@@ -26,6 +26,7 @@
 #include "mpi.h"
 #include "cipher.h"
 #include "filter.h"
+#include "global.h"
 
 #define DEBUG_PARSE_PACKET 1
 
@@ -113,6 +114,11 @@ typedef struct {
     byte data[1];
 } subpktarea_t;
 
+struct revocation_key {
+  byte class;
+  byte algid;
+  byte fpr[MAX_FINGERPRINT_LEN];
+};
 
 typedef struct {
     ulong   local_id;	    /* internal use, valid if > 0 */
@@ -133,7 +139,9 @@ typedef struct {
     byte    sig_class;	    /* sig classification, append for MD calculation*/
     byte    pubkey_algo;    /* algorithm used for public key scheme */
 			    /* (PUBKEY_ALGO_xxx) */
-    byte digest_algo;	    /* algorithm used for digest (DIGEST_ALGO_xxxx) */
+    byte    digest_algo;    /* algorithm used for digest (DIGEST_ALGO_xxxx) */
+    struct revocation_key **revkey;
+    int numrevkeys;
     subpktarea_t *hashed;    /* all subpackets with hashed  data (v4 only) */
     subpktarea_t *unhashed;  /* ditto for unhashed data */
     byte digest_start[2];   /* first 2 bytes of the digest */
@@ -190,13 +198,16 @@ typedef struct {
     u32     has_expired;    /* set to the expiration date if expired */ 
     int     is_revoked;     /* key has been revoked */
     int     is_valid;       /* key (especially subkey) is valid */
+    int     dont_cache;     /* do not cache this */
     ulong   local_id;	    /* internal use, valid if > 0 */
     u32     main_keyid[2];  /* keyid of the primary key */
     u32     keyid[2];	    /* calculated by keyid_from_pk() */
     prefitem_t *prefs;      /* list of preferences (may be NULL) */
-    int    mdc_feature;    /* mdc feature set */
+    int     mdc_feature;    /* mdc feature set */
     byte    *namehash;	    /* if != NULL: found by this name */
     PKT_user_id *user_id;   /* if != NULL: found by that uid */
+    struct revocation_key *revkey;
+    int     numrevkeys;
     MPI     pkey[PUBKEY_MAX_NPKEY];
 } PKT_public_key;
 

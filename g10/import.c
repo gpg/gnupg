@@ -743,6 +743,7 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
     if( rc ) {
 	log_error( _("key %08lX: invalid revocation certificate"
 		  ": %s - rejected\n"), (ulong)keyid[1], g10_errstr(rc));
+	goto leave;
     }
 
 
@@ -954,12 +955,22 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 		delete_kbnode( node );
 	    }
 	    else {
-		int rc = check_key_signature( keyblock, node, NULL);
-		if( rc ) {
-		    log_error( _("key %08lX: invalid revocation "
-			      "certificate: %s - skipped\n"),
-			      (ulong)keyid[1], g10_errstr(rc));
-		    delete_kbnode( node );
+	      /* If the revocation cert is from a different key than
+                 the one we're working on don't check it - it's
+                 probably from a revocation key and won't be
+                 verifiable with this key anyway. */
+
+	      if(node->pkt->pkt.signature->keyid[0]==keyid[0] &&
+		 node->pkt->pkt.signature->keyid[1]==keyid[1])
+		{
+		  int rc = check_key_signature( keyblock, node, NULL);
+		  if( rc )
+		    {
+		      log_error( _("key %08lX: invalid revocation "
+				   "certificate: %s - skipped\n"),
+				 (ulong)keyid[1], g10_errstr(rc));
+		      delete_kbnode( node );
+		    }
 		}
 	    }
 	}
@@ -1114,7 +1125,37 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 	}
     }
 
-    /* 2nd: try to merge new certificates in */
+    /* 2nd: merge in any direct key (0x1F) sigs */
+    for(node=keyblock->next; node; node=node->next ) {
+	if( node->pkt->pkttype == PKT_USER_ID )
+	    break;
+	else if( node->pkt->pkttype == PKT_SIGNATURE
+		 && node->pkt->pkt.signature->sig_class == 0x1F )  {
+	    /* check whether we already have this */
+	    found = 0;
+	    for(onode=keyblock_orig->next; onode; onode=onode->next ) {
+		if( onode->pkt->pkttype == PKT_USER_ID )
+		    break;
+		else if( onode->pkt->pkttype == PKT_SIGNATURE
+			 && onode->pkt->pkt.signature->sig_class == 0x1F
+			 && !cmp_signatures(onode->pkt->pkt.signature,
+					    node->pkt->pkt.signature)) {
+		    found = 1;
+		    break;
+		}
+	    }
+	    if( !found ) {
+		KBNODE n2 = clone_kbnode(node);
+		insert_kbnode( keyblock_orig, n2, 0 );
+		n2->flag |= 1;
+                ++*n_sigs;
+		log_info( _("key %08lX: direct key signature added\n"),
+					 (ulong)keyid[1]);
+	    }
+	}
+    }
+
+    /* 3rd: try to merge new certificates in */
     for(onode=keyblock_orig->next; onode; onode=onode->next ) {
 	if( !(onode->flag & 1) && onode->pkt->pkttype == PKT_USER_ID) {
 	    /* find the user id in the imported keyblock */
@@ -1131,7 +1172,7 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 	}
     }
 
-    /* 3rd: add new user-ids */
+    /* 4th: add new user-ids */
     for(node=keyblock->next; node; node=node->next ) {
 	if( node->pkt->pkttype == PKT_USER_ID) {
 	    /* do we have this in the original keyblock */
@@ -1149,7 +1190,7 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 	}
     }
 
-    /*	add new subkeys */
+    /* 5th: add new subkeys */
     for(node=keyblock->next; node; node=node->next ) {
 	onode = NULL;
 	if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
@@ -1182,7 +1223,7 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 	}
     }
 
-    /* merge subkey certificates */
+    /* 6th: merge subkey certificates */
     for(onode=keyblock_orig->next; onode; onode=onode->next ) {
 	if( !(onode->flag & 1)
 	    &&	(   onode->pkt->pkttype == PKT_PUBLIC_SUBKEY

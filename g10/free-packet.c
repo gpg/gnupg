@@ -59,6 +59,8 @@ free_seckey_enc( PKT_signature *sig )
 	mpi_free(sig->data[0]);
     for(i=0; i < n; i++ )
 	mpi_free( sig->data[i] );
+
+    m_free(sig->revkey);
     m_free(sig->hashed);
     m_free(sig->unhashed);
     m_free(sig);
@@ -88,6 +90,11 @@ release_public_key_parts( PKT_public_key *pk )
     if (pk->user_id) {
         free_user_id (pk->user_id);
         pk->user_id = NULL;
+    }
+    if (pk->revkey) {
+        m_free(pk->revkey);
+	pk->revkey=NULL;
+	pk->numrevkeys=0;
     }
 }
 
@@ -157,6 +164,8 @@ copy_public_key ( PKT_public_key *d, PKT_public_key *s)
 	for(i=0; i < n; i++ )
 	    d->pkey[i] = mpi_copy( s->pkey[i] );
     }
+    d->revkey=m_alloc(sizeof(struct revocation_key)*s->numrevkeys);
+    memcpy(d->revkey,s->revkey,sizeof(struct revocation_key)*s->numrevkeys);
     return d;
 }
 

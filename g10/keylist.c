@@ -417,7 +417,11 @@ list_keyblock_print ( KBNODE keyblock, int secret )
             char *sigstr;
 
 	    if( !any ) { /* no user id, (maybe a revocation follows)*/
-		if( sig->sig_class == 0x20 )
+	      /* Check if the pk is really revoked - there could be a
+                 0x20 sig packet there even if we are not revoked
+                 (say, if a revocation key issued the packet, but the
+                 revocation key isn't present to verify it.) */
+		if( sig->sig_class == 0x20 && pk->is_revoked )
 		    puts("[revoked]");
 		else if( sig->sig_class == 0x18 )
 		    puts("[key binding]");
@@ -436,6 +440,8 @@ list_keyblock_print ( KBNODE keyblock, int secret )
 	    else if( (sig->sig_class&~3) == 0x10 )
 	       sigstr = "sig";
 	    else if( sig->sig_class == 0x18 )
+	       sigstr = "sig";
+	    else if( sig->sig_class == 0x1F )
 	       sigstr = "sig";
 	    else {
                 printf("sig                             "

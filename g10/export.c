@@ -200,14 +200,27 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
             /* make sure that ring_trust packets never get exported */
             if (node->pkt->pkttype == PKT_RING_TRUST)
               continue;
-	    /* do not export packets which are marked as not exportable */
-	    if( node->pkt->pkttype == PKT_SIGNATURE ) {
-	        if( !node->pkt->pkt.signature->flags.exportable )
-		  continue; /* not exportable */
 
-                /* delete our verification cache */
-                delete_sig_subpkt (node->pkt->pkt.signature->unhashed,
-                                   SIGSUBPKT_PRIV_VERIFY_CACHE);
+	    if( node->pkt->pkttype == PKT_SIGNATURE ) {
+	      /* do not export packets which are marked as not exportable */
+	      if( !node->pkt->pkt.signature->flags.exportable )
+		continue; /* not exportable */
+
+	      /* do not export packets with a "sensitive" revocation
+                 key.  This will need revisiting when we start
+                 supporting creating revocation keys and not just
+                 reading them. */
+	      if( node->pkt->pkt.signature->revkey ) {
+		int i;
+
+		for(i=0;i<node->pkt->pkt.signature->numrevkeys;i++)
+		  if(node->pkt->pkt.signature->revkey[i]->class & 0x40)
+		    continue;
+	      }
+
+	      /* delete our verification cache */
+	      delete_sig_subpkt (node->pkt->pkt.signature->unhashed,
+				 SIGSUBPKT_PRIV_VERIFY_CACHE);
 	    }
 
 	    if( secret == 2 && node->pkt->pkttype == PKT_SECRET_KEY ) {

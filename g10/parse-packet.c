@@ -922,6 +922,10 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
 	if( n < 8 ) /* minimum length needed */
 	    break;
 	return 0;
+      case SIGSUBPKT_REV_KEY:
+	if(n < 22)
+	  break;
+	return 0;
       case SIGSUBPKT_REVOC_REASON:
 	if( !n	)
 	    break;
@@ -969,6 +973,7 @@ can_handle_critical( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_KEY_EXPIRE:
       case SIGSUBPKT_EXPORTABLE:
       case SIGSUBPKT_REVOCABLE:
+      case SIGSUBPKT_REV_KEY:
       case SIGSUBPKT_ISSUER:/* issuer key ID */
       case SIGSUBPKT_PREF_SYM:
       case SIGSUBPKT_PREF_HASH:
@@ -1248,6 +1253,28 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	p=parse_sig_subpkt2(sig,SIGSUBPKT_EXPORTABLE,NULL);
 	if(p && *p==0)
 	  sig->flags.exportable=0;
+
+	/* Find all revokation keys */
+	if(sig->sig_class==0x1F)
+	  {
+	    struct revocation_key *revkey;
+	    int len,seq=0;
+
+	    while((revkey=
+		   (struct revocation_key *)enum_sig_subpkt(sig->hashed,
+							    SIGSUBPKT_REV_KEY,
+							    &len,&seq)))
+	      {
+		if(len==sizeof(struct revocation_key) &&
+		   revkey->class&0x80) /* 0x80 bit must be set */
+		  {
+		    sig->revkey=m_realloc(sig->revkey,
+			  sizeof(struct revocation_key *)*(sig->numrevkeys+1));
+		    sig->revkey[sig->numrevkeys]=revkey;
+		    sig->numrevkeys++;
+		  }
+	      }
+	  }
     }
 
     if( list_mode ) {

@@ -96,7 +96,7 @@ static int uid_cache_entries;	/* number of entries in uid cache */
 
 static void merge_selfsigs( KBNODE keyblock );
 static int lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode );
-
+static int check_revocation_keys(PKT_public_key *pk,PKT_signature *sig);
 
 #if 0
 static void
@@ -125,6 +125,9 @@ cache_public_key( PKT_public_key *pk )
 
     if( pk_cache_disabled )
 	return;
+
+    if( pk->dont_cache )
+        return;
 
     if( is_ELGAMAL(pk->pubkey_algo)
 	|| pk->pubkey_algo == PUBKEY_ALGO_DSA
@@ -1176,7 +1179,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
 
     if ( pk->version < 4 ) {
         /* before v4 the key packet itself contains the expiration date
-         * and there was noway to change it.  So we also use only the
+         * and there was no way to change it.  So we also use only the
          * one from the key packet */
         key_expire = pk->expiredate;
         key_expire_seen = 1;
@@ -1216,6 +1219,29 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
                         sigdate = sig->timestamp;
                         signode = k;
 			sigversion = sig->version;
+
+			/* Add any revocation keys onto the pk.  This
+                           is particularly interesting since we
+                           normally only get data from the most recent
+                           1F signature, but you need multiple 1F sigs
+                           to properly handle revocation keys (PGP
+                           does it this way, and a revocation key
+                           could be sensitive and hence in a different
+                           signature). */
+			if(sig->revkey) {
+			  int i;
+
+			  pk->revkey=
+			    m_realloc(pk->revkey,sizeof(struct revocation_key)*
+				      (pk->numrevkeys+sig->numrevkeys));
+
+			  for(i=0;i<sig->numrevkeys;i++)
+			    memcpy(&pk->revkey[pk->numrevkeys],
+				   sig->revkey[i],
+				   sizeof(struct revocation_key));
+
+			  pk->numrevkeys+=sig->numrevkeys;
+			}
                     }
                 }
             }
@@ -1246,11 +1272,37 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
                 key_expire_seen = 1;
             }
         }
+
         /* mark that key as valid: one direct key signature should 
          * render a key as valid */
         pk->is_valid = 1;
     }
 
+    /* pass 1.5: look for key revocation signatures that were not made
+       by the key (i.e. did a revocation key issue a revocation for
+       us?).  Only bother to do this if there is a revocation key in
+       the first place. */
+
+    if(pk->revkey)
+      for(k=keyblock; k && k->pkt->pkttype != PKT_USER_ID; k = k->next )
+	{
+	  if ( k->pkt->pkttype == PKT_SIGNATURE )
+	    {
+	      PKT_signature *sig = k->pkt->pkt.signature;
+
+	      if(IS_KEY_REV(sig) &&
+		 (sig->keyid[0]!=kid[0] || sig->keyid[1]!=kid[1]))
+		{ 
+		  if(check_revocation_keys(pk,sig))
+		    ; /* did not verify, or loop broken */
+		  else
+		    *r_revoked=1;
+
+		  /* In the future handle subkey and cert revocations?
+                     PGP doesn't, but it's in 2440. */
+		}
+	    }
+	}
 
     /* second pass: look at the self-signature of all user IDs */
     signode = uidnode = NULL;
@@ -2189,3 +2241,62 @@ get_ctx_handle(GETKEY_CTX ctx)
 {
   return ctx->kr_handle;
 }
+
+/* Check the revocation keys to see if any of them have revoked our
+   pk.  sig is the revocation sig.  pk is the key it is on.  This code
+   will need to be modified if gpg ever becomes multi-threaded.  Note
+   that this is written so that a revoked revoker can still issue
+   revocations: i.e. If A revokes B, but A is revoked, B is still
+   revoked.  I'm not completely convinced this is the proper behavior,
+   but it matches how PGP does it. -dms */
+
+/* Return 0 if pk is revoked, non-0 if not revoked */
+static int
+check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
+{
+  static int busy=0;
+  int i,rc=-1;
+
+  assert(IS_KEY_REV(sig));
+  assert((sig->keyid[0]!=pk->keyid[0]) || (sig->keyid[0]!=pk->keyid[1]));
+
+  if(busy)
+    {
+      /* return -1 (i.e. not revoked), but mark the pk as uncacheable
+         as we don't really know its revocation status until it is
+         checked directly. */
+
+      pk->dont_cache=1;
+      return -1;
+    }
+
+  busy=1;
+
+  /*  printf("looking at %08lX with a sig from %08lX\n",(ulong)pk->keyid[1],
+      (ulong)sig->keyid[1]); */
+
+  /* is the issuer of the sig one of our revokers? */
+  for(i=0;i<pk->numrevkeys;i++)
+    {
+      u32 keyid[2];
+
+      keyid_from_fingerprint(pk->revkey[i].fpr,MAX_FINGERPRINT_LEN,keyid);
+
+      if(keyid[0]==sig->keyid[0] && keyid[1]==sig->keyid[1])
+	{
+	  MD_HANDLE md;
+
+	  md=md_open(sig->digest_algo,0);
+	  hash_public_key(md,pk);
+	  if(signature_check(sig,md)==0)
+	    {
+	      rc=0;
+	      break;
+	    }
+	}
+    }
+
+  busy=0;
+
+  return rc;
+} 

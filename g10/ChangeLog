@@ -1,3 +1,68 @@
+2002-02-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (check_revocation_keys): New function to check a
+	revocation against a list of potential revocation keys.  Note the
+	loop-breaking code here.  This is to prevent blowing up if A is
+	B's revocation key, while B is also A's.  Note also that this is
+	written so that a revoked revoker can still issue revocations:
+	i.e. If A revokes B, but A is revoked, B is still revoked.  I'm
+	not completely convinced this is the proper behavior, but it
+	matches how PGP does it.  It does at least have the advantage of
+	much simpler code - my first version of this had lots of loop
+	maintaining code so you could chain revokers many levels deep and
+	if D was revoked, C was not, which meant that B was, and so on.
+	It was sort of scary, actually.
+
+	* getkey.c (merge_selfsigs_main): Add any revocation keys onto the
+	pk.  This is particularly interesting since we normally only get
+	data from the most recent 1F signature, but you need multiple 1F
+	sigs to properly handle revocation keys (PGP does it this way, and
+	a revocation key could be marked "sensitive" and hence in a
+	different signature).  Also, if a pk has a revocation key set,
+	check for revocation sigs that were not made by us - if made by a
+	valid revocation key, mark the pk revoked.
+
+	* packet.h, getkey.c (cache_public_key): do not cache key if
+	"dont_cache" is set.  This allows the revocation key code to look
+	up a key and return information that may be inaccurate to prevent
+	loops without caching the fake data.
+
+	* packet.h, sig-check.c (do_signature_check): Record if a
+	signature was made by a revoked pk.
+
+	* packet.h, parse-packet.c (parse_one_sig_subpkt,
+	can_handle_critical, parse_signature): Get revocation key
+	information out of direct sigs.
+	
+	* keylist.c (list_keyblock_print): don't assume that the presence
+	of a 0x20 signature means the key is revoked.  With revocation
+	keys, this may not be true if the revocation key is not around to
+	verify it or if verification failed.  Also, 0x1F should get listed
+	as "sig", and not "unexpected signature class".
+
+	* keyedit.c (show_key_with_all_names): Add a flag for printing
+	revoker information and change all callers.
+
+	* import.c (merge_blocks): merge in any new direct key (0x1F)
+	sigs.
+
+	* import.c (import_revoke_cert): don't keep processing after a
+	revocation is rejected.
+	
+	* import.c (delete_inv_parts): Allow importing a revocation
+	signature even if it was not issued by the key.  This allows a
+	revocation key to issue it.  Of course, the sig still needs to be
+	checked before we trust it.
+
+	* free-packet.c (copy_public_key): Include a new copy of the
+	revocation keys when duping a pk.
+
+	* free-packet.c (free_seckey_enc, release_public_key_parts): Free
+	any revocation keys that are attached to a sig or pk.
+
+	* export.c (do_export_stream): Do not export signatures with
+	"sensitive" revocation keys in them.
+
 2002-02-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* export.c (do_export_stream): Do not include v3 keys in a

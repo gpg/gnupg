@@ -42,8 +42,8 @@
 #include "i18n.h"
 
 static void show_prefs( PKT_user_id *uid, int verbose );
-static void show_key_with_all_names( KBNODE keyblock,
-	    int only_marked, int with_fpr, int with_subkeys, int with_prefs );
+static void show_key_with_all_names( KBNODE keyblock, int only_marked,
+	    int with_revoker, int with_fpr, int with_subkeys, int with_prefs );
 static void show_key_and_fingerprint( KBNODE keyblock );
 static int menu_adduid( KBNODE keyblock, KBNODE sec_keyblock, int photo );
 static void menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock );
@@ -390,7 +390,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	}
 	/* Ask whether we really should sign these user id(s) */
 	tty_printf("\n");
-	show_key_with_all_names( keyblock, 1, 1, 0, 0 );
+	show_key_with_all_names( keyblock, 1, 0, 1, 0, 0 );
 	tty_printf("\n");
 
 	if(primary_pk->expiredate)
@@ -894,7 +894,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 
 	tty_printf("\n");
 	if( redisplay ) {
-	    show_key_with_all_names( cur_keyblock, 0, 0, 1, 0 );
+	    show_key_with_all_names( cur_keyblock, 0, 1, 0, 1, 0 );
 	    tty_printf("\n");
 	    redisplay = 0;
 	}
@@ -1167,7 +1167,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    break;
 
 	  case cmdTRUST:
-	    show_key_with_all_names( keyblock, 0, 0, 1, 0 );
+	    show_key_with_all_names( keyblock, 0, 0, 0, 1, 0 );
 	    tty_printf("\n");
 	    if( edit_ownertrust( find_kbnode( keyblock,
 		      PKT_PUBLIC_KEY )->pkt->pkt.public_key, 1 ) )
@@ -1175,11 +1175,11 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    break;
 
 	  case cmdPREF:
-	    show_key_with_all_names( keyblock, 0, 0, 0, 1 );
+	    show_key_with_all_names( keyblock, 0, 0, 0, 0, 1 );
 	    break;
 
 	  case cmdSHOWPREF:
-	    show_key_with_all_names( keyblock, 0, 0, 0, 2 );
+	    show_key_with_all_names( keyblock, 0, 0, 0, 0, 2 );
 	    break;
 
           case cmdSETPREF:
@@ -1389,7 +1389,7 @@ show_prefs (PKT_user_id *uid, int verbose)
  * so for user ids with mark A flag set and dont display the index number
  */
 static void
-show_key_with_all_names( KBNODE keyblock, int only_marked,
+show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 			 int with_fpr, int with_subkeys, int with_prefs )
 {
     KBNODE node;
@@ -1409,6 +1409,25 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
                 trust = get_validity_info (pk, NULL);
 		otrust = get_ownertrust_info (pk);
 	    }
+
+	    if(with_revoker)
+             for(i=0;i<pk->numrevkeys;i++)
+               {
+                 u32 r_keyid[2];
+                 char *user;
+ 
+                 keyid_from_fingerprint(pk->revkey[i].fpr,
+					MAX_FINGERPRINT_LEN,r_keyid);
+ 
+                 user=get_user_id_string(r_keyid);
+ 
+                 tty_printf(_("This key may be revoked by %s key %s%s\n"),
+                            pubkey_algo_to_string(pk->revkey[i].algid),
+                            user,
+                            pk->revkey[i].class&0x40?_(" (sensitive)"):"");
+ 
+                 m_free(user);
+               }
 
 	    tty_printf(_("%s%c %4u%c/%08lX  created: %s expires: %s"),
 			  node->pkt->pkttype == PKT_PUBLIC_KEY? "pub":"sub",
