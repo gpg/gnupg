@@ -1,3 +1,8 @@
+2002-05-10  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Add gpg_dearmor to all targets where it is used.
+	Noted by Andreas Haumer. 
+
 2002-04-19  Werner Koch  <wk@gnupg.org>
 
 	* signencrypt-dsa.test, sigs-dsa.test: Don't check with MD5 as

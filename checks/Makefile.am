@@ -73,22 +73,22 @@ prepared.stamp: ./pubring.gpg ./secring.gpg ./plain-1 ./plain-2 ./plain-3 \
 ./pubring.gpg: $(srcdir)/pubring.asc $(srcdir)/pubdemo.asc ./gpg_dearmor
 	./gpg_dearmor > ./pubring.gpg < $(srcdir)/pubring.asc
 
-./secring.gpg: $(srcdir)/secring.asc
+./secring.gpg: $(srcdir)/secring.asc ./gpg_dearmor
 	./gpg_dearmor > ./secring.gpg < $(srcdir)/secring.asc
 
-./pubring.pkr: $(srcdir)/pubring.pkr.asc
+./pubring.pkr: $(srcdir)/pubring.pkr.asc ./gpg_dearmor
 	./gpg_dearmor > ./pubring.pkr < $(srcdir)/pubring.pkr.asc
 
-./secring.skr: $(srcdir)/secring.skr.asc
+./secring.skr: $(srcdir)/secring.skr.asc ./gpg_dearmor
 	./gpg_dearmor > ./secring.skr < $(srcdir)/secring.skr.asc
 
-./plain-1: $(srcdir)/plain-1o.asc
+./plain-1: $(srcdir)/plain-1o.asc ./gpg_dearmor
 	./gpg_dearmor > ./plain-1 < $(srcdir)/plain-1o.asc
 
-./plain-2: $(srcdir)/plain-2o.asc
+./plain-2: $(srcdir)/plain-2o.asc ./gpg_dearmor
 	./gpg_dearmor > ./plain-2 < $(srcdir)/plain-2o.asc
 
-./plain-3: $(srcdir)/plain-3o.asc
+./plain-3: $(srcdir)/plain-3o.asc ./gpg_dearmor
 	./gpg_dearmor > ./plain-3 < $(srcdir)/plain-3o.asc
 
 
