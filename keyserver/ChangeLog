@@ -1,3 +1,16 @@
+2004-02-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (epoch2ldaptime): New.  Converse of
+	ldap2epochtime.
+	(make_one_attr): New. Build a modification list in memory to send
+	to the LDAP server.
+	(build_attrs): New. Parse INFO lines sent over by gpg.
+	(free_mod_values): New.  Unwinds a modification list.
+	(send_key_keyserver): Renamed from old send_key().
+	(send_key): New function to send a key to a LDAP server.
+	(main): Use send_key() for real LDAP servers, send_key_keyserver()
+	otherwise.
+
 2004-02-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c: Replacement prototypes for setenv and unsetenv.

@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <ldap.h>
+#include "util.h"
 #include "keyserver.h"
 
 #ifdef __riscos__
@@ -41,7 +42,7 @@ extern int optind;
 #define GET    0
 #define SEND   1
 #define SEARCH 2
-#define MAX_LINE 80
+#define MAX_LINE 256
 
 static int verbose=0,include_disabled=0,include_revoked=0,include_subkeys=0;
 static int real_ldap=0;
@@ -66,7 +67,7 @@ struct keylist
   struct keylist *next;
 };
 
-int
+static int
 ldap_err_to_gpg_err(int err)
 {
   int ret;
@@ -89,7 +90,7 @@ ldap_err_to_gpg_err(int err)
   return ret;
 }
 
-int
+static int
 ldap_to_gpg_err(LDAP *ld)
 {
 #if defined(HAVE_LDAP_GET_OPTION) && defined(LDAP_OPT_ERROR_NUMBER)
@@ -114,7 +115,7 @@ ldap_to_gpg_err(LDAP *ld)
 #endif
 }
 
-int
+static int
 key_in_keylist(const char *key,struct keylist *list)
 {
   struct keylist *keyptr=list;
@@ -130,7 +131,7 @@ key_in_keylist(const char *key,struct keylist *list)
   return 0;
 }
 
-int
+static int
 add_key_to_keylist(const char *key,struct keylist **list)
 {
   struct keylist *keyptr=malloc(sizeof(struct keylist));
@@ -150,7 +151,7 @@ add_key_to_keylist(const char *key,struct keylist **list)
   return 0;
 }
 
-void
+static void
 free_keylist(struct keylist *list)
 {
   while(list!=NULL)
@@ -162,8 +163,507 @@ free_keylist(struct keylist *list)
     }
 }
 
-int
+static time_t
+ldap2epochtime(const char *timestr)
+{
+  struct tm pgptime;
+  time_t answer;
+
+  memset(&pgptime,0,sizeof(pgptime));
+
+  /* YYYYMMDDHHmmssZ */
+
+  sscanf(timestr,"%4d%2d%2d%2d%2d%2d",
+	 &pgptime.tm_year,
+	 &pgptime.tm_mon,
+	 &pgptime.tm_mday,
+	 &pgptime.tm_hour,
+	 &pgptime.tm_min,
+	 &pgptime.tm_sec);
+
+  pgptime.tm_year-=1900;
+  pgptime.tm_isdst=-1;
+  pgptime.tm_mon--;
+
+  /* mktime takes the timezone into account, and we can't have that.
+     I'd use timegm, but it's not portable. */
+
+#ifdef HAVE_TIMEGM
+  answer=timegm(&pgptime);
+#else
+  {
+    char *zone=getenv("TZ");
+    setenv("TZ","UTC",1);
+    tzset();
+    answer=mktime(&pgptime);
+    if(zone)
+      setenv("TZ",zone,1);
+    else
+      unsetenv("TZ");
+    tzset();
+  }
+#endif
+
+  return answer;
+}
+
+/* Caller must free */
+static char *
+epoch2ldaptime(time_t stamp)
+{
+  struct tm *ldaptime;
+  char buf[16];
+
+  ldaptime=gmtime(&stamp);
+
+  ldaptime->tm_year+=1900;
+  ldaptime->tm_mon++;
+
+  /* YYYYMMDDHHmmssZ */
+
+  sprintf(buf,"%04d%02d%02d%02d%02d%02dZ",
+	  ldaptime->tm_year,
+	  ldaptime->tm_mon,
+	  ldaptime->tm_mday,
+	  ldaptime->tm_hour,
+	  ldaptime->tm_min,
+	  ldaptime->tm_sec);
+
+  return strdup(buf);
+}
+
+static int
+make_one_attr(LDAPMod ***modlist,char *attr,const char *value)
+{
+  LDAPMod **m;
+  int nummods=0;
+
+  /* Search modlist for the attribute we're playing with. */
+  for(m=*modlist;*m;m++)
+    {
+      if(strcmp((*m)->mod_type,attr)==0)
+	{
+	  char **ptr=(*m)->mod_values;
+	  int numvalues=0;
+
+	  if(ptr)
+	    while(*ptr++)
+	      numvalues++;
+
+	  ptr=realloc((*m)->mod_values,sizeof(char *)*(numvalues+2));
+	  if(!ptr)
+	    return 0;
+
+	  (*m)->mod_values=ptr;
+	  ptr[numvalues]=strdup(value);
+	  if(!ptr[numvalues])
+	    return 0;
+
+	  ptr[numvalues+1]=NULL;
+	  break;
+	}
+
+      nummods++;
+    }
+
+  /* We didn't find the attr, so make one and add it to the end */
+  if(!*m)
+    {
+      LDAPMod **grow;
+
+      grow=realloc(*modlist,sizeof(LDAPMod *)*(nummods+2));
+      if(!grow)
+	return 0;
+
+      *modlist=grow;
+      grow[nummods]=malloc(sizeof(LDAPMod));
+      if(!grow[nummods])
+	return 0;
+      grow[nummods]->mod_op=LDAP_MOD_REPLACE;
+      grow[nummods]->mod_type=attr;
+      grow[nummods]->mod_values=malloc(sizeof(char *)*2);
+      if(!grow[nummods]->mod_values)
+	{
+	  grow[nummods]=NULL;
+	  return 0;
+	}
+
+      /* Is this the right thing?  Can a UTF8-encoded user ID have
+	 embedded nulls? */
+      grow[nummods]->mod_values[0]=strdup(value);
+      if(!grow[nummods]->mod_values[0])
+	{
+	  free(grow[nummods]->mod_values);
+	  grow[nummods]=NULL;
+	  return 0;
+	}
+
+      grow[nummods]->mod_values[1]=NULL;
+      grow[nummods+1]=NULL;
+    }
+
+  return 1;
+}
+
+static void
+build_attrs(LDAPMod ***modlist,char *line)
+{
+  char *record;
+  int i;
+
+  /* Remove trailing whitespace */
+  for(i=strlen(line);i>0;i--)
+    if(ascii_isspace(line[i-1]))
+      line[i-1]='\0';
+    else
+      break;
+
+  if((record=strsep(&line,":"))==NULL)
+    return;
+
+  if(ascii_strcasecmp("pub",record)==0)
+    {
+      char *tok;
+      int disabled=0,revoked=0;
+
+      /* The long keyid */
+      if((tok=strsep(&line,":"))==NULL)
+	return;
+
+      if(strlen(tok)==16)
+	{
+	  make_one_attr(modlist,"pgpCertID",tok);
+	  make_one_attr(modlist,"pgpKeyID",&tok[8]);
+	}
+      else
+	return;
+
+      /* The primary pubkey algo */
+      if((tok=strsep(&line,":"))==NULL)
+	return;
+
+      switch(atoi(tok))
+	{
+	case 1:
+	  make_one_attr(modlist,"pgpKeyType","RSA");
+	  break;
+
+	case 17:
+	  make_one_attr(modlist,"pgpKeyType","DSS/DH");
+	  break;
+	}
+
+      /* Size of primary key */
+      if((tok=strsep(&line,":"))==NULL)
+	return;
+
+      if(atoi(tok)>0)
+	{
+	  char padded[6];
+	  int val=atoi(tok);
+
+	  /* We zero pad this on the left to make PGP happy. */
+
+	  if(val<99999 && val>0)
+	    {
+	      sprintf(padded,"%05u",atoi(tok));
+	      make_one_attr(modlist,"pgpKeySize",padded);
+	    }
+	}
+
+      /* pk timestamp */
+      if((tok=strsep(&line,":"))==NULL)
+	return;
+
+      if(atoi(tok)>0)
+	{
+	  char *stamp=epoch2ldaptime(atoi(tok));
+	  if(stamp)
+	    {
+	      make_one_attr(modlist,"pgpKeyCreateTime",tok);
+	      free(stamp);
+	    }
+	}
+
+      /* pk expire */
+      if((tok=strsep(&line,":"))==NULL)
+	return;
+
+      if(atoi(tok)>0)
+	{
+	  char *stamp=epoch2ldaptime(atoi(tok));
+	  if(stamp)
+	    {
+	      make_one_attr(modlist,"pgpKeyExpireTime",tok);
+	      free(stamp);
+	    }
+	}
+
+      /* flags */
+      if((tok=strsep(&line,":"))==NULL)
+	return;
+
+      while(*tok)
+	switch(*tok++)
+	  {
+	  case 'r':
+	  case 'R':
+	    revoked=1;
+	    break;
+	    
+	  case 'd':
+	  case 'D':
+	    disabled=1;
+	    break;
+	  }
+
+      /*
+	Note that we always create the pgpDisabled and pgpRevoked
+	attributes, regardless of whether the key is disabled/revoked
+	or not.  This is because a very common search is like
+	"(&(pgpUserID=*isabella*)(pgpDisabled=0))"
+      */
+
+      make_one_attr(modlist,"pgpDisabled",disabled?"1":"0");
+      make_one_attr(modlist,"pgpRevoked",revoked?"1":"0");
+    }
+  else if(ascii_strcasecmp("uid",record)==0)
+    {
+      char *userid,*tok;
+
+      /* The user ID string */
+      if((tok=strsep(&line,":"))==NULL)
+	return;
+
+      if(strlen(tok)==0)
+	return;
+
+      userid=tok;
+
+      /* By definition, de-%-encoding is always smaller than the
+         original string so we can decode in place. */
+
+      i=0;
+
+      while(*tok)
+	if(tok[0]=='%' && tok[1] && tok[2])
+	  {
+	    if((userid[i]=hextobyte(&tok[1]))==-1)
+	      userid[i]='?';
+
+	    i++;
+	    tok+=3;
+	  }
+	else
+	  userid[i++]=*tok++;
+
+      /* We don't care about the other info provided in the uid: line
+	 since the LDAP schema doesn't need it. */
+
+      make_one_attr(modlist,"pgpUserID",userid);
+    }
+}
+
+static void
+free_mod_values(LDAPMod *mod)
+{
+  char **ptr;
+
+  if(!mod->mod_values)
+    return;
+
+  for(ptr=mod->mod_values;*ptr;ptr++)
+    {
+      //      printf("freeing %s with %s as item\n",mod->mod_type,*ptr);
+      free(*ptr);
+    }
+
+  free(mod->mod_values);
+}
+
+static int
 send_key(int *eof)
+{
+  int err,begin=0,end=0,keysize=1,ret=KEYSERVER_INTERNAL_ERROR;
+  char *dn=NULL,line[MAX_LINE],*key=NULL;
+  char keyid[17];
+  LDAPMod **modlist,**ml;
+
+  modlist=malloc(sizeof(LDAPMod *));
+  if(!modlist)
+    {
+      fprintf(console,"gpgkeys: can't allocate memory for keyserver record\n");
+      ret=KEYSERVER_NO_MEMORY;
+      goto fail;
+    }
+
+  *modlist=NULL;
+
+  /* Assemble the INFO stuff into LDAP attributes */
+
+  while(fgets(line,MAX_LINE,input)!=NULL)
+    if(sscanf(line,"INFO %16s BEGIN\n",keyid)==1)
+      {
+	begin=1;
+	break;
+      }
+
+  if(!begin)
+    {
+      /* i.e. eof before the INFO BEGIN was found.  This isn't an
+	 error. */
+      *eof=1;
+      ret=KEYSERVER_OK;
+      goto fail;
+    }
+
+  if(strlen(keyid)!=16)
+    {
+      printf("bad\n");
+      *eof=1;
+      ret=KEYSERVER_KEY_INCOMPLETE;
+      goto fail;
+    }
+
+  dn=malloc(strlen("pgpCertID=")+16+1+strlen(basekeyspacedn)+1);
+  if(dn==NULL)
+    {
+      fprintf(console,"gpgkeys: can't allocate memory for keyserver record\n");
+      ret=KEYSERVER_NO_MEMORY;
+      goto fail;
+    }
+
+  sprintf(dn,"pgpCertID=%s,%s",keyid,basekeyspacedn);
+
+  key=malloc(1);
+  if(!key)
+    {
+      fprintf(console,"gpgkeys: unable to allocate memory for key\n");
+      ret=KEYSERVER_NO_MEMORY;
+      goto fail;
+    }
+
+  key[0]='\0';
+
+  /* Now parse each line until we see the END */
+
+  while(fgets(line,MAX_LINE,input)!=NULL)
+    if(sscanf(line,"INFO %16s END\n",keyid)==1)
+      {
+	end=1;
+	break;
+      }
+    else
+      {
+	build_attrs(&modlist,line);
+	//	printf("line %s\n",line);
+      }
+
+  if(!end)
+    {
+      fprintf(console,"gpgkeys: no INFO %s END found\n",keyid);
+      *eof=1;
+      ret=KEYSERVER_KEY_INCOMPLETE;
+      goto fail;
+    }
+
+  begin=end=0;
+
+  /* Read and throw away stdin until we see the BEGIN */
+
+  while(fgets(line,MAX_LINE,input)!=NULL)
+    if(sscanf(line,"KEY %16s BEGIN\n",keyid)==1)
+      {
+	begin=1;
+	break;
+      }
+
+  if(!begin)
+    {
+      /* i.e. eof before the KEY BEGIN was found.  This isn't an
+	 error. */
+      *eof=1;
+      ret=KEYSERVER_OK;
+      goto fail;
+    }
+
+  /* Now slurp up everything until we see the END */
+
+  while(fgets(line,MAX_LINE,input)!=NULL)
+    if(sscanf(line,"KEY %16s END\n",keyid)==1)
+      {
+	end=1;
+	break;
+      }
+    else
+      {
+	char *tempkey;
+	keysize+=strlen(line);
+	tempkey=realloc(key,keysize);
+	if(tempkey==NULL)
+	  {
+	    fprintf(console,"gpgkeys: unable to reallocate for key\n");
+	    ret=KEYSERVER_NO_MEMORY;
+	    goto fail;
+	  }
+	else
+	  key=tempkey;
+
+	strcat(key,line);
+      }
+
+  if(!end)
+    {
+      fprintf(console,"gpgkeys: no KEY %s END found\n",keyid);
+      *eof=1;
+      ret=KEYSERVER_KEY_INCOMPLETE;
+      goto fail;
+    }
+
+  make_one_attr(&modlist,"objectClass","pgpKeyInfo");
+  make_one_attr(&modlist,"pgpKey",key);
+
+  err=ldap_add_s(ldap,dn,modlist);
+
+  /* If it's there already, we just turn around and send a modify
+     command for the same key to bring it into compliance with our
+     copy.  Note that unlike the LDAP keyserver (and really, any other
+     keyserver) this does NOT merge signatures, but replaces the whole
+     key.  This should make some people very happy. */
+
+  if(err==LDAP_ALREADY_EXISTS)
+    err=ldap_modify_s(ldap,dn,modlist);
+
+  if(err!=LDAP_SUCCESS)
+    {
+      printf("err %d\n",err);
+      fprintf(console,"gpgkeys: error adding key %s to keyserver: %s\n",
+	      keyid,ldap_err2string(err));
+      ret=ldap_err_to_gpg_err(err);
+      goto fail;
+    }
+
+  ret=KEYSERVER_OK;
+
+ fail:
+  /* Unwind and free the whole modlist structure */
+  for(ml=modlist;*ml;ml++)
+    {
+      free_mod_values(*ml);
+      free(*ml);
+    }
+
+  free(modlist);
+  free(dn);
+
+  if(ret!=0 && begin)
+    fprintf(output,"KEY %s FAILED %d\n",keyid,ret);
+
+  return ret;
+}
+
+static int
+send_key_keyserver(int *eof)
 {
   int err,begin=0,end=0,keysize=1,ret=KEYSERVER_INTERNAL_ERROR;
   char *dn=NULL,line[MAX_LINE],*key[2]={NULL,NULL};
@@ -273,7 +773,7 @@ send_key(int *eof)
 }
 
 /* Note that key-not-found is not a fatal error */
-int
+static int
 get_key(char *getkey)
 {
   LDAPMessage *res,*each;
@@ -507,51 +1007,7 @@ get_key(char *getkey)
   return ret;
 }
 
-time_t
-ldap2epochtime(const char *timestr)
-{
-  struct tm pgptime;
-  time_t answer;
-
-  memset(&pgptime,0,sizeof(pgptime));
-
-  /* YYYYMMDDHHmmssZ */
-
-  sscanf(timestr,"%4d%2d%2d%2d%2d%2d",
-	 &pgptime.tm_year,
-	 &pgptime.tm_mon,
-	 &pgptime.tm_mday,
-	 &pgptime.tm_hour,
-	 &pgptime.tm_min,
-	 &pgptime.tm_sec);
-
-  pgptime.tm_year-=1900;
-  pgptime.tm_isdst=-1;
-  pgptime.tm_mon--;
-
-  /* mktime takes the timezone into account, and we can't have that.
-     I'd use timegm, but it's not portable. */
-
-#ifdef HAVE_TIMEGM
-  answer=timegm(&pgptime);
-#else
-  {
-    char *zone=getenv("TZ");
-    setenv("TZ","UTC",1);
-    tzset();
-    answer=mktime(&pgptime);
-    if(zone)
-      setenv("TZ",zone,1);
-    else
-      unsetenv("TZ");
-    tzset();
-  }
-#endif
-
-  return answer;
-}
-
-void
+static void
 printquoted(FILE *stream,char *string,char delim)
 {
   while(*string)
@@ -567,7 +1023,7 @@ printquoted(FILE *stream,char *string,char delim)
 
 /* Returns 0 on success and -1 on error.  Note that key-not-found is
    not an error! */
-int
+static int
 search_key(char *searchkey)
 {
   char **vals;
@@ -799,7 +1255,7 @@ search_key(char *searchkey)
   return KEYSERVER_OK;
 }
 
-void
+static void
 fail_all(struct keylist *keylist,int action,int err)
 {
   if(!keylist)
@@ -1331,8 +1787,16 @@ main(int argc,char *argv[])
 
 	do
 	  {
-	    if(send_key(&eof)!=KEYSERVER_OK)
-	      failed++;
+	    if(real_ldap)
+	      {
+		if(send_key(&eof)!=KEYSERVER_OK)
+		  failed++;
+	      }
+	    else
+	      {
+		if(send_key_keyserver(&eof)!=KEYSERVER_OK)
+		  failed++;
+	      }
 	  }
 	while(!eof);
       }
