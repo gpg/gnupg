@@ -50,27 +50,6 @@ struct decrypt_filter_parm_s {
 };
 
 
-static void
-print_integer_sexp (unsigned char *p)
-{
-  unsigned long len;
-
-  if (!p)
-    log_printf ("none");
-  else
-    {
-      len = gcry_sexp_canon_len (p, 0, NULL, NULL);
-      if (!len)
-        log_printf ("invalid encoding");
-      else
-        {
-          for (; len && *p != ':'; len--, p++)
-            ;
-          for (p++; len; len--, p++)
-            log_printf ("%02X", *p);
-        }
-    }
-}
 
 /* decrypt the session key and fill in the parm structure.  The
    algo and the IV is expected to be already in PARM. */
@@ -370,7 +349,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                   log_debug ("recp %d - issuer: `%s'\n",
                              recp, issuer? issuer:"[NONE]");
                   log_debug ("recp %d - serial: ", recp);
-                  print_integer_sexp (serial);
+                  gpgsm_dump_serial (serial);
                   log_printf ("\n");
 
                   keydb_search_reset (kh);

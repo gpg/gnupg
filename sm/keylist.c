@@ -150,11 +150,15 @@ list_cert_colon (KsbaCert cert, FILE *fp)
       int len;
       const unsigned char *s = sexp;
       
-      for (len=0; *s && *s != ':' && digitp (s); s++)
-        len = len*10 + atoi_1 (s);
-      if (*s == ':')
-        for (s++; len; len--, s++)
-          fprintf (fp,"%02X", *s);
+      if (*s == '(')
+        {
+          s++;
+          for (len=0; *s && *s != ':' && digitp (s); s++)
+            len = len*10 + atoi_1 (s);
+          if (*s == ':')
+            for (s++; len; len--, s++)
+              fprintf (fp,"%02X", *s);
+        }
       xfree (sexp);
     }
   putc (':', fp);

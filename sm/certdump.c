@@ -33,20 +33,24 @@
 #include "gpgsm.h"
 #include "keydb.h"
 
-static void
-print_sexp (KsbaConstSexp p)
+/* print the first element of an S-Expression */
+void
+gpgsm_dump_serial (KsbaConstSexp p)
 {
   unsigned long n;
   KsbaConstSexp endp;
 
   if (!p)
     log_printf ("none");
+  else if (*p != '(')
+    log_printf ("ERROR - not an S-expression");
   else
     {
+      p++;
       n = strtoul (p, (char**)&endp, 10);
       p = endp;
       if (*p!=':')
-        log_printf ("ERROR - invalid value");
+        log_printf ("ERROR - invalid S-expression");
       else
         {
           for (p++; n; n--, p++)
@@ -57,8 +61,8 @@ print_sexp (KsbaConstSexp p)
 
 
 
-static void
-print_time (time_t t)
+void
+gpgsm_dump_time (time_t t)
 {
 
   if (!t)
@@ -76,6 +80,7 @@ print_time (time_t t)
       assert (!tp->tm_isdst);
     }
 }
+
 
 static void
 print_dn (char *p)
@@ -100,17 +105,17 @@ gpgsm_dump_cert (const char *text, KsbaCert cert)
     {
       sexp = ksba_cert_get_serial (cert);
       log_debug ("  serial: ");
-      print_sexp (sexp);
+      gpgsm_dump_serial (sexp);
       ksba_free (sexp);
       log_printf ("\n");
 
       t = ksba_cert_get_validity (cert, 0);
       log_debug ("  notBefore: ");
-      print_time (t);
+      gpgsm_dump_time (t);
       log_printf ("\n");
       t = ksba_cert_get_validity (cert, 1);
       log_debug ("  notAfter: ");
-      print_time (t);
+      gpgsm_dump_time (t);
       log_printf ("\n");
 
       dn = ksba_cert_get_issuer (cert, 0);
@@ -133,3 +138,5 @@ gpgsm_dump_cert (const char *text, KsbaCert cert)
     }
   log_debug ("END Certificate\n");
 }
+
+

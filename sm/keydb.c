@@ -842,7 +842,11 @@ keydb_search_issuer_sn (KEYDB_HANDLE hd,
   
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_ISSUER_SN;
-  for (s=serial,desc.snlen = 0; digitp (s); s++)
+  s = serial;
+  if (*s !='(')
+    return GNUPG_Invalid_Value;
+  s++;
+  for (desc.snlen = 0; digitp (s); s++)
     desc.snlen = 10*desc.snlen + atoi_1 (s);
   if (*s !=':')
     return GNUPG_Invalid_Value;

@@ -1,3 +1,18 @@
+2001-12-20  Werner Koch  <wk@gnupg.org>
+
+	* base64.c (base64_reader_cb): Try to detect an S/MIME body part.
+
+	* certdump.c (print_sexp): Renamed to gpgsm_dump_serial, made
+	global.
+	(print_time): Renamed to gpgsm_dump_time, made global.
+	(gpgsm_dump_serial): Take a real S-Expression as argument and
+	print the first item.
+	* keylist.c (list_cert_colon): Ditto.
+	* keydb.c (keydb_search_issuer_sn): Ditto.
+	* decrypt.c (print_integer_sexp): Removed and made callers 
+	use gpgsm_dump_serial.
+	* verify.c (print_time): Removed, made callers use gpgsm_dump_time.
+	
 2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
 
 	* call-agent.c (start_agent): Add new argument to assuan_pipe_connect.

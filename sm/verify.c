@@ -84,49 +84,6 @@ store_cert (KsbaCert cert)
 
 
 
-static void
-print_integer_sexp (unsigned char *p)
-{
-  unsigned long len;
-
-  if (!p)
-    log_printf ("none");
-  else
-    {
-      len = gcry_sexp_canon_len (p, 0, NULL, NULL);
-      if (!len)
-        log_printf ("invalid encoding");
-      else
-        {
-          for (; len && *p != ':'; len--, p++)
-            ;
-          for (p++; len; len--, p++)
-            log_printf ("%02X", *p);
-        }
-    }
-}
-
-static void
-print_time (time_t t)
-{
-
-  if (!t)
-    log_printf ("none");
-  else if ( t == (time_t)(-1) )
-    log_printf ("error");
-  else
-    {
-      struct tm *tp;
-
-      tp = gmtime (&t);
-      log_printf ("%04d-%02d-%02d %02d:%02d:%02d",
-                  1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
-                  tp->tm_hour, tp->tm_min, tp->tm_sec);
-      assert (!tp->tm_isdst);
-    }
-}
-
-
 
 
 static void
@@ -307,7 +264,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
         break;
       log_debug ("signer %d - issuer: `%s'\n", signer, issuer? issuer:"[NONE]");
       log_debug ("signer %d - serial: ", signer);
-      print_integer_sexp (serial);
+      gpgsm_dump_serial (serial);
       log_printf ("\n");
 
       err = ksba_cms_get_signing_time (cms, signer, &sigtime);
@@ -317,7 +274,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
           sigtime = (time_t)-1;
         }
       log_debug ("signer %d - sigtime: ", signer);
-      print_time (sigtime);  
+      gpgsm_dump_time (sigtime);  
       log_printf ("\n");
 
 
@@ -341,7 +298,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
           log_error ("no signature value available\n");
           goto next_signer;
         }
-      log_debug ("signer %d - signature: `%s'\n", signer, sigval);
+      log_debug ("signer %d - signature available", signer);
 
       /* Find the certificate of the signer */
       keydb_search_reset (kh);

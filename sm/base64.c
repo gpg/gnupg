@@ -49,12 +49,13 @@ struct reader_cb_parm_s {
 
   int autodetect; /* try to detect the input encoding */
   int assume_pem; /* assume input encoding is PEM */
-  int assume_base64; /* assume inpout is base64 encoded */
+  int assume_base64; /* assume input is base64 encoded */
 
   int identified;
   int is_pem;
   int is_base64;
   int stop_seen;
+  int might_be_smime;
 
   struct {
     int idx;
@@ -120,6 +121,31 @@ static unsigned char asctobin[256] = {
   0xff, 0xff, 0xff, 0xff
 };
 
+
+static int
+has_only_base64 (const unsigned char *line, int linelen)
+{
+  if (linelen < 20)
+    return 0;
+  for (; linelen; line++, linelen--)
+    {
+      if (*line == '\n' || (linelen > 1 && *line == '\r' && line[1] == '\n'))
+          break;
+      if ( !strchr (bintoasc, *line) )
+        return 0;
+    }
+  return 1;  /* yes */
+}
+
+static int
+is_empty_line (const unsigned char *line, int linelen)
+{
+  if (linelen >= 2 && *line == '\r' && line[1] == '\n')
+    return 1;
+  if (linelen >= 1 && *line == '\n')
+    return 1;
+  return 0;
+}
 
 
 static int
@@ -196,6 +222,30 @@ base64_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
              the beginning */
           parm->is_pem = 1;
           parm->linelen = parm->readpos = 0;
+        }
+      else if ( parm->have_lf && parm->line_counter == 1
+                && !strncmp (parm->line, "Content-Type:", 13))
+        { /* Might be a S/MIME body */
+          parm->might_be_smime = 1;
+          parm->linelen = parm->readpos = 0;
+          goto next;
+        }
+      else if (parm->might_be_smime == 1
+               && is_empty_line (parm->line, parm->linelen))
+        {
+          parm->might_be_smime = 2;
+          parm->linelen = parm->readpos = 0;
+          goto next;
+        }
+      else if (parm->might_be_smime == 2)
+        {
+          parm->might_be_smime = 0;
+          if ( !has_only_base64 (parm->line, parm->linelen))
+            {
+              parm->linelen = parm->readpos = 0;
+              goto next;
+            }
+          parm->is_pem = 1;
         }
       else
         {
