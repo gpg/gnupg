@@ -83,7 +83,7 @@ enum cmd_and_opt_values {
 
   oEnableSpecialFilenames,
   oAgentProgram,
-
+  oDirmngrProgram,
 
 
 
@@ -95,7 +95,7 @@ enum cmd_and_opt_values {
   oBase64,
   oNoArmor,
 
-
+  oDisableCRLChecks,
 
   oTextmode,
   oFingerprint,
@@ -224,6 +224,10 @@ static ARGPARSE_OPTS opts[] = {
 
     { oRecipient, "recipient", 2, N_("|NAME|encrypt for NAME")},
 
+
+    { oDisableCRLChecks, "disable-crl-checks", 0, N_("never consult a CRL")},
+
+
 #if 0
     { oDefRecipient, "default-recipient" ,2,
 				  N_("|NAME|use NAME as default recipient")},
@@ -315,6 +319,7 @@ static ARGPARSE_OPTS opts[] = {
     { oNoOptions, "no-options", 0, "@" }, /* shortcut for --options /dev/null */
     { oHomedir, "homedir", 2, "@" },   /* defaults to "~/.gnupg" */
     { oAgentProgram, "agent-program", 2 , "@" },
+    { oDirmngrProgram, "dirmngr-program", 2 , "@" },
 
     { oNoBatch, "no-batch", 0, "@" },
     { oWithColons, "with-colons", 0, "@"},
@@ -727,6 +732,10 @@ main ( int argc, char **argv)
           ctrl.is_pem = 0;
           ctrl.is_base64 = 0;
           break;
+
+        case oDisableCRLChecks:
+          opt.no_crl_check = 1;
+          break;
           
 
         case oOutput: opt.outfile = pargs.r.ret_str; break;
@@ -780,6 +789,7 @@ main ( int argc, char **argv)
         case oNoOptions: break; /* no-options */
         case oHomedir: opt.homedir = pargs.r.ret_str; break;
         case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
+        case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str;  break;
           
         case oNoDefKeyring: default_keyring = 0; break;
         case oNoGreeting: nogreeting = 1; break;

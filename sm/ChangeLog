@@ -1,3 +1,10 @@
+2002-01-11  Werner Koch  <wk@gnupg.org>
+
+	* call-dirmngr.c: New.
+	* certpath.c (gpgsm_validate_path): Check the CRL here.
+	* fingerprint.c (gpgsm_get_certid): New.
+	* gpgsm.c: New options --dirmngr-program and --disable-crl-checks.
+
 2002-01-10  Werner Koch  <wk@gnupg.org>
 
 	* base64.c (gpgsm_create_writer): Allow to set the object name

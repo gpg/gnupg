@@ -69,6 +69,33 @@ gpgsm_validate_path (KsbaCert cert)
           goto leave;
         }
 
+      if (!opt.no_crl_check)
+        {
+          rc = gpgsm_dirmngr_isvalid (subject_cert);
+          if (rc)
+            {
+              switch (rc)
+                {
+                case GNUPG_Certificate_Revoked:
+                  log_error (_("the certificate has been revoked\n"));
+                  break;
+                case GNUPG_No_CRL_Known:
+                  log_error (_("no CRL found for certificate\n"));
+                  break;
+                case GNUPG_CRL_Too_Old:
+                  log_error (_("the available CRL is too old\n"));
+                  log_info (_("please make sure that the "
+                              "\"dirmngr\" is properly installed\n"));
+                  break;
+                default:
+                  log_error (_("checking the CRL failed: %s\n"),
+                             gnupg_strerror (rc));
+                  break;
+                }
+              goto leave;
+            }
+        }
+
       if (subject && !strcmp (issuer, subject))
         {
           if (gpgsm_check_cert_sig (subject_cert, subject_cert) )
@@ -118,6 +145,10 @@ gpgsm_validate_path (KsbaCert cert)
       subject_cert = issuer_cert;
       issuer_cert = NULL;
     }
+
+  if (opt.no_crl_check)
+    log_info ("CRL was not checked due to --no-crl-cechk option\n");
+
   
  leave:
   xfree (issuer);

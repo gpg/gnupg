@@ -1,5 +1,5 @@
 /* call-agent.c - divert operations to the agent
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -32,16 +32,6 @@
 #include "gpgsm.h"
 #include "../assuan/assuan.h"
 #include "i18n.h"
-
-#ifdef _POSIX_OPEN_MAX
-#define MAX_OPEN_FDS _POSIX_OPEN_MAX
-#else
-#define MAX_OPEN_FDS 20
-#endif
-
-#define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
-                     *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
-#define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
 
 
 static ASSUAN_CONTEXT agent_ctx = NULL;

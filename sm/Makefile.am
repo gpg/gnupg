@@ -30,6 +30,7 @@ gpgsm_SOURCES = \
 	keydb.c keydb.h \
 	server.c \
 	call-agent.c \
+	call-dirmngr.c \
 	fingerprint.c \
 	base64.c \
 	certlist.c \

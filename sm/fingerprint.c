@@ -187,6 +187,73 @@ gpgsm_get_keygrip_hexstring (KsbaCert cert)
 }
 
 
+
+/* For certain purposes we need a certificate id which has an upper
+   limit of the size.  We use the hash of the issuer name and the
+   serial number for this.  In most cases the serial number is not
+   that large and the resulting string can be passed on an assuan
+   command line.  Everything is hexencoded with the serialnumber
+   delimted from the has by a dot. 
+
+   The caller must free the string.
+*/
+char *
+gpgsm_get_certid (KsbaCert cert)
+{
+  KsbaSexp serial;
+  unsigned char *p;
+  char *endp;
+  unsigned char hash[20];
+  unsigned long n;
+  char *certid;
+  int i;
+  
+  p = ksba_cert_get_issuer (cert, 0);
+  if (!p)
+    return NULL; /* Ooops: No issuer */
+  gcry_md_hash_buffer (GCRY_MD_SHA1, hash, p, strlen (p));
+  xfree (p);
+
+  serial = ksba_cert_get_serial (cert);
+  if (!serial)
+    return NULL; /* oops: no serial number */
+  p = serial;
+  if (*p != '(')
+    {
+      log_error ("Ooops: invalid serial number\n");
+      xfree (serial);
+      return NULL;
+    }
+  p++;
+  n = strtoul (p, &endp, 10);
+  p = endp;
+  if (*p != ':')
+    {
+      log_error ("Ooops: invalid serial number (no colon)\n");
+      xfree (serial);
+      return NULL;
+    }
+  p++;
+
+  certid = xtrymalloc ( 40 + 1 + n*2 + 1);
+  if (!certid)
+    {
+      xfree (serial);
+      return NULL; /* out of core */
+    }
+
+  for (i=0, endp = certid; i < 20; i++, endp += 2 )
+    sprintf (endp, "%02X", hash[i]);
+  *endp++ = '.';
+  for (i=0; i < n; i++, endp += 2)
+    sprintf (endp, "%02X", hash[i]);
+  *endp = 0;
+
+  xfree (serial);
+  return certid;
+}
+
+
 
 
 

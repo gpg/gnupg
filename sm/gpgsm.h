@@ -39,6 +39,7 @@ struct {
 
   const char *homedir; /* configuration directory name */
   const char *agent_program; 
+  const char *dirmngr_program;
   char *outfile;    /* name of output file */
 
   int with_key_data;/* include raw key in the column delimted output */
@@ -64,6 +65,8 @@ struct {
   int lock_once;          /* Keep lock once they are set */
 
   int ignore_time_conflict; /* Ignore certain time conflicts */
+
+  int no_crl_check;       /* Don't do a CRL check */
 
 } opt;
 
@@ -126,6 +129,8 @@ char *gpgsm_get_fingerprint_string (KsbaCert cert, int algo);
 char *gpgsm_get_fingerprint_hexstring (KsbaCert cert, int algo);
 char *gpgsm_get_keygrip (KsbaCert cert, char *array);
 char *gpgsm_get_keygrip_hexstring (KsbaCert cert);
+char *gpgsm_get_certid (KsbaCert cert);
+
 
 /*-- base64.c --*/
 int  gpgsm_create_reader (Base64Context *ctx,
@@ -189,6 +194,12 @@ int gpgsm_agent_pkdecrypt (const char *keygrip,
                            KsbaConstSexp  ciphertext, 
                            char **r_buf, size_t *r_buflen);
 int gpgsm_agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey);
+
+/*-- call-dirmngr.c --*/
+int gpgsm_dirmngr_isvalid (KsbaCert cert);
+
+
+
 
 
 #endif /*GPGSM_H*/
