@@ -49,24 +49,29 @@ static byte bintoasc[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 static byte asctobin[256]; /* runtime initialized */
 static int is_initialized;
 
-typedef enum {
-    fhdrINIT=0,
-    fhdrLF,
-    fhdrWAIT,
-    fhdrWAITINFO,
-    fhdrWAITCLEARSIG,
-    fhdrDASH,
-    fhdrHEAD,
-    fhdrDASH2,
-    fhdrINFO
-} fhdr_state_t;
 
-struct fhdr_struct {
-    fhdr_state_t state;
-    int count;
-    int hdr_line; /* number of the header line */
-    char buf[256];
-};
+typedef enum {
+    fhdrHASArmor,
+    fhdrNOArmor,
+    fhdrINIT,
+    fhdrINITCont,
+    fhdrINITSkip,
+    fhdrCHECKBegin,
+    fhdrWAITHeader,
+    fhdrWAITClearsig,
+    fhdrSKIPHeader,
+    fhdrCLEARSIG,
+    fhdrREADClearsig,
+    fhdrEMPTYClearsig,
+    fhdrCHECKClearsig,
+    fhdrCHECKClearsig2,
+    fhdrREADClearsigNext,
+    fhdrENDClearsig,
+    fhdrTEXT,
+    fhdrERROR,
+    fhdrERRORShow,
+    fhdrEOF
+} fhdr_state_t;
 
 
 /* if we encounter this armor string with this index, go
@@ -85,6 +90,10 @@ static char *tail_strings[] = {
     "END PGP SIGNATURE",
     NULL
 };
+
+
+static fhdr_state_t find_header( fhdr_state_t state,
+			  byte *buf, size_t *r_buflen, IOBUF a, size_t n);
 
 
 static void
@@ -124,18 +133,14 @@ initialize(void)
  * Returns: True if it seems to be armored
  */
 static int
-is_armored( byte *buf, size_t len )
+is_armored( byte *buf )
 {
     int ctb, pkttype;
-
-    if( len < 28 )
-	return 0; /* not even enough space for the "---BEGIN"... */
 
     ctb = *buf;
     if( !(ctb & 0x80) )
 	return 1; /* invalid packet: assume it is armored */
     pkttype =  ctb & 0x40 ? (ctb & 0x3f) : ((ctb>>2)&0xf);
-    /*lenbytes = (ctb & 0x40) || ((ctb&3)==3)? 0 : (1<<(ctb & 3));*/
     switch( pkttype ) {
       case PKT_PUBLIC_CERT:
       case PKT_SECRET_CERT:
@@ -152,120 +157,246 @@ is_armored( byte *buf, size_t len )
 }
 
 
-
-
-static int
-find_header( struct fhdr_struct *fhdr, int c )
+/****************
+ * parse an ascii armor.
+ * Returns: the state,
+ *	    the remaining bytes in BUF are returned in RBUFLEN.
+ */
+static fhdr_state_t
+find_header( fhdr_state_t state, byte *buf, size_t *r_buflen, IOBUF a, size_t n)
 {
-    int i;
+    int c, i;
     const char *s;
+    char *p;
+    size_t buflen;
+    int cont;
+    int clearsig=0;
+    int hdr_line=0;
 
-    if( c == '\n' ) {
-	switch( fhdr->state ) {
-	  case fhdrINFO:
-	    if( !fhdr->count )
-		return 1;   /* blank line: data starts with the next line */
-	    fhdr->buf[fhdr->count] = 0;
-	    log_debug("armor line: '%s'\n", fhdr->buf );
-	    /* fall through */
-	  case fhdrWAITINFO:
-	    fhdr->state = fhdrINFO;
-	    fhdr->count = 0;
-	    break;
-	  case fhdrWAITCLEARSIG:
-	    if( fhdr->count++ == 1 ) /* skip the empty line */
-		return 1; /* clear signed text follows */
-	    else if( fhdr->count > 1 )
-		fhdr->state = fhdrWAIT; /* was not valid */
-	    break;
-	  default:
-	    fhdr->state = fhdrLF;
-	    break;
-	}
-    }
-    else {
-	switch( fhdr->state ) {
-	  case fhdrINIT:
-	  case fhdrLF:
-	    if( c == '-' ) {
-		fhdr->state = fhdrDASH;
-		fhdr->count = 1;
-	    }
+    buflen = *r_buflen;
+    assert(buflen >= 100 );
+    buflen--;
+
+    do {
+	switch( state ) {
+	  case fhdrHASArmor:
+	    /* read 28 bytes, which is the bare minimum for a BEGIN...
+	     * and check wether this has a Armor. */
+	    c = 0;
+	    for(n=0; n < 28 && (c=iobuf_get(a)) != -1 && c != '\n'; )
+		buf[n++] = c;
+	    if( n < 28 || c == -1 )
+		state = fhdrNOArmor; /* too short */
+	    else if( !is_armored( buf ) )
+		state = fhdrNOArmor;
 	    else
-		fhdr->state = fhdrWAIT;
+		state = fhdrINITCont;
 	    break;
-	  case fhdrWAIT:
-	  case fhdrWAITINFO:
-	  case fhdrWAITCLEARSIG:
+
+	  case fhdrINIT: /* read some stuff into buffer */
+	    n = 0;
+	  case fhdrINITCont: /* read more stuff into buffer */
+	    c = 0;
+	    for(; n < buflen && (c=iobuf_get(a)) != -1 && c != '\n'; )
+		buf[n++] = c;
+	    state = c == '\n' ? fhdrCHECKBegin :
+		     c == -1  ? fhdrEOF : fhdrINITSkip;
 	    break;
-	  case fhdrDASH:
-	    if( c == '-' ) {
-		if( ++fhdr->count == 5 ) {
-		    fhdr->state = fhdrHEAD;
-		    fhdr->count = 0;
+
+	  case fhdrINITSkip:
+	    while( (c=iobuf_get(a)) != -1 && c != '\n' )
+		;
+	    state =  c == -1? fhdrEOF : fhdrINIT;
+	    break;
+
+	  case fhdrSKIPHeader:
+	    while( (c=iobuf_get(a)) != -1 && c != '\n' )
+		;
+	    state =  c == -1? fhdrEOF : fhdrWAITHeader;
+	    break;
+
+	  case fhdrWAITHeader: /* wait for Header lines */
+	    c = 0;
+	    for(n=0; n < buflen && (c=iobuf_get(a)) != -1 && c != '\n'; )
+		buf[n++] = c;
+	    buf[n] = 0;
+	    if( n < buflen || c == '\n' ) {
+		if( n && buf[0] != '\r') { /* maybe a header */
+		    if( strchr( buf, ':') ) { /* yes */
+			log_debug("armor header: ");
+			print_string( stderr, buf, n );
+			putc('\n', stderr);
+			state = fhdrWAITHeader;
+		    }
+		    else
+			state = fhdrTEXT;
+		}
+		else if( !n || (buf[0] == '\r' && !buf[1]) ) { /* empty line */
+		    if( clearsig )
+			state = fhdrWAITClearsig;
+		    else {
+			/* this is not really correct: if we do not have
+			 * a clearsig and not armor lines we are not allowed
+			 * to have an empty line */
+			n = 0;
+			state = fhdrTEXT;
+		    }
+		}
+		else {
+		    log_debug("invalid armor header: ");
+		    print_string( stderr, buf, n );
+		    putc('\n', stderr);
+		    state = fhdrERROR;
 		}
 	    }
+	    else if( c != -1 ) {
+		if( strchr( buf, ':') ) { /* buffer to short, but this is okay*/
+		    log_debug("armor header: ");
+		    print_string( stderr, buf, n );
+		    fputs("[...]\n", stderr);  /* indicate it is truncated */
+		    state = fhdrSKIPHeader;  /* skip rest of line */
+		}
+		else /* line too long */
+		    state = fhdrERROR;
+	    }
 	    else
-		fhdr->state = fhdrWAIT;
+		state = fhdrEOF;
 	    break;
-	  case fhdrHEAD:
-	    if( c != '-' ) {
-		if( fhdr->count < DIM(fhdr->buf)-1 )
-		    fhdr->buf[fhdr->count++] = c;
+
+	  case fhdrWAITClearsig: /* skip all empty lines (for clearsig) */
+	    c = 0;
+	    for(n=0; n < buflen && (c=iobuf_get(a)) != -1 && c != '\n'; )
+		buf[n++] = c;
+	    if( n < buflen || c == '\n' ) {
+		buf[n] = 0;
+		if( !n || (buf[0]=='\r' && !buf[1]) ) /* empty line */
+		    ;
+		else
+		    state = fhdrTEXT;
+	    }
+	    else
+		state = fhdrEOF;
+	    break;
+
+	  case fhdrENDClearsig:
+	  case fhdrCHECKBegin:
+	    state = state == fhdrCHECKBegin ? fhdrINITSkip : fhdrERRORShow;
+	    if( n < 15 )
+		break;	/* too short */
+	    if( memcmp( buf, "-----", 5 ) )
+		break;
+	    buf[n] = 0;
+	    p = strstr(buf+5, "-----");
+	    if( !p )
+		break;
+	    *p = 0;
+	    p += 5;
+	    if( *p == '\r' )
+		p++;
+	    if( *p )
+		break; /* garbage after dashes */
+	    p = buf+5;
+	    for(i=0; (s=head_strings[i]); i++ )
+		if( !strcmp(s, p) )
+		    break;
+	    if( !s )
+		break; /* unknown begin line */
+	    /* found the begin line */
+	    hdr_line = i;
+	    state = fhdrWAITHeader;
+	    if( hdr_line == BEGIN_SIGNED_MSG_IDX )
+		clearsig = 1;
+	    log_debug("armor: %s\n", head_strings[hdr_line]);
+	    break;
+
+	  case fhdrCLEARSIG:
+	  case fhdrEMPTYClearsig:
+	  case fhdrREADClearsig:
+	    /* we are at the start of a line: read a clearsig into the buffer
+	     * we have to look for a the header line or dashd escaped text*/
+	    n = 0;
+	    c = 0;
+	    for(; n < buflen && (c=iobuf_get(a)) != -1 && c != '\n'; )
+		buf[n++] = c;
+	    buf[n] = 0;
+	    if( c == -1 )
+		state = fhdrEOF;
+	    else if( !n || ( buf[0]=='\r' && !buf[1] ) ) {
+		state = fhdrEMPTYClearsig;
+		/* FIXME: handle it */
+	    }
+	    else if( c == '\n' )
+		state = fhdrCHECKClearsig2;
+	    else
+		state = fhdrCHECKClearsig;
+	    break;
+
+	  case fhdrCHECKClearsig:
+	  case fhdrCHECKClearsig2:
+	    /* check the clearsig line */
+	    if( n > 15 && !memcmp(buf, "-----", 5 ) )
+		state = fhdrENDClearsig;
+	    else if( buf[0] == '-' && buf[1] == ' ' ) {
+		/* dash escaped line */
+		if( buf[2] == '-' || ( n > 6 && !memcmp(buf+2, "From ", 5))) {
+		    for(i=2; i < n; i++ )
+			buf[i-2] = buf[i];
+		    n -= 2;
+		    buf[n] = 0; /* not really needed */
+		    state = state == fhdrCHECKClearsig2 ?
+				     fhdrREADClearsig : fhdrREADClearsigNext;
+		    /* FIXME: add the lf to the buffer */
+		}
+		else {
+		    log_debug("invalid dash escaped line: ");
+		    print_string( stderr, buf, n );
+		    putc('\n', stderr);
+		    state = fhdrERROR;
+		}
 	    }
 	    else {
-		fhdr->buf[fhdr->count] = 0;
-		for(i=0; (s=head_strings[i]); i++ )
-		    if( !strcmp(s,fhdr->buf) )
-			break;
-		if( s ) { /* found string; wait for trailing dashes */
-		    fhdr->hdr_line = i;
-		    fhdr->state = fhdrDASH2;
-		    fhdr->count = 1;
-		}
-		else
-		    fhdr->state = fhdrWAIT;
+		state = state == fhdrCHECKClearsig2 ?
+				  fhdrREADClearsig : fhdrREADClearsigNext;
+		/* FIXME: add the lf to the buffer */
 	    }
 	    break;
 
-	  case fhdrDASH2:
-	    if( c == '-' ) {
-		if( ++fhdr->count == 5 ) {
-		    fhdr->state = fhdrWAITINFO;
-		    log_debug("armor head: '%s'\n",
-					head_strings[fhdr->hdr_line]);
-		    fhdr->state = fhdr->hdr_line == BEGIN_SIGNED_MSG_IDX
-				   ? fhdrWAITCLEARSIG : fhdrWAITINFO;
-		    if( fhdr->state == fhdrWAITCLEARSIG )
-			fhdr->count = 0;
-		}
-	    }
-	    else
-		fhdr->state = fhdrWAIT;
+	  case fhdrREADClearsigNext:
+	    /* Read to the end of the line, do not care about checking
+	     * for dashed escaped text of headers */
 	    break;
 
-	  case fhdrINFO:
-	    if( fhdr->count < DIM(fhdr->buf)-1 )
-		fhdr->buf[fhdr->count++] = c;
+	  case fhdrERRORShow:
+	    log_debug("invalid clear text header: ");
+	    print_string( stderr, buf, n );
+	    putc('\n', stderr);
+	    state = fhdrERROR;
 	    break;
 
-	  default: abort();
+	  default: BUG();
 	}
-    }
-    return 0;
-}
+	switch( state ) {
+	  case fhdrINIT:
+	  case fhdrINITCont:
+	  case fhdrINITSkip:
+	  case fhdrCHECKBegin:
+	  case fhdrWAITHeader:
+	  case fhdrWAITClearsig:
+	  case fhdrSKIPHeader:
+	  case fhdrEMPTYClearsig:
+	  case fhdrCHECKClearsig:
+	  case fhdrCHECKClearsig2:
+	  case fhdrERRORShow:
+	    cont = 1;
+	    break;
+	  default: cont = 0;
+	}
+    } while( cont );
 
-/****************
- * check wether the trailer is okay.
- * Returns: 0 := still in trailer
- *	    -1 := Okay
- *	    1 := Error in trailer
- */
-static int
-check_trailer( struct fhdr_struct *fhdr, int c )
-{
-    return -1;
-    /* FIXME: implement this ! */
+    if( clearsig && state == fhdrTEXT )
+	state = fhdrCLEARSIG;
+    *r_buflen = n;
+    return state;
 }
 
 
@@ -274,59 +405,45 @@ static int
 check_input( armor_filter_context_t *afx, IOBUF a )
 {
     int rc = 0;
-    int c;
-    size_t n = 0, nn=0;
-    struct fhdr_struct fhdr;
+    size_t n;
+    fhdr_state_t state = afx->parse_state;
 
-    assert( DIM(afx->helpbuf) >= 50 );
-    memset( &fhdr, 0, sizeof(fhdr) );
+    if( state != fhdrENDClearsig )
+	state = fhdrHASArmor;
 
-    /* read a couple of bytes */
-    for( n=0; n < DIM(afx->helpbuf); n++ ) {
-	if( (c=iobuf_get(a)) == -1 )
-	    break;
-	afx->helpbuf[n] = c & 0xff;
-    }
-
-    if( !n )
-	rc = -1;
-    else if( is_armored( afx->helpbuf, n ) ) {
-	for(nn=0; nn < n; nn++ )
-	    if( find_header( &fhdr, afx->helpbuf[nn] ) )
-		break;
-	if( nn == n ) { /* continue read */
-	    while( (c=iobuf_get(a)) != -1 )
-		if( find_header( &fhdr, c ) )
-		    break;
-	    if( c == -1 )
-		rc = -1; /* eof */
-	}
-	if( !rc && fhdr.hdr_line == BEGIN_SIGNED_MSG_IDX ) {
-	    /* start fake package mode (for clear signatures) */
-	    nn++;
-	    afx->helplen = n;
-	    afx->helpidx = nn;
-	    afx->templen = 0;
-	    afx->tempidx = 0;
-	    afx->fake = m_alloc_clear( sizeof(struct fhdr_struct) );
-	}
-	else if( !rc ) {
-	    /* next byte to read or helpbuf[nn+1]
-	     * is the first rad64 byte */
-	    nn++;
-	    afx->inp_checked = 1;
-	    afx->crc = CRCINIT;
-	    afx->idx = 0;
-	    afx->radbuf[0] = 0;
-	    afx->helplen = n;
-	    afx->helpidx = nn;
-	}
-    }
-    else {
+    n = DIM(afx->helpbuf);
+    state = find_header( state, afx->helpbuf, &n, a, afx->helplen );
+    switch( state ) {
+      case fhdrNOArmor:
 	afx->inp_checked = 1;
 	afx->inp_bypass = 1;
+	afx->helplen = n;
+	break;
+
+      case fhdrERROR:
+      case fhdrEOF:
+	rc = -1;
+	break;
+
+      case fhdrCLEARSIG: /* start fake package mode (for clear signatures) */
+	afx->helplen = n;
+	afx->helpidx = 0;
+	afx->faked = 1;
+	break;
+
+      case fhdrTEXT:
+	afx->helplen = n;
+	afx->helpidx = 0;
+	afx->inp_checked = 1;
+	afx->crc = CRCINIT;
+	afx->idx = 0;
+	afx->radbuf[0] = 0;
+	break;
+
+      default: BUG();
     }
 
+    afx->parse_state = state;
     return rc;
 }
 
@@ -338,71 +455,61 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	     size_t *retn, byte *buf, size_t size  )
 {
     int rc = 0;
-    int c;
-    size_t n = 0;
-    struct fhdr_struct *fhdr = afx->fake;
-    byte *helpbuf = afx->helpbuf;
-    int helpidx = afx->helpidx;
-    int helplen = afx->helplen;
-    byte *tempbuf = afx->tempbuf;
-    int tempidx = afx->tempidx;
-    int templen = afx->templen;
+    size_t len = 0;
+    size_t n, nn;
+    fhdr_state_t state = afx->parse_state;
 
-    /* FIXME: have to read one ahead or do some other mimic to
-     * get rid of the lf before the "begin signed message"
-     */
     size = 100; /* FIXME: only used for testing (remove it)  */
-    n = 2; /* reserve 2 bytes for the length header */
-    while( n < size-2 ) { /* and 2 for the term header */
-	if( templen && (fhdr->state == fhdrWAIT || fhdr->state == fhdrLF) ) {
-	    if( tempidx < templen ) {
-		buf[n++] = tempbuf[tempidx++];
-		continue;
-	    }
-	    tempidx = templen = 0;
-	}
 
-	if( helpidx < helplen )
-	    c = helpbuf[helpidx++];
-	else if( (c=iobuf_get(a)) == -1 )
-	    break;
-	if( find_header( fhdr, c ) ) {
-	    m_free(afx->fake);
-	    afx->fake = NULL;
-	    afx->inp_checked = 1;
-	    afx->crc = CRCINIT;
-	    afx->idx = 0;
-	    afx->radbuf[0] = 0;
-	    /* we don't need to care about the tempbuf */
-	    break;
+    len = 2;	/* reserve 2 bytes for the length header */
+    size -= 2;	/* and 2 for the term header */
+    while( !rc && len < size ) {
+	if( afx->helpidx < afx->helplen ) { /* flush the last buffer */
+	    n = afx->helplen;
+	    for(nn=afx->helpidx; len < size && nn < n ; nn++ )
+		buf[len++] = afx->helpbuf[nn];
+	    afx->helpidx = nn;
+	    continue;
 	}
-	if( fhdr->state == fhdrWAIT || fhdr->state == fhdrLF ) {
-	    if( templen ) {
-		tempidx = 0;
-		continue;
-	    }
-	    buf[n++] = c;
+	if( state == fhdrEOF ) {
+	    rc = -1;
+	    continue;
 	}
-	else if( fhdr->state == fhdrWAITINFO
-		|| fhdr->state == fhdrINFO )
-	    ;
-	else { /* store it in another temp. buf */
-	    assert( templen < DIM(afx->tempbuf) );
-	    tempbuf[templen++] = c;
+	/* read a new one */
+	n = DIM(afx->helpbuf);
+	afx->helpidx = 0;
+	state = find_header( state, afx->helpbuf, &n, a, 0 );
+	switch( state) {
+	  case fhdrERROR:
+	  case fhdrEOF:
+	    rc = -1;
+	    break;
+
+	  case fhdrCLEARSIG:
+	  case fhdrREADClearsig:
+	  case fhdrREADClearsigNext:
+	    afx->helplen = n;
+	    break;
+
+	  case fhdrENDClearsig:
+	    afx->helplen = n;
+	    afx->faked = 0;
+	    rc = -1;
+	    break;
+
+	  default: BUG();
 	}
     }
-    buf[0] = (n-2) >> 8;
-    buf[1] = (n-2);
-    if( !afx->fake ) { /* write last (ending) length header */
-	buf[n++] = 0;
-	buf[n++] = 0;
+    buf[0] = (len-2) >> 8;
+    buf[1] = (len-2);
+    if( state == fhdrENDClearsig ) { /* write last (ending) length header */
+	buf[len++] = 0;
+	buf[len++] = 0;
+	rc = 0;
     }
 
-    afx->helpidx = helpidx;
-    afx->helplen = helplen;
-    afx->tempidx = tempidx;
-    afx->templen = templen;
-    *retn = n;
+    afx->parse_state = state;
+    *retn = len;
     return rc;
 }
 
@@ -493,11 +600,8 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		log_error("CRC error; %06lx - %06lx\n",
 				    (ulong)afx->crc, (ulong)mycrc);
 	    else {
-		struct fhdr_struct fhdr;
-
-		memset( &fhdr, 0, sizeof(fhdr) );
 		for(rc=0;!rc;) {
-		    rc = check_trailer( &fhdr, c );
+		    rc = 0 /*check_trailer( &fhdr, c )*/;
 		    if( !rc ) {
 			if( afx->helpidx < afx->helplen )
 			    c = afx->helpbuf[afx->helpidx++];
@@ -561,13 +665,13 @@ armor_filter( void *opaque, int control,
 	    return -1;
 	}
 
-	if( afx->fake )
+	if( afx->faked )
 	    rc = fake_packet( afx, a, &n, buf, size );
 	else if( !afx->inp_checked ) {
 	    rc = check_input( afx, a );
 	    if( afx->inp_bypass )
 		;
-	    else if( afx->fake ) {
+	    else if( afx->faked ) {
 		/* the buffer is at least 20 bytes long, so it
 		 * is easy to construct a packet */
 		buf[0] = 0xaf; /* old packet format, type 11, var length */
