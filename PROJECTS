@@ -47,3 +47,7 @@
 
     * Keep a list of duplicate, faked or unwanted keyids.
 
+    * The current code has knowledge about the structure of a keyblock.
+      We should add an abstraction layer so that adding support for
+      different certificate structures will become easier.
+

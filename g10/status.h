@@ -60,6 +60,9 @@
 #define STATUS_DECRYPTION_OKAY	 30
 #define STATUS_MISSING_PASSPHRASE 31
 #define STATUS_GOOD_PASSPHRASE	32
+#define STATUS_GOODMDC		33
+#define STATUS_BADMDC		34
+#define STATUS_ERRMDC		35
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

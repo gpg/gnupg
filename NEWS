@@ -8,6 +8,9 @@
 
     * Merged gpgm and gpg into one binary.
 
+    * Add revsig command to the edit menu.  It is now possible to
+      revoke signature.
+
 
 Noteworthy changes in version 0.9.5
 -----------------------------------

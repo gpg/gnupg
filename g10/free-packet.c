@@ -56,11 +56,9 @@ void
 free_seckey_enc( PKT_signature *sig )
 {
     int n, i;
-    n = pubkey_get_nsig( sig->pubkey_algo );
-    if( !n ) {
-	m_free(sig->data[0]);
-	sig->data[0] = NULL;
-    }
+    n = sig->pubkey_algo? pubkey_get_nsig( sig->pubkey_algo ) : 0;
+    if( !n )
+	mpi_free(sig->data[0]);
     for(i=0; i < n; i++ )
 	mpi_free( sig->data[i] );
     m_free(sig->hashed_data);
@@ -168,13 +166,11 @@ copy_signature( PKT_signature *d, PKT_signature *s )
     if( !d )
 	d = m_alloc(sizeof *d);
     memcpy( d, s, sizeof *d );
-    n = pubkey_get_nsig( s->pubkey_algo );
+    n = s->pubkey_algo? pubkey_get_nsig( s->pubkey_algo ) : 0;
     if( !n )
-	d->data[0] = cp_fake_data(s->data[0]);
-    else {
-	for(i=0; i < n; i++ )
-	    d->data[i] = mpi_copy( s->data[i] );
-    }
+	d->data[0] = mpi_copy(s->data[0]);
+    for(i=0; i < n; i++ )
+	d->data[i] = mpi_copy( s->data[i] );
     d->hashed_data = cp_data_block(s->hashed_data);
     d->unhashed_data = cp_data_block(s->unhashed_data);
     return d;
@@ -434,7 +430,7 @@ cmp_signatures( PKT_signature *a, PKT_signature *b )
     if( a->pubkey_algo != b->pubkey_algo )
 	return -1;
 
-    n = pubkey_get_nsig( a->pubkey_algo );
+    n = a->pubkey_algo? pubkey_get_nsig( a->pubkey_algo ) : 0;
     if( !n )
 	return -1; /* can't compare due to unknown algorithm */
     for(i=0; i < n; i++ ) {

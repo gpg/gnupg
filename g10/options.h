@@ -44,6 +44,7 @@ struct {
     int list_packets; /* list-packets mode */
     int def_cipher_algo;
     int force_v3_sigs;
+    int force_mdc;
     int def_digest_algo;
     int def_compress_algo;
     const char *def_secret_key;

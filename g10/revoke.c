@@ -201,4 +201,190 @@ gen_revoke( const char *uname )
     return rc;
 }
 
+#if 0 /* The code is not complete but anyway, now we use */
+      /* the edit menu to revoke signature */
+/****************
+ * Return true if there is already a revocation signature for KEYID
+ * in KEYBLOCK at point node.
+ */
+static int
+already_revoked( const KBNODE keyblock, const KBNODE node, u32 *keyid ) 							 ) {
+{
+    const KBNODE n = find_prev_kbnode( keyblock, node, PKT_USER_ID );
+
+    for( ; n; n = n->next ) {
+	PKT_signature *sig;
+	if( n->pkt->pkttype == PKT_SIGNATURE
+	    && (sig = node->pkt->pkt.signature)->sig_class == 0x30
+	    && sig->keyid[0] == keyid[0]
+	    && sig->keyid[1] == keyid[1] )
+	    return 1;
+	}
+	else if( n->pkt->pkttype == PKT_USER_ID
+	    break;
+	else if( n->pkt->pkttype == PKT_PUBLIC_SUBKEY
+	    break;
+    }
+    return 0;
+}
+
+/****************
+ * Ask whether the signature should be revoked.  If the user commits this,
+ * flag bit 0 is set.
+ */
+static void
+ask_revoke_sig( KBNODE keyblock, KBNODE node, PKT_signature *sig )							    ) {
+{
+    KBNODE unode = find_prev_kbnode( keyblock, node, PKT_USER_ID );
+
+    if( !unode ) {
+	log_error("Oops: no user ID for signature\n");
+	return;
+    }
+
+    tty_printf(_("user ID: \""));
+    tty_print_string( unode->pkt->pkt.user_id->name,
+		      unode->pkt->pkt.user_id->len, 0 );
+    tty_printf(_("\"\nsigned with your key %08lX at %s\n"),
+		sig->keyid[1], datestr_from_sig(sig) );
+
+    if( cpr_get_answer_is_yes("ask_revoke_sig.one",
+	 _("Create a revocation certificate for this signature? (y/N)")) ) {
+	node->flag |= 1;
+    }
+}
+
+/****************
+ * Generate a signature revocation certificate for UNAME
+ */
+int
+gen_sig_revoke( const char *uname )
+{
+    int rc = 0;
+    armor_filter_context_t afx;
+    compress_filter_context_t zfx;
+    PACKET pkt;
+    IOBUF out = NULL;
+    KBNODE keyblock = NULL;
+    KBNODE node;
+    KBPOS kbpos;
+    int uidchg;
+
+    if( opt.batch ) {
+	log_error(_("sorry, can't do this in batch mode\n"));
+	return G10ERR_GENERAL;
+    }
+
+
+    memset( &afx, 0, sizeof afx);
+    memset( &zfx, 0, sizeof zfx);
+    init_packet( &pkt );
+
+
+    /* get the keyblock */
+    rc = find_keyblock_byname( &kbpos, uname );
+    if( rc ) {
+	log_error(_("public key for user `%s' not found\n"), uname );
+	goto leave;
+    }
+
+    /* read the keyblock */
+    rc = read_keyblock( &kbpos, &keyblock );
+    if( rc ) {
+	log_error(_("error reading the certificate: %s\n"), g10_errstr(rc) );
+	goto leave;
+    }
+
+    /* get the keyid from the keyblock */
+    node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
+    if( !node ) {
+	log_error(_("Oops; public key lost!\n"));
+	rc = G10ERR_GENERAL;
+	goto leave;
+    }
+
+    if( (rc = open_outfile( NULL, 0, &out )) )
+	goto leave;
+
+    if( opt.armor ) {
+       afx.what = 1;
+       iobuf_push_filter( out, armor_filter, &afx );
+    }
+
+    /* Now walk over all signatures which we did with one of
+     * our secret keys.  Hmmm: Should we check for duplicate signatures */
+    clear_kbnode_flags( flags );
+    for( node = keyblock; node; node = node->next ) {
+	PKT_signature *sig;
+	if( node->pkt->pkttype == PKT_SIGNATURE
+	    && ((sig = node->pkt->pkt.signature)->sig_class&~3) == 0x10
+	    && seckey_available( sig->keyid )
+	    && !already_revoked( keyblock, node, sig->keyid ) ) {							     ) {
+	    ask_revoke_sig( keyblock, node, sig )
+	}
+	else if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+	    break;
+    }
+
+
+    for( node = keyblock; node; node = node->next ) { {
+	if( (node->flag & 1) )
+	    break;
+    }
+    if( !node ) {
+	log_info(_("nothing to revoke\n"));
+	iobuf_cancel(out);
+	out = NULL;
+	goto leave;
+    }
+
+    init_packet( &pkt );
+    pkt.pkttype = PKT_PUBLIC_KEY;
+    pkt.pkt.public_key = keyblock->pkt->pkt.public_key;
+    rc = build_packet( out, &pkt );
+    if( rc ) {
+	log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	goto leave;
+    }
+    uidchg = 1;
+    for( node = keyblock; node; node = node->next ) {
+	if( node->pkt->pkttype == PKT_USER_ID )
+	    uidchg = 1;
+	if( !(node->flag & 1) )
+	    continue;
+
+	if( uidchg ) {
+	    /* create a user ID packet */
+	    .......
+	    uidchg = 0;
+	}
+
+	/* create it */
+	rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x30, 0, NULL, NULL);
+	if( rc ) {
+	    log_error(_("make_keysig_packet failed: %s\n"), g10_errstr(rc));
+	    goto leave;
+	}
+	init_packet( &pkt );
+	pkt.pkttype = PKT_SIGNATURE;
+	pkt.pkt.signature = sig;
+
+	rc = build_packet( out, &pkt );
+	if( rc ) {
+	    log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	    goto leave;
+	}
+    }
+
+  leave:
+    release_kbnode( keyblock );
+    if( !out )
+	;
+    else if( rc )
+	iobuf_cancel(out);
+    else
+	iobuf_close(out);
+    return rc;
+}
+#endif /* unused code */
 

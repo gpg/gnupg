@@ -1,5 +1,5 @@
 /* mpi-inline.h  -  Internal to the Multi Precision Integers
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *	Copyright (C) 1994, 1996 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -30,8 +30,11 @@
 #ifndef G10_MPI_INLINE_H
 #define G10_MPI_INLINE_H
 
+#ifndef G10_MPI_INLINE_DECL
+  #define G10_MPI_INLINE_DECL  extern __inline__
+#endif
 
-extern __inline__ mpi_limb_t
+G10_MPI_INLINE_DECL  mpi_limb_t
 mpihelp_add_1( mpi_ptr_t res_ptr, mpi_ptr_t s1_ptr,
 	       mpi_size_t s1_size, mpi_limb_t s2_limb)
 {
@@ -61,7 +64,7 @@ mpihelp_add_1( mpi_ptr_t res_ptr, mpi_ptr_t s1_ptr,
 
 
 
-extern __inline__ mpi_limb_t
+G10_MPI_INLINE_DECL mpi_limb_t
 mpihelp_add(mpi_ptr_t res_ptr, mpi_ptr_t s1_ptr, mpi_size_t s1_size,
 			       mpi_ptr_t s2_ptr, mpi_size_t s2_size)
 {
@@ -77,7 +80,7 @@ mpihelp_add(mpi_ptr_t res_ptr, mpi_ptr_t s1_ptr, mpi_size_t s1_size,
 }
 
 
-extern __inline__ mpi_limb_t
+G10_MPI_INLINE_DECL mpi_limb_t
 mpihelp_sub_1(mpi_ptr_t res_ptr,  mpi_ptr_t s1_ptr,
 	      mpi_size_t s1_size, mpi_limb_t s2_limb )
 {
@@ -107,7 +110,7 @@ mpihelp_sub_1(mpi_ptr_t res_ptr,  mpi_ptr_t s1_ptr,
 
 
 
-extern __inline__ mpi_limb_t
+G10_MPI_INLINE_DECL   mpi_limb_t
 mpihelp_sub( mpi_ptr_t res_ptr, mpi_ptr_t s1_ptr, mpi_size_t s1_size,
 				mpi_ptr_t s2_ptr, mpi_size_t s2_size)
 {

@@ -1024,7 +1024,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
     sig->digest_start[0] = iobuf_get_noeof(inp); pktlen--;
     sig->digest_start[1] = iobuf_get_noeof(inp); pktlen--;
 
-    if( is_v4 ) { /*extract required information */
+    if( is_v4 && sig->pubkey_algo ) { /*extract required information */
 	const byte *p;
 
 	/* set sig->flags.unknown_critical if there is a
@@ -1065,24 +1065,36 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	}
     }
 
-    ndata = pubkey_get_nsig(sig->pubkey_algo);
-    if( !ndata ) {
-	if( list_mode )
-	    printf("\tunknown algorithm %d\n", sig->pubkey_algo );
-	unknown_pubkey_warning( sig->pubkey_algo );
-	/* we store the plain material in data[0], so that we are able
-	 * to write it back with build_packet() */
-	sig->data[0] = read_rest(inp, &pktlen );
+    if( !sig->pubkey_algo ) {
+	n = pktlen;
+	sig->data[0] = mpi_read(inp, &n, 0 );
+	pktlen -=n;
+	if( list_mode ) {
+	    printf("\tMDC data: ");
+	    mpi_print(stdout, sig->data[0], mpi_print_mode );
+	    putchar('\n');
+	}
     }
     else {
-	for( i=0; i < ndata; i++ ) {
-	    n = pktlen;
-	    sig->data[i] = mpi_read(inp, &n, 0 );
-	    pktlen -=n;
-	    if( list_mode ) {
-		printf("\tdata: ");
-		mpi_print(stdout, sig->data[i], mpi_print_mode );
-		putchar('\n');
+	ndata = pubkey_get_nsig(sig->pubkey_algo);
+	if( !ndata ) {
+	    if( list_mode )
+		printf("\tunknown algorithm %d\n", sig->pubkey_algo );
+	    unknown_pubkey_warning( sig->pubkey_algo );
+	    /* we store the plain material in data[0], so that we are able
+	     * to write it back with build_packet() */
+	    sig->data[0] = read_rest(inp, &pktlen );
+	}
+	else {
+	    for( i=0; i < ndata; i++ ) {
+		n = pktlen;
+		sig->data[i] = mpi_read(inp, &n, 0 );
+		pktlen -=n;
+		if( list_mode ) {
+		    printf("\tdata: ");
+		    mpi_print(stdout, sig->data[i], mpi_print_mode );
+		    putchar('\n');
+		}
 	    }
 	}
     }

@@ -728,9 +728,15 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
     }
     iobuf_put(a, sig->digest_start[0] );
     iobuf_put(a, sig->digest_start[1] );
-    n = pubkey_get_nsig( sig->pubkey_algo );
-    if( !n )
-	write_fake_data( a, sig->data[0] );
+    n = sig->pubkey_algo? pubkey_get_nsig( sig->pubkey_algo ) : 0;
+    if( !n ) {	/* the MDC data */
+	fputs("The MDC: ", stderr);
+	mpi_print(stderr, sig->data[0], 0 );
+	fputs("  ", stderr);
+	mpi_print(stderr, sig->data[0], 1 );
+	putc('\n', stderr);
+	mpi_write( a, sig->data[0] );
+    }
     for(i=0; i < n; i++ )
 	mpi_write(a, sig->data[i] );
 

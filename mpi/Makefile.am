@@ -22,6 +22,7 @@ libmpi_a_SOURCES = longlong.h	  \
 	      mpi-gcd.c      \
 	      mpi-internal.h \
 	      mpi-inline.h   \
+	      mpi-inline.c   \
 	      mpi-inv.c      \
 	      mpi-mul.c      \
 	      mpi-pow.c      \
@@ -29,8 +30,6 @@ libmpi_a_SOURCES = longlong.h	  \
 	      mpi-scan.c     \
 	      mpicoder.c     \
 	      mpih-cmp.c     \
-	      mpih-add.c     \
-	      mpih-sub.c     \
 	      mpih-div.c     \
 	      mpih-mul.c     \
 	      mpiutil.c      \

@@ -71,7 +71,7 @@ decrypt_message( const char *filename )
 	no_out = 1;
 	opt.outfile = "-";
     }
-    rc = proc_encryption_packets( fp );
+    rc = proc_encryption_packets( NULL, fp );
     if( no_out )
        opt.outfile = NULL;
     iobuf_close(fp);

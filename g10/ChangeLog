@@ -1,3 +1,16 @@
+Mon Apr 26 17:48:15 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* parse-packet.c (parse_signature): Add the MDC hack.
+	* build-packet.c (do_signature): Ditto.
+	* free-packet.c (free_seckey_enc,copy_signature,cmp_signatures): Ditto.
+	* mainproc.c (do_check_sig): Ditto.
+	* sig-check.c (mdc_kludge_check): New.
+	* encode.c (encrypt_mdc_file): New.
+
+	* keyedit.c (check_all_keysigs): List revocations.
+	* (menu_revsig): New.
+	* sign (make_keysig_packet): Support for class 0x30.
+
 Sun Apr 18 20:48:15 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* pkclist.c (select_algo_from_prefs): Fixed the case that one key
@@ -6,7 +19,6 @@ Sun Apr 18 20:48:15 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 	keylist.c (list_keyblock): ulti_hack to propagate trust to all uids.
 
 Sun Apr 18 10:11:28 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
 
 	* seckey-cert.c (do_check): Use real IV instead of a 0 one, so that
 	it works even if the length of the IV doesn't match the blocksize.

@@ -70,7 +70,7 @@
 #define G10ERR_NETWORK	      48  /* general network error */
 #define G10ERR_UNKNOWN_HOST   49
 #define G10ERR_SELFTEST_FAILED 50
-
+#define G10ERR_NOT_ENCRYPTED  51
 
 #ifndef HAVE_STRERROR
 char *strerror( int n );

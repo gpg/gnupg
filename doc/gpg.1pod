@@ -473,6 +473,11 @@ B<--force-v3-sigs>
     on key material.  This options forces v3 signatures for
     signatures on data.
 
+B<--force-mdc>
+    Force the use of encryption with appended manipulation
+    code.  This is always used with the newer cipher (those
+    with a blocksize greater than 64 bit).
+
 B<--lock-once>
     Lock the file the first time a lock is requested
     and do not release the lock until the process

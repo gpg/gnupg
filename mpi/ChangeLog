@@ -1,3 +1,9 @@
+Mon Apr 26 17:48:15 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* mpih-add.c, mpih-sub.c: Removed
+	* mpi-inline.c: New.
+	* mpi-inline.h: Make it usable by mpi-inline.c.
+
 Sun Apr 18 10:11:28 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* mpih-mul.c (mpihelp_mul_n): Fixed use of memory region.

@@ -233,9 +233,10 @@ typedef enum {
 
 
 /*-- mainproc.c --*/
-int proc_packets( IOBUF a );
-int proc_signature_packets( IOBUF a, STRLIST signedfiles, const char *sigfile );
-int proc_encryption_packets( IOBUF a );
+int proc_packets( void *ctx, IOBUF a );
+int proc_signature_packets( void *ctx, IOBUF a,
+			    STRLIST signedfiles, const char *sigfile );
+int proc_encryption_packets( void *ctx, IOBUF a );
 int list_packets( IOBUF a );
 
 /*-- parse-packet.c --*/
@@ -301,6 +302,7 @@ int cmp_user_ids( PKT_user_id *a, PKT_user_id *b );
 
 /*-- sig-check.c --*/
 int signature_check( PKT_signature *sig, MD_HANDLE digest );
+int mdc_kludge_check( PKT_signature *sig, MD_HANDLE digest );
 
 /*-- seckey-cert.c --*/
 int is_secret_key_protected( PKT_secret_key *sk );
@@ -311,11 +313,11 @@ int protect_secret_key( PKT_secret_key *sk, DEK *dek );
 int get_session_key( PKT_pubkey_enc *k, DEK *dek );
 
 /*-- compress.c --*/
-int handle_compressed( PKT_compressed *cd,
+int handle_compressed( void *ctx, PKT_compressed *cd,
 		       int (*callback)(IOBUF, void *), void *passthru );
 
 /*-- encr-data.c --*/
-int decrypt_data( PKT_encrypted *ed, DEK *dek );
+int decrypt_data( void *ctx, PKT_encrypted *ed, DEK *dek );
 int encrypt_data( PKT_encrypted *ed, DEK *dek );
 
 /*-- plaintext.c --*/

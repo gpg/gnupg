@@ -8,7 +8,7 @@
 
   * See why we always get this "Hmmm, public key not anymore available"
 
-  * print a warning when a revoked/expired secret key is used.
+  * print a warning when a revoked/expired _secret_ key is used.
 
   * remove more "Fixmes"
 

@@ -45,7 +45,7 @@ static int do_check( PKT_public_key *pk, PKT_signature *sig,
 
 /****************
  * Check the signature which is contained in SIG.
- * The md5handle should be currently open, so that this function
+ * The MD_HANDLE should be currently open, so that this function
  * is able to append some data, before finalizing the digest.
  */
 int
@@ -53,7 +53,6 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 {
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     int rc=0;
-
 
     if( is_RSA(sig->pubkey_algo) )
 	write_status(STATUS_RSA_OR_IDEA);
@@ -103,6 +102,94 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 	m_free(p);
 	md_close(md);
     }
+
+    return rc;
+}
+
+
+
+/****************
+ * Check the MDC which is contained in SIG.
+ * The MD_HANDLE should be currently open, so that this function
+ * is able to append some data, before finalizing the digest.
+ */
+int
+mdc_kludge_check( PKT_signature *sig, MD_HANDLE digest )
+{
+    int rc=0;
+
+    if( (rc=check_digest_algo(sig->digest_algo)) )
+	return rc;
+
+    /* make sure the digest algo is enabled (in case of a detached mdc??) */
+    md_enable( digest, sig->digest_algo );
+
+    /* complete the digest */
+    if( sig->version >= 4 )
+	md_putc( digest, sig->version );
+    md_putc( digest, sig->sig_class );
+    if( sig->version < 4 ) {
+	u32 a = sig->timestamp;
+	md_putc( digest, (a >> 24) & 0xff );
+	md_putc( digest, (a >> 16) & 0xff );
+	md_putc( digest, (a >>	8) & 0xff );
+	md_putc( digest,  a	   & 0xff );
+    }
+    else {
+	byte buf[6];
+	size_t n;
+	md_putc( digest, sig->pubkey_algo );
+	md_putc( digest, sig->digest_algo );
+	if( sig->hashed_data ) {
+	    n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
+	    md_write( digest, sig->hashed_data, n+2 );
+	    n += 6;
+	}
+	else
+	    n = 6;
+	/* add some magic */
+	buf[0] = sig->version;
+	buf[1] = 0xff;
+	buf[2] = n >> 24;
+	buf[3] = n >> 16;
+	buf[4] = n >>  8;
+	buf[5] = n;
+	md_write( digest, buf, 6 );
+    }
+    md_final( digest );
+
+    rc = G10ERR_BAD_SIGN;
+    {	const byte *s1 = md_read( digest, sig->digest_algo );
+	int s1len = md_digest_length( sig->digest_algo );
+
+	log_hexdump( "MDC calculated", s1, s1len );
+
+	if( !sig->data[0] )
+	    log_debug("sig_data[0] is NULL\n");
+	else {
+	    unsigned s2len;
+	    byte *s2;
+	    s2 = mpi_get_buffer( sig->data[0], &s2len, NULL );
+	    log_hexdump( "MDC stored    ", s2, s2len );
+
+	    if( s2len != s1len )
+		log_debug("MDC check: len differ: %d/%d\n", s1len, s2len);
+	    else if( memcmp( s1, s2, s1len ) )
+		log_debug("MDC check: hashs differ\n");
+	    else
+		rc = 0;
+	    m_free(s2);
+	}
+    }
+
+    if( !rc && sig->flags.unknown_critical ) {
+	log_info(_("assuming bad MDC due to an unknown critical bit\n"));
+	rc = G10ERR_BAD_SIGN;
+    }
+    sig->flags.checked = 1;
+    sig->flags.valid = !rc;
+
+    /* FIXME: check that we are actually in an encrypted packet */
 
     return rc;
 }

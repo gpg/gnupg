@@ -1,5 +1,5 @@
 /* mainproc.c - handle packets
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -42,8 +42,9 @@
 /****************
  * Structure to hold the context
  */
-
-typedef struct {
+typedef struct mainproc_context *CTX;
+struct mainproc_context {
+    struct mainproc_context *anchor;
     PKT_public_key *last_pubkey;
     PKT_secret_key *last_seckey;
     PKT_user_id     *last_user_id;
@@ -59,7 +60,8 @@ typedef struct {
     IOBUF iobuf;    /* used to get the filename etc. */
     int trustletter; /* temp usage in list_node */
     ulong local_id;    /* ditto */
-} *CTX;
+    int is_encrypted;  /* used to check the MDC */
+};
 
 
 static int do_proc_packets( CTX c, IOBUF a );
@@ -226,7 +228,8 @@ proc_encrypted( CTX c, PACKET *pkt )
 {
     int result = 0;
 
-    /*printf("dat: %sencrypted data\n", c->dek?"":"conventional ");*/
+    /*log_debug("dat: %sencrypted data\n", c->dek?"":"conventional ");*/
+    c->is_encrypted = 1;
     if( !c->dek && !c->last_was_session_key ) {
 	/* assume this is old conventional encrypted data */
 	c->dek = passphrase_to_dek( NULL,
@@ -236,7 +239,7 @@ proc_encrypted( CTX c, PACKET *pkt )
     else if( !c->dek )
 	result = G10ERR_NO_SECKEY;
     if( !result )
-	result = decrypt_data( pkt->pkt.encrypted, c->dek );
+	result = decrypt_data( c, pkt->pkt.encrypted, c->dek );
     m_free(c->dek); c->dek = NULL;
     if( result == -1 )
 	;
@@ -289,10 +292,13 @@ proc_plaintext( CTX c, PACKET *pkt )
 	     * to do it. (We could use a special packet type to indicate
 	     * this, but this may also be faked - it simply can't be verified
 	     * and is _no_ security issue)
+	     * Hmmm: There is one problem: The MDC also uses a keyid of 0
+	     * and a pubkey algo of 0 - the only difference is that the
+	     * sig_class will be 0.
 	     */
 	    if( n->pkt->pkt.onepass_sig->sig_class == 0x01
 		&& !n->pkt->pkt.onepass_sig->keyid[0]
-		&& !n->pkt->pkt.onepass_sig->keyid[1]  )
+		&& !n->pkt->pkt.onepass_sig->keyid[1] )
 		clearsig = 1;
 	}
     }
@@ -321,14 +327,14 @@ proc_plaintext( CTX c, PACKET *pkt )
 static int
 proc_compressed_cb( IOBUF a, void *info )
 {
-    return proc_signature_packets( a, ((CTX)info)->signed_data,
-				      ((CTX)info)->sigfilename );
+    return proc_signature_packets( info, a, ((CTX)info)->signed_data,
+					    ((CTX)info)->sigfilename );
 }
 
 static int
 proc_encrypt_cb( IOBUF a, void *info )
 {
-    return proc_encryption_packets( a );
+    return proc_encryption_packets( info, a );
 }
 
 static void
@@ -339,19 +345,26 @@ proc_compressed( CTX c, PACKET *pkt )
 
     /*printf("zip: compressed data packet\n");*/
     if( c->sigs_only )
-	rc = handle_compressed( zd, proc_compressed_cb, c );
+	rc = handle_compressed( c, zd, proc_compressed_cb, c );
     else if( c->encrypt_only )
-	rc = handle_compressed( zd, proc_encrypt_cb, c );
+	rc = handle_compressed( c, zd, proc_encrypt_cb, c );
     else
-	rc = handle_compressed( zd, NULL, NULL );
+	rc = handle_compressed( c, zd, NULL, NULL );
     if( rc )
 	log_error("uncompressing failed: %s\n", g10_errstr(rc));
     free_packet(pkt);
     c->last_was_session_key = 0;
 }
 
-
-
+static int
+is_encrypted( CTX c )
+{
+    for( ; c; c = c->anchor ) {
+	if( c->is_encrypted )
+	    return 1;
+    }
+    return 0;
+}
 
 /****************
  * check the signature
@@ -370,16 +383,8 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig )
     sig = node->pkt->pkt.signature;
 
     algo = sig->digest_algo;
-    if( !algo )
-	return G10ERR_PUBKEY_ALGO;
     if( (rc=check_digest_algo(algo)) )
 	return rc;
-
-    if( c->mfx.md ) {
-	m_check(c->mfx.md);
-	if( c->mfx.md->list )
-	    m_check( c->mfx.md->list );
-    }
 
     if( sig->sig_class == 0x00 ) {
 	if( c->mfx.md )
@@ -411,7 +416,12 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig )
     }
     else
 	return G10ERR_SIG_CLASS;
-    rc = signature_check( sig, md );
+    if( sig->pubkey_algo )
+	rc = signature_check( sig, md );
+    else if( !is_encrypted( c ) )
+	rc = G10ERR_NOT_ENCRYPTED;
+    else
+	rc = mdc_kludge_check( sig, md );
     md_close(md);
 
     return rc;
@@ -697,19 +707,25 @@ list_node( CTX c, KBNODE node )
 
 
 int
-proc_packets( IOBUF a )
+proc_packets( void *anchor, IOBUF a )
 {
+    int rc;
     CTX c = m_alloc_clear( sizeof *c );
-    int rc = do_proc_packets( c, a );
+
+    c->anchor = anchor;
+    rc = do_proc_packets( c, a );
     m_free( c );
     return rc;
 }
 
 int
-proc_signature_packets( IOBUF a, STRLIST signedfiles, const char *sigfilename )
+proc_signature_packets( void *anchor, IOBUF a,
+			STRLIST signedfiles, const char *sigfilename )
 {
     CTX c = m_alloc_clear( sizeof *c );
     int rc;
+
+    c->anchor = anchor;
     c->sigs_only = 1;
     c->signed_data = signedfiles;
     c->sigfilename = sigfilename;
@@ -719,10 +735,12 @@ proc_signature_packets( IOBUF a, STRLIST signedfiles, const char *sigfilename )
 }
 
 int
-proc_encryption_packets( IOBUF a )
+proc_encryption_packets( void *anchor, IOBUF a )
 {
     CTX c = m_alloc_clear( sizeof *c );
     int rc;
+
+    c->anchor = anchor;
     c->encrypt_only = 1;
     rc = do_proc_packets( c, a );
     m_free( c );
@@ -845,23 +863,41 @@ check_sig_and_print( CTX c, KBNODE node )
     PKT_signature *sig = node->pkt->pkt.signature;
     const char *astr, *tstr;
     int rc;
+    int mdc_hack = !sig->pubkey_algo;
 
-    if( opt.skip_verify ) {
+    if( opt.skip_verify && !mdc_hack ) {
 	log_info(_("signature verification suppressed\n"));
 	return 0;
     }
 
-    tstr = asctimestamp(sig->timestamp);
-    astr = pubkey_algo_to_string( sig->pubkey_algo );
-    log_info(_("Signature made %.*s using %s key ID %08lX\n"),
+    if( !mdc_hack ) {
+	tstr = asctimestamp(sig->timestamp);
+	astr = pubkey_algo_to_string( sig->pubkey_algo );
+	log_info(_("Signature made %.*s using %s key ID %08lX\n"),
 	    (int)strlen(tstr), tstr, astr? astr: "?", (ulong)sig->keyid[1] );
+    }
 
     rc = do_check_sig(c, node, NULL );
     if( rc == G10ERR_NO_PUBKEY && opt.keyserver_name ) {
 	if( !hkp_ask_import( sig->keyid ) )
 	    rc = do_check_sig(c, node, NULL );
     }
-    if( !rc || rc == G10ERR_BAD_SIGN ) {
+    if( mdc_hack ) {
+	if( !rc ) {
+	    if( opt.verbose )
+		log_info(_("encrypted message is valid\n"));
+	    write_status( STATUS_GOODMDC );
+	}
+	else if( rc == G10ERR_BAD_SIGN ) {
+	    log_error(_("WARNING: encrypted message has been manipulated!\n"));
+	    write_status( STATUS_BADMDC );
+	}
+	else {
+	    write_status( STATUS_ERRMDC );
+	    log_error(_("Can't check MDC: %s\n"), g10_errstr(rc) );
+	}
+    }
+    else if( !rc || rc == G10ERR_BAD_SIGN ) {
 	KBNODE un, keyblock;
 	char *us;
 	int count=0;

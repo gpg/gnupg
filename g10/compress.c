@@ -256,7 +256,7 @@ compress_filter( void *opaque, int control,
  * Handle a compressed packet
  */
 int
-handle_compressed( PKT_compressed *cd,
+handle_compressed( void *procctx, PKT_compressed *cd,
 		   int (*callback)(IOBUF, void *), void *passthru )
 {
     compress_filter_context_t cfx;
@@ -271,7 +271,7 @@ handle_compressed( PKT_compressed *cd,
     if( callback )
 	rc = callback(cd->buf, passthru );
     else
-	rc = proc_packets(cd->buf);
+	rc = proc_packets(procctx, cd->buf);
   #if 0
     iobuf_pop_filter( cd->buf, compress_filter, &cfx );
     if( cd->len )

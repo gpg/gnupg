@@ -1,5 +1,5 @@
 /* keyedit.c - keyedit stuff
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -56,6 +56,7 @@ static int count_uids_with_flag( KBNODE keyblock, unsigned flag );
 static int count_keys_with_flag( KBNODE keyblock, unsigned flag );
 static int count_selected_uids( KBNODE keyblock );
 static int count_selected_keys( KBNODE keyblock );
+static int menu_revsig( KBNODE keyblock );
 
 #define CONTROL_D ('D' - 'A' + 1)
 
@@ -67,6 +68,7 @@ static int count_selected_keys( KBNODE keyblock );
 
 #define NODFLG_SELUID (1<<8)  /* indicate the selected userid */
 #define NODFLG_SELKEY (1<<9)  /* indicate the selected key */
+#define NODFLG_SELSIG (1<<10) /* indicate a selected signature */
 
 
 struct sign_uid_attrib {
@@ -119,6 +121,8 @@ check_all_keysigs( KBNODE keyblock, int only_selected )
     int anyuid = 0;
 
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
+	int is_rev = 0;
+
 	if( node->pkt->pkttype == PKT_USER_ID ) {
 	    PKT_user_id *uid = node->pkt->pkt.user_id;
 
@@ -135,7 +139,8 @@ check_all_keysigs( KBNODE keyblock, int only_selected )
 	    }
 	}
 	else if( selected && node->pkt->pkttype == PKT_SIGNATURE
-		 && (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
+		 && (node->pkt->pkt.signature->sig_class&~3) == 0x10
+		 && (is_rev = node->pkt->pkt.signature->sig_class == 0x30) ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
 	    int sigrc, selfsig;
 
@@ -161,14 +166,16 @@ check_all_keysigs( KBNODE keyblock, int only_selected )
 		break;
 	    }
 	    if( sigrc != '?' ) {
-		tty_printf("sig%c       %08lX %s   ",
+		tty_printf("%s%c       %08lX %s   ",
+			is_rev? "rev":"sig",
 			sigrc, sig->keyid[1], datestr_from_sig(sig));
 		if( sigrc == '%' )
 		    tty_printf("[%s] ", g10_errstr(rc) );
 		else if( sigrc == '?' )
 		    ;
 		else if( selfsig ) {
-		    tty_printf( _("[self-signature]") );
+		    tty_printf( is_rev? _("[revocation]")
+				      : _("[self-signature]") );
 		    if( sigrc == '!' )
 			has_selfsig = 1;
 		}
@@ -278,6 +285,8 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 		&& (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
 		if( sk_keyid[0] == node->pkt->pkt.signature->keyid[0]
 		    && sk_keyid[1] == node->pkt->pkt.signature->keyid[1] ) {
+		    /* Fixme: see whether there is a revocation in which
+		     * case we should allow to sign it again. */
 		    tty_printf(_("Already signed by key %08lX\n"),
 							(ulong)sk_keyid[1] );
 		    uidnode->flag &= ~NODFLG_MARK_A; /* remove mark */
@@ -514,7 +523,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 {
     enum cmdids { cmdNONE = 0,
 	   cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
-	   cmdLSIGN,
+	   cmdLSIGN, cmdREVSIG,
 	   cmdDEBUG, cmdSAVE, cmdADDUID, cmdDELUID, cmdADDKEY, cmdDELKEY,
 	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE,
 	   cmdNOP };
@@ -550,6 +559,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 	{ N_("pref")    , cmdPREF  , 0, N_("list preferences") },
 	{ N_("passwd")  , cmdPASSWD , 1, N_("change the passphrase") },
 	{ N_("trust")   , cmdTRUST , 0, N_("change the ownertrust") },
+	{ N_("revsig")  , cmdREVSIG , 0, N_("revoke signatures") },
 
     { NULL, cmdNONE } };
     enum cmdids cmd;
@@ -850,6 +860,13 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 	    break;
 
 	  case cmdNOP:
+	    break;
+
+	  case cmdREVSIG:
+	    if( menu_revsig( keyblock ) ) {
+		redisplay = 1;
+		modified = 1;
+	    }
 	    break;
 
 	  default:
@@ -1489,4 +1506,161 @@ count_selected_keys( KBNODE keyblock )
 {
     return count_keys_with_flag( keyblock, NODFLG_SELKEY);
 }
+
+/*
+ * Ask whether the signature should be revoked.  If the user commits this,
+ * flag bit MARK_A is set on the signature and the user ID.
+ */
+static void
+ask_revoke_sig( KBNODE keyblock, KBNODE node )
+{
+    PKT_signature *sig = node->pkt->pkt.signature;
+    KBNODE unode = find_prev_kbnode( keyblock, node, PKT_USER_ID );
+
+    if( !unode ) {
+	log_error("Oops: no user ID for signature\n");
+	return;
+    }
+
+    tty_printf(_("user ID: \""));
+    tty_print_string( unode->pkt->pkt.user_id->name,
+		      unode->pkt->pkt.user_id->len );
+    tty_printf(_("\"\nsigned with your key %08lX at %s\n"),
+		sig->keyid[1], datestr_from_sig(sig) );
+
+    if( cpr_get_answer_is_yes("ask_revoke_sig.one",
+	 _("Create a revocation certificate for this signature? (y/N)")) ) {
+	node->flag |= NODFLG_MARK_A;
+	unode->flag |= NODFLG_MARK_A;
+    }
+}
+
+/****************
+ * Display all user ids of the current public key together with signatures
+ * done by one of our keys.  Then walk over all this sigs and ask the user
+ * whether he wants to revoke this signature.
+ * Return: True when the keyblock has changed.
+ */
+static int
+menu_revsig( KBNODE keyblock )
+{
+    PKT_signature *sig;
+    PKT_public_key *primary_pk;
+    KBNODE node;
+    int changed = 0;
+    int upd_trust = 0;
+    int rc, any;
+
+    /* FIXME: detect duplicates here  */
+    tty_printf("You have signed these user IDs:\n");
+    for( node = keyblock; node; node = node->next ) {
+	node->flag &= ~(NODFLG_SELSIG | NODFLG_MARK_A);
+	if( node->pkt->pkttype == PKT_USER_ID ) {
+	    PKT_user_id *uid = node->pkt->pkt.user_id;
+	    /* Hmmm: Should we show only UIDs with a signature? */
+	    tty_printf("     ");
+	    tty_print_string( uid->name, uid->len );
+	    tty_printf("\n");
+	}
+	else if( node->pkt->pkttype == PKT_SIGNATURE
+		&& ((sig = node->pkt->pkt.signature),
+		     !seckey_available( sig->keyid )  ) ) {
+	    if( (sig->sig_class&~3) == 0x10 ) {
+		tty_printf("   signed by %08lX at %s\n",
+			    sig->keyid[1], datestr_from_sig(sig) );
+		node->flag |= NODFLG_SELSIG;
+	    }
+	    else if( sig->sig_class == 0x30 ) {
+		tty_printf("   revoked by %08lX at %s\n",
+			    sig->keyid[1], datestr_from_sig(sig) );
+	    }
+	}
+    }
+
+    /* ask */
+    for( node = keyblock; node; node = node->next ) {
+	if( !(node->flag & NODFLG_SELSIG) )
+	    continue;
+	ask_revoke_sig( keyblock, node );
+    }
+
+    /* present selected */
+    any = 0;
+    for( node = keyblock; node; node = node->next ) {
+	if( !(node->flag & NODFLG_MARK_A) )
+	    continue;
+	if( !any ) {
+	    any = 1;
+	    tty_printf("You are about to revoke these signatures:\n");
+	}
+	if( node->pkt->pkttype == PKT_USER_ID ) {
+	    PKT_user_id *uid = node->pkt->pkt.user_id;
+	    tty_printf("     ");
+	    tty_print_string( uid->name, uid->len );
+	    tty_printf("\n");
+	}
+	else if( node->pkt->pkttype == PKT_SIGNATURE ) {
+	    sig = node->pkt->pkt.signature;
+	    tty_printf("   signed by %08lX at %s\n",
+			    sig->keyid[1], datestr_from_sig(sig) );
+	}
+    }
+    if( !any )
+	return 0; /* none selected */
+
+    if( !cpr_get_answer_is_yes("ask_revoke_sig.okay",
+	 _("Really create the revocation certificates? (y/N)")) )
+	return 0; /* forget it */
+
+
+    /* now we can sign the user ids */
+  reloop: /* (must use this, because we are modifing the list) */
+    primary_pk = keyblock->pkt->pkt.public_key;
+    for( node=keyblock; node; node = node->next ) {
+	KBNODE unode;
+	PACKET *pkt;
+	struct sign_uid_attrib attrib;
+	PKT_secret_key *sk;
+
+	if( !(node->flag & NODFLG_MARK_A)
+	    || node->pkt->pkttype != PKT_SIGNATURE )
+	    continue;
+	unode = find_prev_kbnode( keyblock, node, PKT_USER_ID );
+	assert( unode ); /* we already checked this */
+
+	memset( &attrib, 0, sizeof attrib );
+	node->flag &= ~NODFLG_MARK_A;
+	sk = m_alloc_secure_clear( sizeof *sk );
+	if( get_seckey( sk, node->pkt->pkt.signature->keyid ) ) {
+	    log_info(_("no secret key\n"));
+	    continue;
+	}
+	rc = make_keysig_packet( &sig, primary_pk,
+				       unode->pkt->pkt.user_id,
+				       NULL,
+				       sk,
+				       0x30, 0,
+				       sign_uid_mk_attrib,
+				       &attrib );
+	free_secret_key(sk);
+	if( rc ) {
+	    log_error(_("signing failed: %s\n"), g10_errstr(rc));
+	    return changed;
+	}
+	changed = 1; /* we changed the keyblock */
+	upd_trust = 1;
+
+	pkt = m_alloc_clear( sizeof *pkt );
+	pkt->pkttype = PKT_SIGNATURE;
+	pkt->pkt.signature = sig;
+	insert_kbnode( unode, new_kbnode(pkt), PKT_SIGNATURE );
+	goto reloop;
+    }
+
+    if( upd_trust )
+	clear_trust_checked_flag( primary_pk );
+
+    return changed;
+}
+
 

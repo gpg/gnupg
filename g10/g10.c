@@ -144,6 +144,7 @@ enum cmd_and_opt_values { aNull = 0,
     oComment,
     oThrowKeyid,
     oForceV3Sigs,
+    oForceMDC,
     oS2KMode,
     oS2KDigest,
     oS2KCipher,
@@ -220,6 +221,7 @@ static ARGPARSE_OPTS opts[] = {
     { oVerbose, "verbose",   0, N_("verbose") },
     { oQuiet,	"quiet",   0, N_("be somewhat more quiet") },
     { oForceV3Sigs, "force-v3-sigs", 0, N_("force v3 signatures") },
+    { oForceMDC, "force-mdc", 0, N_("always use a MDC for encryption") },
     { oDryRun, "dry-run",   0, N_("do not make any changes") },
     { oBatch, "batch",     0, N_("batch mode: never ask")},
     { oAnswerYes, "yes",       0, N_("assume yes on most questions")},
@@ -701,6 +703,7 @@ main( int argc, char **argv )
 	  case oComment: opt.comment_string = pargs.r.ret_str; break;
 	  case oThrowKeyid: opt.throw_keyid = 1; break;
 	  case oForceV3Sigs: opt.force_v3_sigs = 1; break;
+	  case oForceMDC: opt.force_mdc = 1; break;
 	  case oS2KMode:   opt.s2k_mode = pargs.r.ret_int; break;
 	  case oS2KDigest: s2k_digest_string = m_strdup(pargs.r.ret_str); break;
 	  case oS2KCipher: s2k_cipher_string = m_strdup(pargs.r.ret_str); break;
@@ -1240,7 +1243,7 @@ main( int argc, char **argv )
 		set_packet_list_mode(1);
 		opt.list_packets=1;
 	    }
-	    proc_packets( a );
+	    proc_packets(NULL, a );
 	    iobuf_close(a);
 	}
 	break;

@@ -109,6 +109,9 @@ write_status_text ( int no, const char *text)
       case STATUS_DECRYPTION_OKAY: s = "DECRYPTION_OKAY\n"; break;
       case STATUS_MISSING_PASSPHRASE: s = "MISSING_PASSPHRASE\n"; break;
       case STATUS_GOOD_PASSPHRASE : s = "GOOD_PASSPHRASE\n"; break;
+      case STATUS_GOODMDC	 : s = "GOODMDC\n"; break;
+      case STATUS_BADMDC	 : s = "BADMDC\n"; break;
+      case STATUS_ERRMDC	 : s = "ERRMDC\n"; break;
       default: s = "?\n"; break;
     }
 

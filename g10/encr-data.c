@@ -45,7 +45,7 @@ typedef struct {
  * Decrypt the data, specified by ED with the key DEK.
  */
 int
-decrypt_data( PKT_encrypted *ed, DEK *dek )
+decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 {
     decode_filter_ctx_t dfx;
     byte *p;
@@ -105,7 +105,7 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
 	return G10ERR_BAD_KEY;
     }
     iobuf_push_filter( ed->buf, decode_filter, &dfx );
-    proc_packets(ed->buf);
+    proc_packets( procctx, ed->buf);
     ed->buf = NULL;
     cipher_close(dfx.cipher_hd);
     return 0;
