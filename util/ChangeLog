@@ -1,3 +1,8 @@
+2002-11-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* secmem.c (lock_pool) [__CYGWIN__]: Don't print secmem warning.
+	From Werner on stable branch.
+
 2002-11-09  Werner Koch  <wk@gnupg.org>
 
 	* ttyio.c (TERMDEVICE): Removed.
