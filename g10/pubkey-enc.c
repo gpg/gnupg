@@ -221,3 +221,59 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 }
 
 
+static int
+hextobyte( const char *s )
+{
+    int c;
+
+    if( *s >= '0' && *s <= '9' )
+	c = 16 * (*s - '0');
+    else if( *s >= 'A' && *s <= 'F' )
+	c = 16 * (10 + *s - 'A');
+    else if( *s >= 'a' && *s <= 'f' )
+	c = 16 * (10 + *s - 'a');
+    else
+	return -1;
+    s++;
+    if( *s >= '0' && *s <= '9' )
+	c += *s - '0';
+    else if( *s >= 'A' && *s <= 'F' )
+	c += 10 + *s - 'A';
+    else if( *s >= 'a' && *s <= 'f' )
+	c += 10 + *s - 'a';
+    else
+	return -1;
+    return c;
+}
+
+/****************
+ * Get the session key from the given string.
+ * String is supposed to be formatted as this:
+ *  <algo-id>:<even-number-of-hex-digits>
+ */
+int
+get_override_session_key( DEK *dek, const char *string )
+{
+    const char *s;
+    int i;
+
+    if ( !string )
+	return G10ERR_BAD_KEY;
+    dek->algo = atoi(string);
+    if ( dek->algo < 1 )
+	return G10ERR_BAD_KEY;
+    if ( !(s = strchr ( string, ':' )) )
+	return G10ERR_BAD_KEY;
+    s++;
+    for(i=0; i < DIM(dek->key) && *s; i++, s +=2 ) {
+	int c = hextobyte ( s );
+	if (c == -1)
+	    return G10ERR_BAD_KEY;
+	dek->key[i] = c;
+    }
+    if ( *s )
+	return G10ERR_BAD_KEY;
+    dek->keylen = i;
+    return 0;
+}
+

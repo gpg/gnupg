@@ -91,6 +91,8 @@ struct {
     int ignore_time_conflict;
     int command_fd;
     int auto_key_retrieve;
+    const char *override_session_key;
+    int show_session_key;
 } opt;
 
 

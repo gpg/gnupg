@@ -81,6 +81,8 @@
 #define STATUS_GOT_IT		49
 #define STATUS_PROGRESS 	50
 #define STATUS_SIG_CREATED	51
+#define STATUS_SESSION_KEY	52
+
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

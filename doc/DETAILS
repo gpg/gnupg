@@ -214,7 +214,7 @@ more arguments in future versions.
 	"char" is the character displayed with no --status-fd enabled, with
 	the linefeed replaced by an 'X'.  "cur" is the current amount
 	done and "total" is amount to be done; a "total" of 0 indicates that
-	the total amount is not known.  100/100 may be used to detect the
+	the total amount is not known.	100/100 may be used to detect the
 	end of operation.
 
     SIG_CREATED <type> <pubkey algo> <hash algo> <class> <timestamp> <key fpr>
@@ -225,6 +225,11 @@ more arguments in future versions.
 		   (only the first character should be checked)
 	    class: 2 hex digits with the signature class
 
+    SESSION_KEY  <algo>:<hexdigits>
+	The session key used to decrypt the message.  This message will
+	only be emmited when the special option --show-session-key
+	is used.  The format is suitable to be passed to the option
+	--override-session-key
 
 
 Key generation

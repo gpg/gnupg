@@ -1338,6 +1338,29 @@ the encoding used in old versions.  This may only happen for ElGamal signatures
 which are not widely used.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--show-session-key</term>
+<listitem><para>
+Display the session key used for one message. See --override-session-key
+for the counterpart of this option.
+</para>
+<para>
+We think that Key-Escrow is a Bad Thing; however the user should
+have the freedom to decide whether to go to prison or to reveal the content of
+one specific message without compromising all messages ever encrypted for one
+secret key. DON'T USE IT UNLESS YOU ARE REALLY FORCED TO DO SO.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--override-session-key &ParmString; </term>
+<listitem><para>
+Don't use the public key but the session key &ParmString;.  The format of this
+string is the same as the one printed by --show-session-key.  This option
+is normally not used but comes handy in case someone forces you to reveal the
+content of an encrypted message; using this option you can do this without
+handing out the secret key.
+</para></listitem></varlistentry>
+
 
 </variablelist>
 </refsect1>

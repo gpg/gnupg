@@ -151,6 +151,7 @@ write_status_text ( int no, const char *text)
       case STATUS_DELETE_PROBLEM : s = "DELETE_PROBLEM\n"; break;
       case STATUS_PROGRESS	 : s = "PROGRESS\n"; break;
       case STATUS_SIG_CREATED	 : s = "SIG_CREATED\n"; break;
+      case STATUS_SESSION_KEY	 : s = "SESSION_KEY\n"; break;
       default: s = "?\n"; break;
     }
 

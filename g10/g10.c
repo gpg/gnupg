@@ -188,6 +188,8 @@ enum cmd_and_opt_values { aNull = 0,
     oFastListMode,
     oListOnly,
     oIgnoreTimeConflict,
+    oShowSessionKey,
+    oOverrideSessionKey,
     oNoRandomSeedFile,
     oNoAutoKeyRetrieve,
     oEmu3DESS2KBug,  /* will be removed in 1.1 */
@@ -370,6 +372,8 @@ static ARGPARSE_OPTS opts[] = {
     { oFastListMode,"fast-list-mode", 0, "@" },
     { oListOnly, "list-only", 0, "@"},
     { oIgnoreTimeConflict, "ignore-time-conflict", 0, "@" },
+    { oShowSessionKey, "show-session-key", 0, "@" },
+    { oOverrideSessionKey, "override-session-key", 2, "@" },
     { oNoRandomSeedFile,  "no-random-seed-file", 0, "@" },
     { oNoAutoKeyRetrieve, "no-auto-key-retrieve", 0, "@" },
     { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
@@ -920,6 +924,10 @@ main( int argc, char **argv )
 	  case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
 	  case oNoRandomSeedFile: use_random_seed = 0; break;
 	  case oNoAutoKeyRetrieve: opt.auto_key_retrieve = 0; break;
+	  case oShowSessionKey: opt.show_session_key = 1; break;
+	  case oOverrideSessionKey:
+		opt.override_session_key = pargs.r.ret_str;
+		break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}

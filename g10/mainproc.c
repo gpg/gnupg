@@ -219,8 +219,17 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 	write_status_text( STATUS_ENC_TO, buf );
     }
 
-
-    if( is_ELGAMAL(enc->pubkey_algo)
+    if( !opt.list_only && opt.override_session_key ) {
+	/* It does not make nuch sense to store the session key in
+	 * secure memory because it has already been passed on the
+	 * command line and the GCHQ knows about it */
+	c->dek = m_alloc( sizeof *c->dek );
+	result = get_override_session_key ( c->dek, opt.override_session_key );
+	if ( result ) {
+	    m_free(c->dek); c->dek = NULL;
+	}
+    }
+    else if( is_ELGAMAL(enc->pubkey_algo)
 	|| enc->pubkey_algo == PUBKEY_ALGO_DSA
 	|| is_RSA(enc->pubkey_algo)  ) {
 	if ( !c->dek && ((!enc->keyid[0] && !enc->keyid[1])
@@ -246,6 +255,15 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
     else if( !result ) {
 	if( opt.verbose > 1 )
 	    log_info( _("public key encrypted data: good DEK\n") );
+	if ( opt.show_session_key ) {
+	    int i;
+	    char *buf = m_alloc ( c->dek->keylen*2 + 20 );
+	    sprintf ( buf, "%d:", c->dek->algo );
+	    for(i=0; i < c->dek->keylen; i++ )
+		sprintf(buf+strlen(buf), "%02X", c->dek->key[i] );
+	    log_info( "session key: \"%s\"\n", buf );
+	    write_status_text ( STATUS_SESSION_KEY, buf );
+	}
     }
     else { /* store it for later display */
 	struct kidlist_item *x = m_alloc( sizeof *x );

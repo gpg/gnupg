@@ -7,6 +7,10 @@ Noteworthy changes in the current CVS branch STABLE-BRANCH-1-0
 
     * Revoked user IDs are now marked in the output of --list-key
 
+    * New options --show-session-key and --override-session-key
+      to help the British folks to somewhat minimize the danger
+      of this Orwellian RIP bill.
+
 
 Noteworthy changes in version 1.0.2 (2000-07-12)
 ----------------------------------------------

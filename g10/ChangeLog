@@ -1,3 +1,11 @@
+Thu Jul 27 12:01:00 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * g10.c: New options --show-session-key and --override-session-key
+  * pubkey-enc.c (hextobyte): New.
+  (get_override_session_key): New.
+  * mainproc.c (proc_pubkey_enc): Add session-key stuff.
+  * status.h, status.c (STATUS_SESSION_KEY): New.
+
 Thu Jul 27 10:02:38 CEST 2000  Werner Koch  <wk@openit.de>
 
   * g10.c (main): Use setmode(O_BINARY) for MSDOS while generating random bytes

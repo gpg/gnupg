@@ -332,6 +332,7 @@ int protect_secret_key( PKT_secret_key *sk, DEK *dek );
 
 /*-- pubkey-enc.c --*/
 int get_session_key( PKT_pubkey_enc *k, DEK *dek );
+int get_override_session_key( DEK *dek, const char *string );
 
 /*-- compress.c --*/
 int handle_compressed( void *ctx, PKT_compressed *cd,
