@@ -1,3 +1,14 @@
+2004-12-27  Werner Koch  <wk@g10code.com>
+
+	Released 1.2.7.
+
+	* Makefile.am (AUTOMAKE_OPTIONS): New.
+	* configure.ac (AC_CANONICAL_TARGET): Replaced by
+	AC_CANONICAL_HOST. Changed all reference to TARGET to HOST.  Made
+	sure that i586-mingw32msvc gets detected as mingw32.
+
+	Updated to automake 1.9.
+
 2004-12-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Note pgpgroup-to-gpggroup.

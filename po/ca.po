@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.5\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-08-13 18:54+0200\n"
+"POT-Creation-Date: 2004-12-27 17:50+0100\n"
 "PO-Revision-Date: 2003-12-05 19:15+0100\n"
 "Last-Translator: Jordi Mallach <jordi@gnu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -2176,28 +2176,28 @@ msgid "too many entries in pk cache - disabled\n"
 msgstr ""
 "hi ha massa entrades en la memòria cau de claus públiques - desactivada\n"
 
-#: g10/getkey.c:186 g10/getkey.c:2672
+#: g10/getkey.c:186 g10/getkey.c:2689
 msgid "[User id not found]"
 msgstr "[No s'ha trobat l'id d'usuari]"
 
-#: g10/getkey.c:1607
+#: g10/getkey.c:1630
 #, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "La clau invàlida %08lX s'ha fet vàlida amb --allow-non-selfsigned-uid\n"
 
-#: g10/getkey.c:2160
+#: g10/getkey.c:2179
 #, c-format
 msgid "no secret subkey for public subkey %08lX - ignoring\n"
 msgstr ""
 "no hi ha una clau secreta per a la subclau pública %08lX - es descarta\n"
 
-#: g10/getkey.c:2388
+#: g10/getkey.c:2407
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "s'usarà la clau secundària %08lX en lloc de la primària %08lX\n"
 
-#: g10/getkey.c:2435
+#: g10/getkey.c:2454
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "clau %08lX: clau secreta sense clau pública - es descarta\n"
@@ -3960,7 +3960,7 @@ msgstr "la variable d'entorn GPG_AGENT_INFO és malformada\n"
 msgid "gpg-agent protocol version %d is not supported\n"
 msgstr "la versió %d del protocol de gpg-agent no està suportada\n"
 
-#: g10/passphrase.c:549 g10/hkp.c:155
+#: g10/passphrase.c:549 g10/hkp.c:156
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "no s'ha pogut connectar amb «%s»: %s\n"
@@ -3969,11 +3969,11 @@ msgstr "no s'ha pogut connectar amb «%s»: %s\n"
 msgid "communication problem with gpg-agent\n"
 msgstr "hi ha un problema de comunicació amb el gpg-agent\n"
 
-#: g10/passphrase.c:578 g10/passphrase.c:879 g10/passphrase.c:992
+#: g10/passphrase.c:578 g10/passphrase.c:885 g10/passphrase.c:998
 msgid "problem with the agent - disabling agent use\n"
 msgstr "hi ha un problema amb l'agent: es deshabilitarà el seu ús\n"
 
-#: g10/passphrase.c:680 g10/passphrase.c:1098
+#: g10/passphrase.c:680 g10/passphrase.c:1104
 #, c-format
 msgid " (main key ID %08lX)"
 msgstr " (ID de la clau principal %08lX)"
@@ -4016,16 +4016,16 @@ msgstr "la contrasenya és massa llarga\n"
 msgid "invalid response from agent\n"
 msgstr "la resposta de l'agent és invàlida\n"
 
-#: g10/passphrase.c:780 g10/passphrase.c:873
+#: g10/passphrase.c:780 g10/passphrase.c:879
 msgid "cancelled by user\n"
 msgstr "s'ha cancel·lat per l'usuari\n"
 
-#: g10/passphrase.c:785 g10/passphrase.c:963
+#: g10/passphrase.c:785 g10/passphrase.c:969
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr "hi ha un problema amb l'agent: l'agent ha tornat 0x%lx\n"
 
-#: g10/passphrase.c:1084
+#: g10/passphrase.c:1090
 msgid ""
 "\n"
 "You need a passphrase to unlock the secret key for\n"
@@ -4035,20 +4035,20 @@ msgstr ""
 "Necessiteu la contrasenya per desblocar la clau secreta de\n"
 "l'usuari: \""
 
-#: g10/passphrase.c:1093
+#: g10/passphrase.c:1099
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
 msgstr "clau %2$s de %1$u bits, ID %3$08lX, creada en %4$s"
 
-#: g10/passphrase.c:1145
+#: g10/passphrase.c:1151
 msgid "can't query password in batchmode\n"
 msgstr "no es pot demanar la contrasenya en mode desatès\n"
 
-#: g10/passphrase.c:1149
+#: g10/passphrase.c:1155
 msgid "Enter passphrase: "
 msgstr "Introduïu la contrasenya: "
 
-#: g10/passphrase.c:1153
+#: g10/passphrase.c:1159
 msgid "Repeat passphrase: "
 msgstr "Repetiu la contrasenya: "
 
@@ -4118,41 +4118,41 @@ msgstr "NOTA: la clau secreta %08lX caduca el %s\n"
 msgid "NOTE: key has been revoked"
 msgstr "NOTA: aquesta clau ha estat revocada!"
 
-#: g10/hkp.c:71
+#: g10/hkp.c:72
 #, c-format
 msgid "requesting key %08lX from %s\n"
 msgstr "s'està sol·licitant la clau %08lX de %s\n"
 
-#: g10/hkp.c:98
+#: g10/hkp.c:99
 #, c-format
 msgid "can't get key from keyserver: %s\n"
 msgstr "no s'ha pogut obtenir del servidor la clau: %s\n"
 
-#: g10/hkp.c:183
+#: g10/hkp.c:184
 #, c-format
 msgid "error sending to `%s': %s\n"
 msgstr "error mentre s'enviava a «%s»: %s\n"
 
-#: g10/hkp.c:198
+#: g10/hkp.c:199
 #, c-format
 msgid "success sending to `%s' (status=%u)\n"
 msgstr "l'enviament a «%s» ha tingut èxit (status=%u)\n"
 
-#: g10/hkp.c:201
+#: g10/hkp.c:202
 #, c-format
 msgid "failed sending to `%s': status=%u\n"
 msgstr "l'enviament a «%s» ha fallat: status=%u\n"
 
-#: g10/hkp.c:373
+#: g10/hkp.c:384
 msgid "this keyserver does not support --search-keys\n"
 msgstr "aquest servidor de claus no suporta --search-keys\n"
 
-#: g10/hkp.c:523
+#: g10/hkp.c:534
 #, c-format
 msgid "searching for \"%s\" from HKP server %s\n"
 msgstr "s'està cercant «%s» al servidor HKP %s\n"
 
-#: g10/hkp.c:575
+#: g10/hkp.c:586
 #, c-format
 msgid "can't search keyserver: %s\n"
 msgstr "no es pot cercar el servidor de claus: %s\n"
@@ -4723,7 +4723,7 @@ msgstr ""
 "no s'ha pogut evitar una clau feble per a xifratge simètric;\n"
 "hi ha hagut %d intents!\n"
 
-#: g10/seskey.c:210
+#: g10/seskey.c:213
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
 msgstr "DSA requereix l'ús d'un algoritme de dispersió de 160 bits\n"
 
@@ -5137,17 +5137,17 @@ msgstr "No hi ha ajuda disponible"
 msgid "No help available for `%s'"
 msgstr "No hi ha ajuda disponible per a `%s'"
 
-#: g10/keydb.c:156
+#: g10/keydb.c:160
 #, c-format
 msgid "error creating keyring `%s': %s\n"
 msgstr "error en crear l'anell «%s»: %s\n"
 
-#: g10/keydb.c:163
+#: g10/keydb.c:167
 #, c-format
 msgid "keyring `%s' created\n"
 msgstr "s'ha creat l'anell «%s»\n"
 
-#: g10/keydb.c:639
+#: g10/keydb.c:646
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "no s'ha pogut reconstruir la memòria cau de l'anell: %s\n"

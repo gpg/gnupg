@@ -21,11 +21,12 @@ dnl
 dnl (Process this file with autoconf to produce a configure script.)
 dnlAC_REVISION($Revision$)dnl
 
-AC_PREREQ(2.52)
+AC_PREREQ(2.59)
+min_automake_version="1.9.3"
 
 # Remember to change the version number immediately *after* a release
 # and remove the "-cvs" or "rc" suffix immediately *before* a release.
-AC_INIT(gnupg, 1.2.7-cvs, bug-gnupg@gnu.org)
+AC_INIT(gnupg, 1.2.7, bug-gnupg@gnu.org)
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.
@@ -33,8 +34,8 @@ development_version=no
 
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_SRCDIR(g10/g10.c)
-AC_CANONICAL_TARGET()
-AM_INIT_AUTOMAKE
+AC_CANONICAL_HOST
+AM_INIT_AUTOMAKE()
 AM_CONFIG_HEADER(config.h)
 
 AC_GNU_SOURCE
@@ -314,7 +315,7 @@ MPI_OPT_FLAGS=""
 
 try_gettext=yes
 have_dosish_system=no
-case "${target}" in
+case "${host}" in
     *-*-mingw32*)
         # special stuff for Windoze NT
         ac_cv_have_dev_random=no
@@ -472,8 +473,8 @@ fi
 AC_SUBST(GPGKEYS_MAILTO)
 AC_SUBST(GPGKEYS_HKP)
 
-case "${target}" in
-    *-*-mingw32*)
+case "${host}" in
+    *-mingw32*)
         PRINTABLE_OS_NAME="MingW32"
         ;;
     *-*-cygwin*)
@@ -503,7 +504,7 @@ AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME",
 #
 NAME_OF_DEV_RANDOM="/dev/random"
 NAME_OF_DEV_URANDOM="/dev/urandom"
-case "${target}" in
+case "${host}" in
     *-openbsd*)
         NAME_OF_DEV_RANDOM="/dev/srandom"
         NAME_OF_DEV_URANDOM="/dev/urandom"
@@ -749,8 +750,8 @@ if test "$use_static_rnd" = default; then
      if test "$ac_cv_have_dev_random" = yes; then
         random_modules="rndlinux"
      else
-         case "${target}" in
-            *-*-mingw32*|*-*-cygwin*)
+         case "${host}" in
+            *-mingw32*|*-*-cygwin*)
                 random_modules="rndw32"
                 ;;
             i?86-emx-os2|i?86-*-os2*emx)
@@ -917,8 +918,8 @@ GNUPG_CHECK_GNUMAKE
 
 # add some extra libs here so that previous tests don't fail for
 # mysterious reasons - the final link step should bail out. 
-case "${target}" in
-    *-*-mingw32*)
+case "${host}" in
+    *-mingw32*)
 dnl      NETLIBS="$NETLIBS -lwsock32"
 	W32LIBS="-lwsock32"
         ;;
@@ -1035,7 +1036,7 @@ AC_OUTPUT
 
 # Give some feedback
 echo
-echo   "                Configured for: $PRINTABLE_OS_NAME ($target)"
+echo   "                Configured for: $PRINTABLE_OS_NAME ($host)"
 if test -n "$show_extraasm"; then
   echo "  Extra cpu specific functions:$show_extraasm"
 fi

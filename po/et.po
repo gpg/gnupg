@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-08-13 18:54+0200\n"
+"POT-Creation-Date: 2004-12-27 17:50+0100\n"
 "PO-Revision-Date: 2004-06-17 11:04+0300\n"
 "Last-Translator: Toomas Soome <Toomas.Soome@microlink.ee>\n"
 "Language-Team: Estonian <et@li.org>\n"
@@ -2081,28 +2081,28 @@ msgstr "HOIATUS: midagi ei eksporditud\n"
 msgid "too many entries in pk cache - disabled\n"
 msgstr "avalike võtmete puhvris on liiga palju võtmeid - blokeerin\n"
 
-#: g10/getkey.c:186 g10/getkey.c:2672
+#: g10/getkey.c:186 g10/getkey.c:2689
 msgid "[User id not found]"
 msgstr "[Kasutaja id puudub]"
 
-#: g10/getkey.c:1607
+#: g10/getkey.c:1630
 #, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "Vigane võti %08lX muudeti kehtivaks võtme --allow-non-selfsigned-uid "
 "kasutamisega\n"
 
-#: g10/getkey.c:2160
+#: g10/getkey.c:2179
 #, c-format
 msgid "no secret subkey for public subkey %08lX - ignoring\n"
 msgstr "avalikul alamvõtmel %08lX puudub salajane alamvõti - ignoreerin\n"
 
-#: g10/getkey.c:2388
+#: g10/getkey.c:2407
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "kasutan sekundaarset võtit %08lX primaarse võtme %08lX asemel\n"
 
-#: g10/getkey.c:2435
+#: g10/getkey.c:2454
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "võti %08lX: salajane võti avaliku võtmeta - jätsin vahele\n"
@@ -3806,7 +3806,7 @@ msgstr "vigane GPG_AGENT_INFO keskkonnamuutuja\n"
 msgid "gpg-agent protocol version %d is not supported\n"
 msgstr "gpg-agendi protokolli versioon %d ei ole toetatud\n"
 
-#: g10/passphrase.c:549 g10/hkp.c:155
+#: g10/passphrase.c:549 g10/hkp.c:156
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "ei õnnestu luua ühendust serveriga `%s': %s\n"
@@ -3815,11 +3815,11 @@ msgstr "ei õnnestu luua ühendust serveriga `%s': %s\n"
 msgid "communication problem with gpg-agent\n"
 msgstr "probleem gpg-agent programmiga suhtlemisel\n"
 
-#: g10/passphrase.c:578 g10/passphrase.c:879 g10/passphrase.c:992
+#: g10/passphrase.c:578 g10/passphrase.c:885 g10/passphrase.c:998
 msgid "problem with the agent - disabling agent use\n"
 msgstr "probleem agendiga - blokeerin agendi kasutamise\n"
 
-#: g10/passphrase.c:680 g10/passphrase.c:1098
+#: g10/passphrase.c:680 g10/passphrase.c:1104
 #, c-format
 msgid " (main key ID %08lX)"
 msgstr " (peamise võtme ID %08lX)"
@@ -3851,16 +3851,16 @@ msgstr "liiga pikk parool\n"
 msgid "invalid response from agent\n"
 msgstr "vigane vastus agendilt\n"
 
-#: g10/passphrase.c:780 g10/passphrase.c:873
+#: g10/passphrase.c:780 g10/passphrase.c:879
 msgid "cancelled by user\n"
 msgstr "katkestatud kasutaja poolt\n"
 
-#: g10/passphrase.c:785 g10/passphrase.c:963
+#: g10/passphrase.c:785 g10/passphrase.c:969
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr "probleem agendiga: agent tagastas 0x%lx\n"
 
-#: g10/passphrase.c:1084
+#: g10/passphrase.c:1090
 msgid ""
 "\n"
 "You need a passphrase to unlock the secret key for\n"
@@ -3870,20 +3870,20 @@ msgstr ""
 "Te vajate kasutaja salajase võtme lahtilukustamiseks\n"
 "parooli: \""
 
-#: g10/passphrase.c:1093
+#: g10/passphrase.c:1099
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
 msgstr "%u-bitine %s võti, ID %08lX, loodud %s"
 
-#: g10/passphrase.c:1145
+#: g10/passphrase.c:1151
 msgid "can't query password in batchmode\n"
 msgstr "pakettmoodis ei saa parooli küsida\n"
 
-#: g10/passphrase.c:1149
+#: g10/passphrase.c:1155
 msgid "Enter passphrase: "
 msgstr "Sisestage parool: "
 
-#: g10/passphrase.c:1153
+#: g10/passphrase.c:1159
 msgid "Repeat passphrase: "
 msgstr "Korrake parooli: "
 
@@ -3949,41 +3949,41 @@ msgstr "MÄRKUS: salajane võti %08lX aegus %s\n"
 msgid "NOTE: key has been revoked"
 msgstr "MÄRKUS: võti on tühistatud"
 
-#: g10/hkp.c:71
+#: g10/hkp.c:72
 #, c-format
 msgid "requesting key %08lX from %s\n"
 msgstr "küsin võtit %08lX võtmeserverist %s\n"
 
-#: g10/hkp.c:98
+#: g10/hkp.c:99
 #, c-format
 msgid "can't get key from keyserver: %s\n"
 msgstr "võtmeserverist ei saa võtit: %s\n"
 
-#: g10/hkp.c:183
+#: g10/hkp.c:184
 #, c-format
 msgid "error sending to `%s': %s\n"
 msgstr "viga teate saatmisel serverile `%s': %s\n"
 
-#: g10/hkp.c:198
+#: g10/hkp.c:199
 #, c-format
 msgid "success sending to `%s' (status=%u)\n"
 msgstr "teate saatmine serverile `%s' õnnestus (olek=%u)\n"
 
-#: g10/hkp.c:201
+#: g10/hkp.c:202
 #, c-format
 msgid "failed sending to `%s': status=%u\n"
 msgstr "teate saatmine serverile `%s' ebaõnnestus: olek=%u\n"
 
-#: g10/hkp.c:373
+#: g10/hkp.c:384
 msgid "this keyserver does not support --search-keys\n"
 msgstr "see võtmeserver ei toeta --search-keys\n"
 
-#: g10/hkp.c:523
+#: g10/hkp.c:534
 #, c-format
 msgid "searching for \"%s\" from HKP server %s\n"
 msgstr "otsin \"%s\" HKP serverist %s\n"
 
-#: g10/hkp.c:575
+#: g10/hkp.c:586
 #, c-format
 msgid "can't search keyserver: %s\n"
 msgstr "võtmeserverist ei saa otsida: %s\n"
@@ -4513,7 +4513,7 @@ msgstr ""
 "sümmeetrilises ¨ifris ei õnnestu vältida nõrga võtme kasutamist; proovisin %"
 "d korda!\n"
 
-#: g10/seskey.c:210
+#: g10/seskey.c:213
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
 msgstr "DSA nõuab 160 bitist räsialgoritmi kasutamist\n"
 
@@ -4905,17 +4905,17 @@ msgstr "Abiinfo puudub"
 msgid "No help available for `%s'"
 msgstr "`%s' kohta abiinfo puudub"
 
-#: g10/keydb.c:156
+#: g10/keydb.c:160
 #, c-format
 msgid "error creating keyring `%s': %s\n"
 msgstr "viga võtmehoidla `%s' loomisel: %s\n"
 
-#: g10/keydb.c:163
+#: g10/keydb.c:167
 #, c-format
 msgid "keyring `%s' created\n"
 msgstr "võtmehoidla `%s' on loodud\n"
 
-#: g10/keydb.c:639
+#: g10/keydb.c:646
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "võtmehoidla vahemälu uuesti loomine ebaõnnestus: %s\n"

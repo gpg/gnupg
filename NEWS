@@ -1,8 +1,14 @@
-Noteworthy changes in version 1.2.7
+Noteworthy changes in version 1.2.7 (2004-12-27)
 ------------------------------------------------
+
+    Please note that the 1.2.x series will enter end of life status on
+    January 1, 2005, after which it will only be updated for security
+    critical bugs. 
 
     * New "pgpgroup-to-gpggroup" script (in the tools directory) to
       convert from PGP 6 group syntax to GnuPG group syntax.
+
+    * Translation update and minor bug fixes.
 
 
 Noteworthy changes in version 1.2.6 (2004-08-25)

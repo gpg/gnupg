@@ -18,6 +18,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
 ## Process this file with automake to produce Makefile.in
+ACLOCAL_AMFLAGS = -I m4
+AUTOMAKE_OPTIONS = dist-bzip2 filename-length-max=99
 
 if CROSS_COMPILING
 checks =
@@ -49,9 +51,3 @@ dist-hook:
 	echo "$(VERSION)" > $(distdir)/VERSION
 
 
-
-
-
-
-
-ACLOCAL_AMFLAGS = -I m4

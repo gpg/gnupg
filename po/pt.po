@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-08-13 18:54+0200\n"
+"POT-Creation-Date: 2004-12-27 17:50+0100\n"
 "PO-Revision-Date: 2002-09-13 18:26+0100\n"
 "Last-Translator: Pedro Morais <morais@kde.org>\n"
 "Language-Team: pt <morais@kde.org>\n"
@@ -2121,26 +2121,26 @@ msgstr "AVISO: nada exportado\n"
 msgid "too many entries in pk cache - disabled\n"
 msgstr "entradas demais no cache pk - desactivado\n"
 
-#: g10/getkey.c:186 g10/getkey.c:2672
+#: g10/getkey.c:186 g10/getkey.c:2689
 msgid "[User id not found]"
 msgstr "[Utilizador não encontrado]"
 
-#: g10/getkey.c:1607
+#: g10/getkey.c:1630
 #, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
 msgstr "Chave inválida %08lX tornada válida por --allow-non-selfsigned-uid\n"
 
-#: g10/getkey.c:2160
+#: g10/getkey.c:2179
 #, fuzzy, c-format
 msgid "no secret subkey for public subkey %08lX - ignoring\n"
 msgstr "há uma chave secreta para a chave pública \"%s\"!\n"
 
-#: g10/getkey.c:2388
+#: g10/getkey.c:2407
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "usando chave secundária %08lX ao invés de chave primária %08lX\n"
 
-#: g10/getkey.c:2435
+#: g10/getkey.c:2454
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "chave %08lX: chave secreta sem chave pública - ignorada\n"
@@ -3860,7 +3860,7 @@ msgstr "variável de ambiente GPG_AGENT_INFO inválida\n"
 msgid "gpg-agent protocol version %d is not supported\n"
 msgstr "a versão %d do protocolo gpg-agent não é suportada\n"
 
-#: g10/passphrase.c:549 g10/hkp.c:155
+#: g10/passphrase.c:549 g10/hkp.c:156
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "impossível ligar a `%s': %s\n"
@@ -3869,11 +3869,11 @@ msgstr "impossível ligar a `%s': %s\n"
 msgid "communication problem with gpg-agent\n"
 msgstr "problemas na comunicação com o gpg-agent\n"
 
-#: g10/passphrase.c:578 g10/passphrase.c:879 g10/passphrase.c:992
+#: g10/passphrase.c:578 g10/passphrase.c:885 g10/passphrase.c:998
 msgid "problem with the agent - disabling agent use\n"
 msgstr "problema com o agente - a desactivar a utilização deste\n"
 
-#: g10/passphrase.c:680 g10/passphrase.c:1098
+#: g10/passphrase.c:680 g10/passphrase.c:1104
 #, c-format
 msgid " (main key ID %08lX)"
 msgstr " (ID principal da chave %08lX)"
@@ -3907,16 +3907,16 @@ msgstr "frase secreta demasiado longa\n"
 msgid "invalid response from agent\n"
 msgstr "resposta do agente inválida\n"
 
-#: g10/passphrase.c:780 g10/passphrase.c:873
+#: g10/passphrase.c:780 g10/passphrase.c:879
 msgid "cancelled by user\n"
 msgstr "cancelado pelo utilizador\n"
 
-#: g10/passphrase.c:785 g10/passphrase.c:963
+#: g10/passphrase.c:785 g10/passphrase.c:969
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr "problema com o agente: o agente returnou 0x%lx\n"
 
-#: g10/passphrase.c:1084
+#: g10/passphrase.c:1090
 msgid ""
 "\n"
 "You need a passphrase to unlock the secret key for\n"
@@ -3926,20 +3926,20 @@ msgstr ""
 "Você precisa de uma frase secreta para desbloquear a chave secreta do\n"
 "utilizador: \""
 
-#: g10/passphrase.c:1093
+#: g10/passphrase.c:1099
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
 msgstr "chave de %u-bit/%s, ID %08lX, criada em %s"
 
-#: g10/passphrase.c:1145
+#: g10/passphrase.c:1151
 msgid "can't query password in batchmode\n"
 msgstr "impossível pedir senha em modo não-interactivo\n"
 
-#: g10/passphrase.c:1149
+#: g10/passphrase.c:1155
 msgid "Enter passphrase: "
 msgstr "Digite a frase secreta: "
 
-#: g10/passphrase.c:1153
+#: g10/passphrase.c:1159
 msgid "Repeat passphrase: "
 msgstr "Repita a frase secreta: "
 
@@ -4005,41 +4005,41 @@ msgstr "NOTA: chave secreta %08lX expirou em %s\n"
 msgid "NOTE: key has been revoked"
 msgstr "NOTA: a chave foi revogada"
 
-#: g10/hkp.c:71
+#: g10/hkp.c:72
 #, c-format
 msgid "requesting key %08lX from %s\n"
 msgstr "a pedir a chave %08lX de %s\n"
 
-#: g10/hkp.c:98
+#: g10/hkp.c:99
 #, c-format
 msgid "can't get key from keyserver: %s\n"
 msgstr "não consigo obter chave do servidor: %s\n"
 
-#: g10/hkp.c:183
+#: g10/hkp.c:184
 #, c-format
 msgid "error sending to `%s': %s\n"
 msgstr "erro ao enviar para `%s': %s\n"
 
-#: g10/hkp.c:198
+#: g10/hkp.c:199
 #, c-format
 msgid "success sending to `%s' (status=%u)\n"
 msgstr "sucesso ao enviar para `%s' (estado=%u)\n"
 
-#: g10/hkp.c:201
+#: g10/hkp.c:202
 #, c-format
 msgid "failed sending to `%s': status=%u\n"
 msgstr "erro ao enviar para `%s': estado=%u\n"
 
-#: g10/hkp.c:373
+#: g10/hkp.c:384
 msgid "this keyserver does not support --search-keys\n"
 msgstr ""
 
-#: g10/hkp.c:523
+#: g10/hkp.c:534
 #, c-format
 msgid "searching for \"%s\" from HKP server %s\n"
 msgstr "a procurar por \"%s\" no servidor HKP %s\n"
 
-#: g10/hkp.c:575
+#: g10/hkp.c:586
 #, c-format
 msgid "can't search keyserver: %s\n"
 msgstr "não consigo procurar no servidor de chaves: %s\n"
@@ -4586,7 +4586,7 @@ msgstr ""
 "impossível evitar chave fraca para criptografia simétrica;\n"
 "tentei %d vezes!\n"
 
-#: g10/seskey.c:210
+#: g10/seskey.c:213
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
 msgstr "DSA necessita de utilização de uma algoritmo de dispersão de 160 bit\n"
 
@@ -4987,17 +4987,17 @@ msgstr "Nenhuma ajuda disponível"
 msgid "No help available for `%s'"
 msgstr "Nenhuma ajuda disponível para `%s'"
 
-#: g10/keydb.c:156
+#: g10/keydb.c:160
 #, c-format
 msgid "error creating keyring `%s': %s\n"
 msgstr "erro ao criar porta-chaves `%s': %s\n"
 
-#: g10/keydb.c:163
+#: g10/keydb.c:167
 #, c-format
 msgid "keyring `%s' created\n"
 msgstr "porta-chaves `%s' criado\n"
 
-#: g10/keydb.c:639
+#: g10/keydb.c:646
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "falha ao criar 'cache' do porta-chaves: %s\n"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-08-13 18:54+0200\n"
+"POT-Creation-Date: 2004-12-27 17:50+0100\n"
 "PO-Revision-Date: 2004-05-10 19:23+0200\n"
 "Last-Translator: Elros Cyriatan <cyriatan@fastmail.fm>\n"
 "Language-Team: Dutch <vertaling@nl.linux.org>\n"
@@ -2118,29 +2118,29 @@ msgstr "WAARSCHUWING: niets uitgevoerd\n"
 msgid "too many entries in pk cache - disabled\n"
 msgstr "teveel ingangen in pk buffer - uit gezet\n"
 
-#: g10/getkey.c:186 g10/getkey.c:2672
+#: g10/getkey.c:186 g10/getkey.c:2689
 msgid "[User id not found]"
 msgstr "[Gebruikerscode niet gevonden]"
 
-#: g10/getkey.c:1607
+#: g10/getkey.c:1630
 #, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "Ongeldige sleutel %08lX geldig gemaakt met --allow-non-selfsigned-uid\n"
 
-#: g10/getkey.c:2160
+#: g10/getkey.c:2179
 #, c-format
 msgid "no secret subkey for public subkey %08lX - ignoring\n"
 msgstr "geen geheime deelsleutel voor openbare deelsleutel %08lX - genegeerd\n"
 
-#: g10/getkey.c:2388
+#: g10/getkey.c:2407
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr ""
 "de secundaire sleutel %08lX wordt gebruikt in plaats van primaire sleutel %"
 "08lX\n"
 
-#: g10/getkey.c:2435
+#: g10/getkey.c:2454
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr ""
@@ -3876,7 +3876,7 @@ msgstr "misvormde GPG_AGENT_INFO omgevingsvariabele\n"
 msgid "gpg-agent protocol version %d is not supported\n"
 msgstr "gpg-agent protocol versie %d wordt niet ondersteund\n"
 
-#: g10/passphrase.c:549 g10/hkp.c:155
+#: g10/passphrase.c:549 g10/hkp.c:156
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "kan niet verbinden met `%s': %s\n"
@@ -3885,11 +3885,11 @@ msgstr "kan niet verbinden met `%s': %s\n"
 msgid "communication problem with gpg-agent\n"
 msgstr "communicatieprobleem met gpg-agent\n"
 
-#: g10/passphrase.c:578 g10/passphrase.c:879 g10/passphrase.c:992
+#: g10/passphrase.c:578 g10/passphrase.c:885 g10/passphrase.c:998
 msgid "problem with the agent - disabling agent use\n"
 msgstr "probleem met de agent - gebruik van agent uit gezet\n"
 
-#: g10/passphrase.c:680 g10/passphrase.c:1098
+#: g10/passphrase.c:680 g10/passphrase.c:1104
 #, c-format
 msgid " (main key ID %08lX)"
 msgstr " (hoofdsleutel ID %08lX)"
@@ -3922,16 +3922,16 @@ msgstr "wachtwoord te lang\n"
 msgid "invalid response from agent\n"
 msgstr "ongeldig antwoord van agent\n"
 
-#: g10/passphrase.c:780 g10/passphrase.c:873
+#: g10/passphrase.c:780 g10/passphrase.c:879
 msgid "cancelled by user\n"
 msgstr "geannuleerd door gebruiker\n"
 
-#: g10/passphrase.c:785 g10/passphrase.c:963
+#: g10/passphrase.c:785 g10/passphrase.c:969
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr "probleem met agent: agent geeft 0x%lx terug\n"
 
-#: g10/passphrase.c:1084
+#: g10/passphrase.c:1090
 msgid ""
 "\n"
 "You need a passphrase to unlock the secret key for\n"
@@ -3941,20 +3941,20 @@ msgstr ""
 "U heeft een wachtwoord nodig om de geheime sleutel\n"
 "voor de gebruiker te ontgrendelen: \""
 
-#: g10/passphrase.c:1093
+#: g10/passphrase.c:1099
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
 msgstr "%u-bit %s sleutel, ID %08lX, gemaakt op %s"
 
-#: g10/passphrase.c:1145
+#: g10/passphrase.c:1151
 msgid "can't query password in batchmode\n"
 msgstr "kan niet vragen om wachtwoord in batch-modus\n"
 
-#: g10/passphrase.c:1149
+#: g10/passphrase.c:1155
 msgid "Enter passphrase: "
 msgstr "Geef wachtwoord: "
 
-#: g10/passphrase.c:1153
+#: g10/passphrase.c:1159
 msgid "Repeat passphrase: "
 msgstr "Herhaal wachtwoord: "
 
@@ -4022,41 +4022,41 @@ msgstr "LET OP: geheime sleutel %08lX verlopen op %s\n"
 msgid "NOTE: key has been revoked"
 msgstr "LET OP: sleutel is herroepen"
 
-#: g10/hkp.c:71
+#: g10/hkp.c:72
 #, c-format
 msgid "requesting key %08lX from %s\n"
 msgstr "bezig met opvragen sleutel %08lX van %s\n"
 
-#: g10/hkp.c:98
+#: g10/hkp.c:99
 #, c-format
 msgid "can't get key from keyserver: %s\n"
 msgstr "kan sleutel niet ontvangen van sleutelserver: %s\n"
 
-#: g10/hkp.c:183
+#: g10/hkp.c:184
 #, c-format
 msgid "error sending to `%s': %s\n"
 msgstr "fout bij verzenden aan `%s': %s\n"
 
-#: g10/hkp.c:198
+#: g10/hkp.c:199
 #, c-format
 msgid "success sending to `%s' (status=%u)\n"
 msgstr "succes bij zenden aan `%s' (status=%u)\n"
 
-#: g10/hkp.c:201
+#: g10/hkp.c:202
 #, c-format
 msgid "failed sending to `%s': status=%u\n"
 msgstr "verzenden aan `%s' mislukt: status=%u\n"
 
-#: g10/hkp.c:373
+#: g10/hkp.c:384
 msgid "this keyserver does not support --search-keys\n"
 msgstr ""
 
-#: g10/hkp.c:523
+#: g10/hkp.c:534
 #, c-format
 msgid "searching for \"%s\" from HKP server %s\n"
 msgstr "bezig met zoeken naar \"%s\" bij HKP-server %s\n"
 
-#: g10/hkp.c:575
+#: g10/hkp.c:586
 #, c-format
 msgid "can't search keyserver: %s\n"
 msgstr "kan niet zoeken op sleutelserver: %s\n"
@@ -4607,7 +4607,7 @@ msgstr ""
 "kan zwakke sleutel voor symmetrische codering niet vermijden; %d keer "
 "geprobeerd!\n"
 
-#: g10/seskey.c:210
+#: g10/seskey.c:213
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
 msgstr "DSA vereist het gebruik van een 160-bits hash-algoritme\n"
 
@@ -5026,17 +5026,17 @@ msgstr "Geen hulp beschikbaar"
 msgid "No help available for `%s'"
 msgstr "Geen hulp beschikbaar voor `%s'"
 
-#: g10/keydb.c:156
+#: g10/keydb.c:160
 #, c-format
 msgid "error creating keyring `%s': %s\n"
 msgstr "fout bij aanmaken sleutelbos `%s': %s\n"
 
-#: g10/keydb.c:163
+#: g10/keydb.c:167
 #, c-format
 msgid "keyring `%s' created\n"
 msgstr "sleutelbos `%s' aangemaakt\n"
 
-#: g10/keydb.c:639
+#: g10/keydb.c:646
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "opnieuw opbouwen sleutelbos buffer mislukt: %s\n"

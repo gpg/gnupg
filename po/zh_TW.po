@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-08-13 18:54+0200\n"
+"POT-Creation-Date: 2004-12-27 17:50+0100\n"
 "PO-Revision-Date: 2003-05-13 15:48+0800\n"
 "Last-Translator: Jedi <Jedi@idej.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -2072,26 +2072,26 @@ msgstr "警告：沒有匯出任何東西\n"
 msgid "too many entries in pk cache - disabled\n"
 msgstr "pk 快取裡有太多項目 ─ 已禁用\n"
 
-#: g10/getkey.c:186 g10/getkey.c:2672
+#: g10/getkey.c:186 g10/getkey.c:2689
 msgid "[User id not found]"
 msgstr "[找不到使用者 ID]"
 
-#: g10/getkey.c:1607
+#: g10/getkey.c:1630
 #, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
 msgstr "--allow-non-selfsigned-uid 能讓無效的金鑰 %08lX 生效\n"
 
-#: g10/getkey.c:2160
+#: g10/getkey.c:2179
 #, c-format
 msgid "no secret subkey for public subkey %08lX - ignoring\n"
 msgstr "公鑰 %08lX 沒有相對應的私鑰 ─ 正在忽略\n"
 
-#: g10/getkey.c:2388
+#: g10/getkey.c:2407
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "正在使用次鑰 %08lX 來替換主鑰 %08lX\n"
 
-#: g10/getkey.c:2435
+#: g10/getkey.c:2454
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "金鑰 %08lX: 祇有私鑰而沒有公鑰 ─ 已跳過\n"
@@ -3785,7 +3785,7 @@ msgstr "被變造的 GPG_AGENT_INFO 環境變數\n"
 msgid "gpg-agent protocol version %d is not supported\n"
 msgstr "gpg-agent 協定版本 %d 未被支援\n"
 
-#: g10/passphrase.c:549 g10/hkp.c:155
+#: g10/passphrase.c:549 g10/hkp.c:156
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "無法連接至 `%s' ： %s\n"
@@ -3794,11 +3794,11 @@ msgstr "無法連接至 `%s' ： %s\n"
 msgid "communication problem with gpg-agent\n"
 msgstr "gpg-agent 的通訊問題\n"
 
-#: g10/passphrase.c:578 g10/passphrase.c:879 g10/passphrase.c:992
+#: g10/passphrase.c:578 g10/passphrase.c:885 g10/passphrase.c:998
 msgid "problem with the agent - disabling agent use\n"
 msgstr "代理程式的問題 ─ 正在停用代理程式\n"
 
-#: g10/passphrase.c:680 g10/passphrase.c:1098
+#: g10/passphrase.c:680 g10/passphrase.c:1104
 #, c-format
 msgid " (main key ID %08lX)"
 msgstr " (主要金鑰 ID %08lX)"
@@ -3830,16 +3830,16 @@ msgstr "密碼串太長\n"
 msgid "invalid response from agent\n"
 msgstr "代理程式傳回無效的回應\n"
 
-#: g10/passphrase.c:780 g10/passphrase.c:873
+#: g10/passphrase.c:780 g10/passphrase.c:879
 msgid "cancelled by user\n"
 msgstr "由使用者取消了\n"
 
-#: g10/passphrase.c:785 g10/passphrase.c:963
+#: g10/passphrase.c:785 g10/passphrase.c:969
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr "代理程式的問題：代理程式傳回 0x%lx\n"
 
-#: g10/passphrase.c:1084
+#: g10/passphrase.c:1090
 msgid ""
 "\n"
 "You need a passphrase to unlock the secret key for\n"
@@ -3849,20 +3849,20 @@ msgstr ""
 "妳需要下列使用者的密碼串，纔能解開私鑰：\n"
 "\""
 
-#: g10/passphrase.c:1093
+#: g10/passphrase.c:1099
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
 msgstr "%u 位元 %s ID %08lX 的金鑰，建立於 %s"
 
-#: g10/passphrase.c:1145
+#: g10/passphrase.c:1151
 msgid "can't query password in batchmode\n"
 msgstr "在批次模式中無法詢問密碼\n"
 
-#: g10/passphrase.c:1149
+#: g10/passphrase.c:1155
 msgid "Enter passphrase: "
 msgstr "請輸入密碼串： "
 
-#: g10/passphrase.c:1153
+#: g10/passphrase.c:1159
 msgid "Repeat passphrase: "
 msgstr "請再輸入一次密碼串： "
 
@@ -3928,41 +3928,41 @@ msgstr "請注意：私鑰 %08lX 在 %s 過期了\n"
 msgid "NOTE: key has been revoked"
 msgstr "請注意：金鑰已經被撤銷了"
 
-#: g10/hkp.c:71
+#: g10/hkp.c:72
 #, c-format
 msgid "requesting key %08lX from %s\n"
 msgstr "金鑰 %08lX 正向 %s 要求中\n"
 
-#: g10/hkp.c:98
+#: g10/hkp.c:99
 #, c-format
 msgid "can't get key from keyserver: %s\n"
 msgstr "無法從金鑰伺服器取得金鑰： %s\n"
 
-#: g10/hkp.c:183
+#: g10/hkp.c:184
 #, c-format
 msgid "error sending to `%s': %s\n"
 msgstr "傳送到 `%s' 的時候發生錯誤： %s\n"
 
-#: g10/hkp.c:198
+#: g10/hkp.c:199
 #, c-format
 msgid "success sending to `%s' (status=%u)\n"
 msgstr "成功地傳送到 `%s' (狀態=%u)\n"
 
-#: g10/hkp.c:201
+#: g10/hkp.c:202
 #, c-format
 msgid "failed sending to `%s': status=%u\n"
 msgstr "傳送到 `%s' 的時候失敗了：狀態=%u\n"
 
-#: g10/hkp.c:373
+#: g10/hkp.c:384
 msgid "this keyserver does not support --search-keys\n"
 msgstr ""
 
-#: g10/hkp.c:523
+#: g10/hkp.c:534
 #, c-format
 msgid "searching for \"%s\" from HKP server %s\n"
 msgstr "正在搜尋 \"%s\" 於 HKP 伺服器 %s 上\n"
 
-#: g10/hkp.c:575
+#: g10/hkp.c:586
 #, c-format
 msgid "can't search keyserver: %s\n"
 msgstr "無法搜尋金鑰伺服器： %s\n"
@@ -4478,7 +4478,7 @@ msgstr "建立了弱金鑰 ─ 正在重試\n"
 msgid "cannot avoid weak key for symmetric cipher; tried %d times!\n"
 msgstr "無法避免對稱式編密法的弱金鑰；已經試了 %d 次了！\n"
 
-#: g10/seskey.c:210
+#: g10/seskey.c:213
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
 msgstr "DSA 要求使用 160 位元的雜湊演算法\n"
 
@@ -4859,17 +4859,17 @@ msgstr "沒有可用的說明"
 msgid "No help available for `%s'"
 msgstr "`%s' 沒有可用的說明"
 
-#: g10/keydb.c:156
+#: g10/keydb.c:160
 #, c-format
 msgid "error creating keyring `%s': %s\n"
 msgstr "建立鑰匙圈 `%s' 時發生錯誤： %s\n"
 
-#: g10/keydb.c:163
+#: g10/keydb.c:167
 #, c-format
 msgid "keyring `%s' created\n"
 msgstr "鑰匙圈 `%s' 已建立\n"
 
-#: g10/keydb.c:639
+#: g10/keydb.c:646
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "重新建立鑰匙圈快取失敗： %s\n"
