@@ -1,3 +1,12 @@
+2004-01-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c: Set MAX_PK_CACHE_ENTRIES and MAX_UID_CACHE_ENTRIES to
+	PK_UID_CACHE_SIZE (set in ./configure).
+
+	* getkey.c (get_pubkey): When reading key data into the cache,
+	properly handle keys that are partially (pk, no UIDs) cached
+	already.  This is Debian bug #176425 and #229549.
+
 2004-01-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* compress.c (init_compress): Remove "-z10" trick to get
