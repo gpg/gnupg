@@ -709,7 +709,7 @@ sexp_to_kparms (gcry_sexp_t sexp)
       return NULL;
     }
 
-  /* Paramter names used with RSA. */
+  /* Parameter names used with RSA. */
   elems = "nedpqu";
   array = xcalloc (strlen(elems) + 1, sizeof *array);
   for (idx=0, s=elems; *s; s++, idx++ ) 

@@ -1,4 +1,4 @@
-# Copyright (C) 2001 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -51,10 +51,10 @@ gpg_agent_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
 gpg_protect_tool_SOURCES = \
 	protect-tool.c \
 	protect.c \
-	minip12.c minip12.h \
-	simple-pwquery.c simple-pwquery.h
+	minip12.c minip12.h 
 
 gpg_protect_tool_LDADD = ../jnlib/libjnlib.a \
-		     ../common/libcommon.a $(LIBGCRYPT_LIBS) -lgpg-error
+        ../common/libcommon.a ../common/libsimple-pwquery.a \
+	 $(LIBGCRYPT_LIBS) -lgpg-error
 
 
