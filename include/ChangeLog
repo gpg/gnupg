@@ -1,3 +1,7 @@
+2003-10-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* cipher.h: Add COMPRESS_ALGO_BZIP2.
+
 2003-10-04  Timo Schulz  <twoaday@freakmail.de>
 
 	* dynload [WIN32] (dlclose): Do not use CloseHandle but FreeLibrary.
