@@ -1,3 +1,10 @@
+2004-05-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* longlong.h: Typo.
+
+	* mpi-pow.c (mpi_powm): s/exp/exponent/ to shutup a compiler
+	warning.  From Werner on stable branch.
+
 2004-01-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* hppa1.1/udiv-qrnnd.S: Alignment fix from Lamont Jones for

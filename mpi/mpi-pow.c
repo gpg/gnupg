@@ -39,7 +39,7 @@
  * RES = BASE ^ EXP mod MOD
  */
 void
-mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
+mpi_powm( MPI res, MPI base, MPI exponent, MPI mod)
 {
     mpi_ptr_t  rp, ep, mp, bp;
     mpi_size_t esize, msize, bsize, rsize;
@@ -55,19 +55,19 @@ mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
     mpi_size_t tsize=0;   /* to avoid compiler warning */
 			  /* fixme: we should check that the warning is void*/
 
-    esize = exp->nlimbs;
+    esize = exponent->nlimbs;
     msize = mod->nlimbs;
     size = 2 * msize;
-    esign = exp->sign;
+    esign = exponent->sign;
     msign = mod->sign;
 
-    esec = mpi_is_secure(exp);
+    esec = mpi_is_secure(exponent);
     msec = mpi_is_secure(mod);
     bsec = mpi_is_secure(base);
     rsec = mpi_is_secure(res);
 
     rp = res->d;
-    ep = exp->d;
+    ep = exponent->d;
 
     if( !msize )
 	msize = 1 / msize;	    /* provoke a signal */
@@ -129,7 +129,7 @@ mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
 	    rp = res->d;
 	}
     }
-    else { /* Make BASE, EXP and MOD not overlap with RES.  */
+    else { /* Make BASE, EXPONENT and MOD not overlap with RES.  */
 	if( rp == bp ) {
 	    /* RES and BASE are identical.  Allocate temp. space for BASE.  */
 	    assert( !bp_marker );
@@ -137,7 +137,8 @@ mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
 	    MPN_COPY(bp, rp, bsize);
 	}
 	if( rp == ep ) {
-	    /* RES and EXP are identical.  Allocate temp. space for EXP.  */
+	    /* RES and EXPONENT are identical.  
+               Allocate temp. space for EXPONENT.  */
 	    ep = ep_marker = mpi_alloc_limb_space( esize, esec );
 	    MPN_COPY(ep, rp, esize);
 	}
