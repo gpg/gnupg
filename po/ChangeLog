@@ -1,7 +1,19 @@
 2002-04-09  Werner Koch  <wk@gnupg.org>
 
-	* cs.po: New.
+	* de.po: Fuzzy fixes and a few new translations.
 
+	* id.po: Fixed a format string mismatch.
+
+	* eo.po, it.po, ja.po, sv.po: Updated with a somewhat newer
+	version from the TP.
+
+	* es_ES.po: Removed
+	* es.po: and replaced with this updated version from the TP.
+
+	* cs.po: New.  Fixed for format string mismatches.
+
+	* el.po, gl.po: New from TP.
+	
 2002-04-06  Werner Koch  <wk@gnupg.org>
 
 	* fr.po: Updated.

@@ -1,47 +1,45 @@
-# GnuPG german translation
-# Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
-# Walter Koch <koch@hsp.de>, 1998, 1999, 2000, 2001
+# Greek Translation of GnuPG.
+# Copyright (C) 2002 Free Software Foundation, Inc.
+# Dokianakis Theofanis <madf@hellug.gr>, 2002.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg-1.0.4\n"
+"Project-Id-Version: gnupg 1.0.6\n"
 "POT-Creation-Date: 2002-04-09 19:04+0200\n"
-"PO-Revision-Date: 2002-04-09 19:41+0200\n"
-"Last-Translator: Walter Koch <koch@hsp.de>\n"
-"Language-Team: German <de@li.org>\n"
+"PO-Revision-Date: 2002-01-16 01:16+0200\n"
+"Last-Translator: Dokianakis Theofanis <madf@hellug.gr>\n"
+"Language-Team: Greek <nls@tux.hellug.gr>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Type: text/plain; charset=ISO-8859-7\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: util/secmem.c:88
 msgid "Warning: using insecure memory!\n"
-msgstr "Warnung: Sensible Daten kφnnten auf Platte ausgelagert werden.\n"
+msgstr "Προειδοποίηση: χρήση μη ασφαλούς μνήμης\n"
 
 #: util/secmem.c:89
 msgid "please see http://www.gnupg.org/faq.html for more information\n"
-msgstr "siehe http://www.gnupg.org/de/faq.html fόr weitere Informationen\n"
+msgstr ""
 
-# "  Um dies zu vermeiden, kann das Programm suid(root) installiert werden.\n"
-# "  Bitte wenden Sie sich hierzu an den Systemadministrator.\n"
 #: util/secmem.c:326
 msgid "operation is not possible without initialized secure memory\n"
-msgstr "Vorgang ist ohne sicheren Hauptspeicher nicht mφglich\n"
+msgstr "η λειτουργία δεν είναι δυνατή χωρίς αρχικοποιημένη ασφαλή μνήμη\n"
 
 #: util/secmem.c:327
 msgid "(you may have used the wrong program for this task)\n"
-msgstr ""
-"(mφglicherweise haben Sie das falsche Programm fόr diese Aufgabe benutzt)\n"
+msgstr "(ίσως χρησιμοποιήσατε λάθος πρόγραμμα για αυτή την εργασία)\n"
 
 #: util/miscutil.c:297 util/miscutil.c:327
 msgid "yes"
-msgstr "ja"
+msgstr "ναι"
 
 #: util/miscutil.c:298 util/miscutil.c:330
 msgid "yY"
-msgstr "jJyY"
+msgstr "yY"
 
 #: util/miscutil.c:299 util/miscutil.c:328
 msgid "no"
-msgstr "nein"
+msgstr "όχι"
 
 #: util/miscutil.c:300 util/miscutil.c:331
 msgid "nN"
@@ -49,7 +47,7 @@ msgstr "nN"
 
 #: g10/keyedit.c:778 util/miscutil.c:329
 msgid "quit"
-msgstr "quit"
+msgstr "τερματισμός"
 
 #: util/miscutil.c:332
 msgid "qQ"
@@ -57,274 +55,276 @@ msgstr "qQ"
 
 #: util/errors.c:54
 msgid "general error"
-msgstr "Allgemeiner Fehler"
+msgstr "γενικό σφάλμα"
 
 #: util/errors.c:55
 msgid "unknown packet type"
-msgstr "Unbekannter Pakettyp"
+msgstr "άγνωστος τύπος πακέτου"
 
 #: util/errors.c:56
 msgid "unknown version"
-msgstr "Unbekannte Version"
+msgstr "άγνωστη έκδοση"
 
 #: util/errors.c:57
 msgid "unknown pubkey algorithm"
-msgstr "Unbekanntes Public-Key-Verfahren"
+msgstr "άγνωστος αλγόριθμος δημοσίου κλειδιού"
 
 #: util/errors.c:58
 msgid "unknown digest algorithm"
-msgstr "Unbekanntes Hashverfahren"
+msgstr "άγνωστος αλγοριθμος περίληψης"
 
 #: util/errors.c:59
 msgid "bad public key"
-msgstr "Falscher φffentlicher Schόssel"
+msgstr "κακό δημόσιο κλειδί"
 
 #: util/errors.c:60
 msgid "bad secret key"
-msgstr "Falscher geheimer Schlόssel"
+msgstr "κακό μυστικό κλειδί"
 
 #: util/errors.c:61
 msgid "bad signature"
-msgstr "Falsche Unterschrift"
+msgstr "κακή υπογραφή"
 
 #: util/errors.c:62
 msgid "checksum error"
-msgstr "Prόfsummen-Fehler"
+msgstr "σφάλμα checksum"
 
 #: util/errors.c:63
 msgid "bad passphrase"
-msgstr "Falsches Mantra"
+msgstr "κακή φράση κλειδί"
 
 #: util/errors.c:64
 msgid "public key not found"
-msgstr "Φffentlicher Schlόssel nicht gefunden"
+msgstr "δεν βρέθηκε το δημόσιο κλειδί"
 
 #: util/errors.c:65
 msgid "unknown cipher algorithm"
-msgstr "Unbekanntes Verschlόsselungsverfahren"
+msgstr "άγνωστος αλγόριθμος κρυπτογράφησης"
 
 #: util/errors.c:66
 msgid "can't open the keyring"
-msgstr "Der Schlόsselbund kann nicht geφffnet werden"
+msgstr "αδυναμία πρόσβασης στη κλειδοθήκη"
 
 #: util/errors.c:67
 msgid "invalid packet"
-msgstr "Ungόltiges Paket"
+msgstr "μη έγκυρο πακέτο"
 
 #: util/errors.c:68
 msgid "invalid armor"
-msgstr "Ungόltige ASCII-Hόlle"
+msgstr "μη έγκυρη θωράκιση"
 
 #: util/errors.c:69
 msgid "no such user id"
-msgstr "Keine solche User-ID"
+msgstr "άγνωστη ταυτότητα χρήστη (user id)"
 
 #: util/errors.c:70
 msgid "secret key not available"
-msgstr "Geheimer Schlόssel ist nicht vorhanden"
+msgstr "το μυστικό κλειδί δεν είναι διαθέσιμο"
 
 #: util/errors.c:71
 msgid "wrong secret key used"
-msgstr "Falscher geheimer Schlόssel benutzt"
+msgstr "χρήση λάθος μυστικού κλειδιού"
 
 #: util/errors.c:72
 msgid "not supported"
-msgstr "Wird nicht unterstόtzt"
+msgstr "δεν υποστηρίζεται"
 
 #: util/errors.c:73
 msgid "bad key"
-msgstr "Falscher Schlόssel"
+msgstr "κακό κλειδί"
 
 #: util/errors.c:74
 msgid "file read error"
-msgstr "Dateilesefehler"
+msgstr "σφάλμα ανάγνωσης αρχείου"
 
 #: util/errors.c:75
 msgid "file write error"
-msgstr "Dateischreibfehler"
+msgstr "σφάλμα εγγραφής αρχείου"
 
 #: util/errors.c:76
 msgid "unknown compress algorithm"
-msgstr "Unbekanntes Komprimierverfahren"
+msgstr "άγνωστος αλγόριθμος συμπίεσης"
 
 #: util/errors.c:77
 msgid "file open error"
-msgstr "Fehler beim Φffnen der Datei"
+msgstr "σφάλμα πρόσβασης αρχείου"
 
 #: util/errors.c:78
 msgid "file create error"
-msgstr "Fehler beim Erzeugen der Datei"
+msgstr "σφάλμα δημιουργίας αρχείου"
 
 #: util/errors.c:79
 msgid "invalid passphrase"
-msgstr "Ungόltiges Mantra"
+msgstr "μη έγκυρη φράση κλειδί"
 
 #: util/errors.c:80
 msgid "unimplemented pubkey algorithm"
-msgstr "nicht implementiertes φffentliches Schlόsselverfahren"
+msgstr "μη υλοποιημένος αλγόριθμος δημοσίου κλειδιού"
 
 #: util/errors.c:81
 msgid "unimplemented cipher algorithm"
-msgstr "Verschlόsselungsverfahren ist nicht implementiert"
+msgstr "μη υλοποιημένος αλγόριθμος κρυπτογράφησης"
 
 #: util/errors.c:82
 msgid "unknown signature class"
-msgstr "Unbekannte Unterschriftenklasse"
+msgstr "άγνωστη κλάση υπογραφής"
 
 #: util/errors.c:83
 msgid "trust database error"
-msgstr "Fehler in der Trust-DB"
+msgstr "σφάλμα της βάσης δεδομένων εμπιστοσύνης"
 
 #: util/errors.c:84
 msgid "bad MPI"
-msgstr "Falsche MPI"
+msgstr "κακό MPI"
 
 #: util/errors.c:85
 msgid "resource limit"
-msgstr "festdefinierte Ressourcenobergrenze erreicht"
+msgstr "όριο πόρου"
 
 #: util/errors.c:86
 msgid "invalid keyring"
-msgstr "Ungόltiger Schlόsselbund"
+msgstr "μη έγκυρη κλειδοθήκη"
 
 #: util/errors.c:87
 msgid "bad certificate"
-msgstr "Falsches Zertifikat"
+msgstr "κακό πιστοποιητικό"
 
 #: util/errors.c:88
 msgid "malformed user id"
-msgstr "Ungόnstig aufgebaute User-ID"
+msgstr "κακοδιατυπωμένη ταυτότητα χρήστη (user id)"
 
 #: util/errors.c:89
 msgid "file close error"
-msgstr "Fehler beim Schlieίen der Datei"
+msgstr "σφάλμα κλεισίματος αρχείου"
 
 #: util/errors.c:90
 msgid "file rename error"
-msgstr "Fehler beim Umbenennen einer Datei"
+msgstr "σφάλμα μετονομασίας αρχείου"
 
 #: util/errors.c:91
 msgid "file delete error"
-msgstr "Fehler beim Lφschen einer Datei"
+msgstr "σφάλμα διαγραφής αρχείου"
 
 #: util/errors.c:92
 msgid "unexpected data"
-msgstr "Unerwartete Daten"
+msgstr "μη αναμενόμενα δεδομένα"
 
 #: util/errors.c:93
 msgid "timestamp conflict"
-msgstr "Zeitangaben differieren"
+msgstr "σύγκρουση ώρας (timestamp)"
 
 #: util/errors.c:94
 msgid "unusable pubkey algorithm"
-msgstr "Unbenutzbares φffentliches Schlόsselverfahren"
+msgstr "μη χρησιμοποιήσιμος αλγόριθμος δημοσίου κλειδιού"
 
 #: util/errors.c:95
 msgid "file exists"
-msgstr "Datei existiert bereits"
+msgstr "το αρχείο υπάρχει"
 
 #: util/errors.c:96
 msgid "weak key"
-msgstr "Unsicherer Schlόssel"
+msgstr "αδύναμο κλειδί"
 
 #: util/errors.c:97
 msgid "invalid argument"
-msgstr "Ungόltiges Argument"
+msgstr "μη έγκυρο όρισμα"
 
 #: util/errors.c:98
 msgid "bad URI"
-msgstr "fehlerhafter URI"
+msgstr "κακό URI"
 
 #: util/errors.c:99
 msgid "unsupported URI"
-msgstr "Nicht unterstόtzter URI"
+msgstr "μη υποστηριζόμενο URI"
 
 #: util/errors.c:100
 msgid "network error"
-msgstr "Netzwerkfehler"
+msgstr "σφάλμα δικτύου"
 
 #: util/errors.c:102
 msgid "not encrypted"
-msgstr "nicht verschlόsselt"
+msgstr "μη κρυπτογραφημένο"
 
 #: util/errors.c:103
 msgid "not processed"
-msgstr "nicht bearbeitet"
+msgstr "μη επεξεργασμένο"
 
 #. the key cannot be used for a specific usage
 #: util/errors.c:105
 msgid "unusable public key"
-msgstr "unbrauchbarer φffentlicher Schόssel"
+msgstr "μη χρησιμοποιήσιμο δημόσιο κλειδί"
 
 #: util/errors.c:106
 msgid "unusable secret key"
-msgstr "unbrauchbarer geheimer Schlόssel"
+msgstr "μη χρησιμοποιήσιμο μυστικό κλειδί"
 
 #: util/errors.c:107
+#, fuzzy
 msgid "keyserver error"
-msgstr "Schlόsselserverfehler"
+msgstr "γενικό σφάλμα"
 
 #: util/logger.c:249
 #, c-format
 msgid "... this is a bug (%s:%d:%s)\n"
-msgstr "... dies ist ein Bug (Programmfehler) (%s:%d:%s)\n"
+msgstr "... αυτό είναι bug (%s:%d:%s)\n"
 
 #: util/logger.c:255
 #, c-format
 msgid "you found a bug ... (%s:%d)\n"
-msgstr "Sie haben eine Bug (Programmfehler) gefunden ... (%s:%d)\n"
+msgstr "βρήκατε ένα bug ... (%s:%d)\n"
 
 #: cipher/random.c:320 g10/import.c:145 g10/keygen.c:1549
 #, c-format
 msgid "can't open `%s': %s\n"
-msgstr "'%s' kann nicht geφffnet werden: %s\n"
+msgstr "αδυναμία πρόσβασης στο `%s': %s\n"
 
 #: cipher/random.c:324
 #, c-format
 msgid "can't stat `%s': %s\n"
-msgstr "Status von '%s' ist nicht feststellbar: %s\n"
+msgstr "αδυναμία λήψης πληροφοριών για το `%s': %s\n"
 
 #: cipher/random.c:329
 #, c-format
 msgid "`%s' is not a regular file - ignored\n"
-msgstr "'%s' ist keine normale Datei - sie bleibt unbeachtet\n"
+msgstr "`%s' δεν είναι κανονικό αρχείο - αγνοήθηκε\n"
 
 #: cipher/random.c:334
 msgid "note: random_seed file is empty\n"
-msgstr "Hinweis: 'random_seed'-Datei ist leer\n"
+msgstr "σημείωση: το αρχείο random_seed είναι άδειο\n"
 
 #: cipher/random.c:340
 msgid "warning: invalid size of random_seed file - not used\n"
 msgstr ""
-"Warnung: Falsche Grφίe der 'random_seed'-Datei - sie wird nicht verwendet\n"
+"προειδοποίηση: μη έγκυρο μέγεθος αρχείου random_seed - δεν θα "
+"χρησιμοποιηθεί\n"
 
 #: cipher/random.c:348
 #, c-format
 msgid "can't read `%s': %s\n"
-msgstr "'%s' ist unlesbar: %s\n"
+msgstr "αδυναμία ανάγνωσης του `%s': %s\n"
 
 #: cipher/random.c:386
 msgid "note: random_seed file not updated\n"
-msgstr "Hinweis: 'random_seed'-Datei bleibt unverδndert\n"
+msgstr "σημείωση: δεν έχει ανανεωθεί το αρχείο random_seed\n"
 
 #: cipher/random.c:406
 #, c-format
 msgid "can't create `%s': %s\n"
-msgstr "'%s' kann nicht erzeugt werden: %s\n"
+msgstr "αδυναμία δημιουργίας του `%s': %s\n"
 
 #: cipher/random.c:413
 #, c-format
 msgid "can't write `%s': %s\n"
-msgstr "kann '%s' nicht schreiben: %s\n"
+msgstr "αδυναμία εγγραφής του `%s': %s\n"
 
 #: cipher/random.c:416
 #, c-format
 msgid "can't close `%s': %s\n"
-msgstr "kann '%s' nicht schliessen: %s\n"
+msgstr "αδυναμία κλεισίματος του `%s': %s\n"
 
 #: cipher/random.c:662
 msgid "WARNING: using insecure random number generator!!\n"
-msgstr "WARNUNG: Der Zufallsgenerator erzeugt keine echten Zufallszahlen!\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: χρήση μη ασφαλούς γεννήτριας τυχαίων αριθμών!!\n"
 
 #: cipher/random.c:663
 msgid ""
@@ -334,10 +334,9 @@ msgid ""
 "DON'T USE ANY DATA GENERATED BY THIS PROGRAM!!\n"
 "\n"
 msgstr ""
-"Der Zufallsgenerator (RNG) ist lediglich ein \"kludge\", damit das\n"
-"Programms όberhaupt lδuft - es ist KEINESFALLS ein starker RNG!\n"
+"Η γεννήτρια τυχαίων αριθμών είναι πολύ αδύναμη για αυτή τη χρήση\n"
 "\n"
-"BENUTZEN SIE DIE DURCH DIESES PROGRAMM ERZEUGTEN DATEN NICHT!\n"
+"ΜΗ ΧΡΗΣΙΜΟΠΟΙΗΣΕΤΕ ΔΕΔΟΜΕΝΑ ΠΟΥ ΕΧΟΥΝ ΠΑΡΑΧΘΕΙ ΑΠΟ ΑΥΤΟ ΤΟ ΠΡΟΓΡΑΜΜΑ!!\n"
 "\n"
 
 #: cipher/rndlinux.c:142
@@ -348,173 +347,180 @@ msgid ""
 "the OS a chance to collect more entropy! (Need %d more bytes)\n"
 msgstr ""
 "\n"
-"Es sind nicht genόgend Zufallswerte vorhanden.  Bitte fόhren Sie andere\n"
-"Arbeiten durch, damit das Betriebssystem weitere Entropie sammeln kann!\n"
-"(Es werden noch %d Byte benφtigt.)\n"
+"Δεν υπάρχουν αρκετά διαθέσιμα τυχαία bytes.  Προτείνεται να αναμείνετε ή\n"
+"να απασχολείτε το λειτουργικό σύστημα μέχρι αυτό να συγκεντρώσει\n"
+"περισσότερη εντροπία! (Χρειάζονται %d περισσότερα bytes)\n"
 
 #: g10/g10.c:279
 msgid ""
 "@Commands:\n"
 " "
 msgstr ""
-"@Befehle:\n"
+"@Εντολές:\n"
 " "
 
 #: g10/g10.c:281
 msgid "|[file]|make a signature"
-msgstr "|[Datei]|Eine Unterschrift erzeugen"
+msgstr "|[αρχείο]|δημιουργία μιας υπογραφής"
 
 #: g10/g10.c:282
 msgid "|[file]|make a clear text signature"
-msgstr "|[Datei]|Eine Klartextunterschrift erzeugen"
+msgstr "|[αρχείο]|δημιουργία μιας μη κρυπτογραφημένης υπογραφής"
 
 #: g10/g10.c:283
 msgid "make a detached signature"
-msgstr "Eine abgetrennte Unterschrift erzeugen"
+msgstr "δημιουργία μιας μη προσαρτημένης υπογραφής"
 
 #: g10/g10.c:284
 msgid "encrypt data"
-msgstr "Daten verschlόsseln"
+msgstr "κρυπτογράφηση δεδομένων"
 
 #: g10/g10.c:285
 msgid "|[files]|encrypt files"
-msgstr "|[Dateien]|Dateien verschlόsseln"
+msgstr ""
 
 #: g10/g10.c:286
 msgid "encryption only with symmetric cipher"
-msgstr "Daten symmetrisch verschlόsseln"
+msgstr "κρυπτογράφηση με χρήση μόνο συμμετρικών αλγορίθμων"
 
 #: g10/g10.c:287
 msgid "store only"
-msgstr "Nur speichern"
+msgstr "αποθήκευση μόνο"
 
 #: g10/g10.c:288
 msgid "decrypt data (default)"
-msgstr "Daten entschlόsseln (Voreinstellung)"
+msgstr "αποκρυπτογράφηση δεδομένων (προκαθορισμένο)"
 
 #: g10/g10.c:289
 msgid "|[files]|decrypt files"
-msgstr "|[Dateien]|Dateien entschlόsseln"
+msgstr ""
 
 #: g10/g10.c:290
 msgid "verify a signature"
-msgstr "Signatur prόfen"
+msgstr "επαλήθευση μιας υπογραφής"
 
 #: g10/g10.c:292
 msgid "list keys"
-msgstr "Liste der Schlόssel"
+msgstr "απεικόνιση της λίστας κλειδιών"
 
 #: g10/g10.c:294
 msgid "list keys and signatures"
-msgstr "Liste der Schlόssel und ihrer Signaturen"
+msgstr "απεικόνιση της λίστας κλειδιών και υπογραφών"
 
 #: g10/g10.c:295
 msgid "check key signatures"
-msgstr "Signaturen der Schlόssel prόfen"
+msgstr "έλεγχος υπογραφής κλειδιού"
 
 #: g10/g10.c:296
 msgid "list keys and fingerprints"
-msgstr "Liste der Schlόssel und ihrer \"Fingerabdrόcke\""
+msgstr "απεικόνιση της λίστας κλειδιών και αποτυπωμάτων (fingerprints)"
 
 #: g10/g10.c:297
 msgid "list secret keys"
-msgstr "Liste der geheimen Schlόssel"
+msgstr "απεικόνιση της λίστας μυστικών κλειδιών"
 
 #: g10/g10.c:298
 msgid "generate a new key pair"
-msgstr "Ein neues Schlόsselpaar erzeugen"
+msgstr "δημιουργία ενός νέου ζεύγους κλειδιών"
 
 #: g10/g10.c:299
+#, fuzzy
 msgid "remove keys from the public keyring"
-msgstr "Schlόssel aus dem φff. Schlόsselbund entfernen"
+msgstr "αφαίρεση του κλειδιού από τη δημόσια κλειδοθήκη"
 
 #: g10/g10.c:301
+#, fuzzy
 msgid "remove keys from the secret keyring"
-msgstr "Schlόssel aus dem geh. Schlόsselbund entfernen"
+msgstr "αφαίρεση του κλειδιού από τη μυστική κλειδοθήκη"
 
 #: g10/g10.c:302
 msgid "sign a key"
-msgstr "Schlόssel signieren"
+msgstr "υπογραφή ενός κλειδιού"
 
 #: g10/g10.c:303
 msgid "sign a key locally"
-msgstr "Schlόssel nur fόr diesen Rechner signieren"
+msgstr "υπογραφή ενός κλειδιού τοπικά"
 
 #: g10/g10.c:304
+#, fuzzy
 msgid "sign a key non-revocably"
-msgstr "Schlόssel nicht widerrufbar signieren"
+msgstr "υπογραφή ενός κλειδιού τοπικά"
 
 #: g10/g10.c:305
+#, fuzzy
 msgid "sign a key locally and non-revocably"
-msgstr "Schlόssel nur fόr diesen Rechner und nicht-widerrufbar signieren"
+msgstr "υπογραφή ενός κλειδιού τοπικά"
 
 #: g10/g10.c:306
 msgid "sign or edit a key"
-msgstr "Unterschreiben oder bearbeiten eines Schl."
+msgstr "υπογραφή ή επεξεργασία ενός κλειδιού"
 
 #: g10/g10.c:307
 msgid "generate a revocation certificate"
-msgstr "Ein Schlόsselwiderruf-Zertifikat erzeugen"
+msgstr "δημιουργία ενός πιστοποιητικού ανάκλησης"
 
 #: g10/g10.c:308
 msgid "export keys"
-msgstr "Schlόssel exportieren"
+msgstr "εξαγωγή κλειδιών"
 
 #: g10/g10.c:309
 msgid "export keys to a key server"
-msgstr "Schlόssel zu einem Schlό.server exportieren"
+msgstr "εξαγωγή κλειδιών σε ένα διακομιστή κλειδιών"
 
 #: g10/g10.c:310
 msgid "import keys from a key server"
-msgstr "Schlόssel von einem Schlό.server importieren"
+msgstr "εισαγωγή κλειδιών από ένα διακομιστή κλειδιών"
 
 #: g10/g10.c:312
+#, fuzzy
 msgid "search for keys on a key server"
-msgstr "Schlόssel auf einem Schlό.server suchen"
+msgstr "εξαγωγή κλειδιών σε ένα διακομιστή κλειδιών"
 
 #: g10/g10.c:314
+#, fuzzy
 msgid "update all keys from a keyserver"
-msgstr "alle Schlόssel per Schlό.server aktualisieren"
+msgstr "εισαγωγή κλειδιών από ένα διακομιστή κλειδιών"
 
 #: g10/g10.c:318
 msgid "import/merge keys"
-msgstr "Schlόssel importieren/kombinieren"
+msgstr "εισαγωγή/συγχώνευση κλειδιών"
 
 #: g10/g10.c:320
 msgid "list only the sequence of packets"
-msgstr "Lediglich Struktur der Datenpakete anzeigen"
+msgstr "απεικόνιση μόνο της ακολουθίας πακέτων"
 
 #: g10/g10.c:322
 msgid "export the ownertrust values"
-msgstr "Exportieren der \"Owner trust\"-Werte"
+msgstr "εξαγωγή των τιμών εμπιστοσύνης"
 
 #: g10/g10.c:324
 msgid "import ownertrust values"
-msgstr "Importieren der \"Owner trust\"-Werte"
+msgstr "εισαγωγή των τιμών εμπιστοσύνης"
 
 #: g10/g10.c:326
 msgid "update the trust database"
-msgstr "Δndern der \"Trust\"-Datenbank"
+msgstr "ανανέωση της βάσης δεδομένων εμπιστοσύνης"
 
 #: g10/g10.c:328
+#, fuzzy
 msgid "unattended trust database update"
-msgstr "unbeaufsichtigtes Δndern der \"Trust\"-Datenbank"
+msgstr "ανανέωση της βάσης δεδομένων εμπιστοσύνης"
 
 #: g10/g10.c:329
 msgid "fix a corrupted trust database"
-msgstr "Reparieren einer beschδdigten \"Trust\"-Datenb."
+msgstr "διόρθωση μιας φθαρμένης βάσης δεδομένων εμπιστοσύνης"
 
 #: g10/g10.c:330
 msgid "De-Armor a file or stdin"
-msgstr "Datei oder stdin von der ASCII-Hόlle befreien"
+msgstr "Αφαίρεση-Θωράκισης ενός αρχείου ή stdin"
 
 #: g10/g10.c:332
 msgid "En-Armor a file or stdin"
-msgstr "Datei oder stdin in eine ASCII-Hόlle einpacken"
+msgstr "Προσθήκη-Θωράκισης ενός αρχείου ή stdin"
 
 #: g10/g10.c:334
 msgid "|algo [files]|print message digests"
-msgstr "|algo [Dateien]|Message-Digests fόr die Dateien ausgeben"
+msgstr "|αλγόρ [αρχεία]| απεικόνιση περιλήψεων των μηνυμάτων"
 
 #: g10/g10.c:338
 msgid ""
@@ -523,203 +529,206 @@ msgid ""
 " "
 msgstr ""
 "@\n"
-"Optionen:\n"
+"Επιλογές:\n"
 " "
 
 #: g10/g10.c:340
 msgid "create ascii armored output"
-msgstr "Ausgabe mit ASCII-Hόlle versehen"
+msgstr "δημιουργία ascii θωρακισμένης εξόδου"
 
 #: g10/g10.c:342
 msgid "|NAME|encrypt for NAME"
-msgstr "|NAME|Verschlόsseln fόr NAME"
+msgstr "|ΟΝΟΜΑ|κρυπτογράφηση για ΟΝΟΜΑ"
 
 #: g10/g10.c:345
 msgid "|NAME|use NAME as default recipient"
-msgstr "|NAME|NAME als voreingestellten Empfδnger benutzen"
+msgstr "|ΟΝΟΜΑ|χρήση του ΟΝΟΜΑτος ως προκαθορισμένου παραλήπτη"
 
 #: g10/g10.c:347
 msgid "use the default key as default recipient"
-msgstr ""
-"Den Standardschlόssel als voreingestellten\n"
-"Empfδnger benutzen"
+msgstr "χρήση του προκαθορισμένου κλειδιού ως προκαθορισμένου παραλήπτη"
 
 #: g10/g10.c:353
 msgid "use this user-id to sign or decrypt"
-msgstr "Mit dieser User-ID signieren"
+msgstr "χρήση αυτής της ταυτότητας (user id) για υπογραφή ή αποκρυπτογράφηση"
 
 #: g10/g10.c:354
 msgid "|N|set compress level N (0 disables)"
-msgstr "Kompressionsstufe auf N setzen (0=keine)"
+msgstr "|N|καθορισμός επιπέδου συμπίεσης N (0 απενεργοποιεί)"
 
 #: g10/g10.c:356
 msgid "use canonical text mode"
-msgstr "Textmodus benutzen"
+msgstr "χρήση κανονικής κατάστασης κειμένου"
 
 #: g10/g10.c:363
 msgid "use as output file"
-msgstr "Als Ausgabedatei benutzen"
+msgstr "χρήση ως αρχείου εξόδου"
 
 #: g10/g10.c:364
 msgid "verbose"
-msgstr "Detaillierte Informationen"
+msgstr "αναλυτικά"
 
 #: g10/g10.c:365
 msgid "be somewhat more quiet"
-msgstr "Etwas weniger Infos"
+msgstr "ήσυχη έξοδος"
 
 #: g10/g10.c:366
 msgid "don't use the terminal at all"
-msgstr "das Terminal gar nicht benutzen"
+msgstr "μη χρήση τερματικού"
 
 #: g10/g10.c:367
 msgid "force v3 signatures"
-msgstr "v3 Signaturen erzwingen"
+msgstr "εξαναγκασμός χρήσης v3 υπογραφών"
 
 #: g10/g10.c:368
+#, fuzzy
 msgid "do not force v3 signatures"
-msgstr "v3 Signaturen nicht erzwingen"
+msgstr "εξαναγκασμός χρήσης v3 υπογραφών"
 
 #: g10/g10.c:369
+#, fuzzy
 msgid "force v4 key signatures"
-msgstr "v4 Signaturen erzwingen"
+msgstr "εξαναγκασμός χρήσης v3 υπογραφών"
 
 #: g10/g10.c:370
+#, fuzzy
 msgid "do not force v4 key signatures"
-msgstr "v4 Signaturen nicht erzwingen"
+msgstr "εξαναγκασμός χρήσης v3 υπογραφών"
 
 #: g10/g10.c:371
 msgid "always use a MDC for encryption"
-msgstr "Beim Verschlόsseln ein Siegel (MDC) verwenden"
+msgstr "χρήση πάντοτε MDC για κρυπτογράφηση"
 
 #: g10/g10.c:373
+#, fuzzy
 msgid "never use a MDC for encryption"
-msgstr "Beim Verschlόsseln niemals ein Siegel (MDC) verwenden"
+msgstr "χρήση πάντοτε MDC για κρυπτογράφηση"
 
 #: g10/g10.c:375
 msgid "do not make any changes"
-msgstr "Keine wirklichen Δnderungen durchfόhren"
+msgstr "να μη γίνει καμμία αλλαγή"
 
 #. { oInteractive, "interactive", 0, N_("prompt before overwriting") },
 #: g10/g10.c:377
 msgid "use the gpg-agent"
-msgstr "den GPG-Agent verwenden"
+msgstr "χρήση του gpg-agent"
 
 #: g10/g10.c:380
 msgid "batch mode: never ask"
-msgstr "Stapelmodus: Keine Abfragen"
+msgstr "κατάσταση batch: να μη γίνονται ερωτήσεις"
 
 #: g10/g10.c:381
 msgid "assume yes on most questions"
-msgstr "\"Ja\" als Standardantwort annehmen"
+msgstr "απάντηση ναι στις περισσότερες ερωτήσεις"
 
 #: g10/g10.c:382
 msgid "assume no on most questions"
-msgstr "\"Nein\" als Standardantwort annehmen"
+msgstr "απάντηση όχι στις περισσότερες ερωτήσεις"
 
 #: g10/g10.c:383
 msgid "add this keyring to the list of keyrings"
-msgstr "Als φffentlichen Schlόsselbund mitbenutzen"
+msgstr "προσθήκη αυτού του κλειδιού στη λίστα των κλειδοθηκών"
 
 #: g10/g10.c:384
 msgid "add this secret keyring to the list"
-msgstr "Als geheimen Schlόsselbund mitbenutzen"
+msgstr "προσθήκη αυτής της μυστικής κλειδοθήκης στη λίστα"
 
 #: g10/g10.c:385
 msgid "show which keyring a listed key is on"
-msgstr "Anzeigen des Schlόsselbundes, in dem ein Schlόssel drin ist"
+msgstr ""
 
 #: g10/g10.c:386
 msgid "|NAME|use NAME as default secret key"
-msgstr "|NAME|NAME als voreingestellten Schlόssel benutzen"
+msgstr "|ΟΝΟΜΑ|χρήση ΟΝΟΜΑτος σαν προκαθορισμένο μυστικό κλειδί"
 
 #: g10/g10.c:387
 msgid "|HOST|use this keyserver to lookup keys"
-msgstr "|HOST|Schlόssel bei diesem Server nachschlagen"
+msgstr "|ΔΙΑΚΟΜΙΣΤΗΣ|χρήση αυτού του διακομιστή κλειδιών για αναζήτηση"
 
 #: g10/g10.c:389
 msgid "|NAME|set terminal charset to NAME"
-msgstr "|NAME|Terminalzeichensatz NAME benutzen"
+msgstr "|ΟΝΟΜΑ|καθορισμός του σετ χαρακτήρων τερματικού σε ΟΝΟΜΑ"
 
 #: g10/g10.c:390
 msgid "read options from file"
-msgstr "Optionen aus der Datei lesen"
+msgstr "ανάγνωση επιλογών από αρχείο"
 
 #: g10/g10.c:394
 msgid "|FD|write status info to this FD"
-msgstr "|FD|Statusinfo auf FD (Dateihandle) ausgeben"
+msgstr "|FD|εγγραφή των πληροφοριών κατάστασης στο FD"
 
 #: g10/g10.c:396
+#, fuzzy
 msgid "|[file]|write status info to file"
-msgstr "|[Datei]|Statusinfo in Datei schreiben"
+msgstr "|FD|εγγραφή των πληροφοριών κατάστασης στο FD"
 
 #: g10/g10.c:402
 msgid "|KEYID|ultimately trust this key"
-msgstr "|KEYID|diesem Schlόssel uneingeschrδnkt vertrauen"
+msgstr "|KEYID|απόλυτη εμπιστοσύνη σε αυτό το κλειδί"
 
 #: g10/g10.c:403
 msgid "|FILE|load extension module FILE"
-msgstr "|DATEI|Erweiterungsmodul DATEI laden"
+msgstr "|ΑΡΧΕΙΟ|φόρτωμα του αρθρώματος επέκτασης ΑΡΧΕΙΟ"
 
 #: g10/g10.c:404
 msgid "emulate the mode described in RFC1991"
-msgstr "Den in RFC1991 beschriebenen Modus nachahmen"
+msgstr "εξομοίωση της κατάστασης που περιγράφεται στο RFC1991"
 
 #: g10/g10.c:405
 msgid "set all packet, cipher and digest options to OpenPGP behavior"
 msgstr ""
-"alle Paket-, Verschlόsselungs- und\n"
-"Hashoptionen auf OpenPGP-Verhalten einstellen"
+"συμπεριφορά όλων των επιλογών πακέτα,αλγόριθμοι και περίληψη σε OPENPGP"
 
 #: g10/g10.c:406
+#, fuzzy
 msgid "set all packet, cipher and digest options to PGP 2.x behavior"
 msgstr ""
-"alle Paket-, Verschlόsselungs- und\n"
-"Hashoptionen auf PGP 2.X-Verhalten einstellen"
+"συμπεριφορά όλων των επιλογών πακέτα,αλγόριθμοι και περίληψη σε OPENPGP"
 
 #: g10/g10.c:410
 msgid "|N|use passphrase mode N"
-msgstr "|N|Verwenden des Mantra-Modus N"
+msgstr "|N|χρήση της κατάστασης φράσης κλειδί N"
 
 #: g10/g10.c:412
 msgid "|NAME|use message digest algorithm NAME for passphrases"
-msgstr "|NAME|Hashverfahren NAME fόr Mantras benutzen"
+msgstr ""
+"|ONOMA|χρήση του αλγόριθμου περίληψης μηνύματος ΟΝΟΜΑ για φράσεις κλειδιά"
 
 #: g10/g10.c:414
 msgid "|NAME|use cipher algorithm NAME for passphrases"
-msgstr "|NAME|Verschl.verfahren NAME fόr Mantras benutzen"
+msgstr "|ΟΝΟΜΑ|χρήση αλγόριθμου κρυπτογράφησης ΟΝΟΜΑ για φράσεις κλειδιά"
 
 #: g10/g10.c:415
 msgid "|NAME|use cipher algorithm NAME"
-msgstr "|NAME|Verschl.verfahren NAME benutzen"
+msgstr "|ΟΝΟΜΑ|χρήση αλγόριθμου κρυπτογράφησης ΟΝΟΜΑ"
 
 #: g10/g10.c:416
 msgid "|NAME|use message digest algorithm NAME"
-msgstr "|NAME|Hashverfahren NAME benutzen"
+msgstr "|ΟΝΟΜΑ|χρήση αλγόριθμου περίληψης μηνύματος ΟΝΟΜΑ "
 
 #: g10/g10.c:417
 msgid "|N|use compress algorithm N"
-msgstr "|N|Komprimierverfahren N benutzen"
+msgstr "|N|χρήση αλγορίθμου συμπίεσης N"
 
 #: g10/g10.c:418
 msgid "throw keyid field of encrypted packets"
-msgstr "Empfδnger-ID verschlόsselter Pakete entfernen"
+msgstr "διαγραφή του πεδίου keyid των κρυπτογραφημένων πακέτων"
 
 #: g10/g10.c:419
 msgid "Show Photo IDs"
-msgstr "Foto-IDs anzeigen"
+msgstr ""
 
 #: g10/g10.c:420
 msgid "Don't show Photo IDs"
-msgstr "Foto-IDs nicht anzeigen"
+msgstr ""
 
 #: g10/g10.c:421
 msgid "Set command line to view Photo IDs"
-msgstr "Kommandozeilentext fόr den Foto-Betrachter setzen"
+msgstr ""
 
 #: g10/g10.c:422
 msgid "|NAME=VALUE|use this notation data"
-msgstr "|NAME=WERT|diese \"notation\"-Daten verwenden"
+msgstr "|ΟΝΟΜΑ=ΤΙΜΗ|χρήση αυτής της κατάστασης σημείωσης"
 
 #: g10/g10.c:425
 msgid ""
@@ -727,8 +736,7 @@ msgid ""
 "(See the man page for a complete listing of all commands and options)\n"
 msgstr ""
 "@\n"
-"(Auf der \"man\"-Seite ist eine vollstδndige Liste aller Kommandos und "
-"Optionen)\n"
+"(δείτε τη σελίδα man για μια πλήρη λίστα εντολών και επιλογών)\n"
 
 #: g10/g10.c:428
 msgid ""
@@ -742,23 +750,21 @@ msgid ""
 " --fingerprint [names]      show fingerprints\n"
 msgstr ""
 "@\n"
-"Beispiele:\n"
+"Παραδείγματα:\n"
 "\n"
-" -se -r Bob [Datei]         Signieren und verschlόsseln fόr Benutzer Bob\n"
-" --clearsign [Datei]        Eine Klartextsignatur erzeugen\n"
-" --detach-sign [Datei]      Eine abgetrennte Signatur erzeugen\n"
-" --list-keys [Namen]        Schlόssel anzeigen\n"
-" --fingerprint [Namen]      \"Fingerabdrόcke\" anzeigen\n"
+" -se -r Bob [αρχείο]          υπογραφή και κρυπτογράφηση για το Bob\n"
+" --clearsign [αρχείο]         δημιουργία μη κρυπτογραφημένης υπογραφής\n"
+" --detach-sign [αρχείο]       δημιουργία αποκομμένης υπογραφής\n"
+" --list-keys [ονόματα]        απεικόνιση κλειδιών\n"
+" --fingerprint [ονόματα]      απεικόνιση αποτυπωμάτων (fingerprints)\n"
 
 #: g10/g10.c:563
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
-msgstr ""
-"Berichte όber Programmfehler bitte in englisch an <gnupg-bugs@gnu.org>.\n"
-"Sinn- oder Schreibfehler in den deutschen Texten bitte an <de@li.org>.\n"
+msgstr "Αναφέρετε τα προβλήματα στο <gnupg-bugs@gnu.org>\n"
 
 #: g10/g10.c:567
 msgid "Usage: gpg [options] [files] (-h for help)"
-msgstr "Aufruf: gpg [Optionen] [Dateien] (-h fόr Hilfe)"
+msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
 
 #: g10/g10.c:570
 msgid ""
@@ -766,9 +772,9 @@ msgid ""
 "sign, check, encrypt or decrypt\n"
 "default operation depends on the input data\n"
 msgstr ""
-"Aufruf: gpg [Optionen] [Dateien]\n"
-"Signieren, prόfen, verschlόsseln, entschlόsseln.\n"
-"Die voreingestellte Operation ist abhδngig von den Eingabedaten.\n"
+"Σύνταξη: gpg [επιλογές] [αρχεία]\n"
+"υπογραφή, έλεγχος, κρυπτογράφηση ή αποκρυπτογράφηση\n"
+"η προκαθορισμένη λειτουργία εξαρτάται από τα δεδομένα εισόδου\n"
 
 #: g10/g10.c:581
 msgid ""
@@ -776,490 +782,492 @@ msgid ""
 "Supported algorithms:\n"
 msgstr ""
 "\n"
-"Unterstόtzte Verfahren:\n"
+"Υποστηριζόμενοι αλγόριθμοι:\n"
 
 #: g10/g10.c:655
 msgid "usage: gpg [options] "
-msgstr "Aufruf: gpg [Optionen] "
+msgstr "χρήση: gpg [επιλογές] "
 
 #: g10/g10.c:712
 msgid "conflicting commands\n"
-msgstr "Widersprόchliche Befehle\n"
+msgstr "συγκρουόμενες εντολές\n"
 
 #: g10/g10.c:885
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
-msgstr "Hinweis: Keine voreingestellte Optionendatei '%s' vorhanden\n"
+msgstr "ΣΗΜΕΙΩΣΗ:μη προκαθορισμένο αρχείο επιλογών `%s'\n"
 
 #: g10/g10.c:889
 #, c-format
 msgid "option file `%s': %s\n"
-msgstr "Optionendatei '%s': %s\n"
+msgstr "αρχείο επιλογών `%s': %s\n"
 
 #: g10/g10.c:896
 #, c-format
 msgid "reading options from `%s'\n"
-msgstr "Optionen werden aus '%s' gelesen\n"
+msgstr "ανάγνωση επιλογών από `%s'\n"
 
 #: g10/g10.c:1179
 #, c-format
 msgid "%s is not a valid character set\n"
-msgstr "%s ist kein gόltiger Zeichensatz.\n"
+msgstr "το %s δεν είναι έγκυρο σετ χαρακτήρων\n"
 
 #: g10/g10.c:1195
 msgid "could not parse keyserver URI\n"
-msgstr "Schlόsselserver-URI konnte nicht zerlegt werden\n"
+msgstr ""
 
 #: g10/g10.c:1211
 #, c-format
 msgid "unable to set exec-path to %s\n"
-msgstr "Der Ausfόhrungspfad konnte nicht auf %s gesetzt werden.\n"
+msgstr ""
 
 #: g10/g10.c:1234 g10/g10.c:1250
-#, c-format
+#, fuzzy, c-format
 msgid "WARNING: %s is a deprecated option.\n"
-msgstr "WARNUNG: %s ist eine miίbilligte Option.\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: `%s' είναι ένα άδειο αρχείο\n"
 
 #: g10/g10.c:1236 g10/g10.c:1253
 #, c-format
 msgid "please use \"--keyserver-options %s\" instead\n"
-msgstr "Bitte benutzen Sie stattdessen \"--keyserver-option %s\".\n"
+msgstr ""
 
 #: g10/g10.c:1324
 msgid "WARNING: program may create a core file!\n"
-msgstr "WARNUNG: Programm kφnnte eine core-dump-Datei schreiben!\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: το πρόγραμμα ίσως δημιουργήσει αρχείο core!\n"
 
 #: g10/g10.c:1328
 #, c-format
 msgid "WARNING: %s overrides %s\n"
-msgstr "WARNUNG: %s ersetzt %s\n"
+msgstr ""
 
 #: g10/g10.c:1335 g10/g10.c:1346
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
-msgstr "Hinweis: %s ist nicht fόr den όblichen Gebrauch gedacht!\n"
+msgstr "ΣΗΜΕΙΩΣΗ: το %s δεν είναι για κανονική χρήση!\n"
 
 #: g10/g10.c:1337 g10/g10.c:1357
 #, c-format
 msgid "%s not allowed with %s!\n"
-msgstr "%s kann nicht zusammen mit %s verwendet werden!\n"
+msgstr "το %s δεν επιτρέπεται με το %s!\n"
 
 #: g10/g10.c:1340
 #, c-format
 msgid "%s makes no sense with %s!\n"
-msgstr "%s zusammen mit %s ist nicht sinnvoll!\n"
+msgstr "το %s δεν έχει καμμία έννοια μαζί με το %s!\n"
 
 #: g10/g10.c:1366
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr ""
-"Im --pgp2-Modus kφnnen Sie nur abgetrennte oder Klartextunterschriften "
-"machen\n"
 
 #: g10/g10.c:1372
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr ""
-"Im --pgp2-Modus kφnnen Sie nicht gleichzeitig unterschreiben und "
-"verschlόsseln\n"
 
 #: g10/g10.c:1378
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr ""
-"Im --pgp2-Modus mόssen Sie Dateien benutzen und kφnnen keine Pipes "
-"verwenden.\n"
 
 #: g10/g10.c:1391
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr ""
-"Verschlόssen einer Botschaft benφtigt im --pgp2-Modus die IDEA-"
-"Verschlόsselung\n"
 
 #: g10/encode.c:287 g10/encode.c:349 g10/g10.c:1405 g10/sign.c:614
 #: g10/sign.c:792
 msgid "this message may not be usable by PGP 2.x\n"
-msgstr "Diese Botschaft kφnnte fόr PGP 2.x unbrauchbar sein\n"
+msgstr ""
 
 #: g10/g10.c:1446 g10/g10.c:1458
 msgid "selected cipher algorithm is invalid\n"
-msgstr "Das ausgewδhlte Verschlόsselungsverfahren ist ungόltig\n"
+msgstr "ο επιλεγμένος αλγόριθμος κρυπτογράφησης δεν είναι έγκυρος\n"
 
 #: g10/g10.c:1452 g10/g10.c:1464
 msgid "selected digest algorithm is invalid\n"
-msgstr "Das ausgewδhlte Hashverfahren ist ungόltig\n"
+msgstr "ο επιλεγμένος αλγόριθμος περίληψης δεν είναι έγκυρος\n"
 
 #: g10/g10.c:1468
+#, fuzzy
 msgid "the given signature policy URL is invalid\n"
-msgstr "Die angegebene Unterschriften-Richtlinien-URL ist ungόltig\n"
+msgstr "το URL πολιτικής που δόθηκε δεν είναι έγκυρο\n"
 
 #: g10/g10.c:1472
+#, fuzzy
 msgid "the given certification policy URL is invalid\n"
-msgstr "Die angegebene Zertifikat-Richtlinien-URL ist ungόltig\n"
+msgstr "το URL πολιτικής που δόθηκε δεν είναι έγκυρο\n"
 
 #: g10/g10.c:1475
 #, c-format
 msgid "compress algorithm must be in range %d..%d\n"
-msgstr "Das Komprimierverfahren muί im Bereich %d bis %d liegen\n"
+msgstr "ο αλγόριθμος συμπίεσης πρέπει να είναι μεταξύ %d..%d\n"
 
 #: g10/g10.c:1477
 msgid "completes-needed must be greater than 0\n"
-msgstr "completes-needed mόssen grφίer als 0 sein\n"
+msgstr "completes-needed πρέπει να είναι μεγαλύτερα από 0\n"
 
 #: g10/g10.c:1479
 msgid "marginals-needed must be greater than 1\n"
-msgstr "marginals-needed mόssen grφίer als 1 sein\n"
+msgstr "marginals-needed πρέπει να είναι μεγαλύτερα από 1\n"
 
 #: g10/g10.c:1481
 msgid "max-cert-depth must be in range 1 to 255\n"
-msgstr "max-cert-depth muί im Bereich 1 bis 255 liegen\n"
+msgstr "max-cert-depth πρέπει να είναι μεταξύ 1 και 255\n"
 
 #: g10/g10.c:1484
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
-msgstr "Hinweis: Vom \"simple S2K\"-Modus (0) ist strikt abzuraten\n"
+msgstr "ΣΗΜΕΙΩΣΗ: η απλή S2K κατάσταση (0) πρέπει να αποφεύγεται\n"
 
 #: g10/g10.c:1488
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
-msgstr "ungόltiger \"simple S2K\"-Modus; Wert muί 0, 1 oder 3 sein\n"
+msgstr "μη έγκυρη κατάσταση S2K; πρέπει να είναι 0, 1 ή 3\n"
 
 #: g10/g10.c:1492
+#, fuzzy
 msgid "invalid default-check-level; must be 0, 1, 2, or 3\n"
-msgstr "ungόltiger \"default-check-level\"; Wert muί 0, 1, 2 oder 3 sein\n"
+msgstr "μη έγκυρη κατάσταση S2K; πρέπει να είναι 0, 1 ή 3\n"
 
 #: g10/g10.c:1495
+#, fuzzy
 msgid "invalid preferences\n"
-msgstr "ungόltige Voreinstellungen\n"
+msgstr "απεικόνιση επιλογών"
 
 #: g10/g10.c:1589
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
-msgstr "Die Trust-DB kann nicht initialisiert werden: %s\n"
+msgstr "αποτυχία αρχικοποίησης της TrustDB: %s\n"
 
 #: g10/g10.c:1609
 msgid "--store [filename]"
-msgstr "--store [Dateiname]"
+msgstr "--store [όνομα αρχείου]"
 
 #: g10/g10.c:1616
 msgid "--symmetric [filename]"
-msgstr "--symmetric [Dateiname]"
+msgstr "--symmetric [όνομα αρχείου]"
 
 #: g10/g10.c:1624
 msgid "--encrypt [filename]"
-msgstr "--encrypt [Dateiname]"
+msgstr "--encrypt [όνομα αρχείου]"
 
 #: g10/g10.c:1641
 msgid "--sign [filename]"
-msgstr "--sign [Dateiname]"
+msgstr "--sign [όνομα αρχείου]"
 
 #: g10/g10.c:1654
 msgid "--sign --encrypt [filename]"
-msgstr "--sign --encrypt [Dateiname]"
+msgstr "--sign --encrypt [όνομα αρχείου]"
 
 #: g10/g10.c:1668
+#, fuzzy
 msgid "--sign --symmetric [filename]"
-msgstr "--sign --symmetric [Dateiname]"
+msgstr "--symmetric [όνομα αρχείου]"
 
 #: g10/g10.c:1677
 msgid "--clearsign [filename]"
-msgstr "--clearsign [Dateiname]"
+msgstr "--clearsign [όνομα αρχείου]"
 
 #: g10/g10.c:1695
 msgid "--decrypt [filename]"
-msgstr "--decrypt [Dateiname]"
+msgstr "--decrypt [όνομα αρχείου]"
 
 #: g10/g10.c:1706
 msgid "--sign-key user-id"
-msgstr "--sign-key User-ID"
+msgstr "--sign-key user-id"
 
 #: g10/g10.c:1714
 msgid "--lsign-key user-id"
-msgstr "--lsign-key User-ID"
+msgstr "--lsign-key user-id"
 
 #: g10/g10.c:1722
+#, fuzzy
 msgid "--nrsign-key user-id"
-msgstr "--nrsign-key User-ID"
+msgstr "--sign-key user-id"
 
 #: g10/g10.c:1730
+#, fuzzy
 msgid "--nrlsign-key user-id"
-msgstr "--nrlsign-key User-ID"
+msgstr "--lsign-key user-id"
 
 #: g10/g10.c:1738
 msgid "--edit-key user-id [commands]"
-msgstr "--edit-key User-ID [Befehle]"
+msgstr "--edit-key user-id [εντολές]"
 
 #: g10/encode.c:307 g10/g10.c:1794 g10/sign.c:703
 #, c-format
 msgid "can't open %s: %s\n"
-msgstr "'%s' kann nicht geφffnet werden: %s\n"
+msgstr "αδυναμία πρόσβασης του %s: %s\n"
 
 #: g10/g10.c:1809
 msgid "-k[v][v][v][c] [user-id] [keyring]"
-msgstr "-k[v][v][v][c] [User-ID] [Schlόsselbund]"
+msgstr "-k[v][v][v][c] [user-id] [κλειδοθήκη]"
 
 #: g10/g10.c:1892
 #, c-format
 msgid "dearmoring failed: %s\n"
-msgstr "Entfernen der ASCII-Hόlle ist fehlgeschlagen: %s\n"
+msgstr "αποθωράκιση απέτυχε: %s\n"
 
 #: g10/g10.c:1900
 #, c-format
 msgid "enarmoring failed: %s\n"
-msgstr "Anbringen der ASCII-Hόlle ist fehlgeschlagen: %s\n"
+msgstr "θωράκιση απέτυχε: %s\n"
 
 #: g10/g10.c:1987
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
-msgstr "Ungόltiges Hashverfahren '%s'\n"
+msgstr "μη έγκυρος αλγόριθμος  hash `%s'\n"
 
 #: g10/g10.c:2073
 msgid "[filename]"
-msgstr "[Dateiname]"
+msgstr "[όνομα αρχείου]"
 
 #: g10/g10.c:2077
 msgid "Go ahead and type your message ...\n"
-msgstr "Auf geht's - Botschaft eintippen ...\n"
+msgstr "Μπορείτε τώρα να εισαγάγετε το μήνυμα σας ...\n"
 
 #: g10/decrypt.c:60 g10/decrypt.c:106 g10/g10.c:2080 g10/verify.c:94
 #: g10/verify.c:139
 #, c-format
 msgid "can't open `%s'\n"
-msgstr "'%s' kann nicht geφffnet werden\n"
+msgstr "αδυναμία πρόσβασης του `%s'\n"
 
 #: g10/g10.c:2289
 msgid ""
 "the first character of a notation name must be a letter or an underscore\n"
 msgstr ""
-"Das erste Zeichen eines \"notation\"-Namens muί ein Buchstabe oder\n"
-"ein Unterstrich sein\n"
+"ο πρώτος χαρακτήρας του ονόματος σημείωσης πρέπει να είναι γράμμα ή "
+"underscore\n"
 
 #: g10/g10.c:2295
 msgid ""
 "a notation name must have only letters, digits, dots or underscores and end "
 "with an '='\n"
 msgstr ""
-"Ein \"notation\"-Name darf nur Buchstaben, Zahlen, Punkte oder Unterstriche "
-"enthalten und muί mit einem '=' enden\n"
+"ένα όνομα σημείωσης μπορεί να περιέχει μόνο αλφαριθμητικά, τελείες ή "
+"underscores και λήγει με '='\n"
 
 #: g10/g10.c:2301
 msgid "dots in a notation name must be surrounded by other characters\n"
-msgstr ""
-"Punkte in einem \"notation\"-Namen mόssen von anderen Zeichen umgeben sein\n"
+msgstr "οι τελείες στο όνομα σημείωσης πρέπει να είναι μεταξύ χαρακτήρων\n"
 
 #: g10/g10.c:2309
 msgid "a notation value must not use any control characters\n"
-msgstr "Ein \"notation\"-Wert darf keine Kontrollzeichen verwenden\n"
+msgstr "η τιμή σημείωσης πρέπει να μη χρησιμοποιεί χαρακτήρες control\n"
 
 #: g10/armor.c:314
 #, c-format
 msgid "armor: %s\n"
-msgstr "ASCII-Hόlle: %s\n"
+msgstr "θωράκιση: %s\n"
 
 #: g10/armor.c:343
 msgid "invalid armor header: "
-msgstr "Ungόltige ASCII-Hόlle"
+msgstr "μη έγκυρη επικεφαλίδα θωράκισης: "
 
 #: g10/armor.c:350
 msgid "armor header: "
-msgstr "ASCII-Hόlle: "
+msgstr "επικεφαλίδα θωράκισης: "
 
 #: g10/armor.c:361
 msgid "invalid clearsig header\n"
-msgstr "Ungόltige Klartextsignatur-Einleitung\n"
+msgstr "μη έγκυρη επικεφαλίδα clearsig\n"
 
 #: g10/armor.c:413
 msgid "nested clear text signatures\n"
-msgstr "verschachtelte Klartextunterschriften\n"
+msgstr "φωλιασμένες μη κρυπτογραφημένες υπογραφές\n"
 
 #: g10/armor.c:537
 msgid "invalid dash escaped line: "
-msgstr "Ungόltige mit Bindestrich \"escapte\" Zeile: "
+msgstr "μη έγκυρη dash escaped γραμμή: "
 
 #: g10/armor.c:549
 msgid "unexpected armor:"
-msgstr "Unerwartete ASCII-Hόlle:"
+msgstr "μη αναμενόμενη θωράκιση:"
 
 #: g10/armor.c:675 g10/armor.c:1242
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
-msgstr "Ungόltiges \"radix64\" Zeichen %02x ignoriert\n"
+msgstr "μη έγκυρος radix64 χαρακτήρας %02x παράβλεψη\n"
 
 #: g10/armor.c:718
 msgid "premature eof (no CRC)\n"
-msgstr "vorzeitiges Dateiende (keine Prόfsumme)\n"
+msgstr "πρόωρο τέλος αρχείου (απουσία CRC)\n"
 
 #: g10/armor.c:752
 msgid "premature eof (in CRC)\n"
-msgstr "vorzeitiges Dateiende (innerhalb der Prόfsumme)\n"
+msgstr "πρόωρο τέλος αρχείου (εντός CRC)\n"
 
 #: g10/armor.c:756
 msgid "malformed CRC\n"
-msgstr "Falsch aufgebaute Prόfsumme\n"
+msgstr "λάθος μορφή CRC\n"
 
 #: g10/armor.c:760 g10/armor.c:1279
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
-msgstr "Prόfsummenfehler; %06lx - %06lx\n"
+msgstr "σφάλμα CRC: %06lx - %06lx\n"
 
 #: g10/armor.c:780
 msgid "premature eof (in Trailer)\n"
-msgstr "vorzeitiges Dateiende (im Nachsatz)\n"
+msgstr "πρόωρο τέλος αρχείου (στο Τrailer)\n"
 
 #: g10/armor.c:784
 msgid "error in trailer line\n"
-msgstr "Fehler in der Nachsatzzeile\n"
+msgstr "σφάλμα στη γραμμή trailer\n"
 
 #: g10/armor.c:1057
 msgid "no valid OpenPGP data found.\n"
-msgstr "Keine gόltigen OpenPGP-Daten gefunden.\n"
+msgstr "δε βρέθηκαν έγκυρα OpenPGP δεδομένα.\n"
 
 #: g10/armor.c:1062
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
-msgstr "ungόltige ASCII-Hόlle: Zeile ist lδnger als %d Zeichen\n"
+msgstr "μη έγκυρη θωράκιση: η γραμμή είναι πάνω από %d χαρακτήρες\n"
 
 #: g10/armor.c:1066
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
-"\"quoted printable\" Zeichen in der ASCII-Hόlle gefunden - mφglicherweise\n"
-" war ein fehlerhafter E-Mail-Transporter(\"MTA\") die Ursache\n"
+"εκτυπώσιμος, σε εισαγωγικά, χαρακτήρας στη θωράκιση - ίσως έγινε χρήση "
+"προβληματικού MTA\n"
 
 #: g10/pkclist.c:61
 msgid "No reason specified"
-msgstr "Kein Grund angegeben"
+msgstr "Δεν έχει οριστεί αιτία"
 
 #: g10/pkclist.c:63
 msgid "Key is superseded"
-msgstr "Schlόssel ist όberholt"
+msgstr "Το κλειδί έχει παρακαμθεί"
 
 #: g10/pkclist.c:65
 msgid "Key has been compromised"
-msgstr "Hinweis: Dieser Schlόssel ist nicht mehr sicher"
+msgstr "Το κλειδί έχει εκτεθεί"
 
 #: g10/pkclist.c:67
 msgid "Key is no longer used"
-msgstr "Schlόssel wird nicht mehr benutzt"
+msgstr "Το κλειδί δε χρησιμοποιείται πλέον"
 
 #: g10/pkclist.c:69
 msgid "User ID is no longer valid"
-msgstr "User-ID ist nicht mehr gόltig"
+msgstr "Το User ID δεν είναι πλέον έγκυρο"
 
 #: g10/pkclist.c:73
 msgid "Reason for revocation: "
-msgstr "Grund fόr Widerruf: "
+msgstr "Αιτία για ανάκληση:"
 
 #: g10/pkclist.c:90
 msgid "Revocation comment: "
-msgstr "Widerruf-Bemerkung: "
+msgstr "Σχόλιο ανάκλησης:"
 
 #. a string with valid answers
 #: g10/pkclist.c:252
 msgid "iImMqQsS"
-msgstr "iImMqQsS"
+msgstr ""
 
 #: g10/pkclist.c:258
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "No trust value assigned to:\n"
 "%4u%c/%08lX %s \""
 msgstr ""
-"Es ist kein \"trust value\" zugewiesen fόr:\n"
+"Δεν δόθηκε αξία εμπιστοσύνης στο %lu:\n"
 "%4u%c/%08lX %s \""
 
 #: g10/pkclist.c:270
+#, fuzzy
 msgid ""
 "Please decide how far you trust this user to correctly\n"
 "verify other users' keys (by looking at passports,\n"
 "checking fingerprints from different sources...)?\n"
 "\n"
 msgstr ""
-"Bitte entscheiden Sie, in wieweit Sie diesem User zutrauen,\n"
-"Schlόssel anderer User korrekt zu prόfen (durch Vergleich\n"
-"mit Lichtbildausweisen, Vergleich der Fingerabdrόcke aus\n"
-"unterschiedlichen Quellen ...)?\n"
+"Παρακαλώ αποφασίστε πόσο εμπιστεύεστε αυτό το\n"
+"χρήστη, ώστε να μπορεί να επαληθεύει κλειδιά άλλων (με το\n"
+"να κοιτάζει passports και fingerprints από διάφορες πηγές...);\n"
 "\n"
+" 1 = Δεν ξέρω\n"
+" 2 = Δεν εμπιστεύομαι\n"
+" 3 = Έχω μερική εμπιστοσύνη\n"
+" 4 = Έχω πλήρη εμπιστοσύνη\n"
+" s = θέλω περισσότερες πληροφορίες\n"
 
 #: g10/pkclist.c:273
 #, c-format
 msgid " %d = Don't know\n"
-msgstr " %d = Weiί nicht so recht\n"
+msgstr ""
 
 #: g10/pkclist.c:274
-#, c-format
+#, fuzzy, c-format
 msgid " %d = I do NOT trust\n"
-msgstr " %d = Nein, ihm traue ich NICHT\n"
+msgstr "%08lX: ΔΕΝ εμπιστευόμαστε αυτό το κλειδί\n"
 
 #: g10/pkclist.c:275
 #, c-format
 msgid " %d = I trust marginally\n"
-msgstr " %d = Ich vertraue ihm einigermaίen\n"
+msgstr ""
 
 #: g10/pkclist.c:276
-#, c-format
+#, fuzzy, c-format
 msgid " %d = I trust fully\n"
-msgstr " %d = Ich vertraue ihm vollstδndig\n"
+msgstr "%s: δεν είναι trustdb αρχείο\n"
 
 #: g10/pkclist.c:278
 #, c-format
 msgid " %d = I trust ultimately\n"
-msgstr " %d = Ich vertraue ihm absolut\n"
+msgstr ""
 
 #: g10/pkclist.c:279
 msgid " i = please show me more information\n"
-msgstr " i = Bitte weitere Information anzeigen\n"
+msgstr ""
 
 #: g10/pkclist.c:281
 msgid " m = back to the main menu\n"
-msgstr " m = Zurόck zum Menό\n"
+msgstr " m = πίσω στο κυρίως μενού\n"
 
 #: g10/pkclist.c:284
 msgid " s = skip this key\n"
-msgstr " s = diesen Schlόssel όberSpringen\n"
+msgstr ""
 
 #: g10/pkclist.c:285
 msgid " q = quit\n"
-msgstr " q = verlassen\n"
+msgstr " q = τερματισμός\n"
 
 #: g10/pkclist.c:292
 msgid "Your decision? "
-msgstr "Ihre Auswahl? "
+msgstr "Η απόφαση σας; "
 
 #: g10/pkclist.c:313
+#, fuzzy
 msgid "Do you really want to set this key to ultimate trust? "
-msgstr "Mφchten Sie diesem Schlόssel wirklich uneingeschrδnkt vertrauen? "
+msgstr "Σίγουρα θέλετε να διαγραφεί αυτό το κλειδί; "
 
 #: g10/pkclist.c:325
 msgid "Certificates leading to an ultimately trusted key:\n"
-msgstr "Zertifikate fόhren zu einem letztlich vertrauenswόrdigen Schlόssel:\n"
+msgstr "Πιστοποιητικά που οδηγούν σε ένα κλειδί απόλυτης εμπιστοσύνης:\n"
 
 #: g10/pkclist.c:399
 #, c-format
 msgid "key %08lX: key has been revoked!\n"
-msgstr "Schlόssel %08lX: Schlόssel wurde widerrufen\n"
+msgstr "κλειδί %08lX: το κλειδί έχει ανακληθεί!\n"
 
 #: g10/pkclist.c:406 g10/pkclist.c:418 g10/pkclist.c:512
 msgid "Use this key anyway? "
-msgstr "Diesen Schlόssel trotzdem benutzen? "
+msgstr "Χρήση οπωσδήποτε αυτού του κλειδιού; "
 
 #: g10/pkclist.c:411
 #, c-format
 msgid "key %08lX: subkey has been revoked!\n"
-msgstr "Schlόssel %08lX: Unterschlόssel wurde widerrufen\n"
+msgstr "κλειδί %08lX: το υποκλειδί έχει ανακληθεί!\n"
 
 #: g10/pkclist.c:432
 #, c-format
 msgid "%08lX: key has expired\n"
-msgstr "%08lX: Schlόssel ist verfallen!\n"
+msgstr "%08lX: το κλειδί έχει λήξει\n"
 
 #: g10/pkclist.c:442
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "%08lX: There is no indication that this key really belongs to the owner\n"
-msgstr ""
-"%08lX: Es gibt keinen Hinweis, daί die Signatur wirklich dem vorgeblichen "
-"Besitzer gehφrt.\n"
+msgstr "         Δεν υπάρχει ένδειξη ότι η υπογραφή ανήκει στον ιδιοκτήτη.\n"
 
 #: g10/pkclist.c:448
 #, c-format
 msgid "%08lX: We do NOT trust this key\n"
-msgstr "%08lX: Wir haben KEIN Vertrauen zu diesem Schlόssel!\n"
+msgstr "%08lX: ΔΕΝ εμπιστευόμαστε αυτό το κλειδί\n"
 
 #: g10/pkclist.c:454
 #, c-format
@@ -1267,19 +1275,16 @@ msgid ""
 "%08lX: It is not sure that this key really belongs to the owner\n"
 "but it is accepted anyway\n"
 msgstr ""
-"%08lX: Es ist nicht sicher, daί dieser Schlόssel wirklich dem vorgeblichen\n"
-"Besitzer gehφrt, aber er wird trotzdem akzeptiert\n"
+"%08lX: Δεν είναι βέβαιο ότι αυτό το κλειδί ανήκει στον ιδιοκτήτη\n"
+"αλλά εν πάση περιπτώσει γίνεται δεκτό\n"
 
 #: g10/pkclist.c:460
 msgid "This key probably belongs to the owner\n"
-msgstr ""
-"Dieser Schlόssel gehφrt hφchstwahrscheinlich dem angegebenen Besitzer\n"
+msgstr "Αυτό το κλειδί πιθανώς ανήκει στον ιδιοκτήτη\n"
 
 #: g10/pkclist.c:465
 msgid "This key belongs to us\n"
-msgstr ""
-"Dieser Schlόssel gehφrt uns (da wir nδmlich den geheimen Schlόssel dazu "
-"haben)\n"
+msgstr "Αυτό το κλειδί ανήκει σε εμάς\n"
 
 #: g10/pkclist.c:507
 msgid ""
@@ -1288,203 +1293,206 @@ msgid ""
 "the next question with yes\n"
 "\n"
 msgstr ""
-"Es ist NICHT sicher, daί der Schlόssel dem vorgeblichen Besitzer gehφrt.\n"
-"Wenn Sie *wirklich* wissen, was Sie tun, kφnnen Sie die nδchste\n"
-"Frage mit ja beantworten\n"
+"ΔΕΝ είναι βέβαιο ότι αυτό το κλειδί ανήκει στον ιδιοκτήτη του.\n"
+"Εάν *πραγματικά* ξέρετε τι κάνετε, μπορείτε να απαντήσετε\n"
+"την επόμενη ερώτηση καταφατικά\n"
+"\n"
 
 #: g10/pkclist.c:521 g10/pkclist.c:543
 msgid "WARNING: Using untrusted key!\n"
-msgstr "WARNUNG: Ein Schlόssel ohne gesichertes Vertrauen wird benutzt!\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Χρήση κλειδιού χωρίς εμπιστοσύνη!\n"
 
 #: g10/pkclist.c:562
 msgid "WARNING: This key has been revoked by its owner!\n"
-msgstr "WARNUNG: Dieser Schlόssel wurde von seinem Besitzer widerrufen!\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Αυτό το κλειδί έχει ανακληθεί από τον ιδιοκτήτη του!\n"
 
 #: g10/pkclist.c:563
 msgid "         This could mean that the signature is forgery.\n"
-msgstr "         Das kφnnte bedeuten, daί die Signatur gefδlscht ist.\n"
+msgstr "         Αυτό μπορεί να σημαίνει ότι η υπογραφή είναι πλαστογραφία.\n"
 
 #: g10/pkclist.c:569
 msgid "WARNING: This subkey has been revoked by its owner!\n"
-msgstr "WARNUNG: Dieser Unterschlόssel wurde von seinem Besitzer widerrufen!\n"
+msgstr ""
+"ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Αυτό το υποκλειδί έχει ανακληθεί από τον ιδιοκτήτη του!\n"
 
 #: g10/pkclist.c:574
+#, fuzzy
 msgid "Note: This key has been disabled.\n"
-msgstr "Hinweis: Dieser Schlόssel wurde abgeschaltet.\n"
+msgstr "Αυτό το κλειδί έχει απενεργοποιηθεί"
 
 #: g10/pkclist.c:579
 msgid "Note: This key has expired!\n"
-msgstr "Hinweis: Dieser Schlόssel ist verfallen!\n"
+msgstr "Σημείωση: Αυτό το κλειδί έχει λήξει!\n"
 
 #: g10/pkclist.c:590
 msgid "WARNING: This key is not certified with a trusted signature!\n"
-msgstr "WARNUNG: Dieser Schlόssel trδgt keine vertrauenswόrdige Signatur!\n"
+msgstr ""
+"ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Αυτό το κλειδί δεν έχει πιστοποιηθεί με εμπιστεύσιμη "
+"υπογραφή!\n"
 
 #: g10/pkclist.c:592
 msgid ""
 "         There is no indication that the signature belongs to the owner.\n"
-msgstr ""
-"         Es gibt keinen Hinweis, daί die Signatur wirklich dem vorgeblichen "
-"Besitzer gehφrt.\n"
+msgstr "         Δεν υπάρχει ένδειξη ότι η υπογραφή ανήκει στον ιδιοκτήτη.\n"
 
 #: g10/pkclist.c:600
 msgid "WARNING: We do NOT trust this key!\n"
-msgstr "WARNUNG: Wir haben KEIN Vertrauen zu diesem Schlόssel!\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: ΔΕΝ εμπιστευόμαστε αυτό το κλειδί!\n"
 
 #: g10/pkclist.c:601
 msgid "         The signature is probably a FORGERY.\n"
-msgstr "         Die Signatur ist wahrscheinlich eine FΔLSCHUNG.\n"
+msgstr "         Η υπογραφή μάλλον είναι πλαστογραφία.\n"
 
 #: g10/pkclist.c:609
 msgid ""
 "WARNING: This key is not certified with sufficiently trusted signatures!\n"
 msgstr ""
-"WARNUNG: Dieser Schlόssel ist nicht durch hinreichend vertrauenswόrdige "
-"Signaturen zertifiziert!\n"
+"ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Αυτό το κλειδί δεν έχει πιστοποιηθεί με υπογραφές\n"
+"αρκετής εμπιστοσύνης!\n"
 
 #: g10/pkclist.c:611
 msgid "         It is not certain that the signature belongs to the owner.\n"
-msgstr ""
-"         Es ist nicht sicher, daί die Signatur wirklich dem vorgeblichen "
-"Besitzer gehφrt.\n"
+msgstr "         Δεν είναι βέβαιο ότι η υπογραφή ανήκει στον ιδιοκτήτη.\n"
 
 #: g10/pkclist.c:714 g10/pkclist.c:737 g10/pkclist.c:874 g10/pkclist.c:929
 #, c-format
 msgid "%s: skipped: %s\n"
-msgstr "%s: όbersprungen: %s\n"
+msgstr "%s: παραλείφθηκε: %s\n"
 
 #: g10/pkclist.c:723 g10/pkclist.c:903
 #, c-format
 msgid "%s: skipped: public key already present\n"
-msgstr "%s: όbersprungen: φffentlicher Schlόssel bereits vorhanden\n"
+msgstr "%s: παραλείφθηκε: δημόσιο κλειδί είναι ήδη παρόν\n"
 
 #: g10/pkclist.c:752
+#, fuzzy
 msgid "You did not specify a user ID. (you may use \"-r\")\n"
 msgstr ""
-"Sie haben keine User-ID angegeben (Sie kφnnen die Option \"-r\" verwenden).\n"
+"Δεν ορίστηκε ένα user ID. (χρησιμοποιείστε το \"-r\")\n"
+"\n"
 
 #: g10/pkclist.c:762
 msgid ""
 "\n"
 "Enter the user ID.  End with an empty line: "
 msgstr ""
-"\n"
-"Geben Sie die User-ID ein. Beenden mit einer leeren Zeile: "
 
 #: g10/pkclist.c:776
 msgid "No such user ID.\n"
-msgstr "Keine solche User-ID vorhanden.\n"
+msgstr "Δεν υπάρχει αυτό το user ID.\n"
 
 #: g10/pkclist.c:781
 msgid "skipped: public key already set as default recipient\n"
 msgstr ""
-"όbersprungen: φffentlicher Schlόssel bereits als Standardempfδnger gesetzt\n"
+"παραλείφθηκε: δημόσιο κλειδί έχει ήδη οριστεί σαν εξ ορισμού παραλήπτης\n"
 
 #: g10/pkclist.c:799
 msgid "Public key is disabled.\n"
-msgstr "Φffentlicher Schlόssel ist abgeschaltet.\n"
+msgstr "Το δημόσιο κλειδί έχει απενεργοποιηθεί.\n"
 
 #: g10/pkclist.c:806
+#, fuzzy
 msgid "skipped: public key already set\n"
-msgstr "όbersprungen: φffentlicher Schlόssel bereits gesetzt\n"
+msgstr "%s: παραλείφθηκε: δημόσιο κλειδί είναι ήδη παρόν\n"
 
 #: g10/pkclist.c:849
 #, c-format
 msgid "unknown default recipient `%s'\n"
-msgstr "Unbekannter voreingestellter Empfδnger '%s'\n"
+msgstr "άγνωστος προκαθορισμένος παραλήπτης `%s'\n"
 
 #: g10/pkclist.c:885
 #, c-format
 msgid "%s: skipped: public key is disabled\n"
-msgstr "%s: όbersprungen: φffentlicher Schlόssel ist abgeschaltet\n"
+msgstr "%s: παραλείφθηκε: το δημόσιο κλειδί έχει απενεργοποιηθεί.\n"
 
 #: g10/pkclist.c:935
 msgid "no valid addressees\n"
-msgstr "Keine gόltigen Adressaten\n"
+msgstr "καμμία έγκυρη διεύθυνση\n"
 
 #: g10/keygen.c:179
 #, c-format
 msgid "preference %c%lu is not valid\n"
-msgstr "Voreinstellung %c%lu ist nicht gόltig\n"
+msgstr ""
 
 #: g10/keygen.c:186
-#, c-format
+#, fuzzy, c-format
 msgid "preference %c%lu duplicated\n"
-msgstr "Voreinstellung %c%lu ist doppelt\n"
+msgstr "παραλείφθηκε `%s': αντιγράφτηκε\n"
 
 #: g10/keygen.c:191
-#, c-format
+#, fuzzy, c-format
 msgid "too many `%c' preferences\n"
-msgstr "zu viele `%c' Voreinstellungen\n"
+msgstr "απεικόνιση επιλογών"
 
 #: g10/keygen.c:256
+#, fuzzy
 msgid "invalid character in string\n"
-msgstr "Ungόltiges Zeichen in der Zeichenkette\n"
+msgstr "Μη έγκυρος χαρακτήρας στο όνομα\n"
 
 #: g10/keygen.c:387
 msgid "writing self signature\n"
-msgstr "Die Eigenbeglaubigung wird geschrieben\n"
+msgstr "εγγραφή ιδιο-υπογραφής\n"
 
 #: g10/keygen.c:431
 msgid "writing key binding signature\n"
-msgstr "Schreiben der \"key-binding\" Signatur\n"
+msgstr "εγγραφή υπογραφής \"δέσιμου\" κλειδιού\n"
 
 #: g10/keygen.c:485 g10/keygen.c:569 g10/keygen.c:660
 #, c-format
 msgid "keysize invalid; using %u bits\n"
-msgstr "Ungόltig Schlόssellδnge; %u Bit werden verwendet\n"
+msgstr "μη έγκυρο μέγεθος κλειδιού, χρήση %u bits\n"
 
 #: g10/keygen.c:490 g10/keygen.c:574 g10/keygen.c:665
 #, c-format
 msgid "keysize rounded up to %u bits\n"
-msgstr "Schlόssellδnge auf %u Bit aufgerundet\n"
+msgstr "στρογγυλοποίηση του μέγεθος κλειδιού έως %u bits\n"
 
 #: g10/keygen.c:765
 msgid "Please select what kind of key you want:\n"
-msgstr "Bitte wδhlen Sie, welche Art von Schlόssel Sie mφchten:\n"
+msgstr "Παρακαλώ επιλέξτε τον τύπο του κλειδιού που θέλετε:\n"
 
 #: g10/keygen.c:767
 #, c-format
 msgid "   (%d) DSA and ElGamal (default)\n"
-msgstr "   (%d) DSA und ElGamal (voreingestellt)\n"
+msgstr "   (%d) DSA και ElGamal (προκαθορισμένο)\n"
 
 #: g10/keygen.c:768
 #, c-format
 msgid "   (%d) DSA (sign only)\n"
-msgstr "   (%d) DSA (nur signieren/beglaubigen)\n"
+msgstr "   (%d) DSA (για υπογραφή μόνο)\n"
 
 #: g10/keygen.c:770
 #, c-format
 msgid "   (%d) ElGamal (encrypt only)\n"
-msgstr "   (%d) ElGamal (nur verschlόsseln)\n"
+msgstr "   (%d) ElGamal (για κρυπτογράφηση μόνο)\n"
 
 #: g10/keygen.c:771
 #, c-format
 msgid "   (%d) ElGamal (sign and encrypt)\n"
-msgstr "   (%d) ElGamal (signieren/beglaubigen und verschlόsseln)\n"
+msgstr "   (%d) ElGamal (υπογραφή και κρυπτογράφηση)\n"
 
 #: g10/keygen.c:772
-#, c-format
+#, fuzzy, c-format
 msgid "   (%d) RSA (sign only)\n"
-msgstr "   (%d) RSA (nur signieren/beglaubigen)\n"
+msgstr "   (%d) DSA (για υπογραφή μόνο)\n"
 
 #: g10/keygen.c:774
-#, c-format
+#, fuzzy, c-format
 msgid "   (%d) RSA (encrypt only)\n"
-msgstr "   (%d) RSA (nur verschlόsseln)\n"
+msgstr "   (%d) ElGamal (για κρυπτογράφηση μόνο)\n"
 
 #: g10/keyedit.c:476 g10/keygen.c:777
 msgid "Your selection? "
-msgstr "Ihre Auswahl? "
+msgstr "Η επιλογή σας; "
 
 #: g10/keygen.c:797
 msgid "The use of this algorithm is deprecated - create anyway? "
 msgstr ""
-"Von der Benutzung dieses Verfahrens ist abzuraten - Trotzdem erzeugen? "
+"Η χρήση αυτού του αλγόριθμου αποδοκιμάζεται - σίγουρα να δημιουργηθεί; "
 
 #: g10/keyedit.c:489 g10/keygen.c:811
 msgid "Invalid selection.\n"
-msgstr "Ungόltige Auswahl.\n"
+msgstr "Μη έγκυρη επιλογή.\n"
 
 #: g10/keygen.c:824
 #, c-format
@@ -1494,26 +1502,29 @@ msgid ""
 "              default keysize is 1024 bits\n"
 "    highest suggested keysize is 2048 bits\n"
 msgstr ""
-"Es wird ein neues %s Schlόsselpaar erzeugt.\n"
-"              kleinste Schlόssellδnge ist  768 Bit\n"
-"              standard Schlόssellδnge ist 1024 Bit\n"
-"      grφίte sinnvolle Schlόssellδnge ist 2048 Bit\n"
+"Σε διαδικασία δημιουργίας ενός νέου %s keypair.\n"
+"              ελάχιστο μέγεθος κλειδιού είναι  768 bits\n"
+"              προκαθορισμένο μέγεθος κλειδιού είναι 1024 bits\n"
+"    μέγιστο προτεινόμενο μέγεθος κλειδιού είναι 2048 bits\n"
 
 #: g10/keygen.c:833
 msgid "What keysize do you want? (1024) "
-msgstr "Welche Schlόssellδnge wόnschen Sie? (1024) "
+msgstr "Τι μέγεθος κλειδιού θα θέλατε; (1024) "
 
 #: g10/keygen.c:838
 msgid "DSA only allows keysizes from 512 to 1024\n"
-msgstr "DSA erlaubt nur Schlόssellδngen von 512 bis 1024\n"
+msgstr "Ο DSA επιτρέπει μόνο μέγεθος κλειδιού από 512 έως 1024\n"
 
 #: g10/keygen.c:840
 msgid "keysize too small; 1024 is smallest value allowed for RSA.\n"
-msgstr "zu kurz; 1024 ist die kleinste fόr RSA mφgliche Schlόssellδnge.\n"
+msgstr ""
+"το μέγεθος κλειδιού είναι πολύ μικρό, 1024 είναι η ελάχιστη τιμή για RSA.\n"
 
 #: g10/keygen.c:843
 msgid "keysize too small; 768 is smallest value allowed.\n"
-msgstr "zu kurz; 768 ist die kleinste mφgliche Schlόssellδnge.\n"
+msgstr ""
+"το μέγεθος κλειδιού είναι πολύ μικρό, 768 είναι η ελάχιστη επιτρεπόμενη "
+"τιμή.\n"
 
 #. It is ridiculous and an annoyance to use larger key sizes!
 #. * GnuPG can handle much larger sizes; but it takes an eternity
@@ -1526,37 +1537,39 @@ msgstr "zu kurz; 768 ist die kleinste mφgliche Schlόssellδnge.\n"
 #: g10/keygen.c:854
 #, c-format
 msgid "keysize too large; %d is largest value allowed.\n"
-msgstr "Schόsselgrφίe zu hoch; %d ist der Maximalwert.\n"
+msgstr ""
+"το μέγεθος κλειδιού είναι πολύ μεγάλο, %d είναι η μέγιστη τιμή που "
+"επιτρέπεται.\n"
 
 #: g10/keygen.c:859
 msgid ""
 "Keysizes larger than 2048 are not suggested because\n"
 "computations take REALLY long!\n"
 msgstr ""
-"Schlόssellδngen grφίer als 2048 werden nicht empfohlen, da die\n"
-"Berechnungen dann WIRKLICH lange brauchen!\n"
+"Μεγέθη κλειδιών μεγαλύτερα του 2048 δεν συνιστώνται γιατί\n"
+"οι υπολογισμοί είναι χρονοβόροι!\n"
 
 #: g10/keygen.c:862
 msgid "Are you sure that you want this keysize? "
-msgstr "Sind Sie sicher, daί Sie diese Schlόssellδnge wόnschen? "
+msgstr "Σίγουρα θέλετε αυτό το μέγεθος κλειδιού; "
 
 #: g10/keygen.c:863
 msgid ""
 "Okay, but keep in mind that your monitor and keyboard radiation is also very "
 "vulnerable to attacks!\n"
 msgstr ""
-"Gut, aber bitte denken Sie auch daran, daί Monitor und Tastatur Daten "
-"abstrahlen und diese leicht mitgelesen werden kφnnen.\n"
+"Εντάξει, αλλά να έχετε υπ'όψη ότι η οθόνη και το πληκτρολόγιο είναι\n"
+"επίσης πολύ τρωτά σε επιθέσεις!\n"
 
 #: g10/keygen.c:872
 #, c-format
 msgid "Requested keysize is %u bits\n"
-msgstr "Die verlangte Schlόssellδnge betrδgt %u Bit\n"
+msgstr "Το μέγεθος κλειδιού που ζητήθηκε είναι %u bits\n"
 
 #: g10/keygen.c:875 g10/keygen.c:879
 #, c-format
 msgid "rounded up to %u bits\n"
-msgstr "aufgerundet auf %u Bit\n"
+msgstr "στρογγυλοποιήθηκε έως τα %u bits\n"
 
 #: g10/keygen.c:930
 msgid ""
@@ -1567,14 +1580,15 @@ msgid ""
 "      <n>m = key expires in n months\n"
 "      <n>y = key expires in n years\n"
 msgstr ""
-"Bitte wδhlen Sie, wie lange der Schlόssel gόltig bleiben soll.\n"
-"         0 = Schlόssel verfδllt nie\n"
-"      <n>  = Schlόssel verfδllt nach n Tagen\n"
-"      <n>w = Schlόssel verfδllt nach n Wochen\n"
-"      <n>m = Schlόssel verfδllt nach n Monaten\n"
-"      <n>y = Schlόssel verfδllt nach n Jahren\n"
+"Παρακαλώ ορίστε για πόσο καιρό το κλειδί θα είναι έγκυρο.\n"
+"         0 = το κλειδί δεν λήγει ποτέ\n"
+"      <n>  = το κλειδί λήγει σε n μέρες\n"
+"      <n>w = το κλειδί λήγει σε n εβδομάδες\n"
+"      <n>m = το κλειδί λήγει σε n μήνες\n"
+"      <n>y = το κλειδί λήγει σε n έτη\n"
 
 #: g10/keygen.c:939
+#, fuzzy
 msgid ""
 "Please specify how long the signature should be valid.\n"
 "         0 = signature does not expire\n"
@@ -1583,47 +1597,48 @@ msgid ""
 "      <n>m = signature expires in n months\n"
 "      <n>y = signature expires in n years\n"
 msgstr ""
-"Bitte wδhlen Sie, wie lange die Beglaubigung gόltig bleiben soll.\n"
-"         0 = Schlόssel verfδllt nie\n"
-"      <n>  = Schlόssel verfδllt nach n Tagen\n"
-"      <n>w = Schlόssel verfδllt nach n Wochen\n"
-"      <n>m = Schlόssel verfδllt nach n Monaten\n"
-"      <n>y = Schlόssel verfδllt nach n Jahren\n"
+"Παρακαλώ ορίστε για πόσο καιρό το κλειδί θα είναι έγκυρο.\n"
+"         0 = το κλειδί δεν λήγει ποτέ\n"
+"      <n>  = το κλειδί λήγει σε n μέρες\n"
+"      <n>w = το κλειδί λήγει σε n εβδομάδες\n"
+"      <n>m = το κλειδί λήγει σε n μήνες\n"
+"      <n>y = το κλειδί λήγει σε n έτη\n"
 
 #: g10/keygen.c:961
 msgid "Key is valid for? (0) "
-msgstr "Wie lange bleibt der Schlόssel gόltig? (0) "
+msgstr "Το κλειδί είναι έγκυρο για; (0) "
 
 #: g10/keygen.c:963
+#, fuzzy
 msgid "Signature is valid for? (0) "
-msgstr "Wie lange bleibt die Beglaubigung gόltig? (0) "
+msgstr "Το κλειδί είναι έγκυρο για; (0) "
 
 #: g10/keygen.c:968
 msgid "invalid value\n"
-msgstr "Ungόltiger Wert.\n"
+msgstr "μη έγκυρη τιμή\n"
 
 #: g10/keygen.c:973
-#, c-format
+#, fuzzy, c-format
 msgid "%s does not expire at all\n"
-msgstr "%s verfδllt nie.\n"
+msgstr "Το κλειδί δεν λήγει ποτέ\n"
 
 #. print the date when the key expires
 #: g10/keygen.c:980
-#, c-format
+#, fuzzy, c-format
 msgid "%s expires at %s\n"
-msgstr "%s verfδllt am %s\n"
+msgstr "Το κλειδί λήγει στις %s\n"
 
 #: g10/keygen.c:986
 msgid ""
 "Your system can't display dates beyond 2038.\n"
 "However, it will be correctly handled up to 2106.\n"
 msgstr ""
-"Ihr Rechner kann Daten jenseits des Jahres 2038 nicht anzeigen.\n"
-"Trotzdem werden Daten bis 2106 korrekt verarbeitet.\n"
+"Το σύστημα σας δεν μπορεί να απεικονίσει ημερομηνίες πέρα του 2038.\n"
+"Όμως, θα χειρίζονται σωστά έως το 2106.\n"
 
 #: g10/keygen.c:991
 msgid "Is this correct (y/n)? "
-msgstr "Ist dies richtig? (j/n) "
+msgstr "Είναι αυτό σωστό (y/n); "
 
 #: g10/keygen.c:1034
 msgid ""
@@ -1635,48 +1650,48 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"Sie benφtigen eine User-ID, um Ihren Schlόssel eindeutig zu machen; das\n"
-"Programm baut diese User-ID aus Ihrem echten Namen, einem Kommentar und\n"
-"Ihrer E-Mail-Adresse in dieser Form auf:\n"
-"    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n"
+"Χρειάζεστε ένα User-ID για να αναγνωρίσετε ένα κλειδί. Το λογισμικό "
+"κατασκευάζει\n"
+"το user-id από το Αληθινό Όνομα, Σχόλιο και Διεύθυνση Email κάπως έτσι:\n"
+"    \"Nikolaoy Nikos (toy Ioanni) <nikoln@athens.gr>\"\n"
 "\n"
 
 #: g10/keygen.c:1046
 msgid "Real name: "
-msgstr "Ihr Name (\"Vorname Nachname\"): "
+msgstr "Αληθινό Όνομα: "
 
 #: g10/keygen.c:1054
 msgid "Invalid character in name\n"
-msgstr "Ungόltiges Zeichen im Namen\n"
+msgstr "Μη έγκυρος χαρακτήρας στο όνομα\n"
 
 #: g10/keygen.c:1056
 msgid "Name may not start with a digit\n"
-msgstr "Der Name darf nicht mit einer Ziffer beginnen.\n"
+msgstr "Το όνομα δεν επιτρέπεται να ξεκινά με αριθμητικό ψηφίο\n"
 
 #: g10/keygen.c:1058
 msgid "Name must be at least 5 characters long\n"
-msgstr "Der Name muί min. 5 Zeichen lang sein.\n"
+msgstr "Το όνομα πρέπει να έχει τουλάχιστον 5 χαρακτήρες\n"
 
 #: g10/keygen.c:1066
 msgid "Email address: "
-msgstr "E-Mail-Adresse: "
+msgstr "Διεύθυνση Email: "
 
 #: g10/keygen.c:1077
 msgid "Not a valid email address\n"
-msgstr "Diese E-Mail-Adresse ist ungόltig\n"
+msgstr "Μη έγκυρη διεύθυνση Email\n"
 
 #: g10/keygen.c:1085
 msgid "Comment: "
-msgstr "Kommentar: "
+msgstr "Σχόλιο: "
 
 #: g10/keygen.c:1091
 msgid "Invalid character in comment\n"
-msgstr "Ungόltiges Zeichen im Kommentar.\n"
+msgstr "Μη έγκυρος χαρακτήρας στο σχόλιο\n"
 
 #: g10/keygen.c:1114
 #, c-format
 msgid "You are using the `%s' character set.\n"
-msgstr "Sie benutzen den Zeichensatz `%s'\n"
+msgstr "Χρησιμοποιείτε το `%s' σετ χαρακτήρων.\n"
 
 #: g10/keygen.c:1120
 #, c-format
@@ -1685,46 +1700,47 @@ msgid ""
 "    \"%s\"\n"
 "\n"
 msgstr ""
-"Sie haben diese User-ID gewδhlt:\n"
+"Επιλέξατε το USER-ID:\n"
 "    \"%s\"\n"
 "\n"
 
 #: g10/keygen.c:1124
 msgid "Please don't put the email address into the real name or the comment\n"
-msgstr "Bitte keine E-Mailadressen als Namen oder Kommentar verwenden\n"
+msgstr "Παρακαλώ μην τοποθετείτε την διεύθυνση email στο όνομα ή στο σχόλιο\n"
 
 #: g10/keygen.c:1129
 msgid "NnCcEeOoQq"
-msgstr "NnKkEeFfBb"
+msgstr "NnCcEeOoQq"
 
 #: g10/keygen.c:1139
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
-msgstr "Δndern: (N)ame, (K)ommentar, (E)-Mail oder (B)eenden? "
+msgstr "Αλλαγή (N)όνομα, (C)σχόλιο, (E)mail ή (Q)τερματισμός; "
 
 #: g10/keygen.c:1140
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
-msgstr "Δndern: (N)ame, (K)ommentar, (E)-Mail oder (F)ertig/(B)eenden? "
+msgstr "Αλλαγή (N)όνομα, (C)σχόλιο, (E)mail ή (O)εντάξει/(Q)τερματισμός; "
 
 #: g10/keygen.c:1159
 msgid "Please correct the error first\n"
-msgstr "Bitte beseitigen Sie zuerst den Fehler\n"
+msgstr "Παρακαλώ, διορθώστε πρώτα το σφάλμα\n"
 
 #: g10/keygen.c:1198
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
 msgstr ""
-"Sie benφtigen ein Mantra, um den geheimen Schlόssel zu schόtzen.\n"
+"Χρειάζεστε μια Φράση κλειδί για να προστατεύσετε το μυστικό κλειδί.\n"
 "\n"
 
 #: g10/keyedit.c:665 g10/keygen.c:1206
+#, fuzzy
 msgid "passphrase not correctly repeated; try again"
-msgstr "Mantra wurde nicht richtig wiederholt; noch einmal versuchen"
+msgstr "η φράση κλειδί δεν επαναλήφθηκε σωστά. Δοκιμάστε ξανά.\n"
 
 #: g10/keygen.c:1207
 #, c-format
 msgid "%s.\n"
-msgstr "%s.\n"
+msgstr ""
 
 #: g10/keygen.c:1213
 msgid ""
@@ -1733,10 +1749,9 @@ msgid ""
 "using this program with the option \"--edit-key\".\n"
 "\n"
 msgstr ""
-"Sie mφchten kein Mantra - Dies ist *nicht* zu empfehlen!\n"
-"Es ist trotzdem mφglich.  Sie kφnnen Ihr Mantra jederzeit\n"
-"δndern, indem sie dieses Programm mit dem Befehl \"--edit-key\"\n"
-"aufrufen.\n"
+"Δεν χρειάζεστε μια φράση κλειδί - αυτό είναι μάλλον μια *κακή* ιδέα!\n"
+"Θα συνεχίσω όπως και να έχει. Μπορείτε να αλλάξετε τη φράση σας\n"
+"όποτε θέλετε, με την επιλογή \"--edit-key\".\n"
 "\n"
 
 #: g10/keygen.c:1234
@@ -1746,453 +1761,448 @@ msgid ""
 "disks) during the prime generation; this gives the random number\n"
 "generator a better chance to gain enough entropy.\n"
 msgstr ""
-"Wir mόssen eine ganze Menge Zufallswerte erzeugen.  Sie kφnnen dies\n"
-"unterstόtzen, indem Sie z.B. in einem anderen Fenster/Konsole irgendetwas\n"
-"tippen, die Maus verwenden oder irgendwelche anderen Programme benutzen.\n"
+"Πρέπει να δημιουργηθούν πολλά τυχαία bytes. Είναι καλή ιδέα να κάνετε\n"
+"κάποια εργασία (πληκτρολογήστε, μετακινήστε το ποντίκι, χρησιμοποιήστε\n"
+"τους δίσκους) κατα τη διάρκεια υπολογισμού πρώτων αριθμών. Αυτό δίνει\n"
+"στη γεννήτρια τυχαίων αριθμών μια ευκαιρία να μαζέψει αρκετή εντροπία.\n"
 
 #: g10/keygen.c:1725
 msgid "DSA keypair will have 1024 bits.\n"
-msgstr "Das DSA-Schlόsselpaar wird 1024 Bit haben.\n"
+msgstr "Το ζεύγος κλειδιών DSA θα είναι 1024 bits.\n"
 
 #: g10/keygen.c:1779
 msgid "Key generation canceled.\n"
-msgstr "Schlόsselerzeugung abgebrochen.\n"
+msgstr "Η δημιουργία κλειδιού αναβλήθηκε.\n"
 
 #: g10/keygen.c:1867 g10/keygen.c:1947
 #, c-format
 msgid "writing public key to `%s'\n"
-msgstr "schreiben des φffentlichen Schlόssels nach '%s'\n"
+msgstr "εγγραφή του δημοσίου κλειδιού στο `%s'\n"
 
 #: g10/keygen.c:1868 g10/keygen.c:1949
 #, c-format
 msgid "writing secret key to `%s'\n"
-msgstr "schreiben des geheimen Schlόssels nach '%s'\n"
+msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
 
 #: g10/keygen.c:1936
-#, c-format
+#, fuzzy, c-format
 msgid "no writable public keyring found: %s\n"
-msgstr "kein schreibbarer φffentlicher Schlόsselbund gefunden: %s\n"
+msgstr "κλειδί %08lX: μυστικό κλειδί που δε βρέθηκε: %s\n"
 
 #: g10/keygen.c:1942
-#, c-format
+#, fuzzy, c-format
 msgid "no writable secret keyring found: %s\n"
-msgstr "kein schreibbarer geheimer Schlόsselbund gefunden: %s\n"
+msgstr "κλειδί %08lX: δε βρέθηκε το μυστικό κλειδί: %s\n"
 
 #: g10/keygen.c:1956
-#, c-format
+#, fuzzy, c-format
 msgid "error writing public keyring `%s': %s\n"
-msgstr "Fehler beim Schreiben des φff. Schlόsselbundes `%s': %s\n"
+msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
 
 #: g10/keygen.c:1963
-#, c-format
+#, fuzzy, c-format
 msgid "error writing secret keyring `%s': %s\n"
-msgstr "Fehler beim Schreiben des geheimen Schlόsselbundes `%s': %s\n"
+msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
 
 #: g10/keygen.c:1983
 msgid "public and secret key created and signed.\n"
-msgstr "Φffentlichen und geheimen Schlόssel erzeugt und signiert.\n"
+msgstr "το δημόσιο και το μυστικό κλειδί δημιουργήθηκαν και υπογράφηκαν.\n"
 
 #: g10/keygen.c:1984
+#, fuzzy
 msgid "key marked as ultimately trusted.\n"
-msgstr "Schlόssel ist als uneingeschrδnkt vertrauenswόrdig gekennzeichnet.\n"
+msgstr "Πιστοποιητικά που οδηγούν σε ένα κλειδί απόλυτης εμπιστοσύνης:\n"
 
 #: g10/keygen.c:1993
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a secondary key for this purpose.\n"
 msgstr ""
-"Bitte beachten Sie, daί dieser Schlόssel nicht zum Verschlόsseln benutzt\n"
-"werden kann.  Sie kφnnen aber mit dem Befehl \"--edit-key\" einen\n"
-"Zweitschlόssel fόr diesem Zweck erzeugen.\n"
+"Σημειώστε ότι αυτό το κλειδί δεν μπορεί να χρησιμοποιηθεί για "
+"κρυπτογράφηση.\n"
+"Μπορείτε να χρησιμοποιήσετε την εντολή \"--edit-key\" για να δημιουργηθεί\n"
+"ένα δευτερεύον κλειδί για αυτό το λόγο.\n"
 
 #: g10/keygen.c:2005 g10/keygen.c:2111
 #, c-format
 msgid "Key generation failed: %s\n"
-msgstr "Schlόsselerzeugung fehlgeschlagen: %s\n"
+msgstr "Η δημιουργία κλειδιού απέτυχε: %s\n"
 
 #: g10/keygen.c:2049 g10/sig-check.c:227 g10/sign.c:228
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr ""
-"Der Schlόssel wurde %lu Sekunde in der Zukunft erzeugt (Zeitreise oder Uhren "
-"stimmen nicht όberein)\n"
+"το κλειδί δημιουργήθηκε %lu δευτερόλεπτο στο μέλλον (χρονοδίνη ή\n"
+"απλώς πρόβλημα στο ρολόι)\n"
 
 #: g10/keygen.c:2051 g10/sig-check.c:229 g10/sign.c:230
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
 msgstr ""
-"Der Schlόssel wurde %lu Sekunden in der Zukunft erzeugt (Zeitreise oder "
-"Uhren stimmen nicht όberein)\n"
+"το κλειδί δημιουργήθηκε %lu δευτερόλεπτα στο μέλλον (χρονοδίνη ή\n"
+"απλώς πρόβλημα στο ρολόι)\n"
 
 #: g10/keygen.c:2060
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
-msgstr "HINWEIS: Unterschlόssel fόr v3-Schlόssen sind nicht OpenPGP-konform\n"
+msgstr ""
+"ΣΗΜΕΙΩΣΗ: η δημιουργία υποκλειδιών για κλειδιά v3 δεν είναι σύμφωνο\n"
+"με το OpenPGP\n"
 
 #: g10/keygen.c:2087
 msgid "Really create? "
-msgstr "Wirklich erzeugen? "
+msgstr "Σίγουρα να δημιουργηθεί; "
 
 #: g10/decrypt.c:92 g10/encode.c:590
 msgid "--output doesn't work for this command\n"
-msgstr "--output funktioniert nicht bei diesem Kommando\n"
+msgstr ""
 
 #: g10/encode.c:92 g10/encode.c:296
-#, c-format
+#, fuzzy, c-format
 msgid "`%s' already compressed\n"
-msgstr "`%s' ist bereits komprimiert\n"
+msgstr "%lu κλειδιά επεξεργάστηκαν\n"
 
 #: g10/encode.c:100 g10/openfile.c:180 g10/openfile.c:300 g10/tdbio.c:492
 #: g10/tdbio.c:552
 #, c-format
 msgid "%s: can't open: %s\n"
-msgstr "%s: kann nicht geφffnet werden: %s\n"
+msgstr "%s: αδυναμία πρόσβασης του: %s\n"
 
 #: g10/encode.c:122 g10/sign.c:953
 #, c-format
 msgid "error creating passphrase: %s\n"
-msgstr "Fehler beim Erzeugen des Mantras: %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 
 #: g10/encode.c:185 g10/encode.c:383
 #, c-format
 msgid "%s: WARNING: empty file\n"
-msgstr "%s: WARNUNG: Leere Datei\n"
+msgstr "%s: ΠΡΟΕΙΔΟΠΟΙΗΣΗ: άδειο αρχείο\n"
 
 #: g10/encode.c:285
 msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
 msgstr ""
-"Im --pgp2-Modus kann nur fόr RSA-Schlόssel mit maximal 2048 Bit "
-"verschlόsselt werden\n"
 
 #: g10/encode.c:313
 #, c-format
 msgid "reading from `%s'\n"
-msgstr "Lesen von '%s'\n"
+msgstr "ανάγνωση από `%s'\n"
 
 #: g10/encode.c:347
 msgid ""
 "unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
 msgstr ""
-"Die IDEA-Verschlόsselung kann nicht mit allen Zielschlόsseln verwendet "
-"werden.\n"
 
 #: g10/encode.c:563
 #, c-format
 msgid "%s/%s encrypted for: %s\n"
-msgstr "%s/%s verschlόsselt fόr: %s\n"
+msgstr "%s/%s κρυπτογραφήθηκε για: %s\n"
 
 #: g10/delkey.c:69 g10/export.c:141
-#, c-format
+#, fuzzy, c-format
 msgid "key `%s' not found: %s\n"
-msgstr "Schlόssel `%s' nicht gefunden: %s\n"
+msgstr "χρήστης '%s' δε βρέθηκε: %s\n"
 
 #: g10/delkey.c:77 g10/export.c:161
-#, c-format
+#, fuzzy, c-format
 msgid "error reading keyblock: %s\n"
-msgstr "Fehler beim Lesen des Schlόsselblocks: %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
 
 #: g10/export.c:169
 #, c-format
 msgid "key %08lX: not a rfc2440 key - skipped\n"
-msgstr "Schlόssel %08lX: dies ist kein RFC2440-Schόssel - όbersprungen\n"
+msgstr "κλειδί %08lX: δεν είναι ένα rfc2440 κλειδί - παραλείφθηκε\n"
 
 #: g10/export.c:180
 #, c-format
 msgid "key %08lX: not protected - skipped\n"
-msgstr "Schlόssel %08lX: ungeschόtzt - όbersprungen\n"
+msgstr "κλειδί %08lX: δεν είναι προστατευμένο - παραλείφθηκε\n"
 
 #: g10/export.c:188
-#, c-format
+#, fuzzy, c-format
 msgid "key %08lX: PGP 2.x style key - skipped\n"
-msgstr "Schlόssel %08lX: PGP 2.x-artiger Schlόssel - όbersprungen\n"
+msgstr "κλειδί %08lX:  νέο κλειδί - παραλείφθηκε\n"
 
 #: g10/export.c:254
 msgid "WARNING: nothing exported\n"
-msgstr "WARNUNG: Nichts exportiert\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: δεν έγινε καμμία εξαγωγή\n"
 
 #: g10/getkey.c:151
 msgid "too many entries in pk cache - disabled\n"
-msgstr "zu viele Eintrδge im pk-Cache - abgeschaltet\n"
+msgstr "πάρα πολλές καταχωρήσεις στη pk cache - απενεργοποιήθηκε\n"
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
 #: g10/getkey.c:187 g10/getkey.c:2260
 msgid "[User id not found]"
-msgstr "[User-ID nicht gefunden]"
+msgstr "[User id δεν βρέθηκε]"
 
 #: g10/getkey.c:1363
 #, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
-msgstr "Ungόltiger Schlόssel %08lX, gόltig gemacht per --allow-non-selfsigned-uid\n"
+msgstr ""
 
 #: g10/getkey.c:1983
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
-msgstr ""
-"der Zweitschlόssel %08lX wird anstelle des Hauptschlόssels %08lX verwendet\n"
+msgstr "χρήση του δευτερεύοντος κλειδιού %08lX αντί του πρωτεύοντος %08lX\n"
 
 #: g10/getkey.c:2024
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
-msgstr ""
-"Schlόssel %08lX: geheimer Schlόssel, aber ohne φffentlichen Schlόssel - "
-"όbersprungen\n"
+msgstr "κλειδί %08lX: μυστικό κλειδί χωρίς δημόσιο - παραλείφθηκε\n"
 
 #: g10/import.c:206
 #, c-format
 msgid "skipping block of type %d\n"
-msgstr "όberspringe den Block vom Typ %d\n"
+msgstr "παράλειψη τμήματος του τύπου %d\n"
 
 #: g10/import.c:213
 #, c-format
 msgid "%lu keys so far processed\n"
-msgstr "%lu Schlόssel bislang bearbeitet\n"
+msgstr "%lu κλειδιά έχουν μέχρι τώρα επεξεργαστεί\n"
 
 #: g10/import.c:218
 #, c-format
 msgid "error reading `%s': %s\n"
-msgstr "Fehler beim Lesen von `%s': %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
 
 #: g10/import.c:230
 #, c-format
 msgid "Total number processed: %lu\n"
-msgstr "Anzahl insgesamt bearbeiteter Schlόssel: %lu\n"
+msgstr "Συνολικός αριθμός που επεξεργάστηκαν: %lu\n"
 
 #: g10/import.c:232
 #, c-format
 msgid "      skipped new keys: %lu\n"
-msgstr "              ignorierte neue Schlόssel: %lu\n"
+msgstr "      νέα κλειδιά που παραλείφθηκαν: %lu\n"
 
 #: g10/import.c:235
 #, c-format
 msgid "          w/o user IDs: %lu\n"
-msgstr "                           ohne User-ID: %lu\n"
+msgstr "          χωρίς user ID: %lu\n"
 
 #: g10/import.c:237
 #, c-format
 msgid "              imported: %lu"
-msgstr "                             importiert: %lu"
+msgstr "              εισαχθέντα: %lu"
 
 #: g10/import.c:243
 #, c-format
 msgid "             unchanged: %lu\n"
-msgstr "                            unverδndert: %lu\n"
+msgstr "             αμετάβλητα: %lu\n"
 
 #: g10/import.c:245
 #, c-format
 msgid "          new user IDs: %lu\n"
-msgstr "                          neue User-IDs: %lu\n"
+msgstr "          νέα user ID: %lu\n"
 
 #: g10/import.c:247
 #, c-format
 msgid "           new subkeys: %lu\n"
-msgstr "                    neue Unterschlόssel: %lu\n"
+msgstr "           νέα υποκλειδιά: %lu\n"
 
 #: g10/import.c:249
 #, c-format
 msgid "        new signatures: %lu\n"
-msgstr "                        neue Signaturen: %lu\n"
+msgstr "        νέες υπογραφές: %lu\n"
 
 #: g10/import.c:251
 #, c-format
 msgid "   new key revocations: %lu\n"
-msgstr "                neue Schlόsselwiderrufe: %lu\n"
+msgstr "   νέες ανακλήσεις κλειδιών: %lu\n"
 
 #: g10/import.c:253
 #, c-format
 msgid "      secret keys read: %lu\n"
-msgstr "             gelesene geheime Schlόssel: %lu\n"
+msgstr "      αναγνωσμένα μυστικά κλειδιά: %lu\n"
 
 #: g10/import.c:255
 #, c-format
 msgid "  secret keys imported: %lu\n"
-msgstr "           geheime Schlόssel importiert: %lu\n"
+msgstr "  εισαχθέντα μυστικά κλειδιά: %lu\n"
 
 #: g10/import.c:257
 #, c-format
 msgid " secret keys unchanged: %lu\n"
-msgstr "                 unverδnderte geh.Schl.: %lu\n"
+msgstr " αμετάβλητα μυστικά κλειδιά: %lu\n"
 
 #: g10/import.c:438 g10/import.c:654
 #, c-format
 msgid "key %08lX: no user ID\n"
-msgstr "Schlόssel %08lX: Keine User-ID\n"
+msgstr "κλειδί %08lX: δεν υπάρχει αυτό το user ID\n"
 
 #: g10/import.c:455
-#, c-format
+#, fuzzy, c-format
 msgid "key %08lX: accepted non self-signed user ID '%s'\n"
-msgstr "Schlόssel %08lX: Nicht eigenbeglaubigte User-ID `%s' όbernommen\n"
+msgstr "κλειδί %08lX: δεκτό μη ιδιο-υπογεγραμμένο user ID '"
 
 #: g10/import.c:462
 #, c-format
 msgid "key %08lX: no valid user IDs\n"
-msgstr "Schlόssel %08lX: Keine gόltigen User-IDs\n"
+msgstr "κλειδί %08lX: δεν έχει έγκυρα user ID\n"
 
 #: g10/import.c:464
 msgid "this may be caused by a missing self-signature\n"
-msgstr "dies kφnnte durch fehlende Eigenbeglaubigung verursacht worden sein\n"
+msgstr "αυτό μπορεί να συνέβει από μια απούσα ιδιοϋπογραφή\n"
 
 #: g10/import.c:475 g10/import.c:723
 #, c-format
 msgid "key %08lX: public key not found: %s\n"
-msgstr "Schlόssel %08lX: Φffentlicher Schlόssel nicht gefunden: %s\n"
+msgstr "κλειδί %08lX: μυστικό κλειδί που δε βρέθηκε: %s\n"
 
 #: g10/import.c:480
 #, c-format
 msgid "key %08lX: new key - skipped\n"
-msgstr "Schlόssel %08lX: neuer Schlόssel - όbersprungen\n"
+msgstr "κλειδί %08lX:  νέο κλειδί - παραλείφθηκε\n"
 
 #: g10/import.c:490
-#, c-format
+#, fuzzy, c-format
 msgid "no writable keyring found: %s\n"
-msgstr "kein schreibbarer Schlόsselbund gefunden: %s\n"
+msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
 
 #: g10/import.c:495 g10/openfile.c:244 g10/sign.c:642 g10/sign.c:811
 #, c-format
 msgid "writing to `%s'\n"
-msgstr "Schreiben nach '%s'\n"
+msgstr "εγγραφή στο  `%s'\n"
 
 #: g10/import.c:498 g10/import.c:569 g10/import.c:674 g10/import.c:783
 #, c-format
 msgid "error writing keyring `%s': %s\n"
-msgstr "Fehler beim Schreiben des Schlόsselbundes `%s': %s\n"
+msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
 
 #: g10/import.c:503
 #, c-format
 msgid "key %08lX: public key imported\n"
-msgstr "Schlόssel %08lX: Φffentlicher Schlόssel importiert\n"
+msgstr "κλειδί %08lX: δημόσιο κλειδί έχει εισαχθεί\n"
 
 #: g10/import.c:522
 #, c-format
 msgid "key %08lX: doesn't match our copy\n"
-msgstr "Schlόssel %08lX: Stimmt nicht mit unserer Kopie όberein\n"
+msgstr "κλειδί %08lX: δεν ταιριάζει με το αντίγραφο μας\n"
 
 #: g10/import.c:540 g10/import.c:740
 #, c-format
 msgid "key %08lX: can't locate original keyblock: %s\n"
-msgstr ""
-"Schlόssel %08lX: der lokale originale Schlόsselblocks wurde nicht gefunden: %"
-"s\n"
+msgstr "κλειδί %08lX: αδυναμία εντοπισμού του αρχικού τμήματος κλειδιού: %s\n"
 
 #: g10/import.c:547 g10/import.c:746
 #, c-format
 msgid "key %08lX: can't read original keyblock: %s\n"
-msgstr ""
-"Schlόssel %08lX: Lesefehler im lokalen originalen Schlόsselblocks: %s\n"
+msgstr "κλειδί %08lX: αδυναμία ανάγνωσης του αρχικού τμήματος κλειδιού: %s\n"
 
 #: g10/import.c:574
 #, c-format
 msgid "key %08lX: 1 new user ID\n"
-msgstr "Schlόssel %08lX: 1 neue User-ID\n"
+msgstr "κλειδί %08lX: 1 νέο user ID\n"
 
 #: g10/import.c:577
 #, c-format
 msgid "key %08lX: %d new user IDs\n"
-msgstr "Schlόssel %08lX: %d neue User-IDs\n"
+msgstr "κλειδί %08lX: %d νέα user ID\n"
 
 #: g10/import.c:580
 #, c-format
 msgid "key %08lX: 1 new signature\n"
-msgstr "Schlόssel %08lX: 1 neue Signatur\n"
+msgstr "κλειδί %08lX: 1 νέα υπογραφή\n"
 
 #: g10/import.c:583
 #, c-format
 msgid "key %08lX: %d new signatures\n"
-msgstr "Schlόssel %08lX: %d neue Signaturen\n"
+msgstr "κλειδί %08lX: %d νέες υπογραφές\n"
 
 #: g10/import.c:586
 #, c-format
 msgid "key %08lX: 1 new subkey\n"
-msgstr "Schlόssel %08lX: 1 neuer Unterschlόssel\n"
+msgstr "κλειδί %08lX: 1 νέο υποκλειδί\n"
 
 #: g10/import.c:589
 #, c-format
 msgid "key %08lX: %d new subkeys\n"
-msgstr "Schlόssel %08lX: %d neue Unterschlόssel\n"
+msgstr "κλειδί %08lX: %d νέα υποκλειδιά\n"
 
 #: g10/import.c:599
 #, c-format
 msgid "key %08lX: not changed\n"
-msgstr "Schlόssel %08lX: Nicht geδndert\n"
+msgstr "κλειδί %08lX: αμετάβλητο\n"
 
 #: g10/import.c:668
-#, c-format
+#, fuzzy, c-format
 msgid "no default secret keyring: %s\n"
-msgstr "Kein voreingestellter geheimer Schlόsselbund: %s\n"
+msgstr "δεν υπάρχει προκαθορισμένη δημόσια κλειδοθήκη\n"
 
 #: g10/import.c:679
 #, c-format
 msgid "key %08lX: secret key imported\n"
-msgstr "Schlόssel %08lX: Geheimer Schlόssel importiert\n"
+msgstr "κλειδί %08lX: μυστικό κλειδί εισήχθηκε\n"
 
 #. we can't merge secret keys
 #: g10/import.c:683
 #, c-format
 msgid "key %08lX: already in secret keyring\n"
-msgstr "Schlόssel %08lX: Ist bereits im geheimen Schlόsselbund\n"
+msgstr "κλειδί %08lX: ήδη στη μυστική κλειδοθήκη\n"
 
 #: g10/import.c:688
 #, c-format
 msgid "key %08lX: secret key not found: %s\n"
-msgstr "Schlόssel %08lX: geheimer Schlόssel nicht gefunden: %s\n"
+msgstr "κλειδί %08lX: δε βρέθηκε το μυστικό κλειδί: %s\n"
 
 #: g10/import.c:717
 #, c-format
 msgid "key %08lX: no public key - can't apply revocation certificate\n"
 msgstr ""
-"Schlόssel %08lX: Kein φffentlicher Schlόssel - der Schlόsselwiderruf kann "
-"nicht angebracht werden\n"
+"κλειδί %08lX: όχι δημόσιο κλειδί - αδυναμία εφαρμογής πιστοποιητικού "
+"ανάκλησης\n"
 
 #: g10/import.c:757
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - rejected\n"
-msgstr "Schlόssel %08lX: Ungόltiges Widerrufzertifikat: %s - zurόckgewiesen\n"
+msgstr "κλειδί %08lX: μη έγκυρο πιστοποιητικό ανάκλησης: %s - απόρριψη\n"
 
 #: g10/import.c:788
 #, c-format
 msgid "key %08lX: revocation certificate imported\n"
-msgstr "Schlόssel %08lX: Widerrufzertifikat importiert\n"
+msgstr "κλειδί %08lX: πιστοποιητικό ανάκλησης εισήχθηκε\n"
 
 #: g10/import.c:823
 #, c-format
 msgid "key %08lX: no user ID for signature\n"
-msgstr "Schlόssel %08lX: Keine User-ID fόr Signatur\n"
+msgstr "κλειδί %08lX: δεν υπάρχει user ID για την υπογραφή\n"
 
 #: g10/import.c:836
-#, c-format
+#, fuzzy, c-format
 msgid "key %08lX: unsupported public key algorithm on user id \"%s\"\n"
-msgstr "Schlόssel %08lX: Nicht unterstόtztes Public-Key-Verfahren fόr User-ID \"%s\"\n"
+msgstr "κλειδί %08lX: μη υποστηριζόμενος αλγόριθμος δημοσίου κλειδιού\n"
 
 #: g10/import.c:838
-#, c-format
+#, fuzzy, c-format
 msgid "key %08lX: invalid self-signature on user id \"%s\"\n"
-msgstr "Schlόssel %08lX: Ungόltige Eigenbeglaubigung fόr User-ID \"%s\"\n"
+msgstr "κλειδί %08lX: μη έγκυρη ιδιο-υπογραφή\n"
 
 #: g10/import.c:855
 #, c-format
 msgid "key %08lX: no subkey for key binding\n"
-msgstr "Schlόssel %08lX: Kein Unterschlόssel fόr die Schlόsselanbindung\n"
+msgstr "κλειδί %08lX: δεν υπάρχει υποκλειδί για τη δέσμευση κλειδιού\n"
 
 #: g10/import.c:865
 #, c-format
 msgid "key %08lX: unsupported public key algorithm\n"
-msgstr "Schlόssel %08lX: Nicht unterstόtztes Public-Key-Verfahren\n"
+msgstr "κλειδί %08lX: μη υποστηριζόμενος αλγόριθμος δημοσίου κλειδιού\n"
 
 #: g10/import.c:866
 #, c-format
 msgid "key %08lX: invalid subkey binding\n"
-msgstr "Schlόssel %08lX: Ungόltige Unterschlόssel-Anbindung\n"
+msgstr "κλειδί %08lX: μη έγκυρη δέσμευση υποκλειδιού\n"
 
 #: g10/import.c:896
 #, c-format
 msgid "key %08lX: skipped user ID '"
-msgstr "Schlόssel %08lX: User-ID όbergangen '"
+msgstr "κλειδί %08lX: παραλείφθηκε user ID '"
 
 #: g10/import.c:919
 #, c-format
 msgid "key %08lX: skipped subkey\n"
-msgstr "Schlόssel %08lX: Unterschlόssel ignoriert\n"
+msgstr "κλειδί %08lX: παραλείφθηκε υποκλειδί\n"
 
 #. here we violate the rfc a bit by still allowing
 #. * to import non-exportable signature when we have the
@@ -2201,100 +2211,101 @@ msgstr "Schlόssel %08lX: Unterschlόssel ignoriert\n"
 #: g10/import.c:942
 #, c-format
 msgid "key %08lX: non exportable signature (class %02x) - skipped\n"
-msgstr ""
-"Schlόssel %08lX: Nicht exportfδhige Unterschrift (Klasse %02x) - όbergangen\n"
+msgstr "κλειδί %08lX: μη εξαγόμενη υπογραφή (κλάση %02x) - παραλείφθηκε\n"
 
 #: g10/import.c:951
 #, c-format
 msgid "key %08lX: revocation certificate at wrong place - skipped\n"
-msgstr "Schlόssel %08lX: Widerrufzertifikat an falschem Platz - όbergangen\n"
+msgstr ""
+"κλειδί %08lX: το πιστοποιητικό ανάκλησης σε λάθος σημείο - παραλείφθηκε\n"
 
 #: g10/import.c:968
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - skipped\n"
-msgstr "Schlόssel %08lX: Ungόltiges Widerrufzertifikat: %s - όbergangen\n"
+msgstr "κλειδί %08lX: μη έγκυρο πιστοποιητικό ανάκλησης: %s - παραλείφθηκε\n"
 
 #: g10/import.c:1069
 #, c-format
 msgid "key %08lX: duplicated user ID detected - merged\n"
-msgstr "Schlόssel %08lX: Doppelte User-ID entdeckt - zusammengefόhrt\n"
+msgstr "κλειδί %08lX: εντοπίστηκε διπλό user ID - ενώθηκαν\n"
 
 #: g10/import.c:1128
 #, c-format
 msgid "Warning: key %08lX may be revoked: fetching revocation key %08lX\n"
-msgstr "Warnung: Schlόssel %08lX ist u.U. widerrufen: hole Widerrufschlόssel %08lX\n"
+msgstr ""
 
 #: g10/import.c:1142
 #, c-format
 msgid "Warning: key %08lX may be revoked: revocation key %08lX not present.\n"
-msgstr "Warnung: Schlόssel %08lX ist u.U. widerrufen: Widerrufschlόssel %08lX ist nicht vorhanden\n"
+msgstr ""
 
 #: g10/import.c:1198
 #, c-format
 msgid "key %08lX: revocation certificate added\n"
-msgstr "Schlόssel %08lX: Widerrufzertifikat hinzugefόgt\n"
+msgstr "κλειδί %08lX: πιστοποιητικό ανάκλησης προστέθηκε\n"
 
 #: g10/import.c:1228
-#, c-format
+#, fuzzy, c-format
 msgid "key %08lX: direct key signature added\n"
-msgstr "Schlόssel %08lX: \"direct-key\"-Signaturen hinzugefόgt\n"
+msgstr "κλειδί %08lX: %d νέες υπογραφές\n"
 
 #: g10/keyedit.c:139
 msgid "[revocation]"
-msgstr "[Widerruf]"
+msgstr "[ανάκληση]"
 
 #: g10/keyedit.c:140
 msgid "[self-signature]"
-msgstr "[Eigenbeglaubigung]"
+msgstr "[ιδιο-υπογραφή]"
 
 #: g10/keyedit.c:211
 msgid "1 bad signature\n"
-msgstr "1 falsche Beglaubigung\n"
+msgstr "1 κακή υπογραφή\n"
 
 #: g10/keyedit.c:213
 #, c-format
 msgid "%d bad signatures\n"
-msgstr "%d falsche Beglaubigungen\n"
+msgstr "%d κακές υπογραφές\n"
 
 #: g10/keyedit.c:215
 msgid "1 signature not checked due to a missing key\n"
-msgstr "1 Beglaubigung wegen fehlendem Schlόssel nicht geprόft\n"
+msgstr "1 υπογραφή δεν ελέγχθηκε λόγω χαμένου κλειδιού\n"
 
 #: g10/keyedit.c:217
 #, c-format
 msgid "%d signatures not checked due to missing keys\n"
-msgstr "%d Beglaubigungen wegen fehlenden Schlόsseln nicht geprόft\n"
+msgstr "%d υπογραφές δεν ελέγχθηκαν λόγω χαμένων κλειδιών\n"
 
 #: g10/keyedit.c:219
 msgid "1 signature not checked due to an error\n"
-msgstr "1 Beglaubigung aufgrund von Fehler nicht geprόft\n"
+msgstr "1 υπογραφή δεν ελέγχθηκε λόγο ενός σφάλματος\n"
 
 #: g10/keyedit.c:221
 #, c-format
 msgid "%d signatures not checked due to errors\n"
-msgstr "%d Beglaubigungen aufgrund von Fehlern nicht geprόft\n"
+msgstr "%d υπογραφές δεν ελέγχθηκαν λόγω σφαλμάτων\n"
 
 #: g10/keyedit.c:223
 msgid "1 user ID without valid self-signature detected\n"
-msgstr "Eine User-ID ohne gόltige Eigenbeglaubigung entdeckt\n"
+msgstr "1 user ID ανιχνεύτηκε χωρίς έγκυρη ιδιο-υπογραφή\n"
 
 #: g10/keyedit.c:225
 #, c-format
 msgid "%d user IDs without valid self-signatures detected\n"
-msgstr "%d User-IDs ohne gόltige Eigenbeglaubigung entdeckt\n"
+msgstr "%d user ID ανιχνεύθηκαν χωρίς έγκυρες ιδιο-υπογραφές\n"
 
 #: g10/keyedit.c:325
 #, c-format
 msgid "User ID \"%s\" is revoked.\n"
-msgstr "User-ID \"%s\" ist widerrufen.\n"
+msgstr ""
 
 #: g10/keyedit.c:330 g10/keyedit.c:1014
+#, fuzzy
 msgid "Are you sure you still want to sign it?\n"
-msgstr "Sind Sie sicher, daί Sie dies wiklich unterschreiben mφchten?\n"
+msgstr "Σίγουρα θέλετε αυτό το μέγεθος κλειδιού; "
 
 #: g10/keyedit.c:335 g10/keyedit.c:529 g10/keyedit.c:1017
 msgid "Really sign? "
-msgstr "Wirklich unterschreiben? "
+msgstr "Σίγουρα να υπογραφεί; "
 
 #. It's a local sig, and we want to make a
 #. exportable sig.
@@ -2306,47 +2317,46 @@ msgid ""
 "\n"
 "Do you want to promote it to a full exportable signature?\n"
 msgstr ""
-"Die derzeitige Beglaubigung von \"%s\"\n"
-"ist nur fόr diesen Rechner gόltig.\n"
-"\n"
-"Soll sie zu einer voll exportierbaren Beglaubigung erhoben werden?\n"
 
 #: g10/keyedit.c:379
-#, c-format
+#, fuzzy, c-format
 msgid "\"%s\" was already locally signed by key %08lX\n"
-msgstr "\"%s\" wurde bereits durch Schlόssel %08lX lokal beglaubigt\n"
+msgstr "Ήδη υπογράφθηκε από το κλειδί %08lX\n"
 
 #: g10/keyedit.c:384
-#, c-format
+#, fuzzy, c-format
 msgid "\"%s\" was already %ssigned by key %08lX\n"
-msgstr "\"%s\" wurde %sbereits durch Schlόssel %08lX beglaubigt\n"
+msgstr "Ήδη υπογράφθηκε από το κλειδί %08lX\n"
 
 #: g10/keyedit.c:396
 #, c-format
 msgid "Nothing to sign with key %08lX\n"
-msgstr "Nichts zu beglaubigen fόr Schlόssel %08lX\n"
+msgstr "Τίποτα για να υπογραφεί με το κλειδί  %08lX\n"
 
 #: g10/keyedit.c:411
+#, fuzzy
 msgid "This key has expired!"
-msgstr "Dieser Schlόssel ist verfallen!"
+msgstr "Σημείωση: Αυτό το κλειδί έχει λήξει!\n"
 
 #: g10/keyedit.c:415
+#, fuzzy
 msgid "  Are you sure you still want to sign it?\n"
-msgstr "  Sind Sie sicher, daί Sie dies immer noch unterschreiben wollen?\n"
+msgstr "Σίγουρα θέλετε αυτό το μέγεθος κλειδιού; "
 
 #: g10/keyedit.c:418
+#, fuzzy
 msgid "Really sign? (y/N) "
-msgstr "Wirklich unterschreiben? (j/N) "
+msgstr "Σίγουρα να υπογραφεί; "
 
 #: g10/keyedit.c:429
-#, c-format
+#, fuzzy, c-format
 msgid "This key is due to expire on %s.\n"
-msgstr "Dieser Schlόssel wird %s verfallen.\n"
+msgstr "Αυτό το κλειδί δεν προστατεύεται.\n"
 
 #. Should this default to yes? -ds
 #: g10/keyedit.c:432
 msgid "Do you want your signature to expire at the same time? (y/N) "
-msgstr "Soll Ihre Beglaubigung zur selben Zeit verfallen? (j/N) "
+msgstr ""
 
 #: g10/keyedit.c:460
 msgid ""
@@ -2354,127 +2364,114 @@ msgid ""
 "belongs\n"
 "to the person named above?  If you don't know what to answer, enter \"0\".\n"
 msgstr ""
-"Wie genau haben Sie όberprόft, ob der Schlόssel, den Sie jetzt beglaubigen\n"
-"wollen, wirklich der o.g. Person gehφrt?\n"
-"Wenn Sie darauf keine Antwort wissen, geben Sie \"0\" ein.\n"
 
 #: g10/keyedit.c:464
 #, c-format
 msgid "   (0) I will not answer.%s\n"
-msgstr "   (0) Ich antworte nicht.%s\n"
+msgstr ""
 
 #: g10/keyedit.c:466
 #, c-format
 msgid "   (1) I have not checked at all.%s\n"
-msgstr "   (1) Ich habe es όberhaupt nicht όberprόft.%s\n"
+msgstr ""
 
 #: g10/keyedit.c:468
 #, c-format
 msgid "   (2) I have done casual checking.%s\n"
-msgstr "   (2) Ich habe es flόchtig όberprόft.%s\n"
+msgstr ""
 
 #: g10/keyedit.c:470
 #, c-format
 msgid "   (3) I have done very careful checking.%s\n"
-msgstr "   (3) Ich habe es sehr sorgfδltig όberprόft.%s\n"
+msgstr ""
 
 #: g10/keyedit.c:495
 msgid ""
 "Are you really sure that you want to sign this key\n"
 "with your key: \""
 msgstr ""
-"Sind Sie wirklich sicher, daί Sie vorstehenden Schlόssel mit Ihrem\n"
-"Schlόssel beglaubigen wollen: \""
+"Σίγουρα θέλετε να υπογράψετε αυτό το κλειδί\n"
+"με το κλειδί σας: \""
 
 #: g10/keyedit.c:504
+#, fuzzy
 msgid ""
 "\n"
 "The signature will be marked as non-exportable.\n"
-msgstr ""
-"\n"
-"Die Unterschrift wird als nicht exportfδhig markiert werden.\n"
+msgstr "Αυτή η υπογραφή θα σημειωθεί σαν μη-εξαγώγιμη.\n"
 
 #: g10/keyedit.c:508
+#, fuzzy
 msgid ""
 "\n"
 "The signature will be marked as non-revocable.\n"
-msgstr ""
-"\n"
-"Die Unterschrift wird als nicht exportfδhig markiert werden.\n"
+msgstr "Αυτή η υπογραφή θα σημειωθεί σαν μη-εξαγώγιμη.\n"
 
 #: g10/keyedit.c:513
 msgid ""
 "\n"
 "I have not checked this key at all.\n"
 msgstr ""
-"\n"
-"Ich habe diesen Schlόssel όberhaupt nicht όberprόft.\n"
 
 #: g10/keyedit.c:517
 msgid ""
 "\n"
 "I have checked this key casually.\n"
 msgstr ""
-"\n"
-"Ich habe diesen Schlόssel flόchtig όberprόft.\n"
 
 #: g10/keyedit.c:521
 msgid ""
 "\n"
 "I have checked this key very carefully.\n"
 msgstr ""
-"\n"
-"Ich habe diesen Schlόssel sehr sorgfδltig όberprόft.\n"
 
 #: g10/keyedit.c:562 g10/keyedit.c:2489 g10/keyedit.c:2551 g10/sign.c:273
 #, c-format
 msgid "signing failed: %s\n"
-msgstr "Beglaubigung fehlgeschlagen: %s\n"
+msgstr "η υπογραφή απέτυχε: %s\n"
 
 #: g10/keyedit.c:622
 msgid "This key is not protected.\n"
-msgstr "Dieser Schlόssel ist nicht geschόtzt.\n"
+msgstr "Αυτό το κλειδί δεν προστατεύεται.\n"
 
 #: g10/keyedit.c:626
 msgid "Secret parts of primary key are not available.\n"
-msgstr "Geheime Teile des Haupschlόssels sind nicht vorhanden\n"
+msgstr "Μυστικά τμήματα του κύριου κλειδιού δεν είναι διαθέσιμα.\n"
 
 #: g10/keyedit.c:630
 msgid "Key is protected.\n"
-msgstr "Schlόssel ist geschόtzt.\n"
+msgstr "Το κλειδί προστατεύεται.\n"
 
 #: g10/keyedit.c:650
 #, c-format
 msgid "Can't edit this key: %s\n"
-msgstr "Dieser Schlόssel kann nicht editiert werden: %s\n"
+msgstr "Αδύνατη η επεξεργασία αυτού του κλειδιού:%s\n"
 
 #: g10/keyedit.c:656
 msgid ""
 "Enter the new passphrase for this secret key.\n"
 "\n"
 msgstr ""
-"Geben Sie das neue Mantra fόr diesen geheimen Schlόssel ein.\n"
+"Πληκτρολογήστε την νέα φράση κλειδί για αυτό το μυστικό κλειδί.\n"
 "\n"
 
 #: g10/keyedit.c:670
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "\n"
-msgstr ""
-"Sie wollen kein Mantra - dies ist bestimmt *keine* gute Idee!\n"
-"\n"
+msgstr "Δεν θέλετε φράση κλειδί - αυτό είναι μάλλον *κακή* ιδέα!\n"
 
 #: g10/keyedit.c:673
 msgid "Do you really want to do this? "
-msgstr "Mφchten Sie dies wirklich tun? "
+msgstr "Σίγουρα θέλετε να κάνετε αυτό; "
 
 #: g10/keyedit.c:737
 msgid "moving a key signature to the correct place\n"
-msgstr "schiebe eine Beglaubigung an die richtige Stelle\n"
+msgstr "μετακίνηση υπογραφής κλειδιού στη σωστή θέση\n"
 
 #: g10/keyedit.c:778
 msgid "quit this menu"
-msgstr "Menό verlassen"
+msgstr "τερματισμός αυτού του μενού"
 
 #: g10/keyedit.c:779
 msgid "q"
@@ -2486,7 +2483,7 @@ msgstr "save"
 
 #: g10/keyedit.c:780
 msgid "save and quit"
-msgstr "speichern und Menό verlassen"
+msgstr "αποθήκευση και έξοδος"
 
 #: g10/keyedit.c:781
 msgid "help"
@@ -2494,7 +2491,7 @@ msgstr "help"
 
 #: g10/keyedit.c:781
 msgid "show this help"
-msgstr "Diese Hilfe zeigen"
+msgstr "απεικόνιση αυτής της βοήθειας"
 
 #: g10/keyedit.c:783
 msgid "fpr"
@@ -2502,15 +2499,15 @@ msgstr "fpr"
 
 #: g10/keyedit.c:783
 msgid "show fingerprint"
-msgstr "\"Fingerabdruck\" anzeigen"
+msgstr "απεικόνιση του fingerprint"
 
 #: g10/keyedit.c:784
 msgid "list"
-msgstr "Liste der Schlόssel"
+msgstr "list"
 
 #: g10/keyedit.c:784
 msgid "list key and user IDs"
-msgstr "Schlόssel und User-IDs auflisten"
+msgstr "απεικόνιση των κλειδιών και των user ID"
 
 #: g10/keyedit.c:785
 msgid "l"
@@ -2522,7 +2519,7 @@ msgstr "uid"
 
 #: g10/keyedit.c:786
 msgid "select user ID N"
-msgstr "User-ID N auswδhlen"
+msgstr "επιλογή user ID N"
 
 #: g10/keyedit.c:787
 msgid "key"
@@ -2530,7 +2527,7 @@ msgstr "key"
 
 #: g10/keyedit.c:787
 msgid "select secondary key N"
-msgstr "Zweitschlόssel N auswδhlen"
+msgstr "επιλογή δευτερεύοντος κλειδιού N"
 
 #: g10/keyedit.c:788
 msgid "check"
@@ -2538,7 +2535,7 @@ msgstr "check"
 
 #: g10/keyedit.c:788
 msgid "list signatures"
-msgstr "Liste der Signaturen"
+msgstr "απεικόνιση υπογραφών"
 
 #: g10/keyedit.c:789
 msgid "c"
@@ -2550,7 +2547,7 @@ msgstr "sign"
 
 #: g10/keyedit.c:790
 msgid "sign the key"
-msgstr "Den Schlόssel signieren"
+msgstr "υπογραφή του κλειδιού"
 
 #: g10/keyedit.c:791
 msgid "s"
@@ -2562,23 +2559,27 @@ msgstr "lsign"
 
 #: g10/keyedit.c:792
 msgid "sign the key locally"
-msgstr "Den Schlόssel nur fόr diesen Rechner beglaubigen"
+msgstr "υπογραφή του κλειδιού τοπικά"
 
 #: g10/keyedit.c:793
+#, fuzzy
 msgid "nrsign"
-msgstr "nrsign"
+msgstr "sign"
 
 #: g10/keyedit.c:793
+#, fuzzy
 msgid "sign the key non-revocably"
-msgstr "Den Schlόssel nicht-widerrufbar beglaubigen"
+msgstr "υπογραφή του κλειδιού τοπικά"
 
 #: g10/keyedit.c:794
+#, fuzzy
 msgid "nrlsign"
-msgstr "nrlsign"
+msgstr "lsign"
 
 #: g10/keyedit.c:794
+#, fuzzy
 msgid "sign the key locally and non-revocably"
-msgstr "Den Schlόssel nicht-widerrufbar und nur fόr diesen Rechner signieren"
+msgstr "υπογραφή του κλειδιού τοπικά"
 
 #: g10/keyedit.c:795
 msgid "debug"
@@ -2590,15 +2591,16 @@ msgstr "adduid"
 
 #: g10/keyedit.c:796
 msgid "add a user ID"
-msgstr "Eine User-ID hinzufόgen"
+msgstr "προσθήκη ενός user ID"
 
 #: g10/keyedit.c:797
 msgid "addphoto"
-msgstr "addphoto"
+msgstr ""
 
 #: g10/keyedit.c:797
+#, fuzzy
 msgid "add a photo ID"
-msgstr "Eine Foto-ID hinzufόgen"
+msgstr "προσθήκη ενός user ID"
 
 #: g10/keyedit.c:798
 msgid "deluid"
@@ -2606,12 +2608,12 @@ msgstr "deluid"
 
 #: g10/keyedit.c:798
 msgid "delete user ID"
-msgstr "User-ID entfernen"
+msgstr "διαγραφή ενός user ID"
 
 #. delphoto is really deluid in disguise
 #: g10/keyedit.c:800
 msgid "delphoto"
-msgstr "delphoto"
+msgstr ""
 
 #: g10/keyedit.c:801
 msgid "addkey"
@@ -2619,7 +2621,7 @@ msgstr "addkey"
 
 #: g10/keyedit.c:801
 msgid "add a secondary key"
-msgstr "Einen Zweitschlόssel hinzufόgen"
+msgstr "προσθήκη ενός δευτερεύοντος κλειδιού"
 
 #: g10/keyedit.c:802
 msgid "delkey"
@@ -2627,7 +2629,7 @@ msgstr "delkey"
 
 #: g10/keyedit.c:802
 msgid "delete a secondary key"
-msgstr "Einen Zweitschlόssel entfernen"
+msgstr "διαγραφή ενός δευτερεύοντος κλειδιού"
 
 #: g10/keyedit.c:803
 msgid "delsig"
@@ -2635,7 +2637,7 @@ msgstr "delsig"
 
 #: g10/keyedit.c:803
 msgid "delete signatures"
-msgstr "Signatur entfernen"
+msgstr "διαγραφή υπογραφών"
 
 #: g10/keyedit.c:804
 msgid "expire"
@@ -2643,15 +2645,15 @@ msgstr "expire"
 
 #: g10/keyedit.c:804
 msgid "change the expire date"
-msgstr "Δndern des Verfallsdatums"
+msgstr "αλλαγή της ημερομηνίας λήξης"
 
 #: g10/keyedit.c:805
 msgid "primary"
-msgstr "primary"
+msgstr ""
 
 #: g10/keyedit.c:805
 msgid "flag user ID as primary"
-msgstr "User-ID als Haupt-User-ID kennzeichnen"
+msgstr ""
 
 #: g10/keyedit.c:806
 msgid "toggle"
@@ -2659,7 +2661,7 @@ msgstr "toggle"
 
 #: g10/keyedit.c:806
 msgid "toggle between secret and public key listing"
-msgstr "Umschalten zwischen Anzeige geheimer und φffentlicher Schlόssel"
+msgstr "αλλαγή μεταξύ της απεικόνισης μυστικού και δημόσιου κλειδιού"
 
 #: g10/keyedit.c:808
 msgid "t"
@@ -2670,32 +2672,38 @@ msgid "pref"
 msgstr "pref"
 
 #: g10/keyedit.c:809
+#, fuzzy
 msgid "list preferences (expert)"
-msgstr "Liste der Voreinstellungen (fόr Experten)"
+msgstr "απεικόνιση επιλογών"
 
 #: g10/keyedit.c:810
 msgid "showpref"
 msgstr "showpref"
 
 #: g10/keyedit.c:810
+#, fuzzy
 msgid "list preferences (verbose)"
-msgstr "Liste der Voreinstellungen (ausfόhrlich)"
+msgstr "απεικόνιση επιλογών"
 
 #: g10/keyedit.c:811
+#, fuzzy
 msgid "setpref"
-msgstr "setpref"
+msgstr "pref"
 
 #: g10/keyedit.c:811
+#, fuzzy
 msgid "set preference list"
-msgstr "Liste der Voreinstellungen einstellen"
+msgstr "απεικόνιση επιλογών"
 
 #: g10/keyedit.c:812
+#, fuzzy
 msgid "updpref"
-msgstr "updpref"
+msgstr "pref"
 
 #: g10/keyedit.c:812
+#, fuzzy
 msgid "updated preferences"
-msgstr "geδnderte Voreinstellungen"
+msgstr "απεικόνιση επιλογών"
 
 #: g10/keyedit.c:813
 msgid "passwd"
@@ -2703,7 +2711,7 @@ msgstr "passwd"
 
 #: g10/keyedit.c:813
 msgid "change the passphrase"
-msgstr "Das Mantra δndern"
+msgstr "αλλαγή της φράσης κλειδί"
 
 #: g10/keyedit.c:814
 msgid "trust"
@@ -2711,7 +2719,7 @@ msgstr "trust"
 
 #: g10/keyedit.c:814
 msgid "change the ownertrust"
-msgstr "Den \"Owner trust\" δndern"
+msgstr "αλλαγή της εμπιστοσύνης ιδιοκτήτη"
 
 #: g10/keyedit.c:815
 msgid "revsig"
@@ -2719,7 +2727,7 @@ msgstr "revsig"
 
 #: g10/keyedit.c:815
 msgid "revoke signatures"
-msgstr "Signaturen widerrufen"
+msgstr "ανάκληση υπογραφών"
 
 #: g10/keyedit.c:816
 msgid "revkey"
@@ -2727,7 +2735,7 @@ msgstr "revkey"
 
 #: g10/keyedit.c:816
 msgid "revoke a secondary key"
-msgstr "Einen Zweitschlόssel widerrufen"
+msgstr "ανάκληση ενός δευτερεύοντος κλειδιού"
 
 #: g10/keyedit.c:817
 msgid "disable"
@@ -2735,7 +2743,7 @@ msgstr "disable"
 
 #: g10/keyedit.c:817
 msgid "disable a key"
-msgstr "Schlόssel abschalten"
+msgstr "απενεργοποιεί ένα κλειδί"
 
 #: g10/keyedit.c:818
 msgid "enable"
@@ -2743,182 +2751,182 @@ msgstr "enable"
 
 #: g10/keyedit.c:818
 msgid "enable a key"
-msgstr "Schlόssel anschalten"
+msgstr "ενεργοποιεί ένα κλειδί"
 
 #: g10/keyedit.c:819
 msgid "showphoto"
-msgstr "showphoto"
+msgstr ""
 
 #: g10/keyedit.c:819
 msgid "show photo ID"
-msgstr "Foto-ID anzeigen"
+msgstr ""
 
 #: g10/delkey.c:112 g10/keyedit.c:839
 msgid "can't do that in batchmode\n"
-msgstr "Dies kann im Batchmodus nicht durchgefόhrt werden.\n"
+msgstr "δεν μπορεί να γίνει αυτό σε κατάσταση δέσμης (batchmode)\n"
 
 #: g10/keyedit.c:876
-#, c-format
+#, fuzzy, c-format
 msgid "error reading secret keyblock `%s': %s\n"
-msgstr "Fehler beim Lesen des geheimen Schlόsselblocks `%s': %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
 
 #: g10/keyedit.c:894
 msgid "Secret key is available.\n"
-msgstr "Geheimer Schlόssel ist vorhanden.\n"
+msgstr "Το μυστικό κλειδί είναι διαθέσιμο.\n"
 
 #: g10/keyedit.c:925
 msgid "Command> "
-msgstr "Befehl> "
+msgstr "Εντολή> "
 
 #: g10/keyedit.c:957
 msgid "Need the secret key to do this.\n"
-msgstr "Hierzu wird der geheime Schlόssel benφtigt.\n"
+msgstr "Απαιτείται το μυστικό κλειδί για να γίνει αυτό.\n"
 
 #: g10/keyedit.c:961
 msgid "Please use the command \"toggle\" first.\n"
-msgstr "Bitte verwenden sie zunδchst den Befehl \"toggle\"\n"
+msgstr "Παρακαλώ χρησιμοποιείστε την εντολή \"toggle\" πρώτα.\n"
 
 #: g10/keyedit.c:1010
+#, fuzzy
 msgid "Key is revoked.\n"
-msgstr "Schlόssel wurde widerrufen.\n"
+msgstr "Το κλειδί προστατεύεται.\n"
 
 #: g10/keyedit.c:1026
 msgid "Really sign all user IDs? "
-msgstr "Wirklich alle User-IDs beglaubigen? "
+msgstr "Σίγουρα να υπογραφούν όλα τα user ID; "
 
 #: g10/keyedit.c:1027
 msgid "Hint: Select the user IDs to sign\n"
-msgstr "Tip: Wδhlen Sie die User-IDs, die beglaubigt werden sollen\n"
+msgstr "Συμβουλή: Επιλέξτε το user ID για υπογραφή\n"
 
 #: g10/keyedit.c:1052
 #, c-format
 msgid "This command is not allowed while in %s mode.\n"
-msgstr "Dieses Kommando ist im %s-Modus nicht erlaubt.\n"
+msgstr ""
 
 #: g10/keyedit.c:1072 g10/keyedit.c:1093
 msgid "You must select at least one user ID.\n"
-msgstr "Zumindestens eine User-ID muί ausgewδhlt werden.\n"
+msgstr "Πρέπει να επιλέξετε το λιγότερο ένα user ID.\n"
 
 #: g10/keyedit.c:1074
 msgid "You can't delete the last user ID!\n"
-msgstr "Die letzte User-ID kann nicht gelφscht werden!\n"
+msgstr "Δεν μπορείτε να διαγράψετε το τελευταίο user ID!\n"
 
 #: g10/keyedit.c:1077
 msgid "Really remove all selected user IDs? "
-msgstr "Mφchten Sie alle ausgewδhlten User-IDs wirklich entfernen? "
+msgstr "Σίγουρα θέλετε να διαγραφούν όλα τα επιλεγμένα user ID; "
 
 #: g10/keyedit.c:1078
 msgid "Really remove this user ID? "
-msgstr "Diese User-ID wirklich entfernen? "
+msgstr "Σίγουρα θέλετε να διαγραφεί αυτό το user ID; "
 
 #: g10/keyedit.c:1116 g10/keyedit.c:1138
 msgid "You must select at least one key.\n"
-msgstr "Zumindestens ein Schlόssel muί ausgewδhlt werden.\n"
+msgstr "Πρέπει να επιλέξετε τουλάχιστον ένα κλειδί.\n"
 
 #: g10/keyedit.c:1120
 msgid "Do you really want to delete the selected keys? "
-msgstr "Mφchten Sie die ausgewδhlten Schlόssel wirklich entfernen? "
+msgstr "Σίγουρα θέλετε να διαγραφούν τα επιλεγμένα κλειδιά; "
 
 #: g10/keyedit.c:1121
 msgid "Do you really want to delete this key? "
-msgstr "Mφchten Sie diesen Schlόssel wirklich entfernen? "
+msgstr "Σίγουρα θέλετε να διαγραφεί αυτό το κλειδί; "
 
 #: g10/keyedit.c:1142
 msgid "Do you really want to revoke the selected keys? "
-msgstr "Mφchten Sie die ausgewδhlten Schlόssel wirklich widerrufen? "
+msgstr "Σίγουρα θέλετε να ανακληθούν τα επιλεγμένα κλειδιά; "
 
 #: g10/keyedit.c:1143
 msgid "Do you really want to revoke this key? "
-msgstr "Mφchten Sie diesen Schlόssel wirklich wiederrufen? "
+msgstr "Σίγουρα θέλετε να ανακληθεί αυτό το κλειδί; "
 
 #: g10/keyedit.c:1207
+#, fuzzy
 msgid "Really update the preferences for the selected user IDs? "
-msgstr ""
-"Mφchten Sie die Voreinstellungen der ausgewδhlten User-IDs wirklich δndern? "
+msgstr "Σίγουρα θέλετε να διαγραφούν όλα τα επιλεγμένα user ID; "
 
 #: g10/keyedit.c:1209
+#, fuzzy
 msgid "Really update the preferences? "
-msgstr "Die Voreinstellungen wirklich δndern? "
+msgstr "Σίγουρα να δημιουργηθούν πιστοποιητικά ανάκλησης; (y/N)"
 
 #: g10/keyedit.c:1247
 msgid "Save changes? "
-msgstr "Δnderungen speichern? "
+msgstr "Αποθήκευση των αλλαγών; "
 
 #: g10/keyedit.c:1250
 msgid "Quit without saving? "
-msgstr "Beenden ohne zu speichern? "
+msgstr "Τερματισμός χωρίς αποθήκευση; "
 
 #: g10/keyedit.c:1261
 #, c-format
 msgid "update failed: %s\n"
-msgstr "Δnderung fehlgeschlagen: %s\n"
+msgstr "η ενημέρωση απέτυχε: %s\n"
 
 #: g10/keyedit.c:1268
 #, c-format
 msgid "update secret failed: %s\n"
-msgstr "Δnderung des Geheimnisses fehlgeschlagen: %s\n"
+msgstr "η ενημέρωση μυστικού απέτυχε: %s\n"
 
 #: g10/keyedit.c:1275
 msgid "Key not changed so no update needed.\n"
-msgstr "Schlόssel ist nicht geδndert worden, also ist kein Speichern nφtig.\n"
+msgstr "Το κλειδί δεν άλλαξε οπότε δεν χρειάζεται ενημέρωση.\n"
 
 #: g10/keyedit.c:1286
 msgid "Invalid command  (try \"help\")\n"
-msgstr "Ungόltiger Befehl (versuchen Sie's mal mit \"help\")\n"
+msgstr "Μη έγκυρη εντολή  (δοκιμάστε \"help\")\n"
 
 #: g10/keyedit.c:1434
-#, c-format
+#, fuzzy, c-format
 msgid "This key may be revoked by %s key %s%s\n"
-msgstr "Dieser Schlόssel kφnnte von %s key %s%s widerrufen worden sein\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Αυτό το κλειδί έχει ανακληθεί από τον ιδιοκτήτη του!\n"
 
 #: g10/keyedit.c:1437
 msgid " (sensitive)"
-msgstr "(empfindlich)"
+msgstr ""
 
 #: g10/keyedit.c:1442 g10/keyedit.c:1468
 #, c-format
 msgid "%s%c %4u%c/%08lX  created: %s expires: %s"
-msgstr "%s%c %4u%c/%08lX  erstellt: %s verfδllt: %s"
+msgstr "%s%c %4u%c/%08lX  δημιουργία: %s λήξη: %s"
 
 #: g10/keyedit.c:1451
 #, c-format
 msgid " trust: %c/%c"
-msgstr " Vertrauen: %c/%c"
+msgstr " εμπιστοσύνη: %c/%c"
 
 #: g10/keyedit.c:1455
 msgid "This key has been disabled"
-msgstr "Hinweis: Dieser Schlόssel ist abgeschaltet"
+msgstr "Αυτό το κλειδί έχει απενεργοποιηθεί"
 
 #: g10/keyedit.c:1484
 #, c-format
 msgid "rev! subkey has been revoked: %s\n"
-msgstr "rev! Unterschlόssel wurde widerrufen: %s\n"
+msgstr "rev! το κλειδί ανακλήθηκε: %s\n"
 
 #: g10/keyedit.c:1487
 msgid "rev- faked revocation found\n"
-msgstr "rev- gefδlschter Schlόsselwiderruf entdeckt\n"
+msgstr "rev- βρέθηκε παραποιημένη ανάκληση\n"
 
 #: g10/keyedit.c:1489
 #, c-format
 msgid "rev? problem checking revocation: %s\n"
-msgstr "rev? Schwierigkeiten bei der Widerruf-άberprόfung: %s\n"
+msgstr "rev? πρόβλημα στον έλεγχο ανάκλησης: %s\n"
 
 #: g10/keyedit.c:1599
 msgid ""
 "WARNING: This key already has a photo ID.\n"
 "         Adding another photo ID may confuse some versions of PGP.\n"
 msgstr ""
-"WARNUNG: Dieser Schlόssel besitzt bereits eine Foto-ID.\n"
-"         Ein hinzugefόgte Foto-ID kφnnte einige Versionen von PGP "
-"verwirren.\n"
 
 #: g10/keyedit.c:1603 g10/keyedit.c:1630
+#, fuzzy
 msgid "Are you sure you still want to add it? (y/N) "
-msgstr "Wollen Sie ihn immmer noch hinzufόgen? (j/N) "
+msgstr "Σίγουρα θέλετε αυτό το μέγεθος κλειδιού; "
 
 #: g10/keyedit.c:1611
 msgid "You may only have one photo ID on a key.\n"
-msgstr "Sie kφnnen nur eine Foto-ID fόr diesen Schlόssel haben.\n"
+msgstr ""
 
 #: g10/keyedit.c:1625
 msgid ""
@@ -2926,85 +2934,83 @@ msgid ""
 "versions\n"
 "         of PGP to reject this key.\n"
 msgstr ""
-"WARNUNG: Dies ist ein PGP2-artiger Schlόssel. Hinzufόgen einer Foto-ID "
-"kφnnte\n"
-"         bei einigen PGP-Versionen zur Zurόckweisung des Schlόssels fόhren.\n"
 
 #: g10/keyedit.c:1636
 msgid "You may not add a photo ID to a PGP2-style key.\n"
-msgstr "Sie kφnnen einem PGP2-artigen Schlόόsel keine Foto-ID hinzufόgen.\n"
+msgstr ""
 
 #: g10/keyedit.c:1767
 msgid "Delete this good signature? (y/N/q)"
-msgstr "Diese korrekte Beglaubigung entfernen? (j/N/q)"
+msgstr "Διαγραφή αυτής της καλής υπογραφής; (y/N/q)"
 
 #: g10/keyedit.c:1771
 msgid "Delete this invalid signature? (y/N/q)"
-msgstr "Diese ungόltige Beglaubigung entfernen= (j/N/q)"
+msgstr "Διαγραφή αυτής της μη έγκυρης υπογραφής; (y/N/q)"
 
 #: g10/keyedit.c:1775
 msgid "Delete this unknown signature? (y/N/q)"
-msgstr "Diese unbekannte Beglaubigung entfernen? (j/N/q)"
+msgstr "Διαγραφή αυτής της άγνωστης υπογραφής; (y/N/q)"
 
 #: g10/keyedit.c:1781
 msgid "Really delete this self-signature? (y/N)"
-msgstr "Eigenbeglaubigung wirklich entfernen? (j/N)"
+msgstr "Σίγουρα να διαγραφεί αυτή η ιδιο-υπογραφή; (y/N)"
 
 #: g10/keyedit.c:1795
 #, c-format
 msgid "Deleted %d signature.\n"
-msgstr "%d Beglaubigungen entfernt.\n"
+msgstr "Διαγράφτηκε %d υπογραφή.\n"
 
 #: g10/keyedit.c:1796
 #, c-format
 msgid "Deleted %d signatures.\n"
-msgstr "%d Beglaubigungen entfernt.\n"
+msgstr "Διαγράφηκαν %d υπογραφές.\n"
 
 #: g10/keyedit.c:1799
 msgid "Nothing deleted.\n"
-msgstr "Nichts entfernt.\n"
+msgstr "Τίποτα δεν διαγράφτηκε.\n"
 
 #: g10/keyedit.c:1868
 msgid "Please remove selections from the secret keys.\n"
-msgstr "Bitte entfernen Sie die Auswahl von den geheimen Schlόsseln.\n"
+msgstr "Παρακαλώ αφαιρέστε τις επιλογές από τα μυστικά κλειδιά.\n"
 
 #: g10/keyedit.c:1874
 msgid "Please select at most one secondary key.\n"
-msgstr "Bitte wδhlen Sie hφchstens einen Zweitschlόssel aus.\n"
+msgstr "Παρακαλώ επιλέξτε το πολύ ένα δευτερεύον κλειδί.\n"
 
 #: g10/keyedit.c:1878
 msgid "Changing expiration time for a secondary key.\n"
-msgstr "Δndern des Verfallsdatums des Zweitschlόssels.\n"
+msgstr "Αλλαγή ημερομηνίας λήξης για ένα δευτερεύον κλειδί.\n"
 
 #: g10/keyedit.c:1880
 msgid "Changing expiration time for the primary key.\n"
-msgstr "Δndern des Verfallsdatums des Hauptschlόssels.\n"
+msgstr "Αλλαγή ημερομηνίας λήξης για ένα πρωτεύον κλειδί.\n"
 
 #: g10/keyedit.c:1922
 msgid "You can't change the expiration date of a v3 key\n"
-msgstr "Sie kφnnen das Verfallsdatum eines v3-Schlόssels nicht δndern\n"
+msgstr "Δεν μπορείτε να αλλάξετε την ημερομηνία λήξης σε ένα v3 κλειδί\n"
 
 #: g10/keyedit.c:1938
 msgid "No corresponding signature in secret ring\n"
-msgstr "Keine entsprechende Signatur im geheimen Schlόsselbund\n"
+msgstr "Δεν βρέθηκε αντίστοιχη υπογραφή στη μυστική κλειδοθήκη\n"
 
 #: g10/keyedit.c:2019
+#, fuzzy
 msgid "Please select exactly one user ID.\n"
-msgstr "Bitte genau eine User-ID auswδhlen.\n"
+msgstr "Πρέπει να επιλέξετε το λιγότερο ένα user ID.\n"
 
 #: g10/keyedit.c:2194
 #, c-format
 msgid "No user ID with index %d\n"
-msgstr "Keine User-ID mit Index %d\n"
+msgstr "Δεν υπάρχει user ID με δείκτη %d\n"
 
 #: g10/keyedit.c:2240
 #, c-format
 msgid "No secondary key with index %d\n"
-msgstr "Kein Zweitschlόssel mit Index %d\n"
+msgstr "Δεν υπάρχει δευτερεύον κλειδί με δείκτη %d\n"
 
 #: g10/keyedit.c:2339
 msgid "user ID: \""
-msgstr "User-ID: \""
+msgstr "user ID: \""
 
 #: g10/keyedit.c:2344
 #, c-format
@@ -3013,328 +3019,332 @@ msgid ""
 "signed with your key %08lX at %s\n"
 msgstr ""
 "\"\n"
-"unterschrieben mit Ihrem Schlόssel %08lX um %s\n"
+"υπογράφθηκε με το κλειδί σας %08lX στις %s\n"
 
 #: g10/keyedit.c:2347
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "\"\n"
 "locally signed with your key %08lX at %s\n"
 msgstr ""
 "\"\n"
-"lokal unterschrieben mit Ihrem Schlόssel %08lX um %s\n"
+"υπογράφθηκε με το κλειδί σας %08lX στις %s\n"
 
 #: g10/keyedit.c:2352
-#, c-format
+#, fuzzy, c-format
 msgid "This signature expired on %s.\n"
-msgstr "Diese Unterschrift ist seit %s verfallen.\n"
+msgstr "%s υπογραφή από: %s\n"
 
 #: g10/keyedit.c:2356
+#, fuzzy
 msgid "Are you sure you still want to revoke it? (y/N) "
-msgstr "Wollen Sie ihn immmer noch widerrufen? (j/N) "
+msgstr "Σίγουρα θέλετε να ανακληθεί αυτό το κλειδί; "
 
 #: g10/keyedit.c:2360
+#, fuzzy
 msgid "Create a revocation certificate for this signature? (y/N) "
-msgstr "Ein Widerrufszertifikat fόr diese Unterschrift erzeugen (j/N)"
+msgstr "Δημιουργία ενός πιστοποιητικού ανάκλησης για αυτή την υπογραφή; (y/N)"
 
 #. FIXME: detect duplicates here
 #: g10/keyedit.c:2386
 msgid "You have signed these user IDs:\n"
-msgstr "Sie haben folgende User-IDs beglaubigt:\n"
+msgstr "Έχετε υπογράψει αυτά τα user ID:\n"
 
 #: g10/keyedit.c:2400
-#, c-format
+#, fuzzy, c-format
 msgid "   signed by %08lX at %s%s%s\n"
-msgstr "   beglaubigt durch %08lX um %s%s%s\n"
+msgstr "   υπογράφθηκε από %08lX στις %s\n"
 
 #: g10/keyedit.c:2408
 #, c-format
 msgid "   revoked by %08lX at %s\n"
-msgstr "   widerrufen durch %08lX um %s\n"
+msgstr "   ανακλήθηκε από %08lX στις %s\n"
 
 #: g10/keyedit.c:2428
 msgid "You are about to revoke these signatures:\n"
-msgstr "Es werden nun folgende Beglaubigungen entfernt:\n"
+msgstr "Σκοπεύετε να ανακαλέσετε αυτές τις υπογραφές:\n"
 
 #: g10/keyedit.c:2438
-#, c-format
+#, fuzzy, c-format
 msgid "   signed by %08lX at %s%s\n"
-msgstr "   beglaubigt durch %08lX am %s%s\n"
+msgstr "   υπογράφθηκε από %08lX στις %s\n"
 
 #: g10/keyedit.c:2440
 msgid " (non-exportable)"
-msgstr " (nicht-exportierbar)"
+msgstr ""
 
 #: g10/keyedit.c:2447
+#, fuzzy
 msgid "Really create the revocation certificates? (y/N) "
-msgstr "Wirklich ein Unterschrift-Widerrufszertifikat erzeugen? (j/N) "
+msgstr "Σίγουρα να δημιουργηθούν πιστοποιητικά ανάκλησης; (y/N)"
 
 #: g10/keyedit.c:2477
 msgid "no secret key\n"
-msgstr "Kein geheimer Schlόssel\n"
+msgstr "κανένα μυστικό κλειδί\n"
 
 #. This isn't UTF8 as it is a URL(?)
 #: g10/keylist.c:82
+#, fuzzy
 msgid "Signature policy: "
-msgstr "Beglaubigungsrichtlinie: "
+msgstr "%s υπογραφή από: %s\n"
 
 #: g10/keylist.c:107 g10/keylist.c:127 g10/mainproc.c:717 g10/mainproc.c:726
 msgid "WARNING: invalid notation data found\n"
-msgstr "WARNUNG: Ungόltige \"Notation\"-Daten gefunden\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: βρέθηκαν μη έγκυρα δεδομένα σημείωσης\n"
 
 #. This is UTF8
 #: g10/keylist.c:115
+#, fuzzy
 msgid "Signature notation: "
-msgstr "Beglaubigungs-\"Notation\": "
+msgstr "Σημείωση: "
 
 #: g10/keylist.c:122
 msgid "not human readable"
-msgstr "nicht als Klartext darstellbar"
+msgstr ""
 
 #: g10/keylist.c:187
 msgid "Keyring"
-msgstr "Schlόsselbund"
+msgstr ""
 
 #. of subkey
 #: g10/keylist.c:387 g10/mainproc.c:852
 #, c-format
 msgid " [expires: %s]"
-msgstr " [verfδllt: %s]"
+msgstr " [λήγει: %s]"
 
 #: g10/keylist.c:852
 msgid "Fingerprint:"
-msgstr "Fingerabdruck:"
+msgstr "Fingerprint:"
 
 #. use tty
 #. Translators: this should fit into 24 bytes to that the fingerprint
 #. * data is properly aligned with the user ID
 #: g10/keylist.c:858
 msgid "             Fingerprint:"
-msgstr "           Fingerabdruck:"
+msgstr "             Fingerprint:"
 
 #: g10/keylist.c:862
+#, fuzzy
 msgid "     Key fingerprint ="
-msgstr " Schl.-Fingerabdruck ="
+msgstr "             Fingerprint:"
 
 #: g10/encr-data.c:66 g10/mainproc.c:255
 #, c-format
 msgid "%s encrypted data\n"
-msgstr "%s verschlόsselte Daten\n"
+msgstr "%s κρυπτογραφημένα δεδομένα\n"
 
 #: g10/encr-data.c:68 g10/mainproc.c:257
 #, c-format
 msgid "encrypted with unknown algorithm %d\n"
-msgstr "Mit unbekanntem Verfahren verschlόsselt %d\n"
+msgstr "κρυπτογραφημένο με άγνωστο αλγόριθμο %d\n"
 
 #: g10/mainproc.c:280
 #, c-format
 msgid "public key is %08lX\n"
-msgstr "Φffentlicher Schlόssel ist %08lX\n"
+msgstr "δημόσιο κλειδί είναι %08lX\n"
 
 #: g10/mainproc.c:326
 msgid "public key encrypted data: good DEK\n"
-msgstr "Mit φffentlichem Schόssel verschlόsselte Daten: Korrekte DEK\n"
+msgstr "κρυπτογραφημένα δεδομένα με δημόσιο κλειδί: καλό DEK\n"
 
 #: g10/mainproc.c:378
 #, c-format
 msgid "encrypted with %u-bit %s key, ID %08lX, created %s\n"
-msgstr "verschlόsselt mit %u-Bit %s Schlόssel, ID %08lX, erzeugt %s\n"
+msgstr "κρυπτογραφημένο με %u-bit %s κλειδί, ID %08lX, δημιουργήθηκε %s\n"
 
-# Scripte scannen lt. dl1bke auf "ID (0-9A-F)+" deswegen muί "ID" rein :-(
-# [kw]
 #: g10/mainproc.c:388
 #, c-format
 msgid "encrypted with %s key, ID %08lX\n"
-msgstr "verschlόsselt mit %s Schlόssel, ID %08lX\n"
+msgstr "κρυπτογραφημένο με %s key, ID %08lX\n"
 
 #: g10/mainproc.c:402
 #, c-format
 msgid "public key decryption failed: %s\n"
-msgstr "Entschlόsselung mit φffentlichem Schlόssel fehlgeschlagen: %s\n"
+msgstr "κρυπτογράφηση με δημόσιο κλειδί απέτυχε: %s\n"
 
 #: g10/mainproc.c:429 g10/mainproc.c:448
-#, c-format
+#, fuzzy, c-format
 msgid "assuming %s encrypted data\n"
-msgstr "vermutlich %s-verschlόsselte Daten\n"
+msgstr "%s κρυπτογραφημένα δεδομένα\n"
 
 #: g10/mainproc.c:436
 #, c-format
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
-msgstr "IDEA-Verschlόsselung nicht verfόgbar; versucht wird stattdessen %s\n"
+msgstr ""
 
 #: g10/mainproc.c:466
 msgid "decryption okay\n"
-msgstr "Entschlόsselung erfolgreich\n"
+msgstr "αποκρυπτογράφηση OK\n"
 
 #: g10/mainproc.c:471
 msgid "WARNING: encrypted message has been manipulated!\n"
-msgstr "Warnung: Verschlόsselte Botschaft ist manipuliert worden!\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: το κρυπτογραφημένο μήνυμα έχει πειραχθεί!\n"
 
 #: g10/mainproc.c:476
 #, c-format
 msgid "decryption failed: %s\n"
-msgstr "Entschlόsselung fehlgeschlagen: %s\n"
+msgstr "αποκρυπτογράφηση απέτυχε: %s\n"
 
 #: g10/mainproc.c:495
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
-msgstr ""
-"Hinweis: Der Absender verlangte Vertraulichkeit(\"for-your-eyes-only\")\n"
+msgstr "ΣΗΜΕΙΩΣΗ: ο αποστολέας ζήτησε \"για-τα-μάτια-σας-μόνο\"\n"
 
 #: g10/mainproc.c:497
 #, c-format
 msgid "original file name='%.*s'\n"
-msgstr "Ursprόnglicher Dateiname='%.*s'\n"
+msgstr "αρχικό όνομα αρχείου='%.*s'\n"
 
 #: g10/mainproc.c:668
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
-msgstr ""
-"Einzelner Widerruf - verwenden Sie \"gpg --import\" um ihn anzuwenden\n"
+msgstr "ανεξάρτητη ανάκληση - χρησιμοποιείστε \"gpg --import\" για εφαρμογή\n"
 
 #: g10/mainproc.c:729
 msgid "Notation: "
-msgstr "\"Notation\": "
+msgstr "Σημείωση: "
 
 #: g10/mainproc.c:741
 msgid "Policy: "
-msgstr "Richtlinie: "
+msgstr "Πολιτική: "
 
 #: g10/mainproc.c:1194
 msgid "signature verification suppressed\n"
-msgstr "Unterschriften-άberprόfung unterdrόckt\n"
+msgstr "καταστολή ανάκλησης υπογραφής\n"
 
 #. plaintext before signatures but no one-pass packets
 #: g10/mainproc.c:1236 g10/mainproc.c:1246
 msgid "can't handle these multiple signatures\n"
-msgstr "diese Mehrfachunterschriften kφnnen nicht behandelt werden\n"
+msgstr "αδυναμία χειρισμού αυτών των πολλαπλών υπογραφών\n"
 
-# Scripte scannen lt. dl1bke auf "ID (0-9A-F)+" deswegen muί "ID" rein :-(
 #: g10/mainproc.c:1257
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
-msgstr "Unterschrift vom %.*s, %s Schlόssel ID %08lX\n"
+msgstr "Υπογραφή %.*s με χρήση του κλειδιού%s ID %08lX\n"
 
 #: g10/mainproc.c:1293 g10/mainproc.c:1316
 msgid "BAD signature from \""
-msgstr "FALSCHE Unterschrift von \""
+msgstr "ΚΑΚΗ υπογραφή από \""
 
 #: g10/mainproc.c:1294 g10/mainproc.c:1317
+#, fuzzy
 msgid "Expired signature from \""
-msgstr "Verfallene Unterschrift von \""
+msgstr "Καλή υπογραφή από \""
 
 #: g10/mainproc.c:1295 g10/mainproc.c:1318
 msgid "Good signature from \""
-msgstr "Korrekte Unterschrift von \""
+msgstr "Καλή υπογραφή από \""
 
 #: g10/mainproc.c:1320
 msgid "[uncertain]"
-msgstr "[ungewiί]  "
+msgstr ""
 
 #: g10/mainproc.c:1340
 msgid "                aka \""
-msgstr "                    alias \""
+msgstr "                γνωστό ως \""
 
 #: g10/mainproc.c:1400
 #, c-format
 msgid "Can't check signature: %s\n"
-msgstr "Unterschrift kann nicht geprόft werden: %s\n"
+msgstr "Αδυναμία ελέγχου της υπογραφής: %s\n"
 
 #: g10/mainproc.c:1469 g10/mainproc.c:1485 g10/mainproc.c:1547
 msgid "not a detached signature\n"
-msgstr "keine abgetrennte Unterschrift\n"
+msgstr "δεν είναι αποκομμένη υπογραφή\n"
 
 #: g10/mainproc.c:1496
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
-msgstr "Einzelne Unterschrift der Klasse 0x%02x\n"
+msgstr "ανεξάρτητη υπογραφή κλάσης 0x%02x\n"
 
 #: g10/mainproc.c:1553
 msgid "old style (PGP 2.x) signature\n"
-msgstr "Unterschrift nach alter (PGP 2.x) Art\n"
+msgstr "υπογραφή παλιού στυλ (PGP 2.x)\n"
 
 #: g10/mainproc.c:1560
 msgid "invalid root packet detected in proc_tree()\n"
-msgstr "ungόltiges root-Paket in proc_tree() entdeckt\n"
+msgstr "μη έγκυρο ριζικό(root) πακέτο ανιχνεύτηκε στο proc_tree()\n"
 
 #: g10/misc.c:101
 #, c-format
 msgid "can't disable core dumps: %s\n"
-msgstr "core-dump-Dateierzeugung kann nicht abgeschaltet werden: %s\n"
+msgstr "αδυναμία απενεργοποίησης των core dump: %s\n"
 
 #: g10/misc.c:211
 msgid "Experimental algorithms should not be used!\n"
-msgstr "Experimentiermethoden sollten nicht benutzt werden!\n"
+msgstr "Πειραματικοί αλγόριθμοι δεν πρέπει να χρησιμοποιούνται!\n"
 
 #: g10/misc.c:241
 msgid "this cipher algorithm is deprecated; please use a more standard one!\n"
-msgstr "Es ist davon abzuraten, diese Verschlόsselungsmethode zu benutzen!\n"
+msgstr ""
+"η χρήση αυτού του αλγόριθμου κρυπτογράφησης δεν συνιστάται. Χρησιμοποιήστε "
+"ένα πιο συνηθισμένο!\n"
 
 #: g10/misc.c:378
 #, c-format
 msgid "Warning: unsafe ownership on %s \"%s\"\n"
-msgstr "Warnung: Unsicheres Besitzverhδltnis von %s \"%s\"\n"
+msgstr ""
 
 #: g10/misc.c:410
 #, c-format
 msgid "Warning: unsafe permissions on %s \"%s\"\n"
-msgstr "Warnung: Unsichere Zugriffsrechte fόr %s \"%s\"\n"
+msgstr ""
 
 #: g10/misc.c:435
 msgid "the IDEA cipher plugin is not present\n"
-msgstr "das IDEA-Verschlόsselungs-Plugin ist nicht vorhanden\n"
+msgstr ""
 
 #: g10/misc.c:436
 msgid ""
 "please see http://www.gnupg.org/why-not-idea.html for more information\n"
-msgstr "Fόr weitere Info siehe http://www.gnupg.org/why-not-idea.html\n"
+msgstr ""
 
 #: g10/parse-packet.c:119
 #, c-format
 msgid "can't handle public key algorithm %d\n"
-msgstr "dieses Public-Key Verfahren %d kann nicht benutzt werden\n"
+msgstr "αδυναμία χειρισμού του αλγόριθμου δημοσίου κλειδιού %d\n"
 
 #: g10/parse-packet.c:1047
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
-msgstr "Im Unterpaket des Typs %d ist das \"critical bit\" gesetzt\n"
+msgstr "υποπακέτο τύπου %d έχει ορισμένο το κριτικό bit\n"
 
 #: g10/passphrase.c:330 g10/passphrase.c:377
 msgid "gpg-agent is not available in this session\n"
-msgstr "GPG-Agent ist in dieser Sitzung nicht vorhanden\n"
+msgstr "ο gpg-agent δεν είναι διαθέσιμος σε αυτή τη συνεδρία\n"
 
 #: g10/passphrase.c:338
 msgid "can't set client pid for the agent\n"
-msgstr "Client-PID fόr den Agent kann nicht gesetzt werden\n"
+msgstr ""
 
 #: g10/passphrase.c:346
 msgid "can't get server read FD for the agent\n"
-msgstr "Server-Lese-Handle fόr den Agent nicht verfόgbar\n"
+msgstr ""
 
 #: g10/passphrase.c:353
 msgid "can't get server write FD for the agent\n"
-msgstr "Server-Schreib-Handle fόr den Agent nicht verfόgbar\n"
+msgstr ""
 
 #: g10/passphrase.c:386
 msgid "malformed GPG_AGENT_INFO environment variable\n"
-msgstr "fehlerhaft aufgebaute GPG_AGENT_INFO - Umgebungsvariable\n"
+msgstr "κακοδιατυπομένη μεταβλητή περιβάλλοντος GPG_AGENT_INFO\n"
 
 #: g10/passphrase.c:399
-#, c-format
+#, fuzzy, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
-msgstr "GPG-Agent-Protokoll-Version %d wird nicht unterstόtzt\n"
+msgstr "δεν υποστηρίζεται ο αλγόριθμος προστασίας %d\n"
 
 #: g10/hkp.c:148 g10/passphrase.c:420
 #, c-format
 msgid "can't connect to `%s': %s\n"
-msgstr "Verbindung zu '%s' kann nicht aufgebaut werden: %s\n"
+msgstr "αδυναμία σύνδεσης στο `%s': %s\n"
 
 #: g10/passphrase.c:442
 msgid "communication problem with gpg-agent\n"
-msgstr "Kommunikationsproblem mit GPG-Agent\n"
+msgstr ""
 
 #: g10/passphrase.c:511 g10/passphrase.c:897
 #, c-format
 msgid " (main key ID %08lX)"
-msgstr " (Hauptschlόssel-ID %08lX)"
+msgstr " (κύριο κλειδί, ID %08lX)"
 
 #: g10/passphrase.c:521
 #, c-format
@@ -3343,39 +3353,40 @@ msgid ""
 "\"%.*s\"\n"
 "%u-bit %s key, ID %08lX, created %s%s\n"
 msgstr ""
-"Sie benφtigen ein Mantra, um den geheimen Schlόssel zu entsperren.\n"
-"Benutzer: \"\"%.*s\"\n"
-"%u-bit %s Schlόssel, ID %08lX, erzeugt %s%s\n"
+"Χρειάζεστε μια φράση κλειδί για να ξεκλειδώσετε το μυστικό κλειδί για το "
+"χρήστη:\n"
+"\"%.*s\"\n"
+"%u-bit %s κλειδί, ID %08lX, δημιουργία %s%s\n"
 
 #: g10/passphrase.c:542
 msgid "Enter passphrase\n"
-msgstr "Geben Sie das Mantra ein\n"
+msgstr "Πληκτρολογήστε τη φράση κλειδί\n"
 
 #: g10/passphrase.c:544
 msgid "Repeat passphrase\n"
-msgstr "Geben Sie das Mantra nochmal ein\n"
+msgstr "Επαναλάβετε τη φράση\n"
 
 #: g10/passphrase.c:585
 msgid "passphrase too long\n"
-msgstr "Mantra ist zu lang\n"
+msgstr "η φράση κλειδί είναι πολύ μεγάλη\n"
 
 #: g10/passphrase.c:598
 msgid "invalid response from agent\n"
-msgstr "Falsche Antwort des Agenten\n"
+msgstr "μη έγκυρη απάντηση από τον agent\n"
 
 #: g10/passphrase.c:607 g10/passphrase.c:688
 msgid "cancelled by user\n"
-msgstr "Abbruch durch Benutzer\n"
+msgstr "ακυρώθηκε από το χρήστη\n"
 
 #: g10/passphrase.c:609 g10/passphrase.c:770
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
-msgstr "Schwierigkeiten mit dem Agenten: Agent antwortet 0x%lx\n"
+msgstr "πρόβλημα με τον agent: agent επιστρέφει 0x%lx\n"
 
 #: g10/passphrase.c:691 g10/passphrase.c:799
+#, fuzzy
 msgid "problem with the agent - disabling agent use\n"
-msgstr ""
-"Schwierigkeiten mit dem Agenten - Agent-Ansteuerung wird abgeschaltet\n"
+msgstr "πρόβλημα με τον agent: agent επιστρέφει 0x%lx\n"
 
 #: g10/passphrase.c:883
 msgid ""
@@ -3384,435 +3395,422 @@ msgid ""
 "user: \""
 msgstr ""
 "\n"
-"Sie benφtigen ein Mantra, um den geheimen Schlόssel zu entsperren.\n"
-"Benutzer: \""
+"Χρειάζεστε μια φράση κλειδί για να ξεκλειδώσετε το μυστικό κλειδί\n"
+"για το χρήστη: \""
 
 #: g10/passphrase.c:892
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
-msgstr "%u-Bit %s Schlόssel, ID %08lX, erzeugt %s"
+msgstr "%u-bit %s κλειδί, ID %08lX, δημιουργία %s"
 
 #: g10/passphrase.c:943
 msgid "can't query password in batchmode\n"
-msgstr "Mantra kann im Batchmodus nicht abgefragt werden\n"
+msgstr "αδυναμία ερώτησης της λέξης κλειδί σε κατάσταση δέσμης\n"
 
 #: g10/passphrase.c:947
 msgid "Enter passphrase: "
-msgstr "Geben Sie das Mantra ein: "
+msgstr "Πληκτρολογήστε τη φράση κλειδί: "
 
 #: g10/passphrase.c:951
 msgid "Repeat passphrase: "
-msgstr "Geben Sie das Mantra nochmal ein: "
+msgstr "Επαναλάβετε τη φράση κλειδί: "
 
 #: g10/plaintext.c:67
 msgid "data not saved; use option \"--output\" to save it\n"
-msgstr ""
-"Daten wurden nicht gespeichert; verwenden Sie dafόr die Option \"--output\"\n"
+msgstr "δεδομένα δεν αποθηκεύτηκαν. Αποθήκευση με την επιλογή \"--output\"\n"
 
 #: g10/plaintext.c:108
-#, c-format
+#, fuzzy, c-format
 msgid "error creating `%s': %s\n"
-msgstr "Fehler beim Erstellen von `%s': %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
 
 #: g10/plaintext.c:336
 msgid "Detached signature.\n"
-msgstr "Abgetrennte Beglaubigungen.\n"
+msgstr "Αποκομμένη υπογραφή.\n"
 
 #: g10/plaintext.c:340
 msgid "Please enter name of data file: "
-msgstr "Bitte geben Sie den Namen der Datendatei ein: "
+msgstr "Εισάγετε το όνομα αρχείου δεδομένων: "
 
 #: g10/plaintext.c:361
 msgid "reading stdin ...\n"
-msgstr "lese stdin ...\n"
+msgstr "ανάγνωση της stdin ...\n"
 
 #: g10/plaintext.c:395
 msgid "no signed data\n"
-msgstr "keine unterschriebene Daten\n"
+msgstr "δεν υπάρχουν υπογεγραμμένα δεδομένα\n"
 
 #: g10/plaintext.c:403
 #, c-format
 msgid "can't open signed data `%s'\n"
-msgstr "kann signierte Datei '%s' nicht φffnen.\n"
+msgstr "αδυναμία πρόσβασης υπογεγραμμένων δεδομένων `%s'\n"
 
 #: g10/pubkey-enc.c:100
-#, c-format
+#, fuzzy, c-format
 msgid "anonymous recipient; trying secret key %08lX ...\n"
-msgstr "Ungenannter Empfδnger; Versuch mit geheimen Schlόssel %08lX ...\n"
+msgstr "ανώνυμος παραλήπτης· δοκιμή μυστικού κλειδιού %08lX ...\n"
 
 #: g10/pubkey-enc.c:106
 msgid "okay, we are the anonymous recipient.\n"
-msgstr "Alles klar, wir sind der ungenannte Empfδnger.\n"
+msgstr "εντάξει, είμαστε ο ανώνυμος παραλήπτης.\n"
 
 #: g10/pubkey-enc.c:158
 msgid "old encoding of the DEK is not supported\n"
-msgstr "alte Kodierung des DEK wird nicht unterstόtzt\n"
+msgstr "παλαιά κωδικοποίηση του DEK δεν υποστηρίζεται\n"
 
 #: g10/pubkey-enc.c:177
-#, c-format
+#, fuzzy, c-format
 msgid "cipher algorithm %d%s is unknown or disabled\n"
-msgstr "Verschόsselungsverfahren %d%s ist unbekannt oder abgeschaltet\n"
+msgstr "ο αλγόριθμος κρυπτογράφησης %d είναι άγνωστος ή απενεργοποιημένος\n"
 
 #: g10/pubkey-enc.c:220
 #, c-format
 msgid "NOTE: cipher algorithm %d not found in preferences\n"
-msgstr "Hinweis: Verfahren %d ist kein bevorzugtes Verschlόsselungsverfahren\n"
+msgstr "ΣΗΜΕΙΩΣΗ: ο αλγόριθμος κρυπτογράφησης %d δεν είναι στις επιλογές\n"
 
 #: g10/pubkey-enc.c:242
 #, c-format
 msgid "NOTE: secret key %08lX expired at %s\n"
-msgstr "Hinweis: geheimer Schlόssel %08lX verfδllt am %s\n"
+msgstr "ΣΗΜΕΙΩΣΗ: το μυστικό κλειδί %08lX έληξε στις %s\n"
 
 #. HKP does not support v3 fingerprints
 #: g10/hkp.c:70
-#, c-format
+#, fuzzy, c-format
 msgid "requesting key %08lX from HKP keyserver %s\n"
-msgstr "Schlόssel %08lX wird von HKP-Schlόsselserver %s angefordert\n"
+msgstr "αίτηση κλειδιού %08lX από %s ...\n"
 
 #: g10/hkp.c:94
 #, c-format
 msgid "can't get key from keyserver: %s\n"
-msgstr "Schlόssel ist beim Schlόsselserver nicht erhδltlich: %s\n"
+msgstr "αδυναμία λήψης του κλειδιού από το διακομιστή: %s\n"
 
 #: g10/hkp.c:172
 #, c-format
 msgid "error sending to `%s': %s\n"
-msgstr "Fehler beim Senden an `%s': %s\n"
+msgstr "σφάλμα στη αποστολή προς το `%s': %s\n"
 
 #: g10/hkp.c:187
 #, c-format
 msgid "success sending to `%s' (status=%u)\n"
-msgstr "Senden an `%s' erfolgreich (status=%u)\n"
+msgstr "επιτυχία της αποστολής στο `%s' (κατάσταση=%u)\n"
 
 #: g10/hkp.c:190
 #, c-format
 msgid "failed sending to `%s': status=%u\n"
-msgstr "Senden an `%s' erfolglos (status=%u)\n"
+msgstr "αποτυχία στην αποστολή προς το `%s': κατάσταση=%u\n"
 
 #: g10/hkp.c:472
 #, c-format
 msgid "searching for \"%s\" from HKP server %s\n"
-msgstr "suche nach \"%s\" auf HKP-Server %s\n"
+msgstr ""
 
 #: g10/hkp.c:522
-#, c-format
+#, fuzzy, c-format
 msgid "can't search keyserver: %s\n"
-msgstr "kann Schlόsselserver nicht durchsuchen: %s\n"
+msgstr "αδυναμία λήψης του κλειδιού από το διακομιστή: %s\n"
 
 #: g10/seckey-cert.c:53
 msgid "secret key parts are not available\n"
-msgstr "Teile des geheimen Schlόssels sind nicht vorhanden\n"
+msgstr "τμήματα του μυστικού κλειδιού δεν είναι διαθέσιμα\n"
 
 #: g10/seckey-cert.c:59
-#, c-format
+#, fuzzy, c-format
 msgid "protection algorithm %d%s is not supported\n"
-msgstr "Schutzverfahren %d%s wird nicht unterstόtzt\n"
+msgstr "δεν υποστηρίζεται ο αλγόριθμος προστασίας %d\n"
 
 #: g10/seckey-cert.c:186
+#, fuzzy
 msgid "Invalid passphrase; please try again"
-msgstr "Ungόltiges Mantra; versuchen Sie es bitte noch einmal"
+msgstr "μη έγκυρη φράση κλειδί, δοκιμάστε ξανά ...\n"
 
 #: g10/seckey-cert.c:187
 #, c-format
 msgid "%s ...\n"
-msgstr "%s ...\n"
+msgstr ""
 
 #: g10/seckey-cert.c:244
 msgid "WARNING: Weak key detected - please change passphrase again.\n"
-msgstr ""
-"WARNUNG: Unsicherer Schlόssel entdeckt -\n"
-"         bitte Mantra nochmals wechseln.\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Ανιχνεύτηκε αδύναμο κλειδί - αλλάξτε τη φράση κλειδί\n"
 
 #: g10/sig-check.c:209
 msgid ""
 "this is a PGP generated ElGamal key which is NOT secure for signatures!\n"
 msgstr ""
-"Dieser durch PGP erzeugte ElGamal-Schlόssel ist fόr Signaturen NICHT sicher "
-"genug!\n"
+"αυτό το, δημιουργήμενο από PGP, κλειδί ElGamal ΔΕΝ είναι ασφαλές για "
+"υπογραφές!\n"
 
 #: g10/sig-check.c:217
 #, c-format
 msgid "public key is %lu second newer than the signature\n"
-msgstr ""
-"Φffentlicher Schlόssel ist um %lu Sekunde jόnger als die Unterschrift\n"
+msgstr "το δημόσιο κλειδί είναι %lu δευτερόλεπτο νεότερο από την υπογραφή\n"
 
 #: g10/sig-check.c:218
 #, c-format
 msgid "public key is %lu seconds newer than the signature\n"
-msgstr ""
-"Φffentlicher Schlόssel ist um %lu Sekunden jόnger als die Unterschrift\n"
+msgstr "το δημόσιο κλειδί είναι %lu δευτερόλεπτα νεότερο από την υπογραφή\n"
 
 #: g10/sig-check.c:240
 #, c-format
 msgid "NOTE: signature key %08lX expired %s\n"
-msgstr "Hinweis: Signaturschlόssel %08lX ist am %s verfallen.\n"
+msgstr "ΣΗΜΕΙΩΣΗ: το κλειδί υπογραφής %08lX έληξε στις %s\n"
 
 #: g10/sig-check.c:312
 msgid "assuming bad signature due to an unknown critical bit\n"
-msgstr ""
-"Vermutlich eine FALSCHE Unterschrift, wegen unbekanntem \"critical bit\"\n"
+msgstr "υπόθεση κακής υπογραφής λόγω άγνωστου κρίσιμου bit\n"
 
 #: g10/sign.c:115
 #, c-format
 msgid ""
 "WARNING: unable to %%-expand policy url (too large).  Using unexpanded.\n"
 msgstr ""
-"WARNUNG: Richtlinien-URL kann nicht %%-erweitert werden (zu gro0). Verwende "
-"\"unerweiterte\".\n"
 
 #: g10/sign.c:268
 #, c-format
 msgid "checking created signature failed: %s\n"
-msgstr "Prόfung der erstellten Unterschrift ist fehlgeschlagen: %s\n"
+msgstr "απέτυχε ο έλεγχος της υπογραφής που δημιουργήθηκε: %s\n"
 
 #: g10/sign.c:277
 #, c-format
 msgid "%s signature from: %s\n"
-msgstr "%s Unterschrift von: %s\n"
+msgstr "%s υπογραφή από: %s\n"
 
 #: g10/sign.c:424
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
-msgstr "WARNUNG: '%s' ist eine leere Datei.\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: `%s' είναι ένα άδειο αρχείο\n"
 
 #: g10/sign.c:612
 msgid "you can only sign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr ""
-"Im --pgp2-Modus kann nur mit PGP-2.x-artigen Schlόsseln unterschrieben "
-"werden\n"
 
 #: g10/sign.c:637 g10/sign.c:806
 #, c-format
 msgid "can't create %s: %s\n"
-msgstr "%s kann nicht erzeugt werden: %s\n"
+msgstr "αδυναμία δημιουργίας του %s: %s\n"
 
 #: g10/sign.c:698
 msgid "signing:"
-msgstr "unterschreibe:"
+msgstr "υπογραφή:"
 
 #: g10/sign.c:790
 msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr ""
-"Im --pgp2-Modus kφnnen Sie Klartextunterschriften nur mit PGP-2.x-artigen "
-"Schlόssel machen\n"
 
 #: g10/sign.c:947
-#, c-format
+#, fuzzy, c-format
 msgid "%s encryption will be used\n"
-msgstr "%s Verschlόsselung wird verwendet\n"
+msgstr "αποκρυπτογράφηση απέτυχε: %s\n"
 
 #: g10/textfilter.c:134
 #, c-format
 msgid "can't handle text lines longer than %d characters\n"
-msgstr "Textzeilen lδnger als %d Zeichen kφnnen nicht benutzt werden\n"
+msgstr "αδυναμία χειρισμού γραμμών κειμένου μεγαλύτερες από %d χαρακτήρες\n"
 
 #: g10/textfilter.c:231
 #, c-format
 msgid "input line longer than %d characters\n"
-msgstr "Eingabezeile ist lδnger als %d Zeichen\n"
+msgstr "γραμμή εισόδου μεγαλύτερη από %d χαρακτήρες\n"
 
 #: g10/tdbio.c:121 g10/tdbio.c:1380
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
-msgstr "trustdb Satz %lu: lseek fehlgeschlagen: %s\n"
+msgstr "trustdb rec %lu: αποτυχία lseek: %s\n"
 
 #: g10/tdbio.c:127 g10/tdbio.c:1387
 #, c-format
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
-msgstr "trustdb Satz %lu: write fehlgeschlagen (n=%d): %s\n"
+msgstr "trustdb rec %lu: αποτυχία write (n=%d): %s\n"
 
 #: g10/tdbio.c:237
 msgid "trustdb transaction too large\n"
-msgstr "trustdb Transaktion zu groί\n"
+msgstr "πολύ μεγάλη συναλλαγή trustdb\n"
 
 #: g10/tdbio.c:454
 #, c-format
 msgid "%s: can't access: %s\n"
-msgstr "%s: kann nicht zugegriffen werden: %s\n"
+msgstr "%s: αδυναμία πρόσβασης: %s\n"
 
 #: g10/tdbio.c:468
 #, c-format
 msgid "%s: directory does not exist!\n"
-msgstr "%s: Verzeichnis existiert nicht!\n"
+msgstr "%s: ο φάκελος δεν υπάρχει!\n"
 
 #: g10/tdbio.c:478 g10/tdbio.c:498 g10/tdbio.c:541
 #, c-format
 msgid "%s: can't create lock\n"
-msgstr "%s: Sperre kann nicht erzeugt werden\n"
+msgstr "%s: αδυναμία δημιουργίας κλειδώματος (lock)\n"
 
 #: g10/tdbio.c:480 g10/tdbio.c:544
-#, c-format
+#, fuzzy, c-format
 msgid "%s: can't make lock\n"
-msgstr "%s: Sperre kann nicht erzeugt werden\n"
+msgstr "%s: αδυναμία δημιουργίας κλειδώματος (lock)\n"
 
 #: g10/keyring.c:1436 g10/openfile.c:240 g10/openfile.c:307 g10/tdbio.c:484
 #, c-format
 msgid "%s: can't create: %s\n"
-msgstr "%s: kann nicht erzeugt werden: %s\n"
+msgstr "%s: αδυναμία δημιουργίας: %s\n"
 
 #: g10/tdbio.c:503
 #, c-format
 msgid "%s: failed to create version record: %s"
-msgstr "%s: Fehler beim Erzeugen des Versionsatzes: %s"
+msgstr "%s: αποτυχία δημιουργίας μιας εγγραφής έκδοσης: %s"
 
 #: g10/tdbio.c:507
 #, c-format
 msgid "%s: invalid trustdb created\n"
-msgstr "%s: ungόltige trust-db erzeugt\n"
+msgstr "%s: δημιουργήθηκε μη έγκυρη trustdb\n"
 
 #: g10/tdbio.c:510
 #, c-format
 msgid "%s: trustdb created\n"
-msgstr "%s: trust-db erzeugt\n"
+msgstr "%s: δημιουργήθηκε η trustdb\n"
 
 #: g10/tdbio.c:565
 #, c-format
 msgid "%s: invalid trustdb\n"
-msgstr "%s: ungόltige 'Trust'-Datenbank\n"
+msgstr "%s: μη έγκυρη trustdb\n"
 
 #: g10/tdbio.c:597
 #, c-format
 msgid "%s: failed to create hashtable: %s\n"
-msgstr "%s: hashtable kann nicht erzeugt werden: %s\n"
+msgstr "%s: αδυναμία δημιουργίας hashtable: %s\n"
 
 #: g10/tdbio.c:605
 #, c-format
 msgid "%s: error updating version record: %s\n"
-msgstr "%s: Fehler beim Δndern des Versionsatzes: %s\n"
+msgstr "%s: σφάλμα στην ενημέρωση της εγγραφής έκδοσης: %s\n"
 
 #: g10/tdbio.c:621 g10/tdbio.c:657 g10/tdbio.c:670 g10/tdbio.c:699
 #: g10/tdbio.c:1313 g10/tdbio.c:1340
 #, c-format
 msgid "%s: error reading version record: %s\n"
-msgstr "%s: Fehler beim Lesen des Versionsatzes: %s\n"
+msgstr "%s: σφάλμα στην ανάγνωση της εγγραφής έκδοσης: %s\n"
 
 #: g10/tdbio.c:634 g10/tdbio.c:679
 #, c-format
 msgid "%s: error writing version record: %s\n"
-msgstr "%s: Fehler beim Schreiben des Versionsatzes: %s\n"
+msgstr "%s: σφάλμα στην εγγραφή της εγγραφής έκδοσης: %s\n"
 
 #: g10/tdbio.c:1117
 #, c-format
 msgid "trustdb: lseek failed: %s\n"
-msgstr "trustdb: lseek fehlgeschlagen: %s\n"
+msgstr "trustdb: απέτυχε lseek: %s\n"
 
 #: g10/tdbio.c:1125
 #, c-format
 msgid "trustdb: read failed (n=%d): %s\n"
-msgstr "trustdb: read failed (n=%d): %s\n"
+msgstr "trustdb: read απέτυχε (n=%d): %s\n"
 
 #: g10/tdbio.c:1146
 #, c-format
 msgid "%s: not a trustdb file\n"
-msgstr "%s: keine trustdb Datei\n"
+msgstr "%s: δεν είναι trustdb αρχείο\n"
 
 #: g10/tdbio.c:1163
 #, c-format
 msgid "%s: version record with recnum %lu\n"
-msgstr "%s: version record with recnum %lu\n"
+msgstr "%s: εγγραφή έκδοσης με recnum %lu\n"
 
 #: g10/tdbio.c:1168
 #, c-format
 msgid "%s: invalid file version %d\n"
-msgstr "%s: invalid file version %d\n"
+msgstr "%s: μη έγκυρη έκδοση αρχείου %d\n"
 
 #: g10/tdbio.c:1346
 #, c-format
 msgid "%s: error reading free record: %s\n"
-msgstr "%s: Fehler beim Lesen eines freien Satzes: %s\n"
+msgstr "%s: σφάλμα στην ανάγνωση της εγγραφής free : %s\n"
 
 #: g10/tdbio.c:1354
 #, c-format
 msgid "%s: error writing dir record: %s\n"
-msgstr "%s: Fehler beim Schreiben eines Verzeichnis-Satzes: %s\n"
+msgstr "%s: σφάλμα στην εγγραφή της εγγραφής dir : %s\n"
 
 #: g10/tdbio.c:1364
 #, c-format
 msgid "%s: failed to zero a record: %s\n"
-msgstr "%s: konnte einen Satz nicht Nullen: %s\n"
+msgstr "%s: αποτυχία στον μηδενισμό μιας εγγραφής: %s\n"
 
 #: g10/tdbio.c:1394
 #, c-format
 msgid "%s: failed to append a record: %s\n"
-msgstr "%s: konnte Satz nicht anhδngen: %s\n"
+msgstr "%s: αποτυχία στην προσθήκη μιας εγγραφής: %s\n"
 
 #: g10/tdbio.c:1439
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
-msgstr ""
-"Die \"Trust\"-Datenbank ist beschδdigt; verwenden Sie \"gpg --fix-trustdb"
-"\".\n"
+msgstr "η trustdb είναι φθαρμένη - χρησιμοποιείστε το \"gpg --fix-trustdb\".\n"
 
 #: g10/trustdb.c:202
-#, c-format
+#, fuzzy, c-format
 msgid "`%s' is not a valid long keyID\n"
-msgstr "'%s' ist keine gόltige lange Schlόssel-ID\n"
+msgstr "'%s' δεν είναι έγκυρο μακρύ keyID\n"
 
 #: g10/trustdb.c:237
-#, c-format
+#, fuzzy, c-format
 msgid "key %08lX: accepted as trusted key\n"
-msgstr "Schlόssel %08lX: Akzeptiert als vertrauenswόrdiger Schlόssel\n"
+msgstr "κλειδί %08lX: αποδοχή σαν κλειδί με εμπιστοσύνη.\n"
 
 #: g10/trustdb.c:276
-#, c-format
+#, fuzzy, c-format
 msgid "key %08lX occurs more than once in the trustdb\n"
-msgstr "Schlόssel %08lX tritt mehr als einmal in der \"trustdb\" auf\n"
+msgstr "κλειδί %08lX: αδυναμία τοποθέτησης του στην trustdb\n"
 
 #: g10/trustdb.c:292
 #, c-format
 msgid "key %08lX: no public key for trusted key - skipped\n"
 msgstr ""
-"Schlόssel %08lX: kein φffentlicher Schlόssel fόr den vertrauenswόrdigen "
-"Schlόssel - όbersprungen\n"
+"κλειδί %08lX: κανένα δημόσιο κλειδί για το κλειδί με εμπιστοσύνη - "
+"παράλειψη\n"
 
 #: g10/trustdb.c:334
 #, c-format
 msgid "trust record %lu, req type %d: read failed: %s\n"
-msgstr "trust record %lu, req type %d: read failed: %s\n"
+msgstr "εγγραφή trust %lu, req τύπος %d: read απέτυχε: %s\n"
 
 #: g10/trustdb.c:340
-#, c-format
+#, fuzzy, c-format
 msgid "trust record %lu is not of requested type %d\n"
-msgstr "Vertrauenssatz %lu ist nicht von der angeforderten Art %d\n"
+msgstr "εγγραφή trust %lu: delete απέτυχε: %s\n"
 
 #: g10/trustdb.c:355
 #, c-format
 msgid "trust record %lu, type %d: write failed: %s\n"
-msgstr "trust record %lu, type %d: write failed: %s\n"
+msgstr "εγγραφή trust %lu, τύπος %d: write απέτυχε: %s\n"
 
 #: g10/trustdb.c:370
 #, c-format
 msgid "trustdb: sync failed: %s\n"
-msgstr "\"Trust-DB\": sync fehlgeschlagen: %s\n"
+msgstr "trustdb: sync απέτυχε: %s\n"
 
 #: g10/trustdb.c:470
+#, fuzzy
 msgid "no need for a trustdb check\n"
-msgstr "\"Trust-DB\"-άberprόfung nicht nφtig\n"
+msgstr "%s: δεν είναι trustdb αρχείο\n"
 
 #: g10/trustdb.c:476 g10/trustdb.c:1488
-#, c-format
+#, fuzzy, c-format
 msgid "next trustdb check due at %s\n"
-msgstr "nδchste \"Trust-DB\"-Pflichtόberprόfung am %s\n"
+msgstr "trustdb rec %lu: αποτυχία lseek: %s\n"
 
 #: g10/trustdb.c:709
+#, fuzzy
 msgid "checking the trustdb\n"
-msgstr "\"Trust-DB\" wird όberprόft\n"
+msgstr "αλλαγή της εμπιστοσύνης ιδιοκτήτη"
 
 #: g10/trustdb.c:860
-#, c-format
+#, fuzzy, c-format
 msgid "public key %08lX not found: %s\n"
-msgstr "Φffentlicher Schlόssel %08lX nicht gefunden: %s\n"
+msgstr "δεν βρέθηκε το δημόσιο κλειδί"
 
 #: g10/trustdb.c:1363
 #, c-format
 msgid "public key of ultimately trusted key %08lX not found\n"
 msgstr ""
-"φff.Schlόssel des uneingeschrδnkt vertrautem Schlόssel %08lX nicht gefunden\n"
 
 #: g10/trustdb.c:1441
 #, c-format
 msgid "checking at depth %d signed=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"
 msgstr ""
-"όberprόfen, Tiefe %d, unterschrieben =%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"
 
 #: g10/verify.c:108
 msgid ""
@@ -3820,34 +3818,34 @@ msgid ""
 "Please remember that the signature file (.sig or .asc)\n"
 "should be the first file given on the command line.\n"
 msgstr ""
-"Die Unterschrift konnte nicht όberprόft werden.\n"
-"Denken Sie daran, daί die Datei mit der Unterschrift (.sig oder .asc)\n"
-"als erster in der Kommandozeile stehen sollte.\n"
+"αδυναμία επαλήθευσης της υπογραφής.\n"
+"Παρακαλώ μην ξεχνάτε ότι το αρχείο υπογραφής (.sig or .asc)\n"
+"πρέπει να είναι το πρώτο αρχείο στη γραμμή εντολών.\n"
 
 #: g10/verify.c:173
 #, c-format
 msgid "input line %u too long or missing LF\n"
-msgstr "Eingabezeile %u ist zu lang oder es fehlt ein LF\n"
+msgstr "γραμμή εισόδου %u είναι πολύ μεγάλη ή της λείπει το LF\n"
 
 #: g10/skclist.c:110 g10/skclist.c:166
 msgid "key is not flagged as insecure - can't use it with the faked RNG!\n"
 msgstr ""
-"Schlόssel ist nicht als unsicher gekennzeichnet - er ist nur mit einem\n"
-"echten Zufallsgenerator verwendbar\n"
+"το κλειδί δεν έχει σημειωθεί σαν ανασφαλές - δεν μπορεί να χρησιμοποιηθεί με "
+"ψεύτικη RNG!\n"
 
 #: g10/skclist.c:138
 #, c-format
 msgid "skipped `%s': duplicated\n"
-msgstr "όbersprungen '%s': doppelt\n"
+msgstr "παραλείφθηκε `%s': αντιγράφτηκε\n"
 
 #: g10/skclist.c:145 g10/skclist.c:153
 #, c-format
 msgid "skipped `%s': %s\n"
-msgstr "όbersprungen '%s': %s\n"
+msgstr "παραλείφθηκε `%s': %s\n"
 
 #: g10/skclist.c:149
 msgid "skipped: secret key already present\n"
-msgstr "όbersprungen: geheimer Schlόssel bereits vorhanden\n"
+msgstr "παραλείφθηκε: μυστικό κλειδί ήδη παρών\n"
 
 #: g10/skclist.c:160
 #, c-format
@@ -3855,106 +3853,106 @@ msgid ""
 "skipped `%s': this is a PGP generated ElGamal key which is not secure for "
 "signatures!\n"
 msgstr ""
-"'%s όbersprungen: Dies ist ein durch PGP erzeugter ElGamal-Schlόssel. Das "
-"ist fόr Signaturen NICHT sicher genug!\n"
+"παραλείφθηκε `%s': αυτό είναι δημιουργημένο από PGP κλειδί ElGamal και δεν "
+"είναι ασφαλές για υπογραφές!\n"
 
 #. do not overwrite
 #: g10/openfile.c:84
 #, c-format
 msgid "File `%s' exists. "
-msgstr "Datei '%s' existiert bereits. "
+msgstr "Το αρχείο `%s' υπάρχει ήδη. "
 
 #: g10/openfile.c:86
 msgid "Overwrite (y/N)? "
-msgstr "άberschreiben (j/N)? "
+msgstr "Επικάλυψη (y/N); "
 
 #: g10/openfile.c:119
 #, c-format
 msgid "%s: unknown suffix\n"
-msgstr "%s: unbekannte Dateinamenerweiterung\n"
+msgstr "%s: άγνωστη κατάληξη\n"
 
 #: g10/openfile.c:141
 msgid "Enter new filename"
-msgstr "Neuen Dateinamen eingeben"
+msgstr "Πληκτρολογήστε ένα νέο όνομα αρχείου"
 
 #: g10/openfile.c:184
 msgid "writing to stdout\n"
-msgstr "Schreiben auf die Standardausgabe\n"
+msgstr "εγγραφή στην stdout\n"
 
 #: g10/openfile.c:273
 #, c-format
 msgid "assuming signed data in `%s'\n"
-msgstr "die unterzeichneten Daten sind wohl in '%s'\n"
+msgstr "υπόθεση υπογεγραμμένων δεδομένων στο `%s'\n"
 
 #: g10/openfile.c:323
 #, c-format
 msgid "%s: new options file created\n"
-msgstr "%s: neue Optionendatei erstellt\n"
+msgstr "%s: δημιουργήθηκε νέο αρχείο επιλογών\n"
 
 #: g10/openfile.c:350
 #, c-format
 msgid "%s: can't create directory: %s\n"
-msgstr "%s: Verzeichnis kann nicht erzeugt werden: %s\n"
+msgstr "%s: αδυναμία δημιουργίας καταλόγου: %s\n"
 
 #: g10/openfile.c:353
 #, c-format
 msgid "%s: directory created\n"
-msgstr "%s: Verzeichnis erzeugt\n"
+msgstr "%s: κατάλογος δημιουργήθηκε\n"
 
 #: g10/openfile.c:355
 msgid "you have to start GnuPG again, so it can read the new options file\n"
 msgstr ""
-"Sie mόssen GnuPG noch einmal starten, damit es die neue Optionsdatei liest\n"
+"πρέπει να επανεκκινήσετε το GnuPG, ώστε να διαβάσει το νέο αρχείο επιλογών\n"
 
 #: g10/encr-data.c:91
 msgid ""
 "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr ""
-"Warnung: Botschaft wurde mit einem unsicheren Schlόssel verschlόsselt.\n"
+"ΠΡΟΕΙΔΟΠΟΙΗΣΗ: το μήνυμα κρυπτογραφήθηκε με αδύναμο κλειδί στο\n"
+"συμμετρικό κρυπταλγόριθμο.\n"
 
 #: g10/encr-data.c:98
 msgid "problem handling encrypted packet\n"
-msgstr "Problem beim Bearbeiten des verschlόsselten Pakets\n"
+msgstr "πρόβλημα στο χειρισμό κρυπτογραφημένου πακέτου\n"
 
 #: g10/seskey.c:52
 msgid "weak key created - retrying\n"
-msgstr "Unsicherer Schlόssel erzeugt - neuer Versuch\n"
+msgstr "δημιουργήθηκε αδύναμο κλειδί - επανάληψη προσπάθειας\n"
 
 #: g10/seskey.c:57
 #, c-format
 msgid "cannot avoid weak key for symmetric cipher; tried %d times!\n"
 msgstr ""
-"Trotz %d-fachen Versuch konnte die Erzeugung eines unsicheren Schlόssels fόr "
-"sym.Verschlόsselung nicht vermieden werden!\n"
+"αδυναμία αποφυγής αδύναμου κλειδιού για συμμετρικό κρυπταλγόριθμο, δοκιμή "
+"για %d φορές!\n"
 
 #: g10/delkey.c:116
 msgid "can't do that in batchmode without \"--yes\"\n"
-msgstr "Dies kann im Batchmodus ohne \"--yes\" nicht durchgefόhrt werden.\n"
+msgstr "δεν μπορεί να γίνει αυτό σε κατάσταση δέσμης χωρίς το \"--yes\"\n"
 
 #: g10/delkey.c:138
 msgid "Delete this key from the keyring? "
-msgstr "Diesen Schlόssel aus dem Schlόsselbund lφschen? "
+msgstr "Διαγραφή αυτού του κλειδιού από τη κλειδοθήκη; "
 
 #: g10/delkey.c:146
 msgid "This is a secret key! - really delete? "
-msgstr "Dies ist ein privater Schlόssel! - Wirklich lφschen? "
+msgstr "Αυτό είναι ένα μυστικό κλειδί! - Σίγουρα να διαγραφεί; "
 
 #: g10/delkey.c:156
-#, c-format
+#, fuzzy, c-format
 msgid "deleting keyblock failed: %s\n"
-msgstr "lφschen des Schlόsselblocks fehlgeschlagen: %s\n"
+msgstr "αρίθμηση keyblocks απέτυχε: %s\n"
 
 #: g10/delkey.c:185
-#, c-format
+#, fuzzy, c-format
 msgid "there is a secret key for public key \"%s\"!\n"
-msgstr ""
-"Es gibt einen privaten Schlόssel zu diesem φffentlichen Schlόssel \"%s\"!\n"
+msgstr "υπάρχει ένα μυστικό κλειδί για αυτό το δημόσιο κλειδί!\n"
 
 #: g10/delkey.c:187
+#, fuzzy
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr ""
-"Verwenden Sie zunδchst das Kommando \"--delete-secret-key\", um ihn zu "
-"entfernen.\n"
+"χρησιμοποιείστε πρώτα την επιλογή \"--delete-secret-key\" για διαγραφή.\n"
 
 #: g10/helptext.c:47
 msgid ""
@@ -3962,10 +3960,10 @@ msgid ""
 "to any 3rd party.  We need it to implement the web-of-trust; it has nothing\n"
 "to do with the (implicitly created) web-of-certificates."
 msgstr ""
-"Sie mόssen selbst entscheiden, welchen Wert Sie hier eintragen; dieser Wert\n"
-"wird niemals an eine dritte Seite weitergegeben.  Wir brauchen diesen Wert,\n"
-"um das \"Netz des Vertrauens\" aufzubauen.  Dieses hat nichts mit dem\n"
-"(implizit erzeugten) \"Netz der Zertifikate\" zu tun."
+"Είναι απόφαση σας να ορίσετε τιμή εδώ. Αυτή η τιμή δεν θα εξαχθεί\n"
+"ποτέ σε τρίτο πρόσωπο.  Τη χρειαζόμαστε για εφαρμογή του ιστού-"
+"εμπιστοσύνης,\n"
+"δεν έχει τίποτα να κάνει με τον (σιωπηλά δημιουργημένο) ιστό-πιστοποιητικών."
 
 #: g10/helptext.c:53
 msgid ""
@@ -3974,28 +3972,23 @@ msgid ""
 "access to the secret key.  Answer \"yes\" to set this key to\n"
 "ultimately trusted\n"
 msgstr ""
-"Um das Web-of-Trust aufzubauen muί GnuPG wissen, welchen Schlόsseln\n"
-"uneingeschrδnkt vertraut wird. Das sind όblicherweise die Schlόssel\n"
-"auf deren geheimen Schlόssel Sie Zugruff haben.\n"
-"Antworten Sie mit \"yes\" um diesen Schlόssel uneingeschrδnkt zu vertrauen\n"
 
 #: g10/helptext.c:60
 msgid "If you want to use this revoked key anyway, answer \"yes\"."
 msgstr ""
-"Wenn Sie diesen widerrufenen Schlόssel trotzdem benutzen wollen,\n"
-"so antworten Sie mit \"ja\"."
+"Εάν θέλετε να χρησιμοποιήσετε αυτό το ανακλήθεν κλειδί, απαντήστε \"yes\"."
 
 #: g10/helptext.c:64
 msgid "If you want to use this untrusted key anyway, answer \"yes\"."
 msgstr ""
-"Wenn Sie diesen nicht vertrauenswόrdigen Schlόssel trotzdem benutzen "
-"wollen,\n"
-"so antworten Sie mit \"ja\"."
+"Εάν θέλετε να χρησιμοποιήσετε αυτό το μη εμπιστευμένο κλειδί, απαντήστε \"yes"
+"\"."
 
 #: g10/helptext.c:68
 msgid ""
 "Enter the user ID of the addressee to whom you want to send the message."
-msgstr "Geben Sie die User-ID dessen ein, dem Sie die Botschaft senden wollen."
+msgstr ""
+"Πληκτρολογήστε το user ID του αποδέκτη αυτού που θέλετε να στείλετε μήνυμα."
 
 #: g10/helptext.c:72
 msgid ""
@@ -4017,28 +4010,24 @@ msgid ""
 "this is the reason why the encryption only ElGamal key is not available in\n"
 "this menu."
 msgstr ""
-"Wδhlen Sie die zu verwendende Methode aus.\n"
+"Επιλέξτε τον αλγόριθμο που θέλετε να χρησιμοποιήσετε.\n"
 "\n"
-"DSA (alias DSS) bedeutet \"digital signature algorithm\" (Digitales\n"
-"  Unterschrift-Verfahren). Es kann nur zum Unterschreiben und Beglaubigen\n"
-"  benutzt werden. Dies ist das empfohlene Verfahren, da dessen άberprόfung\n"
-"  wesentlich schneller ablδuft, als die von \"ElGamal\".\n"
+"DSA (επίσης γνωστός σαν DSS) είναι ο αλγόριθμος ψηφιακής υπογραφής\n"
+"και μπορεί να χρησιμοποιηθεί μόνο για υπογραφές.  Είναι ο προτεινόμενος\n"
+"αλγόριθμος επειδή η επαλήθευση των DSA υπογραφών είναι ταχύτερη από\n"
+"των υπογραφών τύπου ElGamal.\n"
 "\n"
-"ElGamal ist ein Verfahren fόr Unterschrift, Beglaubigung und "
-"Verschlόsselung\n"
-"  OpenPGP unterscheidet zwischen zwei Arten von ElGamal: eines nur zum\n"
-"  Unterschreiben/Beglaubigen und eines zusδtzlich zum Verschlόsseln.\n"
-"  Eigentlich sind diese Arten identisch; allerdings mόssen einige Parameter\n"
-"  auf eine besondere Art gewδhlt werden, um einen sicheren Schlόssel fόr\n"
-"  Unterschriften zu erzeugen. Dieses Programm macht dies zwar so, aber "
-"andere\n"
-"  Programme sind laut der OpenPGP-Spezifikation nicht verpflichtet, die\n"
-"  zweite Art (die mit zusδtzlichem Verschlόsseln) zu verstehen.\n"
+"ElGamal είναι ένας αλγόριθμος για χρήση και σε υπογραφές και για κρυπτο-\n"
+"γράφηση. Το OpenPGP ξεχωρίζει τις δύο \"γεύσεις\" αυτού του αλγόριθμου:\n"
+"ένα κρυπτογράφησης-μόνο και ένα υπογραφής-και-κρυπτογράφησης, στην\n"
+"πραγματικότητα είναι ο ίδιος, αλλά κάποιοι παράμετροι πρέπει να επιλεγούν\n"
+"με ένα ειδικό τρόπο για να δημιουργηθεί ένα ασφαλές κλειδί για υπογραφές.\n"
+"Αυτό το πρόγραμμα το κάνει, αλλά σε άλλες OpenPGP υλοποιήσεις δεν\n"
+"είναι απαραίτητο να καταλαβαίνουν αυτό το συνδυασμό (γεύση).\n"
 "\n"
-"Der Hauptschlόssel (\"primary Key\") muί auf jeden Fall zum Unterschreiben "
-"fδhig\n"
-"sein. Deshalb kann ein nur-Verschlόssel-ElGamal-Schlόssel dafόr nicht\n"
-"verwendet werden."
+"Το πρώτο (πρωτεύον) κλειδί πρέπει να είναι πάντοτε ένα κλειδί ικανό για\n"
+"υπογραφή. Αυτός είναι ο λόγος για τον οποίο ο κρυπτογράφησης-μόνο\n"
+"κλειδί ElGamal δεν είναι διαθέσιμο σε αυτό το μενού."
 
 #: g10/helptext.c:92
 msgid ""
@@ -4046,20 +4035,18 @@ msgid ""
 "because they are not supported by all programs and signatures created\n"
 "with them are quite large and very slow to verify."
 msgstr ""
-"Obwohl diese Schlόssel in RFC 2440 definiert sind, ist ihre Verwendung "
-"nicht\n"
-"empfohlen. Sie werden nδmlich nicht von allen Programmen unterstόtzt.\n"
-"Auίerdem sind damit ezeugte Unterschriften recht groί und ihre άberprόfung\n"
-"ist langsam."
+"Αν και αυτά τα κλειδιά περιγράφονται στο RFC2440 δεν προτείνονται\n"
+"επειδή δεν υποστηρίζονται από όλα τα προγράμματα και οι υπογραφές που\n"
+"έχουν δημιουργηθεί από αυτά είναι μεγάλες και πολύ αργές στην επαλήθευση."
 
 #: g10/helptext.c:99
 msgid "Enter the size of the key"
-msgstr "Wδhlen Sie die gewόnschte Schlόssellδnge"
+msgstr "Πληκτρολογήστε το μέγεθος του κλειδιού"
 
 #: g10/helptext.c:103 g10/helptext.c:108 g10/helptext.c:120 g10/helptext.c:152
 #: g10/helptext.c:180 g10/helptext.c:185 g10/helptext.c:190
 msgid "Answer \"yes\" or \"no\""
-msgstr "Geben Sie \"ja\" oder \"nein\" ein"
+msgstr "Απαντήστε \"yes\"(ναι) ή \"no\"(όχι)"
 
 #: g10/helptext.c:113
 msgid ""
@@ -4068,24 +4055,22 @@ msgid ""
 "get a good error response - instead the system tries to interpret\n"
 "the given value as an interval."
 msgstr ""
-"Geben Sie den benφtigten Wert so an, wie er im Prompt erscheint.\n"
-"Es ist zwar mφglich ein \"ISO\"-Datum (JJJJ-MM-DD) einzugeben, aber man\n"
-"erhδlt dann ggfs. keine brauchbaren Fehlermeldungen - stattdessen versucht\n"
-"der Rechner den Wert als Intervall (von-bis) zu deuten."
+"Πληκτρολογήστε την απαιτούμενη τιμή όπως απεικονίζετε.\n"
+"Μπορείτε να εισάγετε μια ημερομηνία ISO (YYYY-MM-DD) αλλά\n"
+"δεν θα λάβετε μια καλή απάντηση σφάλματος - αντίθετα το σύστημα\n"
+"προσπαθεί να ερμηνεύσει την τιμή σαν διάστημα."
 
 #: g10/helptext.c:125
 msgid "Enter the name of the key holder"
-msgstr "Geben Sie den Namen des Schlόsselinhabers ein"
+msgstr "Πληκτρολογήστε το όνομα του κλειδοκράτορα"
 
 #: g10/helptext.c:130
 msgid "please enter an optional but highly suggested email address"
-msgstr ""
-"Geben Sie eine E-Mail-Adresse ein. Dies ist zwar nicht unbedingt notwendig,\n"
-"aber sehr empfehlenswert."
+msgstr "πληκτρολογήστε προαιρετικά μια διεύθυνση email (συνιστάται)"
 
 #: g10/helptext.c:134
 msgid "Please enter an optional comment"
-msgstr "Geben Sie - bei Bedarf - einen Kommentar ein"
+msgstr "Παρακαλώ προαιρετικά πληκτρολογήστε ένα σχόλιο"
 
 #: g10/helptext.c:139
 msgid ""
@@ -4095,16 +4080,17 @@ msgid ""
 "O  to continue with key generation.\n"
 "Q  to to quit the key generation."
 msgstr ""
-"N  um den Namen zu δndern.\n"
-"K  um den Kommentar zu δndern.\n"
-"E  um die E-Mail-Adresse zu δndern.\n"
-"F  um mit der Schlόsselerzeugung fortzusetzen.\n"
-"B  um die Schlόsselerzeugung abbrechen."
+"N  για αλλαγή του ονόματος.\n"
+"C  για αλλαγή του σχολίου.\n"
+"E  για αλλαγή της διεύθυνσης email.\n"
+"O  για συνέχεια της δημιουργίας κλειδιού.\n"
+"Q  για να τερματίσετε τη δημιουργία κλειδιού."
 
 #: g10/helptext.c:148
 msgid "Answer \"yes\" (or just \"y\") if it is okay to generate the sub key."
 msgstr ""
-"Geben Sie \"ja\" (oder nur \"j\") ein, um den Unterschlόssel zu erzeugen."
+"Απαντήστε \"yes\" (ή απλά \"y\") εάν είναι εντάξει να δημιουργηθεί το "
+"υποκλειδί."
 
 #: g10/helptext.c:156
 msgid ""
@@ -4146,57 +4132,22 @@ msgid ""
 "\n"
 "If you don't know what the right answer is, answer \"0\"."
 msgstr ""
-"Wenn Sie die User-ID eines Schlόssels beglaubigen wollen, sollten Sie "
-"zunδchst\n"
-"sicherstellen, daί der Schlόssel demjenigen gehφrt, der in der User-ID "
-"genannt\n"
-"ist. Fόr Dritte ist es hilfreich zu wissen, wie gut diese Zuordnung "
-"όberprόft\n"
-"wurde.\n"
-"\n"
-"\"0\" zeigt, daί Sie keine bestimmte Aussage όber die Sorgfalt der \n"
-"    Schlόsselzuordnung machen.\n"
-"\n"
-"\"1\" Sie glauben, daί der Schlόssel der benannten Person gehφrt,\n"
-"    aber Sie konnten oder nahmen die άberpόfung όberhaupt nicht vor.\n"
-"    Dies ist hilfreich fόr eine \"persona\"-άberprόfung, wobei man den\n"
-"    Schlόssel eines Pseudonym-Trδgers beglaubigt\n"
-"\n"
-"\"2\" Sie nahmen eine flόchtige άberprόfung vor. Das heisst Sie haben z.B.\n"
-"    den Schlόsselfingerabdruck kontrolliert und die User-ID des Schlόssels\n"
-"    anhand des Fotos geprόft.\n"
-"\n"
-"\"3\" Sie haben eine ausfόhrlich Kontrolle des Schlόssels vorgenommen.\n"
-"    Das kann z.B. die Kontrolle des Schlόsselfingerabdrucks mit dem\n"
-"    Schlόsselinhaber persφnlich vorgenommen haben; daί Sie die User-ID des\n"
-"    Schlόssel anhand einer schwer zu fδlschenden Urkunde mit Foto (wie z.B.\n"
-"    einem Paί) abgeglichen haben und schliesslich per E-Mail-Verkehr die\n"
-"    E-Mail-Adresse als zum Schlόsselbesitzer gehφrig erkannt haben.\n"
-"\n"
-"Beachten Sie, daί diese Beispiele fόr die Antworten 2 und 3 *nur* Beispiele "
-"sind.\n"
-"Schluίendlich ist es Ihre Sache, was Sie unter \"flόchtig\" oder "
-"\"ausfόhrlich\"\n"
-"verstehen, wenn Sie Schlόssel Dritter beglaubigen.\n"
-"\n"
-"Wenn Sie nicht wissen, wie Sie antworten sollen, wδhlen Sie \"0\"."
 
 #: g10/helptext.c:194
 msgid "Answer \"yes\" is you want to sign ALL the user IDs"
-msgstr "Geben Sie \"ja\" (oder nur \"j\") ein, um alle User-IDs zu beglaubigen"
+msgstr "Απαντήστε \"yes\" εάν θέλετε να υπογράψετε ΟΛΑ τα user ID"
 
 #: g10/helptext.c:198
 msgid ""
 "Answer \"yes\" if you really want to delete this user ID.\n"
 "All certificates are then also lost!"
 msgstr ""
-"Geben Sie \"ja\" (oder nur \"j\") ein, um diese User-ID zu LΦSCHEN.\n"
-"Alle Zertifikate werden dann auch weg sein!"
+"Απαντήστε \"yes\" εάν πραγματικά θέλετε να διαγραφεί αυτό\n"
+"το user ID.  Όλα τα πιστοποιητικά θα χαθούν τότε!"
 
 #: g10/helptext.c:203
 msgid "Answer \"yes\" if it is okay to delete the subkey"
-msgstr ""
-"Geben Sie \"ja\" (oder nur \"j\") ein, um diesen Unterschlόssel zu lφschen"
+msgstr "Απαντήστε \"yes\" εάν είναι εντάξει να διαγραφεί το υποκλειδί"
 
 #: g10/helptext.c:208
 msgid ""
@@ -4204,11 +4155,10 @@ msgid ""
 "to delete this signature because it may be important to establish a\n"
 "trust connection to the key or another key certified by this key."
 msgstr ""
-"Dies ist eine gόltige Beglaubigung fόr den Schlόssel. Es ist normalerweise\n"
-"unnφtig sie zu lφschen. Sie ist mφglicherweise sogar notwendig, um einen\n"
-"Trust-Weg zu diesem oder einem durch diesen Schlόssel beglaubigten "
-"Schlόssel\n"
-"herzustellen."
+"Αυτή είναι μια έγκυρη υπογραφή στο κλειδί. Κανονικά δεν θα θέλατε\n"
+"να διαγραφεί αυτή η υπογραφή επειδή μπορεί να είναι απαραίτητη για\n"
+"καθιέρωση μια σύνδεσης εμπιστοσύνης στο κλειδί ή σε ένα άλλο κλειδί\n"
+"πιστοποιημένο από αυτό."
 
 #: g10/helptext.c:213
 msgid ""
@@ -4217,19 +4167,18 @@ msgid ""
 "know which key was used because this signing key might establish\n"
 "a trust connection through another already certified key."
 msgstr ""
-"Diese Beglaubigung kann nicht geprόft werden, da Sie den passenden "
-"Schlόssel\n"
-"nicht besitzen. Sie sollten die Lφschung der Beglaubigung verschieben, bis\n"
-"sie wissen, welcher Schlόssel verwendet wurde. Denn vielleicht wόrde genau\n"
-"diese Beglaubigung den \"Trust\"-Weg kompletieren."
+"Αυτή η υπογραφή δεν μπορεί να ελεγχθεί επειδή δεν έχετε το αντίστοιχο\n"
+"κλειδί.  Πρέπει να αναβάλλετε τη διαγραφή του, μέχρι να μάθετε πιο κλειδί\n"
+"χρησιμοποιήθηκε γιατί αυτό το κλειδί υπογραφής μπορεί να καθιερώσει\n"
+"μια σύνδεση εμπιστοσύνης μέσω ενός άλλου ήδη πιστοποιημένου κλειδιού."
 
 #: g10/helptext.c:219
 msgid ""
 "The signature is not valid.  It does make sense to remove it from\n"
 "your keyring."
 msgstr ""
-"Diese Beglaubigung ist ungόltig. Es ist sinnvoll sie aus Ihrem\n"
-"Schlόsselbund zu entfernen."
+"Η υπογραφή δεν είναι έγκυρη.  Είναι συνετό να διαγραφεί από τη\n"
+"κλειδοθήκη σας."
 
 #: g10/helptext.c:223
 msgid ""
@@ -4239,13 +4188,11 @@ msgid ""
 "only if this self-signature is for some reason not valid and\n"
 "a second one is available."
 msgstr ""
-"Diese Beglaubigung bindet die User-ID an den Schlόssel. Normalerweise ist\n"
-"es nicht gut, solche Beglaubigungen zu entfernen. Um ehrlich zu sein:\n"
-"Es kφnnte dann sein, daί GnuPG diesen Schlόssel gar nicht mehr benutzen "
-"kann.\n"
-"Sie sollten diese Eigenbeglaubigung also nur dann entfernen, wenn sie aus\n"
-"irgendeinem Grund nicht gόltig ist und eine zweite Beglaubigung verfόgbar "
-"ist."
+"Αυτή είναι μια υπογραφή που συνδέει το user ID στο κλειδί. Δεν\n"
+"είναι συνήθως καλή ιδέα να διαγραφεί μια τέτοια υπογραφή.  Στην\n"
+"πραγματικότητα το GnuPG ίσως να μη μπορεί να χρησιμοποιήσει αυτό\n"
+"το κλειδί πια.  Οπότε να συνεχίσετε μόνο εάν αυτή η ιδιο-υπογραφή για\n"
+"κάποιο λόγο δεν είναι έγκυρη ή υπάρχει μια δεύτερη."
 
 #: g10/helptext.c:231
 msgid ""
@@ -4253,39 +4200,33 @@ msgid ""
 "to the current list of preferences.  The timestamp of all affected\n"
 "self-signatures will be advanced by one second.\n"
 msgstr ""
-"Δndern der Voreinstellung aller User-IDs (oder nur der ausgewδhlten)\n"
-"auf die aktuelle Liste der Voreinstellung. Die Zeitangaben aller "
-"betroffenen\n"
-"Eigenbeglaubigungen werden um eine Sekunde vorgestellt.\n"
 
 #: g10/helptext.c:238
+#, fuzzy
 msgid "Please enter the passhrase; this is a secret sentence \n"
-msgstr "Bitte geben Sie das Mantra ein. Dies ist ein geheimer Satz \n"
+msgstr ""
+"Παρακαλώ πληκτρολογήστε τη φράση κλειδί, αυτή είναι μια μυστική πρόταση\n"
+"  Blurb, blurb,.... "
 
 #: g10/helptext.c:244
 msgid "Please repeat the last passphrase, so you are sure what you typed in."
-msgstr ""
-"Um sicher zu gehen, daί Sie sich bei der Eingabe des Mantras nicht\n"
-"vertippt haben, geben Sie diese bitte nochmal ein.  Nur wenn beide Eingaben\n"
-"όbereinstimmen, wird das Mantra akzeptiert."
+msgstr "Παρακαλώ επαναλάβετε τη τελευταία φράση κλειδί, για σιγουριά."
 
 #: g10/helptext.c:248
 msgid "Give the name of the file to which the signature applies"
-msgstr ""
-"Geben Sie den Namen der Datei an, zu dem die abgetrennte Unterschrift gehφrt"
+msgstr "Δώστε το όνομα του αρχείου στο οποίο εφαρμόζεται η υπογραφή"
 
 #: g10/helptext.c:253
 msgid "Answer \"yes\" if it is okay to overwrite the file"
-msgstr "Geben Sie \"ja\" ein, wenn Sie die Datei όberschreiben mφchten"
+msgstr "Απαντήστε \"yes\" εάν είναι εντάξει να επικαλυφθεί το αρχείο"
 
 #: g10/helptext.c:258
 msgid ""
 "Please enter a new filename. If you just hit RETURN the default\n"
 "file (which is shown in brackets) will be used."
 msgstr ""
-"Geben Sie bitte einen neuen Dateinamen ein. Falls Sie nur die\n"
-"Eingabetaste betδtigen, wird der (in Klammern angezeigte) Standarddateiname\n"
-"verwendet."
+"Παρακαλώ εισάγετε ένα νέο όνομα αρχείου. Εάν απλά πατήσετε RETURN\n"
+"το εξ'ορισμού αρχείο (απεικονίζεται στις αγκύλες) θα χρησιμοποιηθεί."
 
 #: g10/helptext.c:264
 msgid ""
@@ -4302,18 +4243,18 @@ msgid ""
 "      Use this to state that the user ID should not longer be used;\n"
 "      this is normally used to mark an email address invalid.\n"
 msgstr ""
-"Sie sollten einen Grund fόr die Zertifizierung angeben. Je nach\n"
-"Zusammenhang kφnnen Sie aus dieser Liste auswδhlen:\n"
-"  \"Schlόssel wurde kompromitiert\"\n"
-"      Falls Sie Grund zu der Annahme haben, daί nicht berechtigte Personen\n"
-"      Zugriff zu Ihrem geheimen Schlόssel hatten\n"
-"  \"Schlόssel ist όberholt\"\n"
-"      Falls Sie diesen Schlόssel durch einem neuen ersetzt haben.\n"
-"  \"Schlόssel wird nicht mehr benutzt\"\n"
-"      Falls Sie diesen Schlόssel zurόckgezogen haben.\n"
-"  \"User-ID ist nicht mehr gόltig\"\n"
-"      Um bekanntzugeben, daί die User-ID nicht mehr benutzt werden soll.\n"
-"      So weist man normalerweise auf eine ungόltige E-Mailadresse hin.\n"
+"Πρέπει να ορίσετε ένα λόγο για την πιστοποίηση.  Ανάλογα με τα\n"
+"συμφραζόμενα, έχετε τη δυνατότητα να επιλέξετε από τη λίστα:\n"
+"  \"Το κλειδί έχει εκτεθεί\"\n"
+"      Χρησιμοποιείστε εάν πιστεύετε ότι μη εξουσιοδοτημένα πρόσωπα\n"
+"      έχουν πρόσβαση στο μυστικό κλειδί σας.\n"
+"  \"Το κλειδί έχει παρακαμθεί\"\n"
+"      Χρησιμοποιείστε εάν έχετε αντικαταστήσει το κλειδί με ένα άλλο.\n"
+"  \"Το κλειδί δεν χρησιμοποιείτε πλέον\"\n"
+"      Χρησιμοποιείστε εάν έχετε αποσύρει αυτό το κλειδί.\n"
+"  \"Το user ID δεν είναι πλέον έγκυρο\"\n"
+"      Χρησιμοποιείστε αυτό για να δηλώσετε ότι το user ID δεν πρέπει\n"
+"      να χρησιμοποιείται πια. Για να ορίσετε άκυρη μια διεύθυνση email.\n"
 
 #: g10/helptext.c:280
 msgid ""
@@ -4321,390 +4262,335 @@ msgid ""
 "revocation certificate.  Please keep this text concise.\n"
 "An empty line ends the text.\n"
 msgstr ""
-"Wenn Sie mφchten, kφnnen Sie hier einen Text eingeben, der darlegt, warum\n"
-"Sie diesen Widerruf herausgeben.  Der Text sollte mφglichst knapp sein.\n"
-"Eine Leerzeile beendet die Eingabe.\n"
+"Εάν επιθυμείτε, μπορείτε να πληκτρολογήσετε ένα κείμενο που\n"
+"περιγράφει τον λόγο που εκδίδεται αυτό το πιστοποιητικό ανάκλησης.\n"
+"Παρακαλώ κρατήστε αυτό το κείμενο συνοπτικό. Μια άδεια γραμμή\n"
+"λήγει το κείμενο.\n"
 
 #: g10/helptext.c:295
 msgid "No help available"
-msgstr "Keine Hilfe vorhanden."
+msgstr "Δεν υπάρχει διαθέσιμη βοήθεια"
 
 #: g10/helptext.c:303
 #, c-format
 msgid "No help available for `%s'"
-msgstr "Keine Hilfe fόr '%s' vorhanden."
+msgstr "Δεν υπάρχει διαθέσιμη βοήθεια για `%s'"
 
 #: g10/keydb.c:177
-#, c-format
+#, fuzzy, c-format
 msgid "error creating keyring `%s': %s\n"
-msgstr "Fehler beim Erzeugen des Schlόsselbundes `%s': %s\n"
+msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
 
 #: g10/keydb.c:188
 #, c-format
 msgid "changing permission of  `%s' failed: %s\n"
-msgstr "Δndern der Zugriffsrechte fόr `%s' ist fehlgeschlagen: %s\n"
+msgstr ""
 
 #: g10/keydb.c:197
-#, c-format
+#, fuzzy, c-format
 msgid "keyring `%s' created\n"
-msgstr "Schlόsselbund `%s' erstellt\n"
+msgstr "%s: κλειδοθήκη δημιουργήθηκε\n"
 
 #: g10/keydb.c:587
-#, c-format
+#, fuzzy, c-format
 msgid "failed to rebuild keyring cache: %s\n"
-msgstr "Schlόsselbund-Cache konnte nicht neu erzeugt werden: %s\n"
+msgstr "%s: αδυναμία δημιουργίας hashtable: %s\n"
 
 #: g10/keyring.c:1235
 msgid "WARNING: 2 files with confidential information exists.\n"
-msgstr "Warnung: Zwei Dateien mit vertraulichem Inhalt vorhanden.\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: 2 αρχεία με εμπιστευτικές πληροφορίες υπάρχουν.\n"
 
 #: g10/keyring.c:1237
 #, c-format
 msgid "%s is the unchanged one\n"
-msgstr "%s ist der Unverδnderte\n"
+msgstr "%s είναι το αμετάβλητο\n"
 
 #: g10/keyring.c:1238
 #, c-format
 msgid "%s is the new one\n"
-msgstr "%s ist der Neue\n"
+msgstr "%s είναι το νέο\n"
 
 #: g10/keyring.c:1239
 msgid "Please fix this possible security flaw\n"
-msgstr "Bitte diesen potentiellen Sicherheitsmangel beseitigen\n"
+msgstr "Παρακαλώ διορθώστε αυτή την πιθανή \"τρύπα\" ασφαλείας\n"
 
 #: g10/keyring.c:1337
-#, c-format
+#, fuzzy, c-format
 msgid "checking keyring `%s'\n"
-msgstr "Prόfen des Schlόsselbundes `%s'\n"
+msgstr "αδυναμία κλειδώματος της κλειδοθήκης `%s': %s\n"
 
 #: g10/keyring.c:1368
-#, c-format
+#, fuzzy, c-format
 msgid "%lu keys so far checked (%lu signatures)\n"
-msgstr "%lu Schlόssel bislang geprόft (%lu Beglaubigungen)\n"
+msgstr "%lu κλειδιά έχουν μέχρι τώρα επεξεργαστεί\n"
 
 #: g10/keyring.c:1379
-#, c-format
+#, fuzzy, c-format
 msgid "%lu keys checked (%lu signatures)\n"
-msgstr "%lu Schlόssel geprόft (%lu Beglaubigungen)\n"
+msgstr "απεικόνιση της λίστας κλειδιών και υπογραφών"
 
 #: g10/keyring.c:1441
 #, c-format
 msgid "%s: keyring created\n"
-msgstr "%s: Schlόsselbund erstellt\n"
+msgstr "%s: κλειδοθήκη δημιουργήθηκε\n"
 
-#~ msgid "key %08lX: our copy has no self-signature\n"
-#~ msgstr "Schlόssel %08lX: Unsere Kopie hat keine Eigenbeglaubigung\n"
-
-#~ msgid "Do you really need such a large keysize? "
-#~ msgstr "Brauchen Sie wirklich einen derartig langen Schlόssel? "
-
-#~ msgid "   signed by %08lX at %s\n"
-#~ msgstr "   beglaubigt durch %08lX um %s\n"
-
-#~ msgid "--delete-secret-key user-id"
-#~ msgstr "--delete-secret-key User-ID"
-
-#~ msgid "--delete-key user-id"
-#~ msgstr "--delete-key User-ID"
-
-#~ msgid "--delete-secret-and-public-key user-id"
-#~ msgstr "--delete-secret-and-public-key User-ID"
-
-#~ msgid "Enter the user ID: "
-#~ msgstr "Geben Sie die User-ID ein: "
-
-#~ msgid "skipped: public key already set with --encrypt-to\n"
-#~ msgstr ""
-#~ "όbersprungen: φffentlicher Schlόssel bereits mittels --encrypt-to "
-#~ "gesetzt\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "WARNING: This is a PGP2-style key\n"
-#~ msgstr "WARNUNG: '%s' ist eine leere Datei.\n"
-
-# valid user replies (not including 1..4)
-#~ msgid "sSmMqQ"
-#~ msgstr "sSmMqQ"
-
-#~ msgid "no keyserver known (use option --keyserver)\n"
-#~ msgstr "Kein Schlόsselserver bekannt (Option --keyserver verwenden)\n"
-
-#~ msgid "%s: not a valid key ID\n"
-#~ msgstr "%s: Dies ist keine gόltige Schlόssel-ID\n"
-
-#~ msgid "duplicate (short) key ID %08lX\n"
-#~ msgstr "Φffentlicher Schlόssel ist %08lX\n"
-
-#~ msgid "%lu key(s) to refresh\n"
-#~ msgstr "\t%lu Schlόssel mit Fehlern\n"
+#~ msgid "too many random bits requested; the limit is %d\n"
+#~ msgstr "ζητήθηκε υπερβολικός αριθμός τυχαίων bit; το όριο είναι %d\n"
 
 #~ msgid "|[NAMES]|check the trust database"
-#~ msgstr "|[NAMEN]|άberprόfen der \"Trust\"-Datenbank"
+#~ msgstr "|[ΟΝΟΜΑΤΑ]|έλεγχος της βάσης δεδομένων εμπιστοσύνης"
+
+#~ msgid "--delete-secret-key user-id"
+#~ msgstr "--delete-secret-key user-id"
+
+#~ msgid "--delete-key user-id"
+#~ msgstr "--delete-key user-id"
+
+#~ msgid "--delete-secret-and-public-key user-id"
+#~ msgstr "--delete-secret-and-public-key user-id"
+
+#~ msgid "For info see http://www.gnupg.org"
+#~ msgstr "Για πληροφορίες δείτε το http://www.gnupg.org"
+
+#~ msgid "sSmMqQ"
+#~ msgstr "sSmMqQ"
 
 #~ msgid ""
 #~ "Could not find a valid trust path to the key.  Let's see whether we\n"
 #~ "can assign some missing owner trust values.\n"
 #~ "\n"
 #~ msgstr ""
-#~ "Fόr diesen Schlόssel konnte kein gόltiger \"Trust Path\" gefunden "
-#~ "werden.\n"
-#~ "Mal sehen, ob wir sonst irgendwie ein paar fehlende \"Owner trust\" "
-#~ "Werte \n"
-#~ "ermitteln kφnnen.\n"
+#~ "Αδυναμία εύρεσης μιας έγκυρης διαδρομής εμπιστοσύνης προς\n"
+#~ "το κλειδί.  Δοκιμή εάν γίνεται να ορισθούν κάποιες χαμένες αξίες\n"
+#~ "εμπιστοσύνης ιδιοκτήτη.\n"
 #~ "\n"
 
 #~ msgid ""
 #~ "No path leading to one of our keys found.\n"
 #~ "\n"
 #~ msgstr ""
-#~ "Kein Pfad fόhrt zu einem unserer Schlόsseln.\n"
+#~ "Δεν υπάρχει διαδρομή που οδηγεί σε ένα από τα κλειδιά που βρέθηκαν.\n"
 #~ "\n"
 
 #~ msgid ""
 #~ "No certificates with undefined trust found.\n"
 #~ "\n"
 #~ msgstr ""
-#~ "Keine Zertifikate mit undefiniertem Vertrauen gefunden.\n"
+#~ "Δεν βρέθηκαν πιστοποιητικά με μη ορισμένη εμπιστοσύνη.\n"
 #~ "\n"
 
 #~ msgid ""
 #~ "No trust values changed.\n"
 #~ "\n"
 #~ msgstr ""
-#~ "Keine \"trust\" Werte geδndert.\n"
+#~ "Δεν μεταβλήθηκαν αξίες εμπιστοσύνης.\n"
 #~ "\n"
 
 #~ msgid "%08lX: no info to calculate a trust probability\n"
 #~ msgstr ""
-#~ "%08lX: Keine Infos zur Berechnung der Vertrauenswahrscheinlichkeit "
-#~ "vorgefunden\n"
+#~ "%08lX: καμμία πληροφορία για τον υπολογισμό πιθανότητας εμπιστοσύνης\n"
+
+#~ msgid "Enter the user ID: "
+#~ msgstr "Εισάγετε ένα user ID: "
+
+#~ msgid "skipped: public key already set with --encrypt-to\n"
+#~ msgstr "παραλείφθηκε: δημόσιο κλειδί ήδη ορίστηκε με --encrypt-to\n"
 
 #~ msgid "%s: error checking key: %s\n"
-#~ msgstr "%s: Fehler beim Prόfen des Schlόssels: %s\n"
-
-#~ msgid "too many entries in unk cache - disabled\n"
-#~ msgstr "zu viele Eintrδge im unk-Lager - abgeschaltet\n"
-
-#~ msgid "secret key %08lX not imported (use %s to allow for it)\n"
-#~ msgstr ""
-#~ "Geheimer Schlόssel %08lX nicht importiert (%s verwenden, um das zu "
-#~ "ermφglichen)\n"
-
-#~ msgid "update of trustdb failed: %s\n"
-#~ msgstr "Δnderung der \"Trust-DB\" fehlgeschlagen: %s\n"
-
-#~ msgid "assuming bad MDC due to an unknown critical bit\n"
-#~ msgstr ""
-#~ "Vermutlich ist das Siegel (MDC) BESCHΔDIGT (wegen unbekanntem \"critical "
-#~ "bit\")\n"
-
-#~ msgid "error reading dir record for LID %lu: %s\n"
-#~ msgstr "Fehler beim Lesen des Dir-Satzes fόr LID %lu: %s\n"
-
-#~ msgid "lid %lu: expected dir record, got type %d\n"
-#~ msgstr "lid %lu: Dir-Satz erwartet, aber es kam Typ %d\n"
-
-#~ msgid "no primary key for LID %lu\n"
-#~ msgstr "Kein Hauptschlόssel fόr LID %lu\n"
-
-#~ msgid "error reading primary key for LID %lu: %s\n"
-#~ msgstr "Fehler beim Lesen den Hauptschlόssels der LID %lu: %s\n"
-
-#~ msgid "get_dir_record: search_record failed: %s\n"
-#~ msgstr "get_dir_record: search_record fehlgeschlagen: %s\n"
-
-#~ msgid "key %08lX: query record failed\n"
-#~ msgstr "Schlόssel %08lX: Satzabfrage fehlgeschlagen\n"
-
-#~ msgid "key %08lX: already in trusted key table\n"
-#~ msgstr "Schlόssel %08lX: Ist bereits in geheimer Schlόsseltabelle\n"
-
-#~ msgid "NOTE: secret key %08lX is NOT protected.\n"
-#~ msgstr "HINWEIS: Geheimer Schlόssel %08lX ist NICHT geschόtzt.\n"
-
-#~ msgid "key %08lX: secret and public key don't match\n"
-#~ msgstr ""
-#~ "Schlόssel %08lX: geheimer und φffentlicher Schlόssel passen nicht "
-#~ "zusammen.\n"
-
-#~ msgid "enumerate secret keys failed: %s\n"
-#~ msgstr "enum_secret_keys fehlgeschlagen: %s\n"
-
-#~ msgid "key %08lX.%lu: Good subkey binding\n"
-#~ msgstr "Schlόssel %08lX.%lu: Korrekte Unterschlόssel-Anbindung\n"
-
-#~ msgid "key %08lX.%lu: Invalid subkey binding: %s\n"
-#~ msgstr "Schlόssel %08lX.%lu: Ungόltige Unterschlόssel-Anbindung: %s\n"
-
-#~ msgid "key %08lX.%lu: Valid key revocation\n"
-#~ msgstr "Schlόssel %08lX.%lu: Gόltiger Schlόsselwiderruf\n"
-
-#~ msgid "key %08lX.%lu: Invalid key revocation: %s\n"
-#~ msgstr "Schlόssel %08lX.%lu: Ungόltiger Schlόsselwiderruf: %s\n"
-
-#~ msgid "key %08lX.%lu: Valid subkey revocation\n"
-#~ msgstr "Schlόssel %08lX.%lu: Gόltiger Unterschlόsselwiderruf\n"
-
-#~ msgid "Good self-signature"
-#~ msgstr "Korrekte Eigenbeglaubigung"
-
-#~ msgid "Invalid self-signature"
-#~ msgstr "Ungόltige Eigenbeglaubigung"
-
-#~ msgid "Valid user ID revocation skipped due to a newer self signature"
-#~ msgstr ""
-#~ "Gόltiger User-ID-Widerruf ignoriert, da eine neuere Eigenbeglaubigung "
-#~ "vorliegt"
-
-#~ msgid "Valid user ID revocation"
-#~ msgstr "Gόltiger User-ID-Widerruf"
-
-#~ msgid "Invalid user ID revocation"
-#~ msgstr "Ungόltiger User-ID-Widerruf"
-
-#~ msgid "Valid certificate revocation"
-#~ msgstr "Gόltiger Zerifikat-Widerruf"
-
-#~ msgid "Good certificate"
-#~ msgstr "Korrektes Zertifikat"
-
-#~ msgid "Invalid certificate revocation"
-#~ msgstr "Ungόltiger Zertifikatswiderruf"
-
-#~ msgid "Invalid certificate"
-#~ msgstr "Ungόltiges Zertifikat"
-
-#~ msgid "sig record %lu[%d] points to wrong record.\n"
-#~ msgstr "Signatursatz %lu[%d] zeigt auf falschen Satz.\n"
-
-#~ msgid "duplicated certificate - deleted"
-#~ msgstr "Doppelte Zertifikate - entfernt"
-
-#~ msgid "tdbio_search_dir failed: %s\n"
-#~ msgstr "tdbio_search_dir fehlgeschlagen: %s\n"
-
-#~ msgid "lid ?: insert failed: %s\n"
-#~ msgstr "lid ?: Einfόgen fehlgeschlagen: %s\n"
-
-#~ msgid "lid %lu: insert failed: %s\n"
-#~ msgstr "lid %lu: Einfόgen fehlgeschlagen: %s\n"
-
-#~ msgid "lid %lu: inserted\n"
-#~ msgstr "lid %lu: eingefόgt\n"
-
-#~ msgid "error reading dir record: %s\n"
-#~ msgstr "Fehler beim Lesen des Verz.Satzes: %s\n"
-
-#~ msgid "\t%lu keys inserted\n"
-#~ msgstr "\t%lu Schlόssel eingefόgt\n"
-
-#~ msgid "enumerate keyblocks failed: %s\n"
-#~ msgstr "enumerate Schlόsselblock fehlgeschlagen: %s\n"
-
-#~ msgid "lid %lu: dir record w/o key - skipped\n"
-#~ msgstr "lid %lu: Dir-Satz ohne Schlόssel - όbergangen\n"
-
-#~ msgid "\t%lu due to new pubkeys\n"
-#~ msgstr "\t%lu wegen neuer Schlόssel\n"
-
-#~ msgid "\t%lu keys skipped\n"
-#~ msgstr "\t%lu Schlόssel όbersprungen\n"
-
-#~ msgid "\t%lu keys updated\n"
-#~ msgstr "\t%lu Schlόssel geδndert\n"
-
-#~ msgid "Ooops, no keys\n"
-#~ msgstr "Huch, keine Schlόssel\n"
-
-#~ msgid "Ooops, no user IDs\n"
-#~ msgstr "Huch, keine User-IDs\n"
-
-#~ msgid "check_trust: search dir record failed: %s\n"
-#~ msgstr "check_trust: Suche nach Dir-Satz fehlgeschlagen: %s\n"
-
-#~ msgid "key %08lX: insert trust record failed: %s\n"
-#~ msgstr "Schlόssel %08lX: 'trust record' einfόgen fehlgeschlagen: %s\n"
-
-#~ msgid "key %08lX.%lu: inserted into trustdb\n"
-#~ msgstr "Schlόssel %08lX.%lu: in \"trustdb\" eingefόgt\n"
-
-#~ msgid "key %08lX.%lu: created in future (time warp or clock problem)\n"
-#~ msgstr ""
-#~ "Schlόssel %08lX.%lu: wurde in der Zukunft erzeugt (Zeitreise oder Uhren "
-#~ "stimmen nicht όberein)\n"
-
-#~ msgid "key %08lX.%lu: expired at %s\n"
-#~ msgstr "Schlόssel %08lX.%lu: verfallen am %s\n"
-
-#~ msgid "key %08lX.%lu: trust check failed: %s\n"
-#~ msgstr "Schlόssel %08lX.%lu: Vertrauensprόfung fehlgeschlagen: %s\n"
-
-#~ msgid "user '%s' not found: %s\n"
-#~ msgstr "Benutzer '%s' nicht gefunden: %s\n"
-
-#~ msgid "problem finding '%s' in trustdb: %s\n"
-#~ msgstr "Problem, '%s' in der Trust-DB zu finden: %s\n"
-
-#~ msgid "user '%s' not in trustdb - inserting\n"
-#~ msgstr "User '%s' ist nicht in der 'Trust'-Datenbank - wird eingefόgt\n"
-
-#~ msgid "failed to put '%s' into trustdb: %s\n"
-#~ msgstr "konnte '%s' nicht in die 'Trust'-Datenbank hineintun: %s\n"
-
-#~ msgid "too many random bits requested; the limit is %d\n"
-#~ msgstr "Zu viele Zufallswerte angefordert: Die Grenze liegt bei %d\n"
-
-#~ msgid "For info see http://www.gnupg.org"
-#~ msgstr "Weitere Infos: siehe http://www.gnupg.org"
+#~ msgstr "%s: σφάλμα στον έλεγχο του κλειδιού: %s\n"
 
 #~ msgid "   (%d) RSA (sign and encrypt)\n"
-#~ msgstr "   (%d) RSA (signieren/beglaubigen und verschlόsseln)\n"
+#~ msgstr "   (%d) RSA (υπογραφή και κρυπτογράφηση)\n"
 
 #~ msgid "Do you really want to create a sign and encrypt key? "
 #~ msgstr ""
-#~ "Mφchten Sie wirklich einen Unterschriften-/Verschlόsselungschlόssel "
-#~ "erzeugen? "
+#~ "Θέλετε σίγουρα να δημιουργήσετε ένα κλειδί υπογραφής και κρυπτογράφησης; "
+
+#~ msgid "Do you really need such a large keysize? "
+#~ msgstr "Χρειάζεστε πραγματικά ένα τόσο μεγάλο μέγεθος κλειδιού;"
 
 #~ msgid "%s: user not found: %s\n"
-#~ msgstr "%s: Benutzer nicht gefunden: %s\n"
+#~ msgstr "%s: ο χρήστης δε βρέθηκε: %s\n"
 
 #~ msgid "certificate read problem: %s\n"
-#~ msgstr "Zertifikat Leseproblem: %s\n"
+#~ msgstr "πρόβλημα ανάγνωσης πιστοποιητικού: %s\n"
 
-#~ msgid "can't lock keyring `%s': %s\n"
-#~ msgstr "kann Schlόsselbund `%s' nicht sperren: %s\n"
+#~ msgid "too many entries in unk cache - disabled\n"
+#~ msgstr "πάρα πολλές καταχωρήσεις στη unk cache - απενεργοποιήθηκε\n"
+
+#~ msgid "secret key %08lX not imported (use %s to allow for it)\n"
+#~ msgstr ""
+#~ "μυστικό κλειδί %08lX δεν έχει εισαχθεί (χρήση του %s για να το "
+#~ "επιτρέψετε)\n"
+
+#~ msgid "key %08lX: our copy has no self-signature\n"
+#~ msgstr "κλειδί %08lX: το αντίγραφο μας δεν έχει ιδιο-υπογραφή\n"
 
 #~ msgid "%s: user not found\n"
-#~ msgstr "%s: Benutzer nicht gefunden\n"
+#~ msgstr "%s: δεν βρέθηκε χρήστης\n"
+
+#~ msgid "update of trustdb failed: %s\n"
+#~ msgstr "ανανέωση της trustdb απέτυχε: %s\n"
+
+#~ msgid "no keyserver known (use option --keyserver)\n"
+#~ msgstr ""
+#~ "κανένας διακομιστής κλειδιών (χρησιμοποιείστε την επιλογή --keyserver)\n"
+
+#~ msgid "%s: not a valid key ID\n"
+#~ msgstr "το %s δεν είναι ένα έγκυρο ID κλειδιού\n"
+
+#~ msgid "assuming bad MDC due to an unknown critical bit\n"
+#~ msgstr "υπόθεση κακού MDC λόγω ενός άγνωστου κριτικού bit\n"
+
+#~ msgid "error reading dir record for LID %lu: %s\n"
+#~ msgstr "σφάλμα στην ανάγνωση της εγγραφής dir για το LID %lu: %s\n"
+
+#~ msgid "lid %lu: expected dir record, got type %d\n"
+#~ msgstr "lid %lu: αναμενόταν εγγραφή dir, πήραμε τύπο %d\n"
+
+#~ msgid "no primary key for LID %lu\n"
+#~ msgstr "κανένα πρωτεύον κλειδί για LID %lu\n"
+
+#~ msgid "error reading primary key for LID %lu: %s\n"
+#~ msgstr "σφάλμα στην ανάγνωση του πρωτεύοντος κλειδιού για LID %lu: %s\n"
+
+#~ msgid "get_dir_record: search_record failed: %s\n"
+#~ msgstr "get_dir_record: search_record απέτυχε: %s\n"
+
+#~ msgid "key %08lX: query record failed\n"
+#~ msgstr "κλειδί %08lX: εγγραφή uery απέτυχε\n"
+
+#~ msgid "key %08lX: already in trusted key table\n"
+#~ msgstr "κλειδί %08lX: είναι ήδη στον πίνακα κλειδιών με εμπιστοσύνη\n"
+
+#~ msgid "NOTE: secret key %08lX is NOT protected.\n"
+#~ msgstr "ΣΗΜΕΙΩΣΗ: το μυστικό κλειδί %08lX ΔΕΝ προστατεύεται.\n"
+
+#~ msgid "key %08lX: secret and public key don't match\n"
+#~ msgstr "κλειδί %08lX: το μυστικό και δημόσιο κλειδί δεν ταιριάζουν\n"
+
+#~ msgid "enumerate secret keys failed: %s\n"
+#~ msgstr "αρίθμηση μυστικών κλειδιών απέτυχε: %s\n"
+
+#~ msgid "key %08lX.%lu: Good subkey binding\n"
+#~ msgstr "κλειδί %08lX.%lu: Καλή δέσμευση υποκλειδιού\n"
+
+#~ msgid "key %08lX.%lu: Invalid subkey binding: %s\n"
+#~ msgstr "κλειδί %08lX.%lu: Μη έγκυρη δέσμευση υποκλειδιού: %s\n"
+
+#~ msgid "key %08lX.%lu: Valid key revocation\n"
+#~ msgstr "κλειδί %08lX.%lu: Έγκυρη ανάκληση κλειδιού\n"
+
+#~ msgid "key %08lX.%lu: Invalid key revocation: %s\n"
+#~ msgstr "κλειδί %08lX.%lu: Μη έγκυρη ανάκληση κλειδιού: %s\n"
+
+#~ msgid "key %08lX.%lu: Valid subkey revocation\n"
+#~ msgstr "κλειδί %08lX.%lu: Έγκυρη ανάκληση υποκλειδιού\n"
+
+#~ msgid "Good self-signature"
+#~ msgstr "Καλή ιδιο-υπογραφή"
+
+#~ msgid "Invalid self-signature"
+#~ msgstr "Μη έγκυρη ιδιο-υπογραφή"
+
+#~ msgid "Valid user ID revocation skipped due to a newer self signature"
+#~ msgstr ""
+#~ "Έγκυρη ανάκληση user ID παραλείφθηκε λόγο μιας νεότερης ιδιο-υπογραφής"
+
+#~ msgid "Valid user ID revocation"
+#~ msgstr "Έγκυρη ανάκληση user ID"
+
+#~ msgid "Invalid user ID revocation"
+#~ msgstr "Μη έγκυρη ανάκληση user ID"
+
+#~ msgid "Valid certificate revocation"
+#~ msgstr "Έγκυρο πιστοποιητικό ανάκλησης"
+
+#~ msgid "Good certificate"
+#~ msgstr "Καλό πιστοποιητικό"
+
+#~ msgid "Invalid certificate revocation"
+#~ msgstr "Μη έγκυρο πιστοποιητικό ανάκλησης"
+
+#~ msgid "Invalid certificate"
+#~ msgstr "Μη έγκυρο πιστοποιητικό "
+
+#~ msgid "sig record %lu[%d] points to wrong record.\n"
+#~ msgstr "εγγραφή sig %lu[%d] δείχνει σε λάθος εγγραφή.\n"
+
+#~ msgid "duplicated certificate - deleted"
+#~ msgstr "διπλό πιστοποιητικό - διαγραφή"
+
+#~ msgid "tdbio_search_dir failed: %s\n"
+#~ msgstr "tdbio_search_dir απέτυχε: %s\n"
+
+#~ msgid "lid ?: insert failed: %s\n"
+#~ msgstr "lid ?: insert απέτυχε: %s\n"
+
+#~ msgid "lid %lu: insert failed: %s\n"
+#~ msgstr "lid %lu: insert απέτυχε: %s\n"
+
+#~ msgid "lid %lu: inserted\n"
+#~ msgstr "lid %lu: inserted\n"
+
+#~ msgid "error reading dir record: %s\n"
+#~ msgstr "σφάλμα στην ανάγνωση εγγραφής dir: %s\n"
+
+#~ msgid "\t%lu keys with errors\n"
+#~ msgstr "\t%lu κλειδιά με σφάλματα\n"
+
+#~ msgid "\t%lu keys inserted\n"
+#~ msgstr "\t%lu κλειδιά εισήχθηκαν\n"
+
+#~ msgid "lid %lu: dir record w/o key - skipped\n"
+#~ msgstr "lid %lu: εγγραφή dir χωρίς κλειδί - παραλείφθηκε\n"
+
+#~ msgid "\t%lu due to new pubkeys\n"
+#~ msgstr "\t%lu λόγω νέων δημόσιων κλειδιών\n"
+
+#~ msgid "\t%lu keys skipped\n"
+#~ msgstr "\t%lu κλειδιά παραλείφθηκαν\n"
+
+#~ msgid "\t%lu keys updated\n"
+#~ msgstr "\t%lu κλειδιά ενημερώθηκαν\n"
+
+#~ msgid "Ooops, no keys\n"
+#~ msgstr "Ωχ, δεν υπάρχουν κλειδιά\n"
+
+#~ msgid "Ooops, no user IDs\n"
+#~ msgstr "Ωχ, δεν υπάρχουν user ID\n"
+
+#~ msgid "check_trust: search dir record failed: %s\n"
+#~ msgstr "check_trust: αναζήτηση εγγραφής dir απέτυχε: %s\n"
+
+#~ msgid "key %08lX: insert trust record failed: %s\n"
+#~ msgstr "κλειδί %08lX: εισαγωγή εγγραφής εμπιστοσύνης απέτυχε: %s\n"
+
+#~ msgid "key %08lX.%lu: inserted into trustdb\n"
+#~ msgstr "κλειδί %08lX.%lu: εισήχθηκε στη trustdb\n"
+
+#~ msgid "key %08lX.%lu: created in future (time warp or clock problem)\n"
+#~ msgstr ""
+#~ "κλειδί %08lX.%lu: δημιουργήθηκε στο μέλλον (χρονοδίνη ή απλά πρόβλημα στο "
+#~ "ρολόι)\n"
+
+#~ msgid "key %08lX.%lu: expired at %s\n"
+#~ msgstr "κλειδί %08lX.%lu: λήγει στις %s\n"
+
+#~ msgid "key %08lX.%lu: trust check failed: %s\n"
+#~ msgstr "κλειδί %08lX.%lu: έλεγχος εμπιστοσύνης απέτυχε: %s\n"
+
+#~ msgid "problem finding '%s' in trustdb: %s\n"
+#~ msgstr "πρόβλημα στην εύρεση του '%s' στη trustdb: %s\n"
+
+#~ msgid "user '%s' not in trustdb - inserting\n"
+#~ msgstr "χρήστης '%s' δεν είναι στη trustdb - εισαγωγή\n"
+
+#~ msgid "failed to put '%s' into trustdb: %s\n"
+#~ msgstr "αποτυχία στην εισαγωγή του '%s' στη trustdb: %s\n"
 
 #~ msgid "WARNING: can't yet handle long pref records\n"
-#~ msgstr "WARNUNG: Lange 'Pref'-Records kφnnen noch nicht benutzt werden\n"
+#~ msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: αδυναμία χειρισμού μεγάλων εγγραφών pref\n"
 
 #~ msgid "%s: can't create keyring: %s\n"
-#~ msgstr "%s: Schlόsselbund kann nicht erzeugt werden: %s\n"
-
-#~ msgid "invalid"
-#~ msgstr "ungόltig"
-
-#~ msgid "revoked"
-#~ msgstr "widerrufen"
-
-#~ msgid "RSA key cannot be used in this version\n"
-#~ msgstr "RSA-Schlόssel kφnnen in dieser Version nicht verwendet werden\n"
-
-#~ msgid "No key for user ID\n"
-#~ msgstr "Kein Schlόssel fόr User-ID\n"
-
-#~ msgid "No user ID for key\n"
-#~ msgstr "Keine User-ID fόr Schlόssel\n"
-
-#~ msgid "no secret key for decryption available\n"
-#~ msgstr "kein geheimer Schlόssel zur Entschlόsselung vorhanden\n"
-
-#~ msgid "   (%d) ElGamal in a v3 packet\n"
-#~ msgstr "   (%d) ElGamal in einem v3-Paket\n"
-
-#~ msgid "Key generation can only be used in interactive mode\n"
-#~ msgstr ""
-#~ "Die Schlόsselerzeugung kann nur im interaktiven Modus benutzt werden.\n"
+#~ msgstr "%s: αδυναμία δημιουργίας της κλειδοθήκης: %s\n"

@@ -70,7 +70,7 @@ default option file 	--voreingestellte Optionendatei
 DEK 			???
 delete  		entfernen, *>löschen 
 depend on   		>sich verlassen auf,>angewiesen sein auf,>abhängen von
-depreciated		- taugt nicht mehr viel
+deprecated              mißbilligte
 detached [sign]		abgetrennte [Unterschrift]
 determined attacker 	>zielbewusster,>entschlossener Angreifer
 digest algorithm	Hashmethode
