@@ -37,7 +37,7 @@
 	(cmd_learn): Print an error message for a failed operation.
 
 	* simple-pwquery.c, simple-pwquery.h: New.
-	* protect-tool. (get_passphrase): New, used to ge a passphrase
+	* protect-tool. (get_passphrase): New, used to get a passphrase
 	from the agent if none was given on the command line.
 
 2002-06-25  Werner Koch  <wk@gnupg.org>
