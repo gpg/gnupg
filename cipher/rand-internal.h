@@ -20,12 +20,16 @@
 #ifndef G10_RAND_INTERNAL_H
 #define G10_RAND_INTERNAL_H
 
-void rndlinux_constructor(void);
-void rndunix_constructor(void);
-void rndw32_constructor(void);
-void rndos2_constructor(void);
-void rndatari_constructor(void);
-void rndmvs_constructor(void);
-void rndriscos_constructor(void);
+int rndunix_gather_random (void (*add)(const void*, size_t, int),
+                           int requester, size_t length, int level);
+int rndlinux_gather_random (void (*add)(const void*, size_t, int),
+                            int requester, size_t length, int level);
+int rndegd_gather_random (void (*add)(const void*, size_t, int),
+                          int requester, size_t length, int level );
+int rndw32_gather_random (void (*add)(const void*, size_t, int),
+                          int requester, size_t length, int level);
+int rndw32_gather_random_fast (void (*add)(const void*, size_t, int),
+                               int requester );
+
 
 #endif /*G10_RAND_INTERNAL_H*/

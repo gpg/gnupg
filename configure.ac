@@ -29,8 +29,6 @@ AC_INIT(gnupg, 1.1.91, bug-gnupg@gnu.org)
 development_version=yes
 
 ALL_LINGUAS="cs da de eo el es et fr gl id it ja nl pl pt_BR pt sv tr"
-static_modules="sha1 md5 rmd160"
-static_random_module=""
 
 PACKAGE=$PACKAGE_NAME
 VERSION=$PACKAGE_VERSION
@@ -47,18 +45,10 @@ AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of this package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version of this package])
 AC_DEFINE(_GNU_SOURCE,1,[Some tests rely on this (stpcpy) and it should be used for new programs anyway])
 
-AC_PROG_AWK
-
-MODULES_IN_CIPHER=`$AWK '/^EXTRA_PROGRAMS/ { for(i=3;i<=NF;i++) print $i}' \
-                                              $srcdir/cipher/Makefile.am`
-
 dnl
 dnl  Check for random module options
 dnl
-dnl  Fixme: get the list of available modules from MODULES_IN_CIPHER
-dnl         and check against this list
-
-AC_MSG_CHECKING([which static random module to use])
+AC_MSG_CHECKING([which random module to use])
 AC_ARG_ENABLE(static-rnd,
     [  --enable-static-rnd=[egd|unix|linux|none]  ],
 [use_static_rnd=$enableval], [use_static_rnd=default] )
@@ -68,7 +58,7 @@ if test "$use_static_rnd" = no; then
 fi
 
 case "$use_static_rnd" in
-    egd | linux | unix | none | default )
+    egd | linux | unix | default )
       AC_MSG_RESULT($use_static_rnd)
       ;;
     * )
@@ -226,21 +216,6 @@ AM_MAINTAINER_MODE
 
 dnl Checks for programs.
 
-dnl
-dnl Setup some stuff depending on host/target.
-dnl
-case "${target}" in
-    *-*-mingw32*)
-        disallowed_modules="rndunix rndlinux rndegd"
-        ;;
-    *-*-cygwin*)
-        disallowed_modules="rndunix rndlinux rndegd tiger"
-        ;;
-    *)
-        disallowed_modules="rndw32"
-       ;;
-esac
-
 AC_PROG_MAKE_SET
 AM_SANITY_CHECK
 missing_dir=`cd $ac_aux_dir && pwd`
@@ -334,11 +309,6 @@ esac
 
 AC_SUBST(MPI_OPT_FLAGS)
 GNUPG_SYS_SYMBOL_UNDERSCORE
-GNUPG_CHECK_PIC
-GNUPG_CHECK_EXPORTDYNAMIC
-if test "$NO_PIC" = yes; then
-    try_dynload=no
-fi
 
 dnl Must check for network library requirements before doing link tests
 dnl for ldap, for example. If ldap libs are static (or dynamic and without
@@ -443,8 +413,7 @@ AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME",
 
 
 #
-# 1. Set flags to be used for the extension modules
-# 2. Set names of random devices
+# 1. Set names of random devices
 #
 NAME_OF_DEV_RANDOM="/dev/random"
 NAME_OF_DEV_URANDOM="/dev/urandom"
@@ -452,57 +421,6 @@ case "${target}" in
     *-openbsd* | *-netbsd*)
         NAME_OF_DEV_RANDOM="/dev/srandom"
         NAME_OF_DEV_URANDOM="/dev/urandom"
-        DYNLINK_MOD_CFLAGS="-shared -rdynamic $CFLAGS_PIC -Wl,-Bshareable -Wl,-x"
-        ;;
-
-     hpux*)
-	# if using the vendor (ANSI) compiler, arrange to have `-b' passed
-	# to the linker.  If using gcc, it supports `-shared' to do the same.
-        if test -n "$GCC" ; then
-           DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"
-        else
-           DYNLINK_MOD_CFLAGS='-Wl,-b'
-        fi
-        ;;
-
-    *-irix6.5*)
-        # Irix 6.5 (and probably a lot earlier, but I only still have
-	# access to 6.5.x) doesn't require any additional flags, as `-KPIC'
-	# is the default.  Also, `-shared' works with the vendor compiler
-	DYNLINK_MOD_CFLAGS="-shared"
-        ;;
-
-    alpha*-dec-osf*)
-	# osf (i.e. OSF/1, Digital UNIX, or Tru64 UNIX, pick any one...)
-	# on alpha doesn't require any PIC flags, everything is PIC.
-	# This may not be the case for osf ports to other machines, so
-	# hence the more specific match for target.
-	#
-	# Also, `-shared' works with the vendor compiler or gcc.
-	# -expect_unresolved turns off warnings about unresolved symbols.
-	DYNLINK_MOD_CFLAGS='-shared -Wl,-expect_unresolved,\*'
-         ;;
-
-    *-solaris*)
-	# -shared is a gcc-ism.  Find pic flags from GNUPG_CHECK_PIC.
-	if test -n "$GCC" ; then
-	   DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"
-	else
-	   DYNLINK_MOD_CFLAGS="-G $CFLAGS_PIC"
-	fi
-	;;
-
-    *-irix* | *-dec-osf* )
-	DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"
-	;;
-
-    *)
-        # -shared is a gcc-ism.  Find pic flags from GNUPG_CHECK_PIC.
-        if test -n "$GCC" ; then
-           DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"                            
-        else
-           DYNLINK_MOD_CFLAGS="$CFLAGS_PIC"
-        fi
         ;;
 esac
 AC_DEFINE_UNQUOTED(NAME_OF_DEV_RANDOM, "$NAME_OF_DEV_RANDOM",
@@ -515,14 +433,14 @@ AC_SUBST(MPI_OPT_FLAGS)
 dnl Checks for libraries.
 
 if test "$try_gettext" = yes; then
-AM_GNU_GETTEXT
+  AM_GNU_GETTEXT
 else
-USE_NLS=no
-USE_INCLUDED_LIBINTL=no
-BUILD_INCLUDED_LIBINTL=no
-AC_SUBST(USE_NLS)
-AC_SUBST(USE_INCLUDED_LIBINTL)
-AC_SUBST(BUILD_INCLUDED_LIBINTL)
+  USE_NLS=no
+  USE_INCLUDED_LIBINTL=no
+  BUILD_INCLUDED_LIBINTL=no
+  AC_SUBST(USE_NLS)
+  AC_SUBST(USE_INCLUDED_LIBINTL)
+  AC_SUBST(BUILD_INCLUDED_LIBINTL)
 fi
 
 
@@ -533,48 +451,19 @@ if test "$try_dynload" = yes ; then
               [define to enable the use of extensions])
     AC_DEFINE(HAVE_DL_DLOPEN,1,
               [Defined when the dlopen function family is available])
-    DYNLINK_LDFLAGS="$CFLAGS_EXPORTDYNAMIC"
-    use_gnupg_extensions=yes
   else
     AC_CHECK_FUNCS(dlopen)
     if test "$ac_cv_func_dlopen" = "yes"; then
       AC_DEFINE(USE_DYNAMIC_LINKING)
       AC_DEFINE(HAVE_DL_DLOPEN)
-      DYNLINK_LDFLAGS="$CFLAGS_EXPORTDYNAMIC"
-      use_gnupg_extensions=yes
-    else
-      AC_CHECK_LIB(dld,shl_load)
-      if test "$ac_cv_lib_dld_shl_load" = "yes"; then
-        AC_DEFINE(USE_DYNAMIC_LINKING)
-        AC_DEFINE(HAVE_DL_SHL_LOAD,1,
-                  [Defined if the shl_load function family is available])
-        DYNLINK_LDFLAGS="$CFLAGS_EXPORTDYNAMIC"
-        use_gnupg_extensions=yes
-dnl -----------------
-dnl  DLD is not ready for use. So I better disable this test
-dnl
-dnl    AC_CHECK_LIB(dld,dld_link)
-dnl    if test "$ac_cv_lib_dld_dld_link" = "yes"; then
-dnl      AC_DEFINE(USE_DYNAMIC_LINKING)
-dnl      AC_DEFINE(HAVE_DLD_DLD_LINK)
-dnl      DYNLINK_LDFLAGS="$CFLAGS_EXPORTDYNAMIC"
-dnl      use_gnupg_extensions=yes
-dnl ---------------
-      fi
     fi
   fi
 else
   AC_MSG_CHECKING(for dynamic loading)
   DYNLINK_LDFLAGS=
   DYNLINK_MOD_CFLAGS=
-  use_gnupg_extensions=no
   AC_MSG_RESULT(has been disabled)
 fi
-
-AM_CONDITIONAL(ENABLE_GNUPG_EXTENSIONS, test "$use_gnupg_extensions" = yes )
-AC_SUBST(DYNLINK_LDFLAGS)
-AC_SUBST(DYNLINK_MOD_CFLAGS)
-
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -713,9 +602,9 @@ fi
 
 
 dnl
-dnl Figure out the default linkage mode for random modules
+dnl Figure out the default random module.
 dnl
-print_egd_notice=no
+static_random_module=""
 if test "$use_static_rnd" = default; then
   if test "$ac_cv_have_dev_random" = yes; then
       static_random_module="rndlinux"
@@ -723,9 +612,6 @@ if test "$use_static_rnd" = default; then
       case "${target}" in
           *-*-mingw32*|*-*-cygwin*)
               static_random_module="rndw32"
-              AC_DEFINE(USE_STATIC_RNDW32,1,
-                       [At some point in the code we need to know that
-                        we use the Windows random module.])
               ;;
           i?86-emx-os2|i?86-*-os2*emx)
               static_random_module="rndos2"
@@ -738,24 +624,19 @@ if test "$use_static_rnd" = default; then
               ;;
           *)
               static_random_module="rndunix"
-              print_egd_notice=yes
              ;;
       esac
   fi
-else
-  if test "$use_static_rnd" = none; then
-    :
-  else
-    static_random_module="rnd$use_static_rnd"
-    if test "$use_static_rnd" = "unix"; then
-        print_egd_notice=yes
-    fi
-  fi
 fi
-
-
-if test "$print_egd_notice" = "yes"; then
-    AC_MSG_WARN([[
+case "$static_random_module" in
+  rndlinux)
+      AC_DEFINE(USE_RNDLINUX,1, 
+                  [Defined if the /dev/random based RNG shoudl be used.])
+        ;;
+  rndunix)
+       AC_DEFINE(USE_RNDUNIX,1, 
+                  [Defined if the default Unix RNG should be used.])
+       AC_MSG_WARN([[
 ***
 *** The performance of the UNIX random gatherer module is not very good
 *** and it does not keep the entropy pool over multiple invocations of
@@ -769,86 +650,36 @@ if test "$print_egd_notice" = "yes"; then
 ***
 ***           http://www.gnupg.org/download.html#egd
 ***
-*** You may want to run ./configure with --enable-static-rnd=none to be
-*** able to load the EGD client code dynamically; this way you can choose
-*** between RNDUNIX and RNDEGD without recompilation.
+*** You may want to run ./configure with --enable-static-rnd=egd to use it.
 ***]])
+        ;;
+  rndegd)
+       AC_DEFINE(USE_RNDEGD,1, 
+                  [Defined if the EGD based RNG shoudl be used.])
+        ;;
+  rndw32)
+       AC_DEFINE(USE_RNDW32,1, 
+                  [Defined if the Windows specific RNG should be used.])
+        ;;
+   *)
+       AC_MSG_ERROR(no random module available)
+        ;;
+esac
+
+# We don't need idea but some people claim that they need it for
+# research etc., so we allow to place an idea source code into the
+# cipher directory and statically link it if available, otherwise we
+# link to a stub.  We don't use AC_CHECK_FILE to avoid caching.
+AC_MSG_CHECKING(for extra cipher modules)
+tmp=""
+if test -f $srcdir/cipher/idea.c; then 
+   IDEA_O=idea.o
+   tmp=idea
+else
+   IDEA_O=idea-stub.o
 fi
-
-dnl
-dnl Parse the modules list and build the list
-dnl of static and dynamically linked modules
-dnl
-dnl (We always need a static rmd160)
-static_modules="$static_modules rmd160 $static_random_module"
-STATIC_CIPHER_NAMES=""
-STATIC_CIPHER_OBJS=""
-DYNAMIC_CIPHER_MODS=""
-show_dynlink=""
-for name in $MODULES_IN_CIPHER; do
-    x="yes"
-    for i in $disallowed_modules; do
-        if test "$name" = "$i" ; then x="no" ; fi
-    done;
-    if test $x = yes; then
-        x="no"
-        for i in $static_modules; do
-            if test "$name" = "$i" ; then
-                x="yes"
-            fi
-        done;
-        if test $x = yes; then
-            STATIC_CIPHER_NAMES="$STATIC_CIPHER_NAMES $name"
-            STATIC_CIPHER_OBJS="$STATIC_CIPHER_OBJS $name.o"
-        else
-            DYNAMIC_CIPHER_MODS="$DYNAMIC_CIPHER_MODS $name"
-            show_dynlink="$show_dynlink $name"
-        fi
-    fi
-done
-AC_SUBST(STATIC_CIPHER_OBJS)
-AC_SUBST(STATIC_CIPHER_NAMES)
-AC_SUBST(DYNAMIC_CIPHER_MODS)
-
-dnl
-dnl And build the constructor file
-dnl
-
-test -d cipher || mkdir cipher
-cat <<G10EOF >cipher/construct.c
-/* automatically generated by configure - do not edit */
-
-G10EOF
-show_statlink=""
-for name in $STATIC_CIPHER_NAMES; do
-    echo "void ${name}_constructor(void);" >>cipher/construct.c
-    show_statlink="$show_statlink $name"
-done
-
-cat <<G10EOF >>cipher/construct.c
-
-void
-cipher_modules_constructor(void)
-{
-    static int done = 0;
-    if( done )
-        return;
-    done = 1;
-
-G10EOF
-for name in $STATIC_CIPHER_NAMES; do
-    echo "   ${name}_constructor();" >>cipher/construct.c
-done
-echo '}' >>cipher/construct.c
-
-
-
-
-dnl
-dnl Figure how to link the cipher modules
-dnl
-AC_SUBST(STATIC_CIPHER_OBJS)
-AC_SUBST(DYNAMIC_CIPHER_MODS)
+AC_SUBST(IDEA_O)
+AC_MSG_RESULT($tmp)
 
 
 dnl setup assembler stuff
@@ -1032,14 +863,7 @@ AC_OUTPUT
 # Give some feedback
 echo
 echo   "                Configured for: $PRINTABLE_OS_NAME ($target)"
-if test -n "$show_dynlink"; then
-  echo "    Dynamically linked modules:$show_dynlink"
-fi
-if test -n "$show_statlink"; then
-  echo "     Statically linked modules:$show_statlink"
-fi
 if test -n "$show_extraasm"; then
   echo "  Extra cpu specific functions:$show_extraasm"
 fi
 echo
-

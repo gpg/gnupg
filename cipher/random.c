@@ -1,5 +1,5 @@
 /* random.c  -	random number generator
- *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -56,8 +56,7 @@
 #include "i18n.h"
 #include "random.h"
 #include "rand-internal.h"
-#include "dynload.h"
-
+#include "algorithms.h"
 
 #ifndef RAND_MAX   /* for SunOS */
   #define RAND_MAX 32767
@@ -125,6 +124,37 @@ static struct {
     ulong naddbytes;
 } rndstats;
 
+
+static int (*
+getfnc_gather_random (void))(void (*)(const void*, size_t, int), int,
+                        size_t, int)
+{
+#ifdef USE_RNDLINUX
+  return rndlinux_gather_random;
+#endif
+#ifdef USE_RNDUNIX
+  return rndunix_gather_random;
+#endif
+#ifdef USE_RNDEGD
+  return rndegd_gather_random;
+#endif
+#ifdef USE_RNDW32
+  return rndw32_gather_random;
+#endif
+  return NULL;
+}
+
+static void (*
+getfnc_fast_random_poll (void))( void (*)(const void*, size_t, int), int)
+{
+#ifdef USE_RNDW32
+  return rndw32_gather_random_fast;
+#endif
+  return NULL;
+}
+
+
+
 static void
 initialize(void)
 {
@@ -136,7 +166,6 @@ initialize(void)
     keypool = secure_alloc ? m_alloc_secure_clear(POOLSIZE+BLOCKLEN)
 			   : m_alloc_clear(POOLSIZE+BLOCKLEN);
     is_initialized = 1;
-    cipher_modules_constructor();
 }
 
 static void
@@ -560,7 +589,7 @@ fast_random_poll()
 	if( !is_initialized )
 	    initialize();
 	initialized = 1;
-	fnc = dynload_getfnc_fast_random_poll();
+	fnc = getfnc_fast_random_poll();
     }
     if( fnc ) {
 	(*fnc)( add_randomness, 1 );
@@ -637,7 +666,7 @@ read_random_source( int requester, size_t length, int level )
     if( !fnc ) {
 	if( !is_initialized )
 	    initialize();
-	fnc = dynload_getfnc_gather_random();
+	fnc = getfnc_gather_random();
 	if( !fnc ) {
 	    faked_rng = 1;
 	    fnc = gather_faked;
@@ -684,4 +713,5 @@ gather_faked( void (*add)(const void*, size_t, int), int requester,
     m_free(buffer);
     return 0; /* okay */
 }
+
 

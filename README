@@ -460,7 +460,7 @@
     --enable-static-rnd=<name> 
                      Force the use of the random byte gathering
 		     module <name>.  Default is either to use /dev/random
-		     or the standard Uix module.  Value for name:
+		     or the standard Unix module.  Value for name:
 		       egd - Use the module which accesses the
 			     Entropy Gathering Daemon. See the webpages
 			     for more information about it.
@@ -469,8 +469,6 @@
 		     linux - Use the module which accesses /dev/random.
 			     This is the first choice and the default one
 			     for GNU/Linux or *BSD.
-		      none - Do not linkl any module in but rely on
-			     a dynmically loaded modules.
 
     --with-egd-socket=<name>
                      This is only used when EGD is used as random
@@ -501,7 +499,8 @@
 
      --disable-dynload 
                     If you have problems with dynamic loading, this
-                    option disables all dynamic loading stuff.
+                    option disables all dynamic loading stuff.  Note
+                    that the use of dynamic linking is very limited.
 
      --disable-asm
                     Do not use assembler modules.  It is not possible 

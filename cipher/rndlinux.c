@@ -20,6 +20,9 @@
 
 
 #include <config.h>
+
+#ifdef USE_RNDLINUX
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -41,17 +44,12 @@
 #include "types.h"
 #include "util.h"
 #include "ttyio.h"
-#include "dynload.h"
+#include "algorithms.h"
 
-#ifdef IS_MODULE
-  #define _(a) (a)
-#else
-  #include "i18n.h"
-#endif
+#include "i18n.h"
 
 static int open_device( const char *name, int minor );
-static int gather_random( void (*add)(const void*, size_t, int), int requester,
-					  size_t length, int level );
+
 
 #if 0
 #ifdef HAVE_DEV_RANDOM_IOCTL
@@ -92,8 +90,8 @@ open_device( const char *name, int minor )
  * Note:  Using a level of 0 should never block and better add nothing
  * to the pool.  This is easy to accomplish with /dev/urandom.
  */
-static int
-gather_random( void (*add)(const void*, size_t, int), int requester,
+int
+rndlinux_gather_random( void (*add)(const void*, size_t, int), int requester,
 					  size_t length, int level )
 {
     static int fd_urandom = -1;
@@ -132,11 +130,7 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 	tv.tv_usec = 0;
 	if( !(rc=select(fd+1, &rfds, NULL, NULL, &tv)) ) {
 	    if( !warn )
-	      #ifdef IS_MODULE
-		fprintf(stderr,
-	      #else
 		tty_printf(
-	      #endif
 _("\n"
 "Not enough random bytes available.  Please do some other work to give\n"
 "the OS a chance to collect more entropy! (Need %d more bytes)\n"), (int)length );
@@ -144,11 +138,7 @@ _("\n"
 	    continue;
 	}
 	else if( rc == -1 ) {
-	  #ifdef IS_MODULE
-	    fprintf(stderr,
-	  #else
 	    tty_printf(
-	  #endif
 		       "select() error: %s\n", strerror(errno));
 	    continue;
 	}
@@ -171,70 +161,4 @@ _("\n"
     return 0; /* success */
 }
 
-
-
-#ifndef IS_MODULE
-static
-#endif
-const char * const gnupgext_version = "RNDLINUX ($Revision$)";
-
-static struct {
-    int class;
-    int version;
-    int (*func)(void);
-} func_table[] = {
-    { 40, 1, (int (*)(void))gather_random },
-};
-
-
-
-/****************
- * Enumerate the names of the functions together with informations about
- * this function. Set sequence to an integer with a initial value of 0 and
- * do not change it.
- * If what is 0 all kind of functions are returned.
- * Return values: class := class of function:
- *			   10 = message digest algorithm info function
- *			   11 = integer with available md algorithms
- *			   20 = cipher algorithm info function
- *			   21 = integer with available cipher algorithms
- *			   30 = public key algorithm info function
- *			   31 = integer with available pubkey algorithms
- *			   40 = get gather_random function
- *			   41 = get fast_random_poll function
- *		  version = interface version of the function/pointer
- *			    (currently this is 1 for all functions)
- */
-
-#ifndef IS_MODULE
-static
-#endif
-void *
-gnupgext_enum_func( int what, int *sequence, int *class, int *vers )
-{
-    void *ret;
-    int i = *sequence;
-
-    do {
-	if ( i >= DIM(func_table) || i < 0 ) {
-	    return NULL;
-	}
-	*class = func_table[i].class;
-	*vers  = func_table[i].version;
-	ret = func_table[i].func;
-	i++;
-    } while ( what && what != *class );
-
-    *sequence = i;
-    return ret;
-}
-
-#ifndef IS_MODULE
-void
-rndlinux_constructor(void)
-{
-    register_internal_cipher_extension( gnupgext_version,
-					gnupgext_enum_func );
-}
-#endif
-
+#endif /*USE_RNDLINUX*/

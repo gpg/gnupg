@@ -1,5 +1,5 @@
 /* md.c  -  message digest dispatcher
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -27,9 +27,7 @@
 #include "util.h"
 #include "cipher.h"
 #include "errors.h"
-#include "dynload.h"
-#include "rmd.h"
-
+#include "algorithms.h"
 
 /****************
  * This structure is used for the list of available algorithms
@@ -54,97 +52,63 @@ static struct md_digest_list_s *digest_list;
 
 
 static struct md_digest_list_s *
-new_list_item( int algo,
+new_list_item (int algo,
 	       const char *(*get_info)( int, size_t*,byte**, int*, int*,
 				       void (**)(void*),
 				       void (**)(void*,byte*,size_t),
-				       void (**)(void*),byte *(**)(void*)) )
+				       void (**)(void*),byte *(**)(void*)))
 {
-    struct md_digest_list_s *r;
+  struct md_digest_list_s *r;
 
-    r = m_alloc_clear( sizeof *r );
-    r->algo = algo,
-    r->name = (*get_info)( algo, &r->contextsize,
-			   &r->asnoid, &r->asnlen, &r->mdlen,
-			   &r->init, &r->write, &r->final, &r->read );
-    if( !r->name ) {
-	m_free(r);
-	r = NULL;
+  r = m_alloc_clear (sizeof *r );
+  r->algo = algo;
+  r->name = (*get_info)( algo, &r->contextsize,
+                         &r->asnoid, &r->asnlen, &r->mdlen,
+                         &r->init, &r->write, &r->final, &r->read );
+  if (!r->name ) 
+    {
+      m_free(r);
+      r = NULL;
     }
-    return r;
+  if (r)
+    {
+      r->next = digest_list;
+      digest_list = r;
+    }
+  return r;
 }
 
 
 
-/****************
- * Try to load the modules with the requeste algorithm
- * and return true if new modules are available
- * If req_alog is -1 try to load all digest algorithms.
+/*
+  Load all available hash algorithms and return true.  Subsequent
+  calls will return 0.  
  */
 static int
-load_digest_module( int req_algo )
+load_digest_module (void)
 {
-    static int initialized = 0;
-    static u32 checked_algos[256/32];
-    static int checked_all = 0;
-    struct md_digest_list_s *r;
-    void *context = NULL;
-    int algo;
-    int any = 0;
-    const char *(*get_info)( int, size_t*,byte**, int*, int*,
-			    void (**)(void*),
-			    void (**)(void*,byte*,size_t),
-			    void (**)(void*),byte *(**)(void*));
+  static int initialized = 0;
 
-    if( !initialized ) {
-	cipher_modules_constructor();
-	initialized = 1;
-    }
-    algo = req_algo;
-    if( algo > 255 || !algo )
-	return 0; /* algorithm number too high (does not fit into out bitmap)*/
-    if( checked_all )
-	return 0; /* already called with -1 */
-    if( algo < 0 )
-	checked_all = 1;
-    else if( (checked_algos[algo/32] & (1 << (algo%32))) )
-	return 0; /* already checked and not found */
-    else
-	checked_algos[algo/32] |= (1 << (algo%32));
+  if (initialized)
+    return 0;
+  initialized = 1;
 
-    while( enum_gnupgext_digests( &context, &algo, &get_info ) ) {
-	if( req_algo != -1 && algo != req_algo )
-	    continue;
-	for(r=digest_list; r; r = r->next )
-	    if( r->algo == algo )
-		break;
-	if( r ) {
-	    log_info("skipping digest %d: already loaded\n", algo );
-	    continue;
-	}
-	r = new_list_item( algo, get_info );
-	if( ! r ) {
-	    log_info("skipping digest %d: no name\n", algo );
-	    continue;
-	}
-	/* put it into the list */
-	if( g10_opt_verbose > 1 )
-	    log_info("loaded digest %d\n", algo);
-	r->next = digest_list;
-	digest_list = r;
-	any = 1;
-	if( req_algo != -1 )
-	    break;
-    }
-    enum_gnupgext_digests( &context, NULL, NULL );
-    return any;
-}
+  /* We load them in reverse order so that the most
+     frequently used are the first in the list. */
+  new_list_item (DIGEST_ALGO_TIGER, tiger_get_info); 
+  if (!new_list_item (DIGEST_ALGO_MD5, md5_get_info)) 
+    BUG ();
+  if (!new_list_item (DIGEST_ALGO_RMD160, rmd160_get_info)) 
+    BUG ();
+  if (!new_list_item (DIGEST_ALGO_SHA1, sha1_get_info)) 
+    BUG ();
 
+  return 1;
+}      
 
 
 /****************
- * Map a string to the digest algo
- */
+ * Map a string to the digest algo */
 int
 string_to_digest_algo( const char *string )
 {
@@ -154,7 +118,7 @@ string_to_digest_algo( const char *string )
 	for(r = digest_list; r; r = r->next )
 	    if( !ascii_strcasecmp( r->name, string ) )
 		return r->algo;
-    } while( !r && load_digest_module(-1) );
+    } while( !r && load_digest_module () );
     return 0;
 }
 
@@ -171,7 +135,7 @@ digest_algo_to_string( int algo )
 	for(r = digest_list; r; r = r->next )
 	    if( r->algo == algo )
 		return r->name;
-    } while( !r && load_digest_module( algo ) );
+    } while( !r && load_digest_module () );
     return NULL;
 }
 
@@ -185,7 +149,7 @@ check_digest_algo( int algo )
 	for(r = digest_list; r; r = r->next )
 	    if( r->algo == algo )
 		return 0;
-    } while( !r && load_digest_module(algo) );
+    } while( !r && load_digest_module () );
     return G10ERR_DIGEST_ALGO;
 }
 
@@ -232,7 +196,7 @@ md_enable( MD_HANDLE h, int algo )
 	for(r = digest_list; r; r = r->next )
 	    if( r->algo == algo )
 		break;
-    } while( !r && load_digest_module( algo ) );
+    } while( !r && load_digest_module () );
     if( !r ) {
 	log_error("md_enable: algorithm %d not available\n", algo );
 	return;
@@ -457,7 +421,7 @@ md_digest_length( int algo )
 	    if( r->algo == algo )
 		return r->mdlen;
 	}
-    } while( !r && load_digest_module( algo ) );
+    } while( !r && load_digest_module () );
     log_error("WARNING: no length for md algo %d\n", algo);
     return 0;
 }
@@ -480,7 +444,7 @@ md_asn_oid( int algo, size_t *asnlen, size_t *mdlen )
 		return r->asnoid;
 	    }
 	}
-    } while( !r && load_digest_module( algo ) );
+    } while( !r && load_digest_module () );
     log_bug("no asn for md algo %d\n", algo);
     return NULL;
 }
@@ -512,13 +476,13 @@ md_stop_debug( MD_HANDLE md )
 	fclose(md->debug);
 	md->debug = NULL;
     }
-  #ifdef HAVE_U64_TYPEDEF
+#ifdef HAVE_U64_TYPEDEF
     {  /* a kludge to pull in the __muldi3 for Solaris */
        volatile u32 a = (u32)(ulong)md;
        volatile u64 b = 42;
        volatile u64 c;
        c = a * b;
     }
-  #endif
+#endif
 }
 

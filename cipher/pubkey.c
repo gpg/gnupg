@@ -31,8 +31,6 @@
 #include "elgamal.h"
 #include "dsa.h"
 #include "rsa.h"
-#include "dynload.h"
-
 
 #define TABLE_SIZE 10
 
@@ -58,6 +56,7 @@ static struct pubkey_table_s pubkey_table[TABLE_SIZE];
 static int disabled_algos[TABLE_SIZE];
 
 
+#if 0
 static int
 dummy_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors )
 { log_bug("no generate() for %d\n", algo ); return G10ERR_PUBKEY_ALGO; }
@@ -65,6 +64,7 @@ dummy_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors )
 static int
 dummy_check_secret_key( int algo, MPI *skey )
 { log_bug("no check_secret_key() for %d\n", algo ); return G10ERR_PUBKEY_ALGO; }
+#endif
 
 static int
 dummy_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
@@ -83,10 +83,11 @@ dummy_verify( int algo, MPI hash, MPI *data, MPI *pkey,
 		int (*cmp)(void *, MPI), void *opaquev )
 { log_bug("no verify() for %d\n", algo ); return G10ERR_PUBKEY_ALGO; }
 
+#if 0
 static unsigned
 dummy_get_nbits( int algo, MPI *pkey )
 { log_bug("no get_nbits() for %d\n", algo ); return 0; }
-
+#endif
 
 /****************
  * Put the static entries into the table.
@@ -215,73 +216,13 @@ static int
 load_pubkey_modules(void)
 {
     static int initialized = 0;
-    static int done = 0;
-    void *context = NULL;
-    struct pubkey_table_s *ct;
-    int ct_idx;
-    int i;
-    const char *name;
-    int any = 0;
-
 
     if( !initialized ) {
-	cipher_modules_constructor();
 	setup_pubkey_table();
 	initialized = 1;
 	return 1;
     }
-    if( done )
-	return 0;
-    done = 1;
-    for(ct_idx=0, ct = pubkey_table; ct_idx < TABLE_SIZE; ct_idx++,ct++ ) {
-	if( !ct->name )
-	    break;
-    }
-    if( ct_idx >= TABLE_SIZE-1 )
-	BUG(); /* table already full */
-    /* now load all extensions */
-    while( (name = enum_gnupgext_pubkeys( &context, &ct->algo,
-				&ct->npkey, &ct->nskey, &ct->nenc,
-				&ct->nsig,  &ct->use,
-				&ct->generate,
-				&ct->check_secret_key,
-				&ct->encrypt,
-				&ct->decrypt,
-				&ct->sign,
-				&ct->verify,
-				&ct->get_nbits )) ) {
-	for(i=0; pubkey_table[i].name; i++ )
-	    if( pubkey_table[i].algo == ct->algo )
-		break;
-	if( pubkey_table[i].name ) {
-	    log_info("skipping pubkey %d: already loaded\n", ct->algo );
-	    continue;
-	}
-
-	if( !ct->generate  )  ct->generate = dummy_generate;
-	if( !ct->check_secret_key )  ct->check_secret_key =
-						    dummy_check_secret_key;
-	if( !ct->encrypt   )  ct->encrypt  = dummy_encrypt;
-	if( !ct->decrypt   )  ct->decrypt  = dummy_decrypt;
-	if( !ct->sign	   )  ct->sign	   = dummy_sign;
-	if( !ct->verify    )  ct->verify   = dummy_verify;
-	if( !ct->get_nbits )  ct->get_nbits= dummy_get_nbits;
-	/* put it into the table */
-	if( g10_opt_verbose > 1 )
-	    log_info("loaded pubkey %d (%s)\n", ct->algo, name);
-	ct->name = name;
-	ct_idx++;
-	ct++;
-	any = 1;
-	/* check whether there are more available table slots */
-	if( ct_idx >= TABLE_SIZE-1 ) {
-	    log_info("pubkey table full; ignoring other extensions\n");
-	    break;
-	}
-    }
-    enum_gnupgext_pubkeys( &context, NULL, NULL, NULL, NULL, NULL, NULL,
-			       NULL, NULL, NULL, NULL, NULL, NULL, NULL );
-    return any;
+    return 0;
 }
 
 

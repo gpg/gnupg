@@ -1,3 +1,9 @@
+2002-08-02  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Removed all extension stuff but keep the tests for
+	dlopen.  We don't need to figure out the flags required.  All
+	stuff is now statically loaded.
+
 2002-07-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* README, configure.ac: --with-exec-path is now clarified into

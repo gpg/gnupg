@@ -1,5 +1,5 @@
 /* cipher.c  -	cipher dispatcher
- *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -30,7 +30,6 @@
 #include "des.h"
 #include "blowfish.h"
 #include "cast5.h"
-#include "dynload.h"
 
 
 #define MAX_BLOCKSIZE 16
@@ -162,6 +161,16 @@ setup_cipher_table(void)
     if( !cipher_table[i].name )
 	BUG();
     i++;
+    cipher_table[i].algo = CIPHER_ALGO_IDEA;
+    cipher_table[i].name = idea_get_info( cipher_table[i].algo,
+					 &cipher_table[i].keylen,
+					 &cipher_table[i].blocksize,
+					 &cipher_table[i].contextsize,
+					 &cipher_table[i].setkey,
+					 &cipher_table[i].encrypt,
+					 &cipher_table[i].decrypt     );
+    if (cipher_table[i].name)
+      i++;  /* Note that IDEA is usually no available. */
 
 #ifdef IS_DEVELOPMENT_VERSION
     cipher_table[i].algo = CIPHER_ALGO_DUMMY;
@@ -186,63 +195,15 @@ setup_cipher_table(void)
 static int
 load_cipher_modules(void)
 {
-    static int done = 0;
-    static int initialized = 0;
-    void *context = NULL;
-    struct cipher_table_s *ct;
-    int ct_idx;
-    int i;
-    const char *name;
-    int any = 0;
+  static int initialized = 0;
 
-    if( !initialized ) {
-	cipher_modules_constructor();
-	setup_cipher_table(); /* load static modules on the first call */
-	initialized = 1;
-	return 1;
+  if (!initialized ) 
+    {
+      setup_cipher_table(); /* load static modules on the first call */
+      initialized = 1;
+      return 1;
     }
-
-    if( done )
-	return 0;
-    done = 1;
-
-    for(ct_idx=0, ct = cipher_table; ct_idx < TABLE_SIZE; ct_idx++,ct++ ) {
-	if( !ct->name )
-	    break;
-    }
-    if( ct_idx >= TABLE_SIZE-1 )
-	BUG(); /* table already full */
-    /* now load all extensions */
-    while( (name = enum_gnupgext_ciphers( &context, &ct->algo,
-				&ct->keylen, &ct->blocksize, &ct->contextsize,
-				&ct->setkey, &ct->encrypt, &ct->decrypt)) ) {
-	if( ct->blocksize != 8 && ct->blocksize != 16 ) {
-	    log_info("skipping cipher %d: unsupported blocksize\n", ct->algo);
-	    continue;
-	}
-	for(i=0; cipher_table[i].name; i++ )
-	    if( cipher_table[i].algo == ct->algo )
-		break;
-	if( cipher_table[i].name ) {
-	    log_info("skipping cipher %d: already loaded\n", ct->algo );
-	    continue;
-	}
-	/* put it into the table */
-	if( g10_opt_verbose > 1 )
-	    log_info("loaded cipher %d (%s)\n", ct->algo, name);
-	ct->name = name;
-	ct_idx++;
-	ct++;
-	any = 1;
-	/* check whether there are more available table slots */
-	if( ct_idx >= TABLE_SIZE-1 ) {
-	    log_info("cipher table full; ignoring other extensions\n");
-	    break;
-	}
-    }
-    enum_gnupgext_ciphers( &context, NULL, NULL, NULL, NULL,
-					   NULL, NULL, NULL );
-    return any;
+  return 0;
 }
 
 

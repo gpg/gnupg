@@ -48,6 +48,9 @@
 /* General includes */
 
 #include <config.h>
+
+#ifdef USE_RNDUNIX
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -768,9 +771,9 @@ read_a_msg( int fd, GATHER_MSG *msg )
  * Using a level of 0 should never block and better add nothing
  * to the pool.  So this is just a dummy for this gatherer.
  */
-static int
-gather_random( void (*add)(const void*, size_t, int), int requester,
-	       size_t length, int level )
+int
+rndunix_gather_random( void (*add)(const void*, size_t, int), int requester,
+                       size_t length, int level )
 {
     static pid_t gatherer_pid = 0;
     static int pipedes[2];
@@ -846,70 +849,4 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
     return 0;
 }
 
-
-
-#ifndef IS_MODULE
-static
-#endif
-const char * const gnupgext_version = "RNDUNIX ($Revision$)";
-
-
-static struct {
-    int class;
-    int version;
-    int (*func)(void);
-} func_table[] = {
-    { 40, 1, (int (*)(void))gather_random },
-};
-
-/****************
- * Enumerate the names of the functions together with informations about
- * this function. Set sequence to an integer with a initial value of 0 and
- * do not change it.
- * If what is 0 all kind of functions are returned.
- * Return values: class := class of function:
- *			   10 = message digest algorithm info function
- *			   11 = integer with available md algorithms
- *			   20 = cipher algorithm info function
- *			   21 = integer with available cipher algorithms
- *			   30 = public key algorithm info function
- *			   31 = integer with available pubkey algorithms
- *			   40 = get read_random_source() function
- *			   41 = get fast_random_poll function
- *		  version = interface version of the function/pointer
- *			    (currently this is 1 for all functions)
- */
-
-#ifndef IS_MODULE
-static
-#endif
-void *
-gnupgext_enum_func( int what, int *sequence, int *class, int *vers )
-{
-    void *ret;
-    int i = *sequence;
-
-    do {
-	if ( i >= DIM(func_table) || i < 0 ) {
-	    return NULL;
-	}
-	*class = func_table[i].class;
-	*vers  = func_table[i].version;
-	ret = func_table[i].func;
-	i++;
-    } while ( what && what != *class );
-
-    *sequence = i;
-    return ret;
-}
-
-#ifndef IS_MODULE
-void
-rndunix_constructor(void)
-{
-    register_internal_cipher_extension( gnupgext_version,
-					gnupgext_enum_func );
-}
-#endif
-
-
+#endif /*USE_RNDUNIX*/

@@ -26,8 +26,8 @@
 #include "util.h"
 #include "memory.h"
 #include "rmd.h"
-#include "cipher.h" /* only used for the rmd160_hash_buffer() prototype */
-#include "dynload.h"
+#include "cipher.h" /* for rmd160_hash_buffer */
+#include "algorithms.h"
 
 #include "bithelp.h"
 
@@ -558,7 +558,7 @@ rmd160_hash_buffer( char *outbuf, const char *buffer, size_t length )
  * Returns: A pointer to string describing the algorithm or NULL if
  *	    the ALGO is invalid.
  */
-static const char *
+const char *
 rmd160_get_info( int algo, size_t *contextsize,
 	       byte **r_asnoid, int *r_asnlen, int *r_mdlen,
 	       void (**r_init)( void *c ),
@@ -585,68 +585,4 @@ rmd160_get_info( int algo, size_t *contextsize,
 
     return "RIPEMD160";
 }
-
-
-#ifndef IS_MODULE
-static
-#endif
-const char * const gnupgext_version = "RMD160 ($Revision$)";
-
-static struct {
-    int class;
-    int version;
-    int  value;
-    void (*func)(void);
-} func_table[] = {
-    { 10, 1, 0, (void(*)(void))rmd160_get_info },
-    { 11, 1, 3 },
-};
-
-
-#ifndef IS_MODULE
-static
-#endif
-void *
-gnupgext_enum_func( int what, int *sequence, int *class, int *vers )
-{
-    void *ret;
-    int i = *sequence;
-
-    do {
-	if( i >= DIM(func_table) || i < 0 ) {
-	    return NULL;
-	}
-	*class = func_table[i].class;
-	*vers  = func_table[i].version;
-	switch( *class ) {
-	  case 11:
-	  case 21:
-	  case 31:
-	    ret = &func_table[i].value;
-	    break;
-	  default:
-#ifndef __riscos__
-	    ret = func_table[i].func;
-#else /* __riscos__ */
-	    ret = (void *) func_table[i].func;
-#endif /* __riscos__ */
-	    break;
-	}
-	i++;
-    } while( what && what != *class );
-
-    *sequence = i;
-    return ret;
-}
-
-
-
-
-#ifndef IS_MODULE
-void
-rmd160_constructor(void)
-{
-    register_internal_cipher_extension( gnupgext_version, gnupgext_enum_func );
-}
-#endif
 

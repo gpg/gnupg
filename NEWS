@@ -1,6 +1,10 @@
 Noteworthy changes in version 1.1.91
 -------------------------------------------------
 
+    * All modules are now linked statically; the --load-extension
+      option is in general not useful anymore.  The only exception is
+      to specify the deprecated idea cipher.
+
     * When using --batch with one of the --delete-key commands, the
       key must be specified by fingerprint.  See the man page for
       details.

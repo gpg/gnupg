@@ -1245,7 +1245,8 @@ Using this option will also prevent the creation of a
 <listitem><para>
 Load an extension module. If &ParmName; does not
 contain a slash it is searched in "/usr/local/lib/gnupg"
-See the manual for more information about extensions.
+Extension are in gernal not useful anymore; the use of this 
+option is deprecated.
 </para></listitem></varlistentry>
 
 

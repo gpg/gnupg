@@ -1,3 +1,41 @@
+2002-08-03  Werner Koch  <wk@gnupg.org>
+
+	* rndegd.c (do_read): Handle case when read returns 0 to avoid
+	gpg hanging when EGD died.  By Christian Biere.
+
+2002-08-02  Werner Koch  <wk@gnupg.org>
+
+        The big extension removal.
+	
+	* Makefile.am: Removed all extension stuff.
+	* dynload.c: Removed everything except for
+	register_cipher_extension.
+	(dynload_enum_module_names): New.
+	* dynload.h: Removed.
+	* random.c (getfnc_gather_random,getfnc_fast_random_poll):
+	New. Replaced all dynload functions with these ones.
+	* rndunix.c (rndunix_gather_random): Renamed from
+	gather_random.  Made global.  Removed all dynload stuff.
+	* rndlinux.c (rndlinux_gather_random): Likewise.
+	* rndegd.c (rndegd_gather_random): Likewise.
+	* rndw32.c (rndw32_gather_random)
+	(rndw32_gather_random_fast): Likewise.  Also removed the unsued
+	entropy dll code.
+	* md.c (new_list_item): Changed return value to indicate whether
+	an algorithms was loaded.
+	(load_digest_module): Simplified by removing all the dynload code.
+	* algorithms.h: New.
+	* md5.c (md5_get_info): Made global.  Removed all dynload stuff.
+	* rmd160.c (rmd160_get_info): Likewise. 
+	* sha1.c (sha1_get_info): Likewise.
+	* tiger.c (tiger_get_info): Likewise. Return NULL if we can't use
+	this module.
+	* idea-stub.c: New.
+	* blowfish.h (idea_get_info): Add prototype.
+	* cipher.c (setup_cipher_table): Try to load IDEA.
+	(load_cipher_modules): Removed all dynload code.
+	* pubkey.c (load_pubkey_modules): Removed the dynloading code.
+
 2002-07-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* random.c: "warning" -> "WARNING"

@@ -1,4 +1,4 @@
-# Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -18,39 +18,14 @@
 
 ## Process this file with automake to produce Makefile.in
 
-
 INCLUDES = -I.. -I$(top_srcdir)/include -I$(top_srcdir)/intl
 
 noinst_LIBRARIES = libcipher.a
 
-# The configure script greps the module names from the EXTRA_PROGRAMS line
-EXTRA_PROGRAMS = rndlinux rndunix rndegd rndw32 sha1 rmd160 md5 tiger
-
-EXTRA_rndlinux_SOURCES = rndlinux.c
-EXTRA_rndunix_SOURCES = rndunix.c
-EXTRA_rndegd_SOURCES = rndegd.c
-EXTRA_rndw32_SOURCES = rndw32.c
-EXTRA_md5_SOURCES = md5.c
-EXTRA_rmd160_SOURCES = rmd160.c
-EXTRA_sha1_SOURCES = sha1.c
-EXTRA_tiger_SOURCES = tiger.c
-
-
-if ENABLE_GNUPG_EXTENSIONS
-pkglib_PROGRAMS  = @DYNAMIC_CIPHER_MODS@
-else
-pkglib_PROGRAMS  =
-endif
-
-
-DYNLINK_MOD_CFLAGS = -DIS_MODULE @DYNLINK_MOD_CFLAGS@
-
-#libcipher_a_LDFLAGS =
 libcipher_a_SOURCES = cipher.c	\
 		 pubkey.c	\
 		 md.c		\
 		 dynload.c	\
-		 dynload.h	\
 		 bithelp.h	\
 		 des.c		\
 		 des.h		\
@@ -72,43 +47,22 @@ libcipher_a_SOURCES = cipher.c	\
 		 dsa.c		\
 		 g10c.c 	\
 		 smallprime.c	\
-		 construct.c
+		 algorithms.h   \
+		 rndlinux.c	\
+		 rndunix.c 	\
+		 rndegd.c  	\
+		 rndw32.c  	\
+		 md5.c     	\
+		 rmd160.c  	\
+		 sha1.c    	\
+		 tiger.c        
 
-# configure creates the constructor file
-BUILT_SOURCES = construct.c
-DISTCLEANFILES = construct.c
+EXTRA_libcipher_a_SOURCES = idea-stub.c
 
-libcipher_a_DEPENDENCIES = @STATIC_CIPHER_OBJS@
-libcipher_a_LIBADD =	   @STATIC_CIPHER_OBJS@
-
-
-# If I remember it correct, automake 1.4 has a feature to set
-# fooFLAGS depending on the program.  So we should check it out.
-
-tiger$(EXEEXT): $(srcdir)/tiger.c
-	`echo $(COMPILE) $(DYNLINK_MOD_CFLAGS) -o tiger $(srcdir)/tiger.c | \
-	    sed -e 's/-O[2-9s]*/-O/g' `
+libcipher_a_DEPENDENCIES = @IDEA_O@
+libcipher_a_LIBADD = @IDEA_O@
 
 tiger.o: $(srcdir)/tiger.c
 	`echo $(COMPILE) -c $(srcdir)/tiger.c | sed -e 's/-O[2-9s]*/-O1/g' `
 
-#twofish: $(srcdir)/twofish.c
-#	 `echo $(COMPILE) $(DYNLINK_MOD_CFLAGS) -o twofish $(srcdir)/twofish.c | \
-#	     sed -e 's/-O[0-9s]*/  /g' `
-
-twofish: $(srcdir)/twofish.c
-	$(COMPILE) $(DYNLINK_MOD_CFLAGS) -o twofish $(srcdir)/twofish.c
-
-#twofish.o: $(srcdir)/twofish.c
-#	 `echo $(COMPILE) -c $(srcdir)/twofish.c | sed -e 's/-O[0-9s]*/  /g' `
-
-
-rndunix$(EXEEXT): $(srcdir)/rndunix.c
-	$(COMPILE) $(DYNLINK_MOD_CFLAGS) -o rndunix $(srcdir)/rndunix.c
-
-rndlinux$(EXEEXT): $(srcdir)/rndlinux.c
-	$(COMPILE) $(DYNLINK_MOD_CFLAGS) -o rndlinux $(srcdir)/rndlinux.c
-
-rndegd$(EXEEXT): $(srcdir)/rndegd.c
-	$(COMPILE) $(DYNLINK_MOD_CFLAGS) -o rndegd $(srcdir)/rndegd.c
 

@@ -1,5 +1,5 @@
 /* rndegd.c  -	interface to the EGD
- *	Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -19,6 +19,9 @@
  */
 
 #include <config.h>
+
+#ifdef USE_RNDEG
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -33,14 +36,10 @@
 #include "types.h"
 #include "util.h"
 #include "ttyio.h"
-#include "dynload.h"
+#include "algorithms.h"
 #include "cipher.h"
+#include "i18n.h"
 
-#ifdef IS_MODULE
-  #define _(a) (a)
-#else
-  #include "i18n.h"
-#endif
 
 #ifndef offsetof
 #define offsetof(type, member) ((size_t) &((type *)0)->member)
@@ -76,6 +75,11 @@ do_read( int fd, void *buf, size_t nbytes )
 	} while( n == -1 && errno == EINTR );
 	if( n == -1 )
 	    return -1;
+	else if( n == 0 ) {
+            /* EGD probably died. */
+	    errno = ECONNRESET;
+	    return -1;
+	}
 	nread += n;
     } while( nread < nbytes );
     return nbytes;
@@ -91,8 +95,8 @@ do_read( int fd, void *buf, size_t nbytes )
  * Using a level of 0 should never block and better add nothing
  * to the pool.  So this is just a dummy for EGD.
  */
-static int
-gather_random( void (*add)(const void*, size_t, int), int requester,
+int
+rndegd_gather_random( void (*add)(const void*, size_t, int), int requester,
 					  size_t length, int level )
 {
     static int fd = -1;
@@ -175,11 +179,7 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
     }
 
     if( length ) {
-      #ifdef IS_MODULE
-	fprintf( stderr,
-      #else
 	tty_printf(
-      #endif
 	 _("Please wait, entropy is being gathered. Do some work if it would\n"
 	   "keep you from getting bored, because it will improve the quality\n"
 	   "of the entropy.\n") );
@@ -205,51 +205,4 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
     return 0; /* success */
 }
 
-
-
-#ifndef IS_MODULE
-static
-#endif
-const char * const gnupgext_version = "RNDEGD ($Revision$)";
-
-static struct {
-    int class;
-    int version;
-    int (*func)(void);
-} func_table[] = {
-    { 40, 1, (int (*)(void))gather_random },
-};
-
-
-#ifndef IS_MODULE
-static
-#endif
-void *
-gnupgext_enum_func( int what, int *sequence, int *class, int *vers )
-{
-    void *ret;
-    int i = *sequence;
-
-    do {
-	if ( i >= DIM(func_table) || i < 0 ) {
-	    return NULL;
-	}
-	*class = func_table[i].class;
-	*vers  = func_table[i].version;
-	ret = func_table[i].func;
-	i++;
-    } while ( what && what != *class );
-
-    *sequence = i;
-    return ret;
-}
-
-#ifndef IS_MODULE
-void
-rndegd_constructor(void)
-{
-    register_internal_cipher_extension( gnupgext_version,
-					gnupgext_enum_func );
-}
-#endif
-
+#endif /*USE_RNDEGD*/

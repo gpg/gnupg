@@ -1,3 +1,7 @@
+2002-08-02  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (LDFLAGS): Removed DYNLINK_LDFLAGS.
+
 2002-07-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, g10.c (main), mainproc.c (proc_encrypted): Return a
