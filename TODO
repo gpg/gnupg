@@ -1,4 +1,7 @@
 
+    * add writing of partial headers conforming to OpenPGP
+      util/iobuf.c:block_filter
+
     * add options: --default-signature-user, --default-encryption-user
 
     * make preferences work

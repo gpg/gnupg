@@ -575,9 +575,7 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
     kbpos->count=0;
     while( (rc=parse_packet(a, pkt)) != -1 ) {
 	if( rc ) {  /* ignore errors */
-	    if( rc == G10ERR_PUBKEY_ALGO )
-		parse_pubkey_warning( pkt );
-	    else if( rc != G10ERR_UNKNOWN_PACKET ) {
+	    if( rc != G10ERR_UNKNOWN_PACKET ) {
 		log_error("read_keyblock: read error: %s\n", g10_errstr(rc) );
 		rc = G10ERR_INV_KEYRING;
 		goto ready;
@@ -640,9 +638,7 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
     init_packet(pkt);
     while( (rc=parse_packet(kbpos->fp, pkt)) != -1 ) {
 	if( rc ) {  /* ignore errors */
-	    if( rc == G10ERR_PUBKEY_ALGO )
-		parse_pubkey_warning( pkt );
-	    else if( rc != G10ERR_UNKNOWN_PACKET ) {
+	    if( rc != G10ERR_UNKNOWN_PACKET ) {
 		log_error("read_keyblock: read error: %s\n", g10_errstr(rc) );
 		rc = G10ERR_INV_KEYRING;
 		goto ready;

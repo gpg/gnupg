@@ -130,7 +130,8 @@ keyid_from_sk( PKT_secret_key *sk, u32 *keyid )
 	keyid = dummy_keyid;
 
     if( sk->version < 4 && is_RSA(sk->pubkey_algo) ) {
-	lowbits = mpi_get_keyid( sk->skey[0], keyid ); /* take n */
+	lowbits = pubkey_get_npkey(sk->pubkey_algo) ?
+		     mpi_get_keyid( sk->skey[0], keyid ) : 0; /* take n */
     }
     else {
 	const byte *dp;
@@ -161,7 +162,8 @@ keyid_from_pk( PKT_public_key *pk, u32 *keyid )
 	keyid = dummy_keyid;
 
     if( pk->version < 4 && is_RSA(pk->pubkey_algo) ) {
-	lowbits = mpi_get_keyid( pk->pkey[0], keyid ); /* from n */
+	lowbits = pubkey_get_npkey(pk->pubkey_algo) ?
+		     mpi_get_keyid( pk->pkey[0], keyid ) : 0 ; /* from n */
     }
     else {
 	const byte *dp;
@@ -267,12 +269,14 @@ fingerprint_from_pk( PKT_public_key *pk, size_t *ret_len )
 	MD_HANDLE md;
 
 	md = md_open( DIGEST_ALGO_MD5, 0);
-	p = buf = mpi_get_buffer( pk->pkey[0], &n, NULL );
-	md_write( md, p, n );
-	m_free(buf);
-	p = buf = mpi_get_buffer( pk->pkey[1], &n, NULL );
-	md_write( md, p, n );
-	m_free(buf);
+	if( pubkey_get_npkey( pk->pubkey_algo ) > 1 ) {
+	    p = buf = mpi_get_buffer( pk->pkey[0], &n, NULL );
+	    md_write( md, p, n );
+	    m_free(buf);
+	    p = buf = mpi_get_buffer( pk->pkey[1], &n, NULL );
+	    md_write( md, p, n );
+	    m_free(buf);
+	}
 	md_final(md);
 	array = m_alloc( 16 );
 	len = 16;
@@ -306,12 +310,14 @@ fingerprint_from_sk( PKT_secret_key *sk, size_t *ret_len )
 	MD_HANDLE md;
 
 	md = md_open( DIGEST_ALGO_MD5, 0);
-	p = buf = mpi_get_buffer( sk->skey[1], &n, NULL );
-	md_write( md, p, n );
-	m_free(buf);
-	p = buf = mpi_get_buffer( sk->skey[0], &n, NULL );
-	md_write( md, p, n );
-	m_free(buf);
+	if( pubkey_get_npkey( sk->pubkey_algo ) > 1 ) {
+	    p = buf = mpi_get_buffer( sk->skey[1], &n, NULL );
+	    md_write( md, p, n );
+	    m_free(buf);
+	    p = buf = mpi_get_buffer( sk->skey[0], &n, NULL );
+	    md_write( md, p, n );
+	    m_free(buf);
+	}
 	md_final(md);
 	array = m_alloc( 16 );
 	len = 16;

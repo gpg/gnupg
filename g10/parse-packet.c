@@ -43,6 +43,7 @@ static int  copy_packet( IOBUF inp, IOBUF out, int pkttype,
 					       unsigned long pktlen );
 static void skip_packet( IOBUF inp, int pkttype, unsigned long pktlen );
 static void skip_rest( IOBUF inp, unsigned long pktlen );
+static void *read_rest( IOBUF inp, ulong *r_pktlen );
 static int  parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen,
 							     PACKET *packet );
 static int  parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen,
@@ -59,11 +60,11 @@ static int  parse_comment( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
 static void parse_trust( IOBUF inp, int pkttype, unsigned long pktlen );
 static int  parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
-								PACKET *pkt );
+					       PACKET *packet, int new_ctb);
 static int  parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen,
-							   PACKET *packet );
+					       PACKET *packet, int new_ctb );
 static int  parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
-							   PACKET *packet );
+					       PACKET *packet, int new_ctb);
 
 
 static unsigned short
@@ -94,6 +95,19 @@ set_packet_list_mode( int mode )
     list_mode = mode;
     mpi_print_mode = DBG_MPI;
     return old;
+}
+
+static void
+unknown_pubkey_warning( int algo )
+{
+    static byte unknown_pubkey_algos[256];
+
+    algo &= 0xff;
+    if( !unknown_pubkey_algos[algo] ) {
+	if( opt.verbose )
+	    log_info("can't handle public key algorithm %d\n", algo );
+	unknown_pubkey_algos[algo] = 1;
+    }
 }
 
 /****************
@@ -177,36 +191,6 @@ skip_some_packets( IOBUF inp, unsigned n )
 }
 
 
-void
-parse_pubkey_warning( PACKET *pkt )
-{
-    static byte unknown_pubkey_algos[256];
-    int unk=0, uns=0;
-
-    if( pkt->pkttype == PKT_PUBLIC_KEY
-	|| pkt->pkttype == PKT_PUBLIC_SUBKEY )
-	unk = pkt->pkt.public_key->pubkey_algo & 0xff;
-    else if( pkt->pkttype == PKT_SECRET_KEY
-	     || pkt->pkttype == PKT_SECRET_SUBKEY )
-	unk = pkt->pkt.secret_key->pubkey_algo & 0xff;
-    else if( pkt->pkttype == PKT_SIGNATURE )
-	uns = pkt->pkt.signature->pubkey_algo & 0xff;
-
-    if( unk ) {
-	if( !(unknown_pubkey_algos[unk]&1) ) {
-	    log_info("can't handle key "
-		      "with public key algorithm %d\n", unk );
-	    unknown_pubkey_algos[unk] |= 1;
-	}
-    }
-    else if( uns ) {
-	if( !(unknown_pubkey_algos[unk]&2) ) {
-	    log_info("can't handle signature "
-		      "with public key algorithm %d\n", uns );
-	    unknown_pubkey_algos[unk] |= 2;
-	}
-    }
-}
 
 /****************
  * Parse packet. Set the variable skip points to to 1 if the packet
@@ -223,7 +207,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
     unsigned long pktlen;
     byte hdr[8];
     int hdrlen;
-    int pgp3 = 0;
+    int new_ctb = 0;
 
     *skip = 0;
     assert( !pkt->pkt.generic );
@@ -238,8 +222,8 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	return G10ERR_INVALID_PACKET;
     }
     pktlen = 0;
-    pgp3 = !!(ctb & 0x40);
-    if( pgp3 ) {
+    new_ctb = !!(ctb & 0x40);
+    if( new_ctb ) {
 	pkttype =  ctb & 0x3f;
 	if( (c = iobuf_get(inp)) == -1 ) {
 	    log_error("%s: 1st length byte missing\n", iobuf_where(inp) );
@@ -257,7 +241,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	    hdr[hdrlen++] = c;
 	    pktlen += c + 192;
 	}
-	else if( c < 255 ) {
+	else if( c == 255 ) {
 	    pktlen  = (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 24;
 	    pktlen |= (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 16;
 	    pktlen |= (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 8;
@@ -268,8 +252,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	    pktlen |= (hdr[hdrlen++] = c );
 	}
 	else { /* partial body length */
-	    log_debug("partial body length of %lu bytes\n", pktlen );
-	    iobuf_set_partial_block_mode(inp, pktlen);
+	    iobuf_set_partial_block_mode(inp, c & 0xff);
 	    pktlen = 0;/* to indicate partial length */
 	}
     }
@@ -305,7 +288,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 
     if( DBG_PACKET )
 	log_debug("parse_packet(iob=%d): type=%d length=%lu%s\n",
-		   iobuf_id(inp), pkttype, pktlen, pgp3?" (pgp3)":"" );
+		   iobuf_id(inp), pkttype, pktlen, new_ctb?" (new_ctb)":"" );
     pkt->pkttype = pkttype;
     rc = G10ERR_UNKNOWN_PACKET; /* default error */
     switch( pkttype ) {
@@ -345,13 +328,13 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	rc = G10ERR_UNKNOWN_PACKET;
 	break;
       case PKT_PLAINTEXT:
-	rc = parse_plaintext(inp, pkttype, pktlen, pkt );
+	rc = parse_plaintext(inp, pkttype, pktlen, pkt, new_ctb );
 	break;
       case PKT_COMPRESSED:
-	rc = parse_compressed(inp, pkttype, pktlen, pkt );
+	rc = parse_compressed(inp, pkttype, pktlen, pkt, new_ctb );
 	break;
       case PKT_ENCRYPTED:
-	rc = parse_encrypted(inp, pkttype, pktlen, pkt );
+	rc = parse_encrypted(inp, pkttype, pktlen, pkt, new_ctb );
 	break;
       default:
 	skip_packet(inp, pkttype, pktlen);
@@ -443,6 +426,28 @@ skip_rest( IOBUF inp, unsigned long pktlen )
 	for( ; pktlen; pktlen-- )
 	    iobuf_get(inp);
     }
+}
+
+static void *
+read_rest( IOBUF inp, ulong *r_pktlen )
+{
+    byte *p;
+    int i;
+    size_t pktlen = *r_pktlen;
+
+    if( iobuf_in_block_mode(inp) ) {
+	log_error("read_rest: can't store stream data\n");
+	p = NULL;
+    }
+    else {
+	p = m_alloc( pktlen + 2 );
+	p[0] = pktlen >> 8;
+	p[1] = pktlen & 0xff;
+	for(i=2; pktlen; pktlen--, i++ )
+	    p[i] = iobuf_get(inp);
+    }
+    *r_pktlen = 0;
+    return p;
 }
 
 
@@ -548,16 +553,21 @@ parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 	  k->version, k->pubkey_algo, (ulong)k->keyid[0], (ulong)k->keyid[1]);
 
     ndata = pubkey_get_nenc(k->pubkey_algo);
-    if( !ndata && list_mode )
-	printf("\tunsupported algorithm %d\n", k->pubkey_algo );
-
-    for( i=0; i < ndata; i++ ) {
-	n = pktlen;
-	k->data[i] = mpi_read(inp, &n, 0); pktlen -=n;
-	if( list_mode ) {
-	    printf("\tdata: ");
-	    mpi_print(stdout, k->data[i], mpi_print_mode );
-	    putchar('\n');
+    if( !ndata ) {
+	if( list_mode )
+	    printf("\tunsupported algorithm %d\n", k->pubkey_algo );
+	unknown_pubkey_warning( k->pubkey_algo );
+	k->data[0] = NULL;  /* no need to store the encrypted data */
+    }
+    else {
+	for( i=0; i < ndata; i++ ) {
+	    n = pktlen;
+	    k->data[i] = mpi_read(inp, &n, 0); pktlen -=n;
+	    if( list_mode ) {
+		printf("\tdata: ");
+		mpi_print(stdout, k->data[i], mpi_print_mode );
+		putchar('\n');
+	    }
 	}
     }
 
@@ -783,17 +793,24 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
     }
 
     ndata = pubkey_get_nsig(sig->pubkey_algo);
-    if( !ndata && list_mode )
-	printf("\tunknown algorithm %d\n", sig->pubkey_algo );
-
-    for( i=0; i < ndata; i++ ) {
-	n = pktlen;
-	sig->data[i] = mpi_read(inp, &n, 0 );
-	pktlen -=n;
-	if( list_mode ) {
-	    printf("\tdata: ");
-	    mpi_print(stdout, sig->data[i], mpi_print_mode );
-	    putchar('\n');
+    if( !ndata ) {
+	if( list_mode )
+	    printf("\tunknown algorithm %d\n", sig->pubkey_algo );
+	unknown_pubkey_warning( sig->pubkey_algo );
+	/* we store the plain material in data[0], so that we are able
+	 * to write it back with build_packet() */
+	sig->data[0] = read_rest(inp, &pktlen );
+    }
+    else {
+	for( i=0; i < ndata; i++ ) {
+	    n = pktlen;
+	    sig->data[i] = mpi_read(inp, &n, 0 );
+	    pktlen -=n;
+	    if( list_mode ) {
+		printf("\tdata: ");
+		mpi_print(stdout, sig->data[i], mpi_print_mode );
+		putchar('\n');
+	    }
 	}
     }
 
@@ -923,14 +940,18 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
     if( !npkey ) {
 	if( list_mode )
 	    printf("\tunknown algorithm %d\n", algorithm );
-	rc = G10ERR_PUBKEY_ALGO;
-	goto leave;
+	unknown_pubkey_warning( algorithm );
     }
 
 
     if( pkttype == PKT_SECRET_KEY || pkttype == PKT_SECRET_SUBKEY )  {
 	PKT_secret_key *sk = pkt->pkt.secret_key;
 	byte temp[8];
+
+	if( !npkey ) {
+	    sk->skey[0] = read_rest( inp, &pktlen );
+	    goto leave;
+	}
 
 	for(i=0; i < npkey; i++ ) {
 	    n = pktlen; sk->skey[i] = mpi_read(inp, &n, 0 ); pktlen -=n;
@@ -1053,6 +1074,11 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
     else {
 	PKT_public_key *pk = pkt->pkt.public_key;
 
+	if( !npkey ) {
+	    pk->pkey[0] = read_rest( inp, &pktlen );
+	    goto leave;
+	}
+
 	for(i=0; i < npkey; i++ ) {
 	    n = pktlen; pk->pkey[i] = mpi_read(inp, &n, 0 ); pktlen -=n;
 	    if( list_mode ) {
@@ -1135,7 +1161,8 @@ parse_trust( IOBUF inp, int pkttype, unsigned long pktlen )
 
 
 static int
-parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
+parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
+					PACKET *pkt, int new_ctb )
 {
     int mode, namelen;
     PKT_plaintext *pt;
@@ -1149,6 +1176,7 @@ parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
     mode = iobuf_get_noeof(inp); if( pktlen ) pktlen--;
     namelen = iobuf_get_noeof(inp); if( pktlen ) pktlen--;
     pt = pkt->pkt.plaintext = m_alloc(sizeof *pkt->pkt.plaintext + namelen -1);
+    pt->new_ctb = new_ctb;
     pt->mode = mode;
     pt->namelen = namelen;
     if( pktlen ) {
@@ -1187,7 +1215,8 @@ parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
 
 
 static int
-parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
+parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen,
+		  PACKET *pkt, int new_ctb )
 {
     PKT_compressed *zd;
 
@@ -1198,6 +1227,7 @@ parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
     zd = pkt->pkt.compressed =	m_alloc(sizeof *pkt->pkt.compressed );
     zd->len = 0; /* not yet used */
     zd->algorithm = iobuf_get_noeof(inp);
+    zd->new_ctb = new_ctb;
     zd->buf = inp;
     if( list_mode )
 	printf(":compressed packet: algo=%d\n", zd->algorithm);
@@ -1206,13 +1236,15 @@ parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
 
 
 static int
-parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
+parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
+				       PACKET *pkt, int new_ctb )
 {
     PKT_encrypted *ed;
 
     ed = pkt->pkt.encrypted =  m_alloc(sizeof *pkt->pkt.encrypted );
     ed->len = pktlen;
     ed->buf = NULL;
+    ed->new_ctb = new_ctb;
     if( pktlen && pktlen < 10 ) {
 	log_error("packet(%d) too short\n", pkttype);
 	skip_rest(inp, pktlen);

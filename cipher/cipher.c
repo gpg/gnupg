@@ -305,10 +305,10 @@ cipher_open( int algo, int mode, int secure )
     if( algo == CIPHER_ALGO_DUMMY )
 	hd->mode = CIPHER_MODE_DUMMY;
     else if( mode == CIPHER_MODE_AUTO_CFB ) {
-	if( algo != CIPHER_ALGO_BLOWFISH160 )
-	    hd->mode = CIPHER_MODE_PHILS_CFB;
-	else
+	if( algo == CIPHER_ALGO_BLOWFISH160 || algo >= 100 )
 	    hd->mode = CIPHER_MODE_CFB;
+	else
+	    hd->mode = CIPHER_MODE_PHILS_CFB;
     }
     else
 	hd->mode = mode;

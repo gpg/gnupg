@@ -34,6 +34,34 @@
 #include "options.h"
 
 
+#define MIN_PARTIAL_SIZE 512
+
+
+static void
+write_header( cipher_filter_context_t *cfx, IOBUF a )
+{
+    PACKET pkt;
+    PKT_encrypted ed;
+    byte temp[10];
+
+    memset( &ed, 0, sizeof ed );
+    ed.len = cfx->datalen;
+    init_packet( &pkt );
+    pkt.pkttype = PKT_ENCRYPTED;
+    pkt.pkt.encrypted = &ed;
+    if( build_packet( a, &pkt ))
+	log_bug("build_packet(ENCR_DATA) failed\n");
+    randomize_buffer( temp, 8, 1 );
+    temp[8] = temp[6];
+    temp[9] = temp[7];
+    cfx->cipher_hd = cipher_open( cfx->dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
+    cipher_setkey( cfx->cipher_hd, cfx->dek->key, cfx->dek->keylen );
+    cipher_setiv( cfx->cipher_hd, NULL );
+    cipher_encrypt( cfx->cipher_hd, temp, temp, 10);
+    cipher_sync( cfx->cipher_hd );
+    iobuf_write(a, temp, 10);
+    cfx->header=1;
+}
 
 
 /****************
@@ -53,35 +81,20 @@ cipher_filter( void *opaque, int control,
     else if( control == IOBUFCTRL_FLUSH ) { /* encrypt */
 	assert(a);
 	if( !cfx->header ) {
-	    PACKET pkt;
-	    PKT_encrypted ed;
-	    byte temp[10];
-
-	    memset( &ed, 0, sizeof ed );
-	    ed.len = cfx->datalen;
-	    init_packet( &pkt );
-	    pkt.pkttype = PKT_ENCRYPTED;
-	    pkt.pkt.encrypted = &ed;
-	    if( build_packet( a, &pkt ))
-		log_bug("build_packet(ENCR_DATA) failed\n");
-	    randomize_buffer( temp, 8, 1 );
-	    temp[8] = temp[6];
-	    temp[9] = temp[7];
-	    cfx->cipher_hd = cipher_open( cfx->dek->algo,
-					  CIPHER_MODE_AUTO_CFB, 1 );
-	    cipher_setkey( cfx->cipher_hd, cfx->dek->key, cfx->dek->keylen );
-	    cipher_setiv( cfx->cipher_hd, NULL );
-	    cipher_encrypt( cfx->cipher_hd, temp, temp, 10);
-	    cipher_sync( cfx->cipher_hd );
-	    iobuf_write(a, temp, 10);
-	    cfx->header=1;
+	    write_header( cfx, a );
 	}
 	cipher_encrypt( cfx->cipher_hd, buf, buf, size);
 	if( iobuf_write( a, buf, size ) )
 	    rc = G10ERR_WRITE_FILE;
     }
     else if( control == IOBUFCTRL_FREE ) {
+      #if 0
+	if( cfx->new_partial && cfx->cfx->la_buffer ) {
+
+	}
+      #endif
 	cipher_close(cfx->cipher_hd);
+	m_free(cfx->la_buffer); cfx->la_buffer = NULL;
     }
     else if( control == IOBUFCTRL_DESC ) {
 	*(char**)buf = "cipher_filter";

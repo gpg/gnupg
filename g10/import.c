@@ -159,9 +159,7 @@ read_block( IOBUF a, compress_filter_context_t *cfx,
     init_packet(pkt);
     while( (rc=parse_packet(a, pkt)) != -1 ) {
 	if( rc ) {  /* ignore errors */
-	    if( rc == G10ERR_PUBKEY_ALGO )
-		parse_pubkey_warning( pkt );
-	    else if( rc != G10ERR_UNKNOWN_PACKET ) {
+	    if( rc != G10ERR_UNKNOWN_PACKET ) {
 		log_error("read_block: read error: %s\n", g10_errstr(rc) );
 		rc = G10ERR_INV_KEYRING;
 		goto ready;

@@ -37,13 +37,23 @@ typedef struct {
     char fname[1]; /* name of the file */
 } file_filter_ctx_t ;
 
+/* The first partial length header block must be of size 512
+ * to make it easier (and efficienter) we use a min. block size of 512
+ * for all chznks (but the last one) */
+#define OP_MIN_PARTIAL_CHUNK	  512
+#define OP_MIN_PARTIAL_CHUNK_2POW 9
+
 typedef struct {
     int usage;
     size_t size;
     size_t count;
     int partial;  /* 1 = partial header, 2 in last partial packet */
+    char *buffer;    /* used for partial header */
+    size_t buflen;   /* used size of buffer */
+    int first_c;     /* of partial header (which is > 0)*/
     int eof;
 } block_filter_ctx_t;
+
 
 static int underflow(IOBUF a);
 
@@ -152,7 +162,14 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    break;
 		}
 		else if( a->partial ) {
-		    if( (c = iobuf_get(chain)) == -1 ) {
+		    /* These OpenPGP introduced huffman encoded length
+		     * bytes are really a mess :-( */
+		    if( a->first_c ) {
+			c = a->first_c;
+			a->first_c = 0;
+			assert( c >= 224 && c < 255 );
+		    }
+		    else if( (c = iobuf_get(chain)) == -1 ) {
 			log_error("block_filter: 1st length byte missing\n");
 			rc = G10ERR_READ_FILE;
 			break;
@@ -183,11 +200,22 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 			    break;
 			}
 		    }
+		    else if( c == 255 ) {
+			a->size  = iobuf_get(chain) << 24;
+			a->size |= iobuf_get(chain) << 16;
+			a->size |= iobuf_get(chain) << 8;
+			if( (c = iobuf_get(chain)) == -1 ) {
+			    log_error("block_filter: invalid 4 byte length\n");
+			    rc = G10ERR_READ_FILE;
+			    break;
+			}
+			a->size |= c;
+		    }
 		    else { /* next partial body length */
 			a->size = 1 << (c & 0x1f);
 		    }
 		}
-		else {
+		else { /* the gnupg partial length scheme - much better :-) */
 		    c = iobuf_get(chain);
 		    a->size = c << 8;
 		    c = iobuf_get(chain);
@@ -220,33 +248,85 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	*ret_len = n;
     }
     else if( control == IOBUFCTRL_FLUSH ) {
-	size_t avail, n;
+	if( a->partial ) { /* the complicated openpgp scheme */
+	    size_t blen, n, nbytes = size + a->buflen;
 
-	assert( !a->partial );
-	for(p=buf; !rc && size; ) {
-	    n = size;
-	    avail = a->size - a->count;
-	    if( !avail ) {
-		if( n > a->size ) {
-		    iobuf_put( chain, (a->size >> 8) & 0xff );
-		    iobuf_put( chain, a->size & 0xff );
-		    avail = a->size;
-		    a->count = 0;
-		}
-		else {
-		    iobuf_put( chain, (n >> 8) & 0xff );
-		    iobuf_put( chain, n & 0xff );
-		    avail = n;
-		    a->count = a->size - n;
+	    assert( a->buflen <= OP_MIN_PARTIAL_CHUNK );
+	    if( nbytes < OP_MIN_PARTIAL_CHUNK ) {
+		/* not enough to write a partial block out , so we store it*/
+		if( !a->buffer )
+		    a->buffer = m_alloc( OP_MIN_PARTIAL_CHUNK );
+		memcpy( a->buffer + a->buflen, buf, size );
+		a->buflen += size;
+	    }
+	    else { /* okay, we can write out something */
+		/* do this in a loop to use the most efficient block lengths */
+		p = buf;
+		do {
+		    /* find the best matching block length - this is limited
+		     * by the size of the internal buffering */
+		    for( blen=OP_MIN_PARTIAL_CHUNK*2,
+			    c=OP_MIN_PARTIAL_CHUNK_2POW+1; blen < nbytes;
+							    blen *=2, c++ )
+			;
+		    blen /= 2; c--;
+		    /* write the partial length header */
+		    assert( c <= 0x1f ); /*;-)*/
+		    c |= 0xe0;
+		    iobuf_put( chain, c );
+		    if( (n=a->buflen) ) { /* write stuff from the buffer */
+			assert( n == OP_MIN_PARTIAL_CHUNK);
+			if( iobuf_write(chain, a->buffer, n ) )
+			    rc = G10ERR_WRITE_FILE;
+			a->buflen = 0;
+			nbytes -= n;
+		    }
+		    if( (n = nbytes) > blen )
+			n = blen;
+		    if( n && iobuf_write(chain, p, n ) )
+			rc = G10ERR_WRITE_FILE;
+		    p += n;
+		    nbytes -= n;
+		} while( !rc && nbytes >= OP_MIN_PARTIAL_CHUNK );
+		/* store the rest in the buffer */
+		if( !rc && nbytes ) {
+		    assert( !a->buflen );
+		    assert( nbytes < OP_MIN_PARTIAL_CHUNK );
+		    if( !a->buffer )
+			a->buffer = m_alloc( OP_MIN_PARTIAL_CHUNK );
+		    memcpy( a->buffer, p, nbytes );
+		    a->buflen = nbytes;
 		}
 	    }
-	    if( n > avail )
-		n = avail;
-	    if( iobuf_write(chain, p, n ) )
-		rc = G10ERR_WRITE_FILE;
-	    a->count += n;
-	    p += n;
-	    size -= n;
+	}
+	else { /* the gnupg scheme */
+	    size_t avail, n;
+
+	    for(p=buf; !rc && size; ) {
+		n = size;
+		avail = a->size - a->count;
+		if( !avail ) {
+		    if( n > a->size ) {
+			iobuf_put( chain, (a->size >> 8) & 0xff );
+			iobuf_put( chain, a->size & 0xff );
+			avail = a->size;
+			a->count = 0;
+		    }
+		    else {
+			iobuf_put( chain, (n >> 8) & 0xff );
+			iobuf_put( chain, n & 0xff );
+			avail = n;
+			a->count = a->size - n;
+		    }
+		}
+		if( n > avail )
+		    n = avail;
+		if( iobuf_write(chain, p, n ) )
+		    rc = G10ERR_WRITE_FILE;
+		a->count += n;
+		p += n;
+		size -= n;
+	    }
 	}
     }
     else if( control == IOBUFCTRL_INIT ) {
@@ -259,6 +339,8 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	else
 	    a->count = a->size; /* force first length bytes */
 	a->eof = 0;
+	a->buffer = NULL;
+	a->buflen = 0;
     }
     else if( control == IOBUFCTRL_DESC ) {
 	*(char**)buf = "block_filter";
@@ -266,6 +348,39 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
     else if( control == IOBUFCTRL_FREE ) {
 	if( a->usage == 2 ) { /* write the end markers */
 	    if( a->partial ) {
+		u32 len;
+		/* write out the remaining bytes without a partial header
+		 * the length of this header may be 0 - but if it is
+		 * the first block we are not allowed to use a partial header
+		 * and frankly we can't do so, because this length must be
+		 * a power of 2. This is _really_ complicated because we
+		 * have to check the possible length of a packet prior
+		 * to it's creation: a chein of filters becomes complicated
+		 * and we need a lot of code to handle compressed packets etc.
+		 *   :-(((((((
+		 */
+		/* construct header */
+		len = a->buflen;
+		if( len < 192 )
+		    rc = iobuf_put(chain, len );
+		else if( len < 8384 ) {
+		    if( !(rc=iobuf_put( chain, ((len-192) / 256) + 192)) )
+			rc = iobuf_put( chain, ((len-192) % 256));
+		}
+		else { /* use a 4 byte header */
+		    if( !(rc=iobuf_put( chain, 0xff )) )
+			if( !(rc=iobuf_put( chain, (len >> 24)&0xff )) )
+			    if( !(rc=iobuf_put( chain, (len >> 16)&0xff )) )
+				if( !(rc=iobuf_put( chain, (len >> 8)&0xff )))
+				    rc=iobuf_put( chain, len & 0xff );
+		}
+		if( !rc && len )
+		    rc = iobuf_write(chain, a->buffer, len );
+		if( rc ) {
+		    log_error("block_filter: write error: %s\n",strerror(errno));
+		    rc = G10ERR_WRITE_FILE;
+		}
+		m_free( a->buffer ); a->buffer = NULL; a->buflen = 0;
 	    }
 	    else {
 		iobuf_writebyte(chain, 0);
@@ -994,7 +1109,7 @@ iobuf_set_block_mode( IOBUF a, size_t n )
 
 /****************
  * enable partial block mode as described in the OpenPGP draft.
- * LEN is the first length
+ * LEN is the first length byte on read, but ignored on writes.
  */
 void
 iobuf_set_partial_block_mode( IOBUF a, size_t len )
@@ -1008,7 +1123,8 @@ iobuf_set_partial_block_mode( IOBUF a, size_t len )
     }
     else {
 	ctx->partial = 1;
-	ctx->size = len;
+	ctx->size = 0;
+	ctx->first_c = len;
 	iobuf_push_filter(a, block_filter, ctx );
     }
 }

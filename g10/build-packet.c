@@ -64,14 +64,21 @@ static int write_version( IOBUF out, int ctb );
 int
 build_packet( IOBUF out, PACKET *pkt )
 {
-    int rc=0, ctb;
+    int new_ctb=0, rc=0, ctb;
 
     if( DBG_PACKET )
 	log_debug("build_packet() type=%d\n", pkt->pkttype );
-    if( pkt->pkttype == PKT_OLD_COMMENT )
-	pkt->pkttype = PKT_COMMENT;
     assert( pkt->pkt.generic );
-    if( pkt->pkttype > 15 ) /* new format */
+
+    switch( pkt->pkttype ) {
+      case PKT_OLD_COMMENT: pkt->pkttype = PKT_COMMENT; break;
+      case PKT_PLAINTEXT: new_ctb = pkt->pkt.plaintext->new_ctb; break;
+      case PKT_ENCRYPTED: new_ctb = pkt->pkt.encrypted->new_ctb; break;
+      case PKT_COMPRESSED:new_ctb = pkt->pkt.compressed->new_ctb; break;
+      default: break;
+    }
+
+    if( new_ctb || pkt->pkttype > 15 ) /* new format */
 	ctb = 0xc0 | (pkt->pkttype & 0x3f);
     else
 	ctb = 0x80 | ((pkt->pkttype & 15)<<2);
@@ -152,6 +159,19 @@ calc_packet_length( PACKET *pkt )
     return n;
 }
 
+static void
+write_fake_data( IOBUF out, MPI a )
+{
+    byte *s;
+    u16 len;
+
+    if( a ) {
+	s = (byte*)a;
+	len = (s[0] << 8) | s[1];
+	iobuf_write( out, s+2, len );
+    }
+}
+
 
 static int
 do_comment( IOBUF out, int ctb, PKT_comment *rem )
@@ -189,6 +209,8 @@ do_public_key( IOBUF out, int ctb, PKT_public_key *pk )
 	write_16(a, pk->valid_days );
     iobuf_put(a, pk->pubkey_algo );
     n = pubkey_get_npkey( pk->pubkey_algo );
+    if( !n )
+	write_fake_data( a, pk->pkey[0] );
     for(i=0; i < n; i++ )
 	mpi_write(a, pk->pkey[i] );
 
@@ -259,6 +281,10 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
     iobuf_put(a, sk->pubkey_algo );
     nskey = pubkey_get_nskey( sk->pubkey_algo );
     npkey = pubkey_get_npkey( sk->pubkey_algo );
+    if( npkey ) {
+	write_fake_data( a, sk->skey[0] );
+	goto leave;
+    }
     assert( npkey < nskey );
 
     for(i=0; i < npkey; i++ )
@@ -287,6 +313,7 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 	mpi_write(a, sk->skey[i] );
     write_16(a, sk->csum );
 
+  leave:
     write_header2(out, ctb, iobuf_get_temp_length(a), sk->hdrbytes, 1 );
     if( iobuf_write_temp( out, a ) )
 	rc = G10ERR_WRITE_FILE;
@@ -326,6 +353,9 @@ do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
     return rc;
 }
 
+
+
+
 static int
 do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
 {
@@ -338,6 +368,8 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
     write_32(a, enc->keyid[1] );
     iobuf_put(a,enc->pubkey_algo );
     n = pubkey_get_nenc( enc->pubkey_algo );
+    if( !n )
+	write_fake_data( a, enc->data[0] );
     for(i=0; i < n; i++ )
 	mpi_write(a, enc->data[i] );
 
@@ -632,6 +664,8 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
     iobuf_put(a, sig->digest_start[0] );
     iobuf_put(a, sig->digest_start[1] );
     n = pubkey_get_nsig( sig->pubkey_algo );
+    if( !n )
+	write_fake_data( a, sig->data[0] );
     for(i=0; i < n; i++ )
 	mpi_write(a, sig->data[i] );
 
@@ -772,7 +806,7 @@ write_new_header( IOBUF out, int ctb, u32 len, int hdrlen )
     if( iobuf_put(out, ctb ) )
 	return -1;
     if( !len ) {
-	log_bug("can't write partial headers yet\n");
+	iobuf_set_partial_block_mode(out, 512 );
     }
     else {
 	if( len < 192 ) {

@@ -145,18 +145,21 @@ typedef struct {
 
 typedef struct {
     u32  len;		  /* reserved */
+    byte  new_ctb;
     byte  algorithm;
     IOBUF buf;		  /* IOBUF reference */
 } PKT_compressed;
 
 typedef struct {
     u32  len;		  /* length of encrypted data */
+    byte  new_ctb;
     IOBUF buf;		  /* IOBUF reference */
 } PKT_encrypted;
 
 typedef struct {
     u32  len;		  /* length of encrypted data */
     IOBUF buf;		  /* IOBUF reference */
+    byte new_ctb;
     int mode;
     u32 timestamp;
     int  namelen;
@@ -224,7 +227,6 @@ int list_packets( IOBUF a );
 int set_packet_list_mode( int mode );
 int search_packet( IOBUF inp, PACKET *pkt, int pkttype, ulong *retpos );
 int parse_packet( IOBUF inp, PACKET *ret_pkt);
-void parse_pubkey_warning( PACKET *pkt );
 int copy_all_packets( IOBUF inp, IOBUF out );
 int copy_some_packets( IOBUF inp, IOBUF out, ulong stopoff );
 int skip_some_packets( IOBUF inp, unsigned n );

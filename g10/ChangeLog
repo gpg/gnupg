@@ -1,3 +1,20 @@
+Thu Jul  2 21:01:25 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* parse-packet.c: Now is able sto store data of unknown
+	algorithms.
+	* free-packet.c: Support for this.
+	* build-packet.c: Can write data of packet with unknown algos.
+
+Thu Jul  2 11:46:36 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* parse-packet.c (parse): fixed 4 byte length header
+
+Wed Jul  1 12:36:55 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* packet.h (new_ctb): New field for some packets
+	* build-packet.c (build_packet): Support for new_ctb
+	* parse-packet.c (parse): Ditto.
+
 Mon Jun 29 12:54:45 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* packet.h: changed all "_cert" to "_key", "subcert" to "subkey".

@@ -87,8 +87,9 @@ static char *head_strings[] = {
     "BEGIN PGP PUBLIC KEY BLOCK",
     "BEGIN PGP SIGNATURE",
     "BEGIN PGP SIGNED MESSAGE",
-    "BEGIN PGP ARMORED FILE",
-    "BEGIN PGP SECRET KEY BLOCK",
+    "BEGIN PGP ARMORED FILE",       /* gnupg extension */
+    "BEGIN PGP PRIVATE KEY BLOCK",
+    "BEGIN PGP SECRET KEY BLOCK",   /* only used by pgp2 */
     NULL
 };
 static char *tail_strings[] = {
@@ -97,6 +98,7 @@ static char *tail_strings[] = {
     "END PGP SIGNATURE",
     "END dummy",
     "END PGP ARMORED FILE",
+    "END PGP PRIVATE KEY BLOCK",
     "END PGP SECRET KEY BLOCK",
     NULL
 };

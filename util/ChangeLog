@@ -1,3 +1,7 @@
+Thu Jul  2 15:55:44 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* iobuf.c (block_filter): Add writing of OP partial length headers.
+
 Fri Jun 26 10:38:35 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* ttyio.c (do_get): all iso8859-1 characters are now allowed.
