@@ -3,6 +3,7 @@
 	* signal.c (got_fatal_signal): Remove lockfiles here because the
 	atexit stuff does not work due to the use of raise. Suggested by
 	Peter Fales.
+	* gpgv.c (remove_lockfiles): New stub.
 	
 2000-12-19  Werner Koch  <wk@gnupg.org>
 

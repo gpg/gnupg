@@ -358,6 +358,7 @@ void disable_dotlock(void) {}
 DOTLOCK create_dotlock( const char *file_to_lock ) { return NULL; }
 int make_dotlock( DOTLOCK h, long timeout ) { return 0;}
 int release_dotlock( DOTLOCK h ) {return 0;}
+void remove_lockfiles(void) {}
 
 
 
