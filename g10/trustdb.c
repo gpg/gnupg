@@ -287,9 +287,8 @@ verify_own_keys(void)
                             (ulong)kid[1]);
         }
     }
-  
-  /* the --trusted-key option is again deprecated; however we automagically
-   * add those keys to the trustdb */
+
+  /* Put any --trusted-key keys into the trustdb */
   for (k = user_utk_list; k; k = k->next) 
     {
       if ( add_utk (k->kid) ) 
@@ -796,13 +795,19 @@ clear_ownertrusts (PKT_public_key *pk)
  * Note: Caller has to do a sync 
  */
 static void
-update_validity (PKT_public_key *pk, const byte *namehash,
+update_validity (PKT_public_key *pk, PKT_user_id *uid,
                  int depth, int validity)
 {
   TRUSTREC trec, vrec;
   int rc;
   ulong recno;
-  
+  byte namehash[20];
+
+  if( uid->attrib_data )
+    rmd160_hash_buffer (namehash,uid->attrib_data,uid->attrib_len);
+  else
+    rmd160_hash_buffer (namehash, uid->name, uid->len );
+
   rc = read_trust_record (pk, &trec);
   if (rc && rc != -1)
     {
@@ -840,6 +845,8 @@ update_validity (PKT_public_key *pk, const byte *namehash,
       vrec.r.valid.next = trec.r.trust.validlist;
     }
   vrec.r.valid.validity = validity;
+  vrec.r.valid.full_count = uid->help_full_count;
+  vrec.r.valid.marginal_count = uid->help_marginal_count;
   write_record (&vrec);
   trec.r.trust.depth = depth;
   trec.r.trust.validlist = vrec.recnum;
@@ -872,14 +879,15 @@ clear_validity (PKT_public_key *pk)
       write_record(&trec);
     }
 
-  /* reset validity for all user IDs */
   recno = trec.r.trust.validlist;
   while (recno)
     {
       read_record (recno, &vrec, RECTYPE_VALID);
-      if ((vrec.r.valid.validity & TRUST_MASK))
+      if ((vrec.r.valid.validity & TRUST_MASK)
+	  || vrec.r.valid.marginal_count || vrec.r.valid.full_count)
         {
           vrec.r.valid.validity &= ~TRUST_MASK;
+	  vrec.r.valid.marginal_count = vrec.r.valid.full_count = 0;
           write_record (&vrec);
           any = 1;
         }
@@ -1033,7 +1041,6 @@ get_validity (PKT_public_key *pk, const byte *namehash)
   return validity;
 }
 
-
 int
 get_validity_info (PKT_public_key *pk, const byte *namehash)
 {
@@ -1051,16 +1058,50 @@ get_validity_info (PKT_public_key *pk, const byte *namehash)
     return c;
 }
 
+static void
+get_validity_counts (PKT_public_key *pk, PKT_user_id *uid)
+{
+  TRUSTREC trec, vrec;
+  ulong recno;
+  byte namehash[20];
 
+  if(pk==NULL || uid==NULL)
+    BUG();
 
+  if( uid->attrib_data )
+    rmd160_hash_buffer (namehash,uid->attrib_data,uid->attrib_len);
+  else
+    rmd160_hash_buffer (namehash, uid->name, uid->len );
+
+  uid->help_marginal_count=uid->help_full_count=0;
+
+  init_trustdb ();
+
+  if(read_trust_record (pk, &trec)!=0)
+    return;
+
+  /* loop over all user IDs */
+  recno = trec.r.trust.validlist;
+  while (recno)
+    {
+      read_record (recno, &vrec, RECTYPE_VALID);
+
+      if(memcmp(vrec.r.valid.namehash,namehash,20)==0)
+	{
+	  uid->help_marginal_count=vrec.r.valid.marginal_count;
+	  uid->help_full_count=vrec.r.valid.full_count;
+	  /*  printf("Fetched marginal %d, full %d\n",uid->help_marginal_count,uid->help_full_count); */
+	  break;
+	}
+
+      recno = vrec.r.valid.next;
+    }
+}
 
 void
 list_trust_path( const char *username )
 {
 }
-
-
-
 
 /****************
  * Enumerate all keys, which are needed to build all trust paths for
@@ -1149,7 +1190,7 @@ mark_keyblock_seen (KeyHashTable tbl, KBNODE node)
 {
   for ( ;node; node = node->next )
     if (node->pkt->pkttype == PKT_PUBLIC_KEY
-        || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+	|| node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
       {
         u32 aki[2];
 
@@ -1157,7 +1198,6 @@ mark_keyblock_seen (KeyHashTable tbl, KBNODE node)
         add_key_hash_table (tbl, aki);
       }
 }
-
 
 
 static void
@@ -1197,10 +1237,9 @@ dump_key_array (int depth, struct key_array *keys)
 
 
 static void
-store_validation_status (int depth, KBNODE keyblock)
+store_validation_status (int depth, KBNODE keyblock, KeyHashTable stored)
 {
   KBNODE node;
-  byte namehash[20];
   int status;
   int any = 0;
 
@@ -1209,7 +1248,6 @@ store_validation_status (int depth, KBNODE keyblock)
       if (node->pkt->pkttype == PKT_USER_ID)
         {
           PKT_user_id *uid = node->pkt->pkt.user_id;
-
           if (node->flag & 4)
             status = TRUST_FULLY;
           else if (node->flag & 2)
@@ -1221,13 +1259,11 @@ store_validation_status (int depth, KBNODE keyblock)
           
           if (status)
             {
-              if( uid->attrib_data )
-                rmd160_hash_buffer (namehash,uid->attrib_data,uid->attrib_len);
-              else
-                rmd160_hash_buffer (namehash, uid->name, uid->len );
-              
               update_validity (keyblock->pkt->pkt.public_key,
-                               namehash, depth, status);
+			       uid, depth, status);
+
+	      mark_keyblock_seen(stored,keyblock);
+
               any = 1;
             }
         }
@@ -1449,9 +1485,10 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
 {
   struct key_item *kr;
   KBNODE node, uidnode=NULL;
+  PKT_user_id *uid=NULL;
   PKT_public_key *pk = kb->pkt->pkt.public_key;
   u32 main_kid[2];
-  int issigned=0, any_signed = 0, fully_count =0, marginal_count = 0;
+  int issigned=0, any_signed = 0;
 
   keyid_from_pk(pk, main_kid);
   for (node=kb; node; node = node->next)
@@ -1460,22 +1497,23 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
         {
           if (uidnode && issigned)
             {
-              if (fully_count >= opt.completes_needed
-                  || marginal_count >= opt.marginals_needed )
+              if (uid->help_full_count >= opt.completes_needed
+                  || uid->help_marginal_count >= opt.marginals_needed )
                 uidnode->flag |= 4; 
-              else if (fully_count || marginal_count)
+              else if (uid->help_full_count || uid->help_marginal_count)
                 uidnode->flag |= 2;
               uidnode->flag |= 1;
               any_signed = 1;
             }
           uidnode = node;
+	  uid=uidnode->pkt->pkt.user_id;
           issigned = 0;
-          fully_count = marginal_count = 0;
+	  get_validity_counts(pk,uid);
           mark_usable_uid_certs (kb, uidnode, main_kid, klist, 
                                  curtime, next_expire);
         }
       else if (node->pkt->pkttype == PKT_SIGNATURE 
-               && (node->flag & (1<<8)) )
+               && (node->flag & (1<<8)) && uid)
         {
 	  /* Note that we are only seeing unrevoked sigs here */
           PKT_signature *sig = node->pkt->pkt.signature;
@@ -1535,12 +1573,12 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
 		    pk->trust_regexp=sig->trust_regexp;
 		}
 
-	      if (kr->ownertrust == TRUST_ULTIMATE)
-                fully_count = opt.completes_needed;
+              if (kr->ownertrust == TRUST_ULTIMATE)
+                uid->help_full_count = opt.completes_needed;
               else if (kr->ownertrust == TRUST_FULLY)
-                fully_count++;
+                uid->help_full_count++;
               else if (kr->ownertrust == TRUST_MARGINAL)
-                marginal_count++;
+                uid->help_marginal_count++;
               issigned = 1;
 	    }
         }
@@ -1548,10 +1586,10 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
 
   if (uidnode && issigned)
     {
-      if (fully_count >= opt.completes_needed
-               || marginal_count >= opt.marginals_needed )
+      if (uid->help_full_count >= opt.completes_needed
+	  || uid->help_marginal_count >= opt.marginals_needed )
         uidnode->flag |= 4; 
-      else if (fully_count || marginal_count)
+      else if (uid->help_full_count || uid->help_marginal_count)
         uidnode->flag |= 2;
       uidnode->flag |= 1;
       any_signed = 1;
@@ -1576,7 +1614,7 @@ search_skipfnc (void *opaque, u32 *kid)
  * Caller hast to release the returned array.  
  */
 static struct key_array *
-validate_key_list (KEYDB_HANDLE hd, KeyHashTable visited,
+validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
                    struct key_item *klist, u32 curtime, u32 *next_expire)
 {
   KBNODE keyblock = NULL;
@@ -1600,7 +1638,7 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable visited,
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_FIRST;
   desc.skipfnc = search_skipfnc;
-  desc.skipfncvalue = visited;
+  desc.skipfncvalue = full_trust;
   rc = keydb_search (hd, &desc, 1);
   if (rc == -1)
     {
@@ -1643,10 +1681,12 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable visited,
       if (pk->has_expired || pk->is_revoked)
         {
           /* it does not make sense to look further at those keys */
-          mark_keyblock_seen (visited, keyblock);
+          mark_keyblock_seen (full_trust, keyblock);
         }
       else if (validate_one_keyblock (keyblock, klist, curtime, next_expire))
         {
+	  KBNODE node;
+
           if (pk->expiredate && pk->expiredate >= curtime
               && pk->expiredate < *next_expire)
             *next_expire = pk->expiredate;
@@ -1656,8 +1696,17 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable visited,
             keys = m_realloc (keys, (maxkeys+1) * sizeof *keys);
           }
           keys[nkeys++].keyblock = keyblock;
-          /* this key is signed - don't check it again */
-          mark_keyblock_seen (visited, keyblock);
+
+	  /* Optimization - if all uids are fully trusted, then we
+	     never need to consider this key as a candidate again. */
+
+	  for (node=keyblock; node; node = node->next)
+	    if (node->pkt->pkttype == PKT_USER_ID && !(node->flag & 4))
+	      break;
+
+	  if(node==NULL)
+	    mark_keyblock_seen (full_trust, keyblock);
+
           keyblock = NULL;
         }
 
@@ -1676,9 +1725,9 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable visited,
   return keys;
 } 
 
-
+/* Caller must sync */
 static void
-reset_unconnected_keys (KEYDB_HANDLE hd, KeyHashTable visited)
+reset_trust_records (KEYDB_HANDLE hd, KeyHashTable exclude)
 {
   int rc;
   KBNODE keyblock = NULL;
@@ -1694,8 +1743,11 @@ reset_unconnected_keys (KEYDB_HANDLE hd, KeyHashTable visited)
 
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_FIRST;
-  desc.skipfnc = search_skipfnc;
-  desc.skipfncvalue = visited;
+  if(exclude)
+    {
+      desc.skipfnc = search_skipfnc;
+      desc.skipfncvalue = exclude;
+    }
   rc = keydb_search (hd, &desc, 1);
   if (rc && rc != -1 )
     log_error ("keydb_search_first failed: %s\n", g10_errstr(rc));
@@ -1723,11 +1775,9 @@ reset_unconnected_keys (KEYDB_HANDLE hd, KeyHashTable visited)
         log_error ("keydb_search_next failed: %s\n", g10_errstr(rc));
     }
   if (opt.verbose)
-    log_info ("%d unconnected keys (%d trust records cleared)\n",
+    log_info ("%d keys processed (%d validity counts cleared)\n",
               count, nreset);
-  do_sync ();
-} 
-
+}
 
 /*
  * Run the key validation procedure.
@@ -1767,12 +1817,14 @@ validate_keys (int interactive)
   int depth;
   int key_count;
   int ot_unknown, ot_undefined, ot_never, ot_marginal, ot_full, ot_ultimate;
-  KeyHashTable visited;
+  KeyHashTable stored,used,full_trust;
   u32 start_time, next_expire;
 
   start_time = make_timestamp ();
   next_expire = 0xffffffff; /* set next expire to the year 2106 */
-  visited = new_key_hash_table ();
+  stored = new_key_hash_table ();
+  used = new_key_hash_table ();
+  full_trust = new_key_hash_table ();
   /* Fixme: Instead of always building a UTK list, we could just build it
    * here when needed */
   if (!utk_list)
@@ -1781,7 +1833,12 @@ validate_keys (int interactive)
       goto leave;
     }
 
-  /* mark all UTKs as visited and set validity to ultimate */
+  kdb = keydb_new (0);
+
+  reset_trust_records (kdb,NULL);
+
+  /* mark all UTKs as used and fully_trusted and set validity to
+     ultimate */
   for (k=utk_list; k; k = k->next)
     {
       KBNODE keyblock;
@@ -1794,21 +1851,14 @@ validate_keys (int interactive)
                        " trusted key %08lX not found\n"), (ulong)k->kid[1]);
           continue;
         }
-      mark_keyblock_seen (visited, keyblock);
+      mark_keyblock_seen (used, keyblock);
+      mark_keyblock_seen (stored, keyblock);
+      mark_keyblock_seen (full_trust, keyblock);
       pk = keyblock->pkt->pkt.public_key;
       for (node=keyblock; node; node = node->next)
         {
           if (node->pkt->pkttype == PKT_USER_ID)
-            {
-              byte namehash[20];
-              PKT_user_id *uid = node->pkt->pkt.user_id;
-              
-              if( uid->attrib_data )
-                rmd160_hash_buffer (namehash,uid->attrib_data,uid->attrib_len);
-              else
-                rmd160_hash_buffer (namehash, uid->name, uid->len );
-              update_validity (pk, namehash, 0, TRUST_ULTIMATE);
-            }
+	    update_validity (pk, node->pkt->pkt.user_id, 0, TRUST_ULTIMATE);
         }
       if ( pk->expiredate && pk->expiredate >= start_time
            && pk->expiredate < next_expire)
@@ -1819,7 +1869,6 @@ validate_keys (int interactive)
     }
 
   klist = utk_list;
-  kdb = keydb_new (0);
 
   log_info(_("%d marginal(s) needed, %d complete(s) needed, %s trust model\n"),
 	   opt.marginals_needed,opt.completes_needed,
@@ -1886,7 +1935,8 @@ validate_keys (int interactive)
         }
 
       /* Find all keys which are signed by a key in kdlist */
-      keys = validate_key_list (kdb, visited, klist, start_time, &next_expire);
+      keys = validate_key_list (kdb, full_trust, klist,
+				start_time, &next_expire);
       if (!keys) 
         {
           log_error ("validate_key_list failed\n");
@@ -1901,13 +1951,13 @@ validate_keys (int interactive)
       if (opt.verbose > 1)
         dump_key_array (depth, keys);
 
-      log_info (_("checking at depth %d signed=%d"
+      for (kar=keys; kar->keyblock; kar++)
+          store_validation_status (depth, kar->keyblock, stored);
+
+      log_info (_("checking at depth %d valid=%d"
                   " ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"), 
                 depth, key_count, ot_unknown, ot_undefined,
                 ot_never, ot_marginal, ot_full, ot_ultimate ); 
-
-      for (kar=keys; kar->keyblock; kar++)
-          store_validation_status (depth, kar->keyblock);
 
       /* Build a new kdlist from all fully valid keys in KEYS */
       if (klist != utk_list)
@@ -1919,39 +1969,52 @@ validate_keys (int interactive)
             {
               if (node->pkt->pkttype == PKT_USER_ID && (node->flag & 4))
                 {
-                  k = new_key_item ();
-                  keyid_from_pk (kar->keyblock->pkt->pkt.public_key, k->kid);
-                  k->ownertrust = get_ownertrust (kar->keyblock
-                                                  ->pkt->pkt.public_key);
-		  k->min_ownertrust = get_min_ownertrust (kar->keyblock
-						        ->pkt->pkt.public_key);
-		  k->trust_depth=
-		    kar->keyblock->pkt->pkt.public_key->trust_depth;
-		  k->trust_value=
-		    kar->keyblock->pkt->pkt.public_key->trust_value;
-		  if(kar->keyblock->pkt->pkt.public_key->trust_regexp)
-		    k->trust_regexp=
-		      m_strdup(kar->keyblock->pkt->
-			       pkt.public_key->trust_regexp);
-                  k->next = klist;
-                  klist = k;
-                  break;
-                }
-            }
-        }
+		  u32 kid[2];
+
+		  /* have we used this key already? */
+                  keyid_from_pk (kar->keyblock->pkt->pkt.public_key, kid);
+		  if(test_key_hash_table(used,kid)==0)
+		    {
+		      /* Normally we add both the primary and subkey
+			 ids to the hash via mark_keyblock_seen, but
+			 since we aren't using this hash as a skipfnc,
+			 that doesn't matter here. */
+		      add_key_hash_table (used,kid);
+		      k = new_key_item ();
+		      k->kid[0]=kid[0];
+		      k->kid[1]=kid[1];
+		      k->ownertrust =
+			get_ownertrust (kar->keyblock->pkt->pkt.public_key);
+		      k->min_ownertrust =
+			get_min_ownertrust(kar->keyblock->pkt->pkt.public_key);
+		      k->trust_depth=
+			kar->keyblock->pkt->pkt.public_key->trust_depth;
+		      k->trust_value=
+			kar->keyblock->pkt->pkt.public_key->trust_value;
+		      if(kar->keyblock->pkt->pkt.public_key->trust_regexp)
+			k->trust_regexp=
+			  m_strdup(kar->keyblock->pkt->
+				   pkt.public_key->trust_regexp);
+		      k->next = klist;
+		      klist = k;
+		      break;
+		    }
+		}
+	    }
+	}
       release_key_array (keys);
       keys = NULL;
       if (!klist)
         break; /* no need to dive in deeper */
     }
 
-  reset_unconnected_keys (kdb, visited);
-
  leave:
   keydb_release (kdb);
   release_key_array (keys);
   release_key_items (klist);
-  release_key_hash_table (visited);
+  release_key_hash_table (full_trust);
+  release_key_hash_table (used);
+  release_key_hash_table (stored);
   if (!rc && !quit) /* mark trustDB as checked */
     {
       if (next_expire == 0xffffffff || next_expire < start_time )

@@ -1218,6 +1218,8 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	memcpy( rec->r.valid.namehash, p, 20); p+=20;
         rec->r.valid.validity = *p++;
 	rec->r.valid.next = buftoulong(p); p += 4;
+	rec->r.valid.full_count = *p++;
+	rec->r.valid.marginal_count = *p++;
 	break;
       default:
 	log_error( "%s: invalid record type %d at recnum %lu\n",
@@ -1299,6 +1301,8 @@ tdbio_write_record( TRUSTREC *rec )
 	memcpy( p, rec->r.valid.namehash, 20); p += 20;
 	*p++ = rec->r.valid.validity;
 	ulongtobuf( p, rec->r.valid.next); p += 4;
+	*p++ = rec->r.valid.full_count;
+	*p++ = rec->r.valid.marginal_count;
 	break;
 
       default:
