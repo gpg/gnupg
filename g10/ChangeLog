@@ -1,3 +1,7 @@
+2004-06-16  Werner Koch  <wk@gnupg.org>
+
+	* free-packet.c (copy_secret_key): Fixed memory leak.
+
 2004-06-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Alias --charset as --display-charset to help avoid
