@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
-"POT-Creation-Date: 1999-10-04 21:57+0200\n"
+"POT-Creation-Date: 1999-10-09 18:42+0200\n"
 "PO-Revision-Date: 1999-09-09 20:28+0000\n"
 "Last-Translator: Pedro Morais <morais@poli.org>\n"
 "Language-Team: pt\n"
@@ -667,177 +667,177 @@ msgstr "uso: gpg [opções] "
 msgid "conflicting commands\n"
 msgstr "comandos em conflito\n"
 
-#: g10/g10.c:658
+#: g10/g10.c:662
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTA: ficheiro de opções por omissão `%s' inexistente\n"
 
-#: g10/g10.c:662
+#: g10/g10.c:666
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "ficheiro de opções `%s': %s\n"
 
-#: g10/g10.c:669
+#: g10/g10.c:673
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "a ler opções de `%s'\n"
 
-#: g10/g10.c:851
+#: g10/g10.c:855
 #, c-format
 msgid "%s is not a valid character set\n"
 msgstr "%s não é um conjunto de caracteres válido\n"
 
-#: g10/g10.c:915 g10/g10.c:924
+#: g10/g10.c:910 g10/g10.c:919
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTA: %s não é para uso normal!\n"
 
-#: g10/g10.c:917
+#: g10/g10.c:912
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s não é permitido com %s!\n"
 
-#: g10/g10.c:920
+#: g10/g10.c:915
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s não faz sentido com %s!\n"
 
-#: g10/g10.c:939 g10/g10.c:951
+#: g10/g10.c:934 g10/g10.c:946
 msgid "selected cipher algorithm is invalid\n"
 msgstr "o algoritmo de cifragem selecionado não é válido\n"
 
-#: g10/g10.c:945 g10/g10.c:957
+#: g10/g10.c:940 g10/g10.c:952
 msgid "selected digest algorithm is invalid\n"
 msgstr "o algoritmo de \"digest\" selecionado não é válido\n"
 
-#: g10/g10.c:961
+#: g10/g10.c:956
 msgid "the given policy URL is invalid\n"
 msgstr "a URL de política dada é inválida\n"
 
-#: g10/g10.c:964
+#: g10/g10.c:959
 #, c-format
 msgid "compress algorithm must be in range %d..%d\n"
 msgstr "o algoritmo de compressão deve estar na faixa %d..%d\n"
 
-#: g10/g10.c:966
+#: g10/g10.c:961
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed deve ser maior que 0\n"
 
-#: g10/g10.c:968
+#: g10/g10.c:963
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed deve ser maior que 1\n"
 
-#: g10/g10.c:970
+#: g10/g10.c:965
 msgid "max-cert-depth must be in range 1 to 255\n"
 msgstr "max-cert-depth deve estar na entre 1 e 255\n"
 
-#: g10/g10.c:973
+#: g10/g10.c:968
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "NOTA: o modo S2K simples (0) não é recomendável\n"
 
-#: g10/g10.c:977
+#: g10/g10.c:972
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "modo S2K inválido: deve ser 0, 1 ou 3\n"
 
-#: g10/g10.c:1054
+#: g10/g10.c:1049
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "falha ao inicializar a base de dados de confiança: %s\n"
 
-#: g10/g10.c:1060
+#: g10/g10.c:1055
 msgid "--store [filename]"
 msgstr "--store [nome_do_ficheiro]"
 
-#: g10/g10.c:1067
+#: g10/g10.c:1062
 msgid "--symmetric [filename]"
 msgstr "--symmetric [nome_do_ficheiro]"
 
-#: g10/g10.c:1075
+#: g10/g10.c:1070
 msgid "--encrypt [filename]"
 msgstr "--encrypt [nome_do_ficheiro]"
 
-#: g10/g10.c:1088
+#: g10/g10.c:1083
 msgid "--sign [filename]"
 msgstr "--sign [nome_do_ficheiro]"
 
-#: g10/g10.c:1101
+#: g10/g10.c:1096
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [nome_do_ficheiro]"
 
-#: g10/g10.c:1115
+#: g10/g10.c:1110
 msgid "--clearsign [filename]"
 msgstr "--clearsign [nome_do_ficheiro]"
 
-#: g10/g10.c:1132
+#: g10/g10.c:1127
 msgid "--decrypt [filename]"
 msgstr "--decrypt [nome_do_ficheiro]"
 
-#: g10/g10.c:1140
+#: g10/g10.c:1135
 msgid "--sign-key user-id"
 msgstr "--sign-key id-utilizador"
 
-#: g10/g10.c:1148
+#: g10/g10.c:1143
 msgid "--lsign-key user-id"
 msgstr "--lsign-key id-utilizador"
 
-#: g10/g10.c:1156
+#: g10/g10.c:1151
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key id-utilizador [comandos]"
 
-#: g10/g10.c:1172
+#: g10/g10.c:1167
 msgid "--delete-secret-key user-id"
 msgstr "--delete-secret-key id-utilizador"
 
-#: g10/g10.c:1175
+#: g10/g10.c:1170
 msgid "--delete-key user-id"
 msgstr "--delete-key id-utilizador"
 
-#: g10/encode.c:260 g10/g10.c:1199 g10/sign.c:366
+#: g10/encode.c:260 g10/g10.c:1194 g10/sign.c:366
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "impossível abrir %s: %s\n"
 
-#: g10/g10.c:1210
+#: g10/g10.c:1205
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [id-utilizador] [porta-chaves]"
 
-#: g10/g10.c:1261
+#: g10/g10.c:1256
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "retirada de armadura falhou: %s\n"
 
-#: g10/g10.c:1269
+#: g10/g10.c:1264
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "criação de armadura falhou: %s\n"
 
 # "hash" poderia ser "espalhamento", mas não fica claro
-#: g10/g10.c:1337
+#: g10/g10.c:1332
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "algoritmo de hash inválido `%s'\n"
 
-#: g10/g10.c:1418
+#: g10/g10.c:1413
 msgid "[filename]"
 msgstr "[nome_do_ficheiro]"
 
-#: g10/g10.c:1422
+#: g10/g10.c:1417
 msgid "Go ahead and type your message ...\n"
 msgstr "Digite a sua mensagem ...\n"
 
-#: g10/decrypt.c:59 g10/g10.c:1425 g10/verify.c:68 g10/verify.c:113
+#: g10/decrypt.c:59 g10/g10.c:1420 g10/verify.c:68 g10/verify.c:113
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "impossível abrir `%s'\n"
 
-#: g10/g10.c:1594
+#: g10/g10.c:1589
 msgid ""
 "the first character of a notation name must be a letter or an underscore\n"
 msgstr ""
 "o primeiro caracter de um nome de notação deve ser uma letra ou um "
 "sublinhado\n"
 
-#: g10/g10.c:1600
+#: g10/g10.c:1595
 msgid ""
 "a notation name must have only letters, digits, dots or underscores and end "
 "with an '='\n"
@@ -845,12 +845,12 @@ msgstr ""
 "um nome de notação deve ter apenas letras, dígitos, pontos ou sublinhados e "
 "terminar com '='\n"
 
-#: g10/g10.c:1606
+#: g10/g10.c:1601
 msgid "dots in a notation name must be surrounded by other characters\n"
 msgstr ""
 "pontos num nome de notação devem estar cercados por outros caracteres\n"
 
-#: g10/g10.c:1614
+#: g10/g10.c:1609
 msgid "a notation value must not use any control characters\n"
 msgstr "um valor de notação não deve usar caracteres de controle\n"
 
@@ -2581,6 +2581,11 @@ msgstr "Repita a frase secreta: "
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "dados não gravados; use a opção \"--output\" para gravá-los\n"
 
+#: g10/plaintext.c:311
+#, fuzzy
+msgid "Detached signature.\n"
+msgstr "%d assinatura removida.\n"
+
 #: g10/plaintext.c:315
 msgid "Please enter name of data file: "
 msgstr "Por favor digite o nome do ficheiro de dados: "
@@ -2718,7 +2723,7 @@ msgstr "%s: directoria criada\n"
 msgid "%s: directory does not exist!\n"
 msgstr "%s: diretoria inexistente!\n"
 
-#: g10/openfile.c:209 g10/openfile.c:277 g10/ringedit.c:1348 g10/tdbio.c:458
+#: g10/openfile.c:209 g10/openfile.c:277 g10/ringedit.c:1350 g10/tdbio.c:458
 #, c-format
 msgid "%s: can't create: %s\n"
 msgstr "%s: impossível criar: %s\n"
@@ -3122,26 +3127,26 @@ msgstr ""
 msgid "%s: can't create keyring: %s\n"
 msgstr "%s: impossível criar porta-chaves: %s\n"
 
-#: g10/ringedit.c:335 g10/ringedit.c:1353
+#: g10/ringedit.c:335 g10/ringedit.c:1355
 #, c-format
 msgid "%s: keyring created\n"
 msgstr "%s: porta-chaves criado\n"
 
-#: g10/ringedit.c:1530
+#: g10/ringedit.c:1532
 msgid "WARNING: 2 files with confidential information exists.\n"
 msgstr "AVISO: existem 2 ficheiros com informações confidenciais.\n"
 
-#: g10/ringedit.c:1531
+#: g10/ringedit.c:1533
 #, c-format
 msgid "%s is the unchanged one\n"
 msgstr "%s é o não modificado\n"
 
-#: g10/ringedit.c:1532
+#: g10/ringedit.c:1534
 #, c-format
 msgid "%s is the new one\n"
 msgstr "%s é o novo\n"
 
-#: g10/ringedit.c:1533
+#: g10/ringedit.c:1535
 msgid "Please fix this possible security flaw\n"
 msgstr "Por favor conserte esta possível falha de segurança\n"
 

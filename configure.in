@@ -17,13 +17,14 @@ VERSION=`cat $srcdir/VERSION`
 PACKAGE=gnupg
 ALL_LINGUAS="de es_ES fr id it pl pt_BR pt_PT ru"
 static_modules="sha1 md5 rmd160"
+static_random_module=""
 AC_SUBST(VERSION)
 AC_SUBST(PACKAGE)
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 
-MODULES_IN_CIPHER=`awk '/# MODULES: / { for(i=3;i<=NF;i++) print $i}' \
-                                                $srcdir/cipher/Makefile.am`
+MODULES_IN_CIPHER=`awk '/^EXTRA_PROGRAMS/ { for(i=3;i<=NF;i++) print $i}' \
+                                              $srcdir/cipher/Makefile.am`
 
 dnl
 dnl  Check for random module options
@@ -104,29 +105,6 @@ AC_ARG_WITH(included-zlib,
 [g10_force_zlib=yes], [g10_force_zlib=no] )
 AC_MSG_RESULT($g10_force_zlib)
 
-dnl
-dnl Check wether we want to compile libgcrypt
-dnl
-AC_MSG_CHECKING([whether compilation of libgcrypt is requested])
-AC_ARG_ENABLE(libgcrypt,
-    [  --enable-libgcrypt      compile the libgcrypt [default=no]],
-[compile_libgcrypt="$enableval"],[compile_libgcrypt=no])
-AC_MSG_RESULT($compile_libgcrypt)
-if test x$compile_libgcrypt = xyes ; then
-    if test -f $srcdir/gcrypt/gcrypt.h; then
-        :
-    else
-        compile_libgcrypt=no
-        AC_MSG_WARN([[
-***
-*** LIBGCRYPT is not yet ready for public testing.
-*** Maybe you have more luck with the next release of GnuPG
-*** Watch the gnupg-announce mailing list or the webpage.
-***]])
-    fi
-fi
-AM_CONDITIONAL(COMPILE_LIBGCRYPT, test x$compile_libgcrypt = xyes)
-
 
 dnl
 dnl Check whether we want to use Linux capabilities
@@ -154,12 +132,13 @@ case "${target}" in
         # special stuff for Windoze NT
         # Do we need to set cross_compiling here or is it sufficient
         # to rely on AC_PROG_CC which is called later?
-        cross_compiling=yes
         CC="${target}-gcc"
         CPP="${target}-gcc -E"
         RANLIB="${target}-ranlib"
+        disallowed_modules="rndunix rndlinux rndegd"
         ;;
     *)
+        disallowed_modules="rndw32"
        ;;
 esac
 
@@ -179,15 +158,6 @@ AC_PROG_INSTALL
 AC_PROG_AWK
 AC_CHECK_PROG(DOCBOOK_TO_MAN, docbook-to-man, yes, no)
 AM_CONDITIONAL(HAVE_DOCBOOK_TO_MAN, test "$ac_cv_prog_DOCBOOK_TO_MAN" = yes)
-
-
-dnl
-dnl Build shared libraries only when compilation of libgcrypt
-dnl has been requested
-dnl
-AM_DISABLE_SHARED
-enable_shared="$compile_libgcrypt"
-AM_PROG_LIBTOOL
 
 
 MPI_OPT_FLAGS=""
@@ -495,31 +465,29 @@ fi
 
 
 dnl
-dnl Figure out the default linkage mode for cipher modules
+dnl Figure out the default linkage mode for random modules
 dnl
-dnl (We always need a static rmd160)
 print_egd_notice=no
-static_modules="$static_modules rmd160"
 if test "$use_static_rnd" = default; then
   if test "$ac_cv_have_dev_random" = yes; then
-      static_modules="$static_modules rndlinux"
+      static_random_module="rndlinux"
   else
       case "${target}" in
           *-*-mingw32)
-              static_modules="$static_modules rndw32"
+              static_random_module="rndw32"
               AC_DEFINE(USE_STATIC_RNDW32)
               ;;
           i?86-emx-os2|i?86-*-os2*emx)
-              static_modules="$static_modules rndos2"
+              static_random_module="rndos2"
               ;;
           m68k-atari-mint)
-              static_modules="$static_modules rndatari"
+              static_random_module="rndatari"
               ;;
           i?86-*-msdosdjgpp*)
-              static_modules="$static_modules"
+              :
               ;;
           *)
-              static_modules="$static_modules rndunix"
+              static_random_module="rndunix"
               print_egd_notice=yes
              ;;
       esac
@@ -528,7 +496,7 @@ else
   if test "$use_static_rnd" = none; then
     :
   else
-    static_modules="$static_modules rnd$use_static_rnd"
+    static_random_module="rnd$use_static_rnd"
     if test "$use_static_rnd" = "unix"; then
         print_egd_notice=yes
     fi
@@ -561,23 +529,31 @@ dnl
 dnl Parse the modules list and build the list
 dnl of static and dymically linked modules
 dnl
+dnl (We always need a static rmd160)
+static_modules="$static_modules rmd160 $static_random_module"
 STATIC_CIPHER_NAMES=""
 STATIC_CIPHER_OBJS=""
 DYNAMIC_CIPHER_MODS=""
 GNUPG_MSG_PRINT([dynamically linked cipher modules:])
 for name in $MODULES_IN_CIPHER; do
-    x="no"
-    for i in $static_modules; do
-        if test "$name" = "$i" ; then
-            x="yes"
-        fi
+    x="yes"
+    for i in $disallowed_modules; do
+        if test "$name" = "$i" ; then x="no" ; fi
     done;
     if test $x = yes; then
-        STATIC_CIPHER_NAMES="$STATIC_CIPHER_NAMES $name"
-        STATIC_CIPHER_OBJS="$STATIC_CIPHER_OBJS $name.lo"
-    else
-        DYNAMIC_CIPHER_MODS="$DYNAMIC_CIPHER_MODS $name"
-        GNUPG_MSG_PRINT([$name])
+        x="no"
+        for i in $static_modules; do
+            if test "$name" = "$i" ; then
+                x="yes"
+            fi
+        done;
+        if test $x = yes; then
+            STATIC_CIPHER_NAMES="$STATIC_CIPHER_NAMES $name"
+            STATIC_CIPHER_OBJS="$STATIC_CIPHER_OBJS $name.o"
+        else
+            DYNAMIC_CIPHER_MODS="$DYNAMIC_CIPHER_MODS $name"
+            GNUPG_MSG_PRINT([$name])
+        fi
     fi
 done
 AC_MSG_RESULT()
@@ -644,7 +620,7 @@ if test "$ac_cv_mpi_extra_asm_modules" != ""; then
 GNUPG_MSG_PRINT([mpi extra asm functions:])
 for i in $ac_cv_mpi_extra_asm_modules; do
     GNUPG_MSG_PRINT([$i])
-    MPI_EXTRA_ASM_OBJS="$MPI_EXTRA_ASM_OBJS $i.lo"
+    MPI_EXTRA_ASM_OBJS="$MPI_EXTRA_ASM_OBJS $i.o"
 done
 AC_MSG_RESULT()
 fi
@@ -732,7 +708,6 @@ doc/gph/Makefile
 tools/Makefile
 zlib/Makefile
 checks/Makefile
-gcrypt/Makefile
 ])
 
 dnl *-*wedit:notab*-*  Please keep this as the last line.

@@ -1,3 +1,12 @@
+Sat Oct  9 20:34:41 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* configure.in: Tweaked handling of random modules and removed
+	dummy support for libgcrypt.
+	* Makefile.am: Removed libgcrypt support.
+	* cgrypt/ : Removed.
+
+	* Makefile.am:	Removed libtool.
+
 Fri Oct  8 20:32:01 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* configure.in: Fixed quoting in test for development version.

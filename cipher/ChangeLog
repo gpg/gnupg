@@ -1,3 +1,7 @@
+Sat Oct  9 20:34:41 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* Makefile.am:	Tweaked module build and removed libtool
+
 Fri Oct  8 20:32:01 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* rndw32.c (load_and_init_winseed): Use the Registry to locate the DLL

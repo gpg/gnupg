@@ -2,11 +2,11 @@
 
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 
-noinst_LTLIBRARIES = libutil.la
+noinst_LIBRARIES = libutil.a
 
 
-libutil_la_LDFLAGS =
-libutil_la_SOURCES = g10u.c logger.c fileutil.c miscutil.c strgutil.c  \
+#libutil_a_LDFLAGS =
+libutil_a_SOURCES = g10u.c logger.c fileutil.c miscutil.c strgutil.c  \
 		     ttyio.c  argparse.c memory.c secmem.c errors.c iobuf.c \
 		     dotlock.c http.c simple-gettext.c w32reg.c
 

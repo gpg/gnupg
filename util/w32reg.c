@@ -71,7 +71,7 @@ read_w32_registry_string( const char *root, const char *dir, const char *name )
     if( !result )
 	goto leave;
     if( RegQueryValueEx( key_handle, name, 0, NULL, result, &n1 ) ) {
-	m_free(result); result = NULL;
+	free(result); result = NULL;
 	goto leave;
     }
     result[nbytes] = 0; /* make sure it is really a string  */
