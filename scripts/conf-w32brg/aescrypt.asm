@@ -1,7 +1,6 @@
 
 ; ---------------------------------------------------------------------------
-; Copyright (c) 2002, Dr Brian Gladman <brg@gladman.me.uk>, Worcester, UK.
-; All rights reserved.
+; Copyright (c) 2002, Dr Brian Gladman, Worcester, UK.   All rights reserved.
 ;
 ; LICENSE TERMS
 ;
@@ -28,7 +27,7 @@
 ; in respect of its properties, including, but not limited to, correctness
 ; and/or fitness for purpose.
 ; ---------------------------------------------------------------------------
-; Issue Date: 1/06/2003
+; Issue 30/06/2004
 
 ; An AES implementation for Pentium processors using the NASM assembler (see
 ; <http://sourceforge.net/projects/nasm>).This version provides the standard
@@ -50,11 +49,17 @@
 ;                   unsigned char out_blk[], const aes_encrypt_ctx cx[1]);
 ; aes_rval aes_decrypt(const unsigned char in_blk[],
 ;                   unsigned char out_blk[], const aes_decrypt_ctx cx[1]);
-;
-; comment in/out the following lines to obtain the desired subroutines
 
+; Comment in/out the following lines to obtain the desired subroutines. These
+; selections MUST match those in the C header file aes.h
+
+%define AES_128     ; define if AES with 128 bit keys is needed
+%define AES_192     ; define if AES with 192 bit keys is needed
+%define AES_256     ; define if AES with 256 bit keys is needed
+%define AES_VAR     ; define if a variable key size is needed
 %define ENCRYPTION  ; define if encryption is needed
 %define DECRYPTION  ; define if decryption is needed
+%define AES_REV_DKS ; define if key decryption schedule is reversed
 
 ; The DLL interface must use the _stdcall convention in which the number
 ; of bytes of parameter space is added after an @ to the sutine's name.
@@ -63,14 +68,36 @@
 
 ;%define AES_DLL
 
-tlen:   equ  1024   ; length of each of 4 'xor' arrays (256 32-bit words)
+; End of user defines
+
+%ifdef AES_VAR
+%define KS_LENGTH       60
+%elifdef AES_256
+%define KS_LENGTH       60
+%elifdef AES_192
+%define KS_LENGTH       52
+%else
+%define KS_LENGTH       44
+%endif
+
+%define xf(x)   (-16*x)
+
+%ifdef AES_REV_DKS
+%define xi(x)   (-16*x)
+%else
+%define xi(x)    (16*x)
+%endif
+
+tlen    equ  1024   ; length of each of 4 'xor' arrays (256 32-bit words)
 
 ; offsets to parameters with one register pushed onto stack
 
-in_blk: equ     4   ; input byte array address parameter
-out_blk:equ     8   ; output byte array address parameter
-ctx:    equ    12   ; AES context structure
-stk_spc:equ    24   ; stack space
+in_blk  equ     4   ; input byte array address parameter
+out_blk equ     8   ; output byte array address parameter
+
+ctx     equ    12   ; AES context structure
+
+stk_spc equ    24   ; stack space
 
 ; register mapping for encrypt and decrypt subroutines
 
@@ -181,7 +208,7 @@ stk_spc:equ    24   ; stack space
 ; compute new column values
 
     do_fcol r0,r3,r2,r1, r4,r5, %2, %1  ; r4 = input r0
-    do_col  r1,r0,r3,r2, r4,r5, %2      ; r4 = input r1 (saved in fcol_f)
+    do_col  r1,r0,r3,r2, r4,r5, %2      ; r4 = input r1 (saved in do_fcol)
     restore r4,0
     do_col  r2,r1,r0,r3, r4,r5, %2      ; r4 = input r2
     restore r4,1
@@ -202,7 +229,7 @@ stk_spc:equ    24   ; stack space
 ; compute new column values
 
     do_icol r0,r1,r2,r3, r4,r5, %2, %1  ; r4 = r0
-    do_col  r3,r0,r1,r2, r4,r5, %2      ; r4 = r3 (saved in icol_f)
+    do_col  r3,r0,r1,r2, r4,r5, %2      ; r4 = r3 (saved in do_icol)
     restore r4,1
     do_col  r2,r3,r0,r1, r4,r5, %2      ; r4 = r2
     restore r4,0
@@ -214,22 +241,24 @@ stk_spc:equ    24   ; stack space
 ; In this case we have to take our parameters (3 4-byte pointers)
 ; off the stack
 
-%macro  do_ret  0
+%define parms 12
+
+%macro  do_ret  0-1 parms
 %ifdef AES_DLL
-    ret 12
+    ret %1
 %else
     ret
 %endif
 %endmacro
 
-%macro  do_name 1
+%macro  do_name 1-2 parms
 %ifndef AES_DLL
     global  %1
 %1:
 %else
-    global  %1@12
-    export  %1@12
-%1@12:
+    global  %1@%2
+    export  %1@%2
+%1@%2:
 %endif
 %endmacro
 
@@ -247,69 +276,69 @@ stk_spc:equ    24   ; stack space
     mov     [esp+16],ebx
     mov     [esp+12],esi
     mov     [esp+ 8],edi
-    mov     r4,[esp+in_blk+stk_spc] ; input pointer
+
     mov     r6,[esp+ctx+stk_spc]    ; key pointer
+    movzx   r0,byte [r6+4*KS_LENGTH]
+    add     r6,r0
+    mov     [r6+16],al              ; r0 = eax
 
 ; input four columns and xor in first round key
 
+    mov     r4,[esp+in_blk+stk_spc] ; input pointer
     mov     r0,[r4   ]
     mov     r1,[r4+ 4]
-    xor     r0,[r6   ]
-    xor     r1,[r6+ 4]
     mov     r2,[r4+ 8]
     mov     r3,[r4+12]
-    xor     r2,[r6+ 8]
-    xor     r3,[r6+12]
+
+    movzx   r5,byte[r6+16]
+    lea     r4,[r4+16]
+    neg     r5
+
+    lea     r4,[r5+r6]
+    xor     r0,[r4   ]
+    xor     r1,[r4+ 4]
+    xor     r2,[r4+ 8]
+    xor     r3,[r4+12]
 
 ; determine the number of rounds
 
-    mov     r4,[r6+4*45]
-    mov     r5,[r6+4*52]
-    xor     r4,[r6+4*53]
-    xor     r4,r5
-    je      .1
-    cmp     r5,10
+    cmp     r5,-10*16
     je      .3
-    cmp     r5,12
+    cmp     r5,-12*16
     je      .2
-    mov     ebp,[esp+20]
-    mov     ebx,[esp+16]
-    mov     esi,[esp+12]
-    mov     edi,[esp+ 8]
-    lea     esp,[esp+stk_spc]
+    cmp     r5,-14*16
+    je      .1
     mov     eax,-1
-    do_ret
+    jmp     .5
 
-.1: fwd_rnd r6+ 16          ; 14 rounds for 256-bit key
-    fwd_rnd r6+ 32
-    lea     r6,[r6+32]
-.2: fwd_rnd r6+ 16          ; 12 rounds for 192-bit key
-    fwd_rnd r6+ 32
-    lea     r6,[r6+32]
-.3: fwd_rnd r6+ 16          ; 10 rounds for 128-bit key
-    fwd_rnd r6+ 32
-    fwd_rnd r6+ 48
-    fwd_rnd r6+ 64
-    fwd_rnd r6+ 80
-    fwd_rnd r6+ 96
-    fwd_rnd r6+112
-    fwd_rnd r6+128
-    fwd_rnd r6+144
-    fwd_rnd r6+160, _t_fl   ; last round uses a different table
+.1: fwd_rnd r6+xf(13)       ; 14 rounds for 256-bit key
+    fwd_rnd r6+xf(12)
+.2: fwd_rnd r6+xf(11)       ; 12 rounds for 192-bit key
+    fwd_rnd r6+xf(10)
+.3: fwd_rnd r6+xf( 9)       ; 10 rounds for 128-bit key
+    fwd_rnd r6+xf( 8)
+    fwd_rnd r6+xf( 7)
+    fwd_rnd r6+xf( 6)
+    fwd_rnd r6+xf( 5)
+    fwd_rnd r6+xf( 4)
+    fwd_rnd r6+xf( 3)
+    fwd_rnd r6+xf( 2)
+    fwd_rnd r6+xf( 1)
+    fwd_rnd r6+xf( 0),_t_fl ; last round uses a different table
 
 ; move final values to the output array
 
-    mov     r6,[esp+out_blk+stk_spc]
-    mov     [r6+12],r3
-    mov     [r6+8],r2
-    mov     [r6+4],r1
-    mov     [r6],r0
-    mov     ebp,[esp+20]
+    mov     r4,[esp+out_blk+stk_spc]
+    mov     [r4+12],r3
+    mov     [r4+8],r2
+    mov     [r4+4],r1
+    mov     [r4],r0
+
+.5: mov     ebp,[esp+20]
     mov     ebx,[esp+16]
     mov     esi,[esp+12]
     mov     edi,[esp+ 8]
     lea     esp,[esp+stk_spc]
-    xor     eax,eax
     do_ret
 
 %endif
@@ -328,75 +357,76 @@ stk_spc:equ    24   ; stack space
     mov     [esp+16],ebx
     mov     [esp+12],esi
     mov     [esp+ 8],edi
+
+    mov     r6,[esp+ctx+stk_spc]    ; key pointer
+%ifdef  AES_REV_DKS
+    movzx   r0,byte[r6+4*KS_LENGTH]
+    add     r6,r0
+    mov     [r6+16],al              ; r0 = eax
+%endif
+
+; input four columns and xor in first round key
+
     mov     r4,[esp+in_blk+stk_spc] ; input pointer
-    mov     r6,[esp+ctx+stk_spc]    ; context pointer
-
-; input four columns
-
-    mov     r0,[r4]
-    mov     r1,[r4+4]
-    mov     r2,[r4+8]
+    mov     r0,[r4   ]
+    mov     r1,[r4+ 4]
+    mov     r2,[r4+ 8]
     mov     r3,[r4+12]
+    lea     r4,[r4+16]
+
+%ifdef  AES_REV_DKS
+    movzx   r5,byte[r6+16]
+    neg     r5
+    lea     r4,[r6+r5]
+%else
+    movzx   r5,byte[r6+4*KS_LENGTH]
+    lea     r4,[r6+r5]
+    neg     r5
+%endif
+    xor     r0,[r4   ]
+    xor     r1,[r4+ 4]
+    xor     r2,[r4+ 8]
+    xor     r3,[r4+12]
 
 ; determine the number of rounds
 
-    mov     r5,[r6+4*52]
-    mov     r4,[r6+4*45]
-    xor     r4,[r6+4*53]
-    xor     r4,r5
-    jne     .1
-    mov     r5,14
-
-; xor in initial keys
-
-.1: lea     r4,[4*r5]
-    xor     r0,[r6+4*r4   ]
-    xor     r1,[r6+4*r4+ 4]
-    xor     r2,[r6+4*r4+ 8]
-    xor     r3,[r6+4*r4+12]
-    cmp     r5,10
+    cmp     r5,-10*16
     je      .3
-    cmp     r5,12
+    cmp     r5,-12*16
     je      .2
-    cmp     r5,14
-    jne     .4
+    cmp     r5,-14*16
+    je      .1
+    mov     eax,-1
+    jmp     .5
 
-    inv_rnd r6+208          ; 14 rounds for 256-bit key
-    inv_rnd r6+192
-.2: inv_rnd r6+176          ; 12 rounds for 192-bit key
-    inv_rnd r6+160
-.3: inv_rnd r6+144          ; 10 rounds for 128-bit key
-    inv_rnd r6+128
-    inv_rnd r6+112
-    inv_rnd r6+ 96
-    inv_rnd r6+ 80
-    inv_rnd r6+ 64
-    inv_rnd r6+ 48
-    inv_rnd r6+ 32
-    inv_rnd r6+ 16
-    inv_rnd r6, _t_il       ; last round uses a different table
+.1: inv_rnd r6+xi(13)       ; 14 rounds for 256-bit key
+    inv_rnd r6+xi(12)
+.2: inv_rnd r6+xi(11)       ; 12 rounds for 192-bit key
+    inv_rnd r6+xi(10)
+.3: inv_rnd r6+xi( 9)       ; 10 rounds for 128-bit key
+    inv_rnd r6+xi( 8)
+    inv_rnd r6+xi( 7)
+    inv_rnd r6+xi( 6)
+    inv_rnd r6+xi( 5)
+    inv_rnd r6+xi( 4)
+    inv_rnd r6+xi( 3)
+    inv_rnd r6+xi( 2)
+    inv_rnd r6+xi( 1)
+    inv_rnd r6+xi( 0),_t_il ; last round uses a different table
 
 ; move final values to the output array.
 
-    mov     r6,[esp+out_blk+stk_spc]
-    mov     [r6+12],r3
-    mov     [r6+8],r2
-    mov     [r6+4],r1
-    mov     [r6],r0
-    mov     ebp,[esp+20]
-    mov     ebx,[esp+16]
-    mov     esi,[esp+12]
-    mov     edi,[esp+ 8]
-    lea     esp,[esp+stk_spc]
-    xor     eax,eax
-    do_ret
+    mov     r4,[esp+out_blk+stk_spc]
+    mov     [r4+12],r3
+    mov     [r4+8],r2
+    mov     [r4+4],r1
+    mov     [r4],r0
 
-.4: mov     ebp,[esp+20]
+.5: mov     ebp,[esp+20]
     mov     ebx,[esp+16]
     mov     esi,[esp+12]
     mov     edi,[esp+ 8]
     lea     esp,[esp+stk_spc]
-    mov     eax,-1
     do_ret
 
 %endif

@@ -44,6 +44,9 @@
 /* Define to 1 if you have the <argz.h> header file. */
 #undef HAVE_ARGZ_H
 
+/* Define to 1 if you have the `asprintf' function. */
+#undef HAVE_ASPRINTF
+
 /* Define to 1 if you have the `atexit' function. */
 #define HAVE_ATEXIT	1
 
@@ -56,6 +59,9 @@
 /* Defined if a `byte' is typedef'd */
 #undef HAVE_BYTE_TYPEDEF
 
+/* Defined if the bz2 compression library is available */
+#undef HAVE_BZIP2
+
 /* Define to 1 if you have the `clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
 
@@ -66,9 +72,29 @@
    */
 #undef HAVE_DCGETTEXT
 
+/* Define to 1 if you have the declaration of `feof_unlocked', and to 0 if you
+   don't. */
+#define HAVE_DECL_FEOF_UNLOCKED		0
+
+/* Define to 1 if you have the declaration of `fgets_unlocked', and to 0 if
+   you don't. */
+#define HAVE_DECL_FGETS_UNLOCKED	0
+
+/* Define to 1 if you have the declaration of `getc_unlocked', and to 0 if you
+   don't. */
+#define HAVE_DECL_GETC_UNLOCKED		0
+
 /* Define to 1 if you have the declaration of `sys_siglist', and to 0 if you
    don't. */
-#undef HAVE_DECL_SYS_SIGLIST
+#define HAVE_DECL_SYS_SIGLIST		0
+
+/* Define to 1 if you have the declaration of `_snprintf', and to 0 if you
+   don't. */
+#define HAVE_DECL__SNPRINTF			1
+
+/* Define to 1 if you have the declaration of `_snwprintf', and to 0 if you
+   don't. */
+#define HAVE_DECL__SNWPRINTF		1
 
 /* defined if the system supports a random device */
 #undef HAVE_DEV_RANDOM
@@ -92,12 +118,6 @@
 /* defined if we must run on a stupid file system */
 #undef HAVE_DRIVE_LETTERS
 
-/* Define to 1 if you have the `feof_unlocked' function. */
-#undef HAVE_FEOF_UNLOCKED
-
-/* Define to 1 if you have the `fgets_unlocked' function. */
-#undef HAVE_FGETS_UNLOCKED
-
 /* Define to 1 if you have the `fork' function. */
 #undef HAVE_FORK
 
@@ -105,10 +125,7 @@
 #undef HAVE_FSEEKO
 
 /* Define to 1 if you have the `getcwd' function. */
-#undef HAVE_GETCWD
-
-/* Define to 1 if you have the `getc_unlocked' function. */
-#undef HAVE_GETC_UNLOCKED
+#define HAVE_GETCWD	1
 
 /* Define to 1 if you have the `getegid' function. */
 #undef HAVE_GETEGID
@@ -121,6 +138,9 @@
 
 /* Define if you have the `gethrtime(2)' function. */
 #undef HAVE_GETHRTIME
+
+/* Define to 1 if you have the <getopt.h> header file. */
+#define HAVE_GETOPT_H		1
 
 /* Define to 1 if you have the `getpagesize' function. */
 #undef HAVE_GETPAGESIZE
@@ -139,6 +159,9 @@
 
 /* Define if you have the iconv() function. */
 #undef HAVE_ICONV
+
+/* Define if you have the 'intmax_t' type in <stdint.h> or <inttypes.h>. */
+#undef HAVE_INTMAX_T
 
 /* Define if <inttypes.h> exists and doesn't clash with <sys/types.h>. */
 #undef HAVE_INTTYPES_H
@@ -174,6 +197,12 @@
 /* Define to 1 if you have the <locale.h> header file. */
 #define HAVE_LOCALE_H	1
 
+/* Define if you have the 'long double' type. */
+#undef HAVE_LONG_DOUBLE
+
+/* Define if you have the 'long long' type. */
+#define HAVE_LONG_LONG	1mempcp
+
 /* Define to 1 if you have the <malloc.h> header file. */
 #define HAVE_MALLOC_H	1
 
@@ -184,7 +213,7 @@
 #define HAVE_MEMORY_H	1
 
 /* Define to 1 if you have the `mempcpy' function. */
-#define HAVE_MEMPCPY	1
+#undef HAVE_MEMPCPY
 
 /* Define to 1 if you have the `mkdtemp' function. */
 #undef HAVE_MKDTEMP
@@ -210,6 +239,9 @@
 /* Define to 1 if you have the `plock' function. */
 #undef HAVE_PLOCK
 
+/* Define if your printf() function supports format strings with positions. */
+#undef HAVE_POSIX_PRINTF
+
 /* Define to 1 if you have the `putenv' function. */
 #undef HAVE_PUTENV
 
@@ -233,6 +265,12 @@
 
 /* Define to 1 if you have the `sigprocmask' function. */
 #undef HAVE_SIGPROCMASK
+
+/* Define to 1 if the system has the type `sigset_t'. */
+#undef HAVE_SIGSET_T
+
+/* Define to 1 if you have the `snprintf' function. */
+#undef HAVE_SNPRINTF
 
 /* Define to 1 if you have the `stat' function. */
 #define HAVE_STAT 1
@@ -286,6 +324,9 @@
 /* Define to 1 if you have the `strtoul' function. */
 #define HAVE_STRTOUL	1
 
+/* Define to 1 if the system has the type `struct sigaction'. */
+#undef HAVE_STRUCT_SIGACTION
+
 /* Define to 1 if you have the <sys/capability.h> header file. */
 #undef HAVE_SYS_CAPABILITY_H
 
@@ -325,6 +366,9 @@
 /* Defined if a `u32' is typedef'd */
 #undef HAVE_U32_TYPEDEF
 
+/* Define if you have the 'uintmax_t' type in <stdint.h> or <inttypes.h>. */
+#undef HAVE_UINTMAX_T
+
 /* Defined if a `ulong' is typedef'd */
 #undef HAVE_ULONG_TYPEDEF
 
@@ -352,6 +396,15 @@
 /* Define to 1 if you have the `waitpid' function. */
 #undef HAVE_WAITPID
 
+/* Define if you have the 'wchar_t' type. */
+#undef HAVE_WCHAR_T
+
+/* Define to 1 if you have the `wcslen' function. */
+#undef HAVE_WCSLEN
+
+/* Define if you have the 'wint_t' type. */
+#undef HAVE_WINT_T
+
 /* Define to 1 if `fork' works. */
 #undef HAVE_WORKING_FORK
 
@@ -366,6 +419,9 @@
 
 /* Define to 1 if you have the `__argz_stringify' function. */
 #undef HAVE___ARGZ_STRINGIFY
+
+/* Define to 1 if you have the `__fsetlocking' function. */
+#undef HAVE___FSETLOCKING
 
 /* Define as const if the declaration of iconv() needs const. */
 #undef ICONV_CONST
@@ -404,7 +460,7 @@
 #undef NO_EXEC
 
 /* Name of package */
-#define	PACKAGE	"GPG-1.3.2/BRG"
+#define	PACKAGE	"GPG-1.2.4"
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
@@ -420,6 +476,9 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
+
+/* Size of the key and UID caches */
+#define PK_UID_CACHE_SIZE	4096
 
 /* A human readable text with the name of the OS */
 #undef	PRINTABLE_OS_NAME
@@ -444,6 +503,10 @@
 
 /* The size of a `unsigned short', as computed by sizeof. */
 #define SIZEOF_UNSIGNED_SHORT	2
+
+/* Define as the maximum value of type 'size_t', if the system doesn't define
+   it. */
+#undef SIZE_MAX
 
 /* If using the C implementation of alloca, define if you know the
    direction of stack growth for your system; otherwise it will be
@@ -515,13 +578,13 @@
 #define USE_SIMPLE_GETTEXT	1
 
 /* Define to include the TIGER/192 digest */
-#undef USE_TIGER192
+#undef USE_TIGER
 
 /* Define to include the TWOFISH cipher */
 #undef USE_TWOFISH
 
 /* Version number of package */
-#define VERSION	"1.3.2/BRG"
+#define VERSION	"1.2.4-BRG"
 
 /* Defined if compiled symbols have a leading underscore */
 #define WITH_SYMBOL_UNDERSCORE	1
@@ -543,9 +606,11 @@
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const
 
-/* Define as `__inline' if that's what the C compiler calls it, or to nothing
-   if it is not supported. */
+/* Define to `__inline__' or `__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
 #define inline	__inline
+#endif
 
 /* Define to `int' if <sys/types.h> does not define. */
 #undef mode_t
@@ -555,6 +620,13 @@
 
 /* Define to `int' if <sys/types.h> does not define. */
 #undef pid_t
+
+/* Define as the type of the result of subtracting two pointers, if the system
+   doesn't define it. */
+#undef ptrdiff_t
+
+/* Define to empty if the C compiler doesn't support this keyword. */
+#undef signed
 
 /* Define to `unsigned' if <sys/types.h> does not define. */
 #define size_t	unsigned
@@ -569,7 +641,6 @@
 /* Define to empty if the keyword `volatile' does not work. Warning: valid
    code using `volatile' can become incorrect without. Disable with care. */
 #undef volatile
-
 
 #if !(defined(HAVE_FORK) && defined(HAVE_PIPE) && defined(HAVE_WAITPID))
 #define EXEC_TEMPFILE_ONLY

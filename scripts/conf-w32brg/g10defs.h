@@ -1,22 +1,19 @@
 
+#include <direct.h>
+#include <io.h>
+
 #define inline __inline
-#define __inline__	__inline
+#define __inline__ __inline
 
 #define	BYTES_PER_MPI_LIMB	4
 
 #define PRINTABLE_OS_NAME	"Win32"
 
-#define GNUPG_HOMEDIR	 "c:\\Program Files\\gnupg"
-#define GNUPG_LIBDIR	 "c:\\Program Files\\gnupg"
-#define GNUPG_DATADIR	 "c:\\Program Files\\gnupg"
-#define GNUPG_LIBEXECDIR "c:\\Program Files\\gnupg"
+#define GNUPG_HOMEDIR		"c:\\Program Files\\gnupg"
+#define GNUPG_LIBDIR		"c:\\Program Files\\gnupg"
+#define GNUPG_DATADIR		"c:\\Program Files\\gnupg"
+#define GNUPG_LIBEXECDIR	"c:\\Program Files\\gnupg"
 
-#define	EXTSEP_S	"."
-#define	DIRSEP_S	"\\"
-#define	DIRSEP_C	'\\'
-
-#include <io.h>
-#include <direct.h>
 #define getpid	_getpid
 #define pid_t	int
 #define	mode_t	int
@@ -40,3 +37,7 @@
 #define	sockaddr_un	sockaddr_in
 #define	sun_path	sin_zero
 #define	sun_family	sin_family
+
+#define	EXTSEP_S	"."
+#define	DIRSEP_S	"\\"
+#define	DIRSEP_C	'\\'

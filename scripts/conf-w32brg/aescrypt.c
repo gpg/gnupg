@@ -1,7 +1,6 @@
 /*
  ---------------------------------------------------------------------------
- Copyright (c) 2003, Dr Brian Gladman <brg@gladman.me.uk>, Worcester, UK.
- All rights reserved.
+ Copyright (c) 2003, Dr Brian Gladman, Worcester, UK.   All rights reserved.
 
  LICENSE TERMS
 
@@ -28,15 +27,11 @@
  in respect of its properties, including, but not limited to, correctness
  and/or fitness for purpose.
  ---------------------------------------------------------------------------
- Issue Date: 1/06/2003
-
- This file contains the code for implementing encryption and decryption
- for AES (Rijndael) for block and key sizes of 16, 24 and 32 bytes. It
- can optionally be replaced by code written in assembler using NASM. For
- further details see the file aesopt.h
+ Issue 30/06/2004
 */
 
 #include "aesopt.h"
+#include "aestab.h"
 
 #if defined(__cplusplus)
 extern "C"
@@ -104,37 +99,34 @@ extern "C"
 #define fwd_lrnd(y,x,k,c)   (s(y,c) = (k)[c] ^ no_table(x,t_use(s,box),fwd_var,rf1,c))
 #endif
 
-aes_rval aes_encrypt(const void *in_blk, void *out_blk, const aes_encrypt_ctx cx[1])
-{   aes_32t			locals(b0, b1);
-	const aes_32t	*kp = cx->ks;
-#ifdef dec_fmvars
+aes_rval aes_encrypt(const unsigned char *in, unsigned char *out, const aes_encrypt_ctx cx[1])
+{   aes_32t         locals(b0, b1);
+    const aes_32t   *kp;
+#if defined( dec_fmvars )
     dec_fmvars; /* declare variables for fwd_mcol() if needed */
 #endif
 
-    aes_32t nr = (kp[45] ^ kp[52] ^ kp[53] ? kp[52] : 14);
-
-#ifdef AES_ERR_CHK
-	if(   (nr != 10 || !(kp[0] | kp[3] | kp[4])) 
-	   && (nr != 12 || !(kp[0] | kp[5] | kp[6]))
-	   && (nr != 14 || !(kp[0] | kp[7] | kp[8])) )
-		return aes_error;
+#if defined( AES_ERR_CHK )
+    if( cx->inf.b[0] != 10 * 16 && cx->inf.b[0] != 12 * 16 && cx->inf.b[0] != 14 * 16 )
+        return aes_error;
 #endif
 
-    state_in(b0, in_blk, kp);
+    kp = cx->ks;
+    state_in(b0, in, kp);
 
 #if (ENC_UNROLL == FULL)
 
-    switch(nr)
+    switch(cx->inf.b[0])
     {
-    case 14:
+    case 14 * 16:
         round(fwd_rnd,  b1, b0, kp + 1 * N_COLS);
         round(fwd_rnd,  b0, b1, kp + 2 * N_COLS);
         kp += 2 * N_COLS;
-    case 12:
+    case 12 * 16:
         round(fwd_rnd,  b1, b0, kp + 1 * N_COLS);
         round(fwd_rnd,  b0, b1, kp + 2 * N_COLS);
         kp += 2 * N_COLS;
-    case 10:
+    case 10 * 16:
         round(fwd_rnd,  b1, b0, kp + 1 * N_COLS);
         round(fwd_rnd,  b0, b1, kp + 2 * N_COLS);
         round(fwd_rnd,  b1, b0, kp + 3 * N_COLS);
@@ -151,7 +143,7 @@ aes_rval aes_encrypt(const void *in_blk, void *out_blk, const aes_encrypt_ctx cx
 
 #if (ENC_UNROLL == PARTIAL)
     {   aes_32t    rnd;
-        for(rnd = 0; rnd < (nr >> 1) - 1; ++rnd)
+        for(rnd = 0; rnd < (cx->inf.b[0] >> 5) - 1; ++rnd)
         {
             kp += N_COLS;
             round(fwd_rnd, b1, b0, kp);
@@ -162,11 +154,11 @@ aes_rval aes_encrypt(const void *in_blk, void *out_blk, const aes_encrypt_ctx cx
         round(fwd_rnd,  b1, b0, kp);
 #else
     {   aes_32t    rnd;
-        for(rnd = 0; rnd < nr - 1; ++rnd)
+        for(rnd = 0; rnd < (cx->inf.b[0] >> 4) - 1; ++rnd)
         {
             kp += N_COLS;
             round(fwd_rnd, b1, b0, kp);
-			l_copy(b0, b1);
+            l_copy(b0, b1);
         }
 #endif
         kp += N_COLS;
@@ -174,9 +166,10 @@ aes_rval aes_encrypt(const void *in_blk, void *out_blk, const aes_encrypt_ctx cx
     }
 #endif
 
-    state_out(out_blk, b0);
-#ifdef AES_ERR_CHK
-	return aes_good;
+    state_out(out, b0);
+
+#if defined( AES_ERR_CHK )
+    return aes_good;
 #endif
 }
 
@@ -228,79 +221,91 @@ aes_rval aes_encrypt(const void *in_blk, void *out_blk, const aes_encrypt_ctx cx
 #define inv_lrnd(y,x,k,c)   (s(y,c) = (k)[c] ^ no_table(x,t_use(i,box),inv_var,rf1,c))
 #endif
 
-aes_rval aes_decrypt(const void *in_blk, void *out_blk, const aes_decrypt_ctx cx[1])
+/* This code can work with the decryption key schedule in the   */
+/* order as that used for encrytpion (where the 1st decryption  */
+/* round key is at the high end ot the schedule) or with a key  */
+/* schedule that has been reversed to put the 1st decryption    */
+/* round key at the low end of the schedule in memory (when     */
+/* AES_REV_DKS is defined)                                      */
+
+#ifdef AES_REV_DKS
+#define key_ofs     0
+#define rnd_key(n)  (kp + n * N_COLS)
+#else
+#define key_ofs     1
+#define rnd_key(n)  (kp - n * N_COLS)
+#endif
+
+aes_rval aes_decrypt(const unsigned char *in, unsigned char *out, const aes_decrypt_ctx cx[1])
 {   aes_32t        locals(b0, b1);
-#ifdef dec_imvars
+#if defined( dec_imvars )
     dec_imvars; /* declare variables for inv_mcol() if needed */
 #endif
+    const aes_32t *kp;
 
-    aes_32t nr = (cx->ks[45] ^ cx->ks[52] ^ cx->ks[53] ? cx->ks[52] : 14);
-    const aes_32t *kp = cx->ks + nr * N_COLS;
-
-#ifdef AES_ERR_CHK
-	if(   (nr != 10 || !(cx->ks[0] | cx->ks[3] | cx->ks[4])) 
-	   && (nr != 12 || !(cx->ks[0] | cx->ks[5] | cx->ks[6]))
-	   && (nr != 14 || !(cx->ks[0] | cx->ks[7] | cx->ks[8])) )
-		return aes_error;
+#if defined( AES_ERR_CHK )
+    if( cx->inf.b[0] != 10 * 16 && cx->inf.b[0] != 12 * 16 && cx->inf.b[0] != 14 * 16 )
+        return aes_error;
 #endif
 
-	state_in(b0, in_blk, kp);
+    kp = cx->ks + (key_ofs ? (cx->inf.b[0] >> 2) : 0);
+    state_in(b0, in, kp);
 
 #if (DEC_UNROLL == FULL)
 
-    switch(nr)
+    kp = cx->ks + (key_ofs ? 0 : (cx->inf.b[0] >> 2));
+    switch(cx->inf.b[0])
     {
-    case 14:
-        round(inv_rnd,  b1, b0, kp -  1 * N_COLS);
-        round(inv_rnd,  b0, b1, kp -  2 * N_COLS);
-        kp -= 2 * N_COLS;
-    case 12:
-        round(inv_rnd,  b1, b0, kp -  1 * N_COLS);
-        round(inv_rnd,  b0, b1, kp -  2 * N_COLS);
-        kp -= 2 * N_COLS;
-    case 10:
-        round(inv_rnd,  b1, b0, kp -  1 * N_COLS);
-        round(inv_rnd,  b0, b1, kp -  2 * N_COLS);
-        round(inv_rnd,  b1, b0, kp -  3 * N_COLS);
-        round(inv_rnd,  b0, b1, kp -  4 * N_COLS);
-        round(inv_rnd,  b1, b0, kp -  5 * N_COLS);
-        round(inv_rnd,  b0, b1, kp -  6 * N_COLS);
-        round(inv_rnd,  b1, b0, kp -  7 * N_COLS);
-        round(inv_rnd,  b0, b1, kp -  8 * N_COLS);
-        round(inv_rnd,  b1, b0, kp -  9 * N_COLS);
-        round(inv_lrnd, b0, b1, kp - 10 * N_COLS);
+    case 14 * 16:
+        round(inv_rnd,  b1, b0, rnd_key(-13));
+        round(inv_rnd,  b0, b1, rnd_key(-12));
+    case 12 * 16:
+        round(inv_rnd,  b1, b0, rnd_key(-11));
+        round(inv_rnd,  b0, b1, rnd_key(-10));
+    case 10 * 16:
+        round(inv_rnd,  b1, b0, rnd_key(-9));
+        round(inv_rnd,  b0, b1, rnd_key(-8));
+        round(inv_rnd,  b1, b0, rnd_key(-7));
+        round(inv_rnd,  b0, b1, rnd_key(-6));
+        round(inv_rnd,  b1, b0, rnd_key(-5));
+        round(inv_rnd,  b0, b1, rnd_key(-4));
+        round(inv_rnd,  b1, b0, rnd_key(-3));
+        round(inv_rnd,  b0, b1, rnd_key(-2));
+        round(inv_rnd,  b1, b0, rnd_key(-1));
+        round(inv_lrnd, b0, b1, rnd_key( 0));
     }
 
 #else
 
 #if (DEC_UNROLL == PARTIAL)
     {   aes_32t    rnd;
-        for(rnd = 0; rnd < (nr >> 1) - 1; ++rnd)
+        for(rnd = 0; rnd < (cx->inf.b[0] >> 5) - 1; ++rnd)
         {
-            kp -= N_COLS;
+            kp = rnd_key(1);
             round(inv_rnd, b1, b0, kp);
-            kp -= N_COLS;
+            kp = rnd_key(1);
             round(inv_rnd, b0, b1, kp);
         }
-        kp -= N_COLS;
+        kp = rnd_key(1);
         round(inv_rnd, b1, b0, kp);
 #else
     {   aes_32t    rnd;
-        for(rnd = 0; rnd < nr - 1; ++rnd)
+        for(rnd = 0; rnd < (cx->inf.b[0] >> 4) - 1; ++rnd)
         {
-            kp -= N_COLS;
+            kp = rnd_key(1);
             round(inv_rnd, b1, b0, kp);
-			l_copy(b0, b1);
+            l_copy(b0, b1);
         }
 #endif
-        kp -= N_COLS;
+        kp = rnd_key(1);
         round(inv_lrnd, b0, b1, kp);
-    }
+        }
 #endif
 
-    state_out(out_blk, b0);
-#ifdef AES_ERR_CHK
-	return aes_good;
+    state_out(out, b0);
+
+#if defined( AES_ERR_CHK )
+    return aes_good;
 #endif
 }
 
