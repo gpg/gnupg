@@ -1269,17 +1269,17 @@ read_parameter_file( const char *fname )
 	    err = "line too long";
 	    break;
 	}
-	for( p = line; isspace(*p); p++ )
+	for( p = line; isspace(*(byte*)p); p++ )
 	    ;
 	if( !*p || *p == '#' )
 	    continue;
 	keyword = p;
 	if( *keyword == '%' ) {
-	    for( ; !isspace(*p); p++ )
+	    for( ; !isspace(*(byte*)p); p++ )
 		;
 	    if( *p )
 		*p++ = 0;
-	    for( ; isspace(*p); p++ )
+	    for( ; isspace(*(byte*)p); p++ )
 		;
 	    value = p;
 	    trim_trailing_ws( value, strlen(value) );
@@ -1325,7 +1325,7 @@ read_parameter_file( const char *fname )
 	}
 	if( *p )
 	    *p++ = 0;
-	for( ; isspace(*p); p++ )
+	for( ; isspace(*(byte*)p); p++ )
 	    ;
 	if( !*p ) {
 	    err = "missing argument";

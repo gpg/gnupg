@@ -360,7 +360,11 @@ myread(int fd, void *buf, size_t count)
             eof_emmited++;
         }
         else { /* Ctrl-D not caught - do something reasonable */
+          #ifdef HAVE_DOSISH_SYSTEM
+            raise (SIGINT);  /* nothing to hangup under DOS */
+          #else
             raise (SIGHUP); /* no more input data */
+          #endif
         }
     }    
     return rc;

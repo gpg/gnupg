@@ -61,7 +61,11 @@ or for snapshots (with a letter appended to the version number)
 
   ftp://ftp.gnupg.org/pub/gcrypt/devel/gnupg-1.0.nx.tar.gz
 
-this is the same source as for the Unix version.
+this is the same source as for the Unix version.  If your binary
+version of GnuPG is called something like gnupg-w32-1.0.4-1.zip, you
+should find a patch file named gnupg-w32-1.0.4-1.0.4-1.diff.gz at the
+same location, which has to ne applied to the stock gpg source file.
+Instructions are at the top of this file.
 
 To build it, you need the MingW32/CPD kit, which is available at
 

@@ -21,9 +21,9 @@ rm * || true
 ln ../g10/gpg gpg.exe
 i386--mingw32-strip gpg.exe
 if [ -t ../doc/gpg.man ] ; then
-  cat ../doc/gpg.man >gpg.man
+  sed `printf "s/\b.//g"` ../doc/gpg.man >gpg.man
 else
-  man -T latin1 -l ../doc/gpg.1 >gpg.man
+  man -T latin1 -l ../doc/gpg.1 | sed `printf "s/\b.//g"`  >gpg.man
 fi
 todos gpg.man
 cp ${srcdir}/README .
@@ -32,3 +32,5 @@ ln ${srcdir}/doc/README.W32 .
 todos README.W32
 for i in ${srcdir}/po/*.gmo; do ln $i "$(basename $i .gmo).mo" ; done
 zip "gnupg-w32-$(cat ${srcdir}/VERSION).zip" *
+
+
