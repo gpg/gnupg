@@ -33,11 +33,11 @@
     compatible with PGP2 versions.  PGP 2.x uses IDEA (which is patented
     worldwide).
 
-    The default algorithms are DSA and ElGamal.  ElGamal for signing
-    is still available, but because of the larger size of such
-    signatures it is deprecated (Please note that the GnuPG
-    implementation of ElGamal signatures is *not* insecure).  Symmetric
-    algorithms are: AES, 3DES, Blowfish, CAST5 and Twofish 
+    The default algorithms are DSA and ElGamal, but RSA is also
+    supported.  ElGamal for signing is available, but because of the
+    larger size of such signatures it is deprecated (Please note that
+    the GnuPG implementation of ElGamal signatures is *not* insecure).
+    Symmetric algorithms are: AES, 3DES, Blowfish, CAST5 and Twofish.
     Digest algorithms available are MD5, RIPEMD160 and SHA1.
 
 
@@ -46,8 +46,8 @@
     Please read the file INSTALL and the sections in this file
     related to the installation.  Here is a quick summary:
 
-    1) Check that you have unmodified sources.	The below on how
-       to do this.  Don't skip it - this is an important step!
+    1) Check that you have unmodified sources.  See below on how to do
+       this.  Don't skip it - this is an important step!
 
     2)	Unpack the TAR.  With GNU tar you can do it this way:
 	"tar xzvf gnupg-x.y.z.tar.gz"
@@ -92,7 +92,7 @@
 
 		$ gpg --fingerprint 0x57548DCD
 
-       with the elsewhere published fingerprint
+       with the fingerprint published elsewhere.
 
        Please note, that you have to use an old version of GnuPG to
        do all this stuff.  *Never* use the version which you are going
@@ -547,9 +547,10 @@
     make.  Try gmake or grab the sources from a GNU archive and
     install them.
 
-    On some OSF you may get unresolved externals.  This is a libtool
-    problem and the workaround is to manually remove all the "-lc -lz"
-    but the last one from the linker line and execute them manually.
+    On some OSF systems you may get unresolved externals.  This is a
+    libtool problem and the workaround is to manually remove all the
+    "-lc -lz" but the last one from the linker line and execute them
+    manually.
 
     On some architectures you see warnings like:
       longlong.h:175: warning: function declaration isn't a prototype
