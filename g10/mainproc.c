@@ -1303,9 +1303,9 @@ check_sig_and_print( CTX c, KBNODE node )
 
     tstr = asctimestamp(sig->timestamp);
     astr = pubkey_algo_to_string( sig->pubkey_algo );
-    log_info(_("Signature made %.*s using %s key ID %08lX\n"),
-	    (int)strlen(tstr), tstr, astr? astr: "?", (ulong)sig->keyid[1] );
-
+    log_info(_("Signature made %.*s using %s key ID 0x%08lX\n"),
+             (int)strlen(tstr), tstr, astr? astr: "?", (ulong)sig->keyid[1] );
+    
     rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
     if( rc == G10ERR_NO_PUBKEY && opt.keyserver_scheme && opt.keyserver_options.auto_key_retrieve) {
 	if( keyserver_import_keyid ( sig->keyid )==0 )

@@ -1,3 +1,6 @@
+
+  * Fix all new fuzzy translations due to prefixing the key ID with 0x
+
   * Reword the message after create-revocation.
 
   * Reword the "Not enough entropy" messages.

@@ -1,3 +1,8 @@
+2003-10-03  Werner Koch  <wk@gnupg.org>
+
+	* mainproc.c (check_sig_and_print): Prefix the key ID printed with
+	0x.  Requested by Nelson H. F. Beebe.
+
 2003-10-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Add --no-groups to zero --group list.
