@@ -341,12 +341,16 @@ md_final(MD_HANDLE a)
 {
     struct md_digest_list_s *r;
 
+    if( a->finalized )
+	return;
+
     if( a->bufcount )
 	md_write( a, NULL, 0 );
 
     for(r=a->list; r; r = r->next ) {
 	(*r->final)( &r->context.c );
     }
+    a->finalized = 1;
 }
 
 

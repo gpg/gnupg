@@ -1,3 +1,16 @@
+Sat Jun 26 12:15:59 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* dotlock.c (create_dotlock): s/uts/utsbuf/ cause there an Amdahl
+	system with the name UTS (Dave Dykstra).
+
+	* secmem.c (DEFAULT_POOLSIZE): Doubled the size.
+
+Fri Jun 18 00:18:02 CEST 1999 Michael Roth <mroth@nessie.de>
+
+	* iobuf.c: file_filter() Detection of EOF on terminals
+          improved/fixed (see Bug #21).
+
 Mon Jun 14 21:18:54 CEST 1999 Michael Roth <mroth@nessie.de>
 
 	* ttyio.c: tty_no_terminal() new.

@@ -98,11 +98,3 @@ rndegd: $(srcdir)/rndegd.c
 
 
 
-install-exec-hook:
-	@list='$(pkglib_PROGRAMS)'; for p in $$list; do \
-	  if test -f $(pkglibdir)/$$p; then \
-	    echo "chmod 644 $(pkglibdir)/$$p"; \
-	    chmod 644 $(pkglibdir)/$$p; \
-	  fi; \
-	done
-

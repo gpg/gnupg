@@ -399,7 +399,7 @@ export_ownertrust()
 
     init_trustdb();
     printf(_("# List of assigned trustvalues, created %s\n"
-	     "# (Use \"gpgm --import-ownertrust\" to restore them)\n"),
+	     "# (Use \"gpg --import-ownertrust\" to restore them)\n"),
 	   asctimestamp( make_timestamp() ) );
     for(recnum=0; !tdbio_read_record( recnum, &rec, 0); recnum++ ) {
 	if( rec.rectype == RECTYPE_DIR ) {

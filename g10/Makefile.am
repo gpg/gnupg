@@ -86,8 +86,8 @@ install-data-local:
 	$(INSTALL_DATA) $(srcdir)/options.skel \
 				$(DESTDIR)$(pkgdatadir)/options.skel
 	@set -e;\
-	 if test -f $(DESTDIR)$(bindir)/gpgm ; then
-	   echo "removing obsolete gpgm binary"
-	   rm $(DESTDIR)$(bindir)/gpgm ;
+	 if test -f $(DESTDIR)$(bindir)/gpgm ; then \
+	   echo "removing obsolete gpgm binary" ;   \
+	   rm $(DESTDIR)$(bindir)/gpgm ;	    \
 	 fi
 

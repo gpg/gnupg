@@ -842,10 +842,12 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 	    break;
 
 	  case cmdADDKEY:
+	secmem_dump_stats();
 	    if( generate_subkeypair( keyblock, sec_keyblock ) ) {
 		redisplay = 1;
 		sec_modified = modified = 1;
 	    }
+	secmem_dump_stats();
 	    break;
 
 

@@ -1,3 +1,13 @@
+Sat Jun 26 12:15:59 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* rndegd.c (do_write): s/ssize_t/int/ due to SunOS 4.1 probs.
+
+	* cipher.c (do_cbc_encrypt, do_cbc_decrypt): New.
+
+	* dynload.c (HAVE_DL_SHL_LOAD): Map hpux API to dlopen (Dave Dykstra).
+	* Makefile.am (install-exec-hook): Removed.
+
 Sun May 23 14:20:22 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* cipher.c (setup_cipher_table): Enable Twofish

@@ -92,16 +92,22 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 
     if( control == IOBUFCTRL_UNDERFLOW ) {
 	assert( size ); /* need a buffer */
-	clearerr( fp );
-	nbytes = fread( buf, 1, size, fp );
-	if( feof(fp) && !nbytes )
-	    rc = -1; /* okay: we can return EOF now. */
-	else if( ferror(fp) && errno != EPIPE  ) {
-	    log_error("%s: read error: %s\n",
-		      a->fname, strerror(errno));
-	    rc = G10ERR_READ_FILE;
+	if ( feof(fp)) {	/* On terminals you could easiely read as many EOFs as you call		*/
+	    rc = -1;		/* fread() or fgetc() repeatly. Every call will block until you press	*/
+	    *ret_len = 0;	/* CTRL-D. So we catch this case before we call fread() again.		*/
 	}
-	*ret_len = nbytes;
+	else {
+	    clearerr( fp );
+	    nbytes = fread( buf, 1, size, fp );
+	    if( feof(fp) && !nbytes )
+		rc = -1; /* okay: we can return EOF now. */
+	    else if( ferror(fp) && errno != EPIPE  ) {
+		log_error("%s: read error: %s\n",
+			  a->fname, strerror(errno));
+		rc = G10ERR_READ_FILE;
+	    }
+	    *ret_len = nbytes;
+	}
     }
     else if( control == IOBUFCTRL_FLUSH ) {
 	if( size ) {

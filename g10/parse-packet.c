@@ -1281,7 +1281,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 
     if( pkttype == PKT_SECRET_KEY || pkttype == PKT_SECRET_SUBKEY ) {
 	PKT_secret_key *sk = pkt->pkt.secret_key;
-	byte temp[8];
+	byte temp[16];
 
 	if( !npkey ) {
 	    sk->skey[0] = mpi_set_opaque( NULL,
@@ -1370,6 +1370,8 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	     * so a
 	     *	 sk->protect.ivlen = cipher_get_blocksize(sk->protect.algo);
 	     * won't work.  The only solution I see is to hardwire it here.
+	     * NOTE: if you change the ivlen above 16, don't forget to
+	     * enlarge temp.
 	     */
 	    switch( sk->protect.algo ) {
 	      case 7: case 8: case 9: /* reserved for AES */

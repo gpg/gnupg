@@ -72,17 +72,21 @@ typedef struct cipher_handle_s *CIPHER_HANDLE;
 #define CIPHER_MODE_PHILS_CFB 3
 #define CIPHER_MODE_AUTO_CFB  4
 #define CIPHER_MODE_DUMMY     5  /* used with algo DUMMY for no encryption */
+#define CIPHER_MODE_CBC       6
 
 struct md_digest_list_s;
 
-typedef struct {
+struct gcry_md_context {
     int  secure;
     FILE  *debug;
+    int finalized;
     struct md_digest_list_s *list;
     int  bufcount;
     int  bufsize;
     byte buffer[1];
-} *MD_HANDLE;
+};
+
+typedef struct gcry_md_context *MD_HANDLE;
 
 
 int g10c_debug_mode;

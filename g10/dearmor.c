@@ -103,7 +103,7 @@ enarmor_file( const char *fname )
 	goto leave;
 
     afx.what = 4;
-    afx.hdrlines = "Comment: Use \"gpgm --dearmor\" for unpacking\n";
+    afx.hdrlines = "Comment: Use \"gpg --dearmor\" for unpacking\n";
     iobuf_push_filter( out, armor_filter, &afx );
 
     while( (c = iobuf_get(inp)) != -1 )

@@ -108,7 +108,7 @@ dnl
 AC_MSG_CHECKING([whether compilation of libgcrypt is requested])
 AC_ARG_ENABLE(libgcrypt,
     [  --enable-libgcrypt      compile the libgcrypt [default=no]],
-[compile_libgcrypt="$enableval"],[compile_libgcrypt=yes])
+[compile_libgcrypt="$enableval"],[compile_libgcrypt=no])
 AM_CONDITIONAL(COMPILE_LIBGCRYPT, test x$compile_libgcrypt = xyes)
 AC_MSG_RESULT($compile_libgcrypt)
 
@@ -287,8 +287,14 @@ if test "$try_dynload" = yes ; then
       AC_DEFINE(HAVE_DL_DLOPEN)
       DYNLINK_LDFLAGS="$CFLAGS_RDYNAMIC"
       use_gnupg_extensions=yes
-dnl else
-dnl
+    else
+      AC_CHECK_LIB(dld,shl_load)
+      if test "$ac_cv_lib_dld_shl_load" = "yes"; then
+        AC_DEFINE(USE_DYNAMIC_LINKING)
+        AC_DEFINE(HAVE_DL_SHL_LOAD)
+        DYNLINK_LDFLAGS="$CFLAGS_RDYNAMIC"
+        use_gnupg_extensions=yes
+dnl -----------------
 dnl  DLD is not ready for use. So I better disable this test
 dnl
 dnl    AC_CHECK_LIB(dld,dld_link)
@@ -297,7 +303,8 @@ dnl      AC_DEFINE(USE_DYNAMIC_LINKING)
 dnl      AC_DEFINE(HAVE_DLD_DLD_LINK)
 dnl      DYNLINK_LDFLAGS="$CFLAGS_RDYNAMIC"
 dnl      use_gnupg_extensions=yes
-dnl    fi
+dnl ---------------
+      fi
     fi
   fi
 else

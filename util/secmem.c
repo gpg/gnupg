@@ -40,7 +40,7 @@
   #define MAP_ANONYMOUS MAP_ANON
 #endif
 
-#define DEFAULT_POOLSIZE 8196
+#define DEFAULT_POOLSIZE 16384
 
 typedef struct memblock_struct MEMBLOCK;
 struct memblock_struct {
@@ -184,7 +184,7 @@ init_pool( size_t n)
 static void
 compress_pool(void)
 {
-
+    /* fixme: we really should do this */
 }
 
 void
@@ -290,6 +290,7 @@ secmem_malloc( size_t size )
 	max_alloced = cur_alloced;
     if( cur_blocks > max_blocks )
 	max_blocks = cur_blocks;
+
     return &mb->u.aligned.c;
 }
 

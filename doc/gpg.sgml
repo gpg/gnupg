@@ -197,7 +197,7 @@ Same as --list-keys, but the signatures are listed too.
 
 
 <varlistentry>
-<term>--list-sigs &OptParmNames;</term>
+<term>--check-sigs &OptParmNames;</term>
 <listitem><para>
 Same as --list-sigs, but the signatures are verified.
 </para></listitem></varlistentry>

@@ -77,3 +77,13 @@
     Import does not detect identical user IDs.
     FIX: 1999-05-22
 
+[ **] #20 1999-06-16 <jashley@yorktown.designlab.ukans.edu>  0.9.7
+    Using "addkey" in the edit menu with more than 1 subkey leads to
+    "out of secure memory" in some cases.
+    FIX: 1999-06-17  (Twofish uses too much memory and the memory
+    becomes fragmented - workaround is using CAST5 to protect passphrases)
+
+[  *] #21 1999-06-17
+    Ctrl-D does not work correct for messages entered at the tty.
+    FIX: 1999-06-18  (Better EOF detection on terminals)
+

@@ -26,8 +26,8 @@ and after about half a day in the rsync snapshots.
        4. save
        5. key has expiration date from 1. and gpg reports that pubkey
 	  and seckey differ.
-     The for loop the exp.date is set before v3 detection?
-     [is this bug still alive?]
+    The for loop the exp.date is set before v3 detection?
+    [is this bug still alive? - can someone please check it]
 
 [  *] #5
     /home/jam/.gnupg/pubring.gpg: can't open gdbm file: Can't be writer
@@ -50,11 +50,5 @@ and after about half a day in the rsync snapshots.
     "trustdb transaction too large" with about 500 signatures on a key
     FAEBD5FC.
 
-[ **] #20 1999-06-16 <jashley@yorktown.designlab.ukans.edu>  0.9.7
-    Using "addkey" in the edit menu with more than 1 subkey leads to
-    "out of secure memory" in some cases.
 
-
-Next #21
-
-
+Next #22

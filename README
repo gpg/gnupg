@@ -2,7 +2,7 @@
 
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-			   Version 0.9.7
+			   Version 0.9.8
 
     GnuPG is now in Beta test and you should report all bugs to the
     mailing list (see below).  The 0.9.x versions are released mainly
@@ -32,8 +32,8 @@
     have problems, please subscribe to "gnupg-users@gnupg.org" by sending
     mail with the subject "subscribe" to "gnupg-users-request@gnupg.org"
     and ask there.  The gnupg.org domain is hosted in Germany to avoid
-    possible legal problems with gnu.org (technical advices may count
-    as a violation of ITAR).
+    possible legal problems (technical advices may count as a violation
+    of ITAR).
 
     See the file COPYING for copyright and warranty information.
 
@@ -45,11 +45,13 @@
     patented worldwide) and RSA (which is patented in the United States
     until Sep 20, 2000).
 
-    The default algorithms are now DSA and ElGamal.  ElGamal for signing
+    The default algorithms are DSA and ElGamal.  ElGamal for signing
     is still available, but because of the larger size of such
     signatures it is deprecated (Please note that the GnuPG
     implementation of ElGamal signatures is *not* insecure).  Symmetric
-    algorithms are: 3DES, Blowfish, and CAST5 (Twofish will come soon).
+    algorithms are: 3DES, Blowfish, CAST5 and Twofish (GnuPG does not
+    yet create Twofish encrypted messages because there no agreement
+    in the OpenPG WG on how to use it together with a MDC algorithm)
     Digest algorithms available are MD5, RIPEMD160, SHA1, and TIGER/192.
 
 
@@ -436,10 +438,9 @@
     To avoid possible legal problems we have decided, not to use
     the normal www.gnu.org webserver.
 
-    Please direct bug reports to <gnupg-bugs@gnu.org> or, better,
-    post them to the mailing list <gnupg-devel@gnupg.org> (this is a
-    closed list - subscribe before posting, see above (~line 33)).
-    Please direct questions about GnuPG to the mailing list or
+    Please direct bug reports to <gnupg-bugs@gnu.org> or post
+    them direct to the mailing list <gnupg-devel@gnupg.org>.
+    Please direct questions about GnuPG to the users mailing list or
     one of the pgp newsgroups and give me more time to improve
     GnuPG.  Commercial support for GnuPG is also available; please
     see the GNU service directory or search other resources.
@@ -450,8 +451,8 @@
 Version: GnuPG v0.9.7 (GNU/Linux)
 Comment: For info see http://www.gnupg.org
 
-iQB1AwUBN1UgTx0Z9MEMmFelAQH93wMAt2JYGXSkJR9+VBeLlpKdjxoIylrlDWEL
-Jk5U/tuuM8H8G4ZJi7lDEhJNX77Jbh2LI18eCJJdrmWPrmDCNK2udDwcyKV4nW3k
-7Fzpc/j8fKJcICP+T9YU9wa0NJrrTg1v
-=dgdp
+iQB1AwUBN3SoBh0Z9MEMmFelAQE+9wL/bOTFEPvkO0drlWAu8k2P7udEzwfGlKhE
+Iyr6g75FSX4NnDkHB7RjyHYvQUkc8gicxYV8pBWe5c1bMYwrpe1cMvAu+BtUfDQc
+oHUbx9ln7CZ2BkEgzT5bjypugwtc6o7g
+=uTFn
 -----END PGP SIGNATURE-----

@@ -1627,7 +1627,7 @@ void
 tdbio_invalid(void)
 {
     log_error(_(
-	"The trustdb is corrupted; please run \"gpgm --fix-trustdb\".\n") );
+	"the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n") );
     g10_exit(2);
 }
 

@@ -1,3 +1,8 @@
+Sat Jun 26 12:15:59 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* cipher.h (MD_HANDLE): Assigned a structure name.
+
 Fri Apr  9 12:26:25 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* cipher.h (BLOWFISH160): Removed.

@@ -27,6 +27,9 @@
   #include <dlfcn.h>
 #elif defined(HAVE_DLD_DLD_LINK)
   #include <dld.h>
+#elif defined(HAVE_DL_SHL_LOAD)
+  #include <dl.h>
+  #include <errno.h>
 #endif
 #include "util.h"
 #include "cipher.h"
@@ -44,6 +47,27 @@
 #ifndef RTLD_NOW
   #define RTLD_NOW  1
 #endif
+
+#ifdef HAVE_DL_SHL_LOAD  /* HPUX has shl_load instead of dlopen */
+#define HAVE_DL_DLOPEN
+#define dlopen(PATHNAME,MODE) \
+    ((void *) shl_load(PATHNAME, DYNAMIC_PATH | \
+	      (((MODE) & RTLD_NOW) ? BIND_IMMEDIATE : BIND_DEFERRED), 0L))
+#define dlclose(HANDLE) shl_unload((shl_t) (HANDLE))
+#define dlerror() (errno == 0 ? NULL : strerror(errno))
+
+static void *
+dlsym(void *handle, char *name)
+{
+    void *addr;
+    if (shl_findsym((shl_t *)&handle,name,(short)TYPE_UNDEFINED,&addr) != 0) {
+      return NULL;
+    }
+    return addr;
+}
+#endif /*HAVE_DL_SHL_LOAD*/
+
+
 
 typedef struct ext_list {
     struct ext_list *next;

@@ -74,7 +74,7 @@ create_dotlock( const char *file_to_lock )
     int  fd = -1;
     char pidstr[16];
   #ifndef  HAVE_DOSISH_SYSTEM
-    struct utsname uts;
+    struct utsname utsbuf;
   #endif
     const char *nodename;
     const char *dirpart;
@@ -93,10 +93,10 @@ create_dotlock( const char *file_to_lock )
     /* fixme: add the hostname to the second line (FQDN or IP addr?) */
 
     /* create a temporary file */
-    if( uname( &uts ) )
+    if( uname( &utsbuf ) )
 	nodename = "unknown";
     else
-	nodename = uts.nodename;
+	nodename = utsbuf.nodename;
 
     if( !(dirpart = strrchr( file_to_lock, '/' )) ) {
 	dirpart = ".";

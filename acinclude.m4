@@ -204,9 +204,14 @@ define(GNUPG_CHECK_RDYNAMIC,
             CFLAGS_RDYNAMIC="-Wl,-dy"
             ;;
 
-          openbsd* | freebsd2* | osf4* )
+          hpux* )
+            CFLAGS_RDYNAMIC="-Wl,-E"
+            ;;
+
+          openbsd* | freebsd2* | osf4* | irix* )
             CFLAGS_RDYNAMIC=""
             ;;
+
           * )
             CFLAGS_RDYNAMIC="-Wl,-export-dynamic"
             ;;

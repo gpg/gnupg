@@ -408,6 +408,49 @@ do_ecb_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nblocks )
     }
 }
 
+static void
+do_cbc_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nblocks )
+{
+    unsigned int n;
+    byte *ivp;
+    int i;
+    size_t blocksize = c->blocksize;
+
+    for(n=0; n < nblocks; n++ ) {
+	/* fixme: the xor should works on words and not on
+	 * bytes.  Maybe it is a good idea to enhance the cipher backend
+	 * API to allow for CBC handling in the backend */
+	for(ivp=c->iv,i=0; i < blocksize; i++ )
+	    outbuf[i] ^= *ivp++;
+	(*c->encrypt)( &c->context.c, outbuf, outbuf );
+	memcpy(c->iv, outbuf, blocksize );
+	inbuf  += c->blocksize;
+	outbuf += c->blocksize;
+    }
+}
+
+static void
+do_cbc_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nblocks )
+{
+    unsigned int n;
+    byte *ivp;
+    int i;
+    size_t blocksize = c->blocksize;
+
+    for(n=0; n < nblocks; n++ ) {
+	/* because outbuf and inbuf might be the same, we have
+	 * to save the original ciphertext block.  We use lastiv
+	 * for this here because it is not used otherwise */
+	memcpy(c->lastiv, inbuf, blocksize );
+	(*c->decrypt)( &c->context.c, outbuf, inbuf );
+	for(ivp=c->iv,i=0; i < blocksize; i++ )
+	    outbuf[i] ^= *ivp++;
+	memcpy(c->iv, c->lastiv, blocksize );
+	inbuf  += c->blocksize;
+	outbuf += c->blocksize;
+    }
+}
+
 
 static void
 do_cfb_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
@@ -524,6 +567,10 @@ cipher_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
 	assert(!(nbytes%8));
 	do_ecb_encrypt(c, outbuf, inbuf, nbytes/8 );
 	break;
+      case CIPHER_MODE_CBC:
+	assert(!(nbytes%8));  /* fixme: should be blocksize */
+	do_cbc_encrypt(c, outbuf, inbuf, nbytes/8 );
+	break;
       case CIPHER_MODE_CFB:
       case CIPHER_MODE_PHILS_CFB:
 	do_cfb_encrypt(c, outbuf, inbuf, nbytes );
@@ -549,6 +596,10 @@ cipher_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
       case CIPHER_MODE_ECB:
 	assert(!(nbytes%8));
 	do_ecb_decrypt(c, outbuf, inbuf, nbytes/8 );
+	break;
+      case CIPHER_MODE_CBC:
+	assert(!(nbytes%8));	/* fixme: should assert on blocksize */
+	do_cbc_decrypt(c, outbuf, inbuf, nbytes/8 );
 	break;
       case CIPHER_MODE_CFB:
       case CIPHER_MODE_PHILS_CFB:
