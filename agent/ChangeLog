@@ -1,3 +1,18 @@
+2002-02-01  Werner Koch  <wk@gnupg.org>
+
+	* cache.c: Add a few debug outputs.
+
+	* protect.c (agent_private_key_type): New.
+	* agent.h: Add PRIVATE_KEY_ enums.
+	* findkey.c (agent_key_from_file): Use it to decide whether we
+	have to unprotect a key.
+	(unprotect): Cache the passphrase.
+	
+	* findkey.c (agent_key_from_file,agent_key_available): The key
+	files do now require a ".key" suffix to make a script's life
+	easier. 
+	* genkey.c (store_key): Ditto.
+
 2002-01-31  Werner Koch  <wk@gnupg.org>
 
 	* genkey.c (store_key): Protect the key.

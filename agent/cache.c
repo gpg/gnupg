@@ -89,6 +89,9 @@ housekeeping (void)
     {
       if (r->pw && r->accessed + r->ttl < current)
         {
+          if (DBG_CACHE)
+            log_debug ("  expired `%s' (%ds after last access)\n",
+                       r->key, r->ttl);
           release_data (r->pw);
           r->pw = NULL;
           r->accessed = current;
@@ -101,6 +104,8 @@ housekeeping (void)
     {
       if (r->pw && r->created + 60*60 < current)
         {
+          if (DBG_CACHE)
+            log_debug ("  expired `%s' (1h after creation)\n", r->key);
           release_data (r->pw);
           r->pw = NULL;
           r->accessed = current;
@@ -114,6 +119,8 @@ housekeeping (void)
       if (!r->pw && r->accessed + 60*30 < current)
         {
           ITEM r2 = r->next;
+          if (DBG_CACHE)
+            log_debug ("  removed `%s' (slot not used for 30m)\n", r->key);
           xfree (r);
           if (!rprev)
             thecache = r2;
@@ -140,6 +147,8 @@ agent_put_cache (const char *key, const char *data, int ttl)
 {
   ITEM r;
 
+  if (DBG_CACHE)
+    log_debug ("agent_put_cache `%s'\n", key);
   housekeeping ();
 
   if (ttl < 1)
@@ -198,6 +207,8 @@ agent_get_cache (const char *key)
   ITEM r;
   int count = 0;
 
+  if (DBG_CACHE)
+    log_debug ("agent_get_cache `%s'...\n", key);
   housekeeping ();
 
   /* FIXME: Returning pointers is not thread safe - add a referencense
@@ -209,9 +220,13 @@ agent_get_cache (const char *key)
           /* put_cache does only put strings into the cache, so we
              don't need the lengths */
           r->accessed = time (NULL);
+          if (DBG_CACHE)
+            log_debug ("... hit\n");
           return r->pw->data;
         }
     }
+  if (DBG_CACHE)
+    log_debug ("... miss\n");
 
   return NULL;
 }

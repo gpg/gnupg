@@ -31,16 +31,36 @@
 #include "agent.h"
 
 static int
-unprotect (unsigned char **keybuf)
+unprotect (unsigned char **keybuf, const unsigned char *grip)
 {
   struct pin_entry_info_s *pi;
-  int rc;
+  int rc, i;
   unsigned char *result;
   size_t resultlen;
   int tries = 0;
+  char hexgrip[40+1];
+  
+  for (i=0; i < 20; i++)
+    sprintf (hexgrip+2*i, "%02X", grip[i]);
+  hexgrip[40] = 0;
 
-  /* fixme: check whether the key needs unprotection */
-
+  /* first try to get it from the cache - if there is none or we can't
+     unprotect it, we fall back to ask the user */
+  {
+    const char *pw = agent_get_cache (hexgrip);
+    if (pw)
+      {
+        rc = agent_unprotect (*keybuf, pw, &result, &resultlen);
+        if (!rc)
+          {
+            xfree (*keybuf);
+            *keybuf = result;
+            return 0;
+          }
+        rc  = 0;
+      }
+  }
+  
   pi = gcry_calloc_secure (1, sizeof (*pi) + 100);
   pi->max_length = 100;
   pi->min_digits = 0;  /* we want a real passphrase */
@@ -55,6 +75,7 @@ unprotect (unsigned char **keybuf)
           rc = agent_unprotect (*keybuf, pi->pin, &result, &resultlen);
           if (!rc)
             {
+              agent_put_cache (hexgrip, pi->pin, 0);
               xfree (*keybuf);
               *keybuf = result;
               xfree (pi);
@@ -82,13 +103,13 @@ agent_key_from_file (const unsigned char *grip)
   unsigned char *buf;
   size_t len, buflen, erroff;
   GCRY_SEXP s_skey;
-  char hexgrip[41];
+  char hexgrip[40+4+1];
   
   for (i=0; i < 20; i++)
     sprintf (hexgrip+2*i, "%02X", grip[i]);
-  hexgrip[40] = 0;
+  strcpy (hexgrip+40, ".key");
 
-  fname = make_filename (opt.homedir, "private-keys-v1.d", hexgrip, NULL );
+  fname = make_filename (opt.homedir, "private-keys-v1.d", hexgrip, NULL);
   fp = fopen (fname, "rb");
   if (!fp)
     {
@@ -138,16 +159,32 @@ agent_key_from_file (const unsigned char *grip)
   assert (len);
   gcry_sexp_release (s_skey);
 
-  rc = unprotect (&buf);
+  switch (agent_private_key_type (buf))
+    {
+    case PRIVATE_KEY_CLEAR:
+      break; /* no unprotection needed */
+    case PRIVATE_KEY_PROTECTED:
+      rc = unprotect (&buf, grip);
+      if (rc)
+        log_error ("failed to unprotect the secret key: %s\n",
+                   gnupg_strerror (rc));
+      break;
+    case PRIVATE_KEY_SHADOWED:
+      log_error ("shadowed private keys are not yet supported\n");
+      rc = GNUPG_Not_Implemented;
+      break;
+    default:
+      log_error ("invalid private key format\n");
+      rc = GNUPG_Bad_Secret_Key;
+      break;
+    }
   if (rc)
     {
-      log_error ("failed to unprotect the secret key: %s\n",
-                 gcry_strerror (rc));
       xfree (buf);
       return NULL;
     }
 
-  /* arggg FIXME: does scna support secure memory? */
+  /* arggg FIXME: does scan support secure memory? */
   rc = gcry_sexp_sscan (&s_skey, &erroff,
                         buf, gcry_sexp_canon_len (buf, 0, NULL, NULL));
   xfree (buf);
@@ -168,13 +205,13 @@ agent_key_available (const unsigned char *grip)
 {
   int i;
   char *fname;
-  char hexgrip[41];
+  char hexgrip[40+4+1];
   
   for (i=0; i < 20; i++)
     sprintf (hexgrip+2*i, "%02X", grip[i]);
-  hexgrip[40] = 0;
+  strcpy (hexgrip+40, ".key");
 
-  fname = make_filename (opt.homedir, "private-keys-v1.d", hexgrip, NULL );
+  fname = make_filename (opt.homedir, "private-keys-v1.d", hexgrip, NULL);
   i = !access (fname, R_OK)? 0 : -1;
   xfree (fname);
   return i;

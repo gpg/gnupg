@@ -40,7 +40,7 @@ store_key (GCRY_SEXP private, const char *passphrase)
   char *buf;
   size_t len;
   unsigned char grip[20];
-  char hexgrip[41];
+  char hexgrip[40+4+1];
   
   if ( !gcry_pk_get_keygrip (private, grip) )
     {
@@ -49,7 +49,7 @@ store_key (GCRY_SEXP private, const char *passphrase)
     }
   for (i=0; i < 20; i++)
     sprintf (hexgrip+2*i, "%02X", grip[i]);
-  hexgrip[40] = 0;
+  strcpy (hexgrip+40, ".key");
 
   fname = make_filename (opt.homedir, "private-keys-v1.d", hexgrip, NULL);
   if (!access (fname, F_OK))

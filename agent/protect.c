@@ -776,6 +776,33 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
   return 0;
 }
 
+/* Check the type of the private key, this is one of the constants:
+   PRIVATE_KEY_UNKNOWN if we can't figure out the type (this is the
+   value 0), PRIVATE_KEY_CLEAR for an unprotected private key.
+   PRIVATE_KEY_PROTECTED for an protected private key or
+   PRIVATE_KEY_SHADOWED for a sub key where the secret parts are store
+   elsewhere. */
+int
+agent_private_key_type (const unsigned char *privatekey)
+{
+  const unsigned char *s;
+  size_t n;
+
+  s = privatekey;
+  if (*s != '(')
+    return PRIVATE_KEY_UNKNOWN;
+  s++;
+  n = snext (&s);
+  if (!n)
+    return PRIVATE_KEY_UNKNOWN;
+  if (smatch (&s, n, "protected-private-key"))
+    return PRIVATE_KEY_PROTECTED;
+  if (smatch (&s, n, "shadowed-private-key"))
+    return PRIVATE_KEY_SHADOWED;
+  if (smatch (&s, n, "private-key"))
+    return PRIVATE_KEY_CLEAR;
+  return PRIVATE_KEY_UNKNOWN;
+}
 
 
 

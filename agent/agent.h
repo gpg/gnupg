@@ -83,6 +83,13 @@ struct pin_entry_info_s {
 };
 
 
+enum {
+  PRIVATE_KEY_UNKNOWN = 0,
+  PRIVATE_KEY_CLEAR = 1,
+  PRIVATE_KEY_PROTECTED = 2,
+  PRIVATE_KEY_SHADOWED = 3
+};
+
 /*-- gpg-agent.c --*/
 void agent_exit (int rc); /* also implemented in other tools */
 
@@ -125,6 +132,7 @@ int agent_protect (const unsigned char *plainkey, const char *passphrase,
                    unsigned char **result, size_t *resultlen);
 int agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
                      unsigned char **result, size_t *resultlen);
+int agent_private_key_type (const unsigned char *privatekey);
 
 
 /*-- trustlist.c --*/
