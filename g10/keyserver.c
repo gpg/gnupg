@@ -177,7 +177,7 @@ printunquoted(char *string,char delim)
 }
 
 static int 
-print_keyinfo(int count,char *keystring,u32 *keyid)
+print_keyinfo(int count,char *keystring,KEYDB_SEARCH_DESC *desc)
 {
   char *certid,*userid,*keytype,*tok;
   int flags,keysize=0;
@@ -186,14 +186,12 @@ print_keyinfo(int count,char *keystring,u32 *keyid)
   if((certid=strsep(&keystring,":"))==NULL)
     return -1;
 
-  /* Ideally this is the long key ID, but HKP uses the short key
-     ID. */
-  if(sscanf(certid,"%08lX%08lX",(ulong *)&keyid[0],(ulong *)&keyid[1])!=2)
-    {
-      keyid[0]=0;
-      if(sscanf(certid,"%08lX",(ulong *)&keyid[1])!=1)
-	return -1;
-    }
+  classify_user_id (certid, desc);
+  if(desc->mode!=KEYDB_SEARCH_MODE_SHORT_KID &&
+     desc->mode!=KEYDB_SEARCH_MODE_LONG_KID &&
+     desc->mode!=KEYDB_SEARCH_MODE_FPR16 &&
+     desc->mode!=KEYDB_SEARCH_MODE_FPR20)
+    return -1;
 
   if((tok=strsep(&keystring,":"))==NULL)
     return -1;
@@ -249,7 +247,7 @@ print_keyinfo(int count,char *keystring,u32 *keyid)
   if(expiretime>0)
     printf(" expires %s,",strtimestamp(expiretime));
 
-  printf(" keyid %s\n",certid);
+  printf(" key %s\n",certid);
 
   return 0;
 }
@@ -258,7 +256,8 @@ print_keyinfo(int count,char *keystring,u32 *keyid)
 #define KEYSERVER_ARGS_NOKEEP " -o \"%o\" \"%i\""
 
 static int 
-keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count,int *prog)
+keyserver_spawn(int action,STRLIST list,
+		KEYDB_SEARCH_DESC *desc,int count,int *prog)
 {
   int ret=0,i,gotversion=0,outofband=0;
   STRLIST temp;
@@ -333,8 +332,37 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count,int *prog)
 	/* Which keys do we want? */
 
 	for(i=0;i<count;i++)
-	  fprintf(spawn->tochild,"0x%08lX%08lX\n",
-		  (ulong)kidlist[i][0],(ulong)kidlist[i][1]);
+	  {
+	    if(desc[i].mode==KEYDB_SEARCH_MODE_FPR20)
+	      {
+		int f;
+
+		fprintf(spawn->tochild,"0x");
+
+		for(f=0;f<MAX_FINGERPRINT_LEN;f++)
+		  fprintf(spawn->tochild,"%02X",(byte)desc[i].u.fpr[f]);
+
+		fprintf(spawn->tochild,"\n");
+	      }
+	    else if(desc[i].mode==KEYDB_SEARCH_MODE_FPR16)
+	      {
+		int f;
+
+		fprintf(spawn->tochild,"0x");
+
+		for(f=0;f<16;f++)
+		  fprintf(spawn->tochild,"%02X",(byte)desc[i].u.fpr[f]);
+
+		fprintf(spawn->tochild,"\n");
+	      }
+	    else if(desc[i].mode==KEYDB_SEARCH_MODE_LONG_KID)
+	      fprintf(spawn->tochild,"0x%08lX%08lX\n",
+		      (ulong)desc[i].u.kid[0],
+		      (ulong)desc[i].u.kid[1]);
+	    else
+	      fprintf(spawn->tochild,"0x%08lX\n",
+		      (ulong)desc[i].u.kid[1]);
+	  }
 
 	fprintf(spawn->tochild,"\n");
 
@@ -526,7 +554,7 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count,int *prog)
 }
 
 static int 
-keyserver_work(int action,STRLIST list,u32 (*kidlist)[2],int count)
+keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 {
   int rc=0,ret=0;
 
@@ -550,7 +578,7 @@ keyserver_work(int action,STRLIST list,u32 (*kidlist)[2],int count)
 	{
 	case GET:
 	  for(count--;count>=0;count--)
-	    if(hkp_ask_import(kidlist[count],stats_handle))
+	    if(hkp_ask_import(&desc[count],stats_handle))
 	      log_inc_errorcount();
 	  break;
 	case SEND:
@@ -568,7 +596,7 @@ keyserver_work(int action,STRLIST list,u32 (*kidlist)[2],int count)
 
   /* It's not the internal HKP code, so try and spawn a handler for it */
 
-  rc=keyserver_spawn(action,list,kidlist,count,&ret);
+  rc=keyserver_spawn(action,list,desc,count,&ret);
   if(ret)
     {
       switch(ret)
@@ -613,42 +641,37 @@ keyserver_export(STRLIST users)
 int 
 keyserver_import(STRLIST users)
 {
-  u32 (*kidlist)[2];
+  KEYDB_SEARCH_DESC *desc;
   int num=100,count=0;
   int rc=0;
 
   /* Build a list of key ids */
-
-  kidlist=m_alloc(sizeof(u32)*2*num);
+  desc=m_alloc(sizeof(KEYDB_SEARCH_DESC)*num);
 
   for(;users;users=users->next)
     {
-      KEYDB_SEARCH_DESC desc;
-
-      classify_user_id (users->d, &desc);
-      if(desc.mode==KEYDB_SEARCH_MODE_SHORT_KID ||
-	 desc.mode==KEYDB_SEARCH_MODE_LONG_KID)
+      classify_user_id (users->d, &desc[count]);
+      if(desc[count].mode!=KEYDB_SEARCH_MODE_SHORT_KID &&
+	 desc[count].mode!=KEYDB_SEARCH_MODE_LONG_KID &&
+	 desc[count].mode!=KEYDB_SEARCH_MODE_FPR16 &&
+	 desc[count].mode!=KEYDB_SEARCH_MODE_FPR20)
 	{
-	  kidlist[count][0]=desc.u.kid[0]; 
-	  kidlist[count][1]=desc.u.kid[1]; 
-	  count++;
-	  if(count==num)
-	    {
-	      num+=100;
-	      kidlist=m_realloc(kidlist,sizeof(u32)*2*num);
-	    }
-	}
-      else
-	{
-	  log_error (_("skipping invalid key ID \"%s\"\n"), users->d );
+	  log_error(_("skipping invalid key ID \"%s\"\n"),users->d);
 	  continue;
+	}
+
+      count++;
+      if(count==num)
+	{
+	  num+=100;
+	  desc=m_realloc(desc,sizeof(KEYDB_SEARCH_DESC)*num);
 	}
     }
 
   if(count>0)
-    rc=keyserver_work(GET,NULL,kidlist,count);
+    rc=keyserver_work(GET,NULL,desc,count);
 
-  m_free(kidlist);
+  m_free(desc);
 
   return rc;
 }
@@ -673,7 +696,7 @@ keyserver_import_keyid(u32 *keyid)
 
 /* code mostly stolen from do_export_stream */
 static int 
-keyidlist(STRLIST users,u32 (**kidlist)[2],int *count,int fakev3)
+keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 {
   int rc=0,ndesc,num=100;
   KBNODE keyblock=NULL,node;
@@ -683,7 +706,7 @@ keyidlist(STRLIST users,u32 (**kidlist)[2],int *count,int fakev3)
 
   *count=0;
 
-  *kidlist=m_alloc(sizeof(u32)*2*num);
+  *klist=m_alloc(sizeof(KEYDB_SEARCH_DESC)*num);
 
   kdbhd=keydb_new(0);
 
@@ -734,37 +757,56 @@ keyidlist(STRLIST users,u32 (**kidlist)[2],int *count,int fakev3)
 	  if(fakev3 && is_RSA(node->pkt->pkt.public_key->pubkey_algo) &&
 	     node->pkt->pkt.public_key->version>=4)
 	    {
+	      (*klist)[*count].mode=KEYDB_SEARCH_MODE_LONG_KID;
 	      mpi_get_keyid(node->pkt->pkt.public_key->pkey[0],
-			    (*kidlist)[*count]);
+			    (*klist)[*count].u.kid);
 	      (*count)++;
 
 	      if(*count==num)
 		{
 		  num+=100;
-		  *kidlist=m_realloc(*kidlist,sizeof(u32)*2*num);
+		  *klist=m_realloc(*klist,sizeof(KEYDB_SEARCH_DESC)*num);
 		}
 	    }
 
-	  keyid_from_pk(node->pkt->pkt.public_key,(*kidlist)[*count]);
+	  /* v4 keys get full fingerprints.  v3 keys get long keyids.
+             This is because it's easy to calculate any sort of key id
+             from a v4 fingerprint, but not a v3 fingerprint. */
+
+	  if(node->pkt->pkt.public_key->version<4)
+	    {
+	      (*klist)[*count].mode=KEYDB_SEARCH_MODE_LONG_KID;
+	      keyid_from_pk(node->pkt->pkt.public_key,
+			    (*klist)[*count].u.kid);
+	    }
+	  else
+	    {
+	      size_t dummy;
+
+	      (*klist)[*count].mode=KEYDB_SEARCH_MODE_FPR20;
+	      fingerprint_from_pk(node->pkt->pkt.public_key,
+				  (*klist)[*count].u.fpr,&dummy);
+	    }
 
 	  (*count)++;
 
 	  if(*count==num)
 	    {
 	      num+=100;
-	      *kidlist=m_realloc(*kidlist,sizeof(u32)*2*num);
+	      *klist=m_realloc(*klist,sizeof(KEYDB_SEARCH_DESC)*num);
 	    }
 	}
     }
 
-  if( rc == -1 )
-    rc = 0;
+  if(rc==-1)
+    rc=0;
+  
+ leave:
+  m_free(desc);
+  keydb_release(kdbhd);
+  release_kbnode(keyblock);
 
-  leave:
-    keydb_release(kdbhd);
-    release_kbnode(keyblock);
-
-    return rc;
+  return rc;
 }
 
 /* Note this is different than the original HKP refresh.  It allows
@@ -774,7 +816,7 @@ int
 keyserver_refresh(STRLIST users)
 {
   int rc,count,fakev3=0;
-  u32 (*kidlist)[2];
+  KEYDB_SEARCH_DESC *desc;
 
   /* If refresh_add_fake_v3_keyids is on and it's a HKP scheme, then
      enable fake v3 keyid generation. */
@@ -785,7 +827,7 @@ keyserver_refresh(STRLIST users)
       strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0))
     fakev3=1;
 
-  rc=keyidlist(users,&kidlist,&count,fakev3);
+  rc=keyidlist(users,&desc,&count,fakev3);
   if(rc)
     return rc;
 
@@ -795,9 +837,9 @@ keyserver_refresh(STRLIST users)
     log_info(_("%d keys to refresh\n"),count);
 
   if(count>0)
-    rc=keyserver_work(GET,NULL,kidlist,count);
+    rc=keyserver_work(GET,NULL,desc,count);
 
-  m_free(kidlist);
+  m_free(desc);
 
   return 0;
 }
@@ -819,7 +861,7 @@ keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
 {
   int i=0,validcount=1;
   unsigned int maxlen=256,buflen=0;
-  u32 (*keyids)[2];
+  KEYDB_SEARCH_DESC *desc;
   byte *line=NULL;
   char *answer;
 
@@ -832,7 +874,7 @@ keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
       count=1;
     }
 
-  keyids=m_alloc(count*sizeof(u32)*2);
+  desc=m_alloc(count*sizeof(KEYDB_SEARCH_DESC));
 
   /* Read each line and show it to the user */
 
@@ -843,7 +885,7 @@ keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
       if(i==count)
 	{
 	  count++;
-	  keyids=m_realloc(keyids,count*sizeof(u32)*2);
+	  desc=m_realloc(desc,count*sizeof(KEYDB_SEARCH_DESC));
 	  validcount=0;
 	}
 
@@ -861,7 +903,7 @@ keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
       rl=iobuf_read_line(buffer,&line,&buflen,&maxlen);
       if(rl>0)
 	{
-	  if(print_keyinfo(i,line,keyids[i-1]))
+	  if(print_keyinfo(i,line,&desc[i-1])==-1)
 	    continue;
 	}
       else
@@ -888,7 +930,7 @@ keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
 
 	      while((num=strsep(&split," ,"))!=NULL)
 		if(atoi(num)>=1 && atoi(num)<=i)
-		  keyserver_work(GET,NULL,&keyids[atoi(num)-1],1);
+		  keyserver_work(GET,NULL,&desc[atoi(num)-1],1);
 
 	      m_free(answer);
 	      break;
@@ -896,7 +938,7 @@ keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
 	}
     }
 
-  m_free(keyids);
+  m_free(desc);
   m_free(line);
 
  notfound:

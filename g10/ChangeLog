@@ -1,4 +1,19 @@
-2002-03-12  David Shaw  <dshaw@jabberwocky.com>
+2002-02-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* hkp.c (hkp_ask_import), hkp.h, keyserver.c (all): treat key
+	lists internally as fingerprints when possible.  All this is via
+	KEYDB_SEARCH_DESC - no point in reinventing the wheel. This allows
+	the helper program to search the keyserver by fingerprint if
+	desired (and the keyserver supports it).  Note that automatic
+	fingerprint promotion during refresh only applies to v4 keys as a
+	v4 fingerprint can be easily changed into a long or short key id,
+	and a v3 cannot.
+
+	* pubkey-enc.c, getkey.c, misc.c, main.h: Take two copies of
+	hextobyte() from pubkey-enc.c and getkey.c and make them into one
+	copy in misc.c.
+
+2002-02-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_search_prompt): Detect a "no keys found"
 	case even if the helper program does not explicitly say how many

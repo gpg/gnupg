@@ -263,31 +263,6 @@ get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 }
 
 
-static int
-hextobyte( const char *s )
-{
-    int c;
-
-    if( *s >= '0' && *s <= '9' )
-	c = 16 * (*s - '0');
-    else if( *s >= 'A' && *s <= 'F' )
-	c = 16 * (10 + *s - 'A');
-    else if( *s >= 'a' && *s <= 'f' )
-	c = 16 * (10 + *s - 'a');
-    else
-	return -1;
-    s++;
-    if( *s >= '0' && *s <= '9' )
-	c += *s - '0';
-    else if( *s >= 'A' && *s <= 'F' )
-	c += 10 + *s - 'A';
-    else if( *s >= 'a' && *s <= 'f' )
-	c += 10 + *s - 'a';
-    else
-	return -1;
-    return c;
-}
-
 /****************
  * Get the session key from the given string.
  * String is supposed to be formatted as this:

@@ -48,15 +48,27 @@ static int urlencode_filter( void *opaque, int control,
  *	    or other error codes.
  */
 int
-hkp_ask_import( u32 *keyid, void *stats_handle)
+hkp_ask_import( KEYDB_SEARCH_DESC *desc, void *stats_handle)
 {
     struct http_context hd;
     char *request;
     int rc;
     unsigned int hflags = opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY : 0;
+    u32 key[2];
+
+    if(desc->mode==KEYDB_SEARCH_MODE_FPR20)
+      keyid_from_fingerprint(desc->u.fpr,MAX_FINGERPRINT_LEN,key);
+    else if(desc->mode==KEYDB_SEARCH_MODE_LONG_KID ||
+	    desc->mode==KEYDB_SEARCH_MODE_SHORT_KID)
+      {
+	key[0]=desc->u.kid[0];
+	key[1]=desc->u.kid[1];
+      }
+    else
+      return -1; /* HKP does not support v3 fingerprints */
 
     log_info(_("requesting key %08lX from HKP keyserver %s\n"),
-	     (ulong)keyid[1],opt.keyserver_host );
+	     (ulong)key[1],opt.keyserver_host );
     request = m_alloc( strlen( opt.keyserver_host ) + 100 );
     /* hkp does not accept the long keyid - we should really write a
      * nicer one :-)
@@ -72,7 +84,7 @@ hkp_ask_import( u32 *keyid, void *stats_handle)
 	    opt.keyserver_host,
 	    atoi(opt.keyserver_port)>0?":":"",
 	    atoi(opt.keyserver_port)>0?opt.keyserver_port:"",
-	    (ulong)keyid[1] );
+	    (ulong)key[1] );
 
   if(opt.keyserver_options.verbose>2)
     log_info("request is \"%s\"\n",request);
