@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: NewPG 0.9.3\n"
-"POT-Creation-Date: 2002-12-04 20:14+0100\n"
+"POT-Creation-Date: 2003-04-29 12:08+0200\n"
 "PO-Revision-Date: 2002-08-21 13:13+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: de\n"
@@ -205,12 +205,12 @@ msgstr "Problem mit dem Agenten\n"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "Bitte geben Sie die PIN%s%s%s ein um die Karte zu entsperren"
 
-#. okay
 #: agent/genkey.c:82
 msgid "does not match - try again"
 msgstr "Keine Übereinstimmung - bitte nochmal versuchen"
 
 #: agent/genkey.c:109
+#, c-format
 msgid "Please enter the passphrase to%0Ato protect your new key"
 msgstr ""
 "Bitte geben Sie das Mantra (Passphrase) ein%0Aum Ihren Schlüssel zu schützen"
@@ -738,8 +738,6 @@ msgstr ""
 msgid "always use a MDC for encryption"
 msgstr ""
 
-#. { oInteractive, "interactive", 0, N_("prompt before overwriting") },
-#. { oUseAgent, "use-agent",0, N_("use the gpg-agent")},
 #: sm/gpgsm.c:298
 msgid "batch mode: never ask"
 msgstr "Stapelverarbeitungs Modus: Nie nachfragen"
