@@ -598,7 +598,7 @@ show_prompt(KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
 
 /* Count and searchstr are just for cosmetics.  If the count is too
    small, it will grow safely.  If negative it disables the "Key x-y
-   of z" messages. */
+   of z" messages.  searchstr should be UTF-8 (rather than native). */
 static void
 keyserver_search_prompt(IOBUF buffer,const char *searchstr)
 {
@@ -606,6 +606,10 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
   unsigned int maxlen,buflen,numlines=0;
   KEYDB_SEARCH_DESC *desc;
   byte *line=NULL;
+  char *localstr=NULL;
+
+  if(searchstr)
+    localstr=utf8_to_native(searchstr,strlen(searchstr),0);
 
   desc=m_alloc(count*sizeof(KEYDB_SEARCH_DESC));
 
@@ -686,7 +690,7 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
 
 	      for(;;)
 		{
-		  if(show_prompt(desc,i,validcount?count:0,searchstr))
+		  if(show_prompt(desc,i,validcount?count:0,localstr))
 		    break;
 		  validcount=0;
 		}
@@ -715,7 +719,7 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
 	      /* screen_lines - 1 for the prompt. */
 	      if(numlines+keyrec->lines>opt.screen_lines-1)
 		{
-		  if(show_prompt(desc,i,validcount?count:0,searchstr))
+		  if(show_prompt(desc,i,validcount?count:0,localstr))
 		    break;
 		  else
 		    numlines=0;
@@ -733,18 +737,18 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
 	}
     }
 
-  m_free(desc);
-  m_free(line);
-
  notfound:
   if(count==0)
     {
-      if(searchstr)
-	log_info(_("key \"%s\" not found on keyserver\n"),searchstr);
+      if(localstr)
+	log_info(_("key \"%s\" not found on keyserver\n"),localstr);
       else
 	log_info(_("key not found on keyserver\n"));
-      return;
     }
+
+  m_free(localstr);
+  m_free(desc);
+  m_free(line);
 }
 
 #define KEYSERVER_ARGS_KEEP " -o \"%O\" \"%I\""
@@ -1426,6 +1430,12 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 	      fingerprint_from_pk(node->pkt->pkt.public_key,
 				  (*klist)[*count].u.fpr,&dummy);
 	    }
+
+	  /* This is a little hackish, using the skipfncvalue as a
+	     void* pointer to the keyserver spec, but we don't need
+	     the skipfnc here, and it saves having an additional field
+	     for this (which would be wasted space most of the
+	     time). */
 
 	  (*klist)[*count].skipfncvalue=NULL;
 
