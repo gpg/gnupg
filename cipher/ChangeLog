@@ -1,3 +1,7 @@
+2001-12-19  Werner Koch  <wk@gnupg.org>
+
+	* rndw32.c [CYGWIN32]: Include winioctl.h.  By Disastry.
+
 2001-11-08  Werner Koch  <wk@gnupg.org>
 
 	* primegen.c (gen_prime): Set 2 high order bits for secret primes.
