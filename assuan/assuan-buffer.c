@@ -149,3 +149,99 @@ _assuan_write_line (ASSUAN_CONTEXT ctx, const char *line )
   return rc;
 }
 
+
+
+/* Write out the data in buffer as datalines with line wrapping and
+   percent escaping.  This fucntion is used for GNU's custom streams */
+int
+_assuan_cookie_write_data (void *cookie, const char *buffer, size_t size)
+{
+  ASSUAN_CONTEXT ctx = cookie;
+  char *line;
+  size_t linelen;
+
+  if (ctx->outbound.data.error)
+    return 0;
+
+  line = ctx->outbound.data.line;
+  linelen = ctx->outbound.data.linelen;
+  line += linelen;
+  while (size)
+    {
+      /* insert data line header */
+      if (!linelen)
+        {
+          *line++ = 'D';
+          *line++ = ' ';
+          linelen += 2;
+        }
+      
+      /* copy data, keep some space for the CRLF and to escape one character */
+      while (size && linelen < LINELENGTH-2-2)
+        {
+          if (*buffer == '%' || *buffer == '\r' || *buffer == '\n')
+            {
+              sprintf (line, "%%%02X", *(unsigned char*)buffer);
+              line += 3;
+              linelen += 3;
+              buffer++;
+            }
+          else
+            {
+              *line++ = *buffer++;
+              linelen++;
+            }
+          size--;
+        }
+      
+      if (linelen >= LINELENGTH-2-2)
+        {
+          *line++ = '\n';
+          linelen++;
+          if (writen (ctx->outbound.fd, ctx->outbound.data.line, linelen))
+            {
+              ctx->outbound.data.error = ASSUAN_Write_Error;
+              return 0;
+            }
+          line = ctx->outbound.data.line;
+          linelen = 0;
+        }
+    }
+
+  ctx->outbound.data.linelen = linelen;
+  return 0;
+}
+
+
+/* Write out any buffered data 
+   This fucntion is used for GNU's custom streams */
+int
+_assuan_cookie_write_flush (void *cookie)
+{
+  ASSUAN_CONTEXT ctx = cookie;
+  char *line;
+  size_t linelen;
+
+  if (ctx->outbound.data.error)
+    return 0;
+
+  line = ctx->outbound.data.line;
+  linelen = ctx->outbound.data.linelen;
+  line += linelen;
+  if (linelen)
+    {
+      *line++ = '\n';
+      linelen++;
+      if (writen (ctx->outbound.fd, ctx->outbound.data.line, linelen))
+        {
+          ctx->outbound.data.error = ASSUAN_Write_Error;
+          return 0;
+        }
+      ctx->outbound.data.linelen = 0;
+    }
+  return 0;
+}
+
+
+
+

@@ -49,6 +49,12 @@ struct assuan_context_s {
 
   struct {
     int fd;
+    struct {
+      FILE *fp;
+      char line[LINELENGTH];
+      int linelen; 
+      int error;
+    } data; 
   } outbound;
 
   int pipe_mode;  /* We are in pipe mode, i.e. we can handle just one
@@ -74,6 +80,9 @@ int _assuan_register_std_commands (ASSUAN_CONTEXT ctx);
 /*-- assuan-buffer.c --*/
 int _assuan_write_line (ASSUAN_CONTEXT ctx, const char *line);
 int _assuan_read_line (ASSUAN_CONTEXT ctx);
+int _assuan_cookie_write_data (void *cookie, const char *buffer, size_t size);
+int _assuan_cookie_write_flush (void *cookie);
+
 
 
 

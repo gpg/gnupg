@@ -192,11 +192,11 @@ assuan_register_command (ASSUAN_CONTEXT ctx,
   if (!cmd_name)
     return ASSUAN_Invalid_Value;
 
-  fprintf (stderr, "DBG-assuan: registering %d as `%s'\n", cmd_id, cmd_name);
+/*    fprintf (stderr, "DBG-assuan: registering %d as `%s'\n", cmd_id, cmd_name); */
 
   if (!ctx->cmdtbl)
     {
-      ctx->cmdtbl_size = 10;
+      ctx->cmdtbl_size = 50;
       ctx->cmdtbl = xtrycalloc ( ctx->cmdtbl_size, sizeof *ctx->cmdtbl);
       if (!ctx->cmdtbl)
         return ASSUAN_Out_Of_Core;
@@ -206,13 +206,11 @@ assuan_register_command (ASSUAN_CONTEXT ctx,
     {
       struct cmdtbl_s *x;
 
-      fprintf (stderr, "DBG-assuan: enlarging cmdtbl\n");
-      
       x = xtryrealloc ( ctx->cmdtbl, (ctx->cmdtbl_size+10) * sizeof *x);
       if (!x)
         return ASSUAN_Out_Of_Core;
       ctx->cmdtbl = x;
-      ctx->cmdtbl_size += 10;
+      ctx->cmdtbl_size += 50;
     }
 
   ctx->cmdtbl[ctx->cmdtbl_used].name = cmd_name;
@@ -285,7 +283,7 @@ dispatch_command (ASSUAN_CONTEXT ctx, char *line, int linelen)
   line += shift;
   linelen -= shift;
 
-  fprintf (stderr, "DBG-assuan: processing %s `%s'\n", s, line);
+/*    fprintf (stderr, "DBG-assuan: processing %s `%s'\n", s, line); */
   return ctx->cmdtbl[i].handler (ctx, line);
 }
 
@@ -316,15 +314,28 @@ assuan_process (ASSUAN_CONTEXT ctx)
         if (rc)
           return rc;
       
-        fprintf (stderr, "DBG-assuan: got %d bytes `%s'\n",
-                 ctx->inbound.linelen, ctx->inbound.line);
+/*          fprintf (stderr, "DBG-assuan: got %d bytes `%s'\n", */
+/*                   ctx->inbound.linelen, ctx->inbound.line); */
       }
     while ( *ctx->inbound.line == '#' || !ctx->inbound.linelen);
-  
-    /* dispatch comamnd and return reply */
+
+    ctx->outbound.data.error = 0;
+    ctx->outbound.data.linelen = 0;
+    /* dispatch command and return reply */
     rc = dispatch_command (ctx, ctx->inbound.line, ctx->inbound.linelen);
+    /* check from data write errors */
+    if (ctx->outbound.data.fp)
+      { /* Flush the data lines */
+        fclose (ctx->outbound.data.fp);
+        ctx->outbound.data.fp = NULL;
+        if (!rc && ctx->outbound.data.error)
+          rc = ctx->outbound.data.error;
+      }
+    /* Error handling */
     if (!rc)
-      rc = _assuan_write_line (ctx, "OK");
+      {
+        rc = _assuan_write_line (ctx, "OK");
+      }
     else if (rc == -1)
       { /* No error checking because the peer may have already disconnect */ 
         _assuan_write_line (ctx, "OK  Bye, bye - hope to meet you again");
@@ -351,6 +362,33 @@ assuan_process (ASSUAN_CONTEXT ctx)
     rc = 0;
 
   return rc;
+}
+
+
+/* Return a FP to be used for data output.  The FILE pointer is valid
+   until the end of a handler.  So a close is not needed.  Assuan does
+   all the buffering needed to insert the status line as well as the
+   required line wappping and quoting for data lines.
+
+   We use GNU's custom streams here.  There should be an alternative
+   implementaion for systems w/o a glibc, a simple implementation
+   could use a child process */
+FILE *
+assuan_get_data_fp (ASSUAN_CONTEXT ctx)
+{
+  cookie_io_functions_t cookie_fnc;
+
+  if (ctx->outbound.data.fp)
+    return ctx->outbound.data.fp;
+  
+  cookie_fnc.read = NULL; 
+  cookie_fnc.write = _assuan_cookie_write_data;
+  cookie_fnc.seek = NULL;
+  cookie_fnc.close = _assuan_cookie_write_flush;
+
+  ctx->outbound.data.fp = fopencookie (ctx, "wb", cookie_fnc);
+  ctx->outbound.data.error = 0;
+  return ctx->outbound.data.fp;
 }
 
 
@@ -391,8 +429,3 @@ assuan_write_status (ASSUAN_CONTEXT ctx, const char *keyword, const char *text)
       xfree (helpbuf);
     }
 }
-
-
-
-
-

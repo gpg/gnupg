@@ -80,6 +80,7 @@ int assuan_register_command (ASSUAN_CONTEXT ctx,
                              int cmd_id, const char *cmd_string,
                              int (*handler)(ASSUAN_CONTEXT, char *));
 int assuan_process (ASSUAN_CONTEXT ctx);
+FILE *assuan_get_data_fp (ASSUAN_CONTEXT ctx);
 void assuan_write_status (ASSUAN_CONTEXT ctx,
                           const char *keyword, const char *text);
 
