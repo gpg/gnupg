@@ -69,6 +69,10 @@ struct assuan_context_s {
   size_t cmdtbl_used; /* used entries */
   size_t cmdtbl_size; /* allocated size of table */
 
+  void (*bye_notify_fnc)(ASSUAN_CONTEXT);
+  void (*cancel_notify_fnc)(ASSUAN_CONTEXT);
+  void (*reset_notify_fnc)(ASSUAN_CONTEXT);
+
 
   int input_fd;   /* set by INPUT command */
   int output_fd;  /* set by OUTPUT command */

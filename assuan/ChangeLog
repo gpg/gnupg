@@ -1,3 +1,10 @@
+2001-11-25  Werner Koch  <wk@gnupg.org>
+
+	* assuan-handler.c (assuan_register_bye_notify)
+	(assuan_register_reset_notify)
+	(assuan_register_cancel_notify): New and call them from the
+	standard handlers.
+
 2001-11-24  Werner Koch  <wk@gnupg.org>
 
 	* assuan-connect.c (assuan_get_pid): New.

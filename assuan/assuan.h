@@ -39,6 +39,7 @@ typedef enum {
   ASSUAN_Timeout = 4,  
   ASSUAN_Read_Error = 5,
   ASSUAN_Write_Error = 6,
+  ASSUAN_Problem_Starting_Server = 7,
 
   /* error codes above 99 are meant as status codes */
   ASSUAN_Not_Implemented = 100,
@@ -53,6 +54,7 @@ typedef enum {
   ASSUAN_No_Input = 109,
   ASSUAN_No_Output = 110,
   ASSUAN_Canceled = 111,
+  ASSUAN_Unsupported_Algorithm = 112,
 
   ASSUAN_Cert_Revoked = 301,
   ASSUAN_No_CRL_For_Cert = 302,
@@ -83,6 +85,12 @@ typedef struct assuan_context_s *ASSUAN_CONTEXT;
 int assuan_register_command (ASSUAN_CONTEXT ctx,
                              int cmd_id, const char *cmd_string,
                              int (*handler)(ASSUAN_CONTEXT, char *));
+int assuan_register_bye_notify (ASSUAN_CONTEXT ctx,
+                                void (*fnc)(ASSUAN_CONTEXT));
+int assuan_register_reset_notify (ASSUAN_CONTEXT ctx,
+                                  void (*fnc)(ASSUAN_CONTEXT));
+int assuan_register_cancel_notify (ASSUAN_CONTEXT ctx,
+                                   void (*fnc)(ASSUAN_CONTEXT));
 int assuan_process (ASSUAN_CONTEXT ctx);
 FILE *assuan_get_data_fp (ASSUAN_CONTEXT ctx);
 void assuan_write_status (ASSUAN_CONTEXT ctx,

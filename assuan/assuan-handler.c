@@ -44,12 +44,16 @@ std_handler_nop (ASSUAN_CONTEXT ctx, char *line)
 static int
 std_handler_cancel (ASSUAN_CONTEXT ctx, char *line)
 {
+  if (ctx->cancel_notify_fnc)
+    ctx->cancel_notify_fnc (ctx);
   return set_error (ctx, Not_Implemented, NULL); 
 }
   
 static int
 std_handler_bye (ASSUAN_CONTEXT ctx, char *line)
 {
+  if (ctx->bye_notify_fnc)
+    ctx->bye_notify_fnc (ctx);
   return -1; /* pretty simple :-) */
 }
   
@@ -62,7 +66,9 @@ std_handler_auth (ASSUAN_CONTEXT ctx, char *line)
 static int
 std_handler_reset (ASSUAN_CONTEXT ctx, char *line)
 {
-  return set_error (ctx, Not_Implemented, NULL); 
+  if (ctx->reset_notify_fnc)
+    ctx->reset_notify_fnc (ctx);
+  return 0;
 }
   
 static int
@@ -128,7 +134,7 @@ static struct {
   const char *name;
   int cmd_id;
   int (*handler)(ASSUAN_CONTEXT, char *line);
-  int always; /* always initializethis command */
+  int always; /* always initialize this command */
 } std_cmd_table[] = {
   { "NOP",    ASSUAN_CMD_NOP,    std_handler_nop, 1 },
   { "CANCEL", ASSUAN_CMD_CANCEL, std_handler_cancel, 1 },
@@ -219,6 +225,34 @@ assuan_register_command (ASSUAN_CONTEXT ctx,
   ctx->cmdtbl_used++;
   return 0;
 }
+
+int
+assuan_register_bye_notify (ASSUAN_CONTEXT ctx, void (*fnc)(ASSUAN_CONTEXT))
+{
+  if (!ctx)
+    return ASSUAN_Invalid_Value;
+  ctx->bye_notify_fnc = fnc;
+  return 0;
+}
+
+int
+assuan_register_reset_notify (ASSUAN_CONTEXT ctx, void (*fnc)(ASSUAN_CONTEXT))
+{
+  if (!ctx)
+    return ASSUAN_Invalid_Value;
+  ctx->reset_notify_fnc = fnc;
+  return 0;
+}
+
+int
+assuan_register_cancel_notify (ASSUAN_CONTEXT ctx, void (*fnc)(ASSUAN_CONTEXT))
+{
+  if (!ctx)
+    return ASSUAN_Invalid_Value;
+  ctx->cancel_notify_fnc = fnc;
+  return 0;
+}
+
 
 /* Helper to register the standards commands */
 int
