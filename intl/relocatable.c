@@ -42,7 +42,12 @@
 #ifdef NO_XMALLOC
 # define xmalloc malloc
 #else
-# include "xmalloc.h"
+# include "xalloc.h"
+#endif
+
+#if defined _WIN32 || defined __WIN32__
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
 #endif
 
 #if DEPENDS_ON_LIBCHARSET
@@ -151,6 +156,8 @@ set_relocation_prefix (const char *orig_prefix_arg, const char *curr_prefix_arg)
   libintl_set_relocation_prefix (orig_prefix_arg, curr_prefix_arg);
 #endif
 }
+
+#if !defined IN_LIBRARY || (defined PIC && defined INSTALLDIR)
 
 /* Convenience function:
    Computes the current installation prefix, based on the original
@@ -266,6 +273,8 @@ compute_curr_prefix (const char *orig_installprefix,
   }
 }
 
+#endif /* !IN_LIBRARY || PIC */
+
 #if defined PIC && defined INSTALLDIR
 
 /* Full pathname of shared library, or NULL.  */
@@ -304,7 +313,8 @@ DllMain (HINSTANCE module_handle, DWORD event, LPVOID reserved)
 static void
 find_shared_library_fullname ()
 {
-#ifdef __linux__
+#if defined __linux__ && __GLIBC__ >= 2
+  /* Linux has /proc/self/maps. glibc 2 has the getline() function.  */
   FILE *fp;
 
   /* Open the current process' maps file.  It describes one VMA per line.  */

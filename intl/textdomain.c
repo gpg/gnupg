@@ -1,5 +1,5 @@
 /* Implementation of the textdomain(3) function.
-   Copyright (C) 1995-1998, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998, 2000-2003 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU Library General Public License as published
@@ -77,8 +77,7 @@ __libc_rwlock_define (extern, _nl_state_lock attribute_hidden)
    If DOMAINNAME is null, return the current default.
    If DOMAINNAME is "", reset to the default of "messages".  */
 char *
-TEXTDOMAIN (domainname)
-     const char *domainname;
+TEXTDOMAIN (const char *domainname)
 {
   char *new_domain;
   char *old_domain;

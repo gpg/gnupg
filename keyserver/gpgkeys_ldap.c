@@ -28,7 +28,14 @@
 #endif
 #include <stdlib.h>
 #include <errno.h>
+
+#ifdef _WIN32
+#include <winsock2.h>
+#include <winldap.h>
+#else
 #include <ldap.h>
+#endif
+
 #include "util.h"
 #include "keyserver.h"
 

@@ -28,9 +28,7 @@
 
 /* Print an ASCII string with quotes and escape sequences where needed.  */
 static void
-print_escaped (stream, str)
-     FILE *stream;
-     const char *str;
+print_escaped (FILE *stream, const char *str)
 {
   putc ('"', stream);
   for (; *str != '\0'; str++)
@@ -52,12 +50,8 @@ print_escaped (stream, str)
 
 /* Add to the log file an entry denoting a failed translation.  */
 void
-_nl_log_untranslated (logfilename, domainname, msgid1, msgid2, plural)
-     const char *logfilename;
-     const char *domainname;
-     const char *msgid1;
-     const char *msgid2;
-     int plural;
+_nl_log_untranslated (const char *logfilename, const char *domainname,
+		      const char *msgid1, const char *msgid2, int plural)
 {
   static char *last_logfilename = NULL;
   static FILE *last_logfile = NULL;

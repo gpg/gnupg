@@ -1,3 +1,8 @@
+2004-07-27  Werner Koch  <wk@g10code.de>
+
+	* autogen.sh: Updated to the moder version, grepping the required
+	tool versions from configure.ac.
+
 2004-06-14  Werner Koch  <wk@gnupg.org>
 
 	* mk-w32-dist: Do not include the en@* po files.

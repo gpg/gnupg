@@ -1,3 +1,13 @@
+2004-07-27  Werner Koch  <wk@g10code.de>
+
+	* LINGUAS: Added all languages we supported in 1.2.5.
+	Copied all po files from 1.2.5.
+
+2004-07-27  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* Makefile.in.in: Upgrade to gettext-0.14.1.
+	* Rules-quot: Upgrade to gettext-0.14.1.
+
 2003-11-27  Werner Koch  <wk@gnupg.org>
 
 	* de.po: Updated some fuzzys.

@@ -1,3 +1,8 @@
+2004-07-27  Werner Koch  <wk@g10code.de>
+
+	* configure.ac (AM_GNU_GETTEXT_VERSION): New.
+	(min_automake_version): New.
+
 2004-05-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Try for wldap32 on Win32 platforms.

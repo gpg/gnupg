@@ -1,4 +1,16 @@
-
+  * From: Nicolas Sierro 
+    Date: Thu, 17 Jun 2004 12:31:24 +0200
+    
+    I understand your concern regarding the GNU coding standards. In
+    zlib-1.2.1, apart from several bug fixes, the inflate code is about
+    20% faster and the crc32 code about 50% faster. Some memory leaks were
+    also fixed according to the ChangeLog.
+    
+    If it can help you, here is what I did to update the distribution is
+    to remove all files in the zlib folder except Makefile.am. To copy all
+    the file in the zlib121.zip archive to the zlib folder with the
+    exception of  configure, example.c, FAQ, INDEX,  Makefile, Makefile.in
+    and zlib.3. I then edited Makefile.am to match the new file list and
 
   * Reword the "Not enough entropy" messages.
 

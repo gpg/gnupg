@@ -1,3 +1,8 @@
+2004-07-20  Werner Koch  <wk@gnupg.org>
+
+	* gpgkeys_ldap.c [_WIN32]: Include Windows specific header files.
+	Suggested by Brian Gladman.
+
 2004-05-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_http.c: General polish and removal of leftover stuff
