@@ -1,3 +1,10 @@
+2003-03-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.c (connect_server): Use DNS SRV to get a server list.  Fail
+	over to A records if necessary.
+
+	* Makefile.am, srv.h, srv.c: New DNS SRV handling code.
+
 2003-02-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* ttyio.c (tty_print_utf8_string, tty_print_utf8_string2): Use 0

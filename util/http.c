@@ -42,8 +42,8 @@
 #include "util.h"
 #include "iobuf.h"
 #include "i18n.h"
-
 #include "http.h"
+#include "srv.h"
 
 #ifdef __riscos__
   #define HTTP_PROXY_ENV           "GnuPG$HttpProxy"
@@ -80,7 +80,7 @@ static int send_request( HTTP_HD hd );
 static byte *build_rel_path( PARSED_URI uri );
 static int parse_response( HTTP_HD hd );
 
-static int connect_server( const char *server, ushort port );
+static int connect_server(const char *server, ushort port, unsigned int flags);
 static int write_server( int sock, const char *data, size_t length );
 
 #ifdef __MINGW32__
@@ -494,11 +494,11 @@ send_request( HTTP_HD hd )
 	    return G10ERR_NETWORK;
 	}
 	hd->sock = connect_server( *uri->host? uri->host : "localhost",
-				    uri->port? uri->port : 80 );
+				   uri->port? uri->port : 80, 0 );
 	release_parsed_uri( uri );
     }
     else
-	hd->sock = connect_server( server, port );
+      hd->sock = connect_server( server, port, hd->flags );
 
     if( hd->sock == -1 )
 	return G10ERR_NETWORK;
@@ -707,19 +707,17 @@ start_server()
 #endif
 
 
-
 static int
-connect_server( const char *server, ushort port )
+connect_server( const char *server, ushort port, unsigned int flags )
 {
-  int sock,i=0;
+  int sock,srv,srvcount=0;
   struct sockaddr_in addr;
   struct hostent *host=NULL;
-  unsigned long l;
+  struct srventry *srvlist=NULL;
 
   memset(&addr,0,sizeof(addr));
 
   addr.sin_family = AF_INET;
-  addr.sin_port = htons(port);
 
 #ifdef __MINGW32__
   init_sockets ();
@@ -740,61 +738,98 @@ connect_server( const char *server, ushort port )
 #ifdef __MINGW32__
   /* Win32 gethostbyname doesn't handle IP addresses internally, so we
      try inet_addr first on that platform only. */
-  if((l=inet_addr(server))==SOCKET_ERROR)
-#endif
-    if((host=gethostbyname(server))==NULL)
-      {
-#ifdef __MINGW32__
-	log_error("%s: host not found: ec=%d\n",server,(int)WSAGetLastError());
-#else
-	log_error("%s: host not found\n",server);
-#endif
-	sock_close(sock);
-	return -1;
-      }
-
-  if(host)
+  if((addr.sin_addr.s_addr=inet_addr(server))!=SOCKET_ERROR)
     {
-      if(host->h_addrtype != AF_INET)
-	{
-	  log_error ("%s: unknown address family\n", server);
-	  sock_close(sock);
-	  return -1;
-        }
+      addr.sin_port = htons(port);
 
-      if(host->h_length != 4 )
-	{
-	  log_error ("%s: illegal address length\n", server);
-	  sock_close(sock);
-	  return -1;
-	}
-
-      /* Try all A records until one responds. */
-      while(host->h_addr_list[i])
-	{
-	  memcpy(&addr.sin_addr,host->h_addr_list[i],host->h_length);
-
-	  if(connect(sock,(struct sockaddr *)&addr,sizeof(addr))==0)
-	    break;
-
-	  i++;
-	}
-
-      if(host->h_addr_list[i]==0)
+      if(connect(sock,(struct sockaddr *)&addr,sizeof(addr))==0)
+	return sock;
+      else
 	{
 	  sock_close(sock);
 	  return -1;
 	}
     }
-  else
-    {
-      memcpy(&addr.sin_addr,&l,sizeof(l));
+#endif
 
-      if(connect(sock,(struct sockaddr *)&addr,sizeof(addr))!=0)
+#ifdef USE_DNS_SRV
+  /* Do the SRV thing */
+  if(flags&HTTP_FLAG_TRY_SRV)
+    {
+      /* We're using SRV, so append the tags */
+      char srvname[MAXDNAME];
+
+      strcpy(srvname,"_hkp._tcp.");
+      strncat(srvname,server,MAXDNAME-11);
+      srvname[MAXDNAME-1]='\0';
+      srvcount=getsrv(srvname,&srvlist);
+    }
+#endif
+
+  if(srvlist==NULL)
+    {
+      /* Either we're not using SRV, or the SRV lookup failed.  Make
+	 up a fake SRV record. */
+      srvlist=m_alloc_clear(sizeof(struct srventry));
+      srvlist->port=port;
+      strncpy(srvlist->target,server,MAXDNAME);
+      srvcount=1;
+    }
+
+  for(srv=0;srv<srvcount;srv++)
+    {
+      int i=0;
+
+      addr.sin_port = htons(srvlist[srv].port);
+
+      if((host=gethostbyname(srvlist[srv].target))==NULL)
+	continue;
+
+      if(host)
 	{
-	  sock_close(sock);
-	  return -1;
+	  if(host->h_addrtype != AF_INET)
+	    {
+	      log_error ("%s: unknown address family\n", srvlist[srv].target);
+	      sock_close(sock);
+	      m_free(srvlist);
+	      return -1;
+	    }
+
+	  if(host->h_length != 4 )
+	    {
+	      log_error ("%s: illegal address length\n", srvlist[srv].target);
+	      sock_close(sock);
+	      m_free(srvlist);
+	      return -1;
+	    }
+
+	  /* Try all A records until one responds. */
+	  while(host->h_addr_list[i])
+	    {
+	      memcpy(&addr.sin_addr,host->h_addr_list[i],host->h_length);
+
+	      if(connect(sock,(struct sockaddr *)&addr,sizeof(addr))==0)
+		break;
+
+	      i++;
+	    }
+
+	  if(host->h_addr_list[i])
+	    break;
 	}
+    }
+
+  m_free(srvlist);
+
+  if(!host)
+    {
+#ifdef __MINGW32__
+      log_error("%s: host not found: ec=%d\n",server,(int)WSAGetLastError());
+#else
+      log_error("%s: host not found\n",server);
+#endif
+      sock_close(sock);
+      return -1;
     }
 
     return sock;

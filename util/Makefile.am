@@ -27,14 +27,15 @@ EXTRA_libutil_a_SOURCES = regcomp.c regex.c regexec.c regex_internal.c regex_int
 #libutil_a_LDFLAGS =
 libutil_a_SOURCES = g10u.c logger.c fileutil.c miscutil.c strgutil.c  \
 		     ttyio.c  argparse.c memory.c secmem.c errors.c iobuf.c \
-		     dotlock.c http.c simple-gettext.c w32reg.c
+		     dotlock.c http.c srv.h srv.c simple-gettext.c w32reg.c
 
 libutil_a_DEPENDENCIES = @REGEX_O@
 libutil_a_LIBADD = @REGEX_O@
 
 http-test:  http.c
-	gcc -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) -g -Wall -DTEST \
-	    -o http-test http.c libutil.a ../mpi/libmpi.a @INTLLIBS@
+	gcc -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
+	    -DTEST -o http-test http.c libutil.a @INTLLIBS@ @SRVLIBS@ @CAPLIBS@
 
-
-
+srv-test:  srv.c
+	gcc -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
+	    -DTEST -o srv-test srv.c libutil.a @INTLLIBS@ @SRVLIBS@ @CAPLIBS@
