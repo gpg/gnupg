@@ -37,16 +37,7 @@
 
 
 #define set_error(e,t) assuan_set_error (ctx, ASSUAN_ ## e, (t))
-#define digitp(a) ((a) >= '0' && (a) <= '9')
-#define hexdigitp(a) (digitp (a)                     \
-                      || ((a) >= 'A' && (a) <= 'F')  \
-                      || ((a) >= 'a' && (a) <= 'f'))
-#define atoi_1(p)   (*(p) - '0' )
-#define atoi_2(p)   ((atoi_1(p) * 10) + atoi_1((p)+1))
-/* assumes ASCII and pre-checked values */
-#define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
-                     *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
-#define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
+
 
 #if MAX_DIGEST_LEN < 20
 #error MAX_DIGEST_LEN shorter than keygrip
@@ -129,7 +120,7 @@ cmd_sigkey (ASSUAN_CONTEXT ctx, char *line)
   unsigned char *buf;
 
   /* parse the hash value */
-  for (p=line,n=0; hexdigitp (*p); p++, n++)
+  for (p=line,n=0; hexdigitp (p); p++, n++)
     ;
   if (*p)
     return set_error (Parameter_Error, "invalid hexstring");
@@ -169,7 +160,7 @@ cmd_sethash (ASSUAN_CONTEXT ctx, char *line)
   ctrl->digest.algo = algo;
 
   /* parse the hash value */
-  for (p=line,n=0; hexdigitp (*p); p++, n++)
+  for (p=line,n=0; hexdigitp (p); p++, n++)
     ;
   if (*p)
     return set_error (Parameter_Error, "invalid hexstring");

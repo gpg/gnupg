@@ -1,3 +1,8 @@
+2001-12-14  Werner Koch  <wk@gnupg.org>
+
+	* command.c: Removed the conversion macros as they are now in
+	../common/util.h.
+
 2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
 
 	* query.c (LINELENGTH): Removed.

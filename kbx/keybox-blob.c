@@ -121,7 +121,6 @@ X.509 specific are noted like [X.509: xxx]
 #include "keybox-defs.h"
 
 
-
 /* special values of the signature status */
 #define SF_NONE(a)  ( !(a) )
 #define SF_NOKEY(a) ((a) & (1<<0))
@@ -768,6 +767,31 @@ _keybox_create_pgp_blob (KEYBOXBLOB *r_blob, KBNODE keyblock)
 #endif /*KEYBOX_WITH_OPENPGP*/
 
 #ifdef KEYBOX_WITH_X509
+
+/* return an allocated string with the email address extracted from a
+   DN */
+static char *
+x509_email_kludge (const char *name)
+{
+#if 0
+  if (!strncmp (name, "1.2.840.113549.1.9.1=#", 22) 
+      && hexdigitp (name+22) && hexdigitp (name+23))
+    { /* this looks pretty much like an email address in the
+         subjects DN we use this to add an additional user ID
+         entry.  This way, openSSL generated keys get a nicer and
+         usable listing */
+      char *buf = NULL;
+      
+      /* FIXME */
+
+      return buf;
+    }
+#endif
+  return NULL;
+}
+
+
+
 /* Note: We should move calculation of the digest into libksba and
    remove that parameter */
 int
@@ -813,6 +837,7 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
   names[blob->nuids++] = p;
   for (i=0; (p = ksba_cert_get_subject (cert, i)); i++)
     {
+
       if (blob->nuids >= max_names)
         {
           unsigned char **tmp;
@@ -826,6 +851,8 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
             }
         }
       names[blob->nuids++] = p;
+      if (!i && (p=x509_email_kludge (p)))
+        names[blob->nuids++] = p; /* due to !i we don't need to check bounds*/
     }
   
   /* space for signature information */

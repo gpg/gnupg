@@ -316,7 +316,7 @@ cmd_message (ASSUAN_CONTEXT ctx, char *line)
   if (strncmp (line, "FD=", 3))
     return set_error (Syntax_Error, "FD=<n> expected");
   line += 3;
-  if (!digitp (*line))
+  if (!digitp (line))
     return set_error (Syntax_Error, "number required");
   fd = strtoul (line, &endp, 10);
   if (*endp)
