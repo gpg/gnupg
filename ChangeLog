@@ -1,3 +1,7 @@
+2000-11-17  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4 (GNUPG_CHECK_FAQPROG): Do not prinnt the warning.
+
 2000-11-11  Paul Eggert  <eggert@twinsun.com>
 
         Actually Paul's patches are dated 2000-20-17; I applied them today

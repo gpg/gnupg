@@ -1,3 +1,8 @@
+2000-11-22  Werner Koch  <wk@gnupg.org>
+
+	* rndegd.c (gather_random): Fixed default socket to be '=entropy'.
+	Thanks to Tomasz Kozlowski.
+
 2000-10-12  Werner Koch  <wk@gnupg.org>
 
         * rijndael.c: New.

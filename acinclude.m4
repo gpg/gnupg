@@ -60,17 +60,17 @@ AC_DEFUN(GNUPG_CHECK_FAQPROG,
     AC_SUBST(FAQPROG)
     AM_CONDITIONAL(WORKING_FAQPROG, test "$working_faqprog" = "yes" )
 
-    if test $working_faqprog = no; then
-	AC_MSG_WARN([[
-***
-*** It seems that the faqprog.pl program is not installed;
-*** however it is only needed if you want to change the FAQ.
-***  (faqprog.pl should be available at:
-***    ftp://ftp.gnupg.org/pub/gcrypt/contrib/faqprog.pl )
-*** No need to worry about this warning.
-***]])
-    fi
-  ])       
+dnl     if test $working_faqprog = no; then
+dnl         AC_MSG_WARN([[
+dnl ***
+dnl *** It seems that the faqprog.pl program is not installed;
+dnl *** however it is only needed if you want to change the FAQ.
+dnl ***  (faqprog.pl should be available at:
+dnl ***    ftp://ftp.gnupg.org/pub/gcrypt/contrib/faqprog.pl )
+dnl *** No need to worry about this warning.
+dnl ***]])
+dnl     fi
+   ])       
 
 
 dnl GNUPG_LINK_FILES( SRC, DEST )

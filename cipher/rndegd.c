@@ -123,7 +123,7 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
         bname = EGD_SOCKET_NAME;
       #endif
         if ( !bname || !*bname )
-            bname = "entropy";
+            bname = "=entropy";
 
         if ( *bname == '=' && bname[1] )
             name = make_filename( g10_opt_homedir, bname+1 , NULL );
