@@ -1,5 +1,7 @@
 2003-02-11  David Shaw  <dshaw@jabberwocky.com>
 
+	* Makefile.am: Make sure sha512.c is included in the tarball.
+
 	* Makefile.am, md.c (load_digest_module): Only build in SHA384/512
 	if specifically enabled.
 
