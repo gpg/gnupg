@@ -1,8 +1,7 @@
-# Makefile.am - main makefile for NewPG/GnuPG
-#     	Copyright (C) 2001 Free Software Foundation, Inc.
-# 
+# Copyright (C) 2002 Free Software Foundation, Inc.
+#
 # This file is part of GnuPG.
-# 
+#
 # GnuPG is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -19,29 +18,11 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = autogen.sh
+info_TEXINFOS = gnupg.texi
 
-if BUILD_GPGSM
-sm = sm
-else
-sm =
-endif
-if BUILD_AGENT
-agent = agent
-else
-agent =
-endif
-if BUILD_SCDAEMON
-scd = scd
-else
-scd =
-endif
+gnupg_TEXINFOS = \
+	gpgsm.texi gpg-agent.texi scdaemon.texi assuan.texi\
+	contrib.texi gpl.texi fdl.texi
 
-SUBDIRS = intl jnlib assuan common kbx ${sm} ${agent} ${scd} po doc tests
-
-
-dist-hook:
-	@set -e; echo "$(VERSION)" > $(distdir)/VERSION
-
-
+DISTCLEANFILES = gnupg.tmp gnupg.ops
 
