@@ -295,6 +295,7 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
         
             print_fingerprint (pk, NULL, 2);
             tty_printf("\n");
+	    release_kbnode(keyblock);
           }
 
         tty_printf (_(
