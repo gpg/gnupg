@@ -117,6 +117,7 @@ int delete_keys( STRLIST names, int secret, int allow_both );
 /*-- keyedit.c --*/
 void keyedit_menu( const char *username, STRLIST locusr, STRLIST cmds,
 							    int sign_mode );
+void show_basic_key_info (KBNODE keyblock);
 
 /*-- keygen.c --*/
 u32 ask_expire_interval(int object);

@@ -1845,6 +1845,74 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 
 }
 
+
+/* Display basic key information.  This fucntion is suitable to show
+   information on the key without any dependencies on the trustdb or
+   any other internal GnuPG stuff.  KEYBLOCK may either be a public or
+   a secret key.*/
+void
+show_basic_key_info ( KBNODE keyblock )
+{
+  KBNODE node;
+  int i;
+
+  /* The primary key */
+  for (node = keyblock; node; node = node->next)
+    {
+      if (node->pkt->pkttype == PKT_PUBLIC_KEY)
+        {
+          PKT_public_key *pk = node->pkt->pkt.public_key;
+          
+          /* Note, we use the same format string as in other show
+             functions to make the translation job easier. */
+          tty_printf (_("%s%c %4u%c/%08lX  created: %s expires: %s"),
+                      node->pkt->pkttype == PKT_PUBLIC_KEY? "pub":"sub",
+                      ' ',
+                      nbits_from_pk( pk ),
+                      pubkey_letter( pk->pubkey_algo ),
+                      (ulong)keyid_from_pk(pk,NULL),
+                      datestr_from_pk(pk),
+                      expirestr_from_pk(pk) );
+          tty_printf("\n");
+          print_fingerprint ( pk, NULL, 3 );
+          tty_printf("\n");
+	}
+      else if (node->pkt->pkttype == PKT_SECRET_KEY)
+        {
+          PKT_secret_key *sk = node->pkt->pkt.secret_key;
+          tty_printf(_("%s%c %4u%c/%08lX  created: %s expires: %s"),
+                     node->pkt->pkttype == PKT_SECRET_KEY? "sec":"ssb",
+                     ' ',
+                     nbits_from_sk( sk ),
+                     pubkey_letter( sk->pubkey_algo ),
+                     (ulong)keyid_from_sk(sk,NULL),
+                     datestr_from_sk(sk),
+                     expirestr_from_sk(sk) );
+          tty_printf("\n");
+          print_fingerprint (NULL, sk, 3 );
+          tty_printf("\n");
+	}
+    }
+
+  /* The user IDs. */
+  for (i=0, node = keyblock; node; node = node->next)
+    {
+      if (node->pkt->pkttype == PKT_USER_ID)
+        {
+          PKT_user_id *uid = node->pkt->pkt.user_id;
+          ++i;
+     
+          tty_printf ("     ");
+          if (uid->is_revoked)
+            tty_printf ("[revoked] ");
+          if ( uid->is_expired )
+            tty_printf ("[expired] ");
+          tty_print_utf8_string (uid->name, uid->len);
+          tty_printf ("\n");
+        }
+    }
+}
+
 static void
 show_key_and_fingerprint( KBNODE keyblock )
 {

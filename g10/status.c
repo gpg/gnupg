@@ -642,10 +642,10 @@ cpr_get_answer_is_yes( const char *keyword, const char *prompt )
 
     if( opt.command_fd != -1 )
 	return !!do_get_from_fd ( keyword, 0, 1 );
-  #ifdef USE_SHM_COPROCESSING
+#ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return !!do_shm_get( keyword, 0, 1 );
-  #endif
+#endif
     for(;;) {
 	p = tty_get( prompt );
 	trim_spaces(p); /* it is okay to do this here */
@@ -670,10 +670,10 @@ cpr_get_answer_yes_no_quit( const char *keyword, const char *prompt )
 
     if( opt.command_fd != -1 )
 	return !!do_get_from_fd ( keyword, 0, 1 );
-  #ifdef USE_SHM_COPROCESSING
+#ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return !!do_shm_get( keyword, 0, 1 );
-  #endif
+#endif
     for(;;) {
 	p = tty_get( prompt );
 	trim_spaces(p); /* it is okay to do this here */

@@ -940,6 +940,7 @@ list_keyblock( KBNODE keyblock, int secret, int fpr, void *opaque )
  * mode 0: as used in key listings, opt.with_colons is honored
  *      1: print using log_info ()
  *      2: direct use of tty
+ *      3: direct use of tty but only primary key.
  * modes 1 and 2 will try and print both subkey and primary key fingerprints
  */
 void
@@ -1004,6 +1005,10 @@ print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode )
 	  text = _(" Primary key fingerprint:");
 	else
 	  text = _("      Subkey fingerprint:");
+    }
+    else if (mode == 3) {
+        fp = NULL; /* use tty */
+	text = _("     Key fingerprint =");
     }
     else {
         fp = stdout;

@@ -34,6 +34,7 @@
 #include "trustdb.h"
 #include "main.h"
 #include "i18n.h"
+#include "ttyio.h"
 #include "status.h"
 #include "keyserver-internal.h"
 
@@ -642,21 +643,13 @@ import_one( const char *fname, KBNODE keyblock, int fast,
 	return 0;
     }
     
-    if( opt.interactive ) {
-        char *prompt, *p;
-        size_t n = 0;
-        
-        p = get_user_id( pk->keyid, &n );
-        prompt = m_alloc( n + 16 + 128 + 1 );
-        snprintf( prompt, n + 16 + 128,
-                  "Do you want to import %08lX \"%s\" ? (y/n) ",
-                  (ulong)keyid[1], p );
-        m_free( p );
-        if( !cpr_get_answer_is_yes( "import.okay", prompt ) ) {
-            m_free( prompt );
+    if (opt.interactive) {
+        tty_printf ("\n");
+        show_basic_key_info (keyblock);
+        tty_printf ("\n");
+        if (!cpr_get_answer_is_yes ("import.okay",
+                                    "Do you want to import this key? (y/N) "))
             return 0;
-        }
-        m_free( prompt );
     }
 
     clear_kbnode_flags( keyblock );
@@ -728,7 +721,7 @@ import_one( const char *fname, KBNODE keyblock, int fast,
 
 	/* we are ready */
 	if( !opt.quiet ) {
-	    char *p=get_user_id_native(keyid);
+	    char *p=get_user_id_printable (keyid);
 	    log_info( _("key %08lX: public key \"%s\" imported\n"),
 		      (ulong)keyid[1],p);
 	    m_free(p);
@@ -804,7 +797,7 @@ import_one( const char *fname, KBNODE keyblock, int fast,
 
 	    /* we are ready */
 	    if( !opt.quiet ) {
-	        char *p=get_user_id_native(keyid);
+	        char *p=get_user_id_printable(keyid);
 		if( n_uids == 1 )
 		    log_info( _("key %08lX: \"%s\" 1 new user ID\n"),
 					     (ulong)keyid[1], p);
@@ -832,7 +825,7 @@ import_one( const char *fname, KBNODE keyblock, int fast,
 	}
 	else {
 	    if( !opt.quiet ) {
-	        char *p=get_user_id_native(keyid);
+	        char *p=get_user_id_printable(keyid);
 		log_info( _("key %08lX: \"%s\" not changed\n"),
 			  (ulong)keyid[1],p);
 		m_free(p);
@@ -1023,7 +1016,7 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
     keydb_release (hd); hd = NULL;
     /* we are ready */
     if( !opt.quiet ) {
-        char *p=get_user_id_native(keyid);
+        char *p=get_user_id_printable (keyid);
 	log_info( _("key %08lX: \"%s\" revocation certificate imported\n"),
 					(ulong)keyid[1],p);
 	m_free(p);
@@ -1445,7 +1438,7 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 		}
 	    }
 	    if( !found ) {
-	        char *p=get_user_id_native(keyid);
+	        char *p=get_user_id_printable (keyid);
 		KBNODE n2 = clone_kbnode(node);
 		insert_kbnode( keyblock_orig, n2, 0 );
 		n2->flag |= 1;

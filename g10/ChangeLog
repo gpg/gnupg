@@ -1,6 +1,18 @@
+2002-08-19  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (get_user_id_native): Renamed to ..
+	(get_user_id_printable): this.  Filter out all dangerous
+	characters.  Checked all usages.
+	(get_user_id_string_native): Renamed to..
+	(get_user_id_string_printable): this.  Filter out all dangerous
+	characters.  Checked all usages.
+	* keyedit.c (show_basic_key_info): New.
+	* keylist.c (print_fingerprint): New mode 3.
+	* import.c (import_one): Use new function to display the user ID.
+
 2002-08-16  Timo Schulz  <ts@winpt.org>
 
-	* g10.c (main): enable opt.interactive.
+	* g10.c (main): Enable opt.interactive.
 
 	* import.c (import_one): Ask the user if the key shall be
 	imported when the interactive mode is used. Useful to extract

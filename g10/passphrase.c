@@ -636,7 +636,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text )
       else
         *maink = 0;
       
-      uid = get_user_id( keyid, &uidlen ); 
+      uid = get_user_id ( keyid, &uidlen ); 
       timestr = strtimestamp (pk->timestamp);
       fmtstr = _("You need a passphrase to unlock the"
                  " secret key for user:\n"

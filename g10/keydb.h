@@ -215,10 +215,10 @@ void get_seckey_end( GETKEY_CTX ctx );
 int enum_secret_keys( void **context, PKT_secret_key *sk, int with_subkeys );
 void merge_keys_and_selfsig( KBNODE keyblock );
 char*get_user_id_string( u32 *keyid );
-char*get_user_id_string_native( u32 *keyid );
+char*get_user_id_string_printable( u32 *keyid );
 char*get_long_user_id_string( u32 *keyid );
 char*get_user_id( u32 *keyid, size_t *rn );
-char*get_user_id_native( u32 *keyid );
+char*get_user_id_printable( u32 *keyid );
 KEYDB_HANDLE get_ctx_handle(GETKEY_CTX ctx);
 
 /*-- keyid.c --*/
