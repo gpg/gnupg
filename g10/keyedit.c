@@ -267,7 +267,6 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	   int local , int nonrevocable )
 {
     int rc = 0;
-    int class=0;
     SK_LIST sk_list = NULL;
     SK_LIST sk_rover = NULL;
     PKT_secret_key *sk = NULL;
@@ -295,6 +294,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	u32 sk_keyid[2];
 	size_t n;
 	char *p;
+	int class=0;
 	u32 duration=0,timestamp=0;
 
 	/* we have to use a copy of the sk, because make_keysig_packet

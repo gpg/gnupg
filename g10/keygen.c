@@ -224,7 +224,12 @@ keygen_set_std_prefs (const char *string)
         string = "S7 S10 S3 S4 S2 H3 H2 Z2 Z1";
 
       /* If we have it, IDEA goes *after* 3DES so it won't be used
-         unless we're encrypting along with a V3 key. */
+         unless we're encrypting along with a V3 key.  Ideally, we
+         would only put the S1 preference in if the key was RSA and
+         <=2048 bits, as that is what won't break PGP2, but that is
+         difficult with the current code, and not really worth
+         checking as a non-RSA <=2048 bit key wouldn't be usable by
+         PGP2 anyway -dms */
     }
     else if (!ascii_strcasecmp (string, "none"))
         string = "";

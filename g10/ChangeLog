@@ -1,3 +1,18 @@
+2002-01-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (keygen_set_std_prefs): Comment
+
+	* keyedit.c (sign_uids): Bug fix - when signing with multiple
+	secret keys at the same time, make sure each key gets the sigclass
+	prompt.
+
+	* exec.c (exec_finish): Close the iobuf and FILE before trying to
+	waitpid, so the remote process will get a SIGPIPE and exit.  This
+	is only a factor when using a pipe to communicate.
+
+	* exec.c (exec_write): Disable cache-on-close of the fd iobuf (is
+	this right?  Why is a fd iobuf cached at all?)
+
 2002-01-26  Werner Koch  <wk@gnupg.org>
 
 	* g10.c, options.h: New option --gpg-agent-info

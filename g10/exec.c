@@ -357,6 +357,9 @@ int exec_write(struct exec_info **info,const char *program,
 	  goto fail;
 	}
 
+      /* fd iobufs are cached?! */
+      iobuf_ioctl((*info)->fromchild,3,1,NULL);
+
       return 0;
     }
 #endif /* !EXEC_TEMPFILE_ONLY */
@@ -442,6 +445,12 @@ int exec_finish(struct exec_info *info)
 {
   int ret=info->progreturn;
 
+  if(info->fromchild)
+    iobuf_close(info->fromchild);
+
+  if(info->tochild)
+    fclose(info->tochild);
+
 #ifndef EXEC_TEMPFILE_ONLY
   if(info->child>0)
     {
@@ -453,12 +462,6 @@ int exec_finish(struct exec_info *info)
     }
 #endif
 
-  if(info->fromchild)
-    iobuf_close(info->fromchild);
-
-  if(info->tochild)
-    fclose(info->tochild);
-    
   if(info->madedir && !info->keep_temp_files)
     {
       if(info->tempfile_in)
