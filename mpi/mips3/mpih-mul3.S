@@ -36,10 +36,10 @@ mpihelp_submul_1:
 	.set	noreorder
 	.set	nomacro
 
- # warm up phase 0
+/* # warm up phase 0 */
 	ld	$8,0($5)
 
- # warm up phase 1
+/* # warm up phase 1 */
 	daddiu	$5,$5,8
 	dmultu	$8,$7
 
@@ -68,7 +68,7 @@ Loop:	ld	$10,0($4)
 	bne	$6,$0,Loop
 	 daddu	$2,$9,$2	# add high product limb and carry from addition
 
- # cool down phase 1
+/* # cool down phase 1 */
 $LC1:	ld	$10,0($4)
 	mflo	$3
 	mfhi	$9
@@ -82,7 +82,7 @@ $LC1:	ld	$10,0($4)
 	daddiu	$4,$4,8
 	daddu	$2,$9,$2	# add high product limb and carry from addition
 
- # cool down phase 0
+/* # cool down phase 0 */
 $LC0:	ld	$10,0($4)
 	mflo	$3
 	mfhi	$9

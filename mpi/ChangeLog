@@ -1,3 +1,7 @@
+2000-10-24  Werner Koch  <wk@gnupg.org>
+
+	* mips3/: Changed a few comments to C-style. By Jeff Long.
+
 2000-10-13  Werner Koch  <wk@gnupg.org>
 
 	* mpi.h: Removed the inclusion of mpi-asm-defs.h because this
@@ -12,7 +16,7 @@
 
 Wed Jul 19 11:26:43 CEST 2000  Werner Koch  <wk@>
 
-  * config.links: Support for powerpc--netbsd by Gabriel Rosenkoetter.
+        * config.links: Support for powerpc--netbsd by Gabriel Rosenkoetter.
 
 Wed Mar 22 13:50:24 CET 2000  Werner Koch  <wk@openit.de>
 
