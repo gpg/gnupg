@@ -1,3 +1,10 @@
+2003-02-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* convert-from-106: Script to automate the 1.0.6->later
+	conversion.  It marks all secret keys as ultimately trusted, adds
+	the signature caches, and checks the trustdb.  Moved from the
+	scripts directory.
+
 2002-10-23  Werner Koch  <wk@gnupg.org>
 
 	* gpgsplit.c: New options --secret-to-public and --no-split.
