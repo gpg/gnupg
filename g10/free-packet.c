@@ -53,17 +53,18 @@ free_pubkey_enc( PKT_pubkey_enc *enc )
 void
 free_seckey_enc( PKT_signature *sig )
 {
-    int n, i;
-    n = pubkey_get_nsig( sig->pubkey_algo );
-    if( !n )
-	mpi_free(sig->data[0]);
-    for(i=0; i < n; i++ )
-	mpi_free( sig->data[i] );
+  int n, i;
 
-    m_free(sig->revkey);
-    m_free(sig->hashed);
-    m_free(sig->unhashed);
-    m_free(sig);
+  n = pubkey_get_nsig( sig->pubkey_algo );
+  if( !n )
+    mpi_free(sig->data[0]);
+  for(i=0; i < n; i++ )
+    mpi_free( sig->data[i] );
+  
+  m_free(sig->revkey);
+  m_free(sig->hashed);
+  m_free(sig->unhashed);
+  m_free(sig);
 }
 
 

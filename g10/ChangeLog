@@ -1,3 +1,9 @@
+2002-05-27  Werner Koch  <wk@gnupg.org>
+
+	* keyedit.c (show_key_with_all_names_colon): New.
+	(show_key_with_all_names): Divert to new function when required.
+	Sanitize printing of revoker name.
+
 2002-05-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* build-packet.c (build_sig_subpkt): Handle setting sig flags for

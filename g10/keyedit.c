@@ -1551,6 +1551,133 @@ show_prefs (PKT_user_id *uid, int verbose)
 }
 
 
+/* This is the version of show_key_with_all_names used when
+   opt.with_colons is used.  It prints all available data in a easy to
+   parse format and does not translate utf8 */
+static void
+show_key_with_all_names_colon (KBNODE keyblock)
+{
+  KBNODE node;
+  int i, j;
+  byte pk_version=0;
+
+  /* the keys */
+  for ( node = keyblock; node; node = node->next )
+    {
+      if (node->pkt->pkttype == PKT_PUBLIC_KEY
+          || (node->pkt->pkttype == PKT_PUBLIC_SUBKEY) )
+        {
+          PKT_public_key *pk = node->pkt->pkt.public_key;
+          int otrust=0, trust=0;
+          u32 keyid[2];
+
+          if (node->pkt->pkttype == PKT_PUBLIC_KEY)
+            {
+              trust = get_validity_info (pk, NULL);
+              otrust = get_ownertrust_info (pk);
+              pk_version = pk->version;
+	    }
+
+          keyid_from_pk (pk, keyid);
+
+          
+          
+          fputs (node->pkt->pkttype == PKT_PUBLIC_KEY?"pub:":"sub:", stdout);
+          if (!pk->is_valid)
+            putchar ('i');
+          else if (pk->is_revoked)
+            putchar ('r');
+          else if (pk->has_expired)
+            putchar ('e');
+          else 
+            putchar (trust);
+          printf (":%u:%d:%08lX%08lX:%lu:%lu:",
+                  nbits_from_pk (pk),
+                  pk->pubkey_algo,
+                  (ulong)keyid[0], (ulong)keyid[1],
+                  (ulong)pk->timestamp,
+                  (ulong)pk->expiredate );
+          if (pk->local_id)
+            printf ("%lu", pk->local_id);
+          putchar (':');
+          putchar (otrust);
+          putchar(':');
+          putchar('\n');
+          
+          print_fingerprint (pk, NULL, 0);
+
+          /* print the revoker record */
+          if( !pk->revkey && pk->numrevkeys )
+            BUG();
+          else
+            {
+              for (i=0; i < pk->numrevkeys; i++)
+                {
+                  byte *p;
+
+                  printf ("rev:::%d::::::", pk->revkey[i].algid);
+                  p = pk->revkey[i].fpr;
+                  for (j=0; j < 20; j++, p++ )
+                    printf ("%02X", *p);
+                  printf (":%02x%c:\n", pk->revkey[i].class,
+                          (pk->revkey[i].class&0x40)? 'l':'x');
+                }
+            }
+        }
+    }
+  
+    /* the user ids */
+    i = 0;
+    for (node = keyblock; node; node = node->next) 
+      {
+	if ( node->pkt->pkttype == PKT_USER_ID )
+          {
+            PKT_user_id *uid = node->pkt->pkt.user_id;
+            int trustletter = '?';
+
+	    ++i;
+            printf ("uid:%c::::::::", trustletter);
+            print_string (stdout, uid->name, uid->len, ':');
+            putchar (':');
+            /* signature class */
+            putchar (':');
+            /* capabilities */
+            putchar (':');
+            /* preferences */
+            if (pk_version>3 || uid->selfsigversion>3)
+              {
+                const prefitem_t *prefs = uid->prefs;
+                
+                for (j=0; prefs && prefs[j].type; j++)
+                  {
+                    if (j)
+                      putchar (' ');
+                    printf ("%c%d", prefs[j].type == PREFTYPE_SYM   ? 'S' :
+                            prefs[j].type == PREFTYPE_HASH  ? 'H' :
+                            prefs[j].type == PREFTYPE_ZIP ? 'Z':'?',
+                            prefs[j].value);
+                  } 
+                if (uid->mdc_feature)
+                  printf (",mdc");
+              } 
+            putchar (':');
+            /* flags */
+            printf ("%d,", i);
+            if (uid->is_primary)
+              putchar ('p');
+            if (uid->is_revoked)
+              putchar ('r');
+            if ((node->flag & NODFLG_SELUID))
+              putchar ('s');
+            if ((node->flag & NODFLG_MARK_A))
+              putchar ('m');
+            putchar (':');
+            putchar('\n');
+          }
+      }
+}
+
+
 /****************
  * Display the key a the user ids, if only_marked is true, do only
  * so for user ids with mark A flag set and dont display the index number
@@ -1563,6 +1690,12 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
     int i, rc;
     int do_warn = 0;
     byte pk_version=0;
+
+    if (opt.with_colons)
+      {
+        show_key_with_all_names_colon (keyblock);
+        return;
+      }
 
     /* the keys */
     for( node = keyblock; node; node = node->next ) {
@@ -1598,15 +1731,15 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
                         char *user;
            
                         keyid_from_fingerprint(pk->revkey[i].fpr,
-				       	MAX_FINGERPRINT_LEN,r_keyid);
-           
-                        user=get_user_id_string_native(r_keyid);
-           
-                        tty_printf(_("This key may be revoked by %s key %s%s\n"),
-                                   pubkey_algo_to_string(pk->revkey[i].algid),
-                                   user,
-                                   pk->revkey[i].class&0x40?_(" (sensitive)"):"");
-           
+                                               MAX_FINGERPRINT_LEN,r_keyid);
+                        
+                        user=get_user_id_string (r_keyid);
+                        tty_printf (_("This key may be revoked by %s key "),
+                                 pubkey_algo_to_string (pk->revkey[i].algid));
+                        tty_print_utf8_string (user, strlen (user));
+                        if ((pk->revkey[i].class&0x40))
+                          tty_printf (_(" (sensitive)"));
+                        tty_printf ("\n");
                         m_free(user);
                       }
             }
