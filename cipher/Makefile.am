@@ -99,4 +99,9 @@ rndlinux: $(srcdir)/rndlinux.c
 rndegd: $(srcdir)/rndegd.c
 	$(COMPILE) $(DYNLINK_MOD_CFLAGS) -o rndegd $(srcdir)/rndegd.c
 
+# We need to have a better system for selection which modules
+# to compile.  For now this works.
+rndw32: $(srcdir)/rndw32.c
+	echo "#!/bin/sh" >rndw32
+	echo "Not usable as a module" >>rndw32
 

@@ -44,40 +44,58 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     PACKET pkt;
     PKT_encrypted ed;
     byte temp[18];
-    unsigned blocksize;
+    int blocksize;
     unsigned nprefix;
     int use_mdc = opt.force_mdc;
+    int rc;
 
     memset( &ed, 0, sizeof ed );
     ed.len = cfx->datalen;
     ed.new_ctb = !ed.len && !opt.rfc1991;
     if( use_mdc ) {
 	ed.mdc_method = DIGEST_ALGO_SHA1;
-	cfx->mdc_hash = md_open( DIGEST_ALGO_SHA1, 0 );
-	md_start_debug( cfx->mdc_hash, "mdccreat" );
+	cfx->mdc_hash = gcry_md_open( DIGEST_ALGO_SHA1, 0 );
+	/*md_start_debug( cfx->mdc_hash, "mdccreat" );*/
     }
     init_packet( &pkt );
     pkt.pkttype = use_mdc? PKT_ENCRYPTED_MDC : PKT_ENCRYPTED;
     pkt.pkt.encrypted = &ed;
     if( build_packet( a, &pkt ))
 	log_bug("build_packet(ENCR_DATA) failed\n");
-    blocksize = cipher_get_blocksize( cfx->dek->algo );
+    blocksize = gcry_cipher_get_algo_blklen( cfx->dek->algo );
     if( blocksize < 8 || blocksize > 16 )
-	log_fatal("unsupported blocksize %u\n", blocksize );
+	log_fatal("unsupported blocksize %d\n", blocksize );
     nprefix = blocksize;
     randomize_buffer( temp, nprefix, 1 );
     temp[nprefix] = temp[nprefix-2];
     temp[nprefix+1] = temp[nprefix-1];
     print_cipher_algo_note( cfx->dek->algo );
-    cfx->cipher_hd = cipher_open( cfx->dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
+    if( gcry_cipher_open( &cfx->cipher_hd,
+			  cfx->dek->algo,
+			  CIPHER_MODE_CFB,
+			  GCRY_CIPHER_SECURE
+			  | (cfy->dek->algo >= 100 ?
+				0 : GCRY_CIPHER_ENABLE_SYNC) )
+			) {
+	/* we should never get an error here cause we already checked, that
+	 * the algorithm is available. */
+	BUG();
+    }
+
 /*   log_hexdump( "thekey", cfx->dek->key, cfx->dek->keylen );*/
-    cipher_setkey( cfx->cipher_hd, cfx->dek->key, cfx->dek->keylen );
-    cipher_setiv( cfx->cipher_hd, NULL, 0 );
+    rc = gcry_cipher_setkey( cfx->cipher_hd, cfx->dek->key, cfx->dek->keylen );
+    if( !rc )
+	rc = gcry_cipher_setiv( cfx->cipher_hd, NULL, 0 );
+    if( rc )
+	log_fatal("set key or IV failed: %s\n", gcry_strerror(rc) );
 /*  log_hexdump( "prefix", temp, nprefix+2 ); */
     if( cfx->mdc_hash )
-	md_write( cfx->mdc_hash, temp, nprefix+2 );
-    cipher_encrypt( cfx->cipher_hd, temp, temp, nprefix+2);
-    cipher_sync( cfx->cipher_hd );
+	gcry_md_write( cfx->mdc_hash, temp, nprefix+2 );
+    rc = cipher_encrypt( cfx->cipher_hd, temp, nprefix+2, NULL, 0 );
+    if( !rc )
+	rc = gcry_cipher_sync( cfx->cipher_hd );
+    if( rc )
+	log_fatal("encrypt failed: %s\n", gcry_strerror(rc) );
     iobuf_write(a, temp, nprefix+2);
     cfx->header=1;
 }
@@ -104,23 +122,26 @@ cipher_filter( void *opaque, int control,
 	    write_header( cfx, a );
 	}
 	if( cfx->mdc_hash )
-	    md_write( cfx->mdc_hash, buf, size );
-	cipher_encrypt( cfx->cipher_hd, buf, buf, size);
+	    gcry_md_write( cfx->mdc_hash, buf, size );
+	rc = gcry_cipher_encrypt( cfx->cipher_hd, buf, size, NULL, 0);
+	if( rc )
+	    log_fatal("encrypt failed: %s\n", gcry_strerror(rc) );
 	if( iobuf_write( a, buf, size ) )
 	    rc = G10ERR_WRITE_FILE;
     }
     else if( control == IOBUFCTRL_FREE ) {
 	if( cfx->mdc_hash ) {
 	    byte *hash;
-	    int hashlen = md_digest_length( md_get_algo( cfx->mdc_hash ) );
-	    md_final( cfx->mdc_hash );
-	    hash = md_read( cfx->mdc_hash, 0 );
-	    cipher_encrypt( cfx->cipher_hd, hash, hash, hashlen );
+	    int hashlen = gcry_md_get_algo_dlen( gcry_md_get_algo( cfx->mdc_hash ) );
+	    hash = gcry_md_read( cfx->mdc_hash, 0 );
+	    rc = gcry_cipher_encrypt( cfx->cipher_hd, hash, hashlen, NULL, 0 );
+	    if( rc )
+		log_fatal("encrypt failed: %s\n", gcry_strerror(rc) );
 	    if( iobuf_write( a, hash, hashlen ) )
 		rc = G10ERR_WRITE_FILE;
-	    md_close( cfx->mdc_hash ); cfx->mdc_hash = NULL;
+	    gcry_md_close( cfx->mdc_hash ); cfx->mdc_hash = NULL;
 	}
-	cipher_close(cfx->cipher_hd);
+	gcry_cipher_close(cfx->cipher_hd);
     }
     else if( control == IOBUFCTRL_DESC ) {
 	*(char**)buf = "cipher_filter";

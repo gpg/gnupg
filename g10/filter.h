@@ -20,12 +20,13 @@
 #ifndef G10_FILTER_H
 #define G10_FILTER_H
 
+#include <gcrypt.h>
+
 #include "types.h"
-#include "cipher.h"
 
 typedef struct {
-    MD_HANDLE md;      /* catch all */
-    MD_HANDLE md2;     /* if we want to calculate an alternate hash */
+    GCRY_MD_HD md;	/* catch all */
+    GCRY_MD_HD md2;	/* if we want to calculate an alternate hash */
     size_t maxbuf_size;
 } md_filter_context_t;
 
@@ -76,9 +77,9 @@ typedef struct {
 typedef struct {
     DEK *dek;
     u32 datalen;
-    CIPHER_HANDLE cipher_hd;
+    GCRY_CIPHER_HD cipher_hd;
     int header;
-    MD_HANDLE mdc_hash;
+    GCRY_MD_HD mdc_hash;
 } cipher_filter_context_t;
 
 
@@ -91,7 +92,7 @@ typedef struct {
     int truncated;	    /* number of truncated lines */
     int not_dash_escaped;
     int escape_from;
-    MD_HANDLE md;
+    GCRY_MD_HD md;
     int pending_lf;
     int pending_esc;
 } text_filter_context_t;
@@ -119,7 +120,7 @@ int cipher_filter( void *opaque, int control,
 /*-- textfilter.c --*/
 int text_filter( void *opaque, int control,
 		 IOBUF chain, byte *buf, size_t *ret_len);
-int copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
+int copy_clearsig_text( IOBUF out, IOBUF inp, GCRY_MD_HD md,
 			  int escape_dash, int escape_from, int pgp2mode );
 
 

@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <gcrypt.h>
 #include "util.h"
 #include "memory.h"
 #include "packet.h"
@@ -38,8 +39,8 @@ static int mdc_decode_filter( void *opaque, int control, IOBUF a,
 					byte *buf, size_t *ret_len);
 
 typedef struct {
-    CIPHER_HANDLE cipher_hd;
-    MD_HANDLE mdc_hash;
+    GCRY_CIPHER_HD cipher_hd;
+    GCRY_MD_HD mdc_hash;
     char defer[20];
     int  defer_filled;
     int  eof_seen;
@@ -55,27 +56,28 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
     decode_filter_ctx_t dfx;
     byte *p;
     int rc=0, c, i;
+    int algo_okay;
     byte temp[32];
-    unsigned blocksize;
+    int blocksize;
     unsigned nprefix;
 
     memset( &dfx, 0, sizeof dfx );
-    if( opt.verbose ) {
-	const char *s = cipher_algo_to_string( dek->algo );
-	if( s )
-	    log_info(_("%s encrypted data\n"), s );
-	else
+    if( gcry_cipher_test_algo( dek->algo ) ) {
+	if( opt.verbose )
 	    log_info(_("encrypted with unknown algorithm %d\n"), dek->algo );
-    }
-    if( (rc=check_cipher_algo(dek->algo)) )
+	rc = G10ERR_CIPHER_ALGO;
 	goto leave;
-    blocksize = cipher_get_blocksize(dek->algo);
-    if( !blocksize || blocksize > 16 )
+    }
+    if( opt.verbose )
+	log_info(_("%s encrypted data\n"), gcry_cipher_algo_name( dek->algo ) );
+
+    blocksize = gcry_cipher_get_blklen( dek->algo );
+    if( blocksize < 1 || blocksize > 16 )
 	log_fatal("unsupported blocksize %u\n", blocksize );
     nprefix = blocksize;
     if( ed->len && ed->len < (nprefix+2) )
 	BUG();
-
+-->   We are currently working HERE!!!!
     if( ed->mdc_method )
 	dfx.mdc_hash = md_open( ed->mdc_method, 0 );
     dfx.cipher_hd = cipher_open( dek->algo, CIPHER_MODE_AUTO_CFB, 1 );

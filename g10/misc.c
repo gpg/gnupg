@@ -253,3 +253,15 @@ print_digest_algo_note( int algo )
 
 
 
+/****************
+ * Map errors retuned by libgcrypt to those used by GnuPG.
+ */
+int
+map_gcry_rc( int rc )
+{
+    switch( rc )  {
+      case 0: return 0;
+      default: return G10ERR_GENERAL;
+    }
+}
+

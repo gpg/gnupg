@@ -362,6 +362,7 @@ cipher_open( int algo, int mode, int secure )
     if( algo == CIPHER_ALGO_DUMMY )
 	hd->mode = CIPHER_MODE_DUMMY;
     else if( mode == CIPHER_MODE_AUTO_CFB ) {
+	#warning Remove this code and the AUTO:CFB macro.
 	if( algo >= 100 )
 	    hd->mode = CIPHER_MODE_CFB;
 	else

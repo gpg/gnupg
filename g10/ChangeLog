@@ -1,3 +1,13 @@
+Sat Sep 18 12:16:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* filter.h: Changed cipher handle types to the the GCRY_xxx ones.
+	replaces include cipher by system header include gcrypt.h.
+	* cipher.c: replaced the cipher functions by the gcry_ ones.
+	Ditto for the md functions.
+
+	* misc.c (map_gcry_rc): New.
+
 Fri Sep 17 12:56:42 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 
