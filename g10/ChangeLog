@@ -1,5 +1,7 @@
 2004-12-14  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (keyedit_menu): Re-remove the N_() markers.
+
 	* trustdb.c (uid_trust_string_fixed): Show uids as revoked if the
 	key is revoked.
 	
