@@ -1,3 +1,14 @@
+2004-12-20  Werner Koch  <wk@g10code.com>
+
+	* strgutil.c (handle_iconv_error): Turn diagnostics into warnings
+	so that gpg does not return with failure.
+	(native_to_utf8, utf8_to_native): Ditto.
+
+2004-12-16  Werner Koch  <wk@g10code.com>
+
+	* iobuf.c (fd_cache_strcmp) [W32]: Casting is a Bad Thing. Cast to
+	an unsigned char pointer and to an unsigned integer.
+
 2004-12-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* ttyio.c: Use only HAVE_LIBREADLINE to detect readline

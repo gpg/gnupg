@@ -146,7 +146,7 @@ fd_cache_strcmp (const char *a, const char *b)
                         || (*a == '\\' && *b == '/')) )
         break;
     }
-  return *(const unsigned *)a - *(const unsigned *)b;
+  return *(const unsigned char *)a - *(const unsigned char *)b;
 #else
   return strcmp (a, b);
 #endif

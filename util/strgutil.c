@@ -451,10 +451,10 @@ static void
 handle_iconv_error (const char *to, const char *from, int use_fallback)
 {
   if (errno == EINVAL)
-    log_error (_("conversion from `%s' to `%s' not available\n"),
+    log_info (_("conversion from `%s' to `%s' not available\n"),
                from, to);
   else
-    log_error (_("iconv_open failed: %s\n"), strerror (errno));
+    log_info (_("iconv_open failed: %s\n"), strerror (errno));
 
   if (use_fallback)
     {
@@ -645,7 +645,7 @@ native_to_utf8( const char *string )
       if ( iconv (cd, (ICONV_CONST char **)&inptr, &inbytes,
                   &outptr, &outbytes) == (size_t)-1)
         {
-          log_error (_("conversion from `%s' to `%s' failed: %s\n"),
+          log_info (_("conversion from `%s' to `%s' failed: %s\n"),
                        active_charset_name, "utf-8", strerror (errno));
           /* We don't do any conversion at all but use the strings as is. */
           strcpy (buffer, string);
@@ -919,7 +919,7 @@ utf8_to_native( const char *string, size_t length, int delim )
             outbuf = outptr = m_alloc (outbytes);
             if ( iconv (cd, (ICONV_CONST char **)&inptr, &inbytes,
                         &outptr, &outbytes) == (size_t)-1) {
-                log_error (_("conversion from `%s' to `%s' failed: %s\n"),
+                log_info (_("conversion from `%s' to `%s' failed: %s\n"),
                            "utf-8", active_charset_name, strerror (errno));
                 /* Didn't worked out.  Temporary disable the use of
                  * iconv and fall back to our old code. */
