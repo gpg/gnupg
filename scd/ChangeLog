@@ -1,3 +1,7 @@
+2004-12-06  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (pkglib_PROGRAMS): Build only for W32.
+
 2004-10-22  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (verify_chv3): The minium length for CHV3 is

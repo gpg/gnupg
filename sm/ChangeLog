@@ -1,3 +1,7 @@
+2004-12-06  Werner Koch  <wk@g10code.com>
+
+	* keydb.c: Don't define DIRSEP_S here.
+
 2004-12-02  Werner Koch  <wk@g10code.com>
 
 	* certchain.c (gpgsm_basic_cert_check): Dump certs with bad

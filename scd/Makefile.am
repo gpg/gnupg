@@ -19,7 +19,9 @@
 ## Process this file with automake to produce Makefile.in
 
 bin_PROGRAMS = scdaemon sc-copykeys
+if HAVE_W32_SYSTEM
 pkglib_PROGRAMS = pcsc-wrapper
+endif
 
 AM_CPPFLAGS = -I$(top_srcdir)/intl -I$(top_srcdir)/common
 

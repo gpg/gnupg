@@ -141,7 +141,7 @@ AC_ARG_ENABLE(agent-only,
     build_agent_only=$enableval)
 
 
-# Configure option to allow ot disallow execution of external
+# Configure option to allow or disallow execution of external
 # programs, like a photo viewer.
 AC_MSG_CHECKING([whether to enable external program execution])
 AC_ARG_ENABLE(exec,
@@ -343,6 +343,7 @@ GNUPG_CHECK_DOCBOOK_TO_TEXI
 
 try_gettext=yes
 have_dosish_system=no
+have_w32_system=no
 case "${host}" in
     *-*-mingw32*)
         # special stuff for Windoze NT
@@ -356,6 +357,7 @@ case "${host}" in
                    MingW32 systems and these systems lack Posix functions,
                    we use a simplified version of gettext])
         have_dosish_system=yes
+        have_w32_system=yes
         try_gettext="no"
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
@@ -409,11 +411,17 @@ esac
 
 if test "$have_dosish_system" = yes; then
    AC_DEFINE(HAVE_DOSISH_SYSTEM,1,
-             [defined if we run on some of the PCDOS like systems 
+             [Defined if we run on some of the PCDOS like systems 
               (DOS, Windoze. OS/2) with special properties like
               no file modes])
 fi
 AM_CONDITIONAL(HAVE_DOSISH_SYSTEM, test "$have_dosish_system" = yes)
+
+if test "$have_w32_system" = yes; then
+   AC_DEFINE(HAVE_W32_SYSTEM,1, [Defined if we run on a W32 API based system])
+fi
+AM_CONDITIONAL(HAVE_W32_SYSTEM, test "$have_w32_system" = yes)
+
 
 
 #
@@ -480,6 +488,7 @@ AM_CONDITIONAL(HAVE_OPENSC, test "$have_opensc" = "yes")
 
 #
 # Check whether the (highly desirable) GNU Pth library is available
+# Note, that we include a Pth emulation for W32.
 #
 AC_ARG_WITH(pth-prefix,
             AC_HELP_STRING([--with-pth-prefix=PFX],
@@ -489,7 +498,8 @@ if test x$pth_config_prefix != x ; then
    PTH_CONFIG="$pth_config_prefix/bin/pth-config"
 fi
 AC_PATH_PROG(PTH_CONFIG, pth-config, no)
-if test "$PTH_CONFIG" = "no"; then
+if test "$have_w32_system" = no; then
+ if test "$PTH_CONFIG" = "no"; then
     AC_MSG_WARN([[
 ***
 *** To support concurrent access to the gpg-agent and the SCdaemon
@@ -498,7 +508,7 @@ if test "$PTH_CONFIG" = "no"; then
 *** On a Debian GNU/Linux system you might want to try 
 ***   apt-get install libpth-dev
 ***]])
-else
+ else
   GNUPG_PTH_VERSION_CHECK(1.3.7)
   if test $have_pth = yes; then      
      PTH_CFLAGS=`$PTH_CONFIG --cflags`
@@ -507,6 +517,12 @@ else
      AC_DEFINE(USE_GNU_PTH, 1,
               [Defined if the GNU Portable Thread Library should be used])
   fi
+ fi
+else 
+ have_pth=yes
+ PTH_CFLAGS=""
+ PTH_LIBS=""
+ AC_DEFINE(USE_GNU_PTH, 1)
 fi
 AC_SUBST(PTH_CFLAGS)
 AC_SUBST(PTH_LIBS)
@@ -968,15 +984,11 @@ AM_CONDITIONAL(CROSS_COMPILING, test x$cross_compiling = xyes)
 
 GNUPG_CHECK_GNUMAKE
 
-# add some extra libs here so that previous tests don't fail for
+# Add some extra libs here so that previous tests don't fail for
 # mysterious reasons - the final link step should bail out. 
-case "${host}" in
-    *-*-mingw32*)
-        W32LIBS="-lwsock32"
-        ;;
-    *)
-       ;;
-esac
+if test "$have_w32_system" = yes; then
+   W32LIBS="-lwsock32"
+fi
 
 
 if test "$GCC" = yes; then
@@ -996,6 +1008,10 @@ AC_SUBST(W32LIBS)
 AC_DEFINE(HAVE_JNLIB_LOGGING, 1,
           [Defined if jnlib style logging functions are available])
 
+# For W32 we need to use our Pth emulation code
+if test "$have_w32_system" = yes; then
+  AC_CONFIG_LINKS(pth.h:jnlib/w32-pth.h)
+fi
 
 
 #

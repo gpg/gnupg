@@ -33,8 +33,6 @@
 #include "keydb.h" 
 #include "i18n.h"
 
-#define DIRSEP_C '/'
-
 static int active_handles;
 
 typedef enum {

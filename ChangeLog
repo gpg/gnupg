@@ -1,3 +1,8 @@
+2004-12-06  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (have_w32_system): New.  Disable Pth checks for W32.
+	Link jnlib/w32-pth.h to pth.h.
+
 2004-12-03  Werner Koch  <wk@g10code.com>
 
 	Released 1.9.13.
