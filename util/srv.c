@@ -20,10 +20,14 @@
 
 #include <config.h>
 #ifdef USE_DNS_SRV
-#include <sys/types.h>
+#ifdef __MINGW32__
+#include <windows.h>
+#else
 #include <netinet/in.h>
 #include <arpa/nameser.h>
 #include <resolv.h>
+#endif
+#include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>

@@ -21,9 +21,13 @@
 #ifndef _SRV_H_
 #define _SRV_H_
 
+#ifdef __MINGW32__
+#include <windows.h>
+#else
 #include <netinet/in.h>
 #include <arpa/nameser.h>
 #include <resolv.h>
+#endif
 
 #ifndef MAXDNAME
 #define MAXDNAME 1025

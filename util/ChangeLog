@@ -1,3 +1,7 @@
+2003-05-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* srv.h, srv.c: Include windows.h with MINGW32.
+
 2003-05-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* argparse.c, dotlock.c, fileutil.c, iobuf.c, miscutil.c,
