@@ -1,5 +1,6 @@
 /* [argparse.c wk 17.06.97] Argument Parser for option handling
- *  Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+ *  Copyright (C) 1998, 1999, 2000, 2001, 2003
+ *                2004 Free Software Foundation, Inc.
  *
  *  This file is part of GnuPG.
  *
@@ -158,39 +159,42 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
 
 
     if( arg->err ) { /* last option was erroneous */
-	const char *s;
 
 	if( filename ) {
 	    if( arg->r_opt == -6 )
-		s = "%s:%u: argument not expected\n";
+	      log_error("%s:%u: argument not expected\n", filename, *lineno );
 	    else if( arg->r_opt == -5 )
-		s = "%s:%u: read error\n";
+	      log_error("%s:%u: read error\n", filename, *lineno );
 	    else if( arg->r_opt == -4 )
-		s = "%s:%u: keyword too long\n";
+	      log_error("%s:%u: keyword too long\n", filename, *lineno );
 	    else if( arg->r_opt == -3 )
-		s = "%s:%u: missing argument\n";
+	      log_error("%s:%u: missing argument\n", filename, *lineno );
 	    else if( arg->r_opt == -7 )
-		s = "%s:%u: invalid command\n";
+	      log_error("%s:%u: invalid command\n", filename, *lineno );
 	    else if( arg->r_opt == -10 )
-		s = "%s:%u: invalid alias definition\n";
+	      log_error("%s:%u: invalid alias definition\n",filename,*lineno);
 	    else
-		s = "%s:%u: invalid option\n";
-	    log_error(s, filename, *lineno );
+	      log_error("%s:%u: invalid option\n", filename, *lineno );
 	}
 	else {
 	    if( arg->r_opt == -3 )
-		s = "Missing argument for option \"%.50s\"\n";
+	      log_error("Missing argument for option \"%.50s\"\n",
+			arg->internal.last? arg->internal.last:"[??]" );
 	    else if( arg->r_opt == -6 )
-		s = "Option \"%.50s\" does not expect an argument\n";
+	      log_error("Option \"%.50s\" does not expect an argument\n",
+			arg->internal.last? arg->internal.last:"[??]" );
 	    else if( arg->r_opt == -7 )
-		s = "Invalid command \"%.50s\"\n";
+	      log_error("Invalid command \"%.50s\"\n",
+			arg->internal.last? arg->internal.last:"[??]" );
 	    else if( arg->r_opt == -8 )
-		s = "Option \"%.50s\" is ambiguous\n";
+	      log_error("Option \"%.50s\" is ambiguous\n",
+			arg->internal.last? arg->internal.last:"[??]" );
 	    else if( arg->r_opt == -9 )
-		s = "Command \"%.50s\" is ambiguous\n";
+	      log_error("Command \"%.50s\" is ambiguous\n",
+			arg->internal.last? arg->internal.last:"[??]" );
 	    else
-		s = "Invalid option \"%.50s\"\n";
-	    log_error(s, arg->internal.last? arg->internal.last:"[??]" );
+	      log_error("Invalid option \"%.50s\"\n",
+			arg->internal.last? arg->internal.last:"[??]" );
 	}
 	if( arg->err != 1 || arg->r_opt == -5 )
 	    exit(2);
@@ -910,7 +914,7 @@ default_strusage( int level )
     switch( level ) {
       case 11: p = "foo"; break;
       case 13: p = "0.0"; break;
-      case 14: p = "Copyright (C) 2003 Free Software Foundation, Inc."; break;
+      case 14: p = "Copyright (C) 2004 Free Software Foundation, Inc."; break;
       case 15: p =
 "This program comes with ABSOLUTELY NO WARRANTY.\n"
 "This is free software, and you are welcome to redistribute it\n"

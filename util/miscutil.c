@@ -1,5 +1,6 @@
 /* miscutil.c -  miscellaneous utilities
- * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -175,15 +176,18 @@ asctimestamp( u32 stamp )
     return buffer;
 }
 
+
 /****************
  * Print a string to FP, but filter all control characters out.
  */
 void
-print_string( FILE *fp, const byte *p, size_t n, int delim )
+print_string2( FILE *fp, const byte *p, size_t n, int delim, int delim2 )
 {
     for( ; n; n--, p++ )
-	if( *p < 0x20 || (*p >= 0x7f && *p < 0xa0) || *p == delim ||
-	    (delim && *p=='\\')) {
+	if( *p < 0x20 || (*p >= 0x7f && *p < 0xa0)
+	    || *p == delim || *p == delim2
+	    || ((delim || delim2) && *p=='\\'))
+	  {
 	    putc('\\', fp);
 	    if( *p == '\n' )
 		putc('n', fp);
@@ -199,9 +203,15 @@ print_string( FILE *fp, const byte *p, size_t n, int delim )
 		putc('0', fp);
 	    else
 		fprintf(fp, "x%02x", *p );
-	}
+	  }
 	else
-	    putc(*p, fp);
+	  putc(*p, fp);
+}
+
+void
+print_string( FILE *fp, const byte *p, size_t n, int delim )
+{
+  print_string2(fp,p,n,delim,0);
 }
 
 /****************

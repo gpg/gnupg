@@ -1,3 +1,13 @@
+2004-01-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* argparse.c (default_strusage): Update copyright date.
+	(initialize): Avoid a number of -Wformat-nonliteral warnings.
+	These aren't actual problems, but the warnings bothered me.
+
+	* miscutil.c (print_string2): New variation on print_string that
+	allows two delimiters.
+	(print_string): Call print_string2 to do work.
+
 2003-12-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10u.c: Dead code.  Remove.
