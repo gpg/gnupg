@@ -50,32 +50,9 @@
 #include "main.h"
 #include "i18n.h"
 #include "status.h"
-
-
-enum gpga_protocol_codes {
-    /* Request codes */
-    GPGA_PROT_GET_VERSION     = 1,
-    GPGA_PROT_GET_PASSPHRASE  = 2,
-    GPGA_PROT_CLEAR_PASSPHRASE= 3,
-    GPGA_PROT_SHUTDOWN        = 4,
-    GPGA_PROT_FLUSH           = 5,
-
-    /* Reply codes */
-    GPGA_PROT_REPLY_BASE     = 0x10000,
-    GPGA_PROT_OKAY           = 0x10001,
-    GPGA_PROT_GOT_PASSPHRASE = 0x10002,
-
-    /* Error codes */
-    GPGA_PROT_ERROR_BASE     = 0x20000,
-    GPGA_PROT_PROTOCOL_ERROR = 0x20001,
-    GPGA_PROT_INVALID_REQUEST= 0x20002,
-    GPGA_PROT_CANCELED       = 0x20003,    
-    GPGA_PROT_NO_PASSPHRASE  = 0x20004,    
-    GPGA_PROT_BAD_PASSPHRASE = 0x20005,
-    GPGA_PROT_INVALID_DATA   = 0x20006,
-    GPGA_PROT_NOT_IMPLEMENTED= 0x20007,
-    GPGA_PROT_UI_PROBLEM     = 0x20008
-};
+#ifdef ENABLE_AGENT_SUPPORT
+#include "assuan.h"
+#endif /*ENABLE_AGENT_SUPPORT*/
 
 
 #define buftou32( p )  ((*(byte*)(p) << 24) | (*((byte*)(p)+1)<< 16) | \
@@ -191,187 +168,29 @@ read_passphrase_from_fd( int fd )
   fd_passwd = pw;
 }
 
+
+
+#ifdef ENABLE_AGENT_SUPPORT
+/* Send one option to the gpg-agent.  */
 static int
-writen (int fd, const void *buf, size_t nbytes)
+agent_send_option (assuan_context_t ctx, const char *name, const char *value)
 {
-#if defined (_WIN32)
-  DWORD nwritten, nleft = nbytes;
-    
-  while (nleft > 0)
-    {
-      if (!WriteFile ((HANDLE)write_fd, buf, nleft, &nwritten, NULL))
-        {
-          log_error ("write failed: %s\n", w32_strerror (0));
-          return -1;
-        }
-      /*log_info ("** WriteFile fd=%d nytes=%d nwritten=%d\n",
-        write_fd, nbytes, (int)nwritten);*/
-      Sleep (100);
-    	
-      nleft -= nwritten;
-      buf = (const BYTE *)buf + nwritten;
-    }
-#elif defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
-  /* not implemented */
-#else
-  size_t nleft = nbytes;
-  int nwritten;
-
-  while (nleft > 0)
-    {
-      nwritten = write (fd, buf, nleft);
-      if (nwritten < 0)
-        {
-          if (errno == EINTR)
-            nwritten = 0;
-          else
-            {
-              log_error ("write() failed: %s\n", strerror (errno));
-              return -1;
-            }
-        }
-      nleft -= nwritten;
-      buf = (const char*)buf + nwritten;
-    }
-#endif
-    
-  return 0;
-}
-
-
-static int
-readn (int fd, void *buf, size_t buflen, size_t *ret_nread)
-{
-#if defined (_WIN32)
-  DWORD nread, nleft = buflen;
-    
-  while (nleft > 0)
-    {
-      if (!ReadFile ((HANDLE)read_fd, buf, nleft, &nread, NULL))
-        {
-          log_error ("read() error: %s\n", w32_strerror (0));
-          return -1;
-    	}
-      if (!nread || GetLastError() == ERROR_BROKEN_PIPE)
-        break;
-      /*log_info ("** ReadFile fd=%d buflen=%d nread=%d\n",
-        read_fd, buflen, (int)nread);*/
-      Sleep (100);
-    	
-      nleft -= nread;
-      buf = (BYTE *)buf + nread;
-    }    	
-  if (ret_nread)
-    *ret_nread = buflen - nleft;
-
-#elif defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
-  /* not implemented */
-#else
-  size_t nleft = buflen;
-  int nread;
-  char *p;
-  
-  p = buf;
-  while( nleft > 0 )
-    {
-      nread = read ( fd, buf, nleft );
-      if( nread < 0 ) 
-        {
-          if (errno == EINTR)
-            nread = 0;
-          else 
-            {
-              log_error ( "read() error: %s\n", strerror (errno) );
-              return -1;
-            }
-        }
-      else if (!nread)
-        break; /* EOF */
-      nleft -= nread;
-      buf = (char*)buf + nread;
-    }
-  if (ret_nread)
-    *ret_nread = buflen - nleft;
-#endif
-    
-  return 0;
-}
-
-/* read an entire line */
-static int
-readaline (int fd, char *buf, size_t buflen)
-{
-  size_t nleft = buflen;
-  char *p;
-  int nread = 0;
-
-  while (nleft > 0)
-    {
-      int n = read (fd, buf, nleft);
-      if (n < 0)
-        {
-          if (errno == EINTR)
-            continue;
-          return -1; /* read error */
-        }
-      else if (!n)
-        {
-          return -1; /* incomplete line */
-        }
-      p = buf;
-      nleft -= n;
-      buf += n;
-      nread += n;
-      
-      for (; n && *p != '\n'; n--, p++)
-        ;
-      if (n)
-        {
-          break; /* at least one full line available - that's enough.
-                    This function is just a temporary hack until we use
-                    the assuna lib in gpg.  So it is okay to forget
-                    about pending bytes */
-        }
-    }
-
-  return nread; 
-}
-
-
-
-#if !defined (__riscos__)
-
-#if !defined (_WIN32)
-/* For the new Assuan protocol we may have to send options */
-static int
-agent_send_option (int fd, const char *name, const char *value)
-{
-  char buf[200];
-  int nread;
   char *line;
-  int i; 
+  int rc; 
   
-  line = m_alloc (7 + strlen (name) + 1 + strlen (value) + 2);
-  strcpy (stpcpy (stpcpy (stpcpy (
-                     stpcpy (line, "OPTION "), name), "="), value), "\n");
-  i = writen (fd, line, strlen (line));
-  m_free (line);
-  if (i)
-    return -1;
-  
-  /* get response */
-  nread = readaline (fd, buf, DIM(buf)-1);
-  if (nread < 3)
-    return -1;
-  
-  if (buf[0] == 'O' && buf[1] == 'K' && (buf[2] == ' ' || buf[2] == '\n')) 
-    return 0; /* okay */
+  if (!value || !*value)
+    return 0; /* Avoid sending empty option values. */
 
-  return -1;
+  line = xmalloc (7 + strlen (name) + 1 + strlen (value) + 1);
+  strcpy (stpcpy (stpcpy (stpcpy (line, "OPTION "), name), "="), value);
+  rc = assuan_transact (ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  xfree (line);
+  return rc? -1 : 0;
 }
 
+/* Send all required options to the gpg-agent.  */
 static int 
-agent_send_all_options (int fd)
+agent_send_all_options (assuan_context_t ctx)
 {
   char *dft_display = NULL;
   const char *dft_ttyname = NULL;
@@ -383,7 +202,7 @@ agent_send_all_options (int fd)
   dft_display = getenv ("DISPLAY");
   if (opt.display || dft_display)
     {
-      if (agent_send_option (fd, "display",
+      if (agent_send_option (ctx, "display",
                              opt.display ? opt.display : dft_display))
         return -1;
     }
@@ -400,7 +219,7 @@ agent_send_all_options (int fd)
     }
   if (opt.ttyname || dft_ttyname)
     {
-      if (agent_send_option (fd, "ttyname",
+      if (agent_send_option (ctx, "ttyname",
                              opt.ttyname ? opt.ttyname : dft_ttyname))
         return -1;
     }
@@ -408,7 +227,7 @@ agent_send_all_options (int fd)
   dft_ttytype = getenv ("TERM");
   if (opt.ttytype || (dft_ttyname && dft_ttytype))
     {
-      if (agent_send_option (fd, "ttytype",
+      if (agent_send_option (ctx, "ttytype",
                              opt.ttyname ? opt.ttytype : dft_ttytype))
         return -1;
     }
@@ -421,7 +240,7 @@ agent_send_all_options (int fd)
 #endif
   if (opt.lc_ctype || (dft_ttyname && dft_lc))
     {
-      rc = agent_send_option (fd, "lc-ctype",
+      rc = agent_send_option (ctx, "lc-ctype",
                               opt.lc_ctype ? opt.lc_ctype : dft_lc);
     }
 #if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
@@ -442,7 +261,7 @@ agent_send_all_options (int fd)
 #endif
   if (opt.lc_messages || (dft_ttyname && dft_lc))
     {
-      rc = agent_send_option (fd, "lc-messages",
+      rc = agent_send_option (ctx, "lc-messages",
                               opt.lc_messages ? opt.lc_messages : dft_lc);
     }
 #if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)
@@ -454,170 +273,147 @@ agent_send_all_options (int fd)
 #endif
   return rc;
 }
-#endif /*!_WIN32*/
+#endif /*ENABLE_AGENT_SUPPORT*/
 
 
 /*
- * Open a connection to the agent and send the magic string
- * Returns: -1 on error or an filedescriptor for urther processing
+ * Open a connection to the agent and initializes the connection.
+ * Returns: -1 on error; on success a file descriptor for that
+ * connection is returned.
  */
-
-static int
-agent_open (int *ret_prot)
+#ifdef ENABLE_AGENT_SUPPORT
+static assuan_context_t
+agent_open (void)
 {
-#if defined (_WIN32)
-    int fd;
-    char *infostr, *p;
-    HANDLE h;
-    char pidstr[128];
+  int rc;
+  assuan_context_t ctx;
+  char *infostr, *p;
+  int prot;
+  int pid;
 
-    *ret_prot = 0;
-    if ( !(infostr = read_w32_registry_string(NULL, "Software\\GNU\\GnuPG",
-                                              "agentPID")) 
-         || *infostr == '0') {
-    	log_error( _("gpg-agent is not available in this session\n"));
-    	return -1;
-    }
-    free(infostr);
-    
-    sprintf(pidstr, "%u", (unsigned int)GetCurrentProcessId());
-    if (write_w32_registry_string(NULL, "Software\\GNU\\GnuPG",
-                                  "agentCID", pidstr)) {
-        log_error( _("can't set client pid for the agent\n") );
-        return -1;
-    }
-    h = OpenEvent(EVENT_ALL_ACCESS, FALSE, "gpg_agent");
-    SetEvent(h);
-    Sleep(50); /* some time for the server */ 
-    if ( !(p = read_w32_registry_string(NULL, "Software\\GNU\\GnuPG",
-                                        "agentReadFD")) ) {
-    	log_error( _("can't get server read FD for the agent\n") );
-    	return -1;
-    }
-    read_fd = atol(p);
-    free(p);    
-    if ( !(p = read_w32_registry_string(NULL, "Software\\GNU\\GnuPG",
-                                        "agentWriteFD")) ) {
-    	log_error ( _("can't get server write FD for the agent\n") );
-    	return -1;
-    }
-    write_fd = atol(p);
-    free(p);
-    fd = 0;
-
-    if ( writen ( fd, "GPGA\0\0\0\x01", 8 ) ) {
-        fd = -1;
-    }
-#else /* Posix */
-
-    int fd;
-    char *infostr, *p;
-    struct sockaddr_un client_addr;
-    size_t len;
-    int prot;
-
-    if (opt.gpg_agent_info)
-      infostr = m_strdup (opt.gpg_agent_info);
-    else
-      {
-        infostr = getenv ( "GPG_AGENT_INFO" );
-        if ( !infostr ) {
+  if (opt.gpg_agent_info)
+    infostr = xstrdup (opt.gpg_agent_info);
+  else
+    {
+      infostr = getenv ( "GPG_AGENT_INFO" );
+      if (!infostr || !*infostr) 
+        {
           log_error (_("gpg-agent is not available in this session\n"));
           opt.use_agent = 0;
-          return -1;
+          return NULL;
         }
-        infostr = m_strdup ( infostr );
-      }
+      infostr = xstrdup ( infostr );
+    }
+  
+  if ( !(p = strchr (infostr, PATHSEP_C)) || p == infostr)
+    {
+      log_error ( _("malformed GPG_AGENT_INFO environment variable\n"));
+      xfree (infostr);
+      opt.use_agent = 0;
+      return NULL;
+    }
+  *p++ = 0;
+  pid = atoi (p);
+  while (*p && *p != PATHSEP_C)
+    p++;
+  prot = *p? atoi (p+1) : 0;
+  if (prot != 1)
+    {
+      log_error (_("gpg-agent protocol version %d is not supported\n"), prot);
+      xfree (infostr);
+      opt.use_agent = 0;
+      return NULL;
+    }
+     
+  rc = assuan_socket_connect (&ctx, infostr, pid);
+  if (rc)
+    {
+      log_error ( _("can't connect to `%s': %s\n"), 
+                  infostr, assuan_strerror (rc));
+      xfree (infostr );
+      opt.use_agent = 0;
+      return NULL;
+    }
+  xfree (infostr);
 
-    if ( !(p = strchr ( infostr, ':')) || p == infostr
-         || (p-infostr)+1 >= sizeof client_addr.sun_path ) {
-        log_error( _("malformed GPG_AGENT_INFO environment variable\n"));
-        m_free (infostr );
-        opt.use_agent = 0;
-        return -1;
+  if (agent_send_all_options (ctx))
+    {
+      log_error (_("problem with the agent - disabling agent use\n"));
+      assuan_disconnect (ctx);
+      opt.use_agent = 0;
+      return NULL;
     }
-    *p++ = 0;
-    /* See whether this is the new gpg-agent using the Assuna protocl.
-       This agent identifies itself by have an info string with a
-       version number in the 3rd field. */
-    while (*p && *p != ':')
-      p++;
-    prot = *p? atoi (p+1) : 0;
-    if ( prot < 0 || prot > 1) {
-        log_error (_("gpg-agent protocol version %d is not supported\n"),prot);
-        m_free (infostr );
-        opt.use_agent = 0;
-        return -1;
-    }
-    *ret_prot = prot;
-       
-    if( (fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1 ) {
-        log_error ("can't create socket: %s\n", strerror(errno) );
-        m_free (infostr );
-        opt.use_agent = 0;
-        return -1;
-    }
-    
-    memset( &client_addr, 0, sizeof client_addr );
-    client_addr.sun_family = AF_UNIX;
-    strcpy( client_addr.sun_path, infostr );
-    len = offsetof (struct sockaddr_un, sun_path)
-        + strlen(client_addr.sun_path) + 1;
-    
-    if( connect( fd, (struct sockaddr*)&client_addr, len ) == -1 ) {
-        log_error ( _("can't connect to `%s': %s\n"), 
-                    infostr, strerror (errno) );
-        m_free (infostr );
-        close (fd );
-        opt.use_agent = 0;
-        return -1;
-    }
-    m_free (infostr);
 
-    if (!prot) {
-        if ( writen ( fd, "GPGA\0\0\0\x01", 8 ) ) {
-          close (fd);
-          fd = -1;
-        }
-    }
-    else { /* assuan based gpg-agent */
-      char line[200];
-      int nread;
-
-      nread = readaline (fd, line, DIM(line));
-      if (nread < 3 || !(line[0] == 'O' && line[1] == 'K'
-                         && (line[2] == '\n' || line[2] == ' ')) ) {
-        log_error ( _("communication problem with gpg-agent\n"));
-        close (fd );
-        opt.use_agent = 0;
-        return -1;
-      }
-
-      if (agent_send_all_options (fd)) {
-        log_error (_("problem with the agent - disabling agent use\n"));
-        close (fd);
-        opt.use_agent = 0;
-        return -1;
-      }
-        
-    }
-#endif
-
-    return fd;
+  return ctx;
 }
+#endif/*ENABLE_AGENT_SUPPORT*/
 
 
+#ifdef ENABLE_AGENT_SUPPORT
 static void
-agent_close ( int fd )
+agent_close (assuan_context_t ctx)
 {
-#if defined (_WIN32)
-    HANDLE h = OpenEvent(EVENT_ALL_ACCESS, FALSE, "gpg_agent");
-    ResetEvent(h);
-#else
-    close (fd);
-#endif
+  assuan_disconnect (ctx);
 }
-#endif /* !__riscos__ */
+#endif /*ENABLE_AGENT_SUPPORT*/
+
+
+/* Copy the text ATEXT into the buffer P and do plus '+' and percent
+   escaping.  Note that the provided buffer needs to be 3 times the
+   size of ATEXT plus 1.  Returns a pointer to the leading Nul in P. */
+#ifdef ENABLE_AGENT_SUPPORT
+static char *
+percent_plus_escape (char *p, const char *atext)
+{
+  const unsigned char *s;
+
+  for (s=atext; *s; s++)
+    {
+      if (*s < ' ' || *s == '+')
+        {
+          sprintf (p, "%%%02X", *s);
+          p += 3;
+        }
+      else if (*s == ' ')
+        *p++ = '+';
+      else
+        *p++ = *s;
+    }
+  *p = 0;
+  return p;
+}
+#endif /*ENABLE_AGENT_SUPPORT*/
+
+
+#ifdef ENABLE_AGENT_SUPPORT
+
+/* Object for the agent_okay_cb function.  */
+struct agent_okay_cb_s {
+  char *pw;
+};
+
+/* A callback used to get the passphrase from the okay line.  See
+   agent-get_passphrase for details.  LINE is the rest of the OK
+   status line without leading white spaces. */
+static assuan_error_t
+agent_okay_cb (void *opaque, const char *line)
+{ 
+  struct agent_okay_cb_s *parm = opaque;
+  int i;
+
+  /* Note: If the malloc below fails we won't be able to wipe the
+     memory at LINE given the current implementation of the Assuan
+     code. There is no easy ay around this w/o adding a lot of more
+     memory function code to allow wiping arbitrary stuff on memory
+     failure. */
+  parm->pw = xmalloc_secure (strlen (line)/2+2);
+  
+  for (i=0; hexdigitp (line) && hexdigitp (line+1); line += 2)
+    parm->pw[i++] = xtoi_2 (line);
+  parm->pw[i] = 0; 
+  return 0;
+}
+#endif /*ENABLE_AGENT_SUPPORT*/
 
 
 
@@ -636,19 +432,13 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
                        const char *custom_description,
                        const char *custom_prompt, int *canceled)
 {
-#if defined(__riscos__)
-  return NULL;
-#else
-  size_t n;
+#ifdef ENABLE_AGENT_SUPPORT
   char *atext = NULL;
-  char buf[50];
-  int fd = -1;
-  u32 reply;
+  assuan_context_t ctx = NULL;
   char *pw = NULL;
   PKT_public_key *pk = m_alloc_clear( sizeof *pk );
   byte fpr[MAX_FINGERPRINT_LEN];
   int have_fpr = 0;
-  int prot;
   char *orig_codeset = NULL;
 
   if (canceled)
@@ -667,7 +457,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
     }
   
 #ifdef ENABLE_NLS
-  /* The Assuan agent protol requires us to transmit utf-8 strings */
+  /* The Assuan agent protocol requires us to transmit utf-8 strings */
   orig_codeset = bind_textdomain_codeset (PACKAGE, NULL);
 #ifdef HAVE_LANGINFO_CODESET
   if (!orig_codeset)
@@ -681,7 +471,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
     }
 #endif
 
-  if ( (fd = agent_open (&prot)) == -1 ) 
+  if ( !(ctx = agent_open ()) ) 
     goto failure;
 
   if (custom_description)
@@ -740,100 +530,23 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
   else
     atext = m_strdup ( _("Enter passphrase\n") );
                 
-  if (!prot)
-    { /* old style protocol */
-      size_t nread;
-
-      n = 4 + 20 + strlen (atext);
-      u32tobuf (buf, n );
-      u32tobuf (buf+4, GPGA_PROT_GET_PASSPHRASE );
-      memcpy (buf+8, fpr, 20 );
-      if ( writen ( fd, buf, 28 ) || writen ( fd, atext, strlen (atext) ) ) 
-        goto failure;
-      m_free (atext); atext = NULL;
-      
-      /* get response */
-      if ( readn ( fd, buf, 12, &nread ) ) 
-        goto failure;
-      
-      if ( nread < 8 ) 
-        {
-          log_error ( "response from agent too short\n" );
-          goto failure;
-        }
-      n = buftou32 ( buf );
-      reply = buftou32 ( buf + 4 );
-      if ( reply == GPGA_PROT_GOT_PASSPHRASE ) 
-        {
-          size_t pwlen;
-          size_t nn;
-          
-          if ( nread < 12 || n < 8 ) 
-            {
-              log_error ( "response from agent too short\n" );
-              goto failure;
-            }
-          pwlen = buftou32 ( buf + 8 );
-          nread -= 12;
-          n -= 8;
-          if ( pwlen > n || n > 1000 ) 
-            {
-              log_error (_("passphrase too long\n"));
-              /* or protocol error */
-              goto failure;
-            }
-          /* we read the whole block in one chunk to give no hints
-           * on how long the passhrase actually is - this wastes some bytes
-           * but because we already have this padding we should not loosen
-           * this by issuing 2 read calls */
-          pw = m_alloc_secure ( n+1 );
-          if ( readn ( fd, pw, n, &nn ) )
-            goto failure;
-          if ( n != nn ) 
-            {
-              log_error (_("invalid response from agent\n"));
-              goto failure;           
-            }
-          pw[pwlen] = 0; /* make a C String */
-          agent_close (fd);
-          if (pk)
-            free_public_key( pk );
-#ifdef ENABLE_NLS
-          if (orig_codeset)
-            bind_textdomain_codeset (PACKAGE, orig_codeset);
-#endif
-          m_free (orig_codeset);
-          return pw;
-        }
-      else if ( reply == GPGA_PROT_CANCELED ) 
-        {
-          log_info ( _("cancelled by user\n") );
-          if (canceled)
-            *canceled = 1;
-        }
-      else 
-        log_error ( _("problem with the agent: agent returns 0x%lx\n"),
-                    (ulong)reply );
-    }
-  else
-    { /* The new Assuan protocol */
-      int nread;
+  { 
       char *line, *p;
-      const unsigned char *s;
-      int i; 
+      int i, rc; 
+      struct agent_okay_cb_s okay_cb_parm;
 
       if (!tryagain_text)
         tryagain_text = "X";
       else
         tryagain_text = _(tryagain_text);
 
-      /* We allocate 2 time the needed space for atext so that there
-         is enough space for escaping */
-      line = m_alloc (15 + 46 
-                      + 3*strlen (tryagain_text)
+      /* We allocate 23 times the needed space for thye texts so that
+         there is enough space for escaping. */
+      line = xmalloc (15 + 46 
                       + 3*strlen (atext)
                       + 3*strlen (custom_prompt? custom_prompt:"")
-                      + 2);
+                      + 3*strlen (tryagain_text)
+                      + 1);
       strcpy (line, "GET_PASSPHRASE ");
       p = line+15;
       if (!mode && have_fpr)
@@ -842,92 +555,50 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
             sprintf (p, "%02X", fpr[i]);
         }
       else
-        *p++ = 'X'; /* no caching */
+        *p++ = 'X'; /* No caching. */
       *p++ = ' ';
-      for (i=0, s=tryagain_text; *s; s++)
-        {
-          if (*s < ' ' || *s == '+')
-            {
-              sprintf (p, "%%%02X", *s);
-              p += 3;
-            }
-          else if (*s == ' ')
-            *p++ = '+';
-          else
-            *p++ = *s;
-        }
+
+      p = percent_plus_escape (p, tryagain_text);
       *p++ = ' ';
 
       /* The prompt.  */
       if (custom_prompt)
         {
           char *tmp = native_to_utf8 (custom_prompt);
-          for (i=0, s=tmp; *s; s++)
-            {
-              if (*s < ' ' || *s == '+')
-                {
-                  sprintf (p, "%%%02X", *s);
-                  p += 3;
-                }
-              else if (*s == ' ')
-                *p++ = '+';
-              else
-                *p++ = *s;
-            }
+          p = percent_plus_escape (p, tmp);
           xfree (tmp);
         }
       else
-        *p++ = 'X'; /* Use the standard prompt */
-
+        *p++ = 'X'; /* Use the standard prompt. */
       *p++ = ' ';
-      /* copy description */
-      for (i=0, s= atext; *s; s++)
-        {
-          if (*s < ' ' || *s == '+')
-            {
-              sprintf (p, "%%%02X", *s);
-              p += 3;
-            }
-          else if (*s == ' ')
-            *p++ = '+';
-          else
-            *p++ = *s;
-        }
-      *p++ = '\n';
-      i = writen (fd, line, p - line);
-      m_free (line);
-      if (i)
-        goto failure;
-      m_free (atext); atext = NULL;
-      
-      /* get response */
-      pw = m_alloc_secure (500);
-      nread = readaline (fd, pw, 499);
-      if (nread < 3)
-        goto failure;
-      
-      if (pw[0] == 'O' && pw[1] == 'K' && pw[2] == ' ') 
-        { /* we got a passphrase - convert it back from hex */
-          size_t pwlen = 0;
 
-          for (i=3; i < nread && hexdigitp (pw+i); i+=2)
-            pw[pwlen++] = xtoi_2 (pw+i);
-          pw[pwlen] = 0; /* make a C String */
-          agent_close (fd);
+      /* Copy description. */
+      percent_plus_escape (p, atext);
+
+      /* Call gpg-agent.  */
+      memset (&okay_cb_parm, 0, sizeof okay_cb_parm);
+      rc = assuan_transact2 (ctx, line, NULL, NULL, NULL, NULL, NULL, NULL,
+                             agent_okay_cb, &okay_cb_parm);
+
+      xfree (line);
+      xfree (atext); atext = NULL;
+      if (!rc)
+        {
+          assert (okay_cb_parm.pw);
+          pw = okay_cb_parm.pw;
+          agent_close (ctx);
           if (pk)
             free_public_key( pk );
 #ifdef ENABLE_NLS
           if (orig_codeset)
             bind_textdomain_codeset (PACKAGE, orig_codeset);
 #endif
-          m_free (orig_codeset);
+          xfree (orig_codeset);
           return pw;
         }
-      else if (nread > 4 && !memcmp (pw, "ERR ", 4)
-	       && (0xffff & strtoul (&pw[4], NULL, 0)) == 99)
+      else if (rc && (rc & 0xffff) == 99)
 	{
-	  /* 99 is GPG_ERR_CANCELED.  FIXME: Check tail and overflow,
-	     and use gpg-error.  */
+	  /* 99 is GPG_ERR_CANCELED. */
           log_info (_("cancelled by user\n") );
           if (canceled)
             *canceled = 1;
@@ -937,7 +608,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
           log_error (_("problem with the agent - disabling agent use\n"));
           opt.use_agent = 0;
         }
-    }
+  }
       
         
  failure:
@@ -945,16 +616,17 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
   if (orig_codeset)
     bind_textdomain_codeset (PACKAGE, orig_codeset);
 #endif
-  m_free (atext);
-  if ( fd != -1 )
-    agent_close (fd);
-  m_free (pw );
+  xfree (atext);
+  agent_close (ctx);
+  xfree (pw );
   if (pk)
     free_public_key( pk );
-  
+
+#endif /*ENABLE_AGENT_SUPPORT*/
+
   return NULL;
-#endif /* Posix or W32 */
 }
+
 
 /*
  * Clear the cached passphrase
@@ -962,17 +634,10 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
 void
 passphrase_clear_cache ( u32 *keyid, int algo )
 {
-#if defined(__riscos__)
-  return ;
-#else
-  size_t n;
-  char buf[200];
-  int fd = -1;
-  size_t nread;
-  u32 reply;
+#ifdef ENABLE_AGENT_SUPPORT
+  assuan_context_t ctx = NULL;
   PKT_public_key *pk;
   byte fpr[MAX_FINGERPRINT_LEN];
-  int prot;
   
 #if MAX_FINGERPRINT_LEN < 20
 #error agent needs a 20 byte fingerprint
@@ -981,7 +646,7 @@ passphrase_clear_cache ( u32 *keyid, int algo )
   if (!opt.use_agent)
     return;
   
-  pk = m_alloc_clear ( sizeof *pk );
+  pk = xcalloc (1, sizeof *pk);
   memset (fpr, 0, MAX_FINGERPRINT_LEN );
   if( !keyid || get_pubkey( pk, keyid ) )
     {
@@ -993,58 +658,23 @@ passphrase_clear_cache ( u32 *keyid, int algo )
     fingerprint_from_pk( pk, fpr, &dummy );
   }
     
-  if ( (fd = agent_open (&prot)) == -1 ) 
+  if ( !(ctx = agent_open ()) ) 
     goto failure;
 
-  if (!prot)
-    {
-      n = 4 + 20;
-      u32tobuf (buf, n );
-      u32tobuf (buf+4, GPGA_PROT_CLEAR_PASSPHRASE );
-      memcpy (buf+8, fpr, 20 );
-      if ( writen ( fd, buf, 28 ) )  
-        goto failure;
-      
-      /* get response */
-      if ( readn ( fd, buf, 8, &nread ) ) 
-        goto failure;
-      
-      if ( nread < 8 ) {
-        log_error ( "response from agent too short\n" );
-        goto failure;
-      }
-      
-      reply = buftou32 ( buf + 4 );
-      if ( reply != GPGA_PROT_OKAY && reply != GPGA_PROT_NO_PASSPHRASE )
-        {
-          log_error ( _("problem with the agent: agent returns 0x%lx\n"),
-                      (ulong)reply );
-        }
-    }
-  else 
-    { /* The assuan protocol */
+  { 
       char *line, *p;
-      int i; 
+      int i, rc; 
 
-      line = m_alloc (17 + 40 + 2);
+      line = xmalloc (17 + 40 + 2);
       strcpy (line, "CLEAR_PASSPHRASE ");
       p = line+17;
       for (i=0; i < 20; i++, p +=2 )
         sprintf (p, "%02X", fpr[i]);
-      *p++ = '\n';
-      i = writen (fd, line, p - line);
-      m_free (line);
-      if (i)
-        goto failure;
-      
-      /* get response */
-      nread = readaline (fd, buf, DIM(buf)-1);
-      if (nread < 3)
-        goto failure;
-      
-      if (buf[0] == 'O' && buf[1] == 'K' && (buf[2] == ' ' || buf[2] == '\n')) 
-        ;
-      else 
+      *p = 0;
+
+      rc = assuan_transact (ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+      xfree (line);
+      if (rc)
         {
           log_error (_("problem with the agent - disabling agent use\n"));
           opt.use_agent = 0;
@@ -1052,11 +682,10 @@ passphrase_clear_cache ( u32 *keyid, int algo )
     }
         
  failure:
-  if (fd != -1)
-    agent_close (fd);
+  agent_close (ctx);
   if (pk)
     free_public_key( pk );
-#endif /* Posix or W32 */
+#endif /*ENABLE_AGENT_SUPPORT*/
 }
 
 

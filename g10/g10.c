@@ -2591,6 +2591,14 @@ main( int argc, char **argv )
 		        "--no-literal" );
     }
 
+#ifndef ENABLE_AGENT_SUPPORT   
+    if (opt.use_agent) {
+      log_info(_("NOTE: %s is not available in this version\n"),
+               "--use-agent");
+      opt.use_agent = 0;
+    }
+#endif /*!ENABLE_AGENT_SUPPORT*/
+
     if (opt.set_filesize)
 	log_info(_("NOTE: %s is not for normal use!\n"), "--set-filesize");
     if( opt.batch )

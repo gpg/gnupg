@@ -1,5 +1,5 @@
 /* memory.h - memory allocation
- *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -93,9 +93,9 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 /* To prepare a migration to the xmalloc suite of function as used in
    1.9 we define a couple of macros. */
 #define xmalloc(n)        m_alloc ((n))
-#define xcalloc(n,m)      m_alloc_clear ((n)*(m))
+void *xcalloc (size_t n, size_t m);
 #define xmalloc_secure(n) m_alloc_secure (n)
-#define xcalloc_secure(n) m_alloc_secure_clear ((n)*(m))
+void *xcalloc_secure (size_t n, size_t m);
 #define xrealloc(a,n)     m_realloc ((a),(n))
 #define xstrdup(a)        m_strdup ((a))
 #define xfree(a)          m_free (a)

@@ -1,3 +1,22 @@
+2005-04-04  Werner Koch  <wk@g10code.com>
+
+	* memory.c (xcalloc, xcalloc_secure): New wrappers.
+
+	* assuan-client.c (assuan_transact): Factored all code out to ..
+	(assuan_transact2): .. new.  Add arg OKAY_CB.  Wipe the memory
+	processed though that callback.
+
+2005-03-31  Werner Koch  <wk@g10code.com>
+
+	* isascii.c: New.  This is an autoconf replacement function.
+
+	* Makefile.am (assuan_source): New.  Only used when agent support
+	has been requested.
+	* assuan-buffer.c, assuan-client.c, assuan-defs.h,
+	* assuan-errors.c, assuan-logging.c, assuan-socket-connect.c,
+	* assuan-socket.c, assuan-util.c, assuan-connect.c: New.  Taken
+	from libassuan 0.6.9 and adjusted for our limited use of Assuan.
+
 2005-03-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* ttyio.c (tty_enable_completion, tty_disable_completion): Enable

@@ -122,13 +122,6 @@ AC_ARG_ENABLE(selinux-support,
 AC_MSG_RESULT($selinux_support)
 
 
-AC_MSG_CHECKING([whether OpenPGP card support is requested])
-AC_ARG_ENABLE(card-support,
-              AC_HELP_STRING([--disable-card-support],
-                             [disable OpenPGP card support]),
-              card_support=$enableval, card_support=yes)
-AC_MSG_RESULT($card_support)
-
 AC_MSG_CHECKING([whether the new iconv based code is requested])
 AC_ARG_ENABLE(gnupg-iconv,
               AC_HELP_STRING([--disable-gnupg-iconv],
@@ -158,6 +151,8 @@ use_sha256=yes
 use_sha512=yes
 use_bzip2=yes
 use_exec=yes
+card_support=yes
+agent_support=yes
 
 AC_ARG_ENABLE(minimal,
    AC_HELP_STRING([--enable-minimal],[build the smallest gpg binary possible]),
@@ -170,7 +165,27 @@ AC_ARG_ENABLE(minimal,
    use_sha256=no
    use_sha512=no
    use_bzip2=no
-   use_exec=no)
+   use_exec=no
+   card_support=no
+   agent_support=no)
+
+
+AC_MSG_CHECKING([whether OpenPGP card support is requested])
+AC_ARG_ENABLE(card-support,
+              AC_HELP_STRING([--disable-card-support],
+                             [disable OpenPGP card support]),
+              card_support=$enableval)
+AC_MSG_RESULT($card_support)
+
+
+# Note that we may later disable the agent support based on the platform.
+AC_MSG_CHECKING([whether gpg-agent support is requested])
+AC_ARG_ENABLE(agent-support,
+              AC_HELP_STRING([--disable-agent-support],
+                             [disable gpg-agent support]),
+              agent_support=$enableval)
+AC_MSG_RESULT($agent_support)
+
 
 AC_MSG_CHECKING([whether to enable the RSA public key algorithm])
 AC_ARG_ENABLE(rsa,
@@ -471,6 +486,7 @@ case "${host}" in
         have_dosish_system=yes
         need_dlopen=no
         try_gettext="no"
+        agent_support=no
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
         # OS/2 with the EMX environment
@@ -478,6 +494,7 @@ case "${host}" in
         AC_DEFINE(HAVE_DRIVE_LETTERS)
         have_dosish_system=yes
         try_gettext="no"
+        agent_support=no
         ;;
 
     i?86-*-msdosdjgpp*)
@@ -486,6 +503,7 @@ case "${host}" in
         AC_DEFINE(HAVE_DRIVE_LETTERS)
         have_dosish_system=yes
         try_gettext="no"
+        agent_support=no
         ;;
 
     *-*-freebsd*)
@@ -754,6 +772,10 @@ if test "$card_support" = yes ; then
   AC_DEFINE(ENABLE_CARD_SUPPORT,1,[Define to include OpenPGP card support])
 fi
 
+if test "$agent_support" = yes ; then
+  AC_DEFINE(ENABLE_AGENT_SUPPORT,1,[Define to include gpg-agent support])
+fi
+
 if test "$try_extensions" = yes ; then
   AC_DEFINE(USE_DYNAMIC_LINKING,1,[Define to enable the use of extensions])
 fi
@@ -771,6 +793,7 @@ if test "$do_backsigs" = yes ; then
 fi
 
 AM_CONDITIONAL(ENABLE_CARD_SUPPORT, test "$card_support" = yes)
+AM_CONDITIONAL(ENABLE_AGENT_SUPPORT, test "$agent_support" = yes)
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -841,6 +864,7 @@ AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(atexit raise getpagesize strftime nl_langinfo setlocale)
 AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe stat getaddrinfo)
 AC_REPLACE_FUNCS(mkdtemp timegm)
+AC_REPLACE_FUNCS(isascii)
 
 AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
 
@@ -1260,11 +1284,15 @@ cat >g10defs.tmp <<G10EOF
 #define EXTSEP_C '.'
 #define DIRSEP_S "\\\\"
 #define EXTSEP_S "."
+#define PATHSEP_C ';'
+#define PATHSEP_S ";"
 #else
 #define DIRSEP_C '/'
 #define EXTSEP_C '.'
 #define DIRSEP_S "/"
 #define EXTSEP_S "."
+#define PATHSEP_C ':'
+#define PATHSEP_S ":"
 #endif
 /* This is the same as VERSION, but should be overridden if the
    platform cannot handle things like dots'.' in filenames.  Set

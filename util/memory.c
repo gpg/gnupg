@@ -1,5 +1,5 @@
 /* memory.c  -	memory allocation
- *	Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2001, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -603,29 +603,6 @@ m_size( const void *a )
 }
 
 
-#if 0 /* not used */
-/****************
- * Make a copy of the memory block at a
- */
-void *
-FNAME(copy)( const void *a FNAMEPRT )
-{
-    void *b;
-    size_t n;
-
-    if( !a )
-	return NULL;
-
-    n = m_size(a); Aiiiih woher nehmen
-    if( m_is_secure(a) )
-	b = FNAME(alloc_secure)(n FNAMEARG);
-    else
-	b = FNAME(alloc)(n FNAMEARG);
-    memcpy(b, a, n );
-    return b;
-}
-#endif
-
 char *
 FNAME(strdup)( const char *a FNAMEPRT )
 {
@@ -634,3 +611,31 @@ FNAME(strdup)( const char *a FNAMEPRT )
     strcpy(p, a);
     return p;
 }
+
+
+/* Wrapper around m_alloc_clear to take the usual 2 arguments of a
+   calloc style function. */
+void *
+xcalloc (size_t n, size_t m)
+{
+  size_t nbytes;
+
+  nbytes = n * m; 
+  if (m && nbytes / m != n) 
+    out_of_core (nbytes, 0);
+  return m_alloc_clear (nbytes);
+}
+
+/* Wrapper around m_alloc_csecure_lear to take the usual 2 arguments
+   of a calloc style function. */
+void *
+xcalloc_secure (size_t n, size_t m)
+{
+  size_t nbytes;
+
+  nbytes = n * m; 
+  if (m && nbytes / m != n) 
+    out_of_core (nbytes, 1);
+  return m_alloc_secure_clear (nbytes);
+}
+

@@ -1,3 +1,11 @@
+2005-04-04  Werner Koch  <wk@g10code.com>
+
+	* memory.h (xcalloc, xcalloc_secure): Replaced macros by functions.
+
+2005-03-31  Werner Koch  <wk@g10code.com>
+
+	* assuan.h: New.  Taken from libassuan 0.6.9.
+
 2005-03-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* ttyio.h: Prototype tty_enable_completion(), and
@@ -506,7 +514,7 @@ Tue Mar  3 15:11:21 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 
  Copyright 1998, 1999, 2000, 2001, 2002, 2003,
-	   2004 Free Software Foundation, Inc.
+	   2004, 2005 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

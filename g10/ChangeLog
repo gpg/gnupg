@@ -1,3 +1,8 @@
+2005-04-01  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (keygen_set_std_prefs): Explain the chosen order of
+	AES key sizes. 
+
 2005-04-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* mainproc.c (proc_plaintext): Properly handle SIG+LITERAL
@@ -10,6 +15,24 @@
 	all callers.  We no longer need to append to $PATH.
 
 2005-03-31  Werner Koch  <wk@g10code.com>
+
+	* passphrase.c (agent_open): Dropped support for W32 - is was
+	never actually used.  Removed support for the old non-assuan
+	protocol; there has never been a matured implementation and
+	gpg-agent is now arround for quite some time.  Rewritten to make
+	use of the Assuan code from ../util.
+	(gpga_protocol_codes): Removed.
+	(readn): Removed.
+	(agent_close): Simplified for use with Assuan.
+	(agent_get_passphrase, passphrase_clear_cache): Removed support
+	for old protocol.  Use only with ENABLE_CARD_SUPPORT defined.
+	(agent_send_all_options): Take assuan context instead of a file
+	descriptor.
+	(agent_send_option): Likewise. Use assuan_transact.
+	* passphrase.c (writen, readaline): Removed.
+
+	* g10.c (main): Print a warning if --use-agent has been used but
+	it has not been build with support for it.
 
 	* keydb.c (keydb_add_resource): Clarify meaning of flags.  Add new
 	flag 4.  Use log_info for errors registering the default secret key.

@@ -1,3 +1,14 @@
+2005-03-31  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: New option --disable-agent-support. Define
+	ENABLE_AGENT_SUPPORT as AC_DEFINE and AM_CONDITIONAL.
+	Disable support for card and agent with --enable-minimal.
+	(AC_REPLACE_FUNCS): Add isascii.
+	(g10defs.h): Define PATHSEP_C and PATHSEP_S.
+
+	* README: Changed the instruction on how to verify a signature to
+	show a .sig extension and not the .asc we used to use ages ago.
+
 2005-03-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Move the LDAP detecting code to m4/ldap.m4.

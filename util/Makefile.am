@@ -1,4 +1,4 @@
-# Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1998, 1999, 2000, 2001, 2005 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -22,12 +22,24 @@ INCLUDES = -I.. -I$(top_srcdir)/include -I$(top_srcdir)/intl
 
 noinst_LIBRARIES = libutil.a
 
-EXTRA_libutil_a_SOURCES = regcomp.c regex.c regexec.c regex_internal.c regex_internal.h
+EXTRA_libutil_a_SOURCES = regcomp.c regex.c regexec.c regex_internal.c \
+	                  regex_internal.h
+
+# We build the assuan support only if it has been requested.
+if ENABLE_AGENT_SUPPORT
+assuan_source = assuan-buffer.c assuan-client.c assuan-defs.h \
+                 assuan-errors.c assuan-logging.c assuan-socket-connect.c \
+		 assuan-connect.c assuan-socket.c assuan-util.c
+else
+assuan_source =
+endif
+
 
 #libutil_a_LDFLAGS =
 libutil_a_SOURCES = logger.c fileutil.c miscutil.c strgutil.c  \
 		     ttyio.c  argparse.c memory.c secmem.c errors.c iobuf.c \
-		     dotlock.c http.c srv.h srv.c simple-gettext.c w32reg.c
+		     dotlock.c http.c srv.h srv.c simple-gettext.c \
+		     w32reg.c $(assuan_source)
 
 libutil_a_DEPENDENCIES = @LIBOBJS@ @REGEX_O@
 # LIBOBJS is for the replacement functions

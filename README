@@ -81,10 +81,10 @@
     a) If you already have a trusted Version of GnuPG installed, you
        can simply check the supplied signature:
 
-	$ gpg --verify gnupg-x.y.z.tar.gz.asc
+	$ gpg --verify gnupg-x.y.z.tar.gz.sig
 
-       This checks that the detached signature gnupg-x.y.z.tar.gz.asc
-       is indeed a a signature of gnupg-x.y.z.tar.gz.  The key used to
+       This checks that the detached signature gnupg-x.y.z.tar.gz.sig
+       is indeed a signature of gnupg-x.y.z.tar.gz.  The key used to
        create this signature is:
 
        "pub  1024D/57548DCD 1998-07-07 Werner Koch (gnupg sig) <dd9jn@gnu.org>"
@@ -584,9 +584,11 @@
 		    --disable-cast5, --disable-blowfish,
 		    --disable-aes, --disable-twofish,
 		    --disable-sha256, --disable-sha512,
-		    --without-bzip2, and --disable-exec.  Configure
-		    command lines are read from left to right, so if
-		    you want to have an "almost minimal"
+		    --without-bzip2, --disable-exec, 
+                    --disable-card-support and
+		    --disable-agent-support.
+                    Configure command lines are read from left to
+		    right, so if you want to have an "almost minimal"
 		    configuration, you can do (for example)
 		    "--enable-minimal --enable-rsa" to have RSA added
 		    to the minimal build.
@@ -602,6 +604,10 @@
                     Do not include smartcard support.  The default is
                     to include support if all required libraries are
                     available.
+
+     --disable-agent-support
+                    Do not include support for the gpg-agent.  The
+                    default is to include support.
 
      --enable-selinux-support
                     This prevents access to certain files and won't
