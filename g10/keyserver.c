@@ -152,7 +152,7 @@ parse_keyserver_uri(char *uri)
   return 0;
 }
 
-/* Unquote only the delimiter character */
+/* Unquote only the delimiter character and backslash */
 static void 
 printunquoted(char *string,char delim)
 {
@@ -164,10 +164,15 @@ printunquoted(char *string,char delim)
 	{
 	  int c;
 
-	  sscanf(ch,"\\x%02X",&c);
+	  sscanf(ch,"\\x%02x",&c);
 	  if(c==delim)
 	    {
 	      printf("%c",c);
+	      ch+=3;
+	    }
+	  else if(c=='\\')
+	    {
+	      fputc('\\',stdout);
 	      ch+=3;
 	    }
 	  else

@@ -234,6 +234,11 @@ write_quoted(IOBUF a, const char *buf, char delim)
 	  if(iobuf_writestr(a,quoted))
 	    return -1;
 	}
+      else if(*buf=='\\')
+	{
+	  if(iobuf_writestr(a,"\\x5c"))
+	    return -1;
+	}
       else
 	{
 	  if(iobuf_writebyte(a,*buf))

@@ -1,3 +1,10 @@
+2002-03-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (printunquoted): unquote backslashes from keyserver
+	searches
+
+	* hkp.c (write_quoted): quote backslashes from keyserver searches
+
 2002-03-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* import.c (append_uid, merge_sigs): it is okay to import
