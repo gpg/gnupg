@@ -1,5 +1,14 @@
 2003-02-11  David Shaw  <dshaw@jabberwocky.com>
 
+	* exec.c (set_exec_path): Add debugging line.
+
+	* g10.c (print_hex, print_mds): Print long hash strings a lot
+	neater.  This assumes at least an 80-character display, as there
+	are a few other similar assumptions here and there.  Users who
+	need unformatted hashes can still use with-colons.  Check that
+	SHA384 and 512 are available before using them as they are no
+	longer always available.
+
 	* Makefile.am: Use a local copy of libexecdir along with @PACKAGE@
 	as GNUPG_LIBEXECDIR so it can be easily overridden at make time.
 

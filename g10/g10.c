@@ -626,7 +626,6 @@ static char *build_list( const char *text, char letter,
 			 const char *(*mapf)(int), int (*chkf)(int) );
 static void set_cmd( enum cmd_and_opt_values *ret_cmd,
 			enum cmd_and_opt_values new_cmd );
-static void print_hex( byte *p, size_t n );
 static void print_mds( const char *fname, int algo );
 static void add_notation_data( const char *string, int which );
 static void add_policy_url( const char *string, int which );
@@ -2687,40 +2686,89 @@ g10_exit( int rc )
 }
 
 
-
-
+/* Pretty-print hex hashes.  This assumes at least an 80-character
+   display, but there are a few other similar assumptions in the
+   display code. */
 static void
-print_hex( byte *p, size_t n )
+print_hex( MD_HANDLE md, int algo, const char *fname )
 {
-    int i;
+  int i,n,count,indent=0;
+  const byte *p;
 
-    if( n == 16 ) {
-        for(i=0; i < n ; i++, p++ ) {
-	  if( i )
-		putchar(' ');
-	    if( i && !(i%8) )
-		putchar(' ');
-	    printf("%02X", *p );
-	}
+  if(fname)
+    indent=printf("%s: ",fname);
+
+  if(indent>40)
+    {
+      printf("\n");
+      indent=0;
     }
-    else if( n == 20 ) {
-	for(i=0; i < n ; i++, i++, p += 2 ) {
-	    if( i )
-		putchar(' ');
-	    if( i == 10 )
-		putchar(' ');
-	    printf("%02X%02X", *p, p[1] );
+
+  if(algo==DIGEST_ALGO_RMD160)
+    indent+=printf("RMD160 = ");
+  else if(algo==DIGEST_ALGO_TIGER)
+    indent+=printf(" TIGER = ");
+  else if(algo>0)
+    indent+=printf("%6s = ",digest_algo_to_string(algo));
+  else
+    algo=abs(algo);
+
+  count=indent;
+
+  p = md_read( md, algo );
+  n = md_digest_length(algo);
+
+  count+=printf("%02X",*p++);
+
+  for(i=1;i<n;i++,p++)
+    {
+      if(n==16)
+	{
+	  if(count+2>79)
+	    {
+	      printf("\n%*s",indent," ");
+	      count=indent;
+	    }
+	  else
+	    count+=printf(" ");
+
+	  if(!(i%8))
+	    count+=printf(" ");
 	}
-    }
-    else {
-	for(i=0; i < n ; i += 4, p += 4 ) {
-	    if( i )
-		putchar(' ');
-	    if( i == 12 && n <= 24 )
-		putchar(' ');
-	    printf("%02X%02X%02X%02X", *p, p[1], p[2], p[3] );
+      else if (n==20)
+	{
+	  if(!(i%2))
+	    {
+	      if(count+4>79)
+		{
+		  printf("\n%*s",indent," ");
+		  count=indent;
+		}
+	      else
+		count+=printf(" ");
+	    }
+
+	  if(!(i%10))
+	    count+=printf(" ");
 	}
+      else
+	{
+	  if(!(i%4))
+	    {
+	      if(count+8>79)
+		{
+		  printf("\n%*s",indent," ");
+		  count=indent;
+		}
+	      else
+		count+=printf(" ");
+	    }
+	}
+
+      count+=printf("%02X",*p);
     }
+
+  printf("\n");
 }
 
 static void
@@ -2754,23 +2802,18 @@ print_mds( const char *fname, int algo )
     char buf[1024];
     size_t n;
     MD_HANDLE md;
-    char *pname;
 
     if( !fname ) {
 	fp = stdin;
       #ifdef HAVE_DOSISH_SYSTEM
 	setmode ( fileno(fp) , O_BINARY );
       #endif
-	pname = m_strdup("[stdin]: ");
     }
     else {
-	pname = m_alloc(strlen(fname)+3);
-	strcpy(stpcpy(pname,fname),": ");
 	fp = fopen( fname, "rb" );
     }
     if( !fp ) {
-	log_error("%s%s\n", pname, strerror(errno) );
-	m_free(pname);
+	log_error("%s: %s\n", fname?fname:"[stdin]", strerror(errno) );
 	return;
     }
 
@@ -2784,14 +2827,16 @@ print_mds( const char *fname, int algo )
 	if( !check_digest_algo(DIGEST_ALGO_TIGER) )
 	    md_enable( md, DIGEST_ALGO_TIGER );
 	md_enable( md, DIGEST_ALGO_SHA256 );
-	md_enable( md, DIGEST_ALGO_SHA384 );
-	md_enable( md, DIGEST_ALGO_SHA512 );
+	if( !check_digest_algo(DIGEST_ALGO_SHA384) )
+	  md_enable( md, DIGEST_ALGO_SHA384 );
+	if( !check_digest_algo(DIGEST_ALGO_SHA512) )
+	  md_enable( md, DIGEST_ALGO_SHA512 );
     }
 
     while( (n=fread( buf, 1, DIM(buf), fp )) )
 	md_write( md, buf, n );
     if( ferror(fp) )
-	log_error("%s%s\n", pname, strerror(errno) );
+	log_error("%s: %s\n", fname?fname:"[stdin]", strerror(errno) );
     else {
 	md_final(md);
         if ( opt.with_colons ) {
@@ -2804,35 +2849,27 @@ print_mds( const char *fname, int algo )
                 if( !check_digest_algo(DIGEST_ALGO_TIGER) ) 
                     print_hashline( md, DIGEST_ALGO_TIGER, fname );
                 print_hashline( md, DIGEST_ALGO_SHA256, fname );
-                print_hashline( md, DIGEST_ALGO_SHA384, fname );
-                print_hashline( md, DIGEST_ALGO_SHA512, fname );
+                if( !check_digest_algo(DIGEST_ALGO_SHA384) ) 
+		  print_hashline( md, DIGEST_ALGO_SHA384, fname );
+                if( !check_digest_algo(DIGEST_ALGO_SHA512) ) 
+		  print_hashline( md, DIGEST_ALGO_SHA512, fname );
             }
         }
         else {
-            if( algo ) {
-                if( fname )
-                    fputs( pname, stdout );
-                print_hex(md_read(md, algo), md_digest_length(algo) );
-            }
+            if( algo )
+	       print_hex(md,-algo,fname);
             else {
-                printf(  "%s   MD5 = ", fname?pname:"" );
-                print_hex(md_read(md, DIGEST_ALGO_MD5), 16 );
-                printf("\n%s  SHA1 = ", fname?pname:""  );
-                print_hex(md_read(md, DIGEST_ALGO_SHA1), 20 );
-                printf("\n%sRMD160 = ", fname?pname:""  );
-                print_hex(md_read(md, DIGEST_ALGO_RMD160), 20 );
-                if( !check_digest_algo(DIGEST_ALGO_TIGER) ) {
-                    printf("\n%s TIGER = ", fname?pname:""  );
-                    print_hex(md_read(md, DIGEST_ALGO_TIGER), 24 );
-		}
-                printf("\n%sSHA256 = ", fname?pname:""  );
-                print_hex(md_read(md, DIGEST_ALGO_SHA256), 32 );
-                printf("\n%sSHA384 = ", fname?pname:""  );
-                print_hex(md_read(md, DIGEST_ALGO_SHA384), 48 );
-                printf("\n%sSHA512 = ", fname?pname:""  );
-                print_hex(md_read(md, DIGEST_ALGO_SHA512), 64 );
+                print_hex( md, DIGEST_ALGO_MD5, fname );
+                print_hex( md, DIGEST_ALGO_SHA1, fname );
+                print_hex( md, DIGEST_ALGO_RMD160, fname );
+                if( !check_digest_algo(DIGEST_ALGO_TIGER) )
+		  print_hex( md, DIGEST_ALGO_TIGER, fname );
+                print_hex( md, DIGEST_ALGO_SHA256, fname );
+                if( !check_digest_algo(DIGEST_ALGO_SHA384) )
+		  print_hex( md, DIGEST_ALGO_SHA384, fname );
+                if( !check_digest_algo(DIGEST_ALGO_SHA512) )
+		  print_hex( md, DIGEST_ALGO_SHA512, fname );
             }
-            putchar('\n');
         }
     }
     md_close(md);

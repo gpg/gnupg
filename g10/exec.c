@@ -112,6 +112,9 @@ int set_exec_path(const char *path,int method)
 
   strcat(p,path);
 
+  if(DBG_EXTPROG)
+    log_debug("set_exec_path method %d: %s\n",method,p);
+
   /* Notice that path is never freed.  That is intentional due to the
      way putenv() works.  This leaks a few bytes if we call
      set_exec_path multiple times. */
