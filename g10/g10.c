@@ -437,6 +437,7 @@ static ARGPARSE_OPTS opts[] = {
     { oImportOptions, "import-options",2,"@"},
     { oExportOptions, "export-options",2,"@"},
     { oListOptions, "list-options",2,"@"},
+    { oVerifyOptions, "verify-options",2,"@"},
     { oCharset, "charset"   , 2, N_("|NAME|set terminal charset to NAME") },
     { oOptions, "options"   , 2, N_("read options from file")},
 

@@ -1402,8 +1402,15 @@ check_sig_and_print( CTX c, KBNODE node )
 
 	if( !rc )
 	  {
-	    show_notation(sig,0,1);
-	    show_policy_url(sig,0,1);
+	    if(opt.verify_options&VERIFY_SHOW_POLICY)
+	      show_policy_url(sig,0,1);
+	    else
+	      show_policy_url(sig,0,2);
+
+	    if(opt.verify_options&VERIFY_SHOW_NOTATION)
+	      show_notation(sig,0,1);
+	    else
+	      show_notation(sig,0,2);
 	  }
 
 	if( !rc && is_status_enabled() ) {
