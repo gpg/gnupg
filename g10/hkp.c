@@ -269,7 +269,18 @@ parse_hkp_index(IOBUF buffer,char *line)
   static u32 bits,createtime;
   int ret=0;
 
-  /* printf("Open %d, LINE: %s\n",open,line); */
+  /* printf("Open %d, LINE: %s, uid: %s\n",open,line,uid); */
+
+  /* Try and catch some bastardization of HKP.  If we don't have
+     certain unchanging landmarks, we can't reliably parse the
+     response. */
+  if(open && ascii_memcasecmp(line,"</pre>",6)!=0 &&
+     ascii_memcasecmp(line,"pub  ",5)!=0 &&
+     ascii_memcasecmp(line,"     ",5)!=0)
+    {
+      log_error(_("this keyserver is not fully HKP compatible\n"));
+      return -1;
+    }
 
   /* For multiple UIDs */
   if(open && uid!=NULL)
@@ -534,6 +545,7 @@ int hkp_search(STRLIST tokens)
     {
       IOBUF buffer;
       int count=1;
+      int ret;
 
       buffer=iobuf_temp();
 
@@ -550,15 +562,20 @@ int hkp_search(STRLIST tokens)
 
 	  rc=iobuf_read_line(hd.fp_read,&line,&buflen,&maxlen);
 
+	  ret=parse_hkp_index(buffer,line);
+	  if(ret==-1)
+	    break;
+
 	  if(rc!=0)
-	    count+=parse_hkp_index(buffer,line);
+	    count+=ret;
 	}
 
       http_close(&hd);
 
       count--;
 
-      keyserver_search_prompt(buffer,count,searchstr);
+      if(ret>-1)
+	keyserver_search_prompt(buffer,count,searchstr);
 
       iobuf_close(buffer);
       m_free(line);

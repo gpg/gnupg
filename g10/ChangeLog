@@ -1,12 +1,22 @@
+2002-06-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (clean_subkeys, import_one): Only allow at most 1
+	binding sig and at most 1 revocation sig on a subkey, as per
+	2440:11.1.
+
+	* hkp.c (parse_hkp_index, hkp_search): Error if the keyserver
+	returns an unparseable HKP response.
+
 2002-06-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (show_key_with_all_names), keylist.c
 	(list_keyblock_print): Show "[expired]" before expired uids.
 
 	* keyedit.c (show_key_with_all_names_colon), mainproc.c
-	(list_node), keylist.c (list_keyblock_colon): Use "uat" for user
-	attribute packets instead of "uid".  Also use '<count> <length>'
-	rather than the fake user id string.
+	(list_node), keylist.c (list_keyblock_colon): Show flag 'e' for
+	expired user ids.  Use "uat" for user attribute packets instead of
+	"uid".  Also use '<count> <length>' rather than the fake user id
+	string on attributes.
 
 	* keygen.c (keygen_add_revkey): Remove unused code.
 

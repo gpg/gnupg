@@ -395,6 +395,95 @@ remove_bad_stuff (KBNODE keyblock)
     }
 }
 
+/* Clean the subkeys on a pk so that they each have at most 1 binding
+   sig and at most 1 revocation sig.  This works based solely on the
+   timestamps like the rest of gpg.  If the standard does get
+   revocation targets, this may need to be revised. */
+
+static int
+clean_subkeys(KBNODE keyblock,u32 *keyid)
+{
+  int removed=0;
+  KBNODE node,sknode=keyblock;
+
+  while((sknode=find_kbnode(sknode,PKT_PUBLIC_SUBKEY)))
+    {
+      KBNODE bsnode=NULL,rsnode=NULL;
+      u32 bsdate=0,rsdate=0;
+
+      sknode=sknode->next;
+
+      for(node=sknode;node;node=node->next)
+	{
+	  if(node->pkt->pkttype==PKT_SIGNATURE)
+	    {
+	      PKT_signature *sig=node->pkt->pkt.signature;
+
+	      /* We're only interested in valid sigs */
+	      if(check_key_signature(keyblock,node,NULL))
+		continue;
+
+	      if(IS_SUBKEY_SIG(sig) && bsdate<=sig->timestamp)
+		{
+		  bsnode=node;
+		  bsdate=sig->timestamp;
+		}
+	      else if(IS_SUBKEY_REV(sig) && rsdate<=sig->timestamp)
+		{
+		  rsnode=node;
+		  rsdate=sig->timestamp;
+		}
+	      /* If it's not a subkey sig or rev, then it shouldn't be
+                 here so ignore it. */
+	    }
+	  else
+	    break;
+	}
+
+      /* We now know the most recent binding sig and revocation sig
+         (if any).  If the binding sig is more recent than the
+         revocation sig, strip everything but the binding sig.  If the
+         revocation sig is more recent than the binding sig, strip
+         everything but the binding sig and the revocation sig. */
+
+      if(bsdate>=rsdate)
+	{
+	  rsnode=NULL;
+	  rsdate=0;
+	}
+
+     for(node=sknode;node;node=node->next)
+	{
+	  if(node->pkt->pkttype==PKT_SIGNATURE)
+	    {
+	      PKT_signature *sig=node->pkt->pkt.signature;
+
+	      if(IS_SUBKEY_SIG(sig) && node!=bsnode)
+		{
+		  delete_kbnode(node);
+		  removed++;
+		}
+	      else if(IS_SUBKEY_REV(sig) && node!=rsnode)
+		{
+		  delete_kbnode(node);
+		  removed++;
+		}
+	    }
+	  else
+	    break;
+	}
+    }
+
+  if(removed)
+    {
+      log_info(_("key %08lX: removed multiple subkey binding\n"),
+	       (ulong)keyid[1]);
+      commit_kbnode(&keyblock);
+    }
+
+  return removed;
+}
+
 
 /****************
  * Try to import one keyblock.	Return an error only in serious cases, but
@@ -492,6 +581,7 @@ import_one( const char *fname, KBNODE keyblock, int fast,
 	}
 	if( opt.verbose > 1 )
 	    log_info (_("writing to `%s'\n"), keydb_get_resource_name (hd) );
+	clean_subkeys(keyblock,keyid);
 	rc = keydb_insert_keyblock (hd, keyblock );
         if (rc)
 	   log_error (_("error writing keyring `%s': %s\n"),
@@ -568,6 +658,7 @@ import_one( const char *fname, KBNODE keyblock, int fast,
 	if( n_uids || n_sigs || n_subk ) {
 	    mod_key = 1;
 	    /* keyblock_orig has been updated; write */
+	    n_sigs-=clean_subkeys(keyblock_orig,keyid);
 	    rc = keydb_update_keyblock (hd, keyblock_orig);
             if (rc)
 		log_error (_("error writing keyring `%s': %s\n"),
