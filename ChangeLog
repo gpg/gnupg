@@ -1,5 +1,7 @@
 2005-01-17  Werner Koch  <wk@g10code.com>
 
+	* README: Updated for SHA1 checkums.
+
 	* configure.ac: Make --without-included-zlib work as
 	expected. Reported by Norihiko Murase.
 

@@ -497,6 +497,7 @@ is_prime( MPI n, int steps, int *count )
     mpi_free( z );
     mpi_free( nminus1 );
     mpi_free( q );
+    mpi_free (a2);
 
     return rc;
 }

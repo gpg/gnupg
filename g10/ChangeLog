@@ -1,3 +1,7 @@
+2005-02-21  Werner Koch  <wk@g10code.com>
+
+	* seckey-cert.c (do_check): Detect card diversion protection.
+
 2005-02-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* mainproc.c (proc_symkey_enc): Set a flag to indicate that a

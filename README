@@ -108,13 +108,13 @@
 
 
     b) If you don't have any of the above programs, you have to verify
-       the MD5 checksum:
+       the SHA1 checksum:
 
-	$ md5sum gnupg-x.y.z.tar.gz
+	$ sha1sum gnupg-x.y.z.tar.gz
 
        This should yield an output _similar_ to this:
 
-	fd9351b26b3189c1d577f0970f9dcadc  gnupg-x.y.z.tar.gz
+	fd935112345678b26b3189c1d577f0970f9dcadc  gnupg-x.y.z.tar.gz
 
        Now check that this checksum is _exactly_ the same as the one
        published via the announcement list and probably via Usenet.

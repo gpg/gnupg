@@ -49,7 +49,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int *canceled )
 	CIPHER_HANDLE cipher_hd=NULL;
 	PKT_secret_key *save_sk;
 
-	if( sk->protect.s2k.mode == 1001 ) {
+	if( sk->protect.s2k.mode == 1001 || sk->protect.s2k.mode == 1002 ) {
 	    log_info(_("secret key parts are not available\n"));
 	    return G10ERR_GENERAL;
 	}
