@@ -182,7 +182,8 @@ void
 print_string( FILE *fp, const byte *p, size_t n, int delim )
 {
     for( ; n; n--, p++ )
-	if( *p < 0x20 || (*p >= 0x7f && *p < 0xa0) || *p == delim ) {
+	if( *p < 0x20 || (*p >= 0x7f && *p < 0xa0) || *p == delim ||
+	    (delim && *p=='\\')) {
 	    putc('\\', fp);
 	    if( *p == '\n' )
 		putc('n', fp);
@@ -246,7 +247,8 @@ make_printable_string( const byte *p, size_t n, int delim )
 
     /* first count length */
     for(save_n = n, save_p = p, buflen=1 ; n; n--, p++ ) {
-	if( *p < 0x20 || (*p >= 0x7f && *p < 0xa0) || *p == delim ) {
+	if( *p < 0x20 || (*p >= 0x7f && *p < 0xa0) || *p == delim ||
+	    (delim && *p=='\\')) {
 	    if( *p=='\n' || *p=='\r' || *p=='\f'
 		|| *p=='\v' || *p=='\b' || !*p )
 		buflen += 2;
@@ -261,7 +263,8 @@ make_printable_string( const byte *p, size_t n, int delim )
     /* and now make the string */
     d = buffer = m_alloc( buflen );
     for( ; n; n--, p++ ) {
-	if( *p < 0x20 || (*p >= 0x7f && *p < 0xa0) || *p == delim ) {
+	if( *p < 0x20 || (*p >= 0x7f && *p < 0xa0) || *p == delim ||
+	    (delim && *p=='\\')) {
 	    *d++ = '\\';
 	    if( *p == '\n' )
 		*d++ = 'n';

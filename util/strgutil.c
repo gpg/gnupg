@@ -476,7 +476,8 @@ utf8_to_native( const char *string, size_t length, int delim )
 	    }
 	    if( !nleft ) {
 		if( !(*s & 0x80) ) { /* plain ascii */
-		    if( *s < 0x20 || *s == 0x7f || *s == delim) {
+		    if( *s < 0x20 || *s == 0x7f || *s == delim ||
+			(delim && *s=='\\')) {
 			n++;
 			if( p )
 			    *p++ = '\\';
