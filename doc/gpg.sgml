@@ -87,6 +87,14 @@ special option "--".
 
 <refsect1>
 <title>COMMANDS</title>
+
+<para>
+<command/gpg/ may be run with no commands, in which case it will
+perform a reasonable action depending on the type of file it is given
+as input (an encrypted message is decrypted, a signature is verified,
+a file containing keys is listed).
+</para>
+
 <para>
 <command/gpg/ recognizes these commands:
 </para>
@@ -172,28 +180,32 @@ material from stdin without denoting it in the above way.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--multifile</term>
+<listitem><para>
+This modifies certain other commands to accept multiple files for
+processing on the command line or read from stdin with each filename
+on a separate line.  This allows for many files to be processed at
+once.  --multifile may currently be used along with --verify,
+--encrypt, and --decrypt.  Note that `--multifile --verify' may not be
+used with detached signatures.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--verify-files <optional><parameter/files/</optional></term>
 <listitem><para>
-This is a special version of the --verify command which does not work with
-detached signatures.  The command expects the files to be verified either
-on the command line or reads the filenames from stdin;  each name must be on
-separate line. The command is intended for quick checking of many files.
+Identical to `--multifile --verify'.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--encrypt-files <optional><parameter/files/</optional></term>
 <listitem><para>
-This is a special version of the --encrypt command. The command expects
-the files to be encrypted either on the command line or reads the filenames
-from stdin; each name must be on separate line. The command is intended
-for a quick encryption of multiple files.
+Identical to `--multifile --encrypt'.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--decrypt-files <optional><parameter/files/</optional></term>
 <listitem><para>
-The same as --encrypt-files with the difference that files will be
-decrypted. The syntax of the filenames is the same.
+Identical to `--multifile --decrypt'.
 </para></listitem></varlistentry>
 
 <!--
