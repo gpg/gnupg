@@ -583,6 +583,13 @@ static gc_option_t gc_options_gpg[] =
 /*      NULL, NULL, */
 /*      GC_ARG_TYPE_UINT32, GC_BACKEND_GPG }, */
 
+   { "Keyserver",
+     GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
+     NULL, "Configuration for Keyservers" },
+   { "keyserver", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
+     "gnupg", "|URL|use keyserver at URL",
+     GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
+
 
    GC_OPTION_NULL
  };
@@ -764,14 +771,14 @@ static gc_option_t gc_options_dirmngr[] =
    update GC_COMPONENT below.  */
 typedef enum
   {
+    /* The classic GPG for OpenPGP.  */
+    GC_COMPONENT_GPG,
+
     /* The GPG Agent.  */
     GC_COMPONENT_GPG_AGENT,
 
     /* The Smardcard Daemon.  */
     GC_COMPONENT_SCDAEMON,
-
-    /* The classic GPG for OpenPGP.  */
-    GC_COMPONENT_GPG,
 
     /* GPG for S/MIME.  */
     GC_COMPONENT_GPGSM,
@@ -803,9 +810,9 @@ static struct
   gc_option_t *options;
 } gc_component[] =
   {
+    { "gpg", NULL,   "GPG for OpenPGP", gc_options_gpg },
     { "gpg-agent", NULL, "GPG Agent", gc_options_gpg_agent },
     { "scdaemon", NULL, "Smartcard Daemon", gc_options_scdaemon },
-    { "gpg", NULL,   "GPG for OpenPGP", gc_options_gpg },
     { "gpgsm", NULL, "GPG for S/MIME", gc_options_gpgsm },
     { "dirmngr", NULL, "CRL Manager", gc_options_dirmngr }
   };

@@ -2965,6 +2965,7 @@ main( int argc, char **argv )
                 GC_OPT_FLAG_NONE,
                 GC_OPT_FLAG_DEFAULT,
                 GC_OPT_FLAG_NONE );
+        printf ("keyserver:%lu:\n", GC_OPT_FLAG_NONE);
 
       }
       break;
