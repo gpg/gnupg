@@ -216,6 +216,8 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
       log_error ("md_open failed: %s\n", gcry_strerror (-1));
       goto leave;
     }
+  if (DBG_HASHING)
+    gcry_md_start_debug (data_md, "vrfy.data");
 
   is_detached = 0;
   do 
@@ -375,6 +377,9 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
               log_error ("md_open failed: %s\n", gcry_strerror (-1));
               goto next_signer;
             }
+          if (DBG_HASHING)
+            gcry_md_start_debug (md, "vrfy.attr");
+
           ksba_cms_set_hash_function (cms, HASH_FNC, md);
           rc = ksba_cms_hash_signed_attrs (cms, signer);
           if (rc)

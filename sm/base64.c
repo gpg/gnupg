@@ -170,10 +170,10 @@ base64_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
           if (parm->assume_pem)
             {
               /* wait for the header line */
-              if (!parm->have_lf || strncmp (parm->line, "-----BEGIN ", 11)
-                  || strncmp (parm->line+11, "PGP ", 4))
-                goto next;
               parm->linelen = parm->readpos = 0;
+              if (!parm->have_lf || strncmp (parm->line, "-----BEGIN ", 11)
+                  || !strncmp (parm->line+11, "PGP ", 4))
+                goto next;
               parm->is_pem = 1;
             }
           else if (parm->assume_base64)

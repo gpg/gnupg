@@ -1,5 +1,17 @@
 2001-12-14  Werner Koch  <wk@gnupg.org>
 
+	* verify.c (gpgsm_verify): Add hash debug helpers
+	* sign.c (gpgsm_sign): Ditto.
+
+	* base64.c (base64_reader_cb): Reset the linelen when we need to
+	skip the line and adjusted test; I somehow forgot about DeMorgan.
+
+	* server.c (cmd_encrypt,cmd_decrypt,cmd_sign,cmd_verify) 
+	(cmd_import): Close the FDs on success.
+	(close_message_fd): New.
+	(input_notify): Setting autodetect_encoding to 0 after initializing
+	it to 0 is pretty pointless.  Easy to fix.
+
 	* gpgsm.c (main): New option --debug-wait n, so that it is
 	possible to attach gdb when used in server mode.
 

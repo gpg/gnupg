@@ -82,6 +82,16 @@ rc_to_assuan_status (int rc)
   return rc;
 }
 
+static void 
+close_message_fd (CTRL ctrl)
+{
+  if (ctrl->server_local->message_fd != -1)
+    {
+      close (ctrl->server_local->message_fd);
+      ctrl->server_local->message_fd = -1;
+    }
+}
+
 static void
 reset_notify (ASSUAN_CONTEXT ctx)
 {
@@ -89,6 +99,7 @@ reset_notify (ASSUAN_CONTEXT ctx)
 
   gpgsm_release_certlist (ctrl->server_local->recplist);
   ctrl->server_local->recplist = NULL;
+  close_message_fd (ctrl);
 }
 
 
@@ -107,7 +118,7 @@ input_notify (ASSUAN_CONTEXT ctx, const char *line)
   else if (strstr (line, "--binary"))
     ;
   else
-    ctrl->autodetect_encoding = 0;
+    ctrl->autodetect_encoding = 1;
 }
 
 static void
@@ -188,6 +199,10 @@ cmd_encrypt (ASSUAN_CONTEXT ctx, char *line)
     {
       gpgsm_release_certlist (ctrl->server_local->recplist);
       ctrl->server_local->recplist = NULL;
+      /* close and reset the fd */
+      close_message_fd (ctrl);
+      assuan_close_input_fd (ctx);
+      assuan_close_output_fd (ctx);
     }
   return rc_to_assuan_status (rc);
 }
@@ -220,6 +235,14 @@ cmd_decrypt (ASSUAN_CONTEXT ctx, char *line)
   rc = gpgsm_decrypt (ctrl, inp_fd, out_fp); 
   fclose (out_fp);
 
+  if (!rc)
+    {
+      /* close and reset the fd */
+      close_message_fd (ctrl);
+      assuan_close_input_fd (ctx);
+      assuan_close_output_fd (ctx);
+    }
+
   return rc_to_assuan_status (rc);
 }
 
@@ -245,6 +268,13 @@ cmd_verify (ASSUAN_CONTEXT ctx, char *line)
 
   rc = gpgsm_verify (assuan_get_pointer (ctx), fd,
                      ctrl->server_local->message_fd);
+  if (!rc)
+    {
+      /* close and reset the fd */
+      close_message_fd (ctrl);
+      assuan_close_input_fd (ctx);
+      assuan_close_output_fd (ctx);
+    }
 
   return rc_to_assuan_status (rc);
 }
@@ -258,6 +288,7 @@ cmd_verify (ASSUAN_CONTEXT ctx, char *line)
 static int 
 cmd_sign (ASSUAN_CONTEXT ctx, char *line)
 {
+  CTRL ctrl = assuan_get_pointer (ctx);
   int inp_fd, out_fd;
   FILE *out_fp;
   int detached;
@@ -278,6 +309,14 @@ cmd_sign (ASSUAN_CONTEXT ctx, char *line)
   rc = gpgsm_sign (assuan_get_pointer (ctx), inp_fd, detached, out_fp);
   fclose (out_fp);
 
+  if (!rc)
+    {
+      /* close and reset the fd */
+      close_message_fd (ctrl);
+      assuan_close_input_fd (ctx);
+      assuan_close_output_fd (ctx);
+    }
+
   return rc_to_assuan_status (rc);
 }
 
@@ -291,6 +330,7 @@ cmd_sign (ASSUAN_CONTEXT ctx, char *line)
 static int 
 cmd_import (ASSUAN_CONTEXT ctx, char *line)
 {
+  CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
   int fd = assuan_get_input_fd (ctx);
 
@@ -299,6 +339,13 @@ cmd_import (ASSUAN_CONTEXT ctx, char *line)
 
   rc = gpgsm_import (assuan_get_pointer (ctx), fd);
 
+  if (!rc)
+    {
+      /* close and reset the fd */
+      close_message_fd (ctrl);
+      assuan_close_input_fd (ctx);
+      assuan_close_output_fd (ctx);
+    }
   return rc_to_assuan_status (rc);
 }
 

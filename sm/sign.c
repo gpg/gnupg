@@ -218,6 +218,9 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
       log_error ("md_open failed: %s\n", gcry_strerror (-1));
       goto leave;
     }
+  if (DBG_HASHING)
+    gcry_md_start_debug (data_md, "sign.data");
+
   for (i=0; (algoid=ksba_cms_get_digest_algo_list (cms, i)); i++)
     {
       algo = gcry_md_map_name (algoid);
@@ -290,6 +293,9 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
           algo = GCRY_MD_SHA1;
           signer = 0;
           md = gcry_md_open (algo, 0);
+          if (DBG_HASHING)
+            gcry_md_start_debug (md, "sign.attr");
+
           if (!md)
             {
               log_error ("md_open failed: %s\n", gcry_strerror (-1));
