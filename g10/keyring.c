@@ -32,6 +32,7 @@
 #include "packet.h"
 #include "keydb.h" 
 #include "options.h"
+#include "main.h" /*for check_key_signature()*/
 #include "i18n.h"
 
 typedef struct keyring_name *KR_NAME;
@@ -219,7 +220,7 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
 {
     PACKET *pkt;
     int rc;
-    KBNODE keyblock = NULL, node;
+    KBNODE keyblock = NULL, node, lastnode;
     IOBUF a;
     int in_cert = 0;
     int pk_no = 0;
@@ -246,6 +247,7 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
     pkt = m_alloc (sizeof *pkt);
     init_packet (pkt);
     hd->found.n_packets = 0;;
+    lastnode = NULL;
     while ((rc=parse_packet (a, pkt)) != -1) {
         hd->found.n_packets++;
         if (rc == G10ERR_UNKNOWN_PACKET) {
@@ -273,36 +275,64 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
         }
 
         in_cert = 1;
-        node = new_kbnode (pkt);
-        if (!keyblock)
-            keyblock = node;
-        else
-            add_kbnode (keyblock, node);
-        
-        if ( pkt->pkttype == PKT_PUBLIC_KEY
-             || pkt->pkttype == PKT_PUBLIC_SUBKEY
-             || pkt->pkttype == PKT_SECRET_KEY
-             || pkt->pkttype == PKT_SECRET_SUBKEY) {
-            if (++pk_no == hd->found.pk_no)
-                node->flag |= 1;
+        if (pkt->pkttype == PKT_RING_TRUST) {
+            /*(this code is duplicated after the loop)*/
+            if ( lastnode 
+                 && lastnode->pkt->pkttype == PKT_SIGNATURE
+                 && (pkt->pkt.ring_trust->sigcache & 1) ) {
+                /* this is a ring trust packet with a checked signature 
+                 * status cache following directly a signature paket.
+                 * Set the cache status into that signature packet */
+                PKT_signature *sig = lastnode->pkt->pkt.signature;
+                
+                sig->flags.checked = 1;
+                sig->flags.valid = !!(pkt->pkt.ring_trust->sigcache & 2);
+            }
+            /* reset lastnode, so that we set the cache status only from
+             * the ring trust packet immediately folling a signature */
+            lastnode = NULL;
         }
-        else if ( pkt->pkttype == PKT_USER_ID) {
-            if (++uid_no == hd->found.uid_no)
-                node->flag |= 2;
+        else {
+            node = lastnode = new_kbnode (pkt);
+            if (!keyblock)
+                keyblock = node;
+            else
+                add_kbnode (keyblock, node);
+
+            if ( pkt->pkttype == PKT_PUBLIC_KEY
+                 || pkt->pkttype == PKT_PUBLIC_SUBKEY
+                 || pkt->pkttype == PKT_SECRET_KEY
+                 || pkt->pkttype == PKT_SECRET_SUBKEY) {
+                if (++pk_no == hd->found.pk_no)
+                    node->flag |= 1;
+            }
+            else if ( pkt->pkttype == PKT_USER_ID) {
+                if (++uid_no == hd->found.uid_no)
+                    node->flag |= 2;
+            }
         }
 
         pkt = m_alloc (sizeof *pkt);
         init_packet(pkt);
     }
 
-    if (rc == -1 && keyblock)
+    if (rc == -1 && keyblock) 
 	rc = 0; /* got the entire keyblock */
 
     if (rc || !ret_kb)
 	release_kbnode (keyblock);
-    else
+    else {
+        /*(duplicated form the loop body)*/
+        if ( pkt && pkt->pkttype == PKT_RING_TRUST
+             && lastnode 
+             && lastnode->pkt->pkttype == PKT_SIGNATURE
+             && (pkt->pkt.ring_trust->sigcache & 1) ) {
+            PKT_signature *sig = lastnode->pkt->pkt.signature;
+            sig->flags.checked = 1;
+            sig->flags.valid = !!(pkt->pkt.ring_trust->sigcache & 2);
+        }
 	*ret_kb = keyblock;
-
+    }
     free_packet (pkt);
     m_free (pkt);
     iobuf_close(a);
@@ -874,6 +904,285 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
 }
 
 
+
+static int
+create_tmp_file (const char *template,
+                 char **r_bakfname, char **r_tmpfname, IOBUF *r_fp)
+{  
+  char *bakfname, *tmpfname;
+
+  *r_bakfname = NULL;
+  *r_tmpfname = NULL;
+
+# ifdef USE_ONLY_8DOT3
+  /* Here is another Windoze bug?:
+   * you cant rename("pubring.gpg.tmp", "pubring.gpg");
+   * but	rename("pubring.gpg.tmp", "pubring.aaa");
+   * works.  So we replace .gpg by .bak or .tmp
+   */
+  if (strlen (template) > 4
+      && !strcmp (template+strlen(template)-4, EXTSEP_S "gpg") )
+    {
+      bakfname = m_alloc (strlen (template) + 1);
+      strcpy (bakfname, template);
+      strcpy (bakfname+strlen(template)-4, EXTSEP_S "bak");
+
+      tmpfname = m_alloc (strlen( template ) + 1 );
+      strcpy (tmpfname,template);
+      strcpy (tmpfname+strlen(template)-4, EXTSEP_S "tmp");
+    }
+    else 
+      { /* file does not end with gpg; hmmm */
+	bakfname = m_alloc (strlen( template ) + 5);
+	strcpy (stpcpy(bakfname, template), EXTSEP_S "bak");
+
+	tmpfname = m_alloc (strlen( template ) + 5);
+	strcpy (stpcpy(tmpfname, template), EXTSEP_S "tmp");
+    }
+# else /* Posix file names */
+    bakfname = m_alloc (strlen( template ) + 2);
+    strcpy (stpcpy (bakfname,template),"~");
+
+    tmpfname = m_alloc (strlen( template ) + 5);
+    strcpy (stpcpy(tmpfname,template), EXTSEP_S "tmp");
+# endif /* Posix filename */
+
+    *r_fp = iobuf_create (tmpfname);
+    if (!*r_fp) {
+	log_error ("can't create `%s': %s\n", tmpfname, strerror(errno) );
+        m_free (tmpfname);
+        m_free (bakfname);
+	return G10ERR_OPEN_FILE;
+    }
+    
+    *r_bakfname = bakfname;
+    *r_tmpfname = tmpfname;
+    return 0;
+}
+
+
+static int
+rename_tmp_file (const char *bakfname, const char *tmpfname,
+                 const char *fname, int secret )
+{
+  int rc=0;
+
+  /* restrict the permissions for secret keyrings */
+#ifndef HAVE_DOSISH_SYSTEM
+  if (secret && !opt.preserve_permissions)
+    {
+      if (chmod (tmpfname, S_IRUSR | S_IWUSR) ) 
+        {
+          log_error ("chmod of `%s' failed: %s\n",
+                     tmpfname, strerror(errno) );
+          return G10ERR_WRITE_FILE;
+	}
+    }
+#endif
+
+  /* invalidate close caches*/
+  iobuf_ioctl (NULL, 2, 0, (char*)tmpfname );
+  iobuf_ioctl (NULL, 2, 0, (char*)bakfname );
+  iobuf_ioctl (NULL, 2, 0, (char*)fname );
+
+  /* first make a backup file except for secret keyrings */
+  if (!secret)
+    { 
+#if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
+      remove (bakfname);
+#endif
+      if (rename (fname, bakfname) )
+        {
+          log_error ("renaming `%s' to `%s' failed: %s\n",
+                     fname, bakfname, strerror(errno) );
+          return G10ERR_RENAME_FILE;
+	}
+    }
+  
+  /* then rename the file */
+#if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
+  remove( fname );
+#endif
+  if (rename (tmpfname, fname) )
+    {
+      log_error ("renaming `%s' to `%s' failed: %s\n",
+                 tmpfname, fname, strerror(errno) );
+      rc = G10ERR_RENAME_FILE;
+      if (secret)
+        {
+          log_info(_("WARNING: 2 files with confidential"
+                     " information exists.\n"));
+          log_info(_("%s is the unchanged one\n"), fname );
+          log_info(_("%s is the new one\n"), tmpfname );
+          log_info(_("Please fix this possible security flaw\n"));
+	}
+      return rc;
+    }
+
+  return 0;
+}
+
+
+static int
+write_keyblock (IOBUF fp, KBNODE keyblock)
+{
+  KBNODE kbctx = NULL, node;
+  int rc;
+  
+  while ( (node = walk_kbnode (keyblock, &kbctx, 0)) ) 
+    {
+      if (node->pkt->pkttype == PKT_RING_TRUST) 
+        continue; /* we write it later on our own */
+
+      if ( (rc = build_packet (fp, node->pkt) ))
+        {
+          log_error ("build_packet(%d) failed: %s\n",
+                     node->pkt->pkttype, g10_errstr(rc) );
+          return rc;
+        }
+      if (node->pkt->pkttype == PKT_SIGNATURE) 
+        { /* always write a signature cache packet */
+          PKT_signature *sig = node->pkt->pkt.signature;
+          unsigned int cacheval = 0;
+          
+          if (sig->flags.checked) 
+            {
+              cacheval |= 1;
+              if (sig->flags.valid)
+                cacheval |= 2;
+            }
+          iobuf_put (fp, 0xb0); /* old style packet 12, 1 byte len*/
+          iobuf_put (fp, 2);    /* 2 bytes */
+          iobuf_put (fp, 0);    /* unused */
+          if (iobuf_put (fp, cacheval)) {
+            log_error ("writing sigcache packet failed\n");
+            return G10ERR_WRITE_FILE;
+          }
+        }
+    }
+  return 0;
+}
+
+/* 
+ * Walk over all public keyrings, check the signatures and replace the
+ * keyring with a new one where the signature cache is then updated.
+ * This is only done for the public keyrings.
+ */
+int
+keyring_rebuild_cache ()
+{
+  KEYRING_HANDLE hd;
+  KEYDB_SEARCH_DESC desc;
+  KBNODE keyblock = NULL, node;
+  const char *lastresname = NULL, *resname;
+  IOBUF tmpfp = NULL;
+  char *tmpfilename = NULL;
+  char *bakfilename = NULL;
+  int rc;
+  ulong count = 0, sigcount = 0;
+
+  hd = keyring_new (0);
+  memset (&desc, 0, sizeof desc);
+  desc.mode = KEYDB_SEARCH_MODE_FIRST;
+
+  while ( !(rc = keyring_search (hd, &desc, 1)) )
+    {
+      desc.mode = KEYDB_SEARCH_MODE_NEXT;
+      resname = keyring_get_resource_name (hd);
+      if (lastresname != resname )
+        { /* we have switched to a new keyring - commit changes */
+          if (tmpfp)
+            {
+              if (iobuf_close (tmpfp))
+                {
+                  log_error ("error closing `%s': %s\n",
+                             tmpfilename, strerror (errno));
+                  rc = G10ERR_CLOSE_FILE;
+                  goto leave;
+                }
+              /* because we have switched resources, we can be sure that
+               * the original file is closed */
+              tmpfp = NULL;
+            }
+          rc = lastresname? rename_tmp_file (bakfilename, tmpfilename, 
+                                             lastresname, 0) : 0;
+          m_free (tmpfilename);  tmpfilename = NULL;
+          m_free (bakfilename);  bakfilename = NULL;
+          if (rc)
+            goto leave;
+          lastresname = resname;
+          if (!opt.quiet)
+            log_info (_("checking keyring `%s'\n"), resname);
+          rc = create_tmp_file (resname, &bakfilename, &tmpfilename, &tmpfp);
+          if (rc)
+            goto leave;
+        }
+      
+      release_kbnode (keyblock);
+      rc = keyring_get_keyblock (hd, &keyblock);
+      if (rc) 
+        {
+          log_error ("keyring_get_keyblock failed: %s\n", g10_errstr(rc));
+          goto leave;
+        }
+      assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
+
+      /* check all signature to set the signature's cache flags */
+      for (node=keyblock; node; node=node->next)
+        {
+          if (node->pkt->pkttype == PKT_SIGNATURE)
+            {
+              check_key_signature (keyblock, node, NULL);
+              sigcount++;
+            }
+        }
+      
+      /* write the keyblock to the temporary file */
+      rc = write_keyblock (tmpfp, keyblock);
+      if (rc)
+        goto leave;
+
+      if ( !(++count % 50) && !opt.quiet)
+        log_info(_("%lu keys so far checked (%lu signatures)\n"),
+                 count, sigcount );
+
+    } /* end main loop */ 
+  if (rc == -1)
+    rc = 0;
+  if (rc) 
+    {
+      log_error ("keyring_search failed: %s\n", g10_errstr(rc));
+      goto leave;
+    }
+  log_info(_("%lu keys checked (%lu signatures)\n"), count, sigcount );
+  if (tmpfp)
+    {
+      if (iobuf_close (tmpfp))
+        {
+          log_error ("error closing `%s': %s\n",
+                     tmpfilename, strerror (errno));
+          rc = G10ERR_CLOSE_FILE;
+          goto leave;
+        }
+      /* because we have switched resources, we can be sure that
+       * the original file is closed */
+      tmpfp = NULL;
+    }
+  rc = lastresname? rename_tmp_file (bakfilename, tmpfilename,
+                                     lastresname, 0) : 0;
+  m_free (tmpfilename);  tmpfilename = NULL;
+  m_free (bakfilename);  bakfilename = NULL;
+
+ leave:
+  if (tmpfp)
+    iobuf_cancel (tmpfp);
+  m_free (tmpfilename);  
+  m_free (bakfilename);  
+  release_kbnode (keyblock);
+  keyring_release (hd);
+  return rc;
+}
+
 
 /****************
  * Perform insert/delete/update operation.
@@ -932,38 +1241,9 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
     }
 
     /* create the new file */
-  #ifdef USE_ONLY_8DOT3
-    /* Here is another Windoze bug?:
-     * you cant rename("pubring.gpg.tmp", "pubring.gpg");
-     * but	rename("pubring.gpg.tmp", "pubring.aaa");
-     * works.  So we replace .gpg by .bak or .tmp
-     */
-    if( strlen (fname) > 4
-	&& !strcmp (fname+strlen(fname)-4, EXTSEP_S "gpg") ) {
-	bakfname = m_alloc( strlen (fname) + 1 );
-	strcpy(bakfname, fname);
-	strcpy(bakfname+strlen(fname)-4, EXTSEP_S "bak");
-	tmpfname = m_alloc( strlen( fname ) + 1 );
-	strcpy(tmpfname,fname);
-	strcpy(tmpfname+strlen(fname)-4, EXTSEP_S "tmp");
-    }
-    else { /* file does not end with gpg; hmmm */
-	bakfname = m_alloc( strlen( fname ) + 5 );
-	strcpy(stpcpy(bakfname, fname), EXTSEP_S "bak");
-	tmpfname = m_alloc( strlen( fname ) + 5 );
-	strcpy(stpcpy(tmpfname, fname), EXTSEP_S "tmp");
-    }
-  #else
-    bakfname = m_alloc( strlen( fname ) + 2 );
-    strcpy(stpcpy(bakfname,fname),"~");
-    tmpfname = m_alloc( strlen( fname ) + 5 );
-    strcpy(stpcpy(tmpfname,fname), EXTSEP_S "tmp");
-  #endif
-    newfp = iobuf_create (tmpfname);
-    if (!newfp) {
-	log_error ("%s: can't create: %s\n", tmpfname, strerror(errno) );
+    rc = create_tmp_file (fname, &bakfname, &tmpfname, &newfp);
+    if (rc) {
 	iobuf_close(fp);
-	rc = G10ERR_OPEN_FILE;
 	goto leave;
     }
 
@@ -1003,20 +1283,12 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
     }
 
     if( mode == 1 || mode == 3 ) { /* insert or update */
-	KBNODE kbctx, node;
-
-	/* append the new data */
-	kbctx=NULL;
-	while( (node = walk_kbnode( root, &kbctx, 0 )) ) {
-	    if( (rc = build_packet( newfp, node->pkt )) ) {
-		log_error("build_packet(%d) failed: %s\n",
-			    node->pkt->pkttype, g10_errstr(rc) );
-		iobuf_close(fp);
-		iobuf_cancel(newfp);
-		rc = G10ERR_WRITE_FILE;
-		goto leave;
-	    }
-	}
+        rc = write_keyblock (newfp, root);
+        if (rc) {
+          iobuf_close(fp);
+          iobuf_cancel(newfp);
+          goto leave;
+        }
     }
 
     if( mode == 2 || mode == 3 ) { /* delete or update */
@@ -1043,58 +1315,11 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	rc = G10ERR_CLOSE_FILE;
 	goto leave;
     }
-    /* if the new file is a secring, restrict the permissions */
-  #ifndef HAVE_DOSISH_SYSTEM
-    if( secret && !opt.preserve_permissions ) {
-	if( chmod( tmpfname, S_IRUSR | S_IWUSR ) ) {
-	    log_error("%s: chmod failed: %s\n",
-				    tmpfname, strerror(errno) );
-	    rc = G10ERR_WRITE_FILE;
-	    goto leave;
-	}
-    }
-  #endif
 
-    /* rename and make backup file */
-    if( !secret ) {  /* but not for secret keyrings */
-        iobuf_ioctl (NULL, 2, 0, (char *)bakfname );
-        iobuf_ioctl (NULL, 2, 0, (char *)fname );
-      #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
-	remove( bakfname );
-      #endif
-	if( rename( fname, bakfname ) ) {
-	    log_error("%s: rename to `%s' failed: %s\n",
-				    fname, bakfname, strerror(errno) );
-	    rc = G10ERR_RENAME_FILE;
-	    goto leave;
-	}
-    }
-    iobuf_ioctl (NULL, 2, 0, (char*)tmpfname );
-    iobuf_ioctl (NULL, 2, 0, (char*)fname );
-  #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
-    remove( fname );
-  #endif
-    if( rename( tmpfname, fname ) ) {
-	log_error("%s: rename to `%s' failed: %s\n",
-			    tmpfname, fname,strerror(errno) );
-	rc = G10ERR_RENAME_FILE;
-	if( secret ) {
-	    log_info(_(
-		"WARNING: 2 files with confidential information exists.\n"));
-	    log_info(_("%s is the unchanged one\n"), fname );
-	    log_info(_("%s is the new one\n"), tmpfname );
-	    log_info(_("Please fix this possible security flaw\n"));
-	}
-	goto leave;
-    }
+    rc = rename_tmp_file (bakfname, tmpfname, fname, secret);
 
   leave:
     m_free(bakfname);
     m_free(tmpfname);
     return rc;
 }
-
-
-
-
-

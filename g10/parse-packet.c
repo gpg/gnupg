@@ -883,7 +883,7 @@ dump_sig_subpkt( int hashed, int type, int critical,
             printf(" %02x", buffer[i] );
 	break;
       case SIGSUBPKT_PRIV_VERIFY_CACHE:
-	p = "verification cache";
+	p = "obsolete verification cache";
 	break;
       default: p = "?"; break;
     }
@@ -936,7 +936,9 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
               break;
           return 0;   
       case SIGSUBPKT_PRIV_VERIFY_CACHE:
-        /* "GPG" 0x00 <mode> <stat>
+        /* We used this in gpg 1.0.5 and 1.0.6 to cache signature
+         * verification results - it is no longer used.
+         * "GPG" 0x00 <mode> <stat>
          * where mode == 1: valid data, stat == 0: invalid signature
          * stat == 1: valid signature 
 	 * (because we use private data, we check our marker) */
@@ -1732,8 +1734,18 @@ parse_trust( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
     c = iobuf_get_noeof(inp);
     pkt->pkt.ring_trust = m_alloc( sizeof *pkt->pkt.ring_trust );
     pkt->pkt.ring_trust->trustval = c;
+    pkt->pkt.ring_trust->sigcache = 0;
+    if (!c && pktlen==2) {
+        c = iobuf_get_noeof (inp);
+        /* we require that bit 7 of the sigcache is 0 (easier eof handling)*/
+        if ( !(c & 0x80) )
+            pkt->pkt.ring_trust->sigcache = c;
+    }
     if( list_mode )
-	printf(":trust packet: flag=%02x\n", c );
+	printf(":trust packet: flag=%02x sigcache=%02x\n",
+               pkt->pkt.ring_trust->trustval,
+               pkt->pkt.ring_trust->sigcache);
+    
 }
 
 

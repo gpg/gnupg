@@ -718,9 +718,11 @@ get_validity (PKT_public_key *pk, const byte *namehash)
   if ( (trec.r.trust.ownertrust & TRUST_FLAG_DISABLED) )
     validity |= TRUST_FLAG_DISABLED;
 
-  /* for convenience set some flags from the key */
+  /* set some flags direct from the key */
   if (pk->is_revoked)
     validity |= TRUST_FLAG_REVOKED;
+  /* Note: expiration is a trust value and not a flag - don't know why
+   * I initially designed it that way */
   if (pk->has_expired)
     validity = (validity & ~TRUST_MASK) | TRUST_EXPIRED;
 
@@ -879,6 +881,9 @@ make_key_array (KEYDB_HANDLE hd, KeyHashTable visited,
   desc.mode = KEYDB_SEARCH_MODE_NEXT; /* change mode */
   do
     {
+      PKT_public_key *pk;
+      u32 kid[2];
+        
       rc = keydb_get_keyblock (hd, &keyblock);
       if (rc) 
         {
@@ -896,18 +901,25 @@ make_key_array (KEYDB_HANDLE hd, KeyHashTable visited,
           continue;
         }
 
+      /* prepare the keyblock for further processing */
+      merge_keys_and_selfsig (keyblock); 
       clear_kbnode_flags (keyblock);
-      if (cmpfnc (keyblock, cmpval))
-        {
-          u32 kid[2];
+      pk = keyblock->pkt->pkt.public_key;
+      keyid_from_pk (pk, kid); /*(cheap: should already be cached in the pk)*/
 
+      if (pk->has_expired || pk->is_revoked)
+        {
+          /* it does not make sense to look further at those keys */
+          add_key_hash_table (visited, kid);
+        }
+      else if (cmpfnc (keyblock, cmpval))
+        {
           if (nkeys == maxkeys) {
             maxkeys += 1000;
             keys = m_realloc (keys, (maxkeys+1) * sizeof *keys);
           }
           keys[nkeys++].keyblock = keyblock;
           /* This key is signed - don't check it again */
-          keyid_from_pk (keyblock->pkt->pkt.public_key, kid);
           add_key_hash_table (visited, kid);
         }
       else 
@@ -1018,10 +1030,11 @@ cmp_kid_for_make_key_array (KBNODE kb, void *opaque)
   struct key_item *klist = opaque;
   struct key_item *kr;
   KBNODE node, uidnode=NULL;
+  PKT_public_key *pk = kb->pkt->pkt.public_key;
   u32 main_kid[2];
   int issigned=0, any_signed = 0, fully_count =0, marginal_count = 0;
   
-  keyid_from_pk(kb->pkt->pkt.public_key, main_kid);
+  keyid_from_pk(pk, main_kid);
   for (node=kb; node; node = node->next)
     {
       if (node->pkt->pkttype == PKT_USER_ID)

@@ -148,6 +148,7 @@ int keydb_update_keyblock (KEYDB_HANDLE hd, KBNODE kb);
 int keydb_insert_keyblock (KEYDB_HANDLE hd, KBNODE kb);
 int keydb_delete_keyblock (KEYDB_HANDLE hd);
 int keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved);
+void keydb_rebuild_caches (void);
 int keydb_search_reset (KEYDB_HANDLE hd);
 int keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc);
 int keydb_search_first (KEYDB_HANDLE hd);

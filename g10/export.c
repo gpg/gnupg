@@ -186,6 +186,9 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 	     * secret keyring */
 	    if( !secret && node->pkt->pkttype == PKT_COMMENT )
 		continue;
+            /* make sure that ring_trust packets never get exported */
+            if (node->pkt->pkttype == PKT_RING_TRUST)
+              continue;
 	    /* do not export packets which are marked as not exportable */
 	    if( node->pkt->pkttype == PKT_SIGNATURE ) {
 		const char *p;

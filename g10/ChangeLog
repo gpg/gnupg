@@ -1,3 +1,31 @@
+2001-09-25  Werner Koch  <wk@gnupg.org>
+
+	* g10.c, options.h, import.c: Removed the entire
+	allow-secret-key-import stuff because the validity is now
+	controlled by other means.
+
+	* g10.c: New command --rebuild-keydb-caches.
+	* keydb.c (keydb_rebuild_caches): New.
+	* keyring.c (do_copy): Moved some code to
+	(create_tmp_file, rename_tmp_file, write_keyblock): new functions.
+	(keyring_rebuild_cache): New.
+
+	* packet.h (PKT_ring_trust): Add sigcache field.
+	* parse-packet.c (parse_trust): Parse sigcache.
+	* keyring.c (do_copy): Always insert a sigcache packet.
+	(keyring_get_keyblock): Copy the sigcache packet to the signature.
+	* sig-check.c (cache_sig_result): Renamed from
+	cache_selfsig_result. Changed implementation to use the flag bits
+	and changed all callers.
+	(mdc_kludge_check): Removed this unused code.
+	(do_check): Do not set the sig flags here.
+
+	* import.c (read_block): Make sure that ring_trust packets are
+	never imported.
+	* export.c (do_export_stream): and never export them.
+
+	* trustdb.c (make_key_array): Skip revoked and expired keys.
+
 2001-09-24  Werner Koch  <wk@gnupg.org>
 
 	* g10.c, options.h: New option --no-auto-check-trustdb.

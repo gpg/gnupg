@@ -120,96 +120,6 @@ do_signature_check( PKT_signature *sig, MD_HANDLE digest,
 }
 
 
-#if 0 /* not anymore used */
-/****************
- * Check the MDC which is contained in SIG.
- * The MD_HANDLE should be currently open, so that this function
- * is able to append some data, before finalizing the digest.
- */
-int
-mdc_kludge_check( PKT_signature *sig, MD_HANDLE digest )
-{
-    int rc=0;
-
-    if( (rc=check_digest_algo(sig->digest_algo)) )
-	return rc;
-
-    /* make sure the digest algo is enabled (in case of a detached mdc??) */
-    md_enable( digest, sig->digest_algo );
-
-    /* complete the digest */
-    if( sig->version >= 4 )
-	md_putc( digest, sig->version );
-    md_putc( digest, sig->sig_class );
-    if( sig->version < 4 ) {
-	u32 a = sig->timestamp;
-	md_putc( digest, (a >> 24) & 0xff );
-	md_putc( digest, (a >> 16) & 0xff );
-	md_putc( digest, (a >>	8) & 0xff );
-	md_putc( digest,  a	   & 0xff );
-    }
-    else {
-	byte buf[6];
-	size_t n;
-	md_putc( digest, sig->pubkey_algo );
-	md_putc( digest, sig->digest_algo );
-	if( sig->hashed ) {
-	    n = sig->hashed->len;
-            md_putc (digest, (n >> 8) );
-            md_putc (digest,  n       );
-	    md_write (digest, sig->hashed->data, n);
-	    n += 6;
-	}
-	else
-	    n = 6;
-	/* add some magic */
-	buf[0] = sig->version;
-	buf[1] = 0xff;
-	buf[2] = n >> 24;
-	buf[3] = n >> 16;
-	buf[4] = n >>  8;
-	buf[5] = n;
-	md_write( digest, buf, 6 );
-    }
-    md_final( digest );
-
-    rc = G10ERR_BAD_SIGN;
-    {	const byte *s1 = md_read( digest, sig->digest_algo );
-	int s1len = md_digest_length( sig->digest_algo );
-
-	log_hexdump( "MDC calculated", s1, s1len );
-
-	if( !sig->data[0] )
-	    log_debug("sig_data[0] is NULL\n");
-	else {
-	    unsigned s2len;
-	    byte *s2;
-	    s2 = mpi_get_buffer( sig->data[0], &s2len, NULL );
-	    log_hexdump( "MDC stored    ", s2, s2len );
-
-	    if( s2len != s1len )
-		log_debug("MDC check: len differ: %d/%d\n", s1len, s2len);
-	    else if( memcmp( s1, s2, s1len ) )
-		log_debug("MDC check: hashs differ\n");
-	    else
-		rc = 0;
-	    m_free(s2);
-	}
-    }
-
-    if( !rc && sig->flags.unknown_critical ) {
-	log_info(_("assuming bad MDC due to an unknown critical bit\n"));
-	rc = G10ERR_BAD_SIGN;
-    }
-    sig->flags.checked = 1;
-    sig->flags.valid = !rc;
-
-    /* FIXME: check that we are actually in an encrypted packet */
-
-    return rc;
-}
-#endif
-
 /****************
  * This function gets called by pubkey_verify() if the algorithm needs it.
  */
@@ -402,8 +312,6 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
 	log_info(_("assuming bad signature due to an unknown critical bit\n"));
 	rc = G10ERR_BAD_SIGN;
     }
-    sig->flags.checked = 1;
-    sig->flags.valid = !rc;
 
     return rc;
 }
@@ -442,31 +350,20 @@ hash_uid_node( KBNODE unode, MD_HANDLE md, PKT_signature *sig )
 }
 
 static void
-cache_selfsig_result ( PKT_signature *sig, int result )
+cache_sig_result ( PKT_signature *sig, int result )
 {
-    byte buf[6];
-
-    if ( opt.no_sig_cache )
-        return;
-
-    buf[0] = 'G';
-    buf[1] = 'P';
-    buf[2] = 'G';
-    buf[3] = 0;
     if ( !result ) {
-        buf[4] = 1; /* mark cache valid */
-        buf[5] = 1; /* mark signature valid */
+        sig->flags.checked = 1;
+        sig->flags.valid = 1;
     }
     else if ( result == G10ERR_BAD_SIGN ) {
-        buf[4] = 1; /* mark cache valid */
-        buf[5] = 0; /* mark signature invalid */
+        sig->flags.checked = 1;
+        sig->flags.valid = 0;
     }
     else {
-        buf[4] = 0; /* mark cache invalid */
-        buf[5] = 0; 
+        sig->flags.checked = 0;
+        sig->flags.valid = 0;
     }
-
-    build_sig_subpkt (sig, SIGSUBPKT_PRIV_VERIFY_CACHE, buf, 6 );
 }
 
 /****************
@@ -503,20 +400,9 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
     sig = node->pkt->pkt.signature;
     algo = sig->digest_algo;
 
-  #if 0 /* I am not sure whether this is a good thing to do */
-    if( sig->flags.checked )
-	log_debug("check_key_signature: already checked: %s\n",
-		      sig->flags.valid? "good":"bad" );
-  #endif
-
-    /* Check whether we have cached the result of a previous signature check.*/
+    /* check whether we have cached the result of a previous signature check.*/
     if ( !opt.no_sig_cache ) {
-        const byte *p;
-        size_t len;
-
-        p = parse_sig_subpkt( sig->unhashed,
-                              SIGSUBPKT_PRIV_VERIFY_CACHE, &len );
-        if ( p && len >= 2 && p[0] == 1 ) { /* cache hit */
+        if (sig->flags.checked) { /*cached status available*/
 	    if( is_selfsig ) {	
 		u32 keyid[2];	
 
@@ -524,7 +410,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 		if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
 		    *is_selfsig = 1;
 	    }
-            return p[1] == 1? 0 : G10ERR_BAD_SIGN;
+            return sig->flags.valid? 0 : G10ERR_BAD_SIGN;
         }
     }
 
@@ -535,7 +421,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	md = md_open( algo, 0 );
 	hash_public_key( md, pk );
 	rc = do_check( pk, sig, md, r_expired );
-        cache_selfsig_result ( sig, rc );
+        cache_sig_result ( sig, rc );
 	md_close(md);
     }
     else if( sig->sig_class == 0x28 ) { /* subkey revocation */
@@ -546,7 +432,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
 	    rc = do_check( pk, sig, md, r_expired );
-            cache_selfsig_result ( sig, rc );
+            cache_sig_result ( sig, rc );
 	    md_close(md);
 	}
 	else {
@@ -571,7 +457,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
 	    rc = do_check( pk, sig, md, r_expired );
-            cache_selfsig_result ( sig, rc );
+            cache_sig_result ( sig, rc );
 	    md_close(md);
 	}
 	else {
@@ -585,7 +471,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	md = md_open( algo, 0 );
 	hash_public_key( md, pk );
 	rc = do_check( pk, sig, md, r_expired );
-        cache_selfsig_result ( sig, rc );
+        cache_sig_result ( sig, rc );
 	md_close(md);
     }
     else { /* all other classes */
@@ -602,11 +488,11 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 		if( is_selfsig )
 		    *is_selfsig = 1;
 		rc = do_check( pk, sig, md, r_expired );
-                cache_selfsig_result ( sig, rc );
 	    }
 	    else {
 		rc = do_signature_check( sig, md, r_expiredate, r_expired );
 	    }
+            cache_sig_result ( sig, rc );
 	    md_close(md);
 	}
 	else {

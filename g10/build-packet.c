@@ -135,7 +135,7 @@ build_packet( IOBUF out, PACKET *pkt )
 	rc = do_onepass_sig( out, ctb, pkt->pkt.onepass_sig );
 	break;
       case PKT_RING_TRUST:
-	break; /* ignore it */
+	break; /* ignore it (keyring.c does write it directly)*/
       default:
 	log_bug("invalid packet type in build_packet()\n");
 	break;

@@ -37,6 +37,18 @@
 
     * The entire keyring management has been revamped.
 
+    * The way signature stati are store has changed, so that v3
+      signatures can be supported. To increase the speed of many
+      operations for existing keys you can use the new
+      --rebuild-keydb-caches command.
+
+    * The entire key validation process (trustdb) has been revamped.
+      See the man page entries for --update-trustdb, --check-trustdb
+      and --no-auto-check-trustdb.
+
+    * --trusted-keys is again obsolete, --edit can be used to set the
+      ownertrust of any key to ultimately trusted.
+
 
 Noteworthy changes in version 1.0.6 (2001-05-29)
 ------------------------------------------------

@@ -320,7 +320,7 @@ lock_all (KEYDB_HANDLE hd)
     }
 
     if (rc) {
-        /* revert the alreadt set locks */
+        /* revert the already set locks */
         for (i--; i >= 0; i--) {
             switch (hd->active[i].type) {
               case KEYDB_RESOURCE_TYPE_NONE:
@@ -516,6 +516,22 @@ keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
     }
     return rc;
 }
+
+/*
+ * Rebuild the caches of all key resources.
+ */
+void
+keydb_rebuild_caches (void)
+{
+  int rc;
+  
+  rc = keyring_rebuild_cache ();
+  if (rc)
+    log_error (_("failed to rebuild all keyring caches: %s\n"),
+               g10_errstr (rc));
+  /* add other types here */
+}
+
 
 
 /* 

@@ -55,13 +55,13 @@ struct stats_s {
 
 
 static int import( IOBUF inp, int fast, const char* fname,
-                   int allow_secret, struct stats_s *stats );
+                   struct stats_s *stats );
 static int read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root );
 static void remove_bad_stuff (KBNODE keyblock);
 static int import_one( const char *fname, KBNODE keyblock, int fast,
                        struct stats_s *stats);
 static int import_secret_one( const char *fname, KBNODE keyblock,
-                              int allow, struct stats_s *stats );
+                              struct stats_s *stats );
 static int import_revoke_cert( const char *fname, KBNODE node,
                                struct stats_s *stats);
 static int chk_self_sigs( const char *fname, KBNODE keyblock,
@@ -144,8 +144,7 @@ import_keys( char **fnames, int nnames, int fast, void *stats_handle )
 	if( !inp )
 	    log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
 	else {
-	    int rc = import( inp, fast, fname,
-                             opt.allow_secret_key_import, stats );
+	    int rc = import( inp, fast, fname, stats );
 	    iobuf_close(inp);
 	    if( rc )
 		log_error("import from `%s' failed: %s\n", fname,
@@ -170,8 +169,7 @@ import_keys_stream( IOBUF inp, int fast, void *stats_handle )
     if (!stats)
         stats = import_new_stats_handle ();
 
-    rc = import( inp, fast, "[stream]",
-                 opt.allow_secret_key_import, stats );
+    rc = import( inp, fast, "[stream]", stats);
     if (!stats_handle) {
         import_print_stats (stats);
         import_release_stats_handle (stats);
@@ -181,8 +179,7 @@ import_keys_stream( IOBUF inp, int fast, void *stats_handle )
 }
 
 static int
-import( IOBUF inp, int fast, const char* fname, int allow_secret,
-        struct stats_s *stats )
+import( IOBUF inp, int fast, const char* fname, struct stats_s *stats )
 {
     PACKET *pending_pkt = NULL;
     KBNODE keyblock;
@@ -201,8 +198,7 @@ import( IOBUF inp, int fast, const char* fname, int allow_secret,
 	if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
 	    rc = import_one( fname, keyblock, fast, stats );
 	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY ) 
-                rc = import_secret_one( fname, keyblock,
-                                        allow_secret, stats );
+                rc = import_secret_one( fname, keyblock, stats );
 	else if( keyblock->pkt->pkttype == PKT_SIGNATURE
 		 && keyblock->pkt->pkt.signature->sig_class == 0x20 )
 	    rc = import_revoke_cert( fname, keyblock, stats );
@@ -344,6 +340,11 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
 	    init_packet(pkt);
 	    break;
 
+          case PKT_RING_TRUST:
+            /* skip those packets */
+	    free_packet( pkt );
+	    init_packet(pkt);
+            break;
 
 	  case PKT_PUBLIC_KEY:
 	  case PKT_SECRET_KEY:
@@ -386,7 +387,8 @@ remove_bad_stuff (KBNODE keyblock)
 
     for (node=keyblock; node; node = node->next ) {
         if( node->pkt->pkttype == PKT_SIGNATURE ) {
-            /* delete the subpackets we use for the verification cache */
+            /* delete the subpackets we used to use for the
+               verification cache */
             delete_sig_subpkt (node->pkt->pkt.signature->unhashed,
                                SIGSUBPKT_PRIV_VERIFY_CACHE);
         }
@@ -606,7 +608,7 @@ import_one( const char *fname, KBNODE keyblock, int fast,
  * with the trust calculation.
  */
 static int
-import_secret_one( const char *fname, KBNODE keyblock, int allow,
+import_secret_one( const char *fname, KBNODE keyblock, 
                    struct stats_s *stats)
 {
     PKT_secret_key *sk;
@@ -634,12 +636,6 @@ import_secret_one( const char *fname, KBNODE keyblock, int allow,
 	putc('\n', stderr);
     }
     stats->secret_read++;
-    if (!allow) {
-        log_info ( _("secret key %08lX not imported "
-                    "(use %s to allow for it)\n"),
-                   (ulong)keyid[1], "--allow-secret-key-import");
-        return 0;
-    }
 
     if( !uidnode ) {
 	log_error( _("key %08lX: no user ID\n"), (ulong)keyid[1]);

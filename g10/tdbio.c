@@ -768,7 +768,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 		    rc = tdbio_read_record( rec.r.hlst.next,
 						       &rec, RECTYPE_HLST);
 		    if( rc ) {
-			log_error( "scan keyhashtbl read hlst failed: %s\n",
+			log_error( "upd_hashtable: read hlst failed: %s\n",
 							     g10_errstr(rc) );
 			return rc;
 		    }
@@ -923,7 +923,7 @@ drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
 		rc = tdbio_read_record( rec.r.hlst.next,
 						   &rec, RECTYPE_HLST);
 		if( rc ) {
-		    log_error( "scan keyhashtbl read hlst failed: %s\n",
+		    log_error( "drop_from_hashtable: read hlst failed: %s\n",
 							 g10_errstr(rc) );
 		    return rc;
 		}

@@ -235,6 +235,7 @@ typedef struct {
 
 typedef struct {
     unsigned int trustval;
+    unsigned int sigcache;
 } PKT_ring_trust;
 
 typedef struct {
@@ -306,7 +307,7 @@ typedef enum {
     SIGSUBPKT_SIGNERS_UID  =28, /* signer's user id */
     SIGSUBPKT_REVOC_REASON =29, /* reason for revocation */
     SIGSUBPKT_FEATURES     =30, /* feature flags */
-    SIGSUBPKT_PRIV_VERIFY_CACHE =101, /* cache verification result */
+    SIGSUBPKT_PRIV_VERIFY_CACHE =101, /* cache verification result (obsolete)*/
 
     SIGSUBPKT_FLAG_CRITICAL=128
 } sigsubpkttype_t;

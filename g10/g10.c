@@ -112,7 +112,7 @@ enum cmd_and_opt_values { aNull = 0,
     aEnArmor,
     aGenRandom,
     aPipeMode,
-    aRefreshCaches,
+    aRebuildKeydbCaches,
     aRefreshKeys,
 
     oTextmode,
@@ -441,6 +441,7 @@ static ARGPARSE_OPTS opts[] = {
     { oEnableSpecialFilenames, "enable-special-filenames", 0, "@" },
     { oNoExpensiveTrustChecks, "no-expensive-trust-checks", 0, "@" },
     { aDeleteSecretAndPublicKey, "delete-secret-and-public-key",256, "@" },
+    { aRebuildKeydbCaches, "rebuild-keydb-caches", 256, "@"},
     { oPreservePermissions, "preserve-permissions", 0, "@"},
     { oPreferenceList,  "preference-list", 2, "@"},
     { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
@@ -848,6 +849,7 @@ main( int argc, char **argv )
 	  case aExportOwnerTrust: set_cmd( &cmd, aExportOwnerTrust); break;
 	  case aImportOwnerTrust: set_cmd( &cmd, aImportOwnerTrust); break;
           case aPipeMode: set_cmd( &cmd, aPipeMode); break;
+          case aRebuildKeydbCaches: set_cmd( &cmd, aRebuildKeydbCaches); break;
 
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
 	  case oOutput: opt.outfile = pargs.r.ret_str; break;
@@ -1078,7 +1080,7 @@ main( int argc, char **argv )
 		opt.override_session_key = pargs.r.ret_str;
 		break;
 	  case oMergeOnly: opt.merge_only = 1; break;
-	  case oAllowSecretKeyImport: opt.allow_secret_key_import = 1; break;
+          case oAllowSecretKeyImport: /* obsolete */ break;
 	  case oTryAllSecrets: opt.try_all_secrets = 1; break;
           case oTrustedKey: register_trusted_key( pargs.r.ret_str ); break;
           case oEnableSpecialFilenames:
@@ -1687,6 +1689,12 @@ main( int argc, char **argv )
         if ( argc )
             wrong_args ("--pipemode");
         run_in_pipemode ();
+        break;
+
+      case aRebuildKeydbCaches:
+        if (argc)
+            wrong_args ("--rebuild-keydb-caches");
+        keydb_rebuild_caches ();
         break;
 
       case aListPackets:
