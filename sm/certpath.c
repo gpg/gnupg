@@ -195,6 +195,33 @@ check_cert_policy (KsbaCert cert)
     }
 }
 
+
+static int
+find_up (KEYDB_HANDLE kh, KsbaCert cert, const char *issuer)
+{
+  KsbaName authid;
+  KsbaSexp authidno;
+  int rc = -1;
+
+  if (!ksba_cert_get_auth_key_id (cert, NULL, &authid, &authidno))
+    {
+      const char *s = ksba_name_enum (authid, 0);
+      if (s && *authidno)
+        {
+          rc = keydb_search_issuer_sn (kh, s, authidno);
+          if (rc)
+              keydb_search_reset (kh);
+        }
+      ksba_name_release (authid);
+      xfree (authidno);
+    }
+  
+  if (rc)
+    rc = keydb_search_subject (kh, issuer);
+  return rc;
+}
+
+
 /* Return the next certificate up in the chain starting at START.
    Returns -1 when there are no more certificates. */
 int
@@ -233,8 +260,8 @@ gpgsm_walk_cert_chain (KsbaCert start, KsbaCert *r_next)
       rc = -1; /* we are at the root */
       goto leave; 
     }
- 
-  rc = keydb_search_subject (kh, issuer);
+
+  rc = find_up (kh, start, issuer);
   if (rc)
     {
       /* it is quite common not to have a certificate, so better don't
@@ -448,7 +475,7 @@ gpgsm_validate_path (KsbaCert cert)
 
       /* find the next cert up the tree */
       keydb_search_reset (kh);
-      rc = keydb_search_subject (kh, issuer);
+      rc = find_up (kh, subject_cert, issuer);
       if (rc)
         {
           if (rc == -1)
@@ -569,7 +596,7 @@ gpgsm_basic_cert_check (KsbaCert cert)
     {
       /* find the next cert up the tree */
       keydb_search_reset (kh);
-      rc = keydb_search_subject (kh, issuer);
+      rc = find_up (kh, cert, issuer);
       if (rc)
         {
           if (rc == -1)

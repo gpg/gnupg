@@ -1,3 +1,8 @@
+2002-04-15  Werner Koch  <wk@gnupg.org>
+
+	* certpath.c (find_up): New to use the authorithKeyIdentifier.
+	Use it in all other functions to locate the signing cert..
+
 2002-04-11  Werner Koch  <wk@gnupg.org>
 
 	* certlist.c (cert_usable_p): New.
