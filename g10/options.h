@@ -104,6 +104,8 @@ struct {
       int keep_temp_files:1;
       STRLIST other;
     } keyserver_options;
+    int keyserver_disable;
+    int no_perm_warn;
     char *temp_dir;
     int no_encrypt_to;
     int interactive;

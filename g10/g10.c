@@ -166,6 +166,7 @@ enum cmd_and_opt_values { aNull = 0,
     oNoVerbose,
     oTrustDBName,
     oNoSecmemWarn,
+    oNoPermissionWarn,
     oNoArmor,
     oNoDefKeyring,
     oNoGreeting,
@@ -408,6 +409,7 @@ static ARGPARSE_OPTS opts[] = {
     { oNoVerbose, "no-verbose", 0, "@"},
     { oTrustDBName, "trustdb-name", 2, "@" },
     { oNoSecmemWarn, "no-secmem-warning", 0, "@" }, /* used only by regression tests */
+    { oNoPermissionWarn, "no-permission-warning", 0, "@" },
     { oNoArmor, "no-armor",   0, "@"},
     { oNoArmor, "no-armour",   0, "@"},
     { oNoDefKeyring, "no-default-keyring", 0, "@" },
@@ -682,6 +684,7 @@ main( int argc, char **argv )
     char **orig_argv;
     const char *fname;
     char *username;
+    STRLIST unsafe_files=NULL;
     int may_coredump;
     STRLIST sl, remusr= NULL, locusr=NULL;
     STRLIST nrings=NULL, sec_nrings=NULL;
@@ -815,6 +818,20 @@ main( int argc, char **argv )
     pargs.flags=  1;  /* do not remove the args */
   next_pass:
     if( configname ) {
+
+      if(check_permissions(configname,1))
+	{
+	  add_to_strlist(&unsafe_files,configname);
+
+	  /* If any options file is unsafe, then disable the keyserver
+	     code.  Since the keyserver code can call an external
+	     program, and the external program to call is set in the
+	     options file, a unsafe options file can lead to an
+	     arbitrary program being run. */
+
+	  opt.keyserver_disable=1;
+	}
+
 	configlineno = 0;
 	configfp = fopen( configname, "r" );
 	if( !configfp ) {
@@ -988,6 +1005,8 @@ main( int argc, char **argv )
 	  case oAlwaysTrust: opt.always_trust = 1; break;
 	  case oLoadExtension:
 #ifndef __riscos__
+	    if(check_permissions(pargs.r.ret_str,1))
+	      add_to_strlist(&unsafe_files,pargs.r.ret_str);
 	    register_cipher_extension(orig_argc? *orig_argv:NULL,
 				      pargs.r.ret_str);
 #else /* __riscos__ */
@@ -1089,6 +1108,7 @@ main( int argc, char **argv )
 	  case oCipherAlgo: def_cipher_string = m_strdup(pargs.r.ret_str); break;
 	  case oDigestAlgo: def_digest_string = m_strdup(pargs.r.ret_str); break;
 	  case oNoSecmemWarn: secmem_set_flags( secmem_get_flags() | 1 ); break;
+	  case oNoPermissionWarn: opt.no_perm_warn=1; break;
 	  case oCharset:
 	    if( set_native_charset( pargs.r.ret_str ) )
 		log_error(_("%s is not a valid character set\n"),
@@ -1162,6 +1182,7 @@ main( int argc, char **argv )
 	  default : pargs.err = configfp? 1:2; break;
 	}
     }
+
     if( configfp ) {
 	fclose( configfp );
 	configfp = NULL;
@@ -1186,6 +1207,18 @@ main( int argc, char **argv )
 	log_info("used in a production environment or with production keys!\n");
     }
   #endif
+
+    check_permissions(opt.homedir,0);
+
+    if(unsafe_files)
+      {
+	STRLIST tmp;
+
+	for(tmp=unsafe_files;tmp;tmp=tmp->next)
+	  check_permissions(tmp->d,0);
+
+	free_strlist(unsafe_files);
+      }
 
     if( may_coredump && !opt.quiet )
 	log_info(_("WARNING: program may create a core file!\n"));
@@ -1334,6 +1367,7 @@ main( int argc, char **argv )
     /* set the random seed file */
     if( use_random_seed ) {
 	char *p = make_filename(opt.homedir, "random_seed", NULL );
+	check_permissions(p,0);
 	set_random_seed_file(p);
 	m_free(p);
     }

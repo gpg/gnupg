@@ -34,6 +34,7 @@
 #include "options.h"
 #include "memory.h"
 #include "keydb.h"
+#include "cipher.h"
 #include "status.h"
 #include "i18n.h"
 #include "util.h"
@@ -122,7 +123,7 @@ parse_keyserver_uri(char *uri)
     opt.keyserver_port="0";
   else
     {
-      unsigned char *ch;
+      char *ch;
 
       /* Get the port */
       opt.keyserver_port=strsep(&uri,"/");
@@ -278,6 +279,14 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
       BUG ();
 #endif
 
+  if(opt.keyserver_disable && !opt.no_perm_warn)
+    {
+      log_info(_("keyserver scheme \"%s\" disabled due to unsafe "
+		 "options file permissions\n"),opt.keyserver_scheme);
+
+      return KEYSERVER_SCHEME_NOT_FOUND;
+    }
+
   /* Build the filename for the helper to execute */
 
   filename=m_alloc(strlen("gpgkeys_")+strlen(opt.keyserver_scheme)+1);
@@ -287,31 +296,44 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
 
   if(opt.keyserver_options.use_temp_files)
     {
+      int attempts;
       const char *tmp=get_temp_dir();
+      byte *randombits;
 
-      tempdir=m_alloc(strlen(tmp)+1+8+11+1);
-      sprintf(tempdir,"%s" DIRSEP_S "gpg-XXXXXX",tmp);
+      tempdir=m_alloc(strlen(tmp)+1+12+1);
 
-      /* Yes, I'm using mktemp.  No, this isn't automatically insecure
-         because of it.  I am using it to make a temp dir, not a file,
-         and I happily fail if it already exists. */
+      /* Try 4 times to make the temp directory */
+      for(attempts=0;attempts<4;attempts++)
+	{
+	  /* Using really random bits is probably overkill here.  The
+	     worst thing that can happen with a directory name collision
+	     is that the user will get an error message. */
+	  randombits=get_random_bits(8*4,0,0);
 
-      mktemp(tempdir);
+	  sprintf(tempdir,"%s" DIRSEP_S "gpg-%02X%02X%02X%02X",tmp,
+		  randombits[0],randombits[1],randombits[2],randombits[3]);
+
+	  m_free(randombits);
+
+	  if(mkdir(tempdir,0700)==0)
+	    {
+	      madedir=1;
+	      break;
+	    }
+	}
+
+      if(!madedir)
+	{
+	  log_error(_("%s: can't create temp directory after %d tries: %s\n"),
+		    tempdir,attempts,strerror(errno));
+	  goto fail;
+	}
 
       tempfile_in=m_alloc(strlen(tempdir)+1+10+1);
       sprintf(tempfile_in,"%s" DIRSEP_S "ksrvin" EXTSEP_S "txt",tempdir);
 
       tempfile_out=m_alloc(strlen(tempdir)+1+11+1);
       sprintf(tempfile_out,"%s" DIRSEP_S "ksrvout" EXTSEP_S "txt",tempdir);
-
-      if(mkdir(tempdir,0700)==-1)
-	{
-	  log_error(_("%s: can't create directory: %s\n"),
-		    tempdir,strerror(errno));
-	  goto fail;
-	}
-
-      madedir=1;
 
       tochild=fopen(tempfile_in,"w");
       if(tochild==NULL)

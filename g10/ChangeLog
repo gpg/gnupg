@@ -1,3 +1,27 @@
+2001-12-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* misc.c (check_permissions): New function to stat() and ensure
+	the permissions of GNUPGHOME and the files have safe permissions.
+
+	* keydb.c (keydb_add_resource): Check keyring permissions.
+
+	* tdbio.c (tdbio_set_dbname): Check permissions of trustdb.gpg
+
+	* keyserver.c (keyserver_spawn): Disable keyserver schemes that
+	involve running external programs if the options file has unsafe
+	permissions or ownership.
+
+	* g10.c, options.h: New option --no-permission-warning to disable
+	the permission warning message(s).  This also permits use of the
+	keyserver if it had been disabled (see above).  Also check the
+	permissions/ownership of random_seed.
+	
+	* keyserver.c (keyserver_spawn): The new glibc prints a warning
+	when using mktemp() (the code was already secure, but the warning
+	was bound to cause confusion).  Use a different implementation
+	based on get_random_bits() instead.  Also try a few times to get
+	the temp dir before giving up.
+
 2001-12-19  Werner Koch  <wk@gnupg.org>
 
 	* g10.c, passphrase.c [CYGWIN32]: Allow this as an alias for MINGW32.

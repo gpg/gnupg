@@ -24,6 +24,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#ifdef HAVE_STAT
+#include <sys/stat.h>
+#endif
 #if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
   #include <asm/sysinfo.h>
   #include <asm/unistd.h>
@@ -327,8 +330,6 @@ openpgp_pk_algo_usage ( int algo )
     return use;
 }
 
-
-
 int
 openpgp_md_test_algo( int algo )
 {
@@ -337,16 +338,60 @@ openpgp_md_test_algo( int algo )
     return check_digest_algo(algo);
 }
 
+int
+check_permissions(const char *path,int checkonly)
+{
+#ifdef HAVE_STAT
+  struct stat statbuf;
+  int isdir=0;
 
+  if(opt.no_perm_warn)
+    return 0;
 
+  /* It's okay if the file doesn't exist */
+  if(stat(path,&statbuf)!=0)
+    return 0;
 
+  isdir=S_ISDIR(statbuf.st_mode);
 
+  /* The user doesn't own the file */
+  if(statbuf.st_uid != getuid())
+    {
+      if(!checkonly)
+	log_info(_("Warning: unsafe ownership on %s \"%s\"\n"),
+		 isdir?"directory":"file",path);
+      return 1;
+    }
 
+  /* This works for both directories and files - basically, we don't
+     care what the owner permissions are, so long as the group and
+     other permissions are 0. */
+  if((statbuf.st_mode & (S_IRWXG|S_IRWXO)) != 0)
+    {
+      char *dir;
 
+      /* However, if the directory the directory/file is in is owned
+         by the user and is 700, then this is not a problem.
+         Theoretically, we could walk this test up to the root
+         directory /, but for the sake of sanity, I'm stopping at one
+         level down. */
 
+      dir=make_dirname(path);
+      if(stat(dir,&statbuf)==0 && statbuf.st_uid==getuid() &&
+	 S_ISDIR(statbuf.st_mode) && (statbuf.st_mode & (S_IRWXG|S_IRWXO))==0)
+	{
+	  m_free(dir);
+	  return 0;
+	}
 
+      m_free(dir);
 
+      if(!checkonly)
+	log_info(_("Warning: unsafe permissions on %s \"%s\"\n"),
+		 isdir?"directory":"file",path);
+      return 1;
+    }
+#endif
 
-
-
-
+  return 0;
+}
