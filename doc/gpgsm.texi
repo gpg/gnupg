@@ -296,7 +296,7 @@ performance, the dirmngr will actually optimize this by suppressing
 the loading for short time intervalls (e.g. 30 minutes). This option
 is useful to make sure that a fresh CRL is available for certificates
 hold in the keybox.  The suggested way of doing this is by using it
-along with the option @code{--with-validation} for a ke listing
+along with the option @option{--with-validation} for a ke listing
 command.  This option should not be used in a configuration file. 
 
 @item  --enable-ocsp
@@ -305,8 +305,11 @@ command.  This option should not be used in a configuration file.
 @opindex disable-ocsp
 Be default @acronym{OCSP} checks are disabled.  The enable opton may
 be used to enable OCSP checks via Dirmngr.  If @acronym{CRL} checks
-are also enabled, CRLs willbe used as a fallback if for some reason an
-OCSP request won't succeed.
+are also enabled, CRLs will be used as a fallback if for some reason an
+OCSP request won't succeed.  Note, that you have to allow OCSP
+requests in Dirmngr's configuration too (option 
+@option{--allow-ocsp} and configure dirmngr properly.  If you don't do
+so you will get the error code @samp{Not supported}.
 
 @end table
 

@@ -1,0 +1,24 @@
+@c Copyright (C) 2004 Free Software Foundation, Inc.
+@c This is part of the GnuPG manual.
+@c For copying conditions, see the file gnupg.texi.
+
+@node Glossary
+@unnumbered Glossary
+
+
+@table @samp
+@item ARL
+      The @emph{Authority Revocation List} is technical identical to a
+@acronym{CRL} but used for @acronym{CA}s and not for end user
+certificates.
+
+@item CRL
+      The @emph{Certificate Revocation List} is a list containing
+certificates revoked by the issuer.
+
+@item OCSP
+      The @emph{Online Certificate Status Protocol} is used as an
+alternative to a @acronym{CRL}.  It is described in @code{RFC 2560}.
+
+
+@end table
