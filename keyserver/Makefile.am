@@ -1,4 +1,4 @@
-# Copyright (C) 2001 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -25,11 +25,12 @@ EXTRA_SCRIPTS = gpgkeys_mailto
 # We don't need the libs the regular GPG binaries do
 LIBS=
 
-bin_PROGRAMS = @GPGKEYS_LDAP@
-bin_SCRIPTS = @GPGKEYS_MAILTO@ @GPGKEYS_HKP@
+bin_PROGRAMS = @GPGKEYS_LDAP@ @GPGKEYS_HKP@
+bin_SCRIPTS = @GPGKEYS_MAILTO@
 noinst_SCRIPTS = gpgkeys_test
 
 # don't distribute hkp for now
 nodist_gpgkeys_hkp_SOURCES = gpgkeys_hkp.c
 
-gpgkeys_ldap_LDADD = -lldap -llber -lresolv
+gpgkeys_ldap_LDADD = @LDAPLIBS@ @NETLIBS@
+gpgkeys_hkp_LDADD = @NETLIBS@
