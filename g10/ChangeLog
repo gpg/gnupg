@@ -1,5 +1,22 @@
 2002-05-29  David Shaw  <dshaw@jabberwocky.com>
 
+	* keygen.c (keygen_set_std_prefs, add_feature_mdc): Use "mdc" and
+	"no-mdc" in the prefs string to allow switching on and off the MDC
+	feature.  This is needed to properly export a key from GnuPG for
+	use on PGP which does not support MDC - without this, MDC-capable
+	implementations will still try and generate MDCs which will break
+	PGP.
+
+	* keygen.c (keygen_get_std_prefs): Show "[mdc]" in prefs string if
+	it is enabled.
+
+	* options.h, g10.c (main), cipher.c (write_header), keygen.c
+	(keygen_set_std_prefs): For consistency, allow the user to specify
+	mdc/no-mdc in the --personal-preference-list.  If disabled, it
+	acts just like --disable-mdc.
+
+2002-05-29  David Shaw  <dshaw@jabberwocky.com>
+
 	* options.h, exec.c: Add some debugging info, using the 1024 debug
 	flag.
 

@@ -106,7 +106,7 @@ static byte hash_prefs[MAX_PREFS];
 static int nhash_prefs;
 static byte zip_prefs[MAX_PREFS];
 static int nzip_prefs;
-
+static int mdc_available;
 
 static void do_generate_keypair( struct para_data_s *para,
 				 struct output_control_s *outctrl );
@@ -215,7 +215,7 @@ int
 keygen_set_std_prefs (const char *string,int personal)
 {
     byte sym[MAX_PREFS], hash[MAX_PREFS], zip[MAX_PREFS];
-    int  nsym=0, nhash=0, nzip=0;
+    int  nsym=0, nhash=0, nzip=0, mdc=1; /* mdc defaults on */
     ulong val;
     const char *s, *s2;
     int rc = 0;
@@ -255,6 +255,14 @@ keygen_set_std_prefs (const char *string,int personal)
             if (set_one_pref (val, 'Z', check_zip_algo, zip, &nzip))
                 rc = -1;
         }
+	else if (ascii_strcasecmp(s,"mdc")==0) {
+	  mdc=1;
+	  s2=s+3;
+	}
+	else if (ascii_strcasecmp(s,"no-mdc")==0) {
+	  mdc=0;
+	  s2=s+6;
+	}
         else if (isspace (*s))
             s2 = s+1;
         else {
@@ -289,11 +297,14 @@ keygen_set_std_prefs (const char *string,int personal)
 	  opt.personal_prefs[n].type = PREFTYPE_NONE; /* end of list marker */
 	  opt.personal_prefs[n].value = 0;
 	}
+
+	opt.personal_mdc = mdc;
       }
       else {
         memcpy (sym_prefs,  sym,  (nsym_prefs=nsym));
         memcpy (hash_prefs, hash, (nhash_prefs=nhash));
         memcpy (zip_prefs,  zip,  (nzip_prefs=nzip));
+	mdc_available = mdc;
         prefs_initialized = 1;
       }
     }
@@ -313,7 +324,7 @@ keygen_get_std_prefs ()
     if (!prefs_initialized)
         keygen_set_std_prefs (NULL,0);
 
-    buf = m_alloc ( MAX_PREFS*3*5 + 1);
+    buf = m_alloc ( MAX_PREFS*3*5 + 5 + 1);
     *buf = 0;
     for (i=0; i < nsym_prefs; i++ )
         sprintf (buf+strlen(buf), "S%d ", sym_prefs[i]);
@@ -321,23 +332,30 @@ keygen_get_std_prefs ()
         sprintf (buf+strlen(buf), "H%d ", hash_prefs[i]);
     for (i=0; i < nzip_prefs; i++ )
         sprintf (buf+strlen(buf), "Z%d ", zip_prefs[i]);
-    
-    if (*buf) /* trim the trailing space */
-        buf[strlen(buf)-1] = 0; 
+
+    if(mdc_available)
+      sprintf(buf+strlen(buf),"[mdc]");
+    else if (*buf) /* trim the trailing space */
+      buf[strlen(buf)-1] = 0;
+
     return buf;
 }
 
 
 static void
-add_feature_mdc (PKT_signature *sig)
+add_feature_mdc (PKT_signature *sig,int enabled)
 {
     const byte *s;
     size_t n;
+    int i;
     char *buf;
 
     s = parse_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES, &n );
-    if (s && n && (s[0] & 0x01))
-        return; /* already set */
+    /* Already set or cleared */
+    if (s && n &&
+	((enabled && (s[0] & 0x01)) || (!enabled && !(s[0] & 0x01))))
+      return;
+
     if (!s || !n) { /* create a new one */
         n = 1;
         buf = m_alloc_clear (n);
@@ -346,11 +364,24 @@ add_feature_mdc (PKT_signature *sig)
         buf = m_alloc (n);
         memcpy (buf, s, n);
     }
-    buf[0] |= 0x01; /* MDC feature */
-    build_sig_subpkt (sig, SIGSUBPKT_FEATURES, buf, n);
+
+    if(enabled)
+      buf[0] |= 0x01; /* MDC feature */
+    else
+      buf[0] &= ~0x01;
+
+    /* Are there any bits set? */
+    for(i=0;i<n;i++)
+      if(buf[i]!=0)
+	break;
+
+    if(i==n)
+      delete_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES);
+    else
+      build_sig_subpkt (sig, SIGSUBPKT_FEATURES, buf, n);
+
     m_free (buf);
 }
-
 
 int
 keygen_upd_std_prefs( PKT_signature *sig, void *opaque )
@@ -382,8 +413,8 @@ keygen_upd_std_prefs( PKT_signature *sig, void *opaque )
         delete_sig_subpkt (sig->unhashed, SIGSUBPKT_PREF_COMPR);
       }
 
-    /* Make sure that the MDC feature flag is set */
-    add_feature_mdc (sig);
+    /* Make sure that the MDC feature flag is set if needed */
+    add_feature_mdc (sig,mdc_available);
 
     return 0;
 }

@@ -64,7 +64,7 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     if (opt.force_mdc)
         use_mdc = 1;
         
-    if( opt.rfc2440 || opt.rfc1991 || opt.disable_mdc )
+    if( opt.rfc2440 || opt.rfc1991 || opt.disable_mdc || !opt.personal_mdc )
 	use_mdc = 0;  /* override - rfc2440 does not know about MDC */
 
     memset( &ed, 0, sizeof ed );
@@ -165,5 +165,3 @@ cipher_filter( void *opaque, int control,
     }
     return rc;
 }
-
-
