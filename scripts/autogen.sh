@@ -1,7 +1,7 @@
 #!/bin/sh
 # Run this to generate all the initial makefiles, etc.
 #
-# Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -17,7 +17,10 @@ autoconf_vers=2.52
 automake_vers=1.6
 aclocal_vers=1.6
 
-
+ACLOCAL=${ACLOCAL:-aclocal}
+AUTOCONF=${AUTOCONF:-autoconf}
+AUTOMAKE=${AUTOMAKE:-automake}
+AUTOHEADER=${AUTOHEADER:-autoheader}
 DIE=no
 if test "$1" = "--build-w32"; then
     tmp=`dirname $0`
@@ -72,8 +75,8 @@ fi
 
 
 
-if (autoconf --version) < /dev/null > /dev/null 2>&1 ; then
-    if (autoconf --version | awk 'NR==1 { if( $3 >= '$autoconf_vers') \
+if ($AUTOCONF --version) < /dev/null > /dev/null 2>&1 ; then
+    if ($AUTOCONF --version | awk 'NR==1 { if( $3 >= '$autoconf_vers') \
 			       exit 1; exit 0; }');
     then
        echo "**Error**: "\`autoconf\'" is too old."
@@ -87,16 +90,16 @@ else
     DIE="yes"
 fi
 
-if (automake --version) < /dev/null > /dev/null 2>&1 ; then
-  if (automake --version | awk 'NR==1 { if( $4 >= '$automake_vers') \
+if ($AUTOMAKE --version) < /dev/null > /dev/null 2>&1 ; then
+  if ($AUTOMAKE --version | awk 'NR==1 { if( $4 >= '$automake_vers') \
 			     exit 1; exit 0; }');
      then
      echo "**Error**: "\`automake\'" is too old."
      echo '           (version ' $automake_vers ' or newer is required)'
      DIE="yes"
   fi
-  if (aclocal --version) < /dev/null > /dev/null 2>&1; then
-    if (aclocal --version | awk 'NR==1 { if( $4 >= '$aclocal_vers' ) \
+  if ($ACLOCAL --version) < /dev/null > /dev/null 2>&1; then
+    if ($ACLOCAL --version | awk 'NR==1 { if( $4 >= '$aclocal_vers' ) \
 						exit 1; exit 0; }' );
     then
       echo "**Error**: "\`aclocal\'" is too old."
@@ -133,13 +136,13 @@ if test "$DIE" = "yes"; then
 fi
 
 echo "Running aclocal..."
-aclocal
+$ACLOCAL
 echo "Running autoheader..."
-autoheader
+$AUTOHEADER
 echo "Running automake --gnu ..."
-automake --gnu;
+$AUTOMAKE --gnu;
 echo "Running autoconf..."
-autoconf
+$AUTOCONF
 
 echo "You can now run \"./configure --enable-maintainer-mode\" and then \"make\"."
 
