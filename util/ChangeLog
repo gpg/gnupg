@@ -1,3 +1,7 @@
+Thu Mar  2 15:37:46 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* ttyio.c (tty_print_utf8_string2): New to allow a max output size.
+
 Wed Feb 23 10:07:57 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* miscutil.c (asctimestamp): Fix for possible buffer overflow by

@@ -1,3 +1,8 @@
+Thu Mar  2 15:37:46 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* config.guess: Add support for QNX.  By Sam Roberts.
+	* config.sub: Ditto.
+
 Thu Sep 23 09:49:25 1999  Werner Koch  (wk@gnupg.org)
 
 	* commit: Remove leading and trailing empty lines when copying

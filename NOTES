@@ -11,3 +11,6 @@ Some other reported cpu-vendor-os strings:
     sparc-sun-sunos4.1.2
     i386-pc-sysv4.2   (USL Unixware v1.1.2)
 
+gpg 1.0.1 okay with MP-RAS 3.02.01 Edition 5 using gcc 2.95.2 and EGD
+ By <CSpeicher@eisi.com>
+

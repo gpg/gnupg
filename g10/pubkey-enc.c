@@ -152,6 +152,10 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 	write_status(STATUS_RSA_OR_IDEA);
     rc = check_cipher_algo( dek->algo );
     if( rc ) {
+	if( !opt.quiet && rc == G10ERR_CIPHER_ALGO ) {
+	    log_info(_("cipher algorithm %d is unknown or disabled\n"),
+							    dek->algo);
+	}
 	dek->algo = 0;
 	goto leave;
     }

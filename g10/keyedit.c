@@ -158,7 +158,7 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	else {
 	    size_t n;
 	    char *p = get_user_id( sig->keyid, &n );
-	    tty_print_utf8_string( p, n > 40? 40 : n );
+	    tty_print_utf8_string2( p, n, 40 );
 	    m_free(p);
 	}
 	tty_printf("\n");

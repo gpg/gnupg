@@ -1,3 +1,13 @@
+Thu Mar  2 15:37:46 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* pubkey-enc.c (get_it): Print a note about unknown cipher algos.
+
+	* g10.c (opts): Add a note to the help listing about the man page
+	and removed some options from the help listing.
+
+	* keyedit.c (print_and_check_one_sig): Use a new function to truncate
+	the output of the user ID.  Suggested by Jan-Benedict Glaw.
+
 Wed Feb 23 10:07:57 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* helptext.c: typo fix.

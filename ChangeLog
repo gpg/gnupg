@@ -1,3 +1,7 @@
+Thu Mar  2 15:37:46 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* configure.in: Add check for clock_gettime
+
 Wed Feb 23 10:07:57 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* configure.in (ALL_LINGUAS): Add nl.

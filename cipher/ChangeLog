@@ -1,3 +1,17 @@
+Thu Mar  2 15:37:46 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* random.c (fast_random_poll): Add clock_gettime() as fallback for
+	system which support this POSIX.4 fucntion. By Sam Roberts.
+
+	* rndunix.c: Add some more headers for QNX. By Sam Roberts.
+
+	* random.c (read_seed_file): Removed the S_ISLNK test becuase it
+	is already covered by !S_ISREG and is not defined in Unixware.
+	Reported by Dave Dykstra.
+
+	* sha1.c (sha1_get_info): Removed those stupid double lines. Dave
+	is really a good lint.
+
 Wed Feb 23 10:07:57 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* twofish.c (twofish_get_info): Add some const to the casts.  By Martin

@@ -43,6 +43,9 @@
 #ifdef HAVE_GETTIMEOFDAY
   #include <sys/times.h>
 #endif
+#ifdef HAVE_CLOCK_GETTIME
+  #include <time.h>
+#endif
 #ifdef HAVE_GETRUSAGE
   #include <sys/resource.h>
 #endif
@@ -306,7 +309,7 @@ read_seed_file()
 	close(fd);
 	return 0;
     }
-    if( !S_ISREG(sb.st_mode) || S_ISLNK(sb.st_mode) ) {
+    if( !S_ISREG(sb.st_mode) ) {
 	log_info(_("`%s' is not a regular file - ignored\n"), seed_file_name );
 	close(fd);
 	return 0;
@@ -556,6 +559,13 @@ fast_random_poll()
 	    BUG();
 	add_randomness( &tv.tv_sec, sizeof(tv.tv_sec), 1 );
 	add_randomness( &tv.tv_usec, sizeof(tv.tv_usec), 1 );
+    }
+  #elif HAVE_CLOCK_GETTIME
+    {	struct timespec tv;
+	if( clock_gettime( CLOCK_REALTIME, &tv ) == -1 )
+	    BUG();
+	add_randomness( &tv.tv_sec, sizeof(tv.tv_sec), 1 );
+	add_randomness( &tv.tv_nsec, sizeof(tv.tv_nsec), 1 );
     }
   #else /* use times */
     #ifndef HAVE_DOSISH_SYSTEM

@@ -276,12 +276,12 @@ static ARGPARSE_OPTS opts[] = {
     { oCharset, "charset"   , 2, N_("|NAME|set terminal charset to NAME") },
     { oOptions, "options"   , 2, N_("read options from file")},
 
-    { oDebug, "debug"     ,4|16, N_("set debugging flags")},
-    { oDebugAll, "debug-all" ,0, N_("enable full debugging")},
+    { oDebug, "debug"     ,4|16, "@"},
+    { oDebugAll, "debug-all" ,0, "@"},
     { oStatusFD, "status-fd" ,1, N_("|FD|write status info to this FD") },
-    { oNoComment, "no-comment", 0,   N_("do not write comment packets")},
-    { oCompletesNeeded, "completes-needed", 1, N_("(default is 1)")},
-    { oMarginalsNeeded, "marginals-needed", 1, N_("(default is 3)")},
+    { oNoComment, "no-comment", 0,   "@"},
+    { oCompletesNeeded, "completes-needed", 1, "@"},
+    { oMarginalsNeeded, "marginals-needed", 1, "@"},
     { oMaxCertDepth,	"max-cert-depth", 1, "@" },
     { oLoadExtension, "load-extension" ,2, N_("|FILE|load extension module FILE")},
     { oRFC1991, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
@@ -297,7 +297,11 @@ static ARGPARSE_OPTS opts[] = {
     { oThrowKeyid, "throw-keyid", 0, N_("throw keyid field of encrypted packets")},
     { oNotation,   "notation-data", 2, N_("|NAME=VALUE|use this notation data")},
 
-    { 302, NULL, 0, N_("@\nExamples:\n\n"
+    { 302, NULL, 0, N_(
+  "@\n(See the man page for a complete listing of all commands and options)\n"
+		      )},
+
+    { 303, NULL, 0, N_("@\nExamples:\n\n"
     " -se -r Bob [file]          sign and encrypt for user Bob\n"
     " --clearsign [file]         make a clear text signature\n"
     " --detach-sign [file]       make a detached signature\n"

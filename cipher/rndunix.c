@@ -75,9 +75,9 @@
 #ifndef __QNX__
 #include <sys/resource.h>
 #endif				/* __QNX__ */
-#ifdef _AIX
+#if defined( _AIX ) || defined( __QNX__ )
 #include <sys/select.h>
-#endif				/* _AIX */
+#endif				/* _AIX || __QNX__ */
 #ifndef __QNX__
 #include <sys/shm.h>
 #include <sys/signal.h>
@@ -89,6 +89,10 @@
 #endif				/* __hpux 9.x, after that it's in unistd.h */
 #include <sys/wait.h>
 /* #include <kitchensink.h> */
+#ifdef __QNX__
+#include <signal.h>
+#include <process.h>
+#endif		      /* __QNX__ */
 #include <errno.h>
 
 #include "types.h"  /* for byte and u32 typedefs */
