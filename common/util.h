@@ -55,6 +55,21 @@ int map_kbx_err (int err);
 int map_assuan_err (int err);
 
 
+/* some macros to replace ctype ones and avoid locale problems */
+#define digitp(p)   (*(p) >= '0' && *(p) <= '9')
+#define hexdigitp(a) (digitp (a)                     \
+                      || ((a) >= 'A' && (a) <= 'F')  \
+                      || ((a) >= 'a' && (a) <= 'f'))
+/* the atoi macros assume that the buffer has only valid digits */
+#define atoi_1(p)   (*(p) - '0' )
+#define atoi_2(p)   ((atoi_1(p) * 10) + atoi_1((p)+1))
+#define atoi_4(p)   ((atoi_2(p) * 100) + atoi_2((p)+2))
+#define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
+                     *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
+#define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
+
+
+
 #endif /*GNUPG_COMMON_UTIL_H*/
 
 
