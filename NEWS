@@ -1,6 +1,9 @@
 Noteworthy changes in the current test release
 ----------------------------------------------
 
+    * The user is now asked for the reason of revocation as required
+      by the new OpenPGP draft.
+
     * There is a ~/.gnupg/random_seed file now which saves the
       state of the internal RNG and increases system performance
       somewhat.  This way the full entropy source is only used in

@@ -131,7 +131,12 @@ int dearmor_file( const char *fname );
 int enarmor_file( const char *fname );
 
 /*-- revoke.c --*/
+struct revocation_reason_info;
 int gen_revoke( const char *uname );
+int revocation_reason_build_cb( PKT_signature *sig, void *opaque );
+struct revocation_reason_info *
+		ask_revocation_reason( int key_rev, int cert_rev, int hint );
+void release_revocation_reason_info( struct revocation_reason_info *reason );
 
 /*-- keylist.c --*/
 void public_key_list( STRLIST list );

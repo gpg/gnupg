@@ -239,6 +239,7 @@ typedef enum {
     SIGSUBPKT_POLICY	   =26, /* policy URL */
     SIGSUBPKT_KEY_FLAGS    =27, /* key flags */
     SIGSUBPKT_SIGNERS_UID  =28, /* signer's user id */
+    SIGSUBPKT_REVOC_REASON =29, /* reason for revocation */
     SIGSUBPKT_PRIV_ADD_SIG =101,/* signatur is also valid for this uid */
 
     SIGSUBPKT_FLAG_CRITICAL=128

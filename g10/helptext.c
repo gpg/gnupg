@@ -224,6 +224,29 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
  "file (which is shown in brackets) will be used."
 )},
 
+/* revoke.c (ask_revocation_reason) */
+{ "ask_revocation_reason.code", N_(
+ "You should specify a reason for the certification.  Depending on the\n"
+ "context you have the ability to choose from this list:\n"
+ "  \"Key has been compromised\"\n"
+ "      Use this if you have a reason to believe that unauthorized persons\n"
+ "      got access to your secret key.\n"
+ "  \"Key is superseded\"\n"
+ "      Use this if you have replaced this key with a newer one.\n"
+ "  \"Key is no longer used\"\n"
+ "      Use this if you have retired this key.\n"
+ "  \"User ID is non longer valid\"\n"
+ "      Use this to state that the user ID should not longer be used;\n"
+ "      this is normally used to mark an email address invalid.\n"
+)},
+
+/* revoke.c (ask_revocation_reason) */
+{ "ask_revocation_reason.text", N_(
+ "If you like, you can enter a text describing why you issue this\n"
+ "revocation certificate.  Please keep this text consis.\n"
+ "An empty line ends the text.\n"
+)},
+
 /* end of list */
 { NULL, NULL } };
 

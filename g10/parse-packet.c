@@ -811,6 +811,13 @@ dump_sig_subpkt( int hashed, int type, int critical,
       case SIGSUBPKT_SIGNERS_UID:
 	p = "signer's user ID";
 	break;
+      case SIGSUBPKT_REVOC_REASON:
+	if( length ) {
+	    printf("revocation reason 0x%02x (", *buffer );
+	    print_string( stdout, buffer+1, length-1, ')' );
+	    p = ")";
+	}
+	break;
       case SIGSUBPKT_PRIV_ADD_SIG:
 	p = "signs additional user ID";
 	break;
@@ -846,6 +853,10 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
 	return 0;
       case SIGSUBPKT_NOTATION:
 	if( n < 8 ) /* minimum length needed */
+	    break;
+	return 0;
+      case SIGSUBPKT_REVOC_REASON:
+	if( !n	)
 	    break;
 	return 0;
       case SIGSUBPKT_PREF_SYM:
@@ -885,7 +896,7 @@ can_handle_critical( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_PREF_COMPR:
 	return 1;
 
-      case SIGSUBPKT_POLICY: /* Is enough to show the policy? */
+      case SIGSUBPKT_POLICY: /* Is it enough to show the policy? */
       default:
 	return 0;
     }

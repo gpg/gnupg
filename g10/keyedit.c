@@ -74,8 +74,9 @@ static int enable_disable_key( KBNODE keyblock, int disable );
 #define NODFLG_SELSIG (1<<10) /* indicate a selected signature */
 
 
-struct sign_uid_attrib {
+struct sign_attrib {
     int non_exportable;
+    struct revocation_reason_info *reason;
 };
 
 
@@ -239,16 +240,18 @@ check_all_keysigs( KBNODE keyblock, int only_selected )
 
 
 
-int
-sign_uid_mk_attrib( PKT_signature *sig, void *opaque )
+static int
+sign_mk_attrib( PKT_signature *sig, void *opaque )
 {
-    struct sign_uid_attrib *attrib = opaque;
+    struct sign_attrib *attrib = opaque;
     byte buf[8];
 
     if( attrib->non_exportable ) {
 	buf[0] = 0; /* not exportable */
 	build_sig_subpkt( sig, SIGSUBPKT_EXPORTABLE, buf, 1 );
     }
+    if( attrib->reason )
+	revocation_reason_build_cb( sig, attrib->reason );
 
     return 0;
 }
@@ -353,7 +356,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 		     && (node->flag & NODFLG_MARK_A) ) {
 		PACKET *pkt;
 		PKT_signature *sig;
-		struct sign_uid_attrib attrib;
+		struct sign_attrib attrib;
 
 		assert( primary_pk );
 		memset( &attrib, 0, sizeof attrib );
@@ -364,7 +367,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 					       NULL,
 					       sk,
 					       0x10, 0,
-					       sign_uid_mk_attrib,
+					       sign_mk_attrib,
 					       &attrib );
 		if( rc ) {
 		    log_error(_("signing failed: %s\n"), g10_errstr(rc));
@@ -1752,6 +1755,7 @@ menu_revsig( KBNODE keyblock )
     int changed = 0;
     int upd_trust = 0;
     int rc, any;
+    struct revocation_reason_info *reason = NULL;
 
     /* FIXME: detect duplicates here  */
     tty_printf(_("You have signed these user IDs:\n"));
@@ -1814,6 +1818,10 @@ menu_revsig( KBNODE keyblock )
 	 _("Really create the revocation certificates? (y/N)")) )
 	return 0; /* forget it */
 
+    reason = ask_revocation_reason( 0, 1, 0 );
+    if( !reason ) { /* user decided to cancel */
+	return 0;
+    }
 
     /* now we can sign the user ids */
   reloop: /* (must use this, because we are modifing the list) */
@@ -1821,7 +1829,7 @@ menu_revsig( KBNODE keyblock )
     for( node=keyblock; node; node = node->next ) {
 	KBNODE unode;
 	PACKET *pkt;
-	struct sign_uid_attrib attrib;
+	struct sign_attrib attrib;
 	PKT_secret_key *sk;
 
 	if( !(node->flag & NODFLG_MARK_A)
@@ -1831,6 +1839,8 @@ menu_revsig( KBNODE keyblock )
 	assert( unode ); /* we already checked this */
 
 	memset( &attrib, 0, sizeof attrib );
+	attrib.reason = reason;
+
 	node->flag &= ~NODFLG_MARK_A;
 	sk = m_alloc_secure_clear( sizeof *sk );
 	if( get_seckey( sk, node->pkt->pkt.signature->keyid ) ) {
@@ -1842,11 +1852,12 @@ menu_revsig( KBNODE keyblock )
 				       NULL,
 				       sk,
 				       0x30, 0,
-				       sign_uid_mk_attrib,
+				       sign_mk_attrib,
 				       &attrib );
 	free_secret_key(sk);
 	if( rc ) {
 	    log_error(_("signing failed: %s\n"), g10_errstr(rc));
+	    release_revocation_reason_info( reason );
 	    return changed;
 	}
 	changed = 1; /* we changed the keyblock */
@@ -1861,7 +1872,7 @@ menu_revsig( KBNODE keyblock )
 
     if( upd_trust )
 	clear_trust_checked_flag( primary_pk );
-
+    release_revocation_reason_info( reason );
     return changed;
 }
 
@@ -1878,6 +1889,13 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
     int changed = 0;
     int upd_trust = 0;
     int rc;
+    struct revocation_reason_info *reason = NULL;
+
+    reason = ask_revocation_reason( 1, 0, 0 );
+    if( !reason ) { /* user decided to cancel */
+	return 0;
+    }
+
 
   reloop: /* (better this way because we are modifing the keyring) */
     mainpk = pub_keyblock->pkt->pkt.public_key;
@@ -1888,14 +1906,20 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	    PKT_signature *sig;
 	    PKT_secret_key *sk;
 	    PKT_public_key *subpk = node->pkt->pkt.public_key;
+	    struct sign_attrib attrib;
+
+	    memset( &attrib, 0, sizeof attrib );
+	    attrib.reason = reason;
 
 	    node->flag &= ~NODFLG_SELKEY;
 	    sk = copy_secret_key( NULL, sec_keyblock->pkt->pkt.secret_key );
 	    rc = make_keysig_packet( &sig, mainpk, NULL, subpk, sk, 0x28, 0,
-				     NULL, NULL );
+				       sign_mk_attrib,
+				       &attrib );
 	    free_secret_key(sk);
 	    if( rc ) {
 		log_error(_("signing failed: %s\n"), g10_errstr(rc));
+		release_revocation_reason_info( reason );
 		return changed;
 	    }
 	    changed = 1; /* we changed the keyblock */
@@ -1914,6 +1938,7 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
     if( upd_trust )
 	clear_trust_checked_flag( mainpk );
 
+    release_revocation_reason_info( reason );
     return changed;
 }
 

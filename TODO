@@ -4,7 +4,7 @@
 
   * --delete-secret-key should work even when the public key is not there.
 
-  * Add reason for revocation which is going to be a SHOULD
+  * Print the reason for revocation at certain places.
 
   * at least an option to prefer DSA keys over RSA when selecting the key to
     use.  Depending on creatin time would be nice too.	I thing this is

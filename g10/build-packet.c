@@ -646,7 +646,6 @@ void
 build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 		  const byte *buffer, size_t buflen )
 {
-
     byte *data;
     size_t hlen, dlen, nlen;
     int found=0;
@@ -682,6 +681,7 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
       case SIGSUBPKT_KEY_EXPIRE:
       case SIGSUBPKT_NOTATION:
       case SIGSUBPKT_POLICY:
+      case SIGSUBPKT_REVOC_REASON:
 	       hashed = 1; break;
       default: hashed = 0; break;
     }

@@ -1,3 +1,21 @@
+Thu Feb 17 13:39:32 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* revoke.c: Removed a bunch of commented code.
+
+	* packet.h (SIGSUBPKT_REVOC_REASON): New.
+	* build-packet.c (build_sig_subpkt): Support new sub packet.
+	* parse-packet.c (parse_one_sig_subpkt): Ditto.
+	(dump_sig_subpkt): Ditto.
+	* revoke.c (ask_revocation_reason): New.
+	(release_revocation_reason_info): New.
+	(revocation_reason_build_cb): New.
+	(gen_revoke): Ask for reason.
+	* main.h (struct revocation_reason_info): Add declaration.
+	* keyedit.c (menu_revsig): Add support for revocation reason.
+	(menu_revkey): Ditto.
+	(sign_uid_mk_attrib): Renamed to ...
+	(sign_mk_attrib): ... this, made static and add support for reasons.
+
 Tue Feb 15 08:48:13 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* build-packet.c (build_packet): Fixed fixing of old comment packets.

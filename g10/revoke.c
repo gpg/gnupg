@@ -24,6 +24,7 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <ctype.h>
 
 #include "options.h"
 #include "packet.h"
@@ -35,6 +36,38 @@
 #include "ttyio.h"
 #include "status.h"
 #include "i18n.h"
+
+
+struct revocation_reason_info {
+    int code;
+    char *desc;
+};
+
+
+int
+revocation_reason_build_cb( PKT_signature *sig, void *opaque )
+{
+    struct revocation_reason_info *reason = opaque;
+    char *ud = NULL;
+    byte *buffer;
+    size_t buflen = 1;
+
+    if( reason->desc ) {
+	ud = native_to_utf8( reason->desc );
+	buflen += strlen(ud);
+    }
+    buffer = m_alloc( buflen );
+    *buffer = reason->code;
+    if( ud ) {
+	memcpy(buffer+1, ud, strlen(ud) );
+	m_free( ud );
+    }
+
+    build_sig_subpkt( sig, SIGSUBPKT_REVOC_REASON, buffer, buflen );
+    m_free( buffer );
+    return 0;
+}
+
 
 
 /****************
@@ -55,25 +88,13 @@ gen_revoke( const char *uname )
     KBNODE keyblock = NULL;
     KBNODE node;
     KBPOS kbpos;
+    struct revocation_reason_info *reason = NULL;
 
     if( opt.batch ) {
 	log_error(_("sorry, can't do this in batch mode\n"));
 	return G10ERR_GENERAL;
     }
 
-
-    /* FIXME: ask for the reason of revocation
-       0x00 - No reason specified (key revocations or cert revocations)
-    Does not make sense!
-
-       0x01 - Key is superceded (key revocations)
-       0x02 - Key material has been compromised (key revocations)
-       0x03 - Key is no longer used (key revocations)
-       0x20 - User id information is no longer valid (cert revocations)
-
-       Following the revocation code is a string of octets which gives
-      information about the reason for revocation in human-readable form
-     */
 
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
@@ -136,6 +157,13 @@ gen_revoke( const char *uname )
 	goto leave;
     }
 
+    /* get the reason for the revocation */
+    reason = ask_revocation_reason( 1, 0, 1 );
+    if( !reason ) { /* user decided to cancel */
+	rc = 0;
+	goto leave;
+    }
+
     switch( is_secret_key_protected( sk ) ) {
       case -1:
 	log_error(_("unknown protection algorithm\n"));
@@ -163,7 +191,9 @@ gen_revoke( const char *uname )
     iobuf_push_filter( out, armor_filter, &afx );
 
     /* create it */
-    rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x20, 0, NULL, NULL);
+    rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x20, 0,
+						  revocation_reason_build_cb,
+						  reason );
     if( rc ) {
 	log_error(_("make_keysig_packet failed: %s\n"), g10_errstr(rc));
 	goto leave;
@@ -198,193 +228,127 @@ gen_revoke( const char *uname )
 	iobuf_cancel(out);
     else
 	iobuf_close(out);
+    release_revocation_reason_info( reason );
     return rc;
 }
 
-#if 0 /* The code is not complete but anyway, now we use */
-      /* the edit menu to revoke signature */
-/****************
- * Return true if there is already a revocation signature for KEYID
- * in KEYBLOCK at point node.
- */
-static int
-already_revoked( const KBNODE keyblock, const KBNODE node, u32 *keyid ) 							 ) {
-{
-    const KBNODE n = find_prev_kbnode( keyblock, node, PKT_USER_ID );
 
-    for( ; n; n = n->next ) {
-	PKT_signature *sig;
-	if( n->pkt->pkttype == PKT_SIGNATURE
-	    && (sig = node->pkt->pkt.signature)->sig_class == 0x30
-	    && sig->keyid[0] == keyid[0]
-	    && sig->keyid[1] == keyid[1] )
-	    return 1;
+
+struct revocation_reason_info *
+ask_revocation_reason( int key_rev, int cert_rev, int hint )
+{
+    int code;
+    char *description = NULL;
+    struct revocation_reason_info *reason;
+    const char *text_1 = _("Key has been compromised");
+    const char *text_2 = _("Key is superseded");
+    const char *text_3 = _("Key is no longer used");
+    const char *text_4 = _("User ID is non longer valid");
+    const char *code_text = NULL;
+
+    do {
+	m_free(description);
+	description = NULL;
+
+	tty_printf(_("Please select the reason for the revocation:\n"));
+	if( key_rev )
+	    tty_printf("  1 = %s\n", text_1 );
+	if( key_rev )
+	    tty_printf("  2 = %s\n", text_2 );
+	if( key_rev )
+	    tty_printf("  3 = %s\n", text_3 );
+	if( cert_rev )
+	    tty_printf("  4 = %s\n", text_4 );
+	tty_printf(    "  0 = %s\n", _("Cancel") );
+	if( hint )
+	    tty_printf(_("(Probably you want to select %d here)\n"), hint );
+
+	for(code = 0; !code;) {
+	    int n;
+	    char *answer = cpr_get("ask_revocation_reason.code",
+						_("Your decision? "));
+	    trim_spaces( answer );
+	    cpr_kill_prompt();
+	    if( *answer == 'q' || *answer == 'Q' )
+		n = 0;
+	    else if( !isdigit( *answer ) )
+		n = -1;
+	    else if( hint && !*answer )
+		n = hint;
+	    else
+		n = atoi(answer);
+	    m_free(answer);
+	    if( !n )
+		return NULL; /* cancel */
+	    else if( key_rev && n == 1 ) {
+		code = 0x02; /* key has  been compromised */
+		code_text = text_1;
+	    }
+	    else if( key_rev && n == 2 ) {
+		code = 0x01; /* key is superseded */
+		code_text = text_2;
+	    }
+	    else if( key_rev && n == 3 ) {
+		code = 0x03; /* key is no longer used */
+		code_text = text_3;
+	    }
+	    else if( cert_rev && n == 4 ) {
+		code = 0x20; /* uid is non longer valid */
+		code_text = text_4;
+	    }
+	    else
+		tty_printf(_("Invalid selection.\n"));
 	}
-	else if( n->pkt->pkttype == PKT_USER_ID
-	    break;
-	else if( n->pkt->pkttype == PKT_PUBLIC_SUBKEY
-	    break;
-    }
-    return 0;
+
+	tty_printf(_("Enter an optional description; "
+		     "end it with an empty line:\n") );
+	for(;;) {
+	    char *answer = cpr_get("ask_revocation_reason.text", "> " );
+	    trim_trailing_ws( answer, strlen(answer) );
+	    cpr_kill_prompt();
+	    if( !*answer ) {
+		m_free(answer);
+		break;
+	    }
+
+	    {
+		char *p = make_printable_string( answer, strlen(answer), 0 );
+		m_free(answer);
+		answer = p;
+	    }
+
+	    if( !description )
+		description = m_strdup(answer);
+	    else {
+		char *p = m_alloc( strlen(description) + strlen(answer) + 2 );
+		strcpy(stpcpy(stpcpy( p, description),"\n"),answer);
+		m_free(description);
+		description = p;
+	    }
+	    m_free(answer);
+	}
+
+	tty_printf(_("Reason for revocation: %s\n"), code_text );
+	if( !description )
+	    tty_printf(_("(No description given)\n") );
+	else
+	    tty_printf("%s\n", description );
+
+    } while( !cpr_get_answer_is_yes("ask_revocation_reason.okay",
+					    _("Is this okay? "))  );
+
+    reason = m_alloc( sizeof *reason );
+    reason->code = code;
+    reason->desc = description;
+    return reason;
 }
 
-/****************
- * Ask whether the signature should be revoked.  If the user commits this,
- * flag bit 0 is set.
- */
-static void
-ask_revoke_sig( KBNODE keyblock, KBNODE node, PKT_signature *sig )							    ) {
+void
+release_revocation_reason_info( struct revocation_reason_info *reason )
 {
-    KBNODE unode = find_prev_kbnode( keyblock, node, PKT_USER_ID );
-
-    if( !unode ) {
-	log_error("Oops: no user ID for signature\n");
-	return;
-    }
-
-    tty_printf(_("user ID: \""));
-    tty_print_utf8_string( unode->pkt->pkt.user_id->name,
-		      unode->pkt->pkt.user_id->len, 0 );
-    tty_printf(_("\"\nsigned with your key %08lX at %s\n"),
-		sig->keyid[1], datestr_from_sig(sig) );
-
-    if( cpr_get_answer_is_yes("ask_revoke_sig.one",
-	 _("Create a revocation certificate for this signature? (y/N)")) ) {
-	node->flag |= 1;
+    if( reason ) {
+	m_free( reason->desc );
+	m_free( reason );
     }
 }
-
-/****************
- * Generate a signature revocation certificate for UNAME
- */
-int
-gen_sig_revoke( const char *uname )
-{
-    int rc = 0;
-    armor_filter_context_t afx;
-    compress_filter_context_t zfx;
-    PACKET pkt;
-    IOBUF out = NULL;
-    KBNODE keyblock = NULL;
-    KBNODE node;
-    KBPOS kbpos;
-    int uidchg;
-
-    if( opt.batch ) {
-	log_error(_("sorry, can't do this in batch mode\n"));
-	return G10ERR_GENERAL;
-    }
-
-
-    memset( &afx, 0, sizeof afx);
-    memset( &zfx, 0, sizeof zfx);
-    init_packet( &pkt );
-
-
-    /* get the keyblock */
-    rc = find_keyblock_byname( &kbpos, uname );
-    if( rc ) {
-	log_error(_("public key for user `%s' not found\n"), uname );
-	goto leave;
-    }
-
-    /* read the keyblock */
-    rc = read_keyblock( &kbpos, &keyblock );
-    if( rc ) {
-	log_error(_("error reading the certificate: %s\n"), g10_errstr(rc) );
-	goto leave;
-    }
-
-    /* get the keyid from the keyblock */
-    node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
-    if( !node ) {
-	log_error(_("Oops; public key lost!\n"));
-	rc = G10ERR_GENERAL;
-	goto leave;
-    }
-
-    if( (rc = open_outfile( NULL, 0, &out )) )
-	goto leave;
-
-    if( opt.armor ) {
-       afx.what = 1;
-       iobuf_push_filter( out, armor_filter, &afx );
-    }
-
-    /* Now walk over all signatures which we did with one of
-     * our secret keys.  Hmmm: Should we check for duplicate signatures */
-    clear_kbnode_flags( flags );
-    for( node = keyblock; node; node = node->next ) {
-	PKT_signature *sig;
-	if( node->pkt->pkttype == PKT_SIGNATURE
-	    && ((sig = node->pkt->pkt.signature)->sig_class&~3) == 0x10
-	    && seckey_available( sig->keyid )
-	    && !already_revoked( keyblock, node, sig->keyid ) ) {							     ) {
-	    ask_revoke_sig( keyblock, node, sig )
-	}
-	else if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
-	    break;
-    }
-
-
-    for( node = keyblock; node; node = node->next ) { {
-	if( (node->flag & 1) )
-	    break;
-    }
-    if( !node ) {
-	log_info(_("nothing to revoke\n"));
-	iobuf_cancel(out);
-	out = NULL;
-	goto leave;
-    }
-
-    init_packet( &pkt );
-    pkt.pkttype = PKT_PUBLIC_KEY;
-    pkt.pkt.public_key = keyblock->pkt->pkt.public_key;
-    rc = build_packet( out, &pkt );
-    if( rc ) {
-	log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
-	goto leave;
-    }
-    uidchg = 1;
-    for( node = keyblock; node; node = node->next ) {
-	if( node->pkt->pkttype == PKT_USER_ID )
-	    uidchg = 1;
-	if( !(node->flag & 1) )
-	    continue;
-
-	if( uidchg ) {
-	    /* create a user ID packet */
-	    .......
-	    uidchg = 0;
-	}
-
-	/* create it */
-	rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x30, 0, NULL, NULL);
-	if( rc ) {
-	    log_error(_("make_keysig_packet failed: %s\n"), g10_errstr(rc));
-	    goto leave;
-	}
-	init_packet( &pkt );
-	pkt.pkttype = PKT_SIGNATURE;
-	pkt.pkt.signature = sig;
-
-	rc = build_packet( out, &pkt );
-	if( rc ) {
-	    log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
-	    goto leave;
-	}
-    }
-
-  leave:
-    release_kbnode( keyblock );
-    if( !out )
-	;
-    else if( rc )
-	iobuf_cancel(out);
-    else
-	iobuf_close(out);
-    return rc;
-}
-#endif /* unused code */
 
