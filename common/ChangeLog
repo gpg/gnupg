@@ -1,5 +1,7 @@
 2004-02-17  Werner Koch  <wk@gnupg.org>
 
+	* simple-pwquery.c (agent_open): Ignore an empty GPG_AGENT_INFO.
+
 	* errors.h: Added STATUS_IMPORT_OK.
 
 2004-02-10  Werner Koch  <wk@gnupg.org>

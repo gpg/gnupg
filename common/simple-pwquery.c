@@ -266,7 +266,7 @@ agent_open (int *rfd)
 
   *rfd = -1;
   infostr = getenv ( "GPG_AGENT_INFO" );
-  if ( !infostr ) 
+  if ( !infostr || !*infostr ) 
     {
 #ifdef SPWQ_USE_LOGGING
       log_error (_("gpg-agent is not available in this session\n"));
