@@ -29,7 +29,7 @@ AC_INIT(gnupg, 1.9.7-cvs, gnupg-devel@gnupg.org)
 # feel that the default check for a development version is not
 # sufficient.
 development_version=yes
-NEED_GPG_ERROR_VERSION=0.6
+NEED_GPG_ERROR_VERSION=0.7
 
 NEED_LIBGCRYPT_API=1
 NEED_LIBGCRYPT_VERSION=1.1.93
