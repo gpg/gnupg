@@ -139,7 +139,7 @@ transform( SHA1HANDLE hd, byte *data )
     D = hd->h3;
     E = hd->h4;
 
-  #ifdef HAVE_BIG_ENDIAN
+  #ifdef BIG_ENDIAN_HOST
     memcpy( eData, data, 64 );
   #else
     { int i;
@@ -379,7 +379,7 @@ sha1_final(SHA1HANDLE hd)
     transform( hd, hd->buffer );
 
     p = hd->buffer;
-  #ifdef HAVE_BIG_ENDIAN
+  #ifdef BIG_ENDIAN_HOST
     #define X(a) do { *(u32*)p = hd->h##a ; p += 4; } while(0)
   #else /* little endian */
     #define X(a) do { *p++ = hd->h##a >> 24; *p++ = hd->h##a >> 16;	 \

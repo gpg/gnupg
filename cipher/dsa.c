@@ -86,7 +86,7 @@ gen_k( MPI p )
 	if( DBG_CIPHER )
 	    fputc('.', stderr);
 	mpi_set_bytes( k, nbits, get_random_byte, 1 );
-	mpi_set_bit( k, nbits-1 ); /* make sure it's high (really needed?) */
+	mpi_set_highbit( k, nbits-1 ); /* make sure it's high (really needed?) */
 	if( mpi_cmp( k, p_1 ) >= 0 )
 	    continue; /* is not smaller than (p-1) */
 	if( mpi_gcd( temp, k, p_1 ) )
@@ -126,7 +126,7 @@ dsa_generate( DSA_public_key *pk, DSA_secret_key *sk, unsigned nbits )
 	if( DBG_CIPHER )
 	    fputc('.', stderr);
 	mpi_set_bytes( x, nbits, get_random_byte, 1 ); /* fixme: should be 2 */
-	mpi_set_bit( x, nbits-1 ); /* make sure it's high (needed?) */
+	mpi_set_highbit( x, nbits-1 ); /* make sure it's high (needed?) */
     } while( mpi_cmp( x, p ) >= 0 );  /* x must be smaller than p */
 
     y = mpi_alloc(nbits/BITS_PER_MPI_LIMB);

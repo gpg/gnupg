@@ -37,6 +37,7 @@ new_kbnode( PACKET *pkt )
     n->next = NULL;
     n->pkt = pkt;
     n->child = NULL;
+    n->flag = 0;
     return n;
 }
 
@@ -138,3 +139,11 @@ walk_kbtree( KBNODE root, KBNODE *context )
     return n;
 }
 
+void
+clear_kbnode_flags( KBNODE n )
+{
+    for( ; n; n = n->next ) {
+	clear_kbnode_flags( n->child );
+	n->flag = 0;
+    }
+}

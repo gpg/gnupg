@@ -28,8 +28,10 @@
 #include "cipher.h"
 
 static int no_of_small_prime_numbers;
-static int is_not_prime( MPI n, unsigned nbits, int steps, int *count );
-static MPI gen_prime( unsigned	nbits, int mode );
+static MPI gen_prime( unsigned	nbits, int mode, int randomlevel );
+static int check_prime( MPI prime );
+static int is_prime( MPI n, int steps, int *count );
+static void m_out_of_n( char *array, int m, int n );
 
 
 /****************
@@ -38,17 +40,149 @@ static MPI gen_prime( unsigned	nbits, int mode );
 MPI
 generate_secret_prime( unsigned  nbits )
 {
-    return gen_prime( nbits, 1 );
+    MPI prime;
+
+    prime = gen_prime( nbits, 1, 2 );
+    fputc('\n', stderr);
+    return prime;
 }
 
 MPI
 generate_public_prime( unsigned  nbits )
 {
-    return gen_prime( nbits, 0 );
+    MPI prime;
+
+    prime = gen_prime( nbits, 0, 1 ); /* fixme: change to 2 */
+    fputc('\n', stderr);
+    return prime;
 }
 
+
+MPI
+generate_elg_prime( unsigned pbits, unsigned qbits, MPI g )
+{
+    int n;  /* number of factors */
+    int m;  /* number of primes in pool */
+    unsigned fbits; /* length of prime factors */
+    MPI *factors; /* curent factors */
+    MPI *pool;	/* pool of primes */
+    MPI q;	/* first prime factor */
+    MPI prime;	/* prime test value */
+    byte *perms = NULL;
+    int i, j;
+
+    /* find number of needed prime factors */
+    for(n=1; (pbits - qbits - 1) / n  >= qbits; n++ )
+	;
+    n--;
+    if( !n )
+	log_fatal("can't gen prime with pbits=%u qbits=%u\n", pbits, qbits );
+    fbits = (pbits - qbits -1) / n;
+    while( qbits + n*fbits < pbits )
+	qbits++;
+    qbits++; /* one mpre to increase tzhe chance to get a weel formed prime*/
+    log_debug("gen prime: pbits=%u qbits=%u fbits=%u n=%d\n",
+		    pbits, qbits, fbits, n  );
+
+    prime = mpi_alloc( (pbits + BITS_PER_MPI_LIMB - 1) /  BITS_PER_MPI_LIMB );
+    q = gen_prime( qbits, 0, 0 ); /* fixme: should be 2 */
+    fputc('\n', stderr);
+
+    /* allocate an array to hold the factors + 2 for later usage */
+    factors = m_alloc_clear( (n+2) * sizeof *factors );
+
+    /* make a pool of 2n+5 primes (this is an arbitrary value) */
+    m = n*2+5;
+    if( m < 20 )
+	m = 20;
+    pool = m_alloc_clear( m * sizeof *pool );
+
+    /* permutate over the pool of primes */
+    do {
+      next_try:
+	if( !perms ) {
+	    /* allocate new primes */
+	    for(i=0; i < m; i++ ) {
+		mpi_free(pool[i]);
+		pool[i] = gen_prime( fbits, 0, 0 ); /* fixme: should be 2 */
+	    }
+	    fputc('\n', stderr);
+	    /* init m_out_of_n() */
+	    perms = m_alloc_clear( m );
+	    for(i=0; i < n; i++ ) {
+		perms[i] = 1;
+		factors[i] = pool[i];
+	    }
+	}
+	else {
+	    m_out_of_n( perms, n, m );
+	    for(i=j=0; i < m && j < n ; i++ )
+		if( perms[i] )
+		    factors[j++] = pool[i];
+	    if( i == n ) {
+		m_free(perms); perms = NULL;
+		fputc('!', stderr);
+		goto next_try;	/* allocate new primes */
+	    }
+	}
+
+	mpi_set( prime, q );
+	mpi_mul_ui( prime, prime, 2 );
+	for(i=0; i < n; i++ )
+	    mpi_mul( prime, prime, factors[i] );
+	mpi_add_ui( prime, prime, 1 );
+    } while( !( mpi_get_nbits( prime ) == pbits && check_prime( prime )) );
+    putc('\n', stderr);
+
+
+    log_mpidump( "prime    : ", prime );
+    log_mpidump( "factor  q: ", q );
+    for(i=0; i < n; i++ )
+	log_mpidump( "factor pi: ", factors[i] );
+    log_debug("bit sizes: prime=%u, q=%u",mpi_get_nbits(prime), mpi_get_nbits(q) );
+    for(i=0; i < n; i++ )
+	fprintf(stderr, ", p%d=%u", i, mpi_get_nbits(factors[i]) );
+    putc('\n', stderr);
+
+    if( g ) { /* create a generator (start with 3)*/
+	MPI tmp   = mpi_alloc( mpi_get_nlimbs(prime) );
+	MPI b	  = mpi_alloc( mpi_get_nlimbs(prime) );
+	MPI pmin1 = mpi_alloc( mpi_get_nlimbs(prime) );
+
+	factors[n] = q;
+	factors[n+1] = mpi_alloc_set_ui(2);
+	mpi_sub_ui( pmin1, prime, 1 );
+	mpi_set_ui(g,2);
+	do {
+	    mpi_add_ui(g, g, 1);
+	    log_mpidump("checking g: ", g );
+	    for(i=0; i < n+2; i++ ) {
+		log_mpidump("   against: ", factors[i] );
+		mpi_fdiv_q(tmp, pmin1, factors[i] );
+		/* (no mpi_pow(), but it is okay to use this with mod prime) */
+		mpi_powm(b, g, tmp, prime );
+		if( !mpi_cmp_ui(b, 1) )
+		    break;
+	    }
+	} while( i < n );
+	mpi_free(factors[n+1]);
+	mpi_free(tmp);
+	mpi_free(b);
+	mpi_free(pmin1);
+	log_mpidump("found    g: ", g );
+    }
+
+    m_free( factors );	/* (factors are shallow copies) */
+    for(i=0; i < m; i++ )
+	mpi_free( pool[i] );
+    m_free( pool );
+    m_free(perms);
+    return prime;
+}
+
+
 static MPI
-gen_prime( unsigned  nbits, int secret )
+gen_prime( unsigned  nbits, int secret, int randomlevel )
 {
     unsigned  nlimbs;
     MPI prime, val_2, val_3, result;
@@ -57,7 +191,7 @@ gen_prime( unsigned  nbits, int secret )
     unsigned count1, count2;
     int *mods;
 
-    if( DBG_CIPHER )
+    if( 0 && DBG_CIPHER )
 	log_debug("generate a prime of %u bits ", nbits );
 
     if( !no_of_small_prime_numbers ) {
@@ -78,9 +212,9 @@ gen_prime( unsigned  nbits, int secret )
     /* enter (endless) loop */
     for(;;) {
 	/* generate a random number */
-	mpi_set_bytes( prime, nbits, get_random_byte, 2 );
+	mpi_set_bytes( prime, nbits, get_random_byte, randomlevel );
 	/* set high order bit to 1, set low order bit to 1 */
-	mpi_set_bit( prime, nbits-1 );
+	mpi_set_highbit( prime, nbits-1 );
 	mpi_set_bit( prime, 0 );
 
 	/* calculate all remainders */
@@ -102,25 +236,26 @@ gen_prime( unsigned  nbits, int secret )
 
 	    mpi_add_ui( prime, prime, step );
 
+	   #if 0
 	    /* do a Fermat test */
 	    count2++;
 	    mpi_powm( result, val_2, prime, prime );
 	    if( mpi_cmp_ui(result, 2) )
 		continue;  /* stepping (fermat test failed) */
 	    fputc('+', stderr);
+	   #endif
 
 	    /* perform stronger tests */
-	    if( !is_not_prime(prime, nbits, 5, &count2 ) ) {
+	    if( is_prime(prime, 5, &count2 ) ) {
 		if( !mpi_test_bit( prime, nbits-1 ) ) {
-		    if( DBG_CIPHER ) {
+		    if( 0 && DBG_CIPHER ) {
 			fputc('\n', stderr);
 			log_debug("overflow in prime generation\n");
 			break; /* step loop, cont with a new prime */
 		    }
 		}
 
-		fputc('\n', stderr);
-		if( DBG_CIPHER ) {
+		if( 0 && DBG_CIPHER ) {
 		    log_debug("performed %u simple and %u stronger tests\n",
 					count1, count2 );
 		    log_mpidump("found prime: ", prime );
@@ -137,12 +272,51 @@ gen_prime( unsigned  nbits, int secret )
     }
 }
 
-
 /****************
- * Return 1 if n is not a prime
+ * Returns: true if this is may me a prime
  */
 static int
-is_not_prime( MPI n, unsigned nbits, int steps, int *count )
+check_prime( MPI prime )
+{
+    int i;
+    unsigned x;
+    int count=0;
+    MPI result;
+    MPI val_2;
+
+    /* check against small primes */
+    for(i=0; (x = small_prime_numbers[i]); i++ ) {
+	if( mpi_divisible_ui( prime, x ) )
+	    return 0;
+    }
+    fputc('.', stderr);
+
+  #if 0
+    result = mpi_alloc( mpi_get_nlimbs(prime) );
+    val_2  = mpi_alloc_set_ui( 2 );
+    mpi_powm( result, val_2, prime, prime );
+    if( mpi_cmp_ui(result, 2) ) {
+	mpi_free(result);
+	mpi_free(val_2);
+	return 0;
+    }
+    mpi_free(result);
+    mpi_free(val_2);
+    fputc('+', stderr);
+  #endif
+
+    /* perform stronger tests */
+    if( is_prime(prime, 5, &count ) )
+	return 1; /* is probably a prime */
+    return 0;
+}
+
+
+/****************
+ * Return true if n is propably a prime
+ */
+static int
+is_prime( MPI n, int steps, int *count )
 {
     MPI x = mpi_alloc( mpi_get_nlimbs( n ) );
     MPI y = mpi_alloc( mpi_get_nlimbs( n ) );
@@ -151,7 +325,8 @@ is_not_prime( MPI n, unsigned nbits, int steps, int *count )
     MPI a2 = mpi_alloc_set_ui( 2 );
     MPI q;
     unsigned i, j, k;
-    int rc = 1;
+    int rc = 0;
+    unsigned nbits = mpi_get_nbits( n );
 
     mpi_sub_ui( nminus1, n, 1 );
 
@@ -162,24 +337,33 @@ is_not_prime( MPI n, unsigned nbits, int steps, int *count )
 
     for(i=0 ; i < steps; i++ ) {
 	++*count;
-	do {
-	    mpi_set_bytes( x, nbits, get_random_byte, 0 );
-	} while( mpi_cmp( x, n ) < 0 && mpi_cmp_ui( x, 1 ) > 0 );
+	if( !i ) {
+	    mpi_set_ui( x, 2 );
+	}
+	else {
+	    mpi_set_bytes( x, nbits-1, get_random_byte, 0 );
+	    /* work around a bug in mpi_set_bytes */
+	    if( mpi_test_bit( x, nbits-2 ) )
+		mpi_set_highbit( x, nbits-2 ); /* clear all higher bits */
+	    else {
+		mpi_set_highbit( x, nbits-2 );
+		mpi_clear_bit( x, nbits-2 );
+	    }
+	    assert( mpi_cmp( x, nminus1 ) < 0 && mpi_cmp_ui( x, 1 ) > 0 );
+	}
 	mpi_powm( y, x, q, n);
 	if( mpi_cmp_ui(y, 1) && mpi_cmp( y, nminus1 ) ) {
-	    for( j=1; j < k; j++ ) {
+	    for( j=1; j < k && mpi_cmp( y, nminus1 ); j++ ) {
 		mpi_powm(y, y, a2, n);
 		if( !mpi_cmp_ui( y, 1 ) )
 		    goto leave; /* not a prime */
-		if( !mpi_cmp( y, nminus1 ) )
-		    break;  /* may be a prime */
 	    }
-	    if( j == k )
-		goto leave;
+	    if( mpi_cmp( y, nminus1 ) )
+		goto leave; /* not a prime */
 	}
 	fputc('+', stderr);
     }
-    rc = 0; /* may be a prime */
+    rc = 1; /* may be a prime */
 
   leave:
     mpi_free( x );
@@ -189,5 +373,92 @@ is_not_prime( MPI n, unsigned nbits, int steps, int *count )
     mpi_free( q );
 
     return rc;
+}
+
+
+static void
+m_out_of_n( char *array, int m, int n )
+{
+    int i=0, i1=0, j=0, jp=0,  j1=0, k1=0, k2=0;
+
+    if( !m || m >= n )
+	return;
+
+    if( m == 1 ) { /* special case */
+	for(i=0; i < n; i++ )
+	    if( array[i] ) {
+		array[i++] = 0;
+		if( i >= n )
+		    i = 0;
+		array[i] = 1;
+		return;
+	    }
+	log_bug(NULL);
+    }
+
+    for(j=1; j < n; j++ ) {
+	if( array[n-1] == array[n-j-1] )
+	    continue;
+	j1 = j;
+	break;
+    }
+
+    if( m & 1 ) { /* m is odd */
+	if( array[n-1] ) {
+	    if( j1 & 1 ) {
+		k1 = n - j1;
+		k2 = k1+2;
+		if( k2 > n )
+		    k2 = n;
+		goto leave;
+	    }
+	    goto scan;
+	}
+	k2 = n - j1 - 1;
+	if( k2 == 0 ) {
+	    k1 = i;
+	    k2 = n - j1;
+	}
+	else if( array[k2] && array[k2-1] )
+	    k1 = n;
+	else
+	    k1 = k2 + 1;
+    }
+    else { /* m is even */
+	if( !array[n-1] ) {
+	    k1 = n - j1;
+	    k2 = k1 + 1;
+	    goto leave;
+	}
+
+	if( !(j1 & 1) ) {
+	    k1 = n - j1;
+	    k2 = k1+2;
+	    if( k2 > n )
+		k2 = n;
+	    goto leave;
+	}
+      scan:
+	jp = n - j1 - 1;
+	for(i=1; i <= jp; i++ ) {
+	    i1 = jp + 2 - i;
+	    if( array[i1-1]  ) {
+		if( array[i1-2] ) {
+		    k1 = i1 - 1;
+		    k2 = n - j1;
+		}
+		else {
+		    k1 = i1 - 1;
+		    k2 = n + 1 - j1;
+		}
+		goto leave;
+	    }
+	}
+	k1 = 1;
+	k2 = n + 1 - m;
+    }
+  leave:
+    array[k1-1] = !array[k1-1];
+    array[k2-1] = !array[k2-1];
 }
 

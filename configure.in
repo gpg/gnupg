@@ -63,6 +63,12 @@ AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
 
+AC_C_BIGENDIAN
+AC_CHECK_SIZEOF(unsigned short)
+AC_CHECK_SIZEOF(unsigned int)
+AC_CHECK_SIZEOF(unsigned long)
+
+
 dnl Checks for library functions.
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(strerror strtol strtoul)
@@ -79,12 +85,12 @@ fi
 
 
 
-dnl checking wether we have the RSA source
+dnl checking whether we have the RSA source
 dnl fixme: I found no way (aside of using Makefile.am.in)
 dnl	   to add the requeired source int Makefile.am
 dnl I used: add_cipher_SOURCES="rsa.c rsa.h"
 dnl but of cource it can't work
-AC_MSG_CHECKING(wether we have the rsa source)
+AC_MSG_CHECKING(whether we have the rsa source)
 if test -f cipher/rsa.c && test -f cipher/rsa.h; then
     AC_DEFINE(HAVE_RSA_CIPHER)
     AC_MSG_RESULT(yes)

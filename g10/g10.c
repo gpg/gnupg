@@ -125,7 +125,7 @@ main( int argc, char **argv )
     { 510, "debug"     ,4|16, "set debugging flags" },
     { 511, "debug-all" ,0, "enable full debugging"},
     { 512, "cache-all" ,0, "hold everything in memory"},
-    { 513, "gen-prime" , 1, "\r" },
+    { 513, "gen-prime" , 0, "\r" },
     { 514, "test"      , 0, "\r" },
     { 515, "change-passphrase", 0, "change the passphrase of your secret keyring"},
     { 515, "fingerprint", 0, "show the fingerprints"},
@@ -345,10 +345,26 @@ main( int argc, char **argv )
 
 
       case aPrimegen:
-	if( argc )
+	if( argc == 1 ) {
+	    mpi_print( stdout, generate_public_prime( atoi(argv[0]) ), 1);
+	    putchar('\n');
+	}
+	else if( argc == 2 ) {
+	    mpi_print( stdout, generate_elg_prime( atoi(argv[0]),
+						   atoi(argv[1]), NULL ), 1);
+	    putchar('\n');
+	}
+	else if( argc == 3 ) {
+	    MPI g = mpi_alloc(1);
+	    mpi_print( stdout, generate_elg_prime( atoi(argv[0]),
+						   atoi(argv[1]), g ), 1);
+	    printf("\nGenerator: ");
+	    mpi_print( stdout, g, 1 );
+	    putchar('\n');
+	    mpi_free(g);
+	}
+	else
 	    usage(1);
-	mpi_print( stdout, generate_public_prime( pargs.r.ret_int ), 1);
-	putchar('\n');
 	break;
 
       case aPrintMDs:
@@ -366,7 +382,7 @@ main( int argc, char **argv )
 	generate_keypair();
 	break;
 
-      case aTest: do_test( atoi(*argv) ); break;
+      case aTest: do_test( argc? atoi(*argv): 0 ); break;
 
       default:
 	if( argc > 1 )
@@ -463,9 +479,11 @@ print_mds( const char *fname )
 }
 
 
+
 static void
 do_test(int times)
 {
+  #if 0
     MPI t = mpi_alloc( 50 );
     MPI m = mpi_alloc( 50 );
     MPI a = mpi_alloc( 50 );
@@ -486,7 +504,34 @@ do_test(int times)
 
 
     m_check(NULL);
+  #endif
+  #if 0
+    char *array;
+    int i, j;
+    int n = 6;
+    int m = times;
 
+    if( m > n )
+	abort();
+    array = m_alloc_clear( n );
+    memset( array, 1, m );
+
+    for(i=0;; i++) {
+	printf("i=%3d: ", i );
+	for(j=0; j < n ; j++ )
+	    if( array[j] )
+		putchar( 'X' );
+	    else
+		putchar( '-' );
+	putchar('\n');
+	m_out_of_n( array, m, n );
+	for(j=0; j < n; j++ )
+	    if( !array[j] )
+		break;
+	if( j == m )
+	    break;
+    }
+  #endif
 }
 
 

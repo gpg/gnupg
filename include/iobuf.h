@@ -65,6 +65,7 @@ IOBUF iobuf_temp(void);
 IOBUF iobuf_open( const char *fname );
 IOBUF iobuf_create( const char *fname );
 IOBUF iobuf_append( const char *fname );
+IOBUF iobuf_openrw( const char *fname );
 int   iobuf_close( IOBUF iobuf );
 int   iobuf_cancel( IOBUF iobuf );
 

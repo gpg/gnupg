@@ -94,7 +94,7 @@ gen_k( MPI p )
     for(;;) {
 	if( DBG_CIPHER )
 	    fputc('.', stderr);
-	mpi_set_bytes( k, nbits, get_random_byte, 1 );
+	mpi_set_bytes( k, nbits , get_random_byte, 1 );
 	if( !(mpi_cmp( k, p_1 ) < 0) )	/* check: k < (p-1) */
 	    continue; /* no  */
 	if( !(mpi_cmp_ui( k, 0 ) > 0) ) /* check: k > 0 */
@@ -123,19 +123,23 @@ elg_generate( ELG_public_key *pk, ELG_secret_key *sk, unsigned nbits )
     MPI x;    /* the secret exponent */
     MPI y;
     MPI temp;
+    unsigned qbits;
 
-    p = NULL;
     p_min1 = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
     temp   = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
-    /*do {*/
-	mpi_free(p);
-	/* FIXME!!!! Should generate a strong prime */
-	p = generate_public_prime( nbits );
-	mpi_sub_ui(p_min1, p, 1);
-    /*} while if( mpi_gcd( temp, k, p_1 ) )*/
+    if( nbits < 512 )
+	qbits = 120;
+    else if( nbits <= 1024 )
+	qbits = 160;
+    else if( nbits <= 2048 )
+	qbits = 200;
+    else
+	qbits = 240;
+    g = mpi_alloc(1);
+    p = generate_elg_prime( nbits, qbits, g );
+    mpi_sub_ui(p_min1, p, 1);
 
 
-    g = mpi_alloc_set_ui(3); /* fixme: 3 is bad (but better than 2)*/
     /* select a random number which has these properties:
      *	 0 < x < p-1
      */

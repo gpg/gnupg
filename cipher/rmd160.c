@@ -368,7 +368,7 @@ rmd160_final(RMDHANDLE hd)
     transform( hd, (u32*)hd->buffer );
 
     p = hd->buffer;
-  #ifdef HAVE_BIG_ENDIAN
+  #ifdef BIG_ENDIAN_HOST
     #define X(a) do { *p++ = hd->h##a >> 24; *p++ = hd->h##a >> 16;	 \
 			*p++ = hd->h##a >> 8; *p++ = hd->h##a; } while(0)
   #else /* little endian */

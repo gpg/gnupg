@@ -400,6 +400,32 @@ iobuf_append( const char *fname )
     return a;
 }
 
+IOBUF
+iobuf_openrw( const char *fname )
+{
+    IOBUF a;
+    FILE *fp;
+    file_filter_ctx_t *fcx;
+    size_t len;
+
+    if( !fname )
+	return NULL;
+    else if( !(fp = fopen(fname, "r+b")) )
+	return NULL;
+    a = iobuf_alloc(2, 8192 );
+    fcx = m_alloc( sizeof *fcx + strlen(fname) );
+    fcx->fp = fp;
+    strcpy(fcx->fname, fname );
+    a->filter = file_filter;
+    a->filter_ov = fcx;
+    file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
+    file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
+    if( DBG_IOBUF )
+	log_debug("iobuf-%d.%d: openrw '%s'\n", a->no, a->subno, a->desc );
+
+    return a;
+}
+
 /****************
  * Register an i/o filter.
  */
@@ -754,7 +780,7 @@ iobuf_seek( IOBUF a, ulong newpos )
 	log_error("can't seek to %lu: %s\n", newpos, strerror(errno) );
 	return -1;
     }
-
+    a->ntotal = newpos;
     /* FIXME: flush all buffers (and remove filters?)*/
 
     return 0;

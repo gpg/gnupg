@@ -174,17 +174,14 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     skc->d.elg.g = sk.g;
     skc->d.elg.y = sk.y;
     skc->d.elg.x = sk.x;
+    skc->d.elg.is_protected = 0;
+    skc->d.elg.protect_algo = 0;
 
     skc->d.elg.csum = checksum_mpi( skc->d.elg.x );
     /* return an unprotected version of the skc */
     *ret_skc = copy_secret_cert( NULL, skc );
 
-    if( !dek ) {
-	skc->d.elg.is_protected = 0;
-	skc->d.elg.protect_algo = 0;
-    }
-    else {
-	skc->d.elg.is_protected = 0;
+    if( dek ) {
 	skc->d.elg.protect_algo = CIPHER_ALGO_BLOWFISH;
 	randomize_buffer(skc->d.elg.protect.blowfish.iv, 8, 1);
 	rc = protect_secret_key( skc, dek );

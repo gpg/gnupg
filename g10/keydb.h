@@ -40,6 +40,7 @@ struct kbnode_struct {
     PACKET *pkt;
     KBNODE next;   /* used to form a link list */
     KBNODE child;
+    int flag;
 };
 
 /****************
@@ -92,6 +93,7 @@ void add_kbnode( KBNODE root, KBNODE node );
 void add_kbnode_as_child( KBNODE root, KBNODE node );
 KBNODE find_kbparent( KBNODE root, KBNODE node );
 KBNODE walk_kbtree( KBNODE root, KBNODE *context );
+void clear_kbnode_flags( KBNODE n );
 
 /*-- ringedit.c --*/
 int add_keyblock_resource( const char *filename, int force );

@@ -22,55 +22,56 @@
 #define G10_TYPES_H
 
 #ifdef __linux__
+  /* FIXME: add stuff to configure to detect for typedefs  */
   #include <linux/types.h>
   #define HAVE_ULONG_TYPEDEF
   #define HAVE_USHORT_TYPEDEF
 #endif
 
+#ifndef HAVE_BYTE_TYPEDEF
+  typedef unsigned char byte;
+  #define HAVE_BYTE_TYPEDEF
+#endif
 
-/* Common code */
-#ifndef HAVE_ULONG_TYPEDEF
-  #define HAVE_ULONG_TYPEDEF
-  typedef unsigned long ulong;
-#endif
 #ifndef HAVE_USHORT_TYPEDEF
-  #define HAVE_USHORT_TYPEDEF
   typedef unsigned short ushort;
+  #define HAVE_USHORT_TYPEDEF
 #endif
+
+#ifndef HAVE_ULONG_TYPEDEF
+  typedef unsigned long ulong;
+  #define HAVE_ULONG_TYPEDEF
+#endif
+
+#ifndef HAVE_U16_TYPEDEF
+  #if SIZEOF_UNSIGNED_INT == 2
+    typedef unsigned int   u16;
+  #elif SIZEOF_UNSIGNED_SHORT == 2
+    typedef unsigned short u16;
+  #else
+    #error no typedef for u16
+  #endif
+  #define HAVE_U16_TYPEDEF
+#endif
+
+#ifndef HAVE_U32_TYPEDEF
+  #if SIZEOF_UNSIGNED_INT == 4
+    typedef unsigned long u32;
+  #elif SIZEOF_UNSIGNED_LONG == 4
+    typedef unsigned int u32;
+  #else
+    #error no typedef for u32
+  #endif
+  #define HAVE_U32_TYPEDEF
+#endif
+
+
 
 
 typedef struct string_list {
     struct string_list *next;
     char d[1];
 } *STRLIST;
-
-
-
-/****************************************
- ******** machine dependent stuff *******
- ****************************************/
-
-#if defined(__hpux)
-  #define HAVE_BIG_ENDIAN 1
-#else
-  #define HAVE_LITTLE_ENDIAN 1
-#endif
-
-
-/*** some defaults ***/
-#ifndef HAVE_BYTE_TYPEDEF
-  #define HAVE_BYTE_TYPEDEF
-  typedef unsigned char byte;
-#endif
-#ifndef HAVE_U16_TYPEDEF
-  #define HAVE_U16_TYPEDEF
-  typedef unsigned short u16;
-#endif
-#ifndef HAVE_U32_TYPEDEF
-  #define HAVE_U32_TYPEDEF
-  typedef unsigned long u32;
-#endif
-
 
 
 #endif /*G10_TYPES_H*/

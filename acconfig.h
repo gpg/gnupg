@@ -21,16 +21,25 @@
 #define G10_CONFIG_H
 
 
-@@TOP@@
+@TOP@
+
 #undef M_DEBUG
 #undef VERSION
 #undef PACKAGE
 /* RSA is only compiled in if you have these files. You can use
- * RSA with out any restrictions, if your not in the U.S. or
+ * RSA without any restrictions, if your not in the U.S. or
  * wait until sep 20, 2000
  */
 #undef HAVE_RSA_CIPHER
 
-@@BOTTOM@@
+
+@BOTTOM@
+
+#ifdef WORDS_BIGENDIAN
+  #define BIG_ENDIAN_HOST
+#else
+  #define LITTLE_ENDIAN_HOST
+#endif
+
 
 #endif /*G10_CONFIG_H*/

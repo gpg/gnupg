@@ -53,6 +53,7 @@
 #include "mpi.h"
 #include "iobuf.h"
 #include "keydb.h"
+#include <unistd.h> /* for truncate */
 
 
 struct resource_table_struct {
@@ -383,6 +384,7 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
     KBNODE root = NULL;
     KBNODE node, n1, n2;
     IOBUF a;
+    u32 offset, last_offset;
 
     if( !(rentry=check_pos(kbpos)) )
 	return G10ERR_GENERAL;
@@ -399,7 +401,6 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
 	return G10ERR_KEYRING_OPEN;
     }
 
-
     pkt = m_alloc( sizeof *pkt );
     init_packet(pkt);
     while( (rc=parse_packet(a, pkt)) != -1 ) {
@@ -407,11 +408,13 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
 	    free_packet( pkt );
 	    continue;
 	}
+	if( root && ( pkt->pkttype == PKT_PUBLIC_CERT
+		      || pkt->pkttype == PKT_SECRET_CERT ) )
+	    goto ready;
+	offset = iobuf_tell(a);
 	switch( pkt->pkttype ) {
 	  case PKT_PUBLIC_CERT:
 	  case PKT_SECRET_CERT:
-	    if( root )
-		goto ready;
 	    root = new_kbnode( pkt );
 	    pkt = m_alloc( sizeof *pkt );
 	    init_packet(pkt);
@@ -423,6 +426,7 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
 		rc = G10ERR_INV_KEYRING; /* or wrong kbpos */
 		goto ready;
 	    }
+	    offset = last_offset;
 	    /* append the user id */
 	    node = new_kbnode( pkt );
 	    if( !(n1=root->child) )
@@ -477,7 +481,7 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
 	release_kbnode( root );
     else {
 	*ret_root = root;
-	kbpos->length = iobuf_tell( a ) - kbpos->offset;
+	kbpos->length = offset - kbpos->offset;
     }
     free_packet( pkt );
     m_free( pkt );
@@ -529,7 +533,68 @@ keyring_insert( KBPOS *kbpos, KBNODE root )
 static int
 keyring_delete( KBPOS *kbpos )
 {
-    return -1;
+    RESTBL *rentry;
+    IOBUF fp;
+    KBNODE kbctx, node;
+    int rc;
+    u32 len;
+    int ctb;
+
+    if( !(rentry = check_pos( kbpos )) )
+	return G10ERR_GENERAL;
+
+
+    /* open the file for read/write */
+    fp = iobuf_openrw( rentry->fname );
+    if( !fp ) {
+	log_error("can't open '%s' for writing\n", rentry->fname );
+	return G10ERR_OPEN_FILE;
+    }
+
+    if( iobuf_seek( fp, kbpos->offset ) ) {
+	log_error("can't seek to %lu: %s\n", kbpos->offset, g10_errstr(rc));
+	iobuf_close(fp);
+	return G10ERR_WRITE_FILE;
+    }
+
+    len = kbpos->length;
+    log_debug("writing a dummy packet of length %lu\n", (ulong)len);
+
+    if( len < 2 )
+	log_bug(NULL);
+
+    if( len < 256 ) {
+	ctb = 0x80;
+	len -= 2;
+    }
+    else if( len < 65536 ) {
+	ctb = 0x81;
+	len -= 3;
+    }
+    else {
+	ctb = 0x82;
+	len -= 5;
+    }
+    iobuf_put(fp, ctb );
+    if( ctb & 2 ) {
+	iobuf_put(fp, len >> 24 );
+	iobuf_put(fp, len >> 16 );
+    }
+    if( ctb & 3 )
+	iobuf_put(fp, len >> 8 );
+    if( iobuf_put(fp, len ) ) {
+	iobuf_close(fp);
+	return G10ERR_WRITE_FILE;
+    }
+    for( ; len; len-- )
+	if( iobuf_put(fp, 0xff ) ) {
+	    iobuf_close(fp);
+	    return G10ERR_WRITE_FILE;
+	}
+
+    iobuf_close(fp);
+
+    return 0;
 }
 
 

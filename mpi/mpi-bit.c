@@ -23,16 +23,29 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "mpi-internal.h"
+#include "longlong.h"
 
 
 /****************
  * Return the number of bits in A.
- * fixme: we should not count leading zero bits
  */
 unsigned
 mpi_get_nbits( MPI a )
 {
-    return a->nlimbs * BITS_PER_MPI_LIMB;
+    unsigned nbits;
+    unsigned n, count = 0;
+
+    if( a->nlimbs ) {
+	mpi_limb_t alimb = a->d[a->nlimbs-1];
+	if( alimb )
+	    count_leading_zeros( n, alimb );
+	else
+	    n = BITS_PER_MPI_LIMB;
+	n = BITS_PER_MPI_LIMB - n + (a->nlimbs-1) * BITS_PER_MPI_LIMB;
+    }
+    else
+	n = 0;
+    return n;
 }
 
 
@@ -75,6 +88,28 @@ mpi_set_bit( MPI a, unsigned n )
 }
 
 /****************
+ * Set bit N of A. and clear all bits above
+ */
+void
+mpi_set_highbit( MPI a, unsigned n )
+{
+    unsigned limbno, bitno;
+
+    limbno = n / BITS_PER_MPI_LIMB;
+    bitno  = n % BITS_PER_MPI_LIMB;
+
+    if( limbno >= a->nlimbs ) { /* resize */
+	if( a->alloced >= limbno )
+	    mpi_resize(a, limbno+1 );
+	a->nlimbs = limbno+1;
+    }
+    a->d[limbno] |= (1<<bitno);
+    for( bitno++; bitno < BITS_PER_MPI_LIMB; bitno++ )
+	a->d[limbno] &= ~(1 << bitno);
+    a->nlimbs = limbno+1;
+}
+
+/****************
  * Clear bit N of A.
  */
 void
@@ -109,7 +144,7 @@ mpi_set_bytes( MPI a, unsigned nbits, byte (*fnc)(int), int opaque )
     a->nlimbs = nlimbs2;
     for(n=0; n < nlimbs; n++ ) {
 	p = (byte*)(a->d+n);
-      #ifdef HAVE_LITTLE_ENDIAN
+      #ifdef LITTLE_ENDIAN_HOST
 	for(i=0; i < BYTES_PER_MPI_LIMB; i++ )
 	    p[i] = fnc(opaque);
       #else
@@ -119,7 +154,7 @@ mpi_set_bytes( MPI a, unsigned nbits, byte (*fnc)(int), int opaque )
     }
     if( xbytes ) {
 	p = (byte*)(a->d+n);
-      #ifdef HAVE_LITTLE_ENDIAN
+      #ifdef LITTLE_ENDIAN_HOST
 	for(i=0; i < xbytes; i++ )
 	    p[i] = fnc(opaque);
       #else
@@ -127,7 +162,18 @@ mpi_set_bytes( MPI a, unsigned nbits, byte (*fnc)(int), int opaque )
 	    p[i] = fnc(opaque);
       #endif
     }
-    assert(!xbits);
+  #if 0 /* fixme: set complete random byte and clear out the unwanted ones*/
+    if( xbits ) {
+	p = (byte*)(a->d+n);
+      #ifdef LITTLE_ENDIAN_HOST
+	for(i=0; i < xbytes; i++ )
+	    p[i] = fnc(opaque);
+      #else
+	for(i=xbytes-1; i>=0; i-- )
+	    p[i] = fnc(opaque);
+      #endif
+    }
+  #endif
 }
 
 /****************

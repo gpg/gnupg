@@ -153,7 +153,7 @@ cipher( byte *inbuf, byte *outbuf, u16 *key )
     x2 = *in++;
     x3 = *in++;
     x4 = *in;
-  #ifdef HAVE_LITTLE_ENDIAN
+  #ifdef LITTLE_ENDIAN_HOST
     x1 = (x1>>8) | (x1<<8);
     x2 = (x2>>8) | (x2<<8);
     x3 = (x3>>8) | (x3<<8);
@@ -186,7 +186,7 @@ cipher( byte *inbuf, byte *outbuf, u16 *key )
     MUL(x4, *key);
 
     out = (u16*)outbuf;
-  #ifdef HAVE_LITTLE_ENDIAN
+  #ifdef LITTLE_ENDIAN_HOST
     *out++ = (x1>>8) | (x1<<8);
     *out++ = (x3>>8) | (x3<<8);
     *out++ = (x2>>8) | (x2<<8);

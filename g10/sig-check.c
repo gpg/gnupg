@@ -213,4 +213,19 @@ signature_check( PKT_signature *sig, MD_HANDLE *digest )
 }
 
 
+/****************
+ * check the signature pointed to by NODE. This is a key signatures
+ */
+int
+check_key_signature( KBNODE root, KBNODE node )
+{
+    assert( node->pkt->pkttype == PKT_SIGNATURE );
+    assert( (node->pkt->pkt.signature->sig_class&~3) == 0x10 );
+    assert( root->pkt->pkttype == PKT_PUBLIC_CERT );
+
+    /*FIXME!!!!!!*/
+
+    return 0;
+}
+
 
