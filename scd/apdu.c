@@ -913,7 +913,7 @@ pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
     }
 
    full_len = len;
-
+   
    n = *buflen < len ? *buflen : len;
    if ((i=readn (slotp->pcsc.rsp_fd, buffer, n, &len)) || len != n)
      {
@@ -922,6 +922,7 @@ pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
        goto command_failed;
      }
    *buflen = n;
+
    full_len -= len;
    if (full_len)
      {
@@ -1771,8 +1772,10 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
              int lc, const char *data, int le,
              unsigned char **retbuf, size_t *retbuflen)
 {
-  unsigned char result[256+10]; /* 10 extra in case of bugs in the driver. */
-  size_t resultlen = 256;
+#define RESULTLEN 256
+  unsigned char result[RESULTLEN+10]; /* 10 extra in case of bugs in
+                                         the driver. */
+  size_t resultlen;
   unsigned char apdu[5+256+1];
   size_t apdulen;
   int sw;
@@ -1811,6 +1814,7 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
   assert (sizeof (apdu) >= apdulen);
   /* As safeguard don't pass any garbage from the stack to the driver. */
   memset (apdu+apdulen, 0, sizeof (apdu) - apdulen);
+  resultlen = RESULTLEN;
   rc = send_apdu (slot, apdu, apdulen, result, &resultlen);
   if (rc || resultlen < 2)
     {
@@ -1867,8 +1871,9 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
         {
           int len = (sw & 0x00ff);
           
-          log_debug ("apdu_send_simple(%d): %d more bytes available\n",
-                     slot, len);
+          if (DBG_CARD_IO)
+            log_debug ("apdu_send_simple(%d): %d more bytes available\n",
+                       slot, len);
           apdulen = 0;
           apdu[apdulen++] = class;
           apdu[apdulen++] = 0xC0;
@@ -1876,6 +1881,7 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
           apdu[apdulen++] = 0;
           apdu[apdulen++] = len; 
           memset (apdu+apdulen, 0, sizeof (apdu) - apdulen);
+          resultlen = RESULTLEN;
           rc = send_apdu (slot, apdu, apdulen, result, &resultlen);
           if (rc || resultlen < 2)
             {
@@ -1893,9 +1899,11 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
                 log_printhex ("     dump: ", result, resultlen);
             }
 
-          if ((sw & 0xff00) == SW_MORE_DATA || sw == SW_SUCCESS)
+          if ((sw & 0xff00) == SW_MORE_DATA
+              || sw == SW_SUCCESS
+              || sw == SW_EOF_REACHED )
             {
-              if (retbuf)
+              if (retbuf && resultlen)
                 {
                   if (p - *retbuf + resultlen > bufsize)
                     {
@@ -1935,6 +1943,7 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
     log_printhex ("      dump: ", *retbuf, *retbuflen);
  
   return sw;
+#undef RESULTLEN
 }
 
 /* Send an APDU to the card in SLOT.  The APDU is created from all

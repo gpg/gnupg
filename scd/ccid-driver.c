@@ -108,7 +108,7 @@
 
 /* Disable all debugging output for now. */
 #undef DBG_CARD_IO
-#define DBG_CARD_IO 1
+#define DBG_CARD_IO 0
 
 /* Define to print information pertaining the T=1 protocol. */
 #undef DEBUG_T1 

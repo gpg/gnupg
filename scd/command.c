@@ -1179,6 +1179,11 @@ send_status_info (CTRL ctrl, const char *keyword, ...)
 void
 scd_update_reader_status_file (void)
 {
+  static struct {
+    int any;
+    unsigned int status;
+    unsigned int changed;
+  } last[10];
   int slot;
   int used;
   unsigned int status, changed;
@@ -1187,9 +1192,35 @@ scd_update_reader_status_file (void)
      make sense to wait here for a operation to complete.  If we are
      so busy working with the card, delays in the status file updated
      are should be acceptable. */
-  for (slot=0; !apdu_enum_reader (slot, &used); slot++)
+  for (slot=0; (slot < DIM(last)
+                &&!apdu_enum_reader (slot, &used)); slot++)
     if (used && !apdu_get_status (slot, 0, &status, &changed))
       {
-        log_info ("status of slot %d is %u\n", slot, status);
+        if (!last[slot].any || last[slot].status != status
+            || last[slot].changed != changed )
+          {
+            char *fname;
+            char templ[50];
+            FILE *fp;
+
+            last[slot].any = 1;
+            last[slot].status = status;
+            last[slot].changed = changed;
+
+            log_info ("updating status of slot %d to 0x%04X\n", slot, status);
+            
+            sprintf (templ, "reader_%d.status", slot);
+            fname = make_filename (opt.homedir, templ, NULL );
+            fp = fopen (fname, "w");
+            if (fp)
+              {
+                fprintf (fp, "%s\n",
+                         (status & 1)? "USABLE":
+                         (status & 4)? "ACTIVE":
+                         (status & 2)? "PRESENT": "NOCARD");
+                fclose (fp);
+              }
+            xfree (fname);
+          }
       }
 }

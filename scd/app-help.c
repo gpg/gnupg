@@ -147,8 +147,13 @@ app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff)
              is the certificate. */
           *r_certoff += hdrlen + objlen;
           if (*r_certoff > resultlen)
-            return 0; /* That should never happen. */
+            {
+              *r_certoff = 0;
+              return 0; /* That should never happen. */
+            }
         }
+      else
+        *r_certoff = 0;
     }
 
   return resultlen;

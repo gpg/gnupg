@@ -1,10 +1,17 @@
 2004-04-20  Werner Koch  <wk@gnupg.org>
 
+	* command.c (scd_update_reader_status_file): Write status files.
+
+	* app-help.c (app_help_read_length_of_cert): Fixed calculation of
+	R_CERTOFF.
+
 	* pcsc-wrapper.c: New.
 	* Makefile.am (pkglib_PROGRAMS): Install it here.
 	* apdu.c (writen, readn): New.
 	(open_pcsc_reader, pcsc_send_apdu, close_pcsc_reader): Use the
 	pcsc-wrapper if we are using Pth.
+	(apdu_send_le): Reinitialize RESULTLEN.  Handle SW_EOF_REACHED
+	like SW_SUCCESS.
 
 2004-04-19  Werner Koch  <wk@gnupg.org>
 

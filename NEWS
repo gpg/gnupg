@@ -1,6 +1,11 @@
 Noteworthy changes in version 1.9.8
 ------------------------------------------------
 
+ * [scdaemon] Overhauled the internal CCID driver.
+
+ * [scdaemon] Status files named ~/.gnupg/reader_<n>.status are now
+   written when using the internal CCID driver.
+
 
 Noteworthy changes in version 1.9.7 (2004-04-06)
 ------------------------------------------------
