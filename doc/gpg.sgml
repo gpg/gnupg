@@ -124,9 +124,11 @@ Encrypt data. This option may be combined with --sign.
 <varlistentry>
 <term>-c, --symmetric</term>
 <listitem><para>
-Encrypt with symmetric cipher only.
-This command asks for a passphrase.
+Encrypt with a symmetric cipher using a passphrase.  The default
+symmetric cipher used is CAST5, but may be chosen with the
+--cipher-algo option.
 </para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--store</term>
@@ -619,37 +621,38 @@ Option --keyserver must be used to give the name of this keyserver.
 <varlistentry>
 <term>--update-trustdb</term>
 <listitem><para>
-Do trust DB maintenance.  This command goes over all keys and builds
-the Web-of-Trust. This is an interactive command because it may has to
-ask for the "ownertrust" values of keys.  The user has to give an
-estimation in how far she trusts the owner of the displayed key to
-correctly certify (sign) other keys.  It does only ask for that value
-if it has not yet been assigned to a key.  Using the edit menu, that
-value can be changed at any time later.
+Do trust database maintenance.  This command iterates over all keys
+and builds the Web-of-Trust. This is an interactive command because it
+may have to ask for the "ownertrust" values for keys.  The user has to
+give an estimation of how far she trusts the owner of the displayed
+key to correctly certify (sign) other keys.  GnuPG only asks for the
+ownertrust value if it has not yet been assigned to a key.  Using the
+--edit-key menu, the assigned value can be changed at any time.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--check-trustdb</term>
 <listitem><para>
-Do trust DB maintenance without user interaction.  Form time to time
-the trust database must be updated so that expired keys and resulting
-changes in the Web-of-Trust can be tracked.  GnuPG tries to figure
-when this is required and then does it implicitly; this command can be
-used to force such a check.  The processing is identically to that of
---update-trustdb but it skips keys with a not yet defined "ownertrust".
+Do trust database maintenance without user interaction.  From time to
+time the trust database must be updated so that expired keys or
+signatures and the resulting changes in the Web-of-Trust can be
+tracked.  Normally, GnuPG will calculate when this is required and do
+it automatically unless --no-auto-check-trustdb is set.  This command
+can be used to force a trust database check at any time.  The
+processing is identical to that of --update-trustdb but it skips keys
+with a not yet defined "ownertrust".
 </para>
 <para>
 For use with cron jobs, this command can be used together with --batch
-in which case the check is only done when it is due.  To force a run
-even in batch mode add the option --yes.
+in which case the trust database check is done only if a check is
+needed.  To force a run even in batch mode add the option --yes.
 </para></listitem></varlistentry>
 
 
 <varlistentry>
-<term>--export-ownertrust &OptParmFile;</term>
+<term>--export-ownertrust</term>
 <listitem><para>
-Store the ownertrust values into
-&ParmFile; (or stdin if not given).  This is useful for backup
+Send the ownertrust values to stdout.  This is useful for backup
 purposes as these values are the only ones which can't be re-created
 from a corrupted trust DB.
 </para></listitem></varlistentry>
@@ -718,11 +721,9 @@ Print warranty information.
 <varlistentry>
 <term>-h, --help</term>
 <listitem><para>
-Print usage information.  This is a really long list even though it doesn't list
-all options.
+Print usage information.  This is a really long list even though it
+doesn't list all options.  For every option, consult this manual.
 </para></listitem></varlistentry>
-
-
 
 </variablelist>
 </refsect1>
@@ -736,7 +737,8 @@ Long options can be put in an options file (default
 not write the 2 dashes, but simply the name of the option and any
 required arguments.  Lines with a hash ('#') as the first
 non-white-space character are ignored.  Commands may be put in this
-file too, but that does not make sense.
+file too, but that is not generally useful as the command will execute
+automatically with every execution of gpg.
 </para>
 <para>
 <command/gpg/ recognizes these options:
@@ -869,9 +871,9 @@ compression level of zlib (normally 6).
 <listitem><para>
 Use canonical text mode.  --no-textmode disables this option.  If -t
 (but not --textmode) is used together with armoring and signing, this
-enables clearsigned messages.  This kludge is needed for PGP
-compatibility; normally you would use --sign or --clearsign to
-selected the type of the signature.
+enables clearsigned messages.  This kludge is needed for command-line
+compatibility with command-line versions of PGP; normally you would
+use --sign or --clearsign to select the type of the signature.
 </para></listitem></varlistentry>
 
 
@@ -1678,12 +1680,13 @@ line tells GnuPG about this cleartext signature option.
 
 <varlistentry>
 <term>--escape-from-lines</term>
+<term>--no-escape-from-lines</term>
 <listitem><para>
-Because some mailers change lines starting with "From "
-to "&#60;From " it is good to handle such lines in a special
-way when creating cleartext signatures. All other PGP
-versions do it this way too. This option is not enabled
-by default because it would violate rfc2440.
+Because some mailers change lines starting with "From " to "&#62;From
+" it is good to handle such lines in a special way when creating
+cleartext signatures to prevent the mail system from breaking the
+signature.  Note that all other PGP versions do it this way too.
+Enabled by default.  --no-escape-from-lines disables this option.
 </para></listitem></varlistentry>
 
 
@@ -1946,7 +1949,7 @@ Suppress the warning about "using insecure memory".
 <term>--no-permission-warning</term>
 <listitem><para>
 Suppress the warning about unsafe file permissions.  Note that the
-file permission checks that GnuPG does are not intended to be
+file permission checks that GnuPG performs are not intended to be
 authoritative, rather they simply warn about certain common permission
 problems.  Do not assume that the lack of a warning means that your
 system is secure.
@@ -2208,8 +2211,8 @@ menu.
 <refsect1>
     <title>How to specify a user ID</title>
     <para>
-There are different ways on how to specify a user ID to GnuPG;
-here are some examples:
+There are different ways to specify a user ID to GnuPG; here are some
+examples:
     </para>
 
     <variablelist>
