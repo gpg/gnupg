@@ -29,6 +29,9 @@
 #include "scdaemon.h"
 #include "../assuan/assuan.h"
 
+/* maximum length aloowed as a PIN; used for INQUIRE NEEDPIN */
+#define MAXLEN_PIN 100
+
 #define set_error(e,t) assuan_set_error (ctx, ASSUAN_ ## e, (t))
 
 /* Data used to associate an Assuan context with local server data */
@@ -329,6 +332,40 @@ cmd_setdata (ASSUAN_CONTEXT ctx, char *line)
 
 
 
+static int 
+pin_cb (void *opaque, const char *info, char **retstr)
+{
+  ASSUAN_CONTEXT ctx = opaque;
+  char *command;
+  int rc;
+  char *value;
+  size_t valuelen;
+
+  *retstr = NULL;
+  log_debug ("asking for PIN '%s'\n", info);
+
+  rc = asprintf (&command, "NEEDPIN %s", info);
+  if (rc < 0)
+    return GNUPG_Out_Of_Core;
+
+  /* FIXME: Write an inquire function which returns the result in
+     secure memory */
+  rc = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN); 
+  free (command);  
+  if (rc)
+    return map_assuan_err (rc);
+
+  if (!valuelen || value[valuelen-1])
+    {
+      /* We require that the returned value is an UTF-8 string */
+      xfree (value);
+      return GNUPG_Invalid_Response;
+    }
+  *retstr = value;
+  return 0;
+}
+
+
 /* PKSIGN <hexified_id>
 
  */
@@ -337,11 +374,28 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
+  void *outdata;
+  size_t outdatalen;
 
   if ((rc = open_card (ctrl)))
     return rc;
 
-
+  rc = card_create_signature (ctrl->card_ctx,
+                              line, GCRY_MD_SHA1,
+                              pin_cb, ctx,
+                              ctrl->in_data.value, ctrl->in_data.valuelen,
+                              &outdata, &outdatalen);
+  if (rc)
+    {
+      log_error ("card_create_signature failed: %s\n", gnupg_strerror (rc));
+    }
+  else
+    {
+      rc = assuan_send_data (ctx, outdata, outdatalen);
+      xfree (outdata);
+      if (rc)
+        return rc; /* that is already an assuan error code */
+    }
 
   return map_to_assuan_status (rc);
 }

@@ -268,6 +268,8 @@ card_enum_keypairs (CARD card, int idx,
 {
   int rc;
   KsbaError krc;
+  struct sc_pkcs15_object *objs[32], *tmpobj;
+  int nobjs;
   struct sc_pkcs15_prkey_info *pinfo;
   struct sc_pkcs15_cert_info *certinfo;
   struct sc_pkcs15_cert      *certder;
@@ -283,19 +285,22 @@ card_enum_keypairs (CARD card, int idx,
   if (idx < 0)
     return GNUPG_Invalid_Index;
 	
-  rc = sc_pkcs15_enum_private_keys (card->p15card);
+  rc = sc_pkcs15_get_objects (card->p15card, SC_PKCS15_TYPE_PRKEY_RSA, 
+                              objs, DIM (objs));
   if (rc < 0) 
     {
-      log_error ("sc_pkcs15_enum_private_keys failed: %s\n", sc_strerror (rc));
+      log_error ("private keys enumeration failed: %s\n", sc_strerror (rc));
       return GNUPG_Card_Error;
     }
-  if ( idx >= card->p15card->prkey_count)
+  nobjs = rc;
+  rc = 0;
+  if (idx >= nobjs)
     return -1;
-  pinfo = card->p15card->prkey_info + idx;
+  pinfo = objs[idx]->data;
   
   /* now we need to read the certificate so that we can calculate the
      keygrip */
-  rc = sc_pkcs15_find_cert_by_id (card->p15card, &pinfo->id, &certinfo);
+  rc = sc_pkcs15_find_cert_by_id (card->p15card, &pinfo->id, &tmpobj);
   if (rc)
     {
       log_info ("certificate for private key %d not found: %s\n",
@@ -312,6 +317,7 @@ card_enum_keypairs (CARD card, int idx,
         *nkeyid = pinfo->id.len;
       return GNUPG_Missing_Certificate;
     }
+  certinfo = tmpobj->data;
   rc = sc_pkcs15_read_certificate (card->p15card, certinfo, &certder);
   if (rc)
     {
@@ -389,6 +395,7 @@ int
 card_read_cert (CARD card, const char *certidstr,
                 unsigned char **cert, size_t *ncert)
 {
+  struct sc_pkcs15_object *tmpobj;
   struct sc_pkcs15_id certid;
   struct sc_pkcs15_cert_info *certinfo;
   struct sc_pkcs15_cert      *certder;
@@ -401,13 +408,14 @@ card_read_cert (CARD card, const char *certidstr,
   if (rc)
     return rc;
 
-  rc = sc_pkcs15_find_cert_by_id (card->p15card, &certid, &certinfo);
+  rc = sc_pkcs15_find_cert_by_id (card->p15card, &certid, &tmpobj);
   if (rc)
     {
       log_info ("certificate '%s' not found: %s\n", 
                 certidstr, sc_strerror (rc));
       return -1;
     }
+  certinfo = tmpobj->data;
   rc = sc_pkcs15_read_certificate (card->p15card, certinfo, &certder);
   if (rc)
     {
@@ -430,22 +438,28 @@ card_read_cert (CARD card, const char *certidstr,
 
 
 
-/* Create the signature and return the allocated result in OUTDATA. */
+/* Create the signature and return the allocated result in OUTDATA.
+   If a PIN is required the PINCB will be used to ask for the PIN; it
+   should return the PIN in an allocated buffer and put it into PIN.  */
 int 
 card_create_signature (CARD card, const char *keyidstr, int hashalgo,
+                       int (pincb)(void*, const char *, char **),
+                       void *pincb_arg,
                        const void *indata, size_t indatalen,
                        void **outdata, size_t *outdatalen )
 {
   unsigned int cryptflags = 0;
   struct sc_pkcs15_id keyid;
   struct sc_pkcs15_prkey_info *key;
-  /*  struct sc_pkcs15_pin_info *pin;*/
+  struct sc_pkcs15_pin_info *pin;
+  struct sc_pkcs15_object *keyobj, *pinobj;
+  char *pinvalue;
   int rc;
   unsigned char *outbuf = NULL;
   size_t outbuflen;
 
   if (!card || !card->p15card || !indata || !indatalen
-      || !outdata || !outdatalen)
+      || !outdata || !outdatalen || !pincb)
     return GNUPG_Invalid_Value;
   
   if (hashalgo != GCRY_MD_SHA1)
@@ -455,7 +469,7 @@ card_create_signature (CARD card, const char *keyidstr, int hashalgo,
   if (rc)
     return rc;
 
-  rc = sc_pkcs15_find_prkey_by_id (card->p15card, &keyid, &key);
+  rc = sc_pkcs15_find_prkey_by_id (card->p15card, &keyid, &keyobj);
   if (rc < 0)
     {
       log_error ("private key not found: %s\n", sc_strerror(rc));
@@ -463,13 +477,40 @@ card_create_signature (CARD card, const char *keyidstr, int hashalgo,
       goto leave;
     }
   rc = 0;
-  key = card->p15card->prkey_info;
+  key = keyobj->data;
 
+  rc = sc_pkcs15_find_pin_by_auth_id (card->p15card,
+                                      &keyobj->auth_id, &pinobj);
+  if (rc)
+    {
+      log_error ("failed to find PIN by auth ID: %s\n", sc_strerror (rc));
+      rc = GNUPG_Bad_PIN_Method;
+      goto leave;
+    }
+  pin = pinobj->data;
 
-  /* FIXME: Handle PIN via callback */
+  /* Fixme: pack this into a verification loop */
+  /* Fixme: we might want to pass pin->min_length and 
+     pin->stored_length */
+  rc = pincb (pincb_arg, pinobj->label, &pinvalue);
+  if (rc)
+    {
+      log_info ("PIN callback returned error: %s\n", gnupg_strerror (rc));
+      goto leave;
+    }
 
-  cryptflags |= SC_PKCS15_HASH_SHA1;
-  cryptflags |= SC_PKCS15_PAD_PKCS1_V1_5;
+  rc = sc_pkcs15_verify_pin (card->p15card, pin,
+                             pinvalue, strlen (pinvalue));
+  xfree (pinvalue);
+  if (rc)
+    {
+      log_info ("PIN verification failed: %s\n", sc_strerror (rc));
+      rc = GNUPG_Bad_PIN;
+      goto leave;
+    }
+
+/*    cryptflags |= SC_PKCS15_HASH_SHA1; */
+/*    cryptflags |= SC_PKCS15_PAD_PKCS1_V1_5; */
 
   outbuflen = 1024; 
   outbuf = xtrymalloc (outbuflen);
@@ -492,7 +533,6 @@ card_create_signature (CARD card, const char *keyidstr, int hashalgo,
       outbuf = NULL;
       rc = 0;
     }
-
 
 
 leave:

@@ -86,6 +86,12 @@ int card_enum_keypairs (CARD card, int idx,
                         unsigned char **keyid, size_t *nkeyid);
 int card_read_cert (CARD card, const char *certidstr,
                     unsigned char **cert, size_t *ncert);
+int card_create_signature (CARD card,
+                           const char *keyidstr, int hashalgo,
+                           int (pincb)(void*, const char *, char **),
+                           void *pincb_arg,
+                           const void *indata, size_t indatalen,
+                           void **outdata, size_t *outdatalen );
 
 
 
