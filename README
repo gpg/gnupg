@@ -2,7 +2,7 @@
 
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-			   Version 0.9.9
+			   Version 0.9.10
 
     GnuPG is now in Beta test and you should report all bugs to the
     mailing list (see below).  The 0.9.x versions are released mainly
@@ -12,28 +12,6 @@
 
     GnuPG works best on GNU/Linux or *BSD.  Other Unices are
     also supported but are not as well tested as the Free Unices.
-    Please verify the tar file with the PGP2 or OpenPGP
-    signatures provided.  My PGP2 key is well known and published in
-    the "Global Trust Register for 1998", ISBN 0-9532397-0-5.
-
-    I have included my pubring as "g10/pubring.asc", which contains
-    the key used to make GnuPG signatures:
-
-    "pub  1024D/57548DCD 1998-07-07 Werner Koch (gnupg sig) <dd9jn@gnu.org>"
-    "Key fingerprint = 6BD9 050F D8FC 941B 4341  2DCC 68B7 AB89 5754 8DCD"
-
-    You may want to add this DSA key to your GnuPG pubring and use it in
-    the future to verify new releases.	Because you verified this README
-    file and _checked_that_it_is_really_my PGP2 key 0C9857A5, you can be
-    quite sure that the above fingerprint is correct.
-
-    Please subscribe to announce@gnupg.org by sending a mail with
-    a subject of "subscribe" to "announce-request@gnupg.org".  If you
-    have problems, please subscribe to "gnupg-users@gnupg.org" by sending
-    mail with the subject "subscribe" to "gnupg-users-request@gnupg.org"
-    and ask there.  The gnupg.org domain is hosted in Germany to avoid
-    possible legal problems (technical advices may count as a violation
-    of ITAR).
 
     See the file COPYING for copyright and warranty information.
 
@@ -62,21 +40,97 @@
 
     Here is a quick summary:
 
-    1)	"./configure"
+    1) Check that you have unmodified sources.	The below on how to do this.
+       Don't skip it - this is an important step!
 
-    2) "make"
+    2)	Unpack the TAR.  With GNU tar you can do it this way:
+	"tar xzvf gnupg-x.y.z.tar.gz"
 
-    3) "make install"
+    3) "cd gnupg-x.y.z"
 
-    4) You end up with a "gpg" binary in /usr/local/bin.
-       Note: Because some programs rely on the existence of a
+    4)	"./configure"
+
+    5) "make"
+
+    6) "make install"
+
+    7) You end up with a "gpg" binary in /usr/local/bin.
+       Note: Because some old programs rely on the existence of a
        binary named "gpgm"; you should install a symbolic link
        from gpgm to gpg:
-       $ cd /usr/local/bin; ln -s gpg gpgm
+	"cd /usr/local/bin; ln -s gpg gpgm"
 
-    5) To avoid swapping out of sensitive data, you can install "gpg" as
+    8) To avoid swapping out of sensitive data, you can install "gpg" as
        suid root.  If you don't do so, you may want to add the option
        "no-secmem-warning" to ~/.gnupg/options
+
+
+    How to Verify the Source
+    ------------------------
+
+    In order to check that the version of GnuPG which you are going to
+    install is an original and unmodified one, you can do it in one of
+    the following ways:
+
+    a) If you already have a trusted Version of GnuPG installed, you
+       can simply check the supplied signature:
+
+	$ gpg --verify gnupg-x.y.z.tar.gz.asc
+
+       This checks that the detached signature gnupg-x.y.z.tar.gz.asc
+       is indeed a a signature of gnupg-x.y.z.tar.gz.  The key used to
+       create this signature is:
+
+       "pub  1024D/57548DCD 1998-07-07 Werner Koch (gnupg sig) <dd9jn@gnu.org>"
+
+       If you do not have this key, you can get it from the source in
+       the file g10/pubring.asc (use "gpg --import g10/pubring.gpg" to
+       add it to the keyring) or from any keyserver.  You have to make
+       sure that this is really the key and not a faked one. You can do
+       this by comparing the output of:
+
+		$ gpg --fingerprint 0x57548DCD
+
+       with the elsewhere published fingerprint, or - if you are able to
+       _positively_ verify the signature of this README file - with
+       this fingerprint: "6BD9 050F D8FC 941B 4341  2DCC 68B7 AB89 5754 8DCD"
+
+       Please note, that you have to use an old version of GnuPG to
+       do all this stuff.  *Never* use the version which you are going
+       to check!
+
+
+    b) If you have a trusted Version of PGP 2 or 5 installed, you
+       can check the supplied PGP 2 signature:
+
+	$ pgp gnupg-x.y.z.tar.gz.sig gnupg-x.y.z.tar.gz
+
+       This checks that the detached signature gnupg-x.y.z.tar.gz.sig
+       is indeed a a signature of gnupg-x.y.z.tar.gz.  Please note,
+       that this signature has been created with a RSA signature and
+       you probably can't use this method (due to legal reasons) when
+       you are in the U.S.  The key used to create this signature is
+       the same as the one used to sign this README file.  It should be
+       available at the keyservers and is also included in the source
+       of GnuPG in g10/pubring.asc.
+
+       "pub   768R/0C9857A5 1995-09-30 Werner Koch <werner.koch@guug.de>"
+
+       The finperprint of this key is published in printed form in the
+	  "Global Trust Register for 1998", ISBN 0-9532397-0-5.
+
+
+    c) If you don't have any of the above programs, you have to verify
+       the MD5 checksum:
+
+	$ md5sum gnupg-x.y.z.tar.gz.sig
+
+       This should yield an output similar to this:
+
+	fd9351b26b3189c1d577f0970f9dcadc  gnupg-x.y.z.tar.gz
+
+       Now check that this checksum is _exactly_ the same as the one
+       published via the anouncement list and probably via Usenet.
 
 
 
@@ -409,15 +463,15 @@
     inner structure of a encrypted packet.  This command should list all
     kinds of rfc2440 messages.
 
-	gpgm --list-trustdb
+	gpg --list-trustdb
 
     List the contents of the trust DB in a human readable format
 
-	gpgm --list-trustdb  <usernames>
+	gpg --list-trustdb  <usernames>
 
     List the tree of certificates for the given usernames
 
-	gpgm --list-trust-path	username
+	gpg --list-trust-path  username
 
     List the possible trust paths for the given username. The length
     of such a trust path is limited by the option --max-cert-depth
@@ -435,8 +489,23 @@
     See http://www.gnupg.org/mirrors.html for a list of FTP mirrors
     and use them if possible.
 
-    To avoid possible legal problems we have decided, not to use
-    the normal www.gnu.org webserver.
+    We have some mailing lists dedicated to GnuPG:
+
+	gnupg-announce@gnupg.org    For important announcements like
+				    new versions and  such stuff.
+				    This is a moderated list and has
+				    very low traffic.
+	gnupg-users@gnupg.org	    For general user discussion and
+				    help.
+	gnupg-devel@gnupg.org	    GnuPG developers main forum.
+
+    You subscribe to one of the list by sending mail with a subject
+    of "subscribe" to x-request@gnupg.org, where x is the name of the
+    mailing list (gnupg-announce, gnupg-users, etc.).  An archive of
+    the mailing lists is available at http://lists.gnupg.org .
+
+    The gnupg.org domain is hosted in Germany to avoid possible legal
+    problems (technical advices may count as a violation of ITAR).
 
     Please direct bug reports to <gnupg-bugs@gnu.org> or post
     them direct to the mailing list <gnupg-devel@gnupg.org>.
@@ -447,12 +516,13 @@
 
     Have fun and remember: Echelon is looking at you kid.
 
+- -----END PGP SIGNATURE-----
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v0.9.8a (GNU/Linux)
+Version: GnuPG v0.9.9 (GNU/Linux)
 Comment: For info see http://www.gnupg.org
 
-iQB1AwUBN5g4Lx0Z9MEMmFelAQE+RwL/Ws+kNklTHJnABT8YU8BqN8x310DyUm+e
-ViS23npv3S/kRnHbCOOQo4cEjUYZFFrJXzQgodBvKbLVzMgdj4XQvkulTSBYK6pm
-B7GeQptWRCNJ7m+Hw0Z4gwJ7giQTdfF8
-=pJ7c
+iQB1AwUBN6figR0Z9MEMmFelAQHydwL+LuKC3W6kRkm0clwab3v8I7zlX0bagxzA
+RStlHXdO6ln1Mo3s3nBuCfrS6LogiUgNRFhNJQ5+rjrTydz00nzcorbyTalqvMlq
+Gnsu9Pd/pTPzvk6kP79yDdoBxfaQGcgw
+=W8uz
 -----END PGP SIGNATURE-----

@@ -92,7 +92,7 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 
     if( control == IOBUFCTRL_UNDERFLOW ) {
 	assert( size ); /* need a buffer */
-	if ( feof(fp)) {	/* On terminals you could easiely read as many EOFs as you call		*/
+	if ( feof(fp)) {	/* On terminals you could easiely read as many EOFs as you call 	*/
 	    rc = -1;		/* fread() or fgetc() repeatly. Every call will block until you press	*/
 	    *ret_len = 0;	/* CTRL-D. So we catch this case before we call fread() again.		*/
 	}
@@ -425,7 +425,7 @@ print_chain( IOBUF a )
 
 	log_debug("iobuf chain: %d.%d `%s' filter_eof=%d start=%d len=%d\n",
 		   a->no, a->subno, desc, a->filter_eof,
-		   a->d.start, a->d.len );
+		   (int)a->d.start, (int)a->d.len );
     }
 }
 

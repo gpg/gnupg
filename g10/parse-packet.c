@@ -737,7 +737,14 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	    printf(" %d", buffer[i] );
 	break;
       case SIGSUBPKT_REV_KEY:
-	p = "revocation key";
+	fputs("revocation key: ", stdout );
+	if( length < 22 )
+	    p = "[too short]";
+	else {
+	    printf("c=%02x a=%d f=", buffer[0], buffer[1] );
+	    for( i=2; i < length; i++ )
+		printf("%02X", buffer[i] );
+	}
 	break;
       case SIGSUBPKT_ISSUER:
 	if( length >= 8 )

@@ -1,5 +1,16 @@
-Mon Jul 26 09:34:46 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+Wed Aug  4 10:34:18 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
+
+	* pubring.asc: Updated.
+
+	* pkclist.c (do_we_trust_pre,check_signatures_trust): Do not print
+	the warning about --always_trust when --quiet is used.
+
+	* pkclist.c (fpr_info): New and called at several places.
+
+	* parse-packet.c (dump_sig_subpkt): List revocation key contents.
+
+Mon Jul 26 09:34:46 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* pkclist.c (build_pk_list): Fixed typo in format string.
 
@@ -94,7 +105,7 @@ Mon Jul 12 14:55:34 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 	* openfile.c (make_outfile_name): s/error/info/
 
 	* passphrase.c (passphrase_to_dek): Return an empty passphrase when
-	in batch mode and don't make the warbing message fatal
+	in batch mode and don't make the warning message fatal
 	* seckey-cert.c (check_secret_key): Try only once when in batch mode.
 
 	* g10.c (make_username): New.
@@ -148,7 +159,7 @@ Thu Jul  1 12:47:31 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 	(trust_letter): Mask the value.
 	(do_check): Take disabled flag into account.
 
-	* passphrase.c (passphrase_to_dek): Add a pubkey_alfo arg and changed
+	* passphrase.c (passphrase_to_dek): Add a pubkey_algo arg and changed
 	all callers.
 
 	* g10.c (utf8_strings): 2 new options.

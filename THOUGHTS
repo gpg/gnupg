@@ -216,6 +216,13 @@ of the existing key servers (I think they bail out on some rfc2440
 packet formats).
 
 
+
+Special procmail addresses
+==========================
+  * foo+bar@example.net:  Try to match the address without the "+bar".
+    Should be done by the MUA, but maybe we can do this.
+
+
 Suggested things which I will not do:
 =====================================
   * Let take --help an option to select some topics.

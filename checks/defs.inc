@@ -51,6 +51,28 @@ chdir () {
     cd $1 || fatal "cannot cd to $1"
 }
 
+echo_n_init=no
+echo_n () {
+  if test "$echo_n_init" = "no"; then
+    if (echo "testing\c"; echo 1,2,3) | grep c >/dev/null; then
+      if (echo -n testing; echo 1,2,3) | sed s/-n/xn/ | grep xn >/dev/null; then
+	echo_n_n=
+	echo_n_c='
+'
+      else
+	echo_n_n='-n'
+	echo_n_c=
+      fi
+    else
+      echo_n_n=
+      echo_n_c='\c'
+    fi
+    echo_n_init=yes
+  fi
+  echo $echo_n_n "${1}$echo_n_c"
+}
+
+
 #cleanup () {
 #    rm $cleanup_files 2>/dev/null || true
 #    echo "#empty" >./options

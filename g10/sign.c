@@ -385,7 +385,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	}
     }
     else {
-	if (!opt.no_literal)
+	if (!opt.no_literal) {
 	    if( fname || opt.set_filename ) {
 		char *s = make_basename( opt.set_filename ? opt.set_filename : fname );
 		pt = m_alloc( sizeof *pt + strlen(s) - 1 );
@@ -397,6 +397,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 		pt = m_alloc( sizeof *pt - 1 );
 		pt->namelen = 0;
 	    }
+	}
 
 	if( fname ) {
 	    if( !(filesize = iobuf_get_filelength(inp)) )
@@ -412,7 +413,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	}
 	else
 	    filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
-	
+
 	if (!opt.no_literal) {
 	    pt->timestamp = make_timestamp();
 	    pt->mode = opt.textmode && !outfile ? 't':'b';
@@ -441,7 +442,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
     /* catch errors from above blocks */
     if (rc)
-        goto leave;
+	goto leave;
 
     /* loop over the secret certificates */
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {

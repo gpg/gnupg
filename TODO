@@ -47,5 +47,5 @@ Nice to have
     trustdb.
   * Evaluate whether it make sense to replace the namehashs either by
     using the user ID directly or by using pointers into the trustdb.
-
+  * --gen-prime may trigger a log_bug; should be a log_fatal.
 

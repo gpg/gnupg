@@ -32,7 +32,7 @@ ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
 		       16 = ElGamal (encrypt only)
 		       17 = DSA (sometimes called DH, sign only)
 		       20 = ElGamal (sign and encrypt)
-            (for other id's see include/cipher.h)
+	    (for other id's see include/cipher.h)
  5. Field:  KeyID
  6. Field:  Creation Date (in UTC)
  7. Field:  Key expiration date or empty if none.
@@ -144,13 +144,20 @@ more arguments in future versions.
 	Issued whenever a passphrase for symmetric encryption is needed.
 
     MISSING_PASSPHRASE
+	No passphrase was supplied.  An application which encounters this
+	message may want to stop parsing immediately because the next message
+	will probably be a BAD_PASSPHRASE.  However, if the application
+	is a wrapper around the key edit menu functionalty it might not
+	make sense to stop parsing but simply ignoring the following
+	PAD_PASSPHRASE.
 
     BAD_PASSPHRASE <long keyid>
-	The supplied passphrase was wrong
+	The supplied passphrase was wrong or not given.  In the latter case
+	you may have seen a MISSING_PASSPHRASE.
 
     GOOD_PASSPHRASE
 	The supplied passphrase was good and the secret key material
-	is therefore usuable.
+	is therefore usable.
 
     DECRYPTION_FAILED
 	The symmetric decryption failed - one reason could be a wrong
@@ -577,9 +584,15 @@ The standard http URL encoded query parameters are this (always key=value):
 - fingerprint=on. Also reports the fingerprints when used with 'index' or
   'vindex'
 
-New (already used by GnuPG):
+The keyserver also recognizes http-POSTs to /pks/add. Use this to upload
+keys.
+
+
+A better way to to this would be a request like:
 
    /pks/lookup/<gnupg_formatierte_user_id>?op=<operation>
 
-The keyserver also recognizes http-POSTs to /pks/add. Use this to upload
-keys.
+this can be implemented using Hurd's translater mechanism.
+However, I think the whole key server stuff has to be re-thougth;
+I have some ideas and probably create a white paper.
+

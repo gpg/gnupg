@@ -73,7 +73,7 @@ $srcdir/run-gpg --verify x
 # bash's builtin echo needs the option -e so we use the external one.
 # ======================================
 echo "this is a sig test" >y
-/bin/echo " \c" >>y
+echo_n " " >>y
 echo "$usrpass1" | $srcdir/run-gpg --passphrase-fd 0 --clearsign -o x --yes y
 $srcdir/run-gpg --verify x
 

@@ -68,6 +68,33 @@ print_fpr( PKT_public_key *pk )
     tty_printf("\n");
 }
 
+static void
+fpr_info( PKT_public_key *pk )
+{
+    byte array[MAX_FINGERPRINT_LEN], *p;
+    size_t i, n;
+    FILE *fp = log_stream();
+
+    fingerprint_from_pk( pk, array, &n );
+    p = array;
+    log_info(_("Fingerprint:"));
+    if( n == 20 ) {
+	for(i=0; i < n ; i++, i++, p += 2 ) {
+	    if( i == 10 )
+		putc(' ', fp);
+	    fprintf(fp, " %02X%02X", *p, p[1] );
+	}
+    }
+    else {
+	for(i=0; i < n ; i++, p++ ) {
+	    if( i && !(i%8) )
+		putc(' ', fp);
+	    fprintf(fp, " %02X", *p );
+	}
+    }
+    putc('\n', fp );
+}
+
 
 
 static void
@@ -453,7 +480,8 @@ do_we_trust_pre( PKT_public_key *pk, int trustlevel )
 	 */
     }
     else if( opt.always_trust && !rc ) {
-	log_info(_("WARNING: Using untrusted key!\n"));
+	if( !opt.quiet )
+	    log_info(_("WARNING: Using untrusted key!\n"));
 	rc = 1;
     }
     return rc;
@@ -475,7 +503,8 @@ check_signatures_trust( PKT_signature *sig )
 
 
     if( opt.always_trust ) {
-	log_info(_("WARNING: Using untrusted key!\n"));
+	if( !opt.quiet )
+	    log_info(_("WARNING: Using untrusted key!\n"));
 	return 0;
     }
 
@@ -523,6 +552,7 @@ check_signatures_trust( PKT_signature *sig )
 
       case TRUST_EXPIRED:
 	log_info(_("Note: This key has expired!\n"));
+	fpr_info( pk );
 	break;
 
       case TRUST_UNDEFINED:
@@ -533,6 +563,7 @@ check_signatures_trust( PKT_signature *sig )
 	    log_info(_(
 	    "         There is no indication that the "
 				    "signature belongs to the owner.\n" ));
+	    fpr_info( pk );
 	}
 	else {
 	    int quit;
@@ -560,6 +591,7 @@ check_signatures_trust( PKT_signature *sig )
 	log_info(_(
 	 "         It is not certain that the signature belongs to the owner.\n"
 		 ));
+	fpr_info( pk );
 	break;
 
       case TRUST_FULLY:

@@ -27,7 +27,7 @@
 -->
 
 
-<!doctype refentry PUBLIC "-//Davenport//DTD DocBook V3.0//EN" [
+<!DOCTYPE RefEntry PUBLIC "-//Davenport//DTD DocBook V3.0//EN" [
 <!entity ParmDir "<parameter>directory</parameter>">
 <!entity ParmFile "<parameter>file</parameter>">
 <!entity OptParmFile "<optional>&ParmFile;</optional>">
@@ -359,14 +359,14 @@ trust value.  Letters are used for the values:</para>
 <term>--sign-key &ParmName;</term>
 <listitem><para>
 Sign a public key with you secret key.	This is a shortcut version
-of the subcommand <term>sign</term> from --edit.
+of the subcommand "sign" from --edit.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--lsign-key &ParmName;</term>
 <listitem><para>
 Sign a public key with you secret key but mark it as non-exportable.
-This is a shortcut version of the subcommand <term>lsign</term> from --edit.
+This is a shortcut version of the subcommand "lsign" from --edit.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -432,7 +432,9 @@ This is normally not very useful and a security risk.
 <term>--import &OptParmFiles;</term>
 <term>--fast-import &OptParmFiles;</term>
 <listitem><para>
-Import/merge keys.  The fast version does not build
+Import/merge keys. This adds the given keys to the
+keyring.
+The fast version does not build
 the trustdb; this can be done at any time with the
 command --update-trustdb.
 </para></listitem></varlistentry>
@@ -1019,6 +1021,7 @@ will still get disabled.
 Never allow the use of &ParmName; as public key algorithm.
 The given name will not be checked so that a later loaded algorithm
 will still get disabled.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--throw-keyid</term>
@@ -1099,10 +1102,11 @@ signatures on data.
 Force the use of encryption with appended manipulation
 code.  This is always used with the newer cipher (those
 with a blocksize greater than 64 bit).
+This option might not be implemented yet.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--allow-non-self-signed-uid</term>
+<term>--allow-non-selfsigned-uid</term>
 <listitem><para>
 Allow the import of keys with user IDs which are not self-signed.
 This is only allows the import - key validation will fail und you
@@ -1145,6 +1149,12 @@ Suppress the initial copyright message but do not
 enter batch mode.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--no-secmem-warning</term>
+<listitem><para>
+Suppress the warning about "using insecure memory".
+</para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--no-armor</term>
@@ -1165,7 +1175,7 @@ keyrings.
 <term>--skip-verify</term>
 <listitem><para>
 Skip the signature verification step.  This may be
-used to make the encryption faster if the signature
+used to make the decryption faster if the signature
 verification is not needed.
 </para></listitem></varlistentry>
 
@@ -1193,13 +1203,13 @@ and may be used together with another command.
 <varlistentry>
 <term>--no-literal</term>
 <listitem><para>
-This is not for normal use.  Use the source to see for it might be used for.
+This is not for normal use.  Use the source to see for what it might be useful.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--set-filesize</term>
 <listitem><para>
-This is not for normal use.  Use the source to see for it might be used for.
+This is not for normal use.  Use the source to see for what it might be useful.
 </para></listitem></varlistentry>
 
 
@@ -1242,6 +1252,18 @@ a signature was bad, and other error codes for fatal errors.
 <term>gpg --fingerprint  <parameter/user_ID/</term>
 <listitem><para>show fingerprint</para></listitem>
 </varlistentry>
+
+<varlistentry>
+<term>gpg --verify  <parameter/pgpfile/</term>
+<term>gpg --verify  <parameter/sigfile/ &OptParmFiles;</term>
+<listitem><para>
+Verify the signature of the file but do not output the data. The second form
+is used for detached signatures, where <parameter/sigfile/ is the detached
+signature (either ASCII armored of binary) and &OptParmFiles are the signed
+data; if this is not given the name of the file holding the signed data is
+constructed by cutting off the extension (".asc" or ".sig") of
+<parameter/sigfile/ or by asking the user for the filename.
+</para></listitem></varlistentry>
 
     </variablelist>
 </refsect1>

@@ -1,3 +1,9 @@
+Wed Aug  4 10:34:18 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* config.guess: Updated from gnu/common and applied my emx patch again.
+	* config.sub: Updated from gnu/common.
+
 Wed Jul 14 19:42:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

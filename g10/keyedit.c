@@ -684,7 +684,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    trim_spaces(answer);
 	} while( *answer == '#' );
 
-	arg_number = 0;
+	arg_number = 0; /* Yes, here is the init which egcc complains about*/
 	if( !*answer )
 	    cmd = cmdLIST;
 	else if( *answer == CONTROL_D )

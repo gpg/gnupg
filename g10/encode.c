@@ -298,7 +298,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     if( rc  )
 	goto leave;
 
-    if (!opt.no_literal)
+    if (!opt.no_literal) {
 	/* setup the inner packet */
 	if( filename || opt.set_filename ) {
 	    char *s = make_basename( opt.set_filename ? opt.set_filename : filename );
@@ -311,6 +311,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	    pt = m_alloc( sizeof *pt - 1 );
 	    pt->namelen = 0;
 	}
+    }
 
     if( filename && !opt.textmode ) {
 	if( !(filesize = iobuf_get_filelength(inp)) )

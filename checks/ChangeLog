@@ -1,3 +1,8 @@
+Wed Aug  4 10:34:18 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* defs.inc (echo_n): New and used instead of /bin/echo "\c"
+
 Sun Apr 18 10:11:28 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* mkdemodirs: New
