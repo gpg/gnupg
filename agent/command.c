@@ -606,9 +606,9 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
     return rc; /* we can't jump to leave because this is already an
                   Assuan error code. */
 
-  s_skey = agent_key_from_file (ctrl, grip, &shadow_info, 1);
-  if (!s_skey && !shadow_info)
-    rc = gpg_error (GPG_ERR_NO_SECKEY);
+  rc = agent_key_from_file (ctrl, grip, &shadow_info, 1, &s_skey);
+  if (rc)
+    ;
   else if (!s_skey)
     {
       log_error ("changing a smartcard PIN is not yet supported\n");

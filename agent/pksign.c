@@ -81,12 +81,11 @@ agent_pksign (CTRL ctrl, FILE *outfp, int ignore_cache)
   if (!ctrl->have_keygrip)
     return gpg_error (GPG_ERR_NO_SECKEY);
 
-  s_skey = agent_key_from_file (ctrl,
-                                ctrl->keygrip, &shadow_info, ignore_cache);
-  if (!s_skey && !shadow_info)
+  rc = agent_key_from_file (ctrl, ctrl->keygrip,
+                            &shadow_info, ignore_cache, &s_skey);
+  if (rc)
     {
       log_error ("failed to read the secret key\n");
-      rc = gpg_error (GPG_ERR_NO_SECKEY);
       goto leave;
     }
 

@@ -198,16 +198,16 @@ unprotect (CTRL ctrl,
 
 
 
-/* Return the secret key as an S-Exp after locating it using the grip.
-   Returns NULL if key is not available or the operation should be
-   diverted to a token.  In the latter case shadow_info will point to
-   an allocated S-Expression with the shadow_info part from the file.
-   With IGNORE_CACHE passed as true the passphrase is not taken from
-   the cache.*/
-gcry_sexp_t
+/* Return the secret key as an S-Exp in RESULT after locating it using
+   the grip.  Returns NULL in RESULT if the operation should be
+   diverted to a token; SHADOW_INFO will point then to an allocated
+   S-Expression with the shadow_info part from the file.  With
+   IGNORE_CACHE passed as true the passphrase is not taken from the
+   cache.*/
+gpg_error_t
 agent_key_from_file (CTRL ctrl,
                      const unsigned char *grip, unsigned char **shadow_info,
-                     int ignore_cache)
+                     int ignore_cache, gcry_sexp_t *result)
 {
   int i, rc;
   char *fname;
@@ -217,7 +217,9 @@ agent_key_from_file (CTRL ctrl,
   size_t len, buflen, erroff;
   gcry_sexp_t s_skey;
   char hexgrip[40+4+1];
+  int got_shadow_info = 0;
   
+  *result = NULL;
   if (shadow_info)
       *shadow_info = NULL;
 
@@ -229,28 +231,31 @@ agent_key_from_file (CTRL ctrl,
   fp = fopen (fname, "rb");
   if (!fp)
     {
+      rc = gpg_error_from_errno (errno);
       log_error ("can't open `%s': %s\n", fname, strerror (errno));
       xfree (fname);
-      return NULL;
+      return rc;
     }
   
   if (fstat (fileno(fp), &st))
     {
+      rc = gpg_error_from_errno (errno);
       log_error ("can't stat `%s': %s\n", fname, strerror (errno));
       xfree (fname);
       fclose (fp);
-      return NULL;
+      return rc;
     }
 
   buflen = st.st_size;
   buf = xmalloc (buflen+1);
   if (fread (buf, buflen, 1, fp) != 1)
     {
+      rc = gpg_error_from_errno (errno);
       log_error ("error reading `%s': %s\n", fname, strerror (errno));
       xfree (fname);
       fclose (fp);
       xfree (buf);
-      return NULL;
+      return rc;
     }
 
   rc = gcry_sexp_sscan (&s_skey, &erroff, buf, buflen);
@@ -261,15 +266,16 @@ agent_key_from_file (CTRL ctrl,
     {
       log_error ("failed to build S-Exp (off=%u): %s\n",
                  (unsigned int)erroff, gpg_strerror (rc));
-      return NULL;
+      return rc;
     }
   len = gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, NULL, 0);
   assert (len);
   buf = xtrymalloc (len);
   if (!buf)
     {
+      rc = out_of_core ();
       gcry_sexp_release (s_skey);
-      return NULL;
+      return rc;
     }
   len = gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, buf, len);
   assert (len);
@@ -303,26 +309,27 @@ agent_key_from_file (CTRL ctrl,
                 {
                   memcpy (*shadow_info, s, n);
                   rc = 0;
+                  got_shadow_info = 1;
                 }
             }
           if (rc)
             log_error ("get_shadow_info failed: %s\n", gpg_strerror (rc));
         }
-      rc = -1; /* ugly interface: we return an error but keep a value
-                  in shadow_info.  */
+      else
+        rc = gpg_error (GPG_ERR_UNUSABLE_SECKEY);
       break;
     default:
       log_error ("invalid private key format\n");
       rc = gpg_error (GPG_ERR_BAD_SECKEY);
       break;
     }
-  if (rc)
+  if (rc || got_shadow_info)
     {
       xfree (buf);
-      return NULL;
+      return rc;
     }
 
-  /* arggg FIXME: does scan support secure memory? */
+  /* Arggg FIXME: does scan support secure memory? */
   rc = gcry_sexp_sscan (&s_skey, &erroff,
                         buf, gcry_sexp_canon_len (buf, 0, NULL, NULL));
   xfree (buf);
@@ -330,10 +337,11 @@ agent_key_from_file (CTRL ctrl,
     {
       log_error ("failed to build S-Exp (off=%u): %s\n",
                  (unsigned int)erroff, gpg_strerror (rc));
-      return NULL;
+      return rc;
     }
 
-  return s_skey;
+  *result = s_skey;
+  return 0;
 }
 
 /* Return the secret key as an S-Exp after locating it using the grip.

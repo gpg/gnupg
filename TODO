@@ -31,9 +31,10 @@ might want to have an agent context for each service request
 ** Don't hardcode the use of RSA.
 
 * sm/gpgsm.c
-** Support --output
+** Support --output for all commands
 ** mark all unimplemented commands and options.
 ** Print a hint when MD2 is the cause for a problem.
+** Implement --default-key
 
 * sm/keydb.c
 ** Check file permissions

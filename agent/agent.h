@@ -130,9 +130,9 @@ void start_command_handler (int, int);
 /*-- findkey.c --*/
 int agent_write_private_key (const unsigned char *grip,
                              const void *buffer, size_t length, int force);
-gcry_sexp_t agent_key_from_file (CTRL ctrl, const unsigned char *grip,
+gpg_error_t agent_key_from_file (CTRL ctrl, const unsigned char *grip,
                                  unsigned char **shadow_info,
-                                 int ignore_cache);
+                                 int ignore_cache, gcry_sexp_t *result);
 int agent_key_available (const unsigned char *grip);
 
 /*-- query.c --*/

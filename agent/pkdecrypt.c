@@ -64,11 +64,10 @@ agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
       log_printhex ("keygrip:", ctrl->keygrip, 20);
       log_printhex ("cipher: ", ciphertext, ciphertextlen);
     }
-  s_skey = agent_key_from_file (ctrl, ctrl->keygrip, &shadow_info, 0);
-  if (!s_skey && !shadow_info)
+  rc = agent_key_from_file (ctrl, ctrl->keygrip, &shadow_info, 0, &s_skey);
+  if (rc)
     {
       log_error ("failed to read the secret key\n");
-      rc = gpg_error (GPG_ERR_NO_SECKEY);
       goto leave;
     }
 

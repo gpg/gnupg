@@ -1,3 +1,12 @@
+2004-01-16  Werner Koch  <wk@gnupg.org>
+
+	* findkey.c (agent_key_from_file): Now return an error code so
+	that we have more detailed error messages in the upper layers.
+	This fixes the handling pinentry's cancel button. 
+	* pksign.c (agent_pksign): Changed accordingly.
+	* pkdecrypt.c (agent_pkdecrypt): Ditto.
+	* command.c (cmd_passwd): Ditto.
+
 2003-12-16  Werner Koch  <wk@gnupg.org>
 
 	* gpg-agent.c (main): Set the prefixes for assuan logging.
