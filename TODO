@@ -7,11 +7,6 @@
 
   * Use --output for keylistings too.
 
-  * Add to the (EGD) docs that ~/.gnupg/entropy should be a symlink to the
-    real socket.
-
-  * Add a way to generate keys in batch mode with arbitrary parameters.
-
   * Never allocate packet memory with a m-alloc, but use a specific function.
 
   * Should we change names like mpi_write in g10/ so that we don't
@@ -27,8 +22,6 @@
     info what we are about to add.
 
   * Speed up calculation of key validation.
-
-  * print a warning when a revoked/expired _secret_ key is used.
 
   * --disable-asm should still assemble _udiv_qrnnd when needed
 

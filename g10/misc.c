@@ -330,6 +330,7 @@ print_cipher_algo_note( int algo )
     else if(	algo == GCRY_CIPHER_3DES
 	     || algo == GCRY_CIPHER_CAST5
 	     || algo == GCRY_CIPHER_BLOWFISH
+             || algo == GCRY_CIPHER_RIJNDAEL
 	     || algo == GCRY_CIPHER_TWOFISH
 	   )
 	;

@@ -36,6 +36,7 @@ libcipher_la_SOURCES = cipher.c  \
 		 bithelp.h	\
 		 des.c		\
 		 des.h		\
+		 rijndael.c     \
 		 twofish.c	\
 		 blowfish.c	\
 		 blowfish.h	\

@@ -9,3 +9,6 @@ gpg: NOTE: secret key 439F02CA is NOT protected.
 gpg: WARNING: using insecure random number generator
 gpg: NOTE: signature key expired
 NOTE: this is a development version!
+secret key without public key - skipped
+gpg: using secondary key CB879DE9 instead of primary key 439F02CA
+

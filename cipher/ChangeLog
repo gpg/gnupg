@@ -1,3 +1,17 @@
+Wed Oct  4 13:16:18 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * sha1.c (transform): Use rol() macro.  Actually this is not needed
+        for a newer gcc but there are still aoter compilers.
+
+        * rsa.c (test_keys): Use new random function. 
+
+        * md.c (gcry_md_setkey): New function to overcome problems with
+        const conflics.  
+        (gcry_md_ctl): Pass set key to the new functions.
+
+        * rijndael.c: New.
+        * cipher.c: Add Rijndael support.
+
 Mon Sep 18 16:35:45 CEST 2000  Werner Koch  <wk@openit.de>
 
         * rndlinux.c (open_device): Loose random device checking.

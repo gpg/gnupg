@@ -795,12 +795,19 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
     ctx->nitems = n;
 
     for(n=0, r=namelist; r; r = r->next, n++ ) {
-	ctx->items[n].mode = classify_user_id( r->d,
-					      ctx->items[n].keyid,
-					      ctx->items[n].fprint,
-					      &ctx->items[n].name,
-					      NULL );
-	if( !ctx->items[n].mode ) {
+	int mode = classify_user_id( r->d,
+                                 ctx->items[n].keyid,
+                                 ctx->items[n].fprint,
+                                 &ctx->items[n].name,
+                                 NULL );
+
+        /* if we don't use one of the exact key specifications, we assume that
+         * the primary key is requested */
+        if ( mode != 10 && mode != 11 && mode != 16 && mode == 20 )
+            ctx->primary = 1; 
+
+	ctx->items[n].mode = mode;
+        if( !ctx->items[n].mode ) {
 	    gcry_free( ctx );
 	    return GPGERR_INV_USER_ID;
 	}
@@ -810,8 +817,7 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
 	}
     }
 
-    /* and call the lookup function */
-    ctx->primary = 1; /* we want to look for the primary key only */
+
 
     if ( !ret_kb ) 
         ret_kb = &help_kb;
@@ -1337,8 +1343,13 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     pk->main_keyid[0] = kid[0];
     pk->main_keyid[1] = kid[1];
 
-    if ( pk->version < 4 ) 
-        return; /* nothing to do for old keys FIXME: This is wrong!!!!*/
+    if ( pk->version < 4 ) {
+        /* before v4 the key packet itself contains the expiration date
+         * and there was noway to change it.  So we also use only the
+         * one from the key packet */
+        key_expire = pk->expiredate;
+        key_expire_seen = 1;
+    }
 
     /* first pass: find the latest direct key self-signature.
      * We assume that the newest one overrides all others
@@ -1394,12 +1405,14 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
                 key_usage |= GCRY_PK_USAGE_ENCR;
         }
 
-        p = parse_sig_subpkt ( sig->hashed_data, SIGSUBPKT_KEY_EXPIRE, NULL);
-        if ( p ) {
-            key_expire = sig->timestamp + buffer_to_u32(p);
-            key_expire_seen = 1;
+        if ( pk->version > 3 ) {
+            p = parse_sig_subpkt ( sig->hashed_data,
+                                   SIGSUBPKT_KEY_EXPIRE, NULL);
+            if ( p ) {
+                key_expire = sig->timestamp + buffer_to_u32(p);
+                key_expire_seen = 1;
+            }
         }
-
         /* and set the created field */
         pk->created = sigdate;
         /* and mark that key as valid: one direct key signature should 
@@ -1518,8 +1531,8 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
             }
       	}
     }
-    if ( key_expire >= curtime )
-        pk->has_expired = key_expire;
+   
+    pk->has_expired = key_expire >= curtime? 0 : key_expire;
     /* FIXME: we should see how to get rid of the expiretime fields */
 
 
@@ -1651,7 +1664,7 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
         key_expire = sig->timestamp + buffer_to_u32(p);
     else
         key_expire = 0;
-    subpk->has_expired = key_expire >= curtime? key_expire : 0;
+    subpk->has_expired = key_expire >= curtime? 0 : key_expire;
 }
 
 
@@ -1711,7 +1724,7 @@ merge_selfsigs( KBNODE keyblock )
  * keys at all and have a way to store just the real secret parts
  * from the key.
  */
-static void
+void
 merge_public_with_secret ( KBNODE pubblock, KBNODE secblock )
 {
     KBNODE pub;
@@ -1942,8 +1955,8 @@ finish_lookup( GETKEY_CTX ctx,  KBNODE foundk )
             }
 
             if (DBG_CACHE)
-                log_debug( "\tconsidering key created %lu\n",
-                           (ulong)pk->created);
+                log_debug( "\tconsidering key %08lX\n",
+                           (ulong)keyid_from_pk( pk, NULL));
             if ( pk->created > latest_date ) {
                 latest_date = pk->created;
                 latest_key  = k;
@@ -1989,7 +2002,8 @@ finish_lookup( GETKEY_CTX ctx,  KBNODE foundk )
     }
 
     if (DBG_CACHE)
-        log_debug( "\tusing key created %lu\n", (ulong)latest_date );
+        log_debug( "\tusing key %08lX\n",
+                (ulong)keyid_from_pk( latest_key->pkt->pkt.public_key, NULL) );
 
     ctx->found_key = latest_key;
 

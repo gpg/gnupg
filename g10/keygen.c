@@ -294,7 +294,6 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval )
 {
     int rc;
-    int i;
     PACKET *pkt;
     PKT_secret_key *sk;
     PKT_public_key *pk;
@@ -407,7 +406,6 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	    STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval )
 {
     int rc;
-    int i;
     PACKET *pkt;
     PKT_secret_key *sk;
     PKT_public_key *pk;
@@ -948,7 +946,6 @@ ask_user_id( int mode )
 
 	/* append a warning if we do not have dev/random
 	 * or it is switched into  quick testmode */
-	#warning quick_random_gen() not available
       #if 0
 	if( quick_random_gen(-1) )
 	    strcpy(p, " (INSECURE!)" );

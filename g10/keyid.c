@@ -454,7 +454,7 @@ fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
 	    int rc;
 	    size_t nbytes;
 
-	    #warning Why is the hash sequence for secret keys different
+	    /* FIXME: Why is the hash sequence for secret keys different */
 	    rc = gcry_mpi_print( GCRYMPI_FMT_USG, NULL, &nbytes, sk->skey[1] );
 	    assert( !rc );
 	    /* fixme: allocate it on the stack */

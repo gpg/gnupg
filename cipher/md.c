@@ -557,10 +557,7 @@ gcry_md_ctl( GCRY_MD_HD hd, int cmd, byte *buffer, size_t buflen)
     if( cmd == GCRYCTL_FINALIZE )
 	md_final( hd );
     else if( cmd == GCRYCTL_SET_KEY ) {
-	if( !(hd->ctx->macpads ) )
-	    rc = GCRYERR_CONFLICT;
-	else if ( !(rc = prepare_macpads( hd, buffer, buflen )) )
-	    gcry_md_reset( hd );
+        rc = gcry_md_setkey ( hd, buffer, buflen );
     }
     else if( cmd == GCRYCTL_START_DUMP ) {
 	md_start_debug( hd, buffer );
@@ -571,6 +568,20 @@ gcry_md_ctl( GCRY_MD_HD hd, int cmd, byte *buffer, size_t buflen)
     else
 	rc = GCRYERR_INV_OP;
     return set_lasterr( rc );
+}
+
+
+int
+gcry_md_setkey( GCRY_MD_HD hd, const char *key, size_t keylen )
+{
+    int rc = 0;
+
+    if( !(hd->ctx->macpads ) )
+        rc = GCRYERR_CONFLICT;
+    else if ( !(rc = prepare_macpads( hd, key, keylen )) )
+        gcry_md_reset( hd );
+
+    return rc;
 }
 
 

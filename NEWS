@@ -3,6 +3,8 @@ Noteworthy changes in the current CVS HEAD
 
     THIS IS A DEVELOPMENT VERSION; see README-alpha
 
+    * Add Rijndael (AES) support.
+
     * Fixed problems with piping to/from other MS-Windows software
 
     * Expiration time of the primary key can be changed again.

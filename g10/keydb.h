@@ -166,6 +166,7 @@ int get_seckey_next( GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_keyblock );
 void get_seckey_end( GETKEY_CTX ctx );
 int enum_secret_keys( void **context, PKT_secret_key *sk, int with_subkeys );
 void merge_keys_and_selfsig( KBNODE keyblock );
+void merge_public_with_secret ( KBNODE pubblock, KBNODE secblock );
 char*get_user_id_string( u32 *keyid );
 char*get_user_id_string_native( u32 *keyid );
 char*get_long_user_id_string( u32 *keyid );

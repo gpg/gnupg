@@ -1,3 +1,18 @@
+Wed Oct  4 13:16:18 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * getkey.c (merge_selfsigs_main): Fixed for v3 keys.
+
+        * sign.c (hash_for): New arg to take packet version in account. Changed
+        all callers.
+        (write_one_sig): New. Moved the shared code from sign_file and
+        clearsign_file to here.
+        * skclist.c (build_sk_list): Fixed usage check.
+        * pkclist.c (build_pk_list): Ditto.
+
+        * encode.c (encode_crypt): Removed duplicated stuff by using
+        encrypt_filter as sign.c already did.  Removed already disabled
+        comment-packet code.
+
 Mon Sep 18 16:35:45 CEST 2000  Werner Koch  <wk@openit.de>
 
         * parse-packet.c (dump_sig_subpkt): Dump key flags.

@@ -67,10 +67,7 @@ test_keys( RSA_secret_key *sk, unsigned nbits )
 
     pk.n = sk->n;
     pk.e = sk->e;
-    {	char *p = get_random_bits( nbits, 0, 0 );
-	mpi_set_buffer( test, p, (nbits+7)/8, 0 );
-	g10_free(p);
-    }
+    gcry_mpi_randomize( test, nbits, GCRY_WEAK_RANDOM );
 
     public( out1, test, &pk );
     secret( out2, out1, sk );

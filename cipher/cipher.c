@@ -33,7 +33,7 @@
 #include "dynload.h"
 
 #define MAX_BLOCKSIZE 16
-#define TABLE_SIZE 10
+#define TABLE_SIZE 12
 #define CTX_MAGIC_NORMAL 0x24091964
 #define CTX_MAGIC_SECURE 0x46919042
 
@@ -82,11 +82,43 @@ dummy_decrypt_block( void *c, byte *outbuf, byte *inbuf ) { BUG(); }
 static void
 setup_cipher_table(void)
 {
-
     int i;
 
     i = 0;
-    cipher_table[i].algo = CIPHER_ALGO_TWOFISH;
+    cipher_table[i].algo = GCRY_CIPHER_RIJNDAEL;
+    cipher_table[i].name = rijndael_get_info( cipher_table[i].algo,
+					 &cipher_table[i].keylen,
+					 &cipher_table[i].blocksize,
+					 &cipher_table[i].contextsize,
+					 &cipher_table[i].setkey,
+					 &cipher_table[i].encrypt,
+					 &cipher_table[i].decrypt     );
+    if( !cipher_table[i].name )
+	BUG();
+    i++;
+    cipher_table[i].algo = GCRY_CIPHER_RIJNDAEL192;
+    cipher_table[i].name = rijndael_get_info( cipher_table[i].algo,
+					 &cipher_table[i].keylen,
+					 &cipher_table[i].blocksize,
+					 &cipher_table[i].contextsize,
+					 &cipher_table[i].setkey,
+					 &cipher_table[i].encrypt,
+					 &cipher_table[i].decrypt     );
+    if( !cipher_table[i].name )
+	BUG();
+    i++;
+    cipher_table[i].algo = GCRY_CIPHER_RIJNDAEL256;
+    cipher_table[i].name = rijndael_get_info( cipher_table[i].algo,
+					 &cipher_table[i].keylen,
+					 &cipher_table[i].blocksize,
+					 &cipher_table[i].contextsize,
+					 &cipher_table[i].setkey,
+					 &cipher_table[i].encrypt,
+					 &cipher_table[i].decrypt     );
+    if( !cipher_table[i].name )
+	BUG();
+    i++;
+    cipher_table[i].algo = GCRY_CIPHER_TWOFISH;
     cipher_table[i].name = twofish_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
 					 &cipher_table[i].blocksize,
@@ -97,7 +129,7 @@ setup_cipher_table(void)
     if( !cipher_table[i].name )
 	BUG();
     i++;
-    cipher_table[i].algo = CIPHER_ALGO_BLOWFISH;
+    cipher_table[i].algo = GCRY_CIPHER_BLOWFISH;
     cipher_table[i].name = blowfish_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
 					 &cipher_table[i].blocksize,
@@ -108,7 +140,7 @@ setup_cipher_table(void)
     if( !cipher_table[i].name )
 	BUG();
     i++;
-    cipher_table[i].algo = CIPHER_ALGO_CAST5;
+    cipher_table[i].algo = GCRY_CIPHER_CAST5;
     cipher_table[i].name = cast5_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
 					 &cipher_table[i].blocksize,
@@ -119,7 +151,7 @@ setup_cipher_table(void)
     if( !cipher_table[i].name )
 	BUG();
     i++;
-    cipher_table[i].algo = CIPHER_ALGO_3DES;
+    cipher_table[i].algo = GCRY_CIPHER_3DES;
     cipher_table[i].name = des_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
 					 &cipher_table[i].blocksize,
@@ -455,7 +487,7 @@ do_ecb_encrypt( GCRY_CIPHER_HD c, byte *outbuf, const byte *inbuf, unsigned nblo
     unsigned n;
 
     for(n=0; n < nblocks; n++ ) {
-	(*c->encrypt)( &c->context.c, outbuf, inbuf );
+	(*c->encrypt)( &c->context.c, outbuf, (byte*)/*arggg*/inbuf );
 	inbuf  += c->blocksize;
 	outbuf += c->blocksize;
     }
@@ -467,7 +499,7 @@ do_ecb_decrypt( GCRY_CIPHER_HD c, byte *outbuf, const byte *inbuf, unsigned nblo
     unsigned n;
 
     for(n=0; n < nblocks; n++ ) {
-	(*c->decrypt)( &c->context.c, outbuf, inbuf );
+	(*c->decrypt)( &c->context.c, outbuf, (byte*)/*arggg*/inbuf );
 	inbuf  += c->blocksize;
 	outbuf += c->blocksize;
     }
@@ -507,7 +539,7 @@ do_cbc_decrypt( GCRY_CIPHER_HD c, byte *outbuf, const byte *inbuf, unsigned nblo
 	 * to save the original ciphertext block.  We use lastiv
 	 * for this here because it is not used otherwise */
 	memcpy(c->lastiv, inbuf, blocksize );
-	(*c->decrypt)( &c->context.c, outbuf, inbuf );
+	(*c->decrypt)( &c->context.c, outbuf, (char*)/*argggg*/inbuf );
 	for(ivp=c->iv,i=0; i < blocksize; i++ )
 	    outbuf[i] ^= *ivp++;
 	memcpy(c->iv, c->lastiv, blocksize );

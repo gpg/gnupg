@@ -74,8 +74,9 @@ set_status_fd ( int newfd )
 {
     fd = newfd;
     if ( fd != -1 ) {
-      #if 0
 	#warning fixme - progress functions
+        /* Has to be fixed in libgcrypt */
+      #if 0
 	register_primegen_progress ( progress_cb, "primegen" );
 	register_pk_dsa_progress ( progress_cb, "pk_dsa" );
 	register_pk_elg_progress ( progress_cb, "pk_elg" );

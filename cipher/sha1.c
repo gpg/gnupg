@@ -108,7 +108,7 @@ transform( SHA1_CONTEXT *hd, byte *data )
 
 #define M(i) ( tm =   x[i&0x0f] ^ x[(i-14)&0x0f] \
 		    ^ x[(i-8)&0x0f] ^ x[(i-3)&0x0f] \
-	       , (x[i&0x0f] = (tm << 1) | (tm >> 31)) )
+	       , (x[i&0x0f] = rol(tm, 1)) )
 
 #define R(a,b,c,d,e,f,k,m)  do { e += rol( a, 5 )     \
 				      + f( b, c, d )  \

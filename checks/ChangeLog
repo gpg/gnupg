@@ -1,3 +1,7 @@
+Wed Oct  4 13:16:18 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * run-gpg: redirect fgrep output to stderr
+
 Sat Nov 13 17:44:23 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* genkey1024.test: Does not use --quick-random anymore.

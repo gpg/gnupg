@@ -75,7 +75,6 @@ pk_check_secret_key( int algo, MPI *skey )
 static int
 do_check( PKT_secret_key *sk )
 {
-    byte *buffer;
     u16 csum=0;
     int i, res;
     unsigned nbytes;
@@ -324,7 +323,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 							 GCRY_STRONG_RANDOM);
 	    gcry_cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen );
 
-	    #warning FIXME: replace set/get buffer
+	    /* FIXME: replace set/get buffer */
 	    if( sk->version >= 4 ) {
 		byte *bufarr[GNUPG_MAX_NSKEY];
 		unsigned narr[GNUPG_MAX_NSKEY];
@@ -336,7 +335,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 			i < pubkey_get_nskey(sk->pubkey_algo); i++, j++ ) {
 		    assert( !gcry_mpi_get_flag( sk->skey[i], GCRYMPI_FLAG_OPAQUE ) );
 
-		    if( gcry_mpi_aprint( GCRYMPI_FMT_USG, (char*)bufarr+j,
+		    if( gcry_mpi_aprint( GCRYMPI_FMT_USG, (void**)bufarr+j,
 							  narr+j, sk->skey[i]))
 			BUG();
 
@@ -374,7 +373,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	    else {
 		/* NOTE: we always recalculate the checksum because there
 		 * are some test releases which calculated it wrong */
-	       #warning FIXME:	Replace this code
+	        /* FIXME: Replace this code -- Hmmm: why */
 		csum = 0;
 		for(i=pubkey_get_npkey(sk->pubkey_algo);
 			i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {

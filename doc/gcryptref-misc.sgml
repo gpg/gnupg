@@ -18,28 +18,238 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 -->
 
-<!--
-const char *gcry_check_version( const char *req_version );
+<refentry>
+  <refnamediv>
+    <refname>gcry_check_version</refname>
+    <refpurpose>get or check the version of libgcrypt</refpurpose>
+  </refnamediv>
 
-int gcry_errno(void);
-const char *gcry_strerror( int ec );
-int gcry_control( enum gcry_ctl_cmds, ... );
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>const char *<function>gcry_check_version</function></funcdef>
+	<paramdef>const char *<parameter>req_version</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>gcry_check_version</primary>
+	     </indexterm>
+  <function>gcry_check_version</function> checks
+that the version of the library is at minimum the requested one
+and return the version string; NULL is returned if the condition is
+not met.  You may pass NULL as reqy_version to simply get the version
+string back without any checking.
+  </para>
+</refentry>
+
+<refentry>
+  <refnamediv>
+    <refname>gcry_errno</refname>
+    <refname>gcry_strerror</refname>
+    <refpurpose>Get the last error</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>int <function>gcry_errno</function></funcdef>
+      </funcprototype>
+      <funcprototype>
+	<funcdef>const char *<function>gcry_strerror</function></funcdef>
+	<paramdef>int<parameter>no</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>gcry_errno</primary></indexterm>
+  <indexterm><primary>gcry_strerror</primary></indexterm>
+  Both function are to be used like there Standard-C
+  counterparts.  However <function>gcry_errno</function> is a function
+  and not just a global variable.  If -1 is passed to
+  <function>gcry_strerror</>, <function>gcry_errno</> is implictly used.
+  </para>
+</refentry>
+
+
+<refentry>
+  <refnamediv>
+    <refname>gcry_control</refname>
+        <refpurpose>Multi purpose control function</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>int <function>gcry_control</function></funcdef>
+	<paramdef>enum gcry_ctl_cmds<parameter>cmd</parameter></paramdef>
+	<paramdef><parameter>...</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>gcry_control</primary></indexterm>
+  This function is used to control various aspects of &libgcrypt;
+  FIXME: Explain all commands here.
+  </para>
+</refentry>
 
 
 
 
-void gcry_set_allocation_handler( void *(*new_alloc_func)(size_t n),
-				  void *(*new_alloc_secure_func)(size_t n),
-				  int (*new_is_secure_func)(const void*),
-				  void *(*new_realloc_func)(void *p, size_t n),
-				  void (*new_free_func)(void*) );
-void gcry_set_outofcore_handler( int (*h)( void*, size_t, unsigned int ),
-								void *opaque );
-void gcry_set_fatalerror_handler( void (*fnc)(void*,int, const char*),
-								void *opaque );
-void gcry_set_gettext_handler( const char *(*f)(const char*) );
+
+<refentry>
+  <refnamediv>
+    <refname>gcry_set_allocation_handler</refname>
+    <refname>gcry_set_outofcore_handler</refname>
+        <refpurpose>Use application defined malloc functions</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>void <function>gcry_set_allocation_handler</></funcdef>
+	<paramdef>void *(*<parameter>alloc_func</>)(size_t n)</paramdef>
+	<paramdef>void *(*<parameter>alloc_secure_func</>)(size_t n)</paramdef>
+	<paramdef>int (*<parameter>is_secure_func</>)(const void *p)</paramdef>
+	<paramdef>void *(*<parameter>realloc_func</>)(void *p, size_t n)</paramdef>
+	<paramdef>void (*<parameter>free_func</>)(void *p)</paramdef>
+      </funcprototype>
+      <funcprototype>
+	<funcdef>void <function>gcry_set_outofcore_handler</></funcdef>
+
+        <paramdef>int (*<parameter>h</>)( void*, size_t, unsigned int ),
+					void *opaque )</paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>gcry_set_allocation_handler</primary></indexterm>
+  <indexterm><primary>gcry_set_outofcore_handler</primary></indexterm>
+
+  FIXME
+  </para>
+</refentry>
+
+
+<refentry>
+  <refnamediv>
+    <refname>gcry_set_fatalerror_handler</refname>
+        <refpurpose>change the default fatal error handler</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+      	<funcdef>void <function>gcry_set_fatalerror_handler</></funcdef>
+	<paramdef>void (*<parameter>func</>)(
+             void *, int, const char*)</paramdef>
+        <paramdef>void *<parameter>opaque</></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>gcry_set_fatalerror_handler</primary></indexterm>
+  At certain places the &libgcrypt; may need to call a fatal error fucntion
+  which does terminate the process.  To allow an application to do
+  some emergency cleanup, it may register a fatal error handler with
+  the library.  This handler is assumed to terminate the application;
+  however if it returns &libgcrypt; will abort anyway.
+     </para>
+  <para>
+The handler is called with the opaque value registered here, an
+errorcode from &libgcrypt; and some descriptive text string.
+  </para>
+</refentry>
+
+
+<refentry>
+  <refnamediv>
+    <refname>gcry_set_gettext_handler</refname>
+        <refpurpose>Change the default gettext function</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+      	<funcdef>void <function>gcry_set_gettext_handler</></funcdef>
+	<paramdef>const char *(*<parameter>func</>)(const char*)</paramdef>
+        <paramdef>void *<parameter>opaque</></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>gcry_set_log_handler</primary></indexterm>
+  FIXME!!
+  </para>
+</refentry>
+
+
+
+
 void gcry_set_log_handler( void (*f)(void*,int, const char*, va_list ),
 							     void *opaque );
+<refentry>
+  <refnamediv>
+    <refname>gcry_set_log_handler</refname>
+        <refpurpose>Change the default logging function</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+      	<funcdef>void <function>gcry_set_log_handler</></funcdef>
+	<paramdef>void (*<parameter>func</>)
+         (void*, int, const char*, va_list)</paramdef>
+        <paramdef>void *<parameter>opaque</></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>gcry_set_log_handler</primary></indexterm>
+  &libgcrypt; has it;s own logging functions.  Applications which 
+  need to use their own, should provide a log function to &libgcrypt;
+so that it will use this function instead.
+
+Fixme: Describe how this is intended to work.
+  </para>
+</refentry>
+
 
 void *gcry_malloc( size_t n );
 void *gcry_calloc( size_t n, size_t m );
@@ -55,6 +265,53 @@ char *gcry_xstrdup( const char * a);
 void  gcry_free( void *a );
 int   gcry_is_secure( const void *a );
 
+<refentry>
+  <refnamediv>
+    <refname>gcry_malloc</refname>
+    <refname>gcry_calloc</refname>
+    <refname>gcry_malloc_secure</refname>
+    <refname>gcry_calloc_secure</refname>
+    <refname>gcry_realloc</refname>
+    <refname>gcry_xmalloc</refname>
+    <refname>gcry_xcalloc</refname>
+    <refname>gcry_xmalloc_secure</refname>
+    <refname>gcry_xcalloc_secure</refname>
+    <refname>gcry_xrealloc</refname>
+    <refname>gcry_xstrdup</refname>
+
+  WORk WORK
+    <refname>gcry_malloc</refname>
+    <refname>gcry_malloc</refname>
+    
+        <refpurpose>Change the default logging function</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+      	<funcdef>void <function>gcry_set_log_handler</></funcdef>
+	<paramdef>void (*<parameter>func</>)
+         (void*, int, const char*, va_list)</paramdef>
+        <paramdef>void *<parameter>opaque</></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>gcry_set_log_handler</primary></indexterm>
+  &libgcrypt; has it;s own logging functions.  Applications which 
+  need to use their own, should provide a log function to &libgcrypt;
+so that it will use this function instead.
+
+Fixme: Describe how this is intended to work.
+  </para>
+</refentry>
+
+
 
 void gcry_randomize( byte *buffer, size_t length,
 		     enum gcry_random_level level );
@@ -64,4 +321,6 @@ void *gcry_random_bytes_secure( size_t nbytes, enum gcry_random_level level );
 
 
     -->
+
+
 

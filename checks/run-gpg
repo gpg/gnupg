@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ -n "$show_cmds" ] && echo "../g10/gpg --homedir . $*"
+[ -n "$show_cmds" ] && echo "../g10/gpg --homedir . $*" >&2
 
 if ../g10/gpg --homedir . $* 2>err.tmp.$$ ; then
     :
@@ -10,6 +10,6 @@ else
     rm err.tmp.$$
     exit 1
 fi
-fgrep -v -f $srcdir/run-gpg.patterns err.tmp.$$
+fgrep -v -f $srcdir/run-gpg.patterns err.tmp.$$ >&2
 rm err.tmp.$$
 

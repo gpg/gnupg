@@ -819,7 +819,8 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		free_public_key( pk ); pk = NULL;
 		log_error(_("%s: skipped: %s\n"), rov->d, gpg_errstr(rc) );
 	    }
-	    else if( !(rc=openpgp_pk_test_algo(pk->pubkey_algo, use )) ) {
+	    else if( !(rc=openpgp_pk_test_algo(pk->pubkey_algo,
+                                               pk->pubkey_usage)) ) {
 		/* Skip the actual key if the key is already present
 		 * in the list */
 		if (key_present_in_pk_list(pk_list, pk) == 0) {
@@ -874,7 +875,8 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    rc = get_pubkey_byname( NULL, pk, answer, NULL );
 	    if( rc )
 		tty_printf(_("No such user ID.\n"));
-	    else if( !(rc=openpgp_pk_test_algo(pk->pubkey_algo, use)) ) {
+	    else if( !(rc=openpgp_pk_test_algo(pk->pubkey_algo,
+                                               pk->pubkey_usage)) ) {
 		if( have_def_rec ) {
 		    if (key_present_in_pk_list(pk_list, pk) == 0) {
 			free_public_key(pk); pk = NULL;
@@ -940,7 +942,8 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	rc = get_pubkey_byname( NULL, pk, def_rec, NULL );
 	if( rc )
 	    log_error(_("unknown default recipient `%s'\n"), def_rec );
-	else if( !(rc=openpgp_pk_test_algo(pk->pubkey_algo, use)) ) {
+	else if( !(rc=openpgp_pk_test_algo(pk->pubkey_algo,
+                                           pk->pubkey_usage)) ) {
 	    PK_LIST r = gcry_xmalloc( sizeof *r );
 	    r->pk = pk; pk = NULL;
 	    r->next = pk_list;
@@ -966,7 +969,8 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		free_public_key( pk ); pk = NULL;
 		log_error(_("%s: skipped: %s\n"), remusr->d, gpg_errstr(rc) );
 	    }
-	    else if( !(rc=openpgp_pk_test_algo(pk->pubkey_algo, use )) ) {
+	    else if( !(rc=openpgp_pk_test_algo(pk->pubkey_algo,
+                                               pk->pubkey_usage)) ) {
 		int trustlevel;
 
 		rc = check_trust( pk, &trustlevel, pk->namehash, NULL, NULL );

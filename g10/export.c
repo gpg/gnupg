@@ -162,7 +162,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 	    log_error(_("certificate read problem: %s\n"), gpg_errstr(rc));
 	    goto leave;
 	}
-
+      
 
 	/* do not export keys which are incompatible with rfc2440 */
 	if( onlyrfc && (node = find_kbnode( keyblock, PKT_PUBLIC_KEY )) ) {

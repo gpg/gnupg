@@ -509,6 +509,10 @@ static void
 register_extension( const char *mainpgm, const char *fname )
 {
   #warning fixme add register cipher extension
+    /* Before we do so, we should design a beter API for this.
+     * I am currently thinking about using S-Exp to pass everything we 
+     * need from the module to gcrypt. I hope we are not going to 
+     * implement my-own-lisp-library-no-17000 */
   #if 0
     if( *fname != '/' ) { /* do tilde expansion etc */
 	char *tmp;

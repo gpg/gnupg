@@ -50,7 +50,7 @@ release_sk_list( SK_LIST sk_list )
 
 int
 build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
-							unsigned use )
+               unsigned int use )
 {
     SK_LIST sk_list = NULL;
     int rc;
@@ -64,9 +64,11 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 	    free_secret_key( sk ); sk = NULL;
 	    log_error("no default secret key: %s\n", gpg_errstr(rc) );
 	}
-	else if( !(rc=openpgp_pk_test_algo(sk->pubkey_algo, use)) ) {
+	else if( !(rc=openpgp_pk_test_algo(sk->pubkey_algo,
+                                           sk->pubkey_usage)) ) {
 	    SK_LIST r;
-	    if( sk->version == 4 && (use & GCRY_PK_USAGE_SIGN )
+            
+	    if( sk->version == 4 && (sk->pubkey_usage & GCRY_PK_USAGE_SIGN )
 		&& sk->pubkey_algo == GCRY_PK_ELG_E ) {
 		log_info("this is a PGP generated "
 		    "ElGamal key which is NOT secure for signatures!\n");
@@ -95,9 +97,10 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 		free_secret_key( sk ); sk = NULL;
 		log_error(_("skipped `%s': %s\n"), locusr->d, gpg_errstr(rc) );
 	    }
-	    else if( !(rc=openpgp_pk_test_algo(sk->pubkey_algo, use)) ) {
+	    else if( !(rc=openpgp_pk_test_algo(sk->pubkey_algo,
+                                               sk->pubkey_usage)) ) {
 		SK_LIST r;
-		if( sk->version == 4 && (use & GCRY_PK_USAGE_SIGN)
+		if( sk->version == 4 && (sk->pubkey_usage & GCRY_PK_USAGE_SIGN)
 		    && sk->pubkey_algo == GCRY_PK_ELG_E ) {
 		    log_info(_("skipped `%s': this is a PGP generated "
 			"ElGamal key which is not secure for signatures!\n"),

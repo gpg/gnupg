@@ -68,7 +68,8 @@
   specified. It is possible to use these functions as MAC functons; therefore
   the flag <literal/GCRY_MD_FLAG_HMAC/ must be given along with the
   hash functions.  Other MAC algorithms than  HMAC are currently not
-  supported.  The key for the MAC must be set using the gcry_md_setkey macro.
+  supported.  The key for the MAC must be set using
+  the <function>gcry_md_setkey</> function.
   <function>gcry_md_close</function> releases all resources associated
   with the context.
   <function>gcry_md_enable</function> may be used to enable hash
@@ -194,6 +195,7 @@
     hash functions into MAC functions.	The key may be any string
     of the speicified length.  The type of the MAC is determined
     by special flags set with the open function.
+    NEW:  There is now a function to do this
   </para>
 </refentry>
 
@@ -478,4 +480,7 @@
   allocated buffer.
   </para>
 </refentry>
+
+
+<!-- FIXME: doc gcry_md_setkey */
 
