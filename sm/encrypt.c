@@ -510,9 +510,8 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
     }
 
   encparm.dek = dek;
-  /* fixme: we should use a larger buffer - the small one is better
-     for testing */
-  encparm.bufsize = 10 * dek->ivlen;
+  /* Use a ~8k (AES) or ~4k (3DES) buffer */
+  encparm.bufsize = 500 * dek->ivlen;
   encparm.buffer = xtrymalloc (encparm.bufsize);
   if (!encparm.buffer)
     {

@@ -255,7 +255,7 @@ gpgsm_create_cms_signature (KsbaCert cert, GCRY_MD_HD md, int mdalgo,
                            gcry_md_get_algo_dlen (mdalgo), mdalgo,
                            r_sigval, &siglen);
   xfree (grip);
-  /* FIXME: we should check that the returnes S-Exp is valid fits int
+  /* FIXME: we should check that the returned S-Exp is valid fits int
      siglen.  It ould probaly be a good idea to scan and print it
      again to make this sure and be sure that we have canoncical
      encoding */

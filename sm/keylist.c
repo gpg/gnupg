@@ -165,7 +165,7 @@ list_cert_colon (KsbaCert cert, FILE *fp, int have_secret)
   putc (':', fp);
   if ((p = ksba_cert_get_issuer (cert,0)))
     {
-      fputs (p, fp);  /* FIXME: Escape colons and linefeeds */
+      print_sanitized_string (fp, p, ':');
       xfree (p);
     }
   putc (':', fp);
@@ -188,7 +188,7 @@ list_cert_colon (KsbaCert cert, FILE *fp, int have_secret)
   for (idx=0; (p = ksba_cert_get_subject (cert,idx)); idx++)
     {
       fprintf (fp, "uid:%c::::::::", trustletter);
-      fputs (p, fp);  /* FIXME: Escape colons and linefeeds */
+      print_sanitized_string (fp, p, ':');
       putc (':', fp);
       putc (':', fp);
       putc ('\n', fp);
@@ -202,7 +202,7 @@ list_cert_colon (KsbaCert cert, FILE *fp, int have_secret)
           if (pp)
             {
               fprintf (fp, "uid:%c::::::::", trustletter);
-              fputs (pp, fp);  /* FIXME: Escape colons and linefeeds */
+              print_sanitized_string (fp, pp, ':');
               putc (':', fp);
               putc (':', fp);
               putc ('\n', fp);

@@ -42,6 +42,17 @@ struct server_local_s {
   CERTLIST recplist;
 };
 
+/* Check whether the option NAME appears in LINE */
+static int
+has_option (const char *line, const char *name)
+{
+  const char *s;
+  int n = strlen (name);
+
+  s = strstr (line, name);
+  return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
+}
+
 
 static void 
 close_message_fd (CTRL ctrl)
@@ -289,7 +300,7 @@ cmd_sign (ASSUAN_CONTEXT ctx, char *line)
   if (out_fd == -1)
     return set_error (No_Output, NULL);
 
-  detached = !!strstr (line, "--detached");  /* fixme: this is ambiguous */
+  detached = has_option (line, "--detached"); 
 
   out_fp = fdopen ( dup(out_fd), "w");
   if (!out_fp)
@@ -362,11 +373,12 @@ static int
 cmd_listkeys (ASSUAN_CONTEXT ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
+  FILE *fp = assuan_get_data_fp (ctx);
 
+  if (!fp)
+    return set_error (General_Error, "no data stream");
   ctrl->with_colons = 1;
-  /* fixme: check that the returned data_fp is not NULL */
-  gpgsm_list_keys (assuan_get_pointer (ctx), NULL,
-                        assuan_get_data_fp (ctx), 3);
+  gpgsm_list_keys (assuan_get_pointer (ctx), NULL, fp, 3);
 
   return 0;
 }
@@ -375,11 +387,12 @@ static int
 cmd_listsecretkeys (ASSUAN_CONTEXT ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
+  FILE *fp = assuan_get_data_fp (ctx);
 
   ctrl->with_colons = 1;
-  /* fixme: check that the returned data_fp is not NULL */
-  gpgsm_list_keys (assuan_get_pointer (ctx), NULL,
-                        assuan_get_data_fp (ctx), 2);
+  if (!fp)
+    return set_error (General_Error, "no data stream");
+  gpgsm_list_keys (assuan_get_pointer (ctx), NULL, fp, 2);
 
   return 0;
 }

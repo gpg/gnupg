@@ -43,7 +43,6 @@ gpgsm_add_to_certlist (const char *name, CERTLIST *listaddr)
   KEYDB_HANDLE kh = NULL;
   KsbaCert cert = NULL;
 
-  /* fixme: check that we identify excactly one cert with the name */
   rc = keydb_classify_name (name, &desc);
   if (!rc)
     {
@@ -55,6 +54,14 @@ gpgsm_add_to_certlist (const char *name, CERTLIST *listaddr)
           rc = keydb_search (kh, &desc, 1);
           if (!rc)
             rc = keydb_get_cert (kh, &cert);
+          if (!rc)
+            {
+              rc = keydb_search (kh, &desc, 1);
+              if (rc == -1)
+                rc = 0;
+              else if (!rc)
+                rc = GNUPG_Ambiguous_Name;
+            }
           if (!rc)
             rc = gpgsm_validate_path (cert);
           if (!rc)
@@ -100,7 +107,6 @@ gpgsm_find_cert (const char *name, KsbaCert *r_cert)
   KEYDB_HANDLE kh = NULL;
 
   *r_cert = NULL;
-  /* fixme: check that we identify excactly one cert with the name */
   rc = keydb_classify_name (name, &desc);
   if (!rc)
     {
@@ -112,9 +118,23 @@ gpgsm_find_cert (const char *name, KsbaCert *r_cert)
           rc = keydb_search (kh, &desc, 1);
           if (!rc)
             rc = keydb_get_cert (kh, r_cert);
+          if (!rc)
+            {
+              rc = keydb_search (kh, &desc, 1);
+              if (rc == -1)
+                rc = 0;
+              else 
+                {
+                  if (!rc)
+                    rc = GNUPG_Ambiguous_Name;
+                  ksba_cert_release (*r_cert);
+                  *r_cert = NULL;
+                }
+            }
         }
     }
   
   keydb_release (kh);
   return rc == -1? GNUPG_No_Public_Key: rc;
 }
+

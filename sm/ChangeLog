@@ -1,3 +1,24 @@
+2002-02-07  Werner Koch  <wk@gnupg.org>
+
+	* certlist.c (gpgsm_add_to_certlist): Check that the specified
+	name identifies a certificate unambiguously.
+	(gpgsm_find_cert): Ditto.
+
+	* server.c (cmd_listkeys): Check that the data stream is available.
+	(cmd_listsecretkeys): Ditto.
+	(has_option): New.
+	(cmd_sign): Fix ambiguousity in option recognition.
+
+	* gpgsm.c (main): Enable --logger-fd.
+
+	* encrypt.c (gpgsm_encrypt): Increased buffer size for better
+	performance.
+
+	* call-agent.c (gpgsm_agent_pksign): Check the S-Exp received from
+	the agent.
+
+	* keylist.c (list_cert_colon): Filter out control characters.
+
 2002-02-06  Werner Koch  <wk@gnupg.org>
 
 	* decrypt.c (gpgsm_decrypt): Bail out after an decryption error.

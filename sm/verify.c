@@ -34,7 +34,7 @@
 #include "keydb.h"
 #include "i18n.h"
 
-/* FIXME: Move this to jnlib */
+/* fixme: Move this to jnlib */
 static char *
 strtimestamp (time_t atime)
 {

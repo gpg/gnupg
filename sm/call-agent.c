@@ -273,7 +273,11 @@ gpgsm_agent_pksign (const char *keygrip,
     }
   *r_buf = get_membuf (&data, r_buflen);
 
-  /* FIXME: check that the returned S-Exp is valid! */
+  if (!gcry_sexp_canon_len (*r_buf, *r_buflen, NULL, NULL))
+    {
+      xfree (*r_buf); *r_buf = NULL;
+      return GNUPG_Invalid_Value;
+    }
 
   return *r_buf? 0 : GNUPG_Out_Of_Core;
 }

@@ -84,6 +84,7 @@ enum {
   GNUPG_Unknown_Sexp = 55,
   GNUPG_Unsupported_Protection = 56,
   GNUPG_Corrupted_Protection = 57,
+  GNUPG_Ambiguous_Name = 58
 };
 
 /* Status codes - fixme: should go into another file */

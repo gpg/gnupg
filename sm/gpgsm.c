@@ -573,7 +573,7 @@ main ( int argc, char **argv)
   struct server_control_s ctrl;
   CERTLIST recplist = NULL;
 
-  /* FIXME: trap_unaligned ();*/
+  /* fixme: trap_unaligned ();*/
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
   /* Please note that we may running SUID(ROOT), so be very CAREFUL
@@ -592,7 +592,7 @@ main ( int argc, char **argv)
 
   may_coredump = disable_core_dumps ();
   
-  /* FIXME: init_signals();*/
+  /* Fixme: init_signals();*/
   
   create_dotlock (NULL); /* register locking cleanup */
   i18n_init();
@@ -791,7 +791,7 @@ main ( int argc, char **argv)
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
 
         case oStatusFD: ctrl.status_fd = pargs.r.ret_int; break;
-        case oLoggerFD: /* fixme: log_set_logfile (NULL, pargs.r.ret_int );*/ break;
+        case oLoggerFD: log_set_fd (pargs.r.ret_int ); break;
         case oWithFingerprint:
           with_fpr=1; /*fall thru*/
         case oFingerprint:
