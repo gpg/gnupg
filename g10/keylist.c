@@ -301,13 +301,15 @@ static void
 print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
 {
     unsigned int use = pk? pk->pubkey_usage : sk->pubkey_usage;
+    int primary = pk? pk->is_primary : sk->is_primary;
     
     if ( use & PUBKEY_USAGE_ENC ) {
         putchar ('e');
     }
     if ( use & PUBKEY_USAGE_SIG ) {
         putchar ('s');
-        putchar ('c');
+	if(primary)
+	  putchar ('c');
     }
     if ( keyblock ) { /* figure our the usable capabilities */
         KBNODE k;
@@ -321,7 +323,11 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
                     if ( pk->pubkey_usage & PUBKEY_USAGE_ENC )
                         enc = 1;
                     if ( pk->pubkey_usage & PUBKEY_USAGE_SIG )
-                        sign = cert = 1;
+		      {
+			sign = 1;
+			if(primary)
+			  cert = 1;
+		      }
                 }
             }
             else if ( k->pkt->pkttype == PKT_SECRET_KEY 
@@ -331,7 +337,11 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
                     if ( sk->pubkey_usage & PUBKEY_USAGE_ENC )
                         enc = 1;
                     if ( sk->pubkey_usage & PUBKEY_USAGE_SIG )
-                        sign = cert = 1;
+		      {
+			sign = 1;
+			if(primary)
+			  cert = 1;
+		      }
                 }
             }
         }

@@ -202,6 +202,7 @@ typedef struct {
     ulong   local_id;	    /* internal use, valid if > 0 */
     u32     main_keyid[2];  /* keyid of the primary key */
     u32     keyid[2];	    /* calculated by keyid_from_pk() */
+    byte    is_primary;
     prefitem_t *prefs;      /* list of preferences (may be NULL) */
     int     mdc_feature;    /* mdc feature set */
     byte    *namehash;	    /* if != NULL: found by this name */
