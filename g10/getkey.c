@@ -235,6 +235,7 @@ static const char *
 get_primary_uid ( KBNODE keyblock, size_t *uidlen )
 {
     KBNODE k;
+    const char *s;
 
     for (k=keyblock; k; k=k->next ) {
         if ( k->pkt->pkttype == PKT_USER_ID
@@ -243,8 +244,11 @@ get_primary_uid ( KBNODE keyblock, size_t *uidlen )
             return k->pkt->pkt.user_id->name;
         }
     } 
-    *uidlen = 12;
-    return "[No user ID]";
+    /* fixme: returning translatable constants instead of a user ID is 
+     * not good because they are probably not utf-8 encoded. */
+    s = _("[User id not found]");
+    *uidlen = strlen (s);
+    return s;
 }
 
 

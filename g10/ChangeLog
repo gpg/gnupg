@@ -1,5 +1,8 @@
 2001-04-24  Werner Koch  <wk@gnupg.org>
 
+	* getkey.c (get_primary_uid): Return a different string in case of
+	error and made it translatable.
+
 	* build-packet.c (do_secret_key): Ugly, we wrote a zero
 	instead of the calucalted ndays.  Thanks to M Taylor for complaining
 	about a secret key import problem.

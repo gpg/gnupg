@@ -55,11 +55,11 @@ stable version of GnuPG.
 
 First get the source:  It is available at
 
-  ftp://ftp.gnupg.org/pub/gcrypt/gnupg/gnupg-1.0.n.tar.gz
+  ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-1.0.n.tar.gz
 
 or for snapshots (with a letter appended to the version number)
 
-  ftp://ftp.gnupg.org/pub/gcrypt/devel/gnupg-1.0.nx.tar.gz
+  ftp://ftp.gnupg.org/gcrypt/devel/gnupg-1.0.nx.tar.gz
 
 this is the same source as for the Unix version.  If your binary
 version of GnuPG is called something like gnupg-w32-1.0.4-1.zip, you
@@ -69,9 +69,9 @@ Instructions are at the top of this file.
 
 To build it, you need the MingW32/CPD kit, which is available at
 
-  ftp://ftp.guug.de/members/wkoch/cpd/mingw32-cpd-0.3.0.tar.gz
-  ftp://ftp.guug.de/members/wkoch/cpd/gcc-core-2.95.2.tar.gz
-  ftp://ftp.guug.de/members/wkoch/cpd/binutils-2.9.1.tar.gz
+  ftp://ftp.gnupg.org/people/werner/cpd/mingw32-cpd-0.3.0.tar.gz
+  ftp://ftp.gnupg.org/people/werner/cpd/gcc-core-2.95.2.tar.gz
+  ftp://ftp.gnupg.org/people/werner/cpd/binutils-2.9.1.tar.gz
 
 gcc and binutils are stock GNU source which are available
 at every GNU mirror. 
@@ -92,5 +92,6 @@ you can switch to a GNU system ;-)
 Be the source always with you.
 
     Werner
+
 
 
