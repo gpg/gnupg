@@ -1,6 +1,6 @@
 /* trustdb.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *                                             Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1194,6 +1194,22 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
         continue; /* we only look at these signature classes */
       if (!is_in_klist (klist, sig))
         continue;  /* no need to check it then */
+      if(sig->pubkey_algo==PUBKEY_ALGO_ELGAMAL)
+	{
+	  if(opt.verbose)
+	    log_info(_("signature from Elgamal signing key %08lX "
+		       "to %08lX skipped\n"),
+		     (ulong)sig->keyid[1],(ulong)main_kid[1]);
+	  continue;
+	}
+      if(keyblock->pkt->pkt.public_key->pubkey_algo==PUBKEY_ALGO_ELGAMAL)
+	{
+	  if(opt.verbose)
+	    log_info(_("signature from %08lX to Elgamal signing key "
+		       "%08lX skipped\n"),
+		     (ulong)sig->keyid[1],(ulong)main_kid[1]);
+	  continue;
+	}
       if (check_key_signature (keyblock, node, NULL))
         continue; /* ignore invalid signatures */
       node->flag |= 1<<9;

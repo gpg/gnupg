@@ -1,3 +1,11 @@
+2003-12-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (strusage, main): Show development version warning in
+	--version output.
+
+	* trustdb.c (mark_usable_uid_certs): Disallow signatures to and
+	from an Elgamal signing key in the trustdb.
+
 2003-11-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (ask_algo): Remove ability to generate Elgamal

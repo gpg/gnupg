@@ -645,6 +645,19 @@ strusage( int level )
       case 19: p =
 	    _("Please report bugs to <gnupg-bugs@gnu.org>.\n");
 	break;
+
+#ifdef IS_DEVELOPMENT_VERSION
+      case 20:
+	p="NOTE: THIS IS A DEVELOPMENT VERSION!";
+	break;
+      case 21:
+	p="It is only intended for test purposes and should NOT be";
+	break;
+      case 22:
+	p="used in a production environment or with production keys!";
+	break;
+#endif
+
       case 1:
       case 40:	p =
 	    _("Usage: gpg [options] [files] (-h for help)");
@@ -1754,11 +1767,17 @@ main( int argc, char **argv )
 	fprintf(stderr, "%s\n", strusage(15) );
     }
 #ifdef IS_DEVELOPMENT_VERSION
-    if( !opt.batch ) {
-	log_info("NOTE: THIS IS A DEVELOPMENT VERSION!\n");
-	log_info("It is only intended for test purposes and should NOT be\n");
-	log_info("used in a production environment or with production keys!\n");
-    }
+    if( !opt.batch )
+      {
+	const char *s;
+
+	if((s=strusage(20)))
+	  log_info("%s\n",s);
+	if((s=strusage(21)))
+	  log_info("%s\n",s);
+	if((s=strusage(22)))
+	  log_info("%s\n",s);
+      }
 #endif
 
     if (opt.verbose > 2)
