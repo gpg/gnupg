@@ -1,5 +1,8 @@
 2003-09-30  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, g10.c (main), mainproc.c (check_sig_and_print): Add
+	--verify-option show-unusable-uids.
+
 	* gpgv.c (check_trustdb_stale): Stub.
 
 	* trustdb.c (get_validity): Move the up-to-date check to

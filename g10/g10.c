@@ -1829,6 +1829,7 @@ main( int argc, char **argv )
 		  {"show-keyserver-url",VERIFY_SHOW_KEYSERVER},
 		  {"show-validity",VERIFY_SHOW_VALIDITY},
 		  {"show-long-keyid",VERIFY_SHOW_LONG_KEYID},
+		  {"show-unusable-uids",VERIFY_SHOW_UNUSABLE_UIDS},
 		  {NULL,0}
 		};
 

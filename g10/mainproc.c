@@ -1345,7 +1345,7 @@ check_sig_and_print( CTX c, KBNODE node )
                 continue;
 	    if ( !un->pkt->pkt.user_id->is_primary )
 	        continue;
-	    /* We want the textual user ID here */
+	    /* We want the textual primary user ID here */
 	    if ( un->pkt->pkt.user_id->attrib_data )
 	        continue;
 
@@ -1417,10 +1417,10 @@ check_sig_and_print( CTX c, KBNODE node )
             for( un=keyblock; un; un = un->next ) {
                 if( un->pkt->pkttype != PKT_USER_ID )
                     continue;
-                if ( un->pkt->pkt.user_id->is_revoked )
-                    continue;
-                if ( un->pkt->pkt.user_id->is_expired )
-                    continue;
+                if((un->pkt->pkt.user_id->is_revoked
+		    || un->pkt->pkt.user_id->is_expired)
+		   && !(opt.verify_options&VERIFY_SHOW_UNUSABLE_UIDS))
+		  continue;
 		/* Only skip textual primaries */
                 if ( un->pkt->pkt.user_id->is_primary &&
 		     !un->pkt->pkt.user_id->attrib_data )
@@ -1440,10 +1440,18 @@ check_sig_and_print( CTX c, KBNODE node )
                                                  un->pkt->pkt.user_id->len );
 
 		if(opt.verify_options&VERIFY_SHOW_VALIDITY)
-		  fprintf(log_stream(),"\" [%s]\n",
-			  trust_value_to_string(get_validity(pk,
-							     un->pkt->
-							     pkt.user_id)));
+		  {
+		    const char *valid;
+		    if(un->pkt->pkt.user_id->is_revoked)
+		      valid=_("revoked");
+		    else if(un->pkt->pkt.user_id->is_expired)
+		      valid=_("expired");
+		    else
+		      valid=trust_value_to_string(get_validity(pk,
+							       un->pkt->
+							       pkt.user_id));
+		    fprintf(log_stream(),"\" [%s]\n",valid);
+		  }
 		else
 		  fputs("\"\n", log_stream() );
             }
