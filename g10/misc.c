@@ -547,7 +547,7 @@ compress_algo_to_string(int algo)
   switch(algo)
     {
     case COMPRESS_ALGO_NONE:
-      s="Uncompressed";
+      s=_("Uncompressed");
       break;
 
     case COMPRESS_ALGO_ZIP:

@@ -175,6 +175,16 @@ do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
 	 : mpi_alloc( (nframe+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
     mpi_set_buffer( a, frame, nframe, 0 );
     m_free(frame);
+
+    /* Note that PGP before version 2.3 encoded the MD as:
+     *
+     *   0   1   MD(16 bytes)   0   PAD(n bytes)   1
+     *
+     * The MD is always 16 bytes here because it's always MD5.  We do
+     * not support pre-v2.3 signatures, but I'm including this comment
+     * so the information is easily found in the future.
+     */
+
     return a;
 }
 
