@@ -54,6 +54,7 @@ struct {
     int shm_coprocess;
     const char *set_filename;
     const char *comment_string;
+    int throw_keyid;
 } opt;
 
 

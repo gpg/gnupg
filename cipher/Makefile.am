@@ -44,11 +44,13 @@ libcipher_a_SOURCES = cipher.c	\
 EXTRA_tiger_SOURCES = tiger.c
 EXTRA_twofish_SOURCES = twofish.c
 
-tiger: tiger.c
-	$(COMPILE) -shared  -fPIC -o tiger tiger.c
 
-twofish: twofish.c
-	$(COMPILE) -shared  -fPIC -o twofish twofish.c
+tiger: $(srcdir)/tiger.c
+	$(COMPILE) -shared  -fPIC -o tiger $(srcdir)/tiger.c
+
+twofish: $(srcdir)/twofish.c
+	$(COMPILE) -shared  -fPIC -o twofish $(srcdir)/twofish.c
+
 
 install-exec-hook:
 	@list='$(pkglib_PROGRAMS)'; for p in $$list; do \

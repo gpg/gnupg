@@ -81,7 +81,7 @@ complete_sig( PKT_signature *sig, PKT_secret_key *sk, MD_HANDLE md )
 {
     int rc=0;
 
-    if( !(rc=check_secret_key( sk )) )
+    if( !(rc=check_secret_key( sk, 0 )) )
 	rc = do_sign( sk, sig, md, 0 );
 
     /* fixme: should we check whether the signature is okay?

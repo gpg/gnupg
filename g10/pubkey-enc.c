@@ -33,6 +33,8 @@
 #include "status.h"
 #include "i18n.h"
 
+static int get_it( PKT_pubkey_enc *k,
+		   DEK *dek, PKT_secret_key *sk, u32 *keyid );
 
 /****************
  * Get the session key from a pubkey enc paket and return
@@ -41,27 +43,70 @@
 int
 get_session_key( PKT_pubkey_enc *k, DEK *dek )
 {
-    int rc = 0;
+    PKT_secret_key *sk = NULL;
+    int rc;
+
+    if( is_RSA(k->pubkey_algo) ) /* warn about that */
+	write_status(STATUS_RSA_OR_IDEA);
+
+    rc = check_pubkey_algo( k->pubkey_algo );
+    if( rc )
+	goto leave;
+
+    if( k->keyid[0] || k->keyid[1] ) {
+	sk = m_alloc_clear( sizeof *sk );
+	sk->pubkey_algo = k->pubkey_algo; /* we want a pubkey with this algo*/
+	if( !(rc = get_seckey( sk, k->keyid )) )
+	    rc = get_it( k, dek, sk, k->keyid );
+    }
+    else { /* anonymous receiver: Try all available secret keys */
+	void *enum_context = NULL;
+	u32 keyid[2];
+
+	for(;;) {
+	    if( sk )
+		free_secret_key( sk );
+	    sk = m_alloc_clear( sizeof *sk );
+	    rc=enum_secret_keys( &enum_context, sk, 1);
+	    if( rc ) {
+		rc = G10ERR_NO_SECKEY;
+		break;
+	    }
+	    if( sk->pubkey_algo != k->pubkey_algo )
+		continue;
+	    keyid_from_sk( sk, keyid );
+	    log_info(_("anonymous receiver; trying secret key %08lX ...\n"),
+				     (ulong)keyid[1] );
+	    rc = check_secret_key( sk, 1 ); /* ask only once */
+	    if( !rc )
+		rc = get_it( k, dek, sk, keyid );
+	    if( !rc ) {
+		log_info( _("okay, we are the anonymous receiver.\n") );
+		break;
+	    }
+	}
+	enum_secret_keys( &enum_context, NULL, 0 ); /* free context */
+    }
+
+  leave:
+    if( sk )
+	free_secret_key( sk );
+    return rc;
+}
+
+
+static int
+get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
+{
+    int rc;
     MPI plain_dek  = NULL;
     byte *frame = NULL;
     unsigned n, nframe;
     u16 csum, csum2;
-    PKT_secret_key *sk = m_alloc_clear( sizeof *sk );
 
-    if( is_RSA(k->pubkey_algo) ) /* warn about that */
-	write_status(STATUS_RSA_OR_IDEA);
-    rc=check_pubkey_algo( k->pubkey_algo );
+    rc = pubkey_decrypt(sk->pubkey_algo, &plain_dek, k->data, sk->skey );
     if( rc )
 	goto leave;
-
-    sk->pubkey_algo = k->pubkey_algo;	/* we want a pubkey with this algo*/
-    if( (rc = get_seckey( sk, k->keyid )) )
-	goto leave;
-
-    rc = pubkey_decrypt(k->pubkey_algo, &plain_dek, k->data, sk->skey );
-    if( rc )
-	goto leave;
-    free_secret_key( sk ); sk = NULL;
     frame = mpi_get_buffer( plain_dek, &nframe, NULL );
     mpi_free( plain_dek ); plain_dek = NULL;
 
@@ -88,7 +133,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
     if( n + 7 > nframe )
 	{ rc = G10ERR_WRONG_SECKEY; goto leave; }
     if( frame[n] == 1 && frame[nframe-1] == 2 ) {
-	log_error("old encoding of DEK is not supported\n");
+	log_info("old encoding of DEK is not supported\n");
 	rc = G10ERR_CIPHER_ALGO;
 	goto leave;
     }
@@ -129,7 +174,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
     /* check that the algo is in the preferences */
     {
 	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
-	if( (rc = get_pubkey( pk, k->keyid )) )
+	if( (rc = get_pubkey( pk, keyid )) )
 	    log_error("public key problem: %s\n", g10_errstr(rc) );
 	else if( !pk->local_id && query_trust_record(pk) )
 	    log_error("can't check algorithm against preferences\n");
@@ -144,8 +189,6 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
   leave:
     mpi_free(plain_dek);
     m_free(frame);
-    if( sk )
-	free_secret_key( sk );
     return rc;
 }
 

@@ -56,7 +56,7 @@ static int count_keys_with_flag( KBNODE keyblock, unsigned flag );
 static int count_selected_uids( KBNODE keyblock );
 static int count_selected_keys( KBNODE keyblock );
 
-
+#define CONTROL_D ('D' - 'A' + 1)
 
 #define NODFLG_BADSIG (1<<0)  /* bad signature */
 #define NODFLG_NOKEY  (1<<1)  /* no public key */
@@ -309,125 +309,6 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified )
 
 
 
-
-/****************
- * Delete a public or secret key from a keyring.
- */
-int
-delete_key( const char *username, int secret )
-{
-    int rc = 0;
-    KBNODE keyblock = NULL;
-    KBNODE node;
-    KBPOS kbpos;
-    PKT_public_key *pk = NULL;
-    PKT_secret_key *sk = NULL;
-    u32 keyid[2];
-    int okay=0;
-    int yes;
-
-    /* search the userid */
-    rc = secret? find_secret_keyblock_byname( &kbpos, username )
-	       : find_keyblock_byname( &kbpos, username );
-    if( rc ) {
-	log_error(_("%s: user not found\n"), username );
-	goto leave;
-    }
-
-    /* read the keyblock */
-    rc = read_keyblock( &kbpos, &keyblock );
-    if( rc ) {
-	log_error("%s: read problem: %s\n", username, g10_errstr(rc) );
-	goto leave;
-    }
-
-    /* get the keyid from the keyblock */
-    node = find_kbnode( keyblock, secret? PKT_SECRET_KEY:PKT_PUBLIC_KEY );
-    if( !node ) {
-	log_error("Oops; key not found anymore!\n");
-	rc = G10ERR_GENERAL;
-	goto leave;
-    }
-
-    if( secret ) {
-	sk = node->pkt->pkt.secret_key;
-	keyid_from_sk( sk, keyid );
-    }
-    else {
-	pk = node->pkt->pkt.public_key;
-	keyid_from_pk( pk, keyid );
-	rc = seckey_available( keyid );
-	if( !rc ) {
-	    log_error(_(
-	    "there is a secret key for this public key!\n"));
-	    log_info(_(
-	    "use option \"--delete-secret-key\" to delete it first.\n"));
-	    rc = -1;
-	}
-	else if( rc != G10ERR_NO_SECKEY )
-	    log_error("%s: get secret key: %s\n", username, g10_errstr(rc) );
-	else
-	    rc = 0;
-    }
-
-    if( rc )
-	rc = 0;
-    else if( opt.batch && secret )
-	log_error(_("can't do that in batchmode\n"));
-    else if( opt.batch && opt.answer_yes )
-	okay++;
-    else if( opt.batch )
-	log_error(_("can't do that in batchmode without \"--yes\"\n"));
-    else {
-	char *p;
-	size_t n;
-
-	if( secret )
-	    tty_printf("sec  %4u%c/%08lX %s   ",
-		      nbits_from_sk( sk ),
-		      pubkey_letter( sk->pubkey_algo ),
-		      keyid[1], datestr_from_sk(sk) );
-	else
-	    tty_printf("pub  %4u%c/%08lX %s   ",
-		      nbits_from_pk( pk ),
-		      pubkey_letter( pk->pubkey_algo ),
-		      keyid[1], datestr_from_pk(pk) );
-	p = get_user_id( keyid, &n );
-	tty_print_string( p, n );
-	m_free(p);
-	tty_printf("\n\n");
-
-	yes = cpr_get_answer_is_yes( secret? N_("delete_key.secret.okay")
-			   : N_("delete_key.okay"),
-			      _("Delete this key from the keyring? "));
-	if( !cpr_enabled() && secret && yes ) {
-	    /* I think it is not required to check a passphrase; if
-	     * the user is so stupid as to let others access his secret keyring
-	     * (and has no backup) - it is up him to read some very
-	     * basic texts about security.
-	     */
-	    yes = cpr_get_answer_is_yes(N_("delete_key.secret.okay"),
-			 _("This is a secret key! - really delete? "));
-	}
-	if( yes )
-	    okay++;
-    }
-
-
-    if( okay ) {
-	rc = delete_keyblock( &kbpos );
-	if( rc ) {
-	    log_error("delete_keyblock failed: %s\n", g10_errstr(rc) );
-	    goto leave;
-	}
-    }
-
-  leave:
-    release_kbnode( keyblock );
-    return rc;
-}
-
-
 /****************
  * Change the passphrase of the primary and all secondary keys.
  * We use only one passphrase for all keys.
@@ -457,7 +338,7 @@ change_passphrase( KBNODE keyblock )
 	break;
       default:
 	tty_printf(_("Key is protected.\n"));
-	rc = check_secret_key( sk );
+	rc = check_secret_key( sk, 0 );
 	if( !rc )
 	    passphrase = get_last_passphrase();
 	break;
@@ -468,7 +349,7 @@ change_passphrase( KBNODE keyblock )
 	if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
 	    PKT_secret_key *subsk = node->pkt->pkt.secret_key;
 	    set_next_passphrase( passphrase );
-	    rc = check_secret_key( subsk );
+	    rc = check_secret_key( subsk, 0 );
 	}
     }
 
@@ -635,6 +516,8 @@ keyedit_menu( const char *username, STRLIST locusr )
 	arg_number = 0;
 	if( !*answer )
 	    cmd = cmdLIST;
+	else if( *answer == CONTROL_D )
+	    cmd = cmdQUIT;
 	else if( isdigit( *answer ) ) {
 	    cmd = cmdSELUID;
 	    arg_number = atoi(answer);

@@ -158,6 +158,7 @@ is_armored( byte *buf )
     pkttype =  ctb & 0x40 ? (ctb & 0x3f) : ((ctb>>2)&0xf);
     switch( pkttype ) {
       case PKT_MARKER:
+      case PKT_SYMKEY_ENC:
       case PKT_PUBLIC_KEY:
       case PKT_SECRET_KEY:
       case PKT_PUBKEY_ENC:

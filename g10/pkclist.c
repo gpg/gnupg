@@ -36,6 +36,10 @@
 #include "status.h"
 #include "i18n.h"
 
+
+#define CONTROL_D ('D' - 'A' + 1)
+
+
 /****************
  * Returns true if an ownertrust has changed.
  */
@@ -113,7 +117,7 @@ edit_ownertrust( ulong lid, int mode )
 	else if( *p == ans[0] || *p == ans[1] ) {
 	    tty_printf(_("You will see a list of signators etc. here\n"));
 	}
-	else if( mode && (*p == ans[2] || *p == ans[3]) ) {
+	else if( mode && (*p == ans[2] || *p == ans[3] || *p == CONTROL_D ) ) {
 	    break ; /* back to the menu */
 	}
 	m_free(p); p = NULL;
@@ -596,9 +600,9 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
     }
 
     if( preftype == PREFTYPE_SYM && i == CIPHER_ALGO_3DES ) {
-	i = CIPHER_ALGO_BLOWFISH;
+	i = CIPHER_ALGO_CAST5;
 	if( opt.verbose )
-	    log_info("replacing 3DES by Blowfish\n");
+	    log_info("replacing 3DES by CAST5\n");
     }
 
 

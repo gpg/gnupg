@@ -510,7 +510,7 @@ get_seckey( PKT_secret_key *sk, u32 *keyid )
 	/* check the secret key (this may prompt for a passprase to
 	 * unlock the secret key
 	 */
-	rc = check_secret_key( sk );
+	rc = check_secret_key( sk, 0 );
     }
 
     return rc;
@@ -551,7 +551,7 @@ get_seckey_byname( PKT_secret_key *sk, const char *name, int unprotect )
     else
 	rc = key_byname( 1, NULL, sk, name );
     if( !rc && unprotect )
-	rc = check_secret_key( sk );
+	rc = check_secret_key( sk, 0 );
 
     return rc;
 }
@@ -984,10 +984,10 @@ lookup_sk( PKT_secret_key *sk, int mode,  u32 *keyid, const char *name,
  *  4) Always call this function a last time with SK set to NULL,
  *     so that can free it's context.
  *
- * Return
+ *
  */
 int
-enum_secret_keys( void **context, PKT_secret_key *sk )
+enum_secret_keys( void **context, PKT_secret_key *sk, int with_subkeys )
 {
     int rc=0;
     PACKET pkt;
@@ -1022,7 +1022,8 @@ enum_secret_keys( void **context, PKT_secret_key *sk )
 	while( (rc=parse_packet(c->iobuf, &pkt)) != -1 ) {
 	    if( rc )
 		; /* e.g. unknown packet */
-	    else if( pkt.pkttype == PKT_SECRET_KEY ) {
+	    else if( pkt.pkttype == PKT_SECRET_KEY
+		     || ( with_subkeys && pkt.pkttype == PKT_SECRET_SUBKEY ) ) {
 		copy_secret_key( sk, pkt.pkt.secret_key );
 		set_packet_list_mode(save_mode);
 		return 0; /* found */

@@ -1,3 +1,24 @@
+Wed Sep  9 11:15:03 1998  Werner Koch  (wk@(none))
+
+	* packet.h (PKT_pubkey_enc): New flah throw_keyid, and add logic to
+	implement it.
+	* g10.c (main): New Option --throw-keyid
+
+	* getkey.c (enum_secret_keys): Add new ar and changed all callers.
+
+Tue Sep  8 20:04:09 1998  Werner Koch  (wk@(none))
+
+	* delkey.c (delete_key): Moved from keyedit.c.
+
+Mon Sep  7 16:37:52 1998  Werner Koch  (wk@(none))
+
+	* build-packet.c (calc_length_header): New arg new_ctb to correctly
+	calculate the length of new style packets.
+
+	* armor.c (is_armored): Checks for symkey_enc packets.
+
+	* pkclist.c (select_algo_from_prefs): 3DEs substitute is now CAST5.
+
 Tue Aug 11 17:54:50 1998  Werner Koch  (wk@(none))
 
 	* build-packet.c (do_secret_key): Fixed handling of old keys.

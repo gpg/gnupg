@@ -63,7 +63,7 @@ enum cmd_and_opt_values { aNull = 0,
     oVerbose	  = 'v',
     oCompress	  = 'z',
     oBatch	  = 500,
-    aClearsign	  = 539,
+    aClearsign,
     aStore,
     aKeygen,
     aSignEncr,
@@ -94,6 +94,47 @@ enum cmd_and_opt_values { aNull = 0,
     aDeArmor,
     aEnArmor,
     aGenRandom,
+
+    oFingerprint,
+    oDoNotExportRSA,
+    oAnswerYes,
+    oAnswerNo,
+    oKeyring,
+    oSecretKeyring,
+    oDefaultKey,
+    oOptions,
+    oDebug,
+    oDebugAll,
+    oStatusFD,
+    oNoComment,
+    oCompletesNeeded,
+    oMarginalsNeeded,
+    oLoadExtension,
+    oRFC1991,
+    oCipherAlgo,
+    oDigestAlgo,
+    oCompressAlgo,
+    oPasswdFD,
+    oQuickRandom,
+    oNoVerbose,
+    oTrustDBName,
+    oNoSecmemWarn,
+    oNoArmor,
+    oNoDefKeyring,
+    oNoGreeting,
+    oNoOptions,
+    oNoBatch,
+    oHomedir,
+    oWithColons,
+    oSkipVerify,
+    oCompressKeys,
+    oCompressSigs,
+    oAlwaysTrust,
+    oEmuChecksumBug,
+    oRunAsShmCP,
+    oSetFilename,
+    oComment,
+    oThrowKeyid,
 aTest };
 
 
@@ -107,37 +148,39 @@ static ARGPARSE_OPTS opts[] = {
     { aDetachedSign, "detach-sign", 256, N_("make a detached signature")},
     { aEncr, "encrypt",   256, N_("encrypt data")},
     { aSym, "symmetric", 256, N_("encryption only with symmetric cipher")},
-    { 507, "store",     256, N_("store only")},
+    { aStore, "store",     256, N_("store only")},
     { aDecrypt, "decrypt",   256, N_("decrypt data (default)")},
-    { 550, "verify"   , 256, N_("verify a signature")},
+    { aVerify, "verify"   , 256, N_("verify a signature")},
   #endif
-    { 551, "list-keys", 256, N_("list keys")},
-    { 552, "list-sigs", 256, N_("list keys and signatures")},
-    { 508, "check-sigs",256, N_("check key signatures")},
-    { 515, "fingerprint", 256, N_("list keys and fingerprints")},
-    { 558, "list-secret-keys", 256, N_("list secret keys")},
+    { aListKeys, "list-keys", 256, N_("list keys")},
+    { aListSigs, "list-sigs", 256, N_("list keys and signatures")},
+    { aCheckKeys, "check-sigs",256, N_("check key signatures")},
+    { oFingerprint, "fingerprint", 256, N_("list keys and fingerprints")},
+    { aListSecretKeys, "list-secret-keys", 256, N_("list secret keys")},
   #ifdef IS_G10
-    { 503, "gen-key",   256, N_("generate a new key pair")},
-    { 505, "delete-key",256, N_("remove key from the public keyring")},
-    { 524, "edit-key"  ,256, N_("sign or edit a key")},
-    { 542, "gen-revoke",256, N_("generate a revocation certificate")},
+    { aKeygen, "gen-key",   256, N_("generate a new key pair")},
   #endif
-    { 537, "export"          , 256, N_("export keys") },
-    { 563, "export-secret-keys" , 256, "@" },
-    { 565, "do-not-export-rsa", 0, "@" },
-    { 530, "import",      256     , N_("import/merge keys")},
-    { 521, "list-packets",256,N_("list only the sequence of packets")},
+    { aDeleteKey, "delete-key",256, N_("remove key from the public keyring")},
+  #ifdef IS_G10
+    { aEditKey, "edit-key"  ,256, N_("sign or edit a key")},
+    { aGenRevoke, "gen-revoke",256, N_("generate a revocation certificate")},
+  #endif
+    { aExport, "export"          , 256, N_("export keys") },
+    { aExportSecret, "export-secret-keys" , 256, "@" },
+    { oDoNotExportRSA, "do-not-export-rsa", 0, "@" },
+    { aImport, "import",      256     , N_("import/merge keys")},
+    { aListPackets, "list-packets",256,N_("list only the sequence of packets")},
   #ifdef IS_G10MAINT
-    { 564, "export-ownertrust", 256, N_("export the ownertrust values")},
-    { 525, "import-ownertrust", 256 , N_("import ownertrust values")},
-    { 567, "check-trustdb",0 , N_("|[NAMES]|check the trust database")},
-    { 546, "dearmor", 256, N_("De-Armor a file or stdin") },
-    { 547, "enarmor", 256, N_("En-Armor a file or stdin") },
-    { 555, "print-md" , 256, N_("|algo [files]|print message digests")},
-    { 516, "print-mds" , 256, N_("print all message digests")},
+    { aExportOwnerTrust, "export-ownertrust", 256, N_("export the ownertrust values")},
+    { aImportOwnerTrust, "import-ownertrust", 256 , N_("import ownertrust values")},
+    { aCheckTrustDB, "check-trustdb",0 , N_("|[NAMES]|check the trust database")},
+    { aDeArmor, "dearmor", 256, N_("De-Armor a file or stdin") },
+    { aEnArmor, "enarmor", 256, N_("En-Armor a file or stdin") },
+    { aPrintMD,  "print-md" , 256, N_("|algo [files]|print message digests")},
+    { aPrintMDs, "print-mds" , 256, N_("print all message digests")},
     #ifdef MAINTAINER_OPTIONS
-    { 513, "gen-prime" , 256, "@" },
-    { 548, "gen-random" , 256, "@" },
+    { aPrimegen, "gen-prime" , 256, "@" },
+    { aGenRandom, "gen-random" , 256, "@" },
     #endif
   #endif
 
@@ -154,29 +197,30 @@ static ARGPARSE_OPTS opts[] = {
     { oVerbose, "verbose",   0, N_("verbose") },
  /* { oDryRun, "dry-run",   0, N_("do not make any changes") }, */
     { oBatch, "batch",     0, N_("batch mode: never ask")},
-    { 501, "yes",       0, N_("assume yes on most questions")},
-    { 502, "no",        0, N_("assume no on most questions")},
-    { 509, "keyring"   ,2, N_("add this keyring to the list of keyrings")},
-    { 517, "secret-keyring" ,2, N_("add this secret keyring to the list")},
-    { 541, "default-key" ,2, N_("|NAME|use NAME as default secret key")},
-    { 518, "options"   , 2, N_("read options from file")},
+    { oAnswerYes, "yes",       0, N_("assume yes on most questions")},
+    { oAnswerNo,  "no",        0, N_("assume no on most questions")},
+    { oKeyring, "keyring"   ,2, N_("add this keyring to the list of keyrings")},
+    { oSecretKeyring, "secret-keyring" ,2, N_("add this secret keyring to the list")},
+    { oDefaultKey, "default-key" ,2, N_("|NAME|use NAME as default secret key")},
+    { oOptions, "options"   , 2, N_("read options from file")},
 
-    { 510, "debug"     ,4|16, N_("set debugging flags")},
-    { 511, "debug-all" ,0, N_("enable full debugging")},
-    { 512, "status-fd" ,1, N_("|FD|write status info to this FD") },
-    { 534, "no-comment", 0,   N_("do not write comment packets")},
-    { 535, "completes-needed", 1, N_("(default is 1)")},
-    { 536, "marginals-needed", 1, N_("(default is 3)")},
-    { 560, "load-extension" ,2, N_("|file|load extension module")},
-    { 561, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
+    { oDebug, "debug"     ,4|16, N_("set debugging flags")},
+    { oDebugAll, "debug-all" ,0, N_("enable full debugging")},
+    { oStatusFD, "status-fd" ,1, N_("|FD|write status info to this FD") },
+    { oNoComment, "no-comment", 0,   N_("do not write comment packets")},
+    { oCompletesNeeded, "completes-needed", 1, N_("(default is 1)")},
+    { oMarginalsNeeded, "marginals-needed", 1, N_("(default is 3)")},
+    { oLoadExtension, "load-extension" ,2, N_("|file|load extension module")},
+    { oRFC1991, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
   #ifdef IS_G10
-    { 527, "cipher-algo", 2 , N_("|NAME|use cipher algorithm NAME")},
-    { 529, "digest-algo", 2 , N_("|NAME|use message digest algorithm NAME")},
-    { 556, "compress-algo", 1 , N_("|N|use compress algorithm N")},
+    { oCipherAlgo, "cipher-algo", 2 , N_("|NAME|use cipher algorithm NAME")},
+    { oDigestAlgo, "digest-algo", 2 , N_("|NAME|use message digest algorithm NAME")},
+    { oCompressAlgo, "compress-algo", 1 , N_("|N|use compress algorithm N")},
+    { oThrowKeyid, "throw-keyid", 0, N_("throw keyid field of encrypted packets")},
   #else /* some dummies */
-    { 527, "cipher-algo", 2 , "@"},
-    { 529, "digest-algo", 2 , "@"},
-    { 556, "compress-algo", 1 , "@"},
+    { oCipherAlgo, "cipher-algo", 2 , "@"},
+    { oDigestAlgo, "digest-algo", 2 , "@"},
+    { oCompressAlgo, "compress-algo", 1 , "@"},
   #endif
 
   #ifdef IS_G10
@@ -190,41 +234,40 @@ static ARGPARSE_OPTS opts[] = {
 
   /* hidden options */
   #ifdef IS_G10MAINT
-    { 514, "test"      , 0, "@" },
-    { 564, "list-ownertrust",0 , "@"},
-    { 567, "check-trustdb",0 , "@"},
-    { 531, "list-trustdb",0 , "@"},
-    { 533, "list-trust-path",0, "@"},
+    { aTest, "test"      , 0, "@" },
+    { aExportOwnerTrust, "list-ownertrust",0 , "@"},  /* alias */
+    { aListTrustDB, "list-trustdb",0 , "@"},
+    { aListTrustPath, "list-trust-path",0, "@"},
   #endif
   #ifdef IS_G10
     { oKOption, NULL,	 0, "@"},
-    { 504, "delete-secret-key",0, "@" },
-    { 524, "edit-sig"  ,0, "@"}, /* alias for edit-key */
-    { 523, "passphrase-fd",1, "@" },
-    { 506, "sign-key"  ,256, "@" }, /* alias for edit-key */
+    { aEditKey, "edit-sig"  ,0, "@"}, /* alias for edit-key */
+    { oPasswdFD, "passphrase-fd",1, "@" },
+    { aSignKey, "sign-key"  ,256, "@" }, /* alias for edit-key */
   #endif
-    { 532, "quick-random", 0, "@"},
-    { 526, "no-verbose", 0, "@"},
-    { 538, "trustdb-name", 2, "@" },
-    { 540, "no-secmem-warning", 0, "@" }, /* used only by regression tests */
-    { 519, "no-armor",   0, "@"},
-    { 520, "no-default-keyring", 0, "@" },
-    { 522, "no-greeting", 0, "@" },
-    { 543, "no-options", 0, "@" }, /* shortcut for --options /dev/null */
-    { 544, "homedir", 2, "@" },   /* defaults to "~/.gnupg" */
-    { 545, "no-batch", 0, "@" },
-    { 549, "with-colons", 0, "@"},
-    { 551, "list-key", 0, "@" }, /* alias */
-    { 552, "list-sig", 0, "@" }, /* alias */
-    { 508, "check-sig",0, "@" }, /* alias */
-    { 553, "skip-verify",0, "@" },
-    { 557, "compress-keys",0, "@"},
-    { 566, "compress-sigs",0, "@"},
-    { 559, "always-trust", 0, "@"},
-    { 562, "emulate-checksum-bug", 0, "@"},
-    { 554, "run-as-shm-coprocess", 4, "@" },
-    { 568, "set-filename", 2, "@" },
-    { 569, "comment", 2, "@" },
+    { aDeleteSecretKey, "delete-secret-key",0, "@" },
+    { oQuickRandom, "quick-random", 0, "@"},
+    { oNoVerbose, "no-verbose", 0, "@"},
+    { oTrustDBName, "trustdb-name", 2, "@" },
+    { oNoSecmemWarn, "no-secmem-warning", 0, "@" }, /* used only by regression tests */
+    { oNoArmor, "no-armor",   0, "@"},
+    { oNoDefKeyring, "no-default-keyring", 0, "@" },
+    { oNoGreeting, "no-greeting", 0, "@" },
+    { oNoOptions, "no-options", 0, "@" }, /* shortcut for --options /dev/null */
+    { oHomedir, "homedir", 2, "@" },   /* defaults to "~/.gnupg" */
+    { oNoBatch, "no-batch", 0, "@" },
+    { oWithColons, "with-colons", 0, "@"},
+    { aListKeys, "list-key", 0, "@" }, /* alias */
+    { aListSigs, "list-sig", 0, "@" }, /* alias */
+    { aCheckKeys, "check-sig",0, "@" }, /* alias */
+    { oSkipVerify, "skip-verify",0, "@" },
+    { oCompressKeys, "compress-keys",0, "@"},
+    { oCompressSigs, "compress-sigs",0, "@"},
+    { oAlwaysTrust, "always-trust", 0, "@"},
+    { oEmuChecksumBug, "emulate-checksum-bug", 0, "@"},
+    { oRunAsShmCP, "run-as-shm-coprocess", 4, "@" },
+    { oSetFilename, "set-filename", 2, "@" },
+    { oComment, "comment", 2, "@" },
 {0} };
 
 
@@ -277,22 +320,22 @@ strusage( int level )
 	  #endif
 	break;
 
-      case 31: p = "\n"; break;
+      case 31: p = _("\nSupported algorithms:\n"); break;
       case 32:
 	if( !ciphers )
-	    ciphers = build_list("Supported ciphers: ", cipher_algo_to_string,
+	    ciphers = build_list("Cipher: ", cipher_algo_to_string,
 							check_cipher_algo );
 	p = ciphers;
 	break;
       case 33:
 	if( !pubkeys )
-	    pubkeys = build_list("Supported pubkeys: ", pubkey_algo_to_string,
+	    pubkeys = build_list("Pubkey: ", pubkey_algo_to_string,
 							check_pubkey_algo );
 	p = pubkeys;
 	break;
       case 34:
 	if( !digests )
-	    digests = build_list("Supported digests: ", digest_algo_to_string,
+	    digests = build_list("Hash: ", digest_algo_to_string,
 							check_digest_algo );
 	p = digests;
 	break;
@@ -471,17 +514,17 @@ main( int argc, char **argv )
     pargs.argv = &argv;
     pargs.flags= 1|(1<<6);  /* do not remove the args, ignore version */
     while( arg_parse( &pargs, opts) ) {
-	if( pargs.r_opt == 510 || pargs.r_opt == 511 )
+	if( pargs.r_opt == oDebug || pargs.r_opt == oDebugAll )
 	    parse_debug++;
-	else if( pargs.r_opt == 518 ) {
+	else if( pargs.r_opt == oOptions ) {
 	    /* yes there is one, so we do not try the default one, but
 	     * read the option file when it is encountered at the commandline
 	     */
 	    default_config = 0;
 	}
-	else if( pargs.r_opt == 543 )
+	else if( pargs.r_opt == oNoOptions )
 	    default_config = 0; /* --no-options */
-	else if( pargs.r_opt == 544 )
+	else if( pargs.r_opt == oHomedir )
 	    opt.homedir = pargs.r.ret_str;
     }
 
@@ -518,20 +561,116 @@ main( int argc, char **argv )
     while( optfile_parse( configfp, configname, &configlineno,
 						&pargs, opts) ) {
 	switch( pargs.r_opt ) {
+	  case aCheckKeys: set_cmd( &cmd, aCheckKeys); break;
+	  case aListPackets: set_cmd( &cmd, aListPackets); break;
+	  case aImport: set_cmd( &cmd, aImport); break;
+	  case aExport: set_cmd( &cmd, aExport); break;
+	  case aListKeys: set_cmd( &cmd, aListKeys); break;
+	  case aListSigs: set_cmd( &cmd, aListSigs); break;
+	  case aExportSecret: set_cmd( &cmd, aExportSecret); break;
+	  case aDeleteSecretKey: set_cmd( &cmd, aDeleteSecretKey); break;
+	  case aDeleteKey: set_cmd( &cmd, aDeleteKey); break;
 
-	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
 	#ifdef IS_G10
 	  case aDetachedSign: detached_sig = 1; set_cmd( &cmd, aSign ); break;
 	  case aSym: set_cmd( &cmd, aSym); break;
 	  case aDecrypt: set_cmd( &cmd, aDecrypt); break;
 	  case aEncr: set_cmd( &cmd, aEncr); break;
+	  case aSign: set_cmd( &cmd, aSign );  break;
+	  case aKeygen: set_cmd( &cmd, aKeygen); break;
+	  case aSignKey: set_cmd( &cmd, aSignKey); break;
+	  case aStore: set_cmd( &cmd, aStore); break;
+	  case aEditKey: set_cmd( &cmd, aEditKey); break;
+	  case aClearsign: set_cmd( &cmd, aClearsign); break;
+	  case aGenRevoke: set_cmd( &cmd, aGenRevoke); break;
+	  case aVerify: set_cmd( &cmd, aVerify); break;
+	#else
+	  #ifdef MAINTAINER_OPTIONS
+	    case aPrimegen: set_cmd( &cmd, aPrimegen); break;
+	    case aTest: set_cmd( &cmd, aTest); break;
+	    case aGenRandom: set_cmd( &cmd, aGenRandom); break;
+	  #endif
+	  case aPrintMD: set_cmd( &cmd, aPrintMD); break;
+	  case aPrintMDs: set_cmd( &cmd, aPrintMDs); break;
+	  case aListTrustDB: set_cmd( &cmd, aListTrustDB); break;
+	  case aCheckTrustDB: set_cmd( &cmd, aCheckTrustDB); break;
+	  case aListTrustPath: set_cmd( &cmd, aListTrustPath); break;
+	  case aDeArmor: set_cmd( &cmd, aDeArmor); break;
+	  case aEnArmor: set_cmd( &cmd, aEnArmor); break;
+	  case aExportOwnerTrust: set_cmd( &cmd, aExportOwnerTrust); break;
+	  case aImportOwnerTrust: set_cmd( &cmd, aImportOwnerTrust); break;
+	#endif /* IS_G10MAINT */
+
+
+
+	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
+	  case oOutput: opt.outfile = pargs.r.ret_str; break;
+	  case oVerbose: g10_opt_verbose++;
+		    opt.verbose++; opt.list_sigs=1; break;
+	  case oKOption: set_cmd( &cmd, aKMode ); break;
+
+	  case oBatch: opt.batch = 1; greeting = 0; break;
+	  case oAnswerYes: opt.answer_yes = 1; break;
+	  case oAnswerNo: opt.answer_no = 1; break;
+	  case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
+	  case oDebug: opt.debug |= pargs.r.ret_ulong; break;
+	  case oDebugAll: opt.debug = ~0; break;
+	  case oStatusFD: set_status_fd( pargs.r.ret_int ); break;
+	  case oFingerprint: opt.fingerprint++; break;
+	  case oSecretKeyring: append_to_strlist( &sec_nrings, pargs.r.ret_str); break;
+	  case oOptions:
+	    /* config files may not be nested (silently ignore them) */
+	    if( !configfp ) {
+		m_free(configname);
+		configname = m_strdup(pargs.r.ret_str);
+		goto next_pass;
+	    }
+	    break;
+	  case oNoArmor: opt.no_armor=1; opt.armor=0; break;
+	  case oNoDefKeyring: default_keyring = 0; break;
+	  case oNoGreeting: greeting = 0; break;
+	  case oNoVerbose: g10_opt_verbose = 0;
+			   opt.verbose = 0; opt.list_sigs=0; break;
+	  case oQuickRandom: quick_random_gen(1); break;
+	  case oNoComment: opt.no_comment=1; break;
+	  case oCompletesNeeded: opt.completes_needed = pargs.r.ret_int; break;
+	  case oMarginalsNeeded: opt.marginals_needed = pargs.r.ret_int; break;
+	  case oTrustDBName: trustdb_name = pargs.r.ret_str; break;
+	  case oDefaultKey: opt.def_secret_key = pargs.r.ret_str; break;
+	  case oNoOptions: break; /* no-options */
+	  case oHomedir: opt.homedir = pargs.r.ret_str; break;
+	  case oNoBatch: opt.batch = 0; break;
+	  case oWithColons: opt.with_colons=':'; break;
+
+	  case oSkipVerify: opt.skip_verify=1; break;
+	  case oCompressAlgo: opt.def_compress_algo = pargs.r.ret_int; break;
+	  case oCompressKeys: opt.compress_keys = 1; break;
+	  case aListSecretKeys: set_cmd( &cmd, aListSecretKeys); break;
+	  case oAlwaysTrust: opt.always_trust = 1; break;
+	  case oLoadExtension: register_cipher_extension(pargs.r.ret_str); break;
+	  case oRFC1991: opt.rfc1991 = 1; opt.no_comment = 1; break;
+	  case oEmuChecksumBug: opt.emulate_bugs |= EMUBUG_GPGCHKSUM; break;
+	  case oDoNotExportRSA: opt.do_not_export_rsa = 1; break;
+	  case oCompressSigs: opt.compress_sigs = 1; break;
+	  case oRunAsShmCP:
+	  #ifdef USE_SHM_COPROCESSING
+	    opt.shm_coprocess = 1;
+	    requested_shm_size = pargs.r.ret_ulong;
+	  #else
+	    log_error("shared memory coprocessing is not available\n");
+	  #endif
+	    break;
+	  case oSetFilename: opt.set_filename = pargs.r.ret_str; break;
+	  case oComment: opt.comment_string = pargs.r.ret_str; break;
+	  case oThrowKeyid: opt.throw_keyid = 1; break;
+
+	#ifdef IS_G10
 	  case oRemote: /* store the remote users */
 	    sl = m_alloc( sizeof *sl + strlen(pargs.r.ret_str));
 	    strcpy(sl->d, pargs.r.ret_str);
 	    sl->next = remusr;
 	    remusr = sl;
 	    break;
-	  case aSign: set_cmd( &cmd, aSign );  break;
 	  case oTextmode: opt.textmode=1;  break;
 	  case oUser: /* store the local users */
 	    sl = m_alloc( sizeof *sl + strlen(pargs.r.ret_str));
@@ -540,107 +679,17 @@ main( int argc, char **argv )
 	    locusr = sl;
 	    break;
 	  case oCompress: opt.compress = pargs.r.ret_int; break;
-	  case 503: set_cmd( &cmd, aKeygen); break;
-	  case 504: set_cmd( &cmd, aDeleteSecretKey); break;
-	  case 505: set_cmd( &cmd, aDeleteKey); break;
-	  case 506: set_cmd( &cmd, aSignKey); break;
-	  case 507: set_cmd( &cmd, aStore); break;
-	  case 523: set_passphrase_fd( pargs.r.ret_int ); break;
-	  case 524: set_cmd( &cmd, aEditKey); break;
-	  case 527: def_cipher_string = m_strdup(pargs.r.ret_str); break;
-	  case 529: def_digest_string = m_strdup(pargs.r.ret_str); break;
-	  case aClearsign: set_cmd( &cmd, aClearsign); break;
-	  case 540: secmem_set_flags( secmem_get_flags() | 1 ); break;
-	  case 542: set_cmd( &cmd, aGenRevoke); break;
-	  case 550: set_cmd( &cmd, aVerify); break;
+	  case oPasswdFD: set_passphrase_fd( pargs.r.ret_int ); break;
+	  case oCipherAlgo: def_cipher_string = m_strdup(pargs.r.ret_str); break;
+	  case oDigestAlgo: def_digest_string = m_strdup(pargs.r.ret_str); break;
+	  case oNoSecmemWarn: secmem_set_flags( secmem_get_flags() | 1 ); break;
 	#else
-	  case 527:
-	  case 529:
-	    break;
-	#endif /* !IS_G10 */
+	  case oCipherAlgo:
+	  case oDigestAlgo:
+	  case oNoSecmemWarn:
+	    break;  /* dummies */
+	#endif
 
-	#ifdef IS_G10MAINT
-	  #ifdef MAINTAINER_OPTIONS
-	    case 513: set_cmd( &cmd, aPrimegen); break;
-	    case 514: set_cmd( &cmd, aTest); break;
-	    case 548: set_cmd( &cmd, aGenRandom); break;
-	  #endif
-	  case 516: set_cmd( &cmd, aPrintMDs); break;
-	  case 531: set_cmd( &cmd, aListTrustDB); break;
-	  case 567: set_cmd( &cmd, aCheckTrustDB); break;
-	  case 533: set_cmd( &cmd, aListTrustPath); break;
-	  case 540: break; /* dummy */
-	  case 546: set_cmd( &cmd, aDeArmor); break;
-	  case 547: set_cmd( &cmd, aEnArmor); break;
-	  case 555: set_cmd( &cmd, aPrintMD); break;
-	  case 564: set_cmd( &cmd, aExportOwnerTrust); break;
-	  case 525: set_cmd( &cmd, aImportOwnerTrust); break;
-	#endif /* IS_G10MAINT */
-
-	  case oOutput: opt.outfile = pargs.r.ret_str; break;
-	  case oVerbose: g10_opt_verbose++;
-		    opt.verbose++; opt.list_sigs=1; break;
-	  case oKOption: set_cmd( &cmd, aKMode ); break;
-
-	  case oBatch: opt.batch = 1; greeting = 0; break;
-	  case 501: opt.answer_yes = 1; break;
-	  case 502: opt.answer_no = 1; break;
-	  case 508: set_cmd( &cmd, aCheckKeys); break;
-	  case 509: append_to_strlist( &nrings, pargs.r.ret_str); break;
-	  case 510: opt.debug |= pargs.r.ret_ulong; break;
-	  case 511: opt.debug = ~0; break;
-	  case 512: set_status_fd( pargs.r.ret_int ); break;
-	  case 515: opt.fingerprint++; break;
-	  case 517: append_to_strlist( &sec_nrings, pargs.r.ret_str); break;
-	  case 518:
-	    /* config files may not be nested (silently ignore them) */
-	    if( !configfp ) {
-		m_free(configname);
-		configname = m_strdup(pargs.r.ret_str);
-		goto next_pass;
-	    }
-	    break;
-	  case 519: opt.no_armor=1; opt.armor=0; break;
-	  case 520: default_keyring = 0; break;
-	  case 521: set_cmd( &cmd, aListPackets); break;
-	  case 522: greeting = 0; break;
-	  case 526: g10_opt_verbose = 0;
-		    opt.verbose = 0; opt.list_sigs=0; break;
-	  case 530: set_cmd( &cmd, aImport); break;
-	  case 532: quick_random_gen(1); break;
-	  case 534: opt.no_comment=1; break;
-	  case 535: opt.completes_needed = pargs.r.ret_int; break;
-	  case 536: opt.marginals_needed = pargs.r.ret_int; break;
-	  case 537: set_cmd( &cmd, aExport); break;
-	  case 538: trustdb_name = pargs.r.ret_str; break;
-	  case 541: opt.def_secret_key = pargs.r.ret_str; break;
-	  case 543: break; /* no-options */
-	  case 544: opt.homedir = pargs.r.ret_str; break;
-	  case 545: opt.batch = 0; break;
-	  case 549: opt.with_colons=':'; break;
-	  case 551: set_cmd( &cmd, aListKeys); break;
-	  case 552: set_cmd( &cmd, aListSigs); break;
-	  case 553: opt.skip_verify=1; break;
-	  case 556: opt.def_compress_algo = pargs.r.ret_int; break;
-	  case 557: opt.compress_keys = 1; break;
-	  case 558: set_cmd( &cmd, aListSecretKeys); break;
-	  case 559: opt.always_trust = 1; break;
-	  case 560: register_cipher_extension(pargs.r.ret_str); break;
-	  case 561: opt.rfc1991 = 1; opt.no_comment = 1; break;
-	  case 562: opt.emulate_bugs |= EMUBUG_GPGCHKSUM; break;
-	  case 563: set_cmd( &cmd, aExportSecret); break;
-	  case 565: opt.do_not_export_rsa = 1; break;
-	  case 566: opt.compress_sigs = 1; break;
-	  case 554:
-	  #ifdef USE_SHM_COPROCESSING
-	    opt.shm_coprocess = 1;
-	    requested_shm_size = pargs.r.ret_ulong;
-	  #else
-	    log_error("shared memory coprocessing is not available\n");
-	  #endif
-	    break;
-	  case 568: opt.set_filename = pargs.r.ret_str; break;
-	  case 569: opt.comment_string = pargs.r.ret_str; break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -867,6 +916,8 @@ main( int argc, char **argv )
 	keyedit_menu(fname, locusr );
 	break;
 
+      #endif /* IS_G10 */
+
       case aDeleteSecretKey:
 	if( argc != 1 )
 	    wrong_args(_("--delete-secret-key username"));
@@ -878,7 +929,6 @@ main( int argc, char **argv )
 	    log_error("%s: delete key failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
 	break;
 
-      #endif /* IS_G10 */
 
       case aCheckKeys:
 	opt.check_sigs = 1;

@@ -39,6 +39,8 @@
 #include "memory.h"
 #include "ttyio.h"
 
+#define CONTROL_D ('D' - 'A' + 1)
+
 
 #ifdef __MINGW32__ /* use the odd Win32 functions */
 static struct {
@@ -279,6 +281,8 @@ do_get( const char *prompt, int hidden )
 	if( !hidden )
 	    last_prompt_len++;
 	c = *cbuf;
+	if( c == CONTROL_D )
+	    log_info("control d found\n");
 	if( c == '\t' )
 	    c = ' ';
 	else if( c > 0xa0 )
@@ -291,6 +295,10 @@ do_get( const char *prompt, int hidden )
 	    buf = m_realloc( buf, n );
 	}
 	buf[i++] = c;
+    }
+    if( *cbuf != '\n' ) {
+	buf[0] = CONTROL_D;
+	i = 1;
     }
 
 

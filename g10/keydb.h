@@ -119,7 +119,7 @@ int get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
 						 size_t fprint_len );
 int seckey_available( u32 *keyid );
 int get_seckey_byname( PKT_secret_key *sk, const char *name, int unlock );
-int enum_secret_keys( void **context, PKT_secret_key *sk );
+int enum_secret_keys( void **context, PKT_secret_key *sk, int with_subkeys );
 char*get_user_id_string( u32 *keyid );
 char*get_user_id( u32 *keyid, size_t *rn );
 

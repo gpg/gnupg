@@ -34,6 +34,7 @@
 
 typedef struct {
     FILE *fp;	   /* open file handle */
+    int  print_only_name; /* flags indicating that fname is not a real file*/
     char fname[1]; /* name of the file */
 } file_filter_ctx_t ;
 
@@ -56,6 +57,7 @@ typedef struct {
 
 
 static int underflow(IOBUF a);
+static const char *get_real_fname( IOBUF a );
 
 /****************
  * Read data from a file into buf which has an allocated length of *LEN.
@@ -451,7 +453,7 @@ iobuf_cancel( IOBUF a )
     const char *s;
 
     if( a && a->usage == 2 ) {
-	s = iobuf_get_fname(a);
+	s = get_real_fname(a);
 	if( s && *s )
 	    remove(s);	/* remove the file. Fixme: this will fail for MSDOZE*/
     }			/* because the file is still open */
@@ -486,16 +488,19 @@ iobuf_open( const char *fname )
     FILE *fp;
     file_filter_ctx_t *fcx;
     size_t len;
+    int print_only = 0;
 
     if( !fname || (*fname=='-' && !fname[1])  ) {
 	fp = stdin; /* fixme: set binary mode for msdoze */
 	fname = "[stdin]";
+	print_only = 1;
     }
     else if( !(fp = fopen(fname, "rb")) )
 	return NULL;
     a = iobuf_alloc(1, 8192 );
     fcx = m_alloc( sizeof *fcx + strlen(fname) );
     fcx->fp = fp;
+    fcx->print_only_name = print_only;
     strcpy(fcx->fname, fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
@@ -517,16 +522,19 @@ iobuf_create( const char *fname )
     FILE *fp;
     file_filter_ctx_t *fcx;
     size_t len;
+    int print_only = 0;
 
     if( !fname || (*fname=='-' && !fname[1]) ) {
 	fp = stdout;
 	fname = "[stdout]";
+	print_only = 1;
     }
     else if( !(fp = fopen(fname, "wb")) )
 	return NULL;
     a = iobuf_alloc(2, 8192 );
     fcx = m_alloc( sizeof *fcx + strlen(fname) );
     fcx->fp = fp;
+    fcx->print_only_name = print_only;
     strcpy(fcx->fname, fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
@@ -1084,6 +1092,21 @@ iobuf_seek( IOBUF a, ulong newpos )
 
 
 
+
+/****************
+ * Retrieve the real filename
+ */
+static const char *
+get_real_fname( IOBUF a )
+{
+    for( ; a; a = a->chain )
+	if( !a->chain && a->filter == file_filter ) {
+	    file_filter_ctx_t *b = a->filter_ov;
+	    return b->print_only_name? NULL : b->fname;
+	}
+
+    return NULL;
+}
 
 /****************
  * Retrieve the filename

@@ -68,6 +68,7 @@ typedef struct {
     u32     keyid[2];	    /* 64 bit keyid */
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
+    byte    throw_keyid;
     MPI     data[PUBKEY_MAX_NENC];
 } PKT_pubkey_enc;
 
@@ -276,7 +277,7 @@ int signature_check( PKT_signature *sig, MD_HANDLE digest );
 
 /*-- seckey-cert.c --*/
 int is_secret_key_protected( PKT_secret_key *sk );
-int check_secret_key( PKT_secret_key *sk );
+int check_secret_key( PKT_secret_key *sk, int retries );
 int protect_secret_key( PKT_secret_key *sk, DEK *dek );
 
 /*-- pubkey-enc.c --*/

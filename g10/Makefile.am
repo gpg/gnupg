@@ -16,6 +16,7 @@ common_source =  \
 	      free-packet.c	\
 	      getkey.c		\
 	      keydb.h		\
+	      delkey.c		\
 	      pkclist.c 	\
 	      skclist.c 	\
 	      ringedit.c	\
@@ -77,8 +78,8 @@ LDADD = @INTLLIBS@ $(needed_libs) @ZLIBS@
 
 gpgm_LDADD = g10maint.o $(LDADD)
 
-g10maint.o: g10.c
-	$(COMPILE) -DIS_G10MAINT  -o g10maint.o -c g10.c
+g10maint.o: $(srcdir)/g10.c
+	$(COMPILE) -DIS_G10MAINT  -o g10maint.o -c $(srcdir)/g10.c
 
 
 $(PROGRAMS): $(needed_libs)

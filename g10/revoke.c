@@ -132,7 +132,7 @@ gen_revoke( const char *uname )
 	tty_printf("Warning: This key is not protected!\n");
 	break;
       default:
-	rc = check_secret_key( sk );
+	rc = check_secret_key( sk, 0 );
 	break;
     }
     if( rc )

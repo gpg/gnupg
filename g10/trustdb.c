@@ -351,7 +351,7 @@ verify_own_keys()
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     u32 keyid[2];
 
-    while( !(rc=enum_secret_keys( &enum_context, sk) ) ) {
+    while( !(rc=enum_secret_keys( &enum_context, sk, 0 ) ) ) {
 	keyid_from_sk( sk, keyid );
 
 	if( DBG_TRUST )

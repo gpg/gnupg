@@ -6,7 +6,16 @@ Werner Koch.  Designed and implemented gnupg.
 TRANSLATIONS	Marco d'Itri    1997-02-22
 Disclaim
 
-Twofish 	Matthew Skala	????????????
+GPG	Matthew Skala	1998-08-10
+Disclaims changes (Twofish code).
+mskala@ansuz.sooke.bc.ca
 
+GPG	Natural Resources Canada       1998-08-11
+Disclaims changes by Matthew Skala.
 
+TRANSLATIONS	Gaël Quéri	?????????????
+fr.po
+
+TRANSLATIONS	Walter Koch	???????????
+de.po
 

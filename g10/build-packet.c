@@ -47,7 +47,7 @@ static int do_compressed( IOBUF out, int ctb, PKT_compressed *cd );
 static int do_signature( IOBUF out, int ctb, PKT_signature *sig );
 static int do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops );
 
-static int calc_header_length( u32 len );
+static int calc_header_length( u32 len, int new_ctb );
 static int write_16(IOBUF inp, u16 a);
 static int write_32(IOBUF inp, u32 a);
 static int write_header( IOBUF out, int ctb, u32 len );
@@ -135,11 +135,13 @@ u32
 calc_packet_length( PACKET *pkt )
 {
     u32 n=0;
+    int new_ctb = 0;
 
     assert( pkt->pkt.generic );
     switch( pkt->pkttype ) {
       case PKT_PLAINTEXT:
 	n = calc_plaintext( pkt->pkt.plaintext );
+	new_ctb = pkt->pkt.plaintext->new_ctb;
 	break;
       case PKT_USER_ID:
       case PKT_COMMENT:
@@ -156,7 +158,8 @@ calc_packet_length( PACKET *pkt )
 	log_bug("invalid packet type in calc_packet_length()");
 	break;
     }
-    n += calc_header_length(n);
+
+    n += calc_header_length(n, new_ctb);
     return n;
 }
 
@@ -374,8 +377,14 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
     IOBUF a = iobuf_temp();
 
     write_version( a, ctb );
-    write_32(a, enc->keyid[0] );
-    write_32(a, enc->keyid[1] );
+    if( enc->throw_keyid ) {
+	write_32(a, 0 );  /* don't tell Eve who can decrypt the message */
+	write_32(a, 0 );
+    }
+    else {
+	write_32(a, enc->keyid[0] );
+	write_32(a, enc->keyid[1] );
+    }
     iobuf_put(a,enc->pubkey_algo );
     n = pubkey_get_nenc( enc->pubkey_algo );
     if( !n )
@@ -739,16 +748,25 @@ write_32(IOBUF out, u32 a)
  * calculate the length of a header
  */
 static int
-calc_header_length( u32 len )
+calc_header_length( u32 len, int new_ctb )
 {
     if( !len )
 	return 1; /* only the ctb */
-    else if( len < 256 )
+
+    if( new_ctb ) {
+	if( len < 192 )
+	    return 2;
+	if( len < 8384 )
+	    return 3;
+	else
+	    return 6;
+    }
+    if( len < 256 )
 	return 2;
-    else if( len < 65536 )
+    if( len < 65536 )
 	return 3;
-    else
-	return 5;
+
+    return 5;
 }
 
 /****************

@@ -951,7 +951,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	break;
       default:
 	tty_printf("Key is protected.\n");
-	rc = check_secret_key( sk );
+	rc = check_secret_key( sk, 0 );
 	if( !rc )
 	    passphrase = get_last_passphrase();
 	break;

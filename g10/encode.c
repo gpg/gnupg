@@ -377,6 +377,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	enc = m_alloc_clear( sizeof *enc );
 	enc->pubkey_algo = pk->pubkey_algo;
 	keyid_from_pk( pk, enc->keyid );
+	enc->throw_keyid = opt.throw_keyid;
 	frame = encode_session_key( dek, pubkey_nbits( pk->pubkey_algo,
 							  pk->pkey ) );
 	rc = pubkey_encrypt( pk->pubkey_algo, enc->data, frame, pk->pkey );

@@ -1,3 +1,12 @@
+Wed Sep  9 13:52:28 1998  Werner Koch  (wk@(none))
+
+	* ttyio.c (do_get): Ctrl-D is now a valid but special character
+
+Mon Sep  7 13:52:41 1998  Werner Koch  (wk@(none))
+
+	* iobuf.c (get_real_fname): New and changed file_filter datastructures
+	and their initialization.
+
 Tue Aug 11 15:12:35 1998  Werner Koch  (wk@(none))
 
 	* miscutil.c (answer_is_yes): i18ned

@@ -333,6 +333,12 @@ B<--compress-algo> I<number>
     If this is not used the OpenPGP behaviour is used; i.e.
     the compression algorith is selected from the preferences.
 
+B<--throw-keyid>
+    Do not put the keyid into encrypted packets.  This option
+    hides the receiver of the message and is a countermeasure
+    against traffic analysis.  It may slow down the decryption
+    process because all available secret keys are tried.
+
 B<--passphrase-fd> I<n>
     Read the passphrase from file descriptor I<n>. If you use
     0 for I<n>, the passphrase will be read from stdin.  This

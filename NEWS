@@ -1,3 +1,15 @@
+Noteworthy changes in version 0.3.5
+-----------------------------------
+    * New option --throw-keyid to create anonymous enciphered messages.
+      If gpg detects such a message it tires all available secret keys
+      in turn so decode it.  This is a gnupg extension and not in OpenPGP
+      but it has been discussed there and afaik some products use this
+      scheme too (Suggested by Nimrod Zimmerman).
+
+    * Fixed a bug with 5 byte length headers.
+
+    * --delete-[secret-]key is now also availabe in gpgm.
+
 Noteworthy changes in version 0.3.4
 -----------------------------------
     * New options --comment and --set-filename; see g10/OPTIONS

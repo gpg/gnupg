@@ -1,4 +1,12 @@
 
+    * cleanup for SHM einbauen (non-linux)
+
+    * shared memory access funktioniert nicht wenn seuid installiert.
+
+    * ElGamal key benutzen wenn die DSA keyid angegeben ist??
+
+    * Apply Paul D. Smith's sugestions for building in another direcory.
+
     * salted and iterated S2Ks don't work (see passphrase.c).
 
     * Replace the SIGUSR1 stuff by semaphores to avoid loss of a signal.
@@ -6,11 +14,6 @@
     * add test cases for invalid data (scrambled armor or other random data)
 
     * fix the expire stuff for v4 packets.
-
-    * check whether it is valid to pack the signature stuff (onepass, data,
-      sig) into a compressed packet - or should we only compress the data?
-      what does pgp 5 do, what does OpenPGP say=
-      ==> I think it is okay, should be tested against pgp5
 
     * Fix Oscaris problems with the trustdb.
     * invalid packets (Marco)  und Markus Gruber
@@ -40,8 +43,6 @@
     * add an option to re-create a public key from a secret key. Think about
       a backup system of only the secret part of the secret key.
 
-    * replace getkey.c#enum_secret_keys
-
     * OpenBSD has sometimes problems reading from /dev/random.
 
     * change the fake_data stuff to mpi_set_opaque
@@ -53,4 +54,11 @@
     * update gettext
 
     * Add some stuff for DU cc
+
+    * check for "expect" before running test genkey1024
+
+    * use "passphrase" instead of "pass phrase"
+    * Use "user ID", "trustdb" and "WARNING".
+
+    * armor.c cannot handle concatenated armored messages.
 

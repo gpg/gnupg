@@ -578,6 +578,7 @@ parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     k->keyid[0] = read_32(inp); pktlen -= 4;
     k->keyid[1] = read_32(inp); pktlen -= 4;
     k->pubkey_algo = iobuf_get_noeof(inp); pktlen--;
+    k->throw_keyid = 0; /* only used as flag for build_packet */
     if( list_mode )
 	printf(":pubkey enc packet: version %d, algo %d, keyid %08lX%08lX\n",
 	  k->version, k->pubkey_algo, (ulong)k->keyid[0], (ulong)k->keyid[1]);

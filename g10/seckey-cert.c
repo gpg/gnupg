@@ -154,15 +154,18 @@ do_check( PKT_secret_key *sk )
 
 /****************
  * Check the secret key
- * Ask up to 3 times for a correct passphrase
+ * Ask up to 3 (or n) times for a correct passphrase
  */
 int
-check_secret_key( PKT_secret_key *sk )
+check_secret_key( PKT_secret_key *sk, int n )
 {
     int rc = G10ERR_BAD_PASS;
     int i;
 
-    for(i=0; i < 3 && rc == G10ERR_BAD_PASS; i++ ) {
+    if( n < 1 )
+	n = 3; /* use the default value */
+
+    for(i=0; i < n && rc == G10ERR_BAD_PASS; i++ ) {
 	if( i )
 	    log_error(_("Invalid passphrase; please try again ...\n"));
 	rc = do_check( sk );

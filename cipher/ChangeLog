@@ -1,3 +1,7 @@
+Mon Sep  7 17:04:33 1998  Werner Koch  (wk@(none))
+
+	* Makefile.am: Fixes to allow a different build directory
+
 Thu Aug  6 17:25:38 1998  Werner Koch,mobil,,,	(wk@tobold)
 
 	* random.c (get_random_byte): Removed and changed all callers
