@@ -96,7 +96,6 @@ static int uid_cache_entries;	/* number of entries in uid cache */
 
 static void merge_selfsigs( KBNODE keyblock );
 static int lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode );
-static int check_revocation_keys(PKT_public_key *pk,PKT_signature *sig);
 
 #if 0
 static void
@@ -1368,9 +1367,11 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
 	      if(IS_KEY_REV(sig) &&
 		 (sig->keyid[0]!=kid[0] || sig->keyid[1]!=kid[1]))
 		{ 
-		  if(check_revocation_keys(pk,sig))
-		    ; /* did not verify, or loop broken */
-		  else
+		  /* Failure here means the sig did not verify, is was
+		     not issued by a revocation key, or a revocation
+		     key loop was broken. */
+
+		  if(check_revocation_keys(pk,sig)==0)
 		    *r_revoked=1;
 
 		  /* In the future handle subkey and cert revocations?
@@ -2407,69 +2408,8 @@ get_user_id_printable( u32 *keyid )
     return p;
 }
 
-
-
 KEYDB_HANDLE
 get_ctx_handle(GETKEY_CTX ctx)
 {
   return ctx->kr_handle;
 }
-
-/* Check the revocation keys to see if any of them have revoked our
-   pk.  sig is the revocation sig.  pk is the key it is on.  This code
-   will need to be modified if gpg ever becomes multi-threaded.  Note
-   that this is written so that a revoked revoker can still issue
-   revocations: i.e. If A revokes B, but A is revoked, B is still
-   revoked.  I'm not completely convinced this is the proper behavior,
-   but it matches how PGP does it. -dms */
-
-/* Return 0 if pk is revoked, non-0 if not revoked */
-static int
-check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
-{
-  static int busy=0;
-  int i,rc=-1;
-
-  assert(IS_KEY_REV(sig));
-  assert((sig->keyid[0]!=pk->keyid[0]) || (sig->keyid[0]!=pk->keyid[1]));
-
-  if(busy)
-    {
-      /* return -1 (i.e. not revoked), but mark the pk as uncacheable
-         as we don't really know its revocation status until it is
-         checked directly. */
-
-      pk->dont_cache=1;
-      return -1;
-    }
-
-  busy=1;
-
-  /*  printf("looking at %08lX with a sig from %08lX\n",(ulong)pk->keyid[1],
-      (ulong)sig->keyid[1]); */
-
-  /* is the issuer of the sig one of our revokers? */
-  if( !pk->revkey && pk->numrevkeys )
-     BUG();
-  else
-      for(i=0;i<pk->numrevkeys;i++) {
-          u32 keyid[2];
-    
-          keyid_from_fingerprint(pk->revkey[i].fpr,MAX_FINGERPRINT_LEN,keyid);
-    
-          if(keyid[0]==sig->keyid[0] && keyid[1]==sig->keyid[1]) {
-              MD_HANDLE md;
-    
-              md=md_open(sig->digest_algo,0);
-              hash_public_key(md,pk);
-              if(signature_check(sig,md)==0) {
-                  rc=0;
-                  break;
-              }
-          }
-      }
-
-  busy=0;
-
-  return rc;
-} 

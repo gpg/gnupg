@@ -402,6 +402,71 @@ cache_sig_result ( PKT_signature *sig, int result )
     }
 }
 
+
+/* Check the revocation keys to see if any of them have revoked our
+   pk.  sig is the revocation sig.  pk is the key it is on.  This code
+   will need to be modified if gpg ever becomes multi-threaded.  Note
+   that this guarantees that a designated revocation sig will never be
+   considered valid unless it is actually valid, as well as being
+   issued by a revocation key in a valid direct signature.  Note that
+   this is written so that a revoked revoker can still issue
+   revocations: i.e. If A revokes B, but A is revoked, B is still
+   revoked.  I'm not completely convinced this is the proper behavior,
+   but it matches how PGP does it. -dms */
+
+/* Returns 0 if sig is valid (i.e. pk is revoked), non-0 if not
+   revoked */
+int
+check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
+{
+  static int busy=0;
+  int i,rc=G10ERR_GENERAL;
+
+  assert(IS_KEY_REV(sig));
+  assert((sig->keyid[0]!=pk->keyid[0]) || (sig->keyid[0]!=pk->keyid[1]));
+
+  if(busy)
+    {
+      /* return -1 (i.e. not revoked), but mark the pk as uncacheable
+         as we don't really know its revocation status until it is
+         checked directly. */
+
+      pk->dont_cache=1;
+      return rc;
+    }
+
+  busy=1;
+
+  /*  printf("looking at %08lX with a sig from %08lX\n",(ulong)pk->keyid[1],
+      (ulong)sig->keyid[1]); */
+
+  /* is the issuer of the sig one of our revokers? */
+  if( !pk->revkey && pk->numrevkeys )
+     BUG();
+  else
+      for(i=0;i<pk->numrevkeys;i++)
+	{
+          u32 keyid[2];
+    
+          keyid_from_fingerprint(pk->revkey[i].fpr,MAX_FINGERPRINT_LEN,keyid);
+    
+          if(keyid[0]==sig->keyid[0] && keyid[1]==sig->keyid[1])
+	    {
+              MD_HANDLE md;
+    
+              md=md_open(sig->digest_algo,0);
+              hash_public_key(md,pk);
+              rc=signature_check(sig,md);
+	      cache_sig_result(sig,rc);
+	      break;
+	    }
+	}
+
+  busy=0;
+
+  return rc;
+} 
+
 /****************
  * check the signature pointed to by NODE. This is a key signature.
  * If the function detects a self-signature, it uses the PK from
@@ -456,11 +521,17 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	return rc;
 
     if( sig->sig_class == 0x20 ) { /* key revocation */
-	md = md_open( algo, 0 );
-	hash_public_key( md, pk );
-	rc = do_check( pk, sig, md, r_expired );
-        cache_sig_result ( sig, rc );
-	md_close(md);
+        /* designated revoker? */
+        if(pk->keyid[0]!=sig->keyid[0] || pk->keyid[1]!=sig->keyid[1])
+	  rc=check_revocation_keys(pk,sig);
+	else
+	  {
+	    md = md_open( algo, 0 );
+	    hash_public_key( md, pk );
+	    rc = do_check( pk, sig, md, r_expired );
+	    cache_sig_result ( sig, rc );
+	    md_close(md);
+	  }
     }
     else if( sig->sig_class == 0x28 ) { /* subkey revocation */
 	KBNODE snode = find_prev_kbnode( root, node, PKT_PUBLIC_SUBKEY );

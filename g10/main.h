@@ -106,6 +106,7 @@ int clearsign_file( const char *fname, STRLIST locusr, const char *outfile );
 int sign_symencrypt_file (const char *fname, STRLIST locusr);
 
 /*-- sig-check.c --*/
+int check_revocation_keys (PKT_public_key *pk, PKT_signature *sig);
 int check_key_signature( KBNODE root, KBNODE node, int *is_selfsig );
 int check_key_signature2( KBNODE root, KBNODE node,
 			  int *is_selfsig, u32 *r_expiredate, int *r_expired );
