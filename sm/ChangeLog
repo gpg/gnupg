@@ -1,3 +1,8 @@
+2002-03-28  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (list_cert_colon): Fixed listing of crt record; the
+	issuer is not at the right place.  Print a chainingID.
+
 2002-03-21  Werner Koch  <wk@gnupg.org>
 
 	* export.c: New.

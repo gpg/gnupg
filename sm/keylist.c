@@ -62,7 +62,6 @@ print_capabilities (KsbaCert cert, FILE *fp)
   putc ('E', fp);
   putc ('S', fp);
   putc ('C', fp);
-  putc (':', fp);
 }
 
 
@@ -137,14 +136,14 @@ list_cert_colon (KsbaCert cert, FILE *fp, int have_secret)
 
   fprintf (fp, ":%u:%d::",
            /*keylen_of_cert (cert)*/1024,
-           /* pubkey_algo_of_cert (cert)*/'R');
+           /* pubkey_algo_of_cert (cert)*/1);
 
   /* we assume --fixed-list-mode for gpgsm */
   print_time ( ksba_cert_get_validity (cert, 0), fp);
   putc (':', fp);
   print_time ( ksba_cert_get_validity (cert, 1), fp);
   putc (':', fp);
-  putc (':', fp);
+  /* field 8, serial number: */
   if ((sexp = ksba_cert_get_serial (cert)))
     {
       int len;
@@ -162,19 +161,42 @@ list_cert_colon (KsbaCert cert, FILE *fp, int have_secret)
       xfree (sexp);
     }
   putc (':', fp);
+  /* field 9, ownertrust - not used here */
   putc (':', fp);
+  /* field 10, old user ID - we use it here for the issuer DN */
   if ((p = ksba_cert_get_issuer (cert,0)))
     {
       print_sanitized_string (fp, p, ':');
       xfree (p);
     }
   putc (':', fp);
+  /* field 11, signature class - not used */ 
+  putc (':', fp);
+  /* field 12, capabilities: */ 
   print_capabilities (cert, fp);
+  putc (':', fp);
   putc ('\n', fp);
 
+  /* FPR record */
   p = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
-  fprintf (fp, "fpr:::::::::%s:\n", p);
+  fprintf (fp, "fpr:::::::::%s:::", p);
   xfree (p);
+  /* print chaining ID (field 13)*/
+  {
+    KsbaCert next;
+    
+    if (!gpgsm_walk_cert_chain (cert, &next))
+      {
+        p = gpgsm_get_fingerprint_hexstring (next, GCRY_MD_SHA1);
+        fputs (p, fp);
+        xfree (p);
+        ksba_cert_release (next);
+      }
+  }
+  putc (':', fp);
+  putc ('\n', fp);
+
+
   if (opt.with_key_data)
     {
       if ( (p = gpgsm_get_keygrip_hexstring (cert)))
