@@ -1636,7 +1636,8 @@ ask_user_id( int mode )
 
     if( !mode )
 	tty_printf( _("\n"
-"You need a user ID to identify your key; the software constructs the user ID\n"
+"You need a user ID to identify your key; "
+                                        "the software constructs the user ID\n"
 "from the Real Name, Comment and Email Address in this form:\n"
 "    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n\n") );
     uid = aname = acomment = amail = NULL;
@@ -1731,7 +1732,7 @@ ask_user_id( int mode )
 	}
 
 	for(;;) {
-            /* Note to translators: These are the allowed answers in
+            /* TRANSLATORS: These are the allowed answers in
                lower and uppercase.  Below you will find the matching
                string which should be translated accordingly and the
                letter changed to match the one in the answer string.

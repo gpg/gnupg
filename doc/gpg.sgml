@@ -1,6 +1,6 @@
 <!-- gpg.sgml - the man page for GnuPG
     Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
-                  2004 Free Software Foundation, Inc.
+                  2004, 2005 Free Software Foundation, Inc.
 
     This file is part of GnuPG.
 
@@ -426,6 +426,18 @@ transferred to the card.  A sub menu allows you to select on what card
 to store the key.  Note that it is not possible to get that key back
 from the card - if the card gets broken your secret key will be lost
 unless you have a backup somewhere.</para></listitem></varlistentry>
+    <varlistentry>
+    <term>bkuptocard &ParmFile;</term>
+    <listitem><para>
+Restore the given file to a card. This command
+may be used to restore a backup key (as generated during card
+initialization) to a new card.  In almost all cases this will be the
+encryption key. You should use this command only
+with the corresponding public key and make sure that the file
+given as argument is indeed the backup to restore.  You should
+then select 2 to restore as encryption key.
+You will first be asked to enter the passphrase of the backup key and
+then for the Admin PIN of the card.</para></listitem></varlistentry>
     <varlistentry>
     <term>delkey</term>
     <listitem><para>

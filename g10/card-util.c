@@ -1122,9 +1122,10 @@ card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)
 }
 
 
-/* Store the subkey at NODE into the smartcard and modify NODE to
-   carry the serrialno stuff instead of the actual secret key
-   parameters. */
+/* Store the key at NODE into the smartcard and modify NODE to
+   carry the serialno stuff instead of the actual secret key
+   parameters.  USE is the usage for that key; 0 means any
+   usage. */
 int 
 card_store_subkey (KBNODE node, int use)
 {

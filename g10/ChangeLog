@@ -1,3 +1,15 @@
+2005-02-15  Werner Koch  <wk@g10code.com>
+
+	* passphrase.c (agent_get_passphrase): Don't call free_public_key
+	if PK is NULL.
+	(passphrase_clear_cache): Ditto. Removed debug output.
+	(passphrase_to_dek): Ditto.
+
+2005-02-13  Werner Koch  <wk@g10code.com>
+
+	* keyedit.c (cmds): Limit code to 80 columns. Add command
+	BKUPTOCARD.
+
 2005-02-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* encr-data.c (decrypt_data): Use it here to turn off the "quick
@@ -6,6 +18,11 @@
 
 	* mainproc.c (proc_symkey_enc): Set a flag to indicate that a
 	particular session key came from a passphrase and not a PK.
+
+2005-02-08  Werner Koch  <wk@g10code.com>
+
+	* misc.c (w32_shgetfolderpath): New.
+	(default_homedir): Use it to avoid problems under Windows95.
 
 2005-02-06  David Shaw  <dshaw@jabberwocky.com>
 

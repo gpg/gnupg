@@ -1,3 +1,7 @@
+2005-02-15  Werner Koch  <wk@g10code.com>
+
+	* gpg.sgml: Add bkuptocard command for --edit-key.
+
 2005-02-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Note that level 0 signatures are always accepted

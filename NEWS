@@ -47,6 +47,9 @@ Noteworthy changes in version 1.4.1
       that directory must be stored in the registry at the same key as
       above with the name "Install Directory".
 
+    * Add new --edit-key command "bkuptocard" to allow restoring a
+      card key from a backup.
+
 
 Noteworthy changes in version 1.4.0 (2004-12-16)
 ------------------------------------------------

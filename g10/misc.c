@@ -51,6 +51,8 @@
 #ifndef CSIDL_FLAG_CREATE
 #define CSIDL_FLAG_CREATE 0x8000
 #endif
+#include "errors.h"
+#include "dynload.h"
 #endif /*_WIN32*/
 
 #include "util.h"
@@ -1018,6 +1020,46 @@ parse_options(char *str,unsigned int *options,
 }
 
 
+/* This is a helper function to load a Windows function from either of
+   one DLLs. */
+#ifdef HAVE_W32_SYSTEM
+static HRESULT
+w32_shgetfolderpath (HWND a, int b, HANDLE c, DWORD d, LPSTR e)
+{
+  static int initialized;
+  static HRESULT (* WINAPI func)(HWND,int,HANDLE,DWORD,LPSTR);
+
+  if (!initialized)
+    {
+      static char *dllnames[] = { "shell32.dll", "shfolder.dll", NULL };
+      void *handle;
+      int i;
+
+      initialized = 1;
+
+      for (i=0, handle = NULL; !handle && dllnames[i]; i++)
+        {
+          handle = dlopen (dllnames[i], RTLD_LAZY);
+          if (handle)
+            {
+              func = dlsym (handle, "SHGetFolderPathA");
+              if (!func)
+                {
+                  dlclose (handle);
+                  handle = NULL;
+                }
+            }
+        }
+    }
+
+  if (func)
+    return func (a,b,c,d,e);
+  else
+    return -1;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
 /* Set up the default home directory.  The usual --homedir option
    should be parsed later. */
 char *
@@ -1040,8 +1082,8 @@ default_homedir (void)
          using a system roaming serives might be better than to let
          them do it manually.  A security conscious user will anyway
          use the registry entry to have better control.  */
-      if (SHGetFolderPath(NULL, CSIDL_APPDATA|CSIDL_FLAG_CREATE, 
-                          NULL, 0, path) >= 0) 
+      if (w32_shgetfolderpath (NULL, CSIDL_APPDATA|CSIDL_FLAG_CREATE, 
+                               NULL, 0, path) >= 0) 
         {
           char *tmp = xmalloc (strlen (path) + 6 +1);
           strcpy (stpcpy (tmp, path), "\\gnupg");

@@ -1,6 +1,6 @@
 /* passphrase.c -  Get a passphrase
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ *               2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -661,7 +661,8 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
   memset (fpr, 0, MAX_FINGERPRINT_LEN );
   if( keyid && get_pubkey( pk, keyid ) )
     {
-      free_public_key( pk );      
+      if (pk)
+        free_public_key( pk );      
       pk = NULL; /* oops: no key for some reason */
     }
   
@@ -795,7 +796,8 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
             }
           pw[pwlen] = 0; /* make a C String */
           agent_close (fd);
-          free_public_key( pk );
+          if (pk)
+            free_public_key( pk );
 #ifdef ENABLE_NLS
           if (orig_codeset)
             bind_textdomain_codeset (PACKAGE, orig_codeset);
@@ -912,7 +914,8 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
             pw[pwlen++] = xtoi_2 (pw+i);
           pw[pwlen] = 0; /* make a C String */
           agent_close (fd);
-          free_public_key( pk );
+          if (pk)
+            free_public_key( pk );
 #ifdef ENABLE_NLS
           if (orig_codeset)
             bind_textdomain_codeset (PACKAGE, orig_codeset);
@@ -946,7 +949,8 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
   if ( fd != -1 )
     agent_close (fd);
   m_free (pw );
-  free_public_key( pk );
+  if (pk)
+    free_public_key( pk );
   
   return NULL;
 #endif /* Posix or W32 */
@@ -981,7 +985,6 @@ passphrase_clear_cache ( u32 *keyid, int algo )
   memset (fpr, 0, MAX_FINGERPRINT_LEN );
   if( !keyid || get_pubkey( pk, keyid ) )
     {
-      log_debug ("oops, no key in passphrase_clear_cache\n");
       goto failure; /* oops: no key for some reason */
     }
   
@@ -1051,7 +1054,8 @@ passphrase_clear_cache ( u32 *keyid, int algo )
  failure:
   if (fd != -1)
     agent_close (fd);
-  free_public_key( pk );
+  if (pk)
+    free_public_key( pk );
 #endif /* Posix or W32 */
 }
 
@@ -1208,7 +1212,8 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 	}
 
 	tty_printf("\n");
-	free_public_key( pk );
+        if (pk)
+          free_public_key( pk );
     }
 
  agent_died:

@@ -1303,7 +1303,7 @@ enum cmdids
     cmdADDREVOKER, cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF,
     cmdEXPIRE, cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF, cmdSETPREF,
     cmdPREFKS, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST, cmdCHKTRUST,
-    cmdADDCARDKEY, cmdKEYTOCARD, cmdNOP
+    cmdADDCARDKEY, cmdKEYTOCARD, cmdBKUPTOCARD, cmdNOP
   };
 
 static struct
@@ -1326,47 +1326,79 @@ static struct
     { "key"     , cmdSELKEY    , 0, N_("select subkey N") },
     { "check"   , cmdCHECK     , 0, N_("check signatures") },
     { "c"       , cmdCHECK     , 0, NULL },
-    { "sign"    , cmdSIGN      , KEYEDIT_NOT_SK|KEYEDIT_TAIL_MATCH, N_("sign selected user IDs [* see below for related commands]") },
+    { "sign"    , cmdSIGN      , KEYEDIT_NOT_SK|KEYEDIT_TAIL_MATCH,
+      N_("sign selected user IDs [* see below for related commands]") },
     { "s"       , cmdSIGN      , KEYEDIT_NOT_SK, NULL },
     /* "lsign" and friends will never match since "sign" comes first
        and it is a tail match.  They are just here so they show up in
        the help menu. */
     { "lsign"   , cmdNOP       , 0, N_("sign selected user IDs locally") },
-    { "tsign"   , cmdNOP       , 0, N_("sign selected user IDs with a trust signature") },
-    { "nrsign"  , cmdNOP       , 0, N_("sign selected user IDs with a non-revocable signature") },
+    { "tsign"   , cmdNOP       , 0,
+      N_("sign selected user IDs with a trust signature") },
+    { "nrsign"  , cmdNOP       , 0,
+      N_("sign selected user IDs with a non-revocable signature") },
+
     { "debug"   , cmdDEBUG     , 0, NULL },
-    { "adduid"  , cmdADDUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a user ID") },
-    { "addphoto", cmdADDPHOTO  , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a photo ID") },
-    { "deluid"  , cmdDELUID    , KEYEDIT_NOT_SK, N_("delete selected user IDs") },
+    { "adduid"  , cmdADDUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK,
+      N_("add a user ID") },
+    { "addphoto", cmdADDPHOTO  , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK,
+      N_("add a photo ID") },
+    { "deluid"  , cmdDELUID    , KEYEDIT_NOT_SK,
+      N_("delete selected user IDs") },
     /* delphoto is really deluid in disguise */
     { "delphoto", cmdDELUID    , KEYEDIT_NOT_SK, NULL },
-    { "addkey"  , cmdADDKEY    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a subkey") },
+
+    { "addkey"  , cmdADDKEY    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK,
+      N_("add a subkey") },
+
 #ifdef ENABLE_CARD_SUPPORT
-    { "addcardkey", cmdADDCARDKEY , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a key to a smartcard") },
-    { "keytocard", cmdKEYTOCARD , KEYEDIT_NEED_SK|KEYEDIT_ONLY_SK, N_("move a key to a smartcard")},
+    { "addcardkey", cmdADDCARDKEY , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK,
+      N_("add a key to a smartcard") },
+    { "keytocard", cmdKEYTOCARD , KEYEDIT_NEED_SK|KEYEDIT_ONLY_SK, 
+      N_("move a key to a smartcard")},
+    { "bkuptocard", cmdBKUPTOCARD , KEYEDIT_NEED_SK|KEYEDIT_ONLY_SK, 
+      N_("move a backup key to a smartcard")},
 #endif /*ENABLE_CARD_SUPPORT*/
-    { "delkey"  , cmdDELKEY    , KEYEDIT_NOT_SK, N_("delete selected subkeys") },
-    { "addrevoker",cmdADDREVOKER,KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a revocation key") },
-    { "delsig"  , cmdDELSIG    , KEYEDIT_NOT_SK, N_("delete signatures from the selected user IDs") },
-    { "expire"  , cmdEXPIRE    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("change the expiration date for the key or selected subkeys") },
-    { "primary" , cmdPRIMARY   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("flag the selected user ID as primary")},
-    { "toggle"  , cmdTOGGLE    , KEYEDIT_NEED_SK, N_("toggle between the secret and public key listings") },
+
+    { "delkey"  , cmdDELKEY    , KEYEDIT_NOT_SK,
+      N_("delete selected subkeys") },
+    { "addrevoker",cmdADDREVOKER,KEYEDIT_NOT_SK|KEYEDIT_NEED_SK,
+      N_("add a revocation key") },
+    { "delsig"  , cmdDELSIG    , KEYEDIT_NOT_SK,
+      N_("delete signatures from the selected user IDs") },
+    { "expire"  , cmdEXPIRE    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK,
+      N_("change the expiration date for the key or selected subkeys") },
+    { "primary" , cmdPRIMARY   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK,
+      N_("flag the selected user ID as primary")},
+    { "toggle"  , cmdTOGGLE    , KEYEDIT_NEED_SK,
+      N_("toggle between the secret and public key listings") },
     { "t"       , cmdTOGGLE    , KEYEDIT_NEED_SK, NULL },
-    { "pref"    , cmdPREF      , KEYEDIT_NOT_SK, N_("list preferences (expert)")},
-    { "showpref", cmdSHOWPREF  , KEYEDIT_NOT_SK, N_("list preferences (verbose)") },
-    { "setpref" , cmdSETPREF   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("set preference list for the selected user IDs") },
+    { "pref"    , cmdPREF      , KEYEDIT_NOT_SK,
+      N_("list preferences (expert)")},
+    { "showpref", cmdSHOWPREF  , KEYEDIT_NOT_SK,
+      N_("list preferences (verbose)") },
+    { "setpref" , cmdSETPREF   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK,
+      N_("set preference list for the selected user IDs") },
     /* Alias */
     { "updpref" , cmdSETPREF   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, NULL },
-    { "keyserver",cmdPREFKS    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("set preferred keyserver URL for the selected user IDs")},
-    { "passwd"  , cmdPASSWD    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("change the passphrase") },
+
+    { "keyserver",cmdPREFKS    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK,
+      N_("set preferred keyserver URL for the selected user IDs")},
+    { "passwd"  , cmdPASSWD    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK,
+      N_("change the passphrase") },
     /* Alias */
     { "password", cmdPASSWD    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, NULL },
+
     { "trust"   , cmdTRUST     , KEYEDIT_NOT_SK, N_("change the ownertrust") },
-    { "revsig"  , cmdREVSIG    , KEYEDIT_NOT_SK, N_("revoke signatures on the selected user IDs") },
-    { "revuid"  , cmdREVUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("revoke selected user IDs") },
+    { "revsig"  , cmdREVSIG    , KEYEDIT_NOT_SK,
+      N_("revoke signatures on the selected user IDs") },
+    { "revuid"  , cmdREVUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK,
+      N_("revoke selected user IDs") },
     /* Alias */
     { "revphoto", cmdREVUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, NULL },
-    { "revkey"  , cmdREVKEY    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("revoke key or selected subkeys") },
+
+    { "revkey"  , cmdREVKEY    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK,
+      N_("revoke key or selected subkeys") },
     { "enable"  , cmdENABLEKEY , KEYEDIT_NOT_SK, N_("enable key") },
     { "disable" , cmdDISABLEKEY, KEYEDIT_NOT_SK, N_("disable key") },
     { "showphoto",cmdSHOWPHOTO , 0, N_("show selected photo IDs") },
@@ -1550,7 +1582,8 @@ keyedit_menu( const char *username, STRLIST locusr,
 
 	    tty_printf("\n");
 	    tty_printf(_(
-"* The `sign' command may be prefixed with an `l' for local signatures (lsign),\n"
+"* The `sign' command may be prefixed with an `l' for local "
+"signatures (lsign),\n"
 "  a `t' for trust signatures (tsign), an `nr' for non-revocable signatures\n"
 "  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"));
 
@@ -1744,6 +1777,69 @@ keyedit_menu( const char *username, STRLIST locusr,
 	      }
 	  }
           break;
+
+        case cmdBKUPTOCARD:
+	  {
+            /* Ask for a filename, check whether this is really a
+               backup key as generated by the card generation, parse
+               that key and store it on card. */
+	    KBNODE node;
+            const char *fname;
+            PACKET *pkt;
+            IOBUF a;
+
+            fname = arg_string;
+            if (!*fname)
+              {
+                tty_printf (_("Command expects a filename argument\n"));
+                break;
+              }
+
+            /* Open that file.  */
+            a = iobuf_open (fname);
+            if (a && is_secured_file (iobuf_get_fd (a)))
+              {
+                iobuf_close (a);
+                a = NULL;
+                errno = EPERM;
+              }
+            if (!a)
+              {
+	        tty_printf (_("Can't open `%s': %s\n"),
+                            fname, strerror(errno));
+                break;
+              }
+            
+            /* Parse and check that file.  */
+            pkt = xmalloc (sizeof *pkt);
+            init_packet (pkt);
+            rc = parse_packet (a, pkt);
+            iobuf_close (a);
+            iobuf_ioctl (NULL, 2, 0, (char*)fname); /* (invalidate cache).  */
+            if (!rc 
+                && pkt->pkttype != PKT_SECRET_KEY 
+                && pkt->pkttype != PKT_SECRET_SUBKEY)
+              rc = G10ERR_NO_SECKEY;
+            if (rc)
+              {
+                tty_printf(_("Error reading backup key from `%s': %s\n"),
+                           fname, g10_errstr (rc));
+                free_packet (pkt);
+                xfree (pkt);
+                break;
+              }
+            node = new_kbnode (pkt);
+
+            /* Store it.  */
+            if (card_store_subkey (node, 0))
+              {
+                redisplay = 1;
+                sec_modified = 1;
+              }
+            release_kbnode (node);
+	  }
+          break;
+
 #endif /* ENABLE_CARD_SUPPORT */
 
 	  case cmdDELKEY: {
