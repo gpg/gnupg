@@ -268,6 +268,7 @@ agent_get_passphrase (char **retpass, const char *desc, const char *prompt,
   if (!parm.buffer)
     return seterr (Out_Of_Core);
 
+  assuan_begin_confidential (entry_ctx);
   rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm, NULL, NULL);
   if (rc)
     {

@@ -269,7 +269,7 @@ cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
 /* GET_PASSPHRASE <cache_id> [<error_message> <prompt> <description>]
 
    This function is usually used to ask for a passphrase to be used
-   for conventional encryption, but may aslo be used by programs which
+   for conventional encryption, but may also be used by programs which
    need specal handling of passphrases.  This command uses a syntax
    which helps clients to use the agent with minimum effort.  The
    agent either returns with an error or with a OK followed by the hex
@@ -287,11 +287,12 @@ cmd_get_passphrase (ASSUAN_CONTEXT ctx, char *line)
   /* FIXME: Parse that stuff */
   desc = "We need a passphrase";
   prompt = NULL;
-  errtext = "try again";
+  errtext = NULL;
 
   rc = agent_get_passphrase (&response, desc, prompt, errtext);
   if (!rc)
     {
+      assuan_begin_confidential (ctx);
       rc = assuan_set_okay_line (ctx, response);
       xfree (response);
     }
@@ -303,7 +304,7 @@ cmd_get_passphrase (ASSUAN_CONTEXT ctx, char *line)
 /* CLEAR_PASSPHRASE <cache_id>
 
    may be used to invalidate the cache entry for a passphrase.  The
-   function returns with OK even when ther eis no cached passphrase.
+   function returns with OK even when there is no cached passphrase.
 */
 
 static int
@@ -359,23 +360,30 @@ register_commands (ASSUAN_CONTEXT ctx)
 }
 
 
-/* Startup the server */
+/* Startup the server.  If LISTEN_FD is given as -1, this is simple
+   piper server, otherwise it is a regular server */
 void
-start_command_handler (void)
+start_command_handler (int listen_fd)
 {
   int rc;
-  int filedes[2];
   ASSUAN_CONTEXT ctx;
   struct server_control_s ctrl;
 
   memset (&ctrl, 0, sizeof ctrl);
 
-  /* For now we use a simple pipe based server so that we can work
-     from scripts.  We will later add options to run as a daemon and
-     wait for requests on a Unix domain socket */
-  filedes[0] = 0;
-  filedes[1] = 1;
-  rc = assuan_init_pipe_server (&ctx, filedes);
+  
+  if (listen_fd == -1)
+    {
+      int filedes[2];
+
+      filedes[0] = 0;
+      filedes[1] = 1;
+      rc = assuan_init_pipe_server (&ctx, filedes);
+    }
+  else
+    {
+      rc = assuan_init_socket_server (&ctx, listen_fd);
+    }
   if (rc)
     {
       log_error ("failed to initialize the server: %s\n",
@@ -385,7 +393,7 @@ start_command_handler (void)
   rc = register_commands (ctx);
   if (rc)
     {
-      log_error ("failed to the register commands with Assuan: %s\n",
+      log_error ("failed to register commands with Assuan: %s\n",
                  assuan_strerror(rc));
       agent_exit (2);
     }
@@ -394,6 +402,9 @@ start_command_handler (void)
   ctrl.server_local = xcalloc (1, sizeof *ctrl.server_local);
   ctrl.server_local->assuan_ctx = ctx;
   ctrl.server_local->message_fd = -1;
+
+  if (DBG_ASSUAN)
+    assuan_set_log_stream (ctx, log_get_stream ());
 
   for (;;)
     {
@@ -417,6 +428,8 @@ start_command_handler (void)
     }
 
 
-  assuan_deinit_pipe_server (ctx);
+  assuan_deinit_server (ctx);
 }
+
+
 

@@ -1,3 +1,12 @@
+2002-01-19  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c:  Removed unused cruft and implement the socket
+	based server.
+	(my_strusage): Take bug report address from configure.ac.
+	* command.c (start_command_handler): Add an argument to start as
+	regular server.
+	(start_command_handler): Enable Assuan logging.
+
 2002-01-15  Werner Koch  <wk@gnupg.org>
 
 	* trustlist.c: New.
