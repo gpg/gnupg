@@ -2,6 +2,8 @@
 
 	* keybox-blob.c (_keybox_create_x509_blob): Skip the leading
 	parenthesis of the serial number's S-exp.
+	(_keybox_create_x509_blob): And fixed length calculation.
+	(create_blob_header): Don't add an offset when writing the serial.
 
 2001-12-18  Werner Koch  <wk@gnupg.org>
 

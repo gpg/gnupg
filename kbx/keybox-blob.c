@@ -555,7 +555,7 @@ create_blob_header (KEYBOXBLOB blob, int blobtype)
 
   put16 (a, blob->seriallen); /*fixme: check that it fits into 16 bits*/
   if (blob->serial)
-    put_membuf (a, blob->serial+4, blob->seriallen);
+    put_membuf (a, blob->serial, blob->seriallen);
 
   put16 ( a, blob->nuids );
   put16 ( a, 4 + 4 + 2 + 1 + 1 );  /* size of uid info */
@@ -821,20 +821,26 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
   p = ksba_cert_get_serial (cert);
   if (p)
     {
-      size_t n;
+      size_t n, len;
       n = gcry_sexp_canon_len (p, 0, NULL, NULL);
-      if (!n)
+      if (n < 2)
         {
           xfree (p);
           return KEYBOX_General_Error;
         }
       blob->serialbuf = p;
+      p++; n--; /* skip '(' */
+      for (len=0; n && *p && *p != ':' && digitp (p); n--, p++)
+        len = len*10 + atoi_1 (p);
+      if (*p != ':')
+        {
+          xfree (blob->serialbuf);
+          blob->serialbuf = NULL;
+          return KEYBOX_General_Error;
+        }
       p++;
-      for (; n && *p != ':'; n--, p++)
-        ;
-      p++;
-      blob->seriallen = n;
       blob->serial = p;
+      blob->seriallen = len;
     }
 
   blob->nkeys = 1;
