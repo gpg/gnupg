@@ -38,11 +38,7 @@ ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
  5. Field:  KeyID
  6. Field:  Creation Date (in UTC)
  7. Field:  Key expiration date or empty if none.
- 8. Field:  Local ID: record number of the dir record in the trustdb.
-	    This value is only valid as long as the trustdb is not
-	    deleted. You can use "#<local-id> as the user id when
-	    specifying a key. This is needed because keyids may not be
-	    unique - a program may use this number to access keys later.
+ 8. Field:  reserved (used to be the Local-ID)
  9. Field:  Ownertrust (primary public keys only)
 	    This is a single letter, but be prepared that additional
 	    information may follow in some future versions.
@@ -439,6 +435,8 @@ The TrustDB is built from fixed length records, where the first byte
 describes the record type.  All numeric values are stored in network
 byte order. The length of each record is 40 bytes. The first record of
 the DB is always of type 1 and this is the only record of this type.
+
+FIXME:  The layout changed, document it here.
 
   Record type 0:
   --------------

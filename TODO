@@ -1,18 +1,9 @@
 
-  * Pot the lsign flag into the hashed area.
-
-  * check whether the "n signatures not checked due to missing keys"
-    from --edit/check can be due to revoked signatures.  Chnage the
-    wording in this case.
-
-  * Remove all references to the local-ID from the docs
- 
-  * What about adding a feture -word to the +wordlist search mode.
-
   * getkey does not return revoked/expired keys - therefore it is not
     possible to override it.
 
   * Selection using +wordlist does not work.
+    What about adding a feature -word to the +wordlist search mode.
 
   * add listing of notation data
 
@@ -96,24 +87,28 @@
     [David is working on this]
 
   * Check the beginning of file to detect already compressed files (gzip,
-    bzip2, xdelta and some picture formats)
+    bzip2, xdelta and some picture formats)  [Timo has some code for this]
 
   * Get new assembler stuff from gmp 3.1
 
   * Use new-format headers for compressed packets.
-    The advantage is that a garbled zip file can be better detected.
+    The advantage is that a garbled zip files can be better detected.
  
-
-Nice to have
-------------
   * use DEL and ^H for erasing the previous character (util/ttyio.c).
     or better readline.
+
   * Print a warning if the directory mode is wrong.
+
   * preferences of hash algorithms are not yet used.
+
   * add test cases for invalid data (scrambled armor or other random data)
+
   * add checking of armor trailers
+
   * the pubkey encrypt functions should do some sanity checks.
+
   * "gpg filename.tar.gz.asc" should work like --verify (-sab).
+
   * for messages created with "-t", it might make sense to append the
     verification status of the message to the output (i.e. write something to
     the --output file and not only to stderr.
@@ -123,4 +118,6 @@ Things we won't do
 ------------------
 
   * New option --file-remove path-to-wipe-program ? 
+
+
 

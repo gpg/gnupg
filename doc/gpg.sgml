@@ -1658,16 +1658,6 @@ digits, the underscore and all characters with bit 7 set.
 </varlistentry>
 
 <varlistentry>
-<term>#34</term>
-<listitem><para>
-Using the Local ID.  This is a very low level method and should
-only be used by applications which really need it.  The hash character
-indicates this method.	An application should not assume that this is
-only a number.
-</para></listitem>
-</varlistentry>
-
-<varlistentry>
 <term>Heine</term>
 <term>*Heine</term>
 <listitem><para>
