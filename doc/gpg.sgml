@@ -522,28 +522,28 @@ safeguard against accidental deletion of multiple keys.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--delete-secret-key  &ParmName;</term>
+<term>--delete-secret-key &ParmName;</term>
 <listitem><para>
 Remove key from the secret and public keyring. In batch mode the key
 must be specified by fingerprint.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--delete-secret-and-public-key  &ParmName;</term>
+<term>--delete-secret-and-public-key &ParmName;</term>
 <listitem><para>
 Same as --delete-key, but if a secret key exists, it will be removed 
 first. In batch mode the key must be specified by fingerprint.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--gen-revoke</term>
+<term>--gen-revoke &ParmName;</term>
 <listitem><para>
 Generate a revocation certificate for the complete key. To revoke
 a subkey or a signature, use the --edit command.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--desig-revoke</term>
+<term>--desig-revoke &ParmName;</term>
 <listitem><para>
 Generate a designated revocation certificate for a key.  This allows a
 user (with the permission of the keyholder) to revoke someone else's
@@ -785,9 +785,9 @@ non-Windows platforms.
 <varlistentry>
 <term>-u, --local-user &ParmName;</term>
 <listitem><para>
-Use &ParmName as the user ID to sign.
-This option is silently ignored for the list commands,
-so that it can be used in an options file.
+Use &ParmName; as the user ID to sign with.  This option is silently
+ignored for the list commands, so that it can be used in an options
+file.
 </para></listitem></varlistentry>
 
 
@@ -1007,22 +1007,20 @@ Identical to `--trust-model always'.  This option is deprecated.
 <varlistentry>
 <term>--keyserver &ParmName;</term>
 <listitem><para>
-Use &ParmName as your keyserver.  This is the server that --recv-keys,
---send-keys, and --search-keys will communicate with to receive keys
-from, send keys to, and search for keys on.  The format of the
-&ParmName is a URI: `scheme:[//]keyservername[:port]' The scheme is
-the type of keyserver: "hkp" for the HTTP (or compatible) keyservers,
-"ldap" for the NAI LDAP keyserver, or "mailto" for the Graff email
-keyserver.  Note that your particular installation of GnuPG may have
-other keyserver types available as well.  Keyserver schemes are
-case-insensitive.
+Use &ParmName; as your keyserver.  This is the server that
+--recv-keys, --send-keys, and --search-keys will communicate with to
+receive keys from, send keys to, and search for keys on.  The format
+of the &ParmName; is a URI: `scheme:[//]keyservername[:port]' The
+scheme is the type of keyserver: "hkp" for the HTTP (or compatible)
+keyservers, "ldap" for the NAI LDAP keyserver, or "mailto" for the
+Graff email keyserver.  Note that your particular installation of
+GnuPG may have other keyserver types available as well.  Keyserver
+schemes are case-insensitive.
 </para><para>
 Most keyservers synchronize with each other, so there is generally no
-need to send keys to more than one server.  Using the command "host -l
-pgp.net | grep wwwkeys" gives you a list of HKP keyservers.  When
-using one of the wwwkeys servers, due to load balancing using
-round-robin DNS you may notice that you get a different key server
-each time.
+need to send keys to more than one server.  The keyserver
+"hkp://subkeys.pgp.net" uses round robin DNS to give a different
+keyserver each time you use it.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2413,12 +2411,13 @@ a signature was bad, and other error codes for fatal errors.
 <term>gpg --verify  <parameter/pgpfile/</term>
 <term>gpg --verify  <parameter/sigfile/ &OptParmFiles;</term>
 <listitem><para>
-Verify the signature of the file but do not output the data. The second form
-is used for detached signatures, where <parameter/sigfile/ is the detached
-signature (either ASCII armored of binary) and &OptParmFiles are the signed
-data; if this is not given the name of the file holding the signed data is
-constructed by cutting off the extension (".asc" or ".sig") of
-<parameter/sigfile/ or by asking the user for the filename.
+Verify the signature of the file but do not output the data. The
+second form is used for detached signatures, where <parameter/sigfile/
+is the detached signature (either ASCII armored or binary) and
+&OptParmFiles; are the signed data; if this is not given, the name of
+the file holding the signed data is constructed by cutting off the
+extension (".asc" or ".sig") of <parameter/sigfile/ or by asking the
+user for the filename.
 </para></listitem></varlistentry>
 
     </variablelist>
