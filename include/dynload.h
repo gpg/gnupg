@@ -52,9 +52,7 @@ dlsym (void * hd, const char * sym)
 static __inline__ const char *
 dlerror (void)
 {
-  static char buf[32];
-  sprintf (buf, "ec=%lu\n", GetLastError ());
-  return buf;
+  return w32_strerror (0);
 }
 
 

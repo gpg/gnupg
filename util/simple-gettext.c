@@ -427,7 +427,7 @@ gettext( const char *msgid )
        log_info("InputCP=%u  OutputCP=%u\n", cp1, cp2 );
 
        if( !SetConsoleOutputCP( 1252 ) )
-	   log_info("SetConsoleOutputCP failed: %d\n", (int)GetLastError() );
+            log_info("SetConsoleOutputCP failed: %s\n", w32_strerror (0));
 
        cp1 = GetConsoleCP();
        cp2 = GetConsoleOutputCP();

@@ -1,3 +1,9 @@
+2004-11-03  Timo Schulz  <twoaday@g10code.com>
+
+        * passphrase.c (readn, writen): Use w32_strerror instead
+        of just showing the error number.
+        * misc.c [_WIN32]: Fix warning about missing prototypes.
+	
 2004-10-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* skclist.c (build_sk_list): Don't need to warn about

@@ -79,7 +79,11 @@
 #define G10ERR_NO_CARD        57
 
 #ifndef HAVE_STRERROR
-char *strerror( int n );
+char *strerror (int n);
+#endif
+
+#ifdef _WIN32
+const char * w32_strerror (int w32_errno);
 #endif
 
 #endif /*G10_ERRORS_H*/

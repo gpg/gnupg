@@ -1,3 +1,10 @@
+2004-11-03  Timo Schulz  <twoaday@g10code.com>
+	
+	* strgutil.c (w32_strerror): New.
+	* ttyio.c (init_ttyfp, tty_printf, do_get): Use it here.
+	* iobuf.c (fd_cache_open, file_filter): Likewise.
+	(iobuf_seek, translate_file_handle): Likewise.
+	
 2004-11-02  Werner Koch  <wk@g10code.com>
 
 	* strgutil.c (load_libiconv): Use log_info to avoid failures when

@@ -189,99 +189,108 @@ read_passphrase_from_fd( int fd )
 }
 
 static int
-writen ( int fd, const void *buf, size_t nbytes )
+writen (int fd, const void *buf, size_t nbytes)
 {
 #if defined (_WIN32)
-    DWORD nwritten, nleft = nbytes;
+  DWORD nwritten, nleft = nbytes;
     
-    while (nleft > 0) {
-    	if ( !WriteFile( (HANDLE)write_fd, buf, nleft, &nwritten, NULL) ) {
-    		log_error("write failed: ec=%d\n", (int)GetLastError());
-    		return -1;
-    	}
-    	/*log_info("** WriteFile fd=%d nytes=%d nwritten=%d\n",
-    		 write_fd, nbytes, (int)nwritten);*/
-    	Sleep(100);
+  while (nleft > 0)
+    {
+      if (!WriteFile ((HANDLE)write_fd, buf, nleft, &nwritten, NULL))
+        {
+          log_error ("write failed: %s\n", w32_strerror (0));
+          return -1;
+        }
+      /*log_info ("** WriteFile fd=%d nytes=%d nwritten=%d\n",
+        write_fd, nbytes, (int)nwritten);*/
+      Sleep (100);
     	
-    	nleft -= nwritten;
-    	buf = (const BYTE *)buf + nwritten;
+      nleft -= nwritten;
+      buf = (const BYTE *)buf + nwritten;
     }
 #elif defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
-    /* not implemented */
+  /* not implemented */
 #else
-    size_t nleft = nbytes;
-    int nwritten;
+  size_t nleft = nbytes;
+  int nwritten;
 
-    while( nleft > 0 ) {
-        nwritten = write( fd, buf, nleft );
-        if( nwritten < 0 ) {
-            if ( errno == EINTR )
-                nwritten = 0;
-            else {
-                log_error ( "write() failed: %s\n", strerror (errno) );
-                return -1;
+  while (nleft > 0)
+    {
+      nwritten = write (fd, buf, nleft);
+      if (nwritten < 0)
+        {
+          if (errno == EINTR)
+            nwritten = 0;
+          else
+            {
+              log_error ("write() failed: %s\n", strerror (errno));
+              return -1;
             }
         }
-        nleft -= nwritten;
-        buf = (const char*)buf + nwritten;
+      nleft -= nwritten;
+      buf = (const char*)buf + nwritten;
     }
 #endif
     
-    return 0;
+  return 0;
 }
 
 
 static int
-readn ( int fd, void *buf, size_t buflen, size_t *ret_nread )
+readn (int fd, void *buf, size_t buflen, size_t *ret_nread)
 {
 #if defined (_WIN32)
-    DWORD nread, nleft = buflen;
+  DWORD nread, nleft = buflen;
     
-    while (nleft > 0) {
-    	if ( !ReadFile( (HANDLE)read_fd, buf, nleft, &nread, NULL) ) {
-            log_error("read() error: ec=%d\n", (int)GetLastError());
-            return -1;
+  while (nleft > 0)
+    {
+      if (!ReadFile ((HANDLE)read_fd, buf, nleft, &nread, NULL))
+        {
+          log_error ("read() error: %s\n", w32_strerror (0));
+          return -1;
     	}
-    	if (!nread || GetLastError() == ERROR_BROKEN_PIPE)
-            break;
-    	/*log_info("** ReadFile fd=%d buflen=%d nread=%d\n",
-          read_fd, buflen, (int)nread);*/
-    	Sleep(100);
+      if (!nread || GetLastError() == ERROR_BROKEN_PIPE)
+        break;
+      /*log_info ("** ReadFile fd=%d buflen=%d nread=%d\n",
+        read_fd, buflen, (int)nread);*/
+      Sleep (100);
     	
-    	nleft -= nread;
-    	buf = (BYTE *)buf + nread;
+      nleft -= nread;
+      buf = (BYTE *)buf + nread;
     }    	
-    if (ret_nread)
-    	*ret_nread = buflen - nleft;
+  if (ret_nread)
+    *ret_nread = buflen - nleft;
 
 #elif defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
-    /* not implemented */
+  /* not implemented */
 #else
-    size_t nleft = buflen;
-    int nread;
-    char *p;
+  size_t nleft = buflen;
+  int nread;
+  char *p;
 
-    p = buf;
-    while( nleft > 0 ) {
-        nread = read ( fd, buf, nleft );
-        if( nread < 0 ) {
-            if (nread == EINTR)
-                nread = 0;
-            else {
-                log_error ( "read() error: %s\n", strerror (errno) );
-                return -1;
-            }
+  p = buf;
+  while (nleft > 0)
+    {
+      nread = read (fd, buf, nleft);
+      if (nread < 0)
+        {
+          if (nread == EINTR)
+            nread = 0;
+          else {
+            log_error ("read() error: %s\n", strerror (errno));
+            return -1;
+          }
         }
-        else if( !nread )
-            break; /* EOF */
-        nleft -= nread;
-        buf = (char*)buf + nread;
+      else if (!nread)
+        break; /* EOF */
+      nleft -= nread;
+      buf = (char*)buf + nread;
     }
-    if( ret_nread )
-        *ret_nread = buflen - nleft;
+  if (ret_nread)
+    *ret_nread = buflen - nleft;
 #endif
     
-    return 0;
+  return 0;
 }
 
 /* read an entire line */

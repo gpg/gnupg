@@ -1,3 +1,8 @@
+2004-11-03  Timo Schulz  <twoaday@g10code.com>
+
+        * idea-stub.c (dlopen, dlsym): Use w32_strerror instead of
+        just showing the error number.
+	
 2004-10-14  Werner Koch  <wk@g10code.com>
 
 	* rndunix.c (start_gatherer) [ENABLE_SELINUX_HACKS]: Don't allow

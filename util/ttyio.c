@@ -140,15 +140,15 @@ init_ttyfp(void)
 			       FILE_SHARE_READ|FILE_SHARE_WRITE,
 			       &sa, OPEN_EXISTING, 0, 0 );
 	if( con.out == INVALID_HANDLE_VALUE )
-	    log_fatal("open(CONOUT$) failed: rc=%d", (int)GetLastError() );
+	    log_fatal ("open(CONOUT$) failed: %s", w32_strerror (0));
 	memset(&sa, 0, sizeof(sa));
 	sa.nLength = sizeof(sa);
 	sa.bInheritHandle = TRUE;
 	con.in = CreateFileA( "CONIN$", GENERIC_READ|GENERIC_WRITE,
 			       FILE_SHARE_READ|FILE_SHARE_WRITE,
 			       &sa, OPEN_EXISTING, 0, 0 );
-	if( con.in == INVALID_HANDLE_VALUE )
-	    log_fatal("open(CONIN$) failed: rc=%d", (int)GetLastError() );
+	if (con.in == INVALID_HANDLE_VALUE)
+            log_fatal ("open(CONIN$) failed: %s", w32_strerror (0));
     }
     SetConsoleMode(con.in, DEF_INPMODE );
     SetConsoleMode(con.out, DEF_OUTMODE );
@@ -212,10 +212,10 @@ tty_printf( const char *fmt, ... )
 	if( !buf )
 	    log_bug("vasprintf() failed\n");
         
-	if( !WriteConsoleA( con.out, buf, n, &nwritten, NULL ) )
-	    log_fatal("WriteConsole failed: rc=%d", (int)GetLastError() );
+	if (!WriteConsoleA (con.out, buf, n, &nwritten, NULL))
+	    log_fatal ("WriteConsole failed: %s", w32_strerror (0));
 	if( n != nwritten )
-	    log_fatal("WriteConsole failed: %d != %d\n", n, (int)nwritten );
+	    log_fatal ("WriteConsole failed: %d != %d\n", n, (int)nwritten );
 	last_prompt_len += n;
         m_free (buf);
     }
@@ -259,10 +259,10 @@ tty_fprintf (FILE *fp, const char *fmt, ... )
 	if( !buf )
 	    log_bug("vasprintf() failed\n");
         
-	if( !WriteConsoleA( con.out, buf, n, &nwritten, NULL ) )
-	    log_fatal("WriteConsole failed: rc=%d", (int)GetLastError() );
-	if( n != nwritten )
-	    log_fatal("WriteConsole failed: %d != %d\n", n, (int)nwritten );
+	if (!WriteConsoleA (con.out, buf, n, &nwritten, NULL))
+	    log_fatal ("WriteConsole failed: %s", w32_strerror (0));
+	if (n != nwritten)
+	    log_fatal ("WriteConsole failed: %d != %d\n", n, (int)nwritten);
 	last_prompt_len += n;
         xfree (buf);
     }
@@ -387,8 +387,8 @@ do_get( const char *prompt, int hidden )
     for(;;) {
 	DWORD nread;
 
-	if( !ReadConsoleA( con.in, cbuf, 1, &nread, NULL ) )
-	    log_fatal("ReadConsole failed: rc=%d", (int)GetLastError() );
+	if (!ReadConsoleA (con.in, cbuf, 1, &nread, NULL))
+	    log_fatal ("ReadConsole failed: %s", w32_strerror (0));
 	if( !nread )
 	    continue;
 	if( *cbuf == '\n' )

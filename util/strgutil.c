@@ -1260,4 +1260,20 @@ asprintf (char **buf, const char *fmt, ...)
   return status;  
 }
 
+const char *
+w32_strerror (int w32_errno)
+{
+  static char strerr[256];
+  int ec = (int)GetLastError ();
+  
+  if (w32_errno == 0)
+    w32_errno = ec;
+  FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL, w32_errno,
+                 MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
+                 strerr, DIM (strerr)-1, NULL);
+  return strerr;    
+}
 #endif /*_WIN32*/
+
+
+

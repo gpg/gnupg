@@ -287,8 +287,8 @@ fd_cache_open (const char *fname, const char *mode)
                 log_debug ("fd_cache_open (%s) using cached fp\n", fname);
 #ifdef HAVE_DOSISH_SYSTEM
             if (SetFilePointer (fp, 0, NULL, FILE_BEGIN) == 0xffffffff ) {
-                log_error ("rewind file failed on handle %p: ec=%d\n",
-                           fp, (int)GetLastError () );
+                log_error ("rewind file failed on handle %p: %s\n",
+                           fp, w32_strerror (errno));
                 fp = INVALID_FP;
             }
 #else
@@ -404,9 +404,9 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 
             nbytes = 0;
             if ( !ReadFile ( f, buf, size, &nread, NULL ) ) {
-                int ec = (int)GetLastError ();
-                if ( ec != ERROR_BROKEN_PIPE ) {
-                    log_error("%s: read error: ec=%d\n", a->fname, ec);
+                if ((int)GetLastError () != ERROR_BROKEN_PIPE) {
+                    log_error ("%s: read error: %s\n", a->fname,
+                               w32_strerror (0));
                     rc = G10ERR_READ_FILE;
                 }
             }
@@ -452,9 +452,9 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 
             nbytes = size;
             do {
-                if ( size && !WriteFile ( f,  p, nbytes, &n, NULL) ) {
-                    int ec = (int)GetLastError ();
-                    log_error("%s: write error: ec=%d\n", a->fname, ec);
+                if (size && !WriteFile (f,  p, nbytes, &n, NULL)) {
+                    log_error ("%s: write error: %s\n", a->fname,
+                               w32_strerror (0));
                     rc = G10ERR_WRITE_FILE;
                     break;
                 }
@@ -1835,10 +1835,10 @@ iobuf_get_filelength( IOBUF a )
 #if defined(HAVE_DOSISH_SYSTEM) && !defined(FILE_FILTER_USES_STDIO)
             ulong size;
 
-            if ( (size=GetFileSize (fp, NULL)) != 0xffffffff ) 
+            if  ((size=GetFileSize (fp, NULL)) != 0xffffffff)
                 return size;
-            log_error ("GetFileSize for handle %p failed: ec=%d\n",
-                       fp, (int)GetLastError () );
+            log_error ("GetFileSize for handle %p failed: %s\n",
+                       fp, w32_strerror (0));
 #else
             if( !fstat(my_fileno(fp), &st) )
 		return st.st_size;
@@ -1945,8 +1945,8 @@ iobuf_seek( IOBUF a, off_t newpos )
 #else
 #ifdef HAVE_DOSISH_SYSTEM
        if (SetFilePointer (b->fp, newpos, NULL, FILE_BEGIN) == 0xffffffff ) {
-           log_error ("SetFilePointer failed on handle %p: ec=%d\n",
-                      b->fp, (int)GetLastError () );
+           log_error ("SetFilePointer failed on handle %p: %s\n",
+                      b->fp, w32_strerror (0));
            return -1;
        }
 #else
@@ -2143,8 +2143,8 @@ translate_file_handle ( int fd, int for_write )
             x = fd;
 
         if (x == -1)
-            log_debug ("GetStdHandle(%d) failed: ec=%d\n",
-                       fd, (int)GetLastError () );
+            log_debug ("GetStdHandle(%d) failed: %s\n",
+                       fd, w32_strerror (0));
 
         fd = x;
     }

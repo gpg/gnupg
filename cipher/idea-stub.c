@@ -63,7 +63,7 @@ dlopen (const char *pathname, int mode)
   void *h = LoadLibrary (pathname);
   if (!h) 
     {
-      log_error ("LoadLibrary failed ec=%d\n", (int)GetLastError());
+      log_error ("LoadLibrary failed: %s\n", w32_strerror (errno));
       last_error = 1;
       return NULL;
     }
@@ -77,25 +77,22 @@ dlclose ( void *handle )
   return FreeLibrary (handle);
 }
 
-char*
+
+const char*
 dlerror (void)
 {
-  static char dlerrstr[10];
   if (last_error)
-    {
-      sprintf(dlerrstr, "%d", (int)GetLastError() );
-      return dlerrstr;
-    }
+    return w32_strerror (0);
   return NULL;
 }
 
 void*
-dlsym ( void *handle, const char *name )
+dlsym (void *handle, const char *name)
 {
   void *h = GetProcAddress (handle, name);
   if (!h)
     {
-      log_error ("GetProcAddress failed ec=%d\n", (int)GetLastError());
+      log_error ("GetProcAddress failed: %s\n", w32_strerror (errno));
       last_error = 1;
     }
   return h;

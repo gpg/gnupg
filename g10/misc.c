@@ -37,6 +37,10 @@
 #ifdef ENABLE_SELINUX_HACKS
 #include <sys/stat.h>
 #endif
+#ifdef _WIN32
+#include <time.h>
+#include <process.h>
+#endif
 #include "util.h"
 #include "main.h"
 #include "photoid.h"
