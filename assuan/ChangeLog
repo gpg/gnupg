@@ -1,3 +1,8 @@
+2002-02-12  Werner Koch  <wk@gnupg.org>
+
+	* assuan-buffer.c (writen,readline) [USE_GNU_PT]: Use pth_read/write.
+	* assuan-socket-server.c (accept_connection) [USE_GNU_PTH]: Ditto.
+
 2002-02-01  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (MOSTLYCLEANFILES): New variable.
