@@ -50,6 +50,7 @@ static char prefix_buffer[80];
 static int with_time;
 static int with_prefix;
 static int with_pid;
+static int force_prefixes;
 
 static int missing_lf;
 static int errorcount;
@@ -207,6 +208,7 @@ log_set_file (const char *name)
 {
   FILE *fp;
 
+  force_prefixes = 0;
   if (name && !strncmp (name, "socket://", 9) && name[9])
     {
 #if defined (HAVE_FOPENCOOKIE)||  defined (HAVE_FUNOPEN)
@@ -237,6 +239,10 @@ log_set_file (const char *name)
         fp = stderr;
       }
 #endif /* Neither fopencookie nor funopen. */
+
+      /* We always need to print the prefix and the pid, so that the
+         server reading the socket can do something meanigful. */
+      force_prefixes = 1;
     }
   else
     fp = (name && strcmp(name,"-"))? fopen (name, "a") : stderr;
@@ -259,7 +265,8 @@ void
 log_set_fd (int fd)
 {
   FILE *fp;
-  
+
+  force_prefixes = 0;
   if (fd == 1)
     fp = stdout;
   else if (fd == 2)
@@ -338,7 +345,7 @@ do_logv( int level, const char *fmt, va_list arg_ptr )
   if (level != JNLIB_LOG_CONT)
     { /* Note this does not work for multiple line logging as we would
        * need to print to a buffer first */
-      if (with_time)
+      if (with_time && !force_prefixes)
         {
           struct tm *tp;
           time_t atime = time (NULL);
@@ -348,14 +355,14 @@ do_logv( int level, const char *fmt, va_list arg_ptr )
                    1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
                    tp->tm_hour, tp->tm_min, tp->tm_sec );
         }
-      if (with_prefix)
+      if (with_prefix || force_prefixes)
         fputs (prefix_buffer, logstream);
-      if (with_pid)
+      if (with_pid || force_prefixes)
         fprintf (logstream, "[%u]", (unsigned int)getpid ());
-      if (!with_time)
+      if (!with_time || force_prefixes)
         putc (':', logstream);
       /* A leading backspace suppresses the extra space so that we can
-         correclty output, programname, filename and linenumber. */
+         correctly output, programname, filename and linenumber. */
       if (fmt && *fmt == '\b')
         fmt++;
       else

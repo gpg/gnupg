@@ -2,6 +2,7 @@
 
 	* logging.c (writen, fun_writer, fun_closer): New.
 	(log_set_file): Add feature to log to a socket.
+	(log_set_file, do_logv): Force printing with prefix and pid.
 
 2003-11-13  Werner Koch  <wk@gnupg.org>
 
