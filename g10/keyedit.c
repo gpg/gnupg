@@ -2073,9 +2073,9 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 		else
 		   tty_printf("(%d)  ", i);
                 if ( uid->is_revoked )
-                    tty_printf ("[revoked] ");
+                    tty_printf (_("[revoked] "));
                 if ( uid->is_expired )
-                    tty_printf ("[expired] ");
+                    tty_printf (_("[expired] "));
 		tty_print_utf8_string( uid->name, uid->len );
 		tty_printf("\n");
 		if( with_prefs )
@@ -2485,9 +2485,9 @@ menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
     if( sec_keyblock )
 	commit_kbnode( &sec_keyblock );
 
-    /* No need to set update_trust here since signing keys no longer
-       are used to certify other keys, so there is no change in trust
-       when revoking/removing them */
+    /* No need to set update_trust here since signing keys are no
+       longer used to certify other keys, so there is no change in
+       trust when revoking/removing them */
 }
 
 
@@ -2636,14 +2636,14 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
       print_fingerprint(revoker_pk,NULL,2);
       tty_printf("\n");
 
-      tty_printf("WARNING: appointing a key as a designated revoker "
-		 "cannot be undone!\n");
+      tty_printf(_("WARNING: appointing a key as a designated revoker "
+		   "cannot be undone!\n"));
 
       tty_printf("\n");
 
       if(!cpr_get_answer_is_yes("keyedit.add_revoker.okay",
-				"Are you sure you want to appoint this "
-				"key as a designated revoker? (y/N): "))
+				_("Are you sure you want to appoint this "
+				  "key as a designated revoker? (y/N): ")))
 	continue;
 
       free_public_key(revoker_pk);

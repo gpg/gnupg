@@ -1452,7 +1452,7 @@ check_sig_and_print( CTX c, KBNODE node )
 
 	    if( !get_pubkey( pk, sig->keyid ) ) {
 		byte array[MAX_FINGERPRINT_LEN], *p;
-		char buf[MAX_FINGERPRINT_LEN*4+73], *bufp;
+		char buf[MAX_FINGERPRINT_LEN*4+90], *bufp;
 		size_t i, n;
 
                 bufp = buf;
@@ -1460,10 +1460,15 @@ check_sig_and_print( CTX c, KBNODE node )
 		p = array;
 		for(i=0; i < n ; i++, p++, bufp += 2)
                     sprintf(bufp, "%02X", *p );
-		sprintf(bufp, " %s %lu %lu ",
+		/* TODO: Replace the reserved '0' in the field below
+		   with bits for status flags (policy url, notation,
+		   etc.).  Remember to make the buffer larger to
+		   match! */
+		sprintf(bufp, " %s %lu %lu %d 0 %d %d %02X ",
                         strtimestamp( sig->timestamp ),
-                        (ulong)sig->timestamp,
-                        (ulong)sig->expiredate );
+                        (ulong)sig->timestamp,(ulong)sig->expiredate,
+			sig->version,sig->pubkey_algo,sig->digest_algo,
+			sig->sig_class);
                 bufp = bufp + strlen (bufp);
                 if (!pk->is_primary) {
                    u32 akid[2];
@@ -1493,11 +1498,18 @@ check_sig_and_print( CTX c, KBNODE node )
 
 	if(sig->flags.expired)
 	  {
-	    log_info("Signature expired %s\n",asctimestamp(sig->expiredate));
+	    log_info(_("Signature expired %s\n"),
+		     asctimestamp(sig->expiredate));
 	    rc=G10ERR_GENERAL; /* need a better error here? */
 	  }
 	else if(sig->expiredate)
-	  log_info("Signature expires %s\n",asctimestamp(sig->expiredate));
+	  log_info(_("Signature expires %s\n"),asctimestamp(sig->expiredate));
+
+	if(opt.verbose)
+	  log_info(_("%s signature, digest algorithm %s\n"),
+		   sig->sig_class==0x00?_("binary"):
+		   sig->sig_class==0x01?_("textmode"):_("unknown"),
+		   digest_algo_to_string(sig->digest_algo));
 
 	if( rc )
 	    g10_errors_seen = 1;

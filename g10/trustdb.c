@@ -440,8 +440,9 @@ init_trustdb()
     {
       /* Try and set the trust model off of whatever the trustdb says
 	 it is. */
-
       opt.trust_model=tdbio_read_model();
+
+      /* Sanity check this ;) */
       if(opt.trust_model!=TM_CLASSIC && opt.trust_model!=TM_OPENPGP)
 	{
 	  log_info(_("unable to use unknown trust model (%d) - "
@@ -452,8 +453,9 @@ init_trustdb()
       if(opt.verbose)
 	log_info(_("using %s trust model\n"),trust_model_string());
     }
-  else if(!tdbio_db_matches_options()
-	  && (opt.trust_model==TM_CLASSIC || opt.trust_model==TM_OPENPGP))
+
+  if((opt.trust_model==TM_CLASSIC || opt.trust_model==TM_OPENPGP)
+     && !tdbio_db_matches_options())
     pending_check_trustdb=1;
 }
 
@@ -997,7 +999,7 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
           if (opt.no_auto_check_trustdb) 
             {
               pending_check_trustdb = 1;
-              log_info ("please do a --check-trustdb\n");
+              log_info (_("please do a --check-trustdb\n"));
             }
           else
             {
@@ -1808,7 +1810,7 @@ reset_trust_records (KEYDB_HANDLE hd, KeyHashTable exclude)
         log_error ("keydb_search_next failed: %s\n", g10_errstr(rc));
     }
   if (opt.verbose)
-    log_info ("%d keys processed (%d validity counts cleared)\n",
+    log_info (_("%d keys processed (%d validity counts cleared)\n"),
               count, nreset);
 }
 
@@ -1862,7 +1864,7 @@ validate_keys (int interactive)
    * here when needed */
   if (!utk_list)
     {
-      log_info ("no ultimately trusted keys found\n");
+      log_info (_("no ultimately trusted keys found\n"));
       goto leave;
     }
 

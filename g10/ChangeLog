@@ -1,3 +1,25 @@
+2003-04-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Add --no-textmode.
+
+	* export.c (do_export_stream), keyedit.c (show_key_with_all_names,
+	menu_addrevoker), mainproc.c (check_sig_and_print), photoid.c
+	(show_photos), sign.c (mk_notation_and_policy), trustdb.c
+	(get_validity, reset_trust_records, validate_keys): Make some
+	strings translatable.
+
+	* mainproc.c (check_sig_and_print): Show digest algorithm and sig
+	class when verifying a sig with --verbose on, and add version, pk
+	and hash algorithms and sig class to VALIDSIG.
+	
+	* parse-packet.c (enum_sig_subpkt): Make a warning message a
+	--verbose warning message since we don't need to warn every time
+	we see an unknown critical (we only need to invalidate the
+	signature).
+
+	* trustdb.c (init_trustdb): Check the trustdb options even with
+	TM_AUTO since the auto may become TM_CLASSIC or TM_OPENPGP.
+
 2003-04-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* sign.c (do_sign): Show the hash used when making a signature in
