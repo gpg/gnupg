@@ -5,7 +5,7 @@
 #
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2000-01-06 08:44+0100\n"
+"POT-Creation-Date: 2000-01-11 13:43+0100\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Date: 1998-11-20 23:46:36-0200\n"
 "From: Thiago Jung Bauermann <jungmann@usa.net>\n"
@@ -261,11 +261,16 @@ msgstr "... isto é um bug (%s:%d:%s)\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "você encontrou um bug ... (%s:%d)\n"
 
-#: cipher/random.c:458
+#: cipher/random.c:274
+#, c-format
+msgid "too many random bits requested; the limit is %d\n"
+msgstr ""
+
+#: cipher/random.c:460
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr "AVISO: usando gerador de números aleatórios inseguro!\n"
 
-#: cipher/random.c:459
+#: cipher/random.c:461
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"
@@ -865,79 +870,79 @@ msgstr ""
 msgid "a notation value must not use any control characters\n"
 msgstr "um valor de notação não deve usar caracteres de controle\n"
 
-#: g10/armor.c:301
+#: g10/armor.c:302
 #, c-format
 msgid "armor: %s\n"
 msgstr "armadura: %s\n"
 
-#: g10/armor.c:330
+#: g10/armor.c:331
 msgid "invalid armor header: "
 msgstr "cabeçalho de armadura inválido: "
 
-#: g10/armor.c:337
+#: g10/armor.c:338
 msgid "armor header: "
 msgstr "cabeçalho de armadura: "
 
-#: g10/armor.c:348
+#: g10/armor.c:349
 msgid "invalid clearsig header\n"
 msgstr "cabeçalho de assinatura em texto puro inválido\n"
 
-#: g10/armor.c:400
+#: g10/armor.c:401
 msgid "nested clear text signatures\n"
 msgstr "assinaturas em texto puro aninhadas\n"
 
-#: g10/armor.c:524
+#: g10/armor.c:525
 msgid "invalid dash escaped line: "
 msgstr "linha com hífen inválida: "
 
-#: g10/armor.c:536
+#: g10/armor.c:537
 msgid "unexpected armor:"
 msgstr "armadura inesperada:"
 
-#: g10/armor.c:653
+#: g10/armor.c:654
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "caractere radix64 inválido %02x ignorado\n"
 
-#: g10/armor.c:696
+#: g10/armor.c:697
 msgid "premature eof (no CRC)\n"
 msgstr "fim de arquivo prematuro (sem CRC)\n"
 
-#: g10/armor.c:730
+#: g10/armor.c:731
 msgid "premature eof (in CRC)\n"
 msgstr "fim de arquivo prematuro (no CRC)\n"
 
-#: g10/armor.c:734
+#: g10/armor.c:735
 msgid "malformed CRC\n"
 msgstr "CRC malformado\n"
 
-#: g10/armor.c:738
+#: g10/armor.c:739
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
 msgstr "erro de CRC; %06lx - %06lx\n"
 
-#: g10/armor.c:755
+#: g10/armor.c:756
 msgid "premature eof (in Trailer)\n"
 msgstr "fim de arquivo prematuro (no \"Trailer\")\n"
 
-#: g10/armor.c:759
+#: g10/armor.c:760
 msgid "error in trailer line\n"
 msgstr "erro na linha \"trailer\"\n"
 
-#: g10/armor.c:911
+#: g10/armor.c:912
 msgid "For info see http://www.gnupg.org"
 msgstr ""
 
-#: g10/armor.c:1032
+#: g10/armor.c:1033
 msgid "no valid OpenPGP data found.\n"
 msgstr "nenhum dado OpenPGP válido encontrado.\n"
 
-#: g10/armor.c:1037
+#: g10/armor.c:1038
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
 msgstr "armadura inválida: linha maior que %d caracteres\n"
 
-#: g10/armor.c:1041
+#: g10/armor.c:1042
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""

@@ -270,8 +270,10 @@ read_pool( byte *buffer, size_t length, int level )
     int i;
     ulong *sp, *dp;
 
-    if( length >= POOLSIZE )
-	BUG(); /* not allowed */
+    if( length >= POOLSIZE ) {
+	log_fatal(_("too many random bits requested; the limit is %d\n"),
+		  POOLSIZE*8-1 );
+    }
 
     /* for level 2 make sure that there is enough random in the pool */
     if( level == 2 && pool_balance < length ) {

@@ -1,6 +1,13 @@
 
     * Some fixes for the W32 version
 
+    * Encryption is now much faster: About 2 times for 1k bit keys
+      and 8 times for 4k keys.
+
+    * New encryption keys are generated in way which allows a much
+      faster decryption.
+
+
 Noteworthy changes in version 1.0.1 (1999-12-16)
 -----------------------------------
 

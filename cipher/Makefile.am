@@ -67,7 +67,7 @@ libcipher_a_LIBADD =	   @STATIC_CIPHER_OBJS@
 
 tiger: $(srcdir)/tiger.c
 	`echo $(COMPILE) $(DYNLINK_MOD_CFLAGS) -o tiger $(srcdir)/tiger.c | \
-	    sed -e 's/-O[2-9s]*/-O1/g' `
+	    sed -e 's/-O[2-9s]*/-O/g' `
 
 tiger.o: $(srcdir)/tiger.c
 	`echo $(COMPILE) -c $(srcdir)/tiger.c | sed -e 's/-O[2-9s]*/-O1/g' `

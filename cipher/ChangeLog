@@ -1,3 +1,15 @@
+Thu Jan 13 19:31:58 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* elgamal.c (wiener_map): New.
+	(gen_k): Use a much smaller k.
+	(generate): Calculate the qbits using the wiener map and
+	choose an x at a size comparable to the one choosen in gen_k
+
+	* random.c (read_pool): Print a more friendly erro message in
+	cases when too much random is requested in one call.
+
+	* Makefile.am (tiger): Replaced -O1 by -O. Suggested by Alec Habig.
+
 Sat Dec  4 12:30:28 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* primegen.c (generate_elg_prime): All primes are now generated with

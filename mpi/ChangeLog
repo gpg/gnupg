@@ -1,3 +1,15 @@
+Thu Jan 13 19:31:58 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* mpi-internal.h (karatsuba_ctx): New.
+	* mpih-mul.c (mpihelp_release_karatsuba_ctx): New.
+	(mpihelp_mul_karatsuba_case): New.
+	(mpihelp_mul): Splitted to make use of the new functions.
+	* mpi-pow.c (mpi_powm): Make use of the new splitted function
+	to avoid multiple allocation of temorary memory during the
+	karatsuba operations.
+
+	* mpi_mpow.c: Removed the unused Barrett code.
+
 Sun Dec 19 15:22:26 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* power/ : Converted more comments to C comments because some AS

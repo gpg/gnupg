@@ -83,6 +83,11 @@
   #define HAVE_U32_TYPEDEF
 #endif
 
+/****************
+ * Warning: Some systems segfault when this u64 typedef and
+ * the dummy code in cipher/md.c is not available.  Examples are
+ * Solaris and IRIX.
+ */
 #ifndef HAVE_U64_TYPEDEF
   #undef u64	    /* maybe there is a macro with this name */
   #if SIZEOF_UNSIGNED_INT == 8
@@ -91,7 +96,7 @@
   #elif SIZEOF_UNSIGNED_LONG == 8
     typedef unsigned long u64;
     #define HAVE_U64_TYPEDEF
-  #elif __GNUC__ >= 2 || defined(__SUNPRO_C)
+  #elif __GNUC__ >= 2 || defined(__SUNPRO_C) || defined(_LONGLONG)
     typedef unsigned long long u64;
     #define HAVE_U64_TYPEDEF
   #endif

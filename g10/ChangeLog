@@ -1,3 +1,10 @@
+Thu Jan 13 19:31:58 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* armor.c (is_armored): Check for 1-pass-sig packets. Reported by
+	David Hallinan <hallinan@rtd.com>.
+	(armor_filter): Replaced one LF by the LF macro.  Reported by
+	Wolfgang Redtenbacher.
+
 Wed Jan  5 11:51:17 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* g10.c (main): Reset new global flag opt.pgp2_workarounds

@@ -48,9 +48,6 @@ info () {
     echo "$pgmname:" $* >&2
 }
 
-chdir () {
-    cd $1 || fatal "cannot cd to $1"
-}
 
 echo_n_init=no
 echo_n () {

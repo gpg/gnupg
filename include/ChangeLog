@@ -1,3 +1,8 @@
+Thu Jan 13 19:31:58 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* types.h (HAVE_U64_TYPEDEF): Add a test for _LONGLONG which fixes
+	this long living SGI bug.  Reported by Alec Habig.
+
 Sat Dec  4 12:30:28 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* iobuf.h (IOBUFCTRL_CANCEL): Nww.

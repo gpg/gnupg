@@ -6,6 +6,10 @@
 
   * Add reason for revocation which is going to be a SHOULD
 
+  * at least an option to prefer DSA keys over RSA when selecting the key to
+    use.  Depending on creatin time would be nice too.	I thing this is
+    already done for the subkeys.
+
 Scheduled for 1.1
 -----------------
   * With option -i prompt before adding a key to the keyring and show some

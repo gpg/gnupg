@@ -167,6 +167,7 @@ is_armored( const byte *buf )
     switch( pkttype ) {
       case PKT_MARKER:
       case PKT_SYMKEY_ENC:
+      case PKT_ONEPASS_SIG:
       case PKT_PUBLIC_KEY:
       case PKT_SECRET_KEY:
       case PKT_PUBKEY_ENC:
@@ -1020,7 +1021,7 @@ armor_filter( void *opaque, int control,
 	    iobuf_put(a, c);
 	    c = bintoasc[radbuf[2]&077];
 	    iobuf_put(a, c);
-	    iobuf_put(a, '\n');
+	    iobuf_writestr(a, LF );
 	    /* and the the trailer */
 	    if( afx->what >= DIM(tail_strings) )
 		log_bug("afx->what=%d", afx->what);

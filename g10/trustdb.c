@@ -1405,7 +1405,7 @@ make_uid_records( KBNODE keyblock, ulong lid, u32 *keyid, u32 *min_expire,
 
 	/* the next test is really bad because we should modify
 	 * out modification timestamps only if we really have a change.
-	 * But becuase we are deleting the uid records first it is somewhat
+	 * But because we are deleting the uid records first it is somewhat
 	 * difficult to track those changes.  fixme */
 	if(   !( u->r.uid.uidflags & UIDF_VALID )
 	    || ( u->r.uid.uidflags & UIDF_REVOKED ) )
@@ -2085,8 +2085,8 @@ verify_key( int max_depth, TRUSTREC *drec, const char *namehash,
     if( namehash && tree->n.k.validity != TRUST_ULTIMATE ) {
 	/* find the matching user id.
 	 * We don't do this here if the key is ultimately trusted; in
-	 * this case there will be no lits od user IDs and frankly
-	 * it doe not make sense to compare by the name if we do
+	 * this case there will be no lids for the user IDs and frankly
+	 * it does not make sense to compare by the name if we do
 	 * have the secret key.
 	 * fixme: the way we handle this is too inefficient */
 	TN ur;

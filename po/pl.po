@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.0.0\n"
-"POT-Creation-Date: 2000-01-06 08:44+0100\n"
+"POT-Creation-Date: 2000-01-11 13:43+0100\n"
 "PO-Revision-Date: 1999-10-02 21:35+02:00\n"
 "Last-Translator: Janusz A. Urbanowicz <alex@bofh.net.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -266,13 +266,18 @@ msgstr "... to jest b³±d w programie (%s:%d:%s)\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "znalaz³e¶(a¶) b³±d w programie ... (%s:%d)\n"
 
-#: cipher/random.c:458
+#: cipher/random.c:274
+#, c-format
+msgid "too many random bits requested; the limit is %d\n"
+msgstr ""
+
+#: cipher/random.c:460
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr ""
 "OSTRZE¯ENIE: u¿ywany generator liczb losowych\n"
 "nie jest kryptograficznie bezpieczny!!\n"
 
-#: cipher/random.c:459
+#: cipher/random.c:461
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"
@@ -848,79 +853,79 @@ msgstr "kropki w adnotacji musz± znajdowaæ siê pomiêdzy innymi znakami\n"
 msgid "a notation value must not use any control characters\n"
 msgstr "warto¶æ adnotacji nie mo¿e zawieraæ znaków steruj±cych\n"
 
-#: g10/armor.c:301
+#: g10/armor.c:302
 #, c-format
 msgid "armor: %s\n"
 msgstr "opakowanie: %s\n"
 
-#: g10/armor.c:330
+#: g10/armor.c:331
 msgid "invalid armor header: "
 msgstr "niepoprawny nag³ówek opakowania: "
 
-#: g10/armor.c:337
+#: g10/armor.c:338
 msgid "armor header: "
 msgstr "nag³ówek opakowania: "
 
-#: g10/armor.c:348
+#: g10/armor.c:349
 msgid "invalid clearsig header\n"
 msgstr "niew³a¶ciwy nag³ówek czytelnego podpisanego dokumentu\n"
 
-#: g10/armor.c:400
+#: g10/armor.c:401
 msgid "nested clear text signatures\n"
 msgstr "zagnie¿d¿one podpisy na czytelnym dokumencie\n"
 
-#: g10/armor.c:524
+#: g10/armor.c:525
 msgid "invalid dash escaped line: "
 msgstr "niepoprawne oznaczenie linii minusami: "
 
-#: g10/armor.c:536
+#: g10/armor.c:537
 msgid "unexpected armor:"
 msgstr "nieoczekiwane opakowanie:"
 
-#: g10/armor.c:653
+#: g10/armor.c:654
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "niew³a¶ciwy znak formatu radix64 %02x zosta³ pominiêty\n"
 
-#: g10/armor.c:696
+#: g10/armor.c:697
 msgid "premature eof (no CRC)\n"
 msgstr "przewczesny koniec pliku (brak CRC)\n"
 
-#: g10/armor.c:730
+#: g10/armor.c:731
 msgid "premature eof (in CRC)\n"
 msgstr "przedwczesny koniec pliku (w CRC)\n"
 
-#: g10/armor.c:734
+#: g10/armor.c:735
 msgid "malformed CRC\n"
 msgstr "b³±d formatu CRC\n"
 
-#: g10/armor.c:738
+#: g10/armor.c:739
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
 msgstr "B³±d sumy CRC; %06lx - %06lx\n"
 
-#: g10/armor.c:755
+#: g10/armor.c:756
 msgid "premature eof (in Trailer)\n"
 msgstr "przedwczesny koniec pliku (w zakoñczeniu)\n"
 
-#: g10/armor.c:759
+#: g10/armor.c:760
 msgid "error in trailer line\n"
 msgstr "b³±d w linii koñcz±cej\n"
 
-#: g10/armor.c:911
+#: g10/armor.c:912
 msgid "For info see http://www.gnupg.org"
 msgstr ""
 
-#: g10/armor.c:1032
+#: g10/armor.c:1033
 msgid "no valid OpenPGP data found.\n"
 msgstr "nie odnaleziono poprawnych danych w formacie OpenPGP.\n"
 
-#: g10/armor.c:1037
+#: g10/armor.c:1038
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
 msgstr "b³±d opakowania: linia d³u¿sza ni¿ %d znaków\n"
 
-#: g10/armor.c:1041
+#: g10/armor.c:1042
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""

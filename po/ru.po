@@ -9,7 +9,7 @@
 # QingLong <qinglong@Bolizm> (couldn't send an email to let you know)
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2000-01-06 08:44+0100\n"
+"POT-Creation-Date: 2000-01-11 13:43+0100\n"
 "Content-Type: text/plain; charset=\n"
 "Date: 1998-01-26 22:08:36+0100\n"
 "From: Gregory Steuck <steuck@iname.com>\n"
@@ -313,12 +313,17 @@ msgstr "Ой-йо ... ошибка в программе (%s:%d:%s)\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "Вы нашли ошибку в программе ... (%s:%d)\n"
 
-#: cipher/random.c:458
+#: cipher/random.c:274
+#, c-format
+msgid "too many random bits requested; the limit is %d\n"
+msgstr ""
+
+#: cipher/random.c:460
 #, fuzzy
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr "Внимание: используется ненадежный генератор случайных чисел!\n"
 
-#: cipher/random.c:459
+#: cipher/random.c:461
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"
@@ -916,83 +921,83 @@ msgstr ""
 msgid "a notation value must not use any control characters\n"
 msgstr ""
 
-#: g10/armor.c:301
+#: g10/armor.c:302
 #, fuzzy, c-format
 msgid "armor: %s\n"
 msgstr "Кодировка: %s\n"
 
-#: g10/armor.c:330
+#: g10/armor.c:331
 msgid "invalid armor header: "
 msgstr ""
 
-#: g10/armor.c:337
+#: g10/armor.c:338
 msgid "armor header: "
 msgstr ""
 
-#: g10/armor.c:348
+#: g10/armor.c:349
 #, fuzzy
 msgid "invalid clearsig header\n"
 msgstr "недопустимое начало текстовой подписи\n"
 
-#: g10/armor.c:400
+#: g10/armor.c:401
 #, fuzzy
 msgid "nested clear text signatures\n"
 msgstr "|[файл]|создать текстовую подпись"
 
-#: g10/armor.c:524
+#: g10/armor.c:525
 msgid "invalid dash escaped line: "
 msgstr "недопустимая строка начинающаяся с минусов: "
 
-#: g10/armor.c:536
+#: g10/armor.c:537
 #, fuzzy
 msgid "unexpected armor:"
 msgstr "Неожиданные данные"
 
-#: g10/armor.c:653
+#: g10/armor.c:654
 #, fuzzy, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "недопустимый для кодировки radix64 символ %02x пропущен\n"
 
-#: g10/armor.c:696
+#: g10/armor.c:697
 msgid "premature eof (no CRC)\n"
 msgstr "неожиданный конец файла (нет CRC)\n"
 
-#: g10/armor.c:730
+#: g10/armor.c:731
 msgid "premature eof (in CRC)\n"
 msgstr "неожиданный конец файла (в CRC)\n"
 
-#: g10/armor.c:734
+#: g10/armor.c:735
 msgid "malformed CRC\n"
 msgstr "неправильная форма CRC\n"
 
-#: g10/armor.c:738
+#: g10/armor.c:739
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
 msgstr "ошибка CRC; %06lx - %06lx\n"
 
-#: g10/armor.c:755
+#: g10/armor.c:756
 msgid "premature eof (in Trailer)\n"
 msgstr "неожиданный конец файла (в хвосте)\n"
 
-#: g10/armor.c:759
+#: g10/armor.c:760
 msgid "error in trailer line\n"
 msgstr "ошибка в завершающей строке\n"
 
-#: g10/armor.c:911
+#: g10/armor.c:912
 msgid "For info see http://www.gnupg.org"
 msgstr ""
 
-#: g10/armor.c:1032
+#: g10/armor.c:1033
 #, fuzzy
 msgid "no valid OpenPGP data found.\n"
 msgstr "не найдено допустимых RFC1991 или OpenPGP данных.\n"
 
-#: g10/armor.c:1037
+#: g10/armor.c:1038
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
 msgstr ""
 
-#: g10/armor.c:1041
+#: g10/armor.c:1042
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""

@@ -1,5 +1,5 @@
 /* elgamal.c  -  ElGamal Public Key encryption
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 2000 Free Software Foundation, Inc.
  *
  * For a description of the algorithm, see:
  *   Bruce Schneier: Applied Cryptography. John Wiley & Sons, 1996.
@@ -62,6 +62,45 @@ progress( int c )
     fputc( c, stderr );
 }
 
+/****************
+ * Michael Wiener's table about subgroup sizes to match field sizes
+ * (floating around somewhere - Fixme: need a reference)
+ */
+static unsigned int
+wiener_map( unsigned int n )
+{
+    static struct { unsigned int p_n, q_n; } t[] =
+    {	/*   p	  q	 attack cost */
+	{  512, 119 },	/* 9 x 10^17 */
+	{  768, 145 },	/* 6 x 10^21 */
+	{ 1024, 165 },	/* 7 x 10^24 */
+	{ 1280, 183 },	/* 3 x 10^27 */
+	{ 1536, 198 },	/* 7 x 10^29 */
+	{ 1792, 212 },	/* 9 x 10^31 */
+	{ 2048, 225 },	/* 8 x 10^33 */
+	{ 2304, 237 },	/* 5 x 10^35 */
+	{ 2560, 249 },	/* 3 x 10^37 */
+	{ 2816, 259 },	/* 1 x 10^39 */
+	{ 3072, 269 },	/* 3 x 10^40 */
+	{ 3328, 279 },	/* 8 x 10^41 */
+	{ 3584, 288 },	/* 2 x 10^43 */
+	{ 3840, 296 },	/* 4 x 10^44 */
+	{ 4096, 305 },	/* 7 x 10^45 */
+	{ 4352, 313 },	/* 1 x 10^47 */
+	{ 4608, 320 },	/* 2 x 10^48 */
+	{ 4864, 328 },	/* 2 x 10^49 */
+	{ 5120, 335 },	/* 3 x 10^50 */
+	{ 0, 0 }
+    };
+    int i;
+
+    for(i=0; t[i].p_n; i++ )  {
+	if( n <= t[i].p_n )
+	    return t[i].q_n;
+    }
+    /* not in table - use some arbitrary high number ;-) */
+    return  n / 8 + 200;
+}
 
 static void
 test_keys( ELG_secret_key *sk, unsigned nbits )
@@ -108,38 +147,45 @@ gen_k( MPI p )
     MPI k = mpi_alloc_secure( 0 );
     MPI temp = mpi_alloc( mpi_get_nlimbs(p) );
     MPI p_1 = mpi_copy(p);
-    unsigned int nbits = mpi_get_nbits(p);
-    unsigned int nbytes = (nbits+7)/8;
+    unsigned int orig_nbits = mpi_get_nbits(p);
+    unsigned int nbits;
+    unsigned int nbytes;
     char *rndbuf = NULL;
 
+    /* IMO using a k much lesser than p is sufficient and it greatly
+     * improves the encryption performance.  We use Wiener's table
+     * and add a large safety margin.
+     */
+    nbits = wiener_map( orig_nbits ) * 3 / 2;
+    if( nbits >= orig_nbits )
+	BUG();
+
+    nbytes = (nbits+7)/8;
     if( DBG_CIPHER )
-	log_debug("choosing a random k ");
+	log_debug("choosing a random k of %u bits", nbits);
     mpi_sub_ui( p_1, p, 1);
     for(;;) {
-	if( DBG_CIPHER )
-	    progress('.');
 	if( !rndbuf || nbits < 32 ) {
 	    m_free(rndbuf);
 	    rndbuf = get_random_bits( nbits, 1, 1 );
 	}
 	else { /* change only some of the higher bits */
-	    /* we could imporove this by directly requesting more memory
+	    /* we could impprove this by directly requesting more memory
 	     * at the first call to get_random_bits() and use this the here
-	     * maybe it is easier to do this directly in random.c */
+	     * maybe it is easier to do this directly in random.c
+	     * Anyway, it is highly inlikely that we will ever reach this code
+	     */
 	    char *pp = get_random_bits( 32, 1, 1 );
 	    memcpy( rndbuf,pp, 4 );
 	    m_free(pp);
+	    log_debug("gen_k: tsss, never expected to reach this\n");
 	}
 	mpi_set_buffer( k, rndbuf, nbytes, 0 );
 
 	for(;;) {
-	    /* make sure that the number is of the exact lenght */
-	    if( mpi_test_bit( k, nbits-1 ) )
-		mpi_set_highbit( k, nbits-1 );
-	    else {
-		mpi_set_highbit( k, nbits-1 );
-		mpi_clear_bit( k, nbits-1 );
-	    }
+	    /* Hmm, actually we don't need this step here
+	     * because we use k much smaller than p - we do it anyway
+	     * just in case the keep on adding a one to k ;) */
 	    if( !(mpi_cmp( k, p_1 ) < 0) ) {  /* check: k < (p-1) */
 		if( DBG_CIPHER )
 		    progress('+');
@@ -153,6 +199,8 @@ gen_k( MPI p )
 	    if( mpi_gcd( temp, k, p_1 ) )
 		goto found;  /* okay, k is relatively prime to (p-1) */
 	    mpi_add_ui( k, k, 1 );
+	    if( DBG_CIPHER )
+		progress('.');
 	}
     }
   found:
@@ -171,7 +219,7 @@ gen_k( MPI p )
  *	    and an array with n-1 factors of (p-1)
  */
 static void
-generate(  ELG_secret_key *sk, unsigned nbits, MPI **ret_factors )
+generate(  ELG_secret_key *sk, unsigned int nbits, MPI **ret_factors )
 {
     MPI p;    /* the prime */
     MPI p_min1;
@@ -179,19 +227,15 @@ generate(  ELG_secret_key *sk, unsigned nbits, MPI **ret_factors )
     MPI x;    /* the secret exponent */
     MPI y;
     MPI temp;
-    unsigned qbits;
+    unsigned int qbits;
+    unsigned int xbits;
     byte *rndbuf;
 
     p_min1 = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
     temp   = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
-    if( nbits < 512 )
-	qbits = 120;
-    else if( nbits <= 1024 )
-	qbits = 160;
-    else if( nbits <= 2048 )
-	qbits = 200;
-    else
-	qbits = 240;
+    qbits = wiener_map( nbits );
+    if( qbits & 1 ) /* better have a even one */
+	qbits++;
     g = mpi_alloc(1);
     p = generate_elg_prime( 0, nbits, qbits, g, ret_factors );
     mpi_sub_ui(p_min1, p, 1);
@@ -202,18 +246,26 @@ generate(  ELG_secret_key *sk, unsigned nbits, MPI **ret_factors )
      * This must be a very good random number because this is the
      * secret part.  The prime is public and may be shared anyway,
      * so a random generator level of 1 is used for the prime.
+     *
+     * I don't see a reason to have a x of about the same size
+     * as the p.  It should be sufficient to have one about the size
+     * of q or the later used k plus a large safety margin. Decryption
+     * will be much faster with such an x.
      */
-    x = mpi_alloc_secure( nbits/BITS_PER_MPI_LIMB );
+    xbits = qbits * 3 / 2;
+    if( xbits >= nbits )
+	BUG();
+    x = mpi_alloc_secure( xbits/BITS_PER_MPI_LIMB );
     if( DBG_CIPHER )
-	log_debug("choosing a random x ");
+	log_debug("choosing a random x of size %u", xbits );
     rndbuf = NULL;
     do {
 	if( DBG_CIPHER )
 	    progress('.');
 	if( rndbuf ) { /* change only some of the higher bits */
-	    if( nbits < 16 ) {/* should never happen ... */
+	    if( xbits < 16 ) {/* should never happen ... */
 		m_free(rndbuf);
-		rndbuf = get_random_bits( nbits, 2, 1 );
+		rndbuf = get_random_bits( xbits, 2, 1 );
 	    }
 	    else {
 		char *r = get_random_bits( 16, 2, 1 );
@@ -222,9 +274,9 @@ generate(  ELG_secret_key *sk, unsigned nbits, MPI **ret_factors )
 	    }
 	}
 	else
-	    rndbuf = get_random_bits( nbits, 2, 1 );
-	mpi_set_buffer( x, rndbuf, (nbits+7)/8, 0 );
-	mpi_clear_highbit( x, nbits+1 );
+	    rndbuf = get_random_bits( xbits, 2, 1 );
+	mpi_set_buffer( x, rndbuf, (xbits+7)/8, 0 );
+	mpi_clear_highbit( x, xbits+1 );
     } while( !( mpi_cmp_ui( x, 0 )>0 && mpi_cmp( x, p_min1 )<0 ) );
     m_free(rndbuf);
 
@@ -311,7 +363,6 @@ decrypt(MPI output, MPI a, MPI b, ELG_secret_key *skey )
     MPI t1 = mpi_alloc_secure( mpi_get_nlimbs( skey->p ) );
 
     /* output = b/(a^x) mod p */
-
     mpi_powm( t1, a, skey->x, skey->p );
     mpi_invm( t1, t1, skey->p );
     mpi_mulm( output, b, t1, skey->p );
