@@ -38,7 +38,8 @@ libcommon_a_SOURCES = \
 	membuf.c membuf.h \
 	iobuf.c iobuf.h \
 	ttyio.c ttyio.h \
-	signal.c
+	signal.c \
+	dynload.h
 
 
 libcommon_a_LIBADD = @LIBOBJS@
