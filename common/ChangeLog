@@ -1,3 +1,8 @@
+2003-08-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* maperror.c (map_ksba_err): Map -1.  Use gpg_err_make to set
+	the error source.
+
 2003-08-14  Timo Schulz  <twoaday@freakmail.de>
 
 	* dynload.h. New. W32 wrapper around the dynload mechanism.

@@ -39,10 +39,10 @@ map_ksba_err (int err)
 {
   switch (err)
     {
-    case -1:
     case 0: 
       break;
 
+    case -1: err = GPG_ERR_EOF; break;
     case KSBA_Out_Of_Core: err = GPG_ERR_ENOMEM; break;
     case KSBA_Invalid_Value: err = GPG_ERR_INV_VALUE; break;
     case KSBA_Not_Implemented: err = GPG_ERR_NOT_IMPLEMENTED; break;
@@ -60,7 +60,7 @@ map_ksba_err (int err)
       err = GPG_ERR_GENERAL;
       break;
     }
-  return err;
+  return gpg_err_make (GPG_ERR_SOURCE_GPGSM, err);
 }
 
 
