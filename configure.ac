@@ -133,6 +133,17 @@ if test "$use_exec" = yes ; then
       try_ldap=$enableval, try_ldap=yes)
   AC_MSG_RESULT($try_ldap)
 
+  AC_MSG_CHECKING([whether experimental external hkp keyserver support is requested])
+  AC_ARG_ENABLE(external-hkp,
+  [  --enable-external-hkp   enable experimental external HKP keyserver interface],
+      try_hkp=$enableval, try_hkp=no)
+  AC_MSG_RESULT($try_hkp)
+
+  if test "$try_hkp" = yes ; then
+    GPGKEYS_HKP="gpgkeys_hkp"
+    AC_DEFINE(USE_EXTERNAL_HKP,1,[define to use the experimental external HKP keyserver interface])
+  fi
+
   AC_MSG_CHECKING([whether email keyserver support is requested])
   AC_ARG_ENABLE(mailto,
   [  --disable-mailto        disable email keyserver interface],
@@ -328,6 +339,8 @@ if test "$try_mailto" = yes ; then
     fi
   fi
 AC_SUBST(GPGKEYS_MAILTO)
+
+AC_SUBST(GPGKEYS_HKP)
 
 case "${target}" in
     *-*-mingw32*)
