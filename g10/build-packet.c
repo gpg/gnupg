@@ -785,6 +785,10 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
       case SIGSUBPKT_PRIV_VERIFY_CACHE: /*(obsolete)*/
 	BUG();
 	break;
+	/* The issuer being unhashed is a historical oddity.  It
+	   should work equally as well hashed.  Of course, if even an
+	   unhashed issuer is tampered with, it makes it awfully hard
+	   to verify the sig... */
       case SIGSUBPKT_ISSUER:
         hashed = 0;
         break;
@@ -1184,4 +1188,3 @@ write_version( IOBUF out, int ctb )
 	return -1;
     return 0;
 }
-

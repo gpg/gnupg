@@ -1,3 +1,18 @@
+2003-04-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* build-packet.c (build_sig_subpkt): Comments.
+
+	* exec.c (exec_write): Cast NULL to void* to properly terminate
+	varargs list.
+
+	* keyedit.c (show_key_with_all_names): Just for safety, catch an
+	invalid pk algorithm.
+
+	* sign.c (make_keysig_packet): Crucial that the call to mksubpkt
+	comes LAST before the calls to finalize the sig as that makes it
+	possible for the mksubpkt function to get a reliable pointer to
+	the subpacket area.
+
 2003-04-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* mainproc.c (check_sig_and_print): Show sig class when verifying
