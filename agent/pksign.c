@@ -77,7 +77,7 @@ do_encode_md (const unsigned char *digest, size_t digestlen, int algo,
   if (DBG_CRYPTO)
     log_printhex ("encoded hash:", frame, nframe);
       
-  gcry_mpi_scan (r_val, GCRYMPI_FMT_USG, frame, &nframe);
+  gcry_mpi_scan (r_val, GCRYMPI_FMT_USG, frame, n, &nframe);
   xfree (frame);
   return 0;
 }

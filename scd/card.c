@@ -196,6 +196,7 @@ card_close (CARD card)
    return a pointer to value as well as its length in NBYTES.  Return
    NULL if it was not found.  Note, that the function does not check
    whether the value fits into the provided buffer. */
+#ifdef HAVE_OPENSC
 static const char *
 find_simple_tlv (const unsigned char *buffer, size_t length,
                  int tag, size_t *nbytes)
@@ -228,11 +229,13 @@ find_simple_tlv (const unsigned char *buffer, size_t length,
       s += len; n -= len;
     }
 }
+#endif /*HAVE_OPENSC*/
 
 /* Find the ICC Serial Number within the provided BUFFER of LENGTH
    (which should contain the GDO file) and return it as a hex encoded
    string and allocated string in SERIAL.  Return an error code when
    the ICCSN was not found. */
+#ifdef HAVE_OPENSC
 static int
 find_iccsn (const unsigned char *buffer, size_t length, char **serial)
 {
@@ -271,7 +274,7 @@ find_iccsn (const unsigned char *buffer, size_t length, char **serial)
   *p = 0;
   return 0;
 }
-
+#endif /*HAVE_OPENSC*/
 
 /* Retrieve the serial number and the time of the last update of the
    card.  The serial number is returned as a malloced string (hex

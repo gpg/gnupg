@@ -1,3 +1,7 @@
+2003-07-27  Werner Koch  <wk@gnupg.org>
+
+	Adjusted for gcry_mpi_print and gcry_mpi_scan API change.
+
 2003-06-24  Werner Koch  <wk@gnupg.org>
 
 	* server.c (gpgsm_status_with_err_code): New.

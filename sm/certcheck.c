@@ -90,7 +90,7 @@ do_encode_md (gcry_md_hd_t md, int algo,  unsigned int nbits,
       log_printf ("\n");
     }
       
-  gcry_mpi_scan (r_val, GCRYMPI_FMT_USG, frame, &nframe);
+  gcry_mpi_scan (r_val, GCRYMPI_FMT_USG, frame, n, &nframe);
   xfree (frame);
   return 0;
 }

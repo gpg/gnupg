@@ -265,8 +265,7 @@ string_to_key (int id, char *salt, int iter, const char *pw,
       /* need more bytes. */
       for(i=0; i < 64; i++)
         buf_b[i] = hash[i % 20];
-      n = 64;
-      rc = gcry_mpi_scan (&num_b1, GCRYMPI_FMT_USG, buf_b, &n);
+      rc = gcry_mpi_scan (&num_b1, GCRYMPI_FMT_USG, buf_b, 64, &n);
       if (rc)
         {
           log_error ( "gcry_mpi_scan failed: %s\n", gpg_strerror (rc));
@@ -277,8 +276,7 @@ string_to_key (int id, char *salt, int iter, const char *pw,
         {
           gcry_mpi_t num_ij;
 
-          n = 64;
-          rc = gcry_mpi_scan (&num_ij, GCRYMPI_FMT_USG, buf_i + i, &n);
+          rc = gcry_mpi_scan (&num_ij, GCRYMPI_FMT_USG, buf_i + i, 64, &n);
           if (rc)
             {
               log_error ( "gcry_mpi_scan failed: %s\n",
@@ -287,12 +285,11 @@ string_to_key (int id, char *salt, int iter, const char *pw,
             }
           gcry_mpi_add (num_ij, num_ij, num_b1);
           gcry_mpi_clear_highbit (num_ij, 64*8);
-          n = 64;
-          rc = gcry_mpi_print (GCRYMPI_FMT_USG, buf_i + i, &n, num_ij);
+          rc = gcry_mpi_print (GCRYMPI_FMT_USG, buf_i + i, 64, &n, num_ij);
           if (rc)
             {
               log_error ( "gcry_mpi_print failed: %s\n",
-                       gpg_strerror (rc));
+                          gpg_strerror (rc));
               return -1;
             }
           gcry_mpi_release (num_ij);
@@ -573,8 +570,6 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   where = "reading.key-parameters";
   for (result_count=0; len && result_count < 9;)
     {
-      int dummy_n;
-
       if (parse_tag (&p, &n, &ti) || ti.class || ti.tag != TAG_INTEGER)
         goto bailout;
       if (len < ti.nhdr)
@@ -583,13 +578,12 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
       if (len < ti.length)
         goto bailout;
       len -= ti.length;
-      dummy_n = ti.length;
       if (!result_count && ti.length == 1 && !*p)
         ; /* ignore the very first one if it is a 0 */
       else 
         {
           rc = gcry_mpi_scan (result+result_count, GCRYMPI_FMT_USG, p,
-                              &dummy_n);
+                              ti.length, NULL);
           if (rc)
             {
               log_error ("error parsing key parameter: %s\n",
@@ -874,7 +868,7 @@ p12_build (gcry_mpi_t *kparms, const char *pw, size_t *r_length)
   for (i=0; kparms[i]; i++)
     {
       n = 0;
-      rc = gcry_mpi_print (GCRYMPI_FMT_STD, NULL, &n, kparms[i]);
+      rc = gcry_mpi_print (GCRYMPI_FMT_STD, NULL, 0, &n, kparms[i]);
       if (rc)
         {
           log_error ("error formatting parameter: %s\n", gpg_strerror (rc));
@@ -947,7 +941,7 @@ p12_build (gcry_mpi_t *kparms, const char *pw, size_t *r_length)
   for (i=0; kparms[i]; i++)
     {
       n = 0;
-      rc = gcry_mpi_print (GCRYMPI_FMT_STD, NULL, &n, kparms[i]);
+      rc = gcry_mpi_print (GCRYMPI_FMT_STD, NULL, 0, &n, kparms[i]);
       if (rc)
         {
           log_error ("oops: error formatting parameter: %s\n",
@@ -958,7 +952,7 @@ p12_build (gcry_mpi_t *kparms, const char *pw, size_t *r_length)
       p = store_tag_length (p, TAG_INTEGER, n);
       
       n = plain + needed - p;
-      rc = gcry_mpi_print (GCRYMPI_FMT_STD, p, &n, kparms[i]);
+      rc = gcry_mpi_print (GCRYMPI_FMT_STD, p, n, &n, kparms[i]);
       if (rc)
         {
           log_error ("oops: error storing parameter: %s\n",

@@ -192,7 +192,7 @@ encode_session_key (DEK dek, unsigned int nbits)
   memcpy (frame+n, dek->key, dek->keylen);
   n += dek->keylen;
   assert (n == nframe);
-  if (gcry_mpi_scan (&a, GCRYMPI_FMT_USG, frame, &nframe) )
+  if (gcry_mpi_scan (&a, GCRYMPI_FMT_USG, frame, n, &nframe) )
     BUG ();
   gcry_free(frame);
 

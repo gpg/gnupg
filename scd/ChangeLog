@@ -1,3 +1,7 @@
+2003-07-27  Werner Koch  <wk@gnupg.org>
+
+	Adjusted for gcry_mpi_print and gcry_mpi_scan API change.
+
 2003-07-24  Werner Koch  <wk@gnupg.org>
 
 	* app-openpgp.c (do_learn_status): Print more status information.

@@ -596,8 +596,7 @@ copykeys (APP app, const char *fname)
   template = tp = xmalloc (1+2 + 1+1+4 + 1+1+64 + 1+1+64);
   *tp++ = 0xC0;
   *tp++ = 4;
-  n = 4;
-  rc = gcry_mpi_print (GCRYMPI_FMT_USG, tp, &n, rsa_e);
+  rc = gcry_mpi_print (GCRYMPI_FMT_USG, tp, 4, &n, rsa_e);
   if (rc)
     {
       log_error ("mpi_print failed: %s\n", gpg_strerror (rc));
@@ -615,8 +614,7 @@ copykeys (APP app, const char *fname)
 
   *tp++ = 0xC1;
   *tp++ = 64;
-  n = 64;
-  rc = gcry_mpi_print (GCRYMPI_FMT_USG, tp, &n, rsa_p);
+  rc = gcry_mpi_print (GCRYMPI_FMT_USG, tp, 64, &n, rsa_p);
   if (rc)
     {
       log_error ("mpi_print failed: %s\n", gpg_strerror (rc));
@@ -627,8 +625,7 @@ copykeys (APP app, const char *fname)
 
   *tp++ = 0xC2;
   *tp++ = 64;
-  n = 64;
-  rc = gcry_mpi_print (GCRYMPI_FMT_USG, tp, &n, rsa_q);
+  rc = gcry_mpi_print (GCRYMPI_FMT_USG, tp, 64, &n, rsa_q);
   if (rc)
     {
       log_error ("mpi_print failed: %s\n", gpg_strerror (rc));
@@ -639,8 +636,7 @@ copykeys (APP app, const char *fname)
   assert (tp - template == 138);
 
   /* (we need the modulus to calculate the fingerprint) */
-  n = 128;
-  rc = gcry_mpi_print (GCRYMPI_FMT_USG, m, &n, rsa_n);
+  rc = gcry_mpi_print (GCRYMPI_FMT_USG, m, 128, &n, rsa_n);
   if (rc)
     {
       log_error ("mpi_print failed: %s\n", gpg_strerror (rc));
