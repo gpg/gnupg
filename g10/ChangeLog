@@ -1,5 +1,18 @@
 2003-02-22  David Shaw  <dshaw@jabberwocky.com>
 
+	* sign.c (sign_file): Do not push textmode filter onto an unopened
+	IOBUF (segfault).  Noted by Marcus Brinkmann.  Push and
+	reinitialize textmode filter for each file in a multiple file
+	list.
+
+	* packet.h, getkey.c (fixup_uidnode), keyedit.c (show_prefs): Set
+	and show the keyserver no-modify flag.
+
+	* keygen.c (add_keyserver_modify): New.
+	(keygen_upd_std_prefs): Call it here.
+	(keygen_set_std_prefs): Accept "ks-modify" and "no-ks-modify" as
+	prefs to set and unset keyserver modify flag.
+
 	* g10.c (main): Accept "s1" in addition to "idea" to match the
 	other ciphers.
 

@@ -1694,9 +1694,22 @@ show_prefs (PKT_user_id *uid, int verbose)
 	    }
 	    tty_printf ("%s",compress_algo_to_string(0));
         }
-        tty_printf ("\n     Features: ");
-	if(uid->mdc_feature)
-	  tty_printf ("MDC");
+	if(uid->mdc_feature || !uid->ks_modify)
+	  {
+	    tty_printf ("\n     Features: ");
+	    any=0;
+	    if(uid->mdc_feature)
+	      {
+		tty_printf ("MDC");
+		any=1;
+	      }
+	    if(!uid->ks_modify)
+	      {
+		if(any)
+		  tty_printf (", ");
+		tty_printf ("Keyserver no-modify");
+	      }
+	  }
 	tty_printf("\n");
     }
     else {
@@ -1709,6 +1722,8 @@ show_prefs (PKT_user_id *uid, int verbose)
         }
         if (uid->mdc_feature)
             tty_printf (" [mdc]");
+        if (!uid->ks_modify)
+            tty_printf (" [no-ks-modify]");
         tty_printf("\n");
     }
 }

@@ -106,7 +106,7 @@ static byte hash_prefs[MAX_PREFS];
 static int nhash_prefs;
 static byte zip_prefs[MAX_PREFS];
 static int nzip_prefs;
-static int mdc_available;
+static int mdc_available,ks_modify;
 
 static void do_generate_keypair( struct para_data_s *para,
 				 struct output_control_s *outctrl );
@@ -235,8 +235,8 @@ int
 keygen_set_std_prefs (const char *string,int personal)
 {
     byte sym[MAX_PREFS], hash[MAX_PREFS], zip[MAX_PREFS];
-    int  nsym=0, nhash=0, nzip=0, mdc=1; /* mdc defaults on */
-    int val,rc = 0;
+    int nsym=0, nhash=0, nzip=0, val, rc=0;
+    int mdc=1, modify=0; /* mdc defaults on, modify defaults off. */
 
     if (!string || !ascii_strcasecmp (string, "default")) {
       if (opt.def_preference_list)
@@ -284,6 +284,10 @@ keygen_set_std_prefs (const char *string,int personal)
 	      mdc=1;
 	    else if (ascii_strcasecmp(tok,"no-mdc")==0)
 	      mdc=0;
+	    else if (ascii_strcasecmp(tok,"ks-modify")==0)
+	      modify=1;
+	    else if (ascii_strcasecmp(tok,"no-ks-modify")==0)
+	      modify=0;
 	    else
 	      {
 		log_info (_("invalid item `%s' in preference string\n"),tok);
@@ -380,6 +384,7 @@ keygen_set_std_prefs (const char *string,int personal)
 	    memcpy (hash_prefs, hash, (nhash_prefs=nhash));
 	    memcpy (zip_prefs,  zip,  (nzip_prefs=nzip));
 	    mdc_available = mdc;
+	    ks_modify = modify;
 	    prefs_initialized = 1;
 	  }
       }
@@ -425,6 +430,7 @@ PKT_user_id *keygen_get_std_prefs(void)
   uid->prefs[j].value=0;
 
   uid->mdc_feature=mdc_available;
+  uid->ks_modify=ks_modify;
 
   return uid;
 }
@@ -470,6 +476,50 @@ add_feature_mdc (PKT_signature *sig,int enabled)
     m_free (buf);
 }
 
+static void
+add_keyserver_modify (PKT_signature *sig,int enabled)
+{
+  const byte *s;
+  size_t n;
+  int i;
+  char *buf;
+
+  /* The keyserver modify flag is a negative flag (i.e. no-modify) */
+  enabled=!enabled;
+
+  s = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KS_FLAGS, &n );
+  /* Already set or cleared */
+  if (s && n &&
+      ((enabled && (s[0] & 0x80)) || (!enabled && !(s[0] & 0x80))))
+    return;
+
+  if (!s || !n) { /* create a new one */
+    n = 1;
+    buf = m_alloc_clear (n);
+  }
+  else {
+    buf = m_alloc (n);
+    memcpy (buf, s, n);
+  }
+
+  if(enabled)
+    buf[0] |= 0x80; /* no-modify flag */
+  else
+    buf[0] &= ~0x80;
+
+  /* Are there any bits set? */
+  for(i=0;i<n;i++)
+    if(buf[i]!=0)
+      break;
+
+  if(i==n)
+    delete_sig_subpkt (sig->hashed, SIGSUBPKT_KS_FLAGS);
+  else
+    build_sig_subpkt (sig, SIGSUBPKT_KS_FLAGS, buf, n);
+
+  m_free (buf);
+}
+
 int
 keygen_upd_std_prefs( PKT_signature *sig, void *opaque )
 {
@@ -502,6 +552,7 @@ keygen_upd_std_prefs( PKT_signature *sig, void *opaque )
 
     /* Make sure that the MDC feature flag is set if needed */
     add_feature_mdc (sig,mdc_available);
+    add_keyserver_modify (sig,ks_modify);
 
     return 0;
 }
@@ -516,19 +567,10 @@ int
 keygen_add_std_prefs( PKT_signature *sig, void *opaque )
 {
     PKT_public_key *pk = opaque;
-    byte buf[8];
 
     do_add_key_flags (sig, pk->pubkey_usage);
     keygen_add_key_expire( sig, opaque );
     keygen_upd_std_prefs (sig, opaque);
-
-    buf[0] = 0x80; /* no modify - It is reasonable that a key holder
-		    * has the possibility to reject signatures from users
-		    * who are known to sign everything without any
-		    * validation - so a signed key should be send
-		    * to the holder who in turn can put it on a keyserver
-		    */
-    build_sig_subpkt( sig, SIGSUBPKT_KS_FLAGS, buf, 1 );
 
     return 0;
 }

@@ -1296,6 +1296,11 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
     p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES, &n);
     if (p && n && (p[0] & 0x01))
         uid->mdc_feature = 1;
+    /* and the keyserver modify flag */
+    uid->ks_modify = 1;
+    p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KS_FLAGS, &n);
+    if (p && n && (p[0] & 0x80))
+        uid->ks_modify = 0;
             
 }
 
