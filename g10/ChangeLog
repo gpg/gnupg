@@ -1,3 +1,8 @@
+2004-04-30  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main) <gpgconf>: Use gpg.conf and not /dev/null as
+	default filename.
+
 2004-04-28  Werner Koch  <wk@gnupg.org>
 
 	* card-util.c (card_edit): Remove PIN verification.
