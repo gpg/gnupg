@@ -89,11 +89,32 @@ dnl
 dnl  Check other options
 dnl
 
-AC_MSG_CHECKING([whether use of extensions is requested])
-AC_ARG_ENABLE(dynload,
-[  --disable-dynload       disable use of extensions],
-    try_dynload=$enableval, try_dynload=yes)
-AC_MSG_RESULT($try_dynload)
+# We don't need idea but some people claim that they need it for
+# research etc., so we allow to place an idea source code into the
+# cipher directory and statically link it if available, otherwise we
+# link to a stub.  We don't use AC_CHECK_FILE to avoid caching.
+AC_MSG_CHECKING(for extra cipher modules)
+tmp=""
+if test -f $srcdir/cipher/idea.c; then 
+   IDEA_O=idea.o
+   tmp=idea
+else
+   IDEA_O=idea-stub.o
+   tmp=no
+fi
+AC_SUBST(IDEA_O)
+AC_MSG_RESULT($tmp)
+
+# if the static idea is present, disable dynload.
+if test "$IDEA_O" = idea-stub.o ; then
+  AC_MSG_CHECKING([whether use of extensions is requested])
+  AC_ARG_ENABLE(dynload,
+  [  --disable-dynload       disable use of extensions],
+      try_dynload=$enableval, try_dynload=yes)
+  AC_MSG_RESULT($try_dynload)
+else
+  try_dynload=no
+fi
 
 AC_MSG_CHECKING([whether assembler modules are requested])
 AC_ARG_ENABLE(asm,
@@ -177,7 +198,7 @@ if test "$use_exec" = yes ; then
     AC_MSG_RESULT($try_mailto)
     fi
 
-    AC_MSG_CHECKING([whether to disable keyserver exec-path])
+    AC_MSG_CHECKING([whether keyserver exec-path is enabled])
     AC_ARG_ENABLE(keyserver-path,
         [  --disable-keyserver-path disable the exec-path option for keyserver helpers],
         [if test "$enableval" = no ; then
@@ -665,22 +686,6 @@ case "$static_random_module" in
        AC_MSG_ERROR(no random module available)
         ;;
 esac
-
-# We don't need idea but some people claim that they need it for
-# research etc., so we allow to place an idea source code into the
-# cipher directory and statically link it if available, otherwise we
-# link to a stub.  We don't use AC_CHECK_FILE to avoid caching.
-AC_MSG_CHECKING(for extra cipher modules)
-tmp=""
-if test -f $srcdir/cipher/idea.c; then 
-   IDEA_O=idea.o
-   tmp=idea
-else
-   IDEA_O=idea-stub.o
-fi
-AC_SUBST(IDEA_O)
-AC_MSG_RESULT($tmp)
-
 
 dnl setup assembler stuff
 AC_MSG_CHECKING(for mpi assembler functions)
