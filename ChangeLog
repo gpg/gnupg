@@ -1,6 +1,10 @@
 2004-09-09  Werner Koch  <wk@g10code.com>
 
-	* configure.ac: Check for readline.
+	* README: Doc --disable-card-support and --without-readline.
+
+	* configure.ac: Check for readline.  Make enable-card-support the
+	default.  New option --without-readline.  Allow the use of either
+	the development or the stable libusb.
 
 2004-07-27  Werner Koch  <wk@g10code.de>
 

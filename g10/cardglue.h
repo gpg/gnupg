@@ -1,5 +1,5 @@
-/* call-agent.h - Divert operations to the agent
- * Copyright (C) 2003 Free Software Foundation, Inc.
+/* cardglue.h - Divert operations to the agent
+ * Copyright (C) 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -37,6 +37,12 @@ struct agent_card_info_s {
   int  disp_sex;     /* 0 = unspecified, 1 = male, 2 = female */
   char *pubkey_url;  /* malloced. */
   char *login_data;  /* malloced. */
+  char cafpr1valid;
+  char cafpr2valid;
+  char cafpr3valid;
+  char cafpr1[20];
+  char cafpr2[20];
+  char cafpr3[20];
   char fpr1valid;
   char fpr2valid;
   char fpr3valid;
@@ -93,10 +99,15 @@ typedef struct ctrl_ctx_s *ctrl_t;
 #define GPG_ERR_NOT_IMPLEMENTED   G10ERR_GENERAL
 #define GPG_ERR_BAD_BER           G10ERR_GENERAL
 #define GPG_ERR_EOF               (-1)
+#define GPG_ERR_CARD_NOT_PRESENT  G10ERR_NO_CARD
+#define GPG_ERR_CARD_RESET        G10ERR_GENERAL
 
 #define GPG_ERR_EBUSY             G10ERR_GENERAL
 #define GPG_ERR_ENOENT            G10ERR_OPEN_FILE
 #define GPG_ERR_EACCES            G10ERR_UNSUPPORTED
+#define GPG_ERR_EIO               G10ERR_GENERAL
+#define GPG_ERR_ENODEV            G10ERR_GENERAL
+#define GPG_ERR_CANCELED          G10ERR_CANCELED
 
 typedef int gpg_error_t;
 typedef int gpg_err_code_t;

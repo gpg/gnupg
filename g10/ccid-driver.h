@@ -55,6 +55,22 @@
 #ifndef CCID_DRIVER_H
 #define CCID_DRIVER_H
 
+/* The CID driver returns the same error codes as the statsu words
+   used by GnuPG's apdu.h.  For ease of maintenance they should always
+   match.  */
+#define CCID_DRIVER_ERR_OUT_OF_CORE    0x10001 
+#define CCID_DRIVER_ERR_INV_VALUE      0x10002
+#define CCID_DRIVER_ERR_INCOMPLETE_CARD_RESPONSE = 0x10003
+#define CCID_DRIVER_ERR_NO_DRIVER      0x10004
+#define CCID_DRIVER_ERR_NOT_SUPPORTED  0x10005
+#define CCID_DRIVER_ERR_LOCKING_FAILED 0x10006
+#define CCID_DRIVER_ERR_BUSY           0x10007
+#define CCID_DRIVER_ERR_NO_CARD        0x10008
+#define CCID_DRIVER_ERR_CARD_INACTIVE  0x10009
+#define CCID_DRIVER_ERR_CARD_IO_ERROR  0x1000a
+#define CCID_DRIVER_ERR_GENERAL_ERROR  0x1000b
+#define CCID_DRIVER_ERR_NO_READER      0x1000c
+#define CCID_DRIVER_ERR_ABORTED        0x1000d
 
 struct ccid_driver_s;
 typedef struct ccid_driver_s *ccid_driver_t;

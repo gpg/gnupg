@@ -336,6 +336,11 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
                    info.chvretry[0], info.chvretry[1], info.chvretry[2]);
       fprintf (fp, "sigcount:%lu:::\n", info.sig_counter);
 
+      fputs ("cafpr:", fp);
+      print_sha1_fpr_colon (fp, info.cafpr1valid? info.cafpr1:NULL);
+      print_sha1_fpr_colon (fp, info.cafpr2valid? info.cafpr2:NULL);
+      print_sha1_fpr_colon (fp, info.cafpr3valid? info.cafpr3:NULL);
+      putc ('\n', fp);
       fputs ("fpr:", fp);
       print_sha1_fpr_colon (fp, info.fpr1valid? info.fpr1:NULL);
       print_sha1_fpr_colon (fp, info.fpr2valid? info.fpr2:NULL);
@@ -362,6 +367,21 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
                    info.disp_sex == 2? _("female") : _("unspecified"));
       print_name (fp, "URL of public key : ", info.pubkey_url);
       print_name (fp, "Login data .......: ", info.login_data);
+      if (info.cafpr1valid)
+        {
+          tty_fprintf (fp, "CA fingerprint %d .:", 1);
+          print_sha1_fpr (fp, info.cafpr1);
+        }
+      if (info.cafpr2valid)
+        {
+          tty_fprintf (fp, "CA fingerprint %d .:", 2);
+          print_sha1_fpr (fp, info.cafpr2);
+        }
+      if (info.cafpr3valid)
+        {
+          tty_fprintf (fp, "CA fingerprint %d .:", 3);
+          print_sha1_fpr (fp, info.cafpr3);
+        }
       tty_fprintf (fp,    "Signature PIN ....: %s\n",
                    info.chv1_cached? _("not forced"): _("forced"));
       tty_fprintf (fp,    "Max. PIN lengths .: %d %d %d\n",
@@ -491,19 +511,46 @@ change_url (void)
 }
 
 static int
-change_login (void)
+change_login (const char *args)
 {
   char *data;
+  int n;
   int rc;
 
-  data = cpr_get ("cardedit.change_login",
-                  _("Login data (account name): "));
-  if (!data)
-    return -1;
-  trim_spaces (data);
-  cpr_kill_prompt ();
+  if (args && *args == '<')  /* Read it from a file */
+    {
+      FILE *fp;
 
-  if (strlen (data) > 254 )
+      for (args++; spacep (args); args++)
+        ;
+      fp = fopen (args, "rb");
+      if (!fp)
+        {
+          tty_printf ("can't open `%s': %s\n", args, strerror (errno));
+          return -1;
+        }
+      data = xmalloc (254);
+      n = fread (data, 1, 254, fp);
+      fclose (fp);
+      if (n < 0)
+        {
+          tty_printf ("error reading `%s': %s\n", args, strerror (errno));
+          xfree (data);
+          return -1;
+        }
+    }
+  else
+    {
+      data = cpr_get ("cardedit.change_login",
+                      _("Login data (account name): "));
+      if (!data)
+        return -1;
+      trim_spaces (data);
+      cpr_kill_prompt ();
+      n = strlen (data);
+    }
+
+  if (n > 254 )
     {
       tty_printf (_("Error: Login data too long "
                     "(limit is %d characters).\n"), 254);    
@@ -511,7 +558,7 @@ change_login (void)
       return -1;
     }
 
-  rc = agent_scd_setattr ("LOGIN-DATA", data, strlen (data) );
+  rc = agent_scd_setattr ("LOGIN-DATA", data, n );
   if (rc)
     log_error ("error setting login data: %s\n", gpg_strerror (rc));
   xfree (data);
@@ -588,6 +635,51 @@ change_sex (void)
   xfree (data);
   return rc;
 }
+
+
+static int
+change_cafpr (int fprno)
+{
+  char *data;
+  const char *s;
+  int i, c, rc;
+  unsigned char fpr[20];
+
+  data = cpr_get ("cardedit.change_cafpr", _("CA fingerprint: "));
+  if (!data)
+    return -1;
+  trim_spaces (data);
+  cpr_kill_prompt ();
+
+  for (i=0, s=data; i < 20 && *s; )
+    {
+      while (spacep(s))
+        s++;
+      if (*s == ':')
+        s++;
+      while (spacep(s))
+        s++;
+      c = hextobyte (s);
+      if (c == -1)
+        break;
+      fpr[i++] = c;
+      s += 2;
+    }
+  xfree (data);
+  if (i != 20 || *s)
+    {
+      tty_printf (_("Error: invalid formatted fingerprint.\n"));
+      return -1;
+    }
+
+  rc = agent_scd_setattr (fprno==1?"CA-FPR-1":
+                          fprno==2?"CA-FPR-2":
+                          fprno==3?"CA-FPR-3":"x", fpr, 20 );
+  if (rc)
+    log_error ("error setting cafpr: %s\n", gpg_strerror (rc));
+  return rc;
+}
+
 
 
 static void
@@ -700,7 +792,7 @@ card_edit (STRLIST commands)
   enum cmdids {
     cmdNOP = 0,
     cmdQUIT, cmdHELP, cmdLIST, cmdDEBUG,
-    cmdNAME, cmdURL, cmdLOGIN, cmdLANG, cmdSEX,
+    cmdNAME, cmdURL, cmdLOGIN, cmdLANG, cmdSEX, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD,
     cmdINVCMD
   };
@@ -722,6 +814,7 @@ card_edit (STRLIST commands)
     { N_("login") , cmdLOGIN , N_("change the login name") },
     { N_("lang")  , cmdLANG  , N_("change the language preferences") },
     { N_("sex")   , cmdSEX   , N_("change card holder's sex") },
+    { N_("cafpr"),  cmdCAFPR,  N_("change a CA fingerprint") },
     { N_("forcesig"),
                   cmdFORCESIG, N_("toggle the signature force PIN flag") },
     { N_("generate"),
@@ -840,7 +933,7 @@ card_edit (STRLIST commands)
           break;
 
         case cmdLOGIN:
-          change_login ();
+          change_login (arg_string);
           break;
 
         case cmdLANG:
@@ -849,6 +942,14 @@ card_edit (STRLIST commands)
 
         case cmdSEX:
           change_sex ();
+          break;
+
+        case cmdCAFPR:
+          if ( arg_number < 1 || arg_number > 3 )
+            tty_printf ("usage: cafpr N\n"
+                        "       1 <= N <= 3\n");
+          else
+            change_cafpr (arg_number);
           break;
 
         case cmdFORCESIG:

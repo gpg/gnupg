@@ -1,5 +1,79 @@
 2004-09-09  Werner Koch  <wk@g10code.com>
 
+	* cardglue.h: Add members for CA fingerprints.
+	* cardglue.c (agent_release_card_info): Invalid them.
+	(learn_status_cb): Store them.
+
+	* app-common.h, app-openpgp.c, iso7816.c, iso7816.h
+	* apdu.c, apdu.h, ccid-driver.c, ccid-driver.h
+	* card-util.c: Updated from current gnupg-1.9.
+
+	Changes are:
+
+	* ccid-driver.h (CCID_DRIVER_ERR_ABORTED): New.
+	* ccid-driver.c (ccid_open_reader): Support the stable 0.1 version
+	of libusb.
+	(ccid_get_atr): Handle short messages.
+	* apdu.c (my_rapdu_get_status): Implemented.
+	* apdu.c: Include <signal.h>.
+	* apdu.c (reader_table_s):  Add function pointers for the backends.
+	(apdu_close_reader, apdu_get_status, apdu_activate) 
+	(send_apdu): Make use of them.
+	(new_reader_slot): Intialize them to NULL.
+	(dump_ccid_reader_status, ct_dump_reader_status): New.
+	(dump_pcsc_reader_status): New.
+	(open_ct_reader, open_pcsc_reader, open_ccid_reader) 
+	(open_osc_reader, open_rapdu_reader): Intialize function pointers.
+	(ct_activate_card, ct_send_apdu, pcsc_send_apdu, osc_send_apdu) 
+	(error_string): Removed.  Replaced by apdu_strerror.
+	(get_ccid_error_string): Removed.
+	(ct_activate_card): Remove the unused loop.
+	(reset_ct_reader): Implemented.
+	(ct_send_apdu): Activate the card if not yet done.
+	(pcsc_send_apdu): Ditto.
+	* ccid-driver.h: Add error codes.
+	* ccid-driver.c: Implement more or less proper error codes all
+	over the place.
+	* apdu.c (apdu_send_direct): New.
+	(get_ccid_error_string): Add some error code mappings.
+	(send_apdu): Pass error codes along for drivers already supporting
+	them.
+	(host_sw_string): New.
+	(get_ccid_error_string): Use above.
+	(send_apdu_ccid): Reset the reader if it has not yet been done.
+	(open_ccid_reader): Don't care if the ATR can't be read.
+	(apdu_activate_card): New.
+	(apdu_strerror): New.
+	(dump_reader_status): Only enable it with opt.VERBOSE.
+	* iso7816.c (map_sw): Add mappings for the new error codes.
+	* apdu.c (open_ct_reader, open_pcsc_reader, open_ccid_reader)
+	(reset_ccid_reader, open_osc_reader): Call dump_reader_status only
+	in verbose mode.
+	* app-openpgp.c (do_getattr): Fix for sending CA-FPR.
+	* app-openpgp.c (app_openpgp_readkey): Fixed check for valid
+	exponent.
+	* app-openpgp.c (do_setattr): Sync FORCE_CHV1.
+	* card-util.c (change_login): Kludge to allow reading data from a
+	file.
+	(card_edit): Pass ARG_STRING to change_login.
+	(card_status): Print CA fingerprints.
+	(change_cafpr): New.
+	(card_edit): New command CAFPR.
+
+2004-04-30  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main) <gpgconf>: Use gpg.conf and not /dev/null as
+	default filename.
+
+2004-04-28  Werner Koch  <wk@gnupg.org>
+
+	* card-util.c (card_edit): Remove PIN verification.
+	(generate_card_keys): New arg SERIALNO.  Do PIN verification here
+	after resetting forced_chv1.
+
+	
+2004-09-09  Werner Koch  <wk@g10code.com>
+
 	* signal.c (got_fatal_signal): Do readline cleanup.  Print signal
 	number if we can't print the name. Use new autoconf macro
 	HAVE_DECL_SYS_SIGLIST.

@@ -104,9 +104,19 @@ fi
 
 AC_MSG_CHECKING([whether OpenPGP card support is requested])
 AC_ARG_ENABLE(card-support,
-    [  --enable-card-support   enable OpenPGP card support],
-    card_support=$enableval, card_support=no)
+              AC_HELP_STRING([--disable-card-support],
+                             [enable OpenPGP card support]),
+              card_support=$enableval, card_support=yes)
 AC_MSG_RESULT($card_support)
+
+AC_MSG_CHECKING([whether readline support is requested])
+AC_ARG_WITH(readline,
+              AC_HELP_STRING([--without-readline],
+                             [do not support fancy command line editing]),
+              [readline_support="$withval"], [readline_support=yes])  
+case "$readline_support" in yes);; no);; *)readline_support=yes;; esac
+AC_MSG_RESULT($readline_support)
+
 
 dnl See if we are disabling any algorithms or features for a smaller
 dnl binary
@@ -1072,23 +1082,24 @@ AC_SUBST(ZLIBS)
 #
 # libusb allows us to use the integrated CCID smartcard reader driver.
 #
-# Note, that we need the CVS (unstable) version. 
-#
 LIBUSB_LIBS=""
 if test "$card_support" = yes; then
-    AC_CHECK_LIB(usb, usb_find_device,
+    AC_CHECK_LIB(usb, usb_bulk_write,
                  [ LIBUSB_LIBS="$LIBUSB_LIBS -lusb"
                    AC_DEFINE(HAVE_LIBUSB,1,
                    [defined if libusb is available])
                  ])
 fi
 AC_SUBST(LIBUSB_LIBS)
+AC_CHECK_FUNCS(usb_create_match)
 
 #
 # Check for readline support
 #
-AC_CHECK_LIB(readline, add_history)
-AC_CHECK_HEADERS([readline/readline.h])
+if test "$readline_support" = yes ; then
+    AC_CHECK_LIB(readline, add_history)
+    AC_CHECK_HEADERS([readline/readline.h])
+fi
 
 
 # Allow users to append something to the version string without

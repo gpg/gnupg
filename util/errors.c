@@ -105,6 +105,8 @@ g10_errstr( int err )
       X(UNU_PUBKEY     ,N_("unusable public key"))
       X(UNU_SECKEY     ,N_("unusable secret key"))
       X(KEYSERVER      ,N_("keyserver error"))
+      X(CANCELED       ,N_("canceled"))
+      X(NO_CARD        ,N_("no card"))
       default: p = buf; sprintf(buf, "g10err=%d", err); break;
     }
 #undef X

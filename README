@@ -476,7 +476,7 @@
                       auto - Compile linux, egd and unix in and 
                              automagically select at runtime.
   
-    --with-egd-socket=<name>
+     --with-egd-socket=<name>
                      This is only used when EGD is used as random
                      gatherer. GnuPG uses by default "~/.gnupg/entropy"
                      as the socket to connect EGD.  Using this option the
@@ -485,7 +485,13 @@
                      "~/" uses the socket in the home directory of the user
                      and one starting with a "=" uses a socket in the
                      GnuPG home directory which is "~/.gnupg" by default.
-   
+ 
+     --without-readline
+                     Do not include support for the readline libary
+                     even if it is available.  The default is to check
+                     whether the readline libarry is a availbale and
+                     use it to allow fancy command line editing.
+  
      --with-included-zlib
                      Forces usage of the local zlib sources. Default is
 		     to use the (shared) library of the system.
@@ -589,6 +595,11 @@
                     keyrings.  The default is 4096, but for use on
                     platforms where memory is an issue, it can be set
                     as low as 5.
+
+     --disable-card-support
+                    Do not include smartcard support.  The default is
+                    to include support if all required libraries are
+                    available.
 
 
     Installation Problems

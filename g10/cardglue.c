@@ -1,5 +1,5 @@
 /* cardglue.c - mainly dispatcher for card related functions.
- * Copyright (C) 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -237,6 +237,7 @@ agent_release_card_info (struct agent_card_info_s *info)
   xfree (info->pubkey_url); info->pubkey_url = NULL;
   xfree (info->login_data); info->login_data = NULL;
   info->fpr1valid = info->fpr2valid = info->fpr3valid = 0;
+  info->cafpr1valid = info->cafpr2valid = info->cafpr3valid = 0;
 }
 
 
@@ -529,7 +530,21 @@ learn_status_cb (void *opaque, const char *line)
       else if (no == 3)
         parm->fpr3valid = unhexify_fpr (line, parm->fpr3);
     }
-  
+  else if (keywordlen == 6 && !memcmp (keyword, "CA-FPR", keywordlen))
+    {
+      int no = atoi (line);
+      while (*line && !spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+      if (no == 1)
+        parm->cafpr1valid = unhexify_fpr (line, parm->cafpr1);
+      else if (no == 2)
+        parm->cafpr2valid = unhexify_fpr (line, parm->cafpr2);
+      else if (no == 3)
+        parm->cafpr3valid = unhexify_fpr (line, parm->cafpr3);
+    }
+
   return 0;
 }
 

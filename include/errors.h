@@ -75,7 +75,8 @@
 #define G10ERR_UNU_PUBKEY     53
 #define G10ERR_UNU_SECKEY     54
 #define G10ERR_KEYSERVER      55
-
+#define G10ERR_CANCELED       56
+#define G10ERR_NO_CARD        57
 
 #ifndef HAVE_STRERROR
 char *strerror( int n );

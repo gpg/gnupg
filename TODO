@@ -72,9 +72,6 @@
 
   * Get new assembler stuff from gmp 3.1
 
-  * use DEL and ^H for erasing the previous character (util/ttyio.c).
-    or better readline.
-
   * add test cases for invalid data (scrambled armor or other random data)
 
   * add checking of armor trailers.  Try to detect garbled header
