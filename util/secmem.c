@@ -85,7 +85,7 @@ print_warn(void)
 {
   if (!no_warning)
     {
-      log_info(_("Warning: using insecure memory!\n"));
+      log_info(_("WARNING: using insecure memory!\n"));
       log_info(_("please see http://www.gnupg.org/faq.html "
 		 "for more information\n"));
     }

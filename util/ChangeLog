@@ -1,3 +1,7 @@
+2002-07-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* secmem.c: "Warning" -> "WARNING"
+
 2002-07-05  Werner Koch  <wk@gnupg.org>
 
 	* argparse.c (initialize): We better exit after a read error so
