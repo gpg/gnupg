@@ -58,6 +58,7 @@ static FILE *ttyfp = NULL;
 static int initialized;
 static int last_prompt_len;
 static int batchmode;
+static int no_terminal;
 
 #ifdef HAVE_TCGETATTR
 static struct termios termsave;
@@ -130,10 +131,21 @@ tty_batchmode( int onoff )
     return old;
 }
 
+int
+tty_no_terminal(int onoff)
+{
+    int old = no_terminal;
+    no_terminal = onoff ? 1 : 0;
+    return old;
+}
+
 void
 tty_printf( const char *fmt, ... )
 {
     va_list arg_ptr;
+
+    if (no_terminal)
+	return;
 
     if( !initialized )
 	init_ttyfp();
@@ -188,6 +200,9 @@ tty_printf( const char *fmt, ... )
 void
 tty_print_string( byte *p, size_t n )
 {
+    if (no_terminal)
+	return;
+
     if( !initialized )
 	init_ttyfp();
 
@@ -233,6 +248,11 @@ do_get( const char *prompt, int hidden )
 
     if( batchmode ) {
 	log_error("Sorry, we are in batchmode - can't get input\n");
+	exit(2);
+    }
+
+    if (no_terminal) {
+	log_error("Sorry, no terminal at all requested - can't get input\n");
 	exit(2);
     }
 
@@ -349,9 +369,12 @@ tty_get_hidden( const char *prompt )
 void
 tty_kill_prompt()
 {
+    if ( no_terminal )
+	return;
 
     if( !initialized )
 	init_ttyfp();
+
     if( batchmode )
 	last_prompt_len = 0;
     if( !last_prompt_len )

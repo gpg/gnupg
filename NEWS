@@ -1,6 +1,4 @@
 
-    * New option -N to insert notations and a --set-policy-url.
-
     * New subcommand "delsig" in the edit menu.
 
     * The name of the output file is not anymore the one which is
@@ -12,7 +10,9 @@
 
     * latin-2 character set works (--charset=iso-8859-2).
 
-    * New option --with-key-data to list the public key parameters
+    * New option --with-key-data to list the public key parameters.
+      New option -N to insert notations and a --set-policy-url.
+      A couple of other options to allow restting of options.
 
 
 Noteworthy changes in version 0.9.7

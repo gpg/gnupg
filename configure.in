@@ -102,6 +102,16 @@ AC_ARG_WITH(included-zlib,
 [g10_force_zlib=yes], [g10_force_zlib=no] )
 AC_MSG_RESULT($g10_force_zlib)
 
+dnl
+dnl Check wether we want to compile libgcrypt
+dnl
+AC_MSG_CHECKING([whether compilation of libgcrypt is requested])
+AC_ARG_ENABLE(libgcrypt,
+    [  --enable-libgcrypt      compile the libgcrypt [default=no]],
+[compile_libgcrypt="$enableval"],[compile_libgcrypt=yes])
+AM_CONDITIONAL(COMPILE_LIBGCRYPT, test x$compile_libgcrypt = xyes)
+AC_MSG_RESULT($compile_libgcrypt)
+
 
 dnl Checks for programs.
 
@@ -120,6 +130,14 @@ AC_PROG_CPP
 AC_ISC_POSIX
 AC_PROG_INSTALL
 AC_PROG_RANLIB
+
+
+if test x$compile_libgcrypt = xyes; then
+   dnl Don't default to build shared libs
+   AM_DISABLE_SHARED
+   AM_PROG_LIBTOOL
+fi
+
 
 MPI_OPT_FLAGS=""
 if test "$GCC" = yes; then
@@ -577,6 +595,7 @@ doc/Makefile
 tools/Makefile
 zlib/Makefile
 checks/Makefile
+gcrypt/Makefile
 ])
 
 dnl *-*wedit:notab*-*  Please keep this as the last line.

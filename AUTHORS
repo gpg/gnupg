@@ -29,10 +29,10 @@ nh@df.lth.se
 Weak key patches.
 
 
-GNUPG	Rémi Guyomarch		????????????
-Assigns changes.
+GNUPG	Rémi Guyomarch		1999-05-25
+Assigns past and future changes. (g10/compress.c, g10/encr-data.c,
+g10/free-packet.c, g10/mdfilter.c, g10/plaintext.c, util/iobuf.c)
 rguyom@mail.dotcom.fr
-Various speed up patches.
 
 
 TRANSLATIONS	Marco d'Itri    1997-02-22

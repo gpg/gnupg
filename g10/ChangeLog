@@ -1,5 +1,21 @@
-Thu Jun 10 14:18:23 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+Tue Jun 15 12:21:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
+
+	* g10.c (main): Made iterated+salted the default S2K method.
+
+	* Makefile.am (install-data-local): Use DESTDIR.
+
+	* passphrase.c (passphrase_to_dek): Emit missing-passphrase while in
+	batchmode.
+
+	* parse-packet.c (parse_pubkeyenc): Fixed a SEGV.
+
+Mon Jun 14 21:18:54 CEST 1999 Michael Roth <mroth@nessie.de>
+
+	* g10.c: New options --openpgp, --no-tty, --emit-version,
+          --default-comment and --lock-multiple
+
+Thu Jun 10 14:18:23 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* free-packet.c (free_encrypted): Fixed EOF case (Remi).
 	(free_plaintext): Ditto.

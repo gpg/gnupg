@@ -116,11 +116,13 @@ enum cmd_and_opt_values { aNull = 0,
     oStatusFD,
     oNoComment,
     oNoVersion,
+    oEmitVersion,
     oCompletesNeeded,
     oMarginalsNeeded,
     oMaxCertDepth,
     oLoadExtension,
     oRFC1991,
+    oOpenPGP,
     oCipherAlgo,
     oDigestAlgo,
     oCompressAlgo,
@@ -132,6 +134,7 @@ enum cmd_and_opt_values { aNull = 0,
     oNoArmor,
     oNoDefKeyring,
     oNoGreeting,
+    oNoTTY,
     oNoOptions,
     oNoBatch,
     oHomedir,
@@ -147,6 +150,7 @@ enum cmd_and_opt_values { aNull = 0,
     oSetPolicyURL,
     oUseEmbeddedFilename,
     oComment,
+    oDefaultComment,
     oThrowKeyid,
     oForceV3Sigs,
     oForceMDC,
@@ -157,6 +161,7 @@ enum cmd_and_opt_values { aNull = 0,
     oNotDashEscaped,
     oEscapeFrom,
     oLockOnce,
+    oLockMultiple,
     oKeyServer,
     oEncryptTo,
     oNoEncryptTo,
@@ -226,6 +231,7 @@ static ARGPARSE_OPTS opts[] = {
     { oOutput, "output",    2, N_("use as output file")},
     { oVerbose, "verbose",   0, N_("verbose") },
     { oQuiet,	"quiet",   0, N_("be somewhat more quiet") },
+    { oNoTTY, "no-tty", 0, N_("don't use the terminal at all") },
     { oForceV3Sigs, "force-v3-sigs", 0, N_("force v3 signatures") },
     { oForceMDC, "force-mdc", 0, N_("always use a MDC for encryption") },
     { oDryRun, "dry-run",   0, N_("do not make any changes") },
@@ -249,6 +255,7 @@ static ARGPARSE_OPTS opts[] = {
     { oMaxCertDepth,	"max-cert-depth", 1, "@" },
     { oLoadExtension, "load-extension" ,2, N_("|FILE|load extension module FILE")},
     { oRFC1991, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
+    { oOpenPGP, "openpgp", 0, N_("set all packet, cipher and digest options to OpenPGP behavior")},
     { oS2KMode, "s2k-mode",  1, N_("|N|use passphrase mode N")},
     { oS2KDigest, "s2k-digest-algo",2,
 		N_("|NAME|use message digest algorithm NAME for passphrases")},
@@ -299,10 +306,13 @@ static ARGPARSE_OPTS opts[] = {
     { oSetFilename, "set-filename", 2, "@" },
     { oSetPolicyURL, "set-policy-url", 2, "@" },
     { oComment, "comment", 2, "@" },
-    { oNoVersion, "no-version", 0,   "@"},
+    { oDefaultComment, "default-comment", 0, "@" },
+    { oNoVersion, "no-version", 0, "@"},
+    { oEmitVersion, "emit-version", 0, "@"},
     { oNotDashEscaped, "not-dash-escaped", 0, "@" },
     { oEscapeFrom, "escape-from-lines", 0, "@" },
     { oLockOnce, "lock-once", 0, "@" },
+    { oLockMultiple, "lock-multiple", 0, "@" },
     { oLoggerFD, "logger-fd",1, "@" },
     { oUseEmbeddedFilename, "use-embedded-filename", 0, "@" },
 {0} };
@@ -513,11 +523,11 @@ main( int argc, char **argv )
     create_dotlock(NULL); /* register locking cleanup */
     i18n_init();
     opt.compress = -1; /* defaults to standard compress level */
-    /* fixme: set the next two to zero and decide where used */
+    /* note: if you change these lines, look at oOpenPGP */
     opt.def_cipher_algo = 0;
     opt.def_digest_algo = 0;
     opt.def_compress_algo = 2;
-    opt.s2k_mode = 1; /* salted */
+    opt.s2k_mode = 3; /* iterated+salted */
     opt.s2k_digest_algo = DIGEST_ALGO_RMD160;
     opt.s2k_cipher_algo = CIPHER_ALGO_BLOWFISH;
     opt.completes_needed = 1;
@@ -655,6 +665,7 @@ main( int argc, char **argv )
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
 	  case oOutput: opt.outfile = pargs.r.ret_str; break;
 	  case oQuiet: opt.quiet = 1; break;
+	  case oNoTTY: opt.quiet = 1; tty_no_terminal(1); break;
 	  case oDryRun: opt.dry_run = 1; break;
 	  case oInteractive: opt.interactive = 1; break;
 	  case oVerbose: g10_opt_verbose++;
@@ -687,6 +698,7 @@ main( int argc, char **argv )
 	  case oQuickRandom: quick_random_gen(1); break;
 	  case oNoComment: opt.no_comment=1; break;
 	  case oNoVersion: opt.no_version=1; break;
+	  case oEmitVersion: opt.no_version=0; break;
 	  case oCompletesNeeded: opt.completes_needed = pargs.r.ret_int; break;
 	  case oMarginalsNeeded: opt.marginals_needed = pargs.r.ret_int; break;
 	  case oMaxCertDepth: opt.max_cert_depth = pargs.r.ret_int; break;
@@ -712,6 +724,20 @@ main( int argc, char **argv )
 	    opt.no_comment = 1;
 	    opt.escape_from = 1;
 	    break;
+	  case oOpenPGP:
+	    opt.rfc1991 = 0;
+	    opt.escape_from = 0;
+	    opt.force_v3_sigs = 0;
+	    opt.compress_keys = 0;	    /* not mandated  but we do it */
+	    opt.compress_sigs = 0;	    /* ditto. */
+	    opt.not_dash_escaped = 0;
+	    opt.def_cipher_algo = 0;
+	    opt.def_digest_algo = 0;
+	    opt.def_compress_algo = 2;
+	    opt.s2k_mode = 3; /* iterated+salted */
+	    opt.s2k_digest_algo = DIGEST_ALGO_RMD160;
+	    opt.s2k_cipher_algo = CIPHER_ALGO_BLOWFISH;
+	    break;
 	  case oEmuChecksumBug: opt.emulate_bugs |= EMUBUG_GPGCHKSUM; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRunAsShmCP:
@@ -725,6 +751,7 @@ main( int argc, char **argv )
 	  case oSetPolicyURL: opt.set_policy_url = pargs.r.ret_str; break;
 	  case oUseEmbeddedFilename: opt.use_embedded_filename = 1; break;
 	  case oComment: opt.comment_string = pargs.r.ret_str; break;
+	  case oDefaultComment: opt.comment_string = NULL; break;
 	  case oThrowKeyid: opt.throw_keyid = 1; break;
 	  case oForceV3Sigs: opt.force_v3_sigs = 1; break;
 	  case oForceMDC: opt.force_mdc = 1; break;
@@ -758,6 +785,7 @@ main( int argc, char **argv )
 	  case oNotDashEscaped: opt.not_dash_escaped = 1; break;
 	  case oEscapeFrom: opt.escape_from = 1; break;
 	  case oLockOnce: opt.lock_once = 1; break;
+	  case oLockMultiple: opt.lock_once = 0; break;
 	  case oKeyServer: opt.keyserver_name = pargs.r.ret_str; break;
 	  case oNotation: add_notation_data( pargs.r.ret_str ); break;
 

@@ -82,11 +82,12 @@ $(PROGRAMS): $(needed_libs)
 
 
 install-data-local:
-	$(mkinstalldirs) $(pkgdatadir)
-	$(INSTALL_DATA) $(srcdir)/options.skel $(pkgdatadir)/options.skel
+	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
+	$(INSTALL_DATA) $(srcdir)/options.skel \
+				$(DESTDIR)$(pkgdatadir)/options.skel
 	@set -e;\
-	 if test -f $(bindir)/gpgm ; then
+	 if test -f $(DESTDIR)$(bindir)/gpgm ; then
 	   echo "removing obsolete gpgm binary"
-	   rm $(bindir)/gpgm ;
+	   rm $(DESTDIR)$(bindir)/gpgm ;
 	 fi
 

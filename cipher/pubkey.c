@@ -89,6 +89,8 @@ dummy_get_nbits( int algo, MPI *pkey )
 
 /****************
  * Put the static entries into the table.
+ * This is out constructor function which fill the table
+ * of algorithms with the one we have statically linked.
  */
 static void
 setup_pubkey_table(void)

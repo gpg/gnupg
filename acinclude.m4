@@ -404,7 +404,7 @@ case "$host_os" in
 aix*)
   ac_symcode='[BCDTU]'
   ;;
-openbsd* | sunos* | cygwin32* | mingw32*)
+freebsd* | netbsd* | openbsd* | sunos* | cygwin32* | mingw32*)
   ac_sympat='_\([_A-Za-z][_A-Za-z0-9]*\)'
   ac_symxfrm='_\1 \1'
   ;;

@@ -391,6 +391,19 @@ B<--no-comment>
 B<--comment> I<string>
     Use I<string> as comment string in clear text signatures.
 
+B<--default-comment>
+    Force to write the standard comment string in clear 
+    text  signatures.  Use this to overwrite B<--comment> 
+    from a config file.
+
+B<--no-version>
+    Omit the version string in clear text signatures.
+
+B<--emit-version>
+    Force to write the version string in clear text 
+    signatures.  Use this to overwrite a previous 
+    B<--no-version> from a config file.
+
 B<--notation-data>, B<-N> I<name>=<value>
     Put the name value pair into the signature as notation data.
     I<name> Must consists only of alphanumeric characters, digits
@@ -493,6 +506,13 @@ B<--passphrase-fd> I<n>
 B<--rfc1991>
     Try to be more RFC1991 (PGP 2.x) compliant.
 
+B<--openpgp>
+    Reset all packet, cipher and digest options to OpenPGP 
+    behavior. Use this option to reset all previous 
+    options like B<--rfc1991>, B<--force-v3-sigs>, B<--s2k-*>,
+    B<--cipher-algo>, B<--digest-algo> and B<--compress-algo> to 
+    OpenPGP compliant values.
+
 B<--force-v3-sigs>
     OpenPGP states that an implementation should generate
     v4 signatures but PGP 5.x recognizes v4 signatures only
@@ -508,6 +528,11 @@ B<--lock-once>
     Lock the file the first time a lock is requested
     and do not release the lock until the process
     terminates.
+
+B<--lock-multiple>
+    Release the locks every time a lock is no longer
+    needed. Use this to overwrite a previous B<--lock-once>
+    from a config file.
 
 B<--no-verbose>
     Reset verbose level to 0.

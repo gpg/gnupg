@@ -405,6 +405,20 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	enc->pubkey_algo = pk->pubkey_algo;
 	keyid_from_pk( pk, enc->keyid );
 	enc->throw_keyid = opt.throw_keyid;
+
+	/* Okay, what's going on: We have the session key somewhere in
+	 * the structure DEK and want to encode this session key in
+	 * an integer value of n bits.	pubkey_nbits gives us the
+	 * number of bits we have to use.  We then encode the session
+	 * key in some way and we get it back in the big intger value
+	 * FRAME.  Then we use FRAME, the public key PK->PKEY and the
+	 * algorithm number PK->PUBKEY_ALGO and pass it to pubkey_encrypt
+	 * which returns the encrypted value in the array ENC->DATA.
+	 * This array has a size which depends on the used algorithm
+	 * (e.g. 2 for ElGamal).  We don't need frame anymore because we
+	 * have everything now in enc->data which is the passed to
+	 * build_packet()
+	 */
 	frame = encode_session_key( dek, pubkey_nbits( pk->pubkey_algo,
 							  pk->pkey ) );
 	rc = pubkey_encrypt( pk->pubkey_algo, enc->data, frame, pk->pkey );

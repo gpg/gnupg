@@ -1,3 +1,7 @@
+Mon Jun 14 21:18:54 CEST 1999 Michael Roth <mroth@nessie.de>
+
+	* ttyio.c: tty_no_terminal() new.
+
 Sat Jun  5 15:30:33 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* strgutil.c (set_native_charset): Support Latin-2

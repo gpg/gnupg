@@ -2252,7 +2252,7 @@ msgstr "la clave pública es %lu segundos más nueva que la firma\n"
 
 #: g10/sig-check.c:292
 msgid "public key is %lu seconds newer than the signature\n"
-msgstr  "la clave pública es %lu segundos más nueva que la firma\n"
+msgstr	"la clave pública es %lu segundos más nueva que la firma\n"
 
 #: g10/sig-check.c:308
 msgid "NOTE: signature key expired %s\n"
@@ -2573,7 +2573,7 @@ msgstr "Revocación identificativo de usuario válida.\n"
 
 #: g10/trustdb.c:1417
 msgid "Invalid user ID revocation"
-msgstr "Revocación identificativo de usuario no válida.\n"
+msgstr "Revocación identificativo de usuario no válida."
 
 #: g10/trustdb.c:1512
 msgid "Too many preferences"

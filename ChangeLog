@@ -1,5 +1,9 @@
-Thu Jun 10 14:18:23 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+Tue Jun 15 12:21:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
+
+	* acinclude.m4 (GNUPG_SYS_NM_PARSE): Support for {net,free}bsd,
+
+Thu Jun 10 14:18:23 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* configure.in (ZLIB,GDBM): Check both, header and lib.
 

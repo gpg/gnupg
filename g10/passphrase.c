@@ -184,8 +184,10 @@ passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode )
 	pw = m_alloc_secure( strlen(fd_passwd)+1 );
 	strcpy( pw, fd_passwd );
     }
-    else if( opt.batch )
+    else if( opt.batch ) {
+	write_status( STATUS_MISSING_PASSPHRASE );
 	log_fatal("Can't query password in batchmode\n");
+    }
     else {
 	pw = cpr_get_hidden("passphrase.enter", _("Enter passphrase: ") );
 	tty_kill_prompt();

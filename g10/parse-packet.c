@@ -640,7 +640,7 @@ parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     int i, ndata;
     PKT_pubkey_enc *k;
 
-    k = packet->pkt.pubkey_enc = m_alloc(sizeof *packet->pkt.pubkey_enc );
+    k = packet->pkt.pubkey_enc = m_alloc_clear(sizeof *packet->pkt.pubkey_enc);
     if( pktlen < 12 ) {
 	log_error("packet(%d) too short\n", pkttype);
 	goto leave;
