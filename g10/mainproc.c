@@ -988,7 +988,7 @@ list_node( CTX c, KBNODE node )
 	    m_free(p);
 	}
 	if( opt.with_colons )
-	    printf(":%02x:", sig->sig_class );
+	    printf(":%02x%c:", sig->sig_class, get_lsign_letter (sig) );
 	putchar('\n');
     }
     else

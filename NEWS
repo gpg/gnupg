@@ -1,5 +1,14 @@
+Noteworthy changes in version ...
+------------------------------------------------
 
     * Security fix for a format string bug in the tty code.
+
+    * Fixed format string bugs in all po files.  Removed Russian
+      translation due to too many bugs.
+
+    * Fixed expire time calculation and keyserver access.
+
+    * The usual set of minor bug fixes and enhancements.
 
 Noteworthy changes in version 1.0.5 (2001-04-29)
 ------------------------------------------------

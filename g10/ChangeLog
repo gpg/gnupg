@@ -1,3 +1,20 @@
+2001-05-27  Werner Koch  <wk@gnupg.org>
+
+	* keyid.c (get_lsign_letter): New.
+	* keylist.c (list_keyblock_colon): Use it here.
+	* mainproc.c (list_node): and here.
+
+	* getkey.c, packet.h, free-packet.c: Removed that useless key
+	created field; I dunno why I introducded this at all - the
+	creation time is always bound to the key packet and subject to
+	fingerprint calculation etc.
+
+	* getkey.c (fixup_uidnode): Add keycreated arg and use this
+	instead of the signature timestamp to calculate the
+	help_key_expire.  Bug reported by David R. Bergstein.
+	(merge_selfsigs_main): Correct key expiration time calculation.
+	(merge_selfsigs_subkey): Ditto.
+
 2001-05-25  Werner Koch  <wk@gnupg.org>
 
 	* revoke.c (gen_revoke): Add a cast to a tty_printf arg.
@@ -341,7 +358,7 @@
 
 2001-02-08  Werner Koch  <wk@gnupg.org>
 
-	* getkey.c (key_byname): I can happe that we have both, sk and pk
+	* getkey.c (key_byname): It can happen that we have both, sk and pk
 	NULL, fix for that.
 
 	* parse-packet.c (parse_one_sig_subpkt): Add support for

@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.4\n"
-"POT-Creation-Date: 2001-04-29 16:39+0200\n"
+"POT-Creation-Date: 2001-05-28 09:05+0200\n"
 "PO-Revision-Date: 2001-01-04 12:01+02:00\n"
 "Last-Translator: Toomas Soome <tsoome@ut.ee>\n"
 "Language-Team: Estonian <et@li.org>\n"
@@ -13,15 +13,15 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO-8859-15\n"
 "Content-Transfer-Encoding: 8-bit\n"
 
-#: util/secmem.c:79
+#: util/secmem.c:84
 msgid "Warning: using insecure memory!\n"
 msgstr "Hoiatus: kasutan ebaturvalist mälu!\n"
 
-#: util/secmem.c:299
+#: util/secmem.c:304
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "initsialiseerimata turvalise mäluta ei ole operatsioon võimalik\n"
 
-#: util/secmem.c:300
+#: util/secmem.c:305
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(te kasutasite vahest selle töö jaoks valet programmi)\n"
 
@@ -599,7 +599,8 @@ msgid "|FD|write status info to this FD"
 msgstr "|FP|kirjuta olekuinfo sellesse failipidemesse"
 
 #: g10/g10.c:310
-msgid "|KEYID|ulimately trust this key"
+#, fuzzy
+msgid "|KEYID|ultimately trust this key"
 msgstr "|VÕTMEID|usalda seda võtit täielikult"
 
 #: g10/g10.c:311
@@ -840,7 +841,7 @@ msgstr "--delete-key kasutaja-id"
 #: g10/g10.c:1305
 #, fuzzy
 msgid "--delete-secret-and-public-key user-id"
-msgstr "--delete-secret-key kasutaja-id"
+msgstr "--delete-secret-and-public-key kasutaja-id"
 
 #: g10/encode.c:268 g10/g10.c:1342 g10/sign.c:410
 #, c-format
@@ -1676,7 +1677,7 @@ msgstr "avalike võtmete puhvris on liiga palju võtmeid - blokeerin\n"
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
-#: g10/getkey.c:249 g10/getkey.c:2536
+#: g10/getkey.c:249 g10/getkey.c:2525
 msgid "[User id not found]"
 msgstr "[Kasutaja id ei leitud]"
 
@@ -1684,12 +1685,12 @@ msgstr "[Kasutaja id ei leitud]"
 msgid "too many entries in unk cache - disabled\n"
 msgstr "unk puhvris on liiga palju elemente - blokeerin\n"
 
-#: g10/getkey.c:2207
+#: g10/getkey.c:2196
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "kasutan sekundaarset võtit %08lX primaarse võtme %08lX asemel\n"
 
-#: g10/getkey.c:2249 g10/trustdb.c:577
+#: g10/getkey.c:2238 g10/trustdb.c:577
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "võti %08lX: salajane võti avaliku võtmeta - jätsin vahele\n"
@@ -2272,7 +2273,7 @@ msgstr "näita eelistusi"
 #: g10/keyedit.c:607
 #, fuzzy
 msgid "showpref"
-msgstr "pref"
+msgstr "showpref"
 
 #: g10/keyedit.c:608
 msgid "passwd"
@@ -2712,7 +2713,7 @@ msgstr ""
 msgid "can't connect to `%s': %s\n"
 msgstr "ei õnnestu luua ühendust serveriga `%s': %s\n"
 
-#: g10/passphrase.c:313 g10/passphrase.c:576
+#: g10/passphrase.c:313 g10/passphrase.c:580
 #, c-format
 msgid " (main key ID %08lX)"
 msgstr " (peamise võtme ID %08lX)"
@@ -2726,7 +2727,8 @@ msgid ""
 msgstr ""
 "\n"
 "Te vajate kasutaja salajase võtme lahtilukustamiseks\n"
-"parooli: \""
+"parooli: \"%*.s\"\n"
+"%u-bit %s key, ID %08lX, created %s%s\n"
 
 #: g10/passphrase.c:344
 #, fuzzy
@@ -2750,12 +2752,12 @@ msgstr ""
 msgid "cancelled by user\n"
 msgstr ""
 
-#: g10/passphrase.c:408 g10/passphrase.c:477
+#: g10/passphrase.c:408 g10/passphrase.c:481
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr ""
 
-#: g10/passphrase.c:562
+#: g10/passphrase.c:566
 msgid ""
 "\n"
 "You need a passphrase to unlock the secret key for\n"
@@ -2765,20 +2767,20 @@ msgstr ""
 "Te vajate kasutaja salajase võtme lahtilukustamiseks\n"
 "parooli: \""
 
-#: g10/passphrase.c:571
+#: g10/passphrase.c:575
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
 msgstr "%u-bitine %s võti, ID %08lX, loodud %s"
 
-#: g10/passphrase.c:609
+#: g10/passphrase.c:613
 msgid "can't query password in batchmode\n"
 msgstr "pakettmoodis ei saa parooli küsida\n"
 
-#: g10/passphrase.c:613
+#: g10/passphrase.c:617
 msgid "Enter passphrase: "
 msgstr "Sisestage parool: "
 
-#: g10/passphrase.c:617
+#: g10/passphrase.c:621
 msgid "Repeat passphrase: "
 msgstr "Korrake parooli: "
 
@@ -2799,9 +2801,8 @@ msgid "reading stdin ...\n"
 msgstr "loen standardsisendit ...\n"
 
 #: g10/plaintext.c:391
-#, fuzzy
 msgid "no signed data\n"
-msgstr "allkirjastatud andmete avamine ebaõnnestus `%s'\n"
+msgstr ""
 
 #: g10/plaintext.c:399
 #, c-format
@@ -2910,7 +2911,7 @@ msgstr "avalik võti on %lu sekundit uuem, kui allkiri\n"
 #: g10/sig-check.c:328
 #, fuzzy, c-format
 msgid "NOTE: signature key %08lX expired %s\n"
-msgstr "MÄRKUS: allkirja võti aegus %s\n"
+msgstr "MÄRKUS: allkirja võti %08lX aegus %s\n"
 
 #: g10/sig-check.c:398
 msgid "assuming bad signature due to an unknown critical bit\n"
@@ -3413,7 +3414,7 @@ msgstr ""
 #: g10/skclist.c:138
 #, fuzzy, c-format
 msgid "skipped `%s': duplicated\n"
-msgstr "`%s' jäi vahele: %s\n"
+msgstr "jäi vahele %s: dubleeritud\n"
 
 #: g10/skclist.c:145 g10/skclist.c:153
 #, c-format
@@ -3423,7 +3424,7 @@ msgstr "`%s' jäi vahele: %s\n"
 #: g10/skclist.c:149
 #, fuzzy
 msgid "skipped: secret key already present\n"
-msgstr "%s: jätsin vahele: avalik võti on juba olemas\n"
+msgstr "jätsin vahele: avalik võti on juba olemas\n"
 
 #: g10/skclist.c:160
 #, c-format

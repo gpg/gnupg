@@ -1400,7 +1400,7 @@ merge_keys_and_selfsig( KBNODE keyblock )
 
 
 static void
-fixup_uidnode ( KBNODE uidnode, KBNODE signode )
+fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
 {
     PKT_user_id   *uid = uidnode->pkt->pkt.user_id;
     PKT_signature *sig = signode->pkt->pkt.signature;
@@ -1429,8 +1429,8 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode )
     /* ditto or the key expiration */
     uid->help_key_expire = 0;
     p = parse_sig_subpkt ( sig->hashed_data, SIGSUBPKT_KEY_EXPIRE, NULL);
-    if ( p ) {
-        uid->help_key_expire = sig->timestamp + buffer_to_u32(p);
+    if ( p ) { 
+        uid->help_key_expire = keycreated + buffer_to_u32(p);
     }
 
     /* Set the primary user ID flag - we will later wipe out some
@@ -1456,6 +1456,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     KBNODE signode, uidnode, uidnode2;
     u32 curtime = make_timestamp ();
     unsigned int key_usage = 0;
+    u32 keytimestamp = 0;
     u32 key_expire = 0;
     int key_expire_seen = 0;
 
@@ -1463,7 +1464,8 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     if ( keyblock->pkt->pkttype != PKT_PUBLIC_KEY )
         BUG ();
     pk = keyblock->pkt->pkt.public_key;
-    pk->created = 0;
+    keytimestamp = pk->timestamp;
+
     keyid_from_pk( pk, kid );
     pk->main_keyid[0] = kid[0];
     pk->main_keyid[1] = kid[1];
@@ -1536,13 +1538,11 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
             p = parse_sig_subpkt ( sig->hashed_data,
                                    SIGSUBPKT_KEY_EXPIRE, NULL);
             if ( p ) {
-                key_expire = sig->timestamp + buffer_to_u32(p);
+                key_expire = keytimestamp + buffer_to_u32(p);
                 key_expire_seen = 1;
             }
         }
-        /* and set the created field */
-        pk->created = sigdate;
-        /* and mark that key as valid: one direct key signature should 
+        /* mark that key as valid: one direct key signature should 
          * render a key as valid */
         pk->is_valid = 1;
     }
@@ -1556,7 +1556,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
 	if ( k->pkt->pkttype == PKT_USER_ID
              || k->pkt->pkttype == PKT_PHOTO_ID ) {
             if ( uidnode && signode ) 
-                fixup_uidnode ( uidnode, signode );
+                fixup_uidnode ( uidnode, signode, keytimestamp );
             uidnode = k;
             signode = NULL;
             if ( sigdate > uiddate )
@@ -1593,24 +1593,12 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
         }
     }
     if ( uidnode && signode ) {
-        fixup_uidnode ( uidnode, signode );
+        fixup_uidnode ( uidnode, signode, keytimestamp );
         pk->is_valid = 1;
     }
     if ( sigdate > uiddate )
         uiddate = sigdate;
-    /* if we do not have a direct key signature, take the key creation date
-     * from the latest user ID.  Hmmm, another possibilty would be to take 
-     * it from the latest primary user ID - but we don't implement it for
-     * now */
-    if ( !pk->created )
-        pk->created = uiddate;
-    if ( !pk->created ) {
-        /* oops, still no creation date: use the timestamp */
-        if (DBG_CACHE)
-            log_debug( "merge_selfsigs_main: "
-                       "using timestamp as creation date\n");    
-        pk->created = pk->timestamp;
-    }
+
 
     /* Now that we had a look at all user IDs we can now get some information
      * from those user IDs.
@@ -1712,6 +1700,7 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
     KBNODE signode;
     u32 curtime = make_timestamp ();
     unsigned int key_usage = 0;
+    u32 keytimestamp = 0;
     u32 key_expire = 0;
     const byte *p;
     size_t n;
@@ -1723,6 +1712,8 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
         return; /* (actually this should never happen) */
     keyid_from_pk( mainpk, mainkid );
     subpk = subnode->pkt->pkt.public_key;
+    keytimestamp = subpk->timestamp;
+
     subpk->is_valid = 0;
     subpk->main_keyid[0] = mainpk->main_keyid[0];
     subpk->main_keyid[1] = mainpk->main_keyid[1];
@@ -1760,12 +1751,10 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
     }
 
     if ( !signode ) {
-        subpk->created = subpk->timestamp;
         return;  /* no valid key binding */
     }
 
     subpk->is_valid = 1;
-    subpk->created = sigdate; 
     sig = signode->pkt->pkt.signature;
         
     p = parse_sig_subpkt ( sig->hashed_data, SIGSUBPKT_KEY_FLAGS, &n );
@@ -1789,7 +1778,7 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
     p = parse_sig_subpkt ( sig->hashed_data, SIGSUBPKT_KEY_EXPIRE, NULL);
 
     if ( p ) 
-        key_expire = sig->timestamp + buffer_to_u32(p);
+        key_expire = keytimestamp + buffer_to_u32(p);
     else
         key_expire = 0;
     subpk->has_expired = key_expire >= curtime? 0 : key_expire;
@@ -2150,8 +2139,8 @@ finish_lookup( GETKEY_CTX ctx,  KBNODE foundk )
 
             if (DBG_CACHE)
                 log_debug( "\tsubkey looks fine\n");
-            if ( pk->created > latest_date ) {
-                latest_date = pk->created;
+            if ( pk->timestamp > latest_date ) {
+                latest_date = pk->timestamp;
                 latest_key  = k;
             }
         }
@@ -2186,7 +2175,7 @@ finish_lookup( GETKEY_CTX ctx,  KBNODE foundk )
             if (DBG_CACHE)
                 log_debug( "\tprimary key may be used\n");
             latest_key = keyblock;
-            latest_date = pk->created;
+            latest_date = pk->timestamp;
         }
     }
     

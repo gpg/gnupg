@@ -174,6 +174,7 @@ char*get_user_id( u32 *keyid, size_t *rn );
 
 /*-- keyid.c --*/
 int pubkey_letter( int algo );
+int get_lsign_letter ( PKT_signature *sig );
 u32 keyid_from_sk( PKT_secret_key *sk, u32 *keyid );
 u32 keyid_from_pk( PKT_public_key *pk, u32 *keyid );
 u32 keyid_from_sig( PKT_signature *sig, u32 *keyid );

@@ -1,3 +1,8 @@
+2001-05-27  Werner Koch  <wk@gnupg.org>
+
+	* hppa/, hppa1.1/, pa7100/ : Use .label command instead of labels
+	because there syntax changed.  By Matthew Wilcox.
+
 2001-05-06  Werner Koch  <wk@gnupg.org>
 
 	* longlong.h: Fixes for ARM by Phil Blundell.

@@ -130,7 +130,6 @@ typedef struct {
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     byte    pubkey_usage;   /* for now only used to pass it to getkey() */
-    u32     created;        /* according to the self-signature */
     byte    req_usage;      /* hack to pass a request to getkey() */
     byte    req_algo;       /* Ditto */
     u32     has_expired;    /* set to the expiration date if expired */ 
@@ -150,7 +149,6 @@ typedef struct {
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     byte    pubkey_usage;
-    u32     created;        /* according to the self-signature */
     byte    req_usage;
     byte    req_algo;
     u32     has_expired;    /* set to the expiration date if expired */ 

@@ -1,3 +1,24 @@
+2001-05-28  Werner Koch  <wk@gnupg.org>
+
+	* ru.po: Removed - too many format string bugs. 
+
+2001-05-27  gettextize  <bug-gnu-utils@gnu.org>
+
+	* Makefile.in.in: Upgrade to gettext-0.10.38.
+	* cat-id-tbl.c: Remove file.
+	* stamp-cat-id: Remove file.
+
+2001-05-27  Werner Koch  <wk@gnupg.org>
+
+	* tr.po: New copy from the TP Robot. 
+	* da.po, de.po, eo.po, es_ES.po, et.po, id.po, ja.po, nl.po,
+        pt_BR.po, sv.po: Fixes to format string errors by Kurt Garloff.
+	It is not cleare whether they are all correct but at least they
+	won't give segv and minimize the risk of format string exploits.
+	* ru.po: Fixed the header entry.
+
+	Fixed some fuzzy entries in all files.
+	
 2001-05-06  Werner Koch  <wk@gnupg.org>
 
 	* id.po: Updated

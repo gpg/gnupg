@@ -31,7 +31,7 @@ AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE(gnupg,`cat $srcdir/VERSION`)
 
 
-ALL_LINGUAS="da de eo es_ES et fr id it ja nl pl pt_BR pt_PT ru sv tr"
+ALL_LINGUAS="da de eo es_ES et fr id it ja nl pl pt_BR pt_PT sv tr"
 static_modules="sha1 md5 rmd160"
 static_random_module=""
 
@@ -303,8 +303,10 @@ AM_GNU_GETTEXT
 else
 USE_NLS=no
 USE_INCLUDED_LIBINTL=no
+BUILD_INCLUDED_LIBINTL=no
 AC_SUBST(USE_NLS)
 AC_SUBST(USE_INCLUDED_LIBINTL)
+AC_SUBST(BUILD_INCLUDED_LIBINTL)
 fi
 
 dnl

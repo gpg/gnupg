@@ -7,31 +7,31 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.0.4\n"
-"POT-Creation-Date: 2001-04-29 16:39+0200\n"
+"POT-Creation-Date: 2001-05-28 09:05+0200\n"
 "PO-Revision-Date: 2001-04-21 01:03+02:00\n"
 "Last-Translator: Janusz A. Urbanowicz <alex@bofh.net.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Xgettext-Options: --default-domain=gnupg --directory=.. --add-comments "
-"--keyword=_ --keyword=N_ --files-from=./POTFILES.in\n"
+"Xgettext-Options: --default-domain=gnupg --directory=.. --add-comments --"
+"keyword=_ --keyword=N_ --files-from=./POTFILES.in\n"
 "Files: util/secmem.c util/argparse.c cipher/random.c cipher/rand-dummy.c "
 "cipher/rand-unix.c cipher/rand-w32.c g10/g10.c g10/pkclist.c g10/keygen.c "
-"g10/decrypt.c g10/encode.c g10/import.c g10/keyedit.c g10/keylist.c "
-"g10/mainproc.c g10/passphrase.c g10/plaintext.c g10/pref.c g10/seckey-cert.c "
-"g10/sig-check.c g10/sign.c g10/trustdb.c g10/verify.c g10/status.c "
-"g10/pubkey-enc.c\n"
+"g10/decrypt.c g10/encode.c g10/import.c g10/keyedit.c g10/keylist.c g10/"
+"mainproc.c g10/passphrase.c g10/plaintext.c g10/pref.c g10/seckey-cert.c g10/"
+"sig-check.c g10/sign.c g10/trustdb.c g10/verify.c g10/status.c g10/pubkey-"
+"enc.c\n"
 
-#: util/secmem.c:79
+#: util/secmem.c:84
 msgid "Warning: using insecure memory!\n"
 msgstr "Ostrze¿enie: u¿ywana pamiêæ nie jest pamiêci± bezpieczn±!\n"
 
-#: util/secmem.c:299
+#: util/secmem.c:304
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "operacja niemo¿liwa do wykonania bez dostêpnej pamiêci bezpiecznej\n"
 
-#: util/secmem.c:300
+#: util/secmem.c:305
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(prawdopodobnie u¿ywany program jest niew³a¶ciwy dlatego zadania)\n"
 
@@ -611,7 +611,8 @@ msgid "|FD|write status info to this FD"
 msgstr "|FD|zapisaæ opis stanu do FD"
 
 #: g10/g10.c:310
-msgid "|KEYID|ulimately trust this key"
+#, fuzzy
+msgid "|KEYID|ultimately trust this key"
 msgstr "|KLUCZ|ca³kowite zaufanie dla tego klucza"
 
 #: g10/g10.c:311
@@ -1708,7 +1709,7 @@ msgstr "zbyt wiele wpisów w buforze kluczy publicznych - wy³±czony\n"
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
-#: g10/getkey.c:249 g10/getkey.c:2536
+#: g10/getkey.c:249 g10/getkey.c:2525
 msgid "[User id not found]"
 msgstr "[brak identyfikatora u¿ytkownika]"
 
@@ -1716,12 +1717,12 @@ msgstr "[brak identyfikatora u¿ytkownika]"
 msgid "too many entries in unk cache - disabled\n"
 msgstr "zbyt wiele wpisów w buforze nieznanych kluczy - wy³±czony\n"
 
-#: g10/getkey.c:2207
+#: g10/getkey.c:2196
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "u¿ywany jest podklucz %08lX zamiast klucza g³ównego %08lX\n"
 
-#: g10/getkey.c:2249 g10/trustdb.c:577
+#: g10/getkey.c:2238 g10/trustdb.c:577
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "klucz %08lX: klucz tajny bez klucza jawnego - pominiêty\n"
@@ -2307,9 +2308,8 @@ msgid "list preferences"
 msgstr "lista opcji"
 
 #: g10/keyedit.c:607
-#, fuzzy
 msgid "showpref"
-msgstr "opcje"
+msgstr ""
 
 #: g10/keyedit.c:608
 msgid "passwd"
@@ -2751,7 +2751,7 @@ msgstr "z³y format zmiennej GPG_AGENT_INFO\n"
 msgid "can't connect to `%s': %s\n"
 msgstr "nie mo¿na po³±czyæ siê z %s: %s\n"
 
-#: g10/passphrase.c:313 g10/passphrase.c:576
+#: g10/passphrase.c:313 g10/passphrase.c:580
 #, c-format
 msgid " (main key ID %08lX)"
 msgstr " (g³ówny ID klucza %08lX)"
@@ -2787,12 +2787,12 @@ msgstr "b³êdna odpowied¼ agenta\n"
 msgid "cancelled by user\n"
 msgstr "anulowane przez u¿ytkownika\n"
 
-#: g10/passphrase.c:408 g10/passphrase.c:477
+#: g10/passphrase.c:408 g10/passphrase.c:481
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr "problem agenta: zwróci³ 0x%lx\n"
 
-#: g10/passphrase.c:562
+#: g10/passphrase.c:566
 msgid ""
 "\n"
 "You need a passphrase to unlock the secret key for\n"
@@ -2802,20 +2802,20 @@ msgstr ""
 "Musisz podaæ wyra¿enie przej¶ciowe (has³o) aby uaktywniæ klucz tajny\n"
 "dla u¿ytkownika: \""
 
-#: g10/passphrase.c:571
+#: g10/passphrase.c:575
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
 msgstr "d³ugo¶æ %u bitów, typ %s, klucz %08lX, stworzony %s"
 
-#: g10/passphrase.c:609
+#: g10/passphrase.c:613
 msgid "can't query password in batchmode\n"
 msgstr "pytanie o has³o nie dzia³a w trybie wsadowym\n"
 
-#: g10/passphrase.c:613
+#: g10/passphrase.c:617
 msgid "Enter passphrase: "
 msgstr "Wyra¿enie przej¶ciowe: "
 
-#: g10/passphrase.c:617
+#: g10/passphrase.c:621
 msgid "Repeat passphrase: "
 msgstr "Powtórzone wyra¿enie przej¶ciowe: "
 
@@ -3594,8 +3594,8 @@ msgstr ""
 #: g10/helptext.c:53
 msgid "If you want to use this revoked key anyway, answer \"yes\"."
 msgstr ""
-"Je¶li mimo wszystko chcesz u¿yæ tego uniewa¿nionego klucza, odpowiedz "
-"\"tak\"."
+"Je¶li mimo wszystko chcesz u¿yæ tego uniewa¿nionego klucza, odpowiedz \"tak"
+"\"."
 
 #: g10/helptext.c:57
 msgid "If you want to use this untrusted key anyway, answer \"yes\"."
@@ -3711,8 +3711,8 @@ msgstr "Je¶li ma zostaæ wygenerowany podklucz, nale¿y odpowiedzieæ \"tak\"."
 #: g10/helptext.c:164
 msgid "Answer \"yes\" is you want to sign ALL the user IDs"
 msgstr ""
-"Aby podpisaæ WSZYSTKIE identyfikatory u¿ytkownika nale¿y odpowiedzieæ "
-"\"tak\"."
+"Aby podpisaæ WSZYSTKIE identyfikatory u¿ytkownika nale¿y odpowiedzieæ \"tak"
+"\"."
 
 #: g10/helptext.c:168
 msgid ""
@@ -3878,14 +3878,15 @@ msgstr "Brak pomocy o '%s'"
 
 #~ msgid "   (%d) ElGamal in a v3 packet\n"
 #~ msgstr ""
-#~ "   (%d) Klucz dla algorytmu ElGamala w pakiecie w trzeciej wersji formatu\n"
+#~ "   (%d) Klucz dla algorytmu ElGamala w pakiecie w trzeciej wersji "
+#~ "formatu\n"
 
 #~ msgid "Key generation can only be used in interactive mode\n"
 #~ msgstr "Generacjê klucza mo¿na wykonywaæ tylko w trybie interaktywnym\n"
 
 #~ msgid ""
-#~ "RSA keys are deprecated; please consider creating a new key and use this key "
-#~ "in the future\n"
+#~ "RSA keys are deprecated; please consider creating a new key and use this "
+#~ "key in the future\n"
 #~ msgstr ""
 #~ "Odradza siê stosowanie kluczy RSA; proszê rozwa¿yæ przej¶cie na inne "
 #~ "algorytmy\n"
@@ -4009,14 +4010,17 @@ msgstr "Brak pomocy o '%s'"
 #~ "stosowaæ\n"
 #~ "zarówno do szyfrowania jak i do tworzenia podpisów cyfrowych\n"
 #~ "W standardzie OpenPGP algorytm ElGamala wystêpuje w dwóch wersjach:\n"
-#~ "obs³uguj±cej podpisywanie, oraz obs³uguj±cej podpisywanie i szyfrowanie; z\n"
+#~ "obs³uguj±cej podpisywanie, oraz obs³uguj±cej podpisywanie i szyfrowanie; "
+#~ "z\n"
 #~ "technicznego punktu widzenia algorytm dzia³a tak samo, ale pewne "
 #~ "wspó³czynniki\n"
 #~ "musz± byæ dobrane tak aby klucz nadawa³ siê do sk³adania bezpiecznych\n"
-#~ "podpisów. Ten program obs³uguje obie wersje, ale inne implementacje OpenPGP\n"
+#~ "podpisów. Ten program obs³uguje obie wersje, ale inne implementacje "
+#~ "OpenPGP\n"
 #~ "nie musz± rozumieæ obs³ugiwaæ klucza przeznaczonego jednocze¶nie do\n"
 #~ "podpisywania i szyfrowania.\n"
-#~ "G³ówny klucz musi byæ zawsze kluczem s³u¿±cym umo¿liwiaj±cym podpisywanie,\n"
+#~ "G³ówny klucz musi byæ zawsze kluczem s³u¿±cym umo¿liwiaj±cym "
+#~ "podpisywanie,\n"
 #~ "dlatego te¿ ten program nie obs³uguje osobnych kluczy ElGamala s³u¿±cych "
 #~ "tylko\n"
 #~ "do szyfrowania."
@@ -4088,7 +4092,8 @@ msgstr "Brak pomocy o '%s'"
 
 #~ msgid "keyedit.remove.uid.okay"
 #~ msgstr ""
-#~ "Odpowiedz \"tak\" je¶li na pewno chcesz skasowaæ ten identyfikator klucza.\n"
+#~ "Odpowiedz \"tak\" je¶li na pewno chcesz skasowaæ ten identyfikator "
+#~ "klucza.\n"
 #~ "Utracisz wszystkie podpisy innych u¿ytkowników z³o¿one na tym "
 #~ "identyfikatorze!"
 

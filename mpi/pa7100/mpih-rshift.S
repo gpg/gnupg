@@ -1,5 +1,5 @@
 /* hppa   rshift
- *	  optimized for the PA7100, where is runs at 3.25 cycles/limb
+ *	  optimized for the PA7100, where it runs at 3.25 cycles/limb
  *
  *      Copyright (C) 1992, 1994, 1998,
  *                    2001 Free Software Foundation, Inc.
@@ -33,7 +33,7 @@
 
 	.code
 	.export 	mpihelp_rshift
-mpihelp_rshift
+	.label		mpihelp_rshift
 	.proc
 	.callinfo	frame=64,no_calls
 	.entry
@@ -46,7 +46,8 @@ mpihelp_rshift
 	addib,<=	-5,%r24,L$rrest
 	vshd		%r29,%r22,%r20
 
-L$roop	ldws,ma 	4(0,%r25),%r22
+	.label	L$roop
+	ldws,ma 	4(0,%r25),%r22
 	stws,ma 	%r20,4(0,%r26)
 	vshd		%r22,%r29,%r20
 	ldws,ma 	4(0,%r25),%r29
@@ -60,9 +61,11 @@ L$roop	ldws,ma 	4(0,%r25),%r22
 	addib,> 	-4,%r24,L$roop
 	vshd		%r29,%r22,%r20
 
-L$rrest addib,= 	4,%r24,L$rend1
+	.label	L$rrest
+	addib,= 	4,%r24,L$rend1
 	nop
-L$eroop ldws,ma 	4(0,%r25),%r22
+	.label	L$eroop
+	ldws,ma 	4(0,%r25),%r22
 	stws,ma 	%r20,4(0,%r26)
 	addib,<=	-1,%r24,L$rend2
 	vshd		%r22,%r29,%r20
@@ -71,12 +74,15 @@ L$eroop ldws,ma 	4(0,%r25),%r22
 	addib,> 	-1,%r24,L$eroop
 	vshd		%r29,%r22,%r20
 
-L$rend1  stws,ma	 %r20,4(0,%r26)
+	.label	L$rend1
+	stws,ma		%r20,4(0,%r26)
 	vshd		%r0,%r29,%r20
 	bv		0(%r2)
 	stw		%r20,0(0,%r26)
-L$rend2  stws,ma	 %r20,4(0,%r26)
-L$r004	vshd		%r0,%r22,%r20
+	.label	L$rend2
+	stws,ma		%r20,4(0,%r26)
+	.label	L$r004
+	vshd		%r0,%r22,%r20
 	bv		0(%r2)
 	stw		%r20,0(0,%r26)
 

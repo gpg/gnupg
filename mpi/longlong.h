@@ -2,7 +2,7 @@
    Note: I added some stuff for use with gnupg
 
 Copyright (C) 1991, 1992, 1993, 1994, 1996, 1998,
-              2000 Free Software Foundation, Inc.
+              2000, 2001 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify
 it under the terms of the GNU Library General Public License as published by

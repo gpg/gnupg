@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.4\n"
-"POT-Creation-Date: 2001-04-29 16:39+0200\n"
+"POT-Creation-Date: 2001-05-28 09:05+0200\n"
 "PO-Revision-Date: 2000-10-19 23:08+09:00\n"
 "Last-Translator: IIDA Yosiaki <y-iida@secom.co.jp>\n"
 "Language-Team: Japanese <ja@li.org>\n"
@@ -15,15 +15,15 @@ msgstr ""
 "Content-Type: text/plain; charset=EUC-JP\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: util/secmem.c:79
+#: util/secmem.c:84
 msgid "Warning: using insecure memory!\n"
 msgstr "警告: やばいメモリーを使用しています!\n"
 
-#: util/secmem.c:299
+#: util/secmem.c:304
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "初期化済みの安全なメモリーがない場合には実行できません\n"
 
-#: util/secmem.c:300
+#: util/secmem.c:305
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(この目的には誤ったプログラムを用いたのでしょう)\n"
 
@@ -621,7 +621,8 @@ msgstr ""
 "書き出す"
 
 #: g10/g10.c:310
-msgid "|KEYID|ulimately trust this key"
+#, fuzzy
+msgid "|KEYID|ultimately trust this key"
 msgstr "|鍵ID|この「鍵」を究極的に信用する"
 
 #: g10/g10.c:311
@@ -881,7 +882,7 @@ msgstr "--delete-key ユーザーid"
 #: g10/g10.c:1305
 #, fuzzy
 msgid "--delete-secret-and-public-key user-id"
-msgstr "--delete-secret-key ユーザーid"
+msgstr "--delete-secret-and-public-key ユーザーid"
 
 #: g10/encode.c:268 g10/g10.c:1342 g10/sign.c:410
 #, c-format
@@ -1715,7 +1716,7 @@ msgstr "pkキャッシュのエントリーが多すぎます - 使用禁止\n"
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
-#: g10/getkey.c:249 g10/getkey.c:2536
+#: g10/getkey.c:249 g10/getkey.c:2525
 msgid "[User id not found]"
 msgstr "[ユーザーidが見つかりません]"
 
@@ -1723,12 +1724,12 @@ msgstr "[ユーザーidが見つかりません]"
 msgid "too many entries in unk cache - disabled\n"
 msgstr "unkキャッシュのエントリーが多すぎます - 使用禁止\n"
 
-#: g10/getkey.c:2207
+#: g10/getkey.c:2196
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "副鍵%08lXを主鍵%08lXに代用します\n"
 
-#: g10/getkey.c:2249 g10/trustdb.c:577
+#: g10/getkey.c:2238 g10/trustdb.c:577
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "鍵%08lX: 公開鍵のない秘密鍵です。スキップ\n"
@@ -2309,7 +2310,7 @@ msgstr "優先順位の一覧"
 #: g10/keyedit.c:607
 #, fuzzy
 msgid "showpref"
-msgstr "pref"
+msgstr "showpref"
 
 #: g10/keyedit.c:608
 msgid "passwd"
@@ -2750,7 +2751,7 @@ msgstr ""
 msgid "can't connect to `%s': %s\n"
 msgstr "`%s'へ接続できません: %s\n"
 
-#: g10/passphrase.c:313 g10/passphrase.c:576
+#: g10/passphrase.c:313 g10/passphrase.c:580
 #, c-format
 msgid " (main key ID %08lX)"
 msgstr " (主鍵ID %08lX)"
@@ -2764,7 +2765,8 @@ msgid ""
 msgstr ""
 "\n"
 "次のユーザーの秘密鍵のロックを解除するには\n"
-"パスフレーズがいります: \""
+"パスフレーズがいります: \"%.*s\"\n"
+"%u-bit %s key, ID %08lX, created %s%s\n"
 
 #: g10/passphrase.c:344
 #, fuzzy
@@ -2788,12 +2790,12 @@ msgstr ""
 msgid "cancelled by user\n"
 msgstr ""
 
-#: g10/passphrase.c:408 g10/passphrase.c:477
+#: g10/passphrase.c:408 g10/passphrase.c:481
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr ""
 
-#: g10/passphrase.c:562
+#: g10/passphrase.c:566
 msgid ""
 "\n"
 "You need a passphrase to unlock the secret key for\n"
@@ -2803,20 +2805,20 @@ msgstr ""
 "次のユーザーの秘密鍵のロックを解除するには\n"
 "パスフレーズがいります: \""
 
-#: g10/passphrase.c:571
+#: g10/passphrase.c:575
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
 msgstr "%uビット%s鍵, ID %08lX作成日付は%s"
 
-#: g10/passphrase.c:609
+#: g10/passphrase.c:613
 msgid "can't query password in batchmode\n"
 msgstr "バッチモードではパスワードの問合せができません\n"
 
-#: g10/passphrase.c:613
+#: g10/passphrase.c:617
 msgid "Enter passphrase: "
 msgstr "パスフレーズを入力: "
 
-#: g10/passphrase.c:617
+#: g10/passphrase.c:621
 msgid "Repeat passphrase: "
 msgstr "パスフレーズを再入力: "
 
@@ -2841,7 +2843,7 @@ msgstr "標準入力より読込み中 ...\n"
 #: g10/plaintext.c:391
 #, fuzzy
 msgid "no signed data\n"
-msgstr "署名されたデータ`%s'が開けません\n"
+msgstr "署名されたデータ が開けません\n"
 
 #: g10/plaintext.c:399
 #, c-format
@@ -2951,7 +2953,7 @@ msgstr "公開鍵は署名よりも%lu秒後に作成されています\n"
 #: g10/sig-check.c:328
 #, fuzzy, c-format
 msgid "NOTE: signature key %08lX expired %s\n"
-msgstr "注意: 署名の鍵は期限切れです%s\n"
+msgstr "注意: %08lX 署名の鍵は期限切れです%s\n"
 
 #: g10/sig-check.c:398
 msgid "assuming bad signature due to an unknown critical bit\n"
@@ -3455,7 +3457,7 @@ msgstr ""
 #: g10/skclist.c:138
 #, fuzzy, c-format
 msgid "skipped `%s': duplicated\n"
-msgstr "`%s'をスキップ: %s\n"
+msgstr "`%s'をスキップ: duplicated\n"
 
 #: g10/skclist.c:145 g10/skclist.c:153
 #, c-format
@@ -3465,7 +3467,7 @@ msgstr "`%s'をスキップ: %s\n"
 #: g10/skclist.c:149
 #, fuzzy
 msgid "skipped: secret key already present\n"
-msgstr "%s: スキップ: 公開鍵は既にあります\n"
+msgstr "スキップ: 公開鍵は既にあります\n"
 
 #: g10/skclist.c:160
 #, c-format

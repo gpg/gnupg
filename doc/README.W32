@@ -1,18 +1,10 @@
 This is a binary version of GnuPG for MS-Windows 95, 98, WNT and W2000.
 
-
-PLEASE READ THE FOLLOWING PARAGRAPH CAREFULLY:
-
-If you have a bug report, please post it to the mailing list
-<gnupg-devel@gnupg.org>.  Please don't send me private mail
-regarding this version of GnuPG; I am already spending too much
-time on answering the same and same questions over and over.
-I can improve GnuPG much faster if I don't have to answer
-questions in private mail.  You can post to the mailing list
-without prior subscribing (but please request to CC you if you want
-to get an answer).
-
-
+A FAQ comes with this package and a probably more recent one can be
+found online at http://www.gnupg.org/faq.html.  See
+http://www.gnupg.org/docs-mls.html for a list of mailing lists. In
+particular the list gnupg-users@gnupg.org might be useful to answer
+questions - but please read the FAQ first.
 
 Installation instructions:
 --------------------------
@@ -34,7 +26,7 @@ Internationalization support:
 -----------------------------
   1. Decide where to store the translation files for your language.
      Here we assume the directory "c:/gnu/locale/fr"
-  2. Set the directory with the translations into the Registry under the key:
+  2. Set the directory with the translations into the Registry under the key: 
 	\\HKEY_CURRENT_USER\Control Panel\Mingw32\NLS\MODir
      (Example entry: "c:/gnu/locale/fr")
   3. Select which language to use and copy the currect translation file
@@ -53,7 +45,13 @@ How to build it from the source:
 This version has been build with the Mingw32/CPD kit using the latest
 stable version of GnuPG.
 
-First get the source:  It is available at
+First get the source: It has to be available at the same location you
+found this binary package - if not you should have received a written
+offer to get the source delivered to you See the file COPYING (section
+3) for details.
+
+If you got this package from its canonical place (ftp.gnupg.org), the
+source is available at:
 
   ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-1.0.n.tar.gz
 
@@ -64,7 +62,7 @@ or for snapshots (with a letter appended to the version number)
 this is the same source as for the Unix version.  If your binary
 version of GnuPG is called something like gnupg-w32-1.0.4-1.zip, you
 should find a patch file named gnupg-w32-1.0.4-1.0.4-1.diff.gz at the
-same location, which has to ne applied to the stock gpg source file.
+same location, which has to be applied to the stock gpg source file.
 Instructions are at the top of this file.
 
 To build it, you need the MingW32/CPD kit, which is available at

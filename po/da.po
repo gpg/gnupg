@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2001-04-29 16:39+0200\n"
+"POT-Creation-Date: 2001-05-28 09:05+0200\n"
 "PO-Revision-Date: 2000-03-07 22:51+01:00\n"
 "Last-Translator: Birger Langkjer <birger.langkjer@image.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
@@ -15,15 +15,15 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: util/secmem.c:79
+#: util/secmem.c:84
 msgid "Warning: using insecure memory!\n"
 msgstr "Advarsel: benytter ubeskyttet hukommelse!\n"
 
-#: util/secmem.c:299
+#: util/secmem.c:304
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "operation er ikke mulig uden beskyttet hukommelse indlæst\n"
 
-#: util/secmem.c:300
+#: util/secmem.c:305
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(du kan have brugt et forkert program til denne opgave)\n"
 
@@ -601,7 +601,7 @@ msgid "|FD|write status info to this FD"
 msgstr "|FD|skriv statusinfo til denne FD"
 
 #: g10/g10.c:310
-msgid "|KEYID|ulimately trust this key"
+msgid "|KEYID|ultimately trust this key"
 msgstr ""
 
 #: g10/g10.c:311
@@ -842,7 +842,7 @@ msgstr "--delete-key bruger-id"
 #: g10/g10.c:1305
 #, fuzzy
 msgid "--delete-secret-and-public-key user-id"
-msgstr "--delete-secret-key bruger-id"
+msgstr "--delete-secret-and-public-key bruger-id"
 
 #: g10/encode.c:268 g10/g10.c:1342 g10/sign.c:410
 #, c-format
@@ -1623,21 +1623,21 @@ msgstr ""
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
-#: g10/getkey.c:249 g10/getkey.c:2536
+#: g10/getkey.c:249 g10/getkey.c:2525
 #, fuzzy
 msgid "[User id not found]"
-msgstr "%s: bruger ikke fundet\n"
+msgstr "[bruger ikke fundet]"
 
 #: g10/getkey.c:453
 msgid "too many entries in unk cache - disabled\n"
 msgstr ""
 
-#: g10/getkey.c:2207
+#: g10/getkey.c:2196
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "bruger sekundær nøgle %08lX istedetfor primær nøgle %08lX\n"
 
-#: g10/getkey.c:2249 g10/trustdb.c:577
+#: g10/getkey.c:2238 g10/trustdb.c:577
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr ""
@@ -2212,7 +2212,7 @@ msgstr "vis præferencer"
 #: g10/keyedit.c:607
 #, fuzzy
 msgid "showpref"
-msgstr "præf"
+msgstr "vispræf"
 
 #: g10/keyedit.c:608
 msgid "passwd"
@@ -2376,12 +2376,12 @@ msgstr ""
 #: g10/keyedit.c:1173
 #, fuzzy, c-format
 msgid "rev! subkey has been revoked: %s\n"
-msgstr "nøgle %08lX: undernøgle er blevet annulleret!\n"
+msgstr "rev! undernøgle er blevet annulleret! %s\n"
 
 #: g10/keyedit.c:1176
 #, fuzzy
 msgid "rev- faked revocation found\n"
-msgstr "  nye nøgletilbagekald: %lu\n"
+msgstr "rev- forkert nøgletilbagekald\n"
 
 #: g10/keyedit.c:1178
 #, c-format
@@ -2649,7 +2649,7 @@ msgstr ""
 msgid "can't connect to `%s': %s\n"
 msgstr "kan ikke åbne '%s': %s\n"
 
-#: g10/passphrase.c:313 g10/passphrase.c:576
+#: g10/passphrase.c:313 g10/passphrase.c:580
 #, c-format
 msgid " (main key ID %08lX)"
 msgstr " (hovednøgle-ID %08lX)"
@@ -2684,32 +2684,32 @@ msgstr ""
 msgid "cancelled by user\n"
 msgstr ""
 
-#: g10/passphrase.c:408 g10/passphrase.c:477
+#: g10/passphrase.c:408 g10/passphrase.c:481
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr ""
 
-#: g10/passphrase.c:562
+#: g10/passphrase.c:566
 msgid ""
 "\n"
 "You need a passphrase to unlock the secret key for\n"
 "user: \""
 msgstr ""
 
-#: g10/passphrase.c:571
+#: g10/passphrase.c:575
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
 msgstr ""
 
-#: g10/passphrase.c:609
+#: g10/passphrase.c:613
 msgid "can't query password in batchmode\n"
 msgstr ""
 
-#: g10/passphrase.c:613
+#: g10/passphrase.c:617
 msgid "Enter passphrase: "
 msgstr "Indtast kodesætning: "
 
-#: g10/passphrase.c:617
+#: g10/passphrase.c:621
 msgid "Repeat passphrase: "
 msgstr "Gentag kodesætning: "
 
@@ -2754,7 +2754,7 @@ msgstr ""
 #: g10/pubkey-enc.c:153
 #, fuzzy, c-format
 msgid "cipher algorithm %d is unknown or disabled\n"
-msgstr "valgte cifferalgoritme er ugyldig\n"
+msgstr "valgte cifferalgoritme %d er ugyldig\n"
 
 #: g10/pubkey-enc.c:192
 #, c-format
@@ -2774,7 +2774,7 @@ msgstr ""
 #: g10/hkp.c:83
 #, fuzzy, c-format
 msgid "can't get key from keyserver: %s\n"
-msgstr "importér nøgler fra en nøgleserver"
+msgstr "importér nøgler fra en nøgleserver: %s\n"
 
 #: g10/hkp.c:102 g10/hkp.c:136
 msgid "no keyserver known (use option --keyserver)\n"
@@ -3348,7 +3348,7 @@ msgstr ""
 #: g10/skclist.c:149
 #, fuzzy
 msgid "skipped: secret key already present\n"
-msgstr "%s: udelod: offentlig nøgle er allerede tilstede\n"
+msgstr "udelod: hemmelig nøgle er allerede tilstede\n"
 
 #: g10/skclist.c:160
 #, c-format

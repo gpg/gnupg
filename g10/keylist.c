@@ -603,7 +603,8 @@ list_keyblock_colon( KBNODE keyblock, int secret )
 	    else if( sig->sig_class == 0x18 )
 	       sigstr = "sig";
 	    else {
-                printf("sig::::::::::%02x:\n",sig->sig_class );
+                printf ("sig::::::::::%02x%c:\n",
+                        sig->sig_class, get_lsign_letter (sig) );
 		continue;
 	    }
 	    if( opt.check_sigs ) {
@@ -638,7 +639,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
                 print_string( stdout, p, n, ':' );
 		m_free(p);
 	    }
-            printf(":%02x:\n", sig->sig_class );
+            printf(":%02x%c:\n", sig->sig_class, get_lsign_letter (sig) );
 	    /* fixme: check or list other sigs here */
 	}
     }

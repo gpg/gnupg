@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Privacy Guard 1.0.4\n"
-"POT-Creation-Date: 2001-04-29 16:39+0200\n"
+"POT-Creation-Date: 2001-05-28 09:05+0200\n"
 "PO-Revision-Date: 2001-04-30 15:19GMT+0700\n"
 "Last-Translator: Tedi Heriyanto <tedi-h@usa.net>\n"
 "Language-Team: Indonesian <id@li.org>\n"
@@ -14,15 +14,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 0.8\n"
 
-#: util/secmem.c:79
+#: util/secmem.c:84
 msgid "Warning: using insecure memory!\n"
 msgstr "Peringatan: menggunakan memori yang tidak aman!\n"
 
-#: util/secmem.c:299
+#: util/secmem.c:304
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "operasi tidak mungkin tanpa menginisialisasi memori yang aman\n"
 
-#: util/secmem.c:300
+#: util/secmem.c:305
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(anda mungkin menggunakan program yang salah untuk tugas ini)\n"
 
@@ -598,7 +598,8 @@ msgid "|FD|write status info to this FD"
 msgstr "|FD|tulis info status ke FD ini"
 
 #: g10/g10.c:310
-msgid "|KEYID|ulimately trust this key"
+#, fuzzy
+msgid "|KEYID|ultimately trust this key"
 msgstr "|KEYID|sangat percaya kunci ini"
 
 #: g10/g10.c:311
@@ -878,7 +879,8 @@ msgid "can't open `%s'\n"
 msgstr "tidak dapat membuka `%s'\n"
 
 #: g10/g10.c:1805
-msgid "the first character of a notation name must be a letter or an underscore\n"
+msgid ""
+"the first character of a notation name must be a letter or an underscore\n"
 msgstr "karakter pertama nama notasi harus huruf atau garis bawah\n"
 
 #: g10/g10.c:1811
@@ -970,7 +972,8 @@ msgid "invalid armor: line longer than %d characters\n"
 msgstr "armor tidak valid: baris melebihi %d karakter\n"
 
 #: g10/armor.c:1059
-msgid "quoted printable character in armor - probably a buggy MTA has been used\n"
+msgid ""
+"quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
 "karakter dapat dicetak dalam armor - mungkin kesalahan pada MTA telah "
 "dipakai\n"
@@ -1177,10 +1180,12 @@ msgstr "Catatan: Kunci ini telah berakhir!\n"
 
 #: g10/pkclist.c:687
 msgid "WARNING: This key is not certified with a trusted signature!\n"
-msgstr "PERINGATAN: Kunci ini tidak disertifikasi dengan sig yang terpercaya!\n"
+msgstr ""
+"PERINGATAN: Kunci ini tidak disertifikasi dengan sig yang terpercaya!\n"
 
 #: g10/pkclist.c:689
-msgid "         There is no indication that the signature belongs to the owner.\n"
+msgid ""
+"         There is no indication that the signature belongs to the owner.\n"
 msgstr "  Tidak ada indikasi signature milik pemilik.\n"
 
 #: g10/pkclist.c:706
@@ -1192,8 +1197,10 @@ msgid "         The signature is probably a FORGERY.\n"
 msgstr "        Signature mungkin palsu.\n"
 
 #: g10/pkclist.c:714
-msgid "WARNING: This key is not certified with sufficiently trusted signatures!\n"
-msgstr "PERINGATAN: Kunci tdk disertifikasi dg signature terpercaya yg cukup!\n"
+msgid ""
+"WARNING: This key is not certified with sufficiently trusted signatures!\n"
+msgstr ""
+"PERINGATAN: Kunci tdk disertifikasi dg signature terpercaya yg cukup!\n"
 
 #: g10/pkclist.c:717
 msgid "         It is not certain that the signature belongs to the owner.\n"
@@ -1344,7 +1351,8 @@ msgstr "keysize terlalu kecil; 768 adalah nilai terendah yang diijinkan.\n"
 
 #: g10/keygen.c:622
 msgid "keysize too small; 1024 is smallest value allowed for RSA.\n"
-msgstr "keysize terlalu kecil; 1024 adalah nilai terendah yang diijinkan untuk RSA.\n"
+msgstr ""
+"keysize terlalu kecil; 1024 adalah nilai terendah yang diijinkan untuk RSA.\n"
 
 #. It is ridiculous and an annoyance to use larger key sizes!
 #. * GnuPG can handle much larger sizes; but it takes an eternity
@@ -1595,13 +1603,17 @@ msgstr "Pembuatan kunci gagal: %s\n"
 
 #: g10/keygen.c:1748 g10/sig-check.c:315 g10/sign.c:112
 #, c-format
-msgid "key has been created %lu second in future (time warp or clock problem)\n"
-msgstr "kunci telah diciptakan dalam %lu detik mendatang (masalah waktu atau jam)\n"
+msgid ""
+"key has been created %lu second in future (time warp or clock problem)\n"
+msgstr ""
+"kunci telah diciptakan dalam %lu detik mendatang (masalah waktu atau jam)\n"
 
 #: g10/keygen.c:1750 g10/sig-check.c:317 g10/sign.c:114
 #, c-format
-msgid "key has been created %lu seconds in future (time warp or clock problem)\n"
-msgstr "kunci telah diciptakan dalam %lu detik mendatang (masalah waktu atau jam)\n"
+msgid ""
+"key has been created %lu seconds in future (time warp or clock problem)\n"
+msgstr ""
+"kunci telah diciptakan dalam %lu detik mendatang (masalah waktu atau jam)\n"
 
 #: g10/keygen.c:1783
 msgid "Really create? "
@@ -1663,7 +1675,7 @@ msgstr "terlalu banyak masukan dalam pk cache - ditiadakan\n"
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
-#: g10/getkey.c:249 g10/getkey.c:2536
+#: g10/getkey.c:249 g10/getkey.c:2525
 msgid "[User id not found]"
 msgstr "[User id tidak ditemukan]"
 
@@ -1671,12 +1683,12 @@ msgstr "[User id tidak ditemukan]"
 msgid "too many entries in unk cache - disabled\n"
 msgstr "terlalu banyak masukan di unk cache - ditiadakan\n"
 
-#: g10/getkey.c:2207
+#: g10/getkey.c:2196
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "menggunakan kunci sekunder %08lX selain kunci primer %08lX\n"
 
-#: g10/getkey.c:2249 g10/trustdb.c:577
+#: g10/getkey.c:2238 g10/trustdb.c:577
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "kunci %08lX: kunci rahasia tanpa kunci publik - dilewati\n"
@@ -2668,7 +2680,8 @@ msgstr "Algoritma eksperimental sebaiknya tidak dipakai!\n"
 
 #: g10/misc.c:238
 msgid "this cipher algorithm is deprecated; please use a more standard one!\n"
-msgstr "algoritma cipher ini didepresiasi; silakan gunakan yang lebih standar!\n"
+msgstr ""
+"algoritma cipher ini didepresiasi; silakan gunakan yang lebih standar!\n"
 
 #: g10/parse-packet.c:119
 #, c-format
@@ -2693,7 +2706,7 @@ msgstr "variabel lingkungan GPG_AGENT_INFO salah bentuk\n"
 msgid "can't connect to `%s': %s\n"
 msgstr "tidak dapat terkoneksi ke `%s': %s\n"
 
-#: g10/passphrase.c:313 g10/passphrase.c:576
+#: g10/passphrase.c:313 g10/passphrase.c:580
 #, c-format
 msgid " (main key ID %08lX)"
 msgstr " (ID kunci utama %08lX)"
@@ -2729,12 +2742,12 @@ msgstr "respon tidak valid dari agen\n"
 msgid "cancelled by user\n"
 msgstr "dibatalkan oleh user\n"
 
-#: g10/passphrase.c:408 g10/passphrase.c:477
+#: g10/passphrase.c:408 g10/passphrase.c:481
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr "masalah dengan agen: agen mengembalikan 0x%lx\n"
 
-#: g10/passphrase.c:562
+#: g10/passphrase.c:566
 msgid ""
 "\n"
 "You need a passphrase to unlock the secret key for\n"
@@ -2744,20 +2757,20 @@ msgstr ""
 "Anda perlu passphrase untuk membuka kunci rahasia untuk\n"
 "pemakai: \""
 
-#: g10/passphrase.c:571
+#: g10/passphrase.c:575
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
 msgstr "%u-bit kunci %s, ID %08lX, tercipta %s"
 
-#: g10/passphrase.c:609
+#: g10/passphrase.c:613
 msgid "can't query password in batchmode\n"
 msgstr "tidak dapat meminta password dalam mode batch\n"
 
-#: g10/passphrase.c:613
+#: g10/passphrase.c:617
 msgid "Enter passphrase: "
 msgstr "Masukkan passphrase: "
 
-#: g10/passphrase.c:617
+#: g10/passphrase.c:621
 msgid "Repeat passphrase: "
 msgstr "Ulangi passphrase: "
 
@@ -2870,8 +2883,10 @@ msgid "assuming bad MDC due to an unknown critical bit\n"
 msgstr "mengasumsikan MDC buruk karena ada bit kritis tidak dikenal\n"
 
 #: g10/sig-check.c:297
-msgid "this is a PGP generated ElGamal key which is NOT secure for signatures!\n"
-msgstr "ini adalah kunci ElGamal ciptaan PGP yang tidak aman untuk signature!\n"
+msgid ""
+"this is a PGP generated ElGamal key which is NOT secure for signatures!\n"
+msgstr ""
+"ini adalah kunci ElGamal ciptaan PGP yang tidak aman untuk signature!\n"
 
 #: g10/sig-check.c:305
 #, c-format
@@ -3175,7 +3190,8 @@ msgstr "Self-signature tidak valid"
 
 #: g10/trustdb.c:1170
 msgid "Valid user ID revocation skipped due to a newer self signature"
-msgstr "Pembatalan ID user valid dilewati karena ada self signature yang lebih baru"
+msgstr ""
+"Pembatalan ID user valid dilewati karena ada self signature yang lebih baru"
 
 #: g10/trustdb.c:1176
 msgid "Valid user ID revocation"
@@ -3454,7 +3470,8 @@ msgstr "%s: direktori tercipta\n"
 
 #: g10/openfile.c:355
 msgid "you have to start GnuPG again, so it can read the new options file\n"
-msgstr "anda harus memulai GnuPG lagi, sehingga ia dapat membaca file option baru\n"
+msgstr ""
+"anda harus memulai GnuPG lagi, sehingga ia dapat membaca file option baru\n"
 
 #: g10/encr-data.c:66
 #, c-format
@@ -3467,8 +3484,10 @@ msgid "encrypted with unknown algorithm %d\n"
 msgstr "dienkripsi dengan algoritma tidak dikenal %d\n"
 
 #: g10/encr-data.c:90
-msgid "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
-msgstr "PERINGATAN: pesan dienkripsi dengan kunci lemah dalam cipher simetrik.\n"
+msgid ""
+"WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
+msgstr ""
+"PERINGATAN: pesan dienkripsi dengan kunci lemah dalam cipher simetrik.\n"
 
 #: g10/encr-data.c:97
 msgid "problem handling encrypted packet\n"
@@ -3481,7 +3500,8 @@ msgstr "kunci lemah tercipta - mengulang\n"
 #: g10/seskey.c:57
 #, c-format
 msgid "cannot avoid weak key for symmetric cipher; tried %d times!\n"
-msgstr "tidak dapat menghindari kunci lemah untuk cipher simetrik; mencoba %d kali!\n"
+msgstr ""
+"tidak dapat menghindari kunci lemah untuk cipher simetrik; mencoba %d kali!\n"
 
 #: g10/delkey.c:114
 msgid "can't do that in batchmode without \"--yes\"\n"
@@ -3524,7 +3544,8 @@ msgid "If you want to use this untrusted key anyway, answer \"yes\"."
 msgstr "Jika anda ingin menggunakan kunci tidak terpercaya ini, jawab \"ya\"."
 
 #: g10/helptext.c:61
-msgid "Enter the user ID of the addressee to whom you want to send the message."
+msgid ""
+"Enter the user ID of the addressee to whom you want to send the message."
 msgstr "Masukkan ID user penerima pesan."
 
 #: g10/helptext.c:65
@@ -3667,7 +3688,8 @@ msgstr ""
 msgid ""
 "The signature is not valid.  It does make sense to remove it from\n"
 "your keyring."
-msgstr "Signature tidak valid. Masuk akal untuk menghapusnya dari keyring anda."
+msgstr ""
+"Signature tidak valid. Masuk akal untuk menghapusnya dari keyring anda."
 
 #: g10/helptext.c:193
 msgid ""
@@ -3693,7 +3715,8 @@ msgstr ""
 
 #: g10/helptext.c:209
 msgid "Please repeat the last passphrase, so you are sure what you typed in."
-msgstr "Silakan ulangi passphrase terakhir, sehingga anda yakin yang anda ketikkan."
+msgstr ""
+"Silakan ulangi passphrase terakhir, sehingga anda yakin yang anda ketikkan."
 
 #: g10/helptext.c:213
 msgid "Give the name of the file to which the signature applies"
@@ -3729,7 +3752,8 @@ msgstr ""
 "Anda harus menspesifikasikan alasan pembatalan. Semua ini tergantung\n"
 "konteks, anda dapat memilih dari daftar berikut:\n"
 " \"Key has been compromised\"\n"
-"      Gunakan ini jika anda punya alasan untuk percaya bahwa orang yang tidak berhak\n"
+"      Gunakan ini jika anda punya alasan untuk percaya bahwa orang yang "
+"tidak berhak\n"
 "      memiliki akses ke kunci pribadi anda.\n"
 "  \"Key is superseded\"\n"
 "      Gunakan ini bila anda mengganti kunci anda dengan yang baru.\n"
@@ -3737,7 +3761,8 @@ msgstr ""
 "      Gunakan ini bila anda telah mempensiunkan kunci ini.\n"
 "  \"User ID is no longer valid\"\n"
 "      Gunakan ini untuk menyatakan user ID tidak boleh digunakan lagi;\n"
-"      normalnya digunakan untuk menandai bahwa alamat email tidak valid lagi.\n"
+"      normalnya digunakan untuk menandai bahwa alamat email tidak valid "
+"lagi.\n"
 
 #: g10/helptext.c:245
 msgid ""
@@ -3757,4 +3782,3 @@ msgstr "Tidak tersedia bantuan"
 #, c-format
 msgid "No help available for `%s'"
 msgstr "Tidak tersedia bantuan untuk `%s'"
-

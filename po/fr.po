@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.4t\n"
-"POT-Creation-Date: 2001-04-29 16:39+0200\n"
+"POT-Creation-Date: 2001-05-28 09:05+0200\n"
 "PO-Revision-Date: 2001-04-24 17:46+02:00\n"
 "Last-Translator: Gaël Quéri <gqueri@mail.dotcom.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -18,17 +18,17 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8-bit\n"
 
-#: util/secmem.c:79
+#: util/secmem.c:84
 msgid "Warning: using insecure memory!\n"
 msgstr "Avertissement: l'utilisation de la mémoire n'est pas sûre !\n"
 
-#: util/secmem.c:299
+#: util/secmem.c:304
 msgid "operation is not possible without initialized secure memory\n"
 msgstr ""
 "l'opération n'est pas possible tant que la mémoire sûre n'est pas\n"
 "initialisée\n"
 
-#: util/secmem.c:300
+#: util/secmem.c:305
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(vous avez peut-être utilisé un programme non adapté à cette fin)\n"
 
@@ -609,7 +609,8 @@ msgid "|FD|write status info to this FD"
 msgstr "|FD|écrire l'état sur ce descripteur"
 
 #: g10/g10.c:310
-msgid "|KEYID|ulimately trust this key"
+#, fuzzy
+msgid "|KEYID|ultimately trust this key"
 msgstr "|IDCLÉ|donner une confiance ultime à cette clé"
 
 #: g10/g10.c:311
@@ -1709,7 +1710,7 @@ msgstr "trop d'entrées dans le cache pk - désactivé\n"
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
-#: g10/getkey.c:249 g10/getkey.c:2536
+#: g10/getkey.c:249 g10/getkey.c:2525
 msgid "[User id not found]"
 msgstr "[Nom utilisateur introuvable]"
 
@@ -1717,14 +1718,14 @@ msgstr "[Nom utilisateur introuvable]"
 msgid "too many entries in unk cache - disabled\n"
 msgstr "trop d'entrées dans le cache unk - désactivé\n"
 
-#: g10/getkey.c:2207
+#: g10/getkey.c:2196
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr ""
 "utilisation de la clé secondaire %08lX à la place de la clé\n"
 "principale %08lX\n"
 
-#: g10/getkey.c:2249 g10/trustdb.c:577
+#: g10/getkey.c:2238 g10/trustdb.c:577
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "clé %08lX: clé secrète sans clé publique - non prise en compte\n"
@@ -2306,9 +2307,8 @@ msgid "list preferences"
 msgstr "lister les préférences"
 
 #: g10/keyedit.c:607
-#, fuzzy
 msgid "showpref"
-msgstr "préf"
+msgstr ""
 
 #: g10/keyedit.c:608
 msgid "passwd"
@@ -2747,7 +2747,7 @@ msgstr "la variable d'environnement GPG_AGENT_INFO est mal définie\n"
 msgid "can't connect to `%s': %s\n"
 msgstr "impossible de se connecter à `%s': %s\n"
 
-#: g10/passphrase.c:313 g10/passphrase.c:576
+#: g10/passphrase.c:313 g10/passphrase.c:580
 #, c-format
 msgid " (main key ID %08lX)"
 msgstr " (ID clé principale %08lX)"
@@ -2784,12 +2784,12 @@ msgstr "réponse de l'agent invalide\n"
 msgid "cancelled by user\n"
 msgstr "annulé par l'utilisateur\n"
 
-#: g10/passphrase.c:408 g10/passphrase.c:477
+#: g10/passphrase.c:408 g10/passphrase.c:481
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr "problème avec l'agent : l'agent renvoie 0x%lx\n"
 
-#: g10/passphrase.c:562
+#: g10/passphrase.c:566
 msgid ""
 "\n"
 "You need a passphrase to unlock the secret key for\n"
@@ -2799,20 +2799,20 @@ msgstr ""
 "Vous avez besoin d'un mot de passe pour déverrouiller la clé secrète pour\n"
 "l'utilisateur: \""
 
-#: g10/passphrase.c:571
+#: g10/passphrase.c:575
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
 msgstr "clé de %u bits %s, ID %08lX, créée le %s"
 
-#: g10/passphrase.c:609
+#: g10/passphrase.c:613
 msgid "can't query password in batchmode\n"
 msgstr "impossible de demander un mot de passe en mode automatique\n"
 
-#: g10/passphrase.c:613
+#: g10/passphrase.c:617
 msgid "Enter passphrase: "
 msgstr "Entrez le mot de passe: "
 
-#: g10/passphrase.c:617
+#: g10/passphrase.c:621
 msgid "Repeat passphrase: "
 msgstr "Répétez le mot de passe: "
 
@@ -3121,8 +3121,8 @@ msgstr "la base de confiance est corrompue; exécutez «gpg --fix-trustdb».\n"
 #, c-format
 msgid "trust record %lu, req type %d: read failed: %s\n"
 msgstr ""
-"enregistrement de confiance %lu, type de requête %d: la lecture a échoué: "
-"%s\n"
+"enregistrement de confiance %lu, type de requête %d: la lecture a échoué: %"
+"s\n"
 
 #: g10/trustdb.c:184
 #, c-format

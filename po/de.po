@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.0.4\n"
-"POT-Creation-Date: 2001-04-29 16:39+0200\n"
+"POT-Creation-Date: 2001-05-28 09:05+0200\n"
 "PO-Revision-Date: 2001-04-16 14:20+0200\n"
 "Last-Translator: Walter Koch <koch@hsp.de>\n"
 "Language-Team: German <de@li.org>\n"
@@ -12,17 +12,17 @@ msgstr ""
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: util/secmem.c:79
+#: util/secmem.c:84
 msgid "Warning: using insecure memory!\n"
 msgstr "Warnung: Sensible Daten könnten auf Platte ausgelagert werden.\n"
 
 # "  Um dies zu vermeiden, kann das Programm suid(root) installiert werden.\n"
 # "  Bitte wenden Sie sich hierzu an den Systemadministrator.\n"
-#: util/secmem.c:299
+#: util/secmem.c:304
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "Vorgang ist ohne sicheren Hauptspeicher nicht möglich\n"
 
-#: util/secmem.c:300
+#: util/secmem.c:305
 msgid "(you may have used the wrong program for this task)\n"
 msgstr ""
 "(möglicherweise haben Sie das falsche Programm für diese Aufgabe benutzt)\n"
@@ -603,7 +603,8 @@ msgid "|FD|write status info to this FD"
 msgstr "|FD|Statusinfo auf FD (Dateihandle) ausgeben"
 
 #: g10/g10.c:310
-msgid "|KEYID|ulimately trust this key"
+#, fuzzy
+msgid "|KEYID|ultimately trust this key"
 msgstr "|KEYID|diesem Schlüssel uneingeschränkt vertrauen"
 
 #: g10/g10.c:311
@@ -1710,7 +1711,7 @@ msgstr "zu viele Einträge im pk-Lager - abgeschaltet\n"
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
-#: g10/getkey.c:249 g10/getkey.c:2536
+#: g10/getkey.c:249 g10/getkey.c:2525
 msgid "[User id not found]"
 msgstr "[User-ID nicht gefunden]"
 
@@ -1718,13 +1719,13 @@ msgstr "[User-ID nicht gefunden]"
 msgid "too many entries in unk cache - disabled\n"
 msgstr "zu viele Einträge im unk-Lager - abgeschaltet\n"
 
-#: g10/getkey.c:2207
+#: g10/getkey.c:2196
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr ""
 "der Zweitschlüssel %08lX wird anstelle des Hauptschlüssels %08lX verwendet\n"
 
-#: g10/getkey.c:2249 g10/trustdb.c:577
+#: g10/getkey.c:2238 g10/trustdb.c:577
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr ""
@@ -1863,8 +1864,8 @@ msgstr "Schlüssel %08lX: Stimmt nicht mit unserer Kopie überein\n"
 #, c-format
 msgid "key %08lX: can't locate original keyblock: %s\n"
 msgstr ""
-"Schlüssel %08lX: der lokale originale Schlüsselblocks wurde nicht gefunden: "
-"%s\n"
+"Schlüssel %08lX: der lokale originale Schlüsselblocks wurde nicht gefunden: %"
+"s\n"
 
 #: g10/import.c:495 g10/import.c:698
 #, c-format
@@ -2316,7 +2317,7 @@ msgstr "Liste der Voreinstellungen"
 #: g10/keyedit.c:607
 #, fuzzy
 msgid "showpref"
-msgstr "pref"
+msgstr "showpref"
 
 #: g10/keyedit.c:608
 msgid "passwd"
@@ -2633,7 +2634,7 @@ msgstr "Entschlüsselung mit öffentlichem Schlüssel fehlgeschlagen: %s\n"
 
 #: g10/mainproc.c:430
 msgid "decryption okay\n"
-msgstr "Enschlüsselung fehlgeschlagen: %s\n"
+msgstr "Enschlüsselung erfolgreich\n"
 
 #: g10/mainproc.c:435
 msgid "WARNING: encrypted message has been manipulated!\n"
@@ -2757,7 +2758,7 @@ msgstr "fehlerhaft aufgebaute GPG_AGENT_INFO - Umgebungsvariable\n"
 msgid "can't connect to `%s': %s\n"
 msgstr "Verbindung zu '%s' kann nicht aufgebaut werden: %s\n"
 
-#: g10/passphrase.c:313 g10/passphrase.c:576
+#: g10/passphrase.c:313 g10/passphrase.c:580
 #, c-format
 msgid " (main key ID %08lX)"
 msgstr " (Hauptschlüssel-ID %08lX)"
@@ -2793,12 +2794,12 @@ msgstr "Falsche Antwort des Agenten\n"
 msgid "cancelled by user\n"
 msgstr "Abbruch durch Benutzer\n"
 
-#: g10/passphrase.c:408 g10/passphrase.c:477
+#: g10/passphrase.c:408 g10/passphrase.c:481
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr "Schwierigkeiten mit dem Agenten: Agent antwortet 0x%lx\n"
 
-#: g10/passphrase.c:562
+#: g10/passphrase.c:566
 msgid ""
 "\n"
 "You need a passphrase to unlock the secret key for\n"
@@ -2808,20 +2809,20 @@ msgstr ""
 "Sie benötigen ein Mantra, um den geheimen Schlüssel zu entsperren.\n"
 "Benutzer: \""
 
-#: g10/passphrase.c:571
+#: g10/passphrase.c:575
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
 msgstr "%u-Bit %s Schlüssel, ID %08lX, erzeugt %s"
 
-#: g10/passphrase.c:609
+#: g10/passphrase.c:613
 msgid "can't query password in batchmode\n"
 msgstr "Mantra kann im Batchmodus nicht abgefragt werden\n"
 
-#: g10/passphrase.c:613
+#: g10/passphrase.c:617
 msgid "Enter passphrase: "
 msgstr "Geben Sie das Mantra ein: "
 
-#: g10/passphrase.c:617
+#: g10/passphrase.c:621
 msgid "Repeat passphrase: "
 msgstr "Geben Sie das Mantra nochmal ein: "
 
@@ -2935,8 +2936,8 @@ msgstr ""
 #: g10/sig-check.c:199
 msgid "assuming bad MDC due to an unknown critical bit\n"
 msgstr ""
-"Vermutlich ist das Siegel (MDC) BESCHÄDIGT (wegen unbekanntem \"critical "
-"bit\")\n"
+"Vermutlich ist das Siegel (MDC) BESCHÄDIGT (wegen unbekanntem \"critical bit"
+"\")\n"
 
 #: g10/sig-check.c:297
 msgid ""
@@ -3124,8 +3125,8 @@ msgstr "%s: konnte Satz nicht anhängen: %s\n"
 #: g10/tdbio.c:1748
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr ""
-"Die \"Trust\"-Datenbank ist beschädigt; verwenden Sie \"gpg "
-"--fix-trustdb\".\n"
+"Die \"Trust\"-Datenbank ist beschädigt; verwenden Sie \"gpg --fix-trustdb"
+"\".\n"
 
 #: g10/trustdb.c:169
 #, c-format

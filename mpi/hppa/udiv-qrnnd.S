@@ -43,7 +43,7 @@
 
 	.code
 	.export 	__udiv_qrnnd
-__udiv_qrnnd
+	.label		__udiv_qrnnd
 	.proc
 	.callinfo	frame=0,no_calls
 	.entry
@@ -121,7 +121,7 @@ __udiv_qrnnd
 	bv		0(%r2)
 	 addc		%r28,%r28,%r28
 
-L$largedivisor
+	.label	L$largedivisor
 	extru		%r24,31,1,%r19		; r19 = n0 & 1
 	bb,<		%r23,31,L$odd
 	 extru		%r23,30,31,%r22 	; r22 = d >> 1
@@ -200,7 +200,8 @@ L$largedivisor
 	bv		0(%r2)
 	 addc		%r24,%r24,%r28
 
-L$odd	addib,sv,n	1,%r22,L$FF..		; r22 = (d / 2 + 1)
+	.label	L$odd
+	addib,sv,n	1,%r22,L$FF..		; r22 = (d / 2 + 1)
 	shd		%r25,%r24,1,%r24	; r24 = new n0
 	extru		%r25,30,31,%r25 	; r25 = new n1
 	sub		%r0,%r22,%r21
@@ -285,7 +286,8 @@ L$odd	addib,sv,n	1,%r22,L$FF..		; r22 = (d / 2 + 1)
 
 ; This is just a special case of the code above.
 ; We come here when d == 0xFFFFFFFF
-L$FF..	add,uv		%r25,%r24,%r24
+	.label	L$FF..
+	add,uv		%r25,%r24,%r24
 	sub,<<		%r24,%r23,%r0
 	ldo		1(%r24),%r24
 	stws		%r24,0(0,%r26)

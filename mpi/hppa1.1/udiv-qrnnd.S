@@ -39,10 +39,11 @@
  */
 
 	.code
-L$0000	.word		0x43f00000
+	.label L$0000
+	.word		0x43f00000
 	.word		0x0
 	.export 	__udiv_qrnnd
-__udiv_qrnnd
+	.label		__udiv_qrnnd
 	.proc
 	.callinfo	frame=64,no_calls
 	.entry
@@ -58,7 +59,7 @@ __udiv_qrnnd
 	fcnvxf,dbl,dbl	%fr5,%fr5
 	fldds		0(0,%r19),%fr4
 	fadd,dbl	%fr4,%fr5,%fr5
-L$1
+	.label	L$1
 	fcpy,sgl	%fr0,%fr6L
 	fldws		-12(0,%r30),%fr6R
 	fcnvxf,dbl,dbl	%fr6,%fr4
@@ -79,7 +80,8 @@ L$1
 
 	add		%r22,%r23,%r22
 	ldo		-1(%r28),%r28
-L$2	bv		0(%r2)
+	.label	L$2
+	bv		0(%r2)
 	stws		%r22,0(0,%r26)
 
 	.exit

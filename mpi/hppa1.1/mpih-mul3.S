@@ -56,7 +56,7 @@
 
 	.code
 	.export 	mpihelp_submul_1
-mpihelp_submul_1
+	.label		mpihelp_submul_1
 	.proc
 	.callinfo	frame=64,no_calls
 	.entry
@@ -79,7 +79,8 @@ mpihelp_submul_1
 	 ldw		-12(%r30),%r1
 
 ; Main loop
-L$loop	ldws		0(%r26),%r29
+	.label	L$loop
+	ldws		0(%r26),%r29
 	fldws,ma	4(%r25),%fr5
 	sub		%r29,%r19,%r22
 	add		%r22,%r19,%r0
@@ -92,7 +93,8 @@ L$loop	ldws		0(%r26),%r29
 	addib,<>	-1,%r24,L$loop
 	 ldw		-12(%r30),%r1
 
-L$end	ldw		0(%r26),%r29
+	.label	L$end
+	ldw		0(%r26),%r29
 	sub		%r29,%r19,%r22
 	add		%r22,%r19,%r0
 	stws,ma 	%r22,4(%r26)
@@ -107,7 +109,7 @@ L$end	ldw		0(%r26),%r29
 	bv		0(%r2)
 	 ldo		-64(%r30),%r30
 
-L$just_one_limb
+	.label	L$just_one_limb
 	xmpyu		%fr4,%fr5,%fr6
 	ldw		0(%r26),%r29
 	fstds		%fr6,-16(%r30)

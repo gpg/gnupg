@@ -151,7 +151,6 @@ copy_public_parts_to_secret_key( PKT_public_key *pk, PKT_secret_key *sk )
     sk->expiredate  = pk->expiredate;     
     sk->pubkey_algo = pk->pubkey_algo;    
     sk->pubkey_usage= pk->pubkey_usage;
-    sk->created     = pk->created;        
     sk->req_usage   = pk->req_usage;
     sk->req_algo    = pk->req_algo;
     sk->has_expired = pk->has_expired;    
