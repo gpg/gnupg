@@ -75,14 +75,16 @@ mk_notation_and_policy( PKT_signature *sig,
     if(IS_SIG(sig) && opt.sig_notation_data)
       {
 	if(sig->version<4)
-	  log_info("can't put notation data into v3 signatures\n");
+	  log_info(_("can't put notation data into v3 (PGP 2.x style) "
+		     "signatures\n"));
 	else
 	  nd=opt.sig_notation_data;
       }
     else if( IS_CERT(sig) && opt.cert_notation_data )
       {
 	if(sig->version<4)
-	  log_info("can't put notation data into v3 key signatures\n");
+	  log_info(_("can't put notation data into v3 (PGP 2.x style) "
+		     "key signatures\n"));
 	else
 	  nd=opt.cert_notation_data;
       }
