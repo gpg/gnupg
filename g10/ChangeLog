@@ -1,3 +1,14 @@
+2005-03-14  Werner Koch  <wk@g10code.com>
+
+	* cardglue.c (pin_cb): Disable debug output.
+
+2005-03-11  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (gen_card_key_with_backup): Write status line with the
+	backup filename.
+
+	* status.h, status.h (STATUS_BACKUP_KEY_CREATED): New.
+
 2005-03-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (parse_keyserver_options): Accept honor-http-proxy

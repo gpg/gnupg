@@ -3420,9 +3420,25 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
       }
     else
       {
+        byte array[MAX_FINGERPRINT_LEN];
+        char *fprbuf, *p;
+       
         iobuf_close (fp);
         iobuf_ioctl (NULL, 2, 0, (char*)fname);
         log_info (_("NOTE: backup of card key saved to `%s'\n"), fname);
+
+        fingerprint_from_sk (sk, array, &n);
+        p = fprbuf = xmalloc (MAX_FINGERPRINT_LEN*2 + 1 + 1);
+        for (i=0; i < n ; i++, p += 2)
+          sprintf (p, "%02X", array[i]);
+        *p++ = ' ';
+        *p = 0;
+
+        write_status_text_and_buffer (STATUS_BACKUP_KEY_CREATED,
+                                      fprbuf,
+                                      fname, strlen (fname),
+                                      0);
+        xfree (fprbuf);
       }
     free_packet (pkt);
     m_free (pkt);

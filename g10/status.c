@@ -1,6 +1,6 @@
 /* status.c
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ *               2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -162,6 +162,7 @@ get_status_string ( int no )
     case STATUS_SIG_SUBPACKET  : s = "SIG_SUBPACKET"; break;
     case STATUS_SC_OP_SUCCESS  : s = "SC_OP_SUCCESS"; break;
     case STATUS_SC_OP_FAILURE  : s = "SC_OP_FAILURE"; break;
+    case STATUS_BACKUP_KEY_CREATED:s="BACKUP_KEY_CREATED"; break;
     default: s = "?"; break;
     }
   return s;

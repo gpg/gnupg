@@ -659,7 +659,7 @@ pin_cb (void *opaque, const char *info, char **retstr)
   const char *ends, *s;
 
   *retstr = NULL;
-  log_debug ("asking for PIN '%s'\n", info);
+  /*   log_debug ("asking for PIN '%s'\n", info); */
 
   /* We use a special prefix to check whether the Admin PIN has been
      requested. */

@@ -33,7 +33,7 @@ Store the locale id (like "de") into the Registry under the key
 HKEY_CURRENT_USER\Software\GNU\GnuPG with the name "Lang".  This must
 match one of the installed languages files in the directory named
 "gnupg.nls" below the installation directory.  Note, that the ".mo"
-extension is not part of the lcoale id.
+extension is not part of the locale id.
 
 
 Home directory:

@@ -122,14 +122,16 @@ for i in README COPYING NEWS; do
   cp ${srcdir}/$i $i.txt
   todos $i.txt
 done
-for i in README.W32 ; do
-  cp ${srcdir}/doc/$i $i.txt
-  todos $i.txt
+
+cp ${srcdir}/doc/README.W32 README-W32.txt
+todos README-W32.txt
+
+patches_defs=
+for i in `find "$topdir/patches" -type f -name '*.diff'`; do
+  cp $i .
+  patches_defs="-DWITH_PATCHES"
 done
-for i in gnupg-w32.reg; do
-  cp ${srcdir}/doc/$i .
-  todos $i
-done
+
 
 # We must distribute the MO files in UTF-8, the conversion is done by
 # gpg at runtime.  To include English at the right position in the list we 
@@ -217,11 +219,11 @@ if [ -n "$topdir" ]; then
   echo makensis -v2 -nocd -DVERSION="${version}" \
            -DPROD_VERSION="${prod_version}" \
            -DGNUPG_SRCDIR="${srcdir}" ${winpt_defs} ${src_defs} \
-           ${srcdir}/scripts/w32installer.nsi
+           ${patches_defs} ${srcdir}/scripts/w32installer.nsi
   BUILDINFO=$buildinfo makensis -v2 -nocd -DVERSION="${version}" \
            -DPROD_VERSION="${prod_version}" \
            -DGNUPG_SRCDIR="${srcdir}" ${winpt_defs} ${src_defs} \
-           ${srcdir}/scripts/w32installer.nsi
+           ${patches_defs} ${srcdir}/scripts/w32installer.nsi
   echo "Installer created" >&2
 else
   zip -9 "gnupg-w32cli-${version}.zip" *

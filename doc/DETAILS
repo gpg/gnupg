@@ -473,7 +473,7 @@ more arguments in future versions.
 
     SESSION_KEY  <algo>:<hexdigits>
 	The session key used to decrypt the message.  This message will
-	only be emmited when the special option --show-session-key
+	only be emitted when the special option --show-session-key
 	is used.  The format is suitable to be passed to the option
 	--override-session-key
 
@@ -582,6 +582,10 @@ more arguments in future versions.
         A smart card operaion succeeded.  This status is only printed
         for certain operation and is mostly useful to check whether a
         PIN change really worked.
+
+    BACKUP_KEY_CREATED fingerprint fname
+        A backup key named FNAME has been created for the key wityh
+        KEYID.
 
 
 Format of the "--attribute-fd" output

@@ -1,3 +1,10 @@
+2005-03-14  Werner Koch  <wk@g10code.com>
+
+	* mk-w32-dist: Check for patch files.
+	* w32installer.nsi: Translated a few more strings.  Print a
+	warning if permssions are not suitable for the installation.
+	Add Uninstaller entries.
+
 2005-02-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* gnupg.spec.in: Fix problem with storing the gpgkeys helpers in

@@ -578,7 +578,7 @@ change_url (void)
 }
 
 
-/* Fetch the key from the URL given on teh card or try to get it from
+/* Fetch the key from the URL given on the card or try to get it from
    the default keyserver.  */
 static int
 fetch_url(void)

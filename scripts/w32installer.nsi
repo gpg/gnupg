@@ -83,20 +83,15 @@ Var STARTMENU_FOLDER
 !insertmacro MUI_PAGE_WELCOME
 
 
-!define MUI_PAGE_HEADER_SUBTEXT \
-  "This software is licensed under the terms of the GNU General Public \
-   License (GPL) which guarantees your freedom to share and change Free \
-   Software."
+!define MUI_PAGE_HEADER_SUBTEXT "$(T_GPLHeader)"
 
-!define MUI_LICENSEPAGE_TEXT_BOTTOM \
-  "In short: You are allowed to run this software for any purpose. \
-   You may distribute it as long as you give the recipients the same \
-   rights you have received."
+!define MUI_LICENSEPAGE_TEXT_BOTTOM "$(T_GPLShort)"
 
 !define MUI_LICENSEPAGE_BUTTON "$(^NextBtn)"
 
 !insertmacro MUI_PAGE_LICENSE "COPYING.txt"
 
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW PrintNonAdminWarning
 !insertmacro MUI_PAGE_COMPONENTS
 
 Page custom CustomPageOptions
@@ -111,10 +106,9 @@ Page custom CustomPageOptions
 
 !insertmacro MUI_PAGE_INSTFILES
 
-!define MUI_FINISHPAGE_SHOWREADME "README.W32.txt"
+!define MUI_FINISHPAGE_SHOWREADME "README-W32.txt"
 !define MUI_FINISHPAGE_SHOWREADME_TEXT "$(T_ShowReadme)"
-!define MUI_FINISHPAGE_LINK \
-  "Visit the GnuPG website for latest news and support"
+!define MUI_FINISHPAGE_LINK "$(T_FiniLink)"
 !define MUI_FINISHPAGE_LINK_LOCATION "http://www.gnupg.org/"
 !insertmacro MUI_PAGE_FINISH
 
@@ -138,6 +132,8 @@ Page custom CustomPageOptions
 !insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
 ReserveFile "opt.ini" 
 ReserveFile "COPYING.txt"
+ReserveFile "${NSISDIR}/Plugins/UserInfo.dll"
+
 
 ${StrStr} # Supportable for Install Sections and Functions
 ${StrTok} # Supportable for Install Sections and Functions
@@ -164,7 +160,7 @@ Section "Base" SecBase
   SetOutPath "$INSTDIR\Doc"
 
   File "README.txt"
-  File "README.W32.txt"
+  File "README-W32.txt"
   File "COPYING.txt"
 
   Call InstallIconv
@@ -230,6 +226,11 @@ Section "Documentation" SecDoc
   File "NEWS.winpt.txt"
 !endif ; WITH_WINPT
 
+!ifdef WITH_PATCHES
+  SetOutPath "$INSTDIR\Src"
+  File '*.diff'
+!endif
+
 SectionEnd ; Section Documentation
 
 
@@ -260,6 +261,18 @@ Section "-Finish"
   ;;--------------------------
   WriteUninstaller "$INSTDIR\uninst-gnupg.exe"
 
+  StrCpy $MYTMP "Software\Microsoft\Windows\CurrentVersion\Uninstall\GnuPG"
+  WriteRegExpandStr HKLM $MYTMP "UninstallString" '"$INSTDIR\uninst-gnupg.exe"'
+  WriteRegExpandStr HKLM $MYTMP "InstallLocation" "$INSTDIR"
+  WriteRegStr       HKLM $MYTMP "DisplayName"     "GNU Privacy Guard"
+  WriteRegStr       HKLM $MYTMP "DisplayIcon"     "$INSTDIR\gpg.exe,0"
+  WriteRegStr       HKLM $MYTMP "DisplayVersion"  "${VERSION}"
+  WriteRegStr       HKLM $MYTMP "Publisher"       "Free Software Foundation"
+  WriteRegStr       HKLM $MYTMP "URLInfoAbout"    "http://www.gnupg.org/"
+  WriteRegDWORD     HKLM $MYTMP "NoModify"        "1"
+  WriteRegDWORD     HKLM $MYTMP "NoRepair"        "1"
+
+
   ;;---------------------
   ;; Create Menu entries
   ;;---------------------
@@ -270,7 +283,7 @@ Section "-Finish"
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\GnuPG README.lnk" \
                  "$INSTDIR\Doc\README.txt"
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\GnuPG README.Windows.lnk" \
-                 "$INSTDIR\Doc\README.W32.txt"
+                 "$INSTDIR\Doc\README-W32.txt"
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\GnuPG NEWS.lnk" \
                  "$INSTDIR\Doc\NEWS.txt"
 
@@ -353,7 +366,7 @@ Section "Uninstall"
   Delete "$INSTDIR\gpgkeys_ldap.exe"
 
   Delete "$INSTDIR\Doc\README.txt"
-  Delete "$INSTDIR\Doc\README.W32.txt"
+  Delete "$INSTDIR\Doc\README-W32.txt"
   Delete "$INSTDIR\Doc\COPYING.txt"
   Delete "$INSTDIR\Doc\COPYING.LIB.txt"
   Delete "$INSTDIR\Doc\README.iconv.txt"
@@ -408,6 +421,7 @@ Section "Uninstall"
   DeleteRegValue HKCU "Software\GNU\GnuPG" "Start Menu Folder"
   DeleteRegValue HKLM "Software\GNU\GnuPG" "Install Directory"
   DeleteRegKey /ifempty HKLM "Software\GNU\GnuPG"
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\GnuPG"
 
 SectionEnd ; Uninstall
 
@@ -437,6 +451,22 @@ Function un.onInit
   
 FunctionEnd
 
+
+;; Check whether the current user is in the Administrator group or
+;; an OS version without the need for an Administrator is in use.
+;; Print a warning if this is not the case.
+Function PrintNonAdminWarning
+  ClearErrors
+  UserInfo::GetName
+  IfErrors leave
+  Pop $0
+  UserInfo::GetAccountType
+  Pop $1
+  StrCmp $1 "Admin" leave +1
+  MessageBox MB_OK "$(T_AdminNeeded)"
+
+ leave:
+FunctionEnd
 
 
 Function CustomPageOptions  
@@ -530,6 +560,40 @@ LangString T_About ${LANG_GERMAN} \
    \r\n\r\n$_CLICK \
    \r\n\r\n\r\n\r\n\r\nDies ist GnuPG version ${VERSION}\r\n\
    erstellt am $%BUILDINFO%"
+
+; Startup page
+LangString T_GPLHeader ${LANG_ENGLISH} \
+  "This software is licensed under the terms of the GNU General Public \
+   License (GPL) which guarantees your freedom to share and change Free \
+   Software."
+LangString T_GPLHeader ${LANG_GERMAN}} \
+  "Diese Software ist unter der GNU General Public License \
+   (GPL) lizensiert; dies gibt Ihnen die Freiheit, sie \
+   zu ändern und weiterzugeben."
+
+LangString T_GPLShort ${LANG_ENGLISH} \
+  "In short: You are allowed to run this software for any purpose. \
+   You may distribute it as long as you give the recipients the same \
+   rights you have received."
+LangString T_GPLShort ${LANG_GERMAN} \
+  "In aller Kürze: Sie haben das Recht, die Software zu jedem Zweck \
+   einzusetzen.  Sie können die Software weitergeben, sofern Sie dem \
+   Empfänger dieselben Rechte einräumen, die auch Sie erhalten haben."
+
+
+; Finish page
+LangString T_FiniLink ${LANG_ENGLISH} \
+  "Visit the GnuPG website for latest news and support"
+LangString T_FiniLink ${LANG_GERMAN}} \
+  "Zur GnuPG Website mit Neuigkeiten und Hilfsangeboten"
+
+; From Function PrintNonAdminWarning
+LangString T_AdminNeeded ${LANG_ENGLISH} \
+   "Warning: Administrator permissions required for a successful installation"
+LangString T_AdminNeeded ${LANG_GERMAN} \
+   "Warnung: Administrator Reche werden für eine erfolgreiche \
+    Installation benötigt."
+
 
 ; Installation options like language used for GnuPG
 LangString T_InstallOptions ${LANG_ENGLISH} "Install Options"

@@ -113,6 +113,8 @@
 #define STATUS_SC_OP_FAILURE    79
 #define STATUS_SC_OP_SUCCESS    80
 
+#define STATUS_BACKUP_KEY_CREATED 81
+
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

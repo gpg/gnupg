@@ -21,7 +21,7 @@
 AUTOMAKE_OPTIONS = no-texinfo.tex
 
 EXTRA_DIST = DETAILS gpg.sgml gpg.1 gpgv.sgml gpgv.1 faq.raw FAQ faq.html \
-             HACKING OpenPGP README.W32 samplekeys.asc gnupg.7 gnupg-w32.reg \
+             HACKING OpenPGP README.W32 samplekeys.asc gnupg.7 \
              TRANSLATE gpg.ru.sgml gpg.ru.1 highlights-1.4.txt
 
 man_MANS = gpg.1 gpgv.1 gnupg.7 gpg.ru.1

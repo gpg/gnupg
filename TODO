@@ -1,8 +1,3 @@
-* BACKUP Filename requires a status message. !!!!
-
-* Delete a card key as well as a wiping.
-
-
   * From: Nicolas Sierro 
     Date: Thu, 17 Jun 2004 12:31:24 +0200
     
@@ -11,12 +6,8 @@
     20% faster and the crc32 code about 50% faster. Some memory leaks were
     also fixed according to the ChangeLog.
     
-  * Reword the "Not enough entropy" messages.
-
   * Do we need a configure test for putenv?
 
-  * Replace "user id not found" in getkey.c by "no valid user ID found"?
- 
   * Describe some pitfalls when using EGD.  Check that ~/.gnupg/entropy
     really is the default.  What about needed permission?  
 
@@ -117,8 +108,7 @@
     given with an indication of the surname and the usable characters
     are also restricted.
 
-  * We status lines at least for bad PINs.  BAD_PASSPHARSE requires a
-    keyID though.
+  * Delete a card key as well as a wiping.
 
 
 Things we won't do
