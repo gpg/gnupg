@@ -1,5 +1,8 @@
 2002-11-24  David Shaw  <dshaw@jabberwocky.com>
 
+	* mainproc.c (proc_encrypted): Use --s2k-digest-algo for
+	passphrase mangling rather than --digest-algo.
+
 	* sign.c (hash_for): If --digest-algo is not set, but
 	--personal-digest-preferences is, then use the first hash
 	algorithm in the personal list.  If the signing algorithm is DSA,

@@ -477,7 +477,7 @@ proc_encrypted( CTX c, PACKET *pkt )
         }
         else {
             algo = CIPHER_ALGO_IDEA;
-            if (!opt.def_digest_algo) {
+            if (!opt.s2k_digest_algo) {
                 /* If no digest is given we assume MD5 */
                 s2kbuf.mode = 0;
                 s2kbuf.hash_algo = DIGEST_ALGO_MD5;
