@@ -1,3 +1,11 @@
+2005-03-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_curl.c, gpgkeys_finger.c, gpgkeys_ldap.c: Start using
+	parse_ks_options and remove a lot of common code.
+
+	* ksutil.h, ksutil.c (parse_ks_options): Parse OPAQUE, and default
+	debug with no arguments to 1.
+
 2005-03-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c: Include lber.h if configure determines we need

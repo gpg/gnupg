@@ -110,6 +110,7 @@ parse_ks_options(char *line,struct ks_options *opt)
   char scheme[MAX_SCHEME+1];
   char auth[MAX_AUTH+1];
   char path[URLMAX_PATH+1];
+  char opaque[MAX_OPAQUE+1];
   char option[MAX_OPTION+1];
 
   if(line[0]=='#')
@@ -170,6 +171,15 @@ parse_ks_options(char *line,struct ks_options *opt)
       path[URLMAX_PATH]='\0';
       opt->path=strdup(path);
       if(!opt->path)
+	return KEYSERVER_NO_MEMORY;
+      return 0;
+    }
+
+  if(sscanf(line,"OPAQUE %" MKSTRING(MAX_OPAQUE) "s\n",opaque)==1)
+    {
+      opaque[MAX_OPAQUE]='\0';
+      opt->opaque=strdup(opaque);
+      if(!opt->opaque)
 	return KEYSERVER_NO_MEMORY;
       return 0;
     }
@@ -236,6 +246,8 @@ parse_ks_options(char *line,struct ks_options *opt)
 	    opt->debug=0;
 	  else if(start[5]=='=')
 	    opt->debug=atoi(&start[6]);
+	  else if(start[5]=='\0')
+	    opt->debug=1;
 	}
       else if(strncasecmp(start,"timeout",7)==0)
 	{

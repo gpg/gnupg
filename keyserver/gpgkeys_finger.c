@@ -55,9 +55,8 @@
 extern char *optarg;
 extern int optind;
 
-static int verbose=0;
-static char path[MAX_OPAQUE+1];
-static FILE *input, *output, *console;
+static FILE *input,*output,*console;
+static struct ks_options *opt;
 
 #ifdef _WIN32
 static void
@@ -300,7 +299,7 @@ get_key (char *getkey)
      indicated the requested key anyway. */
   fprintf(output,"KEY 0x%s BEGIN\n",getkey);
 
-  rc = send_request (path, &sock);
+  rc=send_request(opt->opaque,&sock);
   if(rc)
     {
       fprintf(output,"KEY 0x%s FAILED %d\n",getkey, rc);
@@ -362,10 +361,9 @@ show_help (FILE *fp)
 int
 main(int argc,char *argv[])
 {
-  int arg,action=-1,ret=KEYSERVER_INTERNAL_ERROR;
+  int arg,ret=KEYSERVER_INTERNAL_ERROR;
   char line[MAX_LINE];
   char *thekey=NULL;
-  unsigned int timeout=DEFAULT_KEYSERVER_TIMEOUT;
 
   console=stderr;
 
@@ -422,91 +420,38 @@ main(int argc,char *argv[])
   if(output==NULL)
     output=stdout;
 
+  opt=init_ks_options();
+  if(!opt)
+    return KEYSERVER_NO_MEMORY;
+
   /* Get the command and info block */
 
   while(fgets(line,MAX_LINE,input)!=NULL)
     {
-      int version;
-      char command[MAX_COMMAND+1];
-      char option[MAX_OPTION+1];
-      char hash;
+      int err;
 
       if(line[0]=='\n')
 	break;
 
-      if(sscanf(line,"%c",&hash)==1 && hash=='#')
-	continue;
-
-      if(sscanf(line,"COMMAND %" MKSTRING(MAX_COMMAND) "s\n",command)==1)
+      err=parse_ks_options(line,opt);
+      if(err>0)
 	{
-	  command[MAX_COMMAND]='\0';
-
-	  if(strcasecmp(command,"get")==0)
-	    action=GET;
-
-	  continue;
-	}
-
-      if(strncmp(line,"HOST ",5)==0)
-	{
-	  fprintf(console,"gpgkeys: finger://relay/user syntax is not"
-		  " supported.  Use finger:user instead.\n");
-	  ret=KEYSERVER_NOT_SUPPORTED;
+	  ret=err;
 	  goto fail;
 	}
-
-      if(sscanf(line,"OPAQUE %" MKSTRING(MAX_OPAQUE) "s\n",path)==1)
-	{
-	  path[MAX_OPAQUE]='\0';
-	  continue;
-	}
-
-      if(sscanf(line,"VERSION %d\n",&version)==1)
-	{
-	  if(version!=KEYSERVER_PROTO_VERSION)
-	    {
-	      ret=KEYSERVER_VERSION_ERROR;
-	      goto fail;
-	    }
-
-	  continue;
-	}
-
-      if(sscanf(line,"OPTION %" MKSTRING(MAX_OPTION) "s\n",option)==1)
-	{
-	  int no=0;
-	  char *start=&option[0];
-
-	  option[MAX_OPTION]='\0';
-
-	  if(strncasecmp(option,"no-",3)==0)
-	    {
-	      no=1;
-	      start=&option[3];
-	    }
-
-	  if(strcasecmp(start,"verbose")==0)
-	    {
-	      if(no)
-		verbose--;
-	      else
-		verbose++;
-	    }
-	  else if(strncasecmp(start,"timeout",7)==0)
-	    {
-	      if(no)
-		timeout=0;
-	      else if(start[7]=='=')
-		timeout=atoi(&start[8]);
-	      else if(start[7]=='\0')
-		timeout=DEFAULT_KEYSERVER_TIMEOUT;
-	    }
-
-	  continue;
-	}
+      else if(err==0)
+	continue;
     }
 
-  if(timeout && register_timeout()==-1)
+  if(opt->host)
+    {
+      fprintf(console,"gpgkeys: finger://relay/user syntax is not"
+	      " supported.  Use finger:user instead.\n");
+      ret=KEYSERVER_NOT_SUPPORTED;
+      goto fail;
+    }
+
+  if(opt->timeout && register_timeout()==-1)
     {
       fprintf(console,"gpgkeys: unable to register timeout handler\n");
       return KEYSERVER_INTERNAL_ERROR;
@@ -515,7 +460,7 @@ main(int argc,char *argv[])
   /* If it's a GET or a SEARCH, the next thing to come in is the
      keyids.  If it's a SEND, then there are no keyids. */
 
-  if(action==GET)
+  if(opt->action==KS_GET)
     {
       /* Eat the rest of the file */
       for(;;)
@@ -551,7 +496,7 @@ main(int argc,char *argv[])
       goto fail;
     }
 
-  if(!thekey || !*path)
+  if(!thekey || !opt->opaque)
     {
       fprintf(console,"gpgkeys: invalid keyserver instructions\n");
       goto fail;
@@ -562,16 +507,15 @@ main(int argc,char *argv[])
   fprintf(output,"VERSION %d\n",KEYSERVER_PROTO_VERSION);
   fprintf(output,"PROGRAM %s\n\n",VERSION);
 
-  if (verbose>1)
+  if(opt->verbose>1)
     {
-      if(path[0])
-	fprintf(console,"Path:\t\t%s\n",path);
+      fprintf(console,"User:\t\t%s\n",opt->opaque);
       fprintf(console,"Command:\tGET\n");
     }
 
-  set_timeout(timeout);
+  set_timeout(opt->timeout);
 
-  ret = get_key(thekey);
+  ret=get_key(thekey);
 
  fail:
 
@@ -582,6 +526,8 @@ main(int argc,char *argv[])
 
   if(output!=stdout)
     fclose(output);
+
+  free_ks_options(opt);
 
   return ret;
 }

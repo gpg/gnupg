@@ -50,14 +50,12 @@
 extern char *optarg;
 extern int optind;
 
-static int verbose=0,include_disabled=0,include_revoked=0,include_subkeys=0;
 static int real_ldap=0;
 static char *basekeyspacedn=NULL;
-static char host[MAX_HOST+1]={'\0'};
-static char portstr[MAX_PORT+1]={'\0'};
 static char *pgpkeystr="pgpKey";
 static FILE *input=NULL,*output=NULL,*console=NULL;
 static LDAP *ldap=NULL;
+static struct ks_options *opt;
 
 #ifndef HAVE_TIMEGM
 time_t timegm(struct tm *tm);
@@ -1007,7 +1005,7 @@ get_key(char *getkey)
       /* fingerprint.  Take the last 16 characters and treat it like a
          long key id */
 
-      if(include_subkeys)
+      if(opt->flags.include_subkeys)
 	sprintf(search,"(|(pgpcertid=%.16s)(pgpsubkeyid=%.16s))",
 		offset,offset);
       else
@@ -1017,7 +1015,7 @@ get_key(char *getkey)
     {
       /* long key id */
 
-      if(include_subkeys)
+      if(opt->flags.include_subkeys)
 	sprintf(search,"(|(pgpcertid=%.16s)(pgpsubkeyid=%.16s))",
 		getkey,getkey);
       else
@@ -1030,10 +1028,10 @@ get_key(char *getkey)
       sprintf(search,"(pgpkeyid=%.8s)",getkey);
     }
 
-  if(verbose>2)
+  if(opt->verbose>2)
     fprintf(console,"gpgkeys: LDAP fetch for: %s\n",search);
 
-  if(!verbose)
+  if(!opt->verbose)
     attrs[2]=NULL; /* keep only pgpkey(v2) and pgpcertid */
 
   err=ldap_search_s(ldap,basekeyspacedn,
@@ -1163,13 +1161,13 @@ search_key(char *searchkey)
   /* Build the search string */
 
   sprintf(search,"%s(pgpuserid=*%s*)%s%s%s",
-	  (!(include_disabled&&include_revoked))?"(&":"",
+	  (!(opt->flags.include_disabled&&opt->flags.include_revoked))?"(&":"",
 	  searchkey,
-	  include_disabled?"":"(pgpdisabled=0)",
-	  include_revoked?"":"(pgprevoked=0)",
-	  !(include_disabled&&include_revoked)?")":"");
+	  opt->flags.include_disabled?"":"(pgpdisabled=0)",
+	  opt->flags.include_revoked?"":"(pgprevoked=0)",
+	  !(opt->flags.include_disabled&&opt->flags.include_revoked)?")":"");
 
-  if(verbose>2)
+  if(opt->verbose>2)
     fprintf(console,"gpgkeys: LDAP search for: %s\n",search);
 
   err=ldap_search_s(ldap,basekeyspacedn,
@@ -1374,12 +1372,12 @@ search_key(char *searchkey)
 }
 
 static void
-fail_all(struct keylist *keylist,int action,int err)
+fail_all(struct keylist *keylist,int err)
 {
   if(!keylist)
     return;
 
-  if(action==SEARCH)
+  if(opt->action==KS_SEARCH)
     {
       fprintf(output,"SEARCH ");
       while(keylist)
@@ -1452,7 +1450,7 @@ find_basekeyspacedn(void)
 		  ldap_value_free(vals);
 		}
 
-	      if(verbose>1)
+	      if(opt->verbose>1)
 		{
 		  vals=ldap_get_values(ldap,si_res,"pgpSoftware");
 		  if(vals)
@@ -1503,7 +1501,7 @@ find_basekeyspacedn(void)
 	  ldap_value_free(vals);
 	}
 
-      if(verbose>1)
+      if(opt->verbose>1)
 	{
 	  vals=ldap_get_values(ldap,si_res,"software");
 	  if(vals)
@@ -1516,7 +1514,7 @@ find_basekeyspacedn(void)
       vals=ldap_get_values(ldap,si_res,"version");
       if(vals)
 	{
-	  if(verbose>1)
+	  if(opt->verbose>1)
 	    fprintf(console,"Version:\t%s\n",vals[0]);
 
 	  /* If the version is high enough, use the new pgpKeyV2
@@ -1547,12 +1545,10 @@ show_help (FILE *fp)
 int
 main(int argc,char *argv[])
 {
-  int debug=0,port=0,arg,err,action=-1,ret=KEYSERVER_INTERNAL_ERROR;
+  int port=0,arg,err,ret=KEYSERVER_INTERNAL_ERROR;
   char line[MAX_LINE];
-  int version,failed=0,use_ssl=0,use_tls=0,bound=0,check_cert=1;
+  int failed=0,use_ssl=0,use_tls=0,bound=0;
   struct keylist *keylist=NULL,*keyptr=NULL;
-  unsigned int timeout=DEFAULT_KEYSERVER_TIMEOUT;
-  char *ca_cert_file=NULL;
 
   console=stderr;
 
@@ -1592,7 +1588,6 @@ main(int argc,char *argv[])
 	break;
       }
 
-
   if(argc>optind)
     {
       input=fopen(argv[optind],"r");
@@ -1610,69 +1605,27 @@ main(int argc,char *argv[])
   if(output==NULL)
     output=stdout;
 
+  opt=init_ks_options();
+  if(!opt)
+    return KEYSERVER_NO_MEMORY;
+
   /* Get the command and info block */
 
   while(fgets(line,MAX_LINE,input)!=NULL)
     {
-      char command[MAX_COMMAND+1];
       char optionstr[MAX_OPTION+1];
-      char scheme[MAX_SCHEME+1];
-      char hash;
 
       if(line[0]=='\n')
 	break;
 
-      if(sscanf(line,"%c",&hash)==1 && hash=='#')
+      err=parse_ks_options(line,opt);
+      if(err>0)
+	{
+	  ret=err;
+	  goto fail;
+	}
+      else if(err==0)
 	continue;
-
-      if(sscanf(line,"COMMAND %" MKSTRING(MAX_COMMAND) "s\n",command)==1)
-	{
-	  command[MAX_COMMAND]='\0';
-
-	  if(strcasecmp(command,"get")==0)
-	    action=GET;
-	  else if(strcasecmp(command,"send")==0)
-	    action=SEND;
-	  else if(strcasecmp(command,"search")==0)
-	    action=SEARCH;
-
-	  continue;
-	}
-
-      if(sscanf(line,"HOST %" MKSTRING(MAX_HOST) "s\n",host)==1)
-	{
-	  host[MAX_HOST]='\0';
-	  continue;
-	}
-
-      if(sscanf(line,"PORT %" MKSTRING(MAX_PORT) "s\n",portstr)==1)
-	{
-	  portstr[MAX_PORT]='\0';
-	  port=atoi(portstr);
-	  continue;
-	}
-
-      if(sscanf(line,"SCHEME %" MKSTRING(MAX_SCHEME) "s\n",scheme)==1)
-	{
-	  scheme[MAX_SCHEME]='\0';
-	  if(strcasecmp(scheme,"ldaps")==0)
-	    {
-	      port=636;
-	      use_ssl=1;
-	    }
-	  continue;
-	}
-
-      if(sscanf(line,"VERSION %d\n",&version)==1)
-	{
-	  if(version!=KEYSERVER_PROTO_VERSION)
-	    {
-	      ret=KEYSERVER_VERSION_ERROR;
-	      goto fail;
-	    }
-
-	  continue;
-	}
 
       if(sscanf(line,"OPTION %" MKSTRING(MAX_OPTION) "[^\n]\n",optionstr)==1)
 	{
@@ -1687,35 +1640,7 @@ main(int argc,char *argv[])
 	      start=&optionstr[3];
 	    }
 
-	  if(strcasecmp(start,"verbose")==0)
-	    {
-	      if(no)
-		verbose--;
-	      else
-		verbose++;
-	    }
-	  else if(strcasecmp(start,"include-disabled")==0)
-	    {
-	      if(no)
-		include_disabled=0;
-	      else
-		include_disabled=1;
-	    }
-	  else if(strcasecmp(start,"include-revoked")==0)
-	    {
-	      if(no)
-		include_revoked=0;
-	      else
-		include_revoked=1;
-	    }
-	  else if(strcasecmp(start,"include-subkeys")==0)
-	    {
-	      if(no)
-		include_subkeys=0;
-	      else
-		include_subkeys=1;
-	    }
-	  else if(strncasecmp(start,"tls",3)==0)
+	  if(strncasecmp(start,"tls",3)==0)
 	    {
 	      if(no)
 		use_tls=0;
@@ -1734,20 +1659,6 @@ main(int argc,char *argv[])
 		}
 	      else if(start[3]=='\0')
 		use_tls=1;
-	    }
-	  else if(strcasecmp(start,"check-cert")==0)
-	    {
-	      if(no)
-		check_cert=0;
-	      else
-		check_cert=1;
-	    }
-	  else if(strncasecmp(start,"debug",5)==0)
-	    {
-	      if(no)
-		debug=0;
-	      else if(start[5]=='=')
-		debug=atoi(&start[6]);
 	    }
 	  else if(strncasecmp(start,"basedn",6)==0)
 	    {
@@ -1771,50 +1682,43 @@ main(int argc,char *argv[])
 		  real_ldap=1;
 		}
 	    }
-	  else if(strncasecmp(start,"timeout",7)==0)
-	    {
-	      if(no)
-		timeout=0;
-	      else if(start[7]=='=')
-		timeout=atoi(&start[8]);
-	      else if(start[7]=='\0')
-		timeout=DEFAULT_KEYSERVER_TIMEOUT;
-	    }
-	  else if(strncasecmp(start,"ca-cert-file",12)==0)
-	    {
-	      if(no)
-		{
-		  free(ca_cert_file);
-		  ca_cert_file=NULL;
-		}
-	      else if(start[12]=='=')
-		{
-		  free(ca_cert_file);
-		  ca_cert_file=strdup(&start[13]);
-		  if(!ca_cert_file)
-		    {
-		      fprintf(console,"gpgkeys: out of memory while creating "
-			      "ca_cert_file\n");
-		      ret=KEYSERVER_NO_MEMORY;
-		      goto fail;
-		    }
-		}
-	    }
 
 	  continue;
 	}
     }
 
-  if(timeout && register_timeout()==-1)
+  if(!opt->scheme)
+    {
+      fprintf(console,"gpgkeys: no scheme supplied!\n");
+      ret=KEYSERVER_SCHEME_NOT_FOUND;
+      goto fail;
+    }
+
+  if(strcasecmp(opt->scheme,"ldaps")==0)
+    {
+      port=636;
+      use_ssl=1;
+    }
+
+  if(opt->port)
+    port=atoi(opt->port);
+
+  if(!opt->host)
+    {
+      fprintf(console,"gpgkeys: no keyserver host provided\n");
+      goto fail;
+    }
+
+  if(opt->timeout && register_timeout()==-1)
     {
       fprintf(console,"gpgkeys: unable to register timeout handler\n");
       return KEYSERVER_INTERNAL_ERROR;
     }
 
 #if defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_OPT_X_TLS_CACERTFILE)
-  if(ca_cert_file)
+  if(opt->ca_cert_file)
     {
-      err=ldap_set_option(NULL,LDAP_OPT_X_TLS_CACERTFILE,ca_cert_file);
+      err=ldap_set_option(NULL,LDAP_OPT_X_TLS_CACERTFILE,opt->ca_cert_file);
       if(err!=LDAP_SUCCESS)
 	{
 	  fprintf(console,"gpgkeys: unable to set ca-cert-file: %s\n",
@@ -1832,9 +1736,9 @@ main(int argc,char *argv[])
   /* If it's a GET or a SEARCH, the next thing to come in is the
      keyids.  If it's a SEND, then there are no keyids. */
 
-  if(action==SEND)
+  if(opt->action==KS_SEND)
     while(fgets(line,MAX_LINE,input)!=NULL && line[0]!='\n');
-  else if(action==GET || action==SEARCH)
+  else if(opt->action==KS_GET || opt->action==KS_SEARCH)
     {
       for(;;)
 	{
@@ -1885,24 +1789,23 @@ main(int argc,char *argv[])
   fprintf(output,"VERSION %d\n",KEYSERVER_PROTO_VERSION);
   fprintf(output,"PROGRAM %s\n\n",VERSION);
 
-  if(verbose>1)
+  if(opt->verbose>1)
     {
-      fprintf(console,"Host:\t\t%s\n",host);
+      fprintf(console,"Host:\t\t%s\n",opt->host);
       if(port)
 	fprintf(console,"Port:\t\t%d\n",port);
-      fprintf(console,"Command:\t%s\n",action==GET?"GET":
-	      action==SEND?"SEND":"SEARCH");
+      fprintf(console,"Command:\t%s\n",ks_action_to_string(opt->action));
     }
 
-  if(debug)
+  if(opt->debug)
     {
 #if defined(LDAP_OPT_DEBUG_LEVEL) && defined(HAVE_LDAP_SET_OPTION)
-      err=ldap_set_option(NULL,LDAP_OPT_DEBUG_LEVEL,&debug);
+      err=ldap_set_option(NULL,LDAP_OPT_DEBUG_LEVEL,&opt->debug);
       if(err!=LDAP_SUCCESS)
 	fprintf(console,"gpgkeys: unable to set debug mode: %s\n",
 		ldap_err2string(err));
       else
-	fprintf(console,"gpgkeys: debug level %d\n",debug);
+	fprintf(console,"gpgkeys: debug level %d\n",opt->debug);
 #else
       fprintf(console,"gpgkeys: not built with debugging support\n");
 #endif
@@ -1910,16 +1813,16 @@ main(int argc,char *argv[])
 
   /* We have a timeout set for the setup stuff since it could time out
      as well. */
-  set_timeout(timeout);
+  set_timeout(opt->timeout);
 
   /* Note that this tries all A records on a given host (or at least,
      OpenLDAP does). */
-  ldap=ldap_init(host,port);
+  ldap=ldap_init(opt->host,port);
   if(ldap==NULL)
     {
       fprintf(console,"gpgkeys: internal LDAP init error: %s\n",
 	      strerror(errno));
-      fail_all(keylist,action,KEYSERVER_INTERNAL_ERROR);
+      fail_all(keylist,KEYSERVER_INTERNAL_ERROR);
       goto fail;
     }
 
@@ -1933,11 +1836,11 @@ main(int argc,char *argv[])
 	{
 	  fprintf(console,"gpgkeys: unable to make SSL connection: %s\n",
 		  ldap_err2string(err));
-	  fail_all(keylist,action,ldap_err_to_gpg_err(err));
+	  fail_all(keylist,ldap_err_to_gpg_err(err));
 	  goto fail;
 	}
 
-      if(!check_cert)
+      if(!opt->flags.check_cert)
 	ssl=LDAP_OPT_X_TLS_NEVER;
 
       err=ldap_set_option(NULL,LDAP_OPT_X_TLS_REQUIRE_CERT,&ssl);
@@ -1946,7 +1849,7 @@ main(int argc,char *argv[])
 	  fprintf(console,
 		  "gpgkeys: unable to set certificate validation: %s\n",
 		  ldap_err2string(err));
-	  fail_all(keylist,action,ldap_err_to_gpg_err(err));
+	  fail_all(keylist,ldap_err_to_gpg_err(err));
 	  goto fail;
 	}
 #else
@@ -1962,7 +1865,7 @@ main(int argc,char *argv[])
       {
 	fprintf(console,"gpgkeys: unable to retrieve LDAP base: %s\n",
 		err?ldap_err2string(err):"not found");
-	fail_all(keylist,action,ldap_err_to_gpg_err(err));
+	fail_all(keylist,ldap_err_to_gpg_err(err));
 	goto fail;
       }
 
@@ -1977,7 +1880,7 @@ main(int argc,char *argv[])
 		    "not supported by the NAI LDAP keyserver");
 	  if(use_tls==3)
 	    {
-	      fail_all(keylist,action,KEYSERVER_INTERNAL_ERROR);
+	      fail_all(keylist,KEYSERVER_INTERNAL_ERROR);
 	      goto fail;
 	    }
       	}
@@ -1989,7 +1892,7 @@ main(int argc,char *argv[])
 	  err=ldap_set_option(ldap,LDAP_OPT_PROTOCOL_VERSION,&ver);
 	  if(err==LDAP_SUCCESS)
 	    {
-	      if(check_cert)
+	      if(opt->flags.check_cert)
 		ver=LDAP_OPT_X_TLS_HARD;
 	      else
 		ver=LDAP_OPT_X_TLS_NEVER;
@@ -2001,17 +1904,17 @@ main(int argc,char *argv[])
 
 	  if(err!=LDAP_SUCCESS)
 	    {
-	      if(use_tls>=2 || verbose>2)
+	      if(use_tls>=2 || opt->verbose>2)
 		fprintf(console,"gpgkeys: unable to start TLS: %s\n",
 			ldap_err2string(err));
 	      /* Are we forcing it? */
 	      if(use_tls==3)
 		{
-		  fail_all(keylist,action,ldap_err_to_gpg_err(err));
+		  fail_all(keylist,ldap_err_to_gpg_err(err));
 		  goto fail;
 		}
 	    }
-	  else if(err==LDAP_SUCCESS && verbose>1)
+	  else if(err==LDAP_SUCCESS && opt->verbose>1)
 	    fprintf(console,"gpgkeys: TLS started successfully.\n");
 #else
 	  if(use_tls>=2)
@@ -2045,94 +1948,89 @@ main(int argc,char *argv[])
     bound=1;
 #endif
 
-  switch(action)
+  if(opt->action==KS_GET)
     {
-    case GET:
       keyptr=keylist;
 
       while(keyptr!=NULL)
 	{
-	  set_timeout(timeout);
+	  set_timeout(opt->timeout);
 
 	  if(get_key(keyptr->str)!=KEYSERVER_OK)
 	    failed++;
 
 	  keyptr=keyptr->next;
 	}
-      break;
-
-    case SEND:
-      {
-	int eof=0;
-
-	do
-	  {
-	    set_timeout(timeout);
-
-	    if(real_ldap)
-	      {
-		if(send_key(&eof)!=KEYSERVER_OK)
-		  failed++;
-	      }
-	    else
-	      {
-		if(send_key_keyserver(&eof)!=KEYSERVER_OK)
-		  failed++;
-	      }
-	  }
-	while(!eof);
-      }
-      break;
-
-    case SEARCH:
-      {
-	char *searchkey=NULL;
-	int len=0;
-
-	set_timeout(timeout);
-
-	/* To search, we stick a * in between each key to search for.
-	   This means that if the user enters words, they'll get
-	   "enters*words".  If the user "enters words", they'll get
-	   "enters words" */
-
-	keyptr=keylist;
-	while(keyptr!=NULL)
-	  {
-	    len+=strlen(keyptr->str)+1;
-	    keyptr=keyptr->next;
-	  }
-
-	searchkey=malloc(len+1);
-	if(searchkey==NULL)
-	  {
-	    ret=KEYSERVER_NO_MEMORY;
-	    fail_all(keylist,action,KEYSERVER_NO_MEMORY);
-	    goto fail;
-	  }
-
-	searchkey[0]='\0';
-
-	keyptr=keylist;
-	while(keyptr!=NULL)
-	  {
-	    strcat(searchkey,keyptr->str);
-	    strcat(searchkey,"*");
-	    keyptr=keyptr->next;
-	  }
-
-	/* Nail that last "*" */
-	if(*searchkey)
-	  searchkey[strlen(searchkey)-1]='\0';
-
-	if(search_key(searchkey)!=KEYSERVER_OK)
-	  failed++;
-
-	free(searchkey);
-      }
-
-      break;
     }
+  else if(opt->action==KS_SEND)
+    {
+      int eof=0;
+
+      do
+	{
+	  set_timeout(opt->timeout);
+
+	  if(real_ldap)
+	    {
+	      if(send_key(&eof)!=KEYSERVER_OK)
+		failed++;
+	    }
+	  else
+	    {
+	      if(send_key_keyserver(&eof)!=KEYSERVER_OK)
+		failed++;
+	    }
+	}
+      while(!eof);
+    }
+  else if(opt->action==KS_SEARCH)
+    {
+      char *searchkey=NULL;
+      int len=0;
+
+      set_timeout(opt->timeout);
+
+      /* To search, we stick a * in between each key to search for.
+	 This means that if the user enters words, they'll get
+	 "enters*words".  If the user "enters words", they'll get
+	 "enters words" */
+
+      keyptr=keylist;
+      while(keyptr!=NULL)
+	{
+	  len+=strlen(keyptr->str)+1;
+	  keyptr=keyptr->next;
+	}
+
+      searchkey=malloc(len+1);
+      if(searchkey==NULL)
+	{
+	  ret=KEYSERVER_NO_MEMORY;
+	  fail_all(keylist,KEYSERVER_NO_MEMORY);
+	  goto fail;
+	}
+
+      searchkey[0]='\0';
+
+      keyptr=keylist;
+      while(keyptr!=NULL)
+	{
+	  strcat(searchkey,keyptr->str);
+	  strcat(searchkey,"*");
+	  keyptr=keyptr->next;
+	}
+
+      /* Nail that last "*" */
+      if(*searchkey)
+	searchkey[strlen(searchkey)-1]='\0';
+
+      if(search_key(searchkey)!=KEYSERVER_OK)
+	failed++;
+
+      free(searchkey);
+    }
+  else
+    BUG();
 
   if(!failed)
     ret=KEYSERVER_OK;
@@ -2151,6 +2049,8 @@ main(int argc,char *argv[])
 
   if(output!=stdout)
     fclose(output);
+
+  free_ks_options(opt);
 
   if(ldap!=NULL && bound)
     ldap_unbind_s(ldap);

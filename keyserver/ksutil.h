@@ -69,6 +69,7 @@ struct ks_options
   char *scheme;
   char *auth;
   char *path;
+  char *opaque;
   struct
   {
     unsigned int include_disabled:1;

@@ -38,16 +38,10 @@
 extern char *optarg;
 extern int optind;
 
-static int verbose=0;
-static char scheme[MAX_SCHEME+1];
-static char auth[MAX_AUTH+1];
-static char host[MAX_HOST+1];
-static char port[MAX_PORT+1];
-static char path[URLMAX_PATH+1];
 static char proxy[MAX_PROXY+1];
-static FILE *input, *output, *console;
+static FILE *input,*output,*console;
 static CURL *curl;
-static char request[MAX_URL];
+static struct ks_options *opt;
 
 static int
 curl_err_to_gpg_err(CURLcode error)
@@ -115,14 +109,18 @@ get_key(char *getkey)
 {
   CURLcode res;
   char errorbuffer[CURL_ERROR_SIZE];
+  char request[MAX_URL];
 
   if(strncmp(getkey,"0x",2)==0)
     getkey+=2;
 
   fprintf(output,"KEY 0x%s BEGIN\n",getkey);
 
-  sprintf(request,"%s://%s%s%s%s%s%s%s",scheme,auth[0]?auth:"",auth[0]?"@":"",
-	  host,port[0]?":":"",port[0]?port:"",path[0]?"":"/",path);
+  sprintf(request,"%s://%s%s%s%s%s%s",opt->scheme,
+	  opt->auth?opt->auth:"",
+	  opt->auth?"@":"",opt->host,
+	  opt->port?":":"",opt->port?opt->port:"",
+	  opt->path?opt->path:"/");
 
   curl_easy_setopt(curl,CURLOPT_URL,request);
   curl_easy_setopt(curl,CURLOPT_WRITEFUNCTION,writer);
@@ -132,7 +130,7 @@ get_key(char *getkey)
   res=curl_easy_perform(curl);
   if(res!=0)
     {
-      fprintf(console,"gpgkeys: %s fetch error %d: %s\n",scheme,
+      fprintf(console,"gpgkeys: %s fetch error %d: %s\n",opt->scheme,
 	      res,errorbuffer);
       fprintf(output,"\nKEY 0x%s FAILED %d\n",getkey,curl_err_to_gpg_err(res));
     }
@@ -153,12 +151,10 @@ show_help (FILE *fp)
 int
 main(int argc,char *argv[])
 {
-  int arg,action=-1,ret=KEYSERVER_INTERNAL_ERROR;
+  int arg,ret=KEYSERVER_INTERNAL_ERROR;
   char line[MAX_LINE];
   char *thekey=NULL;
-  unsigned int timeout=DEFAULT_KEYSERVER_TIMEOUT;
-  long follow_redirects=5,debug=0,check_cert=1;
-  char *ca_cert_file=NULL;
+  long follow_redirects=5;
 
   console=stderr;
 
@@ -215,71 +211,28 @@ main(int argc,char *argv[])
   if(output==NULL)
     output=stdout;
 
+  opt=init_ks_options();
+  if(!opt)
+    return KEYSERVER_NO_MEMORY;
+
   /* Get the command and info block */
 
   while(fgets(line,MAX_LINE,input)!=NULL)
     {
-      int version;
-      char command[MAX_COMMAND+1];
+      int err;
       char option[MAX_OPTION+1];
-      char hash;
 
       if(line[0]=='\n')
 	break;
 
-      if(sscanf(line,"%c",&hash)==1 && hash=='#')
+      err=parse_ks_options(line,opt);
+      if(err>0)
+	{
+	  ret=err;
+	  goto fail;
+	}
+      else if(err==0)
 	continue;
-
-      if(sscanf(line,"COMMAND %" MKSTRING(MAX_COMMAND) "s\n",command)==1)
-	{
-	  command[MAX_COMMAND]='\0';
-
-	  if(strcasecmp(command,"get")==0)
-	    action=GET;
-
-	  continue;
-	}
-
-      if(sscanf(line,"SCHEME %" MKSTRING(MAX_SCHEME) "s\n",scheme)==1)
-	{
-	  scheme[MAX_SCHEME]='\0';
-	  continue;
-	}
-
-      if(sscanf(line,"AUTH %" MKSTRING(MAX_AUTH) "s\n",auth)==1)
-	{
-	  auth[MAX_AUTH]='\0';
-	  continue;
-	}
-
-      if(sscanf(line,"HOST %" MKSTRING(MAX_HOST) "s\n",host)==1)
-	{
-	  host[MAX_HOST]='\0';
-	  continue;
-	}
-
-      if(sscanf(line,"PORT %" MKSTRING(MAX_PORT) "s\n",port)==1)
-	{
-	  port[MAX_PORT]='\0';
-	  continue;
-	}
-
-      if(sscanf(line,"PATH %" MKSTRING(URLMAX_PATH) "s\n",path)==1)
-	{
-	  path[URLMAX_PATH]='\0';
-	  continue;
-	}
-
-      if(sscanf(line,"VERSION %d\n",&version)==1)
-	{
-	  if(version!=KEYSERVER_PROTO_VERSION)
-	    {
-	      ret=KEYSERVER_VERSION_ERROR;
-	      goto fail;
-	    }
-
-	  continue;
-	}
 
       if(sscanf(line,"OPTION %" MKSTRING(MAX_OPTION) "s\n",option)==1)
 	{
@@ -294,14 +247,7 @@ main(int argc,char *argv[])
 	      start=&option[3];
 	    }
 
-	  if(strcasecmp(start,"verbose")==0)
-	    {
-	      if(no)
-		verbose--;
-	      else
-		verbose++;
-	    }
-	  else if(strncasecmp(start,"http-proxy",10)==0)
+	  if(strncasecmp(start,"http-proxy",10)==0)
 	    {
 	      if(no)
 		proxy[0]='\0';
@@ -310,15 +256,6 @@ main(int argc,char *argv[])
 		  strncpy(proxy,&start[11],MAX_PROXY);
 		  proxy[MAX_PROXY]='\0';
 		}
-	    }
-	  else if(strncasecmp(start,"timeout",7)==0)
-	    {
-	      if(no)
-		timeout=0;
-	      else if(start[7]=='=')
-		timeout=atoi(&start[8]);
-	      else if(start[7]=='\0')
-		timeout=DEFAULT_KEYSERVER_TIMEOUT;
 	    }
 	  else if(strncasecmp(start,"follow-redirects",16)==0)
 	    {
@@ -329,75 +266,46 @@ main(int argc,char *argv[])
 	      else if(start[16]=='\0')
 		follow_redirects=-1;
 	    }
-	  else if(strncasecmp(start,"debug",5)==0)
-	    {
-	      if(no)
-		debug=0;
-	      else if(start[5]=='=')
-		debug=atoi(&start[6]);
-	      else if(start[5]=='\0')
-		debug=1;
-	    }
-	  else if(strcasecmp(start,"check-cert")==0)
-	    {
-	      if(no)
-		check_cert=0;
-	      else
-		check_cert=1;
-	    }
-	  else if(strncasecmp(start,"ca-cert-file",12)==0)
-	    {
-	      if(no)
-		{
-		  free(ca_cert_file);
-		  ca_cert_file=NULL;
-		}
-	      else if(start[12]=='=')
-		{
-		  free(ca_cert_file);
-		  ca_cert_file=strdup(&start[13]);
-		  if(!ca_cert_file)
-		    {
-		      fprintf(console,"gpgkeys: out of memory while creating "
-			      "ca_cert_file\n");
-		      ret=KEYSERVER_NO_MEMORY;
-		      goto fail;
-		    }
-		}
-	    }
 
 	  continue;
 	}
     }
 
-  if(scheme[0]=='\0')
+  if(!opt->scheme)
     {
       fprintf(console,"gpgkeys: no scheme supplied!\n");
-      return KEYSERVER_SCHEME_NOT_FOUND;
+      ret=KEYSERVER_SCHEME_NOT_FOUND;
+      goto fail;
     }
 #ifdef HTTP_VIA_LIBCURL
-  else if(strcasecmp(scheme,"http")==0)
+  else if(strcasecmp(opt->scheme,"http")==0)
     ;
 #endif /* HTTP_VIA_LIBCURL */
 #ifdef HTTPS_VIA_LIBCURL
-  else if(strcasecmp(scheme,"https")==0)
+  else if(strcasecmp(opt->scheme,"https")==0)
     ;
 #endif /* HTTP_VIA_LIBCURL */
 #ifdef FTP_VIA_LIBCURL
-  else if(strcasecmp(scheme,"ftp")==0)
+  else if(strcasecmp(opt->scheme,"ftp")==0)
     ;
 #endif /* FTP_VIA_LIBCURL */
 #ifdef FTPS_VIA_LIBCURL
-  else if(strcasecmp(scheme,"ftps")==0)
+  else if(strcasecmp(opt->scheme,"ftps")==0)
     ;
 #endif /* FTPS_VIA_LIBCURL */
   else
     {
-      fprintf(console,"gpgkeys: scheme `%s' not supported\n",scheme);
+      fprintf(console,"gpgkeys: scheme `%s' not supported\n",opt->scheme);
       return KEYSERVER_SCHEME_NOT_FOUND;
     }
 
-  if(timeout && register_timeout()==-1)
+  if(!opt->host)
+    {
+      fprintf(console,"gpgkeys: no keyserver host provided\n");
+      goto fail;
+    }
+
+  if(opt->timeout && register_timeout()==-1)
     {
       fprintf(console,"gpgkeys: unable to register timeout handler\n");
       return KEYSERVER_INTERNAL_ERROR;
@@ -419,16 +327,14 @@ main(int argc,char *argv[])
 	curl_easy_setopt(curl,CURLOPT_MAXREDIRS,follow_redirects);
     }
 
-  if(debug)
+  if(opt->debug)
     {
       curl_easy_setopt(curl,CURLOPT_STDERR,console);
       curl_easy_setopt(curl,CURLOPT_VERBOSE,1);
     }
 
-  curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,check_cert);
-
-  if(ca_cert_file)
-    curl_easy_setopt(curl,CURLOPT_CAINFO,ca_cert_file);
+  curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,opt->flags.check_cert);
+  curl_easy_setopt(curl,CURLOPT_CAINFO,opt->ca_cert_file);
 
   if(proxy[0])
     curl_easy_setopt(curl,CURLOPT_PROXY,proxy);
@@ -436,7 +342,7 @@ main(int argc,char *argv[])
   /* If it's a GET or a SEARCH, the next thing to come in is the
      keyids.  If it's a SEND, then there are no keyids. */
 
-  if(action==GET)
+  if(opt->action==KS_GET)
     {
       /* Eat the rest of the file */
       for(;;)
@@ -472,7 +378,7 @@ main(int argc,char *argv[])
       goto fail;
     }
 
-  if(!thekey || !host[0])
+  if(!thekey)
     {
       fprintf(console,"gpgkeys: invalid keyserver instructions\n");
       goto fail;
@@ -483,18 +389,18 @@ main(int argc,char *argv[])
   fprintf(output,"VERSION %d\n",KEYSERVER_PROTO_VERSION);
   fprintf(output,"PROGRAM %s\n\n",VERSION);
 
-  if(verbose)
+  if(opt->verbose)
     {
-      fprintf(console,"Scheme:\t\t%s\n",scheme);
-      fprintf(console,"Host:\t\t%s\n",host);
-      if(port[0])
-	fprintf(console,"Port:\t\t%s\n",port);
-      if(path[0])
-	fprintf(console,"Path:\t\t%s\n",path);
+      fprintf(console,"Scheme:\t\t%s\n",opt->scheme);
+      fprintf(console,"Host:\t\t%s\n",opt->host);
+      if(opt->port)
+	fprintf(console,"Port:\t\t%s\n",opt->port);
+      if(opt->path)
+	fprintf(console,"Path:\t\t%s\n",opt->path);
       fprintf(console,"Command:\tGET\n");
     }
 
-  set_timeout(timeout);
+  set_timeout(opt->timeout);
 
   ret=get_key(thekey);
 
@@ -507,6 +413,8 @@ main(int argc,char *argv[])
 
   if(output!=stdout)
     fclose(output);
+
+  free_ks_options(opt);
 
   if(curl)
     curl_easy_cleanup(curl);
