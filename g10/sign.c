@@ -48,9 +48,9 @@ complete_sig( PKT_signature *sig, PKT_secret_cert *skc, MD_HANDLE md )
     if( (rc=check_secret_key( skc )) )
 	;
     else if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
-	g10_elg_sign( skc, sig, md );
+	g10_elg_sign( skc, sig, md, 0 );
     else if( sig->pubkey_algo == PUBKEY_ALGO_RSA )
-	g10_rsa_sign( skc, sig, md );
+	g10_rsa_sign( skc, sig, md, 0 );
     else
 	BUG();
 
@@ -246,7 +246,6 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	PKT_secret_cert *skc;
 	PKT_signature *sig;
 	MD_HANDLE md;
-	byte *dp;
 
 	skc = skc_rover->skc;
 
@@ -265,58 +264,11 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    md_putc( md,  a	   & 0xff );
 	}
 	md_final( md );
-	dp = md_read( md, DIGEST_ALGO_RMD160 );
 
-	if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
-	    ELG_secret_key skey;
-	    MPI frame;
-
-	    keyid_from_skc( skc, sig->keyid );
-	    sig->d.elg.digest_algo = DIGEST_ALGO_RMD160;
-	    sig->d.elg.digest_start[0] = dp[0];
-	    sig->d.elg.digest_start[1] = dp[1];
-	    sig->d.elg.a = mpi_alloc( mpi_get_nlimbs(skc->d.elg.p) );
-	    sig->d.elg.b = mpi_alloc( mpi_get_nlimbs(skc->d.elg.p) );
-	    frame = encode_rmd160_value( dp, 20, mpi_get_nbits(skc->d.elg.p) );
-	    skey.p = skc->d.elg.p;
-	    skey.g = skc->d.elg.g;
-	    skey.y = skc->d.elg.y;
-	    skey.x = skc->d.elg.x;
-	    elg_sign( sig->d.elg.a, sig->d.elg.b, frame, &skey);
-	    memset( &skey, 0, sizeof skey );
-	    mpi_free(frame);
-	    if( opt.verbose ) {
-		char *ustr = get_user_id_string( sig->keyid );
-		log_info("ELG signature from: %s\n", ustr );
-		m_free(ustr);
-	    }
-	}
-      #ifdef HAVE_RSA_CIPHER
-	else if( sig->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	    RSA_secret_key skey;
-
-	    keyid_from_skc( skc, sig->keyid );
-	    sig->d.rsa.digest_algo = DIGEST_ALGO_RMD160;
-	    sig->d.rsa.digest_start[0] = dp[0];
-	    sig->d.rsa.digest_start[1] = dp[1];
-	    sig->d.rsa.rsa_integer = encode_rmd160_value( dp, 20,
-					    mpi_get_nbits(skc->d.rsa.rsa_n) );
-	    skey.e = skc->d.rsa.rsa_e;
-	    skey.n = skc->d.rsa.rsa_n;
-	    skey.p = skc->d.rsa.rsa_p;
-	    skey.q = skc->d.rsa.rsa_q;
-	    skey.d = skc->d.rsa.rsa_d;
-	    skey.u = skc->d.rsa.rsa_u;
-	    rsa_secret( sig->d.rsa.rsa_integer, sig->d.rsa.rsa_integer, &skey);
-	    memset( &skey, 0, sizeof skey );
-	    if( opt.verbose ) {
-		char *ustr = get_user_id_string( sig->keyid );
-		log_info("RSA signature from: %s\n", ustr );
-		m_free(ustr);
-	    }
-	    /* fixme: should we check wether the signature is okay? */
-	}
-      #endif/*HAVE_RSA_CIPHER*/
+	if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
+	    g10_elg_sign( skc, sig, md, DIGEST_ALGO_RMD160 );
+	else if( sig->pubkey_algo == PUBKEY_ALGO_RSA )
+	    g10_rsa_sign( skc, sig, md, DIGEST_ALGO_RMD160 );
 	else
 	    BUG();
 

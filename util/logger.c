@@ -111,6 +111,7 @@ log_fatal( const char *fmt, ... )
     va_start( arg_ptr, fmt ) ;
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
+    secmem_dump_stats();
     exit(2);
 }
 
@@ -124,6 +125,7 @@ log_bug( const char *fmt, ... )
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
     fflush(stderr);
+    secmem_dump_stats();
     abort();
 }
 

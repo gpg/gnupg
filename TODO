@@ -5,9 +5,7 @@
     * add a way to difference between errors and eof in the underflow/flush
       function of iobuf.
     * check that all output is filtered when displayed.
-    * add trust stuff
     * add checking of armor trailers
-    * add real secure memory
     * look for a way to reuse RSA signatures
     * remove all "Fixmes"
     * speed up the RIPE-MD-160

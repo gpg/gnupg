@@ -116,7 +116,7 @@ wrong_args( const char *text)
     fputs(_("Usage: g10 [options] "),stderr);
     fputs(text,stderr);
     putc('\n',stderr);
-    exit(2);
+    g10_exit(2);
 }
 
 static void
@@ -150,14 +150,14 @@ set_cmd( enum cmd_values *ret_cmd, enum cmd_values new_cmd )
 	cmd = aKModeC;
     else {
 	log_error(_("conflicting commands\n"));
-	exit(2);
+	g10_exit(2);
     }
 
     *ret_cmd = cmd;
 }
 
 
-int
+void
 main( int argc, char **argv )
 {
     static ARGPARSE_OPTS opts[] = {
@@ -236,6 +236,8 @@ main( int argc, char **argv )
     int greeting = 1;
     enum cmd_values cmd = 0;
 
+
+    secmem_init( 16384 );
 
     i18n_init();
     opt.compress = -1; /* defaults to standard compress level */
@@ -397,7 +399,7 @@ main( int argc, char **argv )
 	errors++;
     }
     if( errors )
-	exit(2);
+	g10_exit(2);
 
 
     set_debug();
@@ -673,7 +675,17 @@ main( int argc, char **argv )
     /* cleanup */
     FREE_STRLIST(remusr);
     FREE_STRLIST(locusr);
-    return log_get_errorcount(0)? 2:0;
+    g10_exit(0);
+}
+
+
+void
+g10_exit( int rc )
+{
+    if( opt.verbose )
+	secmem_dump_stats();
+    secmem_term();
+    exit( rc? rc : log_get_errorcount(0)? 2:0 );
 }
 
 

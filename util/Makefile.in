@@ -43,7 +43,7 @@ INCLUDES = -I$(top_srcdir)/include
 noinst_LIBRARIES = util
 
 util_SOURCES = logger.c fileutil.c miscutil.c strgutil.c  \
-	       ttyio.c	argparse.c memory.c errors.c iobuf.c
+	       ttyio.c	argparse.c memory.c secmem.c errors.c iobuf.c
 mkinstalldirs = $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
 LIBRARIES = $(noinst_LIBRARIES)
@@ -64,7 +64,7 @@ COMPILE = $(CC) -c $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 LINK = $(CC) $(LDFLAGS) -o $@
 util_LIBADD =
 util_OBJECTS = logger.o fileutil.o miscutil.o strgutil.o ttyio.o \
-argparse.o memory.o errors.o iobuf.o
+argparse.o memory.o secmem.o errors.o iobuf.o
 EXTRA_util_SOURCES =
 LIBFILES =  libutil.a
 AR = ar
@@ -84,8 +84,8 @@ TAR = tar
 DEP_FILES = $(srcdir)/.deps/argparse.P $(srcdir)/.deps/errors.P \
 $(srcdir)/.deps/fileutil.P $(srcdir)/.deps/iobuf.P \
 $(srcdir)/.deps/logger.P $(srcdir)/.deps/memory.P \
-$(srcdir)/.deps/miscutil.P $(srcdir)/.deps/strgutil.P \
-$(srcdir)/.deps/ttyio.P
+$(srcdir)/.deps/miscutil.P $(srcdir)/.deps/secmem.P \
+$(srcdir)/.deps/strgutil.P $(srcdir)/.deps/ttyio.P
 SOURCES = $(util_SOURCES)
 OBJECTS = $(util_OBJECTS)
 
@@ -170,11 +170,11 @@ $(srcdir)/.deps/%.P: $(srcdir)/%.c
 	@echo "mkdeps $< > $@"
 	@re=`echo 's,^$(srcdir)//*,,g;s, $(srcdir)//*, ,g' | sed 's,\.,\\\\.,g'`; \
 	  $(MKDEP) $< | sed "$$re" > $@-tmp
-	@if test -n "$o"; then			\
-	  sed 's/\.o:/$$o:/' $@-tmp > $@;	\
+	@if test -n "$o"; then                  \
+	  sed 's/\.o:/$$o:/' $@-tmp > $@;       \
 	  rm $@-tmp;				\
 	else					\
-	  mv $@-tmp $@;				\
+	  mv $@-tmp $@; 			\
 	fi
 
 # End of maintainer-only section
@@ -186,14 +186,14 @@ check: all
 
 installcheck:
 
-install-exec: 
+install-exec:
 
-install-data: 
+install-data:
 
 install: install-exec install-data all
 	@:
 
-uninstall: 
+uninstall:
 
 all: $(LIBFILES) Makefile
 
@@ -218,16 +218,16 @@ maintainer-clean-generic:
 mostlyclean:  mostlyclean-noinstLIBRARIES mostlyclean-compile \
 		mostlyclean-tags mostlyclean-generic
 
-clean:  clean-noinstLIBRARIES clean-compile clean-tags clean-generic \
-		mostlyclean 
+clean:	clean-noinstLIBRARIES clean-compile clean-tags clean-generic \
+		mostlyclean
 
 distclean:  distclean-noinstLIBRARIES distclean-compile distclean-tags \
-		distclean-generic clean 
+		distclean-generic clean
 	rm -f config.status
 
 maintainer-clean:  maintainer-clean-noinstLIBRARIES \
 		maintainer-clean-compile maintainer-clean-tags \
-		maintainer-clean-generic distclean 
+		maintainer-clean-generic distclean
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 

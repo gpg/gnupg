@@ -2,12 +2,15 @@
 
 INCLUDES = -I$(top_srcdir)/include
 
-bin_PROGRAMS = mpicalc
+noinst_PROGRAMS = mpicalc bftest
 
 mpicalc_SOURCES = mpicalc.c
 
+bftest_SOURCES = bftest.c
 
-LDADD = -L ../cipher -L ../mpi -L ../util  -lmpi -lutil
 
-$(PROGRAMS): ../mpi/libmpi.a
+LDADD = -L ../cipher -L ../mpi -L ../util -L ../cipher	\
+	-lmpi -lutil -lmpi -lutil -lcipher
+
+$(PROGRAMS): ../mpi/libmpi.a ../cipher/libcipher.a
 

@@ -61,9 +61,20 @@ char *m_strdup( const char * a);
 size_t m_size( const void *a );
 int m_is_secure( const void *p );
 
+/*-- secmem.c --*/
+void secmem_init( size_t npool );
+void secmem_term( void );
+void *secmem_malloc( size_t size );
+void secmem_free( void *a );
+void secmem_dump_stats(void);
+
+
+
 #define DBG_MEMORY    memory_debug_mode
 #define DBG_MEMSTAT   memory_stat_debug_mode
 int memory_debug_mode;
 int memory_stat_debug_mode;
+
+
 
 #endif /*G10_MEMORY_H*/

@@ -10,6 +10,9 @@
 
     * Some features are not yet implemented
 
+    PLEASE USE "--no-armor" BECAUSE THERE IS STILL A BUG IN IT!
+    (put it into the option file)
+
 
     Please subscribe to g10@net.lut.ac.uk by sending a mail with
     the word "subscribe" in the body to "g10-request@net.lut.ac.uk".

@@ -613,7 +613,7 @@ proc_tree( CTX c, KBNODE node )
 		    print_keyid( stderr, sig->keyid );
 		    putc('\n', stderr);
 		    if( opt.batch )
-			exit(1);
+			g10_exit(1);
 		}
 		else
 		    log_error("Can't check signature made by %08lX: %s\n",

@@ -216,11 +216,11 @@ mpi_sub_ui(MPI w, MPI u, unsigned long v )
 void
 mpi_sub(MPI w, MPI u, MPI v)
 {
-    if( 1 || w == v ) {
+    if( w == v ) {
 	MPI vv = mpi_copy(v);
 	vv->sign = !vv->sign;
 	mpi_add( w, u, vv );
-	m_free(vv);
+	mpi_free(vv);
     }
     else {
 	/* fixme: this is not thread-save (we temp. modify v) */

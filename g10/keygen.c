@@ -32,6 +32,7 @@
 #include "ttyio.h"
 #include "options.h"
 #include "keydb.h"
+#include "i18n.h"
 
 #if 0
   #define TEST_ALGO  1
@@ -105,7 +106,7 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_cert *skc )
     PKT_public_cert *pkc;
 
     if( opt.verbose )
-	log_info("writing self signature\n");
+	log_info(_("writing self signature\n"));
 
     /* get the uid packet from the tree */
     for( kbctx=NULL; (node=walk_kbtree( root, &kbctx)) ; ) {
@@ -201,18 +202,15 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 
 #ifdef ENABLE_RSA_KEYGEN
 static int
-gen_rsa(unsigned nbits, IOBUF pub_io, IOBUF sec_io, DEK *dek,
-	PKT_public_cert **ret_pkc, PKT_secret_cert **ret_skc )
+gen_rsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
+	PKT_secret_cert **ret_skc )
 {
     int rc;
-    PACKET pkt1, pkt2;
+    PACKET *pkt;
     PKT_secret_cert *skc;
     PKT_public_cert *pkc;
     RSA_public_key pk;
     RSA_secret_key sk;
-
-    init_packet(&pkt1);
-    init_packet(&pkt2);
 
     rsa_generate( &pk, &sk, nbits );
 
@@ -234,11 +232,11 @@ gen_rsa(unsigned nbits, IOBUF pub_io, IOBUF sec_io, DEK *dek,
     skc->d.rsa.csum += checksum_mpi( skc->d.rsa.rsa_p );
     skc->d.rsa.csum += checksum_mpi( skc->d.rsa.rsa_q );
     skc->d.rsa.csum += checksum_mpi( skc->d.rsa.rsa_u );
-    if( !dek ) {
-	skc->d.rsa.is_protected = 0;
-	skc->d.rsa.protect_algo = 0;
-    }
-    else {
+
+    /* return an unprotected version of the skc */
+    *ret_skc = copy_secret_cert( NULL, skc );
+
+    if( dek ) {
 	skc->d.rsa.is_protected = 1;
 	skc->d.rsa.protect_algo = CIPHER_ALGO_BLOWFISH;
 	randomize_buffer( skc->d.rsa.protect.blowfish.iv, 8, 1);
@@ -246,31 +244,22 @@ gen_rsa(unsigned nbits, IOBUF pub_io, IOBUF sec_io, DEK *dek,
 	rc = protect_secret_key( skc, dek );
 	if( rc ) {
 	    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
-	    goto leave;
+	    free_public_cert(pkc);
+	    free_secret_cert(skc);
+	    return rc;
 	}
     }
 
-    pkt1.pkttype = PKT_PUBLIC_CERT;
-    pkt1.pkt.public_cert = pkc;
-    pkt2.pkttype = PKT_SECRET_CERT;
-    pkt2.pkt.secret_cert = skc;
+    pkt = m_alloc_clear(sizeof *pkt);
+    pkt->pkttype = PKT_PUBLIC_CERT;
+    pkt->pkt.public_cert = pkc;
+    add_kbnode(pub_root, new_kbnode( pkt ));
 
-    if( (rc = build_packet( pub_io, &pkt1 )) ) {
-	log_error("build public_cert packet failed: %s\n", g10_errstr(rc) );
-	goto leave;
-    }
-    if( (rc = build_packet( sec_io, &pkt2 )) ) {
-	log_error("build secret_cert packet failed: %s\n", g10_errstr(rc) );
-	goto leave;
-    }
-    *ret_pkc = pkt1.pkt.public_cert;
-    pkt1.pkt.public_cert = NULL;
-    *ret_skc = pkt1.pkt.secret_cert;
-    pkt1.pkt.secret_cert = NULL;
+    pkt = m_alloc_clear(sizeof *pkt);
+    pkt->pkttype = PKT_SECRET_CERT;
+    pkt->pkt.secret_cert = skc;
+    add_kbnode(sec_root, new_kbnode( pkt ));
 
-  leave:
-    free_packet(&pkt1);
-    free_packet(&pkt2);
     return rc;
 }
 #endif /*ENABLE_RSA_KEYGEN*/
@@ -305,28 +294,27 @@ generate_keypair()
     const char *algo_name;
     char *aname, *acomment, *amail;
 
-  #ifndef TEST_ALGO
+#ifndef TEST_ALGO
     if( opt.batch || opt.answer_yes || opt.answer_no )
-	log_fatal("Key generation can only be used in interactive mode\n");
+	log_fatal(_("Key generation can only be used in interactive mode\n"));
 
-    tty_printf("Please select the algorithm to use:\n"
-	       "   (1) ElGamal is the suggested one.\n"
-	       "   (2) DSA can only be used for signatures.\n"
-	   #ifdef ENABLE_RSA_KEYGEN
-	       "   (3) RSA cannot be used in the U.S.\n"
-	   #endif
-	       );
+    tty_printf(_("Please select the algorithm to use:\n"
+		 "   (1) ElGamal is the suggested one.\n"
+		 "   (2) DSA can only be used for signatures.\n"));
+  #ifdef ENABLE_RSA_KEYGEN
+    tty_printf(_("   (3) RSA cannot be used in the U.S.\n"));
   #endif
+#endif
 
     for(;;) {
       #ifdef TEST_ALGO
 	algo = TEST_ALGO;
       #else
-	answer = tty_get("Your selection? (1,2"
-					   #ifdef ENABLE_RSA_KEYGEN
-					     ",3"
-					   #endif
-					     ") ");
+	#ifdef ENABLE_RSA_KEYGEN
+	  answer = tty_get(_("Your selection? (1,2,3) "));
+       #else
+	  answer = tty_get(_("Your selection? (1,2) "));
+       #endif
 	tty_kill_prompt();
 	algo = *answer? atoi(answer): 1;
 	m_free(answer);
@@ -339,7 +327,7 @@ generate_keypair()
 	else if( algo == 2 ) {
 	    algo = PUBKEY_ALGO_DSA;
 	    algo_name = "DSA";
-	    tty_printf("Sorry; DSA is not yet supported.\n");
+	    tty_printf(_("Sorry; DSA is not yet supported.\n"));
 	}
       #ifdef ENABLE_RSA_KEYGEN
 	else if( algo == 3 ) {
@@ -352,36 +340,33 @@ generate_keypair()
 
 
 
-    tty_printf("About to generate a new %s keypair.\n"
-	  #ifndef TEST_NBITS
-	       "              minimum keysize is  768 bits\n"
-	       "              default keysize is 1024 bits\n"
-	       "    highest suggested keysize is 2048 bits\n"
-	  #endif
-							     , algo_name );
+    tty_printf(_("About to generate a new %s keypair.\n"
+		 "              minimum keysize is  768 bits\n"
+		 "              default keysize is 1024 bits\n"
+		 "    highest suggested keysize is 2048 bits\n"), algo_name );
     for(;;) {
       #ifdef TEST_NBITS
 	nbits = TEST_NBITS;
       #else
-	answer = tty_get("What keysize do you want? (1024) ");
+	answer = tty_get(_("What keysize do you want? (1024) "));
 	tty_kill_prompt();
 	nbits = *answer? atoi(answer): 1024;
 	m_free(answer);
       #endif
 	if( algo == PUBKEY_ALGO_DSA && (nbits < 512 || nbits > 1024) )
-	    tty_printf("DSA does only allow keysizes from 512 to 1024\n");
+	    tty_printf(_("DSA does only allow keysizes from 512 to 1024\n"));
 	else if( nbits < 768 )
-	    tty_printf("keysize too small; 768 is smallest value allowed.\n");
+	    tty_printf(_("keysize too small; 768 is smallest value allowed.\n"));
 	else if( nbits > 2048 ) {
-	    tty_printf("Keysizes larger than 2048 are not suggested, because "
-		       "computations take REALLY long!\n");
-	    answer = tty_get("Are you sure, that you want this keysize? ");
+	    tty_printf(_("Keysizes larger than 2048 are not suggested, because "
+			 "computations take REALLY long!\n"));
+	    answer = tty_get(_("Are you sure, that you want this keysize? "));
 	    tty_kill_prompt();
 	    if( answer_is_yes(answer) ) {
 		m_free(answer);
-		tty_printf("Okay, but keep in mind that your monitor "
-			   "and keyboard radiation is also very vulnerable "
-			   "to attacks!\n");
+		tty_printf(_("Okay, but keep in mind that your monitor "
+			     "and keyboard radiation is also very vulnerable "
+			     "to attacks!\n"));
 		break;
 	    }
 	    m_free(answer);
@@ -389,24 +374,24 @@ generate_keypair()
 	else
 	    break;
     }
-    tty_printf("Requested keysize is %u bits\n", nbits );
+    tty_printf(_("Requested keysize is %u bits\n"), nbits );
     if( algo == PUBKEY_ALGO_DSA && (nbits % 64) ) {
 	nbits = ((nbits + 63) / 64) * 64;
-	tty_printf("rounded up to %u bits\n", nbits );
+	tty_printf(_("rounded up to %u bits\n"), nbits );
     }
     else if( (nbits % 32) ) {
 	nbits = ((nbits + 31) / 32) * 32;
-	tty_printf("rounded up to %u bits\n", nbits );
+	tty_printf(_("rounded up to %u bits\n"), nbits );
     }
 
   #ifdef TEST_UID
     uid = m_alloc(strlen(TEST_UID)+1);
     strcpy(uid, TEST_UID);
   #else
-    tty_printf( "\n"
+    tty_printf( _("\n"
 "You need a User-ID to identify your key; the software constructs the user id\n"
 "from Real Name, Comment and Email Address in this form:\n"
-"    \"Heinrich Heine (Der Dichter) <heinrichh@uni-duesseldorf.de>\"\n\n" );
+"    \"Heinrich Heine (Der Dichter) <heinrichh@uni-duesseldorf.de>\"\n\n") );
     uid = NULL;
     aname=acomment=amail=NULL;
     for(;;) {
@@ -415,15 +400,15 @@ generate_keypair()
 	if( !aname ) {
 	    for(;;) {
 		m_free(aname);
-		aname = tty_get("Real name: ");
+		aname = tty_get(_("Real name: "));
 		trim_spaces(aname);
 		tty_kill_prompt();
 		if( strpbrk( aname, "<([])>" ) )
-		    tty_printf("Invalid character in name\n");
+		    tty_printf(_("Invalid character in name\n"));
 		else if( isdigit(*aname) )
-		    tty_printf("Name may not start with a digit\n");
+		    tty_printf(_("Name may not start with a digit\n"));
 		else if( strlen(aname) < 5 )
-		    tty_printf("Name must be at least 5 characters long\n");
+		    tty_printf(_("Name must be at least 5 characters long\n"));
 		else
 		    break;
 	    }
@@ -431,7 +416,7 @@ generate_keypair()
 	if( !amail ) {
 	    for(;;) {
 		m_free(amail);
-		amail = tty_get("Email address: ");
+		amail = tty_get(_("Email address: "));
 		trim_spaces(amail);
 		strlwr(amail);
 		tty_kill_prompt();
@@ -443,7 +428,7 @@ generate_keypair()
 			 || amail[strlen(amail)-1] == '@'
 			 || amail[strlen(amail)-1] == '.'
 			 || strstr(amail, "..") )
-		    tty_printf("Not a valid email address\n");
+		    tty_printf(_("Not a valid email address\n"));
 		else
 		    break;
 	    }
@@ -451,13 +436,13 @@ generate_keypair()
 	if( !acomment ) {
 	    for(;;) {
 		m_free(acomment);
-		acomment = tty_get("Comment: ");
+		acomment = tty_get(_("Comment: "));
 		trim_spaces(acomment);
 		tty_kill_prompt();
 		if( !*acomment )
 		    break;   /* no comment is okay */
 		else if( strpbrk( acomment, "()" ) )
-		    tty_printf("Invalid character in comment\n");
+		    tty_printf(_("Invalid character in comment\n"));
 		else
 		    break;
 	    }
@@ -473,15 +458,13 @@ generate_keypair()
 
 	/* append a warning if we do not have dev/random
 	 * or it is switched into  quick testmode */
-      #ifdef HAVE_DEV_RANDOM
 	if( quick_random_gen(-1) )
-      #endif
 	    strcpy(p, " (INSECURE!)" );
 
 
-	tty_printf("You selected this USER-ID:\n    \"%s\"\n\n", uid);
+	tty_printf(_("You selected this USER-ID:\n    \"%s\"\n\n"), uid);
 	for(;;) {
-	    answer = tty_get("Edit (N)ame, (C)omment, (E)mail or (O)kay? ");
+	    answer = tty_get(_("Edit (N)ame, (C)omment, (E)mail or (O)kay? "));
 	    tty_kill_prompt();
 	    if( strlen(answer) > 1 )
 		;
@@ -513,7 +496,7 @@ generate_keypair()
   #endif
 
 
-    tty_printf( "You need a Passphrase to protect your secret key.\n\n" );
+    tty_printf(_("You need a Passphrase to protect your secret key.\n\n") );
 
     dek = m_alloc_secure( sizeof *dek );
     for(;;) {
@@ -521,14 +504,14 @@ generate_keypair()
 	rc = make_dek_from_passphrase( dek , 2 );
 	if( rc == -1 ) {
 	    m_free(dek); dek = NULL;
-	    tty_printf(
+	    tty_printf(_(
 	    "You don't what a passphrase - this is probably a *bad* idea!\n"
 	    "I will do it anyway.  You can change your passphrase at anytime,\n"
-	    "using this program with the option \"--change-passphrase\"\n\n" );
+	    "using this program with the option \"--change-passphrase\"\n\n"));
 	    break;
 	}
 	else if( rc == G10ERR_PASSPHRASE ) {
-	    tty_printf("passphrase not correctly repeated; try again.\n");
+	    tty_printf(_("passphrase not correctly repeated; try again.\n"));
 	}
 	else if( rc ) {
 	    m_free(dek); dek = NULL;
@@ -545,8 +528,8 @@ generate_keypair()
     pub_fname = make_filename("~/.g10", "pubring.g10", NULL );
     sec_fname = make_filename("~/.g10", "secring.g10", NULL );
     if( opt.verbose ) {
-	tty_printf("writing public certificate to '%s'\n", pub_fname );
-	tty_printf("writing secret certificate to '%s'\n", sec_fname );
+	tty_printf(_("writing public certificate to '%s'\n"), pub_fname );
+	tty_printf(_("writing secret certificate to '%s'\n"), sec_fname );
     }
 
     /* we create the packets as a tree of kbnodes. Because the structure
@@ -557,17 +540,17 @@ generate_keypair()
     pub_root = make_comment_node("#created by G10 pre-release " VERSION );
     sec_root = make_comment_node("#created by G10 pre-release " VERSION );
 
-    tty_printf(
+    tty_printf(_(
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (work in another window, move the mouse, utilize the\n"
 "network and the disks) during the prime generation; this gives the random\n"
-"number generator a better chance to gain enough entropy.\n" );
+"number generator a better chance to gain enough entropy.\n") );
 
     if( algo == PUBKEY_ALGO_ELGAMAL )
 	rc = gen_elg(nbits, pub_root, sec_root, dek, &skc );
   #ifdef ENABLE_RSA_KEYGEN
     else if( algo == PUBKEY_ALGO_RSA )
-	rc = gen_rsa(nbits, pub_io, sec_io, dek, &skc );
+	rc = gen_rsa(nbits, pub_root, sec_root, dek, &skc );
   #endif
     else if( algo == PUBKEY_ALGO_DSA )
 	rc = gen_dsa(nbits, pub_root, sec_root, dek, &skc );
@@ -625,7 +608,7 @@ generate_keypair()
 	else if( (rc=insert_keyblock( &sec_kbpos, sec_root )) )
 	    log_error("can't write secret key: %s\n", g10_errstr(rc) );
 	else {
-	    tty_printf("public and secret key created and signed.\n" );
+	    tty_printf(_("public and secret key created and signed.\n") );
 	}
 
 	if( !rc1 )
@@ -636,7 +619,7 @@ generate_keypair()
 
 
     if( rc )
-	tty_printf("Key generation failed: %s\n", g10_errstr(rc) );
+	tty_printf(_("Key generation failed: %s\n"), g10_errstr(rc) );
     release_kbnode( pub_root );
     release_kbnode( sec_root );
     if( skc ) /* the unprotected  secret certificate */

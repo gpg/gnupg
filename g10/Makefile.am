@@ -46,8 +46,8 @@ g10_SOURCES = g10.c		\
 	      sig-check.c
 
 
-LDADD = -L ../cipher -L ../mpi -L ../util -L ../intl \
-	-lcipher -lmpi -lutil -lintl
+LDADD = -L ../cipher -L ../mpi -L ../util \
+	-lcipher -lmpi -lutil
 
 
 $(PROGRAMS): ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a

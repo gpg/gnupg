@@ -32,6 +32,13 @@ typedef struct {
 } encrypt_filter_context_t;
 
 
+/*-- g10.c --*/
+#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
+  void g10_exit(int rc) __attribute__ ((noreturn));
+#else
+  void g10_exit(int rc);
+#endif
+
 /*-- encode.c --*/
 int encode_symmetric( const char *filename );
 int encode_store( const char *filename );
@@ -71,11 +78,13 @@ KBNODE make_comment_node( const char *s );
 
 /*-- elg.c --*/
 void g10_elg_encrypt( PKT_public_cert *pkc, PKT_pubkey_enc *enc, DEK *dek );
-void g10_elg_sign( PKT_secret_cert *skc, PKT_signature *sig, MD_HANDLE md );
+void g10_elg_sign( PKT_secret_cert *skc, PKT_signature *sig,
+					 MD_HANDLE md, int digest_algo );
 
 /*-- rsa.c --*/
 void g10_rsa_encrypt( PKT_public_cert *pkc, PKT_pubkey_enc *enc, DEK *dek );
-void g10_rsa_sign( PKT_secret_cert *skc, PKT_signature *sig, MD_HANDLE md );
+void g10_rsa_sign( PKT_secret_cert *skc, PKT_signature *sig,
+					 MD_HANDLE md, int digest_algo );
 
 /*-- import.c --*/
 int import_pubkeys( const char *filename );

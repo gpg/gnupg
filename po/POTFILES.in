@@ -4,11 +4,12 @@
 # utility
 
 # cipher
+cipher/random.c
 
 
 # main program
 
 g10/g10.c
 g10/pkclist.c
-
+g10/keygen.c
 

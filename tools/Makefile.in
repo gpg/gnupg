@@ -40,14 +40,17 @@ transform = @program_transform_name@
 
 INCLUDES = -I$(top_srcdir)/include
 
-bin_PROGRAMS = mpicalc
+noinst_PROGRAMS = mpicalc bftest
 
 mpicalc_SOURCES = mpicalc.c
 
-LDADD = -L ../cipher -L ../mpi -L ../util  -lmpi -lutil
+bftest_SOURCES = bftest.c
+
+LDADD = -L ../cipher -L ../mpi -L ../util -L ../cipher	\
+	-lmpi -lutil -lmpi -lutil -lcipher
 mkinstalldirs = $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
-PROGRAMS = $(bin_PROGRAMS)
+PROGRAMS = $(noinst_PROGRAMS)
 
 
 CC = @CC@
@@ -65,6 +68,9 @@ LINK = $(CC) $(LDFLAGS) -o $@
 mpicalc_OBJECTS = mpicalc.o
 EXTRA_mpicalc_SOURCES =
 mpicalc_LDADD = $(LDADD)
+bftest_OBJECTS = bftest.o
+EXTRA_bftest_SOURCES =
+bftest_LDADD = $(LDADD)
 DIST_COMMON = Makefile.am Makefile.in
 
 
@@ -77,9 +83,9 @@ DEP_DISTFILES = $(DIST_COMMON) $(SOURCES) $(BUILT_SOURCES) $(HEADERS) \
 	$(TEXINFOS) $(INFO_DEPS) $(MANS) $(EXTRA_DIST) $(DATA)
 
 TAR = tar
-DEP_FILES = $(srcdir)/.deps/mpicalc.P
-SOURCES = $(mpicalc_SOURCES)
-OBJECTS = $(mpicalc_OBJECTS)
+DEP_FILES = $(srcdir)/.deps/bftest.P $(srcdir)/.deps/mpicalc.P
+SOURCES = $(mpicalc_SOURCES) $(bftest_SOURCES)
+OBJECTS = $(mpicalc_OBJECTS) $(bftest_OBJECTS)
 
 default: all
 
@@ -90,27 +96,14 @@ $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in
 Makefile: $(top_builddir)/config.status Makefile.in
 	cd $(top_builddir) && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= ./config.status
 
-mostlyclean-binPROGRAMS:
+mostlyclean-noinstPROGRAMS:
 
-clean-binPROGRAMS:
-	rm -f $(bin_PROGRAMS)
+clean-noinstPROGRAMS:
+	rm -f $(noinst_PROGRAMS)
 
-distclean-binPROGRAMS:
+distclean-noinstPROGRAMS:
 
-maintainer-clean-binPROGRAMS:
-
-install-binPROGRAMS: $(bin_PROGRAMS)
-	$(mkinstalldirs) $(bindir)
-	list="$(bin_PROGRAMS)"; for p in $$list; do \
-	  if test -f $$p; then \
-	    $(INSTALL_PROGRAM) $$p $(bindir)/`echo $$p|sed '$(transform)'`; \
-	  else :; fi; \
-	done
-
-uninstall-binPROGRAMS:
-	list="$(bin_PROGRAMS)"; for p in $$list; do \
-	  rm -f $(bindir)/`echo $$p|sed '$(transform)'`; \
-	done
+maintainer-clean-noinstPROGRAMS:
 
 .c.o:
 	$(COMPILE) $<
@@ -128,6 +121,10 @@ $(mpicalc_OBJECTS): ../config.h
 
 mpicalc: $(mpicalc_OBJECTS) $(mpicalc_DEPENDENCIES)
 	$(LINK) $(mpicalc_OBJECTS) $(mpicalc_LDADD) $(LIBS)
+$(bftest_OBJECTS): ../config.h
+
+bftest: $(bftest_OBJECTS) $(bftest_DEPENDENCIES)
+	$(LINK) $(bftest_OBJECTS) $(bftest_LDADD) $(LIBS)
 
 ID: $(HEADERS) $(SOURCES)
 	here=`pwd` && cd $(srcdir) && mkid -f$$here/ID $(SOURCES) $(HEADERS)
@@ -189,21 +186,20 @@ check: all
 
 installcheck:
 
-install-exec: install-binPROGRAMS
+install-exec: 
 
 install-data: 
 
 install: install-exec install-data all
 	@:
 
-uninstall: uninstall-binPROGRAMS
+uninstall: 
 
 all: $(PROGRAMS) Makefile
 
 install-strip:
 	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
 installdirs:
-	$(mkinstalldirs)  $(bindir)
 
 
 mostlyclean-generic:
@@ -219,25 +215,25 @@ distclean-generic:
 maintainer-clean-generic:
 	test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 	test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
-mostlyclean:  mostlyclean-binPROGRAMS mostlyclean-compile \
+mostlyclean:  mostlyclean-noinstPROGRAMS mostlyclean-compile \
 		mostlyclean-tags mostlyclean-generic
 
-clean:  clean-binPROGRAMS clean-compile clean-tags clean-generic \
+clean:  clean-noinstPROGRAMS clean-compile clean-tags clean-generic \
 		mostlyclean 
 
-distclean:  distclean-binPROGRAMS distclean-compile distclean-tags \
+distclean:  distclean-noinstPROGRAMS distclean-compile distclean-tags \
 		distclean-generic clean 
 	rm -f config.status
 
-maintainer-clean:  maintainer-clean-binPROGRAMS maintainer-clean-compile \
-		maintainer-clean-tags maintainer-clean-generic \
-		distclean 
+maintainer-clean:  maintainer-clean-noinstPROGRAMS \
+		maintainer-clean-compile maintainer-clean-tags \
+		maintainer-clean-generic distclean 
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
-.PHONY: default mostlyclean-binPROGRAMS distclean-binPROGRAMS \
-clean-binPROGRAMS maintainer-clean-binPROGRAMS uninstall-binPROGRAMS \
-install-binPROGRAMS mostlyclean-compile distclean-compile clean-compile \
+.PHONY: default mostlyclean-noinstPROGRAMS distclean-noinstPROGRAMS \
+clean-noinstPROGRAMS maintainer-clean-noinstPROGRAMS \
+mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile tags mostlyclean-tags distclean-tags \
 clean-tags maintainer-clean-tags distdir info dvi check installcheck \
 install-exec install-data install uninstall all installdirs \
@@ -245,7 +241,7 @@ mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
-$(PROGRAMS): ../mpi/libmpi.a
+$(PROGRAMS): ../mpi/libmpi.a ../cipher/libcipher.a
 .SUFFIXES:
 .SUFFIXES: .c .o
 

@@ -124,6 +124,12 @@
 /* Define if you have the getpagesize function.  */
 #undef HAVE_GETPAGESIZE
 
+/* Define if you have the mlock function.  */
+#undef HAVE_MLOCK
+
+/* Define if you have the mmap function.  */
+#undef HAVE_MMAP
+
 /* Define if you have the munmap function.  */
 #undef HAVE_MUNMAP
 

@@ -2,3 +2,4 @@ config.guess
 config.sub
 install-sh
 mkinstalldirs
+mkdiff

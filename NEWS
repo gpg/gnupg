@@ -1,4 +1,12 @@
 
+    * We have secure memeory on systems which support mlock().
+      It is not complete yet, because we do not have signal handler
+      which does a cleanup in very case.
+      We should also check the ulimit for the user in the case
+      that the admin does not have set a limit on locked pages.
+
+    * started with internationalization support.
+
     * The logic to handle the web of trust is now implemented. It is
       has some bugs; but I'm going to change the algorithm anyway.
       It works by calculating the trustlevel on the fly.  It may ask
@@ -14,12 +22,10 @@
 
     * Read support for new version packets (OpenPGP).
 
-    * Comment packets are now of coorect OpenPGP type 16. Old comment
-      packets writen by G10 are detected because they always start with
+    * Comment packets are now of correct OpenPGP type 16. Old comment
+      packets written by G10 are detected because they always start with
       a hash which is an invalid version byte.
 
     * The string "(INSECURE!)" is appended to a new user-id if this
       is generated on a system without a good random number generator.
-
-    * works (more or less) on a UltraPenguin (sparc64--gnu-linux)
 

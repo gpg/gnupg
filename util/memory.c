@@ -314,9 +314,10 @@ membug( const char *fmt, ... )
 
 
 static void
-out_of_core(size_t n)
+out_of_core(size_t n, int secure)
 {
-    log_fatal("out of memory while allocating %u bytes\n", (unsigned)n );
+    log_fatal("out of %s memory while allocating %u bytes\n",
+			secure? "secure":"" ,(unsigned)n );
 }
 
 /****************
@@ -329,7 +330,7 @@ FNAME(alloc)( size_t n FNAMEPRT )
     char *p;
 
     if( !(p = malloc( n + 5 )) )
-	out_of_core(n);
+	out_of_core(n,0);
     store_len(p,n,0);
     p[4+n] = MAGIC_END_BYTE; /* need to add the length somewhere */
     return p+4;
@@ -344,8 +345,8 @@ FNAME(alloc_secure)( size_t n FNAMEPRT )
 {
     char *p;
 
-    if( !(p = malloc( n + 5 )) ) /* fixme: should alloc from the secure heap*/
-	out_of_core(n);
+    if( !(p = secmem_malloc( n + 5 )) )
+	out_of_core(n,1);
     store_len(p,n,1);
     p[4+n] = MAGIC_END_BYTE;
     return p+4;
@@ -408,7 +409,10 @@ FNAME(free)( void *a FNAMEPRT )
     free_entry(p-4, info);
   #else
     m_check(p);
-    free(p-4);
+    if( m_is_secure(a) )
+	secmem_free(p-4);
+    else
+	free(p-4);
   #endif
 }
 

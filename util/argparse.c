@@ -545,7 +545,7 @@ show_help( ARGPARSE_OPTS *opts, unsigned flags )
 	indent += 10;
 	puts("Options:");
 	for(i=0; opts[i].short_opt; i++ ) {
-	    s = _(opts[i].description);
+	    s = _( opts[i].description );
 	    if( s && *s== '\r' ) /* hide this line */
 		continue;
 	    if( opts[i].short_opt < 256 )

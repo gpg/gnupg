@@ -22,9 +22,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef __MINGW32__
+  #include <io.h>
+  #include <fcntl.h>
+#endif
 
 #include "util.h"
-#include "blowfish.h"
+#include "cipher.h"
 
 static void
 my_usage(void)
@@ -47,6 +51,11 @@ main(int argc, char **argv)
     char buf[100];
     char iv[BLOWFISH_BLOCKSIZE];
     int n, size=8;
+
+  #ifdef __MINGW32__
+    setmode( fileno(stdin), O_BINARY );
+    setmode( fileno(stdout), O_BINARY );
+  #endif
 
     if( argc > 1 && !strcmp(argv[1], "-e") ) {
 	encode++;
