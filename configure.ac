@@ -732,7 +732,7 @@ AC_CHECK_FUNCS(strerror stpcpy strsep strlwr tcgetattr strtoul mmap)
 AC_CHECK_FUNCS(strcasecmp strncasecmp ctermid times)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(atexit raise getpagesize strftime nl_langinfo setlocale)
-AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe stat)
+AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe stat getaddrinfo)
 AC_REPLACE_FUNCS(mkdtemp)
 AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
 
@@ -891,8 +891,6 @@ for rndmod in $random_modules "" ; do
     rndegd)
          AC_DEFINE(USE_RNDEGD,1, 
                   [Defined if the EGD based RNG should be used.])
-         EGDLIBS=$NETLIBS
-         AC_SUBST(EGDLIBS)
          ;;
     rndw32)
          AC_DEFINE(USE_RNDW32,1, 

@@ -1,3 +1,9 @@
+2003-08-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Check for getaddrinfo.  Don't bother to check for
+	EGD libs since we need to have the netlibs regardless because of
+	the agent socket.
+
 2003-07-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: configure.ac: Check for sigset_t and struct
