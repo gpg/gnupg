@@ -1,3 +1,8 @@
+2003-09-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (show_key_with_all_names): Fix assertion failure when
+	using toggle to see a secret key.  Reported by Maxim Britov.
+
 2003-08-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (add_keyserver_url), keyedit.c (keyedit_menu), sign.c
