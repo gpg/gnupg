@@ -1,3 +1,9 @@
+2003-12-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.c (send_request, http_open_document, http_open): Pass the
+	http proxy from outside rather than pulling it from the
+	evironment.
+
 2003-12-28  Stefan Bellon  <sbellon@sbellon.de>
 
 	* riscos.c [__riscos__]: Better filetype handling (use a

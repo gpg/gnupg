@@ -45,14 +45,6 @@
 #include "http.h"
 #include "srv.h"
 
-#ifdef __riscos__
-#define HTTP_PROXY_ENV           "GnuPG$HttpProxy"
-#define HTTP_PROXY_ENV_PRINTABLE "<GnuPG$HttpProxy>"
-#else
-#define HTTP_PROXY_ENV           "http_proxy"
-#define HTTP_PROXY_ENV_PRINTABLE "$http_proxy"
-#endif
-
 #ifdef _WIN32
 #define sock_close(a)  closesocket(a)
 #else
@@ -76,7 +68,7 @@ static int remove_escapes( byte *string );
 static int insert_escapes( byte *buffer, const byte *string,
 					 const byte *special );
 static URI_TUPLE parse_tuple( byte *string );
-static int send_request( HTTP_HD hd );
+static int send_request( HTTP_HD hd, const char *proxy );
 static byte *build_rel_path( PARSED_URI uri );
 static int parse_response( HTTP_HD hd );
 
@@ -118,7 +110,7 @@ init_sockets (void)
 
 int
 http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
-					      unsigned int flags )
+	   unsigned int flags, const char *proxy )
 {
     int rc;
 
@@ -134,7 +126,7 @@ http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
 
     rc = parse_uri( &hd->uri, url );
     if( !rc ) {
-	rc = send_request( hd );
+	rc = send_request( hd, proxy );
 	if( !rc ) {
 	    hd->fp_write = iobuf_sockopen( hd->sock , "w" );
 	    if( hd->fp_write )
@@ -197,11 +189,12 @@ http_wait_response( HTTP_HD hd, unsigned int *ret_status )
 
 
 int
-http_open_document( HTTP_HD hd, const char *document, unsigned int flags )
+http_open_document( HTTP_HD hd, const char *document,
+		    unsigned int flags, const char *proxy )
 {
     int rc;
 
-    rc = http_open( hd, HTTP_REQ_GET, document, flags );
+    rc = http_open( hd, HTTP_REQ_GET, document, flags, proxy );
     if( rc )
 	return rc;
 
@@ -211,8 +204,6 @@ http_open_document( HTTP_HD hd, const char *document, unsigned int flags )
 
     return rc;
 }
-
-
 
 
 void
@@ -430,9 +421,6 @@ insert_escapes( byte *buffer, const byte *string, const byte *special )
 }
 
 
-
-
-
 static URI_TUPLE
 parse_tuple( byte *string )
 {
@@ -471,32 +459,31 @@ parse_tuple( byte *string )
  * Returns 0 if the request was successful
  */
 static int
-send_request( HTTP_HD hd )
+send_request( HTTP_HD hd, const char *proxy )
 {
     const byte *server;
     byte *request, *p;
     ushort port;
     int rc;
-    const char *http_proxy = NULL;
 
     server = *hd->uri->host? hd->uri->host : "localhost";
     port   = hd->uri->port?  hd->uri->port : 80;
 
-    if( (hd->flags & HTTP_FLAG_TRY_PROXY)
-	&& (http_proxy = getenv( HTTP_PROXY_ENV )) ) {
+    if(proxy)
+      {
 	PARSED_URI uri;
 
-	rc = parse_uri( &uri, http_proxy );
-	if (rc) {
-	    log_error("invalid " HTTP_PROXY_ENV_PRINTABLE ": %s\n",
-                      g10_errstr(rc));
+	rc = parse_uri( &uri, proxy );
+	if (rc)
+	  {
+	    log_error("invalid HTTP proxy (%s): %s\n",proxy,g10_errstr(rc));
 	    release_parsed_uri( uri );
 	    return G10ERR_NETWORK;
-	}
+	  }
 	hd->sock = connect_server( *uri->host? uri->host : "localhost",
 				   uri->port? uri->port : 80, 0 );
 	release_parsed_uri( uri );
-    }
+      }
     else
       hd->sock = connect_server( server, port, hd->flags );
 
@@ -505,7 +492,7 @@ send_request( HTTP_HD hd )
 
     p = build_rel_path( hd->uri );
     request = m_alloc( strlen(server)*2 + strlen(p) + 50 );
-    if( http_proxy ) {
+    if( proxy ) {
 	sprintf( request, "%s http://%s:%hu%s%s HTTP/1.0\r\n",
 			  hd->req_type == HTTP_REQ_GET ? "GET" :
 			  hd->req_type == HTTP_REQ_HEAD? "HEAD":
