@@ -94,8 +94,6 @@ typedef struct ssh_key_type_spec
 
 
 
-static uint32_t lifetime_default;
-
 /* General utility functions.  */
 
 static void *
@@ -1725,7 +1723,8 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
 }
 
 static gpg_error_t
-get_passphrase (const char *description, size_t passphrase_n, char *passphrase)
+get_passphrase (ctrl_t ctrl,
+		const char *description, size_t passphrase_n, char *passphrase)
 {
   struct pin_entry_info_s *pi;
   gpg_error_t err;
@@ -1747,7 +1746,7 @@ get_passphrase (const char *description, size_t passphrase_n, char *passphrase)
   pi->cb_errtext = NULL;
   pi->max_length = 100;
 
-  err = agent_askpin (NULL, description, NULL, pi);
+  err = agent_askpin (ctrl, description, NULL, pi);
   if (err)
     goto out;
 
@@ -1851,7 +1850,7 @@ ssh_key_to_buffer (gcry_sexp_t key, const char *passphrase,
 }
 
 static gpg_error_t
-ssh_identity_register (gcry_sexp_t key, int ttl)
+ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
 {
   unsigned char key_grip_raw[21];
   unsigned char *buffer;
@@ -1862,11 +1861,11 @@ ssh_identity_register (gcry_sexp_t key, int ttl)
   char key_grip[41];
   char *comment;
   gpg_error_t err;
-  
+  unsigned int i;
   int ret;
 
   if (DBG_COMMAND)
-    log_debug ("[ssh-agent] registering identity `%s'\n", key_grip);
+    log_debug ("[ssh-agent] registering identity\n");
 
   description = NULL;
   comment = NULL;
@@ -1898,7 +1897,7 @@ ssh_identity_register (gcry_sexp_t key, int ttl)
 	     "for protecting the received secret key `%s':",
 	     comment ? comment : "");
 
-  err = get_passphrase (description, sizeof (passphrase), passphrase);
+  err = get_passphrase (ctrl, description, sizeof (passphrase), passphrase);
   if (err)
     goto out;
 
@@ -1910,7 +1909,10 @@ ssh_identity_register (gcry_sexp_t key, int ttl)
   if (err)
     goto out;
 
-  err = agent_put_cache (key_grip_raw, passphrase, ttl);
+  for (i = 0; i < 20; i++)
+    sprintf (key_grip + 2 * i, "%02X", key_grip_raw[i]);
+
+  err = agent_put_cache (key_grip, passphrase, ttl);
   if (err)
     goto out;
 
@@ -1954,15 +1956,15 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
   gcry_sexp_t key;
   byte_t b;
   int confirm;
-  int death;
+  int ttl;
   int bad;
   
   if (DBG_COMMAND)
     log_debug ("[ssh-agent] add identity\n");
 
   confirm = 0;
-  death = 0;
   key = NULL;
+  ttl = 0;
   bad = 0;
 
   /* FIXME?  */
@@ -1990,7 +1992,7 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
 
 	    err = es_read_uint32 (request, &n);
 	    if (! err)
-	      death = time (NULL) + n;
+	      ttl = n;
 	    break;
 	  }
 
@@ -2008,12 +2010,9 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
   if (err)
     goto out;
 
-  if (lifetime_default && (! death))
-    death = time (NULL) + lifetime_default;
-
   /* FIXME: are constraints used correctly?  */
 
-  err = ssh_identity_register (key, death);
+  err = ssh_identity_register (ctrl, key, ttl);
 
  out:
 
@@ -2217,6 +2216,7 @@ start_command_handler_ssh (int sock_client)
     log_debug ("[ssh-agent] Starting command handler\n");
 
   memset (&ctrl, 0, sizeof (ctrl));
+  agent_init_default_ctrl (&ctrl);
   ctrl.connection_fd = sock_client;
 
   stream_response = NULL;
@@ -2324,4 +2324,10 @@ start_command_handler_ssh (int sock_client)
 
   if (DBG_COMMAND)
     log_debug ("[ssh-agent] Leaving ssh command handler: %s\n", gpg_strerror (err));
+
+  free (ctrl.display);
+  free (ctrl.ttyname);
+  free (ctrl.ttytype);
+  free (ctrl.lc_ctype);
+  free (ctrl.lc_messages);
 }
