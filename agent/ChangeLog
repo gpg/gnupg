@@ -1,9 +1,9 @@
 2004-12-19  Werner Koch  <wk@g10code.com>
 
-	* query.c (initialize_module_query): 
-
+	* query.c (initialize_module_query): New.
 	* call-scd.c (initialize_module_call_scd): New.
-
+	* gpg-agent.c (main): Call them.
+	
 2004-12-18  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (main):  Remove special Pth initialize.
