@@ -364,9 +364,8 @@ parse_dn (const unsigned char *string)
 }
 
 
-static int
-print_dn_part (FILE *fp, struct dn_array_s *dn, const char *key,
-               int need_delim)
+static void
+print_dn_part (FILE *fp, struct dn_array_s *dn, const char *key)
 {
   int any = 0;
 
@@ -374,11 +373,7 @@ print_dn_part (FILE *fp, struct dn_array_s *dn, const char *key,
     {
       if (!strcmp (dn->key, key) && dn->value && *dn->value)
         {
-          if (need_delim)
-            {
-              putc ('/', fp);
-              need_delim = 0;
-            }
+          putc ('/', fp);
           if (any)
             fputs (" + ", fp);
           else
@@ -387,7 +382,6 @@ print_dn_part (FILE *fp, struct dn_array_s *dn, const char *key,
           any = 1;
         }
     }
-  return any;
 }
 
 /* Print all parts of a DN in a "standard" sequence.  We first print
@@ -398,13 +392,10 @@ print_dn_parts (FILE *fp, struct dn_array_s *dn)
   const char *stdpart[] = {
     "CN", "OU", "O", "STREET", "L", "ST", "C", "EMail", NULL 
   };
-  int any=0, i;
+  int i;
   
   for (i=0; stdpart[i]; i++)
-    {
-      if (print_dn_part (fp, dn, stdpart[i], any))
-        any = 1;
-    }
+    print_dn_part (fp, dn, stdpart[i]);
 
   /* now print the rest without any specific ordering */
   for (; dn->key; dn++)
@@ -415,10 +406,7 @@ print_dn_parts (FILE *fp, struct dn_array_s *dn)
             break;
         }
       if (!stdpart[i])
-        {
-          if (print_dn_part (fp, dn, dn->key, any))
-            any = 1;
-        }
+        print_dn_part (fp, dn, dn->key);
     }
 }
 

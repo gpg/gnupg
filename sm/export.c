@@ -136,7 +136,7 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
           if (count)
             putc ('\n', fp);
           print_short_info (cert, fp);
-          putc ('\n', stdout);
+          putc ('\n', fp);
         }
       count++;
 
@@ -202,20 +202,14 @@ print_short_info (KsbaCert cert, FILE *fp)
   KsbaSexp sexp;
   int idx;
 
-  fputs ("Issuer ...: ", fp); 
-  p = ksba_cert_get_issuer (cert, 0);
-  if (p)
+  for (idx=0; (p = ksba_cert_get_issuer (cert, idx)); idx++)
     {
-      print_sanitized_string (fp, p, '\n');
+      fputs (!idx?   "Issuer ...: "
+                 : "\n   aka ...: ", fp); 
+      gpgsm_print_name (fp, p);
       xfree (p);
-      for (idx=1; (p = ksba_cert_get_issuer (cert, idx)); idx++)
-        {
-          fputs ("\n   aka ...: ", fp); 
-          print_sanitized_string (fp, p, '\n');
-          xfree (p);
-        }
     }
-  putc ('\n', stdout);
+  putc ('\n', fp);
 
   fputs ("Serial ...: ", fp); 
   sexp = ksba_cert_get_serial (cert);
@@ -235,24 +229,20 @@ print_short_info (KsbaCert cert, FILE *fp)
         }
       xfree (sexp);
     }
-  putc ('\n', stdout);
+  putc ('\n', fp);
 
-  fputs ("Subject ..: ", fp); 
-  p = ksba_cert_get_subject (cert, 0);
-  if (p)
+  for (idx=0; (p = ksba_cert_get_subject (cert, idx)); idx++)
     {
-      print_sanitized_string (fp, p, '\n');
+      fputs (!idx?   "Subject ..: "
+                 : "\n    aka ..: ", fp); 
+      gpgsm_print_name (fp, p);
       xfree (p);
-      for (idx=1; (p = ksba_cert_get_subject (cert, idx)); idx++)
-        {
-          fputs ("\n    aka ..: ", fp); 
-          print_sanitized_string (fp, p, '\n');
-          xfree (p);
-        }
     }
-  else
-    fputs ("none", fp);
-  putc ('\n', stdout);
+  putc ('\n', fp);
 }
+
+
+
+
 
 

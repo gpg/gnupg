@@ -443,12 +443,13 @@ static int
 cmd_export (ASSUAN_CONTEXT ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
-  FILE *fp = assuan_get_data_fp (ctx);
+  int fd = assuan_get_output_fd (ctx);
+  FILE *out_fp;
   char *p;
   STRLIST list, sl;
 
-  if (!fp)
-    return set_error (General_Error, "no data stream");
+  if (fd == -1)
+    return set_error (No_Output, NULL);
   
   /* break the line down into an STRLIST */
   list = NULL;
@@ -473,8 +474,20 @@ cmd_export (ASSUAN_CONTEXT ctx, char *line)
         }
     }
 
-  gpgsm_export (ctrl, list, fp);
+  out_fp = fdopen ( dup(fd), "w");
+  if (!out_fp)
+    {
+      free_strlist (list);
+      return set_error (General_Error, "fdopen() failed");
+    }
+
+  gpgsm_export (ctrl, list, out_fp);
+  fclose (out_fp);
   free_strlist (list);
+  /* close and reset the fd */
+  close_message_fd (ctrl);
+  assuan_close_input_fd (ctx);
+  assuan_close_output_fd (ctx);
   return 0;
 }
 

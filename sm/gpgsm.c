@@ -214,7 +214,6 @@ static ARGPARSE_OPTS opts[] = {
     { aVerify, "verify"   , 256, N_("verify a signature")},
     { aVerifyFiles, "verify-files" , 256, "@" },
     { aListKeys, "list-keys", 256, N_("list keys")},
-    { aListKeys, "list-keys", 256, N_("list keys")},
     { aListExternalKeys, "list-external-keys", 256, N_("list external keys")},
     { aListSecretKeys, "list-secret-keys", 256, N_("list secret keys")},
     { aListSigs,   "list-sigs", 256, N_("list certificate chain")}, 
