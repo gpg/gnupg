@@ -1,3 +1,9 @@
+2004-10-15  Werner Koch  <wk@g10code.com>
+
+	* POTFILES.in: Updated.
+
+	* sv.po: Updated.
+
 2004-10-12  Werner Koch  <wk@g10code.com>
 
 	* es.po: s/intgridad/integridad/. This is bug 275.

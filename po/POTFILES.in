@@ -1,58 +1,60 @@
-# List of source files containing translatable strings for G10.
-# Copyright (c) 1998, 2003 Free Software Foundation, Inc.
+# List of source files containing translatable strings for GnuPG
+# Copyright (c) 1998, 2003, 2004 Free Software Foundation, Inc.
 
-# utility
-util/secmem.c
-util/argparse.c
-util/miscutil.c
-util/errors.c
-util/logger.c
-
-# cipher
-cipher/random.c
-cipher/rndlinux.c
+cipher/cast5.c
 cipher/md.c
-cipher/rndegd.c
 cipher/primegen.c
+cipher/random.c
+cipher/rndegd.c
+cipher/rndlinux.c
 
-# main program
-g10/g10.c
-g10/gpgv.c
+g10/app-openpgp.c
 g10/armor.c
-g10/pkclist.c
-g10/keygen.c
+g10/card-util.c
+g10/cardglue.c
+g10/dearmor.c
 g10/decrypt.c
+g10/delkey.c
 g10/encode.c
+g10/encr-data.c
+g10/exec.c
 g10/export.c
+g10/g10.c
 g10/getkey.c
+g10/gpgv.c
+g10/helptext.c
 g10/import.c
+g10/keydb.c
 g10/keyedit.c
+g10/keygen.c
+g10/keyid.c
 g10/keylist.c
+g10/keyring.c
+g10/keyserver.c
 g10/mainproc.c
 g10/misc.c
+g10/openfile.c
 g10/parse-packet.c
 g10/passphrase.c
+g10/photoid.c
+g10/pkclist.c
 g10/plaintext.c
 g10/pubkey-enc.c
+g10/revoke.c
 g10/seckey-cert.c
+g10/seskey.c
 g10/sig-check.c
 g10/sign.c
-g10/textfilter.c
+g10/skclist.c
+g10/tdbdump.c
 g10/tdbio.c
+g10/textfilter.c
 g10/trustdb.c
 g10/verify.c
-g10/skclist.c
-g10/status.c
-g10/openfile.c
-g10/encr-data.c
-g10/seskey.c
-g10/delkey.c
-g10/helptext.c
-g10/keydb.c
-g10/keyring.c
-g10/photoid.c 
-g10/exec.c
-g10/keyid.c
-g10/revoke.c
-g10/tdbdump.c
-g10/dearmor.c
+
+util/argparse.c
+util/errors.c
+util/logger.c
+util/miscutil.c
+util/secmem.c
+
