@@ -23,25 +23,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h> 
 #include <time.h>
 #include <assert.h>
-#include <signal.h>
-#include <fcntl.h>
-#include <sys/wait.h>
 
 #include "gpgsm.h"
 #include <gcrypt.h>
 #include <ksba.h>
 
 #include "keydb.h"
+#include "exechelp.h"
 #include "i18n.h"
 
-#ifdef _POSIX_OPEN_MAX
-#define MAX_OPEN_FDS _POSIX_OPEN_MAX
-#else
-#define MAX_OPEN_FDS 20
-#endif
 
 
 /* A table to store a fingerprint as used in a duplicates table.  We
@@ -522,92 +514,23 @@ popen_protect_tool (const char *pgmname,
                     const char *prompt, const char *keygrip,
                     pid_t *pid)
 {
-  gpg_error_t err;
-  int fd, fdout, rp[2];
-  int n, i;
+  const char *argv[20];
+  int i=0;
 
-  fflush (infile);
-  rewind (infile);
-  fd = fileno (infile);
-  fdout = fileno (outfile);
-  if (fd == -1 || fdout == -1)
-    log_fatal ("no file descriptor for temporary file: %s\n",
-               strerror (errno));
+  argv[i++] = "--homedir";
+  argv[i++] = opt.homedir;
+  argv[i++] = "--p12-export";
+  argv[i++] = "--prompt";
+  argv[i++] = prompt?prompt:"";
+  argv[i++] = "--enable-status-msg";
+  argv[i++] = "--",
+  argv[i++] = keygrip,
+  argv[i] = NULL;
+  assert (i < sizeof argv);
 
-  /* Now start the protect-tool. */
-  if (pipe (rp) == -1)
-    {
-      err = gpg_error_from_errno (errno);
-      log_error (_("error creating a pipe: %s\n"), strerror (errno));
-      return err;
-    }
-      
-  *pid = fork ();
-  if (*pid == -1)
-    {
-      err = gpg_error_from_errno (errno);
-      log_error (_("error forking process: %s\n"), strerror (errno));
-      close (rp[0]);
-      close (rp[1]);
-      return err;
-    }
-
-  if (!*pid)
-    { /* Child. */
-      const char *arg0;
-
-      arg0 = strrchr (pgmname, '/');
-      if (arg0)
-        arg0++;
-      else
-        arg0 = pgmname;
-
-      /* Connect the infile to stdin. */
-      if (fd != 0 && dup2 (fd, 0) == -1)
-        log_fatal ("dup2 stdin failed: %s\n", strerror (errno));
-
-      /* Connect the outfile to stdout. */
-      if (fdout != 1 && dup2 (fdout, 1) == -1)
-        log_fatal ("dup2 stdout failed: %s\n", strerror (errno));
-      
-      /* Connect stderr to our pipe. */
-      if (rp[1] != 2 && dup2 (rp[1], 2) == -1)
-        log_fatal ("dup2 stderr failed: %s\n", strerror (errno));
-
-      /* Close all other files. */
-      n = sysconf (_SC_OPEN_MAX);
-      if (n < 0)
-        n = MAX_OPEN_FDS;
-      for (i=3; i < n; i++)
-        close(i);
-      errno = 0;
-
-      setup_pinentry_env ();
-
-      execlp (pgmname, arg0,
-              "--homedir", opt.homedir,
-              "--p12-export",
-              "--prompt", prompt?prompt:"", 
-              "--enable-status-msg",
-              "--",
-              keygrip,
-              NULL);
-      /* No way to print anything, as we have closed all streams. */
-      _exit (31);
-    }
-
-  /* Parent. */
-  close (rp[1]);
-  *statusfile = fdopen (rp[0], "r");
-  if (!*statusfile)
-    {
-      err = gpg_error_from_errno (errno);
-      log_error ("can't fdopen pipe for reading: %s", strerror (errno));
-      kill (*pid, SIGTERM);
-      return err;
-    }
-
-  return 0;
+  return gnupg_spawn_process (pgmname, argv, infile, outfile,
+                              setup_pinentry_env,
+                              statusfile, pid);
 }
 
 
@@ -618,7 +541,7 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
 {
   const char *pgmname;
   gpg_error_t err = 0, child_err = 0;
-  int i, c, cont_line;
+  int c, cont_line;
   unsigned int pos;
   FILE *infp = NULL, *outfp = NULL, *fp = NULL;
   char buffer[1024];
@@ -722,21 +645,7 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
     fclose (fp);
   if (pid != -1)
     {
-      int status;
-
-      while ( (i=waitpid (pid, &status, 0)) == -1 && errno == EINTR)
-        ;
-      if (i == -1)
-        log_error (_("waiting for protect-tools to terminate failed: %s\n"),
-                   strerror (errno));
-      else if (WIFEXITED (status) && WEXITSTATUS (status) == 31)
-        log_error (_("error running `%s': probably not installed\n"), pgmname);
-      else if (WIFEXITED (status) && WEXITSTATUS (status))
-        log_error (_("error running `%s': exit status %d\n"), pgmname,
-                     WEXITSTATUS (status));
-      else if (!WIFEXITED (status))
-        log_error (_("error running `%s': terminated\n"), pgmname);
-      else 
+      if (!gnupg_wait_process (pgmname, pid))
         child_err = 0;
     }
   if (!err)

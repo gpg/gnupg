@@ -1,3 +1,7 @@
+2004-12-06  Werner Koch  <wk@g10code.com>
+
+	* exechelp.h, exechelp.c: New.  Based on code from ../sm/import.c.
+
 2004-12-03  Werner Koch  <wk@g10code.com>
 
 	* strsep.c: Fixed copyright comments.

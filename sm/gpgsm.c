@@ -1688,6 +1688,7 @@ open_fwrite (const char *filename)
 static void
 run_protect_tool (int argc, char **argv)
 {
+#ifndef _WIN32
   const char *pgm;
   char **av;
   int i;
@@ -1706,5 +1707,6 @@ run_protect_tool (int argc, char **argv)
   av[i] = NULL;
   execv (pgm, av); 
   log_error ("error executing `%s': %s\n", pgm, strerror (errno));
+#endif
   gpgsm_exit (2);
 }

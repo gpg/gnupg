@@ -1,5 +1,13 @@
 2004-12-06  Werner Koch  <wk@g10code.com>
 
+	* gpgsm.c (run_protect_tool) [_WIN32]: Disabled.
+
+	* import.c (popen_protect_tool): Simplified by making use of
+	gnupg_spawn_process.
+	(parse_p12): Likewise, using gnupg_wait_process.
+	* export.c (popen_protect_tool): Ditto.
+	(export_p12): Ditto.
+
 	* keydb.c: Don't define DIRSEP_S here.
 
 2004-12-02  Werner Koch  <wk@g10code.com>
