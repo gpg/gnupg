@@ -1598,7 +1598,40 @@ finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
 	merge_one_pk_and_selfsig( keyblock, keyblock, pk );
     }
     else {
-	if( primary && pk->pubkey_usage
+	if( primary && pk->pubkey_usage == PUBKEY_USAGE_ENC
+            && keyblock->pkt->pkt.public_key->version > 3
+            && keyblock->pkt->pkt.public_key->pubkey_algo == PUBKEY_ALGO_RSA
+            && k->pkt->pkttype == PKT_PUBLIC_KEY ) {
+	    /* Ugly hack to support v4 RSA keys.  Here we assume that the
+               primary key should be used only for signing and a subkey
+               should be used for encryption.  So now look for a subkey.
+            */
+            KBNODE save_k = k;
+	    u32 mainkid[2];
+	    u32 cur_time = make_timestamp();
+
+	    keyid_from_pk( keyblock->pkt->pkt.public_key, mainkid );
+
+            for(k = save_k ; k; k = k->next ) {
+                if( k->pkt->pkttype == PKT_PUBLIC_SUBKEY
+                    && !check_pubkey_algo2(
+                        k->pkt->pkt.public_key->pubkey_algo,
+                        pk->pubkey_usage )
+                    && !has_expired( k, mainkid, cur_time )
+                    )
+                    break;
+            }
+	    
+	    if( !k )
+		k = save_k; /* not found: better use the main key instead */
+	    else
+		log_info(_("using secondary key %08lX "
+			   "instead of primary key %08lX\n"),
+		      (ulong)keyid_from_pk( k->pkt->pkt.public_key, NULL),
+		      (ulong)keyid_from_pk( save_k->pkt->pkt.public_key, NULL)
+			);
+	}
+	else if( primary && pk->pubkey_usage
 	    && check_pubkey_algo2( k->pkt->pkt.public_key->pubkey_algo,
 		       pk->pubkey_usage ) == G10ERR_WR_PUBKEY_ALGO ) {
 	    /* if the usage is not correct, try to use a subkey */

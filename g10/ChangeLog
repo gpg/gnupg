@@ -1,3 +1,11 @@
+Thu Sep 14 17:45:11 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * parse-packet.c (dump_sig_subpkt): Dump key flags. Print special
+        warning in case of faked ARRs.
+
+        * getkey.c (finsih_lookup): Hack so that for v4 RSA keys the subkey
+        is used for encryption.
+
 Thu Sep 14 14:20:38 CEST 2000  Werner Koch  <wk@openit.de>
 
         * g10.c (main): Default S2K algorithms are now SHA1 and CAST5 - this

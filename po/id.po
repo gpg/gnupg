@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Privacy Guard 1.0.1\n"
-"POT-Creation-Date: 2000-09-06 17:28+0200\n"
+"POT-Creation-Date: 2000-09-14 13:26+0200\n"
 "PO-Revision-Date: 2000-02-06 18:04+07:00\n"
 "Last-Translator: Tedi Heriyanto <tedi-h@usa.net>\n"
 "Language-Team: Indonesia <id@li.org>\n"
@@ -308,11 +308,11 @@ msgstr "tidak dapat membuka `%s': %s\n"
 msgid "too many random bits requested; the limit is %d\n"
 msgstr ""
 
-#: cipher/random.c:647
+#: cipher/random.c:650
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr "PERINGATAN: menggunakan random number generator yang tidak aman!!\n"
 
-#: cipher/random.c:648
+#: cipher/random.c:651
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"
@@ -693,174 +693,178 @@ msgstr "pemakaian: gpg [pilihan] "
 msgid "conflicting commands\n"
 msgstr "perintah saling konflik\n"
 
-#: g10/g10.c:703
+#: g10/g10.c:704
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "CATATAN: tidak ada file pilihan baku `%s'\n"
 
-#: g10/g10.c:707
+#: g10/g10.c:708
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "file pilihan `%s': %s\n"
 
-#: g10/g10.c:714
+#: g10/g10.c:715
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "membaca pilihan dari `%s'\n"
 
-#: g10/g10.c:904
+#: g10/g10.c:905
 #, c-format
 msgid "%s is not a valid character set\n"
 msgstr "%s bukanlah set karakter yang valid\n"
 
-#: g10/g10.c:968 g10/g10.c:977
+#: g10/g10.c:970
+msgid "WARNING: program may create a core file!\n"
+msgstr "PERINGATAN: program mungkin membuat file core!\n"
+
+#: g10/g10.c:974 g10/g10.c:983
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "CATATAN: %s tidak untuk pemakaian normal!\n"
 
-#: g10/g10.c:970
+#: g10/g10.c:976
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s tidak dibolehkan dengan %s!\n"
 
-#: g10/g10.c:973
+#: g10/g10.c:979
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s tidak masuk akal dengan %s!\n"
 
-#: g10/g10.c:992 g10/g10.c:1004
+#: g10/g10.c:998 g10/g10.c:1010
 msgid "selected cipher algorithm is invalid\n"
 msgstr "algoritma cipher yang dipilih tidak valid\n"
 
-#: g10/g10.c:998 g10/g10.c:1010
+#: g10/g10.c:1004 g10/g10.c:1016
 msgid "selected digest algorithm is invalid\n"
 msgstr "algoritma digest yang dipilih tidak valid\n"
 
-#: g10/g10.c:1014
+#: g10/g10.c:1020
 msgid "the given policy URL is invalid\n"
 msgstr "kebijakan URL yang diberikan tidak valid\n"
 
-#: g10/g10.c:1017
+#: g10/g10.c:1023
 #, c-format
 msgid "compress algorithm must be in range %d..%d\n"
 msgstr "algoritma kompresi harus di antara %d..%d\n"
 
-#: g10/g10.c:1019
+#: g10/g10.c:1025
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed harus lebih dari 0\n"
 
-#: g10/g10.c:1021
+#: g10/g10.c:1027
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed harus lebih dari 1\n"
 
-#: g10/g10.c:1023
+#: g10/g10.c:1029
 msgid "max-cert-depth must be in range 1 to 255\n"
 msgstr "max-cert-depth harus di antara 1 hingga 255\n"
 
-#: g10/g10.c:1026
+#: g10/g10.c:1032
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "CATATAN: mode S2K sederhana (0) tidak dianjurkan\n"
 
-#: g10/g10.c:1030
+#: g10/g10.c:1036
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "mode S2K yang tidak valid; harus 0, 1 atau 3\n"
 
-#: g10/g10.c:1115
+#: g10/g10.c:1121
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "gagal inisialisasi TrustDB: %s\n"
 
-#: g10/g10.c:1121
+#: g10/g10.c:1127
 msgid "--store [filename]"
 msgstr "--store [namafile]"
 
-#: g10/g10.c:1128
+#: g10/g10.c:1134
 msgid "--symmetric [filename]"
 msgstr "--symmetric [namafile]"
 
-#: g10/g10.c:1136
+#: g10/g10.c:1142
 msgid "--encrypt [filename]"
 msgstr "--encrypt [namafile]"
 
-#: g10/g10.c:1149
+#: g10/g10.c:1155
 msgid "--sign [filename]"
 msgstr "--sign [namafile]"
 
-#: g10/g10.c:1162
+#: g10/g10.c:1168
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [namafile]"
 
-#: g10/g10.c:1176
+#: g10/g10.c:1182
 msgid "--clearsign [filename]"
 msgstr "--clearsign [namafile]"
 
-#: g10/g10.c:1193
+#: g10/g10.c:1199
 msgid "--decrypt [filename]"
 msgstr "--decrypt [namafile]"
 
-#: g10/g10.c:1201
+#: g10/g10.c:1207
 msgid "--sign-key user-id"
 msgstr "--sign-key id-user"
 
-#: g10/g10.c:1209
+#: g10/g10.c:1215
 msgid "--lsign-key user-id"
 msgstr "--lsign-key id-user"
 
-#: g10/g10.c:1217
+#: g10/g10.c:1223
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key id-user [perintah]"
 
-#: g10/g10.c:1233
+#: g10/g10.c:1239
 msgid "--delete-secret-key user-id"
 msgstr "--delete-secret-key id-user"
 
-#: g10/g10.c:1236
+#: g10/g10.c:1242
 msgid "--delete-key user-id"
 msgstr "--delete-key id-user"
 
-#: g10/encode.c:265 g10/g10.c:1273 g10/sign.c:393
+#: g10/encode.c:265 g10/g10.c:1279 g10/sign.c:393
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "tidak dapat membuka %s: %s\n"
 
-#: g10/g10.c:1288
+#: g10/g10.c:1294
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [id-user] [keyring]"
 
-#: g10/g10.c:1354
+#: g10/g10.c:1360
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "gagal dearmoring: %s\n"
 
-#: g10/g10.c:1362
+#: g10/g10.c:1368
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "gagal enarmoring: %s\n"
 
-#: g10/g10.c:1433
+#: g10/g10.c:1439
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "algoritma hash tidak valid `%s'\n"
 
-#: g10/g10.c:1514
+#: g10/g10.c:1520
 msgid "[filename]"
 msgstr "[namafile]"
 
-#: g10/g10.c:1518
+#: g10/g10.c:1524
 msgid "Go ahead and type your message ...\n"
 msgstr "Teruskan dan ketikkan pesan anda ....\n"
 
-#: g10/decrypt.c:59 g10/g10.c:1521 g10/verify.c:68 g10/verify.c:113
+#: g10/decrypt.c:59 g10/g10.c:1527 g10/verify.c:68 g10/verify.c:113
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "tidak dapat membuka `%s'\n"
 
-#: g10/g10.c:1694
+#: g10/g10.c:1700
 msgid ""
 "the first character of a notation name must be a letter or an underscore\n"
 msgstr "karakter pertama nama notasi harus huruf atau garis bawah\n"
 
-#: g10/g10.c:1700
+#: g10/g10.c:1706
 msgid ""
 "a notation name must have only letters, digits, dots or underscores and end "
 "with an '='\n"
@@ -868,11 +872,11 @@ msgstr ""
 "nama notasi hanya terdiri dari huruf, digit, titik atau garis bawah dan "
 "diakhiri dengan sebuah '='\n"
 
-#: g10/g10.c:1706
+#: g10/g10.c:1712
 msgid "dots in a notation name must be surrounded by other characters\n"
 msgstr "titik dalam nama notasi harus diapit oleh karakter lain\n"
 
-#: g10/g10.c:1714
+#: g10/g10.c:1720
 msgid "a notation value must not use any control characters\n"
 msgstr "nilai notasi tidak boleh menggunakan karakter kendali\n"
 
@@ -2647,20 +2651,16 @@ msgstr "signature model lama (PGP 2.X)\n"
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "terdeteksi root paket tidak valid dalam proc_tree()\n"
 
-#: g10/misc.c:94
+#: g10/misc.c:96
 #, c-format
 msgid "can't disable core dumps: %s\n"
 msgstr "tidak dapat meniadakan core dump: %s\n"
 
-#: g10/misc.c:97
-msgid "WARNING: program may create a core file!\n"
-msgstr "PERINGATAN: program mungkin membuat file core!\n"
-
-#: g10/misc.c:205
+#: g10/misc.c:206
 msgid "Experimental algorithms should not be used!\n"
 msgstr "Algoritma eksperimental sebaiknya tidak dipakai!\n"
 
-#: g10/misc.c:232
+#: g10/misc.c:233
 msgid "this cipher algorithm is depreciated; please use a more standard one!\n"
 msgstr ""
 "algoritma cipher ini didepresiasi; silakan gunakan yang lebih standar!\n"
@@ -2806,11 +2806,11 @@ msgstr "kunci rahasia tidak ada"
 msgid "protection algorithm %d is not supported\n"
 msgstr "algoritma proteksi %d tidak didukung\n"
 
-#: g10/seckey-cert.c:175
+#: g10/seckey-cert.c:184
 msgid "Invalid passphrase; please try again ...\n"
 msgstr "Passphrase tidak valid; silakan coba lagi ...\n"
 
-#: g10/seckey-cert.c:231
+#: g10/seckey-cert.c:240
 msgid "WARNING: Weak key detected - please change passphrase again.\n"
 msgstr "PERINGATAN: terdeteksi kunci lemah - silakan rubah passphrase lagi.\n"
 
@@ -2896,7 +2896,7 @@ msgstr "%s: tidak dapat akses: %s\n"
 msgid "%s: directory does not exist!\n"
 msgstr "%s: direktori tidak ada!\n"
 
-#: g10/openfile.c:226 g10/openfile.c:295 g10/ringedit.c:1363 g10/tdbio.c:444
+#: g10/openfile.c:226 g10/openfile.c:295 g10/ringedit.c:1369 g10/tdbio.c:444
 #, c-format
 msgid "%s: can't create: %s\n"
 msgstr "%s: tidak dapat membuat: %s\n"
@@ -3306,26 +3306,26 @@ msgstr ""
 msgid "%s: can't create keyring: %s\n"
 msgstr "%s: tidak dapat membuat keyring: %s\n"
 
-#: g10/ringedit.c:319 g10/ringedit.c:1368
+#: g10/ringedit.c:319 g10/ringedit.c:1374
 #, c-format
 msgid "%s: keyring created\n"
 msgstr "%s: keyring tercipta\n"
 
-#: g10/ringedit.c:1545
+#: g10/ringedit.c:1551
 msgid "WARNING: 2 files with confidential information exists.\n"
 msgstr "PERINGATAN: terdapat 2 file dengan informasi penting.\n"
 
-#: g10/ringedit.c:1546
+#: g10/ringedit.c:1552
 #, c-format
 msgid "%s is the unchanged one\n"
 msgstr "%s adalah yang tidak berubah\n"
 
-#: g10/ringedit.c:1547
+#: g10/ringedit.c:1553
 #, c-format
 msgid "%s is the new one\n"
 msgstr "%s adalah yang baru\n"
 
-#: g10/ringedit.c:1548
+#: g10/ringedit.c:1554
 msgid "Please fix this possible security flaw\n"
 msgstr "Silakan perbaikan kemungkinan lubang keamanan\n"
 

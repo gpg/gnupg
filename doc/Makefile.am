@@ -1,11 +1,16 @@
 ## Process this file with automake to create Makefile.in
 
-EXTRA_DIST = DETAILS gpg.sgml gpg.1 faq.raw \
-             HACKING OpenPGP README.W32
+EXTRA_DIST = DETAILS gpg.sgml gpg.1 faq.raw FAQ faq.html \
+             HACKING OpenPGP README.W32 
 
 man_MANS = gpg.1
 
 pkgdata_DATA = FAQ faq.html
+
+BUILT_SOURCES = FAQ faq.html
+
+CLEANFILES = faq.raw.xref
+
 
 
 %.1 : %.sgml

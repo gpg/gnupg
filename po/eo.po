@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.1e\n"
-"POT-Creation-Date: 2000-09-06 17:28+0200\n"
-"PO-Revision-Date: 2000-06-02 21:04+01:00\n"
+"POT-Creation-Date: 2000-07-12 12:13+0200\n"
+"PO-Revision-Date: 2000-08-16 23:19+01:00\n"
 "Last-Translator: Edmund GRIMLEY EVANS <edmundo@rano.org>\n"
 "Language-Team: Esperanto <eo@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -255,7 +255,7 @@ msgstr "... æi tio estas cimo (%s:%d:%s)\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "vi trovis cimon ... (%s:%d)\n"
 
-#: cipher/random.c:311 g10/import.c:128 g10/keygen.c:1255
+#: cipher/random.c:311 g10/import.c:127 g10/keygen.c:1249
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "ne povas malfermi '%s': %s\n"
@@ -325,7 +325,7 @@ msgstr ""
 "NE UZU DATENOJN KREITAJN DE ÆI TIU PROGRAMO!!\n"
 "\n"
 
-#: cipher/rndlinux.c:142
+#: cipher/rndlinux.c:141
 #, c-format
 msgid ""
 "\n"
@@ -336,7 +336,7 @@ msgstr ""
 "Nesufiæe da stokastaj datenoj. Bonvolu fari ion por ebligi al la\n"
 "mastruma sistemo kolekti pli da entropio! (Mankas %d bitokoj)\n"
 
-#: g10/g10.c:206
+#: g10/g10.c:197
 msgid ""
 "@Commands:\n"
 " "
@@ -344,139 +344,139 @@ msgstr ""
 "@Komandoj:\n"
 " "
 
-#: g10/g10.c:208
+#: g10/g10.c:199
 msgid "|[file]|make a signature"
 msgstr "|[dosiero]|fari subskribon"
 
-#: g10/g10.c:209
+#: g10/g10.c:200
 msgid "|[file]|make a clear text signature"
 msgstr "|[dosiero]|fari klartekstan subskribon"
 
-#: g10/g10.c:210
+#: g10/g10.c:201
 msgid "make a detached signature"
 msgstr "fari apartan subskribon"
 
-#: g10/g10.c:211
+#: g10/g10.c:202
 msgid "encrypt data"
 msgstr "æifri datenojn"
 
-#: g10/g10.c:212
+#: g10/g10.c:203
 msgid "encryption only with symmetric cipher"
 msgstr "æifri nur kun simetria æifro"
 
-#: g10/g10.c:213
+#: g10/g10.c:204
 msgid "store only"
 msgstr "nur skribi"
 
-#: g10/g10.c:214
+#: g10/g10.c:205
 msgid "decrypt data (default)"
 msgstr "malæifri datenojn (implicita elekto)"
 
-#: g10/g10.c:215
+#: g10/g10.c:206
 msgid "verify a signature"
 msgstr "kontroli subskribon"
 
-#: g10/g10.c:217
+#: g10/g10.c:208
 msgid "list keys"
 msgstr "listigi þlosilojn"
 
-#: g10/g10.c:219
+#: g10/g10.c:210
 msgid "list keys and signatures"
 msgstr "listigi þlosilojn kaj subskribojn"
 
-#: g10/g10.c:220
+#: g10/g10.c:211
 msgid "check key signatures"
 msgstr "kontroli þlosilsubskribojn"
 
-#: g10/g10.c:221
+#: g10/g10.c:212
 msgid "list keys and fingerprints"
 msgstr "listigi þlosilojn kaj fingroþpurojn"
 
-#: g10/g10.c:222
+#: g10/g10.c:213
 msgid "list secret keys"
 msgstr "listigi sekretajn þlosilojn"
 
-#: g10/g10.c:223
+#: g10/g10.c:214
 msgid "generate a new key pair"
 msgstr "krei novan þlosilparon"
 
-#: g10/g10.c:224
+#: g10/g10.c:215
 msgid "remove key from the public keyring"
 msgstr "forigi þlosilon de la publika þlosilaro"
 
-#: g10/g10.c:226
+#: g10/g10.c:217
 msgid "remove key from the secret keyring"
 msgstr "forigi þlosilon de la sekreta þlosilaro"
 
-#: g10/g10.c:227
+#: g10/g10.c:218
 msgid "sign a key"
 msgstr "subskribi þlosilon"
 
-#: g10/g10.c:228
+#: g10/g10.c:219
 msgid "sign a key locally"
 msgstr "subskribi þlosilon loke"
 
-#: g10/g10.c:229
+#: g10/g10.c:220
 msgid "sign or edit a key"
 msgstr "subskribi aý redakti þlosilon"
 
-#: g10/g10.c:230
+#: g10/g10.c:221
 msgid "generate a revocation certificate"
 msgstr "krei revokatestilon"
 
-#: g10/g10.c:231
+#: g10/g10.c:222
 msgid "export keys"
 msgstr "eksporti þlosilojn"
 
-#: g10/g10.c:232
+#: g10/g10.c:223
 msgid "export keys to a key server"
 msgstr "eksporti þlosilojn al þlosilservilo"
 
-#: g10/g10.c:233
+#: g10/g10.c:224
 msgid "import keys from a key server"
 msgstr "importi þlosilojn de þlosilservilo"
 
-#: g10/g10.c:237
+#: g10/g10.c:228
 msgid "import/merge keys"
 msgstr "importi/kunfandi þlosilojn"
 
-#: g10/g10.c:239
+#: g10/g10.c:230
 msgid "list only the sequence of packets"
 msgstr "listigi nur la sinsekvon de paketoj"
 
-#: g10/g10.c:241
+#: g10/g10.c:232
 msgid "export the ownertrust values"
 msgstr "eksporti la posedantofido-valorojn"
 
-#: g10/g10.c:243
+#: g10/g10.c:234
 msgid "import ownertrust values"
 msgstr "importi posedantofido-valorojn"
 
-#: g10/g10.c:245
+#: g10/g10.c:236
 msgid "update the trust database"
 msgstr "aktualigi la fido-datenaron"
 
-#: g10/g10.c:247
+#: g10/g10.c:238
 msgid "|[NAMES]|check the trust database"
 msgstr "|[NOMOJ]|kontroli la fido-datenaron"
 
-#: g10/g10.c:248
+#: g10/g10.c:239
 msgid "fix a corrupted trust database"
 msgstr "ripari fuþitan fido-datenaron"
 
-#: g10/g10.c:249
+#: g10/g10.c:240
 msgid "De-Armor a file or stdin"
 msgstr "elkirasigi dosieron aý la normalan enigon"
 
-#: g10/g10.c:251
+#: g10/g10.c:242
 msgid "En-Armor a file or stdin"
 msgstr "enkirasigi dosieron aý la normalan enigon"
 
-#: g10/g10.c:253
+#: g10/g10.c:244
 msgid "|algo [files]|print message digests"
 msgstr "|metodo [dosieroj]|presi mesaøo-kompendiojn"
 
-#: g10/g10.c:257
+#: g10/g10.c:248
 msgid ""
 "@\n"
 "Options:\n"
@@ -486,152 +486,148 @@ msgstr ""
 "Opcioj:\n"
 " "
 
-#: g10/g10.c:259
+#: g10/g10.c:250
 msgid "create ascii armored output"
 msgstr "krei eligon en askia kiraso"
 
-#: g10/g10.c:261
+#: g10/g10.c:252
 msgid "|NAME|encrypt for NAME"
 msgstr "|NOMO|æifri por NOMO"
 
-#: g10/g10.c:264
+#: g10/g10.c:255
 msgid "|NAME|use NAME as default recipient"
 msgstr "|NOMO|uzi NOMOn kiel implicitan ricevonton"
 
-#: g10/g10.c:266
+#: g10/g10.c:257
 msgid "use the default key as default recipient"
 msgstr "uzi la implicitan þlosilon kiel implicitan ricevonton"
 
-#: g10/g10.c:270
+#: g10/g10.c:261
 msgid "use this user-id to sign or decrypt"
 msgstr "uzi æi tiun uzantidentigilon por subskribi aý malæifri"
 
-#: g10/g10.c:271
+#: g10/g10.c:262
 msgid "|N|set compress level N (0 disables)"
 msgstr "|N|difini densig-nivelon N (0=nenia)"
 
-#: g10/g10.c:273
+#: g10/g10.c:264
 msgid "use canonical text mode"
 msgstr "uzi tekstan reøimon"
 
-#: g10/g10.c:274
+#: g10/g10.c:265
 msgid "use as output file"
 msgstr "uzi dosieron por eligo"
 
-#: g10/g10.c:275
+#: g10/g10.c:266
 msgid "verbose"
 msgstr "detala eligo"
 
-#: g10/g10.c:276
+#: g10/g10.c:267
 msgid "be somewhat more quiet"
 msgstr "iom malpli da informoj"
 
-#: g10/g10.c:277
+#: g10/g10.c:268
 msgid "don't use the terminal at all"
 msgstr "tute ne uzi la terminalon"
 
-#: g10/g10.c:278
+#: g10/g10.c:269
 msgid "force v3 signatures"
 msgstr "devigi v3-subskribojn"
 
-#: g10/g10.c:279
+#: g10/g10.c:270
 msgid "always use a MDC for encryption"
 msgstr "æiam uzi sigelon (MDC) por æifrado"
 
-#: g10/g10.c:280
+#: g10/g10.c:271
 msgid "do not make any changes"
 msgstr "fari neniajn þanøojn"
 
 #. { oInteractive, "interactive", 0, N_("prompt before overwriting") },
-#: g10/g10.c:282
+#: g10/g10.c:273
 msgid "batch mode: never ask"
 msgstr "neinteraga reøimo: neniam demandi"
 
-#: g10/g10.c:283
+#: g10/g10.c:274
 msgid "assume yes on most questions"
 msgstr "supozi \"jes\" æe la plej multaj demandoj"
 
-#: g10/g10.c:284
+#: g10/g10.c:275
 msgid "assume no on most questions"
 msgstr "supozi \"ne\" æe la plej multaj demandoj"
 
-#: g10/g10.c:285
+#: g10/g10.c:276
 msgid "add this keyring to the list of keyrings"
 msgstr "aldoni æi tiun þlosilaron al la listo de þlosilaroj"
 
-#: g10/g10.c:286
+#: g10/g10.c:277
 msgid "add this secret keyring to the list"
 msgstr "aldoni æi tiun sekretan þlosilaron al la listo"
 
-#: g10/g10.c:287
+#: g10/g10.c:278
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NOMO|uzi NOMOn kiel la implicitan sekretan þlosilon"
 
-#: g10/g10.c:288
+#: g10/g10.c:279
 msgid "|HOST|use this keyserver to lookup keys"
 msgstr "|SERVILO|uzi æi tiun þlosilservilon por seræi þlosilojn"
 
-#: g10/g10.c:289
+#: g10/g10.c:280
 msgid "|NAME|set terminal charset to NAME"
 msgstr "|NOMO|difini NOMOn kiel la signaron de la terminalo"
 
-#: g10/g10.c:290
+#: g10/g10.c:281
 msgid "read options from file"
 msgstr "legi la opciojn el dosiero"
 
-#: g10/g10.c:294
+#: g10/g10.c:285
 msgid "|FD|write status info to this FD"
 msgstr "|FD|skribi statusinformojn al FD (dosierpriskribilo)"
 
-#: g10/g10.c:299
-msgid "|KEYID|ulimately trust this key"
-msgstr ""
-
-#: g10/g10.c:300
+#: g10/g10.c:290
 msgid "|FILE|load extension module FILE"
 msgstr "|DOSIERO|legi aldonan bibliotekon DOSIERO"
 
-#: g10/g10.c:301
+#: g10/g10.c:291
 msgid "emulate the mode described in RFC1991"
 msgstr "imiti la reøimon priskribitan en RFC 1991"
 
-#: g10/g10.c:302
+#: g10/g10.c:292
 msgid "set all packet, cipher and digest options to OpenPGP behavior"
 msgstr "þalti æiujn paket-, æifrad- kaj kompendi-opciojn al OpenPGP-konduto"
 
-#: g10/g10.c:303
+#: g10/g10.c:293
 msgid "|N|use passphrase mode N"
 msgstr "|N|uzi pasfraz-reøimon N"
 
-#: g10/g10.c:305
+#: g10/g10.c:295
 msgid "|NAME|use message digest algorithm NAME for passphrases"
 msgstr "|NOMO|uzi kompendi-metodon NOMO por pasfrazoj"
 
-#: g10/g10.c:307
+#: g10/g10.c:297
 msgid "|NAME|use cipher algorithm NAME for passphrases"
 msgstr "|NOMO|uzi æifrad-metodon NOMO por pasfrazoj"
 
-#: g10/g10.c:308
+#: g10/g10.c:298
 msgid "|NAME|use cipher algorithm NAME"
 msgstr "|NOMO|uzi æifrad-metodon NOMO"
 
-#: g10/g10.c:309
+#: g10/g10.c:299
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NOMO|uzi kompendi-metodon NOMO"
 
-#: g10/g10.c:310
+#: g10/g10.c:300
 msgid "|N|use compress algorithm N"
 msgstr "|N|uzi densig-metodon N"
 
-#: g10/g10.c:311
+#: g10/g10.c:301
 msgid "throw keyid field of encrypted packets"
 msgstr "forigi la þlosilidentigilon de æifritaj paketoj"
 
-#: g10/g10.c:312
+#: g10/g10.c:302
 msgid "|NAME=VALUE|use this notation data"
 msgstr "|NOMO=VALORO|uzi æi tiun notacian datenon"
 
-#: g10/g10.c:315
+#: g10/g10.c:305
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
@@ -639,7 +635,7 @@ msgstr ""
 "@\n"
 "(Vidu la manpaøon por kompleta listo de æiuj komandoj kaj opcioj)\n"
 
-#: g10/g10.c:318
+#: g10/g10.c:308
 msgid ""
 "@\n"
 "Examples:\n"
@@ -659,15 +655,15 @@ msgstr ""
 " --list-keys [nomoj]        montri þlosilojn\n"
 " --fingerprint [nomoj]      montri fingroþpurojn\n"
 
-#: g10/g10.c:418
+#: g10/g10.c:403
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 msgstr "Bonvolu raporti cimojn al <gnupg-bugs@gnu.org>.\n"
 
-#: g10/g10.c:422
+#: g10/g10.c:407
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Uzado: gpg [opcioj] [dosieroj] (-h por helpo)"
 
-#: g10/g10.c:425
+#: g10/g10.c:410
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "sign, check, encrypt or decrypt\n"
@@ -677,7 +673,7 @@ msgstr ""
 "subskribi, kontroli, æifri aý malæifri\n"
 "implicita operacio dependas de la enigataj datenoj\n"
 
-#: g10/g10.c:432
+#: g10/g10.c:417
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -685,182 +681,182 @@ msgstr ""
 "\n"
 "Realigitaj metodoj:\n"
 
-#: g10/g10.c:511
+#: g10/g10.c:496
 msgid "usage: gpg [options] "
 msgstr "uzado: gpg [opcioj] "
 
-#: g10/g10.c:564
+#: g10/g10.c:549
 msgid "conflicting commands\n"
 msgstr "malkongruaj komandoj\n"
 
-#: g10/g10.c:703
+#: g10/g10.c:692
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTO: mankas implicita opcio-dosiero '%s'\n"
 
-#: g10/g10.c:707
+#: g10/g10.c:696
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "opcio-dosiero '%s': %s\n"
 
-#: g10/g10.c:714
+#: g10/g10.c:703
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "legas opciojn el '%s'\n"
 
-#: g10/g10.c:904
+#: g10/g10.c:893
 #, c-format
 msgid "%s is not a valid character set\n"
 msgstr "%s ne estas valida signaro\n"
 
-#: g10/g10.c:968 g10/g10.c:977
+#: g10/g10.c:949 g10/g10.c:958
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTO: %s ne estas por normala uzado!\n"
 
-#: g10/g10.c:970
+#: g10/g10.c:951
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s ne eblas kun %s!\n"
 
-#: g10/g10.c:973
+#: g10/g10.c:954
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s ne havas sencon kun %s!\n"
 
-#: g10/g10.c:992 g10/g10.c:1004
+#: g10/g10.c:973 g10/g10.c:985
 msgid "selected cipher algorithm is invalid\n"
 msgstr "elektita æifrad-metodo ne validas\n"
 
-#: g10/g10.c:998 g10/g10.c:1010
+#: g10/g10.c:979 g10/g10.c:991
 msgid "selected digest algorithm is invalid\n"
 msgstr "elektita kompendi-metodo ne validas\n"
 
-#: g10/g10.c:1014
+#: g10/g10.c:995
 msgid "the given policy URL is invalid\n"
 msgstr "la donita gvidlinia URL ne validas\n"
 
-#: g10/g10.c:1017
+#: g10/g10.c:998
 #, c-format
 msgid "compress algorithm must be in range %d..%d\n"
 msgstr "la densig-metodo devas esti inter %d kaj %d\n"
 
-#: g10/g10.c:1019
+#: g10/g10.c:1000
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed devas esti pli granda ol 0\n"
 
-#: g10/g10.c:1021
+#: g10/g10.c:1002
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed devas esti pli granda ol 1\n"
 
-#: g10/g10.c:1023
+#: g10/g10.c:1004
 msgid "max-cert-depth must be in range 1 to 255\n"
 msgstr "max-cert-depth devas esti inter 1 kaj 255\n"
 
-#: g10/g10.c:1026
+#: g10/g10.c:1007
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "NOTO: simpla S2K-reøimo (0) estas forte malrekomendata\n"
 
-#: g10/g10.c:1030
+#: g10/g10.c:1011
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "nevalida S2K-reøimo; devas esti 0, 1 aý 3\n"
 
-#: g10/g10.c:1115
+#: g10/g10.c:1096
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "malsukcesis doni komencajn valorojn al fido-datenaro: %s\n"
 
-#: g10/g10.c:1121
+#: g10/g10.c:1102
 msgid "--store [filename]"
 msgstr "--store [dosiero]"
 
-#: g10/g10.c:1128
+#: g10/g10.c:1109
 msgid "--symmetric [filename]"
 msgstr "--symmetric [dosiero]"
 
-#: g10/g10.c:1136
+#: g10/g10.c:1117
 msgid "--encrypt [filename]"
 msgstr "--encrypt [dosiero]"
 
-#: g10/g10.c:1149
+#: g10/g10.c:1130
 msgid "--sign [filename]"
 msgstr "--sign [dosiero]"
 
-#: g10/g10.c:1162
+#: g10/g10.c:1143
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [dosiero]"
 
-#: g10/g10.c:1176
+#: g10/g10.c:1157
 msgid "--clearsign [filename]"
 msgstr "--clearsign [dosiero]"
 
-#: g10/g10.c:1193
+#: g10/g10.c:1174
 msgid "--decrypt [filename]"
 msgstr "--decrypt [dosiero]"
 
-#: g10/g10.c:1201
+#: g10/g10.c:1182
 msgid "--sign-key user-id"
 msgstr "--sign-key uzantidentigilo"
 
-#: g10/g10.c:1209
+#: g10/g10.c:1190
 msgid "--lsign-key user-id"
 msgstr "--lsign-key uzantidentigilo"
 
-#: g10/g10.c:1217
+#: g10/g10.c:1198
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key uzantidentigilo [komandoj]"
 
-#: g10/g10.c:1233
+#: g10/g10.c:1214
 msgid "--delete-secret-key user-id"
 msgstr "--delete-secret-key uzantidentigilo"
 
-#: g10/g10.c:1236
+#: g10/g10.c:1217
 msgid "--delete-key user-id"
 msgstr "--delete-key uzantidentigilo"
 
-#: g10/encode.c:265 g10/g10.c:1273 g10/sign.c:393
+#: g10/encode.c:260 g10/g10.c:1254 g10/sign.c:393
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "ne povas malfermi %s: %s\n"
 
-#: g10/g10.c:1288
+#: g10/g10.c:1269
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [uzantidentigilo] [þlosilaro]"
 
-#: g10/g10.c:1354
+#: g10/g10.c:1335
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "elkirasigo malsukcesis: %s\n"
 
-#: g10/g10.c:1362
+#: g10/g10.c:1343
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "enkirasigo malsukcesis: %s\n"
 
-#: g10/g10.c:1433
+#: g10/g10.c:1411
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "nevalida kompendi-metodo '%s'\n"
 
-#: g10/g10.c:1514
+#: g10/g10.c:1492
 msgid "[filename]"
 msgstr "[dosiero]"
 
-#: g10/g10.c:1518
+#: g10/g10.c:1496
 msgid "Go ahead and type your message ...\n"
 msgstr "Ektajpu vian mesaøon ...\n"
 
-#: g10/decrypt.c:59 g10/g10.c:1521 g10/verify.c:68 g10/verify.c:113
+#: g10/decrypt.c:59 g10/g10.c:1499 g10/verify.c:68 g10/verify.c:113
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "ne povas malfermi '%s'\n"
 
-#: g10/g10.c:1694
+#: g10/g10.c:1669
 msgid ""
 "the first character of a notation name must be a letter or an underscore\n"
 msgstr "la unua signo de notacia nomo devas esti litero aý substreko\n"
 
-#: g10/g10.c:1700
+#: g10/g10.c:1675
 msgid ""
 "a notation name must have only letters, digits, dots or underscores and end "
 "with an '='\n"
@@ -868,11 +864,11 @@ msgstr ""
 "notacia nomo devas enhavi nur literojn, ciferojn, punktojn aý substrekojn "
 "kaj fini per '='\n"
 
-#: g10/g10.c:1706
+#: g10/g10.c:1681
 msgid "dots in a notation name must be surrounded by other characters\n"
 msgstr "punktoj en notacia nomo devas esti inter aliaj signoj\n"
 
-#: g10/g10.c:1714
+#: g10/g10.c:1689
 msgid "a notation value must not use any control characters\n"
 msgstr "notacia valoro ne povas enhavi stirsignojn\n"
 
@@ -982,7 +978,6 @@ msgid "Key is no longer used"
 msgstr "Þlosilo estas ne plu uzata"
 
 #: g10/pkclist.c:124
-#, fuzzy
 msgid "User ID is no longer valid"
 msgstr "Uzantidentigilo ne plu validas"
 
@@ -1251,58 +1246,58 @@ msgstr "skribas mem-subskribon\n"
 msgid "writing key binding signature\n"
 msgstr "skribas þlosilbindan subskribon\n"
 
-#: g10/keygen.c:261 g10/keygen.c:345 g10/keygen.c:435
+#: g10/keygen.c:261 g10/keygen.c:345 g10/keygen.c:433
 #, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "þlosilgrando nevalida; uzas %u bitojn\n"
 
-#: g10/keygen.c:266 g10/keygen.c:350 g10/keygen.c:440
+#: g10/keygen.c:266 g10/keygen.c:350 g10/keygen.c:438
 #, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "þlosilgrando rondigita øis %u bitoj\n"
 
-#: g10/keygen.c:539
+#: g10/keygen.c:537
 msgid "Please select what kind of key you want:\n"
 msgstr "Bonvolu elekti, kian þlosilon vi deziras:\n"
 
-#: g10/keygen.c:541
+#: g10/keygen.c:539
 #, c-format
 msgid "   (%d) DSA and ElGamal (default)\n"
 msgstr "   (%d) DSA kaj ElGamal (implicita elekto)\n"
 
-#: g10/keygen.c:542
+#: g10/keygen.c:540
 #, c-format
 msgid "   (%d) DSA (sign only)\n"
 msgstr "   (%d) DSA (nur subskribi)\n"
 
-#: g10/keygen.c:544
+#: g10/keygen.c:542
 #, c-format
 msgid "   (%d) ElGamal (encrypt only)\n"
 msgstr "   (%d) ElGamal (nur æifri)\n"
 
-#: g10/keygen.c:545
+#: g10/keygen.c:543
 #, c-format
 msgid "   (%d) ElGamal (sign and encrypt)\n"
 msgstr "   (%d) ElGamal (subskribi kaj æifri)\n"
 
-#: g10/keygen.c:547
-#, fuzzy, c-format
+#: g10/keygen.c:545
+#, c-format
 msgid "   (%d) RSA (sign and encrypt)\n"
-msgstr "   (%d) ElGamal (subskribi kaj æifri)\n"
+msgstr "   (%d) RSA (subskribi kaj æifri)\n"
 
-#: g10/keygen.c:551
+#: g10/keygen.c:549
 msgid "Your selection? "
 msgstr "Via elekto? "
 
-#: g10/keygen.c:562 g10/keygen.c:570
+#: g10/keygen.c:560 g10/keygen.c:568
 msgid "Do you really want to create a sign and encrypt key? "
 msgstr "Æu vi vere volas krei subskriban kaj æifran þlosilon? "
 
-#: g10/keygen.c:584
+#: g10/keygen.c:582
 msgid "Invalid selection.\n"
 msgstr "Nevalida elekto.\n"
 
-#: g10/keygen.c:596
+#: g10/keygen.c:594
 #, c-format
 msgid ""
 "About to generate a new %s keypair.\n"
@@ -1315,22 +1310,21 @@ msgstr ""
 "               implicita þlosilgrando estas 1024 bitoj\n"
 " plej granda rekomendata þlosilgrando estas 2048 bitoj\n"
 
-#: g10/keygen.c:603
+#: g10/keygen.c:601
 msgid "What keysize do you want? (1024) "
 msgstr "Kiun þlosilgrandon vi deziras? (1024) "
 
-#: g10/keygen.c:608
+#: g10/keygen.c:606
 msgid "DSA only allows keysizes from 512 to 1024\n"
 msgstr "DSA permesas þlosilgrandon nur inter 512 kaj 1024\n"
 
-#: g10/keygen.c:610
+#: g10/keygen.c:608
 msgid "keysize too small; 768 is smallest value allowed.\n"
 msgstr "þlosilgrando tro malgranda; 768 estas plej eta permesata valoro.\n"
 
-#: g10/keygen.c:612
-#, fuzzy
+#: g10/keygen.c:610
 msgid "keysize too small; 1024 is smallest value allowed for RSA.\n"
-msgstr "þlosilgrando tro malgranda; 768 estas plej eta permesata valoro.\n"
+msgstr "þlosilgrando tro malgranda; 1024 estas plej eta valoro por RSA.\n"
 
 #. It is ridiculous and an annoyance to use larger key sizes!
 #. * GnuPG can handle much larger sizes; but it takes an eternity
@@ -1340,12 +1334,12 @@ msgstr "þlosilgrando tro malgranda; 768 estas plej eta permesata valoro.\n"
 #. * So, before you complain about this limitation, I suggest that
 #. * you start a discussion with Marvin about this theme and then
 #. * do whatever you want.
-#: g10/keygen.c:623
+#: g10/keygen.c:621
 #, c-format
 msgid "keysize too large; %d is largest value allowed.\n"
 msgstr "þlosilgrando tro granda; %d estas plej granda permesata valoro.\n"
 
-#: g10/keygen.c:628
+#: g10/keygen.c:626
 msgid ""
 "Keysizes larger than 2048 are not suggested because\n"
 "computations take REALLY long!\n"
@@ -1353,11 +1347,11 @@ msgstr ""
 "Þlosilgrandoj pli grandaj ol 2048 ne estas rekomendataj,\n"
 "æar la komputado daýras TRE longe!\n"
 
-#: g10/keygen.c:631
+#: g10/keygen.c:629
 msgid "Are you sure that you want this keysize? "
 msgstr "Æu vi estas certa, ke vi deziras æi tiun þlosilgrandon? "
 
-#: g10/keygen.c:632
+#: g10/keygen.c:630
 msgid ""
 "Okay, but keep in mind that your monitor and keyboard radiation is also very "
 "vulnerable to attacks!\n"
@@ -1365,21 +1359,21 @@ msgstr ""
 "Bone, sed pripensu, ke la elradiado de viaj ekrano kaj klavaro estas tre "
 "facile kaptebla!\n"
 
-#: g10/keygen.c:640
+#: g10/keygen.c:638
 msgid "Do you really need such a large keysize? "
 msgstr "Æu vi vere bezonas tiom grandan þlosilgrandon? "
 
-#: g10/keygen.c:646
+#: g10/keygen.c:644
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Petita þlosilgrando estas %u bitoj\n"
 
-#: g10/keygen.c:649 g10/keygen.c:653
+#: g10/keygen.c:647 g10/keygen.c:651
 #, c-format
 msgid "rounded up to %u bits\n"
 msgstr "rondigita øis %u bitoj\n"
 
-#: g10/keygen.c:701
+#: g10/keygen.c:699
 msgid ""
 "Please specify how long the key should be valid.\n"
 "         0 = key does not expire\n"
@@ -1395,25 +1389,25 @@ msgstr ""
 "      <n>m = þlosilo eksvalidiøos post n monatoj\n"
 "      <n>y = þlosilo eksvalidiøos post n jaroj\n"
 
-#: g10/keygen.c:716
+#: g10/keygen.c:714
 msgid "Key is valid for? (0) "
 msgstr "Þlosilo validu ...? (0) "
 
-#: g10/keygen.c:721
+#: g10/keygen.c:719
 msgid "invalid value\n"
 msgstr "nevalida valoro\n"
 
-#: g10/keygen.c:726
+#: g10/keygen.c:724
 msgid "Key does not expire at all\n"
 msgstr "Þlosilo neniam eksvalidiøos\n"
 
 #. print the date when the key expires
-#: g10/keygen.c:732
+#: g10/keygen.c:730
 #, c-format
 msgid "Key expires at %s\n"
 msgstr "Þlosilo eksvalidiøos je %s\n"
 
-#: g10/keygen.c:735
+#: g10/keygen.c:733
 msgid ""
 "Your system can't display dates beyond 2038.\n"
 "However, it will be correctly handled up to 2106.\n"
@@ -1421,11 +1415,11 @@ msgstr ""
 "Via sistemo ne povas montri datojn post 2038.\n"
 "Tamen, øi estos øuste traktata øis 2106.\n"
 
-#: g10/keygen.c:740
+#: g10/keygen.c:738
 msgid "Is this correct (y/n)? "
 msgstr "Æu tio estas øusta (j/n)? "
 
-#: g10/keygen.c:783
+#: g10/keygen.c:781
 msgid ""
 "\n"
 "You need a User-ID to identify your key; the software constructs the user "
@@ -1440,44 +1434,44 @@ msgstr ""
 "    \"Heinrich Heine (la poeto) <heinrichh@duesseldorf.de>\"\n"
 "\n"
 
-#: g10/keygen.c:795
+#: g10/keygen.c:793
 msgid "Real name: "
 msgstr "Vera nomo: "
 
-#: g10/keygen.c:803
+#: g10/keygen.c:797
 msgid "Invalid character in name\n"
 msgstr "Nevalida signo en nomo\n"
 
-#: g10/keygen.c:805
+#: g10/keygen.c:799
 msgid "Name may not start with a digit\n"
 msgstr "Nomo ne povas komenciøi per cifero\n"
 
-#: g10/keygen.c:807
+#: g10/keygen.c:801
 msgid "Name must be at least 5 characters long\n"
 msgstr "Nomo devas havi almenaý 5 signojn\n"
 
-#: g10/keygen.c:815
+#: g10/keygen.c:809
 msgid "Email address: "
 msgstr "Retadreso: "
 
-#: g10/keygen.c:826
+#: g10/keygen.c:820
 msgid "Not a valid email address\n"
 msgstr "Nevalida retadreso\n"
 
-#: g10/keygen.c:834
+#: g10/keygen.c:828
 msgid "Comment: "
 msgstr "Komento: "
 
-#: g10/keygen.c:840
+#: g10/keygen.c:834
 msgid "Invalid character in comment\n"
 msgstr "Nevalida signo en komento\n"
 
-#: g10/keygen.c:863
+#: g10/keygen.c:857
 #, c-format
 msgid "You are using the `%s' character set.\n"
 msgstr "Vi uzas la signaron '%s'.\n"
 
-#: g10/keygen.c:869
+#: g10/keygen.c:863
 #, c-format
 msgid ""
 "You selected this USER-ID:\n"
@@ -1488,27 +1482,27 @@ msgstr ""
 "    \"%s\"\n"
 "\n"
 
-#: g10/keygen.c:873
+#: g10/keygen.c:867
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Bonvolu ne meti la retadreson en la veran nomon aý la komenton\n"
 
-#: g10/keygen.c:878
+#: g10/keygen.c:872
 msgid "NnCcEeOoQq"
 msgstr "NnKkAaBbFf"
 
-#: g10/keygen.c:888
+#: g10/keygen.c:882
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgstr "Þanøu (N)omon, (K)omenton, (A)adreson, aý (F)ini? "
 
-#: g10/keygen.c:889
+#: g10/keygen.c:883
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "Þanøu (N)omon, (K)omenton, (A)adreson, aý (B)one/(F)ini? "
 
-#: g10/keygen.c:908
+#: g10/keygen.c:902
 msgid "Please correct the error first\n"
 msgstr "Bonvolu korekti la eraron unue\n"
 
-#: g10/keygen.c:946
+#: g10/keygen.c:940
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
@@ -1516,11 +1510,11 @@ msgstr ""
 "Vi bezonas pasfrazon por protekti vian sekretan þlosilon.\n"
 "\n"
 
-#: g10/keyedit.c:468 g10/keygen.c:954
+#: g10/keyedit.c:468 g10/keygen.c:948
 msgid "passphrase not correctly repeated; try again.\n"
 msgstr "la pasfrazo ne estis øuste ripetita; provu denove.\n"
 
-#: g10/keygen.c:960
+#: g10/keygen.c:954
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -1532,7 +1526,7 @@ msgstr ""
 "uzante æi tiun programon kun la opcio \"--edit-key\".\n"
 "\n"
 
-#: g10/keygen.c:981
+#: g10/keygen.c:975
 msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
@@ -1544,29 +1538,29 @@ msgstr ""
 "kreado de la primoj; tio donas al la stokastilo pli bonan þancon\n"
 "akiri sufiæe da entropio.\n"
 
-#: g10/keygen.c:1430
+#: g10/keygen.c:1424
 msgid "DSA keypair will have 1024 bits.\n"
 msgstr "DSA-þlosilparo havos 1024 bitojn.\n"
 
-#: g10/keygen.c:1473
+#: g10/keygen.c:1467
 msgid "Key generation canceled.\n"
 msgstr "Kreado de þlosiloj nuligita.\n"
 
-#: g10/keygen.c:1570
+#: g10/keygen.c:1564
 #, c-format
 msgid "writing public key to `%s'\n"
 msgstr "skribas publikan þlosilon al '%s'\n"
 
-#: g10/keygen.c:1571
+#: g10/keygen.c:1565
 #, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "skribas sekretan þlosilon al '%s'\n"
 
-#: g10/keygen.c:1667
+#: g10/keygen.c:1661
 msgid "public and secret key created and signed.\n"
 msgstr "publika kaj sekreta þlosiloj kreitaj kaj subskribitaj.\n"
 
-#: g10/keygen.c:1672
+#: g10/keygen.c:1666
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a secondary key for this purpose.\n"
@@ -1574,12 +1568,12 @@ msgstr ""
 "Notu, ke æi tiu þlosilo ne estas uzebla por æifrado. Vi eble volos\n"
 "uzi la komandon \"--edit-key\" por krei flankan þlosilon por tiu celo.\n"
 
-#: g10/keygen.c:1689 g10/keygen.c:1790
+#: g10/keygen.c:1683 g10/keygen.c:1784
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Kreado de þlosiloj malsukcesis: %s\n"
 
-#: g10/keygen.c:1733 g10/sig-check.c:315 g10/sign.c:112
+#: g10/keygen.c:1727 g10/sig-check.c:318 g10/sign.c:112
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -1587,7 +1581,7 @@ msgstr ""
 "þlosilo estis kreita %lu sekundon en la estonteco (tempotordo aý "
 "horloøeraro)\n"
 
-#: g10/keygen.c:1735 g10/sig-check.c:317 g10/sign.c:114
+#: g10/keygen.c:1729 g10/sig-check.c:320 g10/sign.c:114
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -1595,11 +1589,11 @@ msgstr ""
 "þlosilo estis kreita %lu sekundojn en la estonteco (tempotordo aý "
 "horloøeraro)\n"
 
-#: g10/keygen.c:1768
+#: g10/keygen.c:1762
 msgid "Really create? "
 msgstr "Æu vere krei? "
 
-#: g10/encode.c:91 g10/openfile.c:178 g10/openfile.c:288 g10/tdbio.c:454
+#: g10/encode.c:91 g10/openfile.c:168 g10/openfile.c:277 g10/tdbio.c:454
 #: g10/tdbio.c:515
 #, c-format
 msgid "%s: can't open: %s\n"
@@ -1610,17 +1604,17 @@ msgstr "%s: ne povas malfermi: %s\n"
 msgid "error creating passphrase: %s\n"
 msgstr "eraro dum kreado de pasfrazo: %s\n"
 
-#: g10/encode.c:171 g10/encode.c:324
+#: g10/encode.c:171 g10/encode.c:319
 #, c-format
 msgid "%s: WARNING: empty file\n"
 msgstr "%s: AVERTO: malplena dosiero\n"
 
-#: g10/encode.c:271
+#: g10/encode.c:266
 #, c-format
 msgid "reading from `%s'\n"
 msgstr "legas el '%s'\n"
 
-#: g10/encode.c:492
+#: g10/encode.c:483
 #, c-format
 msgid "%s/%s encrypted for: %s\n"
 msgstr "%s/%s-æifrita por: %s\n"
@@ -1675,251 +1669,240 @@ msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "uzas flankan þlosilon %08lX anstataý la æefa þlosilo %08lX\n"
 
 #: g10/getkey.c:2017
-#, fuzzy
 msgid "[User id not found]"
-msgstr "%s: uzanto ne trovita\n"
+msgstr "[Uzantidentigilo ne trovita]"
 
-#: g10/import.c:182
+#: g10/import.c:181
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "ignoras blokon de speco %d\n"
 
-#: g10/import.c:189 g10/trustdb.c:1806 g10/trustdb.c:1847
+#: g10/import.c:188 g10/trustdb.c:1740 g10/trustdb.c:1781
 #, c-format
 msgid "%lu keys so far processed\n"
 msgstr "%lu þlosiloj jam traktitaj\n"
 
-#: g10/import.c:194
+#: g10/import.c:193
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "eraro dum legado de '%s': %s\n"
 
-#: g10/import.c:204
+#: g10/import.c:203
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "      Nombro traktita entute: %lu\n"
 
-#: g10/import.c:206
-#, fuzzy, c-format
-msgid "      skipped new keys: %lu\n"
-msgstr "           novaj subþlosiloj: %lu\n"
-
-#: g10/import.c:209
+#: g10/import.c:205
 #, c-format
 msgid "          w/o user IDs: %lu\n"
 msgstr "         sen uzantidentigilo: %lu\n"
 
-#: g10/import.c:211
+#: g10/import.c:207
 #, c-format
 msgid "              imported: %lu"
 msgstr "                  importitaj: %lu"
 
-#: g10/import.c:217
+#: g10/import.c:213
 #, c-format
 msgid "             unchanged: %lu\n"
 msgstr "                  neþanøitaj: %lu\n"
 
-#: g10/import.c:219
+#: g10/import.c:215
 #, c-format
 msgid "          new user IDs: %lu\n"
 msgstr "      novaj uzantidentigiloj: %lu\n"
 
-#: g10/import.c:221
+#: g10/import.c:217
 #, c-format
 msgid "           new subkeys: %lu\n"
 msgstr "           novaj subþlosiloj: %lu\n"
 
-#: g10/import.c:223
+#: g10/import.c:219
 #, c-format
 msgid "        new signatures: %lu\n"
 msgstr "            novaj subskriboj: %lu\n"
 
-#: g10/import.c:225
+#: g10/import.c:221
 #, c-format
 msgid "   new key revocations: %lu\n"
 msgstr "         novaj þlosilrevokoj: %lu\n"
 
-#: g10/import.c:227
+#: g10/import.c:223
 #, c-format
 msgid "      secret keys read: %lu\n"
 msgstr "   sekretaj þlosiloj legitaj: %lu\n"
 
-#: g10/import.c:229
+#: g10/import.c:225
 #, c-format
 msgid "  secret keys imported: %lu\n"
 msgstr "sekretaj þlosiloj importitaj: %lu\n"
 
-#: g10/import.c:231
+#: g10/import.c:227
 #, c-format
 msgid " secret keys unchanged: %lu\n"
 msgstr "sekretaj þlosiloj neþanøitaj: %lu\n"
 
-#: g10/import.c:391 g10/import.c:590
+#: g10/import.c:386 g10/import.c:578
 #, c-format
 msgid "key %08lX: no user ID\n"
 msgstr "þlosilo %08lX: mankas uzantidentigilo\n"
 
-#: g10/import.c:405
+#: g10/import.c:400
 #, c-format
 msgid "key %08lX: no valid user IDs\n"
 msgstr "þlosilo %08lX: mankas valida uzantidentigilo\n"
 
-#: g10/import.c:407
+#: g10/import.c:402
 msgid "this may be caused by a missing self-signature\n"
 msgstr "tio povas esti kaýzata de mankanta mem-subskribo\n"
 
-#: g10/import.c:418 g10/import.c:657
+#: g10/import.c:413 g10/import.c:645
 #, c-format
 msgid "key %08lX: public key not found: %s\n"
 msgstr "þlosilo %08lX: publika þlosilo ne trovita: %s\n"
 
-#: g10/import.c:423
-#, fuzzy, c-format
-msgid "key %08lX: new key - skipped\n"
-msgstr "þlosilo %08lX: ne estas RFC-2440-þlosilo - ignorita\n"
-
-#: g10/import.c:431
+#: g10/import.c:419
 msgid "no default public keyring\n"
 msgstr "mankas implicita publika þlosilaro\n"
 
-#: g10/import.c:435 g10/openfile.c:230 g10/sign.c:295 g10/sign.c:615
+#: g10/import.c:423 g10/openfile.c:220 g10/sign.c:295 g10/sign.c:611
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "skribas al '%s'\n"
 
-#: g10/import.c:438 g10/import.c:496 g10/import.c:605 g10/import.c:706
+#: g10/import.c:426 g10/import.c:484 g10/import.c:593 g10/import.c:694
 #, c-format
 msgid "can't lock keyring `%s': %s\n"
 msgstr "ne povas þlosi la þlosilaron '%s': %s\n"
 
-#: g10/import.c:441 g10/import.c:499 g10/import.c:608 g10/import.c:709
+#: g10/import.c:429 g10/import.c:487 g10/import.c:596 g10/import.c:697
 #, c-format
 msgid "error writing keyring `%s': %s\n"
 msgstr "eraro dum skribado de þlosilaro '%s': %s\n"
 
-#: g10/import.c:446
+#: g10/import.c:434
 #, c-format
 msgid "key %08lX: public key imported\n"
 msgstr "þlosilo %08lX: publika þlosilo importita\n"
 
-#: g10/import.c:463
+#: g10/import.c:451
 #, c-format
 msgid "key %08lX: doesn't match our copy\n"
 msgstr "þlosilo %08lX: diferencas de nia kopio\n"
 
-#: g10/import.c:472 g10/import.c:665
+#: g10/import.c:460 g10/import.c:653
 #, c-format
 msgid "key %08lX: can't locate original keyblock: %s\n"
 msgstr "þlosilo %08lX: ne povas trovi originalan þlosilblokon: %s\n"
 
-#: g10/import.c:478 g10/import.c:671
+#: g10/import.c:466 g10/import.c:659
 #, c-format
 msgid "key %08lX: can't read original keyblock: %s\n"
 msgstr "þlosilo %08lX: ne povas legi originalan þlosilblokon: %s\n"
 
-#: g10/import.c:505
+#: g10/import.c:493
 #, c-format
 msgid "key %08lX: 1 new user ID\n"
 msgstr "þlosilo %08lX: 1 nova uzantidentigilo\n"
 
-#: g10/import.c:508
+#: g10/import.c:496
 #, c-format
 msgid "key %08lX: %d new user IDs\n"
 msgstr "þlosilo %08lX: %d novaj uzantidentigiloj\n"
 
-#: g10/import.c:511
+#: g10/import.c:499
 #, c-format
 msgid "key %08lX: 1 new signature\n"
 msgstr "þlosilo %08lX: 1 nova subskribo\n"
 
-#: g10/import.c:514
+#: g10/import.c:502
 #, c-format
 msgid "key %08lX: %d new signatures\n"
 msgstr "þlosilo %08lX: %d novaj subskriboj\n"
 
-#: g10/import.c:517
+#: g10/import.c:505
 #, c-format
 msgid "key %08lX: 1 new subkey\n"
 msgstr "þlosilo %08lX: 1 nova subþlosilo\n"
 
-#: g10/import.c:520
+#: g10/import.c:508
 #, c-format
 msgid "key %08lX: %d new subkeys\n"
 msgstr "þlosilo %08lX: %d novaj subþlosiloj\n"
 
-#: g10/import.c:530
+#: g10/import.c:518
 #, c-format
 msgid "key %08lX: not changed\n"
 msgstr "þlosilo %08lX: ne þanøita\n"
 
-#: g10/import.c:613
+#: g10/import.c:601
 #, c-format
 msgid "key %08lX: secret key imported\n"
 msgstr "þlosilo %08lX: sekreta þlosilo importita\n"
 
 #. we can't merge secret keys
-#: g10/import.c:617
+#: g10/import.c:605
 #, c-format
 msgid "key %08lX: already in secret keyring\n"
 msgstr "þlosilo %08lX: jam en sekreta þlosilaro\n"
 
-#: g10/import.c:622
+#: g10/import.c:610
 #, c-format
 msgid "key %08lX: secret key not found: %s\n"
 msgstr "þlosilo %08lX: sekreta þlosilo ne trovita: %s\n"
 
-#: g10/import.c:651
+#: g10/import.c:639
 #, c-format
 msgid "key %08lX: no public key - can't apply revocation certificate\n"
 msgstr ""
 "þlosilo %08lX: publika þlosilo mankas - ne povas apliki revokatestilon\n"
 
-#: g10/import.c:682
+#: g10/import.c:670
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - rejected\n"
 msgstr "þlosilo %08lX: nevalida revokatestilo: %s - malakceptita\n"
 
-#: g10/import.c:714
+#: g10/import.c:702
 #, c-format
 msgid "key %08lX: revocation certificate imported\n"
 msgstr "þlosilo %08lX: revokatestilo importita\n"
 
-#: g10/import.c:756
+#: g10/import.c:744
 #, c-format
 msgid "key %08lX: no user ID for signature\n"
 msgstr "þlosilo %08lX: mankas uzantidentigilo por subskribo\n"
 
-#: g10/import.c:763 g10/import.c:787
+#: g10/import.c:751 g10/import.c:775
 #, c-format
 msgid "key %08lX: unsupported public key algorithm\n"
 msgstr "þlosilo %08lX: nerealigita publikþlosila metodo\n"
 
-#: g10/import.c:764
+#: g10/import.c:752
 #, c-format
 msgid "key %08lX: invalid self-signature\n"
 msgstr "þlosilo %08lX: nevalida mem-subskribo\n"
 
-#: g10/import.c:779
+#: g10/import.c:767
 #, c-format
 msgid "key %08lX: no subkey for key binding\n"
 msgstr "þlosilo %08lX: mankas subþlosilo por þlosilbindado\n"
 
-#: g10/import.c:788
+#: g10/import.c:776
 #, c-format
 msgid "key %08lX: invalid subkey binding\n"
 msgstr "þlosilo %08lX: nevalida subþlosila bindado\n"
 
-#: g10/import.c:815
+#: g10/import.c:803
 #, c-format
 msgid "key %08lX: accepted non self-signed user ID '"
 msgstr "þlosilo %08lX: akceptis ne-mem-subskribitan uzantidentigilon '"
 
-#: g10/import.c:844
+#: g10/import.c:832
 #, c-format
 msgid "key %08lX: skipped user ID '"
 msgstr "þlosilo %08lX: ignoris uzantidentigilon '"
 
-#: g10/import.c:867
+#: g10/import.c:855
 #, c-format
 msgid "key %08lX: skipped subkey\n"
 msgstr "þlosilo %08lX: ignoris subþlosilon\n"
@@ -1928,32 +1911,32 @@ msgstr "þlosilo %08lX: ignoris subþlosilon\n"
 #. * to import non-exportable signature when we have the
 #. * the secret key used to create this signature - it
 #. * seems that this makes sense
-#: g10/import.c:892
+#: g10/import.c:880
 #, c-format
 msgid "key %08lX: non exportable signature (class %02x) - skipped\n"
 msgstr "þlosilo %08lX: neeksportebla subskribo (klaso %02x) - ignorita\n"
 
-#: g10/import.c:901
+#: g10/import.c:889
 #, c-format
 msgid "key %08lX: revocation certificate at wrong place - skipped\n"
 msgstr "þlosilo %08lX: revokatestilo en maløusta loko - ignorita\n"
 
-#: g10/import.c:909
+#: g10/import.c:897
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - skipped\n"
 msgstr "þlosilo %08lX: nevalida revokatestilo: %s - ignorita\n"
 
-#: g10/import.c:1009
+#: g10/import.c:997
 #, c-format
 msgid "key %08lX: duplicated user ID detected - merged\n"
 msgstr "þlosilo %08lX: trovis ripetitan uzantidentigilon - kunfandita\n"
 
-#: g10/import.c:1060
+#: g10/import.c:1048
 #, c-format
 msgid "key %08lX: revocation certificate added\n"
 msgstr "þlosilo %08lX: revokatestilo aldonita\n"
 
-#: g10/import.c:1174 g10/import.c:1227
+#: g10/import.c:1162 g10/import.c:1215
 #, c-format
 msgid "key %08lX: our copy has no self-signature\n"
 msgstr "þlosilo %08lX: nia kopio ne havas mem-subskribon\n"
@@ -2397,31 +2380,30 @@ msgstr "Nevalida komando (provu per \"helpo\")\n"
 #: g10/keyedit.c:1080 g10/keyedit.c:1106
 #, c-format
 msgid "%s%c %4u%c/%08lX  created: %s expires: %s"
-msgstr ""
+msgstr "%s%c %4u%c/%08lX  kreita: %s eksvalidiøos: %s"
 
 #: g10/keyedit.c:1089
 #, c-format
 msgid " trust: %c/%c"
-msgstr ""
+msgstr " fido: %c/%c"
 
 #: g10/keyedit.c:1093
 msgid "This key has been disabled"
 msgstr "Æi tiu þlosilo estas malþaltita"
 
 #: g10/keyedit.c:1122
-#, fuzzy, c-format
+#, c-format
 msgid "rev! subkey has been revoked: %s\n"
-msgstr "þlosilo %08lX: subþlosilo estas revokita!\n"
+msgstr "rev! subþlosilo estas revokita: %s\n"
 
 #: g10/keyedit.c:1125
-#, fuzzy
 msgid "rev- faked revocation found\n"
-msgstr "         novaj þlosilrevokoj: %lu\n"
+msgstr "rev- falsita revoko trovita\n"
 
 #: g10/keyedit.c:1127
 #, c-format
 msgid "rev? problem checking revocation: %s\n"
-msgstr ""
+msgstr "rev? problemo en kontrolo de revoko: %s\n"
 
 #: g10/keyedit.c:1365
 msgid "Delete this good signature? (y/N/q)"
@@ -2531,18 +2513,8 @@ msgstr "Æu vere krei la revokatestilojn? (j/N)"
 msgid "no secret key\n"
 msgstr "mankas sekreta þlosilo\n"
 
-#: g10/keylist.c:158
-#, fuzzy
-msgid "invalid"
-msgstr "nevalida kiraso"
-
-#: g10/keylist.c:178
-#, fuzzy
-msgid "revoked"
-msgstr "rev"
-
 #. of subkey
-#: g10/keylist.c:400 g10/mainproc.c:760
+#: g10/keylist.c:318 g10/mainproc.c:742
 #, c-format
 msgid " [expires: %s]"
 msgstr " [eksvalidiøos: %s]"
@@ -2552,104 +2524,104 @@ msgstr " [eksvalidiøos: %s]"
 msgid "public key is %08lX\n"
 msgstr "publika þlosilo estas %08lX\n"
 
-#: g10/mainproc.c:257
+#: g10/mainproc.c:248
 msgid "public key encrypted data: good DEK\n"
 msgstr "publikþlosile æifritaj datenoj: bona DEK\n"
 
-#: g10/mainproc.c:299
+#: g10/mainproc.c:281
 #, c-format
 msgid "encrypted with %u-bit %s key, ID %08lX, created %s\n"
 msgstr "æifrita per %u-bita %s-þlosilo, %08lX, kreita je %s\n"
 
-#: g10/mainproc.c:309
+#: g10/mainproc.c:291
 #, c-format
 msgid "encrypted with %s key, ID %08lX\n"
 msgstr "æifrita per %s-þlosilo, %08lX\n"
 
-#: g10/mainproc.c:315
+#: g10/mainproc.c:297
 msgid "no secret key for decryption available\n"
 msgstr "mankas sekreta þlosilo por malæifrado\n"
 
-#: g10/mainproc.c:324
+#: g10/mainproc.c:306
 #, c-format
 msgid "public key decryption failed: %s\n"
 msgstr "publikþlosila malæifrado malsukcesis: %s\n"
 
-#: g10/mainproc.c:361
+#: g10/mainproc.c:343
 msgid "decryption okay\n"
 msgstr "malæifrado sukcesis\n"
 
-#: g10/mainproc.c:366
+#: g10/mainproc.c:348
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "AVERTO: æifrita mesaøo estis manipulita!\n"
 
-#: g10/mainproc.c:371
+#: g10/mainproc.c:353
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "malæifrado malsukcesis: %s\n"
 
-#: g10/mainproc.c:390
+#: g10/mainproc.c:372
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgstr "NOTO: sendinto petis konfidencon (\"for-your-eyes-only\")\n"
 
-#: g10/mainproc.c:392
+#: g10/mainproc.c:374
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "originala dosiernomo='%.*s'\n"
 
-#: g10/mainproc.c:544
+#: g10/mainproc.c:526
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "memstara revoko - uzu \"gpg --import\" por apliki øin\n"
 
-#: g10/mainproc.c:631 g10/mainproc.c:640
+#: g10/mainproc.c:613 g10/mainproc.c:622
 msgid "WARNING: invalid notation data found\n"
 msgstr "AVERTO: nevalida notacia dateno trovita\n"
 
-#: g10/mainproc.c:643
+#: g10/mainproc.c:625
 msgid "Notation: "
 msgstr "Notacio: "
 
-#: g10/mainproc.c:650
+#: g10/mainproc.c:632
 msgid "Policy: "
 msgstr "Gvidlinio: "
 
-#: g10/mainproc.c:1080
+#: g10/mainproc.c:1062
 msgid "signature verification suppressed\n"
 msgstr "kontrolo de subskribo estas malþaltita\n"
 
-#: g10/mainproc.c:1086
+#: g10/mainproc.c:1068
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Subskribo farita je %.*s per %s, þlosilo %08lX\n"
 
 #. just in case that we have no userid
-#: g10/mainproc.c:1112 g10/mainproc.c:1123
+#: g10/mainproc.c:1094 g10/mainproc.c:1105
 msgid "BAD signature from \""
 msgstr "MALBONA subskribo de \""
 
-#: g10/mainproc.c:1113 g10/mainproc.c:1124
+#: g10/mainproc.c:1095 g10/mainproc.c:1106
 msgid "Good signature from \""
 msgstr "Bona subskribo de \""
 
-#: g10/mainproc.c:1115
+#: g10/mainproc.c:1097
 msgid "                aka \""
 msgstr "            alinome \""
 
-#: g10/mainproc.c:1171
+#: g10/mainproc.c:1153
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Ne povas kontroli subskribon: %s\n"
 
-#: g10/mainproc.c:1235
+#: g10/mainproc.c:1217
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "memstara subskribo de klaso 0x%02x\n"
 
-#: g10/mainproc.c:1281
+#: g10/mainproc.c:1263
 msgid "old style (PGP 2.x) signature\n"
 msgstr "malnovstila subskribo (PGP 2.x)\n"
 
-#: g10/mainproc.c:1286
+#: g10/mainproc.c:1268
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "nevalida radikpaketo trovita en proc_tree()\n"
 
@@ -2666,7 +2638,15 @@ msgstr "AVERTO: programo povas krei core-dosieron!\n"
 msgid "Experimental algorithms should not be used!\n"
 msgstr "Eksperimentaj metodoj ne estu uzataj!\n"
 
-#: g10/misc.c:232
+#: g10/misc.c:219
+msgid ""
+"RSA keys are deprecated; please consider creating a new key and use this key "
+"in the future\n"
+msgstr ""
+"RSA-þlosiloj estas malrekomendataj; bonvolu pripensi krei novan þlosilon kaj "
+"uzi tiun en la estonteco\n"
+
+#: g10/misc.c:241
 msgid "this cipher algorithm is depreciated; please use a more standard one!\n"
 msgstr "æi tiu æifrad-metodo estas malrekomendata; bonvolu uzi pli normalan!\n"
 
@@ -2675,7 +2655,7 @@ msgstr "æi tiu æifrad-metodo estas malrekomendata; bonvolu uzi pli normalan!\n"
 msgid "can't handle public key algorithm %d\n"
 msgstr "ne povas trakti publikþlosilan metodon %d\n"
 
-#: g10/parse-packet.c:972
+#: g10/parse-packet.c:965
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "subpaketo de speco %d havas þaltitan \"critical bit\"\n"
@@ -2712,51 +2692,51 @@ msgstr "Donu pasfrazon: "
 msgid "Repeat passphrase: "
 msgstr "Ripetu pasfrazon: "
 
-#: g10/plaintext.c:67
+#: g10/plaintext.c:63
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "datenoj ne savitaj; uzu la opcion \"--output\" por savi ilin\n"
 
-#: g10/plaintext.c:324
+#: g10/plaintext.c:317
 msgid "Detached signature.\n"
 msgstr "Aparta subskribo.\n"
 
-#: g10/plaintext.c:328
+#: g10/plaintext.c:321
 msgid "Please enter name of data file: "
 msgstr "Bonvolu doni la nomon de la dosiero: "
 
-#: g10/plaintext.c:349
+#: g10/plaintext.c:342
 msgid "reading stdin ...\n"
 msgstr "legas la normalan enigon ...\n"
 
-#: g10/plaintext.c:392
+#: g10/plaintext.c:385
 #, c-format
 msgid "can't open signed data `%s'\n"
 msgstr "ne povas malfermi subskribitan dosieron '%s'\n"
 
-#: g10/pubkey-enc.c:76
+#: g10/pubkey-enc.c:79
 #, c-format
 msgid "anonymous receiver; trying secret key %08lX ...\n"
 msgstr "nenomita ricevonto; provas per sekreta þlosilo %08lX ...\n"
 
-#: g10/pubkey-enc.c:82
+#: g10/pubkey-enc.c:85
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "bone; ni estas la nenomita ricevonto.\n"
 
-#: g10/pubkey-enc.c:134
+#: g10/pubkey-enc.c:137
 msgid "old encoding of the DEK is not supported\n"
 msgstr "malnova kodado de DEK ne estas realigita\n"
 
-#: g10/pubkey-enc.c:153
+#: g10/pubkey-enc.c:156
 #, c-format
 msgid "cipher algorithm %d is unknown or disabled\n"
 msgstr "æifrad-metodo %d estas nekonata aý malþaltita\n"
 
-#: g10/pubkey-enc.c:192
+#: g10/pubkey-enc.c:195
 #, c-format
 msgid "NOTE: cipher algorithm %d not found in preferences\n"
 msgstr "NOTO: æifrad-metodo %d ne trovita en preferoj\n"
 
-#: g10/pubkey-enc.c:198
+#: g10/pubkey-enc.c:201
 #, c-format
 msgid "NOTE: secret key %08lX expired at %s\n"
 msgstr "NOTO: sekreta þlosilo %08lX eksvalidiøis je %s\n"
@@ -2818,33 +2798,33 @@ msgid "WARNING: Weak key detected - please change passphrase again.\n"
 msgstr ""
 "AVERTO: Malforta þlosilo trovita - bonvolu þanøi la pasfrazon denove.\n"
 
-#: g10/sig-check.c:199
+#: g10/sig-check.c:202
 msgid "assuming bad MDC due to an unknown critical bit\n"
 msgstr "supozas malbonan sigelon (MDC) pro nekonata \"critical bit\"\n"
 
-#: g10/sig-check.c:297
+#: g10/sig-check.c:300
 msgid ""
 "this is a PGP generated ElGamal key which is NOT secure for signatures!\n"
 msgstr ""
 "æi tio estas PGP-kreita ElGamal-þlosilo, kiu NE estas sekura por "
 "subskribado!\n"
 
-#: g10/sig-check.c:305
+#: g10/sig-check.c:308
 #, c-format
 msgid "public key is %lu second newer than the signature\n"
 msgstr "la publika þlosilo estas %lu sekundon pli nova ol la subskribo\n"
 
-#: g10/sig-check.c:306
+#: g10/sig-check.c:309
 #, c-format
 msgid "public key is %lu seconds newer than the signature\n"
 msgstr "la publika þlosilo estas %lu sekundojn pli nova ol la subskribo\n"
 
-#: g10/sig-check.c:324
+#: g10/sig-check.c:327
 #, c-format
 msgid "NOTE: signature key expired %s\n"
 msgstr "NOTO: subskribo-þlosilo eksvalidiøis je %s\n"
 
-#: g10/sig-check.c:393
+#: g10/sig-check.c:396
 msgid "assuming bad signature due to an unknown critical bit\n"
 msgstr "supozas malbonan subskribon pro nekonata \"critical bit\"\n"
 
@@ -2853,7 +2833,7 @@ msgstr "supozas malbonan subskribon pro nekonata \"critical bit\"\n"
 msgid "%s signature from: %s\n"
 msgstr "%s-subskribo de: %s\n"
 
-#: g10/sign.c:290 g10/sign.c:610
+#: g10/sign.c:290 g10/sign.c:606
 #, c-format
 msgid "can't create %s: %s\n"
 msgstr "ne povas krei %s: %s\n"
@@ -2901,7 +2881,7 @@ msgstr "%s: ne povas aliri: %s\n"
 msgid "%s: directory does not exist!\n"
 msgstr "%s: dosierujo ne ekzistas!\n"
 
-#: g10/openfile.c:226 g10/openfile.c:295 g10/ringedit.c:1363 g10/tdbio.c:444
+#: g10/openfile.c:216 g10/openfile.c:284 g10/ringedit.c:1363 g10/tdbio.c:444
 #, c-format
 msgid "%s: can't create: %s\n"
 msgstr "%s: ne povas krei: %s\n"
@@ -3001,296 +2981,286 @@ msgstr "%s: malsukcesis aldoni registron: %s\n"
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr "la fido-datenaro estas fuþita; bonvolu ruli \"gpg --fix-trustdb\".\n"
 
-#: g10/trustdb.c:169
+#: g10/trustdb.c:168
 #, c-format
 msgid "trust record %lu, req type %d: read failed: %s\n"
 msgstr "fido-datenaro loko %lu, petospeco %d: lego malsukcesis: %s\n"
 
-#: g10/trustdb.c:184
+#: g10/trustdb.c:183
 #, c-format
 msgid "trust record %lu, type %d: write failed: %s\n"
 msgstr "fido-datenaro %lu, speco %d: skribo malsukcesis: %s\n"
 
-#: g10/trustdb.c:198
+#: g10/trustdb.c:197
 #, c-format
 msgid "trust record %lu: delete failed: %s\n"
 msgstr "fido-registro %lu: forviþo malsukcesis: %s\n"
 
-#: g10/trustdb.c:212
+#: g10/trustdb.c:211
 #, c-format
 msgid "trustdb: sync failed: %s\n"
 msgstr "fido-datenaro: sync malsukcesis: %s\n"
 
-#: g10/trustdb.c:377
+#: g10/trustdb.c:376
 #, c-format
 msgid "error reading dir record for LID %lu: %s\n"
 msgstr "eraro dum legado de dosieruja registro por LID %lu: %s\n"
 
-#: g10/trustdb.c:384
+#: g10/trustdb.c:383
 #, c-format
 msgid "lid %lu: expected dir record, got type %d\n"
 msgstr "lid %lu: atendis dosierujan registron, trovis specon %d\n"
 
-#: g10/trustdb.c:389
+#: g10/trustdb.c:388
 #, c-format
 msgid "no primary key for LID %lu\n"
 msgstr "mankas æefa þlosilo por LID %lu\n"
 
-#: g10/trustdb.c:394
+#: g10/trustdb.c:393
 #, c-format
 msgid "error reading primary key for LID %lu: %s\n"
 msgstr "eraro dum legado de æefa þlosilo por LID %lu: %s\n"
 
-#: g10/trustdb.c:433
+#: g10/trustdb.c:432
 #, c-format
 msgid "get_dir_record: search_record failed: %s\n"
 msgstr "get_dir_record: search_record malsukcesis: %s\n"
 
-#: g10/trustdb.c:474
-#, fuzzy, c-format
-msgid "'%s' is not a valid long keyID\n"
-msgstr "%s: ne valida þlosilidentigilo\n"
-
-#: g10/trustdb.c:501
-#, c-format
-msgid "key %08lX: can't put it into the trustdb\n"
-msgstr "þlosilo %08lX: ne povas meti øin en la fido-datenaron\n"
-
-#: g10/trustdb.c:507
-#, c-format
-msgid "key %08lX: query record failed\n"
-msgstr "þlosilo %08lX: peto-registro malsukcesis\n"
-
-#: g10/trustdb.c:516
-#, c-format
-msgid "key %08lX: already in trusted key table\n"
-msgstr "þlosilo %08lX: jam en tabelo de fidataj þlosiloj\n"
-
-#: g10/trustdb.c:519
-#, c-format
-msgid "key %08lX: accepted as trusted key.\n"
-msgstr "þlosilo %08lX: akceptita kiel fidata þlosilo.\n"
-
-#: g10/trustdb.c:546
-#, fuzzy, c-format
-msgid "key %08lX: no public key for trusted key - skipped\n"
-msgstr "þlosilo %08lX: ne protektita - ignorita\n"
-
-#: g10/trustdb.c:565
+#: g10/trustdb.c:487
 #, c-format
 msgid "NOTE: secret key %08lX is NOT protected.\n"
 msgstr "NOTO: sekreta þlosilo %08lX NE estas protektita.\n"
 
-#: g10/trustdb.c:577
+#: g10/trustdb.c:495
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "þlosilo %08lX: sekreta þlosilo sen publika þlosilo - ignorita\n"
 
-#: g10/trustdb.c:584
+#: g10/trustdb.c:502
 #, c-format
 msgid "key %08lX: secret and public key don't match\n"
 msgstr "þlosilo %08lX: sekreta kaj publika þlosiloj ne kongruas\n"
 
-#: g10/trustdb.c:597
+#: g10/trustdb.c:514
+#, c-format
+msgid "key %08lX: can't put it into the trustdb\n"
+msgstr "þlosilo %08lX: ne povas meti øin en la fido-datenaron\n"
+
+#: g10/trustdb.c:520
+#, c-format
+msgid "key %08lX: query record failed\n"
+msgstr "þlosilo %08lX: peto-registro malsukcesis\n"
+
+#: g10/trustdb.c:529
+#, c-format
+msgid "key %08lX: already in trusted key table\n"
+msgstr "þlosilo %08lX: jam en tabelo de fidataj þlosiloj\n"
+
+#: g10/trustdb.c:532
+#, c-format
+msgid "key %08lX: accepted as trusted key.\n"
+msgstr "þlosilo %08lX: akceptita kiel fidata þlosilo.\n"
+
+#: g10/trustdb.c:540
 #, c-format
 msgid "enumerate secret keys failed: %s\n"
 msgstr "listigo de sekretaj þlosiloj malsukcesis: %s\n"
 
-#: g10/trustdb.c:987
+#: g10/trustdb.c:921
 #, c-format
 msgid "key %08lX.%lu: Good subkey binding\n"
 msgstr "þlosilo %08lX.%lu: Bona subþlosila bindado\n"
 
-#: g10/trustdb.c:993 g10/trustdb.c:1028
+#: g10/trustdb.c:927 g10/trustdb.c:962
 #, c-format
 msgid "key %08lX.%lu: Invalid subkey binding: %s\n"
 msgstr "þlosilo %08lX.%lu: Nevalida subþlosila bindado: %s\n"
 
-#: g10/trustdb.c:1005
+#: g10/trustdb.c:939
 #, c-format
 msgid "key %08lX.%lu: Valid key revocation\n"
 msgstr "þlosilo %08lX.%lu: Valida þlosilrevoko\n"
 
-#: g10/trustdb.c:1011
+#: g10/trustdb.c:945
 #, c-format
 msgid "key %08lX.%lu: Invalid key revocation: %s\n"
 msgstr "þlosilo %08lX.%lu: Nevalida þlosilrevoko: %s\n"
 
-#: g10/trustdb.c:1022
+#: g10/trustdb.c:956
 #, c-format
 msgid "key %08lX.%lu: Valid subkey revocation\n"
 msgstr "þlosilo %08lX.%lu: Valida subþlosilrevoko\n"
 
-#: g10/trustdb.c:1133
+#: g10/trustdb.c:1067
 msgid "Good self-signature"
 msgstr "Bona mem-subskribo"
 
-#: g10/trustdb.c:1143
+#: g10/trustdb.c:1077
 msgid "Invalid self-signature"
 msgstr "Nevalida mem-subskribo"
 
-#: g10/trustdb.c:1170
+#: g10/trustdb.c:1104
 msgid "Valid user ID revocation skipped due to a newer self signature"
 msgstr "Valida uzantidentigil-revoko ignorita pro pli nova mem-subskribo"
 
-#: g10/trustdb.c:1176
+#: g10/trustdb.c:1110
 msgid "Valid user ID revocation"
 msgstr "Valida uzantidentigil-revoko"
 
-#: g10/trustdb.c:1181
+#: g10/trustdb.c:1115
 msgid "Invalid user ID revocation"
 msgstr "Nevalida uzantidentigil-revoko"
 
-#: g10/trustdb.c:1223
+#: g10/trustdb.c:1157
 msgid "Valid certificate revocation"
 msgstr "Valida atestilrevoko"
 
-#: g10/trustdb.c:1224
+#: g10/trustdb.c:1158
 msgid "Good certificate"
 msgstr "Bona atestilo"
 
-#: g10/trustdb.c:1252
+#: g10/trustdb.c:1186
 msgid "Invalid certificate revocation"
 msgstr "Nevalida atestilrevoko"
 
-#: g10/trustdb.c:1253
+#: g10/trustdb.c:1187
 msgid "Invalid certificate"
 msgstr "Nevalida atestilo"
 
-#: g10/trustdb.c:1270 g10/trustdb.c:1274
+#: g10/trustdb.c:1204 g10/trustdb.c:1208
 #, c-format
 msgid "sig record %lu[%d] points to wrong record.\n"
 msgstr "subskribo-registro %lu[%d] montras al maløusta registro.\n"
 
-#: g10/trustdb.c:1333
+#: g10/trustdb.c:1267
 msgid "duplicated certificate - deleted"
 msgstr "ripetita atestilo - forviþita"
 
-#: g10/trustdb.c:1650
+#: g10/trustdb.c:1584
 #, c-format
 msgid "tdbio_search_dir failed: %s\n"
 msgstr "tdbio_search_dir malsukcesis: %s\n"
 
-#: g10/trustdb.c:1784
+#: g10/trustdb.c:1718
 #, c-format
 msgid "lid ?: insert failed: %s\n"
 msgstr "lid ?: enþovo malsukcesis: %s\n"
 
-#: g10/trustdb.c:1789
+#: g10/trustdb.c:1723
 #, c-format
 msgid "lid %lu: insert failed: %s\n"
 msgstr "lid %lu: enþovo malsukcesis: %s\n"
 
-#: g10/trustdb.c:1795
+#: g10/trustdb.c:1729
 #, c-format
 msgid "lid %lu: inserted\n"
 msgstr "lid %lu: enþovita\n"
 
-#: g10/trustdb.c:1800
+#: g10/trustdb.c:1734
 #, c-format
 msgid "error reading dir record: %s\n"
 msgstr "eraro dum legado de dosieruja registro: %s\n"
 
-#: g10/trustdb.c:1808 g10/trustdb.c:1871
+#: g10/trustdb.c:1742 g10/trustdb.c:1805
 #, c-format
 msgid "%lu keys processed\n"
 msgstr "%lu þlosiloj traktitaj\n"
 
-#: g10/trustdb.c:1810 g10/trustdb.c:1877
+#: g10/trustdb.c:1744 g10/trustdb.c:1811
 #, c-format
 msgid "\t%lu keys with errors\n"
 msgstr "\t%lu þlosiloj kun eraroj\n"
 
-#: g10/trustdb.c:1812
+#: g10/trustdb.c:1746
 #, c-format
 msgid "\t%lu keys inserted\n"
 msgstr "\t%lu þlosiloj enþovitaj\n"
 
-#: g10/trustdb.c:1815
+#: g10/trustdb.c:1749
 #, c-format
 msgid "enumerate keyblocks failed: %s\n"
 msgstr "listigo de þlosilblokoj malsukcesis: %s\n"
 
-#: g10/trustdb.c:1863
+#: g10/trustdb.c:1797
 #, c-format
 msgid "lid %lu: dir record w/o key - skipped\n"
 msgstr "lid %lu: dosieruja registro sen þlosilo - ignorita\n"
 
-#: g10/trustdb.c:1873
+#: g10/trustdb.c:1807
 #, c-format
 msgid "\t%lu due to new pubkeys\n"
 msgstr "\t%lu pro novaj publikaj þlosiloj\n"
 
-#: g10/trustdb.c:1875
+#: g10/trustdb.c:1809
 #, c-format
 msgid "\t%lu keys skipped\n"
 msgstr "\t%lu þlosiloj ignoritaj\n"
 
-#: g10/trustdb.c:1879
+#: g10/trustdb.c:1813
 #, c-format
 msgid "\t%lu keys updated\n"
 msgstr "\t%lu þlosiloj aktualigitaj\n"
 
-#: g10/trustdb.c:2224
+#: g10/trustdb.c:2158
 msgid "Ooops, no keys\n"
 msgstr "Hu, mankas þlosiloj\n"
 
-#: g10/trustdb.c:2228
+#: g10/trustdb.c:2162
 msgid "Ooops, no user IDs\n"
 msgstr "Hu, mankas uzantidentigiloj\n"
 
-#: g10/trustdb.c:2386
+#: g10/trustdb.c:2320
 #, c-format
 msgid "check_trust: search dir record failed: %s\n"
 msgstr "check_trust: seræo pri dosieruja registro malsukcesis: %s\n"
 
-#: g10/trustdb.c:2395
+#: g10/trustdb.c:2329
 #, c-format
 msgid "key %08lX: insert trust record failed: %s\n"
 msgstr "þlosilo %08lX: enþovo de fidoregistro malsukcesis: %s\n"
 
-#: g10/trustdb.c:2399
+#: g10/trustdb.c:2333
 #, c-format
 msgid "key %08lX.%lu: inserted into trustdb\n"
 msgstr "þlosilo %08lX.%lu: enþovis en fido-datenaron\n"
 
-#: g10/trustdb.c:2407
+#: g10/trustdb.c:2341
 #, c-format
 msgid "key %08lX.%lu: created in future (time warp or clock problem)\n"
 msgstr ""
 "þlosilo %08lX.%lu: kreita en la estonteco (tempotordo aý horloøeraro)\n"
 
-#: g10/trustdb.c:2422
+#: g10/trustdb.c:2356
 #, c-format
 msgid "key %08lX.%lu: expired at %s\n"
 msgstr "þlosilo %08lX.%lu: eksvalidiøis je %s\n"
 
-#: g10/trustdb.c:2430
+#: g10/trustdb.c:2364
 #, c-format
 msgid "key %08lX.%lu: trust check failed: %s\n"
 msgstr "þlosilo %08lX.%lu: fido-kontrolo malsukcesis: %s\n"
 
-#: g10/trustdb.c:2581
+#: g10/trustdb.c:2515
 #, c-format
 msgid "user '%s' not found: %s\n"
 msgstr "uzanto '%s' ne trovita: %s\n"
 
-#: g10/trustdb.c:2583
+#: g10/trustdb.c:2517
 #, c-format
 msgid "problem finding '%s' in trustdb: %s\n"
 msgstr "problemo dum trovo de '%s' en fido-datenaro: %s\n"
 
-#: g10/trustdb.c:2586
+#: g10/trustdb.c:2520
 #, c-format
 msgid "user '%s' not in trustdb - inserting\n"
 msgstr "uzanto '%s' ne estas en fido-datenaro - enþovas\n"
 
-#: g10/trustdb.c:2589
+#: g10/trustdb.c:2523
 #, c-format
 msgid "failed to put '%s' into trustdb: %s\n"
 msgstr "malsukcesis meti '%s' en fido-datenaron: %s\n"
 
-#: g10/trustdb.c:2775 g10/trustdb.c:2805
+#: g10/trustdb.c:2709 g10/trustdb.c:2739
 msgid "WARNING: can't yet handle long pref records\n"
 msgstr "AVERTO: ne povas trakti longajn preferoregistrojn\n"
 
@@ -3358,49 +3328,49 @@ msgstr ""
 "por subskribado!\n"
 
 #. do not overwrite
-#: g10/openfile.c:84
+#: g10/openfile.c:79
 #, c-format
 msgid "File `%s' exists. "
 msgstr "Dosiero '%s' ekzistas. "
 
-#: g10/openfile.c:86
+#: g10/openfile.c:81
 msgid "Overwrite (y/N)? "
 msgstr "Æu surskribi (j/N)? "
 
-#: g10/openfile.c:119
+#: g10/openfile.c:109
 #, c-format
 msgid "%s: unknown suffix\n"
 msgstr "%s: nekonata sufikso\n"
 
-#: g10/openfile.c:141
+#: g10/openfile.c:131
 msgid "Enter new filename"
 msgstr "Donu novan dosiernomon"
 
-#: g10/openfile.c:182
+#: g10/openfile.c:172
 msgid "writing to stdout\n"
 msgstr "skribas al la normala eligo\n"
 
-#: g10/openfile.c:261
+#: g10/openfile.c:250
 #, c-format
 msgid "assuming signed data in `%s'\n"
 msgstr "supozas subskribitajn datenojn en '%s'\n"
 
-#: g10/openfile.c:311
+#: g10/openfile.c:300
 #, c-format
 msgid "%s: new options file created\n"
 msgstr "%s: nova opcio-dosiero kreita\n"
 
-#: g10/openfile.c:338
+#: g10/openfile.c:313
 #, c-format
 msgid "%s: can't create directory: %s\n"
 msgstr "%s: ne povas krei dosierujon: %s\n"
 
-#: g10/openfile.c:341
+#: g10/openfile.c:316
 #, c-format
 msgid "%s: directory created\n"
 msgstr "%s: dosierujo kreita\n"
 
-#: g10/openfile.c:343
+#: g10/openfile.c:318
 msgid "you have to start GnuPG again, so it can read the new options file\n"
 msgstr ""
 "vi devas restartigi GnuPG, por ke øi povu legi la novan opcio-dosieron\n"
@@ -3664,7 +3634,6 @@ msgstr ""
 "dosiero (montrita en parentezo) estos uzata."
 
 #: g10/helptext.c:229
-#, fuzzy
 msgid ""
 "You should specify a reason for the certification.  Depending on the\n"
 "context you have the ability to choose from this list:\n"
@@ -3710,10 +3679,3 @@ msgstr "Nenia helpo disponata"
 #, c-format
 msgid "No help available for `%s'"
 msgstr "Nenia helpo disponata por '%s'"
-
-#~ msgid ""
-#~ "RSA keys are deprecated; please consider creating a new key and use this key "
-#~ "in the future\n"
-#~ msgstr ""
-#~ "RSA-þlosiloj estas malrekomendataj; bonvolu pripensi krei novan þlosilon kaj "
-#~ "uzi tiun en la estonteco\n"

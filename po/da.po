@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2000-09-06 17:28+0200\n"
+"POT-Creation-Date: 2000-09-14 13:26+0200\n"
 "PO-Revision-Date: 2000-03-07 22:51+01:00\n"
 "Last-Translator: Birger Langkjer <birger.langkjer@image.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
@@ -309,11 +309,11 @@ msgstr "kan ikke åbne '%s': %s\n"
 msgid "too many random bits requested; the limit is %d\n"
 msgstr ""
 
-#: cipher/random.c:647
+#: cipher/random.c:650
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr "ADVARSEL: bruger usikker tilfældig-nummer-generator!!!\n"
 
-#: cipher/random.c:648
+#: cipher/random.c:651
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"
@@ -694,187 +694,191 @@ msgstr "brug: gpg [flag] "
 msgid "conflicting commands\n"
 msgstr "konfliktende kommandoer\n"
 
-#: g10/g10.c:703
+#: g10/g10.c:704
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTITS: ingen standard alternativfil '%s'\n"
 
-#: g10/g10.c:707
+#: g10/g10.c:708
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "alternativfil`%s': %s\n"
 
-#: g10/g10.c:714
+#: g10/g10.c:715
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "læser indstillinger fra `%s'\n"
 
-#: g10/g10.c:904
+#: g10/g10.c:905
 #, c-format
 msgid "%s is not a valid character set\n"
 msgstr "%s er ikke et gyldigt tegnsæt\n"
 
-#: g10/g10.c:968 g10/g10.c:977
+#: g10/g10.c:970
+msgid "WARNING: program may create a core file!\n"
+msgstr ""
+
+#: g10/g10.c:974 g10/g10.c:983
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTITS: %s er ikke til normal brug!\n"
 
-#: g10/g10.c:970
+#: g10/g10.c:976
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s ikke tilladt med %s!\n"
 
-#: g10/g10.c:973
+#: g10/g10.c:979
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s er meningsløs sammen med %s!\n"
 
-#: g10/g10.c:992 g10/g10.c:1004
+#: g10/g10.c:998 g10/g10.c:1010
 msgid "selected cipher algorithm is invalid\n"
 msgstr "valgte cifferalgoritme er ugyldig\n"
 
-#: g10/g10.c:998 g10/g10.c:1010
+#: g10/g10.c:1004 g10/g10.c:1016
 msgid "selected digest algorithm is invalid\n"
 msgstr "valgte resuméalgoritme er ugyldig\n"
 
-#: g10/g10.c:1014
+#: g10/g10.c:1020
 msgid "the given policy URL is invalid\n"
 msgstr "den givne politik-URL er ugyldig\n"
 
-#: g10/g10.c:1017
+#: g10/g10.c:1023
 #, c-format
 msgid "compress algorithm must be in range %d..%d\n"
 msgstr ""
 
-#: g10/g10.c:1019
+#: g10/g10.c:1025
 msgid "completes-needed must be greater than 0\n"
 msgstr ""
 
-#: g10/g10.c:1021
+#: g10/g10.c:1027
 msgid "marginals-needed must be greater than 1\n"
 msgstr ""
 
-#: g10/g10.c:1023
+#: g10/g10.c:1029
 msgid "max-cert-depth must be in range 1 to 255\n"
 msgstr ""
 
-#: g10/g10.c:1026
+#: g10/g10.c:1032
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "NOTE: simpel S2K modus (0) frarådes på det skarpeste\n"
 
-#: g10/g10.c:1030
+#: g10/g10.c:1036
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "ugyldig S2K modus; skal være 0, 1 el. 3\n"
 
 # er det klogt at oversætte TrustDB?
-#: g10/g10.c:1115
+#: g10/g10.c:1121
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "kunne ikke initialisere TillidsDB: %s\n"
 
-#: g10/g10.c:1121
+#: g10/g10.c:1127
 msgid "--store [filename]"
 msgstr "--store [filnavn (som gemmes)]"
 
-#: g10/g10.c:1128
+#: g10/g10.c:1134
 msgid "--symmetric [filename]"
 msgstr "--symmetric [filnavn]"
 
-#: g10/g10.c:1136
+#: g10/g10.c:1142
 msgid "--encrypt [filename]"
 msgstr "--encrypt [filnavn (som krypteres)]"
 
-#: g10/g10.c:1149
+#: g10/g10.c:1155
 msgid "--sign [filename]"
 msgstr "--sign [filnavn (som signeres)]"
 
-#: g10/g10.c:1162
+#: g10/g10.c:1168
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [filnavn]"
 
-#: g10/g10.c:1176
+#: g10/g10.c:1182
 msgid "--clearsign [filename]"
 msgstr "--clearsign [filnavn]"
 
-#: g10/g10.c:1193
+#: g10/g10.c:1199
 msgid "--decrypt [filename]"
 msgstr "--decrypt [filnavn (som dekrypteres)]"
 
-#: g10/g10.c:1201
+#: g10/g10.c:1207
 msgid "--sign-key user-id"
 msgstr "--sign-key bruger-id"
 
-#: g10/g10.c:1209
+#: g10/g10.c:1215
 msgid "--lsign-key user-id"
 msgstr "--lsign-key bruger-id"
 
-#: g10/g10.c:1217
+#: g10/g10.c:1223
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key bruger-id [kommandoer]"
 
-#: g10/g10.c:1233
+#: g10/g10.c:1239
 msgid "--delete-secret-key user-id"
 msgstr "--delete-secret-key bruger-id"
 
-#: g10/g10.c:1236
+#: g10/g10.c:1242
 msgid "--delete-key user-id"
 msgstr "--delete-key bruger-id"
 
-#: g10/encode.c:265 g10/g10.c:1273 g10/sign.c:393
+#: g10/encode.c:265 g10/g10.c:1279 g10/sign.c:393
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "kan ikke åbne %s: %s\n"
 
-#: g10/g10.c:1288
+#: g10/g10.c:1294
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [bruger-id] [nøglering]"
 
-#: g10/g10.c:1354
+#: g10/g10.c:1360
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "fjernelse af beskyttelse fejlede: %s\n"
 
-#: g10/g10.c:1362
+#: g10/g10.c:1368
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "påklædning af beskyttelse fejlede: %s\n"
 
-#: g10/g10.c:1433
+#: g10/g10.c:1439
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "ugyldig hash-algoritme `%s'\n"
 
-#: g10/g10.c:1514
+#: g10/g10.c:1520
 msgid "[filename]"
 msgstr "[filnavn]"
 
-#: g10/g10.c:1518
+#: g10/g10.c:1524
 msgid "Go ahead and type your message ...\n"
 msgstr "Gå til sagen og skriv meddelelsen ...\n"
 
-#: g10/decrypt.c:59 g10/g10.c:1521 g10/verify.c:68 g10/verify.c:113
+#: g10/decrypt.c:59 g10/g10.c:1527 g10/verify.c:68 g10/verify.c:113
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "kan ikke åbne `%s'\n"
 
-#: g10/g10.c:1694
+#: g10/g10.c:1700
 msgid ""
 "the first character of a notation name must be a letter or an underscore\n"
 msgstr ""
 "første bogstav af en notationsnavn skal være et bogstave eller en "
 "understregning\n"
 
-#: g10/g10.c:1700
+#: g10/g10.c:1706
 msgid ""
 "a notation name must have only letters, digits, dots or underscores and end "
 "with an '='\n"
 msgstr ""
 
-#: g10/g10.c:1706
+#: g10/g10.c:1712
 msgid "dots in a notation name must be surrounded by other characters\n"
 msgstr ""
 
-#: g10/g10.c:1714
+#: g10/g10.c:1720
 msgid "a notation value must not use any control characters\n"
 msgstr "en notationsværdi må ikke bruge nogen kontroltegn\n"
 
@@ -2582,20 +2586,16 @@ msgstr "gammeldags (PGP 2.x) signatur\n"
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr ""
 
-#: g10/misc.c:94
+#: g10/misc.c:96
 #, c-format
 msgid "can't disable core dumps: %s\n"
 msgstr "kan ikke slå core-dump fra: %s\n"
 
-#: g10/misc.c:97
-msgid "WARNING: program may create a core file!\n"
-msgstr ""
-
-#: g10/misc.c:205
+#: g10/misc.c:206
 msgid "Experimental algorithms should not be used!\n"
 msgstr ""
 
-#: g10/misc.c:232
+#: g10/misc.c:233
 msgid "this cipher algorithm is depreciated; please use a more standard one!\n"
 msgstr ""
 
@@ -2736,11 +2736,11 @@ msgstr "hemmelig nøgle ikke tilgængelig"
 msgid "protection algorithm %d is not supported\n"
 msgstr ""
 
-#: g10/seckey-cert.c:175
+#: g10/seckey-cert.c:184
 msgid "Invalid passphrase; please try again ...\n"
 msgstr ""
 
-#: g10/seckey-cert.c:231
+#: g10/seckey-cert.c:240
 msgid "WARNING: Weak key detected - please change passphrase again.\n"
 msgstr ""
 
@@ -2825,7 +2825,7 @@ msgstr ""
 msgid "%s: directory does not exist!\n"
 msgstr ""
 
-#: g10/openfile.c:226 g10/openfile.c:295 g10/ringedit.c:1363 g10/tdbio.c:444
+#: g10/openfile.c:226 g10/openfile.c:295 g10/ringedit.c:1369 g10/tdbio.c:444
 #, c-format
 msgid "%s: can't create: %s\n"
 msgstr ""
@@ -3234,26 +3234,26 @@ msgstr ""
 msgid "%s: can't create keyring: %s\n"
 msgstr ""
 
-#: g10/ringedit.c:319 g10/ringedit.c:1368
+#: g10/ringedit.c:319 g10/ringedit.c:1374
 #, c-format
 msgid "%s: keyring created\n"
 msgstr ""
 
-#: g10/ringedit.c:1545
+#: g10/ringedit.c:1551
 msgid "WARNING: 2 files with confidential information exists.\n"
 msgstr ""
 
-#: g10/ringedit.c:1546
+#: g10/ringedit.c:1552
 #, c-format
 msgid "%s is the unchanged one\n"
 msgstr ""
 
-#: g10/ringedit.c:1547
+#: g10/ringedit.c:1553
 #, c-format
 msgid "%s is the new one\n"
 msgstr ""
 
-#: g10/ringedit.c:1548
+#: g10/ringedit.c:1554
 msgid "Please fix this possible security flaw\n"
 msgstr ""
 

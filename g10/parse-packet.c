@@ -702,6 +702,18 @@ dump_sig_subpkt( int hashed, int type, int critical,
     const char *p=NULL;
     int i;
 
+    /* The CERT has warning out with explains how to use GNUPG to
+     * detect the ARRs - we print our old message here when it is a faked
+     * ARR and add an additional notice */
+    if ( type == SIGSUBPKT_ARR && !hashed ) {
+        printf("\tsubpkt %d len %u (additional recipient request)\n"
+               "WARNING: PGP versions > 5.0 and < 6.5.8 will automagically "
+               "encrypt to this key and thereby reveal the plaintext to "
+               "the owner of this ARR key. Detailed info follows:\n",
+               type, (unsigned)length );
+    }
+    
+   
     printf("\t%s%ssubpkt %d len %u (", /*)*/
 	      critical ? "critical ":"",
 	      hashed ? "hashed ":"", type, (unsigned)length );
@@ -808,7 +820,9 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	print_string( stdout, buffer, length, ')' );
 	break;
       case SIGSUBPKT_KEY_FLAGS:
-	p = "key flags";
+        fputs ( "key flags:", stdout );
+        for( i=0; i < length; i++ )
+            printf(" %02X", buffer[i] );
 	break;
       case SIGSUBPKT_SIGNERS_UID:
 	p = "signer's user ID";
