@@ -53,7 +53,7 @@ int sign_file( STRLIST filenames, int detached, STRLIST locusr,
 int clearsign_file( const char *fname, STRLIST locusr, const char *outfile );
 int sign_key( const char *username, STRLIST locusr );
 int edit_keysigs( const char *username );
-int delete_key( const char *username );
+int delete_key( const char *username, int secure );
 int change_passphrase( const char *username );
 
 /*-- sig-check.c --*/
@@ -96,5 +96,8 @@ int enarmor_file( const char *fname );
 
 /*-- revoke.c --*/
 int gen_revoke( const char *uname );
+
+/*-- keylist.c --*/
+void ext_key_list( STRLIST names );
 
 #endif /*G10_MAIN_H*/

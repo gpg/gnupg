@@ -1,3 +1,35 @@
+Thu Mar  5 10:20:06 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c: Is nom the common source for gpg and gpgm
+	* g10maint.c: Removed
+	* Makefile.am: Add rule to build g10maint.c
+
+Thu Mar  5 08:43:59 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c (main): Changed the way clear text sigs are faked.
+
+Wed Mar  4 19:47:37 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10maint.c (aMuttKeyList): New
+	* keylist.c: New.
+
+Wed Mar  4 17:20:33 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* getkey.c (get_pubkey_byname): Kludge to allow 0x prefix.
+
+Tue Mar  3 13:46:55 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10maint.c (main): New option --gen-random.
+
+Tue Mar  3 09:50:08 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c (aDeleteSecretKey): New.
+	(aEditSig): Add option "--edit-key" as synonym for "--edit-sig".
+	(aDeleteSecretKey): New.
+	* getkey.c (seckey_available): New.
+	* sign.c (delete_key): Enhanced to delete secret keys, changed all
+	callers.
+
 Mon Mar  2 21:23:48 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* pkc_list.c (build_pkc_list): Add interactive input of user ID.

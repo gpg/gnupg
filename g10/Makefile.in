@@ -95,6 +95,7 @@ l = @l@
 INCLUDES = -I$(top_srcdir)/include
 EXTRA_DIST = OPTIONS  pubring.asc
 OMIT_DEPENDENCIES = zlib.h zconf.h
+BUILT_SOURCES = g10maint.c
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
 bin_PROGRAMS = gpg gpgm
@@ -146,7 +147,8 @@ gpg_SOURCES  = g10.c		\
 	      keygen.c
 
 gpgm_SOURCES = g10maint.c   \
-	      dearmor.c 	\
+	      dearmor.c     \
+	      keylist.c     \
 	      $(common_source)
 
 LDADD = @INTLLIBS@ $(needed_libs) @ZLIBS@
@@ -170,7 +172,7 @@ gpg_LDADD = $(LDADD)
 gpg_DEPENDENCIES =  ../cipher/libcipher.a ../mpi/libmpi.a \
 ../util/libutil.a
 gpg_LDFLAGS = 
-gpgm_OBJECTS =  g10maint.o dearmor.o build-packet.o compress.o \
+gpgm_OBJECTS =  g10maint.o dearmor.o keylist.o build-packet.o compress.o \
 free-packet.o getkey.o pkclist.o skclist.o ringedit.o kbnode.o \
 mainproc.o armor.o mdfilter.o textfilter.o cipher.o elg.o rsa.o \
 openfile.o keyid.o trustdb.o parse-packet.o passphrase.o pubkey-enc.o \
@@ -193,13 +195,14 @@ GZIP = --best
 DEP_FILES =  .deps/armor.P .deps/build-packet.P .deps/cipher.P \
 .deps/comment.P .deps/compress.P .deps/dearmor.P .deps/elg.P \
 .deps/encode.P .deps/encr-data.P .deps/export.P .deps/free-packet.P \
-.deps/g10.P .deps/g10maint.P .deps/getkey.P .deps/import.P \
-.deps/kbnode.P .deps/keygen.P .deps/keyid.P .deps/mainproc.P \
-.deps/mdfilter.P .deps/openfile.P .deps/parse-packet.P \
-.deps/passphrase.P .deps/pkclist.P .deps/plaintext.P .deps/pubkey-enc.P \
-.deps/revoke.P .deps/ringedit.P .deps/rsa.P .deps/seckey-cert.P \
-.deps/seskey.P .deps/sig-check.P .deps/sign.P .deps/skclist.P \
-.deps/status.P .deps/textfilter.P .deps/trustdb.P
+.deps/g10.P .deps/g10maint .deps/g10maint.P .deps/getkey.P \
+.deps/import.P .deps/kbnode.P .deps/keygen.P .deps/keyid.P \
+.deps/keylist.P .deps/mainproc.P .deps/mdfilter.P .deps/openfile.P \
+.deps/parse-packet.P .deps/passphrase.P .deps/pkclist.P \
+.deps/plaintext.P .deps/pubkey-enc.P .deps/revoke.P .deps/ringedit.P \
+.deps/rsa.P .deps/seckey-cert.P .deps/seskey.P .deps/sig-check.P \
+.deps/sign.P .deps/skclist.P .deps/status.P .deps/textfilter.P \
+.deps/trustdb.P
 SOURCES = $(gpg_SOURCES) $(gpgm_SOURCES)
 OBJECTS = $(gpg_OBJECTS) $(gpgm_OBJECTS)
 
@@ -393,6 +396,9 @@ installcheck install-exec install-data install uninstall all \
 installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
+
+g10maint.c : g10.c
+	    $(CPP) $(DEFS) $(INCLUDES) -DIS_G10MAINT  $<  > $@ || rm $@
 
 $(PROGRAMS): $(needed_libs)
 

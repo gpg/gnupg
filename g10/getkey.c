@@ -323,6 +323,8 @@ get_pubkey_byname( PKT_public_cert *pkc, const char *name )
 	int i;
 	char buf[9];
 
+	if( *s == '0' && s[1] == 'x' && isxdigit(s[2]) )
+	    s += 2; /*kludge to allow 0x034343434 */
 	for(i=0; isxdigit(s[i]); i++ )
 	    ;
 	if( s[i] && !isspace(s[i]) ) /* not terminated by EOS or blank*/
@@ -417,6 +419,33 @@ get_seckey( PKT_secret_cert *skc, u32 *keyid )
   leave:
     return rc;
 }
+
+/****************
+ * Check wether the secret key is available
+ * Returns: 0 := key is available
+ *	    G10ERR_NO_SECKEY := not availabe
+ */
+int
+seckey_available( u32 *keyid )
+{
+    PKT_secret_cert *skc;
+    STRLIST sl;
+    int rc=0;
+
+    skc = m_alloc_clear( sizeof *skc );
+    for(sl = secret_keyrings; sl; sl = sl->next )
+	if( !(rc=scan_secret_keyring( skc, keyid, NULL, sl->d )) )
+	    goto found;
+    /* fixme: look at other places */
+    goto leave;
+
+  found:
+  leave:
+    free_secret_cert( skc );
+    return rc;
+}
+
+
 
 /****************
  * Get a secret key by name and store it into skc

@@ -836,7 +836,7 @@ verify_own_certs()
     while( !(rc=enum_secret_keys( &enum_context, skc) ) ) {
 	/* fixed: to be sure that it is a secret key of our own,
 	 *	  we should check it, but this needs a passphrase
-	 *	  for every key and this boring for the user.
+	 *	  for every key and this is boring for the user.
 	 *	  Solution:  Sign the secring and the trustring
 	 *		     and verify this signature during
 	 *		     startup

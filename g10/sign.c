@@ -35,6 +35,7 @@
 #include "main.h"
 #include "filter.h"
 #include "ttyio.h"
+#include "i18n.h"
 
 
 
@@ -855,21 +856,23 @@ edit_keysigs( const char *username )
 
 
 /****************
- * Eine public key aus dem keyring entfernen.
+ * Delete a public or secret key from a keyring.
  */
 int
-delete_key( const char *username )
+delete_key( const char *username, int secret )
 {
     int rc = 0;
     KBNODE keyblock = NULL;
     KBNODE node;
     KBPOS kbpos;
     PKT_public_cert *pkc;
-    u32 pkc_keyid[2];
+    PKT_secret_cert *skc;
+    u32 keyid[2];
     int okay=0;
 
     /* search the userid */
-    rc = find_keyblock_byname( &kbpos, username );
+    rc = secret? find_secret_keyblock_byname( &kbpos, username )
+	       : find_keyblock_byname( &kbpos, username );
     if( rc ) {
 	log_error("%s: user not found\n", username );
 	goto leave;
@@ -878,40 +881,77 @@ delete_key( const char *username )
     /* read the keyblock */
     rc = read_keyblock( &kbpos, &keyblock );
     if( rc ) {
-	log_error("%s: certificate read problem: %s\n", username, g10_errstr(rc) );
+	log_error("%s: read problem: %s\n", username, g10_errstr(rc) );
 	goto leave;
     }
 
     /* get the keyid from the keyblock */
-    node = find_kbnode( keyblock, PKT_PUBLIC_CERT );
+    node = find_kbnode( keyblock, secret? PKT_SECRET_CERT:PKT_PUBLIC_CERT );
     if( !node ) {
-	log_error("Oops; public key not found anymore!\n");
+	log_error("Oops; key not found anymore!\n");
 	rc = G10ERR_GENERAL;
 	goto leave;
     }
 
-    pkc = node->pkt->pkt.public_cert;
-    keyid_from_pkc( pkc, pkc_keyid );
+    if( secret ) {
+	skc = node->pkt->pkt.secret_cert;
+	keyid_from_skc( skc, keyid );
+    }
+    else {
+	pkc = node->pkt->pkt.public_cert;
+	keyid_from_pkc( pkc, keyid );
+	rc = seckey_available( keyid );
+	if( !rc ) {
+	    log_error(_(
+	    "there is a secret key for this public key!\n"));
+	    log_info(_(
+	    "use option \"--delete-secret-key\" to delete it first.\n"));
+	    rc = -1;
+	}
+	else if( rc != G10ERR_NO_SECKEY )
+	    log_error("%s: get secret key: %s\n", username, g10_errstr(rc) );
+	else
+	    rc = 0;
+    }
 
-    if( opt.batch && opt.answer_yes )
+    if( rc )
+	rc = 0;
+    else if( opt.batch && secret )
+	log_error(_("can't do that in batch-mode\n"));
+    else if( opt.batch && opt.answer_yes )
 	okay++;
     else if( opt.batch )
-	log_error("can't do that in batch-mode without \"--yes\"\n");
+	log_error(_("can't do that in batch-mode without \"--yes\"\n"));
     else {
 	char *p;
 	size_t n;
 
-	tty_printf("pub  %4u%c/%08lX %s   ",
-		  nbits_from_pkc( pkc ),
-		  pubkey_letter( pkc->pubkey_algo ),
-		  pkc_keyid[1], datestr_from_pkc(pkc) );
-	p = get_user_id( pkc_keyid, &n );
+	if( secret )
+	    tty_printf("sec  %4u%c/%08lX %s   ",
+		      nbits_from_skc( skc ),
+		      pubkey_letter( skc->pubkey_algo ),
+		      keyid[1], datestr_from_skc(skc) );
+	else
+	    tty_printf("pub  %4u%c/%08lX %s   ",
+		      nbits_from_pkc( pkc ),
+		      pubkey_letter( pkc->pubkey_algo ),
+		      keyid[1], datestr_from_pkc(pkc) );
+	p = get_user_id( keyid, &n );
 	tty_print_string( p, n );
 	m_free(p);
 	tty_printf("\n\n");
 
-	p = tty_get("Delete this key from the keyring? ");
+	p = tty_get(_("Delete this key from the keyring? "));
 	tty_kill_prompt();
+	if( secret && answer_is_yes(p)) {
+	    /* I think it is not required to check a passphrase; if
+	     * the user is so stupid to let others access his secret keyring
+	     * (and has no backup) - it is up him to read some very
+	     * basic texts about security.
+	     */
+	    m_free(p);
+	    p = tty_get(_("This is a secret key! - really delete? "));
+	}
 	if( answer_is_yes(p) )
 	    okay++;
 	m_free(p);

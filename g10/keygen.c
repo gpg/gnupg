@@ -299,8 +299,10 @@ generate_keypair()
     char *aname, *acomment, *amail;
 
 #ifndef TEST_ALGO
-    if( opt.batch || opt.answer_yes || opt.answer_no )
-	log_fatal(_("Key generation can only be used in interactive mode\n"));
+    if( opt.batch || opt.answer_yes || opt.answer_no ) {
+	log_error(_("Key generation can only be used in interactive mode\n"));
+	return;
+    }
 
     tty_printf(_("Please select the algorithm to use:\n"
 		 "   (1) ElGamal is the suggested one.\n"
