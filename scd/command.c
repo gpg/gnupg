@@ -813,7 +813,7 @@ cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
   /* Skip over options. */
   while ( *line == '-' && line[1] == '-' )
     {
-      while (!spacep (line))
+      while (*line && !spacep (line))
         line++;
       while (spacep (line))
         line++;
@@ -821,7 +821,7 @@ cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
   if (!*line)
     return set_error (Parameter_Error, "no key number given");
   keyno = line;
-  while (!spacep (line))
+  while (*line && !spacep (line))
     line++;
   *line = 0;
 
@@ -894,7 +894,7 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
   /* Skip over options. */
   while (*line == '-' && line[1] == '-')
     {
-      while (!spacep (line))
+      while (*line && !spacep (line))
         line++;
       while (spacep (line))
         line++;
@@ -902,7 +902,7 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
   if (!*line)
     return set_error (Parameter_Error, "no CHV number given");
   chvnostr = line;
-  while (!spacep (line))
+  while (*line && !spacep (line))
     line++;
   *line = 0;
 
