@@ -1,3 +1,8 @@
+2002-11-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Add notes about notation names and '@', the "--trust-model
+	always" option, and non-optimized memory wiping.
+
 2002-11-09  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac: Check for ctermid().

@@ -1,6 +1,18 @@
 Noteworthy changes in version 1.2.2 (unreleased)
 ------------------------------------------------
 
+    * Notation names that do not contain a '@' are no longer allowed
+      unless --expert is set.  This is to help prevent pollution of
+      the (as yet unused) IETF notation namespace.
+
+    * A "--trust-model always" option has been added to smooth the
+      transition to a future GnuPG that has multiple trust models.
+      This is identical to the current "--always-trust" option.
+
+    * Care is taken to prevent compiler optimization from removing
+      memory wiping code.
+
+
 Noteworthy changes in version 1.2.1 (2002-10-25)
 ------------------------------------------------
 
