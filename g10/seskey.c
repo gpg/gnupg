@@ -51,7 +51,7 @@ encode_session_key( DEK *dek, unsigned nbits )
     int nframe = (nbits+7) / 8;
     byte *p;
     byte *frame;
-    int i,n,c;
+    int i,n;
     u16 csum;
     MPI a;
 
@@ -86,12 +86,10 @@ encode_session_key( DEK *dek, unsigned nbits )
     frame[n++] = 2;
     i = nframe - 6 - dek->keylen;
     assert( i > 0 );
-    /* FIXME: replace the loop by a call to get_random_bits() */
-    for( ; i ; i-- ) {
-	while( !(c = get_random_byte(1)) )
-	    ;
-	frame[n++] = c;
-    }
+    p = get_random_bits( i*8, 1, 1 );
+    memcpy( frame+n, p, i );
+    m_free(p);
+    n += i;
     frame[n++] = 0;
     frame[n++] = dek->algo;
     memcpy( frame+n, dek->key, dek->keylen ); n += dek->keylen;

@@ -1,3 +1,7 @@
+Thu Aug  6 16:39:28 1998  Werner Koch,mobil,,,	(wk@tobold)
+
+	* mpi-bit.c (mpi_set_bytes): Removed.
+
 Wed Aug  5 15:11:12 1998  Werner Koch  (wk@(none))
 
 	* mpicoder.c (mpi_read_from_buffer): New.

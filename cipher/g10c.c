@@ -35,10 +35,4 @@ g10c_generate_secret_prime( unsigned nbits )
     return generate_secret_prime( nbits );
 }
 
-byte
-g10c_get_random_byte( int level )
-{
-    return get_random_byte( level );
-}
-
 

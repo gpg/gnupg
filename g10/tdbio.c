@@ -871,6 +871,33 @@ tdbio_search_dir_byfpr( const byte *fingerprint, size_t fingerlen,
     return rc;
 }
 
+static int
+del_reclist( ulong recno, int type )
+{
+    TRUSTREC rec;
+    int rc;
+
+    while( recno ) {
+	rc = tdbio_read_record( recno, &rec, type);
+	if( rc ) {
+	    log_error_f(db_name, "can't read record %lu: %s\n",
+						recno, g10_errstr(rc));
+	    return rc;
+	}
+	switch( type ) {
+	    case RECTYPE_PREF: recno = rec.r.pref.next; break;
+	    case RECTYPE_UID:  recno = rec.r.uid.next;	break;
+	    default: BUG();
+	}
+	rc = tdbio_delete_record( rec.recnum );
+	if( rc ) {
+	    log_error_f(db_name, "can't delete record %lu: %s\n",
+						rec.recnum, g10_errstr(rc));
+	    return rc;
+	}
+    }
+    return 0;
+}
 
 /****************
  * Delete the Userid UIDLID from DIRLID
@@ -878,7 +905,47 @@ tdbio_search_dir_byfpr( const byte *fingerprint, size_t fingerlen,
 int
 tdbio_delete_uidrec( ulong dirlid, ulong uidlid )
 {
-    return G10ERR_GENERAL; /* not implemented */
+    TRUSTREC dirrec, rec;
+    ulong recno;
+    int rc;
+
+    rc = tdbio_read_record( dirlid, &dirrec, RECTYPE_DIR);
+    if( rc ) {
+	log_error_f(db_name, "can't read dirrec %lu: %s\n", dirlid, g10_errstr(rc));
+	return rc;
+    }
+    recno = dirrec.r.dir.uidlist;
+    for( ; recno; recno = rec.r.uid.next ) {
+	rc = tdbio_read_record( recno, &rec, RECTYPE_UID);
+	if( rc ) {
+	    log_error_f(db_name, "can't read uidrec %lu: %s\n",
+						    recno, g10_errstr(rc));
+	    return rc;
+	}
+	if( recno == uidlid ) {
+	    rc = del_reclist( rec.r.uid.prefrec, RECTYPE_PREF );
+	    if( rc )
+		return rc;
+	    rc = del_reclist( rec.r.uid.siglist, RECTYPE_SIG );
+	    if( rc )
+		return rc;
+	    rc = tdbio_delete_record( recno );
+	    if( rc ) {
+		log_error_f(db_name, "can't delete uidrec %lu: %s\n",
+						    recno, g10_errstr(rc));
+		return rc;
+	    }
+	    dirrec.r.dir.uidlist = 0;
+	    rc = tdbio_write_record( &dirrec );
+	    if( rc ) {
+		log_error_f(db_name, "can't update dirrec %lu: %s\n",
+						  dirrec.recnum, g10_errstr(rc));
+		return rc;
+	    }
+	    return 0;
+	}
+    }
+    return -1; /* not found */
 }
 
 

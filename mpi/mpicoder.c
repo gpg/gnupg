@@ -397,7 +397,6 @@ mpi_set_buffer( MPI a, const byte *buffer, unsigned nbytes, int sign )
 	alimb |= *p-- << 16 ;
 	alimb |= *p-- << 24 ;
       #elif BYTES_PER_MPI_LIMB == 8
-	/* cast due to egc's "left shift count >= width of type" warning*/
 	alimb  = (mpi_limb_t)*p--	;
 	alimb |= (mpi_limb_t)*p-- <<  8 ;
 	alimb |= (mpi_limb_t)*p-- << 16 ;

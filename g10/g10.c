@@ -969,13 +969,14 @@ main( int argc, char **argv )
 	{
 	    int level = atoi(*argv);
 	    for(;;) {
-		int c = get_random_byte(level);
+		byte *p = get_random_bits( 8, level, 0);
 		if( argc == 1 ) {
-		    printf("%02x", c );
+		    printf("%02x", *p );
 		    fflush(stdout);
 		}
 		else
 		    putchar(c&0xff);
+		m_free(p);
 	    }
 	}
 	break;

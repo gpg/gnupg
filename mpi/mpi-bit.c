@@ -177,56 +177,6 @@ mpi_clear_bit( MPI a, unsigned n )
 }
 
 
-void
-mpi_set_bytes( MPI a, unsigned nbits, byte (*fnc)(int), int opaque )
-{
-    byte *p;
-    unsigned nlimbs, nlimbs2, xbits, xbytes;
-    unsigned n;
-    int i;
-
-    nlimbs = nbits / BITS_PER_MPI_LIMB;
-    xbits = nbits % BITS_PER_MPI_LIMB;
-    nlimbs2 = xbits? (nlimbs+1):nlimbs;
-    xbytes = xbits / 8;
-    xbits = xbits % 8;
-    if( a->alloced < nlimbs2 )
-	mpi_resize(a, nlimbs2 );
-    a->nlimbs = nlimbs2;
-    for(n=0; n < nlimbs; n++ ) {
-	p = (byte*)(a->d+n);
-      #ifdef LITTLE_ENDIAN_HOST
-	for(i=0; i < BYTES_PER_MPI_LIMB; i++ )
-	    p[i] = fnc(opaque);
-      #else
-	for(i=BYTES_PER_MPI_LIMB-1; i>=0; i-- )
-	    p[i] = fnc(opaque);
-      #endif
-    }
-    if( xbytes ) {
-	p = (byte*)(a->d+n);
-      #ifdef LITTLE_ENDIAN_HOST
-	for(i=0; i < xbytes; i++ )
-	    p[i] = fnc(opaque);
-      #else
-	for(i=xbytes-1; i>=0; i-- )
-	    p[i] = fnc(opaque);
-      #endif
-    }
-  #if 0 /* fixme: set complete random byte and clear out the unwanted ones*/
-    if( xbits ) {
-	p = (byte*)(a->d+n);
-      #ifdef LITTLE_ENDIAN_HOST
-	for(i=0; i < xbytes; i++ )
-	    p[i] = fnc(opaque);
-      #else
-	for(i=xbytes-1; i>=0; i-- )
-	    p[i] = fnc(opaque);
-      #endif
-    }
-  #endif
-}
-
 /****************
  * Shift A by N bits to the right
  * FIXME: should use alloc_limb if X and A are same.

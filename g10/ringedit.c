@@ -55,6 +55,7 @@
 #include "mpi.h"
 #include "iobuf.h"
 #include "keydb.h"
+#include "i18n.h"
 #include <unistd.h> /* for truncate */
 
 
@@ -865,14 +866,16 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	}
     }
     /* rename and make backup file */
-  #if __MINGW32__
-    remove( bakfname );
-  #endif
-    if( rename( rentry->fname, bakfname ) ) {
-	log_error("%s: rename to %s failed: %s\n",
-				rentry->fname, bakfname, strerror(errno) );
-	rc = G10ERR_RENAME_FILE;
-	goto leave;
+    if( !rentry->secret ) {  /* but not for secret keyrings */
+      #if __MINGW32__
+	remove( bakfname );
+      #endif
+	if( rename( rentry->fname, bakfname ) ) {
+	    log_error("%s: rename to %s failed: %s\n",
+				    rentry->fname, bakfname, strerror(errno) );
+	    rc = G10ERR_RENAME_FILE;
+	    goto leave;
+	}
     }
   #if __MINGW32__
     remove( rentry->fname );
@@ -881,6 +884,13 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	log_error("%s: rename to %s failed: %s\n",
 			    tmpfname, rentry->fname,strerror(errno) );
 	rc = G10ERR_RENAME_FILE;
+	if( rentry->secret ) {
+	    log_info(_(
+		"Warning: 2 files with confidential information exists.\n"));
+	    log_info(_("%s is the unchanged one\n"), rentry->fname );
+	    log_info(_("%s is the new one\n"), tmpfname );
+	    log_info(_("Please fix this possible security flaw\n"));
+	}
 	goto leave;
     }
 

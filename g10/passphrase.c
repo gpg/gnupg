@@ -210,7 +210,7 @@ hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
 	for(;;) {
 	    md_write( md, s2k->salt, 8 );
 	    md_write( md, pw, len );
-	    if( count < len2 )
+	    if( count <= len2 )
 		break;
 	    count -= len2;
 	}

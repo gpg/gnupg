@@ -47,15 +47,8 @@
   #error weird size for an unsigned long
 #endif
 
-struct cache {
-    int len;
-    int size;
-    byte *buffer;
-};
-
 
 static int is_initialized;
-static struct cache cache[3];
 #define MASK_LEVEL(a) do {if( a > 2 ) a = 2; else if( a < 0 ) a = 0; } while(0)
 static char *rndpool;	/* allocated size is POOLSIZE+BLOCKLEN */
 static char *keypool;	/* allocated size is POOLSIZE+BLOCKLEN */
@@ -113,38 +106,17 @@ quick_random_gen( int onoff )
 void
 randomize_buffer( byte *buffer, size_t length, int level )
 {
-    for( ; length; length-- )
-	*buffer++ = get_random_byte(level);
-}
-
-
-byte
-get_random_byte( int level )
-{
-    MASK_LEVEL(level);
-    if( !cache[level].len ) {
-	if( !is_initialized )
-	    initialize();
-	if( !cache[level].buffer ) {
-	    cache[level].size = 100;
-	    cache[level].buffer = level && secure_alloc?
-					 m_alloc_secure( cache[level].size )
-				       : m_alloc( cache[level].size );
-	}
-	read_pool(cache[level].buffer, cache[level].size, level );
-	cache[level].len = cache[level].size;
-    }
-
-    return cache[level].buffer[--cache[level].len];
+    char *p = get_random_bits( length*8, level, m_is_secure(buffer) );
+    memcpy( buffer, p, length );
+    m_free(p);
 }
 
 
 
 /****************
  * Return a pointer to a randomized buffer of level 0 and LENGTH bits
- * caller must free the buffer. This function does not use the
- * cache (will be removed in future). Note: The returned value is
- * rounded up to bytes.
+ * caller must free the buffer.
+ * Note: The returned value is rounded up to bytes.
  */
 byte *
 get_random_bits( size_t nbits, int level, int secure )

@@ -60,7 +60,7 @@ static void
 test_keys( ELG_secret_key *sk, unsigned nbits )
 {
     ELG_public_key pk;
-    MPI test = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
+    MPI test = mpi_alloc( 0 );
     MPI out1_a = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
     MPI out1_b = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
     MPI out2 = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
@@ -69,7 +69,11 @@ test_keys( ELG_secret_key *sk, unsigned nbits )
     pk.g = sk->g;
     pk.y = sk->y;
 
-    mpi_set_bytes( test, nbits, get_random_byte, 0 );
+    /*mpi_set_bytes( test, nbits, get_random_byte, 0 );*/
+    {	char *p = get_random_bits( nbits, 0, 0 );
+	mpi_set_buffer( test, p, (nbits+7)/8, 0 );
+	m_free(p);
+    }
 
     encrypt( out1_a, out1_b, test, &pk );
     decrypt( out2, out1_a, out1_b, sk );
@@ -94,7 +98,7 @@ test_keys( ELG_secret_key *sk, unsigned nbits )
 static MPI
 gen_k( MPI p )
 {
-    MPI k = mpi_alloc_secure( mpi_get_nlimbs(p) );
+    MPI k = mpi_alloc_secure( 0 );
     MPI temp = mpi_alloc( mpi_get_nlimbs(p) );
     MPI p_1 = mpi_copy(p);
     unsigned nbits = mpi_get_nbits(p);
@@ -105,7 +109,17 @@ gen_k( MPI p )
     for(;;) {
 	if( DBG_CIPHER )
 	    fputc('.', stderr);
-	mpi_set_bytes( k, nbits , get_random_byte, 1 );
+	{   char *p = get_random_bits( nbits, 1, 1 );
+	    mpi_set_buffer( k, p, (nbits+7)/8, 0 );
+	    m_free(p);
+	    /* make sure that the number is of the exact lenght */
+	    if( mpi_test_bit( k, nbits-1 ) )
+		mpi_set_highbit( k, nbits-1 );
+	    else {
+		mpi_set_highbit( k, nbits-1 );
+		mpi_clear_bit( k, nbits-1 );
+	    }
+	}
 	if( !(mpi_cmp( k, p_1 ) < 0) )	/* check: k < (p-1) */
 	    continue; /* no  */
 	if( !(mpi_cmp_ui( k, 0 ) > 0) ) /* check: k > 0 */

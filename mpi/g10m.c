@@ -57,12 +57,6 @@ void g10m_swap( MPI a, MPI b)	   { mpi_swap( a, b );	     }
 void g10m_set( MPI w, MPI u)	   { mpi_set( w, u );	     }
 void g10m_set_ui( MPI w, ulong u ) { mpi_set_ui( w, u ); }
 
-void
-g10m_set_bytes( MPI a, unsigned nbits, byte (*fnc)(int), int opaque )
-{
-    mpi_set_bytes( a, nbits, fnc, opaque );
-}
-
 int  g10m_cmp( MPI u, MPI v )	    { return mpi_cmp( u, v ); }
 int  g10m_cmp_ui( MPI u, ulong v )  { return mpi_cmp_ui( u, v ); }
 

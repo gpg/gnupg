@@ -9,6 +9,7 @@
     * check whether it is valid to pack the signature stuff (onepass, data,
       sig) into a compressed packet - or should we only compress the data?
       what does pgp 5 do, what does OpenPGP say=
+      ==> I think it is okay, should be tested against pgp5
 
     * invalid packets (Marco)  und Markus Gruber
 

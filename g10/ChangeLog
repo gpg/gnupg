@@ -1,3 +1,13 @@
+Thu Aug  6 16:30:41 1998  Werner Koch,mobil,,,	(wk@tobold)
+
+	* seskey.c (encode_session_key): Now uses get_random_bits().
+
+Thu Aug  6 07:34:56 1998  Werner Koch,mobil,,,	(wk@tobold)
+
+	* ringedit.c (keyring_copy): No more backupfiles for
+	secret keyrings and add additional warning in case of
+	a failed secret keyring operation.
+
 Wed Aug  5 11:54:37 1998  Werner Koch  (wk@(none))
 
 	* g10.c (check_opts): Moved to main.  Changed def_cipher_algo

@@ -66,7 +66,17 @@ gen_k( MPI q )
     for(;;) {
 	if( DBG_CIPHER )
 	    fputc('.', stderr);
-	mpi_set_bytes( k, nbits , get_random_byte, 1 );
+	{   char *p = get_random_bits( nbits, 1, 1 );
+	    mpi_set_buffer( k, p, (nbits+7)/8, 0 );
+	    m_free(p);
+	    /* make sure that the number is of the exact lenght */
+	    if( mpi_test_bit( k, nbits-1 ) )
+		mpi_set_highbit( k, nbits-1 );
+	    else {
+		mpi_set_highbit( k, nbits-1 );
+		mpi_clear_bit( k, nbits-1 );
+	    }
+	}
 	if( !(mpi_cmp( k, q ) < 0) )  /* check: k < q */
 	    continue; /* no  */
 	if( !(mpi_cmp_ui( k, 0 ) > 0) ) /* check: k > 0 */
@@ -92,7 +102,11 @@ test_keys( DSA_secret_key *sk, unsigned qbits )
     pk.q = sk->q;
     pk.g = sk->g;
     pk.y = sk->y;
-    mpi_set_bytes( test, qbits, get_random_byte, 0 );
+    /*mpi_set_bytes( test, qbits, get_random_byte, 0 );*/
+    {	char *p = get_random_bits( qbits, 0, 0 );
+	mpi_set_buffer( test, p, (qbits+7)/8, 0 );
+	m_free(p);
+    }
 
     sign( out1_a, out1_b, test, sk );
     if( !verify( out1_a, out1_b, test, &pk ) )

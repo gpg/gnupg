@@ -293,7 +293,12 @@ gen_prime( unsigned  nbits, int secret, int randomlevel )
 	int dotcount=0;
 
 	/* generate a random number */
-	mpi_set_bytes( prime, nbits, get_random_byte, randomlevel );
+	/*mpi_set_bytes( prime, nbits, get_random_byte, randomlevel );*/
+	{   char *p = get_random_bits( nbits, randomlevel, secret );
+	    mpi_set_buffer( prime, p, (nbits+7)/8, 0 );
+	    m_free(p);
+	}
+
 	/* set high order bit to 1, set low order bit to 1 */
 	mpi_set_highbit( prime, nbits-1 );
 	mpi_set_bit( prime, 0 );
@@ -423,8 +428,13 @@ is_prime( MPI n, int steps, int *count )
 	    mpi_set_ui( x, 2 );
 	}
 	else {
-	    mpi_set_bytes( x, nbits-1, get_random_byte, 0 );
-	    /* work around a bug in mpi_set_bytes */
+	    /*mpi_set_bytes( x, nbits-1, get_random_byte, 0 );*/
+	    {	char *p = get_random_bits( nbits, 0, 0 );
+		mpi_set_buffer( x, p, (nbits+7)/8, 0 );
+		m_free(p);
+	    }
+	    /* make sure that the number is smaller than the prime
+	     * and keep the randomness of the high bit */
 	    if( mpi_test_bit( x, nbits-2 ) ) {
 		mpi_set_highbit( x, nbits-2 ); /* clear all higher bits */
 	    }
