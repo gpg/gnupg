@@ -1,3 +1,8 @@
+2004-01-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* cipher.h: Remove the old CIPHER_ALGO_RINJDAEL values.
+	is_ELGAMAL() now only matches type 16 and not type 20.
+
 2004-01-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* util.h: Add prototype for print_string2().
@@ -11,7 +16,7 @@
 
 	* util.h [__riscos__]: Removal of unnecessary RISC OS stuff.
 
-2003-12-17  David Shaw  <dshaw@localhost.localdomain>
+2003-12-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* mpi.h (gcry_mpi, mpi_get_opaque, mpi_set_opaque): Make nbits and
 	the length of an opaque MPI unsigned.
@@ -436,7 +441,8 @@ Tue Mar  3 15:11:21 1998  Werner Koch  (wk@isil.d.shuttle.de)
 	functions to this header.
 
 
- Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2002, 2003,
+	   2004 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
@@ -445,5 +451,3 @@ Tue Mar  3 15:11:21 1998  Werner Koch  (wk@isil.d.shuttle.de)
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-

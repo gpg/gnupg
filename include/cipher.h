@@ -1,5 +1,6 @@
 /* cipher.h
- * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -35,9 +36,6 @@
 #define CIPHER_ALGO_AES          7
 #define CIPHER_ALGO_AES192       8
 #define CIPHER_ALGO_AES256       9
-#define CIPHER_ALGO_RIJNDAEL     CIPHER_ALGO_AES
-#define CIPHER_ALGO_RIJNDAEL192  CIPHER_ALGO_AES192
-#define CIPHER_ALGO_RIJNDAEL256  CIPHER_ALGO_AES256
 #define CIPHER_ALGO_TWOFISH 	10  /* twofish 256 bit */
 #define CIPHER_ALGO_DUMMY      110  /* no encryption at all */
 
@@ -68,7 +66,7 @@
 
 #define is_RSA(a)     ((a)==PUBKEY_ALGO_RSA || (a)==PUBKEY_ALGO_RSA_E \
 		       || (a)==PUBKEY_ALGO_RSA_S )
-#define is_ELGAMAL(a) ((a)==PUBKEY_ALGO_ELGAMAL || (a)==PUBKEY_ALGO_ELGAMAL_E)
+#define is_ELGAMAL(a) ((a)==PUBKEY_ALGO_ELGAMAL_E)
 #define is_DSA(a)     ((a)==PUBKEY_ALGO_DSA)
 
 typedef struct {
