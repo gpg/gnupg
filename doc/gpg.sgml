@@ -520,10 +520,10 @@ will not be used by GnuPG.
     <listitem><para>
 Set a preferred keyserver for the specified user ID(s).  This allows
 other users to know where you prefer they get your key from.  See
---keyserver-option honor-keyserver-url.  Note that some versions of
-PGP interpret the presence of a keyserver URL as an instruction to
-enable PGP/MIME mail encoding.  Setting a value of "none" removes a
-existing preferred keyserver.
+--keyserver-option honor-keyserver-url for more on how this works.
+Note that some versions of PGP interpret the presence of a keyserver
+URL as an instruction to enable PGP/MIME mail encoding.  Setting a
+value of "none" removes a existing preferred keyserver.
 </para></listitem></varlistentry>
     <varlistentry>
     <term>toggle</term>
@@ -1274,10 +1274,11 @@ timeout applies separately to each key retrieval, and not to the
 <varlistentry>
 <term>http-proxy&OptEqualsValue;</term>
 <listitem><para>
-For keyserver schemes that use HTTP (such as HKP), try to access the
-keyserver over a proxy.  If a &ParmValue; is specified, use this as
-the HTTP proxy.  If no &ParmValue; is specified, try to use the value
-of the environment variable "http_proxy".
+For HTTP-like keyserver schemes that (such as HKP and HTTP itself),
+try to access the keyserver over a proxy.  If a &ParmValue; is
+specified, use this as the HTTP proxy.  If no &ParmValue; is
+specified, try to use the value of the environment variable
+"http_proxy".
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2513,9 +2514,9 @@ option is not specified, the expiration time is "never".
 <listitem><para>
 Allow the user to do certain nonsensical or "silly" things like
 signing an expired or revoked key, or certain potentially incompatible
-things like generating deprecated key types.  This also disables
-certain warning messages about potentially incompatible actions.  As
-the name implies, this option is for experts only.  If you don't fully
+things like generating unusual key types.  This also disables certain
+warning messages about potentially incompatible actions.  As the name
+implies, this option is for experts only.  If you don't fully
 understand the implications of what it allows you to do, leave this
 off.  --no-expert disables this option.
 </para></listitem></varlistentry>

@@ -1,3 +1,11 @@
+2004-10-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Minor language tweaks.
+
+	* samplekeys.asc: Updated 99242560.
+
+	* DETAILS: spk flags are hex.
+
 2004-10-15  Werner Koch  <wk@g10code.com>
 
 	* DETAILS: Document IMPORT_CHECK.
