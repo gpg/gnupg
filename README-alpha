@@ -11,4 +11,6 @@ It will probably needs GCC and GLIBC to build due to some debugging
 code.  Please don't complain if it does not work on other machines.
 We will make it work again later.
 
+The specification for the OpenPGP smartcard application will be
+released soon and we will try to make cards easily available.
 
