@@ -3,7 +3,7 @@
 		   -------------------------------
 			    Version 1.0
 
-    Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+    Copyright 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
     This file is free software; as a special exception the author gives
     unlimited permission to copy and/or distribute it, with or without
@@ -91,10 +91,10 @@
        "pub  1024D/57548DCD 1998-07-07 Werner Koch (gnupg sig) <dd9jn@gnu.org>"
 
        If you do not have this key, you can get it from the source in
-       the file g10/pubring.asc (use "gpg --import g10/pubring.gpg" to
-       add it to the keyring) or from any keyserver.  You have to make
-       sure that this is really the key and not a faked one. You can do
-       this by comparing the output of:
+       the file doc/samplekeys.asc (use "gpg --import  doc/samplekeys.asc"
+       to add it to the keyring) or from any keyserver.  You have to
+       make sure that this is really the key and not a faked one. You
+       can do this by comparing the output of:
 
 		$ gpg --fingerprint 0x57548DCD
 
@@ -466,13 +466,13 @@
     We have some mailing lists dedicated to GnuPG:
 
 	gnupg-announce@gnupg.org    For important announcements like
-				    new versions and  such stuff.
+				    new versions and such stuff.
 				    This is a moderated list and has
 				    very low traffic.
+
 	gnupg-users@gnupg.org	    For general user discussion and
 				    help.
-	gnupg-i18n@gnupg.org	    Discussion about internationalization
-				    issues.
+
 	gnupg-devel@gnupg.org	    GnuPG developers main forum.
 
     You subscribe to one of the list by sending mail with a subject
@@ -494,3 +494,4 @@
 
     Commercial grade support for GnuPG is available; please see
     the GNU service directory or search other resources.
+

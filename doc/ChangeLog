@@ -1,3 +1,9 @@
+2002-04-29  Werner Koch  <wk@gnupg.org>
+
+	* samplekeys.asc: Added gnupg distribution key 57548DCD.
+
+	* faq.raw: Inserted Douglas Calvert as new maintainer.
+
 2002-04-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Add some documentation for

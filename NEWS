@@ -1,3 +1,6 @@
+Noteworthy changes in version 1.0.7 (2002-04-29)
+------------------------------------------------
+
     * Secret keys are now stored and exported in a new format which
       uses SHA-1 for integrity checks.  This format renders the
       Rosa/Klima attack useless.  Other OpenPGP implementations might
@@ -5,8 +8,8 @@
       the old vulnerable format.
 
     * The default cipher algorithm for encryption is now CAST5,
-      default default hash algorithm is SHA-1.  This will give us
-      better interoperability with other OpenPGP implementations.
+      default hash algorithm is SHA-1.  This will give us better
+      interoperability with other OpenPGP implementations.
 
     * Symmetric encrypted messages now use a fixed file size if
       possible.  This is a tradeoff: it breaks PGP 5, but fixes PGP 2,
@@ -89,9 +92,9 @@
 
     * The entire keyring management has been revamped.
 
-    * The way signature stati are store has changed, so that v3
+    * The way signature stati are store has changed so that v3
       signatures can be supported. To increase the speed of many
-      operations for existing keys you can use the new
+      operations for existing keyrings you can use the new
       --rebuild-keydb-caches command.
 
     * The entire key validation process (trustdb) has been revamped.

@@ -1,5 +1,3 @@
-  * change the maintainer address in faq.raw
-
   * Do we need a configure test for putenv?
 
   * Check for consistent spelling of user ID, key ID etc.
@@ -9,7 +7,7 @@
     issue warnings when such an algorithm is used (disabled by expert modus?)
 
   * Return status information even when an imported key is already
-    stored.  This is useful for GPGME's detailed info fucntion.
+    stored.  This is useful for GPGME's detailed info function.
 
   * Describe some pitfalls when using EGD.  Check that ~/.gnupg/entropy
     really is the default.  What about needed permission?  
