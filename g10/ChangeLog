@@ -1,5 +1,8 @@
 2002-05-11  Werner Koch  <wk@gnupg.org>
 
+	* mainproc.c (proc_symkey_enc): Avoid segv in case the parser
+	encountered an invalid packet.
+
 	* keyserver.c (keyserver_export): Get confirmation before sending
 	all keys.
 

@@ -244,7 +244,9 @@ proc_symkey_enc( CTX c, PACKET *pkt )
     PKT_symkey_enc *enc;
 
     enc = pkt->pkt.symkey_enc;
-    if (enc->seskeylen)
+    if (!enc)
+        log_error ("invalid symkey encrypted packet\n");
+    else if (enc->seskeylen) 
 	log_error ("symkey_enc packet with session keys are not supported!\n");
     else {
         int algo = enc->cipher_algo;
