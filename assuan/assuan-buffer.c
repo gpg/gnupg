@@ -241,23 +241,31 @@ AssuanError
 assuan_write_line (ASSUAN_CONTEXT ctx, const char *line )
 {
   int rc;
-  
+  size_t len;
+  const char *s;
+
   if (!ctx)
     return ASSUAN_Invalid_Value;
 
-  /* fixme: we should do some kind of line buffering */
+  /* Make sure that we never take a LF from the user - this might
+     violate the protocol. */
+  s = strchr (line, '\n');
+  len = s? (s-line) : strlen (line);
+
+  /* fixme: we should do some kind of line buffering.  */
   if (ctx->log_fp)
     {
       fprintf (ctx->log_fp, "%s[%p] -> ", my_log_prefix (), ctx); 
+      if (s)
+        fputs ("[supplied line contained a LF]", ctx->log_fp);
       if (ctx->confidential)
         fputs ("[Confidential data not shown]", ctx->log_fp);
       else
-        _assuan_log_print_buffer (ctx->log_fp, 
-                                  line, strlen (line));
+        _assuan_log_print_buffer (ctx->log_fp, line, len);
       putc ('\n', ctx->log_fp);
     }
 
-  rc = writen (ctx->outbound.fd, line, strlen(line));
+  rc = writen (ctx->outbound.fd, line, len);
   if (rc)
     rc = ASSUAN_Write_Error;
   if (!rc)

@@ -1,3 +1,8 @@
+2002-06-26  Werner Koch  <wk@gnupg.org>
+
+	* assuan-buffer.c (assuan_write_line): Make sure we never
+	accidently print an extra LF.
+
 2002-05-23  Werner Koch  <wk@gnupg.org>
 
 	* assuan-util.c (assuan_set_io_func): New.
