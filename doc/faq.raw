@@ -13,8 +13,8 @@ The most recent version of the FAQ is available from
 [H H1]GNUPG FREQUENTLY ASKED QUESTIONS[H /H1]
 
 
-Version: 0.34[H p]
-Last-Modified: Nov 30, 2000[H p]
+Version: 0.35[H p]
+Last-Modified: Dec 14, 2000[H p]
 Maintained-by: [$maintainer]
 
 
@@ -392,7 +392,9 @@ messages?
     This has been frequently requested. However, the current viewpoint
     of the GnuPG maintainers is that this would lead to several security
     issues and will therefore not be implemented in the foreseeable
-    future.  
+    future. However, for some areas of areas of application gpgme could
+    do the trick. You'll find it at 
+    [H a href=ftp://ftp.guug.de/pub/gcrypt/alpha/gpgme]ftp://ftp.guug.de/pub/gcrypt/alpha/gpgme[H /a]
 
 <S> COMPATIBILITY ISSUES 
 
@@ -463,13 +465,29 @@ it?
     where pgpkeyring is the original keyring and not the GnuPG one you
     might have created in the first step.
 
-<Q> PGP 5.x, 6.x do not like my secret key.
+<Q> Older PGPs do not like my secret key.
 
     PGP probably bails out on some private comment packets used by
     GnuPG.  These packets are fully in compliance with OpenPGP; however
     PGP is not really OpenPGP aware.  A workaround is to export the
     secret keys with this command: 
-    [H pre] gpg --export-secret-keys --no-comment -a your-key-id [H /pre]
+    [H pre] $ gpg --export-secret-keys --no-comment -a your-key-id [H /pre]
+
+    Another possibility is this: by default, GnuPG encrypts your secret
+    key using the Blowfish symmetric algorithm. Older PGPs will only
+    understand 3DES, CAST5, or IDEA symmetric algorithms. Using the
+    following method you can re-encrypt your secret gpg key with a
+    different algo:
+
+    [H pre]
+     $ gpg --s2k-cipher-algo=CAST5 --s2k-digest-algo=SHA1 \
+          --compress-algo=1  --edit-key username
+    [H /pre]
+
+    Then use passwd to change the password (just change it to the same
+    thing, but it will encrypt the key with CAST5 this time).
+
+    Now you can export it and PGP should be able to handle it.
 
 
 
@@ -574,6 +592,20 @@ in it - why?
 
     A previous gpg has most likely exited abnormally and left a lock
     file. Go to ~/.gnupg and look for .*.lock files and remove them.
+
+<Q> Older gpg's (e.g., 1.0) have problems with keys from newer gpgs ...
+
+    As of 1.0.3, keys generated with gpg are created with preferences to
+    TWOFISH (and AES since 1.0.4) and that also means that they have the
+    capability to use the new MDC encryption method.  This will go into
+    OpenPGP soon and is also suppoted by PGP 7.  This new method avoids
+    a (not so new) attack on all email encryption systems.
+    
+    This in turn means that pre-1.0.3 gpg's have problems with newer
+    key. Because of security fixes, you should keep your gpg
+    installation in a recent state anyway. As a workaround, you can
+    force gpg to use a previous default cipher algo by putting 
+    [H pre]cipher-algo cast5[H /pre] into your options file.
 
 <Q> I still have a problem. How do I report a bug?
 

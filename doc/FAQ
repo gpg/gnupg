@@ -2,8 +2,8 @@
 GNUPG FREQUENTLY ASKED QUESTIONS
 
 
-Version: 0.34
-Last-Modified: Nov 30, 2000
+Version: 0.35
+Last-Modified: Dec 14, 2000
 Maintained-by: Nils Ellmenreich <nils 'at' gnupg.org>
 
 
@@ -66,7 +66,7 @@ you could search in the mailing list archive.
    5.4) Why is PGP 5.x not able to encrypt messages with some keys?
    5.5) Why is PGP 5.x not able to verify my messages?
    5.6) How do I transfer owner trust values from PGP to GnuPG?
-   5.7) PGP 5.x, 6.x do not like my secret key.
+   5.7) Older PGPs do not like my secret key.
 
  6. PROBLEMS and ERROR MESSAGES
    6.1) Why do I get "gpg: Warning: using insecure memory!"
@@ -82,7 +82,8 @@ you could search in the mailing list archive.
    6.9) What is the thing with "can't handle multiple signatures"?
    6.10) If I submit a key to a keyserver, nothing happens ...
    6.11) I get "gpg: waiting for lock ..."
-   6.12) I still have a problem. How do I report a bug?
+   6.12) Older gpg's (e.g., 1.0) have problems with keys from newer gpgs ...
+   6.13) I still have a problem. How do I report a bug?
 
  7. ADVANCED TOPICS
    7.1) How does this whole thing work?
@@ -433,7 +434,9 @@ messages?
     This has been frequently requested. However, the current viewpoint
     of the GnuPG maintainers is that this would lead to several security
     issues and will therefore not be implemented in the foreseeable
-    future.  
+    future. However, for some areas of areas of application gpgme could
+    do the trick. You'll find it at 
+    ftp://ftp.guug.de/pub/gcrypt/alpha/gpgme
 
 5. COMPATIBILITY ISSUES 
 
@@ -499,13 +502,27 @@ it?
     where pgpkeyring is the original keyring and not the GnuPG one you
     might have created in the first step.
 
-5.7) PGP 5.x, 6.x do not like my secret key.
+5.7) Older PGPs do not like my secret key.
 
     PGP probably bails out on some private comment packets used by
     GnuPG.  These packets are fully in compliance with OpenPGP; however
     PGP is not really OpenPGP aware.  A workaround is to export the
     secret keys with this command: 
-     gpg --export-secret-keys --no-comment -a your-key-id 
+     $ gpg --export-secret-keys --no-comment -a your-key-id 
+
+    Another possibility is this: by default, GnuPG encrypts your secret
+    key using the Blowfish symmetric algorithm. Older PGPs will only
+    understand 3DES, CAST5, or IDEA symmetric algorithms. Using the
+    following method you can re-encrypt your secret gpg key with a
+    different algo:
+
+     $ gpg --s2k-cipher-algo=CAST5 --s2k-digest-algo=SHA1 \
+          --compress-algo=1  --edit-key username
+
+    Then use passwd to change the password (just change it to the same
+    thing, but it will encrypt the key with CAST5 this time).
+
+    Now you can export it and PGP should be able to handle it.
 
 
 
@@ -607,7 +624,21 @@ in it - why?
     A previous gpg has most likely exited abnormally and left a lock
     file. Go to ~/.gnupg and look for .*.lock files and remove them.
 
-6.12) I still have a problem. How do I report a bug?
+6.12) Older gpg's (e.g., 1.0) have problems with keys from newer gpgs ...
+
+    As of 1.0.3, keys generated with gpg are created with preferences to
+    TWOFISH (and AES since 1.0.4) and that also means that they have the
+    capability to use the new MDC encryption method.  This will go into
+    OpenPGP soon and is also suppoted by PGP 7.  This new method avoids
+    a (not so new) attack on all email encryption systems.
+
+    This in turn means that pre-1.0.3 gpg's have problems with newer
+    key. Because of security fixes, you should keep your gpg
+    installation in a recent state anyway. As a workaround, you can
+    force gpg to use a previous default cipher algo by putting 
+    cipher-algo cast5 into your options file.
+
+6.13) I still have a problem. How do I report a bug?
 
     Are you sure that it's not been mentioned somewhere on the mailing
     lists? Did you have a look at the bug list (You'll find a link to
