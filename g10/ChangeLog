@@ -1,5 +1,9 @@
 2003-12-09  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyid.c (keyid_from_sk, keyid_from_pk, fingerprint_from_pk,
+	fingerprint_from_sk): Enforce the v3-is-only-RSA rule.  Anything
+	that isn't RSA gets a zero keyid and fingerprint.
+
 	* keyid.c (do_fingerprint_md): Properly handle hashing of keys
 	that we don't know the structure of by using the opaque MPI.
 	(do_fingerprint_md_sk): We cannot calculate the fingerprint from a

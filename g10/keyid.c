@@ -33,7 +33,6 @@
 #include "keydb.h"
 #include "i18n.h"
 
-
 int
 pubkey_letter( int algo )
 {
@@ -149,10 +148,14 @@ keyid_from_sk( PKT_secret_key *sk, u32 *keyid )
     if( !keyid )
 	keyid = dummy_keyid;
 
-    if( sk->version < 4 && is_RSA(sk->pubkey_algo) ) {
-	lowbits = pubkey_get_npkey(sk->pubkey_algo) ?
-		     mpi_get_keyid( sk->skey[0], keyid ) : 0; /* take n */
-    }
+    if( sk->version < 4 )
+      {
+	if( is_RSA(sk->pubkey_algo) )
+	  lowbits = pubkey_get_npkey(sk->pubkey_algo) ?
+	    mpi_get_keyid( sk->skey[0], keyid ) : 0; /* take n */
+	else
+	  keyid[0]=keyid[1]=lowbits=0;
+      }
     else {
 	const byte *dp;
 	MD_HANDLE md;
@@ -191,12 +194,18 @@ keyid_from_pk( PKT_public_key *pk, u32 *keyid )
 	keyid[1] = pk->keyid[1];
 	lowbits = keyid[1];
     }
-    else if( pk->version < 4 && is_RSA(pk->pubkey_algo) ) {
-	lowbits = pubkey_get_npkey(pk->pubkey_algo) ?
-		     mpi_get_keyid( pk->pkey[0], keyid ) : 0 ; /* from n */
-	pk->keyid[0] = keyid[0];
-	pk->keyid[1] = keyid[1];
-    }
+    else if( pk->version < 4 )
+      {
+	if( is_RSA(pk->pubkey_algo) )
+	  {
+	    lowbits = pubkey_get_npkey(pk->pubkey_algo) ?
+	      mpi_get_keyid( pk->pkey[0], keyid ) : 0 ; /* from n */
+	    pk->keyid[0] = keyid[0];
+	    pk->keyid[1] = keyid[1];
+	  }
+	else
+	  pk->keyid[0]=pk->keyid[1]=keyid[0]=keyid[1]=lowbits=0;
+      }
     else {
 	const byte *dp;
 	MD_HANDLE md;
@@ -452,26 +461,37 @@ fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
     size_t len;
     unsigned int n;
 
-    if( pk->version < 4 && is_RSA(pk->pubkey_algo) ) {
-	/* RSA in version 3 packets is special */
-	MD_HANDLE md;
+    if( pk->version < 4 )
+      {
+	if( is_RSA(pk->pubkey_algo) )
+	  {
+	    /* RSA in version 3 packets is special */
+	    MD_HANDLE md;
 
-	md = md_open( DIGEST_ALGO_MD5, 0);
-	if( pubkey_get_npkey( pk->pubkey_algo ) > 1 ) {
-	    p = buf = mpi_get_buffer( pk->pkey[0], &n, NULL );
-	    md_write( md, p, n );
-	    m_free(buf);
-	    p = buf = mpi_get_buffer( pk->pkey[1], &n, NULL );
-	    md_write( md, p, n );
-	    m_free(buf);
-	}
-	md_final(md);
-	if( !array )
-	    array = m_alloc( 16 );
-	len = 16;
-	memcpy(array, md_read(md, DIGEST_ALGO_MD5), 16 );
-	md_close(md);
-    }
+	    md = md_open( DIGEST_ALGO_MD5, 0);
+	    if( pubkey_get_npkey( pk->pubkey_algo ) > 1 ) {
+	      p = buf = mpi_get_buffer( pk->pkey[0], &n, NULL );
+	      md_write( md, p, n );
+	      m_free(buf);
+	      p = buf = mpi_get_buffer( pk->pkey[1], &n, NULL );
+	      md_write( md, p, n );
+	      m_free(buf);
+	    }
+	    md_final(md);
+	    if( !array )
+	      array = m_alloc( 16 );
+	    len = 16;
+	    memcpy(array, md_read(md, DIGEST_ALGO_MD5), 16 );
+	    md_close(md);
+	  }
+	else
+	  {
+	    if(!array)
+	      array=m_alloc(16);
+	    len=16;
+	    memset(array,0,16);
+	  }
+      }
     else {
 	MD_HANDLE md;
 	md = do_fingerprint_md(pk);
@@ -498,26 +518,37 @@ fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
     size_t len;
     unsigned n;
 
-    if( sk->version < 4 && is_RSA(sk->pubkey_algo) ) {
-	/* RSA in version 3 packets is special */
-	MD_HANDLE md;
+    if( sk->version < 4 )
+      {
+	if( is_RSA(sk->pubkey_algo) )
+	  {
+	    /* RSA in version 3 packets is special */
+	    MD_HANDLE md;
 
-	md = md_open( DIGEST_ALGO_MD5, 0);
-	if( pubkey_get_npkey( sk->pubkey_algo ) > 1 ) {
-	    p = buf = mpi_get_buffer( sk->skey[0], &n, NULL );
-	    md_write( md, p, n );
-	    m_free(buf);
-	    p = buf = mpi_get_buffer( sk->skey[1], &n, NULL );
-	    md_write( md, p, n );
-	    m_free(buf);
-	}
-	md_final(md);
-	if( !array )
-	    array = m_alloc( 16 );
-	len = 16;
-	memcpy(array, md_read(md, DIGEST_ALGO_MD5), 16 );
-	md_close(md);
-    }
+	    md = md_open( DIGEST_ALGO_MD5, 0);
+	    if( pubkey_get_npkey( sk->pubkey_algo ) > 1 ) {
+	      p = buf = mpi_get_buffer( sk->skey[0], &n, NULL );
+	      md_write( md, p, n );
+	      m_free(buf);
+	      p = buf = mpi_get_buffer( sk->skey[1], &n, NULL );
+	      md_write( md, p, n );
+	      m_free(buf);
+	    }
+	    md_final(md);
+	    if( !array )
+	      array = m_alloc( 16 );
+	    len = 16;
+	    memcpy(array, md_read(md, DIGEST_ALGO_MD5), 16 );
+	    md_close(md);
+	  }
+	else
+	  {
+	    if(!array)
+	      array=m_alloc(16);
+	    len=16;
+	    memset(array,0,16);
+	  }
+      }
     else {
 	MD_HANDLE md;
 	md = do_fingerprint_md_sk(sk);
