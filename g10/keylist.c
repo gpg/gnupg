@@ -722,20 +722,11 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
         	    printf("%s:::::::::",str);
 	        }
                 else {
-		    byte namehash[20];
 		    int uid_validity;
 
-		    if( pk && !ulti_hack ) {
-			if( node->pkt->pkt.user_id->attrib_data )
-			    rmd160_hash_buffer( namehash,
-					   node->pkt->pkt.user_id->attrib_data,
-					   node->pkt->pkt.user_id->attrib_len);
-			else
-			    rmd160_hash_buffer( namehash,
-					    node->pkt->pkt.user_id->name,
-					    node->pkt->pkt.user_id->len  );
-			uid_validity = get_validity_info( pk, namehash );
-		    }
+		    if( pk && !ulti_hack )
+		      uid_validity=get_validity_info (pk,
+						      node->pkt->pkt.user_id);
 		    else
 			uid_validity = 'u';
 		    printf("%s:%c::::::::",str,uid_validity);

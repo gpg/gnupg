@@ -785,7 +785,7 @@ is_disabled(void *dummy,u32 *keyid)
  * otherwise, a reasonable value for the entire key is returned. 
  */
 unsigned int
-get_validity (PKT_public_key *pk, const byte *namehash)
+get_validity (PKT_public_key *pk, PKT_user_id *uid)
 {
   static int did_nextcheck;
   TRUSTREC trec, vrec;
@@ -794,6 +794,15 @@ get_validity (PKT_public_key *pk, const byte *namehash)
   unsigned int validity;
   u32 kid[2];
   PKT_public_key *main_pk;
+  byte namehash[20];
+
+  if(uid)
+    {
+      if( uid->attrib_data )
+	rmd160_hash_buffer (namehash,uid->attrib_data,uid->attrib_len);
+      else
+	rmd160_hash_buffer (namehash, uid->name, uid->len );
+    }
   
   init_trustdb ();
   if (!did_nextcheck)
@@ -853,7 +862,7 @@ get_validity (PKT_public_key *pk, const byte *namehash)
       read_record (recno, &vrec, RECTYPE_VALID);
       if ( validity < (vrec.r.valid.validity & TRUST_MASK) )
         validity = (vrec.r.valid.validity & TRUST_MASK);
-      if ( namehash && !memcmp (vrec.r.valid.namehash, namehash, 20) )
+      if ( uid && !memcmp (vrec.r.valid.namehash, namehash, 20) )
         break;
       recno = vrec.r.valid.next;
     }
@@ -884,12 +893,12 @@ get_validity (PKT_public_key *pk, const byte *namehash)
 }
 
 int
-get_validity_info (PKT_public_key *pk, const byte *namehash)
+get_validity_info (PKT_public_key *pk, PKT_user_id *uid)
 {
     int trustlevel;
     int c;
 
-    trustlevel = get_validity (pk, namehash);
+    trustlevel = get_validity (pk, uid);
     if( trustlevel & TRUST_FLAG_DISABLED )
 	return 'd';
     if( trustlevel & TRUST_FLAG_REVOKED )

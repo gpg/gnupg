@@ -1660,18 +1660,10 @@ show_key_with_all_names_colon (KBNODE keyblock)
 	      printf("::::::::");
 	    else
 	      {
-		byte namehash[20];
 		int uid_validity;
 
 		if( primary && !ulti_hack )
-		  {
-		    if( uid->attrib_data )
-		      rmd160_hash_buffer(namehash,
-					 uid->attrib_data, uid->attrib_len);
-		    else
-		      rmd160_hash_buffer( namehash, uid->name, uid->len  );
-		    uid_validity = get_validity_info( primary, namehash );
-		  }
+		  uid_validity = get_validity_info( primary, uid );
 		else
 		  uid_validity = 'u';
 		printf("%c::::::::",uid_validity);

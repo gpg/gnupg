@@ -1,3 +1,13 @@
+2003-01-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* packet.h, pkclist.c (build_pk_list), free-packet.c
+	(release_public_key_parts): Remove unused namehash element for
+	public keys.
+
+	* trustdb.h, gpgv.c, trustdb.c (get_validity, get_validity_info):
+	Pass a user ID in rather than a namehash, so we only have to do
+	the hashing in one place.
+
 2003-01-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* packet.h, tdbio.h, tdbio.c (tdbio_read_record,

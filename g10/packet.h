@@ -207,7 +207,6 @@ typedef struct {
     byte    is_primary;
     prefitem_t *prefs;      /* list of preferences (may be NULL) */
     int     mdc_feature;    /* mdc feature set */
-    byte    *namehash;	    /* if != NULL: found by this name */
     PKT_user_id *user_id;   /* if != NULL: found by that uid */
     struct revocation_key *revkey;
     int     numrevkeys;

@@ -248,7 +248,7 @@ is_disabled(void *dummy,u32 *keyid)
 }
 
 int
-get_validity_info (PKT_public_key *pk, const byte *namehash )
+get_validity_info (PKT_public_key *pk, PKT_user_id *uid)
 {
     return '?';
 }

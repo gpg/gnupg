@@ -50,8 +50,8 @@ int trust_letter( unsigned value );
 void revalidation_mark (void);
 
 int is_disabled(void *dummy,u32 *keyid);
-unsigned int get_validity (PKT_public_key *pk, const byte *namehash);
-int get_validity_info (PKT_public_key *pk, const byte *namehash);
+unsigned int get_validity (PKT_public_key *pk, PKT_user_id *uid);
+int get_validity_info (PKT_public_key *pk, PKT_user_id *uid);
 
 void list_trust_path( const char *username );
 
