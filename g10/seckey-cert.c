@@ -346,8 +346,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	    assert( sk->protect.ivlen <= DIM(sk->protect.iv) );
 	    if( sk->protect.ivlen != 8 && sk->protect.ivlen != 16 )
 		BUG(); /* yes, we are very careful */
-	    gcry_randomize (sk->protect.iv, sk->protect.ivlen,
-                            GCRY_STRONG_RANDOM);
+	    gcry_create_nonce (sk->protect.iv, sk->protect.ivlen);
 	    gcry_cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen );
 	    if( sk->version >= 4 ) {
                 unsigned char *bufarr[PUBKEY_MAX_NSKEY];
