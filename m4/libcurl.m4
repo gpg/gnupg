@@ -1,16 +1,17 @@
 # LIBCURL_CHECK_CONFIG ([DEFAULT-ACTION], [MINIMUM-VERSION],
 #                       [ACTION-IF-YES], [ACTION-IF-NO])
 # ----------------------------------------------------------
-#      David Shaw <dshaw@jabberwocky.com>   Dec-24-2004
+#      David Shaw <dshaw@jabberwocky.com>   Jan-23-2005
 #
-# Checks for libcurl.  DEFAULT-ACTION is yes or no whether to default
-# to --with-libcurl or --without-libcurl.  If not supplied,
-# DEFAULT-ACTION is yes.  MINIMUM-VERSION is the minimum version of
-# libcurl to accept.  If not supplied, any version is accepted.
-# ACTION-IF-YES is a list of shell commands to run if libcurl was
-# successfully found and passed the various tests.  ACTION-IF-NO is a
-# list of shell commands that are run otherwise.  Note that using
-# --without-libcurl does run ACTION-IF-NO.
+# Checks for libcurl.  DEFAULT-ACTION is the string yes or no to
+# specify whether to default to --with-libcurl or --without-libcurl.
+# If not supplied, DEFAULT-ACTION is yes.  MINIMUM-VERSION is the
+# minimum version of libcurl to accept.  Pass the version as a regular
+# version number like 7.10.1. If not supplied, any version is
+# accepted.  ACTION-IF-YES is a list of shell commands to run if
+# libcurl was successfully found and passed the various tests.
+# ACTION-IF-NO is a list of shell commands that are run otherwise.
+# Note that using --without-libcurl does run ACTION-IF-NO.
 #
 # This macro defines HAVE_LIBCURL if a working libcurl setup is found,
 # and sets @LIBCURL@ and @LIBCURL_CPPFLAGS@ to the necessary values.
@@ -22,7 +23,19 @@
 # variables $libcurl_feature_xxx and $libcurl_protocol_yyy are also
 # defined to 'yes' for those features and protocols that were found.
 # Note that xxx and yyy keep the same capitalization as in the
-# curl-config list (i.e. it's "HTTP" and not "http").
+# curl-config list (e.g. it's "HTTP" and not "http").
+#
+# For the sake of sanity, this macro assumes that any libcurl that is
+# found is after version 7.7.2, the first version that included the
+# curl-config script.  Note that it is very important for people
+# packaging binary versions of libcurl to include this script!
+# Without curl-config, we can only make educated guesses as to what
+# protocols are available.  Specifically, we assume that all of HTTP,
+# FTP, GOPHER, FILE, TELNET, LDAP, and DICT exist, and (if SSL exists)
+# HTTPS is present.  All of these protocols existed when libcurl was
+# first created in version 7, so this is a safe assumption.  If the
+# version is 7.11.0 or later, FTPS is assumed to be present as well.
+# FTPS existed before then, but was not yet fully standards compliant.
 
 AC_DEFUN([LIBCURL_CHECK_CONFIG],
 [
@@ -111,7 +124,6 @@ AC_DEFUN([LIBCURL_CHECK_CONFIG],
 	fi
 
 	unset _libcurl_wanted
-	unset _libcurl_version
      fi
 
      if test $_libcurl_try_link = yes ; then
@@ -159,13 +171,19 @@ x=CURLOPT_VERBOSE;
            done
 
 	   if test "x$_libcurl_protocols" = "x" ; then
-	      # We don't have --protocols, so just assume that all protocols
-	      # are available
 
+	      # We don't have --protocols, so just assume that all
+	      # protocols are available
 	      _libcurl_protocols="HTTP FTP GOPHER FILE TELNET LDAP DICT"
 
 	      if test x$libcurl_feature_SSL = xyes ; then
-	         _libcurl_protocols="$_libcurl_protocols HTTPS FTPS"
+	         _libcurl_protocols="$_libcurl_protocols HTTPS"
+
+		 # FTPS wasn't standards-compliant until version
+		 # 7.11.0
+		 if test $_libcurl_version -ge 461568; then
+		    _libcurl_protocols="$_libcurl_protocols FTPS"
+		 fi
 	      fi
 	   fi
 
@@ -183,6 +201,7 @@ x=CURLOPT_VERBOSE;
      unset _libcurl_features
      unset _libcurl_protocol
      unset _libcurl_protocols
+     unset _libcurl_version
   fi
 
   if test x$_libcurl_with = xno || test x$libcurl_cv_lib_curl_usable != xyes ; then
