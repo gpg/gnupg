@@ -30,10 +30,11 @@
 #include "des.h"
 #include "blowfish.h"
 #include "cast5.h"
+#include "arcfour.h"
 #include "dynload.h"
 
 #define MAX_BLOCKSIZE 16
-#define TABLE_SIZE 12
+#define TABLE_SIZE 14
 #define CTX_MAGIC_NORMAL 0x24091964
 #define CTX_MAGIC_SECURE 0x46919042
 
@@ -46,6 +47,8 @@ struct cipher_table_s {
     int  (*setkey)( void *c, byte *key, unsigned keylen );
     void (*encrypt)( void *c, byte *outbuf, byte *inbuf );
     void (*decrypt)( void *c, byte *outbuf, byte *inbuf );
+    void (*stencrypt)( void *c, byte *outbuf, byte *inbuf, unsigned int n );
+    void (*stdecrypt)( void *c, byte *outbuf, byte *inbuf, unsigned int n );
 };
 
 static struct cipher_table_s cipher_table[TABLE_SIZE];
@@ -63,6 +66,8 @@ struct gcry_cipher_handle {
     int  (*setkey)( void *c, byte *key, unsigned keylen );
     void (*encrypt)( void *c, byte *outbuf, byte *inbuf );
     void (*decrypt)( void *c, byte *outbuf, byte *inbuf );
+    void (*stencrypt)( void *c, byte *outbuf, byte *inbuf, unsigned int n );
+    void (*stdecrypt)( void *c, byte *outbuf, byte *inbuf, unsigned int n );
     PROPERLY_ALIGNED_TYPE context;
 };
 
@@ -73,6 +78,12 @@ static void
 dummy_encrypt_block( void *c, byte *outbuf, byte *inbuf ) { BUG(); }
 static void
 dummy_decrypt_block( void *c, byte *outbuf, byte *inbuf ) { BUG(); }
+static void
+dummy_encrypt_stream( void *c, byte *outbuf, byte *inbuf, unsigned int n )
+{ BUG(); }
+static void
+dummy_decrypt_stream( void *c, byte *outbuf, byte *inbuf, unsigned int n )
+{ BUG(); }
 
 
 
@@ -84,6 +95,13 @@ setup_cipher_table(void)
 {
     int i;
 
+    for (i=0; i < TABLE_SIZE; i++ ) {
+        cipher_table[i].encrypt = dummy_encrypt_block;
+        cipher_table[i].decrypt = dummy_decrypt_block;
+        cipher_table[i].stencrypt = dummy_encrypt_stream;
+        cipher_table[i].stdecrypt = dummy_decrypt_stream;
+    }
+    
     i = 0;
     cipher_table[i].algo = GCRY_CIPHER_RIJNDAEL;
     cipher_table[i].name = rijndael_get_info( cipher_table[i].algo,
@@ -162,14 +180,23 @@ setup_cipher_table(void)
     if( !cipher_table[i].name )
 	BUG();
     i++;
+    cipher_table[i].algo = GCRY_CIPHER_ARCFOUR;
+    cipher_table[i].name = arcfour_get_info( cipher_table[i].algo,
+					 &cipher_table[i].keylen,
+					 &cipher_table[i].blocksize,
+					 &cipher_table[i].contextsize,
+					 &cipher_table[i].setkey,
+					 &cipher_table[i].stencrypt,
+					 &cipher_table[i].stdecrypt   );
+    if( !cipher_table[i].name )
+	BUG();
+    i++;
     cipher_table[i].algo = CIPHER_ALGO_DUMMY;
     cipher_table[i].name = "DUMMY";
     cipher_table[i].blocksize = 8;
     cipher_table[i].keylen = 128;
     cipher_table[i].contextsize = 0;
     cipher_table[i].setkey = dummy_setkey;
-    cipher_table[i].encrypt = dummy_encrypt_block;
-    cipher_table[i].decrypt = dummy_decrypt_block;
     i++;
 
     for( ; i < TABLE_SIZE; i++ )
@@ -411,12 +438,24 @@ gcry_cipher_open( int algo, int mode, unsigned int flags )
       case GCRY_CIPHER_MODE_ECB:
       case GCRY_CIPHER_MODE_CBC:
       case GCRY_CIPHER_MODE_CFB:
+        if ( cipher_table[idx].encrypt == dummy_encrypt_block
+             || cipher_table[idx].decrypt == dummy_decrypt_block ) {
+            set_lasterr( GCRYERR_INV_CIPHER_MODE );
+            return NULL;
+        }
+        break;
+      case GCRY_CIPHER_MODE_STREAM:
+        if ( cipher_table[idx].stencrypt == dummy_encrypt_stream
+             || cipher_table[idx].stdecrypt == dummy_decrypt_stream ) {
+            set_lasterr( GCRYERR_INV_CIPHER_MODE );
+            return NULL;
+        }
 	break;
       case GCRY_CIPHER_MODE_NONE:
 	/* FIXME: issue a warning when this mode is used */
 	break;
       default:
-	set_lasterr( GCRYERR_INV_CIPHER_ALGO );
+	set_lasterr( GCRYERR_INV_CIPHER_MODE );
 	return NULL;
     }
 
@@ -426,7 +465,7 @@ gcry_cipher_open( int algo, int mode, unsigned int flags )
 				       + cipher_table[idx].contextsize
 				       - sizeof(PROPERLY_ALIGNED_TYPE) )
 	       : g10_calloc( 1, sizeof *h + cipher_table[idx].contextsize
-					   - sizeof(PROPERLY_ALIGNED_TYPE)  );
+                                       - sizeof(PROPERLY_ALIGNED_TYPE)  );
     if( !h ) {
 	set_lasterr( GCRYERR_NO_MEM );
 	return NULL;
@@ -439,6 +478,8 @@ gcry_cipher_open( int algo, int mode, unsigned int flags )
     h->setkey  = cipher_table[idx].setkey;
     h->encrypt = cipher_table[idx].encrypt;
     h->decrypt = cipher_table[idx].decrypt;
+    h->stencrypt = cipher_table[idx].stencrypt;
+    h->stdecrypt = cipher_table[idx].stdecrypt;
 
     return h;
 }
@@ -550,7 +591,8 @@ do_cbc_decrypt( GCRY_CIPHER_HD c, byte *outbuf, const byte *inbuf, unsigned nblo
 
 
 static void
-do_cfb_encrypt( GCRY_CIPHER_HD c, byte *outbuf, const byte *inbuf, unsigned nbytes )
+do_cfb_encrypt( GCRY_CIPHER_HD c,
+                byte *outbuf, const byte *inbuf, unsigned nbytes )
 {
     byte *ivp;
     size_t blocksize = c->blocksize;
@@ -594,7 +636,8 @@ do_cfb_encrypt( GCRY_CIPHER_HD c, byte *outbuf, const byte *inbuf, unsigned nbyt
 }
 
 static void
-do_cfb_decrypt( GCRY_CIPHER_HD c, byte *outbuf, const byte *inbuf, unsigned nbytes )
+do_cfb_decrypt( GCRY_CIPHER_HD c,
+                byte *outbuf, const byte *inbuf, unsigned nbytes )
 {
     byte *ivp;
     ulong temp;
@@ -651,14 +694,16 @@ do_cfb_decrypt( GCRY_CIPHER_HD c, byte *outbuf, const byte *inbuf, unsigned nbyt
 }
 
 
+
+
 /****************
  * Encrypt INBUF to OUTBUF with the mode selected at open.
  * inbuf and outbuf may overlap or be the same.
- * Depending on the mode some some contraints apply to NBYTES.
+ * Depending on the mode some contraints apply to NBYTES.
  */
 static void
 cipher_encrypt( GCRY_CIPHER_HD c, byte *outbuf,
-				  const byte *inbuf, unsigned nbytes )
+				  const byte *inbuf, unsigned int nbytes )
 {
     switch( c->mode ) {
       case GCRY_CIPHER_MODE_ECB:
@@ -672,6 +717,10 @@ cipher_encrypt( GCRY_CIPHER_HD c, byte *outbuf,
       case GCRY_CIPHER_MODE_CFB:
 	do_cfb_encrypt(c, outbuf, inbuf, nbytes );
 	break;
+      case GCRY_CIPHER_MODE_STREAM:
+        (*c->stencrypt)( &c->context.c,
+                         outbuf, (byte*)/*arggg*/inbuf, nbytes );
+        break;
       case GCRY_CIPHER_MODE_NONE:
 	if( inbuf != outbuf )
 	    memmove( outbuf, inbuf, nbytes );
@@ -729,6 +778,10 @@ cipher_decrypt( GCRY_CIPHER_HD c, byte *outbuf, const byte *inbuf,
       case GCRY_CIPHER_MODE_CFB:
 	do_cfb_decrypt(c, outbuf, inbuf, nbytes );
 	break;
+      case GCRY_CIPHER_MODE_STREAM:
+        (*c->stdecrypt)( &c->context.c,
+                         outbuf, (byte*)/*arggg*/inbuf, nbytes );
+        break;
       case GCRY_CIPHER_MODE_NONE:
 	if( inbuf != outbuf )
 	    memmove( outbuf, inbuf, nbytes );

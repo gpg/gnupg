@@ -361,7 +361,6 @@ import_one( const char *fname, KBNODE keyblock, int fast )
     PKT_public_key *pk_orig;
     KBNODE node, uidnode;
     KBNODE keyblock_orig = NULL;
-    KBPOS kbpos;
     u32 keyid[2];
     int rc = 0;
     int new_key = 0;
@@ -425,22 +424,14 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	stats.skipped_new_keys++;
     }
     else if( rc ) { /* insert this key */
-	/* get default resource */
-	if( get_keyblock_handle( NULL, 0, &kbpos ) ) {
-	    log_error(_("no default public keyring\n"));
-	    return GPGERR_GENERAL;
-	}
+#if 0 /* we don't know wehre we are going to write */
 	if( opt.verbose > 1 )
 	    log_info( _("writing to `%s'\n"),
-				keyblock_resource_name(&kbpos) );
-	if( (rc=lock_keyblock( &kbpos )) )
-	   log_error(_("can't lock keyring `%s': %s\n"),
-		       keyblock_resource_name(&kbpos), gpg_errstr(rc) );
-	else if( (rc=insert_keyblock( keyblock )) )
-	   log_error( _("error writing keyring `%s': %s\n"),
-		       keyblock_resource_name(&kbpos), gpg_errstr(rc) );
-	unlock_keyblock( &kbpos );
-	/* we are ready */
+                      keyblock_resource_name(kbpos) );
+#endif
+	if( (rc=insert_keyblock( keyblock )) )
+	   log_error( _("error writing key: %s\n"), gpg_errstr(rc) );
+        /* we are ready */
 	if( !opt.quiet )
 	    log_info( _("key %08lX: public key imported\n"), (ulong)keyid[1]);
 	if( is_status_enabled() ) {
@@ -485,13 +476,8 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	if( n_uids || n_sigs || n_subk ) {
 	    mod_key = 1;
 	    /* keyblock_orig has been updated; write */
-	    if( (rc=lock_keyblock( &kbpos )) )
-	       log_error( _("can't lock keyring `%s': %s\n"),
-			  keyblock_resource_name(&kbpos), gpg_errstr(rc) );
-	    else if( (rc=update_keyblock( keyblock_orig )) )
-		log_error( _("error writing keyring `%s': %s\n"),
-			     keyblock_resource_name(&kbpos), gpg_errstr(rc) );
-	    unlock_keyblock( &kbpos );
+	    if( (rc=update_keyblock( keyblock_orig )) )
+		log_error( _("error writing key: %s\n"), gpg_errstr(rc) );
 	    /* we are ready */
 	    if( !opt.quiet ) {
 		if( n_uids == 1 )
@@ -555,7 +541,6 @@ import_secret_one( const char *fname, KBNODE keyblock )
 {
     PKT_secret_key *sk;
     KBNODE node, uidnode;
-    KBPOS kbpos;
     u32 keyid[2];
     int rc = 0;
 
@@ -588,19 +573,9 @@ import_secret_one( const char *fname, KBNODE keyblock )
 
     /* do we have this key already in one of our secrings ? */
     rc = seckey_available( keyid );
-    if( rc == GPGERR_NO_SECKEY && !opt.merge_only ) { /* simply insert this key */
-	/* get default resource */
-	if( get_keyblock_handle( NULL, 1, &kbpos ) ) {
-	    log_error("no default secret keyring\n");
-	    return GPGERR_GENERAL;
-	}
-	if( (rc=lock_keyblock( &kbpos )) )
-	    log_error( _("can't lock keyring `%s': %s\n"),
-			 keyblock_resource_name(&kbpos), gpg_errstr(rc) );
-	else if( (rc=insert_keyblock( keyblock )) )
-	    log_error( _("error writing keyring `%s': %s\n"),
-		      keyblock_resource_name(&kbpos), gpg_errstr(rc) );
-	unlock_keyblock( &kbpos );
+    if( rc == GPGERR_NO_SECKEY && !opt.merge_only ) { /*just insert this key*/
+	if( (rc=insert_keyblock( keyblock )) )
+	    log_error( _("error writing key: %s\n"), gpg_errstr(rc) );
 	/* we are ready */
 	if( !opt.quiet )
 	    log_info( _("key %08lX: secret key imported\n"), (ulong)keyid[1]);
@@ -627,7 +602,6 @@ import_revoke_cert( const char *fname, KBNODE node )
 {
     PKT_public_key *pk=NULL;
     KBNODE onode, keyblock = NULL;
-    KBPOS kbpos;
     u32 keyid[2];
     int rc = 0;
 
@@ -689,13 +663,8 @@ import_revoke_cert( const char *fname, KBNODE node )
     insert_kbnode( keyblock, clone_kbnode(node), 0 );
 
     /* and write the keyblock back */
-    if( (rc=lock_keyblock( &kbpos )) )
-	log_error( _("can't lock keyring `%s': %s\n"),
-		   keyblock_resource_name(&kbpos), gpg_errstr(rc) );
-    else if( (rc=update_keyblock( keyblock )) )
-	log_error( _("error writing keyring `%s': %s\n"),
-		    keyblock_resource_name(&kbpos), gpg_errstr(rc) );
-    unlock_keyblock( &kbpos );
+    if( (rc=update_keyblock( keyblock )) )
+	log_error( _("error writing key: %s\n"), gpg_errstr(rc) );
     /* we are ready */
     if( !opt.quiet )
 	log_info( _("key %08lX: revocation certificate imported\n"),

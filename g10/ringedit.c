@@ -460,112 +460,152 @@ unlock_keyblock( KBPOS kbpos )
 }
 
 
-/****************
- * This functions can be used to read through a complete keyring.
- * Mode is: 0 = open
- *	    1 = read
- *	    2 = close
- *	    5 = open secret keyrings
- *	    11 = read but skip signature and comment packets.
- *	    all others are reserved!
- */
-int
-enum_keyblocks( int mode, KBPOS kbpos, KBNODE *ret_root )
+static int
+enum_keyrings_open_helper( KBPOS kbpos, int where )
 {
-    int rc = 0;
+    int i = where;
     RESTBL *rentry;
 
-    if( !mode || mode == 5 || mode == 100 ) {
-	int i;
-
-	kbpos->fp = NULL;
-	kbpos->rt = rt_UNKNOWN;
-	if( !mode ) {
-	    kbpos->secret = 0;
-	    i = 0;
-	}
-	else if( mode == 5 ) {
-	    kbpos->secret = 1;
-	    mode = 0;
-	    i = 0;
-	}
-	else
-	    i = kbpos->resno+1;
-	for(; i < MAX_RESOURCES; i++ )
-	    if( resource_table[i].used
-		&& !resource_table[i].secret == !kbpos->secret )
-		break;
-	if( i == MAX_RESOURCES )
-	    return -1; /* no resources */
-	kbpos->resno = i;
-	rentry = check_pos( kbpos );
-	kbpos->rt = resource_table[i].rt;
-	kbpos->valid = 0;
-	switch( kbpos->rt ) {
-	  case rt_RING:
-	  case rt_KBXF:
-	    kbpos->fp = iobuf_open( rentry->fname );
-	    if( !kbpos->fp ) {
-		log_error("can't open `%s'\n", rentry->fname );
-		return GPGERR_OPEN_FILE;
-	    }
-	    break;
-
-	  default: BUG();
-	}
-	kbpos->pkt = NULL;
+    for(; i < MAX_RESOURCES; i++ )
+        if( resource_table[i].used
+            && !resource_table[i].secret == !kbpos->secret )
+            break;
+    if( i == MAX_RESOURCES ) 
+        return -1; /* no resources */
+    kbpos->resno = i;
+    rentry = check_pos( kbpos );
+    kbpos->rt = resource_table[i].rt;
+    kbpos->valid = 0;
+    switch( kbpos->rt ) {
+      case rt_RING:
+      case rt_KBXF:
+        kbpos->fp = iobuf_open( rentry->fname );
+        if ( !kbpos->fp ) {
+            log_error("can't open `%s'\n", rentry->fname );
+            return GPGERR_OPEN_FILE;
+        }
+        break;
+    
+       default: BUG();
     }
-    else if( mode == 1 || mode == 11 ) {
-	int cont;
-	do {
-	    cont = 0;
-	    switch( kbpos->rt ) {
-	      case rt_RING:
-		if( !kbpos->fp )
-		    return GPGERR_GENERAL;
-		rc = keyring_enum( kbpos, ret_root, mode == 11 );
-		break;
-	      case rt_KBXF:
-		if( !kbpos->fp )
-		    return GPGERR_GENERAL;
-		rc = do_kbxf_enum( kbpos, ret_root, mode == 11 );
-		break;
-	      default: BUG();
-	    }
+    kbpos->pkt = NULL;
+    return 0;
+}
 
-	    if( rc == -1 ) {
-		assert( !kbpos->pkt );
-		rentry = check_pos( kbpos );
-		assert(rentry);
-		/* close */
-		enum_keyblocks(2, kbpos, ret_root );
-		/* and open the next one */
-		rc = enum_keyblocks(100, kbpos, ret_root );
-		if( !rc )
-		    cont = 1;
-	    }
-	} while(cont);
+
+/****************
+ * This set of functions is used to scan over all keyrings.
+ * The mode in enum_keyblocks_next() is used liek this:
+ * Mode is: 1 = read
+ *	    11 = read but skip signature and comment packets.
+ */
+int
+enum_keyblocks_begin( KBPOS *rkbpos, int use_secret )
+{
+    int rc, i;
+    KBPOS kbpos;
+    
+    *rkbpos = NULL;
+
+    kbpos = gcry_xcalloc( 1, sizeof *kbpos );
+    kbpos->fp = NULL;
+    kbpos->rt = rt_UNKNOWN;
+    if( !use_secret ) {
+        kbpos->secret = 0;
+        i = 0;
     }
     else {
-	switch( kbpos->rt ) {
-	  case rt_RING:
-	  case rt_KBXF:
-	    if( kbpos->fp ) {
-		iobuf_close( kbpos->fp );
-		kbpos->fp = NULL;
-	    }
-	    break;
-	  case rt_UNKNOWN:
-	    /* this happens when we have no keyring at all */
-	    return rc;
-
-	  default:
-	    BUG();
-	}
-	/* release pending packet */
-	free_packet( kbpos->pkt );
-	gcry_free( kbpos->pkt );
+        kbpos->secret = 1;
+        i = 0;
     }
+    
+    rc = enum_keyrings_open_helper( kbpos, i );
+    if ( rc ) {
+        gcry_free( kbpos );
+        return rc;
+    }
+    /* return the handle */
+    *rkbpos = kbpos;
+    return 0;
+}
+
+void
+enum_keyblocks_end( KBPOS kbpos )
+{
+    if ( !kbpos )
+        return;
+    switch( kbpos->rt ) {
+     case rt_RING:
+     case rt_KBXF:
+       if( kbpos->fp ) {
+           iobuf_close( kbpos->fp );
+           kbpos->fp = NULL;
+       }
+       break;
+     case rt_UNKNOWN:
+       /* this happens when we have no keyring at all */
+       gcry_free( kbpos );
+       return;
+
+     default:
+       BUG();
+    }
+    /* release pending packet */
+    free_packet( kbpos->pkt );
+    gcry_free( kbpos->pkt );
+    gcry_free( kbpos );
+}
+
+int
+enum_keyblocks_next( KBPOS kbpos, int mode, KBNODE *ret_root )
+{
+    int cont, rc = 0;
+    RESTBL *rentry;
+
+    if( mode != 1 && mode != 11 ) 
+        return GPGERR_INV_ARG;
+
+    do {
+        cont = 0;
+        switch( kbpos->rt ) {
+          case rt_RING:
+            if( !kbpos->fp )
+                return GPGERR_GENERAL;
+            rc = keyring_enum( kbpos, ret_root, mode == 11 );
+            break;
+          case rt_KBXF:
+            if( !kbpos->fp )
+                return GPGERR_GENERAL;
+            rc = do_kbxf_enum( kbpos, ret_root, mode == 11 );
+            break;
+          default: BUG();
+        }
+
+        if( rc == -1 ) {
+            RESTBL *rentry;
+            int i;
+
+            assert( !kbpos->pkt );
+            rentry = check_pos( kbpos );
+            assert(rentry);
+            i = kbpos->resno+1;
+            /* first close */
+            if( kbpos->fp ) {
+                iobuf_close( kbpos->fp );
+                kbpos->fp = NULL;
+            }
+            free_packet( kbpos->pkt );
+            gcry_free( kbpos->pkt );
+            kbpos->pkt = NULL;
+            /* and then open the next one */
+            rc = enum_keyrings_open_helper( kbpos, i );
+            if ( !rc ) 
+                cont = 1;
+            /* hmm, that is not really correct: if we got an error kbpos
+             * might be not well anymore */
+        }
+    } while(cont);
+
     return rc;
 }
 
@@ -632,7 +672,7 @@ int
 update_keyblock( KBNODE root )
 {
     int rc;
-    struct WORK WORK WORK KBPOS kbpos;
+    struct keyblock_pos_struct kbpos;
     
     /* We need to get the file position of original keyblock first */
     if ( root->pkt->pkttype == PKT_PUBLIC_KEY )
@@ -668,7 +708,7 @@ update_keyblock( KBNODE root )
  ****************************************************************/
 
 static int
-keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
+keyring_enum( KBPOS kbpos, KBNODE *ret_root, int skipsigs )
 {
     PACKET *pkt;
     int rc;
@@ -767,7 +807,7 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
  *	3 = update
  */
 static int
-keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
+keyring_copy( KBPOS kbpos, int mode, KBNODE root )
 {
     RESTBL *rentry;
     IOBUF fp, newfp;
@@ -1003,7 +1043,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
  ****************************************************************/
 
 static int
-do_kbxf_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
+do_kbxf_enum( KBPOS kbpos, KBNODE *ret_root, int skipsigs )
 {
     PACKET *pkt;
     int rc;
@@ -1092,7 +1132,7 @@ do_kbxf_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
  *	3 = update
  */
 static int
-do_kbxf_copy( KBPOS *kbpos, int mode, KBNODE root )
+do_kbxf_copy( KBPOS kbpos, int mode, KBNODE root )
 {
     RESTBL *rentry;
     IOBUF fp, newfp;

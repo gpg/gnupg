@@ -1,3 +1,10 @@
+2000-10-09  Werner Koch  <wk@gnupg.org>
+
+	* arcfour.c, arcfour.h: New.
+	* cipher.c (cipher_encrypt, cipher_decrypt): Add stream mode.
+	(setup_cipher_table): Add Arcfour.
+	(gcry_cipher_open): Kludge to allow stream mode.
+
 Wed Oct  4 13:16:18 CEST 2000  Werner Koch  <wk@openit.de>
 
         * sha1.c (transform): Use rol() macro.  Actually this is not needed

@@ -124,10 +124,10 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 	iobuf_push_filter( out, compress_filter, &zfx );
 
     if( all ) {
-	rc = enum_keyblocks( secret?5:0, &kbpos, &keyblock );
+	rc = enum_keyblocks_begin( &kbpos, secret );
 	if( rc ) {
 	    if( rc != -1 )
-		log_error("enum_keyblocks(open) failed: %s\n", gpg_errstr(rc) );
+		log_error("enum_keyblocks_begin failed: %s\n", gpg_errstr(rc));
 	    goto leave;
 	}
 	all = 2;
@@ -137,11 +137,11 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
      * NULL pointers :-) */
     for( sl=strlist_last(users); sl || all ; sl=strlist_prev( users, sl )) {
 	if( all ) { /* get the next user */
-	    rc = enum_keyblocks( 1, &kbpos, &keyblock );
+	    rc = enum_keyblocks_next( kbpos, 1, &keyblock );
 	    if( rc == -1 )  /* EOF */
 		break;
 	    if( rc ) {
-		log_error("enum_keyblocks(read) failed: %s\n", gpg_errstr(rc));
+		log_error("enum_keyblocks_next failed: %s\n", gpg_errstr(rc));
 		break;
 	    }
 	}
@@ -219,7 +219,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 
   leave:
     if( all == 2 )
-	enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
+	enum_keyblocks_end( kbpos );
     release_kbnode( keyblock );
     if( !*any )
 	log_info(_("WARNING: nothing exported\n"));

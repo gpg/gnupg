@@ -42,6 +42,7 @@ libcipher_la_SOURCES = cipher.c  \
 		 blowfish.h	\
 		 cast5.c	\
 		 cast5.h	\
+		 arcfour.c arcfour.h \
 		 elgamal.c	\
 		 elgamal.h	\
 		 primegen.c	\

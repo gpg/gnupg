@@ -1778,11 +1778,11 @@ update_trustdb()
 	return;
 
     init_trustdb();
-    rc = enum_keyblocks( 0, &kbpos, &keyblock );
+    rc = enum_keyblocks_begin( &kbpos, 0 );
     if( !rc ) {
 	ulong count=0, err_count=0, new_count=0;
 
-	while( !(rc = enum_keyblocks( 1, &kbpos, &keyblock )) ) {
+	while( !(rc = enum_keyblocks_next( kbpos, 1, &keyblock )) ) {
 	    /*int modified;*/
 	    TRUSTREC drec;
 	    PKT_public_key *pk = find_kbnode( keyblock, PKT_PUBLIC_KEY )
@@ -1825,7 +1825,7 @@ update_trustdb()
     if( rc && rc != -1 )
 	log_error(_("enumerate keyblocks failed: %s\n"), gpg_errstr(rc));
 
-    enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
+    enum_keyblocks_end( kbpos ); 
     release_kbnode( keyblock );
 }
 

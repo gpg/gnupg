@@ -265,14 +265,14 @@ export_as_kbxfile(void)
     KBNODE keyblock = NULL;
     int rc=0;
 
-    rc = enum_keyblocks( 0, &kbpos, &keyblock );
+    rc = enum_keyblocks_begin( &kbpos, 0 );
     if( rc ) {
 	if( rc != -1 )
 	    log_error("enum_keyblocks(open) failed: %s\n", gpg_errstr(rc) );
 	goto leave;
     }
 
-    while( !(rc = enum_keyblocks( 1, &kbpos, &keyblock )) ) {
+    while( !(rc = enum_keyblocks_next( kbpos, 1, &keyblock )) ) {
 	KBXBLOB blob;
 	const char *p;
 	size_t n;
@@ -292,7 +292,7 @@ export_as_kbxfile(void)
 	log_error("enum_keyblocks(read) failed: %s\n", gpg_errstr(rc));
 
   leave:
-    enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
+    enum_keyblocks_end( kbpos );
     release_kbnode( keyblock );
 }
 

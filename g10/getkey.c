@@ -862,17 +862,13 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
         }
     }
 
-    if (!rc )
-       log_debug ( "pk_byname: kbpos %s %lu %p\n",
-                   ctx->kbpos.valid? "valid":"",
-                   ctx->kbpos.offset, ctx->kbpos.fp );
     release_kbnode ( help_kb );
 
     if( retctx ) /* caller wants the context */
 	*retctx = ctx;
     else {
 	/* Hmmm, why not get_pubkey-end here?? */
-	enum_keyblocks( 2, &ctx->kbpos, NULL ); /* close */
+	enum_keyblocks_end( ctx->kbpos ); ctx->kbpos = NULL;
 	for(n=0; n < ctx->nitems; n++ )
 	    gcry_free( ctx->items[n].namebuf );
 	gcry_free( ctx );
@@ -920,7 +916,7 @@ get_pubkey_end( GETKEY_CTX ctx )
     if( ctx ) {
 	int n;
 
-	enum_keyblocks( 2, &ctx->kbpos, NULL ); /* close */
+	enum_keyblocks_end( ctx->kbpos ); ctx->kbpos = NULL;
 	for(n=0; n < ctx->nitems; n++ )
 	    gcry_free( ctx->items[n].namebuf );
 	if( !ctx->not_allocated )
@@ -976,7 +972,7 @@ find_kblocation_bypk( void *re_opaque, PKT_public_key *pk )
     rc = get_pubkey_byname( &ctx, dummy_pk, ufpr, NULL );
     free_public_key(dummy_pk);
     if ( !rc )
-        ringedit_copy_kbpos( re_opaque, &ctx->kbpos );
+        ringedit_copy_kbpos( re_opaque, ctx->kbpos );
     get_pubkey_end( ctx );
 
     return rc;
@@ -2212,11 +2208,11 @@ lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode )
     KBNODE secblock = NULL; /* helper */
 
     if( !ctx->count ) /* first time */
-	rc = enum_keyblocks( secmode?5:0, &ctx->kbpos, &ctx->keyblock );
+	rc = enum_keyblocks_begin( &ctx->kbpos, secmode );
     else
 	rc = 0;
     if( !rc ) {
-	while( !(rc = enum_keyblocks( 1, &ctx->kbpos, &ctx->keyblock )) ) {
+	while( !(rc = enum_keyblocks_next( ctx->kbpos, 1, &ctx->keyblock )) ) {
 	    int n;
 	    getkey_item_t *item;
 

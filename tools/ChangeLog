@@ -1,3 +1,7 @@
+2000-10-10  Werner Koch  <wk@gnupg.org>
+
+	* bftest.c (main): Allow selection of cipher mode.
+
 Mon Sep 18 16:35:45 CEST 2000  Werner Koch  <wk@openit.de>
 
        * ring-a-party: substr starts at offset 1 not 0.  Many thanks to Mike

@@ -142,6 +142,7 @@ delete_key( const char *username, int secret )
 
 
     if( okay ) {
+      #warning MUST FIX THIS!!!
 	rc = delete_keyblock( &kbpos );
 	if( rc ) {
 	    log_error("delete_keyblock failed: %s\n", gpg_errstr(rc) );

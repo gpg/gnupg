@@ -72,7 +72,7 @@ list_all( int secret )
     int rc=0;
     int lastresno;
 
-    rc = enum_keyblocks( secret? 5:0, &kbpos, &keyblock );
+    rc = enum_keyblocks_begin( &kbpos, secret );
     if( rc ) {
 	if( rc != -1 )
 	    log_error("enum_keyblocks(open) failed: %s\n", gpg_errstr(rc) );
@@ -80,12 +80,12 @@ list_all( int secret )
     }
 
     lastresno = -1;
-    while( !(rc = enum_keyblocks( 1, &kbpos, &keyblock )) ) {
-	if( lastresno != kbpos.resno ) {
-	    const char *s = keyblock_resource_name( &kbpos );
+    while( !(rc = enum_keyblocks_next( kbpos, 1, &keyblock )) ) {
+	if( 1 /*lastresno != kbpos.resno FIXME!!! */ ) {
+	    const char *s = "foo" /*keyblock_resource_name( &kbpos ) */;
 	    int i;
 
-	    lastresno = kbpos.resno;
+	    /* FIXME lastresno = kbpos.resno*/
 	    printf("%s\n", s );
 	    for(i=strlen(s); i; i-- )
 		putchar('-');
@@ -100,7 +100,7 @@ list_all( int secret )
 	log_error("enum_keyblocks(read) failed: %s\n", gpg_errstr(rc));
 
   leave:
-    enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
+    enum_keyblocks_end( kbpos ); 
     release_kbnode( keyblock );
 }
 

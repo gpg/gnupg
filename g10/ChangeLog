@@ -1,3 +1,19 @@
+2000-10-09  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (do_generate_keypair): Removed the keyblock locking.
+
+	* ringedit.c (enum_keyblocks): Replaced by ...
+	(enum_keyblocks_begin): New.
+	(enum_keyblocks_next): New.
+	(enum_keyblocks_end): New. And changed all callers.
+	
+	* import.c (import_one): Removed keyblock locking becuase this is
+	now done inside of insert_keyblock().  Removed get_keyblock_handle
+	because insert_keyblock() now decides what is the default keyring.
+	(import_secret_one): Ditto.
+	(import_revoke_cert): Ditto.
+	(import_one): Ditto.
+
 Fri Oct  6 14:29:16 CEST 2000  Werner Koch  <wk@openit.de>
 
         Started to rework the whole getkey/ringedit stuff to make

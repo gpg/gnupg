@@ -1748,10 +1748,6 @@ do_generate_keypair( struct para_data_s *para,
 
 	if( rc )
 	    ;
-	else if( (rc=rc1=lock_keyblock( &pub_kbpos )) )
-	    log_error("can't lock public keyring: %s\n", gpg_errstr(rc) );
-	else if( (rc=rc2=lock_keyblock( &sec_kbpos )) )
-	    log_error("can't lock secret keyring: %s\n", gpg_errstr(rc) );
 	else if( (rc=insert_keyblock( pub_root )) )
 	    log_error("can't write public key: %s\n", gpg_errstr(rc) );
 	else if( (rc=insert_keyblock( sec_root )) )
@@ -1770,10 +1766,6 @@ do_generate_keypair( struct para_data_s *para,
 	    }
 	}
 
-	if( !rc1 )
-	    unlock_keyblock( &pub_kbpos );
-	if( !rc2 )
-	    unlock_keyblock( &sec_kbpos );
     }
 
     if( rc ) {

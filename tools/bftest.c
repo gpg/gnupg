@@ -34,7 +34,7 @@
 static void
 my_usage(void)
 {
-    fprintf(stderr, "usage: bftest [-e][-d] algo key\n");
+    fprintf(stderr, "usage: bftest [-e][-d] algo mode key\n");
     exit(1);
 }
 
@@ -59,9 +59,10 @@ main(int argc, char **argv)
     int encode=0;
     GCRY_CIPHER_HD hd;
     char buf[4096];
-    int n, size=4096;
-    int algo;
-
+    int rc, n, size=4096;
+    int algo, mode;
+    const char *s;
+    
   #ifdef HAVE_DOSISH_SYSTEM
     setmode( fileno(stdin), O_BINARY );
     setmode( fileno(stdout), O_BINARY );
@@ -84,14 +85,34 @@ main(int argc, char **argv)
 	argc--; argv++;
 	size = 10;
     }
-    if( argc != 3 )
+    if( argc != 4 )
 	my_usage();
     argc--; argv++;
     algo = gcry_cipher_map_name( *argv );
     argc--; argv++;
+    s = *argv; argc--; argv++;
+    if ( !strcasecmp( s, "cfb" ) )
+        mode = GCRY_CIPHER_MODE_CFB;
+    else if ( !strcasecmp( s, "cbc" ) )
+        mode = GCRY_CIPHER_MODE_CBC;
+    else if ( !strcasecmp( s, "ebc" ) )
+        mode = GCRY_CIPHER_MODE_ECB;
+    else if ( !strcasecmp( s, "none" ) )
+        mode = GCRY_CIPHER_MODE_NONE;
+    else if ( !strcasecmp( s, "stream" ) )
+        mode = GCRY_CIPHER_MODE_STREAM;
+    else {
+        fprintf( stderr,
+                 "wrong mode; use one of:  none, ecb, cbc, cfb, stream\n");
+        return 1;
+    }
 
-    hd = gcry_cipher_open( algo, GCRY_CIPHER_MODE_CFB, 0 );
-    gcry_cipher_setkey( hd, *argv, strlen(*argv) );
+    hd = gcry_cipher_open( algo, mode, 0 );
+    if (!hd )
+        log_fatal("cipher open failed: %s\n", gcry_strerror(-1) );
+    rc = gcry_cipher_setkey( hd, *argv, strlen(*argv) );
+    if ( rc ) 
+        log_fatal("setkey failed: %s\n", gcry_strerror(rc) );
     gcry_cipher_setiv( hd, NULL, 0 );
     while( (n = fread( buf, 1, size, stdin )) > 0 ) {
 	if( encode )
@@ -104,4 +125,16 @@ main(int argc, char **argv)
     gcry_cipher_close(hd);
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
