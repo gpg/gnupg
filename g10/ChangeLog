@@ -1,3 +1,7 @@
+2004-10-03  Timo Schulz  <twoaday@g10code.de>
+
+	* apdu.c (apdu_open_remote_reader) [_WIN32]: Do not set ENOSYS.
+	
 2004-10-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (print_and_check_one_sig_colon): Fix bad keyids in

@@ -2047,7 +2047,9 @@ apdu_open_remote_reader (const char *portstr,
                             writefnc, writefnc_value,
                             closefnc, closefnc_value);
 #else
+  #ifndef _WIN32
   errno = ENOSYS;
+  #endif
   return -1;
 #endif
 }
