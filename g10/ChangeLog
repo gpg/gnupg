@@ -1,3 +1,9 @@
+Wed Feb 18 18:39:02 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* Makefile.am (OMIT_DEPENDENCIES): New.
+
+	* rsa.c: Replaced log_bug by BUG.
+
 Wed Feb 18 13:35:58 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* mainproc.c (do_check_sig): Now uses hash_public_cert.

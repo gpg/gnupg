@@ -211,5 +211,6 @@ cipher/Makefile
 g10/Makefile
 tools/Makefile
 zlib/Makefile
+checks/Makefile
 ],[echo timestamp >stamp-h; sed -e "/POTFILES =/r po/POTFILES" po/Makefile.in > po/Makefile])
 

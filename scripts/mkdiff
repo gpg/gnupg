@@ -18,7 +18,6 @@ echo "Unpacking previous and current tar"
 tar xzf "g10-$curr_ver.tar.gz"
 tar xzf "g10-$prev_ver.tar.gz"
 
-read
 
 echo "Diffing"
 tmp_name="g10-$curr_ver.diff.tmp"

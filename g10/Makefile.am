@@ -2,6 +2,7 @@
 
 INCLUDES = -I$(top_srcdir)/include
 EXTRA_DIST = OPTIONS  pubring.asc
+OMIT_DEPENDENCIES = zlib.h zconf.h
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
 bin_PROGRAMS = g10 g10maint
@@ -58,6 +59,7 @@ g10maint_SOURCES = g10maint.c	\
 	      $(common_source)
 
 LDADD = @INTLLIBS@ $(needed_libs) @ZLIBS@
+
 
 $(PROGRAMS): $(needed_libs)
 

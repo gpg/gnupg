@@ -58,7 +58,7 @@ g10_rsa_encrypt( PKT_public_cert *pkc, PKT_pubkey_enc *enc, DEK *dek )
 	m_free(ustr);
     }
  #else
-    log_bug(NULL);
+    BUG();
  #endif/* ! HAVE_RSA_CIPHER*/
 }
 
@@ -96,7 +96,7 @@ g10_rsa_sign( PKT_secret_cert *skc, PKT_signature *sig,
 	m_free(ustr);
     }
  #else
-    log_bug(NULL);
+    BUG();
  #endif/* ! HAVE_RSA_CIPHER*/
 }
 

@@ -422,15 +422,17 @@ main( int argc, char **argv )
 	tty_printf("%s", strusage(15) );
     }
 
-    if( !sec_nrings || default_keyring ) { /* add default secret rings */
-	char *p = make_filename(opt.homedir, "secring.g10", NULL );
-	add_secret_keyring(p);
-	m_free(p);
-    }
-    if( !nrings || default_keyring ) { /* add default ring */
-	char *p = make_filename(opt.homedir, "pubring.g10", NULL );
-	add_keyring(p);
-	m_free(p);
+    if( cmd != aDeArmor && cmd != aEnArmor ) {
+	if( !sec_nrings || default_keyring ) { /* add default secret rings */
+	    char *p = make_filename(opt.homedir, "secring.g10", NULL );
+	    add_secret_keyring(p);
+	    m_free(p);
+	}
+	if( !nrings || default_keyring ) { /* add default ring */
+	    char *p = make_filename(opt.homedir, "pubring.g10", NULL );
+	    add_keyring(p);
+	    m_free(p);
+	}
     }
 
     if( argc ) {

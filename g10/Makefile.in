@@ -88,6 +88,7 @@ ZLIBS = @ZLIBS@
 
 INCLUDES = -I$(top_srcdir)/include
 EXTRA_DIST = OPTIONS  pubring.asc
+OMIT_DEPENDENCIES = zlib.h zconf.h
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
 bin_PROGRAMS = g10 g10maint

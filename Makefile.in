@@ -86,7 +86,7 @@ RANLIB = @RANLIB@
 VERSION = @VERSION@
 ZLIBS = @ZLIBS@
 
-SUBDIRS =  intl po zlib util mpi cipher tools g10
+SUBDIRS =  intl po zlib util mpi cipher tools g10 checks
 EXTRA_DIST = VERSION
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/scripts/mkinstalldirs

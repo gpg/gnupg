@@ -17,6 +17,8 @@ Noteworthy changes in version 0.2.7
 
     * Assembler code for m68k (not tested).
 
+    * "make check" works.
+
 Noteworthy changes in version 0.2.6
 -----------------------------------
 

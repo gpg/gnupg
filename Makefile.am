@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS =  intl po zlib util mpi cipher tools g10
+SUBDIRS =  intl po zlib util mpi cipher tools g10 checks
 EXTRA_DIST = VERSION
 
 
@@ -17,4 +17,5 @@ dist-hook:
 		|| cp -p $(srcdir)/$$dir/$$i $(distdir)/$$dir/$$i; \
 	    done ; \
 	done
+
 
