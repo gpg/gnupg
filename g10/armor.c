@@ -151,8 +151,9 @@ initialize(void)
 }
 
 /****************
- * Check whether this is an armored file or not
- * See also parse-packet.c for details on this code
+ * Check whether this is an armored file or not See also
+ * parse-packet.c for details on this code For unknown historic
+ * reasons we use a string here but only the first byte will be used.
  * Returns: True if it seems to be armored
  */
 static int
@@ -195,6 +196,7 @@ use_armor_filter( IOBUF a )
     byte buf[1];
     int n;
 
+    /* fixme: there might be a problem with iobuf_peek */
     n = iobuf_peek(a, buf, 1 );
     if( n == -1 )
 	return 0; /* EOF, doesn't matter whether armored or not */
@@ -1092,4 +1094,222 @@ make_radix64_string( const byte *data, size_t len )
     *p = 0;
     return buffer;
 }
+
+
+/***********************************************
+ *  For the pipemode command we can't use the armor filter for various
+ *  reasons, so we use this new unarmor_pump stuff to remove the armor 
+ */
+
+enum unarmor_state_e {
+    STA_init = 0,
+    STA_bypass,
+    STA_wait_newline,
+    STA_wait_dash,
+    STA_first_dash, 
+    STA_compare_header,
+    STA_found_header_wait_newline,
+    STA_skip_header_lines,
+    STA_skip_header_lines_non_ws,
+    STA_read_data,
+    STA_wait_crc,
+    STA_read_crc,
+    STA_ready
+};
+
+struct unarmor_pump_s {
+    enum unarmor_state_e state;
+    byte val;
+    int checkcrc;
+    int pos;   /* counts from 0..3 */
+    u32 crc;
+    u32 mycrc; /* the one store in the data */
+};
+
+
+
+UnarmorPump
+unarmor_pump_new (void)
+{
+    UnarmorPump x;
+
+    if( !is_initialized )
+        initialize();
+    x = m_alloc_clear (sizeof *x);
+    return x;
+}
+
+void
+unarmor_pump_release (UnarmorPump x)
+{
+    m_free (x);
+}
+
+/* 
+ * Get the next character from the ascii armor taken from the IOBUF
+ * created earlier by unarmor_pump_new().
+ * Return:  c = Character
+ *        256 = ignore this value
+ *         -1 = End of current armor 
+ *         -2 = Premature EOF (not used)
+ *         -3 = Invalid armor
+ */
+int
+unarmor_pump (UnarmorPump x, int c)
+{
+    int rval = 256; /* default is to ignore the return value */
+
+    switch (x->state) {
+      case STA_init:
+        { 
+            byte tmp[1];
+            tmp[0] = c; 
+            if ( is_armored (tmp) )
+                x->state = c == '-'? STA_first_dash : STA_wait_newline;
+            else {
+                x->state = STA_bypass;
+                return c;
+            }
+        }
+        break;
+      case STA_bypass:
+        return c; /* return here to avoid crc calculation */
+      case STA_wait_newline:
+        if (c == '\n')
+            x->state = STA_wait_dash;
+        break;
+      case STA_wait_dash:
+        x->state = c == '-'? STA_first_dash : STA_wait_newline;
+        break;
+      case STA_first_dash: /* just need for initalization */
+        x->pos = 0;
+        x->state = STA_compare_header;
+      case STA_compare_header:
+        if ( "-----BEGIN PGP SIGNATURE-----"[++x->pos] == c ) {
+            if ( x->pos == 28 ) 
+                x->state = STA_found_header_wait_newline;
+        }
+        else 
+            x->state = c == '\n'? STA_wait_dash : STA_wait_newline;
+        break;
+      case STA_found_header_wait_newline:
+        /* to make CR,LF issues easier we simply allow for white space
+           behind the 5 dashes */
+        if ( c == '\n' )
+            x->state = STA_skip_header_lines;
+        else if ( c != '\r' && c != ' ' && c != '\t' )
+            x->state = STA_wait_dash; /* garbage after the header line */
+        break;
+      case STA_skip_header_lines:
+        /* i.e. wait for one empty line */
+        if ( c == '\n' ) {
+            x->state = STA_read_data;
+            x->crc = CRCINIT;
+            x->val = 0;
+            x->pos = 0;
+        }
+        else if ( c != '\r' && c != ' ' && c != '\t' )
+            x->state = STA_skip_header_lines_non_ws;
+        break;
+      case STA_skip_header_lines_non_ws:
+        /* like above but we already encountered non white space */
+        if ( c == '\n' )
+            x->state = STA_skip_header_lines;
+        break;
+      case STA_read_data:
+        /* fixme: we don't check for the trailing dash lines but rely
+         * on the armor stop characters */
+        if( c == '\n' || c == ' ' || c == '\r' || c == '\t' )
+            break; /* skip all kind of white space */
+
+        if( c == '=' ) { /* pad character: stop */
+            if( x->pos == 1 ) /* in this case val has some value */
+                rval = x->val;
+            x->state = STA_wait_crc;
+            break;
+        }
+
+        {
+            int c2;
+            if( (c = asctobin[(c2=c)]) == 255 ) {
+                log_error(_("invalid radix64 character %02x skipped\n"), c2);
+                break;
+            }
+        }
+        
+        switch(x->pos) {
+          case 0:
+            x->val = c << 2;
+            break;
+          case 1:
+            x->val |= (c>>4)&3;
+            rval = x->val;
+            x->val = (c<<4)&0xf0;
+            break;
+          case 2:
+            x->val |= (c>>2)&15;
+            rval = x->val;
+            x->val = (c<<6)&0xc0;
+            break;
+          case 3:
+            x->val |= c&0x3f;
+            rval = x->val;
+            break;
+        }
+        x->pos = (x->pos+1) % 4;
+        break;
+      case STA_wait_crc:
+        if( c == '\n' || c == ' ' || c == '\r' || c == '\t' || c == '=' )
+            break; /* skip ws and pad characters */
+        /* assume that we are at the next line */
+        x->state = STA_read_crc;
+        x->pos = 0;
+        x->mycrc = 0;
+      case STA_read_crc:
+        if( (c = asctobin[c]) == 255 ) {
+            rval = -1; /* ready */
+            if( x->crc != x->mycrc ) {
+                log_info (_("CRC error; %06lx - %06lx\n"),
+                          (ulong)x->crc, (ulong)x->mycrc);
+                if ( invalid_crc() )
+                    rval = -3;
+            }
+            x->state = STA_ready; /* not sure whether this is correct */
+            break;
+        }
+        
+        switch(x->pos) {
+          case 0:
+            x->val = c << 2;
+            break;
+          case 1:
+            x->val |= (c>>4)&3;
+            x->mycrc |= x->val << 16;
+            x->val = (c<<4)&0xf0;
+            break;
+          case 2:
+            x->val |= (c>>2)&15;
+            x->mycrc |= x->val << 8;
+            x->val = (c<<6)&0xc0;
+            break;
+          case 3:
+            x->val |= c&0x3f;
+            x->mycrc |= x->val;
+            break;
+        }
+        x->pos = (x->pos+1) % 4;
+        break;
+      case STA_ready:
+        rval = -1;
+        break;
+    }
+
+    if ( !(rval & ~255) ) { /* compute the CRC */
+        x->crc = (x->crc << 8) ^ crc_table[((x->crc >> 16)&0xff) ^ rval];
+        x->crc &= 0x00ffffff;
+    }
+
+    return rval;
+}
+
 

@@ -29,7 +29,7 @@
     will have commands --{add,remove}-trusted-key which keeps them in
     special trustdb records.
 
-  * Use DSA keys with the test suite.
+  * Use DSA keys with the test suite (partly done)
 
   * g10/trustdb.c (make_sig_records): fix the fixme.
 
@@ -43,7 +43,6 @@
 
   * Add an is_valid flag to each user ID.
 
-  * Make --pipemode work.
 
 Scheduled for 1.1
 -----------------

@@ -143,8 +143,6 @@ add_gpg_control( CTX c, PACKET *pkt )
     }   
     else if ( pkt->pkt.gpg_control->control == CTRLPKT_PIPEMODE ) {
         /* Pipemode control packet */
-#warning the --pipemode does not yet work 
-        /* FIXME: We have to do more sanity checks all over the place */
         if ( pkt->pkt.gpg_control->datalen < 2 ) 
             log_fatal ("invalid pipemode control packet length\n");
         if (pkt->pkt.gpg_control->data[0] == 1) {
@@ -522,16 +520,29 @@ proc_plaintext( CTX c, PACKET *pkt )
 	if ( c->mfx.md2  )
 	    md_start_debug( c->mfx.md2, "verify2" );
     }
-    rc = handle_plaintext( pt, &c->mfx, c->sigs_only, clearsig );
-    if( rc == G10ERR_CREATE_FILE && !c->sigs_only) {
-	/* can't write output but we hash it anyway to
-	 * check the signature */
-	rc = handle_plaintext( pt, &c->mfx, 1, clearsig );
+    if ( c->pipemode.op == 'B' )
+        rc = handle_plaintext( pt, &c->mfx, 1, 0 );
+    else {
+        rc = handle_plaintext( pt, &c->mfx, c->sigs_only, clearsig );
+        if( rc == G10ERR_CREATE_FILE && !c->sigs_only) {
+            /* can't write output but we hash it anyway to
+             * check the signature */
+            rc = handle_plaintext( pt, &c->mfx, 1, clearsig );
+        }
     }
     if( rc )
 	log_error( "handle plaintext failed: %s\n", g10_errstr(rc));
     free_packet(pkt);
     c->last_was_session_key = 0;
+
+    /* We add a marker control packet instead of the plaintext packet.
+     * This is so that we can later detect invalid packet sequences.
+     */
+    n = new_kbnode (create_gpg_control (CTRLPKT_PLAINTEXT_MARK, NULL, 0));
+    if (c->list)
+        add_kbnode (c->list, n);
+    else 
+        c->list = n;
 }
 
 
@@ -1193,22 +1204,48 @@ check_sig_and_print( CTX c, KBNODE node )
      * data+sig, sig+data,sig+data and we have not yet encountered the last
      * data, we could also see this a one data with 2 signatures and then 
      * data+sig.
-     * To protect against this we check that we all signatures follow
+     * To protect against this we check that all signatures follow
      * without any intermediate packets.  Note, that we won't get this
      * error when we use onepass packets or cleartext signatures because
      * we reset the list every time
+     *
+     * FIXME: Now that we have these marker packets, we should create a 
+     * real grammar and check against this.
      */
     {
         KBNODE n;
-        int tmp=0;
+        int n_sig=0;
 
-        for(n=c->list; n; n=n->next ) {
-            if ( tmp && n->pkt->pkttype == PKT_SIGNATURE ) {
-                log_error("can't handle these multiple signatures\n");
-                return 0;
+        for (n=c->list; n; n=n->next ) {
+            if ( n->pkt->pkttype == PKT_SIGNATURE ) 
+                n_sig++;
+        }
+        if (n_sig > 1) { /* more than one signature - check sequence */
+            int tmp, onepass;
+
+            for (tmp=onepass=0,n=c->list; n; n=n->next ) {
+                if (n->pkt->pkttype == PKT_ONEPASS_SIG) 
+                    onepass++;
+                else if (n->pkt->pkttype == PKT_GPG_CONTROL
+                         && n->pkt->pkt.gpg_control->control
+                            == CTRLPKT_CLEARSIGN_START ) {
+                    onepass++; /* handle the same way as a onepass */
+                }
+                else if ( (tmp && n->pkt->pkttype != PKT_SIGNATURE) ) {
+                    log_error(_("can't handle these multiple signatures\n"));
+                    return 0;
+                }
+                else if ( n->pkt->pkttype == PKT_SIGNATURE ) 
+                    tmp = 1;
+                else if (!tmp && !onepass 
+                         && n->pkt->pkttype == PKT_GPG_CONTROL
+                         && n->pkt->pkt.gpg_control->control
+                            == CTRLPKT_PLAINTEXT_MARK ) {
+                    /* plaintext before signatures but no one-pass packets*/
+                    log_error(_("can't handle these multiple signatures\n"));
+                    return 0;
+                }
             }
-            else if ( n->pkt->pkttype == PKT_SIGNATURE ) 
-                tmp = 1;
         }
     }
     
@@ -1336,6 +1373,18 @@ proc_tree( CTX c, KBNODE node )
     if( opt.list_packets || opt.list_only )
 	return;
 
+    /* we must skip our special plaintext marker packets here becuase
+       they may be the root packet.  These packets are only used in
+       addionla checks and skipping them here doesn't matter */
+    while ( node
+            && node->pkt->pkttype == PKT_GPG_CONTROL
+            && node->pkt->pkt.gpg_control->control
+                         == CTRLPKT_PLAINTEXT_MARK ) {
+        node = node->next;
+    }
+    if (!node)
+        return;
+
     c->local_id = 0;
     c->trustletter = ' ';
     if( node->pkt->pkttype == PKT_PUBLIC_KEY
@@ -1456,14 +1505,19 @@ proc_tree( CTX c, KBNODE node )
             log_error (_("not a detached signature\n") );
             return;
         }
-	else
+        else if ( c->pipemode.op == 'B' )
+            ; /* this is a detached signature trough the pipemode handler */
+	else 
 	    log_info(_("old style (PGP 2.x) signature\n"));
 
-	check_sig_and_print( c, node );
+	for( n1 = node; n1; (n1 = find_next_kbnode(n1, PKT_SIGNATURE )) )
+	    check_sig_and_print( c, n1 );
     }
-    else
+    else {
+        dump_kbnode (c->list);
 	log_error(_("invalid root packet detected in proc_tree()\n"));
-
+        dump_kbnode (node);
+    }
 }
 
 

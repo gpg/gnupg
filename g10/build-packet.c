@@ -535,7 +535,7 @@ do_encrypted( IOBUF out, int ctb, PKT_encrypted *ed )
     int rc = 0;
     u32 n;
 
-    n = ed->len ? (ed->len + 10) : 0;
+    n = ed->len ? (ed->len + ed->extralen) : 0;
     write_header(out, ctb, n );
 
     /* This is all. The caller has to write the real data */
@@ -551,7 +551,7 @@ do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed )
 
     assert( ed->mdc_method );
 
-    n = ed->len ? (ed->len + 10) : 0;
+    n = ed->len ? (ed->len + ed->extralen) : 0;
     write_header(out, ctb, n );
     iobuf_put(out, 1 );  /* version */
 

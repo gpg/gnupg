@@ -64,6 +64,9 @@ typedef struct {
     int pending_lf;	    /* used together with faked */
 } armor_filter_context_t;
 
+struct unarmor_pump_s;
+typedef struct unarmor_pump_s *UnarmorPump;
+
 
 typedef struct {
     int status;
@@ -113,6 +116,9 @@ void free_md_filter_context( md_filter_context_t *mfx );
 int use_armor_filter( IOBUF a );
 int armor_filter( void *opaque, int control,
 		  IOBUF chain, byte *buf, size_t *ret_len);
+UnarmorPump unarmor_pump_new (void);
+void        unarmor_pump_release (UnarmorPump x);
+int         unarmor_pump (UnarmorPump x, int c);
 
 /*-- compress.c --*/
 int compress_filter( void *opaque, int control,

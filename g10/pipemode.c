@@ -40,22 +40,24 @@
 #define CONTROL_PACKET_SPACE 30 
 #define FAKED_LITERAL_PACKET_SPACE (9+2+2)
 
+
 enum pipemode_state_e {
     STX_init = 0,
     STX_wait_operation,
     STX_begin,
     STX_text,
     STX_detached_signature,
+    STX_detached_signature_wait_text,
     STX_signed_data,
     STX_wait_init
 };
-
 
 struct pipemode_context_s {
     enum pipemode_state_e state;
     int operation;
     int stop;
     int block_mode;
+    UnarmorPump unarmor_ctx;
 };
 
 
@@ -78,6 +80,7 @@ make_control ( byte *buf, int code, int operation )
     buf[1] = n-2;
     return n;
 }
+
 
 
 static int
@@ -126,6 +129,14 @@ pipemode_filter( void *opaque, int control,
                         buf[n++] = c;
                         break;
                     }
+                    else if ( stx->state == STX_detached_signature ) {
+                        esc = 0;
+                        goto do_unarmor; /* not a very elegant solution */
+                    }
+                    else if ( stx->state == STX_detached_signature_wait_text) {
+                        esc = 0;
+                        break; /* just ignore it in this state */
+                    }
                     log_error ("@@ not allowed in current state\n");
                     return -1;
                   case '<': /* begin of stream part */
@@ -136,6 +147,8 @@ pipemode_filter( void *opaque, int control,
                     }
                     stx->state = STX_wait_operation;
                     stx->block_mode = 0;
+                    unarmor_pump_release (stx->unarmor_ctx);
+                    stx->unarmor_ctx = NULL;
                     break;
                    case '>': /* end of stream part */
                      if ( stx->state != STX_wait_init ) {
@@ -157,13 +170,20 @@ pipemode_filter( void *opaque, int control,
                         return -1;
                     }
                     stx->operation = c;
-                    stx->state = c == 'B'? STX_detached_signature
-                                         : STX_begin;
+                    if ( stx->operation == 'B') {
+                        stx->state = STX_detached_signature;
+                        if ( !opt.no_armor )
+                            stx->unarmor_ctx = unarmor_pump_new ();
+                    }
+                    else
+                        stx->state = STX_begin;
                     n += make_control ( buf+n, 1, stx->operation );
                     /* must leave after a control packet */
                     goto leave;
 
                   case 't': /* plaintext text follows */
+                    if ( stx->state == STX_detached_signature_wait_text ) 
+                        stx->state = STX_detached_signature;
                     if ( stx->state == STX_detached_signature ) {
                         if ( stx->operation != 'B' ) {
                             log_error ("invalid operation for this state\n");
@@ -227,8 +247,24 @@ pipemode_filter( void *opaque, int control,
             }
             else if (c == '@') 
                 esc = 1;
+            else if (stx->unarmor_ctx) {
+          do_unarmor: /* used to handle a @@ */
+                c = unarmor_pump (stx->unarmor_ctx, c);
+                if ( !(c & ~255) )
+                    buf[n++] = c;
+                else if ( c < 0 ) {
+                    /* end of armor or error - we don't care becuase
+                      the armor can be modified anyway.  The unarmored
+                      stuff should stand for itself. */ 
+                    unarmor_pump_release (stx->unarmor_ctx);
+                    stx->unarmor_ctx = NULL;
+                    stx->state = STX_detached_signature_wait_text;
+                }
+            }
+            else if (stx->state == STX_detached_signature_wait_text)
+                ; /* just wait */
             else
-                buf[n++] = c;
+                buf[n++] = c; 
         }
 
       leave:      
@@ -242,7 +278,7 @@ pipemode_filter( void *opaque, int control,
             buf[1] = (n-2);
         }
       leave2:
-        log_hexdump ("pipemode:", buf, n );
+        /*log_hexdump ("pipemode:", buf, n );*/
 	*ret_len = n;
     }
     else if( control == IOBUFCTRL_DESC )
@@ -262,12 +298,6 @@ run_in_pipemode(void)
 
     memset( &afx, 0, sizeof afx);
     memset( &stx, 0, sizeof stx);
-
-    /* FIXME: We have to handle de-armoring somehow.  We can't rely on
-     * the standard armor filter becuase it checks only once whether armoring
-     * is required and it would try to unarmor everything which is not good.
-     * So, currently only non-armored detached signatures do work.
-     */
 
     fp = iobuf_open("-");
     iobuf_push_filter (fp, pipemode_filter, &stx );

@@ -1766,6 +1766,12 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 
     ed = pkt->pkt.encrypted =  m_alloc(sizeof *pkt->pkt.encrypted );
     ed->len = pktlen;
+    /* we don't know the extralen which is (cipher_blocksize+2)
+       because the algorithm ist not specified in this packet.
+       However, it is only important to know this for somesanity
+       checks on the pkacet length - it doesn't matter that we can't
+       do it */
+    ed->extralen = 0;
     ed->buf = NULL;
     ed->new_ctb = new_ctb;
     ed->mdc_method = 0;
@@ -1892,6 +1898,27 @@ parse_gpg_control( IOBUF inp,
     }
     skip_rest(inp,pktlen);
     return G10ERR_INVALID_PACKET;
+}
+
+/* create a gpg control packet to be used internally as a placeholder */
+PACKET *
+create_gpg_control( ctrlpkttype_t type, const byte *data, size_t datalen )
+{
+    PACKET *packet;
+    byte *p;
+
+    packet = m_alloc( sizeof *packet );
+    init_packet(packet);
+    packet->pkttype = PKT_GPG_CONTROL;
+    packet->pkt.gpg_control = m_alloc(sizeof *packet->pkt.gpg_control
+                                      + datalen - 1);
+    packet->pkt.gpg_control->control = type;
+    packet->pkt.gpg_control->datalen = datalen;
+    p = packet->pkt.gpg_control->data;
+    for( ; datalen; datalen--, p++ )
+	*p = *data++;
+
+    return packet;
 }
 
 

@@ -58,7 +58,8 @@ typedef struct packet_struct PACKET;
 /* PKT_GPG_CONTROL types */
 typedef enum {
     CTRLPKT_CLEARSIGN_START = 1,
-    CTRLPKT_PIPEMODE = 2
+    CTRLPKT_PIPEMODE = 2,
+    CTRLPKT_PLAINTEXT_MARK =3
 } ctrlpkttype_t;
 
 
@@ -199,6 +200,7 @@ typedef struct {
 
 typedef struct {
     u32  len;		  /* length of encrypted data */
+    int  extralen;        /* this is (blocksize+2) */
     byte new_ctb;	  /* uses a new CTB */
     byte mdc_method;	  /* > 0: integrity protected encrypted data packet */
     IOBUF buf;		  /* IOBUF reference */
@@ -331,6 +333,8 @@ const byte *parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype,
 				       size_t *ret_n );
 const byte *parse_sig_subpkt2( PKT_signature *sig,
 			       sigsubpkttype_t reqtype, size_t *ret_n );
+PACKET *create_gpg_control ( ctrlpkttype_t type,
+                             const byte *data, size_t datalen );
 
 /*-- build-packet.c --*/
 int build_packet( IOBUF inp, PACKET *pkt );

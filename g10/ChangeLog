@@ -1,4 +1,47 @@
+2001-04-05  Werner Koch  <wk@gnupg.org>
+
+	* armor.c (unarmor_pump_new,unarmor_pump_release): New.
+	(unarmor_pump): New. 
+	* pipemode.c (pipemode_filter): Use the unarmor_pump to handle
+	armored or non-armored detached signatures.  We can't use the
+	regular armor_filter becuase this does only chack for armored
+	signatures the very first time.  In pipemode we may have a mix of
+	armored and binary detached signatures.
+	* mainproc.c (proc_tree): Do not print the "old style" notice when
+	this is a pipemode processes detached signature.
+	(proc_plaintext): Special handling of pipemode detached sigs.
+
+	* packet.h (CTRLPKT_PLAINTEXT_MARK): New.
+	* parse-packet.c (create_gpg_control): New.
+	* kbnode.c (dump_kbnode): Support it here.
+	* mainproc.c (check_sig_and_print): Fixed the check for bad
+	sequences of multiple signatures.
+	(proc_plaintext): Add the marker packet.
+	(proc_tree): We can now check multiple detached signatures.
+
+2001-04-02  Werner Koch  <wk@gnupg.org>
+
+	The length of encrypted packets for blocksizes != 8 was not
+	correct encoded.  I think this is a minor problem, because we
+	usually use partial length packets.  Kudos to Kahil D. Jallad for
+	pointing this out.
+	* packet.h: Add extralen to PKT_encrypted.
+	* cipher.c (write_header): Set extralen.
+	* build-packet.c (do_encrypted): Use extralen instead of const 10.
+	(do_encrypted_mdc): Ditto.
+	* parse-packet.c (parse_encrypted): Set extralen to 0 becuase we
+	don't know it here.
+
+2001-03-30  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (premerge_public_with_secret): Changed wording an add
+	the keyID to the info message.
+
 2001-03-29  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (premerge_public_with_secret): Use log_info instead of
+	log_error when no secret key was found for a public one.
+	Fix the usage if the secret parts of a key are not available.
 
 	* openfile.c (ask_outfile_name): Trim spaces.
 	(open_outfile): Allow to enter an alternate filename.  Thanks to

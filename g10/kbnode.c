@@ -355,6 +355,7 @@ dump_kbnode( KBNODE node )
 	  case PKT_PLAINTEXT:	s="plaintext"; break;
 	  case PKT_COMPRESSED:	s="compressed"; break;
 	  case PKT_ENCRYPTED:	s="encrypted"; break;
+          case PKT_GPG_CONTROL: s="gpg-control"; break;
 	  default:		s="unknown"; break;
 	}
 	fprintf(stderr, "node %p %02x/%02x type=%s",
@@ -370,6 +371,11 @@ dump_kbnode( KBNODE node )
 		   node->pkt->pkt.signature->sig_class,
 		   (ulong)node->pkt->pkt.signature->keyid[1] );
 	}
+	else if( node->pkt->pkttype == PKT_GPG_CONTROL ) {
+	    fprintf(stderr, " ctrl=%d len=%u\n",
+                    node->pkt->pkt.gpg_control->control,
+                    (unsigned int)node->pkt->pkt.gpg_control->datalen);
+	}
 	else if( node->pkt->pkttype == PKT_PUBLIC_KEY
 		 || node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
 	    fprintf(stderr, "  keyid=%08lX\n", (ulong)
@@ -379,4 +385,3 @@ dump_kbnode( KBNODE node )
 	    fputs("\n", stderr);
     }
 }
-

@@ -5,9 +5,8 @@
 
 2001-03-18  Werner Koch  <wk@gnupg.org>
 
-	* config.links (mpi_sflags): Use i386 code for i386.  According to
-	tests by Kevin Ryde the i586 code runs slow on i386 CPUs.  Ditto
-	for i786.
+	* config.links: Use i386 code for i386.  According to tests by
+	Kevin Ryde the i586 code runs slow on i386 CPUs.  Ditto for i786.
 
 2000-10-24  Werner Koch  <wk@gnupg.org>
 

@@ -723,10 +723,10 @@ Here is the format we use for detached signatures:
 "@<"  - Begin of new stream
 "@B"  - Detached signature follows.
         This emits a control packet (1,'B')
-detached_signature
+<detached_signature>
 "@t"  - Signed text follows. 
         This emits the control packet (2, 'B')
-signed_text
+<signed_text>
 "@."  - End of operation. The final control packet forces signature
         verification
 "@>"  - End of stream   

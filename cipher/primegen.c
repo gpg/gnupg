@@ -190,6 +190,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 		count1 = 0;
 		qbits++;
 		progress('>');
+                mpi_free (q);
 		q = gen_prime( qbits, 0, 0 );
 		goto next_try;
 	    }
@@ -201,6 +202,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 		count2 = 0;
 		qbits--;
 		progress('<');
+                mpi_free (q);
 		q = gen_prime( qbits, 0, 0 );
 		goto next_try;
 	    }
@@ -227,8 +229,8 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 
     if( ret_factors ) { /* caller wants the factors */
 	*ret_factors = m_alloc_clear( (n+2) * sizeof **ret_factors);
+        i = 0;
 	if( mode == 1 ) {
-	    i = 0;
 	    (*ret_factors)[i++] = mpi_copy( q_factor );
 	    for(; i <= n; i++ )
 		(*ret_factors)[i] = mpi_copy( factors[i] );
@@ -283,6 +285,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
     m_free( pool );
     m_free(perms);
     mpi_free(val_2);
+    mpi_free(q);
     return prime;
 }
 

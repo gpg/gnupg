@@ -59,6 +59,7 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
 
     memset( &ed, 0, sizeof ed );
     ed.len = cfx->datalen;
+    ed.extralen = blocksize+2;
     ed.new_ctb = !ed.len && !opt.rfc1991;
     if( use_mdc ) {
 	ed.mdc_method = DIGEST_ALGO_SHA1;
