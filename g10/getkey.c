@@ -73,7 +73,8 @@ static int scan_keyring( PKT_public_cert *pkc, u32 *keyid,
 static int scan_secret_keyring( PKT_secret_cert *skc, u32 *keyid,
 				const char *name, const char *filename);
 
-
+/* note this function may be called before secure memory is
+ * available */
 void
 add_keyring( const char *name )
 {
@@ -81,19 +82,32 @@ add_keyring( const char *name )
     int rc;
 
     /* FIXME: check wether this one is available etc */
-    /* my be we should do this later */
-    sl = m_alloc( sizeof *sl + strlen(name) );
-    strcpy(sl->d, name );
+    /* maybe we should do this later */
+    if( *name != '/' ) { /* do tilde expansion etc */
+	char *p ;
+
+	if( strchr(name, '/') )
+	    p = make_filename(name, NULL);
+	else
+	    p = make_filename("~/.g10", name, NULL);
+	sl = m_alloc( sizeof *sl + strlen(p) );
+	strcpy(sl->d, p );
+	m_free(p);
+    }
+    else {
+	sl = m_alloc( sizeof *sl + strlen(name) );
+	strcpy(sl->d, name );
+    }
     sl->next = keyrings;
     keyrings = sl;
 
-    /* FIXME: We should remove much out of this mpdule and
+    /* FIXME: We should remove much out of this module and
      * combine it with the keyblock stuff from ringedit.c
      * For now we will simple add the filename as keyblock resource
      */
-    rc = add_keyblock_resource( name, 0, 0 );
+    rc = add_keyblock_resource( sl->d, 0, 0 );
     if( rc )
-	log_error("keyblock resource '%s': %s\n", name, g10_errstr(rc) );
+	log_error("keyblock resource '%s': %s\n", sl->d, g10_errstr(rc) );
 }
 
 
@@ -119,8 +133,21 @@ add_secret_keyring( const char *name )
 
     /* FIXME: check wether this one is available etc */
     /* my be we should do this later */
-    sl = m_alloc( sizeof *sl + strlen(name) );
-    strcpy(sl->d, name );
+    if( *name != '/' ) { /* do tilde expansion etc */
+	char *p ;
+
+	if( strchr(name, '/') )
+	    p = make_filename(name, NULL);
+	else
+	    p = make_filename("~/.g10", name, NULL);
+	sl = m_alloc( sizeof *sl + strlen(p) );
+	strcpy(sl->d, p );
+	m_free(p);
+    }
+    else {
+	sl = m_alloc( sizeof *sl + strlen(name) );
+	strcpy(sl->d, name );
+    }
     sl->next = secret_keyrings;
     secret_keyrings = sl;
 
@@ -128,9 +155,9 @@ add_secret_keyring( const char *name )
      * combine it with the keyblock stuff from ringedit.c
      * For now we will simple add the filename as keyblock resource
      */
-    rc = add_keyblock_resource( name, 0, 1 );
+    rc = add_keyblock_resource( sl->d, 0, 1 );
     if( rc )
-	log_error("secret keyblock resource '%s': %s\n", name, g10_errstr(rc) );
+	log_error("secret keyblock resource '%s': %s\n", sl->d, g10_errstr(rc));
 }
 
 

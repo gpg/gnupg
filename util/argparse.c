@@ -221,10 +221,10 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		    arg->r_opt = -arg->r_opt;
 		if( !opts[index].short_opt )
 		    arg->r_opt = -2;	       /* unknown option */
-		else if( (opts[index].flags & 8) )  /* no optional argument */
-		    arg->r_type = 0;	       /* okay */
-		else			       /* no required argument */
+		else if( (opts[index].flags & 8) ) /* no argument */
 		    arg->r_opt = -3;	       /* error */
+		else			       /* no or optiona argument */
+		    arg->r_type = 0;	       /* okay */
 		break;
 	    }
 	    else if( state == 3 ) {	       /* no argument found */

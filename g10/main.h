@@ -69,9 +69,6 @@ IOBUF open_sigfile( const char *iname );
 /*-- seskey.c --*/
 void make_session_key( DEK *dek );
 MPI encode_session_key( DEK *dek, unsigned nbits );
-MPI encode_sha1_value( byte *md, unsigned len, unsigned nbits );
-MPI encode_rmd160_value( byte *md, unsigned len, unsigned nbits );
-MPI encode_md5_value( byte *md, unsigned len, unsigned nbits );
 MPI encode_md_value( MD_HANDLE md, unsigned nbits );
 
 /*-- comment.c --*/

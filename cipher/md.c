@@ -28,7 +28,7 @@
 #include "errors.h"
 
 
-static FILE *dumpfp;
+/*static FILE *dumpfp;*/
 
 /****************
  * Open a message digest handle for use with algorithm ALGO.
@@ -40,14 +40,16 @@ md_open( int algo, int secure )
 {
     MD_HANDLE hd;
 
+   #if 0
     if( !dumpfp )
 	dumpfp = fopen("md.out", "w");
     if( !dumpfp )
 	BUG();
     { int i; for(i=0; i < 16; i++ ) putc('\xff', dumpfp ); }
-
+   #endif
     hd = secure ? m_alloc_secure_clear( sizeof *hd )
 		: m_alloc_clear( sizeof *hd );
+    hd->secure = secure;
     if( algo )
 	md_enable( hd, algo );
     return hd;
@@ -78,9 +80,9 @@ md_copy( MD_HANDLE a )
 {
     MD_HANDLE b;
 
-    { int i; for(i=0; i < 16; i++ ) putc('\xee', dumpfp ); }
-    b = m_is_secure(a)? m_alloc_secure( sizeof *b )
-		      : m_alloc( sizeof *b );
+    /*{ int i; for(i=0; i < 16; i++ ) putc('\xee', dumpfp ); }*/
+    b = a->secure ? m_alloc_secure( sizeof *b )
+		  : m_alloc( sizeof *b );
     memcpy( b, a, sizeof *a );
     return b;
 }
@@ -98,10 +100,10 @@ md_close(MD_HANDLE a)
 void
 md_write( MD_HANDLE a, byte *inbuf, size_t inlen)
 {
-    if( a->bufcount && fwrite(a->buffer, a->bufcount, 1, dumpfp ) != 1 )
+  /*  if( a->bufcount && fwrite(a->buffer, a->bufcount, 1, dumpfp ) != 1 )
 	BUG();
     if( inlen && fwrite(inbuf, inlen, 1, dumpfp ) != 1 )
-	BUG();
+	BUG(); */
     if( a->use_rmd160 ) {
 	rmd160_write( &a->rmd160, a->buffer, a->bufcount );
 	rmd160_write( &a->rmd160, inbuf, inlen	);
@@ -124,7 +126,7 @@ md_final(MD_HANDLE a)
 {
     if( a->bufcount )
 	md_write( a, NULL, 0 );
-    { int i; for(i=0; i < 16; i++ ) putc('\xcc', dumpfp ); }
+    /*{ int i; for(i=0; i < 16; i++ ) putc('\xcc', dumpfp ); }*/
     if( a->use_rmd160 ) {
 	byte *p;
 	rmd160_final( &a->rmd160 );

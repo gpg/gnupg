@@ -50,6 +50,28 @@ add_to_strlist( STRLIST *list, const char *string )
     *list = sl;
 }
 
+
+
+STRLIST
+strlist_prev( STRLIST head, STRLIST node )
+{
+    STRLIST n;
+
+    for(n=NULL; head && head != node; head = head->next )
+	n = head;
+    return n;
+}
+
+STRLIST
+strlist_last( STRLIST node )
+{
+    if( node )
+	for( ; node->next ; node = node->next )
+	    ;
+    return node;
+}
+
+
 /****************
  * look for the substring SUB in buffer and return a pointer to that
  * substring in BUF or NULL if not found.

@@ -213,11 +213,13 @@ do_we_trust( PKT_public_cert *pkc, int trustlevel )
 	return 1; /* yes */
 
       case TRUST_FULLY:
-	log_info("This key probably belongs to the owner\n");
+	if( opt.verbose )
+	    log_info("This key probably belongs to the owner\n");
 	return 1; /* yes */
 
       case TRUST_ULTIMATE:
-	log_info("Our own keys is always good.\n");
+	if( opt.verbose )
+	    log_info("This key belongs to us (we have the secret key)\n");
 	return 1; /* yes */
 
       default: BUG();

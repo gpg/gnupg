@@ -89,13 +89,16 @@ VERSION = @VERSION@
 INCLUDES = -I$(top_srcdir)/include
 needed_libs = ../cipher/libcipher.a  ../util/libutil.a ../mpi/libmpi.a ../util/libutil.a
 
-noinst_PROGRAMS = mpicalc bftest
+noinst_PROGRAMS = mpicalc bftest clean-sat
 
 mpicalc_SOURCES = mpicalc.c
 
 bftest_SOURCES = bftest.c
 
-LDADD = @INTLLIBS@  $(needed_libs)
+clean_sat_SOURCES  = clean-sat.c
+
+mpicalc_LDADD = @INTLLIBS@  $(needed_libs)
+bftest_LDADD = @INTLLIBS@  $(needed_libs)
 mkinstalldirs = $(SHELL) $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -107,15 +110,17 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 mpicalc_OBJECTS =  mpicalc.o
-mpicalc_LDADD = $(LDADD)
 mpicalc_DEPENDENCIES =  ../cipher/libcipher.a ../util/libutil.a \
 ../mpi/libmpi.a ../util/libutil.a
 mpicalc_LDFLAGS = 
 bftest_OBJECTS =  bftest.o
-bftest_LDADD = $(LDADD)
 bftest_DEPENDENCIES =  ../cipher/libcipher.a ../util/libutil.a \
 ../mpi/libmpi.a ../util/libutil.a
 bftest_LDFLAGS = 
+clean_sat_OBJECTS =  clean-sat.o
+clean_sat_LDADD = $(LDADD)
+clean_sat_DEPENDENCIES = 
+clean_sat_LDFLAGS = 
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 LINK = $(CC) $(CFLAGS) $(LDFLAGS) -o $@
@@ -126,9 +131,9 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP = --best
-DEP_FILES =  .deps/bftest.P .deps/mpicalc.P
-SOURCES = $(mpicalc_SOURCES) $(bftest_SOURCES)
-OBJECTS = $(mpicalc_OBJECTS) $(bftest_OBJECTS)
+DEP_FILES =  .deps/bftest.P .deps/clean-sat.P .deps/mpicalc.P
+SOURCES = $(mpicalc_SOURCES) $(bftest_SOURCES) $(clean_sat_SOURCES)
+OBJECTS = $(mpicalc_OBJECTS) $(bftest_OBJECTS) $(clean_sat_OBJECTS)
 
 default: all
 
@@ -177,6 +182,10 @@ mpicalc: $(mpicalc_OBJECTS) $(mpicalc_DEPENDENCIES)
 bftest: $(bftest_OBJECTS) $(bftest_DEPENDENCIES)
 	@rm -f bftest
 	$(LINK) $(bftest_LDFLAGS) $(bftest_OBJECTS) $(bftest_LDADD) $(LIBS)
+
+clean-sat: $(clean_sat_OBJECTS) $(clean_sat_DEPENDENCIES)
+	@rm -f clean-sat
+	$(LINK) $(clean_sat_LDFLAGS) $(clean_sat_OBJECTS) $(clean_sat_LDADD) $(LIBS)
 
 tags: TAGS
 
@@ -306,7 +315,7 @@ installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
-$(PROGRAMS): $(needed_libs)
+mpicalc bftest: $(needed_libs)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

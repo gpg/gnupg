@@ -288,9 +288,11 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    if( n < buflen || c == '\n' ) {
 		if( n && buf[0] != '\r') { /* maybe a header */
 		    if( strchr( buf, ':') ) { /* yes */
-			log_debug("armor header: ");
-			print_string( stderr, buf, n );
-			putc('\n', stderr);
+			if( opt.verbose ) {
+			    log_info("armor header: ");
+			    print_string( stderr, buf, n );
+			    putc('\n', stderr);
+			}
 			if( clearsig && !parse_hash_header( buf ) ) {
 			    log_error("invalid clearsig header\n");
 			    state = fhdrERROR;
@@ -321,9 +323,11 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    }
 	    else if( c != -1 ) {
 		if( strchr( buf, ':') ) { /* buffer to short, but this is okay*/
-		    log_debug("armor header: ");
-		    print_string( stderr, buf, n );
-		    fputs("[...]\n", stderr);  /* indicate it is truncated */
+		    if( opt.verbose ) {
+			log_info("armor header: ");
+			print_string( stderr, buf, n );
+			fputs("[...]\n", stderr);  /* indicate it is truncated */
+		    }
 		    state = fhdrSKIPHeader;  /* skip rest of line */
 		}
 		else /* line too long */
@@ -380,7 +384,8 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    state = fhdrWAITHeader;
 	    if( hdr_line == BEGIN_SIGNED_MSG_IDX )
 		clearsig = 1;
-	    log_debug("armor: %s\n", head_strings[hdr_line]);
+	    if( opt.verbose > 1 )
+		log_info("armor: %s\n", head_strings[hdr_line]);
 	    break;
 
 	  case fhdrCLEARSIG:
@@ -432,15 +437,24 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    break;
 
 	  case fhdrCHECKClearsig:
-	  case fhdrCHECKClearsig2:
 	    /* check the clearsig line */
 	    if( n > 15 && !memcmp(buf, "-----", 5 ) )
 		state = fhdrENDClearsig;
 	    else if( buf[0] == '-' && buf[1] == ' ' )
 		state = fhdrCHECKDashEscaped;
 	    else {
-		state = state == fhdrCHECKClearsig2 ?
-				  fhdrREADClearsig : fhdrTESTSpaces;
+		state = fhdrTESTSpaces;
+	    }
+	    break;
+
+	  case fhdrCHECKClearsig2:
+	    /* check the clearsig line */
+	    if( n > 15 && !memcmp(buf, "-----", 5 ) )
+		state = fhdrENDClearsig;
+	    else if( buf[0] == '-' && buf[1] == ' ' )
+		state = fhdrCHECKDashEscaped2;
+	    else {
+		state = fhdrREADClearsig;
 	    }
 	    break;
 
@@ -812,7 +826,7 @@ armor_filter( void *opaque, int control,
     int  idx, idx2;
     size_t n=0;
     u32 crc;
-  #if 1
+  #if 0
     static FILE *fp ;
 
     if( !fp ) {
@@ -884,7 +898,7 @@ armor_filter( void *opaque, int control,
 	}
 	else
 	    rc = radix64_read( afx, a, &n, buf, size );
-      #if 1
+      #if 0
 	if( n )
 	    if( fwrite(buf, n, 1, fp ) != 1 )
 		BUG();

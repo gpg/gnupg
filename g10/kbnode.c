@@ -180,11 +180,8 @@ walk_kbnode( KBNODE root, KBNODE *context, int all )
 	    return root;
 	}
 
-	n = *context;
-	if( n->next ) {
-	    n = n->next;
-	    *context = n;
-	}
+	n = (*context)->next;
+	*context = n;
     } while( !all && n && (n->private_flag & 1) );
 
     return n;

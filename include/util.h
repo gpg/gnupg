@@ -66,20 +66,22 @@ void log_mpidump( const char *text, MPI a );
 			    __attribute__ ((format (printf,2,3)));
   void log_bug( const char *fmt, ... )
 			    __attribute__ ((noreturn, format (printf,1,2)));
-  void log_bug0( void ) __attribute__ ((noreturn));
+  void log_bug0( const char *, int, const char * ) __attribute__ ((noreturn));
   void log_fatal( const char *fmt, ... )
 			    __attribute__ ((noreturn, format (printf,1,2)));
   void log_error( const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
   void log_info( const char *fmt, ... )  __attribute__ ((format (printf,1,2)));
   void log_debug( const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
+  #define BUG() log_bug0(  __FILE__ , __LINE__, __FUNCTION__ )
 #else
   void printstr( int level, const char *fmt, ... );
   void log_bug( const char *fmt, ... );
-  void log_bug0( void );
+  void log_bug0( const char *, int );
   void log_fatal( const char *fmt, ... );
   void log_error( const char *fmt, ... );
   void log_info( const char *fmt, ... );
   void log_debug( const char *fmt, ... );
+  #define BUG() log_bug0( __FILE__ , __LINE__ )
 #endif
 
 
@@ -110,6 +112,8 @@ int answer_is_yes( const char *s );
 void free_strlist( STRLIST sl );
 #define FREE_STRLIST(a) do { free_strlist((a)); (a) = NULL ; } while(0)
 void add_to_strlist( STRLIST *list, const char *string );
+STRLIST strlist_prev( STRLIST head, STRLIST node );
+STRLIST strlist_last( STRLIST node );
 char *memistr( char *buf, size_t buflen, const char *sub );
 char *mem2str( char *, const void *, size_t);
 char *trim_spaces( char *string );
@@ -133,6 +137,5 @@ char *strlwr(char *a);
 #define STR2(v) STR(v)
 #define DIM(v) (sizeof(v)/sizeof((v)[0]))
 #define DIMof(type,member)   DIM(((type *)0)->member)
-#define BUG() log_bug0()
 
 #endif /*G10_UTIL_H*/

@@ -109,8 +109,8 @@ encode_session_key( DEK *dek, unsigned nbits )
  * returns: A mpi with the session key (caller must free)
  *  RMD160 Object ID is 1.3.36.3.2.1
  */
-MPI
-encode_rmd160_value( byte *md, unsigned len, unsigned nbits )
+static MPI
+encode_rmd160_value( byte *md, unsigned len, unsigned nbits, int secure )
 {
     static byte asn[15] =
 	  { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
@@ -128,7 +128,8 @@ encode_rmd160_value( byte *md, unsigned len, unsigned nbits )
      *
      * PAD consists of FF bytes.
      */
-    frame = mpi_alloc_secure( nframe / BYTES_PER_MPI_LIMB );
+    frame = secure ? mpi_alloc_secure( nframe / BYTES_PER_MPI_LIMB )
+		   : mpi_alloc( nframe / BYTES_PER_MPI_LIMB );
     n = 0;
     for(i=20-1; i >= 0; i--, n++ )
 	mpi_putbyte(frame, n, md[i] );
@@ -148,8 +149,8 @@ encode_rmd160_value( byte *md, unsigned len, unsigned nbits )
  * returns: A mpi with the session key (caller must free)
  *  SHA-1 Objet ID is 1.3.14.3.2.26
  */
-MPI
-encode_sha1_value( byte *md, unsigned len, unsigned nbits )
+static MPI
+encode_sha1_value( byte *md, unsigned len, unsigned nbits, int secure )
 {
     static byte asn[15] =
 	  { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03,
@@ -167,7 +168,8 @@ encode_sha1_value( byte *md, unsigned len, unsigned nbits )
      *
      * PAD consists of FF bytes.
      */
-    frame = mpi_alloc_secure( nframe / BYTES_PER_MPI_LIMB );
+    frame = secure ? mpi_alloc_secure( nframe / BYTES_PER_MPI_LIMB )
+		   : mpi_alloc( nframe / BYTES_PER_MPI_LIMB );
     n = 0;
     for(i=20-1; i >= 0; i--, n++ )
 	mpi_putbyte(frame, n, md[i] );
@@ -188,8 +190,8 @@ encode_sha1_value( byte *md, unsigned len, unsigned nbits )
  * returns: A mpi with the session key (caller must free)
  *  MD5 Object ID is 1.2.840.113549.2.5
  */
-MPI
-encode_md5_value( byte *md, unsigned len, unsigned nbits )
+static MPI
+encode_md5_value( byte *md, unsigned len, unsigned nbits, int secure )
 {
     static byte asn[18] =
 	  { 0x30, 0x20, 0x30, 0x0c, 0x06, 0x08, 0x2a, 0x86,0x48,
@@ -207,7 +209,8 @@ encode_md5_value( byte *md, unsigned len, unsigned nbits )
      *
      * PAD consists of FF bytes.
      */
-    frame = mpi_alloc_secure( nframe / BYTES_PER_MPI_LIMB );
+    frame = secure ? mpi_alloc_secure( nframe / BYTES_PER_MPI_LIMB )
+		   : mpi_alloc( nframe / BYTES_PER_MPI_LIMB );
     n = 0;
     for(i=16-1; i >= 0; i--, n++ )
 	mpi_putbyte(frame, n, md[i] );
@@ -227,11 +230,14 @@ encode_md_value( MD_HANDLE md, unsigned nbits )
 {
     switch( md_get_algo( md ) ) {
       case DIGEST_ALGO_MD5:
-	return encode_md5_value( md_read(md, DIGEST_ALGO_MD5), 16, nbits );
+	return encode_md5_value( md_read(md, DIGEST_ALGO_MD5),
+				 16, nbits, md_is_secure(md) );
       case DIGEST_ALGO_RMD160:
-	return encode_rmd160_value( md_read(md, DIGEST_ALGO_RMD160), 20, nbits );
+	return encode_rmd160_value( md_read(md, DIGEST_ALGO_RMD160),
+				 20, nbits, md_is_secure(md) );
       case DIGEST_ALGO_SHA1:
-	return encode_sha1_value( md_read(md, DIGEST_ALGO_SHA1), 20, nbits );
+	return encode_sha1_value( md_read(md, DIGEST_ALGO_SHA1),
+				 20, nbits, md_is_secure(md) );
       default:
 	BUG();
     }

@@ -135,7 +135,7 @@ add_user_id( CTX c, PACKET *pkt )
 static int
 add_signature( CTX c, PACKET *pkt )
 {
-    KBNODE node, n1, n2;
+    KBNODE node;
 
     if( pkt->pkttype == PKT_SIGNATURE && !c->cert ) {
 	/* This is the first signature for a following datafile.
@@ -143,34 +143,25 @@ add_signature( CTX c, PACKET *pkt )
 	 * onepass-sig packets.  The drawback of PGP's method
 	 * of prepending the signtaure to the data is,
 	 * that it is not possible to make a signature from data read
-	 * from stdin.	(Anyway, G10 is are able to read these stuff) */
+	 * from stdin.	(Anyway, G10 is able to read these stuff) */
 	node = new_kbnode( pkt );
 	c->cert = node;
 	return 1;
     }
     else if( !c->cert )
-	return 0; /* oops */
+	return 0; /* oops (invalid packet sequence)*/
     else if( !c->cert->pkt )
-	BUG();
+	BUG();	/* so nicht */
     else if( c->cert->pkt->pkttype == PKT_ONEPASS_SIG ) {
-	/* The root is a onepass signature, so we are signing data */
+	/* The root is a onepass signature: we are signing data */
 	node = new_kbnode( pkt );
 	add_kbnode( c->cert, node );
 	return 1;
     }
 
-    /* goto the last user id */
-    for(n2=NULL, n1=c->cert; n1->next; n1 = n1->next )
-	if( n1->pkt->pkttype == PKT_USER_ID )
-	    n2 = n1;
-    if( !n2 ) {
-	log_error("no user id for signature packet\n");
-	return 0;
-    }
-    n1 = n2;
-    /* and add a new signature node id at the end */
+    /* add a new signature node id at the end */
     node = new_kbnode( pkt );
-    insert_kbnode( n1, node, PKT_USER_ID );
+    add_kbnode( c->cert, node );
     return 1;
 }
 

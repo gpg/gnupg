@@ -61,6 +61,8 @@ static unsigned cur_alloced;
 static unsigned max_blocks;
 static unsigned cur_blocks;
 static int disable_secmem;
+static int show_warning;
+static int no_warning;
 
 static void
 lock_pool( void *p, size_t n )
@@ -82,7 +84,7 @@ lock_pool( void *p, size_t n )
     if( err ) {
 	if( errno != EPERM )
 	    log_error("can´t lock memory: %s\n", strerror(err));
-	log_info(_("Warning: using insecure memory!\n"));
+	show_warning = 1;
     }
 
   #else
@@ -132,6 +134,17 @@ compress_pool(void)
 
 }
 
+void
+secmem_set_flags( unsigned flags )
+{
+    no_warning = flags & 1;
+}
+
+unsigned
+secmem_get_flags(void)
+{
+    return no_warning ? 1:0;
+}
 
 void
 secmem_init( size_t n )
@@ -156,7 +169,12 @@ secmem_malloc( size_t size )
     int compressed=0;
 
     if( !pool_okay )
-	init_pool(DEFAULT_POOLSIZE);
+	log_bug("secmem not initialized\n");
+    if( show_warning ) {
+	show_warning = 0;
+	if( !no_warning )
+	    log_info(_("Warning: using insecure memory!\n"));
+    }
 
     /* blocks are always a multiple of 32 */
     size += sizeof(MEMBLOCK);

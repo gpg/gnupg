@@ -1,5 +1,5 @@
 Noteworthy changes in version 0.2.x
------------------------------------
+***********************************
 
     * nearly doubled the speed of the ElGamal signature verification.
 
@@ -7,9 +7,11 @@ Noteworthy changes in version 0.2.x
 
     * assembler stuff for Pentium; gives about 15% better perfomance.
 
+    * fixed a lot of bugs.
+
 
 Noteworthy changes in version 0.2.3
------------------------------------
+***********************************
 
     * Found a bug in the calculation of ELG fingerprints. This is now
       fixed, but all existing fingerprints and keyids for ELG keys

@@ -190,11 +190,13 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     /* setup the inner packet */
     if( detached ) {
 	if( multifile ) {
-	    STRLIST sl = filenames;
+	    STRLIST sl;
 
 	    if( opt.verbose )
 		log_info("signing:" );
-	    for(; sl; sl = sl->next ) {
+	    /* must walk reverse trough this list */
+	    for( sl = strlist_last(filenames); sl;
+			sl = strlist_prev( filenames, sl ) ) {
 		if( !(inp = iobuf_open(sl->d)) ) {
 		    log_error("can't open %s: %s\n", sl->d, strerror(errno) );
 		    rc = G10ERR_OPEN_FILE;
@@ -345,7 +347,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     armor_filter_context_t afx;
     compress_filter_context_t zfx;
     text_filter_context_t tfx;
-    MD_HANDLE textmd;
+    MD_HANDLE textmd = NULL;
     IOBUF inp = NULL, out = NULL;
     PACKET pkt;
     int rc = 0;

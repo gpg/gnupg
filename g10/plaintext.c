@@ -45,10 +45,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx )
     FILE *fp = NULL;
     int rc = 0;
     int c;
-static FILE *abc;
-if( !abc )
-    abc=fopen("plaintext.out", "wb");
-if( !abc ) BUG();
+    int convert = pt->mode == 't';
 
     /* create the filename as C string */
     if( opt.outfile ) {
@@ -82,9 +79,10 @@ if( !abc ) BUG();
 		rc = G10ERR_READ_FILE;
 		goto leave;
 	    }
-	    putc( c, abc );
 	    if( mfx->md )
 		md_putc(mfx->md, c );
+	    if( convert && c == '\r' )
+		continue; /* FIXME: this hack is too simple */
 	    if( putc( c, fp ) == EOF ) {
 		log_error("Error writing to '%s': %s\n", fname, strerror(errno) );
 		rc = G10ERR_WRITE_FILE;
@@ -94,9 +92,10 @@ if( !abc ) BUG();
     }
     else {
 	while( (c = iobuf_get(pt->buf)) != -1 ) {
-	    putc( c, abc );
 	    if( mfx->md )
 		md_putc(mfx->md, c );
+	    if( convert && c == '\r' )
+		continue; /* FIXME: this hack is too simple */
 	    if( putc( c, fp ) == EOF ) {
 		log_error("Error writing to '%s': %s\n",
 					    fname, strerror(errno) );
@@ -136,7 +135,7 @@ ask_for_detached_datafile( md_filter_context_t *mfx, const char *inname )
     int c;
 
     fp = open_sigfile( inname ); /* open default file */
-    if( !fp ) {
+    if( !fp && !opt.batch ) {
 	int any=0;
 	tty_printf("Detached signature.\n");
 	do {
@@ -160,11 +159,20 @@ ask_for_detached_datafile( md_filter_context_t *mfx, const char *inname )
 	} while( !fp );
     }
 
-    while( (c = iobuf_get(fp)) != -1 ) {
-	if( mfx->md )
-	    md_putc(mfx->md, c );
+    if( !fp ) {
+	log_info("reading stdin ...\n");
+	while( (c = getchar()) != EOF ) {
+	    if( mfx->md )
+		md_putc(mfx->md, c );
+	}
     }
-    iobuf_close(fp);
+    else {
+	while( (c = iobuf_get(fp)) != -1 ) {
+	    if( mfx->md )
+		md_putc(mfx->md, c );
+	}
+	iobuf_close(fp);
+    }
 
   leave:
     m_free(answer);

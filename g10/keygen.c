@@ -114,7 +114,7 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_cert *skc )
 	BUG(); /* no user id packet in tree */
     uid = node->pkt->pkt.user_id;
     /* get the pkc packet from the pub_tree */
-    node = find_kbnode( root, PKT_PUBLIC_CERT );
+    node = find_kbnode( pub_root, PKT_PUBLIC_CERT );
     if( !node )
 	BUG();
     pkc = node->pkt->pkt.public_cert;

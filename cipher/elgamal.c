@@ -322,6 +322,16 @@ elg_verify(MPI a, MPI b, MPI input, ELG_public_key *pkey )
 
   #if 0
     /* t1 = (y^a mod p) * (a^b mod p) mod p */
+    mpi_powm( t1, pkey->y, a, pkey->p );
+    mpi_powm( t2, a, b, pkey->p );
+    mpi_mulm( t1, t1, t2, pkey->p );
+
+    /* t2 = g ^ input mod p */
+    mpi_powm( t2, pkey->g, input, pkey->p );
+
+    rc = !mpi_cmp( t1, t2 );
+  #elif 0
+    /* t1 = (y^a mod p) * (a^b mod p) mod p */
     base[0] = pkey->y; exp[0] = a;
     base[1] = a;       exp[1] = b;
     base[2] = NULL;    exp[2] = NULL;

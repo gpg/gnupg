@@ -154,7 +154,10 @@ dry-run
 
 
 keyring  filename
-# add this filename to the list of keyrings
+# add this filename to the list of keyrings.
+# If the filename begins with a tilde and a slash, these are replaced
+# by the HOME directory. If the filename does not contain a slash, it
+# is assumed to be in "~/.g10"
 
 local-user user-string
 #  use this user-string to sign or decrypt
@@ -191,6 +194,7 @@ remote-user
 
 secret-keyring filename
 # add filename to the list of secret keyrings
+# see "keyring" for further informations
 
 status-fd n
 # Write status informations to this file descriptor. If this option

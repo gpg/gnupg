@@ -1423,10 +1423,13 @@ do_check( ulong pubkeyid, TRUSTREC *dr, unsigned *trustlevel )
 	if( tsl->dup )
 	    continue;
 
-	log_debug("tslist segs:" );
-	for(i=0; i < tsl->nseg; i++ )
-	    fprintf(stderr, "  %lu/%02x", tsl->seg[i].lid, tsl->seg[i].trust );
-	putc('\n',stderr);
+	if( opt.verbose ) {
+	    log_info("tslist segs:" );
+	    for(i=0; i < tsl->nseg; i++ )
+		fprintf(stderr, "  %lu/%02x", tsl->seg[i].lid,
+						tsl->seg[i].trust );
+	    putc('\n',stderr);
+	}
     }
 
     /* and look wether there is a trusted path.

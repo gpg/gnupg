@@ -129,11 +129,19 @@ log_bug( const char *fmt, ... )
     abort();
 }
 
+#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
 void
-log_bug0()
+log_bug0( const char *file, int line, const char *func )
 {
-    log_bug("Ohhhh jeeee ...\n");
+    log_bug("Ohhhh jeeee ... (%s:%d:%s)\n", file, line, func );
 }
+#else
+void
+log_bug0( const char *file, int line )
+{
+    log_bug("Ohhhh jeeee ... (%s:%d)\n", file, line);
+}
+#endif
 
 void
 log_debug( const char *fmt, ... )

@@ -215,6 +215,7 @@ main( int argc, char **argv )
     { 537, "export", 0, N_("export all or the given keys") },
     { 538, "trustdb-name", 2, "\r" },
     { 539, "clearsign", 0, N_("make a clear text signature") },
+    { 540, "no-secmem-warning", 0, "\r" }, /* used only by regression tests */
 
     {0} };
     ARGPARSE_ARGS pargs;
@@ -231,7 +232,7 @@ main( int argc, char **argv )
     FILE *configfp = NULL;
     char *configname = NULL;
     unsigned configlineno;
-    int parse_verbose = 0;
+    int parse_debug = 0;
     int default_config =1;
     int errors=0;
     int default_keyring = 1;
@@ -259,8 +260,8 @@ main( int argc, char **argv )
     pargs.argv = &argv;
     pargs.flags=  1;  /* do not remove the args */
     while( arg_parse( &pargs, opts) ) {
-	if( pargs.r_opt == 'v' )
-	    parse_verbose++;
+	if( pargs.r_opt == 510 || pargs.r_opt == 511 )
+	    parse_debug++;
 	else if( pargs.r_opt == 518 ) {
 	    /* yes there is one, so we do not try the default one, but
 	     * read the option file when it is encountered at the commandline
@@ -283,7 +284,7 @@ main( int argc, char **argv )
 	configfp = fopen( configname, "r" );
 	if( !configfp ) {
 	    if( default_config ) {
-		if( parse_verbose > 1 )
+		if( parse_debug )
 		log_info(_("note: no default option file '%s'\n"), configname );
 	    }
 	    else
@@ -291,7 +292,7 @@ main( int argc, char **argv )
 				    configname, strerror(errno) );
 	    m_free(configname); configname = NULL;
 	}
-	if( parse_verbose > 1 && configname )
+	if( parse_debug && configname )
 	    log_info(_("reading options from '%s'\n"), configname );
 	default_config = 0;
     }
@@ -370,6 +371,7 @@ main( int argc, char **argv )
 	  case 537: set_cmd( &cmd, aExport); break;
 	  case 538: trustdb_name = pargs.r.ret_str; break;
 	  case 539: set_cmd( &cmd, aClearsign); break;
+	  case 540: secmem_set_flags( secmem_get_flags() | 1 ); break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -403,6 +405,13 @@ main( int argc, char **argv )
     if( errors )
 	g10_exit(2);
 
+    if( greeting ) {
+	if( *(s=strusage(10))  )
+	    tty_printf("%s", s);
+	if( *(s=strusage(30))  )
+	    tty_printf("%s", s);
+    }
+
     /* initialize the secure memory. */
     secmem_init( 16384 );
     /* Okay, we are now working under our real uid */
@@ -425,23 +434,11 @@ main( int argc, char **argv )
     }
     if( opt.verbose > 1 )
 	set_packet_list_mode(1);
-    if( greeting ) {
-	if( *(s=strusage(10))  )
-	    tty_printf("%s", s);
-	if( *(s=strusage(30))  )
-	    tty_printf("%s", s);
-    }
 
-    if( !sec_nrings || default_keyring ) { /* add default secret rings */
-	char *p = make_filename("~/.g10", "secring.g10", NULL );
-	add_secret_keyring(p);
-	m_free(p);
-    }
-    if( !nrings || default_keyring ) { /* add default ring */
-	char *p = make_filename("~/.g10", "pubring.g10", NULL );
-	add_keyring(p);
-	m_free(p);
-    }
+    if( !sec_nrings || default_keyring )  /* add default secret rings */
+	add_secret_keyring("secring.g10");
+    if( !nrings || default_keyring )  /* add default ring */
+	add_keyring("pubring.g10");
 
     if( argc ) {
 	fname_print = fname = *argv;

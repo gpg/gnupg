@@ -36,6 +36,7 @@ typedef struct {
     MD5_CONTEXT md5;
     byte buffer[MD_BUFFER_SIZE]; /* primary buffer */
     int  bufcount;
+    int  secure;
 } *MD_HANDLE;
 
 
@@ -55,6 +56,6 @@ void md_write( MD_HANDLE a, byte *inbuf, size_t inlen);
 void md_final(MD_HANDLE a);
 byte *md_read( MD_HANDLE a, int algo );
 int md_get_algo( MD_HANDLE a );
-
+#define md_is_secure(a) ((a)->secure)
 
 #endif /*G10_MD_H*/
