@@ -1,3 +1,9 @@
+2004-06-16  Werner Koch  <wk@gnupg.org>
+
+	Released 1.2.5rc2.
+
+	* configure.ac (ALL_LINGUAS): Added zh_CN.
+
 2004-05-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Try for wldap32 on Win32 platforms.

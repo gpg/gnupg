@@ -27,6 +27,8 @@ Noteworthy changes in version 1.2.5 (unreleased)
     * Some portability fixes for the OpenBSD/i386, HPPA, and AIX
       platforms.
 
+    * Simplified Chinese translation.
+
 
 Noteworthy changes in version 1.2.4 (2003-12-23)
 ------------------------------------------------
