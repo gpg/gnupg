@@ -1,7 +1,7 @@
 #!@PERL@ -w
 
 # gpgkeys_mailto - talk to a email keyserver
-# Copyright (C) 2001 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -104,7 +104,7 @@ if($command=~/get/i || $command=~/search/i)
 
 	    if(length($key)>8)
 	    {
-		$key=substr($key,8);
+		$key=substr($key,-8);
 	    }
 
     	    print MAIL "Subject: GET 0x$key\n\n";
