@@ -22,9 +22,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "mpi.h"
-#define _g10lib_INTERNAL 1
-#include "g10lib.h"
+#include "util.h"
 
+/* FIXME: The modules should use functions from libgcrypt */
 
 const char *g10m_revision_string(int dummy) { return "$Revision$"; }
 

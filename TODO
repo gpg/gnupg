@@ -6,6 +6,8 @@ Bugs
       if the clearsign has been created by pgp263ia.
       Needs more investigation - anyone?
 
+    * replace my type 20 subkeys by type 16 ones.
+
 Important
 ----------
     * Check revocation and expire stuff.  [I'm currently working on this.]

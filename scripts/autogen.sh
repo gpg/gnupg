@@ -9,16 +9,16 @@ if (autoconf --version) < /dev/null > /dev/null 2>&1 ; then
 else
     echo
     echo "**Error**: You must have "\`autoconf\'" installed to compile $PGM."
-    echo '           (version 2.10 or newer is required)'
+    echo '           (version 2.13 or newer is required)'
     DIE="yes"
 fi
 
 if (automake --version) < /dev/null > /dev/null 2>&1 ; then
   if (aclocal --version) < /dev/null > /dev/null 2>&1; then
-    if (aclocal --version | awk 'NR==1 { if( $4 >= 1.3 ) exit 1; exit 0; }');
+    if (aclocal --version | awk 'NR==1 { if( $4 >= 1.4 ) exit 1; exit 0; }');
     then
       echo "**Error**: "\`aclocal\'" is too old."
-      echo '           (version 1.3 or newer is required)'
+      echo '           (version 1.4 or newer is required)'
       DIE="yes"
     fi
   else
@@ -51,7 +51,7 @@ if test "$DIE" = "yes"; then
 fi
 
 echo "Running gettextize...  Ignore non-fatal messages."
-echo "no" | gettextize --force 
+echo "no" | gettextize --force
 
 
 echo "Running aclocal..."

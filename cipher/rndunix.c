@@ -53,10 +53,10 @@
 #include <errno.h>
 
 #include "types.h"  /* for byte and u32 typedefs */
-#include "g10lib.h"
 #ifndef IS_MODULE
 #include "dynload.h"
 #endif
+#include "util.h"
 
 #ifndef EAGAIN
   #define EAGAIN  EWOULDBLOCK

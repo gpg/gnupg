@@ -24,8 +24,10 @@
 #include "mpi.h"
 #include "random.h"
 #include "cipher.h"
-#define _g10lib_INTERNAL 1
-#include "g10lib.h"
+
+
+/* FIXME: The modules should use functions from libgcrypt */
+
 
 const char *g10c_revision_string(int dummy) { return "$Revision$"; }
 

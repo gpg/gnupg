@@ -34,14 +34,14 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "types.h"
+#include "util.h"
+#include "ttyio.h"
+#include "dynload.h"
+
 #ifdef IS_MODULE
-  #include "g10lib.h"
   #define _(a) (a)
 #else
-  #include "util.h"
-  #include "ttyio.h"
   #include "i18n.h"
-  #include "dynload.h"
 #endif
 
 static int open_device( const char *name, int minor );

@@ -10,6 +10,4 @@ i18n.h
 host2net.h
 http.h
 
-g10lib.h
-
 ChangeLog

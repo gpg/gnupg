@@ -1,3 +1,7 @@
+Sat Feb 20 21:40:49 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* g10lib.h: Removed file and changed all files that includes this.
+
 Tue Feb 16 14:10:02 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* types.h (STRLIST): Add field flags.
