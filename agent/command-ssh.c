@@ -403,9 +403,7 @@ gpg_stream_read_file (const char *filename,
       *buffer_n = buffer_new_n;
     }
   else
-    {
-      free (buffer_new);
-    }
+    gcry_free (buffer_new);
 
   return err;
 }
@@ -705,10 +703,7 @@ ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
       *blob_size = blob_new_size;
     }
   else
-    {
-      if (blob_new)
-	free (blob_new);
-    }
+    gcry_free (blob_new);
 
   return err;
 }
