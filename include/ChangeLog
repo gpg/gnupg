@@ -1,3 +1,8 @@
+2003-09-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* types.h: Revert previous change.  This sort of thing is better
+	done in autoconf.
+
 2003-09-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* types.h: Non-POSIX environments may have uint64_t but not
