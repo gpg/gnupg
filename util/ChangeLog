@@ -1,3 +1,8 @@
+2001-04-27  Werner Koch  <wk@gnupg.org>
+
+	* memory.c (out_of_core): Print an explanation on reasons why
+	secret memory can get exhausted.
+
 2001-04-23  Werner Koch  <wk@gnupg.org>
 
 	* http.c (http_wait_response): Implement new flag to inhibit the

@@ -3475,7 +3475,7 @@ msgstr "übersprungen '%s': %s\n"
 
 #: g10/skclist.c:149
 msgid "skipped: secret key already present\n"
-msgstr "%s: übersprungen: geheimer Schlüssel bereits vorhanden\n"
+msgstr "übersprungen: geheimer Schlüssel bereits vorhanden\n"
 
 #: g10/skclist.c:160
 #, c-format

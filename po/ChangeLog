@@ -1,3 +1,7 @@
+2001-04-27  Werner Koch  <wk@gnupg.org>
+
+	* de.po: Removed an extra "%s".
+
 2001-04-25  Werner Koch  <wk@gnupg.org>
 
 	* fr.po: Updated.

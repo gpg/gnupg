@@ -96,7 +96,7 @@ AC_DEFUN(GNUPG_CHECK_DOCBOOK_TO_TEXI,
     AC_CHECK_PROG(DOCBOOK_TO_TEXI, docbook2texi, yes, no)
     AC_MSG_CHECKING(for sgml to texi tools)
     working_sgmltotexi=no
-    if test "$ac_cv_prog_DOCBOOK_TO_MAN" = yes; then
+    if test "$ac_cv_prog_DOCBOOK_TO_TEXI" = yes; then
       if sgml2xml -v /dev/null 2>&1 | grep 'SP version' >/dev/null 2>&1 ; then
             working_sgmltotexi=yes
       fi

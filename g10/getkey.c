@@ -1886,7 +1886,7 @@ merge_public_with_secret ( KBNODE pubblock, KBNODE secblock )
                     if ( !cmp_public_secret_key ( pk, sk ) ) {
                         copy_public_parts_to_secret_key ( pk, sk );
                         free_public_key ( pk );
-                        pub->pkt->pkttype = PKT_SECRET_KEY;
+                        pub->pkt->pkttype = PKT_SECRET_SUBKEY;
                         pub->pkt->pkt.secret_key = copy_secret_key (NULL, sk);
                         break;
                     }

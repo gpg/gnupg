@@ -36,9 +36,7 @@
     is still available, but because of the larger size of such
     signatures it is deprecated (Please note that the GnuPG
     implementation of ElGamal signatures is *not* insecure).  Symmetric
-    algorithms are: 3DES, Blowfish, CAST5 and Twofish (GnuPG does not
-    yet create Twofish encrypted messages because there is no agreement
-    in the OpenPGP WG on how to use it together with a MDC algorithm)
+    algorithms are: AES, 3DES, Blowfish, CAST5 and Twofish 
     Digest algorithms available are MD5, RIPEMD160 and SHA1.
 
 
@@ -100,41 +98,19 @@
 
 		$ gpg --fingerprint 0x57548DCD
 
-       with the elsewhere published fingerprint, or - if you are able to
-       _positively_ verify the signature of this README file - with
-       this fingerprint: "6BD9 050F D8FC 941B 4341  2DCC 68B7 AB89 5754 8DCD"
+       with the elsewhere published fingerprint
 
        Please note, that you have to use an old version of GnuPG to
        do all this stuff.  *Never* use the version which you are going
        to check!
 
 
-    b) If you have a trusted Version of PGP 2 or 5 installed, you
-       can check the supplied PGP 2 signature:
-
-	$ pgp gnupg-x.y.z.tar.gz.sig gnupg-x.y.z.tar.gz
-
-       This checks that the detached signature gnupg-x.y.z.tar.gz.sig
-       is indeed a a signature of gnupg-x.y.z.tar.gz.  Please note,
-       that this signature has been created with a RSA signature and
-       you probably can't use this method (due to legal reasons) when
-       you are in the U.S.  The key used to create this signature is
-       the same as the one used to sign this README file.  It should be
-       available at the keyservers and is also included in the source
-       of GnuPG in g10/pubring.asc.
-
-       "pub   768R/0C9857A5 1995-09-30 Werner Koch <werner.koch@guug.de>"
-
-       The fingerprint of this key is published in printed form in the
-	  "Global Trust Register for 1998", ISBN 0-9532397-0-5.
-
-
-    c) If you don't have any of the above programs, you have to verify
+    b) If you don't have any of the above programs, you have to verify
        the MD5 checksum:
 
 	$ md5sum gnupg-x.y.z.tar.gz
 
-       This should yield an output similar_to this:
+       This should yield an output _similar_ to this:
 
 	fd9351b26b3189c1d577f0970f9dcadc  gnupg-x.y.z.tar.gz
 
@@ -146,7 +122,7 @@
     Documentation
     -------------
 
-    The manual will be distributed separate under the name "gnupgdoc".
+    The manual will be distributed separate under the name "gph".
     An online version of the latest manual draft is available at the
     GnuPG web pages:
 
@@ -488,7 +464,7 @@
     ---------------------------
 
     The primary WWW page is "http://www.gnupg.org"
-    The primary FTP site is "ftp://ftp.gnupg.org/pub/gcrypt/"
+    The primary FTP site is "ftp://ftp.gnupg.org/gcrypt/"
 
     See http://www.gnupg.org/mirrors.html for a list of mirrors
     and use them if possible.  You may also find GnuPG mirrored on

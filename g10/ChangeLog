@@ -1,3 +1,11 @@
+2001-04-28  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (merge_public_with_secret): pkttype was not set to subkey.
+
+2001-04-27  Werner Koch  <wk@gnupg.org>
+
+	* skclist.c (build_sk_list): Changed one log_debug to log_info.
+
 2001-04-25  Werner Koch  <wk@gnupg.org>
 
 	* keyedit.c (show_prefs): Add a verbose mode.
@@ -12,7 +20,7 @@
 	error and made it translatable.
 
 	* build-packet.c (do_secret_key): Ugly, we wrote a zero
-	instead of the calucalted ndays.  Thanks to M Taylor for complaining
+	instead of the computed ndays.  Thanks to M Taylor for complaining
 	about a secret key import problem.
 
 2001-04-23  Werner Koch  <wk@gnupg.org>

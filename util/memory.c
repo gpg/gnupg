@@ -383,9 +383,14 @@ m_dump_table( const char *prefix )
 static void
 out_of_core(size_t n, int secure)
 {
-    log_fatal("out of %s memory while allocating %u bytes\n",
-			secure? "secure":"" ,(unsigned)n );
-
+    log_error ("out of %s memory while allocating %u bytes\n",
+               secure? "secure":"" ,(unsigned)n );
+    if (secure) {
+        /*secmem_dump_stats ();*/
+        log_info ("(this may be caused by too many secret keys used "
+                  "simultaneously or due to excessive large key sizes)\n");
+    }
+    exit (2);
 }
 
 /****************

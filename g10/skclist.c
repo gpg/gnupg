@@ -146,7 +146,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 	    }
             else if ( key_present_in_sk_list(sk_list, sk) == 0) {
                 free_secret_key(sk); sk = NULL;
-                log_debug(_("skipped: secret key already present\n"));
+                log_info(_("skipped: secret key already present\n"));
             }
             else if ( unlock && (rc = check_secret_key( sk, 0 )) ) {
 		free_secret_key( sk ); sk = NULL;
