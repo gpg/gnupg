@@ -96,6 +96,9 @@
   * When presenting the result of a verification show the user ID with
     the highest trust level first instead of the primary one.
 
+  * allow the use of option in gpg.conf. 
+
+  * export-secret-subkey where only one of the subkeys gets exported.
 
 Things we won't do
 ------------------

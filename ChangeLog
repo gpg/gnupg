@@ -1,3 +1,11 @@
+2003-03-24  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4 (GNUPG_CHECK_ENDIAN): When crosscompiling assume
+	little only for Intel CPUs.
+
+	* configure.ac: Check for ranlib and ar.  This is required for
+	cross compiling.
+
 2003-03-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Look for res_query so we can use DNS SRV, and add
@@ -1178,7 +1186,7 @@ Fri Feb 13 19:43:41 1998  Werner Koch  (wk@isil.d.shuttle.de)
 	* Makefile.am: Likewise
 
 
- Copyright 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ Copyright 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
