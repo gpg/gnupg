@@ -1,5 +1,8 @@
 2003-11-29  David Shaw  <dshaw@jabberwocky.com>
 
+	* keygen.c (ask_algo): Remove ability to generate Elgamal
+	sign+encrypt keys.
+
 	* revoke.c (gen_desig_revoke): Specify in the comment when a
 	designated revocation is generated.
 

@@ -958,13 +958,11 @@ ask_algo (int addmode, unsigned int *r_usage)
     tty_printf(    _("   (%d) DSA (sign only)\n"), 2 );
     if( addmode )
 	tty_printf(    _("   (%d) ElGamal (encrypt only)\n"), 3 );
-    if (opt.expert)
-        tty_printf(    _("   (%d) ElGamal (sign and encrypt)\n"), 4 );
-    tty_printf(    _("   (%d) RSA (sign only)\n"), 5 );
+    tty_printf(    _("   (%d) RSA (sign only)\n"), 4 );
     if (addmode)
-        tty_printf(    _("   (%d) RSA (encrypt only)\n"), 6 );
+        tty_printf(    _("   (%d) RSA (encrypt only)\n"), 5 );
     if (opt.expert)
-      tty_printf(    _("   (%d) RSA (sign and encrypt)\n"), 7 );
+      tty_printf(    _("   (%d) RSA (sign and encrypt)\n"), 6 );
 
     for(;;) {
 	answer = cpr_get("keygen.algo",_("Your selection? "));
@@ -975,35 +973,20 @@ ask_algo (int addmode, unsigned int *r_usage)
 	    algo = 0;	/* create both keys */
 	    break;
 	}
-	else if( algo == 7 && opt.expert ) {
+	else if( algo == 6 && opt.expert ) {
 	    algo = PUBKEY_ALGO_RSA;
 	    *r_usage = PUBKEY_USAGE_ENC | PUBKEY_USAGE_SIG;
 	    break;
 	}
-	else if( algo == 6 && addmode ) {
+	else if( algo == 5 && addmode ) {
 	    algo = PUBKEY_ALGO_RSA;
             *r_usage = PUBKEY_USAGE_ENC;
 	    break;
 	}
-	else if( algo == 5 ) {
+	else if( algo == 4 ) {
 	    algo = PUBKEY_ALGO_RSA;
             *r_usage = PUBKEY_USAGE_SIG;
 	    break;
-	}
-	else if( algo == 4 && opt.expert)
-	  {
-	    tty_printf(_(
-"The use of this algorithm is only supported by GnuPG.  You will not be\n"
-"able to use this key to communicate with PGP users.  This algorithm is also\n"
-"very slow, and may not be as secure as the other choices.\n"));
-
-	    if( cpr_get_answer_is_yes("keygen.algo.elg_se",
-				      _("Create anyway? ")))
-	      {
-		algo = PUBKEY_ALGO_ELGAMAL;
-		*r_usage = PUBKEY_USAGE_ENC | PUBKEY_USAGE_SIG;
-		break;
-	      }
 	}
 	else if( algo == 3 && addmode ) {
 	    algo = PUBKEY_ALGO_ELGAMAL_E;
