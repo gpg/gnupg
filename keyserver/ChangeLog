@@ -1,3 +1,8 @@
+2004-08-27  Stefan Bellon  <sbellon@roma>
+
+	* gpgkeys_hkp.c (search_key): Change type of variable skey from
+	unsigned char* to char* to fix type incompatibility.
+
 2004-08-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c (get_key, search_key), gpgkeys_hkp.c (get_key,
@@ -339,7 +344,7 @@
 
 	* gpgkeys_hkp.c (get_key): Properly respond with KEY FAILED (to
 	gpg) and "key not found" (to user) on failure.
-	
+
 2002-09-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c: (search_key, handle_old_hkp_index): Try and
@@ -401,7 +406,7 @@
 	* gpgkeys_hkp.c (main): Don't warn about include-subkeys - it
 	isn't unsupported, it's actually non-meaningful in the context of
 	HKP (yet).
-	
+
 	* gpgkeys_hkp.c (parse_hkp_index, dehtmlize): Move HTML
 	functionality into new "dehtmlize" function.  Remove HTML before
 	trying to parse each line from the keyserver.  If the keyserver
@@ -560,7 +565,7 @@
 	* Initial version of gpgkeys_ldap (LDAP keyserver helper) and
 	gpgkeys_mailto (email keyserver helper)
 
-	
+
  Copyright 1998, 1999, 2000, 2001, 2002, 2003,
 	   2004 Free Software Foundation, Inc.
 

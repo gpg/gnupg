@@ -243,7 +243,7 @@ get_key(char *getkey)
  else
    {
       /* short key id */
-    
+
       sprintf(search,"0x%.8s",getkey);
     }
 
@@ -428,7 +428,7 @@ write_quoted(IOBUF a, const char *buf, char delim)
    LDAP server are close enough in output so the same function can
    parse them both. */
 
-int 
+int
 parse_hkp_index(IOBUF buffer,char *line)
 {
   int ret=0;
@@ -549,7 +549,7 @@ parse_hkp_index(IOBUF buffer,char *line)
 	      iobuf_writestr(buffer,"\nuid:");
 	      write_quoted(buffer,uid,':');
 	    }
-		  
+
 	  iobuf_writestr(buffer,"\n");
 
 	  ret=1;
@@ -629,7 +629,7 @@ search_key(char *searchkey)
   int max=0,len=0,ret=KEYSERVER_INTERNAL_ERROR,rc;
   struct http_context hd;
   char *search=NULL,*request=NULL;
-  unsigned char *skey=searchkey;
+  char *skey=searchkey;
 
   fprintf(output,"SEARCH %s BEGIN\n",searchkey);
 
@@ -666,7 +666,7 @@ search_key(char *searchkey)
     {
       fprintf(console,"gpgkeys: corrupt input?\n");
       return -1;
-    }    
+    }
 
   search[len]='\0';
 
