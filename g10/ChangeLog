@@ -1,3 +1,8 @@
+2003-04-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* hkp.c (hkp_ask_import, hkp_export, hkp_search): Make sure to
+	allocate space for the ":port" text in HKP URLs.
+
 2003-04-23  Werner Koch  <wk@gnupg.org>
 
 	Reverted recent changes in the copyright notices.  We can't use a

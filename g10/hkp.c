@@ -71,7 +71,9 @@ hkp_ask_import( KEYDB_SEARCH_DESC *desc, void *stats_handle)
       log_info(_("requesting key %08lX from %s\n"),
 	       (ulong)key[1],opt.keyserver_uri);
 
-    request = m_alloc( strlen( opt.keyserver_host ) + 100 );
+    request = m_alloc( strlen( opt.keyserver_host )
+		       + (opt.keyserver_port?strlen(opt.keyserver_port):0)
+		       + 100 );
     /* hkp does not accept the long keyid - we should really write a
      * nicer one :-)
      * FIXME: request binary mode - need to pass no_armor mode
@@ -133,7 +135,9 @@ hkp_export( STRLIST users )
 
     iobuf_flush_temp( temp );
 
-    request = m_alloc( strlen( opt.keyserver_host ) + 100 );
+    request = m_alloc( strlen( opt.keyserver_host )
+		       + (opt.keyserver_port?strlen(opt.keyserver_port):0)
+		       + 100 );
 
     if(opt.keyserver_options.broken_http_proxy)
       hflags |= HTTP_FLAG_NO_SHUTDOWN;
@@ -545,7 +549,9 @@ int hkp_search(STRLIST tokens)
 
   searchurl[len]='\0';
 
-  request=m_alloc(strlen(opt.keyserver_host) + 100 + strlen(searchurl));
+  request=m_alloc(strlen(opt.keyserver_host)
+		  + (opt.keyserver_port?strlen(opt.keyserver_port):0)
+		  + 100 + strlen(searchurl));
 
   if(opt.keyserver_options.broken_http_proxy)
     hflags |= HTTP_FLAG_NO_SHUTDOWN;
