@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.4rc\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2004-12-14 08:40+0100\n"
+"POT-Creation-Date: 2004-12-16 10:56+0100\n"
 "PO-Revision-Date: 2003-12-05 19:15+0100\n"
 "Last-Translator: Jordi Mallach <jordi@gnu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -51,7 +51,7 @@ msgstr "no s'ha trobat cap m�dul d'acumulaci� d'entropia\n"
 
 #: cipher/random.c:387 g10/card-util.c:613 g10/card-util.c:682
 #: g10/dearmor.c:60 g10/dearmor.c:109 g10/encode.c:181 g10/encode.c:488
-#: g10/g10.c:962 g10/g10.c:3225 g10/import.c:177 g10/keygen.c:2248
+#: g10/g10.c:962 g10/g10.c:3222 g10/import.c:177 g10/keygen.c:2248
 #: g10/keyring.c:1524 g10/openfile.c:180 g10/openfile.c:333
 #: g10/plaintext.c:469 g10/sign.c:761 g10/sign.c:913 g10/sign.c:1021
 #: g10/sign.c:1166 g10/tdbdump.c:140 g10/tdbdump.c:148 g10/tdbio.c:539
@@ -383,7 +383,7 @@ msgstr ""
 
 # Dest�s? ivb
 # Desat�s, s�. jm
-#: g10/card-util.c:70 g10/card-util.c:1285 g10/delkey.c:120 g10/keyedit.c:1315
+#: g10/card-util.c:70 g10/card-util.c:1285 g10/delkey.c:120 g10/keyedit.c:1353
 #: g10/keygen.c:2432 g10/revoke.c:216 g10/revoke.c:417
 #, fuzzy
 msgid "can't do this in batch mode\n"
@@ -599,7 +599,7 @@ msgstr "Les parts secretes de la clau prim�ria no estan disponibles.\n"
 msgid "secret key already stored on a card\n"
 msgstr "es descarta: la clau secreta ja �s present\n"
 
-#: g10/card-util.c:1250 g10/keyedit.c:1245
+#: g10/card-util.c:1250 g10/keyedit.c:1285
 msgid "quit this menu"
 msgstr "ix del men�"
 
@@ -610,7 +610,7 @@ msgstr "les ordres entren en conflicte\n"
 
 # �pantalla� o �ajuda�?  ivb
 # �ajuda�, evidentment. jm
-#: g10/card-util.c:1253 g10/keyedit.c:1248
+#: g10/card-util.c:1253 g10/keyedit.c:1288
 msgid "show this help"
 msgstr "mostra aquesta ajuda"
 
@@ -663,7 +663,7 @@ msgstr "genera un nou parell de claus"
 msgid "menu to change or unblock the PIN"
 msgstr ""
 
-#: g10/card-util.c:1333 g10/keyedit.c:1398
+#: g10/card-util.c:1333 g10/keyedit.c:1436
 msgid "Command> "
 msgstr "Ordre> "
 
@@ -682,7 +682,7 @@ msgstr "les ordres entren en conflicte\n"
 msgid "Admin commands are not allowed\n"
 msgstr "s'est� escrivint la clau secreta a �%s�\n"
 
-#: g10/card-util.c:1455 g10/keyedit.c:1865
+#: g10/card-util.c:1455 g10/keyedit.c:1928
 msgid "Invalid command  (try \"help\")\n"
 msgstr "L'ordre no �s v�lida (proveu �help�)\n"
 
@@ -730,7 +730,7 @@ msgstr "Repetiu la contrasenya: "
 msgid "PIN not correctly repeated; try again"
 msgstr "la contrasenya no s'ha repetit correctament; torneu a intentar-ho"
 
-#: g10/decrypt.c:68 g10/decrypt.c:157 g10/g10.c:3575 g10/keyring.c:376
+#: g10/decrypt.c:68 g10/decrypt.c:157 g10/g10.c:3572 g10/keyring.c:376
 #: g10/keyring.c:662 g10/verify.c:101 g10/verify.c:154
 #, c-format
 msgid "can't open `%s'\n"
@@ -740,7 +740,7 @@ msgstr "no s'ha pogut obrir �%s�\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output no funciona per a aquesta ordre\n"
 
-#: g10/delkey.c:74 g10/export.c:168 g10/keyedit.c:2919 g10/keyserver.c:1421
+#: g10/delkey.c:74 g10/export.c:168 g10/keyedit.c:2982 g10/keyserver.c:1421
 #: g10/revoke.c:226
 #, fuzzy, c-format
 msgid "key \"%s\" not found: %s\n"
@@ -1056,59 +1056,59 @@ msgstr "signa una clau"
 msgid "sign a key locally"
 msgstr "signa una clau localment"
 
-#: g10/g10.c:385
+#: g10/g10.c:383
 msgid "sign or edit a key"
 msgstr "signa o edita una clau"
 
-#: g10/g10.c:386
+#: g10/g10.c:384
 msgid "generate a revocation certificate"
 msgstr "genera un certificat de revocaci�"
 
-#: g10/g10.c:388
+#: g10/g10.c:386
 msgid "export keys"
 msgstr "exporta claus"
 
-#: g10/g10.c:389
+#: g10/g10.c:387
 msgid "export keys to a key server"
 msgstr "exporta claus a un servidor de claus"
 
-#: g10/g10.c:390
+#: g10/g10.c:388
 msgid "import keys from a key server"
 msgstr "importa claus d'un servidor de claus"
 
-#: g10/g10.c:392
+#: g10/g10.c:390
 msgid "search for keys on a key server"
 msgstr "cerca claus en un servidor de claus"
 
-#: g10/g10.c:394
+#: g10/g10.c:392
 msgid "update all keys from a keyserver"
 msgstr "actualitza totes les claus des d'un servidor de claus"
 
-#: g10/g10.c:397
+#: g10/g10.c:395
 msgid "import/merge keys"
 msgstr "importa/fon claus"
 
-#: g10/g10.c:400
+#: g10/g10.c:398
 msgid "print the card status"
 msgstr ""
 
-#: g10/g10.c:401
+#: g10/g10.c:399
 msgid "change data on a card"
 msgstr ""
 
-#: g10/g10.c:402
+#: g10/g10.c:400
 msgid "change a card's PIN"
 msgstr ""
 
-#: g10/g10.c:410
+#: g10/g10.c:408
 msgid "update the trust database"
 msgstr "actualitza la base de dades de confian�a"
 
-#: g10/g10.c:417
+#: g10/g10.c:415
 msgid "|algo [files]|print message digests"
 msgstr "|algo [fitxers]|imprimeix resums de missatges"
 
-#: g10/g10.c:421 g10/gpgv.c:65
+#: g10/g10.c:419 g10/gpgv.c:65
 msgid ""
 "@\n"
 "Options:\n"
@@ -1118,52 +1118,52 @@ msgstr ""
 "Opcions:\n"
 " "
 
-#: g10/g10.c:423
+#: g10/g10.c:421
 msgid "create ascii armored output"
 msgstr "crea eixida amb armadura ascii"
 
-#: g10/g10.c:425
+#: g10/g10.c:423
 msgid "|NAME|encrypt for NAME"
 msgstr "|NOM|xifra per a NOM"
 
-#: g10/g10.c:436
+#: g10/g10.c:434
 msgid "use this user-id to sign or decrypt"
 msgstr "usa aquest id per a signar o desxifrar"
 
-#: g10/g10.c:437
+#: g10/g10.c:435
 msgid "|N|set compress level N (0 disables)"
 msgstr "|N|nivell de compressi� N (0 no comprimeix)"
 
-#: g10/g10.c:442
+#: g10/g10.c:440
 msgid "use canonical text mode"
 msgstr "usa el mode de text can�nic"
 
-#: g10/g10.c:452
+#: g10/g10.c:450
 msgid "use as output file"
 msgstr "fitxer d'eixida"
 
 # Un dels dos �s en la llista d'opcions amb --help. Urgh. jm
-#: g10/g10.c:454 g10/gpgv.c:67
+#: g10/g10.c:452 g10/gpgv.c:67
 msgid "verbose"
 msgstr "detall"
 
-#: g10/g10.c:465
+#: g10/g10.c:463
 msgid "do not make any changes"
 msgstr "no fa cap canvi"
 
-#: g10/g10.c:466
+#: g10/g10.c:464
 msgid "prompt before overwriting"
 msgstr "pregunta abans de sobreescriure"
 
-#: g10/g10.c:507
+#: g10/g10.c:505
 msgid "use strict OpenPGP behavior"
 msgstr ""
 
-#: g10/g10.c:508
+#: g10/g10.c:506
 msgid "generate PGP 2.x compatible messages"
 msgstr ""
 
-#: g10/g10.c:533
+#: g10/g10.c:532
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
@@ -1174,7 +1174,7 @@ msgstr ""
 # Crec q (A)lice (orig.), (B)ob (dest.), etc. s�n noms usats pel Zimmerman
 # en el manual original de PGP.  A, B, C...  ivb
 # En efecte. Idem per a Mallory m�s endavant. Els deixe com a l'original. jm
-#: g10/g10.c:536
+#: g10/g10.c:535
 msgid ""
 "@\n"
 "Examples:\n"
@@ -1229,7 +1229,7 @@ msgstr ""
 msgid "Pubkey: "
 msgstr "Clau p�blica: "
 
-#: g10/g10.c:756 g10/keyedit.c:1902
+#: g10/g10.c:756 g10/keyedit.c:1965
 msgid "Cipher: "
 msgstr "Xifratge: "
 
@@ -1237,7 +1237,7 @@ msgstr "Xifratge: "
 msgid "Hash: "
 msgstr "Dispersi�: "
 
-#: g10/g10.c:768 g10/keyedit.c:1948
+#: g10/g10.c:768 g10/keyedit.c:2011
 msgid "Compression: "
 msgstr "Compressi�: "
 
@@ -1330,375 +1330,372 @@ msgstr ""
 msgid "unknown configuration item `%s'\n"
 msgstr "s'ha creat el nou fitxer d'opcions �%s�\n"
 
-#: g10/g10.c:1797
+#: g10/g10.c:1798
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "NOTA: es descarta el fitxer d'opcions predeterminades antic �%s�\n"
 
-#: g10/g10.c:1839
+#: g10/g10.c:1840
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTA: no existeix el fitxer d'opcions predeterminades �%s�\n"
 
-#: g10/g10.c:1843
+#: g10/g10.c:1844
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "fitxer d'opcions �%s�: %s\n"
 
-#: g10/g10.c:1850
+#: g10/g10.c:1851
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "s'estan llegint opcions de �%s�\n"
 
-#: g10/g10.c:2066 g10/g10.c:2582 g10/g10.c:2593
+#: g10/g10.c:2065 g10/g10.c:2583 g10/g10.c:2594
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTA: %s no �s per a �s normal!\n"
 
-#: g10/g10.c:2079
+#: g10/g10.c:2078
 #, fuzzy, c-format
 msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
 msgstr ""
 "la extensi� de xifrat �%s� no s'ha carregat per tindre permissos "
 "insegurs\n"
 
-#: g10/g10.c:2291
+#: g10/g10.c:2292
 #, fuzzy, c-format
 msgid "`%s' is not a valid character set\n"
 msgstr "%s no �s un joc de car�cters v�lid\n"
 
-#: g10/g10.c:2310 g10/keyedit.c:3435
+#: g10/g10.c:2311 g10/keyedit.c:3498
 #, fuzzy
 msgid "could not parse keyserver URL\n"
 msgstr ""
 "no s'ha pogut analitzar sint�cticament la URI del servidor de claus\n"
 
-#: g10/g10.c:2316
+#: g10/g10.c:2317
 #, fuzzy, c-format
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d opcions d'exportaci� no v�lides\n"
 
-#: g10/g10.c:2319
+#: g10/g10.c:2320
 #, fuzzy
 msgid "invalid keyserver options\n"
 msgstr "opcions d'exportaci� no v�lides\n"
 
-#: g10/g10.c:2326
+#: g10/g10.c:2327
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: opcions d'importanci� no v�lides\n"
 
-#: g10/g10.c:2329
+#: g10/g10.c:2330
 msgid "invalid import options\n"
 msgstr "opcions d'importaci� no v�lides\n"
 
-#: g10/g10.c:2336
+#: g10/g10.c:2337
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d opcions d'exportaci� no v�lides\n"
 
-#: g10/g10.c:2339
+#: g10/g10.c:2340
 msgid "invalid export options\n"
 msgstr "opcions d'exportaci� no v�lides\n"
 
-#: g10/g10.c:2346
+#: g10/g10.c:2347
 #, fuzzy, c-format
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: opcions d'importanci� no v�lides\n"
 
-#: g10/g10.c:2349
+#: g10/g10.c:2350
 #, fuzzy
 msgid "invalid list options\n"
 msgstr "opcions d'importaci� no v�lides\n"
 
-#: g10/g10.c:2371
+#: g10/g10.c:2372
 #, fuzzy, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d opcions d'exportaci� no v�lides\n"
 
-#: g10/g10.c:2374
+#: g10/g10.c:2375
 #, fuzzy
 msgid "invalid verify options\n"
 msgstr "opcions d'exportaci� no v�lides\n"
 
-#: g10/g10.c:2381
+#: g10/g10.c:2382
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "no s'ha pogut fixar l'exec-path a %s\n"
 
-#: g10/g10.c:2571
+#: g10/g10.c:2572
 msgid "WARNING: program may create a core file!\n"
 msgstr "AV�S: el programa podria crear un fitxer core!\n"
 
 # FIXME: prefer�ncia? jm
 # Ho discut�rem en la llista, segur.  Deu ser als arxius.  ivb
-#: g10/g10.c:2575
+#: g10/g10.c:2576
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "AV�S: %s t� prefer�ncia sobre %s\n"
 
-#: g10/g10.c:2584
+#: g10/g10.c:2585
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s no �s perm�s amb %s!\n"
 
-#: g10/g10.c:2587
+#: g10/g10.c:2588
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s no t� sentit amb %s!\n"
 
+#: g10/g10.c:2602
+#, c-format
+msgid "will not run with insecure memory due to %s"
+msgstr ""
+
 # clares -> en clar?  ivb
-#: g10/g10.c:2608
+#: g10/g10.c:2616
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr "nom�s podeu fer signatures separades o en clar en el mode --pgp2\n"
 
-#: g10/g10.c:2614
+#: g10/g10.c:2622
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr "no podeu signar i xifrar al mateix temps en el mode --pgp2\n"
 
-#: g10/g10.c:2620
+#: g10/g10.c:2628
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr ""
 "heu d'utilitzar fitxers (i no un conducte) mentre treballeu amb --pgp2 "
 "habilitat.\n"
 
-#: g10/g10.c:2633
+#: g10/g10.c:2641
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "xifrar un missatge en mode --pgp2 requereix el xifratge IDEA\n"
 
-#: g10/g10.c:2703 g10/g10.c:2727
+#: g10/g10.c:2711 g10/g10.c:2735
 msgid "selected cipher algorithm is invalid\n"
 msgstr "l'algorisme de xifratge triat no �s v�lid\n"
 
-#: g10/g10.c:2709 g10/g10.c:2733
+#: g10/g10.c:2717 g10/g10.c:2741
 msgid "selected digest algorithm is invalid\n"
 msgstr "l'algorisme de resum seleccionat no �s v�lid\n"
 
-#: g10/g10.c:2715
+#: g10/g10.c:2723
 #, fuzzy
 msgid "selected compression algorithm is invalid\n"
 msgstr "l'algorisme de xifratge triat no �s v�lid\n"
 
-#: g10/g10.c:2721
+#: g10/g10.c:2729
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "l'algorisme de resum de certificaci� seleccionat no �s v�lid\n"
 
-#: g10/g10.c:2736
+#: g10/g10.c:2744
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed ha de ser major que 0\n"
 
-#: g10/g10.c:2738
+#: g10/g10.c:2746
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed ha de ser major que 1\n"
 
-#: g10/g10.c:2740
+#: g10/g10.c:2748
 #, fuzzy
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "max-cert-depth ha d'estar en el rang 1 a 255\n"
 
-#: g10/g10.c:2742
+#: g10/g10.c:2750
 #, fuzzy
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "default-check-level �s inv�lid; ha de ser 0, 1, 2 o 3\n"
 
-#: g10/g10.c:2744
+#: g10/g10.c:2752
 #, fuzzy
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "default-check-level �s inv�lid; ha de ser 0, 1, 2 o 3\n"
 
-#: g10/g10.c:2747
+#: g10/g10.c:2755
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "NOTA: el mode S2K simple (0) no �s gens recomanable\n"
 
-#: g10/g10.c:2751
+#: g10/g10.c:2759
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "el mode S2K �s inv�lid; ha de ser 0, 1 o 3\n"
 
-#: g10/g10.c:2758
+#: g10/g10.c:2766
 msgid "invalid default preferences\n"
 msgstr "les prefer�ncies per defecte s�n inv�lides\n"
 
-#: g10/g10.c:2767
+#: g10/g10.c:2775
 msgid "invalid personal cipher preferences\n"
 msgstr "les prefer�ncies personals de xifrat s�n inv�lides\n"
 
-#: g10/g10.c:2771
+#: g10/g10.c:2779
 msgid "invalid personal digest preferences\n"
 msgstr "les prefer�ncies personals de digest s�n inv�lides\n"
 
-#: g10/g10.c:2775
+#: g10/g10.c:2783
 msgid "invalid personal compress preferences\n"
 msgstr "les prefer�ncies personals de compressi� s�n inv�lides\n"
 
-#: g10/g10.c:2808
+#: g10/g10.c:2816
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s encara no funciona amb %s\n"
 
-#: g10/g10.c:2855
+#: g10/g10.c:2863
 #, fuzzy, c-format
 msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgstr ""
 "no podeu usar l'algorisme de xifratge �%s� mentre esteu en mode %s\n"
 
-#: g10/g10.c:2860
+#: g10/g10.c:2868
 #, fuzzy, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr "no podeu usar l'algorisme de resum %s mentre esteu en mode %s\n"
 
-#: g10/g10.c:2865
+#: g10/g10.c:2873
 #, fuzzy, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgstr "no podeu usar l'algorisme de compressi� %s mentre esteu en mode %s\n"
 
-#: g10/g10.c:2961
+#: g10/g10.c:2969
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "no s'ha pogut inicialitzar la base de dades de confian�a: %s\n"
 
-#: g10/g10.c:2972
+#: g10/g10.c:2980
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "AV�S: s'han donat destinataris (-r) sense usar xifratge de clau p�blica\n"
 
-#: g10/g10.c:2983
+#: g10/g10.c:2991
 msgid "--store [filename]"
 msgstr "--store [nom_del_fitxer]"
 
-#: g10/g10.c:2990
+#: g10/g10.c:2998
 msgid "--symmetric [filename]"
 msgstr "--symmetric [nom_del_fitxer]"
 
-#: g10/g10.c:2992
+#: g10/g10.c:3000
 #, fuzzy, c-format
 msgid "symmetric encryption of `%s' failed: %s\n"
 msgstr "ha fallat el desxifratge: %s\n"
 
-#: g10/g10.c:3002
+#: g10/g10.c:3010
 msgid "--encrypt [filename]"
 msgstr "--encrypt [nom_del_fitxer]"
 
-#: g10/g10.c:3015
+#: g10/g10.c:3023
 #, fuzzy
 msgid "--symmetric --encrypt [filename]"
 msgstr "--sign --encrypt [nom_del_fitxer]"
 
-#: g10/g10.c:3017
+#: g10/g10.c:3025
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
 
-#: g10/g10.c:3020
+#: g10/g10.c:3028
 #, fuzzy, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "no podeu usar %s mentre esteu en mode %s\n"
 
-#: g10/g10.c:3038
+#: g10/g10.c:3046
 msgid "--sign [filename]"
 msgstr "--sign [nom_del_fitxer]"
 
-#: g10/g10.c:3051
+#: g10/g10.c:3059
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [nom_del_fitxer]"
 
-#: g10/g10.c:3066
+#: g10/g10.c:3074
 #, fuzzy
 msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--sign --encrypt [nom_del_fitxer]"
 
-#: g10/g10.c:3068
+#: g10/g10.c:3076
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 
-#: g10/g10.c:3071
+#: g10/g10.c:3079
 #, fuzzy, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "no podeu usar %s mentre esteu en mode %s\n"
 
-#: g10/g10.c:3091
+#: g10/g10.c:3099
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [nom_del_fitxer]"
 
-#: g10/g10.c:3100
+#: g10/g10.c:3108
 msgid "--clearsign [filename]"
 msgstr "--clearsign [nom_del_fitxer]"
 
-#: g10/g10.c:3125
+#: g10/g10.c:3133
 msgid "--decrypt [filename]"
 msgstr "--decrypt [nom_del_fitxer]"
 
-#: g10/g10.c:3133
+#: g10/g10.c:3141
 msgid "--sign-key user-id"
 msgstr "--sign-key user-id"
 
-#: g10/g10.c:3137
+#: g10/g10.c:3145
 msgid "--lsign-key user-id"
 msgstr "--lsign-key user-id"
 
-#: g10/g10.c:3141
-msgid "--nrsign-key user-id"
-msgstr "--nrsign-key user-id"
-
-#: g10/g10.c:3145
-msgid "--nrlsign-key user-id"
-msgstr "--nrlsign-key user-id"
-
-#: g10/g10.c:3169
+#: g10/g10.c:3166
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key user-id [ordres]"
 
-#: g10/g10.c:3240
+#: g10/g10.c:3237
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [user-id] [anell]"
 
-#: g10/g10.c:3277
+#: g10/g10.c:3274
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "l'enviament al servidor de claus ha fallat: %s\n"
 
-#: g10/g10.c:3279
+#: g10/g10.c:3276
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "la recepci� des del servidor de claus ha fallat: %s\n"
 
-#: g10/g10.c:3281
+#: g10/g10.c:3278
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "l'exportaci� de la clau ha fallat: %s\n"
 
-#: g10/g10.c:3292
+#: g10/g10.c:3289
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "ha fallat la cerca al servidor de claus: %s\n"
 
-#: g10/g10.c:3302
+#: g10/g10.c:3299
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "ha fallat el refresc des del servidor de claus: %s\n"
 
-#: g10/g10.c:3343
+#: g10/g10.c:3340
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "no s'ha pogut llevar l'armadura: %s\n"
 
-#: g10/g10.c:3351
+#: g10/g10.c:3348
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "no s'ha pogut crear l'armadura: %s\n"
 
-#: g10/g10.c:3438
+#: g10/g10.c:3435
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "l'algoritme de dispersi� �s inv�lid �%s�\n"
 
-#: g10/g10.c:3561
+#: g10/g10.c:3558
 msgid "[filename]"
 msgstr "[nom_del_fitxer]"
 
-#: g10/g10.c:3565
+#: g10/g10.c:3562
 msgid "Go ahead and type your message ...\n"
 msgstr "Endavant, escriviu el missatge...\n"
 
-#: g10/g10.c:3855
+#: g10/g10.c:3852
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
@@ -1706,23 +1703,23 @@ msgstr ""
 "un nom de notaci� nom�s pot tenir car�cters imprimibles o espais i "
 "acabar amb el signe �=�\n"
 
-#: g10/g10.c:3863
+#: g10/g10.c:3860
 msgid "a user notation name must contain the '@' character\n"
 msgstr "un nom de notaci� d'usuari no pot contenir el car�cter �@�\n"
 
-#: g10/g10.c:3873
+#: g10/g10.c:3870
 msgid "a notation value must not use any control characters\n"
 msgstr "un valor de notaci� no pot utilitzar cap car�cter de control\n"
 
-#: g10/g10.c:3907
+#: g10/g10.c:3904
 msgid "the given certification policy URL is invalid\n"
 msgstr "la URL de pol�tica de certificaci� donada no �s v�lida\n"
 
-#: g10/g10.c:3909
+#: g10/g10.c:3906
 msgid "the given signature policy URL is invalid\n"
 msgstr "la URL de pol�tica de signatura donada no �s v�lida\n"
 
-#: g10/g10.c:3942
+#: g10/g10.c:3939
 #, fuzzy
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "la URL de pol�tica de signatura donada no �s v�lida\n"
@@ -2629,14 +2626,14 @@ msgid "User ID \"%s\" is revoked."
 msgstr "L'ID d'usuari �%s� est� revocat."
 
 #: g10/keyedit.c:593 g10/keyedit.c:619 g10/keyedit.c:644 g10/keyedit.c:799
-#: g10/keyedit.c:857 g10/keyedit.c:1487
+#: g10/keyedit.c:857 g10/keyedit.c:1543
 msgid "Are you sure you still want to sign it? (y/N) "
 msgstr "Segur que encara voleu signarla? (s/N) "
 
 # O no s'ha pogut? ivb
 # FIXME: comprovar context. jm
 #: g10/keyedit.c:605 g10/keyedit.c:631 g10/keyedit.c:656 g10/keyedit.c:805
-#: g10/keyedit.c:1493
+#: g10/keyedit.c:1549
 msgid "  Unable to sign.\n"
 msgstr "  No es pot signar.\n"
 
@@ -2839,7 +2836,7 @@ msgstr ""
 msgid "Really sign? (y/N) "
 msgstr "Signar realment? "
 
-#: g10/keyedit.c:1028 g10/keyedit.c:3883 g10/keyedit.c:3974 g10/keyedit.c:4047
+#: g10/keyedit.c:1028 g10/keyedit.c:3946 g10/keyedit.c:4037 g10/keyedit.c:4110
 #: g10/sign.c:369
 #, c-format
 msgid "signing failed: %s\n"
@@ -2892,54 +2889,41 @@ msgstr "Esteu segur de voler fer a��? "
 msgid "moving a key signature to the correct place\n"
 msgstr "s'est� posant la signatura al lloc correcte\n"
 
-#: g10/keyedit.c:1247
+#: g10/keyedit.c:1287
 msgid "save and quit"
 msgstr "desa i ix"
 
-#: g10/keyedit.c:1250
+#: g10/keyedit.c:1290
 msgid "show fingerprint"
 msgstr "mostra empremta"
 
-#: g10/keyedit.c:1251
+#: g10/keyedit.c:1291
 msgid "list key and user IDs"
 msgstr "llista claus i ID"
 
 # Per aquesta zona (keyedit) hi ha un cacau d'infinitius i presents...  ivb
 # Yeah, els vaig corregir abans de que enviares la teua correcci�. jm
-#: g10/keyedit.c:1253
+#: g10/keyedit.c:1293
 msgid "select user ID N"
 msgstr "tria l'ID d'usuari N"
 
-#: g10/keyedit.c:1254
+#: g10/keyedit.c:1294
 msgid "select secondary key N"
 msgstr "tria la clau secund�ria N"
 
-#: g10/keyedit.c:1255
+#: g10/keyedit.c:1295
 msgid "list signatures"
 msgstr "llista les signatures"
 
-#: g10/keyedit.c:1257
+#: g10/keyedit.c:1297
 msgid "sign the key"
 msgstr "signa la clau"
 
-#: g10/keyedit.c:1259
-#, fuzzy
-msgid "make a trust signature"
-msgstr "crea una signatura separada"
-
-#: g10/keyedit.c:1260
+#: g10/keyedit.c:1301
 msgid "sign the key locally"
 msgstr "signa la clau localment"
 
-#: g10/keyedit.c:1261
-msgid "sign the key non-revocably"
-msgstr "signa la clau irrevocablement"
-
-#: g10/keyedit.c:1262
-msgid "sign the key locally and non-revocably"
-msgstr "signa la clau localment i irrevocablement"
-
-#: g10/keyedit.c:1265
+#: g10/keyedit.c:1303
 msgid "add a user ID"
 msgstr "afegeix un ID d'usuari"
 
@@ -2947,327 +2931,332 @@ msgstr "afegeix un ID d'usuari"
 # Si et refereixes a Photo vs. photo, ho deixe en min�scules, que en tot
 # el men� est� tot en min�scules. Tb hi ha molts ID vs. id en els msgids
 # i no hem unificat en catal�. Potser li ho dir� a Werner. jm.
-#: g10/keyedit.c:1266
+#: g10/keyedit.c:1304
 msgid "add a photo ID"
 msgstr "afegeix un photo ID"
 
-#: g10/keyedit.c:1267
+#: g10/keyedit.c:1305
 msgid "delete user ID"
 msgstr "esborra un ID d'usuari"
 
-#: g10/keyedit.c:1270
+#: g10/keyedit.c:1308
 msgid "add a secondary key"
 msgstr "afegeix una clau secund�ria"
 
-#: g10/keyedit.c:1272
+#: g10/keyedit.c:1310
 msgid "add a key to a smartcard"
 msgstr ""
 
-#: g10/keyedit.c:1273
+#: g10/keyedit.c:1311
 msgid "move a key to a smartcard"
 msgstr ""
 
-#: g10/keyedit.c:1275
+#: g10/keyedit.c:1313
 msgid "delete a secondary key"
 msgstr "esborra una clau secund�ria"
 
-#: g10/keyedit.c:1276
+#: g10/keyedit.c:1314
 msgid "add a revocation key"
 msgstr "afegeix una clau de revocaci�"
 
-#: g10/keyedit.c:1277
+#: g10/keyedit.c:1315
 msgid "delete signatures"
 msgstr "esborra signatures"
 
-#: g10/keyedit.c:1278
+#: g10/keyedit.c:1316
 msgid "change the expire date"
 msgstr "canvia la data de caducitat"
 
-#: g10/keyedit.c:1279
+#: g10/keyedit.c:1317
 msgid "flag user ID as primary"
 msgstr "marca l'ID d'usuari com a primari"
 
-#: g10/keyedit.c:1280
+#: g10/keyedit.c:1318
 msgid "toggle between secret and public key listing"
 msgstr "canvia entre el llistat de claus secretes i p�bliques"
 
-#: g10/keyedit.c:1283
+#: g10/keyedit.c:1320
 msgid "list preferences (expert)"
 msgstr "llista les prefer�ncies (expert)"
 
-#: g10/keyedit.c:1284
+#: g10/keyedit.c:1321
 msgid "list preferences (verbose)"
 msgstr "llista les prefer�ncies (detallat)"
 
-#: g10/keyedit.c:1285
+#: g10/keyedit.c:1322
 msgid "set preference list"
 msgstr "estableix la llista de prefer�ncies"
 
-#: g10/keyedit.c:1286
+#: g10/keyedit.c:1323
 msgid "updated preferences"
 msgstr "prefer�ncies actualitzades"
 
-#: g10/keyedit.c:1287
+#: g10/keyedit.c:1324
 #, fuzzy
 msgid "set preferred keyserver URL"
 msgstr ""
 "no s'ha pogut analitzar sint�cticament la URI del servidor de claus\n"
 
-#: g10/keyedit.c:1288
+#: g10/keyedit.c:1325
 msgid "change the passphrase"
 msgstr "canvia la contrasenya"
 
-#: g10/keyedit.c:1289
+#: g10/keyedit.c:1326
 msgid "change the ownertrust"
 msgstr "canvia la confian�a"
 
-#: g10/keyedit.c:1290
+#: g10/keyedit.c:1327
 msgid "revoke signatures"
 msgstr "revoca signatures"
 
-#: g10/keyedit.c:1291
+#: g10/keyedit.c:1328
 msgid "revoke a user ID"
 msgstr "revoca un ID d'usuari"
 
-#: g10/keyedit.c:1292
+#: g10/keyedit.c:1329
 msgid "revoke a secondary key"
 msgstr "revoca una clau secund�ria"
 
-#: g10/keyedit.c:1293
+#: g10/keyedit.c:1330
 msgid "disable a key"
 msgstr "desactiva una clau"
 
-#: g10/keyedit.c:1294
+#: g10/keyedit.c:1331
 msgid "enable a key"
 msgstr "activa una clau"
 
 # Igual que dalt.  ivb
 # Idem :) jm
-#: g10/keyedit.c:1295
+#: g10/keyedit.c:1332
 msgid "show photo ID"
 msgstr "mostra el photo ID"
 
-#: g10/keyedit.c:1348
+#: g10/keyedit.c:1386
 #, fuzzy, c-format
 msgid "error reading secret keyblock \"%s\": %s\n"
 msgstr "error en llegir el bloc de claus secretes �%s�: %s\n"
 
-#: g10/keyedit.c:1366
+#: g10/keyedit.c:1404
 msgid "Secret key is available.\n"
 msgstr "La clau secreta est� disponible.\n"
 
-#: g10/keyedit.c:1428
+#: g10/keyedit.c:1481
 msgid "Need the secret key to do this.\n"
 msgstr "Cal la clau secreta per a fer a��.\n"
 
-#: g10/keyedit.c:1433
+#: g10/keyedit.c:1489
 msgid "Please use the command \"toggle\" first.\n"
 msgstr "Useu l'ordre �toggle� abans.\n"
 
-#: g10/keyedit.c:1481
+#: g10/keyedit.c:1537
 msgid "Key is revoked."
 msgstr "La clau est� revocada."
 
-#: g10/keyedit.c:1501
+#: g10/keyedit.c:1557
 #, fuzzy
 msgid "Really sign all user IDs? (y/N) "
 msgstr "Realment voleu signar tots els ID d'usuari? "
 
-#: g10/keyedit.c:1503
+#: g10/keyedit.c:1560
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Pista: Trieu els ID d'usuari que voleu signar\n"
 
-#: g10/keyedit.c:1528
+#: g10/keyedit.c:1568
+#, fuzzy, c-format
+msgid "Unknown signature type `%s'\n"
+msgstr "la classe de signatura �s desconeguda"
+
+#: g10/keyedit.c:1591
 #, c-format
 msgid "This command is not allowed while in %s mode.\n"
 msgstr "Aquesta ordre no est� permesa mentre s'est� en mode %s.\n"
 
-#: g10/keyedit.c:1550 g10/keyedit.c:1570 g10/keyedit.c:1673
+#: g10/keyedit.c:1613 g10/keyedit.c:1633 g10/keyedit.c:1736
 msgid "You must select at least one user ID.\n"
 msgstr "Heu de seleccionar al menys un ID d'usuari.\n"
 
-#: g10/keyedit.c:1552
+#: g10/keyedit.c:1615
 msgid "You can't delete the last user ID!\n"
 msgstr "No podeu esborrar l'�ltim ID d'usuari!\n"
 
-#: g10/keyedit.c:1554
+#: g10/keyedit.c:1617
 #, fuzzy
 msgid "Really remove all selected user IDs? (y/N) "
 msgstr "Realment voleu eliminar tots els ID d'usuari seleccionats? "
 
-#: g10/keyedit.c:1555
+#: g10/keyedit.c:1618
 #, fuzzy
 msgid "Really remove this user ID? (y/N) "
 msgstr "Realment voleu eliminar aquest ID d'usuari? "
 
-#: g10/keyedit.c:1605
+#: g10/keyedit.c:1668
 #, fuzzy
 msgid "Really move the primary key? (y/N) "
 msgstr "Realment voleu eliminar aquest ID d'usuari? "
 
-#: g10/keyedit.c:1617
+#: g10/keyedit.c:1680
 #, fuzzy
 msgid "You must select exactly one key.\n"
 msgstr "Heu de seleccionar, si m�s no, una clau.\n"
 
-#: g10/keyedit.c:1637 g10/keyedit.c:1692
+#: g10/keyedit.c:1700 g10/keyedit.c:1755
 msgid "You must select at least one key.\n"
 msgstr "Heu de seleccionar, si m�s no, una clau.\n"
 
-#: g10/keyedit.c:1640
+#: g10/keyedit.c:1703
 #, fuzzy
 msgid "Do you really want to delete the selected keys? (y/N) "
 msgstr "Realment voleu eliminar les claus seleccionades? "
 
-#: g10/keyedit.c:1641
+#: g10/keyedit.c:1704
 #, fuzzy
 msgid "Do you really want to delete this key? (y/N) "
 msgstr "Realment voleu eliminar aquesta clau? "
 
-#: g10/keyedit.c:1676
+#: g10/keyedit.c:1739
 #, fuzzy
 msgid "Really revoke all selected user IDs? (y/N) "
 msgstr "Realment voleu revocar tots els ID d'usuari seleccionats? "
 
-#: g10/keyedit.c:1677
+#: g10/keyedit.c:1740
 #, fuzzy
 msgid "Really revoke this user ID? (y/N) "
 msgstr "Realment voleu eliminar aquest ID d'usuari? "
 
-#: g10/keyedit.c:1696
+#: g10/keyedit.c:1759
 #, fuzzy
 msgid "Do you really want to revoke the selected keys? (y/N) "
 msgstr "Realment voleu revocar les claus seleccionades? "
 
-#: g10/keyedit.c:1697
+#: g10/keyedit.c:1760
 #, fuzzy
 msgid "Do you really want to revoke this key? (y/N) "
 msgstr "Realment voleu revocar aquesta clau? "
 
-#: g10/keyedit.c:1736
+#: g10/keyedit.c:1799
 msgid ""
 "Owner trust may not be set while using an user provided trust database\n"
 msgstr ""
 
-#: g10/keyedit.c:1768
+#: g10/keyedit.c:1831
 #, fuzzy
 msgid "Set preference list to:\n"
 msgstr "estableix la llista de prefer�ncies"
 
-#: g10/keyedit.c:1774
+#: g10/keyedit.c:1837
 #, fuzzy
 msgid "Really update the preferences for the selected user IDs? (y/N) "
 msgstr ""
 "Voleu actualitzar les prefer�ncies per a les ID d'usuaris seleccionades?"
 
-#: g10/keyedit.c:1776
+#: g10/keyedit.c:1839
 #, fuzzy
 msgid "Really update the preferences? (y/N) "
 msgstr "Realment voleu actualitzar les prefer�ncies? "
 
-#: g10/keyedit.c:1826
+#: g10/keyedit.c:1889
 #, fuzzy
 msgid "Save changes? (y/N) "
 msgstr "Voleu desar els canvis? "
 
-#: g10/keyedit.c:1829
+#: g10/keyedit.c:1892
 #, fuzzy
 msgid "Quit without saving? (y/N) "
 msgstr "Voleu eixir sense desar? "
 
-#: g10/keyedit.c:1839
+#: g10/keyedit.c:1902
 #, c-format
 msgid "update failed: %s\n"
 msgstr "ha fallat l'actualitzaci�: %s\n"
 
-#: g10/keyedit.c:1846
+#: g10/keyedit.c:1909
 #, c-format
 msgid "update secret failed: %s\n"
 msgstr "ha fallat l'actualitzaci� de la clau secreta: %s\n"
 
-#: g10/keyedit.c:1853
+#: g10/keyedit.c:1916
 msgid "Key not changed so no update needed.\n"
 msgstr "La clau no ha canviat, per tant no cal actualitzaci�.\n"
 
-#: g10/keyedit.c:1925
+#: g10/keyedit.c:1988
 msgid "Digest: "
 msgstr "Resum: "
 
-#: g10/keyedit.c:1977
+#: g10/keyedit.c:2040
 msgid "Features: "
 msgstr "Funcionalitats: "
 
-#: g10/keyedit.c:1988
+#: g10/keyedit.c:2051
 msgid "Keyserver no-modify"
 msgstr ""
 
-#: g10/keyedit.c:2003 g10/keylist.c:244
+#: g10/keyedit.c:2066 g10/keylist.c:244
 msgid "Preferred keyserver: "
 msgstr ""
 
 # Potser %s haja d'anar darrere de �clau�.  ivb
 # �s cert. Nova funcionalitat de 1.2.0, IIRC. jm
-#: g10/keyedit.c:2246
+#: g10/keyedit.c:2309
 #, fuzzy, c-format
 msgid "This key may be revoked by %s key %s"
 msgstr "Aquesta clau pot ser revocada per la clau %s "
 
-#: g10/keyedit.c:2252
+#: g10/keyedit.c:2315
 #, fuzzy
 msgid "(sensitive)"
 msgstr " (sensible)"
 
-#: g10/keyedit.c:2268 g10/keyedit.c:2324 g10/keyedit.c:2436 g10/keyedit.c:2451
+#: g10/keyedit.c:2331 g10/keyedit.c:2387 g10/keyedit.c:2499 g10/keyedit.c:2514
 #: g10/keyserver.c:366
 #, fuzzy, c-format
 msgid "created: %s"
 msgstr "no s'ha pogut creat %s: %s\n"
 
-#: g10/keyedit.c:2271 g10/keylist.c:723 g10/keylist.c:817 g10/mainproc.c:929
+#: g10/keyedit.c:2334 g10/keylist.c:723 g10/keylist.c:817 g10/mainproc.c:929
 #, fuzzy, c-format
 msgid "revoked: %s"
 msgstr "[revocada]"
 
-#: g10/keyedit.c:2273 g10/keylist.c:694 g10/keylist.c:823
+#: g10/keyedit.c:2336 g10/keylist.c:694 g10/keylist.c:823
 #, fuzzy, c-format
 msgid "expired: %s"
 msgstr " [caduca: %s]"
 
-#: g10/keyedit.c:2275 g10/keyedit.c:2326 g10/keyedit.c:2438 g10/keyedit.c:2453
+#: g10/keyedit.c:2338 g10/keyedit.c:2389 g10/keyedit.c:2501 g10/keyedit.c:2516
 #: g10/keylist.c:700 g10/keylist.c:735 g10/keylist.c:829 g10/keylist.c:850
 #: g10/keyserver.c:372 g10/mainproc.c:935
 #, fuzzy, c-format
 msgid "expires: %s"
 msgstr " [caduca: %s]"
 
-#: g10/keyedit.c:2277
+#: g10/keyedit.c:2340
 #, fuzzy, c-format
 msgid "usage: %s"
 msgstr " confian�a: %c/%c"
 
-#: g10/keyedit.c:2292
+#: g10/keyedit.c:2355
 #, fuzzy, c-format
 msgid "trust: %s"
 msgstr " confian�a: %c/%c"
 
-#: g10/keyedit.c:2296
+#: g10/keyedit.c:2359
 #, c-format
 msgid "validity: %s"
 msgstr ""
 
-#: g10/keyedit.c:2303
+#: g10/keyedit.c:2366
 msgid "This key has been disabled"
 msgstr "Aquesta clau ha estat desactivada"
 
-#: g10/keyedit.c:2331
+#: g10/keyedit.c:2394
 msgid "card-no: "
 msgstr ""
 
-#: g10/keyedit.c:2398
+#: g10/keyedit.c:2461
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "No hi ha prefer�ncies en un ID d'usuari d'estil PGP 2.x.\n"
 
-#: g10/keyedit.c:2406
+#: g10/keyedit.c:2469
 msgid ""
 "Please note that the shown key validity is not necessarily correct\n"
 "unless you restart the program.\n"
@@ -3276,19 +3265,19 @@ msgstr ""
 "necess�riament\n"
 "correcta a no ser que torneu a executar el programa.\n"
 
-#: g10/keyedit.c:2470 g10/keyserver.c:376 g10/mainproc.c:1575
-#: g10/trustdb.c:1163
+#: g10/keyedit.c:2533 g10/keyserver.c:376 g10/mainproc.c:1575
+#: g10/trustdb.c:1164
 #, fuzzy
 msgid "revoked"
 msgstr "[revocada]"
 
-#: g10/keyedit.c:2472 g10/keyserver.c:380 g10/mainproc.c:1577
-#: g10/trustdb.c:530
+#: g10/keyedit.c:2535 g10/keyserver.c:380 g10/mainproc.c:1577
+#: g10/trustdb.c:531
 #, fuzzy
 msgid "expired"
 msgstr "expire"
 
-#: g10/keyedit.c:2537
+#: g10/keyedit.c:2600
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
@@ -3298,7 +3287,7 @@ msgstr ""
 "assumida.\n"
 
 # Photo ID com abans.  ivb
-#: g10/keyedit.c:2597
+#: g10/keyedit.c:2660
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3307,49 +3296,49 @@ msgstr ""
 "AV�S: Aquesta �s una clau d'estil PGP2. Afegir un photo ID pot fer que "
 "algunes versions de PGP rebutgen aquesta clau.\n"
 
-#: g10/keyedit.c:2602 g10/keyedit.c:2880
+#: g10/keyedit.c:2665 g10/keyedit.c:2943
 msgid "Are you sure you still want to add it? (y/N) "
 msgstr "Esteu segur que encara voleu afegir-lo? (s/N) "
 
-#: g10/keyedit.c:2608
+#: g10/keyedit.c:2671
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "No podeu afegir un photo ID a una clau d'estil PGP2.\n"
 
 # Aquesta i les seg�ents no haurien de portar (s/N/q) i no (y/N/q)?  ivb
 # Hmm. S�... (s/N/x) jm
-#: g10/keyedit.c:2748
+#: g10/keyedit.c:2811
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Voleu esborrar aquesta signatura correcta? (s/N/x)"
 
-#: g10/keyedit.c:2758
+#: g10/keyedit.c:2821
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "Voleu esborrar aquesta signatura inv�lida? (s/N/x)"
 
-#: g10/keyedit.c:2762
+#: g10/keyedit.c:2825
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "Voleu esborrar aquesta signatura desconeguda? (s/N/x)"
 
-#: g10/keyedit.c:2768
+#: g10/keyedit.c:2831
 msgid "Really delete this self-signature? (y/N)"
 msgstr "Realment voleu esborrar aquesta autosignatura? (s/N)"
 
 # Werner FIXME: use ngettext. jm
-#: g10/keyedit.c:2782
+#: g10/keyedit.c:2845
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "S'ha esborrat %d signatura.\n"
 
 # Werner FIXME: use ngettext. jm
-#: g10/keyedit.c:2783
+#: g10/keyedit.c:2846
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "S'han esborrat %d signatures.\n"
 
-#: g10/keyedit.c:2786
+#: g10/keyedit.c:2849
 msgid "Nothing deleted.\n"
 msgstr "No s'hi ha eliminat res.\n"
 
-#: g10/keyedit.c:2875
+#: g10/keyedit.c:2938
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
 "cause\n"
@@ -3359,168 +3348,168 @@ msgstr ""
 "pot\n"
 "fer que algunes versions de PGP rebutjen aquesta clau.\n"
 
-#: g10/keyedit.c:2886
+#: g10/keyedit.c:2949
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
 msgstr "No podeu afegir un revocador designat a una clau d'estil PGP 2.x.\n"
 
-#: g10/keyedit.c:2906
+#: g10/keyedit.c:2969
 msgid "Enter the user ID of the designated revoker: "
 msgstr "Introdu�u l'ID d'usuari del revocador designat: "
 
-#: g10/keyedit.c:2929
+#: g10/keyedit.c:2992
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr ""
 "no es pot nominar a una clau d'estil PGP 2.x com a revocador designat\n"
 
-#: g10/keyedit.c:2944
+#: g10/keyedit.c:3007
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "no podeu nominar una clau com el seu propi revocador designat\n"
 
-#: g10/keyedit.c:2966
+#: g10/keyedit.c:3029
 #, fuzzy
 msgid "this key has already been designated as a revoker\n"
 msgstr "AV�S: Aquesta clau ha estat revocada pel propietari!\n"
 
-#: g10/keyedit.c:2985
+#: g10/keyedit.c:3048
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr ""
 "AV�S: no es pot desfer la nominaci� d'una clau com a revocador "
 "designat!\n"
 
-#: g10/keyedit.c:2991
+#: g10/keyedit.c:3054
 #, fuzzy
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr ""
 "Esteu segur que voleu nominar aquesta clau com a revocador designat? (s/N): "
 
-#: g10/keyedit.c:3052
+#: g10/keyedit.c:3115
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Per favor, elimineu les seleccions de les claus secretes.\n"
 
-#: g10/keyedit.c:3058
+#: g10/keyedit.c:3121
 msgid "Please select at most one secondary key.\n"
 msgstr "Per favor, seleccioneu com a molt una clau secund�ria.\n"
 
-#: g10/keyedit.c:3062
+#: g10/keyedit.c:3125
 msgid "Changing expiration time for a secondary key.\n"
 msgstr "S'est� canviant la data de caducitat per a una clau secund�ria.\n"
 
-#: g10/keyedit.c:3065
+#: g10/keyedit.c:3128
 msgid "Changing expiration time for the primary key.\n"
 msgstr "S'est� canviant la data de caducitat per a una clau prim�ria.\n"
 
-#: g10/keyedit.c:3111
+#: g10/keyedit.c:3174
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "No podeu canviar la data de caducitat de les claus v3\n"
 
-#: g10/keyedit.c:3127
+#: g10/keyedit.c:3190
 msgid "No corresponding signature in secret ring\n"
 msgstr "No hi ha cap signatura corresponent en l'anell secret\n"
 
-#: g10/keyedit.c:3207
+#: g10/keyedit.c:3270
 msgid "Please select exactly one user ID.\n"
 msgstr "Heu de seleccionar exactament un ID.\n"
 
-#: g10/keyedit.c:3246 g10/keyedit.c:3356 g10/keyedit.c:3475
+#: g10/keyedit.c:3309 g10/keyedit.c:3419 g10/keyedit.c:3538
 #, fuzzy, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
 msgstr "es descarta l'autosignatura v3 en l'id d'usuari �%s�\n"
 
-#: g10/keyedit.c:3417
+#: g10/keyedit.c:3480
 msgid "Enter your preferred keyserver URL: "
 msgstr ""
 
-#: g10/keyedit.c:3496
+#: g10/keyedit.c:3559
 #, fuzzy
 msgid "Are you sure you want to replace it? (y/N) "
 msgstr "Esteu segur que encara voleu utilitzarla (s/N)? "
 
-#: g10/keyedit.c:3497
+#: g10/keyedit.c:3560
 #, fuzzy
 msgid "Are you sure you want to delete it? (y/N) "
 msgstr "Esteu segur que encara voleu utilitzarla (s/N)? "
 
-#: g10/keyedit.c:3559
+#: g10/keyedit.c:3622
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "No hi ha cap ID amb l'�ndex %d\n"
 
-#: g10/keyedit.c:3605
+#: g10/keyedit.c:3668
 #, c-format
 msgid "No secondary key with index %d\n"
 msgstr "No hi ha cap clau secund�ria amb l'�ndex %d\n"
 
-#: g10/keyedit.c:3722
+#: g10/keyedit.c:3785
 #, fuzzy, c-format
 msgid "user ID: \"%s\"\n"
 msgstr "ID d'usuari: �"
 
-#: g10/keyedit.c:3725 g10/keyedit.c:3789 g10/keyedit.c:3832
+#: g10/keyedit.c:3788 g10/keyedit.c:3852 g10/keyedit.c:3895
 #, fuzzy, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr "   signat per %08lX el %s%s%s\n"
 
-#: g10/keyedit.c:3727 g10/keyedit.c:3791 g10/keyedit.c:3834
+#: g10/keyedit.c:3790 g10/keyedit.c:3854 g10/keyedit.c:3897
 msgid " (non-exportable)"
 msgstr " (no-exportable)"
 
-#: g10/keyedit.c:3731
+#: g10/keyedit.c:3794
 #, c-format
 msgid "This signature expired on %s.\n"
 msgstr "Aquesta signatura va caducar el %s.\n"
 
-#: g10/keyedit.c:3735
+#: g10/keyedit.c:3798
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "Esteu segur de que encara voleu revocarla? (s/N) "
 
 # (s/N) ivb
 # S! jm
-#: g10/keyedit.c:3739
+#: g10/keyedit.c:3802
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr ""
 "Voleu crear un certificat de revocaci� per a aquesta signatura? (s/N) "
 
-#: g10/keyedit.c:3766
+#: g10/keyedit.c:3829
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Heu signat els seg�ents ID d'usuari:\n"
 
-#: g10/keyedit.c:3792
+#: g10/keyedit.c:3855
 #, fuzzy
 msgid " (non-revocable)"
 msgstr " (no-exportable)"
 
-#: g10/keyedit.c:3799
+#: g10/keyedit.c:3862
 #, fuzzy, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "   revocat per %08lX el %s\n"
 
-#: g10/keyedit.c:3821
+#: g10/keyedit.c:3884
 msgid "You are about to revoke these signatures:\n"
 msgstr "Esteu a punt de revocar aquestes signatures:\n"
 
 # (s/N)?  ivb
-#: g10/keyedit.c:3841
+#: g10/keyedit.c:3904
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Realment voleu crear els certificats de revocaci�? (s/N) "
 
-#: g10/keyedit.c:3871
+#: g10/keyedit.c:3934
 msgid "no secret key\n"
 msgstr "ho hi ha clau secreta\n"
 
-#: g10/keyedit.c:3941
+#: g10/keyedit.c:4004
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "l'ID d'usuari �%s� ja est� revocat\n"
 
-#: g10/keyedit.c:3958
+#: g10/keyedit.c:4021
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "AV�S: una signatura d'ID d'usuari est� datada %d segons en el futur\n"
 
-#: g10/keyedit.c:4127
+#: g10/keyedit.c:4190
 #, fuzzy, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr ""
@@ -3854,7 +3843,7 @@ msgstr ""
 "Cal una contrasenya per a protegir la clau secreta.\n"
 "\n"
 
-#: g10/keygen.c:1819 g10/passphrase.c:1102
+#: g10/keygen.c:1819 g10/passphrase.c:1101
 #, c-format
 msgid "%s.\n"
 msgstr "%s.\n"
@@ -4430,7 +4419,7 @@ msgstr "binari"
 msgid "textmode"
 msgstr "mode text"
 
-#: g10/mainproc.c:1672 g10/trustdb.c:529
+#: g10/mainproc.c:1672 g10/trustdb.c:530
 msgid "unknown"
 msgstr "desconeguda"
 
@@ -4653,11 +4642,11 @@ msgstr "no s'ha pogut connectar amb �%s�: %s\n"
 msgid "communication problem with gpg-agent\n"
 msgstr "hi ha un problema de comunicaci� amb el gpg-agent\n"
 
-#: g10/passphrase.c:597 g10/passphrase.c:933 g10/passphrase.c:1045
+#: g10/passphrase.c:597 g10/passphrase.c:932 g10/passphrase.c:1044
 msgid "problem with the agent - disabling agent use\n"
 msgstr "hi ha un problema amb l'agent: es deshabilitar� el seu �s\n"
 
-#: g10/passphrase.c:701 g10/passphrase.c:1206
+#: g10/passphrase.c:700 g10/passphrase.c:1205
 #, fuzzy, c-format
 msgid " (main key ID %s)"
 msgstr " (ID de la clau principal %08lX)"
@@ -4673,7 +4662,7 @@ msgstr " (ID de la clau principal %08lX)"
 # Se't passava l'argument �*�.  printf(3), hieroglyph(7).  ivb
 # Ah!  Prova-ho, no casque alguna cosa :P  ivb
 # Ah, ja veig! Moltes gr�cies! Aquest msgstr ha quedat curi�s :) jm
-#: g10/passphrase.c:715
+#: g10/passphrase.c:714
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for user:\n"
@@ -4684,41 +4673,41 @@ msgstr ""
 "�%2$.*1$s�\n"
 "clau %4$s de %3$u bits, ID %5$08lX, creada en %6$s%7$s\n"
 
-#: g10/passphrase.c:740
+#: g10/passphrase.c:739
 msgid "Repeat passphrase\n"
 msgstr "Repetiu la contrasenya\n"
 
-#: g10/passphrase.c:742
+#: g10/passphrase.c:741
 msgid "Enter passphrase\n"
 msgstr "Introdu�u la contrasenya\n"
 
-#: g10/passphrase.c:780
+#: g10/passphrase.c:779
 msgid "passphrase too long\n"
 msgstr "la contrasenya �s massa llarga\n"
 
-#: g10/passphrase.c:793
+#: g10/passphrase.c:792
 msgid "invalid response from agent\n"
 msgstr "la resposta de l'agent �s inv�lida\n"
 
-#: g10/passphrase.c:808 g10/passphrase.c:927
+#: g10/passphrase.c:807 g10/passphrase.c:926
 msgid "cancelled by user\n"
 msgstr "s'ha cancel�lat per l'usuari\n"
 
-#: g10/passphrase.c:813 g10/passphrase.c:1016
+#: g10/passphrase.c:812 g10/passphrase.c:1015
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr "hi ha un problema amb l'agent: l'agent ha tornat 0x%lx\n"
 
-#: g10/passphrase.c:1097 g10/passphrase.c:1259
+#: g10/passphrase.c:1096 g10/passphrase.c:1258
 #, fuzzy
 msgid "can't query passphrase in batch mode\n"
 msgstr "no es pot demanar la contrasenya en mode desat�s\n"
 
-#: g10/passphrase.c:1104 g10/passphrase.c:1264
+#: g10/passphrase.c:1103 g10/passphrase.c:1263
 msgid "Enter passphrase: "
 msgstr "Introdu�u la contrasenya: "
 
-#: g10/passphrase.c:1187
+#: g10/passphrase.c:1186
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
@@ -4728,17 +4717,17 @@ msgstr ""
 "Necessiteu la contrasenya per desblocar la clau secreta de\n"
 "l'usuari: \""
 
-#: g10/passphrase.c:1193
+#: g10/passphrase.c:1192
 #, fuzzy, c-format
 msgid "%u-bit %s key, ID %s, created %s"
 msgstr "clau %2$s de %1$u bits, ID %3$08lX, creada en %4$s"
 
-#: g10/passphrase.c:1202
+#: g10/passphrase.c:1201
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr ""
 
-#: g10/passphrase.c:1268
+#: g10/passphrase.c:1267
 msgid "Repeat passphrase: "
 msgstr "Repetiu la contrasenya: "
 
@@ -5710,128 +5699,128 @@ msgstr ""
 msgid "using %s trust model\n"
 msgstr ""
 
-#: g10/trustdb.c:503
+#: g10/trustdb.c:504
 msgid "10 translator see trustdb.c:uid_trust_string_fixed"
 msgstr ""
 
-#: g10/trustdb.c:505
+#: g10/trustdb.c:506
 #, fuzzy
 msgid "[ revoked]"
 msgstr "[revocada]"
 
-#: g10/trustdb.c:507 g10/trustdb.c:512
+#: g10/trustdb.c:508 g10/trustdb.c:513
 #, fuzzy
 msgid "[ expired]"
 msgstr "[caducada]"
 
-#: g10/trustdb.c:511
+#: g10/trustdb.c:512
 #, fuzzy
 msgid "[ unknown]"
 msgstr "desconeguda"
 
-#: g10/trustdb.c:513
+#: g10/trustdb.c:514
 msgid "[  undef ]"
 msgstr ""
 
-#: g10/trustdb.c:514
+#: g10/trustdb.c:515
 msgid "[marginal]"
 msgstr ""
 
-#: g10/trustdb.c:515
+#: g10/trustdb.c:516
 msgid "[  full  ]"
 msgstr ""
 
-#: g10/trustdb.c:516
+#: g10/trustdb.c:517
 msgid "[ultimate]"
 msgstr ""
 
-#: g10/trustdb.c:531
+#: g10/trustdb.c:532
 msgid "undefined"
 msgstr ""
 
-#: g10/trustdb.c:532
+#: g10/trustdb.c:533
 #, fuzzy
 msgid "never"
 msgstr "mai       "
 
-#: g10/trustdb.c:533
+#: g10/trustdb.c:534
 msgid "marginal"
 msgstr ""
 
-#: g10/trustdb.c:534
+#: g10/trustdb.c:535
 msgid "full"
 msgstr ""
 
-#: g10/trustdb.c:535
+#: g10/trustdb.c:536
 msgid "ultimate"
 msgstr ""
 
-#: g10/trustdb.c:575
+#: g10/trustdb.c:576
 msgid "no need for a trustdb check\n"
 msgstr ""
 "no �s necess�ria una comprovaci� de la base de dades de confian�a\n"
 "\n"
 
-#: g10/trustdb.c:581 g10/trustdb.c:2142
+#: g10/trustdb.c:582 g10/trustdb.c:2143
 #, c-format
 msgid "next trustdb check due at %s\n"
 msgstr ""
 "la pr?xima comprovaci� de la base de dades de confian�a ser� el %s\n"
 
-#: g10/trustdb.c:590
+#: g10/trustdb.c:591
 #, fuzzy, c-format
 msgid "no need for a trustdb check with `%s' trust model\n"
 msgstr ""
 "no �s necess�ria una comprovaci� de la base de dades de confian�a\n"
 "\n"
 
-#: g10/trustdb.c:605
+#: g10/trustdb.c:606
 #, fuzzy, c-format
 msgid "no need for a trustdb update with `%s' trust model\n"
 msgstr ""
 "no �s necess�ria una comprovaci� de la base de dades de confian�a\n"
 "\n"
 
-#: g10/trustdb.c:823 g10/trustdb.c:1261
+#: g10/trustdb.c:824 g10/trustdb.c:1262
 #, fuzzy, c-format
 msgid "public key %s not found: %s\n"
 msgstr "no s'ha trobat la clau p�blica %08lX: %s\n"
 
-#: g10/trustdb.c:1018
+#: g10/trustdb.c:1019
 msgid "please do a --check-trustdb\n"
 msgstr "si us plau, feu un --check-trustdb\n"
 
-#: g10/trustdb.c:1022
+#: g10/trustdb.c:1023
 msgid "checking the trustdb\n"
 msgstr "s'est� comprovant la base de dades de confian�a\n"
 
-#: g10/trustdb.c:1886
+#: g10/trustdb.c:1887
 #, c-format
 msgid "%d keys processed (%d validity counts cleared)\n"
 msgstr "s'han processat %d claus (s'han netejat %d comptes de validesa)\n"
 
-#: g10/trustdb.c:1950
+#: g10/trustdb.c:1951
 msgid "no ultimately trusted keys found\n"
 msgstr "no s'han trobat claus amb confian�a absoluta\n"
 
-#: g10/trustdb.c:1964
+#: g10/trustdb.c:1965
 #, fuzzy, c-format
 msgid "public key of ultimately trusted key %s not found\n"
 msgstr ""
 "no s'ha trobat la clau p�blica de la clau amb confian�a absoluta %08lX\n"
 
-#: g10/trustdb.c:1987
+#: g10/trustdb.c:1988
 #, c-format
 msgid "%d marginal(s) needed, %d complete(s) needed, %s trust model\n"
 msgstr ""
 
-#: g10/trustdb.c:2073
+#: g10/trustdb.c:2074
 #, c-format
 msgid ""
 "depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
 msgstr ""
 
-#: g10/trustdb.c:2148
+#: g10/trustdb.c:2149
 #, fuzzy, c-format
 msgid "unable to update trustdb version record: write failed: %s\n"
 msgstr "registre de confian�a %lu, tipus %d: no s'ha pogut escriure: %s\n"
@@ -6160,13 +6149,29 @@ msgstr ""
 
 # �ltimament pense si �iniciar� no ser� millor que �inicialitzar�?  ivb
 # Segons SC, hi ha difer�ncia. jm
-#: util/secmem.c:340
+#: util/secmem.c:343
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "l'operaci� no �s possible sense mem�ria segura inicialitzada\n"
 
-#: util/secmem.c:341
+#: util/secmem.c:344
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(potser heu utilitzat el programa erroni per a aquesta tasca)\n"
+
+#~ msgid "--nrsign-key user-id"
+#~ msgstr "--nrsign-key user-id"
+
+#~ msgid "--nrlsign-key user-id"
+#~ msgstr "--nrlsign-key user-id"
+
+#, fuzzy
+#~ msgid "make a trust signature"
+#~ msgstr "crea una signatura separada"
+
+#~ msgid "sign the key non-revocably"
+#~ msgstr "signa la clau irrevocablement"
+
+#~ msgid "sign the key locally and non-revocably"
+#~ msgstr "signa la clau localment i irrevocablement"
 
 #~ msgid "q"
 #~ msgstr "q"
