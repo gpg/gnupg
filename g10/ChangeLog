@@ -1,3 +1,15 @@
+2002-04-25  Werner Koch  <wk@gnupg.org>
+
+	* g10.c, options.h: New options --display, --ttyname, --ttytype,
+	--lc-ctype, --lc-messages to be used with future versions of the
+	gpg-agent. 
+	* passphrase.c (agent_send_option,agent_send_all_options): New.
+	(agent_open): Send options to the agent.
+
+	* trustdb.c (update_ownertrust, clear_ownertrust): Do an explicit
+	do_sync because revalidation_mark does it only if when the
+	timestamp actually changes.
+
 2002-04-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* main.h, keygen.c (do_generate_keypair), keylist.c

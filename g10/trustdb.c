@@ -593,6 +593,7 @@ update_ownertrust (PKT_public_key *pk, unsigned int new_trust )
           rec.r.trust.ownertrust = new_trust;
           write_record( &rec );
           revalidation_mark ();
+          do_sync ();
         }
     }
   else if (rc == -1)
@@ -609,6 +610,7 @@ update_ownertrust (PKT_public_key *pk, unsigned int new_trust )
       rec.r.trust.ownertrust = new_trust;
       write_record (&rec);
       revalidation_mark ();
+      do_sync ();
       rc = 0;
     }
   else 
@@ -635,6 +637,7 @@ clear_ownertrust (PKT_public_key *pk)
           rec.r.trust.ownertrust = 0;
           write_record( &rec );
           revalidation_mark ();
+          do_sync ();
           return 1;
         }
     }

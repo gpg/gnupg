@@ -75,6 +75,13 @@ struct {
     int completes_needed;
     int max_cert_depth;
     const char *homedir;
+
+    char *display;      /* 5 options to be passed to the gpg-agent */
+    char *ttyname;     
+    char *ttytype;
+    char *lc_ctype;
+    char *lc_messages;
+
     int skip_verify;
     int compress_keys;
     int compress_sigs;

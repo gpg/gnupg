@@ -33,6 +33,9 @@
 # include <windows.h>
 #endif
 #include <errno.h>
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
 
 #include "util.h"
 #include "memory.h"
@@ -309,6 +312,115 @@ readline (int fd, char *buf, size_t buflen)
 
 
 #if !defined (__riscos__)
+
+#if !defined (__MINGW32__) && !defined (__CYGWIN32__)
+/* For the new Assuan protocol we may have to send options */
+static int
+agent_send_option (int fd, const char *name, const char *value)
+{
+  char buf[200];
+  int nread;
+  char *line;
+  int i; 
+  
+  line = m_alloc (7 + strlen (name) + 1 + strlen (value) + 2);
+  strcpy (stpcpy (stpcpy (stpcpy (
+                     stpcpy (line, "OPTION "), name), "="), value), "\n");
+  i = writen (fd, line, strlen (line));
+  m_free (line);
+  if (i)
+    return -1;
+  
+  /* get response */
+  nread = readline (fd, buf, DIM(buf)-1);
+  if (nread < 3)
+    return -1;
+  
+  if (buf[0] == 'O' && buf[1] == 'K' && (buf[2] == ' ' || buf[2] == '\n')) 
+    return 0; /* okay */
+
+  return -1;
+}
+
+static int 
+agent_send_all_options (int fd)
+{
+  char *dft_display = NULL;
+  char *dft_ttyname = NULL;
+  char *dft_ttytype = NULL;
+  char *old_lc = NULL;
+  char *dft_lc = NULL;
+  int rc = 0;
+
+  dft_display = getenv ("DISPLAY");
+  if (opt.display || dft_display)
+    {
+      if (agent_send_option (fd, "display",
+                             opt.display ? opt.display : dft_display))
+        return -1;
+    }
+
+  if (!opt.ttyname && ttyname (1))
+    dft_ttyname = ttyname (1);
+  if (opt.ttyname || dft_ttyname)
+    {
+      if (agent_send_option (fd, "ttyname",
+                             opt.ttyname ? opt.ttyname : dft_ttyname))
+        return -1;
+    }
+
+  dft_ttytype = getenv ("TERM");
+  if (opt.ttytype || (dft_ttyname && dft_ttytype))
+    {
+      if (agent_send_option (fd, "ttytype",
+                             opt.ttyname ? opt.ttytype : dft_ttytype))
+        return -1;
+    }
+
+#if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
+  old_lc = setlocale (LC_CTYPE, NULL);
+  if (old_lc)
+    old_lc = m_strdup (old_lc);
+  dft_lc = setlocale (LC_CTYPE, "");
+#endif
+  if (opt.lc_ctype || (dft_ttyname && dft_lc))
+    {
+      rc = agent_send_option (fd, "lc-ctype",
+                              opt.lc_ctype ? opt.lc_ctype : dft_lc);
+    }
+#if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
+  if (old_lc)
+    {
+      setlocale (LC_CTYPE, old_lc);
+      m_free (old_lc);
+    }
+#endif
+  if (rc)
+    return rc;
+
+#if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)
+  old_lc = setlocale (LC_MESSAGES, NULL);
+  if (old_lc)
+    old_lc = m_strdup (old_lc);
+  dft_lc = setlocale (LC_MESSAGES, "");
+#endif
+  if (opt.lc_messages || (dft_ttyname && dft_lc))
+    {
+      rc = agent_send_option (fd, "lc-messages",
+                              opt.lc_messages ? opt.lc_messages : dft_lc);
+    }
+#if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)
+  if (old_lc)
+    {
+      setlocale (LC_MESSAGES, old_lc);
+      m_free (old_lc);
+    }
+#endif
+  return rc;
+}
+#endif /*!__MINGW32__ && !__CYGWIN32__*/
+
+
 /*
  * Open a connection to the agent and send the magic string
  * Returns: -1 on error or an filedescriptor for urther processing
@@ -444,6 +556,13 @@ agent_open (int *ret_prot)
         opt.use_agent = 0;
         return -1;
       }
+
+      if (agent_send_all_options (fd)) {
+        log_error (_("problem with the agent - disabling agent use\n"));
+        close (fd);
+        opt.use_agent = 0;
+        return -1;
+      }
         
     }
 #endif
@@ -463,6 +582,7 @@ agent_close ( int fd )
 #endif
 }
 #endif /* !__riscos__ */
+
 
 
 /*

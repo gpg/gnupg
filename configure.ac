@@ -449,8 +449,7 @@ AC_SUBST(DYNLINK_MOD_CFLAGS)
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(unistd.h langinfo.h termio.h)
-
+AC_CHECK_HEADERS(unistd.h langinfo.h termio.h locale.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -485,7 +484,7 @@ AC_FUNC_VPRINTF
 AC_FUNC_FORK
 AC_CHECK_FUNCS(strerror stpcpy strsep strlwr stricmp tcgetattr strtoul mmap)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
-AC_CHECK_FUNCS(memicmp atexit raise getpagesize strftime nl_langinfo)
+AC_CHECK_FUNCS(memicmp atexit raise getpagesize strftime nl_langinfo setlocale)
 AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe stat)
 AC_REPLACE_FUNCS(mkdtemp)
 

@@ -109,6 +109,9 @@
     packet (See bug report 817).  This is not easy to do as we don't
     store the one-pass packets.
 
+  * cat foo | gpg --sign | gpg --list-packets
+    Does not list the signature packet.
+
 
 
 Things we won't do

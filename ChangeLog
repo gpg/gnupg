@@ -1,3 +1,7 @@
+2002-04-25  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Check for locale.h and setlocale
+
 2002-04-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* Update NEWS with recent changes.

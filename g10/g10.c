@@ -274,6 +274,11 @@ enum cmd_and_opt_values { aNull = 0,
     oPreferenceList,                          
     oEmu3DESS2KBug,  /* will be removed in 1.1 */
     oEmuMDEncodeBug,
+    oDisplay,
+    oTTYname,
+    oTTYtype,
+    oLCctype,
+    oLCmessages,
 aTest };
 
 
@@ -537,6 +542,11 @@ static ARGPARSE_OPTS opts[] = {
     { oPreferenceList,  "preference-list", 2, "@"},
     { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
     { oEmuMDEncodeBug,	"emulate-md-encode-bug", 0, "@"},
+    { oDisplay,    "display",     2, "@" },
+    { oTTYname,    "ttyname",     2, "@" },
+    { oTTYtype,    "ttytype",     2, "@" },
+    { oLCctype,    "lc-ctype",    2, "@" },
+    { oLCmessages, "lc-messages", 2, "@" },
 {0} };
 
 
@@ -1277,6 +1287,11 @@ main( int argc, char **argv )
           case oNoAutoCheckTrustDB: opt.no_auto_check_trustdb=1; break;
           case oPreservePermissions: opt.preserve_permissions=1; break;
           case oPreferenceList: preference_list = pargs.r.ret_str; break;
+          case oDisplay: opt.display = pargs.r.ret_str; break;
+          case oTTYname: opt.ttyname = pargs.r.ret_str; break;
+          case oTTYtype: opt.ttytype = pargs.r.ret_str; break;
+          case oLCctype: opt.lc_ctype = pargs.r.ret_str; break;
+          case oLCmessages: opt.lc_messages = pargs.r.ret_str; break;
 	  default : pargs.err = configfp? 1:2; break;
 	}
     }
