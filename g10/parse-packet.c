@@ -920,8 +920,12 @@ enum_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype,
     int seq = 0;
     int reqseq = start? *start: 0;
 
-    if( !buffer || reqseq == -1 )
-	return NULL;
+    if( !buffer || reqseq == -1 ) {
+	/* return some value different from NULL to indicate that
+	 * there is no crtitical bit we do not understand.  The caller
+	 * will never use the value.  Yes I know, it is an ugly hack */
+	return reqtype == SIGSUBPKT_TEST_CRITICAL? (const byte*)&buffer : NULL;
+    }
     buflen = (*buffer << 8) | buffer[1];
     buffer += 2;
     while( buflen ) {

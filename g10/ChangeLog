@@ -1,3 +1,8 @@
+Mon Jul 10 16:08:57 CEST 2000  Werner Koch  <wk@>
+
+  * parse-packet.c (enum_sig_subpkt): Fixed testing on crtitical bit in case
+  of a NULL buffer.  Reported by Peter Marschall.
+
 Wed Jul  5 13:28:45 CEST 2000  Werner Koch  <wk@>
 
   * keyedit.c, keyid.c: Add some _()
