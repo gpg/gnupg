@@ -1,3 +1,11 @@
+2004-12-13  Timo Schulz  <twoaday@g10code.com>
+
+	* w32-pth.c (enter_pth, leave_pth): New.
+	(pth_init): Initialize global mutex section.
+	(pth_kill): Release global mutex section.
+	(helper_thread): New.
+	(pth_spawn): Make sure only one thread is running.
+	
 2004-12-13  Werner Koch  <wk@g10code.com>
 
 	* stringhelp.c (w32_strerror) [W32]: New.
