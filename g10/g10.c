@@ -76,6 +76,7 @@ enum cmd_and_opt_values
     oCompress	  = 'z',
     oSetNotation  = 'N',
     oBatch	  = 500,
+    oMaxOutput,
     oSigNotation,
     oCertNotation,
     oShowNotation,
@@ -436,6 +437,7 @@ static ARGPARSE_OPTS opts[] = {
     { oAskCertExpire, "ask-cert-expire",   0, "@"},
     { oNoAskCertExpire, "no-ask-cert-expire",   0, "@"},
     { oOutput, "output",    2, N_("use as output file")},
+    { oMaxOutput, "max-output", 16|4, "@" },
     { oVerbose, "verbose",   0, N_("verbose") },
     { oQuiet,	"quiet",   0, "@"},
     { oNoTTY, "no-tty", 0, "@"},
@@ -1697,6 +1699,7 @@ main( int argc, char **argv )
 
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
 	  case oOutput: opt.outfile = pargs.r.ret_str; break;
+	  case oMaxOutput: opt.max_output = pargs.r.ret_ulong; break;
 	  case oQuiet: opt.quiet = 1; break;
 	  case oNoTTY: tty_no_terminal(1); break;
 	  case oDryRun: opt.dry_run = 1; break;

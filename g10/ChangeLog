@@ -1,3 +1,8 @@
+2004-02-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), plaintext.c (handle_plaintext): Add
+	--max-output option to help people deal with decompression bombs.
+
 2004-02-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* build-packet.c (do_user_id): Do not force a header for attribute

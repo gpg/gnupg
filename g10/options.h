@@ -1,6 +1,6 @@
 /* options.h
- * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -21,6 +21,7 @@
 #ifndef G10_OPTIONS_H
 #define G10_OPTIONS_H
 
+#include <sys/types.h>
 #include <types.h>
 #include "main.h"
 #include "packet.h"
@@ -43,6 +44,7 @@ struct {
     unsigned debug;
     int armor;
     char *outfile;
+    off_t max_output;
     int dry_run;
     int list_only;
     int textmode;
