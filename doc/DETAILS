@@ -62,10 +62,13 @@ record.
 		       17 = DSA (sometimes called DH, sign only)
 		       20 = ElGamal (sign and encrypt)
 	    (for other id's see include/cipher.h)
- 5. Field:  KeyID either of 
- 6. Field:  Creation Date (in UTC)
- 7. Field:  Key expiration date or empty if none.
- 8. Field:  Used for serial number in crt records (used to be the Local-ID)
+ 5. Field:  KeyID
+ 6. Field:  Creation Date (in UTC).  For UID and UAT records, this is the
+            self-signature date.
+ 7. Field:  Key or user ID/user attribute expiration date or empty if none.
+ 8. Field:  Used for serial number in crt records (used to be the Local-ID).
+            For UID and UAT records, this is the namehash: a RIPEMD/160 hash
+            of the user ID contents.
  9. Field:  Ownertrust (primary public keys only)
 	    This is a single letter, but be prepared that additional
 	    information may follow in some future versions.
