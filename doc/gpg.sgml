@@ -1579,13 +1579,14 @@ same value is acceptable).
 <varlistentry>
 <term>--compress-algo &ParmN;</term>
 <listitem><para>
-Use compression algorithm &ParmN;. Default is 2 which is RFC1950
-compression. You may use 1 to use the old zlib version (RFC1951) which
-is used by PGP. 0 disables compression. The default algorithm may give
-better results because the window size is not limited to 8K. If this
-is not used the OpenPGP behavior is used, i.e. the compression
-algorithm is selected from the preferences; note, that this can't be
-done if you do not encrypt the data.
+Use compression algorithm &ParmN;.  The value 2 is RFC1950 ZLIB
+compression.  The value 1 is RFC-1951 ZIP compression which is used by
+PGP.  0 disables compression.  If this option is not used, the default
+behavior is to examine the recipient key preferences to see which
+algorithms the recipient supports.  If all else fails, ZIP is used for
+maximum compatibility.  Note, however, that ZLIB may give better
+compression results if that is more important, as the compression
+window size is not limited to 8k.
 </para></listitem></varlistentry>
 
 
