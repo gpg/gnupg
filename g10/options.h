@@ -100,7 +100,7 @@ struct
      we started storing the trust model inside the trustdb. */
   enum
     {
-      TM_CLASSIC=0, TM_PGP=1, TM_EXTERNAL=2, TM_ALWAYS, TM_AUTO
+      TM_CLASSIC=0, TM_PGP=1, TM_EXTERNAL=2, TM_ALWAYS, TM_DIRECT, TM_AUTO
     } trust_model;
   int force_ownertrust;
   enum

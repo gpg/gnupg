@@ -238,31 +238,43 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
             tty_printf("\n");
 	    release_kbnode (keyblock);
           }
-	/* This string also used in keyedit.c:sign_uids */
-        tty_printf (_(
-                     "Please decide how far you trust this user to correctly\n"
-                     "verify other users' keys (by looking at passports,\n"
-                     "checking fingerprints from different sources...)?\n\n"));
+
+	if(opt.trust_model==TM_DIRECT)
+	  {
+	    tty_printf(_("How much do you trust that this key actually "
+			 "belongs to the named user?\n"));
+	    tty_printf("\n");
+	  }
+	else
+	  {
+	    /* This string also used in keyedit.c:trustsig_prompt */
+	    tty_printf(_("Please decide how far you trust this user to"
+			 " correctly verify other users' keys\n"
+			 "(by looking at passports, checking fingerprints from"
+			 " different sources, etc.)\n"));
+	    tty_printf("\n");
+	  }
+
 	if(min_num<=1)
-	  tty_printf (_(" %d = I don't know or won't say\n"), 1);
+	  tty_printf (_("  %d = I don't know or won't say\n"), 1);
 	if(min_num<=2)
-	  tty_printf (_(" %d = I do NOT trust\n"), 2);
+	  tty_printf (_("  %d = I do NOT trust\n"), 2);
 	if(min_num<=3)
-	  tty_printf (_(" %d = I trust marginally\n"), 3);
+	  tty_printf (_("  %d = I trust marginally\n"), 3);
 	if(min_num<=4)
-	  tty_printf (_(" %d = I trust fully\n"), 4);
+	  tty_printf (_("  %d = I trust fully\n"), 4);
         if (mode)
-          tty_printf (_(" %d = I trust ultimately\n"), 5);
+          tty_printf (_("  %d = I trust ultimately\n"), 5);
 #if 0
 	/* not yet implemented */
-        tty_printf (_(" i = please show me more information\n") );
+        tty_printf ("  i = please show me more information\n");
 #endif
         if( mode )
-          tty_printf(_(" m = back to the main menu\n"));
+          tty_printf(_("  m = back to the main menu\n"));
         else
 	  {
-	    tty_printf(_(" s = skip this key\n"));
-	    tty_printf(_(" q = quit\n"));
+	    tty_printf(_("  s = skip this key\n"));
+	    tty_printf(_("  q = quit\n"));
 	  }
         tty_printf("\n");
 	if(minimum)

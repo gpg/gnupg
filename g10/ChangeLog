@@ -1,3 +1,17 @@
+2004-10-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* pkclist.c (do_edit_ownertrust): Different prompt when we're
+	using direct trust since the meaning is different.
+
+	* keyedit.c (trustsig_prompt): Change the strings to match the
+	ones in pkclist.c:do_edit_ownertrust to make translation easier.
+
+	* trustdb.c (trust_model_string, get_validity): Add direct trust
+	model which applies to the key as a whole and not per-uid.
+
+	* options.h, g10.c (parse_trust_model): New.
+	(main): Call it from here to do string-to-trust-model.
+
 2004-10-13  Werner Koch  <wk@g10code.com>
 
 	* openfile.c (overwrite_filep, make_outfile_name, open_outfile) 

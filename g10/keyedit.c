@@ -398,14 +398,13 @@ trustsig_prompt(byte *trust_value,byte *trust_depth,char **regexp)
   *trust_depth=0;
   *regexp=NULL;
 
-  tty_printf("\n");
   /* Same string as pkclist.c:do_edit_ownertrust */
-  tty_printf(_(
-	       "Please decide how far you trust this user to correctly\n"
-	       "verify other users' keys (by looking at passports,\n"
-	       "checking fingerprints from different sources...)?\n\n"));
-  tty_printf (_("   (%d) I trust marginally\n"), 1);
-  tty_printf (_("   (%d) I trust fully\n"), 2);
+  tty_printf(_("Please decide how far you trust this user to correctly verify"
+	       " other users' keys\n(by looking at passports, checking"
+	       " fingerprints from different sources, etc.)\n"));
+  tty_printf("\n");
+  tty_printf (_("  %d = I trust marginally\n"), 1);
+  tty_printf (_("  %d = I trust fully\n"), 2);
   tty_printf("\n");
 
   while(*trust_value==0)

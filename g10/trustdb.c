@@ -391,6 +391,7 @@ trust_model_string(void)
     case TM_PGP:      return "PGP";
     case TM_EXTERNAL: return "external";
     case TM_ALWAYS:   return "always";
+    case TM_DIRECT:   return "direct";
     default:          return "unknown";
     }
 }
@@ -1033,6 +1034,14 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
     }
   else
     main_pk = pk;
+
+  if(opt.trust_model==TM_DIRECT)
+    {
+      /* Note that this happens BEFORE any user ID stuff is checked.
+	 The direct trust model applies to keys as a whole. */
+      validity=get_ownertrust(main_pk);
+      goto leave;
+    }
 
   rc = read_trust_record (main_pk, &trec);
   if (rc && rc != -1)

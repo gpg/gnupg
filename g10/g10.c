@@ -1507,6 +1507,22 @@ collapse_args(int argc,char *argv[])
   return str;
 }
 
+static void
+parse_trust_model(const char *model)
+{
+  if(ascii_strcasecmp(model,"pgp")==0)
+    opt.trust_model=TM_PGP;
+  else if(ascii_strcasecmp(model,"classic")==0)
+    opt.trust_model=TM_CLASSIC;
+  else if(ascii_strcasecmp(model,"always")==0)
+    opt.trust_model=TM_ALWAYS;
+  else if(ascii_strcasecmp(model,"direct")==0)
+    opt.trust_model=TM_DIRECT;
+  else if(ascii_strcasecmp(model,"auto")==0)
+    opt.trust_model=TM_AUTO;
+  else
+    log_error("unknown trust model `%s'\n",model);
+}
 
 int
 main( int argc, char **argv )
@@ -1993,16 +2009,7 @@ main( int argc, char **argv )
 	       time. */
 	  case oAlwaysTrust: opt.trust_model=TM_ALWAYS; break;
 	  case oTrustModel:
-	    if(ascii_strcasecmp(pargs.r.ret_str,"pgp")==0)
-	      opt.trust_model=TM_PGP;
-	    else if(ascii_strcasecmp(pargs.r.ret_str,"classic")==0)
-	      opt.trust_model=TM_CLASSIC;
-	    else if(ascii_strcasecmp(pargs.r.ret_str,"always")==0)
-	      opt.trust_model=TM_ALWAYS;
-	    else if(ascii_strcasecmp(pargs.r.ret_str,"auto")==0)
-	      opt.trust_model=TM_AUTO;
-	    else
-	      log_error("unknown trust model `%s'\n",pargs.r.ret_str);
+	    parse_trust_model(pargs.r.ret_str);
 	    break;
 	  case oForceOwnertrust:
 	    log_info(_("NOTE: %s is not for normal use!\n"),
