@@ -1,5 +1,6 @@
 /* status.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -157,6 +158,39 @@ get_status_string ( int no )
     return s;
 }
 
+
+/* Return true if the status message NO may currently be issued.  We
+   need this to avoid syncronisation problem while auto retrieving a
+   key.  There it may happen that a status NODATA is issued for a non
+   available key and the user may falsely interpret this has a missing
+   signature. */
+static int
+status_currently_allowed (int no)
+{
+  if (!ctrl.in_auto_key_retrieve)
+    return 1; /* Yes. */
+
+  /* We allow some statis anyway, so that import statistics are
+     correct and to avoid problems if the retriebval subsystem will
+     prompt the user. */
+  switch (no)
+    {
+    case STATUS_GET_BOOL:	 
+    case STATUS_GET_LINE:	 
+    case STATUS_GET_HIDDEN:	 
+    case STATUS_GOT_IT:	 
+    case STATUS_IMPORTED:
+    case STATUS_IMPORT_OK:	
+    case STATUS_IMPORT_CHECK:  
+    case STATUS_IMPORT_RES:
+      return 1; /* Yes. */
+    default:
+      break;
+    }
+  return 0; /* No. */
+}
+
+
 void
 set_status_fd ( int fd )
 {
@@ -202,8 +236,8 @@ write_status ( int no )
 void
 write_status_text ( int no, const char *text)
 {
-    if( !statusfp )
-	return;  /* not enabled */
+    if( !statusfp || !status_currently_allowed (no) )
+	return;  /* Not enabled or allowed. */
 
     fputs ( "[GNUPG:] ", statusfp );
     fputs ( get_status_string (no), statusfp );
@@ -238,8 +272,8 @@ write_status_text_and_buffer ( int no, const char *string,
     int lower_limit = ' ';
     size_t n, count, dowrap;
 
-    if( !statusfp )
-	return;  /* not enabled */
+    if( !statusfp || !status_currently_allowed (no) )
+	return;  /* Not enabled or allowed. */
     
     if (wrap == -1) {
         lower_limit--;

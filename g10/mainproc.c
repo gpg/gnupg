@@ -1348,7 +1348,12 @@ check_sig_and_print( CTX c, KBNODE node )
     if( rc == G10ERR_NO_PUBKEY && opt.keyserver
 	&& (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE))
       {
-	if( keyserver_import_keyid ( sig->keyid )==0 )
+	int res;
+
+	ctrl.in_auto_key_retrieve++;
+	res=keyserver_import_keyid ( sig->keyid );
+	ctrl.in_auto_key_retrieve--;
+	if(!res)
 	  rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
       }
 
