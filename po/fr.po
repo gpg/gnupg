@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.7\n"
-"POT-Creation-Date: 2002-09-11 15:11+0200\n"
+"POT-Creation-Date: 2002-09-20 19:09+0200\n"
 "PO-Revision-Date: 2002-06-24 02:06+02:00\n"
 "Last-Translator: Gaël Quéri <gael@lautre.net>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -1989,7 +1989,7 @@ msgstr "Cette commande n'est pas admise en mode %s.\n"
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s chiffré pour: %s\n"
 
-#: g10/delkey.c:73 g10/export.c:190 g10/keyedit.c:2289
+#: g10/delkey.c:73 g10/export.c:190 g10/keyedit.c:2317
 #, c-format
 msgid "key `%s' not found: %s\n"
 msgstr "clé '%s' introuvable: %s\n"
@@ -2018,30 +2018,30 @@ msgstr "clé %08lX: clé de style PGP 2.x - ignorée\n"
 msgid "WARNING: nothing exported\n"
 msgstr "ATTENTION: rien n'a été exporté\n"
 
-#: g10/getkey.c:151
+#: g10/getkey.c:150
 msgid "too many entries in pk cache - disabled\n"
 msgstr "trop d'entrées dans le cache pk - désactivé\n"
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
-#: g10/getkey.c:187 g10/getkey.c:2393
+#: g10/getkey.c:186 g10/getkey.c:2394
 msgid "[User id not found]"
 msgstr "[Nom utilisateur introuvable]"
 
-#: g10/getkey.c:1438
+#: g10/getkey.c:1439
 #, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "La clé invalide %08lX a été rendue valide par --allow-non-selfsigned-uid\n"
 
-#: g10/getkey.c:2109
+#: g10/getkey.c:2110
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr ""
 "utilisation de la clé secondaire %08lX à la place de la clé\n"
 "principale %08lX\n"
 
-#: g10/getkey.c:2156
+#: g10/getkey.c:2157
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "clé %08lX: clé secrète sans clé publique - non prise en compte\n"
@@ -2535,6 +2535,11 @@ msgstr ""
 msgid "   (0) I will not answer.%s\n"
 msgstr "   (0) Je ne répondrai pas.%s\n"
 
+#: g10/keyedit.c:565 g10/keyedit.c:567 g10/keyedit.c:569 g10/keyedit.c:571
+#, fuzzy
+msgid " (default)"
+msgstr "déchiffrer les données (défaut)"
+
 #: g10/keyedit.c:566
 #, c-format
 msgid "   (1) I have not checked at all.%s\n"
@@ -2627,7 +2632,7 @@ msgstr ""
 msgid "Really sign? "
 msgstr "Signer réellement ? "
 
-#: g10/keyedit.c:688 g10/keyedit.c:3064 g10/keyedit.c:3126 g10/sign.c:308
+#: g10/keyedit.c:688 g10/keyedit.c:3094 g10/keyedit.c:3156 g10/sign.c:308
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "la signature a échoué: %s\n"
@@ -3128,7 +3133,7 @@ msgstr ""
 "Notez que la validité affichée pour la clé n'est pas nécessairement\n"
 "correcte à moins de redémarrer le programme.\n"
 
-#: g10/keyedit.c:2001
+#: g10/keyedit.c:2002
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3138,109 +3143,126 @@ msgstr ""
 "d'identité peut empêcher certaines versions de PGP d'accepter\n"
 "cette clé\n"
 
-#: g10/keyedit.c:2006
+#: g10/keyedit.c:2007 g10/keyedit.c:2280
 msgid "Are you sure you still want to add it? (y/N) "
 msgstr "Etes-vous sur de vouloir l'ajouter ? (y/N) "
 
-#: g10/keyedit.c:2012
+#: g10/keyedit.c:2013
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr ""
 "Vous ne pouvez pas ajouter de photo d'identité à une clé du style PGP2.\n"
 
-#: g10/keyedit.c:2147
+#: g10/keyedit.c:2148
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Supprimer cette bonne signature ? (o/N/q)"
 
-#: g10/keyedit.c:2157
+#: g10/keyedit.c:2158
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "Supprimer cette signature invalide ? (o/N/q)"
 
-#: g10/keyedit.c:2161
+#: g10/keyedit.c:2162
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "Supprimer cette signature inconnue ? (o/N/q)"
 
-#: g10/keyedit.c:2167
+#: g10/keyedit.c:2168
 msgid "Really delete this self-signature? (y/N)"
 msgstr "Faut-il vraiment supprimer cette auto-signature ? (o/N)"
 
-#: g10/keyedit.c:2181
+#: g10/keyedit.c:2182
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "%d signature supprimée.\n"
 
-#: g10/keyedit.c:2182
+#: g10/keyedit.c:2183
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "%d signatures supprimées\n"
 
-#: g10/keyedit.c:2185
+#: g10/keyedit.c:2186
 msgid "Nothing deleted.\n"
 msgstr "Rien n'a été supprimé.\n"
 
-#: g10/keyedit.c:2281
+#: g10/keyedit.c:2275
+#, fuzzy
+msgid ""
+"WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
+"cause\n"
+"         some versions of PGP to reject this key.\n"
+msgstr ""
+"ATTENTION: C'est une clé du style PGP2.  Ajouter une photo\n"
+"d'identité peut empêcher certaines versions de PGP d'accepter\n"
+"cette clé\n"
+
+#: g10/keyedit.c:2286
+#, fuzzy
+msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
+msgstr ""
+"Vous ne pouvez pas ajouter de photo d'identité à une clé du style PGP2.\n"
+
+#: g10/keyedit.c:2309
 #, fuzzy
 msgid "Enter the user ID of the designated revoker: "
 msgstr "Entrez la taille de la clé"
 
-#: g10/keyedit.c:2296
+#: g10/keyedit.c:2324
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr ""
 
 #. This actually causes no harm (after all, a key that
 #. designates itself as a revoker is the same as a
 #. regular key), but it's easy enough to check.
-#: g10/keyedit.c:2306
+#: g10/keyedit.c:2334
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr ""
 
-#: g10/keyedit.c:2393
+#: g10/keyedit.c:2423
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Enlevez les sélections des clés secrètes.\n"
 
-#: g10/keyedit.c:2399
+#: g10/keyedit.c:2429
 msgid "Please select at most one secondary key.\n"
 msgstr "Vous devez sélectionner au plus une clé secondaire.\n"
 
-#: g10/keyedit.c:2403
+#: g10/keyedit.c:2433
 msgid "Changing expiration time for a secondary key.\n"
 msgstr "Changer la date d'expiration d'une clé secondaire.\n"
 
-#: g10/keyedit.c:2405
+#: g10/keyedit.c:2435
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Changer la date d'expiration de la clé principale.\n"
 
-#: g10/keyedit.c:2447
+#: g10/keyedit.c:2477
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Vous ne pouvez pas changer la date d'expiration d'une clé v3\n"
 
-#: g10/keyedit.c:2463
+#: g10/keyedit.c:2493
 msgid "No corresponding signature in secret ring\n"
 msgstr "Pas de signature correspondante dans le porte-clés secret\n"
 
-#: g10/keyedit.c:2546
+#: g10/keyedit.c:2576
 msgid "Please select exactly one user ID.\n"
 msgstr "Vous devez sélectionner exactement un utilisateur.\n"
 
-#: g10/keyedit.c:2583 g10/keyedit.c:2690
+#: g10/keyedit.c:2613 g10/keyedit.c:2720
 #, fuzzy, c-format
 msgid "skipping v3 self-signature on user id \"%s\"\n"
 msgstr "clé %08lX: auto-signature sur le nom d'utilisateur \"%s\" invalide\n"
 
-#: g10/keyedit.c:2750
+#: g10/keyedit.c:2780
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "Pas d'utilisateur avec l'index %d\n"
 
-#: g10/keyedit.c:2796
+#: g10/keyedit.c:2826
 #, c-format
 msgid "No secondary key with index %d\n"
 msgstr "Pas de clé secondaire avec l'index %d\n"
 
-#: g10/keyedit.c:2910
+#: g10/keyedit.c:2940
 msgid "user ID: \""
 msgstr "nom d'utilisateur: «"
 
-#: g10/keyedit.c:2915
+#: g10/keyedit.c:2945
 #, c-format
 msgid ""
 "\"\n"
@@ -3249,7 +3271,7 @@ msgstr ""
 "»\n"
 "signé avec votre clé %08lX à %s\n"
 
-#: g10/keyedit.c:2918
+#: g10/keyedit.c:2948
 #, c-format
 msgid ""
 "\"\n"
@@ -3258,56 +3280,56 @@ msgstr ""
 "\"\n"
 "signé localement avec votre clé %08lX à %s\n"
 
-#: g10/keyedit.c:2923
+#: g10/keyedit.c:2953
 #, c-format
 msgid "This signature expired on %s.\n"
 msgstr "Cette signature a expiré le %s.\n"
 
-#: g10/keyedit.c:2927
+#: g10/keyedit.c:2957
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "Etes-vous sur de vouloir toujours le révoquer ? (y/N) "
 
-#: g10/keyedit.c:2931
+#: g10/keyedit.c:2961
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Générer un certificat de révocation pour cette signature ? (o/N) "
 
 #. FIXME: detect duplicates here
-#: g10/keyedit.c:2956
+#: g10/keyedit.c:2986
 msgid "You have signed these user IDs:\n"
 msgstr "Vous avez signé ces noms d'utilisateurs:\n"
 
-#: g10/keyedit.c:2975
+#: g10/keyedit.c:3005
 #, c-format
 msgid "   signed by %08lX at %s%s%s\n"
 msgstr "   signé par %08lX à %s%s%s\n"
 
-#: g10/keyedit.c:2983
+#: g10/keyedit.c:3013
 #, c-format
 msgid "   revoked by %08lX at %s\n"
 msgstr "   révoqué par %08lX à %s\n"
 
-#: g10/keyedit.c:3003
+#: g10/keyedit.c:3033
 msgid "You are about to revoke these signatures:\n"
 msgstr "Vous êtes sur le point de révoquer ces signatures:\n"
 
-#: g10/keyedit.c:3013
+#: g10/keyedit.c:3043
 #, c-format
 msgid "   signed by %08lX at %s%s\n"
 msgstr "   signé par %08lX à %s%s\n"
 
-#: g10/keyedit.c:3015
+#: g10/keyedit.c:3045
 msgid " (non-exportable)"
 msgstr " (non-exportable)"
 
-#: g10/keyedit.c:3022
+#: g10/keyedit.c:3052
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Créer réellement les certificats de révocation ? (o/N) "
 
-#: g10/keyedit.c:3052
+#: g10/keyedit.c:3082
 msgid "no secret key\n"
 msgstr "pas de clé secrète\n"
 
-#: g10/keyedit.c:3207
+#: g10/keyedit.c:3237
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key 0x%08lX (uid %d)\n"
 msgstr ""
@@ -3349,28 +3371,28 @@ msgstr "Porte-clés"
 msgid " [expires: %s]"
 msgstr " [expire: %s]"
 
-#: g10/keylist.c:1001
+#: g10/keylist.c:1003
 #, fuzzy
 msgid "Primary key fingerprint:"
 msgstr "lister les clés et les empreintes"
 
-#: g10/keylist.c:1003
+#: g10/keylist.c:1005
 #, fuzzy
 msgid "     Subkey fingerprint:"
 msgstr " Empreinte de la clé ="
 
-#: g10/keylist.c:1010
+#: g10/keylist.c:1012
 #, fuzzy
 msgid " Primary key fingerprint:"
 msgstr " Empreinte de la clé ="
 
-#: g10/keylist.c:1012
+#: g10/keylist.c:1014
 #, fuzzy
 msgid "      Subkey fingerprint:"
 msgstr " Empreinte de la clé ="
 
 #. use tty
-#: g10/keylist.c:1016 g10/keylist.c:1020
+#: g10/keylist.c:1018 g10/keylist.c:1022
 msgid "     Key fingerprint ="
 msgstr " Empreinte de la clé ="
 
@@ -3776,12 +3798,12 @@ msgstr "l'envoi à `%s' a échoué: le résultat est %u\n"
 msgid "this keyserver is not fully HKP compatible\n"
 msgstr ""
 
-#: g10/hkp.c:515
+#: g10/hkp.c:513
 #, c-format
 msgid "searching for \"%s\" from HKP server %s\n"
 msgstr "recherche de \"%s\" du serveur HKP %s\n"
 
-#: g10/hkp.c:565
+#: g10/hkp.c:563
 #, c-format
 msgid "can't search keyserver: %s\n"
 msgstr "impossible de chercher une clé dans le serveur : %s\n"
@@ -3867,6 +3889,11 @@ msgid "assuming bad signature from key %08lX due to an unknown critical bit\n"
 msgstr ""
 "la signature est supposée être fausse car un bit critique est\n"
 "inconnu\n"
+
+#: g10/sig-check.c:549
+#, fuzzy, c-format
+msgid "key %08lX: no subkey for subkey revocation packet\n"
+msgstr "clé %08lX: pas de sous-clé pour relier la clé\n"
 
 #: g10/sign.c:103
 #, fuzzy, c-format
