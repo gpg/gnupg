@@ -65,7 +65,11 @@ record.
 	    (for other id's see include/cipher.h)
  5. Field:  KeyID
  6. Field:  Creation Date (in UTC).  For UID and UAT records, this is the
-            self-signature date.
+            self-signature date.  Note that the dae is usally printed
+            in seconds since epoch, however, we are migrating to an ISO
+            8601 format (e.g. "19660205T091500").  This is currently
+            only relevant for X.509, A simple way to detect the format
+            is be scannning for the 'T'.
  7. Field:  Key or user ID/user attribute expiration date or empty if none.
  8. Field:  Used for serial number in crt records (used to be the Local-ID).
             For UID and UAT records, this is a hash of the user ID contents
@@ -194,6 +198,10 @@ more arguments in future versions.
 	public key. The other fields give more information about
 	this signature.  sig_class is a 2 byte hex-value.
 
+        Note, that TIMESTAMP may either be a number with seconds since
+        epoch or an ISO 8601 string which can be detected by the
+        presence of the letter 'T' inside.
+
     VALIDSIG	<fingerprint in hex> <sig_creation_date> <sig-timestamp>
 		<expire-timestamp> <sig-version> <reserved> <pubkey-algo>
 		<hash-algo> <sig-class> <primary-key-fpr>
@@ -211,6 +219,10 @@ more arguments in future versions.
 	useful to get back to the primary key without running gpg
 	again for this purpose.
 
+        Note, that *-TIMESTAMP may either be a number with seconds
+        since epoch or an ISO 8601 string which can be detected by the
+        presence of the letter 'T' inside.
+
     SIG_ID  <radix64_string>  <sig_creation_date>  <sig-timestamp>
 	This is emitted only for signatures of class 0 or 1 which
 	have been verified okay.  The string is a signature id
@@ -218,6 +230,11 @@ more arguments in future versions.
 	of signed messages.  Note that only DLP algorithms give
 	unique ids - others may yield duplicated ones when they
 	have been created in the same second.
+
+        Note, that SIG-TIMESTAMP may either be a number with seconds
+        since epoch or an ISO 8601 string which can be detected by the
+        presence of the letter 'T' inside.
+
 
     ENC_TO  <long keyid>  <keytype>  <keylength>
 	The message is encrypted to this keyid.
@@ -252,6 +269,10 @@ more arguments in future versions.
     KEYEXPIRED <expire-timestamp>
 	The key has expired.  expire-timestamp is the expiration time
 	in seconds after the epoch.
+
+        Note, that TIMESTAMP may either be a number with seconds since
+        epoch or an ISO 8601 string which can be detected by the
+        presence of the letter 'T' inside.
 
     KEYREVOKED
 	The used key has been revoked by its owner.  No arguments yet.
@@ -383,6 +404,10 @@ more arguments in future versions.
 		   'S' = standard
 		   (only the first character should be checked)
 	    class: 2 hex digits with the signature class
+
+        Note, that TIMESTAMP may either be a number with seconds since
+        epoch or an ISO 8601 string which can be detected by the
+        presence of the letter 'T' inside.
         
     KEY_CREATED <type> <fingerprint>
         A key has been created
