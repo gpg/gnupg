@@ -2,7 +2,16 @@
 
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-			    Version 1.0
+			    Version 1.1
+
+	WARNING:  This is the current development branch
+		  of GnuPG.  THIS SHOULD NOT BE USED IN
+		  A PRODUCTION ENVIRONMENT.  It will
+		  change quite often and may have serious
+		  problems.  Use the GnuPG from the stable
+		  Branch 1.0.x	for real work.	The next
+		  stable release will be 1.2
+
 
     GnuPG is GNU's tool for secure communication and data storage.
     It can be used to encrypt data and to create digital signatures.
@@ -508,11 +517,11 @@
     the GNU service directory or search other resources.
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v0.9.11 (GNU/Linux)
+Version: GnuPG v1.0.0 (GNU/Linux)
 Comment: For info see http://www.gnupg.org
 
-iQB1AwUBN9QAwB0Z9MEMmFelAQG0XwMAqyH3UR0Jk+dm2ZkVoTqckGqmMMt5IdBN
-MlG4g3dau5De8XXHvbQ45cUpU4CC0MOlEuKDp+CKOc+xbzczdH35qYt/5XKmVWS8
-JwTvuKKCZ/95JRMk0ZMRueQduH7tSijZ
-=MefQ
+iQB1AwUBN+M8CB0Z9MEMmFelAQFmggMAuwHxMcQPsS1r2pD1KVZ67qTUeZnSM+wP
+daX3wnBgZzxYhzZiuciaFYky6ERC0Er4HVKtSlLBPhY1N1y2d98Se7TTUaUsVY8F
+uvGJkK/7ykaHfWgcIbKFb6hlnpy29+mO
+=1oCH
 -----END PGP SIGNATURE-----
