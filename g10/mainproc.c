@@ -421,12 +421,33 @@ proc_encrypted( CTX c, PACKET *pkt )
     if( opt.list_only )
 	result = -1;
     else if( !c->dek && !c->last_was_session_key ) {
-        int algo = opt.def_cipher_algo ? opt.def_cipher_algo
-                                       : opt.s2k_cipher_algo;
+        int algo;
+        STRING2KEY s2kbuf, *s2k = NULL;
+
 	/* assume this is old style conventional encrypted data */
-        log_info(_("assuming %s encrypted data\n"),
-                 cipher_algo_to_string (algo) );
-	c->dek = passphrase_to_dek( NULL, 0, algo, NULL, 0);
+        if ( (algo = opt.def_cipher_algo))
+            log_info (_("assuming %s encrypted data\n"),
+                        cipher_algo_to_string(algo));
+        else if ( check_cipher_algo(CIPHER_ALGO_IDEA) ) {
+            algo = opt.def_cipher_algo;
+            if (!algo)
+                algo = opt.s2k_cipher_algo;;
+            log_info (_("IDEA cipher unavailable, "
+                        "optimistically attempting to use %s instead\n"),
+                       cipher_algo_to_string(algo));
+        }
+        else {
+            algo = CIPHER_ALGO_IDEA;
+            if (!opt.def_digest_algo) {
+                /* If no digest is given we assume MD5 */
+                s2kbuf.mode = 0;
+                s2kbuf.hash_algo = DIGEST_ALGO_MD5;
+                s2k = &s2kbuf;
+            }
+            log_info (_("assuming %s encrypted data\n"), "IDEA");
+        }
+
+	c->dek = passphrase_to_dek ( NULL, 0, algo, s2k, 0 );
         if (c->dek)
             c->dek->algo_info_printed = 1;
     }

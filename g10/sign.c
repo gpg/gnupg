@@ -1002,7 +1002,10 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
             break;
 	  case PUBKEY_ALGO_RSA_S:
 	  case PUBKEY_ALGO_RSA:
-            digest_algo = sk->version < 4? DIGEST_ALGO_MD5 : DIGEST_ALGO_SHA1;
+            if (opt.force_v4_sigs || sk->version > 3)
+              digest_algo = DIGEST_ALGO_SHA1;
+            else
+              digest_algo = DIGEST_ALGO_MD5;
             break;
 	  default:
             digest_algo = DIGEST_ALGO_RMD160;

@@ -1,5 +1,11 @@
 2001-11-08  Werner Koch  <wk@gnupg.org>
 
+	* pubkey-enc.c (get_it): To reduce the number of questions on the
+	MLs print the the name of cipher algorithm 1 with the error message.
+
+	* mainproc.c: Changed the way old rfc1991 encryption cipher is
+	selected. Based on a patch by W Lewis.
+
 	* pkclist.c (do_edit_ownertrust): Allow to skip over keys, the non
 	working "show info" is now assigned to "i" 
 	* trustdb.c (ask_ownertrust, validate_keys): Implement a real quit
@@ -11,7 +17,7 @@
 
 	* g10.c, options.h : New option --[no-]froce-v4-certs.
 	* sign.c (make_keysig_packet): Create v4 sigs on v4 keys even with
-	a v3 key.  Use new option.  By David Shaw
+	a v3 key.  Use that new option.  By David Shaw
 
 	* revoke.c (ask_revocation_reason): Allow to select "no reason".
 	By David Shaw.
