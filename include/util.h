@@ -72,8 +72,8 @@ int  log_get_errorcount( int clear );
 void log_inc_errorcount(void);
 void g10_log_hexdump( const char *text, const char *buf, size_t len );
 
-#if !defined (__riscos__) \
-    && (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 ))
+#if defined (__riscos__) \
+    || (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 ))
   void g10_log_bug( const char *fmt, ... )
 			    __attribute__ ((noreturn, format (printf,1,2)));
   void g10_log_bug0( const char *, int, const char * ) __attribute__ ((noreturn));
@@ -90,7 +90,11 @@ void g10_log_hexdump( const char *text, const char *buf, size_t len );
 			    __attribute__ ((format (printf,2,3)));
   void g10_log_debug_f( const char *fname,  const char *fmt, ... )
 			    __attribute__ ((format (printf,2,3)));
+#ifndef __riscos__
   #define BUG() g10_log_bug0(  __FILE__ , __LINE__, __FUNCTION__ )
+#else
+  #define BUG() g10_log_bug0(  __FILE__ , __LINE__, __func__ )
+#endif
 #else
   void g10_log_bug( const char *fmt, ... );
   void g10_log_bug0( const char *, int );

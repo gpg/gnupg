@@ -558,13 +558,13 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
 		if(answer[0]=='\0')
 		  class=0x10+opt.def_cert_check_level; /* Default */
-		else if(strcasecmp(answer,"0")==0)
+		else if(ascii_strcasecmp(answer,"0")==0)
 		  class=0x10; /* Generic */
-		else if(strcasecmp(answer,"1")==0)
+		else if(ascii_strcasecmp(answer,"1")==0)
 		  class=0x11; /* Persona */
-		else if(strcasecmp(answer,"2")==0)
+		else if(ascii_strcasecmp(answer,"2")==0)
 		  class=0x12; /* Casual */
-		else if(strcasecmp(answer,"3")==0)
+		else if(ascii_strcasecmp(answer,"3")==0)
 		  class=0x13; /* Positive */
 		else
 		  tty_printf(_("Invalid selection.\n"));

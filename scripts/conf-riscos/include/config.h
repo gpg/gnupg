@@ -30,7 +30,7 @@
 #undef C_ALLOCA
 
 /* Define to empty if the keyword does not work.  */
-#undef const
+/* #undef const */
 
 /* Define to one of _getb67, GETB67, getb67 for Cray-2 and Cray-YMP systems.
    This function is required for alloca.c support on those systems.  */
@@ -51,9 +51,6 @@
 
 /* Define if you have the vprintf function.  */
 #define HAVE_VPRINTF
-
-/* Define as __inline if that's what the C compiler calls it.  */
-#define inline __inline
 
 /* Define to `long' if <sys/types.h> doesn't define.  */
 #undef off_t
@@ -99,7 +96,7 @@
 #undef HAVE_GETTEXT
 
 #undef BIG_ENDIAN_HOST
-#define LITTLE_ENDIAN_HOST
+#define LITTLE_ENDIAN_HOST 1
 
 #undef HAVE_BYTE_TYPEDEF
 #undef HAVE_USHORT_TYPEDEF
@@ -360,18 +357,25 @@
 /* Name of package */
 #define PACKAGE "GnuPG"
 
-/* Version number of package */
-/* no more needed here as set in the Makefile
-#define VERSION "1.0.4"
-#define IS_DEVELOPMENT_VERSION
-*/
 
 /* define if compiled symbols have a leading underscore */
 #define WITH_SYMBOL_UNDERSCORE
 
 #ifdef IS_DEVELOPMENT_VERSION
-  #define M_GUARD
   #define DEBUG
+/*  #define M_DEBUG */
+  #define M_GUARD
+#endif
+
+
+/* RISC OS specifica */
+#if (__CC_NORCROFT == 1) /* Norcroft */
+# define __attribute__(x) 
+# if (__CC_NORCROFT_VERSION < 544) /* old version of Norcroft */
+#  define inline __inline
+#  define __func__ "[" __FILE__ ":" __LINE__ "]"
+# endif
+#else /* gcc */
 #endif
 
 #include "g10defs.h"

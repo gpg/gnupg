@@ -1,3 +1,15 @@
+2002-05-10  Stefan Bellon  <sbellon@sbellon.de>
+
+	* memory.c (add_entry) [M_DEBUG]: Added some missing EXTRA_ALIGN.
+	(free_entry) [M_DEBUG]: Free secure memory via secmem_free.
+	(alloc_secure): Malloc at least 1 byte.
+	(realloc) [M_GUARD]: Added missing FNAMEARG to function call.
+
+	* logger.c (g10_log_bug0) [__riscos__]: Make use of first
+	g10_log_bug0 function for later Norcroft compiler.
+
+	* riscos.c: Added stdlib.h include.
+
 2002-05-04  Werner Koch  <wk@gnupg.org>
 
 	* http.c (write_server) [__MINGW32__]: Replaced WriteFile by send

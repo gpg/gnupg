@@ -1,3 +1,10 @@
+2002-05-10  Stefan Bellon  <sbellon@sbellon.de>
+
+	* conf-riscos/include/config.h [__riscos__]: Changes for later
+	Norcroft compilers.
+
+	* conf-riscos/Makefile [__riscos__]: Updated.
+
 2002-04-22  Stefan Bellon  <sbellon@sbellon.de>
 
 	* conf-riscos/include/config.h [__riscos__]: Development

@@ -33,7 +33,7 @@
 #define m_alloc(n)		m_debug_alloc((n), M_DBGINFO( __LINE__ ) )
 #define m_alloc_clear(n)	m_debug_alloc_clear((n), M_DBGINFO(__LINE__) )
 #define m_alloc_secure(n)	m_debug_alloc((n), M_DBGINFO(__LINE__) )
-#define m_alloc_secure_clear(n) m_debug_alloc((n), M_DBGINFO(__LINE__) )
+#define m_alloc_secure_clear(n) m_debug_alloc_secure_clear((n), M_DBGINFO(__LINE__) )
 #define m_realloc(n,m)		m_debug_realloc((n),(m), M_DBGINFO(__LINE__) )
 #define m_free(n)		m_debug_free((n), M_DBGINFO(__LINE__) )
 #define m_check(n)		m_debug_check((n), M_DBGINFO(__LINE__) )

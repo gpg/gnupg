@@ -5,182 +5,188 @@ AS=objasm
 MAKE=amu
 DEPEND=-depend !Depend
 LIBLDAP=^.^.openldap-2/0/18
-CC_FLAGS=-Wp -apcs 3/26bit -throwback -Otime -IUnix:,include,mpi,intl,zlib,$(LIBLDAP).include -JUnix: -D__riscos__ -DHAVE_CONFIG_H -DNO_ASM -UIS_MODULE -DVERSION="\"$(GnuPG$Version)\"" $(GnuPG$DevDefine)
-AS_FLAGS=-apcs 3/26bit -throwback -predefine "ARMv4 SETA 0"
+CC_FLAGS=-Wp -apcs 3/26bit/fpe2 -throwback -Otime -IUnix:,include,mpi,intl,zlib,$(LIBLDAP).include -JUnix: -D__riscos__ -DHAVE_CONFIG_H -DNO_ASM -UIS_MODULE -DVERSION="\"$(GnuPG$Version)\"" $(GnuPG$DevDefine)
+AS_FLAGS=-apcs 3/26bit/fpe2 -throwback -predefine "ARMv4 SETA 0"
 LD_FLAGS=Unix:o.unixlib
-CIPHER_OBJS=cipher.blowfish.o \
-	cipher.cast5.o \
-	cipher.cipher.o \
-	cipher.construct.o \
-	cipher.des.o \
-	cipher.dsa.o \
-	cipher.dynload.o \
-	cipher.elgamal.o \
-	cipher.g10c.o \
-	cipher.md.o \
-	cipher.md5.o \
-	cipher.primegen.o \
-	cipher.pubkey.o \
-	cipher.random.o \
-	cipher.rijndael.o \
-	cipher.rmd160.o \
-	cipher.rndriscos.o \
-	cipher.rsa.o \
-	cipher.sha1.o \
-	cipher.smallprime.o \
-	cipher.tiger32.o \
-	cipher.twofish.o
-GETTEXT_OBJS=intl.bindtextdom.o \
-	intl.dcgettext.o \
-	intl.dgettext.o \
-	intl.explodename.o \
-	intl.finddomain.o \
-	intl.gettext.o \
-	intl.intl-compat.o \
-	intl.l10nflist.o \
-	intl.loadmsgcat.o \
-	intl.localealias.o \
-	intl.textdomain.o
-MPI_OBJS=mpi.mpi-add.o \
-	mpi.mpi-bit.o \
-	mpi.mpi-cmp.o \
-	mpi.mpi-div.o \
-	mpi.mpi-gcd.o \
-	mpi.mpi-inline.o \
-	mpi.mpi-inv.o \
-	mpi.mpi-mul.o \
-	mpi.mpi-pow.o \
-	mpi.mpi-mpow.o \
-	mpi.mpi-scan.o \
-	mpi.mpicoder.o \
-	mpi.mpih-div.o \
-	mpi.mpih-mul.o \
-	mpi.mpiutil.o \
-	mpi.g10m.o \
-	mpi.arm.mpih.o
-UTIL_OBJS=util.argparse.o \
-	util.dotlock.o \
-	util.errors.o \
-	util.fileutil.o \
-	util.g10u.o \
-	util.http.o \
-	util.iobuf.o \
-	util.logger.o \
-	util.memory.o \
-	util.miscutil.o \
-	util.secmem.o \
-	util.strgutil.o \
-	util.ttyio.o \
-	util.riscos.o
-ZLIB_OBJS=zlib.adler32.o \
-	zlib.compress.o \
-	zlib.crc32.o \
-	zlib.deflate.o \
-	zlib.infblock.o \
-	zlib.infcodes.o \
-	zlib.inffast.o \
-	zlib.inflate.o \
-	zlib.inftrees.o \
-	zlib.infutil.o \
-	zlib.trees.o \
-	zlib.uncompr.o \
-	zlib.zutil.o
-G10_OBJS=g10.armor.o \
-	g10.build-packet.o \
-	g10.cipher.o \
-	g10.comment.o \
-	g10.compress.o \
-	g10.dearmor.o \
-	g10.decrypt.o \
-	g10.delkey.o \
-	g10.encode.o \
-	g10.encr-data.o \
-	g10.exec.o \
-	g10.export.o \
-	g10.free-packet.o \
-	g10.g10.o \
-	g10.getkey.o \
-	g10.helptext.o \
-	g10.hkp.o \
-	g10.import.o \
-	g10.kbnode.o \
-	g10.keydb.o \
-	g10.keyedit.o \
-	g10.keygen.o \
-	g10.keyid.o \
-	g10.keylist.o \
-	g10.keyring.o \
-	g10.keyserver.o \
-	g10.mainproc.o \
-	g10.mdfilter.o \
-	g10.misc.o \
-	g10.mkdtemp.o \
-	g10.openfile.o \
-	g10.parse-packet.o \
-	g10.passphrase.o \
-	g10.photoid.o \
-	g10.pipemode.o \
-	g10.pkclist.o \
-	g10.plaintext.o \
-	g10.pubkey-enc.o \
-	g10.revoke.o \
-	g10.seckey-cert.o \
-	g10.seskey.o \
-	g10.sig-check.o \
-	g10.sign.o \
-	g10.signal.o \
-	g10.skclist.o \
-	g10.status.o \
-	g10.tdbdump.o \
-	g10.tdbio.o \
-	g10.textfilter.o \
-	g10.trustdb.o \
-	g10.verify.o
-GPGV_OBJS=g10.armor.o \
-	g10.build-packet.o \
-	g10.compress.o \
-	g10.free-packet.o \
-	g10.getkey.o \
-	g10.gpgv.o \
-	g10.keydb.o \
-	g10.keylist.o \
-	g10.kbnode.o \
-	g10.keyid.o \
-	g10.keyring.o \
-	g10.mainproc.o \
-	g10.mdfilter.o \
-	g10.misc.o \
-	g10.openfile.o \
-	g10.parse-packet.o \
-	g10.plaintext.o \
-	g10.seskey.o \
-	g10.sig-check.o \
-	g10.signal.o \
-	g10.status.o \
-	g10.textfilter.o \
-	g10.verify.o \
-	util.argparse.o \
-	util.errors.o \
-	util.fileutil.o \
-	util.g10u.o \
-	util.iobuf.o \
-	util.logger.o \
-	util.memory.o \
-	util.miscutil.o \
-	util.secmem.o \
-	util.strgutil.o \
-	util.riscos.o \
-	cipher.constructv.o \
-	cipher.dsa.o \
-	cipher.dynload.o \
-	cipher.elgamal.o \
-	cipher.g10c.o \
-	cipher.md.o \
-	cipher.pubkey.o \
-	cipher.rmd160.o \
-	cipher.rsa.o \
+CIPHER_OBJS=cipher.o.blowfish \
+	cipher.o.cast5 \
+	cipher.o.cipher \
+	cipher.o.construct \
+	cipher.o.des \
+	cipher.o.dsa \
+	cipher.o.dynload \
+	cipher.o.elgamal \
+	cipher.o.g10c \
+	cipher.o.md \
+	cipher.o.md5 \
+	cipher.o.primegen \
+	cipher.o.pubkey \
+	cipher.o.random \
+	cipher.o.rijndael \
+	cipher.o.rmd160 \
+	cipher.o.rndriscos \
+	cipher.o.rsa \
+	cipher.o.sha1 \
+	cipher.o.smallprime \
+	cipher.o.tiger32 \
+	cipher.o.twofish
+GETTEXT_OBJS=intl.o.bindtextdom \
+	intl.o.dcgettext \
+	intl.o.dgettext \
+	intl.o.explodename \
+	intl.o.finddomain \
+	intl.o.gettext \
+	intl.o.intl-compat \
+	intl.o.l10nflist \
+	intl.o.loadmsgcat \
+	intl.o.localealias \
+	intl.o.textdomain
+MPI_OBJS=mpi.o.mpi-add \
+	mpi.o.mpi-bit \
+	mpi.o.mpi-cmp \
+	mpi.o.mpi-div \
+	mpi.o.mpi-gcd \
+	mpi.o.mpi-inline \
+	mpi.o.mpi-inv \
+	mpi.o.mpi-mul \
+	mpi.o.mpi-pow \
+	mpi.o.mpi-mpow \
+	mpi.o.mpi-scan \
+	mpi.o.mpicoder \
+	mpi.o.mpih-div \
+	mpi.o.mpih-mul \
+	mpi.o.mpiutil \
+	mpi.o.g10m \
+	mpi.arm.o.mpih
+UTIL_OBJS=util.o.argparse \
+	util.o.dotlock \
+	util.o.errors \
+	util.o.fileutil \
+	util.o.g10u \
+	util.o.http \
+	util.o.iobuf \
+	util.o.logger \
+	util.o.memory \
+	util.o.miscutil \
+	util.o.secmem \
+	util.o.strgutil \
+	util.o.ttyio \
+	util.o.riscos
+ZLIB_OBJS=zlib.o.adler32 \
+	zlib.o.compress \
+	zlib.o.crc32 \
+	zlib.o.deflate \
+	zlib.o.infblock \
+	zlib.o.infcodes \
+	zlib.o.inffast \
+	zlib.o.inflate \
+	zlib.o.inftrees \
+	zlib.o.infutil \
+	zlib.o.trees \
+	zlib.o.uncompr \
+	zlib.o.zutil
+G10_OBJS=g10.o.armor \
+	g10.o.build-packet \
+	g10.o.cipher \
+	g10.o.comment \
+	g10.o.compress \
+	g10.o.dearmor \
+	g10.o.decrypt \
+	g10.o.delkey \
+	g10.o.encode \
+	g10.o.encr-data \
+	g10.o.exec \
+	g10.o.export \
+	g10.o.free-packet \
+	g10.o.g10 \
+	g10.o.getkey \
+	g10.o.helptext \
+	g10.o.hkp \
+	g10.o.import \
+	g10.o.kbnode \
+	g10.o.keydb \
+	g10.o.keyedit \
+	g10.o.keygen \
+	g10.o.keyid \
+	g10.o.keylist \
+	g10.o.keyring \
+	g10.o.keyserver \
+	g10.o.mainproc \
+	g10.o.mdfilter \
+	g10.o.misc \
+	g10.o.mkdtemp \
+	g10.o.openfile \
+	g10.o.parse-packet \
+	g10.o.passphrase \
+	g10.o.photoid \
+	g10.o.pipemode \
+	g10.o.pkclist \
+	g10.o.plaintext \
+	g10.o.pubkey-enc \
+	g10.o.revoke \
+	g10.o.seckey-cert \
+	g10.o.seskey \
+	g10.o.sig-check \
+	g10.o.sign \
+	g10.o.signal \
+	g10.o.skclist \
+	g10.o.status \
+	g10.o.tdbdump \
+	g10.o.tdbio \
+	g10.o.textfilter \
+	g10.o.trustdb \
+	g10.o.verify
+GPGV_OBJS=g10.o.armor \
+	g10.o.build-packet \
+	g10.o.compress \
+	g10.o.free-packet \
+	g10.o.getkey \
+	g10.o.gpgv \
+	g10.o.keydb \
+	g10.o.keylist \
+	g10.o.kbnode \
+	g10.o.keyid \
+	g10.o.keyring \
+	g10.o.mainproc \
+	g10.o.mdfilter \
+	g10.o.misc \
+	g10.o.openfile \
+	g10.o.parse-packet \
+	g10.o.plaintext \
+	g10.o.seskey \
+	g10.o.sig-check \
+	g10.o.signal \
+	g10.o.status \
+	g10.o.textfilter \
+	g10.o.verify \
+	util.o.argparse \
+	util.o.errors \
+	util.o.fileutil \
+	util.o.g10u \
+	util.o.iobuf \
+	util.o.logger \
+	util.o.memory \
+	util.o.miscutil \
+	util.o.secmem \
+	util.o.strgutil \
+	util.o.riscos \
+	cipher.o.constructv \
+	cipher.o.dsa \
+	cipher.o.dynload \
+	cipher.o.elgamal \
+	cipher.o.g10c \
+	cipher.o.md \
+	cipher.o.pubkey \
+	cipher.o.rmd160 \
+	cipher.o.rsa \
 	mpi.mpi \
 	zlib.zlib
+GPGKEYS_OBJS=keyserver.o.gpgkeys_ldap \
+	util.o.strgutil \
+	util.o.memory \
+	util.o.logger \
+	util.o.secmem \
+	intl.gettext
 
 ## Rule Patterns ##
 
@@ -214,8 +220,8 @@ tools.gpgsplit: tools.o.gpgsplit util.util intl.gettext zlib.zlib
 	-squeeze tools.gpgsplit
 	-copy tools.gpgsplit ADFS::A5.$.tmp.!GnuPG.gpgsplit ~CF~V
 
-keyserver.gpgkeys_ldap: keyserver.o.gpgkeys_ldap $(LIBLDAP).libraries.libldap.libldap
-	$(LINK) $(LD_FLAGS) keyserver.o.gpgkeys_ldap $(LIBLDAP).libraries.libldap.libldap -o keyserver.gpgkeys_ldap
+keyserver.gpgkeys_ldap: $(GPGKEYS_OBJS) $(LIBLDAP).libraries.libldap.libldap
+	$(LINK) $(LD_FLAGS) $(GPGKEYS_OBJS) $(LIBLDAP).libraries.libldap.libldap -o keyserver.gpgkeys_ldap
 	-squeeze keyserver.gpgkeys_ldap
 	-copy keyserver.gpgkeys_ldap ADFS::A5.$.tmp.!GnuPG.gpgkeys_ldap ~CF~V
 
@@ -239,7 +245,7 @@ g10.gpgv: $(GPGV_OBJS) intl.gettext BUILD
 	-copy g10.gpgv ADFS::A5.$.tmp.!GnuPG.gpgv ~CFR~V
 
 g10.gpgpart: $(G10_OBJS) cipher.cipher intl.gettext mpi.mpi util.util zlib.zlib BUILD
-	drlink -aof $(G10_OBJS) $(LD_FLAGS) cipher.cipher intl.gettext mpi.mpi util.util zlib.zlib -o g10.gpgpart
+	drlink034 -aof $(G10_OBJS) $(LD_FLAGS) cipher.cipher intl.gettext mpi.mpi util.util zlib.zlib -o g10.gpgpart
 
 select-idea-src:
 	-copy distrib.idea-addon.cipher.c.idea cipher.c.idea ~CF~NR~V
@@ -250,7 +256,6 @@ select-gpl-src:
 	$(CC) $(CC_FLAGS) $(DEPEND) -c -o cipher.o.idea cipher.c.idea
 
 distrib.gnupgsrc/zip: select-gpl-src
-	-stripdepnd
 	-zip -9@ distrib.gnupgsrc/zip < distrib.resources.distfiles
 
 distrib.gnupg/zip: distrib.gpl-bin.!GnuPG.JPEGview distrib.gpl-bin.!GnuPG.gpgsplit distrib.gpl-bin.!GnuPG.gpg distrib.gpl-bin.!GnuPG.gpgv select-gpl-src
@@ -441,6 +446,7 @@ dist: BUILD clean-version tools.gpgsplit
 	ifthere <WebServe$ServeRoot>.archives.gnupgpart/zip then wipe <WebServe$ServeRoot>.archives.gnupgpart/zip ~CFR~V
 	ifthere <WebServe$ServeRoot>.archives.gnupgsrc/zip then wipe <WebServe$ServeRoot>.archives.gnupgsrc/zip ~CFR~V
 	ifthere <WebServe$ServeRoot>.archives.gnupgintl/zip then wipe <WebServe$ServeRoot>.archives.gnupgintl/zip ~CFR~V
+	ifthere <WebServe$ServeRoot>.archives.gnupgldap/zip then wipe <WebServe$ServeRoot>.archives.gnupgldap/zip ~CFR~V
 	ifthere <WebServe$ServeRoot>.gnupg_history/txt then wipe <WebServe$ServeRoot>.gnupg_history/txt ~CFR~V
 	ifthere <WebServe$ServeRoot>.gnupg_news/txt then wipe <WebServe$ServeRoot>.gnupg_news/txt ~CFR~V
 	rename distrib.gnupgdev/zip <WebServe$ServeRoot>.private.gnupgdev/zip
@@ -449,6 +455,7 @@ dist: BUILD clean-version tools.gpgsplit
 	rename distrib.gnupgpart/zip <WebServe$ServeRoot>.archives.gnupgpart/zip
 	rename distrib.gnupgsrc/zip <WebServe$ServeRoot>.archives.gnupgsrc/zip
 	rename distrib.gnupgintl/zip <WebServe$ServeRoot>.archives.gnupgintl/zip
+	rename distrib.gnupgldap/zip <WebServe$ServeRoot>.archives.gnupgldap/zip
 	copy distrib.resources.History <WebServe$ServeRoot>.gnupg_history/txt ~CFR~V
 	copy distrib.resources.orig_docs.NEWS <WebServe$ServeRoot>.gnupg_news/txt ~CFR~V
 	unset GnuPG$DevDefine

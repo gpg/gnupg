@@ -51,44 +51,44 @@ parse_keyserver_options(char *options)
 
   do
     {
-      if(strcasecmp(tok,"include-revoked")==0)
+      if(ascii_strcasecmp(tok,"include-revoked")==0)
 	opt.keyserver_options.include_revoked=1;
-      else if(strcasecmp(tok,"no-include-revoked")==0)
+      else if(ascii_strcasecmp(tok,"no-include-revoked")==0)
 	opt.keyserver_options.include_revoked=0;
-      else if(strcasecmp(tok,"include-disabled")==0)
+      else if(ascii_strcasecmp(tok,"include-disabled")==0)
 	opt.keyserver_options.include_disabled=1;
-      else if(strcasecmp(tok,"no-include-disabled")==0)
+      else if(ascii_strcasecmp(tok,"no-include-disabled")==0)
 	opt.keyserver_options.include_disabled=0;
 #ifdef EXEC_TEMPFILE_ONLY
-      else if(strcasecmp(tok,"use-temp-files")==0 ||
-	      strcasecmp(tok,"no-use-temp-files")==0)
+      else if(ascii_strcasecmp(tok,"use-temp-files")==0 ||
+	      ascii_strcasecmp(tok,"no-use-temp-files")==0)
 	log_info(_("Warning: keyserver option \"%s\" is not used "
 		   "on this platform\n"),tok);
 #else
-      else if(strcasecmp(tok,"use-temp-files")==0)
+      else if(ascii_strcasecmp(tok,"use-temp-files")==0)
 	opt.keyserver_options.use_temp_files=1;
-      else if(strcasecmp(tok,"no-use-temp-files")==0)
+      else if(ascii_strcasecmp(tok,"no-use-temp-files")==0)
 	opt.keyserver_options.use_temp_files=0;
 #endif
-      else if(strcasecmp(tok,"keep-temp-files")==0)
+      else if(ascii_strcasecmp(tok,"keep-temp-files")==0)
 	opt.keyserver_options.keep_temp_files=1;
-      else if(strcasecmp(tok,"no-keep-temp-files")==0)
+      else if(ascii_strcasecmp(tok,"no-keep-temp-files")==0)
 	opt.keyserver_options.keep_temp_files=0;
-      else if(strcasecmp(tok,"verbose")==0)
+      else if(ascii_strcasecmp(tok,"verbose")==0)
 	opt.keyserver_options.verbose++;
-      else if(strcasecmp(tok,"no-verbose")==0)
+      else if(ascii_strcasecmp(tok,"no-verbose")==0)
 	opt.keyserver_options.verbose--;
-      else if(strcasecmp(tok,"honor-http-proxy")==0)
+      else if(ascii_strcasecmp(tok,"honor-http-proxy")==0)
 	opt.honor_http_proxy=1;
-      else if(strcasecmp(tok,"no-honor-http-proxy")==0)
+      else if(ascii_strcasecmp(tok,"no-honor-http-proxy")==0)
 	opt.honor_http_proxy=0;
-      else if(strcasecmp(tok,"refresh-add-fake-v3-keyids")==0)
+      else if(ascii_strcasecmp(tok,"refresh-add-fake-v3-keyids")==0)
 	opt.keyserver_options.refresh_add_fake_v3_keyids=1;
-      else if(strcasecmp(tok,"no-refresh-add-fake-v3-keyids")==0)
+      else if(ascii_strcasecmp(tok,"no-refresh-add-fake-v3-keyids")==0)
 	opt.keyserver_options.refresh_add_fake_v3_keyids=0;
-      else if(strcasecmp(tok,"auto-key-retrieve")==0)
+      else if(ascii_strcasecmp(tok,"auto-key-retrieve")==0)
 	opt.keyserver_options.auto_key_retrieve=1;
-      else if(strcasecmp(tok,"no-auto-key-retrieve")==0)
+      else if(ascii_strcasecmp(tok,"no-auto-key-retrieve")==0)
 	opt.keyserver_options.auto_key_retrieve=0;
       else if(strlen(tok)>0)
 	add_to_strlist(&opt.keyserver_options.other,tok);
@@ -466,7 +466,7 @@ keyserver_spawn(int action,STRLIST list,
 	  goto fail; /* i.e. EOF */
 	}
 
-      if(strncasecmp(line,"VERSION ",8)==0)
+      if(ascii_memcasecmp(line,"VERSION ",8)==0)
 	{
 	  gotversion=1;
 
@@ -478,16 +478,16 @@ keyserver_spawn(int action,STRLIST list,
 	    }
 	}
 
-      if(strncasecmp(line,"PROGRAM ",8)==0)
+      if(ascii_memcasecmp(line,"PROGRAM ",8)==0)
 	{
 	  line[strlen(line)-1]='\0';
-	  if(strcasecmp(&line[8],VERSION)!=0)
+	  if(ascii_strcasecmp(&line[8],VERSION)!=0)
 	    log_info(_("Warning: keyserver handler from a different "
 		       "version of GnuPG (%s)\n"),&line[8]);
 	}
 
       /* Currently the only OPTION */
-      if(strncasecmp(line,"OPTION OUTOFBAND",16)==0)
+      if(ascii_memcasecmp(line,"OPTION OUTOFBAND",16)==0)
 	outofband=1;
     }
   while(line[0]!='\n');
@@ -573,9 +573,9 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 
 #ifndef USE_EXTERNAL_HKP
   /* Use the internal HKP code */
-  if(strcasecmp(opt.keyserver_scheme,"x-hkp")==0 ||
-     strcasecmp(opt.keyserver_scheme,"hkp")==0 ||
-     strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0)
+  if(ascii_strcasecmp(opt.keyserver_scheme,"x-hkp")==0 ||
+     ascii_strcasecmp(opt.keyserver_scheme,"hkp")==0 ||
+     ascii_strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0)
     {
       void *stats_handle = import_new_stats_handle ();
 
@@ -847,10 +847,10 @@ keyserver_refresh(STRLIST users)
      scheme, then enable fake v3 keyid generation. */
   if(opt.keyserver_options.refresh_add_fake_v3_keyids &&
      opt.keyserver_scheme &&
-     (strcasecmp(opt.keyserver_scheme,"x-hkp")==0 ||
-      strcasecmp(opt.keyserver_scheme,"hkp")==0 ||
-      strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0 ||
-      strcasecmp(opt.keyserver_scheme,"mailto")==0))
+     (ascii_strcasecmp(opt.keyserver_scheme,"x-hkp")==0 ||
+      ascii_strcasecmp(opt.keyserver_scheme,"hkp")==0 ||
+      ascii_strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0 ||
+      ascii_strcasecmp(opt.keyserver_scheme,"mailto")==0))
     fakev3=1;
 
   rc=keyidlist(users,&desc,&count,fakev3);

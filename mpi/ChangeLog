@@ -1,3 +1,8 @@
+2002-05-10  Stefan Bellon  <sbellon@sbellon.de>
+
+	* mpiutil.c (mpi_alloc_like/mpi_debug_alloc_like): Added code
+	for M_DEBUG.
+
 2002-04-18  Werner Koch  <wk@gnupg.org>
 
 	* i386/syntax.h (ALIGN): Removed parens from definition

@@ -241,8 +241,8 @@ g10_log_bug( const char *fmt, ... )
     abort();
 }
 
-#if !defined (__riscos__) \
-    && ( __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 ))
+#if defined (__riscos__) \
+    || ( __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 ))
 void
 g10_log_bug0( const char *file, int line, const char *func )
 {

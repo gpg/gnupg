@@ -77,7 +77,7 @@ hkp_ask_import( KEYDB_SEARCH_DESC *desc, void *stats_handle)
      * binary mode ... how?
      */
 
-    if(strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0)
+    if(ascii_strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0)
       hflags |= HTTP_FLAG_NO_SHUTDOWN;
 
     sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=get&search=0x%08lX",
@@ -131,7 +131,7 @@ hkp_export( STRLIST users )
 
     request = m_alloc( strlen( opt.keyserver_host ) + 100 );
 
-    if(strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0)
+    if(ascii_strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0)
       hflags |= HTTP_FLAG_NO_SHUTDOWN;
 
     sprintf( request, "x-hkp://%s%s%s/pks/add",
@@ -305,7 +305,7 @@ parse_hkp_index(IOBUF buffer,char *line)
 	}
     }
 
-  if(strncasecmp(line,"pub  ",5)==0)
+  if(ascii_memcasecmp(line,"pub  ",5)==0)
     {
       char *tok,*temp;
 
@@ -503,7 +503,7 @@ int hkp_search(STRLIST tokens)
 
   request=m_alloc(strlen(opt.keyserver_host) + 100 + strlen(searchurl));
 
-  if(strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0)
+  if(ascii_strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0)
     hflags |= HTTP_FLAG_NO_SHUTDOWN;
 
   sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=index&search=%s",

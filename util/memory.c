@@ -78,7 +78,7 @@
 					info, __FUNCTION__);  } while(0)
   #else
     #define store_len(p,n,m) do { add_entry(p,n,m, \
-	          info, "[" __FILE__ ":" STR(__LINE__) "]" );  } while(0)
+	          info, __func__ );  } while(0)
   #endif
 #else
   #define FNAME(a)  m_ ##a
@@ -175,7 +175,7 @@ add_entry( byte *p, unsigned n, int mode, const char *info, const char *by )
     e = memtbl+index;
     if( e->inuse )
 	membug("Ooops: entry %u is flagged as in use\n", index);
-    e->user_p = p + 4;
+    e->user_p = p + EXTRA_ALIGN + 4;
     e->user_n = n;
     e->count++;
     if( e->next )
@@ -197,10 +197,10 @@ add_entry( byte *p, unsigned n, int mode, const char *info, const char *by )
     e->inuse = 1;
 
     /* put the index at the start of the memory */
-    p[0] = index;
-    p[1] = index >> 8 ;
-    p[2] = index >> 16 ;
-    p[3] = mode? MAGIC_SEC_BYTE : MAGIC_NOR_BYTE  ;
+    p[EXTRA_ALIGN+0] = index;
+    p[EXTRA_ALIGN+1] = index >> 8 ;
+    p[EXTRA_ALIGN+2] = index >> 16 ;
+    p[EXTRA_ALIGN+3] = mode? MAGIC_SEC_BYTE : MAGIC_NOR_BYTE  ;
     if( DBG_MEMORY )
 	log_debug( "%s allocates %u bytes using %s\n", info, e->user_n, by );
 }
@@ -277,8 +277,12 @@ free_entry( byte *p, const char *info )
 	    ;
 	e2->next = e;
     }
-    memset(p,'f', e->user_n+5);
-    free(p);
+    if( m_is_secure(p+EXTRA_ALIGN+4) )
+	secmem_free(p);
+    else {
+        memset(p,'f', e->user_n+5);
+	free(p);
+    }
 }
 
 static void
@@ -444,12 +448,18 @@ FNAME(alloc_secure)( size_t n FNAMEPRT )
     char *p;
 
   #ifdef M_GUARD
+    if(!n)
+      out_of_core(n,1); /* should never happen */
     if( !(p = secmem_malloc( n +EXTRA_ALIGN+ 5 )) )
 	out_of_core(n,1);
     store_len(p,n,1);
     p[4+EXTRA_ALIGN+n] = MAGIC_END_BYTE;
     return p+EXTRA_ALIGN+4;
   #else
+    /* mallocing zero bytes is undefined by ISO-C, so we better make
+       sure that it won't happen */
+    if (!n)
+      n = 1;
     if( !(p = secmem_malloc( n )) )
 	out_of_core(n,1);
     return p;
@@ -499,7 +509,7 @@ FNAME(realloc)( void *a, size_t n FNAMEPRT )
         FNAME(free)(p FNAMEARG);
     }
     else
-        b = FNAME(alloc)(n);
+        b = FNAME(alloc)(n FNAMEARG);
   #else
     if( m_is_secure(a) ) {
 	if( !(b = secmem_realloc( a, n )) )

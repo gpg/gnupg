@@ -1,3 +1,12 @@
+2002-05-10  Stefan Bellon  <sbellon@sbellon.de>
+
+	* mpi.h: New function mpi_debug_alloc_like for M_DEBUG.
+
+	* util.h [__riscos__]: Make use of __func__ that later
+	Norcroft compiler provides.
+
+	* memory.h: Fixed wrong definition of m_alloc_secure_clear.
+
 2002-04-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* util.h: New function answer_is_yes_no_default() to give a
