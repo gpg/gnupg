@@ -27,7 +27,11 @@ Important
 > gpg: keyblock resource `/home/jam/.gnupg/pubring.gpg': file open error
 > gpg: OOPS in close enum_keyblocks - ignored
 
-
+    > Indeed, comparing zero to 0xfe returns 2, not -something, and this is
+> the problem.	This seems to fix it, but I don't know how you want to
+> handle this.
+>
+  I'll better write a autoconf test as memcmp is used all over the place.
 
 Needed
 ------
@@ -69,4 +73,6 @@ Nice to have
     * change the fake_data stuff to mpi_set_opaque
     * How about letting something like 'gpg --version -v', list the
       effective options.
+    * Stats about used random numbers.
+
 

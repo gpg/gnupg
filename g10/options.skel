@@ -62,5 +62,6 @@ lock-once
 # you will be asked in such a case whether GnuPG should try to
 # import the key from that server (server do syncronize with each
 # others and DNS Round-Robin may give you a random server each time).
-#keyserver keys.pgp.net
+# Use "host -l pgp.net | grep www" to figure out a keyserver.
+#keyserver wwwkeys.eu.pgp.net
 
