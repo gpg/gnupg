@@ -85,7 +85,7 @@ struct loaded_domain
   char *data;
   int must_swap;
   u32 nstrings;
-  char *mapped;
+/*    char *mapped; */
   struct string_desc *orig_tab;
   struct string_desc *trans_tab;
   u32 hash_size;
@@ -211,12 +211,12 @@ load_domain( const char *filename )
     }
 
     /* allocate an array to keep track of code page mappings */
-    domain->mapped = calloc( 1, domain->nstrings );
-    if( !domain->mapped ) {
-	free( data );
-	free( domain );
-	return NULL;
-    }
+/*      domain->mapped = calloc( 1, domain->nstrings ); */
+/*      if( !domain->mapped ) { */
+/*  	free( data ); */
+/*  	free( domain ); */
+/*  	return NULL; */
+/*      } */
 
     return domain;
 }
@@ -273,7 +273,7 @@ set_gettext_file( const char *filename )
 
     if( the_domain ) {
 	free( the_domain->data );
-	free( the_domain->mapped );
+/*  	free( the_domain->mapped ); */
 	free( the_domain );
 	the_domain = NULL;
     }
@@ -287,6 +287,8 @@ get_string( struct loaded_domain *domain, u32 idx )
 {
     char *p = domain->data + SWAPIT(domain->must_swap,
 				    domain->trans_tab[idx].offset);
+#if 0 /* Mapping is not used any more.  Instead we convert the files when
+         Creating the binary distribution. */
     if( !domain->mapped[idx] ) {
 	byte *pp;
 
@@ -398,6 +400,7 @@ get_string( struct loaded_domain *domain, u32 idx )
 	}
 
     }
+#endif /* unused code */
     return (const char*)p;
 }
 
