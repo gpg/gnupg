@@ -1,6 +1,8 @@
-Noteworthy changes in version 1.2.?
+Noteworthy changes in version 1.2.8
 ------------------------------------------------
 
+    * Added countermeasures against the Mister/Zuccherato CFB attack
+    <http://eprint.iacr.org/2005/033>.
 
 Noteworthy changes in version 1.2.7 (2004-12-27)
 ------------------------------------------------
