@@ -326,6 +326,10 @@ more arguments in future versions.
     ALREADY_SIGNED <long-keyid>
         Warning: This is experimental and might be removed at any time.
 
+    TRUNCATED <maxno>
+        The output was truncated to MAXNO items.  This status code is issued
+        for certain external requests
+
 
 Key generation
 ==============

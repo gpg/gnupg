@@ -177,16 +177,16 @@ separate line. The command is intended for quick checking of many files.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--encrypt-files <optional><parameter/files></optional></term>
+<term>--encrypt-files <optional><parameter/files/</optional></term>
 <listitem><para>
 This is a special version of the --encrypt command. The command expects
 the files to be encrypted either on the command line or reads the filenames
 from stdin; each name must be on separate line. The command is intended
 for a quick encryption of multiple files.
-</para></listitem></varlistenry>
+</para></listitem></varlistentry>
 
 <varlistentry>
-<term>--decrypt-files <optional><parameter/files></optional></term>
+<term>--decrypt-files <optional><parameter/files/</optional></term>
 <listitem><para>
 The same as --encrypt-files with the difference that files will be
 decrypted. The syntax or the filenames is the same.
