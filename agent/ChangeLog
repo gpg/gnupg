@@ -2,7 +2,7 @@
 
 	**MERGED FROM MAIN BRANCH, RE-PATCHED**
 
-	* command-ssh.c: New file.
+	* command-ssh.c, estream.c, estream.h: New file.
 
 	* findkey.c (modify_description): New function.
 	(agent_key_from_file): New variables: comment, comment_sexp,
