@@ -1,3 +1,9 @@
+2002-01-02  Stefan Bellon  <sbellon@sbellon.de>
+
+	* util.h [__riscos__]: Updated prototype list.
+
+	* types.h [__riscos__]: Changed comment wording.
+
 2001-12-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* KEYSERVER_SCHEME_NOT_FOUND should be 127 to match the POSIX

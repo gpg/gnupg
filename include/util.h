@@ -255,19 +255,28 @@ int vasprintf ( char **result, const char *format, va_list args);
 
 /******* RISC OS stuff ***********/
 #ifdef __riscos__
+pid_t riscos_getpid(void);
+int riscos_kill(pid_t pid, int sig);
 FILE *riscos_fopen(const char *filename, const char *mode);
 int riscos_open(const char *filename, int oflag, ...);
 int riscos_fstat(int fildes, struct stat *buf);
+int riscos_access(const char *path, int amode);
 int fdopenfile(const char *filename, const int allow_write);
 void close_fds(void);
 int renamefile(const char *old, const char *new);
 char *gstrans(const char *old);
 void not_implemented(const char *feature);
-void set_filetype(const char *filename, const int type);
+#ifdef DEBUG
+void dump_fdlist(void);
+void list_openfiles(void);
+#endif
 #ifndef __RISCOS__C__
-  #define fopen riscos_fopen
+  #define getpid riscos_getpid
+  #define kill(a,b) riscos_kill((a),(b))
+  #define fopen(a,b) riscos_fopen((a),(b))
+  #define fstat(a,b) riscos_fstat((a),(b))
   #define open riscos_open
-  #define fstat riscos_fstat
+  #define access(a,b) riscos_access((a),(b))
 #endif /* !__RISCOS__C__ */
 #endif /* __riscos__ */
 
