@@ -88,6 +88,13 @@ struct app_ctx_s {
 #if GNUPG_MAJOR_VERSION == 1
 int app_select_openpgp (app_t app);
 int app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp);
+int app_openpgp_storekey (app_t app, int keyno,
+                          unsigned char *template, size_t template_len,
+                          time_t created_at,
+                          const unsigned char *m, size_t mlen,
+                          const unsigned char *e, size_t elen,
+                          int (*pincb)(void*, const char *, char **),
+                          void *pincb_arg);
 #else
 /*-- app-help.c --*/
 gpg_error_t app_help_get_keygrip_string (ksba_cert_t cert, char *hexkeygrip);

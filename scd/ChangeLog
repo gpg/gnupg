@@ -1,3 +1,11 @@
+2004-10-21  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_sign): Replace asprintf by direct allocation.
+	This avoids problems with missing vasprintf implementations in
+	gnupg 1.4.
+
+	* app-common.h (app_openpgp_storekey: Add prototype. 
+
 2004-10-20  Werner Koch  <wk@g10code.com>
 
 	* sc-investigate: Removed.

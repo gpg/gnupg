@@ -824,7 +824,7 @@ verify_chv3 (app_t app,
 
       if (strlen (pinvalue) < 6)
         {
-          log_error (_("prassphrase (CHV%d) is too short;"
+          log_error (_("passphrase (CHV%d) is too short;"
                        " minimum length is %d\n"), 3, 6);
           xfree (pinvalue);
           return gpg_error (GPG_ERR_BAD_PIN);
@@ -1298,10 +1298,15 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 
       {
         char *prompt;
-        if (asprintf (&prompt, _("PIN [sigs done: %lu]"), sigcount) < 0)
+#define PROMPTSTRING  _("PIN [sigs done: %lu]")
+
+        prompt = malloc (strlen (PROMPTSTRING) + 50);
+        if (!prompt)
           return gpg_error_from_errno (errno);
+        sprintf (prompt, PROMPTSTRING, sigcount);
         rc = pincb (pincb_arg, prompt, &pinvalue); 
         free (prompt);
+#undef PROMPTSTRING
       }
       if (rc)
         {
