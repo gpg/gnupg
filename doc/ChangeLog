@@ -1,3 +1,11 @@
+2002-11-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: --compress-algo now allows algorithm names.
+
+2002-11-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document --trust-model.
+
 2002-11-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* KEYSERVER: New.  Documents the --with-colons format for
@@ -11,6 +19,11 @@
 	--recipient, document --hidden-recipient, document
 	--hidden-encrypt-to, clarify --no-encrypt-to, clarify
 	--throw-keyid, document --no-throw-keyid.
+
+2002-10-25  Werner Koch  <wk@gnupg.org>
+
+        * README.W32: Add blurb on how to create a ZIP file, changed
+        requirement for mingw32 to 0.3.2.
 
 2002-10-24  David Shaw  <dshaw@jabberwocky.com>
 
