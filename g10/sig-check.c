@@ -42,8 +42,7 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 {
     PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
     MPI result = NULL;
-    int rc=0, i, j, c, old_enc;
-    byte *dp;
+    int rc=0;
 
 
     if( get_pubkey( pkc, sig->keyid ) ) {
@@ -74,6 +73,8 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
     }
  #ifdef HAVE_RSA_CIPHER
     else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
+	int i, j, c, old_enc;
+	byte *dp;
 	RSA_public_key pkey;
 
 	result = mpi_alloc(40);

@@ -39,7 +39,9 @@
 
 
 #define TRUST_RECORD_LEN 40
-#define SIGS_PER_RECORD ((TRUST_RECORD_LEN-10)/5)
+#define SIGS_PER_RECORD 	((TRUST_RECORD_LEN-10)/5)
+#define ITEMS_PER_HTBL_RECORD	((TRUST_RECORD_LEN-2)/4)
+#define ITEMS_PER_HLST_RECORD	((TRUST_RECORD_LEN-6)/5)
 #define MAX_LIST_SIGS_DEPTH  20
 
 
@@ -48,6 +50,8 @@
 #define RECTYPE_KEY  3
 #define RECTYPE_CTL  4
 #define RECTYPE_SIG  5
+#define RECTYPE_HTBL 6
+#define RECTYPE_HLST 7
 
 
 struct trust_record {
@@ -67,8 +71,9 @@ struct trust_record {
 	    ulong local_id;
 	    u32  keyid[2];
 	    ulong keyrec;   /* recno of public key record */
-	    ulong ctlrec    /* recno of control record */
+	    ulong ctlrec;   /* recno of control record */
 	    ulong sigrec;   /* recno of first signature record */
+	    ulong link;     /* to next dir record */
 	    byte no_sigs;   /* does not have sigature and checked */
 	} dir;
 	struct {	    /* public key record */
@@ -91,15 +96,27 @@ struct trust_record {
 		byte flag;     /* reserved */
 	    } sig[SIGS_PER_RECORD];
 	} sig;
+	struct {
+	    ulong item[ITEMS_PER_HTBL_RECORD];
+	} htbl;
+	struct {
+	    ulong chain;
+	    struct {
+		byte hash;
+		ulong rnum;
+	    } item[ITEMS_PER_HLST_RECORD];
+	} hlst;
     } r;
 };
 typedef struct trust_record TRUSTREC;
 
 typedef struct {
     ulong     local_id;    /* localid of the pubkey */
+    ulong     sigrec;
     ulong     sig_id;	   /* returned signature id */
     unsigned  sig_flag;    /* returned signature record flag */
     struct {		   /* internal data */
+	int init_done;
 	int eof;
 	TRUSTREC rec;
 	int index;
@@ -139,7 +156,7 @@ typedef struct {
 static void create_db( const char *fname );
 static void open_db(void);
 static void dump_record( ulong rnum, TRUSTREC *rec, FILE *fp );
-static int  read_record( ulong recnum, TRUSTREC *rec );
+static int  read_record( ulong recnum, TRUSTREC *rec, int expected );
 static int  write_record( ulong recnum, TRUSTREC *rec );
 static ulong new_recnum(void);
 static int search_record( PKT_public_cert *pkc, TRUSTREC *rec );
@@ -156,9 +173,9 @@ static int do_list_path( TRUST_INFO *stack, int depth, int max_depth,
 			 LOCAL_ID_INFO *lids, TRUST_SEG_LIST *tslist );
 
 static int list_sigs( ulong pubkey_id );
-static int build_sigrecs( ulong pubkeyid, int kludge );
+static int build_sigrecs( ulong pubkeyid );
 static int propagate_trust( TRUST_SEG_LIST tslist );
-static int do_check( ulong pubkeyid, unsigned *trustlevel );
+static int do_check( ulong pubkeyid, TRUSTREC *drec, unsigned *trustlevel );
 
 static int update_no_sigs( ulong lid, int no_sigs );
 
@@ -335,7 +352,7 @@ open_db()
     db_fd = open( db_name, O_RDWR );
     if( db_fd == -1 )
 	log_fatal("can't open %s: %s\n", db_name, strerror(errno) );
-    if( read_record( 0, &rec ) )
+    if( read_record( 0, &rec, RECTYPE_VER ) )
 	log_fatal("TrustDB %s is invalid\n", db_name );
     /* fixme: check ->locked and other stuff */
 }
@@ -366,17 +383,16 @@ dump_record( ulong rnum, TRUSTREC *rec, FILE *fp  )
       case RECTYPE_CTL: fprintf(fp, "ctl\n");
 	break;
       case RECTYPE_SIG:
-	fprintf(fp, "sigrec, owner=%lu, chain=%lu%s\n",
-			 rec->r.sig.owner, rec->r.sigrec.chain,
-			 rec->rectype == 4?"":" (extend)");
+	fprintf(fp, "sigrec, owner=%lu, chain=%lu\n",
+			 rec->r.sig.owner, rec->r.sig.chain );
 	for(i=any=0; i < SIGS_PER_RECORD; i++ ) {
-	    if( rec->r.sigrec.sig[i].local_id ) {
+	    if( rec->r.sig.sig[i].local_id ) {
 		if( !any ) {
 		    putc('\t', fp);
 		    any++;
 		}
-		fprintf(fp, "  %lu:%02x", rec->r.sigrec.sig[i].local_id,
-					      rec->r.sigrec.sig[i].flag );
+		fprintf(fp, "  %lu:%02x", rec->r.sig.sig[i].local_id,
+					      rec->r.sig.sig[i].flag );
 	    }
 	}
 	if( any )
@@ -393,7 +409,7 @@ dump_record( ulong rnum, TRUSTREC *rec, FILE *fp  )
  * returns: -1 on error, 0 on success
  */
 static int
-read_record( ulong recnum, TRUSTREC *rec )
+read_record( ulong recnum, TRUSTREC *rec, int expected )
 {
     byte buf[TRUST_RECORD_LEN], *p;
     int rc = 0;
@@ -415,23 +431,26 @@ read_record( ulong recnum, TRUSTREC *rec )
     }
     p = buf;
     rec->rectype = *p++;
+    if( expected && rec->rectype != expected ) {
+	log_error("%lu: read expected rec type %d, got %d\n",
+		    recnum, expected, rec->rectype );
+	return G10ERR_TRUSTDB;
+    }
     p++;
     switch( rec->rectype ) {
       case 0:  /* unused record */
 	break;
       case RECTYPE_VER: /* version record */
-	if( memcmp(buf+1, "g10", 3 ) {
+	if( memcmp(buf+1, "g10", 3 ) ) {
 	    log_error("%s: not a trustdb file\n", db_name );
 	    rc = G10ERR_TRUSTDB;
 	}
 	p += 2; /* skip magic */
 	rec->r.ver.version  = *p++;
-	memcpy( rec->r.ver.reserved, p, 3); p += 3;
 	rec->r.ver.locked   = buftoulong(p); p += 4;
 	rec->r.ver.created  = buftoulong(p); p += 4;
 	rec->r.ver.modified = buftoulong(p); p += 4;
 	rec->r.ver.validated= buftoulong(p); p += 4;
-	rec->r.ver.local_id_counter = buftoulong(p); p += 4;
 	rec->r.ver.marginals_needed = *p++;
 	rec->r.ver.completes_needed = *p++;
 	rec->r.ver.max_cert_depth = *p++;
@@ -442,7 +461,7 @@ read_record( ulong recnum, TRUSTREC *rec )
 	}
 	if( rec->r.ver.version != 1 ) {
 	    log_error("%s: invalid file version %d\n",
-				       db_name, rec->r.version.version );
+				       db_name, rec->r.ver.version );
 	    rc = G10ERR_TRUSTDB;
 	}
 	break;
@@ -467,8 +486,8 @@ read_record( ulong recnum, TRUSTREC *rec )
 	rec->r.dir.keyid[0] = buftou32(p); p += 4;
 	rec->r.dir.keyid[1] = buftou32(p); p += 4;
 	rec->r.key.pubkey_algo = *p++; p++;
-	memcpy( rec->r.pubkey.fingerprint, p, 20); p += 20;
-	rec->r.pubkey.ownertrust = *p++;
+	memcpy( rec->r.key.fingerprint, p, 20); p += 20;
+	rec->r.key.ownertrust = *p++;
 	break;
       case RECTYPE_CTL:   /* control record */
 	rec->r.ctl.owner    = buftoulong(p); p += 4;
@@ -508,8 +527,7 @@ write_record( ulong recnum, TRUSTREC *rec )
 
     memset(buf, 0, TRUST_RECORD_LEN);
     p = buf;
-    *p++ = rec->rectype;
-    *p++ = rec->reserved;
+    *p++ = rec->rectype; p++;
     switch( rec->rectype ) {
       case 0:  /* unused record */
 	break;
@@ -532,9 +550,9 @@ write_record( ulong recnum, TRUSTREC *rec )
 	ulongtobuf(p, rec->r.key.owner); p += 4;
 	u32tobuf(p, rec->r.key.keyid[0]); p += 4;
 	u32tobuf(p, rec->r.key.keyid[1]); p += 4;
-	*p++ = rec->r.pubkey.pubkey_algo; p++;
+	*p++ = rec->r.key.pubkey_algo; p++;
 	memcpy( p, rec->r.key.fingerprint, 20); p += 20;
-	*p++ = rec->r.pubkey.ownertrust;
+	*p++ = rec->r.key.ownertrust;
 	break;
 
       case RECTYPE_CTL:   /* control record */
@@ -617,18 +635,18 @@ search_record( PKT_public_cert *pkc, TRUSTREC *rec )
     fingerprint = fingerprint_from_pkc( pkc, &fingerlen );
     assert( fingerlen == 20 || fingerlen == 16 );
 
-    for(recnum=1; !(rc=read_record( recnum, rec)); recnum++ ) {
+    for(recnum=1; !(rc=read_record( recnum, rec, 0)); recnum++ ) {
 	if( rec->rectype != RECTYPE_DIR )
 	    continue;
 	if( rec->r.dir.keyid[0] == keyid[0]
 	    && rec->r.dir.keyid[1] == keyid[1]){
 	    TRUSTREC keyrec;
 
-	    if( read_record( rec->r.dir.keyrec, keyrec ) ) {
+	    if( read_record( rec->r.dir.keyrec, &keyrec, RECTYPE_KEY ) ) {
 		log_error("%lu: ooops: invalid dir record\n", recnum );
 		break;
 	    }
-	    if( keyrec.key.pubkey_algo == pkc->pubkey_algo
+	    if( keyrec.r.key.pubkey_algo == pkc->pubkey_algo
 		&& !memcmp(keyrec.r.key.fingerprint, fingerprint, fingerlen) ){
 		if( pkc->local_id && pkc->local_id != recnum )
 		    log_error("%s: found record, but local_id from mem does "
@@ -682,7 +700,7 @@ keyid_from_local_id( ulong lid, u32 *keyid )
     TRUSTREC rec;
     int rc;
 
-    rc = read_record( lid, &rec );
+    rc = read_record( lid, &rec, RECTYPE_DIR );
     if( rc ) {
 	log_error("error reading record with local_id %lu: %s\n",
 						    lid, g10_errstr(rc));
@@ -710,8 +728,6 @@ keyid_from_local_id( ulong lid, u32 *keyid )
 static int
 walk_sigrecs( SIGREC_CONTEXT *c, int create )
 {
-!!!!!!FIXME!!!!!!!
-
     int rc=0;
     TRUSTREC *r;
     ulong rnum;
@@ -719,56 +735,68 @@ walk_sigrecs( SIGREC_CONTEXT *c, int create )
     if( c->ctl.eof )
 	return -1;
     r = &c->ctl.rec;
-    if( !r->rectype ) { /* this is the first call */
-
-	rc = scan_record( c->pubkey_id, r, 4, &rnum );
-	if( rc == -1 && create ) { /* no signature records */
-	    rc = build_sigrecs( c->pubkey_id, 1 );
+    if( !c->ctl.init_done ) {
+	c->ctl.init_done = 1;
+	if( !c->sigrec ) {
+	    rc = read_record( c->local_id, r, RECTYPE_DIR );
 	    if( rc ) {
-		if( rc != -1 )
-		    log_info("%lu: error building sigs on the fly: %s\n",
-			   c->pubkey_id, g10_errstr(rc) );
-		rc = -1;
+		log_error("%lu: error reading dir record: %s\n",
+					c->local_id, g10_errstr(rc));
+		return rc;
 	    }
-	    else /* once more */
-		rc = scan_record( c->pubkey_id, r, 4, &rnum );
+	    c->sigrec = r->r.dir.sigrec;
+	    if( !c->sigrec && create && !r->r.dir.no_sigs ) {
+		rc = build_sigrecs( c->local_id );
+		if( rc ) {
+		    if( rc != -1 )
+			log_info("%lu: error building sigs on the fly: %s\n",
+			       c->local_id, g10_errstr(rc) );
+		    c->ctl.eof = 1;
+		    return rc;
+		}
+		rc = read_record( c->local_id, r, RECTYPE_DIR );
+		if( rc ) {
+		    log_error("%lu: error re-reading dir record: %s\n",
+					    c->local_id, g10_errstr(rc));
+		    return rc;
+		}
+		c->sigrec = r->r.dir.sigrec;
+	    }
+	    if( !c->sigrec ) {
+		c->ctl.eof = 1;
+		return -1;
+	    }
 	}
-	if( rc == -1 ) { /* no signature records */
-	    c->ctl.eof = 1;
-	    return -1;	/* return eof */
-	}
-	if( rc ) {
-	    log_error("scan_record(sigrec) failed: %s\n", g10_errstr(rc));
-	    c->ctl.eof = 1;
-	    return rc;
-	}
-	c->ctl.index = 0;
+	/* force a read */
+	c->ctl.index = SIGS_PER_RECORD;
+	r->r.sig.chain = c->sigrec;
     }
+
     /* enter loop to skip deleted sigs */
     do {
 	if( c->ctl.index >= SIGS_PER_RECORD ) {
-	    /* read the next record */
-	    if( !r->r.sigrec.chain ) {
+	    /* read the record */
+	    rnum = r->r.sig.chain;
+	    if( !rnum ) {
 		c->ctl.eof = 1;
 		return -1;  /* return eof */
 	    }
-	    rnum = r->r.sigrec.chain;
-	    rc = read_record( rnum, r );
+	    rc = read_record( rnum, r, RECTYPE_SIG );
 	    if( rc ) {
-		log_error("error reading next sigrec: %s\n", g10_errstr(rc));
+		log_error("error reading sigrec: %s\n", g10_errstr(rc));
 		c->ctl.eof = 1;
 		return rc;
 	    }
-	    if( r->r.sigrec.owner != c->pubkey_id ) {
+	    if( r->r.sig.owner != c->local_id ) {
 		log_error("chained sigrec %lu has a wrong owner\n", rnum );
 		c->ctl.eof = 1;
 		return G10ERR_TRUSTDB;
 	    }
 	    c->ctl.index = 0;
 	}
-    } while( !r->r.sigrec.sig[c->ctl.index++].local_id );
-    c->sig_id = r->r.sigrec.sig[c->ctl.index-1].local_id;
-    c->sig_flag = r->r.sigrec.sig[c->ctl.index-1].flag;
+    } while( !r->r.sig.sig[c->ctl.index++].local_id );
+    c->sig_id = r->r.sig.sig[c->ctl.index-1].local_id;
+    c->sig_flag = r->r.sig.sig[c->ctl.index-1].flag;
     return 0;
 }
 
@@ -1089,7 +1117,7 @@ check_sigs( KBNODE keyblock, int *selfsig_okay )
  * to the trustdb
  */
 static int
-build_sigrecs( ulong pubkeyid, int kludge )
+build_sigrecs( ulong pubkeyid )
 {
     TRUSTREC rec, krec, rec2;
     PUBKEY_FIND_INFO finfo=NULL;
@@ -1105,18 +1133,14 @@ build_sigrecs( ulong pubkeyid, int kludge )
 	log_debug("trustdb: build_sigrecs for pubkey %lu\n", (ulong)pubkeyid );
 
     /* get the keyblock */
-    if( (rc=read_record( pubkeyid, &rec )) ) {
+    if( (rc=read_record( pubkeyid, &rec, RECTYPE_DIR )) ) {
 	log_error("%lu: build_sigrecs: can't read dir record\n", pubkeyid );
-	goto leave;
-    }
-    if( kludge && rec.r.dir.no_sigs ) {
-	rc = -1;
 	goto leave;
     }
     finfo = m_alloc_clear( sizeof *finfo );
     finfo->keyid[0] = rec.r.dir.keyid[0];
     finfo->keyid[1] = rec.r.dir.keyid[1];
-    if( (rc=read_record( rec.r.dir.keyrec, &krec )) ) {
+    if( (rc=read_record( rec.r.dir.keyrec, &krec, RECTYPE_KEY )) ) {
 	log_error("%lu: build_sigrecs: can't read key record\n", pubkeyid);
 	goto leave;
     }
@@ -1144,8 +1168,8 @@ build_sigrecs( ulong pubkeyid, int kludge )
 	rc = G10ERR_BAD_CERT;
 	goto leave;
     }
-
     update_no_sigs( pubkeyid, 0 );
+
     /* valid key signatures are now marked; we can now build the
      * sigrecs */
     memset( &rec, 0, sizeof rec );
@@ -1313,13 +1337,12 @@ propagate_trust( TRUST_SEG_LIST tslist )
 
 /****************
  * we have the pubkey record but nothing more is known
+ * function may re-read dr.
  */
 static int
-do_check( ulong pubkeyid, unsigned *trustlevel )
+do_check( ulong pubkeyid, TRUSTREC *dr, unsigned *trustlevel )
 {
     int i, rc=0;
-    ulong rnum;
-    TRUSTREC rec;
     TRUST_SEG_LIST tsl, tsl2, tslist;
     int marginal, fully;
     int fully_needed = opt.completes_needed;
@@ -1333,12 +1356,14 @@ do_check( ulong pubkeyid, unsigned *trustlevel )
     /* verify the cache */
 
     /* do we have sigrecs */
-    rc = scan_record( pubkeyid, &rec, 4, &rnum );
-    if( rc == -1 ) { /* no sigrecs, so build them */
-	rc = build_sigrecs( pubkeyid, 1 );
+    if( !dr->r.dir.sigrec && !dr->r.dir.no_sigs) {
+	/* no sigrecs, so build them */
+	rc = build_sigrecs( pubkeyid );
 	if( !rc ) /* and read again */
-	    rc = scan_record( pubkeyid, &rec, 4, &rnum );
+	    rc = read_record( pubkeyid, dr, RECTYPE_DIR );
     }
+    if( !rc && !dr->r.dir.sigrec )
+	rc = -1;
     if( rc )
 	return rc;  /* error while looking for sigrec or building sigrecs */
 
@@ -1482,7 +1507,7 @@ list_trustdb( const char *username )
 	for(i=9+strlen(db_name); i > 0; i-- )
 	    putchar('-');
 	putchar('\n');
-	for(recnum=0; !read_record( recnum, &rec); recnum++ )
+	for(recnum=0; !read_record( recnum, &rec, 0); recnum++ )
 	    dump_record( recnum, &rec, stdout );
     }
 }
@@ -1550,7 +1575,7 @@ list_trust_path( int max_depth, const char *username )
 		release_lid_table(work);
 	    }
 	    release_lid_table(lids);
-	}	     cvs checkout -h
+	}
 	if( rc )
 	    log_error("user '%s' list problem: %s\n", username, g10_errstr(rc));
 	rc = propagate_trust( tslist );
@@ -1605,14 +1630,14 @@ check_trust( PKT_public_cert *pkc, unsigned *r_trustlevel )
 
     /* get the pubkey record */
     if( pkc->local_id ) {
-	if( read_record( pkc->local_id, &rec ) ) {
+	if( read_record( pkc->local_id, &rec, RECTYPE_DIR ) ) {
 	    log_error("check_trust: read record failed\n");
 	    return G10ERR_TRUSTDB;
 	}
     }
     else { /* no local_id: scan the trustdb */
-	if( (rc=scan_record_by_pkc( pkc, &rec, 2 )) && rc != -1 ) {
-	    log_error("check_trust: scan_record_by_pkc(2) failed: %s\n",
+	if( (rc=search_record( pkc, &rec )) && rc != -1 ) {
+	    log_error("check_trust: search_record failed: %s\n",
 							    g10_errstr(rc));
 	    return rc;
 	}
@@ -1629,7 +1654,7 @@ check_trust( PKT_public_cert *pkc, unsigned *r_trustlevel )
     }
     /* fixme: do some additional checks on the pubkey record */
 
-    rc = do_check( pkc->local_id, &trustlevel );
+    rc = do_check( pkc->local_id, &rec, &trustlevel );
     if( rc ) {
 	log_error("check_trust: do_check failed: %s\n", g10_errstr(rc));
 	return rc;
@@ -1648,7 +1673,7 @@ check_trust( PKT_public_cert *pkc, unsigned *r_trustlevel )
 
 /****************
  * Enumerate all keys, which are needed to build all trust paths for
- * the given key.  This function dies not return the key itself or
+ * the given key.  This function does not return the key itself or
  * the ultimate key.
  *
  *  1) create a void pointer and initialize it to NULL
@@ -1700,12 +1725,16 @@ get_ownertrust( ulong lid, unsigned *r_otrust )
 {
     TRUSTREC rec;
 
-    if( read_record( lid, &rec ) ) {
-	log_error("get_ownertrust: read record failed\n");
+    if( read_record( lid, &rec, RECTYPE_DIR ) ) {
+	log_error("get_ownertrust: read dir record failed\n");
+	return G10ERR_TRUSTDB;
+    }
+    if( read_record( rec.r.dir.keyrec, &rec, RECTYPE_KEY ) ) {
+	log_error("get_ownertrust: read key record failed\n");
 	return G10ERR_TRUSTDB;
     }
     if( r_otrust )
-	*r_otrust = rec.r.pubkey.ownertrust;
+	*r_otrust = rec.r.key.ownertrust;
     return 0;
 }
 
@@ -1714,18 +1743,25 @@ keyid_from_trustdb( ulong lid, u32 *keyid )
 {
     TRUSTREC rec;
 
-    if( read_record( lid, &rec ) ) {
+    if( read_record( lid, &rec, RECTYPE_DIR ) ) {
 	log_error("keyid_from_trustdb: read record failed\n");
 	return G10ERR_TRUSTDB;
     }
     if( keyid ) {
-	keyid[0] = rec.r.pubkey.keyid[0];
-	keyid[1] = rec.r.pubkey.keyid[1];
+	keyid[0] = rec.r.dir.keyid[0];
+	keyid[1] = rec.r.dir.keyid[1];
     }
     return 0;
 }
 
 
+/****************
+ * This function simply looks for the key in the trustdb
+ * and sets PKC->local_id.
+ * Return: 0 = found
+ *	   -1 = not found
+ *	  other = error
+ */
 int
 query_trust_record( PKT_public_cert *pkc )
 {
@@ -1733,21 +1769,19 @@ query_trust_record( PKT_public_cert *pkc )
     int rc=0;
 
     if( pkc->local_id ) {
-	if( read_record( pkc->local_id, &rec ) ) {
+	if( read_record( pkc->local_id, &rec, RECTYPE_DIR ) ) {
 	    log_error("query_trust_record: read record failed\n");
 	    return G10ERR_TRUSTDB;
 	}
     }
     else { /* no local_id: scan the trustdb */
-	if( (rc=scan_record_by_pkc( pkc, &rec, 2 )) && rc != -1 ) {
-	    log_error("query_trust_record: scan_record_by_pkc(2) failed: %s\n",
+	if( (rc=search_record( pkc, &rec )) && rc != -1 ) {
+	    log_error("query_trust_record: search_record failed: %s\n",
 							    g10_errstr(rc));
 	    return rc;
 	}
-	else if( rc == -1 )
-	    return rc;
     }
-    return 0;
+    return rc;
 }
 
 
@@ -1760,7 +1794,7 @@ insert_trust_record( PKT_public_cert *pkc )
 {
     TRUSTREC rec;
     u32 keyid[2];
-    ulong recnum;
+    ulong knum, dnum;
     byte *fingerprint;
     size_t fingerlen;
 
@@ -1773,23 +1807,35 @@ insert_trust_record( PKT_public_cert *pkc )
 
     /* FIXME: check that we do not have this record. */
 
-    recnum = new_recnum();
-    /* build record */
+    dnum = new_recnum();
+    knum = new_recnum();
+    /* build dir record */
     memset( &rec, 0, sizeof rec );
-    rec.rectype = 2; /* the pubkey record */
-    rec.r.pubkey.local_id = recnum;
-    rec.r.pubkey.keyid[0] = keyid[0];
-    rec.r.pubkey.keyid[1] = keyid[1];
-    rec.r.pubkey.pubkey_algo = pkc->pubkey_algo;
-    memcpy(rec.r.pubkey.fingerprint, fingerprint, fingerlen );
-    rec.r.pubkey.ownertrust = 0;
-    rec.r.pubkey.no_sigs = 0;
-    if( write_record( recnum, &rec ) ) {
-	log_error("insert_trust_record: write failed\n");
+    rec.rectype = RECTYPE_DIR;
+    rec.r.dir.local_id = dnum;
+    rec.r.dir.keyid[0] = keyid[0];
+    rec.r.dir.keyid[1] = keyid[1];
+    rec.r.dir.keyrec   = knum;
+    rec.r.dir.no_sigs = 0;
+    if( write_record( dnum, &rec ) ) {
+	log_error("writing dir record failed\n");
+	return G10ERR_TRUSTDB;
+    }
+    /* and the key record */
+    memset( &rec, 0, sizeof rec );
+    rec.rectype = RECTYPE_KEY;
+    rec.r.key.owner    = dnum;
+    rec.r.key.keyid[0] = keyid[0];
+    rec.r.key.keyid[1] = keyid[1];
+    rec.r.key.pubkey_algo = pkc->pubkey_algo;
+    memcpy(rec.r.key.fingerprint, fingerprint, fingerlen );
+    rec.r.key.ownertrust = 0;
+    if( write_record( knum, &rec ) ) {
+	log_error("wrinting key record failed\n");
 	return G10ERR_TRUSTDB;
     }
 
-    pkc->local_id = recnum;
+    pkc->local_id = dnum;
 
     return 0;
 }
@@ -1799,19 +1845,21 @@ int
 update_ownertrust( ulong lid, unsigned new_trust )
 {
     TRUSTREC rec;
+    ulong recnum;
 
-    if( read_record( lid, &rec ) ) {
-	log_error("update_ownertrust: read failed\n");
+    if( read_record( lid, &rec, RECTYPE_DIR ) ) {
+	log_error("update_ownertrust: read dir failed\n");
+	return G10ERR_TRUSTDB;
+    }
+    recnum = rec.r.dir.keyrec;
+    if( read_record( recnum, &rec, RECTYPE_KEY ) ) {
+	log_error("update_ownertrust: read key failed\n");
 	return G10ERR_TRUSTDB;
     }
     /* check keyid, fingerprint etc ? */
-    if( rec.rectype != 2 ) {
-	log_error("update_ownertrust: invalid record type\n");
-	return G10ERR_TRUSTDB;
-    }
 
-    rec.r.pubkey.ownertrust = new_trust;
-    if( write_record( lid, &rec ) ) {
+    rec.r.key.ownertrust = new_trust;
+    if( write_record( recnum, &rec ) ) {
 	log_error("update_ownertrust: write failed\n");
 	return G10ERR_TRUSTDB;
     }
@@ -1830,17 +1878,12 @@ update_no_sigs( ulong lid, int no_sigs )
 {
     TRUSTREC rec;
 
-    if( read_record( lid, &rec ) ) {
+    if( read_record( lid, &rec, RECTYPE_DIR ) ) {
 	log_error("update_no_sigs: read failed\n");
 	return G10ERR_TRUSTDB;
     }
-    /* check keyid, fingerprint etc ? */
-    if( rec.rectype != 2 ) {
-	log_error("update_no_sigs: invalid record type\n");
-	return G10ERR_TRUSTDB;
-    }
 
-    rec.r.pubkey.no_sigs = !!no_sigs;
+    rec.r.dir.no_sigs = !!no_sigs;
     if( write_record( lid, &rec ) ) {
 	log_error("update_no_sigs: write failed\n");
 	return G10ERR_TRUSTDB;

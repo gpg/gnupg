@@ -124,3 +124,54 @@ Record type 5  (sigrec)
 	1 byte reserved
 
 
+Record Type 6 (hash table)
+-------------
+    Due to the fact that we use the keyid to lookup keys, we can
+    implement quick access by some simple hash methods, and avoid
+    the overhead gdbm.	A property of keyids is that they can be
+    used directly as hash value (They can be considered as strong
+    random numbers.
+      What we use is a dynamic multilevel architecture, which combines
+    Hashtables, record lists, and linked list.
+
+    This record is a hashtable of 256 entries; a special property
+    is, that all these records are adjacent stored to make up one
+    big table. The hash value is simple the 1st, 2nd, ... byte of
+    the keyid (depending on the indirection level).
+
+     1 byte value 5
+     1 byte reserved
+     n u32  recnum; n depends on th record length:
+	    n = (reclen-2)/4  which yields 9 for the current record length
+	    of 40 bytes.
+
+    the total number of surch record which makes up the table is:
+	 m = (256+n-1) / n
+    which is 29 for a record length of 40.
+
+    To look up a key we use its lsb to get the recnum from this
+    hashtable and look up this addressed record:
+       - If this record is another hashtable, we use 2nd lsb
+	 to index this hast table and so on.
+       - if this record is of hashlist, we lwalk thru these
+	 reclist record until we found one whos hash fields
+	 matches the MSB of our keyid, and lookup this record
+       - if this record is a dir record, we compare the
+	 keyid and if this is correct, we get the keyrecod and compare
+	 the fingerprint to decide wether it is the requested key;
+	 if this is not the correct dir record, we look at the next
+	 dir record which is linked by the link field.
+
+Record type 7  (hast list)
+-------------
+    see hash table for an explanation.
+
+    1 byte value 6
+    1 byte reserved
+    1 u32  chain	 next hash list record
+    n times		 n = (reclen-6)/5
+	1 byte hash
+	1 u32  recnum
+
+    For the current record length of 40, n is 6
+
