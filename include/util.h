@@ -70,6 +70,7 @@ const char *log_get_name(void);
 void log_set_pid( int pid );
 int  log_get_errorcount( int clear );
 void log_inc_errorcount(void);
+int log_set_strict(int val);
 void g10_log_hexdump( const char *text, const char *buf, size_t len );
 
 #if defined (__riscos__) \
@@ -81,6 +82,7 @@ void g10_log_hexdump( const char *text, const char *buf, size_t len );
 			    __attribute__ ((noreturn, format (printf,1,2)));
   void g10_log_error( const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
   void g10_log_info( const char *fmt, ... )  __attribute__ ((format (printf,1,2)));
+  void g10_log_warning( const char *fmt, ... )  __attribute__ ((format (printf,1,2)));
   void g10_log_debug( const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
   void g10_log_fatal_f( const char *fname, const char *fmt, ... )
 			    __attribute__ ((noreturn, format (printf,2,3)));
@@ -101,6 +103,7 @@ void g10_log_hexdump( const char *text, const char *buf, size_t len );
   void g10_log_fatal( const char *fmt, ... );
   void g10_log_error( const char *fmt, ... );
   void g10_log_info( const char *fmt, ... );
+  void g10_log_warning( const char *fmt, ... );
   void g10_log_debug( const char *fmt, ... );
   void g10_log_fatal_f( const char *fname, const char *fmt, ... );
   void g10_log_error_f( const char *fname, const char *fmt, ... );
@@ -115,6 +118,7 @@ void g10_log_hexdump( const char *text, const char *buf, size_t len );
 #define log_fatal   g10_log_fatal
 #define log_error   g10_log_error
 #define log_info    g10_log_info
+#define log_warning g10_log_warning
 #define log_debug   g10_log_debug
 #define log_fatal_f g10_log_fatal_f
 #define log_error_f g10_log_error_f
