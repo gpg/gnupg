@@ -33,20 +33,13 @@ development_version=yes
 
 ALL_LINGUAS="de"
 
-PACKAGE=$PACKAGE_NAME
-VERSION=$PACKAGE_VERSION
-
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_SRCDIR(g10/g10.c)
 AC_CANONICAL_TARGET()
-AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
+AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
 
-AC_SUBST(PACKAGE)
-AC_SUBST(VERSION)
-AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of this package])
-AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version of this package])
-AC_DEFINE(_GNU_SOURCE,1,[Some tests rely on this (stpcpy) and it should be used for new programs anyway])
+AC_GNU_SOURCE
 
 dnl
 dnl  Check for random module options
@@ -121,6 +114,7 @@ use_blowfish=yes
 use_aes=yes
 use_twofish=yes
 use_tiger192=no
+use_old_tiger192=no
 use_sha256=yes
 use_sha512=yes
 use_exec=yes
@@ -201,16 +195,23 @@ fi
 
 dnl this is because the stable branch calls it just "tiger".
 AC_ARG_ENABLE(tiger,,use_tiger192=$enableval)
+AC_ARG_ENABLE(old-tiger,,use_old_tiger192=$enableval)
 
 dnl TIGER192 is actually defined only after we confirm 64-bit support
 dnl later
-AC_MSG_CHECKING([whether to enable the TIGER/192 digest])
+AC_MSG_CHECKING([whether to enable the nonstandard TIGER/192 digest])
 AC_ARG_ENABLE(tiger192,
-   AC_HELP_STRING([--enable-tiger192],[enable the TIGER/192 digest]),
+   AC_HELP_STRING([--enable-tiger192],[enable the nonstandard TIGER/192 digest]),
    use_tiger192=$enableval)
 AC_MSG_RESULT($use_tiger192)
 
-if test x"$use_tiger192" = xyes ; then
+AC_MSG_CHECKING([whether to enable old-style nonstandard TIGER/192 digest support])
+AC_ARG_ENABLE(old-tiger192,
+   AC_HELP_STRING([--enable-old-tiger192],[enable old-style nonstandard TIGER/192 digest support]),
+   use_old_tiger=$enableval)
+AC_MSG_RESULT($use_old_tiger192)
+
+if test x"$use_tiger192" = xyes || test x"$use_old_tiger192" = xyes ; then
    AC_MSG_WARN([[
 ***
 *** The TIGER/192 digest is in the process of being removed from the
@@ -635,7 +636,13 @@ AC_SUBST(MPI_OPT_FLAGS)
 dnl Checks for libraries.
 
 if test "$try_gettext" = yes; then
-  AM_GNU_GETTEXT
+  AM_GNU_GETTEXT(,[need-ngettext])
+
+  # gettext requires some extra checks.  These really should be part of
+  # the basic AM_GNU_GETTEXT macro.  TODO: move other gettext-specific
+  # function checks to here.
+
+  AC_CHECK_FUNCS(strchr)
 else
   USE_NLS=no
   USE_INCLUDED_LIBINTL=no
@@ -710,16 +717,14 @@ else
   if test x"$use_tiger192" = xyes ; then
      AC_SUBST(TIGER_O,tiger.o)
      AC_DEFINE(USE_TIGER192,1,[Define to include the TIGER/192 digest])
-
-     AC_MSG_CHECKING([whether to enable old-style TIGER/192 digest support])
-     AC_ARG_ENABLE(old-tiger,
-        [  --enable-old-tiger      enable old-style TIGER/192 digest support],
-        old_tiger=$enableval, old_tiger=no)
-     AC_MSG_RESULT($old_tiger)
-     if test "$old_tiger" = yes ; then
-        AC_DEFINE(USE_OLD_TIGER,1,[Define to use the old fake OID for TIGER/192 digest support])
-     fi
   fi
+
+  if test "$use_old_tiger192" = yes ; then
+     AC_SUBST(TIGER_O,tiger.o)
+     AC_DEFINE(USE_TIGER192,1,[Define to include the TIGER/192 digest])
+     AC_DEFINE(USE_OLD_TIGER,1,[Define to use the old fake OID for TIGER/192 digest support])
+  fi
+
   if test x"$use_sha512" = xyes ; then
      AC_SUBST(SHA512_O,sha512.o)
      AC_DEFINE(USE_SHA512,1,[Define to include the SHA-384 and SHA-512 digests])
@@ -731,7 +736,7 @@ AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
 AC_FUNC_FORK
 AC_CHECK_FUNCS(strerror stpcpy strsep strlwr tcgetattr strtoul mmap)
-AC_CHECK_FUNCS(strcasecmp strncasecmp ctermid)
+AC_CHECK_FUNCS(strcasecmp strncasecmp ctermid times)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(atexit raise getpagesize strftime nl_langinfo setlocale)
 AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe stat)
@@ -1057,9 +1062,10 @@ if test "$print_egd_warning" = yes; then
 *** in Perl and available at the GnuPG FTP servers.  For more information
 *** consult the GnuPG webpages:
 ***
-***           http://www.gnupg.org/download.html#egd
+***           http://www.gnupg.org/download/#EGD
 ***
-*** You may want to run ./configure with --enable-static-rnd=egd to use it.
+*** You may want to run ./configure with --enable-static-rnd=egd or
+*** --enable-static-rnd=auto to use it.
 ***]])
 fi
 

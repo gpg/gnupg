@@ -1,12 +1,17 @@
 Noteworthy changes in version 1.3.2 (unreleased)
 ------------------------------------------------
 
+    * A bug in key validation has been fixed.  This bug only affects
+      keys with more than one user ID (photo IDs do not count here),
+      and results in all user IDs on a given key being treated with
+      the validity of the most-valid user ID on that key.
+
     * Notation names that do not contain a '@' are no longer allowed
       unless --expert is set.  This is to help prevent pollution of
       the (as yet unused) IETF notation namespace.
 
     * Multiple trust models are now supported via the --trust-model
-      option.  The options are "openpgp" (web-of-trust plus trust
+      option.  The options are "pgp" (web-of-trust plus trust
       signatures), "classic" (web-of-trust only), and "always"
       (identical to the --always-trust option).
 
@@ -78,6 +83,13 @@ Noteworthy changes in version 1.3.2 (unreleased)
 
     * The keyserver no-modify flag on a key can now be displayed and
       modified.
+
+    * Note that the TIGER/192 digest algorithm is in the process of
+      being dropped from the OpenPGP standard.  While this release of
+      GnuPG still contains it, it is disabled by default.  To ensure
+      you will still be able to use your messages with future versions
+      of GnuPG and other OpenPGP programs, please do not use this
+      algorithm.
 
 
 Noteworthy changes in version 1.3.1 (2002-11-12)
