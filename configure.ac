@@ -112,6 +112,7 @@ dnl binary
 
 try_extensions=no
 
+use_rsa=yes
 use_idea=yes
 use_cast5=yes
 use_blowfish=yes
@@ -124,6 +125,7 @@ use_exec=yes
 
 AC_ARG_ENABLE(minimal,
    AC_HELP_STRING([--enable-minimal],[build the smallest gpg binary possible]),
+   use_rsa=no
    use_idea=no
    use_cast5=no
    use_blowfish=no
@@ -133,6 +135,15 @@ AC_ARG_ENABLE(minimal,
    use_sha512=no
    use_bzip2=no
    use_exec=no)
+
+AC_MSG_CHECKING([whether to enable the RSA public key algorithm])
+AC_ARG_ENABLE(rsa,
+   AC_HELP_STRING([--disable-rsa],[disable the RSA public key algorithm]),
+   use_rsa=$enableval)
+AC_MSG_RESULT($use_rsa)
+if test x"$use_rsa" = xyes ; then
+   AC_DEFINE(USE_RSA,1,[Define to include the RSA public key algorithm])
+fi
 
 AC_MSG_CHECKING([whether to enable the IDEA cipher])
 AC_ARG_ENABLE(idea,

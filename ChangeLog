@@ -1,5 +1,12 @@
 2003-11-30  David Shaw  <dshaw@jabberwocky.com>
 
+	* NEWS: Note --disable-rsa.
+
+	* configure.ac: Add --disable-rsa.
+
+	* README: Add --with-zlib, --with-bzip2, --without-bzip2,
+	--disable-rsa, and --enable-minimal.  Update gettext version.
+
 	* README: Update version number.  Add BZIP2.  Remove Elgamal
 	sign+encrypt.
 

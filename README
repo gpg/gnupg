@@ -409,7 +409,8 @@
 	"123434343434343C3434343434343734349A3434"
 	"0E12343434343434343434EAB3484343434343434"
 
-      The first one is MD5 the others are ripemd160 or sha1.
+      The first one is a short fingerprint for PGP 2.x style keys.
+      The others are long fingerprints for OpenPGP keys.
 
     * By an exact string:
 
@@ -489,6 +490,15 @@
                      Forces usage of the local zlib sources. Default is
 		     to use the (shared) library of the system.
 
+     --with-zlib=<DIR>
+		     Look for the system zlib in DIR.
+
+     --with-bzip2=<DIR>
+		     Look for the system libbz2 in DIR.
+
+     --without-bzip2
+		     Disable the BZIP2 compression algorithm.
+
      --with-included-gettext
                      Forces usage of the local gettext sources instead of
 		     the one provided by your system.
@@ -533,6 +543,11 @@
 		    disable any ability for the user to change it in
 		    their options file.
 
+     --disable-rsa
+		    Removes support for the RSA public key algorithm.
+                    This can give a smaller gpg binary for places
+                    where space is tight.
+
      --disable-idea
      --disable-cast5
      --disable-blowfish
@@ -540,27 +555,41 @@
      --disable-twofish
      --disable-sha256
      --disable-sha512
-		    Removes support for the selected algorithm.  This
-		    can give a smaller gpg binary for places where
-		    space is tight.
+		    Removes support for the selected symmetric
+		    algorithm.  This can give a smaller gpg binary for
+		    places where space is tight.
 
-		    *** Note, that if there are existing keys that
+		    **** Note that if there are existing keys that
 		    have one of these algorithms as a preference,
 		    messages may be received that use one of these
 		    algorithms and you will not be able to decrypt the
-		    message! ***
+		    message! ****
 
-		    A public key preference list can be updated to
+		    The public key preference list can be updated to
 		    match the list of available algorithms by using
-		    'gpg --edit (thekey)', and running the "updpref"
-		    command.
+		    "gpg --edit-key (thekey)", and running the
+		    "updpref" command.
+
+     --enable-minimal
+		    Build the smallest gpg possible (disables all
+		    optional algorithms, disables keyserver access,
+		    and disables photo IDs).  Specifically, this means
+		    --disable-rsa --disable-idea, --disable-cast5,
+		    --disable-blowfish, --disable-aes,
+		    --disable-twofish, --disable-sha256,
+		    --disable-sha512, --without-bzip2, and
+		    --disable-exec.  Configure command lines are read
+		    from left to right, so if you want to have an
+		    "almost minimal" configuration, you can do (for
+		    example) "--enable-minimal --enable-rsa" to have
+		    RSA added to the minimal build.
 
 
     Installation Problems
     ---------------------
     If you get unresolved externals "gettext" you should run configure
     again with the option "--with-included-gettext"; this is version
-    0.10.40 which is available at ftp.gnu.org.
+    0.12.1 which is available at ftp.gnu.org.
 
     If you have other compile problems, try the configure options
     "--with-included-zlib" or "--disable-nls" (See ABOUT-NLS) or
