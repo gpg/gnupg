@@ -1,3 +1,52 @@
+Sun Oct 25 19:32:05 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* openfile.c (copy_options_File): New.
+	* ringedit.c (add_keyblock_resource): Creates options file
+	* tdbio.c (tdbio_set_dbname): Ditto.
+
+Sat Oct 24 14:10:53 1998  brian moore <bem@cmc.net>
+
+	* mainproc.c (proc_pubkey_enc): Don't release the DEK
+	(do_proc_packets): Ditto.
+
+Fri Oct 23 06:49:38 1998  me,,,  (wk@tobold)
+
+	* keyedit.c (keyedit_menu): Comments are now allowed
+
+	* trustdb.c: Rewrote large parts.
+
+
+Thu Oct 22 15:56:45 1998  Michael Roth	(mroth@nessie.de)
+
+	* encode.c: (encode_simple): Only the plain filename without
+	a given directory is stored in generated packets.
+	(encode_crypt): Ditto.
+
+	* sign.c: (sign_file) Ditto.
+
+
+Thu Oct 22 10:53:41 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* trustdb.c (update_trust_record): Add new optional arg.
+
+	* import.c (import_keys): Add statistics output
+	* trustdb.c (update_trustdb): Ditto.
+	(insert_trustdb): Ditto.
+
+	* tdbio.c (tdbio_begin_transaction): New.
+	(tdbio_end_transaction): New.
+	(tdbio_cancel_transaction): New.
+
+	* g10.c (main): New option --quit.
+
+	* trustdb.c (check_hint_sig): No tests for user-id w/o sig.
+	This caused an assert while checking the sigs.
+
+	* trustdb.c (upd_sig_record): Splitted into several functions.
+
+	* import.c (import_keys): New arg "fast".
+	* g10.c (main): New command --fast-import.
+
 Wed Oct 21 18:19:36 1998  Michael Roth <mroth@nessie.de>
 
 	* ringedit.c (add_keyblock_resource): Directory is now created.

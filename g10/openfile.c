@@ -78,11 +78,11 @@ open_outfile( const char *iname, int mode, IOBUF *a )
     *a = NULL;
     if( (!iname || (*iname=='-' && !iname[1])) && !opt.outfile ) {
 	if( !(*a = iobuf_create(NULL)) ) {
-	    log_error("can't open [stdout]: %s\n", strerror(errno) );
+	    log_error(_("%s: can't open: %s\n"), "[stdout]", strerror(errno) );
 	    rc = G10ERR_CREATE_FILE;
 	}
 	else if( opt.verbose )
-	    log_info("writing to stdout\n");
+	    log_info(_("writing to stdout\n"));
     }
     else {
 	char *buf=NULL;
@@ -98,11 +98,11 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 	}
 	if( overwrite_filep( name ) ) {
 	    if( !(*a = iobuf_create( name )) ) {
-		log_error("can't create %s: %s\n", name, strerror(errno) );
+		log_error(_("%s: can't create: %s\n"), name, strerror(errno) );
 		rc = G10ERR_CREATE_FILE;
 	    }
 	    else if( opt.verbose )
-		log_info("writing to '%s'\n", name );
+		log_info(_("writing to '%s'\n"), name );
 	}
 	else
 	    rc = G10ERR_FILE_EXISTS;
@@ -131,10 +131,54 @@ open_sigfile( const char *iname )
 	    buf[len-4] = 0 ;
 	    a = iobuf_open( buf );
 	    if( opt.verbose )
-		log_info("assuming signed data in '%s'\n", buf );
+		log_info(_("assuming signed data in '%s'\n"), buf );
 	    m_free(buf);
 	}
     }
     return a;
+}
+
+
+/****************
+ * Copy the option file skeleton to the given directory.
+ */
+void
+copy_options_file( const char *destdir )
+{
+    const char *datadir = GNUPG_DATADIR;
+    char *fname;
+    FILE *src, *dst;
+    int linefeeds=0;
+    int c;
+
+    fname = m_alloc( strlen(datadir) + strlen(destdir) + 15 );
+    strcpy(stpcpy(fname, datadir), "/options.skel" );
+    src = fopen( fname, "r" );
+    if( !src ) {
+	log_error(_("%s: can't open: %s\n"), fname, strerror(errno) );
+	m_free(fname);
+	return;
+    }
+    strcpy(stpcpy(fname, destdir), "/options" );
+    dst = fopen( fname, "w" );
+    if( !dst ) {
+	log_error(_("%s: can't create: %s\n"), fname, strerror(errno) );
+	fclose( src );
+	m_free(fname);
+	return;
+    }
+
+    while( (c=getc(src)) != EOF ) {
+	if( linefeeds < 3 ) {
+	    if( c == '\n' )
+		linefeeds++;
+	}
+	else
+	    putc( c, dst );
+    }
+    fclose( dst );
+    fclose( src );
+    log_info(_("%s: new options file created\n"), fname );
+    m_free(fname);
 }
 

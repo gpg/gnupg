@@ -253,7 +253,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	int skcount=0;
 	/* loop over the secret certificates and build headers
 	 * The specs now say that the data should be bracket by
-	 * the onepass-sig and signature-packet; so we muts build it
+	 * the onepass-sig and signature-packet; so we must build it
 	 * here in reverse order */
 	for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
 	    skcount++;
@@ -320,10 +320,11 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     }
     else {
 	if( fname || opt.set_filename ) {
-	    const char *s = opt.set_filename ? opt.set_filename : fname;
+	    char *s = make_basename( opt.set_filename ? opt.set_filename : fname );
 	    pt = m_alloc( sizeof *pt + strlen(s) - 1 );
 	    pt->namelen = strlen(s);
 	    memcpy(pt->name, s, pt->namelen );
+	    m_free(s);
 	}
 	else { /* no filename */
 	    pt = m_alloc( sizeof *pt - 1 );

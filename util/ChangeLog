@@ -1,3 +1,8 @@
+Thu Oct 22 16:25:49 1998  Michael Roth	(mroth@nessie.de)
+
+	* fileutil.c (make_basename): New.
+	(make_dirname): New.
+
 Wed Oct 21 12:20:29 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* util.c (iobuf_flush): autoincreasing of a temp. iobuf

@@ -180,11 +180,12 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
     if( is_ELGAMAL(enc->pubkey_algo)
 	|| enc->pubkey_algo == PUBKEY_ALGO_DSA
 	|| is_RSA(enc->pubkey_algo)  ) {
-	m_free(c->dek ); /* paranoid: delete a pending DEK */
-	c->dek = m_alloc_secure( sizeof *c->dek );
-	if( (result = get_session_key( enc, c->dek )) ) {
-	    /* error: delete the DEK */
-	    m_free(c->dek); c->dek = NULL;
+	if ( !c->dek ) {
+	    c->dek = m_alloc_secure( sizeof *c->dek );
+	    if( (result = get_session_key( enc, c->dek )) ) {
+		/* error: delete the DEK */
+		m_free(c->dek); c->dek = NULL;
+	    }
 	}
     }
     else
@@ -716,13 +717,6 @@ do_proc_packets( CTX c, IOBUF a )
     c->iobuf = a;
     init_packet(pkt);
     while( (rc=parse_packet(a, pkt)) != -1 ) {
-	/* cleanup if we have an illegal data structure */
-	if( c->dek && pkt->pkttype != PKT_ENCRYPTED ) {
-	    /* FIXME: do we need to ave it in case we have no secret
-	     * key for one of the next reciepents- we should check it
-	     * here. */
-	    m_free(c->dek); c->dek = NULL; /* burn it */
-	}
 
 	if( rc ) {
 	    free_packet(pkt);

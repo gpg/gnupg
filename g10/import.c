@@ -36,9 +36,24 @@
 #include "i18n.h"
 
 
+static struct {
+    ulong no_user_id;
+    ulong imported;
+    ulong imported_rsa;
+    ulong n_uids;
+    ulong n_sigs;
+    ulong n_subk;
+    ulong unchanged;
+    ulong n_revoc;
+    ulong secret_read;
+    ulong secret_imported;
+    ulong secret_dups;
+} stats;
+
+
 static int read_block( IOBUF a, compress_filter_context_t *cfx,
 			     PACKET **pending_pkt, KBNODE *ret_root );
-static int import_one( const char *fname, KBNODE keyblock );
+static int import_one( const char *fname, KBNODE keyblock, int fast );
 static int import_secret_one( const char *fname, KBNODE keyblock );
 static int import_revoke_cert( const char *fname, KBNODE node );
 static int chk_self_sigs( const char *fname, KBNODE keyblock,
@@ -59,7 +74,7 @@ static int merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
  * least one userid. Only user ids which are self signed will be imported.
  * Other signatures are not checked.
  *
- * Actually this functtion does a merge. It works like this:
+ * Actually this function does a merge. It works like this:
  *
  *  - get the keyblock
  *  - check self-signatures and remove all userids and their signatures
@@ -85,7 +100,7 @@ static int merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
  *
  */
 int
-import_keys( const char *fname )
+import_keys( const char *fname, int fast )
 {
     armor_filter_context_t afx;
     compress_filter_context_t cfx;
@@ -93,10 +108,14 @@ import_keys( const char *fname )
     IOBUF inp = NULL;
     KBNODE keyblock;
     int rc = 0;
+    ulong count=0;
 
     memset( &afx, 0, sizeof afx);
     memset( &cfx, 0, sizeof cfx);
     afx.only_keyblocks = 1;
+
+    /* fixme: don't use static variables */
+    memset( &stats, 0, sizeof( stats ) );
 
     /* open file */
     inp = iobuf_open(fname);
@@ -112,7 +131,7 @@ import_keys( const char *fname )
 
     while( !(rc = read_block( inp, &cfx, &pending_pkt, &keyblock) )) {
 	if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
-	    rc = import_one( fname, keyblock );
+	    rc = import_one( fname, keyblock, fast );
 	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY )
 	    rc = import_secret_one( fname, keyblock );
 	else if( keyblock->pkt->pkttype == PKT_SIGNATURE
@@ -125,11 +144,40 @@ import_keys( const char *fname )
 	release_kbnode(keyblock);
 	if( rc )
 	    break;
+	if( !(++count % 100) )
+	    log_info(_("%lu keys so far processed\n"), count );
     }
     if( rc == -1 )
 	rc = 0;
     else if( rc && rc != G10ERR_INV_KEYRING )
 	log_error_f( fname, _("read error: %s\n"), g10_errstr(rc));
+
+    log_info(_("Total number processed: %lu\n"), count );
+    if( stats.no_user_id )
+	log_info(_("          w/o user IDs: %lu\n"), stats.no_user_id );
+    if( stats.imported || stats.imported_rsa ) {
+	log_info(_("              imported: %lu"), stats.imported );
+	if( stats.imported_rsa )
+	    fprintf(stderr, "  (RSA: %lu)", stats.imported_rsa );
+	putc('\n', stderr);
+    }
+    if( stats.unchanged )
+	log_info(_("             unchanged: %lu\n"), stats.unchanged );
+    if( stats.n_uids )
+	log_info(_("          new user IDs: %lu\n"), stats.n_uids );
+    if( stats.n_subk )
+	log_info(_("           new subkeys: %lu\n"), stats.n_subk );
+    if( stats.n_sigs )
+	log_info(_("        new signatures: %lu\n"), stats.n_sigs );
+    if( stats.n_revoc )
+	log_info(_("   new key revocations: %lu\n"), stats.n_revoc );
+    if( stats.secret_read )
+	log_info(_("      secret keys read: %lu\n"), stats.secret_read );
+    if( stats.secret_imported )
+	log_info(_("  secret keys imported: %lu\n"), stats.secret_imported );
+    if( stats.secret_dups )
+	log_info(_(" secret keys unchanged: %lu\n"), stats.secret_dups );
+
 
     iobuf_close(inp);
     return rc;
@@ -238,7 +286,7 @@ read_block( IOBUF a, compress_filter_context_t *cfx,
  * which called g10.
  */
 static int
-import_one( const char *fname, KBNODE keyblock )
+import_one( const char *fname, KBNODE keyblock, int fast )
 {
     PKT_public_key *pk;
     PKT_public_key *pk_orig;
@@ -280,9 +328,12 @@ import_one( const char *fname, KBNODE keyblock )
 	return rc== -1? 0:rc;
 
     if( !delete_inv_parts( fname, keyblock, keyid ) ) {
-	log_info_f( fname, _("key %08lX: no valid user ids\n"),
-						    (ulong)keyid[1]);
-	log_info(_("this may be caused by a missing self-signature\n"));
+	if( !opt.quiet ) {
+	    log_info_f( fname, _("key %08lX: no valid user ids\n"),
+							(ulong)keyid[1]);
+	    log_info(_("this may be caused by a missing self-signature\n"));
+	}
+	stats.no_user_id++;
 	return 0;
     }
 
@@ -311,7 +362,12 @@ import_one( const char *fname, KBNODE keyblock )
 			_("can't write to keyring: %s\n"), g10_errstr(rc) );
 	unlock_keyblock( &kbpos );
 	/* we are ready */
-	log_info_f( fname, _("key %08lX: public key imported\n"), (ulong)keyid[1]);
+	if( !opt.quiet )
+	    log_info_f( fname, _("key %08lX: public key imported\n"),
+						      (ulong)keyid[1]);
+	stats.imported++;
+	if( is_RSA( pk->pubkey_algo ) )
+	    stats.imported_rsa++;
 	new_key = 1;
     }
     else { /* merge */
@@ -366,29 +422,39 @@ import_one( const char *fname, KBNODE keyblock )
 			    _("can't write keyblock: %s\n"), g10_errstr(rc) );
 	    unlock_keyblock( &kbpos );
 	    /* we are ready */
-	    if( n_uids == 1 )
-		log_info_f(fname, _("key %08lX: 1 new user-id\n"),
-					 (ulong)keyid[1]);
-	    else if( n_uids )
-		log_info_f(fname, _("key %08lX: %d new user-ids\n"),
-					 (ulong)keyid[1], n_uids );
-	    if( n_sigs == 1 )
-		log_info_f(fname, _("key %08lX: 1 new signature\n"),
-					 (ulong)keyid[1]);
-	    else if( n_sigs )
-		log_info_f(fname, _("key %08lX: %d new signatures\n"),
-					 (ulong)keyid[1], n_sigs );
-	    if( n_subk == 1 )
-		log_info_f(fname, _("key %08lX: 1 new subkey\n"),
-					 (ulong)keyid[1]);
-	    else if( n_subk )
-		log_info_f(fname, _("key %08lX: %d new subkeys\n"),
-					 (ulong)keyid[1], n_subk );
+	    if( !opt.quiet ) {
+		if( n_uids == 1 )
+		    log_info_f(fname, _("key %08lX: 1 new user-id\n"),
+					     (ulong)keyid[1]);
+		else if( n_uids )
+		    log_info_f(fname, _("key %08lX: %d new user-ids\n"),
+					     (ulong)keyid[1], n_uids );
+		if( n_sigs == 1 )
+		    log_info_f(fname, _("key %08lX: 1 new signature\n"),
+					     (ulong)keyid[1]);
+		else if( n_sigs )
+		    log_info_f(fname, _("key %08lX: %d new signatures\n"),
+					     (ulong)keyid[1], n_sigs );
+		if( n_subk == 1 )
+		    log_info_f(fname, _("key %08lX: 1 new subkey\n"),
+					     (ulong)keyid[1]);
+		else if( n_subk )
+		    log_info_f(fname, _("key %08lX: %d new subkeys\n"),
+					     (ulong)keyid[1], n_subk );
+	    }
+
+	    stats.n_uids +=n_uids;
+	    stats.n_sigs +=n_sigs;
+	    stats.n_subk +=n_subk;
 	}
-	else
-	    log_info_f(fname, _("key %08lX: not changed\n"), (ulong)keyid[1] );
+	else {
+	    if( !opt.quiet )
+		log_info_f(fname, _("key %08lX: not changed\n"),
+						    (ulong)keyid[1] );
+	    stats.unchanged++;
+	}
     }
-    if( !rc ) {
+    if( !rc && !fast ) {
 	rc = query_trust_record( new_key? pk : pk_orig );
 	if( rc && rc != -1 )
 	    log_error("trustdb error: %s\n", g10_errstr(rc) );
@@ -399,7 +465,7 @@ import_one( const char *fname, KBNODE keyblock )
 					(ulong)keyid[1], g10_errstr(rc) );
 	}
 	else if( mod_key )
-	    rc = update_trust_record( keyblock_orig );
+	    rc = update_trust_record( keyblock_orig, NULL );
 	else
 	    rc = clear_trust_checked_flag( new_key? pk : pk_orig );
     }
@@ -442,6 +508,7 @@ import_secret_one( const char *fname, KBNODE keyblock )
 				  uidnode->pkt->pkt.user_id->len, 0 );
 	putc('\n', stderr);
     }
+    stats.secret_read++;
     if( !uidnode ) {
 	log_error_f(fname, _("key %08lX: no user id\n"), (ulong)keyid[1]);
 	return 0;
@@ -468,10 +535,12 @@ import_secret_one( const char *fname, KBNODE keyblock )
 	unlock_keyblock( &kbpos );
 	/* we are ready */
 	log_info_f(fname, _("key %08lX: secret key imported\n"), (ulong)keyid[1]);
+	stats.secret_imported++;
     }
     else if( !rc ) { /* we can't merge secret keys */
 	log_error_f(fname, _("key %08lX: already in secret keyring\n"),
 						(ulong)keyid[1]);
+	stats.secret_dups++;
     }
     else
 	log_error_f(fname, _("key %08lX: secret key not found: %s\n"),
@@ -569,8 +638,10 @@ import_revoke_cert( const char *fname, KBNODE node )
 		    _("can't write keyblock: %s\n"), g10_errstr(rc) );
     unlock_keyblock( &kbpos );
     /* we are ready */
-    log_info_f(fname, _("key %08lX: revocation certificate imported\n"),
+    if( !opt.quiet )
+	log_info_f(fname, _("key %08lX: revocation certificate imported\n"),
 					(ulong)keyid[1]);
+    stats.n_revoc++;
 
   leave:
     release_kbnode( keyblock );

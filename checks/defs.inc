@@ -60,6 +60,10 @@ chdir () {
 #}
 
 
+have_hash_algo () {
+    ../g10/gpgm --homedir .  --version | grep "Hash:.*$1" >/dev/null
+}
+
 set -e
 pgmname=`basename $0`
 #trap cleanup SIGHUP SIGINT SIGQUIT

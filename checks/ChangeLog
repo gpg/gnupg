@@ -1,3 +1,8 @@
+Sun Oct 25 18:19:35 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* mds.test: Check whether TIGER is available.
+	* sigs.tesr: Ditto.
+
 Wed Sep 23 12:25:07 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* run-gpg.patterns: New (because Solaris fgrep does not like -f -).

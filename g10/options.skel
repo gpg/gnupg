@@ -1,0 +1,37 @@
+These first three lines are not copied to the options file in
+the users home directory.
+$Id$
+# Options for GnuPG
+#
+# Unless you you specify which option file to use (with the
+# commandline option "--options filename"), GnuPG uses the
+# file ~/.gnupg/options by default.
+#
+# An option file can contain all long options which are
+# available in GnuPG. If the first non white space character of
+# a line is a '#', this line is ignored.  Empty lines are also
+# ignored.
+#
+# See the man page for a list of options.
+
+# Uncomment the next line to get rid of the copyright notice
+#no-greeting
+
+# If you have more than 1 secret key in your keyring, you may want
+# to uncomment the following option and set your preffered keyid
+
+# default-key 621CC013
+
+# The next option is enabled because this one is needed for interoperation
+# with PGP 5 users.  To enable full OpenPGP compliance you have to remove
+# this option.
+
+force-v3-sigs
+
+# Default is to use the newer compress algo 2, but PGP 5 does not
+# like this, so we use the old one
+# Hmm: Do we really need this ... preferences should decide which compress
+# algo to use.
+
+compress-algo 1
+

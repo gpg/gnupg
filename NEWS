@@ -12,6 +12,10 @@
       keys.  Use "--keyring gnupg-gdbm:<name-of-gdbm-file>".  This is
       not (yet) supported for secret keys.
 
+    * A Russian language file in the distribution (alternatives are in
+      the contrib directory of the FTP servers)
+
+
 
 Noteworthy changes in version 0.4.2
 -----------------------------------

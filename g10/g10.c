@@ -57,6 +57,7 @@ enum cmd_and_opt_values { aNull = 0,
     oKOption	  = 'k',
     oDryRun	  = 'n',
     oOutput	  = 'o',
+    oQuiet	  = 'q',
     oRemote	  = 'r',
     aSign	  = 's',
     oTextmode	  = 't',
@@ -76,6 +77,7 @@ enum cmd_and_opt_values { aNull = 0,
     aKMode,
     aKModeC,
     aImport,
+    aFastImport,
     aVerify,
     aListKeys,
     aListSigs,
@@ -174,6 +176,7 @@ static ARGPARSE_OPTS opts[] = {
     { aExport, "export"          , 256, N_("export keys") },
     { aExportSecret, "export-secret-keys" , 256, "@" },
     { aImport, "import",      256     , N_("import/merge keys")},
+    { aFastImport, "fast-import",  256 , "@"},
     { aListPackets, "list-packets",256,N_("list only the sequence of packets")},
   #ifdef IS_G10MAINT
     { aExportOwnerTrust,
@@ -206,6 +209,7 @@ static ARGPARSE_OPTS opts[] = {
   #endif
     { oOutput, "output",    2, N_("use as output file")},
     { oVerbose, "verbose",   0, N_("verbose") },
+    { oQuiet,	"quiet",   0, N_("be somewhat more quiet") },
     { oForceV3Sigs, "force-v3-sigs", 0, N_("force v3 signatures") },
  /* { oDryRun, "dry-run",   0, N_("do not make any changes") }, */
     { oBatch, "batch",     0, N_("batch mode: never ask")},
@@ -614,6 +618,7 @@ main( int argc, char **argv )
 	  case aCheckKeys: set_cmd( &cmd, aCheckKeys); break;
 	  case aListPackets: set_cmd( &cmd, aListPackets); break;
 	  case aImport: set_cmd( &cmd, aImport); break;
+	  case aFastImport: set_cmd( &cmd, aFastImport); break;
 	  case aExport: set_cmd( &cmd, aExport); break;
 	  case aListKeys: set_cmd( &cmd, aListKeys); break;
 	  case aListSigs: set_cmd( &cmd, aListSigs); break;
@@ -657,6 +662,7 @@ main( int argc, char **argv )
 
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
 	  case oOutput: opt.outfile = pargs.r.ret_str; break;
+	  case oQuiet: opt.quiet = 1; break;
 	  case oVerbose: g10_opt_verbose++;
 		    opt.verbose++; opt.list_sigs=1; break;
 	  case oKOption: set_cmd( &cmd, aKMode ); break;
@@ -1022,14 +1028,15 @@ main( int argc, char **argv )
 	break;
     #endif
 
+      case aFastImport:
       case aImport:
 	if( !argc  ) {
-	    rc = import_keys( NULL );
+	    rc = import_keys( NULL, (cmd == aFastImport) );
 	    if( rc )
 		log_error("import failed: %s\n", g10_errstr(rc) );
 	}
 	for( ; argc; argc--, argv++ ) {
-	    rc = import_keys( *argv );
+	    rc = import_keys( *argv, (cmd == aFastImport) );
 	    if( rc )
 		log_error("import from '%s' failed: %s\n",
 						*argv, g10_errstr(rc) );

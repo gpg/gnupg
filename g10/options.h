@@ -26,6 +26,7 @@
 
 struct {
     int verbose;
+    int quiet;
     unsigned debug;
     int armor;
     int compress;

@@ -59,6 +59,7 @@
 #include "keydb.h"
 #include "host2net.h"
 #include "options.h"
+#include "main.h"
 #include "i18n.h"
 
 
@@ -153,7 +154,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 {
     static int any_secret, any_public;
     const char *resname = url;
-    IOBUF iobuf;
+    IOBUF iobuf = NULL;
     int i;
     char *filename = NULL;
     int rc = 0;
@@ -217,6 +218,8 @@ add_keyblock_resource( const char *url, int force, int secret )
 		else
 		    rt = rt_RING;
 	    }
+	    else /* maybe empty: assume ring */
+		rt = rt_RING;
 	    fclose( fp );
 	}
 	else /* no file yet: create ring */
@@ -258,6 +261,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 		    }
 		    else
 			log_info( _("%s: directory created\n"), filename );
+		    copy_options_file( filename );
 		}
 		else
 		{
@@ -513,6 +517,7 @@ locate_keyblock_by_fpr( KBPOS *kbpos, const byte *fpr, int fprlen, int secret )
 		rc = do_gdbm_locate( rentry->dbf, kbpos, fpr, fprlen );
 		break;
 	      default:
+		rc = G10ERR_UNSUPPORTED;
 		break;
 	    }
 
@@ -521,7 +526,7 @@ locate_keyblock_by_fpr( KBPOS *kbpos, const byte *fpr, int fprlen, int secret )
 		kbpos->fp = NULL;
 		return 0;
 	    }
-	    else if( rc != -1 ) {
+	    else if( rc != -1 && rc != G10ERR_UNSUPPORTED ) {
 		log_error("error searching resource %d: %s\n",
 						  i, g10_errstr(rc));
 		last_rc = rc;
@@ -551,6 +556,7 @@ locate_keyblock_by_keyid( KBPOS *kbpos, u32 *keyid, int shortkid, int secret )
 		rc = do_gdbm_locate_by_keyid( rentry->dbf, kbpos, keyid );
 		break;
 	      default:
+		rc = G10ERR_UNSUPPORTED;
 		break;
 	    }
 
@@ -559,7 +565,7 @@ locate_keyblock_by_keyid( KBPOS *kbpos, u32 *keyid, int shortkid, int secret )
 		kbpos->fp = NULL;
 		return 0;
 	    }
-	    else if( rc != -1 ) {
+	    else if( rc != -1 && rc != G10ERR_UNSUPPORTED ) {
 		log_error("error searching resource %d: %s\n",
 						  i, g10_errstr(rc));
 		last_rc = rc;
@@ -719,7 +725,10 @@ enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
 	    break;
 	  case rt_GDBM:
 	    break;
-	  default: BUG();
+	  default:
+	    log_error("OOPS in close enum_keyblocks - ignored\n");
+	    return rc;
+	    break;
 	}
 	/* release pending packet */
 	free_packet( kbpos->pkt );
@@ -778,7 +787,8 @@ delete_keyblock( KBPOS *kbpos )
 	break;
      #ifdef HAVE_LIBGDBM
       case rt_GDBM:
-	/* FIXME!!!! */
+	log_debug("deleting gdbm keyblock is not yet implemented\n");
+	rc = 0;
 	break;
      #endif
       default: BUG();

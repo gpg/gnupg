@@ -56,9 +56,11 @@ struct cache_ctrl_struct {
     char data[TRUST_RECORD_LEN];
 };
 
-#define MAX_CACHE_ENTRIES    200
+#define MAX_CACHE_ENTRIES_SOFT	200   /* may be increased due while in a */
+#define MAX_CACHE_ENTRIES_HARD	1000  /* transaction to this one */
 static CACHE_CTRL cache_list;
 static int cache_entries;
+static int cache_is_dirty;
 
 /* a type used to pass infomation to cmp_krec_fpr */
 struct cmp_krec_fpr_struct {
@@ -76,6 +78,7 @@ struct cmp_sdir_struct {
 
 static char *db_name;
 static int  db_fd = -1;
+static int in_transaction;
 
 
 static void open_db(void);
@@ -143,8 +146,10 @@ put_record_into_cache( ulong recno, const char *data )
 	else if( r->recno == recno ) {
 	    if( !r->flags.dirty ) {
 		/* Hmmm: should we use a a copy and compare? */
-		if( memcmp(r->data, data, TRUST_RECORD_LEN ) )
+		if( memcmp(r->data, data, TRUST_RECORD_LEN ) ) {
 		    r->flags.dirty = 1;
+		    cache_is_dirty = 1;
+		}
 	    }
 	    memcpy( r->data, data, TRUST_RECORD_LEN );
 	    return 0;
@@ -163,11 +168,12 @@ put_record_into_cache( ulong recno, const char *data )
 	r->recno = recno;
 	memcpy( r->data, data, TRUST_RECORD_LEN );
 	r->flags.dirty = 1;
+	cache_is_dirty = 1;
 	cache_entries++;
 	return 0;
     }
     /* see whether we reached the limit */
-    if( cache_entries < MAX_CACHE_ENTRIES ) { /* no */
+    if( cache_entries < MAX_CACHE_ENTRIES_SOFT ) { /* no */
 	r = m_alloc( sizeof *r );
 	r->flags.used = 1;
 	r->recno = recno;
@@ -175,6 +181,7 @@ put_record_into_cache( ulong recno, const char *data )
 	r->flags.dirty = 1;
 	r->next = cache_list;
 	cache_list = r;
+	cache_is_dirty = 1;
 	cache_entries++;
 	return 0;
     }
@@ -199,10 +206,31 @@ put_record_into_cache( ulong recno, const char *data )
 	r->recno = recno;
 	memcpy( r->data, data, TRUST_RECORD_LEN );
 	r->flags.dirty = 1;
+	cache_is_dirty = 1;
 	cache_entries++;
 	return 0;
     }
     /* no clean entries: have to flush some dirty entries */
+    if( in_transaction ) {
+	/* but we can't do this while in a transaction
+	 * we increase the cache size instead */
+	if( cache_entries < MAX_CACHE_ENTRIES_HARD ) { /* no */
+	    if( !(cache_entries % 100) )
+		log_info("increasing tdbio cache size\n");
+	    r = m_alloc( sizeof *r );
+	    r->flags.used = 1;
+	    r->recno = recno;
+	    memcpy( r->data, data, TRUST_RECORD_LEN );
+	    r->flags.dirty = 1;
+	    r->next = cache_list;
+	    cache_list = r;
+	    cache_is_dirty = 1;
+	    cache_entries++;
+	    return 0;
+	}
+	log_info("hard cache size limit reached\n");
+	return G10ERR_RESOURCE_LIMIT;
+    }
     if( dirty_count ) {
 	int n = dirty_count / 5; /* discard some dirty entries */
 	if( !n )
@@ -226,6 +254,7 @@ put_record_into_cache( ulong recno, const char *data )
 	r->recno = recno;
 	memcpy( r->data, data, TRUST_RECORD_LEN );
 	r->flags.dirty = 1;
+	cache_is_dirty = 1;
 	cache_entries++;
 	return 0;
     }
@@ -233,15 +262,26 @@ put_record_into_cache( ulong recno, const char *data )
 }
 
 
+int
+tdbio_is_dirty()
+{
+    return cache_is_dirty;
+}
+
 
 /****************
- * Sync the cache to disk
+ * Flush the cache.  This cannot be used while in a transaction.
  */
-
 int
 tdbio_sync()
 {
     CACHE_CTRL r;
+
+    if( in_transaction )
+	log_bug("tdbio: syncing while in transaction\n");
+
+    if( !cache_is_dirty )
+	return 0;
 
     for( r = cache_list; r; r = r->next ) {
 	if( r->flags.used && r->flags.dirty ) {
@@ -250,6 +290,63 @@ tdbio_sync()
 		return rc;
 	}
     }
+    cache_is_dirty = 0;
+    return 0;
+}
+
+
+
+/****************
+ * Simple transactions system:
+ * Everything between begin_transaction and end/cancel_transaction
+ * is not immediatly written but at the time of end_transaction.
+ *
+ */
+int
+tdbio_begin_transaction()
+{
+    int rc;
+
+    if( in_transaction )
+	log_bug("tdbio: nested transactions\n");
+    /* flush everything out */
+    rc = tdbio_sync();
+    if( rc )
+	return rc;
+    in_transaction = 1;
+    return 0;
+}
+
+int
+tdbio_end_transaction()
+{
+    if( !in_transaction )
+	log_bug("tdbio: no active transaction\n");
+    in_transaction = 0;
+    return tdbio_sync();
+}
+
+int
+tdbio_cancel_transaction()
+{
+    CACHE_CTRL r;
+
+    if( !in_transaction )
+	log_bug("tdbio: no active transaction\n");
+
+    /* remove all dirty marked entries, so that the original ones
+     * are read back the next time */
+    if( cache_is_dirty ) {
+	for( r = cache_list; r; r = r->next ) {
+	    if( r->flags.used && r->flags.dirty ) {
+		r->flags.used = 0;
+		cache_entries--;
+	    }
+	}
+	cache_is_dirty = 0;
+    }
+
+    in_transaction = 0;
     return 0;
 }
 
@@ -293,6 +390,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 						    fname,  strerror(errno) );
 		    else
 			log_info( _("%s: directory created\n"), fname );
+		    copy_options_file( fname );
 		}
 		else
 		    log_fatal( _("%s: directory does not exist!\n"), fname );

@@ -30,6 +30,61 @@
 #include "ttyio.h"
 
 
+/***************
+ * Extract from a given path the filename component.
+ *
+ */
+char *
+make_basename(const char *filepath)
+{
+    char *p;
+    
+    if ( !(p=strrchr(filepath, '/')) )
+      #ifdef __MINGW32__
+        if ( !(p=strrchr(filepath, '\\')) )
+            if ( !(p=strrchr(filepath, ':')) )
+      #endif
+              {
+                return m_strdup(filepath);
+              }
+    
+    return m_strdup(p+1);
+}
+
+
+
+/***************
+ * Extract from a given filename the path prepended to it.
+ * If their isn't a path prepended to the filename, a dot
+ * is returned ('.').
+ *
+ */
+char *
+make_dirname(const char *filepath)
+{
+    char *dirname;
+    int  dirname_length;
+    char *p;
+    
+    if ( !(p=strrchr(filepath, '/')) )
+      #ifdef __MINGW32__
+        if ( !(p=strrchr(filepath, '\\')) )
+            if ( !(p=strrchr(filepath, ':')) )
+      #endif
+              {
+                return m_strdup(".");
+              }
+    
+    dirname_length = p-filepath;
+    dirname = m_alloc(dirname_length+1);
+    strncpy(dirname, filepath, dirname_length);
+    dirname[dirname_length] = 0;
+    
+    return dirname;
+}
+
+
+
 /****************
  * Construct a filename from the NULL terminated list of parts.
  * Tilde expansion is done here.

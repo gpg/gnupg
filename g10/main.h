@@ -88,6 +88,7 @@ int generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock );
 int overwrite_filep( const char *fname );
 int   open_outfile( const char *iname, int mode, IOBUF *a );
 IOBUF open_sigfile( const char *iname );
+void copy_options_file( const char *destdir );
 
 /*-- seskey.c --*/
 void make_session_key( DEK *dek );
@@ -100,7 +101,7 @@ KBNODE make_comment_node( const char *s );
 KBNODE make_mpi_comment_node( const char *s, MPI a );
 
 /*-- import.c --*/
-int import_keys( const char *filename );
+int import_keys( const char *filename, int fast );
 /*-- export.c --*/
 int export_pubkeys( STRLIST users );
 int export_seckeys( STRLIST users );

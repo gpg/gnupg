@@ -1,6 +1,8 @@
 
     * Fix ;) revocation and expire stuff.
 
+    * check preferences (cipher and compress)
+
     * OpenBSD: dynamic loading with dlopen works on OpenBSD, but:
 	OpenBSD binaries are a.out, so every symbol begins with "_"
 

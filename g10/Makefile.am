@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
-EXTRA_DIST = OPTIONS  pubring.asc
+EXTRA_DIST = OPTIONS  pubring.asc  options.skel
 OMIT_DEPENDENCIES = zlib.h zconf.h
 LDFLAGS = @LDFLAGS@ @DYNLINK_LDFLAGS@
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
@@ -85,5 +85,11 @@ g10maint.o: $(srcdir)/g10.c
 
 
 $(PROGRAMS): $(needed_libs)
+
+
+install-data-local:
+	$(mkinstalldirs) $(pkgdatadir)
+	$(INSTALL_DATA) $(srcdir)/options.skel $(pkgdatadir)/options.skel
+
 
 

@@ -190,8 +190,10 @@ B<--export-secret-keys> [I<names>
     Same as B<--export>, but does export the secret keys.
     This is normally not very useful.
 
-B<--import>
-    import/merge keys
+B<--import>, B<--fast-import>
+    Import/merge keys.	The fast version does not build
+    the trustdb; this can be deon at anytime with the
+    command B<--update-trustdb>.
 
 B<--export-ownertrust>
     List the assigned ownertrust values in ascii format
@@ -238,6 +240,8 @@ B<-v>, B<--verbose>
     Give more information during processing. If used
     twice, the input data is listed in detail.
 
+B<-q>, B<--quiet>
+    Be somewhat more quiet in some cases.
 
 B<-z> I<n>
     Set compress level to I<n>. A value of 0 for I<n>
@@ -260,10 +264,10 @@ B<--no-batch>
     is used in the options file.
 
 B<--yes>
-    Assume yes on most questions.
+    Assume "yes" on most questions.
 
 B<--no>
-    Assume no on most questions.
+    Assume "no" on most questions.
 
 B<--keyring> I<file>
     Add I<file> to the list of keyrings.
@@ -271,6 +275,9 @@ B<--keyring> I<file>
     are replaced by the HOME directory. If the filename
     does not contain a slash, it is assumed to be in the
     home-directory (F<~/.gnupg> if B<--homedir>) is not used.
+    The filename may be prefixed with a scheme:
+      "gnupg-ring:" is the default one.
+      "gnupg-gdbm:" may be used for a GDBM ring.
 
 B<--secret-keyring> I<file>
     Same as B<--keyring> but for secret keyrings.

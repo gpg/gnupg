@@ -13,9 +13,11 @@ g10defs.h : config.h
 	echo "#ifdef __MINGW32__"; \
 	echo "#define G10_LOCALEDIR \"c:/lib/gnupg/locale\""; \
 	echo "#define GNUPG_LIBDIR \"c:/lib/gnupg\""; \
+	echo "#define GNUPG_DATADIR \"c:/lib/gnupg\""; \
 	echo "#else";\
 	echo "#define G10_LOCALEDIR \"$(prefix)/$(DATADIRNAME)/locale\""; \
 	echo "#define GNUPG_LIBDIR \"$(libdir)/gnupg\""; \
+	echo "#define GNUPG_DATADIR \"$(datadir)/gnupg\""; \
 	echo "#endif";\
 	) >g10defs.h
 
@@ -36,12 +38,23 @@ dist-hook:
 
 # maintainer only
 cvs-get:
-	rsync -avuzb --exclude '*~' koch@ftp.guug.de:work/gnupg .
+	rsync -Cavuzb  --exclude scratch --exclude .deps \
+		      koch@ftp.guug.de:work/gnupg .
 
 cvs-put:
-	rsync -Cavuzb . koch@ftp.guug.de:work/gnupg
+	rsync -Cavuzb --exclude .deps --exclude scratch \
+		      . koch@ftp.guug.de:work/gnupg
 
 cvs-sync: cvs-get cvs-put
+
+
+tobold-get:
+	rsync -Cavuzb --exclude scratch --exclude .deps \
+		      tobold:gnupg/ .
+
+tobold-put:
+	rsync -Cavuzb --excude scratch --exclude .deps \
+		      . tobold:gnupg/
 
 
 .PHONY: cvs-get cvs-put cvs-sync
