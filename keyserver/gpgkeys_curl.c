@@ -94,7 +94,7 @@ get_key(char *getkey)
   if(verbose>1)
     {
       curl_easy_setopt(curl,CURLOPT_STDERR,console);
-      curl_easy_setopt(curl,CURLOPT_VERBOSE,TRUE);
+      curl_easy_setopt(curl,CURLOPT_VERBOSE,1);
     }
 
   res=curl_easy_perform(curl);

@@ -1,3 +1,8 @@
+2005-01-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_curl.c (get_key): Newer versions of libcurl don't define
+	TRUE.
+
 2004-12-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_curl.c (main): Use new defines for opting out of certain
