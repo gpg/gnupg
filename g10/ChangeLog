@@ -4,6 +4,7 @@
 	the warning since all compatibility checks with PGP succeeded.
 	* mainproc.c (symkey_decrypt_sesskey): Better check for the
 	algorithm and check the return values of some functions.
+	* mdc.c (use_mdc): Simplified.
 	
 2003-08-07  Werner Koch  <wk@gnupg.org>
 

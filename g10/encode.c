@@ -113,18 +113,26 @@ encode_sesskey (DEK * dek, DEK ** ret_dek, byte * enckey)
 
 /* We try very hard to use a MDC */
 static int
-use_mdc(PK_LIST pk_list,int algo)
+use_mdc (PK_LIST pk_list,int algo)
 {
+  byte cipher_algid[4] = {
+    CIPHER_ALGO_AES,
+    CIPHER_ALGO_AES192,
+    CIPHER_ALGO_AES256,
+    CIPHER_ALGO_TWOFISH
+  };
+  int i;
+  
   /* --force-mdc overrides --disable-mdc */
-  if(opt.force_mdc)
+  if (opt.force_mdc)
     return 1;
 
-  if(opt.disable_mdc)
+  if (opt.disable_mdc)
     return 0;
 
   /* Do the keys really support MDC? */
 
-  if(select_mdc_from_pklist(pk_list))
+  if (select_mdc_from_pklist (pk_list))
     return 1;
   
   /* The keys don't support MDC, so now we do a bit of a hack - if any
@@ -132,26 +140,15 @@ use_mdc(PK_LIST pk_list,int algo)
      can handle a MDC.  This is valid for PGP 7, which can handle MDCs
      though it will not generate them.  2440bis allows this, by the
      way. */
-
-  if(select_algo_from_prefs(pk_list,PREFTYPE_SYM,
-			    CIPHER_ALGO_AES,NULL)==CIPHER_ALGO_AES)
-    return 1;
-
-  if(select_algo_from_prefs(pk_list,PREFTYPE_SYM,
-			    CIPHER_ALGO_AES192,NULL)==CIPHER_ALGO_AES192)
-    return 1;
-
-  if(select_algo_from_prefs(pk_list,PREFTYPE_SYM,
-			    CIPHER_ALGO_AES256,NULL)==CIPHER_ALGO_AES256)
-    return 1;
-
-  if(select_algo_from_prefs(pk_list,PREFTYPE_SYM,
-			    CIPHER_ALGO_TWOFISH,NULL)==CIPHER_ALGO_TWOFISH)
-    return 1;
+  for (i=0; i < DIM (cipher_algid); i++)
+    {
+      if (select_algo_from_prefs (pk_list, PREFTYPE_SYM, cipher_algid[i],
+                                  NULL) == cipher_algid[i])
+        return 1;
+    }
 
   /* Last try.  Use MDC for the modern ciphers. */
-
-  if( gcry_cipher_get_algo_blklen (algo) != 8)
+  if (gcry_cipher_get_algo_blklen (algo) != 8)
     return 1;
 
   return 0; /* No MDC */
