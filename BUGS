@@ -49,6 +49,7 @@ and after about half a day in the rsync snapshots.
 [ **] #19 1999-06-11
     "trustdb transaction too large" with about 500 signatures on a key
     FAEBD5FC.
+    FIX: 1999-07-12  (less memory requirement and increased the limit)
 
 
 Next #22

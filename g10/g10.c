@@ -70,6 +70,7 @@ enum cmd_and_opt_values { aNull = 0,
     aKeygen,
     aSignEncr,
     aSignKey,
+    aLSignKey,
     aListPackets,
     aEditKey,
     aDeleteKey,
@@ -190,9 +191,11 @@ static ARGPARSE_OPTS opts[] = {
     { aCheckKeys, "check-sigs",256, N_("check key signatures")},
     { oFingerprint, "fingerprint", 256, N_("list keys and fingerprints")},
     { aListSecretKeys, "list-secret-keys", 256, N_("list secret keys")},
-    { aKeygen, "gen-key",   256, N_("generate a new key pair")},
+    { aKeygen,	   "gen-key",  256, N_("generate a new key pair")},
     { aDeleteKey, "delete-key",256, N_("remove key from the public keyring")},
-    { aEditKey, "edit-key"  ,256, N_("sign or edit a key")},
+    { aSignKey,  "sign-key"   ,256, N_("sign a key")},
+    { aLSignKey, "lsign-key"  ,256, N_("sign a key locally")},
+    { aEditKey,  "edit-key"   ,256, N_("sign or edit a key")},
     { aGenRevoke, "gen-revoke",256, N_("generate a revocation certificate")},
     { aExport, "export"           , 256, N_("export keys") },
     { aSendKeys, "send-keys"     , 256, N_("export keys to a key server") },
@@ -283,7 +286,6 @@ static ARGPARSE_OPTS opts[] = {
     { aListTrustPath, "list-trust-path",0, "@"},
     { oKOption, NULL,	 0, "@"},
     { oPasswdFD, "passphrase-fd",1, "@" },
-    { aSignKey, "sign-key"  ,256, "@" }, /* alias for edit-key */
     { aDeleteSecretKey, "delete-secret-key",0, "@" },
     { oQuickRandom, "quick-random", 0, "@"},
     { oNoVerbose, "no-verbose", 0, "@"},
@@ -662,6 +664,7 @@ main( int argc, char **argv )
 	  case aSign: set_cmd( &cmd, aSign );  break;
 	  case aKeygen: set_cmd( &cmd, aKeygen); break;
 	  case aSignKey: set_cmd( &cmd, aSignKey); break;
+	  case aLSignKey: set_cmd( &cmd, aLSignKey); break;
 	  case aStore: set_cmd( &cmd, aStore); break;
 	  case aEditKey: set_cmd( &cmd, aEditKey); break;
 	  case aClearsign: set_cmd( &cmd, aClearsign); break;
@@ -1044,26 +1047,43 @@ main( int argc, char **argv )
 
 
       case aSignKey: /* sign the key given as argument */
+	if( argc != 1 )
+	    wrong_args(_("--sign-key user-id"));
+	username = make_username( fname );
+	keyedit_menu(fname, locusr, NULL, 1 );
+	m_free(username);
+	break;
+
+      case aLSignKey:
+	if( argc != 1 )
+	    wrong_args(_("--lsign-key user-id"));
+	username = make_username( fname );
+	keyedit_menu(fname, locusr, NULL, 2 );
+	m_free(username);
+	break;
+
       case aEditKey: /* Edit a key signature */
 	if( !argc )
-	    wrong_args(_("--edit-key username [commands]"));
+	    wrong_args(_("--edit-key user-id [commands]"));
+	username = make_username( fname );
 	if( argc > 1 ) {
 	    sl = NULL;
 	    for( argc--, argv++ ; argc; argc--, argv++ )
-		append_to_strlist2( &sl, *argv, utf8_strings );
-	    keyedit_menu( fname, locusr, sl );
+		append_to_strlist( &sl, *argv );
+	    keyedit_menu( username, locusr, sl, 0 );
 	    free_strlist(sl);
 	}
 	else
-	    keyedit_menu(fname, locusr, NULL );
+	    keyedit_menu(username, locusr, NULL, 0 );
+	m_free(username);
 	break;
 
       case aDeleteSecretKey:
 	if( argc != 1 )
-	    wrong_args(_("--delete-secret-key username"));
+	    wrong_args(_("--delete-secret-key user-id"));
       case aDeleteKey:
 	if( argc != 1 )
-	    wrong_args(_("--delete-key username"));
+	    wrong_args(_("--delete-key user-id"));
 	username = make_username( fname );
 	if( (rc = delete_key(username, cmd==aDeleteSecretKey)) )
 	    log_error("%s: delete key failed: %s\n", username, g10_errstr(rc) );
@@ -1290,7 +1310,7 @@ main( int argc, char **argv )
 
       case aListTrustPath:
 	if( !argc )
-	    wrong_args("--list-trust-path <usernames>");
+	    wrong_args("--list-trust-path <user-ids>");
 	for( ; argc; argc--, argv++ ) {
 	    username = make_username( *argv );
 	    list_trust_path( username );

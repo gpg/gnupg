@@ -538,13 +538,15 @@ fix_keyblock( KBNODE keyblock )
 }
 
 /****************
- * Menu driven key editor
+ * Menu driven key editor.  If sign_mode is true semi-automatical signing
+ * will be performed. commands are ignore in this case
  *
  * Note: to keep track of some selection we use node->mark MARKBIT_xxxx.
  */
 
 void
-keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
+keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
+						    int sign_mode )
 {
     enum cmdids { cmdNONE = 0,
 	   cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
@@ -552,44 +554,45 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 	   cmdDEBUG, cmdSAVE, cmdADDUID, cmdDELUID, cmdADDKEY, cmdDELKEY,
 	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE,
 	   cmdENABLEKEY, cmdDISABLEKEY,
-	   cmdNOP };
+	   cmdINVCMD, cmdNOP };
     static struct { const char *name;
 		    enum cmdids id;
 		    int need_sk;
+		    int signmode;
 		    const char *desc;
 		  } cmds[] = {
-	{ N_("quit")    , cmdQUIT   , 0, N_("quit this menu") },
-	{ N_("q")       , cmdQUIT   , 0, NULL   },
-	{ N_("save")    , cmdSAVE   , 0, N_("save and quit") },
-	{ N_("help")    , cmdHELP   , 0, N_("show this help") },
-	{    "?"        , cmdHELP   , 0, NULL   },
-	{ N_("fpr")     , cmdFPR    , 0, N_("show fingerprint") },
-	{ N_("list")    , cmdLIST   , 0, N_("list key and user ids") },
-	{ N_("l")       , cmdLIST   , 0, NULL   },
-	{ N_("uid")     , cmdSELUID , 0, N_("select user id N") },
-	{ N_("key")     , cmdSELKEY , 0, N_("select secondary key N") },
-	{ N_("check")   , cmdCHECK  , 0, N_("list signatures") },
-	{ N_("c")       , cmdCHECK  , 0, NULL },
-	{ N_("sign")    , cmdSIGN   , 0, N_("sign the key") },
-	{ N_("s")       , cmdSIGN   , 0, NULL },
-	{ N_("lsign")   , cmdLSIGN  , 0, N_("sign the key locally") },
-	{ N_("debug")   , cmdDEBUG  , 0, NULL },
-	{ N_("adduid")  , cmdADDUID , 1, N_("add a user id") },
-	{ N_("deluid")  , cmdDELUID , 0, N_("delete user id") },
-	{ N_("addkey")  , cmdADDKEY , 1, N_("add a secondary key") },
-	{ N_("delkey")  , cmdDELKEY , 0, N_("delete a secondary key") },
-	{ N_("delsig")  , cmdDELSIG , 0, N_("delete signatures") },
-	{ N_("expire")  , cmdEXPIRE , 1, N_("change the expire date") },
-	{ N_("toggle")  , cmdTOGGLE , 1, N_("toggle between secret "
-					    "and public key listing") },
-	{ N_("t"     )  , cmdTOGGLE , 1, NULL },
-	{ N_("pref")    , cmdPREF  , 0, N_("list preferences") },
-	{ N_("passwd")  , cmdPASSWD , 1, N_("change the passphrase") },
-	{ N_("trust")   , cmdTRUST , 0, N_("change the ownertrust") },
-	{ N_("revsig")  , cmdREVSIG , 0, N_("revoke signatures") },
-	{ N_("revkey")  , cmdREVKEY , 1, N_("revoke a secondary key") },
-	{ N_("disable") , cmdDISABLEKEY , 0, N_("disable a key") },
-	{ N_("enable")  , cmdENABLEKEY , 0, N_("enable a key") },
+	{ N_("quit")    , cmdQUIT      , 0,1, N_("quit this menu") },
+	{ N_("q")       , cmdQUIT      , 0,1, NULL   },
+	{ N_("save")    , cmdSAVE      , 0,1, N_("save and quit") },
+	{ N_("help")    , cmdHELP      , 0,1, N_("show this help") },
+	{    "?"        , cmdHELP      , 0,1, NULL   },
+	{ N_("fpr")     , cmdFPR       , 0,1, N_("show fingerprint") },
+	{ N_("list")    , cmdLIST      , 0,1, N_("list key and user ids") },
+	{ N_("l")       , cmdLIST      , 0,1, NULL   },
+	{ N_("uid")     , cmdSELUID    , 0,1, N_("select user id N") },
+	{ N_("key")     , cmdSELKEY    , 0,0, N_("select secondary key N") },
+	{ N_("check")   , cmdCHECK     , 0,1, N_("list signatures") },
+	{ N_("c")       , cmdCHECK     , 0,1, NULL },
+	{ N_("sign")    , cmdSIGN      , 0,1, N_("sign the key") },
+	{ N_("s")       , cmdSIGN      , 0,1, NULL },
+	{ N_("lsign")   , cmdLSIGN     , 0,1, N_("sign the key locally") },
+	{ N_("debug")   , cmdDEBUG     , 0,0, NULL },
+	{ N_("adduid")  , cmdADDUID    , 1,0, N_("add a user id") },
+	{ N_("deluid")  , cmdDELUID    , 0,0, N_("delete user id") },
+	{ N_("addkey")  , cmdADDKEY    , 1,0, N_("add a secondary key") },
+	{ N_("delkey")  , cmdDELKEY    , 0,0, N_("delete a secondary key") },
+	{ N_("delsig")  , cmdDELSIG    , 0,0, N_("delete signatures") },
+	{ N_("expire")  , cmdEXPIRE    , 1,0, N_("change the expire date") },
+	{ N_("toggle")  , cmdTOGGLE    , 1,0, N_("toggle between secret "
+						 "and public key listing") },
+	{ N_("t"     )  , cmdTOGGLE    , 1,0, NULL },
+	{ N_("pref")    , cmdPREF      , 0,0,  N_("list preferences") },
+	{ N_("passwd")  , cmdPASSWD    , 1,0, N_("change the passphrase") },
+	{ N_("trust")   , cmdTRUST     , 0,0,  N_("change the ownertrust") },
+	{ N_("revsig")  , cmdREVSIG    , 0,0, N_("revoke signatures") },
+	{ N_("revkey")  , cmdREVKEY    , 1,0, N_("revoke a secondary key") },
+	{ N_("disable") , cmdDISABLEKEY, 0,0, N_("disable a key") },
+	{ N_("enable")  , cmdENABLEKEY , 0,0, N_("enable a key") },
 
     { NULL, cmdNONE } };
     enum cmdids cmd = 0;
@@ -612,18 +615,27 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 	goto leave;
     }
 
-    /* first try to locate it as secret key */
-    rc = find_secret_keyblock_byname( &sec_keyblockpos, username );
-    if( !rc ) {
-	rc = read_keyblock( &sec_keyblockpos, &sec_keyblock );
-	if( rc ) {
-	    log_error("%s: secret keyblock read problem: %s\n",
-					    username, g10_errstr(rc));
-	    goto leave;
+    if( sign_mode ) {
+	commands = NULL;
+	append_to_strlist( &commands, sign_mode == 1? "sign":"lsign" );
+	have_commands = 1;
+    }
+
+
+    if( !sign_mode ) {
+	/* first try to locate it as secret key */
+	rc = find_secret_keyblock_byname( &sec_keyblockpos, username );
+	if( !rc ) {
+	    rc = read_keyblock( &sec_keyblockpos, &sec_keyblock );
+	    if( rc ) {
+		log_error("%s: secret keyblock read problem: %s\n",
+						username, g10_errstr(rc));
+		goto leave;
+	    }
+	    merge_keys_and_selfsig( sec_keyblock );
+	    if( fix_keyblock( sec_keyblock ) )
+		sec_modified++;
 	}
-	merge_keys_and_selfsig( sec_keyblock );
-	if( fix_keyblock( sec_keyblock ) )
-	    sec_modified++;
     }
 
     /* and now get the public key */
@@ -636,7 +648,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 	modified++;
 
     if( sec_keyblock ) { /* check that they match */
-	/* FIXME: check that they both match */
+	/* fixme: check that they both match */
 	tty_printf(_("Secret key is available.\n"));
     }
 
@@ -689,10 +701,13 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 		arg_number = atoi(p);
 	    }
 
-	    for(i=0; cmds[i].name; i++ )
+	    for(i=0; cmds[i].name; i++ ) {
 		if( !stricmp( answer, cmds[i].name ) )
 		    break;
-	    if( cmds[i].need_sk && !sec_keyblock ) {
+	    }
+	    if( sign_mode && !cmds[i].signmode )
+		cmd = cmdINVCMD;
+	    else if( cmds[i].need_sk && !sec_keyblock ) {
 		tty_printf(_("Need the secret key to do this.\n"));
 		cmd = cmdNOP;
 	    }
@@ -702,52 +717,14 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 	switch( cmd )  {
 	  case cmdHELP:
 	    for(i=0; cmds[i].name; i++ ) {
-		if( cmds[i].need_sk && !sec_keyblock )
+		if( sign_mode && !cmds[i].signmode )
+		    ;
+		else if( cmds[i].need_sk && !sec_keyblock )
 		    ; /* skip if we do not have the secret key */
 		else if( cmds[i].desc )
 		    tty_printf("%-10s %s\n", cmds[i].name, _(cmds[i].desc) );
 	    }
 	    break;
-
-	  case cmdQUIT:
-	    if( have_commands )
-		goto leave;
-	    if( !modified && !sec_modified )
-		goto leave;
-	    if( !cpr_get_answer_is_yes("keyedit.save.okay",
-					_("Save changes? ")) ) {
-		if( cpr_enabled()
-		    || cpr_get_answer_is_yes("keyedit.cancel.okay",
-					     _("Quit without saving? ")) )
-		    goto leave;
-		break;
-	    }
-	    /* fall thru */
-	  case cmdSAVE:
-	    if( modified || sec_modified  ) {
-		if( modified ) {
-		    rc = update_keyblock( &keyblockpos, keyblock );
-		    if( rc ) {
-			log_error(_("update failed: %s\n"), g10_errstr(rc) );
-			break;
-		    }
-		}
-		if( sec_modified ) {
-		    rc = update_keyblock( &sec_keyblockpos, sec_keyblock );
-		    if( rc ) {
-			log_error(_("update secret failed: %s\n"),
-							    g10_errstr(rc) );
-			break;
-		    }
-		}
-	    }
-	    else
-		tty_printf(_("Key not changed so no update needed.\n"));
-	    rc = update_trust_record( keyblock, 0, NULL );
-	    if( rc )
-		log_error(_("update of trustdb failed: %s\n"),
-			    g10_errstr(rc) );
-	    goto leave;
 
 	  case cmdLIST:
 	    redisplay = 1;
@@ -783,7 +760,9 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 		    break;
 		}
 	    }
-	    sign_uids( keyblock, locusr, &modified, cmd == cmdLSIGN );
+	    if( !sign_uids( keyblock, locusr, &modified, cmd == cmdLSIGN )
+		&& sign_mode )
+		goto do_cmd_save;
 	    break;
 
 	  case cmdDEBUG:
@@ -944,6 +923,53 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 	    }
 	    break;
 
+	  case cmdQUIT:
+	    if( have_commands )
+		goto leave;
+	    if( !modified && !sec_modified )
+		goto leave;
+	    if( !cpr_get_answer_is_yes("keyedit.save.okay",
+					_("Save changes? ")) ) {
+		if( cpr_enabled()
+		    || cpr_get_answer_is_yes("keyedit.cancel.okay",
+					     _("Quit without saving? ")) )
+		    goto leave;
+		break;
+	    }
+	    /* fall thru */
+	  case cmdSAVE:
+	  do_cmd_save:
+	    if( modified || sec_modified  ) {
+		if( modified ) {
+		    rc = update_keyblock( &keyblockpos, keyblock );
+		    if( rc ) {
+			log_error(_("update failed: %s\n"), g10_errstr(rc) );
+			break;
+		    }
+		}
+		if( sec_modified ) {
+		    rc = update_keyblock( &sec_keyblockpos, sec_keyblock );
+		    if( rc ) {
+			log_error(_("update secret failed: %s\n"),
+							    g10_errstr(rc) );
+			break;
+		    }
+		}
+	    }
+	    else
+		tty_printf(_("Key not changed so no update needed.\n"));
+	    /* TODO: we should keep track whether we have changed
+	     *	     something relevant to the trustdb */
+	    if( !modified && sign_mode )
+		rc = 0; /* we can skip at least in this case */
+	    else
+		rc = update_trust_record( keyblock, 0, NULL );
+	    if( rc )
+		log_error(_("update of trustdb failed: %s\n"),
+			    g10_errstr(rc) );
+	    goto leave;
+
+	  case cmdINVCMD:
 	  default:
 	    tty_printf("\n");
 	    tty_printf(_("Invalid command  (try \"help\")\n"));

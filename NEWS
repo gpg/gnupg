@@ -11,6 +11,9 @@
     * New script tools/lspgpot to help transferring assigned
       trustvalues from PGP to GnuPG.
 
+    * New commands --lsign-key and made --sign-key a shortcut for --edit
+      and sign.
+
 
 Noteworthy changes in version 0.9.8
 -----------------------------------

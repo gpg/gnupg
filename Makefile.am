@@ -23,7 +23,7 @@ dist-hook:
 	sed -e 's/@pkg_version@/$(VERSION)/g' \
 	    $(top_srcdir)/scripts/gnupg.spec.in \
 	    > $(distdir)/scripts/gnupg.spec
-	rm $(distdir)/gcrypt/*.[ch]
+	-rm $(distdir)/gcrypt/*.[ch]
 
 
 if MAINTAINER_MODE

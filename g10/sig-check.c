@@ -433,9 +433,11 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
     sig = node->pkt->pkt.signature;
     algo = sig->digest_algo;
 
+  #if 0 /* I am not sure whether this is a good thing to do */
     if( sig->flags.checked )
 	log_debug("check_key_signature: already checked: %s\n",
 		      sig->flags.valid? "good":"bad" );
+  #endif
 
     if( (rc=check_digest_algo(algo)) )
 	return rc;

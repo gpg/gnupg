@@ -39,4 +39,5 @@ Nice to have
   * for messages created with "-t", it might make sense to append the
     verification status of the message to the output (i.e. write something to
     the --output file and not only to stderr.
+  * configure option where to find zlib
 

@@ -355,6 +355,19 @@ trust value.  Letters are used for the values:</para>
     </variablelist>
 </listitem></varlistentry>
 
+<varlistentry>
+<term>--sign-key &ParmName;</term>
+<listitem><para>
+Sign a public key with you secret key.	This is a shortcut version
+of the subcommand <term>sign</term> from --edit.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--lsign-key &ParmName;</term>
+<listitem><para>
+Sign a public key with you secret key but mark it as non-exportable.
+This is a shortcut version of the subcommand <term>lsign</term> from --edit.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--delete-key &ParmName;</term>
