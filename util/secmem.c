@@ -210,7 +210,7 @@ init_pool( size_t n)
     pgsize = 4096;
   #endif
 
-  #if HAVE_MMAP
+  #ifdef HAVE_MMAP
     poolsize = (poolsize + pgsize -1 ) & ~(pgsize-1);
     #ifdef MAP_ANONYMOUS
        pool = mmap( 0, poolsize, PROT_READ|PROT_WRITE,
@@ -443,7 +443,7 @@ secmem_term()
     memset( pool, 0xaa, poolsize);
     memset( pool, 0x55, poolsize);
     memset( pool, 0x00, poolsize);
-  #if HAVE_MMAP
+  #ifdef HAVE_MMAP
     if( pool_is_mmapped )
 	munmap( pool, poolsize );
   #endif

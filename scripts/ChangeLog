@@ -1,11 +1,10 @@
 2002-08-03  Stefan Bellon  <sbellon@sbellon.de>
 
 	* conf-riscos/include/g10defs.h: Added GNUPG_LIBEXECDIR.
-
 	* conf-riscos/include/config.h: Changes due to dynload removal and
 	minor changes to avoid some warnings.
-
 	* conf-riscos/Makefile: Changes due to dynload removal.
+	* conf-riscos/cipher/*: Not needed anymore due to dynload removal.
 
 2002-07-25  David Shaw  <dshaw@jabberwocky.com>
 
