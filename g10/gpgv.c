@@ -331,6 +331,9 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
   return NULL;
 }
 
+struct keyserver_spec *parse_preferred_keyserver(PKT_signature *sig) {return NULL;}
+void free_keyserver_spec(struct keyserver_spec *keyserver) {}
+
 /* Stubs to avoid linking to photoid.c */
 void show_photos(const struct user_attribute *attrs,int count,PKT_public_key *pk) {}
 int parse_image_header(const struct user_attribute *attr,byte *type,u32 *len) {return 0;}

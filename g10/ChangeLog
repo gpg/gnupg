@@ -1,5 +1,20 @@
 2004-05-21  David Shaw  <dshaw@jabberwocky.com>
 
+	* mainproc.c (check_sig_and_print): If we're honoring preferred
+	keyservers, and auto-key-retrieve is set, try and get a missing
+	key from the preferred keyserver subpacket when we verify the sig.
+
+	* gpgv.c (parse_preferred_keyserver, free_keyserver_spec): Stubs.
+
+	* keyserver.c (keyidlist): Use new parse_preferred_keyserver
+	function.
+	(keyserver_work): Use the passed-in keyserver spec rather than the
+	options global one.
+
+	* keyserver-internal.h, keyserver.c (parse_preferred_keyserver):
+	New function to take a sig and return a split out keyserver_spec.
+	(keyserver_import_keyid): Now takes a keyserver_spec.
+
 	* keyserver.c (keyidlist): Go back to the old fast keyid lister.
 	Only merge selfsigs if we have to for honor-keyserver-url.
 	(keyserver_refresh): Keyserver URL handler moved here.

@@ -282,6 +282,27 @@ parse_keyserver_uri(const char *uri,int require_scheme,
   return NULL;
 }
 
+struct keyserver_spec *
+parse_preferred_keyserver(PKT_signature *sig)
+{
+  struct keyserver_spec *spec=NULL;
+  const byte *p;
+  size_t plen;
+
+  p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_PREF_KS,&plen);
+  if(p && plen)
+    {
+      byte *dupe=m_alloc(plen+1);
+
+      memcpy(dupe,p,plen);
+      dupe[plen]='\0';
+      spec=parse_keyserver_uri(dupe,0,NULL,0);
+      m_free(dupe);
+    }
+
+  return spec;
+}
+
 static void
 print_keyrec(int number,struct keyrec *keyrec)
 {
@@ -1173,7 +1194,7 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	{
 	case KEYSERVER_SCHEME_NOT_FOUND:
 	  log_error(_("no handler for keyserver scheme \"%s\"\n"),
-		    opt.keyserver->scheme);
+		    keyserver->scheme);
 	  break;
 
 	case KEYSERVER_NOT_SUPPORTED:
@@ -1181,12 +1202,12 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 		      "scheme \"%s\"\n"),
 		    action==GET?"get":action==SEND?"send":
 		    action==SEARCH?"search":"unknown",
-		    opt.keyserver->scheme);
+		    keyserver->scheme);
 	  break;
 
 	case KEYSERVER_VERSION_ERROR:
 	  log_error(_("gpgkeys_%s does not support handler version %d\n"),
-		    opt.keyserver->scheme,KEYSERVER_PROTO_VERSION);
+		    keyserver->scheme,KEYSERVER_PROTO_VERSION);
 	  break;
 
 	case KEYSERVER_INTERNAL_ERROR:
@@ -1299,7 +1320,7 @@ keyserver_import_fprint(const byte *fprint,size_t fprint_len)
 }
 
 int 
-keyserver_import_keyid(u32 *keyid)
+keyserver_import_keyid(u32 *keyid,struct keyserver_spec *keyserver)
 {
   KEYDB_SEARCH_DESC desc;
 
@@ -1309,7 +1330,7 @@ keyserver_import_keyid(u32 *keyid)
   desc.u.kid[0]=keyid[0];
   desc.u.kid[1]=keyid[1];
 
-  return keyserver_work(GET,NULL,&desc,1,opt.keyserver);
+  return keyserver_work(GET,NULL,&desc,1,keyserver);
 }
 
 /* code mostly stolen from do_export_stream */
@@ -1430,28 +1451,11 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 		    }
 		}
 
+	      /* Try and parse the keyserver URL.  If it doesn't work,
+		 then we end up writing NULL which indicates we are
+		 the same as any other key. */
 	      if(uid && sig)
-		{
-		  const byte *p;
-		  size_t plen;
-		  p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_PREF_KS,&plen);
-		  if(p && plen)
-		    {
-		      byte *dupe=m_alloc(plen+1);
-
-		      memcpy(dupe,p,plen);
-		      dupe[plen]='\0';
-
-		      /* Try and parse the keyserver URL.  If it
-			 doesn't work, then we end up writing NULL
-			 which indicates we are the same as any other
-			 key. */
-
-		      (*klist)[*count].skipfncvalue=
-			parse_keyserver_uri(dupe,0,NULL,0);
-		      m_free(dupe);
-		    }
-		}
+		(*klist)[*count].skipfncvalue=parse_preferred_keyserver(sig);
 	    }
 
 	  (*count)++;

@@ -1345,20 +1345,8 @@ check_sig_and_print( CTX c, KBNODE node )
 	       keystr(sig->keyid));
 
     rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
-    if( rc == G10ERR_NO_PUBKEY && opt.keyserver
-	&& (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE))
-      {
-	int res;
 
-	ctrl.in_auto_key_retrieve++;
-	res=keyserver_import_keyid ( sig->keyid );
-	ctrl.in_auto_key_retrieve--;
-	if(!res)
-	  rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
-      }
-
-    /* If the key still isn't found, try to inform the user where it
-       can be found. */
+    /* If the key isn't found, check for a preferred keyserver */
 
     if(rc==G10ERR_NO_PUBKEY && sig->flags.pref_ks)
       {
@@ -1375,7 +1363,44 @@ check_sig_and_print( CTX c, KBNODE node )
 	    log_info(_("Key available at: ") );
 	    print_string( log_stream(), p, n, 0 );
 	    putc( '\n', log_stream() );
+
+	    if(opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE
+	       && opt.keyserver_options.options&KEYSERVER_HONOR_KEYSERVER_URL)
+	      {
+		struct keyserver_spec *spec;
+
+		spec=parse_preferred_keyserver(sig);
+		if(spec)
+		  {
+		    int res;
+
+		    ctrl.in_auto_key_retrieve++;
+		    res=keyserver_import_keyid(sig->keyid,spec);
+		    ctrl.in_auto_key_retrieve--;
+		    if(!res)
+		      rc=do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
+		    free_keyserver_spec(spec);
+
+		    if(!rc)
+		      break;
+		  }
+	      }
 	  }
+      }
+
+    /* If the preferred keyserver thing above didn't work, this is a
+       second try. */
+
+    if( rc == G10ERR_NO_PUBKEY && opt.keyserver
+	&& (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE))
+      {
+	int res;
+
+	ctrl.in_auto_key_retrieve++;
+	res=keyserver_import_keyid ( sig->keyid, opt.keyserver );
+	ctrl.in_auto_key_retrieve--;
+	if(!res)
+	  rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
       }
 
     if( !rc || rc == G10ERR_BAD_SIGN ) {
