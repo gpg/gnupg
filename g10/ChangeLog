@@ -1,3 +1,18 @@
+2001-12-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (idea_cipher_warn): Add a flag to show the warning always
+	or once per session and change all callers (show always except for
+	the secret key protection and unknown cipher from an encrypted
+	message errors).  Also make the strings translatable.
+
+	* pubkey-enc.c (get_it): Add the IDEA cipher warning if the user
+	tries to decrypt an IDEA encrypted message without the IDEA
+	plugin.
+
+	* keyserver.c (parse_keyserver_uri): More strict checking of the
+	keyserver URI.  Specifically, fail if the ":port" section is
+	anything except a number between 1 and 65535.
+
 2001-12-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (print_keyinfo): No need to check for

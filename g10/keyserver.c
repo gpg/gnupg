@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <ctype.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
@@ -121,13 +122,27 @@ parse_keyserver_uri(char *uri)
     opt.keyserver_port="0";
   else
     {
+      unsigned char *ch;
+
       /* Get the port */
       opt.keyserver_port=strsep(&uri,"/");
-      if(atoi(opt.keyserver_port)==0)
-	opt.keyserver_port="0";
+
+      /* Ports are digits only */
+      ch=opt.keyserver_port;
+      while(*ch!='\0')
+	{
+	  if(!isdigit(*ch))
+	    return G10ERR_BAD_URI;
+
+	  ch++;
+	}
+
+      if(strlen(opt.keyserver_port)==0 ||
+	 atoi(opt.keyserver_port)<1 || atoi(opt.keyserver_port)>65535)
+	return G10ERR_BAD_URI;
     }
 
-  /* (any path part of the URI is discarded) */
+  /* (any path part of the URI is discarded for now) */
 
   if(opt.keyserver_scheme[0]=='\0' || opt.keyserver_host[0]=='\0')
     return G10ERR_BAD_URI;

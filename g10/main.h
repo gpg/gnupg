@@ -48,7 +48,7 @@ extern int g10_errors_seen;
 void print_pubkey_algo_note( int algo );
 void print_cipher_algo_note( int algo );
 void print_digest_algo_note( int algo );
-void idea_cipher_warn(void);
+void idea_cipher_warn( int show );
 const char *get_temp_dir(void);
 
 /*-- armor.c --*/

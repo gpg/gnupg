@@ -1243,7 +1243,7 @@ main( int argc, char **argv )
 	      {
 		log_info(_("encrypting a message in --pgp2 mode requires "
 			   "the IDEA cipher\n"));
-		idea_cipher_warn();
+		idea_cipher_warn(1);
 		unusable=1;
 	      }
 	    else
@@ -1278,7 +1278,7 @@ main( int argc, char **argv )
     if( def_cipher_string ) {
 	opt.def_cipher_algo = string_to_cipher_algo(def_cipher_string);
 	if(opt.def_cipher_algo==0 && strcasecmp(def_cipher_string,"idea")==0)
-	  idea_cipher_warn();
+	  idea_cipher_warn(1);
 	m_free(def_cipher_string); def_cipher_string = NULL;
 	if( check_cipher_algo(opt.def_cipher_algo) )
 	    log_error(_("selected cipher algorithm is invalid\n"));
@@ -2142,15 +2142,15 @@ check_policy_url( const char *s )
 
 /* Special warning for the IDEA cipher */
 void
-idea_cipher_warn(void)
+idea_cipher_warn(int show)
 {
   static int warned=0;
 
-  if(!warned)
+  if(!warned || show)
     {
-      log_info("the IDEA cipher plugin is not present\n");
-      log_info("please see http://www.gnupg.org/why-not-idea.html "
-	       "for more information\n");
+      log_info(_("the IDEA cipher plugin is not present\n"));
+      log_info(_("please see http://www.gnupg.org/why-not-idea.html "
+		 "for more information\n"));
       warned=1;
     }
 }

@@ -178,7 +178,7 @@ set_one_pref (ulong val, int type, int (*cf)(int), byte *buf, int *nbuf)
     if (cf (val)) {
         log_info (_("preference %c%lu is not valid\n"), type, val);
 	if(type=='S' && val==CIPHER_ALGO_IDEA)
-	  idea_cipher_warn();
+	  idea_cipher_warn(1);
         return -1;
     }
     for (i=0; i < *nbuf; i++ ) {
