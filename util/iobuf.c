@@ -1857,7 +1857,7 @@ int
 iobuf_get_fd (IOBUF a)
 {
   if (a->directfp)
-    return a->directfp? fileno(a->directfp) : -1;
+    return fileno ( (FILE*)a->directfp );
 
   for ( ; a; a = a->chain )
     if (!a->chain && a->filter == file_filter)
