@@ -34,6 +34,14 @@
 #include "keydb.h"
 #include "i18n.h"
 
+struct stats_s {
+  unsigned long count;
+  unsigned long skipped_new_keys;
+  unsigned long imported;
+  unsigned long unchanged;
+};
+
+
 
 static void
 print_imported_status (CTRL ctrl, KsbaCert cert)
@@ -45,9 +53,50 @@ print_imported_status (CTRL ctrl, KsbaCert cert)
   xfree (fpr);
 }
 
-static void
-check_and_store (CTRL ctrl, KsbaCert cert, int depth)
+
+void
+print_imported_summary (CTRL ctrl, struct stats_s *stats)
 {
+  char buf[13*25];
+
+  if (!opt.quiet)
+    {
+      log_info (_("total number processed: %lu\n"), stats->count);
+      if (stats->skipped_new_keys)
+        log_info(_("      skipped new keys: %lu\n"), stats->skipped_new_keys );
+      if (stats->imported) 
+        {
+          log_info (_("              imported: %lu"), stats->imported );
+          log_printf ("\n");
+	}
+      if (stats->unchanged)
+        log_info (_("             unchanged: %lu\n"), stats->unchanged);
+    }
+
+  sprintf (buf, "%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
+           stats->count,
+           0l, /*stats->no_user_id*/
+           stats->imported,
+           0l, /*stats->imported_rsa*/
+           stats->unchanged,
+           0l, /*stats->n_uids*/
+           0l, /*stats->n_subk*/
+           0l, /*stats->n_sigs*/
+           0l, /*stats->n_revoc*/
+           0l, /*stats->secret_read*/
+           0l, /*stats->secret_imported*/
+           0l, /*stats->secret_dups*/
+           stats->skipped_new_keys 
+           );
+  gpgsm_status (ctrl, STATUS_IMPORT_RES, buf);
+}
+
+
+
+static void
+check_and_store (CTRL ctrl, struct stats_s *stats, KsbaCert cert, int depth)
+{
+  stats->count++;
   if ( !gpgsm_basic_cert_check (cert) )
     {
       int existed;
@@ -57,7 +106,13 @@ check_and_store (CTRL ctrl, KsbaCert cert, int depth)
           KsbaCert next = NULL;
 
           if (!existed)
-            print_imported_status (ctrl, cert);
+            {
+              print_imported_status (ctrl, cert);
+              stats->imported++;
+            }
+          else
+            stats->unchanged++;
+            
           if (opt.verbose > 1 && existed)
             {
               if (depth)
@@ -78,7 +133,7 @@ check_and_store (CTRL ctrl, KsbaCert cert, int depth)
             log_error (_("certificate chain too long\n"));
           else if (!gpgsm_walk_cert_chain (cert, &next))
             {
-              check_and_store (ctrl, next, depth+1);
+              check_and_store (ctrl, stats, next, depth+1);
               ksba_cert_release (next);
             }
         }
@@ -91,8 +146,9 @@ check_and_store (CTRL ctrl, KsbaCert cert, int depth)
 
 
 
-int
-gpgsm_import (CTRL ctrl, int in_fd)
+
+static int
+import_one (CTRL ctrl, struct stats_s *stats, int in_fd)
 {
   int rc;
   Base64Context b64reader = NULL;
@@ -157,7 +213,7 @@ gpgsm_import (CTRL ctrl, int in_fd)
       
       for (i=0; (cert=ksba_cms_get_cert (cms, i)); i++)
         {
-          check_and_store (ctrl, cert, 0);
+          check_and_store (ctrl, stats, cert, 0);
           ksba_cert_release (cert); 
           cert = NULL;
         }
@@ -181,7 +237,7 @@ gpgsm_import (CTRL ctrl, int in_fd)
           goto leave;
         }
 
-      check_and_store (ctrl, cert, 0);
+      check_and_store (ctrl, stats, cert, 0);
     }
   else
     {
@@ -195,6 +251,19 @@ gpgsm_import (CTRL ctrl, int in_fd)
   gpgsm_destroy_reader (b64reader);
   if (fp)
     fclose (fp);
+  return rc;
+}
+
+
+int
+gpgsm_import (CTRL ctrl, int in_fd)
+{
+  int rc;
+  struct stats_s stats;
+
+  memset (&stats, 0, sizeof stats);
+  rc = import_one (ctrl, &stats, in_fd);
+  print_imported_summary (ctrl, &stats);
   /* If we never printed an error message do it now so that a command
      line invocation will return with an error (log_error keeps a
      global errorcount) */
@@ -204,5 +273,35 @@ gpgsm_import (CTRL ctrl, int in_fd)
 }
 
 
+int
+gpgsm_import_files (CTRL ctrl, int nfiles, char **files,
+                    int (*of)(const char *fname))
+{
+  int rc = 0;
+  struct stats_s stats;
+
+  memset (&stats, 0, sizeof stats);
+  
+  if (!nfiles)
+    rc = import_one (ctrl, &stats, 0);
+  else
+    {
+      for (; nfiles && !rc ; nfiles--, files++)
+        {
+          int fd = of (*files);
+          rc = import_one (ctrl, &stats, fd);
+          close (fd);
+          if (rc == -1)
+            rc = 0;
+        }
+    }
+  print_imported_summary (ctrl, &stats);
+  /* If we never printed an error message do it now so that a command
+     line invocation will return with an error (log_error keeps a
+     global errorcount) */
+  if (rc && !log_get_errorcount (0))
+    log_error (_("error importing certificate: %s\n"), gnupg_strerror (rc));
+  return rc;
+}
 
 

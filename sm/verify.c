@@ -281,28 +281,37 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
         }
 
       err = ksba_cms_get_signing_time (cms, signer, &sigtime);
-      if (err)
+      if (err == KSBA_No_Data)
+        sigtime = 0;
+      else if (err)
         {
           log_error ("error getting signing time: %s\n", ksba_strerror (err));
           sigtime = (time_t)-1;
         }
 
-                  
-
       err = ksba_cms_get_message_digest (cms, signer,
                                          &msgdigest, &msgdigestlen);
-      if (err)
-        break;
-
-      algoid = ksba_cms_get_digest_algo (cms, signer);
-      algo = gcry_md_map_name (algoid);
-      if (DBG_X509)
-        log_debug ("signer %d - digest algo: %d\n", signer, algo);
-      if ( !gcry_md_info (data_md, GCRYCTL_IS_ALGO_ENABLED, &algo, NULL) )
+      if (!err)
         {
-          log_error ("digest algo %d has not been enabled\n", algo);
-          goto next_signer;
+          algoid = ksba_cms_get_digest_algo (cms, signer);
+          algo = gcry_md_map_name (algoid);
+          if (DBG_X509)
+            log_debug ("signer %d - digest algo: %d\n", signer, algo);
+          if ( !gcry_md_info (data_md, GCRYCTL_IS_ALGO_ENABLED, &algo, NULL) )
+            {
+              log_error ("digest algo %d has not been enabled\n", algo);
+              goto next_signer;
+            }
         }
+      else if (err == KSBA_No_Data)
+        {
+          assert (!msgdigest);
+          err = 0;
+          algoid = NULL;
+          algo = 0; 
+        }
+      else /* real error */
+        break;
 
       sigval = ksba_cms_get_sig_val (cms, signer);
       if (!sigval)

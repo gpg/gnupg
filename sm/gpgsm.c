@@ -229,7 +229,6 @@ static ARGPARSE_OPTS opts[] = {
     { aLearnCard, "learn-card", 256 ,N_("register a smartcard")},
     { aServer, "server",      256, N_("run in server mode")},
     { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
-    
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
 
@@ -1000,7 +999,7 @@ main ( int argc, char **argv)
   if (may_coredump && !opt.quiet)
     log_info (_("WARNING: program may create a core file!\n"));
 
-  if (logfile)
+  if (logfile && cmd == aServer)
     {
       log_set_file (logfile);
       log_set_prefix (NULL, 1|2|4);
@@ -1227,13 +1226,7 @@ main ( int argc, char **argv)
       break;
 
     case aImport:
-      if (!argc)
-        gpgsm_import (&ctrl, 0);
-      else
-        {
-          for (; argc; argc--, argv++)
-            gpgsm_import (&ctrl, open_read (*argv));
-        }
+      gpgsm_import_files (&ctrl, argc, argv, open_read);
       break;
 
     case aExport:

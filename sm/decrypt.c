@@ -327,12 +327,15 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
           mode = gcry_cipher_mode_from_oid (algoid);
           if (!algo || !mode)
             {
+              rc = GNUPG_Unsupported_Algorithm;
               log_error ("unsupported algorithm `%s'\n", algoid? algoid:"?");
               if (algoid && !strcmp (algoid, "1.2.840.113549.3.2"))
                 log_info (_("(this is the RC2 algorithm)\n"));
+              else if (!algoid)
+                log_info (_("(this does not seem to be an encrypted"
+                            " message)\n"));
               gpgsm_status2 (ctrl, STATUS_ERROR, "decrypt.algorithm",
-                             gnupg_error_token (rc), algoid, NULL);
-              rc = GNUPG_Unsupported_Algorithm;
+                             gnupg_error_token (rc), algoid?algoid:"?", NULL);
               goto leave;
             }
           dfparm.algo = algo;

@@ -208,6 +208,8 @@ void gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode);
 
 /*-- import.c --*/
 int gpgsm_import (CTRL ctrl, int in_fd);
+int gpgsm_import_files (CTRL ctrl, int nfiles, char **files,
+                        int (*of)(const char *fname));
 
 /*-- export.c --*/
 void gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp);
