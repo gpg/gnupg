@@ -1,3 +1,9 @@
+2003-09-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Error out if --multifile is used with the commands
+	that don't support it yet (--sign, --clearsign, --detach-sign,
+	--symmetric, and --store).
+
 2003-09-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Add --multifile as an alias to turn --encrypt into

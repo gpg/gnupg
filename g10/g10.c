@@ -1932,6 +1932,37 @@ main( int argc, char **argv )
        keygen_set_std_prefs(pers_compress_list,PREFTYPE_ZIP))
       log_error(_("invalid personal compress preferences\n"));
 
+    /* We don't support all possible commands with multifile yet */
+    if(multifile)
+      {
+	char *cmdname;
+
+	switch(cmd)
+	  {
+	  case aSign:
+	    cmdname="--sign";
+	    break;
+	  case aClearsign:
+	    cmdname="--clearsign";
+	    break;
+	  case aDetachedSign:
+	    cmdname="--detach-sign";
+	    break;
+	  case aSym:
+	    cmdname="--symmetric";
+	    break;
+	  case aStore:
+	    cmdname="--store";
+	    break;
+	  default:
+	    cmdname=NULL;
+	    break;
+	  }
+
+	if(cmdname)
+	  log_error(_("%s does not yet work with %s\n"),cmdname,"--multifile");
+      }
+
     if( log_get_errorcount(0) )
 	g10_exit(2);
 
