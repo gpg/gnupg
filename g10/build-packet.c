@@ -182,7 +182,7 @@ static void
 write_fake_data( IOBUF out, MPI a )
 {
     if( a ) {
-	int i;
+        unsigned int i;
 	void *p;
 
 	p = mpi_get_opaque( a, &i );
@@ -353,15 +353,17 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
     else if( sk->is_protected && sk->version >= 4 ) {
         /* The secret key is protected - write it out as it is */
 	byte *p;
+	unsigned int ndata;
+
 	assert( mpi_is_opaque( sk->skey[npkey] ) );
-	p = mpi_get_opaque( sk->skey[npkey], &i );
-	iobuf_write(a, p, i );
+	p = mpi_get_opaque( sk->skey[npkey], &ndata );
+	iobuf_write(a, p, ndata );
     }
     else if( sk->is_protected ) {
         /* The secret key is protected te old v4 way. */
 	for(   ; i < nskey; i++ ) {
             byte *p;
-            int ndata;
+            unsigned int ndata;
 
             assert (mpi_is_opaque (sk->skey[i]));
             p = mpi_get_opaque (sk->skey[i], &ndata);

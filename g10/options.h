@@ -97,7 +97,7 @@ struct {
       {
 	TM_CLASSIC=0, TM_PGP=1, TM_EXTERNAL=2, TM_ALWAYS, TM_AUTO
       } trust_model;
-    unsigned int force_ownertrust;
+    int force_ownertrust;
     enum
       {
 	CO_GNUPG=0, CO_RFC2440, CO_RFC1991, CO_PGP2, CO_PGP6, CO_PGP7, CO_PGP8

@@ -1,5 +1,11 @@
 2003-12-17  David Shaw  <dshaw@localhost.localdomain>
 
+	* build-packet.c (write_fake_data, do_secret_key), seckey-cert.c
+	(do_check): Use an unsigned length for mpi_get_opaque.
+
+	* options.h: It's impolite to assign -1 to an unsigned
+	opt.force_ownertrust.
+
 	* sig-check.c (cmp_help, do_check), sign.c (do_sign): Remove old
 	unused code.
 

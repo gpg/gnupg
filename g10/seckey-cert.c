@@ -86,7 +86,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 	cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen );
 	csum = 0;
 	if( sk->version >= 4 ) {
-	    int ndata;
+	    unsigned int ndata;
 	    byte *p, *data;
             u16 csumc = 0;
 
@@ -140,7 +140,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                     }
                 }
             }
-                
+
             /* must check it here otherwise the mpi_read_xx would fail
                because the length may have an arbitrary value */
             if( sk->csum == csum ) {
@@ -159,8 +159,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 	    for(i=pubkey_get_npkey(sk->pubkey_algo);
 		    i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
                 byte *p;
-                int ndata;
-                unsigned int dummy;
+                unsigned int ndata;
 
                 assert (mpi_is_opaque (sk->skey[i]));
                 p = mpi_get_opaque (sk->skey[i], &ndata);
@@ -173,8 +172,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                 cipher_decrypt (cipher_hd, buffer+2, p+2, ndata-2);
                 csum += checksum (buffer, ndata);
                 mpi_free (sk->skey[i]);
-                dummy = ndata;
-                sk->skey[i] = mpi_read_from_buffer (buffer, &dummy, 1);
+                sk->skey[i] = mpi_read_from_buffer (buffer, &ndata, 1);
                 assert (sk->skey[i]);
 		m_free (buffer);
 /*  		csum += checksum_mpi (sk->skey[i]); */
