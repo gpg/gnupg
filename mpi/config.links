@@ -5,27 +5,29 @@
 
 mpi_extra_modules=
 
+test -d ./mpi || mkdir ./mpi
+
 echo '/* created by config.links - do not edit */' >./mpi/asm-syntax.h
 
 case "${target}" in
     i[345]86*-*-linuxaout* | i[345]86*-*-linuxoldld* | i[345]86*-*-*bsd*)
 	echo '#define BSD_SYNTAX' >>./mpi/asm-syntax.h
-	echo '#include "./i386/syntax.h"' >>./mpi/asm-syntax.h
+	cat  $srcdir/mpi/i386/syntax.h	    >>./mpi/asm-syntax.h
 	path="i386"
 	;;
     i[56]86*-*-linuxaout* | i[56]86*-*-linuxoldld* | i[56]86*-*-*bsd*)
 	echo '#define BSD_SYNTAX' >>./mpi/asm-syntax.h
-	echo '#include "./i386/syntax.h"' >>./mpi/asm-syntax.h
+	cat  $srcdir/mpi/i386/syntax.h	    >>./mpi/asm-syntax.h
 	path="i586 i386"
 	;;
     i[3456]86*-*-*)
 	echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
-	echo '#include "./i386/syntax.h"' >>./mpi/asm-syntax.h
+	cat  $srcdir/mpi/i386/syntax.h	    >>./mpi/asm-syntax.h
 	path="i386"
 	;;
     i[56]86*-*-* | pentium-*-* | pentiumpro-*-*)
 	echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
-	echo '#include "./i586/syntax.h"' >>./mpi/asm-syntax.h
+	cat  $srcdir/mpi/i586/syntax.h	    >>./mpi/asm-syntax.h
 	path="i586 i386"
 	;;
     alpha*-*-*)
@@ -72,6 +74,7 @@ case "${target}" in
 	;;
 esac
 
+
 case "${target}" in
     *-*-linuxaout* | *-*-linuxoldld*)
 	needs_underscore="y"
@@ -116,12 +119,12 @@ path="$path generic"
 for fn in $mpi_ln_modules ; do
     mpi_ln_objects="$mpi_ln_objects $fn.o"
     for dir in $path ; do
-	rm -f ./mpi/$fn.[Sc]
-	if test -f ./mpi/$dir/$fn.S ; then
+	rm -f $srcdir/mpi/$fn.[Sc]
+	if test -f $srcdir/mpi/$dir/$fn.S ; then
 	    mpi_ln_src="$mpi_ln_src mpi/$dir/$fn.S"
 	    mpi_ln_dst="$mpi_ln_dst mpi/$fn.S"
 	    break;
-	elif test -f ./mpi/$dir/$fn.c ; then
+	elif test -f $srcdir/mpi/$dir/$fn.c ; then
 	    mpi_ln_src="$mpi_ln_src mpi/$dir/$fn.c"
 	    mpi_ln_dst="$mpi_ln_dst mpi/$fn.c"
 	    break;
