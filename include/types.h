@@ -21,6 +21,23 @@
 #ifndef G10_TYPES_H
 #define G10_TYPES_H
 
+
+/* The AC_CHECK_SIZEOF() in configure fails for some machines.
+ * we provide some fallback values here */
+#if !SIZEOF_UNSIGNED_SHORT
+  #undef SIZEOF_UNSIGNED_SHORT
+  #define SIZEOF_UNSIGNED_SHORT 2
+#endif
+#if !SIZEOF_UNSIGNED_INT
+  #undef SIZEOF_UNSIGNED_INT
+  #define SIZEOF_UNSIGNED_INT 4
+#endif
+#if !SIZEOF_UNSIGNED_LONG
+  #undef SIZEOF_UNSIGNED_LONG
+  #define SIZEOF_UNSIGNED_LONG 4
+#endif
+
+
 #include <sys/types.h>
 
 

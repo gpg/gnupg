@@ -1,3 +1,12 @@
+Fri May  8 18:07:44 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* rand-internal.h, rand-unix.c, rand-w32.c, rand_dummy.c: New
+	* random.c: Moved system specific functions to rand-****.c
+
+Fri May  8 14:01:17 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* random.c (fast_random_poll): add call to gethrtime.
+
 Tue May  5 21:28:55 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* elgamal.c (elg_generate): choosing x was not correct, could

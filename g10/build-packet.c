@@ -225,11 +225,11 @@ hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc )
     int rc = 0;
     int c;
     IOBUF a = iobuf_temp();
-  #if 0
+  #if 1
     FILE *fp = fopen("dump.pkc", "a");
     int i=0;
 
-    fprintf(fp, "\nHashing PKC:\n");
+    fprintf(fp, "\nHashing PKC (v%d):\n", pkc->version);
   #endif
 
     /* build the packet */
@@ -239,7 +239,7 @@ hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc )
     if( (rc = build_packet( a, &pkt )) )
 	log_fatal("build public_cert for hashing failed: %s\n", g10_errstr(rc));
     while( (c=iobuf_get(a)) != -1 ) {
-      #if 0
+      #if 1
 	fprintf( fp," %02x", c );
 	if( (++i == 24) ) {
 	    putc('\n', fp);
@@ -248,7 +248,7 @@ hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc )
       #endif
 	md_putc( md, c );
     }
-  #if 0
+  #if 1
     putc('\n', fp);
     fclose(fp);
   #endif
@@ -480,6 +480,169 @@ do_compressed( IOBUF out, int ctb, PKT_compressed *cd )
 }
 
 
+
+/****************
+ * Find a subpacket of type REQTYPE in BUFFER and a return a pointer
+ * to the first byte of that subpacket data.
+ * And return the length of the packet in RET_N and the number of
+ * header bytes in RET_HLEN (length header and type byte).
+ */
+byte *
+find_subpkt( byte *buffer, sigsubpkttype_t reqtype,
+	     size_t *ret_hlen, size_t *ret_n )
+{
+    int buflen;
+    sigsubpkttype_t type;
+    byte *bufstart;
+    size_t n;
+
+    if( !buffer )
+	return NULL;
+    buflen = (*buffer << 8) | buffer[1];
+    buffer += 2;
+    for(;;) {
+	if( !buflen )
+	    return NULL; /* end of packets; not found */
+	bufstart = buffer;
+	n = *buffer++; buflen--;
+	if( n == 255 ) {
+	    if( buflen < 4 )
+		break;
+	    n = (buffer[0] << 24) | (buffer[1] << 16)
+				  | (buffer[2] << 8) | buffer[3];
+	    buffer += 4;
+	    buflen -= 4;
+	}
+	else if( n >= 192 ) {
+	    if( buflen < 2 )
+		break;
+	    n = (( n - 192 ) << 8) + *buffer + 192;
+	    buflen--;
+	}
+	if( buflen < n )
+	    break;
+	type = *buffer & 0x7f;
+	if( type == reqtype ) {
+	    buffer++;
+	    n--;
+	    if( n > buflen )
+		break;
+	    if( ret_hlen )
+		*ret_hlen = buffer - bufstart;
+	    if( ret_n )
+		*ret_n = n;
+	    return buffer;
+	}
+	buffer += n; buflen -=n;
+    }
+
+    log_error("find_subpkt: buffer shorter than subpacket\n");
+    return NULL;
+}
+
+
+/****************
+ * Create or update a signature subpacket for SIG of TYPE.
+ * This functions know, where to put the data (hashed or unhashed).
+ * The function may move data from the unhased part to the hashed one.
+ * Note: All pointers into sig->[un]hashed are not valid after a call
+ * to this function.  The data to but into the subpaket should be
+ * in buffer with a length of buflen.
+ */
+void
+build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
+		  const byte *buffer, size_t buflen )
+{
+
+    byte *data;
+    size_t hlen, dlen;
+    int found, hashed, realloced;
+    size_t n, n0;
+
+    if( (data = find_subpkt( sig->hashed_data, type, &hlen, &dlen )) )
+	found = 1;
+    else if( (data = find_subpkt( sig->unhashed_data, type, &hlen, &dlen )))
+	found = 2;
+    else
+	found = 0;
+
+    if( found )
+	log_bug("build_sig_packet: update nyi\n");
+    if( buflen+1 >= 192 )
+	log_bug("build_sig_packet: long subpackets are nyi\n");
+
+    switch( type ) {
+      case SIGSUBPKT_SIG_CREATED:
+	       hashed = 1; break;
+      default: hashed = 0; break;
+    }
+
+    if( hashed ) {
+	n0 = sig->hashed_data ? ((*sig->hashed_data << 8)
+				    | sig->hashed_data[1]) : 0;
+	n = n0 + 1 + 1 + buflen; /* length, type, buffer */
+	realloced = !!sig->hashed_data;
+	data = sig->hashed_data ? m_realloc( sig->hashed_data, n+2 )
+				: m_alloc( n+2 );
+    }
+    else {
+	n0 = sig->unhashed_data ? ((*sig->unhashed_data << 8)
+				      | sig->unhashed_data[1]) : 0;
+	n = n0 + 1 + 1 + buflen; /* length, type, buffer */
+	realloced = !!sig->unhashed_data;
+	data = sig->unhashed_data ? m_realloc( sig->unhashed_data, n+2 )
+				  : m_alloc( n+2 );
+    }
+
+    data[n0+0] = (n >> 8) & 0xff;
+    data[n0+1] = n & 0xff;
+    data[n0+2] = buflen+1;
+    data[n0+3] = type;
+    memcpy(data+n0+4, buffer, buflen );
+
+    if( hashed ) {
+	if( !realloced )
+	    m_free(sig->hashed_data);
+	sig->hashed_data = data;
+    }
+    else {
+	if( !realloced )
+	    m_free(sig->unhashed_data);
+	sig->unhashed_data = data;
+    }
+}
+
+
+/****************
+ * Put all the required stuff from SIG into subpackets of sig.
+ */
+void
+build_sig_subpkt_from_sig( PKT_signature *sig )
+{
+    u32  u;
+    byte buf[8];
+
+    u = sig->keyid[0];
+    buf[0] = (u >> 24) & 0xff;
+    buf[1] = (u >> 16) & 0xff;
+    buf[2] = (u >>  8) & 0xff;
+    buf[3] = u & 0xff;
+    u = sig->keyid[1];
+    buf[4] = (u >> 24) & 0xff;
+    buf[5] = (u >> 16) & 0xff;
+    buf[6] = (u >>  8) & 0xff;
+    buf[7] = u & 0xff;
+    build_sig_subpkt( sig, SIGSUBPKT_ISSUER, buf, 8 );
+
+    u = sig->timestamp;
+    buf[0] = (u >> 24) & 0xff;
+    buf[1] = (u >> 16) & 0xff;
+    buf[2] = (u >>  8) & 0xff;
+    buf[3] = u & 0xff;
+    build_sig_subpkt( sig, SIGSUBPKT_SIG_CREATED, buf, 4 );
+}
+
+
 static int
 do_signature( IOBUF out, int ctb, PKT_signature *sig )
 {
@@ -501,8 +664,20 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
     iobuf_put(a, sig->pubkey_algo );
     iobuf_put(a, sig->digest_algo );
     if( sig->version >= 4 ) {
-	/* fixme: write v4 subpackets here */
-	log_error("WARNING: note writing of v4 subpackets is not implemented\n");
+	size_t n;
+	/* timestamp and keyid must have been packed into the
+	 * subpackets prior to the call of this function, because
+	 * these subpackets are hashed */
+	n = sig->hashed_data?((sig->hashed_data[0]<<8)
+			      |sig->hashed_data[1])   :0;
+	write_16(a, n);
+	if( n )
+	    iobuf_write( a, sig->hashed_data+2, n );
+	n = sig->unhashed_data?((sig->unhashed_data[0]<<8)
+				|sig->unhashed_data[1])   :0;
+	write_16(a, n);
+	if( n )
+	    iobuf_write( a, sig->unhashed_data+2, n );
     }
     iobuf_put(a, sig->digest_start[0] );
     iobuf_put(a, sig->digest_start[1] );
@@ -674,8 +849,18 @@ write_new_header( IOBUF out, int ctb, u32 len, int hdrlen )
 	    if( iobuf_put( out, (len % 256) )  )
 		return -1;
 	}
-	else
-	    log_bug("need a partial header to code a length %lu\n", (ulong)len);
+	else {
+	    if( iobuf_put( out, 0xff ) )
+		return -1;
+	    if( iobuf_put( out, (len >> 24)&0xff ) )
+		return -1;
+	    if( iobuf_put( out, (len >> 16)&0xff ) )
+		return -1;
+	    if( iobuf_put( out, (len >> 8)&0xff )  )
+		return -1;
+	    if( iobuf_put( out, len & 0xff ) )
+		return -1;
+	}
     }
     return 0;
 }

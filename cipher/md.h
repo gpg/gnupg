@@ -65,6 +65,8 @@ byte *md_read( MD_HANDLE a, int algo );
 int md_get_algo( MD_HANDLE a );
 int md_digest_length( int algo );
 const byte *md_asn_oid( int algo, size_t *asnlen, size_t *mdlen );
+void md_start_debug( MD_HANDLE a, const char *suffix );
+void md_stop_debug( MD_HANDLE a );
 #define md_is_secure(a) ((a)->secure)
 
 #endif /*G10_MD_H*/

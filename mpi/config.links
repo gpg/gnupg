@@ -70,6 +70,14 @@ case "${target}" in
 	path="sparc32"
 	mpi_extra_modules="udiv"
 	;;
+    mips[34]*-*-* | mips*-*-irix6*)
+       echo '/* configured for MIPS3 */' >>./mpi/asm-syntax.h
+       path="mips3"
+       ;;
+    mips*-*-*)
+       echo '/* configured for MIPS2 */' >>./mpi/asm-syntax.h
+       path="mips2"
+       ;;
 
     # Motorola 68k configurations.  Let m68k mean 68020-68040.
     # mc68000 or mc68060 configurations need to be specified explicitly

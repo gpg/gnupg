@@ -18,6 +18,10 @@ libcipher_a_SOURCES = cipher.c	\
 		 primegen.c	\
 		 random.h	\
 		 random.c	\
+		 rand-internal.h \
+		 rand-unix.c	\
+		 rand-w32.c	\
+		 rand-dummy.c	\
 		 rmd.h		\
 		 rmd160.c	\
 		 tiger.h	\

@@ -93,6 +93,8 @@ md_close(MD_HANDLE a)
 {
     if( !a )
 	return;
+    if( a->debug )
+	md_stop_debug(a);
     m_free(a);
 }
 
@@ -254,4 +256,30 @@ md_asn_oid( int algo, size_t *asnlen, size_t *mdlen )
     return p;
 }
 
+
+void
+md_start_debug( MD_HANDLE md, const char *suffix )
+{
+    static int index=0;
+    char buf[25];
+
+    if( md->debug ) {
+	log_debug("Oops: md debug already started\n");
+	return;
+    }
+    index++;
+    sprintf(buf, "dbgmd-%05d.%.10s", index, suffix );
+    md->debug = fopen(buf, "w");
+    if( !md->debug )
+	log_debug("md debug: can't open %s\n", buf );
+}
+
+void
+md_stop_debug( MD_HANDLE md )
+{
+    if( md->debug ) {
+	fclose(md->debug);
+	md->debug = NULL;
+    }
+}
 

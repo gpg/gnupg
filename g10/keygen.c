@@ -79,7 +79,7 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_cert *skc )
     pkc = node->pkt->pkt.public_cert;
 
     /* and make the signature */
-    rc = make_keysig_packet( &sig, pkc, uid, skc, 0x13, DIGEST_ALGO_RMD160 );
+    rc = make_keysig_packet( &sig, pkc, uid, skc, 0x13, 0 );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
 	return rc;
@@ -290,7 +290,7 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     /* don't know whether it makes sense to have the factors, so for now
      * we store them in the secret keyring (but they are not secret)
      * p = 2 * q * f1 * f2 * ... * fn
-     * We store only f1 to f_n-1 - fn can be calculated because p and q
+     * We store only f1 to f_n-1;  fn can be calculated because p and q
      * are known.
      */
     pkt = m_alloc_clear(sizeof *pkt);

@@ -20,16 +20,16 @@
       record, as it does not belong to the pubkey record?
 
     * add an option to create a new user id.
-      Make it possible to chnage the signature class of the self-signatures,
-      which can then be used to chnage the displayed order of user-ids:
+      Make it possible to change the signature class of the self-signatures,
+      which can then be used to change the displayed order of user-ids:
       Put the user-id with a self-signature of class 0x13 always on top
       of the displayed list (needs changes in the user-id-from-keyid
       functions).
 
     * enhance --sign-key, so that multiple-user-ids can be signed
-      (use the new classes 0x14..17)
-
-    * support these multi-user-id-sigs in trustdb.
+      (use the new classes 0x14..17), partly implemented, but I think we
+      should better make use of notation data - for now we allow only one
+      user id.
 
     * add an option to re-create a public key from a secret key. Think about
       a backup system of only the secret part of the secret key.
@@ -41,11 +41,10 @@
     * change the misleading usage of public key certificate to public key data
       or something like this.
 
-    * fix the problems with "\v" in gettext
+    * fix the problems with "\v" in gettext.  Add nice formatting stuff to
+      argparse.c
 
     * replace getkey.c#enum_secret_keys
 
-    * add readline support (but how can we allcoate it in secure memory?)
-
-    * add a testcase for --print-mds
+    * add readline support (Must enhance libreadline)
 

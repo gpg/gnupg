@@ -134,6 +134,7 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 	    md_write( digest, buf, 6 );
 	}
 	md_final( digest );
+
 	result = mpi_alloc( (md_digest_length(sig->digest_algo)
 			     +BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
 	mpi_set_buffer( result, md_read(digest, sig->digest_algo),
@@ -344,6 +345,7 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 
 	    keyid_from_pkc( pkc, keyid );
 	    md = md_open( algo, 0 );
+	    md_start_debug(md, "check");
 	    hash_public_cert( md, pkc );
 	    hash_uid_node( unode, md, sig );
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {

@@ -1,6 +1,6 @@
 ## Process this file with automake to create Makefile.in
 
-TESTS = version.test \
+TESTS = version.test mds.test \
 	decrypt.test decrypt-dsa.test \
 	sigs.test sigs-dsa.test \
 	encrypt.test encrypt-dsa.test  \

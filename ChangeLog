@@ -1,3 +1,7 @@
+Mon May 11 10:21:31 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* configure.in (PRINTABLE_OS_NAME): Linux is now GNU/Linux
+
 Tue Apr 14 19:08:05 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* [all files]: Applied Matthew Skala's typo and grammar fixes.

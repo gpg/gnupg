@@ -20,12 +20,9 @@
 
 
 /****************
- * How it works:
- *
- * See Peter Gutmann's Paper: "Software Generation of Practically
- * Strong Random Numbers"
- *
- * fixme!
+ * This random number generator is modelled after the one described
+ * in Peter Gutmann's Paper: "Software Generation of Practically
+ * Strong Random Numbers".
  */
 
 
@@ -34,38 +31,14 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <errno.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#ifndef HAVE_GETTIMEOFTIME
-  #include <sys/times.h>
-#endif
-#ifdef HAVE_GETRUSAGE
-  #include <sys/resource.h>
-#endif
 #include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include "util.h"
-#include "random.h"
 #include "rmd.h"
 #include "ttyio.h"
 #include "i18n.h"
+#include "rand-internal.h"
 
 
-#define BLOCKLEN  64   /* hash this amount of bytes */
-#define DIGESTLEN 20   /* into a digest of this length (rmd160) */
-/* poolblocks is the number of digests which make up the pool
- * and poolsize must be a multiple of the digest length
- * to make the AND operations faster, the size should also be
- * a multiple of ulong
- */
-#define POOLBLOCKS 30
-#define POOLSIZE (POOLBLOCKS*DIGESTLEN)
-#if (POOLSIZE % SIZEOF_UNSIGNED_LONG)
-  #error Please make sure that poolsize is a multiple of ulong
-#endif
-#define POOLWORDS (POOLSIZE / SIZEOF_UNSIGNED_LONG)
 #if SIZEOF_UNSIGNED_LONG == 8
   #define ADD_VALUE 0xa5a5a5a5a5a5a5a5
 #elif SIZEOF_UNSIGNED_LONG == 4
@@ -96,9 +69,7 @@ static int secure_alloc;
 static int quick_test;
 
 
-
 static void read_pool( byte *buffer, size_t length, int level );
-static void read_dev_random( byte *buffer, size_t length, int level );
 
 
 static void
@@ -120,13 +91,14 @@ secure_random_alloc()
     secure_alloc = 1;
 }
 
+
 int
 quick_random_gen( int onoff )
 {
     int last = quick_test;
     if( onoff != -1 )
 	quick_test = onoff;
-  #ifndef HAVE_DEV_RANDOM
+  #ifdef USE_RAND_DUMMY
     last = 1; /* insecure RNG */
   #endif
     return last;
@@ -240,7 +212,7 @@ read_pool( byte *buffer, size_t length, int level )
     if( length >= POOLSIZE )
 	BUG(); /* not allowed */
     if( !level ) { /* read simple random bytes */
-	read_dev_random( buffer, length, level );
+	read_random_source( buffer, length, level );
 	return;
     }
 
@@ -255,7 +227,7 @@ read_pool( byte *buffer, size_t length, int level )
 	if( needed > POOLSIZE )
 	    BUG();
 	p = m_alloc_secure( needed );
-	read_dev_random( p, needed, 2 ); /* read /dev/random */
+	read_random_source( p, needed, 2 ); /* read /dev/random */
 	add_randomness( p, needed, 3);
 	m_free(p);
 	pool_balance += needed;
@@ -306,7 +278,8 @@ add_randomness( const void *buffer, size_t length, int source )
     while( length-- ) {
 	rndpool[pool_writepos++] = *((byte*)buffer)++;
 	if( pool_writepos >= POOLSIZE ) {
-	    pool_filled = 1;
+	    if( source > 1 )
+		pool_filled = 1;
 	    pool_writepos = 0;
 	    mix_pool(rndpool);
 	    just_mixed = !length;
@@ -315,167 +288,4 @@ add_randomness( const void *buffer, size_t length, int source )
 }
 
 
-
-/********************
- *  FIXME: move these functions to rand_unix.c
- */
-
-void
-random_poll()
-{
-    char buf[POOLSIZE/5];
-    read_dev_random( buf, POOLSIZE/5, 1 ); /* read /dev/urandom */
-    add_randomness( buf, POOLSIZE/5, 2);
-    memset( buf, 0, POOLSIZE/5);
-}
-
-
-void
-fast_random_poll()
-{
-  #ifdef HAVE_GETTIMEOFTIME
-    {	struct timeval tv;
-	if( gettimeofday( &tv, NULL ) )
-	    BUG();
-	add_randomness( &tv.tv_sec, sizeof(tv.tv_sec), 1 );
-	add_randomness( &tv.tv_usec, sizeof(tv.tv_usec), 1 );
-    }
-  #else /* use times */
-    {	struct tms buf;
-	times( &buf );
-	add_randomness( &buf, sizeof buf, 1 );
-    }
-  #endif
-  #ifdef HAVE_GETRUSAGE
-    {	struct rusage buf;
-	if( getrusage( RUSAGE_SELF, &buf ) )
-	    BUG();
-	add_randomness( &buf, sizeof buf, 1 );
-	memset( &buf, 0, sizeof buf );
-    }
-  #endif
-}
-
-
-#ifdef HAVE_DEV_RANDOM
-
-static int
-open_device( const char *name, int minor )
-{
-    int fd;
-    struct stat sb;
-
-    fd = open( name, O_RDONLY );
-    if( fd == -1 )
-	log_fatal("can't open %s: %s\n", name, strerror(errno) );
-    if( fstat( fd, &sb ) )
-	log_fatal("stat() off %s failed: %s\n", name, strerror(errno) );
-  #if defined(__sparc__) && defined(__linux__)
-    #warning something is wrong with UltraPenguin /dev/random
-  #else
-    if( !S_ISCHR(sb.st_mode) )
-	log_fatal("invalid random device!\n" );
-  #endif
-    return fd;
-}
-
-
-static void
-read_dev_random( byte *buffer, size_t length, int level )
-{
-    static int fd_urandom = -1;
-    static int fd_random = -1;
-    int fd;
-    int n;
-    int warn=0;
-
-    if( level == 2 && !quick_test ) {
-	if( fd_random == -1 )
-	    fd_random = open_device( "/dev/random", 8 );
-	fd = fd_random;
-    }
-    else {
-	/* fixme: we should use a simpler one for level 0,
-	 * because reading from /dev/urandom removes entropy
-	 * and the next read on /dev/random may have to wait */
-	if( fd_urandom == -1 )
-	    fd_urandom = open_device( "/dev/urandom", 9 );
-	fd = fd_urandom;
-    }
-
-
-    do {
-	fd_set rfds;
-	struct timeval tv;
-	int rc;
-
-	FD_ZERO(&rfds);
-	FD_SET(fd, &rfds);
-	tv.tv_sec = 3;
-	tv.tv_usec = 0;
-	if( !(rc=select(fd+1, &rfds, NULL, NULL, &tv)) ) {
-	    if( !warn )
-		tty_printf( _(
-"\n"
-"Not enough random bytes available.  Please do some other work to give\n"
-"the OS a chance to collect more entropy! (Need %d more bytes)\n"), length );
-	    warn = 1;
-	    continue;
-	}
-	else if( rc == -1 ) {
-	    tty_printf("select() error: %s\n", strerror(errno));
-	    continue;
-	}
-
-	assert( length < 500 );
-	do {
-	    n = read(fd, buffer, length );
-	    if( n >= 0 && n > length ) {
-		log_error("bogus read from random device (n=%d)\n", n );
-		n = length;
-	    }
-	} while( n == -1 && errno == EINTR );
-	if( n == -1 )
-	    log_fatal("read error on random device: %s\n", strerror(errno) );
-	assert( n <= length );
-	buffer += n;
-	length -= n;
-    } while( length );
-}
-
-#else /* not HAVE_DEV_RANDOM */
-
-
-#ifndef RAND_MAX   /* for SunOS */
-  #define RAND_MAX 32767
-#endif
-
-static void
-read_dev_random( byte *buffer, size_t length, int level )
-{
-    static int initialized=0;
-
-    if( !initialized ) {
-	log_info(_("warning: using insecure random number generator!!\n"));
-	tty_printf(_("The random number generator is only a kludge to let\n"
-		   "it compile - it is in no way a strong RNG!\n\n"
-		   "DON'T USE ANY DATA GENERATED BY THIS PROGRAM!!\n\n"));
-	initialized=1;
-      #ifdef HAVE_RAND
-	srand(make_timestamp()*getpid());
-      #else
-	srandom(make_timestamp()*getpid());
-      #endif
-    }
-
-  #ifdef HAVE_RAND
-    while( length-- )
-	*buffer++ = ((unsigned)(1 + (int) (256.0*rand()/(RAND_MAX+1.0)))-1);
-  #else
-    while( length-- )
-	*buffer++ = ((unsigned)(1 + (int) (256.0*random()/(RAND_MAX+1.0)))-1);
-  #endif
-}
-
-#endif
 

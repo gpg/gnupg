@@ -109,6 +109,10 @@ libcipher_a_SOURCES = cipher.c	\
 		 primegen.c	\
 		 random.h	\
 		 random.c	\
+		 rand-internal.h \
+		 rand-unix.c	\
+		 rand-w32.c	\
+		 rand-dummy.c	\
 		 rmd.h		\
 		 rmd160.c	\
 		 tiger.h	\
@@ -135,8 +139,8 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libcipher_a_OBJECTS =  cipher.o blowfish.o cast5.o elgamal.o md5.o \
-primegen.o random.o rmd160.o tiger.o sha1.o dsa.o md.o misc.o \
-smallprime.o
+primegen.o random.o rand-unix.o rand-w32.o rand-dummy.o rmd160.o \
+tiger.o sha1.o dsa.o md.o misc.o smallprime.o
 AR = ar
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
@@ -150,8 +154,8 @@ TAR = tar
 GZIP = --best
 DEP_FILES =  .deps/blowfish.P .deps/cast5.P .deps/cipher.P .deps/dsa.P \
 .deps/elgamal.P .deps/md.P .deps/md5.P .deps/misc.P .deps/primegen.P \
-.deps/random.P .deps/rmd160.P .deps/sha1.P .deps/smallprime.P \
-.deps/tiger.P
+.deps/rand-dummy.P .deps/rand-unix.P .deps/rand-w32.P .deps/random.P \
+.deps/rmd160.P .deps/sha1.P .deps/smallprime.P .deps/tiger.P
 SOURCES = $(libcipher_a_SOURCES)
 OBJECTS = $(libcipher_a_OBJECTS)
 

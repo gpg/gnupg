@@ -73,7 +73,6 @@ g10_elg_sign( PKT_secret_cert *skc, PKT_signature *sig,
 	digest_algo = md_get_algo(md);
 
     dp = md_read( md, digest_algo );
-    keyid_from_skc( skc, sig->keyid );
     sig->digest_algo = digest_algo;
     sig->digest_start[0] = dp[0];
     sig->digest_start[1] = dp[1];

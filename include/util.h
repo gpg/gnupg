@@ -134,6 +134,10 @@ char *strlwr(char *a);
 #ifndef HAVE_STRTOUL
   #define strtoul(a,b,c)  ((unsigned long)strtol((a),(b),(c)))
 #endif
+#ifndef HAVE_MEMMOVE
+  #define memmove(d, s, n) bcopy((s), (d), (n))
+#endif
+
 
 /******** some macros ************/
 #ifndef STR

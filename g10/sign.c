@@ -266,18 +266,50 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	skc = skc_rover->skc;
 
 	/* build the signature packet */
+	/* fixme: this code is partly duplicated in make_keysig_packet */
 	sig = m_alloc_clear( sizeof *sig );
+	sig->version = skc->version;
+	keyid_from_skc( skc, sig->keyid );
 	sig->pubkey_algo = skc->pubkey_algo;
 	sig->timestamp = make_timestamp();
 	sig->sig_class = opt.textmode && !outfile? 0x01 : 0x00;
 
 	md = md_copy( mfx.md );
+
+	if( sig->version >= 4 ) {
+	    build_sig_subpkt_from_sig( sig );
+	    md_putc( md, sig->version );
+	}
 	md_putc( md, sig->sig_class );
-	{   u32 a = sig->timestamp;
+	if( sig->version < 4 ) {
+	    u32 a = sig->timestamp;
 	    md_putc( md, (a >> 24) & 0xff );
 	    md_putc( md, (a >> 16) & 0xff );
 	    md_putc( md, (a >>	8) & 0xff );
 	    md_putc( md,  a	   & 0xff );
+	}
+	else {
+	    byte buf[6];
+	    size_t n;
+
+	    md_putc( md, sig->pubkey_algo );
+	    md_putc( md, sig->digest_algo );
+	    if( sig->hashed_data ) {
+		n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
+		md_write( md, sig->hashed_data, n+2 );
+		n += 6;
+	    }
+	    else
+		n = 6;
+	    /* add some magic */
+	    buf[0] = sig->version;
+	    buf[1] = 0xff;
+	    buf[2] = n >> 24; /* hmmm, n is only 16 bit, so this is always 0 */
+	    buf[3] = n >> 16;
+	    buf[4] = n >>  8;
+	    buf[5] = n;
+	    md_write( md, buf, 6 );
+
 	}
 	md_final( md );
 
@@ -431,18 +463,49 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	skc = skc_rover->skc;
 
 	/* build the signature packet */
+	/* fixme: this code is duplicated above */
 	sig = m_alloc_clear( sizeof *sig );
+	sig->version = skc->version;
+	keyid_from_skc( skc, sig->keyid );
 	sig->pubkey_algo = skc->pubkey_algo;
 	sig->timestamp = make_timestamp();
 	sig->sig_class = 0x01;
 
 	md = md_copy( textmd );
+	if( sig->version >= 4 ) {
+	    build_sig_subpkt_from_sig( sig );
+	    md_putc( md, sig->version );
+	}
 	md_putc( md, sig->sig_class );
-	{   u32 a = sig->timestamp;
+	if( sig->version < 4 ) {
+	    u32 a = sig->timestamp;
 	    md_putc( md, (a >> 24) & 0xff );
 	    md_putc( md, (a >> 16) & 0xff );
 	    md_putc( md, (a >>	8) & 0xff );
 	    md_putc( md,  a	   & 0xff );
+	}
+	else {
+	    byte buf[6];
+	    size_t n;
+
+	    md_putc( md, sig->pubkey_algo );
+	    md_putc( md, sig->digest_algo );
+	    if( sig->hashed_data ) {
+		n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
+		md_write( md, sig->hashed_data, n+2 );
+		n += 6;
+	    }
+	    else
+		n = 6;
+	    /* add some magic */
+	    buf[0] = sig->version;
+	    buf[1] = 0xff;
+	    buf[2] = n >> 24; /* hmmm, n is only 16 bit, so this is always 0 */
+	    buf[3] = n >> 16;
+	    buf[4] = n >>  8;
+	    buf[5] = n;
+	    md_write( md, buf, 6 );
+
 	}
 	md_final( md );
 

@@ -211,6 +211,33 @@ struct packet_struct {
 			    (a)->pkt.generic = NULL;	\
 		       } while(0)
 
+typedef enum {
+    SIGSUBPKT_LIST_UNHASHED=-2,
+    SIGSUBPKT_LIST_HASHED  =-1,
+    SIGSUBPKT_NONE	   = 0,
+    SIGSUBPKT_SIG_CREATED  = 2, /* signature creation time */
+    SIGSUBPKT_SIG_EXPIRE   = 3, /* signature expiration time */
+    SIGSUBPKT_EXPORTABLE   = 4, /* exportable */
+    SIGSUBPKT_TRUST	   = 5, /* trust signature */
+    SIGSUBPKT_REGEXP	   = 6, /* regular expression */
+    SIGSUBPKT_REVOCABLE    = 7, /* revocable */
+    SIGSUBPKT_KEY_EXPIRE   = 9, /* key expiration time */
+    SIGSUBPKT_ARR	   =10, /* additional recipient request */
+    SIGSUBPKT_PREF_SYM	   =11, /* preferred symmetric algorithms */
+    SIGSUBPKT_REV_KEY	   =12, /* revocation key */
+    SIGSUBPKT_ISSUER	   =16, /* issuer key ID */
+    SIGSUBPKT_NOTATION	   =20, /* notation data */
+    SIGSUBPKT_PREF_HASH    =21, /* preferred hash algorithms */
+    SIGSUBPKT_PREF_COMPR   =22, /* preferred compression algorithms */
+    SIGSUBPKT_KS_FLAGS	   =23, /* key server preferences */
+    SIGSUBPKT_PREF_KS	   =24, /* preferred key server */
+    SIGSUBPKT_PRIMARY_UID  =25, /* primary user id */
+    SIGSUBPKT_POLICY	   =26, /* policy URL */
+    SIGSUBPKT_KEY_FLAGS    =27, /* key flags */
+    SIGSUBPKT_SIGNERS_UID  =28	/* signer's user id */
+} sigsubpkttype_t;
+
+
 /*-- mainproc.c --*/
 int proc_packets( IOBUF a );
 int proc_signature_packets( IOBUF a, STRLIST signedfiles );
@@ -224,11 +251,15 @@ int parse_packet( IOBUF inp, PACKET *ret_pkt);
 int copy_all_packets( IOBUF inp, IOBUF out );
 int copy_some_packets( IOBUF inp, IOBUF out, ulong stopoff );
 int skip_some_packets( IOBUF inp, unsigned n );
+const byte *parse_sig_subpkt( const byte *buffer, int reqtype, size_t *ret_n );
 
 /*-- build-packet.c --*/
 int build_packet( IOBUF inp, PACKET *pkt );
 u32 calc_packet_length( PACKET *pkt );
 void hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc );
+void build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
+			const byte *buffer, size_t buflen );
+void build_sig_subpkt_from_sig( PKT_signature *sig );
 
 /*-- free-packet.c --*/
 void free_symkey_enc( PKT_symkey_enc *enc );

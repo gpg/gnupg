@@ -62,4 +62,9 @@
 #define G10ERR_TIME_CONFLICT  40
 #define G10ERR_WR_PUBKEY_ALGO 41 /* unusabe pubkey algo */
 
+
+#ifndef HAVE_STRERROR
+char *strerror( int n );
+#endif
+
 #endif /*G10_ERRORS_H*/

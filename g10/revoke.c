@@ -159,7 +159,7 @@ gen_revoke( const char *uname )
 
 
     /* create it */
-    rc = make_keysig_packet( &sig, pkc, NULL, skc, 0x20, DIGEST_ALGO_RMD160);
+    rc = make_keysig_packet( &sig, pkc, NULL, skc, 0x20, 0);
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc));
 	goto leave;

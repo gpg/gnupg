@@ -25,6 +25,21 @@
 
 #include "errors.h"
 
+#ifndef HAVE_STRERROR
+char *
+strerror( int n )
+{
+    extern char *sys_errlist[];
+    extern int sys_nerr;
+    static char buf[15];
+
+    if( n >= 0 && n < sys_nerr )
+	return sys_errlist[n];
+    strcpy( buf, "Unknown error" );
+    return buf;
+}
+#endif /* !HAVE_STRERROR */
+
 const char *
 g10_errstr( int err )
 {

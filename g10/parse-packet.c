@@ -197,7 +197,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 {
     int rc, c, ctb, pkttype, lenbytes;
     unsigned long pktlen;
-    byte hdr[5];
+    byte hdr[8];
     int hdrlen;
     int pgp3 = 0;
 
@@ -233,8 +233,17 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	    hdr[hdrlen++] = c;
 	    pktlen += c + 192;
 	}
+	else if( c < 255 ) {
+	    pktlen  = (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 24;
+	    pktlen |= (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 16;
+	    pktlen |= (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 8;
+	    if( (c = iobuf_get(inp)) == -1 ) {
+		log_error("%s: 4 byte length invalid\n", iobuf_where(inp) );
+		return G10ERR_INVALID_PACKET;
+	    }
+	    pktlen |= (hdr[hdrlen++] = c );
+	}
 	else { /* partial body length */
-	    pktlen = 1 << (c & 0x1f);
 	    log_debug("partial body length of %lu bytes\n", pktlen );
 	    iobuf_set_partial_block_mode(inp, pktlen);
 	    pktlen = 0;/* to indicate partial length */
@@ -543,20 +552,32 @@ parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 }
 
 
-static const byte *
-parse_subpkt( const byte *buffer, int reqtype )
+const byte *
+parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
 {
-    int buflen = (*buffer << 8) | buffer[1];
+    int buflen;
     int type;
     int critical;
     size_t n;
 
+    if( !buffer )
+	return NULL;
+    buflen = (*buffer << 8) | buffer[1];
     buffer += 2;
     for(;;) {
 	if( !buflen )
 	    return NULL; /* end of packets; not found */
 	n = *buffer++; buflen--;
-	if( n >= 192 ) {
+	if( n == 255 ) {
+	    if( buflen < 4 )
+		goto too_short;
+	    n = (buffer[0] << 24) | (buffer[1] << 16)
+				  | (buffer[2] << 8) | buffer[3];
+	    buffer += 4;
+	    buflen -= 4;
+
+	}
+	else if( n >= 192 ) {
 	    if( buflen < 2 )
 		goto too_short;
 	    n = (( n - 192 ) << 8) + *buffer + 192;
@@ -573,27 +594,27 @@ parse_subpkt( const byte *buffer, int reqtype )
 	    critical = 0;
 	if( reqtype < 0 ) { /* list packets */
 	    printf("\t%ssubpacket %d of length %u (%s)\n",
-		    reqtype == -1 ? "hashed ":"", type, (unsigned)n,
-		    type == 2 ? "signature creation time"
-		  : type == 3 ? "signature expiration time"
-		  : type == 4 ? "exportable"
-		  : type == 5 ? "trust signature"
-		  : type == 6 ? "regular expression"
-		  : type == 7 ? "revocable"
-		  : type == 9 ? "key expiration time"
-		  : type ==10 ? "additional recipient request"
-		  : type ==11 ? "preferred symmetric algorithms"
-		  : type ==12 ? "revocation key"
-		  : type ==16 ? "issuer key ID"
-		  : type ==20 ? "notation data"
-		  : type ==21 ? "preferred hash algorithms"
-		  : type ==22 ? "preferred compression algorithms"
-		  : type ==23 ? "key server preferences"
-		  : type ==24 ? "preferred key server"
-		  : type ==25 ? "primary user id"
-		  : type ==26 ? "policy URL"
-		  : type ==27 ? "key flags"
-		  : type ==28 ? "signer's user id"
+	    reqtype == SIGSUBPKT_LIST_HASHED ? "hashed ":"", type, (unsigned)n,
+	     type == SIGSUBPKT_SIG_CREATED ? "signature creation time"
+	   : type == SIGSUBPKT_SIG_EXPIRE  ? "signature expiration time"
+	   : type == SIGSUBPKT_EXPORTABLE  ? "exportable"
+	   : type == SIGSUBPKT_TRUST	   ? "trust signature"
+	   : type == SIGSUBPKT_REGEXP	   ? "regular expression"
+	   : type == SIGSUBPKT_REVOCABLE   ? "revocable"
+	   : type == SIGSUBPKT_KEY_EXPIRE  ? "key expiration time"
+	   : type == SIGSUBPKT_ARR	   ? "additional recipient request"
+	   : type == SIGSUBPKT_PREF_SYM    ? "preferred symmetric algorithms"
+	   : type == SIGSUBPKT_REV_KEY	   ? "revocation key"
+	   : type == SIGSUBPKT_ISSUER	   ? "issuer key ID"
+	   : type == SIGSUBPKT_NOTATION    ? "notation data"
+	   : type == SIGSUBPKT_PREF_HASH   ? "preferred hash algorithms"
+	   : type == SIGSUBPKT_PREF_COMPR  ? "preferred compression algorithms"
+	   : type == SIGSUBPKT_KS_FLAGS    ? "key server preferences"
+	   : type == SIGSUBPKT_PREF_KS	   ? "preferred key server"
+	   : type == SIGSUBPKT_PRIMARY_UID ? "primary user id"
+	   : type == SIGSUBPKT_POLICY	   ? "policy URL"
+	   : type == SIGSUBPKT_KEY_FLAGS   ? "key flags"
+	   : type == SIGSUBPKT_SIGNERS_UID ? "signer's user id"
 			      : "?");
 	}
 	else if( type == reqtype )
@@ -604,29 +625,17 @@ parse_subpkt( const byte *buffer, int reqtype )
     n--;
     if( n > buflen )
 	goto too_short;
+    if( ret_n )
+	*ret_n = n;
     switch( type ) {
-      case 2: /* signature creation time */
+      case SIGSUBPKT_SIG_CREATED:
 	if( n < 4 )
 	    break;
 	return buffer;
-      case 16:/* issuer key ID */
+      case SIGSUBPKT_ISSUER:/* issuer key ID */
 	if( n < 8 )
 	    break;
 	return buffer;
-      case 3: /* signature expiration time */
-      case 4: /* exportable */
-      case 5: /* trust signature */
-      case 6: /* regular expression */
-      case 7: /* revocable */
-      case 9: /* key expiration time */
-      case 10:/* additional recipient request */
-      case 11:/* preferred symmetric algorithms */
-      case 12:/* revocation key */
-      case 20:/* notation data */
-      case 21:/* preferred hash algorithms */
-      case 22:/* preferred compression algorithms */
-      case 23:/* key server preferences */
-      case 24:/* preferred key server */
       default: BUG(); /* not yet needed */
     }
     log_error("subpacket of type %d too short\n", type);
@@ -718,12 +727,12 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 
     if( is_v4 ) { /*extract required information */
 	const byte *p;
-	p = parse_subpkt( sig->hashed_data, 2 );
+	p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_SIG_CREATED, NULL );
 	if( !p )
 	    log_error("signature packet without timestamp\n");
 	else
 	    sig->timestamp = buffer_to_u32(p);
-	p = parse_subpkt( sig->unhashed_data, 16 );
+	p = parse_sig_subpkt( sig->unhashed_data, SIGSUBPKT_ISSUER, NULL );
 	if( !p )
 	    log_error("signature packet without keyid\n");
 	else {
@@ -742,8 +751,8 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 		sig->digest_algo,
 		sig->digest_start[0], sig->digest_start[1] );
 	if( is_v4 ) {
-	    parse_subpkt( sig->hashed_data, -1 );
-	    parse_subpkt( sig->unhashed_data, -2 );
+	    parse_sig_subpkt( sig->hashed_data,  SIGSUBPKT_LIST_HASHED, NULL );
+	    parse_sig_subpkt( sig->unhashed_data,SIGSUBPKT_LIST_UNHASHED, NULL);
 	}
     }
     if( is_ELGAMAL(sig->pubkey_algo) ) {

@@ -1,3 +1,18 @@
+Noteworthy changes in version 0.2.18
+------------------------------------
+
+    * splitted cipher/random.c, add new option "--disable-dev-random"
+      to configure to support the development of a random source for
+      other systems. Prepared sourcefiles rand-unix.c, rand-w32.c
+      and rand-dummy.c (which is used to allow compilation on systems
+      without a random source).
+
+    * fixed a small bug in the key generation (it was possible that 48 bits
+      of a key were not taken from the random pool)
+
+    * Add key generation for DSA (signature only)
+
+
 Noteworthy changes in version 0.2.17
 ------------------------------------
 

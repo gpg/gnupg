@@ -1,3 +1,29 @@
+Wed May 13 11:48:27 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* build-packet.c (do_signature): Support for v4 pakets.
+	* keyedit.c (make_keysig_packet): Ditto.
+	* build-packet.c (build_sig_subpkt_from_sig): New.
+	(build_sig_subpkt): New.
+
+	* elg.c (g10_elg_sign): removed keyid_from_skc.
+	* dsa.c (g10_dsa_sign): Ditto.
+	* rsa.c (g10_rsa_sign): Ditto.
+	* keyedit.c (make_keysig_packet): Add call to keyid_from_skc
+
+	* sign.c (clearsign_file): Support for v4 signatures.
+	(sign_file): Ditto.
+
+Wed May  6 09:31:24 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* parse-packet.c (do_parse): add support for 5 byte length leader.
+	(parse_subpkt): Ditto.
+	* build-packet.c (write_new_header): Ditto.
+
+	* packet.h (SIGSUBPKT_): New constants.
+	* parse-packet.c (parse_sig_subpkt): Changed name, made global,
+	and arg to return packet length, chnaged all callers
+
+
 Tue May  5 22:11:59 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* keygen.c (gen_dsa): New.

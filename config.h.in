@@ -112,6 +112,11 @@
 #undef HAVE_U16_TYPEDEF
 #undef HAVE_U32_TYPEDEF
 
+/* One of the following macros is defined to select which of
+ * the cipher/rand-xxxx.c should be used */
+#undef USE_RAND_DUMMY
+#undef USE_RAND_UNIX
+#undef USE_RAND_W32
 /* defined if we have a /dev/random and /dev/urandom */
 #undef HAVE_DEV_RANDOM
 
@@ -145,6 +150,9 @@
 /* Define if you have the getcwd function.  */
 #undef HAVE_GETCWD
 
+/* Define if you have the gethrtime function.  */
+#undef HAVE_GETHRTIME
+
 /* Define if you have the getpagesize function.  */
 #undef HAVE_GETPAGESIZE
 
@@ -153,6 +161,9 @@
 
 /* Define if you have the gettimeofday function.  */
 #undef HAVE_GETTIMEOFDAY
+
+/* Define if you have the memmove function.  */
+#undef HAVE_MEMMOVE
 
 /* Define if you have the mlock function.  */
 #undef HAVE_MLOCK
@@ -228,22 +239,5 @@
 
 /* Define if you have the i library (-li).  */
 #undef HAVE_LIBI
-
-
-/* The AC_CHECK_SIZEOF() fails for some machines.
- * we provide some fallback values here */
-#if !SIZEOF_UNSIGNED_SHORT
-  #undef SIZEOF_UNSIGNED_SHORT
-  #define SIZEOF_UNSIGNED_SHORT 2
-#endif
-#if !SIZEOF_UNSIGNED_INT
-  #undef SIZEOF_UNSIGNED_INT
-  #define SIZEOF_UNSIGNED_INT 4
-#endif
-#if !SIZEOF_UNSIGNED_LONG
-  #undef SIZEOF_UNSIGNED_LONG
-  #define SIZEOF_UNSIGNED_LONG 4
-#endif
-
 
 #endif /*G10_CONFIG_H*/

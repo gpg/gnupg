@@ -1,4 +1,4 @@
-/* random.h - random functions
+/* rand-w32.c  -  Windoze32 and NT random device
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
@@ -17,24 +17,38 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef G10_RANDOM_H
-#define G10_RANDOM_H
-
-#include "types.h"
-
-/*-- random.c --*/
-void secure_random_alloc(void);
-int  quick_random_gen( int onoff );
-void randomize_buffer( byte *buffer, size_t length, int level );
-byte get_random_byte( int level );
-byte *get_random_bits( size_t nbits, int level, int secure );
-void add_randomness( const void *buffer, size_t length, int source );
 
 
-/*-- the next two functions are implemented by all the system
-     specific source files rand-xxxx.c --*/
-void random_poll(void);
-void fast_random_poll(void);
+#include <config.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <errno.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include "util.h"
+#include "rmd.h"
+#include "ttyio.h"
+#include "i18n.h"
+#include "rand-internal.h"
+#ifdef USE_RAND_W32 /* this file is only for Mingw32 */
 
 
-#endif /*G10_RANDOM_H*/
+#error To be written
+
+void
+random_poll()
+{
+}
+
+
+void
+fast_random_poll()
+{
+}
+
+#endif /* USE_RAND_W32 */

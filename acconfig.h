@@ -63,7 +63,11 @@
 #undef HAVE_U16_TYPEDEF
 #undef HAVE_U32_TYPEDEF
 
-
+/* One of the following macros is defined to select which of
+ * the cipher/rand-xxxx.c should be used */
+#undef USE_RAND_DUMMY
+#undef USE_RAND_UNIX
+#undef USE_RAND_W32
 /* defined if we have a /dev/random and /dev/urandom */
 #undef HAVE_DEV_RANDOM
 
@@ -74,23 +78,7 @@
 #undef HAVE_RSA_CIPHER
 
 
+
 @BOTTOM@
-
-
-/* The AC_CHECK_SIZEOF() fails for some machines.
- * we provide some fallback values here */
-#if !SIZEOF_UNSIGNED_SHORT
-  #undef SIZEOF_UNSIGNED_SHORT
-  #define SIZEOF_UNSIGNED_SHORT 2
-#endif
-#if !SIZEOF_UNSIGNED_INT
-  #undef SIZEOF_UNSIGNED_INT
-  #define SIZEOF_UNSIGNED_INT 4
-#endif
-#if !SIZEOF_UNSIGNED_LONG
-  #undef SIZEOF_UNSIGNED_LONG
-  #define SIZEOF_UNSIGNED_LONG 4
-#endif
-
 
 #endif /*G10_CONFIG_H*/
