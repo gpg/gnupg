@@ -1,5 +1,5 @@
 /* keybox-defs.h - interal Keybox defintions
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -28,19 +28,14 @@
 
 #include <gpg-error.h>
 #include <sys/types.h> /* off_t */
+
+/* We include the type defintions from jnlib instead of defining our
+   owns here.  This will not allow us build KBX in a standalone way
+   but tehre is currently no need for it anyway. */
+#include "../jnlib/types.h"
+
 #include "keybox.h"
 
-
-
-#ifndef HAVE_BYTE_TYPEDEF
-typedef unsigned char byte; /* fixme */
-#endif
-#ifndef HAVE_U16_TYPEDEF
-typedef unsigned short u16; /* fixme */
-#endif
-#ifndef HAVE_U32_TYPEDEF
-typedef unsigned int u32; /* fixme */
-#endif
 
 enum {
   BLOBTYPE_EMPTY = 0,

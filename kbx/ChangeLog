@@ -1,3 +1,8 @@
+2004-04-20  Werner Koch  <wk@gnupg.org>
+
+	* keybox-defs.h: Include jnlib/types.h and remove our own
+	definitions for byte.u16 and u32.
+
 2004-02-02  Werner Koch  <wk@gnupg.org>
 
 	* keybox.h (keybox_flag_t): New.
