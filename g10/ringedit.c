@@ -198,7 +198,7 @@ add_keyblock_resource( const char *url, int force, int secret )
     char *filename = NULL;
     int rc = 0;
     enum resource_type rt = rt_UNKNOWN;
-
+    const char *created_fname = NULL;
 
     /* Do we have an URL?
      *	gnupg-gdbm:filename  := this is a GDBM resource
@@ -317,12 +317,14 @@ add_keyblock_resource( const char *url, int force, int secret )
 	      #endif
 		if( !opt.quiet )
 		    log_info(_("%s: keyring created\n"), filename );
+                created_fname = filename;
 	    }
 	}
       #if HAVE_DOSISH_SYSTEM || 1
 	iobuf_close( iobuf );
 	iobuf = NULL;
-	/* must close it again */
+        if (created_fname) /* must invalidate that ugly cache */
+            iobuf_ioctl (NULL, 2, 0, (char*)created_fname);
       #endif
 	break;
 

@@ -50,7 +50,7 @@ static void test_keys( ELG_secret_key *sk, unsigned nbits );
 static MPI gen_k( MPI p );
 static void generate( ELG_secret_key *sk, unsigned nbits, MPI **factors );
 static int  check_secret_key( ELG_secret_key *sk );
-static void encrypt(MPI a, MPI b, MPI input, ELG_public_key *pkey );
+static void do_encrypt(MPI a, MPI b, MPI input, ELG_public_key *pkey );
 static void decrypt(MPI output, MPI a, MPI b, ELG_secret_key *skey );
 static void sign(MPI a, MPI b, MPI input, ELG_secret_key *skey);
 static int  verify(MPI a, MPI b, MPI input, ELG_public_key *pkey);
@@ -136,7 +136,7 @@ test_keys( ELG_secret_key *sk, unsigned nbits )
 	m_free(p);
     }
 
-    encrypt( out1_a, out1_b, test, &pk );
+    do_encrypt( out1_a, out1_b, test, &pk );
     decrypt( out2, out1_a, out1_b, sk );
     if( mpi_cmp( test, out2 ) )
 	log_fatal("ElGamal operation: encrypt, decrypt failed\n");
@@ -338,7 +338,7 @@ check_secret_key( ELG_secret_key *sk )
 
 
 static void
-encrypt(MPI a, MPI b, MPI input, ELG_public_key *pkey )
+do_encrypt(MPI a, MPI b, MPI input, ELG_public_key *pkey )
 {
     MPI k;
 
@@ -557,7 +557,7 @@ elg_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
     pk.y = pkey[2];
     resarr[0] = mpi_alloc( mpi_get_nlimbs( pk.p ) );
     resarr[1] = mpi_alloc( mpi_get_nlimbs( pk.p ) );
-    encrypt( resarr[0], resarr[1], data, &pk );
+    do_encrypt( resarr[0], resarr[1], data, &pk );
     return 0;
 }
 

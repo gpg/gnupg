@@ -10,8 +10,8 @@ for i in $plain_files $data_files; do
 done
 
 hash_algo_list="ripemd160 sha1 md5"
-if have_hash_algo "TIGER"; then
-  hash_algo_list="$hash_algo_list tiger"
+if have_hash_algo "TIGER192"; then
+  hash_algo_list="$hash_algo_list tiger192"
 fi
 
 for da in $hash_algo_list ; do

@@ -10,6 +10,7 @@
 #include <signal.h>
 #include <unistd.h>
 #ifdef HAVE_SYS_IPC_H
+  #include <sys/types.h>
   #include <sys/ipc.h>
 #endif
 #ifdef HAVE_SYS_SHM_H

@@ -1,3 +1,7 @@
+2001-03-21  Werner Koch  <wk@gnupg.org>
+
+	* shmtest.c: Add sys/types.h
+
 Fri Sep 15 18:40:36 CEST 2000  Werner Koch  <wk@openit.de>
 
         * ring-a-party: An array start at offset 1 no 0.  Many thanks to Mike

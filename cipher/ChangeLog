@@ -1,3 +1,10 @@
+2001-03-19  Werner Koch  <wk@gnupg.org>
+
+	* blowfish.c (encrypt,do_encrypt): Changed name to do_encrypt to
+	avoid name clahses with an encrypt function in stdlib.h of
+	Dynix/PIX.  Thanks to Gene Carter.
+	* elgamal.c (encrypt,do_encrypt): Ditto.
+
 2001-03-12  Werner Koch  <wk@gnupg.org>
 
 	* twofish.c (gnupgext_enum_func): Add some static when comnpiled

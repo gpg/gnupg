@@ -19,6 +19,7 @@
 ## Process this file with automake to create Makefile.in
 
 GPG_DEARMOR = ../g10/gpg --no-options --quiet --yes --dearmor
+GPG_IMPORT  = ../g10/gpg --homedir . --no-options --quiet --yes --import
 
 TESTS = version.test mds.test \
 	decrypt.test decrypt-dsa.test \
@@ -57,8 +58,9 @@ prepared.stamp: ./pubring.gpg ./secring.gpg ./plain-1 ./plain-2 ./plain-3 \
 	 echo timestamp >./prepared.stamp
 
 
-./pubring.gpg: $(srcdir)/pubring.asc
+./pubring.gpg: $(srcdir)/pubring.asc $(srcdir)/pubdemo.asc
 	 $(GPG_DEARMOR) -o ./pubring.gpg $(srcdir)/pubring.asc
+	 $(GPG_IMPORT) $(srcdir)/pubdemo.asc	 
 
 ./secring.gpg: $(srcdir)/secring.asc
 	 $(GPG_DEARMOR) -o ./secring.gpg $(srcdir)/secring.asc

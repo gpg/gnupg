@@ -416,8 +416,10 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 }
 
 #if 0
-/* we can't enable generation right now, becuase we first need to implement
- * the keyflags */
+/* we can't enable generation right now, becuase we first need to
+ * implement the keyflags - the problem is that we need to change all
+ * signature editing function to keep the ketflags associated with an
+ * RSA key.  */
 static int
 gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval )
@@ -568,7 +570,7 @@ ask_algo( int addmode )
       #endif
 	else if( algo == 4 ) {
 	    if( cpr_get_answer_is_yes("keygen.algo.elg_se",_(
-		"Do you really want to create a sign and encrypt key? "))) {
+		"The use of this algorithm is deprecated - create anyway? "))){
 		algo = PUBKEY_ALGO_ELGAMAL;
 		break;
 	    }

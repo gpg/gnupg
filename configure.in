@@ -327,21 +327,28 @@ if test "$ac_cv_header_gdbm_h" = yes ; then
 fi
 fi
 
-
 dnl Solaris needs -lsocket and -lnsl. Unisys system includes
 dnl gethostbyname in libsocket but needs libnsl for socket.
-AC_CHECK_LIB(nsl, gethostbyname)
-AC_CHECK_LIB(socket, socket, ac_need_libsocket=1, ac_try_nsl=1)
-if test x$ac_need_libsocket = x1; then
-    LIBS="$LIBS -lsocket"
-fi
-if test x$ac_try_nsl = x1; then
-    AC_CHECK_LIB(nsl, gethostbyname, ac_need_libnsl=1)
-    if test x$ac_need_libnsl = x1
-    then
-        LIBS="$LIBS -lnsl"
-    fi
-fi
+dnl The test does not workfor all system, so some are hardcoded here.
+case "${target}" in
+   i386-univel-sysv4*)
+        LIBS="$LIBS -lsocket -lnsl"
+        ;;
+   *)
+      AC_CHECK_LIB(nsl, gethostbyname)
+      AC_CHECK_LIB(socket, socket, ac_need_libsocket=1, ac_try_nsl=1)
+      if test x$ac_need_libsocket = x1; then
+          LIBS="$LIBS -lsocket"
+      fi
+      if test x$ac_try_nsl = x1; then
+         AC_CHECK_LIB(nsl, gethostbyname, ac_need_libnsl=1)
+         if test x$ac_need_libnsl = x1
+         then
+            LIBS="$LIBS -lnsl"
+         fi
+      fi
+      ;;
+esac
 
 
 if test "$try_dynload" = yes ; then

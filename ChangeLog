@@ -1,3 +1,8 @@
+2001-03-18  Werner Koch  <wk@gnupg.org>
+
+	* configure.in: Hardwire the use of -lsocket for some
+	systems. Thanks to Reinhard Wobst.
+
 2001-03-13  Werner Koch  <wk@gnupg.org>
 
 	* configure.in: Add copyright notice and -lwsock32.

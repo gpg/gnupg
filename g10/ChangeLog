@@ -1,4 +1,23 @@
+2001-03-21  Werner Koch  <wk@gnupg.org>
+
+	* status.c: Add sys/types.h so that it runs on Ultrix.  Reported
+	by Georg Schwarz.x
+
+	* build-packet.c (build_sig_subpkt): Fixed generaton of packet
+	length header in case where 2 bytes headers are needed.  Thanks to
+	Piotr Krukowiecki.
+
+2001-03-19  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): the default keyring is no always used unless
+	--no-default-keyring is given.  
+
+	* ringedit.c (add_keyblock_resource): invalidate cache after file
+	creation.
+
 2001-03-15  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (ask_algo): Changed the warning of the ElGamal S+E Algo.
 
 	* keylist.c (print_capabilities): New.
 	(list_keyblock_colon): and use it here.

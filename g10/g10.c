@@ -605,7 +605,7 @@ main( int argc, char **argv )
     char *configname = NULL;
     unsigned configlineno;
     int parse_debug = 0;
-    int default_config =1;
+    int default_config = 1;
     int default_keyring = 1;
     int greeting = 0;
     int nogreeting = 0;
@@ -1128,11 +1128,11 @@ main( int argc, char **argv )
     if( cmd != aDeArmor && cmd != aEnArmor
 	&& !(cmd == aKMode && argc == 2 ) ) {
 
-	if( !sec_nrings && default_keyring )  /* add default secret rings */
+	if( !sec_nrings || default_keyring )  /* add default secret rings */
 	    add_keyblock_resource("secring.gpg", 0, 1);
 	for(sl = sec_nrings; sl; sl = sl->next )
 	    add_keyblock_resource( sl->d, 0, 1 );
-	if( !nrings && default_keyring )  /* add default ring */
+	if( !nrings || default_keyring )  /* add default ring */
 	    add_keyblock_resource("pubring.gpg", 0, 0);
 	for(sl = nrings; sl; sl = sl->next )
 	    add_keyblock_resource( sl->d, 0, 0 );

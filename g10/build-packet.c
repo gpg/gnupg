@@ -818,7 +818,7 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
     }
     else if( nlen == 2 ) {
 	data[n0+2] = (buflen+1-192) / 256 + 192;
-	data[n0+3] = (buflen+1-192) & 256;
+	data[n0+3] = (buflen+1-192) % 256;
 	data[n0+4] = type;
 	memcpy(data+n0+5, buffer, buflen );
     }

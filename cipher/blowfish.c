@@ -280,7 +280,7 @@ function_F( BLOWFISH_context *bc, u32 x )
 
 
 static void
-encrypt(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
+do_encrypt(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
 {
   #if BLOWFISH_ROUNDS == 16
     u32 xl, xr, *s0, *s1, *s2, *s3, *p;
@@ -419,7 +419,7 @@ encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 
     d1 = inbuf[0] << 24 | inbuf[1] << 16 | inbuf[2] << 8 | inbuf[3];
     d2 = inbuf[4] << 24 | inbuf[5] << 16 | inbuf[6] << 8 | inbuf[7];
-    encrypt( bc, &d1, &d2 );
+    do_encrypt( bc, &d1, &d2 );
     outbuf[0] = (d1 >> 24) & 0xff;
     outbuf[1] = (d1 >> 16) & 0xff;
     outbuf[2] = (d1 >>	8) & 0xff;
@@ -524,27 +524,27 @@ bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
 
     datal = datar = 0;
     for(i=0; i < BLOWFISH_ROUNDS+2; i += 2 ) {
-	encrypt( c, &datal, &datar );
+	do_encrypt( c, &datal, &datar );
 	c->p[i]   = datal;
 	c->p[i+1] = datar;
     }
     for(i=0; i < 256; i += 2 )	{
-	encrypt( c, &datal, &datar );
+	do_encrypt( c, &datal, &datar );
 	c->s0[i]   = datal;
 	c->s0[i+1] = datar;
     }
     for(i=0; i < 256; i += 2 )	{
-	encrypt( c, &datal, &datar );
+	do_encrypt( c, &datal, &datar );
 	c->s1[i]   = datal;
 	c->s1[i+1] = datar;
     }
     for(i=0; i < 256; i += 2 )	{
-	encrypt( c, &datal, &datar );
+	do_encrypt( c, &datal, &datar );
 	c->s2[i]   = datal;
 	c->s2[i+1] = datar;
     }
     for(i=0; i < 256; i += 2 )	{
-	encrypt( c, &datal, &datar );
+	do_encrypt( c, &datal, &datar );
 	c->s3[i]   = datal;
 	c->s3[i+1] = datar;
     }

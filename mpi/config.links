@@ -12,18 +12,18 @@ echo '/* created by config.links - do not edit */' >./mpi/asm-syntax.h
 
 if test "$try_asm_modules" = "yes" ; then
 case "${target}" in
-    i[34]86*-*-freebsd*-elf  | \
-    i[34]86*-*-freebsd[3-9]* | \
-    i[34]86*-*-freebsdelf*   | \
-    i[34]86*-*-netbsd* )
+    i[3467]86*-*-freebsd*-elf  | \
+    i[3467]86*-*-freebsd[3-9]* | \
+    i[3467]86*-*-freebsdelf*   | \
+    i[3467]86*-*-netbsd* )
        echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
        cat  $srcdir/mpi/i386/syntax.h	   >>./mpi/asm-syntax.h
        path="i386"
        ;;
-    i[56]86*-*-freebsd*-elf  | \
-    i[56]86*-*-freebsd[3-9]* | \
-    i[56]86*-*-freebsdelf*   | \
-    i[56]86*-*-netbsd*	     | \
+    i586*-*-freebsd*-elf  | \
+    i586*-*-freebsd[3-9]* | \
+    i586*-*-freebsdelf*   | \
+    i586*-*-netbsd*	     | \
     pentium-*-netbsd*	     | \
     pentiumpro-*-netbsd*)
        echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
@@ -35,38 +35,38 @@ case "${target}" in
        cat  $srcdir/mpi/i386/syntax.h	 >>./mpi/asm-syntax.h
        path="i386"
        ;;
-    i[34]86*-*-linuxaout*  | \
-    i[34]86*-*-linuxoldld* | \
-    i[34]86*-*-*bsd*)
+    i[3467]86*-*-linuxaout*  | \
+    i[3467]86*-*-linuxoldld* | \
+    i[3467]86*-*-*bsd*)
 	echo '#define BSD_SYNTAX' >>./mpi/asm-syntax.h
 	echo '#define X86_BROKEN_ALIGN' >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/i386/syntax.h	    >>./mpi/asm-syntax.h
 	path="i386"
 	;;
-    i[56]86*-*-linuxaout*  | \
-    i[56]86*-*-linuxoldld* | \
-    i[56]86*-*-*bsd*)
+    i586*-*-linuxaout*  | \
+    i586*-*-linuxoldld* | \
+    i586*-*-*bsd*)
 	echo '#define BSD_SYNTAX' >>./mpi/asm-syntax.h
 	echo '#define X86_BROKEN_ALIGN' >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/i386/syntax.h	    >>./mpi/asm-syntax.h
 	path="i586 i386"
 	;;
-    i[34]86*-msdosdjgpp*)
+    i[3467]86*-msdosdjgpp*)
 	echo '#define BSD_SYNTAX'        >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/i386/syntax.h	 >>./mpi/asm-syntax.h
 	path="i386"
 	;;
-    i[56]86*-msdosdjgpp*)
+    i586*-msdosdjgpp*)
 	echo '#define BSD_SYNTAX'        >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/i386/syntax.h	 >>./mpi/asm-syntax.h
 	path="i586 i386"
 	;;
-    i[34]86*-*-*)
+    i[3467]86*-*-*)
 	echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/i386/syntax.h	    >>./mpi/asm-syntax.h
 	path="i386"
 	;;
-    i[56]86*-*-*  | \
+    i586*-*-*  | \
     pentium-*-*   | \
     pentiumpro-*-*)
 	echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
