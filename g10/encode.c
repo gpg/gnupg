@@ -407,18 +407,20 @@ encode_crypt( const char *filename, STRLIST remusr )
 
     /* register the compress filter */
     if( do_compress ) {
-	int compr_algo = select_algo_from_prefs( pk_list, PREFTYPE_ZIP );
-	if( !compr_algo )
-	    ; /* don't use compression */
-	else {
-	    if( compr_algo == 1 )
-		zfx.algo = 1;
-	    if( compr_algo == 2 )
-		zfx.algo = 2;
-	    /* Any other compr_algo will fall back to
-               opt.def_compress_algo in the compress_filter. */
+	int compr_algo = opt.def_compress_algo;
+
+	if(compr_algo==-1)
+	  {
+	    if((compr_algo=select_algo_from_prefs( pk_list, PREFTYPE_ZIP))==-1)
+	      compr_algo=DEFAULT_COMPRESS_ALGO;
+	  }
+
+	/* algo 0 means no compression */
+	if( compr_algo )
+	  {
+	    zfx.algo = compr_algo;
 	    iobuf_push_filter( out, compress_filter, &zfx );
-	}
+	  }
     }
 
     /* do the work */

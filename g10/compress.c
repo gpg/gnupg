@@ -31,6 +31,7 @@
 #include "memory.h"
 #include "packet.h"
 #include "filter.h"
+#include "main.h"
 #include "options.h"
 
 
@@ -224,7 +225,9 @@ compress_filter( void *opaque, int control,
 	    PKT_compressed cd;
 
 	    if( !zfx->algo )
-		zfx->algo = opt.def_compress_algo;
+	        zfx->algo = DEFAULT_COMPRESS_ALGO;
+	    if( zfx->algo != 1 && zfx->algo != 2 )
+	      BUG();
 	    memset( &cd, 0, sizeof cd );
 	    cd.len = 0;
 	    cd.algorithm = zfx->algo;

@@ -1,3 +1,20 @@
+2002-05-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (merge_selfsigs_main): Make sure the revocation key
+	list starts clean as this function may be called more than once
+	(e.g. from functions in --edit).
+
+	* g10.c, encode.c (encode_crypt), sign.c (sign_file,
+	sign_symencrypt_file): Make --compress-algo work like the
+	documentation says.  It should be like --cipher-algo and
+	--digest-algo in that it can override the preferences calculation
+	and impose the setting the user wants.  No --compress-algo setting
+	allows the usual preferences calculation to take place.
+
+	* main.h, compress.c (compress_filter): use new
+	DEFAULT_COMPRESS_ALGO define, and add a sanity check for compress
+	algo value.
+
 2002-05-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* pkclist.c (select_algo_from_prefs): There is an assumed

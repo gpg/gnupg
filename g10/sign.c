@@ -596,7 +596,6 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     SK_LIST sk_rover = NULL;
     int multifile = 0;
     int old_style = opt.rfc1991;
-    int compr_algo = -1; /* unknown */
     u32 timestamp=0,duration=0;
 
     memset( &afx, 0, sizeof afx);
@@ -633,12 +632,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	opt.pgp2=0;
       }
 
-    if( encryptflag ) {
-	if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC )) )
-	    goto leave;
-	if( !old_style )
-	    compr_algo = select_algo_from_prefs( pk_list, PREFTYPE_ZIP );
-    }
+    if(encryptflag && (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC )))
+      goto leave;
 
     /* prepare iobufs */
     if( multifile )  /* have list of filenames */
@@ -687,17 +682,31 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	iobuf_push_filter( out, encrypt_filter, &efx );
     }
 
-    if( opt.compress && !outfile && ( !detached || opt.compress_sigs) ) {
-	if( !compr_algo )
-	    ; /* don't use compression */
-	else {
-	    if( old_style
-		|| compr_algo == 1
-		|| (compr_algo == -1 && !encryptflag) )
-		zfx.algo = 1; /* use the non optional algorithm */
+    if( opt.compress && !outfile && ( !detached || opt.compress_sigs) )
+      {
+        int compr_algo=opt.def_compress_algo;
+
+	/* If not forced by user */
+        if(compr_algo==-1)
+	  {
+	    /* If we're not encrypting, then select_algo_from_prefs
+               will fail and we'll end up with the default.  If we are
+               encrypting, select_algo_from_prefs cannot fail since
+               there is an assumed preference for uncompressed data.
+               Still, if it did fail, we'll also end up with the
+               default. */
+
+	    if((compr_algo=select_algo_from_prefs( pk_list, PREFTYPE_ZIP))==-1)
+	      compr_algo=DEFAULT_COMPRESS_ALGO;
+	  }
+
+	/* algo 0 means no compression */
+	if( compr_algo )
+	  {
+	    zfx.algo = compr_algo;
 	    iobuf_push_filter( out, compress_filter, &zfx );
-	}
-    }
+	  }
+      }
 
     /* Write the one-pass signature packets if needed */
     if (!detached && !opt.rfc1991) {
@@ -925,7 +934,6 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     SK_LIST sk_list = NULL;
     SK_LIST sk_rover = NULL;
     int old_style = opt.rfc1991;
-    int compr_algo = -1; /* unknown */
     int algo;
     u32 timestamp=0,duration=0;
 
@@ -1011,15 +1019,20 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     iobuf_push_filter( out, cipher_filter, &cfx );
 
     /* Push the Zip filter */
-    if (opt.compress) {
-	if (!compr_algo)
-	    ; /* don't use compression */
-	else {
-	    if( old_style || compr_algo == 1 )
-		zfx.algo = 1; /* use the non optional algorithm */
+    if (opt.compress)
+      {
+	int compr_algo=opt.def_compress_algo;
+
+	/* Default */
+        if(compr_algo==-1)
+	  compr_algo=DEFAULT_COMPRESS_ALGO;
+
+	if (compr_algo)
+	  {
+	    zfx.algo = compr_algo;
 	    iobuf_push_filter( out, compress_filter, &zfx );
-	}
-    }
+	  }
+      }
 
     /* Write the one-pass signature packets */
     /*(current filters: zip - encrypt - armor)*/

@@ -1192,6 +1192,12 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     /* first pass: find the latest direct key self-signature.
      * We assume that the newest one overrides all others
      */
+
+    /* In case this key was already merged */
+    m_free(pk->revkey);
+    pk->revkey=NULL;
+    pk->numrevkeys=0;
+
     signode = NULL;
     sigdate = 0; /* helper to find the latest signature */
     for(k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY; k = k->next ) {

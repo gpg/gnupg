@@ -808,7 +808,7 @@ main( int argc, char **argv )
     /* note: if you change these lines, look at oOpenPGP */
     opt.def_cipher_algo = 0;
     opt.def_digest_algo = 0;
-    opt.def_compress_algo = 1;
+    opt.def_compress_algo = -1;
     opt.s2k_mode = 3; /* iterated+salted */
     opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
     opt.s2k_cipher_algo = CIPHER_ALGO_CAST5;
@@ -1510,7 +1510,7 @@ main( int argc, char **argv )
 	if( check_digest_algo(opt.s2k_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
     }
-    if( opt.def_compress_algo < 0 || opt.def_compress_algo > 2 )
+    if( opt.def_compress_algo < -1 || opt.def_compress_algo > 2 )
 	log_error(_("compress algorithm must be in range %d..%d\n"), 0, 2);
     if( opt.completes_needed < 1 )
 	log_error(_("completes-needed must be greater than 0\n"));
