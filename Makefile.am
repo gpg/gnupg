@@ -25,7 +25,7 @@ checks = checks
 endif
 
 SUBDIRS = intl zlib util mpi cipher tools g10 keyserver po doc ${checks}
-EXTRA_DIST = VERSION  PROJECTS BUGS config.h.in
+EXTRA_DIST = PROJECTS BUGS config.h.in
 DISTCLEANFILES = g10defs.h 
 
 # Add all the files listed in "distfiles" files to the distribution,
@@ -34,7 +34,7 @@ DISTCLEANFILES = g10defs.h
 dist-hook:
 	@set -e; \
 	 for file in `cd $(top_srcdir); \
-		     find scripts mpi -type f -name distfiles`; do \
+		     find scripts mpi include -type f -name distfiles`; do \
 	    dir=`dirname $$file` ; $(mkinstalldirs) $(distdir)/$$dir ; \
 	    for i in distfiles `cat $(top_srcdir)/$$file` ; do \
 		ln $(top_srcdir)/$$dir/$$i $(distdir)/$$dir/$$i 2> /dev/null \

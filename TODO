@@ -119,6 +119,13 @@
 
   * keyflags don't distinguish between {certify,signature}-only.
 
+  * Instead of issuing a "signature packet without keyid" gpg should
+    try to get the keyID from a corresponding one-pass signature
+    packet (See bug report 817).  This is not easy to do as we don't
+    store the one-pass packets.
+
+
+
 Things we won't do
 ------------------
 
