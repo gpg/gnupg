@@ -124,7 +124,6 @@ get_cached_data (app_t app, int tag,
   size_t len;
   struct cache_s *c;
 
-
   *result = NULL;
   *resultlen = 0;
 
@@ -133,13 +132,18 @@ get_cached_data (app_t app, int tag,
       for (c=app->app_local->cache; c; c = c->next)
         if (c->tag == tag)
           {
-              p = xtrymalloc (c->length);
-              if (!p)
-                return gpg_error (gpg_err_code_from_errno (errno));
-              memcpy (p, c->data, c->length);
-              *resultlen = c->length;
-              *result = p;
-              return 0;
+	    if(c->length)
+	      {
+		p = xtrymalloc (c->length);
+		if (!p)
+		  return gpg_error (gpg_err_code_from_errno (errno));
+		memcpy (p, c->data, c->length);
+		*result = p;
+	      }
+
+	    *resultlen = c->length;
+
+	    return 0;
           }
     }
   
