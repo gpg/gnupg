@@ -42,58 +42,61 @@
 #define SIGS_PER_RECORD ((TRUST_RECORD_LEN-10)/5)
 #define MAX_LIST_SIGS_DEPTH  20
 
+
+#define RECTYPE_VER  1
+#define RECTYPE_DIR  2
+#define RECTYPE_KEY  3
+#define RECTYPE_CTL  4
+#define RECTYPE_SIG  5
+
+
 struct trust_record {
-    byte rectype;
-    byte reserved;
+    int  rectype;
     union {
 	struct {	    /* version record: */
-	    byte magic[2];
 	    byte version;   /* should be 1 */
-	    byte reserved[3];
 	    ulong locked;    /* pid of process which holds a lock */
 	    ulong created;   /* timestamp of trustdb creation  */
 	    ulong modified;  /* timestamp of last modification */
 	    ulong validated; /* timestamp of last validation   */
-	    ulong local_id_counter;
 	    byte marginals_needed;
 	    byte completes_needed;
 	    byte max_cert_depth;
-	} version;
-	struct {	    /* public key record */
+	} ver;
+	struct {	    /* directory record */
 	    ulong local_id;
-	    u32   keyid[2];
+	    u32  keyid[2];
+	    ulong keyrec;   /* recno of public key record */
+	    ulong ctlrec    /* recno of control record */
+	    ulong sigrec;   /* recno of first signature record */
+	    byte no_sigs;   /* does not have sigature and checked */
+	} dir;
+	struct {	    /* public key record */
+	    ulong owner;
+	    u32  keyid[2];
 	    byte pubkey_algo;
-	    byte reserved;
 	    byte fingerprint[20];
 	    byte ownertrust;
-	    byte no_sigs;
-	    /* fixme: indicate a flag to */
-	} pubkey;
-	struct {	    /* cache record */
+	} key;
+	struct {	    /* control record */
 	    ulong owner;
-	    u32   keyid[2];	  /* needed?? */
-	    byte valid;
-	    byte reserved;
 	    byte blockhash[20];
-	    byte n_untrusted;
-	    byte n_marginal;
-	    byte n_fully;
-	    byte trustlevel;
-	} cache;
-	struct {
+	    byte trustlevel;   /* calculated trustlevel */
+	} ctl;
+	struct {	    /* signature record */
 	    ulong owner;  /* local_id of record owner (pubkey record) */
 	    ulong chain;  /* offset of next record or NULL for last one */
 	    struct {
 		ulong  local_id; /* of pubkey record of signator (0=unused) */
 		byte flag;     /* reserved */
 	    } sig[SIGS_PER_RECORD];
-	} sigrec;
+	} sig;
     } r;
 };
 typedef struct trust_record TRUSTREC;
 
 typedef struct {
-    ulong     pubkey_id;   /* localid of the pubkey */
+    ulong     local_id;    /* localid of the pubkey */
     ulong     sig_id;	   /* returned signature id */
     unsigned  sig_flag;    /* returned signature record flag */
     struct {		   /* internal data */
@@ -135,10 +138,11 @@ typedef struct {
 
 static void create_db( const char *fname );
 static void open_db(void);
+static void dump_record( ulong rnum, TRUSTREC *rec, FILE *fp );
 static int  read_record( ulong recnum, TRUSTREC *rec );
 static int  write_record( ulong recnum, TRUSTREC *rec );
 static ulong new_recnum(void);
-static void dump_record( ulong rnum, TRUSTREC *rec, FILE *fp );
+static int search_record( PKT_public_cert *pkc, TRUSTREC *rec );
 static int walk_sigrecs( SIGREC_CONTEXT *c, int create );
 
 static LOCAL_ID_INFO *new_lid_table(void);
@@ -215,6 +219,79 @@ fwrite_zeros( FILE *fp, size_t n)
 }
 
 
+/**********************************************
+ ************* list helpers *******************
+ **********************************************/
+
+static LOCAL_ID_INFO *
+new_lid_table(void)
+{
+    return m_alloc_clear( 16 * sizeof(LOCAL_ID_INFO));
+}
+
+static void
+release_lid_table( LOCAL_ID_INFO *tbl )
+{
+    LOCAL_ID_INFO a, a2;
+    int i;
+
+    for(i=0; i < 16; i++ ) {
+	for(a=tbl[i]; a; a = a2 ) {
+	    a2 = a->next;
+	    m_free(a);
+	}
+    }
+    m_free(tbl);
+}
+
+/****************
+ * Add a new item to the table or return 1 if we already have this item
+ * fixme: maybe its a good idea to take items from an unused item list.
+ */
+static int
+ins_lid_table_item( LOCAL_ID_INFO *tbl, ulong lid, unsigned flag )
+{
+    LOCAL_ID_INFO a;
+
+    for( a = tbl[lid & 0x0f]; a; a = a->next )
+	if( a->lid == lid )
+	    return 1;
+    a = m_alloc( sizeof *a );
+    a->lid = lid;
+    a->flag = flag;
+    a->next = tbl[lid & 0x0f];
+    tbl[lid & 0x0f] = a;
+    return 0;
+}
+
+static int
+qry_lid_table_flag( LOCAL_ID_INFO *tbl, ulong lid, unsigned *flag )
+{
+    LOCAL_ID_INFO a;
+
+    for( a = tbl[lid & 0x0f]; a; a = a->next )
+	if( a->lid == lid ) {
+	    if( flag )
+		*flag = a->flag;
+	    return 0;
+	}
+    return -1;
+}
+
+static void
+upd_lid_table_flag( LOCAL_ID_INFO *tbl, ulong lid, unsigned flag )
+{
+    LOCAL_ID_INFO a;
+
+    for( a = tbl[lid & 0x0f]; a; a = a->next )
+	if( a->lid == lid ) {
+	    a->flag = flag;
+	    return;
+	}
+    BUG();
+}
+
+
 /**************************************************
  ************** read and write stuff **************
  **************************************************/
@@ -241,7 +318,7 @@ create_db( const char *fname )
     fwrite_32( fp, make_timestamp() ); /* created */
     fwrite_32( fp, 0 ); /* not yet modified */
     fwrite_32( fp, 0 ); /* not yet validated*/
-    fwrite_32( fp, 0 ); /* local-id-counter (not used) */
+    fwrite_32( fp, 0 ); /* reserved */
     fwrite_8( fp, 3 );	/* marginals needed */
     fwrite_8( fp, 1 );	/* completes needed */
     fwrite_8( fp, 4 );	/* max_cet_depth */
@@ -263,6 +340,53 @@ open_db()
     /* fixme: check ->locked and other stuff */
 }
 
+
+static void
+dump_record( ulong rnum, TRUSTREC *rec, FILE *fp  )
+{
+    int i, any;
+
+    fprintf(fp, "trust record %lu, type=", rnum );
+
+    switch( rec->rectype ) {
+      case 0: fprintf(fp, "free\n");
+	break;
+      case RECTYPE_VER: fprintf(fp, "version\n");
+	break;
+      case RECTYPE_DIR:
+	fprintf(fp, "dir keyid=%08lx, key=%lu, ctl=%lu, sig=%lu%s\n",
+		    rec->r.dir.keyid[1],
+		    rec->r.dir.keyrec, rec->r.dir.ctlrec, rec->r.dir.sigrec,
+		    rec->r.dir.no_sigs?"  (inv sigs)":"");
+	break;
+      case RECTYPE_KEY: fprintf(fp, "key keyid=%08lx, own=%lu, ownertrust=%02x\n",
+		   rec->r.key.keyid[1],
+		   rec->r.key.owner, rec->r.key.ownertrust );
+	break;
+      case RECTYPE_CTL: fprintf(fp, "ctl\n");
+	break;
+      case RECTYPE_SIG:
+	fprintf(fp, "sigrec, owner=%lu, chain=%lu%s\n",
+			 rec->r.sig.owner, rec->r.sigrec.chain,
+			 rec->rectype == 4?"":" (extend)");
+	for(i=any=0; i < SIGS_PER_RECORD; i++ ) {
+	    if( rec->r.sigrec.sig[i].local_id ) {
+		if( !any ) {
+		    putc('\t', fp);
+		    any++;
+		}
+		fprintf(fp, "  %lu:%02x", rec->r.sigrec.sig[i].local_id,
+					      rec->r.sigrec.sig[i].flag );
+	    }
+	}
+	if( any )
+	    putc('\n', fp);
+	break;
+      default:
+	fprintf(fp, "%d (unknown)\n", rec->rectype );
+	break;
+    }
+}
 
 /****************
  * read the record with number recnum
@@ -291,75 +415,72 @@ read_record( ulong recnum, TRUSTREC *rec )
     }
     p = buf;
     rec->rectype = *p++;
-    rec->reserved = *p++;
+    p++;
     switch( rec->rectype ) {
       case 0:  /* unused record */
 	break;
-      case 1: /* version record */
-	rec->r.version.magic[0] = *p++;
-	rec->r.version.magic[1] = *p++;
-	rec->r.version.version	= *p++;
-	memcpy( rec->r.version.reserved, p, 3); p += 3;
-	rec->r.version.locked	= buftoulong(p); p += 4;
-	rec->r.version.created	= buftoulong(p); p += 4;
-	rec->r.version.modified = buftoulong(p); p += 4;
-	rec->r.version.validated= buftoulong(p); p += 4;
-	rec->r.version.local_id_counter = buftoulong(p); p += 4;
-	rec->r.version.marginals_needed = *p++;
-	rec->r.version.completes_needed = *p++;
-	rec->r.version.max_cert_depth = *p++;
+      case RECTYPE_VER: /* version record */
+	if( memcmp(buf+1, "g10", 3 ) {
+	    log_error("%s: not a trustdb file\n", db_name );
+	    rc = G10ERR_TRUSTDB;
+	}
+	p += 2; /* skip magic */
+	rec->r.ver.version  = *p++;
+	memcpy( rec->r.ver.reserved, p, 3); p += 3;
+	rec->r.ver.locked   = buftoulong(p); p += 4;
+	rec->r.ver.created  = buftoulong(p); p += 4;
+	rec->r.ver.modified = buftoulong(p); p += 4;
+	rec->r.ver.validated= buftoulong(p); p += 4;
+	rec->r.ver.local_id_counter = buftoulong(p); p += 4;
+	rec->r.ver.marginals_needed = *p++;
+	rec->r.ver.completes_needed = *p++;
+	rec->r.ver.max_cert_depth = *p++;
 	if( recnum ) {
 	    log_error("%s: version record with recnum %lu\n",
 						    db_name, (ulong)recnum );
 	    rc = G10ERR_TRUSTDB;
 	}
-	if( rec->reserved != 'g' || rec->r.version.magic[0] != '1'
-				  || rec->r.version.magic[1] != '0' ) {
-	    log_error("%s: not a trustdb file\n", db_name );
-	    rc = G10ERR_TRUSTDB;
-	}
-	if( rec->r.version.version != 1 ) {
+	if( rec->r.ver.version != 1 ) {
 	    log_error("%s: invalid file version %d\n",
 				       db_name, rec->r.version.version );
 	    rc = G10ERR_TRUSTDB;
 	}
 	break;
-      case 2:
-	rec->r.pubkey.local_id = buftoulong(p); p += 4;
-	rec->r.pubkey.keyid[0] = buftou32(p); p += 4;
-	rec->r.pubkey.keyid[1] = buftou32(p); p += 4;
-	rec->r.pubkey.pubkey_algo = *p++;
-	rec->r.pubkey.reserved = *p++;
-	memcpy( rec->r.pubkey.fingerprint, p, 20); p += 20;
-	rec->r.pubkey.ownertrust = *p++;
-	rec->r.pubkey.no_sigs = *p++;
-	if( rec->r.pubkey.local_id != recnum ) {
-	    log_error("%s: pubkey local_id != recnum (%lu,%lu)\n",
+      case RECTYPE_DIR:   /*directory record */
+	rec->r.dir.local_id = buftoulong(p); p += 4;
+	rec->r.dir.keyid[0] = buftou32(p); p += 4;
+	rec->r.dir.keyid[1] = buftou32(p); p += 4;
+	rec->r.dir.keyrec   = buftoulong(p); p += 4;
+	rec->r.dir.ctlrec   = buftoulong(p); p += 4;
+	rec->r.dir.sigrec   = buftoulong(p); p += 4;
+	rec->r.dir.no_sigs = *p++;
+	if( rec->r.dir.local_id != recnum ) {
+	    log_error("%s: dir local_id != recnum (%lu,%lu)\n",
 					db_name,
-					(ulong)rec->r.pubkey.local_id,
+					(ulong)rec->r.dir.local_id,
 					(ulong)recnum );
 	    rc = G10ERR_TRUSTDB;
 	}
 	break;
-      case 3:
-	rec->r.cache.owner    = buftoulong(p); p += 4;
-	rec->r.cache.keyid[0] = buftou32(p); p += 4;
-	rec->r.cache.keyid[1] = buftou32(p); p += 4;
-	rec->r.cache.valid = *p++;
-	rec->r.cache.reserved = *p++;
-	memcpy(rec->r.cache.blockhash, p, 20); p += 20;
-	rec->r.cache.n_untrusted = *p++;
-	rec->r.cache.n_marginal = *p++;
-	rec->r.cache.n_fully = *p++;
-	rec->r.cache.trustlevel = *p++;
+      case RECTYPE_KEY:   /* public key record */
+	rec->r.key.owner    = buftoulong(p); p += 4;
+	rec->r.dir.keyid[0] = buftou32(p); p += 4;
+	rec->r.dir.keyid[1] = buftou32(p); p += 4;
+	rec->r.key.pubkey_algo = *p++; p++;
+	memcpy( rec->r.pubkey.fingerprint, p, 20); p += 20;
+	rec->r.pubkey.ownertrust = *p++;
 	break;
-      case 4:
-      case 5:
-	rec->r.sigrec.owner   = buftoulong(p); p += 4;
-	rec->r.sigrec.chain   = buftoulong(p); p += 4;
+      case RECTYPE_CTL:   /* control record */
+	rec->r.ctl.owner    = buftoulong(p); p += 4;
+	memcpy(rec->r.ctl.blockhash, p, 20); p += 20;
+	rec->r.ctl.trustlevel = *p++;
+	break;
+      case RECTYPE_SIG:
+	rec->r.sig.owner   = buftoulong(p); p += 4;
+	rec->r.sig.chain   = buftoulong(p); p += 4;
 	for(i=0; i < SIGS_PER_RECORD; i++ ) {
-	    rec->r.sigrec.sig[i].local_id = buftoulong(p); p += 4;
-	    rec->r.sigrec.sig[i].flag = *p++;
+	    rec->r.sig.sig[i].local_id = buftoulong(p); p += 4;
+	    rec->r.sig.sig[i].flag = *p++;
 	}
 	break;
       default:
@@ -395,36 +516,39 @@ write_record( ulong recnum, TRUSTREC *rec )
       case 1: /* version record */
 	BUG();
 	break;
-      case 2:
-	ulongtobuf(p, rec->r.pubkey.local_id); p += 4;
-	u32tobuf(p, rec->r.pubkey.keyid[0]); p += 4;
-	u32tobuf(p, rec->r.pubkey.keyid[1]); p += 4;
-	*p++ = rec->r.pubkey.pubkey_algo;
-	*p++ = rec->r.pubkey.reserved;
-	memcpy( p, rec->r.pubkey.fingerprint, 20); p += 20;
+
+      case RECTYPE_DIR:   /*directory record */
+	ulongtobuf(p, rec->r.dir.local_id); p += 4;
+	u32tobuf(p, rec->r.key.keyid[0]); p += 4;
+	u32tobuf(p, rec->r.key.keyid[1]); p += 4;
+	ulongtobuf(p, rec->r.dir.keyrec); p += 4;
+	ulongtobuf(p, rec->r.dir.ctlrec); p += 4;
+	ulongtobuf(p, rec->r.dir.sigrec); p += 4;
+	*p++ = rec->r.dir.no_sigs;
+	assert( rec->r.dir.local_id == recnum );
+	break;
+
+      case RECTYPE_KEY:
+	ulongtobuf(p, rec->r.key.owner); p += 4;
+	u32tobuf(p, rec->r.key.keyid[0]); p += 4;
+	u32tobuf(p, rec->r.key.keyid[1]); p += 4;
+	*p++ = rec->r.pubkey.pubkey_algo; p++;
+	memcpy( p, rec->r.key.fingerprint, 20); p += 20;
 	*p++ = rec->r.pubkey.ownertrust;
-	*p++ = rec->r.pubkey.no_sigs;
-	assert( rec->r.pubkey.local_id == recnum );
 	break;
-      case 3:
-	ulongtobuf(p, rec->r.cache.owner); p += 4;
-	u32tobuf(p, rec->r.cache.keyid[0]); p += 4;
-	u32tobuf(p, rec->r.cache.keyid[1]); p += 4;
-	*p++ = rec->r.cache.valid;
-	*p++ = rec->r.cache.reserved;
-	memcpy(p, rec->r.cache.blockhash, 20); p += 20;
-	*p++ = rec->r.cache.n_untrusted;
-	*p++ = rec->r.cache.n_marginal;
-	*p++ = rec->r.cache.n_fully;
-	*p++ = rec->r.cache.trustlevel;
+
+      case RECTYPE_CTL:   /* control record */
+	ulongtobuf(p, rec->r.ctl.owner); p += 4;
+	memcpy(p, rec->r.ctl.blockhash, 20); p += 20;
+	*p++ = rec->r.ctl.trustlevel;
 	break;
-      case 4:
-      case 5:
-	ulongtobuf(p, rec->r.sigrec.owner); p += 4;
-	ulongtobuf(p, rec->r.sigrec.chain); p += 4;
+
+      case RECTYPE_SIG:
+	ulongtobuf(p, rec->r.sig.owner); p += 4;
+	ulongtobuf(p, rec->r.sig.chain); p += 4;
 	for(i=0; i < SIGS_PER_RECORD; i++ ) {
-	    ulongtobuf(p, rec->r.sigrec.sig[i].local_id); p += 4;
-	    *p++ = rec->r.sigrec.sig[i].flag;
+	    ulongtobuf(p, rec->r.sig.sig[i].local_id); p += 4;
+	    *p++ = rec->r.sig.sig[i].flag;
 	}
 	break;
       default:
@@ -443,7 +567,6 @@ write_record( ulong recnum, TRUSTREC *rec )
 
     return rc;
 }
-
 
 
 /****************
@@ -476,11 +599,13 @@ new_recnum()
 }
 
 /****************
- * Scan the trustdb for a record of type RECTYPE which matches PKC
- * The local_id is set to the correct value
+ * Search the trustdb for a key which matches PKC and return the dir record
+ * The local_id of PKC is set to the correct value
+ *
+ * Note: To increase performance, we could use a index search here.
  */
 static int
-scan_record_by_pkc( PKT_public_cert *pkc, TRUSTREC *rec, int rectype )
+search_record( PKT_public_cert *pkc, TRUSTREC *rec )
 {
     ulong recnum;
     u32 keyid[2];
@@ -488,113 +613,35 @@ scan_record_by_pkc( PKT_public_cert *pkc, TRUSTREC *rec, int rectype )
     size_t fingerlen;
     int rc;
 
-    assert( rectype == 2 || rectype == 3 );
-
     keyid_from_pkc( pkc, keyid );
     fingerprint = fingerprint_from_pkc( pkc, &fingerlen );
     assert( fingerlen == 20 || fingerlen == 16 );
 
     for(recnum=1; !(rc=read_record( recnum, rec)); recnum++ ) {
-	if( rec->rectype != rectype )
+	if( rec->rectype != RECTYPE_DIR )
 	    continue;
-	if( rec->rectype == 2 ) {
-	    if( rec->r.pubkey.keyid[0] == keyid[0]
-		&& rec->r.pubkey.keyid[1] == keyid[1]
-		&& rec->r.pubkey.pubkey_algo == pkc->pubkey_algo
-		&& !memcmp(rec->r.pubkey.fingerprint, fingerprint, fingerlen)
-	      ) { /* found */
-		/* store the local_id */
+	if( rec->r.dir.keyid[0] == keyid[0]
+	    && rec->r.dir.keyid[1] == keyid[1]){
+	    TRUSTREC keyrec;
+
+	    if( read_record( rec->r.dir.keyrec, keyrec ) ) {
+		log_error("%lu: ooops: invalid dir record\n", recnum );
+		break;
+	    }
+	    if( keyrec.key.pubkey_algo == pkc->pubkey_algo
+		&& !memcmp(keyrec.r.key.fingerprint, fingerprint, fingerlen) ){
 		if( pkc->local_id && pkc->local_id != recnum )
 		    log_error("%s: found record, but local_id from mem does "
-			      "not match recnum (%lu,%lu)\n", db_name,
-					 (ulong)pkc->local_id, (ulong)recnum );
+			       "not match recnum (%lu,%lu)\n", db_name,
+				     (ulong)pkc->local_id, (ulong)recnum );
 		pkc->local_id = recnum;
 		return 0;
 	    }
 	}
-	else
-	    log_bug("not yet implemented\n");
     }
     if( rc != -1 )
-	log_error("%s: scan_record_by_pkc failed: %s\n",db_name, g10_errstr(rc) );
+	log_error("%s: search_db failed: %s\n",db_name, g10_errstr(rc) );
     return rc;
-}
-
-/****************
- * scan the DB for a record of type RECTYPE which can be localized
- * with LOCAL_ID
- */
-static int
-scan_record( ulong local_id, TRUSTREC *rec, int rectype, ulong *r_recnum )
-{
-    ulong recnum;
-    int rc;
-
-    assert( rectype == 3 || rectype == 4 );
-
-    for(recnum=1; !(rc=read_record( recnum, rec)); recnum++ ) {
-	if( rec->rectype != rectype )
-	    continue;
-	if( rec->rectype == 34 ) {
-	    if( rec->r.cache.owner == local_id ) { /* found */
-		*r_recnum = recnum;
-		return 0;
-	    }
-	}
-	else if( rec->rectype == 4 ) {
-	    if( rec->r.sigrec.owner == local_id ) { /* found */
-		*r_recnum = recnum;
-		return 0;
-	    }
-	}
-	else
-	    log_bug("not yet implemented\n");
-    }
-    if( rc != -1 )
-	log_error("%s: scan_record failed: %s\n",db_name, g10_errstr(rc) );
-    return rc;
-}
-
-
-static void
-dump_record( ulong rnum, TRUSTREC *rec, FILE *fp  )
-{
-    int i, any;
-
-    fprintf(fp, "trust record %lu, type=", rnum );
-
-    switch( rec->rectype ) {
-      case 0: fprintf(fp, "free\n");
-	break;
-      case 1: fprintf(fp, "version\n");
-	break;
-      case 2: fprintf(fp, "pubkey, keyid=%08lX, ownertrust=%02x%s\n",
-		   rec->r.pubkey.keyid[1], rec->r.pubkey.ownertrust,
-		   rec->r.pubkey.no_sigs?"  (inv sigs)":"");
-	break;
-      case 3: fprintf(fp, "cache\n");
-      case 4:
-      case 5:
-	fprintf(fp, "sigrec, owner=%lu, chain=%lu%s\n",
-			 rec->r.sigrec.owner, rec->r.sigrec.chain,
-			 rec->rectype == 4?"":" (extend)");
-	for(i=any=0; i < SIGS_PER_RECORD; i++ ) {
-	    if( rec->r.sigrec.sig[i].local_id ) {
-		if( !any ) {
-		    putc('\t', fp);
-		    any++;
-		}
-		fprintf(fp, "  %lu:%02x", rec->r.sigrec.sig[i].local_id,
-					      rec->r.sigrec.sig[i].flag );
-	    }
-	}
-	if( any )
-	    putc('\n', fp);
-	break;
-      default:
-	fprintf(fp, "%d (unknown)\n", rec->rectype );
-	break;
-    }
 }
 
 
@@ -613,7 +660,7 @@ set_signature_packets_local_id( PKT_signature *sig )
     if( rc)
 	goto leave;
     if( !pkc->local_id ) {
-	rc = scan_record_by_pkc( pkc, &rec, 2 );
+	rc = search_record( pkc, &rec );
 	if( rc == -1 )
 	    rc = insert_trust_record( pkc );
 	if( rc )
@@ -628,127 +675,32 @@ set_signature_packets_local_id( PKT_signature *sig )
 }
 
 
-void
-list_trustdb( const char *username )
+
+static int
+keyid_from_local_id( ulong lid, u32 *keyid )
 {
     TRUSTREC rec;
-
-    if( username ) {
-	PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
-	int rc;
-
-	if( (rc = get_pubkey_byname( pkc, username )) )
-	    log_error("user '%s' not found: %s\n", username, g10_errstr(rc) );
-	else if( (rc=scan_record_by_pkc( pkc, &rec, 2 )) && rc != -1 )
-	    log_error("problem finding '%s' in trustdb: %s\n",
-						username, g10_errstr(rc));
-	else if( rc == -1 )
-	    log_error("user '%s' not in trustdb\n", username);
-	else if( (rc = list_sigs( pkc->local_id )) )
-	    log_error("user '%s' list problem: %s\n", username, g10_errstr(rc));
-	free_public_cert( pkc );
-    }
-    else {
-	ulong recnum;
-	int i;
-
-	printf("TrustDB: %s\n", db_name );
-	for(i=9+strlen(db_name); i > 0; i-- )
-	    putchar('-');
-	putchar('\n');
-	for(recnum=0; !read_record( recnum, &rec); recnum++ )
-	    dump_record( recnum, &rec, stdout );
-    }
-}
-
-void
-list_trust_path( int max_depth, const char *username )
-{
     int rc;
-    int wipe=0;
-    int i;
-    TRUSTREC rec;
-    PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
 
-    if( max_depth < 0 ) {
-	wipe = 1;
-	max_depth = -max_depth;
+    rc = read_record( lid, &rec );
+    if( rc ) {
+	log_error("error reading record with local_id %lu: %s\n",
+						    lid, g10_errstr(rc));
+	return G10ERR_TRUSTDB;
     }
-
-    if( (rc = get_pubkey_byname( pkc, username )) )
-	log_error("user '%s' not found: %s\n", username, g10_errstr(rc) );
-    else if( (rc=scan_record_by_pkc( pkc, &rec, 2 )) && rc != -1 )
-	log_error("problem finding '%s' in trustdb: %s\n",
-					    username, g10_errstr(rc));
-    else if( rc == -1 ) {
-	log_info("user '%s' not in trustdb - inserting\n", username);
-	rc = insert_trust_record( pkc );
-	if( rc )
-	    log_error("failed to put '%s' into trustdb: %s\n", username, g10_errstr(rc));
-	else {
-	    assert( pkc->local_id );
-	}
+    if( rec.rectype != RECTYPE_DIR ) {
+	log_error("record with local_id %lu is not a dir record\n", lid);
+	return G10ERR_TRUSTDB;
     }
-
-    if( !rc ) {
-	TRUST_SEG_LIST tsl, tslist = NULL;
-
-	if( !qry_lid_table_flag( ultikey_table, pkc->local_id, NULL ) ) {
-	    tslist = m_alloc( sizeof *tslist );
-	    tslist->nseg = 1;
-	    tslist->dup = 0;
-	    tslist->seg[0].lid = pkc->local_id;
-	    tslist->seg[0].trust = 0;
-	    tslist->next = NULL;
-	    rc = 0;
-	}
-	else {
-	    LOCAL_ID_INFO *lids = new_lid_table();
-	    TRUST_INFO stack[MAX_LIST_SIGS_DEPTH];
-
-	    stack[0].lid = pkc->local_id;
-	    stack[0].trust = 0;
-	    rc = do_list_path( stack, 1, max_depth, lids, &tslist );
-	    if( wipe ) { /* wipe out duplicates */
-		LOCAL_ID_INFO *work;
-
-		work = new_lid_table();
-		for( tsl=tslist; tsl; tsl = tsl->next ) {
-		    for(i=1; i < tsl->nseg-1; i++ ) {
-			if( ins_lid_table_item( work, tsl->seg[i].lid, 0 ) ) {
-			    tsl->dup = 1; /* mark as duplicate */
-			    break;
-			}
-		    }
-		}
-		release_lid_table(work);
-	    }
-	    release_lid_table(lids);
-	}
-	if( rc )
-	    log_error("user '%s' list problem: %s\n", username, g10_errstr(rc));
-	rc = propagate_trust( tslist );
-	if( rc )
-	    log_error("user '%s' trust problem: %s\n", username, g10_errstr(rc));
-	for(tsl = tslist; tsl; tsl = tsl->next ) {
-	    int i;
-
-	    if( tsl->dup )
-		continue;
-	    printf("trust path:" );
-	    for(i=0; i < tsl->nseg; i++ )
-		printf("  %lu/%02x", tsl->seg[i].lid, tsl->seg[i].trust );
-	    putchar('\n');
-	}
-    }
-
-    free_public_cert( pkc );
+    keyid[0] = rec.r.dir.keyid[0];
+    keyid[1] = rec.r.dir.keyid[1];
+    return 0;
 }
 
 /****************
  * Walk throug the signatures of a public key.
  * The caller must provide a context structure, with all fields set
- * to zero, but the pubkeyid filed set to the requested pubkey;
+ * to zero, but the local_id field set to the requested key;
  * This function does not change this field.  On return the context
  * is filled with the local-id of the signature and the signature flag.
  * No fields should be changed (clearing all fields and setting
@@ -758,6 +710,8 @@ list_trust_path( int max_depth, const char *username )
 static int
 walk_sigrecs( SIGREC_CONTEXT *c, int create )
 {
+!!!!!!FIXME!!!!!!!
+
     int rc=0;
     TRUSTREC *r;
     ulong rnum;
@@ -766,6 +720,7 @@ walk_sigrecs( SIGREC_CONTEXT *c, int create )
 	return -1;
     r = &c->ctl.rec;
     if( !r->rectype ) { /* this is the first call */
+
 	rc = scan_record( c->pubkey_id, r, 4, &rnum );
 	if( rc == -1 && create ) { /* no signature records */
 	    rc = build_sigrecs( c->pubkey_id, 1 );
@@ -817,101 +772,12 @@ walk_sigrecs( SIGREC_CONTEXT *c, int create )
     return 0;
 }
 
+
+
+
 /***********************************************
- *************	trust logic  *******************
+ *************	Trust  stuff  ******************
  ***********************************************/
-
-static LOCAL_ID_INFO *
-new_lid_table(void)
-{
-    return m_alloc_clear( 16 * sizeof(LOCAL_ID_INFO));
-}
-
-static void
-release_lid_table( LOCAL_ID_INFO *tbl )
-{
-    LOCAL_ID_INFO a, a2;
-    int i;
-
-    for(i=0; i < 16; i++ ) {
-	for(a=tbl[i]; a; a = a2 ) {
-	    a2 = a->next;
-	    m_free(a);
-	}
-    }
-    m_free(tbl);
-}
-
-/****************
- * Add a new item to the table or return 1 if we aread have this item
- * fixme: maybe its a good idea to tage items from an unused item list.
- */
-static int
-ins_lid_table_item( LOCAL_ID_INFO *tbl, ulong lid, unsigned flag )
-{
-    LOCAL_ID_INFO a;
-
-    for( a = tbl[lid & 0x0f]; a; a = a->next )
-	if( a->lid == lid )
-	    return 1;
-    a = m_alloc( sizeof *a );
-    a->lid = lid;
-    a->flag = flag;
-    a->next = tbl[lid & 0x0f];
-    tbl[lid & 0x0f] = a;
-    return 0;
-}
-
-static int
-qry_lid_table_flag( LOCAL_ID_INFO *tbl, ulong lid, unsigned *flag )
-{
-    LOCAL_ID_INFO a;
-
-    for( a = tbl[lid & 0x0f]; a; a = a->next )
-	if( a->lid == lid ) {
-	    if( flag )
-		*flag = a->flag;
-	    return 0;
-	}
-    return -1;
-}
-
-static void
-upd_lid_table_flag( LOCAL_ID_INFO *tbl, ulong lid, unsigned flag )
-{
-    LOCAL_ID_INFO a;
-
-    for( a = tbl[lid & 0x0f]; a; a = a->next )
-	if( a->lid == lid ) {
-	    a->flag = flag;
-	    return;
-	}
-    BUG();
-}
-
-
-
-
-static int
-keyid_from_local_id( ulong lid, u32 *keyid )
-{
-    TRUSTREC rec;
-    int rc;
-
-    rc = read_record( lid, &rec );
-    if( rc ) {
-	log_error("error reading record with local_id %lu: %s\n",
-						    lid, g10_errstr(rc));
-	return G10ERR_TRUSTDB;
-    }
-    if( rec.rectype != 2 ) {
-	log_error("record with local_id %lu is not a pubkey record\n", lid);
-	return G10ERR_TRUSTDB;
-    }
-    keyid[0] = rec.r.pubkey.keyid[0];
-    keyid[1] = rec.r.pubkey.keyid[1];
-    return 0;
-}
 
 
 /****************
@@ -992,6 +858,7 @@ verify_own_certs()
     return rc;
 }
 
+
 static void
 print_user_id( const char *text, u32 *keyid )
 {
@@ -1020,7 +887,7 @@ do_list_sigs( ulong root, ulong pubkey, int depth,
     u32 keyid[2];
 
     memset( &sx, 0, sizeof sx );
-    sx.pubkey_id = pubkey;
+    sx.local_id = pubkey;
     for(;;) {
 	rc = walk_sigrecs( &sx, 0 );
 	if( rc )
@@ -1098,6 +965,9 @@ list_sigs( ulong pubkey_id )
 
 
 
+/****************
+ * Function to collect all trustpaths
+ */
 static int
 do_list_path( TRUST_INFO *stack, int depth, int max_depth,
 	      LOCAL_ID_INFO *lids, TRUST_SEG_LIST *tslist )
@@ -1114,7 +984,7 @@ do_list_path( TRUST_INFO *stack, int depth, int max_depth,
 	return 0;
     }
     memset( &sx, 0, sizeof sx );
-    sx.pubkey_id = stack[depth-1].lid;
+    sx.local_id = stack[depth-1].lid;
     /* loop over all signatures. If we do not have any, try to
      * create them */
     while( !(rc = walk_sigrecs( &sx, 1 )) ) {
@@ -1170,7 +1040,10 @@ do_list_path( TRUST_INFO *stack, int depth, int max_depth,
 
 /****************
  * Check all the sigs of the given keyblock and mark them
- * as checked.
+ * as checked. Valid signatures which are duplicates are
+ * also marked [shall we check them at all?]
+ * FIXME: what shall we do if we have duplicate signatures were only
+ *	  some of them are bad?
  */
 static int
 check_sigs( KBNODE keyblock, int *selfsig_okay )
@@ -1178,6 +1051,7 @@ check_sigs( KBNODE keyblock, int *selfsig_okay )
     KBNODE kbctx;
     KBNODE node;
     int rc;
+    LOCAL_ID_INFO *dups = NULL;
 
     *selfsig_okay = 0;
     for( kbctx=NULL; (node=walk_kbtree( keyblock, &kbctx)) ; ) {
@@ -1192,6 +1066,11 @@ check_sigs( KBNODE keyblock, int *selfsig_okay )
 		}
 		else
 		    node->flag |= 1; /* mark signature valid */
+		if( !dups )
+		    dups = new_lid_table();
+		if( ins_lid_table_item( dups,
+				    node->pkt->pkt.signature->local_id, 0) )
+		    node->flag |= 4; /* mark as duplicate */
 	    }
 	    if( DBG_TRUST )
 		log_debug("trustdb: sig from %08lX: %s\n",
@@ -1199,6 +1078,8 @@ check_sigs( KBNODE keyblock, int *selfsig_okay )
 						    g10_errstr(rc) );
 	}
     }
+    if( dups )
+	release_lid_table(dups);
     return 0;
 }
 
@@ -1210,7 +1091,7 @@ check_sigs( KBNODE keyblock, int *selfsig_okay )
 static int
 build_sigrecs( ulong pubkeyid, int kludge )
 {
-    TRUSTREC rec, rec2;
+    TRUSTREC rec, krec, rec2;
     PUBKEY_FIND_INFO finfo=NULL;
     KBPOS kbpos;
     KBNODE keyblock = NULL;
@@ -1225,18 +1106,22 @@ build_sigrecs( ulong pubkeyid, int kludge )
 
     /* get the keyblock */
     if( (rc=read_record( pubkeyid, &rec )) ) {
-	log_error("build_sigrecs: can't read pubkey record\n");
+	log_error("%lu: build_sigrecs: can't read dir record\n", pubkeyid );
 	goto leave;
     }
-    if( kludge && rec.r.pubkey.no_sigs ) {
+    if( kludge && rec.r.dir.no_sigs ) {
 	rc = -1;
 	goto leave;
     }
     finfo = m_alloc_clear( sizeof *finfo );
-    finfo->keyid[0] = rec.r.pubkey.keyid[0];
-    finfo->keyid[1] = rec.r.pubkey.keyid[1];
-    finfo->pubkey_algo = rec.r.pubkey.pubkey_algo;
-    memcpy( finfo->fingerprint, rec.r.pubkey.fingerprint, 20);
+    finfo->keyid[0] = rec.r.dir.keyid[0];
+    finfo->keyid[1] = rec.r.dir.keyid[1];
+    if( (rc=read_record( rec.r.dir.keyrec, &krec )) ) {
+	log_error("%lu: build_sigrecs: can't read key record\n", pubkeyid);
+	goto leave;
+    }
+    finfo->pubkey_algo = krec.r.key.pubkey_algo;
+    memcpy( finfo->fingerprint, krec.r.key.fingerprint, 20);
     rc = find_keyblock( finfo, &kbpos );
     if( rc ) {
 	log_error("build_sigrecs: find_keyblock failed\n" );
@@ -1264,11 +1149,12 @@ build_sigrecs( ulong pubkeyid, int kludge )
     /* valid key signatures are now marked; we can now build the
      * sigrecs */
     memset( &rec, 0, sizeof rec );
-    rec.rectype = 4;
+    rec.rectype = RECTYPE_SIG;
     i = 0;
     rnum = rnum2 = 0;
     for( kbctx=NULL; (node=walk_kbtree( keyblock, &kbctx)) ; ) {
-	if( node->flag & 1 ) {
+	/* insert sigs which are not a selfsig nor a duplicate */
+	if( (node->flag & 1) && !(node->flag & 4) ) {
 	    assert( node->pkt->pkttype == PKT_SIGNATURE );
 	    if( !node->pkt->pkt.signature->local_id )  {
 		/* the next function should always succeed, because
@@ -1286,8 +1172,8 @@ build_sigrecs( ulong pubkeyid, int kludge )
 		/* write the record */
 		rnum = new_recnum();
 		if( rnum2 ) { /* write the stored record */
-		    rec2.r.sigrec.owner = pubkeyid;
-		    rec2.r.sigrec.chain = rnum; /* the next record number */
+		    rec2.r.sig.owner = pubkeyid;
+		    rec2.r.sig.chain = rnum; /* the next record number */
 		    rc = write_record( rnum2, &rec2 );
 		    if( rc ) {
 			log_error("build_sigrecs: write_record failed\n" );
@@ -1297,11 +1183,11 @@ build_sigrecs( ulong pubkeyid, int kludge )
 		rec2 = rec;
 		rnum2 = rnum;
 		memset( &rec, 0, sizeof rec );
-		rec.rectype = 5;
+		rec.rectype = RECTYPE_SIG;
 		i = 0;
 	    }
-	    rec.r.sigrec.sig[i].local_id = node->pkt->pkt.signature->local_id;
-	    rec.r.sigrec.sig[i].flag = 0;
+	    rec.r.sig.sig[i].local_id = node->pkt->pkt.signature->local_id;
+	    rec.r.sig.sig[i].flag = 0;
 	    i++;
 	}
     }
@@ -1309,8 +1195,8 @@ build_sigrecs( ulong pubkeyid, int kludge )
 	/* write the record */
 	rnum = new_recnum();
 	if( rnum2 ) { /* write the stored record */
-	    rec2.r.sigrec.owner = pubkeyid;
-	    rec2.r.sigrec.chain = rnum;
+	    rec2.r.sig.owner = pubkeyid;
+	    rec2.r.sig.chain = rnum;
 	    rc = write_record( rnum2, &rec2 );
 	    if( rc ) {
 		log_error("build_sigrecs: write_record failed\n" );
@@ -1318,8 +1204,8 @@ build_sigrecs( ulong pubkeyid, int kludge )
 	    }
 	}
 	if( i ) { /* write the pending record */
-	    rec.r.sigrec.owner = pubkeyid;
-	    rec.r.sigrec.chain = 0;
+	    rec.r.sig.owner = pubkeyid;
+	    rec.r.sig.chain = 0;
 	    rc = write_record( rnum, &rec );
 	    if( rc ) {
 		log_error("build_sigrecs: write_record failed\n" );
@@ -1565,6 +1451,124 @@ init_trustdb( int level )
 	BUG();
 
     return rc;
+}
+
+
+void
+list_trustdb( const char *username )
+{
+    TRUSTREC rec;
+
+    if( username ) {
+	PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
+	int rc;
+
+	if( (rc = get_pubkey_byname( pkc, username )) )
+	    log_error("user '%s' not found: %s\n", username, g10_errstr(rc) );
+	else if( (rc=search_record( pkc, &rec )) && rc != -1 )
+	    log_error("problem finding '%s' in trustdb: %s\n",
+						username, g10_errstr(rc));
+	else if( rc == -1 )
+	    log_error("user '%s' not in trustdb\n", username);
+	else if( (rc = list_sigs( pkc->local_id )) )
+	    log_error("user '%s' list problem: %s\n", username, g10_errstr(rc));
+	free_public_cert( pkc );
+    }
+    else {
+	ulong recnum;
+	int i;
+
+	printf("TrustDB: %s\n", db_name );
+	for(i=9+strlen(db_name); i > 0; i-- )
+	    putchar('-');
+	putchar('\n');
+	for(recnum=0; !read_record( recnum, &rec); recnum++ )
+	    dump_record( recnum, &rec, stdout );
+    }
+}
+
+void
+list_trust_path( int max_depth, const char *username )
+{
+    int rc;
+    int wipe=0;
+    int i;
+    TRUSTREC rec;
+    PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
+
+    if( max_depth < 0 ) {
+	wipe = 1;
+	max_depth = -max_depth;
+    }
+
+    if( (rc = get_pubkey_byname( pkc, username )) )
+	log_error("user '%s' not found: %s\n", username, g10_errstr(rc) );
+    else if( (rc=search_record( pkc, &rec )) && rc != -1 )
+	log_error("problem finding '%s' in trustdb: %s\n",
+					    username, g10_errstr(rc));
+    else if( rc == -1 ) {
+	log_info("user '%s' not in trustdb - inserting\n", username);
+	rc = insert_trust_record( pkc );
+	if( rc )
+	    log_error("failed to put '%s' into trustdb: %s\n", username, g10_errstr(rc));
+	else {
+	    assert( pkc->local_id );
+	}
+    }
+
+    if( !rc ) {
+	TRUST_SEG_LIST tsl, tslist = NULL;
+
+	if( !qry_lid_table_flag( ultikey_table, pkc->local_id, NULL ) ) {
+	    tslist = m_alloc( sizeof *tslist );
+	    tslist->nseg = 1;
+	    tslist->dup = 0;
+	    tslist->seg[0].lid = pkc->local_id;
+	    tslist->seg[0].trust = 0;
+	    tslist->next = NULL;
+	    rc = 0;
+	}
+	else {
+	    LOCAL_ID_INFO *lids = new_lid_table();
+	    TRUST_INFO stack[MAX_LIST_SIGS_DEPTH];
+
+	    stack[0].lid = pkc->local_id;
+	    stack[0].trust = 0;
+	    rc = do_list_path( stack, 1, max_depth, lids, &tslist );
+	    if( wipe ) { /* wipe out duplicates */
+		LOCAL_ID_INFO *work;
+
+		work = new_lid_table();
+		for( tsl=tslist; tsl; tsl = tsl->next ) {
+		    for(i=1; i < tsl->nseg-1; i++ ) {
+			if( ins_lid_table_item( work, tsl->seg[i].lid, 0 ) ) {
+			    tsl->dup = 1; /* mark as duplicate */
+			    break;
+			}
+		    }
+		}
+		release_lid_table(work);
+	    }
+	    release_lid_table(lids);
+	}	     cvs checkout -h
+	if( rc )
+	    log_error("user '%s' list problem: %s\n", username, g10_errstr(rc));
+	rc = propagate_trust( tslist );
+	if( rc )
+	    log_error("user '%s' trust problem: %s\n", username, g10_errstr(rc));
+	for(tsl = tslist; tsl; tsl = tsl->next ) {
+	    int i;
+
+	    if( tsl->dup )
+		continue;
+	    printf("trust path:" );
+	    for(i=0; i < tsl->nseg; i++ )
+		printf("  %lu/%02x", tsl->seg[i].lid, tsl->seg[i].trust );
+	    putchar('\n');
+	}
+    }
+
+    free_public_cert( pkc );
 }
 
 
