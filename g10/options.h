@@ -227,6 +227,8 @@ struct {
 #define EXPORT_INCLUDE_LOCAL_SIGS        2
 #define EXPORT_INCLUDE_ATTRIBUTES        4
 #define EXPORT_INCLUDE_SENSITIVE_REVKEYS 8
+#define EXPORT_SEXP_FORMAT               16
+
 
 #define LIST_SHOW_PHOTOS      1
 #define LIST_SHOW_POLICY      2
@@ -240,3 +242,7 @@ struct {
 #define VERIFY_SHOW_NOTATION 4
 
 #endif /*G10_OPTIONS_H*/
+
+
+
+

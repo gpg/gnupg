@@ -62,6 +62,7 @@ do_fingerprint_md( PKT_public_key *pk )
 
     gcry_md_open (&md, pk->version < 4 ? DIGEST_ALGO_RMD160
                                        : DIGEST_ALGO_SHA1, 0);
+    gcry_md_start_debug (md, "fpr");
     n = pk->version < 4 ? 8 : 6;
     for(i=0; i < npkey; i++ ) {
 	size_t nbytes;

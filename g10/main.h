@@ -183,7 +183,7 @@ void try_make_homedir( const char *fname );
 
 /*-- seskey.c --*/
 void make_session_key( DEK *dek );
-gcry_mpi_t encode_session_key( DEK *dek, unsigned nbits );
+gcry_mpi_t encode_session_key( DEK *dek, unsigned int nbits);
 gcry_mpi_t encode_md_value( int pubkey_algo,  MD_HANDLE md,
 		     int hash_algo, unsigned nbits, int v3compathack );
 

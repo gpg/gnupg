@@ -1,3 +1,12 @@
+2003-07-16  Werner Koch  <wk@gnupg.org>
+
+	* export.c (parse_export_options): New option sexp-format.
+	(export_seckeys,export_secsubkeys): Check sexp-format option.
+	(do_export): Ignore armor for sexp format.
+	(do_export_stream): Handle sexp-format.
+	(write_sexp_line,write_sexp_keyparm, build_sexp_seckey): New.
+	(build_sexp): New.
+
 2003-07-03  Werner Koch  <wk@gnupg.org>
 
 	* options.h (DBG_CIPHER): Reintroduced it. 

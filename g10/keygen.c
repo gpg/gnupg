@@ -2986,3 +2986,5 @@ gen_card_key (int algo, int keyno, KBNODE pub_root, KBNODE sec_root,
   return 0;
 }
 
+
+

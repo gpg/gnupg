@@ -1,5 +1,6 @@
 /* export.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -38,6 +39,7 @@ static int do_export( STRLIST users, int secret, unsigned int options );
 static int do_export_stream( iobuf_t out, STRLIST users, int secret,
 			     KBNODE *keyblock_out, unsigned int options,
 			     int *any );
+static int build_sexp (iobuf_t out, PACKET *pkt, int *indent);
 
 int
 parse_export_options(char *str,unsigned int *options)
@@ -48,6 +50,7 @@ parse_export_options(char *str,unsigned int *options)
       {"include-local-sigs",EXPORT_INCLUDE_LOCAL_SIGS},
       {"include-attributes",EXPORT_INCLUDE_ATTRIBUTES},
       {"include-sensitive-revkeys",EXPORT_INCLUDE_SENSITIVE_REVKEYS},
+      {"sexp-format",EXPORT_SEXP_FORMAT},
       {NULL,0}
       /* add tags for include revoked and disabled? */
     };
@@ -85,43 +88,51 @@ export_pubkeys_stream( iobuf_t out, STRLIST users,
 int
 export_seckeys( STRLIST users )
 {
-    return do_export( users, 1, 0 );
+  /* Use only relevant options for the secret key. */
+  unsigned int options = (opt.export_options & EXPORT_SEXP_FORMAT);
+  return do_export (users, 1, options);
 }
 
 int
 export_secsubkeys( STRLIST users )
 {
-    return do_export( users, 2, 0 );
+  /* Use only relevant options for the secret key. */
+  unsigned int options = (opt.export_options & EXPORT_SEXP_FORMAT);
+  return do_export( users, 2, options);
 }
 
 static int
-do_export( STRLIST users, int secret, unsigned int options )
+do_export (STRLIST users, int secret, unsigned int options)
 {
-    iobuf_t out = NULL;
-    int any, rc;
-    armor_filter_context_t afx;
-    compress_filter_context_t zfx;
-
-    memset( &afx, 0, sizeof afx);
-    memset( &zfx, 0, sizeof zfx);
-
-    rc = open_outfile( NULL, 0, &out );
-    if( rc )
-	return rc;
-
-    if( opt.armor ) {
-	afx.what = secret?5:1;
-	iobuf_push_filter( out, armor_filter, &afx );
-    }
-    if( opt.compress_keys && opt.compress )
-	iobuf_push_filter( out, compress_filter, &zfx );
-    rc = do_export_stream( out, users, secret, NULL, options, &any );
-
-    if( rc || !any )
-	iobuf_cancel(out);
-    else
-	iobuf_close(out);
+  iobuf_t out = NULL;
+  int any, rc;
+  armor_filter_context_t afx;
+  compress_filter_context_t zfx;
+  
+  memset (&afx, 0, sizeof afx);
+  memset (&zfx, 0, sizeof zfx);
+  
+  rc = open_outfile (NULL, 0, &out);
+  if (rc)
     return rc;
+
+  if (!(options & EXPORT_SEXP_FORMAT))
+    {
+      if (opt.armor) 
+        {
+          afx.what = secret?5:1;
+          iobuf_push_filter( out, armor_filter, &afx );
+        }
+      if (opt.compress_keys && opt.compress)
+        iobuf_push_filter( out, compress_filter, &zfx );
+    }
+  rc = do_export_stream (out, users, secret, NULL, options, &any );
+
+  if (rc || !any)
+    iobuf_cancel (out);
+  else
+    iobuf_close (out);
+  return rc;
 }
 
 
@@ -140,6 +151,7 @@ do_export_stream( iobuf_t out, STRLIST users, int secret,
     KEYDB_SEARCH_DESC *desc = NULL;
     KEYDB_HANDLE kdbhd;
     STRLIST sl;
+    int indent = 0;
 
     *any = 0;
     init_packet( &pkt );
@@ -346,7 +358,10 @@ do_export_stream( iobuf_t out, STRLIST users, int secret,
 		 */
 		int save_mode = node->pkt->pkt.secret_key->protect.s2k.mode;
 		node->pkt->pkt.secret_key->protect.s2k.mode = 1001;
-		rc = build_packet( out, node->pkt );
+                if ((options&EXPORT_SEXP_FORMAT))
+                  rc = build_sexp (out, node->pkt, &indent);
+                else
+                  rc = build_packet (out, node->pkt);
 		node->pkt->pkt.secret_key->protect.s2k.mode = save_mode;
 	    }
 	    else {
@@ -365,7 +380,10 @@ do_export_stream( iobuf_t out, STRLIST users, int secret,
 		  sha1_warned=1;
 		}
 
-		rc = build_packet( out, node->pkt );
+                if ((options&EXPORT_SEXP_FORMAT))
+                  rc = build_sexp (out, node->pkt, &indent);
+                else
+                  rc = build_packet (out, node->pkt);
 	    }
 
 	    if( rc ) {
@@ -374,6 +392,13 @@ do_export_stream( iobuf_t out, STRLIST users, int secret,
 		goto leave;
 	    }
 	}
+        if ((options&EXPORT_SEXP_FORMAT) && indent)
+          {
+            for (; indent; indent--)
+              iobuf_put (out, ')');
+            iobuf_put (out, '\n');
+          }
+        
 	++*any;
 	if(keyblock_out)
 	  {
@@ -381,6 +406,12 @@ do_export_stream( iobuf_t out, STRLIST users, int secret,
 	    break;
 	  }
     }
+    if ((options&EXPORT_SEXP_FORMAT) && indent)
+      {
+        for (; indent; indent--)
+          iobuf_put (out, ')');
+        iobuf_put (out, '\n');
+      }
     if( rc == -1 )
 	rc = 0;
 
@@ -393,3 +424,123 @@ do_export_stream( iobuf_t out, STRLIST users, int secret,
 	log_info(_("WARNING: nothing exported\n"));
     return rc;
 }
+
+
+static int
+write_sexp_line (iobuf_t out, int *indent, const char *text)
+{
+  int i;
+
+  for (i=0; i < *indent; i++)
+    iobuf_put (out, ' ');
+  iobuf_writestr (out, text);
+  return 0;
+}
+
+static int
+write_sexp_keyparm (iobuf_t out, int *indent, const char *name, gcry_mpi_t a)
+{
+  int rc;
+  char *buffer;
+
+  write_sexp_line (out, indent, "(");
+  iobuf_writestr (out, name);
+  iobuf_writestr (out, " #");
+
+  rc = gcry_mpi_aprint (GCRYMPI_FMT_HEX, (void **)&buffer, NULL, a);
+  assert (!rc);
+  iobuf_writestr (out, buffer);
+  iobuf_writestr (out, "#)");
+  gcry_free (buffer);
+  return 0;
+}
+
+static int
+build_sexp_seckey (iobuf_t out, PACKET *pkt, int *indent)
+{
+  PKT_secret_key *sk = pkt->pkt.secret_key;
+  char tmpbuf[100];
+
+  if (pkt->pkttype == PKT_SECRET_KEY)
+    {
+      iobuf_writestr (out, "(openpgp-key\n");
+      (*indent)++;
+    }
+  else
+    {
+      iobuf_writestr (out, " (subkey\n");
+      (*indent)++;
+    }
+  (*indent)++;
+  write_sexp_line (out, indent, "(private-key\n");
+  (*indent)++;
+  if (is_RSA (sk->pubkey_algo) && !sk->is_protected)
+    {
+      write_sexp_line (out, indent, "(rsa\n");
+      (*indent)++;
+      write_sexp_keyparm (out, indent, "n", sk->skey[0]); iobuf_put (out,'\n');
+      write_sexp_keyparm (out, indent, "e", sk->skey[1]); iobuf_put (out,'\n');
+      write_sexp_keyparm (out, indent, "d", sk->skey[2]); iobuf_put (out,'\n');
+      write_sexp_keyparm (out, indent, "p", sk->skey[3]); iobuf_put (out,'\n');
+      write_sexp_keyparm (out, indent, "q", sk->skey[4]); iobuf_put (out,'\n');
+      write_sexp_keyparm (out, indent, "u", sk->skey[5]); 
+      iobuf_put (out,')'); iobuf_put (out,'\n');
+      (*indent)--;
+    }
+  else if (sk->pubkey_algo == PUBKEY_ALGO_DSA && !sk->is_protected)
+    {
+      write_sexp_line (out, indent, "(dsa\n");
+      (*indent)++;
+      write_sexp_keyparm (out, indent, "p", sk->skey[0]); iobuf_put (out,'\n');
+      write_sexp_keyparm (out, indent, "q", sk->skey[1]); iobuf_put (out,'\n');
+      write_sexp_keyparm (out, indent, "g", sk->skey[2]); iobuf_put (out,'\n');
+      write_sexp_keyparm (out, indent, "y", sk->skey[3]); iobuf_put (out,'\n');
+      write_sexp_keyparm (out, indent, "x", sk->skey[4]);
+      iobuf_put (out,')'); iobuf_put (out,'\n');
+      (*indent)--;
+    }
+  else if (is_ELGAMAL (sk->pubkey_algo) && !sk->is_protected)
+    {
+      write_sexp_line (out, indent, "(elg\n");
+      (*indent)++;
+      write_sexp_keyparm (out, indent, "p", sk->skey[0]); iobuf_put (out,'\n');
+      write_sexp_keyparm (out, indent, "g", sk->skey[2]); iobuf_put (out,'\n');
+      write_sexp_keyparm (out, indent, "y", sk->skey[3]); iobuf_put (out,'\n');
+      write_sexp_keyparm (out, indent, "x", sk->skey[4]);
+      iobuf_put (out,')'); iobuf_put (out,'\n');
+      (*indent)--;
+    }
+  write_sexp_line (out, indent,  "(attrib\n"); (*indent)++;
+  sprintf (tmpbuf, "(created \"%lu\"", (unsigned long)sk->timestamp);
+  write_sexp_line (out, indent, tmpbuf);
+  iobuf_put (out,')'); (*indent)--; /* close created */
+  iobuf_put (out,')'); (*indent)--; /* close attrib */
+  iobuf_put (out,')'); (*indent)--; /* close private-key */
+  if (pkt->pkttype != PKT_SECRET_KEY)
+    iobuf_put (out,')'), (*indent)--; /* close subkey */
+  iobuf_put (out,'\n');
+
+  return 0;
+}
+
+
+/* For some packet types we write them in a S-Exp like format.  This is
+   still EXPERIMENTAL and subject to change. */
+static int 
+build_sexp (iobuf_t out, PACKET *pkt, int *indent)
+{
+  int rc;
+
+  switch (pkt->pkttype)
+    {
+    case PKT_SECRET_KEY:
+    case PKT_SECRET_SUBKEY:
+      rc = build_sexp_seckey (out, pkt, indent);
+      break;
+    default:
+      rc = 0;
+      break;
+    }
+  return rc;
+}
+
