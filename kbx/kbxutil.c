@@ -117,20 +117,20 @@ my_strusage( int level )
 static void
 i18n_init(void)
 {
-  #ifdef USE_SIMPLE_GETTEXT
-    set_gettext_file( PACKAGE );
-  #else
-  #ifdef ENABLE_NLS
+#ifdef USE_SIMPLE_GETTEXT
+    set_gettext_file( PACKAGE_GT );
+#else
+#ifdef ENABLE_NLS
     #ifdef HAVE_LC_MESSAGES
        setlocale( LC_TIME, "" );
        setlocale( LC_MESSAGES, "" );
     #else
        setlocale( LC_ALL, "" );
     #endif
-    bindtextdomain( PACKAGE, LOCALEDIR );
-    textdomain( PACKAGE );
-  #endif
-  #endif
+    bindtextdomain( PACKAGE_GT, LOCALEDIR );
+    textdomain( PACKAGE_GT );
+#endif
+#endif
 }
 
 

@@ -540,7 +540,7 @@ static void
 i18n_init(void)
 {
 #ifdef USE_SIMPLE_GETTEXT
-  set_gettext_file (PACKAGE);
+  set_gettext_file (PACKAGE_GT);
 #else
 # ifdef ENABLE_NLS
 #  ifdef HAVE_LC_MESSAGES
@@ -549,8 +549,8 @@ i18n_init(void)
 #  else
   setlocale (LC_ALL, "" );
 #  endif
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
+  bindtextdomain (PACKAGE_GT, LOCALEDIR);
+  textdomain (PACKAGE_GT);
 # endif
 #endif
 }
@@ -1318,7 +1318,7 @@ main ( int argc, char **argv)
 
     case aCallDirmngr:
       if (!argc)
-        wrong_args (_("--call-dirmngr <command> {args}"));
+        wrong_args ("--call-dirmngr <command> {args}");
       else
         if (gpgsm_dirmngr_run_command (&ctrl, *argv, argc-1, argv+1))
           gpgsm_exit (1);
@@ -1334,7 +1334,7 @@ main ( int argc, char **argv)
       else if (argc == 1)
         gpgsm_encrypt (&ctrl, recplist, open_read (*argv), stdout); /* from file */
       else
-        wrong_args (_("--encrypt [datafile]"));
+        wrong_args ("--encrypt [datafile]");
       break;
 
     case aSign: /* sign the given file */
@@ -1348,7 +1348,7 @@ main ( int argc, char **argv)
         gpgsm_sign (&ctrl, signerlist,
                     open_read (*argv), detached_sig, stdout); /* from file */
       else
-        wrong_args (_("--sign [datafile]"));
+        wrong_args ("--sign [datafile]");
       break;
         
     case aSignEncr: /* sign and encrypt the given file */
@@ -1375,7 +1375,7 @@ main ( int argc, char **argv)
         else if (argc == 2) /* detached signature (sig, detached) */
           gpgsm_verify (&ctrl, open_read (*argv), open_read (argv[1]), NULL); 
         else
-          wrong_args (_("--verify [signature [detached_data]]"));
+          wrong_args ("--verify [signature [detached_data]]");
 
         if (fp && fp != stdout)
           fclose (fp);
@@ -1383,7 +1383,7 @@ main ( int argc, char **argv)
       break;
 
     case aVerifyFiles:
-      log_error ("this command has not yet been implemented\n");
+      log_error (_("this command has not yet been implemented\n"));
       break;
 
     case aDecrypt:
@@ -1392,7 +1392,7 @@ main ( int argc, char **argv)
       else if (argc == 1)
         gpgsm_decrypt (&ctrl, open_read (*argv), stdout); /* from file */
       else
-        wrong_args (_("--decrypt [filename]"));
+        wrong_args ("--decrypt [filename]");
       break;
 
     case aDeleteKey:
@@ -1445,7 +1445,7 @@ main ( int argc, char **argv)
       if (argc == 1)
         gpgsm_p12_export (&ctrl, *argv, stdout);
       else
-        wrong_args (_("--export-secret-key-p12 KEY-ID"));
+        wrong_args ("--export-secret-key-p12 KEY-ID");
       break;
       
     case aSendKeys:

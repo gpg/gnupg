@@ -197,12 +197,12 @@ static void
 i18n_init (void)
 {
 #ifdef USE_SIMPLE_GETTEXT
-    set_gettext_file( PACKAGE );
+    set_gettext_file( PACKAGE_GT );
 #else
 #ifdef ENABLE_NLS
     setlocale (LC_ALL, "");
-    bindtextdomain (PACKAGE, LOCALEDIR);
-    textdomain (PACKAGE);
+    bindtextdomain (PACKAGE_GT, LOCALEDIR);
+    textdomain (PACKAGE_GT);
 #endif
 #endif
 }
@@ -649,7 +649,7 @@ main (int argc, char **argv )
      easier to switch only once instead of for every message and it
      actually helps when more then one thread is active (avoids an
      extra copy step). */
-    bind_textdomain_codeset (PACKAGE, "UTF-8");
+    bind_textdomain_codeset (PACKAGE_GT, "UTF-8");
 #endif
 
   /* now start with logging to a file if this is desired */

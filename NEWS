@@ -7,6 +7,9 @@ Noteworthy changes in version 1.9.7
 
  * Include the smimeCapabilities attribute with signed messages.
 
+ * Now uses the gettext domain "gnupg2" to avoid conflicts with gnupg
+   versions < 1.9.
+
 
 Noteworthy changes in version 1.9.6 (2004-03-06)
 ------------------------------------------------

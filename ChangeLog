@@ -1,6 +1,7 @@
 2004-04-06  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac: Require libgcrypt 1.1.94.
+	Introduce PACKAGE_GT and set it to gnupg2.
 
 2004-03-23  Werner Koch  <wk@gnupg.org>
 
@@ -414,7 +415,7 @@
 	* configure.ac (HAVE_JNLIB_LOGGING): always define it.
 
 	
- Copyright 2001, 2002 Free Software Foundation, Inc.
+ Copyright 2001, 2002, 2004 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

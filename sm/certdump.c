@@ -633,7 +633,7 @@ gpgsm_format_keydesc (ksba_cert_t cert)
 
 #ifdef ENABLE_NLS
   /* The Assuan agent protol requires us to transmit utf-8 strings */
-  orig_codeset = bind_textdomain_codeset (PACKAGE, NULL);
+  orig_codeset = bind_textdomain_codeset (PACKAGE_GT, NULL);
 #ifdef HAVE_LANGINFO_CODESET
   if (!orig_codeset)
     orig_codeset = nl_langinfo (CODESET);
@@ -641,7 +641,7 @@ gpgsm_format_keydesc (ksba_cert_t cert)
   if (orig_codeset)
     { /* We only switch when we are able to restore the codeset later. */
       orig_codeset = xstrdup (orig_codeset);
-      if (!bind_textdomain_codeset (PACKAGE, "utf-8"))
+      if (!bind_textdomain_codeset (PACKAGE_GT, "utf-8"))
         orig_codeset = NULL; 
     }
 #endif
@@ -659,7 +659,7 @@ gpgsm_format_keydesc (ksba_cert_t cert)
 
 #ifdef ENABLE_NLS
   if (orig_codeset)
-    bind_textdomain_codeset (PACKAGE, orig_codeset);
+    bind_textdomain_codeset (PACKAGE_GT, orig_codeset);
 #endif
   xfree (orig_codeset);
 

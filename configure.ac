@@ -1,6 +1,6 @@
 # configure.ac - for GnuPG 1.9
 # Copyright (C) 1998, 1999, 2000, 2001, 2002,
-#               2003 Free Software Foundation, Inc.
+#               2003, 2004 Free Software Foundation, Inc.
 # 
 # This file is part of GnuPG.
 # 
@@ -43,6 +43,7 @@ NEED_OPENSC_VERSION=0.8.0
 
 
 PACKAGE=$PACKAGE_NAME
+PACKAGE_GT=${PACKAGE_NAME}2
 VERSION=$PACKAGE_VERSION
 
 AC_CONFIG_AUX_DIR(scripts)
@@ -68,8 +69,11 @@ GNUPG_BUILD_PROGRAM(scdaemon, yes)
 
 
 AC_SUBST(PACKAGE)
+AC_SUBST(PACKAGE_GT)
 AC_SUBST(VERSION)
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of this package])
+AC_DEFINE_UNQUOTED(PACKAGE_GT, "$PACKAGE_GT",
+                                [Name of this package for gettext])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version of this package])
 AC_DEFINE_UNQUOTED(PACKAGE_BUGREPORT, "$PACKAGE_BUGREPORT",
                                         [Bug report address])

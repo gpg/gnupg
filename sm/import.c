@@ -644,7 +644,7 @@ parse_p12 (ksba_reader_t reader, FILE **retfp)
       while ( (i=waitpid (pid, &status, 0)) == -1 && errno == EINTR)
         ;
       if (i == -1)
-        log_error (_("waiting for protect-tools to terminate failed: %s\n"),
+        log_error (_("waiting for protect-tool to terminate failed: %s\n"),
                    strerror (errno));
       else if (WIFEXITED (status) && WEXITSTATUS (status) == 31)
         log_error (_("error running `%s': probably not installed\n"), pgmname);

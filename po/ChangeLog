@@ -1,3 +1,7 @@
+2004-04-06  Werner Koch  <wk@gnupg.org>
+
+	* Makevars (DOMAIN): Init from PACKAGE_GT
+
 2003-12-09  Werner Koch  <wk@gnupg.org>
 
 	* Makevars (MSGID_BUGS_ADDRESS): New.

@@ -31,3 +31,6 @@ sm/keydb.c
 sm/keylist.c
 sm/sign.c
 sm/verify.c
+
+tools/gpgconf.c
+tools/gpgconf-comp.c

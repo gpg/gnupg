@@ -649,8 +649,8 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
     }
   
 #ifdef ENABLE_NLS
-  /* The Assuan agent protol requires us to trasnmit utf-8 strings */
-  orig_codeset = bind_textdomain_codeset (PACKAGE, NULL);
+  /* The Assuan agent protocol requires us to transmit utf-8 strings */
+  orig_codeset = bind_textdomain_codeset (PACKAGE_GT, NULL);
 #ifdef HAVE_LANGINFO_CODESET
   if (!orig_codeset)
     orig_codeset = nl_langinfo (CODESET);
@@ -658,7 +658,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
   if (orig_codeset)
     { /* We only switch when we are able to restore the codeset later. */
       orig_codeset = xstrdup (orig_codeset);
-      if (!bind_textdomain_codeset (PACKAGE, "utf-8"))
+      if (!bind_textdomain_codeset (PACKAGE_GT, "utf-8"))
         orig_codeset = NULL; 
     }
 #endif
@@ -765,7 +765,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
           free_public_key( pk );
 #ifdef ENABLE_NLS
           if (orig_codeset)
-            bind_textdomain_codeset (PACKAGE, orig_codeset);
+            bind_textdomain_codeset (PACKAGE_GT, orig_codeset);
 #endif
           xfree (orig_codeset);
           return pw;
@@ -857,7 +857,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
           free_public_key( pk );
 #ifdef ENABLE_NLS
           if (orig_codeset)
-            bind_textdomain_codeset (PACKAGE, orig_codeset);
+            bind_textdomain_codeset (PACKAGE_GT, orig_codeset);
 #endif
           xfree (orig_codeset);
           return pw;
@@ -880,7 +880,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
  failure:
 #ifdef ENABLE_NLS
   if (orig_codeset)
-    bind_textdomain_codeset (PACKAGE, orig_codeset);
+    bind_textdomain_codeset (PACKAGE_GT, orig_codeset);
 #endif
   xfree (atext);
   if ( fd != -1 )
