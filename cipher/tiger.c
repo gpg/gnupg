@@ -897,21 +897,10 @@ tiger_get_info( int algo, size_t *contextsize,
 	     )
 {
 #ifdef HAVE_U64_TYPEDEF
-    /* 40: SEQUENCE {
-     * 12:   SEQUENCE {
-     *	8:     OCTET STRING   :54 49 47 45 52 31 39 32
-     *	0:     NULL
-     *	 :     }
-     * 24:   OCTET STRING
-     *	 :   }
-     *
-     * By replacing the 5th byte (0x04) with 0x16 we would have;
-     *	      8:     IA5String 'TIGER192'
-     * Fixme: We should use a registered OID.
-     */
-    static byte asn[18] =
-		{ 0x30, 0x28, 0x30, 0x0c, 0x04, 0x08, 0x54, 0x49, 0x47,
-		  0x45, 0x52, 0x31, 0x39, 0x32, 0x05, 0x00, 0x04, 0x18 };
+    static byte asn[19] = /* Object ID is 1.3.6.1.4.1.11591.12.2 */
+                         { 0x30, 0x29, 0x30, 0x0d, 0x06, 0x09, 0x2b, 0x06,
+                           0x01, 0x04, 0x01, 0xda, 0x47, 0x0c, 0x02,
+                           0x05, 0x00, 0x04, 0x18 };
 
     if( algo != 6 )
 	return NULL;
