@@ -1,3 +1,9 @@
+2004-09-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (keyedit_menu), gpgv.c (agent_scd_getattr (stub)),
+	keygen.c (copy_mpi, generate_raw_key): Fix a compile problem and a
+	few warnings when building without card support.
+
 2004-09-23  Werner Koch  <wk@g10code.com>
 
 	* card_util.c (generate_card_keys): ask whether backup should be

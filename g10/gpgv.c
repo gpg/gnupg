@@ -340,7 +340,9 @@ void show_photos(const struct user_attribute *attrs,int count,PKT_public_key *pk
 int parse_image_header(const struct user_attribute *attr,byte *type,u32 *len) {return 0;}
 char *image_type_to_string(byte type,int string) {return NULL;}
 
+#ifdef ENABLE_CARD_SUPPORT
 int agent_scd_getattr (const char *name, struct agent_card_info_s *info) {return 0;}
+#endif /* ENABLE_CARD_SUPPORT */
 
 /* Stubs to void linking to ../cipher/cipher.c */
 int string_to_cipher_algo( const char *string ) { return 0; }

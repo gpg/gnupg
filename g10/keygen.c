@@ -133,7 +133,7 @@ static int gen_card_key_with_backup (int algo, int keyno, int is_primary,
 #define GET_NBITS(a)  gcry_mpi_get_nbits (a)
 #endif
 
-  
+#ifdef ENABLE_CARD_SUPPORT
 static int
 copy_mpi (MPI a, unsigned char *buffer, size_t len, size_t *ncopied)
 {
@@ -159,8 +159,7 @@ copy_mpi (MPI a, unsigned char *buffer, size_t len, size_t *ncopied)
     log_error ("mpi_copy failed: %s\n", gpg_strerror (rc));
   return rc;
 }
-
-
+#endif /* ENABLE_CARD_SUPPORT */
 
 
 static void
@@ -2450,6 +2449,7 @@ generate_keypair (const char *fname, const char *card_serialno,
 }
 
 
+#ifdef ENABLE_CARD_SUPPORT
 /* Generate a raw key and return it as a secret key packet.  The
    function will ask for the passphrase and return a protected as well
    as an unprotected copy of a new secret key packet.  0 is returned
@@ -2526,6 +2526,7 @@ generate_raw_key (int algo, unsigned int nbits, u32 created_at,
   m_free (s2k);
   return rc;
 }
+#endif /* ENABLE_CARD_SUPPORT */
 
 
 static void

@@ -95,6 +95,7 @@ struct sign_attrib {
 };
 
 
+#ifdef ENABLE_CARD_SUPPORT
 /* Given a node SEC_NODE with a secret key or subkey, locate the
    corresponding public key from pub_keyblock. */
 static PKT_public_key *
@@ -120,7 +121,7 @@ find_pk_from_sknode (KBNODE pub_keyblock, KBNODE sec_node)
       
   return NULL;
 }
-
+#endif /* ENABLE_CARD_SUPPORT */
 
 
 /* TODO: Fix duplicated code between here and the check-sigs/list-sigs
@@ -1285,7 +1286,6 @@ keyedit_menu( const char *username, STRLIST locusr,
     KBNODE sec_keyblock = NULL;
     KEYDB_HANDLE sec_kdbhd = NULL;
     KBNODE cur_keyblock;
-    KBNODE node;
     char *answer = NULL;
     int redisplay = 1;
     int modified = 0;
@@ -1576,35 +1576,37 @@ keyedit_menu( const char *username, STRLIST locusr,
 	    break;
 
         case cmdKEYTOCARD:
-          node = NULL;
-          switch ( count_selected_keys (sec_keyblock) )
-            {
-            case 0:
-              if (cpr_get_answer_is_yes("keyedit.keytocard.use_primary",
-                                        _("Really move the primary key? ")))
-                node = sec_keyblock;
-              break;
-            case 1:
-              for (node = sec_keyblock; node; node = node->next )
-                {
-                  if (node->pkt->pkttype == PKT_SECRET_SUBKEY 
-                      && node->flag & NODFLG_SELKEY)
-                    break;
-                }
-              break;
-            default:
-              tty_printf(_("You must select exactly one key.\n"));
-              break;
-            }
-          if (node)
-            {
-              PKT_public_key *xxpk = find_pk_from_sknode (keyblock, node);
-              if (card_store_subkey (node, xxpk?xxpk->pubkey_usage:0))
-                {
-                  redisplay = 1;
-                  sec_modified = 1;
-                }
-            }
+	  {
+	    KBNODE node=NULL;
+	    switch ( count_selected_keys (sec_keyblock) )
+	      {
+	      case 0:
+		if (cpr_get_answer_is_yes("keyedit.keytocard.use_primary",
+					  _("Really move the primary key? ")))
+		  node = sec_keyblock;
+		break;
+	      case 1:
+		for (node = sec_keyblock; node; node = node->next )
+		  {
+		    if (node->pkt->pkttype == PKT_SECRET_SUBKEY 
+			&& node->flag & NODFLG_SELKEY)
+		      break;
+		  }
+		break;
+	      default:
+		tty_printf(_("You must select exactly one key.\n"));
+		break;
+	      }
+	    if (node)
+	      {
+		PKT_public_key *xxpk = find_pk_from_sknode (keyblock, node);
+		if (card_store_subkey (node, xxpk?xxpk->pubkey_usage:0))
+		  {
+		    redisplay = 1;
+		    sec_modified = 1;
+		  }
+	      }
+	  }
           break;
 #endif /* ENABLE_CARD_SUPPORT */
 
