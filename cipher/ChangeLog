@@ -1,3 +1,14 @@
+2003-05-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* tiger.c: Use the U64_C macro instead of LL.
+
+	* md.c (string_to_digest_algo): Give a warning about TIGER192 not
+	being part of OpenPGP.
+
+	* idea-stub.c (load_module): Catch an error if the idea module
+	file is unloadable for some reason (unreadable, bad permissions,
+	etc.)
+
 2003-05-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* sha512.c: Use the U64_C() macro rather than blindly suffixing
