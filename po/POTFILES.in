@@ -1,0 +1,14 @@
+# List of source files containing translatable strings for G10.
+# Copyright (c) 1998 by Werner Koch (dd9jn)
+
+# utility
+
+# cipher
+
+
+# main program
+
+g10/g10.c
+g10/pkclist.c
+
+

@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <ctype.h>
 #include "util.h"
 #include "packet.h"
 #include "memory.h"
@@ -215,15 +216,6 @@ get_pubkey( PKT_public_cert *pkc, u32 *keyid )
     STRLIST sl;
 
 
-    if( opt.cache_all && !pkc_cache ) {
-	log_info("reading all entries ...\n");
-	for(sl = keyrings; sl; sl = sl->next )
-	    if( !scan_keyring( NULL, NULL, NULL, sl->d ) )
-		goto leave;
-	log_info("cached %d entries\n", pkc_cache_entries);
-    }
-
-
     /* lets see wether we checked the keyid already */
     for( kl = unknown_keyids; kl; kl = kl->next )
 	if( kl->keyid[0] == keyid[0] && kl->keyid[1] == keyid[1] )
@@ -273,6 +265,19 @@ get_pubkey( PKT_public_cert *pkc, u32 *keyid )
  * first pubkey certificate which has the given name in a user_id.
  * if pkc has the pubkey algo set, the function will only return
  * a pubkey with that algo.
+ *
+ * - If the username starts with 8,9,16 or 17 hex-digits (the first one
+ *   must be in the range 0..9), this is considered a keyid; depending
+ *   on the length a short or complete one.
+ * - If the username starts with 32,33,40 or 41 hex-digits (the first one
+ *   must be in the range 0..9), this is considered a fingerprint.
+ *   (Not yet implemented)
+ * - If the username starts with a left angle, we assume it is a complete
+ *   email address and look only at this part.
+ * - If the userid start with an '=' an exact compare is done; this may
+ *   also follow the keyid in which case both parts are matched.
+ *   (Not yet implemented)
+ *
  */
 int
 get_pubkey_byname( PKT_public_cert *pkc, const char *name )
@@ -280,6 +285,58 @@ get_pubkey_byname( PKT_public_cert *pkc, const char *name )
     int internal = 0;
     int rc = 0;
     STRLIST sl;
+    const char *s;
+    u32 keyid[2] = {0}; /* init to avoid compiler warning */
+    int use_keyid=0;
+
+    /* check what kind of name it is */
+    for(s = name; *s && isspace(*s); s++ )
+	;
+    if( isdigit( *s ) ) { /* a keyid */
+	int i;
+	char buf[9];
+
+	for(i=0; isxdigit(s[i]); i++ )
+	    ;
+	if( s[i] && !isspace(s[i]) ) /* not terminated by EOS or blank*/
+	    rc = G10ERR_INV_USER_ID;
+	else if( i == 8 || (i == 9 && *s == '0') ) { /* short keyid */
+	    if( i==9 )
+		s++;
+	    keyid[1] = strtoul( s, NULL, 16 );
+	    use_keyid++;
+	}
+	else if( i == 16 || (i == 17 && *s == '0') ) { /* complete keyid */
+	    if( i==17 )
+		s++;
+	    mem2str(buf, s, 9 );
+	    keyid[0] = strtoul( buf, NULL, 16 );
+	    keyid[1] = strtoul( s+8, NULL, 16 );
+	    return get_pubkey( pkc, keyid );
+	}
+	else
+	    rc = G10ERR_INV_USER_ID;
+    }
+    else if( *s == '<' ) { /* an email address */
+	/* for now handled like a substring */
+	/* a keyserver might use this for quicker access */
+    }
+    else if( *s == '=' ) { /* exact search */
+	rc = G10ERR_INV_USER_ID; /* nox yet implemented */
+    }
+    else if( *s == '#' ) { /* use local id */
+	rc = G10ERR_INV_USER_ID; /* nox yet implemented */
+    }
+    else if( *s == '*' ) { /* substring search */
+	name++;
+    }
+    else if( !*s )  /* empty string */
+	rc = G10ERR_INV_USER_ID;
+
+    if( rc )
+	goto leave;
+
+
 
     if( !pkc ) {
 	pkc = m_alloc_clear( sizeof *pkc );
@@ -288,9 +345,14 @@ get_pubkey_byname( PKT_public_cert *pkc, const char *name )
 
     /* 2. Try to get it from the keyrings */
     for(sl = keyrings; sl; sl = sl->next )
-	if( !scan_keyring( pkc, NULL, name, sl->d ) )
-	    goto leave;
-
+	if( use_keyid ) {
+	    if( !scan_keyring( pkc, keyid, name, sl->d ) )
+		goto leave;
+	}
+	else {
+	    if( !scan_keyring( pkc, NULL, name, sl->d ) )
+		goto leave;
+	}
     /* 3. Try to get it from a key server */
 
     /* 4. not found: store it for future reference */
@@ -363,6 +425,9 @@ get_seckey_byname( PKT_secret_cert *skc, const char *name, int unprotect )
 
 /****************
  * scan the keyring and look for either the keyid or the name.
+ * If both, keyid and name are given, look for keyid but use only
+ * the low word of it (name is only used as a flag to indicate this mode
+ * of operation).
  */
 static int
 scan_keyring( PKT_public_cert *pkc, u32 *keyid,
@@ -375,11 +440,11 @@ scan_keyring( PKT_public_cert *pkc, u32 *keyid,
     int save_mode;
     u32 akeyid[2];
     PKT_public_cert *last_pk = NULL;
+    int shortkeyid;
 
-    assert( !keyid || !name );
-
-    if( opt.cache_all && (name || keyid) )
-	return G10ERR_NO_PUBKEY;
+    shortkeyid = keyid && name;
+    if( shortkeyid )
+	name = NULL; /* not used anymore */
 
     if( !(a = iobuf_open( filename ) ) ) {
 	log_debug("scan_keyring: can't open '%s'\n", filename );
@@ -388,6 +453,8 @@ scan_keyring( PKT_public_cert *pkc, u32 *keyid,
 
     if( !DBG_CACHE )
 	;
+    else if( shortkeyid )
+	log_debug("scan_keyring %s for %08lx\n",  filename, keyid[1] );
     else if( name )
 	log_debug("scan_keyring %s for '%s'\n",  filename, name );
     else if( keyid )
@@ -410,7 +477,8 @@ scan_keyring( PKT_public_cert *pkc, u32 *keyid,
 	      case PUBKEY_ALGO_ELGAMAL:
 	      case PUBKEY_ALGO_RSA:
 		keyid_from_pkc( pkt.pkt.public_cert, akeyid );
-		if( akeyid[0] == keyid[0] && akeyid[1] == keyid[1] ) {
+		if( (shortkeyid || akeyid[0] == keyid[0])
+		    && akeyid[1] == keyid[1] ) {
 		    copy_public_cert( pkc, pkt.pkt.public_cert );
 		    found++;
 		}

@@ -54,5 +54,6 @@
 #define G10ERR_INV_KEYRING    32
 #define G10ERR_TRUSTDB	      33 /* a problem with the trustdb */
 #define G10ERR_BAD_CERT       34 /* bad certicate */
+#define G10ERR_INV_USER_ID    35
 
 #endif /*G10_ERRORS_H*/

@@ -160,6 +160,59 @@
     Ditto, but sign the file with the user id "Suttner"
 
 
+    How to Specify a UserID
+    -----------------------
+    There are several ways to specify a userID, here are some examples:
+
+    * Only by the short keyid (prepend a zero if it start with A..F):
+
+	"234567C4"
+	"0F34E556E"
+	"01347A56A"
+
+    * By a complete keyid:
+
+	"234AABBCC34567C4"
+	"0F323456784E56EAB"
+	"01AB3FED1347A5612"
+
+    * By a fingerprint (not yet implemented):
+
+	"1234343434343434C434343434343434"
+	"123434343434343C3434343434343734349A3434"
+	"0E12343434343434343434EAB3484343434343434"
+
+      The first one is MD5 the others are ripemd160 or sha1.
+
+    * By an exact string (not yet implemented):
+
+	"=Heinrich Heine <heinrichh@uni-duesseldorf.de>"
+
+    * By an email address:
+
+	"<heinrichh@uni-duesseldorf.de>"
+
+      This can be used by a keyserver instead of a substring to
+      find this key faster.
+
+    * By the Local ID (from the trustdb):
+
+	"#34"
+
+      This can be used by a MUA to specify an exact key after selecting
+      a key from G10 (by the use of a special option or an extra utility)
+
+
+    * Or by the usual substring:
+
+	"Heine"
+	"*Heine"
+
+      The '*' indicates substring search explicitly.
+
+
+
+
     Batch mode
     ----------
     If you use the option "--batch", G10 runs in non-interactive mode and

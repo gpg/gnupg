@@ -33,6 +33,7 @@
 #include "util.h"
 #include "trustdb.h"
 #include "ttyio.h"
+#include "i18n.h"
 
 /****************
  * Returns true if a ownertrust has changed.
@@ -61,14 +62,14 @@ query_ownertrust( ulong lid )
 	return 0;
     }
 
-    tty_printf("No ownertrust defined for %lu:\n"
-	       "%4u%c/%08lX %s \"", lid,
+    tty_printf(_("No ownertrust defined for %lu:\n"
+	       "%4u%c/%08lX %s \""), lid,
 	      nbits_from_pkc( pkc ), pubkey_letter( pkc->pubkey_algo ),
 	      (ulong)keyid[1], datestr_from_pkc( pkc ) );
     p = get_user_id( keyid, &n );
     tty_print_string( p, n ),
     m_free(p);
-    tty_printf("\"\n\n"
+    tty_printf(_("\"\n\n"
 "Please decide in how far do you trust this user to\n"
 "correctly sign other users keys (looking at his passport,\n"
 "checking the fingerprints from different sources ...)?\n\n"
@@ -76,19 +77,19 @@ query_ownertrust( ulong lid )
 " 2 = I do NOT trust\n"
 " 3 = I trust marginally\n"
 " 4 = I trust fully\n"
-" s = please show me more informations\n\n" );
+" s = please show me more informations\n\n") );
 
     for(;;) {
-	p = tty_get("Your decision? ");
+	p = tty_get(_("Your decision? "));
 	trim_spaces(p);
 	tty_kill_prompt();
 	if( *p && p[1] )
 	    ;
 	else if( *p == '?' ) {
-	    tty_printf(
+	    tty_printf(_(
 "It's up to you to assign a value here; this value will never be exported\n"
 "to any 3rd party.  We need it to implement the web-of-trust; it has nothing\n"
-"to do with the (implicitly created) web-of-certificates.\n");
+"to do with the (implicitly created) web-of-certificates.\n"));
 	}
 	else if( !p[1] && (*p >= '1' && *p <= '4') ) {
 	    unsigned trust;
@@ -104,7 +105,7 @@ query_ownertrust( ulong lid )
 	    break;
 	}
 	else if( *p == 's' || *p == 'S' ) {
-	    tty_printf("You will see a list of signators etc. here\n");
+	    tty_printf(_("You will see a list of signators etc. here\n"));
 	}
 	m_free(p); p = NULL;
     }
@@ -128,8 +129,8 @@ add_ownertrust( PKT_public_cert *pkc )
     int any=0;
 
     tty_printf(
-"Could not find a valid trust path to the key.  Lets see, wether we\n"
-"can assign some missing owner trust values.\n\n");
+_("Could not find a valid trust path to the key.  Lets see, wether we\n"
+  "can assign some missing owner trust values.\n\n"));
 
     rc = query_trust_record( pkc );
     if( rc ) {

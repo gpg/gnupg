@@ -1,0 +1,308 @@
+msgid ""
+msgstr ""
+"Date: 1998-01-26 22:08:36+0100\n"
+"From: Werner Koch <wk@frodo>\n"
+"Content-Type: text/plain; charset=\n"
+"Xgettext-Options: --default-domain=g10 --directory=.. --add-comments --keyword=_ --keyword=N_ --files-from=./POTFILES.in\n"
+"Files: g10/g10.c g10/pkclist.c\n"
+
+#: g10/g10.c:77
+msgid "Please report bugs to <g10-bugs@isil.d.shuttle.de>.\n"
+msgstr "Berichte über Wanzen bitte an <g10-bugs@isil.d.shuttle.de>.\n"
+
+#: g10/g10.c:82
+msgid ""
+"   NOTE: This version is compiled without ZLIB support;\n"
+"         you are not able to process compresssed data!\n"
+"WARNING: This version has RSA support! Your are not allowed to\n"
+"         use it inside the Unites States before Sep 30, 2000!\n"
+msgstr ""
+"Achtung: Komprimierte Daten können nicht bearbeiten werden,\n"
+"         da auf diesem System ZLIN nicht installiert ist!\n"
+"         (RSA Verfahren ist vorhanden.)\n"
+
+#: g10/g10.c:88
+msgid ""
+"   NOTE: This version is compiled without ZLIB support;\n"
+"         you are not able to process compresssed data!\n"
+msgstr ""
+"Achtung: Komprimierte Daten können nicht bearbeiten werden,\n"
+"         da auf diesem System ZLIB nicht installiert ist!\n"
+
+#: g10/g10.c:92
+msgid ""
+"WARNING: This version has RSA support! Your are not allowed to\n"
+"         use it inside the Unites States before Sep 30, 2000!\n"
+msgstr ""
+"         (RSA Verfahren ist vorhanden.)\n"
+
+#: g10/g10.c:109
+msgid "Usage: g10 [options] "
+msgstr "Aufruf: g10 [Opeionen] "
+
+#: g10/g10.c:145
+msgid "conflicting commands\n"
+msgstr ""
+
+#: g10/g10.c:157
+msgid "create ascii armored output"
+msgstr "Ausgabe mit ASCII Armor versehen"
+
+#: g10/g10.c:158
+msgid "verbose"
+msgstr "detailierte Informationen"
+
+#: g10/g10.c:159
+msgid "set compress level (0 disables)"
+msgstr "Kompressionspegel sethen (aussschalten mit 0)"
+
+#: g10/g10.c:160
+msgid "don't make any changes"
+msgstr "Keine wirklichen Änderungen durchführen"
+
+#: g10/g10.c:168
+msgid "do only a symmetric encryption"
+msgstr ""
+
+#: g10/g10.c:169
+msgid "use as output file"
+msgstr ""
+
+#: g10/g10.c:170
+msgid "batch mode: never ask"
+msgstr ""
+
+#: g10/g10.c:171
+msgid "assume yes on most questions"
+msgstr ""
+
+#: g10/g10.c:172
+msgid "assume no on most questions"
+msgstr ""
+
+#: g10/g10.c:173
+msgid "generate a new key pair"
+msgstr ""
+
+#: g10/g10.c:174
+msgid "add key to the public keyring"
+msgstr ""
+
+#: g10/g10.c:175
+msgid "remove key from public keyring"
+msgstr "Key entfernen"
+
+#: g10/g10.c:176
+msgid "make a signature on a key in the keyring"
+msgstr "key signieren"
+
+#: g10/g10.c:177
+msgid "store only"
+msgstr ""
+
+#: g10/g10.c:178
+msgid "check signatures on a key in the keyring"
+msgstr "  "
+
+#: g10/g10.c:179
+msgid "add this keyring to the list of keyrings"
+msgstr ""
+
+#: g10/g10.c:180
+msgid "make a signature"
+msgstr ""
+
+#: g10/g10.c:181
+msgid "use canonical text mode"
+msgstr ""
+
+#: g10/g10.c:182
+msgid "make a detached signature"
+msgstr ""
+
+#: g10/g10.c:183
+msgid "encrypt data"
+msgstr ""
+
+#: g10/g10.c:184
+msgid "decrypt data (default)"
+msgstr ""
+
+#: g10/g10.c:185
+msgid "use this user-id to sign or decrypt"
+msgstr ""
+
+#: g10/g10.c:186
+msgid "use this user-id for encryption"
+msgstr ""
+
+#: g10/g10.c:187
+msgid "list keys"
+msgstr ""
+
+#: g10/g10.c:188
+msgid "set debugging flags"
+msgstr ""
+
+#: g10/g10.c:189
+msgid "enable full debugging"
+msgstr ""
+
+#: g10/g10.c:193
+msgid "show the fingerprints"
+msgstr ""
+
+#: g10/g10.c:194
+msgid "print all message digests"
+msgstr ""
+
+#: g10/g10.c:195
+msgid "add this secret keyring to the list"
+msgstr ""
+
+#: g10/g10.c:196
+msgid "read options from file"
+msgstr ""
+
+#: g10/g10.c:199
+msgid "list only the sequence of packets"
+msgstr ""
+
+#: g10/g10.c:202
+msgid "edit a key signature"
+msgstr ""
+
+#: g10/g10.c:203
+msgid "change the passphrase of your secret keyring"
+msgstr ""
+
+#: g10/g10.c:205
+msgid "select default cipher algorithm"
+msgstr ""
+
+#: g10/g10.c:206
+msgid "select default puplic key algorithm"
+msgstr ""
+
+#: g10/g10.c:207
+msgid "select default message digest algorithm"
+msgstr ""
+
+#: g10/g10.c:208
+msgid "put public keys into the trustdb"
+msgstr ""
+
+#: g10/g10.c:212
+msgid "do not write comment packets"
+msgstr ""
+
+#: g10/g10.c:213
+msgid "(default is 1)"
+msgstr ""
+
+#: g10/g10.c:214
+msgid "(default is 3)"
+msgstr ""
+
+#: g10/g10.c:215
+msgid "export all or the given keys"
+msgstr ""
+
+#: g10/g10.c:280
+msgid "note: no default option file '%s'\n"
+msgstr ""
+
+#: g10/g10.c:283
+msgid "option file '%s': %s\n"
+msgstr ""
+
+#: g10/g10.c:288
+msgid "reading options from '%s'\n"
+msgstr ""
+
+#: g10/g10.c:380
+msgid "selected cipher algorithm is invalid\n"
+msgstr ""
+
+#: g10/g10.c:384
+msgid "selected pubkey algorithm is invalid\n"
+msgstr ""
+
+#: g10/g10.c:388
+msgid "selected digest algorithm is invalid\n"
+msgstr ""
+
+#: g10/g10.c:392
+msgid "completes-needed must be greater than 0\n"
+msgstr ""
+
+#: g10/g10.c:396
+msgid "marginals-needed must be greater than 1\n"
+msgstr ""
+
+#: g10/g10.c:460
+msgid "failed to initialize the TrustDB: %s\n"
+msgstr ""
+
+#: g10/g10.c:552 g10/g10.c:569 g10/g10.c:658
+msgid "can't open '%s'\n"
+msgstr ""
+
+#: g10/pkclist.c:65
+msgid ""
+"No ownertrust defined for %lu:\n"
+"%4u%c/%08lX %s \""
+msgstr ""
+
+#: g10/pkclist.c:72
+msgid ""
+"\"\n"
+"\n"
+"Please decide in how far do you trust this user to\n"
+"correctly sign other users keys (looking at his passport,\n"
+"checking the fingerprints from different sources ...)?\n"
+"\n"
+" 1 = Don't know\n"
+" 2 = I do NOT trust\n"
+" 3 = I trust marginally\n"
+" 4 = I trust fully\n"
+" s = please show me more informations\n"
+"\n"
+msgstr ""
+"\"\n"
+"\n"
+"Bitte entscheiden Sie, in wieweit Sie diesem User zutrauen,\n"
+"eines anderen Users Key korrekt zu signieren (Vergleich mit dem Paß,\n"
+"vergleichen der Fingerprints aus unterschiedlichen Quellen ...)?\n"
+"\n"
+" 1 = Weiß nicht so recht\n"
+" 2 = Neeh, dem traue ich das nicht zu\n"
+" 3 = Ich vertraue ihm normalerweise\n"
+" 4 = Ich vertraue ihm immer\n"
+" s = Bitte weitere Information anzeigen\n"
+"\n"
+
+#: g10/pkclist.c:83
+msgid "Your decision? "
+msgstr "Ihre Auswahl? "
+
+#: g10/pkclist.c:90
+msgid ""
+"It's up to you to assign a value here; this value will never be exported\n"
+"to any 3rd party.  We need it to implement the web-of-trust; it has nothing\n"
+"to do with the (implicitly created) web-of-certificates.\n"
+msgstr ""
+
+#: g10/pkclist.c:108
+msgid "You will see a list of signators etc. here\n"
+msgstr ""
+
+#: g10/pkclist.c:132
+msgid ""
+"Could not find a valid trust path to the key.  Lets see, wether we\n"
+"can assign some missing owner trust values.\n"
+"\n"
+msgstr ""
+"Ein gültiger Trust Path konnte für diesen Key nicht gefunden werden.\n"
+"Mal sehen ob wir now weitere Ownertrust Werte zuordnen können.\n"
+"\n"

@@ -25,21 +25,13 @@
     * complete cipher/cast.c
     * complete cipher/dsa.c
 
-    * define a standard way to specify keyid/userid and other stuff
-      to identify a user.  We could look at the first character and
-      say: If it's a digit, a keyid follows (need to add a zero in
-      case the keyid starts with A..F); if it is a left angle bracket,
-      this is a email address and should be used, all others are substrings
-      of the userid.
-      [can be handles in get_pubkey_by_name()]
-
     * armor has now some problems.
 
     * add g10 stuff to Mutt's pgpinvoke.c
 
     * Burn the buffers used by fopen().
 
-    * bug: g10/trustdb.c#build_sigrecs caled to often by do_list_path
+    * bug: g10/trustdb.c#build_sigrecs called to often by do_list_path
       and remove the bad kludge. Maybe we should put all sigs into the trustdb
       and mark them as valid/invalid/nopubkey, and how do we check, that
       we have a self-signature -> put this stuff into a kind of directory

@@ -111,6 +111,7 @@ void free_strlist( STRLIST sl );
 #define FREE_STRLIST(a) do { free_strlist((a)); (a) = NULL ; } while(0)
 void add_to_strlist( STRLIST *list, const char *string );
 char *memistr( char *buf, size_t buflen, const char *sub );
+char *mem2str( char *, const void *, size_t);
 char *trim_spaces( char *string );
 int string_count_chr( const char *string, int c );
 

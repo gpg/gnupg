@@ -73,6 +73,31 @@ memistr( char *buf, size_t buflen, const char *sub )
     return NULL ;
 }
 
+/****************
+ * Wie strncpy(), aber es werden maximal n-1 zeichen kopiert und ein
+ * '\0' angehängt. Ist n = 0, so geschieht nichts, ist Destination
+ * gleich NULL, so wird via m_alloc Speicher besorgt, ist dann nicht
+ * genügend Speicher vorhanden, so bricht die funktion ab.
+ */
+char *
+mem2str( char *dest , const void *src , size_t n )
+{
+    char *d;
+    const char *s;
+
+    if( n ) {
+	if( !dest )
+	    dest = m_alloc( n ) ;
+	d = dest;
+	s = src ;
+	for(n--; n && *s; n-- )
+	    *d++ = *s++;
+	*d = '\0' ;
+    }
+
+    return dest ;
+}
+
 
 /****************
  * remove leading and trailing white spaces

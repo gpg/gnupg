@@ -66,6 +66,7 @@ g10_errstr( int err )
       X(SIG_CLASS      ,"Unknown signature class")
       X(TRUSTDB        ,"TrustDB error")
       X(BAD_CERT       ,"Bad certificate")
+      X(INV_USER_ID    ,"malformed user id")
 
       default: p = buf; sprintf(buf, "g10err=%d", err); break;
     }

@@ -79,10 +79,12 @@ g10_SOURCES = g10.c		\
 	      seskey.c		\
 	      sign.c		\
 	      import.c		\
+	      export.c		\
 	      comment.c 	\
 	      sig-check.c
 
-LDADD = -L ../cipher -L ../mpi -L ../util -lcipher -lmpi -lutil
+LDADD = -L ../cipher -L ../mpi -L ../util -L ../intl \
+	-lcipher -lmpi -lutil -lintl
 mkinstalldirs = $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
 PROGRAMS = $(bin_PROGRAMS)
@@ -104,7 +106,7 @@ g10_OBJECTS = g10.o build-packet.o compress.o encode.o encr-data.o \
 free-packet.o getkey.o pkclist.o skclist.o ringedit.o kbnode.o keygen.o \
 mainproc.o armor.o mdfilter.o textfilter.o cipher.o elg.o rsa.o \
 openfile.o keyid.o trustdb.o parse-packet.o passphrase.o plaintext.o \
-pubkey-enc.o seckey-cert.o seskey.o sign.o import.o comment.o \
+pubkey-enc.o seckey-cert.o seskey.o sign.o import.o export.o comment.o \
 sig-check.o
 EXTRA_g10_SOURCES =
 g10_LDADD = $(LDADD)
@@ -124,8 +126,8 @@ DEP_FILES = $(srcdir)/.deps/armor.P $(srcdir)/.deps/build-packet.P \
 $(srcdir)/.deps/cipher.P $(srcdir)/.deps/comment.P \
 $(srcdir)/.deps/compress.P $(srcdir)/.deps/elg.P \
 $(srcdir)/.deps/encode.P $(srcdir)/.deps/encr-data.P \
-$(srcdir)/.deps/free-packet.P $(srcdir)/.deps/g10.P \
-$(srcdir)/.deps/getkey.P $(srcdir)/.deps/import.P \
+$(srcdir)/.deps/export.P $(srcdir)/.deps/free-packet.P \
+$(srcdir)/.deps/g10.P $(srcdir)/.deps/getkey.P $(srcdir)/.deps/import.P \
 $(srcdir)/.deps/kbnode.P $(srcdir)/.deps/keygen.P \
 $(srcdir)/.deps/keyid.P $(srcdir)/.deps/mainproc.P \
 $(srcdir)/.deps/mdfilter.P $(srcdir)/.deps/openfile.P \

@@ -42,6 +42,12 @@ encrypt
 # (Can be combined with a "sign")
 # encrypt data
 
+export <names>
+# Either export all keys from all keyrings (default keyrings and
+# those registered via option "keyring"), or if at least one name is
+# given, those of the givename. The new keyring is written to stdout
+# or to the file given with option "output"
+
 fingerprint
 # show the fingerprints,
 

@@ -41,11 +41,13 @@ g10_SOURCES = g10.c		\
 	      seskey.c		\
 	      sign.c		\
 	      import.c		\
+	      export.c		\
 	      comment.c 	\
 	      sig-check.c
 
 
-LDADD = -L ../cipher -L ../mpi -L ../util -lcipher -lmpi -lutil
+LDADD = -L ../cipher -L ../mpi -L ../util -L ../intl \
+	-lcipher -lmpi -lutil -lintl
 
 
 $(PROGRAMS): ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a

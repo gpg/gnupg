@@ -26,6 +26,22 @@
 #undef M_DEBUG
 #undef VERSION
 #undef PACKAGE
+#undef G10_LOCALEDIR
+
+/* Define if your locale.h file contains LC_MESSAGES.  */
+#undef HAVE_LC_MESSAGES
+
+/* Define to 1 if NLS is requested.  */
+#undef ENABLE_NLS
+
+/* Define as 1 if you have catgets and don't want to use GNU gettext.  */
+#undef HAVE_CATGETS
+
+/* Define as 1 if you have gettext and don't want to use GNU gettext.  */
+#undef HAVE_GETTEXT
+
+#undef HAVE_STPCPY
+
 
 #undef BIG_ENDIAN_HOST
 #undef LITTLE_ENDIAN_HOST
