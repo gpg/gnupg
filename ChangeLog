@@ -1,5 +1,9 @@
 2003-07-10  David Shaw  <dshaw@jabberwocky.com>
 
+	* configure.ac: configure.ac: Check for sigset_t and struct
+	sigaction.  This is for Forte c89 on Solaris which seems to define
+	only the function call half of the two pairs by default.
+
 	* THANKS: Updates from stable.
 
 	* configure.ac: Include wsock32 in W32LIBS.  This is different
