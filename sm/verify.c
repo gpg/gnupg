@@ -443,7 +443,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
       if (rc) /* of validate_chain */
         {
           log_error ("invalid certification chain: %s\n", gnupg_strerror (rc));
-          if (rc == GNUPG_Bad_Certificate_Path
+          if (rc == GNUPG_Bad_Certificate_Chain
               || rc == GNUPG_Bad_Certificate
               || rc == GNUPG_Bad_CA_Certificate
               || rc == GNUPG_Certificate_Revoked)

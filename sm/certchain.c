@@ -530,7 +530,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
           if (gpgsm_check_cert_sig (subject_cert, subject_cert) )
             {
               log_error ("selfsigned certificate has a BAD signatures\n");
-              rc = depth? GNUPG_Bad_Certificate_Path : GNUPG_Bad_Certificate;
+              rc = depth? GNUPG_Bad_Certificate_Chain : GNUPG_Bad_Certificate;
               goto leave;
             }
           rc = allowed_ca (subject_cert, NULL);
@@ -577,7 +577,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
       if (depth > maxdepth)
         {
           log_error (_("certificate chain too long\n"));
-          rc = GNUPG_Bad_Certificate_Path;
+          rc = GNUPG_Bad_Certificate_Chain;
           goto leave;
         }
 
@@ -616,7 +616,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
       if (gpgsm_check_cert_sig (issuer_cert, subject_cert) )
         {
           log_error ("certificate has a BAD signatures\n");
-          rc = GNUPG_Bad_Certificate_Path;
+          rc = GNUPG_Bad_Certificate_Chain;
           goto leave;
         }
 
@@ -637,7 +637,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
       rc = gpgsm_cert_use_cert_p (issuer_cert);
       if (rc)
         {
-          gpgsm_status2 (ctrl, STATUS_ERROR, "certpath.issuer.keyusage",
+          gpgsm_status2 (ctrl, STATUS_ERROR, "certcert.issuer.keyusage",
                          gnupg_error_token (rc), NULL);
           rc = 0;
         }
