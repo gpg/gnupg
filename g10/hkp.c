@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <errno.h>
 #include <assert.h>
 
@@ -30,9 +31,12 @@
 #include "ttyio.h"
 #include "i18n.h"
 #include "options.h"
+#include "filter.h"
 #include "http.h"
 #include "main.h"
 
+static int urlencode_filter( void *opaque, int control,
+			     IOBUF a, byte *buf, size_t *ret_len);
 
 /****************
  * Try to import the key with KEYID from a keyserver but ask the user
@@ -58,17 +62,119 @@ hkp_ask_import( u32 *keyid )
      * nicer one */
     sprintf( request, "x-hkp://%s:11371/pks/lookup?op=get&search=0x%08lX",
 			opt.keyserver_name, (ulong)keyid[1] );
-    rc = open_http_document( &hd, request, 0 );
+    rc = http_open_document( &hd, request, 0 );
     if( rc ) {
 	log_info("can't get key from keyserver: %s\n", g10_errstr(rc) );
-	goto leave;
     }
-    rc = import_keys_stream( hd.fp_read , 0 );
-    close_http_document( &hd );
+    else {
+	rc = import_keys_stream( hd.fp_read , 0 );
+	http_close( &hd );
+    }
 
-  leave:
     m_free( request );
     return rc;
 }
 
+
+int
+hkp_export( STRLIST users )
+{
+    int rc;
+    armor_filter_context_t afx;
+    IOBUF temp = iobuf_temp();
+    struct http_context hd;
+    char *request;
+    unsigned int status;
+
+    if( !opt.keyserver_name ) {
+	log_error("no keyserver known (use option --keyserver)\n");
+	return -1;
+    }
+
+    iobuf_push_filter( temp, urlencode_filter, NULL );
+
+    memset( &afx, 0, sizeof afx);
+    afx.what = 1;
+    iobuf_push_filter( temp, armor_filter, &afx );
+
+    rc = export_pubkeys_stream( temp, users, 1 );
+    if( rc == -1 ) {
+	iobuf_close(temp);
+	return 0;
+    }
+
+    iobuf_flush_temp( temp );
+
+    request = m_alloc( strlen( opt.keyserver_name ) + 100 );
+    sprintf( request, "x-hkp://%s:11371/pks/add", opt.keyserver_name );
+    rc = http_open( &hd, HTTP_REQ_POST, request , 0 );
+    if( rc ) {
+	log_error("can't connect to `%s': %s\n",
+		   opt.keyserver_name, g10_errstr(rc) );
+	iobuf_close(temp);
+	m_free( request );
+	return rc;
+    }
+
+    sprintf( request, "Content-Length: %u\n",
+		      (unsigned)iobuf_get_temp_length(temp) + 9 );
+    iobuf_writestr( hd.fp_write, request );
+    m_free( request );
+    http_start_data( &hd );
+
+    iobuf_writestr( hd.fp_write, "keytext=" );
+    iobuf_write( hd.fp_write, iobuf_get_temp_buffer(temp),
+			      iobuf_get_temp_length(temp) );
+    iobuf_put( hd.fp_write, '\n' );
+    iobuf_close(temp);
+
+    rc = http_wait_response( &hd, &status );
+    if( rc ) {
+	log_error("error sending to `%s': %s\n",
+		   opt.keyserver_name, g10_errstr(rc) );
+    }
+    else {
+      #if 1
+	if( opt.verbose ) {
+	    int c;
+	    while( (c=iobuf_get(hd.fp_read)) != EOF )
+		putchar( c );
+	}
+      #endif
+	if( (status/100) == 2 )
+	    log_info("success sending to `%s' (status=%u)\n",
+					opt.keyserver_name, status  );
+	else
+	    log_error("failed sending to `%s': status=%u\n",
+					opt.keyserver_name, status  );
+    }
+    http_close( &hd );
+    return rc;
+}
+
+static int
+urlencode_filter( void *opaque, int control,
+		  IOBUF a, byte *buf, size_t *ret_len)
+{
+    size_t size = *ret_len;
+    int rc=0;
+
+    if( control == IOBUFCTRL_FLUSH ) {
+	const byte *p;
+	for(p=buf; size; p++, size-- ) {
+	    if( isalnum(*p) || *p == '-' )
+		iobuf_put( a, *p );
+	    else if( *p == ' ' )
+		iobuf_put( a, '+' );
+	    else {
+		char numbuf[5];
+		sprintf(numbuf, "%%%02X", *p );
+		iobuf_writestr(a, numbuf );
+	    }
+	}
+    }
+    else if( control == IOBUFCTRL_DESC )
+	*(char**)buf = "urlencode_filter";
+    return rc;
+}
 

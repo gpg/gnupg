@@ -43,20 +43,33 @@ struct parsed_uri {
 };
 typedef struct parsed_uri *PARSED_URI;
 
+typedef enum {
+    HTTP_REQ_GET  = 1,
+    HTTP_REQ_HEAD = 2,
+    HTTP_REQ_POST = 3
+} HTTP_REQ_TYPE;
+
 struct http_context {
     int initialized;
     unsigned int status_code;
     int socket;
+    int in_data;
     IOBUF fp_read;
     IOBUF fp_write;
     int is_http_0_9;
     PARSED_URI uri;
+    HTTP_REQ_TYPE req_type;
     byte *buffer;	   /* line buffer */
     unsigned buffer_size;
 };
 typedef struct http_context *HTTP_HD;
 
-int open_http_document( HTTP_HD hd, const char *document, unsigned int flags );
-void close_http_document( HTTP_HD hd );
+int http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
+						  unsigned int flags );
+void http_start_data( HTTP_HD hd );
+int  http_wait_response( HTTP_HD hd, unsigned int *ret_status );
+void http_close( HTTP_HD hd );
+
+int http_open_document( HTTP_HD hd, const char *document, unsigned int flags );
 
 #endif /*G10_HTTP_H*/

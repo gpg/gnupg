@@ -1,3 +1,18 @@
+Tue Jan 19 19:34:58 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* * iobuf.c (iobuf_push_filter): Allow filters for temp streams
+
+	(iobuf_write_temp): Ditto.
+	(iobuf_flush_temp): New.
+	(iobuf_unget_and_close_temp): Removed.
+
+	* http.c (close_http_document): Renamed to http_close().
+	(open_http_document): Renamed to http_open_document().
+	(http_open): New.
+	(http_start_data): New.
+	(http_wait_response): New.
+
+
 Sun Jan 17 11:04:33 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* strgutil.c (trim_trailing_ws): New.

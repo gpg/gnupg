@@ -38,6 +38,7 @@ typedef struct {
     char fname[1]; /* name of the file */
 } file_filter_ctx_t ;
 
+
 /* The first partial length header block must be of size 512
  * to make it easier (and efficienter) we use a min. block size of 512
  * for all chznks (but the last one) */
@@ -95,7 +96,7 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	assert( size ); /* need a buffer */
 	for(; size; size-- ) {
 	    if( (c=getc(fp)) == EOF ) {
-		if( ferror(fp) ) {
+		if( ferror(fp) && errno != EPIPE  ) {
 		    log_error("%s: read error: %s\n",
 					a->fname, strerror(errno));
 		    rc = G10ERR_READ_FILE;
@@ -561,12 +562,9 @@ iobuf_fdopen( int fd, const char *mode )
     file_filter_ctx_t *fcx;
     size_t len;
 
-    if( strchr( mode, 'w' ) )
-	log_bug("iobuf_fdopen: mode `%s' is not supported", mode);
-
     if( !(fp = fdopen(fd, mode)) )
 	return NULL;
-    a = iobuf_alloc(1, 8192 );
+    a = iobuf_alloc( strchr( mode, 'w')? 2:1, 8192 );
     fcx = m_alloc( sizeof *fcx + 20 );
     fcx->fp = fp;
     fcx->print_only_name = 1;
@@ -703,7 +701,6 @@ iobuf_fopen( const char *fname, const char *mode )
 
 
 
-
 /****************
  * Register an i/o filter.
  */
@@ -732,6 +729,9 @@ iobuf_push_filter( IOBUF a,
     a->filter = NULL;
     a->filter_ov = NULL;
     a->filter_eof = 0;
+    if( a->usage == 3 )
+	a->usage = 2;  /* make a write stream from a temp stream */
+
     if( a->usage == 2 ) { /* allocate a fresh buffer for the original stream */
 	b->d.buf = m_alloc( a->d.size );
 	b->d.len = 0;
@@ -961,7 +961,7 @@ iobuf_flush(IOBUF a)
 	return 0;
 
     /*log_debug("iobuf-%d.%d: flush\n", a->no, a->subno );*/
-    if( a->usage == 3 ) { /* must increase the size of the temp buffer */
+    if( a->usage == 3 ) { /* increase the temp buffer */
 	char *newbuf;
 	size_t newsize = a->d.size + 8192;
 
@@ -1141,6 +1141,8 @@ iobuf_writestr(IOBUF a, const char *buf )
 int
 iobuf_write_temp( IOBUF a, IOBUF temp )
 {
+    while( temp->chain )
+	pop_filter( temp, temp->filter, NULL );
     return iobuf_write(a, temp->d.buf, temp->d.len );
 }
 
@@ -1158,28 +1160,18 @@ iobuf_temp_to_buffer( IOBUF a, byte *buffer, size_t buflen )
     return n;
 }
 
+
 /****************
- * unget the contents of the temp io stream to A and close temp
- * Could be optimized!!
+ * Call this function to terminate processing of the temp stream
+ * without closing it.	This removes all filters from the stream
+ * makes sure that iobuf_get_temp_{buffer,length}() returns correct
+ * values.
  */
 void
-iobuf_unget_and_close_temp( IOBUF a, IOBUF temp )
+iobuf_flush_temp( IOBUF temp )
 {
-    if( a->unget.buf ) {
-	if( a->unget.start < a->unget.len )
-	    log_fatal("cannot do any more ungets on this buffer\n");
-	/* not yet cleaned up; do it now */
-	m_free(a->unget.buf);
-	a->unget.buf = NULL;
-	a->nofast &= ~2;
-    }
-    a->unget.size = temp->d.len;
-    a->unget.buf = m_alloc( a->unget.size );
-    a->nofast |= 2;
-    a->unget.len = temp->d.len;
-    a->unget.start = 0;
-    memcpy( a->unget.buf, temp->d.buf, a->unget.len );
-    iobuf_close(temp);
+    while( temp->chain )
+	pop_filter( temp, temp->filter, NULL );
 }
 
 
@@ -1285,7 +1277,7 @@ iobuf_seek( IOBUF a, ulong newpos )
     if( a->chain )
 	log_debug("pop_filter called in iobuf_seek - please report\n");
     while( a->chain )
-	pop_filter( a, a->filter, NULL );
+       pop_filter( a, a->filter, NULL );
 
     return 0;
 }
@@ -1309,6 +1301,7 @@ get_real_fname( IOBUF a )
 
     return NULL;
 }
+
 
 /****************
  * Retrieve the filename

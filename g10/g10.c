@@ -43,6 +43,7 @@
 #include "i18n.h"
 #include "status.h"
 #include "g10defs.h"
+#include "hkp.h"
 
 #ifndef IS_G10MAINT
   #define IS_G10 1
@@ -83,6 +84,7 @@ enum cmd_and_opt_values { aNull = 0,
     aListKeys,
     aListSigs,
     aListSecretKeys,
+    aSendKeys,
     aExport,
     aExportAll,
     aExportSecret,
@@ -184,6 +186,7 @@ static ARGPARSE_OPTS opts[] = {
     { aGenRevoke, "gen-revoke",256, N_("generate a revocation certificate")},
   #endif
     { aExport, "export"           , 256, N_("export keys") },
+    { aSendKeys, "send-keys"     , 256, N_("export keys to a key server") },
     { aExportAll, "export-all"    , 256, "@" },
     { aExportSecret, "export-secret-keys" , 256, "@" },
     { aImport, "import",      256     , N_("import/merge keys")},
@@ -639,6 +642,7 @@ main( int argc, char **argv )
 	  case aListPackets: set_cmd( &cmd, aListPackets); break;
 	  case aImport: set_cmd( &cmd, aImport); break;
 	  case aFastImport: set_cmd( &cmd, aFastImport); break;
+	  case aSendKeys: set_cmd( &cmd, aSendKeys); break;
 	  case aExport: set_cmd( &cmd, aExport); break;
 	  case aExportAll: set_cmd( &cmd, aExportAll); break;
 	  case aListKeys: set_cmd( &cmd, aListKeys); break;
@@ -1098,10 +1102,14 @@ main( int argc, char **argv )
 
       case aExport:
       case aExportAll:
+      case aSendKeys:
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
 	    add_to_strlist( &sl, *argv );
-	export_pubkeys( sl, (cmd == aExport) );
+	if( cmd == aSendKeys )
+	    hkp_export( sl );
+	else
+	    export_pubkeys( sl, (cmd == aExport) );
 	free_strlist(sl);
 	break;
 

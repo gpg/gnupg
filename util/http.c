@@ -64,57 +64,105 @@ static int connect_server( const char *server, ushort port );
 static int write_server( int socket, const char *data, size_t length );
 
 
+int
+http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
+					      unsigned int flags )
+{
+    int rc;
+
+    if( flags || !(reqtype == HTTP_REQ_GET || reqtype == HTTP_REQ_POST) )
+	return G10ERR_INV_ARG;
+
+    /* initialize the handle */
+    memset( hd, 0, sizeof *hd );
+    hd->socket = -1;
+    hd->initialized = 1;
+    hd->req_type = reqtype;
+
+    rc = parse_uri( &hd->uri, url );
+    if( !rc ) {
+	rc = send_request( hd );
+	if( !rc ) {
+	    hd->fp_write = iobuf_fdopen( hd->socket , "w" );
+	    if( hd->fp_write )
+		return 0;
+	    rc = G10ERR_GENERAL;
+	}
+    }
+
+    if( !hd->fp_read && !hd->fp_write )
+	close( hd->socket );
+    iobuf_close( hd->fp_read );
+    iobuf_close( hd->fp_write);
+    release_parsed_uri( hd->uri );
+    hd->initialized = 0;
+
+    return rc;
+}
+
+
+void
+ttp_start_data( HTTP_HD hd )
+{
+    if( !hd->in_data ) {
+	iobuf_put( hd->fp_write, '\n' );
+	hd->in_data = 1;
+    }
+}
+
 
 int
-open_http_document( HTTP_HD hd, const char *document, unsigned int flags )
+http_wait_response( HTTP_HD hd, unsigned int *ret_status )
+{
+    int rc;
+
+    http_start_data( hd ); /* make sure that we are in the data */
+    iobuf_flush( hd->fp_write );
+    shutdown( hd->socket, 1 );
+    hd->in_data = 0;
+
+    hd->socket = dup( hd->socket );
+    if( hd->socket == -1 )
+	return G10ERR_GENERAL;
+    iobuf_close( hd->fp_write );
+    hd->fp_write = NULL;
+
+    hd->fp_read = iobuf_fdopen( hd->socket , "r" );
+    if( !hd->fp_read )
+	return G10ERR_GENERAL;
+
+    rc = parse_response( hd );
+    if( !rc && ret_status )
+	*ret_status = hd->status_code;
+
+    return rc;
+}
+
+
+int
+http_open_document( HTTP_HD hd, const char *document, unsigned int flags )
 {
     int rc;
 
     if( flags )
 	return G10ERR_INV_ARG;
 
-    /* initialize the handle */
-    memset( hd, 0, sizeof *hd );
-    hd->socket = -1;
-
-    rc = parse_uri( &hd->uri, document );
+    rc = http_open( hd, HTTP_REQ_GET, document, 0 );
     if( rc )
-	goto failure;
+	return rc;
 
-    rc = send_request( hd );
+    rc = http_wait_response( hd, NULL );
     if( rc )
-	goto failure;
-
-    hd->fp_read = iobuf_fdopen( hd->socket , "r" );
-    if( !hd->fp_read )
-	goto failure;
-
-    rc = parse_response( hd );
-    if( rc == -1 ) { /* no response from server */
-	/* Hmmm, should we set some errro variable or map errors */
-	goto failure;
-    }
-
-    if( !rc )
-	hd->is_http_0_9 = 1;
-    else
-	hd->status_code = rc ;
-
-    hd->initialized = 1;
-    return 0;
-
-  failure:
-    if( !hd->fp_read && !hd->fp_write )
-	close( hd->socket );
-    iobuf_close( hd->fp_read );
-    iobuf_close( hd->fp_write);
-    release_parsed_uri( hd->uri );
+	http_close( hd );
 
     return rc;
 }
 
+
+
+
 void
-close_http_document( HTTP_HD hd )
+http_close( HTTP_HD hd )
 {
     if( !hd || !hd->initialized )
 	return;
@@ -385,12 +433,15 @@ send_request( HTTP_HD hd )
 
     p = build_rel_path( hd->uri );
     request = m_alloc( strlen(p) + 20 );
-    sprintf( request, "GET %s%s HTTP/1.0\r\n\r\n", *p == '/'? "":"/", p );
+    sprintf( request, "%s %s%s HTTP/1.0\r\n\r\n",
+			  hd->req_type == HTTP_REQ_GET ? "GET" :
+			  hd->req_type == HTTP_REQ_HEAD? "HEAD":
+			  hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
+						  *p == '/'? "":"/", p );
     m_free(p);
 
     rc = write_server( hd->socket, request, strlen(request) );
     m_free( request );
-    shutdown( hd->socket, 1 );
 
     return rc;
 }
@@ -442,15 +493,12 @@ build_rel_path( PARSED_URI uri )
 
 /***********************
  * Parse the response from a server.
- * Returns: -1	for no response or error
- *	     0	for a http 0.9 response
- *	   nnn	http 1.0 status code
+ * Returns: errorcode and sets some fileds in the handle
  */
 static int
 parse_response( HTTP_HD hd )
 {
     byte *line, *p, *p2;
-    int status;
     unsigned maxlen, len;
 
     /* Wait for the status line */
@@ -480,9 +528,13 @@ parse_response( HTTP_HD hd )
     /* fixme: add HTTP version number check here */
     if( (p2 = strpbrk( p, " \t" ) ) )
 	*p2++ = 0;
-    if( !isdigit(p[0]) || !isdigit(p[1]) || !isdigit(p[2]) || p[3] )
-	return 0; /* malformed HTTP statuscode - assume HTTP 0.9 */
-    status = atoi( p );
+    if( !isdigit(p[0]) || !isdigit(p[1]) || !isdigit(p[2]) || p[3] ) {
+	 /* malformed HTTP statuscode - assume HTTP 0.9 */
+	hd->is_http_0_9 = 1;
+	hd->status_code = 200;
+	return 0;
+    }
+    hd->status_code = atoi( p );
 
     /* skip all the header lines and wait for the empty line */
     do {
@@ -498,7 +550,7 @@ parse_response( HTTP_HD hd )
 	    *line = 0;
     } while( len && *line  );
 
-    return status;
+    return 0;
 }
 
 

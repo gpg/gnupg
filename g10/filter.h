@@ -67,6 +67,7 @@ typedef struct {
     byte *outbuf;
     unsigned outbufsize;
     int algo;	 /* compress algo */
+    int algo1hack;
 } compress_filter_context_t;
 
 

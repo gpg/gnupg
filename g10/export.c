@@ -35,6 +35,8 @@
 #include "i18n.h"
 
 static int do_export( STRLIST users, int secret, int onlyrfc );
+static int do_export_stream( IOBUF out, STRLIST users,
+			     int secret, int onlyrfc, int *any );
 
 /****************
  * Export the public keys (to standard out or --output).
@@ -48,6 +50,21 @@ export_pubkeys( STRLIST users, int onlyrfc )
     return do_export( users, 0, onlyrfc );
 }
 
+/****************
+ * Export to an already opened stream; return -1 if no keys have
+ * been exported
+ */
+int
+export_pubkeys_stream( IOBUF out, STRLIST users, int onlyrfc )
+{
+    int any, rc;
+
+    rc = do_export_stream( out, users, 0, onlyrfc, &any );
+    if( !rc && !any )
+	rc = -1;
+    return rc;
+}
+
 int
 export_seckeys( STRLIST users )
 {
@@ -57,30 +74,46 @@ export_seckeys( STRLIST users )
 static int
 do_export( STRLIST users, int secret, int onlyrfc )
 {
-    int rc = 0;
-    armor_filter_context_t afx;
-    compress_filter_context_t zfx;
     IOBUF out = NULL;
+    int any, rc;
+    armor_filter_context_t afx;
+
+    memset( &afx, 0, sizeof afx);
+
+    rc = open_outfile( NULL, 0, &out );
+    if( rc )
+	return rc;
+
+    if( opt.armor ) {
+	afx.what = secret?5:1;
+	iobuf_push_filter( out, armor_filter, &afx );
+    }
+    rc = do_export_stream( out, users, secret, onlyrfc, &any );
+
+    if( rc || !any )
+	iobuf_cancel(out);
+    else
+	iobuf_close(out);
+    return rc;
+}
+
+
+static int
+do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
+{
+    int rc = 0;
+    compress_filter_context_t zfx;
     PACKET pkt;
     KBNODE keyblock = NULL;
     KBNODE kbctx, node;
     KBPOS kbpos;
     STRLIST sl;
     int all = !users;
-    int any=0;
 
-    memset( &afx, 0, sizeof afx);
+    *any = 0;
     memset( &zfx, 0, sizeof zfx);
     init_packet( &pkt );
 
-    if( (rc = open_outfile( NULL, 0, &out )) )
-	goto leave;
-
-
-    if( opt.armor ) {
-	afx.what = secret?5:1;
-	iobuf_push_filter( out, armor_filter, &afx );
-    }
     if( opt.compress_keys && opt.compress )
 	iobuf_push_filter( out, compress_filter, &zfx );
 
@@ -157,7 +190,7 @@ do_export( STRLIST users, int secret, int onlyrfc )
 		goto leave;
 	    }
 	}
-	any++;
+	++*any;
     }
     if( rc == -1 )
 	rc = 0;
@@ -166,11 +199,7 @@ do_export( STRLIST users, int secret, int onlyrfc )
     if( all == 2 )
 	enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
     release_kbnode( keyblock );
-    if( rc || !any )
-	iobuf_cancel(out);
-    else
-	iobuf_close(out);
-    if( !any )
+    if( !*any )
 	log_info(_("WARNING: nothing exported\n"));
     return rc;
 }

@@ -99,6 +99,8 @@ init_signals()
     do_sigaction( SIGSEGV, &nact );
     nact.sa_handler = got_usr_signal;
     sigaction( SIGUSR1, &nact, NULL );
+    nact.sa_handler = SIG_IGN;
+    sigaction( SIGPIPE, &nact, NULL ); 
   #endif
 }
 

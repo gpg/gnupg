@@ -146,8 +146,14 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
 	    if( !n )
 		zs->next_in = zfx->inbuf;
 	    for( p=zfx->inbuf+n; n < zfx->inbufsize; n++, p++ ) {
-		if( (c=iobuf_get(a)) == -1 )
-		    break;
+		if( (c=iobuf_get(a)) == -1 ) {
+		    /* If we use the undocumented feature to suppress
+		     * the zlib header, we have to give inflate an
+		     * extra dummy byte to read */
+		    if( zfx->algo != 1 || zfx->algo1hack )
+			break;
+		    zfx->algo1hack = 1;
+		}
 		*p = c & 0xff;
 	    }
 	    zs->avail_in = n;

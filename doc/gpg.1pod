@@ -184,6 +184,13 @@ B<--export> [I<names>]
     the file given with option "output".  Use together
     with B<-a> to mail those keys.
 
+B<--send-keys> [I<names>]
+    Same as B<--export> but sends the keys to a keyserver.
+    Option B<--keyserver> must be used to give the name
+    of this keyserver. Don't send your complete keyring
+    to a keyserver - select only those keys which are new
+    or changed by you.
+
 B<--export-all> [I<names>]
     Same as B<--export> but does also export keys which
     are not compatible to OpenPGP.
@@ -288,6 +295,20 @@ B<--yes>
 B<--no>
     Assume "no" on most questions.
 
+B<--keyserver> I<name>
+    Use I<name> to lookup keys which are not yet in
+    your keyring; this is only done while verifying
+    messages with signatures.  The option is also
+    required for the command B<--send-keys> to
+    specify the keyserver to where the keys should
+    be send.  All keyservers synchronize with each
+    other - so there is no need to send keys to more
+    than one server.  Using the command
+    "host -l pgp.net | grep wwwkeys" gives you a
+    list of keyservers.  Because there is load
+    balancing using round-robin-dns you may notice
+    that you get different key servers.
+
 B<--keyring> I<file>
     Add I<file> to the list of keyrings.
     If I<file> begins with a tilde and a slash, these
@@ -300,7 +321,6 @@ B<--keyring> I<file>
 
 B<--secret-keyring> I<file>
     Same as B<--keyring> but for secret keyrings.
-
 
 B<--homedir> I<dir>
     Set the name of the home directory to I<dir>. If this

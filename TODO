@@ -22,16 +22,12 @@ Important
 > 0.9.1: I get some occasional segfaults during 'make check' unless I use
 > --with-included-zlib. It's strange, I have zlib-1.1.2 on one machine, and
 > zlib-1.1.3 on another, and both of them fail on occasion (maybe half of the
+[ I hope this is fixed ]
 
 > gpg: /home/jam/.gnupg/pubring.gpg: can't open gdbm file: Can't be writer
 > gpg: keyblock resource `/home/jam/.gnupg/pubring.gpg': file open error
 > gpg: OOPS in close enum_keyblocks - ignored
 
-    > Indeed, comparing zero to 0xfe returns 2, not -something, and this is
-> the problem.	This seems to fix it, but I don't know how you want to
-> handle this.
->
-  I'll better write a autoconf test as memcmp is used all over the place.
 
 Needed
 ------
@@ -47,8 +43,6 @@ Needed
       Also, on my FreeBSD 2.2-stable box, i simply removed the
       -Wl,-export-dynamic flag from my Makefile and it linked and seems to
       be working OK so far.
-
-    * text_filter.c: use iobuf_readline for cleartext signatures.
 
 
 Minor Bugs

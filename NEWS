@@ -1,9 +1,10 @@
 
     * add some additional time warp checks.
 
-    * Some HKP support
+    * Option --keyserver and command --send-keys to utilize HKP servers
 
     * Upgraded to zlib 1.1.3
+
 
 Noteworthy changes in version 0.9.1
 -----------------------------------
