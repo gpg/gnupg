@@ -1,5 +1,6 @@
 <!-- gpg.sgml - the man page for GnuPG
-    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+                  2004 Free Software Foundation, Inc.
 
     This file is part of GnuPG.
 
@@ -878,11 +879,20 @@ compression level of zlib (normally 6).
 <term>-t, --textmode</term>
 <term>--no-textmode</term>
 <listitem><para>
-Use canonical text mode.  --no-textmode disables this option.  If -t
-(but not --textmode) is used together with armoring and signing, this
-enables clearsigned messages.  This kludge is needed for command-line
-compatibility with command-line versions of PGP; normally you would
-use --sign or --clearsign to select the type of the signature.
+Treat input files as text and store them in the OpenPGP canonical text
+form with standard "CRLF" line endings.  This also sets the necessary
+flags to inform the recipient that the encrypted or signed data is
+text and may need its line endings converted back to whatever the
+local system uses.  This option is useful when communicating between
+two platforms that have different line ending conventions (UNIX-like
+to Mac, Mac to Windows, etc).  --no-textmode disables this option, and
+is the default.
+</para><para>
+If -t (but not --textmode) is used together with armoring and signing,
+this enables clearsigned messages.  This kludge is needed for
+command-line compatibility with command-line versions of PGP; normally
+you would use --sign or --clearsign to select the type of the
+signature.
 </para></listitem></varlistentry>
 
 
@@ -1482,7 +1492,7 @@ as well as when verifying a signature with a notation in it.
 <listitem><para>
 Use &ParmString; as a Policy URL for signatures (rfc2440:5.2.3.19).
 If you prefix it with an exclamation mark (!), the policy URL packet
-will be flagged as critical.  --sig-policy-url sets a a policy url for
+will be flagged as critical.  --sig-policy-url sets a policy url for
 data signatures.  --cert-policy-url sets a policy url for key
 signatures (certifications).  --set-policy-url sets both.
 </para><para>
@@ -2364,7 +2374,7 @@ in front.
     </variablelist>
 
     <para>
-Note that you can append an exclamation point (!) to key IDs or
+Note that you can append an exclamation mark (!) to key IDs or
 fingerprints.  This flag tells GnuPG to use the specified primary or
 secondary key and not to try and calculate which primary or secondary
 key to use.
