@@ -1,3 +1,13 @@
+2002-06-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* hkp.c (parse_hkp_index): Be more robust with keyservers
+	returning very unparseable responses.
+
+	* exec.c (exec_read): Catch and display an error when the remote
+	process exits unnaturally (i.e. segfault) so the user knows what
+	happened.  Also fix exec_write stub which has a different number
+	of arguments now.
+
 2002-06-05  Timo Schulz  <ts@winpt.org>
 
 	* encode.c (encode_simple): Ignore the new mode for RFC1991.

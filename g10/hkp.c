@@ -280,7 +280,8 @@ parse_hkp_index(IOBUF buffer,char *line)
 	{
 	  char intstr[11];
 
-	  write_quoted(buffer,key,':');
+	  if(key)
+	    write_quoted(buffer,key,':');
 	  iobuf_writestr(buffer,":");
 	  write_quoted(buffer,uid,':');
 	  iobuf_writestr(buffer,":");

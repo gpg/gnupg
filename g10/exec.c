@@ -43,7 +43,7 @@
 
 #ifdef NO_EXEC
 int exec_write(struct exec_info **info,const char *program,
-	       const char *args_in,int writeonly,int binary)
+	       const char *args_in,const char *name,int writeonly,int binary)
 {
   log_error(_("no remote program execution supported\n"));
   return G10ERR_GENERAL;
@@ -473,14 +473,20 @@ int exec_read(struct exec_info *info)
 	  info->progreturn=127;
 	  goto fail;
 	}
+
+#if defined(WIFEXITED) && defined(WEXITSTATUS)
+      if(WIFEXITED(info->progreturn))
+	info->progreturn=WEXITSTATUS(info->progreturn);
       else
 	{
-#ifdef WEXITSTATUS
-	  info->progreturn=WEXITSTATUS(info->progreturn);
-#else
-	  info->progreturn/=256;
-#endif
+	  log_error(_("unnatural exit of external program\n"));
+	  info->progreturn=127;
+	  goto fail;
 	}
+#else
+      /* If we don't have the macros, do the best we can. */
+      info->progreturn/=256;
+#endif
 
       /* 127 is the magic value returned from system() to indicate
          that the shell could not be executed, or from /bin/sh to
