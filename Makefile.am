@@ -44,10 +44,22 @@ else
 scd =
 endif
 
-SUBDIRS = m4  intl jnlib common kbx ${gpg} ${sm} ${agent} ${scd} po doc tests
+SUBDIRS = m4  intl jnlib common kbx \
+ ${gpg} ${sm} ${agent} ${scd} po doc tests
+
 
 
 dist-hook:
-	@set -e; echo "$(VERSION)" > $(distdir)/VERSION
+	@set -e; \
+	 for file in `cd $(top_srcdir); \
+		     find scripts include -type f -name distfiles`; do \
+	    dir=`dirname $$file` ; $(mkinstalldirs) $(distdir)/$$dir ; \
+	    for i in distfiles `cat $(top_srcdir)/$$file` ; do \
+		ln $(top_srcdir)/$$dir/$$i $(distdir)/$$dir/$$i 2> /dev/null \
+		|| cp -p $(top_srcdir)/$$dir/$$i $(distdir)/$$dir/$$i; \
+	    done ; \
+	done
+	echo "$(VERSION)" > $(distdir)/VERSION
+
 
 
