@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.2.2\n"
-"POT-Creation-Date: 2003-07-30 18:02+0200\n"
+"POT-Creation-Date: 2003-07-30 18:22+0200\n"
 "PO-Revision-Date: 2003-04-24 17:50+0200\n"
 "Last-Translator: Roman Pavlik <rp@tns.cz>\n"
 "Language-Team: Czech <translations.cs@gnupg.cz>\n"
@@ -3831,50 +3831,50 @@ msgstr "nemohu pracovat s algoritmem veøejného klíèe %d\n"
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "podpaket typu %d má nastavený kritický bit\n"
 
-#: g10/passphrase.c:455 g10/passphrase.c:502
+#: g10/passphrase.c:459 g10/passphrase.c:506
 msgid "gpg-agent is not available in this session\n"
 msgstr "gpg-agent není v tomto sezení dostupný\n"
 
-#: g10/passphrase.c:463
+#: g10/passphrase.c:467
 msgid "can't set client pid for the agent\n"
 msgstr "nemohu nastavit PID klienta pro gpg-agenta\n"
 
-#: g10/passphrase.c:471
+#: g10/passphrase.c:475
 msgid "can't get server read FD for the agent\n"
 msgstr "nelze získat server read file descriptor pro agenta r\n"
 
-#: g10/passphrase.c:478
+#: g10/passphrase.c:482
 msgid "can't get server write FD for the agent\n"
 msgstr "nezle získat server write file descriptor pro agenta\n"
 
-#: g10/passphrase.c:511
+#: g10/passphrase.c:515
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "¹patný formát promìnné prostøedí GPG_AGENT_INFO\n"
 
-#: g10/passphrase.c:524
+#: g10/passphrase.c:528
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
 msgstr "gpg-agent protokol verze %d není podporován\n"
 
-#: g10/passphrase.c:545 g10/hkp.c:155
+#: g10/passphrase.c:549 g10/hkp.c:155
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "nemohu se pøipojit k `%s': %s\n"
 
-#: g10/passphrase.c:567
+#: g10/passphrase.c:571
 msgid "communication problem with gpg-agent\n"
 msgstr "problém v komunikaci s gpg-agentem\n"
 
-#: g10/passphrase.c:574 g10/passphrase.c:875 g10/passphrase.c:988
+#: g10/passphrase.c:578 g10/passphrase.c:879 g10/passphrase.c:992
 msgid "problem with the agent - disabling agent use\n"
 msgstr "problém s agentem - pou¾ívání agenta vypnuto\n"
 
-#: g10/passphrase.c:676 g10/passphrase.c:1094
+#: g10/passphrase.c:680 g10/passphrase.c:1098
 #, c-format
 msgid " (main key ID %08lX)"
 msgstr " (hlavní ID klíèe %08lX)"
 
-#: g10/passphrase.c:686
+#: g10/passphrase.c:690
 #, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for user:\n"
@@ -3885,32 +3885,32 @@ msgstr ""
 "\"%.*s\"\n"
 "Klíè o délce %u bitù, typ %s, ID %08lX, vytvoøený %s%s\n"
 
-#: g10/passphrase.c:708
+#: g10/passphrase.c:712
 msgid "Repeat passphrase\n"
 msgstr "Opakovat heslo\n"
 
-#: g10/passphrase.c:710
+#: g10/passphrase.c:714
 msgid "Enter passphrase\n"
 msgstr "Vlo¾it heslo\n"
 
-#: g10/passphrase.c:748
+#: g10/passphrase.c:752
 msgid "passphrase too long\n"
 msgstr "heslo je pøíli¹ dlouhé\n"
 
-#: g10/passphrase.c:761
+#: g10/passphrase.c:765
 msgid "invalid response from agent\n"
 msgstr "neplatná reakce od agenta\n"
 
-#: g10/passphrase.c:776 g10/passphrase.c:869
+#: g10/passphrase.c:780 g10/passphrase.c:873
 msgid "cancelled by user\n"
 msgstr "zru¹eno u¾ivatelem\n"
 
-#: g10/passphrase.c:781 g10/passphrase.c:959
+#: g10/passphrase.c:785 g10/passphrase.c:963
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr "problém s agentem: agent vrací 0x%lx\n"
 
-#: g10/passphrase.c:1080
+#: g10/passphrase.c:1084
 msgid ""
 "\n"
 "You need a passphrase to unlock the secret key for\n"
@@ -3920,20 +3920,20 @@ msgstr ""
 "Musíte znát heslo, abyste odemknul(a) tajný klíè pro\n"
 "u¾ivatele: \""
 
-#: g10/passphrase.c:1089
+#: g10/passphrase.c:1093
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
 msgstr "délka %u bitù, typ %s, klíè %08lX, vytvoøený %s"
 
-#: g10/passphrase.c:1141
+#: g10/passphrase.c:1145
 msgid "can't query password in batchmode\n"
 msgstr "v dávkovém re¾imu se nemohu ptát na heslo\n"
 
-#: g10/passphrase.c:1145
+#: g10/passphrase.c:1149
 msgid "Enter passphrase: "
 msgstr "Vlo¾te heslo: "
 
-#: g10/passphrase.c:1149
+#: g10/passphrase.c:1153
 msgid "Repeat passphrase: "
 msgstr "Opakujte heslo: "
 
