@@ -1709,8 +1709,9 @@ validate_keys (int interactive)
 		      k = new_key_item ();
 		      k->kid[0]=kid[0];
 		      k->kid[1]=kid[1];
-		      k->ownertrust = get_ownertrust (kar->keyblock
-						      ->pkt->pkt.public_key);
+		      k->ownertrust = (get_ownertrust (kar->keyblock
+						       ->pkt->pkt.public_key)
+				       & TRUST_MASK);
 		      k->next = klist;
 		      klist = k;
 		      break;
@@ -1744,7 +1745,6 @@ validate_keys (int interactive)
       do_sync ();
       pending_check_trustdb = 0;
     }
+
   return rc;
 }
-
-
