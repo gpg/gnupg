@@ -1,3 +1,10 @@
+2003-05-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Some general language tweaks.  Note default algo for
+	--symmetric.  --export-ownertrust takes no args.  Document
+	--no-escape-from-lines.  Fix escaped "<From" to be ">From".  Make
+	"openpgp" trust model into "pgp".
+
 2003-04-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* DETAILS (VALIDSIG): Add version, pk algo, digest algo, sig
