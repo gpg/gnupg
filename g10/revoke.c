@@ -551,7 +551,9 @@ gen_revoke( const char *uname )
 
     if(opt.pgp2 || opt.pgp6 || opt.pgp7)
       {
-	rc=export_minimal_pk(out,NULL /*pub_keyblock*/,sig,NULL);
+	/* Use a minimal pk for PGPx mode, since PGP can't import bare
+	   revocation certificates. */
+	rc=export_minimal_pk(out,pub_keyblock,sig,NULL);
 	if(rc)
 	  goto leave;
       }

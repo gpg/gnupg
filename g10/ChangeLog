@@ -1,3 +1,18 @@
+2002-10-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (import_secret_one): Check for an illegal (>110)
+	protection cipher when importing a secret key.
+
+	* keylist.c (list_keyblock_print): Show a '#' for a
+	secret-parts-missing key.
+
+	* parse_packet.c (parse_key): Some comments.
+
+	* revoke.c (gen_revoke): Remove some debugging code.
+
+	* trustdb.c (verify_own_keys): Make trusted-key a non-deprecated
+	option again.
+
 2002-10-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* seckey-cert.c (do_check): Don't give the IDEA warning unless the
