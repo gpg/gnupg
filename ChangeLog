@@ -1,3 +1,8 @@
+2003-04-15  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4 (GNUPG_CHECK_ENDIAN): Fix quoting of r.e. using
+	quadrigraphs.
+
 2003-04-08  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am (EXTRA_DIST): Add autogen.sh wrapper.

@@ -114,7 +114,7 @@ define(GNUPG_CHECK_ENDIAN,
     tmp_assumed_endian=big
     if test "$cross_compiling" = yes; then
       case "$host_cpu" in
-         i[345678]* )
+         i@<:@345678@:>@* )
             tmp_assumed_endian=little
             ;;
          *)
