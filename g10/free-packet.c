@@ -57,7 +57,7 @@ free_seckey_enc( PKT_signature *enc )
 }
 
 void
-free_pubkey_cert( PKT_pubkey_cert *cert )
+free_public_cert( PKT_public_cert *cert )
 {
     if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	mpi_free( cert->d.elg.p );
@@ -73,8 +73,8 @@ free_pubkey_cert( PKT_pubkey_cert *cert )
     m_free(cert);
 }
 
-PKT_pubkey_cert *
-copy_pubkey_cert( PKT_pubkey_cert *d, PKT_pubkey_cert *s )
+PKT_public_cert *
+copy_public_cert( PKT_public_cert *d, PKT_public_cert *s )
 {
     if( !d )
 	d = m_alloc(sizeof *d);
@@ -94,7 +94,7 @@ copy_pubkey_cert( PKT_pubkey_cert *d, PKT_pubkey_cert *s )
 }
 
 void
-free_seckey_cert( PKT_seckey_cert *cert )
+free_secret_cert( PKT_secret_cert *cert )
 {
     if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	mpi_free( cert->d.elg.p );
@@ -124,8 +124,8 @@ free_seckey_cert( PKT_seckey_cert *cert )
     m_free(cert);
 }
 
-PKT_seckey_cert *
-copy_seckey_cert( PKT_seckey_cert *d, PKT_seckey_cert *s )
+PKT_secret_cert *
+copy_secret_cert( PKT_secret_cert *d, PKT_secret_cert *s )
 {
     if( !d )
 	d = m_alloc(sizeof *d);
@@ -172,7 +172,7 @@ free_compressed( PKT_compressed *zd )
 }
 
 void
-free_encr_data( PKT_encr_data *ed )
+free_encrypted( PKT_encrypted *ed )
 {
     if( ed->buf ) { /* have to skip some bytes */
 	if( iobuf_in_block_mode(ed->buf) ) {
@@ -225,11 +225,11 @@ free_packet( PACKET *pkt )
       case PKT_PUBKEY_ENC:
 	free_pubkey_enc( pkt->pkt.pubkey_enc );
 	break;
-      case PKT_PUBKEY_CERT:
-	free_pubkey_cert( pkt->pkt.pubkey_cert );
+      case PKT_PUBLIC_CERT:
+	free_public_cert( pkt->pkt.public_cert );
 	break;
-      case PKT_SECKEY_CERT:
-	free_seckey_cert( pkt->pkt.seckey_cert );
+      case PKT_SECRET_CERT:
+	free_secret_cert( pkt->pkt.secret_cert );
 	break;
       case PKT_COMMENT:
 	free_comment( pkt->pkt.comment );
@@ -237,11 +237,11 @@ free_packet( PACKET *pkt )
       case PKT_USER_ID:
 	free_user_id( pkt->pkt.user_id );
 	break;
-      case PKT_COMPR_DATA:
+      case PKT_COMPRESSED:
 	free_compressed( pkt->pkt.compressed);
 	break;
-      case PKT_ENCR_DATA:
-	free_encr_data( pkt->pkt.encr_data );
+      case PKT_ENCRYPTED:
+	free_encrypted( pkt->pkt.encrypted );
 	break;
       case PKT_PLAINTEXT:
 	free_plaintext( pkt->pkt.plaintext );

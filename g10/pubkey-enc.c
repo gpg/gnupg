@@ -41,7 +41,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
     int i, j, c, rc = 0;
     MPI dek_frame = mpi_alloc_secure(40);
     u16 csum, csum2;
-    PKT_seckey_cert *skc = m_alloc_clear( sizeof *skc );
+    PKT_secret_cert *skc = m_alloc_clear( sizeof *skc );
 
     skc->pubkey_algo = k->pubkey_algo;	 /* we want a pubkey with this algo*/
     if( (rc = get_seckey( skc, k->keyid )) )
@@ -58,7 +58,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	skey.g = skc->d.elg.g;
 	skey.y = skc->d.elg.y;
 	skey.x = skc->d.elg.x;
-	elg_decipher( dek_frame, k->d.elg.a, k->d.elg.b, &skey );
+	elg_decrypted( dek_frame, k->d.elg.a, k->d.elg.b, &skey );
 	memset( &skey, 0, sizeof skey );
     }
   #ifdef HAVE_RSA_CIPHER
@@ -82,7 +82,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	rc = G10ERR_PUBKEY_ALGO; /* unsupported algorithm */
 	goto leave;
     }
-    free_seckey_cert( skc ); skc = NULL;
+    free_secret_cert( skc ); skc = NULL;
 
 
     /* Now get the DEK (data encryption key) from the dek_frame
@@ -151,7 +151,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
   leave:
     mpi_free(dek_frame);
     if( skc )
-	free_seckey_cert( skc );
+	free_secret_cert( skc );
     return rc;
 }
 

@@ -6,7 +6,6 @@
       function of iobuf.
     * filter all output read from the input when displaying it to the user.
     * keyring editing
-    * improve the prime number generator
     * remove some debugging stuff (e.g. the listing mode in mainproc)
     * add trust stuff
     * make ttyio.c work (hide passwords etc..)
@@ -19,7 +18,7 @@
     * look for a way to reuse RSA signatures
     * find a way to remove the armor filter after it
       has detected, that the data is not armored.
-    * Use the Chines Remainder Theorem to speed up RSA calculations.
+    * Use the Chinese Remainder Theorem to speed up RSA calculations.
     * remove all "Fixmes"
     * speed up the RIPE-MD-160
     * add signal handling

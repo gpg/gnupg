@@ -27,23 +27,25 @@
 #include "cipher.h"
 #include "filter.h"
 
-
-#define PKT_PUBKEY_ENC	    1  /* public key encrypted packet */
-#define PKT_SIGNATURE	    2  /* secret key encrypted packet */
-#define PKT_SESSION_KEY     3  /* session key packet (OpenPGP)*/
-#define PKT_ONEPASS_SIG     4  /* one pass sig packet (OpenPGP)*/
-#define PKT_SECKEY_CERT     5  /* secret key certificate */
-#define PKT_PUBKEY_CERT     6  /* public key certificate */
-#define PKT_SECKEY_SUBCERT  7  /* secret subkey certificate (OpenPGP) */
-#define PKT_COMPR_DATA	    8  /* compressed data packet */
-#define PKT_ENCR_DATA	    9  /* conventional encrypted data */
-#define PKT_MARKER	   10  /* marker packet (OpenPGP) */
-#define PKT_PLAINTEXT	   11  /* plaintext data with filename and mode */
-#define PKT_RING_TRUST	   12  /* keyring trust packet */
-#define PKT_USER_ID	   13  /* user id packet */
-#define PKT_COMMENT	   14  /* comment packet */
-#define PKT_PUBKEY_SUBCERT 14  /* subkey certificate (OpenPGP) */
-#define PKT_NEW_COMMENT    16  /* new comment packet (OpenPGP) */
+typedef enum {
+	PKT_NONE	   =0,
+	PKT_PUBKEY_ENC	   =1, /* public key encrypted packet */
+	PKT_SIGNATURE	   =2, /* secret key encrypted packet */
+	PKT_SESSION_KEY    =3, /* session key packet (OpenPGP)*/
+	PKT_ONEPASS_SIG    =4, /* one pass sig packet (OpenPGP)*/
+	PKT_SECRET_CERT    =5, /* secret key certificate */
+	PKT_PUBLIC_CERT    =6, /* public key certificate */
+	PKT_SECKEY_SUBCERT =7, /* secret subkey certificate (OpenPGP) */
+	PKT_COMPRESSED	   =8, /* compressed data packet */
+	PKT_ENCRYPTED	   =9, /* conventional encrypted data */
+	PKT_MARKER	  =10, /* marker packet (OpenPGP) */
+	PKT_PLAINTEXT	  =11, /* plaintext data with filename and mode */
+	PKT_RING_TRUST	  =12, /* keyring trust packet */
+	PKT_USER_ID	  =13, /* user id packet */
+	PKT_COMMENT	  =14, /* comment packet */
+	PKT_PUBKEY_SUBCERT=14, /* subkey certificate (OpenPGP) */
+	PKT_NEW_COMMENT   =16  /* new comment packet (OpenPGP) */
+} pkttype_t;
 
 typedef struct packet_struct PACKET;
 
@@ -55,7 +57,7 @@ typedef struct {
 	MPI  rsa_integer;   /* integer containing the DEK */
       } rsa;
       struct {
-	MPI  a, b;	    /* integers with the enciphered DEK */
+	MPI  a, b;	    /* integers with the encrypteded DEK */
       } elg;
     } d;
 } PKT_pubkey_enc;
@@ -98,7 +100,7 @@ typedef struct {
 	MPI y;		    /* g^x mod p */
       } elg;
     } d;
-} PKT_pubkey_cert;
+} PKT_public_cert;
 
 typedef struct {
     u32     timestamp;	    /* certificate made */
@@ -115,7 +117,7 @@ typedef struct {
 	u16 csum;	    /* checksum */
 	u16 calc_csum;	    /* and a place to store the calculated csum */
 	byte is_protected;  /* The above infos are protected and must */
-			    /* be deciphered before use */
+			    /* be decrypteded before use */
 	byte protect_algo;  /* cipher used to protect the secret informations*/
 	union { 	    /* information for the protection */
 	  struct {
@@ -133,7 +135,7 @@ typedef struct {
 	u16 csum;	    /* checksum */
 	u16 calc_csum;	    /* and a place to store the calculated csum */
 	byte is_protected;  /* The above infos are protected and must */
-			    /* be deciphered before use */
+			    /* be decrypteded before use */
 	byte protect_algo;  /* cipher used to protect the secret informations*/
 	union { 	    /* information for the protection */
 	  struct {
@@ -144,7 +146,7 @@ typedef struct {
 	} protect;
       } elg;
     } d;
-} PKT_seckey_cert;
+} PKT_secret_cert;
 
 
 typedef struct {
@@ -166,7 +168,7 @@ typedef struct {
 typedef struct {
     u32  len;		  /* length of encrypted data */
     IOBUF buf;		  /* IOBUF reference */
-} PKT_encr_data;
+} PKT_encrypted;
 
 typedef struct {
     u32  len;		  /* length of encrypted data */
@@ -179,20 +181,20 @@ typedef struct {
 
 /* combine all packets into a union */
 struct packet_struct {
-    int pkttype;
-    PKT_pubkey_cert *pkc_parent;     /* the pubkey to which it belongs */
-    PKT_seckey_cert *skc_parent;      /* the seckey to which it belongs */
+    pkttype_t pkttype;
+    PKT_public_cert *pkc_parent;     /* the pubkey to which it belongs */
+    PKT_secret_cert *skc_parent;      /* the seckey to which it belongs */
     PKT_user_id     *user_parent;     /* the user_id to which it belongs */
     union {
 	void *generic;
-	PKT_pubkey_enc *pubkey_enc;	/* PKT_PUBKEY_ENC */
-	PKT_signature *signature;	/* PKT_SIGNATURE */
-	PKT_pubkey_cert *pubkey_cert;	/* PKT_PUBKEY_CERT */
-	PKT_seckey_cert *seckey_cert;	/* PKT_SECKEY_CERT */
+	PKT_pubkey_enc	*pubkey_enc;	/* PKT_PUBKEY_ENC */
+	PKT_signature	*signature;	/* PKT_SIGNATURE */
+	PKT_public_cert *public_cert;	/* PKT_PUBLIC_CERT */
+	PKT_secret_cert *secret_cert;	/* PKT_SECRET_CERT */
 	PKT_comment	*comment;	/* PKT_COMMENT */
 	PKT_user_id	*user_id;	/* PKT_USER_ID */
 	PKT_compressed	*compressed;	/* PKT_COMPRESSED */
-	PKT_encr_data	*encr_data;	/* PKT_ENCR_DATA */
+	PKT_encrypted	*encrypted;	/* PKT_ENCRYPTED */
 	PKT_plaintext	*plaintext;	/* PKT_PLAINTEXT */
     } pkt;
 };
@@ -218,20 +220,20 @@ u32 calc_packet_length( PACKET *pkt );
 /*-- free-packet.c --*/
 void free_pubkey_enc( PKT_pubkey_enc *enc );
 void free_seckey_enc( PKT_signature *enc );
-void free_pubkey_cert( PKT_pubkey_cert *cert );
-void free_seckey_cert( PKT_seckey_cert *cert );
+void free_public_cert( PKT_public_cert *cert );
+void free_secret_cert( PKT_secret_cert *cert );
 void free_user_id( PKT_user_id *uid );
 void free_comment( PKT_comment *rem );
 void free_packet( PACKET *pkt );
-PKT_pubkey_cert *copy_pubkey_cert( PKT_pubkey_cert *d, PKT_pubkey_cert *s );
-PKT_seckey_cert *copy_seckey_cert( PKT_seckey_cert *d, PKT_seckey_cert *s );
+PKT_public_cert *copy_public_cert( PKT_public_cert *d, PKT_public_cert *s );
+PKT_secret_cert *copy_secret_cert( PKT_secret_cert *d, PKT_secret_cert *s );
 
 
 /*-- sig-check.c --*/
-int signature_check( PKT_signature *sig, MD_HANDLE digest );
+int signature_check( PKT_signature *sig, MD_HANDLE *digest );
 
 /*-- seckey-cert.c --*/
-int check_secret_key( PKT_seckey_cert *cert );
+int check_secret_key( PKT_secret_cert *cert );
 
 /*-- pubkey-enc.c --*/
 int get_session_key( PKT_pubkey_enc *k, DEK *dek );
@@ -240,8 +242,8 @@ int get_session_key( PKT_pubkey_enc *k, DEK *dek );
 int handle_compressed( PKT_compressed *zd );
 
 /*-- encr-data.c --*/
-int decrypt_data( PKT_encr_data *ed, DEK *dek );
-int encrypt_data( PKT_encr_data *ed, DEK *dek );
+int decrypt_data( PKT_encrypted *ed, DEK *dek );
+int encrypt_data( PKT_encrypted *ed, DEK *dek );
 
 /*-- plaintext.c --*/
 int handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx );

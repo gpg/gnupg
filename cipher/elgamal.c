@@ -60,10 +60,10 @@ test_keys( ELG_public_key *pk, ELG_secret_key *sk, unsigned nbits )
 
     mpi_set_bytes( test, nbits, get_random_byte, 0 );
 
-    elg_encipher( out1_a, out1_b, test, pk );
-    elg_decipher( out2, out1_a, out1_b, sk );
+    elg_encrypted( out1_a, out1_b, test, pk );
+    elg_decrypted( out2, out1_a, out1_b, sk );
     if( mpi_cmp( test, out2 ) )
-	log_fatal("ElGamal operation: encipher, decipher failed\n");
+	log_fatal("ElGamal operation: encrypted, decrypted failed\n");
 
     elg_sign( out1_a, out1_b, test, sk );
     if( !elg_verify( out1_a, out1_b, test, pk ) )
@@ -182,7 +182,7 @@ elg_check_secret_key( ELG_secret_key *sk )
 
 
 void
-elg_encipher(MPI a, MPI b, MPI input, ELG_public_key *pkey )
+elg_encrypted(MPI a, MPI b, MPI input, ELG_public_key *pkey )
 {
     MPI k;
 
@@ -197,12 +197,12 @@ elg_encipher(MPI a, MPI b, MPI input, ELG_public_key *pkey )
     mpi_mulm( b, b, input, pkey->p );
   #if 0
     if( DBG_CIPHER ) {
-	log_mpidump("elg encipher y= ", pkey->y);
-	log_mpidump("elg encipher p= ", pkey->p);
-	log_mpidump("elg encipher k= ", k);
-	log_mpidump("elg encipher M= ", input);
-	log_mpidump("elg encipher a= ", a);
-	log_mpidump("elg encipher b= ", b);
+	log_mpidump("elg encrypted y= ", pkey->y);
+	log_mpidump("elg encrypted p= ", pkey->p);
+	log_mpidump("elg encrypted k= ", k);
+	log_mpidump("elg encrypted M= ", input);
+	log_mpidump("elg encrypted a= ", a);
+	log_mpidump("elg encrypted b= ", b);
     }
   #endif
     mpi_free(k);
@@ -212,7 +212,7 @@ elg_encipher(MPI a, MPI b, MPI input, ELG_public_key *pkey )
 
 
 void
-elg_decipher(MPI output, MPI a, MPI b, ELG_secret_key *skey )
+elg_decrypted(MPI output, MPI a, MPI b, ELG_secret_key *skey )
 {
     MPI t1 = mpi_alloc_secure( mpi_get_nlimbs( skey->p ) );
 
@@ -223,11 +223,11 @@ elg_decipher(MPI output, MPI a, MPI b, ELG_secret_key *skey )
     mpi_mulm( output, b, t1, skey->p );
   #if 0
     if( DBG_CIPHER ) {
-	log_mpidump("elg decipher x= ", skey->x);
-	log_mpidump("elg decipher p= ", skey->p);
-	log_mpidump("elg decipher a= ", a);
-	log_mpidump("elg decipher b= ", b);
-	log_mpidump("elg decipher M= ", output);
+	log_mpidump("elg decrypted x= ", skey->x);
+	log_mpidump("elg decrypted p= ", skey->p);
+	log_mpidump("elg decrypted a= ", a);
+	log_mpidump("elg decrypted b= ", b);
+	log_mpidump("elg decrypted M= ", output);
     }
   #endif
     mpi_free(t1);

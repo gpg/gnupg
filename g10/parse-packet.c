@@ -127,7 +127,7 @@ parse_packet( IOBUF inp, PACKET *pkt )
     pktlen = 0;
     if( !lenbytes ) {
 	pktlen = 0; /* don't know the value */
-	if( pkttype != PKT_COMPR_DATA )
+	if( pkttype != PKT_COMPRESSED )
 	    iobuf_set_block_mode(inp, 1);
     }
     else {
@@ -143,13 +143,13 @@ parse_packet( IOBUF inp, PACKET *pkt )
     pkt->pkttype = pkttype;
     rc = G10ERR_UNKNOWN_PACKET; /* default to no error */
     switch( pkttype ) {
-      case PKT_PUBKEY_CERT:
-	pkt->pkt.pubkey_cert = m_alloc_clear(sizeof *pkt->pkt.pubkey_cert );
+      case PKT_PUBLIC_CERT:
+	pkt->pkt.public_cert = m_alloc_clear(sizeof *pkt->pkt.public_cert );
 	rc = parse_certificate(inp, pkttype, pktlen, hdr, hdrlen, pkt );
 	break;
-      case PKT_SECKEY_CERT:
+      case PKT_SECRET_CERT:
       case PKT_SECKEY_SUBCERT:
-	pkt->pkt.seckey_cert = m_alloc_clear(sizeof *pkt->pkt.seckey_cert );
+	pkt->pkt.secret_cert = m_alloc_clear(sizeof *pkt->pkt.secret_cert );
 	rc = parse_certificate(inp, pkttype, pktlen, hdr, hdrlen, pkt );
 	break;
       case PKT_PUBKEY_ENC:
@@ -171,10 +171,10 @@ parse_packet( IOBUF inp, PACKET *pkt )
       case PKT_PLAINTEXT:
 	rc = parse_plaintext(inp, pkttype, pktlen, pkt );
 	break;
-      case PKT_COMPR_DATA:
+      case PKT_COMPRESSED:
 	rc = parse_compressed(inp, pkttype, pktlen, pkt );
 	break;
-      case PKT_ENCR_DATA:
+      case PKT_ENCRYPTED:
 	rc = parse_encrypted(inp, pkttype, pktlen, pkt );
 	break;
       default:
@@ -352,13 +352,13 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
     unsigned short valid_period;
     int is_v4=0;
 
-    if( pkttype == PKT_PUBKEY_CERT ) {
-	pkt->pkt.pubkey_cert->mfx.md5 = md5_open(0);
-	pkt->pkt.pubkey_cert->mfx.rmd160 = rmd160_open(0);
-	pkt->pkt.pubkey_cert->mfx.maxbuf_size = 1;
-	md5_write(pkt->pkt.pubkey_cert->mfx.md5, hdr, hdrlen);
-	rmd160_write(pkt->pkt.pubkey_cert->mfx.rmd160, hdr, hdrlen);
-	iobuf_push_filter( inp, md_filter, &pkt->pkt.pubkey_cert->mfx );
+    if( pkttype == PKT_PUBLIC_CERT ) {
+	pkt->pkt.public_cert->mfx.md5 = md5_open(0);
+	pkt->pkt.public_cert->mfx.rmd160 = rmd160_open(0);
+	pkt->pkt.public_cert->mfx.maxbuf_size = 1;
+	md5_write(pkt->pkt.public_cert->mfx.md5, hdr, hdrlen);
+	rmd160_write(pkt->pkt.public_cert->mfx.rmd160, hdr, hdrlen);
+	iobuf_push_filter( inp, md_filter, &pkt->pkt.public_cert->mfx );
     }
 
     if( pktlen < 12 ) {
@@ -382,17 +382,17 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
     if( list_mode )
 	printf(":%s key certification packet:\n"
 	       "\tversion %d, created %lu, valid for %hu days\n",
-		pkttype == PKT_PUBKEY_CERT? "public": "secret",
+		pkttype == PKT_PUBLIC_CERT? "public": "secret",
 		version, timestamp, valid_period );
-    if( pkttype == PKT_SECKEY_CERT )  {
-	pkt->pkt.seckey_cert->timestamp = timestamp;
-	pkt->pkt.seckey_cert->valid_days = valid_period;
-	pkt->pkt.seckey_cert->pubkey_algo = algorithm;
+    if( pkttype == PKT_SECRET_CERT )  {
+	pkt->pkt.secret_cert->timestamp = timestamp;
+	pkt->pkt.secret_cert->valid_days = valid_period;
+	pkt->pkt.secret_cert->pubkey_algo = algorithm;
     }
     else {
-	pkt->pkt.pubkey_cert->timestamp = timestamp;
-	pkt->pkt.pubkey_cert->valid_days = valid_period;
-	pkt->pkt.pubkey_cert->pubkey_algo = algorithm;
+	pkt->pkt.public_cert->timestamp = timestamp;
+	pkt->pkt.public_cert->valid_days = valid_period;
+	pkt->pkt.public_cert->pubkey_algo = algorithm;
     }
 
     if( algorithm == PUBKEY_ALGO_ELGAMAL ) {
@@ -409,19 +409,19 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    mpi_print(stdout, elg_y, mpi_print_mode  );
 	    putchar('\n');
 	}
-	if( pkttype == PKT_PUBKEY_CERT ) {
-	    pkt->pkt.pubkey_cert->d.elg.p = elg_p;
-	    pkt->pkt.pubkey_cert->d.elg.g = elg_g;
-	    pkt->pkt.pubkey_cert->d.elg.y = elg_y;
+	if( pkttype == PKT_PUBLIC_CERT ) {
+	    pkt->pkt.public_cert->d.elg.p = elg_p;
+	    pkt->pkt.public_cert->d.elg.g = elg_g;
+	    pkt->pkt.public_cert->d.elg.y = elg_y;
 	}
 	else {
-	    PKT_seckey_cert *cert = pkt->pkt.seckey_cert;
+	    PKT_secret_cert *cert = pkt->pkt.secret_cert;
 	    byte temp[8];
 	    byte *mpibuf;
 
-	    pkt->pkt.seckey_cert->d.elg.p = elg_p;
-	    pkt->pkt.seckey_cert->d.elg.g = elg_g;
-	    pkt->pkt.seckey_cert->d.elg.y = elg_y;
+	    pkt->pkt.secret_cert->d.elg.p = elg_p;
+	    pkt->pkt.secret_cert->d.elg.g = elg_g;
+	    pkt->pkt.secret_cert->d.elg.y = elg_y;
 	    cert->d.elg.protect_algo = iobuf_get_noeof(inp); pktlen--;
 	    if( list_mode )
 		printf(  "\tprotect algo: %d\n", cert->d.elg.protect_algo);
@@ -455,10 +455,10 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 		cert->d.elg.calc_csum += checksum( mpibuf );
 		cert->d.elg.x = mpi_decode_buffer( mpibuf );
 		m_free( mpibuf );
-		log_mpidump("elg p=", cert->d.elg.p );
+	      /*log_mpidump("elg p=", cert->d.elg.p );
 		log_mpidump("elg g=", cert->d.elg.g );
 		log_mpidump("elg y=", cert->d.elg.y );
-		log_mpidump("elg x=", cert->d.elg.x );
+		log_mpidump("elg x=", cert->d.elg.x ); */
 	    }
 	}
     }
@@ -474,17 +474,17 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    mpi_print(stdout, rsa_pub_exp, mpi_print_mode  );
 	    putchar('\n');
 	}
-	if( pkttype == PKT_PUBKEY_CERT ) {
-	    pkt->pkt.pubkey_cert->d.rsa.rsa_n = rsa_pub_mod;
-	    pkt->pkt.pubkey_cert->d.rsa.rsa_e = rsa_pub_exp;
+	if( pkttype == PKT_PUBLIC_CERT ) {
+	    pkt->pkt.public_cert->d.rsa.rsa_n = rsa_pub_mod;
+	    pkt->pkt.public_cert->d.rsa.rsa_e = rsa_pub_exp;
 	}
 	else {
-	    PKT_seckey_cert *cert = pkt->pkt.seckey_cert;
+	    PKT_secret_cert *cert = pkt->pkt.secret_cert;
 	    byte temp[8];
 	    byte *mpibuf;
 
-	    pkt->pkt.seckey_cert->d.rsa.rsa_n = rsa_pub_mod;
-	    pkt->pkt.seckey_cert->d.rsa.rsa_e = rsa_pub_exp;
+	    pkt->pkt.secret_cert->d.rsa.rsa_n = rsa_pub_mod;
+	    pkt->pkt.secret_cert->d.rsa.rsa_e = rsa_pub_exp;
 	    cert->d.rsa.protect_algo = iobuf_get_noeof(inp); pktlen--;
 	    if( list_mode )
 		printf(  "\tprotect algo: %d\n", cert->d.rsa.protect_algo);
@@ -548,8 +548,8 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 
 
   leave:
-    if( pkttype == PKT_PUBKEY_CERT )
-	iobuf_pop_filter( inp, md_filter, &pkt->pkt.pubkey_cert->mfx );
+    if( pkttype == PKT_PUBLIC_CERT )
+	iobuf_pop_filter( inp, md_filter, &pkt->pkt.public_cert->mfx );
     skip_rest(inp, pktlen);
     return 0;
 }
@@ -737,9 +737,9 @@ parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
 static int
 parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
 {
-    PKT_encr_data *ed;
+    PKT_encrypted *ed;
 
-    ed = pkt->pkt.encr_data =  m_alloc(sizeof *pkt->pkt.encr_data );
+    ed = pkt->pkt.encrypted =  m_alloc(sizeof *pkt->pkt.encrypted );
     ed->len = pktlen;
     ed->buf = NULL;
     if( pktlen && pktlen < 10 ) {

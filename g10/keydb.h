@@ -32,17 +32,24 @@ int make_dek_from_passphrase( DEK *dek, int mode );
 
 /*-- getkey.c --*/
 void add_keyring( const char *name );
-void cache_pubkey_cert( PKT_pubkey_cert *pkc );
+void cache_public_cert( PKT_public_cert *pkc );
 void cache_user_id( PKT_user_id *uid, u32 *keyid );
-int get_pubkey( PKT_pubkey_cert *pkc, u32 *keyid );
-int get_pubkey_by_name( PKT_pubkey_cert *pkc, const char *name );
-int get_seckey( PKT_seckey_cert *skc, u32 *keyid );
-int get_seckey_by_name( PKT_seckey_cert *skc, const char *name );
+int get_pubkey( PKT_public_cert *pkc, u32 *keyid );
+int get_pubkey_by_name( PKT_public_cert *pkc, const char *name );
+int get_seckey( PKT_secret_cert *skc, u32 *keyid );
+int get_seckey_by_name( PKT_secret_cert *skc, const char *name );
 char*get_user_id_string( u32 *keyid );
+char*get_user_id( u32 *keyid, size_t *rn );
 
 /*-- keyid.c --*/
-u32 keyid_from_skc( PKT_seckey_cert *skc, u32 *keyid );
-u32 keyid_from_pkc( PKT_pubkey_cert *pkc, u32 *keyid );
+u32 keyid_from_skc( PKT_secret_cert *skc, u32 *keyid );
+u32 keyid_from_pkc( PKT_public_cert *pkc, u32 *keyid );
+u32 keyid_from_sig( PKT_signature *sig, u32 *keyid );
+unsigned nbits_from_pkc( PKT_public_cert *pkc );
+unsigned nbits_from_skc( PKT_secret_cert *skc );
+const char *datestr_from_pkc( PKT_public_cert *pkc );
+const char *datestr_from_skc( PKT_secret_cert *skc );
+const char *datestr_from_sig( PKT_signature *sig );
 
 
 

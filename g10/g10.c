@@ -21,6 +21,7 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "packet.h"
 #include "iobuf.h"
@@ -98,10 +99,10 @@ main( int argc, char **argv )
     { 'a', "armor",     0, "create ascii armored output"},
     { 'v', "verbose",   0, "verbose" },
     { 'z', NULL,        1, "set compress level (0 disables)" },
-    { 'b', "batch",     0, "batch mode: never ask" },
     { 'n', "dry-run",   0, "don't make any changes" },
     { 'c', "symmetric", 0, "do only a symmetric encryption" },
     { 'o', "output",    2, "use as output file" },
+    { 500, "batch",     0, "batch mode: never ask" },
     { 501, "yes",       0, "assume yes on most questions"},
     { 502, "no",        0, "assume no on most questions"},
     { 503, "gen-key",   0, "generate a new key pair" },
@@ -112,6 +113,7 @@ main( int argc, char **argv )
     { 508, "check-key" ,0, "check signatures on a key in the keyring" },
     { 509, "keyring"   ,2, "add this keyring to the list of keyrings" },
     { 's', "sign",      0, "make a signature"},
+    { 'b', "detach-sign", 0, "make a detached signature"},
     { 'e', "encrypt",   0, "encrypt data" },
     { 'd', "decrypt",   0, "decrypt data (default)" },
   /*{ 'c', "check",     0, "check a signature (default)" }, */
@@ -143,13 +145,14 @@ main( int argc, char **argv )
 	    opt.compress = pargs.r.ret_int;
 	    break;
 	  case 'a': opt.armor = 1; break;
-	  case 'b': opt.batch = 1; break;
 	  case 'c': action = aSym; break;
 	  case 'o': opt.outfile = pargs.r.ret_str;
 		    if( opt.outfile[0] == '-' && !opt.outfile[1] )
 			opt.outfile_is_stdout = 1;
 		    break;
 	  case 'e': action = action == aSign? aSignEncr : aEncr; break;
+	  case 'b': opt.detached_sig = 1;
+	       /* fall trough */
 	  case 's': action = action == aEncr? aSignEncr : aSign;  break;
 	  case 'l': /* store the local users */
 	    sl = m_alloc( sizeof *sl + strlen(pargs.r.ret_str));
@@ -163,6 +166,7 @@ main( int argc, char **argv )
 	    sl->next = remusr;
 	    remusr = sl;
 	    break;
+	  case 500: opt.batch = 1; break;
 	  case 501: opt.answer_yes = 1; break;
 	  case 502: opt.answer_no = 1; break;
 	  case 503: action = aKeygen; break;
@@ -180,11 +184,12 @@ main( int argc, char **argv )
     set_debug();
     if( opt.verbose > 1 )
 	set_packet_list_mode(1);
-    if( !opt.batch && *(s=strusage(10))  )
-	fputs(s, stderr);
-    if( !opt.batch && *(s=strusage(30))  )
-	fputs(s, stderr);
-
+    if( !opt.batch && isatty(fileno(stdin)) ) {
+	if( *(s=strusage(10))  )
+	    fputs(s, stderr);
+	if( *(s=strusage(30))  )
+	    fputs(s, stderr);
+    }
 
     if( !nrings ) { /* add default rings */
 	add_keyring("../keys/ring.pgp");

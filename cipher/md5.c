@@ -55,6 +55,7 @@
 #include <assert.h>
 #include "util.h"
 #include "md5.h"
+#include "cipher.h"  /* kludge for md5_copy2md() */
 #include "memory.h"
 
 
@@ -141,6 +142,17 @@ md5_copy( MD5HANDLE a )
     memcpy( mdContext, a, sizeof *a );
     return mdContext;
 }
+
+
+/* BAD Kludge!!! */
+MD_HANDLE *
+md5_copy2md( MD5HANDLE a )
+{
+    MD_HANDLE *md = md_makecontainer( DIGEST_ALGO_MD5 );
+    md->u.md5 = md5_copy( a );
+    return md;
+}
+
 
 void
 md5_close(MD5HANDLE hd)

@@ -32,7 +32,7 @@ struct {
     int answer_no;  /* answer no on most questions */
     int check_sigs; /* check key signatures */
     int cache_all;
-    int reserved2;
+    int detached_sig;
     int reserved3;
     int reserved4;
     int reserved5;

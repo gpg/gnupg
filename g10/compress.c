@@ -192,10 +192,10 @@ compress_filter( void *opaque, int control,
 	    cd.len = 0;
 	    cd.algorithm = 2; /* zlib */
 	    init_packet( &pkt );
-	    pkt.pkttype = PKT_COMPR_DATA;
+	    pkt.pkttype = PKT_COMPRESSED;
 	    pkt.pkt.compressed = &cd;
 	    if( build_packet( a, &pkt ))
-		log_bug("build_packet(COMPRESSED) failed\n");
+		log_bug("build_packet(PKT_COMPRESSED) failed\n");
 	    zs = zfx->opaque = m_alloc_clear( sizeof *zs );
 	    init_compress( zfx, zs );
 	    zfx->status = 2;

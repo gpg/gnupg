@@ -60,6 +60,7 @@ g10_errstr( int err )
       X(PASSPHRASE     ,"Invalid passphrase")
       X(NI_PUBKEY      ,"Unimplemented pubkey algorithm")
       X(NI_CIPHER      ,"Unimplemented cipher algorithm")
+      X(SIG_CLASS      ,"Unknown signature class")
 
       default: p = buf; sprintf(buf, "Error code %d", err); break;
     }

@@ -38,9 +38,9 @@
  * is able to append some data, before getting the digest.
  */
 int
-signature_check( PKT_signature *sig, MD_HANDLE digest )
+signature_check( PKT_signature *sig, MD_HANDLE *digest )
 {
-    PKT_pubkey_cert *pkc = m_alloc_clear( sizeof *pkc );
+    PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
     MPI result = NULL;
     int rc=0, i, j, c, old_enc;
     byte *dp;
@@ -54,35 +54,17 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
     if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	ELG_public_key pkey;
 
-	if( sig->d.elg.digest_algo == DIGEST_ALGO_RMD160 ) {
-	    /* complete the digest */
-	    rmd160_putchar( digest.u.rmd, sig->sig_class );
-	    {	u32 a = sig->timestamp;
-		rmd160_putchar( digest.u.rmd, (a >> 24) & 0xff );
-		rmd160_putchar( digest.u.rmd, (a >> 16) & 0xff );
-		rmd160_putchar( digest.u.rmd, (a >>  8) & 0xff );
-		rmd160_putchar( digest.u.rmd,  a	& 0xff );
-	    }
-	    dp = rmd160_final( digest.u.rmd );
-	    result = encode_rmd160_value( dp, 20, mpi_get_nbits(pkc->d.elg.p));
-	}
-	else if( sig->d.elg.digest_algo == DIGEST_ALGO_MD5 ) {
-	    md5_putchar( digest.u.md5, sig->sig_class );
-	    {	u32 a = sig->timestamp;
-		md5_putchar( digest.u.md5, (a >> 24) & 0xff );
-		md5_putchar( digest.u.md5, (a >> 16) & 0xff );
-		md5_putchar( digest.u.md5, (a >>  8) & 0xff );
-		md5_putchar( digest.u.md5,  a	     & 0xff );
-	    }
-	    md5_final( digest.u.md5 );
-	    dp = md5_read( digest.u.md5 );
-	    result = encode_md5_value( dp, 16, mpi_get_nbits(pkc->d.elg.p));
-	}
-	else {
-	    rc = G10ERR_DIGEST_ALGO;
+	if( (rc=md_okay(sig->d.elg.digest_algo)) )
 	    goto leave;
+	/* complete the digest */
+	md_putchar( digest, sig->sig_class );
+	{   u32 a = sig->timestamp;
+	    md_putchar( digest, (a >> 24) & 0xff );
+	    md_putchar( digest, (a >> 16) & 0xff );
+	    md_putchar( digest, (a >>  8) & 0xff );
+	    md_putchar( digest,  a	  & 0xff );
 	}
-
+	result = encode_md_value( digest, mpi_get_nbits(pkc->d.elg.p));
 	pkey.p = pkc->d.elg.p;
 	pkey.g = pkc->d.elg.g;
 	pkey.y = pkc->d.elg.y;
@@ -131,7 +113,7 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 	    for(i=20,j=0; (c=mpi_getbyte(result, i)) != -1 && j < 18; i++, j++ )
 		if( asn[j] != c )
 		    break;
-	    if( j != 18 || c ) { /* ASN is wrong */
+	    if( j != 18 || mpi_getbyte(result, i) ) { /* ASN is wrong */
 		rc = G10ERR_BAD_PUBKEY;
 		goto leave;
 	    }
@@ -152,14 +134,14 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 	    }
 
 	    /* complete the digest */
-	    rmd160_putchar( digest.u.rmd, sig->sig_class );
+	    md_putchar( digest, sig->sig_class );
 	    {	u32 a = sig->timestamp;
-		rmd160_putchar( digest.u.rmd, (a >> 24) & 0xff );
-		rmd160_putchar( digest.u.rmd, (a >> 16) & 0xff );
-		rmd160_putchar( digest.u.rmd, (a >>  8) & 0xff );
-		rmd160_putchar( digest.u.rmd,  a	& 0xff );
+		md_putchar( digest, (a >> 24) & 0xff );
+		md_putchar( digest, (a >> 16) & 0xff );
+		md_putchar( digest, (a >>  8) & 0xff );
+		md_putchar( digest,  a	      & 0xff );
 	    }
-	    dp = rmd160_final( digest.u.rmd );
+	    dp = md_final( digest );
 	    for(i=19; i >= 0; i--, dp++ )
 		if( mpi_getbyte( result, i ) != *dp ) {
 		    rc = G10ERR_BAD_SIGN;
@@ -174,7 +156,7 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 	    for(i=16,j=0; j < 18 && (c=mpi_getbyte(result, i)) != -1; i++, j++ )
 		if( asn[j] != c )
 		    break;
-	    if( j != 18 || c ) { /* ASN is wrong */
+	    if( j != 18 || mpi_getbyte(result, i) ) { /* ASN is wrong */
 		rc = G10ERR_BAD_PUBKEY;
 		goto leave;
 	    }
@@ -195,15 +177,14 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 	    }
 
 	    /* complete the digest */
-	    md5_putchar( digest.u.md5, sig->sig_class );
+	    md_putchar( digest, sig->sig_class );
 	    {	u32 a = sig->timestamp;
-		md5_putchar( digest.u.md5, (a >> 24) & 0xff );
-		md5_putchar( digest.u.md5, (a >> 16) & 0xff );
-		md5_putchar( digest.u.md5, (a >>  8) & 0xff );
-		md5_putchar( digest.u.md5,  a	     & 0xff );
+		md_putchar( digest, (a >> 24) & 0xff );
+		md_putchar( digest, (a >> 16) & 0xff );
+		md_putchar( digest, (a >>  8) & 0xff );
+		md_putchar( digest,  a	      & 0xff );
 	    }
-	    md5_final( digest.u.md5 );
-	    dp = md5_read( digest.u.md5 );
+	    dp = md_final( digest );
 	    for(i=15; i >= 0; i--, dp++ )
 		if( mpi_getbyte( result, i ) != *dp ) {
 		    rc = G10ERR_BAD_SIGN;
@@ -226,7 +207,7 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 
   leave:
     if( pkc )
-	free_pubkey_cert( pkc );
+	free_public_cert( pkc );
     mpi_free( result );
     return rc;
 }

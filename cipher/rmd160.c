@@ -25,6 +25,7 @@
 #include <assert.h>
 #include "util.h"
 #include "memory.h"
+#include "cipher.h" /* grrrr */
 #include "rmd.h"
 
 /*********************************
@@ -260,6 +261,18 @@ rmd160_copy( RMDHANDLE a )
     memcpy( b, a, sizeof *a );
     return b;
 }
+
+
+/* BAD Kludge!!! */
+MD_HANDLE *
+rmd160_copy2md( RMDHANDLE a )
+{
+    MD_HANDLE *md = md_makecontainer( DIGEST_ALGO_RMD160 );
+    md->u.rmd = rmd160_copy( a );
+    return md;
+}
+
+
 
 void
 rmd160_close(RMDHANDLE hd)

@@ -49,11 +49,11 @@
 #define CIPHER_ALGO_BLOWFISH	42  /* blowfish 160 bit key (not in OpenPGP)*/
 #define CIPHER_ALGO_GOST	43  /* (Not in OpenPGP) */
 
-#define PUBKEY_ALGO_RSA       1
-#define PUBKEY_ALGO_RSA_E     2     /* RSA encrypt only */
-#define PUBKEY_ALGO_RSA_S     3     /* RSA sign only */
-#define PUBKEY_ALGO_ELGAMAL  16
-#define PUBKEY_ALGO_DSA      17
+#define PUBKEY_ALGO_RSA        1
+#define PUBKEY_ALGO_RSA_E      2     /* RSA encrypt only */
+#define PUBKEY_ALGO_RSA_S      3     /* RSA sign only */
+#define PUBKEY_ALGO_ELGAMAL   16
+#define PUBKEY_ALGO_DSA       17
 
 #define DIGEST_ALGO_MD5       1
 #define DIGEST_ALGO_SHA1      2
@@ -72,10 +72,25 @@ typedef struct {
       MD5HANDLE md5;
       RMDHANDLE rmd;
     } u;
+    int datalen;
+    char data[1];
 } MD_HANDLE;
 
 
 int cipher_debug_mode;
+
+/*-- md.c --*/
+int md_okay( int algo );
+MD_HANDLE *md_open( int algo, int secure );
+MD_HANDLE *md_copy( MD_HANDLE *a );
+MD_HANDLE *md_makecontainer( int algo ); /* used for a bad kludge */
+void md_write( MD_HANDLE *a, byte *inbuf, size_t inlen);
+void md_putchar( MD_HANDLE *a, int c );
+byte *md_final(MD_HANDLE *a);
+void md_close(MD_HANDLE *a);
+
+MD_HANDLE *md5_copy2md( MD5HANDLE a ); /* (in md5.c) */
+MD_HANDLE *rmd160_copy2md( RMDHANDLE a ); /* (in rmd160.c) */
 
 /*-- random.c --*/
 void randomize_buffer( byte *buffer, size_t length, int level );

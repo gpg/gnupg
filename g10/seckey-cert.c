@@ -49,7 +49,7 @@ checksum( byte *p )
 
 
 static int
-check_elg( PKT_seckey_cert *cert )
+check_elg( PKT_secret_cert *cert )
 {
     byte iv[8];
     byte *mpibuf;
@@ -116,7 +116,7 @@ check_elg( PKT_seckey_cert *cert )
 
 #ifdef HAVE_RSA_CIPHER
 static int
-check_rsa( PKT_seckey_cert *cert )
+check_rsa( PKT_secret_cert *cert )
 {
     byte iv[8];
     byte *mpibuf;
@@ -131,7 +131,7 @@ check_rsa( PKT_seckey_cert *cert )
 
 	switch( cert->d.rsa.protect_algo ) {
 	  case CIPHER_ALGO_NONE:
-	    log_bug("unprotect seckey_cert is flagged protected\n");
+	    log_bug("unprotect secret_cert is flagged protected\n");
 	    break;
 	  case CIPHER_ALGO_BLOWFISH:
 	    keyid_from_skc( cert, keyid );
@@ -203,7 +203,7 @@ check_rsa( PKT_seckey_cert *cert )
  * Check the secret key certificate
  */
 int
-check_secret_key( PKT_seckey_cert *cert )
+check_secret_key( PKT_secret_cert *cert )
 {
     if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
 	return check_elg( cert );

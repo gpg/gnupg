@@ -160,7 +160,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     IOBUF inp, out;
     PACKET pkt;
     PKT_plaintext *pt;
-    PKT_pubkey_cert *pkc = NULL;
+    PKT_public_cert *pkc = NULL;
     PKT_pubkey_enc  *enc = NULL;
     int last_rc, rc = 0;
     u32 filesize;
@@ -214,7 +214,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     /* loop over all user ids and build public key packets for each */
     for(last_rc=0 ; remusr; remusr = remusr->next ) {
 	if( pkc )
-	    free_pubkey_cert( pkc );
+	    free_public_cert( pkc );
 	pkc = m_alloc_clear( sizeof *pkc );
 	pkc->pubkey_algo = DEFAULT_PUBKEY_ALGO;
 
@@ -239,7 +239,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	    pkey.y = pkc->d.elg.y;
 	    if( DBG_CIPHER )
 		log_mpidump("Plain DEK frame: ", frame);
-	    elg_encipher( enc->d.elg.a, enc->d.elg.b, frame, &pkey);
+	    elg_encrypted( enc->d.elg.a, enc->d.elg.b, frame, &pkey);
 	    mpi_free( frame );
 	    if( DBG_CIPHER ) {
 		log_mpidump("Encry DEK a: ", enc->d.elg.a );
@@ -247,7 +247,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	    }
 	    if( opt.verbose ) {
 		ustr = get_user_id_string( enc->keyid );
-		log_info("ElGamal enciphered for: %s\n", ustr );
+		log_info("ElGamal encrypteded for: %s\n", ustr );
 		m_free(ustr);
 	    }
 	}
@@ -267,7 +267,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 		log_mpidump("Encry DEK frame: ", enc->d.rsa.rsa_integer);
 	    if( opt.verbose ) {
 		ustr = get_user_id_string( enc->keyid );
-		log_info("RSA enciphered for: %s\n", ustr );
+		log_info("RSA encrypteded for: %s\n", ustr );
 		m_free(ustr);
 	    }
 	}
@@ -293,7 +293,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	any_names = 1;
     }
     if( pkc ) {
-	free_pubkey_cert( pkc );
+	free_public_cert( pkc );
 	pkc = NULL;
     }
     if( !any_names ) {

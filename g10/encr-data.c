@@ -43,7 +43,7 @@ typedef struct {
  * Decrypt the data, specified by ED with the key DEK.
  */
 int
-decrypt_data( PKT_encr_data *ed, DEK *dek )
+decrypt_data( PKT_encrypted *ed, DEK *dek )
 {
     decode_filter_ctx_t dfx;
     byte *p;

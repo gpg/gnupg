@@ -41,8 +41,8 @@ void elg_free_public_key( ELG_public_key *pk );
 void elg_free_secret_key( ELG_secret_key *sk );
 void elg_generate( ELG_public_key *pk, ELG_secret_key *sk, unsigned nbits );
 int  elg_check_secret_key( ELG_secret_key *sk );
-void elg_encipher(MPI a, MPI b, MPI input, ELG_public_key *pkey );
-void elg_decipher(MPI output, MPI a, MPI b, ELG_secret_key *skey );
+void elg_encrypted(MPI a, MPI b, MPI input, ELG_public_key *pkey );
+void elg_decrypted(MPI output, MPI a, MPI b, ELG_secret_key *skey );
 void elg_sign(MPI a, MPI b, MPI input, ELG_secret_key *skey);
 int  elg_verify(MPI a, MPI b, MPI input, ELG_public_key *pkey);
 

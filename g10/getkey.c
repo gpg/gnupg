@@ -48,7 +48,7 @@ typedef struct user_id_db {
 typedef struct pkc_cache_entry {
     struct pkc_cache_entry *next;
     u32 keyid[2];
-    PKT_pubkey_cert *pkc;
+    PKT_public_cert *pkc;
 } *pkc_cache_entry_t;
 
 static STRLIST keyrings;
@@ -59,9 +59,9 @@ static pkc_cache_entry_t pkc_cache;
 static int pkc_cache_entries;	/* number of entries in pkc cache */
 
 
-static int scan_keyring( PKT_pubkey_cert *pkc, u32 *keyid,
+static int scan_keyring( PKT_public_cert *pkc, u32 *keyid,
 			 const char *name, const char *filename );
-static int scan_secret_keyring( PKT_seckey_cert *skc, u32 *keyid,
+static int scan_secret_keyring( PKT_secret_cert *skc, u32 *keyid,
 				const char *name, const char *filename);
 
 
@@ -80,7 +80,7 @@ add_keyring( const char *name )
 
 
 void
-cache_pubkey_cert( PKT_pubkey_cert *pkc )
+cache_public_cert( PKT_public_cert *pkc )
 {
     pkc_cache_entry_t ce;
     u32 keyid[2];
@@ -95,7 +95,7 @@ cache_pubkey_cert( PKT_pubkey_cert *pkc )
     for( ce = pkc_cache; ce; ce = ce->next )
 	if( ce->keyid[0] == keyid[0] && ce->keyid[1] == keyid[1] ) {
 	    if( DBG_CACHE )
-		log_debug("cache_pubkey_cert: already in cache\n");
+		log_debug("cache_public_cert: already in cache\n");
 	    return;
 	}
 
@@ -106,7 +106,7 @@ cache_pubkey_cert( PKT_pubkey_cert *pkc )
 	    log_info("too many entries in pkc cache - disabled\n");
 	}
 	ce = pkc_cache;
-	free_pubkey_cert( ce->pkc );
+	free_public_cert( ce->pkc );
     }
     else {
 	pkc_cache_entries++;
@@ -114,7 +114,7 @@ cache_pubkey_cert( PKT_pubkey_cert *pkc )
 	ce->next = pkc_cache;
 	pkc_cache = ce;
     }
-    ce->pkc = copy_pubkey_cert( NULL, pkc );
+    ce->pkc = copy_public_cert( NULL, pkc );
     ce->keyid[0] = keyid[0];
     ce->keyid[1] = keyid[1];
 }
@@ -152,7 +152,7 @@ cache_user_id( PKT_user_id *uid, u32 *keyid )
  * internal structures.
  */
 int
-get_pubkey( PKT_pubkey_cert *pkc, u32 *keyid )
+get_pubkey( PKT_public_cert *pkc, u32 *keyid )
 {
     keyid_list_t kl;
     int internal = 0;
@@ -179,7 +179,7 @@ get_pubkey( PKT_pubkey_cert *pkc, u32 *keyid )
     for( ce = pkc_cache; ce; ce = ce->next )
 	if( ce->keyid[0] == keyid[0] && ce->keyid[1] == keyid[1] ) {
 	    if( pkc )
-		copy_pubkey_cert( pkc, ce->pkc );
+		copy_public_cert( pkc, ce->pkc );
 	    return 0;
 	}
 
@@ -207,7 +207,7 @@ get_pubkey( PKT_pubkey_cert *pkc, u32 *keyid )
 
   leave:
     if( !rc )
-	cache_pubkey_cert( pkc );
+	cache_public_cert( pkc );
     if( internal )
 	m_free(pkc);
     return rc;
@@ -221,7 +221,7 @@ get_pubkey( PKT_pubkey_cert *pkc, u32 *keyid )
  * a pubkey with that algo.
  */
 int
-get_pubkey_by_name( PKT_pubkey_cert *pkc, const char *name )
+get_pubkey_by_name( PKT_public_cert *pkc, const char *name )
 {
     int internal = 0;
     int rc = 0;
@@ -253,7 +253,7 @@ get_pubkey_by_name( PKT_pubkey_cert *pkc, const char *name )
  * Get a secret key and store it into skey
  */
 int
-get_seckey( PKT_seckey_cert *skc, u32 *keyid )
+get_seckey( PKT_secret_cert *skc, u32 *keyid )
 {
     int rc=0;
 
@@ -277,7 +277,7 @@ get_seckey( PKT_seckey_cert *skc, u32 *keyid )
  * Get a secret key by name and store it into skc
  */
 int
-get_seckey_by_name( PKT_seckey_cert *skc, const char *name )
+get_seckey_by_name( PKT_secret_cert *skc, const char *name )
 {
     int rc=0;
 
@@ -302,7 +302,7 @@ get_seckey_by_name( PKT_seckey_cert *skc, const char *name )
  * scan the keyring and look for either the keyid or the name.
  */
 static int
-scan_keyring( PKT_pubkey_cert *pkc, u32 *keyid,
+scan_keyring( PKT_public_cert *pkc, u32 *keyid,
 	      const char *name, const char *filename )
 {
     int rc=0;
@@ -311,7 +311,7 @@ scan_keyring( PKT_pubkey_cert *pkc, u32 *keyid,
     PACKET pkt;
     int save_mode;
     u32 akeyid[2];
-    PKT_pubkey_cert *last_pk = NULL;
+    PKT_public_cert *last_pk = NULL;
 
     assert( !keyid || !name );
 
@@ -338,34 +338,34 @@ scan_keyring( PKT_pubkey_cert *pkc, u32 *keyid,
     while( (rc=parse_packet(a, &pkt)) != -1 ) {
 	if( rc )
 	    ; /* e.g. unknown packet */
-	else if( keyid && found && pkt.pkttype == PKT_PUBKEY_CERT ) {
+	else if( keyid && found && pkt.pkttype == PKT_PUBLIC_CERT ) {
 	    log_error("Hmmm, pubkey without an user id in '%s'\n", filename);
 	    goto leave;
 	}
-	else if( keyid && pkt.pkttype == PKT_PUBKEY_CERT ) {
-	    switch( pkt.pkt.pubkey_cert->pubkey_algo ) {
+	else if( keyid && pkt.pkttype == PKT_PUBLIC_CERT ) {
+	    switch( pkt.pkt.public_cert->pubkey_algo ) {
 	      case PUBKEY_ALGO_ELGAMAL:
 	      case PUBKEY_ALGO_RSA:
-		keyid_from_pkc( pkt.pkt.pubkey_cert, akeyid );
+		keyid_from_pkc( pkt.pkt.public_cert, akeyid );
 		if( akeyid[0] == keyid[0] && akeyid[1] == keyid[1] ) {
-		    copy_pubkey_cert( pkc, pkt.pkt.pubkey_cert );
+		    copy_public_cert( pkc, pkt.pkt.public_cert );
 		    found++;
 		}
 		break;
 	      default:
 		log_error("cannot handle pubkey algo %d\n",
-				     pkt.pkt.pubkey_cert->pubkey_algo);
+				     pkt.pkt.public_cert->pubkey_algo);
 	    }
 	}
 	else if( keyid && found && pkt.pkttype == PKT_USER_ID ) {
 	    cache_user_id( pkt.pkt.user_id, keyid );
 	    goto leave;
 	}
-	else if( name && pkt.pkttype == PKT_PUBKEY_CERT ) {
+	else if( name && pkt.pkttype == PKT_PUBLIC_CERT ) {
 	    if( last_pk )
-		free_pubkey_cert(last_pk);
-	    last_pk = pkt.pkt.pubkey_cert;
-	    pkt.pkt.pubkey_cert = NULL;
+		free_public_cert(last_pk);
+	    last_pk = pkt.pkt.public_cert;
+	    pkt.pkt.public_cert = NULL;
 	}
 	else if( name && pkt.pkttype == PKT_USER_ID ) {
 	    if( memistr( pkt.pkt.user_id->name, pkt.pkt.user_id->len, name )) {
@@ -378,16 +378,16 @@ scan_keyring( PKT_pubkey_cert *pkc, u32 *keyid,
 				pkt.pkt.user_id->len, pkt.pkt.user_id->name,
 				pkc->pubkey_algo, last_pk->pubkey_algo );
 		else {
-		    copy_pubkey_cert( pkc, last_pk );
+		    copy_public_cert( pkc, last_pk );
 		    goto leave;
 		}
 	    }
 	}
-	else if( !keyid && !name && pkt.pkttype == PKT_PUBKEY_CERT ) {
+	else if( !keyid && !name && pkt.pkttype == PKT_PUBLIC_CERT ) {
 	    if( last_pk )
-		free_pubkey_cert(last_pk);
-	    last_pk = pkt.pkt.pubkey_cert;
-	    pkt.pkt.pubkey_cert = NULL;
+		free_public_cert(last_pk);
+	    last_pk = pkt.pkt.public_cert;
+	    pkt.pkt.public_cert = NULL;
 	}
 	else if( !keyid && !name && pkt.pkttype == PKT_USER_ID ) {
 	    if( !last_pk )
@@ -399,7 +399,7 @@ scan_keyring( PKT_pubkey_cert *pkc, u32 *keyid,
 		     keyid_from_pkc( last_pk, akeyid );
 		     cache_user_id( pkt.pkt.user_id, akeyid );
 		}
-		cache_pubkey_cert( last_pk );
+		cache_public_cert( last_pk );
 	    }
 	}
 	free_packet(&pkt);
@@ -408,7 +408,7 @@ scan_keyring( PKT_pubkey_cert *pkc, u32 *keyid,
 
   leave:
     if( last_pk )
-	free_pubkey_cert(last_pk);
+	free_public_cert(last_pk);
     free_packet(&pkt);
     iobuf_close(a);
     set_packet_list_mode(save_mode);
@@ -422,7 +422,7 @@ scan_keyring( PKT_pubkey_cert *pkc, u32 *keyid,
  * PKT returns the secret key certificate.
  */
 static int
-scan_secret_keyring( PKT_seckey_cert *skc, u32 *keyid,
+scan_secret_keyring( PKT_secret_cert *skc, u32 *keyid,
 		     const char *name, const char *filename )
 {
     int rc=0;
@@ -431,7 +431,7 @@ scan_secret_keyring( PKT_seckey_cert *skc, u32 *keyid,
     PACKET pkt;
     int save_mode;
     u32 akeyid[2];
-    PKT_seckey_cert *last_pk = NULL;
+    PKT_secret_cert *last_pk = NULL;
 
     assert( !keyid || !name );
 
@@ -445,33 +445,33 @@ scan_secret_keyring( PKT_seckey_cert *skc, u32 *keyid,
     while( (rc=parse_packet(a, &pkt)) != -1 ) {
 	if( rc )
 	    ; /* e.g. unknown packet */
-	else if( keyid && found && pkt.pkttype == PKT_SECKEY_CERT ) {
+	else if( keyid && found && pkt.pkttype == PKT_SECRET_CERT ) {
 	    log_error("Hmmm, seckey without an user id in '%s'\n", filename);
 	    goto leave;
 	}
-	else if( keyid && pkt.pkttype == PKT_SECKEY_CERT ) {
-	    switch( pkt.pkt.seckey_cert->pubkey_algo ) {
+	else if( keyid && pkt.pkttype == PKT_SECRET_CERT ) {
+	    switch( pkt.pkt.secret_cert->pubkey_algo ) {
 	      case PUBKEY_ALGO_ELGAMAL:
 	      case PUBKEY_ALGO_RSA:
-		keyid_from_skc( pkt.pkt.seckey_cert, akeyid );
+		keyid_from_skc( pkt.pkt.secret_cert, akeyid );
 		if( akeyid[0] == keyid[0] && akeyid[1] == keyid[1] ) {
-		    copy_seckey_cert( skc, pkt.pkt.seckey_cert );
+		    copy_secret_cert( skc, pkt.pkt.secret_cert );
 		    found++;
 		}
 		break;
 	      default:
 		log_error("cannot handle pubkey algo %d\n",
-				     pkt.pkt.seckey_cert->pubkey_algo);
+				     pkt.pkt.secret_cert->pubkey_algo);
 	    }
 	}
 	else if( keyid && found && pkt.pkttype == PKT_USER_ID ) {
 	    goto leave;
 	}
-	else if( name && pkt.pkttype == PKT_SECKEY_CERT ) {
+	else if( name && pkt.pkttype == PKT_SECRET_CERT ) {
 	    if( last_pk )
-		free_seckey_cert(last_pk);
-	    last_pk = pkt.pkt.seckey_cert;
-	    pkt.pkt.seckey_cert = NULL;
+		free_secret_cert(last_pk);
+	    last_pk = pkt.pkt.secret_cert;
+	    pkt.pkt.secret_cert = NULL;
 	}
 	else if( name && pkt.pkttype == PKT_USER_ID ) {
 	    if( memistr( pkt.pkt.user_id->name, pkt.pkt.user_id->len, name )) {
@@ -484,16 +484,16 @@ scan_secret_keyring( PKT_seckey_cert *skc, u32 *keyid,
 				pkt.pkt.user_id->len, pkt.pkt.user_id->name,
 				skc->pubkey_algo, last_pk->pubkey_algo );
 		else {
-		    copy_seckey_cert( skc, last_pk );
+		    copy_secret_cert( skc, last_pk );
 		    goto leave;
 		}
 	    }
 	}
-	else if( !keyid && !name && pkt.pkttype == PKT_SECKEY_CERT ) {
+	else if( !keyid && !name && pkt.pkttype == PKT_SECRET_CERT ) {
 	    if( last_pk )
-		free_seckey_cert(last_pk);
-	    last_pk = pkt.pkt.seckey_cert;
-	    pkt.pkt.seckey_cert = NULL;
+		free_secret_cert(last_pk);
+	    last_pk = pkt.pkt.secret_cert;
+	    pkt.pkt.secret_cert = NULL;
 	}
 	else if( !keyid && !name && pkt.pkttype == PKT_USER_ID ) {
 	    if( !last_pk )
@@ -513,7 +513,7 @@ scan_secret_keyring( PKT_seckey_cert *skc, u32 *keyid,
 
   leave:
     if( last_pk )
-	free_seckey_cert(last_pk);
+	free_secret_cert(last_pk);
     free_packet(&pkt);
     iobuf_close(a);
     set_packet_list_mode(save_mode);
@@ -542,6 +542,28 @@ get_user_id_string( u32 *keyid )
     } while( ++pass < 2 && !get_pubkey( NULL, keyid ) );
     p = m_alloc( 15 );
     sprintf(p, "%08lX [?]", keyid[1] );
+    return p;
+}
+
+char*
+get_user_id( u32 *keyid, size_t *rn )
+{
+    user_id_db_t r;
+    char *p;
+    int pass=0;
+    /* try it two times; second pass reads from keyrings */
+    do {
+	for(r=user_id_db; r; r = r->next )
+	    if( r->keyid[0] == keyid[0] && r->keyid[1] == keyid[1] ) {
+		p = m_alloc( r->len );
+		memcpy(p, r->name, r->len );
+		*rn = r->len;
+		return p;
+	    }
+    } while( ++pass < 2 && !get_pubkey( NULL, keyid ) );
+    p = m_alloc( 19 );
+    memcpy(p, "[User id not found]", 19 );
+    *rn = 19;
     return p;
 }
 

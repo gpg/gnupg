@@ -55,6 +55,7 @@ cipher_SOURCES = blowfish.c	\
 		 random.c	\
 		 rmd.h		\
 		 rmd160.c	\
+		 md.c		\
 		 smallprime.c
 
 cipher_LIBADD = rsa.o
@@ -77,7 +78,7 @@ LIBS = @LIBS@
 COMPILE = $(CC) -c $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 LINK = $(CC) $(LDFLAGS) -o $@
 cipher_OBJECTS = blowfish.o elgamal.o gost.o md5.o primegen.o random.o \
-rmd160.o smallprime.o
+rmd160.o md.o smallprime.o
 EXTRA_cipher_SOURCES =
 LIBFILES =  libcipher.a
 AR = ar
@@ -95,9 +96,9 @@ DEP_DISTFILES = $(DIST_COMMON) $(SOURCES) $(BUILT_SOURCES) $(HEADERS) \
 
 TAR = tar
 DEP_FILES = $(srcdir)/.deps/blowfish.P $(srcdir)/.deps/elgamal.P \
-$(srcdir)/.deps/gost.P $(srcdir)/.deps/md5.P $(srcdir)/.deps/primegen.P \
-$(srcdir)/.deps/random.P $(srcdir)/.deps/rmd160.P \
-$(srcdir)/.deps/smallprime.P
+$(srcdir)/.deps/gost.P $(srcdir)/.deps/md.P $(srcdir)/.deps/md5.P \
+$(srcdir)/.deps/primegen.P $(srcdir)/.deps/random.P \
+$(srcdir)/.deps/rmd160.P $(srcdir)/.deps/smallprime.P
 SOURCES = $(cipher_SOURCES)
 OBJECTS = $(cipher_OBJECTS)
 

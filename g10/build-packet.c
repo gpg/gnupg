@@ -36,12 +36,12 @@
 
 static int do_comment( IOBUF out, int ctb, PKT_comment *rem );
 static int do_user_id( IOBUF out, int ctb, PKT_user_id *uid );
-static int do_pubkey_cert( IOBUF out, int ctb, PKT_pubkey_cert *pk );
-static int do_seckey_cert( IOBUF out, int ctb, PKT_seckey_cert *pk );
+static int do_public_cert( IOBUF out, int ctb, PKT_public_cert *pk );
+static int do_secret_cert( IOBUF out, int ctb, PKT_secret_cert *pk );
 static int do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc );
 static u32 calc_plaintext( PKT_plaintext *pt );
 static int do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt );
-static int do_encr_data( IOBUF out, int ctb, PKT_encr_data *ed );
+static int do_encrypted( IOBUF out, int ctb, PKT_encrypted *ed );
 static int do_compressed( IOBUF out, int ctb, PKT_compressed *cd );
 static int do_signature( IOBUF out, int ctb, PKT_signature *sig );
 
@@ -74,11 +74,11 @@ build_packet( IOBUF out, PACKET *pkt )
       case PKT_COMMENT:
 	rc = do_comment( out, ctb, pkt->pkt.comment );
 	break;
-      case PKT_PUBKEY_CERT:
-	rc = do_pubkey_cert( out, ctb, pkt->pkt.pubkey_cert );
+      case PKT_PUBLIC_CERT:
+	rc = do_public_cert( out, ctb, pkt->pkt.public_cert );
 	break;
-      case PKT_SECKEY_CERT:
-	rc = do_seckey_cert( out, ctb, pkt->pkt.seckey_cert );
+      case PKT_SECRET_CERT:
+	rc = do_secret_cert( out, ctb, pkt->pkt.secret_cert );
 	break;
       case PKT_PUBKEY_ENC:
 	rc = do_pubkey_enc( out, ctb, pkt->pkt.pubkey_enc );
@@ -86,10 +86,10 @@ build_packet( IOBUF out, PACKET *pkt )
       case PKT_PLAINTEXT:
 	rc = do_plaintext( out, ctb, pkt->pkt.plaintext );
 	break;
-      case PKT_ENCR_DATA:
-	rc = do_encr_data( out, ctb, pkt->pkt.encr_data );
+      case PKT_ENCRYPTED:
+	rc = do_encrypted( out, ctb, pkt->pkt.encrypted );
 	break;
-      case PKT_COMPR_DATA:
+      case PKT_COMPRESSED:
 	rc = do_compressed( out, ctb, pkt->pkt.compressed );
 	break;
       case PKT_SIGNATURE:
@@ -119,13 +119,13 @@ calc_packet_length( PACKET *pkt )
 	break;
       case PKT_USER_ID:
       case PKT_COMMENT:
-      case PKT_PUBKEY_CERT:
-      case PKT_SECKEY_CERT:
+      case PKT_PUBLIC_CERT:
+      case PKT_SECRET_CERT:
       case PKT_PUBKEY_ENC:
-      case PKT_ENCR_DATA:
+      case PKT_ENCRYPTED:
       case PKT_SIGNATURE:
       case PKT_RING_TRUST:
-      case PKT_COMPR_DATA:
+      case PKT_COMPRESSED:
       default:
 	log_bug("invalid packet type in calc_packet_length()");
 	break;
@@ -154,7 +154,7 @@ do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 }
 
 static int
-do_pubkey_cert( IOBUF out, int ctb, PKT_pubkey_cert *pkc )
+do_public_cert( IOBUF out, int ctb, PKT_public_cert *pkc )
 {
     int rc = 0;
     IOBUF a = iobuf_temp();
@@ -187,7 +187,7 @@ do_pubkey_cert( IOBUF out, int ctb, PKT_pubkey_cert *pkc )
 }
 
 static int
-do_seckey_cert( IOBUF out, int ctb, PKT_seckey_cert *skc )
+do_secret_cert( IOBUF out, int ctb, PKT_secret_cert *skc )
 {
     int rc = 0;
     IOBUF a = iobuf_temp();
@@ -329,7 +329,7 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
 
 
 static int
-do_encr_data( IOBUF out, int ctb, PKT_encr_data *ed )
+do_encrypted( IOBUF out, int ctb, PKT_encrypted *ed )
 {
     int rc = 0;
     u32 n;

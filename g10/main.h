@@ -47,6 +47,7 @@ void make_session_key( DEK *dek );
 MPI encode_session_key( DEK *dek, unsigned nbits );
 MPI encode_rmd160_value( byte *md, unsigned len, unsigned nbits );
 MPI encode_md5_value( byte *md, unsigned len, unsigned nbits );
+MPI encode_md_value( MD_HANDLE *md, unsigned nbits );
 
 
 #endif /*G10_MAIN_H*/

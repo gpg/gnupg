@@ -242,7 +242,7 @@ function_F( BLOWFISH_context *bc, u32 x )
 
 
 static void
-encipher(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
+encrypted(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
 {
     u32 xl, xr, temp;
     int i;
@@ -270,7 +270,7 @@ encipher(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
 }
 
 static void
-decipher(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
+decrypted(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
 {
     u32 xl, xr, temp;
     int i;
@@ -298,25 +298,25 @@ decipher(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
 }
 
 static void
-encipher_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
+encrypted_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 {
     u32 d1, d2;
 
     d1 = ((u32*)inbuf)[0];
     d2 = ((u32*)inbuf)[1];
-    encipher( bc, &d1, &d2 );
+    encrypted( bc, &d1, &d2 );
     ((u32*)outbuf)[0] = d1;
     ((u32*)outbuf)[1] = d2;
 }
 
 static void
-decipher_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
+decrypted_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 {
     u32 d1, d2;
 
     d1 = ((u32*)inbuf)[0];
     d2 = ((u32*)inbuf)[1];
-    decipher( bc, &d1, &d2 );
+    decrypted( bc, &d1, &d2 );
     ((u32*)outbuf)[0] = d1;
     ((u32*)outbuf)[1] = d2;
 }
@@ -349,27 +349,27 @@ blowfish_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
 
     datal = datar = 0;
     for(i=0; i < BLOWFISH_ROUNDS+2; i += 2 ) {
-	encipher( c, &datal, &datar );
+	encrypted( c, &datal, &datar );
 	c->p[i]   = datal;
 	c->p[i+1] = datar;
     }
     for(i=0; i < 256; i += 2 )	{
-	encipher( c, &datal, &datar );
+	encrypted( c, &datal, &datar );
 	c->s0[i]   = datal;
 	c->s0[i+1] = datar;
     }
     for(i=0; i < 256; i += 2 )	{
-	encipher( c, &datal, &datar );
+	encrypted( c, &datal, &datar );
 	c->s1[i]   = datal;
 	c->s1[i+1] = datar;
     }
     for(i=0; i < 256; i += 2 )	{
-	encipher( c, &datal, &datar );
+	encrypted( c, &datal, &datar );
 	c->s2[i]   = datal;
 	c->s2[i+1] = datar;
     }
     for(i=0; i < 256; i += 2 )	{
-	encipher( c, &datal, &datar );
+	encrypted( c, &datal, &datar );
 	c->s3[i]   = datal;
 	c->s3[i+1] = datar;
     }
@@ -384,7 +384,7 @@ blowfish_setiv( BLOWFISH_context *c, byte *iv )
     else
 	memset( c->iv, 0, BLOWFISH_BLOCKSIZE );
     c->count = 0;
-    encipher_block( c, c->eniv, c->iv );
+    encrypted_block( c, c->eniv, c->iv );
 }
 
 
@@ -395,7 +395,7 @@ blowfish_encode( BLOWFISH_context *c, byte *outbuf, byte *inbuf,
     unsigned n;
 
     for(n=0; n < nblocks; n++ ) {
-	encipher_block( c, outbuf, inbuf );
+	encrypted_block( c, outbuf, inbuf );
 	inbuf  += BLOWFISH_BLOCKSIZE;;
 	outbuf += BLOWFISH_BLOCKSIZE;
     }
@@ -408,7 +408,7 @@ blowfish_decode( BLOWFISH_context *c, byte *outbuf, byte *inbuf,
     unsigned n;
 
     for(n=0; n < nblocks; n++ ) {
-	decipher_block( c, outbuf, inbuf );
+	decrypted_block( c, outbuf, inbuf );
 	inbuf  += BLOWFISH_BLOCKSIZE;;
 	outbuf += BLOWFISH_BLOCKSIZE;
     }
@@ -451,7 +451,7 @@ blowfish_encode_cfb( BLOWFISH_context *c, byte *outbuf,
 	outbuf += n;
 	assert( c->count <= BLOWFISH_BLOCKSIZE);
 	if( c->count == BLOWFISH_BLOCKSIZE ) {
-	    encipher_block( c, c->eniv, c->iv );
+	    encrypted_block( c, c->eniv, c->iv );
 	    c->count = 0;
 	}
 	else
@@ -461,7 +461,7 @@ blowfish_encode_cfb( BLOWFISH_context *c, byte *outbuf,
     while( nbytes >= BLOWFISH_BLOCKSIZE ) {
 	xorblock( outbuf, c->eniv, inbuf, BLOWFISH_BLOCKSIZE);
 	memcpy( c->iv, outbuf, BLOWFISH_BLOCKSIZE);
-	encipher_block( c, c->eniv, c->iv );
+	encrypted_block( c, c->eniv, c->iv );
 	nbytes -= BLOWFISH_BLOCKSIZE;
 	inbuf += BLOWFISH_BLOCKSIZE;
 	outbuf += BLOWFISH_BLOCKSIZE;
@@ -495,7 +495,7 @@ blowfish_decode_cfb( BLOWFISH_context *c, byte *outbuf,
 	outbuf += n;
 	assert( c->count <= BLOWFISH_BLOCKSIZE);
 	if( c->count == BLOWFISH_BLOCKSIZE ) {
-	    encipher_block( c, c->eniv, c->iv );
+	    encrypted_block( c, c->eniv, c->iv );
 	    c->count = 0;
 	}
 	else
@@ -506,7 +506,7 @@ blowfish_decode_cfb( BLOWFISH_context *c, byte *outbuf,
     while( nbytes >= BLOWFISH_BLOCKSIZE ) {
 	memcpy( c->iv, inbuf, BLOWFISH_BLOCKSIZE);
 	xorblock( outbuf, c->eniv, inbuf, BLOWFISH_BLOCKSIZE);
-	encipher_block( c, c->eniv, c->iv );
+	encrypted_block( c, c->eniv, c->iv );
 	nbytes -= BLOWFISH_BLOCKSIZE;
 	inbuf += BLOWFISH_BLOCKSIZE;
 	outbuf += BLOWFISH_BLOCKSIZE;

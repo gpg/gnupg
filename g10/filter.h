@@ -23,6 +23,7 @@
 #include "cipher.h"
 
 typedef struct {
+    MD_HANDLE *md;	/* catch all */
     MD5HANDLE md5;	/* if !NULL create md5	*/
     RMDHANDLE rmd160;	/* if !NULL create rmd160  */
     size_t maxbuf_size;

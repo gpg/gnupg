@@ -75,8 +75,8 @@ gen_rsa(unsigned nbits, IOBUF pub_io, IOBUF sec_io)
 {
     int rc;
     PACKET pkt1, pkt2;
-    PKT_seckey_cert *skc;
-    PKT_pubkey_cert *pkc;
+    PKT_secret_cert *skc;
+    PKT_public_cert *pkc;
     RSA_public_key pk;
     RSA_secret_key sk;
 
@@ -102,18 +102,18 @@ gen_rsa(unsigned nbits, IOBUF pub_io, IOBUF sec_io)
     /*memcpy(skc->d.rsa.protect.blowfish.iv,"12345678", 8);*/
 
     init_packet(&pkt1);
-    pkt1.pkttype = PKT_PUBKEY_CERT;
-    pkt1.pkt.pubkey_cert = pkc;
+    pkt1.pkttype = PKT_PUBLIC_CERT;
+    pkt1.pkt.public_cert = pkc;
     init_packet(&pkt2);
-    pkt2.pkttype = PKT_SECKEY_CERT;
-    pkt2.pkt.seckey_cert = skc;
+    pkt2.pkttype = PKT_SECRET_CERT;
+    pkt2.pkt.secret_cert = skc;
 
     if( (rc = build_packet( pub_io, &pkt1 )) ) {
-	log_error("build pubkey_cert packet failed: %s\n", g10_errstr(rc) );
+	log_error("build public_cert packet failed: %s\n", g10_errstr(rc) );
 	goto leave;
     }
     if( (rc = build_packet( sec_io, &pkt2 )) ) {
-	log_error("build seckey_cert packet failed: %s\n", g10_errstr(rc) );
+	log_error("build secret_cert packet failed: %s\n", g10_errstr(rc) );
 	goto leave;
     }
 
@@ -129,8 +129,8 @@ gen_elg(unsigned nbits, IOBUF pub_io, IOBUF sec_io)
 {
     int rc;
     PACKET pkt1, pkt2;
-    PKT_seckey_cert *skc;
-    PKT_pubkey_cert *pkc;
+    PKT_secret_cert *skc;
+    PKT_public_cert *pkc;
     ELG_public_key pk;
     ELG_secret_key sk;
 
@@ -156,18 +156,18 @@ gen_elg(unsigned nbits, IOBUF pub_io, IOBUF sec_io)
     /*memcpy(skc->d.elg.protect.blowfish.iv,"12345678", 8);*/
 
     init_packet(&pkt1);
-    pkt1.pkttype = PKT_PUBKEY_CERT;
-    pkt1.pkt.pubkey_cert = pkc;
+    pkt1.pkttype = PKT_PUBLIC_CERT;
+    pkt1.pkt.public_cert = pkc;
     init_packet(&pkt2);
-    pkt2.pkttype = PKT_SECKEY_CERT;
-    pkt2.pkt.seckey_cert = skc;
+    pkt2.pkttype = PKT_SECRET_CERT;
+    pkt2.pkt.secret_cert = skc;
 
     if( (rc = build_packet( pub_io, &pkt1 )) ) {
-	log_error("build pubkey_cert packet failed: %s\n", g10_errstr(rc) );
+	log_error("build public_cert packet failed: %s\n", g10_errstr(rc) );
 	goto leave;
     }
     if( (rc = build_packet( sec_io, &pkt2 )) ) {
-	log_error("build seckey_cert packet failed: %s\n", g10_errstr(rc) );
+	log_error("build secret_cert packet failed: %s\n", g10_errstr(rc) );
 	goto leave;
     }
 

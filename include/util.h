@@ -82,6 +82,7 @@ const char *strusage( int level );
 
 /*-- miscutil.c --*/
 u32 make_timestamp(void);
+void print_string( FILE *fp, byte *p, size_t n );
 
 /*-- strgutil.c --*/
 void free_strlist( STRLIST sl );

@@ -21,6 +21,7 @@
 #include <config.h>
 #include <stdio.h>
 #include <time.h>
+#include <ctype.h>
 #include "types.h"
 #include "util.h"
 
@@ -30,4 +31,24 @@ make_timestamp()
     return time(NULL);
 }
 
+
+/****************
+ * Print a string to FP, but filter all control characters out.
+ */
+void
+print_string( FILE *fp, byte *p, size_t n )
+{
+    for( ; n; n--, p++ )
+	if( iscntrl( *p ) ) {
+	    putc('\\', fp);
+	    if( *p == '\n' )
+		putc('n', fp);
+	    else if( !*p )
+		putc('0', fp);
+	    else
+		printf("x%02x", *p );
+	}
+	else
+	    putc(*p, fp);
+}
 

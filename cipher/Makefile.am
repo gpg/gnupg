@@ -18,6 +18,7 @@ cipher_SOURCES = blowfish.c	\
 		 random.c	\
 		 rmd.h		\
 		 rmd160.c	\
+		 md.c		\
 		 smallprime.c
 
 cipher_LIBADD = rsa.o

@@ -21,6 +21,7 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "packet.h"
 #include "iobuf.h"
@@ -30,218 +31,206 @@
 #include "cipher.h"
 #include "keydb.h"
 #include "filter.h"
+#include "cipher.h"
 #include "main.h"
 
 
+/****************
+ * We need to glue the packets together.  This done by a
+ * tree of packets, which will released whenever a new start packet
+ * is encounterd. Start packets are: [FIXME]
+ *
+ *  pubkey
+ *     userid		   userid
+ *	  sig, sig, sig       sig, sig
+ *
+ */
+
+typedef struct node_struct *NODE;
+struct node_struct {
+    PACKET *pkt;
+    NODE next;	 /* used to form a link list */
+    NODE child;
+};
+
+
+/****************
+ * Structure to hold the context
+ */
+
 typedef struct {
-    PKT_pubkey_cert *last_pubkey;
-    PKT_seckey_cert *last_seckey;
+    PKT_public_cert *last_pubkey;
+    PKT_secret_cert *last_seckey;
     PKT_user_id     *last_user_id;
     md_filter_context_t mfx;
     DEK *dek;
     int last_was_pubkey_enc;
+    int opt_list;
+    NODE cert;	   /* the current certificate */
 } *CTX;
 
 
 
 
-static int opt_list=1;	/* and list the data packets to stdout */
-#if 1
-static void
-do_free_last_user_id( CTX c )
+
+
+static void list_node( CTX c, NODE node );
+
+static int
+pubkey_letter( int algo )
 {
-    if( c->last_user_id ) {
-	free_user_id( c->last_user_id );
-	c->last_user_id = NULL;
-    }
-}
-static void
-do_free_last_pubkey( CTX c )
-{
-    if( c->last_pubkey ) {
-	free_pubkey_cert( c->last_pubkey );
-	c->last_pubkey = NULL;
-    }
-}
-static void
-do_free_last_seckey( CTX c )
-{
-    if( c->last_seckey ) {
-	free_seckey_cert( c->last_seckey );
-	c->last_seckey = NULL;
+    switch( algo ) {
+      case PUBKEY_ALGO_RSA:	return 'R' ;
+      case PUBKEY_ALGO_RSA_E:	return 'r' ;
+      case PUBKEY_ALGO_RSA_S:	return 's' ;
+      case PUBKEY_ALGO_ELGAMAL: return 'G' ;
+      case PUBKEY_ALGO_DSA:	return 'D' ;
+      default: return '?';
     }
 }
 
+
+
+static NODE
+new_node( PACKET *pkt )
+{
+    NODE n = m_alloc( sizeof *n );
+    n->next = NULL;
+    n->pkt = pkt;
+    n->child = NULL;
+    return n;
+}
+
+
 static void
-proc_pubkey_cert( CTX c, PACKET *pkt )
+release_node( NODE n )
+{
+    NODE n2;
+
+    while( n ) {
+	n2 = n->next;
+	release_node( n->child );
+	free_packet( n->pkt );
+	m_free( n );
+	n = n2;
+    }
+}
+
+
+/****************
+ * Return the parent node of NODE from the tree with ROOT
+ */
+static NODE
+find_parent( NODE root, NODE node )
+{
+    NODE n, n2;
+
+    for( ; root; root = root->child) {
+	for( n = root; n; n = n->next) {
+	    for( n2 = n->child; n2; n2 = n2->next ) {
+		if( n2 == node )
+		    return n;
+	    }
+	}
+    }
+    log_bug(NULL);
+}
+
+
+static void
+release_cert( CTX c )
+{
+    if( !c->cert )
+	return;
+  list_node(c, c->cert );
+    release_node( c->cert );
+    c->cert = NULL;
+}
+
+
+
+static int
+add_public_cert( CTX c, PACKET *pkt )
+{
+    release_cert( c );
+    c->cert = new_node( pkt );
+    return 1;
+}
+
+static int
+add_secret_cert( CTX c, PACKET *pkt )
+{
+    release_cert( c );
+    c->cert = new_node( pkt );
+    return 1;
+}
+
+
+static int
+add_user_id( CTX c, PACKET *pkt )
 {
     u32 keyid[2];
-    char *ustr;
-    int lvl0 = opt.check_sigs? 1:0; /* stdout or /dev/null */
+    NODE node, n1, n2;
 
-    do_free_last_user_id( c );
-    do_free_last_seckey( c );
-    if( opt.check_sigs ) {
-	keyid_from_pkc( pkt->pkt.pubkey_cert, keyid );
-	ustr = get_user_id_string(keyid);
-	printstr(lvl0, "pub: %s\n", ustr );
-	m_free(ustr);
+    if( !c->cert ) {
+	log_error("orphaned user id\n" );
+	return 0;
     }
-    else
-	fputs( "pub: [Public Key Cerificate]\n", stdout );
-    c->last_pubkey = pkt->pkt.pubkey_cert;
-    pkt->pkt.pubkey_cert = NULL;
-    free_packet(pkt);
-    pkt->pkc_parent = c->last_pubkey; /* set this as parent */
+    /* goto the last certificate (currently ther is only one) */
+    for(n1=c->cert; n1->next; n1 = n1->next )
+	;
+    assert( n1->pkt );
+    if( n1->pkt->pkttype != PKT_PUBLIC_CERT
+	&& n1->pkt->pkttype != PKT_SECRET_CERT ) {
+	log_error("invalid parent type %d for userid\n", n1->pkt->pkttype );
+	return 0;
+    }
+    /* add a new user id node at the end */
+    node = new_node( pkt );
+    if( !(n2=n1->child) )
+	n1->child = node;
+    else {
+	for( ; n2->next; n2 = n2->next)
+	    ;
+	n2->next = node;
+    }
+    return 1;
 }
 
 
-static void
-proc_seckey_cert( CTX c, PACKET *pkt )
-{
-    int rc;
-
-    do_free_last_user_id( c );
-    do_free_last_pubkey( c );
-    if( opt_list )
-	fputs( "sec: (secret key certificate)\n", stdout );
-    rc = check_secret_key( pkt->pkt.seckey_cert );
-    if( opt_list ) {
-	if( !rc )
-	    fputs( "     Secret key is good", stdout );
-	else
-	    fputs( g10_errstr(rc), stdout);
-	putchar('\n');
-    }
-    else if( rc )
-	log_error("secret key certificate error: %s\n", g10_errstr(rc));
-    c->last_seckey = pkt->pkt.seckey_cert;
-    pkt->pkt.seckey_cert = NULL;
-    free_packet(pkt);
-    pkt->skc_parent = c->last_seckey; /* set this as parent */
-}
-
-
-static void
-proc_user_id( CTX c, PACKET *pkt )
+static int
+add_signature( CTX c, PACKET *pkt )
 {
     u32 keyid[2];
+    NODE node, n1, n2;
 
-    do_free_last_user_id( c );
-    if( opt_list ) {
-	 printf("uid: '%.*s'\n", pkt->pkt.user_id->len,
-				 pkt->pkt.user_id->name );
-	 if( !pkt->pkc_parent && !pkt->skc_parent )
-	     puts("      (orphaned)");
+    if( !c->cert ) {
+	log_error("orphaned signature (no certificate)\n" );
+	return 0;
     }
-    if( pkt->pkc_parent ) {
-	if( pkt->pkc_parent->pubkey_algo == PUBKEY_ALGO_ELGAMAL
-	    || pkt->pkc_parent->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	    keyid_from_pkc( pkt->pkc_parent, keyid );
-	    cache_user_id( pkt->pkt.user_id, keyid );
-	}
+    assert( c->cert->pkt );
+    if( !c->cert->child ) {
+	log_error("orphaned signature (no userid)\n" );
+	return 0;
     }
-
-    c->last_user_id = pkt->pkt.user_id;  /* save */
-    pkt->pkt.user_id = NULL;
-    free_packet(pkt);
-    pkt->user_parent = c->last_user_id;  /* and set this as user */
-}
-
-
-static void
-proc_signature( CTX c, PACKET *pkt )
-{
-    PKT_signature *sig;
-    MD_HANDLE md_handle; /* union to pass handles down */
-    char *ustr;
-    int result = -1;
-    int lvl0 = opt.check_sigs? 1:0; /* stdout or /dev/null */
-    int lvl1 = opt.check_sigs? 1:3; /* stdout or error */
-
-    sig = pkt->pkt.signature;
-    ustr = get_user_id_string(sig->keyid);
-    if( sig->sig_class == 0x00 ) {
-	if( c->mfx.rmd160 )
-	    result = 0;
-	else
-	    printstr(lvl1,"sig?: %s: no plaintext for signature\n", ustr);
-    }
-    else if( sig->sig_class != 0x10 )
-	printstr(lvl1,"sig?: %s: unknown signature class %02x\n",
-				ustr, sig->sig_class);
-    else if( !pkt->pkc_parent || !pkt->user_parent )
-	printstr(lvl1,"sig?: %s: orphaned encoded packet\n", ustr);
-    else
-	result = 0;
-
-    if( result )
+    /* goto the last user id */
+    for(n1=c->cert->child; n1->next; n1 = n1->next )
 	;
-    else if( !opt.check_sigs && sig->sig_class != 0x00 ) {
-	result = -1;
-	printstr(lvl0, "sig: from %s\n", ustr );
+    assert( n1->pkt );
+    if( n1->pkt->pkttype != PKT_USER_ID ) {
+	log_error("invalid parent type %d for sig\n", n1->pkt->pkttype);
+	return 0;
     }
-    else if(sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
-	md_handle.algo = sig->d.elg.digest_algo;
-	if( sig->d.elg.digest_algo == DIGEST_ALGO_RMD160 ) {
-	    if( sig->sig_class == 0x00 )
-		md_handle.u.rmd = rmd160_copy( c->mfx.rmd160 );
-	    else {
-		md_handle.u.rmd = rmd160_copy(pkt->pkc_parent->mfx.rmd160);
-		rmd160_write(md_handle.u.rmd, pkt->user_parent->name,
-					      pkt->user_parent->len);
-	    }
-	    result = signature_check( sig, md_handle );
-	    rmd160_close(md_handle.u.rmd);
-	}
-	else if( sig->d.elg.digest_algo == DIGEST_ALGO_MD5
-		 && sig->sig_class != 0x00 ) {
-	    md_handle.u.md5 = md5_copy(pkt->pkc_parent->mfx.md5);
-	    md5_write(md_handle.u.md5, pkt->user_parent->name,
-					  pkt->user_parent->len);
-	    result = signature_check( sig, md_handle );
-	    md5_close(md_handle.u.md5);
-	}
-	else
-	    result = G10ERR_DIGEST_ALGO;
+    /* and add a new signature node id at the end */
+    node = new_node( pkt );
+    if( !(n2=n1->child) )
+	n1->child = node;
+    else {
+	for( ; n2->next; n2 = n2->next)
+	    ;
+	n2->next = node;
     }
-    else if(sig->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	md_handle.algo = sig->d.rsa.digest_algo;
-	if( sig->d.rsa.digest_algo == DIGEST_ALGO_RMD160 ) {
-	    if( sig->sig_class == 0x00 )
-		md_handle.u.rmd = rmd160_copy( c->mfx.rmd160 );
-	    else {
-		md_handle.u.rmd = rmd160_copy(pkt->pkc_parent->mfx.rmd160);
-		rmd160_write(md_handle.u.rmd, pkt->user_parent->name,
-						 pkt->user_parent->len);
-	    }
-	    result = signature_check( sig, md_handle );
-	    rmd160_close(md_handle.u.rmd);
-	}
-	else if( sig->d.rsa.digest_algo == DIGEST_ALGO_MD5
-		 && sig->sig_class != 0x00 ) {
-	    md_handle.u.md5 = md5_copy(pkt->pkc_parent->mfx.md5);
-	    md5_write(md_handle.u.md5, pkt->user_parent->name,
-				       pkt->user_parent->len);
-	    result = signature_check( sig, md_handle );
-	    md5_close(md_handle.u.md5);
-	}
-	else
-	    result = G10ERR_DIGEST_ALGO;
-    }
-    else
-	result = G10ERR_PUBKEY_ALGO;
-
-    if( result == -1 )
-	;
-    else if( !result && sig->sig_class == 0x00 )
-	printstr(1,    "sig: good signature from %s\n", ustr );
-    else if( !result )
-	printstr(lvl0, "sig: good signature from %s\n", ustr );
-    else
-	printstr(lvl1, "sig? %s: %s\n", ustr, g10_errstr(result));
-    free_packet(pkt);
-    m_free(ustr);
+    return 1;
 }
 
 
@@ -279,7 +268,7 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 
 
 static void
-proc_encr_data( CTX c, PACKET *pkt )
+proc_encrypted( CTX c, PACKET *pkt )
 {
     int result = 0;
 
@@ -293,7 +282,7 @@ proc_encr_data( CTX c, PACKET *pkt )
     else if( !c->dek )
 	result = G10ERR_NO_SECKEY;
     if( !result )
-	result = decrypt_data( pkt->pkt.encr_data, c->dek );
+	result = decrypt_data( pkt->pkt.encrypted, c->dek );
     m_free(c->dek); c->dek = NULL;
     if( result == -1 )
 	;
@@ -315,7 +304,7 @@ proc_plaintext( CTX c, PACKET *pkt )
 
     printf("txt: plain text data name='%.*s'\n", pt->namelen, pt->name);
     free_md_filter_context( &c->mfx );
-    c->mfx.rmd160 = rmd160_open(0);
+    c->mfx.md = md_open(DIGEST_ALGO_RMD160, 0);
     result = handle_plaintext( pt, &c->mfx );
     if( !result )
 	fputs(	"     okay", stdout);
@@ -328,7 +317,7 @@ proc_plaintext( CTX c, PACKET *pkt )
 
 
 static void
-proc_compr_data( CTX c, PACKET *pkt )
+proc_compressed( CTX c, PACKET *pkt )
 {
     PKT_compressed *zd = pkt->pkt.compressed;
     int result;
@@ -346,6 +335,168 @@ proc_compr_data( CTX c, PACKET *pkt )
 
 
 
+
+/****************
+ * check the signature
+ * Returns: 0 = valid signature or an error code
+ */
+static int
+do_check_sig( CTX c, NODE node )
+{
+    PKT_signature *sig;
+    MD_HANDLE *md;
+    int algo, rc;
+
+    assert( node->pkt->pkttype == PKT_SIGNATURE );
+    sig = node->pkt->pkt.signature;
+
+    if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
+	algo = sig->d.elg.digest_algo;
+    else if(sig->pubkey_algo == PUBKEY_ALGO_RSA )
+	algo = sig->d.rsa.digest_algo;
+    else
+	return G10ERR_PUBKEY_ALGO;
+    if( (rc=md_okay(algo)) )
+	return rc;
+
+    if( sig->sig_class == 0x00 )
+	md = md_copy( c->mfx.md );
+    else if( (sig->sig_class&~3) == 0x10 ) { /* classes 0x10 .. 0x13 */
+	if( c->cert->pkt->pkttype == PKT_PUBLIC_CERT ) {
+	    NODE n1 = find_parent( c->cert, node );
+
+	    if( n1 && n1->pkt->pkttype == PKT_USER_ID ) {
+
+		if( c->cert->pkt->pkt.public_cert->mfx.md )
+		    md = md_copy( c->cert->pkt->pkt.public_cert->mfx.md );
+		else if( algo == DIGEST_ALGO_RMD160 )
+		    md = rmd160_copy2md( c->cert->pkt->pkt.public_cert->mfx.rmd160 );
+		else if( algo == DIGEST_ALGO_MD5 )
+		    md = md5_copy2md( c->cert->pkt->pkt.public_cert->mfx.md5 );
+		else
+		    log_bug(NULL);
+		md_write( md, n1->pkt->pkt.user_id->name, n1->pkt->pkt.user_id->len);
+	    }
+	    else {
+		log_error("invalid parent packet for sigclass 0x10\n");
+		return G10ERR_SIG_CLASS;
+	    }
+	}
+	else {
+	    log_error("invalid root packet for sigclass 0x10\n");
+	    return G10ERR_SIG_CLASS;
+	}
+    }
+    else
+	return G10ERR_SIG_CLASS;
+    rc = signature_check( sig, md );
+    md_close(md);
+
+    return rc;
+}
+
+
+
+static void
+print_userid( PACKET *pkt )
+{
+    if( !pkt )
+	log_bug(NULL);
+    if( pkt->pkttype != PKT_USER_ID ) {
+	printf("ERROR: unexpected packet type %d", pkt->pkttype );
+	return;
+    }
+    print_string( stdout,  pkt->pkt.user_id->name, pkt->pkt.user_id->len );
+}
+
+
+/****************
+ * List the certificate in a user friendly way
+ */
+
+static void
+list_node( CTX c, NODE node )
+{
+    register NODE n2;
+
+    if( !node )
+	;
+    else if( node->pkt->pkttype == PKT_PUBLIC_CERT ) {
+	PKT_public_cert *pkc = node->pkt->pkt.public_cert;
+
+	printf("pub  %4u%c/%08lX %s ", nbits_from_pkc( pkc ),
+				      pubkey_letter( pkc->pubkey_algo ),
+				      (ulong)keyid_from_pkc( pkc, NULL ),
+				      datestr_from_pkc( pkc )	  );
+	n2 = node->child;
+	if( !n2 )
+	    printf("ERROR: no user id!\n");
+	else {
+	    /* and now list all userids with their signatures */
+	    for( ; n2; n2 = n2->next ) {
+		if( n2 != node->child )
+		    printf( "%*s", 31, "" );
+		print_userid( n2->pkt );
+		putchar('\n');
+		list_node(c,  n2 );
+	    }
+	}
+    }
+    else if( node->pkt->pkttype == PKT_SECRET_CERT ) {
+	PKT_secret_cert *skc = node->pkt->pkt.secret_cert;
+
+	printf("sec  %4u%c/%08lX %s ", nbits_from_skc( skc ),
+				      pubkey_letter( skc->pubkey_algo ),
+				      (ulong)keyid_from_skc( skc, NULL ),
+				      datestr_from_skc( skc )	  );
+	n2 = node->child;
+	if( !n2 )
+	    printf("ERROR: no user id!");
+	else {
+	    print_userid( n2->pkt );
+	}
+	putchar('\n');
+    }
+    else if( node->pkt->pkttype == PKT_USER_ID ) {
+	/* list everything under this user id */
+	for(n2=node->child; n2; n2 = n2->next )
+	    list_node(c,  n2 );
+    }
+    else if( node->pkt->pkttype == PKT_SIGNATURE ) {
+	PKT_signature *sig = node->pkt->pkt.signature;
+	int rc2;
+	size_t n;
+	char *p;
+	int sigrc = ' ';
+
+	assert( !node->child );
+	if( opt.check_sigs ) {
+
+	    switch( (rc2=do_check_sig( c, node )) ) {
+	      case 0:		       sigrc = '!'; break;
+	      case G10ERR_BAD_SIGN:    sigrc = '-'; break;
+	      case G10ERR_NO_PUBKEY:   sigrc = '?'; break;
+	      default:		       sigrc = '%'; break;
+	    }
+	}
+	printf("sig%c       %08lX %s   ",
+		sigrc, sig->keyid[1], datestr_from_sig(sig));
+	if( sigrc == '%' )
+	    printf("[%s] ", g10_errstr(rc2) );
+	else if( sigrc == '?' )
+	    ;
+	else {
+	    p = get_user_id( sig->keyid, &n );
+	    print_string( stdout, p, n );
+	    m_free(p);
+	}
+	putchar('\n');
+    }
+    else
+	log_error("invalid node with packet of type %d\n", node->pkt->pkttype);
+}
+
+
 int
 proc_packets( IOBUF a )
 {
@@ -355,11 +506,13 @@ proc_packets( IOBUF a )
     char *ustr;
     int lvl0, lvl1;
     u32 keyid[2];
+    int newpkt;
 
+    c->opt_list = 1;
     init_packet(pkt);
     while( (rc=parse_packet(a, pkt)) != -1 ) {
 	/* cleanup if we have an illegal data structure */
-	if( c->dek && pkt->pkttype != PKT_ENCR_DATA ) {
+	if( c->dek && pkt->pkttype != PKT_ENCRYPTED ) {
 	    log_error("oops: valid pubkey enc packet not followed by data\n");
 	    m_free(c->dek); c->dek = NULL; /* burn it */
 	}
@@ -368,22 +521,29 @@ proc_packets( IOBUF a )
 	    free_packet(pkt);
 	    continue;
 	}
+	newpkt = -1;
 	switch( pkt->pkttype ) {
-	  case PKT_PUBKEY_CERT: proc_pubkey_cert( c, pkt ); break;
-	  case PKT_SECKEY_CERT: proc_seckey_cert( c, pkt ); break;
-	  case PKT_USER_ID:	proc_user_id( c, pkt ); break;
-	  case PKT_SIGNATURE:	proc_signature( c, pkt ); break;
+	  case PKT_PUBLIC_CERT: newpkt = add_public_cert( c, pkt ); break;
+	  case PKT_SECRET_CERT: newpkt = add_secret_cert( c, pkt ); break;
+	  case PKT_USER_ID:	newpkt = add_user_id( c, pkt ); break;
+	  case PKT_SIGNATURE:	newpkt = add_signature( c, pkt ); break;
 	  case PKT_PUBKEY_ENC:	proc_pubkey_enc( c, pkt ); break;
-	  case PKT_ENCR_DATA:	proc_encr_data( c, pkt ); break;
+	  case PKT_ENCRYPTED:	proc_encrypted( c, pkt ); break;
 	  case PKT_PLAINTEXT:	proc_plaintext( c, pkt ); break;
-	  case PKT_COMPR_DATA:	proc_compr_data( c, pkt ); break;
-	  default: free_packet(pkt);
+	  case PKT_COMPRESSED:	proc_compressed( c, pkt ); break;
+	  default: newpkt = 0; break;
 	}
+	if( newpkt == -1 )
+	    ;
+	else if( newpkt ) {
+	    pkt = m_alloc( sizeof *pkt );
+	    init_packet(pkt);
+	}
+	else
+	    free_packet(pkt);
     }
 
-    do_free_last_user_id( c );
-    do_free_last_seckey( c );
-    do_free_last_pubkey( c );
+    release_cert( c );
     m_free(c->dek);
     free_packet( pkt );
     m_free( pkt );
@@ -392,289 +552,4 @@ proc_packets( IOBUF a )
     return 0;
 }
 
-#else /* old */
-int
-proc_packets( IOBUF a )
-{
-    PACKET *pkt;
-    PKT_pubkey_cert *last_pubkey = NULL;
-    PKT_seckey_cert *last_seckey = NULL;
-    PKT_user_id     *last_user_id = NULL;
-    DEK *dek = NULL;
-    PKT_signature *sig; /* CHECK: "might be used uninitialied" */
-    int rc, result;
-    MD_HANDLE md_handle; /* union to pass handles */
-    char *ustr;
-    int lvl0, lvl1;
-    int last_was_pubkey_enc = 0;
-    u32 keyid[2];
-    md_filter_context_t mfx;
-
-    memset( &mfx, 0, sizeof mfx );
-    lvl0 = opt.check_sigs? 1:0; /* stdout or /dev/null */
-    lvl1 = opt.check_sigs? 1:3; /* stdout or error */
-    pkt = m_alloc( sizeof *pkt );
-    init_packet(pkt);
-    while( (rc=parse_packet(a, pkt)) != -1 ) {
-	if( dek && pkt->pkttype != PKT_ENCR_DATA ) {
-	    log_error("oops: valid pubkey enc packet not followed by data\n");
-	    m_free(dek); dek = NULL; /* burn it */
-	}
-
-	if( rc )
-	    free_packet(pkt);
-	else if( pkt->pkttype == PKT_PUBKEY_CERT ) {
-	    if( last_user_id ) {
-		free_user_id( last_user_id );
-		last_user_id = NULL;
-	    }
-	    if( last_pubkey ) {
-		free_pubkey_cert( last_pubkey );
-		last_pubkey = NULL;
-	    }
-	    if( opt.check_sigs ) {
-		ustr = get_user_id_string(sig->keyid);
-		printstr(lvl0, "pub: %s\n", ustr );
-		m_free(ustr);
-	    }
-	    else
-		fputs( "pub: [Public Key Cerificate]\n", stdout );
-	    last_pubkey = pkt->pkt.pubkey_cert;
-	    pkt->pkt.pubkey_cert = NULL;
-	    free_packet(pkt);
-	    pkt->pkc_parent = last_pubkey; /* set this as parent */
-	}
-	else if( pkt->pkttype == PKT_SECKEY_CERT ) {
-	    if( last_user_id ) {
-		free_user_id( last_user_id );
-		last_user_id = NULL;
-	    }
-	    if( last_seckey ) {
-		free_seckey_cert( last_seckey );
-		last_seckey = NULL;
-	    }
-	    if( opt_list )
-		fputs( "sec: (secret key certificate)\n", stdout );
-	    rc = check_secret_key( pkt->pkt.seckey_cert );
-	    if( opt_list ) {
-		if( !rc )
-		    fputs( "     Secret key is good", stdout );
-		else
-		    fputs( g10_errstr(rc), stdout);
-		putchar('\n');
-	    }
-	    else if( rc )
-		log_error("secret key certificate error: %s\n", g10_errstr(rc));
-	    last_seckey = pkt->pkt.seckey_cert;
-	    pkt->pkt.seckey_cert = NULL;
-	    free_packet(pkt);
-	    pkt->skc_parent = last_seckey; /* set this as parent */
-	}
-	else if( pkt->pkttype == PKT_USER_ID ) {
-	    if( last_user_id ) {
-		free_user_id( last_user_id );
-		last_user_id = NULL;
-	    }
-	    if( opt_list ) {
-		 printf("uid: '%.*s'\n", pkt->pkt.user_id->len,
-					 pkt->pkt.user_id->name );
-		 if( !pkt->pkc_parent && !pkt->skc_parent )
-		     puts("      (orphaned)");
-	    }
-	    if( pkt->pkc_parent ) {
-		if( pkt->pkc_parent->pubkey_algo == PUBKEY_ALGO_ELGAMAL
-		    || pkt->pkc_parent->pubkey_algo == PUBKEY_ALGO_RSA ) {
-		    keyid_from_pkc( pkt->pkc_parent, keyid );
-		    cache_user_id( pkt->pkt.user_id, keyid );
-		}
-	    }
-
-	    last_user_id = pkt->pkt.user_id;  /* save */
-	    pkt->pkt.user_id = NULL;
-	    free_packet(pkt);	/* fixme: free_packet is not a good name */
-	    pkt->user_parent = last_user_id;  /* and set this as user */
-	}
-	else if( pkt->pkttype == PKT_SIGNATURE ) {
-	    sig = pkt->pkt.signature;
-	    ustr = get_user_id_string(sig->keyid);
-	    result = -1;
-	    if( sig->sig_class == 0x00 ) {
-		if( mfx.rmd160 )
-		    result = 0;
-		else
-		    printstr(lvl1,"sig?: %s: no plaintext for signature\n",
-							ustr);
-	    }
-	    else if( sig->sig_class != 0x10 )
-		printstr(lvl1,"sig?: %s: unknown signature class %02x\n",
-					ustr, sig->sig_class);
-	    else if( !pkt->pkc_parent || !pkt->user_parent )
-		printstr(lvl1,"sig?: %s: orphaned encoded packet\n", ustr);
-	    else
-		result = 0;
-
-	    if( result )
-		;
-	    else if( !opt.check_sigs && sig->sig_class != 0x00 ) {
-		result = -1;
-		printstr(lvl0, "sig: from %s\n", ustr );
-	    }
-	    else if(sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
-		md_handle.algo = sig->d.elg.digest_algo;
-		if( sig->d.elg.digest_algo == DIGEST_ALGO_RMD160 ) {
-		    if( sig->sig_class == 0x00 )
-			md_handle.u.rmd = rmd160_copy( mfx.rmd160 );
-		    else {
-			md_handle.u.rmd = rmd160_copy(pkt->pkc_parent->mfx.rmd160);
-			rmd160_write(md_handle.u.rmd, pkt->user_parent->name,
-						      pkt->user_parent->len);
-		    }
-		    result = signature_check( sig, md_handle );
-		    rmd160_close(md_handle.u.rmd);
-		}
-		else if( sig->d.elg.digest_algo == DIGEST_ALGO_MD5
-			 && sig->sig_class != 0x00 ) {
-		    md_handle.u.md5 = md5_copy(pkt->pkc_parent->mfx.md5);
-		    md5_write(md_handle.u.md5, pkt->user_parent->name,
-					       pkt->user_parent->len);
-		    result = signature_check( sig, md_handle );
-		    md5_close(md_handle.u.md5);
-		}
-		else
-		    result = G10ERR_DIGEST_ALGO;
-	    }
-	    else if(sig->pubkey_algo == PUBKEY_ALGO_RSA ) {
-		md_handle.algo = sig->d.rsa.digest_algo;
-		if( sig->d.rsa.digest_algo == DIGEST_ALGO_RMD160 ) {
-		    if( sig->sig_class == 0x00 )
-			md_handle.u.rmd = rmd160_copy( mfx.rmd160 );
-		    else {
-			md_handle.u.rmd = rmd160_copy(pkt->pkc_parent->mfx.rmd160);
-			rmd160_write(md_handle.u.rmd, pkt->user_parent->name,
-						      pkt->user_parent->len);
-		    }
-		    result = signature_check( sig, md_handle );
-		    rmd160_close(md_handle.u.rmd);
-		}
-		else if( sig->d.rsa.digest_algo == DIGEST_ALGO_MD5
-			 && sig->sig_class != 0x00 ) {
-		    md_handle.u.md5 = md5_copy(pkt->pkc_parent->mfx.md5);
-		    md5_write(md_handle.u.md5, pkt->user_parent->name,
-					       pkt->user_parent->len);
-		    result = signature_check( sig, md_handle );
-		    md5_close(md_handle.u.md5);
-		}
-		else
-		    result = G10ERR_DIGEST_ALGO;
-	    }
-	    else
-		result = G10ERR_PUBKEY_ALGO;
-
-	    if( result == -1 )
-		;
-	    else if( !result && sig->sig_class == 0x00 )
-		printstr(1,    "sig: good signature from %s\n", ustr );
-	    else if( !result )
-		printstr(lvl0, "sig: good signature from %s\n", ustr );
-	    else
-		printstr(lvl1, "sig? %s: %s\n", ustr, g10_errstr(result));
-	    free_packet(pkt);
-	    m_free(ustr);
-	}
-	else if( pkt->pkttype == PKT_PUBKEY_ENC ) {
-	    PKT_pubkey_enc *enc;
-
-	    last_was_pubkey_enc = 1;
-	    result = 0;
-	    enc = pkt->pkt.pubkey_enc;
-	    printf("enc: encrypted by a pubkey with keyid %08lX\n",
-							enc->keyid[1] );
-	    if( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL
-		|| enc->pubkey_algo == PUBKEY_ALGO_RSA	) {
-		m_free(dek ); /* paranoid: delete a pending DEK */
-		dek = m_alloc_secure( sizeof *dek );
-		if( (result = get_session_key( enc, dek )) ) {
-		    /* error: delete the DEK */
-		    m_free(dek); dek = NULL;
-		}
-	    }
-	    else
-		result = G10ERR_PUBKEY_ALGO;
-
-	    if( result == -1 )
-		;
-	    else if( !result )
-		fputs(	"     DEK is good", stdout );
-	    else
-		printf( "     %s", g10_errstr(result));
-	    putchar('\n');
-	    free_packet(pkt);
-	}
-	else if( pkt->pkttype == PKT_ENCR_DATA ) {
-	    result = 0;
-	    printf("dat: %sencrypted data\n", dek?"":"conventional ");
-	    if( !dek && !last_was_pubkey_enc ) {
-		/* assume this is conventional encrypted data */
-		dek = m_alloc_secure( sizeof *dek );
-		dek->algo = DEFAULT_CIPHER_ALGO;
-		result = make_dek_from_passphrase( dek, 0 );
-	    }
-	    else if( !dek )
-		result = G10ERR_NO_SECKEY;
-	    if( !result )
-		result = decrypt_data( pkt->pkt.encr_data, dek );
-	    m_free(dek); dek = NULL;
-	    if( result == -1 )
-		;
-	    else if( !result )
-		fputs(	"     encryption okay",stdout);
-	    else
-		printf( "     %s", g10_errstr(result));
-	    putchar('\n');
-	    free_packet(pkt);
-	    last_was_pubkey_enc = 0;
-	}
-	else if( pkt->pkttype == PKT_PLAINTEXT ) {
-	    PKT_plaintext *pt = pkt->pkt.plaintext;
-	    printf("txt: plain text data name='%.*s'\n", pt->namelen, pt->name);
-	    free_md_filter_context( &mfx );
-	    mfx.rmd160 = rmd160_open(0);
-	    result = handle_plaintext( pt, &mfx );
-	    if( !result )
-		fputs(	"     okay",stdout);
-	    else
-		printf( "     %s", g10_errstr(result));
-	    putchar('\n');
-	    free_packet(pkt);
-	    last_was_pubkey_enc = 0;
-	}
-	else if( pkt->pkttype == PKT_COMPR_DATA ) {
-	    PKT_compressed *zd = pkt->pkt.compressed;
-	    printf("zip: compressed data packet\n");
-	    result = handle_compressed( zd );
-	    if( !result )
-		fputs(	"     okay",stdout);
-	    else
-		printf( "     %s", g10_errstr(result));
-	    putchar('\n');
-	    free_packet(pkt);
-	    last_was_pubkey_enc = 0;
-	}
-	else
-	    free_packet(pkt);
-    }
-
-    if( last_user_id )
-	free_user_id( last_user_id );
-    if( last_seckey )
-	free_seckey_cert( last_seckey );
-    if( last_pubkey )
-	free_pubkey_cert( last_pubkey );
-    m_free(dek);
-    free_packet( pkt );
-    m_free( pkt );
-    free_md_filter_context( &mfx );
-    return 0;
-}
-#endif
 

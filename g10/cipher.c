@@ -47,21 +47,21 @@ cipher_filter( void *opaque, int control,
     cipher_filter_context_t *cfx = opaque;
     int rc=0;
 
-    if( control == IOBUFCTRL_UNDERFLOW ) { /* decipher */
+    if( control == IOBUFCTRL_UNDERFLOW ) { /* decrypted */
 	rc = -1; /* FIXME:*/
     }
-    else if( control == IOBUFCTRL_FLUSH ) { /* encipher */
+    else if( control == IOBUFCTRL_FLUSH ) { /* encrypted */
 	assert(a);
 	if( !cfx->header ) {
 	    PACKET pkt;
-	    PKT_encr_data ed;
+	    PKT_encrypted ed;
 	    byte temp[10];
 
 	    memset( &ed, 0, sizeof ed );
 	    ed.len = cfx->datalen;
 	    init_packet( &pkt );
-	    pkt.pkttype = PKT_ENCR_DATA;
-	    pkt.pkt.encr_data = &ed;
+	    pkt.pkttype = PKT_ENCRYPTED;
+	    pkt.pkt.encrypted = &ed;
 	    if( build_packet( a, &pkt ))
 		log_bug("build_packet(ENCR_DATA) failed\n");
 	    randomize_buffer( temp, 8, 1 );

@@ -179,3 +179,15 @@ encode_md5_value( byte *md, unsigned len, unsigned nbits )
     return frame;
 }
 
+MPI
+encode_md_value( MD_HANDLE *md, unsigned nbits )
+{
+    byte *p = md_final( md );
+    if( md->algo == DIGEST_ALGO_MD5 )
+	return encode_md5_value( p, 16, nbits );
+    else if( md->algo == DIGEST_ALGO_RMD160 )
+	return encode_rmd160_value( p, 20, nbits );
+    else
+	log_bug(NULL);
+}
+
