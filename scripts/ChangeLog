@@ -1,3 +1,8 @@
+2002-04-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* gnupg.spec.in: Removed pubring.asc and OPTIONS.  Added
+	samplekeys.asc.
+
 2002-03-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* gnupg.spec.in: Added the gpgkeys_xxx keyserver helpers.  Added a

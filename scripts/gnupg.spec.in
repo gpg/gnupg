@@ -24,6 +24,9 @@ Provides: gpg openpgp
 BuildRoot: /tmp/rpmbuild_%{name}
 
 %changelog
+* Fri Apr 19 2002 David Shaw <dshaw@jabberwocky.com>
+- Removed OPTIONS and pubring.asc - no longer used
+- Added doc/samplekeys.asc
 * Sun Mar 31 2002 David Shaw <dshaw@jabberwocky.com>
 - Added the gpgkeys_xxx keyserver helpers.
 - Added a * to catch variations on the basic gpg man page (gpg, gpgv).
@@ -157,8 +160,7 @@ make install-strip prefix=$RPM_BUILD_ROOT/usr
 %doc %attr (-,root,root) doc/faq.html
 %doc %attr (-,root,root) doc/HACKING
 %doc %attr (-,root,root) doc/OpenPGP
-%doc %attr (-,root,root) g10/pubring.asc
-%doc %attr (-,root,root) g10/OPTIONS
+%doc %attr (-,root,root) doc/samplekeys.asc
 
 %attr (-,root,root) /usr/man/man1/gpg*.1*
 %attr (4755,root,root) /usr/bin/gpg
