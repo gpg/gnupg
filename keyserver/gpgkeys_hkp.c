@@ -156,7 +156,7 @@ send_key(int *eof)
 	  host,port[0]?":":"",port[0]?port:"");
 
   if(verbose>2)
-    fprintf(console,"gpgkeys: HTTP URL is \"%s\"\n",request);
+    fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
 
   rc=http_open(&hd,HTTP_REQ_POST,request,http_flags,proxy[0]?proxy:NULL);
   if(rc)
@@ -260,7 +260,7 @@ get_key(char *getkey)
 	  host,port[0]?":":"",port[0]?port:"", search);
 
   if(verbose>2)
-    fprintf(console,"gpgkeys: HTTP URL is \"%s\"\n",request);
+    fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
 
   rc=http_open_document(&hd,request,http_flags,proxy[0]?proxy:NULL);
   if(rc!=0)
@@ -433,11 +433,11 @@ parse_hkp_index(IOBUF buffer,char *line)
 {
   int ret=0;
 
-  /* printf("Open %d, LINE: \"%s\"\n",open,line); */
+  /* printf("Open %d, LINE: `%s'\n",open,line); */
 
   dehtmlize(line);
 
-  /* printf("Now open %d, LINE: \"%s\"\n",open,line); */
+  /* printf("Now open %d, LINE: `%s'\n",open,line); */
 
   if(line[0]=='\0')
     return 0;
@@ -682,7 +682,7 @@ search_key(char *searchkey)
 	  host,port[0]?":":"",port[0]?port:"",search);
 
   if(verbose>2)
-    fprintf(console,"gpgkeys: HTTP URL is \"%s\"\n",request);
+    fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
 
   rc=http_open_document(&hd,request,http_flags,proxy[0]?proxy:NULL);
   if(rc)
@@ -782,7 +782,7 @@ main(int argc,char *argv[])
 	output=fopen(optarg,"w");
 	if(output==NULL)
 	  {
-	    fprintf(console,"gpgkeys: Cannot open output file \"%s\": %s\n",
+	    fprintf(console,"gpgkeys: Cannot open output file `%s': %s\n",
 		    optarg,strerror(errno));
 	    return KEYSERVER_INTERNAL_ERROR;
 	  }
@@ -795,7 +795,7 @@ main(int argc,char *argv[])
       input=fopen(argv[optind],"r");
       if(input==NULL)
 	{
-	  fprintf(console,"gpgkeys: Cannot open input file \"%s\": %s\n",
+	  fprintf(console,"gpgkeys: Cannot open input file `%s': %s\n",
 		  argv[optind],strerror(errno));
 	  return KEYSERVER_INTERNAL_ERROR;
 	}

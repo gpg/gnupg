@@ -149,7 +149,7 @@ main(int argc,char *argv[])
 	output=fopen(optarg,"w");
 	if(output==NULL)
 	  {
-	    fprintf(console,"gpgkeys: Cannot open output file \"%s\": %s\n",
+	    fprintf(console,"gpgkeys: Cannot open output file `%s': %s\n",
 		    optarg,strerror(errno));
 	    return KEYSERVER_INTERNAL_ERROR;
 	  }
@@ -162,7 +162,7 @@ main(int argc,char *argv[])
       input=fopen(argv[optind],"r");
       if(input==NULL)
 	{
-	  fprintf(console,"gpgkeys: Cannot open input file \"%s\": %s\n",
+	  fprintf(console,"gpgkeys: Cannot open input file `%s': %s\n",
 		  argv[optind],strerror(errno));
 	  return KEYSERVER_INTERNAL_ERROR;
 	}
