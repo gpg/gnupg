@@ -223,7 +223,9 @@ static ARGPARSE_OPTS opts[] = {
 	      "check-trustdb",0 , N_("|[NAMES]|check the trust database")},
     { aFixTrustDB, "fix-trustdb",0 , N_("fix a corrupted trust database")},
     { aDeArmor, "dearmor", 256, N_("De-Armor a file or stdin") },
+    { aDeArmor, "dearmour", 256, "@" },
     { aEnArmor, "enarmor", 256, N_("En-Armor a file or stdin") },
+    { aEnArmor, "enarmour", 256, "@" },
     { aPrintMD,  "print-md" , 256, N_("|algo [files]|print message digests")},
     { aPrimegen, "gen-prime" , 256, "@" },
     { aGenRandom, "gen-random" , 256, "@" },
@@ -231,6 +233,7 @@ static ARGPARSE_OPTS opts[] = {
     { 301, NULL, 0, N_("@\nOptions:\n ") },
 
     { oArmor, "armor",     0, N_("create ascii armored output")},
+    { oArmor, "armour",     0, "@" },
     { oRecipient, "recipient", 2, N_("|NAME|encrypt for NAME")},
     { oRecipient, "remote-user", 2, "@"},  /* old option name */
     { oDefRecipient, "default-recipient" ,2,
@@ -303,6 +306,7 @@ static ARGPARSE_OPTS opts[] = {
     { oTrustDBName, "trustdb-name", 2, "@" },
     { oNoSecmemWarn, "no-secmem-warning", 0, "@" }, /* used only by regression tests */
     { oNoArmor, "no-armor",   0, "@"},
+    { oNoArmor, "no-armour",   0, "@"},
     { oNoDefKeyring, "no-default-keyring", 0, "@" },
     { oNoGreeting, "no-greeting", 0, "@" },
     { oNoOptions, "no-options", 0, "@" }, /* shortcut for --options /dev/null */

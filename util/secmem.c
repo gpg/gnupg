@@ -97,8 +97,11 @@ lock_pool( void *p, size_t n )
 	  #ifdef EAGAIN  /* OpenBSD returns this */
 	    && errno != EAGAIN
 	  #endif
+	  #ifdef ENOSYS  /* Some SCOs return this (function not implemented) */
+	    && errno != ENOSYS
+	  #endif
 	  )
-	    log_error("can´t lock memory: %s\n", strerror(err));
+	    log_error("can't lock memory: %s\n", strerror(err));
 	show_warning = 1;
     }
 
@@ -134,8 +137,11 @@ lock_pool( void *p, size_t n )
 	  #ifdef EAGAIN  /* OpenBSD returns this */
 	    && errno != EAGAIN
 	  #endif
+	  #ifdef ENOSYS  /* Some SCOs return this (function not implemented) */
+	    && errno != ENOSYS
+	  #endif
 	  )
-	    log_error("can´t lock memory: %s\n", strerror(err));
+	    log_error("can't lock memory: %s\n", strerror(err));
 	show_warning = 1;
     }
 

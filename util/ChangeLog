@@ -1,3 +1,13 @@
+Fri Sep 17 12:56:42 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* secmem.c (lock_pool): Check for ENOSYS return my mlock() on
+	old SCOs.
+
+	* ttyio.c (do_get): Replaced #if __MINGW32__ by #ifdef becuase
+	gcc 2.95.1 assigns a floating point value (0.2) to this macro,
+	which in turn can't be used in an expression.
+
 Wed Sep 15 16:22:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

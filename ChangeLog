@@ -1,3 +1,11 @@
+Fri Sep 17 12:56:42 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* configure.in: Add "-lcap" when capabilities are requested.
+	Add the conditional CROSS_COMPILING.
+	* Makefile.am: Don't use checks when CROSS_COMPILING.
+
+
 Wed Sep 15 16:22:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

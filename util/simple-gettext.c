@@ -464,5 +464,20 @@ gettext( const char *msgid )
     return msgid;
 }
 
+#if 0
+       unsigned int cp1, cp2;
+
+       cp1 = GetConsoleCP();
+       cp2 = GetConsoleOutputCP();
+
+       log_info("InputCP=%u  OutputCP=%u\n", cp1, cp2 );
+
+       if( !SetConsoleOutputCP( 1252 ) )
+	   log_info("SetConsoleOutputCP failed: %d\n", (int)GetLastError() );
+
+       cp1 = GetConsoleCP();
+       cp2 = GetConsoleOutputCP();
+       log_info("InputCP=%u  OutputCP=%u after switch1\n", cp1, cp2 );
+#endif
 
 #endif /* USE_SIMPLE_GETTEXT */

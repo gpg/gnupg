@@ -107,23 +107,6 @@ init_ttyfp(void)
     SetConsoleMode(con.in, DEF_INPMODE );
     SetConsoleMode(con.out, DEF_OUTMODE );
 
-#warning DEBUG CODE
-    {
-       unsigned int cp1, cp2;
-
-       cp1 = GetConsoleCP();
-       cp2 = GetConsoleOutputCP();
-
-       log_info("InputCP=%u  OutputCP=%u\n", cp1, cp2 );
-
-       if( !SetConsoleOutputCP( 1252 ) )
-	   log_info("SetConsoleOutputCP failed: %d\n", (int)GetLastError() );
-
-       cp1 = GetConsoleCP();
-       cp2 = GetConsoleOutputCP();
-       log_info("InputCP=%u  OutputCP=%u after switch1\n", cp1, cp2 );
-
-    }
   #elif defined(__EMX__)
     ttyfp = stdout; /* Fixme: replace by the real functions: see wklib */
   #else
@@ -304,7 +287,7 @@ do_get( const char *prompt, int hidden )
     buf = m_alloc(n=50);
     i = 0;
 
-  #if __MINGW32__ /* windoze version */
+  #ifdef __MINGW32__ /* windoze version */
     if( hidden )
 	SetConsoleMode(con.in, HID_INPMODE );
 
@@ -419,7 +402,7 @@ tty_kill_prompt()
 	last_prompt_len = 0;
     if( !last_prompt_len )
 	return;
-  #if __MINGW32__
+  #ifdef __MINGW32__
     tty_printf("\r%*s\r", last_prompt_len, "");
   #else
     {

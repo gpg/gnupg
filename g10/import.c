@@ -1124,7 +1124,7 @@ append_uid( KBNODE keyblock, KBNODE node, int *n_sigs,
     KBNODE n, n_where=NULL;
 
     assert(node->pkt->pkttype == PKT_USER_ID );
-    if( node->next->pkt->pkttype == PKT_USER_ID ) {
+    if( !node->next || node->next->pkt->pkttype == PKT_USER_ID ) {
 	log_error( _("key %08lX: our copy has no self-signature\n"),
 						  (ulong)keyid[1]);
 	return G10ERR_GENERAL;
@@ -1177,9 +1177,7 @@ merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
 
     assert(dst->pkt->pkttype == PKT_USER_ID );
     assert(src->pkt->pkttype == PKT_USER_ID );
-    /* at least a self signature comes next to the user IDs */
-    assert(src->next->pkt->pkttype != PKT_USER_ID );
-    if( dst->next->pkt->pkttype == PKT_USER_ID ) {
+    if( !dst->next || dst->next->pkt->pkttype == PKT_USER_ID ) {
 	log_error( _("key %08lX: our copy has no self-signature\n"),
 						  (ulong)keyid[1]);
 	return 0;

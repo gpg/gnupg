@@ -435,6 +435,7 @@ if test "$ac_cv_header_sys_capability_h" = "yes" ; then
   AC_CHECK_LIB(cap, cap_init, ac_need_libcap=1)
   if test "$ac_cv_lib_cap_cap_init" = "yes"; then
      AC_DEFINE(USE_CAPABILITIES)
+     LIBS="$LIBS -lcap"
      use_capabilities=yes
   fi
 fi
@@ -682,6 +683,8 @@ changequote([,])dnl
 if echo "$VERSION" | grep $tmp_pat >/dev/null ; then
     AC_DEFINE(IS_DEVELOPMENT_VERSION)
 fi
+
+AM_CONDITIONAL(CROSS_COMPILING, test x$cross_compiling = xyes)
 
 GNUPG_DO_LINK_FILES
 
