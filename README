@@ -489,6 +489,15 @@
                      Forces usage of the local zlib sources. Default is
 		     to use the (shared) library of the system.
 
+     --with-zlib=<DIR>
+		     Look for the system zlib in DIR.
+
+     --with-bzip2=<DIR>
+		     Look for the system libbz2 in DIR.
+
+     --without-bzip2
+		     Disable the BZIP2 compression algorithm.
+
      --with-included-gettext
                      Forces usage of the local gettext sources instead of
 		     the one provided by your system.

@@ -1,5 +1,7 @@
 2003-11-30  David Shaw  <dshaw@jabberwocky.com>
 
+	* README: Add --with-zlib, --with-bzip2, and --without-bzip2.
+
 	* README: Update version number.  Add BZIP2.  Remove Elgamal
 	sign+encrypt.
 
