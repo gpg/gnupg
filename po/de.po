@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg2 1.9.10\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-10-01 14:24+0200\n"
+"POT-Creation-Date: 2004-10-01 14:54+0200\n"
 "PO-Revision-Date: 2004-10-01 14:27+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: de\n"
@@ -1338,11 +1338,11 @@ msgstr ""
 msgid "usage: gpgconf [options] "
 msgstr "Gebrauch: gpgconf [Optionen] "
 
-#: tools/gpgconf.c:176
+#: tools/gpgconf.c:177
 msgid "Need one component argument"
 msgstr "Benötige ein Komponenten Argument"
 
-#: tools/gpgconf.c:185
+#: tools/gpgconf.c:186
 msgid "Component not found"
 msgstr "Komponente nicht gefunden"
 
