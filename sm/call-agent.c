@@ -461,8 +461,43 @@ gpgsm_agent_istrusted (KsbaCert cert)
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL);
   return map_assuan_err (rc);
 }
-
 
+/* Ask the agent to mark CERT as a trusted Root-CA one */
+int
+gpgsm_agent_marktrusted (KsbaCert cert)
+{
+  int rc;
+  char *fpr, *dn;
+  char line[ASSUAN_LINELENGTH];
+
+  rc = start_agent ();
+  if (rc)
+    return rc;
+
+  fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+  if (!fpr)
+    {
+      log_error ("error getting the fingerprint\n");
+      return seterr (General_Error);
+    }
+
+  dn = ksba_cert_get_issuer (cert, 0);
+  if (!dn)
+    {
+      xfree (fpr);
+      return seterr (General_Error);
+    }
+  snprintf (line, DIM(line)-1, "MARKTRUSTED %s S %s", fpr, dn);
+  line[DIM(line)-1] = 0;
+  ksba_free (dn);
+  xfree (fpr);
+
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL);
+  return map_assuan_err (rc);
+}
+
+
+
 /* Ask the agent whether the a corresponding secret key is available
    for the given keygrip */
 int
@@ -484,3 +519,4 @@ gpgsm_agent_havekey (const char *hexkeygrip)
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL);
   return map_assuan_err (rc);
 }
+

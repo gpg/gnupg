@@ -261,17 +261,27 @@ gpgsm_validate_path (KsbaCert cert)
             ;
           else if (rc == GNUPG_Not_Trusted)
             {
+              int rc2;
+
               char *fpr = gpgsm_get_fingerprint_string (subject_cert,
                                                         GCRY_MD_SHA1);
-              log_error (_("root certificate is not marked trusted\n"));
+              log_info (_("root certificate is not marked trusted\n"));
               log_info (_("fingerprint=%s\n"), fpr? fpr : "?");
               xfree (fpr);
-              /* fixme: print a note while we have not yet the code to
-                 ask whether the cert should be entered into the trust
-                 list */
-              gpgsm_dump_cert ("issuer", subject_cert);
-              log_info ("after checking the fingerprint, you may want "
-                        "to enter it into \"~/.gnupg-test/trustlist.txt\"\n");
+              rc2 = gpgsm_agent_marktrusted (subject_cert);
+              if (!rc2)
+                {
+                  log_info (_("root certificate has now"
+                              " been marked as trusted\n"));
+                  rc = 0;
+                }
+              else 
+                {
+                  gpgsm_dump_cert ("issuer", subject_cert);
+                  log_info ("after checking the fingerprint, you may want "
+                            "to enter it manually into "
+                            "\"~/.gnupg-test/trustlist.txt\"\n");
+                }
             }
           else 
             {
