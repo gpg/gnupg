@@ -1,5 +1,8 @@
 2004-02-21  David Shaw  <dshaw@jabberwocky.com>
 
+	* plaintext.c (handle_plaintext): Properly handle a --max-output
+	of zero (do not limit output at all).
+
 	* keyserver.c (keyserver_spawn): Use the full 64-bit keyid in the
 	INFO header lines, and include "sig:" records for the benefit of
 	people who store their keys in LDAP servers.  It makes it easy to

@@ -168,7 +168,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 #endif
 		if( fp )
 		  {
-		    if((count++)>opt.max_output)
+		    if(opt.max_output && (count++)>opt.max_output)
 		      {
 			log_error("Error writing to `%s': %s\n",
 				  fname,"exceeded --max-output limit\n");
@@ -201,7 +201,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		    md_write( mfx->md, buffer, len );
 		if( fp )
 		  {
-		    if((count+=len)>opt.max_output)
+		    if(opt.max_output && (count+=len)>opt.max_output)
 		      {
 			log_error("Error writing to `%s': %s\n",
 				  fname,"exceeded --max-output limit\n");
@@ -234,7 +234,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 #endif
 		if( fp )
 		  {
-		    if((count++)>opt.max_output)
+		    if(opt.max_output && (count++)>opt.max_output)
 		      {
 			log_error("Error writing to `%s': %s\n",
 				  fname,"exceeded --max-output limit\n");
@@ -270,7 +270,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		    md_write( mfx->md, buffer, len );
 		if( fp )
 		  {
-		    if((count+=len)>opt.max_output)
+		    if(opt.max_output && (count+=len)>opt.max_output)
 		      {
 			log_error("Error writing to `%s': %s\n",
 				  fname,"exceeded --max-output limit\n");
@@ -297,7 +297,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	while( (c = iobuf_get(pt->buf)) != -1 ) {
 	    if( fp )
 	      {
-		if((count++)>opt.max_output)
+		if(opt.max_output && (count++)>opt.max_output)
 		  {
 		    log_error("Error writing to `%s': %s\n",
 			      fname,"exceeded --max-output limit\n");
