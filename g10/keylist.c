@@ -300,16 +300,21 @@ print_key_data( PKT_public_key *pk, u32 *keyid )
 static void
 print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
 {
-    unsigned int use = pk? pk->pubkey_usage : sk->pubkey_usage;
+  if(pk || (sk && sk->protect.s2k.mode!=1001))
+    {
+      unsigned int use = pk? pk->pubkey_usage : sk->pubkey_usage;
     
-    if ( use & PUBKEY_USAGE_ENC ) {
+      if ( use & PUBKEY_USAGE_ENC )
         putchar ('e');
+
+      if ( use & PUBKEY_USAGE_SIG )
+	{
+	  putchar ('s');
+	  if( pk? pk->is_primary : sk->is_primary )
+	    putchar ('c');
+	}
     }
-    if ( (use & PUBKEY_USAGE_SIG) && !(sk?(sk->protect.s2k.mode==1001):0) ) {
-        putchar ('s');
-	if( pk? pk->is_primary : sk->is_primary )
-	  putchar ('c');
-    }
+
     if ( keyblock ) { /* figure our the usable capabilities */
         KBNODE k;
         int enc=0, sign=0, cert=0;

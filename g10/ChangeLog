@@ -1,3 +1,9 @@
+2002-10-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* keylist.c (print_capabilities): Properly indicate per-key
+	capabilities of sign&encrypt primary keys that have
+	secret-parts-missing (i.e. no capabilities at all).
+
 2002-10-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (get_pubkey_direct): Don't cache keys retrieved via
