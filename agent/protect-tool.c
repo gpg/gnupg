@@ -90,6 +90,7 @@ static char *opt_prompt;
 static int opt_status_msg;
 
 static char *get_passphrase (int promptno);
+static char *get_new_passphrase (int promptno);
 static void release_passphrase (char *pw);
 static int store_private_key (const unsigned char *grip,
                               const void *buffer, size_t length, int force);
@@ -663,7 +664,7 @@ import_p12_file (const char *fname)
   if (!buf)
     return;
 
-  kparms = p12_parse (buf, buflen, (pw=get_passphrase (0)),
+  kparms = p12_parse (buf, buflen, (pw=get_passphrase (2)),
                       import_p12_cert_cb, NULL);
   release_passphrase (pw);
   xfree (buf);
@@ -739,7 +740,7 @@ import_p12_file (const char *fname)
   gcry_sexp_release (s_key);
 
 
-  rc = agent_protect (key, (pw=get_passphrase (0)), &result, &resultlen);
+  rc = agent_protect (key, (pw=get_new_passphrase (4)), &result, &resultlen);
   release_passphrase (pw);
   xfree (key);
   if (rc)
@@ -963,7 +964,8 @@ export_p12_file (const char *fname)
   kparms[7] = sk.u;
   kparms[8] = NULL;
 
-  key = p12_build (kparms, cert, certlen, (pw=get_passphrase (0)), &keylen);
+  key = p12_build (kparms, cert, certlen,
+                   (pw=get_new_passphrase (3)), &keylen);
   release_passphrase (pw);
   xfree (cert);
   for (i=0; i < 8; i++)
@@ -1137,6 +1139,11 @@ agent_exit (int rc)
    set from the command line  PROMPTNO select the prompt to display:
      0 = default
      1 = taken from the option --prompt
+     2 = for unprotecting a pkcs#12 object
+     3 = for protecting a new pkcs#12 object
+     4 = for protecting an imported pkcs#12 in our system
+     5 = reenter the passphrase
+   When adding 100 to the values, a "does not match - try again" errro message is shown.
 */
 static char *
 get_passphrase (int promptno)
@@ -1145,9 +1152,14 @@ get_passphrase (int promptno)
   int err;
   const char *desc;
   char *orig_codeset = NULL;
+  int error_msgno;
+  
 
   if (opt_passphrase)
     return xstrdup (opt_passphrase);
+
+  error_msgno = promptno / 100;
+  promptno %= 100;
 
 #ifdef ENABLE_NLS
   /* The Assuan agent protocol requires us to transmit utf-8 strings */
@@ -1169,11 +1181,24 @@ get_passphrase (int promptno)
 
   if (promptno == 1 && opt_prompt)
     desc = opt_prompt;
+  else if (promptno == 2)
+    desc = _("Please enter the passphrase to unprotect the "
+             "PKCS#12 object.");
+  else if (promptno == 3)
+    desc = _("Please enter the passphrase to protect the "
+             "new PKCS#12 object.");
+  else if (promptno == 4)
+    desc = _("Please enter the passphrase to protect the "
+             "imported object within the GnuPG system.");
+  else if (promptno == 5)
+    desc = _("Please re-enter this passphrase");
   else
     desc = _("Please enter the passphrase or the PIN\n"
              "needed to complete this operation.");
 
-  pw = simple_pwquery (NULL,NULL, _("Passphrase:"), desc, &err);
+  pw = simple_pwquery (NULL,
+                       error_msgno == 1? _("does not match - try again"):NULL,
+                       _("Passphrase:"), desc, &err);
 
 #ifdef ENABLE_NLS
   if (orig_codeset)
@@ -1194,6 +1219,44 @@ get_passphrase (int promptno)
 
   return pw;
 }
+
+
+/* Same as get_passphrase but requests it a second time and compares
+   it to the one entered the first time. */
+static char *
+get_new_passphrase (int promptno)
+{
+  char *pw;
+  int i, secondpromptno;
+  
+  pw = get_passphrase (promptno);
+  if (!pw)
+    return NULL; /* Canceled. */
+  if (!*pw)
+    return pw; /* Empty passphrase - no need to as for repeating it. */
+
+  secondpromptno = 5;
+  for (i=0; i < 3; i++)
+    {
+      char *pw2 = get_passphrase (secondpromptno);
+      if (!pw2)
+        {
+          xfree (pw);
+          return NULL; /* Canceled.  */
+        }
+      if (!strcmp (pw, pw2))
+        {
+          xfree (pw2);
+          return pw; /* Okay. */
+        }
+      secondpromptno = 105;
+      xfree (pw2);
+    }
+  xfree (pw);
+  return NULL; /* 3 times repeated wrong - cancel.  */
+}
+
+
 
 static void
 release_passphrase (char *pw)
