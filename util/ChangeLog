@@ -1,3 +1,11 @@
+2003-05-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* argparse.c, dotlock.c, fileutil.c, iobuf.c, miscutil.c,
+	simple-gettext.c, errors.c, http.c, memory.c, secmem.c, ttyio.c:
+	Edit all preprocessor instructions to remove whitespace before the
+	'#'.  This is not required by C89, but there are some compilers
+	out there that don't like it.
+
 2003-05-21  Werner Koch  <wk@gnupg.org>
 
 	* fileutil.c (is_file_compressed): Fix the check for the "-" file

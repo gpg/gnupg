@@ -48,9 +48,9 @@
  * replace this guard stuff with one provided by a modern malloc library
  */
 #if SIZEOF_UNSIGNED_LONG == 8
-  #define EXTRA_ALIGN 4
+#define EXTRA_ALIGN 4
 #else
-  #define EXTRA_ALIGN 0
+#define EXTRA_ALIGN 0
 #endif
 
 #if defined(M_DEBUG) || defined(M_GUARD)
@@ -59,32 +59,32 @@
 
 #ifdef M_DEBUG
 
-  #ifndef M_GUARD
-    #define M_GUARD 1
-  #endif
-  #undef m_alloc
-  #undef m_alloc_clear
-  #undef m_alloc_secure
-  #undef m_alloc_secure_clear
-  #undef m_realloc
-  #undef m_free
-  #undef m_check
-  #undef m_strdup
-  #define FNAME(a)  m_debug_ ##a
-  #define FNAMEPRT  , const char *info
-  #define FNAMEARG  , info
-  #ifndef __riscos__
-    #define store_len(p,n,m) do { add_entry(p,n,m, \
+#ifndef M_GUARD
+#define M_GUARD 1
+#endif
+#undef m_alloc
+#undef m_alloc_clear
+#undef m_alloc_secure
+#undef m_alloc_secure_clear
+#undef m_realloc
+#undef m_free
+#undef m_check
+#undef m_strdup
+#define FNAME(a)  m_debug_ ##a
+#define FNAMEPRT  , const char *info
+#define FNAMEARG  , info
+#ifndef __riscos__
+#define store_len(p,n,m) do { add_entry(p,n,m, \
 					info, __FUNCTION__);  } while(0)
-  #else
-    #define store_len(p,n,m) do { add_entry(p,n,m, \
-	          info, __func__ );  } while(0)
-  #endif
 #else
-  #define FNAME(a)  m_ ##a
-  #define FNAMEPRT
-  #define FNAMEARG
-  #define store_len(p,n,m) do { ((byte*)p)[EXTRA_ALIGN+0] = n;		      \
+#define store_len(p,n,m) do { add_entry(p,n,m, \
+	          info, __func__ );  } while(0)
+#endif
+#else
+#define FNAME(a)  m_ ##a
+#define FNAMEPRT
+#define FNAMEARG
+#define store_len(p,n,m) do { ((byte*)p)[EXTRA_ALIGN+0] = n;		      \
 				((byte*)p)[EXTRA_ALIGN+1] = n >> 8 ;	      \
 				((byte*)p)[EXTRA_ALIGN+2] = n >> 16 ;	      \
 				((byte*)p)[EXTRA_ALIGN+3] = m? MAGIC_SEC_BYTE \
@@ -332,11 +332,11 @@ check_allmem( const char *info )
 
     for( e = memtbl, n = 0; n < memtbl_len; n++, e++ ) {
 	if( e->inuse ) {
-          #ifndef __riscos__
+#ifndef __riscos__
 	    check_mem(e->user_p-4-EXTRA_ALIGN, info);
-          #else 
+#else 
 	    check_mem((const byte *) e->user_p-4-EXTRA_ALIGN, info);
-          #endif
+#endif
         }
     }
 }
@@ -354,10 +354,10 @@ membug( const char *fmt, ... )
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
     fflush(stderr);
-  #ifdef M_DEBUG
+#ifdef M_DEBUG
     if( DBG_MEMSTAT )
 	dump_table();
-  #endif
+#endif
     abort();
 }
 #endif
@@ -365,7 +365,7 @@ membug( const char *fmt, ... )
 void
 m_print_stats( const char *prefix )
 {
-  #ifdef M_DEBUG
+#ifdef M_DEBUG
     unsigned n;
     struct memtbl_entry *e;
     ulong sum = 0, chunks =0;
@@ -379,19 +379,19 @@ m_print_stats( const char *prefix )
 
     log_debug( "%s%smemstat: %8lu bytes in %ld chunks used\n",
 		prefix? prefix:"", prefix? ": ":"", sum, chunks );
-  #elif defined(M_GUARD)
+#elif defined(M_GUARD)
     log_debug( "%s%smemstat: %8ld bytes\n",
 		prefix? prefix:"", prefix? ": ":"", used_memory );
-  #endif
+#endif
 }
 
 void
 m_dump_table( const char *prefix )
 {
-  #ifdef M_DEBUG
+#ifdef M_DEBUG
     fprintf(stderr,"Memory-Table-Dump: %s\n", prefix);
     dump_table();
-  #endif
+#endif
     m_print_stats( prefix );
 }
 
@@ -418,7 +418,7 @@ FNAME(alloc)( size_t n FNAMEPRT )
 {
     char *p;
 
-  #ifdef M_GUARD
+#ifdef M_GUARD
     if(!n)
       out_of_core(n,0); /* should never happen */
     if( !(p = malloc( n + EXTRA_ALIGN+5 )) )
@@ -427,7 +427,7 @@ FNAME(alloc)( size_t n FNAMEPRT )
     used_memory += n;
     p[4+EXTRA_ALIGN+n] = MAGIC_END_BYTE;
     return p+EXTRA_ALIGN+4;
-  #else
+#else
     /* mallocing zero bytes is undefined by ISO-C, so we better make
        sure that it won't happen */
     if (!n)
@@ -435,7 +435,7 @@ FNAME(alloc)( size_t n FNAMEPRT )
     if( !(p = malloc( n )) )
 	out_of_core(n,0);
     return p;
-  #endif
+#endif
 }
 
 /****************
@@ -447,7 +447,7 @@ FNAME(alloc_secure)( size_t n FNAMEPRT )
 {
     char *p;
 
-  #ifdef M_GUARD
+#ifdef M_GUARD
     if(!n)
       out_of_core(n,1); /* should never happen */
     if( !(p = secmem_malloc( n +EXTRA_ALIGN+ 5 )) )
@@ -455,7 +455,7 @@ FNAME(alloc_secure)( size_t n FNAMEPRT )
     store_len(p,n,1);
     p[4+EXTRA_ALIGN+n] = MAGIC_END_BYTE;
     return p+EXTRA_ALIGN+4;
-  #else
+#else
     /* mallocing zero bytes is undefined by ISO-C, so we better make
        sure that it won't happen */
     if (!n)
@@ -463,7 +463,7 @@ FNAME(alloc_secure)( size_t n FNAMEPRT )
     if( !(p = secmem_malloc( n )) )
 	out_of_core(n,1);
     return p;
-  #endif
+#endif
 }
 
 void *
@@ -493,7 +493,7 @@ FNAME(realloc)( void *a, size_t n FNAMEPRT )
 {
     void *b;
 
-  #ifdef M_GUARD
+#ifdef M_GUARD
     if( a ) {
         unsigned char *p = a;
         size_t len = m_size(a);
@@ -510,7 +510,7 @@ FNAME(realloc)( void *a, size_t n FNAMEPRT )
     }
     else
         b = FNAME(alloc)(n FNAMEARG);
-  #else
+#else
     if( m_is_secure(a) ) {
 	if( !(b = secmem_realloc( a, n )) )
 	    out_of_core(n,1);
@@ -519,7 +519,7 @@ FNAME(realloc)( void *a, size_t n FNAMEPRT )
 	if( !(b = realloc( a, n )) )
 	    out_of_core(n,0);
     }
-  #endif
+#endif
 
     return b;
 }
@@ -536,9 +536,9 @@ FNAME(free)( void *a FNAMEPRT )
 
     if( !p )
 	return;
-  #ifdef M_DEBUG
+#ifdef M_DEBUG
     free_entry(p-EXTRA_ALIGN-4, info);
-  #elif defined M_GUARD
+#elif defined M_GUARD
     m_check(p);
     if( m_is_secure(a) )
 	secmem_free(p-EXTRA_ALIGN-4);
@@ -546,57 +546,57 @@ FNAME(free)( void *a FNAMEPRT )
 	used_memory -= m_size(a);
 	free(p-EXTRA_ALIGN-4);
     }
-  #else
+#else
     if( m_is_secure(a) )
 	secmem_free(p);
     else
 	free(p);
-  #endif
+#endif
 }
 
 
 void
 FNAME(check)( const void *a FNAMEPRT )
 {
-  #ifdef M_GUARD
+#ifdef M_GUARD
     const byte *p = a;
 
-  #ifdef M_DEBUG
+#ifdef M_DEBUG
     if( p )
 	check_mem(p-EXTRA_ALIGN-4, info);
     else
 	check_allmem(info);
-  #else
+#else
     if( !p )
 	return;
     if( !(p[-1] == MAGIC_NOR_BYTE || p[-1] == MAGIC_SEC_BYTE) )
 	membug("memory at %p corrupted (underflow=%02x)\n", p, p[-1] );
     else if( p[m_size(p)] != MAGIC_END_BYTE )
 	membug("memory at %p corrupted (overflow=%02x)\n", p, p[-1] );
-  #endif
-  #endif
+#endif
+#endif
 }
 
 
 size_t
 m_size( const void *a )
 {
-  #ifndef M_GUARD
+#ifndef M_GUARD
     log_debug("dummy m_size called\n");
     return 0;
-  #else
+#else
     const byte *p = a;
     size_t n;
 
-  #ifdef M_DEBUG
+#ifdef M_DEBUG
     n = check_mem(p-EXTRA_ALIGN-4, "m_size")->user_n;
-  #else
+#else
     n  = ((byte*)p)[-4];
     n |= ((byte*)p)[-3] << 8;
     n |= ((byte*)p)[-2] << 16;
-  #endif
+#endif
     return n;
-  #endif
+#endif
 }
 
 
@@ -631,4 +631,3 @@ FNAME(strdup)( const char *a FNAMEPRT )
     strcpy(p, a);
     return p;
 }
-

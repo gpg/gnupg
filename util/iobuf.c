@@ -30,7 +30,7 @@
 #include <fcntl.h> 
 #include <unistd.h>
 #ifdef HAVE_DOSISH_SYSTEM
- #include <windows.h>
+#include <windows.h>
 #endif
 #ifdef __riscos__
 #include <kernel.h>
@@ -44,18 +44,18 @@
 #undef FILE_FILTER_USES_STDIO
 
 #ifdef HAVE_DOSISH_SYSTEM
- #define USE_SETMODE 1
+#define USE_SETMODE 1
 #endif
 
 #ifdef FILE_FILTER_USES_STDIO
- #define my_fileno(a)  fileno ((a))
- #define my_fopen_ro(a,b) fopen ((a),(b))
- #define my_fopen(a,b)    fopen ((a),(b))
- typedef FILE *FILEP_OR_FD;
- #define INVALID_FP    NULL
- #define FILEP_OR_FD_FOR_STDIN  (stdin)
- #define FILEP_OR_FD_FOR_STDOUT  (stdout)
- typedef struct {
+#define my_fileno(a)  fileno ((a))
+#define my_fopen_ro(a,b) fopen ((a),(b))
+#define my_fopen(a,b)    fopen ((a),(b))
+typedef FILE *FILEP_OR_FD;
+#define INVALID_FP    NULL
+#define FILEP_OR_FD_FOR_STDIN  (stdin)
+#define FILEP_OR_FD_FOR_STDOUT  (stdout)
+typedef struct {
      FILE *fp;	   /* open file handle */
      int keep_open;
      int no_cache;
@@ -63,22 +63,22 @@
      char fname[1]; /* name of the file */
  } file_filter_ctx_t ;
 #else
- #define my_fileno(a)  (a)
- #define my_fopen_ro(a,b) fd_cache_open ((a),(b)) 
- #define my_fopen(a,b) direct_open ((a),(b)) 
- #ifdef HAVE_DOSISH_SYSTEM
-   typedef HANDLE FILEP_OR_FD;
-   #define INVALID_FP  ((HANDLE)-1)
-   #define FILEP_OR_FD_FOR_STDIN  (GetStdHandle (STD_INPUT_HANDLE))
-   #define FILEP_OR_FD_FOR_STDOUT (GetStdHandle (STD_OUTPUT_HANDLE))
-   #undef USE_SETMODE
- #else
-   typedef int FILEP_OR_FD;
-   #define INVALID_FP  (-1)
-   #define FILEP_OR_FD_FOR_STDIN  (0)
-   #define FILEP_OR_FD_FOR_STDOUT (1)
- #endif
- typedef struct {
+#define my_fileno(a)  (a)
+#define my_fopen_ro(a,b) fd_cache_open ((a),(b)) 
+#define my_fopen(a,b) direct_open ((a),(b)) 
+#ifdef HAVE_DOSISH_SYSTEM
+typedef HANDLE FILEP_OR_FD;
+#define INVALID_FP  ((HANDLE)-1)
+#define FILEP_OR_FD_FOR_STDIN  (GetStdHandle (STD_INPUT_HANDLE))
+#define FILEP_OR_FD_FOR_STDOUT (GetStdHandle (STD_OUTPUT_HANDLE))
+#undef USE_SETMODE
+#else
+typedef int FILEP_OR_FD;
+#define INVALID_FP  (-1)
+#define FILEP_OR_FD_FOR_STDIN  (0)
+#define FILEP_OR_FD_FOR_STDOUT (1)
+#endif
+typedef struct {
      FILEP_OR_FD  fp;	   /* open file handle */
      int keep_open;
      int no_cache;
@@ -147,11 +147,11 @@ fd_cache_invalidate (const char *fname)
         if ( cc->fp != INVALID_FP && !strcmp (cc->fname, fname) ) {
             if( DBG_IOBUF )
                 log_debug ("                did (%s)\n", cc->fname);
-          #ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_DOSISH_SYSTEM
             CloseHandle (cc->fp);
-          #else
+#else
 	    close(cc->fp);
-	  #endif
+#endif
             cc->fp = INVALID_FP;
         }
     }
@@ -284,18 +284,18 @@ fd_cache_open (const char *fname, const char *mode)
             cc->fp = INVALID_FP;
             if( DBG_IOBUF )
                 log_debug ("fd_cache_open (%s) using cached fp\n", fname);
-          #ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_DOSISH_SYSTEM
             if (SetFilePointer (fp, 0, NULL, FILE_BEGIN) == 0xffffffff ) {
                 log_error ("rewind file failed on handle %p: ec=%d\n",
                            fp, (int)GetLastError () );
                 fp = INVALID_FP;
             }
-          #else
+#else
             if ( lseek (fp, 0, SEEK_SET) == (off_t)-1 ) {
                 log_error("can't rewind fd %d: %s\n", fp, strerror(errno) );
                 fp = INVALID_FP;
             }
-          #endif
+#endif
             return fp;
         }
     }
@@ -398,7 +398,7 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	    *ret_len = 0;	
 	}
 	else {
-          #ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_DOSISH_SYSTEM
             unsigned long nread;
 
             nbytes = 0;
@@ -417,7 +417,7 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
                 nbytes = nread;
             }
 
-          #else
+#else
 
             int n;
 
@@ -439,13 +439,13 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
             else {
                 nbytes = n;
             }
-          #endif
+#endif
 	    *ret_len = nbytes;
 	}
     }
     else if( control == IOBUFCTRL_FLUSH ) {
 	if( size ) {
-          #ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_DOSISH_SYSTEM
             byte *p = buf;
             unsigned long n;
 
@@ -461,7 +461,7 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
                 nbytes -= n;
             } while ( nbytes );
             nbytes = p - buf;
-          #else
+#else
             byte *p = buf;
             int n;
 
@@ -480,7 +480,7 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		rc = G10ERR_WRITE_FILE;
 	    }
             nbytes = p - buf;
-          #endif
+#endif
 	}
 	*ret_len = nbytes;
     }
@@ -493,14 +493,14 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	*(char**)buf = "file_filter(fd)";
     }
     else if ( control == IOBUFCTRL_FREE ) {
-      #ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_DOSISH_SYSTEM
         if ( f != FILEP_OR_FD_FOR_STDIN && f != FILEP_OR_FD_FOR_STDOUT ) {
 	    if( DBG_IOBUF )
 		log_debug("%s: close handle %p\n", a->fname, f );
             if (!a->keep_open)
                 fd_cache_close (a->no_cache?NULL:a->fname, f);
         }
-      #else
+#else
 	if ( (int)f != 0 && (int)f != 1 ) {
 	    if( DBG_IOBUF )
 		log_debug("%s: close fd %d\n", a->fname, f );
@@ -508,7 +508,7 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
                 fd_cache_close (a->no_cache?NULL:a->fname, f);
 	}
 	f = INVALID_FP;
-      #endif
+#endif
 	m_free (a); /* we can free our context now */
     }
 #endif /* !stdio implementation */
@@ -950,18 +950,18 @@ iobuf_cancel( IOBUF a )
     const char *s;
     IOBUF a2;
     int rc;
-  #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
+#if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
     char *remove_name = NULL;
-  #endif
+#endif
 
     if( a && a->use == 2 ) {
 	s = iobuf_get_real_fname(a);
 	if( s && *s ) {
-	  #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
+#if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
 	    remove_name = m_strdup ( s );
-	  #else
+#else
 	    remove(s);
-	  #endif
+#endif
 	}
     }
 
@@ -974,14 +974,14 @@ iobuf_cancel( IOBUF a )
     }
 
     rc = iobuf_close(a);
-  #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
+#if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
     if ( remove_name ) {
 	/* Argg, MSDOS does not allow to remove open files.  So
 	 * we have to do it here */
 	remove ( remove_name );
 	m_free ( remove_name );
     }
-  #endif
+#endif
     return rc;
 }
 
@@ -1056,9 +1056,9 @@ iobuf_open( const char *fname )
 
     if( !fname || (*fname=='-' && !fname[1])  ) {
 	fp = FILEP_OR_FD_FOR_STDIN;
-      #ifdef USE_SETMODE
+#ifdef USE_SETMODE
 	setmode ( my_fileno(fp) , O_BINARY );
-      #endif
+#endif
 	fname = "[stdin]";
 	print_only = 1;
     }
@@ -1159,9 +1159,9 @@ iobuf_create( const char *fname )
 
     if( !fname || (*fname=='-' && !fname[1]) ) {
 	fp = FILEP_OR_FD_FOR_STDOUT;
-      #ifdef USE_SETMODE
+#ifdef USE_SETMODE
 	setmode ( my_fileno(fp) , O_BINARY );
-      #endif
+#endif
 	fname = "[stdout]";
 	print_only = 1;
     }
@@ -1261,22 +1261,22 @@ iobuf_ioctl ( IOBUF a, int cmd, int intval, void *ptrval )
                 b->keep_open = intval;
                 return 0;
             }
-          #ifdef __MINGW32__
+#ifdef __MINGW32__
             else if( !a->chain && a->filter == sock_filter ) {
                 sock_filter_ctx_t *b = a->filter_ov;
                 b->keep_open = intval;
                 return 0;
             }
-          #endif
+#endif
     }
     else if ( cmd == 2 ) {  /* invalidate cache */
         if( DBG_IOBUF )
             log_debug("iobuf-*.*: ioctl `%s' invalidate\n",
                       ptrval? (char*)ptrval:"?");
         if ( !a && !intval && ptrval ) {
-          #ifndef FILE_FILTER_USES_STDIO
+#ifndef FILE_FILTER_USES_STDIO
             fd_cache_invalidate (ptrval);
-          #endif
+#endif
             return 0;
         }
     }
@@ -1290,13 +1290,13 @@ iobuf_ioctl ( IOBUF a, int cmd, int intval, void *ptrval )
                 b->no_cache = intval;
                 return 0;
             }
-          #ifdef __MINGW32__
+#ifdef __MINGW32__
             else if( !a->chain && a->filter == sock_filter ) {
                 sock_filter_ctx_t *b = a->filter_ov;
                 b->no_cache = intval;
                 return 0;
             }
-          #endif
+#endif
     }
 
     return -1;
@@ -1841,7 +1841,6 @@ off_t
 iobuf_get_filelength( IOBUF a )
 {
     struct stat st;
-    const char *s;
 
     if( a->directfp )  {
 	FILE *fp = a->directfp;
@@ -1947,18 +1946,18 @@ iobuf_seek( IOBUF a, off_t newpos )
            return -1;
        }
 #else
-    #ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_DOSISH_SYSTEM
        if (SetFilePointer (b->fp, newpos, NULL, FILE_BEGIN) == 0xffffffff ) {
            log_error ("SetFilePointer failed on handle %p: ec=%d\n",
                       b->fp, (int)GetLastError () );
            return -1;
        }
-    #else
+#else
        if ( lseek (b->fp, newpos, SEEK_SET) == (off_t)-1 ) {
            log_error("can't lseek: %s\n", strerror(errno) );
            return -1;
        }
-    #endif
+#endif
 #endif
     }
     a->d.len = 0;   /* discard buffer */
@@ -2142,7 +2141,7 @@ iobuf_read_line( IOBUF a, byte **addr_of_buffer,
 int
 iobuf_translate_file_handle ( int fd, int for_write )
 {
-  #ifdef __MINGW32__
+#ifdef __MINGW32__
     {
         int x;
             
@@ -2158,17 +2157,17 @@ iobuf_translate_file_handle ( int fd, int for_write )
             fd = x;
         }
     }
-  #endif
+#endif
     return fd;
 }
 
 static int
 translate_file_handle ( int fd, int for_write )
 {
-  #ifdef __MINGW32__
-   #ifdef FILE_FILTER_USES_STDIO  
+#ifdef __MINGW32__
+#ifdef FILE_FILTER_USES_STDIO  
     fd = iobuf_translate_file_handle (fd, for_write);
-   #else
+#else
     {
         int x;
 
@@ -2187,9 +2186,7 @@ translate_file_handle ( int fd, int for_write )
 
         fd = x;
     }
-   #endif
-  #endif
+#endif
+#endif
     return fd;
 }
-
-

@@ -80,9 +80,9 @@ create_dotlock( const char *file_to_lock )
     DOTLOCK h;
     int  fd = -1;
     char pidstr[16];
-  #if !defined (HAVE_DOSISH_SYSTEM)
+#if !defined (HAVE_DOSISH_SYSTEM)
     struct utsname utsbuf;
-  #endif
+#endif
     const char *nodename;
     const char *dirpart;
     int dirpartlen;
@@ -97,9 +97,9 @@ create_dotlock( const char *file_to_lock )
     h = m_alloc_clear( sizeof *h );
     if( never_lock ) {
 	h->disable = 1;
-      #ifdef _REENTRANT
+#ifdef _REENTRANT
 	/* fixme: aquire mutex on all_lockfiles */
-      #endif
+#endif
 	h->next = all_lockfiles;
 	all_lockfiles = h;
 	return h;
@@ -134,9 +134,9 @@ create_dotlock( const char *file_to_lock )
 	dirpart = file_to_lock;
     }
 
-  #ifdef _REENTRANT
+#ifdef _REENTRANT
     /* fixme: aquire mutex on all_lockfiles */
-  #endif
+#endif
     h->next = all_lockfiles;
     all_lockfiles = h;
 
@@ -164,9 +164,9 @@ create_dotlock( const char *file_to_lock )
     }
     if( write(fd, pidstr, 11 ) != 11 ) {
 	all_lockfiles = h->next;
-      #ifdef _REENTRANT
+#ifdef _REENTRANT
 	/* release mutex */
-      #endif
+#endif
 	log_fatal( "error writing to `%s': %s\n", h->tname, strerror(errno) );
 	close(fd);
 	unlink(h->tname);
@@ -176,9 +176,9 @@ create_dotlock( const char *file_to_lock )
     }
     if( close(fd) ) {
 	all_lockfiles = h->next;
-      #ifdef _REENTRANT
+#ifdef _REENTRANT
 	/* release mutex */
-      #endif
+#endif
 	log_error( "error closing `%s': %s\n", h->tname, strerror(errno));
 	unlink(h->tname);
 	m_free(h->tname);
@@ -186,9 +186,9 @@ create_dotlock( const char *file_to_lock )
 	return NULL;
     }
 
-  #ifdef _REENTRANT
+#ifdef _REENTRANT
     /* release mutex */
-  #endif
+#endif
 #endif
     h->lockname = m_alloc( strlen(file_to_lock) + 6 );
     strcpy(stpcpy(h->lockname, file_to_lock), EXTSEP_S "lock");
@@ -271,10 +271,10 @@ make_dotlock( DOTLOCK h, long timeout )
 	else if( kill(pid, 0) && errno == ESRCH ) {
 #ifndef __riscos__
 	    maybe_dead = " - probably dead";
-	 #if 0 /* we should not do this without checking the permissions */
+#if 0 /* we should not do this without checking the permissions */
 	       /* and the hostname */
 	    log_info( "removing stale lockfile (created by %d)", pid );
-	 #endif
+#endif
 #else /* __riscos__ */
             /* we are *pretty* sure that the other task is dead and therefore
                we remove the other lock file */
@@ -359,9 +359,9 @@ release_dotlock( DOTLOCK h )
 static int
 read_lockfile( const char *name )
 {
-  #if defined (HAVE_DOSISH_SYSTEM)
+#if defined (HAVE_DOSISH_SYSTEM)
     return 0;
-  #else
+#else
     int fd, pid;
     char pidstr[16];
 
@@ -390,14 +390,14 @@ read_lockfile( const char *name )
 	return -1;
     }
     return pid;
-  #endif
+#endif
 }
 
 
 void
 remove_lockfiles()
 {
-  #if !defined (HAVE_DOSISH_SYSTEM)
+#if !defined (HAVE_DOSISH_SYSTEM)
     DOTLOCK h, h2;
 
     h = all_lockfiles;
@@ -415,6 +415,5 @@ remove_lockfiles()
 	m_free(h);
 	h = h2;
     }
-  #endif
+#endif
 }
-

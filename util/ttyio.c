@@ -25,23 +25,23 @@
 #include <stdarg.h>
 #include <unistd.h>
 #ifdef HAVE_TCGETATTR
-  #include <termios.h>
+#include <termios.h>
 #else
-  #ifdef HAVE_TERMIO_H
-    /* simulate termios with termio */
-    #include <termio.h>
-    #define termios termio
-    #define tcsetattr ioctl
-    #define TCSAFLUSH TCSETAF
-    #define tcgetattr(A,B) ioctl(A,TCGETA,B)
-    #define HAVE_TCGETATTR
-  #endif
+#ifdef HAVE_TERMIO_H
+/* simulate termios with termio */
+#include <termio.h>
+#define termios termio
+#define tcsetattr ioctl
+#define TCSAFLUSH TCSETAF
+#define tcgetattr(A,B) ioctl(A,TCGETA,B)
+#define HAVE_TCGETATTR
+#endif
 #endif
 #ifdef __MINGW32__ /* use the odd Win32 functions */
-  #include <windows.h>
-  #ifdef HAVE_TCGETATTR
-     #error mingw32 and termios
-  #endif
+#include <windows.h>
+#ifdef HAVE_TCGETATTR
+#error mingw32 and termios
+#endif
 #endif
 #include <errno.h>
 #include <ctype.h>
@@ -194,7 +194,7 @@ tty_printf( const char *fmt, ... )
 	init_ttyfp();
 
     va_start( arg_ptr, fmt ) ;
-  #ifdef __MINGW32__
+#ifdef __MINGW32__
     {   
         char *buf = NULL;
         int n;
@@ -211,10 +211,10 @@ tty_printf( const char *fmt, ... )
 	last_prompt_len += n;
         m_free (buf);
     }
-  #else
+#else
     last_prompt_len += vfprintf(ttyfp,fmt,arg_ptr) ;
     fflush(ttyfp);
-  #endif
+#endif
     va_end(arg_ptr);
 }
 
@@ -231,7 +231,7 @@ tty_print_string( byte *p, size_t n )
     if( !initialized )
 	init_ttyfp();
 
-  #ifdef __MINGW32__
+#ifdef __MINGW32__
     /* not so effective, change it if you want */
     for( ; n; n--, p++ )
 	if( iscntrl( *p ) ) {
@@ -244,7 +244,7 @@ tty_print_string( byte *p, size_t n )
 	}
 	else
 	    tty_printf("%c", *p);
-  #else
+#else
     for( ; n; n--, p++ )
 	if( iscntrl( *p ) ) {
 	    putc('\\', ttyfp);
@@ -257,7 +257,7 @@ tty_print_string( byte *p, size_t n )
 	}
 	else
 	    putc(*p, ttyfp);
-  #endif
+#endif
 }
 
 void
@@ -302,9 +302,9 @@ static char *
 do_get( const char *prompt, int hidden )
 {
     char *buf;
-  #ifndef __riscos__
+#ifndef __riscos__
     byte cbuf[1];
-  #endif
+#endif
     int c, n, i;
 
     if( batchmode ) {
@@ -325,7 +325,7 @@ do_get( const char *prompt, int hidden )
     buf = m_alloc(n=50);
     i = 0;
 
-  #ifdef __MINGW32__ /* windoze version */
+#ifdef __MINGW32__ /* windoze version */
     if( hidden )
 	SetConsoleMode(con.in, HID_INPMODE );
 
@@ -359,7 +359,7 @@ do_get( const char *prompt, int hidden )
     if( hidden )
 	SetConsoleMode(con.in, DEF_INPMODE );
 
-  #elif defined(__riscos__)
+#elif defined(__riscos__)
     do {
         c = riscos_getchar();
         if (c == 0xa || c == 0xd) { /* Return || Enter */
@@ -399,9 +399,9 @@ do_get( const char *prompt, int hidden )
         }
     } while (c != '\n');
     i = (i>0) ? i-1 : 0;
-  #else /* unix version */
+#else /* unix version */
     if( hidden ) {
-      #ifdef HAVE_TCGETATTR
+#ifdef HAVE_TCGETATTR
 	struct termios term;
 
 	if( tcgetattr(fileno(ttyfp), &termsave) )
@@ -411,7 +411,7 @@ do_get( const char *prompt, int hidden )
 	term.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
 	if( tcsetattr( fileno(ttyfp), TCSAFLUSH, &term ) )
 	    log_fatal("tcsetattr() failed: %s\n", strerror(errno) );
-      #endif
+#endif
     }
 
     /* fixme: How can we avoid that the \n is echoed w/o disabling
@@ -442,13 +442,13 @@ do_get( const char *prompt, int hidden )
 
 
     if( hidden ) {
-      #ifdef HAVE_TCGETATTR
+#ifdef HAVE_TCGETATTR
 	if( tcsetattr(fileno(ttyfp), TCSAFLUSH, &termsave) )
 	    log_error("tcsetattr() failed: %s\n", strerror(errno) );
 	restore_termios = 0;
-      #endif
+#endif
     }
-  #endif /* end unix version */
+#endif /* end unix version */
     buf[i] = 0;
     return buf;
 }
@@ -480,9 +480,9 @@ tty_kill_prompt()
 	last_prompt_len = 0;
     if( !last_prompt_len )
 	return;
-  #ifdef __MINGW32__
+#ifdef __MINGW32__
     tty_printf("\r%*s\r", last_prompt_len, "");
-  #else
+#else
     {
 	int i;
 	putc('\r', ttyfp);
@@ -491,7 +491,7 @@ tty_kill_prompt()
 	putc('\r', ttyfp);
 	fflush(ttyfp);
     }
-  #endif
+#endif
     last_prompt_len = 0;
 }
 
@@ -506,4 +506,3 @@ tty_get_answer_is_yes( const char *prompt )
     m_free(p);
     return yes;
 }
-

@@ -441,7 +441,7 @@ find_long_option( ARGPARSE_ARGS *arg,
     for(i=0; opts[i].short_opt; i++ )
 	if( opts[i].long_opt && !strcmp( opts[i].long_opt, keyword) )
 	    return i;
-  #if 0
+#if 0
     {
 	ALIAS_DEF a;
 	/* see whether it is an alias */
@@ -453,7 +453,7 @@ find_long_option( ARGPARSE_ARGS *arg,
 	    }
 	}
     }
-  #endif
+#endif
     /* not found, see whether it is an abbreviation */
     /* aliases may not be abbreviated */
     n = strlen( keyword );

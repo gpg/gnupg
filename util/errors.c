@@ -47,7 +47,7 @@ g10_errstr( int err )
     static char buf[50];
     const char *p;
 
-  #define X(n,s) case G10ERR_##n : p = s; break;
+#define X(n,s) case G10ERR_##n : p = s; break;
     switch( err ) {
       case -1:		p = "eof"; break;
       case 0:		p = "okay"; break;
@@ -107,7 +107,6 @@ g10_errstr( int err )
       X(KEYSERVER      ,N_("keyserver error"))
       default: p = buf; sprintf(buf, "g10err=%d", err); break;
     }
-  #undef X
+#undef X
     return _(p);
 }
-

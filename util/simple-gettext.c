@@ -235,11 +235,11 @@ set_gettext_file( const char *filename )
 
     if( filename && *filename ) {
 	if( filename[0] == '/'
-	   #ifdef HAVE_DRIVE_LETTERS
+#ifdef HAVE_DRIVE_LETTERS
 	    || ( isalpha(filename[0])
 		 && filename[1] == ':'
 		 && (filename[2] == '/' || filename[2] == '\\') )
-	   #endif
+#endif
 	   ) {
 	    /* absolute path - use it as is */
 	    domain = load_domain( filename );
