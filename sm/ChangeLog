@@ -1,3 +1,9 @@
+2003-08-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* encrypt.c (encode_session_key): Allocate enough space.  Cast key
+	byte to unsigned char to prevent sign extension.
+	(encrypt_dek): Check return value before error.
+
 2003-08-14  Timo Schulz  <twoaday@freakmail.de>
 
 	* encrypt.c (encode_session_key): Use new Libgcrypt interface.

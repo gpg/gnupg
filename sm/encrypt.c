@@ -134,11 +134,11 @@ encode_session_key (DEK dek, gcry_sexp_t * r_data)
   int i;
   int rc;
 
-  p = xmalloc (64+dek->keylen);
+  p = xmalloc (64 + 2 * dek->keylen);
   strcpy (p, "(data\n (flags pkcs1)\n (value #");
   for (i=0; i < dek->keylen; i++)
     {
-      sprintf (tmp, "%02x", dek->key[i]);
+      sprintf (tmp, "%02x", (unsigned char) dek->key[i]);
       strcat (p, tmp);   
     }
   strcat (p, "#))\n");
@@ -184,6 +184,7 @@ encrypt_dek (const DEK dek, KsbaCert cert, char **encval)
 
   /* put the encoded cleartext into a simple list */
   rc = encode_session_key (dek, &s_data);
+  if (rc)
   {
     log_error ("encode_session_key failed: %s\n", gpg_strerror (rc));
     return rc;
