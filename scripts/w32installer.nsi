@@ -1,4 +1,5 @@
-; w32installer.nsi - W32 Installer definition      -*- lisp -*-
+; w32installer.nsi                         -*- mode: lisp; coding: latin-1; -*-
+;                   W32 Installer script
 ; Copyright (C) 2005 Free Software Foundation, Inc.
 ;
 ; This file is free software; as a special exception the author gives
@@ -17,11 +18,8 @@
 ; TODO:
 ; - Display credit for the installer
 ; - Provide the location of the corresponding source
-; - Check for iconv.dll and optionalkly install or download it.
-; - Allow inclusion of the source into the installer.
 ; - Translate all strings
-; - Setup the home directory and check for old (c:/gnupg located)
-;   versions of the program
+
 
 ; We use the modern UI.
 !include "MUI.nsh"
@@ -35,11 +33,10 @@ OutFile "gnupg-w32cli-${VERSION}.exe"
 
 InstallDir "$PROGRAMFILES\GNU\GnuPG"
 
-InstallDirRegKey HKCU "Software\GNU\GnuPG" ""
+InstallDirRegKey HKLM "Software\GNU\GnuPG" "Install Directory"
 
 SetCompressor lzma
 
-ReserveFile "COPYING.txt"
 
 VIProductVersion "${PROD_VERSION}"
 VIAddVersionKey "ProductName" "GNU Privacy Guard (${VERSION})"
@@ -62,7 +59,7 @@ VIAddVersionKey "FileVersion" "${PROD_VERSION}"
 ; Interface Settings
 ; ------------------
 
-!define MUI_ABORTWARNING
+;;;!define MUI_ABORTWARNING
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_UNFINISHPAGE_NOAUTOCLOSE
 
@@ -95,15 +92,18 @@ VIAddVersionKey "FileVersion" "${PROD_VERSION}"
 
 !insertmacro MUI_PAGE_LICENSE "COPYING.txt"
 
+;;Page custom PageSelectOptions
 
 !insertmacro MUI_PAGE_COMPONENTS
+
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 
 !define MUI_FINISHPAGE_SHOWREADME "README.txt"
 !define MUI_FINISHPAGE_SHOWREADME_TEXT "$(T_ShowReadme)"
-!define MUI_FINISHPAGE_LINK "Goto the GnuPG website"
-!define MUI_FINISHPAGE_LINK_LOCATION "http://www.gnupg.org"
+!define MUI_FINISHPAGE_LINK \
+  "Visit the GnuPG website for latest news and support"
+!define MUI_FINISHPAGE_LINK_LOCATION "http://www.gnupg.org/"
 !insertmacro MUI_PAGE_FINISH
 
   
@@ -122,8 +122,16 @@ VIAddVersionKey "FileVersion" "${PROD_VERSION}"
 ; Installer Sections
 ; ------------------
 
+
+
 ;InstType "full"
 ;InstType "minimal"
+
+!insertmacro MUI_RESERVEFILE_LANGDLL
+;;!insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
+;;ReserveFile "w32inst-opt.ini" 
+ReserveFile "COPYING.txt"
+
 
 ;----------------------
 Section "Base" SecBase
@@ -132,26 +140,41 @@ Section "Base" SecBase
 
   SetOutPath "$INSTDIR"
 
-  File "README.txt"
-  File "README.W32"
-  File "COPYING.txt"
   File "gpg.exe"
   File "gpgkeys_finger.exe"
   File "gpgkeys_hkp.exe"
   File "gpgkeys_http.exe"
   File "gpgkeys_ldap.exe"
-  File "*.mo"
 
-  WriteRegStr HKCU "Software\GNU\GnuPG" "" $INSTDIR
+  SetOutPath "$INSTDIR\Doc"
+
+  File "README.txt"
+  File "README.W32"
+  File "COPYING.txt"
+
+  Call InstallIconv
+
+  WriteRegStr HKLM "Software\GNU\GnuPG" "Install Directory" $INSTDIR
 
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   
 SectionEnd ; Section Base
 
+;----------------------
+Section "NLS" SecNLS
+;  SectionIn 1
+
+  SetOutPath "$INSTDIR\gnupg.nls"
+
+  File "*.mo"
+
+SectionEnd ; Section NLS
+
 ;------------------------
 Section "Tools" SecTools
 ;  SectionIn 1
 
+  SetOutPath "$INSTDIR"
   File "gpgsplit.exe"
   File "gpgv.exe"
 
@@ -160,6 +183,8 @@ SectionEnd ; Section Tools
 ;----------------------
 Section "Documentation" SecDoc
 ;  SectionIn 1
+
+  SetOutPath "$INSTDIR\Doc"
 
   File "gnupg.man"
   File "gpg.man"
@@ -174,76 +199,52 @@ SectionEnd ; Section Documentation
 !ifdef WITH_SOURCE
 Section "Source" SecSource
 
-   ; Note that we include the uncompressed tarball because this allows
-   ; far better compression results for the distribution.  We might
-   ; want to compress it again after installation.
-   File "gnupg-1.4.0.tar"
+  SetOutPath "$INSTDIR\Src"
+
+  ; Note that we include the uncompressed tarball because this allows
+  ; far better compression results for the distribution.  We might
+  ; want to compress it again after installation.
+  File "gnupg-1.4.0.tar"
 
 SectionEnd ; Section Source
 !endif
 
 
-;----------------------
-Section "-Finish" 
-
-  ClearErrors
-  GetDllVersion "iconv.dll" $R0 $R1
-  IfErrors 0 +3
-    MessageBox MB_OK \
-       "iconv.dll is not installed.$\r$\n \
-        It is highy suggested to install  \
-        this DLL to help with character set conversion.$\r$\n$\r$\n \
-        See http://www.gnupg.org/download/iconv.html  for instructions."
-    Return
-
-  IntOp $R2 $R0 / 0x00010000
-  IntOp $R3 $R0 & 0x0000FFFF
-  IntOp $R4 $R1 / 0x00010000
-  IntOp $R5 $R1 & 0x0000FFFF
-  StrCpy $0 "$R2.$R3.$R4.$R5"
-
-  DetailPrint "iconv.dll version is $0"
-
-  IntCmp $R2 1 0 IconvTooOld
-  IntCmp $R3 9 0 IconvTooOld
-  goto +3
- IconvTooOld:
-    MessageBox MB_OK \
-      "The installed iconv.dll is too old.$\r$\n \
-       We require at least version 1.9.0.0  (installed: $0).$\r$\n \
-       It is highly suggested to install an updated DLL to help  \
-       with character set conversion.$\r$\n$\r$\n \
-       See http://www.gnupg.org/download/iconv.html  for instructions."
-
-
-SectionEnd
-
-
 ;------------------
 Section "Uninstall"
 
-  Delete "$INSTDIR\README.txt"
-  Delete "$INSTDIR\README.W32"
-  Delete "$INSTDIR\COPYING.txt"
   Delete "$INSTDIR\gpg.exe"
   Delete "$INSTDIR\gpgkeys_finger.exe"
   Delete "$INSTDIR\gpgkeys_hkp.exe"
   Delete "$INSTDIR\gpgkeys_http.exe"
   Delete "$INSTDIR\gpgkeys_ldap.exe"
-  Delete "$INSTDIR\*.mo"
+
+  Delete "$INSTDIR\Doc\README.txt"
+  Delete "$INSTDIR\Doc\README.W32"
+  Delete "$INSTDIR\Doc\COPYING.txt"
+
+  Delete "$INSTDIR\iconv.dll"
+
+  Delete "$INSTDIR\gnupg.nls\*.mo"
+
   Delete "$INSTDIR\gpgsplit.exe"
   Delete "$INSTDIR\gpgv.exe"
-  Delete "$INSTDIR\gnupg.man"
-  Delete "$INSTDIR\gpg.man"
-  Delete "$INSTDIR\gpgv.man"
-  Delete "$INSTDIR\NEWS.txt"
-  Delete "$INSTDIR\FAQ.txt"
+
+  Delete "$INSTDIR\Doc\gnupg.man"
+  Delete "$INSTDIR\Doc\gpg.man"
+  Delete "$INSTDIR\Doc\gpgv.man"
+  Delete "$INSTDIR\Doc\NEWS.txt"
+  Delete "$INSTDIR\Doc\FAQ.txt"
 
   Delete "$INSTDIR\Uninstall.exe"
 
+  RMDir "$INSTDIR\Doc"
+  RMDir "$INSTDIR\Src"
+  RMDir "$INSTDIR\gnupg.nls"
   RMDir "$INSTDIR"
 
-  DeleteRegKey /ifempty HKCU "Software\GNU\GnuPG"
+  DeleteRegValue HKLM "Software\GNU\GnuPG" "Install Directory"
+  DeleteRegKey /ifempty HKLM "Software\GNU\GnuPG"
 
 SectionEnd ; Uninstall
 
@@ -256,6 +257,9 @@ Function .onInit
 
   !insertmacro MUI_LANGDLL_DISPLAY
 
+;  !insertmacro MUI_INSTALLOPTIONS_EXTRACT_AS \
+;               "${GNUPG_SRCDIR}/scripts/w32inst-opt.ini" "w32inst-opt.ini"
+
 FunctionEnd 
 
 
@@ -263,6 +267,53 @@ Function un.onInit
 
   !insertmacro MUI_UNGETLANGUAGE
   
+FunctionEnd
+
+
+;;Function PageSelectOptions
+;;
+;;  ; Setup a default for the langage to install.  Take it form the registry 
+;;
+;;  !insertmacro MUI_HEADER_TEXT "Install Options" "Languages"
+;;  !insertmacro MUI_INSTALLOPTIONS_DISPLAY "w32inst-opt.ini"
+;;
+;;  ; Save away the language to install
+;;
+;;FunctionEnd
+;;
+
+
+; Install iconv.dll if it has not been installed on the system.
+Function InstallIconv
+
+  ; First delete a iconv DLL already installed in the target directory.
+  ; This is required to detect a meanwhile globally installed dll.
+  Delete "$INSTDIR\iconv.dll"
+  ClearErrors
+  GetDllVersion "iconv.dll" $R0 $R1
+  IfErrors 0 +3
+    DetailPrint "iconv.dll is not installed."
+    goto InstallIconv
+
+  IntOp $R2 $R0 / 0x00010000
+  IntOp $R3 $R0 & 0x0000FFFF
+  IntOp $R4 $R1 / 0x00010000
+  IntOp $R5 $R1 & 0x0000FFFF
+  StrCpy $0 "$R2.$R3.$R4.$R5"
+
+  DetailPrint "iconv.dll version is $0"
+
+  IntCmp $R2 1 0 IconvTooOld
+  IntCmp $R3 9 0 IconvTooOld
+  return
+
+ IconvTooOld:
+    DetailPrint "The installed iconv.dll is too old."
+
+ InstallIconv:
+  SetOutPath "$INSTDIR"
+  File "iconv.dll"
+
 FunctionEnd
 
 
@@ -275,10 +326,12 @@ LangString T_About ${LANG_ENGLISH} \
   "GnuPG is GNU's tool for secure communication and data storage. \
   It can be used to encrypt data and to create digital signatures. \
   It includes an advanced key management facility and is compliant \
-  with the proposed OpenPGP Internet standard as described in RFC2440."
+  with the proposed OpenPGP Internet standard as described in RFC2440. \
+  \r\n\r\nThis is GnuPG version ${VERSION}"
 LangString T_About ${LANG_GERMAN} \
   "GnuPG is das Werzeug aus dem GNU Projekt zur sicheren Kommunikation \
-   sowie zum sicheren Speichern von Daten."
+   sowie zum sicheren Speichern von Daten. \
+   \r\n\r\nThis is GnuPG version ${VERSION}"
 LangString T_ShowReadme ${LANG_ENGLISH} "Show the README file"
 LangString T_ShowReadme ${LANG_GERMAN} "Die README Datei anzeigen"
 
@@ -287,6 +340,11 @@ LangString DESC_SecBase ${LANG_ENGLISH} \
       "The basic files used for the standard OpenPGP protocol"
 LangString DESC_SecBase ${LANG_GERMAN} \
       "Die Basis Dateien zur Benutzung des OpenPGP Protokolls"
+
+Langstring DESC_SecNLS ${LANG_ENGLISH} \
+      "Support for languages other than English"
+LangString DESC_SecNLS ${LANG_GERMAN} \
+      "Unterstützung für weitere Sprachen neben Englisch"
 
 LangString DESC_SecTools ${LANG_ENGLISH} \
       "Extra tools like gpgv and gpgsplit"
@@ -300,6 +358,7 @@ LangString DESC_SecDoc ${LANG_GERMAN} \
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
   !insertmacro MUI_DESCRIPTION_TEXT ${SecBase} $(DESC_SecBase)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecNLS} $(DESC_SecNLS)
   !insertmacro MUI_DESCRIPTION_TEXT ${SecTools} $(DESC_SecTools)
   !insertmacro MUI_DESCRIPTION_TEXT ${SecDoc} $(DESC_SecDoc)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END

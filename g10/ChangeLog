@@ -1,4 +1,14 @@
+2005-01-20  Werner Koch  <wk@g10code.com>
+
+	* g10.c (i18n_init) [W32]: Pass registry key to gettext
+	initialization.
+	* gpgv.c (i18n_init) [W32]: Ditto.
+
 2005-01-18  Werner Koch  <wk@g10code.com>
+
+	* misc.c (default_homedir): New.  Taken from gnupg 1.9.15.
+	* g10.c (main): Use it.
+	* gpgv.c (main): Ditto.
 
 	* keylist.c (public_key_list): Do a trustdb staleness check before
 	opening the keyring.

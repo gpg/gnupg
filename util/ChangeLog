@@ -1,3 +1,16 @@
+2005-01-20  Werner Koch  <wk@g10code.com>
+
+	* simple-gettext.c (set_gettext_file): Use MO files depending on
+	the installation directory.  Add new arg REGKEY.
+	
+2005-01-18  Werner Koch  <wk@g10code.com>
+
+	* argparse.c (default_strusage): Changed default copyright year to
+	2005.
+
+	* strgutil.c (handle_iconv_error): Print error messages only once.
+	(native_to_utf8, utf8_to_native): Ditto.
+
 2005-01-11  Werner Koch  <wk@g10code.com>
 
 	* strgutil.c (set_native_charset) [W32]: Use the alias table from

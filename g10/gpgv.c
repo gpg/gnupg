@@ -1,5 +1,6 @@
 /* gpgv.c - The GnuPG signature verify utility
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -112,7 +113,7 @@ static void
 i18n_init(void)
 {
 #ifdef USE_SIMPLE_GETTEXT
-    set_gettext_file( PACKAGE );
+    set_gettext_file (PACKAGE, "Software\\GNU\\GnuPG");
 #else
 #ifdef ENABLE_NLS
     setlocale( LC_ALL, "" );
@@ -141,14 +142,8 @@ main( int argc, char **argv )
     opt.trust_model = TM_ALWAYS;
     opt.batch = 1;
 
-#if defined (_WIN32)
-    opt.homedir = read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" );
-#else
-    opt.homedir = getenv("GNUPGHOME");
-#endif
-    if( !opt.homedir || !*opt.homedir ) {
-	opt.homedir = GNUPG_HOMEDIR;
-    }
+    opt.homedir = default_homedir ();
+
     tty_no_terminal(1);
     tty_batchmode(1);
     disable_dotlock();

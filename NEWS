@@ -1,6 +1,15 @@
 Noteworthy changes in version 1.4.1
 -------------------------------------------------
 
+    * [W32] The algorithm for the default home directory changed:
+      First we look at the environment variable GNUPGHOME, if this one
+      is not set, we check whether the registry entry
+      HKCU\Software\GNU\GnuPG:HomeDir has been set and if this fails
+      we use a GnuPG directory below the standard application data
+      directory (APPDATA) of the current user. Only in the case that
+      this directory cannot be determined, the old default of c:\gnupg
+      will be used.  The option --homedir still overrides all of them.
+
     * New --rfc2440-text option which controls how text is handled in
       signatures.  This is in response to some problems seen with
       certain PGP/MIME mail clients and GnuPG version 1.4.0.  More

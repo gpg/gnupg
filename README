@@ -54,7 +54,8 @@
        this.  Don't skip it - this is an important step!
 
     2) Unpack the tarball.  With GNU tar you can do it this way:
-       "tar xzvf gnupg-x.y.z.tar.gz"
+       "tar xzvf gnupg-x.y.z.tar.gz".  If got a bzip2 compressed
+       tarball you need to use: "tar xjvf gnupg-x.y.z.tar.bz2".
 
     3) "cd gnupg-x.y.z"
 
@@ -104,13 +105,13 @@
 
 
     b) If you don't have any of the above programs, you have to verify
-       the MD5 checksum:
+       the SHA1 checksum:
 
-	$ md5sum gnupg-x.y.z.tar.gz
+	$ sha1sum gnupg-x.y.z.tar.gz
 
        This should yield an output _similar_ to this:
 
-	fd9351b26b3189c1d577f0970f9dcadc  gnupg-x.y.z.tar.gz
+	fd9351b26b3189c1d577f0970f9dcadc1234abcd  gnupg-x.y.z.tar.gz
 
        Now check that this checksum is _exactly_ the same as the one
        published via the announcement list and probably via Usenet.

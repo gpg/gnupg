@@ -1,13 +1,5 @@
 REGEDIT4
 
-[HKEY_LOCAL_MACHINE\Software\GNU]
-
-[HKEY_LOCAL_MACHINE\Software\GNU\GNUPG]
-
-[HKEY_LOCAL_MACHINE\Software\GNU\GNUPG]
-"HomeDir"="C:\\GnuPG"
-"gpgProgram"="C:\\GnuPG\\gpg.exe"
-
 
 [HKEY_CURRENT_USER\Control Panel\Mingw32]
 

@@ -1,5 +1,6 @@
 /* simple-gettext.c  - a simplified version of gettext.
- * Copyright (C) 1995, 1996, 1997, 1999 Free Software Foundation, Inc.
+ * Copyright (C) 1995, 1996, 1997, 1999,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -231,13 +232,14 @@ load_domain( const char *filename )
 
 
 /****************
- * Set the file used for translations.	Pass a NULL to disable
- * translation.  A new filename may be set at anytime.
- * WARNING: After changing the filename you should not access any data
- *	    retrieved by gettext().
+ * Set the file used for translations. Pass a NULL to disable
+ * translation.  A new filename may be set at anytime.  If REGKEY is
+ * not NULL, the function tries to selected the language the registry
+ * key "Lang" below that key.  WARNING: After changing the filename you
+ * should not access any data retrieved by gettext().
  */
 int
-set_gettext_file( const char *filename )
+set_gettext_file ( const char *filename, const char *regkey )
 {
     struct loaded_domain *domain = NULL;
 
@@ -252,30 +254,57 @@ set_gettext_file( const char *filename )
 	    /* absolute path - use it as is */
 	    domain = load_domain( filename );
 	}
-	else { /* relative path - append ".mo" and get dir from the environment */
-	    char *buf = NULL;
-	    char *dir;
+	else if (regkey) { /* Standard.  */
+            char *instdir, *langid, *fname;
             char *p;
 
-	    dir = read_w32_registry_string( NULL,
-					    "Control Panel\\Mingw32\\NLS",
-					    "MODir" );
-	    if( dir && (buf=malloc(strlen(dir)+strlen(filename)+1+3+1)) ) {
-		strcpy(stpcpy(stpcpy(stpcpy( buf, dir),"\\"), filename),".mo");
-                /* Better make sure that we don't mix forward and
-                   backward slashes.  It seems that some Windoze
-                   versions don't accept this. */
-                for (p=buf; *p; p++)
-                  {
-                    if (*p == '/')
-                      *p = '\\';
-                  }
-		domain = load_domain( buf );
-		free(buf);
-	    }
-	    free(dir);
+            instdir = read_w32_registry_string ("HKEY_LOCAL_MACHINE",
+                                                regkey,
+                                                "Install Directory");
+            if (!instdir)
+                return -1;
+            langid = read_w32_registry_string (NULL, /* HKCU then HKLM */
+                                               regkey,
+                                               "Lang");
+            if (!langid) {
+                free (instdir);
+                return -1;
+            }
+            /* Strip stuff after a dot in case the user tried to enter
+             * the entire locale synatcs as usual for POSIX. */
+            p = strchr (langid, '.');
+            if (p)
+                *p = 0;
+                
+            /* Build the key: "<instdir>/<domain>.nls/<langid>.mo" We
+               use a directory below the installation directory with
+               the domain included in case the software has been
+               insalled with other software altogether at the same
+               place. */
+            fname = malloc (strlen (instdir) + 1 + strlen (filename) + 5
+                            + strlen (langid) + 3 + 1);
+            if (!fname) {
+                free (instdir);
+                free (langid);
+                return -1;
+            }
+            strcpy (stpcpy (stpcpy (stpcpy (stpcpy ( stpcpy (fname,
+                   instdir),"\\"), filename), ".nls\\"), langid), ".mo");
+            free (instdir);
+            free (langid);
+
+            /* Better make sure that we don't mix forward and
+               backward slashes.  It seems that some Windoze
+               versions don't accept this. */
+            for (p=fname; *p; p++) {
+                if (*p == '/')
+                    *p = '\\';
+            }
+            domain = load_domain (fname);
+            free(fname);
 	}
-	if( !domain )
+
+	if (!domain)
 	    return -1;
     }
 

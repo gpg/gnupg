@@ -122,6 +122,9 @@ char *argsplit(char *string);
 int parse_options(char *str,unsigned int *options,
 		  struct parse_options *opts,int noisy);
 
+char *default_homedir (void);
+
+
 /*-- helptext.c --*/
 void display_online_help( const char *keyword );
 

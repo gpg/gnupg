@@ -22,7 +22,7 @@
 #define G10_I18N_H
 
 #ifdef USE_SIMPLE_GETTEXT
-int set_gettext_file( const char *filename );
+int set_gettext_file( const char *filename, const char *regkey );
 const char *gettext( const char *msgid );
 
 #define _(a) gettext (a)

@@ -7,6 +7,9 @@ http://www.gnupg.org/docs-mls.html for a list of mailing lists. In
 particular the list gnupg-users@gnupg.org might be useful to answer
 questions - but please read the FAQ first.
 
+Note: Due to the use of the NSIS installer, the information below are
+mostly out of date.
+
 Installation instructions:
 --------------------------
  1. Unpack the ZIP archive (alright, you already did this).
@@ -39,11 +42,6 @@ Internationalization support:
      under the name "gnupg.mo" into the directory set in step 2
      (Example:	"copy fr.mo c:\gnu\locale\fr\gnupg.mo")
   4. Done.
-
-Currently we only support the Codepages 437, 850 und Latin1.  If you have
-problems, either delete the gnupg.mo file or don't set the environment
-variable
-
 
 
 How to build it from the source:

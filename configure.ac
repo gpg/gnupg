@@ -455,6 +455,8 @@ case "${host}" in
                   [because the Unix gettext has too much overhead on
                    MingW32 systems and these systems lack Posix functions,
                    we use a simplified version of gettext])
+        AC_DEFINE(HAVE_W32_SYSTEM,1,
+                  [Defined if we run on a W32 API based system])
         have_dosish_system=yes
         need_dlopen=no
         try_gettext="no"

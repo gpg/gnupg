@@ -1,3 +1,7 @@
+2005-01-18  Werner Koch  <wk@g10code.com>
+
+	* gnupg-w32.reg: Remove the entry for the home directory.
+
 2004-12-16  Werner Koch  <wk@g10code.com>
 
 	* TRANSLATE: Add a note on how to send translations.

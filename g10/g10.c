@@ -1,6 +1,6 @@
 /* g10.c - The GnuPG utility (main for gpg)
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *               2004 Free Software Foundation, Inc.
+ *               2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -839,7 +839,7 @@ static void
 i18n_init(void)
 {
 #ifdef USE_SIMPLE_GETTEXT
-    set_gettext_file( PACKAGE );
+    set_gettext_file (PACKAGE, "Software\\GNU\\GnuPG");
 #else
 #ifdef ENABLE_NLS
     setlocale( LC_ALL, "" );
@@ -1673,14 +1673,7 @@ main( int argc, char **argv )
     set_screen_dimensions();
     opt.keyid_format=KF_SHORT;
     opt.rfc2440_text=1;
-#if defined (_WIN32)
-    set_homedir ( read_w32_registry_string( NULL,
-                                    "Software\\GNU\\GnuPG", "HomeDir" ));
-#else
-    set_homedir ( getenv("GNUPGHOME") );
-#endif
-    if( !*opt.homedir )
-	set_homedir ( GNUPG_HOMEDIR );
+    set_homedir ( default_homedir () );
 
 #ifdef ENABLE_CARD_SUPPORT
 # ifdef _WIN32

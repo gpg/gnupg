@@ -1,3 +1,7 @@
+2005-01-18  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (HAVE_W32_SYSTEM): Define it.
+
 2005-01-18  David Shaw  <dshaw@grover.jabberwocky.com>
 
 	* NEWS: Note --rfc2440-text import/export-unusable-sigs and
@@ -7,6 +11,8 @@
 	HTTPS flag if we're using curl, and HTTPS is available.
 
 2005-01-17  Werner Koch  <wk@g10code.com>
+
+	* README: Updated for SHA1 checksums.
 
 	* configure.ac: Make --without-included-zlib work as
 	expected. Reported by Norihiko Murase.  Same for

@@ -96,8 +96,13 @@ for i in ${srcdir}/po/*.po; do
 done
 
 if makensis -version >/dev/null 2>&1 ; then
+  echo "invokin installer as:"
+  echo makensis -v3 -nocd -DVERSION="${version}" \
+           -DPROD_VERSION="${prod_version}" \
+           -DGNUPG_SRCDIR="${srcdir}" ${srcdir}/scripts/w32installer.nsi
   makensis -v3 -nocd -DVERSION="${version}" \
-           -DPROD_VERSION="${prod_version}" ${srcdir}/scripts/w32installer.nsi
+           -DPROD_VERSION="${prod_version}" \
+           -DGNUPG_SRCDIR="${srcdir}" ${srcdir}/scripts/w32installer.nsi
   echo "Installer created" >&2
 else
   zip -9 "gnupg-w32cli-${version}.zip" *
