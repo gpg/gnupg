@@ -26,10 +26,11 @@ endif
 
 SUBDIRS = intl zlib util mpi cipher tools g10 po doc ${checks}
 EXTRA_DIST = VERSION  PROJECTS BUGS
-# gettext never gets it right, so we take here care of deleting the
-# symlink.
-DISTCLEANFILES = g10defs.h intl/libintl.h
+DISTCLEANFILES = g10defs.h 
 
+# Add all the files listed in "distfiles" files to the distribution,
+# apply version numbers to some files and create a VERSION file which
+# we need for the Prereq: patch file trick.
 dist-hook:
 	@set -e; \
 	 for file in `cd $(top_srcdir); find . -type f -name distfiles`; do \
@@ -43,6 +44,4 @@ dist-hook:
 	sed -e 's/@pkg_version@/$(VERSION)/g' \
 	    $(top_srcdir)/scripts/gnupg.spec.in \
 	    > $(distdir)/scripts/gnupg.spec
-
-
-
+	echo "$(VERSION)" > $(distdir)/VERSION

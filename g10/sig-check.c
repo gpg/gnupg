@@ -546,7 +546,8 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	    md_close(md);
 	}
 	else {
-	    log_info ("no subkey for subkey revocation packet\n");
+            if (!opt.quiet)
+                log_info ("no subkey for subkey revocation packet\n");
 	    rc = G10ERR_SIG_CLASS;
 	}
     }

@@ -328,7 +328,7 @@ list_records( ulong lid )
 
 
 /****************
- * Dump the complte trustdb or only the entries of one key.
+ * Dump the entire trustdb or only the entries of one key.
  */
 void
 list_trustdb( const char *username )

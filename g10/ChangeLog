@@ -1,3 +1,41 @@
+2001-07-26  Werner Koch  <wk@gnupg.org>
+
+	* parse-packet.c (parse_photo_id): Reset all variables.
+	* getkey.c (merge_selfsigs_main): Removed checks on PHOTO_ID
+	because this is handled identically to a user ID.
+
+2001-07-06  Werner Koch  <wk@gnupg.org>
+
+	* cipher.c (write_header): Don't use MDC with --rfc1991.  Suggested
+	by disastry@saiknes.lv.
+
+2001-07-05  Werner Koch  <wk@gnupg.org>
+
+	* g10.c, options.h: New option --preserve-permissions.
+	* ringedit.c (add_keyblock_resource): Use it here
+	(keyring_copy): and here.
+
+	* trustdb.c (verify_own_keys): Be more silent on --quiet.
+	Suggested by Thomas Roessler.
+	* sig-check.c (check_key_signature2): Ditto.
+	* mainproc.c (proc_encrypted, proc_tree): Ditto
+	* getkey.c (lookup): Ditto.
+
+2001-07-04  Werner Koch  <wk@gnupg.org>
+
+	* ringedit.c (add_keyblock_resource): Restore filename in case of error.
+
+2001-06-25  Werner Koch  <wk@gnupg.org>
+
+	* kbnode.c (dump_kbnode): Print the signature timestamp.
+
+	* keyedit.c (keyedit_menu): New menu point "primary".
+	(change_primary_uid_cb): New.
+	(menu_set_primary_uid): New.
+	* sign.c (update_keysig_packet): New.
+	* build-packet.c (build_sig_subpkt): Put the primary UID flag into
+	the hashed area. Allow update of some more packets.
+
 2001-06-15  Werner Koch  <wk@gnupg.org>
 
 	* getkey.c (merge_selfsigs): Exit gracefully when a secret key is

@@ -54,7 +54,7 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
 	log_fatal("unsupported blocksize %u\n", blocksize );
     if( blocksize != 8 )
 	use_mdc = 1;  /* enable it for all modern ciphers */
-    if( opt.rfc2440 )
+    if( opt.rfc2440 || opt.rfc1991 )
 	use_mdc = 0;  /* override - rfc2440 does not know about MDC */
 
     memset( &ed, 0, sizeof ed );

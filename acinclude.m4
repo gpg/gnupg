@@ -39,7 +39,7 @@ AC_DEFUN(GNUPG_CHECK_TYPEDEF,
     ], gnupg_cv_typedef_$1=yes, gnupg_cv_typedef_$1=no )])
     AC_MSG_RESULT($gnupg_cv_typedef_$1)
     if test "$gnupg_cv_typedef_$1" = yes; then
-        AC_DEFINE($2)
+        AC_DEFINE($2,1,[Defined if a `]$1[' is typedef'd])
     fi
   ])
 
@@ -106,26 +106,6 @@ AC_DEFUN(GNUPG_CHECK_DOCBOOK_TO_TEXI,
    ])       
 
 
-dnl GNUPG_LINK_FILES( SRC, DEST )
-dnl same as AC_LINK_FILES, but collect the files to link in
-dnl some special variables and do the link
-dnl when GNUPG_DO_LINK_FILES is called
-dnl This is a workaround for AC_LINK_FILES, because it does not work
-dnl correct when using a caching scheme
-dnl
-define(GNUPG_LINK_FILES,
-  [ if test "x$wk_link_files_src" = "x"; then
-        wk_link_files_src="$1"
-        wk_link_files_dst="$2"
-    else
-        wk_link_files_src="$wk_link_files_src $1"
-        wk_link_files_dst="$wk_link_files_dst $2"
-    fi
-  ])
-define(GNUPG_DO_LINK_FILES,
-  [ AC_LINK_FILES( $wk_link_files_src, $wk_link_files_dst )
-  ])
-
 
 dnl GNUPG_CHECK_ENDIAN
 dnl define either LITTLE_ENDIAN_HOST or BIG_ENDIAN_HOST
@@ -167,9 +147,11 @@ define(GNUPG_CHECK_ENDIAN,
       ])
     AC_MSG_RESULT([$gnupg_cv_c_endian])
     if test "$gnupg_cv_c_endian" = little; then
-      AC_DEFINE(LITTLE_ENDIAN_HOST)
+      AC_DEFINE(LITTLE_ENDIAN_HOST,1,
+                [Defined if the host has little endian byte ordering])
     else
-      AC_DEFINE(BIG_ENDIAN_HOST)
+      AC_DEFINE(BIG_ENDIAN_HOST,1,
+                [Defined if the host has big endian byte ordering])
     fi
   ])
 
@@ -337,7 +319,8 @@ define(GNUPG_CHECK_IPC,
          gnupg_cv_ipc_rmid_deferred_release="assume-no")
        )
        if test "$gnupg_cv_ipc_rmid_deferred_release" = "yes"; then
-           AC_DEFINE(IPC_RMID_DEFERRED_RELEASE)
+           AC_DEFINE(IPC_RMID_DEFERRED_RELEASE,1,
+                     [Defined if we can do a deferred shm release])
            AC_MSG_RESULT(yes)
        else
           if test "$gnupg_cv_ipc_rmid_deferred_release" = "no"; then
@@ -360,7 +343,8 @@ define(GNUPG_CHECK_IPC,
           )
        )
        if test "$gnupg_cv_ipc_have_shm_lock" = "yes"; then
-         AC_DEFINE(IPC_HAVE_SHM_LOCK)
+         AC_DEFINE(IPC_HAVE_SHM_LOCK,1,
+                   [Defined if a SysV shared memory supports the LOCK flag])
          AC_MSG_RESULT(yes)
        else
          AC_MSG_RESULT(no)
@@ -408,7 +392,8 @@ define(GNUPG_CHECK_MLOCK,
                 gnupg_cv_mlock_is_in_sys_mman=yes,
                 gnupg_cv_mlock_is_in_sys_mman=no)])
             if test "$gnupg_cv_mlock_is_in_sys_mman" = "yes"; then
-                AC_DEFINE(HAVE_MLOCK)
+                AC_DEFINE(HAVE_MLOCK,1,
+                          [Defined if the system supports an mlock() call])
             fi
         fi
     fi
@@ -448,7 +433,8 @@ define(GNUPG_CHECK_MLOCK,
            )
          )
          if test "$gnupg_cv_have_broken_mlock" = "yes"; then
-             AC_DEFINE(HAVE_BROKEN_MLOCK)
+             AC_DEFINE(HAVE_BROKEN_MLOCK,1,
+                       [Defined if the mlock() call does not work])
              AC_MSG_RESULT(yes)
          else
             if test "$gnupg_cv_have_broken_mlock" = "no"; then
@@ -725,7 +711,7 @@ fi
 AC_MSG_RESULT($ac_cv_sys_symbol_underscore)
 if test x$ac_cv_sys_symbol_underscore = xyes; then
   AC_DEFINE(WITH_SYMBOL_UNDERSCORE,1,
-  [define if compiled symbols have a leading underscore])
+            [Defined if compiled symbols have a leading underscore])
 fi
 ])
 
@@ -748,86 +734,8 @@ AC_CACHE_CHECK([if mkdir takes one argument], gnupg_cv_mkdir_takes_one_arg,
 #endif], [mkdir ("foo", 0);],
         gnupg_cv_mkdir_takes_one_arg=no, gnupg_cv_mkdir_takes_one_arg=yes)])
 if test $gnupg_cv_mkdir_takes_one_arg = yes ; then
-  AC_DEFINE(MKDIR_TAKES_ONE_ARG)
+  AC_DEFINE(MKDIR_TAKES_ONE_ARG,1,
+            [Defined if mkdir() does not take permission flags])
 fi
 ])
-
- 
-dnl AC_SYS_LARGEFILE is stolen from tar.
-dnl This can be removed once the official successor to autoconf 2.13 is out.
-#serial 12
-
-dnl By default, many hosts won't let programs access large files;
-dnl one must use special compiler options to get large-file access to work.
-dnl For more details about this brain damage please see:
-dnl http://www.sas.com/standards/large.file/x_open.20Mar96.html
-
-dnl Written by Paul Eggert <eggert@twinsun.com>.
-
-dnl Internal subroutine of AC_SYS_LARGEFILE.
-dnl AC_SYS_LARGEFILE_TEST_INCLUDES
-AC_DEFUN(AC_SYS_LARGEFILE_TEST_INCLUDES,
-  [[#include <sys/types.h>
-    int a[(off_t) 9223372036854775807 == 9223372036854775807 ? 1 : -1];
-  ]])
-
-dnl Internal subroutine of AC_SYS_LARGEFILE.
-dnl AC_SYS_LARGEFILE_MACRO_VALUE(C-MACRO, VALUE, CACHE-VAR,
-dnl                              COMMENT, INCLUDES,FUNCTION-BODY)
-AC_DEFUN(AC_SYS_LARGEFILE_MACRO_VALUE,
-  [AC_CACHE_CHECK([for $1 value needed for large files], $3,
-     [$3=no
-      AC_TRY_COMPILE(AC_SYS_LARGEFILE_TEST_INCLUDES
-$5
-        ,
-       [$6],
-       ,
-       [AC_TRY_COMPILE([#define $1 $2]
-AC_SYS_LARGEFILE_TEST_INCLUDES
-$5
-          ,
-          [$6],
-          [$3=$2])])])
-   if test "[$]$3" != no; then
-     AC_DEFINE_UNQUOTED([$1], [$]$3, [$4])
-   fi])
-
-AC_DEFUN(AC_SYS_LARGEFILE,
-  [AC_ARG_ENABLE(largefile,
-     [  --disable-largefile     omit support for large files])
-   if test "$enable_largefile" != no; then
-
-     AC_CACHE_CHECK([for special C compiler options needed for large files],
-       ac_cv_sys_largefile_CC,
-       [ac_cv_sys_largefile_CC=no
-        if test "$GCC" != yes; then
-         # IRIX 6.2 and later do not support large files by default,
-         # so use the C compiler's -n32 option if that helps.
-         AC_TRY_COMPILE(AC_SYS_LARGEFILE_TEST_INCLUDES, , ,
-           [ac_save_CC="$CC"
-            CC="$CC -n32"
-            AC_TRY_COMPILE(AC_SYS_LARGEFILE_TEST_INCLUDES, ,
-              ac_cv_sys_largefile_CC=' -n32')
-            CC="$ac_save_CC"])
-        fi])
-     if test "$ac_cv_sys_largefile_CC" != no; then
-       CC="$CC$ac_cv_sys_largefile_CC"
-     fi
-
-     AC_SYS_LARGEFILE_MACRO_VALUE(_FILE_OFFSET_BITS, 64,
-       ac_cv_sys_file_offset_bits,
-       [Number of bits in a file offset, on hosts where this is settable.])
-     AC_SYS_LARGEFILE_MACRO_VALUE(_LARGEFILE_SOURCE, 1,
-       ac_cv_sys_largefile_source,
-       [Define to make ftello visible on some hosts (e.g. HP-UX 10.20).],
-       [#include <stdio.h>], [return !ftello;])
-     AC_SYS_LARGEFILE_MACRO_VALUE(_LARGE_FILES, 1,
-       ac_cv_sys_large_files,
-       [Define for large files, on AIX-style hosts.])
-     AC_SYS_LARGEFILE_MACRO_VALUE(_XOPEN_SOURCE, 500,
-       ac_cv_sys_xopen_source,
-       [Define to make ftello visible on some hosts (e.g. glibc 2.1.3).],
-       [#include <stdio.h>], [return !ftello;])
-   fi
-  ])
 

@@ -292,6 +292,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 		 */
 		try_make_homedir( filename );
 		rc = G10ERR_OPEN_FILE;
+        	*last_slash_in_filename = '/';
 		goto leave;
 	    }
 
@@ -306,7 +307,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 	    }
 	    else {
 	      #ifndef HAVE_DOSISH_SYSTEM
-		if( secret ) {
+		if( secret && !opt.preserve_permissions ) {
 		    if( chmod( filename, S_IRUSR | S_IWUSR ) ) {
 			log_error("%s: chmod failed: %s\n",
 						filename, strerror(errno) );
@@ -1519,7 +1520,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
     }
     /* if the new file is a secring, restrict the permissions */
   #ifndef HAVE_DOSISH_SYSTEM
-    if( rentry->secret ) {
+    if( rentry->secret && !opt.preserve_permissions ) {
 	if( chmod( tmpfname, S_IRUSR | S_IWUSR ) ) {
 	    log_error("%s: chmod failed: %s\n",
 				    tmpfname, strerror(errno) );

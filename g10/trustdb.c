@@ -574,8 +574,9 @@ verify_own_keys(void)
 	memset( pk, 0, sizeof *pk );
 	rc = get_pubkey( pk, keyid );
 	if( rc ) {
-	    log_info(_("key %08lX: secret key without public key - skipped\n"),
-							    (ulong)keyid[1] );
+            if (!opt.quiet)
+                log_info(_("key %08lX: secret key without public key "
+                           "- skipped\n"),  (ulong)keyid[1] );
 	    goto skip;
 	}
 	have_pk=1;

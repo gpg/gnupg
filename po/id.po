@@ -1,13 +1,13 @@
-# GNU Privacy Guard 1.0.5 (Indonesian)
+# GNU Privacy Guard 1.0.6 (Indonesian)
 # Copyright (C) 1999, 2001 Free Software Foundation, Inc.
-# Tedi Heriyanto <tedi-h@usa.net>, 1999-2001.
+# Tedi Heriyanto <tedi_h@gmx.net>, 1999-2001.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU Privacy Guard 1.0.4\n"
+"Project-Id-Version: GNUPG 1.0.6\n"
 "POT-Creation-Date: 2001-05-29 08:58+0200\n"
-"PO-Revision-Date: 2001-04-30 15:19GMT+0700\n"
-"Last-Translator: Tedi Heriyanto <tedi-h@usa.net>\n"
+"PO-Revision-Date: 2001-06-01 16:41GMT+0700\n"
+"Last-Translator: Tedi Heriyanto <tedi_h@gmx.net>\n"
 "Language-Team: Indonesian <id@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
@@ -598,9 +598,8 @@ msgid "|FD|write status info to this FD"
 msgstr "|FD|tulis info status ke FD ini"
 
 #: g10/g10.c:310
-#, fuzzy
 msgid "|KEYID|ultimately trust this key"
-msgstr "|KEYID|sangat percaya kunci ini"
+msgstr "|KEYID|sangat percayai kunci ini"
 
 #: g10/g10.c:311
 msgid "|FILE|load extension module FILE"
@@ -1617,7 +1616,7 @@ msgstr ""
 
 #: g10/keygen.c:1759
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
-msgstr ""
+msgstr "CATATAN: membuat subkey bagi kunci-kunci v3 tidak OpenPGP compliant\n"
 
 #: g10/keygen.c:1786
 msgid "Really create? "

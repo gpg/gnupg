@@ -1554,8 +1554,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     sigdate = 0; /* helper to find the latest signature in one user ID */
     uiddate = 0; /* and over of all user IDs */
     for(k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY; k = k->next ) {
-	if ( k->pkt->pkttype == PKT_USER_ID
-             || k->pkt->pkttype == PKT_PHOTO_ID ) {
+	if ( k->pkt->pkttype == PKT_USER_ID ) {
             if ( uidnode && signode ) 
                 fixup_uidnode ( uidnode, signode, keytimestamp );
             uidnode = k;
@@ -1610,8 +1609,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
         uiddate = 0; /* helper to find the latest user ID */
         for(k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY;
             k = k->next ) {
-            if ( k->pkt->pkttype == PKT_USER_ID
-                 || k->pkt->pkttype == PKT_PHOTO_ID ) {
+            if ( k->pkt->pkttype == PKT_USER_ID ) {
                 PKT_user_id *uid = k->pkt->pkt.user_id;
                 if ( uid->help_key_usage && uid->created > uiddate ) {
                     key_usage = uid->help_key_usage;
@@ -1637,8 +1635,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
         uiddate = 0; 
         for(k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY;
             k = k->next ) {
-            if ( k->pkt->pkttype == PKT_USER_ID
-                 || k->pkt->pkttype == PKT_PHOTO_ID ) {
+            if ( k->pkt->pkttype == PKT_USER_ID ) {
                 PKT_user_id *uid = k->pkt->pkt.user_id;
                 if ( uid->help_key_expire && uid->created > uiddate ) {
                     key_expire = uid->help_key_expire;
@@ -1658,8 +1655,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     uiddate = uiddate2 = 0;
     uidnode = uidnode2 = NULL;
     for(k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY; k = k->next ) {
-        if ( k->pkt->pkttype == PKT_USER_ID
-             || k->pkt->pkttype == PKT_PHOTO_ID ) {
+        if ( k->pkt->pkttype == PKT_USER_ID ) {
             PKT_user_id *uid = k->pkt->pkt.user_id;
             if ( uid->is_primary && uid->created > uiddate ) {
                 uiddate = uid->created;
@@ -1674,8 +1670,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     if ( uidnode ) {
         for(k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY;
             k = k->next ) {
-            if ( k->pkt->pkttype == PKT_USER_ID
-                 || k->pkt->pkttype == PKT_PHOTO_ID ) {
+            if ( k->pkt->pkttype == PKT_USER_ID ) {
                 PKT_user_id *uid = k->pkt->pkt.user_id;
                 if ( k != uidnode ) 
                     uid->is_primary = 0;
@@ -2245,8 +2240,9 @@ lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode )
                 keyid_from_sk( k->pkt->pkt.secret_key, aki );
 	        k = get_pubkeyblock( aki );
 	        if( !k ) {
-	            log_info(_("key %08lX: secret key without public key "
-                               "- skipped\n"),  (ulong)aki[1] );
+                    if (!opt.quiet)
+                        log_info(_("key %08lX: secret key without public key "
+                                   "- skipped\n"),  (ulong)aki[1] );
                     goto skip;
                 }
                 secblock = ctx->keyblock;

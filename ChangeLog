@@ -1,3 +1,22 @@
+2001-07-26  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Finally got it running with the new autoconf. Had
+	to define PACKAGE and VERSION and to add -I.. to each Makefile.am.
+
+2001-07-09  Werner Koch  <wk@gnupg.org>
+
+        Migrated to autoconf 2.50.
+	* acinclude.m4: Removed the temporary LFS macros and GNUPG_LINK_FILES.
+	* acconfig.h: Removed
+	* configure.in: Replaced by...
+	* configure.ac: and modified for use with autoconf 2.50, use a
+	literal string for the version number.  Replaced GNUPG_LINK_FILES
+        with AC_CONFIG_LINKS and moved some informational messages to the end.
+	* VERSION: Removed.
+	* Makefile.am (DISTCLEANFILES): gettext is better now; no more
+	need to remove the libintl.h symlink.
+        (dist-hook): Create VERSION file.
+	
 2001-06-08  Werner Koch  <wk@gnupg.org>
 
 	* configure.in (DYNLINK_MOD_CFLAGS): Use -shared with dec-osf.

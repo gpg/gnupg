@@ -1,6 +1,8 @@
 
     * New tool gpgsplit to split OpenPGP data formats into packets.
 
+    * New option --preserve-permissions.
+
 Noteworthy changes in version 1.0.6 (2001-05-29)
 ------------------------------------------------
 

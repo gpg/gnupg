@@ -1488,6 +1488,14 @@ refer to the file descriptor n and not to a file with that name.
 Experimental use only.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--preserve-permissions</term>
+<listitem><para>
+Don't change the permissions of a secret keyring back to user
+read/write only.  Use this option only if you really know what you are doing.
+</para></listitem></varlistentry>
+
+
 </variablelist>
 </refsect1>
 

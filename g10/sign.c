@@ -24,6 +24,7 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <unistd.h> /* need sleep() */
 
 #include "options.h"
 #include "packet.h"
@@ -899,6 +900,111 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     md_close( md );
     if( rc )
 	free_seckey_enc( sig );
+    else
+	*ret_sig = sig;
+    return rc;
+}
+
+
+
+/****************
+ * Create a new signature packet based on an existing one.
+ * Only user ID signatureare supportted for now.
+ * TODO: Merge this with make_keysig_packet.
+ */
+int
+update_keysig_packet( PKT_signature **ret_sig,
+                      PKT_signature *orig_sig,
+                      PKT_public_key *pk,
+                      PKT_user_id *uid, 
+                      PKT_secret_key *sk,
+                      int (*mksubpkt)(PKT_signature *, void *),
+                      void *opaque
+		   )
+{
+    PKT_signature *sig;
+    int rc=0;
+    MD_HANDLE md;
+
+    if (!orig_sig || !pk || !uid || !sk)
+        return G10ERR_GENERAL;
+    if (orig_sig->sig_class < 0x10 || orig_sig->sig_class > 0x13 )
+        return G10ERR_GENERAL;
+
+    md = md_open( orig_sig->digest_algo, 0 );
+
+    /* hash the public key certificate and the user id */
+    hash_public_key( md, pk );
+    if( orig_sig->version >= 4 ) {
+        byte buf[5];
+        buf[0] = 0xb4;	          /* indicates a userid packet */
+        buf[1] = uid->len >> 24;  /* always use 4 length bytes */
+        buf[2] = uid->len >> 16;
+        buf[3] = uid->len >>  8;
+        buf[4] = uid->len;
+        md_write( md, buf, 5 );
+    }
+    md_write( md, uid->name, uid->len );
+
+    /* create a new signature packet */
+    sig = copy_signature (NULL, orig_sig);
+    if ( sig->version >= 4 && mksubpkt)
+	rc = (*mksubpkt)(sig, opaque);
+
+    /* we increasethe timestamp by one second so that a future import
+       of this key will replace the existing one.  We make sure that
+       we don't produce a timestamp in the future */
+    sig->timestamp++; 
+    while (sig->timestamp >= make_timestamp())
+        sleep (1);
+    /* put the updated timestamp back into the data */
+    if( sig->version >= 4 )
+	build_sig_subpkt_from_sig( sig );
+
+    if (!rc) {
+	if (sig->version >= 4)
+	    md_putc (md, sig->version);
+	md_putc (md, sig->sig_class);
+	if (sig->version < 4) {
+	    u32 a = sig->timestamp;
+	    md_putc( md, (a >> 24) & 0xff );
+	    md_putc( md, (a >> 16) & 0xff );
+	    md_putc( md, (a >>	8) & 0xff );
+	    md_putc( md,  a	   & 0xff );
+	}
+	else {
+	    byte buf[6];
+	    size_t n;
+
+	    md_putc( md, sig->pubkey_algo );
+	    md_putc( md, sig->digest_algo );
+	    if( sig->hashed_data ) {
+		n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
+		md_write( md, sig->hashed_data, n+2 );
+		n += 6;
+	    }
+	    else {
+		md_putc( md, 0 );  /* always hash the length of the subpacket*/
+		md_putc( md, 0 );
+		n = 6;
+	    }
+	    /* add some magic */
+	    buf[0] = sig->version;
+	    buf[1] = 0xff;
+	    buf[2] = n >> 24; /* hmmm, n is only 16 bit, so this is always 0 */
+	    buf[3] = n >> 16;
+	    buf[4] = n >>  8;
+	    buf[5] = n;
+	    md_write( md, buf, 6 );
+	}
+	md_final(md);
+
+	rc = complete_sig( sig, sk, md );
+    }
+
+    md_close (md);
+    if( rc )
+	free_seckey_enc (sig);
     else
 	*ret_sig = sig;
     return rc;

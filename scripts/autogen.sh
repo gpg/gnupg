@@ -13,7 +13,7 @@
 
 PGM=GnuPG
 lib_config_files=""
-autoconf_vers=2.13
+autoconf_vers=2.50
 automake_vers=1.4
 aclocal_vers=1.4
 

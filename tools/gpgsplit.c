@@ -19,7 +19,7 @@
  */
 
 /* 
- * TODO: Add an option to uncompress packets.  This should come wuite handy.
+ * TODO: Add an option to uncompress packets.  This should come quite handy.
  */
 
 #include <config.h>
@@ -49,13 +49,14 @@ enum cmd_and_opt_values { aNull = 0,
     oPrefix       = 'p',                          
 aTest };
 
+#warning  Add an option to split a keyring into reasonable sized chunks.
 
 static ARGPARSE_OPTS opts[] = {
 
-    { 301, NULL, 0, "@\nOptions:\n " },
+    { 301, NULL, 0, "@Options:\n " },
 
     { oVerbose, "verbose",   0, "verbose" },
-    { oPrefix,  "prefix",    2, "|STRING| Prepend filenames with STRING" },
+    { oPrefix,  "prefix",    2, "|STRING|Prepend filenames with STRING" },
 {0} };
 
 

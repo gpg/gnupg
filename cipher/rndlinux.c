@@ -141,7 +141,7 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 	      #endif
 _("\n"
 "Not enough random bytes available.  Please do some other work to give\n"
-"the OS a chance to collect more entropy! (Need %d more bytes)\n"), length );
+"the OS a chance to collect more entropy! (Need %d more bytes)\n"), (int)length );
 	    warn = 1;
 	    continue;
 	}

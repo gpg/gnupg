@@ -18,7 +18,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
 # sourced by ../configure to get the list of files to link
-# this should set $mpi_ln_src and mpi_ln_dst.
+# this should set $mpi_ln_list.
 # Note: this is called from the above directory.
 
 
@@ -274,8 +274,7 @@ mpi_ln_modules="${mpi_extra_modules} mpih-add1 mpih-mul1 mpih-mul2 mpih-mul3 \
 		 mpih-lshift mpih-rshift mpih-sub1"
 
 mpi_ln_objects=
-mpi_ln_src=
-mpi_ln_dst=
+mpi_ln_list=
 
 # try to get file to link from the assembler subdirectory and
 # if this fails get it from the generic subdirectory.
@@ -285,12 +284,10 @@ for fn in $mpi_ln_modules ; do
     for dir in $path ; do
 	rm -f $srcdir/mpi/$fn.[Sc]
 	if test -f $srcdir/mpi/$dir/$fn.S ; then
-	    mpi_ln_src="$mpi_ln_src mpi/$dir/$fn.S"
-	    mpi_ln_dst="$mpi_ln_dst mpi/$fn.S"
+            mpi_ln_list="$mpi_ln_list mpi/$fn.S:mpi/$dir/$fn.S"
 	    break;
 	elif test -f $srcdir/mpi/$dir/$fn.c ; then
-	    mpi_ln_src="$mpi_ln_src mpi/$dir/$fn.c"
-	    mpi_ln_dst="$mpi_ln_dst mpi/$fn.c"
+            mpi_ln_list="$mpi_ln_list mpi/$fn.c:mpi/$dir/$fn.c"
 	    break;
 	fi
     done
@@ -299,10 +296,9 @@ done
 # Same thing for the file which defines the limb size
 path="$path generic"
 for dir in $path ; do
-     	rm -f $srcdir/mpi/mpi-asm-defs.h
-	if test -f $srcdir/mpi/$dir/mpi-asm-defs.h ; then
-	    mpi_ln_src="$mpi_ln_src mpi/$dir/mpi-asm-defs.h"
-	    mpi_ln_dst="$mpi_ln_dst mpi/mpi-asm-defs.h"
-	    break;
-	fi
+    rm -f $srcdir/mpi/mpi-asm-defs.h
+    if test -f $srcdir/mpi/$dir/mpi-asm-defs.h ; then
+        mpi_ln_list="$mpi_ln_list mpi/mpi-asm-defs.h:mpi/$dir/mpi-asm-defs.h"
+        break;
+    fi
 done

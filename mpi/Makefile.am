@@ -19,7 +19,7 @@
 ## Process this file with automake to produce Makefile.in
 
 
-INCLUDES =  -I$(top_srcdir)/include
+INCLUDES = -I.. -I$(top_srcdir)/include
 CFLAGS = @CFLAGS@ @MPI_OPT_FLAGS@
 ASFLAGS = @MPI_SFLAGS@
 

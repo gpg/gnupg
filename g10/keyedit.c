@@ -50,6 +50,7 @@ static void menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int  menu_delsig( KBNODE pub_keyblock );
 static void menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock );
+static int menu_set_primary_uid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_select_uid( KBNODE keyblock, int idx );
 static int menu_select_key( KBNODE keyblock, int idx );
 static int count_uids( KBNODE keyblock );
@@ -107,7 +108,7 @@ get_keyblock_byname( KBNODE *keyblock, KBPOS *kbpos, const char *username )
 
 
 /****************
- * Print information about a signature, chek it and return true
+ * Print information about a signature, check it and return true
  * if the signature is okay. NODE must be a signature packet.
  */
 static int
@@ -566,7 +567,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 {
     enum cmdids { cmdNONE = 0,
 	   cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
-	   cmdLSIGN, cmdREVSIG, cmdREVKEY, cmdDELSIG,
+           cmdLSIGN, cmdREVSIG, cmdREVKEY, cmdDELSIG, cmdPRIMARY,
 	   cmdDEBUG, cmdSAVE, cmdADDUID, cmdDELUID, cmdADDKEY, cmdDELKEY,
 	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE,
            cmdENABLEKEY, cmdDISABLEKEY,  cmdSHOWPREF,
@@ -600,6 +601,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	{ N_("delkey")  , cmdDELKEY    , 0,1,0, N_("delete a secondary key") },
 	{ N_("delsig")  , cmdDELSIG    , 0,1,0, N_("delete signatures") },
 	{ N_("expire")  , cmdEXPIRE    , 1,1,0, N_("change the expire date") },
+        { N_("primary") , cmdPRIMARY   , 1,1,0, N_("flag user ID as primary")},
 	{ N_("toggle")  , cmdTOGGLE    , 1,0,0, N_("toggle between secret "
 						   "and public key listing") },
 	{ N_("t"     )  , cmdTOGGLE    , 1,0,0, NULL },
@@ -909,6 +911,14 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		merge_keys_and_selfsig( sec_keyblock );
 		merge_keys_and_selfsig( keyblock );
 		sec_modified = 1;
+		modified = 1;
+		redisplay = 1;
+	    }
+	    break;
+
+	  case cmdPRIMARY:
+	    if( menu_set_primary_uid ( keyblock, sec_keyblock ) ) {
+		merge_keys_and_selfsig( keyblock );
 		modified = 1;
 		redisplay = 1;
 	    }
@@ -1627,6 +1637,126 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 
     free_secret_key( sk );
     return 1;
+}
+
+
+
+static int
+change_primary_uid_cb ( PKT_signature *sig, void *opaque )
+{
+    byte buf[1];
+
+    /* first clear all primary uid flags so that we are sure none are
+     * lingering around */
+    delete_sig_subpkt (sig->hashed_data,   SIGSUBPKT_PRIMARY_UID);
+    delete_sig_subpkt (sig->unhashed_data, SIGSUBPKT_PRIMARY_UID);
+
+    /* if opaque is set,we want to set the primary id */
+    if (opaque) { 
+        buf[0] = 1;
+        build_sig_subpkt (sig, SIGSUBPKT_PRIMARY_UID, buf, 1 );
+    }
+
+    return 0;
+}
+
+/*
+ * Set the primary uid flag for the selected UID.  We will also reset
+ * all other primary uid flags.  For this to work with have to update
+ * all the signature timestamps.  If we would do this with the current
+ * time, we lose quite a lot of information, so we use a a kludge to
+ * do this: Just increment the timestamp by one second which is
+ * sufficient to updated a signature during import.
+ */
+static int
+menu_set_primary_uid ( KBNODE pub_keyblock, KBNODE sec_keyblock )
+{
+    PKT_secret_key *sk;    /* copy of the main sk */
+    PKT_public_key *main_pk;
+    PKT_user_id *uid;
+    KBNODE node;
+    u32 keyid[2];
+    int selected;
+    int modified = 0;
+
+    if ( count_selected_uids (pub_keyblock) != 1 ) {
+	tty_printf(_("Please select exactly one user ID.\n"));
+	return 0;
+    }
+
+    node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
+    sk = copy_secret_key( NULL, node->pkt->pkt.secret_key);
+
+    /* Now we can actually change the self signature(s) */
+    main_pk = NULL;
+    uid = NULL;
+    selected = 0;
+    for ( node=pub_keyblock; node; node = node->next ) {
+	if ( node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+            break; /* ready */
+
+	if ( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
+	    main_pk = node->pkt->pkt.public_key;
+	    keyid_from_pk( main_pk, keyid );
+	}
+	else if ( node->pkt->pkttype == PKT_USER_ID ) {
+	    uid = node->pkt->pkt.user_id;
+       	    selected = node->flag & NODFLG_SELUID;
+        }
+	else if ( main_pk && uid && node->pkt->pkttype == PKT_SIGNATURE ) {
+	    PKT_signature *sig = node->pkt->pkt.signature;
+	    if ( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
+		&& (uid && (sig->sig_class&~3) == 0x10)
+                && sig->version >= 4 ) {
+		/* this is a selfsignature which is to be replaced 
+                 * we can just ignore v3 signatures because they are
+                 * not able to carry the primary ID flag */
+                /* FIXME: We must make sure that we only have one
+                   self-signature per user ID here (not counting
+                   revocations) */
+		PKT_signature *newsig;
+		PACKET *newpkt;
+                const byte *p;
+                int action;
+
+                /* see whether this signature has the primary UID flag */
+                p = parse_sig_subpkt (sig->hashed_data,
+                                      SIGSUBPKT_PRIMARY_UID, NULL );
+                if ( !p )
+                    p = parse_sig_subpkt (sig->unhashed_data,
+                                          SIGSUBPKT_PRIMARY_UID, NULL );
+                if ( p && *p ) /* yes */
+                    action = selected? 0 : -1;
+                else /* no */
+                    action = selected? 1 : 0;
+                
+                if (action) {
+                    int rc = update_keysig_packet (&newsig, sig,
+                                               main_pk, uid, 
+                                               sk,
+                                               change_primary_uid_cb,
+                                               action > 0? "x":NULL );
+                    if( rc ) {
+                        log_error ("update_keysig_packet failed: %s\n",
+                                   g10_errstr(rc));
+                        free_secret_key( sk );
+                        return 0;
+                    }
+                    /* replace the packet */
+                    newpkt = m_alloc_clear( sizeof *newpkt );
+                    newpkt->pkttype = PKT_SIGNATURE;
+                    newpkt->pkt.signature = newsig;
+                    free_packet( node->pkt );
+                    m_free( node->pkt );
+                    node->pkt = newpkt;
+                    modified = 1;
+                }
+	    }
+	}
+    }
+
+    free_secret_key( sk );
+    return modified;
 }
 
 

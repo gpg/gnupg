@@ -103,6 +103,7 @@ struct {
     int no_expensive_trust_checks;
     int no_sig_cache;
     int no_sig_create_check;
+    int preserve_permissions;
 } opt;
 
 

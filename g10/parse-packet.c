@@ -423,7 +423,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, off_t *retpos,
 	rc = parse_user_id(inp, pkttype, pktlen, pkt );
 	break;
       case PKT_PHOTO_ID:
-	pkt->pkttype = pkttype = PKT_USER_ID;  /* must fix it */
+	pkt->pkttype = pkttype = PKT_USER_ID;  /* we store it in the userID */
 	rc = parse_photo_id(inp, pkttype, pktlen, pkt);
 	break;
       case PKT_OLD_COMMENT:
@@ -1625,6 +1625,11 @@ parse_photo_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id  + 30);
     sprintf( packet->pkt.user_id->name, "[image of size %lu]", pktlen );
     packet->pkt.user_id->len = strlen(packet->pkt.user_id->name);
+    packet->pkt.user_id->is_primary = 0;
+    packet->pkt.user_id->is_revoked = 0;
+    packet->pkt.user_id->created = 0;
+    packet->pkt.user_id->help_key_usage = 0;
+    packet->pkt.user_id->help_key_expire = 0;
 
     packet->pkt.user_id->photo = m_alloc(sizeof *packet->pkt.user_id + pktlen);
     packet->pkt.user_id->photolen = pktlen;

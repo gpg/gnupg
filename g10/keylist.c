@@ -667,7 +667,6 @@ reorder_keyblock (KBNODE keyblock)
             primary = primary2 = node;
             for (node=node->next; node; primary2=node, node = node->next ) {
                 if( node->pkt->pkttype == PKT_USER_ID 
-                    || node->pkt->pkttype == PKT_PHOTO_ID 
                     || node->pkt->pkttype == PKT_PUBLIC_SUBKEY 
                     || node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
                     break;

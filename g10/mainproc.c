@@ -398,8 +398,10 @@ proc_encrypted( CTX c, PACKET *pkt )
 {
     int result = 0;
 
-    print_pkenc_list( c->pkenc_list, 1 );
-    print_pkenc_list( c->pkenc_list, 0 );
+    if (!opt.quiet) {
+        print_pkenc_list ( c->pkenc_list, 1 );
+        print_pkenc_list ( c->pkenc_list, 0 );
+    }
 
     write_status( STATUS_BEGIN_DECRYPTION );
 
@@ -1272,7 +1274,7 @@ check_sig_and_print( CTX c, KBNODE node )
 	write_status_text( rc? STATUS_BADSIG : STATUS_GOODSIG, us );
 	m_free(us);
 
-        /* find an print the primary user ID */
+        /* find and print the primary user ID */
 	for( un=keyblock; un; un = un->next ) {
 	    if( un->pkt->pkttype != PKT_USER_ID )
 		continue;
@@ -1507,7 +1509,7 @@ proc_tree( CTX c, KBNODE node )
         }
         else if ( c->pipemode.op == 'B' )
             ; /* this is a detached signature trough the pipemode handler */
-	else 
+	else if (!opt.quiet)
 	    log_info(_("old style (PGP 2.x) signature\n"));
 
 	for( n1 = node; n1; (n1 = find_next_kbnode(n1, PKT_SIGNATURE )) )

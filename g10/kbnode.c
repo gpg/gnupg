@@ -164,9 +164,10 @@ find_prev_kbnode( KBNODE root, KBNODE node, int pkttype )
 {
     KBNODE n1;
 
-    for(n1=NULL ; root && root != node; root = root->next )
-	if( !pkttype || root->pkt->pkttype == pkttype  )
-	    n1 = root;
+    for (n1=NULL; root && root != node; root = root->next ) {
+        if (!pkttype ||root->pkt->pkttype == pkttype)
+            n1 = root;
+    }
     return n1;
 }
 
@@ -184,7 +185,7 @@ find_next_kbnode( KBNODE node, int pkttype )
     for( node=node->next ; node; node = node->next ) {
 	if( !pkttype )
 	    return node;
-	else if( pkttype == PKT_USER_ID
+	else if( pkttype == PKT_USER_ID 
 		 && (	node->pkt->pkttype == PKT_PUBLIC_KEY
 		     || node->pkt->pkttype == PKT_SECRET_KEY ) )
 	    return NULL;
@@ -367,9 +368,10 @@ dump_kbnode( KBNODE node )
 	    fputs("\"\n", stderr);
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE ) {
-	    fprintf(stderr, "  class=%02x keyid=%08lX\n",
+	    fprintf(stderr, "  class=%02x keyid=%08lX ts=%lu\n",
 		   node->pkt->pkt.signature->sig_class,
-		   (ulong)node->pkt->pkt.signature->keyid[1] );
+		   (ulong)node->pkt->pkt.signature->keyid[1],
+                   (ulong)node->pkt->pkt.signature->timestamp);
 	}
 	else if( node->pkt->pkttype == PKT_GPG_CONTROL ) {
 	    fprintf(stderr, " ctrl=%d len=%u\n",

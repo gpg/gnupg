@@ -18,7 +18,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
+INCLUDES = -I.. -I$(top_srcdir)/include -I$(top_srcdir)/intl
 EXTRA_DIST = OPTIONS  pubring.asc  options.skel
 OMIT_DEPENDENCIES = zlib.h zconf.h
 LDFLAGS = @LDFLAGS@ @DYNLINK_LDFLAGS@

@@ -1,3 +1,8 @@
+2001-07-09  Werner Koch  <wk@gnupg.org>
+
+	* config.links: Changed the way the list of files to be
+	symlinked is returned.
+
 2001-05-27  Werner Koch  <wk@gnupg.org>
 
 	* hppa/, hppa1.1/, pa7100/ : Use .label command instead of labels

@@ -748,7 +748,14 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
     else if( (data = find_subpkt( sig->unhashed_data, type, &hlen, &dlen )))
 	found = 2;
 
-    if (found==2 && type == SIGSUBPKT_PRIV_VERIFY_CACHE) {
+    if (found==1 && (type == SIGSUBPKT_SIG_CREATED) ) {
+        unused = delete_sig_subpkt (sig->hashed_data, type);
+        assert (unused);
+        found = 0;
+    }
+    else if (found==2 && (   type == SIGSUBPKT_PRIV_VERIFY_CACHE
+                          || type == SIGSUBPKT_ISSUER
+                         ) ) {
         unused = delete_sig_subpkt (sig->unhashed_data, type);
         assert (unused);
         found = 0;
@@ -773,6 +780,7 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
       case SIGSUBPKT_NOTATION:
       case SIGSUBPKT_POLICY:
       case SIGSUBPKT_REVOC_REASON:
+      case SIGSUBPKT_PRIMARY_UID:
 	       hashed = 1; break;
       default: hashed = 0; break;
     }
@@ -842,6 +850,7 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 
 /****************
  * Put all the required stuff from SIG into subpackets of sig.
+ * Hmmm, should we delete those subpackets which are in a wrong area?
  */
 void
 build_sig_subpkt_from_sig( PKT_signature *sig )

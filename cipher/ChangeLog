@@ -1,3 +1,9 @@
+2001-07-18  Werner Koch  <wk@gnupg.org>
+
+	* rndlinux.c (gather_random): casted a size_t arg to int so that
+	the format string is correct.  Casting is okay here and avoids
+	translation changes. 
+
 2001-06-12  Werner Koch  <wk@gnupg.org>
 
 	* rndw32.c (slow_gatherer_windowsNT): Ditto.  Not really needed here but anyway.
