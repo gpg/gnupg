@@ -203,6 +203,7 @@ enum cmd_and_opt_values { aNull = 0,
     oTryAllSecrets,
     oTrustedKey,
     oNoExpensiveTrustChecks,
+    oFixedListMode,
     oEmu3DESS2KBug,  /* will be removed in 1.1 */
     oEmuMDEncodeBug,
 aTest };
@@ -385,6 +386,7 @@ static ARGPARSE_OPTS opts[] = {
     { oSetFilesize, "set-filesize", 20, "@" },
     { oHonorHttpProxy,"honor-http-proxy", 0, "@" },
     { oFastListMode,"fast-list-mode", 0, "@" },
+    { oFixedListMode,"fixed-list-mode", 0, "@" },
     { oListOnly, "list-only", 0, "@"},
     { oIgnoreTimeConflict, "ignore-time-conflict", 0, "@" },
     { oIgnoreCrcError, "ignore-crc-error", 0,"@" },
@@ -965,6 +967,7 @@ main( int argc, char **argv )
 	  case oSetFilesize: opt.set_filesize = pargs.r.ret_ulong; break;
 	  case oHonorHttpProxy: opt.honor_http_proxy = 1; break;
 	  case oFastListMode: opt.fast_list_mode = 1; break;
+	  case oFixedListMode: opt.fixed_list_mode = 1; break;
 	  case oListOnly: opt.list_only=1; break;
 	  case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
 	  case oIgnoreCrcError: opt.ignore_crc_error = 1; break;

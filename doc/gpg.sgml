@@ -1353,6 +1353,12 @@ in future versions.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--fixed-list-mode</term>
+<listitem><para>
+Do not merge user ID and primary key in --with-colon listing mode.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--list-only</term>
 <listitem><para>
 Changes the behaviour of some commands.  This is like --dry-run but

@@ -89,6 +89,7 @@ struct {
     ulong set_filesize;
     int honor_http_proxy;
     int fast_list_mode;
+    int fixed_list_mode;
     int ignore_time_conflict;
     int ignore_crc_error;
     int command_fd;

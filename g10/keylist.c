@@ -322,7 +322,6 @@ list_keyblock_print ( KBNODE keyblock, int secret )
 }
 
 
-/* FIXME: print info about revoked keys. */
 static void
 list_keyblock_colon( KBNODE keyblock, int secret )
 {
@@ -360,17 +359,23 @@ list_keyblock_colon( KBNODE keyblock, int secret )
 	pk = node->pkt->pkt.public_key;
 	sk = NULL;
 	keyid_from_pk( pk, keyid );
-        if ( opt.fast_list_mode || opt.no_expensive_trust_checks ) {
-            fputs( "pub::", stdout );
-            trustletter = 0;
-        }
+        fputs( "pub:", stdout );
+        trustletter = 0;
+        if ( !pk->is_valid )
+            putchar ('i');
+        else if ( pk->is_revoked )
+            putchar ('r');
+        else if ( pk->has_expired )
+            putchar ('e');
+        else if ( opt.fast_list_mode || opt.no_expensive_trust_checks ) 
+            ;
         else {
             trustletter = query_trust_info( pk, NULL );
             if( trustletter == 'u' )
                 ulti_hack = 1;
-            printf("pub:%c:", trustletter );
+            putchar(trustletter);
         }
-        printf("%u:%d:%08lX%08lX:%s:%s:",
+        printf(":%u:%d:%08lX%08lX:%s:%s:",
 		    nbits_from_pk( pk ),
 		    pk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
@@ -384,11 +389,27 @@ list_keyblock_colon( KBNODE keyblock, int secret )
             putchar( get_ownertrust_info( pk->local_id ) );
 	    putchar(':');
     }
+    
+    if (opt.fixed_list_mode) {
+        /* do not merge the first uid with the primary key */
+        putchar(':');
+        putchar('\n');
+        if( opt.fingerprint )
+            fingerprint( pk, sk );
+        if( opt.with_key_data )
+            print_key_data( pk, keyid );
+        any = 1;
+    }
 
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	if( node->pkt->pkttype == PKT_USER_ID && !opt.fast_list_mode ) {
+            /*
+             * Fixme: We need a is_valid flag here too 
+             */
 	    if( any ) {
-		if ( opt.no_expensive_trust_checks ) {
+                if ( node->pkt->pkt.user_id->is_revoked )
+        	    printf("uid:r::::::::");
+		else if ( opt.no_expensive_trust_checks ) {
         	    printf("uid:::::::::");
 	        }
                 else {
@@ -397,8 +418,8 @@ list_keyblock_colon( KBNODE keyblock, int secret )
 		    if( pk && !ulti_hack ) {
 			if( node->pkt->pkt.user_id->photo )
 			    rmd160_hash_buffer( namehash,
-					    node->pkt->pkt.user_id->name,
-					    node->pkt->pkt.user_id->len  );
+					    node->pkt->pkt.user_id->photo,
+					    node->pkt->pkt.user_id->photolen);
 			else
 			    rmd160_hash_buffer( namehash,
 					    node->pkt->pkt.user_id->name,
@@ -410,7 +431,6 @@ list_keyblock_colon( KBNODE keyblock, int secret )
 		    printf("uid:%c::::::::", trustletter);
                 }
 	    }
-            /* FIXME: check that uID is valid here too */
             print_string( stdout,  node->pkt->pkt.user_id->name,
                           node->pkt->pkt.user_id->len, ':' );
             putchar(':');
@@ -434,16 +454,20 @@ list_keyblock_colon( KBNODE keyblock, int secret )
 		any = 1;
 	    }
 
-
-
 	    keyid_from_pk( pk2, keyid2 );
-            if ( opt.fast_list_mode || opt.no_expensive_trust_checks ) {
-                fputs( "sub::", stdout );
-            }
+            fputs ("sub:", stdout );
+            if ( !pk2->is_valid )
+                putchar ('i');
+            else if ( pk2->is_revoked )
+                putchar ('r');
+            else if ( pk2->has_expired )
+                putchar ('e');
+            else if ( opt.fast_list_mode || opt.no_expensive_trust_checks )
+                ;
             else {
-                printf("sub:%c:", trustletter );
+                printf("%c", trustletter );
             }
-            printf("%u:%d:%08lX%08lX:%s:%s:",
+            printf(":%u:%d:%08lX%08lX:%s:%s:",
 			nbits_from_pk( pk2 ),
 			pk2->pubkey_algo,
 			(ulong)keyid2[0],(ulong)keyid2[1],

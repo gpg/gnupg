@@ -40,6 +40,8 @@
 
   * New option --file-remove path-to-wipe-program ?
 
+  * Add an is_valid flag to each user ID.
+
 Scheduled for 1.1
 -----------------
   * David C Niemi pointed out that the code for --no-default-keyring does not
