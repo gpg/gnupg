@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
+# Copyright (C) 2000, 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -10,14 +10,19 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-
 set -e
-
 cd dist-w32
 
+tmp="`echo $0 | sed 's,.*gnupg-\([^/]*\)/.*,\1,'`"
+
+topdir=
 bindir=..
 
-if [ -f ../README ]; then
+if [ -f "../gnupg-$tmp/README" ]; then
+    srcdir="../gnupg-$tmp"
+    bindir="../gnupg-$tmp"
+    topdir=".."
+elif [ -f ../README ]; then
     srcdir=..
 elif [ -f ../../README ]; then
     srcdir=../..
@@ -37,7 +42,12 @@ else
    STRIP="mingw32 strip"
 fi
 
+# If we don't have an installer we don't need to prepare for it.
+if ! makensis -version >/dev/null 2>&1 ; then
+    topdir=
+fi
 
+# Figure out the version
 version=$(sed -n 's/^#[ ]*define[ ][ ]*VERSION[ ][ ]*\"\([0-9.a-z-]*\)\"/\1/p' $bindir/config.h)
 prod_version=$(echo "$version"|awk -F'[^0-9]' '{print $1 "." $2 "." $3 ".1"}')
 echo "building version $version ($prod_version)"
@@ -79,6 +89,7 @@ done
 for i in ${srcdir}/po/*.po; do
    lang=$(basename $i .po)
    grep -s $lang ${srcdir}/po/LINGUAS >/dev/null || continue
+   [ -f$lang.mo -a $lang.mo -nt $i ] && continue
 
    fromset=`sed -n '/^"Content-Type:/ s/.*charset=\([a-zA-Z0-9_-]*\).*/\1/p' $i`
    case "$fromset" in 
@@ -95,14 +106,50 @@ for i in ${srcdir}/po/*.po; do
    esac
 done
 
-if makensis -version >/dev/null 2>&1 ; then
-  echo "invokin installer as:"
-  echo makensis -v3 -nocd -DVERSION="${version}" \
+# If we have a topdir, assume the full build environment and 
+# prepare the installer
+if [ -n "$topdir" ]; then
+  winpt_defs=
+  src_defs=
+  buildinfo="`date -u '+%Y-%m-%d %H:%M UTC'`"
+
+  # iconv.dll is a hard requirement
+  if [ ! -f "$topdir/iconv/iconv.dll" ]; then
+    echo "iconv.dll not availavle" >&2
+    exit 1
+  fi
+  ln "$topdir/iconv/iconv.dll" iconv.dll
+  for i in COPYING.LIB README.iconv; do
+     cp ${topdir}/iconv/$i $i.txt
+     todos $i.txt
+  done
+  
+  # WinPT is optional
+  if [ -f "$topdir/winpt/WinPT.exe" ]; then
+     ln "$topdir/winpt/WinPT.exe"      WinPT.exe
+     ln "$topdir/winpt/PTD.dll"        PTD.dll
+     cp "$topdir/winpt/README-0.9.txt" README.winpt.txt
+     cp "$topdir/winpt/NEWS-0.9.txt"   NEWS.winpt.txt
+     cp "$topdir/winpt/keyserver.conf" keyserver.conf
+     winpt_defs="-DWITH_WINPT"
+  fi
+
+  # See whether we should include the source.
+  if [ ! -d "$topdir/tarballs" ]; then
+      # FIXME
+      :
+  fi
+
+  # Now run the installer
+  echo "invoking installer as:"
+  echo makensis -v2 -nocd -DVERSION="${version}" \
            -DPROD_VERSION="${prod_version}" \
-           -DGNUPG_SRCDIR="${srcdir}" ${srcdir}/scripts/w32installer.nsi
-  makensis -v3 -nocd -DVERSION="${version}" \
+           -DGNUPG_SRCDIR="${srcdir}" ${winpt_defs} ${src_defs} \
+           ${srcdir}/scripts/w32installer.nsi
+  BUILDINFO=$buildinfo makensis -v2 -nocd -DVERSION="${version}" \
            -DPROD_VERSION="${prod_version}" \
-           -DGNUPG_SRCDIR="${srcdir}" ${srcdir}/scripts/w32installer.nsi
+           -DGNUPG_SRCDIR="${srcdir}" ${winpt_defs} ${src_defs} \
+           ${srcdir}/scripts/w32installer.nsi
   echo "Installer created" >&2
 else
   zip -9 "gnupg-w32cli-${version}.zip" *

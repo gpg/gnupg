@@ -15,12 +15,6 @@
 ; using NSIS.  It is usually used by the mk-w32-dist script.
 ;----------------------------------------------------------------------
 
-; TODO:
-; - Display credit for the installer
-; - Provide the location of the corresponding source
-; - Translate all strings
-
-
 ; We use the modern UI.
 !include "MUI.nsh"
 
@@ -29,7 +23,11 @@
 ; -------------
 Name "GNU Privacy Guard"
 
+!ifdef WITH_WINPT
+OutFile "gnupg-w32-${VERSION}.exe"
+!else
 OutFile "gnupg-w32cli-${VERSION}.exe"
+!endif
 
 InstallDir "$PROGRAMFILES\GNU\GnuPG"
 
@@ -54,6 +52,15 @@ VIAddVersionKey "FileDescription" \
     "GnuPG: Encryption and digital signature tool"
 VIAddVersionKey "FileVersion" "${PROD_VERSION}"
 
+; ----------------------
+; Variable declarations
+; ----------------------
+
+Var MYTMP
+Var STARTMENU_FOLDER
+
+Var DOC_INSTALLED
+Var WINPT_INSTALLED
 
 ; ------------------
 ; Interface Settings
@@ -97,6 +104,13 @@ VIAddVersionKey "FileVersion" "${PROD_VERSION}"
 !insertmacro MUI_PAGE_COMPONENTS
 
 !insertmacro MUI_PAGE_DIRECTORY
+
+!define MUI_STARTMENUPAGE_REGISTRY_ROOT "HKCU" 
+!define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\GNU\GnuPG" 
+!define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "Start Menu Folder"
+  
+!insertmacro MUI_PAGE_STARTMENU Application $STARTMENU_FOLDER
+
 !insertmacro MUI_PAGE_INSTFILES
 
 !define MUI_FINISHPAGE_SHOWREADME "README.txt"
@@ -156,8 +170,6 @@ Section "Base" SecBase
 
   WriteRegStr HKLM "Software\GNU\GnuPG" "Install Directory" $INSTDIR
 
-  WriteUninstaller "$INSTDIR\Uninstall.exe"
-  
 SectionEnd ; Section Base
 
 ;----------------------
@@ -180,6 +192,29 @@ Section "Tools" SecTools
 
 SectionEnd ; Section Tools
 
+;------------------
+!ifdef WITH_WINPT
+Section "WinPT" SecWinPT
+;  SectionIn 1
+
+  SetOutPath "$INSTDIR"
+
+  File "WinPT.exe"
+  File "PTD.dll"
+  File "keyserver.conf"
+
+  SetOutPath "$INSTDIR\Doc"
+
+  File "README.winpt.txt"
+
+  WriteRegStr HKCU "Software\GNU\GnuPG" "gpgProgram" "$INSTDIR\gpg.exe"
+
+  StrCpy $WINPT_INSTALLED 1
+
+SectionEnd ; Section WinPT
+!endif
+
+
 ;----------------------
 Section "Documentation" SecDoc
 ;  SectionIn 1
@@ -191,6 +226,12 @@ Section "Documentation" SecDoc
   File "gpgv.man"
   File "NEWS.txt"
   File "FAQ.txt"
+
+!ifdef WITH_WINPT
+  File "NEWS.winpt.txt"
+!endif ; WITH_WINPT
+
+  StrCpy $DOC_INSTALLED 1
 
 SectionEnd ; Section Documentation
 
@@ -204,15 +245,73 @@ Section "Source" SecSource
   ; Note that we include the uncompressed tarball because this allows
   ; far better compression results for the distribution.  We might
   ; want to compress it again after installation.
-  File "gnupg-1.4.0.tar"
+  File "gnupg-${VERSION}.tar"
 
 SectionEnd ; Section Source
 !endif
 
 
-;------------------
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; The last section is a hidden one; used to finish up things.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Section "-Finish"
+
+  ;;--------------------------
+  ;;  Create the uninstaller
+  ;;--------------------------
+  WriteUninstaller "$INSTDIR\uninst-gnupg.exe"
+
+  ;;---------------------
+  ;; Create Menu entries
+  ;;---------------------
+  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
+    
+  CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER"
+
+  CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\GnuPG README.lnk" \
+                 "$INSTDIR\Doc\README.txt"
+  CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\GnuPG NEWS.lnk" \
+                 "$INSTDIR\Doc\NEWS.txt"
+
+  IntCmp $DOC_INSTALLED 1 0 +2 +2
+  CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\GnuPG Manual Page.lnk" \
+                 "$INSTDIR\Doc\gpg.man"
+
+
+  IntCmp $WINPT_INSTALLED 1 0 no_winpt_menu no_winpt_menu
+  CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\winpt.lnk" \
+                 "$INSTDIR\winpt.exe"
+  CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\WinPT README.lnk" \
+                 "$INSTDIR\Doc\README.winpt.txt"
+  IntCmp $DOC_INSTALLED 1 0 +2 +2
+  CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\WinPT NEWS.lnk" \
+                 "$INSTDIR\Doc\NEWS.winpt.txt"
+
+ no_winpt_menu:
+
+  CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\uninst-gnupg.lnk" \
+                 "$INSTDIR\uninst-gnupg.exe"
+
+
+  !insertmacro MUI_STARTMENU_WRITE_END
+
+
+SectionEnd ; "-Finish"
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Create the section for the uninstaller
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 Section "Uninstall"
 
+  ;;------------------------
+  ;; Delete files
+  ;;------------------------
   Delete "$INSTDIR\gpg.exe"
   Delete "$INSTDIR\gpgkeys_finger.exe"
   Delete "$INSTDIR\gpgkeys_hkp.exe"
@@ -222,6 +321,8 @@ Section "Uninstall"
   Delete "$INSTDIR\Doc\README.txt"
   Delete "$INSTDIR\Doc\README.W32"
   Delete "$INSTDIR\Doc\COPYING.txt"
+  Delete "$INSTDIR\Doc\COPYING.LIB.txt"
+  Delete "$INSTDIR\Doc\README.iconv.txt"
 
   Delete "$INSTDIR\iconv.dll"
 
@@ -229,6 +330,11 @@ Section "Uninstall"
 
   Delete "$INSTDIR\gpgsplit.exe"
   Delete "$INSTDIR\gpgv.exe"
+  Delete "$INSTDIR\WinPT.exe"
+  Delete "$INSTDIR\PTD.dll"
+  Delete "$INSTDIR\Doc\README.winpt.txt"
+  Delete "$INSTDIR\Doc\NEWS.winpt.txt"
+  Delete "$INSTDIR\Doc\keyserver.conf"
 
   Delete "$INSTDIR\Doc\gnupg.man"
   Delete "$INSTDIR\Doc\gpg.man"
@@ -236,13 +342,36 @@ Section "Uninstall"
   Delete "$INSTDIR\Doc\NEWS.txt"
   Delete "$INSTDIR\Doc\FAQ.txt"
 
-  Delete "$INSTDIR\Uninstall.exe"
+  Delete "$INSTDIR\uninst-gnupg.exe"
 
+  ;;------------------------
+  ;; Delete directories
+  ;;------------------------
   RMDir "$INSTDIR\Doc"
   RMDir "$INSTDIR\Src"
   RMDir "$INSTDIR\gnupg.nls"
   RMDir "$INSTDIR"
 
+
+  ;;---------------------------------------------------
+  ;; Delete the menu entries and any empty parent menus
+  ;;---------------------------------------------------
+  !insertmacro MUI_STARTMENU_GETFOLDER Application $MYTMP
+  Delete "$SMPROGRAMS\$MYTMP\*.lnk"
+  StrCpy $MYTMP "$SMPROGRAMS\$MYTMP"
+  startMenuDeleteLoop:
+    ClearErrors
+    RMDir $MYTMP
+    GetFullPathName $MYTMP "$MYTMP\.."
+    IfErrors startMenuDeleteLoopDone
+    StrCmp $MYTMP $SMPROGRAMS startMenuDeleteLoopDone startMenuDeleteLoop
+  startMenuDeleteLoopDone:
+
+
+  ;;-----------------------
+  ;;  Cleanup the registry
+  ;;-----------------------
+  DeleteRegValue HKCU "Software\GNU\GnuPG" "Start Menu Folder"
   DeleteRegValue HKLM "Software\GNU\GnuPG" "Install Directory"
   DeleteRegKey /ifempty HKLM "Software\GNU\GnuPG"
 
@@ -314,6 +443,10 @@ Function InstallIconv
   SetOutPath "$INSTDIR"
   File "iconv.dll"
 
+  SetOutPath "$INSTDIR\doc"
+  File "COPYING.LIB.txt"
+  File "README.iconv.txt"
+
 FunctionEnd
 
 
@@ -327,11 +460,15 @@ LangString T_About ${LANG_ENGLISH} \
   It can be used to encrypt data and to create digital signatures. \
   It includes an advanced key management facility and is compliant \
   with the proposed OpenPGP Internet standard as described in RFC2440. \
-  \r\n\r\nThis is GnuPG version ${VERSION}"
+  \r\n\r\n$_CLICK \
+  \r\n\r\n\r\n\r\n\r\nThis is GnuPG version ${VERSION}\r\n\
+  built on $%BUILDINFO%"
 LangString T_About ${LANG_GERMAN} \
   "GnuPG is das Werzeug aus dem GNU Projekt zur sicheren Kommunikation \
    sowie zum sicheren Speichern von Daten. \
-   \r\n\r\nThis is GnuPG version ${VERSION}"
+   \r\n\r\n$_CLICK \
+   \r\n\r\n\r\n\r\n\r\nDies ist GnuPG version ${VERSION}\r\n\
+   erstellt am $%BUILDINFO%"
 LangString T_ShowReadme ${LANG_ENGLISH} "Show the README file"
 LangString T_ShowReadme ${LANG_GERMAN} "Die README Datei anzeigen"
 
@@ -351,6 +488,13 @@ LangString DESC_SecTools ${LANG_ENGLISH} \
 LangString DESC_SecTools ${LANG_GERMAN} \
       "Weitere Tools wie gpgv und gpgsplit"
 
+!ifdef WITH_WINPT
+LangString DESC_SecWinPT ${LANG_ENGLISH} \
+      "The Windows Privacy Tray (WinPT)"
+LangString DESC_SecWinPT ${LANG_GERMAN} \
+      "Der Windows Privacy Tray (WinPT)"
+!endif
+
 LangString DESC_SecDoc ${LANG_ENGLISH} \
       "Manual pages and a FAQ"
 LangString DESC_SecDoc ${LANG_GERMAN} \
@@ -360,6 +504,9 @@ LangString DESC_SecDoc ${LANG_GERMAN} \
   !insertmacro MUI_DESCRIPTION_TEXT ${SecBase} $(DESC_SecBase)
   !insertmacro MUI_DESCRIPTION_TEXT ${SecNLS} $(DESC_SecNLS)
   !insertmacro MUI_DESCRIPTION_TEXT ${SecTools} $(DESC_SecTools)
+!ifdef WITH_WINPT
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecWinPT} $(DESC_SecWinPT)
+!endif
   !insertmacro MUI_DESCRIPTION_TEXT ${SecDoc} $(DESC_SecDoc)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
