@@ -1182,14 +1182,14 @@ main ( int argc, char **argv)
     case aListKeys:
       for (sl=NULL; argc; argc--, argv++)
         add_to_strlist (&sl, *argv);
-      gpgsm_list_keys (&ctrl, sl, stdout, 0);
+      gpgsm_list_keys (&ctrl, sl, stdout, (0 | (1<<6)));
       free_strlist(sl);
       break;
 
     case aListSecretKeys:
       for (sl=NULL; argc; argc--, argv++)
         add_to_strlist (&sl, *argv);
-      gpgsm_list_keys (&ctrl, sl, stdout, 2);
+      gpgsm_list_keys (&ctrl, sl, stdout, (2 | (1<<6)));
       free_strlist(sl);
       break;
 

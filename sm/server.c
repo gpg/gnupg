@@ -40,6 +40,8 @@ static FILE *statusfp;
 struct server_local_s {
   ASSUAN_CONTEXT assuan_ctx;
   int message_fd;
+  int list_internal;
+  int list_external;
   CERTLIST recplist;
 };
 
@@ -143,6 +145,27 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
       opt.lc_messages = strdup (value);
       if (!opt.lc_messages)
         return ASSUAN_Out_Of_Core;
+    }
+  else if (!strcmp (key, "list-mode"))
+    {
+      int i = *value? atoi (value) : 0;
+      if (!i || i == 1) /* default and mode 1 */
+        {
+          ctrl->server_local->list_internal = 1;
+          ctrl->server_local->list_external = 0;
+        }
+      else if (i == 2)
+        {
+          ctrl->server_local->list_internal = 0;
+          ctrl->server_local->list_external = 1;
+        }
+      else if (i == 3)
+        {
+          ctrl->server_local->list_internal = 1;
+          ctrl->server_local->list_external = 1;
+        }
+      else
+        return ASSUAN_Parameter_Error;
     }
   else
     return ASSUAN_Invalid_Option;
@@ -491,6 +514,7 @@ do_listkeys (ASSUAN_CONTEXT ctx, char *line, int mode)
   FILE *fp = assuan_get_data_fp (ctx);
   char *p;
   STRLIST list, sl;
+  unsigned int listmode;
 
   if (!fp)
     return set_error (General_Error, "no data stream");
@@ -519,7 +543,12 @@ do_listkeys (ASSUAN_CONTEXT ctx, char *line, int mode)
     }
 
   ctrl->with_colons = 1;
-  gpgsm_list_keys (assuan_get_pointer (ctx), list, fp, 3);
+  listmode = mode; 
+  if (ctrl->server_local->list_internal)
+    listmode |= (1<<6);
+  if (ctrl->server_local->list_external)
+    listmode |= (1<<7);
+  gpgsm_list_keys (assuan_get_pointer (ctx), list, fp, listmode);
   free_strlist (list);
   return 0;
 }
@@ -654,6 +683,8 @@ gpgsm_server (void)
   ctrl.server_local = xcalloc (1, sizeof *ctrl.server_local);
   ctrl.server_local->assuan_ctx = ctx;
   ctrl.server_local->message_fd = -1;
+  ctrl.server_local->list_internal = 1;
+  ctrl.server_local->list_external = 0;
 
   if (DBG_ASSUAN)
     assuan_set_log_stream (ctx, log_get_stream ());
@@ -757,6 +788,7 @@ get_status_string ( int no )
     case STATUS_ALREADY_SIGNED : s = "ALREADY_SIGNED"; break;
     case STATUS_EXPSIG         : s = "EXPSIG"; break;
     case STATUS_EXPKEYSIG      : s = "EXPKEYSIG"; break;
+    case STATUS_TRUNCATED      : s = "TRUNCATED"; break;
     default: s = "?"; break;
     }
   return s;
@@ -902,10 +934,3 @@ write_status_text_and_buffer ( int no, const char *string,
     fflush (statusfp);
 }
 #endif
-
-
-
-
-
-
-

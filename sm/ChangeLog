@@ -1,5 +1,14 @@
 2002-05-21  Werner Koch  <wk@gnupg.org>
 
+	* keylist.c (list_internal_keys): Renamed from gpgsm_list_keys.
+	(list_external_keys): New.
+	(gpgsm_list_keys): Dispatcher for above.
+	* call-dirmngr.c (lookup_cb,pattern_from_strlist)
+	(gpgsm_dirmngr_lookup): New.
+	* server.c (option_handler): Handle new option --list-mode.
+	(do_listkeys): Handle options and actually use the mode argument.
+	(get_status_string): New code TRUNCATED.
+
 	* import.c (gpgsm_import): Try to identify the type of input and
 	handle certs-only messages.
 

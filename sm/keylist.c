@@ -34,6 +34,12 @@
 #include "keydb.h"
 #include "i18n.h"
 
+struct list_external_parm_s {
+  FILE *fp;
+  int print_header;
+  int with_colons;
+};
+
 
 
 static void
@@ -265,15 +271,10 @@ list_cert_colon (KsbaCert cert, FILE *fp, int have_secret)
 
 
 
-/* List all keys or just the key given as NAMES.
-   MODE controls the operation mode: 
-      0 = list all public keys but don't flag secret ones
-      1 = list only public keys
-      2 = list only secret keys
-      3 = list secret and public keys
+/* List all internal keys or just the key given as NAMES.
  */
-void
-gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
+static void
+list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
 {
   KEYDB_HANDLE hd;
   KEYDB_SEARCH_DESC *desc = NULL;
@@ -396,3 +397,63 @@ gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
 
 
 
+static void
+list_external_cb (void *cb_value, KsbaCert cert)
+{
+  struct list_external_parm_s *parm = cb_value;
+
+  if (parm->print_header)
+    {
+      const char *resname = "[external keys]";
+      int i;
+
+      fprintf (parm->fp, "%s\n", resname );
+      for (i=strlen(resname); i; i-- )
+        putchar('-');
+      putc ('\n', parm->fp);
+      parm->print_header = 0;
+    }
+
+  if (parm->with_colons)
+    list_cert_colon (cert, parm->fp, 0);
+  else
+    list_cert_colon (cert, parm->fp, 0);
+}
+
+
+/* List external keys similar to internal one.  Note: mode does not
+   make sense here because it would be unwise to list external secret
+   keys */
+static void
+list_external_keys (CTRL ctrl, STRLIST names, FILE *fp)
+{
+  int rc;
+  struct list_external_parm_s parm;
+
+  parm.fp = fp;
+  parm.print_header = ctrl->no_server;
+  parm.with_colons = ctrl->with_colons;
+
+  rc = gpgsm_dirmngr_lookup (names, list_external_cb, &parm);
+  if (rc)
+    log_error ("listing external keys failed: %s\n", gnupg_strerror (rc));
+}
+
+/* List all keys or just the key given as NAMES.
+   MODE controls the operation mode: 
+    Bit 0-2:
+      0 = list all public keys but don't flag secret ones
+      1 = list only public keys
+      2 = list only secret keys
+      3 = list secret and public keys
+    Bit 6: list internal keys
+    Bit 7: list external keys
+ */
+void
+gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
+{
+  if ((mode & (1<<6)))
+      list_internal_keys (ctrl, names, fp, (mode & 3));
+  if ((mode & (1<<7)))
+      list_external_keys (ctrl, names, fp); 
+}

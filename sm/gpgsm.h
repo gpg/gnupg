@@ -120,7 +120,6 @@ struct server_control_s {
                          along with a signature or the number of
                          certificates up the chain (0 = none, 1 = only
                          signer) */
- 
 };
 typedef struct server_control_s *CTRL;
 
@@ -234,6 +233,8 @@ int gpgsm_agent_learn (void);
 
 /*-- call-dirmngr.c --*/
 int gpgsm_dirmngr_isvalid (KsbaCert cert);
+int gpgsm_dirmngr_lookup (STRLIST names,
+                          void (*cb)(void*, KsbaCert), void *cb_value);
 
 
 

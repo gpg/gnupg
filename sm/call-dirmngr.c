@@ -33,6 +33,15 @@
 #include "../assuan/assuan.h"
 #include "i18n.h"
 
+struct membuf {
+  size_t len;
+  size_t size;
+  char *buf;
+  int out_of_core;
+};
+
+
+
 static ASSUAN_CONTEXT dirmngr_ctx = NULL;
 static int force_pipe_server = 0;
 
@@ -41,13 +50,77 @@ struct inq_certificate_parm_s {
   KsbaCert cert;
 };
 
-
-struct membuf {
-  size_t len;
-  size_t size;
-  char *buf;
-  int out_of_core;
+struct lookup_parm_s {
+  ASSUAN_CONTEXT ctx;
+  void (*cb)(void *, KsbaCert);
+  void *cb_value;
+  struct membuf data;
+  int error;
 };
+
+
+
+
+/* A simple implementation of a dynamic buffer.  Use init_membuf() to
+   create a buffer, put_membuf to append bytes and get_membuf to
+   release and return the buffer.  Allocation errors are detected but
+   only returned at the final get_membuf(), this helps not to clutter
+   the code with out of core checks.  */
+
+static void
+init_membuf (struct membuf *mb, int initiallen)
+{
+  mb->len = 0;
+  mb->size = initiallen;
+  mb->out_of_core = 0;
+  mb->buf = xtrymalloc (initiallen);
+  if (!mb->buf)
+      mb->out_of_core = 1;
+}
+
+static void
+put_membuf (struct membuf *mb, const void *buf, size_t len)
+{
+  if (mb->out_of_core)
+    return;
+
+  if (mb->len + len >= mb->size)
+    {
+      char *p;
+      
+      mb->size += len + 1024;
+      p = xtryrealloc (mb->buf, mb->size);
+      if (!p)
+        {
+          mb->out_of_core = 1;
+          return;
+        }
+      mb->buf = p;
+    }
+  memcpy (mb->buf + mb->len, buf, len);
+  mb->len += len;
+}
+
+static void *
+get_membuf (struct membuf *mb, size_t *len)
+{
+  char *p;
+
+  if (mb->out_of_core)
+    {
+      xfree (mb->buf);
+      mb->buf = NULL;
+      return NULL;
+    }
+
+  p = mb->buf;
+  *len = mb->len;
+  mb->buf = NULL;
+  mb->out_of_core = 1; /* don't allow a reuse */
+  return p;
+}
+
+
 
 
 
@@ -234,3 +307,151 @@ gpgsm_dirmngr_isvalid (KsbaCert cert)
 }
 
 
+
+/* Lookup helpers*/
+static AssuanError
+lookup_cb (void *opaque, const void *buffer, size_t length)
+{
+  struct lookup_parm_s *parm = opaque;
+  size_t len;
+  char *buf;
+  KsbaCert cert;
+  int rc;
+
+  if (parm->error)
+    return 0;
+
+  if (buffer)
+    {
+      put_membuf (&parm->data, buffer, length);
+      return 0;
+    }
+  /* END encountered - process what we have */
+  buf = get_membuf (&parm->data, &len);
+  if (!buf)
+    {
+      parm->error = GNUPG_Out_Of_Core;
+      return 0;
+    }
+
+  cert = ksba_cert_new ();
+  if (!cert)
+    {
+      parm->error = GNUPG_Out_Of_Core;
+      return 0;
+    }
+  rc = ksba_cert_init_from_mem (cert, buf, len);
+  if (rc)
+    {
+      log_error ("failed to parse a certificate: %s\n", ksba_strerror (rc));
+    }
+  else
+    {
+      parm->cb (parm->cb_value, cert);
+    }
+
+  ksba_cert_release (cert);
+  init_membuf (&parm->data, 4096);
+  return 0;
+}
+
+/* Return a properly escaped pattern from NAMES.  The only error
+   return is NULL to indicate a malloc failure. */
+static char *
+pattern_from_strlist (STRLIST names)
+{
+  STRLIST sl;
+  int n;
+  const char *s;
+  char *pattern, *p;
+
+  for (n=0, sl=names; sl; sl = sl->next)
+    {
+      for (s=sl->d; *s; s++, n++)
+	{
+          if (*s == '%' || *s == ' ' || *s == '+')
+            n += 2;
+	}
+      n++;
+    }
+
+  p = pattern = xtrymalloc (n+1);
+  if (!pattern)
+    return NULL;
+
+  for (n=0, sl=names; sl; sl = sl->next)
+    {
+      for (s=sl->d; *s; s++)
+        {
+          switch (*s)
+            {
+            case '%':
+              *p++ = '%';
+              *p++ = '2';
+              *p++ = '5';
+              break;
+            case ' ':
+              *p++ = '%';
+              *p++ = '2';
+              *p++ = '0';
+              break;
+            case '+':
+              *p++ = '%';
+              *p++ = '2';
+              *p++ = 'B';
+              break;
+            default:
+              *p++ = *s;
+              break;
+            }
+        }
+      *p++ = ' ';
+    }
+  if (p == pattern)
+    *pattern = 0; /* is empty */
+  else
+    p[-1] = '\0'; /* remove trailing blank */
+  
+  return pattern;
+}
+
+
+/* Run the Directroy Managers lookup command using the apptern
+   compiled from the strings given in NAMES.  The caller must provide
+   the callback CB which will be passed cert by cert. */
+int 
+gpgsm_dirmngr_lookup (STRLIST names,
+                      void (*cb)(void*, KsbaCert), void *cb_value)
+{ 
+  int rc;
+  char *pattern;
+  char line[ASSUAN_LINELENGTH];
+  struct lookup_parm_s parm;
+  size_t len;
+
+  /* FIXME: Set an status handler so that we can get the TRUNCATED code */
+
+  rc = start_dirmngr ();
+  if (rc)
+    return rc;
+
+  pattern = pattern_from_strlist (names);
+  if (!pattern)
+    return GNUPG_Out_Of_Core;
+  snprintf (line, DIM(line)-1, "LOOKUP %s", pattern);
+  line[DIM(line)-1] = 0;
+  xfree (pattern);
+
+  parm.ctx = dirmngr_ctx;
+  parm.cb = cb;
+  parm.cb_value = cb_value;
+  parm.error = 0;
+  init_membuf (&parm.data, 4096);
+
+  rc = assuan_transact (dirmngr_ctx, line, lookup_cb, &parm,
+                        NULL, NULL, NULL, NULL);
+  xfree (get_membuf (&parm.data, &len));
+  if (rc)
+    return map_assuan_err (rc);
+  return parm.error;
+}
