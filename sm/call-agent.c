@@ -35,6 +35,7 @@
 
 
 static ASSUAN_CONTEXT agent_ctx = NULL;
+static int force_pipe_server = 0;
 
 struct cipher_parm_s {
   ASSUAN_CONTEXT ctx;
@@ -126,17 +127,17 @@ start_agent (void)
 {
   int rc;
   char *infostr, *p;
+  ASSUAN_CONTEXT ctx;
 
   if (agent_ctx)
     return 0; /* fixme: We need a context for each thread or serialize
                  the access to the agent (which is suitable given that
                  the agent is not MT */
 
-  infostr = getenv ("GPG_AGENT_INFO");
+  infostr = force_pipe_server? NULL : getenv ("GPG_AGENT_INFO");
   if (!infostr)
     {
       const char *pgmname;
-      ASSUAN_CONTEXT ctx;
       const char *argv[3];
 
       log_info (_("no running gpg-agent - starting one\n"));
@@ -160,27 +161,51 @@ start_agent (void)
 
       /* connect to the agent and perform initial handshaking */
       rc = assuan_pipe_connect (&ctx, opt.agent_program, (char**)argv, 0);
-      if (rc)
-        {
-          log_error ("can't connect to the agent: %s\n", assuan_strerror (rc));
-          return seterr (No_Agent);
-        }
-      agent_ctx = ctx;
     }
   else
     {
+      int prot;
+      int pid;
+
       infostr = xstrdup (infostr);
-      if ( !(p = strchr (infostr, ':')) || p == infostr
-           /* || (p-infostr)+1 >= sizeof client_addr.sun_path */)
+      if ( !(p = strchr (infostr, ':')) || p == infostr)
         {
           log_error (_("malformed GPG_AGENT_INFO environment variable\n"));
           xfree (infostr);
-          return seterr (General_Error);
+          force_pipe_server = 1;
+          return start_agent ();
         }
-      *p = 0;
-      log_error (_("socket based agent communication not yet implemented\n"));
-      return seterr (Not_Implemented);
+      *p++ = 0;
+      pid = atoi (p);
+      while (*p && *p != ':')
+        p++;
+      prot = *p? atoi (p+1) : 0;
+      if (prot != 1)
+        {
+          log_error (_("gpg-agent protocol version %d is not supported\n"),
+                     prot);
+          xfree (infostr);
+          force_pipe_server = 1;
+          return start_agent ();
+        }
+
+      rc = assuan_socket_connect (&ctx, infostr, pid);
+      xfree (infostr);
+      if (rc == ASSUAN_Connect_Failed)
+        {
+          log_error (_("can't connect to the agent - trying fall back\n"));
+          force_pipe_server = 1;
+          return start_agent ();
+        }
     }
+
+
+  if (rc)
+    {
+      log_error ("can't connect to the agent: %s\n", assuan_strerror (rc));
+      return seterr (No_Agent);
+    }
+  agent_ctx = ctx;
 
   if (DBG_AGENT)
     log_debug ("connection to agent established\n");

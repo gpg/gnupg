@@ -1,3 +1,10 @@
+2002-01-21  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c: Add option --enable-crl-checks.
+
+	* call-agent.c (start_agent): Implemented socket based access.
+	* call-dirmngr.c (start_dirmngr): Ditto.
+
 2002-01-20  Werner Koch  <wk@gnupg.org>
 
 	* server.c (option_handler): New.

@@ -36,24 +36,24 @@
 
 enum cmd_and_opt_values {
   aNull = 0,
-  oArmor	  = 'a',
+  oArmor        = 'a',
   aDetachedSign = 'b',
-  aSym	  = 'c',
-  aDecrypt	  = 'd',
-  aEncr	  = 'e',
+  aSym	        = 'c',
+  aDecrypt	= 'd',
+  aEncr	        = 'e',
   oInteractive  = 'i',
-  oKOption	  = 'k',
-  oDryRun	  = 'n',
-  oOutput	  = 'o',
-  oQuiet	  = 'q',
-  oRecipient	  = 'r',
-  aSign	  = 's',
+  oKOption	= 'k',
+  oDryRun	= 'n',
+  oOutput	= 'o',
+  oQuiet	= 'q',
+  oRecipient	= 'r',
+  aSign	        = 's',
   oTextmodeShort= 't',
-  oUser	  = 'u',
-  oVerbose	  = 'v',
-  oCompress	  = 'z',
-  oNotation	  = 'N',
-  oBatch	  = 500,
+  oUser	        = 'u',
+  oVerbose	= 'v',
+  oCompress	= 'z',
+  oNotation	= 'N',
+  oBatch	= 500,
   aClearsign,
   aStore,
   aKeygen,
@@ -96,6 +96,7 @@ enum cmd_and_opt_values {
   oNoArmor,
 
   oDisableCRLChecks,
+  oEnableCRLChecks,
 
   oTextmode,
   oFingerprint,
@@ -226,6 +227,7 @@ static ARGPARSE_OPTS opts[] = {
 
 
     { oDisableCRLChecks, "disable-crl-checks", 0, N_("never consult a CRL")},
+    { oEnableCRLChecks, "enable-crl-checks", 0, "@"},
 
 
 #if 0
@@ -735,6 +737,9 @@ main ( int argc, char **argv)
 
         case oDisableCRLChecks:
           opt.no_crl_check = 1;
+          break;
+        case oEnableCRLChecks:
+          opt.no_crl_check = 0;
           break;
           
 

@@ -34,6 +34,7 @@
 #include "i18n.h"
 
 static ASSUAN_CONTEXT dirmngr_ctx = NULL;
+static int force_pipe_server = 0;
 
 struct inq_certificate_parm_s {
   ASSUAN_CONTEXT ctx;
@@ -57,17 +58,16 @@ start_dirmngr (void)
 {
   int rc;
   char *infostr, *p;
+  ASSUAN_CONTEXT ctx;
 
   if (dirmngr_ctx)
     return 0; /* fixme: We need a context for each thread or serialize
-                 the access to the agent (which is suitable given that
-                 the agent is not MT */
+                 the access to the dirmngr */
 
-  infostr = getenv ("DIRMNGR_INFO");
+  infostr = force_pipe_server? NULL : getenv ("DIRMNGR_INFO");
   if (!infostr)
     {
       const char *pgmname;
-      ASSUAN_CONTEXT ctx;
       const char *argv[3];
 
       log_info (_("no running dirmngr - starting one\n"));
@@ -91,27 +91,50 @@ start_dirmngr (void)
 
       /* connect to the agent and perform initial handshaking */
       rc = assuan_pipe_connect (&ctx, opt.dirmngr_program, (char**)argv, 0);
-      if (rc)
-        {
-          log_error ("can't connect to the dirmngr: %s\n", assuan_strerror (rc));
-          return seterr (No_Dirmngr);
-        }
-      dirmngr_ctx = ctx;
     }
   else
     {
+      int prot;
+      int pid;
+
       infostr = xstrdup (infostr);
-      if ( !(p = strchr (infostr, ':')) || p == infostr
-           /* || (p-infostr)+1 >= sizeof client_addr.sun_path */)
+      if ( !(p = strchr (infostr, ':')) || p == infostr)
         {
           log_error (_("malformed DIRMNGR_INFO environment variable\n"));
           xfree (infostr);
-          return seterr (General_Error);
+          force_pipe_server = 1;
+          return start_dirmngr ();
         }
-      *p = 0;
-      log_error (_("socket based dirmngr communication not yet implemented\n"));
-      return seterr (Not_Implemented);
+      *p++ = 0;
+      pid = atoi (p);
+      while (*p && *p != ':')
+        p++;
+      prot = *p? atoi (p+1) : 0;
+      if (prot != 1)
+        {
+          log_error (_("dirmngr protocol version %d is not supported\n"),
+                     prot);
+          xfree (infostr);
+          force_pipe_server = 1;
+          return start_dirmngr ();
+        }
+
+      rc = assuan_socket_connect (&ctx, infostr, pid);
+      xfree (infostr);
+      if (rc == ASSUAN_Connect_Failed)
+        {
+          log_error (_("can't connect to the dirmngr - trying fall back\n"));
+          force_pipe_server = 1;
+          return start_dirmngr ();
+        }
     }
+
+  if (rc)
+    {
+      log_error ("can't connect to the dirmngr: %s\n", assuan_strerror (rc));
+      return seterr (No_Dirmngr);
+    }
+  dirmngr_ctx = ctx;
 
   if (DBG_AGENT)
     log_debug ("connection to dirmngr established\n");
