@@ -467,9 +467,13 @@ more arguments in future versions.
         for certain external requests
 
     ERROR <error location> <error code> 
+
         This is a generic error status message, it might be followed
         by error location specific data. <error token> and
-        <error_location> should not contain a space.
+        <error_location> should not contain a space.  The error code
+        is a either a string commencing with a letter or such string
+        prefix with a numerical error code and an underscore; e.g.:
+        "151011327_EOF"
 
     ATTRIBUTE <fpr> <octets> <type> <index> <count>
 	      <timestamp> <expiredate> <flags>

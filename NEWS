@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.3.5 (unreleased)
+Noteworthy changes in version 1.3.5 (2004-02-26)
 ------------------------------------------------
 
     * New --min-cert-level option to disregard key signatures that are
