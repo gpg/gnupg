@@ -325,9 +325,9 @@ dnl LDAP is defined only after we confirm the library is available later
 
     AC_MSG_CHECKING([whether ftp key fetching support is requested])
     AC_ARG_ENABLE(ftp,
-      AC_HELP_STRING([--enable-ftp],
-        [enable ftp key fetching interface only]),
-      try_ftp=$enableval, try_ftp=no)
+      AC_HELP_STRING([--disable-ftp],
+        [disable ftp key fetching interface only]),
+      try_ftp=$enableval, try_ftp=yes)
     AC_MSG_RESULT($try_ftp)
 
     AC_MSG_CHECKING([whether email keyserver support is requested])
@@ -526,10 +526,15 @@ fi
 
 if test x"$try_http" = xyes ; then
   AC_SUBST(GPGKEYS_HTTP,"gpgkeys_http$EXEEXT")
+  AC_DEFINE(HTTP_SUPPORT,1,[Define to include HTTP support])
 fi
 
 if test x"$try_finger" = xyes ; then
   AC_SUBST(GPGKEYS_FINGER,"gpgkeys_finger$EXEEXT")
+fi
+
+if test x"$try_ftp" = xyes ; then
+  AC_DEFINE(FTP_SUPPORT,1,[Define to include FTP support])
 fi
 
 dnl Must check for network library requirements before doing link tests
@@ -648,12 +653,17 @@ AC_SUBST(GPGKEYS_LDAP)
 AC_SUBST(LDAPLIBS)
 AM_CONDITIONAL(GPGKEYS_LDAP, test "$GPGKEYS_LDAP" != "")
 
-if test "$try_ftp" = yes ; then
-  GNUPG_CHECK_LIBCURL
+dnl If we have neither FTP or HTTP defined, then don't bother to check
+dnl for curl.
 
-  if test x"$have_libcurl" = xyes ; then
-     AC_SUBST(GPGKEYS_FTP,"gpgkeys_ftp$EXEEXT")
-  fi
+if test "$try_ftp" = yes || test "$try_http" = yes ; then
+   GNUPG_CHECK_LIBCURL
+fi
+
+AM_CONDITIONAL(HAVE_LIBCURL, test "$have_libcurl" = "yes")
+
+if test x"$have_libcurl" = xyes ; then
+   AC_SUBST(GPGKEYS_CURL,"gpgkeys_curl$EXEEXT")
 fi
 
 dnl This isn't necessarily sendmail itself, but anything that gives a
