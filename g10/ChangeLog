@@ -5702,9 +5702,9 @@ Sat Jan 16 09:27:30 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 	* g10.c: New option --keyserver
 	* mainproc.c (check_sig_and_print): Hook to import a pubkey.
 
-	* pref.c pref.h : Removed
+	* pref.c, pref.h : Removed
 
-	* hkp.c hkp.h: New
+	* hkp.c, hkp.h: New
 
 Wed Jan 13 14:10:15 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
@@ -7228,7 +7228,7 @@ Thu Feb 12 22:24:42 1998  Werner Koch  (wk@frodo)
 	* pubkey-enc.c (get_session_key): rewritten
 
 
- Copyright 1998,1999,2000,2001,2002 Free Software Foundation, Inc.
+ Copyright 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

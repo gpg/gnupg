@@ -25,6 +25,8 @@ Noteworthy changes in version 1.2.2 (unreleased)
     * Minor trustdb changes to make the trust calculations match
       common usage.
 
+    * New translations: Finnish and Traditional Chinese.
+
 
 Noteworthy changes in version 1.2.1 (2002-10-25)
 ------------------------------------------------

@@ -477,6 +477,15 @@ Create ASCII armored output.
 @item -o, ---output @code{file}
 Write output to @code{file}.
 
+@item ---no-mangle-dos-filenames
+@itemx ---mangle-dos-filenames
+The Windows version of GPG replaces the extension of an output
+filename to avoid problems with filenames containing more than one
+dot. This is not necessary for newer Windows version and such
+---no-mangle-dos-filenames can be used to switch this feature off and 
+have GPG append the new extension. This otion has no effect on
+non-windows platforms.
+
 @item -u, ---local-user @code{name}
 Use @code{name} as the user ID to sign.
 This option is silently ignored for the list commands,
@@ -598,12 +607,24 @@ don't want to keep your secret keys (or one of them)
 online but still want to be able to check the validity of a given
 recipient's or signator's key. 
 
+@item ---trust-model @code{classic|always}
+Set what trust model GnuPG should follow. The models are:
+
+@table @asis
+@item classic
+This is the regular web-of-trust as used in PGP and GnuPG.
+
+@item always
+Skip key validation and assume that used keys are always fully
+trusted. You won't use this unless you have installed some external
+validation scheme. This option also suppresses the "[uncertain]" tag
+printed with signature checks when there is no evidence that the user
+ID is bound to the key.
+
+@end table
+
 @item ---always-trust
-Skip key validation and assume that used keys are always fully trusted.
-You won't use this unless you have installed some external validation
-scheme. This option also suppresses the "[uncertain]" tag printed
-with signature checks when there is no evidence that the user ID
-is bound to the key.
+Identical to `---trust-model always'
 
 @item ---keyserver @code{name}
 Use @code{name} as your keyserver. This is the server that ---recv-keys,
@@ -633,21 +654,19 @@ keyserver types, some common options are:
 
 @table @asis
 @item include-revoked
-When searching for a key, include keys that are marked on the
-keyserver as revoked. Note that this option is always set when using
-the NAI HKP keyserver, as this keyserver does not differentiate
-between revoked and unrevoked keys. When using the LDAP keyserver,
-this applies to both searching (---search-keys) and receiving
-(---recv-keys).
+When searching for a key with ---search-keys, include keys that are
+marked on the keyserver as revoked. Note that this option is always
+set when using the NAI HKP keyserver, as this keyserver does not
+differentiate between revoked and unrevoked keys.
 
 @item include-disabled
-When receiving or searching for a key, include keys that are marked on
-the keyserver as disabled. Note that this option is not used with HKP
-keyservers, as they do not support disabling keys.
+When searching for a key with ---search-keys, include keys that are
+marked on the keyserver as disabled. Note that this option is not
+used with HKP keyservers.
 
 @item include-subkeys
-When receiving a key, include subkeys in the search. Note that this
-option is not used with HKP keyservers, as they do not support
+When receiving a key, include subkeys as potential targets. Note that
+this option is not used with HKP keyservers, as they do not support
 retrieving keys by subkey id.
 
 @item use-temp-files
@@ -879,34 +898,53 @@ Force to write the version string in clear text
 signatures. Use this to overwrite a previous
 ---no-version from a config file.
 
-@item -N, ---notation-data @code{name=value}
+@item ---sig-notation @code{name=value}
+@itemx ---cert-notation @code{name=value}
+@itemx -N, ---notation-data @code{name=value}
 Put the name value pair into the signature as notation data.
-@code{name} must consist only of alphanumeric characters, digits
-or the underscore; the first character must not be a digit.
-@code{value} may be any printable string; it will be encoded in UTF8,
-so you should check that your ---charset is set correctly.
-If you prefix @code{name} with an exclamation mark, the notation
-data will be flagged as critical (rfc2440:5.2.3.15).
+@code{name} must consist only of printable characters or spaces, and
+must contain a '@@' character. This is to help prevent pollution of
+the IETF reserved notation namespace. The ---expert flag overrides the
+'@@' check. @code{value} may be any printable string; it will be
+encoded in UTF8, so you should check that your ---charset is set
+correctly. If you prefix @code{name} with an exclamation mark, the
+notation data will be flagged as critical (rfc2440:5.2.3.15).
+---sig-notation sets a notation for data signatures. --cert-notation
+sets a notation for key signatures (certifications). ---notation-data
+sets both.
+
+There are special codes that may be used in notation names. "%k" will
+be expanded into the key ID of the key being signed, "%K" for the long
+key ID of the key being signed, "%f" for the key fingerprint of the
+key being signed, "%s" for the key ID of the key making the signature,
+"%S" for the long key ID of the key making the signature, and "%%"
+results in a single "%". %k, %K, and %f are only meaningful when
+making a key signature (certification).
 
 @item ---show-notation
-Show key signature notations in the ---list-sigs or --check-sigs
-listings.
+Show signature notations in the ---list-sigs or --check-sigs listings
+as well as when verifying a signature with a notation in it.
 
 @item ---no-show-notation
-Do not show key signature notations in the ---list-sigs or --check-sigs
-listings.
+Do not show signature notations.
 
-@item ---set-policy-url @code{string}
-Use @code{string} as Policy URL for signatures (rfc2440:5.2.3.19).
-If you prefix it with an exclamation mark, the policy URL
-packet will be flagged as critical.
+@item ---sig-policy-url @code{string}
+@itemx ---cert-policy-url @code{string}
+@itemx ---set-policy-url @code{string}
+Use @code{string} as Policy URL for signatures (rfc2440:5.2.3.19). If
+you prefix it with an exclamation mark, the policy URL packet will be
+flagged as critical. ---sig-policy-url sets a a policy url for data
+signatures. ---cert-policy-url sets a policy url for key signatures
+(certifications). -set-policy-url sets both.
+
+The same %-expandos used for notation data are available here as well.
 
 @item ---show-policy-url
-Show any policy URLs set in the ---list-sigs or --check-sigs listings.
+Show policy URLs in the ---list-sigs or --check-sigs listings as well
+as when verifying a signature with a policy URL in it.
 
 @item ---no-show-policy-url
-Do not show any policy URLs set in the ---list-sigs or --check-sigs
-listings.
+Do not show policy URLs.
 
 @item ---set-filename @code{string}
 Use @code{string} as the name of file which is stored in
@@ -960,18 +998,16 @@ The default cipher is CAST5. This cipher is also used for
 conventional encryption if ---cipher-algo is not given.
 
 @item ---s2k-digest-algo @code{name}
-Use @code{name} as the digest algorithm used to mangle the
-passphrases. The default algorithm is RIPE-MD-160.
-This digest algorithm is also used for conventional
-encryption if ---digest-algo is not given.
+Use @code{name} as the digest algorithm used to mangle the passphrases.
+The default algorithm is SHA-1. This digest algorithm is also used
+for conventional encryption if ---digest-algo is not given.
 
 @item ---s2k-mode @code{n}
-Selects how passphrases are mangled. If @code{n} is 0
-a plain passphrase (which is not recommended) will be used,
-a 1 (default) adds a salt to the passphrase and
-a 3 iterates the whole process a couple of times.
-Unless ---rfc1991 is used, this mode is also used
-for conventional encryption.
+Selects how passphrases are mangled. If @code{n} is 0 a plain
+passphrase (which is not recommended) will be used, a 1 adds a salt to
+the passphrase and a 3 (the default) iterates the whole process a
+couple of times. Unless ---rfc1991 is used, this mode is also used for
+conventional encryption.
 
 @item ---simple-sk-checksum
 Secret keys are integrity protected by using a SHA-1 checksum. This
@@ -985,13 +1021,14 @@ happen is to change the passphrase on the key (even changing it to the
 same value is acceptable).
 
 @item ---compress-algo @code{n}
-Use compression algorithm @code{n}. Default is 2 which is RFC1950
-compression. You may use 1 to use the old zlib version (RFC1951) which
-is used by PGP. 0 disables compression. The default algorithm may give
-better results because the window size is not limited to 8K. If this
-is not used the OpenPGP behavior is used, i.e. the compression
-algorithm is selected from the preferences; note, that this can't be
-done if you do not encrypt the data.
+Use compression algorithm @code{n}. The value 2 is RFC1950 ZLIB
+compression. The value 1 is RFC-1951 ZIP compression which is used by
+PGP. 0 disables compression. If this option is not used, the default
+behavior is to examine the recipient key preferences to see which
+algorithms the recipient supports. If all else fails, ZIP is used for
+maximum compatibility. Note, however, that ZLIB may give better
+compression results if that is more important, as the compression
+window size is not limited to 8k.
 
 @item ---disable-cipher-algo @code{name}
 Never allow the use of @code{name} as cipher algorithm.
@@ -1094,9 +1131,9 @@ Resets the ---pgp2 option.
 Set up all options to be as PGP 6 compliant as possible. This
 restricts you to the ciphers IDEA (if the IDEA plugin is installed),
 3DES, and CAST5, the hashes MD5, SHA1 and RIPEMD160, and the
-compression algorithms none and ZIP. This also disables making
-signatures with signing subkeys as PGP 6 does not understand
-signatures made by signing subkeys.
+compression algorithms none and ZIP. This also disables
+---throw-keyid, and making signatures with signing subkeys as PGP 6
+does not understand signatures made by signing subkeys.
 
 This option implies `---disable-mdc --no-comment --escape-from-lines
 ---force-v3-sigs --no-ask-sig-expire --compress-algo 1'
@@ -1112,6 +1149,15 @@ TWOFISH.
 
 @item ---no-pgp7
 Resets the ---pgp7 option.
+
+@item ---pgp8
+Set up all options to be as PGP 8 compliant as possible. PGP 8 is a
+lot closer to the OpenPGP standard than previous versions of PGP, so
+all this does is disable ---throw-keyid and set --escape-from-lines and
+---compress-algo 1. The allowed algorithms list is the same as --pgp7.
+
+@item ---no-pgp8
+Resets the ---pgp8 option.
 
 @item ---openpgp
 Reset all packet, cipher and digest options to OpenPGP behavior. Use
@@ -1221,7 +1267,11 @@ enter batch mode.
 Suppress the warning about "using insecure memory".
 
 @item ---no-permission-warning
-Suppress the warning about unsafe file permissions.
+Suppress the warning about unsafe file permissions. Note that the
+file permission checks that GnuPG does are not intended to be
+authoritative, rather they simply warn about certain common permission
+problems. Do not assume that the lack of a warning means that your
+system is secure.
 
 @item ---no-mdc-warning
 Suppress the warning about missing MDC integrity protection.
@@ -1344,10 +1394,14 @@ Experimental use only.
 Sets up a named group, which is similar to aliases in email programs.
 Any time the group name is a receipient (-r or ---recipient), it will
 be expanded to the values specified.
+
 The values are @code{key IDs} or fingerprints, but any key description
 is accepted. Note that a value with spaces in it will be treated as
 two different values. Note also there is only one level of expansion
-- you cannot make an group that points to another group.
+- you cannot make an group that points to another group. When used
+from the command line, it may be necessary to quote the argument to
+this option to prevent the shell from treating it as multiple
+arguments.
 
 @item ---preserve-permissions
 Don't change the permissions of a secret keyring back to user
@@ -1538,6 +1592,30 @@ is *very* easy to spy out your passphrase!
 If you are going to verify detached signatures, make sure that the
 program knows about it; either be giving both filenames on the
 command line or using @samp{-} to specify stdin.
+
+@majorheading INTEROPERABILITY WITH OTHER OPENPGP PROGRAMS
+GnuPG tries to be a very flexible implementation of the OpenPGP
+standard. In particular, GnuPG implements many of the "optional"
+parts of the standard, such as the RIPEMD/160 hash, and the ZLIB
+compression algorithms. It is important to be aware that not all
+OpenPGP programs implement these optional algorithms and that by
+forcing their use via the ---cipher-algo, --digest-algo,
+---cert-digest-algo, or --compress-algo options in GnuPG, it is
+possible to create a perfectly valid OpenPGP message, but one that
+cannot be read by the intended recipient.
+
+For example, as of this writing, no version of official PGP supports
+the BLOWFISH cipher algorithm. If you use it, no PGP user will be
+able to decrypt your message. The same thing applies to the ZLIB
+compression algorithm. By default, GnuPG will do the right thing and
+create messages that are usable by any OpenPGP program. Only override
+this safe default if you know what you are doing.
+
+If you absolutely must override the safe default, you are far better
+off using the ---pgp2, --pgp6, or --pgp7 options. These options are
+safe as they do not force any particular algorithms in violation of
+OpenPGP, but rather reduce the available algorithms to a "PGP-safe"
+list.
 
 @majorheading BUGS
 On many systems this program should be installed as setuid(root). This
