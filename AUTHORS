@@ -1,5 +1,8 @@
 Program: GnuPG
 Maintainer:  Werner Koch <wk@gnupg.org>
+Bug reports: <bug-gnupg@gnu.org>
+Security related bug reports: <security@gnupg.org>
+
 
 Authors
 =======
@@ -102,7 +105,7 @@ for GnuPG.
 The RPM specs file scripts/gnupg.spec has been contributed by
 several people.
 
- Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

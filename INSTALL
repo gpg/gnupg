@@ -1,185 +1,8 @@
-Installation instructions for GnuPG
-====================================
-  Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+Copyright 1994, 1995, 1996, 1999, 2000, 2001 Free Software Foundation,
+Inc.
 
-  This file is free software; as a special exception the author gives
-  unlimited permission to copy and/or distribute it, with or without
-  modifications, as long as this notice is preserved.
-
-  This file is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
-  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-Please read the Basic Installation section somewhere below.
-
-Configure options for GNUPG
-===========================
-
---enable-static-rnd=<name>  Force the use of the random byte gathering
-		     module <name>.  Default is either to use /dev/random
-		     or the standard Uix module.  Value for name:
-		       egd - Use the module which accesses the
-			     Entropy Gathering Daemon. See the webpages
-			     for more information about it.
-		      unix - Use the standard Unix module which does not
-			     have a very good performance.
-		     linux - Use the module which accesses /dev/random.
-			     This is the first choice and the default one
-			     for GNU/Linux or *BSD.
-		      none - Do not linkl any module in but rely on
-			     a dynmically loaded modules.
-
---with-egd-socket=<name>  This is only used when EGD is used as random
-                     gatherer. GnuPG uses by default "~/.gnupg/entropy"
-                     as the socket to connect EGD.  Using this option the
-                     socket name can be changed.  You may use any filename
-                     here with 2 exceptions:  a filename starting with
-                     "~/" uses the socket in the homedirectory of the user
-                     and one starting with a "=" uses a socket in the
-                     GnuPG homedirectory which is bye default "~/.gnupg".
-   
---with-included-zlib Forces usage of the local zlib sources. Default is
-		     to use the (shared) library of the system.
-
---with-included-gettext Forces usage of the local gettext sources instead of
-		    the one provided by your system.
-
---disable-nls	    Disable NLS support (See the file ABOUT-NLS)
-
---enable-m-guard    Enable the integrated malloc checking code. Please
-                    note that this feature does not work on all CPUs
-                    (e.g. SunOS 5.7 on UltraSparc-2) and might give
-                    you a Bus error.
-
---disable-dynload   If you have problems with dynamic loading, this option
-		    disables all dynamic loading stuff.
-
---disable-asm	    Do not use assembler modules.  It is not possible to
-		    use this on some CPU types.
-
-
-
-Problems
-========
-
-If you get unresolved externals "gettext" you should run configure again
-with the option "--with-included-gettext"; this is version 0.10.35 which
-is available at alpha.gnu.org.
-
-If you have other compile problems, try the configure options
-"--with-included-zlib" or "--disable-nls" (See ABOUT-NLS)
-or --disable-dynload.
-
-I can't check all assembler files, so if you have problems assembling them
-(or the program crashes) use --disable-asm with ./configure.
-The configure scripts may consider several subdirectories to get all
-available assembler files; be sure to delete the correct ones. The
-assembler replacements are in C and in mpi/generic; never delete udiv-qrnnd.S
-in any CPU directory, because there may be no C substitute.
-Don't forget to delete "config.cache" and run "./config.status --recheck".
-
-Some make tools are broken - the best solution is to use GNU's make.  Try
-gmake or grab the sources from a GNU archive and install them.
-
-On some OSF you may get unresolved externals.  This is a libtool problem and
-the workaround is to manually remove all the "-lc -lz" but the last one from
-the linker line and execute them manually.
-
-On some architectures you get warnings like:
-  longlong.h:175: warning: function declaration isn't a prototype
-or
-  http.c:647: warning: cast increases required alignment of target type
-This doesn't matter and we know about it (actually it is due to the some
-warning options which we have enabled for gcc)
-
-
-Specific problems on some machines
-==================================
-
-  * IBM RS/6000 running AIX:
-
-	Due to a change in gcc (since version 2.8) the MPI stuff may
-	not build. In this case try to run configure using:
-	    CFLAGS="-g -O2 -mcpu=powerpc" ./configure
-
-  * Compaq C V6.2 for alpha:
-
-        You may want to use the option "-msg-disable ptrmismatch1"
-        to get rid of the sign/unsigned char mismatch warnings.
-
-  * SVR4.2 (ESIX V4.2 cc)
-
-        Due to problems with the ESIX as, you probably want to do
-            CFLAGS="-O -K pentium" ./configure --disable-asm
-        Reported by Reinhard Wobst.
-
-
-
-The Random Device
-=================
-Random devices are available in Linux, FreeBSD and OpenBSD.
-The random device files may not exist on your system, please check whether
-they do and create them if needed.
-
-The Linux files should look like this:
-    cr--r--r--	 1 root     sys        1,   8 May 28  1997 /dev/random
-    cr--r--r--	 1 root     sys        1,   9 Feb 16 08:23 /dev/urandom
-You can create them with:
-    mknod /dev/random c 1 8
-    mknod /dev/urandom c 1 9
-
-The FreeBSD files [from the 970202 snapshot]:
-    crw-r--r--	1 root	wheel	 2,   3 Feb 25 16:54 /dev/random
-    crw-r--r--	1 root	wheel	 2,   4 Feb 25 16:54 /dev/urandom
-You can create them with:
-    mknod /dev/random  c 2 3
-    mknod /dev/urandom c 2 4
-
-Unices without a random devices must use another entropy collector.  One
-entropy collector called rndunix and available as an extension module. You
-should put this in your ~/.gnupg/options file:
-===8<====================
-load-extension rndunix
-===>8====================
-This collector works by running a lot of commands that yield more or
-less unpredictable output and feds this as entropy into the random
-generator - It should work reliably but you should check whether
-it produces good output for your version of Unix. There are some debug
-options to help you (see cipher/rndunix.c).
-
-
-
-Installation
-============
-gpg is not installed as suid:root; if you want to do that, do it manually.
-We will use capabilities in the future.
-
-The ~/.gnupg directory will be created if it does not exist.  Your first
-action should be to create a key pair: "gpg --gen-key".
-
-Due to limitations in the automake system, the Info format versions of
-the man pages are not installed.  You have to convert the Texinfo
-files by hand (use makeinfo) and copy them to the appropriate place.
-
-
-
-Creating a RPM package
-======================
-The file scripts/gnupg.spec is used to build a RPM package (both
-binary and src):
-    1. copy the spec file into /usr/src/redhat/SPECS
-    2. copy the tar file into /usr/src/redhat/SOURCES
-    3. type: rpm -ba SPECS/gnupg.spec
-
-Or use the -t (--tarbuild) option of rpm:
-    1. rpm -ta gnupg-x.x.x.tar.gz
-
-The binary rpm file can now be found in /usr/src/redhat/RPMS, source
-rpm in	/usr/src/redhat/SRPMS
-
-Please note that to install gnupg binary rpm you must be root, as
-gnupg needs to be suid root, at least on Linux machines
-
+   This file is free documentation; the Free Software Foundation gives
+unlimited permission to copy, distribute and modify it.
 
 Basic Installation
 ==================
@@ -191,20 +14,27 @@ various system-dependent variables used during compilation.  It uses
 those values to create a `Makefile' in each directory of the package.
 It may also create one or more `.h' files containing system-dependent
 definitions.  Finally, it creates a shell script `config.status' that
-you can run in the future to recreate the current configuration, a file
-`config.cache' that saves the results of its tests to speed up
-reconfiguring, and a file `config.log' containing compiler output
-(useful mainly for debugging `configure').
+you can run in the future to recreate the current configuration, and a
+file `config.log' containing compiler output (useful mainly for
+debugging `configure').
+
+   It can also use an optional file (typically called `config.cache'
+and enabled with `--cache-file=config.cache' or simply `-C') that saves
+the results of its tests to speed up reconfiguring.  (Caching is
+disabled by default to prevent problems with accidental use of stale
+cache files.)
 
    If you need to do unusual things to compile the package, please try
 to figure out how `configure' could check whether to do them, and mail
 diffs or instructions to the address given in the `README' so they can
-be considered for the next release.  If at some point `config.cache'
-contains results you don't want to keep, you may remove or edit it.
+be considered for the next release.  If you are using the cache, and at
+some point `config.cache' contains results you don't want to keep, you
+may remove or edit it.
 
-   The file `configure.in' is used by the program `autoconf' to create
-`configure'.  You only need `configure.in' if you want to change it or
-regenerate `configure' using a newer version of `autoconf'.
+   The file `configure.ac' (or `configure.in') is used to create
+`configure' by a program called `autoconf'.  You only need
+`configure.ac' if you want to change it or regenerate `configure' using
+a newer version of `autoconf'.
 
 The simplest way to compile this package is:
 
@@ -214,7 +44,7 @@ The simplest way to compile this package is:
      `sh ./configure' instead to prevent `csh' from trying to execute
      `configure' itself.
 
-     Running `configure' takes a while.  While running, it prints some
+     Running `configure' takes awhile.  While running, it prints some
      messages telling which features it is checking for.
 
   2. Type `make' to compile the package.
@@ -238,32 +68,32 @@ Compilers and Options
 =====================
 
    Some systems require unusual options for compilation or linking that
-the `configure' script does not know about.  You can give `configure'
-initial values for variables by setting them in the environment.  Using
-a Bourne-compatible shell, you can do that on the command line like
-this:
-     CC=c89 CFLAGS=-O2 LIBS=-lposix ./configure
+the `configure' script does not know about.  Run `./configure --help'
+for details on some of the pertinent environment variables.
 
-Or, on systems that have the `env' program, you can do it like this:
-     env CPPFLAGS=-I/usr/local/include LDFLAGS=-s ./configure
+   You can give `configure' initial values for variables by setting
+them in the environment.  You can do that on the command line like this:
+
+     ./configure CC=c89 CFLAGS=-O2 LIBS=-lposix
+
+   *Note Defining Variables::, for more details.
 
 Compiling For Multiple Architectures
 ====================================
 
-   You can compile the package for more than one kind of computer at
-the same time by placing the object files for each architecture in
-their own directory.  To do this, you must use a version of `make',
-such as GNU `make', that supports the `VPATH' variable.  `cd' to the
-directory where you want the object files and executables to go and
-run the `configure' script; please use a relative filename name to
-invoke `configure'.  `configure' automatically checks for the source
-code in the directory that `configure' is in and in `..'.
+   You can compile the package for more than one kind of computer at the
+same time, by placing the object files for each architecture in their
+own directory.  To do this, you must use a version of `make' that
+supports the `VPATH' variable, such as GNU `make'.  `cd' to the
+directory where you want the object files and executables to go and run
+the `configure' script.  `configure' automatically checks for the
+source code in the directory that `configure' is in and in `..'.
 
-   If you have to use a `make' that does not supports the `VPATH'
-variable, you have to compile the package for one architecture at a time
-in the source code directory.  After you have installed the package for
-one architecture, use `make distclean' before reconfiguring for another
-architecture.
+   If you have to use a `make' that does not support the `VPATH'
+variable, you have to compile the package for one architecture at a
+time in the source code directory.  After you have installed the
+package for one architecture, use `make distclean' before reconfiguring
+for another architecture.
 
 Installation Names
 ==================
@@ -306,22 +136,35 @@ you can use the `configure' options `--x-includes=DIR' and
 Specifying the System Type
 ==========================
 
-   There may be some features `configure' can not figure out
+   There may be some features `configure' cannot figure out
 automatically, but needs to determine by the type of host the package
 will run on.  Usually `configure' can figure that out, but if it prints
-a message saying it can not guess the host type, give it the
-`--host=TYPE' option.  TYPE can either be a short name for the system
-type, such as `sun4', or a canonical name with three fields:
+a message saying it cannot guess the host type, give it the
+`--build=TYPE' option.  TYPE can either be a short name for the system
+type, such as `sun4', or a canonical name which has the form:
+
      CPU-COMPANY-SYSTEM
 
-See the file `config.sub' for the possible values of each field.  If
+where SYSTEM can have one of these forms:
+
+     OS KERNEL-OS
+
+   See the file `config.sub' for the possible values of each field.  If
 `config.sub' isn't included in this package, then this package doesn't
 need to know the host type.
 
-   If you are building compiler tools for cross-compiling, you can also
+   If you are _building_ compiler tools for cross-compiling, you should
 use the `--target=TYPE' option to select the type of system they will
-produce code for and the `--build=TYPE' option to select the type of
-system on which you are compiling the package.
+produce code for.
+
+   If you want to _use_ a cross compiler, that generates code for a
+platform different from the build platform, you should specify the host
+platform (i.e., that on which the generated programs will eventually be
+run) with `--host=TYPE'.  In this case, you should also specify the
+build platform with `--build=TYPE', because, in this case, it may not
+be possible to guess the build platform (it sometimes involves
+compiling and running simple test programs, and this can't be done if
+the compiler is a cross compiler).
 
 Sharing Defaults
 ================
@@ -334,24 +177,48 @@ default values for variables like `CC', `cache_file', and `prefix'.
 `CONFIG_SITE' environment variable to the location of the site script.
 A warning: not all `configure' scripts look for a site script.
 
-Operation Controls
+Defining Variables
 ==================
+
+   Variables not defined in a site shell script can be set in the
+environment passed to `configure'.  However, some packages may run
+configure again during the build, and the customized values of these
+variables may be lost.  In order to avoid this problem, you should set
+them in the `configure' command line, using `VAR=value'.  For example:
+
+     ./configure CC=/usr/local2/bin/gcc
+
+will cause the specified gcc to be used as the C compiler (unless it is
+overridden in the site shell script).
+
+`configure' Invocation
+======================
 
    `configure' recognizes the following options to control how it
 operates.
 
-`--cache-file=FILE'
-     Use and save the results of the tests in FILE instead of
-     `./config.cache'.  Set FILE to `/dev/null' to disable caching, for
-     debugging `configure'.
-
 `--help'
+`-h'
      Print a summary of the options to `configure', and exit.
+
+`--version'
+`-V'
+     Print the version of Autoconf used to generate the `configure'
+     script, and exit.
+
+`--cache-file=FILE'
+     Enable the cache: use and save the results of the tests in FILE,
+     traditionally `config.cache'.  FILE defaults to `/dev/null' to
+     disable caching.
+
+`--config-cache'
+`-C'
+     Alias for `--cache-file=config.cache'.
 
 `--quiet'
 `--silent'
 `-q'
-     Do not print messages saying which checks are being made.	To
+     Do not print messages saying which checks are being made.  To
      suppress all normal output, redirect it to `/dev/null' (any error
      messages will still be shown).
 
@@ -359,9 +226,6 @@ operates.
      Look for the package's source code in directory DIR.  Usually
      `configure' can determine that directory automatically.
 
-`--version'
-     Print the version of Autoconf used to generate the `configure'
-     script, and exit.
-
-`configure' also accepts some other, not widely useful, options.
+`configure' also accepts some other, not widely useful, options.  Run
+`configure --help' for more details.
 

@@ -1,3 +1,11 @@
+2002-06-29  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (development_version): New.
+	(HAVE_DEV_RANDOM_IOCTL): Removed test for it; it was never used.
+
+	* BUGS, AUTHORS: Add a note on how to send security related bug
+	reports.
+
 2002-06-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: changes since 1.0.7.

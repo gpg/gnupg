@@ -21,7 +21,13 @@ dnl (Process this file with autoconf to produce a configure script.)
 dnlAC_REVISION($Revision$)dnl
 
 AC_PREREQ(2.52)
+
+# Please enter the version number here and set development_version to
+# yes if the minor number is odd or you feel that the default check 
+# for a development version is not sufficient.
 AC_INIT(gnupg, 1.1.90, bug-gnupg@gnu.org)
+development_version=yes
+
 ALL_LINGUAS="cs da de eo el es et fr gl id it ja nl pl pt_BR pt sv tr"
 static_modules="sha1 md5 rmd160"
 static_random_module=""
@@ -651,25 +657,6 @@ else
     AC_MSG_RESULT(has been disabled)
 fi
 
-dnl
-dnl and whether this device supports ioctl
-dnl (Note, that we should do a real test here)
-dnl
-if test "$ac_cv_have_dev_random" = yes ; then
-    AC_CHECK_HEADERS(linux/random.h)
-    AC_CACHE_CHECK(for random device ioctl, ac_cv_have_dev_random_ioctl,
-      [ if test "$ac_cv_header_linux_random_h" = yes ; then
-          ac_cv_have_dev_random_ioctl=yes;
-        else
-          ac_cv_have_dev_random_ioctl=no;
-        fi
-      ])
-    if test "$ac_cv_have_dev_random_ioctl" = yes; then
-        AC_DEFINE(HAVE_DEV_RANDOM_IOCTL,1,
-                  [defined if the random device supports some IOCTLs])
-    fi
-fi
-
 
 dnl
 dnl Figure out the default linkage mode for random modules
@@ -736,7 +723,7 @@ fi
 
 dnl
 dnl Parse the modules list and build the list
-dnl of static and dymically linked modules
+dnl of static and dynamically linked modules
 dnl
 dnl (We always need a static rmd160)
 static_modules="$static_modules rmd160 $static_random_module"
@@ -873,13 +860,18 @@ AC_SUBST(ZLIBS)
 
 # Allow users to append something to the version string without
 # flagging it as development version.  The user version parts is
-# considered everything after a dash.
-changequote(,)dnl
-tmp_pat='[a-zA-Z]'
-changequote([,])dnl
-if echo "$VERSION" | sed 's/-.*//' | grep "$tmp_pat" >/dev/null ; then
+# considered everything after a dash. 
+if test "$development_version" != yes; then
+  changequote(,)dnl
+  tmp_pat='[a-zA-Z]'
+  changequote([,])dnl
+  if echo "$VERSION" | sed 's/-.*//' | grep "$tmp_pat" >/dev/null ; then
+    development_version=yes
+  fi
+fi
+if test "$development_version" = yes; then
     AC_DEFINE(IS_DEVELOPMENT_VERSION,1,
-              [Defined if this is not a regular release])
+            [Defined if this is not a regular release])
 fi
 
 AM_CONDITIONAL(CROSS_COMPILING, test x$cross_compiling = xyes)
@@ -887,7 +879,7 @@ AM_CONDITIONAL(CROSS_COMPILING, test x$cross_compiling = xyes)
 GNUPG_CHECK_GNUMAKE
 
 # add some extra libs here so that previous tests don't fail for
-# mysterious reasons - the final link step shoudl bail out. 
+# mysterious reasons - the final link step should bail out. 
 case "${target}" in
     *-*-mingw32*)
         LIBS="$LIBS -lws2_32"
