@@ -183,9 +183,9 @@ const char * const gnupgext_version = "RNDLINUX ($Revision$)";
 static struct {
     int class;
     int version;
-    void *func;
+    int (*func)(void);
 } func_table[] = {
-    { 40, 1, gather_random },
+    { 40, 1, (int (*)(void))gather_random },
 };
 
 
