@@ -243,7 +243,7 @@ symkey_decrypt_sesskey( DEK *dek, byte *sesskey, size_t slen )
     CIPHER_HANDLE hd;
 
     if ( slen > 33 ) {
-        log_error( "weird size for an encrypted session key" );
+        log_error( "weird size for an encrypted session key (%d)\n", slen );
         return;   
     }
     hd = cipher_open( dek->algo, CIPHER_MODE_CFB, 1 );
@@ -253,14 +253,15 @@ symkey_decrypt_sesskey( DEK *dek, byte *sesskey, size_t slen )
     cipher_close( hd );
     /* check first byte (the cipher algo) */
     if ( sesskey[0] > 10 ) {
-        log_error( "invalid symkey algorithm detected\n" );
+        log_error( "invalid symkey algorithm detected (%d)\n", sesskey[0] );
         return;
     }
     /* now we replace the dek components with the real session key
        to decrypt the contents of the sequencing packet. */
-    dek->keylen = cipher_get_keylen( sesskey[0] );
+    dek->keylen = cipher_get_keylen( sesskey[0] ) / 8;
     dek->algo = sesskey[0];
-    memcpy( dek->key, sesskey + 1, dek->keylen );    
+    memcpy( dek->key, sesskey + 1, dek->keylen );
+    /*log_hexdump( "thekey", dek->key, dek->keylen );*/
 }   
 
 static void

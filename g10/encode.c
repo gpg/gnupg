@@ -38,7 +38,7 @@
 #include "i18n.h"
 #include "status.h"
 
-static int encode_simple( const char *filename, int mode );
+static int encode_simple( const char *filename, int mode, int compat );
 static int write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out );
 
 
@@ -50,7 +50,7 @@ static int write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out );
 int
 encode_symmetric( const char *filename )
 {
-    return encode_simple( filename, 1 );
+    return encode_simple( filename, 1, 1 );
 }
 
 /****************
@@ -60,19 +60,49 @@ encode_symmetric( const char *filename )
 int
 encode_store( const char *filename )
 {
-    return encode_simple( filename, 0 );
+    return encode_simple( filename, 0, 1 );
 }
 
+static void
+encode_sesskey( DEK *dek, DEK **ret_dek, byte *enckey )
+{
+    CIPHER_HANDLE hd;
+    DEK *c;
+    byte buf[33];
 
+    assert ( dek->keylen < 32 );
+    
+    c = m_alloc_clear( sizeof *c );
+    c->keylen = dek->keylen;
+    c->algo = dek->algo;
+    make_session_key( c );
+    /*log_hexdump( "thekey", c->key, c->keylen );*/
+
+    buf[0] = c->algo;
+    memcpy( buf + 1, c->key, c->keylen );
+    
+    hd = cipher_open( dek->algo, CIPHER_MODE_CFB, 1 );
+    cipher_setkey( hd, dek->key, dek->keylen );
+    cipher_setiv( hd, NULL, 0 );
+    cipher_encrypt( hd, buf, buf, c->keylen + 1 );
+    cipher_close( hd );
+
+    memcpy( enckey, buf, c->keylen + 1 );
+    memset( buf, 0, sizeof buf ); /* burn key */
+    *ret_dek = c;
+}
 
 static int
-encode_simple( const char *filename, int mode )
+encode_simple( const char *filename, int mode, int compat )
 {
     IOBUF inp, out;
     PACKET pkt;
+    DEK *dek = NULL;
     PKT_plaintext *pt = NULL;
     STRING2KEY *s2k = NULL;
+    byte enckey[33];
     int rc = 0;
+    int seskeylen = 0;
     u32 filesize;
     cipher_filter_context_t cfx;
     armor_filter_context_t afx;
@@ -122,6 +152,13 @@ encode_simple( const char *filename, int mode )
 	    log_error(_("error creating passphrase: %s\n"), g10_errstr(rc) );
 	    return rc;
 	}
+        if ( !compat ) {            
+            seskeylen = cipher_get_keylen( opt.def_cipher_algo ?
+                                           opt.def_cipher_algo:
+                                           opt.s2k_cipher_algo ) / 8;
+            encode_sesskey( cfx.dek, &dek, enckey );
+            m_free( cfx.dek ); cfx.dek = dek;
+        }
     }
 
     if( (rc = open_outfile( filename, opt.armor? 1:0, &out )) ) {
@@ -142,10 +179,14 @@ encode_simple( const char *filename, int mode )
     }
   #endif
     if( s2k && !opt.rfc1991 ) {
-	PKT_symkey_enc *enc = m_alloc_clear( sizeof *enc );
+	PKT_symkey_enc *enc = m_alloc_clear( sizeof *enc + seskeylen + 1 );
 	enc->version = 4;
 	enc->cipher_algo = cfx.dek->algo;
 	enc->s2k = *s2k;
+        if ( !compat && seskeylen ) {
+            enc->seskeylen = seskeylen + 1; /* algo id */
+            memcpy( enc->seskey, enckey, seskeylen + 1 );
+        }
 	pkt.pkttype = PKT_SYMKEY_ENC;
 	pkt.pkt.symkey_enc = enc;
 	if( (rc = build_packet( out, &pkt )) )
