@@ -21,11 +21,9 @@
 #ifndef G10_HKP_H
 #define G10_HKP_H 1
 
-
 int hkp_ask_import( u32 *keyid, void *stats_handle);
 int hkp_import( STRLIST users );
 int hkp_export( STRLIST users );
-int hkp_refresh_keys (void);
-
+int hkp_search(STRLIST tokens);
 
 #endif /*G10_HKP_H*/

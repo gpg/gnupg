@@ -34,6 +34,7 @@
 #include "filter.h"
 #include "http.h"
 #include "main.h"
+#include "keyserver-internal.h"
 
 static int urlencode_filter( void *opaque, int control,
 			     IOBUF a, byte *buf, size_t *ret_len);
@@ -54,30 +55,28 @@ hkp_ask_import( u32 *keyid, void *stats_handle)
     int rc;
     unsigned int hflags = opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY : 0;
 
-    if( !opt.keyserver_name )
-	return -1;
-    log_info(_("requesting key %08lX from %s ...\n"), (ulong)keyid[1],
-						   opt.keyserver_name );
-    request = m_alloc( strlen( opt.keyserver_name ) + 100 );
+    log_info(_("requesting key %08lX from HKP keyserver %s\n"),
+	     (ulong)keyid[1],opt.keyserver_host );
+    request = m_alloc( strlen( opt.keyserver_host ) + 100 );
     /* hkp does not accept the long keyid - we should really write a
      * nicer one :-)
      * FIXME: request binary mode - need to pass no_armor mode
      * down to the import function.  Marc told that there is such a
      * binary mode ... how?
      */
-    if ( !strncmp (opt.keyserver_name, "x-broken-hkp://", 15) ) {
-        sprintf( request, "x-hkp://%s/pks/lookup?op=get&search=0x%08lX",
-			opt.keyserver_name+15, (ulong)keyid[1] );
-        hflags |= HTTP_FLAG_NO_SHUTDOWN;
-    }
-    else if ( !strncmp (opt.keyserver_name, "x-hkp://", 8) ) {
-        sprintf( request, "%s/pks/lookup?op=get&search=0x%08lX",
-			opt.keyserver_name, (ulong)keyid[1] );
-    }
-    else {
-        sprintf( request, "x-hkp://%s/pks/lookup?op=get&search=0x%08lX",
-			opt.keyserver_name, (ulong)keyid[1] );
-    }
+
+    if(strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0)
+      hflags |= HTTP_FLAG_NO_SHUTDOWN;
+
+    sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=get&search=0x%08lX",
+	    opt.keyserver_host,
+	    atoi(opt.keyserver_port)>0?":":"",
+	    atoi(opt.keyserver_port)>0?opt.keyserver_port:"",
+	    (ulong)keyid[1] );
+
+  if(opt.keyserver_options.verbose>2)
+    log_info("Request is \"%s\"\n",request);
+
     rc = http_open_document( &hd, request, hflags );
     if( rc ) {
 	log_info(_("can't get key from keyserver: %s\n"),
@@ -85,48 +84,14 @@ hkp_ask_import( u32 *keyid, void *stats_handle)
 					    : g10_errstr(rc) );
     }
     else {
-	rc = import_keys_stream( hd.fp_read , 0, stats_handle );
+      rc = import_keys_stream( hd.fp_read,
+			       opt.keyserver_options.fast_import,stats_handle);
 	http_close( &hd );
     }
 
     m_free( request );
     return rc;
 }
-
-
-
-int
-hkp_import( STRLIST users )
-{
-    void *stats_handle;
-
-    if( !opt.keyserver_name ) {
-	log_error(_("no keyserver known (use option --keyserver)\n"));
-	return -1;
-    }
-
-    stats_handle = import_new_stats_handle ();
-    for( ; users; users = users->next ) {
-        KEYDB_SEARCH_DESC desc;
-
-	classify_user_id (users->d, &desc);
-	if(    desc.mode != KEYDB_SEARCH_MODE_SHORT_KID
-            && desc.mode != KEYDB_SEARCH_MODE_LONG_KID ) {
-	    log_error (_("%s: not a valid key ID\n"), users->d );
-	    continue;
-	}
-	/* because the function may use log_info in some situations, the
-	 * errorcounter ist not increaed and the program will return
-	 * with success - which is not good when this function is used.
-	 */
-	if( hkp_ask_import( desc.u.kid, stats_handle ) )
-	    log_inc_errorcount();
-    }
-    import_print_stats (stats_handle);
-    import_release_stats_handle (stats_handle);
-    return 0;
-}
-
 
 int
 hkp_export( STRLIST users )
@@ -138,11 +103,6 @@ hkp_export( STRLIST users )
     char *request;
     unsigned int status;
     unsigned int hflags = opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY : 0;
-
-    if( !opt.keyserver_name ) {
-	log_error(_("no keyserver known (use option --keyserver)\n"));
-	return -1;
-    }
 
     iobuf_push_filter( temp, urlencode_filter, NULL );
 
@@ -158,21 +118,23 @@ hkp_export( STRLIST users )
 
     iobuf_flush_temp( temp );
 
-    request = m_alloc( strlen( opt.keyserver_name ) + 100 );
-    if ( !strncmp (opt.keyserver_name, "x-broken-hkp://", 15) ) {
-        sprintf( request, "x-hkp://%s/pks/add", opt.keyserver_name+15 );
-        hflags |= HTTP_FLAG_NO_SHUTDOWN;
-    }
-    else if ( !strncmp (opt.keyserver_name, "x-hkp://", 8) ) {
-        sprintf( request, "%s/pks/add", opt.keyserver_name );
-    }
-    else {
-        sprintf( request, "x-hkp://%s/pks/add", opt.keyserver_name );
-    }
+    request = m_alloc( strlen( opt.keyserver_host ) + 100 );
+
+    if(strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0)
+      hflags |= HTTP_FLAG_NO_SHUTDOWN;
+
+    sprintf( request, "x-hkp://%s%s%s/pks/add",
+	     opt.keyserver_host,
+	     atoi(opt.keyserver_port)>0?":":"",
+	     atoi(opt.keyserver_port)>0?opt.keyserver_port:"");
+
+  if(opt.keyserver_options.verbose>2)
+    log_info("Request is \"%s\"\n",request);
+
     rc = http_open( &hd, HTTP_REQ_POST, request , hflags );
     if( rc ) {
 	log_error(_("can't connect to `%s': %s\n"),
-		   opt.keyserver_name,
+		   opt.keyserver_host,
 			rc == G10ERR_NETWORK? strerror(errno)
 					    : g10_errstr(rc) );
 	iobuf_close(temp);
@@ -196,7 +158,7 @@ hkp_export( STRLIST users )
     rc = http_wait_response( &hd, &status );
     if( rc ) {
 	log_error(_("error sending to `%s': %s\n"),
-		   opt.keyserver_name, g10_errstr(rc) );
+		   opt.keyserver_host, g10_errstr(rc) );
     }
     else {
       #if 1
@@ -208,10 +170,10 @@ hkp_export( STRLIST users )
       #endif
 	if( (status/100) == 2 )
 	    log_info(_("success sending to `%s' (status=%u)\n"),
-					opt.keyserver_name, status  );
+					opt.keyserver_host, status  );
 	else
 	    log_error(_("failed sending to `%s': status=%u\n"),
-					opt.keyserver_name, status  );
+					opt.keyserver_host, status  );
     }
     http_close( &hd );
     return rc;
@@ -243,93 +205,294 @@ urlencode_filter( void *opaque, int control,
     return rc;
 }
 
+/* pub  2048/<a href="/pks/lookup?op=get&search=0x3CB3B415">3CB3B415</a> 1998/04/03 David M. Shaw &lt;<a href="/pks/lookup?op=get&search=0x3CB3B415">dshaw@jabberwocky.com</a>&gt; */
 
-int
-hkp_refresh_keys (void)
+/* Luckily enough, both the HKP server and NAI HKP interface to their
+   LDAP server are close enough in output so the same function can
+   parse them both. */
+
+static int parse_hkp_index(IOBUF buffer,char *line)
 {
-    KEYDB_HANDLE hd;
-    KBNODE node, keyblock = NULL;
-    PKT_public_key *pk;
-    u32 keyid[2];
-    u32 *keys = NULL;
-    size_t n, nkeys=0, maxkeys=0;
-    void *stats_handle;
-    int rc = 0;
+  static int open=0,revoked=0;
+  static char *key,*uid;
+  static u32 bits,createtime;
+  int ret=0;
 
-    /* fist take a snapshot of all keys */
-    hd = keydb_new(0);
-    rc = keydb_search_first(hd);
-    if (rc) {
-        if (rc != -1)
-            log_error ("keydb_search_first failed: %s\n", g10_errstr(rc));
-        goto leave;
+  /* printf("Open %d, LINE: %s\n",open,line); */
+
+  /* For multiple UIDs */
+  if(open && uid!=NULL)
+    {
+      ret=0;
+
+      if(!(revoked && !opt.keyserver_options.include_revoked))
+	{
+	  char intstr[11];
+
+	  iobuf_writestr(buffer,key);
+	  iobuf_writestr(buffer,":");
+	  iobuf_writestr(buffer,uid);
+	  iobuf_writestr(buffer,":");
+	  iobuf_writestr(buffer,revoked?"1:":":");
+	  sprintf(intstr,"%u",createtime);
+	  iobuf_writestr(buffer,intstr);
+	  iobuf_writestr(buffer,"::::");
+	  sprintf(intstr,"%u",bits);
+	  iobuf_writestr(buffer,intstr);
+	  iobuf_writestr(buffer,"\n");
+
+	  ret=1;
+	}
+
+      if(strncmp(line,"     ",5)!=0)
+	{
+	  m_free(key);
+	  m_free(uid);
+	  uid=NULL;
+	  open=0;
+	}
     }
-	
-    do {
-        if (!keys) {
-            maxkeys = 10000;
-            keys = m_alloc (maxkeys * sizeof *keys);
-            nkeys = 0;
-        }
-        else if ( nkeys == maxkeys ) {
-            maxkeys += 10000;
-            keys = m_realloc (keys, maxkeys * sizeof *keys);
-        }
 
-        rc = keydb_get_keyblock (hd, &keyblock);
-        if (rc) {
-            log_error ("keydb_get_keyblock failed: %s\n", g10_errstr(rc));
-            goto leave;
-        }
+  if(strncasecmp(line,"pub  ",5)==0)
+    {
+      char *tok,*temp;
 
-        node = keyblock;
-        if ( node->pkt->pkttype != PKT_PUBLIC_KEY) {
-            log_debug ("invalid pkttype %d encountered\n",
-                       node->pkt->pkttype);
-            dump_kbnode (node);
-            release_kbnode(keyblock);
-            continue;
-        }
-        pk = node->pkt->pkt.public_key;
-        keyid_from_pk(pk, keyid);
-        release_kbnode(keyblock);
-        keyblock = NULL;
-        /* fixme: replace the linear search */
-        for (n=0; n < nkeys; n++) {
-            if (keys[n] == keyid[1]) {
-                log_info (_("duplicate (short) key ID %08lX\n"),
-                          (ulong)keyid[1]);
-                break;
-            }
-        }
-        if (n == nkeys) /* not a duplicate */
-            keys[nkeys++] = keyid[1];
-    } while ( !(rc = keydb_search_next(hd)) );
-    if (rc == -1)
-        rc = 0;
-    if (rc)
-        log_error ("keydb_search_next failed: %s\n", g10_errstr(rc));
-    keydb_release(hd);
-    hd = NULL;
-    
-    /* and now refresh them */
-    stats_handle = import_new_stats_handle ();
-    log_info (_("%lu key(s) to refresh\n"), (ulong)nkeys);
-    for (n=0; n < nkeys; n++) {
-        /* Note: We do only use the short keyID */
-        keyid[0] = 0;
-        keyid[1] = keys[n];
-        if ( hkp_ask_import(keyid, stats_handle) )
-            log_inc_errorcount();
+      open=1;
+
+      line+=4;
+
+      tok=strsep(&line,"/");
+      if(tok==NULL)
+	return ret;
+
+      bits=atoi(tok);
+
+      tok=strsep(&line,">");
+      if(tok==NULL)
+	return ret;
+
+      tok=strsep(&line,"<");
+      if(tok==NULL)
+	return ret;
+
+      key=m_strdup(tok);
+
+      tok=strsep(&line," ");
+      if(tok==NULL)
+	return ret;
+
+      tok=strsep(&line," ");
+      if(tok==NULL)
+	return ret;
+  
+      /* The date parser wants '-' instead of '/', so... */
+      temp=tok;
+      while(*temp!='\0')
+      	{
+	  if(*temp=='/')
+	    *temp='-';
+
+	  temp++;
+	}
+
+      createtime=scan_isodatestr(tok);
     }
-    import_print_stats (stats_handle);
-    import_release_stats_handle (stats_handle);
 
- leave:
-    m_free (keys);
-    if (keyblock)
-        release_kbnode(keyblock);
-    keydb_release(hd);
-    return rc;
+  if(open)
+    {
+      int uidindex=0;
+
+      /* All that's left is the user name.  Strip off anything
+	 <between brackets> and de-urlencode it. */
+
+      while(*line==' ' && *line!='\0')
+	line++;
+
+      if(strncmp(line,"*** KEY REVOKED ***",19)==0)
+	{
+	  revoked=1;
+	  return ret;
+	}
+
+      uid=m_alloc(strlen(line)+1);
+
+      while(*line!='\0')
+	{
+	  switch(*line)
+	    {
+	    case '<':
+	      while(*line!='>' && *line!='\0')
+		line++;
+
+	      if(*line!='\0')
+		line++;
+	      break;
+
+	    case '&':
+	      if((*(line+1)!='\0' && tolower(*(line+1))=='l') &&
+		 (*(line+2)!='\0' && tolower(*(line+2))=='t') &&
+		 (*(line+3)!='\0' && *(line+3)==';'))
+		{
+		  uid[uidindex++]='<';
+		  line+=4;
+		  break;
+		}
+
+	      if((*(line+1)!='\0' && tolower(*(line+1))=='g') &&
+		 (*(line+2)!='\0' && tolower(*(line+2))=='t') &&
+		 (*(line+3)!='\0' && *(line+3)==';'))
+		{
+		  uid[uidindex++]='>';
+		  line+=4;
+		  break;
+		}
+
+	    default:
+	      uid[uidindex++]=*line;
+	      line++;
+	      break;
+	    }
+	}
+
+      uid[uidindex]='\0';
+
+      /* Chop off the trailing \r, \n, or both. This is fussy as the
+         true HKP servers have \r\n, and the NAI HKP servers have just
+         \n. */
+
+      if(isspace(uid[uidindex-1]))
+	uid[uidindex-1]='\0';
+
+      if(isspace(uid[uidindex-2]))
+	uid[uidindex-2]='\0';
+    }
+
+  return ret;
 }
 
+int hkp_search(STRLIST tokens)
+{
+  int rc=0,len=0,first=1;
+  unsigned int maxlen=1024,buflen=0;
+  char *searchstr=NULL,*searchurl=NULL,*request;
+  struct http_context hd;
+  unsigned int hflags=opt.honor_http_proxy?HTTP_FLAG_TRY_PROXY:0;
+  byte *line=NULL;
+
+  /* Glue the tokens together to make a search string */
+
+  for(;tokens;tokens=tokens->next)
+    {
+      len+=strlen(tokens->d)+1;
+
+      searchstr=m_realloc(searchstr,len+1);
+      if(first)
+	{
+	  searchstr[0]='\0';
+	  first=0;
+	}
+
+      strcat(searchstr,tokens->d);
+      strcat(searchstr," ");
+    }
+
+  if(len<=1)
+    {
+      m_free(searchstr);
+      return 0;
+    }
+
+  searchstr[len-1]='\0';
+
+  log_info(_("searching for \"%s\" from HKP server %s\n"),
+	   searchstr,opt.keyserver_host);
+
+  /* Now make it url-ish */
+
+  len=0;
+  request=searchstr;
+  while(*request!='\0')
+    {
+      if(isalnum(*request) || *request=='-')
+	{
+	  searchurl=m_realloc(searchurl,len+1);
+	  searchurl[len++]=*request;
+	}
+      else if(*request==' ')
+	{
+	  searchurl=m_realloc(searchurl,len+1);
+	  searchurl[len++]='+';
+	}
+      else
+	{
+	  searchurl=m_realloc(searchurl,len+3);
+	  sprintf(&searchurl[len],"%%%02X",*request);
+	  len+=3;
+	}
+
+      request++;
+    }
+
+  searchurl=m_realloc(searchurl,len+1);
+  searchurl[len]='\0';
+
+  request=m_alloc(strlen(opt.keyserver_host) + 100 + strlen(searchurl));
+
+  if(strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0)
+    hflags |= HTTP_FLAG_NO_SHUTDOWN;
+
+  sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=index&search=%s",
+	  opt.keyserver_host,
+	  atoi(opt.keyserver_port)>0?":":"",
+	  atoi(opt.keyserver_port)>0?opt.keyserver_port:"",
+	  searchurl);
+
+  if(opt.keyserver_options.verbose>2)
+    log_info("Request is \"%s\"\n",request);
+
+  rc=http_open_document(&hd,request,hflags);
+  if(rc)
+    {
+      log_error(_("can't search keyserver: %s\n"),
+	       rc==G10ERR_NETWORK?strerror(errno):g10_errstr(rc));
+    }
+  else
+    {
+      IOBUF buffer;
+      int count=1;
+
+      buffer=iobuf_temp();
+
+      rc=1;
+      while(rc!=0)
+	{
+	  /* This is a judgement call.  Is it better to slurp up all
+             the results before prompting the user?  On the one hand,
+             it probably makes the keyserver happier to not be blocked
+             on sending for a long time while the user picks a key.
+             On the other hand, it might be nice for the server to be
+             able to stop sending before a large search result page is
+             complete. */
+
+	  rc=iobuf_read_line(hd.fp_read,&line,&buflen,&maxlen);
+
+	  if(rc!=0)
+	    count+=parse_hkp_index(buffer,line);
+	}
+
+      http_close(&hd);
+
+      count--;
+
+      keyserver_search_prompt(buffer,count,searchstr);
+
+      iobuf_close(buffer);
+      m_free(line);
+    }
+
+  m_free(request);
+  m_free(searchurl);
+  m_free(searchstr);
+
+  return rc;
+}

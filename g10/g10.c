@@ -48,7 +48,7 @@
 #include "i18n.h"
 #include "status.h"
 #include "g10defs.h"
-#include "hkp.h"
+#include "keyserver-internal.h"
 
 enum cmd_and_opt_values { aNull = 0,
     oArmor	  = 'a',
@@ -92,6 +92,7 @@ enum cmd_and_opt_values { aNull = 0,
     aListSecretKeys,
     aSendKeys,
     aRecvKeys,
+    aSearchKeys,
     aExport,
     aExportAll,
     aExportSecret,
@@ -193,6 +194,8 @@ enum cmd_and_opt_values { aNull = 0,
     oLockMultiple,
     oLockNever,
     oKeyServer,
+    oKeyServerOptions,
+    oTempDir,
     oEncryptTo,
     oNoEncryptTo,
     oLoggerFD,
@@ -218,6 +221,7 @@ enum cmd_and_opt_values { aNull = 0,
     oShowSessionKey,
     oOverrideSessionKey,
     oNoRandomSeedFile,
+    oAutoKeyRetrieve,
     oNoAutoKeyRetrieve,
     oUseAgent,
     oMergeOnly,
@@ -265,6 +269,8 @@ static ARGPARSE_OPTS opts[] = {
     { aExport, "export"           , 256, N_("export keys") },
     { aSendKeys, "send-keys"     , 256, N_("export keys to a key server") },
     { aRecvKeys, "recv-keys"     , 256, N_("import keys from a key server") },
+    { aSearchKeys, "search-keys" , 256,
+                                    N_("search for keys on a key server") },
     { aRefreshKeys, "refresh-keys", 256,
                                     N_("update all keys from a keyserver")},
     { aExportAll, "export-all"    , 256, "@" },
@@ -301,6 +307,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDefRecipientSelf, "default-recipient-self" ,0,
 				N_("use the default key as default recipient")},
     { oNoDefRecipient, "no-default-recipient", 0, "@" },
+    { oTempDir, "temp-directory", 2, "@" },
     { oEncryptTo, "encrypt-to", 2, "@" },
     { oNoEncryptTo, "no-encrypt-to", 0, "@" },
     { oUser, "local-user",2, N_("use this user-id to sign or decrypt")},
@@ -326,6 +333,7 @@ static ARGPARSE_OPTS opts[] = {
     { oSecretKeyring, "secret-keyring" ,2, N_("add this secret keyring to the list")},
     { oDefaultKey, "default-key" ,2, N_("|NAME|use NAME as default secret key")},
     { oKeyServer, "keyserver",2, N_("|HOST|use this keyserver to lookup keys")},
+    { oKeyServerOptions, "keyserver-options",2,"@"},
     { oCharset, "charset"   , 2, N_("|NAME|set terminal charset to NAME") },
     { oOptions, "options"   , 2, N_("read options from file")},
 
@@ -437,6 +445,7 @@ static ARGPARSE_OPTS opts[] = {
     { oShowSessionKey, "show-session-key", 0, "@" },
     { oOverrideSessionKey, "override-session-key", 2, "@" },
     { oNoRandomSeedFile,  "no-random-seed-file", 0, "@" },
+    { oAutoKeyRetrieve, "auto-key-retrieve", 0, "@" },
     { oNoAutoKeyRetrieve, "no-auto-key-retrieve", 0, "@" },
     { oNoSigCache,         "no-sig-cache", 0, "@" },
     { oNoSigCreateCheck,   "no-sig-create-check", 0, "@" },
@@ -707,7 +716,6 @@ main( int argc, char **argv )
     opt.marginals_needed = 3;
     opt.max_cert_depth = 5;
     opt.pgp2_workarounds = 1;
-    opt.auto_key_retrieve = 1;
   #ifdef __MINGW32__
     opt.homedir = read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" );
   #else
@@ -811,6 +819,7 @@ main( int argc, char **argv )
 	  case aFastImport: set_cmd( &cmd, aFastImport); break;
 	  case aSendKeys: set_cmd( &cmd, aSendKeys); break;
 	  case aRecvKeys: set_cmd( &cmd, aRecvKeys); break;
+	  case aSearchKeys: set_cmd( &cmd, aSearchKeys); break;
 	  case aRefreshKeys: set_cmd( &cmd, aRefreshKeys); break;
 	  case aExport: set_cmd( &cmd, aExport); break;
 	  case aExportAll: set_cmd( &cmd, aExportAll); break;
@@ -1061,8 +1070,14 @@ main( int argc, char **argv )
             not_implemented("lock-multiple");
 #endif /* __riscos__ */
             break;
-
-	  case oKeyServer: opt.keyserver_name = pargs.r.ret_str; break;
+	  case oKeyServer:
+	    if(parse_keyserver_uri(pargs.r.ret_str))
+	      log_error(_("Could not parse keyserver URI\n"));
+	    break;
+	  case oKeyServerOptions:
+	    parse_keyserver_options(pargs.r.ret_str);
+	    break;
+	  case oTempDir: opt.temp_dir=pargs.r.ret_str; break;
 	  case oNotation: add_notation_data( pargs.r.ret_str ); break;
 	  case oUtf8Strings: utf8_strings = 1; break;
 	  case oNoUtf8Strings: utf8_strings = 0; break;
@@ -1078,7 +1093,11 @@ main( int argc, char **argv )
 	  case oAllowFreeformUID: opt.allow_freeform_uid = 1; break;
 	  case oNoLiteral: opt.no_literal = 1; break;
 	  case oSetFilesize: opt.set_filesize = pargs.r.ret_ulong; break;
-	  case oHonorHttpProxy: opt.honor_http_proxy = 1; break;
+	  case oHonorHttpProxy:
+                opt.honor_http_proxy = 1;
+		log_info("WARNING: --honor-http-proxy is deprecated.\n");
+		log_info("Please use \"--keyserver-options honor-http-proxy\" instead\n");
+		break;
 	  case oFastListMode: opt.fast_list_mode = 1; break;
 	  case oFixedListMode: opt.fixed_list_mode = 1; break;
 	  case oListOnly: opt.list_only=1; break;
@@ -1086,6 +1105,7 @@ main( int argc, char **argv )
 	  case oIgnoreValidFrom: opt.ignore_valid_from = 1; break;
 	  case oIgnoreCrcError: opt.ignore_crc_error = 1; break;
 	  case oNoRandomSeedFile: use_random_seed = 0; break;
+	  case oAutoKeyRetrieve: opt.auto_key_retrieve = 1; break;
 	  case oNoAutoKeyRetrieve: opt.auto_key_retrieve = 0; break;
 	  case oShowSessionKey: opt.show_session_key = 1; break;
 	  case oOverrideSessionKey:
@@ -1519,19 +1539,30 @@ main( int argc, char **argv )
 	for( ; argc; argc--, argv++ )
 	    add_to_strlist2( &sl, *argv, utf8_strings );
 	if( cmd == aSendKeys )
-	    hkp_export( sl );
+	    keyserver_export( sl );
 	else if( cmd == aRecvKeys )
-	    hkp_import( sl );
+	    keyserver_import( sl );
 	else
 	    export_pubkeys( sl, (cmd == aExport) );
 	free_strlist(sl);
 	break;
 
+     case aSearchKeys:
+	sl = NULL;
+	for( ; argc; argc--, argv++ )
+	  append_to_strlist2( &sl, *argv, utf8_strings );
+
+	keyserver_search( sl );
+	free_strlist(sl);
+	break;
+
       case aRefreshKeys:
-	if (argc)
-	    wrong_args("--refresh-keys");
-        hkp_refresh_keys ();
-        break;
+	sl = NULL;
+	for( ; argc; argc--, argv++ )
+	    add_to_strlist2( &sl, *argv, utf8_strings );
+	keyserver_refresh(sl);
+	free_strlist(sl);
+	break;
 
       case aExportSecret:
 	sl = NULL;
@@ -1995,3 +2026,22 @@ check_policy_url( const char *s )
     return 0;
 }
 
+const char *get_temp_dir(void)
+{
+  char *tmp;
+
+  if(opt.temp_dir)
+    return opt.temp_dir;
+
+  if((tmp=getenv("TMPDIR")))
+    return tmp;
+
+  if((tmp=getenv("TMP")))
+    return tmp;
+
+#ifdef __riscos__
+  return "<Wimp$ScrapDir>";
+#else
+  return "/tmp";
+#endif
+}

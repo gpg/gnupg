@@ -86,7 +86,9 @@ gpg_SOURCES  = g10.c		\
 	      delkey.c		\
 	      keygen.c          \
 	      pipemode.c        \
-	      helptext.c
+	      helptext.c        \
+	      keyserver.c       \
+	      keyserver-internal.h
 
 gpgv_SOURCES = gpgv.c           \
 	      $(common_source)  \

@@ -48,7 +48,6 @@
 #include "i18n.h"
 #include "status.h"
 #include "g10defs.h"
-#include "hkp.h"
 
 
 enum cmd_and_opt_values { aNull = 0,
@@ -247,7 +246,7 @@ get_ownertrust_info (PKT_public_key *pk)
  * get them from a keyserver
  */
 int
-hkp_ask_import( u32 *keyid, void *dummy )
+keyserver_import_keyid( u32 *keyid, void *dummy )
 {
     return -1;
 }

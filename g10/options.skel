@@ -91,29 +91,67 @@ lock-once
 #load-extension rndunix
 #load-extension rndegd
 
-
-# GnuPG can import a key from a HKP keyerver if one is missing
-# for certain operations. Is you set this option to a keyserver
-# you will be asked in such a case whether GnuPG should try to
-# import the key from that server (server do syncronize with each
-# other and DNS Round-Robin may give you a random server each time).
-# Use "host -l pgp.net | grep www" to figure out a keyserver.
+# GnuPG can send and receive keys to and from a keyserver.  These
+# servers can be HKP, email, or LDAP (if GnuPG is built with LDAP
+# support).
 #
-# If you do not want to use the default port 11371, you can give the
-# name of the keyserver like this: 
-#   x-hkp://keyserver.example.net:22742
-# If you have problems connecting through a buggy proxy, you can use this:
-#   x-broken-hkp://keyserver.example.net:11371
+# Example HKP keyserver:
+#      x-hkp://wwwkeys.nl.pgp.net
+#
+# Example email keyserver:
+#      mailto:pgp-public-keys@keys.nl.pgp.net
+#
+# Example LDAP keyserver:
+#      ldap://keyserver.pgp.com
+#
+# Regular URL syntax applies, and you can set an alternate port
+# through the usual method:
+#      x-hkp://keyserver.example.net:22742
+#
+# If you have problems connecting to a HKP server through a buggy
+# http proxy, you can use this:
+#      x-broken-hkp://keyserver.example.net
 # But first you should make sure that you have read the man page regarding
-# proxies (--honor-http-proxy)
-# Most users just set the name of the preferred keyserver.
-#keyserver wwwkeys.nl.pgp.net
+# proxies (honor-http-proxy)
+#
+# Most users just set the name and type of their preferred keyserver.
+# Most servers do syncronize with each other and DNS round-robin may
+# give you a quasi-random server each time.
+
+#keyserver mailto:pgp-public-keys@keys.nl.pgp.net
+#keyserver ldap://keyserver.pgp.com
+#keyserver x-hkp://wwwkeys.nl.pgp.net
+
+# Options for keyserver functions
+#
+# include-disabled = when searching, include keys marked as "disabled"
+#                    on the keyserver (not all keyservers support this).
+#
+# include-revoked = when searching, include keys marked as "revoked"
+#                   on the keyserver.
+#
+# verbose = show more information as the keys are fetched.
+#           Can be included more than once to increase the amount
+#           of information shown.
+#
+# use-temp-files = use temporary files instead of a pipe to talk to the
+#                  keyserver.  Some platforms (Win32 for one) always
+#                  have this on.
+#
+# keep-temp-files = don't delete the temporary files after using them
+#                   (really only useful for debugging)
+#
+# honor-http-proxy = if the keyserver uses http, honor the http_proxy
+#                    environment variable
+
+#keyserver-options include-disabled include-revoked
+
+# Uncomment this line to automatically fetch a key from a keyserver
+# (which must be set - see above) when verifying signatures.
+
+#auto-key-retrieve
 
 # The environment variable http_proxy is only used when the
 # this option is set.
 
-honor-http-proxy
-
-
-
-
+#honor-http-proxy

@@ -1,3 +1,4 @@
+
 /* options.h
  * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
@@ -88,7 +89,20 @@ struct {
     int not_dash_escaped;
     int escape_from;
     int lock_once;
-    const char *keyserver_name;
+    char *keyserver_scheme;
+    char *keyserver_host;
+    char *keyserver_port;
+    struct
+    {
+      int verbose;
+      int fast_import:1;
+      int include_revoked:1;
+      int include_disabled:1;
+      int use_temp_files:1;
+      int keep_temp_files:1;
+      STRLIST other;
+    } keyserver_options;
+    char *temp_dir;
     int no_encrypt_to;
     int interactive;
     STRLIST notation_data;
