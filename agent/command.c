@@ -549,7 +549,7 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
   unsigned char grip[20];
-  GCRY_SEXP s_skey = NULL;
+  gcry_sexp_t s_skey = NULL;
   unsigned char *shadow_info = NULL;
 
   rc = parse_keygrip (ctx, line, grip);
@@ -572,6 +572,22 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
   xfree (shadow_info);
   if (rc)
     log_error ("command passwd failed: %s\n", gpg_strerror (rc));
+  return map_to_assuan_status (rc);
+}
+
+
+/* SCD <commands to pass to the scdaemon>
+  
+   This is a general quote command to redirect everything to the
+   SCDAEMON. */
+static int
+cmd_scd (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+  int rc;
+
+  rc = divert_generic_cmd (ctrl, line, ctx);
+
   return map_to_assuan_status (rc);
 }
 
@@ -661,6 +677,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "PASSWD",         cmd_passwd },
     { "INPUT",          NULL }, 
     { "OUTPUT",         NULL }, 
+    { "SCD",            cmd_scd },
     { NULL }
   };
   int i, rc;

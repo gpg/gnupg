@@ -27,10 +27,10 @@
 #include <time.h>
 #include <assert.h>
 
+#include "gpgsm.h"
 #include <gcrypt.h>
 #include <ksba.h>
 
-#include "gpgsm.h"
 #include "keydb.h"
 #include "i18n.h"
 
@@ -302,7 +302,7 @@ find_up (KEYDB_HANDLE kh, KsbaCert cert, const char *issuer)
         log_info (_("number of issuers matching: %d\n"), count);
       if (rc) 
         {
-          log_error ("external key lookup failed: %s\n", gnupg_strerror (rc));
+          log_error ("external key lookup failed: %s\n", gpg_strerror (rc));
           rc = -1;
         }
       else if (!count)
@@ -585,7 +585,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
           else 
             {
               log_error (_("checking the trust list failed: %s\n"),
-                         gnupg_strerror (rc));
+                         gpg_strerror (rc));
             }
           
           break;  /* okay, a self-signed certicate is an end-point */
@@ -655,8 +655,10 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
       rc = gpgsm_cert_use_cert_p (issuer_cert);
       if (rc)
         {
+          char numbuf[50];
+          sprintf (numbuf, "%d", rc);
           gpgsm_status2 (ctrl, STATUS_ERROR, "certcert.issuer.keyusage",
-                         gnupg_error_token (rc), NULL);
+                         numbuf, NULL);
           rc = 0;
         }
 

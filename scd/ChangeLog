@@ -1,3 +1,34 @@
+2003-06-26  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (find_tlv): Fixed length header parsing.
+
+	* app.c (app_genkey): New.
+	* command.c (cmd_genkey): New.
+
+2003-06-25  Werner Koch  <wk@gnupg.org>
+
+	* command.c (percent_plus_unescape): New.
+	(cmd_setattr): New.
+
+2003-06-24  Werner Koch  <wk@gnupg.org>
+
+	* command.c (send_status_info): New.
+
+	* app-openpgp.c (app_select_openpgp): Replace SLOT arg by APP arg
+	and setup the function pointers in APP on success. Changed callers.
+	* app.c: New.
+	* app-common.h: New.
+	* scdaemon.h (APP): New type to handle applications.
+	(server_control_s): Add an APP context field.
+
+	* command.c (cmd_serialno): Handle applications.
+	(cmd_pksign): Ditto.
+	(cmd_pkdecrypt): Ditto.
+	(reset_notify): Ditto.
+	(cmd_learn): For now return error for application contexts.
+	(cmd_readcert): Ditto.
+	(cmd_readkey): Ditto.
+
 2003-06-04  Werner Koch  <wk@gnupg.org>
 
 	* card.c (map_sc_err): Renamed gpg_make_err to gpg_err_make.

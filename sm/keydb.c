@@ -231,7 +231,7 @@ keydb_add_resource (const char *url, int force, int secret)
 
  leave:
   if (rc)
-    log_error ("keyblock resource `%s': %s\n", filename, gnupg_strerror(rc));
+    log_error ("keyblock resource `%s': %s\n", filename, gpg_strerror(rc));
   else if (secret)
     any_secret = 1;
   else
@@ -1255,14 +1255,14 @@ keydb_store_cert (KsbaCert cert, int ephemeral, int *existed)
           return 0; /* okay */
         }
       log_error (_("problem looking for existing certificate: %s\n"),
-                 gnupg_strerror (rc));
+                 gpg_strerror (rc));
       return rc;
     }
 
   rc = keydb_locate_writable (kh, 0);
   if (rc)
     {
-      log_error (_("error finding writable keyDB: %s\n"), gnupg_strerror (rc));
+      log_error (_("error finding writable keyDB: %s\n"), gpg_strerror (rc));
       keydb_release (kh);
       return rc;
     }
@@ -1270,7 +1270,7 @@ keydb_store_cert (KsbaCert cert, int ephemeral, int *existed)
   rc = keydb_insert_cert (kh, cert);
   if (rc)
     {
-      log_error (_("error storing certificate: %s\n"), gnupg_strerror (rc));
+      log_error (_("error storing certificate: %s\n"), gpg_strerror (rc));
       keydb_release (kh);
       return rc;
     }

@@ -30,6 +30,7 @@
 #include <assuan.h>
 
 #include "scdaemon.h"
+#include "app-common.h"
 
 /* maximum length aloowed as a PIN; used for INQUIRE NEEDPIN */
 #define MAXLEN_PIN 100
@@ -69,6 +70,12 @@ reset_notify (ASSUAN_CONTEXT ctx)
       xfree (ctrl->in_data.value);
       ctrl->in_data.value = NULL;
     }
+  if (ctrl->app_ctx)
+    {
+      /* FIXME: close the application. */
+      xfree (ctrl->app_ctx);
+      ctrl->app_ctx = NULL;
+    }
 }
 
 
@@ -85,14 +92,55 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 static AssuanError
 open_card (CTRL ctrl)
 {
-  if (!ctrl->card_ctx)
-    {
+  if (ctrl->app_ctx)
+    return 0; /* Already initialized for one specific application. */
+  if (ctrl->card_ctx)
+    return 0; /* Already initialized using a card context. */
+
+  ctrl->app_ctx = select_application ();
+  if (!ctrl->app_ctx)
+    { /* No application found - fall back to old mode. */
       int rc = card_open (&ctrl->card_ctx);
       if (rc)
         return map_to_assuan_status (rc);
     }
   return 0;
 }
+
+
+/* Do the percent and plus/space unescaping in place and return tghe
+   length of the valid buffer. */
+static size_t
+percent_plus_unescape (unsigned char *string)
+{
+  unsigned char *p = string;
+  size_t n = 0;
+
+  while (*string)
+    {
+      if (*string == '%' && string[1] && string[2])
+        { 
+          string++;
+          *p++ = xtoi_2 (string);
+          n++;
+          string+= 2;
+        }
+      else if (*string == '+')
+        {
+          *p++ = ' ';
+          n++;
+          string++;
+        }
+      else
+        {
+          *p++ = *string++;
+          n++;
+        }
+    }
+
+  return n;
+}
+
 
 
 /* SERIALNO 
@@ -106,7 +154,7 @@ open_card (CTRL ctrl)
 
    Background: We want to keep the client clear of handling card
    changes between operations; i.e. the client can assume that all
-   operations are doneon the same card unless he call this function.
+   operations are done on the same card unless he call this function.
  */
 static int
 cmd_serialno (ASSUAN_CONTEXT ctx, char *line)
@@ -120,7 +168,10 @@ cmd_serialno (ASSUAN_CONTEXT ctx, char *line)
   if ((rc = open_card (ctrl)))
     return rc;
 
-  rc = card_get_serial_and_stamp (ctrl->card_ctx, &serial, &stamp);
+  if (ctrl->app_ctx)
+    rc = app_get_serial_and_stamp (ctrl->app_ctx, &serial, &stamp);
+  else
+    rc = card_get_serial_and_stamp (ctrl->card_ctx, &serial, &stamp);
   if (rc)
     return map_to_assuan_status (rc);
   rc = asprintf (&serial_and_stamp, "%s %lu", serial, (unsigned long)stamp);
@@ -149,6 +200,16 @@ cmd_serialno (ASSUAN_CONTEXT ctx, char *line)
    error message.  The response of this command is a list of status
    lines formatted as this:
 
+     S APPTYPE <apptype>
+
+   This returns the type of the application, currently the strings:
+
+       P15     = PKCS-15 structure used
+       DINSIG  = DIN SIG
+       OPENPGP = OpenPGP card
+ 
+   are implemented.  These strings are aliases for the AID
+
      S KEYPAIRINFO <hexstring_with_keygrip> <hexstring_with_id>
 
    If there is no certificate yet stored on the card a single "X" is
@@ -157,13 +218,34 @@ cmd_serialno (ASSUAN_CONTEXT ctx, char *line)
 
      S CERTINFO <certtype> <hexstring_with_id>
 
-   Where CERTINFO is a number indicating the type of certificate:
+   Where CERTTYPE is a number indicating the type of certificate:
       0   := Unknown
       100 := Regular X.509 cert
       101 := Trusted X.509 cert
       102 := Useful X.509 cert
 
+   For certain cards, more information will be returned:
 
+     S KEY-FPR <no> <hexstring>
+
+   For OpenPGP cards this returns the stored fingerprints of the
+   keys. This can be used check whether a key is available on the
+   card.  NO may be 1, 2 or 3.
+
+     S CA-FPR <no> <hexstring>
+
+   Similar to above, these are the fingerprints of keys assumed to be
+   ultimately trusted.
+
+     S DISP-NAME <name_of_card_holder>
+
+   The name of the card holder as stored on the card; percent
+   aescaping takes place, spaces are encoded as '+'
+
+     S PUBKEY-URL <url>
+
+   The URL to be used for locating the entire public key.
+     
 */
 static int
 cmd_learn (ASSUAN_CONTEXT ctx, char *line)
@@ -183,8 +265,11 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
     char *serial_and_stamp;
     char *serial;
     time_t stamp;
-   
-    rc = card_get_serial_and_stamp (ctrl->card_ctx, &serial, &stamp);
+
+    if (ctrl->app_ctx)
+      rc = app_get_serial_and_stamp (ctrl->app_ctx, &serial, &stamp);
+    else
+      rc = card_get_serial_and_stamp (ctrl->card_ctx, &serial, &stamp);
     if (rc)
       return map_to_assuan_status (rc);
     rc = asprintf (&serial_and_stamp, "%s %lu", serial, (unsigned long)stamp);
@@ -221,6 +306,8 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
   }
 
   /* Return information about the certificates. */
+  if (ctrl->app_ctx)
+    rc = -1; /* This information is not yet available for applications. */
   for (idx=0; !rc; idx++)
     {
       char *certid;
@@ -248,6 +335,8 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
 
 
   /* Return information about the keys. */
+  if (ctrl->app_ctx)
+    rc = -1; /* This information is not yet available for applications. */
   for (idx=0; !rc; idx++)
     {
       unsigned char keygrip[20];
@@ -294,6 +383,9 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
   if (rc == -1)
     rc = 0;
 
+  if (!rc && ctrl->app_ctx)
+    rc = app_write_learn_status (ctrl->app_ctx, ctrl);
+
 
   return map_to_assuan_status (rc);
 }
@@ -313,6 +405,9 @@ cmd_readcert (ASSUAN_CONTEXT ctx, char *line)
 
   if ((rc = open_card (ctrl)))
     return rc;
+
+  if (ctrl->app_ctx)
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
   rc = card_read_cert (ctrl->card_ctx, line, &cert, &ncert);
   if (rc)
@@ -347,6 +442,9 @@ cmd_readkey (ASSUAN_CONTEXT ctx, char *line)
 
   if ((rc = open_card (ctrl)))
     return rc;
+
+  if (ctrl->app_ctx)
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
   rc = card_read_cert (ctrl->card_ctx, line, &cert, &ncert);
   if (rc)
@@ -480,11 +578,19 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
   keyidstr = strdup (line);
   if (!keyidstr)
     return ASSUAN_Out_Of_Core;
-  rc = card_sign (ctrl->card_ctx,
-                  keyidstr, GCRY_MD_SHA1,
-                  pin_cb, ctx,
-                  ctrl->in_data.value, ctrl->in_data.valuelen,
-                  &outdata, &outdatalen);
+  
+  if (ctrl->app_ctx)
+    rc = app_sign (ctrl->app_ctx,
+                    keyidstr, GCRY_MD_SHA1,
+                    pin_cb, ctx,
+                    ctrl->in_data.value, ctrl->in_data.valuelen,
+                    &outdata, &outdatalen);
+  else  
+    rc = card_sign (ctrl->card_ctx,
+                    keyidstr, GCRY_MD_SHA1,
+                    pin_cb, ctx,
+                    ctrl->in_data.value, ctrl->in_data.valuelen,
+                    &outdata, &outdatalen);
   free (keyidstr);
   if (rc)
     {
@@ -519,11 +625,18 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
   keyidstr = strdup (line);
   if (!keyidstr)
     return ASSUAN_Out_Of_Core;
-  rc = card_decipher (ctrl->card_ctx,
-                      keyidstr, 
-                      pin_cb, ctx,
-                      ctrl->in_data.value, ctrl->in_data.valuelen,
-                      &outdata, &outdatalen);
+  if (ctrl->app_ctx)
+    rc = app_decipher (ctrl->app_ctx,
+                        keyidstr, 
+                        pin_cb, ctx,
+                        ctrl->in_data.value, ctrl->in_data.valuelen,
+                        &outdata, &outdatalen);
+  else
+    rc = card_decipher (ctrl->card_ctx,
+                        keyidstr, 
+                        pin_cb, ctx,
+                        ctrl->in_data.value, ctrl->in_data.valuelen,
+                        &outdata, &outdatalen);
   free (keyidstr);
   if (rc)
     {
@@ -539,6 +652,99 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
 
   return map_to_assuan_status (rc);
 }
+
+
+/* SETATTR <name> <value> 
+
+   This command is used to store data on a a smartcard.  The allowed
+   names and values are depend on the currently selected smartcard
+   application.  NAME and VALUE must be percent and '+' escaped.
+
+   However, the curent implementation assumes that Name is not escaped;
+   this works as long as noone uses arbitrary escaping. 
+ 
+   A PIN will be requested for most NAMEs.  See the corresponding
+   setattr function of the actually used application (app-*.c) for
+   details.  */
+static int
+cmd_setattr (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+  int rc;
+  char *keyword;
+  int keywordlen;
+  size_t nbytes;
+
+  if ((rc = open_card (ctrl)))
+    return rc;
+
+  keyword = line;
+  for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
+    ;
+  if (*line)
+      *line++ = 0;
+  while (spacep (line))
+    line++;
+  nbytes = percent_plus_unescape (line);
+
+  rc = app_setattr (ctrl->app_ctx, keyword, pin_cb, ctx, line, nbytes);
+
+  return map_to_assuan_status (rc);
+}
+
+/* GENKEY [--force] <no>
+
+   Generate a key on-card identified by NO, which is application
+   specific.  Return values are application specific.  For OpenPGP
+   cards 2 status lines are returned:
+
+     S KEY-FPR  <hexstring>
+     S KEY-CREATED-AT <seconds_since_epoch>
+     S KEY-DATA [p|n] <hexdata>
+     
+
+   --force is required to overwriet an already existing key.  The
+   KEY-CREATED-AT is required for further processing because it is
+   part of the hashed key material for the fingerprint.
+
+   The public part of the key can also later be retrieved using the
+   READKEY command.
+
+ */
+static int
+cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+  int rc;
+  char *keyno;
+  int force = has_option (line, "--force");
+
+  /* Skip over options. */
+  while ( *line == '-' && line[1] == '-' )
+    {
+      while (!spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+    }
+  if (!*line)
+    return set_error (Parameter_Error, "no key number given");
+  keyno = line;
+  while (!spacep (line))
+    line++;
+  *line = 0;
+
+  if ((rc = open_card (ctrl)))
+    return rc;
+
+  if (!ctrl->app_ctx)
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+
+  rc = app_genkey (ctrl->app_ctx, ctrl, keyno, force? 1:0, pin_cb, ctx);
+
+  return map_to_assuan_status (rc);
+}
+
 
 
 
@@ -560,6 +766,8 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "PKDECRYPT",    cmd_pkdecrypt },
     { "INPUT",        NULL }, 
     { "OUTPUT",       NULL }, 
+    { "SETATTR",      cmd_setattr },
+    { "GENKEY",       cmd_genkey },
     { NULL }
   };
   int i, rc;
@@ -646,3 +854,51 @@ scd_command_handler (int listen_fd)
 
   assuan_deinit_server (ctx);
 }
+
+
+/* Send a line with status information via assuan and escape all given
+   buffers. The variable elements are pairs of (char *, size_t),
+   terminated with a (NULL, 0). */
+void
+send_status_info (CTRL ctrl, const char *keyword, ...)
+{
+  va_list arg_ptr;
+  const unsigned char *value;
+  size_t valuelen;
+  char buf[950], *p;
+  size_t n;
+  ASSUAN_CONTEXT ctx = ctrl->server_local->assuan_ctx;
+  
+  va_start (arg_ptr, keyword);
+
+  p = buf; 
+  n = 0;
+  while ( (value = va_arg (arg_ptr, const unsigned char *)) )
+    {
+      valuelen = va_arg (arg_ptr, size_t);
+      if (!valuelen)
+        continue; /* empty buffer */
+      if (n)
+        {
+          *p++ = ' ';
+          n++;
+        }
+      for ( ; valuelen && n < DIM (buf)-2; n++, valuelen--, value++)
+        {
+          if (*value < ' ' || *value == '+')
+            {
+              sprintf (p, "%%%02X", *value);
+              p += 3;
+            }
+          else if (*value == ' ')
+            *p++ = '+';
+          else
+            *p++ = *value;
+        }
+    }
+  *p = 0;
+  assuan_write_status (ctx, keyword, buf);
+
+  va_end (arg_ptr);
+}
+

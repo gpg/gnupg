@@ -1,5 +1,5 @@
 /* pkdecrypt.c - public key decryption (well, acually using a secret key)
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -38,7 +38,7 @@ int
 agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
                  FILE *outfp) 
 {
-  GCRY_SEXP s_skey = NULL, s_cipher = NULL, s_plain = NULL;
+  gcry_sexp_t s_skey = NULL, s_cipher = NULL, s_plain = NULL;
   unsigned char *shadow_info = NULL;
   int rc;
   char *buf = NULL;
@@ -54,7 +54,7 @@ agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
   rc = gcry_sexp_sscan (&s_cipher, NULL, ciphertext, ciphertextlen);
   if (rc)
     {
-      log_error ("failed to convert ciphertext: %s\n", gcry_strerror (rc));
+      log_error ("failed to convert ciphertext: %s\n", gpg_strerror (rc));
       rc = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
@@ -84,7 +84,7 @@ agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
       rc = divert_pkdecrypt (ctrl, ciphertext, shadow_info, &buf, &len );
       if (rc)
         {
-          log_error ("smartcard decryption failed: %s\n", gnupg_strerror (rc));
+          log_error ("smartcard decryption failed: %s\n", gpg_strerror (rc));
           goto leave;
         }
       /* FIXME: don't use buffering and change the protocol to return
@@ -104,7 +104,7 @@ agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
       rc = gcry_pk_decrypt (&s_plain, s_cipher, s_skey);
       if (rc)
         {
-          log_error ("decryption failed: %s\n", gcry_strerror (rc));
+          log_error ("decryption failed: %s\n", gpg_strerror (rc));
           rc = map_gcry_err (rc);
           goto leave;
         }

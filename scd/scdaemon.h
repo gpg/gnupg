@@ -76,18 +76,22 @@ struct {
 
 struct server_local_s;
 struct card_ctx_s;
+struct app_ctx_s;
 
 struct server_control_s {
   struct server_local_s *server_local;
   struct card_ctx_s *card_ctx;
+  struct app_ctx_s *app_ctx;
   struct {
     unsigned char *value;  
     int valuelen;
   } in_data;  /* helper to store the value we are going to sign */
 
 };
+
 typedef struct server_control_s *CTRL;
 typedef struct card_ctx_s *CARD;
+typedef struct app_ctx_s *APP;
 
 /*-- scdaemon.c --*/
 void scd_exit (int rc);
@@ -95,6 +99,7 @@ void scd_init_default_ctrl (CTRL ctrl);
 
 /*-- command.c --*/
 void scd_command_handler (int);
+void send_status_info (CTRL ctrl, const char *keyword, ...);
 
 /*-- card.c --*/
 int card_open (CARD *rcard);

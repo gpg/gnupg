@@ -1,5 +1,5 @@
 /* findkey.c - locate the secret key
- *	Copyright (C) 2001,02 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -204,7 +204,7 @@ unprotect (CTRL ctrl,
    an allocated S-Expression with the shadow_info part from the file.
    With IGNORE_CACHE passed as true the passphrase is not taken from
    the cache.*/
-GCRY_SEXP
+gcry_sexp_t
 agent_key_from_file (CTRL ctrl,
                      const unsigned char *grip, unsigned char **shadow_info,
                      int ignore_cache)
@@ -215,7 +215,7 @@ agent_key_from_file (CTRL ctrl,
   struct stat st;
   unsigned char *buf;
   size_t len, buflen, erroff;
-  GCRY_SEXP s_skey;
+  gcry_sexp_t s_skey;
   char hexgrip[40+4+1];
   
   if (shadow_info)
@@ -260,7 +260,7 @@ agent_key_from_file (CTRL ctrl,
   if (rc)
     {
       log_error ("failed to build S-Exp (off=%u): %s\n",
-                 (unsigned int)erroff, gcry_strerror (rc));
+                 (unsigned int)erroff, gpg_strerror (rc));
       return NULL;
     }
   len = gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, NULL, 0);
@@ -283,7 +283,7 @@ agent_key_from_file (CTRL ctrl,
       rc = unprotect (ctrl, &buf, grip, ignore_cache);
       if (rc)
         log_error ("failed to unprotect the secret key: %s\n",
-                   gnupg_strerror (rc));
+                   gpg_strerror (rc));
       break;
     case PRIVATE_KEY_SHADOWED:
       if (shadow_info)
@@ -329,7 +329,7 @@ agent_key_from_file (CTRL ctrl,
   if (rc)
     {
       log_error ("failed to build S-Exp (off=%u): %s\n",
-                 (unsigned int)erroff, gcry_strerror (rc));
+                 (unsigned int)erroff, gpg_strerror (rc));
       return NULL;
     }
 

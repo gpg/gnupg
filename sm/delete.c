@@ -27,10 +27,10 @@
 #include <time.h>
 #include <assert.h>
 
+#include "gpgsm.h"
 #include <gcrypt.h>
 #include <ksba.h>
 
-#include "gpgsm.h"
 #include "keydb.h"
 #include "i18n.h"
 
@@ -49,7 +49,7 @@ delete_one (CTRL ctrl, const char *username)
   if (rc)
     {
       log_error (_("certificate `%s' not found: %s\n"),
-                 username, gnupg_strerror (rc));
+                 username, gpg_strerror (rc));
       gpgsm_status2 (ctrl, STATUS_DELETE_PROBLEM, "1", NULL);
       goto leave;
     }
@@ -100,7 +100,7 @@ delete_one (CTRL ctrl, const char *username)
       if (rc == -1)
         rc = gpg_error (GPG_ERR_NO_PUBKEY);
       log_error (_("certificate `%s' not found: %s\n"),
-                 username, gnupg_strerror (rc));
+                 username, gpg_strerror (rc));
       gpgsm_status2 (ctrl, STATUS_DELETE_PROBLEM, "3", NULL);
       goto leave;
     }
@@ -113,7 +113,7 @@ delete_one (CTRL ctrl, const char *username)
       if (rc)
         {
           log_error ("problem re-searching certificate: %s\n",
-                     gnupg_strerror (rc));
+                     gpg_strerror (rc));
           goto leave;
         }
       
@@ -156,7 +156,7 @@ gpgsm_delete (CTRL ctrl, STRLIST names)
       if (rc)
         {
           log_error (_("deleting certificate \"%s\" failed: %s\n"),
-                     names->d, gnupg_strerror (rc) );
+                     names->d, gpg_strerror (rc) );
           return rc;
         }
     }

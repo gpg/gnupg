@@ -1,5 +1,5 @@
 /* pksign.c - Generate a keypair
- *	Copyright (C) 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -30,7 +30,7 @@
 #include "i18n.h"
 
 static int
-store_key (GCRY_SEXP private, const char *passphrase, int force)
+store_key (gcry_sexp_t private, const char *passphrase, int force)
 {
   int rc;
   char *buf;
@@ -91,7 +91,7 @@ int
 agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
               FILE *outfp) 
 {
-  GCRY_SEXP s_keyparam, s_key, s_private, s_public;
+  gcry_sexp_t s_keyparam, s_key, s_private, s_public;
   struct pin_entry_info_s *pi, *pi2;
   int rc;
   size_t len;
@@ -100,7 +100,7 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
   rc = gcry_sexp_sscan (&s_keyparam, NULL, keyparam, keyparamlen);
   if (rc)
     {
-      log_error ("failed to convert keyparam: %s\n", gcry_strerror (rc));
+      log_error ("failed to convert keyparam: %s\n", gpg_strerror (rc));
       return gpg_error (GPG_ERR_INV_DATA);
     }
 
@@ -135,7 +135,7 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
   gcry_sexp_release (s_keyparam);
   if (rc)
     {
-      log_error ("key generation failed: %s\n", gcry_strerror (rc));
+      log_error ("key generation failed: %s\n", gpg_strerror (rc));
       xfree (pi);
       return map_gcry_err (rc);
     }
@@ -204,7 +204,7 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
 
 /* Apply a new passpahrse to the key S_SKEY and store it. */
 int
-agent_protect_and_store (CTRL ctrl, GCRY_SEXP s_skey) 
+agent_protect_and_store (CTRL ctrl, gcry_sexp_t s_skey) 
 {
   struct pin_entry_info_s *pi, *pi2;
   int rc;

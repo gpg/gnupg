@@ -1,5 +1,5 @@
 /* keylist.c
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -27,10 +27,11 @@
 #include <time.h>
 #include <assert.h>
 
+#include "gpgsm.h"
+
 #include <gcrypt.h>
 #include <ksba.h>
 
-#include "gpgsm.h"
 #include "keydb.h"
 #include "i18n.h"
 
@@ -460,7 +461,7 @@ list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
           if (rc)
             {
               log_error ("key `%s' not found: %s\n",
-                         sl->d, gnupg_strerror (rc));
+                         sl->d, gpg_strerror (rc));
               rc = 0;
             }
           else
@@ -535,7 +536,7 @@ list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
       cert = NULL;
     }
   if (rc && rc != -1)
-    log_error ("keydb_search failed: %s\n", gnupg_strerror (rc));
+    log_error ("keydb_search failed: %s\n", gpg_strerror (rc));
   
  leave:
   ksba_cert_release (cert);

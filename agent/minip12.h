@@ -1,5 +1,5 @@
 /* minip12.h - Global definitions for the minimal pkcs-12 implementation.
- *	Copyright (C) 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -23,10 +23,11 @@
 
 #include <gcrypt.h>
 
-GcryMPI *p12_parse (const unsigned char *buffer, size_t length,
-                    const char *pw);
+gcry_mpi_t *p12_parse (const unsigned char *buffer, size_t length,
+                       const char *pw);
 
-unsigned char *p12_build (GcryMPI *kparms, const char *pw, size_t *r_length);
+unsigned char *p12_build (gcry_mpi_t *kparms, const char *pw,
+                          size_t *r_length);
 
 
 #endif /*MINIP12_H*/

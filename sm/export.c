@@ -27,10 +27,10 @@
 #include <time.h>
 #include <assert.h>
 
+#include "gpgsm.h"
 #include <gcrypt.h>
 #include <ksba.h>
 
-#include "gpgsm.h"
 #include "keydb.h"
 
 static void print_short_info (KsbaCert cert, FILE *fp);
@@ -85,7 +85,7 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
           if (rc)
             {
               log_error ("key `%s' not found: %s\n",
-                         sl->d, gnupg_strerror (rc));
+                         sl->d, gpg_strerror (rc));
               rc = 0;
             }
           else
@@ -121,7 +121,7 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
       rc = keydb_get_cert (hd, &cert);
       if (rc) 
         {
-          log_error ("keydb_get_cert failed: %s\n", gnupg_strerror (rc));
+          log_error ("keydb_get_cert failed: %s\n", gpg_strerror (rc));
           goto leave;
         }
 
@@ -147,7 +147,7 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
           rc = gpgsm_create_writer (&b64writer, ctrl, fp, &writer);
           if (rc)
             {
-              log_error ("can't create writer: %s\n", gnupg_strerror (rc));
+              log_error ("can't create writer: %s\n", gpg_strerror (rc));
               goto leave;
             }
         }
@@ -176,7 +176,7 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
       cert = NULL;
     }
   if (rc && rc != -1)
-    log_error ("keydb_search failed: %s\n", gnupg_strerror (rc));
+    log_error ("keydb_search failed: %s\n", gpg_strerror (rc));
   else if (b64writer)
     {
       rc = gpgsm_finish_writer (b64writer);

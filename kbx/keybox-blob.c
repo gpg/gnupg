@@ -110,6 +110,8 @@ X.509 specific are noted like [X.509: xxx]
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+
+#include "keybox-defs.h"
 #include <gcrypt.h>
 
 #ifdef KEYBOX_WITH_OPENPGP
@@ -119,7 +121,6 @@ X.509 specific are noted like [X.509: xxx]
 #include <ksba.h>
 #endif
 
-#include "keybox-defs.h"
 
 
 /* special values of the signature status */

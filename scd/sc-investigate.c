@@ -25,11 +25,12 @@
 #include <string.h>
 
 #define JNLIB_NEED_LOG_LOGV
-#include <gcrypt.h>
 #include "scdaemon.h"
+#include <gcrypt.h>
 
 #include "apdu.h" /* for open_reader */
 #include "atr.h"
+#include "app-common.h"
 
 #define _(a) (a)
 
@@ -104,6 +105,9 @@ main (int argc, char **argv )
   ARGPARSE_ARGS pargs;
   int slot, rc;
   int reader_port = 32768; /* First USB reader. */
+  struct app_ctx_s appbuf;
+
+  memset (&appbuf, 0, sizeof appbuf);
 
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
@@ -147,7 +151,8 @@ main (int argc, char **argv )
   if (rc)
     log_error ("can't dump ATR: %s\n", gpg_strerror (rc));
 
-  rc = app_select_openpgp (slot);
+  appbuf.slot = slot;
+  rc = app_select_openpgp (&appbuf, NULL, NULL);
   if (rc)
     log_error ("selecting openpgp failed: %s\n", gpg_strerror (rc));
   else
@@ -159,3 +164,8 @@ main (int argc, char **argv )
 
 
 
+void
+send_status_info (CTRL ctrl, const char *keyword, ...)
+{
+  /* DUMMY */
+}

@@ -27,10 +27,10 @@
 #include <time.h>
 #include <assert.h>
 
-#include <gcrypt.h>
-#include <ksba.h>
 
 #include "gpgsm.h"
+#include <gcrypt.h>
+#include <ksba.h>
 
 /* Return the fingerprint of the certificate (we can't put this into
    libksba because we need libgcrypt support).  The caller must
@@ -45,7 +45,7 @@
 char *
 gpgsm_get_fingerprint (KsbaCert cert, int algo, char *array, int *r_len)
 {
-  GCRY_MD_HD md;
+  gcry_md_hd_t md;
   int rc, len;
   
   if (!algo)
@@ -59,10 +59,10 @@ gpgsm_get_fingerprint (KsbaCert cert, int algo, char *array, int *r_len)
   if (r_len)
     *r_len = len;
 
-  md = gcry_md_open (algo, 0);
-  if (!md)
+  rc = gcry_md_open (&md, algo, 0);
+  if (rc)
     {
-      log_error ("md_open failed: %s\n", gcry_strerror (-1));
+      log_error ("md_open failed: %s\n", gpg_strerror (rc));
       memset (array, 0xff, len); /* better return an invalid fpr than NULL */
       return array;
     }
@@ -143,7 +143,7 @@ gpgsm_get_short_fingerprint (KsbaCert cert)
 char *
 gpgsm_get_keygrip (KsbaCert cert, char *array)
 {
-  GCRY_SEXP s_pkey;
+  gcry_sexp_t s_pkey;
   int rc;
   KsbaSexp p;
   size_t n;
@@ -164,7 +164,7 @@ gpgsm_get_keygrip (KsbaCert cert, char *array)
   xfree (p);
   if (rc)
     {
-      log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
+      log_error ("gcry_sexp_scan failed: %s\n", gpg_strerror (rc));
       return NULL;
     }
   array = gcry_pk_get_keygrip (s_pkey, array);

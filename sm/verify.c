@@ -27,16 +27,15 @@
 #include <time.h>
 #include <assert.h>
 
+#include "gpgsm.h"
 #include <gcrypt.h>
 #include <ksba.h>
 
-#include "gpgsm.h"
 #include "keydb.h"
 #include "i18n.h"
 
-/* fixme: Move this to jnlib */
 static char *
-strtimestamp (time_t atime)
+strtimestamp_r (time_t atime)
 {
   char *buffer = xmalloc (15);
   
@@ -59,7 +58,7 @@ strtimestamp (time_t atime)
 
 /* Hash the data for a detached signature */
 static void
-hash_data (int fd, GCRY_MD_HD md)
+hash_data (int fd, gcry_md_hd_t md)
 {
   FILE *fp;
   char buffer[4096];
@@ -102,7 +101,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
   KsbaStopReason stopreason;
   KsbaCert cert;
   KEYDB_HANDLE kh;
-  GCRY_MD_HD data_md = NULL;
+  gcry_md_hd_t data_md = NULL;
   int signer;
   const char *algoid;
   int algo;
@@ -130,7 +129,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
   rc = gpgsm_create_reader (&b64reader, ctrl, fp, &reader);
   if (rc)
     {
-      log_error ("can't create reader: %s\n", gnupg_strerror (rc));
+      log_error ("can't create reader: %s\n", gpg_strerror (rc));
       goto leave;
     }
 
@@ -139,7 +138,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
       rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, &writer);
       if (rc)
         {
-          log_error ("can't create writer: %s\n", gnupg_strerror (rc));
+          log_error ("can't create writer: %s\n", gpg_strerror (rc));
           goto leave;
         }
     }
@@ -160,11 +159,10 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
       goto leave;
     }
 
-  data_md = gcry_md_open (0, 0);
-  if (!data_md)
+  rc = gcry_md_open (&data_md, 0, 0);
+  if (rc)
     {
-      rc = map_gcry_err (gcry_errno());
-      log_error ("md_open failed: %s\n", gcry_strerror (-1));
+      log_error ("md_open failed: %s\n", gpg_strerror (rc));
       goto leave;
     }
   if (DBG_HASHING)
@@ -225,7 +223,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
       rc = gpgsm_finish_writer (b64writer);
       if (rc) 
         {
-          log_error ("write failed: %s\n", gnupg_strerror (rc));
+          log_error ("write failed: %s\n", gpg_strerror (rc));
           goto leave;
         }
     }
@@ -364,7 +362,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
             }
           else
             log_error ("failed to find the certificate: %s\n",
-                       gnupg_strerror(rc));
+                       gpg_strerror(rc));
           {
             char numbuf[50];
             sprintf (numbuf, "%d", rc);
@@ -380,7 +378,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
       rc = keydb_get_cert (kh, &cert);
       if (rc)
         {
-          log_error ("failed to get cert: %s\n", gnupg_strerror (rc));
+          log_error ("failed to get cert: %s\n", gpg_strerror (rc));
           goto next_signer;
         }
 
@@ -395,7 +393,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
 
       if (msgdigest)
         { /* Signed attributes are available. */
-          GCRY_MD_HD md;
+          gcry_md_hd_t md;
           unsigned char *s;
 
           /* check that the message digest in the signed attributes
@@ -415,10 +413,10 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
               goto next_signer; 
             }
             
-          md = gcry_md_open (algo, 0);
-          if (!md)
+          rc = gcry_md_open (&md, algo, 0);
+          if (rc)
             {
-              log_error ("md_open failed: %s\n", gcry_strerror (-1));
+              log_error ("md_open failed: %s\n", gpg_strerror (rc));
               goto next_signer;
             }
           if (DBG_HASHING)
@@ -445,7 +443,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
         {
           char *fpr;
 
-          log_error ("invalid signature: %s\n", gnupg_strerror (rc));
+          log_error ("invalid signature: %s\n", gpg_strerror (rc));
           fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
           gpgsm_status (ctrl, STATUS_BADSIG, fpr);
           xfree (fpr);
@@ -454,8 +452,8 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
       rc = gpgsm_cert_use_verify_p (cert); /*(this displays an info message)*/
       if (rc)
         {
-          gpgsm_status2 (ctrl, STATUS_ERROR, "verify.keyusage",
-                         gnupg_error_token (rc), NULL);
+          gpgsm_status_with_err_code (ctrl, STATUS_ERROR, "verify.keyusage",
+                                      gpg_err_code (rc));
           rc = 0;
         }
 
@@ -474,7 +472,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
         char *buf, *fpr, *tstr;
 
         fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
-        tstr = strtimestamp (sigtime);
+        tstr = strtimestamp_r (sigtime);
         buf = xmalloc ( strlen(fpr) + strlen (tstr) + 120);
         sprintf (buf, "%s %s %lu %lu", fpr, tstr,
                  (unsigned long)sigtime, (unsigned long)keyexptime );
@@ -486,14 +484,16 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
 
       if (rc) /* of validate_chain */
         {
-          log_error ("invalid certification chain: %s\n", gnupg_strerror (rc));
+          log_error ("invalid certification chain: %s\n", gpg_strerror (rc));
           if (gpg_err_code (rc) == GPG_ERR_BAD_CERT_CHAIN
               || gpg_err_code (rc) == GPG_ERR_BAD_CERT
               || gpg_err_code (rc) == GPG_ERR_BAD_CA_CERT
               || gpg_err_code (rc) == GPG_ERR_CERT_REVOKED)
-            gpgsm_status (ctrl, STATUS_TRUST_NEVER, gnupg_error_token (rc));
+            gpgsm_status_with_err_code (ctrl, STATUS_TRUST_NEVER, NULL,
+                                        gpg_err_code (rc));
           else
-            gpgsm_status (ctrl, STATUS_TRUST_UNDEFINED, gnupg_error_token (rc));
+            gpgsm_status_with_err_code (ctrl, STATUS_TRUST_UNDEFINED, NULL, 
+                                        gpg_err_code (rc));
           goto next_signer;
         }
 

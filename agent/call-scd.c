@@ -57,6 +57,8 @@ struct learn_parm_s {
   void *kpinfo_cb_arg;
   void (*certinfo_cb)(void*, const char *);
   void *certinfo_cb_arg;
+  void (*sinfo_cb)(void*, const char *, size_t, const char *);
+  void *sinfo_cb_arg;
 };
 
 struct inq_needpin_s {
@@ -245,8 +247,10 @@ learn_status_cb (void *opaque, const char *line)
     {
       log_debug ("learn_status_cb: serialno `%s'\n", line);
     }
-  else
-    log_debug ("learn_status_cb: ignoring `%.*s'\n", keywordlen, keyword);
+  else if (keywordlen && *line)
+    {
+      parm->sinfo_cb (parm->sinfo_cb_arg, keyword, keywordlen, line);
+    }
   
   return 0;
 }
@@ -257,7 +261,9 @@ int
 agent_card_learn (void (*kpinfo_cb)(void*, const char *),
                   void *kpinfo_cb_arg,
                   void (*certinfo_cb)(void*, const char *),
-                  void *certinfo_cb_arg)
+                  void *certinfo_cb_arg,
+                  void (*sinfo_cb)(void*, const char *, size_t, const char *),
+                  void *sinfo_cb_arg)
 {
   int rc;
   struct learn_parm_s parm;
@@ -271,6 +277,8 @@ agent_card_learn (void (*kpinfo_cb)(void*, const char *),
   parm.kpinfo_cb_arg = kpinfo_cb_arg;
   parm.certinfo_cb = certinfo_cb;
   parm.certinfo_cb_arg = certinfo_cb_arg;
+  parm.sinfo_cb = sinfo_cb;
+  parm.sinfo_cb_arg = sinfo_cb_arg;
   rc = assuan_transact (scd_ctx, "LEARN --force",
                         NULL, NULL, NULL, NULL,
                         learn_status_cb, &parm);
@@ -329,9 +337,9 @@ agent_card_serialno (char **r_serialno)
      we can do this if we for some reason figure out that the
      operation might have failed due to a missing RESET.  Hmmm, I feel
      this is really SCdaemon's duty */
-  rc = assuan_transact (scd_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL);
-  if (rc)
-    return unlock_scd (map_assuan_err (rc));
+/*    rc = assuan_transact (scd_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL); */
+/*    if (rc) */
+/*      return unlock_scd (map_assuan_err (rc)); */
 
   rc = assuan_transact (scd_ctx, "SERIALNO",
                         NULL, NULL, NULL, NULL,
@@ -590,5 +598,68 @@ agent_card_readkey (const char *id, unsigned char **r_buf)
   return unlock_scd (0);
 }
 
+
+
+
+static AssuanError
+pass_status_thru (void *opaque, const char *line)
+{
+  ASSUAN_CONTEXT ctx = opaque;
+  char keyword[200];
+  int i;
+
+  for (i=0; *line && !spacep (line) && i < DIM(keyword)-1; line++, i++)
+    keyword[i] = *line;
+  keyword[i] = 0;
+  /* truncate any remaining keyword stuff. */
+  for (; *line && !spacep (line); line++)
+    ;
+  while (spacep (line))
+    line++;
+
+  assuan_write_status (ctx, keyword, line);
+  return 0;
+}
+
+static AssuanError
+pass_data_thru (void *opaque, const void *buffer, size_t length)
+{
+  ASSUAN_CONTEXT ctx = opaque;
+
+  assuan_send_data (ctx, buffer, length);
+  return 0;
+}
+
+
+/* Send the line CMDLINE with command for the SCDdaemon to it and send
+   all status messages back.  This command is used as a general quoting
+   mechanism to pass everything verbatim to SCDAEMOPN.  The PIN
+   inquirey is handled inside gpg-agent. */
+int
+agent_card_scd (const char *cmdline,
+                int (*getpin_cb)(void *, const char *, char*, size_t),
+                void *getpin_cb_arg, void *assuan_context)
+{
+  int rc;
+  struct inq_needpin_s inqparm;
+
+  rc = start_scd ();
+  if (rc)
+    return rc;
+
+  inqparm.ctx = scd_ctx;
+  inqparm.getpin_cb = getpin_cb;
+  inqparm.getpin_cb_arg = getpin_cb_arg;
+  rc = assuan_transact (scd_ctx, cmdline,
+                        pass_data_thru, assuan_context,
+                        inq_needpin, &inqparm,
+                        pass_status_thru, assuan_context);
+  if (rc)
+    {
+      return unlock_scd (map_assuan_err (rc));
+    }
+
+  return unlock_scd (0);
+}
 
 

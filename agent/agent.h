@@ -1,5 +1,5 @@
 /* agent.h - Global definitions for the agent
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -130,8 +130,9 @@ void start_command_handler (int, int);
 /*-- findkey.c --*/
 int agent_write_private_key (const unsigned char *grip,
                              const void *buffer, size_t length, int force);
-GCRY_SEXP agent_key_from_file (CTRL ctrl, const unsigned char *grip,
-                               unsigned char **shadow_info, int ignore_cache);
+gcry_sexp_t agent_key_from_file (CTRL ctrl, const unsigned char *grip,
+                                 unsigned char **shadow_info,
+                                 int ignore_cache);
 int agent_key_available (const unsigned char *grip);
 
 /*-- query.c --*/
@@ -160,7 +161,7 @@ int agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
 /*-- genkey.c --*/
 int agent_genkey (CTRL ctrl,
                   const char *keyparam, size_t keyparmlen, FILE *outfp);
-int agent_protect_and_store (CTRL ctrl, GCRY_SEXP s_skey);
+int agent_protect_and_store (CTRL ctrl, gcry_sexp_t s_skey);
 
 /*-- protect.c --*/
 int agent_protect (const unsigned char *plainkey, const char *passphrase,
@@ -189,12 +190,17 @@ int divert_pkdecrypt (CTRL ctrl,
                       const unsigned char *cipher,
                       const unsigned char *shadow_info,
                       char **r_buf, size_t *r_len);
+int divert_generic_cmd (CTRL ctrl, const char *cmdline, void *assuan_context);
+
 
 /*-- call-scd.c --*/
 int agent_card_learn (void (*kpinfo_cb)(void*, const char *),
                       void *kpinfo_cb_arg,
                       void (*certinfo_cb)(void*, const char *),
-                      void *certinfo_cb_arg);
+                      void *certinfo_cb_arg,
+                      void (*sinfo_cb)(void*, const char *,
+                                       size_t, const char *),
+                      void *sinfo_cb_arg);
 int agent_card_serialno (char **r_serialno);
 int agent_card_pksign (const char *keyid,
                        int (*getpin_cb)(void *, const char *, char*, size_t),
@@ -208,6 +214,9 @@ int agent_card_pkdecrypt (const char *keyid,
                           char **r_buf, size_t *r_buflen);
 int agent_card_readcert (const char *id, char **r_buf, size_t *r_buflen);
 int agent_card_readkey (const char *id, unsigned char **r_buf);
+int agent_card_scd (const char *cmdline,
+                    int (*getpin_cb)(void *, const char *, char*, size_t),
+                    void *getpin_cb_arg, void *assuan_context);
 
 
 /*-- learncard.c --*/

@@ -1,5 +1,5 @@
 /* learncard.c - Handle the LEARN command
- *	Copyright (C) 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -59,6 +59,20 @@ struct certinfo_cb_parm_s {
 };
 
 
+struct sinfo_s {
+  struct sinfo_s *next;
+  char *data;       /* Points into keyword. */
+  char keyword[1];  
+};
+typedef struct sinfo_s *SINFO;  
+
+struct sinfo_cb_parm_s {
+  int error;;
+  SINFO info;
+};
+
+
+
 static void
 release_keypair_info (KEYPAIR_INFO info)
 {
@@ -81,9 +95,20 @@ release_certinfo (CERTINFO info)
     }
 }
 
+static void
+release_sinfo (SINFO info)
+{
+  while (info)
+    {
+      SINFO tmp = info->next;
+      xfree (info);
+      info = tmp;
+    }
+}
 
 
-/* This callback is used by agent_card_leanr and passed the content of
+
+/* This callback is used by agent_card_learn and passed the content of
    all KEYPAIRINFO lines.  It merely stores this data away */
 static void
 kpinfo_cb (void *opaque, const char *line)
@@ -134,7 +159,7 @@ kpinfo_cb (void *opaque, const char *line)
 }
 
 
-/* This callback is used by agent_card_leanr and passed the content of
+/* This callback is used by agent_card_learn and passed the content of
    all CERTINFO lines.  It merely stores this data away */
 static void
 certinfo_cb (void *opaque, const char *line)
@@ -170,6 +195,35 @@ certinfo_cb (void *opaque, const char *line)
   /* store it */
   item->next = parm->info;
   parm->info = item;
+}
+
+
+/* This callback is used by agent_card_learn and passed the content of
+   all SINFO lines.  It merely stores this data away */
+static void
+sinfo_cb (void *opaque, const char *keyword, size_t keywordlen,
+          const char *data)
+{
+  struct sinfo_cb_parm_s *sparm = opaque;
+  SINFO item;
+
+  if (sparm->error)
+    return; /* no need to gather data after an error coccured */
+
+  item = xtrycalloc (1, sizeof *item + keywordlen + 1 + strlen (data));
+  if (!item)
+    {
+      sparm->error = out_of_core ();
+      return;
+    }
+  memcpy (item->keyword, keyword, keywordlen);
+  item->data = item->keyword + keywordlen;
+  *item->data = 0;
+  item->data++;
+  strcpy (item->data, data);
+  /* store it */
+  item->next = sparm->info;
+  sparm->info = item;
 }
 
 
@@ -211,7 +265,7 @@ send_cert_back (const char *id, void *assuan_context)
   if (rc)
     {
       log_error ("error reading certificate: %s\n",
-                 gnupg_strerror (rc));
+                 gpg_strerror (rc));
       return rc;
     }
 
@@ -238,8 +292,10 @@ agent_handle_learn (void *assuan_context)
   int rc;
   struct kpinfo_cb_parm_s parm;
   struct certinfo_cb_parm_s cparm;
+  struct sinfo_cb_parm_s sparm;
   char *serialno = NULL;
   KEYPAIR_INFO item;
+  SINFO sitem;
   unsigned char grip[20];
   char *p;
   int i;
@@ -253,23 +309,34 @@ agent_handle_learn (void *assuan_context)
 
   memset (&parm, 0, sizeof parm);
   memset (&cparm, 0, sizeof cparm);
+  memset (&sparm, 0, sizeof sparm);
 
   /* Check whether a card is present and get the serial number */
   rc = agent_card_serialno (&serialno);
   if (rc)
     goto leave;
 
-  /* now gather all the availabe info */
-  rc = agent_card_learn (kpinfo_cb, &parm, certinfo_cb, &cparm);
-  if (!rc && (parm.error || cparm.error))
-    rc = parm.error? parm.error : cparm.error;
+  /* now gather all the available info */
+  rc = agent_card_learn (kpinfo_cb, &parm, certinfo_cb, &cparm,
+                         sinfo_cb, &sparm);
+  if (!rc && (parm.error || cparm.error || sparm.error))
+    rc = parm.error? parm.error : cparm.error? cparm.error : sparm.error;
   if (rc)
     {
-      log_debug ("agent_card_learn failed: %s\n", gnupg_strerror (rc));
+      log_debug ("agent_card_learn failed: %s\n", gpg_strerror (rc));
       goto leave;
     }
   
   log_info ("card has S/N: %s\n", serialno);
+
+  /* Pass on all the collected status information. */
+  if (assuan_context)
+    {
+      for (sitem = sparm.info; sitem; sitem = sitem->next)
+        {
+          assuan_write_status (assuan_context, sitem->keyword, sitem->data);
+        }
+    }
 
   /* Write out the certificates in a standard order. */
   for (i=0; certtype_list[i] != -1; i++)
@@ -315,7 +382,7 @@ agent_handle_learn (void *assuan_context)
       rc = agent_card_readkey (item->id, &pubkey);
       if (rc)
         {
-          log_debug ("agent_card_readkey failed: %s\n", gnupg_strerror (rc));
+          log_debug ("agent_card_readkey failed: %s\n", gpg_strerror (rc));
           goto leave;
         }
 
@@ -333,7 +400,7 @@ agent_handle_learn (void *assuan_context)
       xfree (pubkey);
       if (rc)
         {
-          log_error ("shadowing the key failed: %s\n", gnupg_strerror (rc));
+          log_error ("shadowing the key failed: %s\n", gpg_strerror (rc));
           goto leave;
         }
       n = gcry_sexp_canon_len (shdkey, 0, NULL, NULL);
@@ -343,7 +410,7 @@ agent_handle_learn (void *assuan_context)
       xfree (shdkey);
       if (rc)
         {
-          log_error ("error writing key: %s\n", gnupg_strerror (rc));
+          log_error ("error writing key: %s\n", gpg_strerror (rc));
           goto leave;
         }
 
@@ -374,6 +441,7 @@ agent_handle_learn (void *assuan_context)
   xfree (serialno);
   release_keypair_info (parm.info);
   release_certinfo (cparm.info);
+  release_sinfo (sparm.info);
   return rc;
 }
 

@@ -26,7 +26,10 @@
 #include <dlfcn.h>
 
 #include "scdaemon.h"
+#include "app-common.h"
 #include "iso7816.h"
+
+
 
 static struct {
   int tag;
@@ -80,6 +83,12 @@ find_tlv (const unsigned char *buffer, size_t length,
       buffer = s;
       if (n < 2)
         return NULL; /* buffer definitely too short for tag and length. */
+      if (!*s || *s == 0xff)
+        { /* Skip optional filler between TLV objects. */
+          s++;
+          n--;
+          continue;
+        }
       composite = !!(*s & 0x20);
       if ((*s & 0x1f) == 0x1f)
         { /* more tag bytes to follow */
@@ -95,13 +104,26 @@ find_tlv (const unsigned char *buffer, size_t length,
         this_tag = s[0];
       len = s[1];
       s += 2; n -= 2;
-      if (len == 255)
-        {
+      if (len < 0x80)
+        ;
+      else if (len == 0x81)
+        { /* One byte length follows. */
+          if (!n)
+            return NULL; /* we expected 1 more bytes with the length. */
+          len = s[0];
+          s++; n--;
+        }
+      else if (len == 0x82)
+        { /* Two byte length follows. */
           if (n < 2)
             return NULL; /* we expected 2 more bytes with the length. */
           len = (s[0] << 8) | s[1];
           s += 2; n -= 2;
         }
+      else
+        return NULL; /* APDU limit is 65535, thus it does not make
+                        sense to assume longer length fields. */
+
       if (composite && nestlevel < 100)
         { /* Dive into this composite DO after checking for too deep
              nesting. */
@@ -128,7 +150,64 @@ find_tlv (const unsigned char *buffer, size_t length,
 }
 
 
+/* Get the DO identified by TAG from the card in SLOT and return a
+   buffer with its content in RESULT and NBYTES.  The return value is
+   NULL if not found or a pointer which must be used to release the
+   buffer holding value. */
+static void *
+get_one_do (int slot, int tag, unsigned char **result, size_t *nbytes)
+{
+  int rc, i;
+  unsigned char *buffer;
+  size_t buflen;
+  unsigned char *value;
+  size_t valuelen;
 
+  *result = NULL;
+  *nbytes = 0;
+  for (i=0; data_objects[i].tag && data_objects[i].tag != tag; i++)
+    ;
+
+  value = NULL;
+  rc = -1;
+  if (data_objects[i].tag && data_objects[i].get_from)
+    {
+      rc = iso7816_get_data (slot, data_objects[i].get_from,
+                             &buffer, &buflen);
+      if (!rc)
+        {
+          value = find_tlv (buffer, buflen, tag, &valuelen, 0);
+          if (!value)
+            ; /* not found */
+          else if (valuelen > buflen - (value - buffer))
+            {
+              log_error ("warning: constructed DO too short\n");
+              value = NULL;
+              xfree (buffer); buffer = NULL;
+            }
+        }
+    }
+
+  if (!value) /* Not in a constructed DO, try simple. */
+    {
+      rc = iso7816_get_data (slot, tag, &buffer, &buflen);
+      if (!rc)
+        {
+          value = buffer;
+          valuelen = buflen;
+        }
+    }
+
+  if (!rc)
+    {
+      *nbytes = valuelen;
+      *result = value;
+      return buffer;
+    }
+  return NULL;
+}
+
+#if 0 /* not used */
 static void
 dump_one_do (int slot, int tag)
 {
@@ -191,6 +270,7 @@ dump_one_do (int slot, int tag)
       xfree (buffer);
     }
 }
+#endif /*not used*/
 
 
 static void
@@ -257,15 +337,15 @@ dump_all_do (int slot)
     }
 }
 
-
+/* Note, that FPR must be at least 20 bytes. */
 static int 
 store_fpr (int slot, int keynumber, u32 timestamp,
            const unsigned char *m, size_t mlen,
-           const unsigned char *e, size_t elen)
+           const unsigned char *e, size_t elen, 
+           unsigned char *fpr)
 {
   unsigned int n;
   unsigned char *buffer, *p;
-  unsigned char fpr[20];
   int rc;
   
   n = 6 + 2 + mlen + 2 + elen;
@@ -299,45 +379,189 @@ store_fpr (int slot, int keynumber, u32 timestamp,
   return rc;
 }
 
+       
+static void
+send_fpr_if_not_null (CTRL ctrl, const char *keyword,
+                      int number, const unsigned char *fpr)
+{                      
+  int i;
+  char buf[41];
+  char numbuf[25];
+
+  for (i=0; i < 20 && !fpr[i]; i++)
+    ;
+  if (i==20)
+    return; /* All zero. */
+  for (i=0; i< 20; i++)
+    sprintf (buf+2*i, "%02X", fpr[i]);
+  if (number == -1)
+    *numbuf = 0; /* Don't print the key number */
+  else
+    sprintf (numbuf, "%d", number);
+  send_status_info (ctrl, keyword,
+                    numbuf, (size_t)strlen(numbuf),
+                    buf, (size_t)strlen (buf), NULL, 0);
+}
+
+static void
+send_key_data (CTRL ctrl, const char *name, 
+               const unsigned char *a, size_t alen)
+{
+  char *p, *buf = xmalloc (alen*2+1);
+  
+  for (p=buf; alen; a++, alen--, p += 2)
+    sprintf (p, "%02X", *a);
+
+  send_status_info (ctrl, "KEY-DATA",
+                    name, (size_t)strlen(name), 
+                    buf, (size_t)strlen (buf),
+                    NULL, 0);
+  xfree (buf);
+}
 
 
-/* Generate a new key on the card and store the fingerprint in the
-   corresponding DO.  A KEYNUMBER of 0 creates the digital signature
-   key, 1 the encryption key and 2 the authentication key.  If the key
-   already exists an error is returned unless FORCE has been set to
-   true.  Note, that the function does not return the public key; this
-   has to be done using openpgp_readkey(). */
-int
-openpgp_genkey (int slot, int keynumber, int force)
+
+static int
+do_learn_status (APP app, CTRL ctrl)
+{
+  void *relptr;
+  unsigned char *value;
+  size_t valuelen;
+  int i;
+
+  relptr = get_one_do (app->slot, 0x005B, &value, &valuelen);
+  if (relptr)
+    {
+      send_status_info (ctrl, "DISP-NAME", value, valuelen, NULL, 0);
+      xfree (relptr);
+    }
+  relptr = get_one_do (app->slot, 0x5FF0, &value, &valuelen);
+  if (relptr)
+    {
+      send_status_info (ctrl, "PUBKEY-URL", value, valuelen, NULL, 0);
+      xfree (relptr);
+    }
+
+  relptr = get_one_do (app->slot, 0x00C5, &value, &valuelen);
+  if (relptr && valuelen >= 60)
+    {
+      for (i=0; i < 3; i++)
+        send_fpr_if_not_null (ctrl, "KEY-FPR", i+1, value+i*20);
+    }
+  xfree (relptr);
+  relptr = get_one_do (app->slot, 0x00C6, &value, &valuelen);
+  if (relptr && valuelen >= 60)
+    {
+      for (i=0; i < 3; i++)
+        send_fpr_if_not_null (ctrl, "CA-FPR", i+1, value+i*20);
+    }
+  xfree (relptr);
+  return 0;
+}
+
+
+/* Handle the SETATTR operation. All arguments are already basically
+   checked. */
+static int 
+do_setattr (APP app, const char *name,
+            int (*pincb)(void*, const char *, char **),
+            void *pincb_arg,
+            const unsigned char *value, size_t valuelen)
+{
+  gpg_error_t rc;
+
+  log_debug ("app_openpgp#setattr `%s' value of length %u\n",
+             name, (unsigned int)valuelen); /* fixme: name should be
+                                               sanitized. */
+
+  if (!app->did_chv3)
+    {
+      char *pinvalue;
+
+/*        rc = pincb (pincb_arg, "Please enter the card's admin PIN (CHV3)", */
+/*                    &pinvalue); */
+      pinvalue = xstrdup ("12345678");
+      rc = 0;
+      if (rc)
+        {
+          log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
+          return rc;
+        }
+
+      rc = iso7816_verify (app->slot, 0x83, pinvalue, strlen (pinvalue));
+      xfree (pinvalue);
+      if (rc)
+        {
+          log_error ("verify CHV3 failed\n");
+          rc = gpg_error (GPG_ERR_GENERAL);
+          return rc;
+        }
+      app->did_chv3 = 1;
+    }
+
+  log_debug ("setting `%s' to `%.*s'\n", name, (int)valuelen, value);
+  if (!strcmp (name, "DISP-NAME"))
+    {
+      rc = iso7816_put_data (app->slot, 0x005B, value, valuelen);
+      if (rc)
+        {
+          /* FIXME: If this fails we should *once* try again after
+          doing a verify command, so that in case of a problem with
+          tracking the verify operation we have a fallback. */
+          /* FIXME: change this when iso7816 returns correct error
+          codes. */
+          log_error ("failed to set `Name'\n");
+          rc = gpg_error (GPG_ERR_GENERAL);
+        }
+    }
+  else
+    rc = gpg_error (GPG_ERR_INV_NAME); 
+
+  return rc;
+}
+
+
+/* Handle the GENKEY command. */
+static int 
+do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
+          int (*pincb)(void*, const char *, char **),
+          void *pincb_arg)
 {
   int rc;
   int i;
+  char numbuf[30];
+  unsigned char fprbuf[20];
   const unsigned char *fpr;
   const unsigned char *keydata, *m, *e;
   unsigned char *buffer;
   size_t buflen, keydatalen, n, mlen, elen;
   time_t created_at;
-  
-  if (keynumber < 0 || keynumber > 2)
-    return -1; /* invalid value */
+  int keyno = atoi (keynostr);
+  int force = (flags & 1);
 
-  rc = iso7816_get_data (slot, 0x006E, &buffer, &buflen);
+  if (keyno < 1 || keyno > 3)
+    return gpg_error (GPG_ERR_INV_ID);
+  keyno--;
+
+  rc = iso7816_get_data (app->slot, 0x006E, &buffer, &buflen);
   if (rc)
     {
       log_error ("error reading application data\n");
-      return -1;
+      return gpg_error (GPG_ERR_GENERAL);
     }
   fpr = find_tlv (buffer, buflen, 0x00C5, &n, 0);
   if (!fpr || n != 60)
     {
+      rc = gpg_error (GPG_ERR_GENERAL);
       log_error ("error reading fingerprint DO\n");
       goto leave;
     }
-  fpr += 20*keynumber;
+  fpr += 20*keyno;
   for (i=0; i < 20 && !fpr[i]; i++)
     ;
   if (i!=20 && !force)
     {
+      rc = gpg_error (GPG_ERR_EEXIST);
       log_error ("key already exists\n");
       goto leave;
     }
@@ -346,8 +570,7 @@ openpgp_genkey (int slot, int keynumber, int force)
   else
     log_info ("generating new key\n");
 
-
-  rc = iso7816_verify (slot, 0x83, "12345678", 8);
+  rc = iso7816_verify (app->slot, 0x83, "12345678", 8);
   if (rc)
     {
       log_error ("verify CHV3 failed: rc=%04X\n", rc);
@@ -355,13 +578,14 @@ openpgp_genkey (int slot, int keynumber, int force)
     }
 
   xfree (buffer); buffer = NULL;
-  rc = iso7816_generate_keypair (slot, 
-                                 keynumber == 0? "\xB6" :
-                                 keynumber == 1? "\xB8" : "\xA4",
+  rc = iso7816_generate_keypair (app->slot, 
+                                 keyno == 0? "\xB6" :
+                                 keyno == 1? "\xB8" : "\xA4",
                                  2,
                                  &buffer, &buflen);
   if (rc)
     {
+      rc = gpg_error (GPG_ERR_CARD);
       log_error ("generating key failed\n");
       goto leave;
     }
@@ -372,7 +596,6 @@ openpgp_genkey (int slot, int keynumber, int force)
       goto leave;
     }
  
-
   m = find_tlv (keydata, keydatalen, 0x0081, &mlen, 0);
   if (!m)
     {
@@ -380,6 +603,8 @@ openpgp_genkey (int slot, int keynumber, int force)
       goto leave;
     }
   log_printhex ("RSA n:", m, mlen);
+  send_key_data (ctrl, "n", m, mlen);
+
   e = find_tlv (keydata, keydatalen, 0x0082, &elen, 0);
   if (!e)
     {
@@ -387,8 +612,18 @@ openpgp_genkey (int slot, int keynumber, int force)
       goto leave;
     }
   log_printhex ("RSA e:", e, elen);
+  send_key_data (ctrl, "e", e, elen);
+
   created_at = gnupg_get_time ();
-  rc = store_fpr (slot, keynumber, (u32)created_at, m, mlen, e, elen);
+  sprintf (numbuf, "%lu", (unsigned long)created_at);
+  send_status_info (ctrl, "KEY-CREATED-AT",
+                    numbuf, (size_t)strlen(numbuf), NULL, 0);
+
+  rc = store_fpr (app->slot, keyno, (u32)created_at,
+                  m, mlen, e, elen, fprbuf);
+  if (rc)
+    goto leave;
+  send_fpr_if_not_null (ctrl, "KEY-FPR", -1, fprbuf);
 
 
  leave:
@@ -397,12 +632,75 @@ openpgp_genkey (int slot, int keynumber, int force)
 }
 
 
+/* Comopute a digital signature on INDATA which is expected to be the
+   raw message digest. */
+static int 
+do_sign (APP app, const char *keyidstr, int hashalgo,
+         int (*pincb)(void*, const char *, char **),
+         void *pincb_arg,
+         const void *indata, size_t indatalen,
+         void **outdata, size_t *outdatalen )
+{
+  static unsigned char sha1_prefix[15] = /* Object ID is 1.3.14.3.2.26 */
+  { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03,
+    0x02, 0x1a, 0x05, 0x00, 0x04, 0x14 };
+  static unsigned char rmd160_prefix[15] = /* Object ID is 1.3.36.3.2.1 */
+  { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
+    0x02, 0x01, 0x05, 0x00, 0x04, 0x14 };
+  int rc;
+  unsigned char data[35];
+
+  /* We ignore KEYIDSTR, because the OpenPGP application has only one
+     signing key and no way to specify a different one. */
+  
+  if (indatalen != 20)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (hashalgo == GCRY_MD_SHA1)
+    memcpy (data, sha1_prefix, 15);
+  else if (hashalgo == GCRY_MD_RMD160)
+    memcpy (data, rmd160_prefix, 15);
+  else 
+    return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+  memcpy (data+15, indata, indatalen);
+
+
+  if (!app->did_chv1)
+    {
+      char *pinvalue;
+
+/*        rc = pincb (pincb_arg, "signature PIN", &pinvalue); */
+      pinvalue = xstrdup ("123456");
+      rc = 0;
+      if (rc)
+        {
+          log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
+          return rc;
+        }
+
+      rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
+      xfree (pinvalue);
+      if (rc)
+        {
+          log_error ("verify CHV1 failed\n");
+          rc = gpg_error (GPG_ERR_GENERAL);
+          return rc;
+        }
+      app->did_chv1 = 1;
+    }
+
+  rc = iso7816_compute_ds (app->slot, data, 35, outdata, outdatalen);
+
+  return rc;
+}
+
+
 /* Select the OpenPGP application on the card in SLOT.  This function
-   must be used to before any other OpenPGP application functions. */
+   must be used before any other OpenPGP application functions. */
 int
-app_select_openpgp (int slot)
+app_select_openpgp (APP app, unsigned char **sn, size_t *snlen)
 {
   static char const aid[] = { 0xD2, 0x76, 0x00, 0x01, 0x24, 0x01 };
+  int slot = app->slot;
   int rc;
   unsigned char *buffer;
   size_t buflen;
@@ -416,27 +714,31 @@ app_select_openpgp (int slot)
       if (rc)
         goto leave;
       if (opt.verbose)
-      log_info ("got AID: ");
-      log_printhex ("", buffer, buflen);
-      xfree (buffer);
+        {
+          log_info ("got AID: ");
+          log_printhex ("", buffer, buflen);
+        }
+
+      if (sn)
+        {
+          *sn = buffer;
+          *snlen = buflen;
+        }
+      else
+        xfree (buffer);
 
       dump_all_do (slot);
 
-/*        rc = iso7816_verify (slot, 0x83, "12345678", 8); */
-/*        if (rc) */
-/*          log_error ("verify CHV3 failed: rc=%04X\n", rc); */
-      
-
-/*        rc = iso7816_put_data (slot, 0x005B, "Joe Hacker", 10); */
-/*        if (rc) */
-/*          log_error ("failed to set `Name': rc=%04X\n", rc); */
-/*        else */
-/*          dump_one_do (slot, 0x005B); */
-      
-      /* fixme: associate the internal state with the slot */
-    }
+      app->fnc.learn_status = do_learn_status;
+      app->fnc.setattr = do_setattr;
+      app->fnc.genkey = do_genkey;
+      app->fnc.sign = do_sign;
+   }
 
 leave:
   return rc;
 }
+
+
+
 

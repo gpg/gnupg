@@ -28,10 +28,10 @@
 #include <assert.h>
 #include <ctype.h>
 
+#include "gpgsm.h"
 #include <gcrypt.h>
 #include <assuan.h>
 
-#include "gpgsm.h"
 #include "i18n.h"
 
 struct membuf {
@@ -263,7 +263,7 @@ inq_certificate (void *opaque, const char *line)
       err = gpgsm_find_cert (line, &cert);
       if (err)
         {
-          log_error ("certificate not found: %s\n", gnupg_strerror (err));
+          log_error ("certificate not found: %s\n", gpg_strerror (err));
           rc = ASSUAN_Inquire_Error;
         }
       else
@@ -533,7 +533,7 @@ run_command_inq_cb (void *opaque, const char *line)
       err = gpgsm_find_cert (line, &cert);
       if (err)
         {
-          log_error ("certificate not found: %s\n", gnupg_strerror (err));
+          log_error ("certificate not found: %s\n", gpg_strerror (err));
           rc = ASSUAN_Inquire_Error;
         }
       else

@@ -59,7 +59,7 @@ map_sc_err (int rc)
 int
 card_help_get_keygrip (KsbaCert cert, unsigned char *array)
 {
-  GCRY_SEXP s_pkey;
+  gcry_sexp_t s_pkey;
   int rc;
   KsbaSexp p;
   size_t n;
@@ -558,3 +558,4 @@ card_decipher (CARD card, const char *keyidstr,
     log_info ("card operation decipher result: %s\n", gpg_strerror (rc));
   return rc;
 }
+

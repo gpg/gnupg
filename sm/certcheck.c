@@ -27,17 +27,17 @@
 #include <time.h>
 #include <assert.h>
 
+#include "gpgsm.h"
 #include <gcrypt.h>
 #include <ksba.h>
 
-#include "gpgsm.h"
 #include "keydb.h"
 #include "i18n.h"
 
 
 static int
-do_encode_md (GCRY_MD_HD md, int algo,  unsigned int nbits,
-              GCRY_MPI *r_val)
+do_encode_md (gcry_md_hd_t md, int algo,  unsigned int nbits,
+              gcry_mpi_t *r_val)
 {
   int nframe = (nbits+7) / 8;
   byte *frame;
@@ -104,12 +104,12 @@ int
 gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
 {
   const char *algoid;
-  GCRY_MD_HD md;
+  gcry_md_hd_t md;
   int rc, algo;
-  GCRY_MPI frame;
+  gcry_mpi_t frame;
   KsbaSexp p;
   size_t n;
-  GCRY_SEXP s_sig, s_hash, s_pkey;
+  gcry_sexp_t s_sig, s_hash, s_pkey;
 
   algo = gcry_md_map_name ( (algoid=ksba_cert_get_digest_algo (cert)));
   if (!algo)
@@ -117,11 +117,11 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
       log_error ("unknown hash algorithm `%s'\n", algoid? algoid:"?");
       return gpg_error (GPG_ERR_GENERAL);
     }
-  md = gcry_md_open (algo, 0);
-  if (!md)
+  rc = gcry_md_open (&md, algo, 0);
+  if (rc)
     {
-      log_error ("md_open failed: %s\n", gcry_strerror (-1));
-      return gpg_error (GPG_ERR_GENERAL);
+      log_error ("md_open failed: %s\n", gpg_strerror (rc));
+      return rc;
     }
   if (DBG_HASHING)
     gcry_md_start_debug (md, "hash.cert");
@@ -157,9 +157,9 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
   ksba_free (p);
   if (rc)
     {
-      log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
+      log_error ("gcry_sexp_scan failed: %s\n", gpg_strerror (rc));
       gcry_md_close (md);
-      return map_gcry_err (rc);
+      return rc;
     }
 
   p = ksba_cert_get_public_key (issuer_cert);
@@ -176,10 +176,10 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
   ksba_free (p);
   if (rc)
     {
-      log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
+      log_error ("gcry_sexp_scan failed: %s\n", gpg_strerror (rc));
       gcry_md_close (md);
       gcry_sexp_release (s_sig);
-      return map_gcry_err (rc);
+      return rc;
     }
 
   rc = do_encode_md (md, algo, gcry_pk_get_nbits (s_pkey), &frame);
@@ -199,24 +199,24 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
   
   rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
   if (DBG_CRYPTO)
-      log_debug ("gcry_pk_verify: %s\n", gcry_strerror (rc));
+      log_debug ("gcry_pk_verify: %s\n", gpg_strerror (rc));
   gcry_md_close (md);
   gcry_sexp_release (s_sig);
   gcry_sexp_release (s_hash);
   gcry_sexp_release (s_pkey);
-  return map_gcry_err (rc);
+  return rc;
 }
 
 
 
 int
 gpgsm_check_cms_signature (KsbaCert cert, KsbaConstSexp sigval,
-                           GCRY_MD_HD md, int algo)
+                           gcry_md_hd_t md, int algo)
 {
   int rc;
   KsbaSexp p;
-  GCRY_MPI frame;
-  GCRY_SEXP s_sig, s_hash, s_pkey;
+  gcry_mpi_t frame;
+  gcry_sexp_t s_sig, s_hash, s_pkey;
   size_t n;
 
   n = gcry_sexp_canon_len (sigval, 0, NULL, NULL);
@@ -228,8 +228,8 @@ gpgsm_check_cms_signature (KsbaCert cert, KsbaConstSexp sigval,
   rc = gcry_sexp_sscan (&s_sig, NULL, sigval, n);
   if (rc)
     {
-      log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
-      return map_gcry_err (rc);
+      log_error ("gcry_sexp_scan failed: %s\n", gpg_strerror (rc));
+      return rc;
     }
 
   p = ksba_cert_get_public_key (cert);
@@ -248,9 +248,9 @@ gpgsm_check_cms_signature (KsbaCert cert, KsbaConstSexp sigval,
   ksba_free (p);
   if (rc)
     {
-      log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
+      log_error ("gcry_sexp_scan failed: %s\n", gpg_strerror (rc));
       gcry_sexp_release (s_sig);
-      return map_gcry_err (rc);
+      return rc;
     }
 
 
@@ -268,17 +268,17 @@ gpgsm_check_cms_signature (KsbaCert cert, KsbaConstSexp sigval,
   
   rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
   if (DBG_CRYPTO)
-      log_debug ("gcry_pk_verify: %s\n", gcry_strerror (rc));
+      log_debug ("gcry_pk_verify: %s\n", gpg_strerror (rc));
   gcry_sexp_release (s_sig);
   gcry_sexp_release (s_hash);
   gcry_sexp_release (s_pkey);
-  return map_gcry_err (rc);
+  return rc;
 }
 
 
 
 int
-gpgsm_create_cms_signature (KsbaCert cert, GCRY_MD_HD md, int mdalgo,
+gpgsm_create_cms_signature (KsbaCert cert, gcry_md_hd_t md, int mdalgo,
                             char **r_sigval)
 {
   int rc;

@@ -1,5 +1,6 @@
 /* protect.c - Un/Protect a secret key
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -135,19 +136,19 @@ do_encryption (const char *protbegin, size_t protlen,
                const char *passphrase,  const unsigned char *sha1hash,
                unsigned char **result, size_t *resultlen)
 {
-  GCRY_CIPHER_HD hd;
+  gcry_cipher_hd_t hd;
   const char *modestr = "openpgp-s2k3-sha1-" PROT_CIPHER_STRING "-cbc";
   int blklen, enclen, outlen;
   char *iv = NULL;
-  int rc = 0;
+  int rc;
   char *outbuf = NULL;
   char *p;
   int saltpos, ivpos, encpos;
 
-  hd = gcry_cipher_open (PROT_CIPHER, GCRY_CIPHER_MODE_CBC,
+  rc = gcry_cipher_open (&hd, PROT_CIPHER, GCRY_CIPHER_MODE_CBC,
                          GCRY_CIPHER_SECURE);
-  if (!hd)
-    return map_gcry_err (gcry_errno());
+  if (rc)
+    return rc;
 
 
   /* We need to work on a copy of the data because this makes it
@@ -387,7 +388,7 @@ do_decryption (const unsigned char *protected, size_t protectedlen,
 {
   int rc = 0;
   int blklen;
-  GCRY_CIPHER_HD hd;
+  gcry_cipher_hd_t hd;
   unsigned char *outbuf;
   size_t reallen;
 
@@ -395,10 +396,10 @@ do_decryption (const unsigned char *protected, size_t protectedlen,
   if (protectedlen < 4 || (protectedlen%blklen))
     return gpg_error (GPG_ERR_CORRUPTED_PROTECTION);
 
-  hd = gcry_cipher_open (PROT_CIPHER, GCRY_CIPHER_MODE_CBC,
+  rc = gcry_cipher_open (&hd, PROT_CIPHER, GCRY_CIPHER_MODE_CBC,
                          GCRY_CIPHER_SECURE);
-  if (!hd)
-    return map_gcry_err (gcry_errno());
+  if (rc)
+    return rc;
 
   outbuf = gcry_malloc_secure (protectedlen);
   if (!outbuf)
@@ -750,7 +751,8 @@ hash_passphrase (const char *passphrase, int hashalgo,
                  unsigned long s2kcount,
                  unsigned char *key, size_t keylen)
 {
-  GCRY_MD_HD md;
+  int rc;
+  gcry_md_hd_t md;
   int pass, i;
   int used = 0;
   int pwlen = strlen (passphrase);
@@ -761,9 +763,9 @@ hash_passphrase (const char *passphrase, int hashalgo,
   if ((s2kmode == 1 ||s2kmode == 3) && !s2ksalt)
     return gpg_error (GPG_ERR_INV_VALUE);
   
-  md = gcry_md_open (hashalgo, GCRY_MD_FLAG_SECURE);
-  if (!md)
-    return map_gcry_err (gcry_errno());
+  rc = gcry_md_open (&md, hashalgo, GCRY_MD_FLAG_SECURE);
+  if (rc)
+    return rc;
 
   for (pass=0; used < keylen; pass++)
     {

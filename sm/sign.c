@@ -27,16 +27,16 @@
 #include <time.h>
 #include <assert.h>
 
+#include "gpgsm.h"
 #include <gcrypt.h>
 #include <ksba.h>
 
-#include "gpgsm.h"
 #include "keydb.h"
 #include "i18n.h"
 
 
 static void
-hash_data (int fd, GCRY_MD_HD md)
+hash_data (int fd, gcry_md_hd_t md)
 {
   FILE *fp;
   char buffer[4096];
@@ -61,7 +61,7 @@ hash_data (int fd, GCRY_MD_HD md)
 }
 
 static int
-hash_and_copy_data (int fd, GCRY_MD_HD md, KsbaWriter writer)
+hash_and_copy_data (int fd, gcry_md_hd_t md, KsbaWriter writer)
 {
   KsbaError err;
   FILE *fp;
@@ -203,7 +203,7 @@ get_default_signer (void)
   rc = keydb_classify_name (opt.local_user, &desc);
   if (rc)
     {
-      log_error ("failed to find default signer: %s\n", gnupg_strerror (rc));
+      log_error ("failed to find default signer: %s\n", gpg_strerror (rc));
       return NULL;
     }
 
@@ -302,7 +302,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
   KsbaCMS cms = NULL;
   KsbaStopReason stopreason;
   KEYDB_HANDLE kh = NULL;
-  GCRY_MD_HD data_md = NULL;
+  gcry_md_hd_t data_md = NULL;
   int signer;
   const char *algoid;
   int algo;
@@ -322,7 +322,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
   rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, &writer);
   if (rc)
     {
-      log_error ("can't create writer: %s\n", gnupg_strerror (rc));
+      log_error ("can't create writer: %s\n", gpg_strerror (rc));
       goto leave;
     }
 
@@ -394,7 +394,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
       if (rc)
         {
           log_error ("failed to store list of certificates: %s\n",
-                     gnupg_strerror(rc));
+                     gpg_strerror(rc));
           goto leave;
         }
       /* Set the hash algorithm we are going to use */
@@ -409,11 +409,10 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
     }
   
   /* Prepare hashing (actually we are figuring out what we have set above)*/
-  data_md = gcry_md_open (0, 0);
-  if (!data_md)
+  rc = gcry_md_open (&data_md, 0, 0);
+  if (rc)
     {
-      rc = map_gcry_err (gcry_errno());
-      log_error ("md_open failed: %s\n", gcry_strerror (-1));
+      log_error ("md_open failed: %s\n", gpg_strerror (rc));
       goto leave;
     }
   if (DBG_HASHING)
@@ -524,18 +523,17 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
         }
       else if (stopreason == KSBA_SR_NEED_SIG)
         { /* calculate the signature for all signers */
-          GCRY_MD_HD md;
+          gcry_md_hd_t md;
 
           algo = GCRY_MD_SHA1;
-          md = gcry_md_open (algo, 0);
-          if (DBG_HASHING)
-            gcry_md_start_debug (md, "sign.attr");
-
-          if (!md)
+          rc = gcry_md_open (&md, algo, 0);
+          if (rc)
             {
-              log_error ("md_open failed: %s\n", gcry_strerror (-1));
+              log_error ("md_open failed: %s\n", gpg_strerror (rc));
               goto leave;
             }
+          if (DBG_HASHING)
+            gcry_md_start_debug (md, "sign.attr");
           ksba_cms_set_hash_function (cms, HASH_FNC, md);
           for (cl=signerlist,signer=0; cl; cl = cl->next, signer++)
             {
@@ -605,7 +603,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
   rc = gpgsm_finish_writer (b64writer);
   if (rc) 
     {
-      log_error ("write failed: %s\n", gnupg_strerror (rc));
+      log_error ("write failed: %s\n", gpg_strerror (rc));
       goto leave;
     }
 

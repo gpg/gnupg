@@ -26,15 +26,17 @@
 #include <unistd.h> 
 #include <time.h>
 #include <assert.h>
-#include <gcrypt.h>
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
-#include <assuan.h>
 
 #include "gpgsm.h"
+#include <gcrypt.h>
+#include <assuan.h>
 #include "i18n.h"
 #include "keydb.h" /* fixme: Move this to import.c */
+#include "../common/membuf.h"
+
 
 static ASSUAN_CONTEXT agent_ctx = NULL;
 static int force_pipe_server = 0;
@@ -54,76 +56,8 @@ struct genkey_parm_s {
 struct learn_parm_s {
   int error;
   ASSUAN_CONTEXT ctx;
-  struct membuf *data;
+  membuf_t *data;
 };
-
-struct membuf {
-  size_t len;
-  size_t size;
-  char *buf;
-  int out_of_core;
-};
-
-
-
-/* A simple implemnation of a dynamic buffer.  Use init_membuf() to
-   create a buffer, put_membuf to append bytes and get_membuf to
-   release and return the buffer.  Allocation errors are detected but
-   only returned at the final get_membuf(), this helps not to clutter
-   the code with out of core checks.  */
-
-static void
-init_membuf (struct membuf *mb, int initiallen)
-{
-  mb->len = 0;
-  mb->size = initiallen;
-  mb->out_of_core = 0;
-  mb->buf = xtrymalloc (initiallen);
-  if (!mb->buf)
-      mb->out_of_core = 1;
-}
-
-static void
-put_membuf (struct membuf *mb, const void *buf, size_t len)
-{
-  if (mb->out_of_core)
-    return;
-
-  if (mb->len + len >= mb->size)
-    {
-      char *p;
-      
-      mb->size += len + 1024;
-      p = xtryrealloc (mb->buf, mb->size);
-      if (!p)
-        {
-          mb->out_of_core = 1;
-          return;
-        }
-      mb->buf = p;
-    }
-  memcpy (mb->buf + mb->len, buf, len);
-  mb->len += len;
-}
-
-static void *
-get_membuf (struct membuf *mb, size_t *len)
-{
-  char *p;
-
-  if (mb->out_of_core)
-    {
-      xfree (mb->buf);
-      mb->buf = NULL;
-      return NULL;
-    }
-
-  p = mb->buf;
-  *len = mb->len;
-  mb->buf = NULL;
-  mb->out_of_core = 1; /* don't allow a reuse */
-  return p;
-}
 
 
 
@@ -354,7 +288,7 @@ start_agent (void)
 static AssuanError
 membuf_data_cb (void *opaque, const void *buffer, size_t length)
 {
-  struct membuf *data = opaque;
+  membuf_t *data = opaque;
 
   if (buffer)
     put_membuf (data, buffer, length);
@@ -373,7 +307,7 @@ gpgsm_agent_pksign (const char *keygrip,
 {
   int rc, i;
   char *p, line[ASSUAN_LINELENGTH];
-  struct membuf data;
+  membuf_t data;
   size_t len;
 
   *r_buf = NULL;
@@ -448,7 +382,7 @@ gpgsm_agent_pkdecrypt (const char *keygrip,
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
-  struct membuf data;
+  membuf_t data;
   struct cipher_parm_s cipher_parm;
   size_t n, len;
   char *buf, *endp;
@@ -534,7 +468,7 @@ gpgsm_agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey)
 {
   int rc;
   struct genkey_parm_s gk_parm;
-  struct membuf data;
+  membuf_t data;
   size_t len;
   char *buf;
 
@@ -710,7 +644,7 @@ learn_cb (void *opaque, const void *buffer, size_t length)
       keydb_store_cert (cert, 1, NULL);
     }
   else if (rc)
-    log_error ("invalid certificate: %s\n", gnupg_strerror (rc));
+    log_error ("invalid certificate: %s\n", gpg_strerror (rc));
   else
     {
       int existed;
@@ -735,7 +669,7 @@ gpgsm_agent_learn ()
 {
   int rc;
   struct learn_parm_s learn_parm;
-  struct membuf data;
+  membuf_t data;
   size_t len;
 
   rc = start_agent ();

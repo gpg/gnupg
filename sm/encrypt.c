@@ -27,10 +27,10 @@
 #include <time.h>
 #include <assert.h>
 
+#include "gpgsm.h"
 #include <gcrypt.h>
 #include <ksba.h>
 
-#include "gpgsm.h"
 #include "keydb.h"
 #include "i18n.h"
 
@@ -38,7 +38,7 @@
 struct dek_s {
   const char *algoid;
   int algo;
-  GCRY_CIPHER_HD chd;
+  gcry_cipher_hd_t chd;
   char key[32];
   int keylen;
   char iv[32];
@@ -89,37 +89,37 @@ init_dek (DEK dek)
       return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
     }
   
-  dek->chd = gcry_cipher_open (dek->algo, mode, GCRY_CIPHER_SECURE);
-  if (!dek->chd)
+  rc = gcry_cipher_open (&dek->chd, dek->algo, mode, GCRY_CIPHER_SECURE);
+  if (rc)
     {
-      log_error ("failed to create cipher context: %s\n", gcry_strerror (-1));
-      return gpg_error (GPG_ERR_GENERAL);
+      log_error ("failed to create cipher context: %s\n", gpg_strerror (rc));
+      return rc;
     }
   
   for (i=0; i < 8; i++)
     {
       gcry_randomize (dek->key, dek->keylen, GCRY_STRONG_RANDOM );
       rc = gcry_cipher_setkey (dek->chd, dek->key, dek->keylen);
-      if (rc != GCRYERR_WEAK_KEY)
+      if (gpg_err_code (rc) != GPG_ERR_WEAK_KEY)
         break;
       log_info(_("weak key created - retrying\n") );
     }
   if (rc)
     {
-      log_error ("failed to set the key: %s\n", gcry_strerror (rc));
+      log_error ("failed to set the key: %s\n", gpg_strerror (rc));
       gcry_cipher_close (dek->chd);
       dek->chd = NULL;
-      return map_gcry_err (rc);
+      return rc;
     }
 
   gcry_randomize (dek->iv, dek->ivlen, GCRY_STRONG_RANDOM);
   rc = gcry_cipher_setiv (dek->chd, dek->iv, dek->ivlen);
   if (rc)
     {
-      log_error ("failed to set the IV: %s\n", gcry_strerror (rc));
+      log_error ("failed to set the IV: %s\n", gpg_strerror (rc));
       gcry_cipher_close (dek->chd);
       dek->chd = NULL;
-      return map_gcry_err (rc);
+      return rc;
     }
   
   return 0;
@@ -129,14 +129,14 @@ init_dek (DEK dek)
 /* Encode the session key. NBITS is the number of bits which should be
    used for packing the session key.  returns: An mpi with the session
    key (caller must free) */
-static GCRY_MPI
+static gcry_mpi_t
 encode_session_key (DEK dek, unsigned int nbits)
 {
   int nframe = (nbits+7) / 8;
   byte *p;
   byte *frame;
   int i,n;
-  MPI a;
+  gcry_mpi_t a;
 
   if (dek->keylen + 7 > nframe || !nframe)
     log_bug ("can't encode a %d bit key in a %d bits frame\n",
@@ -206,7 +206,7 @@ encode_session_key (DEK dek, unsigned int nbits)
 static int
 encrypt_dek (const DEK dek, KsbaCert cert, char **encval)
 {
-  GCRY_SEXP s_ciph, s_data, s_pkey;
+  gcry_sexp_t s_ciph, s_data, s_pkey;
   int rc;
   KsbaSexp buf;
   size_t len;
@@ -230,14 +230,14 @@ encrypt_dek (const DEK dek, KsbaCert cert, char **encval)
   xfree (buf); buf = NULL;
   if (rc)
     {
-      log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
-      return map_gcry_err (rc);
+      log_error ("gcry_sexp_scan failed: %s\n", gpg_strerror (rc));
+      return rc;
     }
 
   /* put the encoded cleartext into a simple list */
   {
     /* fixme: actually the pkcs-1 encoding should go into libgcrypt */
-    GCRY_MPI data = encode_session_key (dek, gcry_pk_get_nbits (s_pkey));
+    gcry_mpi_t data = encode_session_key (dek, gcry_pk_get_nbits (s_pkey));
     if (!data)
       {
         gcry_mpi_release (data);
@@ -404,7 +404,7 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
   rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, &writer);
   if (rc)
     {
-      log_error ("can't create writer: %s\n", gnupg_strerror (rc));
+      log_error ("can't create writer: %s\n", gpg_strerror (rc));
       goto leave;
     }
 
@@ -449,7 +449,7 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
   if (rc)
     {
       log_error ("failed to create the session key: %s\n",
-                 gnupg_strerror (rc));
+                 gpg_strerror (rc));
       goto leave;
     }
 
@@ -482,7 +482,7 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
       if (rc)
         {
           log_error ("encryption failed for recipient no. %d: %s\n",
-                     recpno, gnupg_strerror (rc));
+                     recpno, gpg_strerror (rc));
           goto leave;
         }
       
@@ -532,7 +532,7 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
   rc = gpgsm_finish_writer (b64writer);
   if (rc) 
     {
-      log_error ("write failed: %s\n", gnupg_strerror (rc));
+      log_error ("write failed: %s\n", gpg_strerror (rc));
       goto leave;
     }
   log_info ("encrypted data created\n");

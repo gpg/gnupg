@@ -27,10 +27,10 @@
 #include <time.h>
 #include <assert.h>
 
+#include "gpgsm.h"
 #include <gcrypt.h>
 #include <ksba.h>
 
-#include "gpgsm.h"
 #include "keydb.h"
 #include "i18n.h"
 
@@ -38,7 +38,7 @@ struct decrypt_filter_parm_s {
   int algo;
   int mode;
   int blklen;
-  GCRY_CIPHER_HD hd;
+  gcry_cipher_hd_t hd;
   char iv[16];
   size_t ivlen;
   int any_data;  /* dod we push anything through the filter at all? */
@@ -65,7 +65,7 @@ prepare_decryption (const char *hexkeygrip, KsbaConstSexp enc_val,
                               &seskey, &seskeylen);
   if (rc)
     {
-      log_error ("error decrypting session key: %s\n", gnupg_strerror (rc));
+      log_error ("error decrypting session key: %s\n", gpg_strerror (rc));
       goto leave;
     }
 
@@ -113,17 +113,15 @@ prepare_decryption (const char *hexkeygrip, KsbaConstSexp enc_val,
   if (DBG_CRYPTO)
     log_printhex ("session key:", seskey+n, seskeylen-n);
 
-  parm->hd = gcry_cipher_open (parm->algo, parm->mode, 0);
-  if (!parm->hd)
+  rc = gcry_cipher_open (&parm->hd, parm->algo, parm->mode, 0);
+  if (rc)
     {
-      rc = gcry_errno ();
-      log_error ("error creating decryptor: %s\n", gcry_strerror (rc));
-      rc = map_gcry_err (rc);
+      log_error ("error creating decryptor: %s\n", gpg_strerror (rc));
       goto leave;
     }
                         
   rc = gcry_cipher_setkey (parm->hd, seskey+n, seskeylen-n);
-  if (rc == GCRYERR_WEAK_KEY)
+  if (gpg_err_code (rc) == GPG_ERR_WEAK_KEY)
     {
       log_info (_("WARNING: message was encrypted with "
                   "a weak key in the symmetric cipher.\n"));
@@ -131,8 +129,7 @@ prepare_decryption (const char *hexkeygrip, KsbaConstSexp enc_val,
     }
   if (rc)
     {
-      log_error("key setup failed: %s\n", gcry_strerror(rc) );
-      rc = map_gcry_err (rc);
+      log_error("key setup failed: %s\n", gpg_strerror(rc) );
       goto leave;
     }
 
@@ -277,14 +274,14 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
   rc = gpgsm_create_reader (&b64reader, ctrl, in_fp, &reader);
   if (rc)
     {
-      log_error ("can't create reader: %s\n", gnupg_strerror (rc));
+      log_error ("can't create reader: %s\n", gpg_strerror (rc));
       goto leave;
     }
 
   rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, &writer);
   if (rc)
     {
-      log_error ("can't create writer: %s\n", gnupg_strerror (rc));
+      log_error ("can't create writer: %s\n", gpg_strerror (rc));
       goto leave;
     }
 
@@ -334,8 +331,13 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
               else if (!algoid)
                 log_info (_("(this does not seem to be an encrypted"
                             " message)\n"));
-              gpgsm_status2 (ctrl, STATUS_ERROR, "decrypt.algorithm",
-                             gnupg_error_token (rc), algoid?algoid:"?", NULL);
+              {
+                char numbuf[50];
+                sprintf (numbuf, "%d", rc);
+                gpgsm_status2 (ctrl, STATUS_ERROR, "decrypt.algorithm",
+                               numbuf, algoid?algoid:"?", NULL);
+              }
+
               goto leave;
             }
           dfparm.algo = algo;
@@ -383,14 +385,14 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                   if (rc)
                     {
                       log_error ("failed to find the certificate: %s\n",
-                                 gnupg_strerror(rc));
+                                 gpg_strerror(rc));
                       goto oops;
                     }
 
                   rc = keydb_get_cert (kh, &cert);
                   if (rc)
                     {
-                      log_error ("failed to get cert: %s\n", gnupg_strerror (rc));
+                      log_error ("failed to get cert: %s\n", gpg_strerror (rc));
                       goto oops;     
                     }
                   /* Just in case there is a problem with the own
@@ -399,8 +401,10 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                   rc = gpgsm_cert_use_decrypt_p (cert);
                   if (rc)
                     {
+                      char numbuf[50];
+                      sprintf (numbuf, "%d", rc);
                       gpgsm_status2 (ctrl, STATUS_ERROR, "decrypt.keyusage",
-                                     gnupg_error_token (rc), NULL);
+                                     numbuf, NULL);
                       rc = 0;
                     }
 
@@ -424,7 +428,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                   if (rc)
                     {
                       log_debug ("decrypting session key failed: %s\n",
-                                 gnupg_strerror (rc));
+                                 gpg_strerror (rc));
                     }
                   else
                     { /* setup the bulk decrypter */
@@ -479,7 +483,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
   rc = gpgsm_finish_writer (b64writer);
   if (rc) 
     {
-      log_error ("write failed: %s\n", gnupg_strerror (rc));
+      log_error ("write failed: %s\n", gpg_strerror (rc));
       goto leave;
     }
   gpgsm_status (ctrl, STATUS_DECRYPTION_OKAY, NULL);

@@ -1,5 +1,5 @@
 /* divert-scd.c - divert operations to the scdaemon 
- *	Copyright (C) 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -103,7 +103,7 @@ ask_for_card (CTRL ctrl, const unsigned char *shadow_info, char **r_kid)
         }
       else
         {
-          log_error ("error accesing card: %s\n", gnupg_strerror (rc));
+          log_error ("error accesing card: %s\n", gpg_strerror (rc));
         }
 
       if (!rc)
@@ -305,3 +305,15 @@ divert_pkdecrypt (CTRL ctrl,
   xfree (kid);
   return rc;
 }
+
+
+int  
+divert_generic_cmd (CTRL ctrl, const char *cmdline, void *assuan_context)
+{
+  return agent_card_scd (cmdline, getpin_cb, ctrl, assuan_context);
+}
+
+
+
+
+

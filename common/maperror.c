@@ -129,6 +129,8 @@ map_to_assuan_status (int rc)
   gpg_err_code_t   ec = gpg_err_code (rc);
   gpg_err_source_t es = gpg_err_source (rc);
 
+  if (!rc)
+    return 0;
   if (!es)
     {
       es = GPG_ERR_SOURCE_USER_4; /*  This should not happen, but we
@@ -142,6 +144,10 @@ map_to_assuan_status (int rc)
 
   return gpg_err_make (es, ec);
 }
+
+
+
+
 
 
 

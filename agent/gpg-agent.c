@@ -1,5 +1,5 @@
 /* gpg-agent.c  -  The GnuPG Agent
- *	Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -37,11 +37,9 @@
 # include <pth.h>
 #endif
 
-#include <gcrypt.h>
-
 #define JNLIB_NEED_LOG_LOGV
 #include "agent.h"
-#include "../assuan/assuan.h" /* malloc hooks */
+#include <assuan.h> /* malloc hooks */
 
 #include "i18n.h"
 #include "sysutils.h"
@@ -335,6 +333,18 @@ main (int argc, char **argv )
      somewhere after the option parsing */
   log_set_prefix ("gpg-agent", 1|4); 
   i18n_init ();
+
+  /* We need to initialize Pth before libgcrypt, because the libgcrypt
+     initialization done by gcry_check_version internally sets up its
+     mutex system.  Note that one must not link against pth if
+     USE_GNU_PTH is not defined. */
+#ifdef USE_GNU_PTH
+  if (!pth_init ())
+    {
+      log_error ("failed to initialize the Pth library\n");
+      exit (1);
+    }
+#endif /*USE_GNU_PTH*/
 
   /* check that the libraries are suitable.  Do it here because
      the option parsing may need services of the library */
@@ -715,12 +725,6 @@ main (int argc, char **argv )
         {
 	  struct sigaction sa;
 
-          if (!pth_init ())
-            {
-              log_error ("failed to initialize the Pth library\n");
-              exit (1);
-            }
-
 	  sa.sa_handler = SIG_IGN;
 	  sigemptyset (&sa.sa_mask);
 	  sa.sa_flags = 0;
@@ -1030,7 +1034,7 @@ handle_connections (int listen_fd)
       fd = pth_accept_ev (listen_fd, (struct sockaddr *)&paddr, &plen, ev);
       if (fd == -1)
         {
-          if (pth_event_occurred (ev))
+          if (pth_event_status (ev) == PTH_STATUS_OCCURRED)
             {
               handle_signal (signo);
               continue;

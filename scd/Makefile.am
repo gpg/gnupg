@@ -33,6 +33,7 @@ scdaemon_SOURCES = \
 	card-p15.c card-dinsig.c \
 	apdu.c apdu.h \
 	iso7816.c iso7816.h \
+	app.c app-common.h \
 	app-openpgp.c
 
 scdaemon_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \

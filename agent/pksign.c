@@ -1,5 +1,5 @@
 /* pksign.c - public key signing (well, acually using a secret key)
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -33,7 +33,7 @@
 
 static int
 do_encode_md (const unsigned char *digest, size_t digestlen, int algo,
-              unsigned int nbits, GCRY_MPI *r_val)
+              unsigned int nbits, gcry_mpi_t *r_val)
 {
   int nframe = (nbits+7) / 8;
   byte *frame;
@@ -88,8 +88,8 @@ do_encode_md (const unsigned char *digest, size_t digestlen, int algo,
 int
 agent_pksign (CTRL ctrl, FILE *outfp, int ignore_cache) 
 {
-  GCRY_SEXP s_skey = NULL, s_hash = NULL, s_sig = NULL;
-  GCRY_MPI frame = NULL;
+  gcry_sexp_t s_skey = NULL, s_hash = NULL, s_sig = NULL;
+  gcry_mpi_t frame = NULL;
   unsigned char *shadow_info = NULL;
   int rc;
   char *buf = NULL;
@@ -118,7 +118,7 @@ agent_pksign (CTRL ctrl, FILE *outfp, int ignore_cache)
                           shadow_info, &sigbuf);
       if (rc)
         {
-          log_error ("smartcard signing failed: %s\n", gnupg_strerror (rc));
+          log_error ("smartcard signing failed: %s\n", gpg_strerror (rc));
           goto leave;
         }
       len = gcry_sexp_canon_len (sigbuf, 0, NULL, NULL);
@@ -149,7 +149,7 @@ agent_pksign (CTRL ctrl, FILE *outfp, int ignore_cache)
       rc = gcry_pk_sign (&s_sig, s_hash, s_skey);
       if (rc)
         {
-          log_error ("signing failed: %s\n", gcry_strerror (rc));
+          log_error ("signing failed: %s\n", gpg_strerror (rc));
           rc = map_gcry_err (rc);
           goto leave;
         }

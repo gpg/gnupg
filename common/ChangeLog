@@ -1,3 +1,7 @@
+2003-06-25  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c (map_to_assuan_status): Directly map 0 to 0.
+
 2003-06-17  Werner Koch  <wk@gnupg.org>
 
 	* gettime.c (scan_isodatestr,add_days_to_timestamp,strtimevalue)

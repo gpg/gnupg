@@ -27,10 +27,10 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include "gpgsm.h"
 #include <gcrypt.h>
 #include <assuan.h> /* malloc hooks */
 
-#include "gpgsm.h"
 #include "../kbx/keybox.h" /* malloc hooks */
 #include "i18n.h"
 #include "keydb.h"
@@ -1095,7 +1095,7 @@ main ( int argc, char **argv)
       if (rc)
         {
           log_error (_("can't sign using `%s': %s\n"),
-                     sl->d, gnupg_strerror (rc));
+                     sl->d, gpg_strerror (rc));
           gpgsm_status2 (&ctrl, STATUS_INV_RECP,
                          gpg_err_code (rc) == -1?                      "1":
                          gpg_err_code (rc) == GPG_ERR_NO_PUBKEY?       "1":
@@ -1117,7 +1117,7 @@ main ( int argc, char **argv)
       if (rc)
         {
           log_error (_("can't encrypt to `%s': %s\n"),
-                     sl->d, gnupg_strerror (rc));
+                     sl->d, gpg_strerror (rc));
           gpgsm_status2 (&ctrl, STATUS_INV_RECP,
                          gpg_err_code (rc) == -1?                         "1":
                          gpg_err_code (rc) == GPG_ERR_NO_PUBKEY?          "1":

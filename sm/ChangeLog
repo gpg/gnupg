@@ -1,3 +1,14 @@
+2003-06-24  Werner Koch  <wk@gnupg.org>
+
+	* server.c (gpgsm_status_with_err_code): New.
+	* verify.c (gpgsm_verify): Use it here instead of the old
+	tokenizing version.
+
+	* verify.c (strtimestamp): Renamed to strtimestamp_r
+
+	Adjusted for changes in the libgcrypt API. Some more fixes for the
+	libgpg-error stuff.  
+
 2003-06-04  Werner Koch  <wk@gnupg.org>
 
 	* call-agent.c (init_membuf,put_membuf,get_membuf): Removed.

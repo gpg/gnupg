@@ -26,13 +26,14 @@
 #include <ctype.h>
 #include <unistd.h>
 
-#include <gcrypt.h>
-
 #include "../jnlib/logging.h"
 #include "../jnlib/argparse.h"
 #include "../jnlib/stringhelp.h"
 #include "../common/i18n.h"
 #include "keybox-defs.h"
+
+#include <gcrypt.h>
+
 
 enum cmd_and_opt_values {
   aNull = 0,

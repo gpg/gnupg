@@ -34,12 +34,12 @@
 #include <unistd.h>
 #include <signal.h>
 
+#define JNLIB_NEED_LOG_LOGV
+#include "scdaemon.h"
 #include <ksba.h>
 #include <gcrypt.h>
 
-#define JNLIB_NEED_LOG_LOGV
 #include <assuan.h> /* malloc hooks */
-#include "scdaemon.h"
 
 #include "i18n.h"
 #include "sysutils.h"

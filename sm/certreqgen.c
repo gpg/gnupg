@@ -96,10 +96,10 @@ EOF
 #include <time.h>
 #include <assert.h>
 
+#include "gpgsm.h"
 #include <gcrypt.h>
 #include <ksba.h>
 
-#include "gpgsm.h"
 #include "keydb.h"
 #include "i18n.h"
 
@@ -489,7 +489,7 @@ proc_parameters (struct para_data_s *para, struct reqgen_ctrl_s *outctrl)
     {
       r = get_parameter (para, pKEYTYPE);
       log_error ("line %d: key generation failed: %s\n",
-                 r->lnr, gnupg_strerror (rc));
+                 r->lnr, gpg_strerror (rc));
       return rc;
     }
 
@@ -508,7 +508,7 @@ create_request (struct para_data_s *para, KsbaConstSexp public,
 {
   KsbaCertreq cr;
   KsbaError err;
-  GCRY_MD_HD md;
+  gcry_md_hd_t md;
   KsbaStopReason stopreason;
   int rc = 0;
   const char *s;
@@ -517,11 +517,10 @@ create_request (struct para_data_s *para, KsbaConstSexp public,
   if (!cr)
     return gpg_error (GPG_ERR_ENOMEM);
 
-  md = gcry_md_open (GCRY_MD_SHA1, 0);
-  if (!md)
+  rc = gcry_md_open (&md, GCRY_MD_SHA1, 0);
+  if (rc)
     {
-      log_error ("md_open failed: %s\n", gcry_strerror (-1));
-      rc = map_gcry_err (gcry_errno ());
+      log_error ("md_open failed: %s\n", gpg_strerror (rc));
       goto leave;
     }
   if (DBG_HASHING)
@@ -585,7 +584,7 @@ create_request (struct para_data_s *para, KsbaConstSexp public,
         }
       if (stopreason == KSBA_SR_NEED_SIG)
         {
-          GCRY_SEXP s_pkey;
+          gcry_sexp_t s_pkey;
           size_t n;
           unsigned char grip[20], hexgrip[41];
           char *sigval;
@@ -601,8 +600,7 @@ create_request (struct para_data_s *para, KsbaConstSexp public,
           rc = gcry_sexp_sscan (&s_pkey, NULL, public, n);
           if (rc)
             {
-              log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
-              rc = map_gcry_err (rc);
+              log_error ("gcry_sexp_scan failed: %s\n", gpg_strerror (rc));
               goto leave;
             }
           if ( !gcry_pk_get_keygrip (s_pkey, grip) )
@@ -623,7 +621,7 @@ create_request (struct para_data_s *para, KsbaConstSexp public,
                                    &sigval, &siglen);
           if (rc)
             {
-              log_error ("signing failed: %s\n", gnupg_strerror (rc));
+              log_error ("signing failed: %s\n", gpg_strerror (rc));
               goto leave;
             }
           
@@ -671,7 +669,7 @@ gpgsm_genkey (CTRL ctrl, int in_fd, FILE *out_fp)
   rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, &writer);
   if (rc)
     {
-      log_error ("can't create writer: %s\n", gnupg_strerror (rc));
+      log_error ("can't create writer: %s\n", gpg_strerror (rc));
       goto leave;
     }
 
@@ -679,14 +677,14 @@ gpgsm_genkey (CTRL ctrl, int in_fd, FILE *out_fp)
   if (rc)
     {
       log_error ("error creating certificate request: %s\n",
-                 gnupg_strerror (rc));
+                 gpg_strerror (rc));
       goto leave;
     }
 
   rc = gpgsm_finish_writer (b64writer);
   if (rc) 
     {
-      log_error ("write failed: %s\n", gnupg_strerror (rc));
+      log_error ("write failed: %s\n", gpg_strerror (rc));
       goto leave;
     }
 

@@ -1,3 +1,30 @@
+2003-06-26  Werner Koch  <wk@gnupg.org>
+
+	* call-scd.c (agent_card_serialno): Don't do a RESET anymore.
+
+2003-06-25  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_scd): New.
+	* call-scd.c (agent_card_scd): New.
+	* divert-scd.c (divert_generic_cmd): New
+
+	* call-scd.c (agent_card_learn): New callback args SINFO.
+	(learn_status_cb): Pass all other status lines to the sinfo
+	callback.
+	* learncard.c (release_sinfo, sinfo_cb): New.
+	(agent_handle_learn): Pass the new cb to the learn function and
+	pass the collected information back to the client's assuan
+	connection.
+
+	* gpg-agent.c (main): Moved pth_init before gcry_check_version.
+
+2003-06-24  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (handle_connections): Adjusted for Pth 2.0
+
+	Adjusted for changes in the libgcrypt API. Some more fixes for the
+	libgpg-error stuff.  
+
 2003-06-04  Werner Koch  <wk@gnupg.org>
 
 	Renamed error codes from INVALID to INV and removed _ERROR suffixes.

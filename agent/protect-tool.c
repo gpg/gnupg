@@ -1,5 +1,5 @@
 /* protect-tool.c - A tool to test the secret key protection
- *	Copyright (C) 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -30,8 +30,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include <gcrypt.h>
-
 #define JNLIB_NEED_LOG_LOGV
 #include "agent.h"
 #include "minip12.h"
@@ -61,12 +59,12 @@ aTest };
 
 struct rsa_secret_key_s 
   {
-    MPI n;	    /* public modulus */
-    MPI e;	    /* public exponent */
-    MPI d;	    /* exponent */
-    MPI p;	    /* prime  p. */
-    MPI q;	    /* prime  q. */
-    MPI u;	    /* inverse of p mod q. */
+    gcry_mpi_t n;	    /* public modulus */
+    gcry_mpi_t e;	    /* public exponent */
+    gcry_mpi_t d;	    /* exponent */
+    gcry_mpi_t p;	    /* prime  p. */
+    gcry_mpi_t q;	    /* prime  q. */
+    gcry_mpi_t u;	    /* inverse of p mod q. */
   };
 
 
@@ -162,7 +160,7 @@ my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
 
 
 /*  static void */
-/*  print_mpi (const char *text, GcryMPI a) */
+/*  print_mpi (const char *text, gcry_mpi_t a) */
 /*  { */
 /*    char *buf; */
 /*    void *bufaddr = &buf; */
@@ -170,7 +168,7 @@ my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
 
 /*    rc = gcry_mpi_aprint (GCRYMPI_FMT_HEX, bufaddr, NULL, a); */
 /*    if (rc) */
-/*      log_info ("%s: [error printing number: %s]\n", text, gcry_strerror (rc)); */
+/*      log_info ("%s: [error printing number: %s]\n", text, gpg_strerror (rc)); */
 /*    else */
 /*      { */
 /*        log_info ("%s: %s\n", text, buf); */
@@ -185,14 +183,14 @@ make_canonical (const char *fname, const char *buf, size_t buflen)
 {
   int rc;
   size_t erroff, len;
-  GCRY_SEXP sexp;
+  gcry_sexp_t sexp;
   unsigned char *result;
 
   rc = gcry_sexp_sscan (&sexp, &erroff, buf, buflen);
   if (rc)
     {
       log_error ("invalid S-Expression in `%s' (off=%u): %s\n",
-                 fname, (unsigned int)erroff, gcry_strerror (rc));
+                 fname, (unsigned int)erroff, gpg_strerror (rc));
       return NULL;
     }
   len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_CANON, NULL, 0);
@@ -209,14 +207,14 @@ make_advanced (const unsigned char *buf, size_t buflen)
 {
   int rc;
   size_t erroff, len;
-  GCRY_SEXP sexp;
+  gcry_sexp_t sexp;
   unsigned char *result;
 
   rc = gcry_sexp_sscan (&sexp, &erroff, buf, buflen);
   if (rc)
     {
       log_error ("invalid canonical S-Expression (off=%u): %s\n",
-                 (unsigned int)erroff, gcry_strerror (rc));
+                 (unsigned int)erroff, gpg_strerror (rc));
       return NULL;
     }
   len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_ADVANCED, NULL, 0);
@@ -453,7 +451,7 @@ static void
 show_keygrip (const char *fname)
 {
   unsigned char *key;
-  GcrySexp private;
+  gcry_sexp_t private;
   unsigned char grip[20];
   int i;
   
@@ -485,10 +483,10 @@ static int
 rsa_key_check (struct rsa_secret_key_s *skey)
 {
   int err = 0;
-  MPI t = gcry_mpi_snew (0);
-  MPI t1 = gcry_mpi_snew (0);
-  MPI t2 = gcry_mpi_snew (0);
-  MPI phi = gcry_mpi_snew (0);
+  gcry_mpi_t t = gcry_mpi_snew (0);
+  gcry_mpi_t t1 = gcry_mpi_snew (0);
+  gcry_mpi_t t2 = gcry_mpi_snew (0);
+  gcry_mpi_t phi = gcry_mpi_snew (0);
 
   /* check that n == p * q */
   gcry_mpi_mul (t, skey->p, skey->q);
@@ -501,7 +499,7 @@ rsa_key_check (struct rsa_secret_key_s *skey)
   /* check that p is less than q */
   if (gcry_mpi_cmp (skey->p, skey->q) > 0)
     {
-      GcryMPI tmp;
+      gcry_mpi_t tmp;
 
       log_info ("swapping secret primes\n");
       tmp = gcry_mpi_copy (skey->p);
@@ -573,9 +571,9 @@ import_p12_file (const char *fname)
   size_t buflen, resultlen;
   int i;
   int rc;
-  GcryMPI *kparms;
+  gcry_mpi_t *kparms;
   struct rsa_secret_key_s sk;
-  GcrySexp s_key;
+  gcry_sexp_t s_key;
   unsigned char *key;
   unsigned char grip[20];
 
@@ -635,7 +633,7 @@ import_p12_file (const char *fname)
   if (rc)
     {
       log_error ("failed to created S-expression from key: %s\n",
-                 gcry_strerror (rc));
+                 gpg_strerror (rc));
       return;
     }
 
@@ -687,16 +685,16 @@ import_p12_file (const char *fname)
 
 
 
-static GcryMPI *
-sexp_to_kparms (GCRY_SEXP sexp)
+static gcry_mpi_t *
+sexp_to_kparms (gcry_sexp_t sexp)
 {
-  GcrySexp list, l2;
+  gcry_sexp_t list, l2;
   const char *name;
   const char *s;
   size_t n;
   int i, idx;
   const char *elems;
-  GcryMPI *array;
+  gcry_mpi_t *array;
 
   list = gcry_sexp_find_token (sexp, "private-key", 0 );
   if(!list)
@@ -747,10 +745,10 @@ sexp_to_kparms (GCRY_SEXP sexp)
 static void
 export_p12_file (const char *fname)
 {
-  GcryMPI kparms[9], *kp;
+  gcry_mpi_t kparms[9], *kp;
   unsigned char *key;
   size_t keylen;
-  GcrySexp private;
+  gcry_sexp_t private;
   struct rsa_secret_key_s sk;
   int i;
   

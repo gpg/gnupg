@@ -991,7 +991,18 @@ gpgsm_status (CTRL ctrl, int no, const char *text)
   gpgsm_status2 (ctrl, no, text, NULL);
 }
 
+void
+gpgsm_status_with_err_code (CTRL ctrl, int no, const char *text,
+                            gpg_err_code_t ec)
+{
+  char buf[30];
 
+  sprintf (buf, "%u", (unsigned int)ec);
+  if (text)
+    gpgsm_status2 (ctrl, no, text, buf, NULL);
+  else
+    gpgsm_status2 (ctrl, no, buf, NULL);
+}
 
 #if 0
 /*

@@ -1,5 +1,5 @@
-/* minip12.c - A minilam pkcs-12 implementation.
- *	Copyright (C) 2002 Free Software Foundation, Inc.
+/* minip12.c - A minimal pkcs-12 implementation.
+ *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -211,8 +211,8 @@ string_to_key (int id, char *salt, int iter, const char *pw,
                int req_keylen, unsigned char *keybuf)
 {
   int rc, i, j;
-  GcryMDHd md;
-  GcryMPI num_b1 = NULL;
+  gcry_md_hd_t md;
+  gcry_mpi_t num_b1 = NULL;
   int pwlen;
   unsigned char hash[20], buf_b[64], buf_i[128], *p;
   size_t cur_keylen;
@@ -240,11 +240,11 @@ string_to_key (int id, char *salt, int iter, const char *pw,
 
   for (;;)
     {
-      md = gcry_md_open (GCRY_MD_SHA1, 0);
-      if (!md)
+      rc = gcry_md_open (&md, GCRY_MD_SHA1, 0);
+      if (rc)
         {
-          log_error ( "gcry_md_open failed: %s\n", gcry_strerror (-1));
-          return -1;
+          log_error ( "gcry_md_open failed: %s\n", gpg_strerror (rc));
+          return rc;
         }
       for(i=0; i < 64; i++)
         gcry_md_putc (md, id);
@@ -269,20 +269,20 @@ string_to_key (int id, char *salt, int iter, const char *pw,
       rc = gcry_mpi_scan (&num_b1, GCRYMPI_FMT_USG, buf_b, &n);
       if (rc)
         {
-          log_error ( "gcry_mpi_scan failed: %s\n", gcry_strerror (rc));
+          log_error ( "gcry_mpi_scan failed: %s\n", gpg_strerror (rc));
           return -1;
         }
       gcry_mpi_add_ui (num_b1, num_b1, 1);
       for (i=0; i < 128; i += 64)
         {
-          GcryMPI num_ij;
+          gcry_mpi_t num_ij;
 
           n = 64;
           rc = gcry_mpi_scan (&num_ij, GCRYMPI_FMT_USG, buf_i + i, &n);
           if (rc)
             {
               log_error ( "gcry_mpi_scan failed: %s\n",
-                       gcry_strerror (rc));
+                       gpg_strerror (rc));
               return -1;
             }
           gcry_mpi_add (num_ij, num_ij, num_b1);
@@ -292,7 +292,7 @@ string_to_key (int id, char *salt, int iter, const char *pw,
           if (rc)
             {
               log_error ( "gcry_mpi_print failed: %s\n",
-                       gcry_strerror (rc));
+                       gpg_strerror (rc));
               return -1;
             }
           gcry_mpi_release (num_ij);
@@ -302,7 +302,7 @@ string_to_key (int id, char *salt, int iter, const char *pw,
 
 
 static int 
-set_key_iv (GcryCipherHd chd, char *salt, int iter, const char *pw)
+set_key_iv (gcry_cipher_hd_t chd, char *salt, int iter, const char *pw)
 {
   unsigned char keybuf[24];
   int rc;
@@ -312,7 +312,7 @@ set_key_iv (GcryCipherHd chd, char *salt, int iter, const char *pw)
   rc = gcry_cipher_setkey (chd, keybuf, 24);
   if (rc)
     {
-      log_error ( "gcry_cipher_setkey failed: %s\n", gcry_strerror (rc));
+      log_error ( "gcry_cipher_setkey failed: %s\n", gpg_strerror (rc));
       return -1;
     }
 
@@ -321,7 +321,7 @@ set_key_iv (GcryCipherHd chd, char *salt, int iter, const char *pw)
   rc = gcry_cipher_setiv (chd, keybuf, 8);
   if (rc)
     {
-      log_error ("gcry_cipher_setiv failed: %s\n", gcry_strerror (rc));
+      log_error ("gcry_cipher_setiv failed: %s\n", gpg_strerror (rc));
       return -1;
     }
   return 0;
@@ -332,13 +332,13 @@ static void
 crypt_block (unsigned char *buffer, size_t length, char *salt, int iter,
              const char *pw, int encrypt)
 {
-  GcryCipherHd chd;
+  gcry_cipher_hd_t chd;
   int rc;
 
-  chd = gcry_cipher_open (GCRY_CIPHER_3DES, GCRY_CIPHER_MODE_CBC, 0);
-  if (!chd)
+  rc = gcry_cipher_open (&chd, GCRY_CIPHER_3DES, GCRY_CIPHER_MODE_CBC, 0);
+  if (rc)
     {
-      log_error ( "gcry_cipher_open failed: %s\n", gcry_strerror(-1));
+      log_error ( "gcry_cipher_open failed: %s\n", gpg_strerror(-1));
       return;
     }
   if (set_key_iv (chd, salt, iter, pw))
@@ -349,7 +349,7 @@ crypt_block (unsigned char *buffer, size_t length, char *salt, int iter,
 
   if (rc)
     {
-      log_error ( "en/de-crytion failed: %s\n", gcry_strerror (rc));
+      log_error ( "en/de-crytion failed: %s\n", gpg_strerror (rc));
       goto leave;
     }
 
@@ -414,7 +414,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   return -1;
 }
 
-static GcryMPI *
+static gcry_mpi_t *
 parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
                 const char *pw)
 {
@@ -427,7 +427,7 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   unsigned int iter;
   int len;
   unsigned char *plain = NULL;
-  GcryMPI *result = NULL;
+  gcry_mpi_t *result = NULL;
   int result_count, i;
 
   where = "start";
@@ -593,7 +593,7 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
           if (rc)
             {
               log_error ("error parsing key parameter: %s\n",
-                         gcry_strerror (rc));
+                         gpg_strerror (rc));
               goto bailout;
             }
           result_count++;
@@ -625,7 +625,7 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
    that it is only able to look for 3DES encoded enctyptedData and
    tries to extract the first private key object it finds.  In case of
    an error NULL is returned. */
-GcryMPI *
+gcry_mpi_t *
 p12_parse (const unsigned char *buffer, size_t length, const char *pw)
 {
   struct tag_info ti;
@@ -859,7 +859,7 @@ create_final (struct buffer_s *sequences, size_t *r_length)
    PW. Create a PKCS structure from it and return it as well as the
    length in R_LENGTH; return NULL in case of an error. */
 unsigned char * 
-p12_build (GcryMPI *kparms, const char *pw, size_t *r_length)
+p12_build (gcry_mpi_t *kparms, const char *pw, size_t *r_length)
 {
   int rc, i;
   size_t needed, n;
@@ -877,7 +877,7 @@ p12_build (GcryMPI *kparms, const char *pw, size_t *r_length)
       rc = gcry_mpi_print (GCRYMPI_FMT_STD, NULL, &n, kparms[i]);
       if (rc)
         {
-          log_error ("error formatting parameter: %s\n", gcry_strerror (rc));
+          log_error ("error formatting parameter: %s\n", gpg_strerror (rc));
           return NULL;
         }
       needed += n;
@@ -951,7 +951,7 @@ p12_build (GcryMPI *kparms, const char *pw, size_t *r_length)
       if (rc)
         {
           log_error ("oops: error formatting parameter: %s\n",
-                     gcry_strerror (rc));
+                     gpg_strerror (rc));
           gcry_free (plain);
           return NULL;
         }
@@ -962,7 +962,7 @@ p12_build (GcryMPI *kparms, const char *pw, size_t *r_length)
       if (rc)
         {
           log_error ("oops: error storing parameter: %s\n",
-                     gcry_strerror (rc));
+                     gpg_strerror (rc));
           gcry_free (plain);
           return NULL;
         }
@@ -1131,7 +1131,7 @@ main (int argc, char **argv)
                                 NULL, result[i]);
           if (rc)
             printf ("%d: [error printing number: %s]\n",
-                    i, gcry_strerror (rc));
+                    i, gpg_strerror (rc));
           else
             {
               printf ("%d: %s\n", i, buf);
