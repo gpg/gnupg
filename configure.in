@@ -143,7 +143,7 @@ case "${target}" in
         try_gettext="no"
         try_gdbm="no"
         ;;
-    i386-emx-os2)
+    i386-emx-os2 | i[3456]86-pc-os2emx )
         # OS/2 with the EMX environment
         ac_cv_have_dev_random=no
         AC_DEFINE(HAVE_DRIVE_LETTERS)
@@ -182,7 +182,7 @@ case "${target}" in
     i386--mingw32)
         PRINTABLE_OS_NAME="MingW32"
         ;;
-    i386-emx-os2)
+    i386-emx-os2 | i[3456]86-pc-os2emx)
         PRINTABLE_OS_NAME="OS/2"
         ;;
     *-linux*)
@@ -353,7 +353,7 @@ if test "$use_static_rnd" = default; then
           i386--mingw32)
               static_modules="$static_modules rndw32"
               ;;
-          i386-emx-os2)
+          i386-emx-os2|i[3456]86-pc-os2emx)
               static_modules="$static_modules rndos2"
               ;;
           m68k-atari-mint)

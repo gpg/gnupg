@@ -428,6 +428,7 @@ int
 iobuf_print_chain( IOBUF a )
 {
     print_chain(a);
+    return 0;
 }
 
 /****************

@@ -1,3 +1,7 @@
+Sat May 22 22:47:26 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* logger.c (log_set_logfile): New.
+
 Thu May 20 14:04:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* memory.c (membug): Nanu, there was a const instead of a static.

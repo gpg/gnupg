@@ -1,3 +1,7 @@
+Sat May 22 22:47:26 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* autogen.sh: Fixed the error message for a missing libtool.
+
 Sat May  8 19:28:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* mkinstalldirs, install-sh: New from GNU repository

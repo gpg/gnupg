@@ -379,6 +379,9 @@ B<--debug-all>
 B<--status-fd> I<n>
     Write special status strings to the file descriptor I<n>.
 
+B<--logger-fd> I<n>
+    Write log output to file descriptor I<n> and not to stderr.
+
 B<--no-comment>
     Do not write comment packets.  This option affects only
     the generation of secret keys.  Output of option packets

@@ -475,6 +475,8 @@ change_passphrase( KBNODE keyblock )
  * There are some keys out (due to a bug in gnupg), where the sequence
  * of the packets is wrong.  This function fixes that.
  * Returns: true if the keyblock has been fixed.
+ *
+ * Note:  This function does not work if there is more than one user ID.
  */
 static int
 fix_keyblock( KBNODE keyblock )
@@ -602,6 +604,8 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
     if( rc )
 	goto leave;
     if( fix_keyblock( keyblock ) )
+	modified++;
+    if( collapse_uids( &keyblock ) )
 	modified++;
 
     if( sec_keyblock ) { /* check that they match */

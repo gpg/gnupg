@@ -156,6 +156,7 @@ enum cmd_and_opt_values { aNull = 0,
     oKeyServer,
     oEncryptTo,
     oNoEncryptTo,
+    oLoggerFD,
 aTest };
 
 
@@ -224,7 +225,7 @@ static ARGPARSE_OPTS opts[] = {
     { oForceV3Sigs, "force-v3-sigs", 0, N_("force v3 signatures") },
     { oForceMDC, "force-mdc", 0, N_("always use a MDC for encryption") },
     { oDryRun, "dry-run",   0, N_("do not make any changes") },
-    { oInteractive, "interactive", 0, N_("prompt before overwriting") },
+  /*{ oInteractive, "interactive", 0, N_("prompt before overwriting") }, */
     { oBatch, "batch",     0, N_("batch mode: never ask")},
     { oAnswerYes, "yes",       0, N_("assume yes on most questions")},
     { oAnswerNo,  "no",        0, N_("assume no on most questions")},
@@ -295,6 +296,7 @@ static ARGPARSE_OPTS opts[] = {
     { oNotDashEscaped, "not-dash-escaped", 0, "@" },
     { oEscapeFrom, "escape-from-lines", 0, "@" },
     { oLockOnce, "lock-once", 0, "@" },
+    { oLoggerFD, "logger-fd",1, "@" },
 {0} };
 
 
@@ -651,6 +653,7 @@ main( int argc, char **argv )
 	  case oDebug: opt.debug |= pargs.r.ret_ulong; break;
 	  case oDebugAll: opt.debug = ~0; break;
 	  case oStatusFD: set_status_fd( pargs.r.ret_int ); break;
+	  case oLoggerFD: log_set_logfile( NULL, pargs.r.ret_int ); break;
 	  case oFingerprint: opt.fingerprint++; break;
 	  case oSecretKeyring: append_to_strlist( &sec_nrings, pargs.r.ret_str); break;
 	  case oOptions:

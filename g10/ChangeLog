@@ -1,3 +1,19 @@
+Sat May 22 22:47:26 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* mainproc.c (check_sig_and_print): Add sig creation time to the
+	VALIDSIG status output. Add more info to the ERRSIG output.
+	* sig-check.c (signature_check): Add sig time after epoch to SIG_ID.
+
+	* import.c (import_one): Merge duplicate user IDs.
+	(collapse_uids): New.
+	* kbnode.c (move_kbnode): New.
+	(remove_kbnode): New.
+	* keyedit.c (keyedit_menu): Call collapse_uids.
+
+	* g10.c: new option --logger-fd.
+
+	* import.c: s/log_*_f/log_*/
+
 Thu May 20 14:04:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* misc.c (pull_in_libs): do the volatile only for gcc

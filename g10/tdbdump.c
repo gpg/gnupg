@@ -50,6 +50,7 @@
  * Read a record but die if it does not exist
  * fixme: duplicate: remove it
  */
+#if 0
 static void
 read_record( ulong recno, TRUSTREC *rec, int rectype )
 {
@@ -60,7 +61,7 @@ read_record( ulong recno, TRUSTREC *rec, int rectype )
 				    recno, rectype,  g10_errstr(rc) );
     tdbio_invalid();
 }
-
+#endif
 /****************
  * Wirte a record but die on error
  */
@@ -89,7 +90,7 @@ do_sync(void)
     g10_exit(2);
 }
 
-
+#if 0
 static int
 print_sigflags( FILE *fp, unsigned flags )
 {
@@ -105,7 +106,7 @@ print_sigflags( FILE *fp, unsigned flags )
 	fputs("---", fp);
     return 3;
 }
-
+#endif
 
 
 /****************
@@ -119,6 +120,7 @@ print_sigflags( FILE *fp, unsigned flags )
  * Returns: 0 - okay, -1 for eof (no more sigs) or any other errorcode
  * FIXME: Do we really need this large and complicated function?
  */
+#if 0
 static int
 walk_sigrecs( SIGREC_CONTEXT *c )
 {
@@ -168,7 +170,7 @@ walk_sigrecs( SIGREC_CONTEXT *c )
     c->sig_flag = r->r.sig.sig[c->ctl.index-1].flag;
     return 0;
 }
-
+#endif
 
 #if 0
 static int

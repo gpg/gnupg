@@ -58,6 +58,8 @@ typedef struct {
 } ARGPARSE_OPTS;
 
 /*-- logger.c --*/
+void log_set_logfile( const char *name, int fd );
+FILE *log_stream(void);
 void log_set_name( const char *name );
 const char *log_get_name(void);
 void log_set_pid( int pid );

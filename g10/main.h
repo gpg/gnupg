@@ -113,6 +113,7 @@ KBNODE make_mpi_comment_node( const char *s, MPI a );
 /*-- import.c --*/
 int import_keys( const char *filename, int fast );
 int import_keys_stream( IOBUF inp, int fast );
+int collapse_uids( KBNODE *keyblock );
 
 /*-- export.c --*/
 int export_pubkeys( STRLIST users, int onlyrfc );

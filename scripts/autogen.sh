@@ -75,8 +75,8 @@ if (libtool --version) < /dev/null > /dev/null 2>&1 ; then
     fi
 else
     echo
-    echo "**Error**: You must have "\`autoconf\'" installed to compile $PGM."
-    echo '           (version ' $autoconf_vers ' or newer is required)'
+    echo "**Error**: You must have "\`libtool\'" installed to compile $PGM."
+    echo '           (version ' $libtool_vers ' or newer is required)'
     DIE="yes"
 fi
 

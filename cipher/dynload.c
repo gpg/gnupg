@@ -170,7 +170,7 @@ register_internal_cipher_extension(
     }
     /* and register */
     el->enumfunc = enumfunc;
-  #ifdef HAVE_DL_OPEN
+  #ifdef HAVE_DL_DLOPEN
     el->handle = (void*)1;
   #else
     el->handle = 1;

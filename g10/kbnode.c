@@ -32,8 +32,8 @@
 
 static KBNODE unused_nodes;
 
-KBNODE
-new_kbnode( PACKET *pkt )
+static KBNODE
+alloc_node(void)
 {
     KBNODE n;
 
@@ -43,10 +43,33 @@ new_kbnode( PACKET *pkt )
     else
 	n = m_alloc( sizeof *n );
     n->next = NULL;
-    n->pkt = pkt;
+    n->pkt = NULL;
     n->flag = 0;
     n->private_flag=0;
     n->recno = 0;
+    return n;
+}
+
+static void
+free_node( KBNODE n )
+{
+    if( n ) {
+      #if USE_UNUSED_NODES
+	n->next = unused_nodes;
+	unused_nodes = n;
+      #else
+	m_free( n );
+      #endif
+    }
+}
+
+
+
+KBNODE
+new_kbnode( PACKET *pkt )
+{
+    KBNODE n = alloc_node();
+    n->pkt = pkt;
     return n;
 }
 
@@ -54,16 +77,9 @@ new_kbnode( PACKET *pkt )
 KBNODE
 clone_kbnode( KBNODE node )
 {
-    KBNODE n;
+    KBNODE n = alloc_node();
 
-    n = unused_nodes;
-    if( n )
-	unused_nodes = n->next;
-    else
-	n = m_alloc( sizeof *n );
-    n->next = NULL;
     n->pkt = node->pkt;
-    n->flag = 0;
     n->private_flag = node->private_flag | 2; /* mark cloned */
     return n;
 }
@@ -76,23 +92,18 @@ release_kbnode( KBNODE n )
 
     while( n ) {
 	n2 = n->next;
-	if( !(n->private_flag & 2) ) {
+	if( !is_cloned_kbnode(n) ) {
 	    free_packet( n->pkt );
 	    m_free( n->pkt );
 	}
-      #if USE_UNUSED_NODES
-	n->next = unused_nodes;
-	unused_nodes = n;
-      #else
-	m_free( n );
-      #endif
+	free_node( n );
 	n = n2;
     }
 }
 
 
 /****************
- * Delete NODE from ROOT.  ROOT must exist!
+ * Delete NODE.
  * Note: This only works with walk_kbnode!!
  */
 void
@@ -100,6 +111,7 @@ delete_kbnode( KBNODE node )
 {
     node->private_flag |= 1;
 }
+
 
 
 /****************
@@ -220,7 +232,7 @@ walk_kbnode( KBNODE root, KBNODE *context, int all )
 	    n = (*context)->next;
 	    *context = n;
 	}
-    } while( !all && n && (n->private_flag & 1) );
+    } while( !all && n && is_deleted_kbnode(n) );
 
     return n;
 }
@@ -247,21 +259,16 @@ commit_kbnode( KBNODE *root )
     int changed = 0;
 
     for( n = *root, nl=NULL; n; n = nl->next ) {
-	if( (n->private_flag & 1) ) {
+	if( is_deleted_kbnode(n) ) {
 	    if( n == *root )
 		*root = nl = n->next;
 	    else
 		nl->next = n->next;
-	    if( !(n->private_flag & 2) ) {
+	    if( !is_cloned_kbnode(n) ) {
 		free_packet( n->pkt );
 		m_free( n->pkt );
 	    }
-	  #if USE_UNUSED_NODES
-	    n->next = unused_nodes;
-	    unused_nodes = n;
-	  #else
-	    m_free( n );
-	  #endif
+	    free_node( n );
 	    changed = 1;
 	}
 	else
@@ -269,6 +276,63 @@ commit_kbnode( KBNODE *root )
     }
     return changed;
 }
+
+void
+remove_kbnode( KBNODE *root, KBNODE node )
+{
+    KBNODE n, nl;
+
+    for( n = *root, nl=NULL; n; n = nl->next ) {
+	if( n == node ) {
+	    if( n == *root )
+		*root = nl = n->next;
+	    else
+		nl->next = n->next;
+	    if( !is_cloned_kbnode(n) ) {
+		free_packet( n->pkt );
+		m_free( n->pkt );
+	    }
+	    free_node( n );
+	}
+	else
+	    nl = n;
+    }
+}
+
+
+/****************
+ * Move NODE behind right after WHERE or to the beginning if WHERE is NULL.
+ */
+void
+move_kbnode( KBNODE *root, KBNODE node, KBNODE where )
+{
+    KBNODE tmp, prev;
+
+    if( !root || !*root || !node )
+	return;  /* sanity check */
+    for( prev = *root; prev && prev->next != node; prev = prev->next )
+	;
+    if( !prev )
+	return; /* node is not in the list */
+
+    if( !where ) {  /* move node before root */
+	if( node == *root ) /* move to itself */
+	    return;
+	prev->next = node->next;
+	node->next = *root;
+	*root = node;
+	return;
+    }
+    /* move it after where */
+    if( node == where )
+	return;
+    tmp = node->next;
+    node->next = where->next;
+    where->next = node;
+    prev->next = tmp;
+}
+
+
 
 
 void

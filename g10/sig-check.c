@@ -95,8 +95,9 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 	}
 	md_final( md );
 	p = make_radix64_string( md_read( md, 0 ), 20 );
-	buffer = m_alloc( strlen(p) + 40 );
-	sprintf( buffer, "%s %s", p, strtimestamp( sig->timestamp ) );
+	buffer = m_alloc( strlen(p) + 60 );
+	sprintf( buffer, "%s %s %lu",
+		 p, strtimestamp( sig->timestamp ), (ulong)sig->timestamp );
 	write_status_text( STATUS_SIG_ID, buffer );
 	m_free(buffer);
 	m_free(p);

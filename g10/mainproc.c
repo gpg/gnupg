@@ -923,16 +923,16 @@ check_sig_and_print( CTX c, KBNODE node )
 			   : _("Good signature from \""));
 	    else
 		log_info(    _("                aka \""));
-	    print_string( stderr, un->pkt->pkt.user_id->name,
-				  un->pkt->pkt.user_id->len, '\"' );
-	    fputs("\"\n", stderr);
+	    print_string( log_stream(), un->pkt->pkt.user_id->name,
+					un->pkt->pkt.user_id->len, '\"' );
+	    fputs("\"\n", log_stream() );
 	    if( rc )
 		break; /* print only one id in this case */
 	}
 	if( !count ) {	/* just in case that we have no userid */
 	    log_info(rc? _("BAD signature from \"")
 		       : _("Good signature from \""));
-	    fputs("[?]\"\n", stderr );
+	    fputs("[?]\"\n", log_stream() );
 	}
 	release_kbnode( keyblock );
 
@@ -943,13 +943,16 @@ check_sig_and_print( CTX c, KBNODE node )
 
 	    if( !get_pubkey( pk, sig->keyid ) ) {
 		byte array[MAX_FINGERPRINT_LEN], *p;
-		char buf[MAX_FINGERPRINT_LEN*2+1];
+		char buf[MAX_FINGERPRINT_LEN*2+61];
 		size_t i, n;
 
 		fingerprint_from_pk( pk, array, &n );
 		p = array;
 		for(i=0; i < n ; i++, p++ )
 		    sprintf(buf+2*i, "%02X", *p );
+		sprintf(buf+strlen(buf), " %s %lu",
+					 strtimestamp( sig->timestamp ),
+					 (ulong)sig->timestamp );
 		write_status_text( STATUS_VALIDSIG, buf );
 	    }
 	    free_public_key( pk );
@@ -964,9 +967,10 @@ check_sig_and_print( CTX c, KBNODE node )
     }
     else {
 	char buf[50];
-	sprintf(buf, "%08lX%08lX %d",
+	sprintf(buf, "%08lX%08lX %d %d %02x %lu %d",
 		     (ulong)sig->keyid[0], (ulong)sig->keyid[1],
-		     sig->pubkey_algo );
+		     sig->pubkey_algo, sig->digest_algo,
+		     sig->sig_class, (ulong)sig->timestamp, rc );
 	write_status_text( STATUS_ERRSIG, buf );
 	log_error(_("Can't check signature: %s\n"), g10_errstr(rc) );
     }

@@ -54,6 +54,7 @@ and after about half a day in the rsync snapshots.
 
 [ **] #17 1999-05-18 <Bodo_Moeller@public.uni-hamburg.de> 0.9.6
     Import does not detect identical user IDs.
+    FIX: 1999-05-22
 
 Next #18
 
