@@ -1,3 +1,12 @@
+2002-06-07  Stefan Bellon  <sbellon@sbellon.de>
+
+	* g10.c [__riscos__]: Added --attribute-file to do the same as
+	--attribute-fd, but with a filename not a fd as argument.
+	Added magic symbol for RISC OS to use different memory management.
+
+	* gpgv.c [__riscos__]: Added magic symbol for RISC OS to use
+	different memory management.
+
 2002-06-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* main.h, g10.c (main), keygen.c (build_personal_digest_list): Put

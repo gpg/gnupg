@@ -81,6 +81,11 @@ static ARGPARSE_OPTS opts[] = {
 
 int g10_errors_seen = 0;
 
+#ifdef __riscos__
+/* This enables better dynamic memory management on RISC OS */
+const char *__dynamic_da_name = "GnuPG (gpgv) Heap";
+#endif /* __riscos__ */
+
 const char *
 strusage( int level )
 {

@@ -373,7 +373,8 @@
 # define __attribute__(x) 
 # if (__CC_NORCROFT_VERSION < 544) /* old version of Norcroft */
 #  define inline __inline
-#  define __func__ "[" __FILE__ ":" __LINE__ "]"
+#  define STR(a) #a
+#  define __func__ "[" __FILE__ ":" STR(__LINE__) "]"
 # endif
 #else /* gcc */
 #endif

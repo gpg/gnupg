@@ -257,6 +257,8 @@ int vasprintf ( char **result, const char *format, va_list args);
 
 /******* RISC OS stuff ***********/
 #ifdef __riscos__
+/* needed for strcasecmp() */
+#include <strings.h>
 pid_t riscos_getpid(void);
 int riscos_kill(pid_t pid, int sig);
 int riscos_access(const char *path, int amode);

@@ -148,9 +148,12 @@ enum cmd_and_opt_values { aNull = 0,
     oDebug,
     oDebugAll,
     oStatusFD,
-    oAttributeFD,
 #ifdef __riscos__
     oStatusFile,
+#endif /* __riscos__ */
+    oAttributeFD,
+#ifdef __riscos__
+    oAttributeFile,
 #endif /* __riscos__ */
     oSKComments,
     oNoSKComments,
@@ -413,9 +416,12 @@ static ARGPARSE_OPTS opts[] = {
     { oDebug, "debug"     ,4|16, "@"},
     { oDebugAll, "debug-all" ,0, "@"},
     { oStatusFD, "status-fd" ,1, N_("|FD|write status info to this FD") },
-    { oAttributeFD, "attribute-fd" ,1, "@" },
 #ifdef __riscos__
     { oStatusFile, "status-file" ,2, N_("|[file]|write status info to file") },
+#endif /* __riscos__ */
+    { oAttributeFD, "attribute-fd" ,1, "@" },
+#ifdef __riscos__
+    { oAttributeFile, "attribute-file" ,2, "@" },
 #endif /* __riscos__ */
     { oNoSKComments, "no-comment", 0,   "@"},
     { oNoSKComments, "no-sk-comments", 0,   "@"},
@@ -589,6 +595,11 @@ static void print_hex( byte *p, size_t n );
 static void print_mds( const char *fname, int algo );
 static void add_notation_data( const char *string, int which );
 static void add_policy_url( const char *string, int which );
+
+#ifdef __riscos__
+/* This enables better dynamic memory management on RISC OS */
+const char *__dynamic_da_name = "GnuPG Heap";
+#endif /* __riscos__ */
 
 const char *
 strusage( int level )
@@ -1067,12 +1078,17 @@ main( int argc, char **argv )
 	  case oStatusFD:
             set_status_fd( iobuf_translate_file_handle (pargs.r.ret_int, 1) );
             break;
+#ifdef __riscos__
+	  case oStatusFile:
+            set_status_fd( iobuf_translate_file_handle ( fdopenfile (pargs.r.ret_str, 1), 1) );
+            break;
+#endif /* __riscos__ */
 	  case oAttributeFD:
             set_attrib_fd(iobuf_translate_file_handle (pargs.r.ret_int, 1));
             break;
 #ifdef __riscos__
-	  case oStatusFile:
-            set_status_fd( iobuf_translate_file_handle ( fdopenfile (pargs.r.ret_str, 1), 1) );
+	  case oAttributeFile:
+            set_attrib_fd(iobuf_translate_file_handle ( fdopenfile (pargs.r.ret_str, 1), 1) );
             break;
 #endif /* __riscos__ */
 	  case oLoggerFD:

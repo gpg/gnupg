@@ -1,3 +1,8 @@
+2002-06-07  Stefan Bellon  <sbellon@sbellon.de>
+
+	* util.h [__riscos__]: RISC OS needs strings.h for strcasecmp()
+	and strncasecmp().
+
 2002-05-22  Werner Koch  <wk@gnupg.org>
 
 	* util.h: Add strncasecmp.  Removed stricmp and memicmp.
