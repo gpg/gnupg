@@ -1,3 +1,15 @@
+2004-10-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* keylist.c (list_keyblock_print): Show the fingerprint after the
+	key, not after the first user ID.
+
+	* keyedit.c (show_key_with_all_names): Don't show validity if
+	we're just printing user IDs for signing.
+
+	* armor.c (fake_packet): Properly handle the case where the line
+	is dash-space (i.e. a blank line that was quoted).  Give a warning
+	for bad dash escaping.
+
 2004-10-14  Werner Koch  <wk@g10code.com>
 
 	* export.c (do_export_stream) [ENABLE_SELINUX_HACKS]: Don't allow

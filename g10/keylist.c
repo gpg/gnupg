@@ -651,7 +651,6 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
     KBNODE node;
     PKT_public_key *pk;
     PKT_secret_key *sk;
-    int any=0;
     struct sig_stats *stats=opaque;
     int skip_sigs=0;
 
@@ -735,6 +734,12 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	printf("\n");
       }
 
+    if( fpr )
+      print_fingerprint( pk, sk, 0 );
+    print_card_serialno (sk);
+    if( opt.with_key_data )
+      print_key_data( pk );
+
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	if( node->pkt->pkttype == PKT_USER_ID && !opt.fast_list_mode ) {
 	    PKT_user_id *uid=node->pkt->pkt.user_id;
@@ -776,14 +781,6 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 
             print_utf8_string( stdout, uid->name, uid->len );
 	    putchar('\n');
-	    if( !any ) {
-		if( fpr )
-		    print_fingerprint( pk, sk, 0 );
-                print_card_serialno (sk);
-		if( opt.with_key_data )
-		    print_key_data( pk );
-		any = 1;
-	    }
 
 	    if((opt.list_options&LIST_SHOW_PHOTOS) && uid->attribs!=NULL)
 	      show_photos(uid->attribs,uid->numattribs,pk,sk);
@@ -800,14 +797,6 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	      }
 	    else
 	      skip_sigs=0;
-
-	    if( !any )
-	      {
-		putchar('\n');
-		if( fpr )
-		  print_fingerprint( pk, sk, 0 ); /* of the main key */
-		any = 1;
-	      }
 
             printf("sub   %4u%c/%s %s",
 		   nbits_from_pk( pk2 ),pubkey_letter( pk2->pubkey_algo ),
@@ -839,15 +828,6 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	else if( node->pkt->pkttype == PKT_SECRET_SUBKEY )
 	  {
 	    PKT_secret_key *sk2 = node->pkt->pkt.secret_key;
-
-	    if( !any )
-	      {
-		putchar('\n');
-		if( fpr )
-		  print_fingerprint( pk, sk, 0 ); /* of the main key */
-                print_card_serialno (sk);
-		any = 1;
-	      }
 
             printf("ssb%c  %4u%c/%s %s",
                    (sk2->protect.s2k.mode==1001)?'#':
@@ -892,25 +872,6 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    else {
 		rc = 0;
 		sigrc = ' ';
-	    }
-
-	    if( !any ) { /* no user id, (maybe a revocation follows)*/
-	      /* Check if the pk is really revoked - there could be a
-                 0x20 sig packet there even if we are not revoked
-                 (say, if a revocation key issued the packet, but the
-                 revocation key isn't present to verify it.) */
-		if( sig->sig_class == 0x20 && pk->is_revoked )
-		    puts("[revoked]");
-		else if( sig->sig_class == 0x18 )
-		    puts("[key binding]");
-		else if( sig->sig_class == 0x28 )
-		    puts("[subkey revoked]");
-		else
-		    putchar('\n');
-		if( fpr )
-		    print_fingerprint( pk, sk, 0 );
-                print_card_serialno (sk);
-		any=1;
 	    }
 
 	    if( sig->sig_class == 0x20 || sig->sig_class == 0x28
@@ -1535,7 +1496,7 @@ print_card_serialno (PKT_secret_key *sk)
   if (!sk->is_protected || sk->protect.s2k.mode != 1002) 
     return; /* Not a card. */
   if (opt.with_colons)
-    return; /* Handled elesewhere. */
+    return; /* Handled elsewhere. */
 
   fputs (_("      Card serial no. ="), stdout);
   putchar (' ');

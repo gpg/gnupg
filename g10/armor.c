@@ -518,15 +518,64 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	}
 	if( !maxlen )
 	    afx->truncated++;
-	if( !afx->not_dash_escaped ) {
-	    int crlf;
-	    p = afx->buffer;
-	    n = afx->buffer_len;
-	    crlf = n > 1 && p[n-2] == '\r' && p[n-1]=='\n';
+
+	p = afx->buffer;
+	n = afx->buffer_len;
+
+	/* Armor header or dash-escaped line? */
+	if(p[0]=='-')
+	  {
+	    /* 2440bis-10: When reversing dash-escaping, an
+	       implementation MUST strip the string "- " if it occurs
+	       at the beginning of a line, and SHOULD warn on "-" and
+	       any character other than a space at the beginning of a
+	       line.  */
+
+	    if(p[1]==' ' && !afx->not_dash_escaped)
+	      {
+		/* It's a dash-escaped line, so skip over the
+		   escape. */
+		afx->buffer_pos = 2;
+	      }
+	    else if(p[1]=='-' && p[2]=='-' && p[3]=='-' && p[4]=='-')
+	      {
+		/* Five dashes in a row mean it's probably armor
+		   header. */
+		int type = is_armor_header( p, n );
+		if( afx->not_dash_escaped && type != BEGIN_SIGNATURE )
+		  ; /* this is okay */
+		else
+		  {
+		    if( type != BEGIN_SIGNATURE )
+		      {
+			log_info(_("unexpected armor: "));
+			print_string( stderr, p, n, 0 );
+			putc('\n', stderr);
+		      }
+
+		    lastline = 1;
+		    rc = -1;
+		  }
+	      }
+	    else if(!afx->not_dash_escaped)
+	      {
+		/* Bad dash-escaping. */
+		log_info(_("invalid dash escaped line: "));
+		print_string( stderr, p, n, 0 );
+		putc('\n', stderr);
+	      }
+	  }
+
+	/* Now handle the end-of-line canonicalization */
+	if( !afx->not_dash_escaped )
+	  {
+	    int crlf = n > 1 && p[n-2] == '\r' && p[n-1]=='\n';
 
 	    /* PGP2 does not treat a tab as white space character */
-	    afx->buffer_len = trim_trailing_chars( p, n,
-					 afx->pgp2mode ? " \r\n" : " \t\r\n");
+	    afx->buffer_len=
+	      trim_trailing_chars( &p[afx->buffer_pos], n-afx->buffer_pos,
+				   afx->pgp2mode ? " \r\n" : " \t\r\n");
+	    afx->buffer_len+=afx->buffer_pos;
 	    /* the buffer is always allocated with enough space to append
 	     * the removed [CR], LF and a Nul
 	     * The reason for this complicated procedure is to keep at least
@@ -538,37 +587,9 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	     * faked packet could do the job).
 	     */
 	    if( crlf )
-		afx->buffer[afx->buffer_len++] = '\r';
+	      afx->buffer[afx->buffer_len++] = '\r';
 	    afx->buffer[afx->buffer_len++] = '\n';
-	    afx->buffer[afx->buffer_len] = 0;
-	}
-	p = afx->buffer;
-	n = afx->buffer_len;
-
-	if( n > 2 && *p == '-' )
-	  {
-	    /* check for dash escaped or armor header */
-	    if( p[1] == ' ' && !afx->not_dash_escaped )
-	      {
-		/* It's a dash-escaped line */
-		afx->buffer_pos = 2; /* skip */
-	      }
-	    else if( n >= 15 &&  p[1] == '-' && p[2] == '-' && p[3] == '-' )
-	      {
-		/* It's armor header */
-		int type = is_armor_header( p, n );
-		if( afx->not_dash_escaped && type != BEGIN_SIGNATURE )
-		  ; /* this is okay */
-		else {
-		  if( type != BEGIN_SIGNATURE ) {
-		    log_info(_("unexpected armor: "));
-		    print_string( stderr, p, n, 0 );
-		    putc('\n', stderr);
-		  }
-		  lastline = 1;
-		  rc = -1;
-		}
-	      }
+	    afx->buffer[afx->buffer_len] = '\0';
 	  }
     }
 

@@ -915,8 +915,8 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	  }
 
 	p=get_user_id_native(sk_keyid);
-	tty_printf(_("Are you really sure that you want to sign this key\n"
-		     "with your key \"%s\" (%s)\n"),p,keystr_from_sk(sk));
+	tty_printf(_("Are you sure that you want to sign this key with your\n"
+		     "key \"%s\" (%s)\n"),p,keystr_from_sk(sk));
 	m_free(p);
 
 	if(selfsig)
@@ -2325,26 +2325,34 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
     /* the user ids */
 
     i = 0;
-    for( node = keyblock; node; node = node->next ) {
-	if( node->pkt->pkttype == PKT_USER_ID ) {
+    for( node = keyblock; node; node = node->next )
+      {
+	if( node->pkt->pkttype == PKT_USER_ID )
+	  {
 	    PKT_user_id *uid = node->pkt->pkt.user_id;
 	    ++i;
-	    if( !only_marked || (only_marked && (node->flag & NODFLG_MARK_A))){
-	        if(uid->is_revoked)
-		  tty_printf(_("[%8.8s] "),_("revoked"));
-		else if(uid->is_expired)
-		  tty_printf(_("[%8.8s] "),_("expired"));
-		else if(primary)
-		  tty_printf(_("[%8.8s] "),
-			     trust_value_to_string(get_validity(primary,uid)));
+	    if( !only_marked || (only_marked && (node->flag & NODFLG_MARK_A)))
+	      {
+		if(!only_marked)
+		  {
+		    if(uid->is_revoked)
+		      tty_printf(_("[%8.8s] "),_("revoked"));
+		    else if(uid->is_expired)
+		      tty_printf(_("[%8.8s] "),_("expired"));
+		    else if(primary)
+		      tty_printf(_("[%8.8s] "),
+				 trust_value_to_string(get_validity(primary,
+								    uid)));
+		  }
+
 		if( only_marked )
-		   tty_printf("     ");
+		  tty_printf("     ");
 		else if( node->flag & NODFLG_SELUID )
-		   tty_printf("(%d)* ", i);
+		  tty_printf("(%d)* ", i);
 		else if( uid->is_primary )
-		   tty_printf("(%d). ", i);
+		  tty_printf("(%d). ", i);
 		else
-		   tty_printf("(%d)  ", i);
+		  tty_printf("(%d)  ", i);
 		tty_print_utf8_string( uid->name, uid->len );
 		tty_printf("\n");
 		if( with_prefs )
@@ -2372,9 +2380,9 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 		      tty_printf(_("There are no preferences on a "
 				   "PGP 2.x-style user ID.\n"));
 		  }
-	    }
-	}
-    }
+	      }
+	  }
+      }
 
     if (do_warn)
         tty_printf (_("Please note that the shown key validity "
