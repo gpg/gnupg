@@ -1,5 +1,8 @@
 2003-06-18  David Shaw  <dshaw@jabberwocky.com>
 
+	* Add pointer in --ignore-time-conflict to see --ignore-valid
+	from, and vice versa.
+
 	* Document --set-notation.  Explain why it is not possible to
 	disable permission warnings in the gpg.conf file about the
 	homedir.

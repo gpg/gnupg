@@ -1884,18 +1884,20 @@ it does not ensure the de-facto standard format of user IDs.
 <term>--ignore-time-conflict</term>
 <listitem><para>
 GnuPG normally checks that the timestamps associated with keys and
-signatures have plausible values.  However, sometimes a signature seems to
-be older than the key due to clock problems.  This option makes these
-checks just a warning.
+signatures have plausible values.  However, sometimes a signature
+seems to be older than the key due to clock problems.  This option
+makes these checks just a warning.  See also --ignore-valid-from for
+timestamp issues on subkeys.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--ignore-valid-from</term>
 <listitem><para>
-GnuPG normally does not select and use subkeys created in the future.  This
-option allows the use of such keys and thus exhibits the pre-1.0.7
-behaviour.  You should not use this option unless you there is some
-clock problem.
+GnuPG normally does not select and use subkeys created in the future.
+This option allows the use of such keys and thus exhibits the
+pre-1.0.7 behaviour.  You should not use this option unless you there
+is some clock problem.  See also --ignore-time-conflict for timestamp
+issues with signatures.
 </para></listitem></varlistentry>
 
 <varlistentry>
