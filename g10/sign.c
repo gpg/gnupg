@@ -1059,7 +1059,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     if (!opt.quiet || !opt.batch)
         log_info (_("%s encryption will be used\n"),
 		    cipher_algo_to_string(algo) );
-    cfx.dek = passphrase_to_dek( NULL, 0, algo, s2k, 2, NULL );
+    cfx.dek = passphrase_to_dek( NULL, 0, algo, s2k, 2, NULL, NULL);
 
     if (!cfx.dek || !cfx.dek->keylen) {
         rc = G10ERR_PASSPHRASE;

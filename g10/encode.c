@@ -194,7 +194,8 @@ encode_simple( const char *filename, int mode, int compat )
 	s2k->mode = opt.rfc1991? 0:opt.s2k_mode;
 	s2k->hash_algo = opt.s2k_digest_algo;
 	cfx.dek = passphrase_to_dek( NULL, 0,
-				     default_cipher_algo(), s2k, 2, NULL );
+				     default_cipher_algo(), s2k, 2,
+                                     NULL, NULL);
 	if( !cfx.dek || !cfx.dek->keylen ) {
 	    rc = G10ERR_PASSPHRASE;
 	    m_free(cfx.dek);

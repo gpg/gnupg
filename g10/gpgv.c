@@ -314,9 +314,11 @@ check_secret_key( PKT_secret_key *sk, int n )
 DEK *
 passphrase_to_dek( u32 *keyid, int pubkey_algo,
 		   int cipher_algo, STRING2KEY *s2k, int mode,
-                   const char *tmp)
+                   const char *tmp, int *canceled)
 {
-    return NULL;
+  if (canceled)
+    *canceled = 0;
+  return NULL;
 }
 
 /* Stubs to avoid linking to photoid.c */
