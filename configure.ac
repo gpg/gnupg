@@ -360,7 +360,7 @@ AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt,
 # is for Mozilla LDAP.
 
 if test "$try_ldap" = yes ; then
-  for LDAPLIBS in "-lldap -llber -lresolv" "-lldap -llber" "-lldapssl41"; do
+  for LDAPLIBS in "-lldap -llber" "-lldap -llber -lresolv" "-lldapssl41"; do
     _ldap_save_libs=$LIBS
     LIBS="$LDAPLIBS $NETLIBS $LIBS"
 
