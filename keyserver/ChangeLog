@@ -1,5 +1,7 @@
 2002-02-14  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_ldap.c: Fix compiler warning.
+
 	* gpgkeys_ldap.c: Be much more robust with mangled input files.
 
 2001-12-28  David Shaw  <dshaw@jabberwocky.com>

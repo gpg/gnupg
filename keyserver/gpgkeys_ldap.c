@@ -555,7 +555,7 @@ int main(int argc,char *argv[])
   int version;
   char *attrs[]={"basekeyspacedn","version","software",NULL};
   LDAPMessage *res;
-  struct keylist *keylist=NULL,*keyptr;
+  struct keylist *keylist=NULL,*keyptr=NULL;
 
 #ifdef __riscos__
     __riscosify_control = __RISCOSIFY_NO_PROCESS;
