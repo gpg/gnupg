@@ -1,5 +1,5 @@
 /* command.c - SCdaemon command handler
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -27,8 +27,9 @@
 #include <unistd.h>
 #include <ksba.h>
 
+#include <assuan.h>
+
 #include "scdaemon.h"
-#include "../assuan/assuan.h"
 
 /* maximum length aloowed as a PIN; used for INQUIRE NEEDPIN */
 #define MAXLEN_PIN 100
@@ -548,28 +549,24 @@ register_commands (ASSUAN_CONTEXT ctx)
 {
   static struct {
     const char *name;
-    int cmd_id;
     int (*handler)(ASSUAN_CONTEXT, char *line);
   } table[] = {
-    { "SERIALNO", 0, cmd_serialno },
-    { "LEARN", 0, cmd_learn },
-    { "READCERT", 0, cmd_readcert },
-    { "READKEY", 0,  cmd_readkey },
-    { "SETDATA", 0,  cmd_setdata },
-    { "PKSIGN", 0,   cmd_pksign },
-    { "PKDECRYPT", 0,cmd_pkdecrypt },
-    { "",     ASSUAN_CMD_INPUT, NULL }, 
-    { "",     ASSUAN_CMD_OUTPUT, NULL }, 
+    { "SERIALNO",     cmd_serialno },
+    { "LEARN",        cmd_learn },
+    { "READCERT",     cmd_readcert },
+    { "READKEY",      cmd_readkey },
+    { "SETDATA",      cmd_setdata },
+    { "PKSIGN",       cmd_pksign },
+    { "PKDECRYPT",    cmd_pkdecrypt },
+    { "INPUT",        NULL }, 
+    { "OUTPUT",       NULL }, 
     { NULL }
   };
-  int i, j, rc;
+  int i, rc;
 
-  for (i=j=0; table[i].name; i++)
+  for (i=0; table[i].name; i++)
     {
-      rc = assuan_register_command (ctx,
-                                    table[i].cmd_id? table[i].cmd_id
-                                                   : (ASSUAN_CMD_USER + j++),
-                                    table[i].name, table[i].handler);
+      rc = assuan_register_command (ctx, table[i].name, table[i].handler);
       if (rc)
         return rc;
     } 

@@ -25,7 +25,6 @@ bin_PROGRAMS = scdaemon
 
 AM_CPPFLAGS = -I$(top_srcdir)/common $(OPENSC_CFLAGS) $(LIBGCRYPT_CFLAGS) \
 	      $(KSBA_CFLAGS)
-LDFLAGS = @LDFLAGS@ 
 
 scdaemon_SOURCES = \
 	scdaemon.c scdaemon.h \
