@@ -1,3 +1,11 @@
+2004-12-10  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (send_fprtime_if_not_null): New.
+	(do_getattr): Add KEY_TIME.
+	(do_learn_status): Print KEY_TIME.
+	* cardglue.c (learn_status_cb): Parse KEY-TIME.
+	* card-util.c (card_status): Print creation time if available.
+
 2004-12-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, g10.c (main), textfilter.c (len_without_trailing_ws):

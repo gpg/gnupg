@@ -558,6 +558,20 @@ learn_status_cb (void *opaque, const char *line)
       else if (no == 3)
         parm->fpr3valid = unhexify_fpr (line, parm->fpr3);
     }
+  else if (keywordlen == 8 && !memcmp (keyword, "KEY-TIME", keywordlen))
+    {
+      int no = atoi (line);
+      while (* line && !spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+      if (no == 1)
+        parm->fpr1time = strtoul (line, NULL, 10);
+      else if (no == 2)
+        parm->fpr2time = strtoul (line, NULL, 10);
+      else if (no == 3)
+        parm->fpr3time = strtoul (line, NULL, 10);
+    }
   else if (keywordlen == 6 && !memcmp (keyword, "CA-FPR", keywordlen))
     {
       int no = atoi (line);

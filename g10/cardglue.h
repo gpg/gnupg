@@ -50,6 +50,9 @@ struct agent_card_info_s {
   char fpr1[20];
   char fpr2[20];
   char fpr3[20];
+  u32  fpr1time;
+  u32  fpr2time;
+  u32  fpr3time;
   unsigned long sig_counter;
   int chv1_cached;   /* True if a PIN is not required for each
                         signing.  Note that the gpg-agent might cache

@@ -356,7 +356,9 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
       print_sha1_fpr_colon (fp, info.fpr2valid? info.fpr2:NULL);
       print_sha1_fpr_colon (fp, info.fpr3valid? info.fpr3:NULL);
       putc ('\n', fp);
-
+      fprintf (fp, "fprtime:%lu:%lu:%lu:\n",
+               (unsigned long)info.fpr1time, (unsigned long)info.fpr2time,
+               (unsigned long)info.fpr3time);
     }
   else 
     {
@@ -409,10 +411,19 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
       tty_fprintf (fp,    "Signature counter : %lu\n", info.sig_counter);
       tty_fprintf (fp, "Signature key ....:");
       print_sha1_fpr (fp, info.fpr1valid? info.fpr1:NULL);
+      if (info.fpr1valid && info.fpr1time)
+        tty_fprintf (fp, "      created ....: %s\n",
+                     asctimestamp (info.fpr1time));
       tty_fprintf (fp, "Encryption key....:");
       print_sha1_fpr (fp, info.fpr2valid? info.fpr2:NULL);
+      if (info.fpr2valid && info.fpr2time)
+        tty_fprintf (fp, "      created ....: %s\n",
+                     asctimestamp (info.fpr2time));
       tty_fprintf (fp, "Authentication key:");
       print_sha1_fpr (fp, info.fpr3valid? info.fpr3:NULL);
+      if (info.fpr3valid && info.fpr3time)
+        tty_fprintf (fp, "      created ....: %s\n",
+                     asctimestamp (info.fpr3time));
       tty_fprintf (fp, "General key info..: "); 
       if (info.fpr1valid && !get_pubkey_byfprint (pk, info.fpr1, 20))
         print_pubkey_info (fp, pk);

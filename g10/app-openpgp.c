@@ -79,6 +79,7 @@ static struct {
   { 0x00C4, 0, 0x6E, 1, 0, 1, 1, "CHV Status Bytes" },
   { 0x00C5, 0, 0x6E, 1, 0, 0, 0, "Fingerprints" },
   { 0x00C6, 0, 0x6E, 1, 0, 0, 0, "CA Fingerprints" },
+  { 0x00CD, 0, 0x6E, 1, 0, 0, 0, "Generation time" },
   { 0x007A, 1,    0, 1, 0, 0, 0, "Security Support Template" },
   { 0x0093, 0, 0x7A, 1, 1, 0, 0, "Digital Signature Counter" },
   { 0x0101, 0,    0, 0, 0, 0, 0, "Private DO 1"},
@@ -580,6 +581,23 @@ send_fpr_if_not_null (ctrl_t ctrl, const char *keyword,
 }
 
 static void
+send_fprtime_if_not_null (ctrl_t ctrl, const char *keyword,
+                          int number, const unsigned char *stamp)
+{                      
+  char numbuf1[50], numbuf2[50];
+  unsigned long value;
+
+  value = (stamp[0] << 24) | (stamp[1]<<16) | (stamp[2]<<8) | stamp[3];
+  if (!value)
+    return;
+  sprintf (numbuf1, "%d", number);
+  sprintf (numbuf2, "%lu", value);
+  send_status_info (ctrl, keyword,
+                    numbuf1, (size_t)strlen(numbuf1),
+                    numbuf2, (size_t)strlen(numbuf2), NULL, 0);
+}
+
+static void
 send_key_data (ctrl_t ctrl, const char *name, 
                const unsigned char *a, size_t alen)
 {
@@ -611,8 +629,9 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     { "DISP-SEX",     0x5F35 },
     { "PUBKEY-URL",   0x5F50 },
     { "KEY-FPR",      0x00C5, 3 },
+    { "KEY-TIME",     0x00CD, 4 },
     { "CA-FPR",       0x00C6, 3 },
-    { "CHV-STATUS",   0x00C4, 1 },
+    { "CHV-STATUS",   0x00C4, 1 }, 
     { "SIG-COUNTER",  0x0093, 2 },
     { "SERIALNO",     0x004F, -1 },
     { "AID",          0x004F },
@@ -694,6 +713,12 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
             for (i=0; i < 3; i++)
               send_fpr_if_not_null (ctrl, table[idx].name, i+1, value+i*20);
         }
+      else if (table[idx].special == 4)
+        {
+          if (valuelen >= 12)
+            for (i=0; i < 3; i++)
+              send_fprtime_if_not_null (ctrl, table[idx].name, i+1, value+i*4);
+        }
       else
         send_status_info (ctrl, table[idx].name, value, valuelen, NULL, 0);
 
@@ -713,6 +738,8 @@ do_learn_status (app_t app, ctrl_t ctrl)
   do_getattr (app, ctrl, "PUBKEY-URL");
   do_getattr (app, ctrl, "LOGIN-DATA");
   do_getattr (app, ctrl, "KEY-FPR");
+  if (app->card_version > 0x0100)
+    do_getattr (app, ctrl, "KEY-TIME");
   do_getattr (app, ctrl, "CA-FPR");
   do_getattr (app, ctrl, "CHV-STATUS");
   do_getattr (app, ctrl, "SIG-COUNTER");
