@@ -300,6 +300,7 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 	|| enc->pubkey_algo == PUBKEY_ALGO_DSA
 	|| is_RSA(enc->pubkey_algo)  ) {
 	if ( !c->dek && ((!enc->keyid[0] && !enc->keyid[1])
+                          || opt.try_all_secrets
 			  || !seckey_available( enc->keyid )) ) {
 	    if( opt.list_only )
 		result = -1;
@@ -746,7 +747,7 @@ print_notation_data( PKT_signature *sig )
 	print_string( log_stream(), p+n1, n2, 0 );
 	putc( '\n', log_stream() );
         write_status_buffer ( STATUS_NOTATION_NAME, p   , n1, 0 );
-        write_status_buffer ( STATUS_NOTATION_DATA, p+n1, n2, 20 );
+        write_status_buffer ( STATUS_NOTATION_DATA, p+n1, n2, 50 );
     }
     if( (p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_POLICY, &n ) )) {
 	log_info(_("Policy: ") );

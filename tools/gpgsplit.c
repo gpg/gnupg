@@ -33,12 +33,14 @@
 #ifdef HAVE_DOSISH_SYSTEM
   #include <fcntl.h> /* for setmode() */
 #endif
+#include <zlib.h>
 
 #include "../g10/packet.h"
 #include "util.h"
 
 static int opt_verbose;
 static const char *opt_prefix = "";
+static int opt_uncompress;
 
 static void g10_exit( int rc );
 static void split_packets (const char *fname);
@@ -47,6 +49,7 @@ static void split_packets (const char *fname);
 enum cmd_and_opt_values { aNull = 0,
     oVerbose	  = 'v',
     oPrefix       = 'p',                          
+    oUncompress   = 500,                      
 aTest };
 
 
@@ -56,6 +59,7 @@ static ARGPARSE_OPTS opts[] = {
 
     { oVerbose, "verbose",   0, "verbose" },
     { oPrefix,  "prefix",    2, "|STRING|Prepend filenames with STRING" },
+    { oUncompress, "uncompress", 0, "uncompress a packet"},
 {0} };
 
 
@@ -105,6 +109,7 @@ main( int argc, char **argv )
 	switch( pargs.r_opt ) {
           case oVerbose: opt_verbose = 1; break;
           case oPrefix: opt_prefix = pargs.r.ret_str; break;
+          case oUncompress: opt_uncompress = 1; break;
 	  default : pargs.err = 2; break;
 	}
     }
@@ -143,7 +148,9 @@ pkttype_to_string (int pkttype)
 	case PKT_SECRET_KEY    : s = "secret_key"; break;
 	case PKT_PUBLIC_KEY    : s = "public_key"; break;
 	case PKT_SECRET_SUBKEY : s = "secret_subkey"; break;
-	case PKT_COMPRESSED    : s = "compressed"; break;
+	case PKT_COMPRESSED    : 
+          s = opt_uncompress? "uncompressed":"compressed";
+          break;
 	case PKT_ENCRYPTED     : s = "encrypted"; break;
 	case PKT_MARKER	       : s = "marker"; break;
 	case PKT_PLAINTEXT     : s = "plaintext"; break;
@@ -232,11 +239,13 @@ write_part ( const char *fname, FILE *fpin, unsigned long pktlen,
         g10_exit (1);
     }
 
-    for (p=hdr; hdrlen; p++, hdrlen--) {
-        if ( putc (*p, fpout) == EOF )
-            goto write_error;
+    if (!opt_uncompress) {
+        for (p=hdr; hdrlen; p++, hdrlen--) {
+            if ( putc (*p, fpout) == EOF )
+                goto write_error;
+        }
     }
-    
+
     first = 1;
     while (partial) {
         size_t partlen;
@@ -311,13 +320,89 @@ write_part ( const char *fname, FILE *fpin, unsigned long pktlen,
         else { /* compressed: read to end */
             pktlen = 0;
             partial = 0;
-            while ( (c=getc (fpin)) != EOF ) {
-                if ( putc (c, fpout) == EOF )
-                    goto write_error;
+            hdrlen = 0;
+            if (opt_uncompress) {
+                z_stream zs;
+                byte *inbuf, *outbuf;
+                unsigned int inbufsize, outbufsize;
+                int algo, zinit_done, zrc, nread, count;
+                size_t n;
+
+                if ((c = getc (fpin)) == EOF)
+                    goto read_error;
+                algo = c;
+                
+                memset (&zs, 0, sizeof zs);
+                inbufsize = 2048;
+                inbuf = m_alloc (inbufsize);
+                outbufsize = 8192;
+                outbuf = m_alloc (outbufsize);
+                zs.avail_in = 0;
+                zinit_done = 0;
+                
+                do {
+                    if (zs.avail_in < inbufsize) {
+                        n = zs.avail_in;
+                        if (!n)
+                            zs.next_in = inbuf;
+                        count = inbufsize - n;
+                        for (nread=0;
+                             nread < count && (c=getc (fpin)) != EOF;
+                             nread++) {
+                            inbuf[n+nread] = c;
+                        }
+                        n += nread;
+                        if (nread < count && algo == 1) {
+                            inbuf[n] = 0xFF; /* chew dummy byte */
+                            n++;
+                        }
+                        zs.avail_in = n;
+                    }
+                    zs.next_out = outbuf;
+                    zs.avail_out = outbufsize;
+                    
+                    if (!zinit_done) {
+                        zrc = algo == 1? inflateInit2 ( &zs, -13)
+                                       : inflateInit ( &zs );
+                        if (zrc != Z_OK) {
+                            log_fatal ("zlib problem: %s\n", zs.msg? zs.msg :
+                                       zrc == Z_MEM_ERROR ? "out of core" :
+                                       zrc == Z_VERSION_ERROR ?
+                                       "invalid lib version" :
+                                       "unknown error" );
+                        }
+                        zinit_done = 1;
+                    }
+                    else {
+#ifdef Z_SYNC_FLUSH
+                        zrc = inflate (&zs, Z_SYNC_FLUSH);
+#else
+                        zrc = inflate (&zs, Z_PARTIAL_FLUSH);
+#endif
+                        if (zrc == Z_STREAM_END)
+                            ; /* eof */
+                        else if (zrc != Z_OK && zrc != Z_BUF_ERROR) {
+                            if (zs.msg)
+                                log_fatal ("zlib inflate problem: %s\n", zs.msg );
+                            else
+                                log_fatal ("zlib inflate problem: rc=%d\n", zrc );
+                        }
+                        for (n=0; n < outbufsize - zs.avail_out; n++) {
+                            if (putc (outbuf[n], fpout) == EOF )
+                                goto write_error;
+                        }
+                    }
+                } while (zrc != Z_STREAM_END && zrc != Z_BUF_ERROR);
+                inflateEnd (&zs);
+            }
+            else {
+                while ( (c=getc (fpin)) != EOF ) {
+                    if ( putc (c, fpout) == EOF )
+                        goto write_error;
+                }
             }
             if (!feof (fpin))
                 goto read_error;
-            
         }
 
     }

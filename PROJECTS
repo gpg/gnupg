@@ -29,6 +29,12 @@
       We should add an abstraction layer so that adding support for
       different certificate structures will become easier.
 
+    * "Michael T. Babcock" <mbabcock@fibrespeed.net> suggested to write
+      an event log so that other software can display a key history or
+      alike with GnuPG results.  This should be connected to the keyrings.
+
+
+
  Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives

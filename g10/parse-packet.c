@@ -368,6 +368,14 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
 	}
     }
 
+    if (pktlen == 0xffffffff) {
+        /* with a some probability this is caused by a problem in the
+         * the uncompressing layer - in some error cases it just loops
+         * and spits out 0xff bytes. */
+        log_error ("%s: garbled packet detected\n", iobuf_where(inp) );
+	g10_exit (2);
+    }
+
     if( out && pkttype	) {
 	if( iobuf_write( out, hdr, hdrlen ) == -1 )
 	    rc = G10ERR_WRITE_FILE;
@@ -766,7 +774,8 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	p = "regular expression";
 	break;
       case SIGSUBPKT_REVOCABLE:
-	p = "revocable";
+	if( length )
+	    printf("%srevocable", *buffer? "":"not ");
 	break;
       case SIGSUBPKT_KEY_EXPIRE:
 	if( length >= 4 )
@@ -829,7 +838,9 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	    printf(" %d", buffer[i] );
 	break;
       case SIGSUBPKT_KS_FLAGS:
-	p = "key server preferences";
+	fputs("key server preferences:",stdout);
+	for(i=0;i<length;i++)
+	  printf(" %02X", buffer[i]);
 	break;
       case SIGSUBPKT_PREF_KS:
 	p = "preferred key server";

@@ -1,3 +1,20 @@
+2001-09-18  Werner Koch  <wk@gnupg.org>
+
+	* parse-packet.c (parse): Stop on impossible packet lengths.
+
+2001-09-17  Werner Koch  <wk@gnupg.org>
+
+	* mainproc.c (print_notation_data): Wrap notation data status lines
+	after 50 chars.
+	
+	* mainproc.c (proc_pubkey_enc): Make option try-all-secrets work.
+	By disastry@saiknes.lv.
+
+2001-09-14  Werner Koch  <wk@gnupg.org>
+
+	* parse-packet.c (dump_sig_subpkt): List key server preferences
+	and show the revocable flag correctly. Contributed by Davod Shaw.
+
 2001-09-09  Werner Koch  <wk@gnupg.org>
 
 	* keyedit.c (keyedit_menu): No need to define another p.

@@ -1,3 +1,8 @@
+2001-09-17  Werner Koch  <wk@gnupg.org>
+
+	* miscutil.c (print_string): Use explicit ranges and not iscntrl().  
+	(make_printable_string): Ditto.
+
 2001-09-07  Werner Koch  <wk@gnupg.org>
 
 	* strgutil.c (strsep): New, taken from glibc 2.2.1.

@@ -1,3 +1,8 @@
+2001-09-18  Werner Koch  <wk@gnupg.org>
+
+	* gpgsplit.c: New option --uncompress.
+	(write_part): Handle old style uncompressing.
+
 2001-06-20  Werner Koch  <wk@gnupg.org>
 
 	* gpgsplit.c: New.
