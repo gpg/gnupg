@@ -1115,8 +1115,12 @@ cat >g10defs.tmp <<G10EOF
 #define EXTSEP_S "."
 #endif
 /* This is the same as VERSION, but should be overridden if the
-   platform cannot handle things like dots '.' in filenames. */
-#define SAFE_VERSION VERSION
+   platform cannot handle things like dots'.' in filenames.  Set
+   SAFE_VERSION_DOT and SAFE_VERSION_DASH to whatever SAFE_VERSION
+   uses for dots and dashes. */
+#define SAFE_VERSION      VERSION
+#define SAFE_VERSION_DOT  '.'
+#define SAFE_VERSION_DASH '-'
 G10EOF
 cat mpi/mpi-asm-defs.h >>g10defs.tmp 
 if cmp -s g10defs.h g10defs.tmp 2>/dev/null; then

@@ -1,3 +1,10 @@
+2003-10-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note --symmetric --encrypt and the improved config file
+	search.
+
+	* configure.ac: Add SAFE_VERSION_DOT and SAFE_VERSION_DASH.
+
 2003-10-25  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am (SUBDIRS): Add intl.
