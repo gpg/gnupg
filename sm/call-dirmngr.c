@@ -286,7 +286,7 @@ inq_certificate (void *opaque, const char *line)
    Returns 0 for valid or usually one of the errors:
 
   GPG_ERR_CERTIFICATE_REVOKED
-  GPG_ERR NO_CRL_KNOWN
+  GPG_ERR_NO_CRL_KNOWN
   GPG_ERR_CRL_TOO_OLD
  */
 int
