@@ -203,9 +203,25 @@ cmd_encrypt (ASSUAN_CONTEXT ctx, char *line)
 static int 
 cmd_decrypt (ASSUAN_CONTEXT ctx, char *line)
 {
-  
+  CTRL ctrl = assuan_get_pointer (ctx);
+  int inp_fd, out_fd;
+  FILE *out_fp;
+  int rc;
 
-  return set_error (Not_Implemented, "fixme");
+  inp_fd = assuan_get_input_fd (ctx);
+  if (inp_fd == -1)
+    return set_error (No_Input, NULL);
+  out_fd = assuan_get_output_fd (ctx);
+  if (out_fd == -1)
+    return set_error (No_Output, NULL);
+
+  out_fp = fdopen ( dup(out_fd), "w");
+  if (!out_fp)
+    return set_error (General_Error, "fdopen() failed");
+  rc = gpgsm_decrypt (ctrl, inp_fd, out_fp); 
+  fclose (out_fp);
+
+  return rc_to_assuan_status (rc);
 }
 
 
@@ -395,6 +411,7 @@ gpgsm_server (void)
                  assuan_strerror(rc));
       gpgsm_exit (2);
     }
+  assuan_set_hello_line (ctx, "GNU Privacy Guard's S/M server ready");
 
   assuan_register_reset_notify (ctx, reset_notify);
   assuan_register_input_notify (ctx, input_notify);

@@ -83,6 +83,10 @@ enum cmd_and_opt_values {
   oAssumeBase64,
   oAssumeBinary,
 
+  oBase64,
+  oNoArmor,
+
+
   oTextmode,
   oFingerprint,
   oWithFingerprint,
@@ -115,7 +119,6 @@ enum cmd_and_opt_values {
   oNoVerbose,
   oTrustDBName,
   oNoSecmemWarn,
-  oNoArmor,
   oNoDefKeyring,
   oNoGreeting,
   oNoTTY,
@@ -169,7 +172,7 @@ enum cmd_and_opt_values {
   oTryAllSecrets,
   oTrustedKey,
   oEmuMDEncodeBug,
-  aTest
+  aDummy
  };
 
 
@@ -187,8 +190,8 @@ static ARGPARSE_OPTS opts[] = {
     { aVerifyFiles, "verify-files" , 256, "@" },
     { aListKeys, "list-keys", 256, N_("list keys")},
     { aListKeys, "list-public-keys", 256, "@" },
-    { aListSigs, "list-sigs", 256, N_("list keys and signatures")},
-    { aCheckKeys, "check-sigs",256, N_("check key signatures")},
+    { aDummy,    "list-sigs", 256, "@"}, 
+    { aDummy,    "check-sigs",256, "@"},
     { oFingerprint, "fingerprint", 256, N_("list keys and fingerprints")},
     { aListSecretKeys, "list-secret-keys", 256, N_("list secret keys")},
     { aKeygen,	   "gen-key",  256, N_("generate a new key pair")},
@@ -203,7 +206,8 @@ static ARGPARSE_OPTS opts[] = {
     { 301, NULL, 0, N_("@\nOptions:\n ") },
 
     { oArmor, "armor",     0, N_("create ascii armored output")},
-    { oArmor, "armour",     0, "@" },
+    { oArmor, "armour",    0, "@" },
+    { oBase64, "base64",    0, N_("create base-64 encoded output")},
     
     { oAssumeArmor,  "assume-armor", 0, N_("assume input is in PEM format")},
     { oAssumeBase64, "assume-base64", 0,
@@ -211,11 +215,9 @@ static ARGPARSE_OPTS opts[] = {
     { oAssumeBase64, "assume-binary", 0,
                                       N_("assume input is in binary format")},
 
-
     { oRecipient, "recipient", 2, N_("|NAME|encrypt for NAME")},
 
 #if 0
-    { oRecipient, "remote-user", 2, "@"},  /* old option name */
     { oDefRecipient, "default-recipient" ,2,
 				  N_("|NAME|use NAME as default recipient")},
     { oDefRecipientSelf, "default-recipient-self" ,0,
@@ -226,11 +228,13 @@ static ARGPARSE_OPTS opts[] = {
 
 #endif
     { oUser, "local-user",2, N_("use this user-id to sign or decrypt")},
-    { oCompress, NULL,	      1, N_("|N|set compress level N (0 disables)") },
+
 #if 0
+    { oCompress, NULL,	      1, N_("|N|set compress level N (0 disables)") },
     { oTextmodeShort, NULL,   0, "@"},
     { oTextmode, "textmode",  0, N_("use canonical text mode")},
 #endif
+
     { oOutput, "output",    2, N_("use as output file")},
     { oVerbose, "verbose",   0, N_("verbose") },
     { oQuiet,	"quiet",   0, N_("be somewhat more quiet") },
@@ -245,6 +249,7 @@ static ARGPARSE_OPTS opts[] = {
     { oBatch, "batch",     0, N_("batch mode: never ask")},
     { oAnswerYes, "yes",       0, N_("assume yes on most questions")},
     { oAnswerNo,  "no",        0, N_("assume no on most questions")},
+
     { oKeyring, "keyring"   ,2, N_("add this keyring to the list of keyrings")},
     { oSecretKeyring, "secret-keyring" ,2, N_("add this secret keyring to the list")},
     { oDefaultKey, "default-key" ,2, N_("|NAME|use NAME as default secret key")},
@@ -255,24 +260,26 @@ static ARGPARSE_OPTS opts[] = {
     { oDebug, "debug"     ,4|16, "@"},
     { oDebugAll, "debug-all" ,0, "@"},
     { oStatusFD, "status-fd" ,1, N_("|FD|write status info to this FD") },
-    { oNoComment, "no-comment", 0,   "@"},
-    { oCompletesNeeded, "completes-needed", 1, "@"},
-    { oMarginalsNeeded, "marginals-needed", 1, "@"},
+    { aDummy, "no-comment", 0,   "@"},
+    { aDummy, "completes-needed", 1, "@"},
+    { aDummy, "marginals-needed", 1, "@"},
     { oMaxCertDepth,	"max-cert-depth", 1, "@" },
-    { oTrustedKey, "trusted-key", 2, N_("|KEYID|ulimately trust this key")},
-    { oLoadExtension, "load-extension" ,2, N_("|FILE|load extension module FILE")},
-    { oRFC1991, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
-    { oOpenPGP, "openpgp", 0, N_("set all packet, cipher and digest options to OpenPGP behavior")},
-    { oS2KMode, "s2k-mode",  1, N_("|N|use passphrase mode N")},
-    { oS2KDigest, "s2k-digest-algo",2,
-		N_("|NAME|use message digest algorithm NAME for passphrases")},
-    { oS2KCipher, "s2k-cipher-algo",2,
-		N_("|NAME|use cipher algorithm NAME for passphrases")},
+    { aDummy, "trusted-key", 2, "@"},
+    { oLoadExtension, "load-extension" ,2,
+      N_("|FILE|load extension module FILE")},
+    { aDummy, "rfc1991",   0, "@"},
+    { aDummy, "openpgp",   0, "@"},
+    { aDummy, "s2k-mode",  1, "@"},
+    { aDummy, "s2k-digest-algo",2, "@"},
+    { aDummy, "s2k-cipher-algo",2, "@"},
     { oCipherAlgo, "cipher-algo", 2 , N_("|NAME|use cipher algorithm NAME")},
-    { oDigestAlgo, "digest-algo", 2 , N_("|NAME|use message digest algorithm NAME")},
+    { oDigestAlgo, "digest-algo", 2 ,
+      N_("|NAME|use message digest algorithm NAME")},
+#if 0
     { oCompressAlgo, "compress-algo", 1 , N_("|N|use compress algorithm N")},
-    { oThrowKeyid, "throw-keyid", 0, N_("throw keyid field of encrypted packets")},
-    { oNotation,   "notation-data", 2, N_("|NAME=VALUE|use this notation data")},
+#endif
+    { aDummy, "throw-keyid", 0, "@"},
+    { aDummy, "notation-data", 2, "@"},
 
     { 302, NULL, 0, N_(
   "@\n(See the man page for a complete listing of all commands and options)\n"
@@ -292,7 +299,7 @@ static ARGPARSE_OPTS opts[] = {
 
 
     { oTrustDBName, "trustdb-name", 2, "@" },
-    { oNoSecmemWarn, "no-secmem-warning", 0, "@" }, /* used only by regression tests */
+    { oNoSecmemWarn, "no-secmem-warning", 0, "@" }, 
     { oNoArmor, "no-armor",   0, "@"},
     { oNoArmor, "no-armour",   0, "@"},
     { oNoDefKeyring, "no-default-keyring", 0, "@" },
@@ -682,13 +689,20 @@ main ( int argc, char **argv)
         case aClearsign: set_cmd (&cmd, aClearsign); break;
         case aVerify: set_cmd (&cmd, aVerify); break;
 
-        case oArmor: opt.armor = 1; opt.no_armor=0; break;
+          /* output encoding selection */
+        case oArmor:
+          ctrl.create_pem = 1;
+          break;
+        case oBase64: 
+          ctrl.create_pem = 0;
+          ctrl.create_base64 = 1;
+          break;
         case oNoArmor: 
-          /* use of no-armor for setting the input encoding is deprecated*/
-          ctrl.autodetect_encoding = 0;
-          opt.no_armor=1; opt.armor=0; 
+          ctrl.create_pem = 0;
+          ctrl.create_base64 = 0;
           break;
           
+          /* Input encoding selection */
         case oAssumeArmor:
           ctrl.autodetect_encoding = 0;
           ctrl.is_pem = 1;
@@ -707,6 +721,8 @@ main ( int argc, char **argv)
           
 
         case oOutput: opt.outfile = pargs.r.ret_str; break;
+
+        
         case oQuiet: opt.quiet = 1; break;
         case oNoTTY: /* fixme:tty_no_terminal(1);*/ break;
         case oDryRun: opt.dry_run = 1; break;
@@ -825,7 +841,8 @@ main ( int argc, char **argv)
         case oEnableSpecialFilenames: allow_special_filenames =1; break;
           
 
-
+        case aDummy:
+          break;
         default: 
           pargs.err = configfp? 1:2; 
           break;
@@ -906,8 +923,6 @@ main ( int argc, char **argv)
     xfree(p);
   }
 
-  if (opt.armor)
-    ctrl.create_pem = 1;
 
   if (!cmd && opt.fingerprint && !with_fpr)
     set_cmd (&cmd, aListKeys);

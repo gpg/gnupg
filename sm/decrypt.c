@@ -279,7 +279,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
       goto leave;
     }
 
-  rc = gpgsm_create_writer (&b64reader, ctrl, out_fp, &writer);
+  rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, &writer);
   if (rc)
     {
       log_error ("can't create writer: %s\n", gnupg_strerror (rc));
@@ -446,6 +446,14 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
 
     }
   while (stopreason != KSBA_SR_READY);   
+
+  rc = gpgsm_finish_writer (b64writer);
+  if (rc) 
+    {
+      log_error ("write failed: %s\n", gnupg_strerror (rc));
+      goto leave;
+    }
+
 
  leave:
   ksba_cms_release (cms);

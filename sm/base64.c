@@ -530,7 +530,8 @@ gpgsm_create_writer (Base64Context *ctx,
   if (ctrl->create_pem || ctrl->create_base64)
     {
       (*ctx)->u.wparm.fp = fp;
-      (*ctx)->u.wparm.pem_name = "CMS OBJECT"; /* fixme */
+      if (ctrl->create_pem)
+        (*ctx)->u.wparm.pem_name = "CMS OBJECT"; /* fixme */
       rc = ksba_writer_set_cb (w, base64_writer_cb, &(*ctx)->u.wparm);
     }
   else
