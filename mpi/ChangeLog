@@ -1,3 +1,19 @@
+2004-01-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* config.links: OpenBSD 3.4 is now ELF, so use the proper
+	assembler code for that.  Use the portable C MPI code for OpenBSD
+	before 3.4, and remove the special i386-openbsd assembly
+	directory.
+
+	* Makefile.am: Add the portable C links to DISTCLEANFILES.  Noted
+	by Nelson H. F. Beebe.
+
+	* mpi-mpow.c (build_index): s/index/idx/ to avoid gcc warning.
+	From Werner on stable branch.
+
+	* longlong.h: Added PowerPC 64 bit code from GPM-4.1.2 but didn't
+	enable it yet.  From Werner on stable branch.
+
 2003-12-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10m.c: Dead code.  Remove.

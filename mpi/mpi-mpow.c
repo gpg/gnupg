@@ -29,15 +29,15 @@ static int
 build_index( MPI *exparray, int k, int i, int t )
 {
     int j, bitno;
-    int index = 0;
+    int idx = 0;
 
     bitno = t-i;
     for(j=k-1; j >= 0; j-- ) {
-	index <<= 1;
+	idx <<= 1;
 	if( mpi_test_bit( exparray[j], bitno ) )
-	    index |= 1;
+	    idx |= 1;
     }
-    return index;
+    return idx;
 }
 
 /****************
@@ -97,5 +97,3 @@ mpi_mulpowm( MPI res, MPI *basearray, MPI *exparray, MPI m)
 	mpi_free(G[i]);
     m_free(G);
 }
-
-
