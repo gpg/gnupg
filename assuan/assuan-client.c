@@ -63,6 +63,8 @@ _assuan_read_from_server (ASSUAN_CONTEXT ctx, int *okay, int *off)
     {
       *okay = 1;
       *off = 2;
+      while (line[*off] == ' ')
+        ++*off;
     }
   else if (linelen >= 3
            && line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
@@ -70,6 +72,8 @@ _assuan_read_from_server (ASSUAN_CONTEXT ctx, int *okay, int *off)
     {
       *okay = 0;
       *off = 3;
+      while (line[*off] == ' ')
+        ++*off;
     }  
   else if (linelen >= 7
            && line[0] == 'I' && line[1] == 'N' && line[2] == 'Q'
@@ -79,6 +83,8 @@ _assuan_read_from_server (ASSUAN_CONTEXT ctx, int *okay, int *off)
     {
       *okay = 3;
       *off = 7;
+      while (line[*off] == ' ')
+        ++*off;
     }
   else
     rc = ASSUAN_Invalid_Response;

@@ -1,3 +1,8 @@
+2002-01-14  Werner Koch  <wk@gnupg.org>
+
+	* assuan-client.c (_assuan_read_from_server): Skip spaces after
+	the keyword.
+
 2002-01-03  Werner Koch  <wk@gnupg.org>
 
 	* assuan-handler.c (assuan_set_okay_line): New.
