@@ -1,3 +1,8 @@
+2003-07-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (show_key_with_all_names): Use list-option
+	show-validity in --edit-key interface as well.
+
 2003-07-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, g10.c (main), mainproc.c (check_sig_and_print): Add

@@ -1980,6 +1980,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
     int i, rc;
     int do_warn = 0;
     byte pk_version=0;
+    PKT_public_key *primary=NULL;
 
     if (opt.with_colons)
       {
@@ -2010,6 +2011,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
                 }
 
 		pk_version=pk->version;
+		primary=pk;
 	    }
 
 	    if(with_revoker) {
@@ -2095,6 +2097,9 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 							 g10_errstr(rc) );
 	}
     }
+    
+    assert(primary);
+
     /* the user ids */
     i = 0;
     for( node = keyblock; node; node = node->next ) {
@@ -2102,6 +2107,9 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	    PKT_user_id *uid = node->pkt->pkt.user_id;
 	    ++i;
 	    if( !only_marked || (only_marked && (node->flag & NODFLG_MARK_A))){
+                if(opt.list_options&LIST_SHOW_VALIDITY)
+		  tty_printf("[%8.8s] ",
+			     trust_value_to_string(get_validity(primary,uid)));
 		if( only_marked )
 		   tty_printf("     ");
 		else if( node->flag & NODFLG_SELUID )
