@@ -1,5 +1,14 @@
 #!/bin/sh
 # ring-a-party	- print a keyring suitable for a key signing party
+# Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 if [ $# -lt 1 ]; then
     echo "usage: ring-a-party keyring [headerline]" >&2
@@ -54,20 +63,20 @@ $1 == "sub" { if( $4 != 17 && $4 != 3 )  signencrypt=1 }
 function myflush()
 {
     # fixme: take lines to print here into account
-    if( lines > 50 || lines == -1 ) {
+    if( lines > 45 || lines == -1 ) {
 	if( lines != -1 ) printf "\f";
 	page++;
 	printf "%s  %-50.50s Page %d\n\n", now, KEYRING, page ;
-	printf "Type Bits KeyID      Created    Expires    Algorithm                 Use\n";
+	printf "    Type Bits KeyID      Created    Expires    Algorithm                 Use\n\n";
 	lines = 1;
     }
-    printf "pub  %04d 0x%s %10s %10s %-10s     %15s\n",
+    printf "[ ] pub  %04d 0x%s %10s %10s %-10s     %15s\n",
 	  nbits, keyid, created, expires == ""? "----------":expires, algostr,
 			signencrypt == 1? "Sign & Encrypt":"Sign only";
     length(fpr) == 40 ? printfpr20( fpr ) : printfpr16( fpr );
     lnes += 2;
     for( i=0; i < uidcount; i++ ) {
-	printf "uid  %s\n", uids[i];
+	printf "( ) uid  %s\n", uids[i];
 	lines++;
     }
     printf "\n\n";
@@ -84,7 +93,7 @@ function mapalgo( no )
 
 function printfpr16( s )
 {
-    printf "f16    Fingerprint16 =";
+    printf "    f16    Fingerprint16 =";
     for(i=0; i < 16; i++ ) {
 	if( i == 8 ) printf " ";
 	printf " %s", substr( s, i*2+1, 2 );
@@ -94,7 +103,7 @@ function printfpr16( s )
 
 function printfpr20( s )
 {
-    printf "f20    Fingerprint20 =";
+    printf "    f20    Fingerprint20 =";
     for(i=0; i < 10; i++ ) {
 	if( i == 5 ) printf " ";
 	printf " %s", substr( s, i*4+1, 4 );

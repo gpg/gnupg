@@ -1,5 +1,5 @@
-/* basicdefs.h - Some definitions used at many place
- *	Copyright (C) 1999 Free Software Foundation, Inc.
+/* construct.c  -  RISC OS constructors for cipher algorithms
+ *	Copyright (C) 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -18,23 +18,21 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef GPG_BASICDEFS_H
-#define GPG_BASICDEFS_H
+void rndriscos_constructor(void);
+void sha1_constructor(void);
+void rmd160_constructor(void);
+void md5_constructor(void);
 
-#include "types.h"
+void
+cipher_modules_constructor(void)
+{
+    static int done = 0;
+    if( done )
+        return;
+    done = 1;
 
-typedef struct {
-    int algo;
-    int keylen;
-    byte key[32]; /* this is the largest used keylen (256 bit) */
-} DEK;
-
-
-struct pk_list;
-struct sk_list;
-typedef struct pk_list *PK_LIST;
-typedef struct sk_list *SK_LIST;
-
-
-
-#endif /* GPG_BASICDEFS_H */
+   rndriscos_constructor();
+   sha1_constructor();
+   rmd160_constructor();
+   md5_constructor();
+}

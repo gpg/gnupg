@@ -1,6 +1,15 @@
 /* shmtest.c
+ * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
+ * This file is free software; as a special exception the author gives
+ * unlimited permission to copy and/or distribute it, with or without
+ * modifications, as long as this notice is preserved.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+
 
 #include <config.h>
 #include <stdio.h>
@@ -10,12 +19,12 @@
 #include <signal.h>
 #include <unistd.h>
 #ifdef HAVE_SYS_IPC_H
+  #include <sys/types.h>
   #include <sys/ipc.h>
 #endif
 #ifdef HAVE_SYS_SHM_H
   #include <sys/shm.h>
 #endif
-#include <gcrypt.h>
 #include "util.h"
 #include "ttyio.h"
 #include "i18n.h"
@@ -37,6 +46,12 @@ my_usage(void)
     exit(1);
 }
 
+const char *
+strusage( int level )
+{
+    return default_strusage(level);
+}
+
 static void
 i18n_init(void)
 {
@@ -46,7 +61,7 @@ i18n_init(void)
     #else
        setlocale( LC_ALL, "" );
     #endif
-    bindtextdomain( PACKAGE, GNUPG_LOCALEDIR );
+    bindtextdomain( PACKAGE, G10_LOCALEDIR );
     textdomain( PACKAGE );
   #endif
 }
@@ -72,7 +87,7 @@ do_get_string( int mode, const char *keyword, byte *area, size_t areasize )
 	memcpy( area+n+2, p, len );
 	area[n] = len >> 8;
 	area[n+1] = len;
-	gcry_free(p);
+	m_free(p);
     }
     else { /* bool */
 	area[n] = 0;
@@ -107,7 +122,7 @@ main(int argc, char **argv)
 
     for(n=0,i=1; i < argc; i++ )
 	n += strlen(argv[i]) + 1;
-    p = gcry_xmalloc( 100 + n );
+    p = m_alloc( 100 + n );
     strcpy( p, "../g10/gpg --status-fd 1 --run-as-shm-coprocess 0");
     for(i=1; i < argc; i++ ) {
 	strcat(p, " " );
@@ -115,7 +130,7 @@ main(int argc, char **argv)
     }
 
     fp = popen( p, "r" );
-    gcry_free( p );
+    m_free( p );
     if( !fp )
 	log_error("popen failed: %s\n", strerror(errno));
 

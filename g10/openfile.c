@@ -1,5 +1,5 @@
 /* openfile.c
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -29,7 +29,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "util.h"
-#include <gcrypt.h>
+#include "memory.h"
 #include "ttyio.h"
 #include "options.h"
 #include "main.h"
@@ -39,11 +39,11 @@
 #ifdef USE_ONLY_8DOT3
   #define SKELEXT ".skl"
 #else
-  #define SKELEXT ".skel"
+  #define SKELEXT EXTSEP_S "skel"
 #endif
 
-#ifdef HAVE_DRIVE_LETTERS
-  #define CMP_FILENAME(a,b) stricmp( (a), (b) )
+#if defined (HAVE_DRIVE_LETTERS) || defined (__riscos__)
+  #define CMP_FILENAME(a,b) ascii_strcasecmp( (a), (b) )
 #else
   #define CMP_FILENAME(a,b) strcmp( (a), (b) )
 #endif
@@ -99,23 +99,22 @@ make_outfile_name( const char *iname )
     size_t n;
 
     if( (!iname || (*iname=='-' && !iname[1]) ))
-	return gcry_xstrdup("-");
+	return m_strdup("-");
 
     n = strlen(iname);
-    if( n > 4 && (    !CMP_FILENAME(iname+n-4,".gpg")
-		   || !CMP_FILENAME(iname+n-4,".pgp")
-		   || !CMP_FILENAME(iname+n-4,".sig")
-		   || !CMP_FILENAME(iname+n-4,".asc") ) ) {
-	char *buf = gcry_xstrdup( iname );
+    if( n > 4 && (    !CMP_FILENAME(iname+n-4, EXTSEP_S "gpg")
+		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "pgp")
+		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "sig")
+		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "asc") ) ) {
+	char *buf = m_strdup( iname );
 	buf[n-4] = 0;
 	return buf;
     }
-    else if( n > 5 && !CMP_FILENAME(iname+n-5,".sign") ) {
-	char *buf = gcry_xstrdup( iname );
+    else if( n > 5 && !CMP_FILENAME(iname+n-5, EXTSEP_S "sign") ) {
+	char *buf = m_strdup( iname );
 	buf[n-5] = 0;
 	return buf;
     }
-
 
     log_info(_("%s: unknown suffix\n"), iname );
     return NULL;
@@ -143,19 +142,21 @@ ask_outfile_name( const char *name, size_t namelen )
 
     n = strlen(s) + namelen + 10;
     defname = name && namelen? make_printable_string( name, namelen, 0): NULL;
-    prompt = gcry_xmalloc(n);
+    prompt = m_alloc(n);
     if( defname )
 	sprintf(prompt, "%s [%s]: ", s, defname );
     else
 	sprintf(prompt, "%s: ", s );
     fname = cpr_get("openfile.askoutname", prompt );
     cpr_kill_prompt();
-    gcry_free(prompt);
+    m_free(prompt);
     if( !*fname ) {
-	gcry_free( fname ); fname = NULL;
+	m_free( fname ); fname = NULL;
 	fname = defname; defname = NULL;
     }
-    gcry_free(defname);
+    m_free(defname);
+    if (fname)
+        trim_spaces (fname);
     return fname;
 }
 
@@ -177,7 +178,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
     if( (!iname || (*iname=='-' && !iname[1])) && !opt.outfile ) {
 	if( !(*a = iobuf_create(NULL)) ) {
 	    log_error(_("%s: can't open: %s\n"), "[stdout]", strerror(errno) );
-	    rc = GPGERR_CREATE_FILE;
+	    rc = G10ERR_CREATE_FILE;
 	}
 	else if( opt.verbose )
 	    log_info(_("writing to stdout\n"));
@@ -203,7 +204,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 	    const char *newsfx = mode==1 ? ".asc" :
 				 mode==2 ? ".sig" : ".gpg";
 
-	    buf = gcry_xmalloc(strlen(iname)+4+1);
+	    buf = m_alloc(strlen(iname)+4+1);
 	    strcpy(buf,iname);
 	    dot = strchr(buf, '.' );
 	    if( dot && dot > buf && dot[1] && strlen(dot) <= 4
@@ -215,24 +216,34 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 	    else
 		strcat( buf, newsfx );
 	  #else
-	    buf = gcry_xmalloc(strlen(iname)+4+1);
-	    strcpy(stpcpy(buf,iname), mode==1 ? ".asc" :
-				      mode==2 ? ".sig" : ".gpg");
+	    buf = m_alloc(strlen(iname)+4+1);
+	    strcpy(stpcpy(buf,iname), mode==1 ? EXTSEP_S "asc" :
+				      mode==2 ? EXTSEP_S "sig" : EXTSEP_S "gpg");
 	  #endif
 	    name = buf;
 	}
 
-	if( overwrite_filep( name ) ) {
+        rc = 0;
+	while( !overwrite_filep (name) ) {
+            char *tmp = ask_outfile_name (NULL, 0);
+            if ( !tmp || !*tmp ) {
+                m_free (tmp);
+                rc = G10ERR_FILE_EXISTS;
+                break;
+            }
+            m_free (buf);
+            name = buf = tmp;
+        }
+
+	if( !rc ) {
 	    if( !(*a = iobuf_create( name )) ) {
 		log_error(_("%s: can't create: %s\n"), name, strerror(errno) );
-		rc = GPGERR_CREATE_FILE;
+		rc = G10ERR_CREATE_FILE;
 	    }
 	    else if( opt.verbose )
 		log_info(_("writing to `%s'\n"), name );
 	}
-	else
-	    rc = GPGERR_FILE_EXISTS;
-	gcry_free(buf);
+	m_free(buf);
     }
     return rc;
 }
@@ -251,16 +262,16 @@ open_sigfile( const char *iname )
 
     if( iname && !(*iname == '-' && !iname[1]) ) {
 	len = strlen(iname);
-	if( len > 4 && ( !strcmp(iname + len - 4, ".sig")
-                        || ( len > 5 && !strcmp(iname + len - 5, ".sign") )
-			|| !strcmp(iname + len - 4, ".asc")) ) {
+	if( len > 4 && ( !strcmp(iname + len - 4, EXTSEP_S "sig")
+                        || ( len > 5 && !strcmp(iname + len - 5, EXTSEP_S "sign") )
+                        || !strcmp(iname + len - 4, EXTSEP_S "asc")) ) {
 	    char *buf;
-	    buf = gcry_xstrdup(iname);
-	    buf[len-4] = 0 ;
+	    buf = m_strdup(iname);
+	    buf[len-(buf[len-1]=='n'?5:4)] = 0 ;
 	    a = iobuf_open( buf );
-	    if( opt.verbose )
+	    if( a && opt.verbose )
 		log_info(_("assuming signed data in `%s'\n"), buf );
-	    gcry_free(buf);
+	    m_free(buf);
 	}
     }
     return a;
@@ -282,20 +293,20 @@ copy_options_file( const char *destdir )
     if( opt.dry_run )
 	return;
 
-    fname = gcry_xmalloc( strlen(datadir) + strlen(destdir) + 15 );
-    strcpy(stpcpy(fname, datadir), "/options" SKELEXT );
+    fname = m_alloc( strlen(datadir) + strlen(destdir) + 15 );
+    strcpy(stpcpy(fname, datadir), DIRSEP_S "options" SKELEXT );
     src = fopen( fname, "r" );
     if( !src ) {
 	log_error(_("%s: can't open: %s\n"), fname, strerror(errno) );
-	gcry_free(fname);
+	m_free(fname);
 	return;
     }
-    strcpy(stpcpy(fname, destdir), "/options" );
+    strcpy(stpcpy(fname, destdir), DIRSEP_S "options" );
     dst = fopen( fname, "w" );
     if( !dst ) {
 	log_error(_("%s: can't create: %s\n"), fname, strerror(errno) );
 	fclose( src );
-	gcry_free(fname);
+	m_free(fname);
 	return;
     }
 
@@ -310,7 +321,7 @@ copy_options_file( const char *destdir )
     fclose( dst );
     fclose( src );
     log_info(_("%s: new options file created\n"), fname );
-    gcry_free(fname);
+    m_free(fname);
 }
 
 
@@ -325,12 +336,12 @@ try_make_homedir( const char *fname )
      * To cope with HOME, we do compare only the suffix if we see that
      * the default homedir does start with a tilde.
      */
-    if( opt.dry_run )
+    if( opt.dry_run || opt.no_homedir_creation )
 	return;
 
     if ( ( *defhome == '~'
            && ( strlen(fname) >= strlen (defhome+1)
-                && !strcmp(fname+strlen(defhome+1)-strlen(defhome+1),
+                && !strcmp(fname+strlen(fname)-strlen(defhome+1),
                            defhome+1 ) ))
          || ( *defhome != '~'
               && !compare_filenames( fname, defhome ) )
@@ -343,9 +354,6 @@ try_make_homedir( const char *fname )
 	copy_options_file( fname );
 	log_info(_("you have to start GnuPG again, "
 		   "so it can read the new options file\n") );
-	gpg_exit(1);
+	g10_exit(1);
     }
 }
-
-
-

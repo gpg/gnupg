@@ -2,6 +2,15 @@ These first three lines are not copied to the options file in
 the users home directory.
 $Id$
 # Options for GnuPG
+# Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+# 
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+# 
+# This file is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 # Unless you you specify which option file to use (with the
 # commandline option "--options filename"), GnuPG uses the
@@ -22,6 +31,7 @@ $Id$
 
 #default-key 621CC013
 
+
 # If you do not pass a recipient to gpg, it will ask for one.
 # Using this option you can encrypt to a default key.  key validation
 # will not be done in this case.
@@ -30,31 +40,32 @@ $Id$
 #default-recipient some-user-id
 #default-recipient-self
 
-
-# The next option is enabled because this one is needed for interoperation
-# with PGP 5 users.  To enable full OpenPGP compliance you have to remove
-# this option.
-
-force-v3-sigs
+# By default GnuPG creates version 3 signatures for data files.  This
+# is not OpenPGP compliant but PGP 6 requires them.  To disable it,
+# you may use this option or --openpgp.
+#no-force-v3-sigs
 
 # Because some mailers change lines starting with "From " to ">From "
 # it is good to handle such lines in a special way when creating
-# cleartext signatures; all other PGP versions it this way too.
-# To enable full OpenPGP compliance you have to remove this option.
+# cleartext signatures; all other PGP versions do it this way too.
+# To enable full OpenPGP compliance you may want to use this option.
+#no-escape-from-lines
 
-escape-from-lines
+# If you do not use the Latin-1 (ISO-8859-1) charset, you should tell
+# GnuPG which is the native character set.  Please check the man page
+# for supported character sets.  This character set is only used for
+# Meta data and not for the actual message which does not undergo any
+# translation.  Note that future version of GnuPG will change to UTF-8
+# as default character set.
+#charset utf-8
 
-# If you do not use the Latin-1 (ISO-8859-1) charset, you should
-# tell GnuPG which is the native character set.  Please check
-# the man page for supported character sets.
-#charset koi8-r
-
-
-# You may define aliases like this:
-#   alias mynames  -u 0x12345678 -u 0x456789ab -z 9
-# everytime you use --mynames, it will be expanded to the options
-# in the above defintion.  The name of the alias may not be abbreviated.
-# NOTE: This is not yet implemented
+# Group names may be defined like this:
+#   group mynames paige 0x12345678 joe patti
+#
+# Any time "mynames" is a receipient (-r or --recipient), it will be
+# expanded to the names "paige", "joe", and "patti", and the key ID
+# "0x12345678".  Note there is only one level of expansion - you
+# cannot make an group that points to another group.
 
 # lock the file only once for the lifetime of a process.
 # if you do not define this, the lock will be obtained and released
@@ -70,17 +81,122 @@ lock-once
 #load-extension rndunix
 #load-extension rndegd
 
+# GnuPG can send and receive keys to and from a keyserver.  These
+# servers can be HKP, email, or LDAP (if GnuPG is built with LDAP
+# support).
+#
+# Example HKP keyserver:
+#      x-hkp://keyserver.cryptnet.net
+#
+# Example email keyserver:
+#      mailto:pgp-public-keys@keys.nl.pgp.net
+#
+# Example LDAP keyserver:
+#      ldap://pgp.surfnet.nl:11370
+#
+# Regular URL syntax applies, and you can set an alternate port
+# through the usual method:
+#      x-hkp://keyserver.example.net:22742
+#
+# If you have problems connecting to a HKP server through a buggy http
+# proxy, you can use keyserver option broken-http-proxy (see below),
+# but first you should make sure that you have read the man page
+# regarding proxies (keyserver option honor-http-proxy)
+#
+# Most users just set the name and type of their preferred keyserver.
+# Most servers do synchronize with each other and DNS round-robin may
+# give you a quasi-random server each time.
 
-# GnuPG can import a key from a HKP keyerver if one is missing
-# for sercain operations. Is you set this option to a keyserver
-# you will be asked in such a case whether GnuPG should try to
-# import the key from that server (server do syncronize with each
-# others and DNS Round-Robin may give you a random server each time).
-# Use "host -l pgp.net | grep www" to figure out a keyserver.
-#keyserver wwwkeys.eu.pgp.net
+#keyserver x-hkp://keyserver.cryptnet.net
+#keyserver mailto:pgp-public-keys@keys.nl.pgp.net
+#keyserver ldap://pgp.surfnet.nl:11370
 
-# The environment variable http_proxy is only used when the
-# this option is set.
+# Options for keyserver functions
+#
+# include-disabled = when searching, include keys marked as "disabled"
+#                    on the keyserver (not all keyservers support this).
+#
+# include-revoked = when searching, include keys marked as "revoked"
+#                   on the keyserver.
+#
+# verbose = show more information as the keys are fetched.
+#           Can be used more than once to increase the amount
+#           of information shown.
+#
+# use-temp-files = use temporary files instead of a pipe to talk to the
+#                  keyserver.  Some platforms (Win32 for one) always
+#                  have this on.
+#
+# keep-temp-files = do not delete temporary files after using them
+#                   (really only useful for debugging)
+#
+# honor-http-proxy = if the keyserver uses HTTP, honor the http_proxy
+#                    environment variable
+#
+# broken-http-proxy = try to work around a buggy HTTP proxy
+#
+# auto-key-retrieve = automatically fetch keys as needed from the
+#                     keyserver when verifying signatures or when importing
+#                     keys that have been revoked by a revocation key that
+#                     is not present on the keyring.
 
-honor-http-proxy
+#keyserver-options auto-key-retrieve include-disabled include-revoked
 
+# Uncomment this line to display photo user IDs in key listings
+#show-photos
+
+# Use this program to display photo user IDs
+#
+# %i is expanded to a temporary file that contains the photo.
+# %I is the same as %i, but the file isn't deleted afterwards by GnuPG.
+# %k is expanded to the key ID of the key.
+# %K is expanded to the long OpenPGP key ID of the key.
+# %t is expanded to the extension of the image (e.g. "jpg").
+# %T is expanded to the MIME type of the image (e.g. "image/jpeg").
+# %f is expanded to the fingerprint of the key.
+# %% is %, of course.
+#
+# If %i or %I are not present, then the photo is supplied to the
+# viewer on standard input.  If your platform supports it, standard
+# input is the best way to do this as it avoids the time and effort in
+# generating and then cleaning up a secure temp file.
+#
+# The default program is "xloadimage -fork -quiet -title 'KeyID 0x%k' stdin"
+#
+# Some other viewers:
+# photo-viewer "qiv %i"
+# photo-viewer "ee %i"
+# photo-viewer "display -title 'KeyID 0x%k'"
+#
+# This one saves a copy of the photo ID in your home directory:
+# photo-viewer "cat > ~/photoid-for-key-%k.%t"
+#
+# Use your MIME handler to view photos:
+# photo-viewer "metamail -q -d -b -c %T -s 'KeyID 0x%k' -f GnuPG"
+#
+# Use the Win32 registry to pick a viewer for you:
+#    On Win95/98/Me (also the default on Win32):
+# photo-viewer "start /w"
+#    On NT/2k/XP:
+# photo-viewer "cmd /c start /w"
+
+
+# Passphrase agent
+#
+# We support the old experimental passphrase agent protocol as well
+# as the new Assuan based one (currently available in the "newpg" package
+# at ftp.gnupg.org/gcrypt/alpha/aegypten/).  To make use of the agent, you have
+# to run an agent as daemon and use the option
+#
+# use-agent
+# 
+# which tries to use the agent but will fallback to the regular mode
+# if there is a problem connecting to the agent.  The normal way to
+# locate the agent is by looking at the environment variable
+# GPG_AGENT_INFO which should have been set during gpg-agent startup.
+# In certain situations the use of this variable is not possible, thus
+# the option
+# 
+# --gpg-agent-info=<path>:<pid>:1
+#
+# may be used to override it.

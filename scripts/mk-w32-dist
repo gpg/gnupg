@@ -1,0 +1,53 @@
+#!/bin/sh
+#
+# Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+
+set -e
+
+cd dist-w32
+
+if [ -f ../README ]; then
+    srcdir=..
+elif [ -f ../../gnupg-stable/README ]; then
+    srcdir=../../gnupg-stable
+elif [ -f ../../../gnupg-stable/README ]; then
+    srcdir=../../../gnupg-stable
+else
+    echo "cannot figure out the source dir" >&2
+    exit 1
+fi
+
+rm * || true
+ln ../g10/gpg gpg.exe
+mingw32 strip gpg.exe
+if [ -f ../doc/gpg.man ] ; then
+  sed `printf "s/\b.//g"` ../doc/gpg.man >gpg.man
+else
+  man -Tlatin1 -l ../doc/gpg.1 | sed `printf "s/\b.//g"`  >gpg.man
+fi
+todos gpg.man
+cp ${srcdir}/README .
+todos README
+cp ${srcdir}/COPYING .
+todos COPYING
+ln ${srcdir}/doc/README.W32 .
+todos README.W32
+ln ${srcdir}/doc/FAQ .
+todos FAQ
+for i in ${srcdir}/po/*.gmo; do ln $i "$(basename $i .gmo).mo" ; done
+zip "gnupg-w32-$(cat ${srcdir}/VERSION).zip" *
+
+
+
+
+
+

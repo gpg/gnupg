@@ -1,5 +1,5 @@
 /* helptext.c  - English help texts
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -49,6 +49,13 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 "to do with the (implicitly created) web-of-certificates."
 )},
 
+{ "edit_ownertrust.set_ultimate.okay", N_(
+ "To build the Web-of-Trust, GnuPG needs to know which keys are\n"
+ "ultimately trusted - those are usually the keys for which you have\n"
+ "access to the secret key.  Answer \"yes\" to set this key to\n"
+ "ultimately trusted\n"
+)},
+
 { "revoked_key.override", N_(
 "If you want to use this revoked key anyway, answer \"yes\"."
 )},
@@ -85,6 +92,12 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 "Although these keys are defined in RFC2440 they are not suggested\n"
 "because they are not supported by all programs and signatures created\n"
 "with them are quite large and very slow to verify."
+)},
+
+{ "keygen.algo.rsa_se", N_(
+"In general it is not a good idea to use the same key for signing and\n"
+"encryption.  This algorithm should only be used in certain domains.\n"
+"Please consult your security expert first."
 )},
 
 
@@ -145,6 +158,29 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
  "Answer \"yes\" or \"no\""
 )},
 
+{ "sign_uid.class", N_(
+"When you sign a user ID on a key, you should first verify that the key\n"
+"belongs to the person named in the user ID.  It is useful for others to\n"
+"know how carefully you verified this.\n\n"
+"\"0\" means you make no particular claim as to how carefully you verified the\n"
+"    key.\n\n"
+"\"1\" means you believe the key is owned by the person who claims to own it\n"
+"    but you could not, or did not verify the key at all.  This is useful for\n"
+"    a \"persona\" verification, where you sign the key of a pseudonymous user.\n\n"
+"\"2\" means you did casual verification of the key.  For example, this could\n"
+"    mean that you verified the key fingerprint and checked the user ID on the\n"
+"    key against a photo ID.\n\n"
+"\"3\" means you did extensive verification of the key.  For example, this could\n"
+"    mean that you verified the key fingerprint with the owner of the key in\n"
+"    person, and that you checked, by means of a hard to forge document with a\n"
+"    photo ID (such as a passport) that the name of the key owner matches the\n"
+"    name in the user ID on the key, and finally that you verified (by exchange\n"
+"    of email) that the email address on the key belongs to the key owner.\n\n"
+"Note that the examples given above for levels 2 and 3 are *only* examples.\n"
+"In the end, it is up to you to decide just what \"casual\" and \"extensive\"\n"
+"mean to you when you sign other keys.\n\n"
+"If you don't know what the right answer is, answer \"0\"."
+)},
 
 { "change_passwd.empty.okay", N_(
  "Answer \"yes\" or \"no\""
@@ -197,11 +233,16 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
  "a second one is available."
 )},
 
+{ "keyedit.updpref.okay", N_(
+ "Change the preferences of all user IDs (or just of the selected ones)\n"
+ "to the current list of preferences.  The timestamp of all affected\n"
+ "self-signatures will be advanced by one second.\n"
+)},
+
 
 { "passphrase.enter", N_(
  ""
 "Please enter the passhrase; this is a secret sentence \n"
-"  Blurb, blurb,.... "
 )},
 
 
@@ -231,7 +272,7 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
  "  \"Key has been compromised\"\n"
  "      Use this if you have a reason to believe that unauthorized persons\n"
  "      got access to your secret key.\n"
- "  \"Key is superseeded\"\n"
+ "  \"Key is superseded\"\n"
  "      Use this if you have replaced this key with a newer one.\n"
  "  \"Key is no longer used\"\n"
  "      Use this if you have retired this key.\n"
@@ -271,5 +312,3 @@ display_online_help( const char *keyword )
     }
     tty_printf("\n");
 }
-
-

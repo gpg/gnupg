@@ -1,5 +1,5 @@
 /* strgutil.c -  string utilities
- *	Copyright (C) 1998, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1994, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <gcrypt.h>
 #include "types.h"
 #include "util.h"
 #include "memory.h"
@@ -66,29 +65,10 @@ static ushort latin2_unicode[128] = {
     0x0159,0x016F,0x00FA,0x0171,0x00FC,0x00FD,0x0163,0x02D9
 };
 
-static ushort ibm850_unicode[128] = {
-    0x00c7,0x00fc,0x00e9,0x00e2,0x00e4,0x00e0,0x00e5,0x00e7,
-    0x00ea,0x00eb,0x00e8,0x00ef,0x00ee,0x00ec,0x00c4,0x00c5,
-    0x00c9,0x00e6,0x00c6,0x00f4,0x00f6,0x00f2,0x00fb,0x00f9,
-    0x00ff,0x00d6,0x00dc,0x00f8,0x00a3,0x00d8,0x00d7,0x0192,
-    0x00e1,0x00ed,0x00f3,0x00fa,0x00f1,0x00d1,0x00aa,0x00ba,
-    0x00bf,0x00ae,0x00ac,0x00bd,0x00bc,0x00a1,0x00ab,0x00bb,
-    0x2591,0x2592,0x2593,0x2502,0x2524,0x00c1,0x00c2,0x00c0,
-    0x00a9,0x2563,0x2551,0x2557,0x255d,0x00a2,0x00a5,0x2510,
-    0x2514,0x2534,0x252c,0x251c,0x2500,0x253c,0x00e3,0x00c3,
-    0x255a,0x2554,0x2569,0x2566,0x2560,0x2550,0x256c,0x00a4,
-    0x00f0,0x00d0,0x00ca,0x00cb,0x00c8,0x0131,0x00cd,0x00ce,
-    0x00cf,0x2518,0x250c,0x2588,0x2584,0x00a6,0x00cc,0x2580,
-    0x00d3,0x00df,0x00d4,0x00d2,0x00f5,0x00d5,0x00b5,0x00fe,
-    0x00de,0x00da,0x00db,0x00d9,0x00fd,0x00dd,0x00af,0x00b4,
-    0x00ad,0x00b1,0x2017,0x00be,0x00b6,0x00a7,0x00f7,0x00b8,
-    0x00b0,0x00a8,0x00b7,0x00b9,0x00b3,0x00b2,0x25a0,0x00a0,
-};
 
-static int query_native_charset_done = 0;
 static const char *active_charset_name = "iso-8859-1";
 static ushort *active_charset = NULL;
-
+static int no_translation = 0;
 
 void
 free_strlist( STRLIST sl )
@@ -97,7 +77,7 @@ free_strlist( STRLIST sl )
 
     for(; sl; sl = sl2 ) {
 	sl2 = sl->next;
-	gcry_free(sl);
+	m_free(sl);
     }
 }
 
@@ -107,7 +87,7 @@ add_to_strlist( STRLIST *list, const char *string )
 {
     STRLIST sl;
 
-    sl = gcry_xmalloc( sizeof *sl + strlen(string));
+    sl = m_alloc( sizeof *sl + strlen(string));
     sl->flags = 0;
     strcpy(sl->d, string);
     sl->next = *list;
@@ -129,7 +109,7 @@ add_to_strlist2( STRLIST *list, const char *string, int is_utf8 )
     else {
 	char *p = native_to_utf8( string );
 	sl = add_to_strlist( list, p );
-	gcry_free( p );
+	m_free( p );
     }
     return sl;
 }
@@ -139,7 +119,7 @@ append_to_strlist( STRLIST *list, const char *string )
 {
     STRLIST r, sl;
 
-    sl = gcry_xmalloc( sizeof *sl + strlen(string));
+    sl = m_alloc( sizeof *sl + strlen(string));
     sl->flags = 0;
     strcpy(sl->d, string);
     sl->next = NULL;
@@ -163,7 +143,7 @@ append_to_strlist2( STRLIST *list, const char *string, int is_utf8 )
     else {
 	char *p = native_to_utf8( string );
 	sl = append_to_strlist( list, p );
-	gcry_free( p );
+	m_free( p );
     }
     return sl;
 }
@@ -188,6 +168,183 @@ strlist_last( STRLIST node )
     return node;
 }
 
+char *
+pop_strlist( STRLIST *list )
+{
+  char *str=NULL;
+  STRLIST sl=*list;
+
+  if(sl)
+    {
+      str=m_alloc(strlen(sl->d)+1);
+      strcpy(str,sl->d);
+
+      *list=sl->next;
+      m_free(sl);
+    }
+
+  return str;
+}
+
+/****************
+ * look for the substring SUB in buffer and return a pointer to that
+ * substring in BUF or NULL if not found.
+ * Comparison is case-insensitive.
+ */
+const char *
+memistr( const char *buf, size_t buflen, const char *sub )
+{
+    const byte *t, *s ;
+    size_t n;
+
+    for( t=buf, n=buflen, s=sub ; n ; t++, n-- )
+	if( toupper(*t) == toupper(*s) ) {
+	    for( buf=t++, buflen = n--, s++;
+		 n && toupper(*t) == toupper(*s); t++, s++, n-- )
+		;
+	    if( !*s )
+		return buf;
+	    t = buf; n = buflen; s = sub ;
+	}
+
+    return NULL ;
+}
+
+const char *
+ascii_memistr( const char *buf, size_t buflen, const char *sub )
+{
+    const byte *t, *s ;
+    size_t n;
+
+    for( t=buf, n=buflen, s=sub ; n ; t++, n-- )
+	if( ascii_toupper(*t) == ascii_toupper(*s) ) {
+	    for( buf=t++, buflen = n--, s++;
+		 n && ascii_toupper(*t) == ascii_toupper(*s); t++, s++, n-- )
+		;
+	    if( !*s )
+		return buf;
+	    t = buf; n = buflen; s = sub ;
+	}
+
+    return NULL ;
+}
+
+/****************
+ * Wie strncpy(), aber es werden maximal n-1 zeichen kopiert und ein
+ * '\0' angehängt. Ist n = 0, so geschieht nichts, ist Destination
+ * gleich NULL, so wird via m_alloc Speicher besorgt, ist dann nicht
+ * genügend Speicher vorhanden, so bricht die funktion ab.
+ */
+char *
+mem2str( char *dest , const void *src , size_t n )
+{
+    char *d;
+    const char *s;
+
+    if( n ) {
+	if( !dest )
+	    dest = m_alloc( n ) ;
+	d = dest;
+	s = src ;
+	for(n--; n && *s; n-- )
+	    *d++ = *s++;
+	*d = '\0' ;
+    }
+
+    return dest ;
+}
+
+
+/****************
+ * remove leading and trailing white spaces
+ */
+char *
+trim_spaces( char *str )
+{
+    char *string, *p, *mark;
+
+    string = str;
+    /* find first non space character */
+    for( p=string; *p && isspace( *(byte*)p ) ; p++ )
+	;
+    /* move characters */
+    for( (mark = NULL); (*string = *p); string++, p++ )
+	if( isspace( *(byte*)p ) ) {
+	    if( !mark )
+		mark = string ;
+	}
+	else
+	    mark = NULL ;
+    if( mark )
+	*mark = '\0' ;  /* remove trailing spaces */
+
+    return str ;
+}
+
+
+
+unsigned int
+trim_trailing_chars( byte *line, unsigned len, const char *trimchars )
+{
+    byte *p, *mark;
+    unsigned n;
+
+    for(mark=NULL, p=line, n=0; n < len; n++, p++ ) {
+	if( strchr(trimchars, *p ) ) {
+	    if( !mark )
+		mark = p;
+	}
+	else
+	    mark = NULL;
+    }
+
+    if( mark ) {
+	*mark = 0;
+	return mark - line;
+    }
+    return len;
+}
+
+/****************
+ * remove trailing white spaces and return the length of the buffer
+ */
+unsigned
+trim_trailing_ws( byte *line, unsigned len )
+{
+    return trim_trailing_chars( line, len, " \t\r\n" );
+}
+
+unsigned int
+check_trailing_chars( const byte *line, unsigned int len,
+                      const char *trimchars )
+{
+    const byte *p, *mark;
+    unsigned int n;
+
+    for(mark=NULL, p=line, n=0; n < len; n++, p++ ) {
+	if( strchr(trimchars, *p ) ) {
+	    if( !mark )
+		mark = p;
+	}
+	else
+	    mark = NULL;
+    }
+
+    if( mark ) {
+	return mark - line;
+    }
+    return len;
+}
+
+/****************
+ * remove trailing white spaces and return the length of the buffer
+ */
+unsigned int
+check_trailing_ws( const byte *line, unsigned int len )
+{
+    return check_trailing_chars( line, len, " \t\r\n" );
+}
+
 
 
 int
@@ -201,86 +358,40 @@ string_count_chr( const char *string, int c )
 }
 
 
-static const char*
-query_native_charset(void)
+int
+set_native_charset( const char *newset )
 {
-  #ifdef __MINGW32__
-    unsigned int cp;
-
-    cp = GetConsoleOutputCP();
-    if( cp != GetConsoleCP() ) {
-	/* The input cgarset is not equal to the output charset
-	 * our system depends on it and therefore we will set
-	 * same the same (this won't work on Windows 95) */
-	if( !SetConsoleCP( cp ) )
-	    log_info("can't set Input-CP to Output-CP: %d\n",
-						    (int)GetLastError() );
+    if( !ascii_strcasecmp( newset, "iso-8859-1" ) ) {
+	active_charset_name = "iso-8859-1";
+        no_translation = 0;
+	active_charset = NULL;
     }
-    /* we could read the registry, but this seems to be too much work */
-    switch( cp ) {
-      case 850:  return "ibm850";
-      case 437:  return "ibm437";
-      case 1252: return "iso-8859-1";
-      default:
-	log_info("unknown MS-Windows CodePage %u "
-		 "- trying to switch to Latin-1\n", cp );
-	/* try to set latin-1 */
-	if( !SetConsoleOutputCP( 1252 ) ) {
-	    if( !SetConsoleCP( 1252 ) )
-		return "iso-8859-1";
-	    else /* back off */
-		SetConsoleOutputCP( cp );
-	}
-	log_info("no information about MS-Windows CodePage %u\n", cp );
-	return NULL;
+    else if( !ascii_strcasecmp( newset, "iso-8859-2" ) ) {
+	active_charset_name = "iso-8859-2";
+        no_translation = 0;
+	active_charset = latin2_unicode;
     }
-  #else
-    return NULL; /* unknown */
-  #endif
+    else if( !ascii_strcasecmp( newset, "koi8-r" ) ) {
+	active_charset_name = "koi8-r";
+        no_translation = 0;
+	active_charset = koi8_unicode;
+    }
+    else if( !ascii_strcasecmp (newset, "utf8" )
+             || !ascii_strcasecmp(newset, "utf-8") ) {
+	active_charset_name = "utf-8";
+        no_translation = 1;
+	active_charset = NULL;
+    }
+    else
+	return G10ERR_GENERAL;
+    return 0;
 }
-
 
 const char*
 get_native_charset()
 {
-    if( !query_native_charset_done ) {
-	const char *s;
-
-	query_native_charset_done = 1;
-	s = query_native_charset();
-	if( s )
-	    set_native_charset(s);
-    }
-
     return active_charset_name;
 }
-
-
-int
-set_native_charset( const char *newset )
-{
-    query_native_charset_done = 1; /* don't do this when we want to set one*/
-    if( !stricmp( newset, "iso-8859-1" ) ) {
-	active_charset_name = "iso-8859-1";
-	active_charset = NULL;
-    }
-    else if( !stricmp( newset, "iso-8859-2" ) ) {
-	active_charset_name = "iso-8859-2";
-	active_charset = latin2_unicode;
-    }
-    else if( !stricmp( newset, "koi8-r" ) ) {
-	active_charset_name = "koi8-r";
-	active_charset = koi8_unicode;
-    }
-    else if( !stricmp( newset, "ibm850" ) || !stricmp( newset, "ibm437" ) ) {
-	active_charset_name = "ibm850";
-	active_charset = ibm850_unicode;
-    }
-    else
-	return GPGERR_GENERAL;
-    return 0;
-}
-
 
 /****************
  * Convert string, which is in native encoding to UTF8 and return the
@@ -294,13 +405,16 @@ native_to_utf8( const char *string )
     byte *p;
     size_t length=0;
 
-    if( active_charset ) {
+    if (no_translation) {
+        buffer = m_strdup (string);
+    }
+    else if( active_charset ) {
 	for(s=string; *s; s++ ) {
 	    length++;
 	    if( *s & 0x80 )
 		length += 2; /* we may need 3 bytes */
 	}
-	buffer = gcry_xmalloc( length + 1 );
+	buffer = m_alloc( length + 1 );
 	for(p=buffer, s=string; *s; s++ ) {
 	    if( *s & 0x80 ) {
 		ushort val = active_charset[ *s & 0x7f ];
@@ -325,7 +439,7 @@ native_to_utf8( const char *string )
 	    if( *s & 0x80 )
 		length++;
 	}
-	buffer = gcry_xmalloc( length + 1 );
+	buffer = m_alloc( length + 1 );
 	for(p=buffer, s=string; *s; s++ ) {
 	    if( *s & 0x80 ) {
 		*p++ = 0xc0 | ((*s >> 6) & 3);
@@ -341,15 +455,17 @@ native_to_utf8( const char *string )
 
 
 /****************
- * Convert string, which is in UTF8 to native encoding.
- * illegal encodings by some "\xnn" and quote all control characters
- */
+ * Convert string, which is in UTF8 to native encoding.  illegal
+ * encodings by some "\xnn" and quote all control characters. A
+ * character with value DELIM will always be quoted, it must be a
+ * vanilla ASCII character.  
+  */
 char *
-utf8_to_native( const char *string, size_t length )
+utf8_to_native( const char *string, size_t length, int delim )
 {
     int nleft;
     int i;
-    byte encbuf[7];
+    byte encbuf[8];
     int encidx;
     const byte *s;
     size_t n;
@@ -376,7 +492,8 @@ utf8_to_native( const char *string, size_t length )
 	    }
 	    if( !nleft ) {
 		if( !(*s & 0x80) ) { /* plain ascii */
-		    if( iscntrl( *s ) ) {
+		    if( *s < 0x20 || *s == 0x7f || *s == delim ||
+			(delim && *s=='\\')) {
 			n++;
 			if( p )
 			    *p++ = '\\';
@@ -387,11 +504,13 @@ utf8_to_native( const char *string, size_t length )
 			  case '\v': n++; if( p ) *p++ = 'v'; break;
 			  case '\b': n++; if( p ) *p++ = 'b'; break;
 			  case	 0 : n++; if( p ) *p++ = '0'; break;
-			  default: n += 3;
-				   sprintf( p, "x%02x", *s );
-                                   if ( p )
-                                       p += 3;
-				   break;
+			  default:
+                            n += 3;
+                            if ( p ) {
+                                sprintf( p, "x%02x", *s );
+                                p += 3;
+                            }
+                            break;
 			}
 		    }
 		    else {
@@ -402,27 +521,32 @@ utf8_to_native( const char *string, size_t length )
 		else if( (*s & 0xe0) == 0xc0 ) { /* 110x xxxx */
 		    val = *s & 0x1f;
 		    nleft = 1;
-		    encbuf[encidx=0] = *s;
+                    encidx = 0;
+		    encbuf[encidx++] = *s;
 		}
 		else if( (*s & 0xf0) == 0xe0 ) { /* 1110 xxxx */
 		    val = *s & 0x0f;
 		    nleft = 2;
-		    encbuf[encidx=0] = *s;
+                    encidx = 0;
+		    encbuf[encidx++] = *s;
 		}
 		else if( (*s & 0xf8) == 0xf0 ) { /* 1111 0xxx */
 		    val = *s & 0x07;
 		    nleft = 3;
-		    encbuf[encidx=0] = *s;
+                    encidx = 0;
+		    encbuf[encidx++] = *s;
 		}
 		else if( (*s & 0xfc) == 0xf8 ) { /* 1111 10xx */
 		    val = *s & 0x03;
 		    nleft = 4;
-		    encbuf[encidx=0] = *s;
+                    encidx = 0;
+		    encbuf[encidx++] = *s;
 		}
 		else if( (*s & 0xfe) == 0xfc ) { /* 1111 110x */
 		    val = *s & 0x01;
 		    nleft = 5;
-		    encbuf[encidx=0] = *s;
+                    encidx = 0;
+		    encbuf[encidx++] = *s;
 		}
 		else {	/* invalid encoding: print as \xnn */
 		    if( p ) {
@@ -435,19 +559,32 @@ utf8_to_native( const char *string, size_t length )
 	    }
 	    else if( *s < 0x80 || *s >= 0xc0 ) { /* invalid */
 		if( p ) {
+                    for(i=0; i < encidx; i++ ) {
+                        sprintf(p, "\\x%02x", encbuf[i] );
+                        p += 4;
+                    }
 		    sprintf(p, "\\x%02x", *s );
 		    p += 4;
 		}
-		n += 4;
+		n += 4 + 4*encidx;
 		nleft = 0;
+                encidx = 0;
 		resync = 1;
 	    }
 	    else {
-		encbuf[++encidx] = *s;
+		encbuf[encidx++] = *s;
 		val <<= 6;
 		val |= *s & 0x3f;
 		if( !--nleft ) { /* ready */
-		    if( active_charset ) { /* table lookup */
+                    if (no_translation) {
+                        if( p ) {
+                            for(i=0; i < encidx; i++ )
+                                *p++ = encbuf[i];
+                        }
+                        n += encidx;
+                        encidx = 0;
+                    }
+		    else if( active_charset ) { /* table lookup */
 			for(i=0; i < 128; i++ ) {
 			    if( active_charset[i] == val )
 				break;
@@ -464,6 +601,7 @@ utf8_to_native( const char *string, size_t length )
 				}
 			    }
 			    n += encidx*4;
+                            encidx = 0;
 			}
 		    }
 		    else { /* native set */
@@ -479,15 +617,15 @@ utf8_to_native( const char *string, size_t length )
 				}
 			    }
 			    n += encidx*4;
+                            encidx = 0;
 			}
 		    }
-
 		}
 
 	    }
 	}
 	if( !buffer ) { /* allocate the buffer after the first pass */
-	    buffer = p = gcry_xmalloc( n + 1 );
+	    buffer = p = m_alloc( n + 1 );
 	}
 	else {
 	    *p = 0; /* make a string */
@@ -496,8 +634,262 @@ utf8_to_native( const char *string, size_t length )
     }
 }
 
+/****************************************************
+ ******** locale insensitive ctype functions ********
+ ****************************************************/
+/* FIXME: replace them by a table lookup and macros */
+int
+ascii_isupper (int c)
+{
+    return c >= 'A' && c <= 'Z';
+}
+
+int
+ascii_islower (int c)
+{
+    return c >= 'a' && c <= 'z';
+}
+
+int 
+ascii_toupper (int c)
+{
+    if (c >= 'a' && c <= 'z')
+        c &= ~0x20;
+    return c;
+}
+
+int 
+ascii_tolower (int c)
+{
+    if (c >= 'A' && c <= 'Z')
+        c |= 0x20;
+    return c;
+}
 
 
+int
+ascii_strcasecmp( const char *a, const char *b )
+{
+    if (a == b)
+        return 0;
+
+    for (; *a && *b; a++, b++) {
+	if (*a != *b && ascii_toupper(*a) != ascii_toupper(*b))
+	    break;
+    }
+    return *a == *b? 0 : (ascii_toupper (*a) - ascii_toupper (*b));
+}
+
+int
+ascii_memcasecmp( const char *a, const char *b, size_t n )
+{
+    if (a == b)
+        return 0;
+    for ( ; n; n--, a++, b++ ) {
+	if( *a != *b  && ascii_toupper (*a) != ascii_toupper (*b) )
+            return *a == *b? 0 : (ascii_toupper (*a) - ascii_toupper (*b));
+    }
+    return 0;
+}
 
 
+/*********************************************
+ ********** missing string functions *********
+ *********************************************/
+
+#ifndef HAVE_STPCPY
+char *
+stpcpy(char *a,const char *b)
+{
+    while( *b )
+	*a++ = *b++;
+    *a = 0;
+
+    return (char*)a;
+}
+#endif
+
+
+#ifndef HAVE_STRSEP
+/* code taken from glibc-2.2.1/sysdeps/generic/strsep.c */
+char *
+strsep (char **stringp, const char *delim)
+{
+  char *begin, *end;
+
+  begin = *stringp;
+  if (begin == NULL)
+    return NULL;
+
+  /* A frequent case is when the delimiter string contains only one
+     character.  Here we don't need to call the expensive `strpbrk'
+     function and instead work using `strchr'.  */
+  if (delim[0] == '\0' || delim[1] == '\0')
+    {
+      char ch = delim[0];
+
+      if (ch == '\0')
+        end = NULL;
+      else
+        {
+          if (*begin == ch)
+            end = begin;
+          else if (*begin == '\0')
+            end = NULL;
+          else
+            end = strchr (begin + 1, ch);
+        }
+    }
+  else
+    /* Find the end of the token.  */
+    end = strpbrk (begin, delim);
+
+  if (end)
+    {
+      /* Terminate the token and set *STRINGP past NUL character.  */
+      *end++ = '\0';
+      *stringp = end;
+    }
+  else
+    /* No more delimiters; this is the last token.  */
+    *stringp = NULL;
+
+  return begin;
+}
+#endif /*HAVE_STRSEP*/
+
+
+#ifndef HAVE_STRLWR
+char *
+strlwr(char *s)
+{
+    char *p;
+    for(p=s; *p; p++ )
+	*p = tolower(*p);
+    return s;
+}
+#endif
+
+#ifndef HAVE_STRCASECMP
+int
+strcasecmp( const char *a, const char *b )
+{
+    for( ; *a && *b; a++, b++ ) {
+	if( *a != *b && toupper(*a) != toupper(*b) )
+	    break;
+    }
+    return *(const byte*)a - *(const byte*)b;
+}
+#endif
+
+#ifndef HAVE_STRNCASECMP
+int
+strncasecmp( const char *a, const char *b, size_t n )
+{
+    for( ; n && *a && *b; a++, b++, n--) {
+	if( *a != *b && toupper(*a) != toupper(*b) )
+	    break;
+    }
+    if (!n)
+      return 0;
+    return *(const byte*)a - *(const byte*)b;
+}
+#endif
+
+
+#ifdef __MINGW32__
+/* 
+ * Like vsprintf but provides a pointer to malloc'd storage, which
+ * must be freed by the caller (m_free).  Taken from libiberty as
+ * found in gcc-2.95.2 and a little bit modernized.
+ * FIXME: Write a new CRT for W32.
+ */
+int
+vasprintf ( char **result, const char *format, va_list args)
+{
+  const char *p = format;
+  /* Add one to make sure that it is never zero, which might cause malloc
+     to return NULL.  */
+  int total_width = strlen (format) + 1;
+  va_list ap;
+
+  /* this is not really portable but works under Windows */
+  memcpy ( &ap, &args, sizeof (va_list));
+
+  while (*p != '\0')
+    {
+      if (*p++ == '%')
+	{
+	  while (strchr ("-+ #0", *p))
+	    ++p;
+	  if (*p == '*')
+	    {
+	      ++p;
+	      total_width += abs (va_arg (ap, int));
+	    }
+	  else
+            {
+              char *endp;  
+              total_width += strtoul (p, &endp, 10);
+              p = endp;
+            }
+	  if (*p == '.')
+	    {
+	      ++p;
+	      if (*p == '*')
+		{
+		  ++p;
+		  total_width += abs (va_arg (ap, int));
+		}
+	      else
+                {
+                  char *endp;
+                  total_width += strtoul (p, &endp, 10);
+                  p = endp;
+                }
+	    }
+	  while (strchr ("hlL", *p))
+	    ++p;
+	  /* Should be big enough for any format specifier except %s
+             and floats.  */
+	  total_width += 30;
+	  switch (*p)
+	    {
+	    case 'd':
+	    case 'i':
+	    case 'o':
+	    case 'u':
+	    case 'x':
+	    case 'X':
+	    case 'c':
+	      (void) va_arg (ap, int);
+	      break;
+	    case 'f':
+	    case 'e':
+	    case 'E':
+	    case 'g':
+	    case 'G':
+	      (void) va_arg (ap, double);
+	      /* Since an ieee double can have an exponent of 307, we'll
+		 make the buffer wide enough to cover the gross case. */
+	      total_width += 307;
+	    
+	    case 's':
+	      total_width += strlen (va_arg (ap, char *));
+	      break;
+	    case 'p':
+	    case 'n':
+	      (void) va_arg (ap, char *);
+	      break;
+	    }
+	}
+    }
+  *result = m_alloc (total_width);
+  if (*result != NULL)
+    return vsprintf (*result, format, args);
+  else
+    return 0;
+}
+
+#endif /*__MINGW32__*/
 

@@ -1,7 +1,0 @@
-Here you find supporting code for GnuPG and the tools.  It needs some
-support from libgcrypt.
-
-util is not a good name, so at some time we should rename the whole source
-tree.  However this is not easy for CVS and diff reasons.
-
-

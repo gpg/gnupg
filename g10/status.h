@@ -1,5 +1,5 @@
 /* status.h
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -17,8 +17,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef GPG_STATUS_H
-#define GPG_STATUS_H
+#ifndef G10_STATUS_H
+#define G10_STATUS_H
 
 
 #define STATUS_ENTER	 1
@@ -33,7 +33,7 @@
 #define STATUS_BADARMOR  7
 
 #define STATUS_RSA_OR_IDEA 8
-#define STATUS_SIGEXPIRED  9
+#define STATUS_KEYEXPIRED  9
 #define STATUS_KEYREVOKED  10
 
 #define STATUS_TRUST_UNDEFINED 11
@@ -81,12 +81,32 @@
 #define STATUS_GOT_IT		49
 #define STATUS_PROGRESS 	50
 #define STATUS_SIG_CREATED	51
+#define STATUS_SESSION_KEY	52
+#define STATUS_NOTATION_NAME    53
+#define STATUS_NOTATION_DATA    54
+#define STATUS_POLICY_URL       55
+#define STATUS_BEGIN_STREAM     56
+#define STATUS_END_STREAM       57
+#define STATUS_KEY_CREATED      58
+#define STATUS_USERID_HINT      59
+#define STATUS_UNEXPECTED       60
+#define STATUS_INV_RECP         61
+#define STATUS_NO_RECP          62
+#define STATUS_ALREADY_SIGNED   63
+#define STATUS_SIGEXPIRED       64
+#define STATUS_EXPSIG           65
+#define STATUS_EXPKEYSIG        66
+#define STATUS_ATTRIBUTE        67
 
 /*-- status.c --*/
 void set_status_fd ( int fd );
 int  is_status_enabled ( void );
 void write_status ( int no );
 void write_status_text ( int no, const char *text );
+void write_status_buffer ( int no,
+                           const char *buffer, size_t len, int wrap );
+void write_status_text_and_buffer ( int no, const char *text,
+                                    const char *buffer, size_t len, int wrap );
 
 #ifdef USE_SHM_COPROCESSING
   void init_shm_coprocessing ( ulong requested_shm_size, int lock_mem );
@@ -94,6 +114,7 @@ void write_status_text ( int no, const char *text );
 
 int cpr_enabled(void);
 char *cpr_get( const char *keyword, const char *prompt );
+char *cpr_get_no_help( const char *keyword, const char *prompt );
 char *cpr_get_utf8( const char *keyword, const char *prompt );
 char *cpr_get_hidden( const char *keyword, const char *prompt );
 void cpr_kill_prompt(void);
@@ -101,4 +122,4 @@ int  cpr_get_answer_is_yes( const char *keyword, const char *prompt );
 int  cpr_get_answer_yes_no_quit( const char *keyword, const char *prompt );
 
 
-#endif /*GPG_STATUS_H*/
+#endif /*G10_STATUS_H*/

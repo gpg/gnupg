@@ -1,5 +1,5 @@
 /* ttyio.c -  tty i/O functions
- *	Copyright (C) 1998, 2000 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -26,6 +26,11 @@
 #include <unistd.h>
 #ifdef HAVE_TCGETATTR
   #include <termios.h>
+  #ifdef __riscos__
+    #include <kernel.h>
+    #include <swis.h>
+    #undef HAVE_TCGETATTR
+  #endif /* __riscos__ */
 #else
   #ifdef HAVE_TERMIO_H
     /* simulate termios with termio */
@@ -45,13 +50,16 @@
 #endif
 #include <errno.h>
 #include <ctype.h>
-#include <gcrypt.h>
 #include "util.h"
 #include "memory.h"
 #include "ttyio.h"
 
 #define CONTROL_D ('D' - 'A' + 1)
-
+#ifdef __VMS
+  #define TERMDEVICE "/dev/tty"
+#else
+  #define TERMDEVICE "/dev/tty"
+#endif
 
 #ifdef __MINGW32__ /* use the odd Win32 functions */
 static struct {
@@ -72,9 +80,15 @@ static int batchmode;
 static int no_terminal;
 
 #ifdef HAVE_TCGETATTR
-static struct termios termsave;
-static int restore_termios;
+ #ifdef __riscos__
+   struct termios termsave;
+   int restore_termios;
+ #else
+    static struct termios termsave;
+    static int restore_termios;
+ #endif
 #endif
+
 
 #ifdef HAVE_TCGETATTR
 static void
@@ -121,7 +135,7 @@ init_ttyfp(void)
   #elif defined(__EMX__)
     ttyfp = stdout; /* Fixme: replace by the real functions: see wklib */
   #else
-    ttyfp = batchmode? stderr : fopen("/dev/tty", "r+");
+    ttyfp = batchmode? stderr : fopen(TERMDEVICE, "r+");
     if( !ttyfp ) {
 	log_error("cannot open /dev/tty: %s\n", strerror(errno) );
 	exit(2);
@@ -163,39 +177,21 @@ tty_printf( const char *fmt, ... )
 
     va_start( arg_ptr, fmt ) ;
   #ifdef __MINGW32__
-    { static char *buf;
-      static size_t bufsize;
-	int n;
+    {   
+        char *buf = NULL;
+        int n;
 	DWORD nwritten;
 
-      #if 0 /* the dox say, that there is a snprintf, but I didn't found
-	     * it, so we use a static buffer for now */
-	do {
-	    if( n == -1 || !buf ) {
-		gcry_free(buf);
-		bufsize += 200;
-		/* better check the new size; (we use M$ functions) */
-		if( bufsize > 50000 )
-		    log_bug("vsnprintf probably failed\n");
-		buf = gcry_xmalloc( bufsize );
-	    }
-	    n = _vsnprintf(buf, bufsize-1, fmt, arg_ptr);
-	} while( n == -1 );
-      #else
-	if( !buf ) {
-	    bufsize += 1000;
-	    buf = gcry_xmalloc( bufsize );
-	}
-	n = vsprintf(buf, fmt, arg_ptr);
-	if( n == -1 )
-	    log_bug("vsprintf() failed\n");
-      #endif
-
+	n = vasprintf(&buf, fmt, arg_ptr);
+	if( !buf )
+	    log_bug("vasprintf() failed\n");
+        
 	if( !WriteConsoleA( con.out, buf, n, &nwritten, NULL ) )
 	    log_fatal("WriteConsole failed: rc=%d", (int)GetLastError() );
 	if( n != nwritten )
-	    log_fatal("WriteConsole failed: %d != %ld\n", n, nwritten );
+	    log_fatal("WriteConsole failed: %d != %d\n", n, (int)nwritten );
 	last_prompt_len += n;
+        m_free (buf);
     }
   #else
     last_prompt_len += vfprintf(ttyfp,fmt,arg_ptr) ;
@@ -261,13 +257,13 @@ tty_print_utf8_string2( byte *p, size_t n, size_t max_n )
 	    break;
     }
     if( i < n ) {
-	buf = utf8_to_native( p, n );
+	buf = utf8_to_native( p, n, 0 );
 	if( strlen( buf ) > max_n ) {
 	    buf[max_n] = 0;
 	}
 	/*(utf8 conversion already does the control character quoting)*/
 	tty_printf("%s", buf );
-	gcry_free( buf );
+	m_free( buf );
     }
     else {
 	if( n > max_n ) {
@@ -277,7 +273,6 @@ tty_print_utf8_string2( byte *p, size_t n, size_t max_n )
     }
 }
 
-
 void
 tty_print_utf8_string( byte *p, size_t n )
 {
@@ -285,13 +280,16 @@ tty_print_utf8_string( byte *p, size_t n )
 }
 
 
-
-
 static char *
 do_get( const char *prompt, int hidden )
 {
     char *buf;
+  #ifndef __riscos__
     byte cbuf[1];
+  #else 
+    int carry;
+    _kernel_swi_regs r;
+  #endif 
     int c, n, i;
 
     if( batchmode ) {
@@ -308,8 +306,8 @@ do_get( const char *prompt, int hidden )
 	init_ttyfp();
 
     last_prompt_len = 0;
-    tty_printf( prompt );
-    buf = gcry_xmalloc(n=50);
+    tty_printf( "%s", prompt );
+    buf = m_alloc(n=50);
     i = 0;
 
   #ifdef __MINGW32__ /* windoze version */
@@ -338,7 +336,7 @@ do_get( const char *prompt, int hidden )
 	    continue;
 	if( !(i < n-1) ) {
 	    n += 50;
-	    buf = gcry_xrealloc( buf, n );
+	    buf = m_realloc( buf, n );
 	}
 	buf[i++] = c;
     }
@@ -346,6 +344,50 @@ do_get( const char *prompt, int hidden )
     if( hidden )
 	SetConsoleMode(con.in, DEF_INPMODE );
 
+  #elif defined(__riscos__)
+    do {
+        if (_kernel_swi_c(OS_ReadC, &r, &r, &carry))
+            log_fatal("OS_ReadC failed: Couldn't read from keyboard!\n");
+        c = r.r[0];
+        if (carry != 0)
+            log_fatal("OS_ReadC failed: Return Code = %i!\n", c);
+        if (c == 0xa || c == 0xd) { /* Return || Enter */
+            c = (int) '\n';
+        } else if (c == 0x8 || c == 0x7f) { /* Backspace || Delete */
+            if (i>0) {
+                i--;
+                if (!hidden) {
+                    last_prompt_len--;
+                    fputc(8, ttyfp);
+                    fputc(32, ttyfp);
+                    fputc(8, ttyfp);
+                    fflush(ttyfp);
+                }
+            } else {
+                fputc(7, ttyfp);
+                fflush(ttyfp);
+            }
+            continue;
+        } else if (c == (int) '\t') { /* Tab */
+            c = ' ';
+        } else if (c > 0xa0) {
+            ; /* we don't allow 0xa0, as this is a protected blank which may
+               * confuse the user */
+        } else if (iscntrl(c)) {
+            continue;
+        }
+        if(!(i < n-1)) {
+            n += 50;
+            buf = m_realloc(buf, n);
+        }
+        buf[i++] = c;
+        if (!hidden) {
+	    last_prompt_len++;
+            fputc(c, ttyfp);
+            fflush(ttyfp);
+        }
+    } while (c != '\n');
+    i = (i>0) ? i-1 : 0;
   #else /* unix version */
     if( hidden ) {
       #ifdef HAVE_TCGETATTR
@@ -378,7 +420,7 @@ do_get( const char *prompt, int hidden )
 	    continue;
 	if( !(i < n-1) ) {
 	    n += 50;
-	    buf = gcry_xrealloc( buf, n );
+	    buf = m_realloc( buf, n );
 	}
 	buf[i++] = c;
     }
@@ -450,7 +492,7 @@ tty_get_answer_is_yes( const char *prompt )
     char *p = tty_get( prompt );
     tty_kill_prompt();
     yes = answer_is_yes(p);
-    gcry_free(p);
+    m_free(p);
     return yes;
 }
 

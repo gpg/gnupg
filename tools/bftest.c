@@ -1,5 +1,5 @@
 /* bftest.c - Blowfish test program
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -27,17 +27,22 @@
   #include <fcntl.h>
 #endif
 
-#include <gcrypt.h>
 #include "util.h"
+#include "cipher.h"
 #include "i18n.h"
 
 static void
 my_usage(void)
 {
-    fprintf(stderr, "usage: bftest [-e][-d] algo mode key\n");
+    fprintf(stderr, "usage: bftest [-e][-d] algo key\n");
     exit(1);
 }
 
+const char *
+strusage( int level )
+{
+    return default_strusage(level);
+}
 
 static void
 i18n_init(void)
@@ -48,7 +53,7 @@ i18n_init(void)
     #else
        setlocale( LC_ALL, "" );
     #endif
-    bindtextdomain( PACKAGE, GNUPG_LOCALEDIR );
+    bindtextdomain( PACKAGE, G10_LOCALEDIR );
     textdomain( PACKAGE );
   #endif
 }
@@ -57,12 +62,11 @@ int
 main(int argc, char **argv)
 {
     int encode=0;
-    GCRY_CIPHER_HD hd;
+    CIPHER_HANDLE hd;
     char buf[4096];
-    int rc, n, size=4096;
-    int algo, mode;
-    const char *s;
-    
+    int n, size=4096;
+    int algo;
+
   #ifdef HAVE_DOSISH_SYSTEM
     setmode( fileno(stdin), O_BINARY );
     setmode( fileno(stdout), O_BINARY );
@@ -85,56 +89,24 @@ main(int argc, char **argv)
 	argc--; argv++;
 	size = 10;
     }
-    if( argc != 4 )
+    if( argc != 3 )
 	my_usage();
     argc--; argv++;
-    algo = gcry_cipher_map_name( *argv );
+    algo = string_to_cipher_algo( *argv );
     argc--; argv++;
-    s = *argv; argc--; argv++;
-    if ( !strcasecmp( s, "cfb" ) )
-        mode = GCRY_CIPHER_MODE_CFB;
-    else if ( !strcasecmp( s, "cbc" ) )
-        mode = GCRY_CIPHER_MODE_CBC;
-    else if ( !strcasecmp( s, "ebc" ) )
-        mode = GCRY_CIPHER_MODE_ECB;
-    else if ( !strcasecmp( s, "none" ) )
-        mode = GCRY_CIPHER_MODE_NONE;
-    else if ( !strcasecmp( s, "stream" ) )
-        mode = GCRY_CIPHER_MODE_STREAM;
-    else {
-        fprintf( stderr,
-                 "wrong mode; use one of:  none, ecb, cbc, cfb, stream\n");
-        return 1;
-    }
 
-    hd = gcry_cipher_open( algo, mode, 0 );
-    if (!hd )
-        log_fatal("cipher open failed: %s\n", gcry_strerror(-1) );
-    rc = gcry_cipher_setkey( hd, *argv, strlen(*argv) );
-    if ( rc ) 
-        log_fatal("setkey failed: %s\n", gcry_strerror(rc) );
-    gcry_cipher_setiv( hd, NULL, 0 );
+    hd = cipher_open( algo, CIPHER_MODE_CFB, 0 );
+    cipher_setkey( hd, *argv, strlen(*argv) );
+    cipher_setiv( hd, NULL, 0 );
     while( (n = fread( buf, 1, size, stdin )) > 0 ) {
 	if( encode )
-	    gcry_cipher_encrypt( hd, buf, n, buf, n );
+	    cipher_encrypt( hd, buf, buf, n );
 	else
-	    gcry_cipher_decrypt( hd, buf, n, buf, n );
+	    cipher_decrypt( hd, buf, buf, n );
 	if( fwrite( buf, 1, n, stdout) != n )
 	    log_fatal("write error\n");
     }
-    gcry_cipher_close(hd);
+    cipher_close(hd);
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -1,5 +1,5 @@
 /* iobuf.c  -  file handling
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -23,33 +23,89 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <ctype.h>
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h> 
 #include <unistd.h>
-#include <gcrypt.h>
 #ifdef HAVE_DOSISH_SYSTEM
-  #include <fcntl.h> /* for setmode() */
+ #include <windows.h>
 #endif
+#ifdef __riscos__
+#include <kernel.h>
+#include <swis.h>
+#endif /* __riscos__ */
 
 #include "memory.h"
 #include "util.h"
 #include "iobuf.h"
 
+#undef FILE_FILTER_USES_STDIO
 
-#if defined (HAVE_FOPEN64) && defined (HAVE_FSTAT64)
-  #define fopen(a,b)  fopen64 ((a),(b))
-  #define fstat(a,b)  fstat64 ((a),(b))
+#ifdef HAVE_DOSISH_SYSTEM
+ #define USE_SETMODE 1
 #endif
 
+#ifdef FILE_FILTER_USES_STDIO
+ #define my_fileno(a)  fileno ((a))
+ #define my_fopen_ro(a,b) fopen ((a),(b))
+ #define my_fopen(a,b)    fopen ((a),(b))
+ typedef FILE *FILEP_OR_FD;
+ #define INVALID_FP    NULL
+ #define FILEP_OR_FD_FOR_STDIN  (stdin)
+ #define FILEP_OR_FD_FOR_STDOUT  (stdout)
+ typedef struct {
+     FILE *fp;	   /* open file handle */
+     int keep_open;
+     int no_cache;
+     int  print_only_name; /* flags indicating that fname is not a real file*/
+     char fname[1]; /* name of the file */
+ } file_filter_ctx_t ;
+#else
+ #define my_fileno(a)  (a)
+ #define my_fopen_ro(a,b) fd_cache_open ((a),(b)) 
+ #define my_fopen(a,b) direct_open ((a),(b)) 
+ #ifdef HAVE_DOSISH_SYSTEM
+   typedef HANDLE FILEP_OR_FD;
+   #define INVALID_FP  ((HANDLE)-1)
+   #define FILEP_OR_FD_FOR_STDIN  (GetStdHandle (STD_INPUT_HANDLE))
+   #define FILEP_OR_FD_FOR_STDOUT (GetStdHandle (STD_OUTPUT_HANDLE))
+   #undef USE_SETMODE
+ #else
+   typedef int FILEP_OR_FD;
+   #define INVALID_FP  (-1)
+   #define FILEP_OR_FD_FOR_STDIN  (0)
+   #define FILEP_OR_FD_FOR_STDOUT (1)
+ #endif
+ typedef struct {
+     FILEP_OR_FD  fp;	   /* open file handle */
+     int keep_open;
+     int no_cache;
+     int eof_seen;
+     int  print_only_name; /* flags indicating that fname is not a real file*/
+     char fname[1]; /* name of the file */
+ } file_filter_ctx_t ;
 
+ struct close_cache_s { 
+    struct close_cache_s *next;
+    FILEP_OR_FD fp;
+    char fname[1];
+ };
+ typedef struct close_cache_s *CLOSE_CACHE;
+ static CLOSE_CACHE close_cache;
+#endif
 
+#ifdef __MINGW32__
 typedef struct {
-    FILE *fp;	   /* open file handle */
+    int sock;
+    int keep_open;
+    int no_cache;
+    int eof_seen;
     int  print_only_name; /* flags indicating that fname is not a real file*/
     char fname[1]; /* name of the file */
-} file_filter_ctx_t ;
-
+} sock_filter_ctx_t ;
+#endif /*__MINGW32__*/
 
 /* The first partial length header block must be of size 512
  * to make it easier (and efficienter) we use a min. block size of 512
@@ -68,8 +124,185 @@ typedef struct {
     int eof;
 } block_filter_ctx_t;
 
+static int special_names_enabled;
 
 static int underflow(IOBUF a);
+static int translate_file_handle ( int fd, int for_write );
+
+#ifndef FILE_FILTER_USES_STDIO
+
+/*
+ * Invalidate (i.e. close) a cached iobuf
+ */
+static void
+fd_cache_invalidate (const char *fname)
+{
+    CLOSE_CACHE cc;
+
+    assert (fname);
+    if( DBG_IOBUF )
+        log_debug ("fd_cache_invalidate (%s)\n", fname);
+
+    for (cc=close_cache; cc; cc = cc->next ) {
+        if ( cc->fp != INVALID_FP && !strcmp (cc->fname, fname) ) {
+            if( DBG_IOBUF )
+                log_debug ("                did (%s)\n", cc->fname);
+          #ifdef HAVE_DOSISH_SYSTEM
+            CloseHandle (cc->fp);
+          #else
+	    close(cc->fp);
+	  #endif
+            cc->fp = INVALID_FP;
+        }
+    }
+}
+
+
+
+static FILEP_OR_FD
+direct_open (const char *fname, const char *mode)
+{
+#ifdef HAVE_DOSISH_SYSTEM
+    unsigned long da, cd, sm;
+    HANDLE hfile;
+
+    /* Note, that we do not handle all mode combinations */
+
+    /* According to the ReactOS source it seems that open() of the
+     * standard MSW32 crt does open the file in share mode which is
+     * something new for MS applications ;-)
+     */
+    if ( strchr (mode, '+') ) {
+        fd_cache_invalidate (fname);
+        da = GENERIC_READ|GENERIC_WRITE;
+        cd = OPEN_EXISTING;
+        sm = FILE_SHARE_READ | FILE_SHARE_WRITE;
+    }
+    else if ( strchr (mode, 'w') ) {
+        fd_cache_invalidate (fname);
+        da = GENERIC_WRITE;
+        cd = CREATE_ALWAYS;
+        sm = FILE_SHARE_WRITE;
+    }
+    else {
+        da = GENERIC_READ;
+        cd = OPEN_EXISTING;
+        sm = FILE_SHARE_READ;
+    }
+
+    hfile = CreateFile (fname, da, sm, NULL, cd, FILE_ATTRIBUTE_NORMAL, NULL);
+    return hfile;
+#else
+    int oflag;
+    int cflag = S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH;
+
+    /* Note, that we do not handle all mode combinations */
+    if ( strchr (mode, '+') ) {
+        fd_cache_invalidate (fname);
+        oflag = O_RDWR;
+    }
+    else if ( strchr (mode, 'w') ) {
+        fd_cache_invalidate (fname);
+        oflag = O_WRONLY | O_CREAT | O_TRUNC;
+    }
+    else {
+        oflag = O_RDONLY;
+    }
+#ifndef __riscos__
+    return open (fname, oflag, cflag );
+#else
+    {
+        struct stat buf;
+        int rc = stat( fname, &buf );
+        
+        /* Don't allow iobufs on directories */
+        if( !rc && S_ISDIR(buf.st_mode) && !S_ISREG(buf.st_mode) )
+            return __set_errno( EISDIR );
+        else
+            return open( fname, oflag, cflag );
+    }
+#endif
+#endif
+}
+
+
+/*
+ * Instead of closing an FD we keep it open and cache it for later reuse 
+ * Note that this caching strategy only works if the process does not chdir.
+ */
+static void
+fd_cache_close (const char *fname, FILEP_OR_FD fp)
+{
+    CLOSE_CACHE cc;
+
+    assert (fp);
+    if ( !fname || !*fname ) {
+#ifdef HAVE_DOSISH_SYSTEM
+        CloseHandle (fp);
+#else
+        close(fp);
+#endif
+        if( DBG_IOBUF )
+            log_debug ("fd_cache_close (%p) real\n", (void*)fp);
+        return;
+    }
+    /* try to reuse a slot */
+    for (cc=close_cache; cc; cc = cc->next ) {
+        if ( cc->fp == INVALID_FP && !strcmp (cc->fname, fname) ) {
+            cc->fp = fp;
+            if( DBG_IOBUF )
+                log_debug ("fd_cache_close (%s) used existing slot\n", fname);
+            return;
+        }
+    }
+    /* add a new one */
+    if( DBG_IOBUF )
+        log_debug ("fd_cache_close (%s) new slot created\n", fname);
+    cc = m_alloc_clear (sizeof *cc + strlen (fname));
+    strcpy (cc->fname, fname);
+    cc->fp = fp;
+    cc->next = close_cache;
+    close_cache = cc;
+}
+
+/*
+ * Do an direct_open on FNAME but first try to reuse one from the fd_cache
+ */
+static FILEP_OR_FD
+fd_cache_open (const char *fname, const char *mode)
+{
+    CLOSE_CACHE cc;
+
+    assert (fname);
+    for (cc=close_cache; cc; cc = cc->next ) {
+        if ( cc->fp != INVALID_FP && !strcmp (cc->fname, fname) ) {
+            FILEP_OR_FD fp = cc->fp;
+            cc->fp = INVALID_FP;
+            if( DBG_IOBUF )
+                log_debug ("fd_cache_open (%s) using cached fp\n", fname);
+          #ifdef HAVE_DOSISH_SYSTEM
+            if (SetFilePointer (fp, 0, NULL, FILE_BEGIN) == 0xffffffff ) {
+                log_error ("rewind file failed on handle %p: ec=%d\n",
+                           fp, (int)GetLastError () );
+                fp = INVALID_FP;
+            }
+          #else
+            if ( lseek (fp, 0, SEEK_SET) == (off_t)-1 ) {
+                log_error("can't rewind fd %d: %s\n", fp, strerror(errno) );
+                fp = INVALID_FP;
+            }
+          #endif
+            return fp;
+        }
+    }
+    if( DBG_IOBUF )
+        log_debug ("fd_cache_open (%s) not cached\n", fname);
+    return direct_open (fname, mode);
+}
+
+
+#endif /*FILE_FILTER_USES_STDIO*/
+
 
 /****************
  * Read data from a file into buf which has an allocated length of *LEN.
@@ -87,7 +320,7 @@ static int underflow(IOBUF a);
  *		    buffer, and should be set to the number of bytes
  *		    which were put into the buffer. The function
  *		    returns 0 to indicate success, -1 on EOF and
- *		    GPGERR_xxxxx for other errors.
+ *		    G10ERR_xxxxx for other errors.
  *
  * IOBUFCTRL_FLUSH: called by iobuf_flush() to write out the collected stuff.
  *		    *RET_LAN is the number of bytes in BUF.
@@ -99,59 +332,258 @@ static int
 file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 {
     file_filter_ctx_t *a = opaque;
-    FILE *fp = a->fp;
+    FILEP_OR_FD f = a->fp;
     size_t size = *ret_len;
     size_t nbytes = 0;
     int rc = 0;
 
+#ifdef FILE_FILTER_USES_STDIO
     if( control == IOBUFCTRL_UNDERFLOW ) {
 	assert( size ); /* need a buffer */
-	if ( feof(fp)) {	/* On terminals you could easiely read as many EOFs as you call 	*/
+	if ( feof(f)) {	/* On terminals you could easiely read as many EOFs as you call 	*/
 	    rc = -1;		/* fread() or fgetc() repeatly. Every call will block until you press	*/
 	    *ret_len = 0;	/* CTRL-D. So we catch this case before we call fread() again.		*/
 	}
 	else {
-	    clearerr( fp );
-	    nbytes = fread( buf, 1, size, fp );
-	    if( feof(fp) && !nbytes )
+	    clearerr( f );
+	    nbytes = fread( buf, 1, size, f );
+	    if( feof(f) && !nbytes ) {
 		rc = -1; /* okay: we can return EOF now. */
-	    else if( ferror(fp) && errno != EPIPE  ) {
+            }
+	    else if( ferror(f) && errno != EPIPE  ) {
 		log_error("%s: read error: %s\n",
 			  a->fname, strerror(errno));
-		rc = GPGERR_READ_FILE;
+		rc = G10ERR_READ_FILE;
 	    }
 	    *ret_len = nbytes;
 	}
     }
     else if( control == IOBUFCTRL_FLUSH ) {
 	if( size ) {
-	    clearerr( fp );
-	    nbytes = fwrite( buf, 1, size, fp );
-	    if( ferror(fp) ) {
+	    clearerr( f );
+	    nbytes = fwrite( buf, 1, size, f );
+	    if( ferror(f) ) {
 		log_error("%s: write error: %s\n", a->fname, strerror(errno));
-		rc = GPGERR_WRITE_FILE;
+		rc = G10ERR_WRITE_FILE;
 	    }
 	}
 	*ret_len = nbytes;
     }
     else if( control == IOBUFCTRL_INIT ) {
+        a->keep_open = a->no_cache = 0;
     }
     else if( control == IOBUFCTRL_DESC ) {
 	*(char**)buf = "file_filter";
     }
     else if( control == IOBUFCTRL_FREE ) {
-	if( fp != stdin && fp != stdout ) {
+	if( f != stdin && f != stdout ) {
 	    if( DBG_IOBUF )
-		log_debug("%s: close fd %d\n", a->fname, fileno(fp) );
-	    fclose(fp);
+		log_debug("%s: close fd %d\n", a->fname, fileno(f) );
+            if (!a->keep_open)
+                fclose(f);
 	}
-	fp = NULL;
-	gcry_free(a); /* we can free our context now */
+	f = NULL;
+	m_free(a); /* we can free our context now */
     }
+#else /* !stdio implementation */
 
+    if( control == IOBUFCTRL_UNDERFLOW ) {
+	assert( size ); /* need a buffer */
+	if ( a->eof_seen) {
+	    rc = -1;		
+	    *ret_len = 0;	
+	}
+	else {
+          #ifdef HAVE_DOSISH_SYSTEM
+            unsigned long nread;
+
+            nbytes = 0;
+            if ( !ReadFile ( f, buf, size, &nread, NULL ) ) {
+                int ec = (int)GetLastError ();
+                if ( ec != ERROR_BROKEN_PIPE ) {
+                    log_error("%s: read error: ec=%d\n", a->fname, ec);
+                    rc = G10ERR_READ_FILE;
+                }
+            }
+            else if ( !nread ) {
+                a->eof_seen = 1;
+                rc = -1;
+            }
+            else {
+                nbytes = nread;
+            }
+
+          #else
+
+            int n;
+
+            nbytes = 0;
+            do {
+                n = read ( f, buf, size );
+            } while (n == -1 && errno == EINTR );
+            if ( n == -1 ) { /* error */
+                if (errno != EPIPE) {
+                    log_error("%s: read error: %s\n",
+                              a->fname, strerror(errno));
+                    rc = G10ERR_READ_FILE;
+                }
+            }
+            else if ( !n ) { /* eof */
+                a->eof_seen = 1;
+                rc = -1;
+            }
+            else {
+                nbytes = n;
+            }
+          #endif
+	    *ret_len = nbytes;
+	}
+    }
+    else if( control == IOBUFCTRL_FLUSH ) {
+	if( size ) {
+          #ifdef HAVE_DOSISH_SYSTEM
+            byte *p = buf;
+            unsigned long n;
+
+            nbytes = size;
+            do {
+                if ( size && !WriteFile ( f,  p, nbytes, &n, NULL) ) {
+                    int ec = (int)GetLastError ();
+                    log_error("%s: write error: ec=%d\n", a->fname, ec);
+                    rc = G10ERR_WRITE_FILE;
+                    break;
+                }
+                p += n;
+                nbytes -= n;
+            } while ( nbytes );
+            nbytes = p - buf;
+          #else
+            byte *p = buf;
+            int n;
+
+            nbytes = size;
+            do {
+                do {
+                    n = write ( f, p, nbytes );
+                } while ( n == -1 && errno == EINTR );
+                if ( n > 0 ) {
+                    p += n;
+                    nbytes -= n;
+                }
+            } while ( n != -1 && nbytes );
+	    if( n == -1 ) {
+		log_error("%s: write error: %s\n", a->fname, strerror(errno));
+		rc = G10ERR_WRITE_FILE;
+	    }
+            nbytes = p - buf;
+          #endif
+	}
+	*ret_len = nbytes;
+    }
+    else if ( control == IOBUFCTRL_INIT ) {
+        a->eof_seen = 0;
+        a->keep_open = 0;
+        a->no_cache = 0;
+    }
+    else if ( control == IOBUFCTRL_DESC ) {
+	*(char**)buf = "file_filter(fd)";
+    }
+    else if ( control == IOBUFCTRL_FREE ) {
+      #ifdef HAVE_DOSISH_SYSTEM
+        if ( f != FILEP_OR_FD_FOR_STDIN && f != FILEP_OR_FD_FOR_STDOUT ) {
+	    if( DBG_IOBUF )
+		log_debug("%s: close handle %p\n", a->fname, f );
+            if (!a->keep_open)
+                fd_cache_close (a->no_cache?NULL:a->fname, f);
+        }
+      #else
+	if ( (int)f != 0 && (int)f != 1 ) {
+	    if( DBG_IOBUF )
+		log_debug("%s: close fd %d\n", a->fname, f );
+            if (!a->keep_open)
+                fd_cache_close (a->no_cache?NULL:a->fname, f);
+	}
+	f = INVALID_FP;
+      #endif
+	m_free (a); /* we can free our context now */
+    }
+#endif /* !stdio implementation */
     return rc;
 }
 
+#ifdef __MINGW32__
+/* Becuase sockets are an special object under Lose32 we have to
+ * use a special filter */
+static int
+sock_filter (void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
+{
+    sock_filter_ctx_t *a = opaque;
+    size_t size = *ret_len;
+    size_t nbytes = 0;
+    int rc = 0;
+
+    if( control == IOBUFCTRL_UNDERFLOW ) {
+	assert( size ); /* need a buffer */
+	if ( a->eof_seen) {
+	    rc = -1;		
+	    *ret_len = 0;	
+	}
+	else {
+            int nread;
+
+            nread = recv ( a->sock, buf, size, 0 );
+            if ( nread == SOCKET_ERROR ) {
+                int ec = (int)WSAGetLastError ();
+                log_error("socket read error: ec=%d\n", ec);
+                rc = G10ERR_READ_FILE;
+            }
+            else if ( !nread ) {
+                a->eof_seen = 1;
+                rc = -1;
+            }
+            else {
+                nbytes = nread;
+            }
+	    *ret_len = nbytes;
+	}
+    }
+    else if( control == IOBUFCTRL_FLUSH ) {
+	if( size ) {
+            byte *p = buf;
+            int n;
+
+            nbytes = size;
+            do {
+                n = send (a->sock, p, nbytes, 0);
+                if ( n == SOCKET_ERROR ) {
+                    int ec = (int)WSAGetLastError ();
+                    log_error("socket write error: ec=%d\n", ec);
+                    rc = G10ERR_WRITE_FILE;
+                    break;
+                }
+                p += n;
+                nbytes -= n;
+            } while ( nbytes );
+            nbytes = p - buf;
+	}
+	*ret_len = nbytes;
+    }
+    else if ( control == IOBUFCTRL_INIT ) {
+        a->eof_seen = 0;
+        a->keep_open = 0;
+        a->no_cache = 0;
+    }
+    else if ( control == IOBUFCTRL_DESC ) {
+	*(char**)buf = "sock_filter";
+    }
+    else if ( control == IOBUFCTRL_FREE ) {
+        if (!a->keep_open)
+            closesocket (a->sock);
+	m_free (a); /* we can free our context now */
+    }
+    return rc;
+}
+#endif /*__MINGW32__*/
 
 /****************
  * This is used to implement the block write mode.
@@ -191,7 +623,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    }
 		    else if( (c = iobuf_get(chain)) == -1 ) {
 			log_error("block_filter: 1st length byte missing\n");
-			rc = GPGERR_READ_FILE;
+			rc = G10ERR_READ_FILE;
 			break;
 		    }
 		    if( c < 192 ) {
@@ -208,7 +640,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 			a->size = (c - 192) * 256;
 			if( (c = iobuf_get(chain)) == -1 ) {
 			    log_error("block_filter: 2nd length byte missing\n");
-			    rc = GPGERR_READ_FILE;
+			    rc = G10ERR_READ_FILE;
 			    break;
 			}
 			a->size += c + 192;
@@ -226,7 +658,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 			a->size |= iobuf_get(chain) << 8;
 			if( (c = iobuf_get(chain)) == -1 ) {
 			    log_error("block_filter: invalid 4 byte length\n");
-			    rc = GPGERR_READ_FILE;
+			    rc = G10ERR_READ_FILE;
 			    break;
 			}
 			a->size |= c;
@@ -243,7 +675,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    a->size |= c;
 		    if( c == -1 ) {
 			log_error("block_filter: error reading length info\n");
-			rc = GPGERR_READ_FILE;
+			rc = G10ERR_READ_FILE;
 		    }
 		    if( !a->size ) {
 			a->eof = 1;
@@ -261,7 +693,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    if( c == -1 ) c = 0;
 		    log_error("block_filter %p: read error (size=%lu,a->size=%lu)\n",
 			      a,  (ulong)size+c, (ulong)a->size+c);
-		    rc = GPGERR_READ_FILE;
+		    rc = G10ERR_READ_FILE;
 		}
 		else {
 		    size -= c;
@@ -281,7 +713,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	    if( nbytes < OP_MIN_PARTIAL_CHUNK ) {
 		/* not enough to write a partial block out; so we store it*/
 		if( !a->buffer )
-		    a->buffer = gcry_xmalloc( OP_MIN_PARTIAL_CHUNK );
+		    a->buffer = m_alloc( OP_MIN_PARTIAL_CHUNK );
 		memcpy( a->buffer + a->buflen, buf, size );
 		a->buflen += size;
 	    }
@@ -303,14 +735,14 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    if( (n=a->buflen) ) { /* write stuff from the buffer */
 			assert( n == OP_MIN_PARTIAL_CHUNK);
 			if( iobuf_write(chain, a->buffer, n ) )
-			    rc = GPGERR_WRITE_FILE;
+			    rc = G10ERR_WRITE_FILE;
 			a->buflen = 0;
 			nbytes -= n;
 		    }
 		    if( (n = nbytes) > blen )
 			n = blen;
 		    if( n && iobuf_write(chain, p, n ) )
-			rc = GPGERR_WRITE_FILE;
+			rc = G10ERR_WRITE_FILE;
 		    p += n;
 		    nbytes -= n;
 		} while( !rc && nbytes >= OP_MIN_PARTIAL_CHUNK );
@@ -319,7 +751,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    assert( !a->buflen );
 		    assert( nbytes < OP_MIN_PARTIAL_CHUNK );
 		    if( !a->buffer )
-			a->buffer = gcry_xmalloc( OP_MIN_PARTIAL_CHUNK );
+			a->buffer = m_alloc( OP_MIN_PARTIAL_CHUNK );
 		    memcpy( a->buffer, p, nbytes );
 		    a->buflen = nbytes;
 		}
@@ -348,7 +780,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		if( n > avail )
 		    n = avail;
 		if( iobuf_write(chain, p, n ) )
-		    rc = GPGERR_WRITE_FILE;
+		    rc = G10ERR_WRITE_FILE;
 		a->count += n;
 		p += n;
 		size -= n;
@@ -405,9 +837,9 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    rc = iobuf_write(chain, a->buffer, len );
 		if( rc ) {
 		    log_error("block_filter: write error: %s\n",strerror(errno));
-		    rc = GPGERR_WRITE_FILE;
+		    rc = G10ERR_WRITE_FILE;
 		}
-		gcry_free( a->buffer ); a->buffer = NULL; a->buflen = 0;
+		m_free( a->buffer ); a->buffer = NULL; a->buflen = 0;
 	    }
 	    else {
 		iobuf_writebyte(chain, 0);
@@ -419,7 +851,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	}
 	if( DBG_IOBUF )
 	    log_debug("free block_filter %p\n", a );
-	gcry_free(a); /* we can free our context now */
+	m_free(a); /* we can free our context now */
     }
 
     return rc;
@@ -463,9 +895,9 @@ iobuf_alloc(int use, size_t bufsize)
     IOBUF a;
     static int number=0;
 
-    a = gcry_xcalloc( 1,sizeof *a);
+    a = m_alloc_clear(sizeof *a);
     a->use = use;
-    a->d.buf = gcry_xmalloc( bufsize );
+    a->d.buf = m_alloc( bufsize );
     a->d.size = bufsize;
     a->no = ++number;
     a->subno = 0;
@@ -474,17 +906,16 @@ iobuf_alloc(int use, size_t bufsize)
     return a;
 }
 
-
 int
-iobuf_close( IOBUF a )
+iobuf_close ( IOBUF a )
 {
     IOBUF a2;
-    size_t dummy_len = 0;
+    size_t dummy_len=0;
     int rc=0;
 
     if( a && a->directfp ) {
 	fclose( a->directfp );
-	gcry_free( a->real_fname );
+	m_free( a->real_fname );
 	if( DBG_IOBUF )
 	    log_debug("iobuf_close -> %p\n", a->directfp );
 	return 0;
@@ -493,20 +924,22 @@ iobuf_close( IOBUF a )
     for( ; a && !rc ; a = a2 ) {
 	a2 = a->chain;
 	if( a->use == 2 && (rc=iobuf_flush(a)) )
-	    log_error("iobuf_flush failed on close: %s\n", gpg_errstr(rc));
+	    log_error("iobuf_flush failed on close: %s\n", g10_errstr(rc));
 
 	if( DBG_IOBUF )
 	    log_debug("iobuf-%d.%d: close `%s'\n", a->no, a->subno, a->desc );
 	if( a->filter && (rc = a->filter(a->filter_ov, IOBUFCTRL_FREE,
 					 a->chain, NULL, &dummy_len)) )
-	    log_error("IOBUFCTRL_FREE failed on close: %s\n", gpg_errstr(rc) );
-	gcry_free(a->real_fname);
-	gcry_free(a->d.buf);
-	gcry_free(a);
+	    log_error("IOBUFCTRL_FREE failed on close: %s\n", g10_errstr(rc) );
+	m_free(a->real_fname);
+        if (a->d.buf) {
+            memset (a->d.buf, 0, a->d.size); /* erase the buffer */
+            m_free(a->d.buf);
+        }
+	m_free(a);
     }
     return rc;
 }
-
 
 int
 iobuf_cancel( IOBUF a )
@@ -514,14 +947,14 @@ iobuf_cancel( IOBUF a )
     const char *s;
     IOBUF a2;
     int rc;
-  #ifdef HAVE_DOSISH_SYSTEM
+  #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
     char *remove_name = NULL;
   #endif
 
     if( a && a->use == 2 ) {
 	s = iobuf_get_real_fname(a);
 	if( s && *s ) {
-	  #ifdef HAVE_DOSISH_SYSTEM
+	  #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
 	    remove_name = m_strdup ( s );
 	  #else
 	    remove(s);
@@ -538,7 +971,7 @@ iobuf_cancel( IOBUF a )
     }
 
     rc = iobuf_close(a);
-  #ifdef HAVE_DOSISH_SYSTEM
+  #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
     if ( remove_name ) {
 	/* Argg, MSDOS does not allow to remove open files.  So
 	 * we have to do it here */
@@ -548,6 +981,7 @@ iobuf_cancel( IOBUF a )
   #endif
     return rc;
 }
+
 
 /****************
  * create a temporary iobuf, which can be used to collect stuff
@@ -576,6 +1010,32 @@ iobuf_temp_with_content( const char *buffer, size_t length )
     return a;
 }
 
+void
+iobuf_enable_special_filenames ( int yes )
+{
+    special_names_enabled = yes;
+}
+
+/*
+ * see whether the filename has the for "-&nnnn", where n is a
+ * non-zero number.
+ * Returns this number or -1 if it is not the case.
+ */
+static int
+check_special_filename ( const char *fname )
+{
+    if ( special_names_enabled
+         && fname && *fname == '-' && fname[1] == '&' ) {
+        int i;
+
+        fname += 2;
+        for (i=0; isdigit (fname[i]); i++ )
+            ;
+        if ( !fname[i] ) 
+            return atoi (fname);
+    }
+    return -1;
+}
 
 /****************
  * Create a head iobuf for reading from a file
@@ -585,35 +1045,38 @@ IOBUF
 iobuf_open( const char *fname )
 {
     IOBUF a;
-    FILE *fp;
+    FILEP_OR_FD fp;
     file_filter_ctx_t *fcx;
     size_t len;
     int print_only = 0;
+    int fd;
 
     if( !fname || (*fname=='-' && !fname[1])  ) {
-	fp = stdin;
-      #ifdef HAVE_DOSISH_SYSTEM
-	setmode ( fileno(fp) , O_BINARY );
+	fp = FILEP_OR_FD_FOR_STDIN;
+      #ifdef USE_SETMODE
+	setmode ( my_fileno(fp) , O_BINARY );
       #endif
 	fname = "[stdin]";
 	print_only = 1;
     }
-    else if( !(fp = fopen(fname, "rb")) )
+    else if ( (fd = check_special_filename ( fname )) != -1 )
+        return iobuf_fdopen ( translate_file_handle (fd,0), "rb" );
+    else if( (fp = my_fopen_ro(fname, "rb")) == INVALID_FP )
 	return NULL;
     a = iobuf_alloc(1, 8192 );
-    fcx = gcry_xmalloc( sizeof *fcx + strlen(fname) );
+    fcx = m_alloc( sizeof *fcx + strlen(fname) );
     fcx->fp = fp;
     fcx->print_only_name = print_only;
     strcpy(fcx->fname, fname );
     if( !print_only )
-	a->real_fname = gcry_xstrdup( fname );
+	a->real_fname = m_strdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
     file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
 	log_debug("iobuf-%d.%d: open `%s' fd=%d\n",
-		   a->no, a->subno, fname, fileno(fcx->fp) );
+		   a->no, a->subno, fname, (int)my_fileno(fcx->fp) );
 
     return a;
 }
@@ -626,14 +1089,18 @@ IOBUF
 iobuf_fdopen( int fd, const char *mode )
 {
     IOBUF a;
-    FILE *fp;
+    FILEP_OR_FD fp;
     file_filter_ctx_t *fcx;
     size_t len;
 
+#ifdef FILE_FILTER_USES_STDIO
     if( !(fp = fdopen(fd, mode)) )
 	return NULL;
+#else
+    fp = (FILEP_OR_FD)fd;
+#endif
     a = iobuf_alloc( strchr( mode, 'w')? 2:1, 8192 );
-    fcx = gcry_xmalloc( sizeof *fcx + 20 );
+    fcx = m_alloc( sizeof *fcx + 20 );
     fcx->fp = fp;
     fcx->print_only_name = 1;
     sprintf(fcx->fname, "[fd %d]", fd );
@@ -643,7 +1110,34 @@ iobuf_fdopen( int fd, const char *mode )
     file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
 	log_debug("iobuf-%d.%d: fdopen `%s'\n", a->no, a->subno, fcx->fname );
+    iobuf_ioctl (a,3,1,NULL); /* disable fd caching */
+    return a;
+}
 
+
+IOBUF
+iobuf_sockopen ( int fd, const char *mode )
+{
+    IOBUF a;
+#ifdef __MINGW32__
+    sock_filter_ctx_t *scx;
+    size_t len;
+
+    a = iobuf_alloc( strchr( mode, 'w')? 2:1, 8192 );
+    scx = m_alloc( sizeof *scx + 25 );
+    scx->sock = fd;
+    scx->print_only_name = 1;
+    sprintf(scx->fname, "[sock %d]", fd );
+    a->filter = sock_filter;
+    a->filter_ov = scx;
+    sock_filter( scx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
+    sock_filter( scx, IOBUFCTRL_INIT, NULL, NULL, &len );
+    if( DBG_IOBUF )
+	log_debug("iobuf-%d.%d: sockopen `%s'\n", a->no, a->subno, scx->fname);
+    iobuf_ioctl (a,3,1,NULL); /* disable fd caching */ 
+#else
+    a = iobuf_fdopen (fd, mode);
+#endif
     return a;
 }
 
@@ -654,28 +1148,31 @@ IOBUF
 iobuf_create( const char *fname )
 {
     IOBUF a;
-    FILE *fp;
+    FILEP_OR_FD fp;
     file_filter_ctx_t *fcx;
     size_t len;
     int print_only = 0;
+    int fd;
 
     if( !fname || (*fname=='-' && !fname[1]) ) {
-	fp = stdout;
-      #ifdef HAVE_DOSISH_SYSTEM
-	setmode ( fileno(fp) , O_BINARY );
+	fp = FILEP_OR_FD_FOR_STDOUT;
+      #ifdef USE_SETMODE
+	setmode ( my_fileno(fp) , O_BINARY );
       #endif
 	fname = "[stdout]";
 	print_only = 1;
     }
-    else if( !(fp = fopen(fname, "wb")) )
+    else if ( (fd = check_special_filename ( fname )) != -1 )
+        return iobuf_fdopen ( translate_file_handle (fd, 1), "wb" );
+    else if( (fp = my_fopen(fname, "wb")) == INVALID_FP )
 	return NULL;
     a = iobuf_alloc(2, 8192 );
-    fcx = gcry_xmalloc( sizeof *fcx + strlen(fname) );
+    fcx = m_alloc( sizeof *fcx + strlen(fname) );
     fcx->fp = fp;
     fcx->print_only_name = print_only;
     strcpy(fcx->fname, fname );
     if( !print_only )
-	a->real_fname = gcry_xstrdup( fname );
+	a->real_fname = m_strdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
@@ -689,7 +1186,9 @@ iobuf_create( const char *fname )
 /****************
  * append to an iobuf; if the file does not exist, create it.
  * cannot be used for stdout.
+ * Note: This is not used.
  */
+#if 0 /* not used */
 IOBUF
 iobuf_append( const char *fname )
 {
@@ -700,13 +1199,13 @@ iobuf_append( const char *fname )
 
     if( !fname )
 	return NULL;
-    else if( !(fp = fopen(fname, "ab")) )
+    else if( !(fp = my_fopen(fname, "ab")) )
 	return NULL;
     a = iobuf_alloc(2, 8192 );
-    fcx = gcry_xmalloc( sizeof *fcx + strlen(fname) );
+    fcx = m_alloc( sizeof *fcx + strlen(fname) );
     fcx->fp = fp;
     strcpy(fcx->fname, fname );
-    a->real_fname = gcry_xstrdup( fname );
+    a->real_fname = m_strdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
@@ -716,24 +1215,25 @@ iobuf_append( const char *fname )
 
     return a;
 }
+#endif
 
 IOBUF
 iobuf_openrw( const char *fname )
 {
     IOBUF a;
-    FILE *fp;
+    FILEP_OR_FD fp;
     file_filter_ctx_t *fcx;
     size_t len;
 
     if( !fname )
 	return NULL;
-    else if( !(fp = fopen(fname, "r+b")) )
+    else if( (fp = my_fopen(fname, "r+b")) == INVALID_FP )
 	return NULL;
     a = iobuf_alloc(2, 8192 );
-    fcx = gcry_xmalloc( sizeof *fcx + strlen(fname) );
+    fcx = m_alloc( sizeof *fcx + strlen(fname) );
     fcx->fp = fp;
     strcpy(fcx->fname, fname );
-    a->real_fname = gcry_xstrdup( fname );
+    a->real_fname = m_strdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
@@ -745,39 +1245,59 @@ iobuf_openrw( const char *fname )
 }
 
 
-
-/****************
- * You can overwrite the normal iobuf behaviour by using this function.
- * If used the iobuf is a simple wrapper around stdio.
- * NULL if an error occures and sets errno
- */
-IOBUF
-iobuf_fopen( const char *fname, const char *mode )
+int
+iobuf_ioctl ( IOBUF a, int cmd, int intval, void *ptrval )
 {
-    IOBUF a;
-    FILE *fp;
-    int print_only = 0;
-
-    if( !fname || (*fname=='-' && !fname[1])  ) {
-	fp = stdin;
-      #ifdef HAVE_DOSISH_SYSTEM
-	setmode ( fileno(fp) , O_BINARY );
-      #endif
-	fname = "[stdin]";
-	print_only = 1;
+    if ( cmd == 1 ) {  /* keep system filepointer/descriptor open */
+        if( DBG_IOBUF )
+            log_debug("iobuf-%d.%d: ioctl `%s' keep=%d\n",
+                      a? a->no:-1, a?a->subno:-1, a?a->desc:"?", intval );
+        for( ; a; a = a->chain )
+            if( !a->chain && a->filter == file_filter ) {
+                file_filter_ctx_t *b = a->filter_ov;
+                b->keep_open = intval;
+                return 0;
+            }
+          #ifdef __MINGW32__
+            else if( !a->chain && a->filter == sock_filter ) {
+                sock_filter_ctx_t *b = a->filter_ov;
+                b->keep_open = intval;
+                return 0;
+            }
+          #endif
     }
-    else if( !(fp = fopen(fname, mode) ) )
-	return NULL;
-    a = iobuf_alloc(1, 8192 );
-    a->directfp = fp;
-    a->real_fname = gcry_xstrdup( fname );
+    else if ( cmd == 2 ) {  /* invalidate cache */
+        if( DBG_IOBUF )
+            log_debug("iobuf-*.*: ioctl `%s' invalidate\n",
+                      ptrval? (char*)ptrval:"?");
+        if ( !a && !intval && ptrval ) {
+          #ifndef FILE_FILTER_USES_STDIO
+            fd_cache_invalidate (ptrval);
+          #endif
+            return 0;
+        }
+    }
+    else if ( cmd == 3 ) {  /* disallow/allow caching */
+        if( DBG_IOBUF )
+            log_debug("iobuf-%d.%d: ioctl `%s' no_cache=%d\n",
+                      a? a->no:-1, a?a->subno:-1, a?a->desc:"?", intval );
+        for( ; a; a = a->chain )
+            if( !a->chain && a->filter == file_filter ) {
+                file_filter_ctx_t *b = a->filter_ov;
+                b->no_cache = intval;
+                return 0;
+            }
+          #ifdef __MINGW32__
+            else if( !a->chain && a->filter == sock_filter ) {
+                sock_filter_ctx_t *b = a->filter_ov;
+                b->no_cache = intval;
+                return 0;
+            }
+          #endif
+    }
 
-    if( DBG_IOBUF )
-	log_debug("iobuf_fopen -> %p\n", a->directfp );
-
-    return a;
+    return -1;
 }
-
 
 
 /****************
@@ -811,12 +1331,12 @@ iobuf_push_filter2( IOBUF a,
      * The contents of the buffers are transferred to the
      * new stream.
      */
-    b = gcry_xmalloc(sizeof *b);
+    b = m_alloc(sizeof *b);
     memcpy(b, a, sizeof *b );
     /* fixme: it is stupid to keep a copy of the name at every level
      * but we need the name somewhere because the name known by file_filter
      * may have been released when we need the name of the file */
-    b->real_fname = a->real_fname? gcry_xstrdup(a->real_fname):NULL;
+    b->real_fname = a->real_fname? m_strdup(a->real_fname):NULL;
     /* remove the filter stuff from the new stream */
     a->filter = NULL;
     a->filter_ov = NULL;
@@ -826,12 +1346,12 @@ iobuf_push_filter2( IOBUF a,
 	a->use = 2;  /* make a write stream from a temp stream */
 
     if( a->use == 2 ) { /* allocate a fresh buffer for the original stream */
-	b->d.buf = gcry_xmalloc( a->d.size );
+	b->d.buf = m_alloc( a->d.size );
 	b->d.len = 0;
 	b->d.start = 0;
     }
     else { /* allocate a fresh buffer for the new stream */
-	a->d.buf = gcry_xmalloc( a->d.size );
+	a->d.buf = m_alloc( a->d.size );
 	a->d.len = 0;
 	a->d.start = 0;
     }
@@ -859,7 +1379,7 @@ iobuf_push_filter2( IOBUF a,
     /* now we can initialize the new function if we have one */
     if( a->filter && (rc = a->filter(a->filter_ov, IOBUFCTRL_INIT, a->chain,
 		       NULL, &dummy_len)) )
-	log_error("IOBUFCTRL_INIT failed: %s\n", gpg_errstr(rc) );
+	log_error("IOBUFCTRL_INIT failed: %s\n", g10_errstr(rc) );
     return rc;
 }
 
@@ -882,10 +1402,10 @@ pop_filter( IOBUF a, int (*f)(void *opaque, int control,
     if( !a->filter ) { /* this is simple */
 	b = a->chain;
 	assert(b);
-	gcry_free(a->d.buf);
-	gcry_free(a->real_fname);
+	m_free(a->d.buf);
+	m_free(a->real_fname);
 	memcpy(a,b, sizeof *a);
-	gcry_free(b);
+	m_free(b);
 	return 0;
     }
     for(b=a ; b; b = b->chain )
@@ -896,17 +1416,17 @@ pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 
     /* flush this stream if it is an output stream */
     if( a->use == 2 && (rc=iobuf_flush(b)) ) {
-	log_error("iobuf_flush failed in pop_filter: %s\n", gpg_errstr(rc));
+	log_error("iobuf_flush failed in pop_filter: %s\n", g10_errstr(rc));
 	return rc;
     }
     /* and tell the filter to free it self */
     if( b->filter && (rc = b->filter(b->filter_ov, IOBUFCTRL_FREE, b->chain,
 		       NULL, &dummy_len)) ) {
-	log_error("IOBUFCTRL_FREE failed: %s\n", gpg_errstr(rc) );
+	log_error("IOBUFCTRL_FREE failed: %s\n", g10_errstr(rc) );
 	return rc;
     }
     if( b->filter_ov && b->filter_ov_owner ) {
-	gcry_free( b->filter_ov );
+	m_free( b->filter_ov );
 	b->filter_ov = NULL;
     }
 
@@ -919,10 +1439,10 @@ pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 	 * a flush has been done on the to be removed entry
 	 */
 	b = a->chain;
-	gcry_free(a->d.buf);
-	gcry_free(a->real_fname);
+	m_free(a->d.buf);
+	m_free(a->real_fname);
 	memcpy(a,b, sizeof *a);
-	gcry_free(b);
+	m_free(b);
 	if( DBG_IOBUF )
 	   log_debug("iobuf-%d.%d: popped filter\n", a->no, a->subno );
     }
@@ -957,10 +1477,10 @@ underflow(IOBUF a)
 	    if( DBG_IOBUF )
 		log_debug("iobuf-%d.%d: pop `%s' in underflow\n",
 					a->no, a->subno, a->desc );
-	    gcry_free(a->d.buf);
-	    gcry_free(a->real_fname);
+	    m_free(a->d.buf);
+	    m_free(a->real_fname);
 	    memcpy(a, b, sizeof *a);
-	    gcry_free(b);
+	    m_free(b);
 	    print_chain(a);
 	}
 	else
@@ -1011,9 +1531,9 @@ underflow(IOBUF a)
 	    /* and tell the filter to free itself */
 	    if( (rc = a->filter(a->filter_ov, IOBUFCTRL_FREE, a->chain,
 			       NULL, &dummy_len)) )
-		log_error("IOBUFCTRL_FREE failed: %s\n", gpg_errstr(rc) );
+		log_error("IOBUFCTRL_FREE failed: %s\n", g10_errstr(rc) );
 	    if( a->filter_ov && a->filter_ov_owner ) {
-		gcry_free( a->filter_ov );
+		m_free( a->filter_ov );
 		a->filter_ov = NULL;
 	    }
 	    a->filter = NULL;
@@ -1026,10 +1546,10 @@ underflow(IOBUF a)
 		    log_debug("iobuf-%d.%d: pop `%s' in underflow (!len)\n",
 					       a->no, a->subno, a->desc );
 		print_chain(a);
-		gcry_free(a->d.buf);
-		gcry_free(a->real_fname);
+		m_free(a->d.buf);
+		m_free(a->real_fname);
 		memcpy(a,b, sizeof *a);
-		gcry_free(b);
+		m_free(b);
 		print_chain(a);
 	    }
 	}
@@ -1063,16 +1583,15 @@ iobuf_flush(IOBUF a)
     if( a->directfp )
 	return 0;
 
-    /*log_debug("iobuf-%d.%d: flush\n", a->no, a->subno );*/
     if( a->use == 3 ) { /* increase the temp buffer */
 	char *newbuf;
 	size_t newsize = a->d.size + 8192;
 
 	log_debug("increasing temp iobuf from %lu to %lu\n",
 		    (ulong)a->d.size, (ulong)newsize );
-	newbuf = gcry_xmalloc( newsize );
+	newbuf = m_alloc( newsize );
 	memcpy( newbuf, a->d.buf, a->d.len );
-	gcry_free(a->d.buf);
+	m_free(a->d.buf);
 	a->d.buf = newbuf;
 	a->d.size = newsize;
 	return 0;
@@ -1085,7 +1604,7 @@ iobuf_flush(IOBUF a)
     rc = a->filter( a->filter_ov, IOBUFCTRL_FLUSH, a->chain, a->d.buf, &len );
     if( !rc && len != a->d.len ) {
 	log_info("iobuf_flush did not write all!\n");
-	rc = GPGERR_WRITE_FILE;
+	rc = G10ERR_WRITE_FILE;
     }
     else if( rc )
 	a->error = 1;
@@ -1108,7 +1627,7 @@ iobuf_readbyte(IOBUF a)
     if( a->unget.buf ) {
 	if( a->unget.start < a->unget.len )
 	    return a->unget.buf[a->unget.start++];
-	gcry_free(a->unget.buf);
+	m_free(a->unget.buf);
 	a->unget.buf = NULL;
 	a->nofast &= ~2;
     }
@@ -1301,7 +1820,7 @@ iobuf_flush_temp( IOBUF temp )
  * Setting the limit to 0 disables this feature.
  */
 void
-iobuf_set_limit( IOBUF a, unsigned long nlimit )
+iobuf_set_limit( IOBUF a, off_t nlimit )
 {
     if( nlimit )
 	a->nofast |= 1;
@@ -1317,44 +1836,38 @@ iobuf_set_limit( IOBUF a, unsigned long nlimit )
 /****************
  * Return the length of an open file
  */
-u32
+off_t
 iobuf_get_filelength( IOBUF a )
 {
-#if defined (HAVE_FOPEN64) && defined (HAVE_FSTAT64)
-    struct stat64 st;
-#else
     struct stat st;
-#endif
 
     if( a->directfp )  {
 	FILE *fp = a->directfp;
 
-	if( !fstat(fileno(fp), &st) ) {
-          #if defined (HAVE_FOPEN64) && defined (HAVE_FSTAT64)
-            if( st.st_size >= IOBUF_FILELENGTH_LIMIT )
-                return IOBUF_FILELENGTH_LIMIT;
-          #endif
-	    return (u32)st.st_size;
-        }
+       if( !fstat(fileno(fp), &st) )
+           return st.st_size;
 	log_error("fstat() failed: %s\n", strerror(errno) );
 	return 0;
     }
-
 
     /* Hmmm: file_filter may have already been removed */
     for( ; a; a = a->chain )
 	if( !a->chain && a->filter == file_filter ) {
 	    file_filter_ctx_t *b = a->filter_ov;
-	    FILE *fp = b->fp;
+	    FILEP_OR_FD fp = b->fp;
 
-	    if( !fstat(fileno(fp), &st) ) {
-              #if defined (HAVE_FOPEN64) && defined (HAVE_FSTAT64)
-                if( st.st_size >= IOBUF_FILELENGTH_LIMIT )
-                    return IOBUF_FILELENGTH_LIMIT;
-              #endif
+          #if defined(HAVE_DOSISH_SYSTEM) && !defined(FILE_FILTER_USES_STDIO)
+            ulong size;
+
+            if ( (size=GetFileSize (fp, NULL)) != 0xffffffff ) 
+                return size;
+            log_error ("GetFileSize for handle %p failed: ec=%d\n",
+                       fp, (int)GetLastError () );
+          #else
+            if( !fstat(my_fileno(fp), &st) )
 		return st.st_size;
-            }
 	    log_error("fstat() failed: %s\n", strerror(errno) );
+          #endif
 	    break;
 	}
 
@@ -1364,27 +1877,55 @@ iobuf_get_filelength( IOBUF a )
 /****************
  * Tell the file position, where the next read will take place
  */
-ulong
+off_t
 iobuf_tell( IOBUF a )
 {
     return a->ntotal + a->nbytes;
 }
 
 
+#if !defined(HAVE_FSEEKO) && !defined(fseeko)
+
+#ifdef HAVE_LIMITS_H
+# include <limits.h>
+#endif
+#ifndef LONG_MAX
+# define LONG_MAX ((long) ((unsigned long) -1 >> 1))
+#endif
+#ifndef LONG_MIN
+# define LONG_MIN (-1 - LONG_MAX)
+#endif
+
+/****************
+ * A substitute for fseeko, for hosts that don't have it.
+ */
+static int
+fseeko( FILE *stream, off_t newpos, int whence )
+{
+    while( newpos != (long) newpos ) {
+       long pos = newpos < 0 ? LONG_MIN : LONG_MAX;
+       if( fseek( stream, pos, whence ) != 0 )
+           return -1;
+       newpos -= pos;
+       whence = SEEK_CUR;
+    }
+    return fseek( stream, (long)newpos, whence );
+}
+#endif
 
 /****************
  * This is a very limited implementation. It simply discards all internal
  * buffering and removes all filters but the first one.
  */
 int
-iobuf_seek( IOBUF a, ulong newpos )
+iobuf_seek( IOBUF a, off_t newpos )
 {
     file_filter_ctx_t *b = NULL;
 
     if( a->directfp ) {
 	FILE *fp = a->directfp;
-	if( fseek( fp, newpos, SEEK_SET ) ) {
-	    log_error("can't seek to %lu: %s\n", newpos, strerror(errno) );
+        if( fseeko( fp, newpos, SEEK_SET ) ) {
+            log_error("can't seek: %s\n", strerror(errno) );
 	    return -1;
 	}
 	clearerr(fp);
@@ -1398,10 +1939,25 @@ iobuf_seek( IOBUF a, ulong newpos )
 	}
 	if( !a )
 	    return -1;
-	if( fseek( b->fp, newpos, SEEK_SET ) ) {
-	    log_error("can't seek to %lu: %s\n", newpos, strerror(errno) );
-	    return -1;
-	}
+#ifdef FILE_FILTER_USES_STDIO
+       if( fseeko( b->fp, newpos, SEEK_SET ) ) {
+           log_error("can't fseek: %s\n", strerror(errno) );
+           return -1;
+       }
+#else
+    #ifdef HAVE_DOSISH_SYSTEM
+       if (SetFilePointer (b->fp, newpos, NULL, FILE_BEGIN) == 0xffffffff ) {
+           log_error ("SetFilePointer failed on handle %p: ec=%d\n",
+                      b->fp, (int)GetLastError () );
+           return -1;
+       }
+    #else
+       if ( lseek (b->fp, newpos, SEEK_SET) == (off_t)-1 ) {
+           log_error("can't lseek: %s\n", strerror(errno) );
+           return -1;
+       }
+    #endif
+#endif
     }
     a->d.len = 0;   /* discard buffer */
     a->d.start = 0;
@@ -1467,7 +2023,7 @@ iobuf_get_fname( IOBUF a )
 void
 iobuf_set_block_mode( IOBUF a, size_t n )
 {
-    block_filter_ctx_t *ctx = gcry_xcalloc( 1, sizeof *ctx );
+    block_filter_ctx_t *ctx = m_alloc_clear( sizeof *ctx );
 
     assert( a->use == 1 || a->use == 2 );
     ctx->use = a->use;
@@ -1489,7 +2045,7 @@ iobuf_set_block_mode( IOBUF a, size_t n )
 void
 iobuf_set_partial_block_mode( IOBUF a, size_t len )
 {
-    block_filter_ctx_t *ctx = gcry_xcalloc( 1, sizeof *ctx );
+    block_filter_ctx_t *ctx = m_alloc_clear( sizeof *ctx );
 
     assert( a->use == 1 || a->use == 2 );
     ctx->use = a->use;
@@ -1544,7 +2100,7 @@ iobuf_read_line( IOBUF a, byte **addr_of_buffer,
 
     if( !buffer ) { /* must allocate a new buffer */
 	length = 256;
-	buffer = gcry_xmalloc( length );
+	buffer = m_alloc( length );
 	*addr_of_buffer = buffer;
 	*length_of_buffer = length;
     }
@@ -1564,7 +2120,7 @@ iobuf_read_line( IOBUF a, byte **addr_of_buffer,
 	    }
 	    length += 3; /* correct for the reserved byte */
 	    length += length < 1024? 256 : 1024;
-	    buffer = gcry_xrealloc( buffer, length );
+	    buffer = m_realloc( buffer, length );
 	    *addr_of_buffer = buffer;
 	    *length_of_buffer = length;
 	    length -= 3; /* and reserve again */
@@ -1579,4 +2135,59 @@ iobuf_read_line( IOBUF a, byte **addr_of_buffer,
 
     return nbytes;
 }
+
+/* This is the non iobuf specific function */
+int
+iobuf_translate_file_handle ( int fd, int for_write )
+{
+  #ifdef __MINGW32__
+    {
+        int x;
+            
+        if  ( fd <= 2 )
+            return fd; /* do not do this for error, stdin, stdout, stderr */
+
+        x = _open_osfhandle ( fd, for_write? 1:0 );
+        if (x==-1 )
+            log_error ("failed to translate osfhandle %p\n", (void*)fd );
+        else {
+            /*log_info ("_open_osfhandle %p yields %d%s\n",
+              (void*)fd, x, for_write? " for writing":"" );*/
+            fd = x;
+        }
+    }
+  #endif
+    return fd;
+}
+
+static int
+translate_file_handle ( int fd, int for_write )
+{
+  #ifdef __MINGW32__
+   #ifdef FILE_FILTER_USES_STDIO  
+    fd = iobuf_translate_file_handle (fd, for_write);
+   #else
+    {
+        int x;
+
+        if  ( fd == 0 ) 
+            x = (int)GetStdHandle (STD_INPUT_HANDLE);
+        else if (fd == 1)    
+            x = (int)GetStdHandle (STD_OUTPUT_HANDLE);
+        else if (fd == 2)    
+            x = (int)GetStdHandle (STD_ERROR_HANDLE);
+        else
+            x = fd;
+
+        if (x == -1)
+            log_debug ("GetStdHandle(%d) failed: ec=%d\n",
+                       fd, (int)GetLastError () );
+
+        fd = x;
+    }
+   #endif
+  #endif
+    return fd;
+}
+
 

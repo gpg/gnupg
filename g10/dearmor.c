@@ -1,5 +1,5 @@
 /* dearmor.c - Armor utility
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,9 +25,9 @@
 #include <errno.h>
 #include <assert.h>
 
-#include <gcrypt.h>
 #include "errors.h"
 #include "iobuf.h"
+#include "memory.h"
 #include "util.h"
 #include "filter.h"
 #include "packet.h"
@@ -52,7 +52,7 @@ dearmor_file( const char *fname )
     if( !(inp = iobuf_open(fname)) ) {
 	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
 					strerror(errno) );
-	rc = GPGERR_OPEN_FILE;
+	rc = G10ERR_OPEN_FILE;
 	goto leave;
     }
 
@@ -94,7 +94,7 @@ enarmor_file( const char *fname )
     if( !(inp = iobuf_open(fname)) ) {
 	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
 					strerror(errno) );
-	rc = GPGERR_OPEN_FILE;
+	rc = G10ERR_OPEN_FILE;
 	goto leave;
     }
 

@@ -1,5 +1,5 @@
 /* kbnode.c -  keyblock node utility functions
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -23,9 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
-#include <gcrypt.h>
 #include "util.h"
+#include "memory.h"
 #include "packet.h"
 #include "keydb.h"
 
@@ -42,7 +41,7 @@ alloc_node(void)
     if( n )
 	unused_nodes = n->next;
     else
-	n = gcry_xmalloc( sizeof *n );
+	n = m_alloc( sizeof *n );
     n->next = NULL;
     n->pkt = NULL;
     n->flag = 0;
@@ -59,7 +58,7 @@ free_node( KBNODE n )
 	n->next = unused_nodes;
 	unused_nodes = n;
       #else
-	gcry_free( n );
+	m_free( n );
       #endif
     }
 }
@@ -95,7 +94,7 @@ release_kbnode( KBNODE n )
 	n2 = n->next;
 	if( !is_cloned_kbnode(n) ) {
 	    free_packet( n->pkt );
-	    gcry_free( n->pkt );
+	    m_free( n->pkt );
 	}
 	free_node( n );
 	n = n2;
@@ -165,9 +164,10 @@ find_prev_kbnode( KBNODE root, KBNODE node, int pkttype )
 {
     KBNODE n1;
 
-    for(n1=NULL ; root && root != node; root = root->next )
-	if( !pkttype || root->pkt->pkttype == pkttype  )
-	    n1 = root;
+    for (n1=NULL; root && root != node; root = root->next ) {
+        if (!pkttype ||root->pkt->pkttype == pkttype)
+            n1 = root;
+    }
     return n1;
 }
 
@@ -185,7 +185,7 @@ find_next_kbnode( KBNODE node, int pkttype )
     for( node=node->next ; node; node = node->next ) {
 	if( !pkttype )
 	    return node;
-	else if( pkttype == PKT_USER_ID
+	else if( pkttype == PKT_USER_ID 
 		 && (	node->pkt->pkttype == PKT_PUBLIC_KEY
 		     || node->pkt->pkttype == PKT_SECRET_KEY ) )
 	    return NULL;
@@ -267,7 +267,7 @@ commit_kbnode( KBNODE *root )
 		nl->next = n->next;
 	    if( !is_cloned_kbnode(n) ) {
 		free_packet( n->pkt );
-		gcry_free( n->pkt );
+		m_free( n->pkt );
 	    }
 	    free_node( n );
 	    changed = 1;
@@ -291,7 +291,7 @@ remove_kbnode( KBNODE *root, KBNODE node )
 		nl->next = n->next;
 	    if( !is_cloned_kbnode(n) ) {
 		free_packet( n->pkt );
-		gcry_free( n->pkt );
+		m_free( n->pkt );
 	    }
 	    free_node( n );
 	}
@@ -356,28 +356,44 @@ dump_kbnode( KBNODE node )
 	  case PKT_PLAINTEXT:	s="plaintext"; break;
 	  case PKT_COMPRESSED:	s="compressed"; break;
 	  case PKT_ENCRYPTED:	s="encrypted"; break;
+          case PKT_GPG_CONTROL: s="gpg-control"; break;
 	  default:		s="unknown"; break;
 	}
 	fprintf(stderr, "node %p %02x/%02x type=%s",
 		node, node->flag, node->private_flag, s);
 	if( node->pkt->pkttype == PKT_USER_ID ) {
+            PKT_user_id *uid = node->pkt->pkt.user_id;
 	    fputs("  \"", stderr);
-	    print_string( stderr, node->pkt->pkt.user_id->name,
-				  node->pkt->pkt.user_id->len, 0 );
-	    fputs("\"\n", stderr);
+	    print_string( stderr, uid->name, uid->len, 0 );
+	    fprintf (stderr, "\" %c%c%c%c\n",
+                     uid->is_expired? 'e':'.',
+                     uid->is_revoked? 'r':'.',
+                     uid->created?    'v':'.',
+                     uid->is_primary? 'p':'.' );
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE ) {
-	    fprintf(stderr, "  class=%02x keyid=%08lX\n",
+	    fprintf(stderr, "  class=%02x keyid=%08lX ts=%lu\n",
 		   node->pkt->pkt.signature->sig_class,
-		   (ulong)node->pkt->pkt.signature->keyid[1] );
+		   (ulong)node->pkt->pkt.signature->keyid[1],
+                   (ulong)node->pkt->pkt.signature->timestamp);
+	}
+	else if( node->pkt->pkttype == PKT_GPG_CONTROL ) {
+	    fprintf(stderr, " ctrl=%d len=%u\n",
+                    node->pkt->pkt.gpg_control->control,
+                    (unsigned int)node->pkt->pkt.gpg_control->datalen);
 	}
 	else if( node->pkt->pkttype == PKT_PUBLIC_KEY
 		 || node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
-	    fprintf(stderr, "  keyid=%08lX\n", (ulong)
-		  keyid_from_pk( node->pkt->pkt.public_key, NULL ));
+            PKT_public_key *pk = node->pkt->pkt.public_key;
+	    fprintf(stderr, "  keyid=%08lX a=%d u=%d %c%c%c%c\n",
+                    (ulong)keyid_from_pk( pk, NULL ),
+                    pk->pubkey_algo, pk->pubkey_usage,
+                    pk->has_expired? 'e':'.',  
+                    pk->is_revoked?  'r':'.',  
+                    pk->is_valid?    'v':'.',
+                    pk->mdc_feature? 'm':'.');
 	}
 	else
 	    fputs("\n", stderr);
     }
 }
-

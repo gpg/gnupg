@@ -1,5 +1,5 @@
 /* keyedit.c - keyedit stuff
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -31,7 +31,8 @@
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include <gcrypt.h>
+#include "memory.h"
+#include "photoid.h"
 #include "util.h"
 #include "main.h"
 #include "trustdb.h"
@@ -40,26 +41,32 @@
 #include "status.h"
 #include "i18n.h"
 
-static void show_prefs( KBNODE keyblock, PKT_user_id *uid );
-static void show_key_with_all_names( KBNODE keyblock,
-	    int only_marked, int with_fpr, int with_subkeys, int with_prefs );
+static void show_prefs( PKT_user_id *uid, int verbose );
+static void show_key_with_all_names( KBNODE keyblock, int only_marked,
+	    int with_revoker, int with_fpr, int with_subkeys, int with_prefs );
 static void show_key_and_fingerprint( KBNODE keyblock );
-static void show_fingerprint( PKT_public_key *pk );
-static int menu_adduid( KBNODE keyblock, KBNODE sec_keyblock );
+static int menu_adduid( KBNODE keyblock, KBNODE sec_keyblock, int photo );
 static void menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int  menu_delsig( KBNODE pub_keyblock );
 static void menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
+static int menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock );
+static int menu_set_primary_uid( KBNODE pub_keyblock, KBNODE sec_keyblock );
+static int menu_set_preferences( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_select_uid( KBNODE keyblock, int idx );
 static int menu_select_key( KBNODE keyblock, int idx );
 static int count_uids( KBNODE keyblock );
 static int count_uids_with_flag( KBNODE keyblock, unsigned flag );
 static int count_keys_with_flag( KBNODE keyblock, unsigned flag );
 static int count_selected_uids( KBNODE keyblock );
+static int real_uids_left( KBNODE keyblock );
 static int count_selected_keys( KBNODE keyblock );
 static int menu_revsig( KBNODE keyblock );
 static int menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int enable_disable_key( KBNODE keyblock, int disable );
+static void menu_showphoto( KBNODE keyblock );
+
+static int update_trust=0;
 
 #define CONTROL_D ('D' - 'A' + 1)
 
@@ -68,41 +75,19 @@ static int enable_disable_key( KBNODE keyblock, int disable );
 #define NODFLG_SIGERR (1<<2)  /* other sig error */
 
 #define NODFLG_MARK_A (1<<4)  /* temporary mark */
+#define NODFLG_DELSIG (1<<5)  /* to be deleted */
 
 #define NODFLG_SELUID (1<<8)  /* indicate the selected userid */
 #define NODFLG_SELKEY (1<<9)  /* indicate the selected key */
 #define NODFLG_SELSIG (1<<10) /* indicate a selected signature */
 
-
 struct sign_attrib {
-    int non_exportable;
+    int non_exportable,non_revocable;
     struct revocation_reason_info *reason;
 };
 
-
-
-
-static int
-get_keyblock_byname( KBNODE *keyblock, KBPOS *kbpos, const char *username )
-{
-    int rc;
-
-    *keyblock = NULL;
-    /* search the userid */
-    rc = find_keyblock_byname( keyblock, username );
-    if( rc ) {
-	log_error(_("%s: user not found: %s\n"), username, gpg_errstr(rc) );
-	return rc;
-    }
-
-    merge_keys_and_selfsig( *keyblock );
-
-    return rc;
-}
-
-
 /****************
- * Print information about a signature, chek it and return true
+ * Print information about a signature, check it and return true
  * if the signature is okay. NODE must be a signature packet.
  */
 static int
@@ -119,13 +104,14 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	node->flag &= ~(NODFLG_BADSIG|NODFLG_NOKEY|NODFLG_SIGERR);
 	sigrc = '!';
 	break;
-      case GPGERR_BAD_SIGN:
+      case G10ERR_BAD_SIGN:
 	node->flag = NODFLG_BADSIG;
 	sigrc = '-';
 	if( inv_sigs )
 	    ++*inv_sigs;
 	break;
-      case GPGERR_NO_PUBKEY:
+      case G10ERR_NO_PUBKEY:
+      case G10ERR_UNU_PUBKEY:
 	node->flag = NODFLG_NOKEY;
 	sigrc = '?';
 	if( no_key )
@@ -139,11 +125,18 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	break;
     }
     if( sigrc != '?' || print_without_key ) {
-	tty_printf("%s%c       %08lX %s   ",
-		is_rev? "rev":"sig",
-		sigrc, sig->keyid[1], datestr_from_sig(sig));
+        tty_printf("%s%c%c %c%c%c%c%c %08lX %s   ",
+		   is_rev? "rev":"sig",sigrc,
+		   (sig->sig_class-0x10>0 &&
+		    sig->sig_class-0x10<4)?'0'+sig->sig_class-0x10:' ',
+		   sig->flags.exportable?' ':'L',
+		   sig->flags.revocable?' ':'R',
+		   sig->flags.policy_url?'P':' ',
+		   sig->flags.notation?'N':' ',
+                   sig->flags.expired?'X':' ',
+		   (ulong)sig->keyid[1], datestr_from_sig(sig));
 	if( sigrc == '%' )
-	    tty_printf("[%s] ", gpg_errstr(rc) );
+	    tty_printf("[%s] ", g10_errstr(rc) );
 	else if( sigrc == '?' )
 	    ;
 	else if( *is_selfsig ) {
@@ -154,10 +147,17 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	    size_t n;
 	    char *p = get_user_id( sig->keyid, &n );
 	    tty_print_utf8_string2( p, n, 40 );
-	    gcry_free(p);
+	    m_free(p);
 	}
 	tty_printf("\n");
+
+	if(sig->flags.policy_url && opt.show_policy_url)
+	  show_policy_url(sig,3);
+
+	if(sig->flags.notation && opt.show_notation)
+	  show_notation(sig,3);
     }
+
     return (sigrc == '!');
 }
 
@@ -212,7 +212,7 @@ check_all_keysigs( KBNODE keyblock, int only_selected )
     if( !has_selfsig )
 	mis_selfsig++;
     if( inv_sigs == 1 )
-	tty_printf(_("1 bad signature\n"), inv_sigs );
+	tty_printf(_("1 bad signature\n") );
     else if( inv_sigs )
 	tty_printf(_("%d bad signatures\n"), inv_sigs );
     if( no_key == 1 )
@@ -245,6 +245,12 @@ sign_mk_attrib( PKT_signature *sig, void *opaque )
 	buf[0] = 0; /* not exportable */
 	build_sig_subpkt( sig, SIGSUBPKT_EXPORTABLE, buf, 1 );
     }
+
+    if( attrib->non_revocable ) {
+	buf[0] = 0; /* not revocable */
+	build_sig_subpkt( sig, SIGSUBPKT_REVOCABLE, buf, 1 );
+    }
+
     if( attrib->reason )
 	revocation_reason_build_cb( sig, attrib->reason );
 
@@ -259,7 +265,8 @@ sign_mk_attrib( PKT_signature *sig, void *opaque )
  * if some user_ids are marked those will be signed.
  */
 static int
-sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
+sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
+	   int local , int nonrevocable )
 {
     int rc = 0;
     SK_LIST sk_list = NULL;
@@ -268,18 +275,40 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
     KBNODE node, uidnode;
     PKT_public_key *primary_pk=NULL;
     int select_all = !count_selected_uids(keyblock);
-    int upd_trust = 0;
+    int all_v3=1;
 
-    /* build a list of all signators */
-    rc=build_sk_list( locusr, &sk_list, 0, 1 );
+    /* Are there any non-v3 sigs on this key already? */
+    if(opt.pgp2)
+      for(node=keyblock;node;node=node->next)
+	if(node->pkt->pkttype==PKT_SIGNATURE &&
+	   node->pkt->pkt.signature->version>3)
+	  {
+	    all_v3=0;
+	    break;
+	  }
+
+    /* build a list of all signators.
+     *    
+     * We use the CERT flag to request the primary which must always
+     * be one which is capable of signing keys.  I can't see a reason
+     * why to sign keys using a subkey.  Implementation of USAGE_CERT
+     * is just a hack in getkey.c and does not mean that a subkey
+     * marked as certification capable will be used */
+    rc=build_sk_list( locusr, &sk_list, 0, PUBKEY_USAGE_SIG|PUBKEY_USAGE_CERT);
     if( rc )
 	goto leave;
 
-    /* loop over all signaturs */
+    /* loop over all signators */
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
-	u32 sk_keyid[2];
+        u32 sk_keyid[2],pk_keyid[2];
 	size_t n;
 	char *p;
+	int force_v4=0,class=0,selfsig=0;
+	u32 duration=0,timestamp=0;
+
+	if(local || nonrevocable ||
+	   opt.cert_policy_url || opt.cert_notation_data)
+	  force_v4=1;
 
 	/* we have to use a copy of the sk, because make_keysig_packet
 	 * may remove the protection from sk and if we did other
@@ -299,18 +328,129 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 	/* reset mark for uids which are already signed */
 	uidnode = NULL;
 	for( node=keyblock; node; node = node->next ) {
-	    if( node->pkt->pkttype == PKT_USER_ID ) {
+	    if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
+  	        primary_pk=node->pkt->pkt.public_key;
+		keyid_from_pk( primary_pk, pk_keyid );
+
+		/* Is this a self-sig? */
+		if(pk_keyid[0]==sk_keyid[0] && pk_keyid[1]==sk_keyid[1])
+		  {
+		    selfsig=1;
+		    /* Do not force a v4 sig here, otherwise it would
+                       be difficult to remake a v3 selfsig.  If this
+                       is a v3->v4 promotion case, then we set
+                       force_v4 later anyway. */
+		    force_v4=0;
+		  }
+	    }
+	    else if( node->pkt->pkttype == PKT_USER_ID ) {
 		uidnode = (node->flag & NODFLG_MARK_A)? node : NULL;
+		if(uidnode)
+		  {
+		    char *user=utf8_to_native(uidnode->pkt->pkt.user_id->name,
+					      uidnode->pkt->pkt.user_id->len,
+					      0);
+
+		    if(uidnode->pkt->pkt.user_id->is_revoked)
+		      {
+			tty_printf(_("User ID \"%s\" is revoked."),user);
+
+			if(opt.expert)
+			  {
+			    tty_printf("\n");
+			    /* No, so remove the mark and continue */
+			    if(!cpr_get_answer_is_yes("sign_uid.revoke_okay",
+						      _("Are you sure you "
+							"still want to sign "
+							"it? (y/N) ")))
+			      uidnode->flag &= ~NODFLG_MARK_A;
+			  }
+			else
+			  {
+			    uidnode->flag &= ~NODFLG_MARK_A;
+			    tty_printf(_("  Unable to sign.\n"));
+			  }
+		      }
+		    else if(!uidnode->pkt->pkt.user_id->created)
+		      {
+			tty_printf(_("Warning: user ID \"%s\" is not "
+				     "self-signed.\n"),user);
+		      }
+
+		    m_free(user);
+		  }
 	    }
 	    else if( uidnode && node->pkt->pkttype == PKT_SIGNATURE
 		&& (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
 		if( sk_keyid[0] == node->pkt->pkt.signature->keyid[0]
 		    && sk_keyid[1] == node->pkt->pkt.signature->keyid[1] ) {
+                    char buf[50];
+		    char *user=utf8_to_native(uidnode->pkt->pkt.user_id->name,
+					      uidnode->pkt->pkt.user_id->len,
+					      0);
+
+		    /* It's a v3 self-sig.  Make it into a v4 self-sig? */
+		    if(node->pkt->pkt.signature->version<4 && selfsig)
+		      {
+			tty_printf(_("The self-signature on \"%s\"\n"
+				     "is a PGP 2.x-style signature.\n"),user);
+ 
+			/* Note that the regular PGP2 warning below
+			   still applies if there are no v4 sigs on
+			   this key at all. */
+
+			if(opt.expert)
+			  if(cpr_get_answer_is_yes("sign_uid.v4_promote_okay",
+						   _("Do you want to promote "
+						     "it to an OpenPGP self-"
+						     "signature? (y/N) ")))
+			    {
+			      force_v4=1;
+			      node->flag|=NODFLG_DELSIG;
+			      continue;
+			    }
+		      }
+
+		    if(!node->pkt->pkt.signature->flags.exportable && !local)
+		      {
+			/* It's a local sig, and we want to make a
+                           exportable sig. */
+			tty_printf(_("Your current signature on \"%s\"\n"
+				     "is a local signature.\n"),user);
+
+			if(cpr_get_answer_is_yes("sign_uid.local_promote_okay",
+						 _("Do you want to promote "
+						   "it to a full exportable "
+						   "signature? (y/N) ")))
+			  {
+			    /* Mark these for later deletion.  We
+                               don't want to delete them here, just in
+                               case the replacement signature doesn't
+                               happen for some reason.  We only delete
+                               these after the replacement is already
+                               in place. */
+
+			    node->flag|=NODFLG_DELSIG;
+			    continue;
+			  }
+		      }
+
 		    /* Fixme: see whether there is a revocation in which
 		     * case we should allow to sign it again. */
-		    tty_printf(_("Already signed by key %08lX\n"),
-							(ulong)sk_keyid[1] );
+                    if (!node->pkt->pkt.signature->flags.exportable && local)
+                      tty_printf(_(
+                         "\"%s\" was already locally signed by key %08lX\n"),
+				 user,(ulong)sk_keyid[1] );
+                    else
+                      tty_printf(_(
+                         "\"%s\" was already signed by key %08lX\n"),
+                                 user,(ulong)sk_keyid[1] );
+                    sprintf (buf, "%08lX%08lX",
+                             (ulong)sk->keyid[0], (ulong)sk->keyid[1] );
+                    write_status_text (STATUS_ALREADY_SIGNED, buf);
 		    uidnode->flag &= ~NODFLG_MARK_A; /* remove mark */
+
+		    m_free(user);
 		}
 	    }
 	}
@@ -322,25 +462,186 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 	}
 	/* Ask whether we really should sign these user id(s) */
 	tty_printf("\n");
-	show_key_with_all_names( keyblock, 1, 1, 0, 0 );
+	show_key_with_all_names( keyblock, 1, 0, 1, 0, 0 );
 	tty_printf("\n");
-	tty_printf(_(
-	     "Are you really sure that you want to sign this key\n"
-	     "with your key: \""));
+
+	if(primary_pk->expiredate && !selfsig)
+	  {
+	    u32 now=make_timestamp();
+
+	    if(primary_pk->expiredate<=now)
+	      {
+		tty_printf(_("This key has expired!"));
+
+		if(opt.expert)
+		  {
+		    tty_printf("  ");
+		    if(!cpr_get_answer_is_yes("sign_uid.expired_okay",
+					      _("Are you sure you still "
+						"want to sign it? (y/N) ")))
+		      continue;
+		  }
+		else
+		  {
+		    tty_printf(_("  Unable to sign.\n"));
+		    continue;
+		  }
+	      }
+	    else
+	      {
+		char *answer;
+
+		tty_printf(_("This key is due to expire on %s.\n"),
+			   expirestr_from_pk(primary_pk));
+
+		answer=cpr_get("sign_uid.expire",
+			       _("Do you want your signature to "
+				 "expire at the same time? (Y/n) "));
+		if(answer_is_yes_no_default(answer,1))
+		  {
+		    /* This fixes the signature timestamp we're going
+		       to make as now.  This is so the expiration date
+		       is exactly correct, and not a few seconds off
+		       (due to the time it takes to answer the
+		       questions, enter the passphrase, etc). */
+		    timestamp=now;
+		    duration=primary_pk->expiredate-now;
+		    force_v4=1;
+		  }
+
+		cpr_kill_prompt();
+		m_free(answer);
+	      }
+	  }
+
+	/* Only ask for duration if we haven't already set it to match
+           the expiration of the pk */
+	if(opt.ask_cert_expire && !duration && !selfsig)
+	  duration=ask_expire_interval(1);
+
+	if(duration)
+	  force_v4=1;
+
+	/* Is --pgp2 on, it's a v3 key, all the sigs on the key are
+	   currently v3 and we're about to sign it with a v4 sig?  If
+	   so, danger! */
+	if(opt.pgp2 && all_v3 &&
+	   (sk->version>3 || force_v4) && primary_pk->version<=3)
+	  {
+	    tty_printf(_("You may not make an OpenPGP signature on a "
+			 "PGP 2.x key while in --pgp2 mode.\n"));
+	    tty_printf(_("This would make the key unusable in PGP 2.x.\n"));
+
+	    if(opt.expert)
+	      {
+		if(!cpr_get_answer_is_yes("sign_uid.v4_on_v3_okay",
+					  _("Are you sure you still "
+					    "want to sign it? (y/N) ")))
+		  continue;
+
+		all_v3=0;
+	      }
+	    else
+	      continue;
+	  }
+
+	if(selfsig)
+	  ;
+	else if(opt.batch)
+	  class=0x10+opt.def_cert_check_level;
+	else
+	  {
+	    char *answer;
+
+	    tty_printf(_("How carefully have you verified the key you are "
+			 "about to sign actually belongs\nto the person named "
+			 "above?  If you don't know what to answer, enter \"0\".\n"));
+	    tty_printf("\n");
+	    tty_printf(_("   (0) I will not answer.%s\n"),
+		       opt.def_cert_check_level==0?" (default)":"");
+	    tty_printf(_("   (1) I have not checked at all.%s\n"),
+		       opt.def_cert_check_level==1?" (default)":"");
+	    tty_printf(_("   (2) I have done casual checking.%s\n"),
+		       opt.def_cert_check_level==2?" (default)":"");
+	    tty_printf(_("   (3) I have done very careful checking.%s\n"),
+		       opt.def_cert_check_level==3?" (default)":"");
+	    tty_printf("\n");
+
+	    while(class==0)
+	      {
+		answer = cpr_get("sign_uid.class",_("Your selection? "));
+
+		if(answer[0]=='\0')
+		  class=0x10+opt.def_cert_check_level; /* Default */
+		else if(ascii_strcasecmp(answer,"0")==0)
+		  class=0x10; /* Generic */
+		else if(ascii_strcasecmp(answer,"1")==0)
+		  class=0x11; /* Persona */
+		else if(ascii_strcasecmp(answer,"2")==0)
+		  class=0x12; /* Casual */
+		else if(ascii_strcasecmp(answer,"3")==0)
+		  class=0x13; /* Positive */
+		else
+		  tty_printf(_("Invalid selection.\n"));
+
+		m_free(answer);
+	      }
+	  }
+
+	tty_printf(_("Are you really sure that you want to sign this key\n"
+		     "with your key: \""));
 	p = get_user_id( sk_keyid, &n );
 	tty_print_utf8_string( p, n );
-	gcry_free(p); p = NULL;
-	tty_printf("\"\n\n");
+	m_free(p); p = NULL;
+	tty_printf("\"\n");
 
-	if( local )
-	    tty_printf(
-		  _("The signature will be marked as non-exportable.\n\n"));
+	if(selfsig)
+	  {
+	    tty_printf(_("\nThis will be a self-signature.\n"));
 
+	    if( local )
+	      tty_printf(
+			 _("\nWarning: the signature will not be marked "
+			   "as non-exportable.\n"));
+
+	    if( nonrevocable )
+	      tty_printf(
+			 _("\nWarning: the signature will not be marked "
+			   "as non-revocable.\n"));
+	  }
+	else
+	  {
+	    if( local )
+	      tty_printf(
+		     _("\nThe signature will be marked as non-exportable.\n"));
+
+	    if( nonrevocable )
+	      tty_printf(
+		      _("\nThe signature will be marked as non-revocable.\n"));
+
+	    switch(class)
+	      {
+	      case 0x11:
+		tty_printf(_("\nI have not checked this key at all.\n"));
+		break;
+
+	      case 0x12:
+		tty_printf(_("\nI have checked this key casually.\n"));
+		break;
+
+	      case 0x13:
+		tty_printf(_("\nI have checked this key very carefully.\n"));
+		break;
+	      }
+	  }
+
+	tty_printf("\n");
 
 	if( opt.batch && opt.answer_yes )
-	    ;
+	  ;
 	else if( !cpr_get_answer_is_yes("sign_uid.okay", _("Really sign? ")) )
 	    continue;
+
 	/* now we can sign the user ids */
       reloop: /* (must use this, because we are modifing the list) */
 	primary_pk = NULL;
@@ -356,33 +657,50 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 		assert( primary_pk );
 		memset( &attrib, 0, sizeof attrib );
 		attrib.non_exportable = local;
+		attrib.non_revocable = nonrevocable;
 		node->flag &= ~NODFLG_MARK_A;
-		rc = make_keysig_packet( &sig, primary_pk,
-					       node->pkt->pkt.user_id,
-					       NULL,
-					       sk,
-					       0x10, 0,
-					       sign_mk_attrib,
-					       &attrib );
+
+                /* we force creation of a v4 signature for local
+                 * signatures, otherwise we would not generate the
+                 * subpacket with v3 keys and the signature becomes
+                 * exportable */
+
+		if(selfsig)
+		  rc = make_keysig_packet( &sig, primary_pk,
+					   node->pkt->pkt.user_id,
+					   NULL,
+					   sk,
+					   0x13, 0, force_v4?4:0, 0, 0,
+					   keygen_add_std_prefs, primary_pk);
+		else
+		  rc = make_keysig_packet( &sig, primary_pk,
+					   node->pkt->pkt.user_id,
+					   NULL,
+					   sk,
+					   class, 0, force_v4?4:0,
+					   timestamp, duration,
+					   sign_mk_attrib, &attrib );
 		if( rc ) {
-		    log_error(_("signing failed: %s\n"), gpg_errstr(rc));
+		    log_error(_("signing failed: %s\n"), g10_errstr(rc));
 		    goto leave;
 		}
-		*ret_modified = 1; /* we changed the keyblock */
-		upd_trust = 1;
 
-		pkt = gcry_xcalloc( 1, sizeof *pkt );
+		*ret_modified = 1; /* we changed the keyblock */
+		update_trust = 1;
+
+		pkt = m_alloc_clear( sizeof *pkt );
 		pkt->pkttype = PKT_SIGNATURE;
 		pkt->pkt.signature = sig;
 		insert_kbnode( node, new_kbnode(pkt), PKT_SIGNATURE );
 		goto reloop;
 	    }
 	}
-    } /* end loop over signators */
-    if( upd_trust && primary_pk ) {
-	rc = clear_trust_checked_flag( primary_pk );
-    }
 
+	/* Delete any sigs that got promoted */
+	for( node=keyblock; node; node = node->next )
+	  if( node->flag & NODFLG_DELSIG)
+	    delete_kbnode(node);
+    } /* end loop over signators */
 
   leave:
     release_sk_list( sk_list );
@@ -416,7 +734,7 @@ change_passphrase( KBNODE keyblock )
 
     switch( is_secret_key_protected( sk ) ) {
       case -1:
-	rc = GPGERR_PUBKEY_ALGO;
+	rc = G10ERR_PUBKEY_ALGO;
 	break;
       case 0:
 	tty_printf(_("This key is not protected.\n"));
@@ -447,10 +765,11 @@ change_passphrase( KBNODE keyblock )
     }
 
     if( rc )
-	tty_printf(_("Can't edit this key: %s\n"), gpg_errstr(rc));
+	tty_printf(_("Can't edit this key: %s\n"), g10_errstr(rc));
     else {
 	DEK *dek = NULL;
-	STRING2KEY *s2k = gcry_xmalloc_secure( sizeof *s2k );
+	STRING2KEY *s2k = m_alloc_secure( sizeof *s2k );
+        const char *errtext = NULL;
 
 	tty_printf(_("Enter the new passphrase for this secret key.\n\n") );
 
@@ -458,9 +777,11 @@ change_passphrase( KBNODE keyblock )
 	for(;;) {
 	    s2k->mode = opt.s2k_mode;
 	    s2k->hash_algo = opt.s2k_digest_algo;
-	    dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k, 2 );
+	    dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo,
+                                     s2k, 2, errtext);
 	    if( !dek ) {
-		tty_printf(_("passphrase not correctly repeated; try again.\n"));
+		errtext = _("passphrase not correctly repeated; try again");
+		tty_printf ("%s.\n", errtext);
 	    }
 	    else if( !dek->keylen ) {
 		rc = 0;
@@ -487,18 +808,18 @@ change_passphrase( KBNODE keyblock )
 		    }
 		}
 		if( rc )
-		    log_error("protect_secret_key failed: %s\n", gpg_errstr(rc) );
+		    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
 		else
 		    changed++;
 		break;
 	    }
 	}
-	gcry_free(s2k);
-	gcry_free(dek);
+	m_free(s2k);
+	m_free(dek);
     }
 
   leave:
-    gcry_free( passphrase );
+    m_free( passphrase );
     set_next_passphrase( NULL );
     return changed && !rc;
 }
@@ -560,11 +881,12 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 {
     enum cmdids { cmdNONE = 0,
 	   cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
-	   cmdLSIGN, cmdREVSIG, cmdREVKEY, cmdDELSIG,
-	   cmdDEBUG, cmdSAVE, cmdADDUID, cmdDELUID, cmdADDKEY, cmdDELKEY,
-	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE,
-	   cmdENABLEKEY, cmdDISABLEKEY,
-	   cmdINVCMD, cmdNOP };
+           cmdLSIGN, cmdNRSIGN, cmdNRLSIGN, cmdREVSIG, cmdREVKEY, cmdDELSIG,
+	   cmdPRIMARY, cmdDEBUG, cmdSAVE, cmdADDUID, cmdADDPHOTO, cmdDELUID,
+           cmdADDKEY, cmdDELKEY, cmdADDREVOKER, cmdTOGGLE, cmdSELKEY,
+	   cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE, cmdENABLEKEY,
+	   cmdDISABLEKEY, cmdSHOWPREF, cmdSETPREF, cmdUPDPREF, cmdINVCMD,
+           cmdSHOWPHOTO, cmdUPDTRUST, cmdCHKTRUST, cmdNOP };
     static struct { const char *name;
 		    enum cmdids id;
 		    int need_sk;
@@ -587,30 +909,42 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	{ N_("sign")    , cmdSIGN      , 0,1,1, N_("sign the key") },
 	{ N_("s")       , cmdSIGN      , 0,1,1, NULL },
 	{ N_("lsign")   , cmdLSIGN     , 0,1,1, N_("sign the key locally") },
+	{ N_("nrsign")  , cmdNRSIGN    , 0,1,1, N_("sign the key non-revocably") },
+	{ N_("nrlsign") , cmdNRLSIGN   , 0,1,1, N_("sign the key locally and non-revocably") },
 	{ N_("debug")   , cmdDEBUG     , 0,0,0, NULL },
 	{ N_("adduid")  , cmdADDUID    , 1,1,0, N_("add a user ID") },
+	{ N_("addphoto"), cmdADDPHOTO  , 1,1,0, N_("add a photo ID") },
 	{ N_("deluid")  , cmdDELUID    , 0,1,0, N_("delete user ID") },
+	/* delphoto is really deluid in disguise */
+	{ N_("delphoto"), cmdDELUID    , 0,1,0, NULL },
 	{ N_("addkey")  , cmdADDKEY    , 1,1,0, N_("add a secondary key") },
 	{ N_("delkey")  , cmdDELKEY    , 0,1,0, N_("delete a secondary key") },
+	{ N_("addrevoker"),cmdADDREVOKER,1,1,0, N_("add a revocation key") },
 	{ N_("delsig")  , cmdDELSIG    , 0,1,0, N_("delete signatures") },
 	{ N_("expire")  , cmdEXPIRE    , 1,1,0, N_("change the expire date") },
+        { N_("primary") , cmdPRIMARY   , 1,1,0, N_("flag user ID as primary")},
 	{ N_("toggle")  , cmdTOGGLE    , 1,0,0, N_("toggle between secret "
 						   "and public key listing") },
 	{ N_("t"     )  , cmdTOGGLE    , 1,0,0, NULL },
-	{ N_("pref")    , cmdPREF      , 0,1,0, N_("list preferences") },
+	{ N_("pref")    , cmdPREF      , 0,1,0, N_("list preferences (expert)") },
+	{ N_("showpref"), cmdSHOWPREF  , 0,1,0, N_("list preferences (verbose)") },
+	{ N_("setpref") , cmdSETPREF   , 1,1,0, N_("set preference list") },
+	{ N_("updpref") , cmdUPDPREF   , 1,1,0, N_("updated preferences") },
 	{ N_("passwd")  , cmdPASSWD    , 1,1,0, N_("change the passphrase") },
 	{ N_("trust")   , cmdTRUST     , 0,1,0, N_("change the ownertrust") },
 	{ N_("revsig")  , cmdREVSIG    , 0,1,0, N_("revoke signatures") },
 	{ N_("revkey")  , cmdREVKEY    , 1,1,0, N_("revoke a secondary key") },
 	{ N_("disable") , cmdDISABLEKEY, 0,1,0, N_("disable a key") },
 	{ N_("enable")  , cmdENABLEKEY , 0,1,0, N_("enable a key") },
+	{ N_("showphoto"),cmdSHOWPHOTO , 0,0,0, N_("show photo ID") },
 
     { NULL, cmdNONE } };
     enum cmdids cmd = 0;
     int rc = 0;
     KBNODE keyblock = NULL;
-    KBPOS keyblockpos;
+    KEYDB_HANDLE kdbhd = NULL;
     KBNODE sec_keyblock = NULL;
+    KEYDB_HANDLE sec_kdbhd = NULL;
     KBNODE cur_keyblock;
     char *answer = NULL;
     int redisplay = 1;
@@ -619,34 +953,23 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
     int toggle;
     int have_commands = !!commands;
 
-
-    if( opt.batch && !have_commands ) {
+    if ( opt.command_fd != -1 )
+        ;
+    else if( opt.batch && !have_commands  ) {
 	log_error(_("can't do that in batchmode\n"));
 	goto leave;
     }
 
     if( sign_mode ) {
 	commands = NULL;
-	append_to_strlist( &commands, sign_mode == 1? "sign":"lsign" );
+	append_to_strlist( &commands, sign_mode == 1? "sign":
+			   sign_mode == 2?"lsign":
+			   sign_mode == 3?"nrsign":"nrlsign");
 	have_commands = 1;
     }
 
-
-    if( !sign_mode ) {
-	/* first try to locate it as secret key */
-	rc = find_secret_keyblock_byname( &sec_keyblock, username );
-        if( rc && rc != GPGERR_NO_SECKEY ) 
-            log_debug("%s: secret keyblock read problem: %s\n",
-						username, gpg_errstr(rc));
-	if( !rc ) {
-	    merge_keys_and_selfsig( sec_keyblock );
-	    if( fix_keyblock( sec_keyblock ) )
-		sec_modified++;
-	}
-    }
-
-    /* and now get the public key */
-    rc = get_keyblock_byname( &keyblock, &keyblockpos, username );
+    /* get the public key */
+    rc = get_pubkey_byname (NULL, username, &keyblock, &kdbhd);
     if( rc )
 	goto leave;
     if( fix_keyblock( keyblock ) )
@@ -654,44 +977,79 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
     if( collapse_uids( &keyblock ) )
 	modified++;
 
-    if( sec_keyblock ) { /* check that they match */
-	/* fixme: check that they both match */
+    if( !sign_mode ) {/* see whether we have a matching secret key */
+        PKT_public_key *pk = keyblock->pkt->pkt.public_key;
+
+        sec_kdbhd = keydb_new (1);
+        {
+            byte afp[MAX_FINGERPRINT_LEN];
+            size_t an;
+
+            fingerprint_from_pk (pk, afp, &an);
+            while (an < MAX_FINGERPRINT_LEN) 
+                afp[an++] = 0;
+            rc = keydb_search_fpr (sec_kdbhd, afp);
+        }
+	if (!rc) {
+	    rc = keydb_get_keyblock (sec_kdbhd, &sec_keyblock);
+	    if (rc) {
+		log_error (_("error reading secret keyblock `%s': %s\n"),
+						username, g10_errstr(rc));
+	    }
+            else {
+                merge_keys_and_selfsig( sec_keyblock );
+                if( fix_keyblock( sec_keyblock ) )
+                    sec_modified++;
+            }
+	}
+
+        if (rc) {
+            sec_keyblock = NULL;
+            keydb_release (sec_kdbhd); sec_kdbhd = NULL;
+            rc = 0;
+        }
+    }
+
+    if( sec_keyblock ) { 
 	tty_printf(_("Secret key is available.\n"));
     }
 
     toggle = 0;
     cur_keyblock = keyblock;
     for(;;) { /* main loop */
-	int i, arg_number;
+	int i, arg_number, photo;
+        const char *arg_string = "";
 	char *p;
+	PKT_public_key *pk=keyblock->pkt->pkt.public_key;
 
 	tty_printf("\n");
 	if( redisplay ) {
-	    show_key_with_all_names( cur_keyblock, 0, 0, 1, 0 );
+	    show_key_with_all_names( cur_keyblock, 0, 1, 0, 1, 0 );
 	    tty_printf("\n");
 	    redisplay = 0;
 	}
 	do {
-	    gcry_free(answer);
+	    m_free(answer);
 	    if( have_commands ) {
 		if( commands ) {
-		    answer = gcry_xstrdup( commands->d );
+		    answer = m_strdup( commands->d );
 		    commands = commands->next;
 		}
 		else if( opt.batch ) {
-		    answer = gcry_xstrdup("quit");
+		    answer = m_strdup("quit");
 		}
 		else
 		    have_commands = 0;
 	    }
 	    if( !have_commands ) {
-		answer = cpr_get("keyedit.prompt", _("Command> "));
+		answer = cpr_get_no_help("keyedit.prompt", _("Command> "));
 		cpr_kill_prompt();
 	    }
 	    trim_spaces(answer);
 	} while( *answer == '#' );
 
-	arg_number = 0; /* Yes, here is the init which egcc complains about*/
+	arg_number = 0; /* Yes, here is the init which egcc complains about */
+	photo = 0; /* This too */
 	if( !*answer )
 	    cmd = cmdLIST;
 	else if( *answer == CONTROL_D )
@@ -706,10 +1064,11 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		trim_spaces(answer);
 		trim_spaces(p);
 		arg_number = atoi(p);
+                arg_string = p;
 	    }
 
 	    for(i=0; cmds[i].name; i++ ) {
-		if( !stricmp( answer, cmds[i].name ) )
+		if( !ascii_strcasecmp( answer, cmds[i].name ) )
 		    break;
 	    }
 	    if( sign_mode && !cmds[i].signmode )
@@ -764,6 +1123,27 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 
 	  case cmdSIGN: /* sign (only the public key) */
 	  case cmdLSIGN: /* sign (only the public key) */
+	  case cmdNRSIGN: /* sign (only the public key) */
+	  case cmdNRLSIGN: /* sign (only the public key) */
+	    if( pk->is_revoked )
+	      {
+		tty_printf(_("Key is revoked."));
+
+		if(opt.expert)
+		  {
+		    tty_printf("  ");
+		    if(!cpr_get_answer_is_yes("keyedit.sign_revoked.okay",
+					      _("Are you sure you still want "
+						"to sign it? (y/N) ")))
+		      break;
+		  }
+		else
+		  {
+		    tty_printf(_("  Unable to sign.\n"));
+		    break;
+		  }
+	      }
+
 	    if( count_uids(keyblock) > 1 && !count_selected_uids(keyblock) ) {
 		if( !cpr_get_answer_is_yes("keyedit.sign_all.okay",
 					   _("Really sign all user IDs? ")) ) {
@@ -771,14 +1151,11 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		    break;
 		}
 	    }
-	    if( !sign_uids( keyblock, locusr, &modified, cmd == cmdLSIGN )
+	    if( !sign_uids( keyblock, locusr, &modified,
+			    (cmd == cmdLSIGN) || (cmd == cmdNRLSIGN),
+			    (cmd == cmdNRSIGN) || (cmd==cmdNRLSIGN))
 		&& sign_mode )
-		goto do_cmd_save;
-	    /* Actually we should do a update_trust_record() here so that
-	     * the trust gets displayed correctly. however this is not possible
-	     * because we would have to save the keyblock first - something
-	     * we don't want to do without an explicit save command.
-	     */
+	        goto do_cmd_save;
 	    break;
 
 	  case cmdDEBUG:
@@ -791,18 +1168,23 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    redisplay = 1;
 	    break;
 
+	  case cmdADDPHOTO:
+            if (opt.rfc2440 || opt.rfc1991 || opt.pgp2)
+              {
+                tty_printf(
+                   _("This command is not allowed while in %s mode.\n"),
+		   opt.rfc2440?"OpenPGP":opt.pgp2?"PGP2":"RFC-1991");
+                break;
+              }
+	    photo=1;
+	    /* fall through */
+
 	  case cmdADDUID:
-	    if( menu_adduid( keyblock, sec_keyblock ) ) {
+	    if( menu_adduid( keyblock, sec_keyblock, photo ) ) {
 		redisplay = 1;
 		sec_modified = modified = 1;
-		/* must update the trustdb already here, so that preferences
-		 * get listed correctly */
-		rc = update_trust_record( keyblock, 0, NULL );
-		if( rc ) {
-		    log_error(_("update of trustdb failed: %s\n"),
-				gpg_errstr(rc) );
-		    rc = 0;
-		}
+		merge_keys_and_selfsig( sec_keyblock );
+		merge_keys_and_selfsig( keyblock );
 	    }
 	    break;
 
@@ -811,7 +1193,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 
 		if( !(n1=count_selected_uids(keyblock)) )
 		    tty_printf(_("You must select at least one user ID.\n"));
-		else if( count_uids(keyblock) - n1 < 1 )
+		else if( real_uids_left(keyblock) < 1 )
 		    tty_printf(_("You can't delete the last user ID!\n"));
 		else if( cpr_get_answer_is_yes(
 			    "keyedit.remove.uid.okay",
@@ -844,6 +1226,8 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    if( generate_subkeypair( keyblock, sec_keyblock ) ) {
 		redisplay = 1;
 		sec_modified = modified = 1;
+		merge_keys_and_selfsig( sec_keyblock );
+		merge_keys_and_selfsig( keyblock );
 	    }
 	    break;
 
@@ -867,6 +1251,15 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		    if( sec_keyblock )
 		       sec_modified = 1;
 		}
+	    }
+	    break;
+
+	  case cmdADDREVOKER:
+	    if( menu_addrevoker( keyblock, sec_keyblock ) ) {
+		redisplay = 1;
+		sec_modified = modified = 1;
+		merge_keys_and_selfsig( sec_keyblock );
+		merge_keys_and_selfsig( keyblock );
 	    }
 	    break;
 
@@ -902,23 +1295,62 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    }
 	    break;
 
+	  case cmdPRIMARY:
+	    if( menu_set_primary_uid ( keyblock, sec_keyblock ) ) {
+		merge_keys_and_selfsig( keyblock );
+		modified = 1;
+		redisplay = 1;
+	    }
+	    break;
+
 	  case cmdPASSWD:
 	    if( change_passphrase( sec_keyblock ) )
 		sec_modified = 1;
 	    break;
 
 	  case cmdTRUST:
-	    show_key_with_all_names( keyblock, 0, 0, 1, 0 );
+	    show_key_with_all_names( keyblock, 0, 0, 0, 1, 0 );
 	    tty_printf("\n");
 	    if( edit_ownertrust( find_kbnode( keyblock,
-		      PKT_PUBLIC_KEY )->pkt->pkt.public_key->local_id, 1 ) )
+                                 PKT_PUBLIC_KEY )->pkt->pkt.public_key, 1 ) ) {
 		redisplay = 1;
-	    /* we don't need to set modified here, as the trustvalues
-	     * are updated immediately */
+		/* No real need to set update_trust here as
+		   edit_ownertrust() calls revalidation_mark()
+		   anyway. */
+		update_trust=1;
+            }
 	    break;
 
 	  case cmdPREF:
-	    show_key_with_all_names( keyblock, 0, 0, 0, 1 );
+	    show_key_with_all_names( keyblock, 0, 0, 0, 0, 1 );
+	    break;
+
+	  case cmdSHOWPREF:
+	    show_key_with_all_names( keyblock, 0, 0, 0, 0, 2 );
+	    break;
+
+          case cmdSETPREF:
+            keygen_set_std_prefs ( !*arg_string? "default" : arg_string, 0);
+            break;
+
+	  case cmdUPDPREF: 
+            {
+                p = keygen_get_std_prefs ();
+                tty_printf (("Current preference list: %s\n"), p);
+                m_free (p);
+            }
+            if (cpr_get_answer_is_yes ("keyedit.updpref.okay",
+                                        count_selected_uids (keyblock)?
+                                        _("Really update the preferences"
+                                          " for the selected user IDs? "):
+                                       _("Really update the preferences? "))){
+
+                if ( menu_set_preferences (keyblock, sec_keyblock) ) {
+                    merge_keys_and_selfsig (keyblock);
+                    modified = 1;
+                    redisplay = 1;
+                }
+            }
 	    break;
 
 	  case cmdNOP:
@@ -939,6 +1371,10 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    }
 	    break;
 
+         case cmdSHOWPHOTO:
+           menu_showphoto(keyblock);
+           break;
+
 	  case cmdQUIT:
 	    if( have_commands )
 		goto leave;
@@ -957,32 +1393,29 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	  do_cmd_save:
 	    if( modified || sec_modified  ) {
 		if( modified ) {
-		    rc = update_keyblock( keyblock );
+		    rc = keydb_update_keyblock (kdbhd, keyblock);
 		    if( rc ) {
-			log_error(_("update failed: %s\n"), gpg_errstr(rc) );
+			log_error(_("update failed: %s\n"), g10_errstr(rc) );
 			break;
 		    }
 		}
 		if( sec_modified ) {
-		    rc = update_keyblock( sec_keyblock );
+		    rc = keydb_update_keyblock (sec_kdbhd, sec_keyblock );
 		    if( rc ) {
-			log_error(_("update secret failed: %s\n"),
-							    gpg_errstr(rc) );
+			log_error( _("update secret failed: %s\n"),
+                                   g10_errstr(rc) );
 			break;
 		    }
 		}
 	    }
 	    else
 		tty_printf(_("Key not changed so no update needed.\n"));
-	    /* TODO: we should keep track whether we have changed
-	     *	     something relevant to the trustdb */
-	    if( !modified && sign_mode )
-		rc = 0; /* we can skip at least in this case */
-	    else
-		rc = update_trust_record( keyblock, 0, NULL );
-	    if( rc )
-		log_error(_("update of trustdb failed: %s\n"),
-			    gpg_errstr(rc) );
+
+	    if( update_trust )
+	      {
+		revalidation_mark ();
+		update_trust=0;
+	      }
 	    goto leave;
 
 	  case cmdINVCMD:
@@ -996,7 +1429,8 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
   leave:
     release_kbnode( keyblock );
     release_kbnode( sec_keyblock );
-    gcry_free(answer);
+    keydb_release (kdbhd);
+    m_free(answer);
 }
 
 
@@ -1004,45 +1438,246 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
  * show preferences of a public keyblock.
  */
 static void
-show_prefs( KBNODE keyblock, PKT_user_id *uid )
+show_prefs (PKT_user_id *uid, int verbose)
 {
-    KBNODE node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
-    PKT_public_key *pk;
-    byte *p;
+    const prefitem_t fake={0,0};
+    const prefitem_t *prefs;
     int i;
-    size_t n;
-    byte namehash[20];
 
-    if( !node )
-	return; /* is a secret keyblock */
-    pk = node->pkt->pkt.public_key;
-    if( !pk->local_id ) {
-	log_error("oops: no LID\n");
-	return;
-    }
+    if( !uid )
+        return;
 
-    if( uid->photo ) {
-	gcry_md_hash_buffer( GCRY_MD_RMD160, namehash, uid->photo,
-						       uid->photolen );
+    if( uid->prefs )
+        prefs=uid->prefs;
+    else if(verbose)
+        prefs=&fake;
+    else
+      return;
+
+    if (verbose) {
+        int any, des_seen=0, sha1_seen=0, uncomp_seen=0;
+        tty_printf ("     Cipher: ");
+        for(i=any=0; prefs[i].type; i++ ) {
+            if( prefs[i].type == PREFTYPE_SYM ) {
+                const char *s = cipher_algo_to_string (prefs[i].value);
+                
+                if (any)
+                    tty_printf (", ");
+                any = 1;
+                /* We don't want to display strings for experimental algos */
+                if (s && prefs[i].value < 100 )
+                    tty_printf ("%s", s );
+                else
+                    tty_printf ("[%d]", prefs[i].value);
+                if (prefs[i].value == CIPHER_ALGO_3DES )
+                    des_seen = 1;
+            }    
+        }
+        if (!des_seen) {
+            if (any)
+                tty_printf (", ");
+            tty_printf ("%s",cipher_algo_to_string(CIPHER_ALGO_3DES));
+        }
+        tty_printf ("\n     Hash: ");
+        for(i=any=0; prefs[i].type; i++ ) {
+            if( prefs[i].type == PREFTYPE_HASH ) {
+                const char *s = digest_algo_to_string (prefs[i].value);
+                
+                if (any)
+                    tty_printf (", ");
+                any = 1;
+                /* We don't want to display strings for experimental algos */
+                if (s && prefs[i].value < 100 )
+                    tty_printf ("%s", s );
+                else
+                    tty_printf ("[%d]", prefs[i].value);
+                if (prefs[i].value == DIGEST_ALGO_SHA1 )
+                    sha1_seen = 1;
+            }
+        }
+        if (!sha1_seen) {
+            if (any)
+                tty_printf (", ");
+            tty_printf ("%s",digest_algo_to_string(DIGEST_ALGO_SHA1));
+        }
+        tty_printf ("\n     Compression: ");
+        for(i=any=0; prefs[i].type; i++ ) {
+            if( prefs[i].type == PREFTYPE_ZIP ) {
+                const char *s=compress_algo_to_string(prefs[i].value);
+                
+                if (any)
+                    tty_printf (", ");
+                any = 1;
+                /* We don't want to display strings for experimental algos */
+                if (s && prefs[i].value < 100 )
+                    tty_printf ("%s", s );
+                else
+                    tty_printf ("[%d]", prefs[i].value);
+                if (prefs[i].value == 0 )
+                    uncomp_seen = 1;
+            }
+        }
+        if (!uncomp_seen) {
+            if (any)
+                tty_printf (", ");
+	    else {
+	      tty_printf ("%s",compress_algo_to_string(1));
+	      tty_printf (", ");
+	    }
+	    tty_printf ("%s",compress_algo_to_string(0));
+        }
+        tty_printf ("\n     Features: ");
+	if(uid->mdc_feature)
+	  tty_printf ("MDC");
+	tty_printf("\n");
     }
     else {
-	gcry_md_hash_buffer( GCRY_MD_RMD160, namehash, uid->name, uid->len );
+        tty_printf("    ");
+        for(i=0; prefs[i].type; i++ ) {
+            tty_printf( " %c%d", prefs[i].type == PREFTYPE_SYM   ? 'S' :
+                                 prefs[i].type == PREFTYPE_HASH  ? 'H' :
+                                 prefs[i].type == PREFTYPE_ZIP ? 'Z':'?',
+                                 prefs[i].value);
+        }
+        if (uid->mdc_feature)
+            tty_printf (" [mdc]");
+        tty_printf("\n");
     }
+}
 
-    p = get_pref_data( pk->local_id, namehash, &n );
-    if( !p )
-	return;
 
-    tty_printf("    ");
-    for(i=0; i < n; i+=2 ) {
-	if( p[i] )
-	    tty_printf( " %c%d", p[i] == PREFTYPE_SYM    ? 'S' :
-				 p[i] == PREFTYPE_HASH	 ? 'H' :
-				 p[i] == PREFTYPE_COMPR  ? 'Z' : '?', p[i+1]);
+/* This is the version of show_key_with_all_names used when
+   opt.with_colons is used.  It prints all available data in a easy to
+   parse format and does not translate utf8 */
+static void
+show_key_with_all_names_colon (KBNODE keyblock)
+{
+  KBNODE node;
+  int i, j;
+  byte pk_version=0;
+
+  /* the keys */
+  for ( node = keyblock; node; node = node->next )
+    {
+      if (node->pkt->pkttype == PKT_PUBLIC_KEY
+          || (node->pkt->pkttype == PKT_PUBLIC_SUBKEY) )
+        {
+          PKT_public_key *pk = node->pkt->pkt.public_key;
+          int otrust=0, trust=0;
+          u32 keyid[2];
+
+          if (node->pkt->pkttype == PKT_PUBLIC_KEY)
+            {
+              trust = get_validity_info (pk, NULL);
+              otrust = get_ownertrust_info (pk);
+              pk_version = pk->version;
+	    }
+
+          keyid_from_pk (pk, keyid);
+
+          fputs (node->pkt->pkttype == PKT_PUBLIC_KEY?"pub:":"sub:", stdout);
+          if (!pk->is_valid)
+            putchar ('i');
+          else if (pk->is_revoked)
+            putchar ('r');
+          else if (pk->has_expired)
+            putchar ('e');
+          else 
+            putchar (trust);
+          printf (":%u:%d:%08lX%08lX:%lu:%lu:",
+                  nbits_from_pk (pk),
+                  pk->pubkey_algo,
+                  (ulong)keyid[0], (ulong)keyid[1],
+                  (ulong)pk->timestamp,
+                  (ulong)pk->expiredate );
+          if (pk->local_id)
+            printf ("%lu", pk->local_id);
+          putchar (':');
+          putchar (otrust);
+          putchar(':');
+          putchar('\n');
+          
+          print_fingerprint (pk, NULL, 0);
+
+          /* print the revoker record */
+          if( !pk->revkey && pk->numrevkeys )
+            BUG();
+          else
+            {
+              for (i=0; i < pk->numrevkeys; i++)
+                {
+                  byte *p;
+
+                  printf ("rvk:::%d::::::", pk->revkey[i].algid);
+                  p = pk->revkey[i].fpr;
+                  for (j=0; j < 20; j++, p++ )
+                    printf ("%02X", *p);
+                  printf (":%02x%c:\n", pk->revkey[i].class,
+                          (pk->revkey[i].class&0x40)? 'l':'x');
+                }
+            }
+        }
     }
-    tty_printf("\n");
+  
+    /* the user ids */
+    i = 0;
+    for (node = keyblock; node; node = node->next) 
+      {
+	if ( node->pkt->pkttype == PKT_USER_ID )
+          {
+            PKT_user_id *uid = node->pkt->pkt.user_id;
+            int trustletter = '?';
 
-    gcry_free(p);
+	    ++i;
+	    if(uid->attrib_data)
+	      {
+		printf ("uat:%c::::::::%u %lu", trustletter,
+			uid->numattribs,uid->attrib_len);
+	      }
+	    else
+	      {
+		printf ("uid:%c::::::::", trustletter);
+		print_string (stdout, uid->name, uid->len, ':');
+	      }
+            putchar (':');
+            /* signature class */
+            putchar (':');
+            /* capabilities */
+            putchar (':');
+            /* preferences */
+            if (pk_version>3 || uid->selfsigversion>3)
+              {
+                const prefitem_t *prefs = uid->prefs;
+                
+                for (j=0; prefs && prefs[j].type; j++)
+                  {
+                    if (j)
+                      putchar (' ');
+                    printf ("%c%d", prefs[j].type == PREFTYPE_SYM   ? 'S' :
+                            prefs[j].type == PREFTYPE_HASH  ? 'H' :
+                            prefs[j].type == PREFTYPE_ZIP ? 'Z':'?',
+                            prefs[j].value);
+                  } 
+                if (uid->mdc_feature)
+                  printf (",mdc");
+              } 
+            putchar (':');
+            /* flags */
+            printf ("%d,", i);
+            if (uid->is_primary)
+              putchar ('p');
+            if (uid->is_revoked)
+              putchar ('r');
+            if (uid->is_expired)
+              putchar ('e');
+            if ((node->flag & NODFLG_SELUID))
+              putchar ('s');
+            if ((node->flag & NODFLG_MARK_A))
+              putchar ('m');
+            putchar (':');
+            putchar('\n');
+          }
+      }
 }
 
 
@@ -1051,11 +1686,19 @@ show_prefs( KBNODE keyblock, PKT_user_id *uid )
  * so for user ids with mark A flag set and dont display the index number
  */
 static void
-show_key_with_all_names( KBNODE keyblock, int only_marked,
+show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 			 int with_fpr, int with_subkeys, int with_prefs )
 {
     KBNODE node;
     int i, rc;
+    int do_warn = 0;
+    byte pk_version=0;
+
+    if (opt.with_colons)
+      {
+        show_key_with_all_names_colon (keyblock);
+        return;
+      }
 
     /* the keys */
     for( node = keyblock; node; node = node->next ) {
@@ -1067,9 +1710,42 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 	    if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
 		/* do it here, so that debug messages don't clutter the
 		 * output */
-		trust = query_trust_info(pk, NULL);
-		otrust = get_ownertrust_info( pk->local_id );
+                static int did_warn = 0;
+
+                trust = get_validity_info (pk, NULL);
+		otrust = get_ownertrust_info (pk);
+
+                /* Show a warning once */
+                if (!did_warn
+                    && (get_validity (pk, NULL) & TRUST_FLAG_PENDING_CHECK)) {
+                    did_warn = 1;
+                    do_warn = 1;
+                }
+
+		pk_version=pk->version;
 	    }
+
+	    if(with_revoker) {
+	        if( !pk->revkey && pk->numrevkeys )
+	            BUG();
+	        else
+                    for(i=0;i<pk->numrevkeys;i++) {
+                        u32 r_keyid[2];
+                        char *user;
+           
+                        keyid_from_fingerprint(pk->revkey[i].fpr,
+                                               MAX_FINGERPRINT_LEN,r_keyid);
+                        
+                        user=get_user_id_string (r_keyid);
+                        tty_printf (_("This key may be revoked by %s key "),
+                                 pubkey_algo_to_string (pk->revkey[i].algid));
+                        tty_print_utf8_string (user, strlen (user));
+                        if ((pk->revkey[i].class&0x40))
+                          tty_printf (_(" (sensitive)"));
+                        tty_printf ("\n");
+                        m_free(user);
+                      }
+            }
 
 	    tty_printf(_("%s%c %4u%c/%08lX  created: %s expires: %s"),
 			  node->pkt->pkttype == PKT_PUBLIC_KEY? "pub":"sub",
@@ -1082,14 +1758,14 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 	    if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
 		tty_printf(_(" trust: %c/%c"), otrust, trust );
 		if( node->pkt->pkttype == PKT_PUBLIC_KEY
-		    && (get_ownertrust( pk->local_id )&TRUST_FLAG_DISABLED)) {
+		    && (get_ownertrust (pk)&TRUST_FLAG_DISABLED)) {
 		    tty_printf("\n*** ");
 		    tty_printf(_("This key has been disabled"));
 		}
 
 		if( with_fpr  ) {
 		    tty_printf("\n");
-		    show_fingerprint( pk );
+		    print_fingerprint ( pk, NULL, 2 );
 		}
 	    }
 	    tty_printf("\n");
@@ -1115,11 +1791,11 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 	    if( !rc )
 		tty_printf( _("rev! subkey has been revoked: %s\n"),
 			    datestr_from_sig( sig ) );
-	    else if( rc == GPGERR_BAD_SIGN )
+	    else if( rc == G10ERR_BAD_SIGN )
 		tty_printf( _("rev- faked revocation found\n") );
 	    else if( rc )
 		tty_printf( _("rev? problem checking revocation: %s\n"),
-							 gpg_errstr(rc) );
+							 g10_errstr(rc) );
 	}
     }
     /* the user ids */
@@ -1133,15 +1809,33 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 		   tty_printf("     ");
 		else if( node->flag & NODFLG_SELUID )
 		   tty_printf("(%d)* ", i);
+		else if( uid->is_primary )
+		   tty_printf("(%d). ", i);
 		else
 		   tty_printf("(%d)  ", i);
+                if ( uid->is_revoked )
+                    tty_printf ("[revoked] ");
+                if ( uid->is_expired )
+                    tty_printf ("[expired] ");
 		tty_print_utf8_string( uid->name, uid->len );
 		tty_printf("\n");
 		if( with_prefs )
-		    show_prefs( keyblock, uid );
+		  {
+		    if(pk_version>3 || uid->selfsigversion>3)
+		      show_prefs (uid, with_prefs == 2);
+		    else
+		      tty_printf(_("There are no preferences on a "
+				   "PGP 2.x-style key.\n"));
+		  }
 	    }
 	}
     }
+
+    if (do_warn)
+        tty_printf (_("Please note that the shown key validity "
+                      "is not necessarily correct\n"
+                      "unless you restart the program.\n")); 
+
 }
 
 static void
@@ -1167,44 +1861,18 @@ show_key_and_fingerprint( KBNODE keyblock )
     }
     tty_printf("\n");
     if( pk )
-	show_fingerprint( pk );
+	print_fingerprint( pk, NULL, 2 );
 }
 
-
-static void
-show_fingerprint( PKT_public_key *pk )
-{
-    byte array[MAX_FINGERPRINT_LEN], *p;
-    size_t i, n;
-
-    fingerprint_from_pk( pk, array, &n );
-    p = array;
-    tty_printf(_("             Fingerprint:"));
-    if( n == 20 ) {
-	for(i=0; i < n ; i++, i++, p += 2 ) {
-	    if( i == 10 )
-		tty_printf(" ");
-	    tty_printf(" %02X%02X", *p, p[1] );
-	}
-    }
-    else {
-	for(i=0; i < n ; i++, p++ ) {
-	    if( i && !(i%8) )
-		tty_printf(" ");
-	    tty_printf(" %02X", *p );
-	}
-    }
-    tty_printf("\n");
-}
 
 
 /****************
- * Ask for a new user id , do the selfsignature and put it into
+ * Ask for a new user id, do the selfsignature and put it into
  * both keyblocks.
  * Return true if there is a new user id
  */
 static int
-menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
+menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock, int photo)
 {
     PKT_user_id *uid;
     PKT_public_key *pk=NULL;
@@ -1214,10 +1882,6 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
     KBNODE node;
     KBNODE pub_where=NULL, sec_where=NULL;
     int rc;
-
-    uid = generate_user_id();
-    if( !uid )
-	return 0;
 
     for( node = pub_keyblock; node; pub_where = node, node = node->next ) {
 	if( node->pkt->pkttype == PKT_PUBLIC_KEY )
@@ -1235,27 +1899,69 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
     }
     if( !node ) /* no subkey */
 	sec_where = NULL;
-    assert(pk && sk );
+    assert(pk && sk);
 
-    rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0,
+    if(photo) {
+      int hasattrib=0;
+
+      for( node = pub_keyblock; node; node = node->next )
+	if( node->pkt->pkttype == PKT_USER_ID &&
+	    node->pkt->pkt.user_id->attrib_data!=NULL)
+	  {
+	    hasattrib=1;
+	    break;
+	  }
+
+      /* It is legal but bad for compatibility to add a photo ID to a
+         v3 key as it means that PGP2 will not be able to use that key
+         anymore.  Don't bother to ask this if the key already has a
+         photo - any damage has already been done at that point. -dms */
+      if(pk->version==3 && !hasattrib)
+	{
+	  if(opt.expert)
+	    {
+	      tty_printf(_("WARNING: This is a PGP2-style key.  "
+			   "Adding a photo ID may cause some versions\n"
+			   "         of PGP to reject this key.\n"));
+
+	      if(!cpr_get_answer_is_yes("keyedit.v3_photo.okay",
+					_("Are you sure you still want "
+					  "to add it? (y/N) ")))
+		return 0;
+	    }
+	  else
+	    {
+	      tty_printf(_("You may not add a photo ID to "
+			   "a PGP2-style key.\n"));
+	      return 0;
+	    }
+	}
+
+      uid = generate_photo_id(pk);
+    } else
+      uid = generate_user_id();
+    if( !uid )
+	return 0;
+
+    rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0, 0, 0, 0,
 			     keygen_add_std_prefs, pk );
     free_secret_key( sk );
     if( rc ) {
-	log_error("signing failed: %s\n", gpg_errstr(rc) );
+	log_error("signing failed: %s\n", g10_errstr(rc) );
 	free_user_id(uid);
 	return 0;
     }
 
     /* insert/append to secret keyblock */
-    pkt = gcry_xcalloc( 1, sizeof *pkt );
+    pkt = m_alloc_clear( sizeof *pkt );
     pkt->pkttype = PKT_USER_ID;
-    pkt->pkt.user_id = copy_user_id(NULL, uid);
+    pkt->pkt.user_id = scopy_user_id(uid);
     node = new_kbnode(pkt);
     if( sec_where )
 	insert_kbnode( sec_where, node, 0 );
     else
 	add_kbnode( sec_keyblock, node );
-    pkt = gcry_xcalloc( 1, sizeof *pkt );
+    pkt = m_alloc_clear( sizeof *pkt );
     pkt->pkttype = PKT_SIGNATURE;
     pkt->pkt.signature = copy_signature(NULL, sig);
     if( sec_where )
@@ -1263,7 +1969,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
     else
 	add_kbnode( sec_keyblock, new_kbnode(pkt) );
     /* insert/append to public keyblock */
-    pkt = gcry_xcalloc( 1, sizeof *pkt );
+    pkt = m_alloc_clear( sizeof *pkt );
     pkt->pkttype = PKT_USER_ID;
     pkt->pkt.user_id = uid;
     node = new_kbnode(pkt);
@@ -1271,7 +1977,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	insert_kbnode( pub_where, node, 0 );
     else
 	add_kbnode( pub_keyblock, node );
-    pkt = gcry_xcalloc( 1, sizeof *pkt );
+    pkt = m_alloc_clear( sizeof *pkt );
     pkt->pkttype = PKT_SIGNATURE;
     pkt->pkt.signature = copy_signature(NULL, sig);
     if( pub_where )
@@ -1295,6 +2001,10 @@ menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	if( node->pkt->pkttype == PKT_USER_ID ) {
 	    selected = node->flag & NODFLG_SELUID;
 	    if( selected ) {
+		/* Only cause a trust update if we delete a
+                   non-revoked user id */
+		if(!node->pkt->pkt.user_id->is_revoked)
+		  update_trust=1;
 		delete_kbnode( node );
 		if( sec_keyblock ) {
 		    KBNODE snode;
@@ -1353,10 +2063,16 @@ menu_delsig( KBNODE pub_keyblock )
 					    &inv_sig, &no_key, &other_err,
 					    &selfsig, 1 );
 
-	   if( valid )
+	   if( valid ) {
 	       okay = cpr_get_answer_yes_no_quit(
 		   "keyedit.delsig.valid",
 		   _("Delete this good signature? (y/N/q)"));
+
+	       /* Only update trust if we delete a good signature.
+                  The other two cases do not affect trust. */
+	       if(okay)
+		 update_trust=1;
+	   }
 	   else if( inv_sig || other_err )
 	       okay = cpr_get_answer_yes_no_quit(
 		   "keyedit.delsig.invalid",
@@ -1440,8 +2156,146 @@ menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
     commit_kbnode( &pub_keyblock );
     if( sec_keyblock )
 	commit_kbnode( &sec_keyblock );
+
+    /* No need to set update_trust here since signing keys no longer
+       are used to certify other keys, so there is no change in trust
+       when revoking/removing them */
 }
 
+
+/****************
+ * Ask for a new revoker, do the selfsignature and put it into
+ * both keyblocks.
+ * Return true if there is a new revoker
+ */
+static int
+menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock )
+{
+  PKT_public_key *pk=NULL,*revoker_pk=NULL;
+  PKT_secret_key *sk=NULL;
+  PKT_signature *sig=NULL;
+  PACKET *pkt;
+  struct revocation_key revkey;
+  size_t fprlen;
+  int rc;
+
+  assert(pub_keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
+  assert(sec_keyblock->pkt->pkttype==PKT_SECRET_KEY);
+
+  pk=pub_keyblock->pkt->pkt.public_key;
+  sk=copy_secret_key(NULL,sec_keyblock->pkt->pkt.secret_key);
+
+  for(;;)
+    {
+      char *answer;
+      u32 keyid[2];
+      char *p;
+      size_t n;
+
+      if(revoker_pk)
+	free_public_key(revoker_pk);
+
+      revoker_pk=m_alloc_clear(sizeof(*revoker_pk));
+
+      tty_printf("\n");
+
+      answer=cpr_get_utf8("keyedit.add_revoker",
+			  _("Enter the user ID of the designated revoker: "));
+      if(answer[0]=='\0' || answer[0]=='\004')
+	goto fail;
+
+      rc=get_pubkey_byname(revoker_pk,answer,NULL,NULL);
+
+      if(rc)
+	{
+	  log_error (_("key `%s' not found: %s\n"),answer,g10_errstr(rc));
+	  continue;
+	}
+
+      fingerprint_from_pk(revoker_pk,revkey.fpr,&fprlen);
+      if(fprlen!=20)
+	{
+	  log_error(_("cannot appoint a PGP 2.x style key as a "
+		      "designated revoker\n"));
+	  continue;
+	}
+
+      if(cmp_public_keys(revoker_pk,pk)==0)
+	{
+	  /* This actually causes no harm (after all, a key that
+	     designates itself as a revoker is the same as a
+	     regular key), but it's easy enough to check. */
+	  log_error(_("you cannot appoint a key as its own "
+		      "designated revoker\n"));
+	  continue;
+	}
+
+      keyid_from_pk(revoker_pk,keyid);
+
+      tty_printf("\npub  %4u%c/%08lX %s   ",
+		 nbits_from_pk( revoker_pk ),
+		 pubkey_letter( revoker_pk->pubkey_algo ),
+		 (ulong)keyid[1], datestr_from_pk(pk) );
+
+      p = get_user_id( keyid, &n );
+      tty_print_utf8_string( p, n );
+      m_free(p);
+      tty_printf("\n");
+      print_fingerprint(revoker_pk,NULL,2);
+      tty_printf("\n");
+
+      tty_printf("WARNING: appointing a key as a designated revoker "
+		 "cannot be undone!\n");
+
+      tty_printf("\n");
+
+      if(!cpr_get_answer_is_yes("keyedit.add_revoker.okay",
+				"Are you sure you want to appoint this "
+				"key as a designated revoker? (y/N): "))
+	continue;
+
+      /* todo: handle 0x40 sensitive flag here */
+      revkey.class=0x80;
+      revkey.algid=revoker_pk->pubkey_algo;
+      free_public_key(revoker_pk);
+      break;
+    }
+
+  rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x1F, 0, 0, 0, 0,
+			   keygen_add_revkey,&revkey );
+  if( rc )
+    {
+      log_error("signing failed: %s\n", g10_errstr(rc) );
+      goto fail;
+    }
+
+  free_secret_key(sk);
+  sk=NULL;
+
+  /* insert into secret keyblock */
+  pkt = m_alloc_clear( sizeof *pkt );
+  pkt->pkttype = PKT_SIGNATURE;
+  pkt->pkt.signature = copy_signature(NULL, sig);
+  insert_kbnode( sec_keyblock, new_kbnode(pkt), PKT_SIGNATURE );
+
+  /* insert into public keyblock */
+  pkt = m_alloc_clear( sizeof *pkt );
+  pkt->pkttype = PKT_SIGNATURE;
+  pkt->pkt.signature = sig;
+  insert_kbnode( pub_keyblock, new_kbnode(pkt), PKT_SIGNATURE );
+
+  return 1;
+
+ fail:
+  if(sk)
+    free_secret_key(sk);
+  if(sig)
+    free_seckey_enc(sig);
+  if(revoker_pk)
+    free_public_key(revoker_pk);
+
+  return 0;
+}
 
 
 static int
@@ -1495,7 +2349,7 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	else if( node->pkt->pkttype == PKT_USER_ID )
 	    uid = node->pkt->pkt.user_id;
 	else if( main_pk && node->pkt->pkttype == PKT_SIGNATURE
-		 && (mainkey || sub_pk )  ) {
+		 && ( mainkey || sub_pk ) ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
 		&& (	(mainkey && uid && (sig->sig_class&~3) == 0x10)
@@ -1532,31 +2386,31 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 		/* create new self signature */
 		if( mainkey )
 		    rc = make_keysig_packet( &newsig, main_pk, uid, NULL,
-					     sk, 0x13, 0,
+					     sk, 0x13, 0, 0, 0, 0,
 					     keygen_add_std_prefs, main_pk );
 		else
 		    rc = make_keysig_packet( &newsig, main_pk, NULL, sub_pk,
-					     sk, 0x18, 0,
+					     sk, 0x18, 0, 0, 0, 0,
 					     keygen_add_key_expire, sub_pk );
 		if( rc ) {
 		    log_error("make_keysig_packet failed: %s\n",
-						    gpg_errstr(rc));
+						    g10_errstr(rc));
 		    free_secret_key( sk );
 		    return 0;
 		}
 		/* replace the packet */
-		newpkt = gcry_xcalloc( 1, sizeof *newpkt );
+		newpkt = m_alloc_clear( sizeof *newpkt );
 		newpkt->pkttype = PKT_SIGNATURE;
 		newpkt->pkt.signature = newsig;
 		free_packet( node->pkt );
-		gcry_free( node->pkt );
+		m_free( node->pkt );
 		node->pkt = newpkt;
 		if( sn ) {
-		    newpkt = gcry_xcalloc( 1, sizeof *newpkt );
+		    newpkt = m_alloc_clear( sizeof *newpkt );
 		    newpkt->pkttype = PKT_SIGNATURE;
 		    newpkt->pkt.signature = copy_signature( NULL, newsig );
 		    free_packet( sn->pkt );
-		    gcry_free( sn->pkt );
+		    m_free( sn->pkt );
 		    sn->pkt = newpkt;
 		}
 		sub_pk = NULL;
@@ -1565,7 +2419,233 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
     }
 
     free_secret_key( sk );
+    update_trust=1;
     return 1;
+}
+
+static int
+change_primary_uid_cb ( PKT_signature *sig, void *opaque )
+{
+    byte buf[1];
+
+    /* first clear all primary uid flags so that we are sure none are
+     * lingering around */
+    delete_sig_subpkt (sig->hashed,   SIGSUBPKT_PRIMARY_UID);
+    delete_sig_subpkt (sig->unhashed, SIGSUBPKT_PRIMARY_UID);
+
+    /* if opaque is set,we want to set the primary id */
+    if (opaque) { 
+        buf[0] = 1;
+        build_sig_subpkt (sig, SIGSUBPKT_PRIMARY_UID, buf, 1 );
+    }
+
+    return 0;
+}
+
+
+/*
+ * Set the primary uid flag for the selected UID.  We will also reset
+ * all other primary uid flags.  For this to work with have to update
+ * all the signature timestamps.  If we would do this with the current
+ * time, we lose quite a lot of information, so we use a a kludge to
+ * do this: Just increment the timestamp by one second which is
+ * sufficient to updated a signature during import.
+ */
+static int
+menu_set_primary_uid ( KBNODE pub_keyblock, KBNODE sec_keyblock )
+{
+    PKT_secret_key *sk;    /* copy of the main sk */
+    PKT_public_key *main_pk;
+    PKT_user_id *uid;
+    KBNODE node;
+    u32 keyid[2];
+    int selected;
+    int attribute = 0;
+    int modified = 0;
+
+    if ( count_selected_uids (pub_keyblock) != 1 ) {
+	tty_printf(_("Please select exactly one user ID.\n"));
+	return 0;
+    }
+
+    node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
+    sk = copy_secret_key( NULL, node->pkt->pkt.secret_key);
+
+    /* Now we can actually change the self signature(s) */
+    main_pk = NULL;
+    uid = NULL;
+    selected = 0;
+
+    /* Is our selected uid an attribute packet? */
+    for ( node=pub_keyblock; node; node = node->next )
+      if (node->pkt->pkttype == PKT_USER_ID && node->flag & NODFLG_SELUID)
+	attribute = (node->pkt->pkt.user_id->attrib_data!=NULL);
+
+    for ( node=pub_keyblock; node; node = node->next ) {
+	if ( node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+            break; /* ready */
+
+	if ( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
+	    main_pk = node->pkt->pkt.public_key;
+	    keyid_from_pk( main_pk, keyid );
+	}
+	else if ( node->pkt->pkttype == PKT_USER_ID ) {
+	    uid = node->pkt->pkt.user_id;
+       	    selected = node->flag & NODFLG_SELUID;
+        }
+	else if ( main_pk && uid && node->pkt->pkttype == PKT_SIGNATURE ) {
+	    PKT_signature *sig = node->pkt->pkt.signature;
+	    if ( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
+		&& (uid && (sig->sig_class&~3) == 0x10)
+		&& attribute == (uid->attrib_data!=NULL)) {
+	      if(sig->version < 4) {
+		char *user=utf8_to_native(uid->name,strlen(uid->name),0);
+
+		log_info(_("skipping v3 self-signature on user id \"%s\"\n"),
+			 user);
+		m_free(user);
+	      }
+	      else {
+	        /* This is a selfsignature which is to be replaced.
+		   We can just ignore v3 signatures because they are
+		   not able to carry the primary ID flag.  We also
+		   ignore self-sigs on user IDs that are not of the
+		   same type that we are making primary.  That is, if
+		   we are making a user ID primary, we alter user IDs.
+		   If we are making an attribute packet primary, we
+		   alter attribute packets. */
+
+                /* FIXME: We must make sure that we only have one
+                   self-signature per user ID here (not counting
+                   revocations) */
+		PKT_signature *newsig;
+		PACKET *newpkt;
+                const byte *p;
+                int action;
+
+                /* see whether this signature has the primary UID flag */
+                p = parse_sig_subpkt (sig->hashed,
+                                      SIGSUBPKT_PRIMARY_UID, NULL );
+                if ( !p )
+                    p = parse_sig_subpkt (sig->unhashed,
+                                          SIGSUBPKT_PRIMARY_UID, NULL );
+                if ( p && *p ) /* yes */
+                    action = selected? 0 : -1;
+                else /* no */
+                    action = selected? 1 : 0;
+
+                if (action) {
+                    int rc = update_keysig_packet (&newsig, sig,
+                                               main_pk, uid, 
+                                               sk,
+                                               change_primary_uid_cb,
+                                               action > 0? "x":NULL );
+                    if( rc ) {
+                        log_error ("update_keysig_packet failed: %s\n",
+                                   g10_errstr(rc));
+                        free_secret_key( sk );
+                        return 0;
+                    }
+                    /* replace the packet */
+                    newpkt = m_alloc_clear( sizeof *newpkt );
+                    newpkt->pkttype = PKT_SIGNATURE;
+                    newpkt->pkt.signature = newsig;
+                    free_packet( node->pkt );
+                    m_free( node->pkt );
+                    node->pkt = newpkt;
+                    modified = 1;
+		}
+	      }
+	    }
+	}
+    }
+
+    free_secret_key( sk );
+    return modified;
+}
+
+
+/* 
+ * Set preferences to new values for the selected user IDs
+ */
+static int
+menu_set_preferences (KBNODE pub_keyblock, KBNODE sec_keyblock )
+{
+    PKT_secret_key *sk;    /* copy of the main sk */
+    PKT_public_key *main_pk;
+    PKT_user_id *uid;
+    KBNODE node;
+    u32 keyid[2];
+    int selected, select_all;
+    int modified = 0;
+
+    select_all = !count_selected_uids (pub_keyblock);
+
+    node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
+    sk = copy_secret_key( NULL, node->pkt->pkt.secret_key);
+
+    /* Now we can actually change the self signature(s) */
+    main_pk = NULL;
+    uid = NULL;
+    selected = 0;
+    for ( node=pub_keyblock; node; node = node->next ) {
+	if ( node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+            break; /* ready */
+
+	if ( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
+	    main_pk = node->pkt->pkt.public_key;
+	    keyid_from_pk( main_pk, keyid );
+	}
+	else if ( node->pkt->pkttype == PKT_USER_ID ) {
+	    uid = node->pkt->pkt.user_id;
+       	    selected = select_all || (node->flag & NODFLG_SELUID);
+        }
+	else if ( main_pk && uid && selected
+                  && node->pkt->pkttype == PKT_SIGNATURE ) {
+	    PKT_signature *sig = node->pkt->pkt.signature;
+	    if ( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
+		 && (uid && (sig->sig_class&~3) == 0x10) ) {
+	      if( sig->version < 4 ) {
+		char *user=utf8_to_native(uid->name,strlen(uid->name),0);
+
+		log_info(_("skipping v3 self-signature on user id \"%s\"\n"),
+			 user);
+		m_free(user);
+	      }
+	      else {
+		/* This is a selfsignature which is to be replaced 
+                 * We have to ignore v3 signatures because they are
+                 * not able to carry the preferences */
+		PKT_signature *newsig;
+		PACKET *newpkt;
+                int rc;
+
+                rc = update_keysig_packet (&newsig, sig,
+                                           main_pk, uid, 
+                                           sk,
+                                           keygen_upd_std_prefs,
+                                           NULL );
+                if( rc ) {
+                    log_error ("update_keysig_packet failed: %s\n",
+                               g10_errstr(rc));
+                    free_secret_key( sk );
+                    return 0;
+                }
+                /* replace the packet */
+                newpkt = m_alloc_clear( sizeof *newpkt );
+                newpkt->pkttype = PKT_SIGNATURE;
+                newpkt->pkt.signature = newsig;
+                free_packet( node->pkt );
+                m_free( node->pkt );
+                node->pkt = newpkt;
+                modified = 1;
+	      }
+            }
+	}
+    }
+    
+    free_secret_key( sk );
+    return modified;
 }
 
 
@@ -1717,6 +2797,21 @@ count_selected_keys( KBNODE keyblock )
     return count_keys_with_flag( keyblock, NODFLG_SELKEY);
 }
 
+/* returns how many real (i.e. not attribute) uids are unmarked */
+static int
+real_uids_left( KBNODE keyblock )
+{
+  KBNODE node;
+  int real=0;
+
+  for(node=keyblock;node;node=node->next)
+    if(node->pkt->pkttype==PKT_USER_ID && !(node->flag&NODFLG_SELUID) &&
+       !node->pkt->pkt.user_id->attrib_data)
+      real++;
+
+  return real;
+}
+
 /*
  * Ask whether the signature should be revoked.  If the user commits this,
  * flag bit MARK_A is set on the signature and the user ID.
@@ -1724,6 +2819,7 @@ count_selected_keys( KBNODE keyblock )
 static void
 ask_revoke_sig( KBNODE keyblock, KBNODE node )
 {
+    int doit=0;
     PKT_signature *sig = node->pkt->pkt.signature;
     KBNODE unode = find_prev_kbnode( keyblock, node, PKT_USER_ID );
 
@@ -1735,13 +2831,29 @@ ask_revoke_sig( KBNODE keyblock, KBNODE node )
     tty_printf(_("user ID: \""));
     tty_print_utf8_string( unode->pkt->pkt.user_id->name,
 			   unode->pkt->pkt.user_id->len );
-    tty_printf(_("\"\nsigned with your key %08lX at %s\n"),
-		sig->keyid[1], datestr_from_sig(sig) );
 
-    if( cpr_get_answer_is_yes("ask_revoke_sig.one",
-	 _("Create a revocation certificate for this signature? (y/N)")) ) {
-	node->flag |= NODFLG_MARK_A;
-	unode->flag |= NODFLG_MARK_A;
+    if(sig->flags.exportable)
+      tty_printf(_("\"\nsigned with your key %08lX at %s\n"),
+		 (ulong)sig->keyid[1], datestr_from_sig(sig) );
+    else
+      tty_printf(_("\"\nlocally signed with your key %08lX at %s\n"),
+		 (ulong)sig->keyid[1], datestr_from_sig(sig) );
+
+    if(sig->flags.expired)
+      {
+	tty_printf(_("This signature expired on %s.\n"),
+		   expirestr_from_sig(sig));
+	/* Use a different question so we can have different help text */
+	doit=cpr_get_answer_is_yes("ask_revoke_sig.expired",
+			_("Are you sure you still want to revoke it? (y/N) "));
+      }
+    else
+      doit=cpr_get_answer_is_yes("ask_revoke_sig.one",
+	      _("Create a revocation certificate for this signature? (y/N) "));
+
+    if(doit) {
+      node->flag |= NODFLG_MARK_A;
+      unode->flag |= NODFLG_MARK_A;
     }
 }
 
@@ -1758,7 +2870,6 @@ menu_revsig( KBNODE keyblock )
     PKT_public_key *primary_pk;
     KBNODE node;
     int changed = 0;
-    int upd_trust = 0;
     int rc, any;
     struct revocation_reason_info *reason = NULL;
 
@@ -1775,15 +2886,18 @@ menu_revsig( KBNODE keyblock )
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE
 		&& ((sig = node->pkt->pkt.signature),
-		     !seckey_available( sig->keyid )  ) ) {
+                     !seckey_available(sig->keyid)  ) ) {
 	    if( (sig->sig_class&~3) == 0x10 ) {
-		tty_printf(_("   signed by %08lX at %s\n"),
-			    sig->keyid[1], datestr_from_sig(sig) );
-		node->flag |= NODFLG_SELSIG;
+		tty_printf(_("   signed by %08lX at %s%s%s\n"),
+			   (ulong)sig->keyid[1], datestr_from_sig(sig),
+			   sig->flags.exportable?"":" (non-exportable)",
+			   sig->flags.revocable?"":" (non-revocable)");
+		if(sig->flags.revocable)
+		  node->flag |= NODFLG_SELSIG;
 	    }
 	    else if( sig->sig_class == 0x30 ) {
 		tty_printf(_("   revoked by %08lX at %s\n"),
-			    sig->keyid[1], datestr_from_sig(sig) );
+			    (ulong)sig->keyid[1], datestr_from_sig(sig) );
 	    }
 	}
     }
@@ -1812,15 +2926,16 @@ menu_revsig( KBNODE keyblock )
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE ) {
 	    sig = node->pkt->pkt.signature;
-	    tty_printf(_("   signed by %08lX at %s\n"),
-			    sig->keyid[1], datestr_from_sig(sig) );
+	    tty_printf(_("   signed by %08lX at %s%s\n"),
+ 		       (ulong)sig->keyid[1], datestr_from_sig(sig),
+		       sig->flags.exportable?"":_(" (non-exportable)") );
 	}
     }
     if( !any )
 	return 0; /* none selected */
 
     if( !cpr_get_answer_is_yes("ask_revoke_sig.okay",
-	 _("Really create the revocation certificates? (y/N)")) )
+	 _("Really create the revocation certificates? (y/N) ")) )
 	return 0; /* forget it */
 
     reason = ask_revocation_reason( 0, 1, 0 );
@@ -1845,9 +2960,10 @@ menu_revsig( KBNODE keyblock )
 
 	memset( &attrib, 0, sizeof attrib );
 	attrib.reason = reason;
+	attrib.non_exportable=!node->pkt->pkt.signature->flags.exportable;
 
 	node->flag &= ~NODFLG_MARK_A;
-	sk = gcry_xcalloc_secure( 1, sizeof *sk );
+	sk = m_alloc_secure_clear( sizeof *sk );
 	if( get_seckey( sk, node->pkt->pkt.signature->keyid ) ) {
 	    log_info(_("no secret key\n"));
 	    continue;
@@ -1856,27 +2972,25 @@ menu_revsig( KBNODE keyblock )
 				       unode->pkt->pkt.user_id,
 				       NULL,
 				       sk,
-				       0x30, 0,
+				       0x30, 0, 0, 0, 0,
 				       sign_mk_attrib,
 				       &attrib );
 	free_secret_key(sk);
 	if( rc ) {
-	    log_error(_("signing failed: %s\n"), gpg_errstr(rc));
+	    log_error(_("signing failed: %s\n"), g10_errstr(rc));
 	    release_revocation_reason_info( reason );
 	    return changed;
 	}
 	changed = 1; /* we changed the keyblock */
-	upd_trust = 1;
+	update_trust = 1;
 
-	pkt = gcry_xcalloc( 1, sizeof *pkt );
+	pkt = m_alloc_clear( sizeof *pkt );
 	pkt->pkttype = PKT_SIGNATURE;
 	pkt->pkt.signature = sig;
 	insert_kbnode( unode, new_kbnode(pkt), 0 );
 	goto reloop;
     }
 
-    if( upd_trust )
-	clear_trust_checked_flag( primary_pk );
     release_revocation_reason_info( reason );
     return changed;
 }
@@ -1892,7 +3006,6 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
     PKT_public_key *mainpk;
     KBNODE node;
     int changed = 0;
-    int upd_trust = 0;
     int rc;
     struct revocation_reason_info *reason = NULL;
 
@@ -1918,19 +3031,18 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
 
 	    node->flag &= ~NODFLG_SELKEY;
 	    sk = copy_secret_key( NULL, sec_keyblock->pkt->pkt.secret_key );
-	    rc = make_keysig_packet( &sig, mainpk, NULL, subpk, sk, 0x28, 0,
-				       sign_mk_attrib,
-				       &attrib );
+	    rc = make_keysig_packet( &sig, mainpk, NULL, subpk, sk,
+                                     0x28, 0, 0, 0, 0,
+				     sign_mk_attrib, &attrib );
 	    free_secret_key(sk);
 	    if( rc ) {
-		log_error(_("signing failed: %s\n"), gpg_errstr(rc));
+		log_error(_("signing failed: %s\n"), g10_errstr(rc));
 		release_revocation_reason_info( reason );
 		return changed;
 	    }
 	    changed = 1; /* we changed the keyblock */
-	    upd_trust = 1;
 
-	    pkt = gcry_xcalloc( 1, sizeof *pkt );
+	    pkt = m_alloc_clear( sizeof *pkt );
 	    pkt->pkttype = PKT_SIGNATURE;
 	    pkt->pkt.signature = sig;
 	    insert_kbnode( node, new_kbnode(pkt), 0 );
@@ -1940,8 +3052,9 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
     commit_kbnode( &pub_keyblock );
     /*commit_kbnode( &sec_keyblock );*/
 
-    if( upd_trust )
-	clear_trust_checked_flag( mainpk );
+    /* No need to set update_trust here since signing keys no longer
+       are used to certify other keys, so there is no change in trust
+       when revoking/removing them */
 
     release_revocation_reason_info( reason );
     return changed;
@@ -1951,20 +3064,67 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
 static int
 enable_disable_key( KBNODE keyblock, int disable )
 {
-    ulong lid = find_kbnode( keyblock, PKT_PUBLIC_KEY )
-			    ->pkt->pkt.public_key->local_id;
+    PKT_public_key *pk = find_kbnode( keyblock, PKT_PUBLIC_KEY )
+			    ->pkt->pkt.public_key;
     unsigned int trust, newtrust;
 
-    /* Note: Because the keys have beed displayed, we have
-     * ensured that local_id has been set */
-    trust = newtrust = get_ownertrust( lid );
+    trust = newtrust = get_ownertrust (pk);
     newtrust &= ~TRUST_FLAG_DISABLED;
     if( disable )
 	newtrust |= TRUST_FLAG_DISABLED;
     if( trust == newtrust )
 	return 0; /* already in that state */
-    if( !update_ownertrust( lid, newtrust ) )
-	return 1;
+    update_ownertrust(pk, newtrust );
     return 0;
 }
 
+
+static void
+menu_showphoto( KBNODE keyblock )
+{
+  KBNODE node;
+  int select_all = !count_selected_uids(keyblock);
+  int count=0;
+  PKT_public_key *pk=NULL;
+  u32 keyid[2];
+
+  /* Look for the public key first.  We have to be really, really,
+     explicit as to which photo this is, and what key it is a UID on
+     since people may want to sign it. */
+
+  for( node = keyblock; node; node = node->next )
+    {
+      if( node->pkt->pkttype == PKT_PUBLIC_KEY )
+	{
+	  pk = node->pkt->pkt.public_key;
+	  keyid_from_pk(pk, keyid);
+	}
+      else if( node->pkt->pkttype == PKT_USER_ID )
+	{
+	  PKT_user_id *uid = node->pkt->pkt.user_id;
+	  count++;
+
+	  if((select_all || (node->flag & NODFLG_SELUID)) &&
+	     uid->attribs!=NULL)
+	    {
+	      int i;
+
+	      for(i=0;i<uid->numattribs;i++)
+		{
+		  byte type;
+		  u32 size;
+
+		  if(uid->attribs[i].type==ATTRIB_IMAGE &&
+		     parse_image_header(&uid->attribs[i],&type,&size))
+		    {
+		      tty_printf(_("Displaying %s photo ID of size %ld for "
+				   "key 0x%08lX (uid %d)\n"),
+				 image_type_to_string(type,1),
+				 (ulong)size,(ulong)keyid[1],count);
+		      show_photos(&uid->attribs[i],1,pk,NULL);
+		    }
+		}
+	    }
+	}
+    }
+}

@@ -1,5 +1,5 @@
 /* build-packet.c - assemble packets and write them
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,13 +24,14 @@
 #include <string.h>
 #include <assert.h>
 
-#include <gcrypt.h>
 #include "packet.h"
 #include "errors.h"
 #include "iobuf.h"
+#include "mpi.h"
 #include "util.h"
+#include "cipher.h"
+#include "memory.h"
 #include "options.h"
-#include "main.h"
 
 
 static int do_comment( IOBUF out, int ctb, PKT_comment *rem );
@@ -80,8 +81,8 @@ build_packet( IOBUF out, PACKET *pkt )
       case PKT_ENCRYPTED_MDC: new_ctb = pkt->pkt.encrypted->new_ctb; break;
       case PKT_COMPRESSED:new_ctb = pkt->pkt.compressed->new_ctb; break;
       case PKT_USER_ID:
-	    if( pkt->pkt.user_id->photo )
-		pkttype = PKT_PHOTO_ID;
+	    if( pkt->pkt.user_id->attrib_data )
+		pkttype = PKT_ATTRIBUTE;
 	    break;
       default: break;
     }
@@ -91,7 +92,7 @@ build_packet( IOBUF out, PACKET *pkt )
     else
 	ctb = 0x80 | ((pkttype & 15)<<2);
     switch( pkttype ) {
-      case PKT_PHOTO_ID:
+      case PKT_ATTRIBUTE:
       case PKT_USER_ID:
 	rc = do_user_id( out, ctb, pkt->pkt.user_id );
 	break;
@@ -134,7 +135,7 @@ build_packet( IOBUF out, PACKET *pkt )
 	rc = do_onepass_sig( out, ctb, pkt->pkt.onepass_sig );
 	break;
       case PKT_RING_TRUST:
-	break; /* ignore it */
+	break; /* ignore it (keyring.c does write it directly)*/
       default:
 	log_bug("invalid packet type in build_packet()\n");
 	break;
@@ -158,7 +159,7 @@ calc_packet_length( PACKET *pkt )
 	n = calc_plaintext( pkt->pkt.plaintext );
 	new_ctb = pkt->pkt.plaintext->new_ctb;
 	break;
-      case PKT_PHOTO_ID:
+      case PKT_ATTRIBUTE:
       case PKT_USER_ID:
       case PKT_COMMENT:
       case PKT_PUBLIC_KEY:
@@ -195,10 +196,10 @@ write_fake_data( IOBUF out, MPI a )
 static int
 do_comment( IOBUF out, int ctb, PKT_comment *rem )
 {
-    if( !opt.no_comment ) {
+    if( opt.sk_comments ) {
 	write_header(out, ctb, rem->len);
 	if( iobuf_write( out, rem->data, rem->len ) )
-	    return GPGERR_WRITE_FILE;
+	    return G10ERR_WRITE_FILE;
     }
     return 0;
 }
@@ -206,19 +207,15 @@ do_comment( IOBUF out, int ctb, PKT_comment *rem )
 static int
 do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 {
-    if( uid->photo ) {
-	write_header(out, ctb, uid->photolen);
-	uid->stored_at = iobuf_get_temp_length ( out ); /* what a hack ... */
-		  /* ... and it does only work when used with a temp iobuf */
-	if( iobuf_write( out, uid->photo, uid->photolen ) )
-	    return GPGERR_WRITE_FILE;
+    if( uid->attrib_data ) {
+	write_header(out, ctb, uid->attrib_len);
+	if( iobuf_write( out, uid->attrib_data, uid->attrib_len ) )
+	    return G10ERR_WRITE_FILE;
     }
     else {
 	write_header(out, ctb, uid->len);
-	uid->stored_at = iobuf_get_temp_length ( out ); /* what a hack ... */
-		  /* ... and it does only work when used with a temp iobuf */
 	if( iobuf_write( out, uid->name, uid->len ) )
-	    return GPGERR_WRITE_FILE;
+	    return G10ERR_WRITE_FILE;
     }
     return 0;
 }
@@ -252,7 +249,7 @@ do_public_key( IOBUF out, int ctb, PKT_public_key *pk )
 
     write_header2(out, ctb, iobuf_get_temp_length(a), pk->hdrbytes, 1 );
     if( iobuf_write_temp( out, a ) )
-	rc = GPGERR_WRITE_FILE;
+	rc = G10ERR_WRITE_FILE;
 
     iobuf_close(a);
     return rc;
@@ -263,7 +260,7 @@ do_public_key( IOBUF out, int ctb, PKT_public_key *pk )
  * Make a hash value from the public key certificate
  */
 void
-hash_public_key( GCRY_MD_HD md, PKT_public_key *pk )
+hash_public_key( MD_HANDLE md, PKT_public_key *pk )
 {
     PACKET pkt;
     int rc = 0;
@@ -283,7 +280,7 @@ hash_public_key( GCRY_MD_HD md, PKT_public_key *pk )
     pkt.pkttype = PKT_PUBLIC_KEY;
     pkt.pkt.public_key = pk;
     if( (rc = build_packet( a, &pkt )) )
-	log_fatal("build public_key for hashing failed: %s\n", gpg_errstr(rc));
+	log_fatal("build public_key for hashing failed: %s\n", g10_errstr(rc));
 
     if( !(pk->version == 3 && pk->pubkey_algo == 16) ) {
 	/* skip the constructed header but don't do this for our very old
@@ -314,10 +311,10 @@ hash_public_key( GCRY_MD_HD md, PKT_public_key *pk )
 	    }
 	}
 	/* hash a header */
-	gcry_md_putc( md, 0x99 );
+	md_putc( md, 0x99 );
 	pktlen &= 0xffff; /* can't handle longer packets */
-	gcry_md_putc( md, pktlen >> 8 );
-	gcry_md_putc( md, pktlen & 0xff );
+	md_putc( md, pktlen >> 8 );
+	md_putc( md, pktlen & 0xff );
     }
     /* hash the packet body */
     while( (c=iobuf_get(a)) != -1 ) {
@@ -328,7 +325,7 @@ hash_public_key( GCRY_MD_HD md, PKT_public_key *pk )
 	    i=0;
 	}
       #endif
-	gcry_md_putc( md, c );
+	md_putc( md, c );
     }
   #if 0
     putc('\n', fp);
@@ -343,43 +340,64 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 {
     int rc = 0;
     int i, nskey, npkey;
-    IOBUF a = iobuf_temp();
+    IOBUF a = iobuf_temp(); /* build in a self-enlarging buffer */
 
+    /* Write the version number - if none is specified, use 3 */
     if( !sk->version )
 	iobuf_put( a, 3 );
     else
 	iobuf_put( a, sk->version );
     write_32(a, sk->timestamp );
+
+    /* v3  needs the expiration time */
     if( sk->version < 4 ) {
 	u16 ndays;
 	if( sk->expiredate )
 	    ndays = (u16)((sk->expiredate - sk->timestamp) / 86400L);
 	else
 	    ndays = 0;
-	write_16(a, 0 );
+	write_16(a, ndays);
     }
+
     iobuf_put(a, sk->pubkey_algo );
+
+    /* get number of secret and public parameters.  They are held in
+       one array first the public ones, then the secret ones */
     nskey = pubkey_get_nskey( sk->pubkey_algo );
     npkey = pubkey_get_npkey( sk->pubkey_algo );
+
+    /* If we don't have any public parameters - which is the case if
+       we don't know the algorithm used - the parameters are stored as
+       one blob in a faked (opaque) MPI */
     if( !npkey ) {
 	write_fake_data( a, sk->skey[0] );
 	goto leave;
     }
     assert( npkey < nskey );
 
+    /* Writing the public parameters is easy */
     for(i=0; i < npkey; i++ )
 	mpi_write(a, sk->skey[i] );
+
+    /* build the header for protected (encrypted) secret parameters */
     if( sk->is_protected ) {
 	if( is_RSA(sk->pubkey_algo) && sk->version < 4
 				    && !sk->protect.s2k.mode ) {
+            /* the simple rfc1991 (v3) way */
 	    iobuf_put(a, sk->protect.algo );
 	    iobuf_write(a, sk->protect.iv, sk->protect.ivlen );
 	}
 	else {
-	    iobuf_put(a, 0xff );
+          /* OpenPGP protection according to rfc2440 */
+	    iobuf_put(a, sk->protect.sha1chk? 0xfe : 0xff );
 	    iobuf_put(a, sk->protect.algo );
 	    if( sk->protect.s2k.mode >= 1000 ) {
-		iobuf_put(a, 101 );
+                /* These modes are not possible in OpenPGP, we use them
+                   to implement our extesnsions, 101 can ve views as a
+                   private/experimental extension (this is not
+                   specified in rfc2440 but the same scheme is used
+                   for all other algorithm identifiers) */
+		iobuf_put(a, 101 ); 
 		iobuf_put(a, sk->protect.s2k.hash_algo );
 		iobuf_write(a, "GNU", 3 );
 		iobuf_put(a, sk->protect.s2k.mode - 1000 );
@@ -392,34 +410,41 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 		|| sk->protect.s2k.mode == 3 )
 		iobuf_write(a, sk->protect.s2k.salt, 8 );
 	    if( sk->protect.s2k.mode == 3 )
-		iobuf_put(a, sk->protect.s2k.count );
+		iobuf_put(a, sk->protect.s2k.count ); 
+
+            /* For out special mode 1001 we do not need an IV */
 	    if( sk->protect.s2k.mode != 1001 )
 		iobuf_write(a, sk->protect.iv, sk->protect.ivlen );
 	}
     }
     else
 	iobuf_put(a, 0 );
+
     if( sk->protect.s2k.mode == 1001 )
-	;
+        ; /* GnuPG extension - don't write a secret key at all */ 
     else if( sk->is_protected && sk->version >= 4 ) {
+        /* The secret key is protected - write it out as it is */
 	byte *p;
-	size_t n;
-	assert( gcry_mpi_get_flag( sk->skey[i], GCRYMPI_FLAG_OPAQUE ) );
-	p = gcry_mpi_get_opaque( sk->skey[i], &n );
-	iobuf_write(a, p, (n+7)/8 );
+	assert( mpi_is_opaque( sk->skey[npkey] ) );
+	p = mpi_get_opaque( sk->skey[npkey], &i );
+	iobuf_write(a, p, i );
     }
     else {
+        /* v3 way - same code for protected and non- protected key */
 	for(   ; i < nskey; i++ )
 	    mpi_write(a, sk->skey[i] );
 	write_16(a, sk->csum );
     }
 
   leave:
+    /* Build the header of the packet - which we must do after writing all
+       the other stuff, so that we know the length of the packet */
     write_header2(out, ctb, iobuf_get_temp_length(a), sk->hdrbytes, 1 );
+    /* And finally write it out the real stream */
     if( iobuf_write_temp( out, a ) )
-	rc = GPGERR_WRITE_FILE;
+	rc = G10ERR_WRITE_FILE;
 
-    iobuf_close(a);
+    iobuf_close(a); /* close the remporary buffer */
     return rc;
 }
 
@@ -448,7 +473,7 @@ do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
 
     write_header(out, ctb, iobuf_get_temp_length(a) );
     if( iobuf_write_temp( out, a ) )
-	rc = GPGERR_WRITE_FILE;
+	rc = G10ERR_WRITE_FILE;
 
     iobuf_close(a);
     return rc;
@@ -482,7 +507,7 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
 
     write_header(out, ctb, iobuf_get_temp_length(a) );
     if( iobuf_write_temp( out, a ) )
-	rc = GPGERR_WRITE_FILE;
+	rc = G10ERR_WRITE_FILE;
 
     iobuf_close(a);
     return rc;
@@ -511,12 +536,12 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
     for(i=0; i < pt->namelen; i++ )
 	iobuf_put(out, pt->name[i] );
     if( write_32(out, pt->timestamp ) )
-	rc = GPGERR_WRITE_FILE;
+	rc = G10ERR_WRITE_FILE;
 
     n = 0;
     while( (nbytes=iobuf_read(pt->buf, buf, 1000)) != -1 ) {
 	if( iobuf_write(out, buf, nbytes) == -1 ) {
-	    rc = GPGERR_WRITE_FILE;
+	    rc = G10ERR_WRITE_FILE;
 	    break;
 	}
 	n += nbytes;
@@ -539,7 +564,7 @@ do_encrypted( IOBUF out, int ctb, PKT_encrypted *ed )
     int rc = 0;
     u32 n;
 
-    n = ed->len ? (ed->len + 10) : 0;
+    n = ed->len ? (ed->len + ed->extralen) : 0;
     write_header(out, ctb, n );
 
     /* This is all. The caller has to write the real data */
@@ -555,7 +580,7 @@ do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed )
 
     assert( ed->mdc_method );
 
-    n = ed->len ? (ed->len + 10) : 0;
+    n = ed->len ? (ed->len + ed->extralen) : 0;
     write_header(out, ctb, n );
     iobuf_put(out, 1 );  /* version */
 
@@ -572,7 +597,7 @@ do_mdc( IOBUF out, PKT_mdc *mdc )
     iobuf_put( out, 0xd3 ); /* packet ID and 1 byte length */
     iobuf_put( out, 0x14 ); /* length = 20 */
     if( iobuf_write( out, mdc->hash, sizeof(mdc->hash) ) )
-	return GPGERR_WRITE_FILE;
+	return G10ERR_WRITE_FILE;
     return 0;
 }
 
@@ -591,36 +616,36 @@ do_compressed( IOBUF out, int ctb, PKT_compressed *cd )
 }
 
 
-
 /****************
- * Find a subpacket of type REQTYPE in BUFFER and a return a pointer
- * to the first byte of that subpacket data.
- * And return the length of the packet in RET_N and the number of
- * header bytes in RET_HLEN (length header and type byte).
+ * Delete all subpackets of type REQTYPE and return a bool whether a packet
+ * was deleted.
  */
-byte *
-find_subpkt( byte *buffer, sigsubpkttype_t reqtype,
-	     size_t *ret_hlen, size_t *ret_n )
+int
+delete_sig_subpkt (subpktarea_t *area, sigsubpkttype_t reqtype )
 {
     int buflen;
     sigsubpkttype_t type;
-    byte *bufstart;
+    byte *buffer, *bufstart;
     size_t n;
+    size_t unused = 0;
+    int okay = 0;
 
-    if( !buffer )
-	return NULL;
-    buflen = (*buffer << 8) | buffer[1];
-    buffer += 2;
+    if( !area )
+	return 0;
+    buflen = area->len;
+    buffer = area->data;
     for(;;) {
-	if( !buflen )
-	    return NULL; /* end of packets; not found */
+	if( !buflen ) {
+            okay = 1;
+            break;
+        }
 	bufstart = buffer;
 	n = *buffer++; buflen--;
 	if( n == 255 ) {
 	    if( buflen < 4 )
 		break;
 	    n = (buffer[0] << 24) | (buffer[1] << 16)
-				  | (buffer[2] << 8) | buffer[3];
+                | (buffer[2] << 8) | buffer[3];
 	    buffer += 4;
 	    buflen -= 4;
 	}
@@ -633,137 +658,175 @@ find_subpkt( byte *buffer, sigsubpkttype_t reqtype,
 	}
 	if( buflen < n )
 	    break;
+        
 	type = *buffer & 0x7f;
 	if( type == reqtype ) {
 	    buffer++;
+            buflen--;
 	    n--;
 	    if( n > buflen )
 		break;
-	    if( ret_hlen )
-		*ret_hlen = buffer - bufstart;
-	    if( ret_n )
-		*ret_n = n;
-	    return buffer;
+            buffer += n; /* point to next subpkt */
+            buflen -= n;
+            memmove (bufstart, buffer, buflen); /* shift */
+            unused +=  buffer - bufstart;
+            buffer = bufstart;
 	}
-	buffer += n; buflen -=n;
+        else {
+            buffer += n; buflen -=n;
+        }
     }
 
-    log_error("find_subpkt: buffer shorter than subpacket\n");
-    return NULL;
+    if (!okay)
+        log_error ("delete_subpkt: buffer shorter than subpacket\n");
+    assert (unused <= area->len);
+    area->len -= unused;
+    return !!unused;
 }
 
 
 /****************
- * Create or update a signature subpacket for SIG of TYPE.
- * This functions knows where to put the data (hashed or unhashed).
- * The function may move data from the unhased part to the hashed one.
- * Note: All pointers into sig->[un]hashed are not valid after a call
- * to this function.  The data to but into the subpaket should be
- * in buffer with a length of buflen.
+ * Create or update a signature subpacket for SIG of TYPE.  This
+ * functions knows where to put the data (hashed or unhashed).  The
+ * function may move data from the unhashed part to the hashed one.
+ * Note: All pointers into sig->[un]hashed (e.g. returned by
+ * parse_sig_subpkt) are not valid after a call to this function.  The
+ * data to put into the subpaket should be in a buffer with a length
+ * of buflen. 
  */
 void
-build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
+build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
 		  const byte *buffer, size_t buflen )
 {
-    byte *data;
-    size_t hlen, dlen, nlen;
-    int found=0;
-    int critical, hashed, realloced;
-    size_t n, n0;
+    byte *p;
+    int critical, hashed;
+    subpktarea_t *oldarea, *newarea;
+    size_t nlen, n, n0;
 
     critical = (type & SIGSUBPKT_FLAG_CRITICAL);
     type &= ~SIGSUBPKT_FLAG_CRITICAL;
 
-    if( type == SIGSUBPKT_NOTATION )
-	; /* we allow multiple packets */
-    else if( (data = find_subpkt( sig->hashed_data, type, &hlen, &dlen )) )
-	found = 1;
-    else if( (data = find_subpkt( sig->unhashed_data, type, &hlen, &dlen )))
-	found = 2;
+    /* Sanity check buffer sizes */
+    if(parse_one_sig_subpkt(buffer,buflen,type)<0)
+      BUG();
 
-    if( found )
-	log_bug("build_sig_packet: update nyi\n");
-    if( (buflen+1) >= 8384 )
-	nlen = 5;
-    else if( (buflen+1) >= 192 )
-	nlen = 2;
-    else
-	nlen = 1;
-
-    switch( type ) {
-      case SIGSUBPKT_SIG_CREATED:
-      case SIGSUBPKT_PRIV_ADD_SIG:
-      case SIGSUBPKT_PREF_SYM:
-      case SIGSUBPKT_PREF_HASH:
-      case SIGSUBPKT_PREF_COMPR:
-      case SIGSUBPKT_KS_FLAGS:
-      case SIGSUBPKT_KEY_EXPIRE:
+    switch(type)
+      {
       case SIGSUBPKT_NOTATION:
       case SIGSUBPKT_POLICY:
-      case SIGSUBPKT_REVOC_REASON:
-      case SIGSUBPKT_KEY_FLAGS:
-      case SIGSUBPKT_FEATURES:
-	       hashed = 1; break;
-      default: hashed = 0; break;
-    }
+      case SIGSUBPKT_REV_KEY:
+	/* we do allow multiple subpackets */
+	break;
 
-    if( hashed ) {
-	n0 = sig->hashed_data ? ((*sig->hashed_data << 8)
-				    | sig->hashed_data[1]) : 0;
-	n = n0 + nlen + 1 + buflen; /* length, type, buffer */
-	realloced = !!sig->hashed_data;
-	data = sig->hashed_data ? gcry_xrealloc( sig->hashed_data, n+2 )
-				: gcry_xmalloc( n+2 );
-    }
-    else {
-	n0 = sig->unhashed_data ? ((*sig->unhashed_data << 8)
-				      | sig->unhashed_data[1]) : 0;
-	n = n0 + nlen + 1 + buflen; /* length, type, buffer */
-	realloced = !!sig->unhashed_data;
-	data = sig->unhashed_data ? gcry_xrealloc( sig->unhashed_data, n+2 )
-				  : gcry_xmalloc( n+2 );
+      default:
+	/* we don't allow multiple subpackets */
+	delete_sig_subpkt(sig->hashed,type);
+	delete_sig_subpkt(sig->unhashed,type);
+	break;
+      }
+
+    /* Any special magic that needs to be done for this type so the
+       packet doesn't need to be reparsed? */
+    switch(type)
+      {
+      case SIGSUBPKT_NOTATION:
+	sig->flags.notation=1;
+	break;
+
+      case SIGSUBPKT_POLICY:
+	sig->flags.policy_url=1;
+	break;
+
+      case SIGSUBPKT_EXPORTABLE:
+	if(buffer[0])
+	  sig->flags.exportable=1;
+	else
+	  sig->flags.exportable=0;
+	break;
+
+      case SIGSUBPKT_REVOCABLE:
+	if(buffer[0])
+	  sig->flags.revocable=1;
+	else
+	  sig->flags.revocable=0;
+	break;
+
+      default:
+	break;
+      }
+
+    if( (buflen+1) >= 8384 )
+	nlen = 5; /* write 5 byte length header */
+    else if( (buflen+1) >= 192 )
+	nlen = 2; /* write 2 byte length header */
+    else
+	nlen = 1; /* just a 1 byte length header */
+
+    switch( type ) {
+      case SIGSUBPKT_ISSUER:
+      case SIGSUBPKT_PRIV_VERIFY_CACHE: /*(obsolete)*/
+        hashed = 0;
+        break;
+      default: 
+        hashed = 1;
+        break;
     }
 
     if( critical )
 	type |= SIGSUBPKT_FLAG_CRITICAL;
 
-    data[0] = (n >> 8) & 0xff;
-    data[1] = n & 0xff;
-    if( nlen == 5 ) {
-	data[n0+2] = 255;
-	data[n0+3] = (buflen+1) >> 24;
-	data[n0+4] = (buflen+1) >> 16;
-	data[n0+5] = (buflen+1) >>  8;
-	data[n0+6] = (buflen+1);
-	data[n0+7] = type;
-	memcpy(data+n0+8, buffer, buflen );
+    oldarea = hashed? sig->hashed : sig->unhashed;
+
+    /* Calculate new size of the area and allocate */
+    n0 = oldarea? oldarea->len : 0;
+    n = n0 + nlen + 1 + buflen; /* length, type, buffer */
+    if (oldarea && n <= oldarea->size) { /* fits into the unused space */
+        newarea = oldarea;
+        /*log_debug ("updating area for type %d\n", type );*/
     }
-    else if( nlen == 2 ) {
-	data[n0+2] = (buflen+1-192) / 256 + 192;
-	data[n0+3] = (buflen+1-192) & 256;
-	data[n0+4] = type;
-	memcpy(data+n0+5, buffer, buflen );
+    else if (oldarea) {
+        newarea = m_realloc (oldarea, sizeof (*newarea) + n - 1);
+        newarea->size = n;
+        /*log_debug ("reallocating area for type %d\n", type );*/
     }
     else {
-	data[n0+2] = buflen+1;
-	data[n0+3] = type;
-	memcpy(data+n0+4, buffer, buflen );
+        newarea = m_alloc (sizeof (*newarea) + n - 1);
+        newarea->size = n;
+        /*log_debug ("allocating area for type %d\n", type );*/
+    }
+    newarea->len = n;
+
+    p = newarea->data + n0;
+    if (nlen == 5) {
+	*p++ = 255;
+	*p++ = (buflen+1) >> 24;
+	*p++ = (buflen+1) >> 16;
+	*p++ = (buflen+1) >>  8;
+	*p++ = (buflen+1);
+	*p++ = type;
+	memcpy (p, buffer, buflen);
+    }
+    else if (nlen == 2) {
+	*p++ = (buflen+1-192) / 256 + 192;
+	*p++ = (buflen+1-192) % 256;
+	*p++ = type;
+	memcpy (p, buffer, buflen);
+    }
+    else {
+	*p++ = buflen+1;
+	*p++ = type;
+	memcpy (p, buffer, buflen);
     }
 
-    if( hashed ) {
-	if( !realloced )
-	    gcry_free(sig->hashed_data);
-	sig->hashed_data = data;
-    }
-    else {
-	if( !realloced )
-	    gcry_free(sig->unhashed_data);
-	sig->unhashed_data = data;
-    }
+    if (hashed) 
+	sig->hashed = newarea;
+    else
+	sig->unhashed = newarea;
 }
 
 /****************
  * Put all the required stuff from SIG into subpackets of sig.
+ * Hmmm, should we delete those subpackets which are in a wrong area?
  */
 void
 build_sig_subpkt_from_sig( PKT_signature *sig )
@@ -789,8 +852,70 @@ build_sig_subpkt_from_sig( PKT_signature *sig )
     buf[2] = (u >>  8) & 0xff;
     buf[3] = u & 0xff;
     build_sig_subpkt( sig, SIGSUBPKT_SIG_CREATED, buf, 4 );
+
+    if(sig->expiredate)
+      {
+	u = sig->expiredate-sig->timestamp;
+	buf[0] = (u >> 24) & 0xff;
+	buf[1] = (u >> 16) & 0xff;
+	buf[2] = (u >>  8) & 0xff;
+	buf[3] = u & 0xff;
+
+	/* Mark this CRITICAL, so if any implementation doesn't
+           understand sigs that can expire, it'll just disregard this
+           sig altogether. */
+
+	build_sig_subpkt( sig, SIGSUBPKT_SIG_EXPIRE | SIGSUBPKT_FLAG_CRITICAL,
+			  buf, 4 );
+      }
 }
 
+void
+build_attribute_subpkt(PKT_user_id *uid,byte type,
+		       const void *buf,int buflen,
+		       const void *header,int headerlen)
+{
+  byte *attrib;
+  int idx;
+
+  if(1+headerlen+buflen>8383)
+    idx=5;
+  else if(1+headerlen+buflen>191)
+    idx=2;
+  else
+    idx=1;
+
+  /* realloc uid->attrib_data to the right size */
+
+  uid->attrib_data=m_realloc(uid->attrib_data,
+			     uid->attrib_len+idx+1+headerlen+buflen);
+
+  attrib=&uid->attrib_data[uid->attrib_len];
+
+  if(idx==5)
+    {
+      attrib[0]=255;
+      attrib[1]=(1+headerlen+buflen) >> 24;
+      attrib[2]=(1+headerlen+buflen) >> 16;
+      attrib[3]=(1+headerlen+buflen) >> 8;
+      attrib[4]=1+headerlen+buflen;
+    }
+  else if(idx==2)
+    {
+      attrib[0]=(1+headerlen+buflen-192) / 256 + 192;
+      attrib[1]=(1+headerlen+buflen-192) % 256;
+    }
+  else
+    attrib[0]=1+headerlen+buflen; /* Good luck finding a JPEG this small! */
+
+  attrib[idx++]=type;
+
+  /* Tack on our data at the end */
+
+  memcpy(&attrib[idx],header,headerlen);
+  memcpy(&attrib[idx+headerlen],buf,buflen);
+  uid->attrib_len+=idx+headerlen+buflen;
+}
 
 static int
 do_signature( IOBUF out, int ctb, PKT_signature *sig )
@@ -818,16 +943,14 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
 	/* timestamp and keyid must have been packed into the
 	 * subpackets prior to the call of this function, because
 	 * these subpackets are hashed */
-	nn = sig->hashed_data?((sig->hashed_data[0]<<8)
-				|sig->hashed_data[1])	:0;
+	nn = sig->hashed? sig->hashed->len : 0;
 	write_16(a, nn);
 	if( nn )
-	    iobuf_write( a, sig->hashed_data+2, nn );
-	nn = sig->unhashed_data?((sig->unhashed_data[0]<<8)
-				  |sig->unhashed_data[1])   :0;
+	    iobuf_write( a, sig->hashed->data, nn );
+	nn = sig->unhashed? sig->unhashed->len : 0;
 	write_16(a, nn);
 	if( nn )
-	    iobuf_write( a, sig->unhashed_data+2, nn );
+	    iobuf_write( a, sig->unhashed->data, nn );
     }
     iobuf_put(a, sig->digest_start[0] );
     iobuf_put(a, sig->digest_start[1] );
@@ -842,7 +965,7 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
     else
 	write_header(out, ctb, iobuf_get_temp_length(a) );
     if( iobuf_write_temp( out, a ) )
-	rc = GPGERR_WRITE_FILE;
+	rc = G10ERR_WRITE_FILE;
 
     iobuf_close(a);
     return rc;
@@ -865,7 +988,7 @@ do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops )
 
     write_header(out, ctb, iobuf_get_temp_length(a) );
     if( iobuf_write_temp( out, a ) )
-	rc = GPGERR_WRITE_FILE;
+	rc = G10ERR_WRITE_FILE;
 
     iobuf_close(a);
     return rc;

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+exec scripts/autogen.sh --build-w32
+
+
+

@@ -1,5 +1,5 @@
 /* compress.c - compress filter
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -27,10 +27,11 @@
 #include <errno.h>
 #include <zlib.h>
 
-#include <gcrypt.h>
 #include "util.h"
+#include "memory.h"
 #include "packet.h"
 #include "filter.h"
+#include "main.h"
 #include "options.h"
 
 
@@ -63,7 +64,7 @@ init_compress( compress_filter_context_t *zfx, z_stream *zs )
     }
 
     zfx->outbufsize = 8192;
-    zfx->outbuf = gcry_xmalloc( zfx->outbufsize );
+    zfx->outbuf = m_alloc( zfx->outbufsize );
 }
 
 static int
@@ -73,7 +74,11 @@ do_compress( compress_filter_context_t *zfx, z_stream *zs, int flush, IOBUF a )
     unsigned n;
 
     do {
+#ifndef __riscos__
 	zs->next_out = zfx->outbuf;
+#else /* __riscos__ */
+	zs->next_out = (Bytef *) zfx->outbuf;
+#endif /* __riscos__ */
 	zs->avail_out = zfx->outbufsize;
 	if( DBG_FILTER )
 	    log_debug("enter deflate: avail_in=%u, avail_out=%u, flush=%d\n",
@@ -96,7 +101,7 @@ do_compress( compress_filter_context_t *zfx, z_stream *zs, int flush, IOBUF a )
 
 	if( iobuf_write( a, zfx->outbuf, n ) ) {
 	    log_debug("deflate: iobuf_write failed\n");
-	    return GPGERR_WRITE_FILE;
+	    return G10ERR_WRITE_FILE;
 	}
     } while( zs->avail_in || (flush == Z_FINISH && zrc != Z_STREAM_END) );
     return 0;
@@ -121,7 +126,7 @@ init_uncompress( compress_filter_context_t *zfx, z_stream *zs )
     }
 
     zfx->inbufsize = 2048;
-    zfx->inbuf = gcry_xmalloc( zfx->inbufsize );
+    zfx->inbuf = m_alloc( zfx->inbufsize );
     zs->avail_in = 0;
 }
 
@@ -143,7 +148,11 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
 	if( zs->avail_in < zfx->inbufsize && refill ) {
 	    n = zs->avail_in;
 	    if( !n )
+#ifndef __riscos__
 		zs->next_in = zfx->inbuf;
+#else /* __riscos__ */
+		zs->next_in = (Bytef *) zfx->inbuf;
+#endif /* __riscos__ */
 	    count = zfx->inbufsize - n;
 	    nread = iobuf_read( a, zfx->inbuf + n, count );
 	    if( nread == -1 ) nread = 0;
@@ -196,12 +205,16 @@ compress_filter( void *opaque, int control,
 
     if( control == IOBUFCTRL_UNDERFLOW ) {
 	if( !zfx->status ) {
-	    zs = zfx->opaque = gcry_xcalloc( 1, sizeof *zs );
+	    zs = zfx->opaque = m_alloc_clear( sizeof *zs );
 	    init_uncompress( zfx, zs );
 	    zfx->status = 1;
 	}
 
+#ifndef __riscos__
 	zs->next_out = buf;
+#else /* __riscos__ */
+	zs->next_out = (Bytef *) buf;
+#endif /* __riscos__ */
 	zs->avail_out = size;
 	zfx->outbufsize = size; /* needed only for calculation */
 	rc = do_uncompress( zfx, zs, a, ret_len );
@@ -212,7 +225,9 @@ compress_filter( void *opaque, int control,
 	    PKT_compressed cd;
 
 	    if( !zfx->algo )
-		zfx->algo = opt.def_compress_algo;
+	        zfx->algo = DEFAULT_COMPRESS_ALGO;
+	    if( zfx->algo != 1 && zfx->algo != 2 )
+	      BUG();
 	    memset( &cd, 0, sizeof cd );
 	    cd.len = 0;
 	    cd.algorithm = zfx->algo;
@@ -221,35 +236,52 @@ compress_filter( void *opaque, int control,
 	    pkt.pkt.compressed = &cd;
 	    if( build_packet( a, &pkt ))
 		log_bug("build_packet(PKT_COMPRESSED) failed\n");
-	    zs = zfx->opaque = gcry_xcalloc( 1, sizeof *zs );
+	    zs = zfx->opaque = m_alloc_clear( sizeof *zs );
 	    init_compress( zfx, zs );
 	    zfx->status = 2;
 	}
 
+#ifndef __riscos__
 	zs->next_in = buf;
+#else /* __riscos__ */
+	zs->next_in = (Bytef *) buf;
+#endif /* __riscos__ */
 	zs->avail_in = size;
 	rc = do_compress( zfx, zs, Z_NO_FLUSH, a );
     }
     else if( control == IOBUFCTRL_FREE ) {
 	if( zfx->status == 1 ) {
 	    inflateEnd(zs);
-	    gcry_free(zs);
+	    m_free(zs);
 	    zfx->opaque = NULL;
-	    gcry_free(zfx->outbuf); zfx->outbuf = NULL;
+	    m_free(zfx->outbuf); zfx->outbuf = NULL;
 	}
 	else if( zfx->status == 2 ) {
+#ifndef __riscos__
 	    zs->next_in = buf;
+#else /* __riscos__ */
+	    zs->next_in = (Bytef *) buf;
+#endif /* __riscos__ */
 	    zs->avail_in = 0;
 	    do_compress( zfx, zs, Z_FINISH, a );
 	    deflateEnd(zs);
-	    gcry_free(zs);
+	    m_free(zs);
 	    zfx->opaque = NULL;
-	    gcry_free(zfx->outbuf); zfx->outbuf = NULL;
+	    m_free(zfx->outbuf); zfx->outbuf = NULL;
 	}
+        if (zfx->release)
+          zfx->release (zfx);
     }
     else if( control == IOBUFCTRL_DESC )
 	*(char**)buf = "compress_filter";
     return rc;
+}
+
+
+static void
+release_context (compress_filter_context_t *ctx)
+{
+  m_free (ctx);
 }
 
 /****************
@@ -259,26 +291,19 @@ int
 handle_compressed( void *procctx, PKT_compressed *cd,
 		   int (*callback)(IOBUF, void *), void *passthru )
 {
-    compress_filter_context_t cfx;
+    compress_filter_context_t *cfx;
     int rc;
 
-    memset( &cfx, 0, sizeof cfx );
     if( cd->algorithm < 1 || cd->algorithm > 2	)
-	return GPGERR_COMPR_ALGO;
-    cfx.algo = cd->algorithm;
-
-    iobuf_push_filter( cd->buf, compress_filter, &cfx );
+	return G10ERR_COMPR_ALGO;
+    cfx = m_alloc_clear (sizeof *cfx);
+    cfx->algo = cd->algorithm;
+    cfx->release = release_context;
+    iobuf_push_filter( cd->buf, compress_filter, cfx );
     if( callback )
 	rc = callback(cd->buf, passthru );
     else
 	rc = proc_packets(procctx, cd->buf);
-  #if 0
-    iobuf_pop_filter( cd->buf, compress_filter, &cfx );
-    if( cd->len )
-	iobuf_set_limit( cd->buf, 0 ); /* disable the readlimit */
-    else
-	iobuf_clear_eof( cd->buf );
-  #endif
     cd->buf = NULL;
     return rc;
 }

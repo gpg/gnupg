@@ -1,5 +1,5 @@
-/* ggpd.c - The GnuPG daemon (keyserver)
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+/* gpd.c - The GnuPG daemon (keyserver)
+ * Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -112,7 +112,7 @@ build_list( const char *text, const char * (*mapf)(int), int (*chkf)(int) )
     for(i=1; i < 100; i++ )
 	if( !chkf(i) && (s=mapf(i)) )
 	    n += strlen(s) + 2;
-    list = gcry_xmalloc( 21 + n ); *list = 0;
+    list = m_alloc( 21 + n ); *list = 0;
     for(p=NULL, i=1; i < 100; i++ ) {
 	if( !chkf(i) && (s=mapf(i)) ) {
 	    if( !p )
@@ -201,9 +201,9 @@ main( int argc, char **argv )
 	    else {
 		log_error("option file `%s': %s\n",
 				    configname, strerror(errno) );
-		gpg_exit(1);
+		g10_exit(1);
 	    }
-	    gcry_free(configname); configname = NULL;
+	    m_free(configname); configname = NULL;
 	}
 	if( parse_debug && configname )
 	    log_info("reading options from `%s'\n", configname );
@@ -216,8 +216,8 @@ main( int argc, char **argv )
 	  case 'v': opt.verbose++; break;
 	  case 501:
 	    if( !configfp ) {
-		gcry_free(configname);
-		configname = gcry_xstrdup(pargs.r.ret_str);
+		m_free(configname);
+		configname = m_strdup(pargs.r.ret_str);
 		goto next_pass;
 	    }
 	    break;
@@ -230,12 +230,12 @@ main( int argc, char **argv )
     if( configfp ) {
 	fclose( configfp );
 	configfp = NULL;
-	gcry_free(configname); configname = NULL;
+	m_free(configname); configname = NULL;
 	goto next_pass;
     }
-    gcry_free( configname ); configname = NULL;
+    m_free( configname ); configname = NULL;
     if( log_get_errorcount(0) )
-	gpg_exit(2);
+	g10_exit(2);
 
     fprintf(stderr, "%s %s; %s\n", strusage(11), strusage(13), strusage(14) );
     fprintf(stderr, "%s\n", strusage(15) );
@@ -245,13 +245,13 @@ main( int argc, char **argv )
 	become_daemon();
 
 
-    gpg_exit(0);
+    g10_exit(0);
     return 8; /*NEVER REACHED*/
 }
 
 
 void
-gpg_exit( int rc )
+g10_exit( int rc )
 {
     secmem_term();
     rc = rc? rc : log_get_errorcount(0)? 2:0;

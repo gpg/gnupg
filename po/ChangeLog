@@ -1,3 +1,295 @@
+2002-04-30  Werner Koch  <wk@gnupg.org>
+
+	* ja.po: Updated, also a bit too late for the release.
+
+2002-04-29  Werner Koch  <wk@gnupg.org>
+
+	* pl.po: Update.
+	* el.po: Updated, removed one entry due to non-matching printf and
+	one removed one printf specifier.
+
+	Fixed fuzzy entries due to the change of (y/N) to (Y/n) in most files.
+	
+2002-04-25  gettextize  <bug-gnu-utils@gnu.org>
+
+	* Makefile.in.in: Upgrade to gettext-0.10.40.
+
+2002-04-22  Werner Koch  <wk@gnupg.org>
+
+	* et.po, tr.po, cs.po, it.po, id.po: Updated.
+
+2002-04-19  Werner Koch  <wk@gnupg.org>
+
+	* de.po: Fixed fuzzies and added a few translations.
+
+2002-04-18  Werner Koch  <wk@gnupg.org>
+
+	* eo.po: Updated.
+
+2002-04-10  Werner Koch  <wk@gnupg.org>
+
+	* pl.po: Updated.
+
+2002-04-09  Werner Koch  <wk@gnupg.org>
+
+	* pt_BR.po: Updated the info entry 
+
+	* es.po: Fixed a c-format problem; for unknown reasons msgfmt -c
+	can't cope with swapped arguments.
+
+	* de.po: Fuzzy fixes and a few new translations.
+
+	* id.po: Fixed a format string mismatch.
+
+	* eo.po, it.po, ja.po, sv.po: Updated with a somewhat newer
+	version from the TP.
+
+	* es_ES.po: Removed
+	* es.po: and replaced with this updated version from the TP.
+
+	* cs.po: New.  Fixed for format string mismatches.
+
+	* el.po, gl.po: New from TP.
+	
+2002-04-06  Werner Koch  <wk@gnupg.org>
+
+	* fr.po: Updated.
+
+2002-04-02  Werner Koch  <wk@gnupg.org>
+
+	* de.po, de.glo: Updated.
+
+2002-03-08  Werner Koch  <wk@gnupg.org>
+
+	* et.po: Updated.
+
+2002-03-06  Werner Koch  <wk@gnupg.org>
+
+	* pt_PT.po: Removed.
+	* pt.po: and replaced by this updated one.  My machine voted 30 to
+	2 for just pt.  So we go with the crowd.  Thanks for Pedro Morais
+	for suggesting this.
+
+2002-03-05  Werner Koch  <wk@gnupg.org>
+
+	* tr.po, id.po: Updated.
+
+2002-03-03  gettextize  <bug-gnu-utils@gnu.org>
+
+	* Makefile.in.in: Upgrade to gettext-0.10.40.
+
+2002-03-03  gettextize  <bug-gnu-utils@gnu.org>
+
+	* Makefile.in.in: Upgrade to gettext-0.10.40.
+
+2001-10-23  gettextize  <bug-gnu-utils@gnu.org>
+
+	* Makefile.in.in: Upgrade to gettext-0.10.40.
+
+2001-09-07  Werner Koch  <wk@gnupg.org>
+
+	* POTFILES.in: Added new files.
+
+2001-07-26  gettextize  <bug-gnu-utils@gnu.org>
+
+	* Makefile.in.in: Upgrade to gettext-0.10.38.
+
+2001-07-05  Werner Koch  <wk@gnupg.org>
+
+	* id.po: Updated
+
+2001-05-28  Werner Koch  <wk@gnupg.org>
+
+	* ru.po: Removed - too many format string bugs. 
+
+2001-05-27  gettextize  <bug-gnu-utils@gnu.org>
+
+	* Makefile.in.in: Upgrade to gettext-0.10.38.
+	* cat-id-tbl.c: Remove file.
+	* stamp-cat-id: Remove file.
+
+2001-05-27  Werner Koch  <wk@gnupg.org>
+
+	* tr.po: New copy from the TP Robot. 
+	* da.po, de.po, eo.po, es_ES.po, et.po, id.po, ja.po, nl.po,
+        pt_BR.po, sv.po: Fixes to format string errors by Kurt Garloff.
+	It is not cleare whether they are all correct but at least they
+	won't give segv and minimize the risk of format string exploits.
+	* ru.po: Fixed the header entry.
+
+	Fixed some fuzzy entries in all files.
+	
+2001-05-06  Werner Koch  <wk@gnupg.org>
+
+	* id.po: Updated
+
+2001-04-27  Werner Koch  <wk@gnupg.org>
+
+	* de.po: Removed an extra "%s".
+
+2001-04-25  Werner Koch  <wk@gnupg.org>
+
+	* fr.po: Updated.
+
+2001-04-23  Werner Koch  <wk@gnupg.org>
+
+	* eo.po: Updated.
+
+	* it.po: Updated.
+
+2001-04-22  Werner Koch  <wk@gnupg.org>
+
+	* pl.po: Updated.
+
+2001-04-17  Werner Koch  <wk@gnupg.org>
+
+	* et.po: New.
+
+	* de.po: Updated.
+
+2001-04-16  Werner Koch  <wk@gnupg.org>
+
+	* pt_PT.po: Updated.
+
+2001-04-06  Werner Koch  <wk@gnupg.org>
+
+	* tr.po: New. 
+
+2001-03-18  Werner Koch  <wk@gnupg.org>
+
+	* de.po, de.glo: Updated. 
+
+2001-02-22  Werner Koch  <wk@gnupg.org>
+
+	* de.po, de.glo: Updated.
+
+2001-01-23  Werner Koch  <wk@gnupg.org>
+
+	* de.po: Removed superfluous \r.
+
+2001-01-14  Werner Koch  <wk@gnupg.org>
+
+	* de.po, de.glo: Updated.
+
+2000-12-19  Werner Koch  <wk@gnupg.org>
+
+	* pl.po: Updated.
+
+	* ja.po: Justified one message.
+
+2000-10-23  Werner Koch  <wk@gnupg.org>
+
+	* ja.po: Updated.
+
+2000-10-19  Werner Koch  <wk@gnupg.org>
+
+	Fixed a typo in all files.
+
+2000-10-16  Werner Koch  <wk@gnupg.org>
+
+	* de.po, de.glo: Updated.
+
+Thu Sep 14 17:45:11 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * eo.po: Updated.
+
+Wed Jul 12 13:32:06 CEST 2000  Werner Koch  <wk@>
+
+  * da.po: New from the TP server
+  * eo.po: Updated from the TP server
+  * pl.po: Ditto.
+  * sv.po: Ditto.
+
+  Small English spelling correction in all files.
+
+Wed Jul  5 13:28:45 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * fr.po: Minor changes by Gael
+
+Wed Jun 14 12:27:09 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * de.po, de.glo: Updated.
+
+2000-06-07 18:26:58  Werner Koch  (wk@habibti.openit.de)
+
+  * fr.po: New version from Gaël
+
+2000-05-02 10:44:42  Werner Koch  (wk@habibti.openit.de)
+
+	* fr.po: New version from the TP Robot.
+
+2000-05-01 14:19:52  Werner Koch  (wk@habibti.openit.de)
+
+	* de.po: Updated.
+	* de.glo: Ditto.
+
+2000-03-15 15:37:08  Werner Koch  (wk@habibti.openit.de)
+
+	* de.po: Updated.
+
+Wed Feb 23 10:07:57 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* nl.po: New. By Ivo Timmermans.
+
+Wed Feb 16 16:25:09 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* eo.po : New. By Edmund.
+
+Wed Feb 16 14:09:00 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* ja.po: New. By Yosiaki
+
+	* sv.po: New. By Daniel.
+
+Fri Feb 11 17:44:40 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* id.po: Updated.
+
+Thu Jan  6 16:56:18 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* Makefile.in.in: Is not longer maintained as a symlink because we
+	have a patch to work around a bug in non-gnu Make.
+	Fixed by Dave Dykstra.
+
+Thu Dec 16 10:07:58 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* pt_PT.po: Updated.
+	* de.po: Updated.
+	* it.po: Updated.
+
+Thu Dec  9 10:31:05 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* de.po: Updated.
+	* pt_BR.po: Updated.
+
+Fri Nov 12 20:33:19 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* es_ES.po: Fixed 3 \n mismatches.
+
+	* de.po: Updated.
+
+Thu Oct 28 16:08:20 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* es_ES.po: Updated.
+
+	* pt_BR.po: Updated.
+
+Fri Oct  8 20:32:01 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* fr.po: Updated for 1.0.0d.
+
+Mon Oct  4 21:23:04 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* pl.po: New version by Alex.
+
+Thu Sep 23 06:26:28 1999  Werner Koch  (wk@gnupg.org)
+
+	* fr.po: Updated by Gaël.
+
+Sat Sep 18 11:49:51 1999  Werner Koch  (wk@gnupg.org)
+
+	* id.po: New. Done by Tedi Heriyanto.
+
 Wed Sep 15 16:22:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* pt_PT.po: New. Done by Pedro Morais.
@@ -181,5 +473,17 @@ Thu Apr  9 10:03:14 1998  Werner Koch  (wk@isil.d.shuttle.de)
 Fri Mar 13 09:43:19 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* it.po: New
+
+
+
+ Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 

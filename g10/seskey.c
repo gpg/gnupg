@@ -1,5 +1,5 @@
 /* seskey.c -  make sesssion keys etc.
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -23,9 +23,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
-#include <gcrypt.h>
 #include "util.h"
+#include "cipher.h"
+#include "mpi.h"
 #include "main.h"
 #include "i18n.h"
 
@@ -36,31 +36,22 @@
 void
 make_session_key( DEK *dek )
 {
-    GCRY_CIPHER_HD chd;
+    CIPHER_HANDLE chd;
     int i, rc;
 
-    dek->keylen = gcry_cipher_get_algo_keylen( dek->algo );
+    dek->keylen = cipher_get_keylen( dek->algo ) / 8;
 
-    if( !(chd = gcry_cipher_open( dek->algo, GCRY_CIPHER_MODE_CFB,
-				       GCRY_CIPHER_SECURE
-				       | (dek->algo >= 100 ?
-					   0 : GCRY_CIPHER_ENABLE_SYNC) ))
-			  ) {
-	BUG();
-    }
-
-    gcry_randomize( dek->key, dek->keylen, GCRY_STRONG_RANDOM );
+    chd = cipher_open( dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
+    randomize_buffer( dek->key, dek->keylen, 1 );
     for(i=0; i < 16; i++ ) {
-	rc = gcry_cipher_setkey( chd, dek->key, dek->keylen );
+	rc = cipher_setkey( chd, dek->key, dek->keylen );
 	if( !rc ) {
-	    gcry_cipher_close( chd );
+	    cipher_close( chd );
 	    return;
 	}
-	if( rc != GCRYERR_WEAK_KEY )
-	    BUG();
 	log_info(_("weak key created - retrying\n") );
 	/* Renew the session key until we get a non-weak key. */
-	gcry_randomize( dek->key, dek->keylen, GCRY_STRONG_RANDOM );
+	randomize_buffer( dek->key, dek->keylen, 1 );
     }
     log_fatal(_(
 	    "cannot avoid weak key for symmetric cipher; tried %d times!\n"),
@@ -108,13 +99,13 @@ encode_session_key( DEK *dek, unsigned nbits )
     for( p = dek->key, i=0; i < dek->keylen; i++ )
 	csum += *p++;
 
-    frame = gcry_xmalloc_secure( nframe );
+    frame = m_alloc_secure( nframe );
     n = 0;
     frame[n++] = 0;
     frame[n++] = 2;
     i = nframe - 6 - dek->keylen;
     assert( i > 0 );
-    p = gcry_random_bytes_secure( i, GCRY_STRONG_RANDOM );
+    p = get_random_bits( i*8, 1, 1 );
     /* replace zero bytes by new values */
     for(;;) {
 	int j, k;
@@ -127,14 +118,14 @@ encode_session_key( DEK *dek, unsigned nbits )
 	if( !k )
 	    break; /* okay: no zero bytes */
 	k += k/128; /* better get some more */
-	pp = gcry_random_bytes_secure( k, GCRY_STRONG_RANDOM);
+	pp = get_random_bits( k*8, 1, 1);
 	for(j=0; j < i && k ; j++ )
 	    if( !p[j] )
 		p[j] = pp[--k];
-	gcry_free(pp);
+	m_free(pp);
     }
     memcpy( frame+n, p, i );
-    gcry_free(p);
+    m_free(p);
     n += i;
     frame[n++] = 0;
     frame[n++] = dek->algo;
@@ -142,16 +133,15 @@ encode_session_key( DEK *dek, unsigned nbits )
     frame[n++] = csum >>8;
     frame[n++] = csum;
     assert( n == nframe );
-    if( gcry_mpi_scan( &a, GCRYMPI_FMT_USG, frame, &nframe ) )
-	BUG();
-    gcry_free(frame);
-
+    a = mpi_alloc_secure( (nframe+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
+    mpi_set_buffer( a, frame, nframe, 0 );
+    m_free(frame);
     return a;
 }
 
 
 static MPI
-do_encode_md( GCRY_MD_HD md, int algo, size_t len, unsigned nbits,
+do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
 	      const byte *asn, size_t asnlen, int v3compathack )
 {
     int nframe = (nbits+7) / 8;
@@ -165,12 +155,11 @@ do_encode_md( GCRY_MD_HD md, int algo, size_t len, unsigned nbits,
 
     /* We encode the MD in this way:
      *
-     *	   0  1 PAD(n bytes)   0  ASN(asnlen bytes)  MD(len bytes)
+     *	   0  A PAD(n bytes)   0  ASN(asnlen bytes)  MD(len bytes)
      *
      * PAD consists of FF bytes.
      */
-    frame = gcry_md_is_secure(md)? gcry_xmalloc_secure( nframe )
-				 : gcry_xmalloc( nframe );
+    frame = md_is_secure(md)? m_alloc_secure( nframe ) : m_alloc( nframe );
     n = 0;
     frame[n++] = 0;
     frame[n++] = v3compathack? algo : 1; /* block type */
@@ -179,11 +168,13 @@ do_encode_md( GCRY_MD_HD md, int algo, size_t len, unsigned nbits,
     memset( frame+n, 0xff, i ); n += i;
     frame[n++] = 0;
     memcpy( frame+n, asn, asnlen ); n += asnlen;
-    memcpy( frame+n, gcry_md_read(md, algo), len ); n += len;
+    memcpy( frame+n, md_read(md, algo), len ); n += len;
     assert( n == nframe );
-    if( gcry_mpi_scan( &a, GCRYMPI_FMT_USG, frame, &nframe ) )
-	BUG();
-    gcry_free(frame);
+    a = md_is_secure(md)?
+	 mpi_alloc_secure( (nframe+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB )
+	 : mpi_alloc( (nframe+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
+    mpi_set_buffer( a, frame, nframe, 0 );
+    m_free(frame);
     return a;
 }
 
@@ -192,36 +183,35 @@ do_encode_md( GCRY_MD_HD md, int algo, size_t len, unsigned nbits,
  * Encode a message digest into an MPI.
  * v3compathack is used to work around a bug in old GnuPG versions
  * which did put the algo identifier inseatd of the block type 1 into
- * the encoded value.  setting this vare force the old behaviour.
+ * the encoded value.  Setting this flag forces the old behaviour.
  */
 MPI
-encode_md_value( int pubkey_algo, GCRY_MD_HD md, int hash_algo,
+encode_md_value( int pubkey_algo, MD_HANDLE md, int hash_algo,
 		 unsigned nbits, int v3compathack )
 {
-    int algo = hash_algo? hash_algo : gcry_md_get_algo(md);
+    int algo = hash_algo? hash_algo : md_get_algo(md);
+    const byte *asn;
+    size_t asnlen, mdlen;
     MPI frame;
 
-    if( pubkey_algo == GCRY_PK_DSA ) {
-	size_t n = gcry_md_get_algo_dlen(hash_algo);
-	if( gcry_mpi_scan( &frame, GCRYMPI_FMT_USG,
-				   gcry_md_read(md, hash_algo), &n ) )
-	    BUG();
+    if( pubkey_algo == PUBKEY_ALGO_DSA ) {
+        mdlen = md_digest_length (hash_algo);
+        if (mdlen != 20) {
+            log_error (_("DSA requires the use of a 160 bit hash algorithm\n"));
+            return NULL;
+        }
+
+	frame = md_is_secure(md)? mpi_alloc_secure((md_digest_length(hash_algo)
+				 +BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB )
+				: mpi_alloc((md_digest_length(hash_algo)
+				 +BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
+	mpi_set_buffer( frame, md_read(md, hash_algo),
+			       md_digest_length(hash_algo), 0 );
     }
     else {
-	byte *asn;
-	size_t asnlen;
-
-	if( gcry_md_algo_info( algo, GCRYCTL_GET_ASNOID, NULL, &asnlen ) )
-	    log_fatal("can't get OID of algo %d: %s\n",
-					    algo, gcry_strerror(-1));
-	asn = gcry_xmalloc( asnlen );
-	if( gcry_md_algo_info( algo, GCRYCTL_GET_ASNOID, asn, &asnlen ) )
-	    BUG();
-	frame = do_encode_md( md, algo, gcry_md_get_algo_dlen( algo ),
-					 nbits, asn, asnlen, v3compathack );
-	gcry_free( asn );
+       asn = md_asn_oid( algo, &asnlen, &mdlen );
+       frame = do_encode_md( md, algo, mdlen, nbits, asn, asnlen, v3compathack);
     }
     return frame;
 }
-
 

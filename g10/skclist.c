@@ -1,5 +1,5 @@
 /* skclist.c
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,14 +25,14 @@
 #include <errno.h>
 #include <assert.h>
 
-#include <gcrypt.h>
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
 #include "keydb.h"
+#include "memory.h"
 #include "util.h"
 #include "i18n.h"
-#include "main.h"
+#include "cipher.h"
 
 
 void
@@ -43,14 +43,66 @@ release_sk_list( SK_LIST sk_list )
     for( ; sk_list; sk_list = sk_rover ) {
 	sk_rover = sk_list->next;
 	free_secret_key( sk_list->sk );
-	gcry_free( sk_list );
+	m_free( sk_list );
     }
 }
 
 
+/* Check that we are only using keys which don't have
+ * the string "(insecure!)" or "not secure" or "do not use"
+ * in one of the user ids
+ */
+static int
+is_insecure( PKT_secret_key *sk )
+{
+    u32 keyid[2];
+    KBNODE node = NULL, u;
+    int insecure = 0;
+
+    keyid_from_sk( sk, keyid );
+    node = get_pubkeyblock( keyid );
+    for ( u = node; u; u = u->next ) {
+        if ( u->pkt->pkttype == PKT_USER_ID ) {
+            PKT_user_id *id = u->pkt->pkt.user_id;
+            if ( id->attrib_data )
+                continue; /* skip attribute packets */
+            if ( strstr( id->name, "(insecure!)" )
+                 || strstr( id->name, "not secure" )
+                 || strstr( id->name, "do not use" ) ) {
+                insecure = 1;
+                break;
+            }
+        }
+    }
+    release_kbnode( node );
+    
+    return insecure;
+}
+
+static int
+key_present_in_sk_list(SK_LIST sk_list, PKT_secret_key *sk)
+{
+    for (; sk_list; sk_list = sk_list->next) {
+	if ( !cmp_secret_keys(sk_list->sk, sk) )
+	    return 0;
+    }
+    return -1;
+}
+
+static int
+is_duplicated_entry (STRLIST list, STRLIST item)
+{
+    for(; list && list != item; list = list->next) {
+        if ( !strcmp (list->d, item->d) )
+            return 1;
+    }
+    return 0;
+}
+
+
 int
-build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
-               unsigned int use )
+build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
+               int unlock, unsigned int use )
 {
     SK_LIST sk_list = NULL;
     int rc;
@@ -58,24 +110,28 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
     if( !locusr ) { /* use the default one */
 	PKT_secret_key *sk;
 
-	sk = gcry_xcalloc( 1, sizeof *sk );
+	sk = m_alloc_clear( sizeof *sk );
 	sk->req_usage = use;
-	if( (rc = get_seckey_byname( NULL, sk, NULL, unlock, NULL )) ) {
+	if( (rc = get_seckey_byname( sk, NULL, unlock )) ) {
 	    free_secret_key( sk ); sk = NULL;
-	    log_error("no default secret key: %s\n", gpg_errstr(rc) );
+	    log_error("no default secret key: %s\n", g10_errstr(rc) );
 	}
-	else if( !(rc=openpgp_pk_test_algo(sk->pubkey_algo,
-                                           sk->pubkey_usage)) ) {
+	else if( !(rc=check_pubkey_algo2(sk->pubkey_algo, use)) ) {
 	    SK_LIST r;
-            
-	    if( sk->version == 4 && (sk->pubkey_usage & GCRY_PK_USAGE_SIGN )
-		&& sk->pubkey_algo == GCRY_PK_ELG_E ) {
+
+	    if( sk->version == 4 && (use & PUBKEY_USAGE_SIG)
+		&& sk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
 		log_info("this is a PGP generated "
 		    "ElGamal key which is NOT secure for signatures!\n");
 		free_secret_key( sk ); sk = NULL;
 	    }
+	    else if( random_is_faked() && !is_insecure( sk ) ) {
+		log_info(_("key is not flagged as insecure - "
+			   "can't use it with the faked RNG!\n"));
+		free_secret_key( sk ); sk = NULL;
+	    }
 	    else {
-		r = gcry_xmalloc( sizeof *r );
+		r = m_alloc( sizeof *r );
 		r->sk = sk; sk = NULL;
 		r->next = sk_list;
 		r->mark = 0;
@@ -84,31 +140,54 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 	}
 	else {
 	    free_secret_key( sk ); sk = NULL;
-	    log_error("invalid default secret key: %s\n", gpg_errstr(rc) );
+	    log_error("invalid default secret key: %s\n", g10_errstr(rc) );
 	}
     }
     else {
+        STRLIST locusr_orig = locusr;
 	for(; locusr; locusr = locusr->next ) {
 	    PKT_secret_key *sk;
-
-	    sk = gcry_xcalloc( 1, sizeof *sk );
+            
+            rc = 0;
+            /* Do an early check agains duplicated entries.  However this
+             * won't catch all duplicates because the user IDs may be
+             * specified in different ways.
+             */
+            if ( is_duplicated_entry ( locusr_orig, locusr ) ) {
+		log_error(_("skipped `%s': duplicated\n"), locusr->d );
+                continue;
+            }
+	    sk = m_alloc_clear( sizeof *sk );
 	    sk->req_usage = use;
-	    if( (rc = get_seckey_byname( NULL, sk, locusr->d, unlock, NULL))) {
+	    if( (rc = get_seckey_byname( sk, locusr->d, 0 )) ) {
 		free_secret_key( sk ); sk = NULL;
-		log_error(_("skipped `%s': %s\n"), locusr->d, gpg_errstr(rc) );
+		log_error(_("skipped `%s': %s\n"), locusr->d, g10_errstr(rc) );
 	    }
-	    else if( !(rc=openpgp_pk_test_algo(sk->pubkey_algo,
-                                               sk->pubkey_usage)) ) {
+            else if ( key_present_in_sk_list(sk_list, sk) == 0) {
+                free_secret_key(sk); sk = NULL;
+                log_info(_("skipped: secret key already present\n"));
+            }
+            else if ( unlock && (rc = check_secret_key( sk, 0 )) ) {
+		free_secret_key( sk ); sk = NULL;
+		log_error(_("skipped `%s': %s\n"), locusr->d, g10_errstr(rc) );
+            }
+	    else if( !(rc=check_pubkey_algo2(sk->pubkey_algo, use)) ) {
 		SK_LIST r;
-		if( sk->version == 4 && (sk->pubkey_usage & GCRY_PK_USAGE_SIGN)
-		    && sk->pubkey_algo == GCRY_PK_ELG_E ) {
+
+		if( sk->version == 4 && (use & PUBKEY_USAGE_SIG)
+		    && sk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
 		    log_info(_("skipped `%s': this is a PGP generated "
 			"ElGamal key which is not secure for signatures!\n"),
 			locusr->d );
 		    free_secret_key( sk ); sk = NULL;
 		}
+		else if( random_is_faked() && !is_insecure( sk ) ) {
+		    log_info(_("key is not flagged as insecure - "
+			       "can't use it with the faked RNG!\n"));
+		    free_secret_key( sk ); sk = NULL;
+		}
 		else {
-		    r = gcry_xmalloc( sizeof *r );
+		    r = m_alloc( sizeof *r );
 		    r->sk = sk; sk = NULL;
 		    r->next = sk_list;
 		    r->mark = 0;
@@ -117,7 +196,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 	    }
 	    else {
 		free_secret_key( sk ); sk = NULL;
-		log_error("skipped `%s': %s\n", locusr->d, gpg_errstr(rc) );
+		log_error("skipped `%s': %s\n", locusr->d, g10_errstr(rc) );
 	    }
 	}
     }
@@ -125,7 +204,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 
     if( !rc && !sk_list ) {
 	log_error("no valid signators\n");
-	rc = GPGERR_NO_USER_ID;
+	rc = G10ERR_NO_USER_ID;
     }
 
     if( rc )

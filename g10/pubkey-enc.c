@@ -1,5 +1,5 @@
 /* pubkey-enc.c -  public key encoded packet handling
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -23,12 +23,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
-#include <gcrypt.h>
 #include "util.h"
+#include "memory.h"
 #include "packet.h"
+#include "mpi.h"
 #include "keydb.h"
 #include "trustdb.h"
+#include "cipher.h"
 #include "status.h"
 #include "options.h"
 #include "main.h"
@@ -38,66 +39,31 @@ static int get_it( PKT_pubkey_enc *k,
 		   DEK *dek, PKT_secret_key *sk, u32 *keyid );
 
 
-/****************
- * Emulate our old PK interface here - sometime in the future we might
- * change the internal design to directly fit to libgcrypt.
- */
+/* check that the given algo is mentioned in one of the valid user IDs */
 static int
-pk_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
+is_algo_in_prefs ( KBNODE keyblock, preftype_t type, int algo )
 {
-    GCRY_SEXP s_skey, s_data, s_plain;
-    int rc;
+    KBNODE k;
 
-    *result = NULL;
-    /* make a sexp from skey */
-    if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
-	rc = gcry_sexp_build ( &s_skey, NULL,
-			      "(private-key(elg(p%m)(g%m)(y%m)(x%m)))",
-				  skey[0], skey[1], skey[2], skey[3] );
+    for (k=keyblock; k; k=k->next) {
+        if (k->pkt->pkttype == PKT_USER_ID) {
+            PKT_user_id *uid = k->pkt->pkt.user_id;
+            prefitem_t *prefs = uid->prefs;
+            
+            if (uid->created && prefs &&
+		!uid->is_revoked && !uid->is_expired ) {
+                for (; prefs->type; prefs++ )
+                    if (prefs->type == type && prefs->value == algo)
+                        return 1;
+            }
+        }
     }
-    else if( algo == GCRY_PK_RSA ) {
-	rc = gcry_sexp_build ( &s_skey, NULL,
-		    "(private-key(rsa(n%m)(e%m)(d%m)(p%m)(q%m)(u%m)))",
-		     skey[0], skey[1], skey[2], skey[3], skey[4], skey[5] );
-    }
-    else
-	return GPGERR_PUBKEY_ALGO;
-
-    if ( rc )
-	BUG ();
-
-    /* put data into a S-Exp s_data */
-    if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
-	rc = gcry_sexp_build ( &s_data, NULL,
-			       "(enc-val(elg(a%m)(b%m)))", data[0], data[1] );
-    }
-    else if( algo == GCRY_PK_RSA ) {
-	rc = gcry_sexp_build ( &s_data, NULL,
-			       "(enc-val(rsa(a%m)))", data[0] );
-    }
-    else
-	BUG();
-
-    if ( rc )
-	BUG ();
-
-    rc = gcry_pk_decrypt( &s_plain, s_data, s_skey );
-    gcry_sexp_release( s_skey );
-    gcry_sexp_release( s_data);
-    if( rc )
-	return rc;
-
-    *result = gcry_sexp_nth_mpi( s_plain, 0, 0 );
-    gcry_sexp_release( s_plain );
-    if( !*result )
-	return -1; /* oops */
-
     return 0;
 }
 
 
 /****************
- * Get the session key from a pubkey enc paket and return
+ * Get the session key from a pubkey enc packet and return
  * it in DEK, which should have been allocated in secure memory.
  */
 int
@@ -106,12 +72,12 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
     PKT_secret_key *sk = NULL;
     int rc;
 
-    rc = openpgp_pk_test_algo( k->pubkey_algo, 0 );
+    rc = check_pubkey_algo2 (k->pubkey_algo, PUBKEY_USAGE_ENC);
     if( rc )
 	goto leave;
 
     if( (k->keyid[0] || k->keyid[1]) && !opt.try_all_secrets ) {
-	sk = gcry_xcalloc( 1, sizeof *sk );
+	sk = m_alloc_clear( sizeof *sk );
 	sk->pubkey_algo = k->pubkey_algo; /* we want a pubkey with this algo*/
 	if( !(rc = get_seckey( sk, k->keyid )) )
 	    rc = get_it( k, dek, sk, k->keyid );
@@ -123,17 +89,17 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	for(;;) {
 	    if( sk )
 		free_secret_key( sk );
-	    sk = gcry_xcalloc( 1, sizeof *sk );
+	    sk = m_alloc_clear( sizeof *sk );
 	    rc=enum_secret_keys( &enum_context, sk, 1);
 	    if( rc ) {
-		rc = GPGERR_NO_SECKEY;
+		rc = G10ERR_NO_SECKEY;
 		break;
 	    }
 	    if( sk->pubkey_algo != k->pubkey_algo )
 		continue;
 	    keyid_from_sk( sk, keyid );
-	    log_info(_("anonymous receiver; trying secret key %08lX ...\n"),
-				     (ulong)keyid[1] );
+	    log_info(_("anonymous recipient; trying secret key %08lX ...\n"),
+                     (ulong)keyid[1] );
 	    rc = check_secret_key( sk, 1 ); /* ask only once */
 	    if( !rc )
 		rc = get_it( k, dek, sk, keyid );
@@ -153,22 +119,19 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 
 
 static int
-get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
+get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 {
     int rc;
     MPI plain_dek  = NULL;
     byte *frame = NULL;
-    unsigned int n;
-    size_t nframe;
+    unsigned n, nframe;
     u16 csum, csum2;
 
-    rc = pk_decrypt(sk->pubkey_algo, &plain_dek, k->data, sk->skey );
+    rc = pubkey_decrypt(sk->pubkey_algo, &plain_dek, enc->data, sk->skey );
     if( rc )
 	goto leave;
-    if( gcry_mpi_aprint( GCRYMPI_FMT_USG, &frame, &nframe, plain_dek ) )
-	BUG();
-
-    mpi_release( plain_dek ); plain_dek = NULL;
+    frame = mpi_get_buffer( plain_dek, &nframe, NULL );
+    mpi_free( plain_dek ); plain_dek = NULL;
 
     /* Now get the DEK (data encryption key) from the frame
      *
@@ -180,8 +143,7 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
      *
      *	   0  2  RND(n bytes)  0  A  DEK(k bytes)  CSUM(2 bytes)
      *
-     * (mpi_get_buffer already removed the leading zero - still true
-     *	for gcry_mpi_aprint(0 which is used now?)
+     * (mpi_get_buffer already removed the leading zero).
      *
      * RND are non-zero randow bytes.
      * A   is the cipher algorithm
@@ -192,35 +154,37 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 	log_hexdump("DEK frame:", frame, nframe );
     n=0;
     if( n + 7 > nframe )
-	{ rc = GPGERR_WRONG_SECKEY; goto leave; }
+	{ rc = G10ERR_WRONG_SECKEY; goto leave; }
     if( frame[n] == 1 && frame[nframe-1] == 2 ) {
 	log_info(_("old encoding of the DEK is not supported\n"));
-	rc = GPGERR_CIPHER_ALGO;
+	rc = G10ERR_CIPHER_ALGO;
 	goto leave;
     }
     if( frame[n] != 2 )  /* somethink is wrong */
-	{ rc = GPGERR_WRONG_SECKEY; goto leave; }
+	{ rc = G10ERR_WRONG_SECKEY; goto leave; }
     for(n++; n < nframe && frame[n]; n++ ) /* skip the random bytes */
 	;
     n++; /* and the zero byte */
     if( n + 4 > nframe )
-	{ rc = GPGERR_WRONG_SECKEY; goto leave; }
+	{ rc = G10ERR_WRONG_SECKEY; goto leave; }
 
     dek->keylen = nframe - (n+1) - 2;
     dek->algo = frame[n++];
-    if( dek->algo ==  GCRY_CIPHER_IDEA )
+    if( dek->algo ==  CIPHER_ALGO_IDEA )
 	write_status(STATUS_RSA_OR_IDEA);
-    rc = openpgp_cipher_test_algo( dek->algo );
+    rc = check_cipher_algo( dek->algo );
     if( rc ) {
-	if( !opt.quiet && rc == GPGERR_CIPHER_ALGO ) {
-	    log_info(_("cipher algorithm %d is unknown or disabled\n"),
-							    dek->algo);
+	if( !opt.quiet && rc == G10ERR_CIPHER_ALGO ) {
+	    log_info(_("cipher algorithm %d%s is unknown or disabled\n"),
+                     dek->algo, dek->algo == CIPHER_ALGO_IDEA? " (IDEA)":"");
+	    if(dek->algo==CIPHER_ALGO_IDEA)
+	      idea_cipher_warn(0);
 	}
 	dek->algo = 0;
 	goto leave;
     }
-    if( dek->keylen != gcry_cipher_get_algo_keylen( dek->algo ) ) {
-	rc = GPGERR_WRONG_SECKEY;
+    if( (dek->keylen*8) != cipher_get_keylen( dek->algo ) ) {
+	rc = G10ERR_WRONG_SECKEY;
 	goto leave;
     }
 
@@ -231,53 +195,102 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
     for( csum2=0, n=0; n < dek->keylen; n++ )
 	csum2 += dek->key[n];
     if( csum != csum2 ) {
-	rc = GPGERR_WRONG_SECKEY;
+	rc = G10ERR_WRONG_SECKEY;
 	goto leave;
     }
     if( DBG_CIPHER )
 	log_hexdump("DEK is:", dek->key, dek->keylen );
     /* check that the algo is in the preferences and whether it has expired */
     {
-	PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
-	if( (rc = get_pubkey( pk, keyid )) )
-	    log_error("public key problem: %s\n", gpg_errstr(rc) );
-	else if( !pk->local_id && query_trust_record(pk) )
-	    log_error("can't check algorithm against preferences\n");
-	else if( dek->algo != GCRY_CIPHER_3DES
-	    && !is_algo_in_prefs( pk->local_id, PREFTYPE_SYM, dek->algo ) ) {
+	PKT_public_key *pk = NULL;
+        KBNODE pkb = get_pubkeyblock (keyid);
+
+	if( !pkb ) {
+            rc = -1;
+	    log_error("oops: public key not found for preference check\n");
+        }
+	else if( pkb->pkt->pkt.public_key->selfsigversion > 3
+            && dek->algo != CIPHER_ALGO_3DES
+	    && !is_algo_in_prefs( pkb, PREFTYPE_SYM, dek->algo ) ) {
 	    /* Don't print a note while we are not on verbose mode,
 	     * the cipher is blowfish and the preferences have twofish
 	     * listed */
-	    if( opt.verbose || dek->algo != GCRY_CIPHER_BLOWFISH
-		|| !is_algo_in_prefs( pk->local_id, PREFTYPE_SYM,
-						    GCRY_CIPHER_TWOFISH ) )
+	    if( opt.verbose || dek->algo != CIPHER_ALGO_BLOWFISH
+		|| !is_algo_in_prefs( pkb, PREFTYPE_SYM, CIPHER_ALGO_TWOFISH))
 		log_info(_(
 		    "NOTE: cipher algorithm %d not found in preferences\n"),
 								 dek->algo );
 	}
 
+        if (!rc) {
+            KBNODE k;
+            
+            for (k=pkb; k; k = k->next) {
+                if (k->pkt->pkttype == PKT_PUBLIC_KEY 
+                    || k->pkt->pkttype == PKT_PUBLIC_SUBKEY){
+                    u32 aki[2];
+        	    keyid_from_pk(k->pkt->pkt.public_key, aki);
 
-	if( !rc && pk->expiredate && pk->expiredate <= make_timestamp() ) {
-	    log_info(_("NOTE: secret key %08lX expired at %s\n"),
-			   (ulong)keyid[1], asctimestamp( pk->expiredate) );
-	}
+                    if (aki[0]==keyid[0] && aki[1]==keyid[1]) {
+                        pk = k->pkt->pkt.public_key;
+                        break;
+                    }
+                }
+            }
+            if (!pk)
+                BUG ();
+            if ( pk->expiredate && pk->expiredate <= make_timestamp() ) {
+                log_info(_("NOTE: secret key %08lX expired at %s\n"),
+                         (ulong)keyid[1], asctimestamp( pk->expiredate) );
+            }
+        }
 
-	/* FIXME: check wheter the key has been revoked and display
-	 * the revocation reason.  Actually the user should know this himself,
-	 * but the sender might not know already and therefor the user
-	 * should get a notice that an revoked key has been used to decode
-	 * the message.  The user can than watch out for snakes send by
-	 * one of those Eves outside his paradise :-)
-	 */
-	free_public_key( pk );
+        if ( pk->is_revoked ) {
+            log_info( _("NOTE: key has been revoked") );
+            putc( '\n', log_stream() );
+            show_revocation_reason( pk, 1 );
+        }
+
+	release_kbnode (pkb);
 	rc = 0;
     }
 
 
   leave:
-    mpi_release(plain_dek);
-    gcry_free(frame);
+    mpi_free(plain_dek);
+    m_free(frame);
     return rc;
 }
 
+
+/****************
+ * Get the session key from the given string.
+ * String is supposed to be formatted as this:
+ *  <algo-id>:<even-number-of-hex-digits>
+ */
+int
+get_override_session_key( DEK *dek, const char *string )
+{
+    const char *s;
+    int i;
+
+    if ( !string )
+	return G10ERR_BAD_KEY;
+    dek->algo = atoi(string);
+    if ( dek->algo < 1 )
+	return G10ERR_BAD_KEY;
+    if ( !(s = strchr ( string, ':' )) )
+	return G10ERR_BAD_KEY;
+    s++;
+    for(i=0; i < DIM(dek->key) && *s; i++, s +=2 ) {
+	int c = hextobyte ( s );
+	if (c == -1)
+	    return G10ERR_BAD_KEY;
+	dek->key[i] = c;
+    }
+    if ( *s )
+	return G10ERR_BAD_KEY;
+    dek->keylen = i;
+    return 0;
+}
 

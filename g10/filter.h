@@ -1,5 +1,5 @@
 /* filter.h
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -17,18 +17,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef GPG_FILTER_H
-#define GPG_FILTER_H
+#ifndef G10_FILTER_H
+#define G10_FILTER_H
 
-#include <gcrypt.h>
-
-#include "basicdefs.h"
-#include "iobuf.h"
-
+#include "types.h"
+#include "cipher.h"
 
 typedef struct {
-    GCRY_MD_HD md;	/* catch all */
-    GCRY_MD_HD md2;	/* if we want to calculate an alternate hash */
+    MD_HANDLE md;      /* catch all */
+    MD_HANDLE md2;     /* if we want to calculate an alternate hash */
     size_t maxbuf_size;
 } md_filter_context_t;
 
@@ -67,8 +64,11 @@ typedef struct {
     int pending_lf;	    /* used together with faked */
 } armor_filter_context_t;
 
+struct unarmor_pump_s;
+typedef struct unarmor_pump_s *UnarmorPump;
 
-typedef struct {
+
+struct compress_filter_context_s {
     int status;
     void *opaque;   /* (used for z_stream) */
     byte *inbuf;
@@ -77,25 +77,21 @@ typedef struct {
     unsigned outbufsize;
     int algo;	 /* compress algo */
     int algo1hack;
-} compress_filter_context_t;
+    void (*release)(struct compress_filter_context_s*);
+};
+typedef struct compress_filter_context_s compress_filter_context_t;
 
 
 typedef struct {
     DEK *dek;
     u32 datalen;
-    GCRY_CIPHER_HD cipher_hd;
+    CIPHER_HANDLE cipher_hd;
     int header;
-    GCRY_MD_HD mdc_hash;
+    MD_HANDLE mdc_hash;
     byte enchash[20];
     int create_mdc; /* flag will be set by the cipher filter */
 } cipher_filter_context_t;
 
-
-typedef struct {
-    int header_okay;
-    PK_LIST pk_list;
-    cipher_filter_context_t cfx;
-} encrypt_filter_context_t;
 
 
 typedef struct {
@@ -106,11 +102,13 @@ typedef struct {
     int truncated;	    /* number of truncated lines */
     int not_dash_escaped;
     int escape_from;
-    GCRY_MD_HD md;
+    MD_HANDLE md;
     int pending_lf;
     int pending_esc;
 } text_filter_context_t;
 
+
+/* encrypt_filter_context_t defined in main.h */
 
 /*-- mdfilter.c --*/
 int md_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len);
@@ -120,6 +118,9 @@ void free_md_filter_context( md_filter_context_t *mfx );
 int use_armor_filter( IOBUF a );
 int armor_filter( void *opaque, int control,
 		  IOBUF chain, byte *buf, size_t *ret_len);
+UnarmorPump unarmor_pump_new (void);
+void        unarmor_pump_release (UnarmorPump x);
+int         unarmor_pump (UnarmorPump x, int c);
 
 /*-- compress.c --*/
 int compress_filter( void *opaque, int control,
@@ -132,9 +133,9 @@ int cipher_filter( void *opaque, int control,
 /*-- textfilter.c --*/
 int text_filter( void *opaque, int control,
 		 IOBUF chain, byte *buf, size_t *ret_len);
-int copy_clearsig_text( IOBUF out, IOBUF inp, GCRY_MD_HD md,
+int copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
 			  int escape_dash, int escape_from, int pgp2mode );
 
 
 
-#endif /*GPG_FILTER_H*/
+#endif /*G10_FILTER_H*/

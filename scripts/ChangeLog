@@ -1,37 +1,158 @@
-Mon Jul 17 16:35:47 CEST 2000  Werner Koch  <wk@>
+2002-06-21  Stefan Bellon  <sbellon@sbellon.de>
 
-  * config.gues, config.sub: Support for s390-ibm-linux-gnu; thanks
-  to Holger Smolinski.	Add support for QNX; by Sam Roberts.
+	* conf-riscos/Makefile: Changes due to moving around RISC OS
+	specific stuff in the code.
 
-Tue Oct 26 14:10:21 CEST 1999  Werner Koch  <wk@gnupg.de>
+2002-06-07  Stefan Bellon  <sbellon@sbellon.de>
+
+	* conf-riscos/include/config.h [__riscos__]: Fixed macro bug.
+
+2002-05-10  Stefan Bellon  <sbellon@sbellon.de>
+
+	* conf-riscos/include/config.h [__riscos__]: Changes for later
+	Norcroft compilers.
+
+	* conf-riscos/Makefile [__riscos__]: Updated.
+
+2002-04-22  Stefan Bellon  <sbellon@sbellon.de>
+
+	* conf-riscos/include/config.h [__riscos__]: Development
+	versions automatically define DEBUG from now on.
+
+	* conf-riscos/Makefile [__riscos__]: Updated for LDAP keyserver
+	code.
+
+2002-04-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* gnupg.spec.in: Removed pubring.asc and OPTIONS.  Added
+	samplekeys.asc.
+
+2002-03-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* gnupg.spec.in: Added the gpgkeys_xxx keyserver helpers.  Added a
+	* to catch variations on the basic gpg man page (gpg, gpgv).  Mark
+	options.skel as a config file.  Do not include the FAQ/faq.html
+	twice (in /doc/ and /share/).
+	
+2002-01-02  Stefan Bellon  <sbellon@sbellon.de>
+
+	* build-riscos [__riscos__]: Set filetype of Makefile correctly.
+
+	* conf-riscos/include/g10defs.h [__riscos__]: Added GNU GPL
+	header and exec code defines.
+
+	* conf-riscos/include/config.h [__riscos__]: Moved parts to
+	include/util.h where they really belong to.
+
+	* conf-riscos/Makefile [__riscos__]: Updated for new keyserver,
+	exec and photo id code.
+
+2001-12-22  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh: Fixed last change.
+
+2001-12-21  Werner Koch  <wk@gnupg.org>
+
+	* distfiles: Removed those files which which automake installs by
+	default.
+
+	* autogen.sh: Replaced $() by backticks for system without a posix
+	shell.  Removed gawk specific quoting. By David Champion.
+
+2001-10-22  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh (aclocal_vers): Require automalke 1.5.
+
+2001-08-21  Stefan Bellon  <sbellon@sbellon.de>
+
+	* build-riscos [__riscos__]: New.
+	* conf-riscos [__riscos__]: Ditto.
+
+2001-08-13  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh: Test on gettext 0.10.38. By Michael Engels.
+
+2001-08-07  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh: Adjusted --build-w32 for autoconf 2.52 
+
+2001-07-09  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh (autoconf_vers): Require autoconf 2.50
+
+2001-05-06  Werner Koch  <wk@gnupg.org>
+
+	* config.guess, config.sub: Add updates from subversions.gnu.org.
+
+2001-04-19  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh: Add VPATH build support for option --build-w32. 
+
+2001-03-12  Werner Koch  <wk@gnupg.org>
+
+	* config.guess, config.sub: Replaced with the current GNU CVS ones. 
+
+2001-01-18  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh: New options --build-w32
+	* build-w32: Does now call autogen.sh
+
+2000-11-24  Werner Koch  <wk@gnupg.org>
+
+	* build-w32: New script to build the W32 version.
+	* distfiles: And put it into the distribution
+
+Thu Sep 14 17:45:11 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * gnupg.spec.in: Updated.
+
+Wed Sep  6 17:55:47 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * config.guess, config.sub: Replaced with the latest version from the
+        CVS archive.  Hope that does not break too much.
+
+Fri May 12 14:01:20 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* gnupg.spec.in: New version from Fabio with some updated descriptions.
+
+Mon May  1 15:38:04 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* gnupg.spec.in: New version from Fabio.
+
+Fri Mar 17 16:26:05 CET 2000  Werner Koch  <wk@openit.de>
+
+	* config.gues, config.sub: Support for s390-ibm-linux-gnu. Thanks
+	to Holger Smolinski.
+
+Thu Mar  2 15:37:46 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* config.guess: Add support for QNX.  By Sam Roberts.
+	* config.sub: Ditto.
+
+Thu Sep 23 09:49:25 1999  Werner Koch  (wk@gnupg.org)
 
 	* commit: Remove leading and trailing empty lines when copying
 	Changes to Changelog
 
 Wed Sep 15 16:22:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
-
 	* gnupg.spec: Add Portuguese description
 
 Thu Sep  2 16:40:55 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
 
 	* mkdiff: changed format of diff file name and made script more
 	general.
 
 Wed Aug  4 10:34:18 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
-
 	* config.guess: Updated from gnu/common and applied my emx patch again.
 	* config.sub: Updated from gnu/common.
 
 Wed Jul 14 19:42:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
-
 	* ltmain.sh, ltconfig.sh : Updated to libtool 1.3.3
 
 Mon Jul 12 14:55:34 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
 
 	* autogen.sh: Run libtoolize
 
@@ -104,4 +225,16 @@ Wed Oct 14 09:55:25 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* config.guess (FreeBSD): Changes from Jun Kuriyama to support ELF
 	* config.sub: (freebsd): Add to maybe_os
+
+
+ Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
 

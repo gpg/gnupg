@@ -1,5 +1,5 @@
 /* errors.c  -	error strings
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#include <gcrypt.h>
 #include "errors.h"
 #include "i18n.h"
 
@@ -43,12 +42,12 @@ strerror( int n )
 #endif /* !HAVE_STRERROR */
 
 const char *
-gpg_errstr( int err )
+g10_errstr( int err )
 {
     static char buf[50];
     const char *p;
 
-  #define X(n,s) case GPGERR_##n : p = s; break;
+  #define X(n,s) case G10ERR_##n : p = s; break;
     switch( err ) {
       case -1:		p = "eof"; break;
       case 0:		p = "okay"; break;
@@ -101,13 +100,12 @@ gpg_errstr( int err )
       X(NETWORK        ,N_("network error"))
       X(SELFTEST_FAILED,"selftest failed")
       X(NOT_ENCRYPTED  ,N_("not encrypted"))
-      default: /* pass on to libgcrypt */
-	if( err >= 0 ) /* pass on to libgcrypt */
-	    p = gcry_strerror(err); /* fimxe: how do we handle i18n? */
-	else {
-	    p = buf; sprintf(buf, "gpgerr=%d", err); break;
-	}
-	break;
+      X(NOT_PROCESSED  ,N_("not processed"))
+      /* the key cannot be used for a specific usage */
+      X(UNU_PUBKEY     ,N_("unusable public key"))
+      X(UNU_SECKEY     ,N_("unusable secret key"))
+      X(KEYSERVER      ,N_("keyserver error"))
+      default: p = buf; sprintf(buf, "g10err=%d", err); break;
     }
   #undef X
     return _(p);

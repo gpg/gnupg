@@ -1,5 +1,5 @@
 /* armor.c - Armor flter
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -28,7 +28,7 @@
 
 #include "errors.h"
 #include "iobuf.h"
-#include <gcrypt.h>
+#include "memory.h"
 #include "util.h"
 #include "filter.h"
 #include "packet.h"
@@ -151,8 +151,9 @@ initialize(void)
 }
 
 /****************
- * Check whether this is an armored file or not
- * See also parse-packet.c for details on this code
+ * Check whether this is an armored file or not See also
+ * parse-packet.c for details on this code For unknown historic
+ * reasons we use a string here but only the first byte will be used.
  * Returns: True if it seems to be armored
  */
 static int
@@ -195,6 +196,7 @@ use_armor_filter( IOBUF a )
     byte buf[1];
     int n;
 
+    /* fixme: there might be a problem with iobuf_peek */
     n = iobuf_peek(a, buf, 1 );
     if( n == -1 )
 	return 0; /* EOF, doesn't matter whether armored or not */
@@ -210,7 +212,7 @@ static void
 invalid_armor(void)
 {
     write_status(STATUS_BADARMOR);
-    gpg_exit(1); /* stop here */
+    g10_exit(1); /* stop here */
 }
 
 
@@ -245,7 +247,9 @@ parse_hash_header( const char *line )
 	    found |= 2;
 	else if( !strncmp( s, "MD5", s2-s ) )
 	    found |= 4;
-	else if( !strncmp( s, "TIGER", s2-s ) )
+	else if( !strncmp( s, "TIGER192", s2-s ) )
+	    found |= 8;
+	else if( !strncmp( s, "TIGER", s2-s ) ) /* used by old versions */
 	    found |= 8;
 	else
 	    return 0;
@@ -283,6 +287,14 @@ is_armor_header( byte *line, unsigned len )
 	return -1;
     save_p = p;
     p += 5;
+
+    /* Some mail programs on Windows seem to add spaces to the end of
+       the line.  This becomes strict if --openpgp is set. */
+
+    if(!opt.rfc2440)
+      while(*p==' ')
+	p++;
+
     if( *p == '\r' )
 	p++;
     if( *p == '\n' )
@@ -312,19 +324,19 @@ is_armor_header( byte *line, unsigned len )
  *	 >0: Good header line
  */
 static int
-parse_header_line( armor_filter_context_t *afx, byte *line, unsigned len )
+parse_header_line( armor_filter_context_t *afx, byte *line, unsigned int len )
 {
     byte *p;
     int hashes=0;
+    unsigned int len2;
 
-    /* fixme: why this double check?  I think the original code w/o the
-     * second check for an empty line was done from an early draft of
-     * of OpenPGP - or simply very stupid code */
-    if( *line == '\n' || ( len && (*line == '\r' && line[1]=='\n') ) )
-	return 0; /* empty line */
-    len = trim_trailing_ws( line, len );
-    if( !len )
-	return 0; /* WS only same as empty line */
+    len2 = check_trailing_ws( line, len );
+    if( !len2 ) {
+        afx->buffer_pos = len2;  /* (it is not the fine way to do it here) */
+	return 0; /* WS only: same as empty line */
+    }
+    len = len2;
+    line[len2] = 0;
 
     p = strchr( line, ':');
     if( !p || !p[1] ) {
@@ -399,7 +411,7 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 	    if( hdr_line == BEGIN_SIGNED_MSG_IDX ) {
 		if( afx->in_cleartext ) {
 		    log_error(_("nested clear text signatures\n"));
-		    rc = GPGERR_INVALID_ARMOR;
+		    rc = G10ERR_INVALID_ARMOR;
 		}
 		afx->in_cleartext = 1;
 	    }
@@ -429,7 +441,7 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 	i = parse_header_line( afx, line, len );
 	if( i <= 0 ) {
 	    if( i )
-		rc = GPGERR_INVALID_ARMOR;
+		rc = G10ERR_INVALID_ARMOR;
 	    break;
 	}
     }
@@ -502,7 +514,7 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	    /* the buffer is always allocated with enough space to append
 	     * the removed [CR], LF and a Nul
 	     * The reason for this complicated procedure is to keep at least
-	     * the original tupe of lineending - handling of the removed
+	     * the original type of lineending - handling of the removed
 	     * trailing spaces seems to be impossible in our method
 	     * of faking a packet; either we have to use a temporary file
 	     * or calculate the hash here in this module and somehow find
@@ -590,6 +602,15 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 }
 
 
+static int
+invalid_crc(void)
+{
+    if ( opt.ignore_crc_error )
+        return 0;
+    log_inc_errorcount();
+    return G10ERR_INVALID_ARMOR;
+}
+
 
 static int
 radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
@@ -636,9 +657,9 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		if( isxdigit(cc1) && isxdigit(cc2)
 				  && strchr( "=\n\r\t ", cc3 )) {
 		    /* well it seems to be the case - adjust */
-		    c = isdigit(cc1)? (cc1 - '0'): (toupper(cc1)-'A'+10);
+		    c = isdigit(cc1)? (cc1 - '0'): (ascii_toupper(cc1)-'A'+10);
 		    c <<= 4;
-		    c |= isdigit(cc2)? (cc2 - '0'): (toupper(cc2)-'A'+10);
+		    c |= isdigit(cc2)? (cc2 - '0'): (ascii_toupper(cc2)-'A'+10);
 		    afx->buffer_pos += 2;
 		    afx->qp_detected = 1;
 		    goto again;
@@ -728,20 +749,23 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		    break; /* eof */
 	    } while( ++idx < 4 );
 	    if( c == -1 ) {
-		log_error(_("premature eof (in CRC)\n"));
-		rc = GPGERR_INVALID_ARMOR;
-	    }
+		log_info(_("premature eof (in CRC)\n"));
+		rc = invalid_crc();
+                	    }
 	    else if( idx != 4 ) {
-		log_error(_("malformed CRC\n"));
-		rc = GPGERR_INVALID_ARMOR;
+		log_info(_("malformed CRC\n"));
+		rc = invalid_crc();
 	    }
 	    else if( mycrc != afx->crc ) {
-		log_error(_("CRC error; %06lx - %06lx\n"),
+                log_info (_("CRC error; %06lx - %06lx\n"),
 				    (ulong)afx->crc, (ulong)mycrc);
-		rc = GPGERR_INVALID_ARMOR;
+                rc = invalid_crc();
 	    }
 	    else {
 		rc = 0;
+                /* FIXME: Here we should emit another control packet,
+                 * so that we know in mainproc that we are processing
+                 * a clearsign message */
 	      #if 0
 		for(rc=0;!rc;) {
 		    rc = 0 /*check_trailer( &fhdr, c )*/;
@@ -754,11 +778,11 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		    rc = 0;
 		else if( rc == 2 ) {
 		    log_error(_("premature eof (in Trailer)\n"));
-		    rc = GPGERR_INVALID_ARMOR;
+		    rc = G10ERR_INVALID_ARMOR;
 		}
 		else {
 		    log_error(_("error in trailer line\n"));
-		    rc = GPGERR_INVALID_ARMOR;
+		    rc = G10ERR_INVALID_ARMOR;
 		}
 	      #endif
 	    }
@@ -815,7 +839,9 @@ armor_filter( void *opaque, int control,
 	*ret_len = n;
     }
     else if( control == IOBUFCTRL_UNDERFLOW ) {
-	if( size < 15+(4*15) )	/* need space for up to 4 onepass_sigs */
+        /* We need some space for the faked packet.  The minmum required
+         * size is ~18 + length of the session marker */
+	if( size < 50 ) 
 	    BUG(); /* supplied buffer too short */
 
 	if( afx->faked )
@@ -831,7 +857,14 @@ armor_filter( void *opaque, int control,
 		    rc = -1;
 	    }
 	    else if( afx->faked ) {
-		unsigned hashes = afx->hashes;
+		unsigned int hashes = afx->hashes;
+                const byte *sesmark;
+                size_t sesmarklen;
+                
+                sesmark = get_session_marker( &sesmarklen );
+                if ( sesmarklen > 20 )
+                    BUG();
+
 		/* the buffer is at least 15+n*15 bytes long, so it
 		 * is easy to construct the packets */
 
@@ -842,36 +875,21 @@ armor_filter( void *opaque, int control,
 			afx->pgp2mode = 1;
 		}
 		n=0;
-		do {
-		    /* first some onepass signature packets */
-		    buf[n++] = 0x90; /* old format, type 4, 1 length byte */
-		    buf[n++] = 13;   /* length */
-		    buf[n++] = 3;    /* version */
-		    buf[n++] = afx->not_dash_escaped? 0:1; /* sigclass */
-		    if( hashes & 1 ) {
-			hashes &= ~1;
-			buf[n++] = GCRY_MD_RMD160;
-		    }
-		    else if( hashes & 2 ) {
-			hashes &= ~2;
-			buf[n++] = GCRY_MD_SHA1;
-		    }
-		    else if( hashes & 4 ) {
-			hashes &= ~4;
-			buf[n++] = GCRY_MD_MD5;
-		    }
-		    else if( hashes & 8 ) {
-			hashes &= ~8;
-			buf[n++] = GCRY_MD_TIGER;
-		    }
-		    else
-			buf[n++] = 0;	 /* (don't know) */
-
-		    buf[n++] = 0;    /* public key algo (don't know) */
-		    memset(buf+n, 0, 8); /* don't know the keyid */
-		    n += 8;
-		    buf[n++] = !hashes;   /* last one */
-		} while( hashes );
+                /* first a gpg control packet */
+                buf[n++] = 0xff; /* new format, type 63, 1 length byte */
+                n++;   /* see below */
+                memcpy(buf+n, sesmark, sesmarklen ); n+= sesmarklen;
+                buf[n++] = CTRLPKT_CLEARSIGN_START; 
+                buf[n++] = afx->not_dash_escaped? 0:1; /* sigclass */
+                if( hashes & 1 ) 
+                    buf[n++] = DIGEST_ALGO_RMD160;
+                if( hashes & 2 ) 
+                    buf[n++] = DIGEST_ALGO_SHA1;
+                if( hashes & 4 ) 
+                    buf[n++] = DIGEST_ALGO_MD5;
+                if( hashes & 8 ) 
+                    buf[n++] = DIGEST_ALGO_TIGER;
+                buf[1] = n - 2;
 
 		/* followed by a plaintext packet */
 		buf[n++] = 0xaf; /* old packet format, type 11, var length */
@@ -908,9 +926,8 @@ armor_filter( void *opaque, int control,
 					      PRINTABLE_OS_NAME ")" LF );
 
 	    /* write the comment string or a default one */
-	    s = opt.comment_string ? opt.comment_string
-				   : _("For info see http://www.gnupg.org");
-	    if( *s ) {
+	    s = opt.comment_string;
+	    if( s && *s ) {
 		iobuf_writestr(a, "Comment: " );
 		for( ; *s; s++ ) {
 		    if( *s == '\n' )
@@ -925,8 +942,15 @@ armor_filter( void *opaque, int control,
 		iobuf_writestr(a, LF );
 	    }
 
-	    if( afx->hdrlines )
-		iobuf_writestr(a, afx->hdrlines);
+	    if ( afx->hdrlines ) {
+                for ( s = afx->hdrlines; *s; s++ ) {
+                  #ifdef HAVE_DOSISH_SYSTEM
+                    if ( *s == '\n' )
+                        iobuf_put( a, '\r');
+                  #endif
+                    iobuf_put(a, *s );
+                }
+            }
 	    iobuf_writestr(a, LF );
 	    afx->status++;
 	    afx->idx = 0;
@@ -1041,7 +1065,7 @@ armor_filter( void *opaque, int control,
 	if( afx->qp_detected )
 	    log_error(_("quoted printable character in armor - "
 			"probably a buggy MTA has been used\n") );
-	gcry_free( afx->buffer );
+	m_free( afx->buffer );
 	afx->buffer = NULL;
     }
     else if( control == IOBUFCTRL_DESC )
@@ -1058,7 +1082,7 @@ make_radix64_string( const byte *data, size_t len )
 {
     char *buffer, *p;
 
-    buffer = p = gcry_xmalloc( (len+2)/3*4 + 1 );
+    buffer = p = m_alloc( (len+2)/3*4 + 1 );
     for( ; len >= 3 ; len -= 3, data += 3 ) {
 	*p++ = bintoasc[(data[0] >> 2) & 077];
 	*p++ = bintoasc[(((data[0] <<4)&060)|((data[1] >> 4)&017))&077];
@@ -1077,4 +1101,222 @@ make_radix64_string( const byte *data, size_t len )
     *p = 0;
     return buffer;
 }
+
+
+/***********************************************
+ *  For the pipemode command we can't use the armor filter for various
+ *  reasons, so we use this new unarmor_pump stuff to remove the armor 
+ */
+
+enum unarmor_state_e {
+    STA_init = 0,
+    STA_bypass,
+    STA_wait_newline,
+    STA_wait_dash,
+    STA_first_dash, 
+    STA_compare_header,
+    STA_found_header_wait_newline,
+    STA_skip_header_lines,
+    STA_skip_header_lines_non_ws,
+    STA_read_data,
+    STA_wait_crc,
+    STA_read_crc,
+    STA_ready
+};
+
+struct unarmor_pump_s {
+    enum unarmor_state_e state;
+    byte val;
+    int checkcrc;
+    int pos;   /* counts from 0..3 */
+    u32 crc;
+    u32 mycrc; /* the one store in the data */
+};
+
+
+
+UnarmorPump
+unarmor_pump_new (void)
+{
+    UnarmorPump x;
+
+    if( !is_initialized )
+        initialize();
+    x = m_alloc_clear (sizeof *x);
+    return x;
+}
+
+void
+unarmor_pump_release (UnarmorPump x)
+{
+    m_free (x);
+}
+
+/* 
+ * Get the next character from the ascii armor taken from the IOBUF
+ * created earlier by unarmor_pump_new().
+ * Return:  c = Character
+ *        256 = ignore this value
+ *         -1 = End of current armor 
+ *         -2 = Premature EOF (not used)
+ *         -3 = Invalid armor
+ */
+int
+unarmor_pump (UnarmorPump x, int c)
+{
+    int rval = 256; /* default is to ignore the return value */
+
+    switch (x->state) {
+      case STA_init:
+        { 
+            byte tmp[1];
+            tmp[0] = c; 
+            if ( is_armored (tmp) )
+                x->state = c == '-'? STA_first_dash : STA_wait_newline;
+            else {
+                x->state = STA_bypass;
+                return c;
+            }
+        }
+        break;
+      case STA_bypass:
+        return c; /* return here to avoid crc calculation */
+      case STA_wait_newline:
+        if (c == '\n')
+            x->state = STA_wait_dash;
+        break;
+      case STA_wait_dash:
+        x->state = c == '-'? STA_first_dash : STA_wait_newline;
+        break;
+      case STA_first_dash: /* just need for initalization */
+        x->pos = 0;
+        x->state = STA_compare_header;
+      case STA_compare_header:
+        if ( "-----BEGIN PGP SIGNATURE-----"[++x->pos] == c ) {
+            if ( x->pos == 28 ) 
+                x->state = STA_found_header_wait_newline;
+        }
+        else 
+            x->state = c == '\n'? STA_wait_dash : STA_wait_newline;
+        break;
+      case STA_found_header_wait_newline:
+        /* to make CR,LF issues easier we simply allow for white space
+           behind the 5 dashes */
+        if ( c == '\n' )
+            x->state = STA_skip_header_lines;
+        else if ( c != '\r' && c != ' ' && c != '\t' )
+            x->state = STA_wait_dash; /* garbage after the header line */
+        break;
+      case STA_skip_header_lines:
+        /* i.e. wait for one empty line */
+        if ( c == '\n' ) {
+            x->state = STA_read_data;
+            x->crc = CRCINIT;
+            x->val = 0;
+            x->pos = 0;
+        }
+        else if ( c != '\r' && c != ' ' && c != '\t' )
+            x->state = STA_skip_header_lines_non_ws;
+        break;
+      case STA_skip_header_lines_non_ws:
+        /* like above but we already encountered non white space */
+        if ( c == '\n' )
+            x->state = STA_skip_header_lines;
+        break;
+      case STA_read_data:
+        /* fixme: we don't check for the trailing dash lines but rely
+         * on the armor stop characters */
+        if( c == '\n' || c == ' ' || c == '\r' || c == '\t' )
+            break; /* skip all kind of white space */
+
+        if( c == '=' ) { /* pad character: stop */
+            if( x->pos == 1 ) /* in this case val has some value */
+                rval = x->val;
+            x->state = STA_wait_crc;
+            break;
+        }
+
+        {
+            int c2;
+            if( (c = asctobin[(c2=c)]) == 255 ) {
+                log_error(_("invalid radix64 character %02x skipped\n"), c2);
+                break;
+            }
+        }
+        
+        switch(x->pos) {
+          case 0:
+            x->val = c << 2;
+            break;
+          case 1:
+            x->val |= (c>>4)&3;
+            rval = x->val;
+            x->val = (c<<4)&0xf0;
+            break;
+          case 2:
+            x->val |= (c>>2)&15;
+            rval = x->val;
+            x->val = (c<<6)&0xc0;
+            break;
+          case 3:
+            x->val |= c&0x3f;
+            rval = x->val;
+            break;
+        }
+        x->pos = (x->pos+1) % 4;
+        break;
+      case STA_wait_crc:
+        if( c == '\n' || c == ' ' || c == '\r' || c == '\t' || c == '=' )
+            break; /* skip ws and pad characters */
+        /* assume that we are at the next line */
+        x->state = STA_read_crc;
+        x->pos = 0;
+        x->mycrc = 0;
+      case STA_read_crc:
+        if( (c = asctobin[c]) == 255 ) {
+            rval = -1; /* ready */
+            if( x->crc != x->mycrc ) {
+                log_info (_("CRC error; %06lx - %06lx\n"),
+                          (ulong)x->crc, (ulong)x->mycrc);
+                if ( invalid_crc() )
+                    rval = -3;
+            }
+            x->state = STA_ready; /* not sure whether this is correct */
+            break;
+        }
+        
+        switch(x->pos) {
+          case 0:
+            x->val = c << 2;
+            break;
+          case 1:
+            x->val |= (c>>4)&3;
+            x->mycrc |= x->val << 16;
+            x->val = (c<<4)&0xf0;
+            break;
+          case 2:
+            x->val |= (c>>2)&15;
+            x->mycrc |= x->val << 8;
+            x->val = (c<<6)&0xc0;
+            break;
+          case 3:
+            x->val |= c&0x3f;
+            x->mycrc |= x->val;
+            break;
+        }
+        x->pos = (x->pos+1) % 4;
+        break;
+      case STA_ready:
+        rval = -1;
+        break;
+    }
+
+    if ( !(rval & ~255) ) { /* compute the CRC */
+        x->crc = (x->crc << 8) ^ crc_table[((x->crc >> 16)&0xff) ^ rval];
+        x->crc &= 0x00ffffff;
+    }
+
+    return rval;
+}
+
 

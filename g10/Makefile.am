@@ -1,84 +1,104 @@
+# Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+#
+# This file is part of GnuPG.
+#
+# GnuPG is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# GnuPG is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
-EXTRA_DIST = OPTIONS  pubring.asc  options.skel
-OMIT_DEPENDENCIES = zlib.h zconf.h
-LDFLAGS = @LDFLAGS@ $(LIBGCRYPT_LIBS)
-# we need to add libutil.la a second time because we have to resolve
-# gpg_log_ in some libjnlib modules. - very ugly - should be removed soon.
-needed_libs = ../util/libutil.a \
-	      ../jnlib/libjnlib.a ../util/libutil.a
+INCLUDES = -I.. -I$(top_srcdir)/include -I$(top_srcdir)/intl
+EXTRA_DIST = options.skel
+# it seems that we can't use this with automake 1.5
+#OMIT_DEPENDENCIES = zlib.h zconf.h
+LDFLAGS = @LDFLAGS@ @DYNLINK_LDFLAGS@
+needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
 #noinst_PROGRAMS = gpgd
-#bin_PROGRAMS = gpg kbxutil
-noinst_PROGRAMS = gpg kbxutil
+bin_PROGRAMS = gpg gpgv
 
 common_source =  \
+	      global.h          \
 	      build-packet.c	\
 	      compress.c	\
-	      basicdefs.h	\
 	      filter.h		\
 	      free-packet.c	\
 	      getkey.c		\
-	      keydb.h		\
-	      delkey.c		\
-	      pkclist.c 	\
-	      skclist.c 	\
-	      ringedit.c	\
+	      keydb.c keydb.h    \
+	      keyring.c keyring.h \
+	      seskey.c		\
 	      kbnode.c		\
-	      kbx.h		\
-	      kbxblob.c 	\
-	      kbxio.c		\
-	      kbxfile.c 	\
 	      main.h		\
 	      mainproc.c	\
 	      armor.c		\
 	      mdfilter.c	\
 	      textfilter.c	\
-	      cipher.c		\
 	      misc.c		\
 	      options.h 	\
 	      openfile.c	\
 	      keyid.c		\
+	      packet.h		\
+	      parse-packet.c	\
+	      comment.c 	\
+	      status.c		\
+	      status.h		\
+	      plaintext.c	\
+	      sig-check.c	\
+	      keylist.c 	\
+	      signal.c
+
+gpg_SOURCES  = g10.c		\
+	      $(common_source)	\
+	      pkclist.c 	\
+	      skclist.c 	\
+	      pubkey-enc.c	\
+	      passphrase.c	\
+	      seckey-cert.c	\
+	      encr-data.c	\
+	      cipher.c		\
+	      encode.c		\
+	      sign.c		\
+	      verify.c		\
+	      revoke.c		\
+	      decrypt.c 	\
+	      keyedit.c 	\
+	      dearmor.c 	\
+	      import.c		\
+	      export.c		\
+	      hkp.h		\
+	      hkp.c		\
 	      trustdb.c 	\
 	      trustdb.h 	\
 	      tdbdump.c 	\
 	      tdbio.c		\
 	      tdbio.h		\
-	      hkp.h		\
-	      hkp.c		\
-	      packet.h		\
-	      parse-packet.c	\
-	      passphrase.c	\
-	      pubkey-enc.c	\
-	      seckey-cert.c	\
-	      seskey.c		\
-	      import.c		\
-	      export.c		\
-	      comment.c 	\
-	      status.c		\
-	      status.h		\
-	      sign.c		\
-	      plaintext.c	\
-	      encr-data.c	\
-	      encode.c		\
-	      revoke.c		\
-	      keylist.c 	\
-	      sig-check.c	\
-	      signal.c		\
-	      helptext.c
+	      delkey.c		\
+	      keygen.c          \
+	      pipemode.c        \
+	      helptext.c        \
+	      keyserver.c       \
+	      keyserver-internal.h \
+	      photoid.c photoid.h \
+	      exec.c exec.h
 
-gpg_SOURCES  = gpg.c		\
-	      $(common_source)	\
-	      verify.c		\
-	      decrypt.c 	\
-	      keyedit.c 	\
-	      dearmor.c 	\
-	      keygen.c
 
-# fixme: remove unused sources from kbxutil
-kbxutil_SOURCES = kbxutil.c   \
-	      $(common_source)
+
+gpgv_SOURCES = gpgv.c           \
+	      $(common_source)  \
+	      verify.c          
+
+
 
 
 #gpgd_SOURCES = gpgd.c \
@@ -88,15 +108,18 @@ kbxutil_SOURCES = kbxutil.c   \
 #	       ks-db.h \
 #	       $(common_source)
 
-
-LDADD =  $(needed_libs)  @ZLIBS@ @INTLLIBS@
-
+LDADD =  $(needed_libs) @ZLIBS@ @INTLLIBS@
+# gpg gets LIBOBJS to add in mkdtemp if the platform doesn't have it
+gpg_LDADD = @LIBOBJS@ $(LDADD) @NETLIBS@
 
 $(PROGRAMS): $(needed_libs)
-
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_DATA) $(srcdir)/options.skel \
 				$(DESTDIR)$(pkgdatadir)/options.skel
-
+	@set -e;\
+	 if test -f $(DESTDIR)$(bindir)/gpgm ; then \
+	   echo "removing obsolete gpgm binary" ;   \
+	   rm $(DESTDIR)$(bindir)/gpgm ;	    \
+	 fi

@@ -1,22 +1,61 @@
-2000-10-10  Werner Koch  <wk@gnupg.org>
+2002-05-07  Stefan Bellon  <sbellon@sbellon.de>
 
-	* bftest.c (main): Allow selection of cipher mode.
+	* gpgsplit.c (create_filename): Use EXTSEP_S instead of ".".
 
-Mon Sep 18 16:35:45 CEST 2000  Werner Koch  <wk@openit.de>
+2002-04-23  David Shaw  <dshaw@jabberwocky.com>
 
-       * ring-a-party: substr starts at offset 1 not 0.  Many thanks to Mike
-        for finding this bug. Flush the last key.
+	* Makefile.am: Do not list libraries in -lxxx format in a
+	dependency line.
 
-Mon Jul 17 16:35:47 CEST 2000  Werner Koch  <wk@>
+2002-01-02  Stefan Bellon  <sbellon@sbellon.de>
 
-  * mail-signed-keys: New.
-  * ring-a-party: New.
+	* gpgsplit.c [__riscos__]: Added RISC OS specific file name
+	code.
 
-Mon Jan 31 17:46:35 CET 2000  Werner Koch  <wk@>
+	* gpgsplit.c (write_part): Introduced two explicit casts.
 
-	* Makefile.am: Add libjnlib.
-	* bftest.c: Some minor hacks to let it compile.
-	* mpicalc.c: Ditto.
+2001-12-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgsplit.c (pkttype_to_string): PKT_PHOTO_ID -> PKT_ATTRIBUTE
+
+2001-10-23  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (gpgsplit_LDADD): Add ZLIBS.
+
+2001-09-18  Werner Koch  <wk@gnupg.org>
+
+	* gpgsplit.c: New option --uncompress.
+	(write_part): Handle old style uncompressing.
+
+2001-06-20  Werner Koch  <wk@gnupg.org>
+
+	* gpgsplit.c: New.
+	* Makefile.am (bin_PROGRAMS): Install gpgsplit.
+
+2001-03-27  Werner Koch  <wk@gnupg.org>
+
+	* mail-signed-keys: Add option --dry-run.
+
+2001-03-21  Werner Koch  <wk@gnupg.org>
+
+	* shmtest.c: Add sys/types.h
+
+Fri Sep 15 18:40:36 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * ring-a-party: An array start at offset 1 no 0.  Many thanks to Mike
+        for finding this bug.
+
+Thu Sep 14 14:20:38 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * ring-a-party: Flush the last key.
+
+Wed Jul  5 13:28:45 CEST 2000  Werner Koch  <wk@>
+
+        * mail-signed-keys: New.
+
+Tue May 23 09:19:00 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* ring-a-party: New.
 
 Thu Jul  8 16:21:27 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
@@ -42,4 +81,17 @@ Mon May 18 15:39:22 1998  Werner Koch  (wk@isil.d.shuttle.de)
 Tue Apr  7 19:50:41 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* bftest.c: Now supports all availabe ciphers.
+
+
+
+ Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
 

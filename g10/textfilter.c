@@ -1,5 +1,5 @@
 /* textfilter.c
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,9 +25,9 @@
 #include <errno.h>
 #include <assert.h>
 
-#include <gcrypt.h>
 #include "errors.h"
 #include "iobuf.h"
+#include "memory.h"
 #include "util.h"
 #include "filter.h"
 #include "i18n.h"
@@ -133,7 +133,7 @@ text_filter( void *opaque, int control,
 	if( tfx->truncated )
 	    log_error(_("can't handle text lines longer than %d characters\n"),
 			MAX_LINELEN );
-	gcry_free( tfx->buffer );
+	m_free( tfx->buffer );
 	tfx->buffer = NULL;
     }
     else if( control == IOBUFCTRL_DESC )
@@ -147,7 +147,7 @@ text_filter( void *opaque, int control,
  * md is updated as required by rfc2440
  */
 int
-copy_clearsig_text( IOBUF out, IOBUF inp, GCRY_MD_HD md,
+copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
 		    int escape_dash, int escape_from, int pgp2mode )
 {
     unsigned maxlen;
@@ -175,15 +175,15 @@ copy_clearsig_text( IOBUF out, IOBUF inp, GCRY_MD_HD md,
 	/* update the message digest */
 	if( escape_dash ) {
 	    if( pending_lf ) {
-		gcry_md_putc( md, '\r' );
-		gcry_md_putc( md, '\n' );
+		md_putc( md, '\r' );
+		md_putc( md, '\n' );
 	    }
-	    gcry_md_write( md, buffer,
+	    md_write( md, buffer,
 		     len_without_trailing_chars( buffer, n,
 						 pgp2mode? " \r\n":" \t\r\n"));
 	}
 	else
-	    gcry_md_write( md, buffer, n );
+	    md_write( md, buffer, n );
 	pending_lf = buffer[n-1] == '\n';
 
 	/* write the output */
@@ -224,7 +224,7 @@ copy_clearsig_text( IOBUF out, IOBUF inp, GCRY_MD_HD md,
     if( !pending_lf ) { /* make sure that the file ends with a LF */
 	iobuf_writestr( out, LF );
 	if( !escape_dash )
-	    gcry_md_putc( md, '\n' );
+	    md_putc( md, '\n' );
     }
 
     if( truncated )

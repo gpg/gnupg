@@ -1,5 +1,5 @@
 /* ks-proto.h
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef GPG_KS_PROTO_H
-#define GPG_KS_PROTO_H
+#ifndef G10_KS_PROTO_H
+#define G10_KS_PROTO_H
 
-#endif /*GPG_KS_PROTO_H*/
+#endif /*G10_KS_PROTO_H*/

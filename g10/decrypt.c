@@ -1,5 +1,5 @@
 /* decrypt.c - verify signed data
- *	Copyright (C) 1998, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,14 +25,15 @@
 #include <errno.h>
 #include <assert.h>
 
-#include <gcrypt.h>
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
+#include "memory.h"
 #include "util.h"
 #include "main.h"
+#include "status.h"
 #include "i18n.h"
 
 
@@ -57,7 +58,7 @@ decrypt_message( const char *filename )
     fp = iobuf_open(filename);
     if( !fp ) {
 	log_error(_("can't open `%s'\n"), print_fname_stdin(filename));
-	return GPGERR_OPEN_FILE;
+	return G10ERR_OPEN_FILE;
     }
 
     if( !opt.no_armor ) {
@@ -77,6 +78,61 @@ decrypt_message( const char *filename )
     iobuf_close(fp);
     return rc;
 }
+
+void
+decrypt_messages(int nfiles, char **files)
+{
+  IOBUF fp;
+  armor_filter_context_t afx;  
+  char *p, *output = NULL;
+  int rc = 0;
+  
+  if (opt.outfile)
+    {
+      log_error(_("--output doesn't work for this command\n"));
+      return;
+        
+    }
+
+  while (nfiles--)
+    {
+      print_file_status(STATUS_FILE_START, *files, 3);      
+      output = make_outfile_name(*files);
+      if (!output)
+        continue;
+      fp = iobuf_open(*files);
+      if (!fp)
+        {
+          log_error(_("can't open `%s'\n"), print_fname_stdin(*files));
+          continue;
+        }
+      if (!opt.no_armor)
+        {
+          if (use_armor_filter(fp))
+            {
+              memset(&afx, 0, sizeof afx);
+              iobuf_push_filter(fp, armor_filter, &afx);
+            }
+        }
+      rc = proc_packets(NULL, fp);
+      iobuf_close(fp);
+      if (rc)
+        log_error("%s: decryption failed: %s\n", print_fname_stdin(*files),
+                  g10_errstr(rc));
+      p = get_last_passphrase();
+      set_next_passphrase(p);
+      m_free (p);
+      files++;
+      m_free(output);
+      write_status( STATUS_FILE_DONE );
+    }
+  set_next_passphrase(NULL);  
+}
+
+
+
+
+
 
 
 

@@ -1,5 +1,5 @@
-/* plaintext.c -  process an plaintext packet
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+/* plaintext.c -  process plaintext packets
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -29,7 +29,7 @@
 #endif
 
 #include "util.h"
-#include <gcrypt.h>
+#include "memory.h"
 #include "options.h"
 #include "packet.h"
 #include "ttyio.h"
@@ -60,7 +60,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     if( nooutput )
 	;
     else if( opt.outfile ) {
-	fname = gcry_xmalloc( strlen( opt.outfile ) + 1);
+	fname = m_alloc( strlen( opt.outfile ) + 1);
 	strcpy(fname, opt.outfile );
     }
     else if( pt->namelen == 8 && !memcmp( pt->name, "_CONSOLE", 8 ) ) {
@@ -72,7 +72,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	if( !fname )
 	    fname = ask_outfile_name( pt->name, pt->namelen );
 	if( !fname ) {
-	    rc = GPGERR_CREATE_FILE;
+	    rc = G10ERR_CREATE_FILE;
 	    goto leave;
 	}
     }
@@ -89,31 +89,44 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	setmode ( fileno(fp) , O_BINARY );
       #endif
     }
-    else if( !overwrite_filep( fname ) ) {
-	rc = GPGERR_CREATE_FILE;
-	goto leave;
+    else {
+	while( !overwrite_filep (fname) ) {
+            char *tmp = ask_outfile_name (NULL, 0);
+            if ( !tmp || !*tmp ) {
+                m_free (tmp);
+                rc = G10ERR_CREATE_FILE;
+                goto leave;
+            }
+            m_free (fname);
+            fname = tmp;
+        }
     }
 
     if( fp || nooutput )
 	;
     else if( !(fp = fopen(fname,"wb")) ) {
-	log_error("Error creating `%s': %s\n", fname, strerror(errno) );
-	rc = GPGERR_CREATE_FILE;
+	log_error(_("error creating `%s': %s\n"), fname, strerror(errno) );
+	rc = G10ERR_CREATE_FILE;
+#ifdef __riscos__
+        if (errno == 106)
+            log_info("perhaps the output file has the same name as the input file?\n");
+#endif /* __riscos__ */
 	goto leave;
     }
 
-    if( pt->len ) {
+    if( !pt->is_partial ) {
+        /* we have an actual length (which might be zero). */
 	assert( !clearsig );
 	if( convert ) { /* text mode */
 	    for( ; pt->len; pt->len-- ) {
 		if( (c = iobuf_get(pt->buf)) == -1 ) {
 		    log_error("Problem reading source (%u bytes remaining)\n",
 			      (unsigned)pt->len);
-		    rc = GPGERR_READ_FILE;
+		    rc = G10ERR_READ_FILE;
 		    goto leave;
 		}
 		if( mfx->md )
-		    gcry_md_putc(mfx->md, c );
+		    md_putc(mfx->md, c );
 	      #ifndef HAVE_DOSISH_SYSTEM
 		if( c == '\r' )  /* convert to native line ending */
 		    continue;	 /* fixme: this hack might be too simple */
@@ -122,45 +135,45 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		    if( putc( c, fp ) == EOF ) {
 			log_error("Error writing to `%s': %s\n",
 				  fname, strerror(errno) );
-			rc = GPGERR_WRITE_FILE;
+			rc = G10ERR_WRITE_FILE;
 			goto leave;
 		    }
 		}
 	    }
 	}
 	else { /* binary mode */
-	    byte *buffer = gcry_xmalloc( 32768 );
+	    byte *buffer = m_alloc( 32768 );
 	    while( pt->len ) {
 		int len = pt->len > 32768 ? 32768 : pt->len;
 		len = iobuf_read( pt->buf, buffer, len );
 		if( len == -1 ) {
 		    log_error("Problem reading source (%u bytes remaining)\n",
 			      (unsigned)pt->len);
-		    rc = GPGERR_READ_FILE;
-		    gcry_free( buffer );
+		    rc = G10ERR_READ_FILE;
+		    m_free( buffer );
 		    goto leave;
 		}
 		if( mfx->md )
-		    gcry_md_write( mfx->md, buffer, len );
+		    md_write( mfx->md, buffer, len );
 		if( fp ) {
 		    if( fwrite( buffer, 1, len, fp ) != len ) {
 			log_error("Error writing to `%s': %s\n",
 				  fname, strerror(errno) );
-			rc = GPGERR_WRITE_FILE;
-			gcry_free( buffer );
+			rc = G10ERR_WRITE_FILE;
+			m_free( buffer );
 			goto leave;
 		    }
 		}
 		pt->len -= len;
 	    }
-	    gcry_free( buffer );
+	    m_free( buffer );
 	}
     }
     else if( !clearsig ) {
 	if( convert ) { /* text mode */
 	    while( (c = iobuf_get(pt->buf)) != -1 ) {
 		if( mfx->md )
-		    gcry_md_putc(mfx->md, c );
+		    md_putc(mfx->md, c );
 	      #ifndef HAVE_DOSISH_SYSTEM
 		if( convert && c == '\r' )
 		    continue; /* fixme: this hack might be too simple */
@@ -169,14 +182,14 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		    if( putc( c, fp ) == EOF ) {
 			log_error("Error writing to `%s': %s\n",
 				  fname, strerror(errno) );
-			rc = GPGERR_WRITE_FILE;
+			rc = G10ERR_WRITE_FILE;
 			goto leave;
 		    }
 		}
 	    }
 	}
 	else { /* binary mode */
-	    byte *buffer = gcry_xmalloc( 32768 );
+	    byte *buffer = m_alloc( 32768 );
 	    int eof;
 	    for( eof=0; !eof; ) {
 		/* Why do we check for len < 32768:
@@ -191,18 +204,18 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		if( len < 32768 )
 		    eof = 1;
 		if( mfx->md )
-		    gcry_md_write( mfx->md, buffer, len );
+		    md_write( mfx->md, buffer, len );
 		if( fp ) {
 		    if( fwrite( buffer, 1, len, fp ) != len ) {
 			log_error("Error writing to `%s': %s\n",
 				  fname, strerror(errno) );
-			rc = GPGERR_WRITE_FILE;
-			gcry_free( buffer );
+			rc = G10ERR_WRITE_FILE;
+			m_free( buffer );
 			goto leave;
 		    }
 		}
 	    }
-	    gcry_free( buffer );
+	    m_free( buffer );
 	}
 	pt->buf = NULL;
     }
@@ -214,15 +227,15 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		if( putc( c, fp ) == EOF ) {
 		    log_error("Error writing to `%s': %s\n",
 						fname, strerror(errno) );
-		    rc = GPGERR_WRITE_FILE;
+		    rc = G10ERR_WRITE_FILE;
 		    goto leave;
 		}
 	    }
 	    if( !mfx->md )
 		continue;
 	    if( state == 2 ) {
-		gcry_md_putc(mfx->md, '\r' );
-		gcry_md_putc(mfx->md, '\n' );
+		md_putc(mfx->md, '\r' );
+		md_putc(mfx->md, '\n' );
 		state = 0;
 	    }
 	    if( !state ) {
@@ -231,18 +244,18 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		else if( c == '\n'  )
 		    state = 2;
 		else
-		    gcry_md_putc(mfx->md, c );
+		    md_putc(mfx->md, c );
 	    }
 	    else if( state == 1 ) {
 		if( c == '\n'  )
 		    state = 2;
 		else {
-		    gcry_md_putc(mfx->md, '\r' );
+		    md_putc(mfx->md, '\r' );
 		    if( c == '\r'  )
 			state = 1;
 		    else {
 			state = 0;
-			gcry_md_putc(mfx->md, c );
+			md_putc(mfx->md, c );
 		    }
 		}
 	    }
@@ -253,7 +266,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     if( fp && fp != stdout && fclose(fp) ) {
 	log_error("Error closing `%s': %s\n", fname, strerror(errno) );
 	fp = NULL;
-	rc = GPGERR_WRITE_FILE;
+	rc = G10ERR_WRITE_FILE;
 	goto leave;
     }
     fp = NULL;
@@ -261,12 +274,12 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
   leave:
     if( fp && fp != stdout )
 	fclose(fp);
-    gcry_free(fname);
+    m_free(fname);
     return rc;
 }
 
 static void
-do_hash( GCRY_MD_HD md, GCRY_MD_HD md2, IOBUF fp, int textmode )
+do_hash( MD_HANDLE md, MD_HANDLE md2, IOBUF fp, int textmode )
 {
     text_filter_context_t tfx;
     int c;
@@ -280,27 +293,27 @@ do_hash( GCRY_MD_HD md, GCRY_MD_HD md2, IOBUF fp, int textmode )
 	int lc = -1;
 	while( (c = iobuf_get(fp)) != -1 ) {
 	    if( c == '\n' && lc == '\r' )
-		gcry_md_putc(md2, c);
+		md_putc(md2, c);
 	    else if( c == '\n' ) {
-		gcry_md_putc(md2, '\r');
-		gcry_md_putc(md2, c);
+		md_putc(md2, '\r');
+		md_putc(md2, c);
 	    }
 	    else if( c != '\n' && lc == '\r' ) {
-		gcry_md_putc(md2, '\n');
-		gcry_md_putc(md2, c);
+		md_putc(md2, '\n');
+		md_putc(md2, c);
 	    }
 	    else
-		gcry_md_putc(md2, c);
+		md_putc(md2, c);
 
 	    if( md )
-		gcry_md_putc(md, c );
+		md_putc(md, c );
 	    lc = c;
 	}
     }
     else {
 	while( (c = iobuf_get(fp)) != -1 ) {
 	    if( md )
-		gcry_md_putc(md, c );
+		md_putc(md, c );
 	}
     }
 }
@@ -311,7 +324,7 @@ do_hash( GCRY_MD_HD md, GCRY_MD_HD md2, IOBUF fp, int textmode )
  * INFILE is the name of the input file.
  */
 int
-ask_for_detached_datafile( GCRY_MD_HD md, GCRY_MD_HD md2,
+ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
 			   const char *inname, int textmode )
 {
     char *answer = NULL;
@@ -323,12 +336,12 @@ ask_for_detached_datafile( GCRY_MD_HD md, GCRY_MD_HD md2,
 	int any=0;
 	tty_printf(_("Detached signature.\n"));
 	do {
-	    gcry_free(answer);
+	    m_free(answer);
 	    answer = cpr_get("detached_signature.filename",
 			   _("Please enter name of data file: "));
 	    cpr_kill_prompt();
 	    if( any && !*answer ) {
-		rc = GPGERR_READ_FILE;
+		rc = G10ERR_READ_FILE;
 		goto leave;
 	    }
 	    fp = iobuf_open(answer);
@@ -338,7 +351,7 @@ ask_for_detached_datafile( GCRY_MD_HD md, GCRY_MD_HD md2,
 	    }
 	    else if( !fp ) {
 		log_error("can't open `%s': %s\n", answer, strerror(errno) );
-		rc = GPGERR_READ_FILE;
+		rc = G10ERR_READ_FILE;
 		goto leave;
 	    }
 	} while( !fp );
@@ -355,7 +368,7 @@ ask_for_detached_datafile( GCRY_MD_HD md, GCRY_MD_HD md2,
 
 
   leave:
-    gcry_free(answer);
+    m_free(answer);
     return rc;
 }
 
@@ -366,11 +379,11 @@ ask_for_detached_datafile( GCRY_MD_HD md, GCRY_MD_HD md2,
  * If FILES is NULL, hash stdin.
  */
 int
-hash_datafiles( GCRY_MD_HD md, GCRY_MD_HD md2, STRLIST files,
+hash_datafiles( MD_HANDLE md, MD_HANDLE md2, STRLIST files,
 		const char *sigfilename, int textmode )
 {
     IOBUF fp;
-    STRLIST sl=NULL;
+    STRLIST sl;
 
     if( !files ) {
 	/* check whether we can open the signed material */
@@ -380,28 +393,26 @@ hash_datafiles( GCRY_MD_HD md, GCRY_MD_HD md2, STRLIST files,
 	    iobuf_close(fp);
 	    return 0;
 	}
-	/* no we can't (no sigfile) - read signed stuff from stdin */
-	add_to_strlist( &sl, "-");
+        log_error (_("no signed data\n"));
+        return G10ERR_OPEN_FILE;
     }
-    else
-	sl = files;
 
-    for( ; sl; sl = sl->next ) {
+
+    for (sl=files; sl; sl = sl->next ) {
 	fp = iobuf_open( sl->d );
 	if( !fp ) {
 	    log_error(_("can't open signed data `%s'\n"),
 						print_fname_stdin(sl->d));
-	    if( !files )
-		free_strlist(sl);
-	    return GPGERR_OPEN_FILE;
+	    return G10ERR_OPEN_FILE;
 	}
 	do_hash( md, md2, fp, textmode );
 	iobuf_close(fp);
     }
 
-    if( !files )
-	free_strlist(sl);
     return 0;
 }
+
+
+
 
 

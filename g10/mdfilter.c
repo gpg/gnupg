@@ -1,5 +1,5 @@
 /* mdfilter.c - filter data and calculate a message digest
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,9 +25,9 @@
 #include <errno.h>
 #include <assert.h>
 
-#include <gcrypt.h>
 #include "errors.h"
 #include "iobuf.h"
+#include "memory.h"
 #include "util.h"
 #include "filter.h"
 
@@ -50,9 +50,9 @@ md_filter( void *opaque, int control,
 	i = iobuf_read( a, buf, size );
 	if( i == -1 ) i = 0;
 	if( i ) {
-	    gcry_md_write(mfx->md, buf, i );
+	    md_write(mfx->md, buf, i );
 	    if( mfx->md2 )
-		gcry_md_write(mfx->md2, buf, i );
+		md_write(mfx->md2, buf, i );
 	}
 	else
 	    rc = -1; /* eof */
@@ -67,8 +67,8 @@ md_filter( void *opaque, int control,
 void
 free_md_filter_context( md_filter_context_t *mfx )
 {
-    gcry_md_close(mfx->md);
-    gcry_md_close(mfx->md2);
+    md_close(mfx->md);
+    md_close(mfx->md2);
     mfx->md = NULL;
     mfx->md2 = NULL;
     mfx->maxbuf_size = 0;

@@ -1,5 +1,5 @@
 /* main.h
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -17,30 +17,39 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef GPG_MAIN_H
-#define GPG_MAIN_H
-
-#include <gcrypt.h>
-#include "basicdefs.h"
+#ifndef G10_MAIN_H
+#define G10_MAIN_H
+#include "types.h"
 #include "iobuf.h"
+#include "mpi.h"
+#include "cipher.h"
 #include "keydb.h"
 
-#define DEFAULT_CIPHER_ALGO  GCRY_CIPHER_BLOWFISH
-#define DEFAULT_PUBKEY_ALGO  GCRY_PUBKEY_ELGAMAL
-#define DEFAULT_DIGEST_ALGO  GCRY_MD_RMD160
+#define DEFAULT_CIPHER_ALGO   CIPHER_ALGO_CAST5
+#define DEFAULT_PUBKEY_ALGO   PUBKEY_ALGO_ELGAMAL
+#define DEFAULT_DIGEST_ALGO   DIGEST_ALGO_SHA1
+#define DEFAULT_COMPRESS_ALGO 1
 
-#define is_RSA(a)     ((a)==GCRY_PK_RSA || (a)==GCRY_PK_RSA_E \
-					|| (a)==GCRY_PK_RSA_S )
-#define is_ELGAMAL(a) ((a)==GCRY_PK_ELG || (a)==GCRY_PK_ELG_E)
+typedef struct {
+    int header_okay;
+    PK_LIST pk_list;
+    cipher_filter_context_t cfx;
+} encrypt_filter_context_t;
 
+struct groupitem
+{
+  char *name;
+  STRLIST values;
+  struct groupitem *next;
+};
 
-/*-- gpg.c --*/
-extern int gpg_errors_seen;
+/*-- g10.c --*/
+extern int g10_errors_seen;
 
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
-  void gpg_exit(int rc) __attribute__ ((noreturn));
+  void g10_exit(int rc) __attribute__ ((noreturn));
 #else
-  void gpg_exit(int rc);
+  void g10_exit(int rc);
 #endif
 void print_pubkey_algo_note( int algo );
 void print_cipher_algo_note( int algo );
@@ -55,24 +64,29 @@ int disable_core_dumps(void);
 u16 checksum_u16( unsigned n );
 u16 checksum( byte *p, unsigned n );
 u16 checksum_mpi( MPI a );
+u16 checksum_mpi_counted_nbits( MPI a );
 u32 buffer_to_u32( const byte *buffer );
-
-int mpi_write( IOBUF out, GCRY_MPI a );
-int mpi_write_opaque( IOBUF out, MPI a );
-GCRY_MPI mpi_read(IOBUF inp, unsigned int *ret_nread, int secure );
-GCRY_MPI mpi_read_opaque(IOBUF inp, unsigned int *ret_nread );
-int mpi_print( FILE *fp, MPI a, int mode );
-
+const byte *get_session_marker( size_t *rlen );
 int openpgp_cipher_test_algo( int algo );
 int openpgp_pk_test_algo( int algo, unsigned int usage_flags );
 int openpgp_pk_algo_usage ( int algo );
 int openpgp_md_test_algo( int algo );
+int check_permissions(const char *path,int extension,int checkonly);
+void idea_cipher_warn( int show );
 
-int pubkey_get_npkey( int algo );
-int pubkey_get_nskey( int algo );
-int pubkey_get_nsig( int algo );
-int pubkey_get_nenc( int algo );
-unsigned int pubkey_nbits( int algo, MPI *pkey );
+struct expando_args
+{
+  PKT_public_key *pk;
+  PKT_secret_key *sk;
+  byte imagetype;
+};
+
+char *pct_expando(const char *string,struct expando_args *args);
+int hextobyte( const char *s );
+void deprecated_warning(const char *configname,unsigned int configlineno,
+			const char *option,const char *repl1,const char *repl2);
+const char *compress_algo_to_string(int algo);
+int check_compress_algo(int algo);
 
 /*-- helptext.c --*/
 void display_online_help( const char *keyword );
@@ -81,15 +95,17 @@ void display_online_help( const char *keyword );
 int encode_symmetric( const char *filename );
 int encode_store( const char *filename );
 int encode_crypt( const char *filename, STRLIST remusr );
+void encode_crypt_files(int nfiles, char **files, STRLIST remusr);
 int encrypt_filter( void *opaque, int control,
 		    IOBUF a, byte *buf, size_t *ret_len);
 
 
 /*-- sign.c --*/
-int complete_sig( PKT_signature *sig, PKT_secret_key *sk, GCRY_MD_HD md );
+int complete_sig( PKT_signature *sig, PKT_secret_key *sk, MD_HANDLE md );
 int sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	       int do_encrypt, STRLIST remusr, const char *outfile );
 int clearsign_file( const char *fname, STRLIST locusr, const char *outfile );
+int sign_symencrypt_file (const char *fname, STRLIST locusr);
 
 /*-- sig-check.c --*/
 int check_key_signature( KBNODE root, KBNODE node, int *is_selfsig );
@@ -97,17 +113,22 @@ int check_key_signature2( KBNODE root, KBNODE node,
 			  int *is_selfsig, u32 *r_expiredate, int *r_expired );
 
 /*-- delkey.c --*/
-int delete_key( const char *username, int secure );
+int delete_keys( STRLIST names, int secret, int allow_both );
 
 /*-- keyedit.c --*/
 void keyedit_menu( const char *username, STRLIST locusr, STRLIST cmds,
 							    int sign_mode );
 
 /*-- keygen.c --*/
+u32 ask_expire_interval(int object);
 u32 ask_expiredate(void);
 void generate_keypair( const char *fname );
+int keygen_set_std_prefs (const char *string,int personal);
+char *keygen_get_std_prefs (void);
 int keygen_add_key_expire( PKT_signature *sig, void *opaque );
 int keygen_add_std_prefs( PKT_signature *sig, void *opaque );
+int keygen_upd_std_prefs( PKT_signature *sig, void *opaque );
+int keygen_add_revkey(PKT_signature *sig, void *opaque);
 int generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock );
 
 /*-- openfile.c --*/
@@ -121,16 +142,20 @@ void try_make_homedir( const char *fname );
 /*-- seskey.c --*/
 void make_session_key( DEK *dek );
 MPI encode_session_key( DEK *dek, unsigned nbits );
-MPI encode_md_value( int pubkey_algo,  GCRY_MD_HD md,
+MPI encode_md_value( int pubkey_algo,  MD_HANDLE md,
 		     int hash_algo, unsigned nbits, int v3compathack );
 
 /*-- comment.c --*/
-KBNODE make_comment_node_from_buffer( const char *s, size_t n );
 KBNODE make_comment_node( const char *s );
+KBNODE make_mpi_comment_node( const char *s, MPI a );
 
 /*-- import.c --*/
-void import_keys( char **fnames, int nnames, int fast );
-int import_keys_stream( IOBUF inp, int fast );
+void import_keys( char **fnames, int nnames, int fast, void *stats_hd );
+int import_keys_stream( IOBUF inp, int fast, void *stats_hd );
+void *import_new_stats_handle (void);
+void import_release_stats_handle (void *p);
+void import_print_stats (void *hd);
+
 int collapse_uids( KBNODE *keyblock );
 
 /*-- export.c --*/
@@ -146,6 +171,7 @@ int enarmor_file( const char *fname );
 /*-- revoke.c --*/
 struct revocation_reason_info;
 int gen_revoke( const char *uname );
+int gen_desig_revoke( const char *uname );
 int revocation_reason_build_cb( PKT_signature *sig, void *opaque );
 struct revocation_reason_info *
 		ask_revocation_reason( int key_rev, int cert_rev, int hint );
@@ -154,17 +180,27 @@ void release_revocation_reason_info( struct revocation_reason_info *reason );
 /*-- keylist.c --*/
 void public_key_list( STRLIST list );
 void secret_key_list( STRLIST list );
+void list_keyblock( KBNODE keyblock, int secret, int fpr, void *opaque );
+void print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode);
+void show_policy_url(PKT_signature *sig,int indent);
+void show_notation(PKT_signature *sig,int indent);
+void set_attrib_fd(int fd);
 
 /*-- verify.c --*/
+void print_file_status( int status, const char *name, int what );
 int verify_signatures( int nfiles, char **files );
 int verify_files( int nfiles, char **files );
 
 /*-- decrypt.c --*/
 int decrypt_message( const char *filename );
+void decrypt_messages(int nfiles, char **files);
 
 /*-- plaintext.c --*/
-int hash_datafiles( GCRY_MD_HD md, GCRY_MD_HD md2,
+int hash_datafiles( MD_HANDLE md, MD_HANDLE md2,
 		    STRLIST files, const char *sigfilename, int textmode );
+
+/*-- pipemode.c --*/
+void run_in_pipemode (void);
 
 /*-- signal.c --*/
 void init_signals(void);
@@ -172,4 +208,4 @@ void pause_on_sigusr( int which );
 void block_all_signals(void);
 void unblock_all_signals(void);
 
-#endif /*GPG_MAIN_H*/
+#endif /*G10_MAIN_H*/

@@ -1,5 +1,5 @@
 /* delkey.c - delete keys
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -31,7 +31,7 @@
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include <gcrypt.h>
+#include "memory.h"
 #include "util.h"
 #include "main.h"
 #include "trustdb.h"
@@ -43,26 +43,38 @@
 
 /****************
  * Delete a public or secret key from a keyring.
+ * r_sec_avail will be set if a secret key is available and the public
+ * key can't be deleted for that reason.
  */
-int
-delete_key( const char *username, int secret )
+static int
+do_delete_key( const char *username, int secret, int *r_sec_avail )
 {
     int rc = 0;
     KBNODE keyblock = NULL;
     KBNODE node;
-    KBPOS kbpos;
+    KEYDB_HANDLE hd = keydb_new (secret);
     PKT_public_key *pk = NULL;
     PKT_secret_key *sk = NULL;
     u32 keyid[2];
     int okay=0;
     int yes;
+    KEYDB_SEARCH_DESC desc;
+
+    *r_sec_avail = 0;
 
     /* search the userid */
-    rc = secret? find_secret_keyblock_byname( &keyblock, username )
-	       : find_keyblock_byname( &keyblock, username );
-    if( rc ) {
-	log_error(_("%s: user not found: %s\n"), username, gpg_errstr(rc) );
+    classify_user_id (username, &desc);
+    rc = desc.mode? keydb_search (hd, &desc, 1):G10ERR_INV_USER_ID;
+    if (rc) {
+	log_error (_("key `%s' not found: %s\n"), username, g10_errstr (rc));
 	write_status_text( STATUS_DELETE_PROBLEM, "1" );
+	goto leave;
+    }
+
+    /* read the keyblock */
+    rc = keydb_get_keyblock (hd, &keyblock );
+    if (rc) {
+	log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
 	goto leave;
     }
 
@@ -70,7 +82,7 @@ delete_key( const char *username, int secret )
     node = find_kbnode( keyblock, secret? PKT_SECRET_KEY:PKT_PUBLIC_KEY );
     if( !node ) {
 	log_error("Oops; key not found anymore!\n");
-	rc = GPGERR_GENERAL;
+	rc = G10ERR_GENERAL;
 	goto leave;
     }
 
@@ -83,15 +95,12 @@ delete_key( const char *username, int secret )
 	keyid_from_pk( pk, keyid );
 	rc = seckey_available( keyid );
 	if( !rc ) {
-	    log_error(_(
-	    "there is a secret key for this public key!\n"));
-	    log_info(_(
-	    "use option \"--delete-secret-key\" to delete it first.\n"));
-	    write_status_text( STATUS_DELETE_PROBLEM, "2" );
-	    rc = -1;
+            *r_sec_avail = 1;
+            rc = -1;
+            goto leave;
 	}
-	else if( rc != GPGERR_NO_SECKEY ) {
-	    log_error("%s: get secret key: %s\n", username, gpg_errstr(rc) );
+	else if( rc != G10ERR_NO_SECKEY ) {
+	    log_error("%s: get secret key: %s\n", username, g10_errstr(rc) );
 	}
 	else
 	    rc = 0;
@@ -113,15 +122,15 @@ delete_key( const char *username, int secret )
 	    tty_printf("sec  %4u%c/%08lX %s   ",
 		      nbits_from_sk( sk ),
 		      pubkey_letter( sk->pubkey_algo ),
-		      keyid[1], datestr_from_sk(sk) );
+		      (ulong)keyid[1], datestr_from_sk(sk) );
 	else
 	    tty_printf("pub  %4u%c/%08lX %s   ",
 		      nbits_from_pk( pk ),
 		      pubkey_letter( pk->pubkey_algo ),
-		      keyid[1], datestr_from_pk(pk) );
+		      (ulong)keyid[1], datestr_from_pk(pk) );
 	p = get_user_id( keyid, &n );
 	tty_print_utf8_string( p, n );
-	gcry_free(p);
+	m_free(p);
 	tty_printf("\n\n");
 
 	yes = cpr_get_answer_is_yes( secret? "delete_key.secret.okay"
@@ -142,16 +151,59 @@ delete_key( const char *username, int secret )
 
 
     if( okay ) {
-      #warning MUST FIX THIS!!!
-	rc = delete_keyblock( &kbpos );
-	if( rc ) {
-	    log_error("delete_keyblock failed: %s\n", gpg_errstr(rc) );
+	rc = keydb_delete_keyblock (hd);
+	if (rc) {
+	    log_error (_("deleting keyblock failed: %s\n"), g10_errstr(rc) );
 	    goto leave;
 	}
+
+	/* Note that the ownertrust being cleared will trigger a
+           revalidation_mark().  This makes sense - only deleting keys
+           that have ownertrust set should trigger this. */
+
+        if (!secret && pk && clear_ownertrust (pk)) {
+          if (opt.verbose)
+            log_info (_("ownertrust information cleared\n"));
+        }
     }
 
   leave:
-    release_kbnode( keyblock );
+    keydb_release (hd);
+    release_kbnode (keyblock);
     return rc;
 }
 
+/****************
+ * Delete a public or secret key from a keyring.
+ */
+int
+delete_keys( STRLIST names, int secret, int allow_both )
+{
+    int rc, avail;
+
+    for(;names;names=names->next) {
+       rc = do_delete_key (names->d, secret, &avail );
+       if ( rc && avail ) { 
+	 if ( allow_both ) {
+	   rc = do_delete_key (names->d, 1, &avail );
+	   if ( !rc )
+	     rc = do_delete_key (names->d, 0, &avail );
+	 }
+	 else {
+	   log_error(_(
+	      "there is a secret key for public key \"%s\"!\n"),names->d);
+	   log_info(_(
+	      "use option \"--delete-secret-keys\" to delete it first.\n"));
+	   write_status_text( STATUS_DELETE_PROBLEM, "2" );
+	   return rc;
+	 }
+       }
+
+       if(rc) {
+	 log_error("%s: delete key failed: %s\n", names->d, g10_errstr(rc) );
+	 return rc;
+       }
+    }
+
+    return 0;
+}

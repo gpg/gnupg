@@ -1,5 +1,5 @@
 /* miscutil.c -  miscellaneous utilities
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -27,7 +27,6 @@
 #ifdef HAVE_LANGINFO_H
   #include <langinfo.h>
 #endif
-#include <gcrypt.h>
 #include "types.h"
 #include "util.h"
 #include "i18n.h"
@@ -125,10 +124,15 @@ strtimestamp( u32 stamp )
     static char buffer[11+5];
     struct tm *tp;
     time_t atime = stamp;
-
-    tp = gmtime( &atime );
-    sprintf(buffer,"%04d-%02d-%02d",
-		    1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
+    
+    if (atime < 0) {
+        strcpy (buffer, "????" "-??" "-??");
+    }
+    else {
+        tp = gmtime( &atime );
+        sprintf(buffer,"%04d-%02d-%02d",
+                1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
+    }
     return buffer;
 }
 
@@ -144,6 +148,11 @@ asctimestamp( u32 stamp )
     #endif
     struct tm *tp;
     time_t atime = stamp;
+
+    if (atime < 0) {
+        strcpy (buffer, "????" "-??" "-??");
+        return buffer;
+    }
 
     tp = localtime( &atime );
   #ifdef HAVE_STRFTIME
@@ -173,7 +182,8 @@ void
 print_string( FILE *fp, const byte *p, size_t n, int delim )
 {
     for( ; n; n--, p++ )
-	if( iscntrl( *p ) || *p == delim ) {
+	if( *p < 0x20 || (*p >= 0x7f && *p < 0xa0) || *p == delim ||
+	    (delim && *p=='\\')) {
 	    putc('\\', fp);
 	    if( *p == '\n' )
 		putc('n', fp);
@@ -198,7 +208,7 @@ print_string( FILE *fp, const byte *p, size_t n, int delim )
  * Print an UTF8 string to FP and filter all control characters out.
  */
 void
-print_utf8_string( FILE *fp, const byte *p, size_t n )
+print_utf8_string2 ( FILE *fp, const byte *p, size_t n, int delim )
 {
     size_t i;
     char *buf;
@@ -209,17 +219,24 @@ print_utf8_string( FILE *fp, const byte *p, size_t n )
 	    break;
     }
     if( i < n ) {
-	buf = utf8_to_native( p, n );
+	buf = utf8_to_native ( p, n, delim );
+	/*(utf8 conversion already does the control character quoting)*/
 	fputs( buf, fp );
-	gcry_free( buf );
+	m_free( buf );
     }
     else
-	print_string( fp, p, n, 0 );
+	print_string( fp, p, n, delim );
+}
+
+void
+print_utf8_string( FILE *fp, const byte *p, size_t n )
+{
+    print_utf8_string2 (fp, p, n, 0);
 }
 
 /****************
  * This function returns a string which is suitable for printing
- * Caller must release it with gcry_free()
+ * Caller must release it with m_free()
  */
 char *
 make_printable_string( const byte *p, size_t n, int delim )
@@ -230,7 +247,8 @@ make_printable_string( const byte *p, size_t n, int delim )
 
     /* first count length */
     for(save_n = n, save_p = p, buflen=1 ; n; n--, p++ ) {
-	if( iscntrl( *p ) || *p == delim ) {
+	if( *p < 0x20 || (*p >= 0x7f && *p < 0xa0) || *p == delim ||
+	    (delim && *p=='\\')) {
 	    if( *p=='\n' || *p=='\r' || *p=='\f'
 		|| *p=='\v' || *p=='\b' || !*p )
 		buflen += 2;
@@ -243,9 +261,10 @@ make_printable_string( const byte *p, size_t n, int delim )
     p = save_p;
     n = save_n;
     /* and now make the string */
-    d = buffer = gcry_xmalloc( buflen );
+    d = buffer = m_alloc( buflen );
     for( ; n; n--, p++ ) {
-	if( iscntrl( *p ) || *p == delim ) {
+	if( *p < 0x20 || (*p >= 0x7f && *p < 0xa0) || *p == delim ||
+	    (delim && *p=='\\')) {
 	    *d++ = '\\';
 	    if( *p == '\n' )
 		*d++ = 'n';
@@ -271,32 +290,37 @@ make_printable_string( const byte *p, size_t n, int delim )
     return buffer;
 }
 
+int
+answer_is_yes_no_default( const char *s, int def_answer )
+{
+    const char *long_yes = _("yes");
+    const char *short_yes = _("yY");
+    const char *long_no = _("no");
+    const char *short_no = _("nN");
+
+    /* Note: we have to use the local dependent strcasecmp here */
+    if( !strcasecmp(s, long_yes ) )
+	return 1;
+    if( *s && strchr( short_yes, *s ) && !s[1] )
+	return 1;
+    /* test for no strings to catch ambiguities for the next test */
+    if( !strcasecmp(s, long_no ) )
+	return 0;
+    if( *s && strchr( short_no, *s ) && !s[1] )
+	return 0;
+    /* test for the english version (for those who are used to type yes) */
+    if( !ascii_strcasecmp(s, "yes" ) )
+	return 1;
+    if( *s && strchr( "yY", *s ) && !s[1] )
+	return 1;
+    return def_answer;
+}
 
 int
 answer_is_yes( const char *s )
 {
-    char *long_yes = _("yes");
-    char *short_yes = _("yY");
-    char *long_no = _("no");
-    char *short_no = _("nN");
-
-    if( !stricmp(s, long_yes ) )
-	return 1;
-    if( strchr( short_yes, *s ) && !s[1] )
-	return 1;
-    /* test for no strings to catch ambiguities for the next test */
-    if( !stricmp(s, long_no ) )
-	return 0;
-    if( strchr( short_no, *s ) && !s[1] )
-	return 0;
-    /* test for the english version (for those who are used to type yes) */
-    if( !stricmp(s, "yes" ) )
-	return 1;
-    if( strchr( "yY", *s ) && !s[1] )
-	return 1;
-    return 0;
+  return answer_is_yes_no_default(s,0);
 }
-
 
 /****************
  * Return 1 for yes, -1 for quit, or 0 for no
@@ -304,34 +328,34 @@ answer_is_yes( const char *s )
 int
 answer_is_yes_no_quit( const char *s )
 {
-    char *long_yes = _("yes");
-    char *long_no = _("no");
-    char *long_quit = _("quit");
-    char *short_yes = _("yY");
-    char *short_no = _("nN");
-    char *short_quit = _("qQ");
+    const char *long_yes = _("yes");
+    const char *long_no = _("no");
+    const char *long_quit = _("quit");
+    const char *short_yes = _("yY");
+    const char *short_no = _("nN");
+    const char *short_quit = _("qQ");
 
-    if( !stricmp(s, long_no ) )
+    /* Note: We have to use the locale dependent strcasecmp */
+    if( !strcasecmp(s, long_no ) )
 	return 0;
-    if( !stricmp(s, long_yes ) )
+    if( !strcasecmp(s, long_yes ) )
 	return 1;
-    if( !stricmp(s, long_quit ) )
+    if( !strcasecmp(s, long_quit ) )
 	return -1;
-    if( strchr( short_no, *s ) && !s[1] )
+    if( *s && strchr( short_no, *s ) && !s[1] )
 	return 0;
-    if( strchr( short_yes, *s ) && !s[1] )
+    if( *s && strchr( short_yes, *s ) && !s[1] )
 	return 1;
-    if( strchr( short_quit, *s ) && !s[1] )
+    if( *s && strchr( short_quit, *s ) && !s[1] )
 	return -1;
-    if( !stricmp(s, "yes" ) )
+    /* but not here */
+    if( !ascii_strcasecmp(s, "yes" ) )
 	return 1;
-    if( !stricmp(s, "quit" ) )
+    if( !ascii_strcasecmp(s, "quit" ) )
 	return -1;
-    if( strchr( "yY", *s ) && !s[1] )
+    if( *s && strchr( "yY", *s ) && !s[1] )
 	return 1;
-    if( strchr( "qQ", *s ) && !s[1] )
+    if( *s && strchr( "qQ", *s ) && !s[1] )
 	return -1;
     return 0;
 }
-
-

@@ -1,5 +1,5 @@
-/* packet.h - packet read/write stuff
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+/* packet.h - packet definitions
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -18,22 +18,15 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef GPG_PACKET_H
-#define GPG_PACKET_H
+#ifndef G10_PACKET_H
+#define G10_PACKET_H
 
 #include "types.h"
 #include "iobuf.h"
+#include "mpi.h"
+#include "cipher.h"
 #include "filter.h"
-
-#ifndef DID_MPI_TYPEDEF
-  typedef struct gcry_mpi *MPI;
-  #define DID_MPI_TYPEDEF
-#endif
-
-#define GNUPG_MAX_NPKEY  4
-#define GNUPG_MAX_NSKEY  6
-#define GNUPG_MAX_NSIG	 2
-#define GNUPG_MAX_NENC	 2
+#include "global.h"
 
 #define DEBUG_PARSE_PACKET 1
 
@@ -54,13 +47,33 @@ typedef enum {
 	PKT_USER_ID	  =13, /* user id packet */
 	PKT_PUBLIC_SUBKEY =14, /* public subkey (OpenPGP) */
 	PKT_OLD_COMMENT   =16, /* comment packet from an OpenPGP draft */
-	PKT_PHOTO_ID	  =17, /* PGP's photo ID */
+	PKT_ATTRIBUTE     =17, /* PGP's attribute packet */
 	PKT_ENCRYPTED_MDC =18, /* integrity protected encrypted data */
 	PKT_MDC 	  =19, /* manipulaion detection code packet */
 	PKT_COMMENT	  =61, /* new comment packet (private) */
+        PKT_GPG_CONTROL   =63  /* internal control packet */
 } pkttype_t;
 
 typedef struct packet_struct PACKET;
+
+/* PKT_GPG_CONTROL types */
+typedef enum {
+    CTRLPKT_CLEARSIGN_START = 1,
+    CTRLPKT_PIPEMODE = 2,
+    CTRLPKT_PLAINTEXT_MARK =3
+} ctrlpkttype_t;
+
+typedef enum {
+    PREFTYPE_NONE = 0,
+    PREFTYPE_SYM = 1,
+    PREFTYPE_HASH = 2,
+    PREFTYPE_ZIP = 3
+} preftype_t;
+
+typedef struct {
+    byte type; 
+    byte value;
+} prefitem_t;
 
 typedef struct {
     int  mode;
@@ -82,7 +95,7 @@ typedef struct {
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     byte    throw_keyid;
-    MPI     data[GNUPG_MAX_NENC];
+    MPI     data[PUBKEY_MAX_NENC];
 } PKT_pubkey_enc;
 
 
@@ -96,24 +109,73 @@ typedef struct {
 
 
 typedef struct {
+    size_t size;  /* allocated */
+    size_t len;   /* used */
+    byte data[1];
+} subpktarea_t;
+
+struct revocation_key {
+  byte class;
+  byte algid;
+  byte fpr[MAX_FINGERPRINT_LEN];
+};
+
+typedef struct {
     ulong   local_id;	    /* internal use, valid if > 0 */
     struct {
 	unsigned checked:1; /* signature has been checked */
 	unsigned valid:1;   /* signature is good (if checked is set) */
 	unsigned unknown_critical:1;
+        unsigned exportable:1;
+        unsigned revocable:1;
+        unsigned policy_url:1; /* Policy URL is present */
+        unsigned notation:1; /* At least one notation is present */
+        unsigned expired:1;
     } flags;
     u32     keyid[2];	    /* 64 bit keyid */
     u32     timestamp;	    /* signature made */
+    u32     expiredate;     /* expires at this date or 0 if not at all */
     byte    version;
     byte    sig_class;	    /* sig classification, append for MD calculation*/
     byte    pubkey_algo;    /* algorithm used for public key scheme */
-			    /* (GCRY_PK_xxx) */
-    byte digest_algo;	    /* algorithm used for digest (DIGEST_ALGO_xxxx) */
-    byte *hashed_data;	    /* all subpackets with hashed  data (v4 only) */
-    byte *unhashed_data;    /* ditto for unhashed data */
+			    /* (PUBKEY_ALGO_xxx) */
+    byte    digest_algo;    /* algorithm used for digest (DIGEST_ALGO_xxxx) */
+    struct revocation_key **revkey;
+    int numrevkeys;
+    subpktarea_t *hashed;    /* all subpackets with hashed  data (v4 only) */
+    subpktarea_t *unhashed;  /* ditto for unhashed data */
     byte digest_start[2];   /* first 2 bytes of the digest */
-    MPI  data[GNUPG_MAX_NSIG];
+    MPI  data[PUBKEY_MAX_NSIG];
 } PKT_signature;
+
+#define ATTRIB_IMAGE 1
+
+/* This is the cooked form of attributes */
+struct user_attribute {
+  byte type;
+  const byte *data;
+  unsigned long len;
+};
+
+typedef struct {
+    int ref;              /* reference counter */
+    int len;		  /* length of the name */
+    struct user_attribute *attribs;
+    int numattribs;
+    byte *attrib_data;    /* if this is not NULL, the packet is an attribute */
+    unsigned long attrib_len;
+    int help_key_usage;
+    u32 help_key_expire;
+    int is_primary;
+    int is_revoked;
+    int is_expired;
+    u32 expiredate;       /* expires at this date or 0 if not at all */
+    prefitem_t *prefs;    /* list of preferences (may be NULL)*/
+    int mdc_feature;
+    u32 created;          /* according to the self-signature */
+    byte selfsigversion;
+    char name[1];
+} PKT_user_id;
 
 
 /****************
@@ -125,31 +187,38 @@ typedef struct {
 typedef struct {
     u32     timestamp;	    /* key made */
     u32     expiredate;     /* expires at this date or 0 if not at all */
+    u32     max_expiredate; /* must not expire past this date */
     byte    hdrbytes;	    /* number of header bytes */
     byte    version;
+    byte    selfsigversion; /* highest version of all of the self-sigs */
     byte    pubkey_algo;    /* algorithm used for public key scheme */
-    byte    pubkey_usage;   /* the actual allowed usage as set by getkey() */
-    u32     created;        /* according to the self-signature */
+    byte    pubkey_usage;   /* for now only used to pass it to getkey() */
     byte    req_usage;      /* hack to pass a request to getkey() */
     byte    req_algo;       /* Ditto */
     u32     has_expired;    /* set to the expiration date if expired */ 
     int     is_revoked;     /* key has been revoked */
     int     is_valid;       /* key (especially subkey) is valid */
+    int     dont_cache;     /* do not cache this */
     ulong   local_id;	    /* internal use, valid if > 0 */
     u32     main_keyid[2];  /* keyid of the primary key */
     u32     keyid[2];	    /* calculated by keyid_from_pk() */
+    prefitem_t *prefs;      /* list of preferences (may be NULL) */
+    int     mdc_feature;    /* mdc feature set */
     byte    *namehash;	    /* if != NULL: found by this name */
-    MPI     pkey[GNUPG_MAX_NPKEY];
+    PKT_user_id *user_id;   /* if != NULL: found by that uid */
+    struct revocation_key *revkey;
+    int     numrevkeys;
+    MPI     pkey[PUBKEY_MAX_NPKEY];
 } PKT_public_key;
 
 typedef struct {
     u32     timestamp;	    /* key made */
     u32     expiredate;     /* expires at this date or 0 if not at all */
+    u32     max_expiredate; /* must not expire past this date */
     byte    hdrbytes;	    /* number of header bytes */
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     byte    pubkey_usage;
-    u32     created;        /* according to the self-signature */
     byte    req_usage;
     byte    req_algo;
     u32     has_expired;    /* set to the expiration date if expired */ 
@@ -164,11 +233,12 @@ typedef struct {
 			/* and should never be passed to a mpi_xxx() */
     struct {
 	byte algo;  /* cipher used to protect the secret information*/
+        byte sha1chk;  /* SHA1 is used instead of a 16 bit checksum */ 
 	STRING2KEY s2k;
 	byte ivlen;  /* used length of the iv */
 	byte iv[16]; /* initialization vector for CFB mode */
     } protect;
-    MPI skey[GNUPG_MAX_NSKEY];
+    MPI skey[PUBKEY_MAX_NSKEY];
     u16 csum;		/* checksum */
 } PKT_secret_key;
 
@@ -179,19 +249,6 @@ typedef struct {
 } PKT_comment;
 
 typedef struct {
-    ulong stored_at;	  /* the stream offset where it was stored
-			   * by build-packet */
-    int  len;		  /* length of the name */
-    char *photo;	  /* if this is not NULL, the packet is a photo ID */
-    int photolen;	  /* and the length of the photo */
-    int help_key_usage;
-    u32 help_key_expire;
-    int is_primary;
-    u32 created;          /* according to the self-signature */
-    char name[1];
-} PKT_user_id;
-
-typedef struct {
     u32  len;		  /* reserved */
     byte  new_ctb;
     byte  algorithm;
@@ -200,6 +257,7 @@ typedef struct {
 
 typedef struct {
     u32  len;		  /* length of encrypted data */
+    int  extralen;        /* this is (blocksize+2) */
     byte new_ctb;	  /* uses a new CTB */
     byte mdc_method;	  /* > 0: integrity protected encrypted data packet */
     IOBUF buf;		  /* IOBUF reference */
@@ -211,18 +269,25 @@ typedef struct {
 
 typedef struct {
     unsigned int trustval;
+    unsigned int sigcache;
 } PKT_ring_trust;
 
 typedef struct {
     u32  len;		  /* length of encrypted data */
     IOBUF buf;		  /* IOBUF reference */
     byte new_ctb;
+    byte is_partial;      /* partial length encoded */
     int mode;
     u32 timestamp;
     int  namelen;
     char name[1];
 } PKT_plaintext;
 
+typedef struct {
+    int  control;
+    size_t datalen;
+    char data[1];
+} PKT_gpg_control;
 
 /* combine all packets into a union */
 struct packet_struct {
@@ -242,6 +307,7 @@ struct packet_struct {
 	PKT_mdc 	*mdc;		/* PKT_MDC */
 	PKT_ring_trust	*ring_trust;	/* PKT_RING_TRUST */
 	PKT_plaintext	*plaintext;	/* PKT_PLAINTEXT */
+        PKT_gpg_control *gpg_control;   /* PKT_GPG_CONTROL */
     } pkt;
 };
 
@@ -276,7 +342,7 @@ typedef enum {
     SIGSUBPKT_SIGNERS_UID  =28, /* signer's user id */
     SIGSUBPKT_REVOC_REASON =29, /* reason for revocation */
     SIGSUBPKT_FEATURES     =30, /* feature flags */
-    SIGSUBPKT_PRIV_ADD_SIG =101,/* signatur is also valid for this uid */
+    SIGSUBPKT_PRIV_VERIFY_CACHE =101, /* cache verification result (obsolete)*/
 
     SIGSUBPKT_FLAG_CRITICAL=128
 } sigsubpkttype_t;
@@ -293,39 +359,62 @@ int list_packets( IOBUF a );
 int set_packet_list_mode( int mode );
 
 #if DEBUG_PARSE_PACKET
-int dbg_search_packet( IOBUF inp, PACKET *pkt, int pkttype, ulong *retpos, const char* file, int lineno  );
-int dbg_parse_packet( IOBUF inp, PACKET *ret_pkt, ulong *pos,
+int dbg_search_packet( IOBUF inp, PACKET *pkt, off_t *retpos, int with_uid,
+                       const char* file, int lineno  );
+int dbg_parse_packet( IOBUF inp, PACKET *ret_pkt,
                       const char* file, int lineno );
-int dbg_copy_all_packets( IOBUF inp, IOBUF out, const char* file, int lineno  );
-int dbg_copy_some_packets( IOBUF inp, IOBUF out, ulong stopoff, const char* file, int lineno  );
-int dbg_skip_some_packets( IOBUF inp, unsigned n, const char* file, int lineno	);
-#define search_packet( a,b,c,d )   dbg_search_packet( (a), (b), (c), (d), __FILE__, __LINE__ )
-#define parse_packet( a, b, c )	   dbg_parse_packet( (a), (b), (c), __FILE__, __LINE__ )
-#define copy_all_packets( a,b )    dbg_copy_all_packets((a),(b), __FILE__, __LINE__ )
-#define copy_some_packets( a,b,c ) dbg_copy_some_packets((a),(b),(c), __FILE__, __LINE__ )
-#define skip_some_packets( a,b )   dbg_skip_some_packets((a),(b), __FILE__, __LINE__ )
+int dbg_copy_all_packets( IOBUF inp, IOBUF out,
+                          const char* file, int lineno  );
+int dbg_copy_some_packets( IOBUF inp, IOBUF out, off_t stopoff,
+                           const char* file, int lineno  );
+int dbg_skip_some_packets( IOBUF inp, unsigned n,
+                           const char* file, int lineno	);
+#define search_packet( a,b,c,d )   \
+             dbg_search_packet( (a), (b), (c), (d), __FILE__, __LINE__ )
+#define parse_packet( a, b )  \
+	     dbg_parse_packet( (a), (b), __FILE__, __LINE__ )
+#define copy_all_packets( a,b )  \
+             dbg_copy_all_packets((a),(b), __FILE__, __LINE__ )
+#define copy_some_packets( a,b,c ) \
+             dbg_copy_some_packets((a),(b),(c), __FILE__, __LINE__ )
+#define skip_some_packets( a,b ) \
+             dbg_skip_some_packets((a),(b), __FILE__, __LINE__ )
 #else
-int search_packet( IOBUF inp, PACKET *pkt, int pkttype, ulong *retpos );
-int parse_packet( IOBUF inp, PACKET *ret_pkt, ulong *retpos);
+int search_packet( IOBUF inp, PACKET *pkt, off_t *retpos, int with_uid );
+int parse_packet( IOBUF inp, PACKET *ret_pkt);
 int copy_all_packets( IOBUF inp, IOBUF out );
-int copy_some_packets( IOBUF inp, IOBUF out, ulong stopoff );
+int copy_some_packets( IOBUF inp, IOBUF out, off_t stopoff );
 int skip_some_packets( IOBUF inp, unsigned n );
 #endif
 
-const byte *enum_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype,
-					      size_t *ret_n, int *start );
-const byte *parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype,
-				       size_t *ret_n );
-const byte *parse_sig_subpkt2( PKT_signature *sig,
-			       sigsubpkttype_t reqtype, size_t *ret_n );
+const byte *enum_sig_subpkt ( const subpktarea_t *subpkts,
+                              sigsubpkttype_t reqtype,
+                              size_t *ret_n, int *start, int *critical );
+const byte *parse_sig_subpkt ( const subpktarea_t *buffer,
+                               sigsubpkttype_t reqtype,
+                               size_t *ret_n );
+const byte *parse_sig_subpkt2 ( PKT_signature *sig,
+                                sigsubpkttype_t reqtype,
+                                size_t *ret_n );
+int parse_one_sig_subpkt( const byte *buffer, size_t n, int type );
+void parse_revkeys(PKT_signature *sig);
+int parse_attribute_subpkts(PKT_user_id *uid);
+void make_attribute_uidname(PKT_user_id *uid);
+PACKET *create_gpg_control ( ctrlpkttype_t type,
+                             const byte *data,
+                             size_t datalen );
 
 /*-- build-packet.c --*/
 int build_packet( IOBUF inp, PACKET *pkt );
 u32 calc_packet_length( PACKET *pkt );
-void hash_public_key( GCRY_MD_HD md, PKT_public_key *pk );
+void hash_public_key( MD_HANDLE md, PKT_public_key *pk );
 void build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 			const byte *buffer, size_t buflen );
 void build_sig_subpkt_from_sig( PKT_signature *sig );
+int  delete_sig_subpkt(subpktarea_t *buffer, sigsubpkttype_t type );
+void build_attribute_subpkt(PKT_user_id *uid,byte type,
+			    const void *buf,int buflen,
+			    const void *header,int headerlen);
 
 /*-- free-packet.c --*/
 void free_symkey_enc( PKT_symkey_enc *enc );
@@ -336,18 +425,16 @@ void release_public_key_parts( PKT_public_key *pk );
 void free_public_key( PKT_public_key *key );
 void release_secret_key_parts( PKT_secret_key *sk );
 void free_secret_key( PKT_secret_key *sk );
+void free_attributes(PKT_user_id *uid);
 void free_user_id( PKT_user_id *uid );
 void free_comment( PKT_comment *rem );
 void free_packet( PACKET *pkt );
+prefitem_t *copy_prefs (const prefitem_t *prefs);
 PKT_public_key *copy_public_key( PKT_public_key *d, PKT_public_key *s );
-PKT_public_key *copy_public_key_new_namehash( PKT_public_key *d,
-					      PKT_public_key *s,
-					      const byte *namehash );
-void copy_public_parts_to_secret_key( PKT_public_key *pk,
-                                      PKT_secret_key *sk );
+void copy_public_parts_to_secret_key( PKT_public_key *pk, PKT_secret_key *sk );
 PKT_secret_key *copy_secret_key( PKT_secret_key *d, PKT_secret_key *s );
 PKT_signature *copy_signature( PKT_signature *d, PKT_signature *s );
-PKT_user_id *copy_user_id( PKT_user_id *d, PKT_user_id *s );
+PKT_user_id *scopy_user_id (PKT_user_id *sd );
 int cmp_public_keys( PKT_public_key *a, PKT_public_key *b );
 int cmp_secret_keys( PKT_secret_key *a, PKT_secret_key *b );
 int cmp_signatures( PKT_signature *a, PKT_signature *b );
@@ -356,7 +443,9 @@ int cmp_user_ids( PKT_user_id *a, PKT_user_id *b );
 
 
 /*-- sig-check.c --*/
-int signature_check( PKT_signature *sig, GCRY_MD_HD digest );
+int signature_check( PKT_signature *sig, MD_HANDLE digest );
+int signature_check2( PKT_signature *sig, MD_HANDLE digest,
+		      u32 *r_expiredate, int *r_expired );
 
 /*-- seckey-cert.c --*/
 int is_secret_key_protected( PKT_secret_key *sk );
@@ -365,6 +454,7 @@ int protect_secret_key( PKT_secret_key *sk, DEK *dek );
 
 /*-- pubkey-enc.c --*/
 int get_session_key( PKT_pubkey_enc *k, DEK *dek );
+int get_override_session_key( DEK *dek, const char *string );
 
 /*-- compress.c --*/
 int handle_compressed( void *ctx, PKT_compressed *cd,
@@ -376,7 +466,7 @@ int decrypt_data( void *ctx, PKT_encrypted *ed, DEK *dek );
 /*-- plaintext.c --*/
 int handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 					int nooutput, int clearsig );
-int ask_for_detached_datafile( GCRY_MD_HD md, GCRY_MD_HD md2,
+int ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
 			       const char *inname, int textmode );
 
 /*-- comment.c --*/
@@ -385,12 +475,19 @@ int write_comment( IOBUF out, const char *s );
 /*-- sign.c --*/
 int make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 			PKT_user_id *uid, PKT_public_key *subpk,
-			PKT_secret_key *sk,
-			int sigclass, int digest_algo,
+			PKT_secret_key *sk, int sigclass, int digest_algo,
+			int sigversion, u32 timestamp, u32 duration,
 			int (*mksubpkt)(PKT_signature *, void *),
 			void *opaque  );
+int update_keysig_packet( PKT_signature **ret_sig,
+                      PKT_signature *orig_sig,
+                      PKT_public_key *pk,
+                      PKT_user_id *uid, 
+                      PKT_secret_key *sk,
+                      int (*mksubpkt)(PKT_signature *, void *),
+                      void *opaque   );
 
 /*-- keygen.c --*/
 PKT_user_id *generate_user_id(void);
 
-#endif /*GPG_PACKET_H*/
+#endif /*G10_PACKET_H*/

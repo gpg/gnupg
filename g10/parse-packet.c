@@ -1,5 +1,5 @@
 /* parse-packet.c  - read packets
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,11 +24,14 @@
 #include <string.h>
 #include <assert.h>
 
-#include <gcrypt.h>
 #include "packet.h"
 #include "iobuf.h"
+#include "mpi.h"
 #include "util.h"
+#include "cipher.h"
+#include "memory.h"
 #include "filter.h"
+#include "photoid.h"
 #include "options.h"
 #include "main.h"
 #include "i18n.h"
@@ -36,8 +39,8 @@
 static int mpi_print_mode = 0;
 static int list_mode = 0;
 
-static int  parse( IOBUF inp, PACKET *pkt, int reqtype,
-		   ulong *retpos, int *skip, IOBUF out, int do_skip
+static int  parse( IOBUF inp, PACKET *pkt, int onlykeypkts,
+                  off_t *retpos, int *skip, IOBUF out, int do_skip
 	    #ifdef DEBUG_PARSE_PACKET
 		   ,const char *dbg_w, const char *dbg_f, int dbg_l
 	    #endif
@@ -59,7 +62,7 @@ static int  parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 				      byte *hdr, int hdrlen, PACKET *packet );
 static int  parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
-static int  parse_photo_id( IOBUF inp, int pkttype, unsigned long pktlen,
+static int  parse_attribute( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
 static int  parse_comment( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
@@ -73,6 +76,8 @@ static int  parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 					       PACKET *packet, int new_ctb);
 static int  parse_mdc( IOBUF inp, int pkttype, unsigned long pktlen,
 					       PACKET *packet, int new_ctb);
+static int  parse_gpg_control( IOBUF inp, int pkttype, unsigned long pktlen,
+                               PACKET *packet );
 
 static unsigned short
 read_16(IOBUF inp)
@@ -100,7 +105,7 @@ set_packet_list_mode( int mode )
 {
     int old = list_mode;
     list_mode = mode;
-    mpi_print_mode = (opt.debug & DBG_MPI_VALUE);
+    mpi_print_mode = DBG_MPI;
     return old;
 }
 
@@ -127,53 +132,51 @@ unknown_pubkey_warning( int algo )
  */
 #ifdef DEBUG_PARSE_PACKET
 int
-dbg_parse_packet( IOBUF inp, PACKET *pkt, ulong *retpos,
-                  const char *dbg_f, int dbg_l )
+dbg_parse_packet( IOBUF inp, PACKET *pkt, const char *dbg_f, int dbg_l )
 {
     int skip, rc;
 
     do {
-	rc = parse( inp, pkt, 0, retpos,
-                    &skip, NULL, 0, "parse", dbg_f, dbg_l );
+	rc = parse( inp, pkt, 0, NULL, &skip, NULL, 0, "parse", dbg_f, dbg_l );
     } while( skip );
     return rc;
 }
 #else
 int
-parse_packet( IOBUF inp, PACKET *pkt, ulong *retpos )
+parse_packet( IOBUF inp, PACKET *pkt )
 {
     int skip, rc;
 
     do {
-	rc = parse( inp, pkt, 0, retpos, &skip, NULL, 0 );
+	rc = parse( inp, pkt, 0, NULL, &skip, NULL, 0 );
     } while( skip );
     return rc;
 }
 #endif
 
 /****************
- * Like parse packet, but only return packets of the given type.
+ * Like parse packet, but only return secret or public (sub)key packets.
  */
 #ifdef DEBUG_PARSE_PACKET
 int
-dbg_search_packet( IOBUF inp, PACKET *pkt, int pkttype, ulong *retpos,
+dbg_search_packet( IOBUF inp, PACKET *pkt, off_t *retpos, int with_uid,
 		   const char *dbg_f, int dbg_l )
 {
     int skip, rc;
 
     do {
-	rc = parse( inp, pkt, pkttype, retpos, &skip, NULL, 0, "search", dbg_f, dbg_l );
+	rc = parse( inp, pkt, with_uid?2:1, retpos, &skip, NULL, 0, "search", dbg_f, dbg_l );
     } while( skip );
     return rc;
 }
 #else
 int
-search_packet( IOBUF inp, PACKET *pkt, int pkttype, ulong *retpos )
+search_packet( IOBUF inp, PACKET *pkt, off_t *retpos, int with_uid )
 {
     int skip, rc;
 
     do {
-	rc = parse( inp, pkt, pkttype, retpos, &skip, NULL, 0 );
+	rc = parse( inp, pkt, with_uid?2:1, retpos, &skip, NULL, 0 );
     } while( skip );
     return rc;
 }
@@ -213,7 +216,7 @@ copy_all_packets( IOBUF inp, IOBUF out )
  */
 #ifdef DEBUG_PARSE_PACKET
 int
-dbg_copy_some_packets( IOBUF inp, IOBUF out, ulong stopoff,
+dbg_copy_some_packets( IOBUF inp, IOBUF out, off_t stopoff,
 		   const char *dbg_f, int dbg_l )
 {
     PACKET pkt;
@@ -228,7 +231,7 @@ dbg_copy_some_packets( IOBUF inp, IOBUF out, ulong stopoff,
 }
 #else
 int
-copy_some_packets( IOBUF inp, IOBUF out, ulong stopoff )
+copy_some_packets( IOBUF inp, IOBUF out, off_t stopoff )
 {
     PACKET pkt;
     int skip, rc=0;
@@ -275,14 +278,14 @@ skip_some_packets( IOBUF inp, unsigned n )
 
 
 /****************
- * Parse packet. Set the variable skip points to to 1 if the packet
- * should be skipped; this is the case if either there is a
- * requested packet type and the parsed packet doesn't match or the
+ * Parse packet. Set the variable skip points to 1 if the packet
+ * should be skipped; this is the case if either ONLYKEYPKTS is set
+ * and the parsed packet isn't one or the
  * packet-type is 0, indicating deleted stuff.
  * if OUT is not NULL, a special copymode is used.
  */
 static int
-parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
+parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
        int *skip, IOBUF out, int do_skip
 #ifdef DEBUG_PARSE_PACKET
        ,const char *dbg_w, const char *dbg_f, int dbg_l
@@ -294,6 +297,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
     byte hdr[8];
     int hdrlen;
     int new_ctb = 0;
+    int with_uid = (onlykeypkts == 2);
 
     *skip = 0;
     assert( !pkt->pkt.generic );
@@ -307,9 +311,8 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
     hdrlen=0;
     hdr[hdrlen++] = ctb;
     if( !(ctb & 0x80) ) {
-	log_error("%s: invalid packet (ctb=%02x) near %lu\n",
-			    iobuf_where(inp), ctb, iobuf_tell(inp) );
-	rc = GPGERR_INVALID_PACKET;
+        log_error("%s: invalid packet (ctb=%02x)\n", iobuf_where(inp), ctb );
+	rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     pktlen = 0;
@@ -318,7 +321,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	pkttype =  ctb & 0x3f;
 	if( (c = iobuf_get(inp)) == -1 ) {
 	    log_error("%s: 1st length byte missing\n", iobuf_where(inp) );
-	    rc = GPGERR_INVALID_PACKET;
+	    rc = G10ERR_INVALID_PACKET;
 	    goto leave;
 	}
 	hdr[hdrlen++] = c;
@@ -328,7 +331,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	    pktlen = (c - 192) * 256;
 	    if( (c = iobuf_get(inp)) == -1 ) {
 		log_error("%s: 2nd length byte missing\n", iobuf_where(inp) );
-		rc = GPGERR_INVALID_PACKET;
+		rc = G10ERR_INVALID_PACKET;
 		goto leave;
 	    }
 	    hdr[hdrlen++] = c;
@@ -340,7 +343,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	    pktlen |= (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 8;
 	    if( (c = iobuf_get(inp)) == -1 ) {
 		log_error("%s: 4 byte length invalid\n", iobuf_where(inp) );
-		rc = GPGERR_INVALID_PACKET;
+		rc = G10ERR_INVALID_PACKET;
 		goto leave;
 	    }
 	    pktlen |= (hdr[hdrlen++] = c );
@@ -366,15 +369,30 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	}
     }
 
+    if (pktlen == 0xffffffff) {
+        /* with a some probability this is caused by a problem in the
+         * the uncompressing layer - in some error cases it just loops
+         * and spits out 0xff bytes. */
+        log_error ("%s: garbled packet detected\n", iobuf_where(inp) );
+	g10_exit (2);
+    }
+
     if( out && pkttype	) {
 	if( iobuf_write( out, hdr, hdrlen ) == -1 )
-	    rc = GPGERR_WRITE_FILE;
+	    rc = G10ERR_WRITE_FILE;
 	else
 	    rc = copy_packet(inp, out, pkttype, pktlen );
 	goto leave;
     }
 
-    if( do_skip || !pkttype || (reqtype && pkttype != reqtype) ) {
+    if (with_uid && pkttype == PKT_USER_ID)
+        ;
+    else if( do_skip 
+        || !pkttype
+        || (onlykeypkts && pkttype != PKT_PUBLIC_SUBKEY
+                        && pkttype != PKT_PUBLIC_KEY
+                        && pkttype != PKT_SECRET_SUBKEY
+                        && pkttype != PKT_SECRET_KEY  ) ) {
 	skip_rest(inp, pktlen);
 	*skip = 1;
 	rc = 0;
@@ -392,16 +410,16 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
       #endif
     }
     pkt->pkttype = pkttype;
-    rc = GPGERR_UNKNOWN_PACKET; /* default error */
+    rc = G10ERR_UNKNOWN_PACKET; /* default error */
     switch( pkttype ) {
       case PKT_PUBLIC_KEY:
       case PKT_PUBLIC_SUBKEY:
-	pkt->pkt.public_key = gcry_xcalloc( 1,sizeof *pkt->pkt.public_key );
+	pkt->pkt.public_key = m_alloc_clear(sizeof *pkt->pkt.public_key );
 	rc = parse_key(inp, pkttype, pktlen, hdr, hdrlen, pkt );
 	break;
       case PKT_SECRET_KEY:
       case PKT_SECRET_SUBKEY:
-	pkt->pkt.secret_key = gcry_xcalloc( 1,sizeof *pkt->pkt.secret_key );
+	pkt->pkt.secret_key = m_alloc_clear(sizeof *pkt->pkt.secret_key );
 	rc = parse_key(inp, pkttype, pktlen, hdr, hdrlen, pkt );
 	break;
       case PKT_SYMKEY_ENC:
@@ -411,19 +429,19 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	rc = parse_pubkeyenc(inp, pkttype, pktlen, pkt );
 	break;
       case PKT_SIGNATURE:
-	pkt->pkt.signature = gcry_xcalloc( 1,sizeof *pkt->pkt.signature );
+	pkt->pkt.signature = m_alloc_clear(sizeof *pkt->pkt.signature );
 	rc = parse_signature(inp, pkttype, pktlen, pkt->pkt.signature );
 	break;
       case PKT_ONEPASS_SIG:
-	pkt->pkt.onepass_sig = gcry_xcalloc( 1,sizeof *pkt->pkt.onepass_sig );
+	pkt->pkt.onepass_sig = m_alloc_clear(sizeof *pkt->pkt.onepass_sig );
 	rc = parse_onepass_sig(inp, pkttype, pktlen, pkt->pkt.onepass_sig );
 	break;
       case PKT_USER_ID:
 	rc = parse_user_id(inp, pkttype, pktlen, pkt );
 	break;
-      case PKT_PHOTO_ID:
-	pkt->pkttype = pkttype = PKT_USER_ID;  /* must fix it */
-	rc = parse_photo_id(inp, pkttype, pktlen, pkt);
+      case PKT_ATTRIBUTE:
+	pkt->pkttype = pkttype = PKT_USER_ID;  /* we store it in the userID */
+	rc = parse_attribute(inp, pkttype, pktlen, pkt);
 	break;
       case PKT_OLD_COMMENT:
       case PKT_COMMENT:
@@ -446,6 +464,9 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
       case PKT_MDC:
 	rc = parse_mdc(inp, pkttype, pktlen, pkt, new_ctb );
 	break;
+      case PKT_GPG_CONTROL:
+        rc = parse_gpg_control(inp, pkttype, pktlen, pkt );
+        break;
       default:
 	skip_packet(inp, pkttype, pktlen);
 	break;
@@ -453,7 +474,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 
   leave:
     if( !rc && iobuf_error(inp) )
-	rc = GPGERR_INV_KEYRING;
+	rc = G10ERR_INV_KEYRING;
     return rc;
 }
 
@@ -483,23 +504,23 @@ copy_packet( IOBUF inp, IOBUF out, int pkttype, unsigned long pktlen )
     if( iobuf_in_block_mode(inp) ) {
 	while( (n = iobuf_read( inp, buf, 100 )) != -1 )
 	    if( iobuf_write(out, buf, n ) )
-		return GPGERR_WRITE_FILE; /* write error */
+		return G10ERR_WRITE_FILE; /* write error */
     }
     else if( !pktlen && pkttype == PKT_COMPRESSED ) {
 	log_debug("copy_packet: compressed!\n");
 	/* compressed packet, copy till EOF */
 	while( (n = iobuf_read( inp, buf, 100 )) != -1 )
 	    if( iobuf_write(out, buf, n ) )
-		return GPGERR_WRITE_FILE; /* write error */
+		return G10ERR_WRITE_FILE; /* write error */
     }
     else {
 	for( ; pktlen; pktlen -= n ) {
 	    n = pktlen > 100 ? 100 : pktlen;
 	    n = iobuf_read( inp, buf, n );
 	    if( n == -1 )
-		return GPGERR_READ_FILE;
+		return G10ERR_READ_FILE;
 	    if( iobuf_write(out, buf, n ) )
-		return GPGERR_WRITE_FILE; /* write error */
+		return G10ERR_WRITE_FILE; /* write error */
 	}
     }
     return 0;
@@ -559,7 +580,7 @@ read_rest( IOBUF inp, size_t pktlen )
 	p = NULL;
     }
     else {
-	p = gcry_xmalloc( pktlen );
+	p = m_alloc( pktlen );
 	for(i=0; pktlen; pktlen--, i++ )
 	    p[i] = iobuf_get(inp);
     }
@@ -572,19 +593,23 @@ static int
 parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
     PKT_symkey_enc *k;
+    int rc = 0;
     int i, version, s2kmode, cipher_algo, hash_algo, seskeylen, minlen;
 
     if( pktlen < 4 ) {
 	log_error("packet(%d) too short\n", pkttype);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     version = iobuf_get_noeof(inp); pktlen--;
     if( version != 4 ) {
 	log_error("packet(%d) with unknown version %d\n", pkttype, version);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     if( pktlen > 200 ) { /* (we encode the seskeylen in a byte) */
 	log_error("packet(%d) too large\n", pkttype);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     cipher_algo = iobuf_get_noeof(inp); pktlen--;
@@ -606,10 +631,11 @@ parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     }
     if( minlen > pktlen ) {
 	log_error("packet with S2K %d too short\n", s2kmode );
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     seskeylen = pktlen - minlen;
-    k = packet->pkt.symkey_enc = gcry_xcalloc( 1, sizeof *packet->pkt.symkey_enc
+    k = packet->pkt.symkey_enc = m_alloc_clear( sizeof *packet->pkt.symkey_enc
 						+ seskeylen - 1 );
     k->version = version;
     k->cipher_algo = cipher_algo;
@@ -642,24 +668,27 @@ parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 
   leave:
     skip_rest(inp, pktlen);
-    return 0;
+    return rc;
 }
 
 static int
 parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
-    unsigned n;
+    unsigned int n;
+    int rc = 0;
     int i, ndata;
     PKT_pubkey_enc *k;
 
-    k = packet->pkt.pubkey_enc = gcry_xcalloc( 1,sizeof *packet->pkt.pubkey_enc);
+    k = packet->pkt.pubkey_enc = m_alloc_clear(sizeof *packet->pkt.pubkey_enc);
     if( pktlen < 12 ) {
 	log_error("packet(%d) too short\n", pkttype);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     k->version = iobuf_get_noeof(inp); pktlen--;
     if( k->version != 2 && k->version != 3 ) {
 	log_error("packet(%d) with unknown version %d\n", pkttype, k->version);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     k->keyid[0] = read_32(inp); pktlen -= 4;
@@ -686,12 +715,14 @@ parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 		mpi_print(stdout, k->data[i], mpi_print_mode );
 		putchar('\n');
 	    }
+            if (!k->data[i])
+                rc = G10ERR_INVALID_PACKET;
 	}
     }
 
   leave:
     skip_rest(inp, pktlen);
-    return 0;
+    return rc;
 }
 
 
@@ -713,6 +744,7 @@ dump_sig_subpkt( int hashed, int type, int critical,
                type, (unsigned)length );
     }
     
+   
     printf("\t%s%ssubpkt %d len %u (", /*)*/
 	      critical ? "critical ":"",
 	      hashed ? "hashed ":"", type, (unsigned)length );
@@ -737,13 +769,20 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	    printf("%sexportable", *buffer? "":"not ");
 	break;
       case SIGSUBPKT_TRUST:
-	p = "trust signature";
+	if(length!=2)
+	  p="[invalid trust signature]";
+	else
+	  printf("trust signature of level %d, amount %d",buffer[0],buffer[1]);
 	break;
       case SIGSUBPKT_REGEXP:
-	p = "regular expression";
+	if(!length)
+	  p="[invalid regexp]";
+	else
+	  printf("regular expression: \"%s\"",buffer);
 	break;
       case SIGSUBPKT_REVOCABLE:
-	p = "revocable";
+	if( length )
+	    printf("%srevocable", *buffer? "":"not ");
 	break;
       case SIGSUBPKT_KEY_EXPIRE:
 	if( length >= 4 )
@@ -806,7 +845,9 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	    printf(" %d", buffer[i] );
 	break;
       case SIGSUBPKT_KS_FLAGS:
-	p = "key server preferences";
+	fputs("key server preferences:",stdout);
+	for(i=0;i<length;i++)
+	  printf(" %02X", buffer[i]);
 	break;
       case SIGSUBPKT_PREF_KS:
 	p = "preferred key server";
@@ -822,12 +863,12 @@ dump_sig_subpkt( int hashed, int type, int critical,
         fputs ( "key flags:", stdout );
         for( i=0; i < length; i++ )
             printf(" %02X", buffer[i] );
-        break;
+	break;
       case SIGSUBPKT_SIGNERS_UID:
 	p = "signer's user ID";
 	break;
       case SIGSUBPKT_REVOC_REASON:
-	if( length ) {
+        if( length ) {
 	    printf("revocation reason 0x%02x (", *buffer );
 	    print_string( stdout, buffer+1, length-1, ')' );
 	    p = ")";
@@ -846,10 +887,10 @@ dump_sig_subpkt( int hashed, int type, int critical,
       case SIGSUBPKT_FEATURES:
         fputs ( "features:", stdout );
         for( i=0; i < length; i++ )
-            printf(" %02X", buffer[i] );
-        break;
-      case SIGSUBPKT_PRIV_ADD_SIG:  /* gnupg private - to be removed */
-	p = "signs additional user ID";
+            printf(" %02x", buffer[i] );
+	break;
+      case SIGSUBPKT_PRIV_VERIFY_CACHE:
+	p = "obsolete verification cache";
 	break;
       default: p = "?"; break;
     }
@@ -863,10 +904,14 @@ dump_sig_subpkt( int hashed, int type, int critical,
  *	    -2 unsupported type
  *	    -3 subpacket too short
  */
-static int
+int
 parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
 {
     switch( type ) {
+      case SIGSUBPKT_REV_KEY:
+	if(n < 22)
+	  break;
+	return 0;
       case SIGSUBPKT_SIG_CREATED:
       case SIGSUBPKT_SIG_EXPIRE:
       case SIGSUBPKT_KEY_EXPIRE:
@@ -874,12 +919,19 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
 	    break;
 	return 0;
       case SIGSUBPKT_KEY_FLAGS:
-          return 0;  
+      case SIGSUBPKT_KS_FLAGS:
+      case SIGSUBPKT_PREF_SYM:
+      case SIGSUBPKT_PREF_HASH:
+      case SIGSUBPKT_PREF_COMPR:
+      case SIGSUBPKT_POLICY:
+      case SIGSUBPKT_FEATURES:
+	return 0;
       case SIGSUBPKT_EXPORTABLE:
+      case SIGSUBPKT_REVOCABLE:
 	if( !n )
 	    break;
 	return 0;
-      case SIGSUBPKT_ISSUER:/* issuer key ID */
+      case SIGSUBPKT_ISSUER: /* issuer key ID */
 	if( n < 8 )
 	    break;
 	return 0;
@@ -891,23 +943,23 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
 	if( !n	)
 	    break;
 	return 0;
-      case SIGSUBPKT_PREF_SYM:
-      case SIGSUBPKT_PREF_HASH:
-      case SIGSUBPKT_PREF_COMPR:
-      case SIGSUBPKT_FEATURES:
-      case SIGSUBPKT_POLICY:
-	return 0;
       case SIGSUBPKT_PRIMARY_UID:
           if ( n != 1 )
               break;
           return 0;   
-      case SIGSUBPKT_PRIV_ADD_SIG:
-	/* because we use private data, we check the GNUPG marker */
-	if( n < 24 )
+      case SIGSUBPKT_PRIV_VERIFY_CACHE:
+        /* We used this in gpg 1.0.5 and 1.0.6 to cache signature
+         * verification results - it is no longer used.
+         * "GPG" 0x00 <mode> <stat>
+         * where mode == 1: valid data, stat == 0: invalid signature
+         * stat == 1: valid signature 
+	 * (because we use private data, we check our marker) */
+	if( n < 6 )
 	    break;
-	if( buffer[0] != 'G' || buffer[1] != 'P' || buffer[2] != 'G' )
+	if( buffer[0] != 'G' || buffer[1] != 'P'
+            || buffer[2] != 'G' || buffer[3] )
 	    return -2;
-	return 3;
+	return 4;
       default: return -1;
     }
     return -3;
@@ -927,15 +979,18 @@ can_handle_critical( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_SIG_EXPIRE:
       case SIGSUBPKT_KEY_EXPIRE:
       case SIGSUBPKT_EXPORTABLE:
+      case SIGSUBPKT_REVOCABLE:
+      case SIGSUBPKT_REV_KEY:
       case SIGSUBPKT_ISSUER:/* issuer key ID */
       case SIGSUBPKT_PREF_SYM:
       case SIGSUBPKT_PREF_HASH:
       case SIGSUBPKT_PREF_COMPR:
-      case SIGSUBPKT_FEATURES:
       case SIGSUBPKT_KEY_FLAGS:
+      case SIGSUBPKT_PRIMARY_UID:
+      case SIGSUBPKT_FEATURES:
+      case SIGSUBPKT_POLICY: /* Is it enough to show the policy? */
 	return 1;
 
-      case SIGSUBPKT_POLICY: /* Is it enough to show the policy? */
       default:
 	return 0;
     }
@@ -943,37 +998,40 @@ can_handle_critical( const byte *buffer, size_t n, int type )
 
 
 const byte *
-enum_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype,
-		 size_t *ret_n, int *start )
+enum_sig_subpkt( const subpktarea_t *pktbuf, sigsubpkttype_t reqtype,
+		 size_t *ret_n, int *start, int *critical )
 {
+    const byte *buffer;
     int buflen;
     int type;
-    int critical;
+    int critical_dummy;
     int offset;
     size_t n;
     int seq = 0;
     int reqseq = start? *start: 0;
 
-    if( !buffer || reqseq == -1 ) {
+    if(!critical)
+      critical=&critical_dummy;
+
+    if( !pktbuf || reqseq == -1 ) {
 	/* return some value different from NULL to indicate that
-	 * there is no crtitical bit we do not understand.  The caller
+	 * there is no critical bit we do not understand.  The caller
 	 * will never use the value.  Yes I know, it is an ugly hack */
-	return reqtype == SIGSUBPKT_TEST_CRITICAL? (const byte*)&buffer : NULL;
+	return reqtype == SIGSUBPKT_TEST_CRITICAL? (const byte*)&pktbuf : NULL;
     }
-    buflen = (*buffer << 8) | buffer[1];
-    buffer += 2;
+    buffer = pktbuf->data;
+    buflen = pktbuf->len;
     while( buflen ) {
 	n = *buffer++; buflen--;
-	if( n == 255 ) {
+	if( n == 255 ) { /* 4 byte length header */
 	    if( buflen < 4 )
 		goto too_short;
 	    n = (buffer[0] << 24) | (buffer[1] << 16)
-				  | (buffer[2] << 8) | buffer[3];
+                | (buffer[2] << 8) | buffer[3];
 	    buffer += 4;
 	    buflen -= 4;
-
 	}
-	else if( n >= 192 ) {
+	else if( n >= 192 ) { /* 2 byte special encoded length header */
 	    if( buflen < 2 )
 		goto too_short;
 	    n = (( n - 192 ) << 8) + *buffer + 192;
@@ -985,14 +1043,14 @@ enum_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype,
 	type = *buffer;
 	if( type & 0x80 ) {
 	    type &= 0x7f;
-	    critical = 1;
+	    *critical = 1;
 	}
 	else
-	    critical = 0;
+	    *critical = 0;
 	if( !(++seq > reqseq) )
 	    ;
 	else if( reqtype == SIGSUBPKT_TEST_CRITICAL ) {
-	    if( critical ) {
+	    if( *critical ) {
 		if( n-1 > buflen+1 )
 		    goto too_short;
 		if( !can_handle_critical(buffer+1, n-1, type ) ) {
@@ -1006,7 +1064,7 @@ enum_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype,
 	}
 	else if( reqtype < 0 ) /* list packets */
 	    dump_sig_subpkt( reqtype == SIGSUBPKT_LIST_HASHED,
-				    type, critical, buffer, buflen, n );
+				    type, *critical, buffer, buflen, n );
 	else if( type == reqtype ) { /* found */
 	    buffer++;
 	    n--;
@@ -1048,23 +1106,49 @@ enum_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype,
 
 
 const byte *
-parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
+parse_sig_subpkt (const subpktarea_t *buffer, sigsubpkttype_t reqtype,
+                  size_t *ret_n)
 {
-    return enum_sig_subpkt( buffer, reqtype, ret_n, NULL );
+    return enum_sig_subpkt( buffer, reqtype, ret_n, NULL, NULL );
 }
 
 const byte *
-parse_sig_subpkt2( PKT_signature *sig, sigsubpkttype_t reqtype, size_t *ret_n )
+parse_sig_subpkt2 (PKT_signature *sig, sigsubpkttype_t reqtype,
+                   size_t *ret_n )
 {
     const byte *p;
 
-    p = parse_sig_subpkt( sig->hashed_data, reqtype, ret_n );
+    p = parse_sig_subpkt (sig->hashed, reqtype, ret_n );
     if( !p )
-	p = parse_sig_subpkt( sig->unhashed_data, reqtype, ret_n );
+	p = parse_sig_subpkt (sig->unhashed, reqtype, ret_n );
     return p;
 }
 
+/* Find all revocation keys. Look in hashed area only. */
+void parse_revkeys(PKT_signature *sig)
+{
+  struct revocation_key *revkey;
+  int seq=0;
+  size_t len;
 
+  if(sig->sig_class!=0x1F)
+    return;
+
+  while((revkey=
+	 (struct revocation_key *)enum_sig_subpkt(sig->hashed,
+						  SIGSUBPKT_REV_KEY,
+						  &len,&seq,NULL)))
+    {
+      if(len==sizeof(struct revocation_key) &&
+	 (revkey->class&0x80)) /* 0x80 bit must be set */
+	{
+	  sig->revkey=m_realloc(sig->revkey,
+			  sizeof(struct revocation_key *)*(sig->numrevkeys+1));
+	  sig->revkey[sig->numrevkeys]=revkey;
+	  sig->numrevkeys++;
+	}
+    }
+}
 
 static int
 parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
@@ -1085,6 +1169,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	is_v4=1;
     else if( sig->version != 2 && sig->version != 3 ) {
 	log_error("packet(%d) with unknown version %d\n", pkttype, sig->version);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
 
@@ -1099,19 +1184,22 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
     }
     sig->pubkey_algo = iobuf_get_noeof(inp); pktlen--;
     sig->digest_algo = iobuf_get_noeof(inp); pktlen--;
+    sig->flags.exportable=1;
+    sig->flags.revocable=1;
     if( is_v4 ) { /* read subpackets */
 	n = read_16(inp); pktlen -= 2; /* length of hashed data */
 	if( n > 10000 ) {
 	    log_error("signature packet: hashed data too long\n");
-	    rc = GPGERR_INVALID_PACKET;
+	    rc = G10ERR_INVALID_PACKET;
 	    goto leave;
 	}
 	if( n ) {
-	    sig->hashed_data = gcry_xmalloc( n + 2 );
-	    sig->hashed_data[0] = n >> 8;
-	    sig->hashed_data[1] = n;
-	    if( iobuf_read(inp, sig->hashed_data+2, n ) != n ) {
-		log_error("premature eof while reading hashed signature data\n");
+	    sig->hashed = m_alloc (sizeof (*sig->hashed) + n - 1 );
+            sig->hashed->size = n;
+	    sig->hashed->len = n;
+	    if( iobuf_read (inp, sig->hashed->data, n ) != n ) {
+		log_error ("premature eof while reading "
+                           "hashed signature data\n");
 		rc = -1;
 		goto leave;
 	    }
@@ -1120,15 +1208,19 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	n = read_16(inp); pktlen -= 2; /* length of unhashed data */
 	if( n > 10000 ) {
 	    log_error("signature packet: unhashed data too long\n");
-	    rc = GPGERR_INVALID_PACKET;
+	    rc = G10ERR_INVALID_PACKET;
 	    goto leave;
 	}
 	if( n ) {
-	    sig->unhashed_data = gcry_xmalloc( n + 2 );
-	    sig->unhashed_data[0] = n >> 8;
-	    sig->unhashed_data[1] = n;
-	    if( iobuf_read(inp, sig->unhashed_data+2, n ) != n ) {
-		log_error("premature eof while reading unhashed signature data\n");
+            /* we add 8 extra bytes so that we have space for the signature
+             * status cache.  Well we are wastin this if there is a cache
+             * packet already, but in the other case it avoids an realloc */
+	    sig->unhashed = m_alloc (sizeof(*sig->unhashed) + n + 8 - 1 );
+            sig->unhashed->size = n + 8;
+	    sig->unhashed->len = n;
+	    if( iobuf_read(inp, sig->unhashed->data, n ) != n ) {
+		log_error("premature eof while reading "
+                          "unhashed signature data\n");
 		rc = -1;
 		goto leave;
 	    }
@@ -1138,7 +1230,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 
     if( pktlen < 5 ) { /* sanity check */
 	log_error("packet(%d) too short\n", pkttype);
-	rc = GPGERR_INVALID_PACKET;
+	rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
 
@@ -1150,14 +1242,14 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 
 	/* set sig->flags.unknown_critical if there is a
 	 * critical bit set for packets which we do not understand */
-	if( !parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_TEST_CRITICAL, NULL)
-	   || !parse_sig_subpkt( sig->unhashed_data, SIGSUBPKT_TEST_CRITICAL,
+	if( !parse_sig_subpkt (sig->hashed, SIGSUBPKT_TEST_CRITICAL, NULL)
+	   || !parse_sig_subpkt (sig->unhashed, SIGSUBPKT_TEST_CRITICAL,
 									NULL) )
 	{
 	    sig->flags.unknown_critical = 1;
 	}
 
-	p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_SIG_CREATED, NULL );
+	p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIG_CREATED, NULL );
 	if( !p )
 	    log_error("signature packet without timestamp\n");
 	else
@@ -1169,6 +1261,37 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	    sig->keyid[0] = buffer_to_u32(p);
 	    sig->keyid[1] = buffer_to_u32(p+4);
 	}
+
+	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_SIG_EXPIRE,NULL);
+	if(p)
+	  sig->expiredate=sig->timestamp+buffer_to_u32(p);
+	if(sig->expiredate && sig->expiredate<=make_timestamp())
+ 	    sig->flags.expired=1;
+
+	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_POLICY,NULL);
+	if(p)
+	  sig->flags.policy_url=1;
+
+	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_NOTATION,NULL);
+	if(p)
+	  sig->flags.notation=1;
+
+	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_REVOCABLE,NULL);
+	if(p && *p==0)
+	  sig->flags.revocable=0;
+
+	/* We accept the exportable subpacket from either the hashed
+	   or unhashed areas as older versions of gpg put it in the
+	   unhashed area.  In theory, anyway, we should never see this
+	   packet off of a local keyring. */
+
+	p=parse_sig_subpkt2(sig,SIGSUBPKT_EXPORTABLE,NULL);
+	if(p && *p==0)
+	  sig->flags.exportable=0;
+
+	/* Find all revocation keys. */
+	if(sig->sig_class==0x1F)
+	  parse_revkeys(sig);
     }
 
     if( list_mode ) {
@@ -1181,8 +1304,8 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 		sig->digest_algo,
 		sig->digest_start[0], sig->digest_start[1] );
 	if( is_v4 ) {
-	    parse_sig_subpkt( sig->hashed_data,  SIGSUBPKT_LIST_HASHED, NULL );
-	    parse_sig_subpkt( sig->unhashed_data,SIGSUBPKT_LIST_UNHASHED, NULL);
+	    parse_sig_subpkt (sig->hashed,   SIGSUBPKT_LIST_HASHED, NULL );
+	    parse_sig_subpkt (sig->unhashed, SIGSUBPKT_LIST_UNHASHED, NULL);
 	}
     }
 
@@ -1206,6 +1329,8 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 		mpi_print(stdout, sig->data[i], mpi_print_mode );
 		putchar('\n');
 	    }
+            if (!sig->data[i])
+                rc = G10ERR_INVALID_PACKET;
 	}
     }
 
@@ -1220,14 +1345,17 @@ parse_onepass_sig( IOBUF inp, int pkttype, unsigned long pktlen,
 					     PKT_onepass_sig *ops )
 {
     int version;
+    int rc = 0;
 
     if( pktlen < 13 ) {
 	log_error("packet(%d) too short\n", pkttype);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     version = iobuf_get_noeof(inp); pktlen--;
     if( version != 3 ) {
 	log_error("onepass_sig with unknown version %d\n", version);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     ops->sig_class = iobuf_get_noeof(inp); pktlen--;
@@ -1246,7 +1374,7 @@ parse_onepass_sig( IOBUF inp, int pkttype, unsigned long pktlen,
 
   leave:
     skip_rest(inp, pktlen);
-    return 0;
+    return rc;
 }
 
 
@@ -1258,14 +1386,14 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 {
     int i, version, algorithm;
     unsigned n;
-    unsigned long timestamp, expiredate;
+    unsigned long timestamp, expiredate, max_expiredate;
     int npkey, nskey;
     int is_v4=0;
     int rc=0;
 
     version = iobuf_get_noeof(inp); pktlen--;
     if( pkttype == PKT_PUBLIC_SUBKEY && version == '#' ) {
-	/* early versions of gpg use old PGP comments packets;
+	/* early versions of G10 use old PGP comments packets;
 	 * luckily all those comments are started by a hash */
 	if( list_mode ) {
 	    printf(":rfc1991 comment packet: \"" );
@@ -1286,17 +1414,21 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	is_v4=1;
     else if( version != 2 && version != 3 ) {
 	log_error("packet(%d) with unknown version %d\n", pkttype, version);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
 
     if( pktlen < 11 ) {
 	log_error("packet(%d) too short\n", pkttype);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
 
     timestamp = read_32(inp); pktlen -= 4;
-    if( is_v4 )
+    if( is_v4 ) {
 	expiredate = 0; /* have to get it from the selfsignature */
+	max_expiredate = 0;
+    }
     else {
 	unsigned short ndays;
 	ndays = read_16(inp); pktlen -= 2;
@@ -1304,6 +1436,8 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	    expiredate = timestamp + ndays * 86400L;
 	else
 	    expiredate = 0;
+
+	max_expiredate=expiredate;
     }
     algorithm = iobuf_get_noeof(inp); pktlen--;
     if( list_mode )
@@ -1320,23 +1454,25 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 
 	sk->timestamp = timestamp;
 	sk->expiredate = expiredate;
+	sk->max_expiredate = max_expiredate;
 	sk->hdrbytes = hdrlen;
 	sk->version = version;
 	sk->is_primary = pkttype == PKT_SECRET_KEY;
 	sk->pubkey_algo = algorithm;
 	sk->req_usage = 0; 
-        sk->pubkey_usage = 0; /* will be set by getkey functions */
+	sk->pubkey_usage = 0; /* not yet used */
     }
     else {
 	PKT_public_key *pk = pkt->pkt.public_key;
 
 	pk->timestamp = timestamp;
 	pk->expiredate = expiredate;
+	pk->max_expiredate = max_expiredate;
 	pk->hdrbytes	= hdrlen;
 	pk->version	= version;
 	pk->pubkey_algo = algorithm;
-        pk->req_usage = 0;
-	pk->pubkey_usage = 0; /* will be set bey getkey functions */
+	pk->req_usage = 0; 
+	pk->pubkey_usage = 0; /* not yet used */
         pk->is_revoked = 0;
 	pk->keyid[0] = 0;
 	pk->keyid[1] = 0;
@@ -1355,8 +1491,8 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	byte temp[16];
 
 	if( !npkey ) {
-	    sk->skey[0] = gcry_mpi_set_opaque( NULL,
-					     read_rest(inp, pktlen), pktlen*8 );
+	    sk->skey[0] = mpi_set_opaque( NULL,
+					  read_rest(inp, pktlen), pktlen );
 	    pktlen = 0;
 	    goto leave;
 	}
@@ -1368,16 +1504,22 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		mpi_print(stdout, sk->skey[i], mpi_print_mode  );
 		putchar('\n');
 	    }
+            if (!sk->skey[i])
+                rc = G10ERR_INVALID_PACKET;
 	}
+        if (rc) /* one of the MPIs were bad */
+            goto leave;
 	sk->protect.algo = iobuf_get_noeof(inp); pktlen--;
+        sk->protect.sha1chk = 0;
 	if( sk->protect.algo ) {
 	    sk->is_protected = 1;
 	    sk->protect.s2k.count = 0;
-	    if( sk->protect.algo == 255 ) {
+	    if( sk->protect.algo == 254 || sk->protect.algo == 255 ) {
 		if( pktlen < 3 ) {
-		    rc = GPGERR_INVALID_PACKET;
+		    rc = G10ERR_INVALID_PACKET;
 		    goto leave;
 		}
+                sk->protect.sha1chk = (sk->protect.algo == 254);
 		sk->protect.algo = iobuf_get_noeof(inp); pktlen--;
 		sk->protect.s2k.mode  = iobuf_get_noeof(inp); pktlen--;
 		sk->protect.s2k.hash_algo = iobuf_get_noeof(inp); pktlen--;
@@ -1389,7 +1531,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 			if( list_mode )
 			    printf(  "\tunknown S2K %d\n",
 						sk->protect.s2k.mode );
-			rc = GPGERR_INVALID_PACKET;
+			rc = G10ERR_INVALID_PACKET;
 			goto leave;
 		    }
 		    /* here we know that it is a gnu extension
@@ -1421,13 +1563,15 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 			printf(  "\tunknown %sS2K %d\n",
 				 sk->protect.s2k.mode < 1000? "":"GNU ",
 						   sk->protect.s2k.mode );
-		    rc = GPGERR_INVALID_PACKET;
+		    rc = G10ERR_INVALID_PACKET;
 		    goto leave;
 		}
 
 		if( list_mode ) {
-		    printf(", algo: %d, hash: %d",
+		    printf(", algo: %d,%s hash: %d",
 				     sk->protect.algo,
+                                     sk->protect.sha1chk?" SHA1 protection,"
+                                                        :" simple checksum,",
 				     sk->protect.s2k.hash_algo );
 		    if( sk->protect.s2k.mode == 1
 			|| sk->protect.s2k.mode == 3 ) {
@@ -1440,7 +1584,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 
 		if( sk->protect.s2k.mode == 3 ) {
 		    if( pktlen < 1 ) {
-			rc = GPGERR_INVALID_PACKET;
+			rc = G10ERR_INVALID_PACKET;
 			goto leave;
 		    }
 		    sk->protect.s2k.count = iobuf_get(inp);
@@ -1452,7 +1596,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	    }
 	    else { /* old version; no S2K, so we set mode to 0, hash MD5 */
 		sk->protect.s2k.mode = 0;
-		sk->protect.s2k.hash_algo = GCRY_MD_MD5;
+		sk->protect.s2k.hash_algo = DIGEST_ALGO_MD5;
 		if( list_mode )
 		    printf(  "\tprotect algo: %d  (hash algo: %d)\n",
 			 sk->protect.algo, sk->protect.s2k.hash_algo );
@@ -1477,7 +1621,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		sk->protect.ivlen = 0;
 
 	    if( pktlen < sk->protect.ivlen ) {
-		rc = GPGERR_INVALID_PACKET;
+		rc = G10ERR_INVALID_PACKET;
 		goto leave;
 	    }
 	    for(i=0; i < sk->protect.ivlen && pktlen; i++, pktlen-- )
@@ -1498,26 +1642,25 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	 * So we put the key into secure memory when we unprotect it. */
 	if( sk->protect.s2k.mode == 1001 ) {
 	    /* better set some dummy stuff here */
-	    sk->skey[npkey] = mpi_set_opaque(NULL, gcry_xstrdup("dummydata"), 10);
+	    sk->skey[npkey] = mpi_set_opaque(NULL, m_strdup("dummydata"), 10);
 	    pktlen = 0;
 	}
 	else if( is_v4 && sk->is_protected ) {
 	    /* ugly; the length is encrypted too, so we read all
 	     * stuff up to the end of the packet into the first
 	     * skey element */
-	    sk->skey[npkey] = gcry_mpi_set_opaque(NULL,
-					     read_rest(inp, pktlen), pktlen*8 );
+	    sk->skey[npkey] = mpi_set_opaque(NULL,
+					     read_rest(inp, pktlen), pktlen );
 	    pktlen = 0;
 	    if( list_mode ) {
 		printf("\tencrypted stuff follows\n");
 	    }
 	}
-	else { /* unencrypted v4 or v3 method (where length is not encrypted) */
+	else { /* v3 method: the mpi length is not encrypted */
 	    for(i=npkey; i < nskey; i++ ) {
-		n = pktlen;
-		sk->skey[i] = sk->is_protected ? mpi_read_opaque(inp, &n )
-					       : mpi_read( inp, &n, 1 );
-		pktlen -=n;
+		n = pktlen; sk->skey[i] = mpi_read(inp, &n, 0 ); pktlen -=n;
+		if( sk->is_protected && sk->skey[i] )
+		    mpi_set_protect_flag(sk->skey[i]);
 		if( list_mode ) {
 		    printf(  "\tskey[%d]: ", i);
 		    if( sk->is_protected )
@@ -1527,7 +1670,11 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 			putchar('\n');
 		    }
 		}
+                if (!sk->skey[i])
+                    rc = G10ERR_INVALID_PACKET;
 	    }
+            if (rc)
+                goto leave;
 
 	    sk->csum = read_16(inp); pktlen -= 2;
 	    if( list_mode ) {
@@ -1539,8 +1686,8 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	PKT_public_key *pk = pkt->pkt.public_key;
 
 	if( !npkey ) {
-	    pk->pkey[0] = gcry_mpi_set_opaque( NULL,
-					     read_rest(inp, pktlen), pktlen*8 );
+	    pk->pkey[0] = mpi_set_opaque( NULL,
+					  read_rest(inp, pktlen), pktlen );
 	    pktlen = 0;
 	    goto leave;
 	}
@@ -1552,7 +1699,11 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		mpi_print(stdout, pk->pkey[i], mpi_print_mode  );
 		putchar('\n');
 	    }
+            if (!pk->pkey[i])
+                rc = G10ERR_INVALID_PACKET;
 	}
+        if (rc)
+            goto leave;
     }
 
   leave:
@@ -1560,16 +1711,95 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
     return rc;
 }
 
+/* Attribute subpackets have the same format as v4 signature
+   subpackets.  This is not part of OpenPGP, but is done in several
+   versions of PGP nevertheless. */
+int
+parse_attribute_subpkts(PKT_user_id *uid)
+{
+  size_t n;
+  int count=0;
+  struct user_attribute *attribs=NULL;
+  const byte *buffer=uid->attrib_data;
+  int buflen=uid->attrib_len;
+  byte type;
+
+  m_free(uid->attribs);
+
+  while(buflen)
+    {
+      n = *buffer++; buflen--;
+      if( n == 255 ) { /* 4 byte length header */
+	if( buflen < 4 )
+	  goto too_short;
+	n = (buffer[0] << 24) | (buffer[1] << 16)
+	  | (buffer[2] << 8) | buffer[3];
+	buffer += 4;
+	buflen -= 4;
+      }
+      else if( n >= 192 ) { /* 2 byte special encoded length header */
+	if( buflen < 2 )
+	  goto too_short;
+	n = (( n - 192 ) << 8) + *buffer + 192;
+	buffer++;
+	buflen--;
+      }
+      if( buflen < n )
+	goto too_short;
+
+      attribs=m_realloc(attribs,(count+1)*sizeof(struct user_attribute));
+      memset(&attribs[count],0,sizeof(struct user_attribute));
+
+      type=*buffer;
+      buffer++;
+      buflen--;
+      n--;
+
+      attribs[count].type=type;
+      attribs[count].data=buffer;
+      attribs[count].len=n;
+      buffer+=n;
+      buflen-=n;
+      count++;
+    }
+
+  uid->attribs=attribs;
+  uid->numattribs=count;
+  return count;
+
+ too_short:
+  log_error("buffer shorter than attribute subpacket\n");
+  uid->attribs=attribs;
+  uid->numattribs=count;
+  return count;
+}
+
+static void setup_user_id(PACKET *packet)
+{
+  packet->pkt.user_id->ref = 1;
+  packet->pkt.user_id->attribs = NULL;
+  packet->pkt.user_id->attrib_data = NULL;
+  packet->pkt.user_id->attrib_len = 0;
+  packet->pkt.user_id->is_primary = 0;
+  packet->pkt.user_id->is_revoked = 0;
+  packet->pkt.user_id->is_expired = 0;
+  packet->pkt.user_id->expiredate = 0;
+  packet->pkt.user_id->created = 0;
+  packet->pkt.user_id->help_key_usage = 0;
+  packet->pkt.user_id->help_key_expire = 0;
+  packet->pkt.user_id->prefs = NULL;
+}
 
 static int
 parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
     byte *p;
 
-    packet->pkt.user_id = gcry_xmalloc(sizeof *packet->pkt.user_id  + pktlen);
+    packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id  + pktlen);
     packet->pkt.user_id->len = pktlen;
-    packet->pkt.user_id->photo = NULL;
-    packet->pkt.user_id->photolen = 0;
+
+    setup_user_id(packet);
+
     p = packet->pkt.user_id->name;
     for( ; pktlen; pktlen--, p++ )
 	*p = iobuf_get_noeof(inp);
@@ -1578,7 +1808,7 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     if( list_mode ) {
 	int n = packet->pkt.user_id->len;
 	printf(":user ID packet: \"");
-	/* fixme: Hey why don't we replace this wioth print_string?? */
+	/* fixme: Hey why don't we replace this with print_string?? */
 	for(p=packet->pkt.user_id->name; n; p++, n-- ) {
 	    if( *p >= ' ' && *p <= 'z' )
 		putchar(*p);
@@ -1590,28 +1820,60 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     return 0;
 }
 
+void
+make_attribute_uidname(PKT_user_id *uid)
+{
+  if(uid->numattribs<=0)
+    sprintf(uid->name,"[bad attribute packet of size %lu]",uid->attrib_len);
+  else if(uid->numattribs>1)
+    sprintf(uid->name,"[%d attributes of size %lu]",
+	    uid->numattribs,uid->attrib_len);
+  else
+    {
+      /* Only one attribute, so list it as the "user id" */
 
-/****************
- * PGP generates a packet of type 17. We assume this is a photo ID and
- * simply store it here as a comment packet.
- */
+      if(uid->attribs->type==ATTRIB_IMAGE)
+	{
+	  u32 len;
+	  byte type;
+
+	  if(parse_image_header(uid->attribs,&type,&len))
+	    sprintf(uid->name,"[%s image of size %lu]",
+		    image_type_to_string(type,1),(ulong)len);
+	  else
+	    sprintf(uid->name,"[invalid image]");
+	}
+      else
+	sprintf(uid->name,"[unknown attribute of size %lu]",uid->attribs->len);
+    }
+
+  uid->len = strlen(uid->name);
+}
+
 static int
-parse_photo_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
+parse_attribute( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
     byte *p;
 
-    packet->pkt.user_id = gcry_xmalloc(sizeof *packet->pkt.user_id  + 30);
-    sprintf( packet->pkt.user_id->name, "[image of size %lu]", pktlen );
-    packet->pkt.user_id->len = strlen(packet->pkt.user_id->name);
+    packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id + 70);
 
-    packet->pkt.user_id->photo = gcry_xmalloc(sizeof *packet->pkt.user_id + pktlen);
-    packet->pkt.user_id->photolen = pktlen;
-    p = packet->pkt.user_id->photo;
+    setup_user_id(packet);
+
+    packet->pkt.user_id->attrib_data = m_alloc(pktlen);
+    packet->pkt.user_id->attrib_len = pktlen;
+    p = packet->pkt.user_id->attrib_data;
     for( ; pktlen; pktlen--, p++ )
 	*p = iobuf_get_noeof(inp);
 
+    /* Now parse out the individual attribute subpackets.  This is
+       somewhat pointless since there is only one currently defined
+       attribute type (jpeg), but it is correct by the spec. */
+    parse_attribute_subpkts(packet->pkt.user_id);
+
+    make_attribute_uidname(packet->pkt.user_id);
+
     if( list_mode ) {
-	printf(":photo_id packet: %s\n", packet->pkt.user_id->name );
+	printf(":attribute packet: %s\n", packet->pkt.user_id->name );
     }
     return 0;
 }
@@ -1622,7 +1884,7 @@ parse_comment( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
     byte *p;
 
-    packet->pkt.comment = gcry_xmalloc(sizeof *packet->pkt.comment + pktlen - 1);
+    packet->pkt.comment = m_alloc(sizeof *packet->pkt.comment + pktlen - 1);
     packet->pkt.comment->len = pktlen;
     p = packet->pkt.comment->data;
     for( ; pktlen; pktlen--, p++ )
@@ -1647,13 +1909,34 @@ parse_comment( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 static void
 parse_trust( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
 {
-    int c;
+  int c;
 
-    c = iobuf_get_noeof(inp);
-    pkt->pkt.ring_trust = gcry_xmalloc( sizeof *pkt->pkt.ring_trust );
-    pkt->pkt.ring_trust->trustval = c;
-    if( list_mode )
-	printf(":trust packet: flag=%02x\n", c );
+  if (pktlen)
+    {
+      c = iobuf_get_noeof(inp);
+      pktlen--;
+      pkt->pkt.ring_trust = m_alloc( sizeof *pkt->pkt.ring_trust );
+      pkt->pkt.ring_trust->trustval = c;
+      pkt->pkt.ring_trust->sigcache = 0;
+      if (!c && pktlen==1)
+        {
+          c = iobuf_get_noeof (inp);
+          pktlen--;
+          /* we require that bit 7 of the sigcache is 0 (easier eof handling)*/
+          if ( !(c & 0x80) )
+            pkt->pkt.ring_trust->sigcache = c;
+        }
+      if( list_mode )
+	printf(":trust packet: flag=%02x sigcache=%02x\n",
+               pkt->pkt.ring_trust->trustval,
+               pkt->pkt.ring_trust->sigcache);
+    }
+  else
+    {
+      if( list_mode )
+	printf(":trust packet: empty\n");
+    }
+  skip_rest (inp, pktlen);
 }
 
 
@@ -1661,21 +1944,29 @@ static int
 parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
 					PACKET *pkt, int new_ctb )
 {
-    int mode, namelen;
+    int rc = 0;
+    int mode, namelen, partial=0;
     PKT_plaintext *pt;
     byte *p;
     int c, i;
 
     if( pktlen && pktlen < 6 ) {
 	log_error("packet(%d) too short (%lu)\n", pkttype, (ulong)pktlen);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
+    /* A packet length of zero indicates partial body length.  A zero
+       data length isn't a zero length packet due to the header (mode,
+       name, etc), so this is accurate. */
+    if(pktlen==0)
+      partial=1;
     mode = iobuf_get_noeof(inp); if( pktlen ) pktlen--;
     namelen = iobuf_get_noeof(inp); if( pktlen ) pktlen--;
-    pt = pkt->pkt.plaintext = gcry_xmalloc(sizeof *pkt->pkt.plaintext + namelen -1);
+    pt = pkt->pkt.plaintext = m_alloc(sizeof *pkt->pkt.plaintext + namelen -1);
     pt->new_ctb = new_ctb;
     pt->mode = mode;
     pt->namelen = namelen;
+    pt->is_partial = partial;
     if( pktlen ) {
 	for( i=0; pktlen > 4 && i < namelen; pktlen--, i++ )
 	    pt->name[i] = iobuf_get_noeof(inp);
@@ -1707,7 +1998,7 @@ parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
     }
 
   leave:
-    return 0;
+    return rc;
 }
 
 
@@ -1721,7 +2012,7 @@ parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen,
      * (this should be the last object in a file or
      *	the compress algorithm should know the length)
      */
-    zd = pkt->pkt.compressed =	gcry_xmalloc(sizeof *pkt->pkt.compressed );
+    zd = pkt->pkt.compressed =	m_alloc(sizeof *pkt->pkt.compressed );
     zd->len = 0; /* not yet used */
     zd->algorithm = iobuf_get_noeof(inp);
     zd->new_ctb = new_ctb;
@@ -1736,10 +2027,18 @@ static int
 parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 				       PACKET *pkt, int new_ctb )
 {
+    int rc = 0;
     PKT_encrypted *ed;
+    unsigned long orig_pktlen = pktlen;
 
-    ed = pkt->pkt.encrypted =  gcry_xmalloc(sizeof *pkt->pkt.encrypted );
+    ed = pkt->pkt.encrypted =  m_alloc(sizeof *pkt->pkt.encrypted );
     ed->len = pktlen;
+    /* we don't know the extralen which is (cipher_blocksize+2)
+       because the algorithm ist not specified in this packet.
+       However, it is only important to know this for somesanity
+       checks on the pkacet length - it doesn't matter that we can't
+       do it */
+    ed->extralen = 0;
     ed->buf = NULL;
     ed->new_ctb = new_ctb;
     ed->mdc_method = 0;
@@ -1747,22 +2046,27 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 	/* fixme: add some pktlen sanity checks */
 	int version;
 
-	version = iobuf_get_noeof(inp); pktlen--;
+	version = iobuf_get_noeof(inp); 
+        if (orig_pktlen)
+            pktlen--;
 	if( version != 1 ) {
 	    log_error("encrypted_mdc packet with unknown version %d\n",
 								version);
+            /*skip_rest(inp, pktlen); should we really do this? */
+            rc = G10ERR_INVALID_PACKET;
 	    goto leave;
 	}
-	ed->mdc_method = GCRY_MD_SHA1;
+	ed->mdc_method = DIGEST_ALGO_SHA1;
     }
-    if( pktlen && pktlen < 10 ) { /* actually this is blocksize+2 */
+    if( orig_pktlen && pktlen < 10 ) { /* actually this is blocksize+2 */
 	log_error("packet(%d) too short\n", pkttype);
+        rc = G10ERR_INVALID_PACKET;
 	skip_rest(inp, pktlen);
 	goto leave;
     }
     if( list_mode ) {
-	if( pktlen )
-	    printf(":encrypted data packet:\n\tlength: %lu\n", pktlen);
+	if( orig_pktlen )
+	    printf(":encrypted data packet:\n\tlength: %lu\n", orig_pktlen);
 	else
 	    printf(":encrypted data packet:\n\tlength: unknown\n");
 	if( ed->mdc_method )
@@ -1773,7 +2077,7 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
     pktlen = 0;
 
   leave:
-    return 0;
+    return rc;
 }
 
 
@@ -1781,14 +2085,16 @@ static int
 parse_mdc( IOBUF inp, int pkttype, unsigned long pktlen,
 				   PACKET *pkt, int new_ctb )
 {
+    int rc = 0;
     PKT_mdc *mdc;
     byte *p;
 
-    mdc = pkt->pkt.mdc=  gcry_xmalloc(sizeof *pkt->pkt.mdc );
+    mdc = pkt->pkt.mdc=  m_alloc(sizeof *pkt->pkt.mdc );
     if( list_mode )
 	printf(":mdc packet: length=%lu\n", pktlen);
     if( !new_ctb || pktlen != 20 ) {
 	log_error("mdc_packet with invalid encoding\n");
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     p = mdc->hash;
@@ -1796,6 +2102,90 @@ parse_mdc( IOBUF inp, int pkttype, unsigned long pktlen,
 	*p = iobuf_get_noeof(inp);
 
   leave:
-    return 0;
+    return rc;
 }
 
+
+/*
+ * This packet is internally generated by PGG (by armor.c) to
+ * transfer some information to the lower layer.  To make sure that
+ * this packet is really a GPG faked one and not one comming from outside,
+ * we first check that tehre is a unique tag in it.
+ * The format of such a control packet is:
+ *   n byte  session marker
+ *   1 byte  control type CTRLPKT_xxxxx
+ *   m byte  control data
+ */
+
+static int
+parse_gpg_control( IOBUF inp,
+                   int pkttype, unsigned long pktlen, PACKET *packet )
+{
+    byte *p;
+    const byte *sesmark;
+    size_t sesmarklen;
+    int i;
+
+    if ( list_mode )
+        printf(":packet 63: length %lu ",  pktlen);
+
+    sesmark = get_session_marker ( &sesmarklen );
+    if ( pktlen < sesmarklen+1 ) /* 1 is for the control bytes */
+        goto skipit;
+    for( i=0; i < sesmarklen; i++, pktlen-- ) {
+	if ( sesmark[i] != iobuf_get_noeof(inp) )
+            goto skipit;
+    }
+    if ( list_mode )
+        puts ("- gpg control packet");
+
+    packet->pkt.gpg_control = m_alloc(sizeof *packet->pkt.gpg_control
+                                      + pktlen - 1);
+    packet->pkt.gpg_control->control = iobuf_get_noeof(inp); pktlen--;
+    packet->pkt.gpg_control->datalen = pktlen;
+    p = packet->pkt.gpg_control->data;
+    for( ; pktlen; pktlen--, p++ )
+	*p = iobuf_get_noeof(inp);
+
+    return 0;
+
+ skipit:
+    if ( list_mode ) {
+        int c;
+
+        i=0;
+        printf("- private (rest length %lu)\n",  pktlen);
+        if( iobuf_in_block_mode(inp) ) {
+            while( (c=iobuf_get(inp)) != -1 )
+                dump_hex_line(c, &i);
+        }
+        else {
+            for( ; pktlen; pktlen-- )
+                dump_hex_line(iobuf_get(inp), &i);
+        }
+        putchar('\n');
+    }
+    skip_rest(inp,pktlen);
+    return G10ERR_INVALID_PACKET;
+}
+
+/* create a gpg control packet to be used internally as a placeholder */
+PACKET *
+create_gpg_control( ctrlpkttype_t type, const byte *data, size_t datalen )
+{
+    PACKET *packet;
+    byte *p;
+
+    packet = m_alloc( sizeof *packet );
+    init_packet(packet);
+    packet->pkttype = PKT_GPG_CONTROL;
+    packet->pkt.gpg_control = m_alloc(sizeof *packet->pkt.gpg_control
+                                      + datalen - 1);
+    packet->pkt.gpg_control->control = type;
+    packet->pkt.gpg_control->datalen = datalen;
+    p = packet->pkt.gpg_control->data;
+    for( ; datalen; datalen--, p++ )
+	*p = *data++;
+
+    return packet;
+}

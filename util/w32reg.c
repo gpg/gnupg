@@ -19,7 +19,8 @@
  */
 
 #include <config.h>
-#ifdef __MINGW32__  /* This module is only used in this environment */
+#if defined (__MINGW32__) || defined (__CYGWIN32__)
+ /* This module is only used in this environment */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,23 +30,13 @@
 #include "util.h"
 #include "memory.h"
 
-
-/****************
- * Return a string from the Win32 Registry or NULL in case of
- * error.  Caller must release the return value.   A NUKK for root
- * is an alias fro HKEY_CURRENT_USER
- * NOTE: The value is allocated with a plain malloc() - use free() and not
- * the usual gcry_free()!!!
- */
-char *
-read_w32_registry_string( const char *root, const char *dir, const char *name )
+static HKEY
+get_root_key(const char *root)
 {
-    HKEY root_key, key_handle;
-    DWORD n1, nbytes;
-    char *result = NULL;
-
+    HKEY root_key;
+	
     if( !root )
-	root_key = HKEY_CURRENT_USER;
+        root_key = HKEY_CURRENT_USER;
     else if( !strcmp( root, "HKEY_CLASSES_ROOT" ) )
 	root_key = HKEY_CLASSES_ROOT;
     else if( !strcmp( root, "HKEY_CURRENT_USER" ) )
@@ -59,6 +50,27 @@ read_w32_registry_string( const char *root, const char *dir, const char *name )
     else if( !strcmp( root, "HKEY_CURRENT_CONFIG" ) )
 	root_key = HKEY_CURRENT_CONFIG;
     else
+        return NULL;
+	
+    return root_key;
+}
+
+
+/****************
+ * Return a string from the Win32 Registry or NULL in case of
+ * error.  Caller must release the return value.   A NUKK for root
+ * is an alias fro HKEY_CURRENT_USER
+ * NOTE: The value is allocated with a plain malloc() - use free() and not
+ * the usual m_free()!!!
+ */
+char *
+read_w32_registry_string( const char *root, const char *dir, const char *name )
+{
+    HKEY root_key, key_handle;
+    DWORD n1, nbytes;
+    char *result = NULL;
+
+    if ( !(root_key = get_root_key(root) ) )
 	return NULL;
 
     if( RegOpenKeyEx( root_key, dir, 0, KEY_READ, &key_handle ) )
@@ -82,7 +94,35 @@ read_w32_registry_string( const char *root, const char *dir, const char *name )
 }
 
 
+int
+write_w32_registry_string(const char *root, const char *dir, 
+                          const char *name, const char *value)
+{
+    HKEY root_key, reg_key;
+	
+    if ( !(root_key = get_root_key(root) ) )
+	return -1;
 
+    if ( RegOpenKeyEx( root_key, dir, 0, KEY_WRITE, &reg_key ) 
+         != ERROR_SUCCESS )
+	return -1;
+	
+    if ( RegSetValueEx( reg_key, name, 0, REG_SZ, (BYTE *)value, 
+                        strlen( value ) ) != ERROR_SUCCESS ) {
+        if ( RegCreateKey( root_key, name, &reg_key ) != ERROR_SUCCESS ) {
+            RegCloseKey(reg_key);
+            return -1;
+        }
+        if ( RegSetValueEx( reg_key, name, 0, REG_SZ, (BYTE *)value,
+                            strlen( value ) ) != ERROR_SUCCESS ) {
+            RegCloseKey(reg_key);
+            return -1;
+        }
+    }
 
+    RegCloseKey( reg_key );
+	
+    return 0;
+}
 
-#endif /* __MINGW32__ */
+#endif /* __MINGW32__ || __CYGWIN32__ */

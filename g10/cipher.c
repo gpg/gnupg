@@ -1,5 +1,5 @@
 /* cipher.c - En-/De-ciphering filter
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,9 +25,9 @@
 #include <errno.h>
 #include <assert.h>
 
-#include <gcrypt.h>
 #include "errors.h"
 #include "iobuf.h"
+#include "memory.h"
 #include "util.h"
 #include "filter.h"
 #include "packet.h"
@@ -45,69 +45,69 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     PACKET pkt;
     PKT_encrypted ed;
     byte temp[18];
-    unsigned int blocksize;
-    unsigned int nprefix;
-    int rc;
-    int use_mdc = opt.force_mdc;
+    unsigned blocksize;
+    unsigned nprefix;
+    int use_mdc;
 
-    blocksize = gcry_cipher_get_algo_blklen( cfx->dek->algo );
+    blocksize = cipher_get_blocksize( cfx->dek->algo );
     if( blocksize < 8 || blocksize > 16 )
 	log_fatal("unsupported blocksize %u\n", blocksize );
+
+    use_mdc = cfx->dek->use_mdc;
+
     if( blocksize != 8 )
-	use_mdc = 1;  /* enable it for all modern ciphers */
-    if( opt.rfc2440 )
+	use_mdc = 1;  /* Hack: enable it for all modern ciphers */
+    /* Note: We should remove this hack as soon as a reasonable number of keys
+       are carrying the MDC flag.  But always keep the hack for conventional
+       encryption */
+
+    if (opt.force_mdc)
+        use_mdc = 1;
+        
+    if( opt.rfc2440 || opt.rfc1991 || opt.disable_mdc )
 	use_mdc = 0;  /* override - rfc2440 does not know about MDC */
 
     memset( &ed, 0, sizeof ed );
     ed.len = cfx->datalen;
+    ed.extralen = blocksize+2;
     ed.new_ctb = !ed.len && !opt.rfc1991;
     if( use_mdc ) {
-	ed.mdc_method = GCRY_MD_SHA1;
-	cfx->mdc_hash = gcry_md_open( GCRY_MD_SHA1, 0 );
-	if( !cfx->mdc_hash )
-	    BUG();
+	ed.mdc_method = DIGEST_ALGO_SHA1;
+	cfx->mdc_hash = md_open( DIGEST_ALGO_SHA1, 0 );
 	if ( DBG_HASHING )
-	    gcry_md_start_debug( cfx->mdc_hash, "creatmdc" );
+	    md_start_debug( cfx->mdc_hash, "creatmdc" );
     }
+
+    {
+        char buf[20];
+        
+        sprintf (buf, "%d %d", ed.mdc_method, cfx->dek->algo);
+        write_status_text (STATUS_BEGIN_ENCRYPTION, buf);
+    }
+
     init_packet( &pkt );
     pkt.pkttype = use_mdc? PKT_ENCRYPTED_MDC : PKT_ENCRYPTED;
     pkt.pkt.encrypted = &ed;
     if( build_packet( a, &pkt ))
 	log_bug("build_packet(ENCR_DATA) failed\n");
     nprefix = blocksize;
-    gcry_randomize( temp, nprefix, GCRY_STRONG_RANDOM );
+    randomize_buffer( temp, nprefix, 1 );
     temp[nprefix] = temp[nprefix-2];
     temp[nprefix+1] = temp[nprefix-1];
     print_cipher_algo_note( cfx->dek->algo );
-    if( !(cfx->cipher_hd = gcry_cipher_open( cfx->dek->algo,
-				       GCRY_CIPHER_MODE_CFB,
-				       GCRY_CIPHER_SECURE
-				       | ((use_mdc || cfx->dek->algo >= 100) ?
-					     0 : GCRY_CIPHER_ENABLE_SYNC)))
-				     ) {
-	/* we should never get an error here cause we already checked, that
-	 * the algorithm is available. */
-	BUG();
-    }
-
-
+    cfx->cipher_hd = cipher_open( cfx->dek->algo,
+				  use_mdc? CIPHER_MODE_CFB
+					 : CIPHER_MODE_AUTO_CFB, 1 );
 /*   log_hexdump( "thekey", cfx->dek->key, cfx->dek->keylen );*/
-    rc = gcry_cipher_setkey( cfx->cipher_hd, cfx->dek->key, cfx->dek->keylen );
-    if( !rc )
-	rc = gcry_cipher_setiv( cfx->cipher_hd, NULL, 0 );
-    if( rc )
-	log_fatal("set key or IV failed: %s\n", gcry_strerror(rc) );
+    cipher_setkey( cfx->cipher_hd, cfx->dek->key, cfx->dek->keylen );
+    cipher_setiv( cfx->cipher_hd, NULL, 0 );
 /*  log_hexdump( "prefix", temp, nprefix+2 ); */
-    if( cfx->mdc_hash )
-	gcry_md_write( cfx->mdc_hash, temp, nprefix+2 );
-    rc = gcry_cipher_encrypt( cfx->cipher_hd, temp, nprefix+2, NULL, 0 );
-    if( !rc )
-	rc = gcry_cipher_sync( cfx->cipher_hd );
-    if( rc )
-	log_fatal("encrypt failed: %s\n", gcry_strerror(rc) );
+    if( cfx->mdc_hash ) /* hash the "IV" */
+	md_write( cfx->mdc_hash, temp, nprefix+2 );
+    cipher_encrypt( cfx->cipher_hd, temp, temp, nprefix+2);
+    cipher_sync( cfx->cipher_hd );
     iobuf_write(a, temp, nprefix+2);
     cfx->header=1;
-
 }
 
 
@@ -129,46 +129,39 @@ cipher_filter( void *opaque, int control,
     else if( control == IOBUFCTRL_FLUSH ) { /* encrypt */
 	assert(a);
 	if( !cfx->header ) {
-	    write_status( STATUS_BEGIN_ENCRYPTION );
 	    write_header( cfx, a );
 	}
 	if( cfx->mdc_hash )
-	    gcry_md_write( cfx->mdc_hash, buf, size );
-	rc = gcry_cipher_encrypt( cfx->cipher_hd, buf, size, NULL, 0);
-	if( rc )
-	    log_fatal("encrypt failed: %s\n", gcry_strerror(rc) );
+	    md_write( cfx->mdc_hash, buf, size );
+	cipher_encrypt( cfx->cipher_hd, buf, buf, size);
 	if( iobuf_write( a, buf, size ) )
-	    rc = GPGERR_WRITE_FILE;
+	    rc = G10ERR_WRITE_FILE;
     }
     else if( control == IOBUFCTRL_FREE ) {
 	if( cfx->mdc_hash ) {
 	    byte *hash;
-	    int hashlen = gcry_md_get_algo_dlen( gcry_md_get_algo( cfx->mdc_hash ) );
+	    int hashlen = md_digest_length( md_get_algo( cfx->mdc_hash ) );
 	    byte temp[22];
 
 	    assert( hashlen == 20 );
 	    /* we must hash the prefix of the MDC packet here */
 	    temp[0] = 0xd3;
 	    temp[1] = 0x14;
-	    gcry_md_putc( cfx->mdc_hash, temp[0] );
-	    gcry_md_putc( cfx->mdc_hash, temp[1] );
+	    md_putc( cfx->mdc_hash, temp[0] );
+	    md_putc( cfx->mdc_hash, temp[1] );
 
-	    hash = gcry_md_read( cfx->mdc_hash, 0 );
+	    md_final( cfx->mdc_hash );
+	    hash = md_read( cfx->mdc_hash, 0 );
 	    memcpy(temp+2, hash, 20);
-	    rc = gcry_cipher_encrypt( cfx->cipher_hd, temp, 22, NULL, 0 );
-	    if( rc )
-		log_fatal("encrypt failed: %s\n", gcry_strerror(rc) );
-	    gcry_md_close( cfx->mdc_hash ); cfx->mdc_hash = NULL;
+	    cipher_encrypt( cfx->cipher_hd, temp, temp, 22 );
+	    md_close( cfx->mdc_hash ); cfx->mdc_hash = NULL;
 	    if( iobuf_write( a, temp, 22 ) )
 		log_error("writing MDC packet failed\n" );
 	}
-	gcry_cipher_close(cfx->cipher_hd);
-	write_status( STATUS_END_ENCRYPTION );
+	cipher_close(cfx->cipher_hd);
     }
     else if( control == IOBUFCTRL_DESC ) {
 	*(char**)buf = "cipher_filter";
     }
     return rc;
 }
-
-

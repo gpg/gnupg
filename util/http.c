@@ -1,5 +1,5 @@
 /* http.c  -  HTTP protocol handler
- *	Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+ *	Copyright (C) 1999, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -26,24 +26,38 @@
 #include <ctype.h>
 #include <errno.h>
 
-#ifndef HAVE_DOSISH_SYSTEM  /* fixme: add support W32 sockets */
-
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <time.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-
-#include <gcrypt.h>
+#ifdef __MINGW32__
+ #include <windows.h>
+#else
+ #include <unistd.h>
+ #include <sys/types.h>
+ #include <sys/socket.h>
+ #include <sys/time.h>
+ #include <time.h>
+ #include <netinet/in.h>
+ #include <arpa/inet.h>
+ #include <netdb.h>
+#endif
 
 #include "util.h"
 #include "iobuf.h"
 #include "i18n.h"
 
 #include "http.h"
+
+#ifdef __riscos__
+  #define HTTP_PROXY_ENV           "GnuPG$HttpProxy"
+  #define HTTP_PROXY_ENV_PRINTABLE "<GnuPG$HttpProxy>"
+#else
+  #define HTTP_PROXY_ENV           "http_proxy"
+  #define HTTP_PROXY_ENV_PRINTABLE "$http_proxy"
+#endif
+
+#ifdef __MINGW32__
+#define sock_close(a)  closesocket(a)
+#else
+#define sock_close(a)  close(a)
+#endif
 
 #define MAX_LINELEN 20000  /* max. length of a HTTP line */
 #define VALID_URI_CHARS "abcdefghijklmnopqrstuvwxyz"   \
@@ -69,6 +83,38 @@ static int parse_response( HTTP_HD hd );
 static int connect_server( const char *server, ushort port );
 static int write_server( int sock, const char *data, size_t length );
 
+#ifdef __MINGW32__
+static void
+deinit_sockets (void)
+{
+    WSACleanup();
+}
+
+static void
+init_sockets (void)
+{
+    static int initialized;
+    static WSADATA wsdata;
+
+    if (initialized)
+        return;
+
+    if( WSAStartup( 0x0101, &wsdata ) ) {
+        log_error ("error initializing socket library: ec=%d\n", 
+                    (int)WSAGetLastError () );
+        return;
+    }
+    if( wsdata.wVersion < 0x0001 ) {
+        log_error ("socket library version is %x.%x - but 1.1 needed\n",
+                   LOBYTE(wsdata.wVersion), HIBYTE(wsdata.wVersion));
+        WSACleanup();
+        return;
+    }
+    atexit ( deinit_sockets );
+    initialized = 1;
+}
+#endif /*__MINGW32__*/
+
 
 int
 http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
@@ -77,7 +123,7 @@ http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
     int rc;
 
     if( !(reqtype == HTTP_REQ_GET || reqtype == HTTP_REQ_POST) )
-	return GPGERR_INV_ARG;
+	return G10ERR_INV_ARG;
 
     /* initialize the handle */
     memset( hd, 0, sizeof *hd );
@@ -90,15 +136,15 @@ http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
     if( !rc ) {
 	rc = send_request( hd );
 	if( !rc ) {
-	    hd->fp_write = iobuf_fdopen( hd->sock , "w" );
+	    hd->fp_write = iobuf_sockopen( hd->sock , "w" );
 	    if( hd->fp_write )
 		return 0;
-	    rc = GPGERR_GENERAL;
+	    rc = G10ERR_GENERAL;
 	}
     }
 
     if( !hd->fp_read && !hd->fp_write && hd->sock != -1 )
-	close( hd->sock );
+	sock_close( hd->sock );
     iobuf_close( hd->fp_read );
     iobuf_close( hd->fp_write);
     release_parsed_uri( hd->uri );
@@ -111,8 +157,9 @@ http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
 void
 http_start_data( HTTP_HD hd )
 {
+    iobuf_flush ( hd->fp_write );
     if( !hd->in_data ) {
-	iobuf_put( hd->fp_write, '\n' );
+        write_server (hd->sock, "\r\n", 2);
 	hd->in_data = 1;
     }
 }
@@ -124,19 +171,22 @@ http_wait_response( HTTP_HD hd, unsigned int *ret_status )
     int rc;
 
     http_start_data( hd ); /* make sure that we are in the data */
-    iobuf_flush( hd->fp_write );
 
-    hd->sock = dup( hd->sock );
+  #if 0
+    hd->sock = dup( hd->sock ); 
     if( hd->sock == -1 )
-	return GPGERR_GENERAL;
-    iobuf_close( hd->fp_write );
+	return G10ERR_GENERAL;
+  #endif
+    iobuf_ioctl (hd->fp_write, 1, 1, NULL); /* keep the socket open */
+    iobuf_close (hd->fp_write);
     hd->fp_write = NULL;
-    shutdown( hd->sock, 1 );
+    if ( !(hd->flags & HTTP_FLAG_NO_SHUTDOWN) )
+        shutdown( hd->sock, 1 );
     hd->in_data = 0;
 
-    hd->fp_read = iobuf_fdopen( hd->sock , "r" );
+    hd->fp_read = iobuf_sockopen( hd->sock , "r" );
     if( !hd->fp_read )
-	return GPGERR_GENERAL;
+	return G10ERR_GENERAL;
 
     rc = parse_response( hd );
     if( !rc && ret_status )
@@ -171,11 +221,11 @@ http_close( HTTP_HD hd )
     if( !hd || !hd->initialized )
 	return;
     if( !hd->fp_read && !hd->fp_write && hd->sock != -1 )
-	close( hd->sock );
+	sock_close( hd->sock );
     iobuf_close( hd->fp_read );
     iobuf_close( hd->fp_write );
     release_parsed_uri( hd->uri );
-    gcry_free( hd->buffer );
+    m_free( hd->buffer );
     hd->initialized = 0;
 }
 
@@ -189,7 +239,7 @@ http_close( HTTP_HD hd )
 static int
 parse_uri( PARSED_URI *ret_uri, const char *uri )
 {
-   *ret_uri = gcry_xcalloc( 1, sizeof(**ret_uri) + strlen(uri) );
+   *ret_uri = m_alloc_clear( sizeof(**ret_uri) + strlen(uri) );
    strcpy( (*ret_uri)->buffer, uri );
    return do_parse_uri( *ret_uri, 0 );
 }
@@ -203,9 +253,9 @@ release_parsed_uri( PARSED_URI uri )
 
 	for( r = uri->query; r; r = r2 ) {
 	    r2 = r->next;
-	    gcry_free( r );
+	    m_free( r );
 	}
-	gcry_free( uri );
+	m_free( uri );
     }
 }
 
@@ -225,27 +275,28 @@ do_parse_uri( PARSED_URI uri, int only_local_part )
 
     /* a quick validity check */
     if( strspn( p, VALID_URI_CHARS) != n )
-	return GPGERR_BAD_URI; /* invalid characters found */
+	return G10ERR_BAD_URI; /* invalid characters found */
 
     if( !only_local_part ) {
 	/* find the scheme */
 	if( !(p2 = strchr( p, ':' ) ) || p2 == p )
-	   return GPGERR_BAD_URI; /* No scheme */
+	   return G10ERR_BAD_URI; /* No scheme */
 	*p2++ = 0;
 	strlwr( p );
 	uri->scheme = p;
+        uri->port = 80;
 	if( !strcmp( uri->scheme, "http" ) )
 	    ;
 	else if( !strcmp( uri->scheme, "x-hkp" ) ) /* same as HTTP */
-	    ;
+	    uri->port = 11371;
 	else
-	    return GPGERR_INVALID_URI; /* Unsupported scheme */
+	    return G10ERR_INVALID_URI; /* Unsupported scheme */
 
 	p = p2;
 
 	/* find the hostname */
 	if( *p != '/' )
-	    return GPGERR_INVALID_URI; /* does not start with a slash */
+	    return G10ERR_INVALID_URI; /* does not start with a slash */
 
 	p++;
 	if( *p == '/' ) {  /* there seems to be a hostname */
@@ -258,13 +309,12 @@ do_parse_uri( PARSED_URI uri, int only_local_part )
 		*p3++ = 0;
 		uri->port = atoi( p3 );
 	    }
-	    else
-	       uri->port = 80;
+
 	    uri->host = p;
 	    if( (n = remove_escapes( uri->host )) < 0 )
-		return GPGERR_BAD_URI;
+		return G10ERR_BAD_URI;
 	    if( n != strlen( p ) )
-		return GPGERR_BAD_URI; /* hostname with a Nul in it */
+		return G10ERR_BAD_URI; /* hostname with a Nul in it */
 	    p = p2 ? p2 : NULL;
 	}
     } /* end global URI part */
@@ -281,9 +331,9 @@ do_parse_uri( PARSED_URI uri, int only_local_part )
 
     uri->path = p;
     if( (n = remove_escapes( p )) < 0 )
-	return GPGERR_BAD_URI;
+	return G10ERR_BAD_URI;
     if( n != strlen( p ) )
-	return GPGERR_BAD_URI; /* path with a Nul in it */
+	return G10ERR_BAD_URI; /* path with a Nul in it */
     p = p2 ? p2 : NULL;
 
     if( !p || !*p ) /* we don't have a query string */
@@ -297,7 +347,7 @@ do_parse_uri( PARSED_URI uri, int only_local_part )
 	if( (p2 = strchr( p, '&' )) )
 	    *p2++ = 0;
 	if( !(elem = parse_tuple( p )) )
-	    return GPGERR_BAD_URI;
+	    return G10ERR_BAD_URI;
 	*tail = elem;
 	tail = &elem->next;
 
@@ -397,7 +447,7 @@ parse_tuple( byte *string )
 	return NULL; /* bad URI */
     if( n != strlen( p ) )
        return NULL; /* name with a Nul in it */
-    tuple = gcry_xcalloc( 1, sizeof *tuple );
+    tuple = m_alloc_clear( sizeof *tuple );
     tuple->name = p;
     if( !p2 )  {
 	/* we have only the name, so we assume an empty value string */
@@ -406,7 +456,7 @@ parse_tuple( byte *string )
     }
     else { /* name and value */
 	if( (n = remove_escapes( p2 )) < 0 ) {
-	    gcry_free( tuple );
+	    m_free( tuple );
 	    return NULL; /* bad URI */
 	}
 	tuple->value = p2;
@@ -433,14 +483,15 @@ send_request( HTTP_HD hd )
     port   = hd->uri->port?  hd->uri->port : 80;
 
     if( (hd->flags & HTTP_FLAG_TRY_PROXY)
-	&& (http_proxy = getenv( "http_proxy" )) ) {
+	&& (http_proxy = getenv( HTTP_PROXY_ENV )) ) {
 	PARSED_URI uri;
 
 	rc = parse_uri( &uri, http_proxy );
 	if (rc) {
-	    log_error("invalid $http_proxy: %s\n", gpg_errstr(rc));
+	    log_error("invalid " HTTP_PROXY_ENV_PRINTABLE ": %s\n",
+                      g10_errstr(rc));
 	    release_parsed_uri( uri );
-	    return GPGERR_NETWORK;
+	    return G10ERR_NETWORK;
 	}
 	hd->sock = connect_server( *uri->host? uri->host : "localhost",
 				    uri->port? uri->port : 80 );
@@ -450,10 +501,10 @@ send_request( HTTP_HD hd )
 	hd->sock = connect_server( server, port );
 
     if( hd->sock == -1 )
-	return GPGERR_NETWORK;
+	return G10ERR_NETWORK;
 
     p = build_rel_path( hd->uri );
-    request = gcry_xmalloc( strlen(p) + 20 );
+    request = m_alloc( strlen(server) + strlen(p) + 50 );
     if( http_proxy ) {
 	sprintf( request, "%s http://%s:%hu%s%s HTTP/1.0\r\n",
 			  hd->req_type == HTTP_REQ_GET ? "GET" :
@@ -468,10 +519,10 @@ send_request( HTTP_HD hd )
 			  hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
 						  *p == '/'? "":"/", p );
     }
-    gcry_free(p);
+    m_free(p);
 
     rc = write_server( hd->sock, request, strlen(request) );
-    gcry_free( request );
+    m_free( request );
 
     return rc;
 }
@@ -502,7 +553,7 @@ build_rel_path( PARSED_URI uri )
     n++;
 
     /* now  allocate and copy */
-    p = rel_path = gcry_xmalloc( n );
+    p = rel_path = m_alloc( n );
     n = insert_escapes( p, uri->path, "%;?&" );
     p += n;
     /* todo: add params */
@@ -608,13 +659,13 @@ start_server()
 
     if( bind( fd, (struct sockaddr *)&mya, sizeof(mya)) ) {
 	log_error("bind to port 11371 failed: %s\n", strerror(errno) );
-	close( fd );
+	sock_close( fd );
 	return -1;
     }
 
     if( listen( fd, 5 ) ) {
 	log_error("listen failed: %s\n", strerror(errno) );
-	close( fd );
+	sock_close( fd );
 	return -1;
     }
 
@@ -647,7 +698,7 @@ start_server()
 	    fclose(fp);
 	    exit(0);
 	}
-	close( client );
+	sock_close( client );
     }
 
 
@@ -660,9 +711,51 @@ start_server()
 static int
 connect_server( const char *server, ushort port )
 {
+    int sd;
+#ifdef __MINGW32__
+    struct hostent *hp;
+    struct sockaddr_in ad;
+    unsigned long l;
+    
+    init_sockets ();
+
+    memset (&ad, 0, sizeof(ad));
+    ad.sin_family = AF_INET;
+    ad.sin_port = htons(port);
+
+    if( (l = inet_addr (server)) != SOCKET_ERROR ) {
+        memcpy (&ad.sin_addr, &l, sizeof(l));
+    }
+    else if( (hp = gethostbyname (server)) ) {
+        if( hp->h_addrtype != AF_INET ) {
+            log_error ("%s: unknown address family\n", server);
+            return -1;
+        }
+        if ( hp->h_length != 4 ) {
+            log_error ("%s: illegal address length\n", server);
+            return -1;
+        }
+        memcpy (&ad.sin_addr, hp->h_addr, hp->h_length);
+    }
+    else {
+        log_error ("%s: host not found: ec=%d\n",
+                   server, (int)WSAGetLastError ());
+        return -1;
+    }
+
+    if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
+        log_error ("error creating socket: ex=%d\n", 
+                   (int)WSAGetLastError ());
+        return -1;
+    }
+
+    if( connect (sd, (struct sockaddr *)&ad, sizeof (ad) ) ) {
+        sock_close (sd);
+        return -1;
+    }
+#else
     struct sockaddr_in addr;
     struct hostent *host;
-    int sd;
 
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
@@ -677,10 +770,10 @@ connect_server( const char *server, ushort port )
 	return -1;
 
     if( connect( sd, (struct sockaddr *)&addr, sizeof addr) == -1 ) {
-	close(sd);
+	sock_close(sd);
 	return -1;
     }
-
+#endif
     return sd;
 }
 
@@ -688,11 +781,20 @@ connect_server( const char *server, ushort port )
 static int
 write_server( int sock, const char *data, size_t length )
 {
-    int nleft, nwritten;
+    int nleft;
 
     nleft = length;
     while( nleft > 0 ) {
-	nwritten = write( sock, data, nleft );
+      #ifdef __MINGW32__  
+        int nwritten;
+
+        nwritten = send (sock, data, nleft, 0);
+        if ( nwritten == SOCKET_ERROR ) {
+	    log_info ("write failed: ec=%d\n", (int)WSAGetLastError ());
+	    return G10ERR_NETWORK;
+        }
+      #else
+	int nwritten = write( sock, data, nleft );
 	if( nwritten == -1 ) {
 	    if( errno == EINTR )
 		continue;
@@ -705,16 +807,15 @@ write_server( int sock, const char *data, size_t length )
 		continue;
 	    }
 	    log_info("write failed: %s\n", strerror(errno));
-	    return GPGERR_NETWORK;
+	    return G10ERR_NETWORK;
 	}
+      #endif
 	nleft -=nwritten;
 	data += nwritten;
     }
 
     return 0;
 }
-
-#endif /* HAVE_DOSISH_SYSTEM */
 
 /**** Test code ****/
 #ifdef TEST
@@ -742,7 +843,7 @@ main(int argc, char **argv)
 
     rc = parse_uri( &uri, *argv );
     if( rc ) {
-	log_error("`%s': %s\n", *argv, gpg_errstr(rc));
+	log_error("`%s': %s\n", *argv, g10_errstr(rc));
 	release_parsed_uri( uri );
 	return 1;
     }
@@ -767,7 +868,7 @@ main(int argc, char **argv)
 
     rc = http_open_document( &hd, *argv, 0 );
     if( rc ) {
-	log_error("can't get `%s': %s\n", *argv, gpg_errstr(rc));
+	log_error("can't get `%s': %s\n", *argv, g10_errstr(rc));
 	return 1;
     }
     log_info("open_http_document succeeded; status=%u\n", hd.status_code );

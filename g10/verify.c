@@ -1,5 +1,5 @@
 /* verify.c - verify signed data
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,13 +24,14 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <unistd.h> /* for isatty() */
 
-#include <gcrypt.h>
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
+#include "memory.h"
 #include "util.h"
 #include "main.h"
 #include "status.h"
@@ -60,13 +61,38 @@ verify_signatures( int nfiles, char **files )
     STRLIST sl;
 
     memset( &afx, 0, sizeof afx);
+    /* decide whether we should handle a detached or a normal signature,
+     * which is needed so that the code later can hash the correct data and
+     * not have a normal signature act as detached signature and ignoring the
+     * indended signed material from the 2nd file or stdin.
+     * 1. gpg <file        - normal
+     * 2. gpg file         - normal (or detached)
+     * 3. gpg file <file2  - detached
+     * 4. gpg file file2   - detached
+     * The question is how decide between case 2 and 3?  The only way
+     * we can do it is by reading one byte from stdin and the unget
+     * it; the problem here is that we may be reading from the
+     * terminal (which could be detected using isatty() but won't work
+     * when under contol of a pty using program (e.g. expect)) and
+     * might get us in trouble when stdin is used for another purpose
+     * (--passphrase-fd 0).  So we have to break with the behaviour
+     * prior to gpg 1.0.4 by assuming that case 3 is a normal
+     * signature (where file2 is ignored and require for a detached
+     * signature to indicate signed material comes from stdin by using
+     * case 4 with a file2 of "-".
+     *
+     * Actually we don't have to change anything here but can handle
+     * that all quite easily in mainproc.c 
+     */
+     
+
     sigfile = nfiles? *files : NULL;
 
     /* open the signature file */
     fp = iobuf_open(sigfile);
     if( !fp ) {
 	log_error(_("can't open `%s'\n"), print_fname_stdin(sigfile));
-	return GPGERR_OPEN_FILE;
+	return G10ERR_OPEN_FILE;
     }
 
     if( !opt.no_armor && use_armor_filter( fp ) )
@@ -89,13 +115,13 @@ verify_signatures( int nfiles, char **files )
 }
 
 
-static void
+void
 print_file_status( int status, const char *name, int what )
 {
-    char *p = gcry_xmalloc(strlen(name)+10);
+    char *p = m_alloc(strlen(name)+10);
     sprintf(p, "%d %s", what, name );
     write_status_text( status, p );
-    gcry_free(p);
+    m_free(p);
 }
 
 
@@ -111,7 +137,7 @@ verify_one_file( const char *name )
     if( !fp ) {
 	print_file_status( STATUS_FILE_ERROR, name, 1 );
 	log_error(_("can't open `%s'\n"), print_fname_stdin(name));
-	return GPGERR_OPEN_FILE;
+	return G10ERR_OPEN_FILE;
     }
 
     if( !opt.no_armor ) {
@@ -145,7 +171,7 @@ verify_files( int nfiles, char **files )
 	    lno++;
 	    if( !*line || line[strlen(line)-1] != '\n' ) {
 		log_error(_("input line %u too long or missing LF\n"), lno );
-		return GPGERR_GENERAL;
+		return G10ERR_GENERAL;
 	    }
 	    /* This code does not work on MSDOS but how cares there are
 	     * also no script languages available.  We don't strip any
@@ -161,4 +187,3 @@ verify_files( int nfiles, char **files )
     }
     return 0;
 }
-

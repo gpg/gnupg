@@ -1,92 +1,3375 @@
+2002-06-21  Stefan Bellon  <sbellon@sbellon.de>
+
+	* g10.c [__riscos__]: Moved RISC OS specific stuff to util/riscos.c
+	and include/util.h.
+
+	* gpgv.c [__riscos__]: Likewise.
+
+2002-06-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* keydb.h, pkclist.c (select_algo_from_prefs): Allow passing a
+	suggested algorithm which will be used if available.
+
+	* encode.c (encode_crypt, encrypt_filter), sign.c (sign_file): Use
+	new select_algo_from_prefs feature to check if forcing an
+	algorithm would violate the recipient preferences.
+
+	* photoid.c (get_default_photo_command, show_photos): Use
+	different default viewers on different platforms.  Currently we
+	have Win 9x, Win NT (2k, xp), Mac OSX, RISC OS, and "everybody
+	else".  These are #ifdefs as much as possible to avoid clutter.
+
+	* g10.c (strusage, build_list), keyedit.c (show_prefs), main.h,
+	misc.c (compress_algo_to_string, check_compress_algo), pkclist.c
+	(algo_available), keygen.c (keygen_set_std_prefs): New
+	algo_to_string and check functions for compress algorithms.
+
+2002-06-20  Werner Koch  <wk@gnupg.org>
+
+	* misc.c (setsysinfo): Removed a #warning for Alpha's uniligedn
+	trap disabling - it is quite possible that this is a debug relict.
+
+2002-06-20  Stefan Bellon  <sbellon@sbellon.de>
+
+	* g10.c [__riscos__]: Added image file system feature.
+
+	* gpgv.c [__riscos__]: Added image file system feature.
+
+	* photoid.c (show_photos) [__riscos__]: Set RISC OS filetype of
+	photo id according to MIME type.
+
+2002-06-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* hkp.c (parse_hkp_index): Don't leak memory when failing out of a
+	bad HKP keyserver.
+
+	* g10.c (add_notation_data): Relax slightly the rules as to what
+	can go into a notation name - 2440 allows "@", for example.
+
+2002-06-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (clean_subkeys, import_one): Only allow at most 1
+	binding sig and at most 1 revocation sig on a subkey, as per
+	2440:11.1.
+
+	* hkp.c (parse_hkp_index, hkp_search): Error if the keyserver
+	returns an unparseable HKP response.
+
+2002-06-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (show_key_with_all_names), keylist.c
+	(list_keyblock_print): Show "[expired]" before expired uids.
+
+	* keyedit.c (show_key_with_all_names_colon), mainproc.c
+	(list_node), keylist.c (list_keyblock_colon): Show flag 'e' for
+	expired user ids.  Use "uat" for user attribute packets instead of
+	"uid".  Also use '<count> <length>' rather than the fake user id
+	string on attributes.
+
+	* keygen.c (keygen_add_revkey): Remove unused code.
+
+	* misc.c (check_permissions): Check directory permissions
+	properly - they are not special files.
+
+	* pkclist.c (expand_id, expand_group, build_pk_list): When
+	expanding groups before building a pk list, inherit flags from the
+	original pre-expanded string.
+
+	* pubkey-enc.c (is_algo_in_prefs): Don't use prefs from expired
+	uids.
+
+2002-06-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* free-packet.c (copy_signature): Properly copy a signature that
+	carries a revocation key on it.
+
+	* pkclist.c (expand_id, expand_group, build_pk_list): Groups now
+	work properly when used in the "Enter the user ID" prompt.
+
+2002-06-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (show_key_with_all_names): Display warning if a user
+	tries to show prefs on a v3 key with a v3 selfsig.
+
+	* kbnode.c (dump_kbnode): Show if a uid is expired.
+
+	* import.c (merge_blocks, import_revoke_cert): Show user ID
+	receiving a revocation certificate.
+
+	* free-packet.c (cmp_user_ids): Properly compare attribute ids.
+
+	* pkclist.c (expand_groups): Maintain the strlist flags while
+	expanding.  Members of an expansion inherit their flags from the
+	expansion key.
+
+	* options.h, cipher.c (write_header), g10.c (main), keygen.c
+	(keygen_set_std_prefs): remove the personal_mdc flag.  It no
+	longer serves a purpose now that the personal preference lists are
+	split into cipher/digest/zip.
+
+2002-06-14  Timo Schulz  <ts@winpt.org>
+
+	* skclist.c (is_insecure): Implemented.
+	
+2002-06-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_spawn): Properly handle PROGRAM responses
+	when they have a CRLF ending.  Noted by Keith Ray.
+
+	* keyserver.c (keyserver_spawn): Handle CRLF endings from
+	keyserver helpers.  Also don't leak the last line worth of memory
+	from the keyserver response.
+
+	* main.h, misc.c (deprecated_warning): New function to warn about
+	deprecated options and commands.
+
+	* g10.c (main), keyserver-internal.h, keyserver.c
+	(parse_keyserver_uri): Use new deprecated function to warn about
+	honor-http-proxy, auto-key-retrieve, and x-broken-hkp.
+
+2002-06-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: link gpg with NETLIBS for the built-in HKP access.
+
+2002-06-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, keyserver.c (keyserver_opts), g10.c (main): New
+	keyserver option "include-subkeys".  This feature already existed,
+	but now can be turned off.  It defaults to on.
+
+	* options.h, keyserver.c (parse_keyserver_options,
+	keyserver_spawn): There are now enough options to justify making a
+	structure for the keyserver options rather than a page of
+	if-then-else-if-then-etc.
+
+	* getkey.c (merge_keys_and_selfsig, merge_selfsigs_main): Fix bug
+	in calculating key expiration dates.
+
+2002-06-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* keydb.h, getkey.c (get_user_id_native), import.c (import_one):
+	Display user ID while importing a key.  Note this applies to both
+	--import and keyserver --recv-keys.
+
+	* exec.c (exec_finish): Log unnatural exit (core dump, killed
+	manually, etc) for fork/exec/pipe child processes.
+
+2002-06-08  Timo Schulz  <ts@winpt.org>
+
+	* encode.c (encode_symmetric): Disable the compat flag
+	when the expert mode is enabled.
+	
+2002-06-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.skel, options.h, main.h, keydb.h, pkclist.c
+	(build_pk_list, expand_groups), g10.c (main, add_group): Add new
+	"group" command to allow one name to expand into multiple keys.
+	For simplicity, and to avoid potential loops, we only expand once
+	- you can't make an alias that points to an alias.
+
+	* main.h, g10.c (main), keygen.c (build_personal_digest_list):
+	Simplify the default digest list - there is really no need for the
+	other hashes since they will never be used after SHA-1 in the
+	list.
+
+	* options.skel, options.h, g10.c (main), hkp.c (hkp_ask_import,
+	hkp_export, hkp_search), keyserver.c (parse_keyserver_options,
+	parse_keyserver_uri, keyserver_work, keyserver_refresh): Make the
+	"x-broken-hkp" keyserver scheme into keyserver-option
+	"broken-http-proxy".  Move honor_http_proxy into
+	keyserver_options.  Canonicalize the three variations of "hkp",
+	"x-hkp", and "x-broken-hkp" into "hkp".
+
+2002-06-07  Stefan Bellon  <sbellon@sbellon.de>
+
+	* g10.c [__riscos__]: Added --attribute-file to do the same as
+	--attribute-fd, but with a filename not a fd as argument.
+	Added magic symbol for RISC OS to use different memory management.
+
+	* gpgv.c [__riscos__]: Added magic symbol for RISC OS to use
+	different memory management.
+
+2002-06-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, g10.c (main), keygen.c (build_personal_digest_list): Put
+	in a default digest preference list consisting of SHA-1, followed
+	by every other installed digest except MD5.  Note this is the same
+	as having no digest preference at all except for SHA-1 being
+	favored.
+
+	* options.h, g10.c (main), keygen.c (keygen_set_std_prefs),
+	pkclist.c (select_algo_from_prefs): Split
+	--personal-preference-list into three:
+	--personal-{cipher|digest|compress}-preferences.  This allows a
+	user to set one without affecting another (i.e. setting only a
+	digest pref doesn't imply an empty cipher pref).
+
+	* exec.c (exec_read): This is a safer way of guessing the return
+	value of system().  Noted by Stefan Bellon.
+
+2002-06-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* hkp.c (parse_hkp_index): Be more robust with keyservers
+	returning very unparseable responses.
+
+	* exec.c (exec_read): Catch and display an error when the remote
+	process exits unnaturally (i.e. segfault) so the user knows what
+	happened.  Also fix exec_write stub which has a different number
+	of arguments now.
+
+2002-06-05  Timo Schulz  <ts@winpt.org>
+
+	* encode.c (encode_simple): Ignore the new mode for RFC1991.
+	* mainproc.c (symkey_decrypt_sesskey): Better check for weird
+	keysizes.
+	
+2002-06-05  Timo Schulz  <ts@winpt.org>
+
+	* encode.c (encode_sesskey): New.
+	(encode_simple): Use it here. But by default we use the compat
+	mode which supress to generate encrypted session keys.
+	
+2002-06-05  Timo Schulz  <ts@winpt.org>
+
+	* mainproc.c (symkey_decrypt_sesskey): New.
+	(proc_symkey_enc): Support for encrypted session keys.
+	
+2002-06-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* sign.c (hash_for, sign_file): When encrypting and signing at the
+	same time, consult the various hash prefs to pick a hash algorithm
+	to use.  Pass in a 160-bit hint if any of the signing keys are
+	DSA.
+
+	* keydb.h, pkclist.c (select_algo_from_prefs, algo_available):
+	Pass a "hints" opaque pointer in to let the caller give hints as
+	to what algorithms would be acceptable.  The only current hint is
+	for PREFTYPE_HASH to require a 160-bit hash for DSA.  Change all
+	callers in encode.c (encode_crypt, encrypt_filter) and sign.c
+	(sign_file).  If we settle on MD5 as the best algorithm based
+	solely on recepient keys and SHA1 is also a possibility, use SHA1
+	unless the user intentionally chose MD5.  This is as per 2440:13.
+
+	* exec.c (make_tempdir): Fix duplicated filename problem.
+
+2002-06-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* packet.h, parse-packet.c (enum_sig_subpkt): Report back from
+	enum_sig_subpkt when a subpacket is critical and change all
+	callers in keylist.c (show_policy_url, show_notation), mainproc.c
+	(print_notation_data), and pkclist.c (do_show_revocation_reason).
+
+	* keylist.c (show_policy_url, show_notation): Display if the
+	policy or notation is critical.
+	
+2002-06-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, g10.c (main), keylist.c (dump_attribs, set_attrib_fd,
+	list_keyblock_print, list_keyblock_colon), status.h, status.c
+	(get_status_string): New --attribute-fd feature to dump the
+	contents of attribute subpackets for frontends.  If --status-fd is
+	also used, then a new status tag ATTRIBUTE is provided for each
+	subpacket.
+
+	* packet.h, getkey.c (fixup_uidnode, merge_selfsigs_main,
+	merge_selfsigs_subkey), parse-packet.c (setup_user_id): Keep track
+	of the expiration time of a user ID, and while we're at it, use
+	the expired flag from the selfsig rather than reparsing the
+	SIG_EXPIRE subpacket.
+
+	* photoid.c (generate_photo_id): When adding a new photo ID,
+	showing the photo for confirmation is not safe when noninteractive
+	since the "user" may not be able to dismiss a viewer window.
+	Noted by Timo Schulz.
+	
+2002-06-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.skel: Sample photo viewers for Win32.
+
+	* misc.c (pct_expando): Use the seckey for %k/%K if the pubkey is
+	not available.
+
+	* photoid.h, photoid.c (show_photos): Include the seckey in case a
+	user tries to view a photo on a secret key, and change all callers
+	in keyedit.c (menu_showphoto), keylist.c (list_keyblock_print),
+	and photoid.c (generate_photo_id).
+
+2002-06-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* photoid.c (show_photos): Work properly when not called with a
+	public key.
+
+2002-05-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* sign.c (mk_notation_and_policy): Free unneeded buffer.
+
+	* hkp.c (parse_hkp_index): Properly handle the '&' character
+	(i.e. "&amp;") in HKP responses.
+
+	* getkey.c (merge_selfsigs_main): Fix reversed expiration time
+	check with self-sigs.
+
+	* keyedit.c (sign_uids): When making a new self-sig on a v3 key,
+	make a v3 self-sig unless it is currently a v3 self-sig being
+	promoted to v4.
+
+2002-05-31  Timo Schulz  <ts@winpt.org>
+
+	* pkclist.c (do_show_revocation_reason): Don't use capital
+	letters for non-interactive output.
+	(show_revocation_reason): Now it is global.
+	* pubkey-enc.c (get_it): Show if the key has been revoked.
+	
+2002-05-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* sign.c (write_signature_packets, sign_file, clearsign_file,
+	sign_symencrypt_file): Make a v4 signature if a policy URL or
+	notation is set, unless v3 sigs are forced via rfc1991 or
+	force-v3-sigs.  Also remove some doubled code and clarify an error
+	message (we don't sign in PGP2 mode - just detach-sign).
+
+	* parse-packet.c (parse_one_sig_subpkt): Add KS_FLAGS to the "any
+	size" section.
+
+2002-05-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (keygen_set_std_prefs, add_feature_mdc): Use "mdc" and
+	"no-mdc" in the prefs string to allow switching on and off the MDC
+	feature.  This is needed to properly export a key from GnuPG for
+	use on PGP which does not support MDC - without this, MDC-capable
+	implementations will still try and generate MDCs which will break
+	PGP.
+
+	* keygen.c (keygen_get_std_prefs): Show "[mdc]" in prefs string if
+	it is enabled.
+
+	* options.h, g10.c (main), cipher.c (write_header), keygen.c
+	(keygen_set_std_prefs): For consistency, allow the user to specify
+	mdc/no-mdc in the --personal-preference-list.  If disabled, it
+	acts just like --disable-mdc.
+
+2002-05-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, exec.c: Add some debugging info, using the 1024 debug
+	flag.
+
+	* exec.c (win_system): New system()-like function for win32 that
+	does not return until the child process terminates.  Of course,
+	this doesn't help if the process itself exits before it is
+	finished.
+
+2002-05-29  Werner Koch  <wk@gnupg.org>
+
+	* encode.c (encode_simple): Intialize PKT when --no-literal is used.
+
+	* keyedit.c (show_key_with_all_names_colon): Renamed the record
+	for revocation keys to "rvk".
+
+2002-05-27  Werner Koch  <wk@gnupg.org>
+
+	* keyedit.c (show_key_with_all_names_colon): New.
+	(show_key_with_all_names): Divert to new function when required.
+	Sanitize printing of revoker name.
+
+2002-05-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* build-packet.c (build_sig_subpkt): Handle setting sig flags for
+	certain subpacket types (notation, policy url, exportable,
+	revocable).  keyedit.c (sign_mk_attrib): Flags no longer need to
+	be set here.
+
+	* packet.h, parse-packet.c (parse_one_sig_subpkt), build-packet.c
+	(build_sig_subpkt): Call parse_one_sig_subpkt to sanity check
+	buffer lengths before building a sig subpacket.
+
+2002-05-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* sign.c (mk_notation_and_policy): Include secret key to enable %s
+	expandos, and pass notations through pct_expando as well.
+
+	* main.h, misc.c (pct_expando): Add %s and %S expandos for
+	signer's keyid.
+
+2002-05-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (strusage, build_list): Add compress algorithms to
+	--version list.  Show algorithm numbers when --verbose --version
+	is done.
+
+2002-05-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, main.h, keygen.c (keygen_set_set_prefs,
+	keygen_get_std_prefs, keygen_upd_std_prefs), keyedit.c
+	(keyedit_menu), g10.c (main), pkclist.c (select_algo_from_prefs):
+	Add --personal-preference-list which allows the user to factor in
+	their own preferred algorithms when the preference lists are
+	consulted.  Obviously, this does not let the user violate a
+	recepient's preferences (and the RFC) - this only influences the
+	ranking of the agreed-on (and available) algorithms from the
+	recepients.  Suggested by David Hollenberg.
+
+	* options.h, keygen.c (keygen_set_std_prefs), g10.c (main): Rename
+	--preference-list to --default-preference-list (as that is what it
+	really is), and make it a true default in that if the user selects
+	"default" they get this list and not the compiled-in list.
+
+2002-05-22  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): Add missing LF in a info printout and made it
+	translatable.  Noted by Michael Tokarev.
+
+2002-05-21  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): Removed the undef of USE_SHM_COPROCESSING which
+	was erroneously introduced on 2002-01-09.
+
+	* signal.c (got_fatal_signal): Don't write the Nul to stderr.
+	Reported by David Hollenberg.
+
+2002-05-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, g10.c (main), revoke.c (gen_desig_revoke): Generate a
+	designated revocation via --desig-revoke
+
+	* keyedit.c (keyedit_menu, menu_addrevoker): New "addrevoker"
+	command to add a designated revoker to a key.
+
+2002-05-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgv.c: Add stub for get_ownertrust().
+
+	* g10.c (main): --allow-freeform-uid should be implied by
+	OpenPGP.  Add --no-allow-freeform-uid.
+
+	* keyedit.c (sign_uids): Issue a warning when signing a
+	non-selfsigned uid.
+
+	* getkey.c (merge_selfsigs_main): If a key has no selfsigs, and
+	allow-non-selfsigned-uid is not set, still try and make the key
+	valid by checking all uids for a signature from an ultimately
+	trusted key.
+
+2002-05-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, keygen.c (keygen_add_revkey): Add revocation key
+	subpackets to a signature (callable by
+	make_keysig_packet). (write_direct_sig): Write a 1F direct key
+	signature. (parse_revocation_key): Parse a string in
+	algo:fpr:sensitive format into a revocation
+	key. (get_parameter_revkey, do_generate_keypair): Call above
+	functions when prompted from a batch key generation file.
+
+	* build-packet.c (build_sig_subpkt): Allow multiple revocation key
+	subpackets in a single sig.
+
+	* keydb.h, getkey.c (get_seckey_byfprint): Same as
+	get_pubkey_byfprint, except for secret keys.  We only know the
+	fingerprint of a revocation key, so this is needed to retrieve the
+	secret key needed to issue a revokation.
+
+	* packet.h, parse-packet.c (parse_signature, parse_revkeys): Split
+	revkey parsing off into a new function that can be used to reparse
+	after manipulating the revkey list.
+
+	* sign.c (make_keysig_packet): Ability to make 1F direct key
+	signatures.
+
+2002-05-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.skel: keyserver.pgp.com is gone, so list pgp.surfnet.nl
+	as a sample LDAP server instead.
+
+	* getkey.c (merge_selfsigs_main): Properly handle multiple
+	revocation keys in a single packet.  Properly handle revocation
+	keys that are in out-of-order packets.  Remove duplicates in
+	revocation key list.
+
+2002-05-14  Timo Schulz   <ts@winpt.org>
+
+	* exec.c (make_tempdir) [MINGW32]: Added missing '\'.
+	
+2002-05-14  Stefan Bellon  <sbellon@sbellon.de>
+
+	* exec.c (make_tempdir): Make use of EXTSEP_S instead of hardcoded
+	dot as extension separator.
+
+2002-05-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* photoid.c (show_photos): Use the long keyid as the filename for
+	the photo.  Use the short keyid as the filename on 8.3 systems.
+
+	* exec.h, exec.c (make_tempdir, exec_write, exec_finish): Allow
+	caller to specify filename.  This should make things easier on
+	windows and macs where the file extension is required, but a whole
+	filename is even better.
+
+	* keyedit.c (show_key_with_all_names, show_prefs): Show proper
+	prefs for a v4 key uid with no selfsig at all.
+
+	* misc.c (check_permissions): Don't check permissions on
+	non-normal files (pipes, character devices, etc.)
+
+2002-05-11  Werner Koch  <wk@gnupg.org>
+
+	* mainproc.c (proc_symkey_enc): Avoid segv in case the parser
+	encountered an invalid packet.
+
+	* keyserver.c (keyserver_export): Get confirmation before sending
+	all keys.
+
+2002-05-10  Stefan Bellon  <sbellon@sbellon.de>
+
+	* g10.c, hkp.c, keyedit.c, keyserver.c: Replaced all occurrances
+	of strcasecmp with ascii_strcasecmp and all occurrances of
+	strncasecmp with ascii_memcasecmp.
+
+2002-05-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* packet.h, getkey.c (fixup_uidnode), keyedit.c (show_prefs): Show
+	assumed prefs for hash and compression as well as the cipher pref.
+	Show assumed prefs if there are no prefs at all on a v4
+	self-signed key.
+
+	* options.h, g10.c (main), sign.c (make_keysig_packet): New
+	--cert-digest-algo function to override the default key signing
+	hash algorithm.
+
+2002-05-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (merge_selfsigs_main): Make sure the revocation key
+	list starts clean as this function may be called more than once
+	(e.g. from functions in --edit).
+
+	* g10.c, encode.c (encode_crypt), sign.c (sign_file,
+	sign_symencrypt_file): Make --compress-algo work like the
+	documentation says.  It should be like --cipher-algo and
+	--digest-algo in that it can override the preferences calculation
+	and impose the setting the user wants.  No --compress-algo setting
+	allows the usual preferences calculation to take place.
+
+	* main.h, compress.c (compress_filter): use new
+	DEFAULT_COMPRESS_ALGO define, and add a sanity check for compress
+	algo value.
+
+2002-05-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* pkclist.c (select_algo_from_prefs): There is an assumed
+	compression preference for uncompressed data.
+
+2002-05-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), getkey.c (finish_lookup), pkclist.c
+	(algo_available): --pgp7, identical to --pgp6 except that it
+	permits a few algorithms that PGP 7 added: AES128, AES192, AES256,
+	and TWOFISH.  Any more of these --pgpX flags, and it'll be time to
+	start looking at a generic --emulate-pgp X option.
+
+	* export.c (do_export_stream): Warn the user when exporting a
+	secret key if it or any of its secret subkeys are protected with
+	SHA1 while simple_sk_checksum is set.
+
+	* parse-packet.c (parse_key): Show when the SHA1 protection is
+	used in --list-packets.
+
+	* options.h, build-packet.c (do_comment), g10.c (main): Rename
+	--no-comment as --sk-comments/--no-sk-comments (--no-comment still
+	works) and make the default be --no-sk-comments.
+
+2002-05-07  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (get_parameter_algo): Never allow generation of the
+	deprecated RSA-E or RSA-S flavors of PGP RSA.
+	(ask_algo): Allow generation of RSA sign and encrypt in expert
+	mode.  Don't allow ElGamal S+E unless in expert mode.
+	* helptext.c: Added entry keygen.algo.rsa_se.
+
+2002-05-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (sign_uids): If --expert is set, allow re-signing a
+	uid to promote a v3 self-sig to a v4 one.  This essentially
+	deletes the old v3 self-sig and replaces it with a v4 one.
+
+	* packet.h, parse-packet.c (parse_key), getkey.c
+	(merge_keys_and_selfsig, merge_selfsigs_main): a v3 key with a v4
+	self-sig must never let the v4 self-sig express a key expiration
+	time that extends beyond the original v3 expiration time.
+
+2002-05-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (sign_uids): When making a self-signature via "sign"
+	don't ask about sig level or expiration, and include the usual
+	preferences and such for v4 self-sigs.  (menu_set_preferences):
+	Convert uids from UTF8 to native before printing.
+
+	* keyedit.c (sign_uids): Convert uids from UTF8 to native before
+	printing.  (menu_set_primary_uid): Show error if the user tries to
+	make a uid with a v3 self-sig primary.
+
+2002-05-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (import_one): When merging with a key we already have,
+	don't let a key conflict (same keyid but different key) stop the
+	import: just skip the bad key and continue.
+
+	* exec.c (make_tempdir): Under Win32, don't try environment
+	variables for temp directories - GetTempDir tries environment
+	variables internally, and it's better not to second-guess it in
+	case MS adds some sort of temp dir handling to Windows at some
+	point.
+
+2002-05-05  Timo Schulz  <ts@winpt.org>
+
+        * mainproc.c (proc_symkey_enc): Don't ask for a passphrase
+        in the list only mode.
+	
+2002-05-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_refresh): --refresh-keys implies
+	--merge-only so as not to import keys with keyids that match the
+	ones being refreshed.  Noted by Florian Weimer.
+
+2002-05-04  Stefan Bellon  <sbellon@sbellon.de>
+
+	* free-packet.c (copy_public_key): Don't call m_alloc(0), therefore
+	added consistency check for revkey and numrefkeys.
+
+	* getkey.c (check_revocation_keys): Added consistency check for
+	revkey and numrefkeys.
+
+	* keyedit.c (show_key_with_all_names): Likewise.
+
+2002-05-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* photoid.c: Provide default image viewer for Win32.
+
+	* misc.c (pct_expando): %t means extension, not name ("jpg", not
+	"jpeg").
+
+	* keyserver.c (keyserver_spawn), photoid.c (show_photos), exec.h,
+	exec.c: Allow the caller to determine the temp file extension when
+	starting an exec_write and change all callers.
+
+	* keyedit.c (sign_uids): Nonrevocable key signatures cause an
+	automatic promotion to v4.
+
+	* exec.c: Provide stubs for exec_ functions when NO_EXEC is
+	defined.
+
+2002-05-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* photoid.h, photoid.c (parse_image_header, image_type_to_string):
+	Useful functions to return data about an image.
+
+	* packet.h, parse-packet.c (make_attribute_uidname,
+	parse_attribute_subpkts, parse_attribute), photoid.h, photoid.c
+	(show_photos): Handle multiple images in a single attribute
+	packet.
+
+	* main.h, misc.c (pct_expando), sign.c (mk_notation_and_policy),
+	photoid.c (show_photos): Simpler expando code that does not
+	require using compile-time string sizes.  Call
+	image_type_to_string to get image strings (i.e. "jpg",
+	"image/jpeg").  Change all callers.
+
+	* keyedit.c (menu_showphoto), keylist.c (list_keyblock_print):
+	Allow viewing multiple images within a single attribute packet.
+
+	* gpgv.c: Various stubs for link happiness.
+
+2002-05-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* build-packet.c (build_sig_subpkt), keyedit.c (sign_uids),
+	options.h, sign.c (mk_notation_and_policy), g10.c (main,
+	add_notation_data, add_policy_url (new), check_policy_url
+	(removed)): Allow multiple policy URLs on a given signature.
+	Split "--notation-data" into "--cert-notation" and
+	"--sig-notation" so the user can set different policies for key
+	and data signing.  For backwards compatibility, "--notation-data"
+	sets both, as before.
+
+2002-05-02  Werner Koch  <wk@gnupg.org>
+
+	* options.skel: Removed the comment on trusted-keys because this
+	option is now deprecated.
+
+2002-05-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (menu_adduid): 2440bis04 says that multiple attribute
+	packets on a given key are legal.
+
+	* keyserver.c (keyserver_refresh): the fake v3 keyid hack applies
+	to "mailto" URLs as well since they are also served by pksd.
+
+2002-04-29  Werner Koch  <wk@gnupg.org>
+
+	Added a copyright year for files changed this year.
+
+2002-04-25  Werner Koch  <wk@gnupg.org>
+
+	* g10.c, options.h: New options --display, --ttyname, --ttytype,
+	--lc-ctype, --lc-messages to be used with future versions of the
+	gpg-agent. 
+	* passphrase.c (agent_send_option,agent_send_all_options): New.
+	(agent_open): Send options to the agent.
+
+	* trustdb.c (update_ownertrust, clear_ownertrust): Do an explicit
+	do_sync because revalidation_mark does it only if when the
+	timestamp actually changes.
+
+2002-04-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, keygen.c (do_generate_keypair), keylist.c
+	(print_signature_stats, list_all, list_one, list_keyblock,
+	list_keyblock_print, list_keyblock_colon): After generating a new
+	key, show the key information (name, keyid, fingerprint, etc.)
+	Also do not print uncheckable signatures (missing key..) in
+	--check-sigs.  Print statistics (N missing keys, etc.) after
+	--check-sigs.
+
+	* keyedit.c (sign_uids): When signing a key with an expiration
+	date on it, the "Do you want your signature to expire at the same
+	time?" question should default to YES.
+
+2002-04-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (parse_plaintext), packet.h, plaintext.c
+	(handle_plaintext): Fix bug in handling literal packets with
+	zero-length data (no data was being confused with partial body
+	length).
+
+	* misc.c (pct_expando), options.skel: %t means extension ("jpg").
+	%T means MIME type ("image/jpeg").
+
+	* import.c (import_one): Only trigger trust update if the keyring
+	is actually changed.
+
+	* export.c (do_export_stream): Missing a m_free.
+
+2002-04-22  Stefan Bellon  <sbellon@sbellon.de>
+
+	* keyid.c (expirestr_from_sk, expirestr_from_sig): Added _() to
+	string constant.
+
+	* exec.c (make_tempdir) [__riscos__]: Better placement of
+	temporary file.
+
+2002-04-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (generate_subkeypair): 2440bis04 adds that creating
+	subkeys on v3 keys is a MUST NOT.
+
+	* getkey.c (finish_lookup): The --pgp6 "use the primary key"
+	behavior should only apply while data signing and not encryption.
+	Noted by Roger Sondermann.
+
+2002-04-19  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (keygen_set_std_prefs): Put back 3DES because the RFC
+	says it is good form to do so.
+
+2002-04-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (menu_deluid): Only cause a trust update if we delete
+	a non-revoked user id.
+
+	* hkp.c (hkp_ask_import), keyserver.c (parse_keyserver_options,
+	keyserver_spawn), options.h: Remove fast-import keyserver option
+	(no longer meaningful).
+
+	* g10.c (main), keyedit.c (sign_uids), options.h: Change
+	--default-check-level to --default-cert-check-level as it makes
+	clear what it operates on.
+
+	* g10.c (main): --pgp6 also implies --no-ask-sig-expire.
+
+	* delkey.c (do_delete_key): Comment.
+
+	* keyedit.c (sign_uids, keyedit_menu, menu_deluid, menu_delsig,
+	menu_expire, menu_revsig, menu_revkey): Only force a trustdb check
+	if we did something that changes it.
+
+	* g10.c: add "--auto-check-trustdb" to override a
+	"--no-auto-check-trustdb"
+
+2002-04-19  Werner Koch  <wk@gnupg.org>
+
+	* tdbio.c (tdbio_write_nextcheck): Return a status whether the
+	stamp was actually changed.
+	* trustdb.c (revalidation_mark): Sync the changes.  Removed the
+	sync operation done by its callers.
+	(get_validity): Add logic for maintaining a pending_check flag.
+	(clear_ownertrust): New.
+	
+	* keyedit.c (sign_uids): Don't call revalidation_mark depending on
+	primary_pk.
+	(keyedit_menu): Call revalidation_mark after "trust".
+	(show_key_with_all_names): Print a warning on the wrong listed key
+	validity.
+
+	* delkey.c (do_delete_key): Clear the owenertrust information when
+	deleting a public key.
+	
+2002-04-18  Werner Koch  <wk@gnupg.org>
+
+	* seskey.c (encode_md_value): Print an error message if a wrong
+	digest algorithm is used with DSA.  Changed all callers to cope
+	with a NULL return.  Problem noted by Imad R. Faiad.
+
+2002-04-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.c (mark_usable_uid_certs): Properly handle nonrevocable
+	signatures that can expire.  In short, the only thing that can
+	override an unexpired nonrevocable signature is another unexpired
+	nonrevocable signature.
+
+	* getkey.c (finish_lookup): Always use primary signing key for
+	signatures when --pgp6 is on since pgp6 and 7 do not understand
+	signatures made by signing subkeys.
+
+2002-04-18  Werner Koch  <wk@gnupg.org>
+
+	* trustdb.c (validate_keys): Never schedule a nextcheck into the
+	past.
+	(validate_key_list): New arg curtime use it to set next_expire.
+	(validate_one_keyblock): Take the current time from the caller.
+	(clear_validity, reset_unconnected_keys): New.
+	(validate_keys): Reset all unconnected keys.
+
+	* getkey.c (premerge_public_with_secret): Fixed 0x12345678! syntax
+	for use with secret keys.
+	(lookup): Advance the searchmode after a search FIRST.
+
+	* seckey-cert.c (do_check): Always calculate the old checksum for
+	use after unprotection.
+
+	* g10.c, options.skel: New option --no-escape-from.  Made
+	--escape-from and --force-v3-sigs the default and removed them
+	from the options skeleton.
+
+2002-04-16  Werner Koch  <wk@gnupg.org>
+
+	* parse-packet.c (parse_key): Support a SHA1 checksum as per
+	draft-rfc2440-bis04.
+	* packet.h (PKT_secret_key): Add field sha1chk.
+	* seckey-cert.c (do_check): Check the SHA1 checksum
+	(protect_secret_key): And create it.
+	* build-packet.c (do_secret_key): Mark it as sha-1 protected.
+	* g10.c, options.h: New option --simple-sk-checksum.
+
+2002-04-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (parse_signature): Minor fix - signatures should
+	expire at their expiration time and not one second later.
+
+	* keygen.c (proc_parameter_file): Allow specifying preferences
+	string (i.e. "s5 s2 z1 z2", etc) in a batchmode key generation
+	file.
+
+	* keyedit.c (keyedit_menu): Print standard error message when
+	signing a revoked key (no new translation).
+
+	* getkey.c (merge_selfsigs): Get the default set of key prefs from
+	the real (not attribute) primary uid.
+
+2002-04-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* pkclist.c (build_pk_list): Fix bug that allowed a key to be
+	selected twice in batch mode if one instance was the default
+	recipient and the other was an encrypt-to.  Noted by Stefan
+	Bellon.
+
+	* parse-packet.c (dump_sig_subpkt): Show data in trust and regexp
+	sig subpackets.
+
+	* keyedit.c (keyedit_menu): Use new function real_uids_left to
+	prevent deleting the last real (i.e. non-attribute) uid.  Again,
+	according to the attribute draft. (menu_showphoto): Make another
+	string translatable.
+
+2002-04-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* build-packet.c (build_sig_subpkt): Delete subpackets from both
+	hashed and unhashed area on update.  (find_subpkt): No longer
+	needed.
+
+	* keyedit.c (sign_uids): With --pgp2 on, refuse to sign a v3 key
+	with a v4 signature.  As usual, --expert overrides.  Try to tweak
+	some strings to a closer match so they can all be translated in
+	one place.  Use different helptext keys to allow different help
+	text for different questions.
+
+	* keygen.c (keygen_upd_std_prefs): Remove preferences from both
+	hashed and unhashed areas if they are not going to be used.
+
+2002-04-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* misc.c (pct_expando), options.skel: Use %t to indicate type of a
+	photo ID (in this version, it's always "jpeg").  Also tweak string
+	expansion loop to minimize reallocs.
+
+	* mainproc.c (do_check_sig): Variable type fix.
+
+	* keyedit.c (menu_set_primary_uid): Differentiate between true
+	user IDs and attribute user IDs when making one of them primary.
+	That is, if we are making a user ID primary, we alter user IDs.
+	If we are making an attribute packet primary, we alter attribute
+	packets.  This matches the language in the latest attribute packet
+	draft.
+
+	* keyedit.c (sign_uids): No need for the empty string hack.
+
+	* getkey.c (fixup_uidnode): Only accept preferences from the
+	hashed segment of the self-sig.
+
+2002-04-10  Werner Koch  <wk@gnupg.org>
+
+	* tdbio.c (migrate_from_v2): Fixed the offset to read the old
+	ownertrust value and only add entries to the table if we really
+	have a value.
+
+2002-04-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* status.h, status.c (get_status_string): Add KEYEXPIRED, EXPSIG,
+	and EXPKEYSIG.  Add "deprecated-use-keyexpired-instead" to
+	SIGEXPIRED.
+
+	* sig-check.c (do_check): Start transition from SIGEXPIRED to
+	KEYEXPIRED, since the actual event is signature verification by an
+	expired key and not an expired signature. (do_signature_check,
+	packet.h): Rename as signature_check2, make public, and change all
+	callers.
+
+	* mainproc.c (check_sig_and_print, do_check_sig): Use status
+	EXPSIG for an expired, but good, signature.  Add the expiration
+	time (or 0) to the VALIDSIG status line.  Use status KEYEXPSIG for
+	a good signature from an expired key.
+
+	* g10.c (main): remove checks for no arguments now that argparse
+	does it.
+
+2002-04-06  Werner Koch  <wk@gnupg.org>
+
+	* keyring.c (keyring_get_keyblock): Disable the keylist mode here.
+
+	* encode.c (encode_simple, encode_crypt): Only test on compressed
+	files if a compress level was not explicity set.
+
+	* keygen.c (keygen_set_std_prefs): Removed Blowfish and Twofish
+	from the list of default preferences, swapped the preferences of
+	RMD160 and SHA1.  Don't include a preference to 3DES unless the
+	IDEA kludge gets used.
+
+	* free-packet.c (free_packet): call free_encrypted also for
+	PKT_ENCRYPTED_MDC.
+
+	* compress.c (release_context): New.
+	(handle_compressed): Allocate the context and setup a closure to
+	release the context.  This is required because there is no
+	guarabntee that the filter gets popped from the chain at the end
+	of the function.  Problem noted by Timo and probably also the
+	cause for a couple of other reports.
+	(compress_filter): Use the release function if set.
+
+	* tdbio.c [__CYGWIN32__]: Don't rename ftruncate.  Noted by
+	Disastry.
+
+	* parse-packet.c (parse_signature): Put parens around a bit test.
+
+	* exec.c (make_tempdir): Double backslash for TMP directory
+	creation under Windows.  Better strlen the DIRSEP_S constants for
+	allocation measurements.
+
+	* decrypt.c (decrypt_messages): Release the passphrase aquired
+	by get_last_passphrase.
+
+2002-04-02  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (EXTRA_DIST): Removed OPTIONS an pubring.asc - they
+	are no longer of any use. 
+
+2002-04-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (parse_keyserver_options): fix auto-key-retrieve to
+	actually work as a keyserver-option (noted by Roger Sondermann).
+
+	* keylist.c (reorder_keyblock): do not reorder the primary
+	attribute packet - the first user ID must be a genuine one.
+
+2002-03-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* keylist.c (list_keyblock_colon): Fix ownertrust display with
+	--with-colons.
+
+	* keygen.c (generate_user_id), photoid.c (generate_photo_id):
+	Properly initialize the user ID refcount.  A few more "y/n" ->
+	"y/N" in photoid.c.
+
+	* keyedit.c (ask_revoke_sig): Warn the user if they are about to
+	revoke an expired sig (not a problem, but they should know).  Also
+	tweak a few prompts to change "y/n" to "y/N", which is how most
+	other prompts are written.
+
+	* keyserver.c (keyserver_search_prompt): Control-d escapes the
+	keyserver search prompt.
+
+	* pkclist.c (show_revocation_reason & callers): If a subkey is
+	considered revoked solely because the parent key is revoked, print
+	the revocation reason from the parent key.
+
+	* trustdb.c (get_validity): Allow revocation/expiration to apply
+	to a uid/key with no entry in the trustdb.
+
+2002-03-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (printunquoted): unquote backslashes from keyserver
+	searches
+
+	* hkp.c (write_quoted): quote backslashes from keyserver searches
+
+2002-03-26  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (ask_keysize): Removed the warning for key sizes > 1536.
+
+2002-03-25  Werner Koch  <wk@gnupg.org>
+
+	* keyedit.c (sign_uids): Use 2 strings and not a %s so that
+	translations can be done the right way.
+	* helptext.c: Fixed small typo.
+
+2002-03-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (append_uid, merge_sigs): it is okay to import
+	completely non-signed uids now (with --allow-non-selfsigned-uid).
+
+	* getkey.c (get_primary_uid, merge_selfsigs_main): do not choose
+	an attribute packet (i.e. photo) as primary uid.  This prevents
+	oddities like "Good signature from [image of size 2671]".  This is
+	still not perfect (one can still select an attribute packet as
+	primary in --edit), but is closer to the way the draft is going.
+
+	* g10.c (build_list): algorithms should include 110.
+
+	* g10.c (main): --pgp2 implies --no-ask-sig-expire and
+	--no-ask-cert-expire as those would cause a v4 sig/cert.
+
+	* armor.c (is_armor_header): be more lenient in what constitutes a
+	valid armor header (i.e. -----BEGIN blah blah-----) as some
+	Windows programs seem to add spaces at the end.  --openpgp makes
+	it strict again.
+
+2002-03-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_search_prompt): Properly handle a "no
+	keys found" case from the internal HKP code (external HKP is ok).
+	Also, make a COUNT -1 (i.e. streamed) keyserver response a little
+	more efficient.
+
+	* g10.c (main): Add --no-allow-non-selfsigned-uid
+
+2002-03-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): --openpgp implies --allow-non-selfsigned-uid.
+
+	* getkey.c (merge_selfsigs_main): If none of the uids are primary
+	(because none are valid) then pick the first to be primary (but
+	still invalid).  This is for cosmetics in case some display needs
+	to print a user ID from a non-selfsigned key.  Also use
+	--allow-non-selfsigned-uid to make such a key valid and not
+	--always-trust.  The key is *not* automatically trusted via
+	--allow-non-selfsigned-uid.
+
+	* mainproc.c (check_sig_and_print): Make sure non-selfsigned uids
+	print [uncertain] on verification even though one is primary now.
+
+	* getkey.c (merge_selfsigs): If the main key is not valid, then
+	neither are the subkeys.
+
+	* import.c (import_one): Allow --allow-non-selfsigned-uid to work
+	on completely unsigned keys.  Print the uids in UTF8.  Remove
+	mark_non_selfsigned_uids_valid().
+
+	* keyedit.c (show_key_with_all_names): Show revocation key as
+	UTF8.
+
+	* sign.c (clearsign_file): Allow --not-dash-escaped to work with
+	v3 keys.
+
+2002-03-14  Werner Koch  <wk@gnupg.org>
+
+	* main.h: Changed the default algorithms to CAST5 and SHA1.
+
+2002-03-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (chk_self_sigs): Show which user ID a bad self-sig
+	(invald sig or unsupported public key algorithm) resides on.
+
+	* import.c (chk_self_sigs): any valid self-sig should mark a user
+	ID or subkey as valid - otherwise, an attacker could DoS the user
+	by inventing a bogus invalid self-signature.
+
+2002-03-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): make a few more strings translatable.
+
+	* options.h, options.skel, g10.c (main), gpgv.c, mainproc.c
+	(check_sig_and_print), keyserver.c (parse_keyserver_options):
+	--auto-key-retrieve should really be a keyserver-option variable.
+
+	* import.c (revocation_present): new function to print a warning
+	if a key is imported that has been revoked by designated revoker,
+	but the designated revoker is not present to verify the
+	revocation.  If keyserver-options auto-key-retrieve is set, try
+	and fetch the designated revoker from the keyserver.
+
+	* import.c (import_one): call revocation_present after importing a
+	new key.  Note that this applies to --import, --recv-keys, and
+	--search-keys.
+	
+	* keyserver-internal.h, keyserver.c (keyserver_import_fprint):
+	import via fingerprint (for revocation keys).
+
+	* keyserver.c (keyserver_import_keyid): much simpler
+	implementation now that we're using KEYDB_SEARCH_DESC internally.
+
+2002-03-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* revoke.c (gen_revoke): do not prompt for revocation reason for
+	v3 revocations (unless force-v4-certs is on) since they wouldn't
+	be used anyway.
+
+	* keyedit.c (menu_revsig): show the status of the sigs
+	(exportable? revocable?) to the user before prompting for which
+	sig to revoke.  Also, make sure that local signatures get local
+	revocations.
+
+	* keyedit.c (ask_revoke_sig): remind the user which sigs are
+	local.
+
+	* g10.c (main): Add "exec-path" variable to override PATH for
+	execing programs.
+
+	* export.c (do_export_stream): properly check return code from
+	classify_user_id to catch unclassifiable keys.
+
+2002-03-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (parse_signature): variable type tweak for RISC
+	OS (from Stefan)
+
+2002-02-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (check_revocation_keys): New function to check a
+	revocation against a list of potential revocation keys.  Note the
+	loop-breaking code here.  This is to prevent blowing up if A is
+	B's revocation key, while B is also A's.  Note also that this is
+	written so that a revoked revoker can still issue revocations:
+	i.e. If A revokes B, but A is revoked, B is still revoked.  I'm
+	not completely convinced this is the proper behavior, but it
+	matches how PGP does it.  It does at least have the advantage of
+	much simpler code - my first version of this had lots of loop
+	maintaining code so you could chain revokers many levels deep and
+	if D was revoked, C was not, which meant that B was, and so on.
+	It was sort of scary, actually.
+
+	* getkey.c (merge_selfsigs_main): Add any revocation keys onto the
+	pk.  This is particularly interesting since we normally only get
+	data from the most recent 1F signature, but you need multiple 1F
+	sigs to properly handle revocation keys (PGP does it this way, and
+	a revocation key could be marked "sensitive" and hence in a
+	different signature).  Also, if a pk has a revocation key set,
+	check for revocation sigs that were not made by us - if made by a
+	valid revocation key, mark the pk revoked.
+
+	* packet.h, getkey.c (cache_public_key): do not cache key if
+	"dont_cache" is set.  This allows the revocation key code to look
+	up a key and return information that may be inaccurate to prevent
+	loops without caching the fake data.
+
+	* packet.h, sig-check.c (do_signature_check): Record if a
+	signature was made by a revoked pk.
+
+	* packet.h, parse-packet.c (parse_one_sig_subpkt,
+	can_handle_critical, parse_signature): Get revocation key
+	information out of direct sigs.
+	
+	* keylist.c (list_keyblock_print): don't assume that the presence
+	of a 0x20 signature means the key is revoked.  With revocation
+	keys, this may not be true if the revocation key is not around to
+	verify it or if verification failed.  Also, 0x1F should get listed
+	as "sig", and not "unexpected signature class".
+
+	* keyedit.c (show_key_with_all_names): Add a flag for printing
+	revoker information and change all callers.
+
+	* import.c (merge_blocks): merge in any new direct key (0x1F)
+	sigs.
+
+	* import.c (import_revoke_cert): don't keep processing after a
+	revocation is rejected.
+	
+	* import.c (delete_inv_parts): Allow importing a revocation
+	signature even if it was not issued by the key.  This allows a
+	revocation key to issue it.  Of course, the sig still needs to be
+	checked before we trust it.
+
+	* free-packet.c (copy_public_key): Include a new copy of the
+	revocation keys when duping a pk.
+
+	* free-packet.c (free_seckey_enc, release_public_key_parts): Free
+	any revocation keys that are attached to a sig or pk.
+
+	* export.c (do_export_stream): Do not export signatures with
+	"sensitive" revocation keys in them.
+
+2002-02-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* export.c (do_export_stream): Do not include v3 keys in a
+	--export-secret-subkeys export.
+
+	* getkey.c (merge_selfsigs_main): If a key isn't valid (say,
+	because of no self-signature), allow --always-trust to force it
+	valid so it can be trusted.
+
+2002-02-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* hkp.c (hkp_ask_import), hkp.h, keyserver.c (all): treat key
+	lists internally as fingerprints when possible.  All this is via
+	KEYDB_SEARCH_DESC - no point in reinventing the wheel. This allows
+	the helper program to search the keyserver by fingerprint if
+	desired (and the keyserver supports it).  Note that automatic
+	fingerprint promotion during refresh only applies to v4 keys as a
+	v4 fingerprint can be easily changed into a long or short key id,
+	and a v3 cannot.
+
+	* pubkey-enc.c, getkey.c, misc.c, main.h: Take two copies of
+	hextobyte() from pubkey-enc.c and getkey.c and make them into one
+	copy in misc.c.
+
+2002-02-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_search_prompt): Detect a "no keys found"
+	case even if the helper program does not explicitly say how many
+	keys were found.
+
+	* hkp.c (parse_hkp_index): Bug fix - don't report non-revoked keys
+	as revoked in HKP key searches.
+
+2002-02-19  Werner Koch  <wk@gnupg.org>
+
+	* parse-packet.c (parse_trust): Made parsing more robust.
+
+2002-02-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* hkp.c (parse_hkp_index): Catch corruption in HKP index lines
+	(can be caused by broken or malicious keyservers).
+
+	* keyserver.c (keyserver_work): Add KEYSERVER_NOT_SUPPORTED for
+	unsupported actions (say, a keyserver that has no way to search,
+	or a readonly keyserver that has no way to add).  Also add a
+	USE_EXTERNAL_HKP define to disable the internal HKP keyserver
+	code.
+
+2002-02-14  Werner Koch  <wk@gnupg.org>
+
+	* g10.c: New option --no-use-agent. 
+
+	* pkclist.c (check_signatures_trust): Always print the warning for
+	unknown and undefined trust.  Removed the did_add cruft.  Reported
+	by Janusz A. Urbanowicz.
+
+2002-02-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* hkp.c (parse_hkp_index): Bug fix - properly handle user IDs with
+	colons (":") in them while HKP searching.
+
+2002-02-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* misc.c (pct_expando): More comments.
+
+	* keydb.h, sign.c (mk_notation_and_policy): Clarify what is a sig
+	and what is a cert.  A sig has sigclass 0x00, 0x01, 0x02, or 0x40,
+	and everything else is a cert.
+
+	* g10.c (main), keyedit.c (keyedit_menu): Add a "nrlsign" for
+	nonrevocable and local key signatures.
+
+	* g10.c (main): Add a --no-force-mdc to undo --force-mdc.
+
+	* options.h, g10.c (main), cipher.c (write_header): Add a knob to
+	--disable-mdc/--no-disable-mdc.  Off by default, of course, but is
+	used in --pgp2 and --pgp6 modes.
+	
+	* pkclist.c (build_pk_list): Allow specifying multiple users in
+	the "Enter the user ID" loop.  Enter a blank line to stop.  Show
+	each key+id as it is added.
+
+	* keylist.c (show_policy_url), mainproc.c (print_notation_data):
+	It is not illegal (though possibly silly) to have multiple policy
+	URLs in a given signature, so print all that are present.
+	
+	* hkp.c (hkp_search): More efficient implementation of URL-ifying
+	code.
+
+2002-02-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, misc.c (pct_expando): New function to generalize
+	%-expando processing in any arbitrary string.
+
+	* photoid.c (show_photo): Call the new pct_expando function rather
+	than expand strings internally.
+	
+	* sign.c (mk_notation_and_policy): Show policy URLs and notations
+	when making a signature if show-policy/show-notation is on.
+	%-expand policy URLs during generation.  This lets the user have
+	policy URLs of the form "http://notary.jabberwocky.com/keysign/%K"
+	which will generate a per-signature policy URL.
+
+	* main.h, keylist.c (show_policy_url, show_notation): Add amount
+	to indent so the same function can be used in key listings as well
+	as during sig generation.  Change all callers.
+
+2002-02-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c, options.h (parse_keyserver_options, keyidlist):
+	Workaround for the pksd and OKS keyserver bug that calculates v4
+	RSA keyids as if they were v3.  The workaround/hack is to fetch
+	both the v4 (e.g. 99242560) and v3 (e.g. 68FDDBC7) keyids.  This
+	only happens for key refresh while using the HKP scheme and the
+	refresh-add-fake-v3-keyids keyserver option must be set.  This
+	should stay off by default.
+
+2002-02-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_spawn): Bug fix - do not append keys to
+	each other when --sending more than one.
+
+2002-02-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), keyedit.c (sign_uids), sign.c
+	(mk_notation_and_policy): Split "--set-policy-url" into
+	"--cert-policy-url" and "--sig-policy-url" so the user can set
+	different policies for key and data signing.  For backwards
+	compatibility, "--set-policy-url" sets both, as before.
+
+2002-01-30  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): --gen-random --armor does now output a base64
+	encoded string.
+
+2002-01-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main), options.h, pkclist.c (algo_available): --pgp6
+	flag.  This is not nearly as involved as --pgp2.  In short, it
+	turns off force_mdc, turns on no_comment, escape_from, and
+	force_v3_sigs, and sets compression to 1.  It also restricts the
+	user to IDEA (if present), 3DES, CAST5, MD5, SHA1, and RIPEMD160.
+	See the comments above algo_available() for lots of discussion on
+	why you would want to do this.
+
+2002-01-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (keygen_set_std_prefs): Comment
+
+	* keyedit.c (sign_uids): Bug fix - when signing with multiple
+	secret keys at the same time, make sure each key gets the sigclass
+	prompt.
+
+	* exec.c (exec_finish): Close the iobuf and FILE before trying to
+	waitpid, so the remote process will get a SIGPIPE and exit.  This
+	is only a factor when using a pipe to communicate.
+
+	* exec.c (exec_write): Disable cache-on-close of the fd iobuf (is
+	this right?  Why is a fd iobuf cached at all?)
+
+2002-01-26  Werner Koch  <wk@gnupg.org>
+
+	* g10.c, options.h: New option --gpg-agent-info
+	* passphrase.c (agent_open): Let it override the environment info.
+	* seckey-cert.c (check_secret_key): Always try 3 times when the
+	agent is enabled.
+	* options.skel: Describe --use-agent.
+
+2002-01-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* pubkey-enc.c (is_algo_in_prefs, get_it): Only check preferences
+	against keys with v4 self sigs - there is really little point in
+	warning for every single non-IDEA message encrypted to an old key.
+
+	* pkclist.c (select_algo_from_prefs): Only put in the fake IDEA
+	preference if --pgp2 is on.
+
+	* mainproc.c (check_sig_and_print): Print "Expired" for expired
+	but good signatures (this still prints "BAD" for expired but bad
+	signatures).
+
+2002-01-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (ask_keysize): Cosmetic: don't present a RSA signing
+	key as a "keypair" which can be 768 bits long (as RSA minimum is
+	1024).
+
+	* pubkey-enc.c (is_algo_in_prefs): Allow IDEA as a fake preference
+	for v3 keys with v3 selfsigs.
+
+2002-01-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* packet.h, getkey.c (merge_selfsigs_main), pkclist.c
+	(select_algo_from_prefs): Implement the fake IDEA preference as
+	per RFC2440:12.1.  This doesn't mean that IDEA will be used (the
+	plugin may not be present), but it does mean that a v3 key with a
+	v3 selfsig has an implicit IDEA preference instead of 3DES.  v3
+	keys with v4 selfsigs use preferences as normal.
+
+	* encode.c (encode_crypt): if select_algo_from_prefs fails, this
+	means that we could not find a cipher that both keys like.  Since
+	all v4 keys have an implicit 3DES preference, this means there is
+	a v3 key with a v3 selfsig in the list.  Use 3DES in this case as
+	it is the safest option (we know the v4 key can handle it, and
+	we'll just hope the v3 key is being used in an implementation that
+	can handle it).  If --pgp2 is on, warn the user what we're doing
+	since it'll probably break PGP2 compatibility.
+
+	* g10.c (main): Do not force using IDEA for encrypted files in
+	--pgp2 mode - let the fake IDEA preference choose this for us for
+	better compatibility when encrypting to multiple keys, only some
+	of which are v3.
+
+	* keygen.c (keygen_set_std_prefs): Put 3DES on the end of the
+	default cipher pref list (RFC2440: "...it is good form to place it
+	there explicitly.").  If the user has the IDEA plugin installed,
+	put a preference for IDEA *after* 3DES to effectively disable its
+	use for everything except encrypting along with v3 keys.
+
+	* encode.c, g10.c, sign.c: Change the PGP2 warning line from
+	"... will not be usable ..." to "... may not be usable ..." as the
+	user could be using one of the enhanced PGP2 variations.
+
+	* helptext.c: Revise the sign_uid.class help text as suggested by
+	Stefan.
+	
+2002-01-20  Werner Koch  <wk@gnupg.org>
+
+	* passphrase.c (passphrase_to_dek): Add tryagain_text arg to be
+	used with the agent.  Changed all callers.
+	(agent_get_passphrase): Likewise and send it to the agent
+	* seckey-cert.c (do_check): New arg tryagain_text.
+	(check_secret_key): Pass the string to do_check.
+	* keygen.c (ask_passphrase): Set the error text is required.
+	* keyedit.c (change_passphrase): Ditto.
+
+	* passphrase.c (agent_open): Disable opt.use_agent in case of a
+	problem with the agent. 
+	(agent_get_passphrase): Ditto.
+	(passphrase_clear_cache): Ditto.
+
+2002-01-19  Werner Koch  <wk@gnupg.org>
+
+	* passphrase.c (agent_open): Add support for the new Assuan based
+	gpg-agent.  New arg to return the used protocol version.
+	(agent_get_passphrase): Implemented new protocol here.
+	(passphrase_clear_cache): Ditto.
+	(readline): New.
+	
+2002-01-15  Timo Schulz  <ts@winpt.org>
+
+	* encode.c (encode_crypt_files): Fail if --output is used.
+	
+	* g10.c: New command --decrypt-files.
+
+	* decrypt.c (decrypt_messages): New.
+	
+2002-01-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c, misc.c, gpgv.c: move idea_cipher_warn to misc.c so gpgv.c
+	doesn't need a stub for it any longer.
+
+	* g10.c (get_temp_dir), main.h: no longer used (it's in exec.c now)
+
+	* g10.c (main), delkey.c (delete_keys), main.h : Allow
+	--delete-key (now --delete-keys, though --delete-key still works,
+	of course) to delete multiple keys in one go.  This applies to
+	--delete-secret-key(s) and --delete-secret-and-public-key(s) as
+	well.
+
+2002-01-09  Timo Schulz  <ts@winpt.org>
+
+	* encode.c (encode_crypt_files): Now it behaves like verify_files.
+	
+	* g10.c (main): We don't need to check argc for encode_crypt_files
+	any longer.
+
+2002-01-09  Timo Schulz  <ts@winpt.org>
+
+	* exec.c: Include windows.h for dosish systems.
+
+2002-01-08  Timo Schulz  <ts@winpt.org>
+
+	* g10.c (main): New description for --encrypt-files.
+
+2002-01-08  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): Must register the secring for encryption because
+	it is needed to figure out the default recipient.  Reported by
+	Roger Sondermann.
+
+2002-01-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (menu_adduid): Require --expert before adding a photo
+	ID to a v3 key, and before adding a second photo ID to any key.
+
+	* keyedit.c (keyedit_menu): Don't allow adding photo IDs in
+	rfc1991 or pgp2 mode.
+
+	* getkey.c (merge_selfsigs_subkey): Permit v3 subkeys.  Believe it
+	or not, this is allowed by rfc 2440, and both PGP 6 and PGP 7 work
+	fine with them.
+
+	* g10.c, options.h, keyedit.c, sign.c: Move the "ask for
+	expiration" switch off of --expert, which was getting quite
+	overloaded, and onto ask-sig-expire and ask-cert-expire.  Both
+	default to off.
+
+	* g10.c (main): Change the default compression algo to 1, to be
+	more OpenPGP compliant (PGP also uses this, so it'll help with
+	interoperability problems as well).
+
+	* encode.c (encode_crypt): Handle compression algo 2, since the
+	default is now 1.
+
+	* build-packet.c (build_attribute_subpkt): Fix off-by-one error.
+
+2002-01-05  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): Do not register the secret keyrings for certain
+	commands.
+
+	* keydb.c (keydb_add_resource): Use access to test for keyring
+	existence.  This avoids cached opened files which are bad under
+	RISC OS.
+
+2002-01-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* sign.c (sign_file, sign_symencrypt_file): always use one-pass
+	packets unless rfc1991 is enabled.  This allows a signature made
+	with a v3 key to work in PGP 6 and 7.  Signatures made with v4
+	keys are unchanged.
+
+	* g10.c (main): Disallow non-detached signatures in PGP2 mode.
+	Move the "you must use files and not pipes" PGP2 warning up so all
+	the PGP2 stuff is together.
+
+	* encode.c (encode_simple): Use the actual filesize instead of
+	partial length packets in the internal literal packet from a
+	symmetric message.  This breaks PGP5(?), but fixes PGP2, 6, and 7.
+	It's a decent tradeoff.  Note there was only an issue with
+	old-style RFC1991 symmetric messages.  2440-style messages in 6
+	and 7 work with or without partial length packets.
+
+2002-01-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Removed --no-default-check-level option, as it is
+	not consistent with other "default" options.  Plus, it is the same
+	as saying --default-check-level 0.
+
+	* exec.c (exec_read): Disallow caching tempfile from child
+	process, as this keeps the file handle open and can cause unlink
+	problems on some platforms.
+
+	* keyserver.c (keyserver_search_prompt): Minor tweak - don't
+	bother to transform keyids into textual form if they're just going
+	to be transformed back to numbers.
+
+2002-01-03  Timo Schulz <ts@winpt.org>
+
+	* g10.c: New command --encrypt-files.
+    
+	* verify.c (print_file_status): Removed the static because
+	encode_crypt_files also uses this function.
+
+	* main.h (print_files_status): New.
+	(encode_crypt_files): New.
+
+	* encode.c (encode_crypt_files): New.
+
+2002-01-02  Stefan Bellon  <sbellon@sbellon.de>
+
+	* keyserver.c: Moved util.h include down in order to avoid
+	redefinition problems on RISC OS.
+
+	* keyring.c (keyring_lock): Only lock keyrings that are writable.
+
+	* keyring.c (keyring_update_keyblock): Close unused iobuf.
+
+	* hkp.c (parse_hkp_index, hkp_search) [__riscos__]: Changed
+	unsigned char* to char* because of compiler issues.
+
+	* exec.c (exec_finish) [__riscos__]: Invalidate close cache so
+	that file can be unlinked.
+
+2001-12-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Use a different strlist to check extensions since
+	they need to be handled seperately now.
+
+	* misc.c,main.h (check_permissions): Properly handle permission
+	and ownership checks on files in the lib directory
+	(e.g. /usr/local/lib/gnupg), which are owned by root and are
+	world-readable, and change all callers to specify extension or
+	per-user file.
+
+	* photoid.c (show_photo), keyserver.c (keyserver_spawn): Bug fix -
+	don't call exec_finish if exec_write fails.
+
+	* keyserver.c (keyserver_spawn): Look for OPTIONS from the
+	keyserver helper - specifically, a "OUTOFBAND" option for the
+	email keyserver.
+
+	* mainproc.c (list_node), keylist.c (list_keyblock_colon),
+	import.c (delete_inv_parts), export.c (do_export_stream): Use
+	signature flags for exportability check rather than re-parsing the
+	subpacket.
+
+	* keyid.c, keydb.h (get_lsign_letter): No longer needed.
+
+2001-12-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* exec.c (exec_finish): Show errors when temp files cannot be
+	deleted for whatever reason.
+
+	* exec.c (exec_read): Don't rely on WEXITSTATUS being present.
+
+	* exec.c (make_tempdir): Add temp file creator for win32.  Don't
+	create an incoming temp file if the exec is write-only.
+
+	* keyserver.c (keyserver_spawn): Clean up error handling, for when
+	the spawn fails.
+
+	* photoid.c (show_photo): Clean up error handling.
+
+	* misc.c (check_permissions): Neaten.
+
+2001-12-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* mkdtemp.c (mkdtemp): Add copyleft info and tweak the 'X' counter
+	to be a bit simpler.
+
+	* keyserver.c, photoid.c: Remove unused headers left over from
+	when the exec functions lived there.
+
+2001-12-23  Timo Schulz <ts@winpt.org>
+
+	* misc.c (check_permissions): Do not use it for W32 systems.
+
+	* tdbio.c (migrate_from_v2): Define ftruncate as chsize() for W32.
+
+	* mkdtemp.c: W32 support.
+
+	* photoid.c: Ditto.
+
+	* exec.c: Ditto.
+
+2001-12-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* exec.c (make_tempdir): avoid compiler warning with const
+
+	* mkdtemp.c (mkdtemp): catch the empty ("") string case in case
+	someone repurposes mkdtemp at some point.
+
+	* photoid.c (generate_photo_id, show_photo): some type changes
+	from Stefan Bellon.
+
+	* exec.c (make_tempdir): handle Win32 systems, suggested by Timo
+	Schulz.
+
+2001-12-22  Werner Koch  <wk@gnupg.org>
+
+	* encode.c (encode_simple, encode_crypt): i18n 2 strings.
+
+2001-12-22  Timo Schulz <ts@winpt.org>
+	
+	* encode.c (encode_simple, encode_crypt): Use is_file_compressed
+	to avoid to compress compressed files.
+
+2001-12-22  Werner Koch  <wk@gnupg.org>
+
+	* keyserver.c (keyserver_spawn): Removed some variables
+	declaration due to shadowing warnings.
+
+	* build-packet.c (build_attribute_subpkt): s/index/idx/ to avoid
+	compiler warnig due to index(3).
+
+	* getkey.c (get_ctx_handle): Use KEYDB_HANDLE as return value.
+	* keylist.c (list_one): Made resname const.
+
+	* keyedit.c (keyedit_menu): Allow "addphoto" only when --openpgp is
+	not used.
+
+	* options.skel: Changed one example photo viewer to qiv.
+
+2001-12-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: add exec.c, exec.h, photoid.c, and photoid.h
+
+	* build-packet.c (build_attribute_subpkt): new function to build
+	the raw attribute subpacket.  Note that attribute subpackets have
+	the same format as signature subpackets.
+
+	* exec.c: new file with generic exec-a-program functionality.
+	Used by both photo IDs and keyserver helpers.  This is pretty much
+	the same code that used to be keyserver specific, with some
+	changes to be usable generically.
+
+	* free-packet.c (free_attributes (new)): function to free an
+	attribute packet.
+	
+	* gpgv.c: added stub show_photo
+	
+	* keyedit.c (keyedit_menu, menu_adduid, menu_showphoto): can add a
+	photo (calls generate_photo_id), or display a photo (calls
+	show_photo) from the --edit menu.  New commands are "addphoto",
+	and "delphoto" (same as "deluid").
+
+	* keylist.c (list_keyblock_print): show photos during key list if
+	--show-photos enabled.
+	
+	* keyserver.c (keyserver_spawn): use the generic exec_xxx
+	functions to call keyserver helper.
+
+	* g10.c, options.h: three new options - --{no-}show-photos, and
+	--photo-viewer to give the command line to display a picture.
+
+	* options.skel: instructions for the photo viewer
+	
+	* parse-packet.c (parse_user_id, setup_user_id (new)): common code
+	for both user IDs and attribute IDs moved to setup_user_id.
+
+	* parse-packet.c (make_attribute_uidname (new)): constructs a fake
+	"name" for attribute packets (e.g. "[image of size ...]")
+
+	* parse-packet.c (parse_attribute (replaces parse_photo_id),
+	parse_attribute_subpkts): Builds an array of individual
+	attributes.  Currently only handles attribute image / type jpeg
+	subpackets.
+
+	* sign.c (hash_uid): Fix bug in signing attribute (formerly
+	photo_id) packets.
+
+	* packet.h, and callers: globally change "photo_id" to "attribute"
+	and add structures for attributes.  The packet format is generic
+	attributes, even though the only attribute type thus far defined
+	is jpeg.
+
+2001-12-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (can_handle_critical): Can handle critical
+	revocation subpackets now.
+
+	* trustdb.c (mark_usable_uid_certs): Disregard revocations for
+	nonrevocable sigs.  Note that this allows a newer revocable
+	signature to override an older nonrevocable signature.
+
+	* sign.c (make_keysig_packet): add a duration field and change all
+	callers.  This makes make_keysig_packet closer to
+	write_signature_packets and removes some duplicated expiration
+	code.
+
+	* keyedit.c (keyedit_menu, menu_revsig, sign_uids,
+	sign_mk_attrib): Add nrsign command, don't allow revoking a
+	nonrevocable signature,
+
+	* g10.c (main): Add --nrsign option to nonrevocably sign a key
+	from the command line.
+
+	* build-packet.c (build_sig_subpkt_from_sig): Comment to explain
+	the use of CRITICAL.
+
+2001-12-21  Werner Koch  <wk@gnupg.org>
+
+	* g10.c. options.h : New option --show-keyring
+	* getkey.c (get_ctx_handle): New.
+	* keylist.c (list_one): Implement option here.  By David Champion. 
+
+2001-12-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_spawn): Use mkdtemp() to make temp
+	directory.
+
+	* mkdtemp.c: replacement function for those platforms that don't
+	have mkdtemp (make a temp directory securely).
+
+2001-12-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* misc.c (check_permissions): New function to stat() and ensure
+	the permissions of GNUPGHOME and the files have safe permissions.
+
+	* keydb.c (keydb_add_resource): Check keyring permissions.
+
+	* tdbio.c (tdbio_set_dbname): Check permissions of trustdb.gpg
+
+	* keyserver.c (keyserver_spawn): Disable keyserver schemes that
+	involve running external programs if the options file has unsafe
+	permissions or ownership.
+
+	* g10.c, options.h: New option --no-permission-warning to disable
+	the permission warning message(s).  This also permits use of the
+	keyserver if it had been disabled (see above).  Also check the
+	permissions/ownership of random_seed.
+	
+	* keyserver.c (keyserver_spawn): The new glibc prints a warning
+	when using mktemp() (the code was already secure, but the warning
+	was bound to cause confusion).  Use a different implementation
+	based on get_random_bits() instead.  Also try a few times to get
+	the temp dir before giving up.
+
+2001-12-19  Werner Koch  <wk@gnupg.org>
+
+	* g10.c, passphrase.c [CYGWIN32]: Allow this as an alias for MINGW32.
+
+2001-12-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (idea_cipher_warn): Add a flag to show the warning always
+	or once per session and change all callers (show always except for
+	the secret key protection and unknown cipher from an encrypted
+	message errors).  Also make the strings translatable.
+
+	* pubkey-enc.c (get_it): Add the IDEA cipher warning if the user
+	tries to decrypt an IDEA encrypted message without the IDEA
+	plugin.
+
+	* keyserver.c (parse_keyserver_uri): More strict checking of the
+	keyserver URI.  Specifically, fail if the ":port" section is
+	anything except a number between 1 and 65535.
+
+2001-12-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (print_keyinfo): No need to check for
+	control/illegal characters, as utf8_to_native does this for us.
+
+	* mainproc.c (proc_encrypted): Use generic IDEA warning.
+
+	* gpgv.c: add stub for idea_cipher_warn
+
+	* g10.c, hkp.c, keyserver.c: Fix capitalization and plural issues.
+
+	* encode.c (encode_crypt), sign.c (sign_file, clearsign_file):
+	disable pgp2 mode after the message is no longer pgp2 compatible.
+
+	* g10.c (main): Tweak the PGP2.x IDEA warning to use the generic
+	warning, and not merely fail if the IDEA plugin isn't there.
+
+	* g10.c (main, idea_cipher_warn), keygen.c (set_one_pref),
+	seckey-cert.c (do_check): Add a generic IDEA warning for when the
+	IDEA plugin is not present.  This pops up when the user uses
+	"--cipher-algo idea", when setpref is used to set a "S1"
+	preference, and when a secret key protected with IDEA is used.
+
+2001-12-15  Werner Koch  <wk@gnupg.org>
+
+	* keyserver.c (keyserver_spawn): Assert that we have dropped privs.
+
+2001-12-13  Werner Koch  <wk@gnupg.org>
+
+	* pubkey-enc.c (get_session_key): Check that the public key
+	algorithm is indeed usable for en/decryption.  This avoid a
+	strange error message from pubkey_decrypt if for some reasons a
+	bad algorithm indentifier is passed.
+
+2001-12-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* Fixed some types for portability.  Noted by Stefan Bellon.
+
+2001-12-11  Werner Koch  <wk@gnupg.org>
+
+	* hkp.c (hkp_export): Do not print possible control characters
+	from a keyserver response.
+	(parse_hkp_index): Made uid an unsigned char* because it is passed to
+	isspace().
+	(hkp_search): Ditto for the char* vars.
+
+	* g10.c (main): Print the IDEA warning also for -c and -se.
+	
+	* g10.c (get_temp_dir): Assert that we have dropped privs
+
+	* encode.c (encode_crypt): Include the first key into the --pgp2
+	check.
+
+2001-12-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c, options.h: New option --pgp2.  This is identical to
+	"--rfc1991 --cipher-algo idea --compress-algo 1 --digest-algo md5
+	--force_v3_sigs" with the addition of an warning to advise the
+	user not to use a pipe (which would break pgp2 compatibility).
+
+	* encode.c (encode_crypt): warn if the user tries to encrypt to
+	any key that is not RSA and <= 2048 bits when the --pgp2 option is
+	used.
+
+	* sign.c (sign_file, clearsign_file): When using --pgp2, make a v3
+	sig, and warn if the signature is made with a non-v3 key.
+
+2001-12-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* sign.c (sign_file, clearsign_file, sign_symencrypt_file): Prompt
+	for sig expiration if --expert is set and --force-v3-sigs is not
+	set (v3 sigs cannot expire).
+
+	* mainproc.c (check_sig_and_print): After checking a sig, print
+	expiration status.  This causes a error return if the sig is
+	expired.
+
+	* build-packet.c (build_sig_subpkt_from_sig): Include a critical
+	sig expiration subpacket if the sig is to expire.
+
+	* keyedit.c (sign_uids): Do not sign an expired key unless
+	--expert is set, in which case prompt.  Also, offer to expire a
+	signature when the key the user is signing expires.
+
+	* keygen.c (ask_expire_interval): Add a value to determine whether
+	to prompt for a key or sig expiration and change all callers.
+
+	* keyid.c: New functions: expirestr_from_sig and
+	colon_expirestr_from_sig.
+
+	* keylist.c (list_keyblock_colon): Show sig expiration date in the
+	--with-colons listing.
+
+	* sign.c (make_keysig_packet, write_signature_packets): Pass in an
+	optional timestamp for the signature packet, and change all
+	callers.
+
+	* keyedit.c (sign_mk_attrib): Include a critical expiration
+	subpacket in the signature if an expiration date is given.
+
+2001-12-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (sign_uids): If the user tries to sign a
+	locally-signed key, allow the cert to be promoted to a full
+	exportable signature.  This essentially deletes the old
+	non-exportable sig, and replaces it with a new exportable one.
+
+2001-12-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (keyedit_menu): Do not allow signing a revoked key
+	unless --expert is set, and ask even then.
+
+	* keyedit.c (sign_uids): Do not allow signing a revoked UID unless
+	--expert is set, and ask even then.
+
+	* g10.c, options.h : New option --expert
+
+2001-11-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* Allow the user to select no compression via "--compress-algo 0"
+	on the command line.
+
+	* keyedit.c (show_prefs): Show compression preferences in the
+	long-form "showpref" style.
+
+	* keygen.c (set_one_pref): Permit setting a no-compression ("Z0")
+	preference.
+
+	* getkey.c (fixup_uidnode): Fix compression preference corruption
+	bug.
+
+2001-12-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c: Add advisory --for-your-eyes-only option as per section
+	5.9 of 2440.
+
+2001-12-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* Force a V4 sig if the user has a notation or policy URL set.
+
+2001-12-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c: Add options --keyserver-options, --temp-directory, and
+	auto-key-retrieve (the opposite of no-auto-key-retrieve).
+
+	* hkp.c (hkp_search): New function to handle searching a HKP
+	keyserver for a key
+
+	* hkp.c (hkp_ask_import, hkp_export): Pretty large changes to make
+	them communicate via the generic functions in keyserver.c
+
+	* keyserver.c: new file with generic keyserver routines for
+	getting keys from a keyserver, sending keys to a keyserver, and
+	searching for keys on a keyserver.  Calls the internal HKP stuff
+	in hkp.c for HKP keyserver functions.  Other calls are handled by
+	an external program which is spawned and written to and read from
+	via pipes.  Platforms that don't have pipes use temp files.
+
+2001-11-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c: New options show-notation, no-show-notation,
+	default-check-level, no-default-check-level, show-policy-url,
+	no-show-policy-url.
+
+	* packet.h, sign.c (make_keysig_packet), parse-packet.c
+	(parse_signature), free-packet.c (free_seckey_enc): Fill in
+	structures for notation, policy, sig class, exportability, etc.
+
+	* keyedit.c, keylist.c (print_and_check_one_sig,
+	list_keyblock_print): Show flags in signature display for cert
+	details (class, local, notation, policy, revocable).  If selected,
+	show the notation and policy url.
+
+	* keyedit.c (sign_uids): Prompt for and use different key sig
+	classes.
+
+	* helptext.c (helptexts): Add help text to explain different
+	key signature classes
+
+2001-11-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.c (mark_usable_uid_certs): Fix segfault from bad
+	initialization and fix reversed key signature expiration check.
+
+2001-11-09  Werner Koch  <wk@gnupg.org>
+
+	* export.c (do_export_stream): Put all given names into a search
+	description and change the loop so that all matching names are
+	returned.
+
+2001-11-08  Werner Koch  <wk@gnupg.org>
+
+	* pubkey-enc.c (get_it): To reduce the number of questions on the
+	MLs print the the name of cipher algorithm 1 with the error message.
+
+	* mainproc.c: Changed the way old rfc1991 encryption cipher is
+	selected. Based on a patch by W Lewis.
+
+	* pkclist.c (do_edit_ownertrust): Allow to skip over keys, the non
+	working "show info" is now assigned to "i" 
+	* trustdb.c (ask_ownertrust, validate_keys): Implement a real quit
+	here.  Both are by David Shaw.
+	
+	* trustdb.c (validate_keys): Make sure next_exipire is initialized.
+
+	* sign.c (make_keysig_packet): Use SHA-1 with v4 RSA keys.
+
+	* g10.c, options.h : New option --[no-]froce-v4-certs.
+	* sign.c (make_keysig_packet): Create v4 sigs on v4 keys even with
+	a v3 key.  Use that new option.  By David Shaw
+
+	* revoke.c (ask_revocation_reason): Allow to select "no reason".
+	By David Shaw.
+
+	* keyid.c (fingerprint_from_sk): Calculation of an v3 fpr was
+	plain wrong - nearly the same code in fingerprint_from_pk is correct.
+
+	* build-packet.c (do_secret_key): Added a few comments to the code.
+
+2001-11-07  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): Print a warning when -r is used w/o encryption.
+	Suggested by Pascal Scheffers.
+
+2001-10-23  Werner Koch  <wk@gnupg.org>
+
+	* keyedit.c (keyedit_menu): Changed helptext for showpref
+	command.  Suggested by Reinhard Wobst.
+
+	* keyring.c (keyring_search): When marking the offtbl ready, take
+	into account that we may have more than one keyring.
+
+2001-10-22  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Do not use OMIT_DEPENDENCIES
+
+	* build-packet.c (build_sig_subpkt): Default is now to put all
+	types of subpackets into the hashed area and only list those which
+	should go into the unhashed area.
+
+2001-10-18  Werner Koch  <wk@gnupg.org>
+
+	* keydb.c (keydb_add_resource): Rearranged the way we keep track
+	of the resource. There will now be an entry for each keyring here
+	and not in keyring.c itself.  Store a token to allow creation of a
+	keyring handle.  Changed all functions to utilize this new design.
+	(keydb_locate_writable): Make a real implementation.
+	* keyring.c (next_kr): Removed and changed all callers to set the
+	resource directly from the one given with the handle.
+	(keyring_is_writable): New. 
+	(keyring_rebuild_cache): Add an arg to pass the token from keydb.
+
+2001-10-17  Werner Koch  <wk@gnupg.org>
+
+	* keyring.c (keyring_search): Enabled word search mode but print a
+	warning that it is buggy.
+	
+2001-10-11  Werner Koch  <wk@gnupg.org>
+
+	* hkp.c (hkp_ask_import): No more need to set the port number for
+	the x-hkp scheme. 
+	(hkp_export): Ditto.
+
+2001-10-06  Stefan Bellon  <sbellon@sbellon.de>
+
+	* passphrase.c [__riscos__]: Disabled agent specific stuff.
+	* g10.c: New option --no-force-v3-sigs.
+
+2001-10-04  Werner Koch  <wk@gnupg.org>
+
+	* export.c (do_export_stream): Do not push the compress filter
+	here because the context would run out of scope due to the
+	iobuf_close done by the caller.
+	(do_export): Do it here instead. 
+
+2001-09-28  Werner Koch  <wk@gnupg.org>
+
+	* keyedit.c (sign_uids): Always use the primary key to sign keys.
+	* getkey.c (finish_lookup): Hack to return only the primary key if
+	a certification key has been requested.
+
+	* trustdb.c (cmp_kid_for_make_key_array): Renamed to
+	(validate_one_keyblock): this and changed arg for direct calling.
+	(make_key_array): Renamed to
+	(validate_one_keyblock): this and changed args for direct calling.
+	(mark_usable_uid_certs, validate_one_keyblock)
+	(validate_key_list): Add next_expire arg to keep track of
+	expiration times.  
+	(validate_keys): Ditto for UTKs and write the stamp.
+
+	* tdbio.c (migrate_from_v2): Check return code of tbdio_sync.
+
+	* tdbdump.c (import_ownertrust): Do a tdbio_sync().
+
+	* keyring.c: Made the offtbl an global object.
+
+2001-09-27  Werner Koch  <wk@gnupg.org>
+
+	* pkclist.c (do_edit_ownertrust): Allow settin of ultimate trust.
+
+	* trustdb.c (mark_keyblock_seen): New.
+	(make_key_array): Use it to mark the subkeys too.
+	(validate_keys): Store validity for ultimatly trusted keys.
+
+2001-09-26  Werner Koch  <wk@gnupg.org>
+
+	* pkclist.c (check_signatures_trust, do_we_trust): Removed the
+	invocation of add_ownertrust. Minor changes to the wording.
+	(add_ownertrust, add_ownertrust_cb): Removed.
+
+	* trustdb.c (get_validity): Allow to lookup the validity using a
+	subkey.
+
+	* trustdb.c (new_key_hash_table): Increased the table size to 1024
+	and changed the masks accordingly.
+	(validate): Changed stats printing.
+	(mark_usable_uid_certs): New.
+	(cmp_kid_for_make_key_array): Does now check the signatures and
+	figures out a usable one.
+
+2001-09-25  Werner Koch  <wk@gnupg.org>
+
+	* keyring.c (new_offset_item,release_offset_items)
+	(new_offset_hash_table, lookup_offset_hash_table)
+	(update_offset_hash_table, update_offset_hash_table_from_kb): New.
+	(keyring_search): Use a offset table to optimize search for
+	unknown keys.
+	(keyring_update_keyblock, keyring_insert_keyblock): Insert new
+	offsets.
+	* getkey.c (MAX_UNK_CACHE_ENTRIES): Removed the unknown keys
+	caching code.
+
+	* g10.c, options.h, import.c: Removed the entire
+	allow-secret-key-import stuff because the validity is now
+	controlled by other means.
+
+	* g10.c: New command --rebuild-keydb-caches.
+	* keydb.c (keydb_rebuild_caches): New.
+	* keyring.c (do_copy): Moved some code to
+	(create_tmp_file, rename_tmp_file, write_keyblock): new functions.
+	(keyring_rebuild_cache): New.
+
+	* packet.h (PKT_ring_trust): Add sigcache field.
+	* parse-packet.c (parse_trust): Parse sigcache.
+	* keyring.c (do_copy): Always insert a sigcache packet.
+	(keyring_get_keyblock): Copy the sigcache packet to the signature.
+	* sig-check.c (cache_sig_result): Renamed from
+	cache_selfsig_result. Changed implementation to use the flag bits
+	and changed all callers.
+	(mdc_kludge_check): Removed this unused code.
+	(do_check): Do not set the sig flags here.
+
+	* import.c (read_block): Make sure that ring_trust packets are
+	never imported.
+	* export.c (do_export_stream): and never export them.
+
+	* trustdb.c (make_key_array): Skip revoked and expired keys.
+
+2001-09-24  Werner Koch  <wk@gnupg.org>
+
+	* g10.c, options.h: New option --no-auto-check-trustdb.
+
+	* keygen.c (do_generate_keypair): Set newly created keys to
+	ultimately trusted.
+
+	* tdbio.h, tdbio.c: Removed all support for records DIR, KEY, UID,
+	PREF, SIG, SDIR and CACH. Changed migration function to work
+	direct on the file.
+	(tdbio_read_nextcheck): New.
+	(tdbio_write_nextcheck): New. 
+
+2001-09-21  Werner Koch  <wk@gnupg.org>
+
+	Revamped the entire key validation system.
+	* trustdb.c: Complete rewrite. No more validation on demand,
+	removed some functions, adjusted to all callers to use the new 
+	and much simpler interface. Does not use the LID anymore.
+	* tdbio.c, tdbio.h: Add new record types trust and valid. Wrote a
+	migration function to convert to the new trustdb layout.
+	* getkey.c (classify_user_id2): Do not allow the use of the "#"
+	prefix. 
+	* keydb.h: Removed the TDBIDX mode add a skipfnc to the
+	descriptor.
+	* keyring.c (keyring_search): Implemented skipfnc.
+
+	* passphrase.c (agent_open): Add missing bracket.  Include windows.h.
+
+2001-09-19  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (print_fingerprint): Renamed from fingerprint, made
+	global available. Added new arg to control the print style.
+	* mainproc.c (print_fingerprint): Removed. 
+	* pkclist.c (print_fpr, fpr_info): Removed and changed callers to
+	use print_fingerprint.
+	* keyedit.c (show_fingerprint): Ditto.
+
+	* passphrase.c (writen, readn)
+	(agent_open, agent_close)
+	(agent_get_passphrase)
+	(passphrase_clear_cache): Support for W32.  Contributed by Timo.
+
+	* import.c (import_one): Release keydb handles at 2 more places.
+
+	* keyring.c (keyring_release): Close the iobuf.
+	(keyring_get_keyblock): Init ret_kb to NULL and store error contidion.
+
+	* import.c (import_new_stats_handle): New. 
+	(import_release_stats_handle): New.
+	(import_print_stats): Renamed from static fnc print_stats.
+	(import_keys, import_keys_stream): Add an optional status handle
+	arg and changed all callers.
+	* hkp.c (hkp_ask_import): Add an stats_handle arg and changed all
+	callers.
+
+	* mainproc.c (print_pkenc_list): Use print_utf8_string2().
+
+2001-09-18  Werner Koch  <wk@gnupg.org>
+
+	* g10.c: New command --refresh-keys.
+	* hkp.c (hkp_refresh_keys): New. Contributed by Timo Schulz.
+
+	* parse-packet.c (parse): Stop on impossible packet lengths.
+
+2001-09-17  Werner Koch  <wk@gnupg.org>
+
+	* mainproc.c (print_notation_data): Wrap notation data status lines
+	after 50 chars.
+	
+	* mainproc.c (proc_pubkey_enc): Make option try-all-secrets work.
+	By disastry@saiknes.lv.
+
+2001-09-14  Werner Koch  <wk@gnupg.org>
+
+	* parse-packet.c (dump_sig_subpkt): List key server preferences
+	and show the revocable flag correctly. Contributed by David Shaw.
+
+2001-09-09  Werner Koch  <wk@gnupg.org>
+
+	* keyedit.c (keyedit_menu): No need to define another p.
+
+	* keylist.c (print_capabilities): s/used/use/ so that it
+	does not shadow a global.
+	* sign.c (sign_file): Renamed arg encrypt to encryptflag
+	* keygen.c: Replaced all "usage" by "use".
+	* misc.c (openpgp_pk_algo_usage): Ditto.
+
+	* pubkey-enc.c (get_it): Renamed arg k to enc so that the later
+	defined k does not shadow it.
+
+	* parse-packet.c (parse_gpg_control): No need to define another i.
+
+	* getkey.c (get_pubkey_byfprint): Must use the enum values and not
+	the fprint_len.
+	* keyring.c (keyring_search): Removed a non-sense break.  Both
+	bugs pointed out by Stefan.
+
+2001-09-07  Werner Koch  <wk@gnupg.org>
+
+	* status.c, status.h: Added NO_RECP and ALREADY_SIGNED.
+	* pkclist.c (build_pk_list): Issue NO_RECP.
+	* keyedit.c (sign_uids): Added experimental ALREADY_SIGNED
+
+	* hkp.c (hkp_import): Use log_error. Bug reported by Neal H
+	Walfield. 
+
+	* getkey.c (classify_user_id2): Change args to take the desc union
+	direct.  It was a stupid idea to pass the individual fields of an
+	union to this function. Changed all callers.
+	(classify_user_id): Ditto and allow to pass NULL as the description.
+
+2001-09-06  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (fixup_uidnode): Features flag is now a bit vector.
+	* keygen.c (add_feature_mdc): Ditto.
+
+	Revamped the entire key I/O code to be prepared for other ways of
+	key storages and to get rid of the existing shit.  GDBM support has
+	gone.
+	* keydb.c: New
+	* keyring.c, keyring.h: New.
+	* ringedit.c: Removed.  Moved some stuff to keyring.c
+	* getkey.c: Changed everything related to the key retrieving
+	functions which are now using the keydb_ functions.  
+	(prepare_search, word_match_chars, word_match)
+	(prepare_word_match, compare_name): Moved to keyring.c
+	(get_pubkey_byname): Removed ctx arg and add ret_kdbhd
+	arg.  Changed all callers.
+	(key_byname): Use get_pubkey_end to release the context and take
+	new ret_kbdhd arg.  Changed all callers.
+	(classify_user_id2): Fill the 16 byte fingerprint up with 4 null
+	bytes not with zero bytes of value 4, tsss.
+	* import.c (import_one): Updated to use the new keydb interface.
+	(import_secret_one): Ditto.
+	(import_revoke_cert): Ditto.
+	* delkey.c (do_delete_key): Ditto. 
+	* keyedit.c (keyedit_menu): Ditto.
+	(get_keyblock_byname): Removed.
+	* revoke.c (gen_revoke): Ditto. 
+	* export.c (do_export_stream): Ditto.
+	* trustdb.c (update_trustdb): Ditto.
+	* g10.c, gpgv.c (main): Renamed add_keyblock_resource to
+	keydb_add_resource. 
+	* Makefile.am:  Added and removed files.
+
+	* keydb.h: Moved KBNODE typedef and MAX_FINGERPRINT_LEN to
+	* global.h: this new header.
+ 	
+2001-09-03  Werner Koch  <wk@gnupg.org>
+
+	* passphrase.c (agent_get_passphrase): Changed nread to size_t.
+	(passphrase_clear_cache): Ditto.
+
+	* keyid.c (mk_datestr): Avoid trigraphs.
+	(fingerprint_from_pk): Cache the keyid in the pk.
+
+	* options.h: Add opt.with_fingerprint so that we know whether the
+	corresponding options was used.
+	* g10.c (main): Set it here.
+	* pkclist.c (check_signatures_trust): Always print fingerprint
+	when this option is used.  Mixed a minor memory leak.
+
+	* status.c, status.h: New status INV_RECP.
+	* pkclist.c (build_pk_list): Issue this status.
+
+2001-08-31  Werner Koch  <wk@gnupg.org>
+
+	* parse-packet.c (parse_key,parse_pubkeyenc)
+	(parse_signature): Return error on reading bad MPIs.
+	
+	* mainproc.c (check_sig_and_print): Always print the user ID even
+	if it is not bound by a signature.  Use the primary UID in the
+	status messages and encode them in UTF-8
+	* status.c (write_status_text_and_buffer): New.
+
+2001-08-30  Werner Koch  <wk@gnupg.org>
+
+	* packet.h (sigsubpkttype_t): Add SIGSUBPKT_FEATURES.
+	(PKT_public_key, PKT_user_id): Add a flag for it.
+	* parse-packet.c, build-packet.c: Add support for them.
+	* getkey.c (fixup_uidnode, merge_selfsigs): Set the MDC flags.
+	* keygen.c (add_feature_mdc): New.
+	(keygen_upd_std_prefs): Always set the MDC feature.
+	* keyedit.c (show_prefs): List the MDC flag
+	* pkclist.c (select_mdc_from_pklist): New.
+	* encode.c (encode_crypt, encrypt_filter): Test whether MDC
+	should be used.
+	* cipher.c (write_header): Set MDC use depending on the above test.
+	Print more status info.
+
+	* delkey.c (do_delete_key): Kludge to delete a secret key with no
+	public key available.
+
+	* ringedit.c (find_secret_keyblock_direct): New.
+	* getkey.c (seckey_available): Simplified.
+
+	* ringedit.c (cmp_seckey): Now compares the secret key against the
+	public key while ignoring all secret parts.
+	(keyring_search): Use a public key packet as arg.  Allow to search
+	for subnkeys
+	(search): Likewise. Changed all callers.
+	(find_secret_keyblock_bypk): New.
+	(find_secret_keyblock_byname): First locate the pubkey and then
+	find the correponding secret key.
+	* parse-packet.c (parse): Renamed pkttype arg to onlykeypkts and
+	changed code accordingly.  Changed all callers.
+	(search_packet): Removed pkttype arg.
+	* keyedit.c (keyedit_menu): First locate the public key and then
+	try to locate a secret key.
+
+	* ringedit.c (locate_keyblock_by_fpr): Removed.
+	(locate_keyblock_by_keyid): Removed.
+	(find_keyblock_bysk): Removed.
+
+	* sig-check.c (check_key_signature2): Print the keyid along with
+	the wrong sig class errors.
+
+2001-08-24  Werner Koch  <wk@gnupg.org>
+
+	* sign.c (sign_file): Stripped the disabled comment packet code.
+	(sign_file, sign_symencrypt_file): Moved common code to ..
+	(write_onepass_sig_packets): .. this new function.
+	(sign_file, clearsign_file, sign_symencrypt_file): Moved common
+	code to 
+	(write_signature_packets): this new function.
+	(write_signature_packets, make_keysig_packet)
+	(update_keysig_packet): Moved common code to 
+	(hash_uid, hash_sigclass_to_magic): these new functions
+	(sign_file, sign_symencrypt_file): Moved common code to 
+	(write_plaintext_packet):  this new function.
+
+2001-08-21  Stefan Bellon  <sbellon@sbellon.de>
+
+	* trustdb.c (query_trust_info): Changed trustlevel to signed int.
+	* g10.c [__riscos__]: Fixed handling of --use-agent --lock-multiple.
+
+2001-08-20  Werner Koch  <wk@gnupg.org>
+
+	* encr-data.c (decrypt_data): Keep track on whether we already
+	printed information about the used algorithm.
+	* mainproc.c (proc_encrypted): Removed the non-working IDEA hack
+	and print a message about the assumed algorithm.
+	* passphrase.c (passphrase_to_dek): Use the same algorithm as above.
+	(proc_symkey_enc): Print the algorithm, so that the user knows it
+	before entering the passphrase.
+	(proc_pubkey_enc, proc_pubkey_enc): Zero the DEK out.
+	* encode.c (encode_crypt, encrypt_filter): Ditto.
+
+	* g10.c: Allow for --sign --symmetric.
+	* sign.c (sign_and_symencrypt): New.
+
+	Applied patches from Stefan Bellon <sbellon@sbellon.de> to support
+	RISC OS.  Nearly all of these patches are identified by the
+	__riscos__ macro.
+	* compress.c: Added a couple of casts.
+	* g10.c [__riscos__]: Some patches and new options foo-file similar
+	to all foo-fd options.
+	* gpgv.c, openfile.c, ringedit.c, tdbio.c: Minor fixes.  Mainly
+	replaced hardcoded path	separators with EXTSEP_S like macros.  
+	* passprase.c [__riscos__]: Disabled agent stuff
+	* trustdb.c (check_trust): Changed r_trustlevel to signed int to
+	avoid mismatch problems in pkclist.c
+	* pkclist.c (add_ownertrust): Ditto.
+	* plaintext.c (handle_plaintext) [__riscos__]: Print a note when
+	file can't be created.
+	* options.h [__riscos__]: Use an extern unless included from the
+	main module.
+	* signal.c (got_fatal_signal) [__riscos__]: Close all files.
+	
+2001-08-14  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (ask_algo): New arg r_usage.  Allow for RSA keys.
+	(gen_rsa): Enabled the code.
+	(do_create): Enabled RSA branch.
+	(parse_parameter_usage): New.
+	(proc_parameter_file): Handle usage parameter.
+	(read_parameter_file): Ditto.
+	(generate_keypair): Ditto.
+	(generate_subkeypair): Ditto.
+	(do_generate_keypair): Ditto.
+	(do_add_key_flags): New.
+	(keygen_add_std_prefs): Use the new function.
+	(keygen_add_key_flags_and_expire): New.
+	(write_selfsig, write_keybinding): Handle new usage arg.
+	* build-packet.c (build_sig_subpkt): Make sure that key flags go
+	into the hashed area.
+	
+	* keygen.c (write_uid): Initialize the reference cunter.
+
+	* keyedit.c (keyedit_menu): No more need to update the trustdb for
+	preferences.  Added calls to merge keblock.
+
+	* kbnode.c (dump_kbnode): Print some more flags.
+
+2001-08-10  Werner Koch  <wk@gnupg.org>
+
+        Revamped the preference handling.
+
+	* packet.h (prefitem_t, preftype_t): New.
+	(PKT_public_key): Added a uid field.
+	(PKT_user_id): Added field to store preferences and a reference
+	counter.
+	* parse-packet.c (parse_user_id,parse_photo_id): Initialize them
+	* free-packet.c (free_user_id): Free them.
+	(copy_user_id): Removed.
+	(scopy_user_id): New. 
+	(cmp_user_ids): Optimized for identical pointers.
+	(release_public_key_parts): Release the uid.
+	(copy_public_key_with_new_namehash): Removed.
+	(copy_prefs): New.
+	* keyedit.c (menu_adduid): Use the new shallow copy user id.
+	(show_prefs): Adjusted implementation.
+	(keyedit_menu): No more need to update the trustdb after changing
+	preferences.
+	* getkey.c (fixup_uidnode): Store preferences.
+	(find_by_name): Return a user id packet and remove namehash stuff.
+	(lookup): Removed the unused namehash stuff.
+	(finish_lookup): Added foundu arg.
+	(pk_from_block): Removed the namehash arg and changed all callers.
+	(merge_selfsigs): Copy prefs to all keys.
+	* trustdb.c (get_pref_data): Removed.
+ 	(is_algo_in_prefs): Removed.
+	(make_pref_record): Deleted and removed all class.
+	* pkclist.c (select_algo_from_prefs): Adjusted for the new
+	preference implementation.
+	* pubkey-enc.c (is_algo_in_prefs): New.
+	(get_it): Use that new function. 
+
+2001-08-09  Werner Koch  <wk@gnupg.org>
+
+	* build-packet.c (build_sig_subpkt): Fixed calculation of
+	newarea->size.
+
+	* g10.c (main): New option "--preference-list"
+	* keyedit.c (keyedit_menu): New commands "setpref" and "updpref".
+	(menu_set_preferences): New.
+	* keygen.c (keygen_set_std_prefs): New.
+	(set_one_pref): New.
+	(check_zip_algo): New.
+	(keygen_get_std_prefs): New.
+	(keygen_upd_std_prefs): New
+	(keygen_add_std_prefs): Move the pref setting code into the above fnc.
+	* build-packet.c (build_sig_subpkt): Updated the list of allowed
+	to update subpackets.
+
+2001-08-08  Werner Koch  <wk@gnupg.org>
+
+	* packet.h (subpktarea_t): New.
+	(PKT_signature): Use that type for hashed_data and unhashed_data and
+	removed the _data prefix from those fields.  Changed all users.
+	* parse-packet.c (parse_signature): Changed allocation for that.
+	(parse_sig_subpkt): Changed declaration
+	(enum_sig_subpkt): Ditto and changed implementation accordingly.
+	* free-packet.c (cp_subpktarea): Renamed from cp_data_block and
+	adjusted implementation. Changed caller.
+	* sig-check.c (mdc_kludge_check): Adjusted the hashing.
+	(do_check): Ditto.
+	* sign.c (sign_file, clearsign_file, make_keysig_packet,
+	update_keysig_packet): Ditto.
+	* build-packet.c (build_sig_subpkt): Partial rewrite.
+	(find_subpkt): Adjusted and made static.
+	(delete_sig_subpkt): Adjusted.
+	(do_signature): Ditto.
+
+	* keygen.c (ask_keysize): Do not print the notes about suggested
+	key sizes if just a DSA key is generated.
+
+	* trustdb.c (add_ultimate_key): s/log_error/log_info/ for
+	duplicated inserted trusted keys.
+
+2001-08-07  Werner Koch  <wk@gnupg.org>
+
+	* sign.c (sleep): Redefine for W32.
+
+	* g10.c, options.h: Set new flag opt.no_homedir_creation when
+	--no-options is given.
+	* openfile.c (try_make_homedir): Don't create the homedir in that case.
+
+2001-08-03  Werner Koch  <wk@gnupg.org>
+
+	* armor.c (armor_filter): Removed the default comment string
+	because it could get us in trouble due to translations using non
+	ascii characters.
+
+2001-08-01  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (list_keyblock_print): Do not list revoked UIDs unless
+	in verbose mode and we do no signature listing.
+
+	* getkey.c (finish_lookup): Skip subkeys which are not yet valid.
+	* g10.c, options.h: New option --ignore-valid-from.
+
+	* sign.c (make_keysig_packet): Added new sigversion argument to
+	allow the caller to force generation of required signature
+	version. Changed all callers. Suggested by Thomas Roessler.
+
+	* keyedit.c (sign_uids): Force v4 signature generation for local
+	sigs.  Removed the check for local signature and pre-v4 keys.
+
+2001-07-27  Werner Koch  <wk@gnupg.org>
+
+	* keyedit.c (sign_uids): Check that we are not trying to to a
+	lsign with a pre-v4 key.  Bug noticed by Thomas Roessler.
+
+2001-07-26  Werner Koch  <wk@gnupg.org>
+
+	* parse-packet.c (parse_photo_id): Reset all variables.
+	* getkey.c (merge_selfsigs_main): Removed checks on PHOTO_ID
+	because this is handled identically to a user ID.
+
+2001-07-06  Werner Koch  <wk@gnupg.org>
+
+	* cipher.c (write_header): Don't use MDC with --rfc1991.  Suggested
+	by disastry@saiknes.lv.
+
+2001-07-05  Werner Koch  <wk@gnupg.org>
+
+	* g10.c, options.h: New option --preserve-permissions.
+	* ringedit.c (add_keyblock_resource): Use it here
+	(keyring_copy): and here.
+
+	* trustdb.c (verify_own_keys): Be more silent on --quiet.
+	Suggested by Thomas Roessler.
+	* sig-check.c (check_key_signature2): Ditto.
+	* mainproc.c (proc_encrypted, proc_tree): Ditto
+	* getkey.c (lookup): Ditto.
+
+2001-07-04  Werner Koch  <wk@gnupg.org>
+
+	* ringedit.c (add_keyblock_resource): Restore filename in case of error.
+
+2001-06-25  Werner Koch  <wk@gnupg.org>
+
+	* kbnode.c (dump_kbnode): Print the signature timestamp.
+
+	* keyedit.c (keyedit_menu): New menu point "primary".
+	(change_primary_uid_cb): New.
+	(menu_set_primary_uid): New.
+	* sign.c (update_keysig_packet): New.
+	* build-packet.c (build_sig_subpkt): Put the primary UID flag into
+	the hashed area. Allow update of some more packets.
+
+2001-06-15  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (merge_selfsigs): Exit gracefully when a secret key is
+	encountered.  May happen if a secret key is in public keyring.
+	Reported by Francesco Potorti.
+	
+2001-06-12  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (compare_name): Use ascii_memistr(), ascii_memcasecmp()
+	* keyedit.c (keyedit_menu): Use ascii_strcasecmp().
+	* armor.c (radix64_read): Use ascii_toupper().  
+	* ringedit.c (do_bm_search): Ditto.
+	* keygen.c (read_parameter_file): Ditto.
+	* openfile.c (CMP_FILENAME): Ditto.
+	* g10.c (i18n_init): We can now use just LC_ALL.
+
+2001-05-29  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (generate_subkeypair): Print a warning if a subkey is
+	created on a v3 key. Suggested by Brian M. Carlson.
+
+2001-05-27  Werner Koch  <wk@gnupg.org>
+
+	* keyid.c (get_lsign_letter): New.
+	* keylist.c (list_keyblock_colon): Use it here.
+	* mainproc.c (list_node): and here.
+
+	* getkey.c, packet.h, free-packet.c: Removed that useless key
+	created field; I dunno why I introducded this at all - the
+	creation time is always bound to the key packet and subject to
+	fingerprint calculation etc.
+
+	* getkey.c (fixup_uidnode): Add keycreated arg and use this
+	instead of the signature timestamp to calculate the
+	help_key_expire.  Bug reported by David R. Bergstein.
+	(merge_selfsigs_main): Correct key expiration time calculation.
+	(merge_selfsigs_subkey): Ditto.
+
+2001-05-25  Werner Koch  <wk@gnupg.org>
+
+	* revoke.c (gen_revoke): Add a cast to a tty_printf arg.
+	* delkey.c (do_delete_key): Ditto.
+	* keyedit.c (print_and_check_one_sig): Ditto.
+	(ask_revoke_sig): Ditto.
+	(menu_revsig): Ditto.
+	(check_all_keysigs): Removed unused arg.
+
+2001-05-23  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (opts): Typo fix by Robert C. Ames.
+
+2001-05-06  Werner Koch  <wk@gnupg.org>
+
+	* revoke.c: Small typo fix
+
+2001-05-04  Werner Koch  <wk@gnupg.org>
+
+	* passphrase.c (passphrase_clear_cache): Shortcut if agent usage
+	is not enabled.
+
+2001-05-01  Werner Koch  <wk@gnupg.org>
+
+	* passphrase.c (writen): Replaced ssize_t by int.  Thanks to 
+	to Robert Joop for reporting that SunOS 4.1.4 does not have it.
+
+2001-04-28  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (merge_public_with_secret): pkttype was not set to subkey.
+
+2001-04-27  Werner Koch  <wk@gnupg.org>
+
+	* skclist.c (build_sk_list): Changed one log_debug to log_info.
+
+2001-04-25  Werner Koch  <wk@gnupg.org>
+
+	* keyedit.c (show_prefs): Add a verbose mode.
+	(show_key_with_all_names): Pass verbose flag for special value of
+	with_pref.
+	(keyedit_menu): New command "showpref"
+	(show_key_with_all_names): Mark revoked uids and the primary key.
+
+2001-04-24  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (get_primary_uid): Return a different string in case of
+	error and made it translatable.
+
+	* build-packet.c (do_secret_key): Ugly, we wrote a zero
+	instead of the computed ndays.  Thanks to M Taylor for complaining
+	about a secret key import problem.
+
+2001-04-23  Werner Koch  <wk@gnupg.org>
+
+	* hkp.c (hkp_ask_import): Allow to specify a port number for the 
+	keyserver.  Add a kudge to set the no_shutdown flag.
+	(hkp_export): Ditto.
+	* options.skel: Document the changes 
+
+2001-04-20  Werner Koch  <wk@gnupg.org>
+
+	* options.skel: Add some more comments.
+
+2001-04-19  Werner Koch  <wk@gnupg.org>
+
+	* keyid.c (mk_datestr): New.  Handles negative times.  We must do
+	this because Windoze segvs on negative times passed to gmtime().
+	Changed all datestr_from function to use this one.
+
+	* keyid.c, keyid.h (colon_strtime): New. To implement the
+	fixed-list-mode.
+	(colon_datestr_from_pk): New.
+	(colon_datestr_from_sk): New.
+	(colon_datestr_from_sig): New.
+	* keylist.c (list_keyblock_colon): Use these functions here.
+	* mainproc.c (list_node): Ditto.
+
+2001-04-18  Werner Koch  <wk@gnupg.org>
+
+	* openfile.c (open_sigfile): Fixed the handling of ".sign".
+	* mainproc.c (proc_tree): Use iobuf_get_real_fname.
+	Both are by Vincent Broman.
+
+2001-04-14  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (fixup_uidnode): Removed check for !sig which is
+	pointless here.  Thanks to Jan Niehusmann.
+
+2001-04-10  Werner Koch  <wk@gnupg.org>
+
+	* sig-check.c (check_key_signature2): Use log_info instead of
+	log_error so that messed up keys do not let gpg return an error.
+	Suggested by Christian Kurz.
+
+	* getkey.c (merge_selfsigs_main): Do a fixup_uidnode only if we
+	have both, uid and sig.  Thanks to M Taylor.
+
+2001-04-05  Werner Koch  <wk@gnupg.org>
+
+	* armor.c (unarmor_pump_new,unarmor_pump_release): New.
+	(unarmor_pump): New. 
+	* pipemode.c (pipemode_filter): Use the unarmor_pump to handle
+	armored or non-armored detached signatures.  We can't use the
+	regular armor_filter becuase this does only chack for armored
+	signatures the very first time.  In pipemode we may have a mix of
+	armored and binary detached signatures.
+	* mainproc.c (proc_tree): Do not print the "old style" notice when
+	this is a pipemode processes detached signature.
+	(proc_plaintext): Special handling of pipemode detached sigs.
+
+	* packet.h (CTRLPKT_PLAINTEXT_MARK): New.
+	* parse-packet.c (create_gpg_control): New.
+	* kbnode.c (dump_kbnode): Support it here.
+	* mainproc.c (check_sig_and_print): Fixed the check for bad
+	sequences of multiple signatures.
+	(proc_plaintext): Add the marker packet.
+	(proc_tree): We can now check multiple detached signatures.
+
+2001-04-02  Werner Koch  <wk@gnupg.org>
+
+	The length of encrypted packets for blocksizes != 8 was not
+	correct encoded.  I think this is a minor problem, because we
+	usually use partial length packets.  Kudos to Kahil D. Jallad for
+	pointing this out.
+	* packet.h: Add extralen to PKT_encrypted.
+	* cipher.c (write_header): Set extralen.
+	* build-packet.c (do_encrypted): Use extralen instead of const 10.
+	(do_encrypted_mdc): Ditto.
+	* parse-packet.c (parse_encrypted): Set extralen to 0 because we
+	don't know it here.
+
+2001-03-30  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (premerge_public_with_secret): Changed wording an add
+	the keyID to the info message.
+
+2001-03-29  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (premerge_public_with_secret): Use log_info instead of
+	log_error when no secret key was found for a public one.
+	Fix the usage if the secret parts of a key are not available.
+
+	* openfile.c (ask_outfile_name): Trim spaces.
+	(open_outfile): Allow to enter an alternate filename.  Thanks to
+	Stefan Bellon.
+	* plaintext.c (handle_plaintext): Ditto.
+
+2001-03-28  Werner Koch  <wk@gnupg.org>
+
+	* mainproc.c (do_check_sig): Allow direct key and subkey
+	revocation signature.
+	* sig-check.c (check_key_signature2): Check direct key signatures.
+	Print the signature class along with an error.
+
+2001-03-27  Werner Koch  <wk@gnupg.org>
+
+	* packet.h: Add a missing typedef to an enum.  Thanks to Stefan Bellon.
+
+	* g10.c: New option --no-sig-create-check.
+	* sign.c (do_sign): Implement it here.
+	* g10.c: New option --no-sig-cache.
+	* sig-check.c (check_key_signature2): Implement it here.
+	(cache_selfsig_result): and here.
+
+	* keylist.c (list_keyblock): Removed debugging stuff.
+
+	* getkey.c (cache_public_key): Made global.
+	* keygen.c (write_selfsig, write_keybinding): Cache the new key.
+
+	* getkey.c (key_byname): Add new arg secmode and changed all
+	callers to request explicitly the mode.  Deriving this information
+	from the other supplied parameters does not work if neither pk nor
+	sk are supplied.
+
+2001-03-25  Werner Koch  <wk@gnupg.org>
+
+	* packet.h (ctrlpkttype_t): New.
+	* mainproc.c (add_gpg_control,proc_plaintext,proc_tree): Use the
+	new enum values.
+	* pipemode.c (make_control): Ditto.
+	* armor.c (armor_filter): Ditto.
+
+2001-03-24  Werner Koch  <wk@gnupg.org>
+
+	* sign.c (do_sign): Verify the signature right after creation.
+
+2001-03-23  Werner Koch  <wk@gnupg.org>
+
+	* status.c, status.h (STATUS_UNEXPECTED): New.
+	* mainproc.c (do_proc_packets): And emit it here.
+
+2001-03-21  Werner Koch  <wk@gnupg.org>
+
+	* status.c: Add sys/types.h so that it runs on Ultrix.  Reported
+	by Georg Schwarz.x
+
+	* build-packet.c (build_sig_subpkt): Fixed generaton of packet
+	length header in case where 2 bytes headers are needed.  Thanks to
+	Piotr Krukowiecki.
+
+2001-03-19  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): the default keyring is no always used unless
+	--no-default-keyring is given.  
+
+	* ringedit.c (add_keyblock_resource): invalidate cache after file
+	creation.
+
+2001-03-15  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (ask_algo): Changed the warning of the ElGamal S+E Algo.
+
+	* keylist.c (print_capabilities): New.
+	(list_keyblock_colon): and use it here.
+
+2001-03-13  Werner Koch  <wk@gnupg.org>
+
+	* main.c, options.h: New option --fixed_list_mode.
+	* keylist.c (list_keyblock_colon): use it here.
+
+	* getkey.c (merge_keys_and_selfsig): Divert merging of public keys
+	to the function used in key selection..
+	* keylist.c (is_uid_valid): Removed.
+	(list_keyblock): Splitted into ..
+	(list_keyblock_print, list_keyblock_colon): .. these.
+	functions.  Changed them to use the flags set in the key lookup code.
+	(reorder_keyblock): New, so that primary user IDs are listed first.
+
+	* ringedit.c (keyring_copy): flush the new iobuf chaces before
+	rename or remove operations.  This is mainly needed for W32.
+
+	* hkp.c [HAVE_DOSISH_SYSTEM]: Removed the disabled code because we
+	have now W32 socket support in ../util/http.c
+
+	* skclist.c (key_present_in_sk_list): New.
+	(is_duplicated_entry): New.
+	(build_sk_list): Check for duplicates and do that before unlocking.
+
+2001-03-12  Werner Koch  <wk@gnupg.org>
+
+	* armor.c (parse_header_line): Removed double empty line check.
+	(parse_header_line): Replaced trim_trailing_ws with a counting
+	function so that we can adjust for the next read.
+
+	* options.skel: Fixed 3 typos. By Thomas Klausner. Replaced the
+	keyserver example by a better working server. 
+
+	* parse-packet.c (parse_symkeyenc): Return Invalid_Packet on error.
+	(parse_pubkeyenc): Ditto.
+	(parse_onepass_sig): Ditto.
+	(parse_plaintext): Ditto.
+	(parse_encrypted): Ditto.
+	(parse_signature): Return error at other places too.
+	(parse_key): Ditto.
+	* g10.c (main): Set opt.list_packets to another value when invoked
+	with the --list-packets command.
+	* mainproc.c (do_proc_packets): Don's stop processing when running
+	under --list-packets command.
+
+	* signal.c (do_sigaction): Removed.
+	(init_one_signal): New to replace the above.  Needed to support
+	systems without sigactions. Suggested by Dave Dykstra.
+	(got_fatal_signal,init_signals): Use the above here. 
+	(do_block): Use sigset() if sigprocmask() is not available.
+
+	* armor.c (parse_hash_header): Test on TIGER192, which is the
+	correct value as per rfc2440.  By Edwin Woudt.
+
+2001-03-08  Werner Koch  <wk@gnupg.org>
+
+	* misc.c: Include time.h. By James Troup.
+
+	* getkey.c: Re-enabled the unknown user Id and PK caches and
+	increased their sizes.
+
+	* getkey.c (merge_selfsigs_main): Set expire date and continue
+	processing even if we found a revoked key.
+	(merge_selfsigs_subkeys): Ditto.
+	
+	* packet.h: Add an is_revoked flag to the user_id packet.
+	* getkey.c (fixup_uidnode): Set that flag here.
+	(merge_selfsigs_main): Fix so that the latest signature is used to
+	find the self-signature for an UID.
+	* parse-packet.c (parse_user_id): Zero out all fields.
+	* mainproc.c (check_sig_and_print): Print the primary user ID
+	according the the node flag and then all other non-revoked user IDs.
+	(is_uid_revoked): Removed; it is now handled by the key selection code.
+	
+	Changed the year list of all copyright notices.
+	
+2001-03-07  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (finish_lookup): Print an info message only in verbose mode.
+
+2001-03-05  Werner Koch  <wk@gnupg.org>
+
+	* packet.h: Replaced sigsubpkt_t value 101 by PRIV_VERIFY_CACHE.
+	We have never used the old value, so we can do this without any harm.
+	* parse-packet.c (dump_sig_subpkt): Ditto.
+	(parse_one_sig_subpkt): Parse that new sub packet.
+	* build-packet.c (build_sig_subpkt): Removed the old one from the
+	hashed area.
+	(delete_sig_subpkt): New.
+	(build_sig_subpkt): Allow an update of that new subpkt.
+	* sig-check.c (check_key_signature2): Add verification caching
+	(cache_selfsig_result): New.
+	* export.c (do_export_stream): Delete that sig subpkt before exporting.
+	* import.c (remove_bad_stuff): New.
+	(import): Apply that function to all imported data 
+
+2001-03-03  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c: Introduced a new lookup context flag "exact" and used 
+	it in all place where we once used primary.
+	(classify_user_id2): Replaced the old function and add an extra
+	argument to return whether an exact keyID has been requested.
+	(key_byname): Removed the unused ctx.primary flag
+	(get_seckey_byname2): Ditto.
+	(finish_lookup): Changed debugging output.
+
+2001-03-02  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (list_one): Remove the merge key calls. 
+
+2001-03-01  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (finish_lookup): Don't use it if we no specific usage
+	has been requested.
+	(merge_selfsigs_main): fix UID only if we have an signature.
+	(lookup): Return UNU_PUBKEY etc. instead of NO_PUBKEY if we found
+	a key but the requested usage does not allow this key.
+	* import.c (import_one): Take UNU_PUBKEY into account.
+	* mainproc.c (list_node): Ditto.
+	* keylist.c (list_keyblock): Ditto.
+	* keyedit.c (print_and_check_one_sig): Ditto. 
+
+2001-02-09  Werner Koch  <wk@gnupg.org>
+
+	* delkey.c (delete_key): Removed that silly assert which rendered
+	the whole new stuff meaningless.
+
+2001-02-08  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (key_byname): It can happen that we have both, sk and pk
+	NULL, fix for that.
+
+	* parse-packet.c (parse_one_sig_subpkt): Add support for
+	primary_uid and key_flags.
+	(can_handle_critical): Ditto
+
+	* parse-packet.c (parse_encrypted): Fixed listing of pktlen for
+	MDC packets.
+
+	* getkey.c: Backported the version of this file from gpg 1.1. this
+	involved some changes in other files too.
+	* parse-packet.c (parse_key): Clear req_usage.
+	* skclist.c (build_sk_list): Use req_usage to pass the usage
+	information to the lookup function.
+	* pkclist.c (build_pk_list): Ditto.
+	* free-packet.c (copy_public_parts_to_secret_key): New.
+	* keydb.h: Add IS_* macros to check the sig_class.
+	* misc.c (openpgp_cipher_test_algo): New.
+	(openpgp_pk_test_algo): New.
+	(openpgp_pk_algo_usage): New.
+	(openpgp_md_test_algo): New.
+	* packet.h: Add a few fields to PKT_{public,secret}_key and
+	PKT_user_id.
+	* seckey-cert.c (do_check): Use the new main_keyid field.
+
+2001-02-04  Werner Koch  <wk@gnupg.org>
+
+	* encr-data.c (decrypt_data): Catch error when we had problems to
+	parse the encrypted packet. By Timo.
+
+2001-01-29  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): --batch does now set nogreeting.
+
+	* delkey.c (do_delete_key): Fixed delete-both functionality.
+
+2001-01-22  Werner Koch  <wk@gnupg.org>
+
+	* g10.c: New command --delete-secret-and-public-key.
+	* delkey.c (delete_key): Add new arg allow_both.
+	(do_delete_key): Move most stuff from above to this new function.
+
+2001-01-12  Werner Koch  <wk@gnupg.org>
+
+	* passphrase.c (passphrase_to_dek): Use MD5 when IDEA is installed
+	and we have no S2K.
+	* mainproc.c (proc_encrypted): Likewise
+
+2001-01-11  Werner Koch  <wk@gnupg.org>
+
+	* sig-check.c (do_check): Print the signature key expire message
+	only in verbose mode and added the keyID.
+
+2001-01-09  Werner Koch  <wk@gnupg.org>
+
+	* status.c, status.h: New status USERID_HINT. 
+	(write_status_text): Replace LF and CR int text by C-escape sequence.
+
+	* passphrase.c (passphrase_to_dek): Fixed the NEED_PASSPHRASE
+	output.  It does now always print 2 keyIDs.  Emit the new
+	USERID_HINT.
+
+2001-01-08  Werner Koch  <wk@gnupg.org>
+
+	* g10.c, options.h: New option --no-expensive-trust-checks.
+	* keylist.c (list_keyblock): Act on this option.
+
+2001-01-04  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): Set homedir only in the pre-parsing phase and
+	replace backslashes in the W32 version.
+
+2001-01-03  Werner Koch  <wk@gnupg.org>
+
+	* status.c, status.h : New status KEY_CREATED
+	* keygen.c (do_generate_keypair,generate_subkeypair): Emit it.
+
+2000-12-28  Werner Koch  <wk@gnupg.org>
+
+	* signal.c (got_fatal_signal): Remove lockfiles here because the
+	atexit stuff does not work due to the use of raise. Suggested by
+	Peter Fales.
+	* gpgv.c (remove_lockfiles): New stub.
+	
+2000-12-19  Werner Koch  <wk@gnupg.org>
+
+	* status.c, status.h (cpr_get_no_help): New.
+	* keyedit.c (keyedit_menu): Use it here because we have our own
+	help list here.
+
+2000-12-18  Werner Koch  <wk@gnupg.org>
+
+	* mainproc.c (print_failed_pkenc): Don't print the sometimes
+	confusing message about unavailabe secret key.  Renamed ...
+	(print_pkenc_list): ... to this and introduced failed arg.
+	(proc_encrypted): Print the failed encryption keys and then
+	the one to be used.
+	(proc_pubkey_enc): Store also the key we are going to use.
+
+	* mainproc.c (check_sig_and_print): Don't list revoked user IDs.
+	(is_uid_revoked): New.
+
+2000-12-08  Werner Koch  <wk@gnupg.org>
+
+	* pipemode.c: Made the command work.  Currently only for
+	non-armored detached signatures.
+	* mainproc.c (release_list): Reset the new pipemode vars.
+	(add_gpg_control): Handle the control packets for pipemode
+	* status.c, status.h: New stati {BEGIN,END}_STREAM.
+
+2000-12-07  Werner Koch  <wk@gnupg.org>
+
+	* g10.c: New option --allow-secret-key-import.
+	* import.c (import_keys,import_keys_stream): Honor this option.
+	(import): New arg allow_secret and pass that arg down to ...
+	(import_secret_one): to this and print a warning if secret key
+	importing is not allowed.
+
+2000-12-05  Werner Koch  <wk@gnupg.org>
+
+	* cipher.c (cipher_filter): Moved the end_encryption status ...
+	* encode.c (encode_simple,encode_crypt): to here
+	* sign.c (sign_file): and here.
+
+	* status.c (mywrite): Removed.
+	(get_status_string): Removed the LFs from the strings.
+	(set_status_fd,is_status_enabed,write_status_text,
+	write_status_buffer): Replaced all mywrite by stdio calls and use
+	fdopen to create a strem.  This is needed to make things smoother
+	in the W32 version.
+
+2000-12-04  Werner Koch  <wk@gnupg.org>
+
+	* import.c (merge_blocks): Increment n_sigs for revocations.
+
+2000-11-30  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): Use iobuf_translate_file_handle for all options
+	with filehandles as arguments.  This is function does some magic
+	for the W32 API.
+
+	* verify.c (verify_signatures): Add a comment rant about the
+	detached signature problem.
+	* mainproc.c (proc_tree): Issue an error if a detached signature
+	is assumed but a standard one was found.
+	* plaintext.c (hash_datafiles): Don't fall back to read signature
+	from stdin.
+	* openfile.c (open_sigfile): Print verbose message only if the
+	file could be accessed.
+
+2000-11-24  Werner Koch  <wk@gnupg.org>
+
+	* passphrase.c [HAVE_DOSISH_SYSTEM]: Disabled all the agent stuff.
+
+2000-11-16  Werner Koch  <wk@gnupg.org>
+
+        * g10.c: New option --use-agent
+        * passphrase.c (agent_open,agent_close): New.
+        (agent_get_passphrase,agent_clear_passphrase): New.
+	(passphrase_clear_cache): New.
+        (passphrase_to_dek): Use the agent here.
+	* seckey-cert.c (do_check): Clear cached passphrases.
+
+2000-11-15  Werner Koch  <wk@gnupg.org>
+
+	* status.c (write_status_text): Moved the big switch to ...
+	(get_status_string): ... new function.
+	(write_status_buffer): New.
+
+	* status.c (mywrite): New and replaced all write() by this.
+
+	* status.c, status.h: Add 3 status lcodes for notaions and policy.
+	* mainproc.c (print_notation_data): Do status output of notations.
+	
 2000-11-13  Werner Koch  <wk@gnupg.org>
 
-	* Makefile.am: Do not install any program
+	* sign.c (clearsign_file): Use LF macro to print linefeed.
+	
+2000-11-11  Paul Eggert  <eggert@twinsun.com>
+
+	Clean up the places in the code that incorrectly use "long" or
+        "unsigned long" for file offsets.  The correct type to use is
+        "off_t".  The difference is important on large-file hosts,
+        where "off_t" is longer than "long".
+
+        * keydb.h (struct keyblock_pos_struct.offset):
+        Use off_t, not ulong, for file offsets.
+        * packet.h (dbg_search_packet, dbg_copy_some_packets,
+        search_packet, copy_some_packets): Likewise.
+        * parse-packet.c (parse, dbg_search_packet, search_packet,
+        dbg_copy_some_packets, copy_some_packets): Likewise.
+        * ringedit.c (keyring_search): Likewise.
+
+        * parse-packet.c (parse): Do not use %lu to report file
+        offsets in error diagnostics; it's not portable.
+        * ringedit.c (keyring_search): Likewise.
+
+2000-11-09  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): New option --enable-special-filenames.
+
+2000-11-07  Werner Koch  <wk@gnupg.org>
+ 
+	* g10.c (main): New command --pipemode.
+	* pipemode.c: New.
+
+2000-10-23  Werner Koch  <wk@gnupg.org>
+
+	* armor.c (armor_filter): Changed output of hdrlines, so that a CR
+	is emitted for DOS systems.
+
+	* keygen.c (read_parameter_file): Add a cast for isspace().
+
+	* status.c (myread): Use SIGINT instead of SIGHUP for DOS. 
+
+2000-10-19  Werner Koch  <wk@gnupg.org>
+
+	* g10.c: New option --ignore-crc-error
+	* armor.c (invalid_crc): New.
+	(radix64_read): Act on new option.
+
+	* openfile.c (try_make_homedir): Klaus Singvogel fixed a stupid
+	error introduced on Sep 6th. 
+
+2000-10-18  Werner Koch  <wk@gnupg.org>
+
+	* misc.c (print_cipher_algo_note): Don't print the note for AES.
+	Changed wording.
+
+2000-10-16  Werner Koch  <wk@gnupg.org>
+
+	* mainproc.c (do_proc_packets): Hack to fix the problem that
+	signatures are not detected when there is a MDC packet but no
+	compression packet.
+	
+	* g10.c (print_hashline): New.
+	(print_mds): Use above func with --with-colons.
+
+	* mainproc.c (check_sig_and_print): Detect multiple signatures
+	and don't verify them.
+
+2000-10-14  Werner Koch  <wk@gnupg.org>
+
+	* mainproc.c (add_onepass_sig): There is an easier solution to the
+	error fixed yesterday; just check that we only have onepass
+	packets.  However, the other solution provides an cleaner
+	interface and opens the path to get access to other information
+	from the armore headers.
+	(release_list): Reset some more variables.
+
+2000-10-13  Werner Koch  <wk@gnupg.org>
+
+	* mainproc.c (add_gpg_control): New.
+	(do_proc_packets): use it.
+	(proc_plaintext): Changed logic to detect clearsigns.
+	(proc_tree): Check the cleartext sig with some new code.
+
+	* packet.h: New packet PKT_GPG_CONTROL.
+	* parse-packet.c (parse_gpg_control): New.
+	* misc.c (get_session_marker): New.
+	* armor.c (armor_filter): Replaced the faked 1-pass packet by the
+	new control packet.
+
+	* keyedit.c (keyedit_menu): Allow batchmode with a command_fd. 
+	* status.c (my_read): New.
+	(do_get_from_fd): use it.
 
 2000-10-12  Werner Koch  <wk@gnupg.org>
 
 	* keygen.c (keygen_add_std_prefs): Add Rijndael to the prefs.
 
-2000-10-11  Werner Koch  <wk@gnupg.org>
+2000-10-07  Werner Koch  <wk@gnupg.org>
 
-	* packet.h: Add features sig subpacket definition.
-	* parse-packet.c (dump_sig_subpkt,parse_one_sig_subpkt,
-	can_handle_critical): Implemented it here.
-	* build-packet.c (build_sig_subpkt): and here.
-	* keygen.c (keygen_add_std_prefs): Generate a features packet.
-	
-2000-10-09  Werner Koch  <wk@gnupg.org>
+	* gpgv.c: Add more stubs for ununsed code to make the binary smaller.
 
-	* keygen.c (do_generate_keypair): Removed the keyblock locking.
+Wed Oct  4 15:50:18 CEST 2000  Werner Koch  <wk@openit.de>
 
-	* ringedit.c (enum_keyblocks): Replaced by ...
-	(enum_keyblocks_begin): New.
-	(enum_keyblocks_next): New.
-	(enum_keyblocks_end): New. And changed all callers.
-	
-	* import.c (import_one): Removed keyblock locking becuase this is
-	now done inside of insert_keyblock().  Removed get_keyblock_handle
-	because insert_keyblock() now decides what is the default keyring.
-	(import_secret_one): Ditto.
-	(import_revoke_cert): Ditto.
-	(import_one): Ditto.
+        * sign.c (hash_for): New arg to take packet version in account, changed
+        call callers.
 
-Fri Oct  6 14:29:16 CEST 2000  Werner Koch  <wk@openit.de>
+        * gpgv.c: New.
+        * Makefile.am: Rearranged source files so that gpgv can be build with
+        at least files as possible.
 
-        Started to rework the whole getkey/ringedit stuff to make
-        it simpler, correcter and faster. 
+Mon Sep 18 12:13:52 CEST 2000  Werner Koch  <wk@openit.de>
 
-        * parse-packet.c (parse_packet): Add a 3rd arg to return the filepos.
-        Changed all callers.
-        * getkey.c (classify_user_id): Add new mode 21.
-        (find_by_fpr): Find using this new mode.
-        (get_seckey_byname): New arg to return the context. Changed all
-        callers.
-        * keyid.c (unified_fingerprint_from_pk): New.
-        (unified_fingerprint_from_sk): New.
-        * ringedit.c (find_keyblock_bypk): Changed to use the unified 
-        fingerprint for lookup.  I can't see a reason why we did compare
-        the entire public key.
-        (find_keyblock_bysk): Ditto.
-        (search,cmp_pubkey,cmp_seckey): Removed.
-        (keyring_search, do_kbxf_search): Removed.
-        (locate_keyblock_by_fpr,locate_keyblock_by_keyid): Removed.
-        (find_keyblock_byname): Removed use o search function.
-        (find_secret_keyblock_byname): Ditto.
-        (merge_public_with_secret): Fixed removing subkeys.
-        (premerge_public_with_secret): New.
+        * hkp.c (not_implemented): Print a notice for W32
 
-        * ringedit.c: Removed all GDBM support
+Fri Sep 15 18:40:36 CEST 2000  Werner Koch  <wk@openit.de>
 
-        * ringedit.c (read_keyblock): Removed.
-        * ringedit.c (find_keyblock_byname,find_secret_keyblock_byname,
-        find_keyblock_bypk,find_keyblock_bysk): Moved from here to ....
-        * getkey.c: ... here. Changed first arg to return a keyblock and
-        changed all callers to merge the old read_keyblock() with these
-        functions.       
+        * keygen.c (keygen_add_std_prefs): Changed order of preferences to
+        twofish, cast5, blowfish.
 
-Wed Oct  4 13:16:18 CEST 2000  Werner Koch  <wk@openit.de>
+        * pkclist.c (algo_available): Removed hack to disable Twofish.
 
-        * getkey.c (merge_selfsigs_main): Fixed for v3 keys.
+Thu Sep 14 17:45:11 CEST 2000  Werner Koch  <wk@openit.de>
 
-        * sign.c (hash_for): New arg to take packet version in account. Changed
-        all callers.
-        (write_one_sig): New. Moved the shared code from sign_file and
-        clearsign_file to here.
-        * skclist.c (build_sk_list): Fixed usage check.
-        * pkclist.c (build_pk_list): Ditto.
+        * parse-packet.c (dump_sig_subpkt): Dump key flags. Print special
+        warning in case of faked ARRs.
 
-        * encode.c (encode_crypt): Removed duplicated stuff by using
-        encrypt_filter as sign.c already did.  Removed already disabled
-        comment-packet code.
+        * getkey.c (finsih_lookup): Hack so that for v4 RSA keys the subkey
+        is used for encryption.
 
-Mon Sep 18 16:35:45 CEST 2000  Werner Koch  <wk@openit.de>
+Thu Sep 14 14:20:38 CEST 2000  Werner Koch  <wk@openit.de>
 
-        * parse-packet.c (dump_sig_subpkt): Dump key flags.
-        (parse_one_sig_subpkt,can_handle_critical): Add KeyFlags support.
-        * build-packet.c (build_sig_subpkt): Ditto.
+        * g10.c (main): Default S2K algorithms are now SHA1 and CAST5 - this
+        should solve a lot of compatibility problems with other OpenPGP
+        apps because those algorithms are SHOULD and not optional.  The old
+        way to force it was by using the --openpgp option whith the drawback 
+        that this would disable a couple of workarounds for PGP.
 
-        * g10.c: New option --allow-freeform-uid. By Jeroen C. van Gelderen.
-        * keygen.c (ask_user_id): Implemented here.
+        * g10.c (main): Don't set --quite along with --no-tty.  By Frank Tobin.
+
+        * misc.c (disable_core_dump): Don't display a warning here but a return
+        a status value and ...
+        * g10.c (main): ...print warnining here. Suggested by Sam Roberts.
+
+Wed Sep 13 18:12:34 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * keyedit.c (keyedit_menu): Allow to use "debug" on the secret key.
+
+        * ringedit.c (cmp_seckey): Fix for v4 RSA keys.
+        * seckey-cert.c (do_check): Workaround for PGP 7 bug.
+
+Wed Sep  6 17:55:47 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * misc.c (print_pubkey_algo_note): Do not print the RSA notice.
+        * sig-check.c (do_signature_check): Do not emit the RSA status message.
+        * pubkey-enc.c (get_session_key): Ditto.
+
+        * encode.c (encode_simple, encode_crypt): Fix for large files.
+        * sign.c (sign_file): Ditto.
+
+Wed Sep  6 14:59:09 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * passphrase.c (hash_passphrase): Removed funny assert.  Reported by
+        David Mathog.
+
+        * openfile.c (try_make_homedir): Changes for non-Posix systems.
+        * g10.c (main): Take the default homedir from macro.
+
+        * g10.c: The --trusted-key option is back.
+        * trustdb.c (verify_own_key): Handle this option.
+        (add_ultimate_key): Moved stuff from verify_own_key to this new func.
+        (register_trusted_key): New.
+
+Fri Aug 25 16:05:38 CEST 2000  Werner Koch  <wk@openit.de>
 
         * parse-packet.c (dump_sig_subpkt): Print info about the ARR.
 
@@ -95,335 +3378,69 @@ Mon Sep 18 16:35:45 CEST 2000  Werner Koch  <wk@openit.de>
         (make_outfile_name): Add ".sign" to the list of know extensions.
         (open_sigfile): Ditto.
 
-        * getkey.c: Large parts rewritten to have a better sub key selection
-        and handle some meta information from signatures more correctly.
-        (get_primary_seckey): Removed.
-        * seckey_cert.c (do_check): Set main keyid from the data in the sk.
-        * free-packet.c (copy_public_parts_to_secret_key): New.
-        * sig-check.c (check_key_signature2): Enabled shortcut for already
-        checked signatures.
-        * keydb.h: New macros IS_xxx_SIG, IS_xxx_REV.
-        * misc.c (openpgp_pk_algo_usage): New.
-        * packet.h: New field req_uage and do not use pubkey_usage anymore
-        to request a specific usage.  Changed at all places.
-        * keyid.c (keyid_from_sk): Cache the keyid in the sk
+Wed Aug 23 19:52:51 CEST 2000  Werner Koch  <wk@openit.de>
 
-        * passphrase.c (hash_passphrase): Removed funny assert.  Reported by
-        David Mathog.
+        * g10.c: New option --allow-freeform-uid. By Jeroen C. van Gelderen.
+        * keygen.c (ask_user_id): Implemented here.
 
-        * keyedit.c (keyedit_menu): Allow "debug" on secret keys.
-
-        * keygen.c (keygen_add_std_prefs): Changed order of preferences to
-        twofish, cast5, blowfish.
-
-        * gpg.c: The --trusted-key option is back.
-        * trustdb.c (verify_own_key): Handle this option.
-        (add_ultimate_key): Moved stuff from verify_own_key to this new func.
-        (register_trusted_key): New.
-
-        * openfile.c (try_make_homedir): Changes for non-Posix systems.
-        * gpg.c (main): Take the default homedir from macro.
-
-        * encode.c (encode_simple, encode_crypt): Fix for large files.
-        * sign.c (sign_file): Ditto.
-
-        * gpg.c (main): Don't set --quite along with --no-tty.  By Frank Tobin.
-
-        * misc.c (disable_core_dump): Don't display a warning here but a return
-        a status value and ...
-        * gpg.c (main): ...print warning here. Suggested by Sam Roberts.
-
-        * misc.c (print_pubkey_algo_note): Do not print the RSA notice.
-        * sig-check.c (do_signature_check): Do not emit the RSA status message.
-        * pubkey-enc.c (get_session_key): Ditto.
-
-        * ringedit.c (cmp_seckey): Fix for v4 RSA keys.
-        * seckey-cert.c (do_check): Workaround for PGP 7 bug.
-
-        * pkclist.c (algo_available): Removed hack to disable Twofish.
-
-        * gpg.c (main): Default S2K algorithms are now SHA1 and CAST5 - this
-        should solve a lot of compatibility problems with other OpenPGP
-        apps because those algorithms are SHOULD and not optional.  The old
-        way to force it was by using the --openpgp option whith the drawback 
-        that this would disable a couple of workarounds for PGP.
-
-        * gpg.c: New option --merge-only.  Suggested by Brendan O'Dea.
-        * import.c (import_one): Implemented it here.
-        (import_secret_one): Ditto.
-        (print_stats): and give some stats.
-
-        * gpg.c: New option --try-all-secrets on suggestion from
-        Matthias Urlichs.
-        * pubkey-enc.c (get_session_key): Quite easy to implement here.
-
-Mon Aug 21 17:59:17 CEST 2000  Werner Koch  <wk@openit.de>
-
-        * gpg.c: New option --use-agent
-        * passphrase.c (agent_open,agent_close): New.
-        (agent_get_passphrase,agent_clear_passphrase): New.
-        (passphrase_to_dek): Use the agent here.
-        * seckey-cert.c (do_check): Clear wrong cached passphrases.
-
-Fri Aug 18 14:27:14 CEST 2000  Werner Koch  <wk@openit.de>
+Fri Aug  4 14:23:05 CEST 2000  Werner Koch  <wk@openit.de>
 
   * status.c (do_get_from_fd): Ooops, we used fd instead of opt.command_fd.
   Thanks to Michael Tokarev.
 
-Mon Jul 31 10:04:47 CEST 2000  Werner Koch  <wk@openit.de>
+Tue Aug  1 20:06:23 CEST 2000  Werner Koch  <wk@openit.de>
 
-  * encode.c, sign.c, keygen.c, pubkey-enc.c: Replaced all
-  gcry_sexp_{car,cdr}_{data,mpi} by the new gcry_sexp_nth_{data,mpi} functions.
+  * g10.c: New opttion --try-all-secrets on suggestion from Matthias Urlichs.
+  * pubkey-enc.c (get_session_key): Quite easy to implement here.
 
-  * keygen.c (gen_dsa,gen_elg): Changed the way the factors are stored.
-  (factors_from_sexp): Removed.
-  * comment.c (make_mpi_comment_node): Removed.
-  (make_comment_node_from_buffer): New.
+Thu Jul 27 17:33:04 CEST 2000  Werner Koch  <wk@openit.de>
 
-Fri Jul 28 18:19:11 CEST 2000  Werner Koch  <wk@openit.de>
+  * g10.c: New option --merge-only.  Suggested by Brendan O'Dea.
+  * import.c (import_one): Implemented it here
+  (import_secret_one): Ditto.
+  (print_stats): and give some stats.
 
-  * sig-check.c (pk_verify): Fixed the S-Exp withe the pkey.
+Thu Jul 27 12:01:00 CEST 2000  Werner Koch  <wk@openit.de>
 
-  * gpg.c (main): Use setmode(O_BINARY) for MSDOS while generating random bytes
+  * g10.c: New options --show-session-key and --override-session-key
+  * pubkey-enc.c (hextobyte): New.
+  (get_override_session_key): New.
+  * mainproc.c (proc_pubkey_enc): Add session-key stuff.
+  * status.h, status.c (STATUS_SESSION_KEY): New.
+
+Thu Jul 27 10:02:38 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * g10.c (main): Use setmode(O_BINARY) for MSDOS while generating random bytes
   (print_mds): Likewise for stdin.
   * plaintext.c (handle_plaintext): Likewise for stdout.
 
-Tue Jul 25 17:44:15 CEST 2000  Werner Koch  <wk@openit.de>
+Mon Jul 24 10:30:17 CEST 2000  Werner Koch  <wk@openit.de>
 
   * keyedit.c (menu_expire): expire date for primary key can be set again.
+
+Wed Jul 19 11:26:43 CEST 2000  Werner Koch  <wk@openit.de>
 
   * keylist.c (is_uid_valid): New.
   (list_keyblock): Print validity information for all user IDs.  Note, this
   has to be done at other places too; for now we have only minimal support.
 
-  * sign.c (pk_sign): Changed to use the new S-Exp interface.
-  * encode.c (pk_encrypt): Ditto.
-  * sig-check.c (pk_verify): Ditto.
-  * seckey-cert.c (pk_check_secret_key): Ditto.
-  * pubkey-enc.c (pk_decrypt): Ditto.
-  * misc.c (pubkey_nbits): Ditto.
-  * keygen.c (key_from_sexp,factors_from_sexp,gen_elg,gen_dsa): Ditto.
+Wed Jul 12 13:32:06 CEST 2000  Werner Koch  <wk@openit.de>
 
-Fri Jul 14 19:38:23 CEST 2000  Werner Koch  <wk@>
+  * helptext.c, pkclist.c: s/superseeded/superseded/
 
-  Replaced everything with the code from the STABLE-BRANCH-1-0 and
-  started to backport the changes from the 1.1 development branch
-  which are dated according to the ChangeLog of the 1.1 from
-  Sat Sep 18 12:16:08 CEST 1999  to  Thu May 25 18:39:11 CEST 2000.
-  Here are those changes, some of them are duplicates because they
-  have been done on both branch simultaneously.
+Mon Jul 10 16:08:57 CEST 2000  Werner Koch  <wk@openit.de>
 
-  * gpg.c (print_mds): Add arg keys as a kludge to print hmacs
-  (main): New option --print-hmac.
+  * parse-packet.c (enum_sig_subpkt): Fixed testing on crtitical bit in case
+  of a NULL buffer.  Reported by Peter Marschall.
 
-  * trustdb.c (verify_own_keys): Do not print warning about unprotected
-  key when in quiet mode.
+Wed Jul  5 13:28:45 CEST 2000  Werner Koch  <wk@openit.de>
 
-  * build-paket.c (do_user_id): Save offset where name has been stored.
+  * keyedit.c, keyid.c: Add some _()
 
-  * ringedit.c : Add new access method KBXF
+  * argparse.c:  Changed the flag to suppress --version handling to also
+  suppress --help.
 
-  * kbxfile.c: New.
-
-  * kbx.h: New.
-  * kbxblob.c: Started to work on the keybox stuff.
-
-  * keygen.c (gen_dsa): Modified to work with gcry_pk_genkey.
-
-  * Removed dummy-cipher.h from all files.
-
-  * keygen.c (gen_elg): Modified to work with gcry_pk_genkey.
-  (key_from_sexp): New.
-  (factors_from_sexp): New.
-
-  * g10.c : Renamed to ...
-  * gpg.c : ... this
-  * Makefile.am: And fixed it here.
-
-  * Changed all "g10_"/"GPG_" prefixes to "gpg_"/"GPG_".
-
-  * misc.c (mpi_read_opaque): Fixed double counting.
-
-  * seckey-cert.c (do_check): Removed buffer and the unmotivated free
-  on it.
-
-  * pubkey-enc.c (pk_decrypt): New wrapper for the gcry_ function.
-  * seckey-cert.c (pk_check_secret_key): Likewise.
-  * encode.c (pk_encrypt): Likewise.
-
-  * parse-packet.c (parse_key): Fixed case of unencrypted secret keys.
-
-  * misc.c (mpi_print): Use gcry_mpi_aprint.
-  (pubkey_nbits): Kludge to use the gcry_pk_ API.
-
-  * seskey.c (encode_session_key): Replaced mpi_set_buffer by *_scan.
-  (do_encode_md): Ditto.
-  (encode_md_value): Ditto.
-  * seckey-cert.c (protect_secret_key): Ditto.
-  * comment.c (make_mpi_comment_node): Replaced mpi_get_buffer by _print.
-  * pubkey-enc.c (get_it): Ditto.
-  * sig-check.c (do_signature_check): Ditto.
-
-  * keyid.c (do_fingerprint_md): Replaced mpi_get_buffer by gcry_mpi_print.
-  (v3_keyid): New.
-  (keyid_from_sk): And use it here.
-  (keyid_from_pk): Ditto.
-  (fingerprint_from_sk): Ditto.
-  (fingerprint_from_pk): Ditto.
-
-  * misc.c (mpi_print): New.
-
-  * misc.c (checksum_mpi): Now uses gcry_mpi_print to get the data.
-
-  * seckey-cert.c (do_check): Replaced mpi_read_from_buffer.
-
-  * armor.c (armor_filter): Made the "Comment:" header translatable.
-
-  * seckey-cert.c: Removed obsolete mpi_*_protect_flag.
-  * parse-packet.c: Ditto.
-
-  * misc.c (mpi_read): Removed the secure argumet becuase it is
-  never used.  Changed all Callers.
-  (mpi_read_opaque): New.
-  (mpi_write_opaque): New.
-  * parse-packet.c (parse_key): Use the opaque method also for
-  v3 keys.
-  * build-packet.c (do_secret_key): Likewise.
-
-  * g10.c (main): Check libgcrypt version.
-
-  * packet.h: replaced inclusion of mpi.h by a plain typeedef of the
-  gcry_mpi structure and removed all inclusions of "mpi.h" in all
-  sources.
-
-  * g10.c: Add --delete-secret-key to the help page.
-
-  * g10.c (main): Changed the default homedir to "~/.gnupg-test" so
-  that we don't mess up with the stable version.
-
-  * misc.c (mpi_write): New.
-  (mpi_write): New.
-
-  * misc.c (checksum_u16_nobug): Removed.
-  (checksum_mpi_counted_nbits): Renamed to ...
-  (checksum_mpi): ... this to superseed the old one. Changed all
-  callers. This is because we do not emulate the old gpg bug anymore.
-  * g10.c (oEmuChecksumBug): Removed.
-
-  * g10.c (register_extension): New...
-  (main): Use it here instead of register_cipher_extesnion.
-  (strusage): s/strusage/my_strusage/ . Made static.
-  (main): Use set_strusage().
-
-  * tdbdump.c (HEXTOBIN): Changed the name of the argument, so that
-  traditional cpp don't mess up the macros. Suggested by Jos Backus.
-
-  * armor.c (parse_header_line): Stop parsing on a only WS line too.
-  Suggested by Aric Cyr.
-
-  * misc.c (pull_in_libs): Removed.
-
-  * mainproc.c (list_node): Print the PK algo in the --with-colon mode.
-  * keylist.c (list_keyblock): Ditto.
-
-  * misc.c (pull_in_libs): Removed pull in of g10c.
-
-  * misc.c (map_gcry_rc): Removed here and chnaged all users.
-
-  * getkey.c: Replaced check_pubkey_algo by openpgp_pk_test_algo.
-  * import.c (delete_inv_parts): Ditto.
-  * pkclist.c: Ditto.
-  * skclist.c: Ditto.
-  * pubkey-enc.c: Ditto.
-
-  * g10.c (main): Replaced the function to diable PK algos.
-
-  * g10.c (main): Replaced get_random_bits by gcry_random_bytes.
-  * seskey.c (encode_session_key): Likewise.
-  (make_session_key): Renamed randomize_buffer to gcry_randomize
-  and use the GCRY_xxx_RANDOM constants.
-  * cipher.c (write_header): Ditto.
-  * passphrase.c (hash_passphrase): Ditto.
-  * seckey-cert.c (protect_secret_key): Ditto.
-
-  * getkey.c (find_by_name): Replaced rmd160_hash_buffer
-  by gcry_md_hash_buffer.
-  * keyedit.c (show_prefs): Ditto.
-  * keylist.c (list_keyblock): Ditto.
-  * trustdb.c (print_uid_from_keyblock): Ditto.
-  (make_uid_records): Ditto.
-
-  * skclist.c (build_sk_list): Removed the test on faked RNGs.
-  (is_insecure): Removed.
-  * g10.c (--quick-random): Removed this option.
-
-  * Replaced all PUBKEY_ALGO_xxx by GCRY_PK_xxxx.
-
-  * misc.c (pubkey_algo_npkey): New as a wrapper around the gcry fucntion.
-  (pubkey_algo_nskey): Ditto.
-  (pubkey_algo_nsig): Ditto.
-  (pubkey_algo_nenc): Ditto.
-
-  * Makefile.am (basicdefs.h): Added.
-  (install-data-local): Removed the handling for historic gpgm.
-
-  * misc.c (openpgp_cipher_test_algo): New.
-  (openpgp_pk_test_algo): New.
-  (openpgp_md_test_algo): New.
-
-  * g10.c (build_list): Changed to use the new functions from libgcrypt.
-
-  * ringedit.c (enum_keyblocks): Set .rt to 0 on open.
-
-  * encode.c (encode_simple): Use new CTB when we don't have the
-  length of the file.  This is somewhat strange as the comment above
-  indicates that this part is actually fixed for PGP 5 - maybe I simply
-  lost the source line, tsss.
-
-  * sign.c (clearsign_file): Avoid duplicated Entries in the "Hash:"
-  line.  Those headers are now only _not_ printed when there are
-  only old-style keys _and_ all hashs are MD5.
-
-  (clearsign_file): Use gcry_md_test_algo() and gcry_md_algo_name().
-
-  * openfile.c (make_outfile_name): Use case-insenstive compare for
-  DOS systems.	Add ".pgp" to the list of know extensions.
-  (open_outfile): For DOS systems try to replace the suffix instead of
-  appending it.
-
-  * encr-data.c (decrypt_data): Reset error on a weak key.
-
-  * cipher.c: Replaced the cipher and digest functions by the gcry_ ones.
-  * seckey-cert.c: Ditto.
-  * seskey.c: Ditto.
-  * g10.c (print_mds): Replaced digst functions with the new gcry_ ones.
-  * keyid.c: Ditto.
-  * mainproc.c: Ditto.
-  * passphrase.c: Ditto.
-  * sig-check.c: Ditto.
-  * sign.c: Ditto.
-
-  * pkclist.c (do_edit_ownertrust): Made the answer string const.
-
-  * basicdefs.h: New.  Move some defs and decl to this header.
-
-  * openfile.c (open_outfile): Fixed the 8dot3 handling.
-
-  * passphrase.c (passphrase_to_dek): Print uid using utf8 func.
-  * delkey.c (delete_key): Ditto.
-  * pkclist.c (show_paths,do_edit_ownertrust,do_we_trust): Ditto
-  (do_we_trust_pre): Ditto.
-  * trustdb.c (print_user_id,check_uidsigs): Ditto.
-  * revoke.c (gen_revoke,ask_revoke_sig): Ditto.
-
-  * filter.h: Changed cipher handle types to the the GCRY_xxx ones.
-  replaces include cipher by system header include gcrypt.h.
-  * cipher.c: replaced the cipher functions by the gcry_ ones.
-  Ditto for the md functions.
-
-  * misc.c (map_gcry_rc): New.
-
-Wed Jun 28 11:54:44 CEST 2000  Werner Koch  <wk@>
+Wed Jun 28 11:54:44 CEST 2000  Werner Koch  <wk@openit.de>
 
   * armor.c (armor_filter): Set sigclass to 0 in case of non-dash-escaped
   clearsig.  This makes this mode work again.
@@ -461,7 +3478,7 @@ Fri Jun  9 10:09:52 CEST 2000  Werner Koch  <wk@openit.de>
 
 Wed Jun  7 19:19:09 CEST 2000  Werner Koch  <wk@openit.de>
 
-  * sig-check.c (do_check): Use EMULATE_MDENCODE also on v4 paclets.
+  * sig-check.c (do_check): Use EMULATE_MDENCODE also on v4 packets.
 
 Wed Jun  7 17:25:38 CEST 2000  Werner Koch  <wk@openit.de>
 
@@ -3280,3 +6297,13 @@ Thu Feb 12 22:24:42 1998  Werner Koch  (wk@frodo)
 
 	* pubkey-enc.c (get_session_key): rewritten
 
+
+ Copyright 1998,1999,2000,2001,2002 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

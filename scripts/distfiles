@@ -1,13 +1,5 @@
-config.guess
-config.sub
-install-sh
-mkinstalldirs
 mkdiff
-missing
+build-w32
 gnupg.spec.in
 autogen.sh
-ChangeLog
-ltconfig
-ltmain.sh
-db2html.in
 

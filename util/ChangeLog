@@ -1,129 +1,464 @@
-Mon Sep 18 16:35:45 CEST 2000  Werner Koch  <wk@openit.de>
+2002-06-21  Stefan Bellon  <sbellon@sbellon.de>
 
-        * strgutil.c (utf8_to_native): Fixed null ptr problem.  By
-        Giampaolo Tomassoni.
+	* riscos.c (riscos_global_defaults): New.
+
+2002-06-20  Stefan Bellon  <sbellon@sbellon.de>
+
+	* riscos.c (riscos_set_filetype_by_number, riscos_set_filetype):
+	New. Set RISC OS filetype according to MIME type.
+
+2002-06-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* strgutil.c (pop_strlist): New function to pop the head off of a
+	strlist.
+
+2002-06-05  Timo Schulz  <ts@winpt.org>
+
+	* fileutil.c (is_file_compressed): Corrected the magic values
+	for bzip2 and gzip. Noted by David.
+	
+2002-05-22  Werner Koch  <wk@gnupg.org>
+
+	* fileutil.c (compare_filenames): Replaced stricmp by strcasecmp.
+	* miscutil.c (answer_is_yes_no_quit,answer_is_yes_no_default): Ditto.
+
+	* strgutil.c (strncasecmp): New.
+	(memicmp): Removed.
+
+2002-05-10  Stefan Bellon  <sbellon@sbellon.de>
+
+	* memory.c (add_entry) [M_DEBUG]: Added some missing EXTRA_ALIGN.
+	(free_entry) [M_DEBUG]: Free secure memory via secmem_free.
+	(alloc_secure): Malloc at least 1 byte.
+	(realloc) [M_GUARD]: Added missing FNAMEARG to function call.
+
+	* logger.c (g10_log_bug0) [__riscos__]: Make use of first
+	g10_log_bug0 function for later Norcroft compiler.
+
+	* riscos.c: Added stdlib.h include.
+
+2002-05-04  Werner Koch  <wk@gnupg.org>
+
+	* http.c (write_server) [__MINGW32__]: Replaced WriteFile by send
+	because sockets don't work with WriteFile under NT anymore.
+
+2002-05-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* argparse.c (optfile_parse): Remove quotes only if they totally
+	enclose the string, and do not occur within the string.  This
+	makes specifying a program under Win32 easier when you need quotes
+	around part of a string, but not around the whole string.
+	
+2002-05-02  Werner Koch  <wk@gnupg.org>
+
+	* memory.c (alloc): Malloc at least 1 byte.  Noted by Winona Brown. 
+
+2002-04-23  David Shaw  <dshaw@jabberwocky.com>
+
+ 	* miscutil.c: New function answer_is_yes_no_default() to give a
+	default answer.
+
+2002-04-22  Stefan Bellon  <sbellon@sbellon.de>
+
+	* riscos.c (riscos_open, riscos_fopen, riscos_fstat, set_filetype):
+	Removed as they're not needed anymore.
+
+	* iobuf.c (direct_open) [__riscos__]: Don't allow opening of
+	directories.
+
+2002-04-08  Werner Koch  <wk@gnupg.org>
+
+	Fixed filename of last entry.
+
+2002-03-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* miscutil.c (print_string, utf8_to_native): If a delimiter is
+	used, then quote the backslash character as well.  Problem noted
+	by Rainer Perske.
+
+2002-03-15  Werner Koch  <wk@gnupg.org>
+
+	* argparse.c (optfile_parse): Fixed missing argument handling.
+
+2002-02-28  Timo Schulz  <ts@winpt.org>
+
+	* http.c (write_server): Convert integer to a HANDLE for W32.
+	
+2002-01-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* iobuf.c (iobuf_fdopen, iobuf_sockopen): Do not cache fdopened
+	fds on close.
+
+2002-01-08  Werner Koch  <wk@gnupg.org>
+
+	* secmem.c (print_warn): Print a pointer to the FAQ.
+
+2002-01-05  Werner Koch  <wk@gnupg.org>
+
+	* argparse.c (default_strusage): Set default copyright date to 2002.
+
+2002-01-02  Stefan Bellon  <sbellon@sbellon.de>
+
+	* iobuf.c [__riscos__]: Updated include file name.
+
+	* fileutil.c [__riscos__]: Ditto.
+
+	* ttyio.d [__riscos__]: Ditto.
+
+	* riscos.c [__riscos__]: Ditto. Added debugging code and
+	unified error messages.
+
+2001-12-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* errors.c (g10_errstr): Added G10ERR_KEYSERVER
+
+2001-12-27  Werner Koch  <wk@gnupg.org>
+
+	* simple-gettext.c [MINGW32]: Fixed last changed.
+
+2001-12-22  Stefan Bellon  <sbellon@sbellon.de>
+
+	* memory.c (realloc): Fixed realloc not working when M_GUARD is
+	defined and first parameter is NULL.
+
+2001-12-22  Timo Schulz <ts@winpt.org>
+
+        * fileutil.c (is_file_compressed): New.
+
+2001-12-19  Werner Koch  <wk@gnupg.org>
+
+	* simple-gettext.c, w32reg.c [CYGWIN32]: Allow to use this file
+
+2001-10-11  Werner Koch  <wk@gnupg.org>
+
+	* http.c (do_parse_uri): Changed initialization of the port number
+	so that it does also work with x-hkp.  By David Shaw.
+
+2001-09-19  Werner Koch  <wk@gnupg.org>
+
+	* w32reg.c (get_root_key): New.
+	(read_w32_registry_string): Use it here.
+	(write_w32_registry_string): New.  Contributed by Timo.
+
+	* iobuf.c (iobuf_ioctl): New command to disable fd
+	caching. Implemented no_cache flag where needed.
+	(iobuf_sockopen): Always set no_cache flag.
+
+	* strgutil.c (utf8_to_native): Add a delim arg and changed all
+	callers. Make sure that quoting is done when translation is
+	disabled.
+	* miscutil.c (print_utf8_string2): New.
+
+2001-09-17  Werner Koch  <wk@gnupg.org>
+
+	* miscutil.c (print_string): Use explicit ranges and not iscntrl().  
+	(make_printable_string): Ditto.
+
+2001-09-07  Werner Koch  <wk@gnupg.org>
+
+	* strgutil.c (strsep): New, taken from glibc 2.2.1.
+
+2001-09-03  Werner Koch  <wk@gnupg.org>
+
+	* miscutil.c (strtimestamp,asctimestamp): Avoid trigraphs.
+
+2001-08-21  Stefan Bellon  <sbellon@sbellon.de>
+
+	* riscos.c [__riscos__] (close_fds): Fixed possible endless loop.
+
+2001-08-20  Werner Koch  <wk@gnupg.org>
+
+	Applied patches from Stefan Bellon <sbellon@sbellon.de> to support
+	RISC OS.  Nearly all of these patches are identified by the
+	__riscos__ macro.
+	* secmem.c [__riscos__]: Disabled secure memory stuff.
+	* dotlock.c, ttyio.c [__riscos__]: Adapted for RISC OS
+	* fileutil.c, iobuf.c: Adapted for RISC OS;  mainly replaced
+	hardcoded path separators with EXTSEP_S like macros. 
+	* http.c (send_request): Use macros for the env-var name.
+	* logger.c [__riscos__]: Do an fflush at the end of each log
+	function. 
+ 	* memory.c [__riscos__]: Minor patches
+	* riscos.c (set_filetype): New.
+
+	* secmem.c (lock_pool): Under HPUX mlock is broken but we might
+	have plock, so we use this to lock the entire process.  By Albert
+	Chin.
+	
+2001-07-03  Werner Koch  <wk@gnupg.org>
+
+	* strgutil.c (utf8_to_native): Fixed printing of invalid utf-8
+	characters.  Thomas Roessler reported that the escaping didn't work
+	correct.
+
+2001-06-12  Werner Koch  <wk@gnupg.org>
+
+	* strgutil.c (ascii_memistr,ascii_isupper,ascii_islower,
+	ascii_toupper,ascii_tolower, ascii_strcasecmp, ascii_memcasecmp): New.
+	(set_native_charset): Use ascii_strcasecmp()
+	* fileutil.c (compare_filenames): Ditto
+	* miscutil.c (answer_is_yes): Ditto.
+	(answer_is_yes_no_quit): Ditto.
+
+2001-06-06  Werner Koch  <wk@gnupg.org>
+
+	* strgutil.c (vasprintf) [__MINGW32__]: New. Taken from libiberty.
+	* ttyio.c (tty_printf) [__MINGW32__]:  Replaced the sprintf with
+	the new vasprintf. 
+
+2001-06-05  Werner Koch  <wk@gnupg.org>
+
+	* dotlock.c (make_dotlock): Typo fixes. 
+
+2001-05-25  Werner Koch  <wk@gnupg.org>
+
+	* ttyio.c (do_get): Fixed a serious format string bug.  Thanks to
+	fish stiqz.
+
+2001-05-23  Werner Koch  <wk@gnupg.org>
+
+	* secmem.c (EPERM): Try to work around a Slackware problem.
+
+2001-05-05  Werner Koch  <wk@gnupg.org>
+
+	* http.c (http_start_data): Flush before writing.
+	(http_wait_response): No need to flush here.
+
+2001-04-27  Werner Koch  <wk@gnupg.org>
+
+	* memory.c (out_of_core): Print an explanation on reasons why
+	secret memory can get exhausted.
+
+2001-04-23  Werner Koch  <wk@gnupg.org>
+
+	* http.c (http_wait_response): Implement new flag to inhibit the
+	TCP shutdown.
+
+2001-04-20  Werner Koch  <wk@gnupg.org>
+
+	* http.c (http_start_data): Use write_server and not the iobuf
+	stuff.  I wonder why we are at all using write_server - shouldn't
+	it be handled by iobuf?
+
+	* strgutil.c (set_native_charset): Allow utf-8 by introducing the
+	new no_translation variable.
+	(native_to_utf8): Handle no_translation.
+	(utf8_to_native): Ditto.
+
+2001-04-19  Werner Koch  <wk@gnupg.org>
+
+	* miscutil.c (asctimestamp): Handle negative times.  We must do
+	this because Windoze segvs on negative times passed to gmtime().
+	(strtimestamp): Ditto.
+
+2001-04-14  Werner Koch  <wk@gnupg.org>
+
+	* strgutil.c (utf8_to_native): Fixed a segv.  Thanks to Keith Clayton.
+
+2001-04-13  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.c (iobuf_fopen): Removed because it is not used and
+	furthermore mode is ignored for an fname of "-".  Suggested by
+	Florian Weimer.
+
+2001-04-02  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.c (translate_file_handle): New. Use this function
+	everywhere in this file.
+	(iobuf_translate_file_handle): Always use the osfhandle stuff here
+	because callers don't know the implementation details of iobuf and
+	they expect that the handles are translated. 
+
+2001-03-29  Werner Koch  <wk@gnupg.org>
+
+	* miscutil.c (answer_is_yes): An empty string does now return no.
+	(answer_is_yes_no_quit): Likewise.
+
+	* iobuf.c (iobuf_close): Burn the buffers.
+
+2001-03-26  Werner Koch  <wk@gnupg.org>
+
+	* ttyio.c: Define TERMDEVICE depending on OS.
+
+	* http.c (http_start_data): send a CRLF and not just a LF.
+	Pointed out by Steven Murdoch.
+
+2001-03-13  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.c (iobuf_sockopen): New.
+	(sock_filter) [__MINGW32__]: New.
+	(iobuf_ioctl): New.
+	(file_filter): Implemented keep_open mode.
+	* http.c (http_open, http_wait_response): Replaced iobuf_fdopen by
+	iobuf_sockopen and use an iobuf_ioctl to avoid the dup().
+	(deinit_sockets, init_sockets) [__MINGW32__]: New.
+	(connect_server, write_server): Add code to work with W32 sockets.
+
+2001-03-12  Werner Koch  <wk@gnupg.org>
+
+	* strgutil.c (check_trailing_chars,check_trailing_ws): New.
+
+2001-03-08  Werner Koch  <wk@gnupg.org>
+
+	* argparse.c (default_strusage): Changed year of printed copyright
+	to 2001.
+
+	* iobuf.c (fd_cache_invalidate, fd_cache_close, fd_cache_open): New. 
+	(direct_open): Invalidate the fd_cache for read access.
+	(file_filter): Cache the close here.
+	(iobuf_open): Use new my_fopen_ro macro to try the cache first.
+
+2001-03-07  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.c: Made the old stdio file handling cpp conditional
+	controlled by FILE_FILTER_USES_STDIO and added a new
+	open/read/close based one.  We don't need the stdio buffering
+	becuase we are doing our own buffering anyway.  And it is a
+	prerequesite to allow the use of ReadFile et al for W32 which in
+	turn is needed to make the http stuff work there. The new W32
+	stuff has also been implemented. Minor changes to all open functions.
+	(direct_open): New.
+	(file_filter): Core of the new read/write handling.
+	(iobuf_get_filelength): Use W32 API function here. But it is
+	currently limited to 2GB files.
+	(iobuf_seek): Ditto.
+
+2001-03-01  Werner Koch  <wk@gnupg.org>
+
+	* errors.c (g10_errstr): New codes UNU_SECKEY and UNU_PUBKEY.
+
+2000-12-28  Werner Koch  <wk@gnupg.org>
+
+	* dotlock.c: Made all_lockfiles volatile.
+	(remove_lockfiles): Made public.
+
+2000-11-30  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.c (iobuf_translate_file_handle): New.
+	(iobuf_open, iobuf_create): Use it for special filenames
+
+2000-11-11  Paul Eggert  <eggert@twinsun.com>
+
+        * iobuf.c (iobuf_get_filelength): Now returns off_t, not u32.
+        Remove kludges to worry about large files; the callers check
+        for files that are too large, and they should already be doing
+        the right thing in an implementation-independent way.
+        (fopen, fstat): Remove macros.
+
+        * iobuf.c (iobuf_set_limit, iobuf_tell, iobuf_seek): 
+        Use off_t, not ulong, for file offsets.
+        (<limits.h>): Include if needed.
+        (LONG_MAX, LONG_MIN): Define a substitute if needed.
+        (fseeko): Define a substitute if needed.
+
+        * iobuf.c (iobuf_seek):  Do not use %lu to report file
+
+2000-11-09  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.c (iobuf_enable_special_filenames): New.
+	(check_special_filename): New.
+	(iobuf_open): check for special filenames.
+	(iobuf_create): Ditto.
+
+2000-10-23  Werner Koch  <wk@gnupg.org>
+
+	* secmem.c (lock_pool): Don't print warning for Windows.
+
+2000-10-16  Werner Koch  <wk@gnupg.org>
+
+	* secmem.c (lock_pool): Fixed error checking for Linux.
+	By James Troup.
+
+Thu Sep 14 14:20:38 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * miscutil.c (answer_is_yes_no_quit): Swapped order of yes/no test
+        so that no is returned for an empty input. By David Champion.
+
+Wed Sep  6 17:55:47 CEST 2000  Werner Koch  <wk@openit.de>
 
         * iobuf.c: Use fopen64 insead of fopen when available.
         (iobuf_get_filelength): Use fstat64 when available but return
         2^32-1 if the file is larger than this value.
 
-        * miscutil.c (answer_is_yes_no_quit): Swapped order of yes/no test
-        so that no is returned for an empty input. By David Champion.
+Wed Sep  6 14:59:09 CEST 2000  Werner Koch  <wk@openit.de>
 
-Fri Aug 18 14:27:14 CEST 2000  Werner Koch  <wk@openit.de>
+        * secmem.c (secmem_realloc): check for failed secmem_malloc.  By
+        Matt Kraai.
 
-        * logger.c (log_set_file): Allow to set the file by name.
+        * strgutil.c (utf8_to_native): Fixed null ptr problem.  By
+        Giampaolo Tomassoni.
 
-Fri Jul 28 18:19:11 CEST 2000  Werner Koch  <wk@openit.de>
+Thu Jul 27 10:02:38 CEST 2000  Werner Koch  <wk@openit.de>
 
   * iobuf.c: Use setmode() at several places to set stdin and stdout
   to binary mode for MSDOS based systems
 
   * iobuf.c (underflow): Initialize dummy_len to keep memory checker happy.
 
-Fri Jul 14 19:38:23 CEST 2000  Werner Koch  <wk@>
+Fri Jun  9 10:09:52 CEST 2000  Werner Koch  <wk@openit.de>
 
-  * iobuf.c (iobuf_cancel): Broadcast the new Cancel message to all
-  filters.  Fix for MSDOS.
-
-  * miscutil.c (asctimestamp): Fix for possible buffer overflow by
-  a large system returned date format string.
-
-  * logger.c (log_inc_errorcount): New.
-
-  * w32reg.c: New.
-
-  * simple-gettext.c: Use the Registry to locate the mo file.
-
-  * http.c (send_request): Add support for proxys; suggested by
-  Walter Hofmann.
-  (http_open_document): Pass flags to http_open.
-
-  * ttyio.c (do_get): Replaced #if __MINGW32__ by #ifdef because
-  gcc 2.95.1 assigns a floating point value (0.2) to this macro,
-  which in turn can't be used in an expression.
   * ttyio.c: Simulate termios with termios.  By Dave Dykstra.
-  * ttyio.c (tty_print_utf8_string): Oops.
-  * ttyio.c (tty_print_utf8_string2): New to allow a max output size.
 
-Thu Jan 27 18:00:44 CET 2000  Werner Koch  <wk@gnupg.de>
+Thu Jun  8 20:22:00 CEST 2000  Werner Koch  <wk@openit.de>
 
-	* Changed all "g10_"/"GPG_" prefixes to "gpg_"/"GPG_".
+  * secmem.c (lock_pool,secmem_init): Additional check for dropped privs.
 
-Mon Jan 24 13:04:28 CET 2000  Werner Koch  <wk@gnupg.de>
+Tue May 30 16:37:55 CEST 2000  Werner Koch  <wk@openit.de>
 
-	* memory.c: Removed
-	* secmem.c: Moved to ../gcrypt.
-	* argparse.c argparse.h logging.c logging.h
-	  mischelp.h stringhelp.c stringhelp.h xmalloc.c
-	  xmalloc.h dotlock.c: Moved to ../jnlib
-	* libutil-config.h: Removed.
+  * iobuf.c (iobuf_cancel): Fix for MSDOS.
 
-	* logging.c (log_set_file): New.
-	(log_printf): New.
-	(do_logv): Add kludge to insert LFs.
+Fri Apr 14 19:37:08 CEST 2000  Werner Koch  <wk@openit.de>
 
-	* Replaced all m_ memory fucntions by gcry_ ones.
-	* README: New.
+	* dotlock.c (disable_dotlock): New.  Implmented this in the module.
 
-Fri Dec 31 12:48:31 CET 1999  Werner Koch  <wk@gnupg.de>
+2000-03-09 14:04:22  Werner Koch  (wk@habibti.openit.de)
 
-	* memory.c (m_is_secure): New.
+	* argparse.c (default_strusage): Changed year of default copyright.
 
-	* stringhelp.c (trim_trailing_spaces): New.
+Tue Mar  7 18:45:31 CET 2000  Werner Koch  <wk@gnupg.de>
 
-Wed Dec  8 21:58:32 CET 1999  Werner Koch  <wk@gnupg.de>
+	* secmem.c (lock_pool): No more warning for QNX. By Sam Roberts.
+
+2000-03-02 15:51:04  Werner Koch  (wk@habibti.gnupg.de)
+
+	* ttyio.c (tty_print_utf8_string): Oops.
+
+Thu Mar  2 15:37:46 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* ttyio.c (tty_print_utf8_string2): New to allow a max output size.
+
+Wed Feb 23 10:07:57 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* miscutil.c (asctimestamp): Fix for possible buffer overflow by
+	large system returned date format string.
+
+Fri Dec 31 14:08:15 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* logger.c (log_inc_errorcount): New.
+
+Sat Dec  4 12:30:28 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* iobuf.c (iobuf_cancel): Broadcast the new Cancel mesaage to all
+	filters.
+
+Mon Nov 22 11:14:53 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* strgutil.c (strcasecmp): New.
 
-	* argparse.h: New.
-	* libutil.h: New.
-	* argparse.c: Use these new files.
-	(optfile_parse): s/m_alloc/libutil_xalloc/
+	* secmem.c (pool_is_mmapped): Made volatile.
 
-	* strgutil.c: Moved a lot of function to ...
-	* stringhelp.c: ... this new file
-	* stringhelp.h: ... and the definitions to here
+Sat Oct  9 20:34:41 CEST 1999  Werner Koch  <wk@gnupg.de>
 
-	* mischelp.h: New.
+	* Makefile.am:	Removed libtool.
 
-	* logging.h: New, but not yet used in GnuPG.
-	* logging.c: Ditto.
+Fri Oct  8 20:32:01 CEST 1999  Werner Koch  <wk@gnupg.de>
 
-Fri Nov 19 17:15:20 CET 1999  Werner Koch  <wk@gnupg.de>
+	* w32reg.c: New.
+	* simple-gettext.c: Use the Registry to locate the mo file.
 
-	* argparse.c (default_strusage): Renamed to strusage. Fall back
-	to the old behaviour if no sepcial strhandler has been set.
-
-	* memory.c (g10_private_check_heap): New.
-
-	* secmem.c (m_is_secure): Renamed to ...
-	(g10_private_is_secure): ... this.
-	* memory.c (g10_private_malloc): New. Takes core functionalty of ...
-	(m_alloc): ... and calls it.
-	(g10_private_malloc_secure): New. Takes core functionalty of ...
-	(m_alloc_secure): ... and calls it.
-	(g10_private_realloc): New. Takes core functionalty of ...
-	(m_realloc): ... and this one calls it.
-	(g10_private_free): Wraps around m_free().
-
-	* argparse.c (g10_set_strusage): New.
-	(default_strusage): renamed to ...
-	(g10_default_strusage): .. this.
-
-Sat Nov 13 17:44:23 CET 1999  Werner Koch  <wk@gnupg.de>
-
-	* g10u.c: Removed.
-
-	* errors.c (g10_errstr): Use gcry_strerror as fallback
-
-Tue Oct 26 14:10:21 CEST 1999  Werner Koch  <wk@gnupg.de>
-
-	* simple-gettext.c (set_gettext_file): Check charset and do
-	mapping only for IBM850.
-	* strgutil.c (query_native_charset): New.
-	(get_native_charset): Try to get it from the system on the first call.
-	(ibm850_unicode): New table.
+	* http.c (send_request): Add support for proxys; suggested by
+	Walter Hofmann.
+	(http_open_document): Pass flags to http_open.
 
 Fri Sep 17 12:56:42 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
@@ -208,7 +543,7 @@ Sat Jun 26 12:15:59 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 Fri Jun 18 00:18:02 CEST 1999 Michael Roth <mroth@nessie.de>
 
 	* iobuf.c: file_filter() Detection of EOF on terminals
-          improved/fixed (see Bug #21).
+	  improved/fixed (see Bug #21).
 
 Mon Jun 14 21:18:54 CEST 1999 Michael Roth <mroth@nessie.de>
 
@@ -579,5 +914,17 @@ Fri Feb 13 17:13:04 1998  Werner Koch  (wk@isil.d.shuttle.de)
 Fri Feb 13 15:14:13 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* argparse.c (show_help): New '\v' kludge.
+
+
+
+ Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 

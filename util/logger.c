@@ -1,5 +1,5 @@
 /* logger.c  -	log functions
- *	Copyright (C) 1998, 2000 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,7 +24,6 @@
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
-#include <gcrypt.h>
 
 #include "util.h"
 #include "i18n.h"
@@ -41,19 +40,17 @@ static FILE *logfp;
 void
 log_set_logfile( const char *name, int fd )
 {
+    if( name )
+	BUG();
+
     if( logfp && logfp != stderr && logfp != stdout )
-        fclose( logfp );
-    if( name ) {
-        logfp = fopen ( name, "a" );
-    }
-    else {
-        if( fd == 1 )
-            logfp = stdout;
-        else if( fd == 2 )
-            logfp = stderr;
-        else
-            logfp = fdopen( fd, "a" );
-    }
+	fclose( logfp );
+    if( fd == 1 )
+	logfp = stdout;
+    else if( fd == 2 )
+	logfp = stderr;
+    else
+	logfp = fdopen( fd, "a" );
     if( !logfp ) {
 	logfp = stderr;
 	log_fatal("can't open fd %d for logging: %s\n", fd, strerror(errno));
@@ -72,9 +69,9 @@ log_stream()
 void
 log_set_name( const char *name )
 {
-    gcry_free(pgm_name);
+    m_free(pgm_name);
     if( name )
-	pgm_name = gcry_xstrdup(name);
+	pgm_name = m_strdup(name);
     else
 	pgm_name = NULL;
 }
@@ -112,7 +109,7 @@ log_inc_errorcount()
 
 
 void
-gpg_log_print_prefix(const char *text)
+g10_log_print_prefix(const char *text)
 {
     if( !logfp )
 	logfp = stderr;
@@ -120,6 +117,9 @@ gpg_log_print_prefix(const char *text)
 	fprintf(logfp, "%s%s: %s", pgm_name, pidstring, text );
     else
 	fprintf(logfp, "?%s: %s", pidstring, text );
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
 }
 
 static void
@@ -131,21 +131,27 @@ print_prefix_f(const char *text, const char *fname)
 	fprintf(logfp, "%s%s:%s: %s", pgm_name, pidstring, fname, text );
     else
 	fprintf(logfp, "?%s:%s: %s", pidstring, fname, text );
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
 }
 
 void
-gpg_log_info( const char *fmt, ... )
+g10_log_info( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    gpg_log_print_prefix("");
+    g10_log_print_prefix("");
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
 }
 
 void
-gpg_log_info_f( const char *fname, const char *fmt, ... )
+g10_log_info_f( const char *fname, const char *fmt, ... )
 {
     va_list arg_ptr ;
 
@@ -153,22 +159,28 @@ gpg_log_info_f( const char *fname, const char *fmt, ... )
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
 }
 
 void
-gpg_log_error( const char *fmt, ... )
+g10_log_error( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    gpg_log_print_prefix("");
+    g10_log_print_prefix("");
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
     errorcount++;
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
 }
 
 void
-gpg_log_error_f( const char *fname, const char *fmt, ... )
+g10_log_error_f( const char *fname, const char *fmt, ... )
 {
     va_list arg_ptr ;
 
@@ -177,23 +189,29 @@ gpg_log_error_f( const char *fname, const char *fmt, ... )
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
     errorcount++;
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
 }
 
 void
-gpg_log_fatal( const char *fmt, ... )
+g10_log_fatal( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    gpg_log_print_prefix("fatal: ");
+    g10_log_print_prefix("fatal: ");
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
     secmem_dump_stats();
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
     exit(2);
 }
 
 void
-gpg_log_fatal_f( const char *fname, const char *fmt, ... )
+g10_log_fatal_f( const char *fname, const char *fmt, ... )
 {
     va_list arg_ptr ;
 
@@ -202,16 +220,19 @@ gpg_log_fatal_f( const char *fname, const char *fmt, ... )
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
     secmem_dump_stats();
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
     exit(2);
 }
 
 void
-gpg_log_bug( const char *fmt, ... )
+g10_log_bug( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
     putc('\n', stderr );
-    gpg_log_print_prefix("Ohhhh jeeee: ");
+    g10_log_print_prefix("Ohhhh jeeee: ");
     va_start( arg_ptr, fmt ) ;
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -220,33 +241,37 @@ gpg_log_bug( const char *fmt, ... )
     abort();
 }
 
-#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
+#if defined (__riscos__) \
+    || ( __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 ))
 void
-gpg_log_bug0( const char *file, int line, const char *func )
+g10_log_bug0( const char *file, int line, const char *func )
 {
     log_bug(_("... this is a bug (%s:%d:%s)\n"), file, line, func );
 }
 #else
 void
-gpg_log_bug0( const char *file, int line )
+g10_log_bug0( const char *file, int line )
 {
     log_bug(_("you found a bug ... (%s:%d)\n"), file, line);
 }
 #endif
 
 void
-gpg_log_debug( const char *fmt, ... )
+g10_log_debug( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    gpg_log_print_prefix("DBG: ");
+    g10_log_print_prefix("DBG: ");
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
 }
 
 void
-gpg_log_debug_f( const char *fname, const char *fmt, ... )
+g10_log_debug_f( const char *fname, const char *fmt, ... )
 {
     va_list arg_ptr ;
 
@@ -254,19 +279,25 @@ gpg_log_debug_f( const char *fname, const char *fmt, ... )
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
 }
 
 
 
 void
-gpg_log_hexdump( const char *text, const char *buf, size_t len )
+g10_log_hexdump( const char *text, const char *buf, size_t len )
 {
     int i;
 
-    gpg_log_print_prefix(text);
+    g10_log_print_prefix(text);
     for(i=0; i < len; i++ )
 	fprintf(logfp, " %02X", ((const byte*)buf)[i] );
     fputc('\n', logfp);
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
 }
 
 
