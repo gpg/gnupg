@@ -1,3 +1,23 @@
+2002-12-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* pkclist.c (do_we_trust): Tweak language to refer to the "named
+	user" rather than "owner".  Noted by Stefan Bellon.
+
+	* trustdb.h, trustdb.c (trustdb_pending_check): New function to
+	check if the trustdb needs a check.
+
+	* import.c (import_keys_internal): Used here so we don't rebuild
+	the trustdb if it is still clean.
+	(import_one, chk_self_sigs): Only mark trustdb dirty if the key
+	that is being imported has any sigs other than self-sigs.
+	Suggested by Adrian von Bidder.
+
+	* options.skel: Include the required '=' sign in the sample
+	'group' option.  Noted by Stefan Bellon.
+
+	* import.c (chk_self_sigs): Don't try and check a subkey as if it
+	was a signature.
+
 2002-12-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* tdbio.c (tdbio_read_record, tdbio_write_record): Compact the

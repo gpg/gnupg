@@ -49,6 +49,7 @@ int trust_letter( unsigned value );
 const char *trust_string (unsigned int value);
 
 void revalidation_mark (void);
+int trustdb_pending_check(void);
 
 unsigned int get_validity (PKT_public_key *pk, const byte *namehash);
 int get_validity_info (PKT_public_key *pk, const byte *namehash);

@@ -551,6 +551,12 @@ revalidation_mark (void)
   pending_check_trustdb = 1;
 }
 
+int
+trustdb_pending_check(void)
+{
+  return pending_check_trustdb;
+}
+
 
 /***********************************************
  ***********  Ownertrust et al. ****************

@@ -493,25 +493,24 @@ do_we_trust( PKT_public_key *pk, unsigned int *trustlevel )
          /* fall thru */
       case TRUST_UNKNOWN: 
       case TRUST_UNDEFINED:
-        log_info(_("%08lX: There is no indication that this key "
-                   "really belongs to the owner\n"),
-                 (ulong)keyid_from_pk( pk, NULL) );
+        log_info(_("%08lX: There is no assurance this key belongs "
+		   "to the named user\n"),(ulong)keyid_from_pk( pk, NULL) );
 	return 0; /* no */
 
+	/* No way to get here? */
       case TRUST_NEVER:
 	log_info(_("%08lX: We do NOT trust this key\n"),
 					(ulong)keyid_from_pk( pk, NULL) );
 	return 0; /* no */
 
       case TRUST_MARGINAL:
-	log_info(
-       _("%08lX: It is not sure that this key really belongs to the owner\n"
-	 "but it is accepted anyway\n"), (ulong)keyid_from_pk( pk, NULL) );
+	log_info(_("%08lX: There is limited assurance this key belongs "
+		   "to the named user\n"),(ulong)keyid_from_pk(pk,NULL));
 	return 1; /* yes */
 
       case TRUST_FULLY:
 	if( opt.verbose )
-	    log_info(_("This key probably belongs to the owner\n"));
+	    log_info(_("This key probably belongs to the named user\n"));
 	return 1; /* yes */
 
       case TRUST_ULTIMATE:

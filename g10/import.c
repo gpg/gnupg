@@ -68,7 +68,7 @@ static int import_secret_one( const char *fname, KBNODE keyblock,
 static int import_revoke_cert( const char *fname, KBNODE node,
                                struct stats_s *stats);
 static int chk_self_sigs( const char *fname, KBNODE keyblock,
-			  PKT_public_key *pk, u32 *keyid );
+			  PKT_public_key *pk, u32 *keyid, int *non_self );
 static int delete_inv_parts( const char *fname, KBNODE keyblock,
 			     u32 *keyid, unsigned int options );
 static int merge_blocks( const char *fname, KBNODE keyblock_orig,
@@ -213,18 +213,19 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames,
         import_print_stats (stats);
         import_release_stats_handle (stats);
     }
-    /* If no fast import and we really added new keys or merged new
-       user ids, signatures or revocations, then update/check the
-       trustdb if the user specified by setting interactive or by
-       not setting no-auto-check-trustdb */
-    if (!(options&IMPORT_FAST_IMPORT) &&
-         (stats->imported || stats->n_uids ||
-          stats->n_sigs || stats->n_revoc)) {
-        if (opt.interactive)
-	    update_trustdb();
+    /* If no fast import and the trustdb is dirty (i.e. we added a key
+       or userID that had something other than a selfsig, a signature
+       that was other than a selfsig, or any revocation), then
+       update/check the trustdb if the user specified by setting
+       interactive or by not setting no-auto-check-trustdb */
+    if (!(options&IMPORT_FAST_IMPORT) && trustdb_pending_check())
+      {
+	if (opt.interactive)
+	  update_trustdb();
 	else if (!opt.no_auto_check_trustdb)
-	    check_trustdb();
-    }
+	  check_trustdb();
+      }
+
     return rc;
 }
 
@@ -573,6 +574,7 @@ import_one( const char *fname, KBNODE keyblock,
     int rc = 0;
     int new_key = 0;
     int mod_key = 0;
+    int non_self = 0;
 
     /* get the key and print some info about it */
     node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
@@ -617,7 +619,7 @@ import_one( const char *fname, KBNODE keyblock,
       log_info(_("key %08lX: HKP subkey corruption repaired\n"),
 	       (ulong)keyid[1]);
 
-    rc = chk_self_sigs( fname, keyblock , pk, keyid );
+    rc = chk_self_sigs( fname, keyblock , pk, keyid, &non_self );
     if( rc )
 	return rc== -1? 0:rc;
 
@@ -680,7 +682,8 @@ import_one( const char *fname, KBNODE keyblock,
 	       be made to happen with the trusted-key command. */
 
 	    clear_ownertrusts (pk);
-	    revalidation_mark ();
+	    if(non_self)
+	      revalidation_mark ();
 	  }
         keydb_release (hd);
 
@@ -757,7 +760,7 @@ import_one( const char *fname, KBNODE keyblock,
             if (rc)
 		log_error (_("error writing keyring `%s': %s\n"),
 			     keydb_get_resource_name (hd), g10_errstr(rc) );
-	    else
+	    else if(non_self)
 	      revalidation_mark ();
 
 	    /* we are ready */
@@ -1093,10 +1096,12 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
  * Mark all user-ids with an invalid self-signature by setting bit 1.
  * This works also for subkeys, here the subkey is marked.  Invalid or
  * extra subkey sigs (binding or revocation) are marked for deletion.
+ * non_self is set to true if there are any sigs other than self-sigs
+ * in this keyblock.
  */
 static int
 chk_self_sigs( const char *fname, KBNODE keyblock,
-	       PKT_public_key *pk, u32 *keyid )
+	       PKT_public_key *pk, u32 *keyid, int *non_self )
 {
     KBNODE n,knode=NULL;
     PKT_signature *sig;
@@ -1112,6 +1117,7 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 	  rsdate=0;
 	  bsnode=NULL;
 	  rsnode=NULL;
+	  continue;
 	}
       else if( n->pkt->pkttype != PKT_SIGNATURE )
 	    continue;
@@ -1230,6 +1236,8 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 		}
 	    }
 	}
+	else
+	  *non_self=1;
     }
 
     return 0;
