@@ -71,6 +71,7 @@ CATOBJEXT = .gmo
 CC = gcc
 CPP = gcc -E
 DATADIRNAME = share
+DYNLINK_LDFLAGS = -rdynamic
 G10_LOCALEDIR = /usr/local/share/locale
 GENCAT = 
 GMOFILES =  de.gmo it.gmo
@@ -91,7 +92,7 @@ POSUB = po
 RANLIB = ranlib
 USE_INCLUDED_LIBINTL = yes
 USE_NLS = yes
-VERSION = 0.2.19c
+VERSION = 0.3.0
 ZLIBS = 
 l = 
 
@@ -121,7 +122,7 @@ LIBRARIES =  $(noinst_LIBRARIES)
 DEFS = -DHAVE_CONFIG_H -I. -I$(srcdir) -I..
 CPPFLAGS = 
 LDFLAGS = 
-LIBS = -lz
+LIBS = -ldl -lz
 libzlib_a_LIBADD = 
 libzlib_a_OBJECTS =  adler32.o compress.o crc32.o gzio.o uncompr.o \
 deflate.o trees.o zutil.o inflate.o infblock.o inftrees.o infcodes.o \
