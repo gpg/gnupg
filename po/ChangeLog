@@ -1,3 +1,7 @@
+2003-07-30  Werner Koch  <wk@gnupg.org>
+
+	* de.po: Fixed fuzzies and translated a few new strings.
+
 2003-06-19  Werner Koch  <wk@gnupg.org>
 
 	* ca.po, de.po, es.po, et.po, ja.po, ro.po, tr.po, zh_TW.po:
