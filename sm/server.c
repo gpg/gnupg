@@ -39,12 +39,13 @@ static FILE *statusfp;
 
 /* Data used to assuciate an Assuan context with local server data */
 struct server_local_s {
-  ASSUAN_CONTEXT assuan_ctx;
+  assuan_context_t assuan_ctx;
   int message_fd;
   int list_internal;
   int list_external;
-  CERTLIST recplist;
-  CERTLIST signerlist;
+  certlist_t recplist;
+  certlist_t signerlist;
+  certlist_t default_recplist; /* As set by main() - don't release. */
 };
 
 
@@ -233,7 +234,7 @@ output_notify (ASSUAN_CONTEXT ctx, const char *line)
   way of specification [we will support this].  If this is a valid and
   trusted recipient the server does respond with OK, otherwise the
   return is an ERR with the reason why the recipient can't be used,
-  the encryption will then not be done for this recipient.  IF the
+  the encryption will then not be done for this recipient.  If the
   policy is not to encrypt at all if not all recipients are valid, the
   client has to take care of this.  All RECIPIENT commands are
   cumulative until a RESET or an successful ENCRYPT command.  */
@@ -243,7 +244,7 @@ cmd_recipient (ASSUAN_CONTEXT ctx, char *line)
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
 
-  rc = gpgsm_add_to_certlist (ctrl, line, 0, &ctrl->server_local->recplist);
+  rc = gpgsm_add_to_certlist (ctrl, line, 0, &ctrl->server_local->recplist, 0);
   if (rc)
     {
       gpg_err_code_t r = gpg_err_code (rc);
@@ -286,7 +287,8 @@ cmd_signer (ASSUAN_CONTEXT ctx, char *line)
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
 
-  rc = gpgsm_add_to_certlist (ctrl, line, 1, &ctrl->server_local->signerlist);
+  rc = gpgsm_add_to_certlist (ctrl, line, 1,
+                              &ctrl->server_local->signerlist, 0);
   if (rc)
     {
       gpg_err_code_t r = gpg_err_code (rc);
@@ -325,6 +327,7 @@ static int
 cmd_encrypt (ASSUAN_CONTEXT ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
+  certlist_t cl;
   int inp_fd, out_fd;
   FILE *out_fp;
   int rc;
@@ -339,14 +342,26 @@ cmd_encrypt (ASSUAN_CONTEXT ctx, char *line)
   out_fp = fdopen ( dup(out_fd), "w");
   if (!out_fp)
     return set_error (General_Error, "fdopen() failed");
-  rc = gpgsm_encrypt (assuan_get_pointer (ctx),
-                      ctrl->server_local->recplist,
-                      inp_fd, out_fp);
+  
+  /* Now add all encrypt-to marked recipients from the default
+     list. */
+  rc = 0;
+  if (!opt.no_encrypt_to)
+    {
+      for (cl=ctrl->server_local->recplist; !rc && cl; cl = cl->next)
+        if (cl->is_encrypt_to)
+          rc = gpgsm_add_cert_to_certlist (ctrl, cl->cert,
+                                           &ctrl->server_local->recplist, 1);
+    }
+  if (!rc)
+    rc = gpgsm_encrypt (assuan_get_pointer (ctx),
+                        ctrl->server_local->recplist,
+                        inp_fd, out_fp);
   fclose (out_fp);
 
   gpgsm_release_certlist (ctrl->server_local->recplist);
   ctrl->server_local->recplist = NULL;
-  /* close and reset the fd */
+  /* Close and reset the fd */
   close_message_fd (ctrl);
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
@@ -755,9 +770,11 @@ register_commands (ASSUAN_CONTEXT ctx)
   return 0;
 }
 
-/* Startup the server */
+/* Startup the server. DEFAULT_RECPLIST is the list of recipients as
+   set from the command line or config file.  We only require those
+   marked as encrypt-to. */
 void
-gpgsm_server (void)
+gpgsm_server (certlist_t default_recplist)
 {
   int rc;
   int filedes[2];
@@ -799,6 +816,7 @@ gpgsm_server (void)
   ctrl.server_local->message_fd = -1;
   ctrl.server_local->list_internal = 1;
   ctrl.server_local->list_external = 0;
+  ctrl.server_local->default_recplist = default_recplist;
 
   if (DBG_ASSUAN)
     assuan_set_log_stream (ctx, log_get_stream ());

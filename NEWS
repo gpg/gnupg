@@ -1,14 +1,19 @@
 Noteworthy changes in version 1.9.3 (unreleased)
 ------------------------------------------------
 
- * New options --{enable,disable}-ocsp to validate keys using OCSP
-   This requires a not yet released DirMngr 0.5.1.  Default is
+ * New gpgsm options --{enable,disable}-ocsp to validate keys using
+   OCSP. This requires a not yet released DirMngr 0.5.1.  Default is
    disabled.
 
  * The --log-file option may now be used to print logs to a socket.
    Prefix the socket name with "socket://" to enable this.  This does
    not work on all systems and falls back to stderr if there is a
    problem with the socket.
+
+ * The options --encrypt-to and --no-encrypt-to now work the same in
+   gpgsm as in gpg.  Note, they are also used in server mode.
+
+ * Duplicated recipients are now silently removed in gpgsm.
 
 
 Noteworthy changes in version 1.9.2 (2003-11-17)

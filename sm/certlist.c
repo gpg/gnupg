@@ -131,14 +131,54 @@ same_subject_issuer (const char *subject, const char *issuer, ksba_cert_t cert)
   return tmp;
 }
 
+/* Return true if CERT is already contained in CERTLIST. */
+static int
+is_cert_in_certlist (ksba_cert_t cert, certlist_t certlist)
+{
+  const unsigned char *img_a, *img_b;
+  size_t len_a, len_b;
 
+  img_a = ksba_cert_get_image (cert, &len_a);
+  if (img_a)
+    {
+      for ( ; certlist; certlist = certlist->next)
+        {
+          img_b = ksba_cert_get_image (certlist->cert, &len_b);
+          if (img_b && len_a == len_b && !memcmp (img_a, img_b, len_a))
+            return 1; /* Already contained. */
+        }
+    }
+  return 0;
+}
+
+
+/* Add CERT to the list of certificates at CERTADDR but avoid
+   duplicates. */
+int 
+gpgsm_add_cert_to_certlist (ctrl_t ctrl, ksba_cert_t cert,
+                            certlist_t *listaddr, int is_encrypt_to)
+{
+  if (!is_cert_in_certlist (cert, *listaddr))
+    {
+      certlist_t cl = xtrycalloc (1, sizeof *cl);
+      if (!cl)
+        return OUT_OF_CORE (errno);
+      cl->cert = cert;
+      ksba_cert_ref (cert);
+      cl->next = *listaddr;
+      cl->is_encrypt_to = is_encrypt_to;
+      *listaddr = cl;
+    }
+   return 0;
+}
 
 /* Add a certificate to a list of certificate and make sure that it is
    a valid certificate.  With SECRET set to true a secret key must be
-   available for the certificate. */
+   available for the certificate. IS_ENCRYPT_TO sets the corresponding
+   flag in the new create LISTADDR item.  */
 int
 gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
-                       CERTLIST *listaddr)
+                       CERTLIST *listaddr, int is_encrypt_to)
 {
   int rc;
   KEYDB_SEARCH_DESC desc;
@@ -224,31 +264,35 @@ gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
           xfree (subject);
           xfree (issuer);
 
-          if (!rc && secret) 
+          if (!rc && !is_cert_in_certlist (cert, *listaddr))
             {
-              char *p;
-
-              rc = gpg_error (GPG_ERR_NO_SECKEY);
-              p = gpgsm_get_keygrip_hexstring (cert);
-              if (p)
+              if (!rc && secret) 
                 {
-                  if (!gpgsm_agent_havekey (p))
-                    rc = 0;
-                  xfree (p);
+                  char *p;
+                  
+                  rc = gpg_error (GPG_ERR_NO_SECKEY);
+                  p = gpgsm_get_keygrip_hexstring (cert);
+                  if (p)
+                    {
+                      if (!gpgsm_agent_havekey (p))
+                        rc = 0;
+                      xfree (p);
+                    }
                 }
-            }
-          if (!rc)
-            rc = gpgsm_validate_chain (ctrl, cert, NULL);
-          if (!rc)
-            {
-              CERTLIST cl = xtrycalloc (1, sizeof *cl);
-              if (!cl)
-                rc = OUT_OF_CORE (errno);
-              else 
+              if (!rc)
+                rc = gpgsm_validate_chain (ctrl, cert, NULL);
+              if (!rc)
                 {
-                  cl->cert = cert; cert = NULL;
-                  cl->next = *listaddr;
-                  *listaddr = cl;
+                  CERTLIST cl = xtrycalloc (1, sizeof *cl);
+                  if (!cl)
+                    rc = OUT_OF_CORE (errno);
+                  else 
+                    {
+                      cl->cert = cert; cert = NULL;
+                      cl->next = *listaddr;
+                      cl->is_encrypt_to = is_encrypt_to;
+                      *listaddr = cl;
+                    }
                 }
             }
         }

@@ -306,7 +306,13 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
 
   memset (&encparm, 0, sizeof encparm);
 
-  if (!recplist)
+  /* Check that the certificate list is not empty and that at least
+     one certificate is not flagged as encrypt_to; i.e. is a real
+     recipient. */
+  for (cl = recplist; cl; cl = cl->next)
+    if (!cl->is_encrypt_to)
+      break;
+  if (!cl)
     {
       log_error(_("no valid recipients given\n"));
       gpgsm_status (ctrl, STATUS_NO_RECP, "0");
@@ -412,7 +418,7 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
       goto leave;
     }
 
-  /* gather certificates of recipients, encrypt the session key for
+  /* Gather certificates of recipients, encrypt the session key for
      each and store them in the CMS object */
   for (recpno = 0, cl = recplist; cl; recpno++, cl = cl->next)
     {
@@ -447,7 +453,7 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
         }
   }
 
-  /* main control loop for encryption */
+  /* Main control loop for encryption. */
   recpno = 0;
   do 
     {

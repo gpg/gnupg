@@ -1,5 +1,18 @@
 2003-12-17  Werner Koch  <wk@gnupg.org>
 
+	* server.c (gpgsm_server): Add arg DEFAULT_RECPLIST.
+	(cmd_encrypt): Add all enrypt-to marked certs to the list.
+	* encrypt.c (gpgsm_encrypt): Check that real recipients are
+	available.
+	* gpgsm.c (main): Make the --encrypt-to and --no-encrypt-to
+	options work.  Pass the list of recients to gpgsm_server.
+	* gpgsm.h (certlist_s): Add field IS_ENCRYPT_TO.
+	(opt): Add NO_ENCRYPT_TO.
+	* certlist.c (gpgsm_add_to_certlist): New arg IS_ENCRYPT_TO.
+	Changed all callers and ignore duplicate entries.
+	(is_cert_in_certlist): New.
+	(gpgsm_add_cert_to_certlist): New.
+
 	* certdump.c (gpgsm_print_serial): Cleaned up cast use in strtoul.
 	(gpgsm_dump_serial): Ditto.
 

@@ -72,6 +72,8 @@ struct {
   char *def_recipient;    /* userID of the default recipient */
   int def_recipient_self; /* The default recipient is the default key */
 
+  int no_encrypt_to;      /* Ignore all as encrypt to marked recipients. */
+
   char *local_user;       /* NULL or argument to -u */
 
   int always_trust;       /* Trust the given keys even if there is no
@@ -135,6 +137,7 @@ struct server_control_s {
   int use_ocsp;       /* Set to true if OCSP should be used. */
 };
 typedef struct server_control_s *CTRL;
+typedef struct server_control_s *ctrl_t;
 
 /* data structure used in base64.c */
 typedef struct base64_context_s *Base64Context;
@@ -143,22 +146,26 @@ typedef struct base64_context_s *Base64Context;
 struct certlist_s {
   struct certlist_s *next;
   ksba_cert_t cert;
+  int is_encrypt_to; /* True if the certificate has been set through
+                        the --encrypto-to option. */
 };
 typedef struct certlist_s *CERTLIST;
+typedef struct certlist_s *certlist_t;
 
 /*-- gpgsm.c --*/
 void gpgsm_exit (int rc);
 void gpgsm_init_default_ctrl (struct server_control_s *ctrl);
 
 /*-- server.c --*/
-void gpgsm_server (void);
-void gpgsm_status (CTRL ctrl, int no, const char *text);
-void gpgsm_status2 (CTRL ctrl, int no, ...);
-void gpgsm_status_with_err_code (CTRL ctrl, int no, const char *text,
+void gpgsm_server (certlist_t default_recplist);
+void gpgsm_status (ctrl_t ctrl, int no, const char *text);
+void gpgsm_status2 (ctrl_t ctrl, int no, ...);
+void gpgsm_status_with_err_code (ctrl_t ctrl, int no, const char *text,
                                  gpg_err_code_t ec);
 
 /*-- fingerprint --*/
-char *gpgsm_get_fingerprint (ksba_cert_t cert, int algo, char *array, int *r_len);
+char *gpgsm_get_fingerprint (ksba_cert_t cert, int algo,
+                             char *array, int *r_len);
 char *gpgsm_get_fingerprint_string (ksba_cert_t cert, int algo);
 char *gpgsm_get_fingerprint_hexstring (ksba_cert_t cert, int algo);
 unsigned long gpgsm_get_short_fingerprint (ksba_cert_t cert);
@@ -169,10 +176,10 @@ char *gpgsm_get_certid (ksba_cert_t cert);
 
 /*-- base64.c --*/
 int  gpgsm_create_reader (Base64Context *ctx,
-                          CTRL ctrl, FILE *fp, ksba_reader_t *r_reader);
+                          ctrl_t ctrl, FILE *fp, ksba_reader_t *r_reader);
 void gpgsm_destroy_reader (Base64Context ctx);
 int  gpgsm_create_writer (Base64Context *ctx,
-                          CTRL ctrl, FILE *fp, ksba_writer_t *r_writer);
+                          ctrl_t ctrl, FILE *fp, ksba_writer_t *r_writer);
 int  gpgsm_finish_writer (Base64Context ctx);
 void gpgsm_destroy_writer (Base64Context ctx);
 
@@ -201,7 +208,8 @@ int gpgsm_create_cms_signature (ksba_cert_t cert, gcry_md_hd_t md, int mdalgo,
 /*-- certchain.c --*/
 int gpgsm_walk_cert_chain (ksba_cert_t start, ksba_cert_t *r_next);
 int gpgsm_is_root_cert (ksba_cert_t cert);
-int gpgsm_validate_chain (CTRL ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime);
+int gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert,
+                          ksba_isotime_t r_exptime);
 int gpgsm_basic_cert_check (ksba_cert_t cert);
 
 /*-- certlist.c --*/
@@ -210,41 +218,43 @@ int gpgsm_cert_use_encrypt_p (ksba_cert_t cert);
 int gpgsm_cert_use_verify_p (ksba_cert_t cert);
 int gpgsm_cert_use_decrypt_p (ksba_cert_t cert);
 int gpgsm_cert_use_cert_p (ksba_cert_t cert);
-int gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
-                           CERTLIST *listaddr);
-void gpgsm_release_certlist (CERTLIST list);
+int gpgsm_add_cert_to_certlist (ctrl_t ctrl, ksba_cert_t cert,
+                                certlist_t *listaddr, int is_encrypt_to);
+int gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
+                           certlist_t *listaddr, int is_encrypt_to);
+void gpgsm_release_certlist (certlist_t list);
 int gpgsm_find_cert (const char *name, ksba_cert_t *r_cert);
 
 /*-- keylist.c --*/
-void gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode);
+void gpgsm_list_keys (ctrl_t ctrl, STRLIST names, FILE *fp, unsigned int mode);
 
 /*-- import.c --*/
-int gpgsm_import (CTRL ctrl, int in_fd);
-int gpgsm_import_files (CTRL ctrl, int nfiles, char **files,
+int gpgsm_import (ctrl_t ctrl, int in_fd);
+int gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
                         int (*of)(const char *fname));
 
 /*-- export.c --*/
-void gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp);
+void gpgsm_export (ctrl_t ctrl, STRLIST names, FILE *fp);
 
 /*-- delete.c --*/
-int gpgsm_delete (CTRL ctrl, STRLIST names);
+int gpgsm_delete (ctrl_t ctrl, STRLIST names);
 
 /*-- verify.c --*/
-int gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp);
+int gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp);
 
 /*-- sign.c --*/
 int gpgsm_get_default_cert (ksba_cert_t *r_cert);
-int gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
+int gpgsm_sign (ctrl_t ctrl, CERTLIST signerlist,
                 int data_fd, int detached, FILE *out_fp);
 
 /*-- encrypt.c --*/
-int gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int in_fd, FILE *out_fp);
+int gpgsm_encrypt (ctrl_t ctrl, CERTLIST recplist, int in_fd, FILE *out_fp);
 
 /*-- decrypt.c --*/
-int gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp);
+int gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp);
 
 /*-- certreqgen.c --*/
-int gpgsm_genkey (CTRL ctrl, int in_fd, FILE *out_fp);
+int gpgsm_genkey (ctrl_t ctrl, int in_fd, FILE *out_fp);
 
 /*-- call-agent.c --*/
 int gpgsm_agent_pksign (const char *keygrip,
@@ -264,9 +274,9 @@ int gpgsm_agent_passwd (const char *hexkeygrip);
 
 /*-- call-dirmngr.c --*/
 int gpgsm_dirmngr_isvalid (ksba_cert_t cert, int use_ocsp);
-int gpgsm_dirmngr_lookup (CTRL ctrl, STRLIST names,
+int gpgsm_dirmngr_lookup (ctrl_t ctrl, STRLIST names,
                           void (*cb)(void*, ksba_cert_t), void *cb_value);
-int gpgsm_dirmngr_run_command (CTRL ctrl, const char *command,
+int gpgsm_dirmngr_run_command (ctrl_t ctrl, const char *command,
                                int argc, char **argv);
 
 

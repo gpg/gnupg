@@ -277,10 +277,10 @@ static ARGPARSE_OPTS opts[] = {
     { oDefRecipientSelf, "default-recipient-self" ,0,
 				N_("use the default key as default recipient")},
     { oNoDefRecipient, "no-default-recipient", 0, "@" },
+#endif
     { oEncryptTo, "encrypt-to", 2, "@" },
     { oNoEncryptTo, "no-encrypt-to", 0, "@" },
 
-#endif
     { oUser, "local-user",2, N_("use this user-id to sign or decrypt")},
 
 #if 0
@@ -582,6 +582,31 @@ set_cmd (enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd)
     }
 
   *ret_cmd = cmd;
+}
+
+
+/* Helper to add recipients to a list. */
+static void
+do_add_recipient (ctrl_t ctrl, const char *name,
+                  certlist_t *recplist, int is_encrypt_to)
+{
+  int rc = gpgsm_add_to_certlist (ctrl, name, 0, recplist, is_encrypt_to);
+  if (rc)
+    {
+      log_error (_("can't encrypt to `%s': %s\n"), name, gpg_strerror (rc));
+      gpgsm_status2 (ctrl, STATUS_INV_RECP,
+                     gpg_err_code (rc) == -1?                         "1":
+                     gpg_err_code (rc) == GPG_ERR_NO_PUBKEY?          "1":
+                     gpg_err_code (rc) == GPG_ERR_AMBIGUOUS_NAME?     "2":
+                     gpg_err_code (rc) == GPG_ERR_WRONG_KEY_USAGE?    "3":
+                     gpg_err_code (rc) == GPG_ERR_CERT_REVOKED?       "4":
+                     gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED?       "5":
+                     gpg_err_code (rc) == GPG_ERR_NO_CRL_KNOWN?       "6":
+                     gpg_err_code (rc) == GPG_ERR_CRL_TOO_OLD?        "7":
+                     gpg_err_code (rc) == GPG_ERR_NO_POLICY_MATCH?    "8":
+                     "0",
+                     name, NULL);
+    }
 }
 
 
@@ -953,8 +978,8 @@ main ( int argc, char **argv)
 
         case oSkipVerify: opt.skip_verify=1; break;
 
-        case oNoEncryptTo: /*fixme: opt.no_encrypt_to = 1;*/ break;
-        case oEncryptTo: /* store the recipient in the second list */
+        case oNoEncryptTo: opt.no_encrypt_to = 1; break;
+        case oEncryptTo: /* Store the recipient in the second list */
           sl = add_to_strlist (&remusr, pargs.r.ret_str);
           sl->flags = 1;
           break;
@@ -1107,7 +1132,7 @@ main ( int argc, char **argv)
 
   for (sl = locusr; sl; sl = sl->next)
     {
-      int rc = gpgsm_add_to_certlist (&ctrl, sl->d, 1, &signerlist);
+      int rc = gpgsm_add_to_certlist (&ctrl, sl->d, 1, &signerlist, 0);
       if (rc)
         {
           log_error (_("can't sign using `%s': %s\n"),
@@ -1127,27 +1152,22 @@ main ( int argc, char **argv)
                          sl->d, NULL);
         }
     }
+
+  /* Build the recipient list.  We first add the regular ones and then
+     the encrypt-to ones because the underlying function will silenty
+     ignore duplicates and we can't allow to keep a duplicate which is
+     flagged as encrypt-to as the actually encrypt function would then
+     complain about no (regular) recipients. */
   for (sl = remusr; sl; sl = sl->next)
+    if (!(sl->flags & 1))
+      do_add_recipient (&ctrl, sl->d, &recplist, 0);
+  if (!opt.no_encrypt_to)
     {
-      int rc = gpgsm_add_to_certlist (&ctrl, sl->d, 0, &recplist);
-      if (rc)
-        {
-          log_error (_("can't encrypt to `%s': %s\n"),
-                     sl->d, gpg_strerror (rc));
-          gpgsm_status2 (&ctrl, STATUS_INV_RECP,
-                         gpg_err_code (rc) == -1?                         "1":
-                         gpg_err_code (rc) == GPG_ERR_NO_PUBKEY?          "1":
-                         gpg_err_code (rc) == GPG_ERR_AMBIGUOUS_NAME?     "2":
-                         gpg_err_code (rc) == GPG_ERR_WRONG_KEY_USAGE?    "3":
-                         gpg_err_code (rc) == GPG_ERR_CERT_REVOKED?       "4":
-                         gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED?       "5":
-                         gpg_err_code (rc) == GPG_ERR_NO_CRL_KNOWN?       "6":
-                         gpg_err_code (rc) == GPG_ERR_CRL_TOO_OLD?        "7":
-                         gpg_err_code (rc) == GPG_ERR_NO_POLICY_MATCH?    "8":
-                         "0",
-                         sl->d, NULL);
-        }
-  }
+      for (sl = remusr; sl; sl = sl->next)
+        if ((sl->flags & 1))
+          do_add_recipient (&ctrl, sl->d, &recplist, 1);
+    }
+ 
   if (log_get_errorcount(0))
     gpgsm_exit(1); /* must stop for invalid recipients */
   
@@ -1165,7 +1185,7 @@ main ( int argc, char **argv)
           sleep (debug_wait);
           log_debug ("... okay\n");
          }
-      gpgsm_server ();
+      gpgsm_server (recplist);
       break;
 
     case aCallDirmngr:
