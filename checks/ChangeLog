@@ -1,3 +1,13 @@
+2003-04-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am, options.in: Rename options.in to options since it
+	no longer needs to be a generated file.
+
+	* sigs.test: TODO note to add the new SHAs when we start
+	generating them.
+
+	* mds.test: Test the new SHAs.
+
 2002-05-10  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am: Add gpg_dearmor to all targets where it is used.
