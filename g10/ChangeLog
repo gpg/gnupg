@@ -1,3 +1,17 @@
+2002-06-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, keyserver.c (keyserver_opts), g10.c (main): New
+	keyserver option "include-subkeys".  This feature already existed,
+	but now can be turned off.  It defaults to on.
+
+	* options.h, keyserver.c (parse_keyserver_options,
+	keyserver_spawn): There are now enough options to justify making a
+	structure for the keyserver options rather than a page of
+	if-then-else-if-then-etc.
+
+	* getkey.c (merge_keys_and_selfsig, merge_selfsigs_main): Fix bug
+	in calculating key expiration dates.
+
 2002-06-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* keydb.h, getkey.c (get_user_id_native), import.c (import_one):

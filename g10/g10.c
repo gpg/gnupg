@@ -907,6 +907,7 @@ main( int argc, char **argv )
     opt.pgp2_workarounds = 1;
     opt.force_v3_sigs = 1;
     opt.escape_from = 1;
+    opt.keyserver_options.include_subkeys=1;
 #if defined (__MINGW32__) || defined (__CYGWIN32__)
     opt.homedir = read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" );
 #else

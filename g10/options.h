@@ -117,14 +117,15 @@ struct {
     struct
     {
       int verbose;
-      int include_revoked:1;
-      int include_disabled:1;
-      int use_temp_files:1;
-      int keep_temp_files:1;
-      int refresh_add_fake_v3_keyids:1;
-      int auto_key_retrieve:1;
-      int honor_http_proxy:1;
-      int broken_http_proxy:1;
+      int include_revoked;
+      int include_disabled;
+      int include_subkeys;
+      int honor_http_proxy;
+      int broken_http_proxy;
+      int use_temp_files;
+      int keep_temp_files;
+      int fake_v3_keyids;
+      int auto_key_retrieve;
       STRLIST other;
     } keyserver_options;
     int exec_disable;

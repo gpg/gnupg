@@ -44,6 +44,24 @@
 #define SEND   1
 #define SEARCH 2
 
+struct kopts
+{
+  char *name;
+  int tell; /* tell remote process about this one */
+  int *flag;
+} keyserver_opts[]=
+{
+  {"include-revoked",1,&opt.keyserver_options.include_revoked},
+  {"include-disabled",1,&opt.keyserver_options.include_disabled},
+  {"include-subkeys",1,&opt.keyserver_options.include_subkeys},
+  {"keep-temp-files",0,&opt.keyserver_options.keep_temp_files},
+  {"honor-http-proxy",1,&opt.keyserver_options.honor_http_proxy},
+  {"broken-http-proxy",1,&opt.keyserver_options.broken_http_proxy},
+  {"refresh-add-fake-v3-keyids",0,&opt.keyserver_options.fake_v3_keyids},
+  {"auto-key-retrieve",0,&opt.keyserver_options.auto_key_retrieve},
+  {NULL}
+};
+
 void 
 parse_keyserver_options(char *options)
 {
@@ -51,51 +69,47 @@ parse_keyserver_options(char *options)
 
   do
     {
-      if(ascii_strcasecmp(tok,"include-revoked")==0)
-	opt.keyserver_options.include_revoked=1;
-      else if(ascii_strcasecmp(tok,"no-include-revoked")==0)
-	opt.keyserver_options.include_revoked=0;
-      else if(ascii_strcasecmp(tok,"include-disabled")==0)
-	opt.keyserver_options.include_disabled=1;
-      else if(ascii_strcasecmp(tok,"no-include-disabled")==0)
-	opt.keyserver_options.include_disabled=0;
+      struct kopts *kopts=keyserver_opts;
+      int i,hit=0;
+
+      for(i=0,kopts=keyserver_opts;kopts[i].name;i++)
+	{
+	  if(ascii_strcasecmp(tok,kopts[i].name)==0)
+	    {
+	      *(kopts[i].flag)=1;
+	      hit=1;
+	      break;
+	    }
+	  else if(ascii_memcasecmp("no-",tok,3)==0 && strlen(tok)>3 &&
+		  ascii_strcasecmp(&tok[3],kopts[i].name)==0)
+	    {
+	      *(kopts[i].flag)=0;
+	      hit=1;
+	      break;
+	    }
+	}
+
+      /* These options need more than just a flag */
+      if(!hit)
+	{
+	  if(ascii_strcasecmp(tok,"verbose")==0)
+	    opt.keyserver_options.verbose++;
+	  else if(ascii_strcasecmp(tok,"no-verbose")==0)
+	    opt.keyserver_options.verbose--;
 #ifdef EXEC_TEMPFILE_ONLY
-      else if(ascii_strcasecmp(tok,"use-temp-files")==0 ||
-	      ascii_strcasecmp(tok,"no-use-temp-files")==0)
-	log_info(_("Warning: keyserver option \"%s\" is not used "
-		   "on this platform\n"),tok);
+	  else if(ascii_strcasecmp(tok,"use-temp-files")==0 ||
+		  ascii_strcasecmp(tok,"no-use-temp-files")==0)
+	    log_info(_("Warning: keyserver option \"%s\" is not used "
+		       "on this platform\n"),tok);
 #else
-      else if(ascii_strcasecmp(tok,"use-temp-files")==0)
-	opt.keyserver_options.use_temp_files=1;
-      else if(ascii_strcasecmp(tok,"no-use-temp-files")==0)
-	opt.keyserver_options.use_temp_files=0;
+	  else if(ascii_strcasecmp(tok,"use-temp-files")==0)
+	    opt.keyserver_options.use_temp_files=1;
+	  else if(ascii_strcasecmp(tok,"no-use-temp-files")==0)
+	    opt.keyserver_options.use_temp_files=0;
 #endif
-      else if(ascii_strcasecmp(tok,"keep-temp-files")==0)
-	opt.keyserver_options.keep_temp_files=1;
-      else if(ascii_strcasecmp(tok,"no-keep-temp-files")==0)
-	opt.keyserver_options.keep_temp_files=0;
-      else if(ascii_strcasecmp(tok,"verbose")==0)
-	opt.keyserver_options.verbose++;
-      else if(ascii_strcasecmp(tok,"no-verbose")==0)
-	opt.keyserver_options.verbose--;
-      else if(ascii_strcasecmp(tok,"honor-http-proxy")==0)
-	opt.keyserver_options.honor_http_proxy=1;
-      else if(ascii_strcasecmp(tok,"no-honor-http-proxy")==0)
-	opt.keyserver_options.honor_http_proxy=0;
-      else if(ascii_strcasecmp(tok,"refresh-add-fake-v3-keyids")==0)
-	opt.keyserver_options.refresh_add_fake_v3_keyids=1;
-      else if(ascii_strcasecmp(tok,"no-refresh-add-fake-v3-keyids")==0)
-	opt.keyserver_options.refresh_add_fake_v3_keyids=0;
-      else if(ascii_strcasecmp(tok,"auto-key-retrieve")==0)
-	opt.keyserver_options.auto_key_retrieve=1;
-      else if(ascii_strcasecmp(tok,"no-auto-key-retrieve")==0)
-	opt.keyserver_options.auto_key_retrieve=0;
-      else if(ascii_strcasecmp(tok,"broken-http-proxy")==0)
-	opt.keyserver_options.broken_http_proxy=1;
-      else if(ascii_strcasecmp(tok,"no-broken-http-proxy")==0)
-	opt.keyserver_options.broken_http_proxy=0;
-      else if(strlen(tok)>0)
-	add_to_strlist(&opt.keyserver_options.other,tok);
+	  else if(strlen(tok)>0)
+	    add_to_strlist(&opt.keyserver_options.other,tok);
+	}
 
       tok=strsep(&options," ,");
     }
@@ -117,9 +131,9 @@ parse_keyserver_uri(char *uri)
   if(ascii_strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0)
     {
       log_info(_("WARNING: %s is a deprecated option.\n"),
- 	       "x-broken-hkp");
+	       "x-broken-hkp");
       log_info(_("please use \"--keyserver-options %s\" instead\n"),
- 	       "broken-http-proxy");
+	       "broken-http-proxy");
       opt.keyserver_scheme="hkp";
       opt.keyserver_options.broken_http_proxy=1;
     }
@@ -128,7 +142,7 @@ parse_keyserver_uri(char *uri)
       /* Canonicalize this to "hkp" so it works with both the internal
 	 and external keyserver interface. */
       opt.keyserver_scheme="hkp";
-    } 
+    }
 
   /* Skip the "//", if any */
   if(strlen(uri)>2 && uri[0]=='/' && uri[1]=='/')
@@ -290,6 +304,7 @@ keyserver_spawn(int action,STRLIST list,
   unsigned int maxlen=256,buflen;
   char *command=NULL,*searchstr=NULL;
   byte *line=NULL;
+  struct kopts *kopts;
   struct exec_info *spawn;
 
 #ifdef EXEC_TEMPFILE_ONLY
@@ -335,11 +350,9 @@ keyserver_spawn(int action,STRLIST list,
 
   /* Write options */
 
-  fprintf(spawn->tochild,"OPTION %sinclude-revoked\n",
-	  opt.keyserver_options.include_revoked?"":"no-");
-
-  fprintf(spawn->tochild,"OPTION %sinclude-disabled\n",
-	  opt.keyserver_options.include_disabled?"":"no-");
+  for(i=0,kopts=keyserver_opts;kopts[i].name;i++)
+    if(*(kopts[i].flag) && kopts[i].tell)
+      fprintf(spawn->tochild,"OPTION %s\n",kopts[i].name);
 
   for(i=0;i<opt.keyserver_options.verbose;i++)
     fprintf(spawn->tochild,"OPTION verbose\n");
@@ -874,8 +887,7 @@ keyserver_refresh(STRLIST users)
 
   /* If refresh_add_fake_v3_keyids is on and it's a HKP or MAILTO
      scheme, then enable fake v3 keyid generation. */
-  if(opt.keyserver_options.refresh_add_fake_v3_keyids &&
-     opt.keyserver_scheme &&
+  if(opt.keyserver_options.fake_v3_keyids && opt.keyserver_scheme &&
      (ascii_strcasecmp(opt.keyserver_scheme,"hkp")==0 ||
       ascii_strcasecmp(opt.keyserver_scheme,"mailto")==0))
     fakev3=1;

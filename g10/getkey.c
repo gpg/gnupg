@@ -1084,10 +1084,12 @@ merge_keys_and_selfsig( KBNODE keyblock )
 	    }
 	}
 
-	if(pk && (pk->expiredate==0 || pk->expiredate>pk->max_expiredate))
+	if(pk && (pk->expiredate==0 ||
+		  (pk->max_expiredate && pk->expiredate>pk->max_expiredate)))
 	  pk->expiredate=pk->max_expiredate;
 
-	if(sk && (sk->expiredate==0 || sk->expiredate>sk->max_expiredate))
+	if(sk && (sk->expiredate==0 ||
+		  (sk->max_expiredate && sk->expiredate>sk->max_expiredate)))
 	  sk->expiredate=sk->max_expiredate;
     }
 }
@@ -1527,7 +1529,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
 
     /* Currently only v3 keys have a maximum expiration date, but I'll
        bet v5 keys get this feature again. */
-    if(key_expire==0 || key_expire>pk->max_expiredate)
+    if(key_expire==0 || (pk->max_expiredate && key_expire>pk->max_expiredate))
       key_expire=pk->max_expiredate;
 
     pk->has_expired = key_expire >= curtime? 0 : key_expire;
