@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.4\n"
-"POT-Creation-Date: 2001-05-28 09:05+0200\n"
+"POT-Creation-Date: 2001-05-29 08:58+0200\n"
 "PO-Revision-Date: 2001-01-04 12:01+02:00\n"
 "Last-Translator: Toomas Soome <tsoome@ut.ee>\n"
 "Language-Team: Estonian <et@li.org>\n"
@@ -1600,7 +1600,7 @@ msgstr ""
 "Krüptimiseks tuleb genereerida teine võti, seda saate teha\n"
 "kasutades võtit \"--edit-key\".\n"
 
-#: g10/keygen.c:1701 g10/keygen.c:1807
+#: g10/keygen.c:1701 g10/keygen.c:1810
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Võtme genereerimine ebaõnnestus: %s\n"
@@ -1617,7 +1617,11 @@ msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
 msgstr "võti loodi %lu sekundit tulevikus (ajahüpe või kella probleem)\n"
 
-#: g10/keygen.c:1783
+#: g10/keygen.c:1759
+msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+msgstr ""
+
+#: g10/keygen.c:1786
 msgid "Really create? "
 msgstr "Loon tõesti? "
 

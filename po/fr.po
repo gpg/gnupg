@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.4t\n"
-"POT-Creation-Date: 2001-05-28 09:05+0200\n"
+"POT-Creation-Date: 2001-05-29 08:58+0200\n"
 "PO-Revision-Date: 2001-04-24 17:46+02:00\n"
 "Last-Translator: Gaël Quéri <gqueri@mail.dotcom.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -1628,7 +1628,7 @@ msgstr ""
 "utiliser la commande «--edit-key» pour générer une clé secondaire à\n"
 "cette fin.\n"
 
-#: g10/keygen.c:1701 g10/keygen.c:1807
+#: g10/keygen.c:1701 g10/keygen.c:1810
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "La génération de clé a échoué: %s\n"
@@ -1650,7 +1650,11 @@ msgstr ""
 "la clé a été créée %lu secondes dans le futur (rupture spatio-temporelle ou\n"
 "problème d'horloge\n"
 
-#: g10/keygen.c:1783
+#: g10/keygen.c:1759
+msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+msgstr ""
+
+#: g10/keygen.c:1786
 msgid "Really create? "
 msgstr "Créer vraiment ? "
 

@@ -7,7 +7,7 @@
 # GPG version: 1.0.0
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2001-05-28 09:05+0200\n"
+"POT-Creation-Date: 2001-05-29 08:58+0200\n"
 "PO-Revision-Date: 1999-10-27 06:35+0200\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Date: 1998-11-13 10:49:25+0100\n"
@@ -1628,7 +1628,7 @@ msgstr ""
 "el comando \"--edit-key\" para crear una clave secundaria con este "
 "propósito.\n"
 
-#: g10/keygen.c:1701 g10/keygen.c:1807
+#: g10/keygen.c:1701 g10/keygen.c:1810
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Creación de la clave fallida: %s\n"
@@ -1649,7 +1649,11 @@ msgstr ""
 "clave pública creada %lu segundos en el futuro (salto en el tiempo o\n"
 "problemas con el reloj)\n"
 
-#: g10/keygen.c:1783
+#: g10/keygen.c:1759
+msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+msgstr ""
+
+#: g10/keygen.c:1786
 msgid "Really create? "
 msgstr "¿Crear de verdad? "
 

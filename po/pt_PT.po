@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
-"POT-Creation-Date: 2001-05-28 09:05+0200\n"
+"POT-Creation-Date: 2001-05-29 08:58+0200\n"
 "PO-Revision-Date: 2001-04-08 16:28+00:00\n"
 "Last-Translator: Pedro Morais <morais@kde.org>\n"
 "Language-Team: pt <morais@kde.org>\n"
@@ -1626,7 +1626,7 @@ msgstr ""
 "Note que esta chave não pode ser usada para encriptação. Você pode usar\n"
 "o comando \"--edit-key\" para gerar uma chave secundária para esse fim.\n"
 
-#: g10/keygen.c:1701 g10/keygen.c:1807
+#: g10/keygen.c:1701 g10/keygen.c:1810
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "A geração de chaves falhou: %s\n"
@@ -1647,7 +1647,11 @@ msgstr ""
 "a chave foi criada %lu segundos no futuro\n"
 "(viagem no tempo ou problema no relógio)\n"
 
-#: g10/keygen.c:1783
+#: g10/keygen.c:1759
+msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+msgstr ""
+
+#: g10/keygen.c:1786
 msgid "Really create? "
 msgstr "Realmente criar? "
 

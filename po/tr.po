@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.4h.po\n"
-"POT-Creation-Date: 2001-05-28 09:05+0200\n"
+"POT-Creation-Date: 2001-05-29 08:58+0200\n"
 "PO-Revision-Date: 2001-05-24 06:42+300\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@fide.org>\n"
 "Language-Team: Turkish <tr@li.org>\n"
@@ -1608,7 +1608,7 @@ msgstr ""
 "Þifrelemede kullanmak amacýyla ikinci bir anahtar üretmek isterseniz\n"
 "\"--edit-key\" seçeneðini kullanabilirsiniz.\n"
 
-#: g10/keygen.c:1701 g10/keygen.c:1807
+#: g10/keygen.c:1701 g10/keygen.c:1810
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Anahtar üretimi baþarýsýzlýða uðradý: %s\n"
@@ -1629,7 +1629,11 @@ msgstr ""
 "anahtar bundan %lu saniye sonra üretilmiþti.\n"
 "(zaman sapmasý veya saat problemi)\n"
 
-#: g10/keygen.c:1783
+#: g10/keygen.c:1759
+msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+msgstr ""
+
+#: g10/keygen.c:1786
 msgid "Really create? "
 msgstr "Gerçekten oluþturulacak mý? "
 
