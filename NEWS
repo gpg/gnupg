@@ -1,6 +1,10 @@
 Noteworthy changes in version 1.1.91
 -------------------------------------------------
 
+    * When using --batch with one of the --delete-key commands, the
+      key must be specified by fingerprint.  See the man page for
+      details.
+
     * There are now various ways to restrict the ability GnuPG has to
       exec external programs (for the keyserver helpers or photo ID
       viewers).  Read the README file for the complete list.
