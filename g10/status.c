@@ -1,6 +1,6 @@
 /* status.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2004  Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -151,6 +151,8 @@ get_status_string ( int no )
       case STATUS_EXPKEYSIG      : s = "EXPKEYSIG"; break;
       case STATUS_REVKEYSIG      : s = "REVKEYSIG"; break;
       case STATUS_ATTRIBUTE      : s = "ATTRIBUTE"; break;
+      case STATUS_PLAINTEXT      : s = "PLAINTEXT"; break;
+      case STATUS_PLAINTEXT_LENGTH:s = "PLAINTEXT_LENGTH"; break;
       default: s = "?"; break;
     }
     return s;

@@ -1,3 +1,9 @@
+2004-06-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* status.h, status.c (get_status_string), plaintext.c
+	(handle_plaintext): New status tags PLAINTEXT and
+	PLAINTEXT_LENGTH.
+
 2004-06-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (make_backsig): Make sure that the backsig was built

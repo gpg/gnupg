@@ -58,6 +58,24 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     int c;
     int convert = (pt->mode == 't' || pt->mode == 'u');
 
+    /* Let people know what the plaintext info is. This allows the
+       receiving program to try and do something different based on
+       the format code (say, recode UTF-8 to local). */
+    if(!nooutput && is_status_enabled())
+      {
+	char status[20];
+
+	sprintf(status,"%X %lu ",(byte)pt->mode,(ulong)pt->timestamp);
+	write_status_text_and_buffer(STATUS_PLAINTEXT,
+				     status,pt->name,pt->namelen,0);
+
+	if(!pt->is_partial)
+	  {
+	    sprintf(status,"%lu",(ulong)pt->len);
+	    write_status_text(STATUS_PLAINTEXT_LENGTH,status);
+	  }
+      }
+
     /* create the filename as C string */
     if( nooutput )
 	;

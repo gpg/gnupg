@@ -1,5 +1,6 @@
 /* status.h
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -20,7 +21,6 @@
 #ifndef G10_STATUS_H
 #define G10_STATUS_H
 
-
 #define STATUS_ENTER	 1
 #define STATUS_LEAVE	 2
 #define STATUS_ABORT	 3
@@ -28,7 +28,6 @@
 #define STATUS_GOODSIG	 4
 #define STATUS_BADSIG	 5
 #define STATUS_ERRSIG	 6
-
 
 #define STATUS_BADARMOR  7
 
@@ -100,6 +99,8 @@
 #define STATUS_IMPORT_OK 	68
 #define STATUS_IMPORT_CHECK     69
 #define STATUS_REVKEYSIG        70
+#define STATUS_PLAINTEXT        71
+#define STATUS_PLAINTEXT_LENGTH 72
 
 /*-- status.c --*/
 void set_status_fd ( int fd );
@@ -123,6 +124,5 @@ char *cpr_get_hidden( const char *keyword, const char *prompt );
 void cpr_kill_prompt(void);
 int  cpr_get_answer_is_yes( const char *keyword, const char *prompt );
 int  cpr_get_answer_yes_no_quit( const char *keyword, const char *prompt );
-
 
 #endif /*G10_STATUS_H*/
