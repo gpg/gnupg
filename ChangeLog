@@ -1,3 +1,9 @@
+2002-11-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note trust signature support,
+	--hidden-encrypt-to/--hidden-recipient, and long algorithm name
+	support everywhere.
+
 2002-10-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Put gnupg.spec in the root directory so rpm -ta

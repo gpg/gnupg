@@ -1,6 +1,26 @@
 Noteworthy changes in version 1.3.1 (unreleased)
 ------------------------------------------------
 
+    * Trust signature support.  This is based on the Maurer trust
+      model where a user can specify the trust level along with the
+      signature with multiple levels so users can delegate
+      certification ability to other users, possibly restricted by a
+      regular expression on the user ID.  Note that full trust
+      signature support requires a regular expression parsing library.
+      The regexp code from glibc 2.3.1 is included for those platforms
+      that don't have working regexp functions available.  The
+      configure option --disable-regex may be used to disable any
+      regular expression code, which will make GnuPG ignore any trust
+      signature with a regular expression included.
+
+    * Two new commands --hidden-recipient (-R) and --hidden-encrypt-to
+      encrypt to a user, but hide the identity of that user.  This is
+      the same functionality as --throw-keyid, but can be used on a
+      per-user basis.
+
+    * Full algorithm names (e.g. "3DES", "SHA1", "ZIP") can now be
+      used interchangeably with the short algorithm names (e.g. "S2",
+      "H2", "Z1") anywhere algorithm names are used in GnuPG.
 
 Noteworthy changes in version 1.3.0 (2002-10-18)
 ------------------------------------------------
@@ -34,6 +54,11 @@ Noteworthy changes in version 1.3.0 (2002-10-18)
       ultimately trusted keys from the config file.  It is identical
       to using --edit and "trust" to change a key to ultimately
       trusted.
+
+    * Translations other than de are no longer distributed with the
+      development branch.  This is due to the frequent text changes
+      during development, which cause the translations to rapidly go
+      out of date.
 
 Noteworthy changes in version 1.1.92 (2002-09-11)
 -------------------------------------------------
