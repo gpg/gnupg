@@ -36,11 +36,7 @@ Record type 1:
      1 u32  timestamp of last validation
 	    (Used to keep track of the time, when this TrustDB was checked
 	     against the pubring)
-     1 u32  Local-Id-Counter.  Used to keep track of Local-IDs.
-	    32 bits are enough numbers for all practial purposes; if this
-	    counter rolls over (due to deleted keyblock and new ones),
-	    the software should reassign new Local-Ids to the whole
-	    database (not expected to ever occur).
+     1 u32  reserved
      1 byte marginals needed
      1 byte completes needed
      1 byte max. cert depth
@@ -48,45 +44,47 @@ Record type 1:
 	    muts be invalidated.
      9 bytes reserved
 
-Record type 2:
+
+Record type 2: (directory record)
 --------------
     Informations about a public key certificate.
     These are static values which are never changed without user interaction.
 
      1 byte value 2
      1 byte   reserved
-     1 u32   Local-Id.	This is used to bind all records for
+     8 bytes keyid (We keep it here to speed up searching by keyid)
+     1 u32   Local-Id.	This is simply the record number of this record.
+     1 u32   pubkey (record number of it)
+     1 u32   cache record
+     1 u32   sigrecord
+     1 byte  No signatures flag  (used to avoid duplicate building).
+     13 byte reserved
+
+
+Record type 3:
+--------------
+    Informations about a public key certificate.
+    These are static values which are never changed without user interaction.
+
+     1 byte value 3
+     1 byte   reserved
+     1 u32   owner  This is used to bind all records for
 	     a given certificate together. It is valid only in this TrustDB
 	     and usefull if we have duplicate keyids
-	     It is not defined, how an implementaion selects such
-	     a Local-Id, but it may use the local-ID counter from
-	     record type 1, or simply use the offset of Record type 2
-     8 bytes keyid (of the primary key)
+	     It points back to the directory node.
      1 byte pubkey algorithm
      1 byte reserved
      20 bytes fingerprint of the public key
      1 byte ownertrust:
-	      Bits 2-0:
-	       0 = undefined (not yet initialized)
-	       1 = unknown owner (could not initialize it)
-	       2 = do not trust this owner
-	       4 = usually trust this owner
-	       5 = always trust this owner
-	       7 = ultimately trust this owner.  This can only be set if
-		   we have control over the secret key too.
-	      Bit 3: set if key is revoked; do not use it.
-	      Bit 7-4: reserved
-     1 byte  No signatures (used to avoid duplicate building).
-	     FIXME: this should be moved to the cahce record
-     2 byte reserved
+     3 byte reserved
 
 
-Record type 3:	(cache record)
+Record type 4:	(cache record)
 --------------
     Used to bind the trustDB to the concrete instance of keyblock in
     a pubring. This is used to cache informations.
 
-     1 byte   value 3
+     1 byte   value 4
      1 byte   reserved
      1 u32    Local-Id.
      8 bytes  keyid of the primary key (needed?)
@@ -111,26 +109,18 @@ Record type 3:	(cache record)
 		4 = fully trusted
 		5 = ultimately trusted (have secret key too).
 
-Record type 4  (sigrec)
+Record type 5  (sigrec)
 -------------
     Used to keep track of valid key signatures. Self-signatures are not
     stored.
 
-     1 byte   value 4
+     1 byte   value 5
      1 byte   reserved
-     1 u32    Local-Id of owners (pubkey record)
+     1 u32    For Local-Id (points back to the directory record)
      1 u32    chain: next sigrec of this owner or 0 to indicate the
 	      last sigrec.
      6 times
 	1 u32  Local_id of signators pubkey record
 	1 byte reserved
 
-Record type 5  (next-sigrec)
--------------
-    This is the same as record type 4 but the record type is 5 and the
-    local-id is only used to verify the internal db structure. You can
-    not search for such a record; access is done based on the chain field
-    in segrec or netx-sigrec.  This is, so that we can handle sigrecords
-    more easier - there is no need to handle multiple sigrecs when searching
-    for such a record.
 
