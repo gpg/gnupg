@@ -1,3 +1,10 @@
+2004-07-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* sign.c (update_keysig_packet): Revert change of 2004-05-18.  It
+	is not appropriate to strip policy and notations when remaking a
+	sig.  That should only happen when specifically requested by the
+	user.
+
 2004-06-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* sign.c (sign_symencrypt_file): Allow using --force-mdc in --sign
