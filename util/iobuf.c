@@ -1,5 +1,5 @@
 /* iobuf.c  -  file handling
- *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -96,7 +96,7 @@ typedef struct {
  static CLOSE_CACHE close_cache;
 #endif
 
-#ifdef __MINGW32__
+#ifdef _WIN32
 typedef struct {
     int sock;
     int keep_open;
@@ -105,7 +105,7 @@ typedef struct {
     int  print_only_name; /* flags indicating that fname is not a real file*/
     char fname[1]; /* name of the file */
 } sock_filter_ctx_t ;
-#endif /*__MINGW32__*/
+#endif /*_WIN32*/
 
 /* The first partial length header block must be of size 512
  * to make it easier (and efficienter) we use a min. block size of 512
@@ -515,7 +515,7 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
     return rc;
 }
 
-#ifdef __MINGW32__
+#ifdef _WIN32
 /* Becuase sockets are an special object under Lose32 we have to
  * use a special filter */
 static int
@@ -587,7 +587,7 @@ sock_filter (void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
     }
     return rc;
 }
-#endif /*__MINGW32__*/
+#endif /*_WIN32*/
 
 /****************
  * This is used to implement the block write mode.
@@ -1122,7 +1122,7 @@ IOBUF
 iobuf_sockopen ( int fd, const char *mode )
 {
     IOBUF a;
-#ifdef __MINGW32__
+#ifdef _WIN32
     sock_filter_ctx_t *scx;
     size_t len;
 
@@ -1261,7 +1261,7 @@ iobuf_ioctl ( IOBUF a, int cmd, int intval, void *ptrval )
                 b->keep_open = intval;
                 return 0;
             }
-#ifdef __MINGW32__
+#ifdef _WIN32
             else if( !a->chain && a->filter == sock_filter ) {
                 sock_filter_ctx_t *b = a->filter_ov;
                 b->keep_open = intval;
@@ -1290,7 +1290,7 @@ iobuf_ioctl ( IOBUF a, int cmd, int intval, void *ptrval )
                 b->no_cache = intval;
                 return 0;
             }
-#ifdef __MINGW32__
+#ifdef _WIN32
             else if( !a->chain && a->filter == sock_filter ) {
                 sock_filter_ctx_t *b = a->filter_ov;
                 b->no_cache = intval;
@@ -2141,7 +2141,7 @@ iobuf_read_line( IOBUF a, byte **addr_of_buffer,
 int
 iobuf_translate_file_handle ( int fd, int for_write )
 {
-#ifdef __MINGW32__
+#ifdef _WIN32
     {
         int x;
             
@@ -2164,7 +2164,7 @@ iobuf_translate_file_handle ( int fd, int for_write )
 static int
 translate_file_handle ( int fd, int for_write )
 {
-#ifdef __MINGW32__
+#ifdef _WIN32
 #ifdef FILE_FILTER_USES_STDIO  
     fd = iobuf_translate_file_handle (fd, for_write);
 #else

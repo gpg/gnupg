@@ -1,5 +1,8 @@
 2003-07-30  Werner Koch  <wk@gnupg.org>
 
+	* photoid.c, passphrase.c, g10.c, exec.c: Replaced some
+	__MINGW32__ by _WIN32.
+
 	* g10.c (main): Disable use-agent if passphrase-fd is given
 	later. Suggested by Kurt Garloff.
 

@@ -1,3 +1,9 @@
+2003-07-30  Werner Koch  <wk@gnupg.org>
+
+	* dotlock.c [_WIN32]: Don't include sys/time.h 
+	* http.c, iobuf.c, simple-gettext.c: s/__MINGW32__/_WIN32/.
+	* strgutil.c, ttyio.c, w32reg.c: Ditto.
+	
 2003-06-07  Werner Koch  <wk@gnupg.org>
 
 	* iobuf.c (check_special_filename): Replaced is isdigit by digitp

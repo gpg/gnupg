@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.1.92\n"
-"POT-Creation-Date: 2003-07-30 09:55+0200\n"
+"POT-Creation-Date: 2003-07-30 18:02+0200\n"
 "PO-Revision-Date: 2003-04-28 02:34+0200\n"
 "Last-Translator: Marco d'Itri <md@linux.it>\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
@@ -273,64 +273,64 @@ msgstr "... questo è un bug (%s:%d:%s)\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "hai trovato un bug... (%s:%d)\n"
 
-#: cipher/random.c:160
+#: cipher/random.c:163
 msgid "no entropy gathering module detected\n"
 msgstr "non è stato trovato il modulo per raccogliere l'entropia\n"
 
-#: cipher/random.c:384 g10/keygen.c:1834 g10/import.c:163
+#: cipher/random.c:387 g10/keygen.c:1834 g10/import.c:163
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "impossibile aprire `%s': %s\n"
 
-#: cipher/random.c:388
+#: cipher/random.c:391
 #, c-format
 msgid "can't stat `%s': %s\n"
 msgstr "impossibile eseguire stat su `%s': %s\n"
 
-#: cipher/random.c:393
+#: cipher/random.c:396
 #, c-format
 msgid "`%s' is not a regular file - ignored\n"
 msgstr "`%s' non è un file regolare - ignorato\n"
 
-#: cipher/random.c:398
+#: cipher/random.c:401
 msgid "note: random_seed file is empty\n"
 msgstr "nota: il file random_seed è vuoto\n"
 
-#: cipher/random.c:404
+#: cipher/random.c:407
 msgid "WARNING: invalid size of random_seed file - not used\n"
 msgstr ""
 "ATTENZIONE: le dimensioni del file random_seed non sono valide - non usato\n"
 
-#: cipher/random.c:412
+#: cipher/random.c:415
 #, c-format
 msgid "can't read `%s': %s\n"
 msgstr "impossibile leggere `%s': %s\n"
 
-#: cipher/random.c:450
+#: cipher/random.c:453
 msgid "note: random_seed file not updated\n"
 msgstr "nota: il file random_seed non è stato aggiornato\n"
 
-#: cipher/random.c:470 g10/exec.c:481
+#: cipher/random.c:473 g10/exec.c:481
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "impossibile creare `%s': %s\n"
 
-#: cipher/random.c:477
+#: cipher/random.c:480
 #, c-format
 msgid "can't write `%s': %s\n"
 msgstr "impossibile scrivere su `%s': %s\n"
 
-#: cipher/random.c:480
+#: cipher/random.c:483
 #, c-format
 msgid "can't close `%s': %s\n"
 msgstr "impossibile chiudere `%s': %s\n"
 
-#: cipher/random.c:725
+#: cipher/random.c:728
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr ""
 "ATTENZIONE: si sta usando un generatore di numeri casuali non sicuro!!\n"
 
-#: cipher/random.c:726
+#: cipher/random.c:729
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"

@@ -1,5 +1,5 @@
 /* http.c  -  HTTP protocol handler
- *	Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 1999, 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -26,7 +26,7 @@
 #include <ctype.h>
 #include <errno.h>
 
-#ifdef __MINGW32__
+#ifdef _WIN32
 #include <windows.h>
 #else
 #include <unistd.h>
@@ -53,7 +53,7 @@
 #define HTTP_PROXY_ENV_PRINTABLE "$http_proxy"
 #endif
 
-#ifdef __MINGW32__
+#ifdef _WIN32
 #define sock_close(a)  closesocket(a)
 #else
 #define sock_close(a)  close(a)
@@ -83,7 +83,7 @@ static int parse_response( HTTP_HD hd );
 static int connect_server( const char *server, ushort port );
 static int write_server( int sock, const char *data, size_t length );
 
-#ifdef __MINGW32__
+#ifdef _WIN32
 static void
 deinit_sockets (void)
 {
@@ -113,7 +113,7 @@ init_sockets (void)
     atexit ( deinit_sockets );
     initialized = 1;
 }
-#endif /*__MINGW32__*/
+#endif /*_WIN32*/
 
 
 int
@@ -712,7 +712,7 @@ static int
 connect_server( const char *server, ushort port )
 {
     int sd;
-#ifdef __MINGW32__
+#ifdef _WIN32
     struct hostent *hp;
     struct sockaddr_in ad;
     unsigned long l;
@@ -785,7 +785,7 @@ write_server( int sock, const char *data, size_t length )
 
     nleft = length;
     while( nleft > 0 ) {
-#ifdef __MINGW32__  
+#ifdef _WIN32  
         int nwritten;
 
         nwritten = send (sock, data, nleft, 0);

@@ -22,7 +22,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#ifdef __MINGW32__ 
+#ifdef _WIN32 
 # include <windows.h>
 # ifndef VER_PLATFORM_WIN32_WINDOWS
 #  define VER_PLATFORM_WIN32_WINDOWS 1
@@ -223,7 +223,7 @@ char *image_type_to_string(byte type,int style)
 #if !defined(FIXED_PHOTO_VIEWER) && !defined(DISABLE_PHOTO_VIEWER)
 static const char *get_default_photo_command(void)
 {
-#if defined(__MINGW32__)
+#if defined(_WIN32)
   OSVERSIONINFO osvi;
 
   memset(&osvi,0,sizeof(osvi));

@@ -1,3 +1,8 @@
+2003-07-30  Werner Koch  <wk@gnupg.org>
+
+	* idea-stub.c, random.c: Replaced some __MINGW32__ by _WIN32 and
+	added some _WIN32.
+
 2003-05-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* bithelp.h, des.c, random.c, rndlinux.c, sha1.c, blowfish.c,

@@ -1120,7 +1120,7 @@ main( int argc, char **argv )
     opt.keyserver_options.include_subkeys=1;
     opt.keyserver_options.include_revoked=1;
     opt.mangle_dos_filenames = 1;
-#if defined (__MINGW32__)
+#if defined (_WIN32)
     set_homedir ( read_w32_registry_string( NULL,
                                     "Software\\GNU\\GnuPG", "HomeDir" ));
 #else
@@ -1425,7 +1425,7 @@ main( int argc, char **argv )
 	    break;
 	  case oLoadExtension:
 #ifndef __riscos__
-#if defined(USE_DYNAMIC_LINKING) || defined(__MINGW32__)
+#if defined(USE_DYNAMIC_LINKING) || defined(_WIN32)
 	    if(check_permissions(pargs.r.ret_str,2))
 	      log_info(_("cipher extension \"%s\" not loaded due to "
 			 "unsafe permissions\n"),pargs.r.ret_str);

@@ -1,5 +1,6 @@
 /* random.c  -	random number generator
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -33,7 +34,9 @@
 #include <errno.h>
 #include <string.h>
 #include <time.h>
+#ifndef _WIN32
 #include <sys/time.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -50,7 +53,7 @@
 #ifdef HAVE_GETRUSAGE
 #include <sys/resource.h>
 #endif
-#ifdef __MINGW32__
+#ifdef _WIN32
 #include <process.h>
 #endif
 #include "util.h"

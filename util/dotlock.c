@@ -29,7 +29,9 @@
 #include <sys/utsname.h>
 #endif
 #include <sys/types.h>
+#ifndef _WIN32
 #include <sys/time.h>
+#endif
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <signal.h>
