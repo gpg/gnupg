@@ -170,7 +170,7 @@ make install-strip prefix=$RPM_BUILD_ROOT/usr
 %doc %attr (-,root,root) doc/HACKING
 %doc %attr (-,root,root) doc/OpenPGP
 %doc %attr (-,root,root) doc/samplekeys.asc
-%doc %attr (0755,root,root) scripts/convert-from-106
+%doc %attr (0755,root,root) tools/convert-from-106
 
 %attr (-,root,root) /usr/man/man1/gpg*.1*
 %attr (-,root,root) /usr/man/man7/gnupg.7*
