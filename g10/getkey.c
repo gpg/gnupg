@@ -1387,7 +1387,16 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
 }
 
 static void
-merge_selfsigs_main( KBNODE keyblock, int *r_revoked, u32 *r_revokedate )
+sig_to_revoke_info(PKT_signature *sig,struct revoke_info *rinfo)
+{
+  rinfo->date = sig->timestamp;
+  rinfo->algo = sig->pubkey_algo;
+  rinfo->keyid[0] = sig->keyid[0];
+  rinfo->keyid[1] = sig->keyid[1];
+}
+
+static void
+merge_selfsigs_main(KBNODE keyblock, int *r_revoked, struct revoke_info *rinfo)
 {
     PKT_public_key *pk = NULL;
     KBNODE k;
@@ -1402,7 +1411,8 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked, u32 *r_revokedate )
     byte sigversion = 0;
 
     *r_revoked = 0;
-    *r_revokedate = 0;
+    memset(rinfo,0,sizeof(*rinfo));
+
     if ( keyblock->pkt->pkttype != PKT_PUBLIC_KEY )
         BUG ();
     pk = keyblock->pkt->pkt.public_key;
@@ -1448,7 +1458,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked, u32 *r_revokedate )
                      * that key.
                      */ 
                     *r_revoked = 1;
-		    *r_revokedate = sig->timestamp;
+		    sig_to_revoke_info(sig,rinfo);
                 }
                 else if ( IS_KEY_SIG (sig) ) {
 		  /* Add any revocation keys onto the pk.  This is
@@ -1558,7 +1568,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked, u32 *r_revokedate )
 		  if(rc==0)
 		    {
 		      *r_revoked=2;
-		      *r_revokedate=sig->timestamp;
+		      sig_to_revoke_info(sig,rinfo);
 		      /* don't continue checking since we can't be any
 			 more revoked than this */
 		      break;
@@ -1894,7 +1904,7 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
                      problem is in the distribution.  Plus, PGP (7)
                      does this the same way.  */
                     subpk->is_revoked = 1;
-		    subpk->revokedate = sig->timestamp;
+		    sig_to_revoke_info(sig,&subpk->revoked);
                     /* although we could stop now, we continue to 
                      * figure out other information like the old expiration
                      * time */
@@ -2011,7 +2021,7 @@ merge_selfsigs( KBNODE keyblock )
 {
     KBNODE k;
     int revoked;
-    u32 revokedate;
+    struct revoke_info rinfo;
     PKT_public_key *main_pk;
     prefitem_t *prefs;
     int mdc_feature;
@@ -2028,7 +2038,7 @@ merge_selfsigs( KBNODE keyblock )
         BUG ();
     }
 
-    merge_selfsigs_main ( keyblock, &revoked, &revokedate );
+    merge_selfsigs_main ( keyblock, &revoked, &rinfo );
 
     /* now merge in the data from each of the subkeys */
     for(k=keyblock; k; k = k->next ) {
@@ -2051,7 +2061,7 @@ merge_selfsigs( KBNODE keyblock )
 		if(revoked && !pk->is_revoked)
 		  {
 		    pk->is_revoked = revoked;
-		    pk->revokedate = revokedate;
+		    memcpy(&pk->revoked,&rinfo,sizeof(rinfo));
 		  }
                 if(main_pk->has_expired)
 		  pk->has_expired = main_pk->has_expired;

@@ -2317,6 +2317,15 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 		primary=pk;
 	    }
 
+	    if(pk->is_revoked)
+	      {
+		char *user=get_user_id_string_native(pk->revoked.keyid);
+		const char *algo=pubkey_algo_to_string(pk->revoked.algo);
+		tty_printf(_("This key was revoked on %s by %s key %s\n"),
+			   revokestr_from_pk(pk),algo?algo:"?",user);
+		m_free(user);
+	      }
+
 	    if(with_revoker)
 	      {
 	        if( !pk->revkey && pk->numrevkeys )

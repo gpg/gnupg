@@ -1,3 +1,10 @@
+2004-12-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* packet.h, getkey.c (merge_selfsigs_main, sig_to_revoke_info),
+	keyid.c (revokestr_from_pk), keyedit.c (show_key_with_all_names):
+	Show who revoked a key (either the same key or a designated
+	revoker) and when.
+
 2004-12-28  Werner Koch  <wk@g10code.com>
 
 	* ccid-driver.c (find_endpoint): New.

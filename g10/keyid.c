@@ -529,9 +529,9 @@ revokestr_from_pk( PKT_public_key *pk )
     static char buffer[11+5];
     time_t atime;
 
-    if(!pk->revokedate)
+    if(!pk->revoked.date)
       return _("never     ");
-    atime=pk->revokedate;
+    atime=pk->revoked.date;
     return mk_datestr (buffer, atime);
 }
 

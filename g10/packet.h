@@ -186,6 +186,15 @@ typedef struct {
     char name[1];
 } PKT_user_id;
 
+struct revoke_info
+{
+  /* revoked at this date */
+  u32 date;
+  /* the keyid of the revoking key (selfsig or designated revoker) */
+  u32 keyid[2];
+  /* the algo of the revoking key */
+  byte algo;
+};
 
 /****************
  * Note about the pkey/skey elements:  We assume that the secret keys
@@ -197,7 +206,7 @@ typedef struct {
     u32     timestamp;	    /* key made */
     u32     expiredate;     /* expires at this date or 0 if not at all */
     u32     max_expiredate; /* must not expire past this date */
-    u32     revokedate;     /* revoked at this date */
+    struct revoke_info revoked;
     byte    hdrbytes;	    /* number of header bytes */
     byte    version;
     byte    selfsigversion; /* highest version of all of the self-sigs */
