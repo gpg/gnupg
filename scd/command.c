@@ -127,7 +127,7 @@ open_card (CTRL ctrl, const char *apptype)
 }
 
 
-/* Do the percent and plus/space unescaping in place and return tghe
+/* Do the percent and plus/space unescaping in place and return the
    length of the valid buffer. */
 static size_t
 percent_plus_unescape (unsigned char *string)

@@ -1,3 +1,7 @@
+2004-02-19  Werner Koch  <wk@gnupg.org>
+
+	* simple-pwquery.c (agent_open): Don't mangle INFOSTR.
+
 2004-02-17  Werner Koch  <wk@gnupg.org>
 
 	* simple-pwquery.c (agent_open): Ignore an empty GPG_AGENT_INFO.

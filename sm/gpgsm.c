@@ -74,6 +74,7 @@ enum cmd_and_opt_values {
   aSendKeys,
   aRecvKeys,
   aExport,
+  aExportSecretKeyP12,
   aCheckKeys, /* nyi */
   aServer,                        
   aLearnCard,
@@ -344,6 +345,8 @@ static ARGPARSE_OPTS opts[] = {
 #endif
     { aDummy, "throw-keyid", 0, "@"},
     { aDummy, "notation-data", 2, "@"},
+    { aExportSecretKeyP12, "export-secret-key-p12", 256, "@"}, 
+    
 
     { 302, NULL, 0, N_(
   "@\n(See the man page for a complete listing of all commands and options)\n"
@@ -869,6 +872,7 @@ main ( int argc, char **argv)
         case aSendKeys: 
         case aRecvKeys: 
         case aExport: 
+        case aExportSecretKeyP12: 
         case aListKeys:
         case aListExternalKeys: 
         case aListSecretKeys: 
@@ -1406,6 +1410,12 @@ main ( int argc, char **argv)
       free_strlist(sl);
       break;
 
+    case aExportSecretKeyP12:
+      if (argc == 1)
+        gpgsm_p12_export (&ctrl, *argv, stdout);
+      else
+        wrong_args (_("--export-secret-key-p12 KEY-ID"));
+      break;
       
     case aSendKeys:
     case aRecvKeys:

@@ -562,7 +562,7 @@ parse_p12 (ksba_reader_t reader, FILE **retfp)
     }
   while (!(err = ksba_reader_read (reader, buffer, sizeof buffer, &nread)))
     {
-      if (fwrite (buffer, nread, 1, tmpfp) != 1)
+      if (nread && fwrite (buffer, nread, 1, tmpfp) != 1)
         {
           err = gpg_error_from_errno (errno);
           log_error (_("error writing to temporary file: %s\n"),

@@ -1,3 +1,17 @@
+2004-02-19  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c: New options --have-cert and --prompt.
+	(export_p12_file): Read a certificate from STDIN and pass it to
+	p12_build.  Detect a keygrip and construct the filename in that
+	case.  Unprotcet a key if needed.  Print error messages for key
+	formats we can't handle.
+	(release_passphrase): New.
+	(get_passphrase): New arg PROMPTNO. Return the allocated
+	string. Changed all callers.
+
+	* minip12.c: Revamped the build part.
+	(p12_build): New args CERT and CERTLEN.  
+
 2004-02-18  Werner Koch  <wk@gnupg.org>
 
 	* protect-tool.c (main): Setup the used character set.

@@ -1,5 +1,5 @@
 /* protect-tool.c - A tool to test the secret key protection
- *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -54,8 +54,10 @@ enum cmd_and_opt_values
   oP12Export,
   oStore,
   oForce,
+  oHaveCert,
   oNoFailOnExist,
   oHomedir,
+  oPrompt,
 
 aTest };
 
@@ -75,9 +77,12 @@ static int opt_armor;
 static int opt_store;
 static int opt_force;
 static int opt_no_fail_on_exist;
-static const char *passphrase;
+static int opt_have_cert;
+static const char *opt_passphrase;
+static char *opt_prompt;
 
-static const char *get_passphrase (void);
+static char *get_passphrase (int promptno);
+static void release_passphrase (char *pw);
 static int store_private_key (const unsigned char *grip,
                               const void *buffer, size_t length, int force);
 
@@ -97,10 +102,12 @@ static ARGPARSE_OPTS opts[] = {
 
   { oP12Import, "p12-import", 256, "import a PKCS-12 encoded private key"},
   { oP12Export, "p12-export", 256, "export a private key PKCS-12 encoded"},
+  { oHaveCert, "have-cert", 0,  "certificate to export provided on STDIN"},
   { oStore,     "store", 0, "store the created key in the appropriate place"},
   { oForce,     "force", 0, "force overwriting"},
   { oNoFailOnExist, "no-fail-on-exist", 0, "@" },
   { oHomedir, "homedir", 2, "@" }, 
+  { oPrompt,  "prompt", 2, "|ESCSTRING|use ESCSTRING as prompt in pinentry"}, 
   {0}
 };
 
@@ -328,12 +335,15 @@ read_and_protect (const char *fname)
   unsigned char *key;
   unsigned char *result;
   size_t resultlen;
+  char *pw;
   
   key = read_key (fname);
   if (!key)
     return;
 
-  rc = agent_protect (key, get_passphrase (), &result, &resultlen);
+  pw = get_passphrase (1);
+  rc = agent_protect (key, pw, &result, &resultlen);
+  release_passphrase (pw);
   xfree (key);
   if (rc)
     {
@@ -363,12 +373,14 @@ read_and_unprotect (const char *fname)
   unsigned char *key;
   unsigned char *result;
   size_t resultlen;
+  char *pw;
   
   key = read_key (fname);
   if (!key)
     return;
 
-  rc = agent_unprotect (key, get_passphrase (), &result, &resultlen);
+  rc = agent_unprotect (key, (pw=get_passphrase (1)), &result, &resultlen);
+  release_passphrase (pw);
   xfree (key);
   if (rc)
     {
@@ -632,6 +644,7 @@ import_p12_file (const char *fname)
   gcry_sexp_t s_key;
   unsigned char *key;
   unsigned char grip[20];
+  char *pw;
 
   /* fixme: we should release some stuff on error */
   
@@ -639,8 +652,9 @@ import_p12_file (const char *fname)
   if (!buf)
     return;
 
-  kparms = p12_parse (buf, buflen, get_passphrase (),
+  kparms = p12_parse (buf, buflen, (pw=get_passphrase (0)),
                       import_p12_cert_cb, NULL);
+  release_passphrase (pw);
   xfree (buf);
   if (!kparms)
     {
@@ -714,7 +728,8 @@ import_p12_file (const char *fname)
   gcry_sexp_release (s_key);
 
 
-  rc = agent_protect (key, get_passphrase (), &result, &resultlen);
+  rc = agent_protect (key, (pw=get_passphrase (0)), &result, &resultlen);
+  release_passphrase (pw);
   xfree (key);
   if (rc)
     {
@@ -797,27 +812,113 @@ sexp_to_kparms (gcry_sexp_t sexp)
 }
 
 
+/* Check whether STRING is a KEYGRIP, i.e has the correct length and
+   does only consist of uppercase hex characters. */
+static int
+is_keygrip (const char *string)
+{
+  int i;
+
+  for(i=0; string[i] && i < 41; i++) 
+    if (!strchr("01234567890ABCDEF", string[i]))
+      return 0; 
+  return i == 40;
+}
 
 
 static void
 export_p12_file (const char *fname)
 {
+  int rc;
   gcry_mpi_t kparms[9], *kp;
   unsigned char *key;
   size_t keylen;
   gcry_sexp_t private;
   struct rsa_secret_key_s sk;
   int i;
+  unsigned char *cert = NULL;
+  size_t certlen = 0;
+  int keytype;
+  size_t keylen_for_wipe = 0;
+  char *pw;
+
+  if ( is_keygrip (fname) )
+    {
+      char hexgrip[40+4+1];
+      char *p;
   
-  key = read_key (fname);
+      assert (strlen(fname) == 40);
+      strcpy (stpcpy (hexgrip, fname), ".key");
+
+      p = make_filename (opt_homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
+      key = read_key (p);
+      xfree (p);
+    }
+  else
+    key = read_key (fname);
+
   if (!key)
     return;
+
+  keytype = agent_private_key_type (key);
+  if (keytype == PRIVATE_KEY_PROTECTED)
+    {
+      unsigned char *tmpkey;
+      size_t tmplen;
+
+      rc = agent_unprotect (key, (pw=get_passphrase (1)), &tmpkey, &tmplen);
+      release_passphrase (pw);
+      if (rc)
+        {
+          log_error ("unprotecting key `%s' failed: %s\n",
+                     fname, gpg_strerror (rc));
+          xfree (key);
+          return;
+        }
+      xfree (key);
+      key = tmpkey;
+      keylen_for_wipe = tmplen;
+
+      keytype = agent_private_key_type (key);
+    }
+
+  if (keytype == PRIVATE_KEY_SHADOWED)
+    {
+      log_error ("`%s' is a shadowed private key - can't export it\n", fname);
+      wipememory (key, keylen_for_wipe);
+      xfree (key);
+      return;
+    }
+  else if (keytype != PRIVATE_KEY_CLEAR)
+    {
+      log_error ("\%s' is not a private key\n", fname);
+      wipememory (key, keylen_for_wipe);
+      xfree (key);
+      return;
+    }
+
+
+  if (opt_have_cert)
+    {
+      cert = read_file ("-", &certlen);
+      if (!cert)
+        {
+          wipememory (key, keylen_for_wipe);
+          xfree (key);
+          return;
+        }
+    }
+
 
   if (gcry_sexp_new (&private, key, 0, 0))
     {
       log_error ("gcry_sexp_new failed\n");
+      wipememory (key, keylen_for_wipe);
+      xfree (key);
+      xfree (cert);
       return;
     } 
+  wipememory (key, keylen_for_wipe);
   xfree (key);
 
   kp = sexp_to_kparms (private);
@@ -825,6 +926,7 @@ export_p12_file (const char *fname)
   if (!kp)
     {
       log_error ("error converting key parameters\n");
+      xfree (cert);
       return;
     } 
   sk.n = kp[0];
@@ -850,7 +952,9 @@ export_p12_file (const char *fname)
   kparms[7] = sk.u;
   kparms[8] = NULL;
 
-  key = p12_build (kparms, get_passphrase (), &keylen);
+  key = p12_build (kparms, cert, certlen, (pw=get_passphrase (0)), &keylen);
+  release_passphrase (pw);
+  xfree (cert);
   for (i=0; i < 8; i++)
     gcry_mpi_release (kparms[i]);
   if (!key)
@@ -860,6 +964,54 @@ export_p12_file (const char *fname)
   xfree (key);
 }
 
+
+
+/* Do the percent and plus/space unescaping in place and return the
+   length of the valid buffer. */
+static size_t
+percent_plus_unescape (unsigned char *string)
+{
+  unsigned char *p = string;
+  size_t n = 0;
+
+  while (*string)
+    {
+      if (*string == '%' && string[1] && string[2])
+        { 
+          string++;
+          *p++ = xtoi_2 (string);
+          n++;
+          string+= 2;
+        }
+      else if (*string == '+')
+        {
+          *p++ = ' ';
+          n++;
+          string++;
+        }
+      else
+        {
+          *p++ = *string++;
+          n++;
+        }
+    }
+
+  return n;
+}
+
+/* Remove percent and plus escaping and make sure that the reuslt is a
+   string.  This is done in place. Returns STRING. */
+static char *
+percent_plus_unescape_string (char *string) 
+{
+  unsigned char *p = string;
+  size_t n;
+
+  n = percent_plus_unescape (p);
+  p[n] = 0;
+
+  return string;
+}
 
 
 int
@@ -918,11 +1070,13 @@ main (int argc, char **argv )
         case oP12Import: cmd = oP12Import; break;
         case oP12Export: cmd = oP12Export; break;
 
-        case oPassphrase: passphrase = pargs.r.ret_str; break;
+        case oPassphrase: opt_passphrase = pargs.r.ret_str; break;
         case oStore: opt_store = 1; break;
         case oForce: opt_force = 1; break;
         case oNoFailOnExist: opt_no_fail_on_exist = 1; break;
-
+        case oHaveCert: opt_have_cert = 1; break;
+        case oPrompt: opt_prompt = pargs.r.ret_str; break;
+          
         default : pargs.err = 2; break;
 	}
     }
@@ -934,6 +1088,9 @@ main (int argc, char **argv )
     fname = *argv;
   else if (argc > 1)
     usage (1);
+
+  if (opt_prompt)
+    opt_prompt = percent_plus_unescape_string (xstrdup (opt_prompt));
 
   if (cmd == oProtect)
     read_and_protect (fname);
@@ -965,21 +1122,27 @@ agent_exit (int rc)
 
 
 /* Return the passphrase string and ask the agent if it has not been
-   set from the command line. */
-static const char *
-get_passphrase (void)
+   set from the command line  PROMPTNO select the prompt to display:
+     0 = default
+     1 = taken from the option --prompt
+*/
+static char *
+get_passphrase (int promptno)
 {
   char *pw;
   int err;
+  const char *desc;
 
-  if (passphrase)
-    return passphrase;
+  if (opt_passphrase)
+    return xstrdup (opt_passphrase);
 
-  pw = simple_pwquery (NULL,NULL, 
-                       _("Enter passphrase:"),
-                       _("Please enter the passphrase or the PIN\n"
-                         "needed to complete this operation."),
-                       &err);
+  if (promptno == 1 && opt_prompt)
+    desc = opt_prompt;
+  else
+    desc = _("Please enter the passphrase or the PIN\n"
+             "needed to complete this operation.");
+
+  pw = simple_pwquery (NULL,NULL, _("Passphrase:"), desc, &err);
   if (!pw)
     {
       if (err)
@@ -988,10 +1151,19 @@ get_passphrase (void)
         log_info ("cancelled\n");
       agent_exit (0);
     }
-  passphrase = pw;
-  return passphrase;
+
+  return pw;
 }
 
+static void
+release_passphrase (char *pw)
+{
+  if (pw)
+    {
+      wipememory (pw, strlen (pw));
+      xfree (pw);
+    }
+}
 
 static int
 store_private_key (const unsigned char *grip,

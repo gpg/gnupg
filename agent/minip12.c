@@ -106,12 +106,19 @@ static unsigned char const oid_rsaEncryption[9] = {
   0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01 };
 
 
-static unsigned char const data_3desiter1024[30] = {
+static unsigned char const data_3desiter2048[30] = {
   0x30, 0x1C, 0x06, 0x0A, 0x2A, 0x86, 0x48, 0x86,
   0xF7, 0x0D, 0x01, 0x0C, 0x01, 0x03, 0x30, 0x0E, 
   0x04, 0x08, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-  0xFF, 0xFF, 0x02, 0x02, 0x04, 0x00 };
-#define DATA_3DESITER1024_SALT_OFF  18
+  0xFF, 0xFF, 0x02, 0x02, 0x08, 0x00 };
+#define DATA_3DESITER2048_SALT_OFF  18
+
+static unsigned char const data_rc2iter2048[30] = {
+  0x30, 0x1C, 0x06, 0x0A, 0x2A, 0x86, 0x48, 0x86,
+  0xF7, 0x0D, 0x01, 0x0C, 0x01, 0x06, 0x30, 0x0E, 
+  0x04, 0x08, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+  0xFF, 0xFF, 0x02, 0x02, 0x08, 0x00 };
+#define DATA_RC2ITER2048_SALT_OFF  18
 
 
 struct buffer_s 
@@ -346,17 +353,22 @@ crypt_block (unsigned char *buffer, size_t length, char *salt, int iter,
   if (rc)
     {
       log_error ( "gcry_cipher_open failed: %s\n", gpg_strerror(rc));
+      wipememory (buffer, length);
       return;
     }
   if (set_key_iv (chd, salt, iter, pw,
                   cipher_algo == GCRY_CIPHER_RFC2268_40? 5:24))
-    goto leave;
+    {
+      wipememory (buffer, length);
+      goto leave;
+    }
 
   rc = encrypt? gcry_cipher_encrypt (chd, buffer, length, NULL, 0)
               : gcry_cipher_decrypt (chd, buffer, length, NULL, 0);
 
   if (rc)
     {
+      wipememory (buffer, length);
       log_error ( "en/de-crytion failed: %s\n", gpg_strerror (rc));
       goto leave;
     }
@@ -473,6 +485,13 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   n = ti.length;
   startoffset = 0;
   buffer = p = plain;
+
+/*   { */
+/*     FILE *fp = fopen ("tmp-rc2-plain.der", "wb"); */
+/*     if (!fp || fwrite (p, n, 1, fp) != 1) */
+/*       exit (2); */
+/*     fclose (fp); */
+/*   } */
 
   where = "outer.outer.seq";
   if (parse_tag (&p, &n, &ti))
@@ -707,13 +726,6 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   n = ti.length;
   startoffset = 0;
   buffer = p = plain;
-
-/*   { */
-/*     FILE *fp = fopen ("tmp-3des-plain.der", "wb"); */
-/*     if (!fp || fwrite (p, n, 1, fp) != 1) */
-/*       exit (2); */
-/*     fclose (fp); */
-/*   } */
 
   where = "decrypted-text";
   if (parse_tag (&p, &n, &ti) || ti.class || ti.tag != TAG_SEQUENCE)
@@ -970,37 +982,48 @@ create_final (struct buffer_s *sequences, size_t *r_length)
 {
   int i;
   size_t needed = 0;
-  size_t n, outseqlen, notsooutseqlen, out0taglen, octstrlen, inseqlen;
+  size_t len[8], n;
   unsigned char *result, *p;
   size_t resultlen;
 
+  /* 8 steps to create the pkcs#12 Krampf. */
+
+  /* 7. All the buffers. */
   for (i=0; sequences[i].buffer; i++)
     needed += sequences[i].length;
-  /* This goes into a sequences. */
-  inseqlen = needed;
-  n = compute_tag_length (needed);
-  needed += n;
-  /* And encapsulate all in an octet string. */
-  octstrlen = needed;
-  n = compute_tag_length (needed);
-  needed += n;
-  /* And tag it with [0]. */
-  out0taglen = needed;
-  n = compute_tag_length (needed);
-  needed += n;
-  /* Prepend an data OID. */
-  needed += 2 + DIM (oid_data);
-  /* This all into a sequences. */
-  notsooutseqlen = needed;
-  n = compute_tag_length (needed);
-  needed += n;
-  /* Prepend the version integer 3. */
-  needed += 3;
-  /* And the final sequence. */
-  outseqlen = needed;
+
+  /* 6. This goes into a sequences. */
+  len[6] = needed;
   n = compute_tag_length (needed);
   needed += n;
 
+  /* 5. Encapsulate all in an octet string. */
+  len[5] = needed;
+  n = compute_tag_length (needed);
+  needed += n;
+
+  /* 4. And tag it with [0]. */
+  len[4] = needed;
+  n = compute_tag_length (needed);
+  needed += n;
+
+  /* 3. Prepend an data OID. */
+  needed += 2 + DIM (oid_data);
+
+  /* 2. Put all into a sequences. */
+  len[2] = needed;
+  n = compute_tag_length (needed);
+  needed += n;
+
+  /* 1. Prepend the version integer 3. */
+  needed += 3;
+
+  /* 0. And the final outer sequence. */
+  len[0] = needed;
+  n = compute_tag_length (needed);
+  needed += n;
+
+  /* Allocate a buffer. */
   result = gcry_malloc (needed);
   if (!result)
     {
@@ -1009,25 +1032,32 @@ create_final (struct buffer_s *sequences, size_t *r_length)
     }
   p = result;
 
-  /* Store the very outer sequence. */
-  p = store_tag_length (p, TAG_SEQUENCE, outseqlen);
-  /* Store the version integer 3. */
+  /* 0. Store the very outer sequence. */
+  p = store_tag_length (p, TAG_SEQUENCE, len[0]);
+
+  /* 1. Store the version integer 3. */
   *p++ = TAG_INTEGER;
   *p++ = 1; 
-  *p++ = 3; 
-  /* Store another sequence. */
-  p = store_tag_length (p, TAG_SEQUENCE, notsooutseqlen);
-  /* Store the data OID. */
+  *p++ = 3;
+ 
+  /* 2. Store another sequence. */
+  p = store_tag_length (p, TAG_SEQUENCE, len[2]);
+
+  /* 3. Store the data OID. */
   p = store_tag_length (p, TAG_OBJECT_ID, DIM (oid_data));
   memcpy (p, oid_data, DIM (oid_data)); 
   p += DIM (oid_data); 
-  /* Next comes a context tag. */
-  p = store_tag_length (p, 0xa0, out0taglen);
-  /* And an octet string. */
-  p = store_tag_length (p, TAG_OCTET_STRING, octstrlen);
-  /* And the inner sequence. */
-  p = store_tag_length (p, TAG_SEQUENCE, inseqlen);
-  /* And append all the buffers. */
+
+  /* 4. Next comes a context tag. */
+  p = store_tag_length (p, 0xa0, len[4]);
+
+  /* 5. And an octet string. */
+  p = store_tag_length (p, TAG_OCTET_STRING, len[5]);
+
+  /* 6. And the inner sequence. */
+  p = store_tag_length (p, TAG_SEQUENCE, len[6]);
+
+  /* 7. Append all the buffers. */
   for (i=0; sequences[i].buffer; i++)
     {
       memcpy (p, sequences[i].buffer, sequences[i].length);
@@ -1044,20 +1074,38 @@ create_final (struct buffer_s *sequences, size_t *r_length)
 }
 
 
-/* Expect the RSA key parameters in KPARMS and a password in
-   PW. Create a PKCS structure from it and return it as well as the
-   length in R_LENGTH; return NULL in case of an error. */
-unsigned char * 
-p12_build (gcry_mpi_t *kparms, const char *pw, size_t *r_length)
+/* Build a DER encoded SEQUENCE with the key:
+
+   SEQUENCE {
+     INTEGER 0
+     SEQUENCE {
+       OBJECT IDENTIFIER rsaEncryption (1 2 840 113549 1 1 1)
+       NULL
+       }
+     OCTET STRING, encapsulates {
+       SEQUENCE {
+         INTEGER 0
+         INTEGER
+         INTEGER 
+         INTEGER
+         INTEGER
+         INTEGER
+         INTEGER
+         INTEGER
+         INTEGER
+         }
+       }
+     }
+*/  
+  
+static unsigned char * 
+build_key_sequence (gcry_mpi_t *kparms, size_t *r_length)
 {
   int rc, i;
   size_t needed, n;
-  unsigned char *plain, *p, *cipher;
-  size_t plainlen, cipherlen;
+  unsigned char *plain, *p;
+  size_t plainlen;
   size_t outseqlen, oidseqlen, octstrlen, inseqlen;
-  size_t out0taglen, in0taglen, outoctstrlen;
-  size_t aseq1len, aseq2len, aseq3len;
-  char salt[8];
 
   needed = 3; /* The version(?) integer of value 0. */
   for (i=0; kparms[i]; i++)
@@ -1165,105 +1213,380 @@ p12_build (gcry_mpi_t *kparms, const char *pw, size_t *r_length)
   for (;(plainlen % 8); plainlen++)
     *p++ = n;
 
-/*   { */
-/*     FILE *fp = fopen("inner-out.der", "wb"); */
-/*     fwrite (plain, 1, plainlen, fp); */
-/*     fclose (fp); */
-/*   } */
+  *r_length = plainlen;
+  return plain;
+}
 
 
-  /* Encrypt it and prepend a lot of stupid things. */
-  gcry_randomize (salt, 8, GCRY_STRONG_RANDOM);
-  crypt_block (plain, plainlen, salt, 1024, pw, GCRY_CIPHER_3DES, 1);
-  /* the data goes into an octet string. */
-  needed = compute_tag_length (plainlen);
-  needed += plainlen;
-  /* we prepend the the algorithm identifier (we use a pre-encoded one)*/
-  needed += DIM (data_3desiter1024);
-  /* we put a sequence around. */
-  aseq3len = needed;
+
+static unsigned char *
+build_key_bag (unsigned char *buffer, size_t buflen, char *salt,
+               size_t *r_length)
+{
+  size_t len[11], needed;
+  unsigned char *p, *keybag;
+  size_t keybaglen;
+
+  /* Walk 11 steps down to collect the info: */
+
+  /* 10. The data goes into an octet string. */
+  needed = compute_tag_length (buflen);
+  needed += buflen;
+
+  /* 9. Prepend the algorithm identifier. */
+  needed += DIM (data_3desiter2048);
+
+  /* 8. Put a sequence around. */
+  len[8] = needed;
   needed += compute_tag_length (needed);
-  /* Prepend it with a [0] tag. */
-  in0taglen = needed;
+
+  /* 7. Prepend a [0] tag. */
+  len[7] = needed;
   needed += compute_tag_length (needed);
-  /* Prepend that shroudedKeyBag OID. */
+
+  /* 6. Prepend the shroudedKeyBag OID. */
   needed += 2 + DIM (oid_pkcs_12_pkcs_8ShroudedKeyBag);
-  /* Put it all into two sequence. */
-  aseq2len = needed;
+
+  /* 5+4. Put all into two sequences. */
+  len[5] = needed;
   needed += compute_tag_length ( needed);
-  aseq1len = needed;
-  needed += compute_tag_length (needed);
-  /* This all goes into an octet string. */
-  outoctstrlen = needed;
-  needed += compute_tag_length (needed);
-  /* Prepend it with a [0] tag. */
-  out0taglen = needed;
-  needed += compute_tag_length (needed);
-  /* Prepend the data OID. */
-  needed += 2 + DIM (oid_data);
-  /* And a sequence. */
-  outseqlen = needed;
+  len[4] = needed;
   needed += compute_tag_length (needed);
 
-  cipher = gcry_malloc (needed);
-  if (!cipher)
+  /* 3. This all goes into an octet string. */
+  len[3] = needed;
+  needed += compute_tag_length (needed);
+
+  /* 2. Prepend another [0] tag. */
+  len[2] = needed;
+  needed += compute_tag_length (needed);
+
+  /* 1. Prepend the data OID. */
+  needed += 2 + DIM (oid_data);
+
+  /* 0. Prepend another sequence. */
+  len[0] = needed;
+  needed += compute_tag_length (needed);
+
+  /* Now that we have all length information, allocate a buffer. */
+  p = keybag = gcry_malloc (needed);
+  if (!keybag)
     {
       log_error ("error allocating buffer\n");
-      gcry_free (plain);
       return NULL;
     }
-  p = cipher;
-  /* Store the first sequence. */
-  p = store_tag_length (p, TAG_SEQUENCE, outseqlen);
-  /* Store the data OID. */
+
+  /* Walk 11 steps up to store the data. */
+
+  /* 0. Store the first sequence. */
+  p = store_tag_length (p, TAG_SEQUENCE, len[0]);
+
+  /* 1. Store the data OID. */
   p = store_tag_length (p, TAG_OBJECT_ID, DIM (oid_data));
   memcpy (p, oid_data, DIM (oid_data)); 
   p += DIM (oid_data); 
-  /* Next comes a context tag. */
-  p = store_tag_length (p, 0xa0, out0taglen);
-  /* And an octet string. */
-  p = store_tag_length (p, TAG_OCTET_STRING, outoctstrlen);
-  /* Two sequences. */
-  p = store_tag_length (p, TAG_SEQUENCE, aseq1len);
-  p = store_tag_length (p, TAG_SEQUENCE, aseq2len);
-  /* Store the shroudedKeyBag OID. */
+
+  /* 2. Store a [0] tag. */
+  p = store_tag_length (p, 0xa0, len[2]);
+
+  /* 3. And an octet string. */
+  p = store_tag_length (p, TAG_OCTET_STRING, len[3]);
+
+  /* 4+5. Two sequences. */
+  p = store_tag_length (p, TAG_SEQUENCE, len[4]);
+  p = store_tag_length (p, TAG_SEQUENCE, len[5]);
+
+  /* 6. Store the shroudedKeyBag OID. */
   p = store_tag_length (p, TAG_OBJECT_ID,
                         DIM (oid_pkcs_12_pkcs_8ShroudedKeyBag));
   memcpy (p, oid_pkcs_12_pkcs_8ShroudedKeyBag,
           DIM (oid_pkcs_12_pkcs_8ShroudedKeyBag)); 
   p += DIM (oid_pkcs_12_pkcs_8ShroudedKeyBag); 
-  /* Next comes a context tag. */
-  p = store_tag_length (p, 0xa0, in0taglen);
-  /* And a sequence. */
-  p = store_tag_length (p, TAG_SEQUENCE, aseq3len);
-  /* Now for the pre-encoded algorithm indentifier and the salt. */
-  memcpy (p, data_3desiter1024, DIM (data_3desiter1024));
-  memcpy (p + DATA_3DESITER1024_SALT_OFF, salt, 8);
-  p += DIM (data_3desiter1024);
-  /* And finally the octet string with the encrypted data. */
-  p = store_tag_length (p, TAG_OCTET_STRING, plainlen);
-  memcpy (p, plain, plainlen);
-  p += plainlen;
-  cipherlen = p - cipher;
+
+  /* 7. Store a [0] tag. */
+  p = store_tag_length (p, 0xa0, len[7]);
+
+  /* 8. Store a sequence. */
+  p = store_tag_length (p, TAG_SEQUENCE, len[8]);
+
+  /* 9. Now for the pre-encoded algorithm identifier and the salt. */
+  memcpy (p, data_3desiter2048, DIM (data_3desiter2048));
+  memcpy (p + DATA_3DESITER2048_SALT_OFF, salt, 8);
+  p += DIM (data_3desiter2048);
+
+  /* 10. And finally the octet string with the encrypted data. */
+  p = store_tag_length (p, TAG_OCTET_STRING, buflen);
+  memcpy (p, buffer, buflen);
+  p += buflen;
+  keybaglen = p - keybag;
   
-  if (needed != cipherlen)
-    log_debug ("length mismatch: %u, %u\n", needed, cipherlen);
-  gcry_free (plain);
+  if (needed != keybaglen)
+    log_debug ("length mismatch: %u, %u\n", needed, keybaglen);
+  
+  *r_length = keybaglen;
+  return keybag;
+}
 
-  {
-    struct buffer_s seqlist[2];
 
-    seqlist[0].buffer = cipher;
-    seqlist[0].length = cipherlen;
-    seqlist[1].buffer = NULL;
-    seqlist[1].length = 0;
+static unsigned char *
+build_cert_bag (unsigned char *buffer, size_t buflen, char *salt,
+                size_t *r_length)
+{
+  size_t len[9], needed;
+  unsigned char *p, *certbag;
+  size_t certbaglen;
 
-    cipher = create_final (seqlist, &cipherlen);
-    gcry_free (seqlist[0].buffer);
-  }
+  /* Walk 9 steps down to collect the info: */
 
-  *r_length = cipherlen;
-  return cipher;
+  /* 8. The data goes into an octet string. */
+  needed = compute_tag_length (buflen);
+  needed += buflen;
+
+  /* 7. The algorithm identifier. */
+  needed += DIM (data_rc2iter2048);
+
+  /* 6. The data OID. */
+  needed += 2 + DIM (oid_data);
+
+  /* 5. A sequence. */
+  len[5] = needed;
+  needed += compute_tag_length ( needed);
+
+  /* 4. An integer. */
+  needed += 3;
+
+  /* 3. A sequence. */
+  len[3] = needed;
+  needed += compute_tag_length (needed);
+
+  /* 2.  A [0] tag. */
+  len[2] = needed;
+  needed += compute_tag_length (needed);
+
+  /* 1. The encryptedData OID. */
+  needed += 2 + DIM (oid_encryptedData);
+
+  /* 0. The first sequence. */
+  len[0] = needed;
+  needed += compute_tag_length (needed);
+
+  /* Now that we have all length information, allocate a buffer. */
+  p = certbag = gcry_malloc (needed);
+  if (!certbag)
+    {
+      log_error ("error allocating buffer\n");
+      return NULL;
+    }
+
+  /* Walk 9 steps up to store the data. */
+
+  /* 0. Store the first sequence. */
+  p = store_tag_length (p, TAG_SEQUENCE, len[0]);
+
+  /* 1. Store the encryptedData OID. */
+  p = store_tag_length (p, TAG_OBJECT_ID, DIM (oid_encryptedData));
+  memcpy (p, oid_encryptedData, DIM (oid_encryptedData)); 
+  p += DIM (oid_encryptedData); 
+
+  /* 2. Store a [0] tag. */
+  p = store_tag_length (p, 0xa0, len[2]);
+
+  /* 3. Store a sequence. */
+  p = store_tag_length (p, TAG_SEQUENCE, len[3]);
+
+  /* 4. Store the integer 0. */
+  *p++ = TAG_INTEGER;
+  *p++ = 1; 
+  *p++ = 0;
+
+  /* 5. Store a sequence. */
+  p = store_tag_length (p, TAG_SEQUENCE, len[5]);
+
+  /* 6. Store the data OID. */
+  p = store_tag_length (p, TAG_OBJECT_ID, DIM (oid_data));
+  memcpy (p, oid_data, DIM (oid_data)); 
+  p += DIM (oid_data); 
+
+  /* 7. Now for the pre-encoded algorithm identifier and the salt. */
+  memcpy (p, data_rc2iter2048, DIM (data_rc2iter2048));
+  memcpy (p + DATA_RC2ITER2048_SALT_OFF, salt, 8);
+  p += DIM (data_rc2iter2048);
+
+  /* 8. And finally the [0] tag with the encrypted data. */
+  p = store_tag_length (p, 0xa0, buflen);
+  memcpy (p, buffer, buflen);
+  p += buflen;
+  certbaglen = p - certbag;
+  
+  if (needed != certbaglen)
+    log_debug ("length mismatch: %u, %u\n", needed, certbaglen);
+
+  *r_length = certbaglen;
+  return certbag;
+}
+
+
+static unsigned char *
+build_cert_sequence (unsigned char *buffer, size_t buflen, size_t *r_length)
+{
+  size_t len[8], needed, n;
+  unsigned char *p, *certseq;
+  size_t certseqlen;
+
+  /* Walk 8 steps down to collect the info: */
+
+  /* 7. The data goes into an octet string. */
+  needed = compute_tag_length (buflen);
+  needed += buflen;
+
+  /* 6. A [0] tag. */
+  len[6] = needed;
+  needed += compute_tag_length (needed);
+
+  /* 5. An OID. */
+  needed += 2 + DIM (oid_x509Certificate_for_pkcs_12);
+
+  /* 4. A sequence. */
+  len[4] = needed;
+  needed += compute_tag_length (needed);
+
+  /* 3. A [0] tag. */
+  len[3] = needed;
+  needed += compute_tag_length (needed);
+
+  /* 2. An OID. */
+  needed += 2 + DIM (oid_pkcs_12_CertBag);
+
+  /* 1. A sequence. */
+  len[1] = needed;
+  needed += compute_tag_length (needed);
+
+  /* 0. The first sequence. */
+  len[0] = needed;
+  needed += compute_tag_length (needed);
+
+  /* Now that we have all length information, allocate a buffer. */
+  p = certseq = gcry_malloc (needed + 8 /*(for padding)*/);
+  if (!certseq)
+    {
+      log_error ("error allocating buffer\n");
+      return NULL;
+    }
+
+  /* Walk 8 steps up to store the data. */
+
+  /* 0. Store the first sequence. */
+  p = store_tag_length (p, TAG_SEQUENCE, len[0]);
+
+  /* 1. Store the second sequence. */
+  p = store_tag_length (p, TAG_SEQUENCE, len[1]);
+
+  /* 2. Store the pkcs12-cert-bag OID. */
+  p = store_tag_length (p, TAG_OBJECT_ID, DIM (oid_pkcs_12_CertBag));
+  memcpy (p, oid_pkcs_12_CertBag, DIM (oid_pkcs_12_CertBag)); 
+  p += DIM (oid_pkcs_12_CertBag); 
+
+  /* 3. Store a [0] tag. */
+  p = store_tag_length (p, 0xa0, len[3]);
+
+  /* 4. Store a sequence. */
+  p = store_tag_length (p, TAG_SEQUENCE, len[4]);
+
+  /* 5. Store the x509Certificate OID. */
+  p = store_tag_length (p, TAG_OBJECT_ID,
+                        DIM (oid_x509Certificate_for_pkcs_12));
+  memcpy (p, oid_x509Certificate_for_pkcs_12,
+          DIM (oid_x509Certificate_for_pkcs_12)); 
+  p += DIM (oid_x509Certificate_for_pkcs_12); 
+
+  /* 6. Store a [0] tag. */
+  p = store_tag_length (p, 0xa0, len[6]);
+
+  /* 7. And finally the octet string with the actual certificate. */
+  p = store_tag_length (p, TAG_OCTET_STRING, buflen);
+  memcpy (p, buffer, buflen);
+  p += buflen;
+  certseqlen = p - certseq;
+  
+  if (needed != certseqlen)
+    log_debug ("length mismatch: %u, %u\n", needed, certseqlen);
+  
+  /* Append some pad characters; we already allocated extra space. */
+  n = 8 - certseqlen % 8;
+  for (;(certseqlen % 8); certseqlen++)
+    *p++ = n;
+  
+  *r_length = certseqlen;
+  return certseq;
+}
+
+
+/* Expect the RSA key parameters in KPARMS and a password in
+   PW. Create a PKCS structure from it and return it as well as the
+   length in R_LENGTH; return NULL in case of an error. */
+unsigned char * 
+p12_build (gcry_mpi_t *kparms, unsigned char *cert, size_t certlen,
+           const char *pw, size_t *r_length)
+{
+  unsigned char *buffer;
+  size_t n, buflen;
+  char salt[8];
+  struct buffer_s seqlist[2];
+  int seqlistidx = 0;
+
+  if (cert && certlen)
+    {
+      /* Encode the certificate. */
+      buffer = build_cert_sequence (cert, certlen, &buflen);
+      if (!buffer)
+        goto failure;
+
+      /* Encrypt it. */
+      gcry_randomize (salt, 8, GCRY_STRONG_RANDOM);
+      crypt_block (buffer, buflen, salt, 2048, pw, GCRY_CIPHER_RFC2268_40, 1);
+      
+      /* Encode the encrypted stuff into a bag. */
+      seqlist[seqlistidx].buffer = build_cert_bag (buffer, buflen, salt, &n);
+      seqlist[seqlistidx].length = n;
+      gcry_free (buffer);
+      buffer = NULL;
+      if (!seqlist[seqlistidx].buffer)
+        goto failure;
+      seqlistidx++;
+    }
+
+  if (kparms)
+    {
+      /* Encode the key. */
+      buffer = build_key_sequence (kparms, &buflen);
+      if (!buffer)
+        goto failure;
+      
+      /* Encrypt it. */
+      gcry_randomize (salt, 8, GCRY_STRONG_RANDOM);
+      crypt_block (buffer, buflen, salt, 2048, pw, GCRY_CIPHER_3DES, 1);
+
+      /* Encode the encrypted stuff into a bag. */
+      seqlist[seqlistidx].buffer = build_key_bag (buffer, buflen, salt, &n);
+      seqlist[seqlistidx].length = n;
+      gcry_free (buffer);
+      buffer = NULL;
+      if (!seqlist[seqlistidx].buffer)
+        goto failure;
+      seqlistidx++;
+    }
+
+  seqlist[seqlistidx].buffer = NULL;
+  seqlist[seqlistidx].length = 0;
+
+  buffer = create_final (seqlist, &buflen);
+
+ failure:
+  for ( ; seqlistidx; seqlistidx--)
+    gcry_free (seqlist[seqlistidx].buffer);
+
+  *r_length = buffer? buflen : 0;
+  return buffer;
 }
 
 

@@ -7,6 +7,8 @@ Noteworthy changes in version 1.9.5
 
  * [gpgsm] The --import command is now able to autodetect pkcs#12
    files and import secret and private keys from this file format.
+   A new command --export-secret-key-p12 is provided to allow
+   exporting of secret keys in PKCS\#12 format.
 
  * [gpgsm] The pinentry will now present a description of the key for
    whom the passphrase is requests.

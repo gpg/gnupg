@@ -1,5 +1,5 @@
 /* export.c
- * Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -26,14 +26,29 @@
 #include <unistd.h> 
 #include <time.h>
 #include <assert.h>
+#include <signal.h>
+#include <fcntl.h>
+#include <sys/wait.h>
 
 #include "gpgsm.h"
 #include <gcrypt.h>
 #include <ksba.h>
 
 #include "keydb.h"
+#include "i18n.h"
+
+#ifdef _POSIX_OPEN_MAX
+#define MAX_OPEN_FDS _POSIX_OPEN_MAX
+#else
+#define MAX_OPEN_FDS 20
+#endif
+
+
 
 static void print_short_info (ksba_cert_t cert, FILE *fp);
+static gpg_error_t export_p12 (const unsigned char *certimg, size_t certimglen,
+                               const char *prompt, const char *keygrip,
+                               FILE **retfp);
 
 
 
@@ -195,6 +210,147 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
 }
 
 
+/* Export a certificates and its private key. */
+void
+gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
+{
+  KEYDB_HANDLE hd;
+  KEYDB_SEARCH_DESC *desc = NULL;
+  Base64Context b64writer = NULL;
+  ksba_writer_t writer;
+  ksba_cert_t cert = NULL;
+  int rc=0;
+  const unsigned char *image;
+  size_t imagelen;
+  char *keygrip = NULL;
+  char *prompt;
+  char buffer[1024];
+  int  nread;
+  FILE *datafp = NULL;
+
+  hd = keydb_new (0);
+  if (!hd)
+    {
+      log_error ("keydb_new failed\n");
+      goto leave;
+    }
+
+  desc = xtrycalloc (1, sizeof *desc);
+  if (!desc)
+    {
+      log_error ("allocating memory for export failed: %s\n",
+                 gpg_strerror (OUT_OF_CORE (errno)));
+      goto leave;
+    }
+
+  rc = keydb_classify_name (name, desc);
+  if (rc)
+    {
+      log_error ("key `%s' not found: %s\n",
+                 name, gpg_strerror (rc));
+      goto leave;
+    }
+
+  /* Lookup the certificate an make sure that it is unique. */
+  rc = keydb_search (hd, desc, 1);
+  if (!rc)
+    {
+      rc = keydb_get_cert (hd, &cert);
+      if (rc) 
+        {
+          log_error ("keydb_get_cert failed: %s\n", gpg_strerror (rc));
+          goto leave;
+        }
+      
+      rc = keydb_search (hd, desc, 1);
+      if (!rc)
+        rc = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
+      else if (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
+        rc = 0;
+      if (rc)
+        {
+          log_error ("key `%s' not found: %s\n",
+                     name, gpg_strerror (rc));
+          goto leave;
+        }
+    }
+      
+  keygrip = gpgsm_get_keygrip_hexstring (cert);
+  if (!keygrip || gpgsm_agent_havekey (keygrip))
+    {
+      /* Note, that the !keygrip case indicates a bad certificate. */
+      rc = gpg_error (GPG_ERR_NO_SECKEY);
+      log_error ("can't export key `%s': %s\n", name, gpg_strerror (rc));
+      goto leave;
+    }
+  
+  image = ksba_cert_get_image (cert, &imagelen);
+  if (!image)
+    {
+      log_error ("ksba_cert_get_image failed\n");
+      goto leave;
+    }
+
+  if (ctrl->create_pem)
+    {
+      print_short_info (cert, fp);
+      putc ('\n', fp);
+    }
+
+  ctrl->pem_name = "PKCS12";
+  rc = gpgsm_create_writer (&b64writer, ctrl, fp, &writer);
+  if (rc)
+    {
+      log_error ("can't create writer: %s\n", gpg_strerror (rc));
+      goto leave;
+    }
+
+
+  prompt = gpgsm_format_keydesc (cert);
+  rc = export_p12 (image, imagelen, prompt, keygrip, &datafp);
+  xfree (prompt);
+  if (rc)
+    goto leave;
+  rewind (datafp);
+  while ( (nread = fread (buffer, 1, sizeof buffer, datafp)) > 0 )
+    if ((rc = ksba_writer_write (writer, buffer, nread)))
+      {
+        log_error ("write failed: %s\n", gpg_strerror (rc));
+        goto leave;
+      }
+  if (ferror (datafp))
+    {
+      rc = gpg_error_from_errno (rc);
+      log_error ("error reading temporary file: %s\n", gpg_strerror (rc));
+      goto leave;
+    }
+
+  if (ctrl->create_pem)
+    {
+      /* We want one certificate per PEM block */
+      rc = gpgsm_finish_writer (b64writer);
+      if (rc) 
+        {
+          log_error ("write failed: %s\n", gpg_strerror (rc));
+          goto leave;
+        }
+      gpgsm_destroy_writer (b64writer);
+      b64writer = NULL;
+    }
+  
+  ksba_cert_release (cert); 
+  cert = NULL;
+
+ leave:
+  if (datafp)
+    fclose (datafp);
+  gpgsm_destroy_writer (b64writer);
+  ksba_cert_release (cert);
+  xfree (desc);
+  keydb_release (hd);
+}
+
+
 /* Print some info about the certifciate CERT to FP */
 static void
 print_short_info (ksba_cert_t cert, FILE *fp)
@@ -243,7 +399,220 @@ print_short_info (ksba_cert_t cert, FILE *fp)
 }
 
 
+static gpg_error_t
+popen_protect_tool (const char *pgmname,
+                    FILE *infile, FILE *outfile, FILE **statusfile, 
+                    const char *prompt, const char *keygrip,
+                    pid_t *pid)
+{
+  gpg_error_t err;
+  int fd, fdout, rp[2];
+  int n, i;
+
+  fflush (infile);
+  rewind (infile);
+  fd = fileno (infile);
+  fdout = fileno (outfile);
+  if (fd == -1 || fdout == -1)
+    log_fatal ("no file descriptor for temporary file: %s\n",
+               strerror (errno));
+
+  /* Now start the protect-tool. */
+  if (pipe (rp) == -1)
+    {
+      err = gpg_error_from_errno (errno);
+      log_error (_("error creating a pipe: %s\n"), strerror (errno));
+      return err;
+    }
+      
+  *pid = fork ();
+  if (*pid == -1)
+    {
+      err = gpg_error_from_errno (errno);
+      log_error (_("error forking process: %s\n"), strerror (errno));
+      close (rp[0]);
+      close (rp[1]);
+      return err;
+    }
+
+  if (!*pid)
+    { /* Child. */
+      const char *arg0;
+
+      arg0 = strrchr (pgmname, '/');
+      if (arg0)
+        arg0++;
+      else
+        arg0 = pgmname;
+
+      /* Connect the infile to stdin. */
+      if (fd != 0 && dup2 (fd, 0) == -1)
+        log_fatal ("dup2 stdin failed: %s\n", strerror (errno));
+
+      /* Connect the outfile to stdout. */
+      if (fdout != 1 && dup2 (fdout, 1) == -1)
+        log_fatal ("dup2 stdout failed: %s\n", strerror (errno));
+      
+      /* Connect stderr to our pipe. */
+      if (rp[1] != 2 && dup2 (rp[1], 2) == -1)
+        log_fatal ("dup2 stderr failed: %s\n", strerror (errno));
+
+      /* Close all other files. */
+      n = sysconf (_SC_OPEN_MAX);
+      if (n < 0)
+        n = MAX_OPEN_FDS;
+      for (i=3; i < n; i++)
+        close(i);
+      errno = 0;
+
+      execlp (pgmname, arg0,
+              "--homedir", opt.homedir,
+              "--p12-export",
+              "--prompt", prompt?prompt:"", 
+              "--",
+              keygrip,
+              NULL);
+      /* No way to print anything, as we have closed all streams. */
+      _exit (31);
+    }
+
+  /* Parent. */
+  close (rp[1]);
+  *statusfile = fdopen (rp[0], "r");
+  if (!*statusfile)
+    {
+      err = gpg_error_from_errno (errno);
+      log_error ("can't fdopen pipe for reading: %s", strerror (errno));
+      kill (*pid, SIGTERM);
+      return err;
+    }
+
+  return 0;
+}
 
 
+static gpg_error_t
+export_p12 (const unsigned char *certimg, size_t certimglen,
+            const char *prompt, const char *keygrip,
+            FILE **retfp)
+{
+  const char *pgmname;
+  gpg_error_t err = 0, child_err = 0;
+  int i, c, cont_line;
+  unsigned int pos;
+  FILE *infp = NULL, *outfp = NULL, *fp = NULL;
+  char buffer[1024];
+  pid_t pid = -1;
 
+  if (!opt.protect_tool_program || !*opt.protect_tool_program)
+    pgmname = GNUPG_DEFAULT_PROTECT_TOOL;
+  else
+    pgmname = opt.protect_tool_program;
+
+  infp = tmpfile ();
+  if (!infp)
+    {
+      err = gpg_error_from_errno (errno);
+      log_error (_("error creating temporary file: %s\n"), strerror (errno));
+      goto cleanup;
+    }
+
+  if (fwrite (certimg, certimglen, 1, infp) != 1)
+    {
+      err = gpg_error_from_errno (errno);
+      log_error (_("error writing to temporary file: %s\n"),
+                 strerror (errno));
+      goto cleanup;
+    }
+
+  outfp = tmpfile ();
+  if (!outfp)
+    {
+      err = gpg_error_from_errno (errno);
+      log_error (_("error creating temporary file: %s\n"), strerror (errno));
+      goto cleanup;
+    }
+
+  err = popen_protect_tool (pgmname, infp, outfp, &fp, prompt, keygrip, &pid);
+  if (err)
+    {
+      pid = -1;
+      goto cleanup;
+    }
+  fclose (infp);
+  infp = NULL;
+
+  /* Read stderr of the protect tool. */
+  pos = 0;
+  cont_line = 0;
+  while ((c=getc (fp)) != EOF)
+    {
+      /* fixme: We could here grep for status information of the
+         protect tool to figure out better error codes for
+         CHILD_ERR. */
+      buffer[pos++] = c;
+      if (pos >= 5 /*sizeof buffer - 1*/ || c == '\n')
+        {
+          buffer[pos - (c == '\n')] = 0;
+          if (cont_line)
+            log_printf ("%s", buffer);
+          else
+            log_info ("%s", buffer);
+          pos = 0;
+          cont_line = (c != '\n');
+        }
+    }
+
+  if (pos)
+    {
+      buffer[pos] = 0;
+      if (cont_line)
+        log_printf ("%s\n", buffer);
+      else
+        log_info ("%s\n", buffer);
+    }
+  else if (cont_line)
+    log_printf ("\n");
+
+  /* If we found no error in the output of the child, setup a suitable
+     error code, which will later be reset if the exit status of the
+     child is 0. */
+  if (!child_err)
+    child_err = gpg_error (GPG_ERR_DECRYPT_FAILED);
+
+ cleanup:
+  if (infp)
+    fclose (infp);
+  if (fp)
+    fclose (fp);
+  if (pid != -1)
+    {
+      int status;
+
+      while ( (i=waitpid (pid, &status, 0)) == -1 && errno == EINTR)
+        ;
+      if (i == -1)
+        log_error (_("waiting for protect-tools to terminate failed: %s\n"),
+                   strerror (errno));
+      else if (WIFEXITED (status) && WEXITSTATUS (status) == 31)
+        log_error (_("error running `%s': probably not installed\n"), pgmname);
+      else if (WIFEXITED (status) && WEXITSTATUS (status))
+        log_error (_("error running `%s': exit status %d\n"), pgmname,
+                     WEXITSTATUS (status));
+      else if (!WIFEXITED (status))
+        log_error (_("error running `%s': terminated\n"), pgmname);
+      else 
+        child_err = 0;
+    }
+  if (!err)
+    err = child_err;
+  if (err)
+    {
+      if (outfp)
+        fclose (outfp);
+    }
+  else
+    *retfp = outfp;
+  return err;
+}
 

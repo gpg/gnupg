@@ -273,6 +273,11 @@ agent_open (int *rfd)
 #endif
       return SPWQ_NO_AGENT;
     }
+  p = spwq_malloc (strlen (infostr)+1);
+  if (!p)
+    return SPWQ_OUT_OF_CORE;
+  strcpy (p, infostr);
+  infostr = p;
 
   if ( !(p = strchr ( infostr, ':')) || p == infostr
        || (p-infostr)+1 >= sizeof client_addr.sun_path ) 
@@ -344,7 +349,7 @@ agent_open (int *rfd)
 }
 
 
-/* Copy text to BUFFER and escape as required.  Return a poiinter to
+/* Copy text to BUFFER and escape as required.  Return a pointer to
    the end of the new buffer.  NOte that BUFFER must be large enough
    to keep the entire text; allocataing it 3 times the size of TEXT
    is sufficient. */

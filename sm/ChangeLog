@@ -1,3 +1,9 @@
+2004-02-19  Werner Koch  <wk@gnupg.org>
+
+	* export.c (export_p12, popen_protect_tool)
+	(gpgsm_p12_export): New.
+	* gpgsm.c (main): New command --export-secret-key-p12. 
+
 2004-02-18  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.c (set_debug): Set the new --debug-level flags.

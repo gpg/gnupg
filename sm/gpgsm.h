@@ -247,6 +247,7 @@ int gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
 
 /*-- export.c --*/
 void gpgsm_export (ctrl_t ctrl, STRLIST names, FILE *fp);
+void gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp);
 
 /*-- delete.c --*/
 int gpgsm_delete (ctrl_t ctrl, STRLIST names);
