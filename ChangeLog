@@ -1,3 +1,8 @@
+2005-02-04  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (GNUPG_CHECK_GNUMAKE):  Removed. Not needed for
+	decent automakes.
+
 2005-02-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Fix typo.

@@ -1,5 +1,8 @@
 2005-02-03  Werner Koch  <wk@g10code.com>
 
+	* w32reg.c (read_w32_registry_string): Fallback to HKLM also for a
+	missing name.
+
 	* http.c (connect_server): Define ERR outside of the !W32 block.
 
 2005-02-01  David Shaw  <dshaw@jabberwocky.com>

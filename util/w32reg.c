@@ -1,5 +1,5 @@
 /* w32reg.c -  MS-Windows Registry access
- *	Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 1999, 2002, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -77,14 +77,22 @@ read_w32_registry_string( const char *root, const char *dir, const char *name )
       {
         if (root)
           return NULL; /* no need for a RegClose, so return direct */
-        /* It seems to be common practise to fall back to HLM. */
+        /* It seems to be common practise to fall back to HKLM. */
         if (RegOpenKeyEx (HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &key_handle) )
           return NULL; /* still no need for a RegClose, so return direct */
       }
 
     nbytes = 1;
-    if( RegQueryValueEx( key_handle, name, 0, NULL, NULL, &nbytes ) )
-	goto leave;
+    if( RegQueryValueEx( key_handle, name, 0, NULL, NULL, &nbytes ) ) {
+        if (root)
+            goto leave;
+        /* Try to fallback to HKLM also vor a missing value.  */
+        RegCloseKey (key_handle);
+        if (RegOpenKeyEx (HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &key_handle) )
+            return NULL; /* Nope.  */
+        if (RegQueryValueEx( key_handle, name, 0, NULL, NULL, &nbytes))
+            goto leave;
+    }
     result = malloc( (n1=nbytes+1) );
     if( !result )
 	goto leave;

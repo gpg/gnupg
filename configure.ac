@@ -1211,7 +1211,6 @@ fi
 
 AM_CONDITIONAL(CROSS_COMPILING, test x$cross_compiling = xyes)
 
-GNUPG_CHECK_GNUMAKE
 
 # add some extra libs here so that previous tests don't fail for
 # mysterious reasons - the final link step should bail out. 
