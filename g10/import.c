@@ -1,5 +1,6 @@
 /* import.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ *               Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -948,12 +949,12 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
 	if( onode->pkt->pkttype == PKT_USER_ID )
 	    break;
 	else if( onode->pkt->pkttype == PKT_SIGNATURE
-		 && onode->pkt->pkt.signature->sig_class == 0x20
-		 && keyid[0] == onode->pkt->pkt.signature->keyid[0]
-		 && keyid[1] == onode->pkt->pkt.signature->keyid[1] ) {
+		 && !cmp_signatures(node->pkt->pkt.signature,
+				    onode->pkt->pkt.signature))
+	  {
 	    rc = 0;
 	    goto leave; /* yes, we already know about it */
-	}
+	  }
     }
 
 
@@ -1469,13 +1470,12 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 		    break;
 		else if( onode->pkt->pkttype == PKT_SIGNATURE
 			 && onode->pkt->pkt.signature->sig_class == 0x20
-			 && node->pkt->pkt.signature->keyid[0]
-			    == onode->pkt->pkt.signature->keyid[0]
-			 && node->pkt->pkt.signature->keyid[1]
-			    == onode->pkt->pkt.signature->keyid[1] ) {
+			 && !cmp_signatures(onode->pkt->pkt.signature,
+					    node->pkt->pkt.signature))
+		  {
 		    found = 1;
 		    break;
-		}
+		  }
 	    }
 	    if( !found ) {
 	        char *p=get_user_id_printable (keyid);
@@ -1683,20 +1683,12 @@ merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
 	    || n->pkt->pkt.signature->sig_class == 0x28 )
 	    continue; /* skip signatures which are only valid on subkeys */
 	found = 0;
-	for(n2=dst->next; n2 && n2->pkt->pkttype != PKT_USER_ID; n2 = n2->next){
-	    if( n2->pkt->pkttype == PKT_SIGNATURE
-		&& n->pkt->pkt.signature->keyid[0]
-		   == n2->pkt->pkt.signature->keyid[0]
-		&& n->pkt->pkt.signature->keyid[1]
-		   == n2->pkt->pkt.signature->keyid[1]
-		&& n->pkt->pkt.signature->timestamp
-		   <= n2->pkt->pkt.signature->timestamp
-		&& n->pkt->pkt.signature->sig_class
-		   == n2->pkt->pkt.signature->sig_class ) {
-		found++;
-		break;
+	for(n2=dst->next; n2 && n2->pkt->pkttype != PKT_USER_ID; n2 = n2->next)
+	  if(!cmp_signatures(n->pkt->pkt.signature,n2->pkt->pkt.signature))
+	    {
+	      found++;
+	      break;
 	    }
-	}
 	if( !found ) {
 	    /* This signature is new or newer, append N to DST.
 	     * We add a clone to the original keyblock, because this
