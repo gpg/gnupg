@@ -35,6 +35,7 @@ libcommon_a_SOURCES = \
 	gettime.c \
 	yesno.c \
 	miscellaneous.c \
+	xasprintf.c \
 	membuf.c membuf.h \
 	iobuf.c iobuf.h \
 	ttyio.c ttyio.h \

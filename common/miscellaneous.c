@@ -25,25 +25,6 @@
 #include "util.h"
 #include "iobuf.h"
 
-/* Same as asprintf but return an allocated buffer suitable to be
-   freed using xfree.  This function simply dies on memory failure,
-   thus no extra check is required. */
-char *
-xasprintf (const char *fmt, ...)
-{
-  va_list ap;
-  char *buf, *p;
-
-  va_start (ap, fmt);
-  if (vasprintf (&buf, fmt, ap) < 0)
-    log_fatal ("asprintf failed: %s\n", strerror (errno));
-  va_end (ap);
-  p = xstrdup (buf);
-  free (buf);
-  return p;
-}
-
-
 
 /* Decide whether the filename is stdout or a real filename and return
  * an appropriate string.  */
