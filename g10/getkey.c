@@ -1826,7 +1826,10 @@ finish_lookup (GETKEY_CTX ctx)
     PKT_user_id *foundu = NULL;
   #define USAGE_MASK  (PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC)
     unsigned int req_usage = ( ctx->req_usage & USAGE_MASK );
-    int req_cert = (ctx->req_usage & PUBKEY_USAGE_CERT);
+    /* Request the primary if we're certifying another key, and also
+       if --pgp6 is on (since pgp 6 (and 7) do not understand
+       signatures made by a signing subkey. */
+    int req_prim = (ctx->req_usage & PUBKEY_USAGE_CERT) | opt.pgp6;
     u32 latest_date;
     KBNODE latest_key;
     u32 curtime = make_timestamp ();
@@ -1877,7 +1880,7 @@ finish_lookup (GETKEY_CTX ctx)
     latest_date = 0;
     latest_key  = NULL;
     /* do not look at subkeys if a certification key is requested */
-    if ((!foundk || foundk->pkt->pkttype == PKT_PUBLIC_SUBKEY) && !req_cert) {
+    if ((!foundk || foundk->pkt->pkttype == PKT_PUBLIC_SUBKEY) && !req_prim) {
         KBNODE nextk;
         /* either start a loop or check just this one subkey */
         for (k=foundk?foundk:keyblock; k; k = nextk ) {
@@ -1930,9 +1933,9 @@ finish_lookup (GETKEY_CTX ctx)
 
     /* Okay now try the primary key unless we want an exact 
      * key ID match on a subkey */
-    if ((!latest_key && !(ctx->exact && foundk != keyblock)) || req_cert) {
+    if ((!latest_key && !(ctx->exact && foundk != keyblock)) || req_prim) {
         PKT_public_key *pk;
-        if (DBG_CACHE && !foundk && !req_cert )
+        if (DBG_CACHE && !foundk && !req_prim )
             log_debug( "\tno suitable subkeys found - trying primary\n");
         pk = keyblock->pkt->pkt.public_key;
         if ( !pk->is_valid ) {

@@ -1,3 +1,14 @@
+2002-04-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.c (mark_usable_uid_certs): Properly handle nonrevocable
+	signatures that can expire.  In short, the only thing that can
+	override an unexpired nonrevocable signature is another unexpired
+	nonrevocable signature.
+
+	* getkey.c (finish_lookup): Always use primary signing key for
+	signatures when --pgp6 is on since pgp6 and 7 do not understand
+	signatures made by signing subkeys.
+
 2002-04-18  Werner Koch  <wk@gnupg.org>
 
 	* trustdb.c (validate_keys): Never schedule a nextcheck into the
