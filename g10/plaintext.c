@@ -41,7 +41,6 @@
 #include "i18n.h"
 
 
-
 /****************
  * Handle a plaintext packet.  If MFX is not NULL, update the MDs
  * Note: we should use the filter stuff here, but we have to add some
@@ -54,7 +53,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 {
     char *fname = NULL;
     FILE *fp = NULL;
-    off_t count=0;
+    static off_t count=0;
     int rc = 0;
     int c;
     int convert = pt->mode == 't';
@@ -169,7 +168,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 #endif
 		if( fp )
 		  {
-		    if(opt.max_output && (count++)>opt.max_output)
+		    if(opt.max_output && (++count)>opt.max_output)
 		      {
 			log_error("Error writing to `%s': %s\n",
 				  fname,"exceeded --max-output limit\n");
@@ -235,7 +234,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 #endif
 		if( fp )
 		  {
-		    if(opt.max_output && (count++)>opt.max_output)
+		    if(opt.max_output && (++count)>opt.max_output)
 		      {
 			log_error("Error writing to `%s': %s\n",
 				  fname,"exceeded --max-output limit\n");
@@ -298,7 +297,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	while( (c = iobuf_get(pt->buf)) != -1 ) {
 	    if( fp )
 	      {
-		if(opt.max_output && (count++)>opt.max_output)
+		if(opt.max_output && (++count)>opt.max_output)
 		  {
 		    log_error("Error writing to `%s': %s\n",
 			      fname,"exceeded --max-output limit\n");

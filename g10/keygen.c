@@ -1041,7 +1041,7 @@ check_valid_days( const char *s )
 
 
 /****************
- * Returns: 0 to create both a DSA and a ElGamal key.
+ * Returns: 0 to create both a DSA and a Elgamal key.
  *          and only if key flags are to be written the desired usage.
  */
 static int
@@ -1053,10 +1053,10 @@ ask_algo (int addmode, unsigned int *r_usage)
     *r_usage = 0;
     tty_printf(_("Please select what kind of key you want:\n"));
     if( !addmode )
-	tty_printf(_("   (%d) DSA and ElGamal (default)\n"), 1 );
+	tty_printf(_("   (%d) DSA and Elgamal (default)\n"), 1 );
     tty_printf(    _("   (%d) DSA (sign only)\n"), 2 );
     if( addmode )
-	tty_printf(    _("   (%d) ElGamal (encrypt only)\n"), 3 );
+	tty_printf(    _("   (%d) Elgamal (encrypt only)\n"), 3 );
     tty_printf(    _("   (%d) RSA (sign only)\n"), 4 );
     if (addmode)
         tty_printf(    _("   (%d) RSA (encrypt only)\n"), 5 );

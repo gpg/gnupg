@@ -1,5 +1,6 @@
 /* helptext.c  - English help texts
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -71,28 +72,16 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 { "keygen.algo", N_(
 "Select the algorithm to use.\n"
 "\n"
-"DSA (aka DSS) is the digital signature algorithm which can only be used\n"
-"for signatures.  This is the suggested algorithm because verification of\n"
-"DSA signatures are much faster than those of ElGamal.\n"
+"DSA (aka DSS) is the Digital Signature Algorithm and can only be used\n"
+"for signatures.\n"
 "\n"
-"ElGamal is an algorithm which can be used for signatures and encryption.\n"
-"OpenPGP distinguishs between two flavors of this algorithms: an encrypt only\n"
-"and a sign+encrypt; actually it is the same, but some parameters must be\n"
-"selected in a special way to create a safe key for signatures: this program\n"
-"does this but other OpenPGP implementations are not required to understand\n"
-"the signature+encryption flavor.\n"
+"Elgamal is an encrypt-only algorithm.\n"
 "\n"
-"The first (primary) key must always be a key which is capable of signing;\n"
-"this is the reason why the encryption only ElGamal key is not available in\n"
-"this menu."
+"RSA may be used for signatures or encryption.\n"
+"\n"
+"The first (primary) key must always be a key which is capable of signing."
 )},
 
-
-{ "keygen.algo.elg_se", N_(
-"Although these keys are defined in RFC2440 they are not suggested\n"
-"because they are not supported by all programs and signatures created\n"
-"with them are quite large and very slow to verify."
-)},
 
 { "keygen.algo.rsa_se", N_(
 "In general it is not a good idea to use the same key for signing and\n"

@@ -1,3 +1,16 @@
+2004-02-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* delkey.c (do_delete_key): Allow deleting a public key with a
+	secret present if --expert is set.
+
+	* plaintext.c (handle_plaintext): Make bytecount static so it
+	works with multiple literal packets inside a message.
+
+	* encode.c, helptext.c (keygen.algo, keygen.algo.elg_se), keygen.c
+	(ask_algo), sig-check.c (do_check_messages), skclist.c
+	(build_sk_list): Rename "ElGamal" to "Elgamal" as that is the
+	proper spelling nowadays.  Suggested by Jon Callas.
+
 2004-02-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* plaintext.c: Copyright.

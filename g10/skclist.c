@@ -122,7 +122,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
 	    if( sk->version == 4 && (use & PUBKEY_USAGE_SIG)
 		&& sk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
 		log_info("this is a PGP generated "
-		    "ElGamal key which is NOT secure for signatures!\n");
+		    "Elgamal key which is NOT secure for signatures!\n");
 		free_secret_key( sk ); sk = NULL;
 	    }
 	    else if( random_is_faked() && !is_insecure( sk ) ) {
@@ -177,7 +177,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
 		if( sk->version == 4 && (use & PUBKEY_USAGE_SIG)
 		    && sk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
 		    log_info(_("skipped `%s': this is a PGP generated "
-			"ElGamal key which is not secure for signatures!\n"),
+			"Elgamal key which is not secure for signatures!\n"),
 			locusr->d );
 		    free_secret_key( sk ); sk = NULL;
 		}

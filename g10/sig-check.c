@@ -144,7 +144,7 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig,
       *r_revoked = 0;
     if( pk->version == 4 && pk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
 	log_info(_("key %08lX: this is a PGP generated "
-		   "ElGamal key which is NOT secure for signatures!\n"),
+		   "Elgamal key which is NOT secure for signatures!\n"),
  		  (ulong)keyid_from_pk(pk,NULL));
 	return G10ERR_PUBKEY_ALGO;
     }

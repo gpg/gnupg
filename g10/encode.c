@@ -802,7 +802,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	 * algorithm number PK->PUBKEY_ALGO and pass it to pubkey_encrypt
 	 * which returns the encrypted value in the array ENC->DATA.
 	 * This array has a size which depends on the used algorithm
-	 * (e.g. 2 for ElGamal).  We don't need frame anymore because we
+	 * (e.g. 2 for Elgamal).  We don't need frame anymore because we
 	 * have everything now in enc->data which is the passed to
 	 * build_packet()
 	 */
