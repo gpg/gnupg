@@ -1169,6 +1169,10 @@ Use @code{string} as a comment string in clear text signatures and
 ASCII armored messages or keys (see --armor). The default behavior is
 not to use a comment string. --comment may be repeated multiple times
 to get multiple comment strings. --no-comments removes all comments.
+It is a good idea to keep the length of a single comment below 60
+characters to avoid problems with mail programs wrapping such lines.
+Note, that those comment lines, like all other header lines, are not
+protected by the signature.
 
 @item --emit-version
 @itemx --no-emit-version
