@@ -1165,7 +1165,9 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     /* If you are making a signature on a v4 key using your v3 key, it
        doesn't make sense to generate a v3 sig.  After all, no v3-only
        PGP implementation could understand the v4 key in the first
-       place. */
+       place.  Note that this implies that a signature on an attribute
+       uid is usually going to be v4 as well, since they are not
+       generally found on v3 keys. */
     if (sigversion < pk->version)
         sigversion = pk->version;
 

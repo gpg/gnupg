@@ -100,6 +100,9 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
     int rc, sigrc;
     int is_rev = sig->sig_class == 0x30;
 
+    /* TODO: Make sure a cached sig record here still has the pk that
+       issued it.  See also keylist.c:list_keyblock_print */
+
     switch( (rc = check_key_signature( keyblock, node, is_selfsig)) ) {
       case 0:
 	node->flag &= ~(NODFLG_BADSIG|NODFLG_NOKEY|NODFLG_SIGERR);

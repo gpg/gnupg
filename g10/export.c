@@ -275,7 +275,10 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 
 		for(i=0;i<node->pkt->pkt.signature->numrevkeys;i++)
 		  if(node->pkt->pkt.signature->revkey[i]->class & 0x40)
-		    continue;
+		    break;
+
+		if(i<node->pkt->pkt.signature->numrevkeys)
+		  continue;
 	      }
 
 	      /* delete our verification cache */

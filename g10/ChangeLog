@@ -1,3 +1,14 @@
+2002-08-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* keylist.c, keyedit.c, keyserver.c, sign.c: Some TODOs and
+	comments.
+
+	* export.c (do_export_stream): Fix noop bug in exporting sensitive
+	revocation keys.
+
+	* pkclist.c (do_edit_ownertrust): Comment out the option for
+	showing trust paths until it can be implemented.
+
 2002-08-19  Werner Koch  <wk@gnupg.org>
 
 	* getkey.c (get_user_id_native): Renamed to ..

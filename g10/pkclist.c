@@ -276,7 +276,10 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
         tty_printf (_(" %d = I trust fully\n"), 4);
         if (mode)
           tty_printf (_(" %d = I trust ultimately\n"), 5);
+#if 0
+	/* not yet implemented */
         tty_printf (_(" i = please show me more information\n") );
+#endif
         if( mode )
           tty_printf(_(" m = back to the main menu\n"));
         else
@@ -320,12 +323,15 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
             break;
           }
       }
+#if 0
+    /* not yet implemented */
     else if( *p == ans[0] || *p == ans[1] ) 
       {
         tty_printf(_("Certificates leading to an ultimately trusted key:\n"));
         show = 1;
         break;
       }
+#endif
     else if( mode && (*p == ans[2] || *p == ans[3] || *p == CONTROL_D ) ) 
       {
         break ; /* back to the menu */

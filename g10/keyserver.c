@@ -975,7 +975,7 @@ keyserver_refresh(STRLIST users)
   return 0;
 }
 
-int 
+int
 keyserver_search(STRLIST tokens)
 {
   if(tokens)
@@ -987,7 +987,12 @@ keyserver_search(STRLIST tokens)
 /* Count and searchstr are just for cosmetics.  If the count is too
    small, it will grow safely.  If negative it disables the "Key x-y
    of z" messages. */
-void 
+
+/* TODO: do this as a list sent to keyserver_work rather than calling
+   it once for each key to get the correct counts after the import
+   (cosmetics, really) and to better take advantage of the keyservers
+   that can do multiple fetches in one go (LDAP). */
+void
 keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
 {
   int i=0,validcount=1;

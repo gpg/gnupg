@@ -517,6 +517,11 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 		 case G10ERR_UNU_PUBKEY: stats->no_key++; continue;
 		 default:		 stats->oth_err++; sigrc = '%'; break;
 		}
+
+		/* TODO: Make sure a cached sig record here still has
+                   the pk that issued it.  See also
+                   keyedit.c:print_and_check_one_sig */
+
 	    }
 	    else {
 		rc = 0;
