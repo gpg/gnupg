@@ -95,7 +95,8 @@ parse_import_options(char *str,unsigned int *options)
   } import_opts[]=
     {
       {"allow-local-sigs",IMPORT_ALLOW_LOCAL_SIGS},
-      {"repair-hkp-subkey-bug",IMPORT_REPAIR_HKP_SUBKEY_BUG},
+      {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG},
+      {"repair-pks-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG},
       {"fast-import",IMPORT_FAST_IMPORT},
       {"convert-sk-to-pk",IMPORT_SK2PK},
       {NULL,0}
@@ -465,7 +466,7 @@ remove_bad_stuff (KBNODE keyblock)
     }
 }
 
-/* Walk through the subkeys on a pk to find if we have the HKP
+/* Walk through the subkeys on a pk to find if we have the PKS
    disease: multiple subkeys with their binding sigs stripped, and the
    sig for the first subkey placed after the last subkey.  That is,
    instead of "pk uid sig sub1 bind1 sub2 bind2 sub3 bind3" we have
@@ -475,7 +476,7 @@ remove_bad_stuff (KBNODE keyblock)
    sub2 sub3".  Returns TRUE if the keyblock was modified. */
 
 static int
-fix_hkp_corruption(KBNODE keyblock)
+fix_pks_corruption(KBNODE keyblock)
 {
   int changed=0,keycount=0;
   KBNODE node,last=NULL,sknode=NULL;
@@ -639,8 +640,8 @@ import_one( const char *fname, KBNODE keyblock,
 
     clear_kbnode_flags( keyblock );
 
-    if((options&IMPORT_REPAIR_HKP_SUBKEY_BUG) && fix_hkp_corruption(keyblock))
-      log_info(_("key %08lX: HKP subkey corruption repaired\n"),
+    if((options&IMPORT_REPAIR_PKS_SUBKEY_BUG) && fix_pks_corruption(keyblock))
+      log_info(_("key %08lX: PKS subkey corruption repaired\n"),
 	       (ulong)keyid[1]);
 
     rc = chk_self_sigs( fname, keyblock , pk, keyid, &non_self );

@@ -162,8 +162,8 @@ enum cmd_and_opt_values { aNull = 0,
 #endif /* __riscos__ */
     oSKComments,
     oNoSKComments,
-    oNoVersion,
     oEmitVersion,
+    oNoEmitVersion,
     oCompletesNeeded,
     oMarginalsNeeded,
     oMaxCertDepth,
@@ -551,8 +551,9 @@ static ARGPARSE_OPTS opts[] = {
     { oNoShowNotation, "no-show-notation", 0, "@" },
     { oComment, "comment", 2, "@" },
     { oDefaultComment, "default-comment", 0, "@" },
-    { oNoVersion, "no-version", 0, "@"},
     { oEmitVersion, "emit-version", 0, "@"},
+    { oNoEmitVersion, "no-emit-version", 0, "@"},
+    { oNoEmitVersion, "no-version", 0, "@"}, /* alias */
     { oNotDashEscaped, "not-dash-escaped", 0, "@" },
     { oEscapeFrom, "escape-from-lines", 0, "@" },
     { oNoEscapeFrom, "no-escape-from-lines", 0, "@" },
@@ -1163,7 +1164,7 @@ main( int argc, char **argv )
     opt.import_options=IMPORT_SK2PK;
     opt.export_options=
       EXPORT_INCLUDE_NON_RFC|EXPORT_INCLUDE_ATTRIBUTES;
-    opt.keyserver_options.import_options=IMPORT_REPAIR_HKP_SUBKEY_BUG;
+    opt.keyserver_options.import_options=IMPORT_REPAIR_PKS_SUBKEY_BUG;
     opt.keyserver_options.export_options=
       EXPORT_INCLUDE_NON_RFC|EXPORT_INCLUDE_ATTRIBUTES;
     opt.keyserver_options.include_subkeys=1;
@@ -1451,8 +1452,8 @@ main( int argc, char **argv )
 	  case oQuickRandom: quick_random_gen(1); break;
 	  case oSKComments: opt.sk_comments=1; break;
 	  case oNoSKComments: opt.sk_comments=0; break;
-	  case oNoVersion: opt.no_version=1; break;
 	  case oEmitVersion: opt.no_version=0; break;
+	  case oNoEmitVersion: opt.no_version=1; break;
 	  case oCompletesNeeded: opt.completes_needed = pargs.r.ret_int; break;
 	  case oMarginalsNeeded: opt.marginals_needed = pargs.r.ret_int; break;
 	  case oMaxCertDepth: opt.max_cert_depth = pargs.r.ret_int; break;

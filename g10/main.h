@@ -161,7 +161,7 @@ KBNODE make_mpi_comment_node( const char *s, MPI a );
 
 /*-- import.c --*/
 #define IMPORT_ALLOW_LOCAL_SIGS      1
-#define IMPORT_REPAIR_HKP_SUBKEY_BUG 2
+#define IMPORT_REPAIR_PKS_SUBKEY_BUG 2
 #define IMPORT_FAST_IMPORT           4
 #define IMPORT_SK2PK                 8
 
