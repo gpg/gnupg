@@ -224,6 +224,7 @@ enum cmd_and_opt_values { aNull = 0,
     oFixedListMode,
     oNoSigCache,
     oNoSigCreateCheck,
+    oNoAutoCheckTrustDB,
     oPreservePermissions,
     oPreferenceList,                          
     oEmu3DESS2KBug,  /* will be removed in 1.1 */
@@ -276,7 +277,7 @@ static ARGPARSE_OPTS opts[] = {
     { aUpdateTrustDB,
 	      "update-trustdb",0 , N_("update the trust database")},
     { aCheckTrustDB,
-	      "check-trustdb",0 , N_("|[NAMES]|check the trust database")},
+	      "check-trustdb",0 , N_("unattended trust database update")},
     { aFixTrustDB, "fix-trustdb",0 , N_("fix a corrupted trust database")},
     { aDeArmor, "dearmor", 256, N_("De-Armor a file or stdin") },
     { aDeArmor, "dearmour", 256, "@" },
@@ -433,6 +434,7 @@ static ARGPARSE_OPTS opts[] = {
     { oNoAutoKeyRetrieve, "no-auto-key-retrieve", 0, "@" },
     { oNoSigCache,         "no-sig-cache", 0, "@" },
     { oNoSigCreateCheck,   "no-sig-create-check", 0, "@" },
+    { oNoAutoCheckTrustDB, "no-auto-check-trustdb", 0, "@"},
     { oMergeOnly,	  "merge-only", 0, "@" },
     { oAllowSecretKeyImport, "allow-secret-key-import", 0, "@" },
     { oTryAllSecrets,  "try-all-secrets", 0, "@" },
@@ -1083,6 +1085,7 @@ main( int argc, char **argv )
             iobuf_enable_special_filenames (1);
             break;
           case oNoExpensiveTrustChecks: opt.no_expensive_trust_checks=1; break;
+          case oNoAutoCheckTrustDB: opt.no_auto_check_trustdb=1; break;
           case oPreservePermissions: opt.preserve_permissions=1; break;
           case oPreferenceList: preference_list = pargs.r.ret_str; break;
 	  default : pargs.err = configfp? 1:2; break;
@@ -1648,15 +1651,8 @@ main( int argc, char **argv )
 	break;
 
       case aCheckTrustDB:
-	if( !argc )
-	    check_trustdb(NULL);
-	else {
-	    for( ; argc; argc--, argv++ ) {
-		username = make_username( *argv );
-		check_trustdb( username );
-		m_free(username);
-	    }
-	}
+        /* Old versions allowed for arguments - ignore them */
+        check_trustdb();
 	break;
 
       case aFixTrustDB:

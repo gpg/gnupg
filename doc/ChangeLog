@@ -1,3 +1,7 @@
+2001-09-24  Werner Koch  <wk@gnupg.org>
+
+	* gpg.sgml: Described --{update,check}-trustdb.
+
 2001-09-03  Werner Koch  <wk@gnupg.org>
 
 	* gpg.sgml, gpgv.sgml: Removed GDBM stuff.

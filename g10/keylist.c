@@ -433,7 +433,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
         else if ( opt.fast_list_mode || opt.no_expensive_trust_checks ) 
             ;
         else {
-            trustletter = query_trust_info( pk, NULL );
+            trustletter = get_validity_info ( pk, NULL );
             if( trustletter == 'u' )
                 ulti_hack = 1;
             putchar(trustletter);
@@ -449,7 +449,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
         putchar(':');
         if( pk->local_id && !opt.fast_list_mode
             && !opt.no_expensive_trust_checks  )
-            putchar( get_ownertrust_info( pk->local_id ) );
+            putchar( get_ownertrust_info(pk) );
 	    putchar(':');
     }
     
@@ -490,7 +490,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
 			    rmd160_hash_buffer( namehash,
 					    node->pkt->pkt.user_id->name,
 					    node->pkt->pkt.user_id->len  );
-			trustletter = query_trust_info( pk, namehash );
+			trustletter = get_validity_info( pk, namehash );
 		    }
 		    else
 			trustletter = 'u';

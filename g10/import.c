@@ -158,8 +158,7 @@ import_keys( char **fnames, int nnames, int fast, void *stats_handle )
         import_print_stats (stats);
         import_release_stats_handle (stats);
     }
-    if( !fast )
-	sync_trustdb();
+
 }
 
 int
@@ -177,8 +176,7 @@ import_keys_stream( IOBUF inp, int fast, void *stats_handle )
         import_print_stats (stats);
         import_release_stats_handle (stats);
     }
-    if( !fast )
-	sync_trustdb();
+
     return rc;
 }
 
@@ -591,21 +589,8 @@ import_one( const char *fname, KBNODE keyblock, int fast,
 	}
         keydb_release (hd); hd = NULL;
     }
-    if( !rc && !fast ) {
-	rc = query_trust_record( new_key? pk : pk_orig );
-	if( rc && rc != -1 )
-	    log_error("trustdb error: %s\n", g10_errstr(rc) );
-	else if( rc == -1 ) { /* not found trustdb */
-	    rc = insert_trust_record( new_key? keyblock : keyblock_orig );
-	    if( rc )
-		log_error("key %08lX: trustdb insert failed: %s\n",
-					(ulong)keyid[1], g10_errstr(rc) );
-	}
-	else if( mod_key )
-	    rc = update_trust_record( keyblock_orig, 1, NULL );
-	else
-	    rc = clear_trust_checked_flag( new_key? pk : pk_orig );
-    }
+    if (!rc) 
+      revalidation_mark ();
 
   leave:
     release_kbnode( keyblock_orig );
@@ -793,15 +778,7 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
 	log_info( _("key %08lX: revocation certificate imported\n"),
 					(ulong)keyid[1]);
     stats->n_revoc++;
-    if( clear_trust_checked_flag( pk ) ) {
-	/* seems that we have to insert the record first */
-	rc = insert_trust_record( keyblock );
-	if( rc )
-	    log_error("key %08lX: trustdb insert failed: %s\n",
-					(ulong)keyid[1], g10_errstr(rc) );
-	else
-	    rc = clear_trust_checked_flag( pk );
-    }
+    revalidation_mark ();
 
   leave:
     keydb_release (hd);

@@ -32,6 +32,7 @@
 #include "ttyio.h"
 #include "options.h"
 #include "keydb.h"
+#include "trustdb.h"
 #include "status.h"
 #include "i18n.h"
 
@@ -1934,9 +1935,19 @@ do_generate_keypair( struct para_data_s *para,
                 get_parameter_algo(para, pKEYTYPE) == PUBKEY_ALGO_RSA
                 && get_parameter_uint( para, pKEYUSAGE )
                 && !(get_parameter_uint( para,pKEYUSAGE) & PUBKEY_USAGE_ENC);
+            PKT_public_key *pk = find_kbnode (pub_root, 
+                                    PKT_PUBLIC_KEY)->pkt->pkt.public_key;
+            
+            update_ownertrust (pk,
+                               ((get_ownertrust (pk) & ~TRUST_MASK)
+                                | TRUST_ULTIMATE ));
 
-	    if( !opt.batch )
-		 tty_printf(_("public and secret key created and signed.\n") );
+	    if (!opt.batch) {
+                tty_printf(_("public and secret key created and signed.\n") );
+                tty_printf(_("key marked as ultimately trusted.\n") );
+            }
+            
+
 	    if( !opt.batch
 		&& ( get_parameter_algo( para, pKEYTYPE ) == PUBKEY_ALGO_DSA
                      || no_enc_rsa )

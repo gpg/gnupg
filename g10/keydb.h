@@ -120,7 +120,6 @@ typedef enum {
     KEYDB_SEARCH_MODE_WORDS,
     KEYDB_SEARCH_MODE_SHORT_KID,
     KEYDB_SEARCH_MODE_LONG_KID,
-    KEYDB_SEARCH_MODE_TDBIDX,
     KEYDB_SEARCH_MODE_FPR16,
     KEYDB_SEARCH_MODE_FPR20,
     KEYDB_SEARCH_MODE_FPR,
@@ -130,6 +129,8 @@ typedef enum {
 
 struct keydb_search_desc {
     KeydbSearchMode mode;
+    int (*skipfnc)(void *,u32*);
+    void *skipfncvalue;
     union {
         const char *name;
         char fpr[MAX_FINGERPRINT_LEN];

@@ -528,6 +528,7 @@ hextobyte( const byte *s )
 /****************
  * Return the type of the user id:
  *
+ * Please use the constants KEYDB_SERCH_MODE_xxx
  *  0 = Invalid user ID
  *  1 = exact match
  *  2 = match a substring
@@ -625,11 +626,7 @@ classify_user_id2( const char *name,
 	    break;
 
 	case '#':  /* local user id */
-	    mode = KEYDB_SEARCH_MODE_TDBIDX;
-	    s++;
-            if (keyid_from_lid(strtoul(s, NULL, 10), desc->u.kid))
-                desc->u.kid[0] = desc->u.kid[1] = 0;
-	    break;
+            return 0; /* This is now obsolete and van't not be used anymore*/
         
         case ':': /*Unified fingerprint */
             {  
@@ -953,37 +950,6 @@ get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
 
     return rc;
 }
-
-
-
-/****************
- * Search for a key with the given lid and return the entire keyblock
- */
-int
-get_keyblock_bylid( KBNODE *ret_keyblock, ulong lid )
-{
-    int rc;
-    struct getkey_ctx_s ctx;
-    u32 kid[2];
-
-    if( keyid_from_lid( lid, kid ) )
-	kid[0] = kid[1] = 0;
-    memset( &ctx, 0, sizeof ctx );
-    ctx.exact = 1;
-    ctx.not_allocated = 1;
-    ctx.kr_handle = keydb_new (0);
-    ctx.nitems = 1;
-    ctx.items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
-    ctx.items[0].u.kid[0] = kid[0];
-    ctx.items[0].u.kid[1] = kid[1];
-    rc = lookup( &ctx,  ret_keyblock, 0 );
-    get_pubkey_end( &ctx );
-
-    return rc;
-}
-
-
-
 
 
 /****************

@@ -114,6 +114,7 @@ struct {
     int no_expensive_trust_checks;
     int no_sig_cache;
     int no_sig_create_check;
+    int no_auto_check_trustdb;
     int preserve_permissions;
     int no_homedir_creation;
 } opt;

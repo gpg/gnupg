@@ -149,8 +149,10 @@ show_revocation_reason( PKT_public_key *pk )
 
 
 static void
-show_paths( ulong lid, int only_first )
+show_paths (const PKT_public_key *pk, int only_first )
 {
+#warning must change enum_cert_paths to use pk
+#if 0    
     void *context = NULL;
     unsigned otrust, validity;
     int last_level, level;
@@ -168,6 +170,7 @@ show_paths( ulong lid, int only_first )
 	last_level = level;
 
 	rc = keyid_from_lid( lid, keyid );
+
 	if( rc ) {
 	    log_error("ooops: can't get keyid for lid %lu\n", lid);
 	    return;
@@ -206,6 +209,7 @@ show_paths( ulong lid, int only_first )
 	free_public_key( pk );
     }
     enum_cert_paths( &context, NULL, NULL, NULL ); /* release context */
+#endif
     tty_printf("\n");
 }
 
@@ -213,143 +217,144 @@ show_paths( ulong lid, int only_first )
 
 
 /****************
- * Returns true if an ownertrust has changed.
+ * mode: 0 = standard
+ *       1 = Without key info and additional menu option 'm'
+ * Returns: 
+ *      -2 = nothing changed - caller should show some additional info
+ *      -1 = quit operation
+ *       0 = nothing changed
+ *       1 = new ownertrust now ion new_trust
  */
 static int
-do_edit_ownertrust( ulong lid, int mode, unsigned *new_trust, int defer_help )
+do_edit_ownertrust (PKT_public_key *pk, int mode,
+                    unsigned *new_trust, int defer_help )
 {
-    char *p;
-    int rc;
-    size_t n;
-    u32 keyid[2];
-    PKT_public_key *pk ;
-    int changed=0;
-    int quit=0;
-    int show=0;
-    int did_help=defer_help;
+  char *p;
+  size_t n;
+  u32 keyid[2];
+  int changed=0;
+  int quit=0;
+  int show=0;
+  int did_help=defer_help;
 
-    rc = keyid_from_lid( lid, keyid );
-    if( rc ) {
-	log_error("ooops: can't get keyid for lid %lu\n", lid);
-	return 0;
-    }
+  keyid_from_pk (pk, keyid);
+  for(;;) {
+    /* a string with valid answers */
+    const char *ans = _("sSmMqQ");
 
-    pk = m_alloc_clear( sizeof *pk );
-    rc = get_pubkey( pk, keyid );
-    if( rc ) {
-	log_error("key %08lX: public key not found: %s\n",
-				(ulong)keyid[1], g10_errstr(rc) );
-	return 0;
-    }
-
-
-    for(;;) {
-	/* a string with valid answers */
-	const char *ans = _("sSmMqQ");
-
-	if( !did_help ) {
-	    if( !mode ) {
-		tty_printf(_("No trust value assigned to %lu:\n"
-			   "%4u%c/%08lX %s \""), lid,
-			  nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
-			  (ulong)keyid[1], datestr_from_pk( pk ) );
-		p = get_user_id( keyid, &n );
-		tty_print_utf8_string( p, n ),
-		m_free(p);
-		tty_printf("\"\n");
-                print_fingerprint (pk, NULL, 2);
-		tty_printf("\n");
-	    }
-	    tty_printf(_(
-"Please decide how far you trust this user to correctly\n"
-"verify other users' keys (by looking at passports,\n"
-"checking fingerprints from different sources...)?\n\n"
-" 1 = Don't know\n"
-" 2 = I do NOT trust\n"
-" 3 = I trust marginally\n"
-" 4 = I trust fully\n"
-" s = please show me more information\n") );
-	    if( mode )
-		tty_printf(_(" m = back to the main menu\n"));
-	    else
-		tty_printf(_(" q = quit\n"));
-	    tty_printf("\n");
-	    did_help = 1;
-	}
-	if( strlen(ans) != 6 )
-	    BUG();
-	p = cpr_get("edit_ownertrust.value",_("Your decision? "));
-	trim_spaces(p);
-	cpr_kill_prompt();
-	if( !*p )
-	    did_help = 0;
-	else if( *p && p[1] )
-	    ;
-	else if( !p[1] && (*p >= '1' && *p <= '4') ) {
-	    unsigned trust;
-	    switch( *p ) {
-	      case '1': trust = TRUST_UNDEFINED; break;
-	      case '2': trust = TRUST_NEVER    ; break;
-	      case '3': trust = TRUST_MARGINAL ; break;
-	      case '4': trust = TRUST_FULLY    ; break;
-	      default: BUG();
-	    }
-            *new_trust = trust;
-            changed = 1;
-            break;
-	}
-	else if( *p == ans[0] || *p == ans[1] ) {
-	    tty_printf(_(
-		"Certificates leading to an ultimately trusted key:\n"));
-	    show = 1;
-	    break;
-	}
-	else if( mode && (*p == ans[2] || *p == ans[3] || *p == CONTROL_D ) ) {
-	    break ; /* back to the menu */
-	}
-	else if( !mode && (*p == ans[4] || *p == ans[5] ) ) {
-	    quit = 1;
-	    break ; /* back to the menu */
-	}
-	m_free(p); p = NULL;
-    }
-    m_free(p);
-    m_free(pk);
-    return show? -2: quit? -1 : changed;
+    if( !did_help ) 
+      {
+        if( !mode ) 
+          {
+            tty_printf(_("No trust value assigned to:\n"
+                         "%4u%c/%08lX %s \""),
+                       nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
+                       (ulong)keyid[1], datestr_from_pk( pk ) );
+            p = get_user_id( keyid, &n );
+            tty_print_utf8_string( p, n ),
+              m_free(p);
+            tty_printf("\"\n");
+            print_fingerprint (pk, NULL, 2);
+            tty_printf("\n");
+          }
+        tty_printf(_(
+                     "Please decide how far you trust this user to correctly\n"
+                     "verify other users' keys (by looking at passports,\n"
+                     "checking fingerprints from different sources...)?\n\n"
+                     " 1 = Don't know\n"
+                     " 2 = I do NOT trust\n"
+                     " 3 = I trust marginally\n"
+                     " 4 = I trust fully\n"
+                     " s = please show me more information\n") );
+        if( mode )
+          tty_printf(_(" m = back to the main menu\n"));
+        else
+          tty_printf(_(" q = quit\n"));
+        tty_printf("\n");
+        did_help = 1;
+      }
+    if( strlen(ans) != 6 )
+      BUG();
+    p = cpr_get("edit_ownertrust.value",_("Your decision? "));
+    trim_spaces(p);
+    cpr_kill_prompt();
+    if( !*p )
+      did_help = 0;
+    else if( *p && p[1] )
+      ;
+    else if( !p[1] && (*p >= '1' && *p <= '4') ) 
+      {
+        unsigned trust;
+        switch( *p )
+          {
+          case '1': trust = TRUST_UNDEFINED; break;
+          case '2': trust = TRUST_NEVER    ; break;
+          case '3': trust = TRUST_MARGINAL ; break;
+          case '4': trust = TRUST_FULLY    ; break;
+          default: BUG();
+          }
+        *new_trust = trust;
+        changed = 1;
+        break;
+      }
+    else if( *p == ans[0] || *p == ans[1] ) 
+      {
+        tty_printf(_("Certificates leading to an ultimately trusted key:\n"));
+        show = 1;
+        break;
+      }
+    else if( mode && (*p == ans[2] || *p == ans[3] || *p == CONTROL_D ) ) 
+      {
+        break ; /* back to the menu */
+      }
+    else if( !mode && (*p == ans[4] || *p == ans[5] ) )
+      {
+        quit = 1;
+        break ; /* back to the menu */
+      }
+    m_free(p); p = NULL;
+  }
+  m_free(p);
+  return show? -2: quit? -1 : changed;
 }
 
-
+/* 
+ * Display a menu to change the ownertrust of the key PK (which should
+ * be a primary key).  
+ * For mode values see do_edit_ownertrust ()
+ */
 int
-edit_ownertrust( ulong lid, int mode )
+edit_ownertrust (PKT_public_key *pk, int mode )
 {
-    unsigned int trust;
-    int no_help = 0;
+  unsigned int trust;
+  int no_help = 0;
 
-    for(;;) {
-	switch( do_edit_ownertrust( lid, mode, &trust, no_help ) ) {
-	  case -1:
-	    return 0;
-	  case -2:
-	    show_paths( lid, 1	);
-	    no_help = 1;
-	    break;
-	  case 1:
-	    trust &= ~TRUST_FLAG_DISABLED;
-	    trust |= get_ownertrust( lid ) & TRUST_FLAG_DISABLED;
-	    if( !update_ownertrust( lid, trust ) )
-		return 1;
-	    return 0;
-	  default:
-	    return 0;
-	}
+  for(;;)
+    {
+      switch ( do_edit_ownertrust (pk, mode, &trust, no_help ) )
+        {
+        case -1: /* quit */
+          return 0;
+        case -2: /* show info */
+          show_paths(pk, 1);
+          no_help = 1;
+          break;
+        case 1: /* trust value set */
+          trust &= ~TRUST_FLAG_DISABLED;
+          trust |= get_ownertrust (pk) & TRUST_FLAG_DISABLED;
+          update_ownertrust (pk, trust );
+          return 0;
+        default:
+          return 0;
+        }
     }
 }
 
 static int
-add_ownertrust_cb( ulong lid )
+add_ownertrust_cb (PKT_public_key *pk )
 {
-    unsigned trust;
-    int rc = do_edit_ownertrust( lid, 0, &trust, 0 );
+    unsigned int trust;
+    int rc = do_edit_ownertrust (pk, 0, &trust, 0 );
 
     if( rc == 1 )
 	return trust & TRUST_MASK;
@@ -368,13 +373,14 @@ add_ownertrust( PKT_public_key *pk, int *quit, int *trustlevel )
     int rc;
     unsigned flags = 0;
 
+#warning This function does not make sense anymore
     *quit = 0;
     *trustlevel = 0;
     tty_printf(
 _("Could not find a valid trust path to the key.  Let's see whether we\n"
   "can assign some missing owner trust values.\n\n"));
 
-    rc = check_trust( pk, trustlevel, NULL, add_ownertrust_cb, &flags );
+    *trustlevel = get_validity ( pk, NULL);
 
     if( !(flags & 1) )
 	tty_printf(_("No path leading to one of our keys found.\n\n") );
@@ -436,17 +442,8 @@ do_we_trust( PKT_public_key *pk, int *trustlevel )
 
     switch( (*trustlevel & TRUST_MASK) ) {
       case TRUST_UNKNOWN: /* No pubkey in trustDB: Insert and check again */
-	rc = insert_trust_record_by_pk( pk );
-	if( rc ) {
-	    log_error("failed to insert it into the trustdb: %s\n",
-						      g10_errstr(rc) );
-	    return 0; /* no */
-	}
-	rc = check_trust( pk, trustlevel, NULL, NULL, NULL );
+	*trustlevel = get_validity (pk, NULL);
 	*trustlevel &= ~trustmask;
-	if( rc )
-	    log_fatal("trust check after insert failed: %s\n",
-						      g10_errstr(rc) );
 	if( *trustlevel == TRUST_UNKNOWN || *trustlevel == TRUST_EXPIRED ) {
 	    log_debug("do_we_trust: oops at %d\n", __LINE__ );
 	    return 0;
@@ -587,11 +584,7 @@ check_signatures_trust( PKT_signature *sig )
 	goto leave;
     }
 
-    rc = check_trust( pk, &trustlevel, NULL, NULL, NULL );
-    if( rc ) {
-	log_error("check trust failed: %s\n", g10_errstr(rc));
-	goto leave;
-    }
+    trustlevel = get_validity (pk, NULL);
 
   retry:
     if( (trustlevel & TRUST_FLAG_REVOKED) ) {
@@ -609,16 +602,7 @@ check_signatures_trust( PKT_signature *sig )
 
     switch( (trustlevel & TRUST_MASK) ) {
       case TRUST_UNKNOWN: /* No pubkey in trustDB: Insert and check again */
-	rc = insert_trust_record_by_pk( pk );
-	if( rc ) {
-	    log_error("failed to insert it into the trustdb: %s\n",
-						      g10_errstr(rc) );
-	    goto leave;
-	}
-	rc = check_trust( pk, &trustlevel, NULL, NULL, NULL );
-	if( rc )
-	    log_fatal("trust check after insert failed: %s\n",
-						      g10_errstr(rc) );
+	trustlevel = get_validity (pk, NULL);
 	if( trustlevel == TRUST_UNKNOWN || trustlevel == TRUST_EXPIRED )
 	    BUG();
 	goto retry;
@@ -851,13 +835,8 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		else {
 		    int trustlevel;
 
-		    rc = check_trust( pk, &trustlevel, pk->namehash,
-						       NULL, NULL );
-		    if( rc ) {
-			log_error("error checking pk of `%s': %s\n",
-						     answer, g10_errstr(rc) );
-		    }
-		    else if( (trustlevel & TRUST_FLAG_DISABLED) ) {
+		    trustlevel = get_validity (pk, NULL);
+		    if( (trustlevel & TRUST_FLAG_DISABLED) ) {
 			tty_printf(_("Public key is disabled.\n") );
 		    }
 		    else if( do_we_trust_pre( pk, trustlevel ) ) {
@@ -929,17 +908,8 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
 		int trustlevel;
 
-		rc = check_trust( pk, &trustlevel, pk->namehash, NULL, NULL );
-		if( rc ) {
-		    free_public_key( pk ); pk = NULL;
-		    log_error(_("%s: error checking key: %s\n"),
-						      remusr->d, g10_errstr(rc) );
-                    write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
-                                                  remusr->d,
-                                                  strlen (remusr->d),
-                                                  -1);
-		}
-		else if( (trustlevel & TRUST_FLAG_DISABLED) ) {
+		trustlevel = get_validity (pk, pk->namehash);
+		if( (trustlevel & TRUST_FLAG_DISABLED) ) {
 		    free_public_key(pk); pk = NULL;
 		    log_info(_("%s: skipped: public key is disabled\n"),
 								    remusr->d);

@@ -1,4 +1,29 @@
-2001-09-20  Werner Koch  <wk@gnupg.org>
+2001-09-24  Werner Koch  <wk@gnupg.org>
+
+	* g10.c, options.h: New option --no-auto-check-trustdb.
+
+	* keygen.c (do_generate_keypair): Set newly created keys to
+	ultimately trusted.
+
+	* tdbio.h, tdbio.c: Removed all support for records DIR, KEY, UID,
+	PREF, SIG, SDIR and CACH. Changed migration function to work
+	direct on the file.
+	(tdbio_read_nextcheck): New.
+	(tdbio_write_nextcheck): New. 
+
+2001-09-21  Werner Koch  <wk@gnupg.org>
+
+	Revamped the entire key validation system.
+	* trustdb.c: Complete rewrite. No more validation on demand,
+	removed some functions, adjusted to all callers to use the new 
+	and much simpler interface. Does not use the LID anymore.
+	* tdbio.c, tdbio.h: Add new record types trust and valid. Wrote a
+	migration function to convert to the new trustdb layout.
+	* getkey.c (classify_user_id2): Do not allow the use of the "#"
+	prefix. 
+	* keydb.h: Removed the TDBIDX mode add a skipfnc to the
+	descriptor.
+	* keyring.c (keyring_search): Implemented skipfnc.
 
 	* passphrase.c (agent_open): Add missing bracket.  Include windows.h.
 

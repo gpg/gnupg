@@ -748,7 +748,7 @@ list_node( CTX c, KBNODE node )
 	    if( mainkey ) {
 		c->local_id = pk->local_id;
 		c->trustletter = opt.fast_list_mode?
-					   0 : query_trust_info( pk, NULL );
+					   0 : get_validity_info( pk, NULL );
 	    }
 	    printf("%s:", mainkey? "pub":"sub" );
 	    if( c->trustletter )
@@ -762,8 +762,8 @@ list_node( CTX c, KBNODE node )
 	    if( c->local_id )
 		printf("%lu", c->local_id );
 	    putchar(':');
-	    if( c->local_id && !opt.fast_list_mode )
-		putchar( get_ownertrust_info( c->local_id ) );
+	    if( mainkey && !opt.fast_list_mode )
+                 putchar( get_ownertrust_info (pk) );
 	    putchar(':');
 	    if( node->next && node->next->pkt->pkttype == PKT_RING_TRUST) {
 		putchar('\n'); any=1;

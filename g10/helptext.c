@@ -203,11 +203,18 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
  "self-signatures fill be advanced by one second.\n"
 )},
 
+{ "keyedit.trust.set_ultimate.okay", N_(
+ "To build the Web-of-Trust, GnuPG needs to know which keys are\n"
+ "ultimately trusted - those are usually the keys for which you have\n"
+ "access to the secret key.  Answer \"yes\" to set this key to\n"
+ "ultimately trusted; if you choose not to do so, you will then be\n"
+ "taken to the regular ownertrust menu.\n"
+)},
+
 
 { "passphrase.enter", N_(
  ""
 "Please enter the passhrase; this is a secret sentence \n"
-"  Blurb, blurb,.... "
 )},
 
 

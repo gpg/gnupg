@@ -83,6 +83,8 @@ static int  db_fd = -1;
 static int in_transaction;
 
 static void open_db(void);
+static void migrate_from_v2 (void);
+
 
 
 /*************************************
@@ -406,6 +408,28 @@ cleanup(void)
     }
 }
 
+static int
+create_version_record (void)
+{
+  TRUSTREC rec;
+  int rc;
+  
+  memset( &rec, 0, sizeof rec );
+  rec.r.ver.version = 3;
+  rec.r.ver.created = make_timestamp();
+  rec.r.ver.marginals =  opt.marginals_needed;
+  rec.r.ver.completes =  opt.completes_needed;
+  rec.r.ver.cert_depth = opt.max_cert_depth;
+  rec.rectype = RECTYPE_VER;
+  rec.recnum = 0;
+  rc = tdbio_write_record( &rec );
+  if( !rc )
+    tdbio_sync();
+  return rc;
+}
+
+
+
 int
 tdbio_set_dbname( const char *new_dbname, int create )
 {
@@ -469,17 +493,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 		log_fatal( _("%s: can't create lock\n"), db_name );
 #endif /* !__riscos__ */
 
-	    memset( &rec, 0, sizeof rec );
-	    rec.r.ver.version = 2;
-	    rec.r.ver.created = make_timestamp();
-	    rec.r.ver.marginals =  opt.marginals_needed;
-	    rec.r.ver.completes =  opt.completes_needed;
-	    rec.r.ver.cert_depth = opt.max_cert_depth;
-	    rec.rectype = RECTYPE_VER;
-	    rec.recnum = 0;
-	    rc = tdbio_write_record( &rec );
-	    if( !rc )
-		tdbio_sync();
+            rc = create_version_record ();
 	    if( rc )
 		log_fatal( _("%s: failed to create version record: %s"),
 						   fname, g10_errstr(rc));
@@ -510,31 +524,45 @@ tdbio_get_dbname()
 static void
 open_db()
 {
-    TRUSTREC rec;
-    assert( db_fd == -1 );
+  byte buf[10];
+  int n;
+  TRUSTREC rec;
 
-    if( !lockhandle )
-	lockhandle = create_dotlock( db_name );
-    if( !lockhandle )
-	log_fatal( _("%s: can't create lock\n"), db_name );
+  assert( db_fd == -1 );
+
+  if (!lockhandle )
+    lockhandle = create_dotlock( db_name );
+  if (!lockhandle )
+    log_fatal( _("%s: can't create lock\n"), db_name );
 #ifdef __riscos__
-    if( make_dotlock( lockhandle, -1 ) )
-        log_fatal( _("%s: can't make lock\n"), db_name );
+  if (make_dotlock( lockhandle, -1 ) )
+    log_fatal( _("%s: can't make lock\n"), db_name );
 #endif /* __riscos__ */
-  #ifdef HAVE_DOSISH_SYSTEM
-    db_fd = open( db_name, O_RDWR | O_BINARY );
-  #else
-    db_fd = open( db_name, O_RDWR );
-  #endif
-    if( db_fd == -1 )
-	log_fatal( _("%s: can't open: %s\n"), db_name, strerror(errno) );
-    if( tdbio_read_record( 0, &rec, RECTYPE_VER ) )
-	log_fatal( _("%s: invalid trustdb\n"), db_name );
+#ifdef HAVE_DOSISH_SYSTEM
+  db_fd = open (db_name, O_RDWR | O_BINARY );
+#else
+  db_fd = open (db_name, O_RDWR );
+#endif
+  if ( db_fd == -1 )
+    log_fatal( _("%s: can't open: %s\n"), db_name, strerror(errno) );
+
+  /* check whether we need to do a version migration */
+  do
+    n = read (db_fd, buf, 5);
+  while (n==-1 && errno == EINTR);
+  if (n == 5 && !memcmp (buf, "\x01gpg\x02", 5))
+    {
+      migrate_from_v2 ();
+    }
+  
+  /* read the version record */
+  if (tdbio_read_record (0, &rec, RECTYPE_VER ) )
+    log_fatal( _("%s: invalid trustdb\n"), db_name );
 }
 
 
 /****************
- * Make a hashtable: type 0 = key hash, 1 = sdir hash
+ * Make a hashtable: type 0 = trust hash
  */
 static void
 create_hashtable( TRUSTREC *vr, int type )
@@ -551,9 +579,8 @@ create_hashtable( TRUSTREC *vr, int type )
     assert(recnum); /* this is will never be the first record */
 
     if( !type )
-	vr->r.ver.keyhashtbl = recnum;
-    else
-	vr->r.ver.sdirhashtbl = recnum;
+	vr->r.ver.trusthashtbl = recnum;
+
     /* Now write the records */
     n = (256+ITEMS_PER_HTBL_RECORD-1) / ITEMS_PER_HTBL_RECORD;
     for(i=0; i < n; i++, recnum++ ) {
@@ -612,50 +639,36 @@ tdbio_db_matches_options()
 
 
 /****************
- * Return the modifiy stamp.
- * if modify_down is true, the modify_down stamp will be
- * returned, otherwise the modify_up stamp.
+ * Return the nextstamp value.
  */
 ulong
-tdbio_read_modify_stamp( int modify_down )
+tdbio_read_nextcheck ()
 {
     TRUSTREC vr;
     int rc;
-    ulong mod;
 
     rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
     if( rc )
 	log_fatal( _("%s: error reading version record: %s\n"),
 						    db_name, g10_errstr(rc) );
-
-    mod = modify_down? vr.r.ver.mod_down : vr.r.ver.mod_up;
-
-    /* Always return at least 1 to make comparison easier;
-     * this is still far back in history (before Led Zeppelin III :-) */
-    return mod ? mod : 1;
+    return vr.r.ver.nextcheck;
 }
 
 void
-tdbio_write_modify_stamp( int up, int down )
+tdbio_write_nextcheck (ulong stamp)
 {
     TRUSTREC vr;
     int rc;
-    ulong stamp;
-
-    if( !(up || down) )
-	return;
 
     rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
     if( rc )
 	log_fatal( _("%s: error reading version record: %s\n"),
 				       db_name, g10_errstr(rc) );
 
-    stamp = make_timestamp();
-    if( down )
-	vr.r.ver.mod_down = stamp;
-    if( up )
-	vr.r.ver.mod_up = stamp;
+    if (vr.r.ver.nextcheck == stamp)
+      return;
 
+    vr.r.ver.nextcheck = stamp;
     rc = tdbio_write_record( &vr );
     if( rc )
 	log_fatal( _("%s: error writing version record: %s\n"),
@@ -663,15 +676,16 @@ tdbio_write_modify_stamp( int up, int down )
 }
 
 
+
 /****************
- * Return the record number of the keyhash tbl or create a new one.
+ * Return the record number of the trusthash tbl or create a new one.
  */
 static ulong
-get_keyhashrec(void)
+get_trusthashrec(void)
 {
-    static ulong keyhashtbl; /* record number of the key hashtable */
+    static ulong trusthashtbl; /* record number of the trust hashtable */
 
-    if( !keyhashtbl ) {
+    if( !trusthashtbl ) {
 	TRUSTREC vr;
 	int rc;
 
@@ -679,38 +693,14 @@ get_keyhashrec(void)
 	if( rc )
 	    log_fatal( _("%s: error reading version record: %s\n"),
 					    db_name, g10_errstr(rc) );
-	if( !vr.r.ver.keyhashtbl )
+	if( !vr.r.ver.trusthashtbl )
 	    create_hashtable( &vr, 0 );
 
-	keyhashtbl = vr.r.ver.keyhashtbl;
+	trusthashtbl = vr.r.ver.trusthashtbl;
     }
-    return keyhashtbl;
+    return trusthashtbl;
 }
 
-/****************
- * Return the record number of the shadow direcory hash table
- * or create a new one.
- */
-static ulong
-get_sdirhashrec(void)
-{
-    static ulong sdirhashtbl; /* record number of the hashtable */
-
-    if( !sdirhashtbl ) {
-	TRUSTREC vr;
-	int rc;
-
-	rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
-	if( rc )
-	    log_fatal( _("%s: error reading version record: %s\n"),
-						    db_name, g10_errstr(rc) );
-	if( !vr.r.ver.sdirhashtbl )
-	    create_hashtable( &vr, 1 );
-
-	sdirhashtbl = vr.r.ver.sdirhashtbl;
-    }
-    return sdirhashtbl;
-}
 
 
 /****************
@@ -827,9 +817,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 		}
 	    } /* end loop over hlst slots */
 	}
-	else if( rec.rectype == RECTYPE_KEY
-		 || rec.rectype == RECTYPE_DIR
-		 || rec.rectype == RECTYPE_SDIR ) { /* insert a list record */
+	else if( rec.rectype == RECTYPE_TRUST ) { /* insert a list record */
 	    if( rec.recnum == newrecnum ) {
 		return 0;
 	    }
@@ -1036,56 +1024,15 @@ lookup_hashtable( ulong table, const byte *key, size_t keylen,
 }
 
 
-
-
 /****************
- * Update the key hashtbl or create the table if it does not exist
+ * Update the trust hashtbl or create the table if it does not exist
  */
 static int
-update_keyhashtbl( TRUSTREC *kr )
+update_trusthashtbl( TRUSTREC *tr )
 {
-    return upd_hashtable( get_keyhashrec(),
-			  kr->r.key.fingerprint,
-			  kr->r.key.fingerprint_len, kr->recnum );
+    return upd_hashtable( get_trusthashrec(),
+			  tr->r.trust.fingerprint, 20, tr->recnum );
 }
-
-/****************
- * Update the shadow dir hashtbl or create the table if it does not exist
- */
-static int
-update_sdirhashtbl( TRUSTREC *sr )
-{
-    byte key[8];
-
-    u32tobuf( key   , sr->r.sdir.keyid[0] );
-    u32tobuf( key+4 , sr->r.sdir.keyid[1] );
-    return upd_hashtable( get_sdirhashrec(), key, 8, sr->recnum );
-}
-
-/****************
- * Drop the records from the key-hashtbl
- */
-static int
-drop_from_keyhashtbl( TRUSTREC *kr )
-{
-    return drop_from_hashtable( get_keyhashrec(),
-				kr->r.key.fingerprint,
-				kr->r.key.fingerprint_len, kr->recnum );
-}
-
-/****************
- * Drop record drom the shadow dir hashtbl
- */
-static int
-drop_from_sdirhashtbl( TRUSTREC *sr )
-{
-    byte key[8];
-
-    u32tobuf( key   , sr->r.sdir.keyid[0] );
-    u32tobuf( key+4 , sr->r.sdir.keyid[1] );
-    return drop_from_hashtable( get_sdirhashrec(), key, 8, sr->recnum );
-}
-
 
 
 
@@ -1094,7 +1041,6 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 {
     int i;
     ulong rnum = rec->recnum;
-    byte *p;
 
     fprintf(fp, "rec %5lu, ", rnum );
 
@@ -1102,115 +1048,17 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
       case 0: fprintf(fp, "blank\n");
 	break;
       case RECTYPE_VER: fprintf(fp,
-	    "version, kd=%lu, sd=%lu, free=%lu, m/c/d=%d/%d/%d down=%s",
-	    rec->r.ver.keyhashtbl, rec->r.ver.sdirhashtbl,
+	    "version, td=%lu, f=%lu, m/c/d=%d/%d/%d nc=%lu (%s)\n",
+                                   rec->r.ver.trusthashtbl,
 				   rec->r.ver.firstfree,
 				   rec->r.ver.marginals,
 				   rec->r.ver.completes,
 				   rec->r.ver.cert_depth,
-				   strtimestamp(rec->r.ver.mod_down) );
-	    fprintf(fp, ", up=%s\n", strtimestamp(rec->r.ver.mod_up) );
+                                   rec->r.ver.nextcheck,
+				   strtimestamp(rec->r.ver.nextcheck)
+                                 );
 	break;
       case RECTYPE_FREE: fprintf(fp, "free, next=%lu\n", rec->r.free.next );
-	break;
-      case RECTYPE_DIR:
-	fprintf(fp, "dir %lu, keys=%lu, uids=%lu, t=%02x",
-		    rec->r.dir.lid,
-		    rec->r.dir.keylist,
-		    rec->r.dir.uidlist,
-		    rec->r.dir.ownertrust );
-	if( rec->r.dir.valcheck )
-	    fprintf( fp, ", v=%02x/%s", rec->r.dir.validity,
-					strtimestamp(rec->r.dir.valcheck) );
-	if( rec->r.dir.checkat )
-	    fprintf( fp, ", a=%s", strtimestamp(rec->r.dir.checkat) );
-	if( rec->r.dir.dirflags & DIRF_CHECKED ) {
-	    if( rec->r.dir.dirflags & DIRF_VALID )
-		fputs(", valid", fp );
-	    if( rec->r.dir.dirflags & DIRF_EXPIRED )
-		fputs(", expired", fp );
-	    if( rec->r.dir.dirflags & DIRF_REVOKED )
-		fputs(", revoked", fp );
-	    if( rec->r.dir.dirflags & DIRF_NEWKEYS )
-		fputs(", newkeys", fp );
-	}
-	putc('\n', fp);
-	break;
-      case RECTYPE_KEY:
-	fprintf(fp, "key %lu, n=%lu a=%d ",
-		   rec->r.key.lid,
-		   rec->r.key.next,
-		   rec->r.key.pubkey_algo );
-	for(i=0; i < rec->r.key.fingerprint_len; i++ )
-	    fprintf(fp, "%02X", rec->r.key.fingerprint[i] );
-	if( rec->r.key.keyflags & KEYF_CHECKED ) {
-	    if( rec->r.key.keyflags & KEYF_VALID )
-		fputs(", valid", fp );
-	    if( rec->r.key.keyflags & KEYF_EXPIRED )
-		fputs(", expired", fp );
-	    if( rec->r.key.keyflags & KEYF_REVOKED )
-		fputs(", revoked", fp );
-	}
-	putc('\n', fp);
-	break;
-      case RECTYPE_UID:
-	fprintf(fp, "uid %lu, next=%lu, pref=%lu, sig=%lu, hash=%02X%02X",
-		    rec->r.uid.lid,
-		    rec->r.uid.next,
-		    rec->r.uid.prefrec,
-		    rec->r.uid.siglist,
-		    rec->r.uid.namehash[18], rec->r.uid.namehash[19]);
-	fprintf( fp, ", v=%02x", rec->r.uid.validity );
-	if( rec->r.uid.uidflags & UIDF_CHECKED ) {
-	    if( rec->r.uid.uidflags & UIDF_VALID )
-		fputs(", valid", fp );
-	    if( rec->r.uid.uidflags & UIDF_REVOKED )
-		fputs(", revoked", fp );
-	}
-	putc('\n', fp);
-	break;
-      case RECTYPE_PREF:
-	fprintf(fp, "pref %lu, next=%lu,",
-		    rec->r.pref.lid, rec->r.pref.next);
-	for(i=0,p=rec->r.pref.data; i < ITEMS_PER_PREF_RECORD; i+=2,p+=2 ) {
-	    if( *p )
-		fprintf(fp, " %c%d", *p == PREFTYPE_SYM    ? 'S' :
-				     *p == PREFTYPE_HASH   ? 'H' :
-				     *p == PREFTYPE_ZIP  ? 'Z' : '?', p[1]);
-	}
-	putc('\n', fp);
-	break;
-      case RECTYPE_SIG:
-	fprintf(fp, "sig %lu, next=%lu,",
-			 rec->r.sig.lid, rec->r.sig.next );
-	for(i=0; i < SIGS_PER_RECORD; i++ ) {
-	    if( rec->r.sig.sig[i].lid ) {
-		fprintf(fp, " %lu:", rec->r.sig.sig[i].lid );
-		if( rec->r.sig.sig[i].flag & SIGF_CHECKED ) {
-		    fprintf(fp,"%c%c%c",
-		       (rec->r.sig.sig[i].flag & SIGF_VALID)   ? 'V':
-		       (rec->r.sig.sig[i].flag & SIGF_IGNORED) ? 'I':'-',
-		       (rec->r.sig.sig[i].flag & SIGF_EXPIRED) ? 'E':'-',
-		       (rec->r.sig.sig[i].flag & SIGF_REVOKED) ? 'R':'-');
-		}
-		else if( rec->r.sig.sig[i].flag & SIGF_NOPUBKEY)
-		    fputs("?--", fp);
-		else
-		    fputs("---", fp);
-	    }
-	}
-	putc('\n', fp);
-	break;
-      case RECTYPE_SDIR:
-	fprintf(fp, "sdir %lu, keyid=%08lX%08lX, algo=%d, hint=%lu\n",
-		    rec->r.sdir.lid,
-		    (ulong)rec->r.sdir.keyid[0],
-		    (ulong)rec->r.sdir.keyid[1],
-		    rec->r.sdir.pubkey_algo,
-		    (ulong)rec->r.sdir.hintlist );
-	break;
-      case RECTYPE_CACH:
-	fprintf(fp, "cach\n");
 	break;
       case RECTYPE_HTBL:
 	fprintf(fp, "htbl,");
@@ -1223,6 +1071,20 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 	for(i=0; i < ITEMS_PER_HLST_RECORD; i++ )
 	    fprintf(fp, " %lu", rec->r.hlst.rnum[i] );
 	putc('\n', fp);
+	break;
+      case RECTYPE_TRUST:
+	fprintf(fp, "trust ");
+	for(i=0; i < 20; i++ )
+	    fprintf(fp, "%02X", rec->r.trust.fingerprint[i] );
+        fprintf (fp, ", ot=%d, d=%d, vl=%lu\n", rec->r.trust.ownertrust,
+                 rec->r.trust.depth, rec->r.trust.validlist);
+	break;
+      case RECTYPE_VALID:
+	fprintf(fp, "valid ");
+	for(i=0; i < 20; i++ )
+	    fprintf(fp, "%02X", rec->r.valid.namehash[i] );
+        fprintf (fp, ", v=%d, next=%lu\n", rec->r.valid.validity,
+                 rec->r.valid.next);
 	break;
       default:
 	fprintf(fp, "unknown type %d\n", rec->rectype );
@@ -1279,24 +1141,25 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	    log_error( _("%s: not a trustdb file\n"), db_name );
 	    rc = G10ERR_TRUSTDB;
 	}
-	p += 2; /* skip "pgp" */
+	p += 2; /* skip "gpg" */
 	rec->r.ver.version  = *p++;
 	rec->r.ver.marginals = *p++;
 	rec->r.ver.completes = *p++;
 	rec->r.ver.cert_depth = *p++;
 	p += 4; /* lock flags */
 	rec->r.ver.created  = buftoulong(p); p += 4;
-	rec->r.ver.mod_down = buftoulong(p); p += 4;
-	rec->r.ver.mod_up   = buftoulong(p); p += 4;
-	rec->r.ver.keyhashtbl=buftoulong(p); p += 4;
+	rec->r.ver.nextcheck = buftoulong(p); p += 4;
+	p += 4;
+	p += 4;
 	rec->r.ver.firstfree =buftoulong(p); p += 4;
-	rec->r.ver.sdirhashtbl =buftoulong(p); p += 4;
+	p += 4;
+	rec->r.ver.trusthashtbl =buftoulong(p); p += 4;
 	if( recnum ) {
 	    log_error( _("%s: version record with recnum %lu\n"), db_name,
 							     (ulong)recnum );
 	    rc = G10ERR_TRUSTDB;
 	}
-	else if( rec->r.ver.version != 2 ) {
+	else if( rec->r.ver.version != 3 ) {
 	    log_error( _("%s: invalid file version %d\n"), db_name,
 							rec->r.ver.version );
 	    rc = G10ERR_TRUSTDB;
@@ -1304,95 +1167,6 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	break;
       case RECTYPE_FREE:
 	rec->r.free.next  = buftoulong(p); p += 4;
-	break;
-      case RECTYPE_DIR:   /*directory record */
-	rec->r.dir.lid	    = buftoulong(p); p += 4;
-	rec->r.dir.keylist  = buftoulong(p); p += 4;
-	rec->r.dir.uidlist  = buftoulong(p); p += 4;
-	rec->r.dir.cacherec = buftoulong(p); p += 4;
-	rec->r.dir.ownertrust = *p++;
-	rec->r.dir.dirflags   = *p++;
-	rec->r.dir.validity   = *p++;
-	rec->r.dir.valcheck   = buftoulong(p); p += 4;
-	rec->r.dir.checkat    = buftoulong(p); p += 4;
-	switch( rec->r.dir.validity ) {
-	  case 0:
-	  case TRUST_UNDEFINED:
-	  case TRUST_NEVER:
-	  case TRUST_MARGINAL:
-	  case TRUST_FULLY:
-	  case TRUST_ULTIMATE:
-	    break;
-	  default:
-	    log_info("lid %lu: invalid validity value - cleared\n", recnum);
-	}
-	if( rec->r.dir.lid != recnum ) {
-	    log_error( "%s: dir LID != recnum (%lu,%lu)\n",
-			      db_name, rec->r.dir.lid, (ulong)recnum );
-	    rc = G10ERR_TRUSTDB;
-	}
-	break;
-      case RECTYPE_KEY:   /* public key record */
-	rec->r.key.lid	    = buftoulong(p); p += 4;
-	rec->r.key.next     = buftoulong(p); p += 4;
-	p += 7;
-	rec->r.key.keyflags = *p++;
-	rec->r.key.pubkey_algo = *p++;
-	rec->r.key.fingerprint_len = *p++;
-	if( rec->r.key.fingerprint_len < 1 || rec->r.key.fingerprint_len > 20 )
-	    rec->r.key.fingerprint_len = 20;
-	memcpy( rec->r.key.fingerprint, p, 20);
-	break;
-      case RECTYPE_UID:   /* user id record */
-	rec->r.uid.lid	    = buftoulong(p); p += 4;
-	rec->r.uid.next     = buftoulong(p); p += 4;
-	rec->r.uid.prefrec  = buftoulong(p); p += 4;
-	rec->r.uid.siglist  = buftoulong(p); p += 4;
-	rec->r.uid.uidflags = *p++;
-	rec->r.uid.validity   = *p++;
-	switch( rec->r.uid.validity ) {
-	  case 0:
-	  case TRUST_UNDEFINED:
-	  case TRUST_NEVER:
-	  case TRUST_MARGINAL:
-	  case TRUST_FULLY:
-	  case TRUST_ULTIMATE:
-	    break;
-	  default:
-	    log_info("lid %lu: invalid validity value - cleared\n", recnum);
-	}
-	memcpy( rec->r.uid.namehash, p, 20);
-	break;
-      case RECTYPE_PREF:  /* preference record */
-	rec->r.pref.lid     = buftoulong(p); p += 4;
-	rec->r.pref.next    = buftoulong(p); p += 4;
-	memcpy( rec->r.pref.data, p, 30 );
-	break;
-      case RECTYPE_SIG:
-	rec->r.sig.lid	   = buftoulong(p); p += 4;
-	rec->r.sig.next    = buftoulong(p); p += 4;
-	for(i=0; i < SIGS_PER_RECORD; i++ ) {
-	    rec->r.sig.sig[i].lid  = buftoulong(p); p += 4;
-	    rec->r.sig.sig[i].flag = *p++;
-	}
-	break;
-      case RECTYPE_SDIR:   /* shadow directory record */
-	rec->r.sdir.lid     = buftoulong(p); p += 4;
-	rec->r.sdir.keyid[0]= buftou32(p); p += 4;
-	rec->r.sdir.keyid[1]= buftou32(p); p += 4;
-	rec->r.sdir.pubkey_algo = *p++;
-	p += 3;
-	rec->r.sdir.hintlist = buftoulong(p);
-	if( rec->r.sdir.lid != recnum ) {
-	    log_error( "%s: sdir LID != recnum (%lu,%lu)\n",
-			       db_name, rec->r.sdir.lid, (ulong)recnum );
-	    rc = G10ERR_TRUSTDB;
-	}
-	break;
-      case RECTYPE_CACH:   /* cache record */
-	rec->r.cache.lid    = buftoulong(p); p += 4;
-	memcpy(rec->r.cache.blockhash, p, 20); p += 20;
-	rec->r.cache.trustlevel = *p++;
 	break;
       case RECTYPE_HTBL:
 	for(i=0; i < ITEMS_PER_HTBL_RECORD; i++ ) {
@@ -1404,6 +1178,18 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	for(i=0; i < ITEMS_PER_HLST_RECORD; i++ ) {
 	    rec->r.hlst.rnum[i] = buftoulong(p); p += 4;
 	}
+	break;
+      case RECTYPE_TRUST:
+	memcpy( rec->r.trust.fingerprint, p, 20); p+=20;
+        rec->r.trust.ownertrust = *p++;
+        rec->r.trust.depth = *p++;
+        p += 2;
+	rec->r.trust.validlist  = buftoulong(p); p += 4;
+	break;
+      case RECTYPE_VALID:
+	memcpy( rec->r.valid.namehash, p, 20); p+=20;
+        rec->r.valid.validity = *p++;
+	rec->r.valid.next = buftoulong(p); p += 4;
 	break;
       default:
 	log_error( "%s: invalid record type %d at recnum %lu\n",
@@ -1445,79 +1231,18 @@ tdbio_write_record( TRUSTREC *rec )
 	*p++ = rec->r.ver.cert_depth;
 	p += 4; /* skip lock flags */
 	ulongtobuf(p, rec->r.ver.created); p += 4;
-	ulongtobuf(p, rec->r.ver.mod_down); p += 4;
-	ulongtobuf(p, rec->r.ver.mod_up); p += 4;
-	ulongtobuf(p, rec->r.ver.keyhashtbl); p += 4;
+	ulongtobuf(p, rec->r.ver.nextcheck); p += 4;
+	p += 4;
+	p += 4;
 	ulongtobuf(p, rec->r.ver.firstfree ); p += 4;
-	ulongtobuf(p, rec->r.ver.sdirhashtbl ); p += 4;
+	p += 4;
+	ulongtobuf(p, rec->r.ver.trusthashtbl ); p += 4;
 	break;
 
       case RECTYPE_FREE:
 	ulongtobuf(p, rec->r.free.next); p += 4;
 	break;
 
-      case RECTYPE_DIR:   /*directory record */
-	ulongtobuf(p, rec->r.dir.lid); p += 4;
-	ulongtobuf(p, rec->r.dir.keylist); p += 4;
-	ulongtobuf(p, rec->r.dir.uidlist); p += 4;
-	ulongtobuf(p, rec->r.dir.cacherec); p += 4;
-	*p++ = rec->r.dir.ownertrust;
-	*p++ = rec->r.dir.dirflags;
-	*p++ = rec->r.dir.validity;
-	ulongtobuf(p, rec->r.dir.valcheck); p += 4;
-	ulongtobuf(p, rec->r.dir.checkat); p += 4;
-	assert( rec->r.dir.lid == recnum );
-	break;
-
-      case RECTYPE_KEY:
-	ulongtobuf(p, rec->r.key.lid); p += 4;
-	ulongtobuf(p, rec->r.key.next); p += 4;
-	p += 7;
-	*p++ = rec->r.key.keyflags;
-	*p++ = rec->r.key.pubkey_algo;
-	*p++ = rec->r.key.fingerprint_len;
-	memcpy( p, rec->r.key.fingerprint, 20); p += 20;
-	break;
-
-      case RECTYPE_UID:   /* user id record */
-	ulongtobuf(p, rec->r.uid.lid); p += 4;
-	ulongtobuf(p, rec->r.uid.next); p += 4;
-	ulongtobuf(p, rec->r.uid.prefrec); p += 4;
-	ulongtobuf(p, rec->r.uid.siglist); p += 4;
-	*p++ = rec->r.uid.uidflags;
-	*p++ = rec->r.uid.validity;
-	memcpy( p, rec->r.uid.namehash, 20 ); p += 20;
-	break;
-
-      case RECTYPE_PREF:
-	ulongtobuf(p, rec->r.pref.lid); p += 4;
-	ulongtobuf(p, rec->r.pref.next); p += 4;
-	memcpy( p, rec->r.pref.data, 30 );
-	break;
-
-      case RECTYPE_SIG:
-	ulongtobuf(p, rec->r.sig.lid); p += 4;
-	ulongtobuf(p, rec->r.sig.next); p += 4;
-	for(i=0; i < SIGS_PER_RECORD; i++ ) {
-	    ulongtobuf(p, rec->r.sig.sig[i].lid); p += 4;
-	    *p++ = rec->r.sig.sig[i].flag;
-	}
-	break;
-
-      case RECTYPE_SDIR:
-	ulongtobuf( p, rec->r.sdir.lid); p += 4;
-	u32tobuf( p, rec->r.sdir.keyid[0] ); p += 4;
-	u32tobuf( p, rec->r.sdir.keyid[1] ); p += 4;
-	*p++ = rec->r.sdir.pubkey_algo;
-	p += 3;
-	ulongtobuf( p, rec->r.sdir.hintlist );
-	break;
-
-      case RECTYPE_CACH:
-	ulongtobuf(p, rec->r.cache.lid); p += 4;
-	memcpy(p, rec->r.cache.blockhash, 20); p += 20;
-	*p++ = rec->r.cache.trustlevel;
-	break;
 
       case RECTYPE_HTBL:
 	for(i=0; i < ITEMS_PER_HTBL_RECORD; i++ ) {
@@ -1532,6 +1257,20 @@ tdbio_write_record( TRUSTREC *rec )
 	}
 	break;
 
+      case RECTYPE_TRUST:
+	memcpy( p, rec->r.trust.fingerprint, 20); p += 20;
+	*p++ = rec->r.trust.ownertrust;
+	*p++ = rec->r.trust.depth;
+        p += 2;
+	ulongtobuf( p, rec->r.trust.validlist); p += 4;
+	break;
+
+      case RECTYPE_VALID:
+	memcpy( p, rec->r.valid.namehash, 20); p += 20;
+	*p++ = rec->r.valid.validity;
+	ulongtobuf( p, rec->r.valid.next); p += 4;
+	break;
+
       default:
 	BUG();
     }
@@ -1539,10 +1278,8 @@ tdbio_write_record( TRUSTREC *rec )
     rc = put_record_into_cache( recnum, buf );
     if( rc )
 	;
-    else if( rec->rectype == RECTYPE_KEY )
-	rc = update_keyhashtbl( rec );
-    else if( rec->rectype == RECTYPE_SDIR )
-	rc = update_sdirhashtbl( rec );
+    else if( rec->rectype == RECTYPE_TRUST )
+	rc = update_trusthashtbl( rec );
 
     return rc;
 }
@@ -1557,10 +1294,10 @@ tdbio_delete_record( ulong recnum )
     rc = tdbio_read_record( recnum, &rec, 0 );
     if( rc )
 	;
-    else if( rec.rectype == RECTYPE_KEY )
-	rc = drop_from_keyhashtbl( &rec );
-    else if( rec.rectype == RECTYPE_SDIR )
-	rc = drop_from_sdirhashtbl( &rec );
+    else if( rec.rectype == RECTYPE_TRUST ) {
+         rc = drop_from_hashtable( get_trusthashrec(),
+				   rec.r.trust.fingerprint, 20, rec.recnum );
+    }
 
     if( rc )
 	return rc;
@@ -1657,103 +1394,37 @@ tdbio_new_recnum()
 
 
 
-/****************
- * Search the trustdb for a key which matches PK and return the dir record
- * The local_id of PK is set to the correct value
- */
+static int
+cmp_trec_fpr ( void *fpr, const TRUSTREC *rec )
+{
+    return rec->rectype == RECTYPE_TRUST
+	   && !memcmp( rec->r.trust.fingerprint, fpr, 20);
+}
+
+
 int
-tdbio_search_dir_bypk( PKT_public_key *pk, TRUSTREC *rec )
+tdbio_search_trust_byfpr( const byte *fingerprint, TRUSTREC *rec )
+{
+    int rc;
+
+    /* locate the trust record using the hash table */
+    rc = lookup_hashtable( get_trusthashrec(), fingerprint, 20,
+			   cmp_trec_fpr, (void*)fingerprint, rec );
+    return rc;
+}
+
+int
+tdbio_search_trust_bypk (PKT_public_key *pk, TRUSTREC *rec)
 {
     byte fingerprint[MAX_FINGERPRINT_LEN];
     size_t fingerlen;
-    u32 keyid[2];
-    int rc;
 
-    keyid_from_pk( pk, keyid );
     fingerprint_from_pk( pk, fingerprint, &fingerlen );
-    rc = tdbio_search_dir_byfpr( fingerprint, fingerlen,
-				 pk->pubkey_algo, rec );
-
-    if( !rc ) {
-	if( pk->local_id && pk->local_id != rec->recnum )
-	    log_error("%s: found record, but LID from memory does "
-		       "not match recnum (%lu,%lu)\n",
-			    db_name,  pk->local_id, rec->recnum );
-	pk->local_id = rec->recnum;
-    }
-    return rc;
+    for (; fingerlen < 20; fingerlen++ )
+      fingerprint[fingerlen] = 0;
+    return tdbio_search_trust_byfpr (fingerprint, rec);
 }
 
-
-static int
-cmp_krec_fpr( void *dataptr, const TRUSTREC *rec )
-{
-    const struct cmp_krec_fpr_struct *d = dataptr;
-
-    return rec->rectype == RECTYPE_KEY
-	   && ( !d->pubkey_algo || rec->r.key.pubkey_algo == d->pubkey_algo )
-	   && rec->r.key.fingerprint_len == d->fprlen
-	   && !memcmp( rec->r.key.fingerprint, d->fpr, d->fprlen );
-}
-
-int
-tdbio_search_dir_byfpr( const byte *fingerprint, size_t fingerlen,
-			int pubkey_algo, TRUSTREC *rec )
-{
-    struct cmp_krec_fpr_struct cmpdata;
-    ulong recnum;
-    int rc;
-
-    assert( fingerlen == 20 || fingerlen == 16 );
-
-    /* locate the key using the hash table */
-    cmpdata.pubkey_algo = pubkey_algo;
-    cmpdata.fpr = fingerprint;
-    cmpdata.fprlen = fingerlen;
-    rc = lookup_hashtable( get_keyhashrec(), fingerprint, fingerlen,
-			   cmp_krec_fpr, &cmpdata, rec );
-    if( !rc ) {
-	recnum = rec->r.key.lid;
-	/* Now read the dir record */
-	rc = tdbio_read_record( recnum, rec, RECTYPE_DIR);
-	if( rc )
-	    log_error("%s: can't read dirrec %lu: %s\n",
-				     db_name, recnum, g10_errstr(rc) );
-    }
-    return rc;
-}
-
-
-
-static int
-cmp_sdir( void *dataptr, const TRUSTREC *rec )
-{
-    const struct cmp_xdir_struct *d = dataptr;
-
-    return rec->rectype == RECTYPE_SDIR
-	   && ( !d->pubkey_algo || rec->r.sdir.pubkey_algo == d->pubkey_algo )
-	   && rec->r.sdir.keyid[0] == d->keyid[0]
-	   && rec->r.sdir.keyid[1] == d->keyid[1];
-}
-
-
-int
-tdbio_search_sdir( u32 *keyid, int pubkey_algo, TRUSTREC *rec )
-{
-    struct cmp_xdir_struct cmpdata;
-    int rc;
-    byte key[8];
-
-    /* locate the shadow dir record using the hash table */
-    u32tobuf( key   , keyid[0] );
-    u32tobuf( key+4 , keyid[1] );
-    cmpdata.pubkey_algo = pubkey_algo;
-    cmpdata.keyid[0] = keyid[0];
-    cmpdata.keyid[1] = keyid[1];
-    rc = lookup_hashtable( get_sdirhashrec(), key, 8,
-			   cmp_sdir, &cmpdata, rec );
-    return rc;
-}
 
 
 void
@@ -1763,5 +1434,131 @@ tdbio_invalid(void)
 	"the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n") );
     g10_exit(2);
 }
+
+/*
+ * Migrate the trustdb as just up to gpg 1.0.6 (trustdb version 2)
+ * to the 2.1 version as used with 1.0.6b - This is pretty trivial as needs
+ * only to scan the tdb and insert new the new trust records.  The old ones are
+ * obsolte from now on
+ */
+static void
+migrate_from_v2 ()
+{
+  TRUSTREC rec;
+  int i, n;
+  struct {
+    ulong keyrecno;
+    byte  ot;
+    byte okay;
+    byte  fpr[20];
+  } *ottable;
+  int ottable_size, ottable_used;
+  byte oldbuf[40];
+  ulong recno;
+  int count;
+
+  ottable_size = 5;
+  ottable = m_alloc (ottable_size * sizeof *ottable);
+  ottable_used = 0;
+
+  /* We have some restrictions here.  We can't use the version record
+   * and we can't use any of the old hashtables because we dropped the
+   * code.  So we first collect all ownertrusts and then use a second
+   * pass fo find the associated keys.  We have to do this all without using 
+   * the regular record read functions.
+   */
+
+  /* get all the ownertrusts */
+  if (lseek (db_fd, 0, SEEK_SET ) == -1 ) 
+      log_fatal ("migrate_from_v2: lseek failed: %s\n", strerror (errno));
+  for (recno=0;;recno++)
+    {
+      do
+        n = read (db_fd, oldbuf, 40);
+      while (n==-1 && errno == EINTR);
+      if (!n)
+        break; /* eof */
+      if (n != 40)
+        log_fatal ("migrate_vfrom_v2: read error or short read\n");
+
+      if (*oldbuf != 2)
+        continue;
+      
+      /* v2 dir record */
+      if (ottable_used == ottable_size)
+        {
+          ottable_size += 1000;
+          ottable = m_realloc (ottable, ottable_size * sizeof *ottable);
+        }
+      ottable[ottable_used].keyrecno = buftoulong (oldbuf+6);
+      ottable[ottable_used].ot = oldbuf[17];
+      ottable[ottable_used].okay = 0;
+      memset (ottable[ottable_used].fpr,0, 20);
+      if (ottable[ottable_used].keyrecno)
+        ottable_used++;
+    }
+  log_info ("found %d ownertrust records\n", ottable_used);
+
+  /* Read again and find the fingerprints */
+  if (lseek (db_fd, 0, SEEK_SET ) == -1 ) 
+      log_fatal ("migrate_from_v2: lseek failed: %s\n", strerror (errno));
+  for (recno=0;;recno++)
+    {
+      do
+        n = read (db_fd, oldbuf, 40);
+      while (n==-1 && errno == EINTR);
+      if (!n)
+        break; /* eof */
+      if (n != 40)
+        log_fatal ("migrate_from_v2: read error or short read\n");
+
+      if (*oldbuf != 3) 
+        continue;
+
+      /* v2 key record */
+      for (i=0; i < ottable_used; i++)
+        {
+          if (ottable[i].keyrecno == recno)
+            {
+              memcpy (ottable[i].fpr, oldbuf+20, 20);
+              ottable[i].okay = 1;
+              break;
+            }
+        }
+    }
+
+  /* got everything - create the v3 trustdb */
+  if (ftruncate (db_fd, 0))
+    log_fatal ("can't truncate `%s': %s\n", db_name, strerror (errno) );
+  if (create_version_record ())
+    log_fatal ("failed to recreate version record of `%s'\n", db_name);
+
+  /* access the hash table, so it is store just after the version record, 
+   * this is not needed put a dump is more pretty */
+  get_trusthashrec ();
+
+  /* And insert the old ownertrust values */
+  count = 0;
+  for (i=0; i < ottable_used; i++)
+    {
+      if (!ottable[i].okay)
+        continue;
+      
+      memset (&rec, 0, sizeof rec);
+      rec.recnum = tdbio_new_recnum ();
+      rec.rectype = RECTYPE_TRUST;
+      memcpy(rec.r.trust.fingerprint, ottable[i].fpr, 20);
+      rec.r.trust.ownertrust = ottable[i].ot;
+      if (tdbio_write_record (&rec))
+        log_fatal ("failed to write trust record of `%s'\n", db_name);
+      count++;
+    }
+
+  revalidation_mark ();
+  tdbio_sync ();
+  log_info ("migrated %d version 2 ownertrusts\n", count);
+  m_free (ottable);
+}
+
 
 

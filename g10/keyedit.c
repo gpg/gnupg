@@ -373,7 +373,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 	}
     } /* end loop over signators */
     if( upd_trust && primary_pk ) {
-	rc = clear_trust_checked_flag( primary_pk );
+	revalidation_mark ();
     }
 
 
@@ -793,11 +793,6 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    if( !sign_uids( keyblock, locusr, &modified, cmd == cmdLSIGN )
 		&& sign_mode )
 		goto do_cmd_save;
-	    /* Actually we should do a update_trust_record() here so that
-	     * the trust gets displayed correctly. however this is not possible
-	     * because we would have to save the keyblock first - something
-	     * we don't want to do without an explicit save command.
-	     */
 	    break;
 
 	  case cmdDEBUG:
@@ -933,11 +928,22 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	  case cmdTRUST:
 	    show_key_with_all_names( keyblock, 0, 0, 1, 0 );
 	    tty_printf("\n");
-	    if( edit_ownertrust( find_kbnode( keyblock,
-		      PKT_PUBLIC_KEY )->pkt->pkt.public_key->local_id, 1 ) )
+            if ( sec_keyblock
+                 && cpr_get_answer_is_yes(
+			"keyedit.trust.set_ultimate.okay",
+                _("Do you want to set this key to ultimately trusted? "))) {
+                PKT_public_key *pk = keyblock->pkt->pkt.public_key;
+              
+                update_ownertrust (pk,
+                                   ((get_ownertrust (pk) & ~TRUST_MASK)
+                                    | TRUST_ULTIMATE ));
 		redisplay = 1;
-	    /* we don't need to set modified here, as the trustvalues
-	     * are updated immediately */
+                break;
+            }
+            
+	    if( edit_ownertrust( find_kbnode( keyblock,
+		      PKT_PUBLIC_KEY )->pkt->pkt.public_key, 1 ) )
+		redisplay = 1;
 	    break;
 
 	  case cmdPREF:
@@ -1028,13 +1034,8 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 
 	    /* TODO: we should keep track whether we have changed
 	     *	     something relevant to the trustdb */
-	    if( !modified && sign_mode )
-		rc = 0; /* we can skip at least in this case */
-	    else
-		rc = update_trust_record( keyblock, 0, NULL );
-	    if( rc )
-		log_error(_("update of trustdb failed: %s\n"),
-			    g10_errstr(rc) );
+	    if( !(!modified && sign_mode) )
+		revalidation_mark ();
 	    goto leave;
 
 	  case cmdINVCMD:
@@ -1143,8 +1144,9 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 	    if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
 		/* do it here, so that debug messages don't clutter the
 		 * output */
-		trust = query_trust_info(pk, NULL);
-		otrust = get_ownertrust_info( pk->local_id );
+              
+                trust = get_validity_info (pk, NULL);
+		otrust = get_ownertrust_info (pk);
 	    }
 
 	    tty_printf(_("%s%c %4u%c/%08lX  created: %s expires: %s"),
@@ -1158,7 +1160,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 	    if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
 		tty_printf(_(" trust: %c/%c"), otrust, trust );
 		if( node->pkt->pkttype == PKT_PUBLIC_KEY
-		    && (get_ownertrust( pk->local_id )&TRUST_FLAG_DISABLED)) {
+		    && (get_ownertrust (pk)&TRUST_FLAG_DISABLED)) {
 		    tty_printf("\n*** ");
 		    tty_printf(_("This key has been disabled"));
 		}
@@ -2127,7 +2129,7 @@ menu_revsig( KBNODE keyblock )
     }
 
     if( upd_trust )
-	clear_trust_checked_flag( primary_pk );
+	revalidation_mark ();
     release_revocation_reason_info( reason );
     return changed;
 }
@@ -2192,7 +2194,7 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
     /*commit_kbnode( &sec_keyblock );*/
 
     if( upd_trust )
-	clear_trust_checked_flag( mainpk );
+	revalidation_mark ();
 
     release_revocation_reason_info( reason );
     return changed;
@@ -2202,20 +2204,17 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
 static int
 enable_disable_key( KBNODE keyblock, int disable )
 {
-    ulong lid = find_kbnode( keyblock, PKT_PUBLIC_KEY )
-			    ->pkt->pkt.public_key->local_id;
+    PKT_public_key *pk = find_kbnode( keyblock, PKT_PUBLIC_KEY )
+			    ->pkt->pkt.public_key;
     unsigned int trust, newtrust;
 
-    /* Note: Because the keys have beed displayed, we have
-     * ensured that local_id has been set */
-    trust = newtrust = get_ownertrust( lid );
+    trust = newtrust = get_ownertrust (pk);
     newtrust &= ~TRUST_FLAG_DISABLED;
     if( disable )
 	newtrust |= TRUST_FLAG_DISABLED;
     if( trust == newtrust )
 	return 0; /* already in that state */
-    if( !update_ownertrust( lid, newtrust ) )
-	return 1;
+    update_ownertrust(pk, newtrust );
     return 0;
 }
 

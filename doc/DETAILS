@@ -469,7 +469,7 @@ the DB is always of type 1 and this is the only record of this type.
      1 u32  record number of shadow directory hash table
 	    It does not make sense to combine this table with the key table
 	    because the keyid is not in every case a part of the fingerprint.
-     4 bytes reserved for version extension record
+     1 u32  record number of the trusthashtbale
 
 
   Record type 2: (directory record)

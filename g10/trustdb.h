@@ -24,7 +24,7 @@
 
 /* Trust values must be sorted in ascending order */
 #define TRUST_MASK	 15
-#define TRUST_UNKNOWN	  0  /* o: not yet calculated */
+#define TRUST_UNKNOWN	  0  /* o: not yet calculated/assigned */
 #define TRUST_EXPIRED	  1  /* e: calculation may be invalid */
 #define TRUST_UNDEFINED   2  /* q: not enough information for calculation */
 #define TRUST_NEVER	  3  /* n: never trust this pubkey */
@@ -38,31 +38,31 @@
 
 
 /*-- trustdb.c --*/
-void list_trust_path( const char *username );
 void register_trusted_key( const char *string );
-void check_trustdb( const char *username );
-void update_trustdb( void );
+void check_trustdb (void);
+void update_trustdb (void);
 int setup_trustdb( int level, const char *dbname );
 void init_trustdb( void );
 void sync_trustdb( void );
-int check_trust( PKT_public_key *pk, int *r_trustlevel,
-		 const byte* nh, int (*add_fnc)(ulong), unsigned *retflgs );
-int query_trust_info( PKT_public_key *pk, const byte *nh );
+
+int trust_letter( unsigned value );
+
+void revalidation_mark (void);
+
+unsigned int get_validity (PKT_public_key *pk, const byte *namehash);
+int get_validity_info (PKT_public_key *pk, const byte *namehash);
+
+void list_trust_path( const char *username );
+
 int enum_cert_paths( void **context, ulong *lid,
 		     unsigned *ownertrust, unsigned *validity );
 void enum_cert_paths_print( void **context, FILE *fp,
 					   int refresh, ulong selected_lid );
-unsigned get_ownertrust( ulong lid );
-int get_ownertrust_info( ulong lid );
-int keyid_from_lid( ulong lid, u32 *keyid );
-ulong lid_from_keyblock( KBNODE keyblock );
-int query_trust_record( PKT_public_key *pk );
-int clear_trust_checked_flag( PKT_public_key *pk );
-int update_trust_record( KBNODE keyblock, int fast, int *modified );
-int insert_trust_record( KBNODE keyblock );
-int insert_trust_record_by_pk( PKT_public_key *pk );
-int update_ownertrust( ulong lid, unsigned new_trust );
-int trust_letter( unsigned value );
+
+unsigned int get_ownertrust (PKT_public_key *pk);
+int get_ownertrust_info (PKT_public_key *pk);
+void update_ownertrust (PKT_public_key *pk, unsigned int new_trust );
+
 
 /*-- tdbdump.c --*/
 void list_trustdb(const char *username);
@@ -70,6 +70,6 @@ void export_ownertrust(void);
 void import_ownertrust(const char *fname);
 
 /*-- pkclist.c --*/
-int edit_ownertrust( ulong lid, int mode );
+int edit_ownertrust (PKT_public_key *pk, int mode );
 
 #endif /*G10_TRUSTDB_H*/

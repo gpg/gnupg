@@ -229,21 +229,14 @@ check_signatures_trust( PKT_signature *sig )
  * instead
  */
 int
-keyid_from_lid( ulong lid, u32 *keyid )
-{
-    return G10ERR_TRUSTDB;
-}
-
-/* Stub: */
-int
-query_trust_info( PKT_public_key *pk, const byte *namehash )
+get_validity_info (PKT_public_key *pk, const byte *namehash )
 {
     return '?';
 }
 
 /* Stub: */
 int
-get_ownertrust_info( ulong lid )
+get_ownertrust_info (PKT_public_key *pk)
 {
     return '?';
 }

@@ -505,7 +505,7 @@ not be expected to successfully import such a key.
 <listitem><para>
 Import/merge keys. This adds the given keys to the
 keyring.
-The fast version does not build
+The fast version does not update
 the trustdb; this can be done at any time with the
 command --update-trustdb.
 </para>
@@ -527,10 +527,34 @@ give the name of this keyserver.
 
 
 <varlistentry>
-<term>--export-ownertrust</term>
+<term>--recv-keys &ParmKeyIDs;</term>
 <listitem><para>
-List the assigned ownertrust values in ASCII format
-for backup purposes.
+Import the keys with the given key IDs from a HKP
+keyserver. Option --keyserver must be used to
+give the name of this keyserver.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--update-trustdb</term>
+<listitem><para>
+Do trust DB maintenance.  This command goes over all keys and builds
+the Web-of-Trust. This is an intercative command because it may has to
+ask for the "ownertrust" values of keys.  The user has to give an
+estimation in how far she trusts the owner of the displayed key to
+correctly certify (sign) other keys.  It does only ask for that value
+if it has not yet been assigned to a key.  Using the edit menu, that
+value can be changed at any time later.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--check-trustdb</term>
+<listitem><para>
+Do trust DB maintenance without user interaction.  Form time to time
+the trust database must be updated so that expired keys and resulting
+changes in the Web-of_trust can be tracked.  GnuPG tries to figure
+when this is required and then does it implicitly; this command can be
+used to force such a check.  The processing is identically to that of
+--update-trustdb but it skips keys with a not yet defined "ownertrust".
 </para></listitem></varlistentry>
 
 
@@ -1162,6 +1186,14 @@ the secret key.  This extra verification needs some time (about 115%
 for DSA keys), and so this option can be used to disable it.
 However, due to the fact that the signature creation needs manual
 interaction, this performance penalty does not matter in most settings.
+</para></listitem></varlistentry>
+
+<term>--no-auto-check-trustdb</term>
+<listitem><para>
+If GnuPG feels that its information about the Web-of-Trust has to be
+updated, it automatically runs the --check-trustdb command 
+internally.  As this is a time consuming process, this option allow to
+disable the automatic invocation.
 </para></listitem></varlistentry>
 
 <varlistentry>

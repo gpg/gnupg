@@ -678,7 +678,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
     int save_mode;
     off_t offset, main_offset;
     size_t n;
-    int need_uid, need_words, need_keyid, need_fpr;
+    int need_uid, need_words, need_keyid, need_fpr, any_skip;
     int pk_no, uid_no;
     int initial_skip;
     PKT_user_id *uid = NULL;
@@ -686,7 +686,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
     PKT_secret_key *sk = NULL;
 
     /* figure out what information we need */
-    need_uid = need_words = need_keyid = need_fpr = 0;
+    need_uid = need_words = need_keyid = need_fpr = any_skip = 0;
     for (n=0; n < ndesc; n++) {
         switch (desc[n].mode) {
           case KEYDB_SEARCH_MODE_EXACT: 
@@ -715,6 +715,10 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
             break;
           default: break;
 	}
+        if (desc[n].skipfnc) {
+            any_skip = 1;
+            need_keyid = 1;
+        }
     }
 
     rc = prepare_search (hd);
@@ -797,9 +801,6 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
               case KEYDB_SEARCH_MODE_NONE: 
                 BUG ();
                 break;
-              case KEYDB_SEARCH_MODE_TDBIDX: 
-                BUG();
-                break;
               case KEYDB_SEARCH_MODE_EXACT: 
               case KEYDB_SEARCH_MODE_SUBSTR:
               case KEYDB_SEARCH_MODE_MAIL:
@@ -831,6 +832,9 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
                     goto found;
                 break;
               case KEYDB_SEARCH_MODE_FIRST: 
+                if (pk||sk)
+                    goto found;
+                break;
               case KEYDB_SEARCH_MODE_NEXT: 
                 if (pk||sk)
                     goto found;
@@ -840,10 +844,19 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
                 goto found;
             }
 	}
-
+	free_packet (&pkt);
+        continue;
+      found:  
+        for (n=any_skip?0:ndesc; n < ndesc; n++) {
+            if (desc[n].skipfnc
+                && desc[n].skipfnc (desc[n].skipfncvalue, aki))
+                break;
+        }
+        if (n == ndesc)
+            goto real_found;
 	free_packet (&pkt);
     }
- found:
+ real_found:
     if( !rc ) {
         hd->found.offset = main_offset;
 	hd->found.kr = hd->current.kr;
