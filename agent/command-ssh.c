@@ -486,14 +486,32 @@ ssh_receive_key_secret (gpg_stream_t stream, ssh_key_secret_t *key_secret)
       if (err)
 	break;
 
+      log_debug ("key->p = ");
+      gcry_mpi_dump (key.material.rsa.p);
+      log_debug ("\n");
+      log_debug ("key->q = ");
+      gcry_mpi_dump (key.material.rsa.q);
+      log_debug ("\n");
+      log_debug ("key->u = ");
+      gcry_mpi_dump (key.material.rsa.iqmp);
+      log_debug ("\n");
+
       if (gcry_mpi_cmp (key.material.rsa.p, key.material.rsa.q))
 	{
 	  /* P shall be smaller then Q!  */
 	  gcry_mpi_t tmp = NULL;
 
+	  log_debug ("p >= q!  swapping primes.\n");
+
 	  tmp = key.material.rsa.p;
 	  key.material.rsa.p = key.material.rsa.q;
 	  key.material.rsa.q = tmp;
+
+	  gcry_mpi_invm (key.material.rsa.iqmp, key.material.rsa.p, key.material.rsa.q);
+
+	  log_debug ("new key->u = ");
+	  gcry_mpi_dump (key.material.rsa.iqmp);
+	  log_debug ("\n");
 	}
 
       break;
@@ -1308,10 +1326,7 @@ ssh_identity_register (ssh_key_secret_t *key, int ttl)
 
  out:
 
-  if (passphrase)
-    gcry_free (passphrase);
-  if (buffer)
-    free (buffer);
+  free (buffer);
 
   return err;
 }
