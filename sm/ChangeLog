@@ -1,3 +1,10 @@
+2002-04-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* server.c (option_handler): Accept display, ttyname, ttytype,
+	lc_ctype and lc_messages options.
+	* gpgsm.c (main): Allocate memory for these options.
+	* gpgsm.h (struct opt): Make corresponding members non-const.
+
 2002-04-24  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgsm.h (struct opt): New members display, ttyname, ttytype,

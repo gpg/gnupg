@@ -854,11 +854,11 @@ main ( int argc, char **argv)
         case oNoOptions: break; /* no-options */
         case oHomedir: opt.homedir = pargs.r.ret_str; break;
         case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
-        case oDisplay: opt.display = pargs.r.ret_str; break;
-        case oTTYname: opt.ttyname = pargs.r.ret_str; break;
-        case oTTYtype: opt.ttytype = pargs.r.ret_str; break;
-        case oLCctype: opt.lc_ctype = pargs.r.ret_str; break;
-        case oLCmessages: opt.lc_messages = pargs.r.ret_str; break;
+        case oDisplay: opt.display = xstrdup (pargs.r.ret_str); break;
+        case oTTYname: opt.ttyname = xstrdup (pargs.r.ret_str); break;
+        case oTTYtype: opt.ttytype = xstrdup (pargs.r.ret_str); break;
+        case oLCctype: opt.lc_ctype = xstrdup (pargs.r.ret_str); break;
+        case oLCmessages: opt.lc_messages = xstrdup (pargs.r.ret_str); break;
         case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str;  break;
           
         case oNoDefKeyring: default_keyring = 0; break;

@@ -104,6 +104,46 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
         return ASSUAN_Parameter_Error;
       ctrl->include_certs = i;
     }
+  else   if (!strcmp (key, "display"))
+    {
+      if (opt.display)
+        free (opt.display);
+      opt.display = strdup (value);
+      if (!opt.display)
+        return ASSUAN_Out_Of_Core;
+    }
+  else if (!strcmp (key, "ttyname"))
+    {
+      if (opt.ttyname)
+        free (opt.ttyname);
+      opt.ttyname = strdup (value);
+      if (!opt.ttyname)
+        return ASSUAN_Out_Of_Core;
+    }
+  else if (!strcmp (key, "ttytype"))
+    {
+      if (opt.ttytype)
+        free (opt.ttytype);
+      opt.ttytype = strdup (value);
+      if (!opt.ttytype)
+        return ASSUAN_Out_Of_Core;
+    }
+  else if (!strcmp (key, "lc-ctype"))
+    {
+      if (opt.lc_ctype)
+        free (opt.lc_ctype);
+      opt.lc_ctype = strdup (value);
+      if (!opt.lc_ctype)
+        return ASSUAN_Out_Of_Core;
+    }
+  else if (!strcmp (key, "lc-messages"))
+    {
+      if (opt.lc_messages)
+        free (opt.lc_messages);
+      opt.lc_messages = strdup (value);
+      if (!opt.lc_messages)
+        return ASSUAN_Out_Of_Core;
+    }
   else
     return ASSUAN_Invalid_Option;
 
