@@ -1,3 +1,8 @@
+2004-01-19  Moritz Schulte  <mo@g10code.com>
+
+	* keygen.c (do_generate_keypair): Print member fname, instead of
+	newfname, again.
+
 2004-01-18  Moritz Schulte  <mo@g10code.com>
 
 	* keygen.c (do_generate_keypair): Print member fname, instead of

@@ -2474,7 +2474,7 @@ do_generate_keypair (struct para_data_s *para,
 	  outctrl->sec.stream = iobuf_create (outctrl->sec.fname);
 	  if (!outctrl->sec.stream)
 	    {
-	      log_error ("can't create `%s': %s\n", outctrl->sec.newfname,
+	      log_error ("can't create `%s': %s\n", outctrl->sec.fname,
 			 strerror (errno));
 	      return;
 	    }
