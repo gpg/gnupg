@@ -1,3 +1,12 @@
+2004-05-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* timegm.c: New replacement function.  Removes the need for
+	setenv.c and unsetenv.c.
+
+	* setenv.c: Removed.
+
+	* unsetenv.c: Removed.
+
 2004-03-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* iobuf.c (block_filter): Remove the old gpg indeterminate length
