@@ -1338,18 +1338,21 @@ keyedit_menu( const char *username, STRLIST locusr,
                 afp[an++] = 0;
             rc = keydb_search_fpr (sec_kdbhd, afp);
         }
-	if (!rc) {
+	if (!rc)
+	  {
 	    rc = keydb_get_keyblock (sec_kdbhd, &sec_keyblock);
-	    if (rc) {
-		log_error (_("error reading secret keyblock `%s': %s\n"),
-						username, g10_errstr(rc));
-	    }
-            else {
+	    if (rc)
+	      {
+		log_error (_("error reading secret keyblock \"%s\": %s\n"),
+			   username, g10_errstr(rc));
+	      }
+            else
+	      {
                 merge_keys_and_selfsig( sec_keyblock );
                 if( fix_keyblock( sec_keyblock ) )
-                    sec_modified++;
-            }
-	}
+		  sec_modified++;
+	      }
+	  }
 
         if (rc) {
             sec_keyblock = NULL;
@@ -2914,7 +2917,7 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
       rc=get_pubkey_byname(revoker_pk,answer,NULL,NULL,1);
       if(rc)
 	{
-	  log_error (_("key `%s' not found: %s\n"),answer,g10_errstr(rc));
+	  log_error (_("key \"%s\" not found: %s\n"),answer,g10_errstr(rc));
 	  m_free(answer);
 	  continue;
 	}

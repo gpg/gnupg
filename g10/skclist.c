@@ -153,34 +153,40 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
              * won't catch all duplicates because the user IDs may be
              * specified in different ways.
              */
-            if ( is_duplicated_entry ( locusr_orig, locusr ) ) {
-		log_error(_("skipped `%s': duplicated\n"), locusr->d );
+            if ( is_duplicated_entry ( locusr_orig, locusr ) )
+	      {
+		log_error(_("skipped \"%s\": duplicated\n"), locusr->d );
                 continue;
-            }
+	      }
 	    sk = m_alloc_clear( sizeof *sk );
 	    sk->req_usage = use;
-	    if( (rc = get_seckey_byname( sk, locusr->d, 0 )) ) {
+	    if( (rc = get_seckey_byname( sk, locusr->d, 0 )) )
+	      {
 		free_secret_key( sk ); sk = NULL;
-		log_error(_("skipped `%s': %s\n"), locusr->d, g10_errstr(rc) );
-	    }
+		log_error(_("skipped \"%s\": %s\n"),
+			  locusr->d, g10_errstr(rc) );
+	      }
             else if ( key_present_in_sk_list(sk_list, sk) == 0) {
                 free_secret_key(sk); sk = NULL;
                 log_info(_("skipped: secret key already present\n"));
             }
-            else if ( unlock && (rc = check_secret_key( sk, 0 )) ) {
+            else if ( unlock && (rc = check_secret_key( sk, 0 )) )
+	      {
 		free_secret_key( sk ); sk = NULL;
-		log_error(_("skipped `%s': %s\n"), locusr->d, g10_errstr(rc) );
-            }
+		log_error(_("skipped \"%s\": %s\n"),
+			  locusr->d, g10_errstr(rc) );
+	      }
 	    else if( !(rc=check_pubkey_algo2(sk->pubkey_algo, use)) ) {
 		SK_LIST r;
 
 		if( sk->version == 4 && (use & PUBKEY_USAGE_SIG)
-		    && sk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
-		    log_info(_("skipped `%s': this is a PGP generated "
-			"Elgamal key which is not secure for signatures!\n"),
-			locusr->d );
+		    && sk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E )
+		  {
+		    log_info(_("skipped \"%s\": %s\n"),locusr->d,
+			     _("this is a PGP generated Elgamal key which"
+			       " is not secure for signatures!"));
 		    free_secret_key( sk ); sk = NULL;
-		}
+		  }
 		else if( random_is_faked() && !is_insecure( sk ) ) {
 		    log_info(_("key is not flagged as insecure - "
 			       "can't use it with the faked RNG!\n"));
@@ -196,7 +202,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
 	    }
 	    else {
 		free_secret_key( sk ); sk = NULL;
-		log_error("skipped `%s': %s\n", locusr->d, g10_errstr(rc) );
+		log_error("skipped \"%s\": %s\n", locusr->d, g10_errstr(rc) );
 	    }
 	}
     }

@@ -222,7 +222,7 @@ gen_desig_revoke( const char *uname )
     classify_user_id (uname, &desc);
     rc = desc.mode? keydb_search (kdbhd, &desc, 1) : G10ERR_INV_USER_ID;
     if (rc) {
-	log_error (_("key `%s' not found: %s\n"),uname, g10_errstr (rc));
+	log_error (_("key \"%s\" not found: %s\n"),uname, g10_errstr (rc));
 	goto leave;
     }
 
@@ -372,7 +372,7 @@ gen_desig_revoke( const char *uname )
       }
 
     if(!any)
-      log_error(_("no revocation keys found for `%s'\n"),uname);
+      log_error(_("no revocation keys found for \"%s\"\n"),uname);
 
   leave:
     if( pk )
@@ -425,11 +425,12 @@ gen_revoke( const char *uname )
     kdbhd = keydb_new (1);
     classify_user_id (uname, &desc);
     rc = desc.mode? keydb_search (kdbhd, &desc, 1) : G10ERR_INV_USER_ID;
-    if (rc) {
-	log_error (_("secret key `%s' not found: %s\n"),
+    if (rc)
+      {
+	log_error (_("secret key \"%s\" not found: %s\n"),
                    uname, g10_errstr (rc));
 	goto leave;
-    }
+      }
 
     rc = keydb_get_keyblock (kdbhd, &keyblock );
     if( rc ) {

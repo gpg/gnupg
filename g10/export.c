@@ -159,7 +159,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 	    if (classify_user_id (sl->d, desc+ndesc))
                 ndesc++;
             else
-                log_error (_("key `%s' not found: %s\n"),
+                log_error (_("key \"%s\" not found: %s\n"),
                            sl->d, g10_errstr (G10ERR_INV_USER_ID));
         }
 

@@ -900,7 +900,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	/* The default recipient may be disabled */
 	rc = get_pubkey_byname( pk, def_rec, NULL, NULL, 1 );
 	if( rc )
-	    log_error(_("unknown default recipient `%s'\n"), def_rec );
+	    log_error(_("unknown default recipient \"%s\"\n"), def_rec );
 	else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) {
 	  /* Mark any_recipients here since the default recipient
              would have been used if it wasn't already there.  It

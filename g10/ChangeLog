@@ -1,3 +1,8 @@
+2004-10-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* delkey.c, export.c, keyedit.c, pkclist.c, revoke.c, skclist.c:
+	Fix a few missed possible \"username\" quotes.
+
 2004-10-26  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (verify_chv3): The minimum length for CHV3 is
