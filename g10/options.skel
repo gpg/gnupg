@@ -85,13 +85,14 @@ lock-once
 # support).
 #
 # Example HKP keyserver:
-#      x-hkp://keyserver.cryptnet.net
+#      x-hkp://pgp.mit.edu
 #
 # Example email keyserver:
 #      mailto:pgp-public-keys@keys.nl.pgp.net
 #
-# Example LDAP keyserver:
+# Example LDAP keyservers:
 #      ldap://pgp.surfnet.nl:11370
+#      ldap://keyserver.pgp.com
 #
 # Regular URL syntax applies, and you can set an alternate port
 # through the usual method:
@@ -109,6 +110,7 @@ lock-once
 #keyserver x-hkp://pgp.mit.edu
 #keyserver mailto:pgp-public-keys@keys.nl.pgp.net
 #keyserver ldap://pgp.surfnet.nl:11370
+#keyserver ldap://keyserver.pgp.com
 
 # Common options for keyserver functions:
 #

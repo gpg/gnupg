@@ -770,6 +770,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 		log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
                 write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
                                               rov->d, strlen (rov->d), -1);
+		goto fail;
             }
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
 		/* Skip the actual key if the key is already present
@@ -793,6 +794,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 		log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
                 write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
                                               rov->d, strlen (rov->d), -1);
+		goto fail;
 	    }
 	}
     }
@@ -945,6 +947,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
                 write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
                                               remusr->d, strlen (remusr->d),
                                               -1);
+		goto fail;
 	    }
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
 		int trustlevel;
@@ -958,6 +961,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
                                                   remusr->d,
                                                   strlen (remusr->d),
                                                   -1);
+		    goto fail;
 		}
 		else if( do_we_trust_pre( pk, trustlevel ) ) {
 		    /* note: do_we_trust may have changed the trustlevel */
@@ -988,6 +992,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
                                                   remusr->d,
                                                   strlen (remusr->d),
                                                   -1);
+		    goto fail;
 		}
 	    }
 	    else {
@@ -997,6 +1002,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
                                               strlen (remusr->d),
                                               -1);
 		log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
+		goto fail;
 	    }
 	}
     }
@@ -1006,6 +1012,8 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
         write_status_text (STATUS_NO_RECP, "0");
 	rc = G10ERR_NO_USER_ID;
     }
+
+ fail:
 
     if( rc )
 	release_pk_list( pk_list );

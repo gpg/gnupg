@@ -1835,7 +1835,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 		      show_prefs (uid, with_prefs == 2);
 		    else
 		      tty_printf(_("There are no preferences on a "
-				   "PGP 2.x-style key.\n"));
+				   "PGP 2.x-style user ID.\n"));
 		  }
 	    }
 	}
