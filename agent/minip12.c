@@ -708,12 +708,12 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   startoffset = 0;
   buffer = p = plain;
 
-  {
-    FILE *fp = fopen ("tmp-3des-plain.der", "wb");
-    if (!fp || fwrite (p, n, 1, fp) != 1)
-      exit (2);
-    fclose (fp);
-  }
+/*   { */
+/*     FILE *fp = fopen ("tmp-3des-plain.der", "wb"); */
+/*     if (!fp || fwrite (p, n, 1, fp) != 1) */
+/*       exit (2); */
+/*     fclose (fp); */
+/*   } */
 
   where = "decrypted-text";
   if (parse_tag (&p, &n, &ti) || ti.class || ti.tag != TAG_SEQUENCE)
@@ -1165,11 +1165,11 @@ p12_build (gcry_mpi_t *kparms, const char *pw, size_t *r_length)
   for (;(plainlen % 8); plainlen++)
     *p++ = n;
 
-  {
-    FILE *fp = fopen("inner-out.der", "wb");
-    fwrite (plain, 1, plainlen, fp);
-    fclose (fp);
-  }
+/*   { */
+/*     FILE *fp = fopen("inner-out.der", "wb"); */
+/*     fwrite (plain, 1, plainlen, fp); */
+/*     fclose (fp); */
+/*   } */
 
 
   /* Encrypt it and prepend a lot of stupid things. */
