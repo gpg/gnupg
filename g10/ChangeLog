@@ -1,3 +1,13 @@
+2002-05-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, exec.c: Add some debugging info, using the 1024 debug
+	flag.
+
+	* exec.c (win_system): New system()-like function for win32 that
+	does not return until the child process terminates.  Of course,
+	this doesn't help if the process itself exits before it is
+	finished.
+
 2002-05-29  Werner Koch  <wk@gnupg.org>
 
 	* encode.c (encode_simple): Intialize PKT when --no-literal is used.

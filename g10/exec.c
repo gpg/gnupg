@@ -58,6 +58,38 @@ int exec_finish(struct exec_info *info) { return G10ERR_GENERAL; }
 char *mkdtemp(char *template);
 #endif
 
+#if defined (__MINGW32__) || defined (__CYGWIN32__)
+/* This is a nicer system() for windows that waits for programs to
+   return before returning control to the caller.  I hate helpful
+   computers. */
+static int win_system(const char *command)
+{
+  PROCESS_INFORMATION pi;
+  STARTUPINFO si;
+  char *string;
+
+  /* We must use a copy of the command as CreateProcess modifies this
+     argument. */
+  string=m_strdup(command);
+
+  memset(&pi,0,sizeof(pi));
+  memset(&si,0,sizeof(si));
+  si.cb=sizeof(si);
+
+  if(!CreateProcess(NULL,string,NULL,NULL,FALSE,0,NULL,NULL,&si,&pi))
+    return -1;
+
+  /* Wait for the child to exit */
+  WaitForSingleObject(pi.hProcess,INFINITE);
+
+  CloseHandle(pi.hProcess);
+  CloseHandle(pi.hThread);
+  m_free(string);
+
+  return 0;
+}
+#endif
+
 /* Makes a temp directory and filenames */
 static int make_tempdir(struct exec_info *info)
 {
@@ -143,6 +175,9 @@ static int expand_args(struct exec_info *info,const char *args_in)
   info->use_temp_files=0;
   info->keep_temp_files=0;
 
+  if(DBG_EXTPROG)
+    log_debug("expanding string \"%s\"\n",args_in);
+
   size=100;
   info->command=m_alloc(size);
   len=0;
@@ -218,7 +253,9 @@ static int expand_args(struct exec_info *info,const char *args_in)
       ch++;
     }
 
-  /* printf("args expanded to \"%s\"\n",info->command); */
+  if(DBG_EXTPROG)
+    log_debug("args expanded to \"%s\", use %d, keep %d\n",
+	      info->command,info->use_temp_files,info->keep_temp_files);
 
   return 0;
 
@@ -335,12 +372,16 @@ int exec_write(struct exec_info **info,const char *program,
 
 	  if(args_in==NULL)
 	    {
-	      /* fprintf(stderr,"execing: %s\n",program); */
+	      if(DBG_EXTPROG)
+		log_debug("execlp: %s\n",program);
+
 	      execlp(program,program,NULL);
 	    }
 	  else
 	    {
-	      /* fprintf(stderr,"execing: %s -c %s\n",shell,(*info)->command); */
+	      if(DBG_EXTPROG)
+		log_debug("execlp: %s -c %s\n",shell,(*info)->command);
+
 	      execlp(shell,shell,"-c",(*info)->command,NULL);
 	    }
 
@@ -386,6 +427,9 @@ int exec_write(struct exec_info **info,const char *program,
     }
 #endif /* !EXEC_TEMPFILE_ONLY */
 
+  if(DBG_EXTPROG)
+    log_debug("using temp file \"%s\"\n",(*info)->tempfile_in);
+
   /* It's not fork/exec/pipe, so create a temp file */
   (*info)->tochild=fopen((*info)->tempfile_in,binary?"wb":"w");
   if((*info)->tochild==NULL)
@@ -411,9 +455,14 @@ int exec_read(struct exec_info *info)
 
   if(info->use_temp_files)
     {
-      /* printf("system command is %s\n",info->command); */
+      if(DBG_EXTPROG)
+	log_debug("system() command is %s\n",info->command);
 
+#if defined (__MINGW32__) || defined (__CYGWIN32__)
+      info->progreturn=win_system(info->command);
+#else
       info->progreturn=system(info->command);
+#endif
 
       if(info->progreturn==-1)
 	{
