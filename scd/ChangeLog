@@ -1,3 +1,7 @@
+2003-07-01  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (store_fpr): Fixed fingerprint calculation.
+
 2003-06-26  Werner Koch  <wk@gnupg.org>
 
 	* app-openpgp.c (find_tlv): Fixed length header parsing.

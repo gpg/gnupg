@@ -154,7 +154,7 @@ percent_plus_unescape (unsigned char *string)
 
    Background: We want to keep the client clear of handling card
    changes between operations; i.e. the client can assume that all
-   operations are done on the same card unless he call this function.
+   operations are done on the same card unless he calls this function.
  */
 static int
 cmd_serialno (ASSUAN_CONTEXT ctx, char *line)

@@ -243,10 +243,6 @@ learn_status_cb (void *opaque, const char *line)
     {
       parm->kpinfo_cb (parm->kpinfo_cb_arg, line);
     }
-  else if (keywordlen == 8 && !memcmp (keyword, "SERIALNO", keywordlen))
-    {
-      log_debug ("learn_status_cb: serialno `%s'\n", line);
-    }
   else if (keywordlen && *line)
     {
       parm->sinfo_cb (parm->sinfo_cb_arg, keyword, keywordlen, line);

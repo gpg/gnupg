@@ -1,3 +1,7 @@
+2003-06-30  Werner Koch  <wk@gnupg.org>
+
+	* call-scd.c (learn_status_cb): Store the serialno in PARM.
+
 2003-06-26  Werner Koch  <wk@gnupg.org>
 
 	* call-scd.c (agent_card_serialno): Don't do a RESET anymore.

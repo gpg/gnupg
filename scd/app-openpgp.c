@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <dlfcn.h>
+#include <assert.h>
 
 #include "scdaemon.h"
 #include "app-common.h"
@@ -362,14 +362,15 @@ store_fpr (int slot, int keynumber, u32 timestamp,
   *p++ = timestamp >>  8;
   *p++ = timestamp;
   *p++ = 1; /* RSA */
-  *p++ = mlen >> 8;
-  *p++ = mlen;
+  *p++ = (mlen*8) >> 8; /* (we want number of bits here) */
+  *p++ = (mlen*8);
   memcpy (p, m, mlen); p += mlen;
-  *p++ = elen >> 8;
-  *p++ = elen;
+  *p++ = (elen*8) >> 8;
+  *p++ = (elen*8);
   memcpy (p, e, elen); p += elen;
     
   gcry_md_hash_buffer (GCRY_MD_SHA1, fpr, buffer, n+3);
+
   xfree (buffer);
 
   rc = iso7816_put_data (slot, 0xC6 + keynumber, fpr, 20);
@@ -578,7 +579,13 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
     }
 
   xfree (buffer); buffer = NULL;
-  rc = iso7816_generate_keypair (app->slot, 
+#if 1
+  rc = iso7816_generate_keypair 
+#else
+#warning key generation temporary replaced by reading an existing key.
+  rc = iso7816_read_public_key
+#endif
+                              (app->slot, 
                                  keyno == 0? "\xB6" :
                                  keyno == 1? "\xB8" : "\xA4",
                                  2,
@@ -632,8 +639,50 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
 }
 
 
-/* Comopute a digital signature on INDATA which is expected to be the
-   raw message digest. */
+static int
+compare_fingerprint (APP app, int keyno, unsigned char *sha1fpr)
+{
+  const unsigned char *fpr;
+  unsigned char *buffer;
+  size_t buflen, n;
+  int rc, i;
+  
+  assert (keyno >= 1 && keyno <= 3);
+
+  rc = iso7816_get_data (app->slot, 0x006E, &buffer, &buflen);
+  if (rc)
+    {
+      log_error ("error reading application data\n");
+      return gpg_error (GPG_ERR_GENERAL);
+    }
+  fpr = find_tlv (buffer, buflen, 0x00C5, &n, 0);
+  if (!fpr || n != 60)
+    {
+      xfree (buffer);
+      log_error ("error reading fingerprint DO\n");
+      return gpg_error (GPG_ERR_GENERAL);
+    }
+  fpr += (keyno-1)*20;
+  for (i=0; i < 20; i++)
+    if (sha1fpr[i] != fpr[i])
+      {
+        xfree (buffer);
+        return gpg_error (GPG_ERR_WRONG_SECKEY);
+      }
+  xfree (buffer);
+  return 0;
+}
+
+
+
+/* Compute a digital signature on INDATA which is expected to be the
+   raw message digest. For this application the KEYIDSTR consists of
+   the serialnumber and the fingerprint delimited by a slash.
+
+   Note that this fucntion may return the error code
+   GPG_ERR_WRONG_CARD to indicate that the card currently present does
+   not match the one required for the requested action (e.g. the
+   serial number does not match). */
 static int 
 do_sign (APP app, const char *keyidstr, int hashalgo,
          int (*pincb)(void*, const char *, char **),
@@ -649,12 +698,63 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
     0x02, 0x01, 0x05, 0x00, 0x04, 0x14 };
   int rc;
   unsigned char data[35];
+  unsigned char tmp_sn[20]; /* actually 16 but we use it also for the fpr. */
+  const char *s;
+  int n;
+  const char *fpr = NULL;
 
-  /* We ignore KEYIDSTR, because the OpenPGP application has only one
-     signing key and no way to specify a different one. */
-  
+  if (!keyidstr || !*keyidstr)
+    return gpg_error (GPG_ERR_INV_VALUE);
   if (indatalen != 20)
     return gpg_error (GPG_ERR_INV_VALUE);
+
+  /* Check whether an OpenPGP card of any version has been requested. */
+  if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))
+    return gpg_error (GPG_ERR_INV_ID);
+  
+  for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
+    ;
+  if (n != 32)
+    return gpg_error (GPG_ERR_INV_ID);
+  else if (!*s)
+    ; /* no fingerprint given: we allow this for now. */
+  else if (*s == '/')
+    fpr = s + 1; 
+  else
+    return gpg_error (GPG_ERR_INV_ID);
+
+  for (s=keyidstr, n=0; n < 16; s += 2, n++)
+    tmp_sn[n] = xtoi_2 (s);
+
+  if (app->serialnolen != 16)
+    return gpg_error (GPG_ERR_INV_CARD);
+  if (memcmp (app->serialno, tmp_sn, 16))
+    return gpg_error (GPG_ERR_WRONG_CARD);
+
+  /* If a fingerprint has been speicified check it against the one on
+     the card.  This is allows for a meaningful error message in case
+     the key on the card has been replaced but the shadow information
+     known to gpg was not updated.  If there is no fingerprint, gpg
+     will detect the bodus signature anyway die to the
+     verify-after-signing feature. */
+  if (fpr)
+    {
+      for (s=fpr, n=0; hexdigitp (s); s++, n++)
+        ;
+      if (n != 40)
+        return gpg_error (GPG_ERR_INV_ID);
+      else if (!*s)
+        ; /* okay */
+      else
+        return gpg_error (GPG_ERR_INV_ID);
+
+      for (s=fpr, n=0; n < 20; s += 2, n++)
+        tmp_sn[n] = xtoi_2 (s);
+      rc = compare_fingerprint (app, 1, tmp_sn);
+      if (rc)
+        return rc;
+    }
+
   if (hashalgo == GCRY_MD_SHA1)
     memcpy (data, sha1_prefix, 15);
   else if (hashalgo == GCRY_MD_RMD160)
