@@ -31,6 +31,7 @@
 #include "trustdb.h"
 #include "cipher.h"
 #include "status.h"
+#include "i18n.h"
 
 
 /****************
@@ -134,7 +135,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	    log_error("can't check algorithm against preferences\n");
 	else if( dek->algo != CIPHER_ALGO_3DES
 	    && !is_algo_in_prefs( pk->local_id, PREFTYPE_SYM, dek->algo ) )
-	    log_info("note: cipher algorithm %d not found in preferences\n",
+	    log_info(_("note: cipher algorithm %d not found in preferences\n"),
 								 dek->algo );
 	free_public_key( pk );
 	rc = 0;

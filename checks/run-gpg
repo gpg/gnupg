@@ -1,12 +1,18 @@
 #!/bin/sh
 
+[ -n "$show_cmds" ] && echo "../g10/gpg --homedir . $*"
+
 if ! ../g10/gpg --homedir . $* 2>err.tmp.$$ ; then
     echo "(../g10/gpg --homedir . $*) failed" >&2
     cat err.tmp.$$ >&2
     rm err.tmp.$$
     exit 1
 fi
-grep -v 'gpg: Good signature from' err.tmp.$$ \
- | grep -v 'gpg: Signature made ' || true
+fgrep -v -f - err.tmp.$$ <<EOF
+gpg: Good signature from
+gpg: Signature made
+gpg: note: cipher algorithm 3 not found in preferences
+gpg: note: cipher algorithm 4 not found in preferences
+EOF
 rm err.tmp.$$
 

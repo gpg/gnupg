@@ -1,3 +1,11 @@
+Sat Aug  8 17:26:12 1998  Werner Koch  (wk@(none))
+
+	* openfile (overwrite_filep): Changed semantics and all callers.
+
+Sat Aug  8 12:17:07 1998  Werner Koch  (wk@(none))
+
+	* status.c (display_help): New.
+
 Thu Aug  6 16:30:41 1998  Werner Koch,mobil,,,	(wk@tobold)
 
 	* seskey.c (encode_session_key): Now uses get_random_bits().

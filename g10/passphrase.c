@@ -32,6 +32,7 @@
 #include "keydb.h"
 #include "main.h"
 #include "i18n.h"
+#include "status.h"
 
 static int pwfd = -1;
 static char *next_pw = NULL;
@@ -129,6 +130,12 @@ passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode )
 	tty_printf("\n");
 	free_public_key( pk );
     }
+    else if( keyid && !next_pw ) {
+	char buf[20];
+	sprintf( buf, "%08lX%08lX", (ulong)keyid[0], (ulong)keyid[1] );
+	write_status_text( STATUS_NEED_PASSPHRASE, buf );
+    }
+
     if( next_pw ) {
 	pw = next_pw;
 	next_pw = NULL;
@@ -157,10 +164,11 @@ passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode )
     else if( opt.batch )
 	log_fatal("Can't query password in batchmode\n");
     else {
-	pw = tty_get_hidden("Enter pass phrase: " );
+	pw = cpr_get_hidden(N_("passphrase.enter"), _("Enter pass phrase: ") );
 	tty_kill_prompt();
-	if( mode == 2 ) {
-	    char *pw2 = tty_get_hidden("Repeat pass phrase: " );
+	if( mode == 2 && !cpr_enabled() ) {
+	    char *pw2 = cpr_get_hidden(N_("passphrase.repeat"),
+				       _("Repeat pass phrase: ") );
 	    tty_kill_prompt();
 	    if( strcmp(pw, pw2) ) {
 		m_free(pw2);
@@ -205,7 +213,7 @@ hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
 
 	if( s2k->mode == 3 ) {
 	    count = (16ul + (s2k->count & 15)) << ((s2k->count >> 4) + 6);
-	    log_info("s2k iteration count=%lu\n", count );
+	    log_debug("s2k iteration count=%lu\n", count );
 	}
 	for(;;) {
 	    md_write( md, s2k->salt, 8 );

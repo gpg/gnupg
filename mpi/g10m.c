@@ -85,3 +85,11 @@ g10m_get_size( MPI a )
     return mpi_get_nlimbs( a ) * BITS_PER_MPI_LIMB;
 }
 
+
+void
+g10m_set_buffer( MPI a, const char *buffer, unsigned nbytes, int sign )
+{
+    mpi_set_buffer( a, buffer, nbytes, sign );
+}
+
+

@@ -266,7 +266,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified )
 	tty_print_string( p, n );
 	tty_printf("\"\n\n");
 	m_free(p);
-	p = cpr_get("sign_uid.really", _("Really sign? "));
+	p = cpr_get(N_("sign_uid.okay"), _("Really sign? "));
 	cpr_kill_prompt();
 	if( !answer_is_yes(p) ) {
 	    m_free(p);
@@ -400,8 +400,9 @@ delete_key( const char *username, int secret )
 	m_free(p);
 	tty_printf("\n\n");
 
-	p = cpr_get( secret? "delete_key.secret.really":"delete_key.really",
-			_("Delete this key from the keyring? "));
+	p = cpr_get( secret? N_("delete_key.secret.okay")
+			   : N_("delete_key.okay"),
+			      _("Delete this key from the keyring? "));
 	cpr_kill_prompt();
 	if( !cpr_enabled() && secret && answer_is_yes(p)) {
 	    /* I think it is not required to check a passphrase; if
@@ -410,7 +411,8 @@ delete_key( const char *username, int secret )
 	     * basic texts about security.
 	     */
 	    m_free(p);
-	    p = tty_get(_("This is a secret key! - really delete? "));
+	    p = cpr_get(N_("delete_key.secret.okay"),
+			 _("This is a secret key! - really delete? "));
 	}
 	if( answer_is_yes(p) )
 	    okay++;
@@ -496,7 +498,7 @@ change_passphrase( KBNODE keyblock )
 		rc = 0;
 		tty_printf(_( "You don't want a passphrase -"
 			    " this is probably a *bad* idea!\n\n"));
-		if( cpr_get_answer_is_yes("change_passwd.empty",
+		if( cpr_get_answer_is_yes(N_("change_passwd.empty.okay"),
 			       _("Do you really want to do this? ")))
 		    changed++;
 		break;
@@ -632,7 +634,7 @@ keyedit_menu( const char *username, STRLIST locusr )
 	    redisplay = 0;
 	}
 	m_free(answer);
-	answer = cpr_get("keyedit.cmd", _("Command> "));
+	answer = cpr_get(N_("keyedit.cmd"), _("Command> "));
 	cpr_kill_prompt();
 	trim_spaces(answer);
 
@@ -674,9 +676,11 @@ keyedit_menu( const char *username, STRLIST locusr )
 	  case cmdQUIT:
 	    if( !modified && !sec_modified )
 		goto leave;
-	    if( !cpr_get_answer_is_yes("keyedit.save",_("Save changes? ")) ) {
+	    if( !cpr_get_answer_is_yes(N_("keyedit.save.okay"),
+					_("Save changes? ")) ) {
 		if( cpr_enabled()
-		    || tty_get_answer_is_yes(_("Quit without saving? ")) )
+		    || cpr_get_answer_is_yes(N_("keyedit.cancel.okay"),
+					     _("Quit without saving? ")) )
 		    goto leave;
 		break;
 	    }
@@ -731,7 +735,8 @@ keyedit_menu( const char *username, STRLIST locusr )
 
 	  case cmdSIGN: /* sign (only the public key) */
 	    if( count_uids(keyblock) > 1 && !count_selected_uids(keyblock) ) {
-		if( !tty_get_answer_is_yes(_("Really sign all user ids? ")) ) {
+		if( !cpr_get_answer_is_yes(N_("keyedit.signall.okay"),
+					   _("Really sign all user ids? ")) ) {
 		    tty_printf(_("Hint: Select the user ids to sign\n"));
 		    break;
 		}
@@ -763,7 +768,8 @@ keyedit_menu( const char *username, STRLIST locusr )
 		    tty_printf(_("You must select at least one user id.\n"));
 		else if( count_uids(keyblock) - n1 < 1 )
 		    tty_printf(_("You can't delete the last user id!\n"));
-		else if( tty_get_answer_is_yes(
+		else if( cpr_get_answer_is_yes(
+			    N_("keyedit.remove.uid.okay"),
 			n1 > 1? _("Really remove all selected user ids? ")
 			      : _("Really remove this user id? ")
 		       ) ) {
@@ -789,7 +795,8 @@ keyedit_menu( const char *username, STRLIST locusr )
 
 		if( !(n1=count_selected_keys( keyblock )) )
 		    tty_printf(_("You must select at least one key.\n"));
-		else if( sec_keyblock && !tty_get_answer_is_yes(
+		else if( sec_keyblock && !cpr_get_answer_is_yes(
+			    N_("keyedit.remove.subkey.okay"),
 		       n1 > 1?
 			_("Do you really want to delete the selected keys? "):
 			_("Do you really want to delete this key? ")

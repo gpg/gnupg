@@ -56,9 +56,22 @@ static FILE *ttyfp = NULL;
 static int initialized;
 static int last_prompt_len;
 
+#ifdef HAVE_TCGETATTR
+static struct termios termsave;
+static int restore_termios;
+#endif
 
-
-
+#ifdef HAVE_TCGETATTR
+static void
+cleanup(void)
+{
+    if( restore_termios ) {
+	restore_termios = 0; /* do it prios in case it is interrupted again */
+	if( tcsetattr(fileno(ttyfp), TCSAFLUSH, &termsave) )
+	    log_error("tcsetattr() failed: %s\n", strerror(errno) );
+    }
+}
+#endif
 
 static void
 init_ttyfp()
@@ -94,6 +107,9 @@ init_ttyfp()
     ttyfp = fopen("/dev/tty", "r+");
     if( !ttyfp )
 	log_fatal("cannot open /dev/tty: %s\n", strerror(errno) );
+  #endif
+  #ifdef HAVE_TCGETATTR
+    atexit( cleanup );
   #endif
     initialized = 1;
 }
@@ -199,9 +215,6 @@ do_get( const char *prompt, int hidden )
     char *buf;
     byte cbuf[1];
     int c, n, i;
-  #ifdef HAVE_TCGETATTR
-    struct termios termsave;
-  #endif
 
     if( !initialized )
 	init_ttyfp();
@@ -252,6 +265,7 @@ do_get( const char *prompt, int hidden )
 
 	if( tcgetattr(fileno(ttyfp), &termsave) )
 	    log_fatal("tcgetattr() failed: %s\n", strerror(errno) );
+	restore_termios = 1;
 	term = termsave;
 	term.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
 	if( tcsetattr( fileno(ttyfp), TCSAFLUSH, &term ) )
@@ -284,6 +298,7 @@ do_get( const char *prompt, int hidden )
       #ifdef HAVE_TCGETATTR
 	if( tcsetattr(fileno(ttyfp), TCSAFLUSH, &termsave) )
 	    log_error("tcsetattr() failed: %s\n", strerror(errno) );
+	restore_termios = 0;
       #endif
     }
   #endif /* end unix version */

@@ -1102,8 +1102,8 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	 * If the user is so careless, not to protect his secret key,
 	 * we can assume, that he operates an open system :=(.
 	 * So we put the key into secure memory when we unprotect it. */
-	if( is_v4 && sk->is_protected && !(opt.emulate_bugs & EMUBUG_ENCR_MPI)){
-	    /* ugly; the length is encrypted too, so wee read all
+	if( is_v4 && sk->is_protected ){
+	    /* ugly; the length is encrypted too, so we read all
 	     * stuff up to the end of the packet into the first
 	     * skey element */
 	    sk->skey[npkey] = mpi_set_opaque(NULL,

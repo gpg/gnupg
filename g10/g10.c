@@ -173,7 +173,7 @@ static ARGPARSE_OPTS opts[] = {
     { 559, "always-trust", 0, "@"},
     { 562, "emulate-checksum-bug", 0, "@"},
     { 554, "run-as-shm-coprocess", 4, "@" },
-    { 568, "emulate-encr-mpi-bug", 0, "@"},
+     /* 568 unused */
 {0} };
 
 
@@ -598,7 +598,6 @@ main( int argc, char **argv )
 	    log_error("shared memory coprocessing is not available\n");
 	  #endif
 	    break;
-	  case 568: opt.emulate_bugs |= EMUBUG_ENCR_MPI; break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }

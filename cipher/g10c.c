@@ -36,3 +36,9 @@ g10c_generate_secret_prime( unsigned nbits )
 }
 
 
+char *
+g10c_get_random_bits( unsigned nbits, int level, int secure )
+{
+    return (char*)get_random_bits( nbits, level, secure );
+}
+

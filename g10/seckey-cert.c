@@ -67,9 +67,10 @@ do_check( PKT_secret_key *sk )
 	memcpy(save_iv, sk->protect.iv, 8 );
 	cipher_decrypt( cipher_hd, sk->protect.iv, sk->protect.iv, 8 );
 	csum = 0;
-	if( sk->version >= 4 && !(opt.emulate_bugs & EMUBUG_ENCR_MPI) ) {
+	if( sk->version >= 4 ) {
 	    int ndata;
 	    byte *p, *data;
+
 
 	    i = pubkey_get_npkey(sk->pubkey_algo);
 	    assert( mpi_is_opaque( sk->skey[i] ) );
@@ -78,10 +79,15 @@ do_check( PKT_secret_key *sk )
 	    cipher_decrypt( cipher_hd, data, p, ndata );
 	    mpi_free( sk->skey[i] ); sk->skey[i] = NULL ;
 	    p = data;
-	    csum = checksum( data, ndata);
-	    if( ndata < 2 )
-		log_bug("not enough bytes for checksum\n");
-	    sk->csum = data[ndata-2] << 8 | data[ndata-1];
+	    if( ndata < 2 ) {
+		log_error("not enough bytes for checksum\n");
+		sk->csum = 0;
+		csum = 1;
+	    }
+	    else {
+		csum = checksum( data, ndata-2);
+		sk->csum = data[ndata-2] << 8 | data[ndata-1];
+	    }
 	    /* must check it here otherwise the mpi_read_xx would fail
 	     * because the length das an abritary value */
 	    if( sk->csum == csum ) {
@@ -198,7 +204,7 @@ is_secret_key_protected( PKT_secret_key *sk )
 int
 protect_secret_key( PKT_secret_key *sk, DEK *dek )
 {
-    int i, rc = 0;
+    int i,j, rc = 0;
     byte *buffer;
     unsigned nbytes;
     u16 csum;
@@ -219,12 +225,53 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	    cipher_setkey( cipher_hd, dek->key, dek->keylen );
 	    cipher_setiv( cipher_hd, NULL );
 	    cipher_encrypt( cipher_hd, sk->protect.iv, sk->protect.iv, 8 );
-	    if( sk->version >= 4 && !(opt.emulate_bugs & EMUBUG_ENCR_MPI) ) {
-		BUG();
+	    if( sk->version >= 4 ) {
+	      #define NMPIS (PUBKEY_MAX_NSKEY - PUBKEY_MAX_NPKEY)
+		byte *buffer[NMPIS];
+		unsigned nbytes[NMPIS];
+		unsigned nbits[NMPIS];
+		int ndata=0;
+		byte *p, *data;
+
+		for(j=0, i = pubkey_get_npkey(sk->pubkey_algo);
+			i < pubkey_get_nskey(sk->pubkey_algo); i++, j++ ) {
+		    assert( !mpi_is_opaque( sk->skey[i] ) );
+		    buffer[j] = mpi_get_buffer( sk->skey[i], &nbytes[j], NULL );
+		    nbits[j]  = mpi_get_nbits( sk->skey[i] );
+		    ndata += nbytes[j] + 2;
+		}
+		for( ; j < NMPIS; j++ )
+		    buffer[j] = NULL;
+		ndata += 2; /* for checksum */
+
+		data = m_alloc_secure( ndata );
+		p = data;
+		for(j=0; j < NMPIS && buffer[j]; j++ ) {
+		    p[0] = nbits[j] >> 8 ;
+		    p[1] = nbits[j];
+		    p += 2;
+		    memcpy(p, buffer[j], nbytes[j] );
+		    p += nbytes[j];
+		    m_free(buffer[j]);
+		}
+	      #undef NMPIS
+		csum = checksum( data, ndata-2);
+		sk->csum = csum;
+		*p++ =	csum >> 8;
+		*p++ =	csum;
+		assert( p == data+ndata );
+		cipher_encrypt( cipher_hd, data, data, ndata );
+		for(i = pubkey_get_npkey(sk->pubkey_algo);
+			i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
+		    mpi_free( sk->skey[i] );
+		    sk->skey[i] = NULL;
+		}
+		i = pubkey_get_npkey(sk->pubkey_algo);
+		sk->skey[i] = mpi_set_opaque(NULL, data, ndata );
 	    }
 	    else {
 		/* NOTE: we always recalculate the checksum because there
-		 * are some * test releases which calculated it wrong */
+		 * are some test releases which calculated it wrong */
 		csum = 0;
 		for(i=pubkey_get_npkey(sk->pubkey_algo);
 			i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {

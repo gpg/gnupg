@@ -30,51 +30,35 @@
 #include "ttyio.h"
 #include "options.h"
 #include "main.h"
+#include "status.h"
+#include "i18n.h"
 
 
 /****************
  * Check whether FNAME exists and ask if it's okay to overwrite an
  * existing one.
- * Returns: -1 : Do not overwrite
- *	    0 : it's okay to overwrite or the file does not exist
- *	    >0 : other error
+ * Returns: True: it's okay to overwrite or the file does not exist
+ *	    False: Do not overwrite
  */
 int
 overwrite_filep( const char *fname )
 {
     if( !fname || (*fname == '-' && !fname[1]) )
-	return 0; /* stdout */
-    if( !access( fname, F_OK ) ) {
-	char *p;
-	int okay;
-	int first = 1;
+	return 1; /* writing to stdout is always okay */
 
-	if( opt.answer_yes )
-	    okay = 1;
-	else if( opt.answer_no || opt.batch )
-	    okay = 2;
-	else
-	    okay = 0;
+    if( access( fname, F_OK ) )
+	return 1; /* does not exist */
 
-	while( !okay ) {
-	    if( first ) {
-		tty_printf("File '%s' exists. ", fname);
-		first = 0;
-	    }
-	    p = tty_get("Overwrite (y/N)? ");
-	    tty_kill_prompt();
-	    if( (*p == 'y' || *p == 'Y') && !p[1] )
-		okay = 1;
-	    else if( !*p || ((*p == 'n' || *p == 'N') && !p[1]) )
-		okay = 2;
-	    else
-		okay = 0;
-	    m_free(p);
-	}
-	if( okay == 2 )
-	    return -1;
-	/* fixme: add some backup stuff */
-    }
+    /* fixme: add some backup stuff in case of overwrite */
+    if( opt.answer_yes )
+	return 1;
+    if( opt.answer_no || opt.batch )
+	return 0;  /* do not overwrite */
+
+    tty_printf(_("File '%s' exists. "), fname);
+    if( cpr_get_answer_is_yes(N_("openfile.overwrite.okay"),
+			       _("Overwrite (y/N)? ")) )
+	return 1;
     return 0;
 }
 
@@ -90,7 +74,6 @@ IOBUF
 open_outfile( const char *iname, int mode )
 {
     IOBUF a = NULL;
-    int rc;
 
     if( (!iname || (*iname=='-' && !iname[1])) && !opt.outfile ) {
 	if( !(a = iobuf_create(NULL)) )
@@ -110,14 +93,12 @@ open_outfile( const char *iname, int mode )
 				      mode==2 ? ".sig" : ".gpg");
 	    name = buf;
 	}
-	if( !(rc=overwrite_filep( name )) ) {
+	if( overwrite_filep( name ) ) {
 	    if( !(a = iobuf_create( name )) )
 		log_error("can't create %s: %s\n", name, strerror(errno) );
 	    else if( opt.verbose )
 		log_info("writing to '%s'\n", name );
 	}
-	else if( rc != -1 )
-	    log_error("oops: overwrite_filep(%s): %s\n", name, g10_errstr(rc) );
 	m_free(buf);
     }
     return a;

@@ -33,6 +33,8 @@
 #include "util.h"
 #include "main.h"
 #include "ttyio.h"
+#include "status.h"
+#include "i18n.h"
 
 
 /****************
@@ -53,8 +55,6 @@ gen_revoke( const char *uname )
     KBNODE keyblock = NULL;
     KBNODE node;
     KBPOS kbpos;
-    char *answer;
-    int yes;
 
     if( opt.batch ) {
 	log_error("sorry, can't do this in batch mode\n");
@@ -117,11 +117,8 @@ gen_revoke( const char *uname )
     }
 
     tty_printf("\n");
-    answer = tty_get("Create a revocation certificate for this key? ");
-    tty_kill_prompt();
-    yes = answer_is_yes(answer);
-    m_free(answer);
-    if( !yes ) {
+    if( !cpr_get_answer_is_yes(N_("gen_revoke.okay"),
+			_("Create a revocation certificate for this key? ")) ){
 	rc = 0;
 	goto leave;
     }

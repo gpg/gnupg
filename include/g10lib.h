@@ -70,6 +70,8 @@ int  g10m_invm( MPI x, MPI u, MPI v );
 unsigned g10m_get_nbits( MPI a );
 unsigned g10m_get_size( MPI a );
 
+void g10m_set_buffer( MPI a, const char *buffer, unsigned nbytes, int sign );
+
 
 /********************************************
  *******  symmetric cipher functions  *******
@@ -97,8 +99,8 @@ const char *g10m_revision_string(int mode);
 const char *g10c_revision_string(int mode);
 const char *g10u_revision_string(int mode);
 
-MPI	      g10c_generate_secret_prime( unsigned nbits );
-unsigned char g10c_get_random_byte( int level );
+MPI   g10c_generate_secret_prime( unsigned nbits );
+char *g10c_get_random_bits( unsigned nbits, int level, int secure );
 
 
 void *g10_malloc( size_t n );

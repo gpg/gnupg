@@ -37,6 +37,7 @@
 #include "ttyio.h"
 #include "options.h"
 #include "main.h"
+#include "i18n.h"
 
 static int fd = -1;
 #ifdef USE_SHM_COPROCESSING
@@ -87,6 +88,7 @@ write_status_text ( int no, const char *text)
       case STATUS_SHM_GET	 : s = "SHM_GET\n"; break;
       case STATUS_SHM_GET_BOOL	 : s = "SHM_GET_BOOL\n"; break;
       case STATUS_SHM_GET_HIDDEN : s = "SHM_GET_HIDDEN\n"; break;
+      case STATUS_NEED_PASSPHRASE: s = "NEED_PASSPHRASE\n"; break;
       default: s = "?\n"; break;
     }
 
@@ -194,6 +196,32 @@ do_shm_get( const char *keyword, int hidden, int bool )
 
 #endif /* USE_SHM_COPROCESSING */
 
+static void
+display_help( const char *keyword )
+{
+    char *p;
+    int hint = 0;
+
+    tty_kill_prompt();
+    if( !keyword ) {
+	tty_printf(_("No help available") );
+	hint++;
+    }
+    else {
+	p = _(keyword);
+	if( !strcmp( p, keyword ) ) {
+	    tty_printf(_("No help available for '%s'"), keyword );
+	    hint++;
+	}
+	else
+	    tty_printf("%s", p );
+    }
+    tty_printf("\n");
+    if( hint )
+	tty_printf("You should set your LANG variable to a valid value.\n"
+		   "Set LANG to \"en\" to see the English help texts.\n" );
+}
+
 
 int
 cpr_enabled()
@@ -208,21 +236,41 @@ cpr_enabled()
 char *
 cpr_get( const char *keyword, const char *prompt )
 {
+    char *p;
+
   #ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return do_shm_get( keyword, 0, 0 );
   #endif
-    return tty_get( prompt );
+    for(;;) {
+	p = tty_get( prompt );
+	if( *p == '?' && !p[1] ) {
+	    m_free(p);
+	    display_help( keyword );
+	}
+	else
+	    return p;
+    }
 }
 
 char *
 cpr_get_hidden( const char *keyword, const char *prompt )
 {
+    char *p;
+
   #ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return do_shm_get( keyword, 1, 0 );
   #endif
-    return tty_get_hidden( prompt );
+    for(;;) {
+	p = tty_get_hidden( prompt );
+	if( *p == '?' && !p[1] ) {
+	    m_free(p);
+	    display_help( keyword );
+	}
+	else
+	    return p;
+    }
 }
 
 void

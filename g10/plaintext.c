@@ -30,6 +30,7 @@
 #include "ttyio.h"
 #include "filter.h"
 #include "main.h"
+#include "status.h"
 #include "i18n.h"
 
 
@@ -109,9 +110,8 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	/* no filename or "-" given; write to stdout */
 	fp = stdout;
     }
-    else if( (rc=overwrite_filep( fname )) ) {
-	if( rc == -1 )
-	    rc = G10ERR_CREATE_FILE;
+    else if( !overwrite_filep( fname ) ) {
+	rc = G10ERR_CREATE_FILE;
 	goto leave;
     }
 
@@ -207,8 +207,9 @@ ask_for_detached_datafile( md_filter_context_t *mfx, const char *inname )
 	tty_printf("Detached signature.\n");
 	do {
 	    m_free(answer);
-	    answer = tty_get("Please enter name of data file: ");
-	    tty_kill_prompt();
+	    answer = cpr_get(N_("detached_signature.filename"),
+			      _("Please enter name of data file: "));
+	    cpr_kill_prompt();
 	    if( any && !*answer ) {
 		rc = G10ERR_READ_FILE;
 		goto leave;

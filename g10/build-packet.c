@@ -310,9 +310,11 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
     }
     else
 	iobuf_put(a, 0 );
-    if( sk->is_protected && sk->version >= 4
-			 && !(opt.emulate_bugs & EMUBUG_ENCR_MPI) ) {
-	BUG();
+    if( sk->is_protected && sk->version >= 4 ) {
+	byte *p;
+	assert( mpi_is_opaque( sk->skey[npkey] ) );
+	p = mpi_get_opaque( sk->skey[npkey], &i );
+	iobuf_write(a, p, i );
     }
     else {
 	for(   ; i < nskey; i++ )

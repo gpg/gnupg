@@ -1,29 +1,128 @@
-
-msgid "passphrase.enter"
+msgid ""
 msgstr ""
-"Please enter the passhrase; this is a secret sentence which consists\n"
-"beliebigen Zeichen bestehen kann.  Was Sie eingegeben wird nicht angezeigt.\n"
-"Zur ihrer eigenen Sicherbeit benutzen Sie biite einen Satz, den sie sich\n"
-"gut merken könne, der aber nicht leicht zu raten ist; Zitate und andere\n"
-"bekannte Texte sind eine SCHLECHTE Wahl, da diese mit Sicherheit Online\n"
-"verfügbar sind und durch entsprechende Programme zum Raten der \"Passphrase\"\n"
-"benutzt werden.  Sätze mit persönlicher Bedeutung die auch noch durch\n"
-"falsche Groß-/Kleinschreibung und eingestreute Sonderzeichen verändert werden,\n"
-"sind i.d.R. eine gute Wahl"
+"Date: 1998-08-08 18:07:50+0200\n"
+"From: Werner Koch <wk@frodo>\n"
+"Content-Type: text/plain; charset=\n"
+"Xgettext-Options: --default-domain=gnupg --directory=.. --add-comments --keyword=_ --keyword=N_ --files-from=./POTFILES.in\n"
+"Files: util/secmem.c util/argparse.c cipher/random.c cipher/rand-dummy.c cipher/rand-unix.c cipher/rand-w32.c g10/g10.c g10/pkclist.c g10/keygen.c g10/decrypt.c g10/encode.c g10/import.c g10/keyedit.c g10/keylist.c g10/mainproc.c g10/passphrase.c g10/plaintext.c g10/pref.c g10/seckey-cert.c g10/sig-check.c g10/sign.c g10/trustdb.c g10/verify.c g10/status.c g10/pubkey-enc.c\n"
 
-msgid "passphrase.repeat"
-msgstr ""
-"Um sicher zugehen, daß Sie sich bei der Eingabe der \"Passphrase\" nicht\n"
-"vertippt haben, geben Sie diese bitte nochmal ein.  Nur wenn beide Eingaben\n"
-"übereinstimmen, wird die \"Passphrase\" akzeptiert."
-
-msgid "keyedit.cmd"
-msgstr "Please enter \"help\"."
-
-
+#: g10/pkclist.c:87
 msgid "edit_ownertrust.value"
 msgstr ""
 "It's up to you to assign a value here; this value will never be exported\n"
 "to any 3rd party.  We need it to implement the web-of-trust; it has nothing\n"
 "to do with the (implicitly created) web-of-certificates."
+
+#: g10/pkclist.c:174
+msgid "revoked_key.override"
+msgstr "If you want to use this revoked key anyway, answer \"yes\"."
+
+#: g10/pkclist.c:261
+msgid "untrusted_key.override"
+msgstr "If you want to use this untrusted key anyway, answer \"yes\"."
+
+#: g10/pkclist.c:408
+msgid "pklist.user_id.enter"
+msgstr "Enter the user id of the addresse to whom you want to send the message."
+
+#: g10/keygen.c:393
+msgid "keygen.algo"
+msgstr "Select the algorithm to use:"
+"Needs more explanation here."
+
+#: g10/keygen.c:437
+msgid "keygen.size"
+msgstr ""
+
+#: g10/keygen.c:449
+msgid "keygen.size.huge.okay"
+msgstr ""
+
+#: g10/keygen.c:458
+msgid "keygen.size.large.okay"
+msgstr ""
+
+#: g10/keygen.c:499
+msgid "keygen.valid"
+msgstr ""
+
+#: g10/keygen.c:523
+msgid "keygen.valid.okay"
+msgstr ""
+
+#: g10/keygen.c:563
+msgid "keygen.name"
+msgstr ""
+
+#: g10/keygen.c:579
+msgid "keygen.email"
+msgstr ""
+
+#: g10/keygen.c:599
+msgid "keygen.comment"
+msgstr ""
+
+#: g10/keygen.c:635
+msgid "keygen.userid.cmd"
+msgstr ""
+"N  to change the name.\n"
+"C  to change the comment.\n"
+"E  to change the email address.\n"
+"O  to continue with key generation.\n"
+"Q  to to quit the key generation."
+
+#: g10/keygen.c:964
+msgid "keygen.sub.okay"
+msgstr "Answer \"yes\" (or just \"y\") if it is okay to generate the sub key."
+
+#: g10/keyedit.c:269
+msgid "sign_uid.okay"
+msgstr ""
+
+#: g10/keyedit.c:403 g10/keyedit.c:414
+msgid "delete_key.secret.okay"
+msgstr ""
+
+#: g10/keyedit.c:404
+msgid "delete_key.okay"
+msgstr ""
+
+#: g10/keyedit.c:501
+msgid "change_passwd.empty.okay"
+msgstr ""
+
+#: g10/keyedit.c:637
+msgid "keyedit.cmd"
+msgstr "Please enter \"help\"."
+
+#: g10/keyedit.c:679
+msgid "keyedit.save.okay"
+msgstr ""
+
+#: g10/keyedit.c:682
+msgid "keyedit.cancel.okay"
+msgstr ""
+
+#: g10/keyedit.c:738
+msgid "keyedit.signall.okay"
+msgstr ""
+
+#: g10/keyedit.c:772
+msgid "keyedit.remove.uid.okay"
+msgstr ""
+
+#: g10/keyedit.c:799
+msgid "keyedit.remove.subkey.okay"
+msgstr ""
+
+#: g10/passphrase.c:167
+msgid "passphrase.enter"
+msgstr ""
+"Please enter the passhrase; this is a secret sentence \n"
+"  Blurb, blurb,.... "
+
+#: g10/passphrase.c:170
+msgid "passphrase.repeat"
+msgstr ""
+"Please repeat the last passphrase, so you are sure what you typed in."
 

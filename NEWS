@@ -1,5 +1,24 @@
 Noteworthy changes in version 0.3.3
 -----------------------------------
+    * IMPORTANT: I found yet another bug in the way the secret keys
+      are encrypted - I did it the way pgp 2.x did it, but OpenPGP
+      and pgp 5.x specifiy another (in some aspects simpler) method.
+      To convert your secret keys you have to do this:
+	1. Build the new release but don't install it and keep
+	   a copy of the old program.
+	2. Disable the network, make sure that you are the only
+	   user, be sure that there are no trojan horses etc ....
+	3. Use your old gpg (version 0.3.[12]) and set the
+	   passphrases of ALL your secret keys to empty!
+	   (gpg --change-passphrase your-user-id).
+	4. Save your ownertrusts (see the next point)
+	5. rm ~/.gnupg/trustd.gpg
+	6. install the new version of gpg (0.3.3)
+	7. For every secret key call "gpg --edit-key your-user-id",
+	   enter "passwd" at the prompt, follow the instructions and
+	   change your passward back, enter "save" to store it.
+	8. Restore the ownertrust (see next point).
+
     * The format of the trust database has changed; you must delete
       the old one, so gnupg can create a new one.
       IMPORTANT: Use version 0.3.[12] to save your assigned ownertrusts
@@ -43,8 +62,13 @@ Noteworthy changes in version 0.3.3
       Twofish is the AES submission from Schneier et al.; see
       "www.counterpane.com/twofish.html" for more information.
 
-    * [talk about --emulate-encr-mpi-bug]
+    * Started with a help system: If you enter a question mark at some
+      prompt; you should get a specific help for this prompt.
 
+    * There is no more backup copy of the secret keyring.
+
+    * A lot of new bugs. I think this release is not as stable as
+      the previous one.
 
 
 Noteworthy changes in version 0.3.2

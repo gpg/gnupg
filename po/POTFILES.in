@@ -30,6 +30,8 @@ g10/sig-check.c
 g10/sign.c
 g10/trustdb.c
 g10/verify.c
+g10/status.c
+g10/pubkey-enc.c
 
 
 #---end--

@@ -1259,3 +1259,31 @@ msgid "key %08lX.%lu: trust check failed: %s\n"
 msgstr "Schlüssel %08lX.%lu: Vertrauensprüfung fehlgeschlagen: %s\n"
 
 
+
+
+
+#################################
+######## Help msgids ############
+#################################
+
+msgid "passphrase.enter"
+msgstr ""
+"Bitte geben Sie die \"Passhrase\" ein; dies ist ein geheimer Satz der aus\n"
+"beliebigen Zeichen bestehen kann.  Was Sie eingegeben wird nicht angezeigt.\n"
+"Zur ihrer eigenen Sicherbeit benutzen Sie biite einen Satz, den sie sich\n"
+"gut merken könne, der aber nicht leicht zu raten ist; Zitate und andere\n"
+"bekannte Texte sind eine SCHLECHTE Wahl, da diese mit Sicherheit Online\n"
+"verfügbar sind und durch entsprechende Programme zum Raten der \"Passphrase\"\n"
+"benutzt werden.  Sätze mit persönlicher Bedeutung die auch noch durch\n"
+"falsche Groß-/Kleinschreibung und eingestreute Sonderzeichen verändert werden,\n"
+"sind i.d.R. eine gute Wahl"
+
+msgid "passphrase.repeat"
+msgstr ""
+"Um sicher zugehen, daß Sie sich bei der Eingabe der \"Passphrase\" nicht\n"
+"vertippt haben, geben Sie diese bitte nochmal ein.  Nur wenn beide Eingaben\n"
+"übereinstimmen, wird die \"Passphrase\" akzeptiert."
+
+msgid "keyedit.cmd"
+msgstr "Geben Sie bitte \"help\" ein."
+

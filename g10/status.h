@@ -47,6 +47,7 @@
 #define STATUS_SHM_GET_BOOL    18
 #define STATUS_SHM_GET_HIDDEN  19
 
+#define STATUS_NEED_PASSPHRASE 20
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

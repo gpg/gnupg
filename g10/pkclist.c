@@ -84,17 +84,11 @@ edit_ownertrust( ulong lid, int mode )
 " s = please show me more information\n\n") );
 
     for(;;) {
-	p = tty_get(_("Your decision? "));
+	p = cpr_get(N_("edit_ownertrust.value"),_("Your decision? "));
 	trim_spaces(p);
-	tty_kill_prompt();
+	cpr_kill_prompt();
 	if( *p && p[1] )
 	    ;
-	else if( *p == '?' ) {
-	    tty_printf(_(
-"It's up to you to assign a value here; this value will never be exported\n"
-"to any 3rd party.  We need it to implement the web-of-trust; it has nothing\n"
-"to do with the (implicitly created) web-of-certificates.\n"));
-	}
 	else if( !p[1] && (*p >= '1' && *p <= '4') ) {
 	    unsigned trust;
 	    switch( *p ) {
@@ -173,18 +167,12 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
     int rc;
 
     if( (trustlevel & TRUST_FLAG_REVOKED) ) {
-	char *answer;
-	int yes;
-
 	log_info("key has been revoked!\n");
 	if( opt.batch )
 	    return 0;
 
-	answer = tty_get("Use this key anyway? ");
-	tty_kill_prompt();
-	yes = answer_is_yes(answer);
-	m_free(answer);
-	if( !yes )
+	if( !cpr_get_answer_is_yes(N_("revoked_key.override"),
+				    _("Use this key anyway? ")) )
 	    return 0;
     }
 
@@ -265,18 +253,14 @@ do_we_trust_pre( PKT_public_key *pk, int trustlevel )
     int rc = do_we_trust( pk, trustlevel );
 
     if( !opt.batch && !rc ) {
-	char *answer;
-
 	tty_printf(_(
 "It is NOT certain that the key belongs to its owner.\n"
 "If you *really* know what you are doing, you may answer\n"
 "the next question with yes\n\n") );
 
-	answer = tty_get("Use this key anyway? ");
-	tty_kill_prompt();
-	if( answer_is_yes(answer) )
+	if( cpr_get_answer_is_yes(N_("untrusted_key.override"),
+				   _("Use this key anyway? "))  )
 	    rc = 1;
-	m_free(answer);
     }
     else if( opt.always_trust && !rc ) {
 	log_info(_("WARNING: Using untrusted key!\n"));
@@ -421,9 +405,10 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage )
 	for(;;) {
 	    rc = 0;
 	    m_free(answer);
-	    answer = tty_get(_("Enter the user ID: "));
+	    answer = cpr_get(N_("pklist.user_id.enter"),
+			      _("Enter the user ID: "));
 	    trim_spaces(answer);
-	    tty_kill_prompt();
+	    cpr_kill_prompt();
 	    if( !*answer )
 		break;
 	    if( pk )

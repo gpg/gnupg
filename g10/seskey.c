@@ -87,6 +87,24 @@ encode_session_key( DEK *dek, unsigned nbits )
     i = nframe - 6 - dek->keylen;
     assert( i > 0 );
     p = get_random_bits( i*8, 1, 1 );
+    /* replace zero bytes by new values */
+    for(;;) {
+	int j, k;
+	byte *pp;
+
+	/* count the zero bytes */
+	for(j=k=0; j < i; j++ )
+	    if( !p[j] )
+		k++;
+	if( !k )
+	    break; /* okay: no zero bytes */
+	k += k/128; /* better get some more */
+	pp = get_random_bits( k*8, 1, 1);
+	for(j=0; j < i && k ; j++ )
+	    if( !p[j] )
+		p[j] = pp[--k];
+	m_free(pp);
+    }
     memcpy( frame+n, p, i );
     m_free(p);
     n += i;
