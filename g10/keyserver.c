@@ -523,8 +523,7 @@ keyserver_spawn(int action,STRLIST list,
 	}
       else if(ascii_memcasecmp(ptr,"PROGRAM ",8)==0)
 	{
-	  ptr[strlen(ptr)-1]='\0';
-	  if(ascii_strcasecmp(&ptr[8],VERSION)!=0)
+	  if(ascii_memcasecmp(&ptr[8],VERSION,strlen(VERSION))!=0)
 	    log_info(_("Warning: keyserver handler from a different "
 		       "version of GnuPG (%s)\n"),&ptr[8]);
 	}

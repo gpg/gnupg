@@ -1,5 +1,8 @@
 2002-06-12  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyserver.c (keyserver_spawn): Properly handle PROGRAM responses
+	when they have a CRLF ending.  Noted by Keith Ray.
+
 	* keyserver.c (keyserver_spawn): Handle CRLF endings from
 	keyserver helpers.  Also don't leak the last line worth of memory
 	from the keyserver response.
