@@ -224,6 +224,9 @@ print_cipher_algo_note( int algo )
 	     || algo == CIPHER_ALGO_CAST5
 	     || algo == CIPHER_ALGO_BLOWFISH
 	     || algo == CIPHER_ALGO_TWOFISH
+	     || algo == CIPHER_ALGO_RIJNDAEL
+	     || algo == CIPHER_ALGO_RIJNDAEL192
+	     || algo == CIPHER_ALGO_RIJNDAEL256
 	   )
 	;
     else {

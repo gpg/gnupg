@@ -1,3 +1,7 @@
+2000-10-18  Werner Koch  <wk@gnupg.org>
+
+	* misc.c (print_cipher_algo_note): Don't print the nore for AES.
+
 2000-10-16  Werner Koch  <wk@gnupg.org>
 
 	* mainproc.c (do_proc_packets): Hack to fix the problem that
