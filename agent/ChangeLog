@@ -1,3 +1,8 @@
+2004-09-28  Werner Koch  <wk@g10code.com>
+
+	* protect.c (agent_unprotect): Fixed wiping of CLEARTEXT.  Thanks
+	to Moritz for pointing this out.
+
 2004-09-25  Moritz Schulte  <moritz@g10code.com>
 	
 	* agent.h: Declare: agent_pksign_do.
