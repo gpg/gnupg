@@ -627,8 +627,8 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
 	if(selfsig)
 	  ;
-	else if(opt.batch)
-	  class=0x10+opt.def_cert_check_level;
+	else if(opt.batch || !opt.ask_cert_level)
+	  class=0x10+opt.def_cert_level;
 	else
 	  {
 	    char *answer;
@@ -638,13 +638,13 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 			 "above?  If you don't know what to answer, enter \"0\".\n"));
 	    tty_printf("\n");
 	    tty_printf(_("   (0) I will not answer.%s\n"),
-		       opt.def_cert_check_level==0?_(" (default)"):"");
+		       opt.def_cert_level==0?_(" (default)"):"");
 	    tty_printf(_("   (1) I have not checked at all.%s\n"),
-		       opt.def_cert_check_level==1?_(" (default)"):"");
+		       opt.def_cert_level==1?_(" (default)"):"");
 	    tty_printf(_("   (2) I have done casual checking.%s\n"),
-		       opt.def_cert_check_level==2?_(" (default)"):"");
+		       opt.def_cert_level==2?_(" (default)"):"");
 	    tty_printf(_("   (3) I have done very careful checking.%s\n"),
-		       opt.def_cert_check_level==3?_(" (default)"):"");
+		       opt.def_cert_level==3?_(" (default)"):"");
 	    tty_printf("\n");
 
 	    while(class==0)
@@ -653,7 +653,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 				   "(enter '?' for more information): "));
 
 		if(answer[0]=='\0')
-		  class=0x10+opt.def_cert_check_level; /* Default */
+		  class=0x10+opt.def_cert_level; /* Default */
 		else if(ascii_strcasecmp(answer,"0")==0)
 		  class=0x10; /* Generic */
 		else if(ascii_strcasecmp(answer,"1")==0)

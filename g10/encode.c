@@ -219,6 +219,10 @@ encode_simple( const char *filename, int mode, int use_seskey )
             m_free( cfx.dek ); cfx.dek = dek;
         }
 
+	if(opt.verbose)
+	  log_info(_("using cipher %s\n"),
+		   cipher_algo_to_string(cfx.dek->algo));
+
 	cfx.dek->use_mdc=use_mdc(NULL,cfx.dek->algo);
     }
 
