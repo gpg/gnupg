@@ -130,26 +130,20 @@ if test "$use_m_guard" = yes ; then
     AC_DEFINE(M_GUARD,1,[Define to use the (obsolete) malloc guarding feature])
 fi
 
-AC_MSG_CHECKING([whether to enable experimental TIGER/192 digest support])
+# Note that TIGER, SHA-384, and SHA-512 may not actually be included
+# if there is no 64-bit integer support.
+
+AC_MSG_CHECKING([whether to enable nonstandard TIGER/192 digest support])
 AC_ARG_ENABLE(tiger,
-    [  --enable-tiger          enable experimental TIGER/192 digest support],
+    [  --enable-tiger          enable nonstandard TIGER/192 digest support],
     use_tiger=$enableval, use_tiger=no)
 AC_MSG_RESULT($use_tiger)
-if test "$use_tiger" = yes ; then
-    AC_SUBST(TIGER_O,tiger.o)
-    AC_DEFINE(USE_TIGER,1,[Define to include experimental TIGER/192 digest support])
-    AC_DEFINE(USE_OLD_TIGER,1,[Define to use the old fake OID for TIGER/192 digest support])
-else
-    AC_MSG_CHECKING([whether to enable new-style experimental TIGER/192 digest support])
-    AC_ARG_ENABLE(new-tiger,
-        [  --enable-new-tiger      enable new-style experimental TIGER/192 digest support],
-        use_new_tiger=$enableval, use_new_tiger=no)
-    AC_MSG_RESULT($use_new_tiger)
-    if test "$use_new_tiger" = yes ; then
-        AC_SUBST(TIGER_O,tiger.o)
-        AC_DEFINE(USE_TIGER,1,[Define to include experimental TIGER/192 digest support])
-    fi
-fi
+
+AC_MSG_CHECKING([whether to enable new-style nonstandard TIGER/192 digest support])
+AC_ARG_ENABLE(new-tiger,
+    [  --enable-new-tiger      enable new-style nonstandard TIGER/192 digest support],
+    use_new_tiger=$enableval, use_new_tiger=no)
+AC_MSG_RESULT($use_new_tiger)
 
 if test x"$use_tiger" = xyes || test x"$use_new_tiger" = xyes ; then
    AC_MSG_WARN([[
@@ -166,10 +160,6 @@ AC_ARG_ENABLE(sha512,
     [  --enable-sha512         enable read-only SHA-384 and SHA-512 digest support],
     use_sha512=$enableval, use_sha512=no)
 AC_MSG_RESULT($use_sha512)
-if test "$use_sha512" = yes ; then
-    AC_SUBST(SHA512_O,sha512.o)
-    AC_DEFINE(USE_SHA512,1,[Define to include read-only SHA-384 and SHA-512 digest support])
-fi
 
 AC_MSG_CHECKING([whether to enable external program execution])
 AC_ARG_ENABLE(exec,
@@ -570,15 +560,78 @@ GNUPG_CHECK_TYPEDEF(ulong, HAVE_ULONG_TYPEDEF)
 GNUPG_CHECK_TYPEDEF(u16, HAVE_U16_TYPEDEF)
 GNUPG_CHECK_TYPEDEF(u32, HAVE_U32_TYPEDEF)
 
-AC_CHECK_SIZEOF(unsigned short, 2)
-AC_CHECK_SIZEOF(unsigned int, 4)
-AC_CHECK_SIZEOF(unsigned long, 4)
-AC_CHECK_SIZEOF(unsigned long long, 0)
+AC_CHECK_SIZEOF(unsigned short)
+AC_CHECK_SIZEOF(unsigned int)
+AC_CHECK_SIZEOF(unsigned long)
+AC_CHECK_SIZEOF(unsigned long long)
 
 if test "$ac_cv_sizeof_unsigned_short" = "0" \
    || test "$ac_cv_sizeof_unsigned_int" = "0" \
    || test "$ac_cv_sizeof_unsigned_long" = "0"; then
     AC_MSG_WARN([Hmmm, something is wrong with the sizes - using defaults]);
+fi
+
+if test "$use_tiger" = yes || test "$use_new_tiger" = yes || test "$use_sha512" = yes ; then
+   # Do we have any 64-bit data types at all?
+   AC_CHECK_SIZEOF(uint64_t)
+   if test "$ac_cv_sizeof_unsigned_int" != "8" \
+      && test "$ac_cv_sizeof_unsigned_long" != "8" \
+      && test "$ac_cv_sizeof_unsigned_long_long" != "8" \
+      && test "$ac_cv_sizeof_uint64_t" != "8"; then
+     AC_MSG_WARN([No 64-bit types.  Disabling TIGER/192, SHA-384, and SHA-512])
+   else
+      AC_MSG_CHECKING([whether the compiler can handle 64-bit integers])
+
+      # The logic here is:
+
+      # 1) c89 does not guarantee that 64-bit ints are available, and
+      # does not support LL.
+
+      # 2) c99 does guarantee 64-bit ints, and does support LL.
+
+      # 3) Some/many supposedly "c89" compilers support 64-bit ints
+      # and LL anyway as an extension.
+
+      # So the answer is to always use LL in the code, and try and
+      # weed out any compilers that don't support LL here in
+      # configure.  This will work on all c99 compilers, and any c89
+      # compilers that support 64-bit ints.  If it is a pure c89
+      # compiler (and therefore doesn't support 64-bit ints), it
+      # doesn't matter if it supports LL or not.  The only thing this
+      # test won't handle is a c89 compiler that does support 64-bit
+      # ints, but does not support LL.  I can live with that,
+      # especially since the digest code in question is optional
+      # anyway.
+
+      AC_RUN_IFELSE(AC_LANG_PROGRAM(,[
+         if((0x6a09e667f3bcc908LL != 0x6a09e667f3bcc908LL) ||
+	    (0x6a09e667f3bcc908LL == 0x7a09e667f3bcc908LL))
+	    return 1;]),
+         use_64bit=yes,use_64bit=no)
+
+      AC_MSG_RESULT($use_64bit)
+
+      if test "$use_64bit" = yes ; then
+
+         if test "$use_tiger" = yes ; then
+             AC_SUBST(TIGER_O,tiger.o)
+             AC_DEFINE(USE_TIGER,1,[Define to include nonstandard TIGER/192 digest support])
+             AC_DEFINE(USE_OLD_TIGER,1,[Define to use the old fake OID for TIGER/192 digest support])
+         fi
+
+         if test "$use_new_tiger" = yes ; then
+             AC_SUBST(TIGER_O,tiger.o)
+             AC_DEFINE(USE_TIGER,1,[Define to include nonstandard TIGER/192 digest support])
+         fi
+
+         if test "$use_sha512" = yes ; then
+             AC_SUBST(SHA512_O,sha512.o)
+             AC_DEFINE(USE_SHA512,1,[Define to include read-only SHA-384 and SHA-512 digest support])
+         fi
+      else
+         AC_MSG_WARN([Compiler cannot handle 64-bit types.  Disabling TIGER/192, SHA-384, and SHA-512])
+      fi
+   fi
 fi
 
 dnl Checks for library functions.

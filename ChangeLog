@@ -1,3 +1,8 @@
+2003-05-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Check for 64-bit types, and how well the compiler
+	supports them (LL) before enabling TIGER/192, SHA-384, or SHA-512.
+
 2003-05-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* README: Remove note about HP/UX inline problem since autoconf
