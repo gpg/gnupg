@@ -96,6 +96,11 @@ int assuan_init_pipe_server (ASSUAN_CONTEXT *r_ctx, int filedes[2]);
 void assuan_deinit_pipe_server (ASSUAN_CONTEXT ctx);
 
 
+/*-- assuan-connect.c --*/
+AssuanError assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name,
+                                 char *const argv[]);
+void assuan_pipe_disconnect (ASSUAN_CONTEXT ctx);
+
 /*-- assuan-util.c --*/
 void assuan_set_malloc_hooks ( void *(*new_alloc_func)(size_t n),
                                void *(*new_realloc_func)(void *p, size_t n),
