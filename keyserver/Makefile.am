@@ -23,12 +23,9 @@ EXTRA_PROGRAMS = gpgkeys_ldap gpgkeys_hkp
 EXTRA_SCRIPTS = gpgkeys_mailto
 libexecdir = @libexecdir@/@PACKAGE@
 
-# We don't need the libs the regular GPG binaries do
-LIBS=
-
 libexec_PROGRAMS = @GPGKEYS_LDAP@ @GPGKEYS_HKP@
 libexec_SCRIPTS = @GPGKEYS_MAILTO@
 noinst_SCRIPTS = gpgkeys_test
 
-gpgkeys_ldap_LDADD = @LDAPLIBS@ @NETLIBS@
-gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ @INTLLIBS@ @CAPLIBS@
+gpgkeys_ldap_LDADD = @LDAPLIBS@ @NETLIBS@ @GETOPT@
+gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ @INTLLIBS@ @CAPLIBS@ @GETOPT@

@@ -1,3 +1,13 @@
+2003-05-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c, gpgkeys_ldap.c: #include <getopt.h> if it is
+	available.  Also include extern references for optarg and optind
+	since there is no guarantee that any header file will include
+	them.  Standards?  We don't need no stinkin' standards
+
+	* Makefile.am: Use @GETOPT@ to pull in libiberty on those
+	platforms that need it.
+
 2003-04-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (dehtmlize, parse_hkp_index): Fix memory

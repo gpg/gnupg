@@ -25,10 +25,16 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
+#endif
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "util.h"
 #include "http.h"
 #include "keyserver.h"
+
+extern char *optarg;
+extern int optind;
 
 #define GET    0
 #define SEND   1

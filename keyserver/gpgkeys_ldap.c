@@ -23,6 +23,9 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
+#endif
 #include <stdlib.h>
 #include <errno.h>
 #ifdef NEED_LBER_H
@@ -34,6 +37,9 @@
 #ifdef __riscos__
 #include "util.h"
 #endif
+
+extern char *optarg;
+extern int optind;
 
 #define GET    0
 #define SEND   1
