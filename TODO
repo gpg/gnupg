@@ -1,3 +1,6 @@
+  * Describe some pitfalls when using EGD.  Check that ~/.gnupg/entropy
+    really is the default.  What about needed permission?  
+
   * Using an expired key for signing should give an error message
     "expired key"and not "unusable key'.  Furthermore the error should
     also be thrown when the defaultkey has expired.  Reported by
