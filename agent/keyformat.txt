@@ -5,8 +5,8 @@ keyformat.txt (wk 2001-12-18)
 Some notes on the format of the secret keys used with gpg-agent.
 
 
-The secret[1] keys are store one per file in a directory below
-the .gnupg homedirectory.  This directory is named
+The secret keys[1] are stored on a per file basis in a directory below
+the .gnupg home directory.  This directory is named
 
    private-keys-v1.d
 
@@ -14,7 +14,7 @@ and should have permissions 700.
 
 The secret keys are stored in files with a name matching the
 hexadecimal representation of the keygrip[2].  The content of the file
-is an S-Expression like tyhe ones used with Libgcrypt.  Here is the
+is an S-Expression like the ones used with Libgcrypt.  Here is an
 example of an unprotected file:
 
 (private-key
@@ -33,7 +33,8 @@ accepted by gpg-agent with the configuration option:
 --allow-non-canonical-key-format.  
 
 The regular way to represent the keys is in canonical representation
-with the additional requirement of an extra object around it[3]:
+with the additional requirement of an extra object container around
+it[3]:
 
 (oid.1.3.6.1.4.1.11591.2.2.2
  (keyinfo human_readable_information_to_decribe_this_key)
@@ -74,8 +75,8 @@ Defined protection methods are:
 1.3.6.1.4.1.gnu(11591).aegypten(2)
 .algorithms(1).keyprotection(1).s2k3-sha1-aes-cbc(1)
 
-This uses AES in CBS mode for encryption, SHA-1 fro integrity
-protecion and the String to Key algorithm 3 from OpenPGP (rfc2440).
+This uses AES in CBC mode for encryption, SHA-1 for integrity
+protection and the String to Key algorithm 3 from OpenPGP (rfc2440).
 
 Example:
 
@@ -93,6 +94,9 @@ representation) after decryption:
  (q #00f7a7c..[some bytes not shown]..61#)
  (u #304559a..[some bytes not shown]..9b#)
 )
+
+For padding reasons, random bytes are appended to this list - they can
+easily be stripped by looking for the end of the list.
 
 The first element is the SHA-1 hash calculated on the concatenation of the
 public key and secret key parameter lists: i.e one has to hash the
@@ -112,13 +116,7 @@ the stored one - If they don't match the integrity of the key is not
 given.
 
 
-
-
-
-
-
-
-
+TODO: write a more elaborated version.
 
 
 

@@ -215,6 +215,82 @@ agent_askpin (const char *desc_text,
 }
 
 
+
+/* Ask for the passphrase using the supplied arguments.  The
+   passphrase is returned in RETPASS as an hex encoded string to be
+   freed by the caller */
+int 
+agent_get_passphrase (char **retpass, const char *desc, const char *prompt,
+                      const char *errtext)
+{
+
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+  struct entry_parm_s parm;
+  unsigned char *p, *hexstring;
+  int i;
+
+  *retpass = NULL;
+  if (opt.batch)
+    return GNUPG_Bad_Passphrase; 
+
+  rc = start_pinentry ();
+  if (rc)
+    return rc;
+
+  if (desc)
+    snprintf (line, DIM(line)-1, "SETDESC %s", desc);
+  else
+    snprintf (line, DIM(line)-1, "RESET");
+  line[DIM(line)-1] = 0;
+  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL);
+  if (rc)
+    return map_assuan_err (rc);
+
+  snprintf (line, DIM(line)-1, "SETPROMPT %s", prompt? prompt : "Passphrase");
+  line[DIM(line)-1] = 0;
+  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL);
+  if (rc)
+    return map_assuan_err (rc);
+
+  if (errtext)
+    {
+      snprintf (line, DIM(line)-1, "SETERROR %s", errtext);
+      line[DIM(line)-1] = 0;
+      rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL);
+      if (rc)
+        return map_assuan_err (rc);
+    }
+
+  memset (&parm, 0, sizeof parm);
+  parm.size = ASSUAN_LINELENGTH/2 - 5;
+  parm.buffer = gcry_malloc_secure (parm.size+10);
+  if (!parm.buffer)
+    return seterr (Out_Of_Core);
+
+  rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm, NULL, NULL);
+  if (rc)
+    {
+      xfree (parm.buffer);
+      return map_assuan_err (rc);
+    }
+  
+  hexstring = gcry_malloc_secure (strlen (parm.buffer)*2+1);
+  if (!hexstring)
+    {
+      xfree (parm.buffer);
+      return seterr (Out_Of_Core);
+    }
+
+  for (i=0, p=parm.buffer; *p; p++, i += 2)
+    sprintf (hexstring+i, "%02X", *p);
+  
+  xfree (parm.buffer);
+  *retpass = hexstring;
+  return 0;
+}
+
+
 
 
 

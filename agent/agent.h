@@ -94,6 +94,9 @@ GCRY_SEXP agent_key_from_file (const unsigned char *grip);
 
 /*-- query.c --*/
 int agent_askpin (const char *desc_text, struct pin_entry_info_s *pininfo);
+int agent_get_passphrase (char **retpass,
+                          const char *desc, const char *prompt,
+                          const char *errtext);
 
 /*-- pksign.c --*/
 int agent_pksign (CTRL ctrl, FILE *outfp);
@@ -101,6 +104,11 @@ int agent_pksign (CTRL ctrl, FILE *outfp);
 /*-- pkdecrypt.c --*/
 int agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
                      FILE *outfp);
+
+/*-- genkey.c --*/
+int agent_genkey (CTRL ctrl,
+                  const char *keyparam, size_t keyparmlen, FILE *outfp);
+
 
 
 #endif /*AGENT_H*/

@@ -1,5 +1,5 @@
 /* command.c - gpg-agent command handler
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -34,7 +34,8 @@
 
 /* maximum allowed size of the inquired ciphertext */
 #define MAXLEN_CIPHERTEXT 4096
-
+/* maximum allowed size of the key parameters */
+#define MAXLEN_KEYPARAM 1024
 
 #define set_error(e,t) assuan_set_error (ctx, ASSUAN_ ## e, (t))
 
@@ -50,50 +51,6 @@ struct server_local_s {
 };
 
 
-/* Map GNUPG_xxx error codes to Assuan status codes
-   FIXME: duplicated from ../sm/server.c */
-static int
-rc_to_assuan_status (int rc)
-{
-  switch (rc)
-    {
-    case 0: break;
-    case GNUPG_Bad_Certificate:   rc = ASSUAN_Bad_Certificate; break;
-    case GNUPG_Bad_Certificate_Path: rc = ASSUAN_Bad_Certificate_Path; break;
-    case GNUPG_Missing_Certificate: rc = ASSUAN_Missing_Certificate; break;
-    case GNUPG_No_Data:           rc = ASSUAN_No_Data_Available; break;
-    case GNUPG_Bad_Signature:     rc = ASSUAN_Bad_Signature; break;
-    case GNUPG_Not_Implemented:   rc = ASSUAN_Not_Implemented; break;
-    case GNUPG_No_Agent:          rc = ASSUAN_No_Agent; break;
-    case GNUPG_Agent_Error:       rc = ASSUAN_Agent_Error; break;
-    case GNUPG_No_Public_Key:     rc = ASSUAN_No_Public_Key; break;
-    case GNUPG_No_Secret_Key:     rc = ASSUAN_No_Secret_Key; break;
-    case GNUPG_Invalid_Data:      rc = ASSUAN_Invalid_Data; break;
-
-    case GNUPG_Bad_PIN:
-    case GNUPG_Bad_Passphrase:
-      rc = ASSUAN_No_Secret_Key;
-      break;
-
-    case GNUPG_Read_Error: 
-    case GNUPG_Write_Error:
-    case GNUPG_IO_Error: 
-      rc = ASSUAN_Server_IO_Error;
-      break;
-    case GNUPG_Out_Of_Core:    
-    case GNUPG_Resource_Limit: 
-      rc = ASSUAN_Server_Resource_Problem;
-      break;
-    case GNUPG_Bug: 
-    case GNUPG_Internal_Error:   
-      rc = ASSUAN_Server_Bug;
-      break;
-    default: 
-      rc = ASSUAN_Server_Fault;
-      break;
-    }
-  return rc;
-}
 
 
 
@@ -193,7 +150,7 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
   CTRL ctrl = assuan_get_pointer (ctx);
 
   rc = agent_pksign (ctrl, assuan_get_data_fp (ctx));
-  return rc_to_assuan_status (rc);
+  return map_to_assuan_status (rc);
 }
 
 /* PKDECRYPT <options>
@@ -216,7 +173,92 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
 
   rc = agent_pkdecrypt (ctrl, value, valuelen, assuan_get_data_fp (ctx));
   xfree (value);
-  return rc_to_assuan_status (rc);
+  return map_to_assuan_status (rc);
+}
+
+
+/* GENKEY
+
+   Generate a new key, store the secret part and return the public
+   part.  Here is an example transaction:
+
+   C: GENKEY
+   S: INQUIRE KEYPARM
+   C: D (genkey (rsa (nbits  1024)))
+   C: END
+   S: D (public-key
+   S: D   (rsa (n 326487324683264) (e 10001)))
+   S  OK key created
+*/
+
+static int
+cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+  int rc;
+  char *value;
+  size_t valuelen;
+
+  /* First inquire the parameters */
+  rc = assuan_inquire (ctx, "KEYPARAM", &value, &valuelen, MAXLEN_KEYPARAM);
+  if (rc)
+    return rc;
+
+  rc = agent_genkey (ctrl, value, valuelen, assuan_get_data_fp (ctx));
+  xfree (value);
+  return map_to_assuan_status (rc);
+}
+
+
+/* GET_PASSPHRASE <cache_id> [<error_message> <prompt> <description>]
+
+   This function is usually used to ask for a passphrase to be used
+   for conventional encryption, but may aslo be used by programs which
+   need specal handling of passphrases.  This command uses a syntax
+   which helps clients to use the agent with minimum effort.  The
+   agent either returns with an error or with a OK followed by the hex
+   encoded passphrase.  Note that the length of the strings is
+   implicitly limited by the maximum length of a command.
+*/
+
+static int
+cmd_get_passphrase (ASSUAN_CONTEXT ctx, char *line)
+{
+  int rc;
+  char *response;
+  char *desc, *prompt, *errtext;
+
+  /* FIXME: Parse that stuff */
+  desc = "We need a passphrase";
+  prompt = NULL;
+  errtext = "try again";
+
+  rc = agent_get_passphrase (&response, desc, prompt, errtext);
+  if (!rc)
+    {
+      rc = assuan_set_okay_line (ctx, response);
+      xfree (response);
+    }
+
+  return map_to_assuan_status (rc);
+}
+
+
+/* CLEAR_PASSPHRASE <cache_id>
+
+   may be used to invalidate the cache entry for a passphrase.  The
+   function returns with OK even when ther eis no cached passphrase.
+*/
+
+static int
+cmd_clear_passphrase (ASSUAN_CONTEXT ctx, char *line)
+{
+  int rc;
+
+  /* fixme: no caching yet. so return with OK */
+  rc = 0;
+
+  return map_to_assuan_status (rc);
 }
 
 
@@ -235,6 +277,9 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "SETHASH",    0,  cmd_sethash },
     { "PKSIGN",     0,  cmd_pksign },
     { "PKDECRYPT",  0,  cmd_pkdecrypt },
+    { "GENKEY",     0,  cmd_genkey },
+    { "GET_PASSPHRASE",0, cmd_get_passphrase },
+    { "CLEAR_PASSPHRASE",0, cmd_clear_passphrase },
     { "",     ASSUAN_CMD_INPUT, NULL }, 
     { "",     ASSUAN_CMD_OUTPUT, NULL }, 
     { NULL }

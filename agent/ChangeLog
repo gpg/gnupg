@@ -1,3 +1,21 @@
+2002-01-07  Werner Koch  <wk@gnupg.org>
+
+	* genkey.c: Store the secret part and return the public part.
+
+2002-01-03  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_get_passphrase): New.
+	(cmd_clear_passphrase): New.
+	* query.c (agent_get_passphrase): New.
+
+2002-01-02  Werner Koch  <wk@gnupg.org>
+
+	* genkey.c: New.
+	* command.c (cmd_genkey): New.
+
+	* command.c (rc_to_assuan_status): Removed and changed all callers
+	to use map_to_assuan_status.
+	
 2001-12-19  Werner Koch  <wk@gnupg.org>
 
 	* keyformat.txt: New. 
@@ -50,3 +68,13 @@ Fri Aug 18 14:27:14 CEST 2000  Werner Koch  <wk@openit.de>
         * gpg-agent.c: New.
         * Makefile.am: New.
 
+
+ Copyright 2001, 2002 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
