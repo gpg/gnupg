@@ -59,4 +59,29 @@ struct keylist
 unsigned int set_timeout(unsigned int seconds);
 int register_timeout(void);
 
+struct ks_options
+{
+  enum {KS_UNKNOWN,KS_GET,KS_SEND,KS_SEARCH} action;
+  char *host;
+  char *port;
+  char *scheme;
+  char *auth;
+  char *path;
+  struct
+  {
+    unsigned int include_disabled:1;
+    unsigned int include_revoked:1;
+    unsigned int include_subkeys:1;
+    unsigned int check_cert:1;
+  } flags;
+  unsigned int verbose;
+  unsigned int debug;
+  unsigned int timeout;
+  char *ca_cert_file;
+};
+
+struct ks_options *init_ks_options(void);
+void free_ks_options(struct ks_options *opt);
+int parse_ks_options(char *line,struct ks_options *opt);
+
 #endif /* !_KSUTIL_H_ */

@@ -1,3 +1,9 @@
+2005-03-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.h, ksutil.c (init_ks_options, free_ks_options,
+	parse_ks_options): Pull a lot of duplicated code into a single
+	options parser for all keyserver helpers.
+
 2005-02-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* curl-shim.c (curl_easy_perform): Fix compile warning.
