@@ -1,83 +1,124 @@
+  * Reword the "Not enough entropy" messages.
 
-  * Look at FEATURES packet to decide wether to use MDC.  We should
-    rethink the whole preference implementation and drop that ugly hamehash
-    stuff.  Is it possible to that in getkey?  We have to see whether we
-    realy lookit up by user name or whethre there is a double lookup,
-    first by userid and then later by keyid - which is bad.
+  * Do we need a configure test for putenv?
 
-  * options.skel wird mit umask von root installiert.
+  * Check for consistent spelling of user ID, key ID etc.
+    Replace "user id not found" in getkey.c by "no valid user ID found".
+ 
+  * Add remarks to the man page about OpenPGP OPTIONAL algorithms and
+    issue warnings when such an algorithm is used (disabled by expert modus?)
 
-  * See how we can handle the symlinks in ./gcrypt
+  * Return status information even when an imported key is already
+    stored.  This is useful for GPGME's detailed info function.
 
-  * Add SIGSEGV handler to overcome zlib problems with truncated data.
+  * Describe some pitfalls when using EGD.  Check that ~/.gnupg/entropy
+    really is the default.  What about needed permission?  
 
-  * Use --output for keylistings too.
+  * Using an expired key for signing should give an error message
+    "expired key" and not "unusable key'.  Furthermore the error should
+    also be thrown when the default key has expired.  Reported by
+    Eric.VanBuggenhaut@AdValvas.be.
 
-  * Never allocate packet memory with a m-alloc, but use a specific function.
+  * pause scrolling help in --edit-key and elsewhere.
 
-  * Should we change names like mpi_write in g10/ so that we don't
-    use the prefix mpi here?
+  * getkey does not return revoked/expired keys - therefore it is not
+    possible to override it.
 
-  * Implement the AXP syscall to enable bus traps for GLIB 2
+  * Selection using +wordlist does not work.
+    What about adding a feature -word to the +wordlist search mode.
 
-  * parse a paramter file to do automatic key generation and to set
-    parameters for the keygen menu.  Far easier than to do a dialog for
-    each required parameter.
+  * Check the changes to the gpg random gatherer on all W32 platforms.
+
+  * Put a note into readme.w32 that there is a man page and a options
+    file;  write the registry stuff in regedit format.
+
+  * Show more info does not work from edit->trust
+
+  * set default charset from nl_langinfo.
+
+  * Check that no secret temporary results are stored in the result parameter
+    of the mpi functions.  We have already done this for mpi-mul.c 
+
+  * We need another special packet at the end of a clearsign message to mark
+    it's end and allow for multiple signature for one message.  And
+    add a real grammar to the code in mainproc.c
+
+  * Option to warn when a non MDC message is decrypted?
+
+  * If there is no secure memory, allocate more memory for the secure
+    memory block or do it in all cases.
+
+  * add some minor things vor VMS.
+
+  * Use DSA keys with the test suite (partly done)
+
+  * Fix the bug in the mips assembler code
+
+  * Add a way to show the fingerprint of an key signator's keys
+
+  * Add an is_valid flag to each user ID.
+
+  * Replace the printing of the user name by [self-signature] when
+    appropriate so that a key listing does not get clobbered.
+
+  * Concatenated encryption messages don't work corectly - only the
+    first one is processed.
+
+  * Add option to put the list of recipients (from the encryption
+    layer) into the signatures notation data.
 
   * With option -i prompt before adding a key to the keyring and show some
     info what we are about to add.
 
-  * Speed up calculation of key validation.
-
   * --disable-asm should still assemble _udiv_qrnnd when needed
 
-  * Skip RO keyrings when importing a key.
+  * Get new assembler stuff from gmp 3.1
 
-  * Use the newest encryption key if only the main key has been given.
-
-  * replace the keyserver stuff either by a call to a specialized
-    utility and SOCKSify this utility.
-
-  * Check the beginning of file to detect already compressed files (gzip,
-    bzip2, xdelta and some picture formats)
-
-  * Delay the read of the passphrase-fd afte a NEED_PASSPHRASE.  But this
-    may break some scripts.
-
-  * as soon as we have moved to KBX, we can check signatures at all places
-  because there is no perfomance drawback as we can store the result of
-  a verification in the KBX.  This enable us to better print information on
-  revoked user IDs and signatures. Well, caching of non-self-signatures
-  will still be complicated.
-
-
-Nice to have
-------------
-  * Official test vectors for 3DES-EDE3
+  * Use new-format headers for compressed packets.
+    The advantage is that a garbled zip files can be better detected.
+ 
   * use DEL and ^H for erasing the previous character (util/ttyio.c).
     or better readline.
-  * Print a warning if the directory mode is wrong.
-  * Do a real fix for bug #7 or document that it is a PGP 5 error.
+
   * preferences of hash algorithms are not yet used.
-  * Replace the SIGUSR1 stuff by semaphores to avoid loss of a signal.
-    or use POSIX.4 realtime signals.  Overhaul the interface and the
-    test program.  Use it with the test suite?
+
   * add test cases for invalid data (scrambled armor or other random data)
-  * add checking of armor trailers
-  * Burn the buffers used by fopen(), or use read(2). Does this
-    really make sense?	And while we are at it:  implement a secure deletion
-    stuff?
+
+  * add checking of armor trailers.  Try to detect garbled header lines.
+
   * the pubkey encrypt functions should do some sanity checks.
-  * dynload: implement the hint stuff.
+
   * "gpg filename.tar.gz.asc" should work like --verify (-sab).
+
   * for messages created with "-t", it might make sense to append the
     verification status of the message to the output (i.e. write something to
-    the --output file and not only to stderr.
-  * configure option where to find zlib
-  * Display more validity information about the user IDs at certain places.
-    We need a more general function to extract such kind of info from the
-    trustdb.
-  * Evaluate whether it make sense to replace the namehashs either by
-    using the user ID directly or by using pointers into the trustdb.
-  * --gen-prime may trigger a log_bug; should be a log_fatal.
+    the --output file and not only to stderr.  However the problem is
+    that we consider the message transpatrent and don't have any
+    indication of the used character set.  To implement this feature
+    we need to make sure that all output is plain 7 bit ascii but
+    given that we need to print a user name, this does not make sense
+    at all.  The only way this can be implemented is by assuming that
+    the message is encoded in utf8 and hope tht everyone starts to use
+    utf8 instead of latin-1 or whatever RSN.  Hmmm, I myself should
+    start with this.
+
+  * keyflags don't distinguish between {certify,signature}-only.
+
+  * Instead of issuing a "signature packet without keyid" gpg should
+    try to get the keyID from a corresponding one-pass signature
+    packet (See bug report 817).  This is not easy to do as we don't
+    store the one-pass packets.
+
+  * cat foo | gpg --sign | gpg --list-packets
+    Does not list the signature packet.
+
+  * Replace wording "It is NOT certain that the key belongs to its owner..."
+    with "It is NOT certain that the key belongs to the person named in the
+    user ID..." (or similar but clearer message).
+
+
+Things we won't do
+------------------
+
+  * New option --file-remove path-to-wipe-program ? 
 

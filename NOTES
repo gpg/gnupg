@@ -1,7 +1,6 @@
+Checking ElGamal signatures is really slow and the reason for the long 
+running time on parts o my keyring.  Because somekeys are also checked at startup, this is even worser.  I should invalidate my self signature with algo 16 or 20.
 
-gcry_md_open() may return NULL in case of an unknown algorithm
-
-Return GCRYERR_NOMEM instead of using m_alloc in most library functions
 
 SCO UnixWare/7.1.0  reported by Allan Clark <allanc@sco.com> for 0.9.8
 
@@ -13,16 +12,35 @@ Some other reported cpu-vendor-os strings:
     sparc-sun-solaris5.4
     sparc-sun-sunos4.1.2
     i386-pc-sysv4.2   (USL Unixware v1.1.2)
+    powerpc-ibm-aix4.3.2.0  John Payne <jcapayne@att.com>
+
+gpg 1.0.1 okay with MP-RAS 3.02.01 Edition 5 using gcc 2.95.2 and EGD
+ By <CSpeicher@eisi.com>
+
+gpg 1.0.1 okay with 4.0.1 BSDI BSD/OS 4.0 i386
+
+
+rndw32 tested on:
+
+  Windows 98 4.10.1998 mit einem AMD-K6-2-450
+   	 Michael Engels <angel@dalrin.de>)
+
+  Windows 95 4.00.950a
+
+  Windows NT 4.00.1381
 
 
 
+  
+tried to compile GnuPG on AIX 4.3 on a power CPU based machine. It
+doesn't work out of the box but i found a way to do so:
 
-Simos Hadjiyiannis <hadjiyia@cs.colostate.edu>
+ PowerPC based machines:
+ CFLAGS="-g -O2 -mcpu=powerpc" ./configure --disable-asm --disable-dynload
++--enable-static-rnd=egd
 
-runs successfully on HP-UX v11.00 as well. (using gcc)
-
-Johan Wevers <johanw@vulcan.xs4all.nl> is working on a NL translation.
-
-
+ Power1 and Power2 machines:
+ CFLAGS="-g -O2 -mcpu=power" ./configure --disable-asm --disable-dynload
++--enable-static-rnd=egd
 
 

@@ -1,3 +1,14 @@
+Installation instructions for GnuPG
+====================================
+  Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+
+  This file is free software; as a special exception the author gives
+  unlimited permission to copy and/or distribute it, with or without
+  modifications, as long as this notice is preserved.
+
+  This file is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Please read the Basic Installation section somewhere below.
 
@@ -18,6 +29,15 @@ Configure options for GNUPG
 		      none - Do not linkl any module in but rely on
 			     a dynmically loaded modules.
 
+--with-egd-socket=<name>  This is only used when EGD is used as random
+                     gatherer. GnuPG uses by default "~/.gnupg/entropy"
+                     as the socket to connect EGD.  Using this option the
+                     socket name can be changed.  You may use any filename
+                     here with 2 exceptions:  a filename starting with
+                     "~/" uses the socket in the homedirectory of the user
+                     and one starting with a "=" uses a socket in the
+                     GnuPG homedirectory which is bye default "~/.gnupg".
+   
 --with-included-zlib Forces usage of the local zlib sources. Default is
 		     to use the (shared) library of the system.
 
@@ -26,7 +46,10 @@ Configure options for GNUPG
 
 --disable-nls	    Disable NLS support (See the file ABOUT-NLS)
 
---enable-m-guard    Enable the integrated malloc checking code.
+--enable-m-guard    Enable the integrated malloc checking code. Please
+                    note that this feature does not work on all CPUs
+                    (e.g. SunOS 5.7 on UltraSparc-2) and might give
+                    you a Bus error.
 
 --disable-dynload   If you have problems with dynamic loading, this option
 		    disables all dynamic loading stuff.
@@ -70,6 +93,28 @@ This doesn't matter and we know about it (actually it is due to the some
 warning options which we have enabled for gcc)
 
 
+Specific problems on some machines
+==================================
+
+  * IBM RS/6000 running AIX:
+
+	Due to a change in gcc (since version 2.8) the MPI stuff may
+	not build. In this case try to run configure using:
+	    CFLAGS="-g -O2 -mcpu=powerpc" ./configure
+
+  * Compaq C V6.2 for alpha:
+
+        You may want to use the option "-msg-disable ptrmismatch1"
+        to get rid of the sign/unsigned char mismatch warnings.
+
+  * SVR4.2 (ESIX V4.2 cc)
+
+        Due to problems with the ESIX as, you probably want to do
+            CFLAGS="-O -K pentium" ./configure --disable-asm
+        Reported by Reinhard Wobst.
+
+
+
 The Random Device
 =================
 Random devices are available in Linux, FreeBSD and OpenBSD.
@@ -111,6 +156,10 @@ We will use capabilities in the future.
 
 The ~/.gnupg directory will be created if it does not exist.  Your first
 action should be to create a key pair: "gpg --gen-key".
+
+Due to limitations in the automake system, the Info format versions of
+the man pages are not installed.  You have to convert the Texinfo
+files by hand (use makeinfo) and copy them to the appropriate place.
 
 
 
@@ -201,13 +250,14 @@ Or, on systems that have the `env' program, you can do it like this:
 Compiling For Multiple Architectures
 ====================================
 
-   You can compile the package for more than one kind of computer at the same
-time by placing the object files for each architecture in their own
-directory.  To do this, you must use a version of `make', such as GNU `make',
-that supports the `VPATH' variable.  `cd' to the directory where you want the
-object files and executables to go and run the `configure' script.
-`configure' automatically checks for the source code in the directory that
-`configure' is in and in `..'.
+   You can compile the package for more than one kind of computer at
+the same time by placing the object files for each architecture in
+their own directory.  To do this, you must use a version of `make',
+such as GNU `make', that supports the `VPATH' variable.  `cd' to the
+directory where you want the object files and executables to go and
+run the `configure' script; please use a relative filename name to
+invoke `configure'.  `configure' automatically checks for the source
+code in the directory that `configure' is in and in `..'.
 
    If you have to use a `make' that does not supports the `VPATH'
 variable, you have to compile the package for one architecture at a time

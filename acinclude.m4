@@ -1,5 +1,21 @@
-dnl macros to configure g10
-
+dnl macros to configure gnupg
+dnl Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+dnl
+dnl This file is part of GnuPG.
+dnl
+dnl GnuPG is free software; you can redistribute it and/or modify
+dnl it under the terms of the GNU General Public License as published by
+dnl the Free Software Foundation; either version 2 of the License, or
+dnl (at your option) any later version.
+dnl 
+dnl GnuPG is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl GNU General Public License for more details.
+dnl 
+dnl You should have received a copy of the GNU General Public License
+dnl along with this program; if not, write to the Free Software
+dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
 dnl GNUPG_MSG_PRINT(STRING)
 dnl print a message
@@ -15,37 +31,15 @@ dnl
 AC_DEFUN(GNUPG_CHECK_TYPEDEF,
   [ AC_MSG_CHECKING(for $1 typedef)
     AC_CACHE_VAL(gnupg_cv_typedef_$1,
-    [AC_TRY_COMPILE([#include <stdlib.h>
+    [AC_TRY_COMPILE([#define _GNU_SOURCE 1
+    #include <stdlib.h>
     #include <sys/types.h>], [
     #undef $1
     int a = sizeof($1);
     ], gnupg_cv_typedef_$1=yes, gnupg_cv_typedef_$1=no )])
     AC_MSG_RESULT($gnupg_cv_typedef_$1)
     if test "$gnupg_cv_typedef_$1" = yes; then
-        AC_DEFINE($2)
-    fi
-  ])
-
-
-dnl GNUPG_FIX_HDR_VERSION(FILE, NAME)
-dnl Make the version number in gcrypt/gcrypt.h the same as the one here.
-dnl (this is easier than to have a .in file just for one substitution)
-dnl
-AC_DEFUN(GNUPG_FIX_HDR_VERSION,
-  [ sed "s/^#define $2 \".*/#define $2 \"$VERSION\"/" $srcdir/$1 > $srcdir/$1.tmp
-    if cmp -s $srcdir/$1 $srcdir/$1.tmp 2>/dev/null; then
-        rm -f $srcdir/$1.tmp
-    else
-        rm -f $srcdir/$1
-        if mv $srcdir/$1.tmp $srcdir/$1 ; then
-            :
-        else
-            AC_MSG_ERROR([[
-*** Failed to fix the version string macro $2 in $1.
-*** The old file has been saved as $1.tmp
-                         ]])
-        fi
-        AC_MSG_WARN([fixed the $2 macro in $1])
+        AC_DEFINE($2,1,[Defined if a `]$1[' is typedef'd])
     fi
   ])
 
@@ -53,7 +47,7 @@ AC_DEFUN(GNUPG_FIX_HDR_VERSION,
 dnl GNUPG_CHECK_GNUMAKE
 dnl
 AC_DEFUN(GNUPG_CHECK_GNUMAKE,
-  [
+  [ 
     if ${MAKE-make} --version 2>/dev/null | grep '^GNU ' >/dev/null 2>&1; then
         :
     else
@@ -66,6 +60,7 @@ AC_DEFUN(GNUPG_CHECK_GNUMAKE,
 ***]])
     fi
   ])
+
 
 dnl GNUPG_CHECK_FAQPROG
 dnl
@@ -82,39 +77,33 @@ AC_DEFUN(GNUPG_CHECK_FAQPROG,
     AC_SUBST(FAQPROG)
     AM_CONDITIONAL(WORKING_FAQPROG, test "$working_faqprog" = "yes" )
 
-    if test $working_faqprog = no; then
-	AC_MSG_WARN([[
-***
-*** It seems that the faqprog.pl program is not installed.
-*** Unless you do not change the source of the FAQs it is not required.
-*** The working version of this utility should be available at:
-***   ftp://ftp.gnupg.org/pub/gcrypt/contrib/faqprog.pl
-***]])
-    fi
-  ])       
+dnl     if test $working_faqprog = no; then
+dnl         AC_MSG_WARN([[
+dnl ***
+dnl *** It seems that the faqprog.pl program is not installed;
+dnl *** however it is only needed if you want to change the FAQ.
+dnl ***  (faqprog.pl should be available at:
+dnl ***    ftp://ftp.gnupg.org/pub/gcrypt/contrib/faqprog.pl )
+dnl *** No need to worry about this warning.
+dnl ***]])
+dnl     fi
+   ])       
 
-
-
-dnl GNUPG_LINK_FILES( SRC, DEST )
-dnl same as AC_LINK_FILES, but collect the files to link in
-dnl some special variables and do the link
-dnl when GNUPG_DO_LINK_FILES is called
-dnl This is a workaround for AC_LINK_FILES, because it does not work
-dnl correct when using a caching scheme
+dnl GNUPG_CHECK_DOCBOOK_TO_TEXI
 dnl
-define(GNUPG_LINK_FILES,
-  [ if test "x$wk_link_files_src" = "x"; then
-        wk_link_files_src="$1"
-        wk_link_files_dst="$2"
-    else
-        wk_link_files_src="$wk_link_files_src $1"
-        wk_link_files_dst="$wk_link_files_dst $2"
+AC_DEFUN(GNUPG_CHECK_DOCBOOK_TO_TEXI,
+  [
+    AC_CHECK_PROG(DOCBOOK_TO_TEXI, docbook2texi, yes, no)
+    AC_MSG_CHECKING(for sgml to texi tools)
+    working_sgmltotexi=no
+    if test "$ac_cv_prog_DOCBOOK_TO_TEXI" = yes; then
+      if sgml2xml -v /dev/null 2>&1 | grep 'SP version' >/dev/null 2>&1 ; then
+            working_sgmltotexi=yes
+      fi
     fi
-  ])
-define(GNUPG_DO_LINK_FILES,
-  [ AC_LINK_FILES( $wk_link_files_src, $wk_link_files_dst )
-  ])
-
+    AC_MSG_RESULT($working_sgmltotexi)
+    AM_CONDITIONAL(HAVE_DOCBOOK_TO_TEXI, test "$working_sgmltotexi" = "yes" )
+   ])       
 
 
 
@@ -158,9 +147,11 @@ define(GNUPG_CHECK_ENDIAN,
       ])
     AC_MSG_RESULT([$gnupg_cv_c_endian])
     if test "$gnupg_cv_c_endian" = little; then
-      AC_DEFINE(LITTLE_ENDIAN_HOST)
+      AC_DEFINE(LITTLE_ENDIAN_HOST,1,
+                [Defined if the host has little endian byte ordering])
     else
-      AC_DEFINE(BIG_ENDIAN_HOST)
+      AC_DEFINE(BIG_ENDIAN_HOST,1,
+                [Defined if the host has big endian byte ordering])
     fi
   ])
 
@@ -328,7 +319,8 @@ define(GNUPG_CHECK_IPC,
          gnupg_cv_ipc_rmid_deferred_release="assume-no")
        )
        if test "$gnupg_cv_ipc_rmid_deferred_release" = "yes"; then
-           AC_DEFINE(IPC_RMID_DEFERRED_RELEASE)
+           AC_DEFINE(IPC_RMID_DEFERRED_RELEASE,1,
+                     [Defined if we can do a deferred shm release])
            AC_MSG_RESULT(yes)
        else
           if test "$gnupg_cv_ipc_rmid_deferred_release" = "no"; then
@@ -351,7 +343,8 @@ define(GNUPG_CHECK_IPC,
           )
        )
        if test "$gnupg_cv_ipc_have_shm_lock" = "yes"; then
-         AC_DEFINE(IPC_HAVE_SHM_LOCK)
+         AC_DEFINE(IPC_HAVE_SHM_LOCK,1,
+                   [Defined if a SysV shared memory supports the LOCK flag])
          AC_MSG_RESULT(yes)
        else
          AC_MSG_RESULT(no)
@@ -384,7 +377,7 @@ define(GNUPG_CHECK_MLOCK,
                     #endif
                 ], [
                     int i;
-                    
+
                     /* glibc defines this for functions which it implements
                      * to always fail with ENOSYS.  Some functions are actually
                      * named something starting with __ and the normal name
@@ -399,7 +392,8 @@ define(GNUPG_CHECK_MLOCK,
                 gnupg_cv_mlock_is_in_sys_mman=yes,
                 gnupg_cv_mlock_is_in_sys_mman=no)])
             if test "$gnupg_cv_mlock_is_in_sys_mman" = "yes"; then
-                AC_DEFINE(HAVE_MLOCK)
+                AC_DEFINE(HAVE_MLOCK,1,
+                          [Defined if the system supports an mlock() call])
             fi
         fi
     fi
@@ -439,8 +433,10 @@ define(GNUPG_CHECK_MLOCK,
            )
          )
          if test "$gnupg_cv_have_broken_mlock" = "yes"; then
-             AC_DEFINE(HAVE_BROKEN_MLOCK)
+             AC_DEFINE(HAVE_BROKEN_MLOCK,1,
+                       [Defined if the mlock() call does not work])
              AC_MSG_RESULT(yes)
+             AC_CHECK_FUNCS(plock)
          else
             if test "$gnupg_cv_have_broken_mlock" = "no"; then
                 AC_MSG_RESULT(no)
@@ -452,10 +448,8 @@ define(GNUPG_CHECK_MLOCK,
   ])
 
 
-
 ################################################################
 # GNUPG_PROG_NM - find the path to a BSD-compatible name lister
-################################################################
 AC_DEFUN(GNUPG_PROG_NM,
 [AC_MSG_CHECKING([for BSD-compatible nm])
 AC_CACHE_VAL(ac_cv_path_NM,
@@ -667,7 +661,7 @@ AC_CHECK_TOOL(AS, as, false)
 AC_DEFUN(GNUPG_SYS_SYMBOL_UNDERSCORE,
 [tmp_do_check="no"
 case "${target}" in
-    i386-emx-os2 | i[3456]86-pc-os2*emx | i386-pc-msdosdjgpp)
+    i386-emx-os2 | i[3456]86-pc-os2*emx | i386-pc-msdosdjgpp | *-*-cygwin)
         ac_cv_sys_symbol_underscore=yes
         ;;
     *)
@@ -718,7 +712,7 @@ fi
 AC_MSG_RESULT($ac_cv_sys_symbol_underscore)
 if test x$ac_cv_sys_symbol_underscore = xyes; then
   AC_DEFINE(WITH_SYMBOL_UNDERSCORE,1,
-  [define if compiled symbols have a leading underscore])
+            [Defined if compiled symbols have a leading underscore])
 fi
 ])
 
@@ -741,119 +735,8 @@ AC_CACHE_CHECK([if mkdir takes one argument], gnupg_cv_mkdir_takes_one_arg,
 #endif], [mkdir ("foo", 0);],
         gnupg_cv_mkdir_takes_one_arg=no, gnupg_cv_mkdir_takes_one_arg=yes)])
 if test $gnupg_cv_mkdir_takes_one_arg = yes ; then
-  AC_DEFINE(MKDIR_TAKES_ONE_ARG)
+  AC_DEFINE(MKDIR_TAKES_ONE_ARG,1,
+            [Defined if mkdir() does not take permission flags])
 fi
 ])
 
-dnl GPH_PROG_DOCBOOK()
-dnl Check whether we have the needed Docbook environment
-dnl and issue a warning if this is not the case.
-dnl
-dnl This test defines these variables for substitution:
-dnl    DB2HTML - command used to convert Docbook to HTML
-dnl    DB2TEX  - command used to convert Docbook to TeX
-dnl    DB2MAN  - command used to convert Docbook to man pages
-dnl    JADE    - command to invoke jade
-dnl    JADETEX - command to invoke jadetex
-dnl    DSL_FOR_HTML - the stylesheet used to for the Docbook->HTML conversion
-dnl The following make conditionals are defined
-dnl    HAVE_DB2MAN  - defined when db2man is available
-dnl    HAVE_DB2TEX  - defined when db2tex is available
-dnl    HAVE_DB2HTML - defined when db2html is available
-dnl    HAVE_DOCBOOK - defined when the entire Docbook environment is present
-dnl    HAVE_JADE    - defined when jade is installed
-dnl    HAVE_JADETEX - defined when jadetex is installed
-dnl
-dnl (wk 2000-02-17)
-dnl
-AC_DEFUN(GPH_PROG_DOCBOOK,
-  [  AC_REQUIRE([AC_CONFIG_AUX_DIR_DEFAULT])dnl
-     all=yes
-     AC_PATH_PROG(DB2MAN, docbook-to-man, no)
-     test "$DB2MAN" = no && all=no
-     AM_CONDITIONAL(HAVE_DB2MAN, test "$DB2MAN" != no )
-
-     AC_PATH_PROG(JADE, jade, no)
-     test "$JADE" = no && all=no
-     AM_CONDITIONAL(HAVE_JADE, test "$JADE" != no )
-
-     AC_PATH_PROG(JADETEX, jadetex, no)
-     test "$JADETEX" = no && all=no
-     AM_CONDITIONAL(HAVE_JADETEX, test "$JADETEX" != no )
-
-     stylesheet_dirs='
-/usr/local/lib/dsssl/stylesheets/docbook
-/usr/local/share/dsssl/stylesheets/docbook
-/usr/local/lib/sgml/stylesheet/dsssl/docbook/nwalsh
-/usr/local/share/sgml/stylesheet/dsssl/docbook/nwalsh
-/usr/lib/dsssl/stylesheets/docbook
-/usr/share/dsssl/stylesheets/docbook
-/usr/lib/sgml/stylesheet/dsssl/docbook/nwalsh
-/usr/share/sgml/stylesheet/dsssl/docbook/nwalsh
-'
-
-    AC_MSG_CHECKING(for TeX stylesheet)
-    dsl=none
-    for d in ${stylesheet_dirs}; do
-        file=${d}/print/docbook.dsl
-        if test -f $file; then
-            dsl=$file
-            break
-        fi
-    done
-    AC_MSG_RESULT([$dsl])
-    okay=no
-    if test $dsl = none ; then
-       DB2TEX="$missing_dir/missing db2tex"
-       all=no
-    else
-       DB2TEX="$JADE -t tex -i tex -d $dsl"
-       okay=yes
-    fi
-    AC_SUBST(DB2TEX)
-    AM_CONDITIONAL(HAVE_DB2TEX, test $okay = yes )
-
-    if ( $ac_aux_dir/db2html.in --version) < /dev/null > /dev/null 2>&1; then
-        :
-    else
-        AC_ERROR([needed $ac_aux_dir/db2html.in not found])
-    fi
-
-    AC_MSG_CHECKING(for HTML stylesheet)
-    DSL_FOR_HTML="none"
-    for d in ${stylesheet_dirs}; do
-        file=${d}/html/docbook.dsl
-        if test -f $file; then
-            DSL_FOR_HTML=$file
-            break
-        fi
-    done
-    AC_MSG_RESULT([$DSL_FOR_HTML])
-    okay=no
-    if test $DSL_FOR_HTML = none ; then
-       DB2HTML="$missing_dir/missing db2html"
-       all=no
-    else
-       DB2HTML="`cd $ac_aux_dir && pwd`/db2html --copyfiles"
-       okay=yes
-    fi
-    AC_SUBST(DB2HTML)
-    AC_SUBST(DSL_FOR_HTML)
-    AM_CONDITIONAL(HAVE_DB2HTML, test $okay = yes )
-
-    AM_CONDITIONAL(HAVE_DOCBOOK, test "$all" != yes )
-    if test $all = no ; then
-        AC_MSG_WARN([[
-***
-*** It seems that the Docbook environment is not installed as required.
-*** We will try to build everything,  but if you either touch some files
-*** or use a bogus make tool, you may run into problems.
-*** Docbook is normally only needed to build the documentation.
-***]])
-    fi
-  ])
-
-
-
-
-dnl *-*wedit:notab*-*  Please keep this as the last line.
