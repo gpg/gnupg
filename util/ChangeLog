@@ -1,3 +1,9 @@
+2003-08-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.c (connect_server): Try and use getaddrinfo if it is
+	available.  Try for IPv6 via getaddrinfo() or a IPv6-ized
+	gethostbyname().  Suggested by Jun-ichiro itojun Hagino.
+
 2003-07-10  David Shaw  <dshaw@jabberwocky.com> (from Werner on stable branch)
 
 	* iobuf.c (check_special_filename): Replaced is isdigit by digitp

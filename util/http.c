@@ -1,5 +1,5 @@
 /* http.c  -  HTTP protocol handler
- *	Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -710,37 +710,30 @@ start_server()
 static int
 connect_server( const char *server, ushort port, unsigned int flags )
 {
-  int sock,srv,srvcount=0;
-  struct sockaddr_in addr;
-  struct hostent *host=NULL;
+  int sock=-1,srv,srvcount=0,connected=0;
   struct srventry *srvlist=NULL;
 
-  memset(&addr,0,sizeof(addr));
-
-  addr.sin_family = AF_INET;
-
 #ifdef __MINGW32__
-  init_sockets ();
+  in_addr_t inaddr;
+#warning check the windoze type
 
-  if((sock=socket(AF_INET,SOCK_STREAM,0))==INVALID_SOCKET)
-    {
-      log_error("error creating socket: ec=%d\n",(int)WSAGetLastError());
-      return -1;
-    }
-#else
-  if((sock=socket(AF_INET,SOCK_STREAM,0))==-1)
-    {
-      log_error("error creating socket\n");
-      return -1;
-    }
-#endif
-
-#ifdef __MINGW32__
+  init_sockets();
   /* Win32 gethostbyname doesn't handle IP addresses internally, so we
      try inet_addr first on that platform only. */
-  if((addr.sin_addr.s_addr=inet_addr(server))!=SOCKET_ERROR)
+  if((inaddr=inet_addr(server))!=SOCKET_ERROR)
     {
-      addr.sin_port = htons(port);
+      struct sockaddr_in addr;
+
+      memset(&addr,0,sizeof(addr));
+
+      if((sock=socket(AF_INET,SOCK_STREAM,0))==INVALID_SOCKET)
+	{
+	  log_error("error creating socket: ec=%d\n",(int)WSAGetLastError());
+	  return -1;
+	}
+
+      addr.sin_family=AF_INET; 
+      addr.sin_port=htons(port);
 
       if(connect(sock,(struct sockaddr *)&addr,sizeof(addr))==0)
 	return sock;
@@ -776,63 +769,94 @@ connect_server( const char *server, ushort port, unsigned int flags )
       srvcount=1;
     }
 
+#ifdef HAVE_GETADDRINFO
+
+  for(srv=0;srv<srvcount;srv++)
+    {
+      struct addrinfo hints,*res,*ai;
+      char portstr[6];
+
+      sprintf(portstr,"%u",srvlist[srv].port);
+      memset(&hints,0,sizeof(hints));
+      hints.ai_socktype=SOCK_STREAM;
+      if(getaddrinfo(srvlist[srv].target,portstr,&hints,&res)!=0)
+	continue;
+
+      for(ai=res;ai;ai=ai->ai_next)
+	{
+	  if((sock=socket(ai->ai_family,ai->ai_socktype,ai->ai_protocol))==-1)
+	    {
+	      log_error("error creating socket: %s\n",strerror(errno));
+	      return -1;
+	    }
+
+	  if(connect(sock,ai->ai_addr,ai->ai_addrlen)==0)
+	    {
+	      connected=1;
+	      break;
+	    }
+	}
+
+      if(ai)
+	break;
+    }
+
+#else /* !HAVE_GETADDRINFO */
+
   for(srv=0;srv<srvcount;srv++)
     {
       int i=0;
+      struct hostent *host=NULL;
+      struct sockaddr_in addr;
 
-      addr.sin_port = htons(srvlist[srv].port);
+      memset(&addr,0,sizeof(addr));
 
       if((host=gethostbyname(srvlist[srv].target))==NULL)
 	continue;
 
-      if(host)
+      if((sock=socket(host->h_addrtype,SOCK_STREAM,0))==-1)
 	{
-	  if(host->h_addrtype != AF_INET)
-	    {
-	      log_error ("%s: unknown address family\n", srvlist[srv].target);
-	      sock_close(sock);
-	      m_free(srvlist);
-	      return -1;
-	    }
-
-	  if(host->h_length != 4 )
-	    {
-	      log_error ("%s: illegal address length\n", srvlist[srv].target);
-	      sock_close(sock);
-	      m_free(srvlist);
-	      return -1;
-	    }
-
-	  /* Try all A records until one responds. */
-	  while(host->h_addr_list[i])
-	    {
-	      memcpy(&addr.sin_addr,host->h_addr_list[i],host->h_length);
-
-	      if(connect(sock,(struct sockaddr *)&addr,sizeof(addr))==0)
-		break;
-
-	      i++;
-	    }
-
-	  if(host->h_addr_list[i])
-	    break;
+	  log_error("error creating socket: %s\n",strerror(errno));
+	  return -1;
 	}
+
+      addr.sin_family=host->h_addrtype;
+      addr.sin_port=htons(srvlist[srv].port);
+
+      /* Try all A records until one responds. */
+      while(host->h_addr_list[i])
+	{
+	  memcpy(&addr.sin_addr,host->h_addr_list[i],host->h_length);
+
+	  if(connect(sock,(struct sockaddr *)&addr,sizeof(addr))==0)
+	    {
+	      connected=1;
+	      break;
+	    }
+
+	  i++;
+	}
+
+      if(host->h_addr_list[i])
+	break;
     }
+#endif /* !HAVE_GETADDRINFO */
 
   m_free(srvlist);
 
-  if(!host)
+  if(!connected)
     {
 #ifdef __MINGW32__
       log_error("%s: host not found: ec=%d\n",server,(int)WSAGetLastError());
 #else
       log_error("%s: host not found\n",server);
 #endif
-      sock_close(sock);
+      if(sock!=-1)
+	sock_close(sock);
       return -1;
     }
 
-    return sock;
+  return sock;
 }
 
 
