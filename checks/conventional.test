@@ -14,4 +14,10 @@ for i in plain-1 data-80000 ; do
     echo "Hier spricht HAL" | $srcdir/run-gpg --passphrase-fd 0    -o y --yes x
     cmp $i y || error "$i: mismatch"
 done
+for i in plain-1 data-80000 ; do
+    echo "Hier spricht HAL" | $srcdir/run-gpg --passphrase-fd 0 \
+					--cipher-algo 3des -c -o x --yes $i
+    echo "Hier spricht HAL" | $srcdir/run-gpg --passphrase-fd 0 -o y --yes x
+    cmp $i y || error "$i: mismatch"
+done
 

@@ -1,3 +1,7 @@
+Fri Sep 18 16:25:47 1998  Werner Koch  (wk@(none))
+
+	* secmem.c (lock_pool): Kludge for broken mlock on HPUX 10.20
+
 Tue Sep 15 17:52:21 1998  Werner Koch  (wk@(none))
 
 	* miscutil.c (asctimestamp): New.

@@ -1,3 +1,7 @@
+Thu Sep 17 18:08:50 1998  Werner Koch  (wk@(none))
+
+	* hppa1.1/udiv-qrnnd.S: Fix from Steffen Zahn for HPUX 10.20
+
 Thu Aug  6 16:39:28 1998  Werner Koch,mobil,,,	(wk@tobold)
 
 	* mpi-bit.c (mpi_set_bytes): Removed.

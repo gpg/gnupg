@@ -1,3 +1,7 @@
+Thu Sep 17 19:00:06 1998  Werner Koch  (wk@(none))
+
+	* des.c : New file from Michael Roth <mroth@nessie.de>
+
 Mon Sep 14 11:10:55 1998  Werner Koch  (wk@(none))
 
 	* blowfish.c (bf_setkey): Niklas Hernaeus patch to detect weak keys.

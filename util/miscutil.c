@@ -61,16 +61,16 @@ strtimestamp( u32 stamp )
 const char *
 asctimestamp( u32 stamp )
 {
-    static char buffer[30];
+    static char buffer[50];
     struct tm *tp;
     time_t atime = stamp;
 
     tp = localtime( &atime );
   #ifdef HAVE_STRFTIME
-    mem2str( buffer, asctime(tp), DIM(buffer) );
-  #else
-    strftime( buffer, DIM(buffer)-1, "%c", tp );
+    strftime( buffer, DIM(buffer)-1, "%c %Z", tp );
     buffer[DIM(buffer)-1] = 0;
+  #else
+    mem2str( buffer, asctime(tp), DIM(buffer) );
   #endif
     return buffer;
 }

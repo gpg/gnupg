@@ -85,6 +85,9 @@ get_keyblock_byname( KBNODE *keyblock, KBPOS *kbpos, const char *username )
     rc = read_keyblock( kbpos, keyblock );
     if( rc )
 	log_error("%s: keyblock read problem: %s\n", username, g10_errstr(rc));
+    else
+	merge_keys_and_selfsig( *keyblock );
+
     return rc;
 }
 
@@ -490,6 +493,7 @@ keyedit_menu( const char *username, STRLIST locusr )
 					    username, g10_errstr(rc));
 	    goto leave;
 	}
+	merge_keys_and_selfsig( sec_keyblock );
     }
 
     /* and now get the public key */

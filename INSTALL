@@ -77,9 +77,19 @@ You can create them with:
 Installation
 ============
 gpg is not installed as suid:root; if you want to do it, do it manually.
+We will use capabilities in the future.
 
 The ~/.gnupg directory will be created if it does not exist.  Your first
 action should be to create a key pair: "gpg --gen-key".
+
+
+
+Creating a RPM package
+======================
+The file scripts/gnupg-x.x.x.spec is used to build a RPM package:
+    1. As root, copy the spec file into /usr/src/redhat/SPECS
+    2. copy the tar file into /usr/src/redhat/SOURCES
+    3. type: rpm -ba SPECS/gnupg-x.x.x.spec
 
 
 

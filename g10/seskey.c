@@ -42,6 +42,7 @@ make_session_key( DEK *dek )
     dek->keylen = cipher_get_keylen( dek->algo ) / 8;
 
     chd = cipher_open( dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
+    randomize_buffer( dek->key, dek->keylen, 1 );
     for(i=0; i < 16; i++ ) {
 	rc = cipher_setkey( chd, dek->key, dek->keylen );
 	if( !rc ) {

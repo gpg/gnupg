@@ -29,6 +29,7 @@
 #include "util.h"
 #include "errors.h"
 #include "cipher.h"
+#include "des.h"
 #include "blowfish.h"
 #include "cast5.h"
 #include "dynload.h"
@@ -97,6 +98,17 @@ setup_cipher_table()
     i++;
     cipher_table[i].algo = CIPHER_ALGO_CAST5;
     cipher_table[i].name = cast5_get_info( cipher_table[i].algo,
+					 &cipher_table[i].keylen,
+					 &cipher_table[i].blocksize,
+					 &cipher_table[i].contextsize,
+					 &cipher_table[i].setkey,
+					 &cipher_table[i].encrypt,
+					 &cipher_table[i].decrypt     );
+    if( !cipher_table[i].name )
+	BUG();
+    i++;
+    cipher_table[i].algo = CIPHER_ALGO_3DES;
+    cipher_table[i].name = des_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
 					 &cipher_table[i].blocksize,
 					 &cipher_table[i].contextsize,

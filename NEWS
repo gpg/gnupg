@@ -1,3 +1,18 @@
+Noteworthy changes in version 0.4.0
+-----------------------------------
+    * Triple DES is now supported.  Michael Roth did this piece of
+      needed work.  We have now all the coded needed to be OpenPGP
+      compliant.
+
+    * Added a simple rpm spec file (see INSTALL).
+
+    * detached and armored signatures are now using "PGP SIGNATURE",
+      except when --rfc1991 is used.
+
+    * All times which are not in the yyy-mm-dd format are now printed
+      in local time.
+
+
 Noteworthy changes in version 0.3.5
 -----------------------------------
     * New option --throw-keyid to create anonymous enciphered messages.

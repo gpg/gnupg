@@ -62,7 +62,8 @@
 #define G10ERR_TIME_CONFLICT  40
 #define G10ERR_WR_PUBKEY_ALGO 41 /* unusabe pubkey algo */
 #define G10ERR_FILE_EXISTS    42
-#define G10ERR_WEAK_KEY       43
+#define G10ERR_WEAK_KEY       43 /* NOTE: hardcoded intothe cipher modules */
+#define G10ERR_WRONG_KEYLEN   44 /* NOTE: hardcoded intothe cipher modules */
 
 
 #ifndef HAVE_STRERROR

@@ -64,6 +64,8 @@
 #undef HAVE_U16_TYPEDEF
 #undef HAVE_U32_TYPEDEF
 
+#undef HAVE_BROKEN_MLOCK
+
 /* One of the following macros is defined to select which of
  * the cipher/rand-xxxx.c should be used */
 #undef USE_RAND_DUMMY

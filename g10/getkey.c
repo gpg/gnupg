@@ -613,7 +613,7 @@ compare_name( const char *uid, size_t uidlen, const char *name, int mode )
  */
 
 static void
-add_stuff_from_selfsig( KBNODE keyblock, KBNODE knode )
+merge_one_pk_and_selfsig( KBNODE keyblock, KBNODE knode )
 {
     PKT_public_key *pk = knode->pkt->pkt.public_key;
     PKT_signature *sig;
@@ -643,9 +643,8 @@ add_stuff_from_selfsig( KBNODE keyblock, KBNODE knode )
 	    && sig->keyid[1] == kid[1]
 	    && sig->version > 3 ) {
 	    /* okay this is (the first) self-signature which can be used
-	     * fixme: Check how to handle subkey bindings
 	     * FIXME: We should only use this if the signature is valid
-	     *	      but this is time consuming - we muts provide another
+	     *	      but this is time consuming - we must provide another
 	     *	      way to handle this
 	     */
 	    const byte *p;
@@ -656,6 +655,63 @@ add_stuff_from_selfsig( KBNODE keyblock, KBNODE knode )
 	}
     }
 }
+
+
+/****************
+ * merge all selfsignatures with the keys.
+ */
+void
+merge_keys_and_selfsig( KBNODE keyblock )
+{
+    PKT_public_key *pk = NULL;
+    PKT_secret_key *sk = NULL;
+    PKT_signature *sig;
+    KBNODE k;
+    u32 kid[2];
+
+    for(k=keyblock; k; k = k->next ) {
+	if( k->pkt->pkttype == PKT_PUBLIC_KEY
+	    || k->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
+	    pk = k->pkt->pkt.public_key; sk = NULL;
+	    if( pk->version < 4 )
+		pk = NULL; /* not needed for old keys */
+	    else
+		keyid_from_pk( pk, kid );
+	}
+	else if( k->pkt->pkttype == PKT_SECRET_KEY
+	    || k->pkt->pkttype == PKT_SECRET_SUBKEY ) {
+	    pk = NULL; sk = k->pkt->pkt.secret_key;
+	    if( sk->version < 4 )
+		sk = NULL;
+	    else
+		keyid_from_sk( sk, kid );
+	}
+	else if( (pk || sk ) && k->pkt->pkttype == PKT_SIGNATURE
+		 && (sig=k->pkt->pkt.signature)->sig_class >= 0x10
+		 && sig->sig_class <= 0x13 && sig->version > 3
+		 && sig->keyid[0] == kid[0] && sig->keyid[1] == kid[1] ) {
+	    /* okay this is (the first) self-signature which can be used
+	     * FIXME: We should only use this if the signature is valid
+	     *	      but this is time consuming - we must provide another
+	     *	      way to handle this
+	     */
+	    const byte *p;
+	    p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_KEY_EXPIRE, NULL );
+	    if( pk ) {
+		pk->valid_days = p? ((buffer_to_u32(p)+86399L)/86400L):0;
+		/* fixme: add usage etc. */
+		pk = NULL; /* use only the first self signature */
+	    }
+	    else {
+		sk->valid_days = p? ((buffer_to_u32(p)+86399L)/86400L):0;
+		sk = NULL; /* use only the first self signature */
+	    }
+	}
+    }
+}
+
+
+
 
 
 /****************
@@ -808,12 +864,12 @@ lookup( PKT_public_key *pk, int mode,  u32 *keyid,
 	    if( primary && !pk->pubkey_usage ) {
 		copy_public_key_new_namehash( pk, keyblock->pkt->pkt.public_key,
 					      use_namehash? namehash:NULL);
-		add_stuff_from_selfsig( keyblock, keyblock );
+		merge_one_pk_and_selfsig( keyblock, keyblock );
 	    }
 	    else {
 		copy_public_key_new_namehash( pk, k->pkt->pkt.public_key,
 					      use_namehash? namehash:NULL);
-		add_stuff_from_selfsig( keyblock, k );
+		merge_one_pk_and_selfsig( keyblock, k );
 	    }
 	    if( ret_keyblock ) {
 		*ret_keyblock = keyblock;

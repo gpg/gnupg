@@ -50,8 +50,8 @@ __udiv_qrnnd
 
 	stws		%r25,-16(0,%r30)	; n_hi
 	stws		%r24,-12(0,%r30)	; n_lo
-	ldil		L'L$0000,%r19
-	ldo		R'L$0000(%r19),%r19
+	ldil		L'L$0000,%r19           ; '
+	ldo		R'L$0000(%r19),%r19     ; '
 	fldds		-16(0,%r30),%fr5
 	stws		%r23,-12(0,%r30)
 	comib,<=	0,%r25,L$1

@@ -69,9 +69,12 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
 	log_bug("Nanu\n");   /* oops: found a bug */
 
     dfx.cipher_hd = cipher_open( dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
-    if( cipher_setkey( dfx.cipher_hd, dek->key, dek->keylen ) )
+    rc = cipher_setkey( dfx.cipher_hd, dek->key, dek->keylen );
+    if( rc == G10ERR_WEAK_KEY )
 	log_info(_("Warning: Message was encrypted with "
 		    "a weak key in the symmetric cipher.\n"));
+    else if( rc )
+	log_error("key setup failed: %s\n", g10_errstr(rc) );
 
     cipher_setiv( dfx.cipher_hd, NULL );
 

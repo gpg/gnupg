@@ -1636,7 +1636,7 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel )
 						pk->valid_days) < cur_time ) {
 	log_info(_("key %08lX.%lu: expired at %s\n"),
 			keyid[1], pk->local_id,
-		    strtimestamp( add_days_to_timestamp(pk->timestamp,
+		    asctimestamp( add_days_to_timestamp(pk->timestamp,
 							pk->valid_days)));
 	 trustlevel = TRUST_EXPIRED;
     }

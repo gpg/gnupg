@@ -13,5 +13,8 @@ dist-hook:
 		|| cp -p $(srcdir)/$$dir/$$i $(distdir)/$$dir/$$i; \
 	    done ; \
 	done
+	@set -e; \
+	sed -e 's/@pkg_version@/$(VERSION)/g' $(srcdir)/scripts/gnupg.spec \
+	    > $(distdir)/scripts/gnupg-$(VERSION).spec
 
 

@@ -112,14 +112,39 @@
  */
 
 
+#include <config.h>
+#include <string.h>	       /* memcpy, memcmp */
+#include <assert.h>
+#include "types.h"             /* for byte and u32 typedefs */
+#include "util.h"              /* for log_fatal() */
+#include "des.h"
+
+
+/* Some defines/checks to support standalone modules */
+
+#ifndef CIPHER_ALGO_3DES
+  #define CIPHER_ALGO_3DES 2
+#elif CIPHER_ALGO_3DES != 2
+  #error CIPHER_ALGO_3DES is defined to a wrong value.
+#endif
+
+#ifndef G10ERR_WEAK_KEY
+  #define G10ERR_WEAK_KEY 43
+#elif G10ERR_WEAK_KEY != 43
+  #error G10ERR_WEAK_KEY is defined to a wrong value.
+#endif
+
+#ifndef G10ERR_WRONG_KEYLEN
+  #define G10ERR_WRONG_KEYLEN 44
+#elif G10ERR_WRONG_KEYLEN != 44
+  #error G10ERR_WRONG_KEYLEN is defined to a wrong value.
+#endif
 
 
 
-#include <string.h>		/* memcpy, memcmp */
-
-typedef unsigned long u32;
-typedef unsigned char byte;
-
+/* Macros used by the info function. */
+#define FNCCAST_SETKEY(f)  ((int(*)(void*, byte*, unsigned))(f))
+#define FNCCAST_CRYPT(f)   ((void(*)(void*, byte*, byte*))(f))
 
 
 /*
@@ -127,6 +152,7 @@ typedef unsigned char byte;
  */
 typedef struct _des_ctx
   {
+    int mode;
     u32 encrypt_subkeys[32];
     u32 decrypt_subkeys[32];
   }
@@ -137,6 +163,7 @@ des_ctx[1];
  */
 typedef struct _tripledes_ctx
   {
+    int mode;
     u32 encrypt_subkeys[96];
     u32 decrypt_subkeys[96];
   }
@@ -499,7 +526,8 @@ des_setkey (struct _des_ctx *ctx, const byte * key)
 
 
 /*
- * Electronic Codebook Mode DES encryption/decryption of data according to 'mode'.
+ * Electronic Codebook Mode DES encryption/decryption of data according
+ * to 'mode'.
  */
 static int
 des_ecb_crypt (struct _des_ctx *ctx, const byte * from, byte * to, int mode)
@@ -638,6 +666,16 @@ tripledes_ecb_crypt (struct _tripledes_ctx *ctx, const byte * from, byte * to, i
 }
 
 
+/*
+ * Check whether the 8 byte key is weak.
+ */
+
+static int
+is_weak_key ( byte *key )
+{
+    return 0; /* FIXME */
+}
+
 
 /*
  * Performs a selftest of this DES/Triple-DES implementation.
@@ -652,8 +690,7 @@ selftest (void)
    * need this.
    */
   if (sizeof (u32) != 4)
-    return "Wrong word size for DES configured.";
-
+       return "Wrong word size for DES configured.";
 
   /*
    * DES Maintenance Test
@@ -714,3 +751,69 @@ selftest (void)
 
   return 0;
 }
+
+
+static int
+do_tripledes_setkey ( struct _tripledes_ctx *ctx, byte *key, unsigned keylen )
+{
+    if( keylen != 24 )
+	return G10ERR_WRONG_KEYLEN;
+
+    if( is_weak_key( key ) || is_weak_key( key+8 ) || is_weak_key( key+16 ) )
+	return G10ERR_WEAK_KEY;
+
+    tripledes_set3keys ( ctx, key, key+8, key+16);
+
+    return 0;
+}
+
+
+static void
+do_tripledes_encrypt( struct _tripledes_ctx *ctx, byte *outbuf, byte *inbuf )
+{
+    tripledes_ecb_encrypt ( ctx, inbuf, outbuf );
+}
+
+static void
+do_tripledes_decrypt( struct _tripledes_ctx *ctx, byte *outbuf, byte *inbuf )
+{
+    tripledes_ecb_decrypt ( ctx, inbuf, outbuf );
+}
+
+
+/****************
+ * Return some information about the algorithm.  We need algo here to
+ * distinguish different flavors of the algorithm.
+ * Returns: A pointer to string describing the algorithm or NULL if
+ *	    the ALGO is invalid.
+ */
+const char *
+des_get_info( int algo, size_t *keylen,
+		   size_t *blocksize, size_t *contextsize,
+		   int	(**r_setkey)( void *c, byte *key, unsigned keylen ),
+		   void (**r_encrypt)( void *c, byte *outbuf, byte *inbuf ),
+		   void (**r_decrypt)( void *c, byte *outbuf, byte *inbuf )
+		 )
+{
+    static int did_selftest = 0;
+
+    if( !did_selftest ) {
+	const char *s = selftest();
+	if( s )
+	    log_fatal("selftest failed: %s", s );
+	did_selftest = 1;
+    }
+
+
+    if( algo == CIPHER_ALGO_3DES ) {
+	*keylen = 192;
+	*blocksize = 8;
+	*contextsize = sizeof(struct _tripledes_ctx);
+	*r_setkey = FNCCAST_SETKEY(do_tripledes_setkey);
+	*r_encrypt= FNCCAST_CRYPT(do_tripledes_encrypt);
+	*r_decrypt= FNCCAST_CRYPT(do_tripledes_decrypt);
+	return "3DES";
+    }
+    return NULL;
+}
+

@@ -17,6 +17,8 @@ libcipher_a_SOURCES = cipher.c	\
 		 md.c		\
 		 dynload.c	\
 		 dynload.h	\
+		 des.c		\
+		 des.h		\
 		 blowfish.c	\
 		 blowfish.h	\
 		 cast5.c	\

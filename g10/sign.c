@@ -220,6 +220,9 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     if( !multifile )
 	iobuf_push_filter( inp, md_filter, &mfx );
 
+    if( detached && !encrypt && !opt.rfc1991 )
+	afx.what = 2;
+
     if( opt.armor && !outfile  )
 	iobuf_push_filter( out, armor_filter, &afx );
     else {

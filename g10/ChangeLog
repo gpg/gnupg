@@ -1,3 +1,16 @@
+Fri Sep 18 16:50:32 1998  Werner Koch  (wk@(none))
+
+	* getkey.c (merge_key_and_selfsig): New.
+
+Fri Sep 18 10:20:11 1998  Werner Koch  (wk@(none))
+
+	* pkclist.c (select_algo_from_prefs): Removed 3DEs kludge.
+
+	* seskey.c (make_session_key): Fixed SERIOUS bug introduced
+	by adding the weak key detection code.
+
+	* sign.c (sign_file): Changed aremor header in certain cases.
+
 Tue Sep 15 17:52:55 1998  Werner Koch  (wk@(none))
 
 	* mainproc.c (check_sig_and_print): Replaced ascime by asctimestamp.

@@ -2,12 +2,7 @@
 
 		  GNUPG - The GNU Privacy Guard
 		 -------------------------------
-			  Version 0.3
-
-    WARNING: IF YOU ARE ALREADY USING GNUPG YOU SHOULD NOW MAKE A BACKUP
-    OF "gpg" BECAUSE YOU NEED IT TO CONVERT YOUR PASSPHRASE AND OTHER
-    THINGS - SEE "NEWS"!
-
+			  Version 0.4
 
     As you can see from the version number, the program may have some
     bugs and some features may not work at all - please report this to
@@ -336,11 +331,11 @@
     please subscribe before posting).
 
 -----BEGIN PGP SIGNATURE-----
-Version: GNUPG v0.3.2b (GNU/Linux)
+Version: GNUPG v0.3.5a (GNU/Linux)
 Comment: Get GNUPG from ftp://ftp.guug.de/pub/gcrypt/
 
-iQB1AwUBNcy3yh0Z9MEMmFelAQEUXwMAg8h8GaecR1jWVwCqaWO4oGCyWgaxvi0yfQR1Y1GC
-j6Hpo5Hwa3d2UAYETL3M42/M32uxe0Wh8PMgLTWTfhV9XjwxCNg3BBDm2Zb5Enpr9UEIFOdN
-OCV3J4gED4jXDOtO
-=oPV/
+iQB1AwUBNgJ6bB0Z9MEMmFelAQEBHgL+JhFVCrTAK2G3NVVVQBHXU5eucNx3tQQE3UucvSBA
+YaKfX8dC5QU7wfgv8nFBXMK2mnAcJhJzBT6mZwxpzTZZTh7IS4qu//R9Vgy3A06ZddxKFf2M
+YFelmgdpqTL6ntJC
+=JZ3m
 -----END PGP SIGNATURE-----

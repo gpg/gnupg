@@ -1,3 +1,8 @@
+Thu Sep 17 18:49:40 1998  Werner Koch  (wk@(none))
+
+	* Makefile.am (dist-hook): Now creates RPM file.
+	* scripts/gnupg.spec: New template file for RPMs
+
 Thu Jul 30 19:17:07 1998  Werner Koch  (wk@(none))
 
 	* acinclude.h (WK_CHECK_IPC): New

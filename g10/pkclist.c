@@ -599,13 +599,6 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
 	    i = 1;  /* yep; we can use compression algo 1 */
     }
 
-    if( preftype == PREFTYPE_SYM && i == CIPHER_ALGO_3DES ) {
-	i = CIPHER_ALGO_CAST5;
-	if( opt.verbose )
-	    log_info("replacing 3DES by CAST5\n");
-    }
-
-
     m_free(pref);
     return i;
 }

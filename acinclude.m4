@@ -155,6 +155,50 @@ define(WK_CHECK_IPC,
 
 
 ######################################################################
+# Check whether mlock is broken (hpux 10.20 raises a SIGBUS if mlock
+# is not called from uid 0 (not tested whether uid 0 works)
+######################################################################
+dnl WK_CHECK_MLOCK
+dnl
+define(WK_CHECK_MLOCK,
+  [ AC_CHECK_FUNCS(mlock)
+    if test "$ac_cv_func_mlock" = "yes"; then
+	AC_MSG_CHECKING(whether mlock is broken)
+	  AC_TRY_RUN([
+		#include <unistd.h>
+		#include <errno.h>
+		#include <sys/mman.h>
+		#include <sys/types.h>
+		#include <fcntl.h>
+
+		int main()
+		{
+		    char *pool;
+		    int err;
+		    long int pgsize = getpagesize();
+
+		    pool = malloc( 4096 + pgsize );
+		    if( !pool )
+			return 2;
+		    pool += (pgsize - ((long int)pool % pgsize));
+
+		    err = mlock( pool, 4096 );
+		    if( !err || errno == EPERM )
+			return 0; /* okay */
+
+		    return 1;  /* hmmm */
+		}
+
+	    ],
+	    AC_MSG_RESULT(no),
+	    AC_DEFINE(HAVE_BROKEN_MLOCK)
+	    AC_MSG_RESULT(yes),
+	    AC_MSG_RESULT(assuming no))
+    fi
+  ])
+
+
+######################################################################
 # progtest.m4 from gettext 0.35
 ######################################################################
 # Search path for a program which passes the given test.

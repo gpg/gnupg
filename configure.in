@@ -180,9 +180,11 @@ fi
 
 dnl Checks for library functions.
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS(strerror stpcpy strlwr tcgetattr rand strtoul mlock mmap)
+AC_CHECK_FUNCS(strerror stpcpy strlwr tcgetattr rand strtoul mmap)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage gethrtime setrlimit)
 AC_CHECK_FUNCS(atexit raise getpagesize strftime)
+
+WK_CHECK_MLOCK
 
 WK_CHECK_IPC
 if test "$ac_cv_header_sys_shm_h" = "yes"; then

@@ -75,11 +75,22 @@ lock_pool( void *p, size_t n )
     uid_t uid;
     int err;
 
+    uid = getuid();
+
+  #ifdef HAVE_BROKEN_MLOCK
+    if( uid )
+	err = EPERM;
+    else {
+	err = mlock( p, n );
+	if( err && errno )
+	    err = errno;
+    }
+  #else
     err = mlock( p, n );
     if( err && errno )
 	err = errno;
+  #endif
 
-    uid = getuid();
     if( uid && !geteuid() ) {
 	if( setuid( uid ) )
 	    log_fatal("failed to reset uid: %s\n", strerror(errno));
