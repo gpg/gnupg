@@ -1,3 +1,11 @@
+2004-09-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* signal.c (got_fatal_signal): HAVE_DECL_SYS_SIGLIST is defined,
+	but zero if not found.  Noted by John Clizbe.
+
+	* keyserver.c (parse_keyrec): Fix problem with non-expiring keys
+	appearing expired in --search-keys results.
+
 2004-09-27  Werner Koch  <wk@g10code.com>
 
 	* card-util.c (card_edit): Take admin only status from the table.

@@ -95,7 +95,7 @@ parse_keyserver_options(char *options)
 #ifdef EXEC_TEMPFILE_ONLY
       else if(ascii_strncasecmp(tok,"use-temp-files",14)==0 ||
 	      ascii_strncasecmp(tok,"no-use-temp-files",17)==0)
-	log_info(_("WARNING: keyserver option %s is not used"
+	log_info(_("WARNING: keyserver option `%s' is not used"
 		   " on this platform\n"),tok);
 #else
       else if(ascii_strncasecmp(tok,"use-temp-files",14)==0)
@@ -462,7 +462,7 @@ parse_keyrec(char *keystring)
       if((tok=strsep(&keystring,":"))==NULL)
 	return ret;
 
-      if(atoi(tok)<0)
+      if(atoi(tok)<=0)
 	work->createtime=0;
       else
 	work->createtime=atoi(tok);
@@ -470,7 +470,7 @@ parse_keyrec(char *keystring)
       if((tok=strsep(&keystring,":"))==NULL)
 	return ret;
 
-      if(atoi(tok)<0)
+      if(atoi(tok)<=0)
 	work->expiretime=0;
       else
 	{
