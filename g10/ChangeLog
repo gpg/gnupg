@@ -1,5 +1,8 @@
 2005-03-10  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyserver.c (parse_keyserver_options): Accept honor-http-proxy
+	as an alias for http-proxy.
+
 	* delkey.c (do_delete_key, delete_keys): Fix problem with --expert
 	preventing --delete-secret-and-public-keys from deleting secret
 	keys.

@@ -83,6 +83,14 @@ parse_keyserver_options(char *options)
       if(tok[0]=='\0')
 	continue;
 
+      /* For backwards compatibility.  1.2.x used honor-http-proxy and
+	 there are a good number of documents published that recommend
+	 it. */
+      if(ascii_strcasecmp(tok,"honor-http-proxy")==0)
+	tok="http-proxy";
+      else if(ascii_strcasecmp(tok,"no-honor-http-proxy")==0)
+	tok="no-http-proxy";
+
       /* We accept quite a few possible options here - some options to
 	 handle specially, the keyserver_options list, and import and
 	 export options that pertain to keyserver operations.  Note
