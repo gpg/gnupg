@@ -471,7 +471,7 @@ assuan_get_active_fds (ASSUAN_CONTEXT ctx, int what,
 {
   int n = 0;
 
-  if (ctx || fdarraysize < 2 || what < 0 || what > 1)
+  if (!ctx || fdarraysize < 2 || what < 0 || what > 1)
     return -1;
 
   if (!what)

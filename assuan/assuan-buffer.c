@@ -172,11 +172,15 @@ _assuan_read_line (ASSUAN_CONTEXT ctx)
 AssuanError
 assuan_read_line (ASSUAN_CONTEXT ctx, char **line, size_t *linelen)
 {
+  AssuanError err;
+
   if (!ctx)
     return ASSUAN_Invalid_Value;
+
+  err = _assuan_read_line (ctx);
   *line = ctx->inbound.line;
   *linelen = ctx->inbound.linelen;
-  return _assuan_read_line (ctx);
+  return err;
 }
 
 
