@@ -2,8 +2,8 @@
 GNUPG FREQUENTLY ASKED QUESTIONS
 
 
-Version: 1.5.3
-Last-Modified: Jul 10, 2001
+Version: 1.5.4
+Last-Modified: Jul 11, 2001
 Maintained-by: Nils Ellmenreich <nils 'at' gnupg.org>
 
 
@@ -59,6 +59,7 @@ you could search in the mailing list archive.
    4.15) Can't we have a gpg library?
    4.16) I have successfully generated a revocation certificate, but I don't
 	understand how to send it to the key servers.
+   4.17) How do I put my keyring in a different directory?
 
  5. COMPATIBILITY ISSUES 
    5.1) How can I encrypt a message with GnuPG so that PGP is able to decrypt it?
@@ -459,6 +460,22 @@ messages?
     then send the revoked key to the keyservers:
     gpg --keyserver certserver.pgp.com --send-keys mykeyid
     (or use a keyserver web interface for this).
+
+
+4.17) How do I put my keyring in a different directory?
+
+    GnuPG keeps several files in a special homedir directory.  These
+    include the options file, pubring.gpg, secring.gpg, the trustdb, and
+    others. Gnupg will always create and use these files.  On unices,
+    the homedir is usually ~/.gnupg; on Windows "C:\gnupg\".
+
+    If you want to put your keyrings somewhere else, use 
+    --homedir /my/path/ to make gnupg create all its
+    files in that directory. Your keyring will be
+    "/my/path/pubring.gpg". This way you can store your secrets on a
+    floppy disk. Don't use "--keyring" as its purpose is to specify
+    additional keyring files.
+
 
 5. COMPATIBILITY ISSUES 
 
@@ -889,7 +906,7 @@ material?
 
 7.7) What is the list of preferred algorithms?
 
-    The list of preferred algorithms is a list of cypher, hash and
+    The list of preferred algorithms is a list of cipher, hash and
     compression algorithms stored in the self-signature of a key during
     key generation. When you encrypt a document, GnuPG uses this list
     (which is then part of a public key) to determine which algorithms
