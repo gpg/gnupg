@@ -1,3 +1,9 @@
+2003-02-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): --openpgp disables --pgpX.
+
+	* keyedit.c (show_prefs): Make strings translatable.
+
 2003-02-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Use @CAPLIBS@ to link in -lcap if we are using
