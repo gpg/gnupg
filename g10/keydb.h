@@ -243,6 +243,7 @@ size_t keystrlen(void);
 const char *keystr(u32 *keyid);
 const char *keystr_from_pk(PKT_public_key *pk);
 const char *keystr_from_sk(PKT_secret_key *sk);
+const char *keystr_from_desc(KEYDB_SEARCH_DESC *desc);
 u32 keyid_from_sk( PKT_secret_key *sk, u32 *keyid );
 u32 keyid_from_pk( PKT_public_key *pk, u32 *keyid );
 u32 keyid_from_sig( PKT_signature *sig, u32 *keyid );

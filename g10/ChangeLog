@@ -1,5 +1,13 @@
 2004-05-21  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyserver.c (keyidlist): Go back to the old fast keyid lister.
+	Only merge selfsigs if we have to for honor-keyserver-url.
+	(keyserver_refresh): Keyserver URL handler moved here.
+	(calculate_keyid_fpr): Removed.
+
+	* keydb.h, keyid.c (keystr_from_desc): Calculate a key string from
+	a KEYDB_SEARCH_DESC.
+
 	* keyserver.c (keyserver_spawn): Fix keyserver options on tempfile
 	only platforms.  Noted by Roger Sondermann.
 

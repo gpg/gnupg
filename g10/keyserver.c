@@ -850,7 +850,7 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	      fprintf(spawn->tochild,"0x%08lX%08lX\n",
 		      (ulong)desc[i].u.kid[0],
 		      (ulong)desc[i].u.kid[1]);
-	    else
+	    else if(desc[i].mode==KEYDB_SEARCH_MODE_SHORT_KID)
 	      fprintf(spawn->tochild,"0x%08lX\n",
 		      (ulong)desc[i].u.kid[1]);
 	  }
@@ -1312,53 +1312,109 @@ keyserver_import_keyid(u32 *keyid)
   return keyserver_work(GET,NULL,&desc,1,opt.keyserver);
 }
 
-static void
-calculate_keyid_fpr(PKT_public_key *pk,KEYDB_SEARCH_DESC *desc)
-{
-  if(pk->version<4)
-    {
-      desc->mode=KEYDB_SEARCH_MODE_LONG_KID;
-      keyid_from_pk(pk,desc->u.kid);
-    }
-  else
-    {
-      size_t dummy;
-
-      desc->mode=KEYDB_SEARCH_MODE_FPR20;
-      fingerprint_from_pk(pk,desc->u.fpr,&dummy);
-    }
-}
-
+/* code mostly stolen from do_export_stream */
 static int 
 keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 {
-  int rc=0,num=100;
+  int rc=0,ndesc,num=100;
   KBNODE keyblock=NULL,node;
-  GETKEY_CTX ctx;
+  KEYDB_HANDLE kdbhd;
+  KEYDB_SEARCH_DESC *desc;
+  STRLIST sl;
 
   *count=0;
 
-  rc=get_pubkey_bynames(&ctx,NULL,users,&keyblock);
-  if(rc)
-    {
-      log_error("error reading key: %s\n", g10_errstr(rc) );
-      get_pubkey_end( ctx );
-      return rc;
-    }
-
   *klist=m_alloc(sizeof(KEYDB_SEARCH_DESC)*num);
 
-  do
+  kdbhd=keydb_new(0);
+
+  if(!users)
     {
+      ndesc = 1;
+      desc = m_alloc_clear ( ndesc * sizeof *desc);
+      desc[0].mode = KEYDB_SEARCH_MODE_FIRST;
+    }
+  else
+    {
+      for (ndesc=0, sl=users; sl; sl = sl->next, ndesc++) 
+	;
+      desc = m_alloc ( ndesc * sizeof *desc);
+        
+      for (ndesc=0, sl=users; sl; sl = sl->next)
+	{
+	  if(classify_user_id (sl->d, desc+ndesc))
+	    ndesc++;
+	  else
+	    log_error (_("key `%s' not found: %s\n"),
+		       sl->d, g10_errstr (G10ERR_INV_USER_ID));
+	}
+    }
+
+  while (!(rc = keydb_search (kdbhd, desc, ndesc)))
+    {
+      if (!users) 
+	desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
+
+      /* read the keyblock */
+      rc = keydb_get_keyblock (kdbhd, &keyblock );
+      if( rc )
+	{
+	  log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
+	  goto leave;
+	}
+
       if((node=find_kbnode(keyblock,PKT_PUBLIC_KEY)))
 	{
-	  PKT_public_key *pk=node->pkt->pkt.public_key;
+	  /* This is to work around a bug in some keyservers (pksd and
+             OKS) that calculate v4 RSA keyids as if they were v3 RSA.
+             The answer is to refresh both the correct v4 keyid
+             (e.g. 99242560) and the fake v3 keyid (e.g. 68FDDBC7).
+             This only happens for key refresh using the HKP scheme
+             and if the refresh-add-fake-v3-keyids keyserver option is
+             set. */
+	  if(fakev3 && is_RSA(node->pkt->pkt.public_key->pubkey_algo) &&
+	     node->pkt->pkt.public_key->version>=4)
+	    {
+	      (*klist)[*count].mode=KEYDB_SEARCH_MODE_LONG_KID;
+	      mpi_get_keyid(node->pkt->pkt.public_key->pkey[0],
+			    (*klist)[*count].u.kid);
+	      (*count)++;
 
-	  /* Check the user ID for a preferred keyserver subpacket. */
+	      if(*count==num)
+		{
+		  num+=100;
+		  *klist=m_realloc(*klist,sizeof(KEYDB_SEARCH_DESC)*num);
+		}
+	    }
+
+	  /* v4 keys get full fingerprints.  v3 keys get long keyids.
+             This is because it's easy to calculate any sort of keyid
+             from a v4 fingerprint, but not a v3 fingerprint. */
+
+	  if(node->pkt->pkt.public_key->version<4)
+	    {
+	      (*klist)[*count].mode=KEYDB_SEARCH_MODE_LONG_KID;
+	      keyid_from_pk(node->pkt->pkt.public_key,
+			    (*klist)[*count].u.kid);
+	    }
+	  else
+	    {
+	      size_t dummy;
+
+	      (*klist)[*count].mode=KEYDB_SEARCH_MODE_FPR20;
+	      fingerprint_from_pk(node->pkt->pkt.public_key,
+				  (*klist)[*count].u.fpr,&dummy);
+	    }
+
+	  (*klist)[*count].skipfncvalue=NULL;
+
+	  /* Are we honoring preferred keyservers? */
 	  if(opt.keyserver_options.options&KEYSERVER_HONOR_KEYSERVER_URL)
 	    {
 	      PKT_user_id *uid=NULL;
 	      PKT_signature *sig=NULL;
+
+	      merge_keys_and_selfsig(keyblock);
 
 	      for(node=node->next;node;node=node->next)
 		{
@@ -1381,80 +1437,21 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 		  p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_PREF_KS,&plen);
 		  if(p && plen)
 		    {
-		      struct keyserver_spec *keyserver;
 		      byte *dupe=m_alloc(plen+1);
 
 		      memcpy(dupe,p,plen);
 		      dupe[plen]='\0';
 
-		      /* Make up a keyserver structure and do an
-			 import for this key.  Note that a preferred
-			 keyserver without a scheme:// will be
-			 interpreted as hkp:// */
+		      /* Try and parse the keyserver URL.  If it
+			 doesn't work, then we end up writing NULL
+			 which indicates we are the same as any other
+			 key. */
 
-		      keyserver=parse_keyserver_uri(dupe,0,NULL,0);
+		      (*klist)[*count].skipfncvalue=
+			parse_keyserver_uri(dupe,0,NULL,0);
 		      m_free(dupe);
-
-		      if(keyserver)
-			{
-			  KEYDB_SEARCH_DESC desc;
-
-			  calculate_keyid_fpr(pk,&desc);
-
-			  rc=keyserver_work(GET,NULL,&desc,1,keyserver);
-			  if(rc)
-			    log_info(_("WARNING: unable to refresh key %s"
-				       " via %s: %s\n"),
-				     keystr_from_pk(pk),keyserver->uri,
-				     g10_errstr(rc));
-			  free_keyserver_spec(keyserver);
-
-			  continue;
-			}
-		      else
-			log_info(_("WARNING: unable to refresh key %s"
-				   " via %s: %s\n"),
-				 keystr_from_pk(pk),keyserver->uri,
-				 g10_errstr(G10ERR_BAD_URI));
 		    }
 		}
-	    }
-
-	  /* This is to work around a bug in some keyservers (pksd and
-             OKS) that calculate v4 RSA keyids as if they were v3 RSA.
-             The answer is to refresh both the correct v4 keyid
-             (e.g. 99242560) and the fake v3 keyid (e.g. 68FDDBC7).
-             This only happens for key refresh using the HKP scheme
-             and if the refresh-add-fake-v3-keyids keyserver option is
-             set. */
-	  if(fakev3 && is_RSA(pk->pubkey_algo) && pk->version>=4)
-	    {
-	      (*klist)[*count].mode=KEYDB_SEARCH_MODE_LONG_KID;
-	      mpi_get_keyid(pk->pkey[0],(*klist)[*count].u.kid);
-	      (*count)++;
-
-	      if(*count==num)
-		{
-		  num+=100;
-		  *klist=m_realloc(*klist,sizeof(KEYDB_SEARCH_DESC)*num);
-		}
-	    }
-
-	  /* v4 keys get full fingerprints.  v3 keys get long keyids.
-             This is because it's easy to calculate any sort of key id
-             from a v4 fingerprint, but not a v3 fingerprint. */
-
-	  if(pk->version<4)
-	    {
-	      (*klist)[*count].mode=KEYDB_SEARCH_MODE_LONG_KID;
-	      keyid_from_pk(pk,(*klist)[*count].u.kid);
-	    }
-	  else
-	    {
-	      size_t dummy;
-
-	      (*klist)[*count].mode=KEYDB_SEARCH_MODE_FPR20;
-	      fingerprint_from_pk(pk,(*klist)[*count].u.fpr,&dummy);
 	    }
 
 	  (*count)++;
@@ -1465,12 +1462,19 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 	      *klist=m_realloc(*klist,sizeof(KEYDB_SEARCH_DESC)*num);
 	    }
 	}
-
-      release_kbnode(keyblock);
     }
-  while(!get_pubkey_next(ctx,NULL,&keyblock));
 
-  return 0;
+  if(rc==-1)
+    rc=0;
+  
+ leave:
+  if(rc)
+    m_free(*klist);
+  m_free(desc);
+  keydb_release(kdbhd);
+  release_kbnode(keyblock);
+
+  return rc;
 }
 
 /* Note this is different than the original HKP refresh.  It allows
@@ -1500,6 +1504,36 @@ keyserver_refresh(STRLIST users)
 
   if(count>0)
     {
+      int i;
+
+      /* Try to handle preferred keyserver keys first */
+      for(i=0;i<count;i++)
+	{
+	  if(desc[i].skipfncvalue)
+	    {
+	      struct keyserver_spec *keyserver=desc[i].skipfncvalue;
+
+	      /* We use the keyserver structure we parsed out before.
+		 Note that a preferred keyserver without a scheme://
+		 will be interpreted as hkp:// */
+
+	      rc=keyserver_work(GET,NULL,&desc[i],1,keyserver);
+	      if(rc)
+		log_info(_("WARNING: unable to refresh key %s"
+			   " via %s: %s\n"),keystr_from_desc(&desc[i]),
+			 keyserver->uri,g10_errstr(rc));
+	      else
+		{
+		  /* We got it, so mark it as NONE so we don't try and
+		     get it again from the regular keyserver. */
+
+		  desc[i].mode=KEYDB_SEARCH_MODE_NONE;
+		}
+
+	      free_keyserver_spec(keyserver);
+	    }
+	}
+
       if(opt.keyserver)
 	{
 	  if(count==1)
