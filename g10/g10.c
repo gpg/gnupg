@@ -1172,7 +1172,7 @@ main( int argc, char **argv )
     opt.keyserver_options.include_subkeys=1;
     opt.keyserver_options.include_revoked=1;
     opt.keyserver_options.try_dns_srv=1;
-    opt.trust_model=TM_OPENPGP;
+    opt.trust_model=TM_AUTO;
     opt.mangle_dos_filenames = 1;
 
 #if defined (__MINGW32__)
@@ -1493,6 +1493,8 @@ main( int argc, char **argv )
 	      opt.trust_model=TM_CLASSIC;
 	    else if(ascii_strcasecmp(pargs.r.ret_str,"always")==0)
 	      opt.trust_model=TM_ALWAYS;
+	    else if(ascii_strcasecmp(pargs.r.ret_str,"auto")==0)
+	      opt.trust_model=TM_AUTO;
 	    else
 	      log_error("unknown trust model \"%s\"\n",pargs.r.ret_str);
 	    break;

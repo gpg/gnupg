@@ -99,6 +99,7 @@ void tdbio_dump_record( TRUSTREC *rec, FILE *fp );
 int tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected );
 int tdbio_write_record( TRUSTREC *rec );
 int tdbio_db_matches_options(void);
+byte tdbio_read_model(void);
 ulong tdbio_read_nextcheck (void);
 int tdbio_write_nextcheck (ulong stamp);
 int tdbio_is_dirty(void);

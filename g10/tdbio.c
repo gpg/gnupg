@@ -669,6 +669,18 @@ tdbio_db_matches_options()
   return yes_no;
 }
 
+byte
+tdbio_read_model(void)
+{
+  TRUSTREC vr;
+  int rc;
+ 
+  rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
+  if( rc )
+    log_fatal( _("%s: error reading version record: %s\n"),
+	       db_name, g10_errstr(rc) );
+  return vr.r.ver.trust_model;
+}
 
 /****************
  * Return the nextstamp value.

@@ -309,8 +309,10 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     else {
 	if( opt.verbose ) {
 	    char *ustr = get_user_id_string_printable (sig->keyid);
-	    log_info(_("%s signature from: \"%s\"\n"),
-		      pubkey_algo_to_string(sk->pubkey_algo), ustr );
+	    log_info(_("%s/%s signature from: \"%s\"\n"),
+		     pubkey_algo_to_string(sk->pubkey_algo),
+		     digest_algo_to_string(sig->digest_algo),
+		     ustr );
 	    m_free(ustr);
 	}
     }

@@ -1,3 +1,15 @@
+2003-04-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* sign.c (do_sign): Show the hash used when making a signature in
+	verbose mode.
+
+	* tdbio.h, tdbio.c (tdbio_read_model): New function to return the
+	trust model used in a given trustdb.
+
+	* options.h, g10.c (main), trustdb.c (init_trustdb, check_trustdb,
+	update_trustdb): Use tdbio_read_model to implement an "auto" trust
+	model which is set via the trustdb.
+
 2003-04-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* import.c (import_revoke_cert): Remove ultimate trust when

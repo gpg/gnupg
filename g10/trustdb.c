@@ -375,6 +375,17 @@ do_sync(void)
       }
 }
 
+static const char *
+trust_model_string(void)
+{
+  switch(opt.trust_model)
+    {
+    case TM_OPENPGP: return "OpenPGP";
+    case TM_CLASSIC: return "classic";
+    case TM_ALWAYS:  return "always";
+    default:         return "unknown";
+    }
+}
 
 /****************
  * Perform some checks over the trustdb
@@ -425,8 +436,24 @@ init_trustdb()
   if( rc )
     log_fatal("can't init trustdb: %s\n", g10_errstr(rc) );
 
-  if(!tdbio_db_matches_options()
-     && (opt.trust_model==TM_CLASSIC || opt.trust_model==TM_OPENPGP))
+  if(opt.trust_model==TM_AUTO)
+    {
+      /* Try and set the trust model off of whatever the trustdb says
+	 it is. */
+
+      opt.trust_model=tdbio_read_model();
+      if(opt.trust_model!=TM_CLASSIC && opt.trust_model!=TM_OPENPGP)
+	{
+	  log_info(_("unable to use unknown trust model (%d) - "
+		     "assuming OpenPGP trust model\n"),opt.trust_model);
+	  opt.trust_model=TM_OPENPGP;
+	}
+
+      if(opt.verbose)
+	log_info(_("using %s trust model\n"),trust_model_string());
+    }
+  else if(!tdbio_db_matches_options()
+	  && (opt.trust_model==TM_CLASSIC || opt.trust_model==TM_OPENPGP))
     pending_check_trustdb=1;
 }
 
@@ -475,18 +502,6 @@ trust_string (unsigned int value)
     }
 }
 
-static const char *
-trust_model_string(void)
-{
-  switch(opt.trust_model)
-    {
-    case TM_OPENPGP: return "OpenPGP";
-    case TM_CLASSIC: return "classic";
-    case TM_ALWAYS:  return "always";
-    default:         return "unknown";
-    }
-}
-
 /****************
  * Recreate the WoT but do not ask for new ownertrusts.  Special
  * feature: In batch mode and without a forced yes, this is only done
@@ -495,9 +510,9 @@ trust_model_string(void)
 void
 check_trustdb ()
 {
+  init_trustdb();
   if(opt.trust_model==TM_OPENPGP || opt.trust_model==TM_CLASSIC)
     {
-      init_trustdb();
       if (opt.batch && !opt.answer_yes)
 	{
 	  ulong scheduled;
@@ -531,11 +546,9 @@ check_trustdb ()
 void
 update_trustdb()
 {
+  init_trustdb();
   if(opt.trust_model==TM_OPENPGP || opt.trust_model==TM_CLASSIC)
-    {
-      init_trustdb();
-      validate_keys (1);
-    }
+    validate_keys (1);
   else
     log_info (_("no need for a trustdb update with \"%s\" trust model\n"),
 	      trust_model_string());
@@ -1891,9 +1904,7 @@ validate_keys (int interactive)
   klist = utk_list;
 
   log_info(_("%d marginal(s) needed, %d complete(s) needed, %s trust model\n"),
-	   opt.marginals_needed,opt.completes_needed,
-	   opt.trust_model==TM_CLASSIC?"Classic":
-	                  opt.trust_model==TM_OPENPGP?"OpenPGP":"unknown");
+	   opt.marginals_needed,opt.completes_needed,trust_model_string());
 
   for (depth=0; depth < opt.max_cert_depth; depth++)
     {
