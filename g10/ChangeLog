@@ -1,3 +1,11 @@
+2004-03-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (check_prefs_warning, check_prefs): --keyid-format
+	conversion and a little better text.
+	(import_one, import_secret_one, import_revoke_cert, chk_self_sigs,
+	delete_inv_parts, merge_blocks): Still more --keyid-format
+	conversions.
+
 2004-03-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* keylist.c (print_seckey_info, print_pubkey_info): --keyid-format
