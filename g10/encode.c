@@ -50,7 +50,11 @@ static int write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out );
 int
 encode_symmetric( const char *filename )
 {
-    return encode_simple( filename, 1, 1 );
+    int compat = 1;
+    
+    if ( opt.expert )
+        compat = 0; /* PGP knows how to handle this mode. */
+    return encode_simple( filename, 1, compat );
 }
 
 /****************
