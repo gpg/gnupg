@@ -1,3 +1,9 @@
+2002-08-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* revoke.c (export_minimal_pk, gen_desig_revoke, gen_revoke):
+	Export a minimal pk along with the revocation cert when in --pgpX
+	mode so that PGP can import it.
+
 2002-08-06  Werner Koch  <wk@gnupg.org>
 
 	* options.skel: Changed comments.

@@ -71,7 +71,125 @@ revocation_reason_build_cb( PKT_signature *sig, void *opaque )
     return 0;
 }
 
+/* Outputs a minimal pk (as defined by 2440) from a keyblock.  A
+   minimal pk consists of the public key packet and a user ID.  We try
+   and pick a user ID that has a uid signature, and include it if
+   possible. */
+static int
+export_minimal_pk(IOBUF out,KBNODE keyblock,
+		  PKT_signature *revsig,PKT_signature *revkey)
+{
+  KBNODE node;
+  PACKET pkt;
+  PKT_user_id *uid=NULL;
+  PKT_signature *selfsig=NULL;
+  u32 keyid[2];
+  int rc;
 
+  node=find_kbnode(keyblock,PKT_PUBLIC_KEY);
+  if(!node)
+    {
+      log_error(_("key incomplete\n"));
+      return G10ERR_GENERAL;
+    }
+
+  keyid_from_pk(node->pkt->pkt.public_key,keyid);
+
+  pkt=*node->pkt;
+  rc=build_packet(out,&pkt);
+  if(rc)
+    {
+      log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+      return rc;
+    }
+
+  init_packet(&pkt);
+  pkt.pkttype=PKT_SIGNATURE;
+
+  /* the revocation itself, if any.  2440 likes this to come first. */
+  if(revsig)
+    {
+      pkt.pkt.signature=revsig;
+      rc=build_packet(out,&pkt);
+      if(rc)
+	{
+	  log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	  return rc;
+	}
+    }
+
+  /* If a revkey in a 1F sig is present, include it too */
+  if(revkey)
+    {
+      pkt.pkt.signature=revkey;
+      rc=build_packet(out,&pkt);
+      if(rc)
+	{
+	  log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	  return rc;
+	}
+    }
+
+  while(!selfsig)
+    {
+      KBNODE signode;
+
+      node=find_next_kbnode(node,PKT_USER_ID);
+      if(!node)
+	{
+	  /* We're out of user IDs - none were self-signed. */
+	  if(uid)
+	    break;
+	  else
+	    {
+	      log_error(_("key %08lX incomplete\n"),(ulong)keyid[1]);
+	      return G10ERR_GENERAL;
+	    }
+	}
+
+      if(node->pkt->pkt.user_id->attrib_data)
+	continue;
+
+      uid=node->pkt->pkt.user_id;
+      signode=node;
+
+      while((signode=find_next_kbnode(signode,PKT_SIGNATURE)))
+	{
+	  if(keyid[0]==signode->pkt->pkt.signature->keyid[0] &&
+	     keyid[1]==signode->pkt->pkt.signature->keyid[1] &&
+	     IS_UID_SIG(signode->pkt->pkt.signature))
+	    {
+	      selfsig=signode->pkt->pkt.signature;
+	      break;
+	    }
+	}
+    }
+
+  pkt.pkttype=PKT_USER_ID;
+  pkt.pkt.user_id=uid;
+
+  rc=build_packet(out,&pkt);
+  if(rc)
+    {
+      log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+      return rc;
+    }
+
+  if(selfsig)
+    {
+      pkt.pkttype=PKT_SIGNATURE;
+      pkt.pkt.signature=selfsig;
+
+      rc=build_packet(out,&pkt);
+      if(rc)
+	{
+	  log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	  return rc;
+	}
+    }
+
+  return 0;
+}
 
 /****************
  * Generate a revocation certificate for UNAME via a designated revoker
@@ -81,7 +199,6 @@ gen_desig_revoke( const char *uname )
 {
     int rc = 0;
     armor_filter_context_t afx;
-    PACKET pkt;
     PKT_public_key *pk = NULL;
     PKT_secret_key *sk = NULL;
     PKT_signature *sig = NULL;
@@ -146,8 +263,7 @@ gen_desig_revoke( const char *uname )
 	    size_t n;
 	    char *p;
 	    u32 sk_keyid[2];
-	    PKT_user_id *uid=NULL;
-	    PKT_signature *selfsig=NULL,*revsig=NULL;
+	    PKT_signature *revkey=NULL;
 
 	    any=1;
 	    keyid_from_sk(sk,sk_keyid);
@@ -210,40 +326,24 @@ gen_desig_revoke( const char *uname )
 	    }
 
 	    /* Spit out a minimal pk as well, since otherwise there is
-               no way to know which key to attach this revocation
-               to. */
+               no way to know which key to attach this revocation to.
+               Also include the direct key signature that contains
+               this revocation key.  We're allowed to include
+               sensitive revocation keys along with a revocation, as
+               this may be the only time the recipient has seen it.
+               Note that this means that if we have multiple different
+               sensitive revocation keys in a given direct key
+               signature, we're going to include them all here.  This
+               is annoying, but the good outweighs the bad, since
+               without including this a sensitive revoker can't really
+               do their job.  People should not include multiple
+               sensitive revocation keys in one signature: 2440 says
+               "Note that it may be appropriate to isolate this
+               subpacket within a separate signature so that it is not
+               combined with other subpackets that need to be
+               exported." -dms */
 
-	    node=find_kbnode(keyblock,PKT_PUBLIC_KEY);
-	    if(!node)
-	      {
-		rc=G10ERR_GENERAL;
-		log_error(_("key %08lX incomplete\n"),(ulong)keyid[1]);
-		goto leave;
-	      }
-
-	    pkt = *node->pkt;
-	    rc=build_packet(out,&pkt);
-	    if( rc ) {
-	      log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
-	      goto leave;
-	    }
-
-	    /* Include the direct key signature that contains this
-	       revocation key.  We're allowed to include sensitive
-	       revocation keys along with a revocation, and this may
-	       be the only time the recipient has seen it.  Note that
-	       this means that if we have multiple different sensitive
-	       revocation keys in a given direct key signature, we're
-	       going to include them all here.  This is annoying, but
-	       the good outweighs the bad, since without including
-	       this a sensitive revoker can't really do their job.
-	       People should not include multiple sensitive revocation
-	       keys in one signature: 2440 says "Note that it may be
-	       appropriate to isolate this subpacket within a separate
-	       signature so that it is not combined with other
-	       subpackets that need to be exported." -dms */
-
-	    while(!revsig)
+	    while(!revkey)
 	      {
 		KBNODE signode;
 
@@ -269,94 +369,19 @@ gen_desig_revoke( const char *uname )
 				  signode->pkt->pkt.signature->revkey[j]->fpr,
 				  MAX_FINGERPRINT_LEN)==0)
 			  {
-			    revsig=signode->pkt->pkt.signature;
+			    revkey=signode->pkt->pkt.signature;
 			    break;
 			  }
 		      }
 		  }
 	      }
 
-	    if(revsig)
-	      {
-		pkt.pkttype = PKT_SIGNATURE;
-		pkt.pkt.signature = revsig;
-
-		rc = build_packet( out, &pkt );
-		if( rc ) {
-		  log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
-		  goto leave;
-		}
-	      }
-	    else
+	    if(!revkey)
 	      BUG();
 
-	    init_packet( &pkt );
-	    pkt.pkttype = PKT_SIGNATURE;
-	    pkt.pkt.signature = sig;
-
-	    rc = build_packet( out, &pkt );
-	    if( rc ) {
-	      log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	    rc=export_minimal_pk(out,keyblock,sig,revkey);
+	    if(rc)
 	      goto leave;
-	    }
-
-	    while(!selfsig)
-	      {
-		KBNODE signode;
-
-		node=find_next_kbnode(node,PKT_USER_ID);
-		if(!node)
-		  {
-		    /* We're out of user IDs - none were
-                       self-signed. */
-		    if(uid)
-		      break;
-		    else
-		      {
-			rc=G10ERR_GENERAL;
-			log_error(_("key %08lX incomplete\n"),(ulong)keyid[1]);
-			goto leave;
-		      }
-		  }
-
-		if(node->pkt->pkt.user_id->attrib_data)
-		  continue;
-
-		uid=node->pkt->pkt.user_id;
-		signode=node;
-
-		while((signode=find_next_kbnode(signode,PKT_SIGNATURE)))
-		  {
-		    if(keyid[0]==signode->pkt->pkt.signature->keyid[0] &&
-		       keyid[1]==signode->pkt->pkt.signature->keyid[1] &&
-		       IS_UID_SIG(signode->pkt->pkt.signature))
-		      {
-			selfsig=signode->pkt->pkt.signature;
-			break;
-		      }
-		  }
-	      }
-
-	    pkt.pkttype = PKT_USER_ID;
-	    pkt.pkt.user_id = uid;
-
-	    rc = build_packet( out, &pkt );
-	    if( rc ) {
-	      log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
-	      goto leave;
-	    }
-
-	    if(selfsig)
-	      {
-		pkt.pkttype = PKT_SIGNATURE;
-		pkt.pkt.signature = selfsig;
-
-		rc = build_packet( out, &pkt );
-		if( rc ) {
-		  log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
-		  goto leave;
-		}
-	      }
 
 	    /* and issue a usage notice */
 	    tty_printf(_("Revocation certificate created.\n"));
@@ -398,7 +423,7 @@ gen_revoke( const char *uname )
     PKT_signature *sig = NULL;
     u32 sk_keyid[2];
     IOBUF out = NULL;
-    KBNODE keyblock = NULL;
+    KBNODE keyblock = NULL, pub_keyblock = NULL;
     KBNODE node;
     KEYDB_HANDLE kdbhd;
     struct revocation_reason_info *reason = NULL;
@@ -453,11 +478,20 @@ gen_revoke( const char *uname )
     pk = m_alloc_clear( sizeof *pk );
 
     /* FIXME: We should get the public key direct from the secret one */
-    rc = get_pubkey( pk, sk_keyid );
-    if( rc ) {
+
+    pub_keyblock=get_pubkeyblock(sk_keyid);
+    if(!pub_keyblock)
+      {
 	log_error(_("no corresponding public key: %s\n"), g10_errstr(rc) );
 	goto leave;
-    }
+      }
+
+    node=find_kbnode(pub_keyblock,PKT_PUBLIC_KEY);
+    if(!node)
+      BUG();
+
+    pk=node->pkt->pkt.public_key;
+
     if( cmp_public_secret_key( pk, sk ) ) {
 	log_error(_("public key does not match secret key!\n") );
 	rc = G10ERR_GENERAL;
@@ -514,15 +548,25 @@ gen_revoke( const char *uname )
 	log_error(_("make_keysig_packet failed: %s\n"), g10_errstr(rc));
 	goto leave;
     }
-    init_packet( &pkt );
-    pkt.pkttype = PKT_SIGNATURE;
-    pkt.pkt.signature = sig;
 
-    rc = build_packet( out, &pkt );
-    if( rc ) {
-	log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
-	goto leave;
-    }
+    if(opt.pgp2 || opt.pgp6 || opt.pgp7)
+      {
+	rc=export_minimal_pk(out,NULL /*pub_keyblock*/,sig,NULL);
+	if(rc)
+	  goto leave;
+      }
+    else
+      {
+	init_packet( &pkt );
+	pkt.pkttype = PKT_SIGNATURE;
+	pkt.pkt.signature = sig;
+
+	rc = build_packet( out, &pkt );
+	if( rc ) {
+	  log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	  goto leave;
+	}
+      }
 
     /* and issue a usage notice */
     tty_printf(_("Revocation certificate created.\n\n"
@@ -532,14 +576,11 @@ gen_revoke( const char *uname )
 "your media become unreadable.  But have some caution:  The print system of\n"
 "your machine might store the data and make it available to others!\n"));
 
-
-
   leave:
-    if( pk )
-	free_public_key( pk );
     if( sig )
 	free_seckey_enc( sig );
     release_kbnode( keyblock );
+    release_kbnode( pub_keyblock );
     keydb_release (kdbhd);
     if( rc )
 	iobuf_cancel(out);
