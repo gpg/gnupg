@@ -132,7 +132,7 @@ get_membuf (struct membuf *mb, size_t *len)
 static int
 start_agent (void)
 {
-  int rc;
+  int rc = 0;
   char *infostr, *p;
   ASSUAN_CONTEXT ctx;
   char *dft_display = NULL;
@@ -252,7 +252,7 @@ start_agent (void)
 	return map_assuan_err (rc);
     }
   dft_ttytype = getenv ("TERM");
-  if (!rc && (opt.ttytype || (dft_ttyname && dft_ttytype)))
+  if (opt.ttytype || (dft_ttyname && dft_ttytype))
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION ttytype=%s",
@@ -268,44 +268,52 @@ start_agent (void)
   old_lc = setlocale (LC_CTYPE, NULL);
   dft_lc = setlocale (LC_CTYPE, "");
 #endif
-  if (!rc && (opt.lc_ctype || (dft_ttyname && dft_lc)))
+  if (opt.lc_ctype || (dft_ttyname && dft_lc))
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION lc-ctype=%s",
 		    opt.lc_ctype ? opt.lc_ctype : dft_lc) < 0)
-	return GNUPG_Out_Of_Core;
-      rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-			    NULL);
-      free (optstr);
-      if (rc)
-	return map_assuan_err (rc);
+	rc = GNUPG_Out_Of_Core;
+      else
+	{
+	  rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+				NULL);
+	  free (optstr);
+	  if (rc)
+	    rc = map_assuan_err (rc);
+	}
     }
 #ifdef LC_CTYPE
   if (old_lc)
     setlocale (LC_CTYPE, old_lc);
 #endif
+  if (rc)
+    return rc;
 #ifdef LC_MESSAGES
   old_lc = setlocale (LC_MESSAGES, NULL);
   dft_lc = setlocale (LC_MESSAGES, "");
 #endif
-  if (!rc && (opt.lc_messages || (dft_ttyname && dft_lc)))
+  if (opt.lc_messages || (dft_ttyname && dft_lc))
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION lc-messages=%s",
 		    opt.lc_messages ? opt.lc_messages : dft_lc) < 0)
-	return GNUPG_Out_Of_Core;
-      rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-			    NULL);
-      free (optstr);
-      if (rc)
-	return map_assuan_err (rc);
+	rc = GNUPG_Out_Of_Core;
+      else
+	{
+	  rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+				NULL);
+	  free (optstr);
+	  if (rc)
+	    rc = map_assuan_err (rc);
+	}
     }
 #ifdef LC_MESSAGES
   if (old_lc)
     setlocale (LC_MESSAGES, old_lc);
 #endif
 
-  return 0;
+  return rc;
 }
 
 

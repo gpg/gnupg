@@ -1,5 +1,10 @@
 2002-04-25  Marcus Brinkmann  <marcus@g10code.de>
 
+	* call-agent.c (start_agent): Fix error handling logic so the
+	locale is always correctly reset.
+
+2002-04-25  Marcus Brinkmann  <marcus@g10code.de>
+
 	* server.c (option_handler): Accept display, ttyname, ttytype,
 	lc_ctype and lc_messages options.
 	* gpgsm.c (main): Allocate memory for these options.
