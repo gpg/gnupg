@@ -37,9 +37,11 @@
 #include "../jnlib/dotlock.h"
 #include "../jnlib/utf8conv.h"
 
-/* handy malloc macros  - use only them */
+/* Handy malloc macros - please use only them. */
 #define xtrymalloc(a)    gcry_malloc ((a))
+#define xtrymalloc_secure(a)  gcry_malloc_secure ((a))
 #define xtrycalloc(a,b)  gcry_calloc ((a),(b))
+#define xtrycalloc_secure(a,b)  gcry_calloc_secure ((a),(b))
 #define xtryrealloc(a,b) gcry_realloc ((a),(b))
 #define xtrystrdup(a)    gcry_strdup ((a))
 #define xfree(a)         gcry_free ((a))
