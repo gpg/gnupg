@@ -65,13 +65,14 @@ struct cipher_handle_s {
 };
 
 
+#ifdef IS_DEVELOPMENT_VERSION
 static int
 dummy_setkey( void *c, byte *key, unsigned keylen ) { return 0; }
 static void
 dummy_encrypt_block( void *c, byte *outbuf, byte *inbuf ) { BUG(); }
 static void
 dummy_decrypt_block( void *c, byte *outbuf, byte *inbuf ) { BUG(); }
-
+#endif
 
 
 /****************
@@ -161,6 +162,8 @@ setup_cipher_table(void)
     if( !cipher_table[i].name )
 	BUG();
     i++;
+
+#ifdef IS_DEVELOPMENT_VERSION
     cipher_table[i].algo = CIPHER_ALGO_DUMMY;
     cipher_table[i].name = "DUMMY";
     cipher_table[i].blocksize = 8;
@@ -170,6 +173,7 @@ setup_cipher_table(void)
     cipher_table[i].encrypt = dummy_encrypt_block;
     cipher_table[i].decrypt = dummy_decrypt_block;
     i++;
+#endif
 
     for( ; i < TABLE_SIZE; i++ )
 	cipher_table[i].name = NULL;
@@ -406,9 +410,8 @@ cipher_open( int algo, int mode, int secure )
     hd->setkey	= cipher_table[i].setkey;
     hd->encrypt = cipher_table[i].encrypt;
     hd->decrypt = cipher_table[i].decrypt;
-    if( algo == CIPHER_ALGO_DUMMY )
-	hd->mode = CIPHER_MODE_DUMMY;
-    else if( mode == CIPHER_MODE_AUTO_CFB ) {
+
+    if( mode == CIPHER_MODE_AUTO_CFB ) {
 	if( algo >= 100 )
 	    hd->mode = CIPHER_MODE_CFB;
 	else
@@ -416,6 +419,11 @@ cipher_open( int algo, int mode, int secure )
     }
     else
 	hd->mode = mode;
+
+#ifdef IS_DEVELOPMENT_VERSION
+    if( algo == CIPHER_ALGO_DUMMY )
+	hd->mode = CIPHER_MODE_DUMMY;
+#endif
 
     return hd;
 }
@@ -644,10 +652,12 @@ cipher_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
       case CIPHER_MODE_PHILS_CFB:
 	do_cfb_encrypt(c, outbuf, inbuf, nbytes );
 	break;
+#ifdef IS_DEVELOPMENT_VERSION
       case CIPHER_MODE_DUMMY:
 	if( inbuf != outbuf )
 	    memmove( outbuf, inbuf, nbytes );
 	break;
+#endif
       default: log_fatal("cipher_encrypt: invalid mode %d\n", c->mode );
     }
 }
@@ -674,10 +684,12 @@ cipher_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
       case CIPHER_MODE_PHILS_CFB:
 	do_cfb_decrypt(c, outbuf, inbuf, nbytes );
 	break;
+#ifdef IS_DEVELOPMENT_VERSION
       case CIPHER_MODE_DUMMY:
 	if( inbuf != outbuf )
 	    memmove( outbuf, inbuf, nbytes );
 	break;
+#endif
       default: log_fatal("cipher_decrypt: invalid mode %d\n", c->mode );
     }
 }

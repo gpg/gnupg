@@ -1,3 +1,10 @@
+2002-04-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* cipher.c (setup_cipher_table, cipher_open, cipher_encrypt,
+	cipher_decrypt, dummy_setkey, dummy_encrypt_block,
+	dummy_decrypt_block): the dummy cipher should only be built on
+	development versions.
+
 2002-04-06  Werner Koch  <wk@gnupg.org>
 
 	* rijndael.c (rijndael_get_info): We do only support a 128 bit
