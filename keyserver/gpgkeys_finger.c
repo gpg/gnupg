@@ -435,6 +435,14 @@ main(int argc,char *argv[])
 	  continue;
 	}
 
+      if(strncmp(line,"HOST ",5)==0)
+	{
+	  fprintf(console,"gpgkeys: finger://relay/user syntax is not"
+		  " supported.  Use finger:user instead.\n");
+	  ret=KEYSERVER_NOT_SUPPORTED;
+	  goto fail;
+	}
+
       if(sscanf(line,"OPAQUE %1023s\n",path)==1)
 	{
 	  path[1023]='\0';

@@ -1,3 +1,9 @@
+2004-10-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_finger.c (main): We do not support relay fingering
+	(i.e. "finger://relayhost/user@example.com"), but finger URLs are
+	occasionally miswritten that way.  Give an error in this case.
+
 2004-10-14  Werner Koch  <wk@g10code.com>
 
 	* gpgkeys_finger.c (get_key): s/unsigned char/byte/ due
