@@ -67,7 +67,6 @@ int
 agent_pksign (CTRL ctrl, FILE *outfp, int ignore_cache) 
 {
   gcry_sexp_t s_skey = NULL, s_hash = NULL, s_sig = NULL;
-  gcry_mpi_t frame = NULL;
   unsigned char *shadow_info = NULL;
   int rc;
   char *buf = NULL;
@@ -151,7 +150,6 @@ agent_pksign (CTRL ctrl, FILE *outfp, int ignore_cache)
   gcry_sexp_release (s_skey);
   gcry_sexp_release (s_hash);
   gcry_sexp_release (s_sig);
-  gcry_mpi_release (frame);
   xfree (buf);
   xfree (shadow_info);
   return rc;
