@@ -39,7 +39,7 @@ struct cache_item_s {
   ITEM next;
   time_t created;
   time_t accessed;
-  int ttl;  /* max. lifetime given in seonds, -1 one means infinite */
+  int ttl;  /* max. lifetime given in seconds, -1 one means infinite */
   int lockcount;
   struct secret_data_s *pw;
   char key[1];
@@ -185,17 +185,18 @@ agent_flush_cache (void)
 /* Store DATA of length DATALEN in the cache under KEY and mark it
    with a maximum lifetime of TTL seconds.  If there is already data
    under this key, it will be replaced.  Using a DATA of NULL deletes
-   the entry */
+   the entry.  A TTL of 0 is replaced by the default TTL and a TTL of
+   -1 set infinite timeout. */
 int
 agent_put_cache (const char *key, const char *data, int ttl)
 {
   ITEM r;
 
   if (DBG_CACHE)
-    log_debug ("agent_put_cache `%s'\n", key);
+    log_debug ("agent_put_cache `%s' requested ttl=%d\n", key, ttl);
   housekeeping ();
 
-  if (ttl == 1)
+  if (!ttl)
     ttl = opt.def_cache_ttl;
   if (!ttl)
     return 0;

@@ -1,3 +1,8 @@
+2005-01-04  Werner Koch  <wk@g10code.com>
+
+	* cache.c (agent_put_cache): Fix the test for using the default
+	TTL.
+
 2004-12-21  Werner Koch  <wk@g10code.com>
 
 	* preset-passphrase.c (preset_passphrase): Handle --passphrase.
