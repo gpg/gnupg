@@ -961,6 +961,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
                                                   remusr->d,
                                                   strlen (remusr->d),
                                                   -1);
+		    rc=G10ERR_UNU_PUBKEY;
 		    goto fail;
 		}
 		else if( do_we_trust_pre( pk, trustlevel ) ) {
@@ -988,10 +989,11 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 		}
 		else { /* we don't trust this pk */
 		    free_public_key( pk ); pk = NULL;
-                    write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
+                    write_status_text_and_buffer (STATUS_INV_RECP, "10 ",
                                                   remusr->d,
                                                   strlen (remusr->d),
                                                   -1);
+		    rc=G10ERR_UNU_PUBKEY;
 		    goto fail;
 		}
 	    }

@@ -1,5 +1,9 @@
 2002-08-30  David Shaw  <dshaw@jabberwocky.com>
 
+	* pkclist.c (build_pk_list): Add new status code to indicate an
+	untrusted user.  This (or a disabled key) fail with "unavailable
+	pubkey" (G10ERR_UNU_PUBKEY).
+
 	* pkclist.c (build_pk_list): Fail if any recipient keys are
 	unusable.
 
