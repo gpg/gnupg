@@ -1,3 +1,12 @@
+2002-02-06  Werner Koch  <wk@gnupg.org>
+
+	* decrypt.c (gpgsm_decrypt): Bail out after an decryption error.
+
+	* server.c (reset_notify): Close input and output FDs.
+	(cmd_encrypt,cmd_decrypt,cmd_verify,cmd_sign.cmd_import)
+	(cmd_genkey): Close the FDs and release the recipient list even in
+	the error case.
+
 2002-02-01  Marcus Brinkmann  <marcus@g10code.de>
 
 	* sign.c (gpgsm_sign): Do not release certificate twice.

@@ -385,8 +385,13 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                                            &dfparm);
                   xfree (enc_val);
                   if (rc)
-                    log_error ("decrypting session key failed: %s\n",
-                               gnupg_strerror (rc));
+                    {
+                      /* fixme: as soon as we support multiple recipients, we 
+                         should just set a flag and try the next recipient */
+                      log_error ("decrypting session key failed: %s\n",
+                                 gnupg_strerror (rc));
+                      goto leave;
+                    }
                   else
                     { /* setup the bulk decrypter */
                       ksba_writer_set_filter (writer,
