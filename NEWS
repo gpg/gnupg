@@ -21,7 +21,7 @@
 
     * RSA key generation.
 
-    * Merged Stefan's patches for RISCOS in.  See comments in
+    * Merged Stefan's patches for RISC OS in.  See comments in
       scripts/build-riscos. 
 
     * It is now possible to sign an convenional encrypt a message (-cs).

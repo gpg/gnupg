@@ -1,15 +1,15 @@
 2001-08-20  Werner Koch  <wk@gnupg.org>
 
 	Applied patches from Stefan Bellon <sbellon@sbellon.de> to support
-	the RISCOS.  Nearly all of these patches are identified by the
+	RISC OS.  Nearly all of these patches are identified by the
 	__riscos__ macro.
 	* blowfish.c, twofish.c: Added pragmas for use with a Norcraft
 	compiler. 
-	* dynload.c, md5.c, rmd160.c, sha1.c: Minor patches for RISCOS.
+	* dynload.c, md5.c, rmd160.c, sha1.c: Minor patches for RISC OS.
 	* rndriscos.c: New.
 	* rnd-internal.h: Added prototype.
 	* random.c (fast_random_poll): Use '#if defined' instead of just
-	'defined'; needed for RISCOS.
+	'defined'; needed for RISC OS.
 	* primegen.c (gen_prime): count? are now ints for consistence
 	with is_prime().
 
