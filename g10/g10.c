@@ -279,7 +279,8 @@ enum cmd_and_opt_values { aNull = 0,
     oAutoCheckTrustDB,
     oNoAutoCheckTrustDB,
     oPreservePermissions,
-    oPreferenceList,                          
+    oDefaultPreferenceList,
+    oPersonalPreferenceList,
     oEmu3DESS2KBug,  /* will be removed in 1.1 */
     oEmuMDEncodeBug,
     oDisplay,
@@ -556,7 +557,8 @@ static ARGPARSE_OPTS opts[] = {
     { aDeleteSecretAndPublicKeys, "delete-secret-and-public-keys",256, "@" },
     { aRebuildKeydbCaches, "rebuild-keydb-caches", 256, "@"},
     { oPreservePermissions, "preserve-permissions", 0, "@"},
-    { oPreferenceList,  "preference-list", 2, "@"},
+    { oDefaultPreferenceList,  "default-preference-list", 2, "@"},
+    { oPersonalPreferenceList,  "personal-preference-list", 2, "@"},
     { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
     { oEmuMDEncodeBug,	"emulate-md-encode-bug", 0, "@"},
     { oDisplay,    "display",     2, "@" },
@@ -784,7 +786,7 @@ main( int argc, char **argv )
     char *cert_digest_string = NULL;
     char *s2k_cipher_string = NULL;
     char *s2k_digest_string = NULL;
-    char *preference_list = NULL;
+    char *pers_pref_list = NULL;
     int eyes_only=0;
     int pwfd = -1;
     int with_fpr = 0; /* make an option out of --fingerprint */
@@ -1320,7 +1322,10 @@ main( int argc, char **argv )
           case oAutoCheckTrustDB: opt.no_auto_check_trustdb=0; break;
           case oNoAutoCheckTrustDB: opt.no_auto_check_trustdb=1; break;
           case oPreservePermissions: opt.preserve_permissions=1; break;
-          case oPreferenceList: preference_list = pargs.r.ret_str; break;
+          case oDefaultPreferenceList:
+	    opt.def_preference_list = pargs.r.ret_str;
+	    break;
+          case oPersonalPreferenceList: pers_pref_list=pargs.r.ret_str; break;
           case oDisplay: opt.display = pargs.r.ret_str; break;
           case oTTYname: opt.ttyname = pargs.r.ret_str; break;
           case oTTYtype: opt.ttytype = pargs.r.ret_str; break;
@@ -1549,8 +1554,14 @@ main( int argc, char **argv )
     if(opt.def_cert_check_level<0 || opt.def_cert_check_level>3)
       log_error(_("invalid default-check-level; must be 0, 1, 2, or 3\n"));
 
-    if (preference_list && keygen_set_std_prefs (preference_list))
-        log_error(_("invalid preferences\n"));
+    /* This isn't actually needed, but does serve to error out if the
+       string is invalid. */
+    if(opt.def_preference_list &&
+	keygen_set_std_prefs(opt.def_preference_list,0))
+      log_error(_("invalid default preferences\n"));
+
+    if(pers_pref_list && keygen_set_std_prefs(pers_pref_list,1))
+      log_error(_("invalid personal preferences\n"));
 
     if( log_get_errorcount(0) )
 	g10_exit(2);

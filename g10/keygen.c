@@ -212,7 +212,7 @@ check_zip_algo (int algo)
  * Returns: 0 = okay
  */
 int
-keygen_set_std_prefs (const char *string)
+keygen_set_std_prefs (const char *string,int personal)
 {
     byte sym[MAX_PREFS], hash[MAX_PREFS], zip[MAX_PREFS];
     int  nsym=0, nhash=0, nzip=0;
@@ -221,7 +221,9 @@ keygen_set_std_prefs (const char *string)
     int rc = 0;
 
     if (!string || !ascii_strcasecmp (string, "default")) {
-      if ( !check_cipher_algo(CIPHER_ALGO_IDEA) )
+      if (opt.def_preference_list)
+	string=opt.def_preference_list;
+      else if ( !check_cipher_algo(CIPHER_ALGO_IDEA) )
         string = "S7 S3 S2 S1 H2 H3 Z2 Z1";
       else
         string = "S7 S3 S2 H2 H3 Z2 Z1";
@@ -262,10 +264,38 @@ keygen_set_std_prefs (const char *string)
     }
 
     if (!rc) {
+      if(personal) {
+	m_free(opt.personal_prefs);
+
+	if((nsym+nhash+nzip)==0)
+	  opt.personal_prefs=NULL;
+	else {
+	  int i,n=0;
+
+	  opt.personal_prefs=m_alloc(sizeof(prefitem_t *)*(nsym+nhash+nzip+1));
+
+	  for (i=0; i<nsym; i++, n++) {
+            opt.personal_prefs[n].type = PREFTYPE_SYM;
+            opt.personal_prefs[n].value = sym[i];
+	  }
+	  for (i=0; i<nhash; i++, n++) {
+            opt.personal_prefs[n].type = PREFTYPE_HASH;
+            opt.personal_prefs[n].value = hash[i];
+	  }
+	  for (i=0; i<nzip; i++, n++) {
+            opt.personal_prefs[n].type = PREFTYPE_ZIP;
+            opt.personal_prefs[n].value = zip[i];
+	  }
+	  opt.personal_prefs[n].type = PREFTYPE_NONE; /* end of list marker */
+	  opt.personal_prefs[n].value = 0;
+	}
+      }
+      else {
         memcpy (sym_prefs,  sym,  (nsym_prefs=nsym));
         memcpy (hash_prefs, hash, (nhash_prefs=nhash));
         memcpy (zip_prefs,  zip,  (nzip_prefs=nzip));
         prefs_initialized = 1;
+      }
     }
     return rc;
 }
@@ -281,7 +311,7 @@ keygen_get_std_prefs ()
     int i;
 
     if (!prefs_initialized)
-        keygen_set_std_prefs (NULL);
+        keygen_set_std_prefs (NULL,0);
 
     buf = m_alloc ( MAX_PREFS*3*5 + 1);
     *buf = 0;
@@ -326,7 +356,7 @@ int
 keygen_upd_std_prefs( PKT_signature *sig, void *opaque )
 {
     if (!prefs_initialized)
-        keygen_set_std_prefs (NULL);
+        keygen_set_std_prefs (NULL, 0);
 
     if (nsym_prefs) 
         build_sig_subpkt (sig, SIGSUBPKT_PREF_SYM, sym_prefs, nsym_prefs);
@@ -1599,7 +1629,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
     }
 
     /* Set preferences, if any. */
-    keygen_set_std_prefs(get_parameter_value( para, pPREFERENCES ));
+    keygen_set_std_prefs(get_parameter_value( para, pPREFERENCES ), 0);
 
     /* Set revoker, if any. */
     if (parse_revocation_key (fname, para, pREVOKER))

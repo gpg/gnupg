@@ -1033,8 +1033,7 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
 	  else
 	    mask[0] |= (1<<2); /* 3DES is implicitly there for everyone else */
 	}
-
-	if( preftype == PREFTYPE_ZIP )
+	else if( preftype == PREFTYPE_ZIP )
 	  mask[0] |= (1<<0); /* Uncompressed is implicit */
 
         if (pkr->pk->user_id) /* selected by user ID */
@@ -1078,6 +1077,11 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
      */
     i = -1;
     any = 0;
+
+    /* If we have personal prefs set, use them instead of the last key */
+    if(opt.personal_prefs)
+      prefs=opt.personal_prefs;
+
     if( prefs ) {
 	for(j=0; prefs[j].type; j++ ) {
 	    if( prefs[j].type == preftype ) {

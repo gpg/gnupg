@@ -1,3 +1,20 @@
+2002-05-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, main.h, keygen.c (keygen_set_set_prefs,
+	keygen_get_std_prefs, keygen_upd_std_prefs), keyedit.c
+	(keyedit_menu), g10.c (main), pkclist.c (select_algo_from_prefs):
+	Add --personal-preference-list which allows the user to factor in
+	their own preferred algorithms when the preference lists are
+	consulted.  Obviously, this does not let the user violate a
+	recepient's preferences (and the RFC) - this only influences the
+	ranking of the agreed-on (and available) algorithms from the
+	recepients.  Suggested by David Hollenberg.
+
+	* options.h, keygen.c (keygen_set_std_prefs), g10.c (main): Rename
+	--preference-list to --default-preference-list (as that is what it
+	really is), and make it a true default in that if the user selects
+	"default" they get this list and not the compiled-in list.
+
 2002-05-22  Werner Koch  <wk@gnupg.org>
 
 	* g10.c (main): Add missing LF in a info printout and made it

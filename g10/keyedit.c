@@ -1325,7 +1325,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    break;
 
           case cmdSETPREF:
-            keygen_set_std_prefs ( !*arg_string? "default" : arg_string );
+            keygen_set_std_prefs ( !*arg_string? "default" : arg_string, 0);
             break;
 
 	  case cmdUPDPREF: 

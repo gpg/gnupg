@@ -112,7 +112,7 @@ void keyedit_menu( const char *username, STRLIST locusr, STRLIST cmds,
 u32 ask_expire_interval(int object);
 u32 ask_expiredate(void);
 void generate_keypair( const char *fname );
-int keygen_set_std_prefs (const char *string);
+int keygen_set_std_prefs (const char *string,int personal);
 char *keygen_get_std_prefs (void);
 int keygen_add_key_expire( PKT_signature *sig, void *opaque );
 int keygen_add_std_prefs( PKT_signature *sig, void *opaque );

@@ -21,6 +21,7 @@
 #define G10_OPTIONS_H
 
 #include <types.h>
+#include "packet.h"
 
 #undef ENABLE_COMMENT_PACKETS  /* don't create comment packets */
 
@@ -124,6 +125,8 @@ struct {
       STRLIST other;
     } keyserver_options;
     int exec_disable;
+    char *def_preference_list;
+    prefitem_t *personal_prefs;
     int no_perm_warn;
     char *temp_dir;
     int no_encrypt_to;
