@@ -210,13 +210,13 @@ g10_log_debug_f( const char *fname, const char *fmt, ... )
 
 
 void
-g10_log_hexdump( const char *text, char *buf, size_t len )
+g10_log_hexdump( const char *text, const char *buf, size_t len )
 {
     int i;
 
     print_prefix(text);
     for(i=0; i < len; i++ )
-	fprintf(stderr, " %02X", ((byte*)buf)[i] );
+	fprintf(stderr, " %02X", ((const byte*)buf)[i] );
     fputc('\n', stderr);
 }
 

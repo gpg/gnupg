@@ -76,6 +76,7 @@ typedef struct {
     u32 datalen;
     CIPHER_HANDLE cipher_hd;
     int header;
+    MD_HANDLE mdc_hash;
 } cipher_filter_context_t;
 
 

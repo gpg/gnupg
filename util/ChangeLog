@@ -1,3 +1,7 @@
+Mon May 17 21:54:43 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* logger.c (g10_log_hexdump): Made 2nd arg a const.
+
 Wed Apr 28 13:03:03 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* miscutil.c (asctimestamp): Use nl_langinfo (Gaël Quéri).

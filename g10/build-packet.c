@@ -43,6 +43,7 @@ static int do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc );
 static u32 calc_plaintext( PKT_plaintext *pt );
 static int do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt );
 static int do_encrypted( IOBUF out, int ctb, PKT_encrypted *ed );
+static int do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed );
 static int do_compressed( IOBUF out, int ctb, PKT_compressed *cd );
 static int do_signature( IOBUF out, int ctb, PKT_signature *sig );
 static int do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops );
@@ -74,7 +75,8 @@ build_packet( IOBUF out, PACKET *pkt )
     switch( pkt->pkttype ) {
       case PKT_OLD_COMMENT: pkt->pkttype = PKT_COMMENT; break;
       case PKT_PLAINTEXT: new_ctb = pkt->pkt.plaintext->new_ctb; break;
-      case PKT_ENCRYPTED: new_ctb = pkt->pkt.encrypted->new_ctb; break;
+      case PKT_ENCRYPTED:
+      case PKT_ENCRYPTED_MDC: new_ctb = pkt->pkt.encrypted->new_ctb; break;
       case PKT_COMPRESSED:new_ctb = pkt->pkt.compressed->new_ctb; break;
       default: break;
     }
@@ -109,6 +111,9 @@ build_packet( IOBUF out, PACKET *pkt )
 	break;
       case PKT_ENCRYPTED:
 	rc = do_encrypted( out, ctb, pkt->pkt.encrypted );
+	break;
+      case PKT_ENCRYPTED_MDC:
+	rc = do_encrypted_mdc( out, ctb, pkt->pkt.encrypted );
 	break;
       case PKT_COMPRESSED:
 	rc = do_compressed( out, ctb, pkt->pkt.compressed );
@@ -171,7 +176,7 @@ write_fake_data( IOBUF out, MPI a )
 	void *p;
 
 	p = mpi_get_opaque( a, &i );
-	iobuf_write( a, p, i );
+	iobuf_write( out, p, i );
     }
 }
 
@@ -509,6 +514,24 @@ do_encrypted( IOBUF out, int ctb, PKT_encrypted *ed )
 }
 
 static int
+do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed )
+{
+    int rc = 0;
+    u32 n;
+
+    assert( ed->mdc_method );
+
+    n = ed->len ? (ed->len + 10) : 0;
+    write_header(out, ctb, n );
+    iobuf_put(out, 1 );  /* version */
+    iobuf_put(out, ed->mdc_method );
+
+    /* This is all. The caller has to write the real data */
+
+    return rc;
+}
+
+static int
 do_compressed( IOBUF out, int ctb, PKT_compressed *cd )
 {
     int rc = 0;
@@ -560,6 +583,7 @@ find_subpkt( byte *buffer, sigsubpkttype_t reqtype,
 	    if( buflen < 2 )
 		break;
 	    n = (( n - 192 ) << 8) + *buffer + 192;
+	    buffer++;
 	    buflen--;
 	}
 	if( buflen < n )

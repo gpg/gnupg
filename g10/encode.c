@@ -64,6 +64,7 @@ encode_store( const char *filename )
 }
 
 
+
 static int
 encode_simple( const char *filename, int mode )
 {

@@ -1,4 +1,4 @@
-/* mainproc.c - handle packets
+/* maPPPPinproc.c - handle packets
  *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -44,7 +44,7 @@
  */
 typedef struct mainproc_context *CTX;
 struct mainproc_context {
-    struct mainproc_context *anchor;
+    struct mainproc_context *anchor;  /* may be useful in the future */
     PKT_public_key *last_pubkey;
     PKT_secret_key *last_seckey;
     PKT_user_id     *last_user_id;
@@ -60,7 +60,6 @@ struct mainproc_context {
     IOBUF iobuf;    /* used to get the filename etc. */
     int trustletter; /* temp usage in list_node */
     ulong local_id;    /* ditto */
-    int is_encrypted;  /* used to check the MDC */
 };
 
 
@@ -229,7 +228,6 @@ proc_encrypted( CTX c, PACKET *pkt )
     int result = 0;
 
     /*log_debug("dat: %sencrypted data\n", c->dek?"":"conventional ");*/
-    c->is_encrypted = 1;
     if( !c->dek && !c->last_was_session_key ) {
 	/* assume this is old conventional encrypted data */
 	c->dek = passphrase_to_dek( NULL,
@@ -247,6 +245,12 @@ proc_encrypted( CTX c, PACKET *pkt )
 	write_status( STATUS_DECRYPTION_OKAY );
 	if( opt.verbose > 1 )
 	    log_info(_("decryption okay\n"));
+	if( pkt->pkt.encrypted->mdc_method )
+	    write_status( STATUS_GOODMDC );
+    }
+    else if( result == G10ERR_BAD_SIGN ) {
+	log_error(_("WARNING: encrypted message has been manipulated!\n"));
+	write_status( STATUS_BADMDC );
     }
     else {
 	write_status( STATUS_DECRYPTION_FAILED );
@@ -257,6 +261,7 @@ proc_encrypted( CTX c, PACKET *pkt )
     free_packet(pkt);
     c->last_was_session_key = 0;
 }
+
 
 
 static void
@@ -351,16 +356,6 @@ proc_compressed( CTX c, PACKET *pkt )
 	log_error("uncompressing failed: %s\n", g10_errstr(rc));
     free_packet(pkt);
     c->last_was_session_key = 0;
-}
-
-static int
-is_encrypted( CTX c )
-{
-    for( ; c; c = c->anchor ) {
-	if( c->is_encrypted )
-	    return 1;
-    }
-    return 0;
 }
 
 /****************
@@ -763,7 +758,8 @@ do_proc_packets( CTX c, IOBUF a )
 	    switch( pkt->pkttype ) {
 	      case PKT_PUBKEY_ENC:  proc_pubkey_enc( c, pkt ); break;
 	      case PKT_SYMKEY_ENC:  proc_symkey_enc( c, pkt ); break;
-	      case PKT_ENCRYPTED:   proc_encrypted( c, pkt ); break;
+	      case PKT_ENCRYPTED:
+	      case PKT_ENCRYPTED_MDC: proc_encrypted( c, pkt ); break;
 	      case PKT_COMPRESSED:  proc_compressed( c, pkt ); break;
 	      default: newpkt = 0; break;
 	    }
@@ -776,6 +772,7 @@ do_proc_packets( CTX c, IOBUF a )
 	      case PKT_SYMKEY_ENC:
 	      case PKT_PUBKEY_ENC:
 	      case PKT_ENCRYPTED:
+	      case PKT_ENCRYPTED_MDC:
 		rc = G10ERR_UNEXPECTED;
 		goto leave;
 	      case PKT_SIGNATURE:   newpkt = add_signature( c, pkt ); break;
@@ -795,7 +792,8 @@ do_proc_packets( CTX c, IOBUF a )
 	      case PKT_SIGNATURE:   newpkt = add_signature( c, pkt ); break;
 	      case PKT_SYMKEY_ENC:  proc_symkey_enc( c, pkt ); break;
 	      case PKT_PUBKEY_ENC:  proc_pubkey_enc( c, pkt ); break;
-	      case PKT_ENCRYPTED:   proc_encrypted( c, pkt ); break;
+	      case PKT_ENCRYPTED:
+	      case PKT_ENCRYPTED_MDC: proc_encrypted( c, pkt ); break;
 	      case PKT_PLAINTEXT:   proc_plaintext( c, pkt ); break;
 	      case PKT_COMPRESSED:  proc_compressed( c, pkt ); break;
 	      case PKT_ONEPASS_SIG: newpkt = add_onepass_sig( c, pkt ); break;
@@ -818,7 +816,8 @@ do_proc_packets( CTX c, IOBUF a )
 	      case PKT_SIGNATURE:   newpkt = add_signature( c, pkt ); break;
 	      case PKT_PUBKEY_ENC:  proc_pubkey_enc( c, pkt ); break;
 	      case PKT_SYMKEY_ENC:  proc_symkey_enc( c, pkt ); break;
-	      case PKT_ENCRYPTED:   proc_encrypted( c, pkt ); break;
+	      case PKT_ENCRYPTED:
+	      case PKT_ENCRYPTED_MDC: proc_encrypted( c, pkt ); break;
 	      case PKT_PLAINTEXT:   proc_plaintext( c, pkt ); break;
 	      case PKT_COMPRESSED:  proc_compressed( c, pkt ); break;
 	      case PKT_ONEPASS_SIG: newpkt = add_onepass_sig( c, pkt ); break;
@@ -854,22 +853,6 @@ do_proc_packets( CTX c, IOBUF a )
     return rc;
 }
 
-
-#if 0 /* old MDC hack code preserved to reuse the messages later */
-	if( !rc ) {
-	    if( opt.verbose )
-		log_info(_("encrypted message is valid\n"));
-	    write_status( STATUS_GOODMDC );
-	}
-	else if( rc == G10ERR_BAD_SIGN ) {
-	    log_error(_("WARNING: encrypted message has been manipulated!\n"));
-	    write_status( STATUS_BADMDC );
-	}
-	else {
-	    write_status( STATUS_ERRMDC );
-	    log_error(_("Can't check MDC: %s\n"), g10_errstr(rc) );
-	}
-#endif
 
 static int
 check_sig_and_print( CTX c, KBNODE node )

@@ -1,3 +1,19 @@
+Mon May 17 21:54:43 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* parse-packet.c (parse_encrypted): Support for PKT_ENCRYPTED_MDC.
+	* build-packet.c (do_encrypted_mdc): Ditto.
+	* cipher.c (write_header): Add mdc hashing.
+	(cipher_filter): write out the hash.
+	* mainproc.c (do_proc_packets): Add PKT_ENCRYPTED_MDC.
+	* encr-data.c (decrypt_data): Add mdc hashing.
+	(mdc_decode_filter): New.
+
+	* parse-packet.c (parse_sig_subpkt): Fixed stupid bug for subpkt
+	length calculation
+	(parse_signature): Fixed even more stupid bug.
+
+
 Sat May  8 19:28:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* build-packet.c (do_signature): Removed MDC hack.

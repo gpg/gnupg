@@ -2,50 +2,62 @@
 # Copyright (C) 1998 Free Software Foundation, Inc.
 # Walter Koch <walterk@dip.de>, 1998.
 # This is just a textfile for your information.
-# It will _not_ be read or processed automatically by any program
+# It will _not_ be read or processed automatically by any program 
 
 ........		Authentisierung
-algorithm		Verfahren
+aka			alias
+algorithm		Verfahren          
 anonymous		ungenannter
+argument
 armor			ASCII-Hülle
 available		vorhanden [besser?: verfügbar]
-bad [signature] 	falsch[e] Unterschrift
+bad [signature]		falsch[e] Unterschrift 
+bad [MPI]		fehlerhafte MPI 
 bug			"Bug (Programmfehler)"
 cache			Lager [ ob das ernst gemeint ist? :-) ]
 certificate		Zertifikat
 character set		Zeichensatz
+check (verb)		pr|fen, gepr|ft
 checksum		Prüfsumme
 cipher algorithm	Verschlüsselungsverfahren
-clearsig header 	Klartextsignatur-Einleitung
-command 		Befehl
+clearsig header		Klartextsignatur-Einleitung
+command			Befehl
 compress algorithm	Komprimierverfahren *
 core dump		core-dump-Datei
 corrupted		beschädigter
-dash escaped		mit Bindestrich \"escapte\"
+critical bit		???
+dash escaped 		mit Bindestrich \"escapte\" 
 decryption		Enschlüsselung
-DEK			???
+DEK 			???
 delete			entfernen
-depreciated		nicht viel wert
+depreciated		taugt nicht mehr viel
 digest algorithm	Hashmethode
 disabled		abgeschaltet
 encrypted		verschlüsselte
 expire date		Verfallsdatum
 failed			fehlgeschlagen
-fingerprint		Fingerabdruck
+faked [RNG]		
+fingerprint  		Fingerabdruck
 for-your-eyes-only	Vertraulichkeit (\"for-your-eyes-only\")
 generated		erzeugter
 good certificate	Korrektes Zertifikat
 handle			benutzt
 hint			Tip
+init			-
 key-ID			Schlüssel-ID
+key binding		Schlüsselanbindung
 keyblock		Schlüsselblock
 keyring 		Schlüsselbund
+keyserver               - Schl€sselserver
+lookup			- Suche
 main key		Hauptschlüssel
 maintenance utility	Wartungs-Hilfsprogramm
 malformed		ungünstig aufgebaute
+MDC			Manipulation detection code (Siegel ?)
 message 		Botschaft
-mode			Modus, Methode	 *
+mode			Modus, Methode   *
 move			schieben
+network error		Netzwerkfehler
 note			Hinweis
 okay			in Ordnung
 Ooops			Huch
@@ -61,39 +73,43 @@ primary keys		Hauptschlüssel
 protection algorithm	Schutzverfahren
 pubkey algorithm	Public-Key Verfahren	 (*)
 public key		öffentlicher Schüssel
-public key algorithm	Public-Key Verfahren
-radix64 		radix64
-retry			????
-revo... 		Widerruf
+public key algorithm 	Public-Key Verfahren
+quit
+radix64			radix64
+random 			Zufall
+random bytes		Zufallswerte
+retry			???? (Wiederholung?, Wiederaufnahme?)
+revoke			widerrufen
+revocation 		Widerruf
+RNG			Zufallsgenerator
 secondary key		Zweitschlüssel
 secret key		geheimer Schlüssel
-self-signature		Eigenbeglaubigung
+self-signature		Eigenbeglaubigung     
 sender			Absender
 sign user id		User-ID beglaubigen   *
-signature (files)	Unterschrift	      *
-signature (keys)	Beglaubigung	      *
-simple S2K mode 	????
-skipped 		übergangen, übersprungen, ignoriert
-stdin			- stdin
-terminal charset	Terminalzeichensatz
+signature (files)	Unterschrift          *
+signature (keys)	Beglaubigung          *
+simple S2K mode		????
+skipped			übergangen, übersprungen, ignoriert
+stdin			- stdin                 
+subkey			Unterschlüssel
+terminal charset 	- Terminalzeichensatz
 throw			verwerfe
 Timestamp conflict	Zeitangaben differieren
 Trust-DB		'Trust'-Datenbank
-trusted 		- vertrauenswürdig
-trustvalues		- trustvalues
+trusted			- vertrauenswürdig
+trustvalues		- trustvalues           
 trying			Versuch
 type [message]		[Botschaft] eintippen
 ulimately [trust]	uneingeschränktes [Vertrauen]
-update			Ändern, Änderung
+update			Ändern, Änderung 
 User			- User
 user ID 		User-ID
 user IDs		User-IDs
 username		Username
-untrusted		- nichtvertruenswürdigen
-warning 		Warnung
+untrusted		- nichtvertruenswürdig 
+warning			Warnung
 weak key		unsicherer Schlüssel
 
  (*) Uneinheitlich verwendet
   -  Gefällt mir nicht so toll
-
-

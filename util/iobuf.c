@@ -424,6 +424,12 @@ print_chain( IOBUF a )
     }
 }
 
+int
+iobuf_print_chain( IOBUF a )
+{
+    print_chain(a);
+}
+
 /****************
  * Allocate a new io buffer, with no function assigned.
  * Use is the desired usage: 1 for input, 2 for output, 3 for temp buffer
@@ -787,7 +793,7 @@ iobuf_push_filter2( IOBUF a,
 /****************
  * Remove an i/o filter.
  */
-static int
+int
 pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 		      IOBUF chain, byte *buf, size_t *len), void *ov )
 {
@@ -854,7 +860,6 @@ pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 
     return rc;
 }
-
 
 
 /****************
@@ -949,8 +954,6 @@ underflow(IOBUF a)
 		memcpy(a,b, sizeof *a);
 		m_free(b);
 		print_chain(a);
-
-
 	    }
 	}
 	else if( rc )

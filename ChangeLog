@@ -1,3 +1,7 @@
+Mon May 17 21:54:43 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* configure.in (socket): Fix for Unisys by Katsuhiro Kondou.
+
 Sat May  8 19:28:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* NEWS: Add a marker line which I forgot to do for 0.9.6.

@@ -46,12 +46,18 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     byte temp[18];
     unsigned blocksize;
     unsigned nprefix;
+    int use_mdc = opt.force_mdc;
 
     memset( &ed, 0, sizeof ed );
     ed.len = cfx->datalen;
     ed.new_ctb = !ed.len && !opt.rfc1991;
+    if( use_mdc ) {
+	ed.mdc_method = DIGEST_ALGO_SHA1;
+	cfx->mdc_hash = md_open( DIGEST_ALGO_SHA1, 0 );
+	md_start_debug( cfx->mdc_hash, "mdccreat" );
+    }
     init_packet( &pkt );
-    pkt.pkttype = PKT_ENCRYPTED;
+    pkt.pkttype = use_mdc? PKT_ENCRYPTED_MDC : PKT_ENCRYPTED;
     pkt.pkt.encrypted = &ed;
     if( build_packet( a, &pkt ))
 	log_bug("build_packet(ENCR_DATA) failed\n");
@@ -68,11 +74,14 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     cipher_setkey( cfx->cipher_hd, cfx->dek->key, cfx->dek->keylen );
     cipher_setiv( cfx->cipher_hd, NULL, 0 );
 /*  log_hexdump( "prefix", temp, nprefix+2 ); */
+    if( cfx->mdc_hash )
+	md_write( cfx->mdc_hash, temp, nprefix+2 );
     cipher_encrypt( cfx->cipher_hd, temp, temp, nprefix+2);
     cipher_sync( cfx->cipher_hd );
     iobuf_write(a, temp, nprefix+2);
     cfx->header=1;
 }
+
 
 
 /****************
@@ -94,11 +103,23 @@ cipher_filter( void *opaque, int control,
 	if( !cfx->header ) {
 	    write_header( cfx, a );
 	}
+	if( cfx->mdc_hash )
+	    md_write( cfx->mdc_hash, buf, size );
 	cipher_encrypt( cfx->cipher_hd, buf, buf, size);
 	if( iobuf_write( a, buf, size ) )
 	    rc = G10ERR_WRITE_FILE;
     }
     else if( control == IOBUFCTRL_FREE ) {
+	if( cfx->mdc_hash ) {
+	    byte *hash;
+	    int hashlen = md_digest_length( md_get_algo( cfx->mdc_hash ) );
+	    md_final( cfx->mdc_hash );
+	    hash = md_read( cfx->mdc_hash, 0 );
+	    cipher_encrypt( cfx->cipher_hd, hash, hash, hashlen );
+	    if( iobuf_write( a, hash, hashlen ) )
+		rc = G10ERR_WRITE_FILE;
+	    md_close( cfx->mdc_hash ); cfx->mdc_hash = NULL;
+	}
 	cipher_close(cfx->cipher_hd);
     }
     else if( control == IOBUFCTRL_DESC ) {
@@ -106,7 +127,5 @@ cipher_filter( void *opaque, int control,
     }
     return rc;
 }
-
-
 
 

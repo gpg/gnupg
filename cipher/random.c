@@ -304,10 +304,12 @@ read_pool( byte *buffer, size_t length, int level )
 static void
 add_randomness( const void *buffer, size_t length, int source )
 {
+    const byte *p = buffer;
+
     if( !is_initialized )
 	initialize();
     while( length-- ) {
-	rndpool[pool_writepos++] = *((byte*)buffer)++;
+	rndpool[pool_writepos++] = *p++;
 	if( pool_writepos >= POOLSIZE ) {
 	    if( source > 1 )
 		pool_filled = 1;

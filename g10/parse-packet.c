@@ -71,7 +71,6 @@ static int  parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen,
 static int  parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 					       PACKET *packet, int new_ctb);
 
-
 static unsigned short
 read_16(IOBUF inp)
 {
@@ -432,6 +431,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	rc = parse_compressed(inp, pkttype, pktlen, pkt, new_ctb );
 	break;
       case PKT_ENCRYPTED:
+      case PKT_ENCRYPTED_MDC:
 	rc = parse_encrypted(inp, pkttype, pktlen, pkt, new_ctb );
 	break;
       default:
@@ -852,6 +852,7 @@ parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
 	    if( buflen < 2 )
 		goto too_short;
 	    n = (( n - 192 ) << 8) + *buffer + 192;
+	    buffer++;
 	    buflen--;
 	}
 	if( buflen < n )
@@ -966,7 +967,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	}
 	if( n ) {
 	    sig->hashed_data = m_alloc( n + 2 );
-	    sig->hashed_data[0] = n << 8;
+	    sig->hashed_data[0] = n >> 8;
 	    sig->hashed_data[1] = n;
 	    if( iobuf_read(inp, sig->hashed_data+2, n ) != n ) {
 		log_error("premature eof while reading hashed signature data\n");
@@ -983,7 +984,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	}
 	if( n ) {
 	    sig->unhashed_data = m_alloc( n + 2 );
-	    sig->unhashed_data[0] = n << 8;
+	    sig->unhashed_data[0] = n >> 8;
 	    sig->unhashed_data[1] = n;
 	    if( iobuf_read(inp, sig->unhashed_data+2, n ) != n ) {
 		log_error("premature eof while reading unhashed signature data\n");
@@ -1536,6 +1537,25 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
     ed->len = pktlen;
     ed->buf = NULL;
     ed->new_ctb = new_ctb;
+    ed->mdc_method = 0;
+    if( pkttype == PKT_ENCRYPTED_MDC ) {
+	/* test: this is the new encrypted_mdc packet */
+	/* fixme: add some pktlen sanity checks */
+	int version, method;
+
+	version = iobuf_get_noeof(inp); pktlen--;
+	if( version != 1 ) {
+	    log_error("encrypted_mdc packet with unknown version %d\n",
+								version);
+	    goto leave;
+	}
+	method = iobuf_get_noeof(inp); pktlen--;
+	if( method != DIGEST_ALGO_SHA1 ) {
+	    log_error("encrypted_mdc does not use SHA1 method\n" );
+	    goto leave;
+	}
+	ed->mdc_method = method;
+    }
     if( pktlen && pktlen < 10 ) { /* actually this is blocksize+2 */
 	log_error("packet(%d) too short\n", pkttype);
 	skip_rest(inp, pktlen);
@@ -1546,6 +1566,8 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 	    printf(":encrypted data packet:\n\tlength: %lu\n", pktlen);
 	else
 	    printf(":encrypted data packet:\n\tlength: unknown\n");
+	if( ed->mdc_method )
+	    printf("\tmdc_method: %d\n", ed->mdc_method );
     }
 
     ed->buf = inp;
@@ -1554,6 +1576,4 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
   leave:
     return 0;
 }
-
-
 

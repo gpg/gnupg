@@ -46,7 +46,8 @@ typedef enum {
 	PKT_USER_ID	  =13, /* user id packet */
 	PKT_PUBLIC_SUBKEY =14, /* public subkey (OpenPGP) */
 	PKT_OLD_COMMENT   =16, /* comment packet from an OpenPGP draft */
-	PKT_COMMENT	  =61  /* new comment packet (private) */
+	PKT_COMMENT	  =61, /* new comment packet (private) */
+	PKT_ENCRYPTED_MDC =62, /* test: encrypted data with MDC */
 } pkttype_t;
 
 typedef struct packet_struct PACKET;
@@ -166,7 +167,8 @@ typedef struct {
 
 typedef struct {
     u32  len;		  /* length of encrypted data */
-    byte  new_ctb;
+    byte new_ctb;	  /* uses a new CTB */
+    byte mdc_method;	  /* test: > 0: this is is an encrypted_mdc packet */
     IOBUF buf;		  /* IOBUF reference */
 } PKT_encrypted;
 
@@ -179,6 +181,7 @@ typedef struct {
     int  namelen;
     char name[1];
 } PKT_plaintext;
+
 
 /* combine all packets into a union */
 struct packet_struct {
@@ -194,7 +197,7 @@ struct packet_struct {
 	PKT_comment	*comment;	/* PKT_COMMENT */
 	PKT_user_id	*user_id;	/* PKT_USER_ID */
 	PKT_compressed	*compressed;	/* PKT_COMPRESSED */
-	PKT_encrypted	*encrypted;	/* PKT_ENCRYPTED */
+	PKT_encrypted	*encrypted;	/* PKT_ENCRYPTED[_MDC] */
 	PKT_plaintext	*plaintext;	/* PKT_PLAINTEXT */
     } pkt;
 };

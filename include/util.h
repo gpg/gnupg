@@ -62,7 +62,7 @@ void log_set_name( const char *name );
 const char *log_get_name(void);
 void log_set_pid( int pid );
 int  log_get_errorcount( int clear );
-void g10_log_hexdump( const char *text, char *buf, size_t len );
+void g10_log_hexdump( const char *text, const char *buf, size_t len );
 void g10_log_mpidump( const char *text, MPI a );
 
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )

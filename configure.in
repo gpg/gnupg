@@ -7,6 +7,7 @@ AC_REVISION($Revision$)dnl
 dnl Must reset CDPATH so that bash's cd does not print to stdout
 CDPATH=
 
+AC_PREREQ(2.13)
 AC_INIT(g10/g10.c)
 AC_CONFIG_AUX_DIR(scripts)
 AM_CONFIG_HEADER(config.h)
@@ -221,9 +222,20 @@ if test "$try_gdbm" = yes; then
 AC_CHECK_LIB(gdbm,gdbm_firstkey)
 fi
 
-dnl Solaris needs -lsocket and -lnsl
-AC_CHECK_LIB(socket, socket)
+dnl Solaris needs -lsocket and -lnsl. Unisys system includes
+dnl gethostbyname in libsocket but needs libnsl for socket.
 AC_CHECK_LIB(nsl, gethostbyname)
+AC_CHECK_LIB(socket, socket, ac_need_libsocket=1, ac_try_nsl=1)
+if test x$ac_need_libsocket = x1; then
+    LIBS="$LIBS -lsocket"
+fi
+if test x$ac_try_nsl = x1; then
+    AC_CHECK_LIB(nsl, gethostbyname, ac_need_libnsl=1)
+    if test x$ac_need_libnsl = x1
+    then
+        LIBS="$LIBS -lnsl"
+    fi
+fi
 
 
 if test "$try_dynload" = yes ; then
