@@ -723,6 +723,10 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     if( fname && filenames->next && (!detached || encryptflag) )
 	log_bug("multiple files can only be detached signed");
 
+    if(encryptflag==2
+       && (rc=setup_symkey(&efx.symkey_s2k,&efx.symkey_dek)))
+      goto leave;
+
     if(opt.ask_sig_expire && !opt.force_v3_sigs && !opt.batch && !RFC1991)
       duration=ask_expire_interval(1);
 

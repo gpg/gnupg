@@ -371,6 +371,53 @@ encode_simple( const char *filename, int mode, int use_seskey )
     return rc;
 }
 
+int
+setup_symkey(STRING2KEY **symkey_s2k,DEK **symkey_dek)
+{
+  *symkey_s2k=m_alloc_clear(sizeof(STRING2KEY));
+  (*symkey_s2k)->mode = opt.s2k_mode;
+  (*symkey_s2k)->hash_algo = opt.s2k_digest_algo;
+
+  *symkey_dek=passphrase_to_dek(NULL,0,opt.s2k_cipher_algo,
+				*symkey_s2k,2,NULL,NULL);
+  if(!*symkey_dek || !(*symkey_dek)->keylen)
+    {
+      m_free(*symkey_dek);
+      m_free(*symkey_s2k);
+      return G10ERR_PASSPHRASE;
+    }
+
+  return 0;
+}
+
+static int
+write_symkey_enc(STRING2KEY *symkey_s2k,DEK *symkey_dek,DEK *dek,IOBUF out)
+{
+  int rc,seskeylen=cipher_get_keylen(dek->algo)/8;
+
+  PKT_symkey_enc *enc;
+  byte enckey[33];
+  PACKET pkt;
+
+  enc=m_alloc_clear(sizeof(PKT_symkey_enc)+seskeylen+1);
+  encode_seskey(symkey_dek,&dek,enckey);
+
+  enc->version = 4;
+  enc->cipher_algo = opt.s2k_cipher_algo;
+  enc->s2k = *symkey_s2k;
+  enc->seskeylen = seskeylen + 1; /* algo id */
+  memcpy( enc->seskey, enckey, seskeylen + 1 );
+
+  pkt.pkttype = PKT_SYMKEY_ENC;
+  pkt.pkt.symkey_enc = enc;
+
+  if((rc=build_packet(out,&pkt)))
+    log_error("build symkey_enc packet failed: %s\n",g10_errstr(rc));
+
+  m_free(enc);
+  return rc;
+}
+
 /****************
  * Encrypt the file with the given userids (or ask if none
  * is supplied).
@@ -399,24 +446,12 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
     memset( &tfx, 0, sizeof tfx);
     init_packet(&pkt);
 
+    if(use_symkey
+       && (rc=setup_symkey(&symkey_s2k,&symkey_dek)))
+      return rc;
+
     if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC)) )
 	return rc;
-
-    if(use_symkey)
-      {
-	symkey_s2k=m_alloc_clear(sizeof(STRING2KEY));
-	symkey_s2k->mode = opt.s2k_mode;
-	symkey_s2k->hash_algo = opt.s2k_digest_algo;
-
-	symkey_dek=passphrase_to_dek(NULL,0,opt.s2k_cipher_algo,
-				     symkey_s2k,2,NULL,NULL);
-	if(!symkey_dek || !symkey_dek->keylen)
-	  {
-	    m_free(symkey_dek);
-	    m_free(symkey_s2k);
-	    return G10ERR_PASSPHRASE;
-	  }
-      }
 
     if(PGP2) {
       for(work_list=pk_list; work_list; work_list=work_list->next)
@@ -524,32 +559,8 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
        seems to be the most useful on the recipient side - there is no
        point in prompting a user for a passphrase if they have the
        secret key needed to decrypt. */
-    if(use_symkey)
-      {
-	int seskeylen=cipher_get_keylen(cfx.dek->algo)/8;
-	PKT_symkey_enc *enc;
-	byte enckey[33];
-
-	enc=m_alloc_clear(sizeof(PKT_symkey_enc)+seskeylen+1);
-	encode_seskey(symkey_dek,&cfx.dek,enckey);
-
-	enc->version = 4;
-	enc->cipher_algo = opt.s2k_cipher_algo;
-	enc->s2k = *symkey_s2k;
-	enc->seskeylen = seskeylen + 1; /* algo id */
-	memcpy( enc->seskey, enckey, seskeylen + 1 );
-
-	pkt.pkttype = PKT_SYMKEY_ENC;
-	pkt.pkt.symkey_enc = enc;
-	if( (rc = build_packet( out, &pkt )) )
-	  {
-	    log_error("build symkey packet failed: %s\n", g10_errstr(rc) );
-	    m_free(enc);
-	    goto leave;
-	  }
-
-	m_free(enc);
-      }
+    if(use_symkey && (rc=write_symkey_enc(symkey_s2k,symkey_dek,cfx.dek,out)))
+      goto leave;
 
     if (!opt.no_literal) {
 	/* setup the inner packet */
@@ -723,6 +734,14 @@ encrypt_filter( void *opaque, int control,
 	    if( rc )
 		return rc;
 
+	    if(efx->symkey_s2k && efx->symkey_dek)
+	      {
+		rc=write_symkey_enc(efx->symkey_s2k,efx->symkey_dek,
+				    efx->cfx.dek,a);
+		if(rc)
+		  return rc;
+	      }
+
 	    iobuf_push_filter( a, cipher_filter, &efx->cfx );
 
 	    efx->header_okay = 1;
@@ -730,8 +749,11 @@ encrypt_filter( void *opaque, int control,
 	rc = iobuf_write( a, buf, size );
 
     }
-    else if( control == IOBUFCTRL_FREE ) {
-    }
+    else if( control == IOBUFCTRL_FREE )
+      {
+	m_free(efx->symkey_dek);
+	m_free(efx->symkey_s2k);
+      }
     else if( control == IOBUFCTRL_DESC ) {
 	*(char**)buf = "encrypt_filter";
     }

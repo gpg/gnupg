@@ -87,6 +87,7 @@ enum cmd_and_opt_values
     aStore,
     aKeygen,
     aSignEncr,
+    aSignEncrSym,
     aSignSym,
     aSignKey,
     aLSignKey,
@@ -879,6 +880,12 @@ set_cmd( enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd )
 	cmd = aEncrSym;
     else if( cmd == aKMode && new_cmd == aSym )
 	cmd = aKModeC;
+    else if (cmd == aSignEncr && new_cmd == aSym)
+        cmd = aSignEncrSym;
+    else if (cmd == aSignSym && new_cmd == aEncr)
+        cmd = aSignEncrSym;
+    else if (cmd == aEncrSym && new_cmd == aSign)
+        cmd = aSignEncrSym;
     else if(	( cmd == aSign	   && new_cmd == aClearsign )
 	     || ( cmd == aClearsign && new_cmd == aSign )  )
 	cmd = aClearsign;
@@ -2543,8 +2550,34 @@ main( int argc, char **argv )
 	else
 	    sl = NULL;
 	if( (rc = sign_file(sl, detached_sig, locusr, 1, remusr, NULL)) )
-	    log_error("%s: sign+encrypt failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
+	    log_error("%s: sign+encrypt failed: %s\n",
+		      print_fname_stdin(fname), g10_errstr(rc) );
 	free_strlist(sl);
+	break;
+
+      case aSignEncrSym: /* sign and encrypt the given file */
+	if( argc > 1 )
+	    wrong_args(_("--symmetric --sign --encrypt [filename]"));
+	else if(opt.s2k_mode==0)
+	  log_error(_("you cannot use --symmetric --sign --encrypt"
+		      " with --s2k-mode 0\n"));
+	else if(PGP2 || PGP6 || PGP7 || RFC1991)
+	  log_error(_("you cannot use --symmetric --sign --encrypt"
+		      " while in %s mode\n"),compliance_option_string());
+	else
+	  {
+	    if( argc )
+	      {
+		sl = m_alloc_clear( sizeof *sl + strlen(fname));
+		strcpy(sl->d, fname);
+	      }
+	    else
+	      sl = NULL;
+	    if( (rc = sign_file(sl, detached_sig, locusr, 2, remusr, NULL)) )
+	      log_error("%s: symmetric+sign+encrypt failed: %s\n",
+			print_fname_stdin(fname), g10_errstr(rc) );
+	    free_strlist(sl);
+	  }
 	break;
 
       case aSignSym: /* sign and conventionally encrypt the given file */

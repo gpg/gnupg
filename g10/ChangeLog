@@ -1,3 +1,17 @@
+2003-11-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Add --symmetric --sign --encrypt.
+
+	* main.h, encode.c (setup_symkey): New.  Prompt for a passphrase
+	and create a DEK for symmetric encryption.
+	(write_symkey_enc): New.  Write out symmetrically encrypted
+	session keys.
+	(encode_crypt, encrypt_filter): Use them here here when creating a
+	message that can be decrypted with a passphrase or a pk.
+
+	* sign.c (sign_file): Call setup_symkey if we are doing a
+	--symmetric --sign --encrypt.
+
 2003-11-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* mainproc.c (proc_symkey_enc): Don't show algorithm information

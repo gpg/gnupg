@@ -1,5 +1,6 @@
 /* main.h
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -32,10 +33,13 @@
 #define DEFAULT_DIGEST_ALGO   DIGEST_ALGO_SHA1
 #define DEFAULT_COMPRESS_ALGO COMPRESS_ALGO_ZIP
 
-typedef struct {
-    int header_okay;
-    PK_LIST pk_list;
-    cipher_filter_context_t cfx;
+typedef struct
+{
+  int header_okay;
+  PK_LIST pk_list;
+  DEK *symkey_dek;
+  STRING2KEY *symkey_s2k;
+  cipher_filter_context_t cfx;
 } encrypt_filter_context_t;
 
 struct groupitem
@@ -110,6 +114,7 @@ int parse_options(char *str,unsigned int *options,struct parse_options *opts);
 void display_online_help( const char *keyword );
 
 /*-- encode.c --*/
+int setup_symkey(STRING2KEY **symkey_s2k,DEK **symkey_dek);
 int encode_symmetric( const char *filename );
 int encode_store( const char *filename );
 int encode_crypt( const char *filename, STRLIST remusr, int use_symkey );
