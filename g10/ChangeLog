@@ -1,3 +1,8 @@
+2003-11-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* pkclist.c (build_pk_list): When adding recipients interactively,
+	allow the user to stop at any point.
+
 2003-10-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* trustdb.h, trustdb.c (register_trusted_keyid): New.  Adds a
