@@ -325,7 +325,7 @@ keygen_set_std_prefs (const char *string,int personal)
     byte sym[MAX_PREFS], hash[MAX_PREFS], zip[MAX_PREFS];
     int nsym=0, nhash=0, nzip=0, val, rc=0;
     int mdc=1, modify=0; /* mdc defaults on, modify defaults off. */
-    char dummy_string[45]; /* enough for 15 items */
+    char dummy_string[45+1]; /* Enough for 15 items. */
 
     if (!string || !ascii_strcasecmp (string, "default"))
       {
@@ -334,6 +334,18 @@ keygen_set_std_prefs (const char *string,int personal)
 	else
 	  {
 	    dummy_string[0]='\0';
+
+            /* The rationale why we use the order AES256,192,128 is
+               for compatibility reasons with PGP.  If gpg would
+               define AES128 first, we would get the somewhat
+               confusing situation:
+
+                 gpg -r pgpkey -r gpgkey  ---gives--> AES256
+                 gpg -r gpgkey -r pgpkey  ---gives--> AES
+                 
+               Note that by using --personal-cipher-preferences it is
+               possible to prefer AES128.
+            */
 
 	    /* Make sure we do not add more than 15 items here, as we
 	       could overflow the size of dummy_string. */
