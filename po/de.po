@@ -1,4 +1,4 @@
-# German translation for GnuPG 1.9.x
+# German translation for GnuPG 1.9.x         -*-coding: latin-1;-*-
 # Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 # Werner Koch <wk@gnupg.org>, 2002.
 #
@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg2 1.9.10\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-09-29 16:21+0200\n"
-"PO-Revision-Date: 2004-09-29 16:28+0200\n"
+"POT-Creation-Date: 2004-09-29 18:01+0200\n"
+"PO-Revision-Date: 2004-09-29 18:10+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: de\n"
 "MIME-Version: 1.0\n"
@@ -190,13 +190,16 @@ msgstr "Bitte geben Sie die Passphrase zum Entsperren des PKCS#12 Objekts ein"
 
 #: agent/protect-tool.c:1190
 msgid "Please enter the passphrase to protect the new PKCS#12 object."
-msgstr "Bitte geben Sie die Passphrase zum Schützen des neuen PKCS#12 Objekts ein"
+msgstr ""
+"Bitte geben Sie die Passphrase zum Schützen des neuen PKCS#12 Objekts ein"
 
 #: agent/protect-tool.c:1193
 msgid ""
 "Please enter the passphrase to protect the imported object within the GnuPG "
 "system."
-msgstr "Bitte geben Sie die Passphrase ein, um das importierte Objket im GnuPG System zu schützen."
+msgstr ""
+"Bitte geben Sie die Passphrase ein, um das importierte Objket im GnuPG "
+"System zu schützen."
 
 #: agent/protect-tool.c:1196 agent/genkey.c:110 agent/genkey.c:224
 msgid "Please re-enter this passphrase"
@@ -514,7 +517,9 @@ msgstr "Das Zertifikat h�tte nicht zum Zertifizieren benutzt werden sollen\n"
 
 #: sm/certlist.c:154
 msgid "certificate should have not been used for OCSP response signing\n"
-msgstr "Das Zertifikat hätte nicht zum Signieren von OCSP Antworten benutzt werden sollen\n"
+msgstr ""
+"Das Zertifikat hätte nicht zum Signieren von OCSP Antworten benutzt werden "
+"sollen\n"
 
 #: sm/certlist.c:165
 msgid "certificate should have not been used for encryption\n"
@@ -1239,6 +1244,45 @@ msgstr "Ben�tige ein Komponenten Argument"
 #: tools/gpgconf.c:190
 msgid "Component not found"
 msgstr "Komponente nicht gefunden"
+
+#: tools/gpgconf-comp.c:432 tools/gpgconf-comp.c:493 tools/gpgconf-comp.c:558
+#: tools/gpgconf-comp.c:611 tools/gpgconf-comp.c:674
+msgid "Options controlling the diagnostic output"
+msgstr "Optionen zur Einstellung Diagnoseausgaben"
+
+#: tools/gpgconf-comp.c:445 tools/gpgconf-comp.c:506 tools/gpgconf-comp.c:571
+#: tools/gpgconf-comp.c:624 tools/gpgconf-comp.c:697
+msgid "Options controlling the configuration"
+msgstr "Optionen zur Einstellung der Konfiguration"
+
+#: tools/gpgconf-comp.c:452 tools/gpgconf-comp.c:529 tools/gpgconf-comp.c:578
+#: tools/gpgconf-comp.c:631 tools/gpgconf-comp.c:704
+msgid "Options useful for debugging"
+msgstr "Nützliche Optionen zum Debuggen"
+
+#: tools/gpgconf-comp.c:465 tools/gpgconf-comp.c:539 tools/gpgconf-comp.c:644
+msgid "Options controlling the security"
+msgstr "Optionen zur Einstellung der Sicherheit"
+
+#: tools/gpgconf-comp.c:591
+msgid "Configuration for Keyservers"
+msgstr "Konfiguration der Schlüsselserver"
+
+#: tools/gpgconf-comp.c:687
+msgid "Options controlling the format of the output"
+msgstr "Optionen zum Einstellen der Ausgabeformate"
+
+#: tools/gpgconf-comp.c:723
+msgid "Options controlling the interactivity and enforcement"
+msgstr "Optionen zur Einstellung der Interaktivität und Geltendmachung"
+
+#: tools/gpgconf-comp.c:733
+msgid "Configuration of LDAP servers to use"
+msgstr "Konfiguration der zu nutzenden LDAP-Server"
+
+#: tools/gpgconf-comp.c:758
+msgid "Configuration for OCSP"
+msgstr "Konfiguration zu OCSP"
 
 #~ msgid "Enter passphrase:"
 #~ msgstr "Bitte das Mantra (Passphrase) eingeben:"
