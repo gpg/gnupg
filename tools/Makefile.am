@@ -18,7 +18,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = lspgpot ring-a-party mail-signed-keys
+EXTRA_DIST = lspgpot ring-a-party mail-signed-keys convert-from-106
 INCLUDES = -I.. -I$(top_srcdir)/include -I$(top_srcdir)/intl
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a @CAPLIBS@
 
