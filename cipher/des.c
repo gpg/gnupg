@@ -826,11 +826,12 @@ selftest (void)
       return "TRIPLE-DES test failed.";
   }
 
+ #if 0
     /*
      * More Triple-DES test.  These are testvectors as used by SSLeay,
      * thanks to Jeroen C. van Gelderen.
      */
-    {	struct { byte key[24], byte plain[8], byte cipher[8] } testdata[] = {
+    {	struct { byte key[24]; byte plain[8]; byte cipher[8]; } testdata[] = {
 	{ { 0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
 	    0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
 	    0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01  },
@@ -895,6 +896,7 @@ selftest (void)
 	};
 	/* fixme: do the test */
     }
+ #endif
 
   /*
    * Check the weak key detection. We simply assume the table with
