@@ -1055,44 +1055,25 @@ get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
  */
 static int
 get_seckey_byname2( GETKEY_CTX *retctx,
-                   PKT_secret_key *sk, const char *name, int unprotect,
-                   KBNODE *retblock )
+		    PKT_secret_key *sk, const char *name, int unprotect,
+		    KBNODE *retblock )
 {
-    STRLIST namelist = NULL;
-    int rc;
+  STRLIST namelist = NULL;
+  int rc;
 
-    if( !name && opt.def_secret_key && *opt.def_secret_key ) {
-	add_to_strlist( &namelist, opt.def_secret_key );
-	rc = key_byname( retctx, namelist, NULL, sk, 1, 1, retblock, NULL );
-    }
-    else if( !name ) { /* use the first one as default key */
-	struct getkey_ctx_s ctx;
-        KBNODE kb = NULL;
+  if( !name && opt.def_secret_key && *opt.def_secret_key )
+    add_to_strlist( &namelist, opt.def_secret_key );
+  else if(name)
+    add_to_strlist( &namelist, name );
 
-        assert (!retctx ); /* do we need this at all */
-        assert (!retblock);
-	memset( &ctx, 0, sizeof ctx );
-	ctx.not_allocated = 1;
-        ctx.kr_handle = keydb_new (1);
-	ctx.nitems = 1;
-	ctx.items[0].mode = KEYDB_SEARCH_MODE_FIRST;
-	rc = lookup( &ctx, &kb, 1 );
-        if (!rc && sk )
-            sk_from_block ( &ctx, sk, kb );
-        release_kbnode ( kb );
-	get_seckey_end( &ctx );
-    }
-    else {
-	add_to_strlist( &namelist, name );
-	rc = key_byname( retctx, namelist, NULL, sk, 1, 1, retblock, NULL );
-    }
+  rc = key_byname( retctx, namelist, NULL, sk, 1, 1, retblock, NULL );
 
-    free_strlist( namelist );
+  free_strlist( namelist );
 
-    if( !rc && unprotect )
-	rc = check_secret_key( sk, 0 );
+  if( !rc && unprotect )
+    rc = check_secret_key( sk, 0 );
 
-    return rc;
+  return rc;
 }
 
 int 

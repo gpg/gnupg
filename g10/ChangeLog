@@ -1,5 +1,10 @@
 2004-04-25  David Shaw  <dshaw@jabberwocky.com>
 
+	* getkey.c (get_seckey_byname2): Significantly simplify this
+	function by using key_byname to do the heavy lifting.  Note that
+	this also fixes an old problem when the first key on the secret
+	keyring has an unusable stub primary, but is still chosen.
+
 	* getkey.c (key_byname): If namelist is NULL, return the first key
 	in the keyring.
 
