@@ -1,3 +1,8 @@
+2003-02-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Use @CAPLIBS@ to link in -lcap if we are using
+	capabilities.
+
 2003-02-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Use the more correct @PACKAGE@ rather than "gnupg".

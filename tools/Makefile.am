@@ -20,7 +20,7 @@
 
 EXTRA_DIST = lspgpot ring-a-party mail-signed-keys
 INCLUDES = -I.. -I$(top_srcdir)/include -I$(top_srcdir)/intl
-needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
+needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a @CAPLIBS@
 
 bin_PROGRAMS    = gpgsplit
 noinst_PROGRAMS = mpicalc bftest clean-sat mk-tdata shmtest

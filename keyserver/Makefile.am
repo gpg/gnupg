@@ -1,4 +1,4 @@
-# Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -31,4 +31,4 @@ libexec_SCRIPTS = @GPGKEYS_MAILTO@
 noinst_SCRIPTS = gpgkeys_test
 
 gpgkeys_ldap_LDADD = @LDAPLIBS@ @NETLIBS@
-gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@
+gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @CAPLIBS@
