@@ -74,7 +74,8 @@ list_all( int secret )
     const char *s;
     IOBUF a;
 
-    while( (s=secret? get_secret_keyring(seq++):get_keyring(seq++)) ) {
+    /* FIXME: this assumes a keyring resource is a plain keyring file */
+    while( (s = enum_keyblock_resources( &seq, secret )) ) {
 	if( !(a = iobuf_open(s)) ) {
 	    log_error(_("can't open %s: %s\n"), s, strerror(errno));
 	    continue;
@@ -133,12 +134,12 @@ list_one( const char *name, int secret )
 	sk = node->pkt->pkt.secret_key;
 	keyid_from_sk( sk, keyid );
 	if( opt.with_colons )
-	    printf("sec::%u:%d:%08lX%08lX:%s:%u:::",
+	    printf("sec::%u:%d:%08lX%08lX:%s:%s:::",
 		    nbits_from_sk( sk ),
 		    sk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
 		    datestr_from_sk( sk ),
-		    (unsigned)sk->valid_days
+		    sk->expiredate? strtimestamp(sk->expiredate):""
 		    /* fixme: add LID here */ );
 	else
 	    printf("sec  %4u%c/%08lX %s ", nbits_from_sk( sk ),
@@ -152,13 +153,14 @@ list_one( const char *name, int secret )
 	keyid_from_pk( pk, keyid );
 	if( opt.with_colons ) {
 	    trustletter = query_trust_info( pk );
-	    printf("pub:%c:%u:%d:%08lX%08lX:%s:%u:",
+	    printf("pub:%c:%u:%d:%08lX%08lX:%s:%s:",
 		    trustletter,
 		    nbits_from_pk( pk ),
 		    pk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
 		    datestr_from_pk( pk ),
-		    (unsigned)pk->valid_days );
+		    pk->expiredate? strtimestamp(pk->expiredate):""
+					     );
 	    if( pk->local_id )
 		printf("%lu", pk->local_id );
 	    putchar(':');
@@ -206,13 +208,13 @@ list_one( const char *name, int secret )
 
 	    keyid_from_pk( pk2, keyid2 );
 	    if( opt.with_colons ) {
-		printf("sub:%c:%u:%d:%08lX%08lX:%s:%u:",
+		printf("sub:%c:%u:%d:%08lX%08lX:%s:%s:",
 			trustletter,
 			nbits_from_pk( pk2 ),
 			pk2->pubkey_algo,
 			(ulong)keyid2[0],(ulong)keyid2[1],
 			datestr_from_pk( pk2 ),
-			(unsigned)pk2->valid_days
+			pk2->expiredate? strtimestamp(pk2->expiredate):""
 			/* fixme: add LID and ownertrust here */
 						);
 		if( pk->local_id ) /* use the local_id of the main key??? */
@@ -242,12 +244,12 @@ list_one( const char *name, int secret )
 
 	    keyid_from_sk( sk2, keyid2 );
 	    if( opt.with_colons )
-		printf("ssb::%u:%d:%08lX%08lX:%s:%u:::\n",
+		printf("ssb::%u:%d:%08lX%08lX:%s:%s:::\n",
 			nbits_from_sk( sk2 ),
 			sk2->pubkey_algo,
 			(ulong)keyid2[0],(ulong)keyid2[1],
 			datestr_from_sk( sk2 ),
-			(unsigned)sk2->valid_days
+			sk2->expiredate? strtimestamp(sk2->expiredate):""
 			/* fixme: add LID */
 						);
 	    else

@@ -225,12 +225,14 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
     if( opt.armor && !outfile  )
 	iobuf_push_filter( out, armor_filter, &afx );
+  #ifdef ENABLE_COMMENT_PACKETS
     else {
 	write_comment( out, "#created by GNUPG v" VERSION " ("
 					    PRINTABLE_OS_NAME ")");
 	if( opt.comment_string )
 	    write_comment( out, opt.comment_string );
     }
+  #endif
     if( encrypt ) {
 	efx.pk_list = pk_list;
 	/* fixme: set efx.cfx.datalen if known */

@@ -5,3 +5,4 @@ mkinstalldirs
 mkdiff
 missing
 gnupg.spec
+ChangeLog

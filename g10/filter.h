@@ -31,6 +31,7 @@ typedef struct {
 typedef struct {
     int status;
     int what;
+    int only_keyblocks;  /* skip all headers but ".... key block" */
     byte radbuf[4];
     int  idx, idx2;
     u32 crc;

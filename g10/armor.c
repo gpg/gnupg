@@ -109,7 +109,8 @@ static char *tail_strings[] = {
 static fhdr_state_t find_header( fhdr_state_t state,
 				 byte *buf, size_t *r_buflen,
 				 IOBUF a, size_t n,
-				 unsigned *r_empty, int *r_hashes );
+				 unsigned *r_empty, int *r_hashes,
+				 int only_keyblocks );
 
 
 static void
@@ -260,7 +261,8 @@ parse_hash_header( const char *line )
  */
 static fhdr_state_t
 find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
-	     IOBUF a, size_t n, unsigned *r_empty, int *r_hashes )
+	     IOBUF a, size_t n, unsigned *r_empty, int *r_hashes,
+	     int only_keyblocks )
 {
     int c=0, i;
     const char *s;
@@ -273,7 +275,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 
     buflen = *r_buflen;
     assert(buflen >= 100 );
-    buflen -= 3; /* reserved room for CR,LF and one extra */
+    buflen -= 4; /* reserved room for CR,LF, and two extra */
 
     do {
 	switch( state ) {
@@ -281,14 +283,17 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    /* read at least the first byte to check whether it is armored
 	     * or not */
 	    c = 0;
-	    for(n=0; n < 28 && (c=iobuf_get2(a)) != -1 && c != '\n'; )
+	    for(n=0; n < 28 && (c=iobuf_get(a)) != -1 && c != '\n'; )
 		buf[n++] = c;
 	    if( !n && c == '\n' )
 		state = fhdrCHECKBegin;
 	    else if( !n  || c == -1 )
 		state = fhdrNOArmor; /* too short */
-	    else if( !is_armored( buf ) )
+	    else if( !is_armored( buf ) ) {
 		state = fhdrNOArmor;
+		if( c == '\n' )
+		    buf[n++] = c;
+	    }
 	    else if( c == '\n' )
 		state = fhdrCHECKBegin;
 	    else
@@ -299,7 +304,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    n = 0;
 	  case fhdrINITCont: /* read more stuff into buffer */
 	    c = 0;
-	    for(; n < buflen && (c=iobuf_get2(a)) != -1 && c != '\n'; )
+	    for(; n < buflen && (c=iobuf_get(a)) != -1 && c != '\n'; )
 		buf[n++] = c;
 	    state = c == '\n' ? fhdrCHECKBegin :
 		     c == -1  ? fhdrEOF : fhdrINITSkip;
@@ -309,21 +314,21 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    if( c == '\n' )
 		n = 0;
 	    else {
-		while( (c=iobuf_get2(a)) != -1 && c != '\n' )
+		while( (c=iobuf_get(a)) != -1 && c != '\n' )
 		    ;
 	    }
 	    state =  c == -1? fhdrEOF : fhdrINIT;
 	    break;
 
 	  case fhdrSKIPHeader:
-	    while( (c=iobuf_get2(a)) != -1 && c != '\n' )
+	    while( (c=iobuf_get(a)) != -1 && c != '\n' )
 		;
 	    state =  c == -1? fhdrEOF : fhdrWAITHeader;
 	    break;
 
 	  case fhdrWAITHeader: /* wait for Header lines */
 	    c = 0;
-	    for(n=0; n < buflen && (c=iobuf_get2(a)) != -1 && c != '\n'; )
+	    for(n=0; n < buflen && (c=iobuf_get(a)) != -1 && c != '\n'; )
 		buf[n++] = c;
 	    buf[n] = 0;
 	    if( n < buflen || c == '\n' ) {
@@ -388,7 +393,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 
 	  case fhdrWAITClearsig: /* skip the empty line (for clearsig) */
 	    c = 0;
-	    for(n=0; n < buflen && (c=iobuf_get2(a)) != -1 && c != '\n'; )
+	    for(n=0; n < buflen && (c=iobuf_get(a)) != -1 && c != '\n'; )
 		buf[n++] = c;
 	    if( n < buflen || c == '\n' ) {
 		buf[n] = 0;
@@ -432,6 +437,9 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 		    break;
 	    if( !s )
 		break; /* unknown begin line */
+	    if( only_keyblocks && i != 1 && i != 5 && i != 6 )
+		break; /* not a keyblock armor */
+
 	    /* found the begin line */
 	    hdr_line = i;
 	    state = fhdrWAITHeader;
@@ -448,7 +456,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	     * we have to look for a header line or dashed escaped text*/
 	    n = 0;
 	    c = 0;
-	    while( n < buflen && (c=iobuf_get2(a)) != -1 && c != '\n' )
+	    while( n < buflen && (c=iobuf_get(a)) != -1 && c != '\n' )
 		buf[n++] = c;
 	    buf[n] = 0;
 	    if( c == -1 )
@@ -516,7 +524,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	     * for dashed escaped text of headers */
 	    c = 0;
 	    n = 0;
-	    while( n < buflen && (c=iobuf_get2(a)) != -1 && c != '\n' )
+	    while( n < buflen && (c=iobuf_get(a)) != -1 && c != '\n' )
 		buf[n++] = c;
 	    buf[n] = 0;
 	    if( c == -1 )
@@ -534,7 +542,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	     * counting spaces is not enough, because it may be a
 	     * mix of different white space characters */
 	    IOBUF b = iobuf_temp();
-	    while( (c=iobuf_get2(a)) != -1 && c != '\n' ) {
+	    while( (c=iobuf_get(a)) != -1 && c != '\n' ) {
 		iobuf_put(b,c);
 		if( c != ' ' && c != '\t' && c != '\r' )
 		    break;
@@ -622,7 +630,8 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 
     n = DIM(afx->helpbuf);
     state = find_header( state, afx->helpbuf, &n, a,
-				afx->helplen, &emplines, &afx->hashes);
+				afx->helplen, &emplines, &afx->hashes,
+				afx->only_keyblocks );
     switch( state ) {
       case fhdrNOArmor:
 	afx->inp_checked = 1;
@@ -708,7 +717,8 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	afx->helpidx = 0;
 	state = find_header( state, afx->helpbuf, &n, a,
 			      state == fhdrNullClearsig? afx->helplen:0,
-						&emplines, &afx->hashes );
+						&emplines, &afx->hashes,
+						afx->only_keyblocks );
 	switch( state) {
 	  case fhdrERROR:
 	    invalid_armor();

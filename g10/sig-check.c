@@ -166,11 +166,9 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
 	return G10ERR_TIME_CONFLICT;
     }
 
-    if( pk->valid_days && add_days_to_timestamp(pk->timestamp,
-						pk->valid_days) < cur_time ) {
-	log_info(_("warning: signature key expired %s\n"), strtimestamp(
-				    add_days_to_timestamp(pk->timestamp,
-							  pk->valid_days)));
+    if( pk->expiredate && pk->expiredate < cur_time ) {
+	log_info(_("warning: signature key expired %s\n"),
+					asctimestamp( pk->expiredate ) );
 	write_status(STATUS_SIGEXPIRED);
     }
 

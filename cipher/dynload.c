@@ -25,6 +25,8 @@
 #include <unistd.h>
 #ifdef HAVE_DL_DLOPEN
   #include <dlfcn.h>
+#elif defined(HAVE_DLD_DLD_LINK)
+  #include <dld.h>
 #endif
 #include "util.h"
 #include "cipher.h"
@@ -37,7 +39,11 @@
 
 typedef struct ext_list {
     struct ext_list *next;
+  #ifdef HAVE_DL_DLOPEN
     void *handle; /* handle from dlopen() */
+  #else
+    int handle;   /* if the function has been loaded, this is true */
+  #endif
     int  failed;  /* already tried but failed */
     void * (*enumfunc)(int, int*, int*, int*);
     char *hintstr; /* pointer into name */
@@ -53,6 +59,14 @@ typedef struct {
     void *sym;
 } ENUMCONTEXT;
 
+
+#ifdef HAVE_DLD_DLD_LINK
+static char *mainpgm_path;
+static int did_dld_init;
+static int dld_available;
+#endif
+
+
 /****************
  * Register an extension module.  The last registered module will
  * be loaded first.  A name may have a list of classes
@@ -62,13 +76,20 @@ typedef struct {
  * algorithms 20 and 109.  This is only a hint but if it is there the
  * loader may decide to only load a module which claims to have a
  * requested algorithm.
+ *
+ * mainpgm is the path to the program which wants to load a module
+ * it is only used in some environments.
  */
 void
-register_cipher_extension( const char *fname )
+register_cipher_extension( const char *mainpgm, const char *fname )
 {
     EXTLIST r, el;
     char *p, *pe;
 
+  #ifdef HAVE_DLD_DLD_LINK
+    if( !mainpgm_path && mainpgm && *mainpgm )
+	mainpgm_path = m_strdup(mainpgm);
+  #endif
     if( *fname != '/' ) { /* do tilde expansion etc */
 	char *p ;
 
@@ -110,16 +131,22 @@ load_extension( EXTLIST el )
 {
   #ifdef USE_DYNAMIC_LINKING
     char **name;
-    void *sym;
+  #ifdef HAVE_DL_DLOPEN
     const char *err;
     int seq = 0;
     int class, vers;
+    void *sym;
+  #else
+    unsigned long addr;
+    int rc;
+  #endif
 
     /* make sure we are not setuid */
     if( getuid() != geteuid() )
 	log_bug("trying to load an extension while still setuid\n");
 
     /* now that we are not setuid anymore, we can safely load modules */
+  #ifdef HAVE_DL_DLOPEN
     el->handle = dlopen(el->name, RTLD_NOW);
     if( !el->handle ) {
 	log_error("%s: error loading extension: %s\n", el->name, dlerror() );
@@ -130,6 +157,38 @@ load_extension( EXTLIST el )
 	log_error("%s: not a gnupg extension: %s\n", el->name, err );
 	goto failure;
     }
+  #else /* have dld */
+    if( !did_dld_init ) {
+	did_dld_init = 1;
+	if( !mainpgm_path )
+	    log_error("DLD is not correctly initialized\n");
+	else {
+	    rc = dld_init( dld_find_executable(mainpgm_path) );
+	    if( rc )
+		log_error("DLD init failed: %s\n", dld_strerror(rc) );
+	    else
+		dld_available = 1;
+	}
+    }
+    if( !dld_available ) {
+	log_error("%s: DLD not available\n", el->name );
+	goto failure;
+    }
+
+    rc = dld_link( el->name );
+    if( rc ) {
+	log_error("%s: error loading extension: %s\n",
+				    el->name, dld_strerror(rc) );
+	goto failure;
+    }
+    addr = dld_get_symbol("gnupgext_version");
+    if( !addr ) {
+	log_error("%s: not a gnupg extension: %s\n",
+				el->name, dld_strerror(dld_errno) );
+	goto failure;
+    }
+    name = (char**)addr;
+  #endif
 
     if( g10_opt_verbose )
 	log_info("%s: %s%s%s%s\n", el->name, *name,
@@ -137,13 +196,31 @@ load_extension( EXTLIST el )
 		  el->hintstr? el->hintstr:"",
 		  el->hintstr? ")":"");
 
+  #ifdef HAVE_DL_DLOPEN
     sym = dlsym(el->handle, "gnupgext_enum_func");
     if( (err=dlerror()) ) {
 	log_error("%s: invalid gnupg extension: %s\n", el->name, err );
 	goto failure;
     }
     el->enumfunc = (void *(*)(int,int*,int*,int*))sym;
+  #else /* dld */
+    addr = dld_get_func("gnupgext_enum_func");
+    if( !addr ) {
+	log_error("%s: invalid gnupg extension: %s\n",
+				el->name, dld_strerror(dld_errno) );
+	goto failure;
+    }
+    rc = dld_function_executable_p("gnupgext_enum_func");
+    if( rc ) {
+	log_error("%s: extension function is not executable: %s\n",
+					el->name, dld_strerror(rc) );
+	goto failure;
+    }
+    el->enumfunc = (void *(*)(int,int*,int*,int*))addr;
+    el->handle = 1; /* mark as usable */
+  #endif
 
+  #ifdef HAVE_DL_DLOPEN
     if( g10_opt_verbose > 1 ) {
 	/* list the contents of the module */
 	while( (sym = (*el->enumfunc)(0, &seq, &class, &vers)) ) {
@@ -166,13 +243,16 @@ load_extension( EXTLIST el )
 	    }
 	}
     }
+  #endif
     return 0;
 
   failure:
+  #ifdef HAVE_DL_DLOPEN
     if( el->handle ) {
 	dlclose(el->handle);
 	el->handle = NULL;
     }
+  #endif
     el->failed = 1;
   #endif /*USE_DYNAMIC_LINKING*/
     return -1;

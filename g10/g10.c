@@ -1,4 +1,4 @@
-/* g10.c - The GNUPG utility (main for gpg)
+/* g10.c - The GnuPG utility (main for gpg)
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
@@ -88,6 +88,7 @@ enum cmd_and_opt_values { aNull = 0,
     aPrintMD,
     aPrintMDs,
     aCheckTrustDB,
+    aUpdateTrustDB,
     aFixTrustDB,
     aListTrustDB,
     aListTrustPath,
@@ -98,7 +99,6 @@ enum cmd_and_opt_values { aNull = 0,
     aGenRandom,
 
     oFingerprint,
-    oDoNotExportRSA,
     oAnswerYes,
     oAnswerNo,
     oKeyring,
@@ -172,13 +172,17 @@ static ARGPARSE_OPTS opts[] = {
   #endif
     { aExport, "export"          , 256, N_("export keys") },
     { aExportSecret, "export-secret-keys" , 256, "@" },
-    { oDoNotExportRSA, "do-not-export-rsa", 0, "@" },
     { aImport, "import",      256     , N_("import/merge keys")},
     { aListPackets, "list-packets",256,N_("list only the sequence of packets")},
   #ifdef IS_G10MAINT
-    { aExportOwnerTrust, "export-ownertrust", 256, N_("export the ownertrust values")},
-    { aImportOwnerTrust, "import-ownertrust", 256 , N_("import ownertrust values")},
-    { aCheckTrustDB, "check-trustdb",0 , N_("|[NAMES]|check the trust database")},
+    { aExportOwnerTrust,
+	      "export-ownertrust", 256, N_("export the ownertrust values")},
+    { aImportOwnerTrust,
+	      "import-ownertrust", 256 , N_("import ownertrust values")},
+    { aUpdateTrustDB,
+	      "update-trustdb",0 , N_("|[NAMES]|update the trust database")},
+    { aCheckTrustDB,
+	      "check-trustdb",0 , N_("|[NAMES]|check the trust database")},
     { aFixTrustDB, "fix-trustdb",0 , N_("fix a corrupted trust database")},
     { aDeArmor, "dearmor", 256, N_("De-Armor a file or stdin") },
     { aEnArmor, "enarmor", 256, N_("En-Armor a file or stdin") },
@@ -302,9 +306,9 @@ strusage( int level )
     switch( level ) {
       case 11: p =
 	  #ifdef IS_G10MAINT
-	    "gpgm (GNUPG)";
+	    "gpgm (GnuPG)";
 	  #else
-	    "gpg (GNUPG)";
+	    "gpg (GnuPG)";
 	  #endif
 	break;
       case 13: p = VERSION; break;
@@ -323,7 +327,7 @@ strusage( int level )
       case 41:	p =
 	  #ifdef IS_G10MAINT
 	    _("Syntax: gpgm [options] [files]\n"
-	      "GNUPG maintenance utility\n");
+	      "GnuPG maintenance utility\n");
 	  #else
 	    _("Syntax: gpg [options] [files]\n"
 	      "sign, check, encrypt or decrypt\n"
@@ -638,6 +642,7 @@ main( int argc, char **argv )
 	  case aPrintMDs: set_cmd( &cmd, aPrintMDs); break;
 	  case aListTrustDB: set_cmd( &cmd, aListTrustDB); break;
 	  case aCheckTrustDB: set_cmd( &cmd, aCheckTrustDB); break;
+	  case aUpdateTrustDB: set_cmd( &cmd, aUpdateTrustDB); break;
 	  case aFixTrustDB: set_cmd( &cmd, aFixTrustDB); break;
 	  case aListTrustPath: set_cmd( &cmd, aListTrustPath); break;
 	  case aDeArmor: set_cmd( &cmd, aDeArmor); break;
@@ -692,10 +697,12 @@ main( int argc, char **argv )
 	  case oCompressKeys: opt.compress_keys = 1; break;
 	  case aListSecretKeys: set_cmd( &cmd, aListSecretKeys); break;
 	  case oAlwaysTrust: opt.always_trust = 1; break;
-	  case oLoadExtension: register_cipher_extension(pargs.r.ret_str); break;
+	  case oLoadExtension:
+	    register_cipher_extension(orig_argc? *orig_argv:NULL,
+				      pargs.r.ret_str);
+	    break;
 	  case oRFC1991: opt.rfc1991 = 1; opt.no_comment = 1; break;
 	  case oEmuChecksumBug: opt.emulate_bugs |= EMUBUG_GPGCHKSUM; break;
-	  case oDoNotExportRSA: opt.do_not_export_rsa = 1; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRunAsShmCP:
 	  #ifndef USE_SHM_COPROCESSING
@@ -835,13 +842,13 @@ main( int argc, char **argv )
 	&& !(cmd == aKMode && argc == 2 ) ) {
 
 	if( !sec_nrings || default_keyring )  /* add default secret rings */
-	    add_secret_keyring("secring.gpg");
+	    add_keyblock_resource("secring.gpg", 0, 1);
 	for(sl = sec_nrings; sl; sl = sl->next )
-	    add_secret_keyring( sl->d );
+	    add_keyblock_resource( sl->d, 0, 1 );
 	if( !nrings || default_keyring )  /* add default ring */
-	    add_keyring("pubring.gpg");
+	    add_keyblock_resource("pubring.gpg", 0, 0);
 	for(sl = nrings; sl; sl = sl->next )
-	    add_keyring( sl->d );
+	    add_keyblock_resource( sl->d, 0, 0 );
     }
     FREE_STRLIST(nrings);
     FREE_STRLIST(sec_nrings);
@@ -996,7 +1003,7 @@ main( int argc, char **argv )
 	    else {
 		/* add keyring (default keyrings are not registered in this
 		 * special case */
-		add_keyring( argv[1] );
+		add_keyblock_resource( argv[1], 0, 0 );
 		public_key_list( **argv?1:0, argv );
 	    }
 	}
@@ -1158,6 +1165,12 @@ main( int argc, char **argv )
 	    for( ; argc; argc--, argv++ )
 		list_trustdb( *argv );
 	}
+	break;
+
+      case aUpdateTrustDB:
+	if( argc )
+	    wrong_args("--update-trustdb");
+	update_trustdb();
 	break;
 
       case aCheckTrustDB:

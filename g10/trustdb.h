@@ -46,6 +46,7 @@ void list_trust_path( int max_depth, const char *username );
 void export_ownertrust(void);
 void import_ownertrust(const char *fname);
 void check_trustdb( const char *username );
+void update_trustdb( void );
 int init_trustdb( int level, const char *dbname );
 int check_trust( PKT_public_key *pk, unsigned *r_trustlevel );
 int query_trust_info( PKT_public_key *pk );

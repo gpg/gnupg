@@ -10,6 +10,16 @@ test -d ./mpi || mkdir ./mpi
 echo '/* created by config.links - do not edit */' >./mpi/asm-syntax.h
 
 case "${target}" in
+    i[34]86*-*-freebsd*-elf)
+       echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
+       cat  $srcdir/mpi/i386/syntax.h	   >>./mpi/asm-syntax.h
+       path="i386"
+       ;;
+    i[56]86*-*-freebsd*-elf)
+       echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
+       cat  $srcdir/mpi/i386/syntax.h	   >>./mpi/asm-syntax.h
+       path="i586 i386"
+       ;;
     i[34]86*-*-linuxaout* | i[34]86*-*-linuxoldld* | i[34]86*-*-*bsd*)
 	echo '#define BSD_SYNTAX' >>./mpi/asm-syntax.h
 	echo '#define X86_BROKEN_ALIGN' >>./mpi/asm-syntax.h
@@ -122,7 +132,7 @@ case "${target}" in
     *-*-linuxaout* | *-*-linuxoldld* | *-*-linux-gnuoldld*)
 	needs_underscore="y"
 	;;
-    *-*-linux* | *-sysv* | *-solaris* | *-gnu*)
+    *-*-linux* | *-sysv* | *-solaris* | *-gnu* | *-freebsd*-elf)
 	needs_underscore="n"
 	;;
     *)

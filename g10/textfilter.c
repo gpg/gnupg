@@ -48,7 +48,7 @@ read_line( byte *buf, size_t *r_buflen, IOBUF a )
     assert(buflen >= 20 );
     buflen -= 3; /* leave some room for CR,LF and one extra */
 
-    for(c=0, n=0; n < buflen && (c=iobuf_get2(a)) != -1 && c != '\n'; )
+    for(c=0, n=0; n < buflen && (c=iobuf_get(a)) != -1 && c != '\n'; )
 	buf[n++] = c;
     buf[n] = 0;
     if( c == -1 ) {
@@ -58,7 +58,7 @@ read_line( byte *buf, size_t *r_buflen, IOBUF a )
     }
     else if( c != '\n' ) {
 	IOBUF b = iobuf_temp();
-	while( (c=iobuf_get2(a)) != -1 && c != '\n' ) {
+	while( (c=iobuf_get(a)) != -1 && c != '\n' ) {
 	    iobuf_put(b,c);
 	    if( c != ' ' && c != '\t' && c != '\r' )
 		break;

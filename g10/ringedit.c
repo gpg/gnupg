@@ -48,6 +48,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h> /* for truncate */
 #include <assert.h>
 #include "util.h"
 #include "packet.h"
@@ -55,8 +56,8 @@
 #include "mpi.h"
 #include "iobuf.h"
 #include "keydb.h"
+#include "options.h"
 #include "i18n.h"
-#include <unistd.h> /* for truncate */
 
 
 struct resource_table_struct {
@@ -97,29 +98,75 @@ check_pos( KBPOS *kbpos )
  ****************************************************************/
 
 /****************
+ * Get the name of the keyrings, start with a sequence number pointing to a 0.
+ */
+const char *
+enum_keyblock_resources( int *sequence, int secret )
+{
+    int i = *sequence;
+    const char *name = NULL;
+
+    for(; i < MAX_RESOURCES; i++ )
+	if( resource_table[i].used && !resource_table[i].secret == !secret ) {
+	    if( resource_table[i].fname ) {
+		name = resource_table[i].fname;
+		break;
+	    }
+	}
+    *sequence = ++i;
+    return NULL; /* not found */
+}
+
+
+
+/****************
  * Register a resource (which currently may only be a keyring file).
+ * The first keyring which is added by this function is
+ * created if it does not exist.
+ * Note: this function may be called before secure memory is
+ * available.
  */
 int
-add_keyblock_resource( const char *filename, int force, int secret )
+add_keyblock_resource( const char *resname, int force, int secret )
 {
+    static int any_secret, any_public;
     IOBUF iobuf;
-    int i;
+    int i, force;
+    char *filename;
+    int rc = 0;
+
+    if( *resname != '/' ) { /* do tilde expansion etc */
+	if( strchr(resname, '/') )
+	    filename = make_filename(resname, NULL);
+	else
+	    filename = make_filename(opt.homedir, resname, NULL);
+    }
+    else
+	filename = m_strdup( resname );
+
+    if( !force )
+	force = secret? !any_secret : !any_public;
 
     for(i=0; i < MAX_RESOURCES; i++ )
 	if( !resource_table[i].used )
 	    break;
-    if( i == MAX_RESOURCES )
-	return G10ERR_RESOURCE_LIMIT;
+    if( i == MAX_RESOURCES ) {
+	rc = G10ERR_RESOURCE_LIMIT;
+	goto leave;
+    }
 
-    iobuf = iobuf_open( filename );
-    if( !iobuf && !force )
-	return G10ERR_OPEN_FILE;
+    iobuf = iobuf_fopen( filename, "rb" );
+    if( !iobuf && !force ) {
+	rc = G10ERR_OPEN_FILE;
+	goto leave;
+    }
 
     if( !iobuf ) {
 	iobuf = iobuf_create( filename );
 	if( !iobuf ) {
 	    log_error("%s: can't create: %s\n", filename, strerror(errno));
-	    return G10ERR_OPEN_FILE;
+	    rc = G10ERR_OPEN_FILE;
+	    goto leave;
 	}
 	else
 	    log_info("%s: keyring created\n", filename );
@@ -135,7 +182,15 @@ add_keyblock_resource( const char *filename, int force, int secret )
     resource_table[i].secret = !!secret;
     resource_table[i].fname = m_strdup(filename);
     resource_table[i].iobuf = iobuf;
-    return 0;
+  leave:
+    if( rc )
+	log_error("keyblock resource '%s': %s\n", filename, g10_errstr(rc) );
+    else if( secret )
+	any_secret = 1;
+    else
+	any_public = 1;
+    m_free( filename );
+    return rc;
 }
 
 /****************
@@ -362,7 +417,7 @@ enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
 	    return -1; /* no resources */
 	kbpos->resno = i;
 	rentry = check_pos( kbpos );
-	kbpos->fp = iobuf_open( rentry->fname );
+	kbpos->fp = iobuf_fopen( rentry->fname, "rb" );
 	if( !kbpos->fp ) {
 	    log_error("can't open '%s'\n", rentry->fname );
 	    return G10ERR_OPEN_FILE;
@@ -528,7 +583,6 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
 	    PKT_secret_key *sk = pkt.pkt.secret_key;
 
 	    if(   req_sk->timestamp == sk->timestamp
-	       && req_sk->valid_days == sk->valid_days
 	       && req_sk->pubkey_algo == sk->pubkey_algo
 	       && !cmp_seckey( req_sk, sk) )
 		break; /* found */
@@ -537,7 +591,6 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
 	    PKT_public_key *pk = pkt.pkt.public_key;
 
 	    if(   req_pk->timestamp == pk->timestamp
-	       && req_pk->valid_days == pk->valid_days
 	       && req_pk->pubkey_algo == pk->pubkey_algo
 	       && !cmp_pubkey( req_pk, pk ) )
 		break; /* found */
@@ -572,7 +625,7 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
     if( !(rentry=check_pos(kbpos)) )
 	return G10ERR_GENERAL;
 
-    a = iobuf_open( rentry->fname );
+    a = iobuf_fopen( rentry->fname, "rb" );
     if( !a ) {
 	log_error("can't open '%s'\n", rentry->fname );
 	return G10ERR_OPEN_FILE;
@@ -732,7 +785,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	BUG(); /* not allowed with such a handle */
 
     /* open the source file */
-    fp = iobuf_open( rentry->fname );
+    fp = iobuf_fopen( rentry->fname, "rb" );
     if( mode == 1 && !fp && errno == ENOENT ) { /* no file yet */
 	KBNODE kbctx, node;
 

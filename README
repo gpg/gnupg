@@ -1,4 +1,4 @@
-		  GNUPG - The GNU Privacy Guard
+		  GnuPG - The GNU Privacy Guard
 		 -------------------------------
 			  Version 0.4
 
@@ -8,12 +8,12 @@
 
     On a Linux box (version 2.x.x, alpha or x86 CPU) it should
     work reliably.  You may create your key on such a machine and
-    use it.  Please verify the tar file; there is a PGP and a GNUPG
+    use it.  Please verify the tar file; there is a PGP and a GnuPG
     signature available. My PGP 2 key is well known and published in
     the "Global Trust Register for 1998", ISBN 0-9532397-0-5.
 
     I have included my pubring as "g10/pubring.asc", which contains
-    the key used to make GNUPG signatures:
+    the key used to make GnuPG signatures:
     "pub  1024D/57548DCD 1998-07-07 Werner Koch (gnupg sig) <dd9jn@gnu.org>"
     "Key fingerprint = 6BD9 050F D8FC 941B 4341  2DCC 68B7 AB89 5754 8DCD"
 
@@ -25,7 +25,7 @@
     "pub  1024D/621CC013 1998-07-07 Werner Koch <werner.koch@guug.de>"
     "Key fingerprint = ECAF 7590 EB34 43B5 C7CF  3ACB 6C7E E1B8 621C C013"
 
-    You may add it to your GNUPG pubring and use it in the future to
+    You may add it to your GnuPG pubring and use it in the future to
     verify new releases.  Because you verified this README file and
     _checked_that_it_is_really_my PGP2 key 0C9857A5, you can be sure
     that the above fingerprints are correct.
@@ -36,17 +36,17 @@
 
     See the file COPYING for copyright and warranty information.
 
-    Due to the fact that GNUPG does not use use any patented algorithm,
+    Due to the fact that GnuPG does not use use any patented algorithm,
     it cannot be compatible with old PGP versions, because those use
     IDEA (which is patented worldwide) and RSA (which is patented in
     the United States until Sep 20, 2000).
 
-    GNUPG is in almost all  aspects compatible with other OpenPGP
+    GnuPG is in almost all  aspects compatible with other OpenPGP
     implementations.
 
     The default algorithms are now DSA and ELGamal.  ELGamal for signing
     is still available, but due to the larger size of such signatures it
-    is depreciated (Please note that the GNUPG implementation of ElGamal
+    is depreciated (Please note that the GnuPG implementation of ElGamal
     signatures is *not* insecure).  Symmetric algorithms are: 3DES, Blowfish
     and CAST5,	Digest algorithms are MD5, RIPEMD160, SHA1 and TIGER/192.
 
@@ -230,7 +230,7 @@
 	"#34"
 
       This can be used by a MUA to specify an exact key after selecting
-      a key from GNUPG (by the use of a special option or an extra utility)
+      a key from GnuPG (by the use of a special option or an extra utility)
 
 
     * Or by the usual substring:
@@ -245,19 +245,19 @@
 
     Batch mode
     ----------
-    If you use the option "--batch", GNUPG runs in non-interactive mode and
+    If you use the option "--batch", GnuPG runs in non-interactive mode and
     never prompts for input data.  This does not even allow entering the
     passphrase; until we have a better solution (something like ssh-agent),
     you can use the option "--passhrase-fd n", which works like PGPs
     PGPPASSFD.
 
-    Batch mode also causes GNUPG to terminate as soon as a BAD signature is
+    Batch mode also causes GnuPG to terminate as soon as a BAD signature is
     detected.
 
 
     Exit status
     -----------
-    GNUPG returns with an exit status of 1 if in batch mode and a bad signature
+    GnuPG returns with an exit status of 1 if in batch mode and a bad signature
     has been detected or 2 or higher for all other errors.  You should parse
     stderr or the output of the fd specified with --status-fd to get detailed
     information about the errors.
@@ -269,7 +269,7 @@
 	gpg --list-packets datafile
 
     Use this to list the contents of a data file. If the file is encrypted
-    you are asked for the passphrase, so that GNUPG is able to look at the
+    you are asked for the passphrase, so that GnuPG is able to look at the
     inner structure of a encrypted packet.
 
 	gpgm --list-trustdb

@@ -2,6 +2,25 @@ Noteworthy changes in version 0.4.2
 -----------------------------------
     * Fixed this huge memory leak.
 
+    * Redesigned the trust database:  You should run "gpgm --check-trustdb".
+      New command --update-trustdb, which adds new key from the public
+      keyring into your trustdb
+
+    * Fixed a bug in the armor code, leading to invalid packet errors.
+      (a workaround for this was to use --no-armor).
+
+    * comment packets are not anymore generated. "--export" filters
+      them out.  One Exception:  The comment packets in a secret keyring
+      are still used because they carry the factorization of the public
+      prime product.
+
+    * --import now only looks for KEYBLOCK headers, so you can now simply
+      remove the "- " in front of such a header if someone accdently signed
+      such a message or the keyblock is part of a cleartext signed message.
+
+    * --with-colons now lists the key expiration time and not anymore
+      the valid period.
+
 
 Noteworthy changes in version 0.4.1
 -----------------------------------

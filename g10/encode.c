@@ -118,12 +118,14 @@ encode_simple( const char *filename, int mode )
 
     if( opt.armor )
 	iobuf_push_filter( out, armor_filter, &afx );
+  #ifdef ENABLE_COMMENT_PACKETS
     else {
 	write_comment( out, "#created by GNUPG v" VERSION " ("
 					    PRINTABLE_OS_NAME ")");
 	if( opt.comment_string )
 	    write_comment( out, opt.comment_string );
     }
+  #endif
     if( s2k && !opt.rfc1991 ) {
 	PKT_symkey_enc *enc = m_alloc_clear( sizeof *enc );
 	enc->version = 4;
@@ -224,13 +226,14 @@ encode_crypt( const char *filename, STRLIST remusr )
 
     if( opt.armor )
 	iobuf_push_filter( out, armor_filter, &afx );
+  #ifdef ENABLE_COMMENT_PACKETS
     else {
 	write_comment( out, "#created by GNUPG v" VERSION " ("
 					    PRINTABLE_OS_NAME ")");
 	if( opt.comment_string )
 	    write_comment( out, opt.comment_string );
     }
-
+  #endif
     /* create a session key */
     cfx.dek = m_alloc_secure( sizeof *cfx.dek );
     if( !opt.def_cipher_algo ) { /* try to get it from the prefs */

@@ -1,29 +1,40 @@
+    * change ringedit:
+	- avoid all copy operations
+	- delete for update by changing the packet type to a
+	  special unused packet. (export most know about this)
+	- do an append instead of an update or insert
+	- export may be used to compress a keyring.
+	- keep track of all offset in the trustbd and index them
+	  by keyid.
+	- If the lookup does not find a public key block at the
+	  stored offset disable this keyid.
+	- If the keyid was not found or is disabled, walk thru
+	  the pubring.
+	- use ftruncate to recover from keyring errors.
+	   maybe a new option to do this or simply mark the
+	   wrong part as unused.
+      This makes signature checks and imports much faster; only keys
+      given by a userid or a fingerprint (RSA only) have to walk tru
+      the ring.
+
+    * There is a new memory leak in update-trustdb
+
+    * OpenBSD: dynamic loading with dlopen works on OpenBSD, but:
+	OpenBSD binaries are a.out, so every symbol begins with "_"
+
+    * use dld if we don't have dlopen.
+
+    * should we flush the getkey.c caches while doing an import?
+
+    * prefer a type 16 subkey for encryption because pgp cannot handle
+      type 20.
 
     * calculation of marginals never yields a completely trusted key.
-
-    * list-keys:  change valid-days to key expiration date
-
-    * disable comments but those in secret keyrings.
-
-    * abgelaufene secret keys verhinder ein korrektes initialisieren der
-      Trustdb.
-
-    * import should skip all ascii armored messages headers which are
-      not keys (some folks are mailing signed public keyblocks :-)
 
     * The critical bit of signature subpackets is not yet supported; i.e.
       it is ignored.
 
-    * Read more records at once in tdbio.c and provide a lazy write cache.
-
     * Exportable Certification Flag is ignored
-
-    * Why does OpenPGP say: The algorithm byte is included in the
-      checksum of an encoded key, but the actual implementaion does
-      not do this but works - According to Hal Finney, this is a bug
-      in the specs.
-
-    * fix armor problems (see mails by Brian Moore).
 
     * write a tool to extract selected keys from a file.
 
@@ -32,10 +43,6 @@
     * commandline controlled --edit-key with assumed save.
 
     * -rdynamic auf Solaris Problem
-
-    * if --libdir is used, the extensions are put in a wrong place.
-      How does GNOME handle this or make a new option for this directory.
-      Hmmm, I don´ like to pass ot as a commandline option to cc.
 
     * Replace the SIGUSR1 stuff by semaphores to avoid loss of a signal.
 
@@ -61,8 +68,8 @@
       can also hold the localid and extend the localid to hold information
       of the subkey number because two subkeys may have the same keyid.
 
-    * add an option to re-create a public key from a secret key. Think about
-      a backup system of only the secret part of the secret key.
+    * add an option to re-create a public key from a secret key; we
+      can do this in trustdb.c:verify_own_keys.
 
     * OpenBSD has sometimes problems reading from /dev/random.
 

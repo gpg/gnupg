@@ -1,6 +1,35 @@
+Fri Oct 16 10:24:47 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* trustdb.c: Rewrote most.
+	* tdbio.c: Add cache and generalized hash tables.
+
+	* options.h (ENABLE_COMMENT_PACKETS): New but undef'ed.
+	* encode.c, sign.c, keygen.c: Disabled comment packets.
+	* export.c (do_export): Comment packets are never exported,
+	except for those in the secret keyring.
+
+	* g10.c (main): Removed option do-no-export-rsa; should be
+	be replaced by a secpial tool.
+	* export.c (do_export): Removed the code for the above option.
+
+	* armor.c (find_header): Support for new only_keyblocks.
+	* import.c (import_keys): Only looks for keyblock armors.
+
+	* packet.h: replaced valid_days by expiredate and changed all users.
+	* build-packet.c (do_public_key): calculates valid-days
+	(do_secret_key): Ditto.
+	* parse-packet.c (parse_key): expiredate is calucated from the
+	valid_period in v3 packets.
+	* keyid.c (do_fingerprint_md): calculates valid_dates.
+
+	* keygen.c (add_key_expire): fixed key expiration time for v4 packets.
+
+	* armor.c (find_header): A LF in the first 28 bytes
+	was skipped for non-armored data.
+
 Thu Oct  8 11:35:51 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
-	* armor.c (is_armored): Ad test on old comment packets.
+	* armor.c (is_armored): Add test on old comment packets.
 
 	* tdbio.c (tdbio_search_dir_bypk): fixed memory leak.
 

@@ -89,10 +89,10 @@ fast_random_poll()
 }
 
 
-#ifdef HAVE_DEV_RANDOM	/* we have the /dev/random device */
+#ifdef HAVE_DEV_RANDOM	/* we have the /dev/random devices */
 
 /****************
- * Used to open the Linux /dev/random device
+ * Used to open the Linux and xBSD /dev/random devices
  */
 static int
 open_device( const char *name, int minor )
@@ -126,12 +126,12 @@ read_random_source( byte *buffer, size_t length, int level )
 
     if( level >= 2 ) {
 	if( fd_random == -1 )
-	    fd_random = open_device( "/dev/random", 8 );
+	    fd_random = open_device( NAME_OF_DEV_RANDOM, 8 );
 	fd = fd_random;
     }
     else {
 	if( fd_urandom == -1 )
-	    fd_urandom = open_device( "/dev/urandom", 9 );
+	    fd_urandom = open_device( NAME_OF_DEV_URANDOM, 9 );
 	fd = fd_urandom;
     }
     do {

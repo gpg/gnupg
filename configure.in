@@ -76,6 +76,7 @@ AC_PROG_INSTALL
 AM_CYGWIN32
 
 
+
 case "${target}" in
     i386--mingw32)
 	# special stuff for Windoze NT
@@ -104,6 +105,23 @@ case "${target}" in
 esac
 AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME")
 
+dnl  Fixme: Are these the best flags for OpenBSD????
+case "${target}" in
+    *-openbsd*)
+	NAME_OF_DEV_RANDOM="/dev/srandom"
+	NAME_OF_DEV_URANDOM="/dev/urandom"
+	DYNLINK_MOD_CFLAGS="-shared -rdynamic -fpic -Wl,-Bshareable -Wl,-x"
+	;;
+    *)
+	NAME_OF_DEV_RANDOM="/dev/random"
+	NAME_OF_DEV_URANDOM="/dev/urandom"
+	DYNLINK_MOD_CFLAGS="-shared  -fPIC -lc"
+	;;
+esac
+AC_DEFINE_UNQUOTED(NAME_OF_DEV_RANDOM, "$NAME_OF_DEV_RANDOM")
+AC_DEFINE_UNQUOTED(NAME_OF_DEV_URANDOM, "$NAME_OF_DEV_URANDOM")
+
+
 dnl Checks for libraries.
 
 
@@ -126,12 +144,15 @@ fi
 else
   AC_MSG_CHECKING(for dynamic loading)
   DYNLINK_LDFLAGS=
+  DYNLINK_MOD_CFLAGS=
   use_gnupg_extensions=no
   AC_MSG_RESULT(has been disabled)
 fi
 
 AM_CONDITIONAL(ENABLE_GNUPG_EXTENSIONS, test "$use_gnupg_extensions" = yes )
 AC_SUBST(DYNLINK_LDFLAGS)
+AC_SUBST(DYNLINK_MOD_CFLAGS)
+
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -182,7 +203,7 @@ fi
 dnl check whether we have a random device
 if test "$try_dev_random" = yes ; then
 AC_CACHE_CHECK(for random device, ac_cv_have_dev_random,
-[if test -c /dev/random && test -c /dev/urandom ; then
+[if test -c "$NAME_OF_DEV_RANDOM" && test -c "$NAME_OF_DEV_URANDOM" ; then
   ac_cv_have_dev_random=yes; else ac_cv_have_dev_random=no; fi])
 if test "$ac_cv_have_dev_random" = yes; then
     AC_DEFINE(HAVE_DEV_RANDOM)
@@ -192,8 +213,6 @@ else
     ac_cv_have_dev_random=no
     AC_MSG_RESULT(has been disabled)
 fi
-
-
 
 
 dnl setup assembler stuff

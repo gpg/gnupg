@@ -97,7 +97,7 @@ int g10c_debug_mode;
 int g10_opt_verbose;
 
 /*-- dynload.c --*/
-void register_cipher_extension( const char *fname );
+void register_cipher_extension( const char *mainpgm, const char *fname );
 
 /*-- md.c --*/
 int string_to_digest_algo( const char *string );

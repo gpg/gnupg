@@ -22,8 +22,7 @@ ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
 		       20 = ElGamal (sign and encrypt)
  5. Field:  KeyID
  6. Field:  Creation Date (in UTC)
- 7. Field:  key expieres n days after creation.
-	    (I will change this to a key exiration date)
+ 7. Field:  Key expiration date or empty if none.
  8. Field:  Local ID: record number of the dir record in the trustdb
 	    this value is only valid as long as the trustdb is not
 	    deleted.  May be later used to lookup the key: You will be

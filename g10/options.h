@@ -20,6 +20,10 @@
 #ifndef G10_OPTIONS_H
 #define G10_OPTIONS_H
 
+
+#undef ENABLE_COMMENT_PACKETS  /* don't create comment packets */
+
+
 struct {
     int verbose;
     unsigned debug;
@@ -37,7 +41,7 @@ struct {
     int no_armor;
     int list_packets; /* list-packets mode */
     int def_cipher_algo;
-    int do_not_export_rsa;
+    int reserved1;
     int def_digest_algo;
     int def_compress_algo;
     const char *def_secret_key;

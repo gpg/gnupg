@@ -106,10 +106,6 @@ void set_next_passphrase( const char *s );
 char *get_last_passphrase(void);
 
 /*-- getkey.c --*/
-void add_keyring( const char *name );
-const char *get_keyring( int sequence );
-const char *get_secret_keyring( int sequence );
-void add_secret_keyring( const char *name );
 int get_pubkey( PKT_public_key *pk, u32 *keyid );
 int get_pubkey_byname( PKT_public_key *pk, const char *name );
 int get_seckey( PKT_secret_key *sk, u32 *keyid );
@@ -156,7 +152,8 @@ int  commit_kbnode( KBNODE *root );
 void dump_kbnode( KBNODE node );
 
 /*-- ringedit.c --*/
-int add_keyblock_resource( const char *filename, int force, int secret );
+const char *enum_keyblock_resources( int *sequence, int secret );
+int add_keyblock_resource( const char *resname, int force, int secret );
 const char *keyblock_resource_name( KBPOS *kbpos );
 int get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos );
 int find_keyblock( PUBKEY_FIND_INFO info, KBPOS *kbpos );

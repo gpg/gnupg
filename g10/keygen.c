@@ -58,8 +58,8 @@ add_key_expire( PKT_signature *sig, void *opaque )
     byte buf[8];
     u32  u;
 
-    if( sk->valid_days ) {
-	u = sk->valid_days * 86400L;
+    if( sk->expiredate ) {
+	u = sk->expiredate;
 	buf[0] = (u >> 24) & 0xff;
 	buf[1] = (u >> 16) & 0xff;
 	buf[2] = (u >>	8) & 0xff;
@@ -192,7 +192,7 @@ write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
 
 static int
 gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	STRING2KEY *s2k, PKT_secret_key **ret_sk, u16 valid_days,
+	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expiredate,
 							int version )
 {
     int rc;
@@ -214,7 +214,9 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     pk = m_alloc_clear( sizeof *pk );
     sk->timestamp = pk->timestamp = make_timestamp();
     sk->version = pk->version = version;
-    sk->valid_days = pk->valid_days = valid_days;
+    if( expiredate && expiredate < sk->timestamp )
+	expiredate = sk->timestamp; /* key generatio may take long */
+    sk->expiredate = pk->expiredate = expiredate;
     sk->pubkey_algo = pk->pubkey_algo = algo;
 		       pk->pkey[0] = mpi_copy( skey[0] );
 		       pk->pkey[1] = mpi_copy( skey[1] );
@@ -266,7 +268,7 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
  */
 static int
 gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	    STRING2KEY *s2k, PKT_secret_key **ret_sk, u16 valid_days )
+	    STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expiredate )
 {
     int rc;
     int i;
@@ -289,7 +291,9 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     pk = m_alloc_clear( sizeof *pk );
     sk->timestamp = pk->timestamp = make_timestamp();
     sk->version = pk->version = 4;
-    sk->valid_days = pk->valid_days = valid_days;
+    if( expiredate && expiredate < pk->timestamp )
+	expiredate = pk->timestamp; /* key generation may take long */
+    sk->expiredate = pk->expiredate = expiredate;
     sk->pubkey_algo = pk->pubkey_algo = PUBKEY_ALGO_DSA;
 		       pk->pkey[0] = mpi_copy( skey[0] );
 		       pk->pkey[1] = mpi_copy( skey[1] );
@@ -477,11 +481,12 @@ ask_keysize( int algo )
 }
 
 
-static int
-ask_valid_days()
+static u32
+ask_expiredate()
 {
     char *answer;
     int valid_days=0;
+    u32 expiredate = 0;
 
     tty_printf(_("Please specify how long the key should be valid.\n"
 		 "         0 = key does not expire\n"
@@ -513,12 +518,14 @@ ask_valid_days()
 	    continue;
 	}
 
-	if( !valid_days )
+	if( !valid_days ) {
 	    tty_printf(_("Key does not expire at all\n"));
+	    expiredate = 0;
+	}
 	else {
+	    expiredate = make_timestamp() + valid_days * 86400L;
 	    /* print the date when the key expires */
-	    tty_printf(_("Key expires at %s\n"), strtimestamp(
-		       add_days_to_timestamp( make_timestamp(), valid_days )));
+	    tty_printf(_("Key expires at %s\n"), asctimestamp(expiredate) );
 	}
 
 	if( !cpr_enabled()
@@ -527,7 +534,7 @@ ask_valid_days()
 	    break;
     }
     m_free(answer);
-    return valid_days;
+    return expiredate;
 }
 
 
@@ -713,7 +720,7 @@ ask_passphrase( STRING2KEY **ret_s2k )
 
 static int
 do_create( int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root,
-	   DEK *dek, STRING2KEY *s2k, PKT_secret_key **sk, int valid_days,
+	   DEK *dek, STRING2KEY *s2k, PKT_secret_key **sk, u32 expiredate,
 							     int v4_packet )
 {
     int rc=0;
@@ -726,11 +733,13 @@ do_create( int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root,
 
     if( algo == PUBKEY_ALGO_ELGAMAL || algo == PUBKEY_ALGO_ELGAMAL_E )
 	rc = gen_elg(algo, nbits, pub_root, sec_root, dek, s2k,
-			   sk, valid_days, v4_packet? 4:3 );
+			   sk, expiredate, v4_packet? 4:3 );
     else if( algo == PUBKEY_ALGO_DSA )
-	rc = gen_dsa(nbits, pub_root, sec_root, dek, s2k, sk, valid_days);
+	rc = gen_dsa(nbits, pub_root, sec_root, dek, s2k, sk, expiredate);
     else
 	BUG();
+
+  #ifdef ENABLE_COMMENT_PACKETS
     if( !rc ) {
 	add_kbnode( pub_root,
 		make_comment_node("#created by GNUPG v" VERSION " ("
@@ -739,6 +748,7 @@ do_create( int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root,
 		make_comment_node("#created by GNUPG v" VERSION " ("
 					    PRINTABLE_OS_NAME ")"));
     }
+  #endif
     return rc;
 }
 
@@ -781,7 +791,7 @@ generate_keypair()
     STRING2KEY *s2k;
     int rc;
     int algo;
-    int ndays;
+    u32 expiredate;
     int v4;
     int both = 0;
 
@@ -797,7 +807,7 @@ generate_keypair()
 	tty_printf(_("DSA keypair will have 1024 bits.\n"));
     }
     nbits = ask_keysize( algo );
-    ndays = ask_valid_days();
+    expiredate = ask_expiredate();
     uid = ask_user_id(0);
     if( !uid ) {
 	log_error(_("Key generation cancelled.\n"));
@@ -824,10 +834,10 @@ generate_keypair()
 
     if( both )
 	rc = do_create( PUBKEY_ALGO_DSA, 1024, pub_root, sec_root,
-					       dek, s2k, &sk, ndays, 1);
+					       dek, s2k, &sk, expiredate, 1);
     else
 	rc = do_create( algo,		nbits, pub_root, sec_root,
-					       dek, s2k, &sk, ndays, v4);
+					       dek, s2k, &sk, expiredate, v4);
     if( !rc )
 	write_uid(pub_root, uid );
     if( !rc )
@@ -839,7 +849,7 @@ generate_keypair()
 
     if( both ) {
 	rc = do_create( algo, nbits, pub_root, sec_root,
-					  dek, s2k, NULL, ndays, 1 );
+					  dek, s2k, NULL, expiredate, 1 );
 	if( !rc )
 	    rc = write_keybinding(pub_root, pub_root, sk);
 	if( !rc )
@@ -927,7 +937,8 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     int okay=0, rc=0;
     KBNODE node;
     PKT_secret_key *sk = NULL; /* this is the primary sk */
-    int v4, algo, ndays;
+    int v4, algo;
+    u32 expiredate;
     unsigned nbits;
     char *passphrase = NULL;
     DEK *dek = NULL;
@@ -964,7 +975,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     algo = ask_algo( &v4, 1 );
     assert(algo);
     nbits = ask_keysize( algo );
-    ndays = ask_valid_days();
+    expiredate = ask_expiredate();
     if( !cpr_enabled() && !cpr_get_answer_is_yes(N_("keygen.sub.okay"),
 						  _("Really create? ") ) )
 	goto leave;
@@ -978,7 +989,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     }
 
     rc = do_create( algo, nbits, pub_keyblock, sec_keyblock,
-				      dek, s2k, NULL, ndays, v4 );
+				      dek, s2k, NULL, expiredate, v4 );
     if( !rc )
 	rc = write_keybinding(pub_keyblock, pub_keyblock, sk);
     if( !rc )

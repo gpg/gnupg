@@ -1,3 +1,8 @@
+Wed Oct 14 12:11:34 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* configure.in (NAME_OF_DEV_RANDOM): New.
+	(DYNLINK_MOD_CFLAGS): New.
+
 Thu Oct  8 10:55:15 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* Makefile.am (g10defs.h): creates include file

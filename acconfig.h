@@ -71,6 +71,9 @@
 #undef USE_RAND_W32
 /* defined if we have a /dev/random and /dev/urandom */
 #undef HAVE_DEV_RANDOM
+/* and the real names of the random devices */
+#undef NAME_OF_DEV_RANDOM
+#undef NAME_OF_DEV_URANDOM
 
 #undef USE_DYNAMIC_LINKING
 #undef HAVE_DL_DLOPEN

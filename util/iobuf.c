@@ -431,6 +431,13 @@ iobuf_close( IOBUF a )
     size_t dummy_len;
     int rc=0;
 
+    if( a->directfp ) {
+	fclose( a->directfp );
+	if( DBG_IOBUF )
+	    log_debug("iobuf-close -> %p\n", a->directfp );
+	return 0;
+    }
+
     for( ; a && !rc ; a = a2 ) {
 	a2 = a->chain;
 	if( a->usage == 2 && (rc=iobuf_flush(a)) )
@@ -602,6 +609,39 @@ iobuf_openrw( const char *fname )
     return a;
 }
 
+
+
+/****************
+ * You can overwrite the normal iobuf behaviour by using this function.
+ * If used, the crwated iobuf is a simple wrapper around stdio.
+ * NULL if an error occures and sets errno
+ */
+IOBUF
+iobuf_fopen( const char *fname, const char *mode )
+{
+    IOBUF a;
+    FILE *fp;
+    int print_only = 0;
+
+    if( !fname || (*fname=='-' && !fname[1])  ) {
+	fp = stdin; /* fixme: set binary mode for msdoze */
+	fname = "[stdin]";
+	print_only = 1;
+    }
+    else if( !(fp = fopen(fname, mode) ) )
+	return NULL;
+    a = iobuf_alloc(1, 8192 );
+    a->directfp = fp;
+
+    if( DBG_IOBUF )
+	log_debug("iobuf_fopen -> %p\n", a->directfp );
+
+    return a;
+}
+
+
+
+
 /****************
  * Register an i/o filter.
  */
@@ -613,6 +653,9 @@ iobuf_push_filter( IOBUF a,
     IOBUF b;
     size_t dummy_len=0;
     int rc=0;
+
+    if( a->directfp )
+	BUG();
 
     if( a->usage == 2 && (rc=iobuf_flush(a)) )
 	return rc;
@@ -640,6 +683,7 @@ iobuf_push_filter( IOBUF a,
     /* disable nlimit for the new stream */
     a->ntotal = b->ntotal + b->nbytes;
     a->nlimit = a->nbytes = 0;
+    a->nofast &= ~1;
     /* make a link from the new stream to the original stream */
     a->chain = b;
     a->opaque = b->opaque;
@@ -674,6 +718,9 @@ iobuf_pop_filter( IOBUF a, int (*f)(void *opaque, int control,
     IOBUF b;
     size_t dummy_len=0;
     int rc=0;
+
+    if( a->directfp )
+	BUG();
 
     if( DBG_IOBUF )
 	log_debug("iobuf-%d.%d: pop '%s'\n", a->no, a->subno, a->desc );
@@ -744,6 +791,7 @@ underflow(IOBUF a)
     assert( a->d.start == a->d.len );
     if( a->usage == 3 )
 	return -1; /* EOF because a temp buffer can't do an underflow */
+
     if( a->filter_eof ) {
 	if( DBG_IOBUF )
 	    log_debug("iobuf-%d.%d: filter eof\n", a->no, a->subno );
@@ -754,6 +802,22 @@ underflow(IOBUF a)
 	    log_debug("iobuf-%d.%d: error\n", a->no, a->subno );
 	return -1;
     }
+
+    if( a->directfp ) {
+	FILE *fp = a->directfp;
+
+	len = fread( a->d.buf, 1, a->d.size, fp);
+	if( len < a->d.size ) {
+	    if( ferror(fp) )
+		a->error = 1;
+	    else if( feof( fp ) )
+		a->filter_eof = 1;
+	}
+	a->d.len = len;
+	a->d.start = 0;
+	return len? a->d.buf[a->d.start++] : -1;
+    }
+
 
     if( a->filter ) {
 	len = a->d.size;
@@ -790,6 +854,9 @@ underflow(IOBUF a)
 void
 iobuf_clear_eof(IOBUF a)
 {
+    if( a->directfp )
+	return;
+
     assert(a->usage == 1);
 
     if( a->filter )
@@ -805,6 +872,9 @@ iobuf_flush(IOBUF a)
 {
     size_t len;
     int rc;
+
+    if( a->directfp )
+	return 0;
 
     /*log_debug("iobuf-%d.%d: flush\n", a->no, a->subno );*/
     if( a->usage == 3 )
@@ -842,6 +912,7 @@ iobuf_readbyte(IOBUF a)
 	    return a->unget.buf[a->unget.start++];
 	m_free(a->unget.buf);
 	a->unget.buf = NULL;
+	a->nofast &= ~2;
     }
 
     if( a->nlimit && a->nbytes >= a->nlimit )
@@ -924,6 +995,10 @@ iobuf_peek(IOBUF a, byte *buf, unsigned buflen )
 int
 iobuf_writebyte(IOBUF a, unsigned c)
 {
+
+    if( a->directfp )
+	BUG();
+
     if( a->d.len == a->d.size )
 	if( iobuf_flush(a) )
 	    return -1;
@@ -937,6 +1012,10 @@ iobuf_writebyte(IOBUF a, unsigned c)
 int
 iobuf_write(IOBUF a, byte *buf, unsigned buflen )
 {
+
+    if( a->directfp )
+	BUG();
+
     do {
 	for( ; buflen && a->d.len < a->d.size; buflen--, buf++ )
 	    a->d.buf[a->d.len++] = *buf;
@@ -996,9 +1075,11 @@ iobuf_unget_and_close_temp( IOBUF a, IOBUF temp )
 	/* not yet cleaned up; do it now */
 	m_free(a->unget.buf);
 	a->unget.buf = NULL;
+	a->nofast &= ~2;
     }
     a->unget.size = temp->d.len;
     a->unget.buf = m_alloc( a->unget.size );
+    a->nofast |= 2;
     a->unget.len = temp->d.len;
     memcpy( a->unget.buf, temp->d.buf, a->unget.len );
     iobuf_close(temp);
@@ -1012,6 +1093,10 @@ iobuf_unget_and_close_temp( IOBUF a, IOBUF temp )
 void
 iobuf_set_limit( IOBUF a, unsigned long nlimit )
 {
+    if( nlimit )
+	a->nofast |= 1;
+    else
+	a->nofast &= ~1;
     a->nlimit = nlimit;
     a->ntotal += a->nbytes;
     a->nbytes = 0;
@@ -1026,6 +1111,15 @@ u32
 iobuf_get_filelength( IOBUF a )
 {
     struct stat st;
+
+    if( a->directfp )  {
+	FILE *fp = a->directfp;
+
+	if( !fstat(fileno(fp), &st) )
+	    return st.st_size;
+	log_error("fstat() failed: %s\n", strerror(errno) );
+	return 0;
+    }
 
     for( ; a; a = a->chain )
 	if( !a->chain && a->filter == file_filter ) {
@@ -1061,29 +1155,38 @@ iobuf_seek( IOBUF a, ulong newpos )
 {
     file_filter_ctx_t *b = NULL;
 
-    for( ; a; a = a->chain ) {
-	if( !a->chain && a->filter == file_filter ) {
-	    b = a->filter_ov;
-	    break;
+    if( a->directfp ) {
+	FILE *fp = a->directfp;
+	if( fseek( fp, newpos, SEEK_SET ) ) {
+	    log_error("can't seek to %lu: %s\n", newpos, strerror(errno) );
+	    return -1;
 	}
+	clearerr(fp);
     }
-    if( !a )
-	return -1;
-
-    if( fseek( b->fp, newpos, SEEK_SET ) ) {
-	log_error("can't seek to %lu: %s\n", newpos, strerror(errno) );
-	return -1;
+    else {
+	for( ; a; a = a->chain ) {
+	    if( !a->chain && a->filter == file_filter ) {
+		b = a->filter_ov;
+		break;
+	    }
+	}
+	if( !a )
+	    return -1;
+	if( fseek( b->fp, newpos, SEEK_SET ) ) {
+	    log_error("can't seek to %lu: %s\n", newpos, strerror(errno) );
+	    return -1;
+	}
     }
     a->d.len = 0;   /* discard buffer */
     a->d.start = 0;
     a->nbytes = 0;
     a->nlimit = 0;
+    a->nofast &= ~1;
     a->ntotal = newpos;
     a->error = 0;
     /* remove filters, but the last */
     while( a->chain )
 	iobuf_pop_filter( a, a->filter, NULL );
-
 
     return 0;
 }

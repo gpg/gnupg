@@ -11,6 +11,8 @@ else
 pkglib_PROGRAMS  =
 endif
 
+DYNLINK_MOD_CFLAGS = @DYNLINK_MOD_CFLAGS@
+
 
 libcipher_a_SOURCES = cipher.c	\
 		 pubkey.c	\
@@ -48,11 +50,11 @@ EXTRA_twofish_SOURCES = twofish.c
 
 
 tiger: $(srcdir)/tiger.c
-	`echo $(COMPILE) -shared  -fPIC -lc -o tiger $(srcdir)/tiger.c | \
+	`echo $(COMPILE) $(DYNLINK_MOD_CFLAGS) -o tiger $(srcdir)/tiger.c | \
 	    sed -e 's/-O[2-9]*/-O1/' `
 
 twofish: $(srcdir)/twofish.c
-	`echo $(COMPILE) -shared  -fPIC -lc -o twofish $(srcdir)/twofish.c | \
+	`echo $(COMPILE) $(DYNLINK_MOD_CFLAGS) -o twofish $(srcdir)/twofish.c | \
 	    sed -e 's/-O[0-9]*/  /' `
 
 

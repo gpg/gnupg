@@ -1,3 +1,7 @@
+Tue Oct 13 12:40:13 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* util.c (.nofast): set this variable
+
 Wed Oct  7 19:27:50 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* memory.c (m_print_stats): New.

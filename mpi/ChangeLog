@@ -1,3 +1,7 @@
+Wed Oct 14 09:59:30 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* config-links (freebsd): ELF patches from Jun Kuriyama.
+
 Thu Oct  8 13:28:17 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* mpi-mpow.c (mpi_mulpowm): Fixed mem leak (m_free/mpi_free).

@@ -917,8 +917,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 {
     int i, version, algorithm;
     unsigned n;
-    unsigned long timestamp;
-    unsigned short valid_period;
+    unsigned long timestamp, expiredate;
     int npkey, nskey;
     int is_v4=0;
     int rc=0;
@@ -956,25 +955,30 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 
     timestamp = read_32(inp); pktlen -= 4;
     if( is_v4 )
-	valid_period = 0;
+	expiredate = 0; /* have to get it from the selfsignature */
     else {
-	valid_period = read_16(inp); pktlen -= 2;
+	unsigned short ndays;
+	ndays = read_16(inp); pktlen -= 2;
+	if( ndays )
+	    expiredate = timestamp + ndays * 86400L;
+	else
+	    expiredate = 0;
     }
     algorithm = iobuf_get_noeof(inp); pktlen--;
     if( list_mode )
 	printf(":%s key packet:\n"
-	       "\tversion %d, algo %d, created %lu, valid for %hu days\n",
+	       "\tversion %d, algo %d, created %lu, expires %lu\n",
 		pkttype == PKT_PUBLIC_KEY? "public" :
 		pkttype == PKT_SECRET_KEY? "secret" :
 		pkttype == PKT_PUBLIC_SUBKEY? "public sub" :
 		pkttype == PKT_SECRET_SUBKEY? "secret sub" : "??",
-		version, algorithm, timestamp, valid_period );
+		version, algorithm, timestamp, expiredate );
 
     if( pkttype == PKT_SECRET_KEY || pkttype == PKT_SECRET_SUBKEY )  {
 	PKT_secret_key *sk = pkt->pkt.secret_key;
 
 	sk->timestamp = timestamp;
-	sk->valid_days = valid_period;
+	sk->expiredate = expiredate;
 	sk->hdrbytes = hdrlen;
 	sk->version = version;
 	sk->pubkey_algo = algorithm;
@@ -984,7 +988,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	PKT_public_key *pk = pkt->pkt.public_key;
 
 	pk->timestamp = timestamp;
-	pk->valid_days = valid_period;
+	pk->expiredate = expiredate;
 	pk->hdrbytes	= hdrlen;
 	pk->version	= version;
 	pk->pubkey_algo = algorithm;

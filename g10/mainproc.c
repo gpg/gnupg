@@ -471,14 +471,14 @@ list_node( CTX c, KBNODE node )
 		c->local_id = pk->local_id;
 		c->trustletter = query_trust_info( pk );
 	    }
-	    printf("%s:%c:%u:%d:%08lX%08lX:%s:%u:",
+	    printf("%s:%c:%u:%d:%08lX%08lX:%s:%s:",
 		    mainkey? "pub":"sub",
 		    c->trustletter,
 		    nbits_from_pk( pk ),
 		    pk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
 		    datestr_from_pk( pk ),
-		    (unsigned)pk->valid_days );
+		    pk->expiredate? strtimestamp(pk->expiredate):"" );
 	    if( c->local_id )
 		printf("%lu", c->local_id );
 	    putchar(':');
@@ -541,13 +541,13 @@ list_node( CTX c, KBNODE node )
 	if( opt.with_colons ) {
 	    u32 keyid[2];
 	    keyid_from_sk( sk, keyid );
-	    printf("%s::%u:%d:%08lX%08lX:%s:%u:::",
+	    printf("%s::%u:%d:%08lX%08lX:%s:%s:::",
 		    mainkey? "sec":"ssb",
 		    nbits_from_sk( sk ),
 		    sk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
 		    datestr_from_sk( sk ),
-		    (unsigned)sk->valid_days
+		    sk->expiredate? strtimestamp(sk->expiredate):""
 		    /* fixme: add LID */ );
 	}
 	else

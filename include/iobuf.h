@@ -41,6 +41,8 @@ struct iobuf_struct {
     unsigned long nlimit;
     unsigned long nbytes; /* used together with nlimit */
     unsigned long ntotal; /* total bytes read (position of stream) */
+    int nofast; 	/* used by the iobuf_get() */
+    void *directfp;
     struct {
 	size_t size;   /* allocated size */
 	size_t start;  /* number of invalid bytes at the begin of the buffer */
@@ -70,6 +72,7 @@ int iobuf_debug_mode;
 IOBUF iobuf_alloc(int usage, size_t bufsize);
 IOBUF iobuf_temp(void);
 IOBUF iobuf_open( const char *fname );
+IOBUF iobuf_fopen( const char *fname, const char *mode );
 IOBUF iobuf_create( const char *fname );
 IOBUF iobuf_append( const char *fname );
 IOBUF iobuf_openrw( const char *fname );
@@ -114,14 +117,9 @@ int  iobuf_in_block_mode( IOBUF a );
  * returned value to be in the range 0 ..255.
  */
 #define iobuf_get(a)  \
-     (	((a)->nlimit || (a)->d.start >= (a)->d.len )?  \
+     (	((a)->nofast || (a)->d.start >= (a)->d.len )?  \
 	iobuf_readbyte((a)) : ( (a)->nbytes++, (a)->d.buf[(a)->d.start++] ) )
 #define iobuf_get_noeof(a)    (iobuf_get((a))&0xff)
-
-/* use this if you have ungetted stuff */
-#define iobuf_get2(a)  \
-     (	( (a)->unget.buf || (a)->nlimit || (a)->d.start >= (a)->d.len )?  \
-	iobuf_readbyte((a)) : ( (a)->nbytes++, (a)->d.buf[(a)->d.start++] ) )
 
 /* write a byte to the iobuf and return true on write error
  * This macro does only write the low order byte

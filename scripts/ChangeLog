@@ -1,0 +1,5 @@
+Wed Oct 14 09:55:25 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* config.guess (FreeBSD): Changes from Jun Kuriyama to support ELF
+	* config.sub: (freebsd): Add to maybe_os
+

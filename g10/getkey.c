@@ -37,16 +37,15 @@
 #define MAX_PK_CACHE_ENTRIES	50
 #define MAX_UID_CACHE_ENTRIES	50
 
+static struct {
+    int any;
+    int okay_count;
+    int nokey_count;
+    int error_count;
+} lkup_stats[21];
 
-typedef struct enum_seckey_context {
-    int eof;
-    STRLIST sl;
-    IOBUF iobuf;
-} enum_seckey_context_t;
 
 
-static STRLIST keyrings;
-static STRLIST secret_keyrings;
 
 #if MAX_UNK_CACHE_ENTRIES
   typedef struct keyid_list {
@@ -89,91 +88,23 @@ static int lookup( PKT_public_key *pk,
 static int lookup_sk( PKT_secret_key *sk,
 		   int mode,  u32 *keyid, const char *name, int primary );
 
-/* note this function may be called before secure memory is
- * available
- * The first keyring which is added by this function is
- * created if it does not exist.
- */
-void
-add_keyring( const char *name )
+
+
+static void
+print_stats()
 {
-    STRLIST sl;
-    int rc, force = !keyrings;
-
-    if( *name != '/' ) { /* do tilde expansion etc */
-	char *p ;
-
-	if( strchr(name, '/') )
-	    p = make_filename(name, NULL);
-	else
-	    p = make_filename(opt.homedir, name, NULL);
-	sl = append_to_strlist( &keyrings, p );
-	m_free(p);
+    int i;
+    for(i=0; i < DIM(lkup_stats); i++ ) {
+	if( lkup_stats[i].any )
+	    fprintf(stderr,
+		    "lookup stats: mode=%-2d  ok=%-6d  nokey=%-6d  err=%-6d\n",
+		    i,
+		    lkup_stats[i].okay_count,
+		    lkup_stats[i].nokey_count,
+		    lkup_stats[i].error_count );
     }
-    else
-	sl = append_to_strlist( &keyrings, name );
-
-    /* fixme: We should remove much out of this module and
-     * combine it with the keyblock stuff from ringedit.c
-     * For now we will simple add the filename as keyblock resource
-     */
-    rc = add_keyblock_resource( sl->d, force, 0 );
-    if( rc )
-	log_error("keyblock resource '%s': %s\n", sl->d, g10_errstr(rc) );
 }
 
-
-/****************
- * Get the name of the keyrings, start with a sequence number of 0.
- */
-const char *
-get_keyring( int sequence )
-{
-    STRLIST sl;
-
-    for(sl = keyrings; sl && sequence; sl = sl->next, sequence-- )
-	;
-    return sl? sl->d : NULL;
-}
-
-const char *
-get_secret_keyring( int sequence )
-{
-    STRLIST sl;
-
-    for(sl = secret_keyrings; sl && sequence; sl = sl->next, sequence-- )
-	;
-    return sl? sl->d : NULL;
-}
-
-
-void
-add_secret_keyring( const char *name )
-{
-    STRLIST sl;
-    int rc, force = !secret_keyrings;
-
-    if( *name != '/' ) { /* do tilde expansion etc */
-	char *p ;
-
-	if( strchr(name, '/') )
-	    p = make_filename(name, NULL);
-	else
-	    p = make_filename(opt.homedir, name, NULL);
-	sl = append_to_strlist( &secret_keyrings, p );
-	m_free(p);
-    }
-    else
-	sl = append_to_strlist( &secret_keyrings, name );
-
-    /* fixme: We should remove much out of this module and
-     * combine it with the keyblock stuff from ringedit.c
-     * For now we will simple add the filename as keyblock resource
-     */
-    rc = add_keyblock_resource( sl->d, force, 1 );
-    if( rc )
-	log_error("secret keyblock resource '%s': %s\n", sl->d, g10_errstr(rc));
-}
 
 
 static void
@@ -690,7 +621,7 @@ merge_one_pk_and_selfsig( KBNODE keyblock, KBNODE knode )
 	     */
 	    const byte *p;
 	    p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_KEY_EXPIRE, NULL );
-	    pk->valid_days = p? ((buffer_to_u32(p)+86399L)/86400L):0;
+	    pk->expiredate = p? buffer_to_u32(p):0;
 	    /* fixme: add usage etc. to pk */
 	    break;
 	}
@@ -739,12 +670,12 @@ merge_keys_and_selfsig( KBNODE keyblock )
 	    const byte *p;
 	    p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_KEY_EXPIRE, NULL );
 	    if( pk ) {
-		pk->valid_days = p? ((buffer_to_u32(p)+86399L)/86400L):0;
+		pk->expiredate = p? buffer_to_u32(p):0;
 		/* fixme: add usage etc. */
 		pk = NULL; /* use only the first self signature */
 	    }
 	    else {
-		sk->valid_days = p? ((buffer_to_u32(p)+86399L)/86400L):0;
+		sk->expiredate = p? buffer_to_u32(p):0;
 		sk = NULL; /* use only the first self signature */
 	    }
 	}
@@ -756,7 +687,7 @@ merge_keys_and_selfsig( KBNODE keyblock )
 
 
 /****************
- * Lookup a key by scanning all keyrings
+ * Lookup a key by scanning all keyresources
  *   mode 1 = lookup by NAME (exact)
  *	  2 = lookup by NAME (substring)
  *	  3 = lookup by NAME (email address)
@@ -949,6 +880,24 @@ lookup( PKT_public_key *pk, int mode,  u32 *keyid,
     enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
     release_kbnode( keyblock );
     set_packet_list_mode(oldmode);
+    if( opt.debug & DBG_MEMSTAT_VALUE ) {
+	static int initialized;
+
+	if( !initialized ) {
+	    initialized = 1;
+	    atexit( print_stats );
+	}
+
+	assert( mode < DIM(lkup_stats) );
+	lkup_stats[mode].any = 1;
+	if( !rc )
+	    lkup_stats[mode].okay_count++;
+	else if ( rc == G10ERR_NO_PUBKEY )
+	    lkup_stats[mode].nokey_count++;
+	else
+	    lkup_stats[mode].error_count++;
+    }
+
     return rc;
 }
 
@@ -1107,12 +1056,19 @@ enum_secret_keys( void **context, PKT_secret_key *sk, int with_subkeys )
     int rc=0;
     PACKET pkt;
     int save_mode;
-    enum_seckey_context_t *c = *context;
+    struct {
+	int eof;
+	int sequence;
+	const char *name;
+	IOBUF iobuf;
+    } *c = *context;
+
 
     if( !c ) { /* make a new context */
 	c = m_alloc_clear( sizeof *c );
 	*context = c;
-	c->sl = secret_keyrings;
+	c->sequence = 0;
+	c->name = enum_keyblock_resources( &c->sequence, 1 );
     }
 
     if( !sk ) { /* free the context */
@@ -1126,10 +1082,11 @@ enum_secret_keys( void **context, PKT_secret_key *sk, int with_subkeys )
     if( c->eof )
 	return -1;
 
-    for( ; c->sl; c->sl = c->sl->next ) {
+    /* FIXME: This assumes a plain keyring file */
+    for( ; c->name; c->name = enum_keyblock_resources( &c->sequence, 1 ) ) {
 	if( !c->iobuf ) {
-	    if( !(c->iobuf = iobuf_open( c->sl->d ) ) ) {
-		log_error("enum_secret_keys: can't open '%s'\n", c->sl->d );
+	    if( !(c->iobuf = iobuf_open( c->name ) ) ) {
+		log_error("enum_secret_keys: can't open '%s'\n", c->name );
 		continue; /* try next file */
 	    }
 	}
@@ -1165,7 +1122,7 @@ get_user_id_string( u32 *keyid )
     user_id_db_t r;
     char *p;
     int pass=0;
-    /* try it two times; second pass reads from keyrings */
+    /* try it two times; second pass reads from key resources */
     do {
 	for(r=user_id_db; r; r = r->next )
 	    if( r->keyid[0] == keyid[0] && r->keyid[1] == keyid[1] ) {
@@ -1185,7 +1142,7 @@ get_user_id( u32 *keyid, size_t *rn )
     user_id_db_t r;
     char *p;
     int pass=0;
-    /* try it two times; second pass reads from keyrings */
+    /* try it two times; second pass reads from key resources */
     do {
 	for(r=user_id_db; r; r = r->next )
 	    if( r->keyid[0] == keyid[0] && r->keyid[1] == keyid[1] ) {

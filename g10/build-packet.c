@@ -209,8 +209,14 @@ do_public_key( IOBUF out, int ctb, PKT_public_key *pk )
     else
 	iobuf_put( a, pk->version );
     write_32(a, pk->timestamp );
-    if( pk->version < 4 )
-	write_16(a, pk->valid_days );
+    if( pk->version < 4 ) {
+	u16 ndays;
+	if( pk->expiredate )
+	    ndays = (u16)((pk->expiredate - pk->timestamp) / 86400L);
+	else
+	    ndays = 0;
+	write_16(a, 0 );
+    }
     iobuf_put(a, pk->pubkey_algo );
     n = pubkey_get_npkey( pk->pubkey_algo );
     if( !n )
@@ -280,8 +286,14 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
     else
 	iobuf_put( a, sk->version );
     write_32(a, sk->timestamp );
-    if( sk->version < 4 )
-	write_16(a, sk->valid_days );
+    if( sk->version < 4 ) {
+	u16 ndays;
+	if( sk->expiredate )
+	    ndays = (u16)((sk->expiredate - sk->timestamp) / 86400L);
+	else
+	    ndays = 0;
+	write_16(a, 0 );
+    }
     iobuf_put(a, sk->pubkey_algo );
     nskey = pubkey_get_nskey( sk->pubkey_algo );
     npkey = pubkey_get_npkey( sk->pubkey_algo );

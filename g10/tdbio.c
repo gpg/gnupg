@@ -39,6 +39,27 @@
 #include "trustdb.h"
 #include "tdbio.h"
 
+
+/****************
+ * Yes, this is a very simple implementation. We should really
+ * use a page aligned buffer and read complete pages.
+ * To implement a simple trannsaction system, this is sufficient.
+ */
+typedef struct cache_ctrl_struct *CACHE_CTRL;
+struct cache_ctrl_struct {
+    CACHE_CTRL next;
+    struct {
+	unsigned used:1;
+	unsigned dirty:1;
+    } flags;
+    ulong recno;
+    char data[TRUST_RECORD_LEN];
+};
+
+#define MAX_CACHE_ENTRIES    200
+static CACHE_CTRL cache_list;
+static int cache_entries;
+
 /* a type used to pass infomation to cmp_krec_fpr */
 struct cmp_krec_fpr_struct {
     int pubkey_algo;
@@ -59,6 +80,184 @@ static int  db_fd = -1;
 
 static void open_db(void);
 
+
+/*************************************
+ ************* record cache **********
+ *************************************/
+
+/****************
+ * Get the data from therecord cache and return a
+ * pointer into that cache.  Caller should copy
+ * the return data.  NULL is returned on a cache miss.
+ */
+static const char *
+get_record_from_cache( ulong recno )
+{
+    CACHE_CTRL r;
+
+    for( r = cache_list; r; r = r->next ) {
+	if( r->flags.used && r->recno == recno )
+	    return r->data;
+    }
+    return NULL;
+}
+
+
+static int
+write_cache_item( CACHE_CTRL r )
+{
+    int n;
+
+    if( lseek( db_fd, r->recno * TRUST_RECORD_LEN, SEEK_SET ) == -1 ) {
+	log_error(_("trustdb rec %lu: lseek failed: %s\n"),
+					    r->recno, strerror(errno) );
+	return G10ERR_WRITE_FILE;
+    }
+    n = write( db_fd, r->data, TRUST_RECORD_LEN);
+    if( n != TRUST_RECORD_LEN ) {
+	log_error(_("trustdb rec %lu: write failed (n=%d): %s\n"),
+					    r->recno, n, strerror(errno) );
+	return G10ERR_WRITE_FILE;
+    }
+    r->flags.dirty = 0;
+    return 0;
+}
+
+/****************
+ * Put data into the cache.  This function may flush the
+ * some cache entries if there is not enough space available.
+ */
+int
+put_record_into_cache( ulong recno, const char *data )
+{
+    CACHE_CTRL r, unused;
+    int dirty_count = 0;
+    int clean_count = 0;
+
+    /* see whether we already cached this one */
+    for( unused = NULL, r = cache_list; r; r = r->next ) {
+	if( !r->flags.used ) {
+	    if( !unused )
+		unused = r;
+	}
+	else if( r->recno == recno ) {
+	    if( !r->flags.dirty ) {
+		/* Hmmm: should we use a a copy and compare? */
+		if( memcmp(r->data, data, TRUST_RECORD_LEN ) )
+		    r->flags.dirty = 1;
+	    }
+	    memcpy( r->data, data, TRUST_RECORD_LEN );
+	    return 0;
+	}
+	if( r->flags.used ) {
+	    if( r->flags.dirty )
+		dirty_count++;
+	    else
+		clean_count++;
+	}
+    }
+    /* not in the cache: add a new entry */
+    if( unused ) { /* reuse this entry */
+	r = unused;
+	r->flags.used = 1;
+	r->recno = recno;
+	memcpy( r->data, data, TRUST_RECORD_LEN );
+	r->flags.dirty = 1;
+	cache_entries++;
+	return 0;
+    }
+    /* see whether we reached the limit */
+    if( cache_entries < MAX_CACHE_ENTRIES ) { /* no */
+	r = m_alloc( sizeof *r );
+	r->flags.used = 1;
+	r->recno = recno;
+	memcpy( r->data, data, TRUST_RECORD_LEN );
+	r->flags.dirty = 1;
+	r->next = cache_list;
+	cache_list = r;
+	cache_entries++;
+	return 0;
+    }
+    /* cache is full: discard some clean entries */
+    if( clean_count ) {
+	int n = clean_count / 3; /* discard a third of the clean entries */
+	if( !n )
+	    n = 1;
+	for( unused = NULL, r = cache_list; r; r = r->next ) {
+	    if( r->flags.used && !r->flags.dirty ) {
+		if( !unused )
+		    unused = r;
+		r->flags.used = 0;
+		cache_entries--;
+		if( !--n )
+		    break;
+	    }
+	}
+	assert( unused );
+	r = unused;
+	r->flags.used = 1;
+	r->recno = recno;
+	memcpy( r->data, data, TRUST_RECORD_LEN );
+	r->flags.dirty = 1;
+	cache_entries++;
+	return 0;
+    }
+    /* no clean entries: have to flush some dirty entries */
+    if( dirty_count ) {
+	int n = dirty_count / 5; /* discard some dirty entries */
+	if( !n )
+	    n = 1;
+	for( unused = NULL, r = cache_list; r; r = r->next ) {
+	    if( r->flags.used && r->flags.dirty ) {
+		int rc = write_cache_item( r );
+		if( rc )
+		    return rc;
+		if( !unused )
+		    unused = r;
+		r->flags.used = 0;
+		cache_entries--;
+		if( !--n )
+		    break;
+	    }
+	}
+	assert( unused );
+	r = unused;
+	r->flags.used = 1;
+	r->recno = recno;
+	memcpy( r->data, data, TRUST_RECORD_LEN );
+	r->flags.dirty = 1;
+	cache_entries++;
+	return 0;
+    }
+    BUG();
+}
+
+
+
+/****************
+ * Sync the cache to disk
+ */
+
+int
+tdbio_sync()
+{
+    CACHE_CTRL r;
+
+    for( r = cache_list; r; r = r->next ) {
+	if( r->flags.used && r->flags.dirty ) {
+	    int rc = write_cache_item( r );
+	    if( rc )
+		return rc;
+	}
+    }
+    return 0;
+}
+
+
+
+/********************************************************
+ **************** cached I/O functions ******************
+ ********************************************************/
 
 int
 tdbio_set_dbname( const char *new_dbname, int create )
@@ -118,6 +317,8 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    rec.rectype = RECTYPE_VER;
 	    rec.recnum = 0;
 	    rc = tdbio_write_record( &rec );
+	    if( !rc )
+		tdbio_sync();
 	    if( rc )
 		log_fatal_f( fname, _("failed to create version record: %s"),
 							       g10_errstr(rc));
@@ -185,7 +386,7 @@ create_hashtable( TRUSTREC *vr, int type )
     n = (256+ITEMS_PER_HTBL_RECORD-1) / ITEMS_PER_HTBL_RECORD;
     for(i=0; i < n; i++, recnum++ ) {
 	 memset( &rec, 0, sizeof rec );
-	 rec.rectype = RECTYPE_HTBL; /* free record */
+	 rec.rectype = RECTYPE_HTBL;
 	 rec.recnum = recnum;
 	 rc = tdbio_write_record( &rec );
 	 if( rc )
@@ -194,6 +395,8 @@ create_hashtable( TRUSTREC *vr, int type )
     }
     /* update the version record */
     rc = tdbio_write_record( vr );
+    if( !rc )
+	rc = tdbio_sync();
     if( rc )
 	log_fatal_f( db_name, _("error updating version record: %s\n"),
 							     g10_errstr(rc));
@@ -208,21 +411,21 @@ static ulong
 get_keyhashrec()
 {
     static ulong keyhashtbl; /* record number of the key hashtable */
-    TRUSTREC vr;
-    int rc;
 
-    if( keyhashtbl )
-	return keyhashtbl;
+    if( !keyhashtbl ) {
+	TRUSTREC vr;
+	int rc;
 
-    rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
-    if( rc )
-	log_fatal_f( db_name, _("error reading version record: %s\n"),
-							g10_errstr(rc) );
-    if( !vr.r.ver.keyhashtbl )
-	create_hashtable( &vr, 0 );
+	rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
+	if( rc )
+	    log_fatal_f( db_name, _("error reading version record: %s\n"),
+							    g10_errstr(rc) );
+	if( !vr.r.ver.keyhashtbl )
+	    create_hashtable( &vr, 0 );
 
-
-    return vr.r.ver.keyhashtbl;
+	keyhashtbl = vr.r.ver.keyhashtbl;
+    }
+    return keyhashtbl;
 }
 
 /****************
@@ -233,20 +436,21 @@ static ulong
 get_sdirhashrec()
 {
     static ulong sdirhashtbl; /* record number of the hashtable */
-    TRUSTREC vr;
-    int rc;
 
-    if( sdirhashtbl )
-	return sdirhashtbl;
+    if( !sdirhashtbl ) {
+	TRUSTREC vr;
+	int rc;
 
-    rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
-    if( rc )
-	log_fatal_f( db_name, _("error reading version record: %s\n"),
-							g10_errstr(rc) );
-    if( !vr.r.ver.sdirhashtbl )
-	create_hashtable( &vr, 1 );
+	rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
+	if( rc )
+	    log_fatal_f( db_name, _("error reading version record: %s\n"),
+							    g10_errstr(rc) );
+	if( !vr.r.ver.sdirhashtbl )
+	    create_hashtable( &vr, 1 );
 
-    return vr.r.ver.sdirhashtbl;
+	sdirhashtbl = vr.r.ver.sdirhashtbl;
+    }
+    return sdirhashtbl;
 }
 
 
@@ -289,15 +493,16 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 	lastrec = rec;
 	rc = tdbio_read_record( item, &rec, 0 );
 	if( rc ) {
-	    log_error( db_name, "upd_hashtable: read item failed: %s\n",
+	    log_error( "upd_hashtable: read item failed: %s\n",
 							    g10_errstr(rc) );
 	    return rc;
 	}
+
 	if( rec.rectype == RECTYPE_HTBL ) {
 	    hashrec = item;
 	    level++;
 	    if( level >= keylen ) {
-		log_error( db_name, "hashtable has invalid indirections.\n");
+		log_error( "hashtable has invalid indirections.\n");
 		return G10ERR_TRUSTDB;
 	    }
 	    goto next_level;
@@ -314,8 +519,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 		    rc = tdbio_read_record( rec.r.hlst.next,
 						       &rec, RECTYPE_HLST);
 		    if( rc ) {
-			log_error( db_name,
-				   "scan keyhashtbl read hlst failed: %s\n",
+			log_error( "scan keyhashtbl read hlst failed: %s\n",
 							     g10_errstr(rc) );
 			return rc;
 		    }
@@ -330,8 +534,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 			rec.r.hlst.rnum[i] = newrecnum;
 			rc = tdbio_write_record( &rec );
 			if( rc )
-			    log_error( db_name,
-				   "upd_hashtable: write hlst failed: %s\n",
+			    log_error( "upd_hashtable: write hlst failed: %s\n",
 							      g10_errstr(rc) );
 			return rc; /* done */
 		    }
@@ -340,8 +543,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 		    rc = tdbio_read_record( rec.r.hlst.next,
 						      &rec, RECTYPE_HLST );
 		    if( rc ) {
-			log_error( db_name,
-				   "upd_hashtable: read hlst failed: %s\n",
+			log_error( "upd_hashtable: read hlst failed: %s\n",
 							     g10_errstr(rc) );
 			return rc;
 		    }
@@ -350,8 +552,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 		    rec.r.hlst.next = item = tdbio_new_recnum();
 		    rc = tdbio_write_record( &rec );
 		    if( rc ) {
-			log_error( db_name,
-			       "upd_hashtable: write hlst failed: %s\n",
+			log_error( "upd_hashtable: write hlst failed: %s\n",
 							  g10_errstr(rc) );
 			return rc;
 		    }
@@ -361,14 +562,14 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 		    rec.r.hlst.rnum[0] = newrecnum;
 		    rc = tdbio_write_record( &rec );
 		    if( rc )
-			log_error( db_name,
-			       "upd_hashtable: write ext hlst failed: %s\n",
+			log_error( "upd_hashtable: write ext hlst failed: %s\n",
 							  g10_errstr(rc) );
 		    return rc; /* done */
 		}
 	    } /* end loop over hlst slots */
 	}
 	else if( rec.rectype == RECTYPE_KEY
+		 || rec.rectype == RECTYPE_DIR
 		 || rec.rectype == RECTYPE_SDIR ) { /* insert a list record */
 	    if( rec.recnum == newrecnum ) {
 		return 0;
@@ -381,8 +582,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 	    rec.r.hlst.rnum[1] = newrecnum; /* and new one */
 	    rc = tdbio_write_record( &rec );
 	    if( rc ) {
-		log_error( db_name,
-		       "upd_hashtable: write new hlst failed: %s\n",
+		log_error( "upd_hashtable: write new hlst failed: %s\n",
 						  g10_errstr(rc) );
 		return rc;
 	    }
@@ -390,12 +590,12 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 	    lastrec.r.htbl.item[msb % ITEMS_PER_HTBL_RECORD] = rec.recnum;
 	    rc = tdbio_write_record( &lastrec );
 	    if( rc )
-		log_error( db_name, "upd_hashtable: update htbl failed: %s\n",
+		log_error( "upd_hashtable: update htbl failed: %s\n",
 							     g10_errstr(rc) );
 	    return rc; /* ready */
 	}
 	else {
-	    log_error( db_name, "hashtbl %lu points to an invalid record\n",
+	    log_error( "hashtbl %lu points to an invalid record\n",
 								    item);
 	    return G10ERR_TRUSTDB;
 	}
@@ -637,23 +837,29 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 int
 tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 {
-    byte buf[TRUST_RECORD_LEN], *p;
+    byte readbuf[TRUST_RECORD_LEN];
+    const byte *buf, *p;
     int rc = 0;
     int n, i;
 
     if( db_fd == -1 )
 	open_db();
-    if( lseek( db_fd, recnum * TRUST_RECORD_LEN, SEEK_SET ) == -1 ) {
-	log_error(_("trustdb: lseek failed: %s\n"), strerror(errno) );
-	return G10ERR_READ_FILE;
-    }
-    n = read( db_fd, buf, TRUST_RECORD_LEN);
-    if( !n ) {
-	return -1; /* eof */
-    }
-    else if( n != TRUST_RECORD_LEN ) {
-	log_error(_("trustdb: read failed (n=%d): %s\n"), n, strerror(errno) );
-	return G10ERR_READ_FILE;
+    buf = get_record_from_cache( recnum );
+    if( !buf ) {
+	if( lseek( db_fd, recnum * TRUST_RECORD_LEN, SEEK_SET ) == -1 ) {
+	    log_error(_("trustdb: lseek failed: %s\n"), strerror(errno) );
+	    return G10ERR_READ_FILE;
+	}
+	n = read( db_fd, readbuf, TRUST_RECORD_LEN);
+	if( !n ) {
+	    return -1; /* eof */
+	}
+	else if( n != TRUST_RECORD_LEN ) {
+	    log_error(_("trustdb: read failed (n=%d): %s\n"), n,
+							strerror(errno) );
+	    return G10ERR_READ_FILE;
+	}
+	buf = readbuf;
     }
     rec->recnum = recnum;
     rec->dirty = 0;
@@ -791,13 +997,11 @@ tdbio_write_record( TRUSTREC *rec )
 {
     byte buf[TRUST_RECORD_LEN], *p;
     int rc = 0;
-    int i, n;
+    int i;
     ulong recnum = rec->recnum;
 
     if( db_fd == -1 )
 	open_db();
-
-tdbio_dump_record( rec, stdout );
 
     memset(buf, 0, TRUST_RECORD_LEN);
     p = buf;
@@ -900,16 +1104,10 @@ tdbio_dump_record( rec, stdout );
 	BUG();
     }
 
-    if( lseek( db_fd, recnum * TRUST_RECORD_LEN, SEEK_SET ) == -1 ) {
-	log_error(_("trustdb: lseek failed: %s\n"), strerror(errno) );
-	return G10ERR_WRITE_FILE;
-    }
-    n = write( db_fd, buf, TRUST_RECORD_LEN);
-    if( n != TRUST_RECORD_LEN ) {
-	log_error(_("trustdb: write failed (n=%d): %s\n"), n, strerror(errno) );
-	return G10ERR_WRITE_FILE;
-    }
-    else if( rec->rectype == RECTYPE_KEY )
+    rc = put_record_into_cache( recnum, buf );
+    if( rc )
+	;
+    if( rec->rectype == RECTYPE_KEY )
 	rc = update_keyhashtbl( rec );
     else if( rec->rectype == RECTYPE_SDIR )
 	rc = update_sdirhashtbl( rec );
@@ -990,7 +1188,21 @@ tdbio_new_recnum()
 	memset( &rec, 0, sizeof rec );
 	rec.rectype = 0; /* unused record */
 	rec.recnum = recnum;
-	rc = tdbio_write_record( &rec );
+	rc = 0;
+	if( lseek( db_fd, recnum * TRUST_RECORD_LEN, SEEK_SET ) == -1 ) {
+	    log_error(_("trustdb rec %lu: lseek failed: %s\n"),
+						recnum, strerror(errno) );
+	    rc = G10ERR_WRITE_FILE;
+	}
+	else {
+	    int n = write( db_fd, &rec, TRUST_RECORD_LEN);
+	    if( n != TRUST_RECORD_LEN ) {
+		log_error(_("trustdb rec %lu: write failed (n=%d): %s\n"),
+						 recnum, n, strerror(errno) );
+		rc = G10ERR_WRITE_FILE;
+	    }
+	}
+
 	if( rc )
 	    log_fatal_f(db_name,_("failed to append a record: %s\n"),
 						g10_errstr(rc));

@@ -71,11 +71,6 @@ struct trust_seg_list {
 };
 
 
-typedef struct {
-    TRUST_SEG_LIST tsl;
-    int index;
-} ENUM_TRUST_WEB_CONTEXT;
-
 
 struct recno_list_struct {
     struct recno_list_struct *next;
@@ -169,6 +164,19 @@ delete_record( ulong recno )
     log_error("trust record %lu: delete failed: %s\n",
 					      recno, g10_errstr(rc) );
     die_invalid_db();
+}
+
+/****************
+ * sync the db
+ */
+static void
+do_sync( )
+{
+    int rc = tdbio_sync();
+    if( !rc )
+	return;
+    log_error("trust db: sync failed: %s\n", g10_errstr(rc) );
+    g10_exit(2);
 }
 
 
@@ -425,15 +433,15 @@ verify_own_keys()
 	memset( pk, 0, sizeof *pk );
 	rc = get_pubkey( pk, keyid );
 	if( rc ) {
-	    log_error(_("key %08lX: secret key without public key\n"),
+	    log_info(_("key %08lX: secret key without public key - skipped\n"),
 							    (ulong)keyid[1] );
-	    goto leave;
+	    goto skip;
 	}
+
 	if( cmp_public_secret_key( pk, sk ) ) {
-	    log_error(_("key %08lX: secret and public key don't match\n"),
+	    log_info(_("key %08lX: secret and public key don't match\n"),
 							    (ulong)keyid[1] );
-	    rc = G10ERR_GENERAL;
-	    goto leave;
+	    goto skip;
 	}
 
 	/* make sure that the pubkey is in the trustdb */
@@ -443,12 +451,12 @@ verify_own_keys()
 	    if( rc ) {
 		log_error(_("key %08lX: can't put it into the trustdb\n"),
 							    (ulong)keyid[1] );
-		goto leave;
+		goto skip;
 	    }
 	}
 	else if( rc ) {
 	    log_error(_("key %08lX: query record failed\n"), (ulong)keyid[1] );
-	    goto leave;
+	    goto skip;
 
 	}
 
@@ -456,9 +464,12 @@ verify_own_keys()
 	    log_debug("key %08lX.%lu: stored into ultikey_table\n",
 				    (ulong)keyid[1], pk->local_id );
 	if( ins_lid_table_item( ultikey_table, pk->local_id, 0 ) )
-	    log_error(_("key %08lX: already in ultikey_table\n"),
+	    log_error(_("key %08lX: already in secret key table\n"),
 							(ulong)keyid[1]);
-
+	else if( opt.verbose )
+	    log_info(_("key %08lX: accepted as secret key.\n"),
+							(ulong)keyid[1]);
+      skip:
 	release_secret_key_parts( sk );
 	release_public_key_parts( pk );
     }
@@ -467,7 +478,6 @@ verify_own_keys()
     else
 	rc = 0;
 
-  leave:
     enum_secret_keys( &enum_context, NULL, 0 ); /* free context */
     free_secret_key( sk );
     free_public_key( pk );
@@ -695,6 +705,13 @@ do_list_path( TRUST_INFO *stack, int depth, int max_depth,
 	TRUST_SEG_LIST tsl, t2, tl;
 	int i;
 
+	if( !(sx.sig_flag & SIGF_CHECKED) )
+	    continue;  /* only checked sigs */
+	if( !(sx.sig_flag & SIGF_VALID) )
+	    continue;  /* and, of course, only valid sigs */
+	if( (sx.sig_flag & SIGF_REVOKED) )
+	    continue;  /* and skip revoked sigs */
+
 	stack[depth].lid = sx.sig_lid;
 	stack[depth].trust = 0;
 	if( qry_lid_table_flag( lids, sx.sig_lid, &last_depth) ) {
@@ -782,8 +799,13 @@ make_tsl( ulong lid, TRUST_SEG_LIST *ret_tslist )
 	release_lid_table(work);
 	*ret_tslist = tslist;
     }
-    else
-	; /* FIXME: release tslist */
+    else { /* error: release tslist */
+	while( tslist ) {
+	    tsl = tslist->next;
+	    m_free(tslist);
+	    tslist = tsl;
+	}
+    }
     release_lid_table(lids);
     return rc;
 }
@@ -865,7 +887,7 @@ do_check( TRUSTREC *dr, unsigned *trustlevel )
     if( dr->r.dir.dirflags & DIRF_REVOKED )
 	tflags |= TRUST_FLAG_REVOKED;
 
-  #if 0
+  #if 0   /* Do we still need this?? */
     if( !rc && !dr->r.dir.siglist ) {
 	/* We do not have any signatures; check whether it is one of our
 	 * secret keys */
@@ -1153,6 +1175,7 @@ import_ownertrust( const char *fname )
 	log_error_f(fname, _("read error: %s\n"), strerror(errno) );
     if( !is_stdin )
 	fclose(fp);
+    do_sync();
 }
 
 
@@ -1247,8 +1270,6 @@ list_trust_path( int max_depth, const char *username )
 
 /****************
  * Check the complete trustdb or only the entries for the given username.
- * Special hack:  A username "REBUILD" inserts all records from the public
- * key rings into the trustdb.
  */
 void
 check_trustdb( const char *username )
@@ -1257,9 +1278,8 @@ check_trustdb( const char *username )
     KBNODE keyblock = NULL;
     KBPOS kbpos;
     int rc;
-    int rebuild = username && !strcmp(username, "REBUILD");
 
-    if( username && !rebuild ) {
+    if( username ) {
 	rc = find_keyblock_byname( &kbpos, username );
 	if( !rc )
 	    rc = read_keyblock( &kbpos, &keyblock );
@@ -1315,43 +1335,48 @@ check_trustdb( const char *username )
 		release_kbnode( keyblock ); keyblock = NULL;
 	    }
 	}
-	if( rebuild ) {
-	    log_info("adding new entries.\n");
-
-	    rc = enum_keyblocks( 0, &kbpos, &keyblock );
-	    if( !rc ) {
-		while( !(rc = enum_keyblocks( 1, &kbpos, &keyblock )) ) {
-		    rc = update_trust_record( keyblock );
-		    if( rc == -1 ) { /* not yet in trustdb: insert */
-			PKT_public_key *pk =
-				    find_kbnode( keyblock, PKT_PUBLIC_KEY
-					       ) ->pkt->pkt.public_key;
-			rc = insert_trust_record( pk );
-			if( rc && !pk->local_id )
-			    log_error("lid ?: insert failed: %s\n",
-							     g10_errstr(rc) );
-			else if( rc )
-			    log_error("lid %lu: insert failed: %s\n",
-					       pk->local_id, g10_errstr(rc) );
-			else
-			     log_info("lid %lu: inserted\n", pk->local_id );
-		    }
-		    else if( rc )
-			log_error("lid %lu: update failed: %s\n",
-				 lid_from_keyblock(keyblock), g10_errstr(rc) );
-		    else
-			log_info("lid %lu: updated\n",
-					lid_from_keyblock(keyblock) );
-		}
-	    }
-	    if( rc && rc != -1 )
-		log_error("enum_keyblocks failed: %s\n", g10_errstr(rc));
-
-	    enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
-	    release_kbnode( keyblock );
-	}
-
     }
+}
+
+
+void
+update_trustdb( )
+{
+    KBNODE keyblock = NULL;
+    KBPOS kbpos;
+    int rc;
+
+    rc = enum_keyblocks( 0, &kbpos, &keyblock );
+    if( !rc ) {
+	while( !(rc = enum_keyblocks( 1, &kbpos, &keyblock )) ) {
+	    rc = update_trust_record( keyblock );
+	    if( rc == -1 ) { /* not yet in trustdb: insert */
+		PKT_public_key *pk =
+			    find_kbnode( keyblock, PKT_PUBLIC_KEY
+				       ) ->pkt->pkt.public_key;
+		rc = insert_trust_record( pk );
+		if( rc && !pk->local_id )
+		    log_error("lid ?: insert failed: %s\n",
+						     g10_errstr(rc) );
+		else if( rc )
+		    log_error("lid %lu: insert failed: %s\n",
+				       pk->local_id, g10_errstr(rc) );
+		else
+		     log_info("lid %lu: inserted\n", pk->local_id );
+	    }
+	    else if( rc )
+		log_error("lid %lu: update failed: %s\n",
+			 lid_from_keyblock(keyblock), g10_errstr(rc) );
+	    else
+		log_info("lid %lu: updated\n",
+				lid_from_keyblock(keyblock) );
+	}
+    }
+    if( rc && rc != -1 )
+	log_error("enum_keyblocks failed: %s\n", g10_errstr(rc));
+
+    enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
+    release_kbnode( keyblock );
 }
 
 
@@ -1418,12 +1443,10 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel )
 	return G10ERR_TIME_CONFLICT;
     }
 
-    if( pk->valid_days && add_days_to_timestamp(pk->timestamp,
-						pk->valid_days) < cur_time ) {
+    if( pk->expiredate && pk->expiredate <= cur_time ) {
 	log_info(_("key %08lX.%lu: expired at %s\n"),
 			(ulong)keyid[1], pk->local_id,
-		    asctimestamp( add_days_to_timestamp(pk->timestamp,
-							pk->valid_days)));
+			     asctimestamp( pk->expiredate) );
 	 trustlevel = TRUST_EXPIRED;
     }
     else {
@@ -1485,7 +1508,10 @@ query_trust_info( PKT_public_key *pk )
 int
 enum_trust_web( void **context, ulong *lid )
 {
-    ENUM_TRUST_WEB_CONTEXT *c = *context;
+    struct {
+       TRUST_SEG_LIST tsl;
+       int index;
+    } *c = *context;
 
     if( !c ) { /* make a new context */
 	c = m_alloc_clear( sizeof *c );
@@ -1652,7 +1678,7 @@ query_trust_record( PKT_public_key *pk )
     return get_dir_record( pk, &rec );
 }
 
-
+/* FIXME: Brauchen wir das?? */
 int
 clear_trust_checked_flag( PKT_public_key *pk )
 {
@@ -1669,6 +1695,7 @@ clear_trust_checked_flag( PKT_public_key *pk )
     /* reset the flag */
     rec.r.dir.dirflags &= ~DIRF_CHECKED;
     write_record( &rec );
+    do_sync();
     return 0;
 }
 
@@ -1684,6 +1711,8 @@ check_hint_sig( ulong lid, KBNODE keyblock, u32 *keyid, byte *uidrec_hash,
     byte uhash[20];
     int is_selfsig;
     PKT_signature *sigpkt = NULL;
+    TRUSTREC tmp;
+    u32 sigkid[2];
 
     if( sigrec->r.sig.sig[sigidx].flag & SIGF_CHECKED )
 	log_info(_("note: sig rec %lu[%d] in hintlist "
@@ -1693,6 +1722,23 @@ check_hint_sig( ulong lid, KBNODE keyblock, u32 *keyid, byte *uidrec_hash,
 	log_info(_("note: sig rec %lu[%d] in hintlist "
 		   "of %lu but not marked\n"),
 		    sigrec->recnum, sigidx, hint_owner );
+
+    read_record( sigrec->r.sig.sig[sigidx].lid, &tmp, 0 );
+    if( tmp.rectype != RECTYPE_DIR ) {
+	/* we need the dir record */
+	log_error(_("sig rec %lu[%d] in hintlist "
+		    "of %u does not point to a dir record\n"),
+		    sigrec->recnum, sigidx, hint_owner );
+	return;
+    }
+    if( !tmp.r.dir.keylist ) {
+	log_error(_("lid %lu: no primary key\n"), tmp.r.dir.lid );
+	return;
+    }
+    read_record(tmp.r.dir.keylist, &tmp, RECTYPE_KEY );
+    keyid_from_fingerprint( tmp.r.key.fingerprint,
+			    tmp.r.key.fingerprint_len, sigkid );
+
 
     /* find the correct signature packet */
     for( node=keyblock; node; node = node->next ) {
@@ -1707,8 +1753,8 @@ check_hint_sig( ulong lid, KBNODE keyblock, u32 *keyid, byte *uidrec_hash,
 	}
 	else if( state && node->pkt->pkttype == PKT_SIGNATURE ) {
 	    sigpkt = node->pkt->pkt.signature;
-	    if( sigpkt->keyid[0] == keyid[0]
-		&& sigpkt->keyid[1] == keyid[1]
+	    if( sigpkt->keyid[0] == sigkid[0]
+		&& sigpkt->keyid[1] == sigkid[1]
 		&& (sigpkt->sig_class&~3) == 0x10 )
 		break; /* found */
 	}
@@ -1723,23 +1769,28 @@ check_hint_sig( ulong lid, KBNODE keyblock, u32 *keyid, byte *uidrec_hash,
     rc = check_key_signature( keyblock, node, &is_selfsig );
     if( is_selfsig ) {
 	log_error(_("lid %lu: self-signature in hintlist\n"), lid );
-	return ;
+	return;
     }
     if( !rc ) { /* valid signature */
+	if( opt.verbose )
+	    log_info(_("key %08lX.%lu, uid %02X%02X, sig %08lX: "
+		       "good signature (3)\n"),
+		    (ulong)keyid[1], lid, uhash[18], uhash[19],
+		    (ulong)sigpkt->keyid[1] );
 	sigrec->r.sig.sig[sigidx].flag = SIGF_CHECKED | SIGF_VALID;
     }
     else if( rc == G10ERR_NO_PUBKEY ) {
-	log_info(_("key %08lX.%lu, uid %02X%02X: "
-	   "very strange: no public key for signature %08lX\n"),
+	log_info(_("key %08lX.%lu, uid %02X%02X, sig %08lX: "
+		   "very strange: no public key\n"),
 	      (ulong)keyid[1], lid, uhash[18], uhash[19],
 	       (ulong)sigpkt->keyid[1] );
 	sigrec->r.sig.sig[sigidx].flag = SIGF_NOPUBKEY;
     }
     else {
-	log_info(_("key %08lX.%lu, uid %02X%02X: "
+	log_info(_("key %08lX.%lu, uid %02X%02X, sig %08lX: "
 		   "invalid signature: %s\n"),
-		    (ulong)keyid[1], lid,
-		    uhash[18], uhash[19], g10_errstr(rc));
+		    (ulong)keyid[1], lid, uhash[18], uhash[19],
+		    (ulong)sigpkt->keyid[1], g10_errstr(rc) );
 	sigrec->r.sig.sig[sigidx].flag = SIGF_CHECKED;
     }
     sigrec->dirty = 1;
@@ -1930,7 +1981,7 @@ upd_uid_record( PKT_user_id *uid, TRUSTREC *drec, RECNO_LIST *recno_list,
 
 static void
 upd_pref_record( PKT_signature *sig, TRUSTREC *drec,
-		 u32 *keyid, ulong *uidrecno, byte *uidhash )
+		 u32 *keyid, TRUSTREC *urec, byte *uidhash )
 {
     static struct {
 	sigsubpkttype_t subpkttype;
@@ -1941,7 +1992,7 @@ upd_pref_record( PKT_signature *sig, TRUSTREC *drec,
 	{ SIGSUBPKT_PREF_COMPR, PREFTYPE_COMPR	},
 	{ 0, 0 }
     };
-    TRUSTREC urec, prec;
+    TRUSTREC prec;
     const byte *s;
     size_t n;
     int k, i;
@@ -1949,13 +2000,10 @@ upd_pref_record( PKT_signature *sig, TRUSTREC *drec,
     int recno_idx = 0;
     ulong recno;
 
-    /* we need the uid record */
-    read_record( *uidrecno, &urec, RECTYPE_UID );
-
     /* First delete all pref records
      * This is much simpler than checking whether we have to
      * do update the record at all - the record cache may care about it */
-    for( recno=urec.r.uid.prefrec; recno; recno = prec.r.pref.next ) {
+    for( recno=urec->r.uid.prefrec; recno; recno = prec.r.pref.next ) {
 	read_record( recno, &prec, RECTYPE_PREF );
 	delete_record( recno );
     }
@@ -1999,8 +2047,8 @@ upd_pref_record( PKT_signature *sig, TRUSTREC *drec,
 	write_record( &prec );
     }
     /* don't need to write the last one, but update the uid */
-    urec.r.uid.prefrec = recno_idx? recno_tbl[0] : 0;
-    write_record( &urec );
+    urec->r.uid.prefrec = recno_idx? recno_tbl[0] : 0;
+    urec->dirty = 1;
 }
 
 
@@ -2014,25 +2062,41 @@ upd_sig_record( PKT_signature *sig, TRUSTREC *drec,
 		u32 *keyid, ulong *uidrecno, byte *uidhash,
 		KBNODE keyblock, KBNODE signode )
 {
+    TRUSTREC urec;
     int rc;
     ulong lid = drec->recnum;
+
+    if( !*uidrecno ) {
+	/* fixme: handle direct key signatures */
+	log_error("key %08lX: signature without user id\n", (ulong)keyid[1] );
+	return;
+    }
+    read_record( *uidrecno, &urec, RECTYPE_UID );
 
     if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
 	if( (sig->sig_class&~3) == 0x10 ) {
 	    /* must verify this selfsignature here, so that we can
 	     * build the preference record and validate the uid record
 	     */
-	    if( !*uidrecno ) {
-		log_error("key %08lX: self-signature without user id\n",
-			  (ulong)keyid[1] );
-	    }
-	    else if( (rc = check_key_signature( keyblock, signode, NULL ))) {
-		log_error("key %08lX, uid %02X%02X: "
-			  "invalid self-signature: %s\n", (ulong)keyid[1],
-				uidhash[18], uidhash[19], g10_errstr(rc) );
-	    }
-	    else { /* valid sig (may be revoked, but that doesn't matter here) */
-		upd_pref_record( sig, drec, keyid, uidrecno, uidhash );
+	    if( !(urec.r.uid.uidflags & UIDF_CHECKED) ) {
+		rc = check_key_signature( keyblock, signode, NULL );
+		if( !rc ) {
+		    if( opt.verbose )
+			log_info(_(
+			       "key %08lX.%lu, uid %02X%02X: "
+			       "good self-signature\n"),
+				(ulong)keyid[1], lid, uidhash[18],
+						 uidhash[19] );
+		    upd_pref_record( sig, drec, keyid, &urec, uidhash );
+		    urec.r.uid.uidflags = UIDF_CHECKED | UIDF_VALID;
+		}
+		else {
+		    log_error("key %08lX, uid %02X%02X: "
+			      "invalid self-signature: %s\n", (ulong)keyid[1],
+				    uidhash[18], uidhash[19], g10_errstr(rc) );
+		    urec.r.uid.uidflags = UIDF_CHECKED;
+		}
+		urec.dirty = 1;
 	    }
 	}
 	else {/* is revocation sig etc */
@@ -2051,18 +2115,43 @@ upd_sig_record( PKT_signature *sig, TRUSTREC *drec,
 	 * be converted to a dir record as soon as a new public key is
 	 * inserted into the trustdb.
 	 */
-	TRUSTREC urec, rec;
+	TRUSTREC rec;
 	ulong recno;
 	TRUSTREC delrec;
 	int delrecidx;
 	int newflag = 0;
 	ulong newlid = 0;
 	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+	ulong pk_lid = 0;
+	int found_sig = 0;
+	int found_delrec = 0;
 
 	delrec.recnum = 0;
-	/* we need the uid record */
-	read_record( *uidrecno, &urec, RECTYPE_UID );
 
+	rc = get_pubkey( pk, sig->keyid );
+	if( !rc ) {
+	    if( pk->local_id )
+		pk_lid = pk->local_id;
+	    else {
+		rc = tdbio_search_dir_bypk( pk, &rec );
+		if( !rc )
+		    pk_lid = rec.recnum;
+		else if( rc == -1 ) { /* see whether there is a sdir instead */
+		    u32 akid[2];
+
+		    keyid_from_pk( pk, akid );
+		    rc = tdbio_search_sdir( akid, pk->pubkey_algo, &rec );
+		    if( !rc )
+			pk_lid = rec.recnum;
+		}
+	    }
+	}
+	free_public_key( pk ); pk = NULL;
+
+	/* Loop over all signatures just in case one is not correctly
+	 * marked.  If we see the correct signature, set a flag.
+	 * delete duplicate signatures (should not happen but...)
+	 */
 	for( recno = urec.r.uid.siglist; recno; recno = rec.r.sig.next ) {
 	    int i;
 
@@ -2070,11 +2159,24 @@ upd_sig_record( PKT_signature *sig, TRUSTREC *drec,
 	    for(i=0; i < SIGS_PER_RECORD; i++ ) {
 		TRUSTREC tmp;
 		if( !rec.r.sig.sig[i].lid ) {
-		    if( !delrec.recnum ) {
+		    if( !found_delrec && !delrec.recnum ) {
 			delrec = rec;
 			delrecidx = i;
+			found_delrec=1;
 		    }
 		    continue; /* skip deleted sigs */
+		}
+		if( rec.r.sig.sig[i].lid == pk_lid ) {
+		    if( found_sig ) {
+			log_info(_("key %08lX.%lu, uid %02X%02X, sig %08lX: "
+				   "duplicated signature - deleted\n"),
+			      (ulong)keyid[1], lid, uidhash[18],
+			       uidhash[19], (ulong)sig->keyid[1] );
+			rec.r.sig.sig[i].lid = 0;
+			rec.dirty = 1;
+		    }
+		    else
+			found_sig = 1;
 		}
 		if( rec.r.sig.sig[i].flag & SIGF_CHECKED )
 		    continue; /* we already checked this signature */
@@ -2087,24 +2189,30 @@ upd_sig_record( PKT_signature *sig, TRUSTREC *drec,
 		     * the signature: */
 		    rc = check_key_signature( keyblock, signode, NULL );
 		    if( !rc ) { /* valid signature */
+			if( opt.verbose )
+			    log_info(_(
+				   "key %08lX.%lu, uid %02X%02X, sig %08lX: "
+				   "good signature (1)\n"),
+				    (ulong)keyid[1], lid, uidhash[18],
+				    uidhash[19], (ulong)sig->keyid[1] );
 			rec.r.sig.sig[i].flag = SIGF_CHECKED | SIGF_VALID;
 		    }
 		    else if( rc == G10ERR_NO_PUBKEY ) {
-			log_info(_("key %08lX.%lu, uid %02X%02X: "
-			   "weird: no public key for signature %08lX\n"),
+			log_info(_("key %08lX.%lu, uid %02X%02X, sig %08lX: "
+				   "weird: no public key\n"),
 			      (ulong)keyid[1], lid, uidhash[18],
 			       uidhash[19], (ulong)sig->keyid[1] );
 			rec.r.sig.sig[i].flag = SIGF_NOPUBKEY;
 		    }
 		    else {
-			log_info(_("key %08lX.%lu, uid %02X%02X: "
+			log_info(_("key %08lX.%lu, uid %02X%02X, sig %08lX: "
 				   "invalid signature: %s\n"),
-				    (ulong)keyid[1], lid,
-				    uidhash[18], uidhash[19], g10_errstr(rc));
+				    (ulong)keyid[1], lid, uidhash[18],
+				    uidhash[19], (ulong)sig->keyid[1],
+							g10_errstr(rc));
 			rec.r.sig.sig[i].flag = SIGF_CHECKED;
 		    }
-		    write_record( &rec );
-		    goto ready;
+		    rec.dirty = 1;
 		}
 		else if( tmp.rectype == RECTYPE_SDIR ) {
 		    /* must check that it is the right one */
@@ -2117,11 +2225,10 @@ upd_sig_record( PKT_signature *sig, TRUSTREC *drec,
 				    (ulong)keyid[1], lid,
 				    uidhash[18], uidhash[19], tmp.recnum );
 			rec.r.sig.sig[i].flag = SIGF_NOPUBKEY;
-			write_record( &rec );
+			rec.dirty = 1;
 			/* fixme: should we verify that the record is
 			 * in the hintlist? - This case here should anyway
 			 * never occur */
-			goto ready;
 		    }
 		}
 		else {
@@ -2130,48 +2237,52 @@ upd_sig_record( PKT_signature *sig, TRUSTREC *drec,
 		    die_invalid_db();
 		}
 	    }
+	    if( found_delrec && delrec.recnum ) {
+		delrec = rec;
+		found_delrec = 0; /* we onyl want the first one */
+	    }
+	    if( rec.dirty )
+		write_record( &rec );
 	}
+
+	if( found_sig )
+	    goto leave;
+
 	/* at this point, we have verified, that the signature is not in
 	 * our list of signatures.  Add a new record with that signature
 	 * and if the public key is there, check the signature. */
-	rc = get_pubkey( pk, sig->keyid );
-	if( !rc ) {
-	    /* check that we already have the record in the trustdb;
-	     * if not we should not check the signature, because we do
-	     * not have the lid of the signature and therefore can't add
-	     * a signature record.  We will fake a no_pubkey error, so
-	     * that this is handled, like we do not have the publick key at
-	     * at all.	The alternative would be a recursive insert of
-	     * records - but that is not good.
-	     */
-	    rc = query_trust_record( pk );
-	    if( rc == -1 )
-		rc = G10ERR_NO_PUBKEY;
-	    else
-		rc = check_key_signature( keyblock, signode, NULL );
-	}
+
+	if( !pk_lid )
+	    rc = G10ERR_NO_PUBKEY;
+	else
+	    rc = check_key_signature( keyblock, signode, NULL );
+
 	if( !rc ) { /* valid signature */
-	    newlid = pk->local_id;  /* this is the pk of the signature */
+	    if( opt.verbose )
+		log_info(_("key %08lX.%lu, uid %02X%02X, sig %08lX: "
+			   "good signature (2)\n"),
+			      (ulong)keyid[1], lid, uidhash[18],
+			       uidhash[19], (ulong)sig->keyid[1] );
+	    newlid = pk_lid;  /* this is the pk of the signature */
 	    if( !newlid )
 		BUG();
 	    newflag = SIGF_CHECKED | SIGF_VALID;
 	}
 	else if( rc == G10ERR_NO_PUBKEY ) {
-	    if( opt.verbose )
-		log_info(_("key %08lX.%lu, uid %02X%02X: "
-			   "no public key for signature %08lX\n"),
+	    if( opt.verbose > 1 )
+		log_info(_("key %08lX.%lu, uid %02X%02X, sig %08lX: "
+			   "no public key\n"),
 			      (ulong)keyid[1], lid, uidhash[18],
 			       uidhash[19], (ulong)sig->keyid[1] );
 	    newflag = SIGF_NOPUBKEY;
 	}
 	else {
-	    log_info(_("key %08lX.%lu, uid %02X%02X: "
+	    log_info(_("key %08lX.%lu, uid %02X%02X, sig %08lX: "
 		       "invalid signature: %s\n"),
 			(ulong)keyid[1], lid, uidhash[18], uidhash[19],
-						       g10_errstr(rc));
+				  (ulong)sig->keyid[1], g10_errstr(rc));
 	    newflag = SIGF_CHECKED;
 	}
-	free_public_key( pk );
 
 	if( !newlid ) { /* create a shadow dir record */
 	    TRUSTREC sdir, hlst, tmphlst;
@@ -2250,16 +2361,17 @@ upd_sig_record( PKT_signature *sig, TRUSTREC *drec,
 	    tmp.r.sig.sig[0].flag= newflag;
 	    write_record( &tmp );
 	    urec.r.uid.siglist = tmp.recnum;
-	    write_record( &urec );
+	    urec.dirty = 1;
 	}
 
-      ready:
-	;
     }
     else {
 	/* handle other sig classes */
     }
 
+  leave:
+    if( urec.dirty )
+	write_record( &urec );
 }
 
 
@@ -2389,7 +2501,7 @@ update_trust_record( KBNODE keyblock )
     else if( drec.dirty ) {
 	drec.r.dir.dirflags &= ~DIRF_CHECKED; /* reset flag */
 	write_record( &drec );
-	/* fixme: commit_transaction */
+	do_sync();
     }
     rel_recno_list( &recno_list );
     return rc;
@@ -2437,9 +2549,17 @@ insert_trust_record( PKT_public_key *pk )
 
     /* check that we used the primary key (we are little bit paranoid) */
     {	PKT_public_key *a_pk;
+	u32 akid[2], bkid[2];
+
 	node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
 	a_pk = node->pkt->pkt.public_key;
-	if( cmp_public_keys( a_pk, pk ) ) {
+
+	/* we can't use cmp_public_keys here because some parts (expiredate)
+	 * might not be set in pk <--- but why (fixme) */
+	keyid_from_pk( a_pk, akid );
+	keyid_from_pk( pk, bkid );
+
+	if( akid[0] != bkid[0] || akid[1] != bkid[1] ) {
 	    log_error("did not use primary key for insert_trust_record()\n");
 	    rc = G10ERR_GENERAL;
 	    goto leave;
@@ -2492,6 +2612,7 @@ insert_trust_record( PKT_public_key *pk )
     if( rc && hintlist )
 	; /* fixme: the hintlist is not anymore anchored */
     release_kbnode( keyblock );
+    do_sync();
     return rc;
 }
 
@@ -2504,6 +2625,7 @@ update_ownertrust( ulong lid, unsigned new_trust )
     read_record( lid, &rec, RECTYPE_DIR );
     rec.r.dir.ownertrust = new_trust;
     write_record( &rec );
+    do_sync();
     return 0;
 }
 

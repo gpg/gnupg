@@ -111,7 +111,7 @@ typedef struct {
  */
 typedef struct {
     u32     timestamp;	    /* key made */
-    u16     valid_days;     /* valid for this number of days */
+    u32     expiredate;     /* expires at this date or 0 if not at all */
     byte    hdrbytes;	    /* number of header bytes */
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
@@ -124,7 +124,7 @@ typedef struct {
 
 typedef struct {
     u32     timestamp;	    /* key made */
-    u16     valid_days;     /* valid for this number of days */
+    u32     expiredate;     /* expires at this date or 0 if not at all */
     byte    hdrbytes;	    /* number of header bytes */
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */

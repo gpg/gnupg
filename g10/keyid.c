@@ -82,7 +82,12 @@ do_fingerprint_md( PKT_public_key *pk )
 	md_putc( md, a	     );
     }
     if( pk->version < 4 ) {
-	u16 a = pk->valid_days;
+	u16 a;
+
+	if( pk->expiredate )
+	    a = (u16)((pk->expiredate - pk->timestamp) / 86400L);
+	else
+	    a = 0;
 	md_putc( md, a >> 8 );
 	md_putc( md, a	    );
     }
@@ -108,7 +113,7 @@ do_fingerprint_md_sk( PKT_secret_key *sk )
     pk.pubkey_algo = sk->pubkey_algo;
     pk.version	   = sk->version;
     pk.timestamp = sk->timestamp;
-    pk.valid_days = sk->valid_days;
+    pk.expiredate = sk->expiredate;
     pk.pubkey_algo = sk->pubkey_algo;
     for( i=0; i < npkey; i++ )
 	pk.pkey[i] = sk->skey[i];
@@ -303,9 +308,9 @@ expirestr_from_pk( PKT_public_key *pk )
     struct tm *tp;
     time_t atime;
 
-    if( !pk->valid_days )
+    if( !pk->expiredate )
 	return "never     ";
-    atime = add_days_to_timestamp( pk->timestamp, pk->valid_days );
+    atime =  pk->expiredate;
     tp = gmtime( &atime );
     sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
     return buffer;
@@ -318,9 +323,9 @@ expirestr_from_sk( PKT_secret_key *sk )
     struct tm *tp;
     time_t atime;
 
-    if( !sk->valid_days )
+    if( !sk->expiredate )
 	return "never     ";
-    atime = add_days_to_timestamp( sk->timestamp, sk->valid_days );
+    atime = sk->expiredate;
     tp = gmtime( &atime );
     sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
     return buffer;

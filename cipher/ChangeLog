@@ -1,3 +1,11 @@
+Thu Oct 15 11:47:57 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* dynload.c: Support for DLD
+
+Wed Oct 14 12:13:07 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* rand-unix.c: Now uses names from configure for /dev/random.
+
 1998-10-10  SL Baur  <steve@altair.xemacs.org>
 
 	* Makefile.am: fix sed -O substitutions to catch -O6, etc.

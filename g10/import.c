@@ -96,6 +96,7 @@ import_keys( const char *fname )
 
     memset( &afx, 0, sizeof afx);
     memset( &cfx, 0, sizeof cfx);
+    afx.only_keyblocks = 1;
 
     /* open file */
     inp = iobuf_open(fname);
