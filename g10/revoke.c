@@ -147,7 +147,7 @@ gen_desig_revoke( const char *uname )
 	    char *p;
 	    u32 sk_keyid[2];
 	    PKT_user_id *uid=NULL;
-	    PKT_signature *selfsig=NULL;
+	    PKT_signature *selfsig=NULL,*revsig=NULL;
 
 	    any=1;
 	    keyid_from_sk(sk,sk_keyid);
@@ -172,7 +172,10 @@ gen_desig_revoke( const char *uname )
 	    p = get_user_id( sk_keyid, &n );
 	    tty_print_utf8_string( p, n );
 	    m_free(p);
-	    tty_printf("\n\n");
+	    tty_printf("\n");
+	    if(pk->revkey[i].class&0x40)
+	      tty_printf(_("(This is a sensitive revocation key)\n"));
+	    tty_printf("\n");
 
 	    if( !cpr_get_answer_is_yes("gen_desig_revoke.okay",
 		       _("Create a revocation certificate for this key? ")) )
@@ -224,6 +227,57 @@ gen_desig_revoke( const char *uname )
 	      log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
 	      goto leave;
 	    }
+
+	    /* Include the direct key signature that contains this
+               revocation key.  We're allowed to include sensitive
+               revocation keys along with a revocation, and this may
+               be the only time the recipient has seen it. */
+	    while(!revsig)
+	      {
+		KBNODE signode;
+
+		signode=find_next_kbnode(node,PKT_SIGNATURE);
+		if(!signode)
+		  break;
+
+		node=signode;
+
+		if(keyid[0]==signode->pkt->pkt.signature->keyid[0] &&
+		   keyid[1]==signode->pkt->pkt.signature->keyid[1] &&
+		   IS_KEY_SIG(signode->pkt->pkt.signature))
+		  {
+		    int j;
+
+		    for(j=0;j<signode->pkt->pkt.signature->numrevkeys;j++)
+		      {
+			if(pk->revkey[i].class==
+			   signode->pkt->pkt.signature->revkey[j]->class &&
+			   pk->revkey[i].algid==
+			   signode->pkt->pkt.signature->revkey[j]->algid &&
+			   memcmp(pk->revkey[i].fpr,
+				  signode->pkt->pkt.signature->revkey[j]->fpr,
+				  MAX_FINGERPRINT_LEN)==0)
+			  {
+			    revsig=signode->pkt->pkt.signature;
+			    break;
+			  }
+		      }
+		  }
+	      }
+
+	    if(revsig)
+	      {
+		pkt.pkttype = PKT_SIGNATURE;
+		pkt.pkt.signature = revsig;
+
+		rc = build_packet( out, &pkt );
+		if( rc ) {
+		  log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+		  goto leave;
+		}
+	      }
+	    else
+	      BUG();
 
 	    init_packet( &pkt );
 	    pkt.pkttype = PKT_SIGNATURE;

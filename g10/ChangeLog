@@ -1,3 +1,15 @@
+2002-07-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (keyedit_menu, menu_addrevoker): Allow specifying
+	"sensitive" as an argument to an addrevoker command.  This sets
+	the 0x40 sensitive revoker flag.
+
+	* revoke.c (gen_desig_revoke): When generating a designated
+	revocation, include the direct key sig that contains the
+	designated revoker subpacket.  This allows sensitive designated
+	revocation subpackets to be exported.  Also indicate which
+	revokers are sensitive in the first place.
+
 2002-07-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (show_key_with_all_names_colon): The 0x40 class bit in

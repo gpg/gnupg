@@ -49,7 +49,8 @@ static int menu_adduid( KBNODE keyblock, KBNODE sec_keyblock, int photo );
 static void menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int  menu_delsig( KBNODE pub_keyblock );
 static void menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
-static int menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock );
+static int menu_addrevoker( KBNODE pub_keyblock,
+			    KBNODE sec_keyblock, int sensitive );
 static int menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_set_primary_uid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_set_preferences( KBNODE pub_keyblock, KBNODE sec_keyblock );
@@ -1255,11 +1256,17 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    break;
 
 	  case cmdADDREVOKER:
-	    if( menu_addrevoker( keyblock, sec_keyblock ) ) {
+	    {
+	      int sensitive=0;
+
+	      if(arg_string && ascii_strcasecmp(arg_string,"sensitive")==0)
+		sensitive=1;
+	      if( menu_addrevoker( keyblock, sec_keyblock, sensitive ) ) {
 		redisplay = 1;
 		sec_modified = modified = 1;
 		merge_keys_and_selfsig( sec_keyblock );
 		merge_keys_and_selfsig( keyblock );
+	      }
 	    }
 	    break;
 
@@ -2169,7 +2176,7 @@ menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
  * Return true if there is a new revoker
  */
 static int
-menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock )
+menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
 {
   PKT_public_key *pk=NULL,*revoker_pk=NULL;
   PKT_secret_key *sk=NULL;
@@ -2254,8 +2261,9 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock )
 				"key as a designated revoker? (y/N): "))
 	continue;
 
-      /* todo: handle 0x40 sensitive flag here */
       revkey.class=0x80;
+      if(sensitive)
+	revkey.class|=0x40;
       revkey.algid=revoker_pk->pubkey_algo;
       free_public_key(revoker_pk);
       break;
