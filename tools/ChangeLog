@@ -1,3 +1,8 @@
+2004-11-24  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c <dirmngr>: Add --ignore-http-dp and
+        --ignore-ldap-dp.
+
 2004-11-23  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c <dirmngr>: Add the proxy options.
