@@ -78,6 +78,39 @@ print_time (time_t t, FILE *fp)
 }
 
 
+/* return an allocated string with the email address extracted from a
+   DN */
+static char *
+email_kludge (const char *name)
+{
+  const unsigned char *p;
+  unsigned char *buf;
+  int n;
+
+  if (strncmp (name, "1.2.840.113549.1.9.1=#", 22))
+    return NULL;
+  /* This looks pretty much like an email address in the subject's DN
+     we use this to add an additional user ID entry.  This way,
+     openSSL generated keys get a nicer and usable listing */
+  name += 22;    
+  for (n=0, p=name; hexdigitp (p) && hexdigitp (p+1); p +=2, n++)
+    ;
+  if (*p != '#' || !n)
+    return NULL;
+  buf = xtrymalloc (n+3);
+  if (!buf)
+    return NULL; /* oops, out of core */
+  *buf = '<';
+  for (n=1, p=name; *p != '#'; p +=2, n++)
+    buf[n] = xtoi_2 (p);
+  buf[n++] = '>';
+  buf[n] = 0;
+  return buf;
+}
+
+
+
+
 /* List one certificate in colon mode */
 static void
 list_cert_colon (KsbaCert cert, FILE *fp)
@@ -146,10 +179,27 @@ list_cert_colon (KsbaCert cert, FILE *fp)
     {
       fprintf (fp, "uid:%c::::::::", trustletter);
       fputs (p, fp);  /* FIXME: Escape colons and linefeeds */
-      xfree (p);
       putc (':', fp);
       putc (':', fp);
       putc ('\n', fp);
+      if (!idx)
+        {
+          /* It would be better to get the faked email address from
+             the keydb.  But as long as we don't have a way to pass
+             the meta data back, we just check it the same way as the
+             code used to create the keybox meta data does */
+          char *pp = email_kludge (p);
+          if (pp)
+            {
+              fprintf (fp, "uid:%c::::::::", trustletter);
+              fputs (pp, fp);  /* FIXME: Escape colons and linefeeds */
+              putc (':', fp);
+              putc (':', fp);
+              putc ('\n', fp);
+              xfree (pp);
+            }
+        }
+      xfree (p);
     }
 }
 

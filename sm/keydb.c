@@ -918,6 +918,7 @@ classify_user_id (const char *name,
 
     case '<': /* an email address */
       mode = KEYDB_SEARCH_MODE_MAIL;
+      s++;
       desc->u.name = s;
       break;
 

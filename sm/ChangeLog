@@ -1,5 +1,8 @@
 2001-12-14  Werner Koch  <wk@gnupg.org>
 
+	* keylist.c (list_cert_colon): Kludge to show an email address
+	encoded in the subject's DN.
+
 	* verify.c (gpgsm_verify): Add hash debug helpers
 	* sign.c (gpgsm_sign): Ditto.
 
