@@ -208,9 +208,7 @@ do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 {
     if( uid->attrib_data )
       {
-	/* Shouldn't be necessary to force a header here since attribs
-	   can't be of zero length, but it doesn't hurt either. */
-	write_header2(out, ctb, uid->attrib_len, 1, 1);
+	write_header(out, ctb, uid->attrib_len);
 	if( iobuf_write( out, uid->attrib_data, uid->attrib_len ) )
 	  return G10ERR_WRITE_FILE;
       }
