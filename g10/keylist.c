@@ -1,6 +1,6 @@
 /* keylist.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002
- *               2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1469,10 +1469,11 @@ void set_attrib_fd(int fd)
   else if( fd == 2 )
     attrib_fp = stderr;
   else
-    attrib_fp = fdopen( fd, "w" );
+    attrib_fp = fdopen( fd, "wb" );
   if( !attrib_fp ) {
     log_fatal("can't open fd %d for attribute output: %s\n",
 	      fd, strerror(errno));
   }
+
   last_fd = fd;
 }

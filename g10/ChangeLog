@@ -1,5 +1,9 @@
 2004-01-20  David Shaw  <dshaw@jabberwocky.com>
 
+	* keylist.c (set_attrib_fd): Open attribute fd in binary
+	mode. This isn't meaningful on POSIX systems, but the Mingw builds
+	aren't exactly POSIX.
+
 	* trustdb.c (reset_trust_records): New, faster, implementation
 	that doesn't involve a keyring scan.
 	(clear_validity): Removed.
