@@ -284,10 +284,11 @@ do_parse_uri( PARSED_URI uri, int only_local_part )
 	*p2++ = 0;
 	strlwr( p );
 	uri->scheme = p;
+        uri->port = 80;
 	if( !strcmp( uri->scheme, "http" ) )
 	    ;
 	else if( !strcmp( uri->scheme, "x-hkp" ) ) /* same as HTTP */
-	    ;
+	    uri->port = 11371;
 	else
 	    return G10ERR_INVALID_URI; /* Unsupported scheme */
 
@@ -308,8 +309,7 @@ do_parse_uri( PARSED_URI uri, int only_local_part )
 		*p3++ = 0;
 		uri->port = atoi( p3 );
 	    }
-	    else
-	       uri->port = 80;
+
 	    uri->host = p;
 	    if( (n = remove_escapes( uri->host )) < 0 )
 		return G10ERR_BAD_URI;

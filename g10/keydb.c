@@ -42,21 +42,26 @@ typedef enum {
     KEYDB_RESOURCE_TYPE_NONE = 0,
     KEYDB_RESOURCE_TYPE_KEYRING
 } KeydbResourceType;
-#define MAX_KEYDB_RESOURCES 1
+#define MAX_KEYDB_RESOURCES 20
 
 struct resource_item {
-    KeydbResourceType type;
-    union {
-        KEYRING_HANDLE kr;
-    } u;
+  KeydbResourceType type;
+  union {
+    KEYRING_HANDLE kr;
+  } u;
+  void *token;
+  int secret;
 };
 
+static struct resource_item all_resources[MAX_KEYDB_RESOURCES];
+static int used_resources;
 
 struct keydb_handle {
-    int locked;
-    int found;
-    int current;
-    struct resource_item active[MAX_KEYDB_RESOURCES];
+  int locked;
+  int found;
+  int current;
+  int used; /* items in active */
+  struct resource_item active[MAX_KEYDB_RESOURCES];
 };
 
 
@@ -193,7 +198,21 @@ keydb_add_resource (const char *url, int force, int secret)
 	iobuf = NULL;
         if (created_fname) /* must invalidate that ugly cache */
             iobuf_ioctl (NULL, 2, 0, (char*)created_fname);
-        keyring_register_filename (filename, secret);
+        {
+          void *token = keyring_register_filename (filename, secret);
+          if (!token)
+            ; /* already registered - ignore it */
+          else if (used_resources >= MAX_KEYDB_RESOURCES)
+              rc = G10ERR_RESOURCE_LIMIT;
+          else 
+            {
+              all_resources[used_resources].type = rt;
+              all_resources[used_resources].u.kr = NULL; /* Not used here */
+              all_resources[used_resources].token = token;
+              all_resources[used_resources].secret = secret;
+              used_resources++;
+            }
+        }
 	break;
 
       default:
@@ -221,24 +240,38 @@ keydb_add_resource (const char *url, int force, int secret)
 KEYDB_HANDLE
 keydb_new (int secret)
 {
-    KEYDB_HANDLE hd;
-    int i=0;
-
-    hd = m_alloc_clear (sizeof *hd);
-    hd->found = -1;
-
-    hd->active[i].type = KEYDB_RESOURCE_TYPE_KEYRING;
-    hd->active[i].u.kr = keyring_new (secret);
-    if (!hd->active[i].u.kr) {
-        m_free (hd);
-        return NULL;
+  KEYDB_HANDLE hd;
+  int i, j;
+  
+  hd = m_alloc_clear (sizeof *hd);
+  hd->found = -1;
+  
+  assert (used_resources <= MAX_KEYDB_RESOURCES);
+  for (i=j=0; i < used_resources; i++)
+    {
+      if (!all_resources[i].secret != !secret)
+        continue;
+      switch (all_resources[i].type)
+        {
+        case KEYDB_RESOURCE_TYPE_NONE: /* ignore */
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYRING:
+          hd->active[j].type   = all_resources[i].type;
+          hd->active[j].token  = all_resources[i].token;
+          hd->active[j].secret = all_resources[i].secret;
+          hd->active[j].u.kr = keyring_new (all_resources[i].token, secret);
+          if (!hd->active[j].u.kr) {
+            m_free (hd);
+            return NULL; /* fixme: release all previously allocated handles*/
+          }
+          j++;
+          break;
+        }
     }
-    i++;
-
-
-    assert (i <= MAX_KEYDB_RESOURCES);
-    active_handles++;
-    return hd;
+  hd->used = j;
+  
+  active_handles++;
+  return hd;
 }
 
 void 
@@ -252,7 +285,7 @@ keydb_release (KEYDB_HANDLE hd)
     active_handles--;
 
     unlock_all (hd);
-    for (i=0; i < MAX_KEYDB_RESOURCES; i++) {
+    for (i=0; i < hd->used; i++) {
         switch (hd->active[i].type) {
           case KEYDB_RESOURCE_TYPE_NONE:
             break;
@@ -283,9 +316,9 @@ keydb_get_resource_name (KEYDB_HANDLE hd)
     if (!hd) 
         return NULL;
 
-    if ( hd->found >= 0 && hd->found < MAX_KEYDB_RESOURCES) 
+    if ( hd->found >= 0 && hd->found < hd->used) 
         idx = hd->found;
-    else if ( hd->current >= 0 && hd->current < MAX_KEYDB_RESOURCES) 
+    else if ( hd->current >= 0 && hd->current < hd->used) 
         idx = hd->current;
     else
         idx = 0;
@@ -309,7 +342,7 @@ lock_all (KEYDB_HANDLE hd)
 {
     int i, rc = 0;
 
-    for (i=0; !rc && i < MAX_KEYDB_RESOURCES; i++) {
+    for (i=0; !rc && i < hd->used; i++) {
         switch (hd->active[i].type) {
           case KEYDB_RESOURCE_TYPE_NONE:
             break;
@@ -345,7 +378,7 @@ unlock_all (KEYDB_HANDLE hd)
     if (!hd->locked)
         return;
 
-    for (i=MAX_KEYDB_RESOURCES-1; i >= 0; i--) {
+    for (i=hd->used-1; i >= 0; i--) {
         switch (hd->active[i].type) {
           case KEYDB_RESOURCE_TYPE_NONE:
             break;
@@ -372,7 +405,7 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
     if (!hd)
         return G10ERR_INV_ARG;
 
-    if ( hd->found < 0 || hd->found >= MAX_KEYDB_RESOURCES) 
+    if ( hd->found < 0 || hd->found >= hd->used) 
         return -1; /* nothing found */
 
     switch (hd->active[hd->found].type) {
@@ -398,7 +431,7 @@ keydb_update_keyblock (KEYDB_HANDLE hd, KBNODE kb)
     if (!hd)
         return G10ERR_INV_ARG;
 
-    if ( hd->found < 0 || hd->found >= MAX_KEYDB_RESOURCES) 
+    if ( hd->found < 0 || hd->found >= hd->used) 
         return -1; /* nothing found */
 
     if( opt.dry_run )
@@ -437,9 +470,9 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, KBNODE kb)
     if( opt.dry_run )
 	return 0;
 
-    if ( hd->found >= 0 && hd->found < MAX_KEYDB_RESOURCES) 
+    if ( hd->found >= 0 && hd->found < hd->used) 
         idx = hd->found;
-    else if ( hd->current >= 0 && hd->current < MAX_KEYDB_RESOURCES) 
+    else if ( hd->current >= 0 && hd->current < hd->used) 
         idx = hd->current;
     else
         return G10ERR_GENERAL;
@@ -473,7 +506,7 @@ keydb_delete_keyblock (KEYDB_HANDLE hd)
     if (!hd)
         return G10ERR_INV_ARG;
 
-    if ( hd->found < 0 || hd->found >= MAX_KEYDB_RESOURCES) 
+    if ( hd->found < 0 || hd->found >= hd->used) 
         return -1; /* nothing found */
 
     if( opt.dry_run )
@@ -505,16 +538,30 @@ keydb_delete_keyblock (KEYDB_HANDLE hd)
 int
 keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
 {
-    int rc;
-
-    if (!hd)
-        return G10ERR_INV_ARG;
-
-    rc = keydb_search_reset (hd);
-    if (!rc) {
-        /* fixme: set forward to a writable one */
-    }
+  int rc;
+  
+  if (!hd)
+    return G10ERR_INV_ARG;
+  
+  rc = keydb_search_reset (hd); /* this does reset hd->current */
+  if (rc)
     return rc;
+
+  for ( ; hd->current >= 0 && hd->current < hd->used; hd->current++) 
+    {
+      switch (hd->active[hd->current].type) 
+        {
+        case KEYDB_RESOURCE_TYPE_NONE:
+          BUG();
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYRING:
+          if (keyring_is_writable (hd->active[hd->current].token))
+            return 0; /* found (hd->current is set to it) */
+          break;
+        }
+    }
+  
+  return -1;
 }
 
 /*
@@ -523,13 +570,24 @@ keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
 void
 keydb_rebuild_caches (void)
 {
-  int rc;
+  int i, rc;
   
-  rc = keyring_rebuild_cache ();
-  if (rc)
-    log_error (_("failed to rebuild all keyring caches: %s\n"),
-               g10_errstr (rc));
-  /* add other types here */
+  for (i=0; i < used_resources; i++)
+    {
+      if (all_resources[i].secret)
+        continue;
+      switch (all_resources[i].type)
+        {
+        case KEYDB_RESOURCE_TYPE_NONE: /* ignore */
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYRING:
+          rc = keyring_rebuild_cache (all_resources[i].token);
+          if (rc)
+            log_error (_("failed to rebuild keyring cache: %s\n"),
+                       g10_errstr (rc));
+          break;
+        }
+    }
 }
 
 
@@ -548,7 +606,7 @@ keydb_search_reset (KEYDB_HANDLE hd)
     hd->current = 0; 
     hd->found = -1;
     /* and reset all resources */
-    for (i=0; !rc && i < MAX_KEYDB_RESOURCES; i++) {
+    for (i=0; !rc && i < hd->used; i++) {
         switch (hd->active[i].type) {
           case KEYDB_RESOURCE_TYPE_NONE:
             break;
@@ -573,10 +631,10 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
     if (!hd)
         return G10ERR_INV_ARG;
 
-    while (rc == -1 && hd->current >= 0 && hd->current < MAX_KEYDB_RESOURCES) {
+    while (rc == -1 && hd->current >= 0 && hd->current < hd->used) {
         switch (hd->active[hd->current].type) {
           case KEYDB_RESOURCE_TYPE_NONE:
-            rc = -1; /* no resource = eof */
+            BUG(); /* we should never see it here */
             break;
           case KEYDB_RESOURCE_TYPE_KEYRING:
             rc = keyring_search (hd->active[hd->current].u.kr, desc, ndesc);

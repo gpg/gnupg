@@ -1,4 +1,14 @@
+
+  * Pot the lsign flag into the hashed area.
+
+  * check whether the "n signatures not checked due to missing keys"
+    from --edit/check can be due to revoked signatures.  Chnage the
+    wording in this case.
+
+  * Remove all references to the local-ID from the docs
  
+  * What about adding a feture -word to the +wordlist search mode.
+
   * getkey does not return revoked/expired keys - therefore it is not
     possible to override it.
 
@@ -80,10 +90,6 @@
     info what we are about to add.
 
   * --disable-asm should still assemble _udiv_qrnnd when needed
-
-  * Skip RO keyrings when importing a key.
-    [Do an access(2) when registering a keyring and add code to
-    keydb_locate_writable()]
 
   * replace the keyserver stuff either by a call to a specialized
     utility and SOCKSify this utility.

@@ -1,3 +1,7 @@
+2001-10-17  Werner Koch  <wk@gnupg.org>
+
+	* README: Removed note on local_ID.
+
 2001-09-28  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac: From now on add a string "-cvs" to the version to

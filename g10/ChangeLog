@@ -1,7 +1,37 @@
+2001-10-18  Werner Koch  <wk@gnupg.org>
+
+	* keydb.c (keydb_add_resource): Rearranged the way we keep track
+	of the resource. There will now be an entry for each keyring here
+	and not in keyring.c itself.  Store a token to allow creation of a
+	keyring handle.  Changed all functions to utilize this new design.
+	(keydb_locate_writable): Make a real implementation.
+	* keyring.c (next_kr): Removed and changed all callers to set the
+	resource directly from the one given with the handle.
+	(keyring_is_writable): New. 
+	(keyring_rebuild_cache): Add an arg to pass the token from keydb.
+
+2001-10-17  Werner Koch  <wk@gnupg.org>
+
+	* keyring.c (keyring_search): Enabled word search mode but print a
+	warning that it is buggy.
+	
+2001-10-11  Werner Koch  <wk@gnupg.org>
+
+	* hkp.c (hkp_ask_import): No more need to set the port number for
+	the x-hkp scheme. 
+	(hkp_export): Ditto.
+
 2001-10-06  Stefan Bellon  <sbellon@sbellon.de>
 
 	* passphrase.c [__riscos__]: Disabled agent specific stuff.
 	* g10.c: New option --no-force-v3-sigs.
+
+2001-10-04  Werner Koch  <wk@gnupg.org>
+
+	* export.c (do_export_stream): Do not push the compress filter
+	here because the context would run out of scope due to the
+	iobuf_close done by the caller.
+	(do_export): Do it here instead. 
 
 2001-09-28  Werner Koch  <wk@gnupg.org>
 

@@ -24,6 +24,7 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -66,7 +67,8 @@ static int kr_offtbl_ready;
 
 
 struct keyring_handle {
-  int secret; /* this is for a secret keyring */
+  CONST_KR_NAME resource;
+  int secret;             /* this is for a secret keyring */
   struct {
     CONST_KR_NAME kr;
     IOBUF iobuf;
@@ -191,9 +193,10 @@ update_offset_hash_table_from_kb (OffsetHashTable tbl, KBNODE node, off_t off)
 
 
 /* 
- * Register a filename for plain keyring files
- */
-void
+ * Register a filename for plain keyring files.  Returns a pointer to
+ * be used to create a handles etc or NULL to indicate that it has
+ * already been registered */
+void *
 keyring_register_filename (const char *fname, int secret)
 {
     KR_NAME kr;
@@ -203,7 +206,7 @@ keyring_register_filename (const char *fname, int secret)
 
     for (kr=kr_names; kr; kr = kr->next) {
         if ( !compare_filenames (kr->fname, fname) )
-            return; /* already registered */
+            return NULL; /* already registered */
     }
 
     kr = m_alloc (sizeof *kr + strlen (fname));
@@ -211,27 +214,44 @@ keyring_register_filename (const char *fname, int secret)
     kr->secret = !!secret;
     kr->lockhd = NULL;
     kr->is_locked = 0;
+    /* keep a list of all issued pointers */
     kr->next = kr_names;
     kr_names = kr;
 
     /* create the offset table the first time a function here is used */
     if (!kr_offtbl)
       kr_offtbl = new_offset_hash_table ();
+
+    return kr;
 }
 
+int
+keyring_is_writable (void *token)
+{
+  KR_NAME r = token;
 
-
+  return r? !access (r->fname, W_OK) : 0;
+}
+    
 
 
+/* Create a new handle for the resource associated with TOKEN.  SECRET
+   is just just as a cross-check.
+   
+   The returned handle must be released using keyring_release (). */
 KEYRING_HANDLE
-keyring_new (int secret)
+keyring_new (void *token, int secret)
 {
-    KEYRING_HANDLE hd;
+  KEYRING_HANDLE hd;
+  KR_NAME resource = token;
 
-    hd = m_alloc_clear (sizeof *hd);
-    hd->secret = !!secret;
-    active_handles++;
-    return hd;
+  assert (resource && !resource->secret == !secret);
+  
+  hd = m_alloc_clear (sizeof *hd);
+  hd->resource = resource;
+  hd->secret = !!secret;
+  active_handles++;
+  return hd;
 }
 
 void 
@@ -247,32 +267,13 @@ keyring_release (KEYRING_HANDLE hd)
     m_free (hd);
 }
 
-static CONST_KR_NAME
-next_kr (CONST_KR_NAME start, int secret)
-{
-    start = start? start->next : kr_names;
-    while ( start && start->secret != secret )
-        start = start->next;
-    return start;
-}
 
 const char *
 keyring_get_resource_name (KEYRING_HANDLE hd)
 {
-    const char *fname;
-
-    if (!hd)
-        fname = NULL;
-    else if (hd->found.kr)
-        fname = hd->found.kr->fname;
-    else if (hd->current.kr)
-        fname = hd->current.kr->fname;
-    else {
-        CONST_KR_NAME kr = next_kr (NULL, hd->secret);
-        fname = kr? kr->fname:NULL;
-    }
-
-    return fname;
+    if (!hd || !hd->resource)
+      return NULL;
+    return hd->resource->fname;
 }
 
 
@@ -512,10 +513,8 @@ keyring_insert_keyblock (KEYRING_HANDLE hd, KBNODE kb)
         fname = hd->found.kr->fname;
     else if (hd->current.kr)
         fname = hd->current.kr->fname;
-    else {
-        CONST_KR_NAME kr = next_kr (NULL, hd->secret);
-        fname = kr? kr->fname:NULL;
-    }
+    else 
+        fname = hd->resource? hd->resource->fname:NULL;
 
     if (!fname)
         return G10ERR_GENERAL; 
@@ -536,6 +535,7 @@ keyring_insert_keyblock (KEYRING_HANDLE hd, KBNODE kb)
       
     return rc;
 }
+
 
 int
 keyring_delete_keyblock (KEYRING_HANDLE hd)
@@ -614,21 +614,19 @@ prepare_search (KEYRING_HANDLE hd)
         return -1; /* still EOF */
 
     if (!hd->current.kr) { /* start search with first keyring */
-        hd->current.kr = next_kr (NULL, hd->secret);
+        hd->current.kr = hd->resource;
         if (!hd->current.kr) {
             hd->current.eof = 1;
-            return -1; /* no keyring available */
+            return -1; /* keyring not available */
         }
         assert (!hd->current.iobuf);
     }
-    else { /* EOF on last keyring - switch to next one */
+    else { /* EOF */
         iobuf_close (hd->current.iobuf); 
         hd->current.iobuf = NULL;
-        hd->current.kr = next_kr (hd->current.kr, hd->secret);
-        if (!hd->current.kr) {
-            hd->current.eof = 1;
-            return -1;
-        }
+        hd->current.kr = NULL;
+        hd->current.eof = 1;
+        return -1;
     }
 
     hd->current.eof = 0;
@@ -834,242 +832,260 @@ compare_name (int mode, const char *name, const char *uid, size_t uidlen)
 int 
 keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
 {
-    int rc;
-    PACKET pkt;
-    int save_mode;
-    off_t offset, main_offset;
-    size_t n;
-    int need_uid, need_words, need_keyid, need_fpr, any_skip;
-    int pk_no, uid_no;
-    int initial_skip;
-    int use_offtbl;
-    PKT_user_id *uid = NULL;
-    PKT_public_key *pk = NULL;
-    PKT_secret_key *sk = NULL;
+  int rc;
+  PACKET pkt;
+  int save_mode;
+  off_t offset, main_offset;
+  size_t n;
+  int need_uid, need_words, need_keyid, need_fpr, any_skip;
+  int pk_no, uid_no;
+  int initial_skip;
+  int use_offtbl;
+  PKT_user_id *uid = NULL;
+  PKT_public_key *pk = NULL;
+  PKT_secret_key *sk = NULL;
 
-    /* figure out what information we need */
-    need_uid = need_words = need_keyid = need_fpr = any_skip = 0;
-    for (n=0; n < ndesc; n++) {
-        switch (desc[n].mode) {
+  /* figure out what information we need */
+  need_uid = need_words = need_keyid = need_fpr = any_skip = 0;
+  for (n=0; n < ndesc; n++) 
+    {
+      switch (desc[n].mode) 
+        {
+        case KEYDB_SEARCH_MODE_EXACT: 
+        case KEYDB_SEARCH_MODE_SUBSTR:
+        case KEYDB_SEARCH_MODE_MAIL:
+        case KEYDB_SEARCH_MODE_MAILSUB:
+        case KEYDB_SEARCH_MODE_MAILEND:
+          need_uid = 1;
+          break;
+        case KEYDB_SEARCH_MODE_WORDS: 
+          need_uid = 1;
+          need_words = 1;
+          break;
+        case KEYDB_SEARCH_MODE_SHORT_KID: 
+        case KEYDB_SEARCH_MODE_LONG_KID:
+          need_keyid = 1;
+          break;
+        case KEYDB_SEARCH_MODE_FPR16: 
+        case KEYDB_SEARCH_MODE_FPR20:
+        case KEYDB_SEARCH_MODE_FPR: 
+          need_fpr = 1;
+          break;
+        case KEYDB_SEARCH_MODE_FIRST:
+          /* always restart the search in this mode */
+          keyring_search_reset (hd);
+          break;
+        default: break;
+	}
+      if (desc[n].skipfnc) 
+        {
+          any_skip = 1;
+          need_keyid = 1;
+        }
+    }
+
+  rc = prepare_search (hd);
+  if (rc)
+    return rc;
+
+  use_offtbl = !hd->secret && kr_offtbl;
+  if (!use_offtbl)
+    ;
+  else if (!kr_offtbl_ready)
+    need_keyid = 1;
+  else if (ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID)
+    {
+      struct off_item *oi;
+            
+      oi = lookup_offset_hash_table (kr_offtbl, desc[0].u.kid);
+      if (!oi)
+        { /* We know that we don't have this key */
+          hd->found.kr = NULL;
+          hd->current.eof = 1;
+          return -1;
+        }
+      /* We could now create a positive search status and return.
+       * However the problem is that another instance of gpg may 
+       * have changed the keyring so that the offsets are not valid
+       * anymore - therefore we don't do it 
+       */
+    }
+
+  if (need_words)
+    {
+      const char *name = NULL;
+
+      log_debug ("word search mode does not yet work\n");
+      /* FIXME: here is a long standing bug in our function and in addition we
+         just use the first search description */
+      for (n=0; n < ndesc && !name; n++) 
+        {
+          if (desc[n].mode == KEYDB_SEARCH_MODE_WORDS) 
+            name = desc[n].u.name;
+        }
+      assert (name);
+      if ( !hd->word_match.name || strcmp (hd->word_match.name, name) ) 
+        {
+          /* name changed */
+          m_free (hd->word_match.name);
+          m_free (hd->word_match.pattern);
+          hd->word_match.name = m_strdup (name);
+          hd->word_match.pattern = prepare_word_match (name);
+        }
+      name = hd->word_match.pattern;
+    }
+
+  init_packet(&pkt);
+  save_mode = set_packet_list_mode(0);
+
+  hd->found.kr = NULL;
+  main_offset = 0;
+  pk_no = uid_no = 0;
+  initial_skip = 1; /* skip until we see the start of a keyblock */
+  while (!(rc=search_packet (hd->current.iobuf, &pkt, &offset, need_uid))) 
+    {
+      byte afp[MAX_FINGERPRINT_LEN];
+      size_t an;
+      u32 aki[2];
+
+      if (pkt.pkttype == PKT_PUBLIC_KEY  || pkt.pkttype == PKT_SECRET_KEY) 
+        {
+          main_offset = offset;
+          pk_no = uid_no = 0;
+          initial_skip = 0;
+        }
+      if (initial_skip) 
+        {
+          free_packet (&pkt);
+          continue;
+        }
+	
+      pk = NULL;
+      sk = NULL;
+      uid = NULL;
+      if (   pkt.pkttype == PKT_PUBLIC_KEY
+             || pkt.pkttype == PKT_PUBLIC_SUBKEY)
+        {
+          pk = pkt.pkt.public_key;
+          ++pk_no;
+
+          if (need_fpr) {
+            fingerprint_from_pk (pk, afp, &an);
+            while (an < 20) /* fill up to 20 bytes */
+              afp[an++] = 0;
+          }
+          if (need_keyid)
+            keyid_from_pk (pk, aki);
+
+          if (use_offtbl && !kr_offtbl_ready)
+            update_offset_hash_table (kr_offtbl, aki, main_offset);
+        }
+      else if (pkt.pkttype == PKT_USER_ID) 
+        {
+          uid = pkt.pkt.user_id;
+          ++uid_no;
+        }
+      else if (    pkt.pkttype == PKT_SECRET_KEY
+                   || pkt.pkttype == PKT_SECRET_SUBKEY) 
+        {
+          sk = pkt.pkt.secret_key;
+          ++pk_no;
+
+          if (need_fpr) {
+            fingerprint_from_sk (sk, afp, &an);
+            while (an < 20) /* fill up to 20 bytes */
+              afp[an++] = 0;
+          }
+          if (need_keyid)
+            keyid_from_sk (sk, aki);
+            
+        }
+
+      for (n=0; n < ndesc; n++) 
+        {
+          switch (desc[n].mode) {
+          case KEYDB_SEARCH_MODE_NONE: 
+            BUG ();
+            break;
           case KEYDB_SEARCH_MODE_EXACT: 
           case KEYDB_SEARCH_MODE_SUBSTR:
           case KEYDB_SEARCH_MODE_MAIL:
           case KEYDB_SEARCH_MODE_MAILSUB:
           case KEYDB_SEARCH_MODE_MAILEND:
-            need_uid = 1;
-            break;
           case KEYDB_SEARCH_MODE_WORDS: 
-            need_uid = 1;
-            need_words = 1;
+            if ( uid && !compare_name (desc[n].mode,
+                                       desc[n].u.name,
+                                       uid->name, uid->len)) 
+              goto found;
             break;
+                
           case KEYDB_SEARCH_MODE_SHORT_KID: 
-          case KEYDB_SEARCH_MODE_LONG_KID:
-            need_keyid = 1;
+            if ((pk||sk) && desc[n].u.kid[1] == aki[1])
+              goto found;
             break;
-          case KEYDB_SEARCH_MODE_FPR16: 
+          case KEYDB_SEARCH_MODE_LONG_KID:
+            if ((pk||sk) && desc[n].u.kid[0] == aki[0]
+                && desc[n].u.kid[1] == aki[1])
+              goto found;
+            break;
+          case KEYDB_SEARCH_MODE_FPR16:
+            if ((pk||sk) && !memcmp (desc[n].u.fpr, afp, 16))
+              goto found;
+            break;
           case KEYDB_SEARCH_MODE_FPR20:
           case KEYDB_SEARCH_MODE_FPR: 
-            need_fpr = 1;
+            if ((pk||sk) && !memcmp (desc[n].u.fpr, afp, 20))
+              goto found;
             break;
-          case KEYDB_SEARCH_MODE_FIRST:
-            /* always restart the search in this mode */
-            keyring_search_reset (hd);
+          case KEYDB_SEARCH_MODE_FIRST: 
+            if (pk||sk)
+              goto found;
             break;
-          default: break;
-	}
-        if (desc[n].skipfnc) {
-            any_skip = 1;
-            need_keyid = 1;
-        }
-    }
-
-    rc = prepare_search (hd);
-    if (rc)
-        return rc;
-
-    use_offtbl = !hd->secret && kr_offtbl;
-    if (!use_offtbl)
-      ;
-    else if (!kr_offtbl_ready)
-      need_keyid = 1;
-    else if (ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID)
-      {
-        struct off_item *oi;
-            
-        oi = lookup_offset_hash_table (kr_offtbl, desc[0].u.kid);
-        if (!oi)
-          { /* We know that we don't have this key */
-            hd->found.kr = NULL;
-            hd->current.eof = 1;
-            return -1;
+          case KEYDB_SEARCH_MODE_NEXT: 
+            if (pk||sk)
+              goto found;
+            break;
+          default: 
+            rc = G10ERR_INV_ARG;
+            goto found;
           }
-        /* We could now create a positive search status and return.
-         * However the problem is that another instance of gpg may 
-         * have changed the keyring so that the offsets are not valid
-         * anymore - therefore we don't do it 
-         */
-      }
-
-#if 0
-    if (need_words) {
-        BUG();
-        if ( !hd->word_match.name || strcmp (hd->word_match.name, name) ) {
-            /* name changed */
-            m_free (hd->word_match.name);
-            m_free (hd->word_match.pattern);
-            hd->word_match.name = m_strdup (name);
-            hd->word_match.pattern = prepare_word_match (name);
-        }
-        name = hd->word_match.pattern;
-    }
-#endif
-
-    init_packet(&pkt);
-    save_mode = set_packet_list_mode(0);
-
-    hd->found.kr = NULL;
-    main_offset = 0;
-    pk_no = uid_no = 0;
-    initial_skip = 1; /* skip until we see the start of a keyblock */
-    while (!(rc=search_packet (hd->current.iobuf, &pkt, &offset, need_uid))) {
-        byte afp[MAX_FINGERPRINT_LEN];
-        size_t an;
-        u32 aki[2];
-
-	if (pkt.pkttype == PKT_PUBLIC_KEY
-            || pkt.pkttype == PKT_SECRET_KEY) {
-            main_offset = offset;
-            pk_no = uid_no = 0;
-            initial_skip = 0;
-        }
-        if (initial_skip) {
-            free_packet (&pkt);
-            continue;
-        }
-	
-        pk = NULL;
-        sk = NULL;
-        uid = NULL;
-        if (   pkt.pkttype == PKT_PUBLIC_KEY
-               || pkt.pkttype == PKT_PUBLIC_SUBKEY) {
-            pk = pkt.pkt.public_key;
-            ++pk_no;
-
-            if (need_fpr) {
-                fingerprint_from_pk (pk, afp, &an);
-                while (an < 20) /* fill up to 20 bytes */
-                    afp[an++] = 0;
-            }
-            if (need_keyid)
-                keyid_from_pk (pk, aki);
-
-            if (use_offtbl && !kr_offtbl_ready)
-              update_offset_hash_table (kr_offtbl, aki, main_offset);
-        }
-	else if (pkt.pkttype == PKT_USER_ID) {
-            uid = pkt.pkt.user_id;
-            ++uid_no;
-        }
-        else if (    pkt.pkttype == PKT_SECRET_KEY
-                  || pkt.pkttype == PKT_SECRET_SUBKEY) {
-            sk = pkt.pkt.secret_key;
-            ++pk_no;
-
-            if (need_fpr) {
-                fingerprint_from_sk (sk, afp, &an);
-                while (an < 20) /* fill up to 20 bytes */
-                    afp[an++] = 0;
-            }
-            if (need_keyid)
-                keyid_from_sk (sk, aki);
-            
-        }
-
-        for (n=0; n < ndesc; n++) {
-            switch (desc[n].mode) {
-              case KEYDB_SEARCH_MODE_NONE: 
-                BUG ();
-                break;
-              case KEYDB_SEARCH_MODE_EXACT: 
-              case KEYDB_SEARCH_MODE_SUBSTR:
-              case KEYDB_SEARCH_MODE_MAIL:
-              case KEYDB_SEARCH_MODE_MAILSUB:
-              case KEYDB_SEARCH_MODE_MAILEND:
-              case KEYDB_SEARCH_MODE_WORDS: 
-                if ( uid && !compare_name (desc[n].mode,
-                                           desc[n].u.name,
-                                           uid->name, uid->len)) 
-                    goto found;
-                break;
-                
-              case KEYDB_SEARCH_MODE_SHORT_KID: 
-                if ((pk||sk) && desc[n].u.kid[1] == aki[1])
-                    goto found;
-                break;
-              case KEYDB_SEARCH_MODE_LONG_KID:
-                if ((pk||sk) && desc[n].u.kid[0] == aki[0]
-                       && desc[n].u.kid[1] == aki[1])
-                    goto found;
-                break;
-              case KEYDB_SEARCH_MODE_FPR16:
-                if ((pk||sk) && !memcmp (desc[n].u.fpr, afp, 16))
-                    goto found;
-                break;
-              case KEYDB_SEARCH_MODE_FPR20:
-              case KEYDB_SEARCH_MODE_FPR: 
-                if ((pk||sk) && !memcmp (desc[n].u.fpr, afp, 20))
-                    goto found;
-                break;
-              case KEYDB_SEARCH_MODE_FIRST: 
-                if (pk||sk)
-                    goto found;
-                break;
-              case KEYDB_SEARCH_MODE_NEXT: 
-                if (pk||sk)
-                    goto found;
-                break;
-              default: 
-                rc = G10ERR_INV_ARG;
-                goto found;
-            }
 	}
-	free_packet (&pkt);
-        continue;
-      found:  
-        for (n=any_skip?0:ndesc; n < ndesc; n++) {
-            if (desc[n].skipfnc
-                && desc[n].skipfnc (desc[n].skipfncvalue, aki))
-                break;
+      free_packet (&pkt);
+      continue;
+    found:  
+      for (n=any_skip?0:ndesc; n < ndesc; n++) 
+        {
+          if (desc[n].skipfnc
+              && desc[n].skipfnc (desc[n].skipfncvalue, aki))
+            break;
         }
-        if (n == ndesc)
-            goto real_found;
-	free_packet (&pkt);
+      if (n == ndesc)
+        goto real_found;
+      free_packet (&pkt);
     }
  real_found:
-    if( !rc ) {
-        hd->found.offset = main_offset;
-	hd->found.kr = hd->current.kr;
-        hd->found.pk_no = (pk||sk)? pk_no : 0;
-        hd->found.uid_no = uid? uid_no : 0;
+  if (!rc)
+    {
+      hd->found.offset = main_offset;
+      hd->found.kr = hd->current.kr;
+      hd->found.pk_no = (pk||sk)? pk_no : 0;
+      hd->found.uid_no = uid? uid_no : 0;
     }
-    else if (rc == -1)
-      {
-        hd->current.eof = 1;
-        /* if we scanned the entire keyring, we are sure that
-         * all known key IDs are in our offtbl, mark that. */
-        if (use_offtbl)
-          kr_offtbl_ready = 1;
-      }
-    else 
-        hd->current.error = rc;
+  else if (rc == -1)
+    {
+      hd->current.eof = 1;
+      /* if we scanned the entire keyring, we are sure that
+       * all known key IDs are in our offtbl, mark that. */
+      if (use_offtbl)
+        kr_offtbl_ready = 1;
+    }
+  else 
+    hd->current.error = rc;
 
-
-
-    free_packet(&pkt);
-    set_packet_list_mode(save_mode);
-    return rc;
+  free_packet(&pkt);
+  set_packet_list_mode(save_mode);
+  return rc;
 }
-
 
 
 static int
@@ -1236,7 +1252,7 @@ write_keyblock (IOBUF fp, KBNODE keyblock)
  * This is only done for the public keyrings.
  */
 int
-keyring_rebuild_cache ()
+keyring_rebuild_cache (void *token)
 {
   KEYRING_HANDLE hd;
   KEYDB_SEARCH_DESC desc;
@@ -1248,7 +1264,7 @@ keyring_rebuild_cache ()
   int rc;
   ulong count = 0, sigcount = 0;
 
-  hd = keyring_new (0);
+  hd = keyring_new (token, 0);
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_FIRST;
 
@@ -1366,7 +1382,10 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
     char *bakfname = NULL;
     char *tmpfname = NULL;
 
-    /* open the source file */
+    /* Open the source file. Because we do a rname, we have to check the 
+       permissions of the file */
+    if (access (fname, W_OK))
+      return G10ERR_WRITE_FILE;
     fp = iobuf_open (fname);
     if (mode == 1 && !fp && errno == ENOENT) { 
 	/* insert mode but file does not exist: create a new file */

@@ -425,13 +425,6 @@
       any order in the user ID.  Words are any sequences of letters,
       digits, the underscore and characters with bit 7 set.
 
-    * By the Local ID (from the trust DB):
-
-	"#34"
-
-      This may be used by a MUA to specify an exact key after selecting
-      a key from GnuPG (by using a special option or an extra utility)
-
     * Or by the usual substring:
 
 	"Heine"

@@ -1293,6 +1293,12 @@ on key material.  This option forces v3 signatures for
 signatures on data.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--no-force-v3-sigs</term>
+<listitem><para>
+Reset the --force-v3-sigs option.
+</para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--force-mdc</term>

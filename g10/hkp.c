@@ -75,7 +75,7 @@ hkp_ask_import( u32 *keyid, void *stats_handle)
 			opt.keyserver_name, (ulong)keyid[1] );
     }
     else {
-        sprintf( request, "x-hkp://%s:11371/pks/lookup?op=get&search=0x%08lX",
+        sprintf( request, "x-hkp://%s/pks/lookup?op=get&search=0x%08lX",
 			opt.keyserver_name, (ulong)keyid[1] );
     }
     rc = http_open_document( &hd, request, hflags );
@@ -167,7 +167,7 @@ hkp_export( STRLIST users )
         sprintf( request, "%s/pks/add", opt.keyserver_name );
     }
     else {
-        sprintf( request, "x-hkp://%s:11371/pks/add", opt.keyserver_name );
+        sprintf( request, "x-hkp://%s/pks/add", opt.keyserver_name );
     }
     rc = http_open( &hd, HTTP_REQ_POST, request , hflags );
     if( rc ) {

@@ -26,19 +26,20 @@
 
 typedef struct keyring_handle *KEYRING_HANDLE;
 
-void keyring_register_filename (const char *fname, int secret);
+void *keyring_register_filename (const char *fname, int secret);
+int keyring_is_writable (void *token);
 
-
-KEYRING_HANDLE keyring_new (int secret);
+KEYRING_HANDLE keyring_new (void *token, int secret);
 void keyring_release (KEYRING_HANDLE hd);
 const char *keyring_get_resource_name (KEYRING_HANDLE hd);
 int keyring_lock (KEYRING_HANDLE hd, int yes);
 int keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb);
 int keyring_update_keyblock (KEYRING_HANDLE hd, KBNODE kb);
 int keyring_insert_keyblock (KEYRING_HANDLE hd, KBNODE kb);
+int keyring_locate_writable (KEYRING_HANDLE hd);
 int keyring_delete_keyblock (KEYRING_HANDLE hd);
 int keyring_search_reset (KEYRING_HANDLE hd);
 int keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc);
-int keyring_rebuild_cache (void);
+int keyring_rebuild_cache (void *);
 
 #endif /*GPG_KEYRING_H*/

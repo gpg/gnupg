@@ -1,3 +1,8 @@
+2001-10-11  Werner Koch  <wk@gnupg.org>
+
+	* http.c (do_parse_uri): Changed initialization of the port number
+	so that it does also work with x-hkp.  By David Shaw.
+
 2001-09-19  Werner Koch  <wk@gnupg.org>
 
 	* w32reg.c (get_root_key): New.

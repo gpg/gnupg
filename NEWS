@@ -67,6 +67,9 @@ Noteworthy changes in version 1.0.6 (2001-05-29)
 
     * The usual set of minor bug fixes and enhancements.
 
+    * non-writable keyrings are now correctly handled.
+
+
 Noteworthy changes in version 1.0.5 (2001-04-29)
 ------------------------------------------------
 

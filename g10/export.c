@@ -83,8 +83,10 @@ do_export( STRLIST users, int secret, int onlyrfc )
     IOBUF out = NULL;
     int any, rc;
     armor_filter_context_t afx;
+    compress_filter_context_t zfx;
 
     memset( &afx, 0, sizeof afx);
+    memset( &zfx, 0, sizeof zfx);
 
     rc = open_outfile( NULL, 0, &out );
     if( rc )
@@ -94,6 +96,8 @@ do_export( STRLIST users, int secret, int onlyrfc )
 	afx.what = secret?5:1;
 	iobuf_push_filter( out, armor_filter, &afx );
     }
+    if( opt.compress_keys && opt.compress )
+	iobuf_push_filter( out, compress_filter, &zfx );
     rc = do_export_stream( out, users, secret, onlyrfc, &any );
 
     if( rc || !any )
@@ -108,7 +112,6 @@ static int
 do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 {
     int rc = 0;
-    compress_filter_context_t zfx;
     PACKET pkt;
     KBNODE keyblock = NULL;
     KBNODE kbctx, node;
@@ -118,13 +121,9 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
     int all_first = 1;
 
     *any = 0;
-    memset( &zfx, 0, sizeof zfx);
     init_packet( &pkt );
 
     kdbhd = keydb_new (secret);
-
-    if( opt.compress_keys && opt.compress )
-	iobuf_push_filter( out, compress_filter, &zfx );
 
     /* use the correct sequence. strlist_last,prev do work correctly with
      * NULL pointers :-) */
