@@ -1,3 +1,11 @@
+2004-11-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (parse_key_usage): New function to parse out key usage
+	flags.  Set PUBKEY_USAGE_UNKNOWN to handle flags
+	(i.e. authentication) that we don't understand in this branch.
+	(fixup_uidnode, merge_selfsigs_main, merge_selfsigs_subkey): Call
+	it from here to remove duplicate code.  This is bug 378.
+
 2004-09-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (premerge_public_with_secret): Fix subkey<->binding sig
@@ -14,9 +22,10 @@
 	* hkp.c (dehtmlize): Understand the quote character
 	(i.e. "&quot;") in HTML responses.
 
-	* keydb.h, getkey.c (get_user_id_printable): Rename to
-	get_user_id_native and remove the printable stuff since we're
-	print-ifying valid utf8 characters.  Change all callers in
+	* keydb.h, getkey.c (get_user_id_printable,
+	get_user_id_string_printable): Rename to get_user_id_native and
+	get_user_id_string_native and remove the printable stuff since
+	we're print-ifying valid utf8 characters.  Change all callers in
 	import.c, sign.c, and encode.c.
 
 2004-08-19  David Shaw  <dshaw@jabberwocky.com>
