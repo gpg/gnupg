@@ -48,9 +48,20 @@ one_user () {
         error "error creating \`$home/.gnupg'"
         return
     fi
+
     if ! chown $user "$home/.gnupg" ; then
         error "error changing ownership of \`$home/.gnupg'"
         return
+    fi
+
+    group=$(id -g "$user")
+    [ -z "$group" ] && group="0"
+
+    if [ "$group" -gt 0 ]; then
+        if ! chgrp $group "$home/.gnupg" ; then
+            error "error changing group of \`$home/.gnupg'"
+            return
+        fi
     fi
 
     if ! cd "$home/.gnupg" ; then
@@ -63,9 +74,17 @@ one_user () {
         else
             cp /etc/skel/.gnupg/$f $f
         fi
-        chown $user $f
+        if ! chown $user $f ; then
+            error "error changing ownership of \`$f'"
+            return
+        fi
+        if [ "$group" -gt 0 ]; then
+            if ! chgrp $group "$f" ; then
+                error "error changing group of \`$f'"
+                return
+            fi
+        fi
     done
-
 
 }
 

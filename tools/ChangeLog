@@ -9,6 +9,10 @@
 	
 2004-01-30  Werner Koch  <wk@gnupg.org>
 
+	* addgnupghome: Also set the group of copied files. 
+
+2004-01-30  Werner Koch  <wk@gnupg.org>
+
 	* Makefile.am (sbin_SCRIPTS): New, to install addgnupghome.
 	(EXTRA_DIST): Added rfc822parse.c rfc822parse.h gpgparsemail.c
 	which might be useful for debugging.
