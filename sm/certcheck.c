@@ -138,12 +138,16 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
   if (!n)
     {
       log_error ("libksba did not return a proper S-Exp\n");
+      gcry_md_close (md);
+      ksba_free (p);
       return GNUPG_Bug;
     }
   rc = gcry_sexp_sscan ( &s_sig, NULL, p, n);
+  ksba_free (p);
   if (rc)
     {
       log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
+      gcry_md_close (md);
       return map_gcry_err (rc);
     }
 
@@ -152,29 +156,42 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
   if (!n)
     {
       log_error ("libksba did not return a proper S-Exp\n");
+      gcry_md_close (md);
+      ksba_free (p);
+      gcry_sexp_release (s_sig);
       return GNUPG_Bug;
     }
   rc = gcry_sexp_sscan ( &s_pkey, NULL, p, n);
+  ksba_free (p);
   if (rc)
     {
       log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
+      gcry_md_close (md);
+      gcry_sexp_release (s_sig);
       return map_gcry_err (rc);
     }
 
   rc = do_encode_md (md, algo, gcry_pk_get_nbits (s_pkey), &frame);
   if (rc)
     {
-      /* fixme: clean up some things */
+      gcry_md_close (md);
+      gcry_sexp_release (s_sig);
+      gcry_sexp_release (s_pkey);
       return rc;
     }
+
   /* put hash into the S-Exp s_hash */
   if ( gcry_sexp_build (&s_hash, NULL, "%m", frame) )
     BUG ();
-
+  gcry_mpi_release (frame);
   
   rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
   if (DBG_CRYPTO)
       log_debug ("gcry_pk_verify: %s\n", gcry_strerror (rc));
+  gcry_md_close (md);
+  gcry_sexp_release (s_sig);
+  gcry_sexp_release (s_hash);
+  gcry_sexp_release (s_pkey);
   return map_gcry_err (rc);
 }
 
@@ -208,15 +225,19 @@ gpgsm_check_cms_signature (KsbaCert cert, KsbaConstSexp sigval,
   if (!n)
     {
       log_error ("libksba did not return a proper S-Exp\n");
+      ksba_free (p);
+      gcry_sexp_release (s_sig);
       return GNUPG_Bug;
     }
   if (DBG_X509)
     log_printhex ("public key: ", p, n);
 
   rc = gcry_sexp_sscan ( &s_pkey, NULL, p, n);
+  ksba_free (p);
   if (rc)
     {
       log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
+      gcry_sexp_release (s_sig);
       return map_gcry_err (rc);
     }
 
@@ -224,17 +245,22 @@ gpgsm_check_cms_signature (KsbaCert cert, KsbaConstSexp sigval,
   rc = do_encode_md (md, algo, gcry_pk_get_nbits (s_pkey), &frame);
   if (rc)
     {
-      /* fixme: clean up some things */
+      gcry_sexp_release (s_sig);
+      gcry_sexp_release (s_pkey);
       return rc;
     }
   /* put hash into the S-Exp s_hash */
   if ( gcry_sexp_build (&s_hash, NULL, "%m", frame) )
     BUG ();
-
+  gcry_mpi_release (frame);
+  
   
   rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
   if (DBG_CRYPTO)
       log_debug ("gcry_pk_verify: %s\n", gcry_strerror (rc));
+  gcry_sexp_release (s_sig);
+  gcry_sexp_release (s_hash);
+  gcry_sexp_release (s_sig);
   return map_gcry_err (rc);
 }
 

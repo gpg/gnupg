@@ -43,6 +43,7 @@ struct server_local_s {
   int list_internal;
   int list_external;
   CERTLIST recplist;
+  CERTLIST signerlist;
 };
 
 
@@ -182,7 +183,9 @@ reset_notify (ASSUAN_CONTEXT ctx)
   CTRL ctrl = assuan_get_pointer (ctx);
 
   gpgsm_release_certlist (ctrl->server_local->recplist);
+  gpgsm_release_certlist (ctrl->server_local->signerlist);
   ctrl->server_local->recplist = NULL;
+  ctrl->server_local->signerlist = NULL;
   close_message_fd (ctrl);
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
@@ -239,10 +242,11 @@ cmd_recipient (ASSUAN_CONTEXT ctx, char *line)
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
 
-  rc = gpgsm_add_to_certlist (ctrl, line, &ctrl->server_local->recplist);
+  rc = gpgsm_add_to_certlist (ctrl, line, 0, &ctrl->server_local->recplist);
   if (rc)
     gpgsm_status2 (ctrl, STATUS_INV_RECP,
                    rc == -1? "1":
+                   rc == GNUPG_No_Public_Key?       "1":
                    rc == GNUPG_Ambiguous_Name?      "2":
                    rc == GNUPG_Wrong_Key_Usage?     "3":
                    rc == GNUPG_Certificate_Revoked? "4":
@@ -250,6 +254,47 @@ cmd_recipient (ASSUAN_CONTEXT ctx, char *line)
                    rc == GNUPG_No_CRL_Known?        "6":
                    rc == GNUPG_CRL_Too_Old?         "7":
                    rc == GNUPG_No_Policy_Match?     "8":
+                   "0",
+                   line, NULL);
+
+  return map_to_assuan_status (rc);
+}
+
+/*  SIGNER <userID>
+
+  Set the signer's keys for the signature creation.  <userID> should
+  be the internal representation of the key; the server may accept any
+  other way of specification [we will support this].  If this is a
+  valid and usable signing key the server does respond with OK,
+  otherwise it returns an ERR with the reason why the key can't be
+  used, the signing will then not be done for this key.  If the policy
+  is not to sign at all if not all signer keys are valid, the client
+  has to take care of this.  All SIGNER commands are cumulative until
+  a RESET but they are *not* reset by an SIGN command becuase it can
+  be expected that set of signers are used for more than one sign
+  operation.  
+
+  Note that this command returns an INV_RECP status which is a bit
+  strange, but they are very similar.  */
+static int 
+cmd_signer (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+  int rc;
+
+  rc = gpgsm_add_to_certlist (ctrl, line, 1, &ctrl->server_local->signerlist);
+  if (rc)
+    gpgsm_status2 (ctrl, STATUS_INV_RECP,
+                   rc == -1? "1":
+                   rc == GNUPG_No_Public_Key?       "1":
+                   rc == GNUPG_Ambiguous_Name?      "2":
+                   rc == GNUPG_Wrong_Key_Usage?     "3":
+                   rc == GNUPG_Certificate_Revoked? "4":
+                   rc == GNUPG_Certificate_Expired? "5":
+                   rc == GNUPG_No_CRL_Known?        "6":
+                   rc == GNUPG_CRL_Too_Old?         "7":
+                   rc == GNUPG_No_Policy_Match?     "8":
+                   rc == GNUPG_No_Secret_Key?       "9":
                    "0",
                    line, NULL);
 
@@ -407,7 +452,9 @@ cmd_sign (ASSUAN_CONTEXT ctx, char *line)
   out_fp = fdopen ( dup(out_fd), "w");
   if (!out_fp)
     return set_error (General_Error, "fdopen() failed");
-  rc = gpgsm_sign (assuan_get_pointer (ctx), inp_fd, detached, out_fp);
+
+  rc = gpgsm_sign (assuan_get_pointer (ctx), ctrl->server_local->signerlist,
+                   inp_fd, detached, out_fp);
   fclose (out_fp);
 
   /* close and reset the fd */
@@ -676,6 +723,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     int (*handler)(ASSUAN_CONTEXT, char *line);
   } table[] = {
     { "RECIPIENT",  0,  cmd_recipient },
+    { "SIGNER",     0,  cmd_signer },
     { "ENCRYPT",    0,  cmd_encrypt },
     { "DECRYPT",    0,  cmd_decrypt },
     { "VERIFY",     0,  cmd_verify },
@@ -776,6 +824,8 @@ gpgsm_server (void)
 
   gpgsm_release_certlist (ctrl.server_local->recplist);
   ctrl.server_local->recplist = NULL;
+  gpgsm_release_certlist (ctrl.server_local->signerlist);
+  ctrl.server_local->signerlist = NULL;
 
   assuan_deinit_server (ctx);
 }

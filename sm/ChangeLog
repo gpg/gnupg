@@ -1,3 +1,30 @@
+2002-08-09  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (emergency_cleanup): New.
+	(main): Initialize the signal handler.
+
+	* sign.c (gpgsm_sign): Reset the hash context for subsequent
+	signers and release it at the end.
+
+2002-08-05  Werner Koch  <wk@gnupg.org>
+
+	* server.c (cmd_signer): New command "SIGNER"
+	(register_commands): Register it.
+	(cmd_sign): Pass the signer list to gpgsm_sign.
+	* certlist.c (gpgsm_add_to_certlist): Add SECRET argument, check
+	for secret key if set and changed all callers.
+	* sign.c (gpgsm_sign): New argument SIGNERLIST and implemt
+	multiple signers.
+	* gpgsm.c (main): Support more than one -u.
+	
+	* server.c (cmd_recipient): Return reason code 1 for No_Public_Key
+	which is actually what gets returned from add_to_certlist.
+	
+2002-07-26  Werner Koch  <wk@gnupg.org>
+
+	* certcheck.c (gpgsm_check_cert_sig): Implement proper cleanup.
+	(gpgsm_check_cms_signature): Ditto.
+
 2002-07-22  Werner Koch  <wk@gnupg.org>
 
 	* keydb.c (keydb_add_resource): Register a lock file.

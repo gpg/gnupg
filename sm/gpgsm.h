@@ -197,7 +197,8 @@ int gpgsm_cert_use_encrypt_p (KsbaCert cert);
 int gpgsm_cert_use_verify_p (KsbaCert cert);
 int gpgsm_cert_use_decrypt_p (KsbaCert cert);
 int gpgsm_cert_use_cert_p (KsbaCert cert);
-int gpgsm_add_to_certlist (CTRL ctrl, const char *name, CERTLIST *listaddr);
+int gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
+                           CERTLIST *listaddr);
 void gpgsm_release_certlist (CERTLIST list);
 int gpgsm_find_cert (const char *name, KsbaCert *r_cert);
 
@@ -218,7 +219,8 @@ int gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp);
 
 /*-- sign.c --*/
 int gpgsm_get_default_cert (KsbaCert *r_cert);
-int gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp);
+int gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
+                int data_fd, int detached, FILE *out_fp);
 
 /*-- encrypt.c --*/
 int gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int in_fd, FILE *out_fp);

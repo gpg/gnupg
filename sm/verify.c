@@ -1,5 +1,5 @@
 /* verify.c - Verify a messages signature
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -248,7 +248,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
 
   cert = NULL;
   err = 0;
-  for (signer=0; signer < 1; signer++)
+  for (signer=0; ; signer++)
     {
       char *issuer = NULL;
       KsbaSexp sigval = NULL;
@@ -265,7 +265,11 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
           break;
         }
       if (err)
-        break;
+        {
+          if (signer && err == -1)
+            err = 0;
+          break;
+        }
       if (DBG_X509)
         {
           log_debug ("signer %d - issuer: `%s'\n",

@@ -403,6 +403,7 @@ static char *build_list (const char *text,
 static void set_cmd (enum cmd_and_opt_values *ret_cmd,
                      enum cmd_and_opt_values new_cmd );
 
+static void emergency_cleanup (void);
 static int check_special_filename (const char *fname);
 static int open_read (const char *filename);
 static FILE *open_fwrite (const char *filename);
@@ -601,6 +602,7 @@ main ( int argc, char **argv)
   enum cmd_and_opt_values cmd = 0;
   struct server_control_s ctrl;
   CERTLIST recplist = NULL;
+  CERTLIST signerlist = NULL;
 
   /* trap_unaligned ();*/
   set_strusage (my_strusage);
@@ -626,7 +628,7 @@ main ( int argc, char **argv)
 
   may_coredump = disable_core_dumps ();
   
-  /* Fixme: init_signals();*/
+  gnupg_init_signals (0, emergency_cleanup);
   
   create_dotlock (NULL); /* register locking cleanup */
   i18n_init();
@@ -922,9 +924,10 @@ main ( int argc, char **argv)
         case oTextmodeShort: /*fixme:opt.textmode = 2;*/ break;
         case oTextmode: /*fixme:opt.textmode=1;*/  break;
 
-        case oUser: /* store the local users */
-          opt.local_user = pargs.r.ret_str;
-          add_to_strlist ( &locusr, pargs.r.ret_str);
+        case oUser: /* store the local users, the first one is the default */
+          if (!opt.local_user)
+            opt.local_user = pargs.r.ret_str;
+          add_to_strlist (&locusr, pargs.r.ret_str);
           break;
 
         case oNoSecmemWarn:
@@ -1059,15 +1062,39 @@ main ( int argc, char **argv)
     keydb_add_resource (sl->d, 0, 0);
   FREE_STRLIST(nrings);
 
+
+  for (sl = locusr; sl; sl = sl->next)
+    {
+      int rc = gpgsm_add_to_certlist (&ctrl, sl->d, 1, &signerlist);
+      if (rc)
+        {
+          log_error (_("can't sign using `%s': %s\n"),
+                     sl->d, gnupg_strerror (rc));
+          gpgsm_status2 (&ctrl, STATUS_INV_RECP,
+                         rc == -1? "1":
+                         rc == GNUPG_No_Public_Key?       "1":
+                         rc == GNUPG_Ambiguous_Name?      "2":
+                         rc == GNUPG_Wrong_Key_Usage?     "3":
+                         rc == GNUPG_Certificate_Revoked? "4":
+                         rc == GNUPG_Certificate_Expired? "5":
+                         rc == GNUPG_No_CRL_Known?        "6":
+                         rc == GNUPG_CRL_Too_Old?         "7":
+                         rc == GNUPG_No_Policy_Match?     "8":
+                         rc == GNUPG_No_Secret_Key?       "9":
+                         "0",
+                         sl->d, NULL);
+        }
+    }
   for (sl = remusr; sl; sl = sl->next)
     {
-      int rc = gpgsm_add_to_certlist (&ctrl, sl->d, &recplist);
+      int rc = gpgsm_add_to_certlist (&ctrl, sl->d, 0, &recplist);
       if (rc)
         {
           log_error (_("can't encrypt to `%s': %s\n"),
                      sl->d, gnupg_strerror (rc));
           gpgsm_status2 (&ctrl, STATUS_INV_RECP,
                          rc == -1? "1":
+                         rc == GNUPG_No_Public_Key?       "1":
                          rc == GNUPG_Ambiguous_Name?      "2":
                          rc == GNUPG_Wrong_Key_Usage?     "3":
                          rc == GNUPG_Certificate_Revoked? "4":
@@ -1109,69 +1136,25 @@ main ( int argc, char **argv)
       break;
 
     case aSign: /* sign the given file */
-      /* FIXME: W we don't handle --output yet. We should also allow
+      /* FIXME: We don't handle --output yet. We should also allow
          to concatenate multiple files for signing because that is
          what gpg does.*/
       if (!argc)
-        gpgsm_sign (&ctrl, 0, detached_sig, stdout); /* create from stdin */
+        gpgsm_sign (&ctrl, signerlist,
+                    0, detached_sig, stdout); /* create from stdin */
       else if (argc == 1)
-        gpgsm_sign (&ctrl, open_read (*argv),
-                    detached_sig, stdout); /* from file */
+        gpgsm_sign (&ctrl, signerlist,
+                    open_read (*argv), detached_sig, stdout); /* from file */
       else
         wrong_args (_("--sign [datafile]"));
-      break;
-#if 0
-      sl = NULL;
-      if (detached_sig)
-        { /* sign all files */
-          for (; argc; argc--, argv++ )
-            add_to_strlist ( &sl, *argv );
-	}
-      else
-        {
-          if (argc > 1 )
-            wrong_args (_("--sign [filename]"));
-          if (argc)
-            {
-              sl = xcalloc (1, sizeof *sl + strlen(fname));
-              strcpy(sl->d, fname);
-	    }
-	}
-      if ( (rc = sign_file( sl, detached_sig, locusr, 0, NULL, NULL)) )
-        log_error ("signing failed: %s\n", gpg_errstr(rc) );
-      free_strlist(sl);
-#endif
       break;
         
     case aSignEncr: /* sign and encrypt the given file */
       log_error ("this command has not yet been implemented\n");
-#if 0
-      if (argc > 1)
-        wrong_args(_("--sign --encrypt [filename]"));
-      if (argc)
-        {
-          sl = xcalloc( 1, sizeof *sl + strlen(fname));
-          strcpy(sl->d, fname);
-        }
-      else
-        sl = NULL;
-
-      if ( (rc = sign_file(sl, detached_sig, locusr, 1, remusr, NULL)) )
-        log_error ("%s: sign+encrypt failed: %s\n",
-                   print_fname_stdin(fname), gpg_errstr(rc) );
-      free_strlist(sl);
-#endif
       break;
 
     case aClearsign: /* make a clearsig */
       log_error ("this command has not yet been implemented\n");
-#if 0
-      if (argc > 1)
-        wrong_args (_("--clearsign [filename]"));
-      if ( (rc = clearsign_file(fname, locusr, NULL)) )
-        log_error ("%s: clearsign failed: %s\n",
-                   print_fname_stdin(fname), gpg_errstr(rc) );
-#endif
       break;
 
     case aVerify:
@@ -1199,8 +1182,6 @@ main ( int argc, char **argv)
 
     case aVerifyFiles:
       log_error ("this command has not yet been implemented\n");
-/*        if ((rc = verify_files( argc, argv ))) */
-/*          log_error ("verify files failed: %s\n", gpg_errstr(rc) ); */
       break;
 
     case aDecrypt:
@@ -1244,18 +1225,6 @@ main ( int argc, char **argv)
 
     case aKeygen: /* generate a key */
       log_error ("this function is not yet available from the commandline\n");
-/*        if (opt.batch) */
-/*          { */
-/*            if (argc > 1) */
-/*              wrong_args("--gen-key [parameterfile]"); */
-/*            generate_keypair (argc? *argv : NULL); */
-/*  	} */
-/*        else */
-/*          { */
-/*            if (argc) */
-/*              wrong_args ("--gen-key"); */
-/*            generate_keypair(NULL); */
-/*  	} */
       break;
 
     case aImport:
@@ -1279,16 +1248,6 @@ main ( int argc, char **argv)
     case aSendKeys:
     case aRecvKeys:
       log_error ("this command has not yet been implemented\n");
-/*        sl = NULL; */
-/*        for ( ; argc; argc--, argv++ ) */
-/*          add_to_strlist (&sl, *argv); */
-/*        if ( cmd == aSendKeys ) */
-/*          ldap_export (sl); */
-/*        else if (cmd == aRecvKeys ) */
-/*          ldap_import (sl); */
-/*        else */
-/*          export_pubkeys (sl, (cmd == aExport)); */
-/*        free_strlist (sl); */
       break;
 
 
@@ -1305,32 +1264,24 @@ main ( int argc, char **argv)
 
 
     default:
-        log_error ("invalid command\n");
-#if 0
-	if (argc > 1)
-          wrong_args(_("[filename]"));
-	/* Issue some output for the unix newbie */
-	if ( !fname && !opt.outfile && isatty( fileno(stdin) )
-            && isatty (fileno(stdout) ) && isatty (fileno(stderr) ) )
-          log_info (_("Go ahead and type your message ...\n"));
-        
-	if ( !(a = iobuf_open(fname)) )
-          log_error (_("can't open `%s'\n"), print_fname_stdin(fname));
-	else
-          {
-	    if (!opt.no_armor) 
-              iobuf_close(a);
-	}
-#endif
+        log_error ("invalid command (there is no implicit command)\n");
 	break;
     }
   
   /* cleanup */
   gpgsm_release_certlist (recplist);
+  gpgsm_release_certlist (signerlist);
   FREE_STRLIST(remusr);
   FREE_STRLIST(locusr);
   gpgsm_exit(0);
   return 8; /*NEVER REACHED*/
+}
+
+/* Note: This function is used by signal handlers!. */
+static void
+emergency_cleanup (void)
+{
+  gcry_control (GCRYCTL_TERM_SECMEM );
 }
 
 
@@ -1351,7 +1302,7 @@ gpgsm_exit (int rc)
   if (opt.debug)
     gcry_control (GCRYCTL_DUMP_SECMEM_STATS );
 #endif
-  gcry_control (GCRYCTL_TERM_SECMEM );
+  emergency_cleanup ();
   rc = rc? rc : log_get_errorcount(0)? 2 : gpgsm_errors_seen? 1 : 0;
   exit (rc);
 }

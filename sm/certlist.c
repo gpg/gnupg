@@ -133,10 +133,12 @@ same_subject_issuer (const char *subject, const char *issuer, KsbaCert cert)
 
 
 
-/* add a certificate to a list of certificate and make sure that it is
-   a valid certificate */
+/* Add a certificate to a list of certificate and make sure that it is
+   a valid certificate.  With SECRET set to true a secret key must be
+   avaibale for the certificate. */
 int
-gpgsm_add_to_certlist (CTRL ctrl, const char *name, CERTLIST *listaddr)
+gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
+                       CERTLIST *listaddr)
 {
   int rc;
   KEYDB_SEARCH_DESC desc;
@@ -161,7 +163,8 @@ gpgsm_add_to_certlist (CTRL ctrl, const char *name, CERTLIST *listaddr)
             rc = keydb_get_cert (kh, &cert);
           if (!rc)
             {
-              rc = gpgsm_cert_use_encrypt_p (cert);
+              rc = secret? gpgsm_cert_use_sign_p (cert)
+                         : gpgsm_cert_use_encrypt_p (cert);
               if (rc == GNUPG_Wrong_Key_Usage)
                 {
                   /* There might be another certificate with the
@@ -206,7 +209,8 @@ gpgsm_add_to_certlist (CTRL ctrl, const char *name, CERTLIST *listaddr)
                   if (!keydb_get_cert (kh, &cert2))
                     {
                       int tmp = (same_subject_issuer (subject, issuer, cert2)
-                                 && (gpgsm_cert_use_encrypt_p (cert2)
+                                 && ((secret? gpgsm_cert_use_sign_p (cert2):
+                                      gpgsm_cert_use_encrypt_p (cert2))
                                      == GNUPG_Wrong_Key_Usage));
                       ksba_cert_release (cert2);
                       if (tmp)
@@ -218,6 +222,19 @@ gpgsm_add_to_certlist (CTRL ctrl, const char *name, CERTLIST *listaddr)
           xfree (subject);
           xfree (issuer);
 
+          if (!rc && secret) 
+            {
+              char *p;
+
+              rc = GNUPG_No_Secret_Key;
+              p = gpgsm_get_keygrip_hexstring (cert);
+              if (p)
+                {
+                  if (!gpgsm_agent_havekey (p))
+                    rc = 0;
+                  xfree (p);
+                }
+            }
           if (!rc)
             rc = gpgsm_validate_path (ctrl, cert, NULL);
           if (!rc)
