@@ -1,3 +1,8 @@
+2003-12-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgsplit.c (handle_bzip2): Remove two cut and paste typecast
+	errors.  Noted by Stefan Bellon.
+
 2003-12-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgsplit.c (write_part): Split off decompression code.
