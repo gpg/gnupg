@@ -101,6 +101,9 @@ void gpgsm_status (CTRL ctrl, int no, const char *text);
 char *gpgsm_get_fingerprint (KsbaCert cert, int algo, char *array, int *r_len);
 char *gpgsm_get_fingerprint_string (KsbaCert cert, int algo);
 char *gpgsm_get_fingerprint_hexstring (KsbaCert cert, int algo);
+char *gpgsm_get_keygrip (KsbaCert cert, char *array);
+char *gpgsm_get_keygrip_hexstring (KsbaCert cert);
+
 
 /*-- certdump.c --*/
 void gpgsm_dump_cert (const char *text, KsbaCert cert);

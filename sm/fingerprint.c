@@ -124,4 +124,61 @@ gpgsm_get_fingerprint_hexstring (KsbaCert cert, int algo)
   return buf;
 }
 
+
+/* Return the sop called KEYGRIP which is the SHA-1 hash of the public
+   key parameters expressed as an canoncial encoded S-Exp.  array must
+   be 20 bytes long. returns the array or a newly allocated one if the
+   passed one was NULL */
+char *
+gpgsm_get_keygrip (KsbaCert cert, char *array)
+{
+  GCRY_SEXP s_pkey;
+  int rc, len;
+  char *buf, *p;
+  
+  p = ksba_cert_get_public_key (cert);
+  if (!p)
+    return NULL; /* oops */
+
+  if (DBG_X509)
+    log_debug ("get_keygrip, public key: %s\n", p);
+  rc = gcry_sexp_sscan ( &s_pkey, NULL, p, strlen(p));
+  if (rc)
+    {
+      log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
+      return NULL;
+    }
+  /* and now convert it into canoncial form - fixme: we should modify
+     libksba to return it in this form */
+  len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
+  assert (len);
+  buf = xmalloc (len);
+  len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, buf, len);
+  assert (len);
+
+  if (!array)
+    array = xmalloc (20);
+
+  gcry_md_hash_buffer (GCRY_MD_SHA1, array, buf, len);
+  xfree (buf);
+
+  return array;
+}
+
+/* Return an allocated buffer with the keygrip of CERT in from of an
+   hexstring.  NULL is returned in case of error */
+char *
+gpgsm_get_keygrip_hexstring (KsbaCert cert)
+{
+  unsigned char grip[20];
+  char *buf, *p;
+  int i;
+
+  gpgsm_get_keygrip (cert, grip);
+  buf = p = xmalloc (20*2+1);
+  for (i=0; i < 20; i++, p += 2 )
+    sprintf (p, "%02X", grip[i]);
+  return buf;
+}
+
 

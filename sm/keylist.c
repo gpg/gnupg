@@ -104,6 +104,9 @@ list_cert_colon (KsbaCert cert, FILE *fp)
   p = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
   fprintf (fp, "fpr:::::::::%s:\n", p);
   xfree (p);
+  p = gpgsm_get_keygrip_hexstring (cert);
+  fprintf (fp, "grp:::::::::%s:\n", p?p:"");
+  xfree (p);
   if (opt.with_key_data)
     print_key_data (cert, fp);
 
