@@ -1,3 +1,8 @@
+2002-10-17  Werner Koch  <wk@gnupg.org>
+
+	* faq.raw: New upstream version with new sections 1.3, 5.8, 6.20
+	and a list of MUAs.  Replaced ftp.guug.de URL.
+
 2002-10-12  Werner Koch  <wk@gnupg.org>
 
 	* DETAILS (KEY_CREATED): Enhanced by fingerprint.
