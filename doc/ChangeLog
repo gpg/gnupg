@@ -1,3 +1,8 @@
+2002-01-25  Timo Schulz  <ts@winpt.org>
+
+	* README.W32: Modify the filename because now the .exe extension
+ 	is automatically added to the binary.
+	
 2002-01-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Added documentation for --{no-}ask-cert-expire,

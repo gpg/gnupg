@@ -78,8 +78,8 @@ After you have installed this environment you should be able to do this:
 
  $ scripts/autogen.sh --build-w32
  $ make
- $ mingw32 strip g10/gpg
- $ cp g10/gpg  /some_windows_drive/gpg.exe
+ $ mingw32 strip g10/gpg.exe
+ $ cp g10/gpg.exe  /some_windows_drive/
 
 And everything hopefully works.
 
