@@ -1,6 +1,10 @@
+2004-01-05  Werner Koch  <wk@gnupg.org>
+
+	* argparse.c (strusage): Changed default copyright year to 2004.
+
 2003-12-17  Werner Koch  <wk@gnupg.org>
 
-	* argparse.c (initialize): Replaced use of non-literal forma
+	* argparse.c (initialize): Replaced use of non-literal format
 	args.  Suggested by Florian Weimer.
 
 2003-12-16  Werner Koch  <wk@gnupg.org>
