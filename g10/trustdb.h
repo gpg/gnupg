@@ -48,7 +48,7 @@ void sync_trustdb( void );
 
 void revalidation_mark (void);
 
-int is_disabled(PKT_public_key *pk);
+int cache_disabled_value(PKT_public_key *pk);
 unsigned int get_validity (PKT_public_key *pk, PKT_user_id *uid);
 int get_validity_info (PKT_public_key *pk, PKT_user_id *uid);
 

@@ -747,7 +747,7 @@ skip_disabled(void *dummy,u32 *keyid)
       goto leave;
     }
  
-  disabled=is_disabled(pk);
+  disabled=pk_is_disabled(pk);
 
  leave:
   free_public_key(pk);

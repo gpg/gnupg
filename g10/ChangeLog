@@ -1,3 +1,21 @@
+2003-05-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): New --gnupg option to disable the various
+	--openpgp, --pgpX, etc. options.  This is the same as --no-XXXX
+	for those options.
+
+	* packet.h, getkey.c (skip_disabled), keylist.c
+	(print_capabilities): New "pk_is_disabled" macro to retrieve the
+	cached disabled value if available, and fill it in via
+	cache_disabled_value if not available.
+
+	* trustdb.h, gpgv.c (is_disabled), trustdb.c (is_disabled): Rename
+	to cache_disabled_value.  Cache the result of the check so we
+	don't need to hit the trustdb more than once.
+
+	* trustdb.c (get_validity): Cache the disabled value since we have
+	it handy and it might be useful later.
+
 2003-05-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* revoke.c (ask_revocation_reason): Clear old reason if user

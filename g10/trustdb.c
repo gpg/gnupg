@@ -745,11 +745,14 @@ clear_validity (PKT_public_key *pk)
 
 /* Return true if key is disabled */
 int
-is_disabled(PKT_public_key *pk)
+cache_disabled_value(PKT_public_key *pk)
 {
   int rc;
   TRUSTREC trec;
   int disabled=0;
+
+  if(pk->is_disabled)
+    return (pk->is_disabled==2);
 
   init_trustdb();
 
@@ -765,6 +768,13 @@ is_disabled(PKT_public_key *pk)
   if(trec.r.trust.ownertrust & TRUST_FLAG_DISABLED)
     disabled=1;
  
+  /* Cache it for later so we don't need to look at the trustdb every
+     time */
+  if(disabled)
+    pk->is_disabled=2;
+  else
+    pk->is_disabled=1;
+
  leave:
    return disabled;
 }
@@ -875,7 +885,12 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
     }
   
   if ( (trec.r.trust.ownertrust & TRUST_FLAG_DISABLED) )
-    validity |= TRUST_FLAG_DISABLED;
+    {
+      validity |= TRUST_FLAG_DISABLED;
+      pk->is_disabled=2;
+    }
+  else
+    pk->is_disabled=1;
 
  leave:
   /* set some flags direct from the key */

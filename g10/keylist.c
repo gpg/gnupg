@@ -325,7 +325,7 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
                 pk = k->pkt->pkt.public_key;
 
 		if(pk->is_primary)
-		  disabled=is_disabled(pk);
+		  disabled=pk_is_disabled(pk);
 
                 if ( pk->is_valid && !pk->is_revoked && !pk->has_expired ) {
                     if ( pk->pubkey_usage & PUBKEY_USAGE_ENC )
