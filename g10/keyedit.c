@@ -3270,8 +3270,7 @@ menu_set_keyserver_url (const char *url,
   u32 keyid[2];
   int selected, select_all;
   int modified = 0;
-  char *answer;
-  struct keyserver_spec *keyserver;
+  char *answer,*uri;
 
   no_primary_warning(pub_keyblock);
 
@@ -3288,13 +3287,21 @@ menu_set_keyserver_url (const char *url,
 	}
     }
 
-  /* Sanity check the format */
-  keyserver=parse_keyserver_uri(answer,1,NULL,0);
-  m_free(answer);
-  if(!keyserver)
+  if(ascii_strcasecmp(answer,"none")==0)
+    uri=NULL;
+  else
     {
-      log_info(_("could not parse keyserver URL\n"));
-      return 0;
+      struct keyserver_spec *keyserver=NULL;
+      /* Sanity check the format */
+      keyserver=parse_keyserver_uri(answer,1,NULL,0);
+      m_free(answer);
+      if(!keyserver)
+	{
+	  log_info(_("could not parse keyserver URL\n"));
+	  return 0;
+	}
+      uri=m_strdup(keyserver->uri);
+      free_keyserver_spec(keyserver);
     }
 
   select_all = !count_selected_uids (pub_keyblock);
@@ -3349,22 +3356,27 @@ menu_set_keyserver_url (const char *url,
 		      tty_printf("Current preferred keyserver for user"
 				 " ID \"%s\": %.*s\n",user,plen,p);
 		      if(!cpr_get_answer_is_yes("keyedit.confirm_keyserver",
-						_("Are you sure you want"
-						  " to replace it? (y/N) ")))
+			 uri?_("Are you sure you want to replace it? (y/N) "):
+			     _("Are you sure you want to delete it? (y/N) ")))
 			continue;
+		    }
+		  else if(uri==NULL)
+		    {
+		      /* There is no current keyserver URL, so there
+			 is no point in trying to un-set it. */
+		      continue;
 		    }
 
 		  rc = update_keysig_packet (&newsig, sig,
 					     main_pk, uid, NULL,
 					     sk,
-					     keygen_add_keyserver_url,
-					     keyserver->uri );
+					     keygen_add_keyserver_url, uri );
 		  if( rc )
 		    {
 		      log_error ("update_keysig_packet failed: %s\n",
 				 g10_errstr(rc));
-		      free_keyserver_spec(keyserver);
 		      free_secret_key( sk );
+		      m_free(uri);
 		      return 0;
 		    }
 		  /* replace the packet */
@@ -3382,7 +3394,7 @@ menu_set_keyserver_url (const char *url,
 	}
     }
 
-  free_keyserver_spec(keyserver);
+  m_free(uri);
   free_secret_key( sk );
   return modified;
 }

@@ -599,7 +599,10 @@ keygen_add_keyserver_url(PKT_signature *sig, void *opaque)
 {
   const char *url=opaque;
 
-  build_sig_subpkt(sig,SIGSUBPKT_PREF_KS,url,strlen(url));
+  if(url)
+    build_sig_subpkt(sig,SIGSUBPKT_PREF_KS,url,strlen(url));
+  else
+    delete_sig_subpkt (sig->hashed,SIGSUBPKT_PREF_KS);
 
   return 0;
 }
