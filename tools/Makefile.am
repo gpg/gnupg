@@ -37,7 +37,7 @@ gpgsplit_SOURCES = gpgsplit.c
 
 
 mpicalc_LDADD =  $(needed_libs) @INTLLIBS@
-bftest_LDADD =	$(needed_libs) @INTLLIBS@
+bftest_LDADD =	$(needed_libs) @EGDLIBS@ @INTLLIBS@
 
 shmtest_LDADD =  $(needed_libs) @INTLLIBS@
 gpgsplit_LDADD = @ZLIBS@ $(needed_libs) @INTLLIBS@
