@@ -245,13 +245,13 @@ gpgsm_agent_pksign (const char *keygrip,
   if (digestlen*2 + 50 > DIM(line))
     return seterr (General_Error);
 
-  rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL);
+  rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return map_assuan_err (rc);
 
   snprintf (line, DIM(line)-1, "SIGKEY %s", keygrip);
   line[DIM(line)-1] = 0;
-  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return map_assuan_err (rc);
 
@@ -259,13 +259,13 @@ gpgsm_agent_pksign (const char *keygrip,
   p = line + strlen (line);
   for (i=0; i < digestlen ; i++, p += 2 )
     sprintf (p, "%02X", digest[i]);
-  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return map_assuan_err (rc);
 
   init_membuf (&data, 1024);
   rc = assuan_transact (agent_ctx, "PKSIGN",
-                        membuf_data_cb, &data, NULL, NULL);
+                        membuf_data_cb, &data, NULL, NULL, NULL, NULL);
   if (rc)
     {
       xfree (get_membuf (&data, &len));
@@ -327,14 +327,14 @@ gpgsm_agent_pkdecrypt (const char *keygrip,
   if (rc)
     return rc;
 
-  rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL);
+  rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return map_assuan_err (rc);
 
   assert ( DIM(line) >= 50 );
   snprintf (line, DIM(line)-1, "SETKEY %s", keygrip);
   line[DIM(line)-1] = 0;
-  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return map_assuan_err (rc);
 
@@ -344,7 +344,7 @@ gpgsm_agent_pkdecrypt (const char *keygrip,
   cipher_parm.ciphertextlen = ciphertextlen;
   rc = assuan_transact (agent_ctx, "PKDECRYPT",
                         membuf_data_cb, &data,
-                        inq_ciphertext_cb, &cipher_parm);
+                        inq_ciphertext_cb, &cipher_parm, NULL, NULL);
   if (rc)
     {
       xfree (get_membuf (&data, &len));
@@ -403,7 +403,7 @@ gpgsm_agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey)
   if (rc)
     return rc;
 
-  rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL);
+  rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return map_assuan_err (rc);
 
@@ -415,7 +415,7 @@ gpgsm_agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey)
     return GNUPG_Invalid_Value;
   rc = assuan_transact (agent_ctx, "GENKEY",
                         membuf_data_cb, &data, 
-                        inq_genkey_parms, &gk_parm);
+                        inq_genkey_parms, &gk_parm, NULL, NULL);
   if (rc)
     {
       xfree (get_membuf (&data, &len));
@@ -458,7 +458,7 @@ gpgsm_agent_istrusted (KsbaCert cert)
   line[DIM(line)-1] = 0;
   xfree (fpr);
 
-  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   return map_assuan_err (rc);
 }
 
@@ -492,7 +492,7 @@ gpgsm_agent_marktrusted (KsbaCert cert)
   ksba_free (dn);
   xfree (fpr);
 
-  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   return map_assuan_err (rc);
 }
 
@@ -516,7 +516,7 @@ gpgsm_agent_havekey (const char *hexkeygrip)
   snprintf (line, DIM(line)-1, "HAVEKEY %s", hexkeygrip);
   line[DIM(line)-1] = 0;
 
-  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   return map_assuan_err (rc);
 }
 

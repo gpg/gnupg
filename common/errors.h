@@ -94,6 +94,11 @@ enum {
   GNUPG_Not_Confirmed = 65,
   GNUPG_Configuration_Error = 66,
   GNUPG_No_Policy_Match = 67,
+  GNUPG_Invalid_Index = 68,
+  GNUPG_Invalid_Id = 69,
+  GNUPG_No_Scdaemon = 70,
+  GNUPG_Scdaemon_Error = 71,
+  GNUPG_Unsupported_Protocol = 72,
 };
 
 /* Status codes - fixme: should go into another file */

@@ -44,6 +44,7 @@ map_ksba_err (int err)
       break;
 
     case KSBA_Unsupported_Algorithm: err = GNUPG_Unsupported_Algorithm; break;
+    case KSBA_Invalid_Index: err = GNUPG_Invalid_Index; break;
       
     default:
       err = seterr (General_Error);
@@ -136,6 +137,7 @@ map_assuan_err (int err)
       break;
 
     case ASSUAN_Canceled:        err = GNUPG_Canceled; break;
+    case ASSUAN_Invalid_Index:   err = GNUPG_Invalid_Index; break;
 
     case ASSUAN_Not_Implemented: err = GNUPG_Not_Implemented; break;
     case ASSUAN_Server_Fault:    err = GNUPG_Assuan_Server_Fault; break;
@@ -153,6 +155,7 @@ map_assuan_err (int err)
     case ASSUAN_No_PKCS15_App:   err = GNUPG_No_PKCS15_App; break;
     case ASSUAN_Card_Not_Present: err= GNUPG_Card_Not_Present; break;
     case ASSUAN_Not_Confirmed:   err = GNUPG_Not_Confirmed; break;
+    case ASSUAN_Invalid_Id:      err = GNUPG_Invalid_Id; break;
 
     default:
       err = err < 100? GNUPG_Assuan_Server_Fault : GNUPG_Assuan_Error;
@@ -182,6 +185,7 @@ map_to_assuan_status (int rc)
     case GNUPG_Invalid_Name:      rc = ASSUAN_Invalid_Name; break;
     case GNUPG_Not_Trusted:       rc = ASSUAN_Not_Trusted; break;
     case GNUPG_Canceled:          rc = ASSUAN_Canceled; break;
+    case GNUPG_Invalid_Index:     rc = ASSUAN_Invalid_Index; break;
 
     case GNUPG_Card_Error:      
     case GNUPG_Card_Reset:      
@@ -194,7 +198,7 @@ map_to_assuan_status (int rc)
     case GNUPG_Invalid_Card:      rc = ASSUAN_Invalid_Card; break;
     case GNUPG_No_PKCS15_App:     rc = ASSUAN_No_PKCS15_App; break;
     case GNUPG_Not_Confirmed:     rc = ASSUAN_Not_Confirmed; break;
-
+    case GNUPG_Invalid_Id:        rc = ASSUAN_Invalid_Id; break; 
 
     case GNUPG_Bad_PIN:
     case GNUPG_Bad_Passphrase:

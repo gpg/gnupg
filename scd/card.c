@@ -26,6 +26,7 @@
 #include <time.h>
 
 #include <opensc-pkcs15.h>
+#include <ksba.h>
 
 #include "scdaemon.h"
 
@@ -114,13 +115,13 @@ card_open (CARD *rcard)
     }
   card->ctx->error_file = log_get_stream ();
   card->ctx->debug_file = log_get_stream ();
-  if (sc_detect_card (card->ctx, card->reader) != 1)
+  if (sc_detect_card_presence (card->ctx->reader[card->reader], 0) != 1)
     {
       rc = GNUPG_Card_Not_Present;
       goto leave;
     }
 
-  rc = sc_connect_card (card->ctx, card->reader, &card->scard);
+  rc = sc_connect_card (card->ctx->reader[card->reader], 0, &card->scard);
   if (rc)
     {
       log_error ("failed to connect card in reader %d: %s\n",
@@ -175,7 +176,7 @@ card_close (CARD card)
       if (card->scard)
         {
           sc_unlock (card->scard);
-          sc_disconnect_card (card->scard);
+          sc_disconnect_card (card->scard, 0);
           card->scard = NULL;
 	}
       if (card->ctx)
@@ -219,3 +220,204 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
     return GNUPG_Out_Of_Core;
   return 0;
 }
+
+
+
+/* Get the keygrip from CERT, return 0 on success */
+static int
+get_keygrip (KsbaCert cert, unsigned char *array)
+{
+  GCRY_SEXP s_pkey;
+  int rc;
+  KsbaSexp p;
+  size_t n;
+  
+  p = ksba_cert_get_public_key (cert);
+  if (!p)
+    return -1; /* oops */
+  n = gcry_sexp_canon_len (p, 0, NULL, NULL);
+  if (!n)
+    return -1; /* libksba did not return a proper S-expression */
+  rc = gcry_sexp_sscan ( &s_pkey, NULL, p, n);
+  xfree (p);
+  if (rc)
+    return -1; /* can't parse that S-expression */
+  array = gcry_pk_get_keygrip (s_pkey, array);
+  gcry_sexp_release (s_pkey);
+  if (!array)
+    return -1; /* failed to calculate the keygrip */
+  return 0;
+}
+
+
+
+/* Enumerate all keypairs on the card and return the Keygrip as well
+   as the internal identification of the key.  KEYGRIP must be a
+   caller provided buffer with a size of 20 bytes which will receive
+   the KEYGRIP of the keypair.  If KEYID is not NULL, it returns the
+   ID field of the key in allocated memory, NKEYID will then receive
+   the length of it.  The function returns -1 when all keys have been
+   enumerated.  Note that the error GNUPG_Missing_Certificate may be
+   returned if there is just the private key but no public key (ie.e a
+   certificate) available.  Applications might want to continue
+   enumerating after this error.*/
+int
+card_enum_keypairs (CARD card, int idx,
+                    unsigned char *keygrip,
+                    unsigned char **keyid, size_t *nkeyid)
+{
+  int rc;
+  KsbaError krc;
+  struct sc_pkcs15_prkey_info *pinfo;
+  struct sc_pkcs15_cert_info *certinfo;
+  struct sc_pkcs15_cert      *certder;
+  KsbaCert cert;
+
+  if (keyid)
+    *keyid = NULL;
+  if (nkeyid)
+    *nkeyid = 0;
+
+  if (!card || !keygrip || !card->p15card)
+    return GNUPG_Invalid_Value;
+  if (idx < 0)
+    return GNUPG_Invalid_Index;
+	
+  rc = sc_pkcs15_enum_private_keys (card->p15card);
+  if (rc < 0) 
+    {
+      log_error ("sc_pkcs15_enum_private_keys failed: %s\n", sc_strerror (rc));
+      return GNUPG_Card_Error;
+    }
+  if ( idx >= card->p15card->prkey_count)
+    return -1;
+  pinfo = card->p15card->prkey_info + idx;
+  
+  /* now we need to read the certificate so that we can calculate the
+     keygrip */
+  rc = sc_pkcs15_find_cert_by_id (card->p15card, &pinfo->id, &certinfo);
+  if (rc)
+    {
+      log_info ("certificate for private key %d not found: %s\n",
+                idx, sc_strerror (rc));
+      /* but we should return the ID anyway */
+      if (keyid)
+        {
+          *keyid = xtrymalloc (pinfo->id.len);
+          if (!*keyid)
+            return GNUPG_Out_Of_Core;
+          memcpy (*keyid, pinfo->id.value, pinfo->id.len);
+        }
+      if (nkeyid)
+        *nkeyid = pinfo->id.len;
+      return GNUPG_Missing_Certificate;
+    }
+  rc = sc_pkcs15_read_certificate (card->p15card, certinfo, &certder);
+  if (rc)
+    {
+      log_info ("failed to read certificate for private key %d: %s\n",
+                idx, sc_strerror (rc));
+      return GNUPG_Card_Error;
+    }
+
+  cert = ksba_cert_new ();
+  if (!cert)
+    {
+      sc_pkcs15_free_certificate (certder);
+      return GNUPG_Out_Of_Core;
+    }
+  krc = ksba_cert_init_from_mem (cert, certder->data, certder->data_len);
+  sc_pkcs15_free_certificate (certder);
+  if (krc)
+    {
+      log_error ("failed to parse the certificate for private key %d: %s\n",
+                 idx, ksba_strerror (krc));
+      ksba_cert_release (cert);
+      return GNUPG_Card_Error;
+    }
+  if (get_keygrip (cert, keygrip))
+    {
+      log_error ("failed to calculate the keygrip of private key %d\n", idx);
+      ksba_cert_release (cert);
+      return GNUPG_Card_Error;
+    }      
+  ksba_cert_release (cert);
+
+  /* return the iD */
+  if (keyid)
+    {
+      *keyid = xtrymalloc (pinfo->id.len);
+      if (!*keyid)
+        return GNUPG_Out_Of_Core;
+      memcpy (*keyid, pinfo->id.value, pinfo->id.len);
+    }
+  if (nkeyid)
+    *nkeyid = pinfo->id.len;
+  
+  return 0;
+}
+
+
+
+/* Read the certificate identified by CERTIDSTR which is the
+   hexadecimal encoded ID of the certificate, prefixed with the string
+   "3F005015.". The certificate is return in DER encoded form in CERT
+   and NCERT. */
+int
+card_read_cert (CARD card, const char *certidstr,
+                unsigned char **cert, size_t *ncert)
+{
+  struct sc_pkcs15_id certid;
+  struct sc_pkcs15_cert_info *certinfo;
+  struct sc_pkcs15_cert      *certder;
+  const char *s;
+  int rc, n;
+
+  if (!card || !certidstr || !card->p15card || !cert || !ncert)
+    return GNUPG_Invalid_Value;
+
+  /* For now we only support the standard DF */
+  if (strncmp (certidstr, "3F005015.", 9) ) 
+    return GNUPG_Invalid_Id;
+  for (s=certidstr+9, n=0; hexdigitp (s); s++, n++)
+    ;
+  if (*s || (n&1))
+    return GNUPG_Invalid_Id; /* invalid or odd number of digits */
+  n /= 2;
+  if (!n || n > SC_PKCS15_MAX_ID_SIZE)
+    return GNUPG_Invalid_Id; /* empty or too large */
+  for (s=certidstr+9, n=0; *s; s += 2, n++)
+    certid.value[n] = xtoi_2 (s);
+  certid.len = n;
+
+  rc = sc_pkcs15_find_cert_by_id (card->p15card, &certid, &certinfo);
+  if (rc)
+    {
+      log_info ("certificate '%s' not found: %s\n", 
+                certidstr, sc_strerror (rc));
+      return -1;
+    }
+  rc = sc_pkcs15_read_certificate (card->p15card, certinfo, &certder);
+  if (rc)
+    {
+      log_info ("failed to read certificate '%s': %s\n",
+                certidstr, sc_strerror (rc));
+      return GNUPG_Card_Error;
+    }
+
+  *cert = xtrymalloc (certder->data_len);
+  if (!*cert)
+    {
+      sc_pkcs15_free_certificate (certder);
+      return GNUPG_Out_Of_Core;
+    }
+  memcpy (*cert, certder->data, certder->data_len);
+  *ncert = certder->data_len;
+  sc_pkcs15_free_certificate (certder);
+  return 0;
+}
+
+
+
+
+

@@ -97,7 +97,7 @@ start_pinentry (void)
 
   rc = assuan_transact (entry_ctx, 
                         opt.no_grab? "OPTION no-grab":"OPTION grab",
-                        NULL, NULL, NULL, NULL);
+                        NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return map_assuan_err (rc);
 
@@ -160,14 +160,14 @@ agent_askpin (const char *desc_text, const char *start_err_text,
 
   snprintf (line, DIM(line)-1, "SETDESC %s", desc_text);
   line[DIM(line)-1] = 0;
-  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return map_assuan_err (rc);
 
   rc = assuan_transact (entry_ctx,
                         pininfo->min_digits? "SETPROMPT PIN:"
                                            : "SETPROMPT Passphrase:",
-                        NULL, NULL, NULL, NULL);
+                        NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return map_assuan_err (rc);
 
@@ -189,13 +189,13 @@ agent_askpin (const char *desc_text, const char *start_err_text,
             snprintf (line, DIM(line)-1, "SETERROR %s (try %d of %d)",
                       errtext, pininfo->failed_tries+1, pininfo->max_tries);
           line[DIM(line)-1] = 0;
-          rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL);
+          rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
           if (rc)
             return map_assuan_err (rc);
           errtext = NULL;
         }
       
-      rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm, NULL, NULL);
+      rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm, NULL, NULL, NULL, NULL);
       if (rc == ASSUAN_Too_Much_Data)
         errtext = pininfo->min_digits? trans ("PIN too long")
                                      : trans ("Passphrase too long");
@@ -248,13 +248,13 @@ agent_get_passphrase (char **retpass, const char *desc, const char *prompt,
   else
     snprintf (line, DIM(line)-1, "RESET");
   line[DIM(line)-1] = 0;
-  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return map_assuan_err (rc);
 
   snprintf (line, DIM(line)-1, "SETPROMPT %s", prompt? prompt : "Passphrase");
   line[DIM(line)-1] = 0;
-  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return map_assuan_err (rc);
 
@@ -262,7 +262,7 @@ agent_get_passphrase (char **retpass, const char *desc, const char *prompt,
     {
       snprintf (line, DIM(line)-1, "SETERROR %s", errtext);
       line[DIM(line)-1] = 0;
-      rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL);
+      rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
         return map_assuan_err (rc);
     }
@@ -274,7 +274,7 @@ agent_get_passphrase (char **retpass, const char *desc, const char *prompt,
     return seterr (Out_Of_Core);
 
   assuan_begin_confidential (entry_ctx);
-  rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm, NULL, NULL);
+  rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm, NULL, NULL, NULL, NULL);
   if (rc)
     {
       xfree (parm.buffer);
@@ -317,7 +317,7 @@ agent_get_confirmation (const char *desc, const char *prompt)
   else
     snprintf (line, DIM(line)-1, "RESET");
   line[DIM(line)-1] = 0;
-  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return map_assuan_err (rc);
 
@@ -325,12 +325,12 @@ agent_get_confirmation (const char *desc, const char *prompt)
     {
       snprintf (line, DIM(line)-1, "SETPROMPT %s", prompt);
       line[DIM(line)-1] = 0;
-      rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL);
+      rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
         return map_assuan_err (rc);
     }
 
-  rc = assuan_transact (entry_ctx, "CONFIRM", NULL, NULL, NULL, NULL);
+  rc = assuan_transact (entry_ctx, "CONFIRM", NULL, NULL, NULL, NULL, NULL, NULL);
   return map_assuan_err (rc);
 }
 

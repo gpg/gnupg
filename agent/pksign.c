@@ -90,6 +90,7 @@ agent_pksign (CTRL ctrl, FILE *outfp)
 {
   GCRY_SEXP s_skey = NULL, s_hash = NULL, s_sig = NULL;
   GCRY_MPI frame = NULL;
+  unsigned char *shadow_info = NULL;
   int rc;
   char *buf = NULL;
   size_t len;
@@ -97,39 +98,50 @@ agent_pksign (CTRL ctrl, FILE *outfp)
   if (!ctrl->have_keygrip)
     return seterr (No_Secret_Key);
 
-  s_skey = agent_key_from_file (ctrl->keygrip);
-  if (!s_skey)
+  s_skey = agent_key_from_file (ctrl->keygrip, &shadow_info);
+  if (!s_skey && !shadow_info)
     {
       log_error ("failed to read the secret key\n");
       rc = seterr (No_Secret_Key);
       goto leave;
     }
 
-  /* put the hash into a sexp */
+  /* put the hash into a sexp FIXME: this belongs into libgcrypt/divert-scd.c*/
   rc = do_encode_md (ctrl->digest.value,
                      ctrl->digest.valuelen,
                      ctrl->digest.algo,
                      gcry_pk_get_nbits (s_skey),
                      &frame);
   if (rc)
-      goto leave;
+    goto leave;
   if ( gcry_sexp_build (&s_hash, NULL, "%m", frame) )
     BUG ();
 
-  if (DBG_CRYPTO)
-    {
-      log_debug ("skey: ");
-      gcry_sexp_dump (s_skey);
+  if (!s_skey)
+    { /* divert operation to the smartcard */
+      rc = divert_pksign (&s_sig, s_hash, shadow_info);
+      if (rc)
+        {
+          log_error ("smartcard signing failed: %s\n", gnupg_strerror (rc));
+          goto leave;
+        }
     }
+  else
+    { /* no smartcard, but a private key */
+      if (DBG_CRYPTO)
+        {
+          log_debug ("skey: ");
+          gcry_sexp_dump (s_skey);
+        }
 
-
-  /* sign */
-  rc = gcry_pk_sign (&s_sig, s_hash, s_skey);
-  if (rc)
-    {
-      log_error ("signing failed: %s\n", gcry_strerror (rc));
-      rc = map_gcry_err (rc);
-      goto leave;
+      /* sign */
+      rc = gcry_pk_sign (&s_sig, s_hash, s_skey);
+      if (rc)
+        {
+          log_error ("signing failed: %s\n", gcry_strerror (rc));
+          rc = map_gcry_err (rc);
+          goto leave;
+        }
     }
 
   if (DBG_CRYPTO)
@@ -137,7 +149,6 @@ agent_pksign (CTRL ctrl, FILE *outfp)
       log_debug ("result: ");
       gcry_sexp_dump (s_sig);
     }
-
 
   len = gcry_sexp_sprint (s_sig, GCRYSEXP_FMT_CANON, NULL, 0);
   assert (len);
@@ -156,6 +167,7 @@ agent_pksign (CTRL ctrl, FILE *outfp)
   gcry_sexp_release (s_sig);
   gcry_mpi_release (frame);
   xfree (buf);
+  xfree (shadow_info);
   return rc;
 }
 

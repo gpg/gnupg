@@ -4,7 +4,8 @@ keyformat.txt (wk 2001-12-18)
 
 Some notes on the format of the secret keys used with gpg-agent.
 
-
+Location of keys
+================
 The secret keys[1] are stored on a per file basis in a directory below
 the ~/.gnupg home directory.  This directory is named
 
@@ -13,9 +14,12 @@ the ~/.gnupg home directory.  This directory is named
 and should have permissions 700.
 
 The secret keys are stored in files with a name matching the
-hexadecimal representation of the keygrip[2].  The content of the file
-is an S-Expression like the ones used with Libgcrypt.  Here is an
-example of an unprotected file:
+hexadecimal representation of the keygrip[2].
+
+Unprotected Private Key Format
+==============================
+The content of the file is an S-Expression like the ones used with
+Libgcrypt.  Here is an example of an unprotected file:
 
 (private-key
  (rsa
@@ -47,8 +51,9 @@ keys is in canonical representation[3]:
 )  
 
 
-
-This describes an unprotected key; a protected key is like this:
+Protected Private Key Format
+==============================
+A protected key is like this:
 
 (protected-private-key
    (rsa
@@ -116,12 +121,35 @@ the stored one - If they don't match the integrity of the key is not
 given.
 
 
+Shadowed Private Key Format
+============================
+To keep track of keys stored on IC cards we use a third format for
+private kyes which are called shadow keys as they are only a reference
+to keys stored on a token:
+
+(shadowed-private-key
+   (rsa
+    (n #00e0ce9..[some bytes not shown]..51#)
+    (e #010001#)
+    (shadowed protocol (info))
+   )
+   (uri http://foo.bar x-foo:whatever_you_want)
+)  
+
+The currently used protocol is "ti-v1" (token info version 1).  The
+second list with the information has this layout:
+
+(card_serial_number id_string_of_key)
+
+More items may be added to the list.
+
+
 
 
 
 
 Notes:
-
+======
 [1] I usually use the terms private and secret key exchangeable but prefer the
 term secret key because it can be visually be better distinguished
 from the term public key.

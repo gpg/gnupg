@@ -1,3 +1,22 @@
+2002-02-28  Werner Koch  <wk@gnupg.org>
+
+	* pksign.c (agent_pksign): Detect whether a Smartcard is to be
+	used and divert the operation in this case.
+	* pkdecrypt.c (agent_pkdecrypt): Likewise
+	* findkey.c (agent_key_from_file): Add optional arg shadow_info
+	and have it return information about a shadowed key.
+	* protect.c (agent_get_shadow_info): New.
+	* divert-scd.c: New.
+	
+2002-02-27  Werner Koch  <wk@gnupg.org>
+
+	* protect.c (agent_shadow_key): New.
+
+	* command.c (cmd_learn): New command LEARN.
+	* gpg-agent.c: New option --scdaemon-program.
+	* call-scd.c (start_scd): New. Based on query.c
+	* query.c: Add 2 more arguments to all uses of assuan_transact.
+
 2002-02-18  Werner Koch  <wk@gnupg.org>
 
 	* findkey.c (unprotect): Show an error message for a bad passphrase.

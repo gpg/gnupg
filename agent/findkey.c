@@ -95,9 +95,12 @@ unprotect (unsigned char **keybuf, const unsigned char *grip)
 
 
 /* Return the secret key as an S-Exp after locating it using the grip.
-   Returns NULL if key is not available. */
+   Returns NULL if key is not available or the operation should be
+   diverted to a token.  In the latter case shadow_info will point to
+   an allocated S-Expression with the shadow_info part from the
+   file. */
 GCRY_SEXP
-agent_key_from_file (const unsigned char *grip)
+agent_key_from_file (const unsigned char *grip, unsigned char **shadow_info)
 {
   int i, rc;
   char *fname;
@@ -108,6 +111,9 @@ agent_key_from_file (const unsigned char *grip)
   GCRY_SEXP s_skey;
   char hexgrip[40+4+1];
   
+  if (shadow_info)
+      *shadow_info = NULL;
+
   for (i=0; i < 20; i++)
     sprintf (hexgrip+2*i, "%02X", grip[i]);
   strcpy (hexgrip+40, ".key");
@@ -173,8 +179,30 @@ agent_key_from_file (const unsigned char *grip)
                    gnupg_strerror (rc));
       break;
     case PRIVATE_KEY_SHADOWED:
-      log_error ("shadowed private keys are not yet supported\n");
-      rc = GNUPG_Not_Implemented;
+      if (shadow_info)
+        {
+          const unsigned char *s;
+          size_t n;
+
+          rc = agent_get_shadow_info (buf, &s);
+          if (!rc)
+            {
+              n = gcry_sexp_canon_len (s, 0, NULL,NULL);
+              assert (n);
+              *shadow_info = xtrymalloc (n);
+              if (!*shadow_info)
+                rc = GNUPG_Out_Of_Core;
+              else
+                {
+                  memcpy (*shadow_info, s, n);
+                  rc = 0;
+                }
+            }
+          if (rc)
+            log_error ("get_shadow_info failed: %s\n", gnupg_strerror (rc));
+        }
+      rc = -1; /* ugly interface: we return an error but keep a value
+                  in shadow_info.  */
       break;
     default:
       log_error ("invalid private key format\n");

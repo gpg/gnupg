@@ -69,6 +69,7 @@ enum cmd_and_opt_values
   oBatch,
   
   oPinentryProgram,
+  oScdaemonProgram,
   oDefCacheTTL,
 
 aTest };
@@ -92,7 +93,8 @@ static ARGPARSE_OPTS opts[] = {
   { oNoGrab, "no-grab"     ,0, N_("do not grab keyboard and mouse")},
   { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
 
-  { oPinentryProgram, "pinentry-program", 2 , "path of PIN Entry program" },
+  { oPinentryProgram, "pinentry-program", 2 , "path to PIN Entry program" },
+  { oScdaemonProgram, "scdaemon-program", 2 , "path to SCdaemon program" },
   { oDefCacheTTL, "default-cache-ttl", 4,
                                  "|N|expire cached PINs after N seconds"},
 
@@ -372,6 +374,7 @@ main (int argc, char **argv )
         case oServer: pipe_server = 1; break;
 
         case oPinentryProgram: opt.pinentry_program = pargs.r.ret_str; break;
+        case oScdaemonProgram: opt.scdaemon_program = pargs.r.ret_str; break;
         case oDefCacheTTL: opt.def_cache_ttl = pargs.r.ret_ulong; break;
 
         default : pargs.err = configfp? 1:2; break;

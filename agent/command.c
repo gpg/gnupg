@@ -462,6 +462,22 @@ cmd_clear_passphrase (ASSUAN_CONTEXT ctx, char *line)
   return 0;
 }
 
+
+/* LEARN
+
+   Learn something about the currently inserted smartcard 
+ */
+static int
+cmd_learn (ASSUAN_CONTEXT ctx, char *line)
+{
+  int rc;
+
+  rc = agent_learn_card ();
+  if (rc)
+    log_error ("agent_learn_card failed: %s\n", gnupg_strerror (rc));
+  return map_to_assuan_status (rc);
+}
+
 
 
 /* Tell the assuan library about our commands */
@@ -485,6 +501,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "CLEAR_PASSPHRASE",0, cmd_clear_passphrase },
     { "LISTTRUSTED",  0,  cmd_listtrusted },
     { "MARKTRUSTED",  0,  cmd_marktrusted },
+    { "LEARN",        0,  cmd_learn },
     { "",     ASSUAN_CMD_INPUT, NULL }, 
     { "",     ASSUAN_CMD_OUTPUT, NULL }, 
     { NULL }

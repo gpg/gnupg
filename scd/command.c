@@ -75,14 +75,20 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 /* LEARN [--force]
 
    Learn all useful information of the currently inserted card.  When
-   used without the force options, the command might to an INQUIRE
+   used without the force options, the command might do an INQUIRE
    like this:
 
       INQUIRE KNOWNCARDP <hexstring_with_serialNumber> <timestamp>
 
    The client should just send an "END" if the processing should go on
    or a "CANCEL" to force the function to terminate with a Cancel
-   error message.
+   error message.  The response of this command is a list of status
+   lines formatted as this:
+
+     S KEYPAIRINFO <hexstring_with_keygrip> <hexstring_with_id>
+
+   If there is no certificate yet stored on the card a single "X" is
+   returned as the keygrip.
 
 */
 static int
@@ -90,6 +96,7 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc = 0;
+  int idx;
 
   /* if this is the first command issued for a new card, open the card and 
      and create a context */
@@ -104,40 +111,138 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
      the card using a serial number and inquiring the client with
      that. The client may choose to cancel the operation if he already
      knows about this card */
-  if (!has_option (line, "--force"))
+  {
+    char *serial_and_stamp;
+    char *serial;
+    time_t stamp;
+   
+    rc = card_get_serial_and_stamp (ctrl->card_ctx, &serial, &stamp);
+    if (rc)
+      return map_to_assuan_status (rc);
+    rc = asprintf (&serial_and_stamp, "%s %lu", serial, (unsigned long)stamp);
+    xfree (serial);
+    if (rc < 0)
+      return ASSUAN_Out_Of_Core;
+    rc = 0;
+    assuan_write_status (ctx, "SERIALNO", serial_and_stamp);
+
+    if (!has_option (line, "--force"))
+      {
+        char *command;
+
+        rc = asprintf (&command, "KNOWNCARDP %s", serial_and_stamp);
+        if (rc < 0)
+          {
+            free (serial_and_stamp);
+            return ASSUAN_Out_Of_Core;
+          }
+        rc = 0;
+        rc = assuan_inquire (ctx, command, NULL, NULL, 0); 
+        free (command);  /* (must use standard free here) */
+        if (rc)
+          {
+            if (rc != ASSUAN_Canceled)
+              log_error ("inquire KNOWNCARDP failed: %s\n",
+                         assuan_strerror (rc));
+            free (serial_and_stamp);
+            return rc; 
+          }
+        /* not canceled, so we have to proceeed */
+      }
+    free (serial_and_stamp);
+  }
+
+  for (idx=0; !rc; idx++)
     {
-      char *serial;
-      time_t stamp;
-      char *command;
+      unsigned char keygrip[20];
+      unsigned char *keyid;
+      size_t nkeyid;
+      int no_cert = 0;
 
-      rc = card_get_serial_and_stamp (ctrl->card_ctx, &serial, &stamp);
-      if (rc)
-        return map_to_assuan_status (rc);
-
-      rc = asprintf (&command, "KNOWNCARDP %s %lu",
-                     serial, (unsigned long)stamp);
-      xfree (serial);
-      if (rc < 0)
-        return ASSUAN_Out_Of_Core;
-      rc = 0;
-      rc = assuan_inquire (ctx, command, NULL, NULL, 0); 
-      free (command);  /* (must use standard free here) */
-      if (rc)
+      rc = card_enum_keypairs (ctrl->card_ctx, idx, 
+                               keygrip, &keyid, &nkeyid);
+      if (rc == GNUPG_Missing_Certificate && keyid)
         {
-          if (rc != ASSUAN_Canceled)
-            log_error ("inquire KNOWNCARDP failed: %s\n",
-                       assuan_strerror (rc));
-          return rc; 
+          /* this does happen with an incomplete personalized
+             card; i.e. during the time we have stored the key on the
+             card but not stored the certificate; probably becuase it
+             has not yet been received back from the CA.  Note that we
+             must release KEYID in this case. */
+          rc = 0; 
+          no_cert = 1;
         }
-      /* not canceled, so we have to proceeed */
+      if (!rc)
+        {
+          char *buf, *p;
+
+          buf = p = xtrymalloc (40+1+9+2*nkeyid+1);
+          if (!buf)
+            rc = GNUPG_Out_Of_Core;
+          else
+            {
+              int i;
+              
+              if (no_cert)
+                *p++ = 'X';
+              else
+                {
+                  for (i=0; i < 20; i++, p += 2)
+                    sprintf (p, "%02X", keygrip[i]);
+                }
+              *p++ = ' ';
+              /* fixme: we need to get the pkcs-15 DF from the card function */
+              p = stpcpy (p, "3F005015.");
+              for (i=0; i < nkeyid; i++, p += 2)
+                sprintf (p, "%02X", keyid[i]);
+              *p = 0;
+              assuan_write_status (ctx, "KEYPAIRINFO", buf);
+              xfree (buf);
+            }
+        }
+      xfree (keyid);
     }
+  if (rc == -1)
+    rc = 0;
+
 
   return map_to_assuan_status (rc);
 }
 
 
+
+/* READCERT <hexified_certid>
 
+ */
+static int
+cmd_readcert (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+  int rc;
+  unsigned char *cert;
+  size_t ncert;
 
+  if (!ctrl->card_ctx)
+    {
+      rc = card_open (&ctrl->card_ctx);
+      if (rc)
+        return map_to_assuan_status (rc);
+    }
+
+  rc = card_read_cert (ctrl->card_ctx, line, &cert, &ncert);
+  if (rc)
+    {
+      log_error ("card_read_cert failed: %s\n", gnupg_strerror (rc));
+    }
+  if (!rc)
+    {
+      rc = assuan_send_data (ctx, cert, ncert);
+      xfree (cert);
+      if (rc)
+        return rc;
+    }
+
+  return map_to_assuan_status (rc);
+}
 
 
 /* Tell the assuan library about our commands */
@@ -150,6 +255,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     int (*handler)(ASSUAN_CONTEXT, char *line);
   } table[] = {
     { "LEARN", 0, cmd_learn },
+    { "READCERT", 0, cmd_readcert },
     { "",     ASSUAN_CMD_INPUT, NULL }, 
     { "",     ASSUAN_CMD_OUTPUT, NULL }, 
     { NULL }

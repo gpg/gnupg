@@ -36,6 +36,7 @@ struct {
   int batch;        /* batch mode */
   const char *homedir; /* configuration directory name */
   const char *pinentry_program; 
+  const char *scdaemon_program; 
   int no_grab;      /* don't let the pinentry grab the keyboard */
   unsigned long def_cache_ttl;
 
@@ -101,7 +102,8 @@ const char *trans (const char *text);
 void start_command_handler (int);
 
 /*-- findkey.c --*/
-GCRY_SEXP agent_key_from_file (const unsigned char *grip);
+GCRY_SEXP agent_key_from_file (const unsigned char *grip,
+                               unsigned char **shadow_info);
 int agent_key_available (const unsigned char *grip);
 
 /*-- query.c --*/
@@ -135,12 +137,27 @@ int agent_protect (const unsigned char *plainkey, const char *passphrase,
 int agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
                      unsigned char **result, size_t *resultlen);
 int agent_private_key_type (const unsigned char *privatekey);
+int agent_shadow_key (const unsigned char *pubkey,
+                      const unsigned char *shadow_info,
+                      unsigned char **result);
+int agent_get_shadow_info (const unsigned char *shadowkey,
+                           unsigned char const **shadow_info);
 
 
 /*-- trustlist.c --*/
 int agent_istrusted (const char *fpr);
 int agent_listtrusted (void *assuan_context);
 int agent_marktrusted (const char *name, const char *fpr, int flag);
+
+
+/*-- divert-scd.c --*/
+int divert_pksign (GCRY_SEXP *s_sig, GCRY_SEXP s_hash,
+                   const char *shadow_info);
+int divert_pkdecrypt (GCRY_SEXP *s_plain, GCRY_SEXP s_cipher,
+                      const char *shadow_info);
+
+/*-- call-scd.c --*/
+int agent_learn_card (void);
 
 
 #endif /*AGENT_H*/

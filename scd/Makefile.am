@@ -20,7 +20,8 @@
 
 bin_PROGRAMS = scdaemon
 
-AM_CPPFLAGS = -I$(top_srcdir)/common $(LIBOPENSC_CFLAGS) $(LIBGCRYPT_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/common $(LIBOPENSC_CFLAGS) $(LIBGCRYPT_CFLAGS) \
+	      $(LIBKSBA_CFLAGS)
 LDFLAGS = @LDFLAGS@ 
 
 scdaemon_SOURCES = \
@@ -29,7 +30,8 @@ scdaemon_SOURCES = \
 
 
 scdaemon_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a  \
-		../common/libcommon.a $(LIBOPENSC_LIBS) $(LIBGCRYPT_LIBS) 
+		../common/libcommon.a \
+		$(LIBOPENSC_LIBS) $(LIBGCRYPT_LIBS) $(LIBKSBA_LIBS)
 
 
 

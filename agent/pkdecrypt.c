@@ -39,6 +39,7 @@ agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
                  FILE *outfp) 
 {
   GCRY_SEXP s_skey = NULL, s_cipher = NULL, s_plain = NULL;
+  unsigned char *shadow_info = NULL;
   int rc;
   char *buf = NULL;
   size_t len;
@@ -63,27 +64,38 @@ agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
       log_printhex ("keygrip:", ctrl->keygrip, 20);
       log_printhex ("cipher: ", ciphertext, ciphertextlen);
     }
-  s_skey = agent_key_from_file (ctrl->keygrip);
-  if (!s_skey)
+  s_skey = agent_key_from_file (ctrl->keygrip, &shadow_info);
+  if (!s_skey && !shadow_info)
     {
       log_error ("failed to read the secret key\n");
       rc = seterr (No_Secret_Key);
       goto leave;
     }
-
-  if (DBG_CRYPTO)
-    {
-      log_debug ("skey: ");
-      gcry_sexp_dump (s_skey);
+  if (!s_skey)
+    { /* divert operation to the smartcard */
+      rc = divert_pkdecrypt (&s_plain, s_cipher, shadow_info);
+      if (rc)
+        {
+          log_error ("smartcard decryption failed: %s\n", gnupg_strerror (rc));
+          goto leave;
+        }
     }
+  else
+    { /* no smartcard, but a private key */
+      if (DBG_CRYPTO)
+        {
+          log_debug ("skey: ");
+          gcry_sexp_dump (s_skey);
+        }
 
-  rc = gcry_pk_decrypt (&s_plain, s_cipher, s_skey);
-  if (rc)
-    {
-      log_error ("decryption failed: %s\n", gcry_strerror (rc));
-      rc = map_gcry_err (rc);
-      goto leave;
-    }
+      rc = gcry_pk_decrypt (&s_plain, s_cipher, s_skey);
+      if (rc)
+        {
+          log_error ("decryption failed: %s\n", gcry_strerror (rc));
+          rc = map_gcry_err (rc);
+          goto leave;
+        }
+    }      
 
   if (DBG_CRYPTO)
     {
@@ -106,6 +118,7 @@ agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
   gcry_sexp_release (s_plain);
   gcry_sexp_release (s_cipher);
   xfree (buf);
+  xfree (shadow_info);
   return rc;
 }
 

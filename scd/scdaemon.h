@@ -77,6 +77,11 @@ void scd_command_handler (int);
 int card_open (CARD *rcard);
 void card_close (CARD card);
 int card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp);
+int card_enum_keypairs (CARD card, int idx,
+                        unsigned char *keygrip,
+                        unsigned char **keyid, size_t *nkeyid);
+int card_read_cert (CARD card, const char *certidstr,
+                    unsigned char **cert, size_t *ncert);
 
 
 

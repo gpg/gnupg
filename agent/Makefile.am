@@ -35,7 +35,9 @@ gpg_agent_SOURCES = \
 	pkdecrypt.c \
 	genkey.c \
 	protect.c \
-	trustlist.c 
+	trustlist.c \
+	divert-scd.c \
+	call-scd.c
 
 gpg_agent_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a  \
 		../common/libcommon.a $(LIBGCRYPT_LIBS)

@@ -227,7 +227,8 @@ gpgsm_dirmngr_isvalid (KsbaCert cert)
   line[DIM(line)-1] = 0;
   xfree (certid);
 
-  rc = assuan_transact (dirmngr_ctx, line, NULL, NULL, inq_certificate, &parm);
+  rc = assuan_transact (dirmngr_ctx, line, NULL, NULL,
+                        inq_certificate, &parm, NULL, NULL);
   return map_assuan_err (rc);
 }
 

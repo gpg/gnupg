@@ -780,7 +780,7 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
    PRIVATE_KEY_UNKNOWN if we can't figure out the type (this is the
    value 0), PRIVATE_KEY_CLEAR for an unprotected private key.
    PRIVATE_KEY_PROTECTED for an protected private key or
-   PRIVATE_KEY_SHADOWED for a sub key where the secret parts are store
+   PRIVATE_KEY_SHADOWED for a sub key where the secret parts are stored
    elsewhere. */
 int
 agent_private_key_type (const unsigned char *privatekey)
@@ -885,4 +885,155 @@ hash_passphrase (const char *passphrase, int hashalgo,
   return 0;
 }
 
+
+
+/* Create a shadow key from a public key.  We use the shadow protocol
+  "ti-v1" and insert the S-expressionn SHADOW_INFO.  The resulting
+  S-expression is returned in an allocated buffer RESULT will point
+  to. The input parameters are expected to be valid canonilized
+  S-expressions */
+int 
+agent_shadow_key (const unsigned char *pubkey,
+                  const unsigned char *shadow_info,
+                  unsigned char **result)
+{
+  const unsigned char *s;
+  const unsigned char *point;
+  size_t n;
+  int depth = 0;
+  unsigned char *p;
+  size_t pubkey_len = gcry_sexp_canon_len (pubkey, 0, NULL,NULL);
+  size_t shadow_info_len = gcry_sexp_canon_len (shadow_info, 0, NULL,NULL);
+
+  if (!pubkey_len || !shadow_info_len)
+    return GNUPG_Invalid_Value;
+  s = pubkey;
+  if (*s != '(')
+    return GNUPG_Invalid_Sexp;
+  depth++;
+  s++;
+  n = snext (&s);
+  if (!n)
+    return GNUPG_Invalid_Sexp; 
+  if (!smatch (&s, n, "public-key"))
+    return GNUPG_Unknown_Sexp; 
+  if (*s != '(')
+    return GNUPG_Unknown_Sexp;
+  depth++;
+  s++;
+  n = snext (&s); 
+  if (!n)
+    return GNUPG_Invalid_Sexp; 
+  s += n; /* skip over the algorithm name */
+
+  while (*s != ')')
+    {
+      if (*s != '(')
+        return GNUPG_Invalid_Sexp;
+      depth++;
+      s++;
+      n = snext (&s);
+      if (!n) 
+        return GNUPG_Invalid_Sexp; 
+      s += n;
+      n = snext (&s);
+      if (!n)
+        return GNUPG_Invalid_Sexp; 
+      s +=n; /* skip value */
+      if (*s != ')')
+        return GNUPG_Invalid_Sexp; 
+      depth--;
+      s++;
+    }
+  point = s; /* insert right before the point */
+  depth--;
+  s++;
+  assert (depth == 1);
+
+  /* calculate required length by taking in account: the "shadowed-"
+     prefix, the "shadowed", "t1-v1" as well as some parenthesis */
+  n = 12 + pubkey_len + 1 + 3+8 + 2+5 + shadow_info_len + 1;
+  *result = p = xtrymalloc (n);
+  if (!p)
+      return GNUPG_Out_Of_Core;
+  p = stpcpy (p, "(20:shadowed-private-key");
+  /* (10:public-key ...)*/
+  memcpy (p, pubkey+14, point - (pubkey+14));
+  p += point - (pubkey+14);
+  p = stpcpy (p, "(8:shadowed5:t1-v1");
+  memcpy (p, shadow_info, shadow_info_len);
+  p += shadow_info_len;
+  *p++ = ')';
+  memcpy (p, point, pubkey_len - (point - pubkey));
+  p += pubkey_len - (point - pubkey);
+
+  return 0;
+}
+
+/* Parse a canonical encoded shadowed key and return a pointer to the
+   inner list with the shadow_info */
+int 
+agent_get_shadow_info (const unsigned char *shadowkey,
+                       unsigned char const **shadow_info)
+{
+  const unsigned char *s;
+  size_t n;
+  int depth = 0;
+
+  s = shadowkey;
+  if (*s != '(')
+    return GNUPG_Invalid_Sexp;
+  depth++;
+  s++;
+  n = snext (&s);
+  if (!n)
+    return GNUPG_Invalid_Sexp; 
+  if (!smatch (&s, n, "shadowed-private-key"))
+    return GNUPG_Unknown_Sexp; 
+  if (*s != '(')
+    return GNUPG_Unknown_Sexp;
+  depth++;
+  s++;
+  n = snext (&s); 
+  if (!n)
+    return GNUPG_Invalid_Sexp; 
+  s += n; /* skip over the algorithm name */
+
+  for (;;)
+    {
+      if (*s == ')')
+        return GNUPG_Unknown_Sexp;
+      if (*s != '(')
+        return GNUPG_Invalid_Sexp;
+      depth++;
+      s++;
+      n = snext (&s);
+      if (!n) 
+        return GNUPG_Invalid_Sexp; 
+      if (smatch (&s, n, "shadowed"))
+        break;
+      s += n;
+      n = snext (&s);
+      if (!n)
+        return GNUPG_Invalid_Sexp; 
+      s +=n; /* skip value */
+      if (*s != ')')
+        return GNUPG_Invalid_Sexp; 
+      depth--;
+      s++;
+    }
+  /* found the shadowed list, s points to the protocol */
+  n = snext (&s);
+  if (!n) 
+    return GNUPG_Invalid_Sexp; 
+  if (smatch (&s, n, "t1-v1"))
+    {
+      if (*s != '(')
+        return GNUPG_Invalid_Sexp;
+      *shadow_info = s;
+    }
+  else
+    return GNUPG_Unsupported_Protocol;
+  return 0;
+}
 

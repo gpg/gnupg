@@ -49,6 +49,8 @@ enum cmd_and_opt_values
   oUnprotect      = 'u',
   
   oNoVerbose = 500,
+  oShadow,
+  oShowShadowInfo,
 
 aTest };
 
@@ -65,6 +67,8 @@ static ARGPARSE_OPTS opts[] = {
   { oPassphrase, "passphrase", 2, "|STRING| Use passphrase STRING" },
   { oProtect, "protect",     256, "protect a private key"},
   { oUnprotect, "unprotect", 256, "unprotect a private key"},
+  { oShadow,  "shadow", 256, "create a shadow entry for a priblic key"},
+  { oShowShadowInfo,  "show-shadow-info", 256, "return the shadow info"},
 
   {0}
 };
@@ -125,8 +129,7 @@ my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
     case GCRY_LOG_FATAL:level = JNLIB_LOG_FATAL; break;
     case GCRY_LOG_BUG:  level = JNLIB_LOG_BUG; break;
     case GCRY_LOG_DEBUG:level = JNLIB_LOG_DEBUG; break;
-    default:            level = JNLIB_LOG_ERROR; break;  
-    }
+    default:            level = JNLIB_LOG_ERROR; break;      }
   log_logv (level, fmt, arg_ptr);
 }
 
@@ -291,6 +294,79 @@ read_and_unprotect (const char *fname)
 }
 
 
+
+static void
+read_and_shadow (const char *fname)
+{
+  int  rc;
+  unsigned char *key;
+  unsigned char *result;
+  size_t resultlen;
+  
+  key = read_key (fname);
+  if (!key)
+    return;
+
+  rc = agent_shadow_key (key, "(8:313233342:43)", &result);
+  xfree (key);
+  if (rc)
+    {
+      log_error ("shadowing the key failed: %s\n", gnupg_strerror (rc));
+      return;
+    }
+  resultlen = gcry_sexp_canon_len (result, 0, NULL,NULL);
+  assert (resultlen);
+  
+  if (opt_armor)
+    {
+      char *p = make_advanced (result, resultlen);
+      xfree (result);
+      if (!p)
+        return;
+      result = p;
+      resultlen = strlen (p);
+    }
+
+  fwrite (result, resultlen, 1, stdout);
+  xfree (result);
+}
+
+static void
+show_shadow_info (const char *fname)
+{
+  int  rc;
+  unsigned char *key;
+  const unsigned char *info;
+  size_t infolen;
+  
+  key = read_key (fname);
+  if (!key)
+    return;
+
+  rc = agent_get_shadow_info (key, &info);
+  xfree (key);
+  if (rc)
+    {
+      log_error ("get_shadow_info failed: %s\n", gnupg_strerror (rc));
+      return;
+    }
+  infolen = gcry_sexp_canon_len (info, 0, NULL,NULL);
+  assert (infolen);
+  
+  if (opt_armor)
+    {
+      char *p = make_advanced (info, infolen);
+      if (!p)
+        return;
+      fwrite (p, strlen (p), 1, stdout);
+      xfree (p);
+    }
+  else
+    fwrite (info, infolen, 1, stdout);
+}
+
+
+
 
 int
 main (int argc, char **argv )
@@ -325,6 +401,8 @@ main (int argc, char **argv )
 
         case oProtect: cmd = oProtect; break;
         case oUnprotect: cmd = oUnprotect; break;
+        case oShadow: cmd = oShadow; break;
+        case oShowShadowInfo: cmd = oShowShadowInfo; break;
 
         case oPassphrase: passphrase = pargs.r.ret_str; break;
 
@@ -341,6 +419,10 @@ main (int argc, char **argv )
     read_and_protect (*argv);
   else if (cmd == oUnprotect)
     read_and_unprotect (*argv);
+  else if (cmd == oShadow)
+    read_and_shadow (*argv);
+  else if (cmd == oShowShadowInfo)
+    show_shadow_info (*argv);
   else
     log_info ("no action requested\n");
 

@@ -34,6 +34,7 @@
 #include <unistd.h>
 #include <signal.h>
 
+#include <ksba.h>
 #include <gcrypt.h>
 
 #define JNLIB_NEED_LOG_LOGV
@@ -242,6 +243,7 @@ main (int argc, char **argv )
                    "1.1.5", gcry_check_version (NULL) );
     }
 
+  ksba_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
   assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
   gcry_set_log_handler (my_gcry_logger, NULL);
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);

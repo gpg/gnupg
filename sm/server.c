@@ -371,7 +371,7 @@ cmd_message (ASSUAN_CONTEXT ctx, char *line)
 
 
 /* Note that the line contains a space separated list of pappern where
-   each pappern is percent escaped and spacesmay be replaced by
+   each pappern is percent escaped and spaces may be replaced by
    '+'. */
 static int 
 cmd_listkeys (ASSUAN_CONTEXT ctx, char *line)
