@@ -381,13 +381,13 @@ parse_hkp_index(IOBUF buffer,char *line)
 
 int hkp_search(STRLIST tokens)
 {
-  int rc=0,len=0,first=1;
+  int rc=0,len=0,max,first=1;
   unsigned int maxlen=1024,buflen=0;
 #ifndef __riscos__
-  unsigned char *searchstr=NULL,*searchurl=NULL;
+  unsigned char *searchstr=NULL,*searchurl;
   unsigned char *request;
 #else
-  char *searchstr=NULL,*searchurl=NULL;
+  char *searchstr=NULL,*searchurl;
   char *request;
 #endif
   struct http_context hd;
@@ -424,23 +424,25 @@ int hkp_search(STRLIST tokens)
 
   /* Now make it url-ish */
 
+  max=0;
   len=0;
+  searchurl=NULL;
   request=searchstr;
+
   while(*request!='\0')
     {
+      if(max-len<3)
+	{
+	  max+=100;
+	  searchurl=m_realloc(searchurl,max+1); /* Note +1 for \0 */
+	}
+
       if(isalnum(*request) || *request=='-')
-	{
-	  searchurl=m_realloc(searchurl,len+1);
-	  searchurl[len++]=*request;
-	}
+	searchurl[len++]=*request;
       else if(*request==' ')
-	{
-	  searchurl=m_realloc(searchurl,len+1);
-	  searchurl[len++]='+';
-	}
+	searchurl[len++]='+';
       else
 	{
-	  searchurl=m_realloc(searchurl,len+3);
 	  sprintf(&searchurl[len],"%%%02X",*request);
 	  len+=3;
 	}
@@ -448,7 +450,6 @@ int hkp_search(STRLIST tokens)
       request++;
     }
 
-  searchurl=m_realloc(searchurl,len+1);
   searchurl[len]='\0';
 
   request=m_alloc(strlen(opt.keyserver_host) + 100 + strlen(searchurl));

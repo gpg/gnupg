@@ -81,6 +81,7 @@ enum cmd_and_opt_values { aNull = 0,
     aSignKey,
     aLSignKey,
     aNRSignKey,
+    aNRLSignKey,
     aListPackets,
     aEditKey,
     aDeleteKeys,
@@ -211,6 +212,9 @@ enum cmd_and_opt_values { aNull = 0,
     oForceV4Certs,
     oNoForceV4Certs,
     oForceMDC,
+    oNoForceMDC,
+    oDisableMDC,
+    oNoDisableMDC,
     oS2KMode,
     oS2KDigest,
     oS2KCipher,
@@ -295,6 +299,7 @@ static ARGPARSE_OPTS opts[] = {
     { aSignKey,  "sign-key"   ,256, N_("sign a key")},
     { aLSignKey, "lsign-key"  ,256, N_("sign a key locally")},
     { aNRSignKey, "nrsign-key"  ,256, N_("sign a key non-revocably")},
+    { aNRLSignKey, "nrlsign-key"  ,256, N_("sign a key locally and non-revocably")},
     { aEditKey,  "edit-key"   ,256, N_("sign or edit a key")},
     { aGenRevoke, "gen-revoke",256, N_("generate a revocation certificate")},
     { aExport, "export"           , 256, N_("export keys") },
@@ -360,6 +365,9 @@ static ARGPARSE_OPTS opts[] = {
     { oForceV4Certs, "force-v4-certs", 0, N_("force v4 key signatures") },
     { oNoForceV4Certs, "no-force-v4-certs", 0, N_("do not force v4 key signatures") },
     { oForceMDC, "force-mdc", 0, N_("always use a MDC for encryption") },
+    { oNoForceMDC, "no-force-mdc", 0, "@" },
+    { oDisableMDC, "disable-mdc", 0, N_("never use a MDC for encryption") },
+    { oNoDisableMDC, "no-disable-mdc", 0, "@" },
     { oDryRun, "dry-run",   0, N_("do not make any changes") },
   /*{ oInteractive, "interactive", 0, N_("prompt before overwriting") }, */
     { oUseAgent, "use-agent",0, N_("use the gpg-agent")},
@@ -921,6 +929,7 @@ main( int argc, char **argv )
 	  case aSignKey: set_cmd( &cmd, aSignKey); break;
 	  case aLSignKey: set_cmd( &cmd, aLSignKey); break;
 	  case aNRSignKey: set_cmd( &cmd, aNRSignKey); break;
+	  case aNRLSignKey: set_cmd( &cmd, aNRLSignKey); break;
 	  case aStore: set_cmd( &cmd, aStore); break;
 	  case aEditKey: set_cmd( &cmd, aEditKey); greeting=1; break;
 	  case aClearsign: set_cmd( &cmd, aClearsign); break;
@@ -1109,6 +1118,9 @@ main( int argc, char **argv )
           case oForceV4Certs: opt.force_v4_certs = 1; break;
           case oNoForceV4Certs: opt.force_v4_certs = 0; break;
 	  case oForceMDC: opt.force_mdc = 1; break;
+	  case oNoForceMDC: opt.force_mdc = 0; break;
+	  case oDisableMDC: opt.disable_mdc = 1; break;
+	  case oNoDisableMDC: opt.disable_mdc = 0; break;
 	  case oS2KMode:   opt.s2k_mode = pargs.r.ret_int; break;
 	  case oS2KDigest: s2k_digest_string = m_strdup(pargs.r.ret_str); break;
 	  case oS2KCipher: s2k_cipher_string = m_strdup(pargs.r.ret_str); break;
@@ -1365,6 +1377,7 @@ main( int argc, char **argv )
 		opt.rfc1991 = 1;
 		opt.rfc2440 = 0;
 		opt.force_mdc = 0;
+		opt.disable_mdc = 1;
 		opt.force_v4_certs = 0;
 		opt.no_comment = 1;
 		opt.escape_from = 1;
@@ -1379,6 +1392,7 @@ main( int argc, char **argv )
 	if(opt.pgp6)
 	  {
 	    opt.force_mdc=0;
+	    opt.disable_mdc=1;
 	    opt.no_comment=1;
 	    opt.escape_from=1;
 	    opt.force_v3_sigs=1;
@@ -1673,6 +1687,14 @@ main( int argc, char **argv )
 	    wrong_args(_("--nrsign-key user-id"));
 	username = make_username( fname );
 	keyedit_menu(fname, locusr, NULL, 3 );
+        m_free(username);
+        break;
+
+      case aNRLSignKey:
+	if( argc != 1 )
+	    wrong_args(_("--nrlsign-key user-id"));
+	username = make_username( fname );
+	keyedit_menu(fname, locusr, NULL, 4 );
         m_free(username);
         break;
 

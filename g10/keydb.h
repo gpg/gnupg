@@ -26,6 +26,10 @@
 #include "packet.h"
 #include "cipher.h"
 
+/* What qualifies as a certification (rather than a signature?) */
+#define IS_SIG(s) (((s)->sig_class==0x00) || ((s)->sig_class==0x01) || \
+		   ((s)->sig_class==0x02) || ((s)->sig_class==0x40))
+#define IS_CERT(s) (!IS_SIG(s))
 
 #define IS_KEY_SIG(s)    ((s)->sig_class == 0x1f)
 #define IS_UID_SIG(s)    (((s)->sig_class & ~3) == 0x10)

@@ -69,9 +69,9 @@ show_policy_url(PKT_signature *sig,int indent)
 {
   const byte *p;
   size_t len;
+  int seq=0;
 
-  p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_POLICY,&len);
-  if(p)
+  while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_POLICY,&len,&seq)))
     {
       int i;
 

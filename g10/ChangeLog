@@ -1,3 +1,31 @@
+2002-02-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* misc.c (pct_expando): More comments.
+
+	* keydb.h, sign.c (mk_notation_and_policy): Clarify what is a sig
+	and what is a cert.  A sig has sigclass 0x00, 0x01, 0x02, or 0x40,
+	and everything else is a cert.
+
+	* g10.c (main), keyedit.c (keyedit_menu): Add a "nrlsign" for
+	nonrevocable and local key signatures.
+
+	* g10.c (main): Add a --no-force-mdc to undo --force-mdc.
+
+	* options.h, g10.c (main), cipher.c (write_header): Add a knob to
+	--disable-mdc/--no-disable-mdc.  Off by default, of course, but is
+	used in --pgp2 and --pgp6 modes.
+	
+	* pkclist.c (build_pk_list): Allow specifying multiple users in
+	the "Enter the user ID" loop.  Enter a blank line to stop.  Show
+	each key+id as it is added.
+
+	* keylist.c (show_policy_url), mainproc.c (print_notation_data):
+	It is not illegal (though possibly silly) to have multiple policy
+	URLs in a given signature, so print all that are present.
+	
+	* hkp.c (hkp_search): More efficient implementation of URL-ifying
+	code.
+
 2002-02-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* main.h, misc.c (pct_expando): New function to generalize

@@ -62,6 +62,7 @@ struct {
     int force_v3_sigs;
     int force_v4_certs;
     int force_mdc;
+    int disable_mdc;
     int def_digest_algo;
     int def_compress_algo;
     const char *def_secret_key;

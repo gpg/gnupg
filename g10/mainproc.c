@@ -734,7 +734,10 @@ print_notation_data( PKT_signature *sig )
         write_status_buffer ( STATUS_NOTATION_NAME, p   , n1, 0 );
         write_status_buffer ( STATUS_NOTATION_DATA, p+n1, n2, 50 );
     }
-    if( (p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_POLICY, &n ) )) {
+
+    seq=0;
+
+    while( (p = enum_sig_subpkt (sig->hashed, SIGSUBPKT_POLICY, &n, &seq) )) {
 	log_info(_("Policy: ") );
 	print_string( log_stream(), p, n, 0 );
 	putc( '\n', log_stream() );

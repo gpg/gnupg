@@ -442,7 +442,8 @@ idea_cipher_warn(int show)
 /* The largest string we have an expando for, times two. */
 #define LARGEST_EXPANDO ((MAX_FINGERPRINT_LEN*2)*2)
 
-/* Expand %-strings */
+/* Expand %-strings.  Returns a string which must be m_freed.  Returns
+   NULL if the string cannot be expanded (too large). */
 char *
 pct_expando(const char *string,PKT_public_key *pk)
 {
@@ -517,7 +518,10 @@ pct_expando(const char *string,PKT_public_key *pk)
 	      break;
 
 	      /* Any unknown %-keys (like %i, %o, %I, and %O) are
-		 passed through for later expansion. */
+		 passed through for later expansion.  Note this also
+		 handles the case where the last character in the
+		 string is a '%' - the terminating \0 will end up here
+		 and properly terminate the string. */
 	    default:
 	      if(idx+2>maxlen)
 		goto fail;

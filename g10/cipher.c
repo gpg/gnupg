@@ -64,9 +64,8 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     if (opt.force_mdc)
         use_mdc = 1;
         
-    if( opt.rfc2440 || opt.rfc1991 )
+    if( opt.rfc2440 || opt.rfc1991 || opt.disable_mdc )
 	use_mdc = 0;  /* override - rfc2440 does not know about MDC */
-
 
     memset( &ed, 0, sizeof ed );
     ed.len = cfx->datalen;

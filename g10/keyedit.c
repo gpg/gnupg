@@ -753,11 +753,11 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 {
     enum cmdids { cmdNONE = 0,
 	   cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
-           cmdLSIGN, cmdNRSIGN, cmdREVSIG, cmdREVKEY, cmdDELSIG, cmdPRIMARY,
-	   cmdDEBUG, cmdSAVE, cmdADDUID, cmdADDPHOTO, cmdDELUID, cmdADDKEY,
-	   cmdDELKEY, cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF,
-	   cmdEXPIRE, cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF, cmdSETPREF,
-	   cmdUPDPREF, cmdINVCMD, cmdSHOWPHOTO, cmdNOP };
+           cmdLSIGN, cmdNRSIGN, cmdNRLSIGN, cmdREVSIG, cmdREVKEY, cmdDELSIG,
+	   cmdPRIMARY, cmdDEBUG, cmdSAVE, cmdADDUID, cmdADDPHOTO, cmdDELUID,
+           cmdADDKEY, cmdDELKEY, cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST,
+           cmdPREF, cmdEXPIRE, cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF,
+	   cmdSETPREF, cmdUPDPREF, cmdINVCMD, cmdSHOWPHOTO, cmdNOP };
     static struct { const char *name;
 		    enum cmdids id;
 		    int need_sk;
@@ -781,6 +781,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	{ N_("s")       , cmdSIGN      , 0,1,1, NULL },
 	{ N_("lsign")   , cmdLSIGN     , 0,1,1, N_("sign the key locally") },
 	{ N_("nrsign")  , cmdNRSIGN    , 0,1,1, N_("sign the key non-revocably") },
+	{ N_("nrlsign") , cmdNRLSIGN   , 0,1,1, N_("sign the key locally and non-revocably") },
 	{ N_("debug")   , cmdDEBUG     , 0,0,0, NULL },
 	{ N_("adduid")  , cmdADDUID    , 1,1,0, N_("add a user ID") },
 	{ N_("addphoto"), cmdADDPHOTO  , 1,1,0, N_("add a photo ID") },
@@ -832,7 +833,8 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
     if( sign_mode ) {
 	commands = NULL;
 	append_to_strlist( &commands, sign_mode == 1? "sign":
-			   sign_mode == 2?"lsign":"nrsign" );
+			   sign_mode == 2?"lsign":
+			   sign_mode == 3?"nrsign":"nrlsign");
 	have_commands = 1;
     }
 
@@ -992,6 +994,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	  case cmdSIGN: /* sign (only the public key) */
 	  case cmdLSIGN: /* sign (only the public key) */
 	  case cmdNRSIGN: /* sign (only the public key) */
+	  case cmdNRLSIGN: /* sign (only the public key) */
 	    if( pk->is_revoked )
 	      {
 		tty_printf(_("Key is revoked.\n"));
@@ -1016,9 +1019,10 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		}
 	    }
 	    if( !sign_uids( keyblock, locusr, &modified,
-			    cmd == cmdLSIGN , cmd == cmdNRSIGN )
+			    (cmd == cmdLSIGN) || (cmd == cmdNRLSIGN),
+			    (cmd == cmdNRSIGN) || (cmd==cmdNRLSIGN))
 		&& sign_mode )
-		goto do_cmd_save;
+	        goto do_cmd_save;
 	    break;
 
 	  case cmdDEBUG:

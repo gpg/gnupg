@@ -737,14 +737,14 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
     }
 
     if( !any_recipients && !opt.batch ) { /* ask */
-	char *answer=NULL;
 	int have_def_rec;
+	char *answer=NULL;
 
 	def_rec = default_recipient();
 	have_def_rec = !!def_rec;
 	if( !have_def_rec )
 	    tty_printf(_(
-		"You did not specify a user ID. (you may use \"-r\")\n\n"));
+		"You did not specify a user ID. (you may use \"-r\")\n"));
 	for(;;) {
 	    rc = 0;
 	    m_free(answer);
@@ -754,12 +754,14 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    }
 	    else {
 		answer = cpr_get_utf8("pklist.user_id.enter",
-				       _("Enter the user ID: "));
+			 _("\nEnter the user ID.  End with an empty line: "));
 		trim_spaces(answer);
 		cpr_kill_prompt();
 	    }
-	    if( !*answer )
+	    if( !answer || !*answer ) {
+	        m_free(answer);
 		break;
+	    }
 	    if( pk )
 		free_public_key( pk );
 	    pk = m_alloc_clear( sizeof *pk );
@@ -782,7 +784,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 			pk_list = r;
 		    }
 		    any_recipients = 1;
-		    break;
+		    continue;
 		}
 		else {
 		    int trustlevel;
@@ -796,11 +798,24 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 			 * in the list */
 			if (key_present_in_pk_list(pk_list, pk) == 0) {
 			    free_public_key(pk); pk = NULL;
-			    log_info(_("skipped: public key "
-				       "already set with --encrypt-to\n") );
+			    log_info(_("skipped: public key already set\n") );
 			}
 			else {
 			    PK_LIST r;
+			    char *p;
+			    size_t n;
+			    u32 keyid[2];
+
+			    keyid_from_pk( pk, keyid);
+			    tty_printf("Added %4u%c/%08lX %s \"",
+				       nbits_from_pk( pk ),
+				       pubkey_letter( pk->pubkey_algo ),
+				       (ulong)keyid[1],
+				       datestr_from_pk( pk ) );
+			    p = get_user_id( keyid, &n );
+			    tty_print_utf8_string( p, n );
+			    m_free(p);
+			    tty_printf("\"\n");
 
 			    r = m_alloc( sizeof *r );
 			    r->pk = pk; pk = NULL;
@@ -809,14 +824,13 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 			    pk_list = r;
 			}
 			any_recipients = 1;
-			break;
+			continue;
 		    }
 		}
 	    }
 	    m_free(def_rec); def_rec = NULL;
 	    have_def_rec = 0;
 	}
-	m_free(answer);
 	if( pk ) {
 	    free_public_key( pk );
 	    pk = NULL;

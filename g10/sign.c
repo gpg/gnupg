@@ -49,7 +49,6 @@
   #define LF "\n"
 #endif
 
-
 /****************
  * Create a notation.  It is assumed that the stings in STRLIST
  * are already checked to contain only printable data and have a valid
@@ -96,14 +95,14 @@ mk_notation_and_policy( PKT_signature *sig, PKT_public_key *pk )
     }
 
     /* set policy URL */
-    if( (sig->sig_class==0 || sig->sig_class==1) && opt.sig_policy_url )
+    if( IS_SIG(sig) && opt.sig_policy_url )
       {
 	if(sig->version<4)
 	  log_info("can't put a policy URL into v3 signatures\n");
 	else
 	  s=m_strdup(opt.sig_policy_url);
       }
-    else if( !(sig->sig_class==0 || sig->sig_class==1) && opt.cert_policy_url )
+    else if( IS_CERT(sig) && opt.cert_policy_url )
       {
 	if(sig->version<4)
 	  log_info("can't put a policy URL into v3 key signatures\n");
