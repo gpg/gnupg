@@ -632,12 +632,18 @@ main (int argc, char **argv )
 #ifdef USE_GNU_PTH
       if (!disable_pth)
         {
+	  struct sigaction sa;
+
           if (!pth_init ())
             {
               log_error ("failed to initialize the Pth library\n");
               exit (1);
             }
-          signal (SIGPIPE, SIG_IGN);
+
+	  sa.sa_handler = SIG_IGN;
+	  sigemptyset (&sa.sa_mask);
+	  sa.sa_flags = 0;
+	  sigaction (SIGPIPE, &sa, NULL);
           handle_connections (fd);
         }
       else

@@ -1,3 +1,7 @@
+2002-09-04  Neal H. Walfield  <neal@g10code.de>
+
+	* gpg-agent.c (main): Use sigaction, not signal.
+
 2002-09-03  Neal H. Walfield  <neal@g10code.de>
 
 	* findkey.c: Include <fcntl.h>.
