@@ -1,4 +1,4 @@
-# Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -110,10 +110,9 @@ gpgv_SOURCES = gpgv.c           \
 
 LDADD =  $(needed_libs) @ZLIBS@ @INTLLIBS@
 # gpg gets LIBOBJS to add in mkdtemp if the platform doesn't have it
-gpg_LDADD = @LIBOBJS@ $(LDADD)
+gpg_LDADD = @LIBOBJS@ $(LDADD) @NETLIBS@
 
 $(PROGRAMS): $(needed_libs)
-
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
@@ -124,4 +123,3 @@ install-data-local:
 	   echo "removing obsolete gpgm binary" ;   \
 	   rm $(DESTDIR)$(bindir)/gpgm ;	    \
 	 fi
-
