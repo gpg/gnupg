@@ -57,7 +57,7 @@ function print_code( s )
 {
 printf "    case %s: s=\"", s ;
 gsub(/_/, " ", s );
-printf "%s\"; break;\n", substr(s,8);
+printf "%s\"; break;\n", tolower(substr(s,8));
 }
 '
 

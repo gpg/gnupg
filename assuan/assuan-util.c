@@ -21,6 +21,7 @@
 #include <config.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "assuan-defs.h"
 
@@ -72,11 +73,10 @@ _assuan_free (void *p)
 
 
 /* Store the error in the context so that the error sending function
-  can take out a descriptive text.  We wight also want to store a
-  standard text when TEXT is NULL.  Use the macro set_error instead of
-  this function.  */
+  can take out a descriptive text.  Inside the assuan code, use the
+  macro set_error instead of this function. */
 int
-_assuan_set_error (ASSUAN_CONTEXT ctx, int err, const char *text)
+assuan_set_error (ASSUAN_CONTEXT ctx, int err, const char *text)
 {
   ctx->err_no = err;
   ctx->err_str = text;

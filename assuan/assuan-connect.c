@@ -1,4 +1,4 @@
-/* assuan-pipe-server.c - Assuan server working over a pipe 
+/* assuan-connect.c - Establish a connection (client) 
  *	Copyright (C) 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -21,49 +21,7 @@
 #include <config.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "assuan-defs.h"
-
-
-int
-assuan_init_pipe_server (ASSUAN_CONTEXT *r_ctx, int filedes[2])
-{
-  ASSUAN_CONTEXT ctx;
-  int rc;
-
-  *r_ctx = NULL;
-  ctx = xtrycalloc (1, sizeof *ctx);
-  if (!ctx)
-    return ASSUAN_Out_Of_Core;
-  ctx->input_fd = -1;
-  ctx->output_fd = -1;
-
-  ctx->inbound.fd = filedes[0];
-  ctx->outbound.fd = filedes[1];
-
-  ctx->pipe_mode = 1;
-
-  rc = _assuan_register_std_commands (ctx);
-  if (rc)
-    xfree (ctx);
-  else
-    *r_ctx = ctx;
-  return rc;
-}
-
-void
-assuan_deinit_pipe_server (ASSUAN_CONTEXT ctx)
-{
-  xfree (ctx);
-}
-
-
-
-
-
-
-
-
-
-
 

@@ -23,6 +23,13 @@
 
 #include "assuan.h"
 
+#define LINELENGTH 1002 /* 1000 + [CR,]LF */
+
+struct cmdtbl_s {
+  const char *name;
+  int cmd_id;
+  int (*handler)(ASSUAN_CONTEXT, char *line);
+};
 
 struct assuan_context_s {
   AssuanError err_no;
@@ -30,11 +37,24 @@ struct assuan_context_s {
 
   struct {
     int fd;
+    int eof;
+    char line[LINELENGTH];
+    int linelen;  /* w/o CR, LF - might not be the same as
+                     strlen(line) due to embedded nuls. However a nul
+                     is always written at this pos */
   } inbound;
 
   struct {
     int fd;
   } outbound;
+
+  int pipe_mode;  /* We are in pipe mode, i.e. we can handle just one
+                     connection and must terminate then */
+
+  struct cmdtbl_s *cmdtbl;
+  size_t cmdtbl_used; /* used entries */
+  size_t cmdtbl_size; /* allocated size of table */
+
 
   int input_fd;   /* set by INPUT command */
   int output_fd;  /* set by OUTPUT command */
@@ -46,6 +66,11 @@ struct assuan_context_s {
 
 /*-- assuan-handler.c --*/
 int _assuan_register_std_commands (ASSUAN_CONTEXT ctx);
+
+/*-- assuan-buffer.c --*/
+int _assuan_write_line (ASSUAN_CONTEXT ctx, const char *line);
+int _assuan_read_line (ASSUAN_CONTEXT ctx);
+
 
 
 /*-- assuan-util.c --*/
@@ -59,8 +84,7 @@ void  _assuan_free (void *p);
 #define xtryrealloc(a,b) _assuan_realloc((a),(b))
 #define xfree(a)         _assuan_free ((a))
 
-int _assuan_set_error (ASSUAN_CONTEXT ctx, int err, const char *text);
-#define set_error(c,e,t) _assuan_set_error ((c), ASSUAN_ ## e, (t))
+#define set_error(c,e,t) assuan_set_error ((c), ASSUAN_ ## e, (t))
 
 
 #endif /*ASSUAN_DEFS_H*/
