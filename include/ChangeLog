@@ -1,3 +1,7 @@
+2004-10-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.h: Add KEYSERVER_TIMEOUT.
+
 2004-09-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* util.h: Prototype destroy_dotlock().  From Werner on stable
