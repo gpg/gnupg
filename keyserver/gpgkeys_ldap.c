@@ -1,5 +1,5 @@
 /* gpgkeys_ldap.c - talk to a LDAP keyserver
- * Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -794,14 +794,132 @@ fail_all(struct keylist *keylist,int action,int err)
       }
 }
 
+static int
+find_basekeyspacedn(void)
+{
+  int err,i;
+  char *attr[]={"namingContexts",NULL,NULL,NULL};
+  LDAPMessage *res;
+  char **context;
+
+  /* Look for namingContexts */
+  err=ldap_search_s(ldap,"",LDAP_SCOPE_BASE,"(objectClass=*)",attr,0,&res);
+  if(err==LDAP_SUCCESS)
+    {
+      context=ldap_get_values(ldap,res,"namingContexts");
+      attr[0]="pgpBaseKeySpaceDN";
+      attr[1]="pgpVersion";
+      attr[2]="pgpSoftware";
+
+      /* We found some, so try each namingContext as the search base
+	 and look for pgpBaseKeySpaceDN.  Because we found this, we
+	 know we're talking to a regular-ish LDAP server and not a
+	 LDAP keyserver. */
+
+      for(i=0;context[i] && !basekeyspacedn;i++)
+	{
+	  char **vals;
+	  LDAPMessage *si_res;
+	  err=ldap_search_s(ldap,context[i],LDAP_SCOPE_ONELEVEL,
+			    "(cn=pgpServerInfo)",attr,0,&si_res);
+	  if(err!=LDAP_SUCCESS)
+	    return err;
+
+	  vals=ldap_get_values(ldap,si_res,"pgpBaseKeySpaceDN");
+	  if(vals)
+	    {
+	      /* This is always "OU=ACTIVE,O=PGP KEYSPACE,C=US", but
+		 it might not be in the future. */
+
+	      basekeyspacedn=strdup(vals[0]);
+	      ldap_value_free(vals);
+	    }
+
+	  if(verbose>1)
+	    {
+	      vals=ldap_get_values(ldap,si_res,"pgpSoftware");
+	      if(vals)
+		{
+		  fprintf(console,"Server: \t%s\n",vals[0]);
+		  ldap_value_free(vals);
+		}
+
+	      vals=ldap_get_values(ldap,si_res,"pgpVersion");
+	      if(vals)
+		{
+		  fprintf(console,"Version:\t%s\n",vals[0]);
+		  ldap_value_free(vals);
+		}
+	    }
+
+	  ldap_msgfree(si_res);
+	}
+
+      ldap_value_free(context);
+      ldap_msgfree(res);
+    }
+  else
+    {
+      /* We don't have an answer yet, which means the server might be
+	 a LDAP keyserver. */
+      char **vals;
+      LDAPMessage *si_res;
+
+      attr[0]="pgpBaseKeySpaceDN";
+      attr[1]="version";
+      attr[2]="software";
+
+      err=ldap_search_s(ldap,"cn=pgpServerInfo",LDAP_SCOPE_BASE,
+			"(objectClass=*)",attr,0,&si_res);
+      if(err!=LDAP_SUCCESS)
+	return err;
+
+      vals=ldap_get_values(ldap,si_res,"baseKeySpaceDN");
+      if(vals)
+	{
+	  basekeyspacedn=strdup(vals[0]);
+	  ldap_value_free(vals);
+	}
+
+      if(verbose>1)
+	{
+	  vals=ldap_get_values(ldap,si_res,"software");
+	  if(vals)
+	    {
+	      fprintf(console,"Server: \t%s\n",vals[0]);
+	      ldap_value_free(vals);
+	    }
+	}
+
+      vals=ldap_get_values(ldap,si_res,"version");
+      if(vals)
+	{
+	  if(verbose>1)
+	    fprintf(console,"Version:\t%s\n",vals[0]);
+
+	  /* If the version is high enough, use the new pgpKeyV2
+	     attribute.  This design if iffy at best, but it matches how
+	     PGP does it.  I figure the NAI folks assumed that there would
+	     never be a LDAP keyserver vendor with a different numbering
+	     scheme. */
+	  if(atoi(vals[0])>1)
+	    pgpkeystr="pgpKeyV2";
+
+	  ldap_value_free(vals);
+	}
+
+      ldap_msgfree(si_res);
+    }   
+
+  return LDAP_SUCCESS;
+}
+
 int
 main(int argc,char *argv[])
 {
   int port=0,arg,err,action=-1,ret=KEYSERVER_INTERNAL_ERROR;
-  char line[MAX_LINE],**vals;
+  char line[MAX_LINE];
   int version,failed=0;
-  char *attrs[]={"basekeyspacedn","version","software",NULL};
-  LDAPMessage *res;
   struct keylist *keylist=NULL,*keyptr=NULL;
 
   console=stderr;
@@ -1032,70 +1150,13 @@ main(int argc,char *argv[])
       goto fail;
     }
 
-  /* Get the magic info record */
-
-  err=ldap_search_s(ldap,"cn=PGPServerInfo",LDAP_SCOPE_BASE,
-		    "(objectclass=*)",attrs,0,&res);
-  if(err!=0)
+  if((err=find_basekeyspacedn()))
     {
-      fprintf(console,"gpgkeys: error retrieving LDAP server info: %s\n",
+      fprintf(console,"gpgkeys: unable to retrieve LDAP base: %s\n",
 	      ldap_err2string(err));
       fail_all(keylist,action,ldap_err_to_gpg_err(err));
       goto fail;
     }
-
-  if(ldap_count_entries(ldap,res)!=1)
-    {
-      fprintf(console,"gpgkeys: more than one serverinfo record\n");
-      fail_all(keylist,action,KEYSERVER_INTERNAL_ERROR);
-      goto fail;
-    }
-
-  if(verbose>1)
-    {
-      vals=ldap_get_values(ldap,res,"software");
-      if(vals!=NULL)
-	{
-	  fprintf(console,"Server: \t%s\n",vals[0]);
-	  ldap_value_free(vals);
-	}
-    }
-
-  vals=ldap_get_values(ldap,res,"version");
-  if(vals!=NULL)
-    {
-      if(verbose>1)
-	fprintf(console,"Version:\t%s\n",vals[0]);
-
-      /* If the version is high enough, use the new pgpKeyV2
-	 attribute.  This design if iffy at best, but it matches how
-	 PGP does it.  I figure the NAI folks assumed that there would
-	 never be a LDAP keyserver vendor with a different numbering
-	 scheme. */
-      if(atoi(vals[0])>1)
-	pgpkeystr="pgpKeyV2";
-
-      ldap_value_free(vals);
-    }
-
-  /* This is always "OU=ACTIVE,O=PGP KEYSPACE,C=US", but it might not
-     be in the future. */
-
-  vals=ldap_get_values(ldap,res,"basekeyspacedn");
-  if(vals!=NULL)
-    {
-      basekeyspacedn=strdup(vals[0]);
-      ldap_value_free(vals);
-      if(basekeyspacedn==NULL)
-	{
-	  fprintf(console,"gpgkeys: can't allocate string space "
-		  "for LDAP base\n");
-	  fail_all(keylist,action,KEYSERVER_NO_MEMORY);
-	  goto fail;
-	}
-    }
-
-  ldap_msgfree(res);
 
   switch(action)
     {
