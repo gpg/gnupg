@@ -328,6 +328,6 @@ void show_photos(const struct user_attribute *attrs,
   return;
 
  fail:
-  log_error("unable to display photo ID!\n");
+  log_error(_("unable to display photo ID!\n"));
 #endif
 }

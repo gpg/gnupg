@@ -1,3 +1,16 @@
+2003-04-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* mainproc.c (check_sig_and_print): Show sig class when verifying
+	a sig with --verbose on, and add version, pk and hash algorithms
+	and sig class to VALIDSIG.
+
+	* g10.c (main): Add --no-textmode.
+
+	* export.c (do_export_stream), keyedit.c (show_key_with_all_names,
+	menu_addrevoker), mainproc.c (check_sig_and_print), photoid.c
+	(show_photos), trustdb.c (get_validity, reset_trust_records,
+	validate_keys): Make some strings translatable.
+
 2003-04-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* mainproc.c (check_sig_and_print): Show digest algorithm when

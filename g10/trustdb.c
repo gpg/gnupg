@@ -817,7 +817,7 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
           if (opt.no_auto_check_trustdb) 
             {
               pending_check_trustdb = 1;
-              log_info ("please do a --check-trustdb\n");
+              log_info (_("please do a --check-trustdb\n"));
             }
           else
             {
@@ -1533,7 +1533,7 @@ reset_trust_records (KEYDB_HANDLE hd, KeyHashTable exclude)
         log_error ("keydb_search_next failed: %s\n", g10_errstr(rc));
     }
   if (opt.verbose)
-    log_info ("%d keys processed (%d validity counts cleared)\n",
+    log_info (_("%d keys processed (%d validity counts cleared)\n"),
               count, nreset);
 }
 
@@ -1587,7 +1587,7 @@ validate_keys (int interactive)
    * here when needed */
   if (!utk_list)
     {
-      log_info ("no ultimately trusted keys found\n");
+      log_info (_("no ultimately trusted keys found\n"));
       goto leave;
     }
 
