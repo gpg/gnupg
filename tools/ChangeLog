@@ -1,3 +1,9 @@
+2003-12-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgsplit.c (write_part): Split off decompression code.
+	(handle_zlib): Move it here.
+	(handle_bzip2): Add this to handle BZIP2 compressed messages.
+
 2003-06-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Use W32LIBS where appropriate.
