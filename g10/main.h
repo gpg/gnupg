@@ -153,7 +153,8 @@ void show_basic_key_info (KBNODE keyblock);
 /*-- keygen.c --*/
 u32 ask_expire_interval(int object);
 u32 ask_expiredate(void);
-void generate_keypair( const char *fname, const char *card_serialno );
+void generate_keypair( const char *fname, const char *card_serialno,
+                       const char *backup_encryption_dir );
 int keygen_set_std_prefs (const char *string,int personal);
 PKT_user_id *keygen_get_std_prefs (void);
 int keygen_add_key_expire( PKT_signature *sig, void *opaque );
@@ -165,6 +166,7 @@ int generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock );
 #ifdef ENABLE_CARD_SUPPORT
 int generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
                               int keyno, const char *serialno);
+int save_unprotected_key_to_card (PKT_secret_key *sk, int keyno);
 #endif
 
 /*-- openfile.c --*/

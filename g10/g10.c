@@ -3181,12 +3181,12 @@ main( int argc, char **argv )
 	if( opt.batch ) {
 	    if( argc > 1 )
 		wrong_args("--gen-key [parameterfile]");
-	    generate_keypair( argc? *argv : NULL, NULL );
+	    generate_keypair( argc? *argv : NULL, NULL, NULL );
 	}
 	else {
 	    if( argc )
 		wrong_args("--gen-key");
-	    generate_keypair(NULL, NULL);
+	    generate_keypair(NULL, NULL, NULL);
 	}
 	break;
 

@@ -1,3 +1,8 @@
+2004-09-23  Werner Koch  <wk@g10code.com>
+
+	* rsa.c (rsa_generate): Return the dummy list of factors only if
+	the caller asked for it.
+
 2004-05-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* dsa.c (verify): s/exp/exponent/ to fix a compiler warning.  From

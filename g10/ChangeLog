@@ -1,5 +1,16 @@
 2004-09-23  Werner Koch  <wk@g10code.com>
 
+	* card_util.c (generate_card_keys): ask whether backup should be
+	created.
+	(card_store_subkey): Factored some code out to ..
+	* keygen.c (save_unprotected_key_to_card): .. new function.
+	(gen_card_key_with_backup): New.
+	(generate_raw_key): New.
+	(generate_keypair): New arg BACKUP_ENCRYPTION_DIR.  Changed all
+	callers.
+	(do_generate_keypair): Divert to gen_card_key_with_backup when
+	desired.
+
 	* apdu.c (open_pcsc_reader): Do not print empty reader string.
 
 	* keygen.c (ask_algo): Allow creation of AUTH keys.
@@ -7,6 +18,9 @@
 	* keyid.c (usagestr_from_pk): New.
 
 	* app-openpgp.c (app_openpgp_storekey): Call flush_cache.
+	(get_cached_data): Move local data initialization to ..
+	(app_select_openpgp): .. here. Read some flags for later use.
+	(do_getattr): New read-only attribute EXTCAP.
 
 	* keyedit.c (keyedit_menu): New command "keytocard"
 	(keyedit_menu): Bad hack for the not_with_sk element.
@@ -15,6 +29,7 @@
 
 	* card-util.c (card_store_subkey): New.
 	(copy_mpi): New.
+
 	* cardglue.c (agent_openpgp_storekey): New.
 
 2004-09-22  Werner Koch  <wk@g10code.com>

@@ -353,7 +353,8 @@ rsa_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors )
     skey[4] = sk.q;
     skey[5] = sk.u;
     /* make an empty list of factors */
-    *retfactors = m_alloc_clear( 1 * sizeof **retfactors );
+    if (retfactors)
+      *retfactors = m_alloc_clear( 1 * sizeof **retfactors );
     return 0;
 }
 

@@ -43,39 +43,6 @@
 
 #define CONTROL_D ('D' - 'A' + 1)
 
-#if GNUPG_MAJOR_VERSION == 1
-#define GET_NBITS(a)  mpi_get_nbits (a)
-#else
-#define GET_NBITS(a)  gcry_mpi_get_nbits (a)
-#endif
-
-  
-static int
-copy_mpi (MPI a, unsigned char *buffer, size_t len, size_t *ncopied)
-{
-  int rc;
-#if GNUPG_MAJOR_VERSION == 1
-  unsigned char *tmp;
-  unsigned int n;
-
-  tmp = mpi_get_secure_buffer (a, &n, NULL);
-  if (n > len)
-    rc = G10ERR_GENERAL;
-  else
-    {
-      rc = 0;
-      memcpy (buffer, tmp, n);
-      *ncopied = n;
-    }
-  xfree (tmp);
-#else /* GNUPG_MAJOR_VERSION != 1 */
-  rc = gcry_mpi_print (GCRYMPI_FMT_USG, buffer, len, ncopied, a);
-#endif /* GNUPG_MAJOR_VERSION != 1 */
-  if (rc)
-    log_error ("mpi_copy failed: %s\n", gpg_strerror (rc));
-  return rc;
-}
-
 
 /* Change the PIN of a an OpenPGP card.  This is an interactive
    function. */
@@ -897,9 +864,14 @@ generate_card_keys (const char *serialno)
 {
   struct agent_card_info_s info;
   int forced_chv1;
+  int want_backup;
 
   if (get_info_for_key_operation (&info))
     return;
+
+  want_backup = !(cpr_get_answer_is_yes 
+                  ( "cardedit.genkeys.backup_enc",
+                    _("Inhibit creation of encryption key backup? ")));
 
   if ( (info.fpr1valid && !fpr_is_zero (info.fpr1))
        || (info.fpr2valid && !fpr_is_zero (info.fpr2))
@@ -928,7 +900,8 @@ generate_card_keys (const char *serialno)
   if (check_pin_for_key_operation (&info, &forced_chv1))
     goto leave;
   
-  generate_keypair (NULL, info.serialno);
+  generate_keypair (NULL, info.serialno,
+                    want_backup? opt.homedir:NULL);
 
  leave:
   agent_release_card_info (&info);
@@ -1003,12 +976,6 @@ card_store_subkey (KBNODE node, int use)
   PKT_secret_key *copied_sk = NULL;
   PKT_secret_key *sk;
   size_t n;
-  MPI rsa_n, rsa_e, rsa_p, rsa_q;
-  unsigned int nbits;
-  unsigned char *template = NULL;
-  unsigned char *tp;
-  unsigned char m[128], e[4];
-  size_t mlen, elen;
   const char *s;
   int allow_keyno[3];
 
@@ -1087,94 +1054,9 @@ card_store_subkey (KBNODE node, int use)
         goto leave;
     }
 
-  /* Some basic checks on the key parameters. */
-  rsa_n = sk->skey[0];
-  rsa_e = sk->skey[1];
-  rsa_p = sk->skey[3];
-  rsa_q = sk->skey[4];
-
-  nbits = GET_NBITS (rsa_n);
-  if (nbits != 1024)
-    {
-      log_error (_("length of RSA modulus is not %d\n"), 1024);
-      goto leave;
-    }
-  nbits = GET_NBITS (rsa_e);
-  if (nbits < 2 || nbits > 32)
-    {
-      log_error (_("public exponent too large (more than 32 bits)\n"));
-      goto leave;
-    }
-  nbits = GET_NBITS (rsa_p);
-  if (nbits != 512)
-    {
-      log_error (_("length of an RSA prime is not %d\n"), 512);
-      goto leave;
-    }
-  nbits = GET_NBITS (rsa_q);
-  if (nbits != 512)
-    {
-      log_error (_("length of an RSA prime is not %d\n"), 512);
-      goto leave;
-    }
-
-  
-  /* We need the modulus later to calculate the fingerprint. */
-  rc = copy_mpi (rsa_n, m, 128, &n);
+  rc = save_unprotected_key_to_card (sk, keyno);
   if (rc)
     goto leave;
-  assert (n == 128);
-  mlen = 128;
-
-  /* Build the private key template as described in section 4.3.3.6 of
-     the OpenPGP card specs:
-         0xC0   <length> public exponent
-         0xC1   <length> prime p 
-         0xC2   <length> prime q 
-  */
-  template = tp = xmalloc_secure (1+2 + 1+1+4 + 1+1+(512/8) + 1+1+(512/8));
-  *tp++ = 0xC0;
-  *tp++ = 4;
-  rc = copy_mpi (rsa_e, tp, 4, &n);
-  if (rc)
-    goto leave;
-  assert (n <= 4);
-  memcpy (e, tp, n);  /* Save a copy of the exponent for later use.  */
-  elen = n;
-  if (n != 4)
-    {
-      memmove (tp+4-n, tp, 4-n);
-      memset (tp, 0, 4-n);
-    }                 
-  tp += 4;
-
-  *tp++ = 0xC1;
-  *tp++ = 64;
-  rc = copy_mpi (rsa_p, tp, 64, &n);
-  if (rc)
-    goto leave;
-  assert (n == 64);
-  tp += 64;
-
-  *tp++ = 0xC2;
-  *tp++ = 64;
-  rc = copy_mpi (rsa_q, tp, 64, &n);
-  if (rc)
-    goto leave;
-  assert (n == 64);
-  tp += 64;
-  assert (tp - template == 138);
-
-  rc = agent_openpgp_storekey (keyno,
-                               template, tp - template,
-                               sk->timestamp,
-                               m, mlen,
-                               e, elen);
-
-  if (rc)
-    goto leave;
-  xfree (template);
-  template = NULL;
 
   /* Get back to the maybe protected original secret key.  */
   if (copied_sk)
@@ -1205,7 +1087,6 @@ card_store_subkey (KBNODE node, int use)
  leave:
   if (copied_sk)
     free_secret_key (copied_sk);
-  xfree (template);
   agent_release_card_info (&info);
   return okay;
 }

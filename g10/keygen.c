@@ -63,7 +63,8 @@ enum para_name {
   pPASSPHRASE,
   pPASSPHRASE_DEK,
   pPASSPHRASE_S2K,
-  pSERIALNO
+  pSERIALNO,
+  pBACKUPENCDIR
 };
 
 struct para_data_s {
@@ -120,6 +121,47 @@ static int  write_keyblock( IOBUF out, KBNODE node );
 static int gen_card_key (int algo, int keyno, int is_primary,
                          KBNODE pub_root, KBNODE sec_root,
                          u32 expireval, struct para_data_s *para);
+static int gen_card_key_with_backup (int algo, int keyno, int is_primary,
+                                     KBNODE pub_root, KBNODE sec_root,
+                                     u32 expireval, struct para_data_s *para,
+                                     const char *backup_dir);
+
+
+#if GNUPG_MAJOR_VERSION == 1
+#define GET_NBITS(a)  mpi_get_nbits (a)
+#else
+#define GET_NBITS(a)  gcry_mpi_get_nbits (a)
+#endif
+
+  
+static int
+copy_mpi (MPI a, unsigned char *buffer, size_t len, size_t *ncopied)
+{
+  int rc;
+#if GNUPG_MAJOR_VERSION == 1
+  unsigned char *tmp;
+  unsigned int n;
+
+  tmp = mpi_get_secure_buffer (a, &n, NULL);
+  if (n > len)
+    rc = G10ERR_GENERAL;
+  else
+    {
+      rc = 0;
+      memcpy (buffer, tmp, n);
+      *ncopied = n;
+    }
+  xfree (tmp);
+#else /* GNUPG_MAJOR_VERSION != 1 */
+  rc = gcry_mpi_print (GCRYMPI_FMT_USG, buffer, len, ncopied, a);
+#endif /* GNUPG_MAJOR_VERSION != 1 */
+  if (rc)
+    log_error ("mpi_copy failed: %s\n", gpg_strerror (rc));
+  return rc;
+}
+
+
+
 
 static void
 write_uid( KBNODE root, const char *s )
@@ -1622,6 +1664,7 @@ ask_user_id( int mode )
 }
 
 
+/* FIXME: We need a way to cancel this prompt. */
 static DEK *
 do_ask_passphrase( STRING2KEY **ret_s2k )
 {
@@ -2213,10 +2256,14 @@ read_parameter_file( const char *fname )
 /*
  * Generate a keypair (fname is only used in batch mode) If
  * CARD_SERIALNO is not NULL the fucntion will create the keys on an
- * OpenPGP Card.
+ * OpenPGP Card.  If BACKUP_ENCRYPTION_DIR has been set and
+ * CARD_SERIALNO is NOT NULL, the encryption key for the card gets
+ * generate in software, imported to the card and a backup file
+ * written to directory given by this argument .
  */
 void
-generate_keypair( const char *fname, const char *card_serialno )
+generate_keypair (const char *fname, const char *card_serialno, 
+                  const char *backup_encryption_dir)
 {
   unsigned int nbits;
   char *uid = NULL;
@@ -2239,158 +2286,245 @@ generate_keypair( const char *fname, const char *card_serialno )
       return;
     }
   
-   if (opt.batch)
-     {
-       read_parameter_file( fname );
-       return;
-     }
+  if (opt.batch)
+    {
+      read_parameter_file( fname );
+      return;
+    }
 
-   if (card_serialno)
-     {
+  if (card_serialno)
+    {
 #ifdef ENABLE_CARD_SUPPORT
-       r = xcalloc (1, sizeof *r + strlen (card_serialno) );
-       r->key = pSERIALNO;
-       strcpy( r->u.value, card_serialno);
-       r->next = para;
-       para = r;
+      r = xcalloc (1, sizeof *r + strlen (card_serialno) );
+      r->key = pSERIALNO;
+      strcpy( r->u.value, card_serialno);
+      r->next = para;
+      para = r;
        
-       algo = PUBKEY_ALGO_RSA;
+      algo = PUBKEY_ALGO_RSA;
        
-       r = xcalloc (1, sizeof *r + 20 );
-       r->key = pKEYTYPE;
-       sprintf( r->u.value, "%d", algo );
-       r->next = para;
-       para = r;
-       r = xcalloc (1, sizeof *r + 20 );
-       r->key = pKEYUSAGE;
-       strcpy (r->u.value, "sign");
-       r->next = para;
-       para = r;
+      r = xcalloc (1, sizeof *r + 20 );
+      r->key = pKEYTYPE;
+      sprintf( r->u.value, "%d", algo );
+      r->next = para;
+      para = r;
+      r = xcalloc (1, sizeof *r + 20 );
+      r->key = pKEYUSAGE;
+      strcpy (r->u.value, "sign");
+      r->next = para;
+      para = r;
        
-       r = xcalloc (1, sizeof *r + 20 );
-       r->key = pSUBKEYTYPE;
-       sprintf( r->u.value, "%d", algo );
-       r->next = para;
-       para = r;
-       r = xcalloc (1, sizeof *r + 20 );
-       r->key = pSUBKEYUSAGE;
-       strcpy (r->u.value, "encrypt");
-       r->next = para;
-       para = r;
+      r = xcalloc (1, sizeof *r + 20 );
+      r->key = pSUBKEYTYPE;
+      sprintf( r->u.value, "%d", algo );
+      r->next = para;
+      para = r;
+      r = xcalloc (1, sizeof *r + 20 );
+      r->key = pSUBKEYUSAGE;
+      strcpy (r->u.value, "encrypt");
+      r->next = para;
+      para = r;
        
-       r = xcalloc (1, sizeof *r + 20 );
-       r->key = pAUTHKEYTYPE;
-       sprintf( r->u.value, "%d", algo );
-       r->next = para;
-       para = r;
+      r = xcalloc (1, sizeof *r + 20 );
+      r->key = pAUTHKEYTYPE;
+      sprintf( r->u.value, "%d", algo );
+      r->next = para;
+      para = r;
+
+      if (backup_encryption_dir)
+        {
+          r = xcalloc (1, sizeof *r + strlen (backup_encryption_dir) );
+          r->key = pBACKUPENCDIR;
+          strcpy (r->u.value, backup_encryption_dir);
+          r->next = para;
+          para = r;
+        }
 #endif /*ENABLE_CARD_SUPPORT*/
-     }
-   else
-     {
-       algo = ask_algo( 0, &use );
-       if( !algo )
-         { /* default: DSA with ElG subkey of the specified size */
-           both = 1;
-           r = m_alloc_clear( sizeof *r + 20 );
-           r->key = pKEYTYPE;
-           sprintf( r->u.value, "%d", PUBKEY_ALGO_DSA );
-           r->next = para;
-           para = r;
-           tty_printf(_("DSA keypair will have 1024 bits.\n"));
-           r = m_alloc_clear( sizeof *r + 20 );
-           r->key = pKEYLENGTH;
-           strcpy( r->u.value, "1024" );
-           r->next = para;
-           para = r;
-           r = m_alloc_clear( sizeof *r + 20 );
-           r->key = pKEYUSAGE;
-           strcpy( r->u.value, "sign" );
-           r->next = para;
-           para = r;
+    }
+  else
+    {
+      algo = ask_algo( 0, &use );
+      if( !algo )
+        { /* default: DSA with ElG subkey of the specified size */
+          both = 1;
+          r = m_alloc_clear( sizeof *r + 20 );
+          r->key = pKEYTYPE;
+          sprintf( r->u.value, "%d", PUBKEY_ALGO_DSA );
+          r->next = para;
+          para = r;
+          tty_printf(_("DSA keypair will have 1024 bits.\n"));
+          r = m_alloc_clear( sizeof *r + 20 );
+          r->key = pKEYLENGTH;
+          strcpy( r->u.value, "1024" );
+          r->next = para;
+          para = r;
+          r = m_alloc_clear( sizeof *r + 20 );
+          r->key = pKEYUSAGE;
+          strcpy( r->u.value, "sign" );
+          r->next = para;
+          para = r;
            
-           algo = PUBKEY_ALGO_ELGAMAL_E;
-           r = m_alloc_clear( sizeof *r + 20 );
-           r->key = pSUBKEYTYPE;
-           sprintf( r->u.value, "%d", algo );
-           r->next = para;
-           para = r;
-           r = m_alloc_clear( sizeof *r + 20 );
-           r->key = pSUBKEYUSAGE;
-           strcpy( r->u.value, "encrypt" );
-           r->next = para;
-           para = r;
-         }
-       else 
-         {
-           r = m_alloc_clear( sizeof *r + 20 );
-           r->key = pKEYTYPE;
-           sprintf( r->u.value, "%d", algo );
-           r->next = para;
-           para = r;
+          algo = PUBKEY_ALGO_ELGAMAL_E;
+          r = m_alloc_clear( sizeof *r + 20 );
+          r->key = pSUBKEYTYPE;
+          sprintf( r->u.value, "%d", algo );
+          r->next = para;
+          para = r;
+          r = m_alloc_clear( sizeof *r + 20 );
+          r->key = pSUBKEYUSAGE;
+          strcpy( r->u.value, "encrypt" );
+          r->next = para;
+          para = r;
+        }
+      else 
+        {
+          r = m_alloc_clear( sizeof *r + 20 );
+          r->key = pKEYTYPE;
+          sprintf( r->u.value, "%d", algo );
+          r->next = para;
+          para = r;
            
-           if (use)
-             {
-               r = m_alloc_clear( sizeof *r + 20 );
-               r->key = pKEYUSAGE;
-               sprintf( r->u.value, "%s%s",
-                        (use & PUBKEY_USAGE_SIG)? "sign ":"",
-                        (use & PUBKEY_USAGE_ENC)? "encrypt ":"" );
-               r->next = para;
-               para = r;
-             }
+          if (use)
+            {
+              r = m_alloc_clear( sizeof *r + 20 );
+              r->key = pKEYUSAGE;
+              sprintf( r->u.value, "%s%s",
+                       (use & PUBKEY_USAGE_SIG)? "sign ":"",
+                       (use & PUBKEY_USAGE_ENC)? "encrypt ":"" );
+              r->next = para;
+              para = r;
+            }
            
-         }
+        }
        
-       nbits = ask_keysize( algo );
-       r = m_alloc_clear( sizeof *r + 20 );
-       r->key = both? pSUBKEYLENGTH : pKEYLENGTH;
-       sprintf( r->u.value, "%u", nbits);
-       r->next = para;
-       para = r;
-     }
+      nbits = ask_keysize( algo );
+      r = m_alloc_clear( sizeof *r + 20 );
+      r->key = both? pSUBKEYLENGTH : pKEYLENGTH;
+      sprintf( r->u.value, "%u", nbits);
+      r->next = para;
+      para = r;
+    }
+   
+  expire = ask_expire_interval(0);
+  r = m_alloc_clear( sizeof *r + 20 );
+  r->key = pKEYEXPIRE;
+  r->u.expire = expire;
+  r->next = para;
+  para = r;
+  r = m_alloc_clear( sizeof *r + 20 );
+  r->key = pSUBKEYEXPIRE;
+  r->u.expire = expire;
+  r->next = para;
+  para = r;
 
-   expire = ask_expire_interval(0);
-    r = m_alloc_clear( sizeof *r + 20 );
-    r->key = pKEYEXPIRE;
-    r->u.expire = expire;
-    r->next = para;
-    para = r;
-    r = m_alloc_clear( sizeof *r + 20 );
-    r->key = pSUBKEYEXPIRE;
-    r->u.expire = expire;
-    r->next = para;
-    para = r;
+  uid = ask_user_id(0);
+  if( !uid ) 
+    {
+      log_error(_("Key generation canceled.\n"));
+      release_parameter_list( para );
+      return;
+    }
+  r = m_alloc_clear( sizeof *r + strlen(uid) );
+  r->key = pUSERID;
+  strcpy( r->u.value, uid );
+  r->next = para;
+  para = r;
+    
+  dek = card_serialno? NULL : do_ask_passphrase( &s2k );
+  if( dek )
+    {
+      r = m_alloc_clear( sizeof *r );
+      r->key = pPASSPHRASE_DEK;
+      r->u.dek = dek;
+      r->next = para;
+      para = r;
+      r = m_alloc_clear( sizeof *r );
+      r->key = pPASSPHRASE_S2K;
+      r->u.s2k = s2k;
+      r->next = para;
+      para = r;
+    }
+    
+  proc_parameter_file( para, "[internal]", &outctrl, !!card_serialno);
+  release_parameter_list( para );
+}
 
-    uid = ask_user_id(0);
-    if( !uid ) 
-      {
-	log_error(_("Key generation canceled.\n"));
-	release_parameter_list( para );
-	return;
-      }
-    r = m_alloc_clear( sizeof *r + strlen(uid) );
-    r->key = pUSERID;
-    strcpy( r->u.value, uid );
-    r->next = para;
-    para = r;
-    
-    dek = card_serialno? NULL : do_ask_passphrase( &s2k );
-    if( dek )
-      {
-	r = m_alloc_clear( sizeof *r );
-	r->key = pPASSPHRASE_DEK;
-	r->u.dek = dek;
-	r->next = para;
-	para = r;
-	r = m_alloc_clear( sizeof *r );
-	r->key = pPASSPHRASE_S2K;
-	r->u.s2k = s2k;
-	r->next = para;
-	para = r;
-      }
-    
-    proc_parameter_file( para, "[internal]", &outctrl, !!card_serialno);
-    release_parameter_list( para );
+
+/* Generate a raw key and return it as a secret key packet.  The
+   function will ask for the passphrase and return a protected as well
+   as an unprotected copy of a new secret key packet.  0 is returned
+   on success and the caller must then free the returned values.  */
+static int
+generate_raw_key (int algo, unsigned int nbits, u32 created_at,
+                  PKT_secret_key **r_sk_unprotected,
+                  PKT_secret_key **r_sk_protected)
+{
+  int rc;
+  DEK *dek = NULL;
+  STRING2KEY *s2k = NULL;
+  PKT_secret_key *sk = NULL;
+  int i;
+  size_t nskey, npkey;
+
+  npkey = pubkey_get_npkey (algo);
+  nskey = pubkey_get_nskey (algo);
+  assert (nskey <= PUBKEY_MAX_NSKEY && npkey < nskey);
+
+  if (nbits < 512)
+    {
+      nbits = 512;
+      log_info (_("keysize invalid; using %u bits\n"), nbits );
+    }
+
+  if ((nbits % 32)) 
+    {
+      nbits = ((nbits + 31) / 32) * 32;
+      log_info(_("keysize rounded up to %u bits\n"), nbits );
+    }
+
+  dek = do_ask_passphrase (&s2k);
+
+  sk = m_alloc_clear (sizeof *sk);
+  sk->timestamp = created_at;
+  sk->version = 4;
+  sk->pubkey_algo = algo;
+
+  rc = pubkey_generate (algo, nbits, sk->skey, NULL);
+  if (rc)
+    {
+      log_error("pubkey_generate failed: %s\n", g10_errstr(rc) );
+      goto leave;
+    }
+
+  for (i=npkey; i < nskey; i++)
+    sk->csum += checksum_mpi (sk->skey[i]);
+
+  if (r_sk_unprotected) 
+    *r_sk_unprotected = copy_secret_key (NULL, sk);
+
+  if (dek)
+    {
+      sk->protect.algo = dek->algo;
+      sk->protect.s2k = *s2k;
+      rc = protect_secret_key (sk, dek);
+      if (rc)
+        {
+          log_error ("protect_secret_key failed: %s\n", g10_errstr(rc));
+          goto leave;
+	}
+    }
+  if (r_sk_protected)
+    {
+      *r_sk_protected = sk;
+      sk = NULL;
+    }
+
+ leave:
+  if (sk)
+    free_secret_key (sk);
+  m_free (dek);
+  m_free (s2k);
+  return rc;
 }
 
 
@@ -2552,8 +2686,20 @@ do_generate_keypair( struct para_data_s *para,
           }
         else
           {
-            rc = gen_card_key (PUBKEY_ALGO_RSA, 2, 0, pub_root, sec_root,
-                               get_parameter_u32 (para, pKEYEXPIRE), para);
+            if ((s = get_parameter_value (para, pBACKUPENCDIR)))
+              {
+                /* A backup of the encryption key has been requested.
+                   Generate the key i software and import it then to
+                   the card.  Write a backup file. */
+                rc = gen_card_key_with_backup (PUBKEY_ALGO_RSA, 2, 0,
+                                               pub_root, sec_root,
+                                               get_parameter_u32 (para,
+                                                                  pKEYEXPIRE),
+                                               para, s);
+              }
+            else
+              rc = gen_card_key (PUBKEY_ALGO_RSA, 2, 0, pub_root, sec_root,
+                                 get_parameter_u32 (para, pKEYEXPIRE), para);
           }
 
         if( !rc )
@@ -2943,6 +3089,7 @@ gen_card_key (int algo, int keyno, int is_primary,
   PKT_public_key *pk;
 
   assert (algo == PUBKEY_ALGO_RSA);
+  
 
   rc = agent_scd_genkey (&info, keyno, 1);
 /*    if (gpg_err_code (rc) == GPG_ERR_EEXIST) */
@@ -3006,3 +3153,241 @@ gen_card_key (int algo, int keyno, int is_primary,
   return -1;
 #endif /*!ENABLE_CARD_SUPPORT*/
 }
+
+
+
+static int
+gen_card_key_with_backup (int algo, int keyno, int is_primary,
+                          KBNODE pub_root, KBNODE sec_root,
+                          u32 expireval, struct para_data_s *para,
+                          const char *backup_dir)
+{
+#ifdef ENABLE_CARD_SUPPORT
+  int rc;
+  const char *s;
+  PACKET *pkt;
+  PKT_secret_key *sk, *sk_unprotected, *sk_protected;
+  PKT_public_key *pk;
+  size_t n;
+  int i;
+
+  rc = generate_raw_key (algo, 1024, make_timestamp (),
+                         &sk_unprotected, &sk_protected);
+  if (rc)
+    return rc;
+
+  /* First, store the key to the card. */
+  rc = save_unprotected_key_to_card (sk_unprotected, keyno);
+  if (rc)
+    {
+      log_error (_("storing key onto card failed: %s\n"), g10_errstr (rc));
+      free_secret_key (sk_unprotected);
+      free_secret_key (sk_protected);
+      return rc;
+    }
+
+  /* Get rid of the secret key parameters and store the serial numer. */
+  sk = sk_unprotected;
+  n = pubkey_get_nskey (sk->pubkey_algo);
+  for (i=pubkey_get_npkey (sk->pubkey_algo); i < n; i++)
+    {
+      mpi_free (sk->skey[i]);
+      sk->skey[i] = NULL;
+    }
+  i = pubkey_get_npkey (sk->pubkey_algo);
+  sk->skey[i] = mpi_set_opaque (NULL, xstrdup ("dummydata"), 10);
+  sk->is_protected = 1;
+  sk->protect.s2k.mode = 1002;
+  s = get_parameter_value (para, pSERIALNO);
+  assert (s);
+  for (sk->protect.ivlen=0; sk->protect.ivlen < 16 && *s && s[1];
+       sk->protect.ivlen++, s += 2)
+    sk->protect.iv[sk->protect.ivlen] = xtoi_2 (s);
+
+  /* Now write the *protected* secret key to the file.  */
+  {
+    char name_buffer[50];
+    char *fname;
+    IOBUF fp;
+    mode_t oldmask;
+
+    keyid_from_sk (sk, NULL);
+    sprintf (name_buffer,"sk_%08lX%08lX.gpg",
+             (ulong)sk->keyid[0], (ulong)sk->keyid[1]);
+
+    fname = make_filename (backup_dir, name_buffer, NULL);
+    oldmask = umask (077);
+    fp = iobuf_create (fname);
+    umask (oldmask);
+    if (!fp) 
+      {
+	log_error (_("can't create backup file `%s': %s\n"),
+                   fname, strerror(errno) );
+        m_free (fname);
+        free_secret_key (sk_unprotected);
+        free_secret_key (sk_protected);
+        return G10ERR_OPEN_FILE;
+      }
+
+    pkt = xcalloc (1, sizeof *pkt);
+    pkt->pkttype = PKT_SECRET_KEY;
+    pkt->pkt.secret_key = sk_protected;
+    sk_protected = NULL;
+
+    rc = build_packet (fp, pkt);
+    if (rc)
+      {
+        log_error("build packet failed: %s\n", g10_errstr(rc) );
+        iobuf_cancel (fp);
+      }
+    else
+      {
+        iobuf_close (fp);
+        iobuf_ioctl (NULL, 2, 0, (char*)fname);
+        log_info (_("NOTE: backup of card key saved to `%s'\n"), fname);
+      }
+    free_packet (pkt);
+    m_free (pkt);
+    m_free (fname);
+    if (rc)
+      {
+        free_secret_key (sk_unprotected);
+        return rc;
+      }
+  }
+
+  /* Create the public key from the secret key. */
+  pk = xcalloc (1, sizeof *pk );
+  pk->timestamp = sk->timestamp;
+  pk->version = sk->version;
+  if (expireval)
+      pk->expiredate = sk->expiredate = sk->timestamp + expireval;
+  pk->pubkey_algo = sk->pubkey_algo;
+  n = pubkey_get_npkey (sk->pubkey_algo);
+  for (i=0; i < n; i++)
+    pk->pkey[i] = mpi_copy (sk->skey[i]);
+
+  /* Build packets and add them to the node lists.  */
+  pkt = xcalloc (1,sizeof *pkt);
+  pkt->pkttype = is_primary ? PKT_PUBLIC_KEY : PKT_PUBLIC_SUBKEY;
+  pkt->pkt.public_key = pk;
+  add_kbnode(pub_root, new_kbnode( pkt ));
+
+  pkt = xcalloc (1,sizeof *pkt);
+  pkt->pkttype = is_primary ? PKT_SECRET_KEY : PKT_SECRET_SUBKEY;
+  pkt->pkt.secret_key = sk;
+  add_kbnode(sec_root, new_kbnode( pkt ));
+
+  return 0;
+#else
+  return -1;
+#endif /*!ENABLE_CARD_SUPPORT*/
+}
+
+
+#ifdef ENABLE_CARD_SUPPORT
+int
+save_unprotected_key_to_card (PKT_secret_key *sk, int keyno)
+{
+  int rc;
+  size_t n;
+  MPI rsa_n, rsa_e, rsa_p, rsa_q;
+  unsigned int nbits;
+  unsigned char *template = NULL;
+  unsigned char *tp;
+  unsigned char m[128], e[4];
+  size_t mlen, elen;
+
+  assert (is_RSA (sk->pubkey_algo));
+  assert (!sk->is_protected);
+
+  rc = -1;
+  /* Some basic checks on the key parameters. */
+  rsa_n = sk->skey[0];
+  rsa_e = sk->skey[1];
+  rsa_p = sk->skey[3];
+  rsa_q = sk->skey[4];
+
+  nbits = GET_NBITS (rsa_n);
+  if (nbits != 1024)
+    {
+      log_error (_("length of RSA modulus is not %d\n"), 1024);
+      goto leave;
+    }
+  nbits = GET_NBITS (rsa_e);
+  if (nbits < 2 || nbits > 32)
+    {
+      log_error (_("public exponent too large (more than 32 bits)\n"));
+      goto leave;
+    }
+  nbits = GET_NBITS (rsa_p);
+  if (nbits != 512)
+    {
+      log_error (_("length of an RSA prime is not %d\n"), 512);
+      goto leave;
+    }
+  nbits = GET_NBITS (rsa_q);
+  if (nbits != 512)
+    {
+      log_error (_("length of an RSA prime is not %d\n"), 512);
+      goto leave;
+    }
+
+  
+  /* We need the modulus later to calculate the fingerprint. */
+  rc = copy_mpi (rsa_n, m, 128, &n);
+  if (rc)
+    goto leave;
+  assert (n == 128);
+  mlen = 128;
+
+  /* Build the private key template as described in section 4.3.3.6 of
+     the OpenPGP card specs:
+         0xC0   <length> public exponent
+         0xC1   <length> prime p 
+         0xC2   <length> prime q 
+  */
+  template = tp = xmalloc_secure (1+2 + 1+1+4 + 1+1+(512/8) + 1+1+(512/8));
+  *tp++ = 0xC0;
+  *tp++ = 4;
+  rc = copy_mpi (rsa_e, tp, 4, &n);
+  if (rc)
+    goto leave;
+  assert (n <= 4);
+  memcpy (e, tp, n);  /* Save a copy of the exponent for later use.  */
+  elen = n;
+  if (n != 4)
+    {
+      memmove (tp+4-n, tp, 4-n);
+      memset (tp, 0, 4-n);
+    }                 
+  tp += 4;
+
+  *tp++ = 0xC1;
+  *tp++ = 64;
+  rc = copy_mpi (rsa_p, tp, 64, &n);
+  if (rc)
+    goto leave;
+  assert (n == 64);
+  tp += 64;
+
+  *tp++ = 0xC2;
+  *tp++ = 64;
+  rc = copy_mpi (rsa_q, tp, 64, &n);
+  if (rc)
+    goto leave;
+  assert (n == 64);
+  tp += 64;
+  assert (tp - template == 138);
+
+  rc = agent_openpgp_storekey (keyno,
+                               template, tp - template,
+                               sk->timestamp,
+                               m, mlen,
+                               e, elen);
+
+ leave:
+  xfree (template);
+  return rc;
+}
+#endif /*ENABLE_CARD_SUPPORT*/

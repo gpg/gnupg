@@ -63,11 +63,11 @@ static struct {
   { 0x006E, 1,    0, 1, 0, 0, "Application Related Data" },
   { 0x004F, 0, 0x6E, 1, 0, 0, "AID" },
   { 0x0073, 1,    0, 1, 0, 0, "Discretionary Data Objects" },
-  { 0x0047, 0, 0x6E, 1, 0, 0, "Card Capabilities" },
-  { 0x00C0, 0, 0x6E, 1, 0, 0, "Extended Card Capabilities" },
-  { 0x00C1, 0, 0x6E, 1, 0, 0, "Algorithm Attributes Signature" },
-  { 0x00C2, 0, 0x6E, 1, 0, 0, "Algorithm Attributes Decryption" },
-  { 0x00C3, 0, 0x6E, 1, 0, 0, "Algorithm Attributes Authentication" },
+  { 0x0047, 0, 0x6E, 1, 1, 0, "Card Capabilities" },
+  { 0x00C0, 0, 0x6E, 1, 1, 0, "Extended Card Capabilities" },
+  { 0x00C1, 0, 0x6E, 1, 1, 0, "Algorithm Attributes Signature" },
+  { 0x00C2, 0, 0x6E, 1, 1, 0, "Algorithm Attributes Decryption" },
+  { 0x00C3, 0, 0x6E, 1, 1, 0, "Algorithm Attributes Authentication" },
   { 0x00C4, 0, 0x6E, 1, 0, 1, "CHV Status Bytes" },
   { 0x00C5, 0, 0x6E, 1, 0, 0, "Fingerprints" },
   { 0x00C6, 0, 0x6E, 1, 0, 0, "CA Fingerprints" },
@@ -86,6 +86,13 @@ struct cache_s {
 
 struct app_local_s {
   struct cache_s *cache;
+  struct 
+  {
+    unsigned int get_challenge:1;
+    unsigned int key_import:1;
+    unsigned int change_force_chv:1;
+    unsigned int private_dos:1;
+  } extcap;
 };
 
 
@@ -127,25 +134,23 @@ get_cached_data (app_t app, int tag,
   *result = NULL;
   *resultlen = 0;
 
-  if (app->app_local)
-    {
-      for (c=app->app_local->cache; c; c = c->next)
-        if (c->tag == tag)
+  for (c=app->app_local->cache; c; c = c->next)
+    if (c->tag == tag)
+      {
+        if(c->length)
           {
-	    if(c->length)
-	      {
-		p = xtrymalloc (c->length);
-		if (!p)
-		  return gpg_error (gpg_err_code_from_errno (errno));
-		memcpy (p, c->data, c->length);
-		*result = p;
-	      }
-
-	    *resultlen = c->length;
-
-	    return 0;
+            p = xtrymalloc (c->length);
+            if (!p)
+              return gpg_error (gpg_err_code_from_errno (errno));
+            memcpy (p, c->data, c->length);
+            *result = p;
           }
-    }
+
+        *resultlen = c->length;
+
+        return 0;
+      }
+ 
   
   err = iso7816_get_data (app->slot, tag, &p, &len);
   if (err)
@@ -163,24 +168,18 @@ get_cached_data (app_t app, int tag,
       }
 
   /* No, cache it. */
-  if (!app->app_local)
-    app->app_local = xtrycalloc (1, sizeof *app->app_local);
 
-  /* Note that we can safely ignore out of core errors. */
-  if (app->app_local)
+  for (c=app->app_local->cache; c; c = c->next)
+    assert (c->tag != tag);
+  
+  c = xtrymalloc (sizeof *c + len);
+  if (c)
     {
-      for (c=app->app_local->cache; c; c = c->next)
-        assert (c->tag != tag);
-      
-      c = xtrymalloc (sizeof *c + len);
-      if (c)
-        {
-          memcpy (c->data, p, len);
-          c->length = len;
-          c->tag = tag;
-          c->next = app->app_local->cache;
-          app->app_local->cache = c;
-        }
+      memcpy (c->data, p, len);
+      c->length = len;
+      c->tag = tag;
+      c->next = app->app_local->cache;
+      app->app_local->cache = c;
     }
 
   return 0;
@@ -505,6 +504,7 @@ do_getattr (APP app, CTRL ctrl, const char *name)
     { "SIG-COUNTER",  0x0093, 2 },
     { "SERIALNO",     0x004F, -1 },
     { "AID",          0x004F },
+    { "EXTCAP",       0x0000, -2 },
     { NULL, 0 }
   };
   int idx, i;
@@ -537,6 +537,18 @@ do_getattr (APP app, CTRL ctrl, const char *name)
                             NULL, 0);
           xfree (serial);
         }
+      return 0;
+    }
+  if (table[idx].special == -2)
+    {
+      char tmp[50];
+
+      sprintf (tmp, "gc=%d ki=%d fc=%d pd=%d", 
+               app->app_local->extcap.get_challenge,
+               app->app_local->extcap.key_import,
+               app->app_local->extcap.change_force_chv,
+               app->app_local->extcap.private_dos);
+      send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
       return 0;
     }
 
@@ -578,6 +590,7 @@ do_getattr (APP app, CTRL ctrl, const char *name)
 static int
 do_learn_status (APP app, CTRL ctrl)
 {
+  do_getattr (app, ctrl, "EXTCAP");
   do_getattr (app, ctrl, "DISP-NAME");
   do_getattr (app, ctrl, "DISP-LANG");
   do_getattr (app, ctrl, "DISP-SEX");
@@ -1378,11 +1391,14 @@ app_select_openpgp (APP app)
   rc = iso7816_select_application (slot, aid, sizeof aid);
   if (!rc)
     {
+      unsigned int manufacturer;
+
       app->apptype = "OPENPGP";
 
       app->did_chv1 = 0;
       app->did_chv2 = 0;
       app->did_chv3 = 0;
+      app->app_local = NULL;
 
       /* The OpenPGP card returns the serial number as part of the
          AID; because we prefer to use OpenPGP serial numbers, we
@@ -1400,10 +1416,18 @@ app_select_openpgp (APP app)
 
       app->card_version = buffer[6] << 8;
       app->card_version |= buffer[7];
+      manufacturer = (buffer[8]<<8 | buffer[9]);
+
       xfree (app->serialno);
       app->serialno = buffer;
       app->serialnolen = buflen;
       buffer = NULL;
+      app->app_local = xtrycalloc (1, sizeof *app->app_local);
+      if (!app->app_local)
+        {
+          rc = gpg_error (gpg_err_code_from_errno (errno));
+          goto leave;
+        }
 
       relptr = get_one_do (app, 0x00C4, &buffer, &buflen);
       if (!relptr)
@@ -1413,7 +1437,29 @@ app_select_openpgp (APP app)
         }
       app->force_chv1 = (buflen && *buffer == 0);
       xfree (relptr);
-        
+
+      relptr = get_one_do (app, 0x00C0, &buffer, &buflen);
+      if (!relptr)
+        {
+          log_error ("can't access Extended Capability Flags - "
+                     "invalid OpenPGP card?\n");
+          goto leave;
+        }
+      if (buflen)
+        {
+          app->app_local->extcap.get_challenge    = !!(*buffer & 0x40);
+          app->app_local->extcap.key_import       = !!(*buffer & 0x20);
+          app->app_local->extcap.change_force_chv = !!(*buffer & 0x10);
+          app->app_local->extcap.private_dos      = !!(*buffer & 0x08);
+        }
+      xfree (relptr);
+      
+      /* Some of the first cards accidently don't set the
+         CHANGE_FORCE_CHV bit but allow it anyway. */
+      if (app->card_version <= 0x0100 && manufacturer == 1)
+        app->app_local->extcap.change_force_chv = 1;
+
+
       if (opt.verbose > 1)
         dump_all_do (slot);
 
@@ -1431,6 +1477,8 @@ app_select_openpgp (APP app)
    }
 
 leave:
+  if (rc)
+    do_deinit (app);
   return rc;
 }
 
