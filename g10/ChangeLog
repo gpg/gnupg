@@ -1,3 +1,8 @@
+2003-06-10  Werner Koch  <wk@gnupg.org>
+
+	* parse-packet.c (parse): Disallow old style partial length for
+	all key material packets to avoid possible corruption of keyrings.
+
 2003-06-08  Werner Koch  <wk@gnupg.org>
 
 	* import.c (import_keys): Invalidate the cache so that the file
