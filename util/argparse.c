@@ -327,10 +327,19 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 
 		    trim_spaces( buffer );
 		    p = buffer;
-		    if( *p == '"' ) { /* remove quotes */
-			p++;
-			if( *p && p[strlen(p)-1] == '"' )
-			    p[strlen(p)-1] = 0;
+		    /* remove quotes if they totally enclose the
+                       string, and do not occur within the string */
+		    if( *p == '"' && p[strlen(p)-1]=='"') {
+		        char *i=p;
+
+			while(*(++i))
+			  if(*i=='"')
+			    break;
+
+			if(*i=='"' && *(i+1)=='\0') {
+			  p[strlen(p)-1] = 0;
+			  p++;
+			}
 		    }
 		    if( !set_opt_arg(arg, opts[idx].flags, p) )
 			m_free(buffer);

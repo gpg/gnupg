@@ -1,3 +1,10 @@
+2002-05-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* argparse.c (optfile_parse): Remove quotes only if they totally
+	enclose the string, and do not occur within the string.  This
+	makes specifying a program under Win32 easier when you need quotes
+	around part of a string, but not around the whole string.
+	
 2002-05-02  Werner Koch  <wk@gnupg.org>
 
 	* memory.c (alloc): Malloc at least 1 byte.  Noted by Winona Brown. 
