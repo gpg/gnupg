@@ -15,7 +15,7 @@ are not listed.  Please keep this list in alphabetical order.
 @itemize @bullet
 
 @item
-Bernhard Herzog did extensive testing and tracked down a lot of bugs
+Bernhard Herzog did extensive testing and tracked down a lot of bugs.
 
 @item
 Bernhard Reiter made sure that we met the specifications and the
@@ -37,7 +37,7 @@ Steffen Hansen had a hard time to write the dirmngr due to
 underspecified interfaces.
 
 @item
-Thomas Koester did extensive testing and tracked down a lot of bugs
+Thomas Koester did extensive testing and tracked down a lot of bugs.
 
 @item
 Werner Koch designed the system and wrote most of the original code.
