@@ -1,3 +1,7 @@
+2003-10-09  Werner Koch  <wk@gnupg.org>
+
+	* ccid-driver.c (ccid_transceive): Add T=1 chaining for sending.
+
 2003-10-08  Werner Koch  <wk@gnupg.org>
 
 	* app-openpgp.c (do_getattr): Support SERIALNO and AID.
