@@ -24,19 +24,28 @@ AC_DEFUN([GNUPG_CHECK_LIBCURL],
         LDFLAGS="${LDFLAGS} -L$withval/lib"
      fi
 
-     AC_MSG_CHECKING([for libcurl])
+     AC_MSG_CHECKING([for curl-config])
 
      if eval curl-config --version 2>/dev/null >/dev/null; then
-        AC_SUBST([LIBCURL_INCLUDES],[`curl-config --cflags`])
-        AC_SUBST([LIBCURL],[`curl-config --libs`])
-        have_libcurl=yes
+        if test x"$LIBCURL_INCLUDES" = "x" ; then
+           LIBCURL_INCLUDES=`curl-config --cflags`
+        fi
+        if test x"$LIBCURL" = "x" ; then
+           LIBCURL=`curl-config --libs`
+        fi
+        _have_config=yes
      else
-        have_libcurl=no
+        _have_config=no
      fi
 
-     AC_MSG_RESULT([$have_libcurl])
+     AC_MSG_RESULT([$_have_config])
 
-     AC_MSG_CHECKING([whether libcurl is modern enough])
+     # we didn't find curl-config, so let's see if the user-supplied
+     # link line (or failing that, "-lcurl") is enough.
+
+     LIBCURL=${LIBCURL-"-lcurl"}
+
+     AC_MSG_CHECKING([whether libcurl is usable])
 
      _libcurl_save_cppflags=$CPPFLAGS
      CPPFLAGS="$CPPFLAGS $LIBCURL_INCLUDES"
@@ -53,7 +62,7 @@ x=CURLOPT_FILE;
 x=CURLOPT_ERRORBUFFER;
 x=CURLOPT_STDERR;
 x=CURLOPT_VERBOSE;
-]),,have_libcurl=no)
+]),have_libcurl=yes,have_libcurl=no)
 
      CPPFLAGS=$_libcurl_save_cppflags
      LDFLAGS=$_libcurl_save_ldflags
@@ -63,9 +72,12 @@ x=CURLOPT_VERBOSE;
      if test $have_libcurl = yes ; then
         AC_DEFINE(HAVE_LIBCURL,1,
           [Define to 1 if you have a fully functional curl library.])
+        AC_SUBST(LIBCURL_INCLUDES)
+        AC_SUBST(LIBCURL)
      fi
 
      unset _do_libcurl
+     unset _have_config
      unset _libcurl_save_cppflags
      unset _libcurl_save_ldflags
   fi

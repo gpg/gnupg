@@ -1,3 +1,12 @@
+2004-12-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* readline.m4: Make sure that readline is modern enough to
+	understand rl_catch_signals.
+
+	* libcurl.m4: Don't require curl-config to be present since it
+	seems some binary packages don't include it.  Allow users to
+	specify LIBCURL and LIBCURL_INCLUDES for us.
+
 2004-12-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* libcurl.m4: Be much more strict with libcurl by trying to

@@ -34,7 +34,10 @@ AC_DEFUN([GNUPG_CHECK_READLINE],
 #include <stdio.h>
 #include <readline/readline.h>
 #include <readline/history.h>
-],[add_history("foobar");]),_found_readline=yes,_found_readline=no)
+],[
+add_history("foobar");
+rl_catch_signals=0;
+]),_found_readline=yes,_found_readline=no)
 
         AC_MSG_RESULT([$_found_readline])
 
