@@ -1,3 +1,11 @@
+2003-05-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c, gpgkeys_ldap.c: #include <getopt.h> if it is
+	available.
+
+	* Makefile.am: Use @GETOPT@ to pull in libiberty on those
+	platforms that need it.
+
 2003-03-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: gpgkeys_hkp needs @INTLLIBS@ on some platforms.
