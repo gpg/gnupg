@@ -2,7 +2,7 @@
    Note: I added some stuff for use with gnupg
 
 Copyright (C) 1991, 1992, 1993, 1994, 1996, 1998,
-              2000, 2001, 2002 Free Software Foundation, Inc.
+              2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify
 it under the terms of the GNU Library General Public License as published by
@@ -1034,7 +1034,8 @@ extern USItype __udiv_qrnnd ();
 /***************************************
  **************  SH2  ******************
  ***************************************/
-#if defined (__sh2__) && W_TYPE_SIZE == 32
+#if (defined (__sh2__) || defined(__sh3__) || defined(__SH4__) ) \
+    && W_TYPE_SIZE == 32
 #define umul_ppmm(w1, w0, u, v) \
   __asm__ (								\
         "dmulu.l %2,%3\n"  \

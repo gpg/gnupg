@@ -1,3 +1,8 @@
+2003-04-15  Werner Koch  <wk@gnupg.org>
+
+	* longlong.h (umul_ppmm): Support SH3 and SH4.  Thanks to
+	kazuya.s@jp.yokogawa.com.
+
 2002-11-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* config.links: Use OpenBSD/NetBSD powerpc assembler code for
