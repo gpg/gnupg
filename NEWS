@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.3.3 (unreleased)
+Noteworthy changes in version 1.3.3 (2003-10-10)
 ------------------------------------------------
 
     * Basic support for the OpenPGP card.  New commands --card-status,
