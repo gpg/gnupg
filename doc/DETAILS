@@ -564,6 +564,10 @@ more arguments in future versions.
         encoding it is not possible to know the length ahead of time.
         In that case, this status tag does not appear.
 
+    SIG_SUBPACKET <type> <flags> <len> <data>
+        This indicates that a signature subpacket was seen.  The
+        format is the same as the "spk" record above.
+
 
 Format of the "--attribute-fd" output
 =====================================
