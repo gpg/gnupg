@@ -37,14 +37,20 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <assert.h>
 #ifdef __MINGW32__
 #  include <io.h>
 #endif
+
 
 #define JNLIB_NEED_LOG_LOGV 1
 #include "libjnlib-config.h"
 #include "logging.h"
 
+#if defined (HAVE_FOPENCOOKIE) ||  defined (HAVE_FUNOPEN)
+#define USE_FUNWRITER 1
+#endif
 
 static FILE *logstream;
 static int log_socket = -1;
@@ -94,10 +100,12 @@ log_inc_errorcount (void)
 
 /* The follwing 3 functions are used by funopen to write logs to a
    socket. */
-#if defined (HAVE_FOPENCOOKIE) || defined (HAVE_FUNOPEN)
+#ifdef USE_FUNWRITER
 struct fun_cookie_s {
   int fd;
   int quiet;
+  int want_socket;
+  int is_socket;
   char name[1];
 };
 
@@ -135,64 +143,78 @@ fun_writer (void *cookie_arg, const char *buffer, size_t size)
      processes often close stderr and by writing to file descriptor 2
      we might send the log message to a file not intended for logging
      (e.g. a pipe or network connection). */
-  if (cookie->fd == -1)
+  if (cookie->want_socket && cookie->fd == -1)
     {
       /* Not yet open or meanwhile closed due to an error. */
-      struct sockaddr_un addr;
-      size_t addrlen;
-
+      cookie->is_socket = 0;
       cookie->fd = socket (PF_LOCAL, SOCK_STREAM, 0);
       if (cookie->fd == -1)
         {
           if (!cookie->quiet && !running_detached)
             fprintf (stderr, "failed to create socket for logging: %s\n",
                      strerror(errno));
-          goto failure;
         }
-      log_socket = cookie->fd;
-      
-      memset (&addr, 0, sizeof addr);
-      addr.sun_family = PF_LOCAL;
-      strncpy (addr.sun_path, cookie->name, sizeof (addr.sun_path)-1);
-      addr.sun_path[sizeof (addr.sun_path)-1] = 0;
-      addrlen = (offsetof (struct sockaddr_un, sun_path)
-                 + strlen (addr.sun_path) + 1);
-      
-      if (connect (cookie->fd, (struct sockaddr *) &addr, addrlen) == -1)
+      else
         {
-          log_socket = -1;
-          if (!cookie->quiet && !running_detached)
-            fprintf (stderr, "can't connect to `%s': %s\n",
-                     cookie->name, strerror(errno));
-          close (cookie->fd);
-          cookie->fd = -1;
-          goto failure;
+          struct sockaddr_un addr;
+          size_t addrlen;
+          
+          memset (&addr, 0, sizeof addr);
+          addr.sun_family = PF_LOCAL;
+          strncpy (addr.sun_path, cookie->name, sizeof (addr.sun_path)-1);
+          addr.sun_path[sizeof (addr.sun_path)-1] = 0;
+          addrlen = (offsetof (struct sockaddr_un, sun_path)
+                     + strlen (addr.sun_path) + 1);
+      
+          if (connect (cookie->fd, (struct sockaddr *) &addr, addrlen) == -1)
+            {
+              if (!cookie->quiet && !running_detached)
+                fprintf (stderr, "can't connect to `%s': %s\n",
+                         cookie->name, strerror(errno));
+              close (cookie->fd);
+              cookie->fd = -1;
+            }
         }
-      /* Connection established. */
-      cookie->quiet = 0;
+      
+      if (cookie->fd == -1)
+        {
+          if (!running_detached)
+            {
+              if (!cookie->quiet)
+                {
+                  fputs ("switching logging to stderr\n", stderr);
+                  cookie->quiet = 1;
+                }
+              cookie->fd = fileno (stderr);
+            }
+        }
+      else /* Connection has been established. */
+        {
+          cookie->quiet = 0;
+          cookie->is_socket = 1;
+        }
     }
-  
-  if (!writen (cookie->fd, buffer, size))
+
+  log_socket = cookie->fd;
+  if (cookie->fd != -1 && !writen (cookie->fd, buffer, size))
     return size; /* Okay. */ 
 
-  log_socket = -1;
-  if (!running_detached)
-    fprintf (stderr, "error writing to `%s': %s\n",
-             cookie->name, strerror(errno));
-  close (cookie->fd);
-  cookie->fd = -1;
-
- failure: 
-  if (!running_detached)
+  if (!running_detached && cookie->fd != -1)
     {
-      if (!cookie->quiet)
-        {
-          fputs ("switching logging to stderr\n", stderr);
-          cookie->quiet = 1;
-        }
-      
-      fwrite (buffer, size, 1, stderr);
+      if (*cookie->name)
+        fprintf (stderr, "error writing to `%s': %s\n",
+                 cookie->name, strerror(errno));
+      else
+        fprintf (stderr, "error writing to file descriptor %d: %s\n",
+                 cookie->fd, strerror(errno));
     }
+  if (cookie->is_socket && cookie->fd != -1)
+    {
+      close (cookie->fd);
+      cookie->fd = -1;
+      log_socket = -1;
+    }
+
   return size;
 }
 
@@ -204,11 +226,129 @@ fun_closer (void *cookie_arg)
   if (cookie->fd != -1)
     close (cookie->fd);
   jnlib_free (cookie);
+  log_socket = -1;
   return 0;
 }
-#endif /* HAVE_FOPENCOOKIE || HAVE_FUNOPEN */
+#endif /*USE_FUNWRITER*/
 
 
+
+/* Common function to either set the logging to a file or a file
+   descriptor. */
+static void
+set_file_fd (const char *name, int fd) 
+{
+  FILE *fp;
+  int want_socket;
+#ifdef USE_FUNWRITER
+  struct fun_cookie_s *cookie;
+#endif
+
+  if (name && !strcmp (name, "-"))
+    {
+      name = NULL;
+      fd = fileno (stderr);
+    }
+
+  if (name)
+    {
+      want_socket = (!strncmp (name, "socket://", 9) && name[9]);
+      if (want_socket)
+        name += 9;
+    }
+  else
+    {
+      want_socket = 0;
+    }
+
+#ifdef USE_FUNWRITER
+  cookie = jnlib_xmalloc (sizeof *cookie + (name? strlen (name):0));
+  strcpy (cookie->name, name? name:"");
+  cookie->quiet = 0;
+  cookie->is_socket = 0;
+  cookie->want_socket = want_socket;
+  if (!name)
+    cookie->fd = fd;
+  else if (want_socket)
+    cookie->fd = -1;
+  else
+    {
+      do
+        cookie->fd = open (name, O_WRONLY|O_APPEND|O_CREAT,
+                           (S_IRUSR|S_IRGRP|S_IROTH|S_IWUSR|S_IWGRP|S_IWOTH));
+      while (cookie->fd == -1 && errno == EINTR);
+    }
+  log_socket = cookie->fd;
+
+#ifdef HAVE_FOPENCOOKIE
+  {
+    cookie_io_functions_t io = { NULL };
+    io.write = fun_writer;
+    io.close = fun_closer;
+    
+    fp = fopencookie (cookie, "w", io);
+  }
+#else /*!HAVE_FOPENCOOKIE*/
+  fp = funopen (cookie, NULL, fun_writer, NULL, fun_closer);
+#endif /*!HAVE_FOPENCOOKIE*/
+
+#else /*!USE_FUNWRITER*/
+
+  /* The system does not feature custom streams.  Thus fallback to
+     plain stdio. */
+  if (want_socket)
+    {
+      fprintf (stderr, "system does not support logging to a socket - "
+               "using stderr\n");
+      fp = stderr;
+    }
+  else if (name)
+    fp = fopen (name, "a");
+  else if (fd == 1)
+    fp = stdout;
+  else if (fd == 2)
+    fp = stderr;
+  else
+    fp = fdopen (fd, "a");
+
+  log_socket = -1; 
+
+#endif /*!USE_FUNWRITER*/
+
+  /* On success close the old logstream right now, so that we are
+     really sure it has been closed. */
+  if (fp && logstream)
+    {
+      if (logstream != stderr && logstream != stdout)
+        fclose (logstream);
+      logstream = NULL;
+    }
+      
+  if (!fp)
+    {
+      if (name)
+        fprintf (stderr, "failed to open log file `%s': %s\n",
+                 name, strerror(errno));
+      else
+        fprintf (stderr, "failed to fdopen file descriptor %d: %s\n",
+                 fd, strerror(errno));
+      /* We need to make sure that there is a log stream.  We use stderr. */
+      fp = stderr;
+    }
+  else
+    setvbuf (fp, NULL, _IOLBF, 0);
+  
+  if (logstream && logstream != stderr && logstream != stdout)
+    fclose (logstream);
+  logstream = fp;
+
+  /* We always need to print the prefix and the pid for socket mode,
+     so that the server reading the socket can do something
+     meaningful. */
+  force_prefixes = want_socket;
+
+  missing_lf = 0;
+}
 
 
 /* Set the file to write log to.  The special names NULL and "-" may
@@ -221,93 +361,13 @@ fun_closer (void *cookie_arg)
 void
 log_set_file (const char *name) 
 {
-  FILE *fp;
-
-  force_prefixes = 0;
-  if (name && !strncmp (name, "socket://", 9) && name[9])
-    {
-#if defined (HAVE_FOPENCOOKIE)||  defined (HAVE_FUNOPEN)
-      struct fun_cookie_s *cookie;
-
-      cookie = jnlib_xmalloc (sizeof *cookie + strlen (name+9));
-      cookie->fd = -1;
-      cookie->quiet = 0;
-      strcpy (cookie->name, name+9);
-
-#ifdef HAVE_FOPENCOOKIE
-      {
-        cookie_io_functions_t io = { NULL };
-        io.write = fun_writer;
-        io.close = fun_closer;
-
-        fp = fopencookie (cookie, "w", io);
-      }
-#else /*!HAVE_FOPENCOOKIE*/
-      {
-        fp = funopen (cookie, NULL, fun_writer, NULL, fun_closer);
-      }
-#endif /*!HAVE_FOPENCOOKIE*/
-#else /* Neither fopencookie nor funopen. */
-      {
-        fprintf (stderr, "system does not support logging to a socket - "
-                 "using stderr\n");
-        fp = stderr;
-      }
-#endif /* Neither fopencookie nor funopen. */
-
-      /* We always need to print the prefix and the pid, so that the
-         server reading the socket can do something meaningful. */
-      force_prefixes = 1;
-      /* On success close the old logstream right now, so that we are
-         really sure it has been closed. */
-      if (fp && logstream)
-        {
-          if (logstream != stderr && logstream != stdout)
-            fclose (logstream);
-          logstream = NULL;
-        }
-    }
-  else
-    fp = (name && strcmp(name,"-"))? fopen (name, "a") : stderr;
-  if (!fp)
-    {
-      fprintf (stderr, "failed to open log file `%s': %s\n",
-               name? name:"[stderr]", strerror(errno));
-      return;
-    }
-  setvbuf (fp, NULL, _IOLBF, 0);
-  
-  if (logstream && logstream != stderr && logstream != stdout)
-    fclose (logstream);
-  logstream = fp;
-  missing_lf = 0;
+  set_file_fd (name? name: "-", -1);
 }
-
 
 void
 log_set_fd (int fd)
 {
-  FILE *fp;
-
-  force_prefixes = 0;
-  if (fd == 1)
-    fp = stdout;
-  else if (fd == 2)
-    fp = stderr;
-  else
-    fp = fdopen (fd, "a");
-  if (!fp)
-    {
-      fprintf (stderr, "failed to fdopen log fd %d: %s\n",
-               fd, strerror(errno));
-      return;
-    }
-  setvbuf (fp, NULL, _IOLBF, 0);
-  
-  if (logstream && logstream != stderr && logstream != stdout)
-    fclose( logstream);
-  logstream = fp;
-  missing_lf = 0;
+  set_file_fd (NULL, fd);
 }
 
 
@@ -351,9 +411,10 @@ log_get_prefix (unsigned int *flags)
 int
 log_test_fd (int fd)
 {
-  if (fileno (logstream?logstream:stderr) == fd)
+  int tmp = fileno (logstream);
+  if ( tmp != -1 && tmp == fd)
     return 1;
-  if (log_socket == fd)
+  if (log_socket != -1 && log_socket == fd)
     return 1;
   return 0;
 }
@@ -367,15 +428,20 @@ log_get_fd ()
 FILE *
 log_get_stream ()
 {
+  /* FIXME: We should not return stderr here but initialize the log
+     stream properly.  This might break more things than using stderr,
+     though */
   return logstream?logstream:stderr;
 }
-
 
 static void
 do_logv (int level, const char *fmt, va_list arg_ptr)
 {
   if (!logstream)
-    logstream = stderr;
+    {
+      log_set_file (NULL); /* Make sure a log stream has been set.  */
+      assert (logstream);
+    }
 
   if (missing_lf && level != JNLIB_LOG_CONT)
     putc('\n', logstream );

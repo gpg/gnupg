@@ -1,3 +1,11 @@
+2004-10-21  Werner Koch  <wk@g10code.com>
+
+	* logging.c (do_logv): Use set_log_stream to setup a default.
+	(log_set_file): Factored code out to ..
+	(set_file_fd): .. New function to allow using a file descriptor.
+	(log_set_fd): Make use of new fucntion.
+	(fun_writer): Reworked.
+
 2004-08-18  Werner Koch  <wk@g10code.de>
 
 	* stringhelp.c (print_sanitized_utf8_string): Actually implement
