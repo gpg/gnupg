@@ -614,9 +614,12 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text )
 
   memset (fpr, 0, MAX_FINGERPRINT_LEN );
   if( keyid && get_pubkey( pk, keyid ) )
-    pk = NULL; /* oops: no key for some reason */
+    {
+      free_public_key( pk );      
+      pk = NULL; /* oops: no key for some reason */
+    }
   
-  if ( !mode && pk )
+  if ( !mode && pk && keyid )
     { 
       char *uid;
       size_t uidlen;
@@ -658,10 +661,10 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text )
       }
       
     }
-  else if (mode == 1 ) 
-    atext = m_strdup ( _("Enter passphrase\n") );
-  else 
+  else if (mode == 2 ) 
     atext = m_strdup ( _("Repeat passphrase\n") );
+  else
+    atext = m_strdup ( _("Enter passphrase\n") );
                 
   if ( (fd = agent_open (&prot)) == -1 ) 
     goto failure;

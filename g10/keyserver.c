@@ -67,6 +67,7 @@ struct kopts
   {"broken-http-proxy",1,&opt.keyserver_options.broken_http_proxy},
   {"refresh-add-fake-v3-keyids",0,&opt.keyserver_options.fake_v3_keyids},
   {"auto-key-retrieve",0,&opt.keyserver_options.auto_key_retrieve},
+  {"try-dns-srv",1,&opt.keyserver_options.try_dns_srv},
   {NULL}
 };
 

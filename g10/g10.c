@@ -1166,6 +1166,7 @@ main( int argc, char **argv )
       EXPORT_INCLUDE_NON_RFC|EXPORT_INCLUDE_ATTRIBUTES;
     opt.keyserver_options.include_subkeys=1;
     opt.keyserver_options.include_revoked=1;
+    opt.keyserver_options.try_dns_srv=1;
     opt.trust_model=TM_OPENPGP;
     opt.mangle_dos_filenames = 1;
 

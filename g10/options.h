@@ -129,6 +129,7 @@ struct {
       int keep_temp_files;
       int fake_v3_keyids;
       int auto_key_retrieve;
+      int try_dns_srv;
       unsigned int import_options;
       unsigned int export_options;
       STRLIST other;

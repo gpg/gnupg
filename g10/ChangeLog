@@ -1,3 +1,12 @@
+2003-03-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), keyserver.c (kopts): Add "try-dns-srv"
+	keyserver option.  Defaults to on.
+
+	* passphrase.c (agent_get_passphrase): Fix memory leak with
+	symmetric messages.  Fix segfault with symmetric messages.  Fix
+	incorrect prompt with symmetric messages.
+
 2003-03-10  Werner Koch  <wk@gnupg.org>
 
 	* compress.c (init_uncompress): Use a 15 bit window size so that
