@@ -124,6 +124,8 @@ main( int argc, char **argv )
     { 512, "cache-all" ,0, "hold everything in memory"},
     { 513, "gen-prime" , 1, "\rgenerate a prime of length n" },
     { 514, "test"      , 0, "\rdevelopment usage" },
+    { 515, "change-passphrase", 0, "change the passphrase of your secret keyring"},
+    { 515, "fingerprint", 0, "show the fingerprints"},
     {0} };
     ARGPARSE_ARGS pargs = { &argc, &argv, 0 };
     IOBUF a;
@@ -136,11 +138,14 @@ main( int argc, char **argv )
     int nrings=0;
     armor_filter_context_t afx;
     const char *s;
+    int detached_sig = 0;
 
     opt.compress = -1; /* defaults to default compression level */
     while( arg_parse( &pargs, opts) ) {
 	switch( pargs.r_opt ) {
-	  case 'v': opt.verbose++; break;
+	  case 'v': opt.verbose++;
+		    opt.list_sigs=1;
+		    break;
 	  case 'z':
 	    opt.compress = pargs.r.ret_int;
 	    break;
@@ -151,7 +156,7 @@ main( int argc, char **argv )
 			opt.outfile_is_stdout = 1;
 		    break;
 	  case 'e': action = action == aSign? aSignEncr : aEncr; break;
-	  case 'b': opt.detached_sig = 1;
+	  case 'b': detached_sig = 1;
 	       /* fall trough */
 	  case 's': action = action == aEncr? aSignEncr : aSign;  break;
 	  case 'l': /* store the local users */
@@ -171,13 +176,14 @@ main( int argc, char **argv )
 	  case 502: opt.answer_no = 1; break;
 	  case 503: action = aKeygen; break;
 	  case 507: action = aStore; break;
-	  case 508: opt.check_sigs = 1; break;
+	  case 508: opt.check_sigs = 1; opt.list_sigs = 1; break;
 	  case 509: add_keyring(pargs.r.ret_str); nrings++; break;
 	  case 510: opt.debug |= pargs.r.ret_ulong; break;
 	  case 511: opt.debug = ~0; break;
 	  case 512: opt.cache_all = 1; break;
 	  case 513: action = aPrimegen; break;
 	  case 514: action = aTest; break;
+	  case 515: opt.fingerprint = 1; break;
 	  default : pargs.err = 2; break;
 	}
     }
@@ -230,7 +236,7 @@ main( int argc, char **argv )
       case aSign: /* sign the given file */
 	if( argc > 1 )
 	    usage(1);
-	if( (rc = sign_file(fname, opt.detached_sig, locusr)) )
+	if( (rc = sign_file(fname, detached_sig, locusr)) )
 	    log_error("sign_file('%s'): %s\n", fname_print, g10_errstr(rc) );
 	break;
 

@@ -239,8 +239,8 @@ parse_publickey( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 					k->keyid[0], k->keyid[1]);
     if( k->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	n = pktlen;
-	k->d.elg.a = mpi_decode(inp, &n ); pktlen -=n;
-	k->d.elg.b = mpi_decode(inp, &n ); pktlen -=n;
+	k->d.elg.a = mpi_read(inp, &n, 0); pktlen -=n;
+	k->d.elg.b = mpi_read(inp, &n, 0 ); pktlen -=n;
 	if( list_mode ) {
 	    printf("\telg a: ");
 	    mpi_print(stdout, k->d.elg.a, mpi_print_mode );
@@ -251,7 +251,7 @@ parse_publickey( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     }
     else if( k->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	n = pktlen;
-	k->d.rsa.rsa_integer = mpi_decode(inp, &n ); pktlen -=n;
+	k->d.rsa.rsa_integer = mpi_read(inp, &n, 0 ); pktlen -=n;
 	if( list_mode ) {
 	    printf("\trsa integer: ");
 	    mpi_print(stdout, k->d.rsa.rsa_integer, mpi_print_mode );
@@ -304,8 +304,8 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	sig->d.elg.digest_start[0] = iobuf_get_noeof(inp); pktlen--;
 	sig->d.elg.digest_start[1] = iobuf_get_noeof(inp); pktlen--;
 	n = pktlen;
-	sig->d.elg.a = mpi_decode(inp, &n ); pktlen -=n;
-	sig->d.elg.b = mpi_decode(inp, &n ); pktlen -=n;
+	sig->d.elg.a = mpi_read(inp, &n, 0 ); pktlen -=n;
+	sig->d.elg.b = mpi_read(inp, &n, 0 ); pktlen -=n;
 	if( list_mode ) {
 	    printf("\tdigest algo %d, begin of digest %02x %02x\n",
 		    sig->d.elg.digest_algo,
@@ -313,7 +313,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	    printf("\telg a: ");
 	    mpi_print(stdout, sig->d.elg.a, mpi_print_mode );
 	    printf("\n\telg b: ");
-	    mpi_print(stdout, sig->d.elg.a, mpi_print_mode );
+	    mpi_print(stdout, sig->d.elg.b, mpi_print_mode );
 	    putchar('\n');
 	}
     }
@@ -326,7 +326,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	sig->d.rsa.digest_start[0] = iobuf_get_noeof(inp); pktlen--;
 	sig->d.rsa.digest_start[1] = iobuf_get_noeof(inp); pktlen--;
 	n = pktlen;
-	sig->d.rsa.rsa_integer = mpi_decode(inp, &n ); pktlen -=n;
+	sig->d.rsa.rsa_integer = mpi_read(inp, &n, 0 ); pktlen -=n;
 	if( list_mode ) {
 	    printf("\tdigest algo %d, begin of digest %02x %02x\n",
 		    sig->d.rsa.digest_algo,
@@ -439,9 +439,9 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 
     if( algorithm == PUBKEY_ALGO_ELGAMAL ) {
 	MPI elg_p, elg_g, elg_y;
-	n = pktlen; elg_p = mpi_decode(inp, &n ); pktlen -=n;
-	n = pktlen; elg_g = mpi_decode(inp, &n ); pktlen -=n;
-	n = pktlen; elg_y = mpi_decode(inp, &n ); pktlen -=n;
+	n = pktlen; elg_p = mpi_read(inp, &n, 0 ); pktlen -=n;
+	n = pktlen; elg_g = mpi_read(inp, &n, 0 ); pktlen -=n;
+	n = pktlen; elg_y = mpi_read(inp, &n, 0 ); pktlen -=n;
 	if( list_mode ) {
 	    printf(  "\telg p:  ");
 	    mpi_print(stdout, elg_p, mpi_print_mode  );
@@ -483,32 +483,24 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    else
 		cert->d.elg.is_protected = 0;
 
-	    n = pktlen; mpibuf = mpi_read(inp, &n ); pktlen -=n; assert(n>=2);
-	    cert->d.elg.x = (MPI)mpibuf;
+	    n = pktlen; cert->d.elg.x = mpi_read(inp, &n, 1 ); pktlen -=n;
 
 	    cert->d.elg.csum = read_16(inp); pktlen -= 2;
-	    cert->d.elg.calc_csum = 0;
 	    if( list_mode ) {
 		printf("\t[secret value x is not shown]\n"
 		       "\tchecksum: %04hx\n", cert->d.elg.csum);
 	    }
-	    if( !cert->d.elg.is_protected ) { /* convert buffer to MPIs */
-		mpibuf = (byte*)cert->d.elg.x;
-		cert->d.elg.calc_csum += checksum( mpibuf );
-		cert->d.elg.x = mpi_decode_buffer( mpibuf );
-		m_free( mpibuf );
-	      /*log_mpidump("elg p=", cert->d.elg.p );
-		log_mpidump("elg g=", cert->d.elg.g );
-		log_mpidump("elg y=", cert->d.elg.y );
-		log_mpidump("elg x=", cert->d.elg.x ); */
-	    }
+	  /*log_mpidump("elg p=", cert->d.elg.p );
+	    log_mpidump("elg g=", cert->d.elg.g );
+	    log_mpidump("elg y=", cert->d.elg.y );
+	    log_mpidump("elg x=", cert->d.elg.x ); */
 	}
     }
     else if( algorithm == PUBKEY_ALGO_RSA ) {
 	MPI rsa_pub_mod, rsa_pub_exp;
 
-	n = pktlen; rsa_pub_mod = mpi_decode(inp, &n ); pktlen -=n;
-	n = pktlen; rsa_pub_exp = mpi_decode(inp, &n ); pktlen -=n;
+	n = pktlen; rsa_pub_mod = mpi_read(inp, &n, 0); pktlen -=n;
+	n = pktlen; rsa_pub_exp = mpi_read(inp, &n, 0 ); pktlen -=n;
 	if( list_mode ) {
 	    printf(  "\tpublic modulus  n:  ");
 	    mpi_print(stdout, rsa_pub_mod, mpi_print_mode  );
@@ -546,43 +538,22 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    else
 		cert->d.rsa.is_protected = 0;
 
-	    n = pktlen; mpibuf = mpi_read(inp, &n ); pktlen -=n; assert(n>=2);
-	    cert->d.rsa.rsa_d = (MPI)mpibuf;
-
-	    n = pktlen; mpibuf = mpi_read(inp, &n ); pktlen -=n; assert(n>=2);
-	    cert->d.rsa.rsa_p = (MPI)mpibuf;
-
-	    n = pktlen; mpibuf = mpi_read(inp, &n ); pktlen -=n; assert(n>=2);
-	    cert->d.rsa.rsa_q = (MPI)mpibuf;
-
-	    n = pktlen; mpibuf = mpi_read(inp, &n ); pktlen -=n; assert(n>=2);
-	    cert->d.rsa.rsa_u = (MPI)mpibuf;
+	    n = pktlen; cert->d.rsa.rsa_d = mpi_read(inp, &n, 1 ); pktlen -=n;
+	    n = pktlen; cert->d.rsa.rsa_p = mpi_read(inp, &n, 1 ); pktlen -=n;
+	    n = pktlen; cert->d.rsa.rsa_q = mpi_read(inp, &n, 1 ); pktlen -=n;
+	    n = pktlen; cert->d.rsa.rsa_u = mpi_read(inp, &n, 1 ); pktlen -=n;
 
 	    cert->d.rsa.csum = read_16(inp); pktlen -= 2;
-	    cert->d.rsa.calc_csum = 0;
 	    if( list_mode ) {
 		printf("\t[secret values d,p,q,u are not shown]\n"
 		       "\tchecksum: %04hx\n", cert->d.rsa.csum);
 	    }
-	    if( !cert->d.rsa.is_protected ) { /* convert buffer to MPIs */
-	      #define X(a) do { 					\
-		    mpibuf = (byte*)cert->d.rsa.rsa_##a;		\
-		    cert->d.rsa.calc_csum += checksum( mpibuf );	\
-		    cert->d.rsa.rsa_##a = mpi_decode_buffer( mpibuf );	\
-		    m_free( mpibuf );					\
-		} while(0)
-		X(d);
-		X(p);
-		X(q);
-		X(u);
-	      #undef X
-	     /* log_mpidump("rsa n=", cert->d.rsa.rsa_n );
-		log_mpidump("rsa e=", cert->d.rsa.rsa_e );
-		log_mpidump("rsa d=", cert->d.rsa.rsa_d );
-		log_mpidump("rsa p=", cert->d.rsa.rsa_p );
-		log_mpidump("rsa q=", cert->d.rsa.rsa_q );
-		log_mpidump("rsa u=", cert->d.rsa.rsa_u ); */
-	    }
+	 /* log_mpidump("rsa n=", cert->d.rsa.rsa_n );
+	    log_mpidump("rsa e=", cert->d.rsa.rsa_e );
+	    log_mpidump("rsa d=", cert->d.rsa.rsa_d );
+	    log_mpidump("rsa p=", cert->d.rsa.rsa_p );
+	    log_mpidump("rsa q=", cert->d.rsa.rsa_q );
+	    log_mpidump("rsa u=", cert->d.rsa.rsa_u ); */
 	}
     }
     else if( list_mode )
@@ -671,34 +642,9 @@ parse_trust( IOBUF inp, int pkttype, unsigned long pktlen )
 	1 = "we do not trust this key's ownership"
 	2 = "we have marginal confidence of this key's ownership"
 	3 = "we completely trust this key's ownership."
-	 /* This one (3) requires either:
-	  * - 1 ultimately trusted signature (SIGTRUST=7)
-	  * - COMPLETES_NEEDED completely trusted signatures (SIGTRUST=6)
-	  * - MARGINALS_NEEDED marginally trusted signatures (SIGTRUST=5)
-	  */
 	if( c & 0x80 )
 	    "warnonly"
     else if( prev_packet_is_a_signature ) {
-	 Bits 0-2 - SIGTRUST bits - Trust bits for this signature.  Value is
-		    copied directly from OWNERTRUST bits of signer:
-	      000 - undefined, or uninitialized trust.
-	      001 - unknown
-	      010 - We do not trust this signature.
-	      011 - reserved
-	      100 - reserved
-	      101 - We reasonably trust this signature.
-	      110 - We completely trust this signature.
-	      111 - ultimately trusted signature (from the owner of the ring)
-	  Bit 6 - CHECKED bit - This means that the key checking pass (pgp -kc,
-		  also invoked automatically whenever keys are added to the
-		  keyring) has tested this signature and found it good.  If
-		  this bit is not set, the maintenance pass considers this
-		  signature untrustworthy.
-	  Bit 7 - CONTIG bit - Means this signature leads up a contiguous trusted
-		  certification path all the way back to the ultimately-
-		  trusted keyring owner, where the buck stops.	This bit is derived
-		  from other trust packets.  It is currently not used for anything
-		  in PGP.
     }
   #endif
 }

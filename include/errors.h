@@ -49,5 +49,6 @@
 #define G10ERR_NI_PUBKEY      27
 #define G10ERR_NI_CIPHER      28
 #define G10ERR_SIG_CLASS      29
+#define G10ERR_BAD_MPI	      30
 
 #endif /*G10_ERRORS_H*/

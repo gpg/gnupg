@@ -124,7 +124,6 @@ typedef struct {
 	MPI rsa_q;	    /* secret second prime number */
 	MPI rsa_u;	    /* secret multiplicative inverse */
 	u16 csum;	    /* checksum */
-	u16 calc_csum;	    /* and a place to store the calculated csum */
 	byte is_protected;  /* The above infos are protected and must */
 			    /* be decrypteded before use */
 	byte protect_algo;  /* cipher used to protect the secret informations*/
@@ -142,7 +141,6 @@ typedef struct {
 	MPI y;		    /* g^x mod p */
 	MPI x;		    /* secret exponent */
 	u16 csum;	    /* checksum */
-	u16 calc_csum;	    /* and a place to store the calculated csum */
 	byte is_protected;  /* The above infos are protected and must */
 			    /* be decrypteded before use */
 	byte protect_algo;  /* cipher used to protect the secret informations*/
@@ -220,6 +218,7 @@ int parse_packet( IOBUF inp, PACKET *ret_pkt);
 /*-- build-packet.c --*/
 int build_packet( IOBUF inp, PACKET *pkt );
 u32 calc_packet_length( PACKET *pkt );
+void hash_public_cert( MD_HANDLE *md, PKT_public_cert *pkc );
 
 /*-- free-packet.c --*/
 void free_pubkey_enc( PKT_pubkey_enc *enc );
@@ -238,6 +237,7 @@ int signature_check( PKT_signature *sig, MD_HANDLE *digest );
 
 /*-- seckey-cert.c --*/
 int check_secret_key( PKT_secret_cert *cert );
+int protect_secret_key( PKT_secret_cert *cert, DEK *dek );
 
 /*-- pubkey-enc.c --*/
 int get_session_key( PKT_pubkey_enc *k, DEK *dek );
@@ -256,5 +256,9 @@ int ask_for_detached_datafile( md_filter_context_t *mfx );
 /*-- comment.c --*/
 int write_comment( IOBUF out, const char *s );
 
+/*-- sign.c --*/
+int make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
+			PKT_user_id *uid, PKT_secret_cert *skc,
+			int sigclass, int digest_algo );
 
 #endif /*G10_PACKET_H*/

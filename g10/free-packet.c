@@ -100,26 +100,15 @@ free_secret_cert( PKT_secret_cert *cert )
 	mpi_free( cert->d.elg.p );
 	mpi_free( cert->d.elg.g );
 	mpi_free( cert->d.elg.y );
-	if( cert->d.rsa.is_protected )
-	    m_free( cert->d.elg.x );
-	else
-	    mpi_free( cert->d.elg.x );
+	mpi_free( cert->d.elg.x );
     }
     else if( cert->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	mpi_free( cert->d.rsa.rsa_n );
 	mpi_free( cert->d.rsa.rsa_e );
-	if( cert->d.rsa.is_protected ) {
-	    m_free( cert->d.rsa.rsa_d );
-	    m_free( cert->d.rsa.rsa_p );
-	    m_free( cert->d.rsa.rsa_q );
-	    m_free( cert->d.rsa.rsa_u );
-	}
-	else {
-	    mpi_free( cert->d.rsa.rsa_d );
-	    mpi_free( cert->d.rsa.rsa_p );
-	    mpi_free( cert->d.rsa.rsa_q );
-	    mpi_free( cert->d.rsa.rsa_u );
-	}
+	mpi_free( cert->d.rsa.rsa_d );
+	mpi_free( cert->d.rsa.rsa_p );
+	mpi_free( cert->d.rsa.rsa_q );
+	mpi_free( cert->d.rsa.rsa_u );
     }
     m_free(cert);
 }

@@ -33,6 +33,7 @@
 #define m_realloc(n,m)		m_debug_realloc((n),(m), M_DBGINFO(__LINE__) )
 #define m_free(n)		m_debug_free((n), M_DBGINFO(__LINE__) )
 #define m_check(n)		m_debug_check((n), M_DBGINFO(__LINE__) )
+#define m_copy(a)		m_debug_copy((a), M_DBGINFO(__LINE__) )
 
 void *m_debug_alloc( size_t n, const char *info );
 void *m_debug_alloc_clear( size_t n, const char *info  );
@@ -41,6 +42,7 @@ void *m_debug_alloc_secure_clear( size_t n, const char *info  );
 void *m_debug_realloc( void *a, size_t n, const char *info  );
 void m_debug_free( void *p, const char *info  );
 void m_debug_check( const void *a, const char *info );
+void *m_debug_copy( const void *a, const char *info );
 
 #else
 void *m_alloc( size_t n );
@@ -50,6 +52,7 @@ void *m_alloc_secure_clear( size_t n );
 void *m_realloc( void *a, size_t n );
 void m_free( void *p );
 void m_check( const void *a );
+void *m_copy( void *a );
 #endif
 
 

@@ -46,6 +46,7 @@ typedef struct {
 void rsa_free_public_key( RSA_public_key *pk );
 void rsa_free_secret_key( RSA_secret_key *sk );
 void rsa_generate( RSA_public_key *pk, RSA_secret_key *sk, unsigned nbits );
+int  rsa_check_secret_key( RSA_secret_key *sk );
 void rsa_public(MPI output, MPI input, RSA_public_key *skey );
 void rsa_secret(MPI output, MPI input, RSA_secret_key *skey );
 

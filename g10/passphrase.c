@@ -44,13 +44,13 @@ get_passphrase_hash( u32 *keyid, char *text )
     DEK *dek;
 
     if( keyid ) {
-	tty_printf("Need a pass phrase to unlock the secret key!\n");
+	tty_printf("\nNeed a pass phrase to unlock the secret key!\n");
 	tty_printf("KeyID: %08lX\n\n",  keyid[1] );
     }
-    if( keyid && (p=getenv("PGPPATHPHRASE")) ) {
+    if( keyid && (p=getenv("G10PASSPHRASE")) ) {
 	pw = m_alloc_secure(strlen(p)+1);
 	strcpy(pw,p);
-	tty_printf("Taking it from $PGPPATHPHRASE !\n",  keyid[1] );
+	tty_printf("Taking it from $G10PASSPHRASE !\n",  keyid[1] );
     }
     else
 	pw = tty_get_hidden("Enter pass phrase: " );
@@ -61,7 +61,7 @@ get_passphrase_hash( u32 *keyid, char *text )
     m_free(pw); /* is allocated in secure memory, so it will be burned */
     if( !p ) {
 	tty_kill_prompt();
-	tty_printf("\n\n");
+	tty_printf("\n");
     }
     return dek;
 }
@@ -70,6 +70,7 @@ get_passphrase_hash( u32 *keyid, char *text )
 /****************
  * This function is used to construct a DEK from a user input.
  * It uses the default CIPHER
+ * Returns: 0 = okay, -1 No passphrase entered, > 0 error
  */
 int
 make_dek_from_passphrase( DEK *dek, int mode )
@@ -88,7 +89,10 @@ make_dek_from_passphrase( DEK *dek, int mode )
 	}
 	m_free(pw2);
     }
-    rc = hash_passphrase( dek, pw );
+    if( !*pw )
+	rc = -1;
+    else
+	rc = hash_passphrase( dek, pw );
     m_free(pw);
     return rc;
 }

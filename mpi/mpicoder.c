@@ -24,13 +24,13 @@
 #include <assert.h>
 
 #include "mpi.h"
+#include "mpi-internal.h"
 #include "iobuf.h"
 #include "memory.h"
 #include "util.h"
 
 #ifdef M_DEBUG
-  #undef mpi_decode
-  #undef mpi_decode_buffer
+  #undef mpi_read
 #endif
 
 #define MAX_EXTERN_MPI_BITS 16384
@@ -39,89 +39,52 @@
  * write an mpi to out.
  */
 int
-mpi_encode( IOBUF out, MPI a )
-{
-    u16 dummy;
-    return mpi_encode_csum( out, a, &dummy );
-}
-
-int
-mpi_encode_csum( IOBUF out, MPI a, u16 *csum )
+mpi_write( IOBUF out, MPI a )
 {
     int i;
-    byte c;
     unsigned nbits = a->nlimbs * BITS_PER_MPI_LIMB;
     mpi_limb_t limb;
 
-#if BYTES_PER_MPI_LIMB != 4
-  #error Make this function work with other LIMB sizes
-#endif
+    /* fixme: use a->nbits if valid */
     if( nbits > MAX_EXTERN_MPI_BITS )
 	log_bug("mpi_encode: mpi too large (%u bits)\n", nbits);
-    iobuf_put(out, (c=nbits >>8) ); *csum += c;
-    iobuf_put(out, (c=nbits) );     *csum += c;
+    iobuf_put(out, (nbits >>8) );
+    iobuf_put(out, (nbits) );
     for(i=a->nlimbs-1; i >= 0; i-- ) {
 	limb = a->d[i];
-	iobuf_put(out, (c=limb >> 24) ); *csum += c;
-	iobuf_put(out, (c=limb >> 16) ); *csum += c;
-	iobuf_put(out, (c=limb >>  8) ); *csum += c;
-	iobuf_put(out, (c=limb	    ) ); *csum += c;
+      #if BYTES_PER_MPI_LIMB == 4
+	iobuf_put(out, (limb >> 24) );
+	iobuf_put(out, (limb >> 16) );
+	iobuf_put(out, (limb >>  8) );
+	iobuf_put(out, (limb	  ) );
+      #elif BYTES_PER_MPI_LIMB == 8
+	iobuf_put(out, (limb >> 56) );
+	iobuf_put(out, (limb >> 48) );
+	iobuf_put(out, (limb >> 40) );
+	iobuf_put(out, (limb >> 32) );
+	iobuf_put(out, (limb >> 24) );
+	iobuf_put(out, (limb >> 16) );
+	iobuf_put(out, (limb >>  8) );
+	iobuf_put(out, (limb	  ) );
+      #else
+	#error Make this function work with other LIMB sizes
+      #endif
     }
     return 0;
 }
 
-/****************
- * encode the MPI into a newly allocated buffer, the buffer is
- * so constructed, that it can be used for mpi_write. The caller
- * must free the returned buffer. The buffer is allocated in the same
- * type of memory space as A is.
- */
-byte *
-mpi_encode_buffer( MPI a )
-{
-    abort();
-    return NULL;
-}
 
 /****************
- * write an mpi to out. This is a special function to handle
- * encrypted values. It simply writes the buffer a to OUT.
- * A is a special buffer, starting with 2 bytes giving it's length
- * (in big endian order) and 2 bytes giving it's length in bits (also
- * big endian)
- */
-int
-mpi_write( IOBUF out, byte *a)
-{
-    u16 dummy;
-    return mpi_write_csum( out, a, &dummy );
-}
-
-int
-mpi_write_csum( IOBUF out, byte *a, u16 *csum)
-{
-    int rc;
-    unsigned n;
-
-    n = *a++ << 8;
-    n |= *a++;
-    rc = iobuf_write(out, a, n );
-    for( ; n; n--, a++ )
-	*csum += *a;
-    return rc;
-}
-
-/****************
- * Decode an external representation and return an MPI
+ * Read an external representation of an mpi and return the MPI
  * The external format is a 16 bit unsigned value stored in network byte order,
  * giving the number of bits for the following integer. The integer is stored
  * with MSB first (left padded with zeroes to align on a byte boundary).
  */
 MPI
 #ifdef M_DEBUG
-mpi_debug_decode(IOBUF inp, unsigned *ret_nread, const char *info)
+mpi_debug_read(IOBUF inp, unsigned *ret_nread, int secure, const char *info)
 #else
-mpi_decode(IOBUF inp, unsigned *ret_nread)
+mpi_read(IOBUF inp, unsigned *ret_nread, int secure)
 #endif
 {
     int c, i, j;
@@ -144,12 +107,15 @@ mpi_decode(IOBUF inp, unsigned *ret_nread)
     nbytes = (nbits+7) / 8;
     nlimbs = (nbytes+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB;
   #ifdef M_DEBUG
-    val = mpi_debug_alloc( nlimbs, info );
+    val = secure? mpi_debug_alloc_secure( nlimbs, info )
+		: mpi_debug_alloc( nlimbs, info );
   #else
-    val = mpi_alloc( nlimbs );
+    val = secure? mpi_alloc_secure( nlimbs )
+		: mpi_alloc( nlimbs );
   #endif
     i = BYTES_PER_MPI_LIMB - nbytes % BYTES_PER_MPI_LIMB;
     i %= BYTES_PER_MPI_LIMB;
+    val->nbits = nbits;
     j= val->nlimbs = nlimbs;
     val->sign = 0;
     for( ; j > 0; j-- ) {
@@ -170,103 +136,6 @@ mpi_decode(IOBUF inp, unsigned *ret_nread)
     return val;
 }
 
-
-/****************
- * Decode an MPI from the buffer, the buffer starts with two bytes giving
- * the length of the data to follow, the original data follows.
- * The MPI is alloced from secure MPI space
- */
-MPI
-#ifdef M_DEBUG
-mpi_debug_decode_buffer(byte *buffer, const char *info )
-#else
-mpi_decode_buffer(byte *buffer )
-#endif
-{
-    int i, j;
-    u16 buflen;
-    unsigned nbits, nbytes, nlimbs;
-    mpi_limb_t a;
-    byte *p = buffer;
-    MPI val;
-
-    if( !buffer )
-	log_bug("mpi_decode_buffer: no buffer\n");
-    buflen = *p++ << 8;
-    buflen |= *p++;
-    nbits = *p++ << 8;
-    nbits |= *p++;
-    nbytes = (nbits+7) / 8;
-    if( nbytes+2 != buflen )
-	log_bug("mpi_decode_buffer: length conflict\n");
-    nlimbs = (nbytes+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB;
-  #ifdef M_DEBUG
-    val = mpi_debug_alloc_secure( nlimbs, info );
-  #else
-    val = mpi_alloc_secure( nlimbs );
-  #endif
-    i = BYTES_PER_MPI_LIMB - nbytes % BYTES_PER_MPI_LIMB;
-    i %= BYTES_PER_MPI_LIMB;
-    j= val->nlimbs = nlimbs;
-    val->sign = 0;
-    for( ; j > 0; j-- ) {
-	a = 0;
-	for(; i < BYTES_PER_MPI_LIMB; i++ ) {
-	    a <<= 8;
-	    a |= *p++;
-	}
-	i = 0;
-	val->d[j-1] = a;
-    }
-    return val;
-}
-
-
-/****************
- * Read a MPI from the external medium and return it in a newly allocated
- * buffer (This buffer is allocated in the secure memory space, because
- * we properly need this to decipher this string).
- * Return: the allocated string and in RET_NREAD the number of bytes
- *	   read (including the 2 length bytes), the returned buffer will
- *	   be prefixed with two bytes describing the length of the following
- *	   data.
- */
-byte *
-mpi_read(IOBUF inp, unsigned *ret_nread)
-{
-    int c;
-    u16 buflen;
-    unsigned nbits, nbytes, nread;
-    byte *p, *buf;
-
-    if( (c = iobuf_get(inp)) == -1 )
-	return NULL;
-    nbits = c << 8;
-    if( (c = iobuf_get(inp)) == -1 )
-	return NULL;
-    nbits |= c;
-    if( nbits > MAX_EXTERN_MPI_BITS ) {
-	log_error("mpi too large (%u bits)\n", nbits);
-	return NULL;
-    }
-    nread = 2;
-
-    nbytes = (nbits+7) / 8;
-    buflen = nbytes + 2;
-    p = buf = m_alloc_secure( buflen+2 );
-    *p++ = buflen >> 8;
-    *p++ = buflen & 0xff;
-    *p++ = nbits >> 8;
-    *p++ = nbits & 0xff;
-    for( ; nbytes ; nbytes--, nread++ )
-	*p++ = iobuf_get(inp) & 0xff;
-
-    if( nread > *ret_nread )
-	log_error("Ooops: mpi crosses packet border");
-    else
-	*ret_nread = nread;
-    return buf;
-}
 
 
 /****************
@@ -389,4 +258,97 @@ mpi_get_keyid( MPI a, u32 *keyid )
     return a->nlimbs >= 1? a->d[0] : 0;
 }
 
+
+/****************
+ * Return a m_alloced buffer with the MPI (msb first).
+ * NBYTES receives the length of this buffer. Caller must free the
+ * return string (This function does return a 0 byte buffer with NBYTES
+ * set to zero if the value of A is zero. If sign is not NULL, it will
+ * be set to the sign of the A.
+ */
+byte *
+mpi_get_buffer( MPI a, unsigned *nbytes, int *sign )
+{
+    byte *p, *buffer;
+    mpi_limb_t alimb;
+    int i;
+
+    if( sign )
+	*sign = a->sign;
+    *nbytes = a->nlimbs * BYTES_PER_MPI_LIMB;
+    p = buffer = a->secure ? m_alloc_secure( *nbytes) : m_alloc( *nbytes );
+
+    for(i=a->nlimbs-1; i >= 0; i-- ) {
+	alimb = a->d[i];
+      #if BYTES_PER_MPI_LIMB == 4
+	*p++ = alimb >> 24;
+	*p++ = alimb >> 16;
+	*p++ = alimb >>  8;
+	*p++ = alimb	  ;
+      #elif BYTES_PER_MPI_LIMB == 8
+	*p++ = alimb >> 56;
+	*p++ = alimb >> 48;
+	*p++ = alimb >> 40;
+	*p++ = alimb >> 32;
+	*p++ = alimb >> 24;
+	*p++ = alimb >> 16;
+	*p++ = alimb >>  8;
+	*p++ = alimb	  ;
+      #else
+	#error please implement for this limb size.
+      #endif
+    }
+    return buffer;
+}
+
+/****************
+ * Use BUFFER to update MPI.
+ */
+void
+mpi_set_buffer( MPI a, const byte *buffer, unsigned nbytes, int sign )
+{
+    const byte *p;
+    mpi_limb_t alimb;
+    int nlimbs;
+    int i;
+
+    nlimbs = (nbytes + BYTES_PER_MPI_LIMB - 1) / BYTES_PER_MPI_LIMB;
+    RESIZE_IF_NEEDED(a, nlimbs);
+    a->sign = sign;
+
+    for(i=0, p = buffer+nbytes-1; p >= buffer+BYTES_PER_MPI_LIMB; ) {
+      #if BYTES_PER_MPI_LIMB == 4
+	alimb  = *p--	    ;
+	alimb |= *p-- <<  8 ;
+	alimb |= *p-- << 16 ;
+	alimb |= *p-- << 24 ;
+      #elif BYTES_PER_MPI_LIMB == 8
+      #else
+	#error please implement for this limb size.
+      #endif
+	a->d[i++] = alimb;
+    }
+    if( p >= buffer ) {
+      #if BYTES_PER_MPI_LIMB == 4
+	alimb  = *p--	    ;
+	if( p >= buffer ) alimb |= *p-- <<  8 ;
+	if( p >= buffer ) alimb |= *p-- << 16 ;
+	if( p >= buffer ) alimb |= *p-- << 24 ;
+      #elif BYTES_PER_MPI_LIMB == 8
+	alimb  = *p--	    ;
+	if( p >= buffer ) alimb |= *p-- <<  8 ;
+	if( p >= buffer ) alimb |= *p-- << 16 ;
+	if( p >= buffer ) alimb |= *p-- << 24 ;
+	if( p >= buffer ) alimb |= *p-- << 32 ;
+	if( p >= buffer ) alimb |= *p-- << 40 ;
+	if( p >= buffer ) alimb |= *p-- << 48 ;
+	if( p >= buffer ) alimb |= *p-- << 56 ;
+      #else
+	#error please implement for this limb size.
+      #endif
+	a->d[i++] = alimb;
+    }
+    a->nlimbs = i;
+    assert( i == nlimbs );
+}
 

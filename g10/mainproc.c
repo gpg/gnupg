@@ -342,7 +342,7 @@ proc_plaintext( CTX c, PACKET *pkt )
     printf("txt: plain text data name='%.*s'\n", pt->namelen, pt->name);
     free_md_filter_context( &c->mfx );
     /* fixme: take the digest algo to use from the
-     * onpass_sig packet (if we have these) */
+     * onepass_sig packet (if we have these) */
     c->mfx.md = md_open(DIGEST_ALGO_RMD160, 0);
     result = handle_plaintext( pt, &c->mfx );
     if( !result )
@@ -450,6 +450,34 @@ print_userid( PACKET *pkt )
 }
 
 
+static void
+print_fingerprint( PKT_public_cert *pkc, PKT_secret_cert *skc )
+{
+    byte *array, *p;
+    size_t i, n;
+
+    p = array = skc? fingerprint_from_skc( skc, &n )
+		   : fingerprint_from_pkc( pkc, &n );
+    printf("     Key fingerprint =");
+    if( n == 20 ) {
+	for(i=0; i < n ; i++, i++, p += 2 ) {
+	    if( i == 10 )
+		putchar(' ');
+	    printf(" %02X%02X", *p, p[1] );
+	}
+    }
+    else {
+	for(i=0; i < n ; i++, p++ ) {
+	    if( i && !(i%8) )
+		putchar(' ');
+	    printf(" %02X", *p );
+	}
+    }
+    putchar('\n');
+    m_free(array);
+}
+
+
 /****************
  * List the certificate in a user friendly way
  */
@@ -478,6 +506,8 @@ list_node( CTX c, NODE node )
 		    printf( "%*s", 31, "" );
 		print_userid( n2->pkt );
 		putchar('\n');
+		if( opt.fingerprint && n2 == node->child )
+		    print_fingerprint( pkc, NULL );
 		list_node(c,  n2 );
 	    }
 	}
@@ -491,18 +521,20 @@ list_node( CTX c, NODE node )
 				      datestr_from_skc( skc )	  );
 	n2 = node->child;
 	if( !n2 )
-	    printf("ERROR: no user id!");
+	    printf("ERROR: no user id!\n");
 	else {
 	    print_userid( n2->pkt );
+	    putchar('\n');
+	    if( opt.fingerprint && n2 == node->child )
+		print_fingerprint( NULL, skc );
 	}
-	putchar('\n');
     }
     else if( node->pkt->pkttype == PKT_USER_ID ) {
 	/* list everything under this user id */
 	for(n2=node->child; n2; n2 = n2->next )
 	    list_node(c,  n2 );
     }
-    else if( node->pkt->pkttype == PKT_SIGNATURE ) {
+    else if( node->pkt->pkttype == PKT_SIGNATURE  ) {
 	PKT_signature *sig = node->pkt->pkt.signature;
 	int rc2;
 	size_t n;
@@ -510,6 +542,9 @@ list_node( CTX c, NODE node )
 	int sigrc = ' ';
 
 	assert( !node->child );
+	if( !opt.list_sigs )
+	    return;
+
 	if( opt.check_sigs ) {
 
 	    switch( (rc2=do_check_sig( c, node )) ) {

@@ -171,3 +171,110 @@ datestr_from_sig( PKT_signature *sig )
     return buffer;
 }
 
+
+/**************** .
+ * Return a byte array with the fingerprint for the given PKC/SKC
+ * The length of the array is returned in ret_len. Caller must free
+ * the array.
+ */
+byte *
+fingerprint_from_skc( PKT_secret_cert *skc, size_t *ret_len )
+{
+    PKT_public_cert pkc;
+    byte *p;
+
+    pkc.pubkey_algo = skc->pubkey_algo;
+    if( pkc.pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	pkc.timestamp = skc->timestamp;
+	pkc.valid_days = skc->valid_days;
+	pkc.pubkey_algo = skc->pubkey_algo;
+	pkc.d.elg.p = skc->d.elg.p;
+	pkc.d.elg.g = skc->d.elg.g;
+	pkc.d.elg.y = skc->d.elg.y;
+    }
+    else if( pkc.pubkey_algo == PUBKEY_ALGO_RSA ) {
+	pkc.d.rsa.rsa_n = skc->d.rsa.rsa_n;
+	pkc.d.rsa.rsa_e = skc->d.rsa.rsa_e;
+    }
+    p = fingerprint_from_pkc( &pkc, ret_len );
+    memset(&pkc, 0, sizeof pkc); /* not really needed */
+    return p;
+}
+
+byte *
+fingerprint_from_pkc( PKT_public_cert *pkc, size_t *ret_len )
+{
+    byte *p, *buf, *array;
+    size_t len;
+    unsigned n;
+
+    if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	RMDHANDLE md;
+	const char *dp;
+
+	md = rmd160_open(0);
+
+	{   u32 a = pkc->timestamp;
+	    rmd160_putchar( md, a >> 24 );
+	    rmd160_putchar( md, a >> 16 );
+	    rmd160_putchar( md, a >>  8 );
+	    rmd160_putchar( md, a	);
+	}
+	{   u16 a = pkc->valid_days;
+	    rmd160_putchar( md, a >> 8 );
+	    rmd160_putchar( md, a      );
+	}
+	rmd160_putchar( md, pkc->pubkey_algo );
+	p = buf = mpi_get_buffer( pkc->d.elg.p, &n, NULL );
+	for( ; !*p && n; p++, n-- )
+	    ;
+	rmd160_putchar( md, n>>8); rmd160_putchar( md, n ); rmd160_write( md, p, n );
+	m_free(buf);
+	p = buf = mpi_get_buffer( pkc->d.elg.g, &n, NULL );
+	for( ; !*p && n; p++, n-- )
+	    ;
+	rmd160_putchar( md, n>>8); rmd160_putchar( md, n ); rmd160_write( md, p, n );
+	m_free(buf);
+	p = buf = mpi_get_buffer( pkc->d.elg.y, &n, NULL );
+	for( ; !*p && n; p++, n-- )
+	    ;
+	rmd160_putchar( md, n>>8); rmd160_putchar( md, n ); rmd160_write( md, p, n );
+	m_free(buf);
+
+	dp = rmd160_final(md);
+	array = m_alloc( 20 );
+	len = 20;
+	memcpy(array, dp, 20 );
+	rmd160_close(md);
+    }
+    else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
+	MD5HANDLE md;
+
+	md = md5_open(0);
+	p = buf = mpi_get_buffer( pkc->d.rsa.rsa_n, &n, NULL );
+	for( ; !*p && n; p++, n-- )
+	    ;
+	md5_write( md, p, n );
+	m_free(buf);
+	p = buf = mpi_get_buffer( pkc->d.rsa.rsa_e, &n, NULL );
+	for( ; !*p && n; p++, n-- )
+	    ;
+	md5_write( md, p, n );
+	m_free(buf);
+	md5_final(md);
+	array = m_alloc( 16 );
+	len = 16;
+	memcpy(array, md5_read(md), 16 );
+	md5_close(md);
+    }
+    else {
+	array = m_alloc(1);
+	len = 0; /* ooops */
+    }
+
+    *ret_len = len;
+    return array;
+}
+
+
+

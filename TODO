@@ -4,15 +4,13 @@
       this shoud espceially done for the buffer in the chain.
     * add a way to difference between errors and eof in the underflow/flush
       function of iobuf.
-    * filter all output read from the input when displaying it to the user.
+    * check that all output is filtered when displayed.
     * keyring editing
     * add trust stuff
     * make ttyio.c work (hide passwords etc..)
-    * add detached signatures
     * add option file handling.
     * use correct ASN values for DEK encoding
     * add checking of armor trailers
-    * fix the memory stuff (secure memory)
     * add real secure memory
     * look for a way to reuse RSA signatures
     * find a way to remove the armor filter after it
@@ -24,10 +22,12 @@
     * enable a SIGSEGV handler while using zlib functions
 
     * PGP writes the signature and then the file, this is not
-      a good idea, we can't write such files if we take input rom stdin.
+      a good idea, we can't write such files if we take input from stdin.
       So the solution will: accept such packet, but write
       signature the corret way: first the data and then the signature[s]
       this is much easier to check, also we must read the entire data
       before we can check wether we have the pubkey or not.  The one-pass
       signature packets should be implemented to avoid this.
+
+    * compress does not work always!
 

@@ -157,6 +157,22 @@ rsa_generate( RSA_public_key *pk, RSA_secret_key *sk, unsigned nbits )
 }
 
 
+/****************
+ * Test wether the secret key is valid.
+ * Returns: true if this is a valid key.
+ */
+int
+rsa_check_secret_key( RSA_secret_key *sk )
+{
+    int rc;
+    MPI temp = mpi_alloc( mpi_get_nlimbs(sk->p)*2 );
+
+    mpi_mul(temp, sk->p, sk->q );
+    rc = mpi_cmp( temp, sk->n );
+    mpi_free(temp);
+    return !rc;
+}
+
 
 
 /****************

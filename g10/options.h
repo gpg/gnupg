@@ -32,8 +32,8 @@ struct {
     int answer_no;  /* answer no on most questions */
     int check_sigs; /* check key signatures */
     int cache_all;
-    int detached_sig;
-    int reserved3;
+    int fingerprint; /* list fingerprints */
+    int list_sigs;   /* list signatures */
     int reserved4;
     int reserved5;
     int reserved6;

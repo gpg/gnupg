@@ -52,15 +52,16 @@ int mpi_debug_mode;
 typedef struct mpi_struct {
     int alloced;    /* array size (# of allocated limbs) */
     int nlimbs;     /* number of valid limbs */
+    int nbits;	    /* the real number of valid bits (info only) */
     int sign;	    /* indicates a negative number */
-    int secure;     /* array mut be allocated in secure memory space */
+    int secure;     /* array must be allocated in secure memory space */
     mpi_limb_t *d;  /* array with the limbs */
 } *MPI;
 
 #define MPI_NULL NULL
 
-#define mpi_get_nlimbs(a) ((a)->nlimbs)
-#define mpi_is_neg(a)	  ((a)->sign)
+#define mpi_get_nlimbs(a)     ((a)->nlimbs)
+#define mpi_is_neg(a)	      ((a)->sign)
 
 /*-- mpiutil.c --*/
 
@@ -90,23 +91,18 @@ void mpi_m_check( MPI a );
 void mpi_swap( MPI a, MPI b);
 
 /*-- mpicoder.c --*/
-int mpi_encode( IOBUF out, MPI a );
-int mpi_encode_csum( IOBUF out, MPI a, u16 *csum );
-int mpi_write( IOBUF out, byte *a);
-int mpi_write_csum( IOBUF out, byte *a, u16 *csum);
+int mpi_write( IOBUF out, MPI a );
 #ifdef M_DEBUG
-  #define mpi_decode(a,b)   mpi_debug_decode((a),(b),  M_DBGINFO( __LINE__ ) )
-  #define mpi_decode_buffer(a)	 mpi_debug_decode_buffer((a), M_DBGINFO( __LINE__ ) )
-  MPI mpi_debug_decode(IOBUF inp, unsigned *nread, const char *info);
-  MPI mpi_debug_decode_buffer(byte *buffer, const char *info );
+  #define mpi_read(a,b,c)   mpi_debug_read((a),(b),(c),  M_DBGINFO( __LINE__ ) )
+  MPI mpi_debug_read(IOBUF inp, unsigned *nread, int secure, const char *info);
 #else
-  MPI mpi_decode(IOBUF inp, unsigned *nread);
-  MPI mpi_decode_buffer(byte *buffer );
+  MPI mpi_read(IOBUF inp, unsigned *nread, int secure);
 #endif
-byte *mpi_read(IOBUF inp, unsigned *ret_nread);
 int mpi_fromstr(MPI val, const char *str);
 int mpi_print( FILE *fp, MPI a, int mode );
 u32 mpi_get_keyid( MPI a, u32 *keyid );
+byte *mpi_get_buffer( MPI a, unsigned *nbytes, int *sign );
+void  mpi_set_buffer( MPI a, const byte *buffer, unsigned nbytes, int sign );
 
 /*-- mpi-add.c --*/
 void mpi_add_ui(MPI w, MPI u, ulong v );

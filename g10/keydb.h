@@ -50,6 +50,8 @@ unsigned nbits_from_skc( PKT_secret_cert *skc );
 const char *datestr_from_pkc( PKT_public_cert *pkc );
 const char *datestr_from_skc( PKT_secret_cert *skc );
 const char *datestr_from_sig( PKT_signature *sig );
+byte *fingerprint_from_skc( PKT_secret_cert *skc, size_t *ret_len );
+byte *fingerprint_from_pkc( PKT_public_cert *pkc, size_t *ret_len );
 
 
 

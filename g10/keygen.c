@@ -51,9 +51,44 @@ answer_is_yes( const char *s )
 }
 
 
+static u16
+checksum_u16( unsigned n )
+{
+    u16 a;
+
+    a  = (n >> 8) & 0xff;
+    a |= n & 0xff;
+    return a;
+}
+
+static u16
+checksum( byte *p, unsigned n )
+{
+    u16 a;
+
+    for(a=0; n; n-- )
+	a += *p++;
+    return a;
+}
+
+static u16
+checksum_mpi( MPI a )
+{
+    u16 csum;
+    byte *buffer;
+    unsigned nbytes;
+
+    buffer = mpi_get_buffer( a, &nbytes, NULL );
+    csum = checksum_u16( nbytes*8 );
+    csum += checksum( buffer, nbytes );
+    m_free( buffer );
+    return csum;
+}
+
+
 
 static void
-write_uid( IOBUF out, const char *s )
+write_uid( IOBUF out, const char *s, PKT_user_id **upkt )
 {
     PACKET pkt;
     size_t n = strlen(s);
@@ -65,13 +100,44 @@ write_uid( IOBUF out, const char *s )
     strcpy(pkt.pkt.user_id->name, s);
     if( (rc = build_packet( out, &pkt )) )
 	log_error("build_packet(user_id) failed: %s\n", g10_errstr(rc) );
+    if( upkt ) {
+	*upkt = pkt.pkt.user_id;
+	pkt.pkt.user_id = NULL;
+    }
     free_packet( &pkt );
+}
+
+
+static int
+write_selfsig( IOBUF out, PKT_public_cert *pkc, PKT_user_id *uid,
+						PKT_secret_cert *skc )
+{
+    PACKET pkt;
+    PKT_signature *sig;
+    int rc=0;
+
+    if( opt.verbose )
+	log_info("writing self signature\n");
+
+    rc = make_keysig_packet( &sig, pkc, uid, skc, 0x13, DIGEST_ALGO_RMD160 );
+    if( rc ) {
+	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
+	return rc;
+    }
+
+    pkt.pkttype = PKT_SIGNATURE;
+    pkt.pkt.signature = sig;
+    if( (rc = build_packet( out, &pkt )) )
+	log_error("build_packet(signature) failed: %s\n", g10_errstr(rc) );
+    free_packet( &pkt );
+    return rc;
 }
 
 
 #ifdef HAVE_RSA_CIPHER
 static int
-gen_rsa(unsigned nbits, IOBUF pub_io, IOBUF sec_io)
+gen_rsa(unsigned nbits, IOBUF pub_io, IOBUF sec_io, DEK *dek,
+	PKT_public_cert **ret_pkc, PKT_secret_cert **ret_skc )
 {
     int rc;
     PACKET pkt1, pkt2;
@@ -79,6 +145,9 @@ gen_rsa(unsigned nbits, IOBUF pub_io, IOBUF sec_io)
     PKT_public_cert *pkc;
     RSA_public_key pk;
     RSA_secret_key sk;
+
+    init_packet(&pkt1);
+    init_packet(&pkt2);
 
     rsa_generate( &pk, &sk, nbits );
 
@@ -96,15 +165,28 @@ gen_rsa(unsigned nbits, IOBUF pub_io, IOBUF sec_io)
     skc->d.rsa.rsa_p = sk.p;
     skc->d.rsa.rsa_q = sk.q;
     skc->d.rsa.rsa_u = sk.u;
-    skc->d.rsa.calc_csum = 0;
-    skc->d.rsa.is_protected = 0; /* FIXME!!! */
-    skc->d.rsa.protect_algo = 0; /* should be blowfish */
-    /*memcpy(skc->d.rsa.protect.blowfish.iv,"12345678", 8);*/
+    skc->d.rsa.csum  = checksum_mpi( skc->d.rsa.rsa_d );
+    skc->d.rsa.csum += checksum_mpi( skc->d.rsa.rsa_p );
+    skc->d.rsa.csum += checksum_mpi( skc->d.rsa.rsa_q );
+    skc->d.rsa.csum += checksum_mpi( skc->d.rsa.rsa_u );
+    if( !dek ) {
+	skc->d.rsa.is_protected = 0;
+	skc->d.rsa.protect_algo = 0;
+    }
+    else {
+	skc->d.rsa.is_protected = 1;
+	skc->d.rsa.protect_algo = CIPHER_ALGO_BLOWFISH;
+	randomize_buffer( skc->d.rsa.protect.blowfish.iv, 8, 1);
+	skc->d.rsa.csum += checksum( skc->d.rsa.protect.blowfish.iv, 8 );
+	rc = protect_secret_key( skc, dek );
+	if( rc ) {
+	    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
+	    goto leave;
+	}
+    }
 
-    init_packet(&pkt1);
     pkt1.pkttype = PKT_PUBLIC_CERT;
     pkt1.pkt.public_cert = pkc;
-    init_packet(&pkt2);
     pkt2.pkttype = PKT_SECRET_CERT;
     pkt2.pkt.secret_cert = skc;
 
@@ -116,6 +198,10 @@ gen_rsa(unsigned nbits, IOBUF pub_io, IOBUF sec_io)
 	log_error("build secret_cert packet failed: %s\n", g10_errstr(rc) );
 	goto leave;
     }
+    *ret_pkc = pkt1.pkt.public_cert;
+    pkt1.pkt.public_cert = NULL;
+    *ret_skc = pkt1.pkt.secret_cert;
+    pkt1.pkt.secret_cert = NULL;
 
   leave:
     free_packet(&pkt1);
@@ -125,14 +211,19 @@ gen_rsa(unsigned nbits, IOBUF pub_io, IOBUF sec_io)
 #endif /*HAVE_RSA_CIPHER*/
 
 static int
-gen_elg(unsigned nbits, IOBUF pub_io, IOBUF sec_io)
+gen_elg(unsigned nbits, IOBUF pub_io, IOBUF sec_io, DEK *dek,
+	PKT_public_cert **ret_pkc, PKT_secret_cert **ret_skc )
 {
     int rc;
     PACKET pkt1, pkt2;
-    PKT_secret_cert *skc;
+    PKT_secret_cert *skc, *unprotected_skc;
     PKT_public_cert *pkc;
     ELG_public_key pk;
     ELG_secret_key sk;
+    unsigned nbytes;
+
+    init_packet(&pkt1);
+    init_packet(&pkt2);
 
     elg_generate( &pk, &sk, nbits );
 
@@ -150,15 +241,25 @@ gen_elg(unsigned nbits, IOBUF pub_io, IOBUF sec_io)
     skc->d.elg.y = sk.y;
     skc->d.elg.x = sk.x;
 
-    skc->d.elg.calc_csum = 0;
-    skc->d.elg.is_protected = 0; /* FIXME!!! */
-    skc->d.elg.protect_algo = 0; /* should be blowfish */
-    /*memcpy(skc->d.elg.protect.blowfish.iv,"12345678", 8);*/
+    skc->d.elg.csum = checksum_mpi( skc->d.elg.x );
+    unprotected_skc = copy_secret_cert( NULL, skc );
+    if( !dek ) {
+	skc->d.elg.is_protected = 0;
+	skc->d.elg.protect_algo = 0;
+    }
+    else {
+	skc->d.elg.is_protected = 0;
+	skc->d.elg.protect_algo = CIPHER_ALGO_BLOWFISH;
+	randomize_buffer(skc->d.elg.protect.blowfish.iv, 8, 1);
+	rc = protect_secret_key( skc, dek );
+	if( rc ) {
+	    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
+	    goto leave;
+	}
+    }
 
-    init_packet(&pkt1);
     pkt1.pkttype = PKT_PUBLIC_CERT;
     pkt1.pkt.public_cert = pkc;
-    init_packet(&pkt2);
     pkt2.pkttype = PKT_SECRET_CERT;
     pkt2.pkt.secret_cert = skc;
 
@@ -170,10 +271,17 @@ gen_elg(unsigned nbits, IOBUF pub_io, IOBUF sec_io)
 	log_error("build secret_cert packet failed: %s\n", g10_errstr(rc) );
 	goto leave;
     }
+    *ret_pkc = pkt1.pkt.public_cert;
+    pkt1.pkt.public_cert = NULL;
+    *ret_skc = unprotected_skc;
+    unprotected_skc = NULL;
+
 
   leave:
     free_packet(&pkt1);
     free_packet(&pkt2);
+    if( unprotected_skc )
+	free_secret_cert( unprotected_skc );
     return rc;
 }
 
@@ -192,6 +300,10 @@ generate_keypair()
     char *uid = NULL;
     IOBUF pub_io = NULL;
     IOBUF sec_io = NULL;
+    PKT_public_cert *pkc = NULL;
+    PKT_secret_cert *skc = NULL;
+    PKT_user_id *upkt = NULL;
+    DEK *dek = NULL;
     int rc;
     int algo;
     const char *algo_name;
@@ -301,6 +413,28 @@ generate_keypair()
 	}
     }
   #endif
+
+
+    tty_printf( "You need a Passphrase to protect your secret key.\n\n" );
+
+    dek = m_alloc_secure( sizeof *dek );
+    dek->algo = CIPHER_ALGO_BLOWFISH;
+    rc = make_dek_from_passphrase( dek , 2 );
+    if( rc == -1 ) {
+	m_free(dek); dek = NULL;
+	tty_printf(
+	    "You don't what a passphrase - this is probably a *bad* idea!\n"
+	    "I will do it anyway.  You can change your passphrase at anytime,\n"
+	    "using this program with the option \"--change-passphrase\"\n\n" );
+    }
+    else if( rc ) {
+	m_free(dek); dek = NULL;
+	m_free(uid);
+	log_error("Error getting the passphrase: %s\n", g10_errstr(rc) );
+	return;
+    }
+
+
     /* now check wether we a are allowed to write the keyrings */
     if( !(rc=overwrite_filep( pub_fname )) ) {
 	if( !(pub_io = iobuf_create( pub_fname )) )
@@ -334,23 +468,41 @@ generate_keypair()
 	return;
     }
 
-
     write_comment( pub_io, "#public key created by G10 pre-release " VERSION );
     write_comment( sec_io, "#secret key created by G10 pre-release " VERSION );
 
     if( algo == PUBKEY_ALGO_ELGAMAL )
-	gen_elg(nbits, pub_io, sec_io);
+	rc = gen_elg(nbits, pub_io, sec_io, dek, &pkc, &skc);
   #ifdef HAVE_RSA_CIPHER
     else if( algo == PUBKEY_ALGO_RSA )
-	gen_rsa(nbits, pub_io, sec_io);
+	rc = gen_rsa(nbits, pub_io, sec_io, dek, &pkc, &skc);
   #endif
     else
 	log_bug(NULL);
-    write_uid(pub_io, uid );
-    write_uid(sec_io, uid );
-    m_free(uid);
+    if( !rc )
+	write_uid(pub_io, uid, &upkt );
+    if( !rc )
+	write_uid(sec_io, uid, NULL );
+    if( !rc )
+	rc = write_selfsig(pub_io, pkc, upkt, skc );
 
-    iobuf_close(pub_io);
-    iobuf_close(sec_io);
+    if( rc ) {
+	iobuf_cancel(pub_io);
+	iobuf_cancel(sec_io);
+	tty_printf("Key generation failed: %s\n", g10_errstr(rc) );
+    }
+    else {
+	iobuf_close(pub_io);
+	iobuf_close(sec_io);
+	tty_printf("public and secret key created and signed.\n" );
+    }
+    if( pkc )
+	free_public_cert( pkc );
+    if( skc )
+	free_secret_cert( skc );
+    if( upkt )
+	free_user_id( upkt );
+    m_free(uid);
+    m_free(dek);
 }
 

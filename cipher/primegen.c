@@ -98,8 +98,7 @@ gen_prime( unsigned  nbits, int secret )
 	    }
 	    if( x )
 		continue;   /* found a multiple of a already known prime */
-	    if( DBG_CIPHER )
-		fputc('.', stderr);
+	    fputc('.', stderr);
 
 	    mpi_add_ui( prime, prime, step );
 
@@ -108,8 +107,7 @@ gen_prime( unsigned  nbits, int secret )
 	    mpi_powm( result, val_2, prime, prime );
 	    if( mpi_cmp_ui(result, 2) )
 		continue;  /* stepping (fermat test failed) */
-	    if( DBG_CIPHER )
-		fputc('+', stderr);
+	    fputc('+', stderr);
 
 	    /* perform stronger tests */
 	    if( !is_not_prime(prime, nbits, 5, &count2 ) ) {
@@ -120,8 +118,9 @@ gen_prime( unsigned  nbits, int secret )
 			break; /* step loop, cont with a new prime */
 		    }
 		}
+
+		fputc('\n', stderr);
 		if( DBG_CIPHER ) {
-		    fputc('\n', stderr);
 		    log_debug("performed %u simple and %u stronger tests\n",
 					count1, count2 );
 		    log_mpidump("found prime: ", prime );
@@ -134,8 +133,7 @@ gen_prime( unsigned  nbits, int secret )
 		return prime;
 	    }
 	}
-	if( DBG_CIPHER )
-	    fputc(':', stderr); /* restart with a new random value */
+	fputc(':', stderr); /* restart with a new random value */
     }
 }
 
@@ -179,8 +177,7 @@ is_not_prime( MPI n, unsigned nbits, int steps, int *count )
 	    if( j == k )
 		goto leave;
 	}
-	if( DBG_CIPHER )
-	    fputc('+', stderr);
+	fputc('+', stderr);
     }
     rc = 0; /* may be a prime */
 

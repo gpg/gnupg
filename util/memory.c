@@ -456,3 +456,26 @@ m_is_secure( const void *p )
     return p && ((byte*)p)[-1] == MAGIC_SEC_BYTE;
 }
 
+
+/****************
+ * Make a copy of the memory block at a
+ */
+void *
+FNAME(copy)( void *a FNAMEPRT )
+{
+    void *b;
+    size_t n;
+
+    if( !a )
+	return a;
+
+    n = m_size(a);
+    if( m_is_secure(a) )
+	b = FNAME(alloc_secure)(n FNAMEARG);
+    else
+	b = FNAME(alloc)(n FNAMEARG);
+    memcpy(b, a, n );
+    return b;
+}
+
+
