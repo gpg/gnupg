@@ -1,3 +1,12 @@
+2004-10-22  Werner Koch  <wk@g10code.com>
+
+	* g10.c (main): Display a bit fat warning that this gpg should not
+	be used.
+
+	* card-util.c (fetch_url): Disable for gnupg 1.9
+	(card_generate_subkey): Ditto.
+	(card_store_subkey): Ditto.
+
 2004-09-30  Werner Koch  <wk@g10code.com>
 
 	* gpgv.c (i18n_init): Always use LC_ALL.

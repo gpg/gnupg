@@ -1,5 +1,5 @@
 # Makefile.am - main makefile for NewPG/GnuPG
-#     	Copyright (C) 2001 Free Software Foundation, Inc.
+#     	Copyright (C) 2001, 2004 Free Software Foundation, Inc.
 # 
 # This file is part of GnuPG.
 # 
@@ -20,6 +20,7 @@
 ## Process this file with automake to produce Makefile.in
 
 ACLOCAL_AMFLAGS = -I m4
+AUTOMAKE_OPTIONS = dist-bzip2
 
 EXTRA_DIST = scripts/config.rpath autogen.sh README.CVS
 DISTCLEANFILES = g10defs.h 

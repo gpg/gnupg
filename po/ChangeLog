@@ -1,3 +1,7 @@
+2004-10-22  Werner Koch  <wk@g10code.com>
+
+	* POTFILES.in: Removed sc-investigate.c
+
 2004-10-04  Werner Koch  <wk@g10code.com>
 
 	* de.po: Typo fixes.

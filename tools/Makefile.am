@@ -19,7 +19,7 @@
 
 EXTRA_DIST = Manifest watchgnupg.c \
              rfc822parse.c rfc822parse.h gpgparsemail.c \
-	     addgnupghome
+	     addgnupghome gpgsm-gencert.sh
 
 AM_CPPFLAGS =  -I$(top_srcdir)/intl -I$(top_srcdir)/common
 include $(top_srcdir)/am/cmacros.am

@@ -1,3 +1,7 @@
+2004-10-22  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (AUTOMAKE_OPTIONS): Set option to create bzip2 tarball.
+
 2004-10-01  Werner Koch  <wk@g10code.com>
 
 	Released 1.9.11.

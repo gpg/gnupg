@@ -259,7 +259,7 @@ int hash_datafiles( MD_HANDLE md, MD_HANDLE md2,
 void run_in_pipemode (void);
 
 /*-- card-util.c --*/
-void change_pin (int no);
+void change_pin (int no, int allow_admin);
 void card_status (FILE *fp, char *serialnobuf, size_t serialnobuflen);
 void card_edit (STRLIST commands);
 

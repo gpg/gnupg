@@ -2038,6 +2038,10 @@ main( int argc, char **argv )
     }
 #endif
 
+    log_info ("WARNING: This version of gpg is not very matured and\n");
+    log_info ("WARNING: only intended for testing.  Please keep using\n");
+    log_info ("WARNING: gpg 1.2.x, 1.3.x or 1.4.x for OpenPGP\n");
+
     /* FIXME: We should use the lggging to a file only in server mode;
        however we have not yet implemetyed that thus we try to get
        away with --batch as indication for logging to file required. */
@@ -2926,9 +2930,9 @@ main( int argc, char **argv )
 
     case aChangePIN:
       if (!argc)
-        change_pin (0);
+        change_pin (0,1);
       else if (argc == 1)
-        change_pin ( atoi (*argv));
+        change_pin ( atoi (*argv), 1);
       else
         wrong_args ("--change-pin [no]");
       break;

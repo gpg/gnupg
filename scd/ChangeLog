@@ -1,3 +1,8 @@
+2004-10-22  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (verify_chv3): The minium length for CHV3 is
+	8. Changed string to match the other ones.
+
 2004-10-21  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (do_sign): Replace asprintf by direct allocation.

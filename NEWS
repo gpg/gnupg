@@ -3,8 +3,10 @@ Noteworthy changes in version 1.9.12
 
  * [scdaemon] Partly rewrote the PC/SC code.
 
- * Removed the sc-investigate tool.  It is now in the separate
-   gscutils package.
+ * Removed the sc-investigate tool.  It is now in a separate package
+   available at ftp://ftp.g10code.com/g10code/gscutils/ .
+
+ * [gpg-agent] Fixed logging problem.
 
 
 Noteworthy changes in version 1.9.11 (2004-10-01)
