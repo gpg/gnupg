@@ -50,7 +50,7 @@ struct keylist
 RISCOS_GLOBAL_STATICS("HKP Keyfetcher Heap")
 #endif /* __riscos__ */
 
-static int
+int
 urlencode_filter( void *opaque, int control,
 		  IOBUF a, byte *buf, size_t *ret_len)
 {
@@ -77,7 +77,8 @@ urlencode_filter( void *opaque, int control,
 }
 
 /* Returns 0 on success, -1 on failure, and 1 on eof */
-int send_key(void)
+int
+send_key(void)
 {
   int rc,gotit=0,ret=-1;
   char keyid[17];
@@ -186,7 +187,8 @@ int send_key(void)
   return ret;
 }
 
-int get_key(char *getkey)
+int
+get_key(char *getkey)
 {
   int rc,gotit=0;
   unsigned int maxlen=1024,buflen=0;
@@ -283,7 +285,7 @@ int get_key(char *getkey)
 /* Remove anything <between brackets> and de-urlencode in place.  Note
    that this requires all brackets to be closed on the same line.  It
    also means that the result is never larger than the input. */
-static void
+void
 dehtmlize(char *line)
 {
   int parsedindex=0;
@@ -351,7 +353,7 @@ dehtmlize(char *line)
     }
 }
 
-static int
+int
 write_quoted(IOBUF a, const char *buf, char delim)
 {
   char quoted[5];
@@ -388,7 +390,7 @@ write_quoted(IOBUF a, const char *buf, char delim)
    LDAP server are close enough in output so the same function can
    parse them both. */
 
-static int 
+int 
 parse_hkp_index(IOBUF buffer,char *line)
 {
   static int open=0,revoked=0;
@@ -396,7 +398,7 @@ parse_hkp_index(IOBUF buffer,char *line)
   static u32 bits,createtime;
   int ret=0;
 
-  /*  printf("Open %d, LINE: \"%s\", uid: %s\n",open,line,uid); */
+  /* printf("Open %d, LINE: \"%s\", uid: %s\n",open,line,uid); */
 
   dehtmlize(line);
 
@@ -524,12 +526,49 @@ parse_hkp_index(IOBUF buffer,char *line)
   return ret;
 }
 
-int search_key(char *searchkey)
+void
+handle_old_hkp_index(IOBUF input)
+{
+  int ret,rc,count=0;
+  unsigned int maxlen=1024,buflen=0;
+  byte *line=NULL;
+  IOBUF buffer=iobuf_temp();
+
+  do
+    {
+      /* This is a judgement call.  Is it better to slurp up all the
+	 results before prompting the user?  On the one hand, it
+	 probably makes the keyserver happier to not be blocked on
+	 sending for a long time while the user picks a key.  On the
+	 other hand, it might be nice for the server to be able to
+	 stop sending before a large search result page is
+	 complete. */
+
+      rc=iobuf_read_line(input,&line,&buflen,&maxlen);
+
+      ret=parse_hkp_index(buffer,line);
+      if(ret==-1)
+	break;
+
+      if(rc!=0)
+	count+=ret;
+    }
+  while(rc!=0);
+
+  m_free(line);
+
+  if(ret>-1)
+    fprintf(output,"COUNT %d\n%s",count,iobuf_get_temp_buffer(buffer));
+
+  iobuf_close(buffer);
+}
+
+int
+search_key(char *searchkey)
 {
   int max=0,len=0,ret=-1,rc;
   struct http_context hd;
   char *search=NULL,*request=searchkey;
-  byte *line=NULL;
 
   fprintf(output,"SEARCH %s BEGIN\n",searchkey);
 
@@ -573,7 +612,7 @@ int search_key(char *searchkey)
       return -1;
     }
 
-  sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=index&search=%s",
+  sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=index&options=mr&search=%s",
 	  host,port[0]?":":"",port[0]?port:"",search);
 
  if(verbose>2)
@@ -588,44 +627,27 @@ int search_key(char *searchkey)
   else
     {
       unsigned int maxlen=1024,buflen=0;
-      int count=1;
-      IOBUF buffer;
+      byte *line=NULL;
 
-      buffer=iobuf_temp();
+      /* Is it a pksd that knows how to handle machine-readable
+         format? */
 
-      rc=1;
+      rc=iobuf_read_line(hd.fp_read,&line,&buflen,&maxlen);
+      if(line[0]=='<')
+	handle_old_hkp_index(hd.fp_read);
+      else
+	do
+	  {
+	    fprintf(output,"%s",line);
+	    rc=iobuf_read_line(hd.fp_read,&line,&buflen,&maxlen);
+	  }
+	while(rc!=0);
 
-      while(rc!=0)
-	{
-	  /* This is a judgement call.  Is it better to slurp up all
-             the results before prompting the user?  On the one hand,
-             it probably makes the keyserver happier to not be blocked
-             on sending for a long time while the user picks a key.
-             On the other hand, it might be nice for the server to be
-             able to stop sending before a large search result page is
-             complete. */
-
-	  rc=iobuf_read_line(hd.fp_read,&line,&buflen,&maxlen);
-
-	  ret=parse_hkp_index(buffer,line);
-	  if(ret==-1)
-	    break;
-
-	  if(rc!=0)
-	    count+=ret;
-	}
+      m_free(line);
 
       http_close(&hd);
 
-      count--;
-
-      if(ret>-1)
-	fprintf(output,"COUNT %d\n%s",count,iobuf_get_temp_buffer(buffer));
-
       fprintf(output,"SEARCH %s END\n",searchkey);
-
-      iobuf_close(buffer);
-      m_free(line);
 
       ret=0;
     }
@@ -636,7 +658,8 @@ int search_key(char *searchkey)
   return ret;
 }
 
-int main(int argc,char *argv[])
+int
+main(int argc,char *argv[])
 {
   int arg,action=-1,ret=KEYSERVER_INTERNAL_ERROR;
   char line[MAX_LINE];

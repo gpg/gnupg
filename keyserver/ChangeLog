@@ -1,3 +1,10 @@
+2002-09-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c: (search_key, handle_old_hkp_index): Try and
+	request a machine-readable key index.  If the server supports
+	this, pass it through.  If the server does not support it, parse
+	the "index" page.
+
 2002-09-12  Stefan Bellon  <sbellon@sbellon.de>
 
 	* gpgkeys_hkp.c: Tidied up RISC OS initializations.
