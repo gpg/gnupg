@@ -1,3 +1,7 @@
+2004-09-09  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Check for readline.
+
 2004-07-27  Werner Koch  <wk@g10code.de>
 
 	* configure.ac (AM_GNU_GETTEXT_VERSION): New.

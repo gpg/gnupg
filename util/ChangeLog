@@ -1,5 +1,7 @@
 2004-09-09  Werner Koch  <wk@g10code.com>
 
+	* ttyio.c (tty_get): Add readline support.
+
 	* iobuf.c (iobuf_skip_rest): New.  Orginal patch by Florian
 	Weimer.  Added new argument PARTIAL.
 

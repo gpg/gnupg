@@ -1,5 +1,6 @@
 /* signal.c - signal handling
- * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -26,6 +27,10 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#ifdef HAVE_READLINE_READLINE_H
+#include <readline/readline.h>
+#include <readline/history.h>
+#endif
 
 #include "options.h"
 #include "errors.h"
@@ -67,17 +72,6 @@ init_one_signal (int sig, RETSIGTYPE (*handler)(int), int check_ign )
 #endif /*!HAVE_DOSISH_SYSTEM*/
 }
 
-static const char *
-get_signal_name( int signum )
-{
-#if defined(SYS_SIGLIST_DECLARED) && defined(NSIG)
-    return (signum >= 0 && signum < NSIG) ? sys_siglist[signum] : "?";
-#else
-    return "some signal";
-#endif
-}
-
-
 static RETSIGTYPE
 got_fatal_signal( int sig )
 {
@@ -88,14 +82,33 @@ got_fatal_signal( int sig )
     caught_fatal_sig = 1;
 
     secmem_term();
-    /* better don't transtale these messages */
+
+#if defined(HAVE_READLINE_READLINE_H) && defined(HAVE_LIBREADLINE)
+    rl_free_line_state ();
+    rl_cleanup_after_signal ();
+#endif
+
+    /* Better don't translate these messages. */
     write(2, "\n", 1 );
     s = log_get_name(); if( s ) write(2, s, strlen(s) );
     write(2, ": ", 2 );
-    s = get_signal_name(sig); write(2, s, strlen(s) );
+
+#if defined(HAVE_DECL_SYS_SIGLIST) && defined(NSIG)
+    s = (sig >= 0 && sig < NSIG) ? sys_siglist[sig] : "?";
+    write (2, s, strlen(s) );
+#else
+    write (2, "signal ", 7 );
+    if (sig < 0 || sig >=100)
+        write (2, "?", 1);
+    else {
+        if (sig >= 10)
+            write (2, "0123456789"+(sig/10), 1 );
+        write (2, "0123456789"+(sig%10), 1 );
+    }
+#endif
     write(2, " caught ... exiting\n", 20 );
 
-    /* reset action to default action and raise signal again */
+    /* Reset action to default action and raise signal again. */
     init_one_signal (sig, SIG_DFL, 0);
     remove_lockfiles ();
 #ifdef __riscos__

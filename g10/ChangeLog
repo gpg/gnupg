@@ -1,5 +1,10 @@
 2004-09-09  Werner Koch  <wk@g10code.com>
 
+	* signal.c (got_fatal_signal): Do readline cleanup.  Print signal
+	number if we can't print the name. Use new autoconf macro
+	HAVE_DECL_SYS_SIGLIST.
+	(get_signal_name): Removed.
+
 	* photoid.c: Include ttyio.h.
 
 	* parse-packet.c (skip_rest): Removed.  Changed all callers to use

@@ -706,6 +706,7 @@ dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(unistd.h langinfo.h termio.h locale.h getopt.h)
 
+
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
@@ -1083,6 +1084,11 @@ if test "$card_support" = yes; then
 fi
 AC_SUBST(LIBUSB_LIBS)
 
+#
+# Check for readline support
+#
+AC_CHECK_LIB(readline, add_history)
+AC_CHECK_HEADERS([readline/readline.h])
 
 
 # Allow users to append something to the version string without

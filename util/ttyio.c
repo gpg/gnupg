@@ -1,5 +1,6 @@
 /* ttyio.c -  tty i/O functions
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -45,6 +46,11 @@
 #endif
 #include <errno.h>
 #include <ctype.h>
+#ifdef HAVE_READLINE_READLINE_H
+#include <readline/readline.h>
+#include <readline/history.h>
+#endif
+
 #include "util.h"
 #include "memory.h"
 #include "ttyio.h"
@@ -156,6 +162,10 @@ init_ttyfp(void)
                   tty_get_ttyname (), strerror(errno) );
 	exit(2);
     }
+#if defined(HAVE_READLINE_READLINE_H) && defined(HAVE_LIBREADLINE)
+    rl_catch_signals = 0;
+    rl_instream = rl_outstream = ttyfp;
+#endif
 #endif
 #ifdef HAVE_TCGETATTR
     atexit( cleanup );
@@ -502,7 +512,40 @@ do_get( const char *prompt, int hidden )
 char *
 tty_get( const char *prompt )
 {
-    return do_get( prompt, 0 );
+#if defined(HAVE_READLINE_READLINE_H) && defined(HAVE_LIBREADLINE)
+    if (!batchmode && !no_terminal) {
+      char *line;
+      char *buf;
+
+      if( !initialized )
+	init_ttyfp();
+
+      last_prompt_len = 0;
+
+      line = readline (prompt?prompt:"");
+
+      /* We need to copy it to memory controlled by our malloc
+         implementations; further we need to convert an EOF to our
+         convention. */
+      buf = m_alloc(line? strlen(line)+1:2);
+      if (line)
+        {
+          strcpy (buf, line);
+          trim_spaces (buf);
+          if (strlen (buf) > 2 )
+            add_history (line); /* Note that we test BUF but add LINE. */
+          free (line);
+        }
+      else
+        {
+          buf[0] = CONTROL_D;
+          buf[1] = 0;
+        }
+      return buf;
+    }
+    else
+#endif /* HAVE_READLINE_READLINE_H && HAVE_LIBREADLINE */
+      return do_get( prompt, 0 );
 }
 
 char *

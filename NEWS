@@ -1,6 +1,9 @@
 Noteworthy changes in version 1.3.6 (2004-05-22)
 ------------------------------------------------
 
+    * Readline support at all prompt if the systems provides a
+      readline library.
+
     * New --keyid-format option that selects short (99242560), long
       (DB698D7199242560), 0xshort (0x99242560), or 0xlong
       (0xDB698D7199242560) keyid displays.  This lets users tune the
