@@ -1,3 +1,8 @@
+2002-11-13  Stefan Bellon  <sbellon@sbellon.de>
+
+	* getkey.c (get_pubkey_byfprint_fast): Fixed type incompatibility,
+	was unsigned char instead of byte.
+
 2002-11-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (show_key_with_all_names_colon): Make --with-colons

@@ -920,7 +920,7 @@ get_pubkey_byfprint_fast (PKT_public_key *pk,
   int rc = 0;
   KEYDB_HANDLE hd;
   KBNODE keyblock;
-  unsigned char fprbuf[MAX_FINGERPRINT_LEN];
+  byte fprbuf[MAX_FINGERPRINT_LEN];
   int i;
   
   for (i=0; i < MAX_FINGERPRINT_LEN && i < fprint_len; i++)
