@@ -506,6 +506,7 @@ hextobyte( const byte *s )
  *  6 = word match mode
  * 10 = it is a short KEYID (don't care about keyid[0])
  * 11 = it is a long  KEYID
+ * 12 = it is a trustdb index (keyid is looked up)
  * 16 = it is a 16 byte fingerprint
  * 20 = it is a 20 byte fingerprint
  *
@@ -624,7 +625,12 @@ classify_user_id( const char *name, u32 *keyid, byte *fprint,
 	s++;
     }
     else if( *s == '#' ) { /* use local id */
-	return 0;
+	mode = 12;
+	s++;
+	if( keyid ) {
+	    if( keyid_from_lid( strtoul( s, NULL, 10), keyid ) )
+		keyid[0] = keyid[1] = 0;
+	}
     }
     else if( !*s )  /* empty string */
 	return 0;
@@ -1561,54 +1567,6 @@ finish_lookup_sk( KBNODE keyblock, PKT_secret_key *sk, KBNODE k, int primary )
 }
 
 
-/****** old code from lookup_read ******/
-#if 0 /* can't use it anymore - invent a more general approach */
-    /* try the quick functions */
-    if( !ctx->count ) {
-	k = NULL;
-	switch( ctx->mode ) {
-	  case 10:
-	  case 11:
-	    rc = locate_keyblock_by_keyid( &ctx->kbpos, ctx->keyid,
-							ctx->mode==10, 0 );
-	    if( !rc )
-		rc = read_keyblock( &ctx->kbpos, &ctx->keyblock );
-	    if( !rc )
-		k = find_by_keyid( ctx->keyblock, pk, ctx->keyid, ctx->mode );
-	    break;
-
-	  case 16:
-	  case 20:
-	    rc = locate_keyblock_by_fpr( &ctx->kbpos, ctx->name, ctx->mode, 0 );
-	    if( !rc )
-		rc = read_keyblock( &ctx->kbpos, &ctx->keyblock );
-	    if( !rc )
-		k = find_by_fpr( ctx->keyblock, pk, ctx->name, ctx->mode );
-	    break;
-
-	  default: rc = G10ERR_UNSUPPORTED;
-	}
-	if( !rc ) {
-	    if( !k ) {
-		log_error("lookup: key has been located but was not found\n");
-		rc = G10ERR_INV_KEYRING;
-	    }
-	    else
-		finish_lookup( ctx->keyblock, pk, k, namehash, 0, ctx->primary );
-	}
-    }
-    else
-	rc = G10ERR_UNSUPPORTED;
-
-    /* if this was not possible, loop over all keyblocks
-     * fixme: If one of the resources in the quick functions above
-     *	      works, but the key was not found, we will not find it
-     *	      in the other resources */
-    if( rc == G10ERR_UNSUPPORTED ) {
-    }
-#endif
-
-
 static int
 lookup_pk( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock )
 {
@@ -1636,7 +1594,7 @@ lookup_pk( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock )
 		    k = find_by_name( ctx->keyblock, pk,
 				      item->name, item->mode,
 				      namehash, &use_namehash );
-		else if( item->mode == 10 || item->mode == 11 )
+		else if( item->mode >= 10 && item->mode <= 12 )
 		    k = find_by_keyid( ctx->keyblock, pk,
 				       item->keyid, item->mode );
 		else if( item->mode == 15 )
@@ -1723,7 +1681,7 @@ lookup_sk( GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_keyblock )
 		if( item->mode < 10 )
 		    k = find_by_name_sk( ctx->keyblock, sk,
 					 item->name, item->mode );
-		else if( item->mode == 10 || item->mode == 11 )
+		else if( item->mode >= 10 && item->mode <= 12 )
 		    k = find_by_keyid_sk( ctx->keyblock, sk,
 					  item->keyid, item->mode );
 		else if( item->mode == 15 )
@@ -1764,143 +1722,6 @@ lookup_sk( GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_keyblock )
     return rc;
 }
 
-
-#if 0
-OLD/************
-OLD * Ditto for secret keys WORK!!!!!!
-OLD */
-OLDstatic int
-OLDlookup_sk( PKT_secret_key *sk, int mode,  u32 *keyid, const char *name,
-OLD	      int primary )
-OLD{
-OLD    int rc;
-OLD    KBNODE keyblock = NULL;
-OLD    KBPOS kbpos;
-OLD    int oldmode = set_packet_list_mode(0);
-OLD
-OLD    rc = enum_keyblocks( 5 /* open secret */, &kbpos, &keyblock );
-OLD    if( rc ) {
-OLD	   if( rc == -1 )
-OLD	       rc = G10ERR_NO_SECKEY;
-OLD	   else if( rc )
-OLD	       log_error("enum_keyblocks(open secret) failed: %s\n", g10_errstr(rc) );
-OLD	   goto leave;
-OLD    }
-OLD
-OLD    while( !(rc = enum_keyblocks( 1, &kbpos, &keyblock )) ) {
-OLD	   KBNODE k, kk;
-OLD	   if( mode < 10 ) { /* name lookup */
-OLD	       for(k=keyblock; k; k = k->next ) {
-OLD		   if( k->pkt->pkttype == PKT_USER_ID
-OLD		       && !compare_name( k->pkt->pkt.user_id->name,
-OLD					 k->pkt->pkt.user_id->len, name, mode)) {
-OLD		       /* we found a matching name, look for the key */
-OLD		       for(kk=keyblock; kk; kk = kk->next ) {
-OLD			   if( (    kk->pkt->pkttype == PKT_SECRET_KEY
-OLD				 || kk->pkt->pkttype == PKT_SECRET_SUBKEY )
-OLD			       && ( !sk->pubkey_algo
-OLD				    || sk->pubkey_algo
-OLD				       == kk->pkt->pkt.secret_key->pubkey_algo)
-OLD			       && ( !sk->pubkey_usage
-OLD				    || !check_pubkey_algo2(
-OLD					  kk->pkt->pkt.secret_key->pubkey_algo,
-OLD							      sk->pubkey_usage ))
-OLD			     )
-OLD			       break;
-OLD		       }
-OLD		       if( kk ) {
-OLD			   u32 aki[2];
-OLD			   keyid_from_sk( kk->pkt->pkt.secret_key, aki );
-OLD			   cache_user_id( k->pkt->pkt.user_id, aki );
-OLD			   k = kk;
-OLD			   break;
-OLD		       }
-OLD		       else
-OLD			   log_error("No key for userid (in sk)\n");
-OLD		   }
-OLD	       }
-OLD	   }
-OLD	   else { /* keyid or fingerprint lookup */
-OLD	       if( DBG_CACHE && (mode== 10 || mode==11) ) {
-OLD		   log_debug("lookup_sk keyid=%08lx%08lx req_algo=%d mode=%d\n",
-OLD				   (ulong)keyid[0], (ulong)keyid[1],
-OLD				    sk->pubkey_algo, mode );
-OLD	       }
-OLD	       for(k=keyblock; k; k = k->next ) {
-OLD		   if(	  k->pkt->pkttype == PKT_SECRET_KEY
-OLD		       || k->pkt->pkttype == PKT_SECRET_SUBKEY ) {
-OLD		       if( mode == 10 || mode == 11 ) {
-OLD			   u32 aki[2];
-OLD			   keyid_from_sk( k->pkt->pkt.secret_key, aki );
-OLD			   if( DBG_CACHE ) {
-OLD			       log_debug("             aki=%08lx%08lx algo=%d\n",
-OLD					       (ulong)aki[0], (ulong)aki[1],
-OLD				       k->pkt->pkt.secret_key->pubkey_algo    );
-OLD			   }
-OLD			   if( aki[1] == keyid[1]
-OLD			       && ( mode == 10 || aki[0] == keyid[0] )
-OLD			       && ( !sk->pubkey_algo
-OLD				    || sk->pubkey_algo
-OLD				       == k->pkt->pkt.secret_key->pubkey_algo) ){
-OLD			       /* cache the userid */
-OLD			       for(kk=keyblock; kk; kk = kk->next )
-OLD				   if( kk->pkt->pkttype == PKT_USER_ID )
-OLD				       break;
-OLD			       if( kk )
-OLD				   cache_user_id( kk->pkt->pkt.user_id, aki );
-OLD			       else
-OLD				   log_error("No userid for key\n");
-OLD			       break; /* found */
-OLD			   }
-OLD		       }
-OLD		       else if( mode == 15 ) { /* get the first key */
-OLD			   if( !sk->pubkey_algo
-OLD			       || sk->pubkey_algo
-OLD				     == k->pkt->pkt.secret_key->pubkey_algo )
-OLD			       break;
-OLD		       }
-OLD		       else if( mode == 16 || mode == 20 ) {
-OLD			   size_t an;
-OLD			   byte afp[MAX_FINGERPRINT_LEN];
-OLD
-OLD			   fingerprint_from_sk(k->pkt->pkt.secret_key, afp, &an );
-OLD			   if( an == mode && !memcmp( afp, name, an)
-OLD			       && ( !sk->pubkey_algo
-OLD				    || sk->pubkey_algo
-OLD				       == k->pkt->pkt.secret_key->pubkey_algo) ) {
-OLD			       break;
-OLD			   }
-OLD		       }
-OLD		       else
-OLD			   BUG();
-OLD		   } /* end compare secret keys */
-OLD	       }
-OLD	   }
-OLD	   if( k ) { /* found */
-OLD	       assert(	  k->pkt->pkttype == PKT_SECRET_KEY
-OLD		       || k->pkt->pkttype == PKT_SECRET_SUBKEY );
-OLD	       assert( keyblock->pkt->pkttype == PKT_SECRET_KEY );
-OLD	       if( primary && !sk->pubkey_usage )
-OLD		   copy_secret_key( sk, keyblock->pkt->pkt.secret_key );
-OLD	       else
-OLD		   copy_secret_key( sk, k->pkt->pkt.secret_key );
-OLD	       break; /* enumeration */
-OLD	   }
-OLD	   release_kbnode( keyblock );
-OLD	   keyblock = NULL;
-OLD    }
-OLD    if( rc == -1 )
-OLD	   rc = G10ERR_NO_SECKEY;
-OLD    else if( rc )
-OLD	   log_error("enum_keyblocks(read) failed: %s\n", g10_errstr(rc));
-OLD
-OLD  leave:
-OLD    enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
-OLD    release_kbnode( keyblock );
-OLD    set_packet_list_mode(oldmode);
-OLD    return rc;
-OLD}
-#endif
 
 
 /****************

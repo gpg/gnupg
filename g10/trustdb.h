@@ -49,8 +49,8 @@ void register_trusted_key( const char *string );
 void check_trustdb( const char *username );
 void update_trustdb( void );
 int init_trustdb( int level, const char *dbname );
-int check_trust( PKT_public_key *pk, unsigned *r_trustlevel );
-int query_trust_info( PKT_public_key *pk );
+int check_trust( PKT_public_key *pk, unsigned *r_trustlevel, const byte* nh );
+int query_trust_info( PKT_public_key *pk, const byte *nh );
 int enum_cert_paths( void **context, ulong *lid,
 		     unsigned *ownertrust, unsigned *validity );
 void enum_cert_paths_print( void **context, FILE *fp,

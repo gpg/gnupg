@@ -1,4 +1,6 @@
 
+  * Finish the EGD module.
+
   * Implement 256 bit key Twofish.
 
   * Check revocation and expire stuff.	[I'm currently working on this.]
@@ -20,6 +22,7 @@
 
 Nice to have
 ------------
+  * Do a real fix for bug #7 or document that it is a PGP 5 error.
   * clearsig: Keep lineendings while writing the output of a clearsig
   * preferences of hash algorithms are not yet used.
   * new menu to delete signatures and list signature in menu

@@ -50,7 +50,7 @@ show_paths( ulong lid, int only_first )
     last_level = 0;
     while( (level=enum_cert_paths( &context, &lid, &otrust, &validity)) != -1){
 	char *p;
-	int rc;
+	int c, rc;
 	size_t n;
 	u32 keyid[2];
 	PKT_public_key *pk ;
@@ -77,7 +77,7 @@ show_paths( ulong lid, int only_first )
 		  level*2, "",
 		  nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
 		  (ulong)keyid[1], lid, datestr_from_pk( pk ) );
-     #if 0
+
 	c = trust_letter(otrust);
 	if( c )
 	    putchar( c );
@@ -90,8 +90,6 @@ show_paths( ulong lid, int only_first )
 	else
 	    printf( "%02x", validity );
 	putchar(' ');
-      #endif
-
 
 	p = get_user_id( keyid, &n );
 	tty_print_string( p, n ),
@@ -230,7 +228,6 @@ _("Could not find a valid trust path to the key.  Let's see whether we\n"
     }
 
     lid = pk->local_id;
-  #if 0  /* FIXME: enable this when trustdb stuff works again */
     while( enum_cert_paths( &context, &lid, &otrust, &validity ) != -1 ) {
 	if( lid == pk->local_id )
 	    continue;
@@ -242,6 +239,7 @@ _("Could not find a valid trust path to the key.  Let's see whether we\n"
 	     * those values from then on
 	     */
 	    otrust = get_ownertrust( lid );
+	    /* fixme: and the validity? */
 	}
 	if( otrust == TRUST_UNDEFINED ) {
 	    any_undefined=1;
@@ -257,7 +255,6 @@ _("Could not find a valid trust path to the key.  Let's see whether we\n"
 	}
     }
     enum_cert_paths( &context, NULL, NULL, NULL ); /* release context */
-  #endif
 
     if( !any )
 	tty_printf(_("No path leading to one of our keys found.\n\n") );
@@ -298,12 +295,14 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 						      g10_errstr(rc) );
 	    return 0; /* no */
 	}
-	rc = check_trust( pk, &trustlevel );
+	rc = check_trust( pk, &trustlevel, NULL );
 	if( rc )
 	    log_fatal("trust check after insert failed: %s\n",
 						      g10_errstr(rc) );
-	if( trustlevel == TRUST_UNKNOWN || trustlevel == TRUST_EXPIRED )
-	    BUG();
+	if( trustlevel == TRUST_UNKNOWN || trustlevel == TRUST_EXPIRED ) {
+	    log_debug("do_we_trust: oops at %d\n", __LINE__ );
+	    return 0;
+	}
 	return do_we_trust( pk, trustlevel );
 
       case TRUST_EXPIRED:
@@ -320,7 +319,7 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 
 	    rc = add_ownertrust( pk, &quit );
 	    if( !rc && !quit ) {
-		rc = check_trust( pk, &trustlevel );
+		rc = check_trust( pk, &trustlevel, NULL );
 		if( rc )
 		    log_fatal("trust check after add_ownertrust failed: %s\n",
 							      g10_errstr(rc) );
@@ -431,7 +430,7 @@ check_signatures_trust( PKT_signature *sig )
     }
 
   retry:
-    rc = check_trust( pk, &trustlevel );
+    rc = check_trust( pk, &trustlevel, NULL );
     if( rc ) {
 	log_error("check trust failed: %s\n", g10_errstr(rc));
 	goto leave;
@@ -452,7 +451,7 @@ check_signatures_trust( PKT_signature *sig )
 						      g10_errstr(rc) );
 	    goto leave;
 	}
-	rc = check_trust( pk, &trustlevel );
+	rc = check_trust( pk, &trustlevel, NULL );
 	if( rc )
 	    log_fatal("trust check after insert failed: %s\n",
 						      g10_errstr(rc) );
@@ -592,7 +591,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) {
 		int trustlevel;
 
-		rc = check_trust( pk, &trustlevel );
+		rc = check_trust( pk, &trustlevel, NULL );
 		if( rc ) {
 		    log_error("error checking pk of `%s': %s\n",
 						      answer, g10_errstr(rc) );
@@ -631,7 +630,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
 		int trustlevel;
 
-		rc = check_trust( pk, &trustlevel );
+		rc = check_trust( pk, &trustlevel, NULL );
 		if( rc ) {
 		    free_public_key( pk ); pk = NULL;
 		    log_error(_("%s: error checking key: %s\n"),
@@ -712,7 +711,7 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
 
 	memset( mask, 0, 8 * sizeof *mask );
 	if( !pkr->pk->local_id ) { /* try to set the local id */
-	    query_trust_info( pkr->pk );
+	    query_trust_info( pkr->pk, NULL );
 	    if( !pkr->pk->local_id ) {
 		log_debug("select_algo_from_prefs: can't get LID\n");
 		continue;

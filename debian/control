@@ -8,16 +8,16 @@ Package: gnupg
 Architecture: any
 Depends: ${shlibs:Depends}
 Description: GNU privacy guard - a free PGP replacement.
- GNUPG is the GNU encryption and signing tool.  As you can see from the 
- version number, the program may have some bugs and some features may not 
+ GnuPG is the GNU encryption and signing tool.	As you can see from the
+ version number, the program may have some bugs and some features may not
  work at all.
  .
- Due to the fact that GNUPG does not use use any patented algorithm,
+ Due to the fact that GnuPG does not use use any patented algorithm,
  it cannot be compatible to old PGP versions, because those use
  IDEA (which is worldwide patented) and RSA (which is patented in
- the United States until Sep 20, 2000).  
+ the United States until Sep 20, 2000).
  .
- GNUPG is in almost all aspects compatible with other OpenPGP
- implementations. The default algorithms are DSA and ELGamal.  
+ GnuPG is in almost all aspects compatible with other OpenPGP
+ implementations. The default algorithms are DSA and ELGamal.
  Symmetric algorithms are: Blowfish and CAST5, Digest algorithms are
  MD5, RIPEMD160, SHA1 and TIGER/192.

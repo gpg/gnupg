@@ -32,7 +32,7 @@
 #include "cipher.h"
 #include "dynload.h"
 
-#ifdef DLSYM_NEEDS_UNDERSCORE
+#ifdef WITH_SYMBOL_UNDERSCORE
   #define SYMBOL_VERSION "_gnupgext_version"
   #define SYMBOL_ENUM	 "_gnupgext_enum_func"
 #else

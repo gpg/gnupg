@@ -196,7 +196,7 @@ list_keyblock( KBNODE keyblock, int secret )
 	sk = NULL;
 	keyid_from_pk( pk, keyid );
 	if( opt.with_colons ) {
-	    trustletter = query_trust_info( pk );
+	    trustletter = query_trust_info( pk, NULL );
 	    printf("pub:%c:%u:%d:%08lX%08lX:%s:%s:",
 		    trustletter,
 		    nbits_from_pk( pk ),
@@ -222,8 +222,15 @@ list_keyblock( KBNODE keyblock, int secret )
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	if( node->pkt->pkttype == PKT_USER_ID ) {
 	    if( any ) {
-		if( opt.with_colons )
-		    printf("uid:::::::::");
+		if( opt.with_colons ) {
+		    byte namehash[20];
+
+		    rmd160_hash_buffer( namehash,
+					node->pkt->pkt.user_id->name,
+					node->pkt->pkt.user_id->len  );
+		    trustletter = query_trust_info( pk, namehash );
+		    printf("uid:%c::::::::", trustletter);
+		}
 		else
 		    printf("uid%*s", 28, "");
 	    }

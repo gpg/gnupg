@@ -4,4 +4,40 @@
 (format: severity: [  *] to [***], no, first reported, by, version)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+[***] #2  1999-02-21
+    Problem while importing or deleting public keys in 0.9.3 - 0.9.2
+    worked fine.  Error message:
+    gpg:[stdin]: key A6A59DB9: secret key not found: public key not found
+    FIX: 1999-02-22 wk
+
+[  *] #7 1999-02-22 <dwpalmer@dwpalm.jf.intel.com> 0.9.3
+    Conventional encrytion incompatibilty:
+     $ gpg -c --cipher-algo cast5 --compress-algo 1 --no-comment secrets.txt
+    Creates a file that gpg can decrypt, but PGP 5.5 has problems with it.
+    PGP decrypts 6416k out of 6424k, then complains with "PGP Warning",
+    "The keyring contains a bad (corrupted) PGP packet".  The resulting
+    file is missing information from the front.
+    FIX: 1999-02-26 temporary fix in encrypt_simple()
+
+
+[  *] #8 1999-02-25 <kazu@iijlab.net> 0.9.3
+    %gpg --encrypt -r kazu@iijlab.net --batch foo
+    gpg: Warning: using insecure memory!
+    gpg: 11C23F61: no info to calculate a trust probability
+    This creates a symmetrically encrypted message WITHOUT a session key
+    encrypted with public cryptographic(i.e. foo.gpg). This is probably
+    FIX: 199-02-26 wk
+
+[ **] #9 1999-02-25
+    Misalignment in md5.c#md5_write.
+    FIX: 1999-02-26 wk
+
+[ **] #10 1999-03-01
+    Armor detection code is broken.  Direct import of keyrings is not possible.
+    FIX: 1999-03-02 wk
+
+[***] #11 1999-02-25
+    "cipher algo 10 not found".
+    FIX: 1999-02-25 wk
+
 

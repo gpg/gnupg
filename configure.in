@@ -171,7 +171,7 @@ case "${target}" in
 esac
 
 AC_SUBST(MPI_OPT_FLAGS)
-
+AM_SYS_SYMBOL_UNDERSCORE
 GNUPG_CHECK_PIC
 GNUPG_CHECK_RDYNAMIC
 if test "$NO_PIC" = yes; then
@@ -241,9 +241,6 @@ if test "$try_dynload" = yes ; then
       AC_DEFINE(USE_DYNAMIC_LINKING)
       AC_DEFINE(HAVE_DL_DLOPEN)
       DYNLINK_LDFLAGS="$CFLAGS_RDYNAMIC"
-      dnl fixme: this is probably false but it should
-      dnl work for freebsd
-      AC_DEFINE(DLSYM_NEEDS_UNDERSCORE)
       use_gnupg_extensions=yes
 dnl else
 dnl
@@ -429,10 +426,8 @@ echo '}' >>cipher/construct.c
 dnl
 dnl Figure how to link the cipher modules
 dnl
-dnl (form now these are only dynamic)
 AC_SUBST(STATIC_CIPHER_OBJS)
 AC_SUBST(DYNAMIC_CIPHER_MODS)
-
 
 
 dnl setup assembler stuff

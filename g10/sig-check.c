@@ -76,7 +76,7 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 	MD_HANDLE md;
 	u32 a = sig->timestamp;
 	int i, nsig = pubkey_get_nsig( sig->pubkey_algo );
-	byte *p;
+	byte *p, *buffer;
 
 	md = md_open( DIGEST_ALGO_RMD160, 0);
 	md_putc( digest, sig->pubkey_algo );
@@ -96,7 +96,10 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 	}
 	md_final( md );
 	p = make_radix64_string( md_read( md, 0 ), 20 );
-	write_status_text( STATUS_SIG_ID, p );
+	buffer = m_alloc( strlen(p) + 40 );
+	sprintf( buffer, "%s %s", p, strtimestamp( sig->timestamp ) );
+	write_status_text( STATUS_SIG_ID, buffer );
+	m_free(buffer);
 	m_free(p);
 	md_close(md);
     }

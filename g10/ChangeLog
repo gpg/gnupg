@@ -1,3 +1,17 @@
+Mon Mar  8 20:47:17 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* getkey.c (classify_user_id): Add new mode 12 (#<lid>).
+
+	* seckey-cert.c (check_secret_key): replaced error by info.
+
+	* trustdb.c (query_trust_info): Add another arg, changed all callers.
+	(check_trust): Ditto.
+	(do_check): Ditto.
+	(verify_key): Handle namehash.
+	* keylist.c (list_keyblock): print trust info for user ids.
+
+	* sig-check.c (signature_check): Add sig-created to status output.
+
 Tue Mar  2 16:44:57 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* textfilter.c (copy_clearsig_text): New.

@@ -481,7 +481,7 @@ list_node( CTX c, KBNODE node )
 	    keyid_from_pk( pk, keyid );
 	    if( mainkey ) {
 		c->local_id = pk->local_id;
-		c->trustletter = query_trust_info( pk );
+		c->trustletter = query_trust_info( pk, NULL );
 	    }
 	    printf("%s:%c:%u:%d:%08lX%08lX:%s:%s:",
 		    mainkey? "pub":"sub",

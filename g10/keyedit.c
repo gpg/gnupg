@@ -889,7 +889,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 	    if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
 		/* do it here, so that debug messages don't clutter the
 		 * output */
-		trust = query_trust_info(pk);
+		trust = query_trust_info(pk, NULL);
 		otrust = get_ownertrust_info( pk->local_id );
 	    }
 

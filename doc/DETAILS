@@ -64,12 +64,12 @@ more arguments in future versions.
 	as GOODSIG but has the fingerprint as the argument. Both
 	status lines ere emitted for a good signature.
 
-    SIG_ID  <radix64_string>
+    SIG_ID  <radix64_string>  <sig_creation_date>
 	This is emitted only for signatures which
 	have been verified okay.  The string is a signature id
 	and may be used in applications to detect replay attacks
 	of signed messages.  Note that only DLP algorithms give
-	unique ids - others may yoild duplicated ones when they
+	unique ids - others may yield duplicated ones when they
 	have been created in the same second.
 
     TRUST_UNDEFINED

@@ -1,3 +1,10 @@
+gnupg (0.9.4) unstable; urgency=low
+
+  * New version.
+  * debian/control: s/GNUPG/GnuPG/
+
+ -- Werner Koch <wk@isil.d.suttle.de>  Mon, 8 Mar 1999 19:58:28 +0100
+
 gnupg (0.9.2-1) unstable; urgency=low
 
   * New version.

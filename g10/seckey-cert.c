@@ -173,7 +173,7 @@ check_secret_key( PKT_secret_key *sk, int n )
 
     for(i=0; i < n && rc == G10ERR_BAD_PASS; i++ ) {
 	if( i )
-	    log_error(_("Invalid passphrase; please try again ...\n"));
+	    log_info(_("Invalid passphrase; please try again ...\n"));
 	rc = do_check( sk );
 	if( have_static_passphrase() )
 	    break;

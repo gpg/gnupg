@@ -12,12 +12,12 @@ echo '/* created by config.links - do not edit */' >./mpi/asm-syntax.h
 
 if test "$try_asm_modules" = "yes" ; then
 case "${target}" in
-    i[34]86*-*-freebsd*-elf | i[34]86*-*-freebsd3*)
+    i[34]86*-*-freebsd*-elf | i[34]86*-*-freebsd[34]*)
        echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
        cat  $srcdir/mpi/i386/syntax.h	   >>./mpi/asm-syntax.h
        path="i386"
        ;;
-    i[56]86*-*-freebsd*-elf | i[56]86*-*-freebsd3*)
+    i[56]86*-*-freebsd*-elf | i[56]86*-*-freebsd[34]*)
        echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
        cat  $srcdir/mpi/i386/syntax.h	   >>./mpi/asm-syntax.h
        path="i586 i386"
@@ -168,22 +168,9 @@ else
 fi
 
 
-case "${target}" in
-    *-*-linuxaout* | *-*-linuxoldld* | *-*-linux-gnuoldld*)
-	needs_underscore="y"
-	;;
-    *-*-linux* | *-sysv* | *-solaris* | *-gnu* | *-freebsd*-elf)
-	needs_underscore="n"
-	;;
-    *)
-	needs_underscore="y"
-	;;
-esac
-
-
 # Make sysdep.h
 echo '/* created by config.links - do not edit */' >./mpi/sysdep.h
-if test "$needs_underscore" = "y" ; then
+if test x$ac_cv_sys_symbol_underscore = xyes; then
     cat <<EOF >>./mpi/sysdep.h
 #if __STDC__
 #define C_SYMBOL_NAME(name) _##name
