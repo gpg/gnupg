@@ -1,3 +1,8 @@
+2003-02-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Use a local copy of libexecdir along with @PACKAGE@
+	as GNUPG_LIBEXECDIR so it can be easily overridden at make time.
+
 2003-02-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* armor.c (parse_hash_header, armor_filter): Accept the new SHAs
