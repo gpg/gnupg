@@ -253,6 +253,24 @@ gpgsm_walk_cert_chain (KsbaCert start, KsbaCert *r_next)
   return rc;
 }
 
+
+/* Check whether the CERT is a root certificate.  Returns True if this
+   is the case. */
+int
+gpgsm_is_root_cert (KsbaCert cert)
+{
+  char *issuer;
+  char *subject;
+  int yes;
+
+  issuer = ksba_cert_get_issuer (cert, 0);
+  subject = ksba_cert_get_subject (cert, 0);
+  yes = (issuer && subject && !strcmp (issuer, subject));
+  xfree (issuer);
+  xfree (subject);
+  return yes;
+}
+
 
 int
 gpgsm_validate_path (KsbaCert cert)

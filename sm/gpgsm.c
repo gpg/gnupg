@@ -1239,7 +1239,7 @@ gpgsm_exit (int rc)
 void
 gpgsm_init_default_ctrl (struct server_control_s *ctrl)
 {
-  ctrl->include_certs = 1;
+  ctrl->include_certs = 1;  /* only include the signer's cert */
 }
 
 

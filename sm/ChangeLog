@@ -1,3 +1,10 @@
+2002-02-25  Werner Koch  <wk@gnupg.org>
+
+	* server.c (option_handler): Allow to use -2 for "send all certs
+	except the root cert".
+	* sign.c (add_certificate_list): Implement it here.
+	* certpath.c (gpgsm_is_root_cert): New.
+
 2002-02-19  Werner Koch  <wk@gnupg.org>
 
 	* certpath.c (check_cert_policy): New.

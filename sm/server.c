@@ -73,7 +73,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
   if (!strcmp (key, "include-certs"))
     {
       int i = *value? atoi (value) : -1;
-      if (ctrl->include_certs < -1)
+      if (ctrl->include_certs < -2)
         return ASSUAN_Parameter_Error;
       ctrl->include_certs = i;
     }
@@ -369,6 +369,10 @@ cmd_message (ASSUAN_CONTEXT ctx, char *line)
   return 0;
 }
 
+
+/* Note that the line contains a space separated list of pappern where
+   each pappern is percent escaped and spacesmay be replaced by
+   '+'. */
 static int 
 cmd_listkeys (ASSUAN_CONTEXT ctx, char *line)
 {

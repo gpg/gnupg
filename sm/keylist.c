@@ -232,6 +232,8 @@ gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
   const char *lastresname, *resname;
   int have_secret;
 
+#warning there is no key selection yet
+  /* We must take care of qouting here */
   hd = keydb_new (0);
   if (!hd)
     rc = GNUPG_General_Error;

@@ -103,7 +103,7 @@ get_default_signer (void)
 }
 
 
-/* Depending on the options in CTRL add the certifcate CERT as well as
+/* Depending on the options in CTRL add the certificate CERT as well as
    other certificate up in the chain to the Root-CA to the CMS
    object. */
 static int 
@@ -113,22 +113,34 @@ add_certificate_list (CTRL ctrl, KsbaCMS cms, KsbaCert cert)
   int rc = 0;
   KsbaCert next = NULL;
   int n;
+  int not_root = 0;
 
   ksba_cert_ref (cert);
 
   n = ctrl->include_certs;
+  if (n == -2)
+    {
+      not_root = 1;
+      n = -1;
+    }
   if (n < 0 || n > 50)
     n = 50; /* We better apply an upper bound */
 
   if (n)
     {
-      err = ksba_cms_add_cert (cms, cert);
+      if (not_root && gpgsm_is_root_cert (cert))
+        err = 0;
+      else
+        err = ksba_cms_add_cert (cms, cert);
       if (err)
         goto ksba_failure;
     }
   while ( n-- && !(rc = gpgsm_walk_cert_chain (cert, &next)) )
     {
-      err = ksba_cms_add_cert (cms, next);
+      if (not_root && gpgsm_is_root_cert (next))
+        err = 0;
+      else
+        err = ksba_cms_add_cert (cms, next);
       ksba_cert_release (cert);
       cert = next; next = NULL;
       if (err)

@@ -263,3 +263,4 @@ gpgsm_create_cms_signature (KsbaCert cert, GCRY_MD_HD md, int mdalgo,
 }
 
 
+

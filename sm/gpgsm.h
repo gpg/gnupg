@@ -170,10 +170,11 @@ int gpgsm_create_cms_signature (KsbaCert cert, GCRY_MD_HD md, int mdalgo,
 
 /*-- certpath.c --*/
 int gpgsm_walk_cert_chain (KsbaCert start, KsbaCert *r_next);
+int gpgsm_is_root_cert (KsbaCert cert);
 int gpgsm_validate_path (KsbaCert cert);
 int gpgsm_basic_cert_check (KsbaCert cert);
 
-/*-- cetrlist.c --*/
+/*-- certlist.c --*/
 int gpgsm_add_to_certlist (const char *name, CERTLIST *listaddr);
 void gpgsm_release_certlist (CERTLIST list);
 int gpgsm_find_cert (const char *name, KsbaCert *r_cert);
