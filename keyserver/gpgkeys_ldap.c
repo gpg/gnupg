@@ -177,6 +177,15 @@ int get_key(char *getkey)
   if(strncmp(getkey,"0x",2)==0)
     getkey+=2;
 
+  if(strlen(getkey)==32)
+    {
+      fprintf(console,
+	      "gpgkeys: LDAP keyservers do not support v3 fingerprints\n");
+      fprintf(output,"KEY 0x%s BEGIN\n",getkey);
+      fprintf(output,"KEY 0x%s FAILED\n",getkey);
+      return -1;
+    }
+
   if(strlen(getkey)>16)
     {
       char *offset=&getkey[strlen(getkey)-16];

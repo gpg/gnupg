@@ -1,3 +1,10 @@
+2002-02-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap (get_key): LDAP keyservers do not support v3
+	fingerprints, so error out if someone tries.  Actually, they don't
+	support any fingerprints, but at least we can calculate a keyid
+	from a v4 fingerprint.
+
 2002-02-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap: Clarify the notion of a partial failure.  This is
