@@ -408,6 +408,23 @@ md_get_algo( MD_HANDLE a )
     return 0;
 }
 
+/* Returns true if a given algo is in use in a md */
+int
+md_algo_present( MD_HANDLE a, int algo )
+{
+  struct md_digest_list_s *r=a->list;
+
+  while(r)
+    {
+      if(r->algo==algo)
+	return 1;
+
+      r=r->next;
+    }
+
+  return 0;
+}
+
 /****************
  * Return the length of the digest
  */
@@ -485,4 +502,3 @@ md_stop_debug( MD_HANDLE md )
     }
 #endif
 }
-
