@@ -24,14 +24,14 @@ min_automake_version="1.7.6"
 
 # Version number: Remember to change it immediately *after* a release.
 #                 Add a "-cvs" prefix for non-released code.
-AC_INIT(gnupg, 1.9.5-cvs, gnupg-devel@gnupg.org)
+AC_INIT(gnupg, 1.9.5, gnupg-devel@gnupg.org)
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.
 development_version=yes
 NEED_GPG_ERROR_VERSION=0.6
 NEED_LIBGCRYPT_VERSION=1.1.92
-NEED_LIBASSUAN_VERSION=0.6.3
+NEED_LIBASSUAN_VERSION=0.6.4
 NEED_KSBA_VERSION=0.9.4
 NEED_OPENSC_VERSION=0.8.0
 

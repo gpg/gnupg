@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.9.5
+Noteworthy changes in version 1.9.5 (2004-02-21)
 ------------------------------------------------
 
  * gpg-protect-tool gets now installed into libexec as it ought to be.
@@ -11,7 +11,7 @@ Noteworthy changes in version 1.9.5
    exporting of secret keys in PKCS\#12 format.
 
  * [gpgsm] The pinentry will now present a description of the key for
-   whom the passphrase is requests.
+   whom the passphrase is requested.
 
  * [gpgsm] New option --with-validation to check the validity of key
    while listing it.
