@@ -91,6 +91,10 @@
   * cat foo | gpg --sign | gpg --list-packets
     Does not list the signature packet.
 
+  * When presenting the result of a verification show the user ID with
+    the highest trust level first instead of the primary one.
+
+
 Things we won't do
 ------------------
 
