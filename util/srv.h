@@ -21,15 +21,15 @@
 #ifndef _SRV_H_
 #define _SRV_H_
 
+#ifdef USE_DNS_SRV
 #ifdef _WIN32
 #include <windows.h>
 #else
 #include <netinet/in.h>
-#ifdef HAVE_ARPA_NAMESER_H
 #include <arpa/nameser.h>
-#endif
 #include <resolv.h>
-#endif
+#endif /* !_WIN32 */
+#endif /* USE_DNS_SRV */
 #include "types.h"
 
 #ifndef MAXDNAME

@@ -1,3 +1,9 @@
+2004-12-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* srv.h: Better implementation for the SRV check.  We don't need
+	to actually check all the header files individually since the SRV
+	test compile uses them together.
+
 2004-12-20  Werner Koch  <wk@g10code.com>
 
 	* strgutil.c (handle_iconv_error): Turn diagnostics into warnings

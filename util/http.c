@@ -826,6 +826,7 @@ connect_server( const char *server, ushort port, unsigned int flags,
       srvlist=m_alloc_clear(sizeof(struct srventry));
       srvlist->port=port;
       strncpy(srvlist->target,server,MAXDNAME);
+      srvlist->target[MAXDNAME-1]='\0';
       srvcount=1;
     }
 
