@@ -1175,8 +1175,8 @@ modifications, you can use this option to disable the caching.  It
 probably does not make sense to disable it because all kind of damage
 can be done if someone else has write access to your public keyring.
 </para></listitem></varlistentry>
-<varlistentry>
 
+<varlistentry>
 <term>--no-sig-create-check</term>
 <listitem><para>
 GnuPG normally verifies each signature right after creation to protect
@@ -1187,6 +1187,7 @@ However, due to the fact that the signature creation needs manual
 interaction, this performance penalty does not matter in most settings.
 </para></listitem></varlistentry>
 
+<varlistentry>
 <term>--no-auto-check-trustdb</term>
 <listitem><para>
 If GnuPG feels that its information about the Web-of-Trust has to be

@@ -1,7 +1,8 @@
+ 
+  * getkey does not return revoked/expired keys - therefore it is not
+    possible to override it.
 
   * Selection using +wordlist does not work.
-
-  * Make the offtbl in keyring.c global.
 
   * Always use the primary key to sign other keys.
 
@@ -75,9 +76,8 @@
   * export by user-IDs does only export the first matching name which leads
     to a problem in cases where there are 2 keys with identically
     user-IDs. 
-    --> Check whether this is still true.
+    --> Check whether this is still true - yes it is.
     
-
   * With option -i prompt before adding a key to the keyring and show some
     info what we are about to add.
 
@@ -105,7 +105,6 @@ Nice to have
   * use DEL and ^H for erasing the previous character (util/ttyio.c).
     or better readline.
   * Print a warning if the directory mode is wrong.
-  * Do a real fix for bug #7 or document that it is a PGP 5 error.
   * preferences of hash algorithms are not yet used.
   * add test cases for invalid data (scrambled armor or other random data)
   * add checking of armor trailers

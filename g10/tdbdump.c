@@ -128,6 +128,7 @@ import_ownertrust( const char *fname )
     unsigned int otrust;
     byte fpr[20];
     int any = 0;
+    int rc;
 
     init_trustdb();
     if( !fname || (*fname == '-' && !fname[1]) ) {
@@ -142,7 +143,6 @@ import_ownertrust( const char *fname )
 
     while( fgets( line, DIM(line)-1, fp ) ) {
 	TRUSTREC rec;
-	int rc;
 
 	if( !*line || *line == '#' )
 	    continue;
@@ -210,6 +210,13 @@ import_ownertrust( const char *fname )
 	fclose(fp);
     
     if (any)
+      {
         revalidation_mark ();
+        rc = tdbio_sync ();
+        if (rc)
+          log_error (_("trustdb: sync failed: %s\n"), g10_errstr(rc) );
+      }
+    
 }
+
 

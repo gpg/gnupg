@@ -316,23 +316,40 @@ not be expected to successfully import such a key.
 @itemx ---fast-import @code{files}
 Import/merge keys. This adds the given keys to the
 keyring.
-The fast version does not build
+The fast version does not update
 the trustdb; this can be done at any time with the
 command ---update-trustdb.
 
 There are a few other options which control how this command works.
 Most notable here is the ---merge-only option which does not insert new keys
 but does only the merging of new signatures, user-IDs and subkeys.
-See also the option ---allow-secret-key-import.
 
 @item ---recv-keys @code{key IDs}
 Import the keys with the given key IDs from a HKP
 keyserver. Option ---keyserver must be used to
 give the name of this keyserver.
 
-@item ---export-ownertrust
-List the assigned ownertrust values in ASCII format
-for backup purposes.
+@item ---recv-keys @code{key IDs}
+Import the keys with the given key IDs from a HKP
+keyserver. Option ---keyserver must be used to
+give the name of this keyserver.
+
+@item ---update-trustdb
+Do trust DB maintenance. This command goes over all keys and builds
+the Web-of-Trust. This is an intercative command because it may has to
+ask for the "ownertrust" values of keys. The user has to give an
+estimation in how far she trusts the owner of the displayed key to
+correctly certify (sign) other keys. It does only ask for that value
+if it has not yet been assigned to a key. Using the edit menu, that
+value can be changed at any time later.
+
+@item ---check-trustdb
+Do trust DB maintenance without user interaction. Form time to time
+the trust database must be updated so that expired keys and resulting
+changes in the Web-of_trust can be tracked. GnuPG tries to figure
+when this is required and then does it implicitly; this command can be
+used to force such a check. The processing is identically to that of
+---update-trustdb but it skips keys with a not yet defined "ownertrust".
 
 @item ---import-ownertrust @code{files}
 Update the trustdb with the ownertrust values stored
@@ -703,6 +720,12 @@ for DSA keys), and so this option can be used to disable it.
 However, due to the fact that the signature creation needs manual
 interaction, this performance penalty does not matter in most settings.
 
+@item ---no-auto-check-trustdb
+If GnuPG feels that its information about the Web-of-Trust has to be
+updated, it automatically runs the ---check-trustdb command 
+internally. As this is a time consuming process, this option allow to
+disable the automatic invocation.
+
 @item ---throw-keyid
 Do not put the keyid into encrypted packets. This option
 hides the receiver of the message and is a countermeasure
@@ -905,9 +928,7 @@ handing out the secret key.
 Don't insert new keys into the keyrings while doing an import.
 
 @item ---allow-secret-key-import
-Allow import of secret keys. The import command normally skips secret
-keys because a secret key can otherwise be used to attack the trust
-calculation.
+This is an obsolete option and is not used anywhere.
 
 @item ---try-all-secrets
 Don't look at the key ID as stored in the message but try all secret keys in

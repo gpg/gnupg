@@ -1455,7 +1455,7 @@ migrate_from_v2 ()
   int ottable_size, ottable_used;
   byte oldbuf[40];
   ulong recno;
-  int count;
+  int rc, count;
 
   ottable_size = 5;
   ottable = m_alloc (ottable_size * sizeof *ottable);
@@ -1555,7 +1555,9 @@ migrate_from_v2 ()
     }
 
   revalidation_mark ();
-  tdbio_sync ();
+  rc = tdbio_sync ();
+  if (rc)
+    log_fatal ("failed to sync `%s'\n", db_name);
   log_info ("migrated %d version 2 ownertrusts\n", count);
   m_free (ottable);
 }

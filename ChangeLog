@@ -1,3 +1,12 @@
+2001-09-28  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: From now on add a string "-cvs" to the version to
+	indicate that this is a pre-release of the given version number.
+
+2001-09-26  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac [MINGW32]: Switched from wsock.dll to ws2_32.dll.
+
 2001-09-09  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac: autoconf changed the name of the maintainer mode

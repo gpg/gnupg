@@ -21,7 +21,10 @@ dnl (Process this file with autoconf to produce a configure script.)
 AC_REVISION($Revision$)dnl
 
 AC_PREREQ(2.52)
-AC_INIT(gnupg,1.0.6b)
+dnl A snapshot release has a letter appended. CVS files before a release
+dnl are suffixed with the string "-cvs", so "1.0.6a-cvs" is a cvs version
+dnl between 1.0.6 and 1.0.6a. 
+AC_INIT(gnupg,1.0.6b-cvs)
 AC_CONFIG_SRCDIR(g10/g10.c)
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_HEADERS(config.h)
@@ -786,7 +789,7 @@ GNUPG_CHECK_GNUMAKE
 # mysterious reasons - the final link step shoudl bail out. 
 case "${target}" in
     *-*-mingw32*)
-        LIBS="$LIBS -lwsock32"
+        LIBS="$LIBS -lws2_32"
         ;;
     *)
        ;;

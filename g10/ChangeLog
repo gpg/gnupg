@@ -1,3 +1,11 @@
+2001-09-28  Werner Koch  <wk@gnupg.org>
+
+	* tdbio.c (migrate_from_v2): Check return code of tbdio_sync.
+
+	* tdbdump.c (import_ownertrust): Do a tdbio_sync().
+
+	* keyring.c: Made the offtbl an global object.
+
 2001-09-27  Werner Koch  <wk@gnupg.org>
 
 	* pkclist.c (do_edit_ownertrust): Allow settin of ultimate trust.
