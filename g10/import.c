@@ -173,35 +173,40 @@ import_release_stats_handle (void *p)
  *  Key revocation certificates have special handling.
  *
  */
-void
-import_keys( char **fnames, int nnames, int fast,
-	     void *stats_handle, unsigned int options )
+static int
+import_keys_internal( IOBUF inp, char **fnames, int nnames, int fast,
+		      void *stats_handle, unsigned int options )
 {
-    int i;
+    int i, rc = 0;
     struct stats_s *stats = stats_handle;
 
     if (!stats)
         stats = import_new_stats_handle ();
 
-    if( !fnames && !nnames )
-	nnames = 1;  /* Ohh what a ugly hack to jump into the loop */
+    if (inp) {
+        rc = import( inp, fast, "[stream]", stats, options);
+    }
+    else {
+        if( !fnames && !nnames )
+	    nnames = 1;  /* Ohh what a ugly hack to jump into the loop */
 
-    for(i=0; i < nnames; i++ ) {
-	const char *fname = fnames? fnames[i] : NULL;
-	IOBUF inp = iobuf_open(fname);
-	if( !fname )
-	    fname = "[stdin]";
-	if( !inp )
-	    log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
-	else {
-	    int rc = import( inp, fast, fname, stats, options );
-	    iobuf_close(inp);
-	    if( rc )
-		log_error("import from `%s' failed: %s\n", fname,
-							   g10_errstr(rc) );
+	for(i=0; i < nnames; i++ ) {
+	    const char *fname = fnames? fnames[i] : NULL;
+	    IOBUF inp = iobuf_open(fname);
+	    if( !fname )
+	        fname = "[stdin]";
+	    if( !inp )
+	        log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
+	    else {
+	        rc = import( inp, fast, fname, stats, options );
+	        iobuf_close(inp);
+	        if( rc )
+		    log_error("import from `%s' failed: %s\n", fname,
+       	                      g10_errstr(rc) );
+	    }
+	    if( !fname )
+	        break;
 	}
-	if( !fname )
-	    break;
     }
     if (!stats_handle) {
         import_print_stats (stats);
@@ -218,37 +223,21 @@ import_keys( char **fnames, int nnames, int fast,
 	else if (!opt.no_auto_check_trustdb)
 	    check_trustdb();
     }
+    return rc;
+}
+
+void
+import_keys( char **fnames, int nnames, int fast,
+	     void *stats_handle, unsigned int options )
+{
+    import_keys_internal( NULL, fnames, nnames, fast, stats_handle, options);
 }
 
 int
 import_keys_stream( IOBUF inp, int fast,
 		    void *stats_handle, unsigned int options )
 {
-    int rc = 0;
-    struct stats_s *stats = stats_handle;
-
-    if (!stats)
-        stats = import_new_stats_handle ();
-
-    rc = import( inp, fast, "[stream]", stats, options);
-    if (!stats_handle) {
-        import_print_stats (stats);
-        import_release_stats_handle (stats);
-    }
-
-    /* If no fast import and we really added new keys or merged new
-       user ids, signatures or revocations, then update/check the
-       trustdb if the user specified by setting interactive or by
-       not setting no-auto-check-trustdb */
-    if (!fast && (stats->imported || stats->n_uids ||
-                  stats->n_sigs || stats->n_revoc)) {
-        if (opt.interactive)
-	    update_trustdb();
-	else if (!opt.no_auto_check_trustdb)
-	    check_trustdb();
-    }
-
-    return rc;
+    return import_keys_internal( inp, NULL, NULL, fast, stats_handle, options);
 }
 
 static int

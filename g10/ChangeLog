@@ -1,8 +1,9 @@
 2002-09-22  Stefan Bellon  <sbellon@sbellon.de>
 
-	* import.c (import_keys, import_keys_stream): Added trustdb
-	update/check to key import if not fast-import and interactive
-	set/no-auto-check-trustdb unset.
+	* import.c (import_keys, import_keys_stream,
+	import_keys_internal): Added trustdb update/check to key import if
+	not fast-import and interactive set/no-auto-check-trustdb unset.
+	Avoided function clone by introducing import_keys_internal.
 
 2002-09-19  David Shaw  <dshaw@jabberwocky.com>
 
