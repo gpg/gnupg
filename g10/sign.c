@@ -487,7 +487,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
         pt->timestamp = make_timestamp ();
         pt->mode = ptmode;
         pt->len = filesize;
-        pt->new_ctb = !pt->len && !opt.rfc1991;
+        pt->new_ctb = !pt->len && !RFC1991;
         pt->buf = inp;
         init_packet(&pkt);
         pkt.pkttype = PKT_PLAINTEXT;
@@ -538,7 +538,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
 
 	/* build the signature packet */
 	sig = m_alloc_clear (sizeof *sig);
-	if(opt.force_v3_sigs || opt.rfc1991)
+	if(opt.force_v3_sigs || RFC1991)
 	  sig->version=3;
 	else if(duration || opt.sig_policy_url || opt.sig_notation_data)
 	  sig->version=4;
@@ -637,18 +637,18 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     if( fname && filenames->next && (!detached || encryptflag) )
 	log_bug("multiple files can only be detached signed");
 
-    if(opt.ask_sig_expire && !opt.force_v3_sigs && !opt.batch && !opt.rfc1991)
+    if(opt.ask_sig_expire && !opt.force_v3_sigs && !opt.batch && !RFC1991)
       duration=ask_expire_interval(1);
 
     if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
 	goto leave;
 
-    if(opt.pgp2 && !only_old_style(sk_list))
+    if(PGP2 && !only_old_style(sk_list))
       {
 	log_info(_("you can only detach-sign with PGP 2.x style keys "
 		   "while in --pgp2 mode\n"));
 	log_info(_("this message may not be usable by %s\n"),"PGP 2.x");
-	opt.pgp2=0;
+	opt.xpgp2=0;
       }
 
     if(encryptflag && (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC )))
@@ -734,7 +734,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     if( !multifile )
 	iobuf_push_filter( inp, md_filter, &mfx );
 
-    if( detached && !encryptflag && !opt.rfc1991 )
+    if( detached && !encryptflag && !RFC1991 )
 	afx.what = 2;
 
     if( opt.armor && !outfile  )
@@ -780,7 +780,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
       }
 
     /* Write the one-pass signature packets if needed */
-    if (!detached && !opt.rfc1991) {
+    if (!detached && !RFC1991) {
         rc = write_onepass_sig_packets (sk_list, out,
                                         opt.textmode && !outfile ? 0x01:0x00);
         if (rc)
@@ -874,14 +874,14 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     int rc = 0;
     SK_LIST sk_list = NULL;
     SK_LIST sk_rover = NULL;
-    int old_style = opt.rfc1991;
+    int old_style = RFC1991;
     int only_md5 = 0;
     u32 duration=0;
 
     memset( &afx, 0, sizeof afx);
     init_packet( &pkt );
 
-    if(opt.ask_sig_expire && !opt.force_v3_sigs && !opt.batch && !opt.rfc1991)
+    if(opt.ask_sig_expire && !opt.force_v3_sigs && !opt.batch && !RFC1991)
       duration=ask_expire_interval(1);
 
     if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
@@ -890,12 +890,12 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     if( !old_style && !duration )
 	old_style = only_old_style( sk_list );
 
-    if(!old_style && opt.pgp2)
+    if(!old_style && PGP2)
       {
 	log_info(_("you can only clearsign with PGP 2.x style keys "
 		   "while in --pgp2 mode\n"));
 	log_info(_("this message may not be usable by %s\n"),"PGP 2.x");
-	opt.pgp2=0;
+	opt.xpgp2=0;
       }
 
     /* prepare iobufs */
@@ -1022,7 +1022,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     memset( &cfx, 0, sizeof cfx);
     init_packet( &pkt );
 
-    if(opt.ask_sig_expire && !opt.force_v3_sigs && !opt.batch && !opt.rfc1991)
+    if(opt.ask_sig_expire && !opt.force_v3_sigs && !opt.batch && !RFC1991)
       duration=ask_expire_interval(1);
 
     rc = build_sk_list (locusr, &sk_list, 1, PUBKEY_USAGE_SIG);
@@ -1041,7 +1041,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
 
     /* prepare key */
     s2k = m_alloc_clear( sizeof *s2k );
-    s2k->mode = opt.rfc1991? 0:opt.s2k_mode;
+    s2k->mode = RFC1991? 0:opt.s2k_mode;
     s2k->hash_algo = opt.def_digest_algo ? opt.def_digest_algo
 	                                 : opt.s2k_digest_algo;
 
@@ -1080,7 +1080,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
 
     /* Write the symmetric key packet */
     /*(current filters: armor)*/
-    if (!opt.rfc1991) {
+    if (!RFC1991) {
 	PKT_symkey_enc *enc = m_alloc_clear( sizeof *enc );
 	enc->version = 4;
 	enc->cipher_algo = cfx.dek->algo;
@@ -1113,7 +1113,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
 
     /* Write the one-pass signature packets */
     /*(current filters: zip - encrypt - armor)*/
-    if (!opt.rfc1991) {
+    if (!RFC1991) {
         rc = write_onepass_sig_packets (sk_list, out,
                                         opt.textmode? 0x01:0x00);
         if (rc)

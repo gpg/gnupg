@@ -1092,10 +1092,10 @@ static int
 algo_available( int preftype, int algo, void *hint )
 {
     if( preftype == PREFTYPE_SYM ) {
-        if( opt.pgp6 && ( algo != 1 && algo != 2 && algo != 3) )
+        if( PGP6 && ( algo != 1 && algo != 2 && algo != 3) )
 	  return 0;
 
-        if( (opt.pgp7 || opt.pgp8)
+        if( (PGP7 || PGP8)
 	    && (algo != 1 && algo != 2 && algo != 3
 		&& algo != 7 && algo != 8 && algo != 9 && algo != 10) )
 	  return 0;
@@ -1111,16 +1111,16 @@ algo_available( int preftype, int algo, void *hint )
 	if(bits && (bits != md_digest_length(algo)))
 	  return 0;
 
-        if( (opt.pgp6 || opt.pgp7) && (algo != 1 && algo != 2 && algo != 3) )
+        if( (PGP6 || PGP7) && (algo != 1 && algo != 2 && algo != 3) )
 	  return 0;
 
-	if( opt.pgp8 && (algo != 1 && algo != 2 && algo != 3 && algo != 8))
+	if( PGP8 && (algo != 1 && algo != 2 && algo != 3 && algo != 8))
 	  return 0;
 
 	return algo && !check_digest_algo( algo );
     }
     else if( preftype == PREFTYPE_ZIP ) {
-        if ( ( opt.pgp6 || opt.pgp7 || opt.pgp8 )
+        if ( ( PGP6 || PGP7 || PGP8 )
 	     && ( algo !=0 && algo != 1) )
 	  return 0;
 
@@ -1154,7 +1154,7 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype, int request, void *hint)
 
 	memset( mask, 0, 8 * sizeof *mask );
 	if( preftype == PREFTYPE_SYM ) {
-	  if( opt.pgp2 &&
+	  if( PGP2 &&
 	      pkr->pk->version < 4 &&
 	      pkr->pk->selfsigversion < 4 )
 	    mask[0] |= (1<<1); /* IDEA is implicitly there for v3 keys
@@ -1172,7 +1172,7 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype, int request, void *hint)
 	     wasn't locked at MD5, we don't support sign+encrypt in
 	     --pgp2 mode, and that's the only time PREFTYPE_HASH is
 	     used anyway. -dms */
-	  if( opt.pgp2 &&
+	  if( PGP2 &&
 	      pkr->pk->version < 4 &&
 	      pkr->pk->selfsigversion < 4 )
 	    mask[0] |= (1<<1); /* MD5 is there for v3 keys with v3

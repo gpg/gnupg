@@ -1,3 +1,11 @@
+2003-05-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, armor.c, cipher.c, g10.c, keyedit.c, pkclist.c,
+	sign.c, encode.c, getkey.c, revoke.c: The current flags for
+	different levels of PGP-ness are massively complex.  This is step
+	one in simplifying them.  No functional change yet, just use a
+	macro to check for compliance level.
+
 2003-05-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* packet.h, build-packet.c (build_sig_subpkt), export.c

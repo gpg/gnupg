@@ -1437,8 +1437,8 @@ main( int argc, char **argv )
 #endif /* __riscos__ */
 	    break;
 	  case oRFC1991:
-	    opt.rfc1991 = 1;
-	    opt.rfc2440 = 0;
+	    opt.xrfc1991 = 1;
+	    opt.xrfc2440 = 0;
 	    opt.force_v4_certs = 0;
 	    opt.disable_mdc = 1;
 	    opt.escape_from = 1;
@@ -1446,8 +1446,8 @@ main( int argc, char **argv )
 	  case oOpenPGP:
 	    /* TODO: When 2440bis becomes a RFC, these may need
                changing. */
-	    opt.rfc1991 = 0;
-	    opt.rfc2440 = 1;
+	    opt.xrfc1991 = 0;
+	    opt.xrfc2440 = 1;
 	    opt.disable_mdc = 1;
 	    opt.allow_non_selfsigned_uid = 1;
 	    opt.allow_freeform_uid = 1;
@@ -1464,19 +1464,19 @@ main( int argc, char **argv )
             opt.s2k_mode = 3; /* iterated+salted */
 	    opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
 	    opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
-	    opt.pgp2 = 0;
-	    opt.pgp6 = 0;
-	    opt.pgp7 = 0;
-	    opt.pgp8 = 0;
+	    opt.xpgp2 = 0;
+	    opt.xpgp6 = 0;
+	    opt.xpgp7 = 0;
+	    opt.xpgp8 = 0;
 	    break;
-	  case oPGP2: opt.pgp2 = 1; break;
-	  case oNoPGP2: opt.pgp2 = 0; break;
-	  case oPGP6: opt.pgp6 = 1; break;
-	  case oNoPGP6: opt.pgp6 = 0; break;
-	  case oPGP7: opt.pgp7 = 1; break;
-	  case oNoPGP7: opt.pgp7 = 0; break;
-	  case oPGP8: opt.pgp8 = 1; break;
-	  case oNoPGP8: opt.pgp8 = 0; break;
+	  case oPGP2: opt.xpgp2 = 1; break;
+	  case oNoPGP2: opt.xpgp2 = 0; break;
+	  case oPGP6: opt.xpgp6 = 1; break;
+	  case oNoPGP6: opt.xpgp6 = 0; break;
+	  case oPGP7: opt.xpgp7 = 1; break;
+	  case oNoPGP7: opt.xpgp7 = 0; break;
+	  case oPGP8: opt.xpgp8 = 1; break;
+	  case oNoPGP8: opt.xpgp8 = 0; break;
 	  case oEmuMDEncodeBug: opt.emulate_bugs |= EMUBUG_MDENCODE; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRunAsShmCP:
@@ -1770,12 +1770,12 @@ main( int argc, char **argv )
     set_debug();
 
     /* Do these after the switch(), so they can override settings. */
-    if(opt.pgp2 && (opt.pgp6 || opt.pgp7 || opt.pgp8))
+    if(PGP2 && (PGP6 || PGP7 || PGP8))
       log_error(_("%s not allowed with %s!\n"),
-		"--pgp2",opt.pgp6?"--pgp6":opt.pgp7?"--pgp7":"--pgp8");
+		"--pgp2",PGP6?"--pgp6":PGP7?"--pgp7":"--pgp8");
     else
       {
-	if(opt.pgp2)
+	if(PGP2)
 	  {
 	    int unusable=0;
 
@@ -1833,12 +1833,12 @@ main( int argc, char **argv )
 	      {
 		log_info(_("this message may not be usable by %s\n"),
 			 "PGP 2.x");
-		opt.pgp2=0;
+		opt.xpgp2=0;
 	      }
 	    else
 	      {
-		opt.rfc1991 = 1;
-		opt.rfc2440 = 0;
+		opt.xrfc1991 = 1;
+		opt.xrfc2440 = 0;
 		opt.force_mdc = 0;
 		opt.disable_mdc = 1;
 		opt.force_v4_certs = 0;
@@ -1853,7 +1853,7 @@ main( int argc, char **argv )
 		opt.def_compress_algo = 1;
 	      }
 	  }
-	else if(opt.pgp6)
+	else if(PGP6)
 	  {
 	    opt.sk_comments=0;
 	    opt.escape_from=1;
@@ -1863,7 +1863,7 @@ main( int argc, char **argv )
 	    opt.force_mdc=0;
 	    opt.disable_mdc=1;
 	  }
-	else if(opt.pgp7)
+	else if(PGP7)
 	  {
 	    opt.sk_comments=0;
 	    opt.escape_from=1;
@@ -1871,7 +1871,7 @@ main( int argc, char **argv )
 	    opt.ask_sig_expire=0;
 	    opt.def_compress_algo=1;
 	  }
-	else if(opt.pgp8)
+	else if(PGP8)
 	  {
 	    opt.escape_from=1;
 	    opt.def_compress_algo=1;

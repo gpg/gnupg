@@ -165,7 +165,7 @@ encode_simple( const char *filename, int mode, int compat )
     compress_filter_context_t zfx;
     text_filter_context_t tfx;
     progress_filter_context_t pfx;
-    int do_compress = opt.compress && !opt.rfc1991;
+    int do_compress = opt.compress && !RFC1991;
 
     memset( &cfx, 0, sizeof cfx);
     memset( &afx, 0, sizeof afx);
@@ -188,13 +188,13 @@ encode_simple( const char *filename, int mode, int compat )
     /* Due the the fact that we use don't use an IV to encrypt the
        session key we can't use the new mode with RFC1991 because
        it has no S2K salt. RFC1991 always uses simple S2K. */
-    if ( opt.rfc1991 && !compat )
+    if ( RFC1991 && !compat )
         compat = 1;
     
     cfx.dek = NULL;
     if( mode ) {
 	s2k = m_alloc_clear( sizeof *s2k );
-	s2k->mode = opt.rfc1991? 0:opt.s2k_mode;
+	s2k->mode = RFC1991? 0:opt.s2k_mode;
 	s2k->hash_algo = opt.def_digest_algo ? opt.def_digest_algo
 					     : opt.s2k_digest_algo;
 	cfx.dek = passphrase_to_dek( NULL, 0,
@@ -251,7 +251,7 @@ encode_simple( const char *filename, int mode, int compat )
 	    write_comment( out, opt.comment_string );
     }
   #endif
-    if( s2k && !opt.rfc1991 ) {
+    if( s2k && !RFC1991 ) {
 	PKT_symkey_enc *enc = m_alloc_clear( sizeof *enc + seskeylen + 1 );
 	enc->version = 4;
 	enc->cipher_algo = cfx.dek->algo;
@@ -315,7 +315,7 @@ encode_simple( const char *filename, int mode, int compat )
 	pt->timestamp = make_timestamp();
 	pt->mode = opt.textmode? 't' : 'b';
 	pt->len = filesize;
-	pt->new_ctb = !pt->len && !opt.rfc1991;
+	pt->new_ctb = !pt->len && !RFC1991;
 	pt->buf = inp;
 	pkt.pkttype = PKT_PLAINTEXT;
 	pkt.pkt.plaintext = pt;
@@ -396,7 +396,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     text_filter_context_t tfx;
     progress_filter_context_t pfx;
     PK_LIST pk_list,work_list;
-    int do_compress = opt.compress && !opt.rfc1991;
+    int do_compress = opt.compress && !RFC1991;
 
 
     memset( &cfx, 0, sizeof cfx);
@@ -408,7 +408,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC)) )
 	return rc;
 
-    if(opt.pgp2) {
+    if(PGP2) {
       for(work_list=pk_list; work_list; work_list=work_list->next)
 	if(!(is_RSA(work_list->pk->pubkey_algo) &&
 	     nbits_from_pk(work_list->pk)<=2048))
@@ -416,7 +416,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	    log_info(_("you can only encrypt to RSA keys of 2048 bits or "
 		       "less in --pgp2 mode\n"));
 	    log_info(_("this message may not be usable by %s\n"),"PGP 2.x");
-	    opt.pgp2=0;
+	    opt.xpgp2=0;
 	    break;
 	  }
     }
@@ -464,11 +464,11 @@ encode_crypt( const char *filename, STRLIST remusr )
 	if( cfx.dek->algo == -1 ) {
 	    cfx.dek->algo = CIPHER_ALGO_3DES;
 
-	    if( opt.pgp2 ) {
+	    if( PGP2 ) {
 	      log_info(_("unable to use the IDEA cipher for all of the keys "
 			 "you are encrypting to.\n"));
 	      log_info(_("this message may not be usable by %s\n"),"PGP 2.x");
-	      opt.pgp2=0;
+	      opt.xpgp2=0;
 	    }
 	}
     }
@@ -548,7 +548,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	pt->timestamp = make_timestamp();
 	pt->mode = opt.textmode ? 't' : 'b';
 	pt->len = filesize;
-	pt->new_ctb = !pt->len && !opt.rfc1991;
+	pt->new_ctb = !pt->len && !RFC1991;
 	pt->buf = inp;
 	pkt.pkttype = PKT_PLAINTEXT;
 	pkt.pkt.plaintext = pt;
@@ -716,16 +716,16 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	keyid_from_pk( pk, enc->keyid );
 	enc->throw_keyid = opt.throw_keyid;
 
-	if(opt.throw_keyid && (opt.pgp2 || opt.pgp6 || opt.pgp7 || opt.pgp8))
+	if(opt.throw_keyid && (PGP2 || PGP6 || PGP7 || PGP8))
 	  {
 	    log_info(_("you may not use %s while in %s mode\n"),
 		     "--throw-keyid",
-		     opt.pgp2?"--pgp2":opt.pgp6?"--pgp6":opt.pgp7?"--pgp7":"--pgp8");
+		     PGP2?"--pgp2":PGP6?"--pgp6":PGP7?"--pgp7":"--pgp8");
 
 	    log_info(_("this message may not be usable by %s\n"),
-		     opt.pgp2?"PGP 2.x":opt.pgp6?"PGP 6.x":opt.pgp7?"PGP 7.x":"PGP 8.x");
+		     PGP2?"PGP 2.x":PGP6?"PGP 6.x":PGP7?"PGP 7.x":"PGP 8.x");
 
-	    opt.pgp2=opt.pgp6=opt.pgp7=opt.pgp8=0;
+	    opt.xpgp2=opt.xpgp6=opt.xpgp7=opt.xpgp8=0;
 	  }
 
 	/* Okay, what's going on: We have the session key somewhere in

@@ -91,12 +91,12 @@ struct {
     int compress_sigs;
     int always_trust;
     /* TODO: change these to an emulate_pgp variable */
-    int pgp2;
-    int pgp6;
-    int pgp7;
-    int pgp8;
-    int rfc1991;
-    int rfc2440;
+    int xpgp2;
+    int xpgp6;
+    int xpgp7;
+    int xpgp8;
+    int xrfc1991;
+    int xrfc2440;
     int pgp2_workarounds;
     unsigned int emulate_bugs; /* bug emulation flags EMUBUG_xxxx */
     int shm_coprocess;
@@ -207,5 +207,11 @@ struct {
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
 #define DBG_EXTPROG (opt.debug & DBG_EXTPROG_VALUE)
 
+#define RFC1991 (opt.xrfc1991)
+#define RFC2440 (opt.xrfc2440)
+#define PGP2 (opt.xpgp2)
+#define PGP6 (opt.xpgp6)
+#define PGP7 (opt.xpgp7)
+#define PGP8 (opt.xpgp8)
 
 #endif /*G10_OPTIONS_H*/

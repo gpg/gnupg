@@ -2078,7 +2078,7 @@ finish_lookup (GETKEY_CTX ctx)
        do not understand signatures made by a signing subkey.  PGP 8
        does. */
     int req_prim = (ctx->req_usage & PUBKEY_USAGE_CERT) ||
-      ((opt.pgp6 || opt.pgp7) && (ctx->req_usage & PUBKEY_USAGE_SIG));
+      ((PGP6 || PGP7) && (ctx->req_usage & PUBKEY_USAGE_SIG));
     u32 latest_date;
     KBNODE latest_key;
     u32 curtime = make_timestamp ();

@@ -284,7 +284,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
     int all_v3=1;
 
     /* Are there any non-v3 sigs on this key already? */
-    if(opt.pgp2)
+    if(PGP2)
       for(node=keyblock;node;node=node->next)
 	if(node->pkt->pkttype==PKT_SIGNATURE &&
 	   node->pkt->pkt.signature->version>3)
@@ -569,7 +569,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	/* Is --pgp2 on, it's a v3 key, all the sigs on the key are
 	   currently v3 and we're about to sign it with a v4 sig?  If
 	   so, danger! */
-	if(opt.pgp2 && all_v3 &&
+	if(PGP2 && all_v3 &&
 	   (sk->version>3 || force_v4) && primary_pk->version<=3)
 	  {
 	    tty_printf(_("You may not make an OpenPGP signature on a "
@@ -1215,11 +1215,11 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    break;
 
 	  case cmdADDPHOTO:
-            if (opt.rfc2440 || opt.rfc1991 || opt.pgp2)
+            if (RFC2440 || RFC1991 || PGP2)
               {
                 tty_printf(
                    _("This command is not allowed while in %s mode.\n"),
-		   opt.rfc2440?"OpenPGP":opt.pgp2?"PGP2":"RFC-1991");
+		   RFC2440?"OpenPGP":PGP2?"PGP2":"RFC-1991");
                 break;
               }
 	    photo=1;
