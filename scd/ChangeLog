@@ -1,3 +1,7 @@
+2002-04-15  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_pksign, cmd_pkdecrypt): Use a copy of the key ID.
+
 2002-04-12  Werner Koch  <wk@gnupg.org>
 
 	* scdaemon.c: New option --debug-sc N.
