@@ -1,3 +1,9 @@
+2002-06-30  Werner Koch  <wk@gnupg.org>
+
+	* photoid.c: Use __MINGW32__ to include windows because
+	HAVE_DOSISH_SYSTEM is also set for OS/2 and plain DOS.  Provide
+	constant missing in older mingw installations. 
+
 2002-06-21  Stefan Bellon  <sbellon@sbellon.de>
 
 	* g10.c [__riscos__]: Moved RISC OS specific stuff to util/riscos.c

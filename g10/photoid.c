@@ -22,8 +22,11 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#ifdef HAVE_DOSISH_SYSTEM
-#include <windows.h>
+#ifdef __MINGW32__ 
+# include <windows.h>
+# ifndef VER_PLATFORM_WIN32_WINDOWS
+#  define VER_PLATFORM_WIN32_WINDOWS 1
+# endif
 #endif
 #include "packet.h"
 #include "status.h"
