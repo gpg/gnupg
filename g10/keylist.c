@@ -622,12 +622,18 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
       }
     else
       {
+#if 0
 	int validity;
+#endif
 	pk = node->pkt->pkt.public_key;
 	sk = NULL;
 	keyid_from_pk( pk, keyid );
 
+#if 0
 	validity=get_validity(pk,NULL);
+#endif
+
+	check_trustdb_stale();
 
 	printf("pub   %4u%c/",
 	       nbits_from_pk(pk),pubkey_letter(pk->pubkey_algo));
@@ -644,8 +650,13 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	if(newformat && pk->expiredate)
 	  printf(_(" [expires: %s]"), expirestr_from_pk( pk ) );
 
+#if 0
+	/* I need to think about this some more.  It's easy enough to
+	   include, but it looks sort of confusing in the
+	   listing... */
 	if(opt.list_options&LIST_SHOW_VALIDITY)
 	  printf(" [%s]",trust_value_to_string(validity));
+#endif
       }
 
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {

@@ -242,6 +242,9 @@ cache_disabled_value(PKT_public_key *pk)
   return 0;
 }
 
+void
+check_trustdb_stale(void) {}
+
 int
 get_validity_info (PKT_public_key *pk, PKT_user_id *uid)
 {

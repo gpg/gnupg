@@ -1,3 +1,19 @@
+2003-09-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgv.c (check_trustdb_stale): Stub.
+
+	* trustdb.c (get_validity): Move the up-to-date check to
+	check_trustdb_stale (new), so that it can be called before
+	validity is checked.
+	
+	* keylist.c (list_keyblock_print): Disable the overall key
+	validity display until it can be thought about more.  Use
+	check_trustdb_stale here to avoid putting the check warning in the
+	middle of a listed key.
+
+	* trustdb.c (init_trustdb): Only verify_own_keys() for those trust
+	models that it applies to (i.e. classic and OpenPGP).
+
 2003-09-29  Werner Koch  <wk@gnupg.org>
 
 	* keygen.c (do_add_key_flags, parse_parameter_usage): Add support

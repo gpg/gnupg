@@ -406,7 +406,6 @@ setup_trustdb( int level, const char *dbname )
 void
 init_trustdb()
 {
-  int rc=0;
   int level = trustdb_args.level;
   const char* dbname = trustdb_args.dbname;
 
@@ -415,26 +414,14 @@ init_trustdb()
 
   trustdb_args.init = 1;
 
-  if ( !level || level==1)
+  if(level==0 || level==1)
     {
-      rc = tdbio_set_dbname( dbname, !!level );
-      if( !rc )
-        {
-          if( !level )
-            return;
-          
-          /* verify that our own keys are in the trustDB
-           * or move them to the trustdb. */
-          verify_own_keys();
-          
-          /* should we check whether there is no other ultimately trusted
-           * key in the database? */
-        }
+      int rc = tdbio_set_dbname( dbname, !!level );
+      if( rc )
+	log_fatal("can't init trustdb: %s\n", g10_errstr(rc) );
     }
   else
     BUG();
-  if( rc )
-    log_fatal("can't init trustdb: %s\n", g10_errstr(rc) );
 
   if(opt.trust_model==TM_AUTO)
     {
@@ -443,7 +430,7 @@ init_trustdb()
       opt.trust_model=tdbio_read_model();
 
       /* Sanity check this ;) */
-      if(opt.trust_model!=TM_PGP && opt.trust_model!=TM_CLASSIC)
+      if(opt.trust_model!=TM_CLASSIC && opt.trust_model!=TM_PGP)
 	{
 	  log_info(_("unable to use unknown trust model (%d) - "
 		     "assuming %s trust model\n"),opt.trust_model,"PGP");
@@ -454,14 +441,19 @@ init_trustdb()
 	log_info(_("using %s trust model\n"),trust_model_string());
     }
 
-  if((opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC)
-     && !tdbio_db_matches_options())
-    pending_check_trustdb=1;
+  if(opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC)
+    {
+      /* Verify the list of ultimately trusted keys and move the
+	 --trusted-keys list there as well. */
+      if(level==1)
+	verify_own_keys();
+
+      if(!tdbio_db_matches_options())
+	pending_check_trustdb=1;
+    }
 }
 
 
-
-
 /***********************************************
  *************	Print helpers	****************
  ***********************************************/
@@ -1007,24 +999,10 @@ cache_disabled_value(PKT_public_key *pk)
    return disabled;
 }
 
-/*
- * Return the validity information for PK.  If the namehash is not
- * NULL, the validity of the corresponsing user ID is returned,
- * otherwise, a reasonable value for the entire key is returned. 
- */
-unsigned int
-get_validity (PKT_public_key *pk, PKT_user_id *uid)
+void
+check_trustdb_stale(void)
 {
-  static int did_nextcheck;
-  TRUSTREC trec, vrec;
-  int rc;
-  ulong recno;
-  unsigned int validity;
-  u32 kid[2];
-  PKT_public_key *main_pk;
-
-  if(uid)
-    namehash_from_uid(uid);
+  static int did_nextcheck=0;
 
   init_trustdb ();
   if (!did_nextcheck
@@ -1048,6 +1026,28 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
             }
         }
     }
+}
+
+/*
+ * Return the validity information for PK.  If the namehash is not
+ * NULL, the validity of the corresponsing user ID is returned,
+ * otherwise, a reasonable value for the entire key is returned. 
+ */
+unsigned int
+get_validity (PKT_public_key *pk, PKT_user_id *uid)
+{
+  TRUSTREC trec, vrec;
+  int rc;
+  ulong recno;
+  unsigned int validity;
+  u32 kid[2];
+  PKT_public_key *main_pk;
+
+  if(uid)
+    namehash_from_uid(uid);
+
+  init_trustdb ();
+  check_trustdb_stale();
 
   keyid_from_pk (pk, kid);
   if (pk->main_keyid[0] != kid[0] || pk->main_keyid[1] != kid[1])
