@@ -1451,14 +1451,14 @@ main( int argc, char **argv )
 
     /* Add the keyrings, but not for some special commands and not in
        case of "-kvv userid keyring".  Also avoid adding the secret
-       keyring for a couple of commands to avaoid unneeded access in
+       keyring for a couple of commands to avoid unneeded access in
        case the secrings are stored on a floppy */
     if( cmd != aDeArmor && cmd != aEnArmor
 	&& !(cmd == aKMode && argc == 2 ) ) 
       {
         if (cmd != aCheckKeys && cmd != aListSigs && cmd != aListKeys
             && cmd != aVerify && cmd != aVerifyFiles
-            && cmd != aEncr && cmd != aSym)
+            && cmd != aSym)
           {
             if (!sec_nrings || default_keyring) /* add default secret rings */
               keydb_add_resource ("secring" EXTSEP_S "gpg", 0, 1);
