@@ -661,7 +661,7 @@ AC_CHECK_TOOL(AS, as, false)
 AC_DEFUN(GNUPG_SYS_SYMBOL_UNDERSCORE,
 [tmp_do_check="no"
 case "${target}" in
-    i386-emx-os2 | i[3456]86-pc-os2*emx | i386-pc-msdosdjgpp)
+    i386-emx-os2 | i[3456]86-pc-os2*emx | i386-pc-msdosdjgpp | *-*-cygwin)
         ac_cv_sys_symbol_underscore=yes
         ;;
     *)

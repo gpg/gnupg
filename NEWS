@@ -1,3 +1,4 @@
+    * Some fixes to build cleanly under Cygwin32.
 
     * New tool gpgsplit to split OpenPGP data formats into packets.
 

@@ -170,6 +170,9 @@ case "${target}" in
     *-*-mingw32*)
         disallowed_modules="rndunix rndlinux rndegd"
         ;;
+    *-*-cygwin*)
+        disallowed_modules="rndunix rndlinux rndegd tiger"
+        ;;
     *)
         disallowed_modules="rndw32"
        ;;
@@ -200,7 +203,7 @@ MPI_OPT_FLAGS=""
 
 try_gettext=yes
 case "${target}" in
-    *-*-mingw32*)
+    *-*-mingw32*|*-*-cygwin*)
         # special stuff for Windoze NT
         ac_cv_have_dev_random=no
         AC_DEFINE(USE_ONLY_8DOT3,1,
@@ -293,6 +296,9 @@ AC_SUBST(GPGKEYS_MAILTO)
 case "${target}" in
     *-*-mingw32*)
         PRINTABLE_OS_NAME="MingW32"
+        ;;
+    *-*-cygwin*)
+        PRINTABLE_OS_NAME="Cygwin32"
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
         PRINTABLE_OS_NAME="OS/2"
@@ -608,7 +614,7 @@ if test "$use_static_rnd" = default; then
       static_random_module="rndlinux"
   else
       case "${target}" in
-          *-*-mingw32*)
+          *-*-mingw32*|*-*-cygwin*)
               static_random_module="rndw32"
               AC_DEFINE(USE_STATIC_RNDW32,1,
                        [At some point in the code we need to know that
