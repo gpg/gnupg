@@ -1,3 +1,9 @@
+2003-06-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (ask_user_id): Make --allow-freeform-uid apply to the
+	email field as well as the name field, and allow mixing fields
+	when it is set.
+
 2003-06-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* hkp.c (hkp_search): Return proper error code on failure.

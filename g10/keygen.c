@@ -1266,7 +1266,7 @@ ask_user_id( int mode )
 		amail = cpr_get("keygen.email",_("Email address: "));
 		trim_spaces(amail);
 		cpr_kill_prompt();
-		if( !*amail )
+		if( !*amail || opt.allow_freeform_uid )
 		    break;   /* no email address is okay */
 		else if( has_invalid_email_chars(amail)
 			 || string_count_chr(amail,'@') != 1
@@ -1319,11 +1319,13 @@ ask_user_id( int mode )
 
 	tty_printf(_("You selected this USER-ID:\n    \"%s\"\n\n"), uid);
 	/* fixme: add a warning if this user-id already exists */
-	if( !*amail && (strchr( aname, '@' ) || strchr( acomment, '@'))) {
+	if( !*amail && !opt.allow_freeform_uid
+	    && (strchr( aname, '@' ) || strchr( acomment, '@')))
+	  {
 	    fail = 1;
 	    tty_printf(_("Please don't put the email address "
-			  "into the real name or the comment\n") );
-	}
+			 "into the real name or the comment\n") );
+	  }
 
 	for(;;) {
 	    const char *ansstr = _("NnCcEeOoQq");
