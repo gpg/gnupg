@@ -1,3 +1,11 @@
+2002-08-16  Werner Koch  <wk@gnupg.org>
+
+	* call-scd.c (learn_status_cb): Handle CERTINFO status.
+	(agent_card_learn): Add args for certinfo cb.
+	* learncard.c (release_certinfo,certinfo_cb): New.
+	(send_cert_back): New. With factored out code from ..
+	(agent_handle_learn): here.  Return certinfo stuff.
+
 2002-07-26  Werner Koch  <wk@gnupg.org>
 
 	* gpg-agent.c (main): New option --ignore-cache-for-signing.

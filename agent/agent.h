@@ -173,7 +173,9 @@ int divert_pkdecrypt (const unsigned char *cipher,
 
 /*-- call-scd.c --*/
 int agent_card_learn (void (*kpinfo_cb)(void*, const char *),
-                      void *kpinfo_cb_arg);
+                      void *kpinfo_cb_arg,
+                      void (*certinfo_cb)(void*, const char *),
+                      void *certinfo_cb_arg);
 int agent_card_serialno (char **r_serialno);
 int agent_card_pksign (const char *keyid,
                        int (*getpin_cb)(void *, const char *, char*, size_t),

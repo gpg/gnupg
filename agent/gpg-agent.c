@@ -43,11 +43,8 @@
 #include "agent.h"
 #include "../assuan/assuan.h" /* malloc hooks */
 
+#include "i18n.h"
 #include "sysutils.h"
-
-
-#define N_(a) a
-#define _(a) a
 
 
 enum cmd_and_opt_values 

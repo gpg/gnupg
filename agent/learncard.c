@@ -45,6 +45,20 @@ struct kpinfo_cb_parm_s {
 };
 
 
+struct certinfo_s {
+  struct certinfo_s *next;
+  int type;  
+  int done;
+  char id[1];
+};
+typedef struct certinfo_s *CERTINFO;
+
+struct certinfo_cb_parm_s {
+  int error;
+  CERTINFO info;
+};
+
+
 static void
 release_keypair_info (KEYPAIR_INFO info)
 {
@@ -56,10 +70,21 @@ release_keypair_info (KEYPAIR_INFO info)
     }
 }
 
+static void
+release_certinfo (CERTINFO info)
+{
+  while (info)
+    {
+      CERTINFO tmp = info->next;
+      xfree (info);
+      info = tmp;
+    }
+}
+
 
 
 /* This callback is used by agent_card_leanr and passed the content of
-   all KEYPAIRINFO lines.  It merely store this data away */
+   all KEYPAIRINFO lines.  It merely stores this data away */
 static void
 kpinfo_cb (void *opaque, const char *line)
 {
@@ -109,6 +134,45 @@ kpinfo_cb (void *opaque, const char *line)
 }
 
 
+/* This callback is used by agent_card_leanr and passed the content of
+   all CERTINFO lines.  It merely stores this data away */
+static void
+certinfo_cb (void *opaque, const char *line)
+{
+  struct certinfo_cb_parm_s *parm = opaque;
+  CERTINFO item;
+  int type;
+  char *p, *pend;
+
+  if (parm->error)
+    return; /* no need to gather data after an error coccured */
+
+  type = strtol (line, &p, 10);
+  while (spacep (p))
+    p++;
+  for (pend = p; *pend && !spacep (pend); pend++)
+    ;
+  if (p == pend || !*p)
+    { 
+      parm->error = GNUPG_Invalid_Response;
+      return;
+    }
+  *pend = 0; /* ignore trailing stuff */
+
+  item = xtrycalloc (1, sizeof *item + strlen (p));
+  if (!item)
+    {
+      parm->error = GNUPG_Out_Of_Core;
+      return;
+    }
+  item->type = type;
+  strcpy (item->id, p);
+  /* store it */
+  item->next = parm->info;
+  parm->info = item;
+}
+
+
 /* Create an S-expression with the shadow info.  */
 static unsigned char *
 make_shadow_info (const char *serialno, const char *idstring)
@@ -136,6 +200,35 @@ make_shadow_info (const char *serialno, const char *idstring)
   return info;
 }
 
+static int
+send_cert_back (const char *id, void *assuan_context)
+{
+  int rc;
+  char *derbuf;
+  size_t derbuflen;
+  
+  rc = agent_card_readcert (id, &derbuf, &derbuflen);
+  if (rc)
+    {
+      log_error ("error reading certificate: %s\n",
+                 gnupg_strerror (rc));
+      return rc;
+    }
+
+  rc = assuan_send_data (assuan_context, derbuf, derbuflen);
+  xfree (derbuf);
+  if (!rc)
+    rc = assuan_send_data (assuan_context, NULL, 0);
+  if (!rc)
+    rc = assuan_write_line (assuan_context, "END");
+  if (rc)
+    {
+      log_error ("sending certificate failed: %s\n",
+                 assuan_strerror (rc));
+      return map_assuan_err (rc);
+    }
+  return 0;
+}
 
 /* Perform the learn operation.  If ASSUAN_CONTEXT is not NULL all new
    certificates are send via Assuan */
@@ -144,13 +237,22 @@ agent_handle_learn (void *assuan_context)
 {
   int rc;
   struct kpinfo_cb_parm_s parm;
+  struct certinfo_cb_parm_s cparm;
   char *serialno = NULL;
   KEYPAIR_INFO item;
   unsigned char grip[20];
   char *p;
   int i;
+  static int certtype_list[] = { 
+    101, /* trusted */
+    102, /* useful */
+    100, /* regular */
+    -1 /* end of list */
+  };
+
 
   memset (&parm, 0, sizeof parm);
+  memset (&cparm, 0, sizeof cparm);
 
   /* Check whether a card is present and get the serial number */
   rc = agent_card_serialno (&serialno);
@@ -158,16 +260,40 @@ agent_handle_learn (void *assuan_context)
     goto leave;
 
   /* now gather all the availabe info */
-  rc = agent_card_learn (kpinfo_cb, &parm);
-  if (!rc && parm.error)
-    rc = parm.error;
+  rc = agent_card_learn (kpinfo_cb, &parm, certinfo_cb, &cparm);
+  if (!rc && (parm.error || cparm.error))
+    rc = parm.error? parm.error : cparm.error;
   if (rc)
     {
       log_debug ("agent_card_learn failed: %s\n", gnupg_strerror (rc));
       goto leave;
     }
-
+  
   log_info ("card has S/N: %s\n", serialno);
+
+  /* Write out the certificates in a standard order. */
+  for (i=0; certtype_list[i] != -1; i++)
+    {
+      CERTINFO citem;
+      for (citem = cparm.info; citem; citem = citem->next)
+        {
+          if (certtype_list[i] != citem->type)
+            continue;
+
+          if (opt.verbose)
+            log_info ("          id: %s    (type=%d)\n",
+                      citem->id, citem->type);
+          
+          if (assuan_context)
+            {
+              rc = send_cert_back (citem->id, assuan_context);
+              if (rc)
+                goto leave;
+              citem->done = 1;
+            }
+        }
+    }
+  
   for (item = parm.info; item; item = item->next)
     {
       unsigned char *pubkey, *shdkey;
@@ -226,29 +352,19 @@ agent_handle_learn (void *assuan_context)
       
       if (assuan_context)
         {
-          char *derbuf;
-          size_t derbuflen;
-
-          rc = agent_card_readcert (item->id, &derbuf, &derbuflen);
-          if (rc)
+          CERTINFO citem;
+          
+          /* only send the certificate if we have not done so before */
+          for (citem = cparm.info; citem; citem = citem->next)
             {
-              log_error ("error reading certificate: %s\n",
-                         gnupg_strerror (rc));
-              goto leave;
+              if (!strcmp (citem->id, item->id))
+                break;
             }
-
-          rc = assuan_send_data (assuan_context, derbuf, derbuflen);
-          xfree (derbuf);
-          if (!rc)
-            rc = assuan_send_data (assuan_context, NULL, 0);
-          if (!rc)
-            rc = assuan_write_line (assuan_context, "END");
-          if (rc)
+          if (!citem)
             {
-              log_error ("sending certificate failed: %s\n",
-                         assuan_strerror (rc));
-              rc = map_assuan_err (rc);
-              goto leave;
+              rc = send_cert_back (item->id, assuan_context);
+              if (rc)
+                goto leave;
             }
         }
     }
@@ -257,6 +373,7 @@ agent_handle_learn (void *assuan_context)
  leave:
   xfree (serialno);
   release_keypair_info (parm.info);
+  release_certinfo (cparm.info);
   return rc;
 }
 

@@ -36,10 +36,7 @@
 #include "agent.h"
 #include "minip12.h"
 #include "simple-pwquery.h"
-
-#define N_(a) a
-#define _(a) a
-
+#include "i18n.h"
 
 enum cmd_and_opt_values 
 { aNull = 0,

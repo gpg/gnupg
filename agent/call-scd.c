@@ -55,6 +55,8 @@ static pth_mutex_t scd_lock = PTH_MUTEX_INIT;
 struct learn_parm_s {
   void (*kpinfo_cb)(void*, const char *);
   void *kpinfo_cb_arg;
+  void (*certinfo_cb)(void*, const char *);
+  void *certinfo_cb_arg;
 };
 
 struct inq_needpin_s {
@@ -230,7 +232,11 @@ learn_status_cb (void *opaque, const char *line)
     ;
   while (spacep (line))
     line++;
-  if (keywordlen == 11 && !memcmp (keyword, "KEYPAIRINFO", keywordlen))
+  if (keywordlen == 8 && !memcmp (keyword, "CERTINFO", keywordlen))
+    {
+      parm->certinfo_cb (parm->certinfo_cb_arg, line);
+    }
+  else if (keywordlen == 11 && !memcmp (keyword, "KEYPAIRINFO", keywordlen))
     {
       parm->kpinfo_cb (parm->kpinfo_cb_arg, line);
     }
@@ -247,7 +253,10 @@ learn_status_cb (void *opaque, const char *line)
 /* Perform the learn command and return a list of all private keys
    stored on the card. */
 int
-agent_card_learn (void (*kpinfo_cb)(void*, const char *), void *kpinfo_cb_arg)
+agent_card_learn (void (*kpinfo_cb)(void*, const char *),
+                  void *kpinfo_cb_arg,
+                  void (*certinfo_cb)(void*, const char *),
+                  void *certinfo_cb_arg)
 {
   int rc;
   struct learn_parm_s parm;
@@ -259,6 +268,8 @@ agent_card_learn (void (*kpinfo_cb)(void*, const char *), void *kpinfo_cb_arg)
   memset (&parm, 0, sizeof parm);
   parm.kpinfo_cb = kpinfo_cb;
   parm.kpinfo_cb_arg = kpinfo_cb_arg;
+  parm.certinfo_cb = certinfo_cb;
+  parm.certinfo_cb_arg = certinfo_cb_arg;
   rc = assuan_transact (scd_ctx, "LEARN --force",
                         NULL, NULL, NULL, NULL,
                         learn_status_cb, &parm);
