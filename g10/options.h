@@ -75,6 +75,7 @@ struct {
     int no_encrypt_to;
     int interactive;
     STRLIST notation_data;
+    const char *set_policy_url;
 } opt;
 
 

@@ -143,6 +143,7 @@ enum cmd_and_opt_values { aNull = 0,
     oEmuChecksumBug,
     oRunAsShmCP,
     oSetFilename,
+    oSetPolicyURL,
     oComment,
     oThrowKeyid,
     oForceV3Sigs,
@@ -293,6 +294,7 @@ static ARGPARSE_OPTS opts[] = {
     { oEmuChecksumBug, "emulate-checksum-bug", 0, "@"},
     { oRunAsShmCP, "run-as-shm-coprocess", 4, "@" },
     { oSetFilename, "set-filename", 2, "@" },
+    { oSetPolicyURL, "set-policy-url", 2, "@" },
     { oComment, "comment", 2, "@" },
     { oNoVersion, "no-version", 0,   "@"},
     { oNotDashEscaped, "not-dash-escaped", 0, "@" },
@@ -315,6 +317,7 @@ static void set_cmd( enum cmd_and_opt_values *ret_cmd,
 static void print_hex( byte *p, size_t n );
 static void print_mds( const char *fname, int algo );
 static void add_notation_data( const char *string );
+static int  check_policy_url( const char *s );
 
 const char *
 strusage( int level )
@@ -709,6 +712,7 @@ main( int argc, char **argv )
 	  #endif
 	    break;
 	  case oSetFilename: opt.set_filename = pargs.r.ret_str; break;
+	  case oSetPolicyURL: opt.set_policy_url = pargs.r.ret_str; break;
 	  case oComment: opt.comment_string = pargs.r.ret_str; break;
 	  case oThrowKeyid: opt.throw_keyid = 1; break;
 	  case oForceV3Sigs: opt.force_v3_sigs = 1; break;
@@ -800,6 +804,10 @@ main( int argc, char **argv )
 	m_free(s2k_digest_string); s2k_digest_string = NULL;
 	if( check_digest_algo(opt.s2k_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
+    }
+    if( opt.set_policy_url ) {
+	if( check_policy_url( opt.set_policy_url ) )
+	    log_error(_("the given policy URL is invalid\n"));
     }
     if( opt.def_compress_algo < 1 || opt.def_compress_algo > 2 )
 	log_error(_("compress algorithm must be in range %d..%d\n"), 1, 2);
@@ -1394,9 +1402,17 @@ print_mds( const char *fname, int algo )
 static void
 add_notation_data( const char *string )
 {
-    const char *s = string;
+    const char *s;
     const char *s2;
+    STRLIST sl;
+    int critical=0;
     int highbit=0;
+
+    if( *string == '!' ) {
+	critical = 1;
+	string++;
+    }
+    s = string;
 
     if( !*s || (*s & 0x80) || (!isalpha(*s) && *s != '_') ) {
 	log_error(_("the first character of a notation name "
@@ -1429,10 +1445,28 @@ add_notation_data( const char *string )
 
     if( highbit ) {  /* must use UTF8 encoding */
 	char *p = native_to_utf8( string );
-	add_to_strlist( &opt.notation_data, p );
+	sl = add_to_strlist( &opt.notation_data, p );
 	m_free( p );
     }
     else
-	add_to_strlist( &opt.notation_data, string );
+	sl = add_to_strlist( &opt.notation_data, string );
+
+    if( critical )
+	sl->flags |= 1;
+}
+
+
+static int
+check_policy_url( const char *s )
+{
+    if( *s == '!' )
+	s++;
+    if( !*s )
+	return -1;
+    for(; *s ; s++ ) {
+	if( (*s & 0x80) || iscntrl(*s) )
+	    return -1;
+    }
+    return 0;
 }
 

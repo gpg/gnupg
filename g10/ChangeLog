@@ -1,3 +1,16 @@
+Wed May 26 14:36:29 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* build-packet.c (build_sig_subpkt): Support large packets.
+	* parse-packet.c (enum_sig_subpkt): Replaces parse_sig_subpkt.
+	* mainproc.c (print_notation_data): Print all notation packets.
+	* g10.c (add_notation_data): Add a way to specify the critical flag.
+	(main): Add option --set-policy-url.
+	(check_policy_url): Basic checks.
+	* sign.c (mk_notation_and_policy): Replaces mk_notation.
+
+	* parse-packet.c (can_handle_critical): Moved decision whether we can
+	handle critical subpacket to an extra function.
+
 Tue May 25 19:50:32 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* sign.c (sign_file): Always use compression algo 1 for signed

@@ -497,29 +497,39 @@ print_notation_data( PKT_signature *sig )
 {
     size_t n, n1, n2;
     const byte *p;
+    int seq = 0;
 
-    /* FIXME: we can not handle multiple notaion data packets yet */
-    p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_NOTATION, &n );
-    if( !p )
-	return;
-    if( n < 8 ) {
-	log_info(_("WARNING: invalid notation data found\n"));
-	return;
+    while( (p = enum_sig_subpkt( sig->hashed_data, SIGSUBPKT_NOTATION,
+				 &n, &seq )) ) {
+	if( n < 8 ) {
+	    log_info(_("WARNING: invalid notation data found\n"));
+	    return;
+	}
+	if( !(*p & 0x80) )
+	    return; /* not human readable */
+	n1 = (p[4] << 8) | p[5];
+	n2 = (p[6] << 8) | p[7];
+	p += 8;
+	if( 8+n1+n2 != n ) {
+	    log_info(_("WARNING: invalid notation data found\n"));
+	    return;
+	}
+	log_info(_("Notation: ") );
+	print_string( log_stream(), p, n1, 0 );
+	putc( '=', log_stream() );
+	print_string( log_stream(), p+n1, n2, 0 );
+	putc( '\n', log_stream() );
     }
-    if( !(*p & 0x80) )
-	return; /* not human readable */
-    n1 = (p[4] << 8) | p[5];
-    n2 = (p[6] << 8) | p[7];
-    p += 8;
-    if( 8+n1+n2 != n ) {
-	log_info(_("WARNING: invalid notation data found\n"));
-	return;
+    if( (p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_POLICY, &n ) )) {
+	log_info(_("Policy: ") );
+	print_string( log_stream(), p, n, 0 );
+	putc( '\n', log_stream() );
     }
-    log_info(_("Notation: ") );
-    print_string( log_stream(), p, n1, 0 );
-    putc( '=', log_stream() );
-    print_string( log_stream(), p+n1, n2, 0 );
-    putc( '\n', log_stream() );
+
+    /* Now check wheter the key of this signature has some
+     * notation data */
+
+    /* TODO */
 }
 
 /****************

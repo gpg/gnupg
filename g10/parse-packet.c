@@ -761,9 +761,9 @@ dump_sig_subpkt( int hashed, int type, int critical,
 		if( 8+n1+n2 != length )
 		    p = "[error]";
 		else {
-		    print_string( stdout, s, n1, 0 );
+		    print_string( stdout, s, n1, ')' );
 		    putc( '=', stdout );
-		    print_string( stdout, s+n1, n2, 0 );
+		    print_string( stdout, s+n1, n2, ')' );
 		}
 	    }
 	}
@@ -788,7 +788,8 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	p = "primary user id";
 	break;
       case SIGSUBPKT_POLICY:
-	p = "policy URL";
+	fputs("policy: ", stdout );
+	print_string( stdout, buffer, length, ')' );
 	break;
       case SIGSUBPKT_KEY_FLAGS:
 	p = "key flags";
@@ -836,6 +837,7 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_PREF_SYM:
       case SIGSUBPKT_PREF_HASH:
       case SIGSUBPKT_PREF_COMPR:
+      case SIGSUBPKT_POLICY:
 	return 0;
       case SIGSUBPKT_PRIV_ADD_SIG:
 	/* because we use private data, we check the GNUPG marker */
@@ -849,16 +851,46 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
     return -3;
 }
 
+
+static int
+can_handle_critical( const byte *buffer, size_t n, int type )
+{
+    switch( type ) {
+      case SIGSUBPKT_NOTATION:
+	if( n >= 8 && (*buffer & 0x80) )
+	    return 1; /* human readable is handled */
+	return 0;
+
+      case SIGSUBPKT_SIG_CREATED:
+      case SIGSUBPKT_SIG_EXPIRE:
+      case SIGSUBPKT_KEY_EXPIRE:
+      case SIGSUBPKT_EXPORTABLE:
+      case SIGSUBPKT_ISSUER:/* issuer key ID */
+      case SIGSUBPKT_PREF_SYM:
+      case SIGSUBPKT_PREF_HASH:
+      case SIGSUBPKT_PREF_COMPR:
+	return 1;
+
+      case SIGSUBPKT_POLICY: /* Is enough to show the policy? */
+      default:
+	return 0;
+    }
+}
+
+
 const byte *
-parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
+enum_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype,
+		 size_t *ret_n, int *start )
 {
     int buflen;
     int type;
     int critical;
     int offset;
     size_t n;
+    int seq = 0;
+    int reqseq = start? *start: 0;
 
-    if( !buffer )
+    if( !buffer || reqseq == -1 )
 	return NULL;
     buflen = (*buffer << 8) | buffer[1];
     buffer += 2;
@@ -889,13 +921,17 @@ parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
 	}
 	else
 	    critical = 0;
-	if( reqtype == SIGSUBPKT_TEST_CRITICAL ) {
+	if( !(++seq > reqseq) )
+	    ;
+	else if( reqtype == SIGSUBPKT_TEST_CRITICAL ) {
 	    if( critical ) {
 		if( n-1 > buflen+1 )
 		    goto too_short;
-		if( parse_one_sig_subpkt(buffer+1, n-1, type ) < 0 ) {
+		if( !can_handle_critical(buffer+1, n-1, type ) ) {
 		    log_info(_("subpacket of type %d has critical bit set\n"),
 									type);
+		    if( start )
+			*start = seq;
 		    return NULL; /* this is an error */
 		}
 	    }
@@ -922,6 +958,8 @@ parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
 	      default:
 		break;
 	    }
+	    if( start )
+		*start = seq;
 	    return buffer+offset;
 	}
 	buffer += n; buflen -=n;
@@ -929,13 +967,23 @@ parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
     if( reqtype == SIGSUBPKT_TEST_CRITICAL )
 	return buffer; /* as value true to indicate that there is no */
 		       /* critical bit we don't understand */
+    if( start )
+	*start = -1;
     return NULL; /* end of packets; not found */
 
   too_short:
     log_error("buffer shorter than subpacket\n");
+    if( start )
+	*start = -1;
     return NULL;
 }
 
+
+const byte *
+parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
+{
+    return enum_sig_subpkt( buffer, reqtype, ret_n, NULL );
+}
 
 const byte *
 parse_sig_subpkt2( PKT_signature *sig, sigsubpkttype_t reqtype, size_t *ret_n )

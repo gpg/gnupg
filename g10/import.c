@@ -376,10 +376,10 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	    log_info( _("writing to `%s'\n"),
 				keyblock_resource_name(&kbpos) );
 	if( (rc=lock_keyblock( &kbpos )) )
-	    log_error(_("can't lock keyring `%': %s\n"),
+           log_error(_("can't lock keyring `%s': %s\n"),
 		       keyblock_resource_name(&kbpos), g10_errstr(rc) );
 	else if( (rc=insert_keyblock( &kbpos, keyblock )) )
-	    log_error( _("error writing keyring `%': %s\n"),
+           log_error( _("error writing keyring `%s': %s\n"),
 		       keyblock_resource_name(&kbpos), g10_errstr(rc) );
 	unlock_keyblock( &kbpos );
 	/* we are ready */
@@ -432,7 +432,7 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	    mod_key = 1;
 	    /* keyblock_orig has been updated; write */
 	    if( (rc=lock_keyblock( &kbpos )) )
-		log_error( _("can't lock keyring `%': %s\n"),
+               log_error( _("can't lock keyring `%s': %s\n"),
 			  keyblock_resource_name(&kbpos), g10_errstr(rc) );
 	    else if( (rc=update_keyblock( &kbpos, keyblock_orig )) )
 		log_error( _("error writing keyring `%s': %s\n"),

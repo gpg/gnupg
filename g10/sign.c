@@ -46,35 +46,48 @@
  * NAME=VALUE format.
  */
 static void
-mk_notation( PKT_signature *sig, STRLIST nd )
+mk_notation_and_policy( PKT_signature *sig )
 {
     const char *string, *s;
     byte *buf;
     unsigned n1, n2;
 
-    if( sig->version < 4 ) {
+    /* notation data */
+    if( opt.notation_data && sig->version < 4 )
 	log_info("can't put notation data into v3 signatures\n");
-	return;
+    else if( opt.notation_data ) {
+	STRLIST nd = opt.notation_data;
+
+	for( ; nd; nd = nd->next )  {
+	    string = nd->d;
+	    s = strchr( string, '=' );
+	    if( !s )
+		BUG(); /* we have already parsed this */
+	    n1 = s - string;
+	    s++;
+	    n2 = strlen(s);
+	    buf = m_alloc( 8 + n1 + n2 );
+	    buf[0] = 0x80; /* human readable */
+	    buf[1] = buf[2] = buf[3] = 0;
+	    buf[4] = n1 >> 8;
+	    buf[5] = n1;
+	    buf[6] = n2 >> 8;
+	    buf[7] = n2;
+	    memcpy(buf+8, string, n1 );
+	    memcpy(buf+8+n1, s, n2 );
+	    build_sig_subpkt( sig, SIGSUBPKT_NOTATION
+			      | ((nd->flags & 1)? SIGSUBPKT_FLAG_CRITICAL:0),
+			      buf, 8+n1+n2 );
+	}
     }
 
-    for( ; nd; nd = nd->next )	{
-	string = nd->d;
-	s = strchr( string, '=' );
-	if( !s )
-	    BUG(); /* we have already parsed this */
-	n1 = s - string;
-	s++;
-	n2 = strlen(s);
-	buf = m_alloc( 8 + n1 + n2 );
-	buf[0] = 0x80; /* human readable */
-	buf[1] = buf[2] = buf[3] = 0;
-	buf[4] = n1 >> 8;
-	buf[5] = n1;
-	buf[6] = n2 >> 8;
-	buf[7] = n2;
-	memcpy(buf+8, string, n1 );
-	memcpy(buf+8+n1, s, n2 );
-	build_sig_subpkt( sig, SIGSUBPKT_NOTATION, buf, 8+n1+n2 );
+    /* set policy URL */
+    if( (s=opt.set_policy_url) ) {
+	if( *s == '!' )
+	    build_sig_subpkt( sig, SIGSUBPKT_POLICY | SIGSUBPKT_FLAG_CRITICAL,
+			      s+1, strlen(s+1) );
+	else
+	    build_sig_subpkt( sig, SIGSUBPKT_POLICY, s, strlen(s) );
     }
 }
 
@@ -435,8 +448,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    md_putc( md, sig->version );
 	}
 
-	if( opt.notation_data )
-	     mk_notation( sig, opt.notation_data );
+	mk_notation_and_policy( sig );
 
 	md_putc( md, sig->sig_class );
 	if( sig->version < 4 ) {
@@ -625,8 +637,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	    md_putc( md, sig->version );
 	}
 
-	if( opt.notation_data )
-	     mk_notation( sig, opt.notation_data );
+	mk_notation_and_policy( sig );
 
 	md_putc( md, sig->sig_class );
 	if( sig->version < 4 ) {
@@ -756,8 +767,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 	rc = (*mksubpkt)( sig, opaque );
 
     if( !rc ) {
-	if( opt.notation_data )
-	     mk_notation( sig, opt.notation_data );
+	mk_notation_and_policy( sig );
 	if( sig->version >= 4 )
 	    md_putc( md, sig->version );
 	md_putc( md, sig->sig_class );

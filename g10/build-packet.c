@@ -566,6 +566,7 @@ find_subpkt( byte *buffer, sigsubpkttype_t reqtype,
 	return NULL;
     buflen = (*buffer << 8) | buffer[1];
     buffer += 2;
+  log_debug("find_subpkt: tyoe=%d bufferlength=%d\n", reqtype, buflen );
     for(;;) {
 	if( !buflen )
 	    return NULL; /* end of packets; not found */
@@ -586,6 +587,7 @@ find_subpkt( byte *buffer, sigsubpkttype_t reqtype,
 	    buffer++;
 	    buflen--;
 	}
+  log_debug("find_subpkt: this len=%u\n", n );
 	if( buflen < n )
 	    break;
 	type = *buffer & 0x7f;
@@ -622,21 +624,29 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 {
 
     byte *data;
-    size_t hlen, dlen;
-    int found, hashed, realloced;
+    size_t hlen, dlen, nlen;
+    int found=0;
+    int critical, hashed, realloced;
     size_t n, n0;
 
-    if( (data = find_subpkt( sig->hashed_data, type, &hlen, &dlen )) )
+    critical = (type & SIGSUBPKT_FLAG_CRITICAL);
+    type &= ~SIGSUBPKT_FLAG_CRITICAL;
+
+    if( type == SIGSUBPKT_NOTATION )
+	; /* we allow multiple packets */
+    else if( (data = find_subpkt( sig->hashed_data, type, &hlen, &dlen )) )
 	found = 1;
     else if( (data = find_subpkt( sig->unhashed_data, type, &hlen, &dlen )))
 	found = 2;
-    else
-	found = 0;
 
     if( found )
 	log_bug("build_sig_packet: update nyi\n");
-    if( buflen+1 >= 192 )
-	log_bug("build_sig_packet: long subpackets are nyi\n");
+    if( (buflen+1) >= 8384 )
+	nlen = 5;
+    else if( (buflen+1) >= 192 )
+	nlen = 2;
+    else
+	nlen = 1;
 
     switch( type ) {
       case SIGSUBPKT_SIG_CREATED:
@@ -647,6 +657,7 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
       case SIGSUBPKT_KS_FLAGS:
       case SIGSUBPKT_KEY_EXPIRE:
       case SIGSUBPKT_NOTATION:
+      case SIGSUBPKT_POLICY:
 	       hashed = 1; break;
       default: hashed = 0; break;
     }
@@ -654,7 +665,7 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
     if( hashed ) {
 	n0 = sig->hashed_data ? ((*sig->hashed_data << 8)
 				    | sig->hashed_data[1]) : 0;
-	n = n0 + 1 + 1 + buflen; /* length, type, buffer */
+	n = n0 + nlen + 1 + buflen; /* length, type, buffer */
 	realloced = !!sig->hashed_data;
 	data = sig->hashed_data ? m_realloc( sig->hashed_data, n+2 )
 				: m_alloc( n+2 );
@@ -662,17 +673,37 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
     else {
 	n0 = sig->unhashed_data ? ((*sig->unhashed_data << 8)
 				      | sig->unhashed_data[1]) : 0;
-	n = n0 + 1 + 1 + buflen; /* length, type, buffer */
+	n = n0 + nlen + 1 + buflen; /* length, type, buffer */
 	realloced = !!sig->unhashed_data;
 	data = sig->unhashed_data ? m_realloc( sig->unhashed_data, n+2 )
 				  : m_alloc( n+2 );
     }
 
+    if( critical )
+	type |= SIGSUBPKT_FLAG_CRITICAL;
+
     data[0] = (n >> 8) & 0xff;
     data[1] = n & 0xff;
-    data[n0+2] = buflen+1;
-    data[n0+3] = type;
-    memcpy(data+n0+4, buffer, buflen );
+    if( nlen == 5 ) {
+	data[n0+2] = 255;
+	data[n0+3] = (buflen+1) >> 24;
+	data[n0+4] = (buflen+1) >> 16;
+	data[n0+5] = (buflen+1) >>  8;
+	data[n0+6] = (buflen+1);
+	data[n0+7] = type;
+	memcpy(data+n0+8, buffer, buflen );
+    }
+    else if( nlen == 2 ) {
+	data[n0+2] = (buflen+1-192) / 256 + 192;
+	data[n0+3] = (buflen+1-192) & 256;
+	data[n0+4] = type;
+	memcpy(data+n0+5, buffer, buflen );
+    }
+    else {
+	data[n0+2] = buflen+1;
+	data[n0+3] = type;
+	memcpy(data+n0+4, buffer, buflen );
+    }
 
     if( hashed ) {
 	if( !realloced )
@@ -685,7 +716,6 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 	sig->unhashed_data = data;
     }
 }
-
 
 /****************
  * Put all the required stuff from SIG into subpackets of sig.

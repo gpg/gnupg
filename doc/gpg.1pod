@@ -396,6 +396,13 @@ B<--notation-data>, B<-N> I<name>=<value>
     or the underscore; the first character muts not be a digit.
     B<value> May be any printable string; it will encoded in UTF8,
     so sou should have check that your B<--charset> is set right.
+    If you prefix I<name> with an exclamation mark, the notation
+    data will be flagged as critical. (rfc2440:5.2.3.15).
+
+B<--set-policy-url> I<string>
+    Use I<string> as Policy URL for signatures (rfc2440:5.2.3.19).
+    If you prefix it with an exclamation mark, the policy URL
+    packet will be flagged as critical.
 
 B<--set-filename> I<string>
     Use I<string> as the name of file which is stored in
