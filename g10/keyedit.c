@@ -335,8 +335,13 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		uidnode = (node->flag & NODFLG_MARK_A)? node : NULL;
 		if(uidnode && uidnode->pkt->pkt.user_id->is_revoked)
 		  {
-		    tty_printf(_("User ID \"%s\" is revoked."),
-			       uidnode->pkt->pkt.user_id->name);
+		    char *user=utf8_to_native(uidnode->pkt->pkt.user_id->name,
+					      uidnode->pkt->pkt.user_id->len,
+					      0);
+
+		    tty_printf(_("User ID \"%s\" is revoked."),user);
+
+		    m_free(user);
 
 		    if(opt.expert)
 		      {
@@ -359,14 +364,17 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		if( sk_keyid[0] == node->pkt->pkt.signature->keyid[0]
 		    && sk_keyid[1] == node->pkt->pkt.signature->keyid[1] ) {
                     char buf[50];
+		    char *user=utf8_to_native(uidnode->pkt->pkt.user_id->name,
+					      uidnode->pkt->pkt.user_id->len,
+					      0);
 
 		    if(!node->pkt->pkt.signature->flags.exportable && !local)
 		      {
 			/* It's a local sig, and we want to make a
                            exportable sig. */
 			tty_printf(_("Your current signature on \"%s\"\n"
-				     "is a local signature.\n"),
-				   uidnode->pkt->pkt.user_id->name);
+				     "is a local signature.\n"),user);
+
 			if(cpr_get_answer_is_yes("sign_uid.promote_okay",
 						 _("Do you want to promote "
 						   "it to a full exportable "
@@ -389,17 +397,17 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
                     if (!node->pkt->pkt.signature->flags.exportable && local)
                       tty_printf(_(
                          "\"%s\" was already locally signed by key %08lX\n"),
-                                   uidnode->pkt->pkt.user_id->name,
-                                   (ulong)sk_keyid[1] );
+				 user,(ulong)sk_keyid[1] );
                     else
                       tty_printf(_(
                          "\"%s\" was already signed by key %08lX\n"),
-                                 uidnode->pkt->pkt.user_id->name,
-				 (ulong)sk_keyid[1] );
+                                 user,(ulong)sk_keyid[1] );
                     sprintf (buf, "%08lX%08lX",
                              (ulong)sk->keyid[0], (ulong)sk->keyid[1] );
                     write_status_text (STATUS_ALREADY_SIGNED, buf);
 		    uidnode->flag &= ~NODFLG_MARK_A; /* remove mark */
+
+		    m_free(user);
 		}
 	    }
 	}
@@ -2108,8 +2116,15 @@ menu_set_primary_uid ( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	    PKT_signature *sig = node->pkt->pkt.signature;
 	    if ( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
 		&& (uid && (sig->sig_class&~3) == 0x10)
-                && sig->version >= 4
 		&& attribute == (uid->attrib_data!=NULL)) {
+	      if(sig->version < 4) {
+		char *user=utf8_to_native(uid->name,strlen(uid->name),0);
+
+		log_info(_("skipping v3 self-signature on user id \"%s\"\n"),
+			 user);
+		m_free(user);
+	      }
+	      else {
 	        /* This is a selfsignature which is to be replaced.
 		   We can just ignore v3 signatures because they are
 		   not able to carry the primary ID flag.  We also
@@ -2158,7 +2173,8 @@ menu_set_primary_uid ( KBNODE pub_keyblock, KBNODE sec_keyblock )
                     m_free( node->pkt );
                     node->pkt = newpkt;
                     modified = 1;
-                }
+		}
+	      }
 	    }
 	}
     }
