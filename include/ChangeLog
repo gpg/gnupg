@@ -1,3 +1,7 @@
+2002-10-28  Stefan Bellon  <sbellon@sbellon.de>
+
+	* util.h [__riscos__]: Added prototypes for new filetype support.
+
 2002-10-21  Werner Koch  <wk@gnupg.org>
 
 	* util.h [__CYGWIN32__]: Don't need the registry prototypes.

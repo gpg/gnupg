@@ -1,3 +1,7 @@
+2002-10-28  Stefan Bellon  <sbellon@sbellon.de>
+
+	* gpgkeys_hkp.c: Tidied up RISC OS initializations.
+
 2002-10-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (main), gpgkeys_ldap.c (main): Add -V flag to
@@ -26,6 +30,10 @@
 
 	* gpgkeys_hkp.c (get_key): Properly respond with KEY FAILED (to
 	gpg) and "key not found" (to user) on failure.
+
+2002-09-12  Stefan Bellon  <sbellon@sbellon.de>
+
+	* gpgkeys_hkp.c: Tidied up RISC OS initializations.
 
 2002-09-09  Werner Koch  <wk@gnupg.org>
 

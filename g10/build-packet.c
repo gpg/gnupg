@@ -528,7 +528,14 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
 static u32
 calc_plaintext( PKT_plaintext *pt )
 {
+#ifndef __riscos__
     return pt->len? (1 + 1 + pt->namelen + 4 + pt->len) : 0;
+#else
+    /* Under RISC OS, we add ",xxx" to the file name in order to
+       be able to recreate the correct file type on the recipients'
+       side. Therefore we need 4 bytes more. */
+    return pt->len? (1 + 1 + pt->namelen + 4 + pt->len + 4) : 0;
+#endif
 }
 
 static int
@@ -541,9 +548,26 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
 
     write_header(out, ctb, calc_plaintext( pt ) );
     iobuf_put(out, pt->mode );
+#ifndef __riscos__
     iobuf_put(out, pt->namelen );
     for(i=0; i < pt->namelen; i++ )
 	iobuf_put(out, pt->name[i] );
+#else
+    /* Under RISC OS, we add ",xxx" to the file name in order to
+       be able to recreate the correct file type on the recipients'
+       side. Therefore we need 4 bytes more. */
+    iobuf_put(out, pt->namelen + 4);
+    for(i=0; i < pt->namelen; i++ )
+        if( pt->name[i] != '/' )
+            iobuf_put(out, pt->name[i] );
+        else
+            iobuf_put(out, '.' );
+    i = riscos_get_filetype( iobuf_get_real_fname( pt->buf ) );
+    iobuf_put(out, ',');
+    iobuf_put(out, "0123456789abcdef"[(i >> 8) & 0xf]);
+    iobuf_put(out, "0123456789abcdef"[(i >> 4) & 0xf]);
+    iobuf_put(out, "0123456789abcdef"[(i >> 0) & 0xf]);
+#endif
     if( write_32(out, pt->timestamp ) )
 	rc = G10ERR_WRITE_FILE;
 
