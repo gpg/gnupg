@@ -86,6 +86,10 @@ parse_keyserver_options(char *options)
 	opt.honor_http_proxy=1;
       else if(strcasecmp(tok,"no-honor-http-proxy")==0)
 	opt.honor_http_proxy=0;
+      else if(strcasecmp(tok,"refresh-add-fake-v3-keyids")==0)
+	opt.keyserver_options.refresh_add_fake_v3_keyids=1;
+      else if(strcasecmp(tok,"no-refresh-add-fake-v3-keyids")==0)
+	opt.keyserver_options.refresh_add_fake_v3_keyids=0;
       else if(strlen(tok)>0)
 	add_to_strlist(&opt.keyserver_options.other,tok);
 
@@ -660,7 +664,7 @@ keyserver_import_keyid(u32 *keyid)
 
 /* code mostly stolen from do_export_stream */
 static int 
-keyidlist(STRLIST users,u32 (**kidlist)[2],int *count)
+keyidlist(STRLIST users,u32 (**kidlist)[2],int *count,int fakev3)
 {
   int rc=0,ndesc,num=100;
   KBNODE keyblock=NULL,node;
@@ -711,6 +715,27 @@ keyidlist(STRLIST users,u32 (**kidlist)[2],int *count)
 
       if((node=find_kbnode(keyblock,PKT_PUBLIC_KEY)))
 	{
+	  /* This is to work around a bug in some keyservers (pksd and
+             OKS) that calculate v4 RSA keyids as if they were v3 RSA.
+             The answer is to refresh both the correct v4 keyid
+             (e.g. 99242560) and the fake v3 keyid (e.g. 68FDDBC7).
+             This only happens for key refresh using the HKP scheme
+             and if the refresh-add-fake-v3-keyids keyserver option is
+             set. */
+	  if(fakev3 && is_RSA(node->pkt->pkt.public_key->pubkey_algo) &&
+	     node->pkt->pkt.public_key->version>=4)
+	    {
+	      mpi_get_keyid(node->pkt->pkt.public_key->pkey[0],
+			    (*kidlist)[*count]);
+	      (*count)++;
+
+	      if(*count==num)
+		{
+		  num+=100;
+		  *kidlist=m_realloc(*kidlist,sizeof(u32)*2*num);
+		}
+	    }
+
 	  keyid_from_pk(node->pkt->pkt.public_key,(*kidlist)[*count]);
 
 	  (*count)++;
@@ -739,11 +764,19 @@ keyidlist(STRLIST users,u32 (**kidlist)[2],int *count)
 int 
 keyserver_refresh(STRLIST users)
 {
-  int rc;
+  int rc,count,fakev3=0;
   u32 (*kidlist)[2];
-  int count;
 
-  rc=keyidlist(users,&kidlist,&count);
+  /* If refresh_add_fake_v3_keyids is on and it's a HKP scheme, then
+     enable fake v3 keyid generation. */
+  if(opt.keyserver_options.refresh_add_fake_v3_keyids &&
+     opt.keyserver_scheme &&
+     (strcasecmp(opt.keyserver_scheme,"x-hkp")==0 ||
+      strcasecmp(opt.keyserver_scheme,"hkp")==0 ||
+      strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0))
+    fakev3=1;
+
+  rc=keyidlist(users,&kidlist,&count,fakev3);
   if(rc)
     return rc;
 

@@ -1,3 +1,13 @@
+2002-02-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c, options.h (parse_keyserver_options, keyidlist):
+	Workaround for the pksd and OKS keyserver bug that calculates v4
+	RSA keyids as if they were v3.  The workaround/hack is to fetch
+	both the v4 (e.g. 99242560) and v3 (e.g. 68FDDBC7) keyids.  This
+	only happens for key refresh while using the HKP scheme and the
+	refresh-add-fake-v3-keyids keyserver option must be set.  This
+	should stay off by default.
+
 2002-02-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_spawn): Bug fix - do not append keys to

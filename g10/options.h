@@ -107,6 +107,7 @@ struct {
       int include_disabled:1;
       int use_temp_files:1;
       int keep_temp_files:1;
+      int refresh_add_fake_v3_keyids:1;
       STRLIST other;
     } keyserver_options;
     int exec_disable;
