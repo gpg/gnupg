@@ -1,3 +1,9 @@
+2002-09-03  Neal H. Walfield  <neal@g10code.de>
+
+	* findkey.c: Include <fcntl.h>.
+	(agent_write_private_key): Prefer POSIX compatibity, open and
+	fdopen, over the simplicity of GNU extensions, fopen(file, "x").
+
 2002-08-22  Werner Koch  <wk@gnupg.org>
 
 	* query.c (agent_askpin): Provide the default desc text depending

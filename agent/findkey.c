@@ -1,5 +1,5 @@
 /* findkey.c - locate the secret key
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001,02 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <fcntl.h>
 #include <assert.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -57,15 +58,33 @@ agent_write_private_key (const unsigned char *grip,
     fp = fopen (fname, "wb");
   else
     {
+      int fd;
+
       if (!access (fname, F_OK))
       {
         log_error ("secret key file `%s' already exists\n", fname);
         xfree (fname);
         return seterr (General_Error);
       }
-      fp = fopen (fname, "wbx");  /* FIXME: the x is a GNU extension - let
-                                     configure check whether this actually
-                                     works */
+
+      /* We would like to create FNAME but only if it does not already
+	 exist.  We cannot make this guarantee just using POSIX (GNU
+	 provides the "x" opentype for fopen, however, this is not
+	 portable).  Thus, we use the more flexible open function and
+	 then use fdopen to obtain a stream.
+
+	 The mode parameter to open is what fopen uses.  It will be
+	 combined with the process' umask automatically.  */
+      fd = open (fname, O_CREAT | O_EXCL | O_RDWR,
+		 S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+      if (fd < 0)
+	fp = 0;
+      else
+	{
+	  fp = fdopen (fd, "wb");
+	  if (! fp)
+	    close (fd);
+	}
     }
 
   if (!fp) 
