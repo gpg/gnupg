@@ -1,3 +1,7 @@
+2002-05-07  Stefan Bellon  <sbellon@sbellon.de>
+
+	* gpgsplit.c (create_filename): Use EXTSEP_S instead of ".".
+
 2002-04-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Do not list libraries in -lxxx format in a

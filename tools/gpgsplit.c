@@ -192,7 +192,7 @@ create_filename (int pkttype)
 
     assert (pkttype < 1000 && pkttype >= 0 );
     partno++;
-    sprintf (name, "%s%06u-%03d.%.40s",
+    sprintf (name, "%s%06u-%03d" EXTSEP_S "%.40s",
              opt_prefix, partno, pkttype, pkttype_to_string (pkttype));
     return name;
 }

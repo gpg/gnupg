@@ -1,3 +1,7 @@
+2002-05-07  Stefan Bellon  <sbellon@sbellon.de>
+
+	* md.c (md_start_debug): Use EXTSEP_S instead of ".".
+
 2002-04-24  Werner Koch  <wk@gnupg.org>
 
 	* tiger.c (tiger_final): Removed superfluous toke pasting operators.
