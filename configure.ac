@@ -42,6 +42,7 @@ AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of this package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version of this package])
+AC_DEFINE(_GNU_SOURCE,1,[Some tests rely on this (stpcpy) and it should be used for new programs anyway])
 
 AC_PROG_AWK
 
@@ -145,13 +146,6 @@ AC_ARG_WITH(capabilities,
 AC_MSG_RESULT($use_capabilities)
 
 
-
-AH_TOP([
-/* need this, because some autoconf tests rely on this (e.g. stpcpy)
- * and it should be used for new programs  */
-#define _GNU_SOURCE  1
-])
-
 AH_BOTTOM([
 #if !(defined(HAVE_FORK) && defined(HAVE_PIPE) && defined(HAVE_WAITPID))
 #define EXEC_TEMPFILE_ONLY
@@ -159,8 +153,6 @@ AH_BOTTOM([
 
 #include "g10defs.h"
 ])
-
-
 
 
 AM_MAINTAINER_MODE

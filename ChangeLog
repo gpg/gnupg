@@ -1,3 +1,11 @@
+2002-03-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* Add a AC_DEFINE(_GNU_SOURCE).  Since this is always defined in
+	config.h, the various autoconf tests should be tested with it
+	enabled.  This also works around a compiler warning caused by a
+	minor header bug in glibc 2.1 that causes fseeko to be defined
+	when building gpg, but not when tested for in configure.
+
 2002-03-03  Werner Koch  <wk@gnupg.org>
 
 	Release 1.0.6d snapshot.
