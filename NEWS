@@ -18,10 +18,12 @@ Noteworthy changes in version 1.2.3 (unreleased)
 
     * New "tru" record in --with-colons --list-keys listings.  It
       shows the status of the trust database that was used to
-      calculate the key validity in the listings.
+      calculate the key validity in the listings.  See doc/DETAILS for
+      the specifics of this.
 
     * New REVKEYSIG status tag for --status-fd.  It indicates a valid
-      signature that was issued by a revoked key.
+      signature that was issued by a revoked key.  See doc/DETAILS for
+      the specifics of this.
 
 
 Noteworthy changes in version 1.2.2 (2003-05-01)
