@@ -1,3 +1,8 @@
+2002-05-22  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Check for strcasecmp and strncasecmp.  Removed
+	stricmp and memicmp checks.
+
 2002-05-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: If LDAP comes up unusable, try #including <lber.h>
