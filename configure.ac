@@ -835,8 +835,32 @@ if test "$use_local_zlib" = yes ; then
 else
     AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, false)
 fi
-AC_SUBST(ZLIBS)
 
+_cppflags="${CPPFLAGS}"
+_ldflags="${LDFLAGS}"
+AC_ARG_WITH(bzip2,
+   AC_HELP_STRING([--with-bzip2=DIR],[look for bzip2 in DIR]),
+    [
+    if test -d "$withval" ; then
+      CPPFLAGS="${CPPFLAGS} -I$withval/include"
+      LDFLAGS="${LDFLAGS} -L$withval/lib"
+    fi
+    ],withval="")
+
+if test "$withval" != no ; then
+   AC_CHECK_HEADER(bzlib.h,
+      AC_CHECK_LIB(bz2,BZ2_bzCompressInit,
+	[
+	ZLIBS="$ZLIBS -lbz2"
+	AC_DEFINE(HAVE_BZIP2,1,
+		[Defined if the bz2 compression library is available])
+	],
+	CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}),
+	CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags})
+fi
+
+AM_CONDITIONAL(ENABLE_BZIP2_SUPPORT,test x"$have_bz2" = "xyes")
+AC_SUBST(ZLIBS)
 
 # Allow users to append something to the version string without
 # flagging it as development version.  The user version parts is

@@ -1,3 +1,7 @@
+2003-10-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Locate libbz2 for bzip2 compression support.
+
 2003-10-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac (DLLIBS): Work properly on platforms where dlopen
