@@ -304,7 +304,7 @@ parse_keyrec(char *keystring)
 {
   static struct keyrec *work=NULL;
   struct keyrec *ret=NULL;
-  char *record,*tok;
+  char *record;
   int i;
 
   if(keystring==NULL)
@@ -342,6 +342,8 @@ parse_keyrec(char *keystring)
 
   if(ascii_strcasecmp("pub",record)==0)
     {
+      char *tok;
+
       if(work->desc.mode)
 	{
 	  ret=work;
@@ -415,7 +417,6 @@ parse_keyrec(char *keystring)
   else if(ascii_strcasecmp("uid",record)==0 && work->desc.mode)
     {
       char *userid,*tok,*decoded;
-      int i=0;
 
       if((tok=strsep(&keystring,":"))==NULL)
 	return ret;
@@ -427,6 +428,8 @@ parse_keyrec(char *keystring)
 
       /* By definition, de-%-encoding is always smaller than the
          original string so we can decode in place. */
+
+      i=0;
 
       while(*tok)
 	if(tok[0]=='%' && tok[1] && tok[2])

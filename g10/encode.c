@@ -699,7 +699,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	enc = m_alloc_clear( sizeof *enc );
 	enc->pubkey_algo = pk->pubkey_algo;
 	keyid_from_pk( pk, enc->keyid );
-	enc->throw_keyid = opt.throw_keyid;
+	enc->throw_keyid = (opt.throw_keyid || (pk_list->flags&1));
 
 	if(opt.throw_keyid && (opt.pgp2 || opt.pgp6 || opt.pgp7))
 	  {

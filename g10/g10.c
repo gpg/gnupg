@@ -65,6 +65,7 @@ enum cmd_and_opt_values { aNull = 0,
     oOutput	  = 'o',
     oQuiet	  = 'q',
     oRecipient	  = 'r',
+    oHiddenRecipient = 'R',
     aSign	  = 's',
     oTextmodeShort= 't',
     oUser	  = 'u',
@@ -218,6 +219,7 @@ enum cmd_and_opt_values { aNull = 0,
     oComment,
     oDefaultComment,
     oThrowKeyid,
+    oNoThrowKeyid,
     oShowPhotos,
     oNoShowPhotos,
     oPhotoViewer,
@@ -247,6 +249,7 @@ enum cmd_and_opt_values { aNull = 0,
     oTempDir,
     oExecPath,
     oEncryptTo,
+    oHiddenEncryptTo,
     oNoEncryptTo,
     oLoggerFD,
 #ifdef __riscos__
@@ -372,6 +375,7 @@ static ARGPARSE_OPTS opts[] = {
     { oArmor, "armor",     0, N_("create ascii armored output")},
     { oArmor, "armour",     0, "@" },
     { oRecipient, "recipient", 2, N_("|NAME|encrypt for NAME")},
+    { oHiddenRecipient, "hidden-recipient", 2, "@" },
     { oRecipient, "remote-user", 2, "@"},  /* old option name */
     { oDefRecipient, "default-recipient" ,2,
 				  N_("|NAME|use NAME as default recipient")},
@@ -381,6 +385,7 @@ static ARGPARSE_OPTS opts[] = {
     { oTempDir, "temp-directory", 2, "@" },
     { oExecPath, "exec-path", 2, "@" },
     { oEncryptTo, "encrypt-to", 2, "@" },
+    { oHiddenEncryptTo, "hidden-encrypt-to", 2, "@" },
     { oNoEncryptTo, "no-encrypt-to", 0, "@" },
     { oUser, "local-user",2, N_("use this user-id to sign or decrypt")},
     { oCompress, NULL,	      1, N_("|N|set compress level N (0 disables)") },
@@ -460,6 +465,7 @@ static ARGPARSE_OPTS opts[] = {
     { oCertDigestAlgo, "cert-digest-algo", 2 , "@" },
     { oCompressAlgo, "compress-algo", 1 , N_("|N|use compress algorithm N")},
     { oThrowKeyid, "throw-keyid", 0, N_("throw keyid field of encrypted packets")},
+    { oNoThrowKeyid, "no-throw-keyid", 0, "@" },
     { oShowPhotos,   "show-photos", 0, N_("Show Photo IDs")},
     { oNoShowPhotos, "no-show-photos", 0, N_("Don't show Photo IDs")},
     { oPhotoViewer,  "photo-viewer", 2, N_("Set command line to view Photo IDs")},
@@ -1515,6 +1521,7 @@ main( int argc, char **argv )
 	  case oComment: opt.comment_string = pargs.r.ret_str; break;
 	  case oDefaultComment: opt.comment_string = NULL; break;
 	  case oThrowKeyid: opt.throw_keyid = 1; break;
+	  case oNoThrowKeyid: opt.throw_keyid = 0; break;
 	  case oShowPhotos: opt.show_photos = 1; break;
 	  case oNoShowPhotos: opt.show_photos = 0; break;
 	  case oPhotoViewer: opt.photo_viewer = pargs.r.ret_str; break;
@@ -1535,8 +1542,17 @@ main( int argc, char **argv )
 	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
 	    sl->flags = 1;
 	    break;
+	  case oHiddenEncryptTo: /* store the recipient in the second list */
+	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
+	    sl->flags = 1|2;
+	    break;
 	  case oRecipient: /* store the recipient */
 	    add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
+            any_explicit_recipient = 1;
+	    break;
+	  case oHiddenRecipient: /* store the recipient with a flag */
+	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
+	    sl->flags = 2;
             any_explicit_recipient = 1;
 	    break;
 	  case oTextmodeShort: opt.textmode = 2; break;

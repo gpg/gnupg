@@ -89,7 +89,7 @@ typedef struct pk_list *PK_LIST;
 struct pk_list {
     PK_LIST next;
     PKT_public_key *pk;
-    int mark;
+    int flags; /* flag bit 1==throw_keyid */
 };
 
 /* structure to hold a couple of secret key certificates */
@@ -97,7 +97,7 @@ typedef struct sk_list *SK_LIST;
 struct sk_list {
     SK_LIST next;
     PKT_secret_key *sk;
-    int mark;
+    int mark; /* not used */
 };
 
 /* structure to collect all information which can be used to

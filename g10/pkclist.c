@@ -808,7 +808,21 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
      * list of the encrypt-to ones (we always trust them) */
     for( rov = remusr; rov; rov = rov->next ) {
 	if( !(rov->flags & 1) )
+	  {
 	    any_recipients = 1;
+
+	    if((rov->flags&2) && (opt.pgp2 || opt.pgp6 || opt.pgp7))
+	      {
+		log_info(_("you may not use %s while in %s mode\n"),
+			 "--hidden-recipient",
+			 opt.pgp2?"--pgp2":opt.pgp6?"--pgp6":"--pgp7");
+
+		log_info(_("this message may not be usable by %s\n"),
+			 opt.pgp2?"PGP 2.x":opt.pgp6?"PGP 6.x":"PGP 7.x");
+
+		opt.pgp2=opt.pgp6=opt.pgp7=0;
+	      }
+	  }
 	else if( (use & PUBKEY_USAGE_ENC) && !opt.no_encrypt_to ) {
 	    pk = m_alloc_clear( sizeof *pk );
 	    pk->req_usage = use;
@@ -832,8 +846,20 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 		    r = m_alloc( sizeof *r );
 		    r->pk = pk; pk = NULL;
 		    r->next = pk_list;
-		    r->mark = 0;
+		    r->flags = (rov->flags&2)?1:0;
 		    pk_list = r;
+
+		    if(r->flags&1 && (opt.pgp2 || opt.pgp6 || opt.pgp7))
+		      {
+			log_info(_("you may not use %s while in %s mode\n"),
+				 "--hidden-encrypt-to",
+				 opt.pgp2?"--pgp2":opt.pgp6?"--pgp6":"--pgp7");
+
+			log_info(_("this message may not be usable by %s\n"),
+			      opt.pgp2?"PGP 2.x":opt.pgp6?"PGP 6.x":"PGP 7.x");
+
+			opt.pgp2=opt.pgp6=opt.pgp7=0;
+		      }
 		}
 	    }
 	    else {
@@ -896,7 +922,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 			PK_LIST r = m_alloc( sizeof *r );
 			r->pk = pk; pk = NULL;
 			r->next = pk_list;
-			r->mark = 0;
+			r->flags = 0; /* no throwing default ids */
 			pk_list = r;
 		    }
 		    any_recipients = 1;
@@ -936,7 +962,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 			    r = m_alloc( sizeof *r );
 			    r->pk = pk; pk = NULL;
 			    r->next = pk_list;
-			    r->mark = 0;
+			    r->flags = 0; /* no throwing interactive ids */
 			    pk_list = r;
 			}
 			any_recipients = 1;
@@ -970,7 +996,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	    PK_LIST r = m_alloc( sizeof *r );
 	    r->pk = pk; pk = NULL;
 	    r->next = pk_list;
-	    r->mark = 0;
+	    r->flags = 0; /* no throwing default ids */
 	    pk_list = r;
 	  }
 	}
@@ -1030,7 +1056,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 			r = m_alloc( sizeof *r );
 			r->pk = pk; pk = NULL;
 			r->next = pk_list;
-			r->mark = 0;
+			r->flags = (remusr->flags&2)?1:0;
 			pk_list = r;
 		    }
 		}
@@ -1266,7 +1292,7 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype, int request, void *hint)
 	 * algorithm 1 is also available (the ordering is not relevant
 	 * in this case). */
 	if( bits[0] & (1<<1) )
-	    i = 1;  /* yep; we can use compression algo 1 */
+	    i = 1; /* yep; we can use compression algo 1 */
     }
 
     /* "If you are building an authentication system, the recipient
@@ -1274,7 +1300,7 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype, int request, void *hint)
        would be foolish to use a weak algorithm simply because the
        recipient requests it." RFC2440:13.  If we settle on MD5, and
        SHA1 is also available, use SHA1 instead.  Of course, if the
-       user intentinally chose MD5 (by putting it in their personal
+       user intentionally chose MD5 (by putting it in their personal
        prefs), then we should do what they say. */
 
     if(preftype==PREFTYPE_HASH &&

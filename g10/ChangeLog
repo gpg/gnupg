@@ -1,3 +1,15 @@
+2002-11-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Add --no-throw-keyid.
+
+	* keydb.h, encode.c (write_pubkey_enc_from_list), g10.c (main),
+	pkclist.c (build_pk_list): Add --hidden-recipient (-R) and
+	--hidden-encrypt-to, which do a single-user variation on
+	--throw-keyid.  The "hide this key" flag is carried in bit 0 of
+	the pk_list flags field.
+
+	* keyserver.c (parse_keyrec): Fix shadowing warning.
+
 2002-10-31  Stefan Bellon  <sbellon@sbellon.de>
 
 	* compress.c (init_compress) [__riscos__]: Use
