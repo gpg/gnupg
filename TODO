@@ -110,6 +110,9 @@
   * cat foo | gpg --sign | gpg --list-packets
     Does not list the signature packet.
 
+  * Replace wording "It is NOT certain that the key belongs to its owner..."
+    with "It is NOT certain that the key belongs to the person named in the
+    user ID..." (or similar but clearer message).
 
 
 Things we won't do
