@@ -376,7 +376,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     if( rc )
 	goto leave;
 
-    iobuf_writestr(out, "\n\n" );
+    iobuf_writestr(out, "\n" );
     afx.what = 2;
     iobuf_push_filter( out, armor_filter, &afx );
 

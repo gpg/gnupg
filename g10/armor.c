@@ -72,6 +72,7 @@ typedef enum {
     fhdrCHECKDashEscaped3,
     fhdrREADClearsigNext,
     fhdrENDClearsig,
+    fhdrENDClearsigHelp,
     fhdrTESTSpaces,
     fhdrTEXT,
     fhdrERROR,
@@ -291,7 +292,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 		    state = fhdrCHECKDashEscaped3;
 	    }
 	    else {
-		/* fixme: we should check wether this linee continues
+		/* fixme: we should check wether this line continues
 		 *   it is poosible that we have only read ws until here
 		 *   and more stuff is to come */
 		state = fhdrEOF;
@@ -565,6 +566,12 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	    }
 	    continue;
 	}
+	if( state == fhdrENDClearsigHelp ) {
+	    state = fhdrENDClearsig;
+	    afx->faked = 0;
+	    rc = -1;
+	    continue;
+	}
 	if( afx->helpidx < afx->helplen ) { /* flush the last buffer */
 	    n = afx->helplen;
 	    for(nn=afx->helpidx; len < size && nn < n ; nn++ )
@@ -598,9 +605,11 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	    break;
 
 	  case fhdrENDClearsig:
+	    log_debug("endclearsig: emplines=%u n=%u\n", emplines, n );
+	    assert( emplines );
+	    emplines--; /* don't count the last one */
+	    state = fhdrENDClearsigHelp;
 	    afx->helplen = n;
-	    afx->faked = 0;
-	    rc = -1;
 	    break;
 
 	  default: BUG();
