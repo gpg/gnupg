@@ -10,7 +10,7 @@ Noteworthy changes in version 1.3.4 (unreleased)
       generated with --symmetric --encrypt or --symmetric --sign
       --encrypt.
 
-    * The config file search has been enhanced to try for more
+    * The config file search has been enhanced to try for less
       specific filename matches before giving up.  For example,
       version 1.3.4 will try for gpg.conf-1.3.4, gpg.conf-1.3, and
       gpg.conf-1 before falling back to the regular gpg.conf file.
@@ -23,7 +23,7 @@ Noteworthy changes in version 1.3.3 (2003-10-10)
       --card-edit, --change-pin and the configuration options
       --reader-port, --ctapi-driver, --pcsc-driver, and --disable-ccid.
 
-    * Full support for the SHA-256 hash has been added.
+    * Full (read/write) support for the SHA-256 hash has been added.
 
     * Support for the TIGER/192 hash has been dropped.  This should
       not be interpreted as a statement as to the strength of

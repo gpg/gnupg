@@ -1,3 +1,10 @@
+2003-11-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Use MSG_NOTICE instead of MSG_WARN for less
+	serious notifications.
+
+	* NEWS: I meant "less" not "more".
+
 2003-11-12  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Note BZIP2.

@@ -33,7 +33,7 @@ development_version=yes
 
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_SRCDIR(g10/g10.c)
-AC_CANONICAL_TARGET()
+AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
 
@@ -477,7 +477,7 @@ if test x"$try_hkp" = xyes && test x"$use_dns_srv" = xyes ; then
      AC_DEFINE(USE_DNS_SRV,1,[define to use DNS SRV])
      SRVLIBS=$LIBS
   else
-     AC_MSG_WARN([Resolver functions not found or not usable.  Disabling DNS SRV.])
+     AC_MSG_NOTICE([Resolver functions not found or not usable.  Disabling DNS SRV.])
   fi
   LIBS=$_srv_save_libs
 fi
@@ -662,7 +662,7 @@ if test "$try_extensions" = yes || test x"$card_support" = xyes ; then
       DLLIBS=$LIBS
     else
       if test "$try_extensions" = yes ; then
-         AC_MSG_WARN([dlopen not found.  Disabling extensions.])
+         AC_MSG_NOTICE([dlopen not found.  Disabling extensions.])
 	 try_extensions=no
       fi
   
@@ -733,7 +733,7 @@ if test "$ac_cv_sizeof_unsigned_int" != "8" \
    && test "$ac_cv_sizeof_unsigned_long" != "8" \
    && test "$ac_cv_sizeof_unsigned_long_long" != "8" \
    && test x"$ac_cv_sizeof_uint64_t" != "x8"; then
-    AC_MSG_WARN([No 64-bit types.  Disabling SHA-384 and SHA-512])
+    AC_MSG_NOTICE([No 64-bit types.  Disabling SHA-384 and SHA-512.])
 else
   if test x"$use_sha512" = xyes ; then
      AC_SUBST(SHA512_O,sha512.o)
