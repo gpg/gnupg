@@ -562,7 +562,7 @@ size_t
 m_size( const void *a )
 {
   #ifndef M_GUARD
-    log_debug("Ooops, m_size called\n");
+    log_debug("dummy m_size called\n");
     return 0;
   #else
     const byte *p = a;

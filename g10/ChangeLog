@@ -1,3 +1,12 @@
+2001-09-26  Werner Koch  <wk@gnupg.org>
+
+	* trustdb.c (new_key_hash_table): Increased the table size to 1024
+	and changed the masks accordingly.
+	(validate): Changed stats printing.
+	(mark_usable_uid_certs): New.
+	(cmp_kid_for_make_key_array): Does now check the signatures and
+	figures out a usable one.
+
 2001-09-25  Werner Koch  <wk@gnupg.org>
 
 	* keyring.c (new_offset_item,release_offset_items)

@@ -2028,7 +2028,7 @@ menu_revsig( KBNODE keyblock )
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE
 		&& ((sig = node->pkt->pkt.signature),
-		     !seckey_available( sig->keyid )  ) ) {
+                     !seckey_available(sig->keyid)  ) ) {
 	    if( (sig->sig_class&~3) == 0x10 ) {
 		tty_printf(_("   signed by %08lX at %s\n"),
 			    (ulong)sig->keyid[1], datestr_from_sig(sig) );

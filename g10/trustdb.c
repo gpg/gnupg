@@ -107,7 +107,7 @@ release_key_items (struct key_item *k)
  * For fast keylook up we need a hash table.  Each byte of a KeyIDs
  * should be distributed equally over the 256 possible values (except
  * for v3 keyIDs but we consider them as not important here). So we
- * can just use one byte to index a table of 256 key items. 
+ * can just use 10 bits to index a table of 1024 key items. 
  * Possible optimization: Don not use key_items but other hash_table when the
  * duplicates lists gets too large. 
  */
@@ -116,7 +116,7 @@ new_key_hash_table (void)
 {
   struct key_item **tbl;
 
-  tbl = m_alloc_clear (256 * sizeof *tbl);
+  tbl = m_alloc_clear (1024 * sizeof *tbl);
   return tbl;
 }
 
@@ -127,7 +127,7 @@ release_key_hash_table (KeyHashTable tbl)
 
   if (!tbl)
     return;
-  for (i=0; i < 256; i++)
+  for (i=0; i < 1024; i++)
     release_key_items (tbl[i]);
   m_free (tbl);
 }
@@ -140,7 +140,7 @@ test_key_hash_table (KeyHashTable tbl, u32 *kid)
 {
   struct key_item *k;
 
-  for (k = tbl[(kid[1] & 0xff)]; k; k = k->next)
+  for (k = tbl[(kid[1] & 0x03ff)]; k; k = k->next)
     if (k->kid[0] == kid[0] && k->kid[1] == kid[1])
       return 1;
   return 0;
@@ -154,15 +154,15 @@ add_key_hash_table (KeyHashTable tbl, u32 *kid)
 {
   struct key_item *k, *kk;
 
-  for (k = tbl[(kid[1] & 0xff)]; k; k = k->next)
+  for (k = tbl[(kid[1] & 0x03ff)]; k; k = k->next)
     if (k->kid[0] == kid[0] && k->kid[1] == kid[1])
       return; /* already in table */
   
   kk = new_key_item ();
   kk->kid[0] = kid[0];
   kk->kid[1] = kid[1];
-  kk->next = tbl[(kid[1] & 0xff)];
-  tbl[(kid[1] & 0xff)] = kk;
+  kk->next = tbl[(kid[1] & 0x03ff)];
+  tbl[(kid[1] & 0x03ff)] = kk;
 }
 
 
@@ -1017,12 +1017,131 @@ store_validation_status (int depth, KBNODE keyblock)
 }  
 
 /*
+ * check whether the signature sig is in the klist k
+ */
+static struct key_item *
+is_in_klist (struct key_item *k, PKT_signature *sig)
+{
+  for (; k; k = k->next)
+    {
+      if (k->kid[0] == sig->keyid[0] && k->kid[1] == sig->keyid[1])
+        return k;
+    }
+  return NULL;
+}
+
+/*
+ * Mark the signature of the given UID which are used to certify it.
+ * To do this, we first revmove all signatures which are not valid and
+ * from the remain ones we look for the latest one.  If this is not a
+ * certification revocation signature we mark the signature by setting
+ * node flag bit 8.  Note that flag bits 9 and 10 are used for internal
+ * purposes.  
+ */
+static void
+mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
+                       u32 *main_kid, struct key_item *klist, u32 curtime)
+{
+  KBNODE node;
+  PKT_signature *sig = node->pkt->pkt.signature;
+  
+  /* first check all signatures */
+  for (node=uidnode->next; node; node = node->next)
+    {
+      node->flag &= ~(1<<8 | 1<<9 | 1<<10);
+      if (node->pkt->pkttype == PKT_USER_ID
+          || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+        break; /* ready */
+      if (node->pkt->pkttype != PKT_SIGNATURE)
+        continue;
+      
+      sig = node->pkt->pkt.signature;
+      if (sig->keyid[0] == main_kid[0] && sig->keyid[1] == main_kid[1])
+        continue; /* ignore self-signatures */
+      if (!IS_UID_SIG(sig) && !IS_UID_REV(sig))
+        continue; /* we only look at these signature classes */
+      if (!is_in_klist (klist, sig))
+        continue;  /* no need to check it then */
+      if (check_key_signature (keyblock, node, NULL))
+        continue; /* ignore invalid signatures */
+      node->flag |= 1<<9;
+    }      
+  /* reset the remaining flags */
+  for (; node; node = node->next)
+      node->flag &= ~(1<<8 | 1<<9 | 1 << 10);
+
+  /* kbnode flag usage: bit 9 is here set for signatures to consider,
+   * bit 10 will be set by the loop to keep track of keyIDs already
+   * processed, bit 8 will be set for the usable signatures */
+
+  /* for each cert figure out the latest valid one */
+  for (node=uidnode->next; node; node = node->next)
+    {
+      KBNODE n, signode;
+      u32 kid[2];
+      u32 sigdate;
+      
+      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+        break;
+      if ( !(node->flag & (1<<9)) )
+        continue; /* not a node to look at */
+      if ( (node->flag & (1<<10)) )
+        continue; /* signature with a keyID already processed */
+      node->flag |= (1<<10); /* mark this node as processed */
+      sig = node->pkt->pkt.signature;
+      signode = node;
+      sigdate = sig->timestamp;
+      kid[0] = sig->keyid[0]; kid[1] = sig->keyid[1];
+      for (n=uidnode->next; n; n = n->next)
+        {
+          if (n->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+            break;
+          if ( !(n->flag & (1<<9)) )
+            continue;
+          if ( (n->flag & (1<<10)) )
+            continue; /* shortcut already processed signatures */
+          sig = n->pkt->pkt.signature;
+          if (kid[0] != sig->keyid[0] || kid[1] != sig->keyid[1])
+            continue;
+          n->flag |= (1<<10); /* mark this node as processed */
+          if (sig->timestamp >= sigdate)
+            {
+              signode = n;
+              sigdate = sig->timestamp;
+            }
+        }
+      sig = signode->pkt->pkt.signature;
+      if (IS_UID_SIG (sig))
+        { /* this seems to be a usable one which is not revoked. 
+           * Just need to check whether there is an expiration time,
+           * We do the expired certification after finding a suitable
+           * certification, the assumption is that a signator does not
+           * want that after the expiration of his certificate the
+           * system falls back to an older certification which has a
+           * different expiration time */
+          const byte *p;
+                    
+          p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIG_EXPIRE, NULL );
+          if ( p && (sig->timestamp + buffer_to_u32(p)) >= curtime )
+            ; /* signature expired */
+          else 
+            signode->flag |= (1<<8); /* yeah eventually we found a good cert */
+        }
+    }
+}
+
+
+/*
  * Return true if the key is signed by one of the keys in the given
  * key ID list.  User IDs with a valid signature are marked by node
  * flags as follows:
  *  flag bit 0: There is at least one signature
  *           1: There is marginal confidence that this is a legitimate uid
  *           2: There is full confidence that this is a legitimate uid.
+ *           8: Used for internal purposes.
+ *           9: Ditto (in mark_usable_uid_certs())
+ *          10: Ditto (ditto)
+ * This function assumes that all kbnode flags are cleared on entry.
  */
 static int
 cmp_kid_for_make_key_array (KBNODE kb, void *opaque)
@@ -1033,7 +1152,8 @@ cmp_kid_for_make_key_array (KBNODE kb, void *opaque)
   PKT_public_key *pk = kb->pkt->pkt.public_key;
   u32 main_kid[2];
   int issigned=0, any_signed = 0, fully_count =0, marginal_count = 0;
-  
+  u32 curtime = make_timestamp();
+
   keyid_from_pk(pk, main_kid);
   for (node=kb; node; node = node->next)
     {
@@ -1052,42 +1172,23 @@ cmp_kid_for_make_key_array (KBNODE kb, void *opaque)
           uidnode = node;
           issigned = 0;
           fully_count = marginal_count = 0;
+          mark_usable_uid_certs (kb, uidnode, main_kid, klist, curtime);
         }
-      else if (node->pkt->pkttype == PKT_SIGNATURE)
+      else if (node->pkt->pkttype == PKT_SIGNATURE 
+               && (node->flag & (1<<8)) )
         {
           PKT_signature *sig = node->pkt->pkt.signature;
           
-          if ( sig->keyid[0] == main_kid[0] && sig->keyid[1] == main_kid[1])
-            ; /* ignore self-signatures */
-          else if ( IS_UID_SIG(sig) )
-            { /* certification */
-              for (kr=klist; kr; kr = kr->next)
-                {
-                  if (kr->kid[0] == sig->keyid[0]
-                      && kr->kid[1] == sig->keyid[1])
-                    {
-                      /* Hmmm: Should we first look whether this
-                       * signature has been revoked? Avoids problem in
-                       * fixing the counters later and we might also
-                       * want to check the signature here.  It might
-                       * also be worth to find the latest signature
-                       * first so that we count only one signature for
-                       * each key */
-                      if (kr->ownertrust == TRUST_ULTIMATE)
-                        fully_count = opt.completes_needed;
-                      else if (kr->ownertrust == TRUST_FULLY)
-                        fully_count++;
-                      else if (kr->ownertrust == TRUST_MARGINAL)
-                        marginal_count++;
-                      issigned = 1;
-                      /* fixme: track timestamp to see handle cert revocs */
-                      break;
-                    }
-                }
-            }
-          else if ( IS_UID_REV(sig) )
-            { /* certificate revocation */
-              /* fixme: reset issigned and counter if needed */
+          kr = is_in_klist (klist, sig);
+          if (kr)
+            {
+              if (kr->ownertrust == TRUST_ULTIMATE)
+                fully_count = opt.completes_needed;
+              else if (kr->ownertrust == TRUST_FULLY)
+                fully_count++;
+              else if (kr->ownertrust == TRUST_MARGINAL)
+                marginal_count++;
+              issigned = 1;
             }
         }
     }
@@ -1110,25 +1211,25 @@ cmp_kid_for_make_key_array (KBNODE kb, void *opaque)
 /*
  * Run the key validation procedure.
  *
- *-----------------------------------
- *  Assume all signatures are good.
- *  Find all ultimately trusted keys (UTK).
- *  mark them all as seen.
- *    Loop over all key to find keys signed by an UTK.
- *        mark key as seen
- *        if OWNERTRUST of that key is undefined
- *            ask user for ownertrust
- *        For each user ID of that key which is signed by the UTK
- *            Calculate validity by counting trusted signatures.
- *            Set validity of user ID
- *            if user ID validity is full
- *                 Loop over all keys to find keys signed by current key
- *                 skip those which are already seen.
- *
- *TODO:
- *
- * - Make sure that only valid signatures are checked.
- * - Skip revoked keys.
+ * This works this way:
+ * Step 1: Find all ultimately trusted keys (UTK).
+ *         mark them all as seen and put them into klist.
+ * Step 2: loop max_cert_times
+ * Step 3:   if OWNERTRUST of any key in klist is undefined
+ *             ask user to assign ownertrust
+ * Step 4:   Loop over all keys in the keyDB which are not marked seen 
+ * Step 5:     if key is revoked or expired
+ *                mark key as seen
+ *                continue loop at Step 4
+ * Step 6:     For each user ID of that key signed by a key in klist
+ *                Calculate validity by counting trusted signatures.
+ *                Set validity of user ID
+ * Step 7:     If any signed user ID was found
+ *                mark key as seen
+ *             End Loop
+ * Step 8:   Build a new klist from all fully trusted keys from step 6
+ *           End Loop
+ *         Ready  
  *
  */
 static int
@@ -1143,19 +1244,20 @@ validate_keys (int interactive)
   KBNODE node;
   int depth;
   int key_count;
-  int ot_unknown;
-  int ot_undefined;
-  int ot_marginal;
-  int ot_full;
-  int ot_ultimate;
+  int ot_unknown, ot_undefined, ot_never, ot_marginal, ot_full, ot_ultimate;
   KeyHashTable visited;
 
   visited = new_key_hash_table ();
+  /* Fixme: Instead of always building a UTK list, we could just build it
+   * here when needed */
   if (!utk_list)
     {
       log_info ("no ultimately trusted keys found\n");
       goto leave;
     }
+
+  for (k=utk_list; k; k = k->next)
+    add_key_hash_table (visited, k->kid);
 
   klist = utk_list;
   kdb = keydb_new (0);
@@ -1165,7 +1267,8 @@ validate_keys (int interactive)
       /* See whether we should assign ownertrust values to the
        * keys in utk_list.  
        */
-      ot_unknown = ot_undefined = ot_marginal = ot_full = ot_ultimate = 0;
+      ot_unknown = ot_undefined = ot_never = 0;
+      ot_marginal = ot_full = ot_ultimate = 0;
       for (k=klist; k; k = k->next)
         {
           if (interactive && k->ownertrust == TRUST_UNKNOWN)
@@ -1174,6 +1277,8 @@ validate_keys (int interactive)
             ot_unknown++;
           else if (k->ownertrust == TRUST_UNDEFINED)
             ot_undefined++;
+          else if (k->ownertrust == TRUST_NEVER)
+            ot_never++;
           else if (k->ownertrust == TRUST_MARGINAL)
             ot_marginal++;
           else if (k->ownertrust == TRUST_FULLY)
@@ -1199,9 +1304,10 @@ validate_keys (int interactive)
       if (opt.verbose > 1)
         dump_key_array (depth, keys);
 
-      log_info (_("depth=%d keys=%d (-=%d q=%d m=%d f=%d u=%d)\n"), 
+      log_info (_("checking at depth %d signed=%d"
+                  " ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"), 
                 depth, key_count, ot_unknown, ot_undefined,
-                ot_marginal, ot_full, ot_ultimate ); 
+                ot_never, ot_marginal, ot_full, ot_ultimate ); 
 
       for (kar=keys; kar->keyblock; kar++)
           store_validation_status (depth, kar->keyblock);

@@ -1,6 +1,8 @@
 
   * Selection using +wordlist does not work.
 
+  * Make the offtbl in keyring.c global.
+
   * Always use the primary key to sign other keys.
 
   * add listing of notation data
@@ -61,7 +63,8 @@
   * Add option to put the list of recipients (from the encryption
     layer) into the signatures notation data.
 
-  * Allow to update key signatures.
+  * Allow to update key signatures.  It is also not possible to resign
+    an already revoked key signature.
 
   * For FreeBSD only: spit out a message that rndcontrol (8) should be
     used to enable the use of IRQs for entropy gathering.

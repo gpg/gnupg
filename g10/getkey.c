@@ -442,6 +442,7 @@ seckey_available( u32 *keyid )
 {
     int rc;
     KEYDB_HANDLE hd = keydb_new (1);
+
     rc = keydb_search_kid (hd, keyid);
     if ( rc == -1 )
         rc = G10ERR_NO_SECKEY;

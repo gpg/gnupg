@@ -479,7 +479,7 @@ keyring_update_keyblock (KEYRING_HANDLE hd, KBNODE kb)
     rc = do_copy (3, hd->found.kr->fname, kb, hd->secret,
                   hd->found.offset, hd->found.n_packets );
     if (!rc) {
-      if (hd->current.kr->offtbl)
+      if (hd->current.kr && hd->current.kr->offtbl)
         {
           /* we do not have the offset but as it is not use it does not
            * matter*/
@@ -521,7 +521,7 @@ keyring_insert_keyblock (KEYRING_HANDLE hd, KBNODE kb)
 
     /* do the insert */
     rc = do_copy (1, fname, kb, hd->secret, 0, 0 );
-    if (!rc && hd->current.kr->offtbl)
+    if (!rc && hd->current.kr && hd->current.kr->offtbl)
       {
         /* we do not have the offset but as it is not use it does not matter*/
         update_offset_hash_table_from_kb (hd->current.kr->offtbl, kb, 0);
@@ -881,7 +881,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
     if (rc)
         return rc;
 
-    offtbl = hd->current.kr->offtbl;
+    offtbl = hd->secret? NULL:hd->current.kr->offtbl;
     offtbl_ready = hd->current.kr->offtbl_ready;
     if (!offtbl)
       ;
