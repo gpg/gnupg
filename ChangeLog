@@ -1,3 +1,11 @@
+2002-04-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Try and link to a sample LDAP program to check if
+	the LDAP we're about to use is really sane.  The most common
+	problem (using a very old OpenLDAP), could be fixed with an extra
+	#include, but this would not be very portable to other LDAP
+	libraries.
+
 2002-04-29  Werner Koch  <wk@gnupg.org>
 
 	Released 1.0.7.

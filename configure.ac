@@ -273,10 +273,25 @@ if test "$NO_PIC" = yes; then
     try_dynload=no
 fi
 
+# Try and link a LDAP test program to weed out unusable LDAP libraries
+
 if test "$try_ldap" = yes ; then
-  AC_CHECK_LIB(ldap,ldap_init,
-	[GPGKEYS_LDAP="gpgkeys_ldap"],,-llber -lresolv)
+  _ldap_save_libs=$LIBS
+  LIBS="-lldap -llber -lresolv $LIBS"
+
+  AC_CACHE_CHECK([whether LDAP is sane],
+	         [gnupg_cv_func_ldap_init],
+                 [AC_TRY_LINK([#include <ldap.h>],
+                  [ldap_open("foobar",1234);],
+                  [gnupg_cv_func_ldap_init=yes],
+                  [gnupg_cv_func_ldap_init=no])])
+
+  if test $gnupg_cv_func_ldap_init = yes; then
+     GPGKEYS_LDAP="gpgkeys_ldap"
   fi
+
+  LIBS=$_ldap_save_libs
+fi
 AC_SUBST(GPGKEYS_LDAP)
 
 if test "$try_mailto" = yes ; then
