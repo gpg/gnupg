@@ -18,6 +18,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+/* Fixme: For now we have serialized all access to the scdaemon which
+   make sense becuase the scdaemon can't handle concurrent connections
+   right now.  We should however keep a list of connections and lock
+   just that connection - it migth make sense to implemtn parts of
+   this in Assuan.*/
+
 #include <config.h>
 #include <errno.h>
 #include <stdio.h>
@@ -27,6 +33,9 @@
 #include <assert.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#ifdef USE_GNU_PTH
+# include <pth.h>
+#endif
 
 #include "agent.h"
 #include "../assuan/assuan.h"
@@ -38,6 +47,9 @@
 #endif
 
 static ASSUAN_CONTEXT scd_ctx = NULL;
+#ifdef USE_GNU_PTH
+static pth_mutex_t scd_lock = PTH_MUTEX_INIT;
+#endif
 
 /* callback parameter for learn card */
 struct learn_parm_s {
@@ -60,7 +72,7 @@ struct membuf {
 
 
 
-/* A simple implemnation of a dynamic buffer.  Use init_membuf() to
+/* A simple implementation of a dynamic buffer.  Use init_membuf() to
    create a buffer, put_membuf to append bytes and get_membuf to
    release and return the buffer.  Allocation errors are detected but
    only returned at the final get_membuf(), this helps not to clutter
@@ -122,6 +134,20 @@ get_membuf (struct membuf *mb, size_t *len)
 
 
 
+static int 
+unlock_scd (int rc)
+{
+#ifdef USE_GNU_PTH
+  if (!pth_mutex_release (&scd_lock))
+    {
+      log_error ("failed to release the SCD lock\n");
+      if (!rc)
+        rc = GNUPG_Internal_Error;
+    }
+#endif
+  return rc;
+}
+
 /* Fork off the SCdaemon if this has not already been done */
 static int
 start_scd (void)
@@ -130,6 +156,14 @@ start_scd (void)
   const char *pgmname;
   ASSUAN_CONTEXT ctx;
   const char *argv[3];
+
+#ifdef USE_GNU_PTH
+  if (!pth_mutex_acquire (&scd_lock, 0, NULL))
+    {
+      log_error ("failed to acquire the SCD lock\n");
+      return GNUPG_Internal_Error;
+    }
+#endif
 
   if (scd_ctx)
     return 0; /* No need to serialize things because the agent is
@@ -142,7 +176,7 @@ start_scd (void)
   if (fflush (NULL))
     {
       log_error ("error flushing pending output: %s\n", strerror (errno));
-      return seterr (Write_Error);
+      return unlock_scd (seterr (Write_Error));
     }
 
   /* FIXME: change the default location of the program */
@@ -163,7 +197,7 @@ start_scd (void)
     {
       log_error ("can't connect to the SCdaemon: %s\n",
                  assuan_strerror (rc));
-      return seterr (No_Scdaemon);
+      return unlock_scd (seterr (No_Scdaemon));
     }
   scd_ctx = ctx;
   
@@ -218,9 +252,9 @@ agent_card_learn (void (*kpinfo_cb)(void*, const char *), void *kpinfo_cb_arg)
                         NULL, NULL, NULL, NULL,
                         learn_status_cb, &parm);
   if (rc)
-    return map_assuan_err (rc);
+    return unlock_scd (map_assuan_err (rc));
 
-  return 0;
+  return unlock_scd (0);
 }
 
 
@@ -274,7 +308,7 @@ agent_card_serialno (char **r_serialno)
      this is really SCdaemon's duty */
   rc = assuan_transact (scd_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return unlock_scd (map_assuan_err (rc));
 
   rc = assuan_transact (scd_ctx, "SERIALNO",
                         NULL, NULL, NULL, NULL,
@@ -282,10 +316,10 @@ agent_card_serialno (char **r_serialno)
   if (rc)
     {
       xfree (serialno);
-      return map_assuan_err (rc);
+      return unlock_scd (map_assuan_err (rc));
     }
   *r_serialno = serialno;
-  return 0;
+  return unlock_scd (0);
 }
 
 
@@ -354,7 +388,7 @@ agent_card_pksign (const char *keyid,
     return rc;
 
   if (indatalen*2 + 50 > DIM(line))
-    return seterr (General_Error);
+    return unlock_scd (seterr (General_Error));
 
   sprintf (line, "SETDATA ");
   p = line + strlen (line);
@@ -362,7 +396,7 @@ agent_card_pksign (const char *keyid,
     sprintf (p, "%02X", indata[i]);
   rc = assuan_transact (scd_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return unlock_scd (map_assuan_err (rc));
 
   init_membuf (&data, 1024);
   inqparm.ctx = scd_ctx;
@@ -377,7 +411,7 @@ agent_card_pksign (const char *keyid,
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return map_assuan_err (rc);
+      return unlock_scd (map_assuan_err (rc));
     }
   sigbuf = get_membuf (&data, &sigbuflen);
 
@@ -388,7 +422,7 @@ agent_card_pksign (const char *keyid,
   if (!*r_buf)
     {
       xfree (*r_buf);
-      return GNUPG_Out_Of_Core;
+      return unlock_scd (GNUPG_Out_Of_Core);
     }
   p = stpcpy (*r_buf, "(7:sig-val(3:rsa(1:s" );
   sprintf (p, "%u:", (unsigned int)sigbuflen);
@@ -399,7 +433,7 @@ agent_card_pksign (const char *keyid,
   xfree (sigbuf);
 
   assert (gcry_sexp_canon_len (*r_buf, *r_buflen, NULL, NULL));
-  return 0;
+  return unlock_scd (0);
 }
 
 /* Decipher INDATA using the current card. Note that the returned value is */
@@ -423,7 +457,7 @@ agent_card_pkdecrypt (const char *keyid,
 
   /* FIXME: use secure memory where appropriate */
   if (indatalen*2 + 50 > DIM(line))
-    return seterr (General_Error);
+    return unlock_scd (seterr (General_Error));
 
   sprintf (line, "SETDATA ");
   p = line + strlen (line);
@@ -431,7 +465,7 @@ agent_card_pkdecrypt (const char *keyid,
     sprintf (p, "%02X", indata[i]);
   rc = assuan_transact (scd_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return unlock_scd (map_assuan_err (rc));
 
   init_membuf (&data, 1024);
   inqparm.ctx = scd_ctx;
@@ -446,13 +480,13 @@ agent_card_pkdecrypt (const char *keyid,
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return map_assuan_err (rc);
+      return unlock_scd (map_assuan_err (rc));
     }
   *r_buf = get_membuf (&data, r_buflen);
   if (!*r_buf)
-    return GNUPG_Out_Of_Core;
+    return unlock_scd (GNUPG_Out_Of_Core);
 
-  return 0;
+  return unlock_scd (0);
 }
 
 
@@ -481,13 +515,13 @@ agent_card_readcert (const char *id, char **r_buf, size_t *r_buflen)
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return map_assuan_err (rc);
+      return unlock_scd (map_assuan_err (rc));
     }
   *r_buf = get_membuf (&data, r_buflen);
   if (!*r_buf)
-    return GNUPG_Out_Of_Core;
+    return unlock_scd (GNUPG_Out_Of_Core);
 
-  return 0;
+  return unlock_scd (0);
 }
 
 
@@ -517,19 +551,19 @@ agent_card_readkey (const char *id, unsigned char **r_buf)
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return map_assuan_err (rc);
+      return unlock_scd (map_assuan_err (rc));
     }
   *r_buf = get_membuf (&data, &buflen);
   if (!*r_buf)
-    return GNUPG_Out_Of_Core;
+    return unlock_scd (GNUPG_Out_Of_Core);
 
   if (!gcry_sexp_canon_len (*r_buf, buflen, NULL, NULL))
     {
       xfree (*r_buf); *r_buf = NULL;
-      return GNUPG_Invalid_Value;
+      return unlock_scd (GNUPG_Invalid_Value);
     }
 
-  return 0;
+  return unlock_scd (0);
 }
 
 

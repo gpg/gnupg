@@ -104,7 +104,7 @@ void agent_exit (int rc); /* also implemented in other tools */
 const char *trans (const char *text);
 
 /*-- command.c --*/
-void start_command_handler (int);
+void start_command_handler (int, int);
 
 /*-- findkey.c --*/
 int agent_write_private_key (const unsigned char *grip,
@@ -124,8 +124,8 @@ int agent_get_confirmation (const char *desc, const char *ok,
 
 /*-- cache.c --*/
 int agent_put_cache (const char *key, const char *data, int ttl);
-const char *agent_get_cache (const char *key);
-
+const char *agent_get_cache (const char *key, void **cache_id);
+void agent_unlock_cache_entry (void **cache_id);
 
 
 /*-- pksign.c --*/

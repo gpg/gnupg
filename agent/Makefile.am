@@ -21,7 +21,7 @@
 bin_PROGRAMS = gpg-agent
 noinst_PROGRAMS = protect-tool
 
-AM_CPPFLAGS = -I$(top_srcdir)/common $(LIBGCRYPT_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/common $(LIBGCRYPT_CFLAGS) $(PTH_CFLAGS)
 LDFLAGS = @LDFLAGS@ 
 
 gpg_agent_SOURCES = \
@@ -43,7 +43,7 @@ gpg_agent_SOURCES = \
 
 
 gpg_agent_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a  \
-		../common/libcommon.a $(LIBGCRYPT_LIBS)
+		../common/libcommon.a $(LIBGCRYPT_LIBS) $(PTH_LIBS)
 
 protect_tool_SOURCES = \
 	protect-tool.c \

@@ -106,10 +106,12 @@ unprotect (unsigned char **keybuf, const unsigned char *grip)
   /* first try to get it from the cache - if there is none or we can't
      unprotect it, we fall back to ask the user */
   {
-    const char *pw = agent_get_cache (hexgrip);
+    void *cache_marker;
+    const char *pw = agent_get_cache (hexgrip, &cache_marker);
     if (pw)
       {
         rc = agent_unprotect (*keybuf, pw, &result, &resultlen);
+        agent_unlock_cache_entry (&cache_marker);
         if (!rc)
           {
             xfree (*keybuf);

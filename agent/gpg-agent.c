@@ -33,6 +33,9 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <signal.h>
+#ifdef USE_GNU_PTH
+# include <pth.h>
+#endif
 
 #include <gcrypt.h>
 
@@ -113,13 +116,24 @@ static ARGPARSE_OPTS opts[] = {
 };
 
 
+#ifndef USE_GNU_PTH
 static volatile int caught_fatal_sig = 0;
+#endif /*!USE_GNU_PTH*/
+
+/* flag to indicate that a shutdown was requested */
+static int shutdown_pending;
+
 
 /* It is possible that we are currently running under setuid permissions */
 static int maybe_setuid = 1;
 
 /* Name of the communication socket */
 static char socket_name[128];
+
+
+#ifdef USE_GNU_PTH
+static void handle_connections (int listen_fd);
+#endif
 
 
 
@@ -205,6 +219,7 @@ cleanup (void)
 }
 
 
+#ifndef USE_GNU_PTH
 static RETSIGTYPE
 cleanup_sh (int sig)
 {
@@ -226,6 +241,7 @@ cleanup_sh (int sig)
 #endif
   raise( sig );
 }
+#endif /*!USE_GNU_PTH*/
 
 int
 main (int argc, char **argv )
@@ -265,6 +281,9 @@ main (int argc, char **argv )
     }
 
   assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
+#ifdef USE_GNU_PTH
+  assuan_set_io_func (pth_read, pth_write);
+#endif
   gcry_set_log_handler (my_gcry_logger, NULL);
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
 
@@ -447,7 +466,7 @@ main (int argc, char **argv )
 
   if (pipe_server)
     { /* this is the simple pipe based server */
-      start_command_handler (-1);
+      start_command_handler (-1, -1);
     }
   else
     { /* regular server mode */
@@ -574,6 +593,7 @@ main (int argc, char **argv )
           /*NEVER REACHED*/
         } /* end parent */
       
+
       /* this is the child */
 
       /* detach from tty and put process into a new session */
@@ -592,6 +612,22 @@ main (int argc, char **argv )
             }
         }
 
+      if (chdir("/"))
+        {
+          log_error ("chdir to / failed: %s\n", strerror (errno));
+          exit (1);
+        }
+
+
+#ifdef USE_GNU_PTH
+      if (!pth_init ())
+        {
+          log_error ("failed to initialize the Pth library\n");
+          exit (1);
+        }
+      signal (SIGPIPE, SIG_IGN);
+      handle_connections (fd);
+#else /*!USE_GNU_PTH*/
       /* setup signals */
       {
         struct sigaction oact, nact;
@@ -610,15 +646,8 @@ main (int argc, char **argv )
         sigaction (SIGPIPE, &nact, NULL);
         sigaction (SIGINT, &nact, NULL);
       }
-
-      if (chdir("/"))
-        {
-          log_error ("chdir to / failed: %s\n", strerror (errno));
-          exit (1);
-        }
-
-      start_command_handler (fd);
-
+      start_command_handler (fd, -1);
+#endif /*!USE_GNU_PTH*/
       close (fd);
     }
   
@@ -628,10 +657,7 @@ main (int argc, char **argv )
 void
 agent_exit (int rc)
 {
-  #if 0
-#warning no update_random_seed_file
-  update_random_seed_file();
-  #endif
+  /*FIXME: update_random_seed_file();*/
 #if 0
   /* at this time a bit annoying */
   if (opt.debug & DBG_MEMSTAT_VALUE)
@@ -647,3 +673,144 @@ agent_exit (int rc)
   exit (rc);
 }
 
+
+static void
+reread_configuration (void)
+{
+  /* FIXME: Move parts of the option parsing to here. */
+}
+
+
+#ifdef USE_GNU_PTH
+static void
+handle_signal (int signo)
+{
+  switch (signo)
+    {
+    case SIGHUP:
+      log_info ("SIGHUP received - re-reading configuration\n");
+      reread_configuration ();
+      break;
+      
+    case SIGUSR1:
+      if (opt.verbose < 5)
+        opt.verbose++;
+      log_info ("SIGUSR1 received - verbosity set to %d\n", opt.verbose);
+      break;
+
+    case SIGUSR2:
+      if (opt.verbose)
+        opt.verbose--;
+      log_info ("SIGUSR2 received - verbosity set to %d\n", opt.verbose );
+      break;
+
+    case SIGTERM:
+      if (!shutdown_pending)
+        log_info ("SIGTERM received - shutting down ...\n");
+      else
+        log_info ("SIGTERM received - still %ld running threads\n",
+                  pth_ctrl( PTH_CTRL_GETTHREADS ));
+      shutdown_pending++;
+      if (shutdown_pending > 2)
+        {
+          log_info ("shutdown forced\n");
+          log_info ("%s %s stopped\n", strusage(11), strusage(13) );
+          cleanup ();
+          agent_exit (0);
+	}
+	break;
+        
+    case SIGINT:
+      log_info ("SIGINT received - immediate shutdown\n");
+      log_info( "%s %s stopped\n", strusage(11), strusage(13));
+      cleanup ();
+      agent_exit (0);
+      break;
+
+    default:
+      log_info ("signal %d received - no action defined\n", signo);
+    }
+}
+
+
+static void *
+start_connection_thread (void *arg)
+{
+  int fd = (int)arg;
+
+  if (opt.verbose)
+    log_info ("handler for fd %d started\n", fd);
+  start_command_handler (-1, fd);
+  if (opt.verbose)
+    log_info ("handler for fd %d terminated\n", fd);
+  
+  return NULL;
+}
+
+
+static void
+handle_connections (int listen_fd)
+{
+  pth_attr_t tattr;
+  pth_event_t ev;
+  sigset_t sigs;
+  int signo;
+  struct sockaddr_un paddr;
+  socklen_t plen = sizeof( paddr );
+  int fd;
+
+  tattr = pth_attr_new();
+  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
+  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 32*1024);
+  pth_attr_set (tattr, PTH_ATTR_NAME, "gpg-agent");
+
+  sigemptyset (&sigs );
+  sigaddset (&sigs, SIGHUP);
+  sigaddset (&sigs, SIGUSR1);
+  sigaddset (&sigs, SIGUSR2);
+  sigaddset (&sigs, SIGINT);
+  sigaddset (&sigs, SIGTERM);
+  ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
+
+  for (;;)
+    {
+      if (shutdown_pending)
+        {
+          if (pth_ctrl (PTH_CTRL_GETTHREADS) == 1)
+            break; /* ready */
+
+          /* Do not accept anymore connections and wait for existing
+             connections to terminate */
+          signo = 0;
+          pth_wait (ev);
+          if (pth_event_occurred (ev) && signo)
+            handle_signal (signo);
+          continue;
+	}
+
+      fd = pth_accept_ev (listen_fd, (struct sockaddr *)&paddr, &plen, ev);
+      if (fd == -1)
+        {
+          if (pth_event_occurred (ev))
+            {
+              handle_signal (signo);
+              continue;
+	    }
+          log_error ("accept failed: %s - waiting 1s\n", strerror (errno));
+          pth_sleep(1);
+          continue;
+	}
+
+      if (!pth_spawn (tattr, start_connection_thread, (void*)fd))
+        {
+          log_error ("error spawning connection handler: %s\n",
+                     strerror (errno) );
+          close (fd);
+	}
+    }
+
+  pth_event_free (ev, PTH_FREE_ALL);
+  cleanup ();
+  log_info ("%s %s stopped\n", strusage(11), strusage(13));
+}
+#endif /*USE_GNU_PTH*/

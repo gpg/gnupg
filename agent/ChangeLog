@@ -1,3 +1,25 @@
+2002-05-23  Werner Koch  <wk@gnupg.org>
+
+	* call-scd.c: Seirialized all scdaeom access when using Pth.
+
+	* cache.c: Made the cache Pth-thread-safe.
+	(agent_unlock_cache_entry): New.
+	* findkey.c (unprotect): Unlock the returned cache value.
+	* command.c (cmd_get_passphrase): Ditto.
+
+	* gpg-agent.c (main): Register pth_read/write with Assuan.
+
+2002-05-22  Werner Koch  <wk@gnupg.org>
+
+	* query.c: Serialized all pinentry access when using Pth.
+
+	* gpg-agent.c (handle_signal,start_connection_thread)
+	(handle_connections): New
+	(main): Use the new Pth stuff to allow concurrent connections.
+	* command.c (start_command_handler): Add new arg FD so that the
+	fucntion can also be used for an already connected socket.
+	* Makefile.am: Link with Pth.
+
 2002-05-14  Werner Koch  <wk@gnupg.org>
 
 	* cache.c (housekeeping, agent_put_cache): Use our time() wrapper.

@@ -40,6 +40,7 @@ struct cache_item_s {
   time_t created;
   time_t accessed;
   int  ttl;  /* max. lifetime given in seonds */
+  int lockcount;
   struct secret_data_s *pw;
   char key[1];
 };
@@ -87,7 +88,7 @@ housekeeping (void)
   /* first expire the actual data */
   for (r=thecache; r; r = r->next)
     {
-      if (r->pw && r->accessed + r->ttl < current)
+      if (!r->lockcount && r->pw && r->accessed + r->ttl < current)
         {
           if (DBG_CACHE)
             log_debug ("  expired `%s' (%ds after last access)\n",
@@ -99,10 +100,10 @@ housekeeping (void)
     }
 
   /* second, make sure that we also remove them based on the created stamp so
-     that the used has to enter it from time to time.  We do this every hour */
+     that the user has to enter it from time to time.  We do this every hour */
   for (r=thecache; r; r = r->next)
     {
-      if (r->pw && r->created + 60*60 < current)
+      if (!r->lockcount && r->pw && r->created + 60*60 < current)
         {
           if (DBG_CACHE)
             log_debug ("  expired `%s' (1h after creation)\n", r->key);
@@ -118,15 +119,27 @@ housekeeping (void)
     {
       if (!r->pw && r->accessed + 60*30 < current)
         {
-          ITEM r2 = r->next;
-          if (DBG_CACHE)
-            log_debug ("  removed `%s' (slot not used for 30m)\n", r->key);
-          xfree (r);
-          if (!rprev)
-            thecache = r2;
+          if (r->lockcount)
+            {
+              log_error ("can't remove unused cache entry `%s' due to"
+                         " lockcount=%d\n",
+                         r->key, r->lockcount);
+              r->accessed += 60*10; /* next error message in 10 minutes */
+              rprev = r;
+              r = r->next;
+            }
           else
-            rprev->next = r2;
-          r = r2;
+            {
+              ITEM r2 = r->next;
+              if (DBG_CACHE)
+                log_debug ("  removed `%s' (slot not used for 30m)\n", r->key);
+              xfree (r);
+              if (!rprev)
+                thecache = r2;
+              else
+                rprev->next = r2;
+              r = r2;
+            }
         }
       else
         {
@@ -158,7 +171,7 @@ agent_put_cache (const char *key, const char *data, int ttl)
 
   for (r=thecache; r; r = r->next)
     {
-      if ( !strcmp (r->key, key))
+      if (!r->lockcount && !strcmp (r->key, key))
         break;
     }
   if (r)
@@ -206,34 +219,67 @@ agent_put_cache (const char *key, const char *data, int ttl)
 
 /* Try to find an item in the cache */
 const char *
-agent_get_cache (const char *key)
+agent_get_cache (const char *key, void **cache_id)
 {
   ITEM r;
-  int count = 0;
 
   if (DBG_CACHE)
     log_debug ("agent_get_cache `%s'...\n", key);
   housekeeping ();
 
-  /* FIXME: Returning pointers is not thread safe - add a reference
-     counter */
-  for (r=thecache; r; r = r->next, count++)
+  /* first try to find one with no locks - this is an updated cache
+     entry: We might have entries with a lockcount and without a
+     lockcount. */
+  for (r=thecache; r; r = r->next)
     {
-      if (r->pw && !strcmp (r->key, key))
+      if (!r->lockcount && r->pw && !strcmp (r->key, key))
         {
           /* put_cache does only put strings into the cache, so we
              don't need the lengths */
           r->accessed = gnupg_get_time ();
           if (DBG_CACHE)
             log_debug ("... hit\n");
+          r->lockcount++;
+          *cache_id = r;
+          return r->pw->data;
+        }
+    }
+  /* again, but this time get even one with a lockcount set */
+  for (r=thecache; r; r = r->next)
+    {
+      if (r->pw && !strcmp (r->key, key))
+        {
+          r->accessed = gnupg_get_time ();
+          if (DBG_CACHE)
+            log_debug ("... hit (locked)\n");
+          r->lockcount++;
+          *cache_id = r;
           return r->pw->data;
         }
     }
   if (DBG_CACHE)
     log_debug ("... miss\n");
 
+  *cache_id = NULL;
   return NULL;
 }
 
 
+void
+agent_unlock_cache_entry (void **cache_id)
+{
+  ITEM r;
 
+  for (r=thecache; r; r = r->next)
+    {
+      if (r == *cache_id)
+        {
+          if (!r->lockcount)
+            log_error ("trying to unlock non-locked cache entry `%s'\n",
+                       r->key);
+          else
+            r->lockcount--;
+          return;
+        }
+    }
+}

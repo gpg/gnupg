@@ -370,6 +370,7 @@ cmd_get_passphrase (ASSUAN_CONTEXT ctx, char *line)
   char *response;
   char *cacheid = NULL, *desc = NULL, *prompt = NULL, *errtext = NULL;
   char *p;
+  void *cache_marker;
 
   /* parse the stuff */
   for (p=line; *p == ' '; p++)
@@ -417,17 +418,18 @@ cmd_get_passphrase (ASSUAN_CONTEXT ctx, char *line)
     desc = NULL;
 
   /* Note: we store the hexified versions in the cache. */
-  pw = cacheid ? agent_get_cache (cacheid) : NULL;
+  pw = cacheid ? agent_get_cache (cacheid, &cache_marker) : NULL;
   if (pw)
     {
       assuan_begin_confidential (ctx);
       rc = assuan_set_okay_line (ctx, pw);
+      agent_unlock_cache_entry (&cache_marker);
     }
   else
     {
-      /* Note, that we only need to repalce the + characters and
-         should leave the other escaping in place becuase the escaped
-         sting is send verbatim to the pinentry which does the
+      /* Note, that we only need to replace the + characters and
+         should leave the other escaping in place because the escaped
+         string is send verbatim to the pinentry which does the
          unescaping (but not the + replacing) */
       if (errtext)
         plus_to_blank (errtext);
@@ -593,19 +595,18 @@ register_commands (ASSUAN_CONTEXT ctx)
 }
 
 
-/* Startup the server.  If LISTEN_FD is given as -1, this is a simple
+/* Startup the server.  If LISTEN_FD and FD is given as -1, this is a simple
    piper server, otherwise it is a regular server */
 void
-start_command_handler (int listen_fd)
+start_command_handler (int listen_fd, int fd)
 {
   int rc;
   ASSUAN_CONTEXT ctx;
   struct server_control_s ctrl;
 
   memset (&ctrl, 0, sizeof ctrl);
-
   
-  if (listen_fd == -1)
+  if (listen_fd == -1 && fd == -1)
     {
       int filedes[2];
 
@@ -613,9 +614,13 @@ start_command_handler (int listen_fd)
       filedes[1] = 1;
       rc = assuan_init_pipe_server (&ctx, filedes);
     }
-  else
+  else if (listen_fd != -1)
     {
       rc = assuan_init_socket_server (&ctx, listen_fd);
+    }
+  else 
+    {
+      rc = assuan_init_connected_socket_server (&ctx, fd);
     }
   if (rc)
     {
@@ -663,6 +668,4 @@ start_command_handler (int listen_fd)
 
   assuan_deinit_server (ctx);
 }
-
-
 

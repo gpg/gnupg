@@ -27,6 +27,9 @@
 #include <assert.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#ifdef USE_GNU_PTH
+# include <pth.h>
+#endif
 
 #include "agent.h"
 #include "../assuan/assuan.h"
@@ -38,6 +41,9 @@
 #endif
 
 static ASSUAN_CONTEXT entry_ctx = NULL;
+#ifdef USE_GNU_PTH
+static pth_mutex_t entry_lock = PTH_MUTEX_INIT;
+#endif
 
 /* data to be passed to our callbacks */
 struct entry_parm_s {
@@ -49,7 +55,24 @@ struct entry_parm_s {
 
 
 
-/* Fork off the pin entry if this has not already been done */
+static int 
+unlock_pinentry (int rc)
+{
+#ifdef USE_GNU_PTH
+  if (!pth_mutex_release (&entry_lock))
+    {
+      log_error ("failed to release the entry lock\n");
+      if (!rc)
+        rc = GNUPG_Internal_Error;
+    }
+#endif
+  return rc;
+}
+
+/* Fork off the pin entry if this has not already been done.  Note,
+   that this function must always be used to aquire the lock for the
+   pinentry - we will serialize _all_ pinentry calls.
+ */
 static int
 start_pinentry (void)
 {
@@ -58,10 +81,16 @@ start_pinentry (void)
   ASSUAN_CONTEXT ctx;
   const char *argv[5];
 
+#ifdef USE_GNU_PTH
+  if (!pth_mutex_acquire (&entry_lock, 0, NULL))
+    {
+      log_error ("failed to acquire the entry lock\n");
+      return GNUPG_Internal_Error;
+    }
+#endif
+
   if (entry_ctx)
-    return 0; /* No need to serialize things becuase the agent is
-                 expected to tun as a single-thread (or may be in
-                 future using libpth) */
+    return 0; 
 
   if (opt.verbose)
     log_info ("no running PIN Entry - starting it\n");
@@ -69,7 +98,7 @@ start_pinentry (void)
   if (fflush (NULL))
     {
       log_error ("error flushing pending output: %s\n", strerror (errno));
-      return seterr (Write_Error);
+      return unlock_pinentry (seterr (Write_Error));
     }
 
   /* FIXME: change the default location of the program */
@@ -80,6 +109,7 @@ start_pinentry (void)
   else
     pgmname++;
 
+  /* FIXME: We must do this thread specific */
   argv[0] = pgmname;
   if (opt.display)
     {
@@ -96,7 +126,7 @@ start_pinentry (void)
     {
       log_error ("can't connect to the PIN entry module: %s\n",
                  assuan_strerror (rc));
-      return seterr (No_PIN_Entry);
+      return unlock_pinentry (seterr (No_PIN_Entry));
     }
   entry_ctx = ctx;
 
@@ -107,47 +137,47 @@ start_pinentry (void)
                         opt.no_grab? "OPTION no-grab":"OPTION grab",
                         NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return unlock_pinentry (map_assuan_err (rc));
   if (opt.ttyname)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION ttyname=%s", opt.ttyname) < 0 )
-	return GNUPG_Out_Of_Core;
+	return unlock_pinentry (GNUPG_Out_Of_Core);
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       free (optstr);
       if (rc)
-	return map_assuan_err (rc);
+	return unlock_pinentry (map_assuan_err (rc));
     }
   if (opt.ttytype)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION ttytype=%s", opt.ttytype) < 0 )
-	return GNUPG_Out_Of_Core;
+	return unlock_pinentry (GNUPG_Out_Of_Core);
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       if (rc)
-	return map_assuan_err (rc);
+	return unlock_pinentry (map_assuan_err (rc));
     }
   if (opt.lc_ctype)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION lc-ctype=%s", opt.lc_ctype) < 0 )
-	return GNUPG_Out_Of_Core;
+	return unlock_pinentry (GNUPG_Out_Of_Core);
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       if (rc)
-	return map_assuan_err (rc);
+	return unlock_pinentry (map_assuan_err (rc));
     }
   if (opt.lc_messages)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION lc-messages=%s", opt.lc_messages) < 0 )
-	return GNUPG_Out_Of_Core;
+	return unlock_pinentry (GNUPG_Out_Of_Core);
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       if (rc)
-	return map_assuan_err (rc);
+	return unlock_pinentry (map_assuan_err (rc));
     }
   return 0;
 }
@@ -213,14 +243,14 @@ agent_askpin (const char *desc_text, const char *start_err_text,
   line[DIM(line)-1] = 0;
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return unlock_pinentry (map_assuan_err (rc));
 
   rc = assuan_transact (entry_ctx,
                         pininfo->min_digits? "SETPROMPT PIN:"
                                            : "SETPROMPT Passphrase:",
                         NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return unlock_pinentry (map_assuan_err (rc));
 
   for (;pininfo->failed_tries < pininfo->max_tries; pininfo->failed_tries++)
     {
@@ -242,7 +272,7 @@ agent_askpin (const char *desc_text, const char *start_err_text,
           line[DIM(line)-1] = 0;
           rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
           if (rc)
-            return map_assuan_err (rc);
+            return unlock_pinentry (map_assuan_err (rc));
           errtext = NULL;
         }
       
@@ -251,9 +281,9 @@ agent_askpin (const char *desc_text, const char *start_err_text,
         errtext = pininfo->min_digits? trans ("PIN too long")
                                      : trans ("Passphrase too long");
       else if (rc)
-        return map_assuan_err (rc);
+        return unlock_pinentry (map_assuan_err (rc));
       if (!errtext && !pininfo->min_digits)
-        return 0; /* okay, got a passphrase */
+        return unlock_pinentry (0); /* okay, got a passphrase */
       if (!errtext && !all_digitsp (pininfo->pin))
         errtext = trans ("Invalid characters in PIN");
       if (!errtext && pininfo->max_digits
@@ -264,10 +294,11 @@ agent_askpin (const char *desc_text, const char *start_err_text,
         errtext = trans ("PIN too short");
 
       if (!errtext)
-        return 0; /* okay, got a PIN */
+        return unlock_pinentry (0); /* okay, got a PIN */
     }
 
-  return pininfo->min_digits? GNUPG_Bad_PIN : GNUPG_Bad_Passphrase;
+  return unlock_pinentry (pininfo->min_digits? GNUPG_Bad_PIN
+                          : GNUPG_Bad_Passphrase);
 }
 
 
@@ -301,13 +332,13 @@ agent_get_passphrase (char **retpass, const char *desc, const char *prompt,
   line[DIM(line)-1] = 0;
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return unlock_pinentry (map_assuan_err (rc));
 
   snprintf (line, DIM(line)-1, "SETPROMPT %s", prompt? prompt : "Passphrase");
   line[DIM(line)-1] = 0;
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return unlock_pinentry (map_assuan_err (rc));
 
   if (errtext)
     {
@@ -315,28 +346,28 @@ agent_get_passphrase (char **retpass, const char *desc, const char *prompt,
       line[DIM(line)-1] = 0;
       rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
-        return map_assuan_err (rc);
+        return unlock_pinentry (map_assuan_err (rc));
     }
 
   memset (&parm, 0, sizeof parm);
   parm.size = ASSUAN_LINELENGTH/2 - 5;
   parm.buffer = gcry_malloc_secure (parm.size+10);
   if (!parm.buffer)
-    return seterr (Out_Of_Core);
+    return unlock_pinentry (seterr (Out_Of_Core));
 
   assuan_begin_confidential (entry_ctx);
   rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm, NULL, NULL, NULL, NULL);
   if (rc)
     {
       xfree (parm.buffer);
-      return map_assuan_err (rc);
+      return unlock_pinentry (map_assuan_err (rc));
     }
   
   hexstring = gcry_malloc_secure (strlen (parm.buffer)*2+1);
   if (!hexstring)
     {
       xfree (parm.buffer);
-      return seterr (Out_Of_Core);
+      return unlock_pinentry (seterr (Out_Of_Core));
     }
 
   for (i=0, p=parm.buffer; *p; p++, i += 2)
@@ -344,7 +375,7 @@ agent_get_passphrase (char **retpass, const char *desc, const char *prompt,
   
   xfree (parm.buffer);
   *retpass = hexstring;
-  return 0;
+  return unlock_pinentry (0);
 }
 
 
@@ -370,7 +401,7 @@ agent_get_confirmation (const char *desc, const char *ok, const char *cancel)
   line[DIM(line)-1] = 0;
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return unlock_pinentry (map_assuan_err (rc));
 
   if (ok)
     {
@@ -378,7 +409,7 @@ agent_get_confirmation (const char *desc, const char *ok, const char *cancel)
       line[DIM(line)-1] = 0;
       rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
-        return map_assuan_err (rc);
+        return unlock_pinentry (map_assuan_err (rc));
     }
   if (cancel)
     {
@@ -386,11 +417,11 @@ agent_get_confirmation (const char *desc, const char *ok, const char *cancel)
       line[DIM(line)-1] = 0;
       rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
-        return map_assuan_err (rc);
+        return unlock_pinentry (map_assuan_err (rc));
     }
 
   rc = assuan_transact (entry_ctx, "CONFIRM", NULL, NULL, NULL, NULL, NULL, NULL);
-  return map_assuan_err (rc);
+  return unlock_pinentry (map_assuan_err (rc));
 }
 
 
