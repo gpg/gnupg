@@ -122,7 +122,7 @@ gpg_err_code_t _keybox_get_flag_location (const unsigned char *buffer,
 
 /*-- keybox-dump.c --*/
 int _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp);
-int _keybox_dump_file (const char *filename, FILE *outfp);
+int _keybox_dump_file (const char *filename, int stats_only, FILE *outfp);
 
 
 /*-- keybox-util.c --*/

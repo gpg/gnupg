@@ -323,14 +323,95 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
 }
 
 
+struct file_stats_s
+{
+  unsigned long too_short_blobs;
+  unsigned long too_large_blobs;
+  unsigned long total_blob_count;
+  unsigned long empty_blob_count;
+  unsigned long header_blob_count;
+  unsigned long pgp_blob_count;
+  unsigned long x509_blob_count;
+  unsigned long unknown_blob_count;
+  unsigned long non_flagged;
+  unsigned long secret_flagged;
+  unsigned long ephemeral_flagged;
+};
+
+static int
+update_stats (KEYBOXBLOB blob, struct file_stats_s *s)
+{
+  const unsigned char *buffer;
+  size_t length;
+  int type;
+  unsigned long n;
+
+  buffer = _keybox_get_blob_image (blob, &length);
+  if (length < 32)
+    {
+      s->too_short_blobs++;
+      return -1;
+    }
+
+  n = get32( buffer );
+  if (n > length) 
+    s->too_large_blobs++;
+  else
+    length = n;  /* ignore the rest */
+
+  s->total_blob_count++;
+  type = buffer[4];
+  switch (type)
+    {
+    case BLOBTYPE_EMPTY:
+      s->empty_blob_count++;
+      return 0;
+    case BLOBTYPE_HEADER:
+      s->header_blob_count++;
+      return 0;
+    case BLOBTYPE_PGP:
+      s->pgp_blob_count++;
+      break;
+    case BLOBTYPE_X509:
+      s->x509_blob_count++;
+      break;
+    default:
+      s->unknown_blob_count++;
+      return 0;
+    }
+
+  if (length < 40)
+    {
+      s->too_short_blobs++;
+      return -1;
+    }
+  
+  n = get16 (buffer + 6);
+  if (n)
+    {
+      if ((n & 1))
+        s->secret_flagged++;
+      if ((n & 2))
+        s->ephemeral_flagged++;
+    }
+  else
+    s->non_flagged++;
+
+  return 0;
+}
+
+
 
 int
-_keybox_dump_file (const char *filename, FILE *outfp)
+_keybox_dump_file (const char *filename, int stats_only, FILE *outfp)
 {
   FILE *fp;
   KEYBOXBLOB blob;
   int rc;
   unsigned long count = 0;
+  struct file_stats_s stats;
+
+  memset (&stats, 0, sizeof stats);
 
   if (!filename)
     {
@@ -348,10 +429,17 @@ _keybox_dump_file (const char *filename, FILE *outfp)
 
   while ( !(rc = _keybox_read_blob (&blob, fp)) )
     {
-      fprintf (outfp, "BEGIN-RECORD: %lu\n", count );
-      _keybox_dump_blob (blob, outfp);
+      if (stats_only)
+        {
+          update_stats (blob, &stats);
+        }
+      else
+        {
+          fprintf (outfp, "BEGIN-RECORD: %lu\n", count );
+          _keybox_dump_blob (blob, outfp);
+          fprintf (outfp, "END-RECORD\n");
+        }
       _keybox_release_blob (blob);
-      fprintf (outfp, "END-RECORD\n");
       count++;
     }
   if (rc == -1)
@@ -361,5 +449,36 @@ _keybox_dump_file (const char *filename, FILE *outfp)
   
   if (fp != stdin)
     fclose (fp);
+
+  if (stats_only)
+    {
+      fprintf (outfp, 
+               "Total number of blobs: %8lu\n"
+               "               header: %8lu\n"
+               "                empty: %8lu\n"
+               "              openpgp: %8lu\n"
+               "                 x509: %8lu\n"
+               "          non flagged: %8lu\n"
+               "       secret flagged: %8lu\n"
+               "    ephemeral flagged: %8lu\n",
+               stats.total_blob_count,
+               stats.header_blob_count,
+               stats.empty_blob_count,
+               stats.pgp_blob_count,
+               stats.x509_blob_count,
+               stats.non_flagged,
+               stats.secret_flagged,
+               stats.ephemeral_flagged);
+        if (stats.unknown_blob_count)
+          fprintf (outfp, "   unknown blob types: %8lu\n",
+                   stats.unknown_blob_count);
+        if (stats.too_short_blobs)
+          fprintf (outfp, "      too short blobs: %8lu\n",
+                   stats.too_short_blobs);
+        if (stats.too_large_blobs)
+          fprintf (outfp, "      too large blobs: %8lu\n",
+                   stats.too_large_blobs);
+    }
+
   return rc;
 }

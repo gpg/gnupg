@@ -1,3 +1,9 @@
+2004-06-18  Werner Koch  <wk@gnupg.org>
+
+	* keybox-dump.c (_keybox_dump_file): New arg STATS_ONLY.
+	(update_stats): New.
+	* kbxutil.c (main): New command --stats.
+
 2004-04-23  Werner Koch  <wk@gnupg.org>
 
 	* keybox-blob.c (_keybox_update_header_blob): New.

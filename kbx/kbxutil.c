@@ -47,6 +47,7 @@ enum cmd_and_opt_values {
   aFindByFpr,
   aFindByKid,
   aFindByUid,
+  aStats,
 
   oDebug,
   oDebugAll,
@@ -61,15 +62,16 @@ enum cmd_and_opt_values {
 static ARGPARSE_OPTS opts[] = {
   { 300, NULL, 0, N_("@Commands:\n ") },
 
-  { aFindByFpr,  "find-by-fpr", 0, "|FPR| find key using it's fingerprnt" },
-  { aFindByKid,  "find-by-kid", 0, "|KID| find key using it's keyid" },
-  { aFindByUid,  "find-by-uid", 0, "|NAME| find key by user name" },
+/*   { aFindByFpr,  "find-by-fpr", 0, "|FPR| find key using it's fingerprnt" }, */
+/*   { aFindByKid,  "find-by-kid", 0, "|KID| find key using it's keyid" }, */
+/*   { aFindByUid,  "find-by-uid", 0, "|NAME| find key by user name" }, */
+  { aStats,      "stats",       0, "show key statistics" }, 
   
   { 301, NULL, 0, N_("@\nOptions:\n ") },
   
-  { oArmor, "armor",     0, N_("create ascii armored output")},
-  { oArmor, "armour",     0, "@" },
-  { oOutput, "output",    2, N_("use as output file")},
+/*   { oArmor, "armor",     0, N_("create ascii armored output")}, */
+/*   { oArmor, "armour",     0, "@" }, */
+/*   { oOutput, "output",    2, N_("use as output file")}, */
   { oVerbose, "verbose",   0, N_("verbose") },
   { oQuiet,	"quiet",   0, N_("be somewhat more quiet") },
   { oDryRun, "dry-run",   0, N_("do not make any changes") },
@@ -261,6 +263,7 @@ main( int argc, char **argv )
         case aFindByFpr:
         case aFindByKid:
         case aFindByUid:
+        case aStats:
           cmd = pargs.r_opt;
           break;
           
@@ -275,50 +278,65 @@ main( int argc, char **argv )
   if (!cmd)
       { /* default is to list a KBX file */
 	if (!argc) 
-          _keybox_dump_file (NULL, stdout);
+          _keybox_dump_file (NULL, 0, stdout);
 	else
           {
 	    for (; argc; argc--, argv++) 
-              _keybox_dump_file (*argv, stdout);
+              _keybox_dump_file (*argv, 0, stdout);
+          }
+      }
+  else if (cmd == aStats )
+    {
+	if (!argc) 
+          _keybox_dump_file (NULL, 1, stdout);
+	else
+          {
+	    for (; argc; argc--, argv++) 
+              _keybox_dump_file (*argv, 1, stdout);
           }
     }
 #if 0
-    else if ( cmd == aFindByFpr ) {
-	char *fpr;
-	if ( argc != 2 )
-	    wrong_args ("kbxfile foingerprint");
-	fpr = format_fingerprint ( argv[1] );
-	if ( !fpr )
-	    log_error ("invalid formatted fingerprint\n");
-	else {
-	    kbxfile_search_by_fpr ( argv[0], fpr );
-	    gcry_free ( fpr );
+  else if ( cmd == aFindByFpr ) 
+    {
+      char *fpr;
+      if ( argc != 2 )
+        wrong_args ("kbxfile foingerprint");
+      fpr = format_fingerprint ( argv[1] );
+      if ( !fpr )
+        log_error ("invalid formatted fingerprint\n");
+      else 
+        {
+          kbxfile_search_by_fpr ( argv[0], fpr );
+          gcry_free ( fpr );
+        }
+    }
+  else if ( cmd == aFindByKid ) 
+    {
+      u32 kid[2];
+      int mode;
+      
+      if ( argc != 2 )
+        wrong_args ("kbxfile short-or-long-keyid");
+      mode = format_keyid ( argv[1], kid );
+      if ( !mode )
+        log_error ("invalid formatted keyID\n");
+      else
+        {
+          kbxfile_search_by_kid ( argv[0], kid, mode );
 	}
     }
-    else if ( cmd == aFindByKid ) {
-	u32 kid[2];
-	int mode;
-
-	if ( argc != 2 )
-	    wrong_args ("kbxfile short-or-long-keyid");
-	mode = format_keyid ( argv[1], kid );
-	if ( !mode )
-	    log_error ("invalid formatted keyID\n");
-	else {
-	    kbxfile_search_by_kid ( argv[0], kid, mode );
-	}
-    }
-    else if ( cmd == aFindByUid ) {
-	if ( argc != 2 )
-	    wrong_args ("kbxfile userID");
-	kbxfile_search_by_uid ( argv[0], argv[1] );
+  else if ( cmd == aFindByUid ) 
+    {
+      if ( argc != 2 )
+        wrong_args ("kbxfile userID");
+      kbxfile_search_by_uid ( argv[0], argv[1] );
     }
 #endif
-    else
-	log_error ("unsupported action\n");
-
-    myexit(0);
-    return 8; /*NEVER REACHED*/
+  else
+      log_error ("unsupported action\n");
+  
+  myexit(0);
+  return 8; /*NEVER REACHED*/
 }
 
 
