@@ -349,4 +349,17 @@
      line is needed for modern signatures, to tell the parser which
      hash algorithm to use.
 
+  Q: Now can a get list of key IDs used to encrypt a message?
+  A: gpg --batch --decrypt --status-fd 1 2>/dev/null \
+	      | awk '/^\[GNUPG:\] ENC_TO / { print $3 }'
+
+
+  Q: PGP 5.x, 6.x does not like my secret key.
+  A: PGP probaly bails out on some private comment packets used by GnuPG.
+     These packets are fully in compliance with OpenPGP; however PGP is not
+     really OPenPGP aware.  A workaround is to eport the secret keys with
+     this command:
+
+	gpg --export-secret-keys --no-comment -a your-key-id
+
 

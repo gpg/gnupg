@@ -178,7 +178,7 @@ enum cmd_and_opt_values { aNull = 0,
     oAllowNonSelfsignedUID,
     oNoLiteral,
     oSetFilesize,
-    oEntropyDLLName,
+    oHonorHttpProxy,
     oEmu3DESS2KBug,  /* will be removed in 1.1 */
 aTest };
 
@@ -346,7 +346,7 @@ static ARGPARSE_OPTS opts[] = {
     { oAllowNonSelfsignedUID, "allow-non-selfsigned-uid", 0, "@" },
     { oNoLiteral, "no-literal", 0, "@" },
     { oSetFilesize, "set-filesize", 20, "@" },
-    { oEntropyDLLName, "entropy-dll-name", 2, "@" },
+    { oHonorHttpProxy,"honor-http-proxy", 0, "@" },
     { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
 {0} };
 
@@ -586,7 +586,11 @@ main( int argc, char **argv )
     opt.completes_needed = 1;
     opt.marginals_needed = 3;
     opt.max_cert_depth = 5;
+  #ifdef __MINGW32__
+    opt.homedir = read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" );
+  #else
     opt.homedir = getenv("GNUPGHOME");
+  #endif
     if( !opt.homedir || !*opt.homedir ) {
       #ifdef HAVE_DRIVE_LETTERS
 	opt.homedir = "c:/gnupg";
@@ -865,22 +869,10 @@ main( int argc, char **argv )
 	  case oDisablePubkeyAlgo:
 		disable_pubkey_algo( string_to_pubkey_algo(pargs.r.ret_str) );
 		break;
-	  case oAllowNonSelfsignedUID:
-		opt.allow_non_selfsigned_uid = 1;
-		break;
-	  case oNoLiteral:
-		opt.no_literal = 1;
-		break;
-	  case oSetFilesize:
-		opt.set_filesize = pargs.r.ret_ulong;
-		break;
-
-	  case oEntropyDLLName:
-	      #ifdef USE_STATIC_RNDW32
-		log_info("set dllname to `%s'\n", pargs.r.ret_str );
-		rndw32_set_dll_name( pargs.r.ret_str );
-	      #endif
-		break;
+	  case oAllowNonSelfsignedUID: opt.allow_non_selfsigned_uid = 1; break;
+	  case oNoLiteral: opt.no_literal = 1; break;
+	  case oSetFilesize: opt.set_filesize = pargs.r.ret_ulong; break;
+	  case oHonorHttpProxy: opt.honor_http_proxy = 1; break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}
@@ -903,8 +895,11 @@ main( int argc, char **argv )
 	fprintf(stderr, "%s\n", strusage(15) );
     }
   #ifdef IS_DEVELOPMENT_VERSION
-    if( !opt.batch )
-	log_info("NOTE: this is a development version!\n");
+    if( !opt.batch ) {
+	log_info("NOTE: THIS IS A DEVELOPMENT VERSION!\n");
+	log_info("It is only intended for test purposes and should NOT be\n");
+	log_info("used in a production environment or with production keys!\n");
+    }
   #endif
     if( opt.force_mdc ) {
 	log_info("--force-mdc ignored because"

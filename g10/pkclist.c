@@ -194,7 +194,7 @@ do_edit_ownertrust( ulong lid, int mode, unsigned *new_trust, int defer_help )
 
     for(;;) {
 	/* a string with valid answers */
-	char *ans = _("sSmMqQ");
+	const char *ans = _("sSmMqQ");
 
 	if( !did_help ) {
 	    if( !mode ) {

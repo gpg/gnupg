@@ -1,6 +1,8 @@
 
     * New command --verify-files.
 
+    * $http_proxy is now used when --honor-http-proxy is set.
+
     * Fixed some minor bugs and the problem with conventional encrypted
       packets which did use the gpg v3 partial length headers.
 

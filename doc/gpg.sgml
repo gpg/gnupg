@@ -732,6 +732,12 @@ balancing using round-robin DNS you may notice
 that you get different key servers.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--honor-http-proxy</term>
+<listitem><para>
+Try to access the keyserver over the proxy set with the variable
+"http_proxy".
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--keyring &ParmFile;</term>
@@ -1228,13 +1234,6 @@ This is not for normal use.  Use the source to see for what it might be useful.
 This is not for normal use.  Use the source to see for what it might be useful.
 </para></listitem></varlistentry>
 
-<varlistentry>
-<term>--entropy-dll-name &ParmFile;</term>
-<listitem><para>
-This option is only used for the Win32 version of GnuPG and changes the
-default location (c:/gnupg/entropy.dll) of the Winseed DLL to &ParmFile;.
-</para></listitem></varlistentry>
-
 
 </variablelist>
 </refsect1>
@@ -1303,6 +1302,9 @@ constructed by cutting off the extension (".asc" or ".sig") of
 <varlistentry>
 <term>GNUPGHOME</term>
 <listitem><para>If set directory used instead of "~/.gnupg".</para></listitem>
+</varlistentry>
+<term>http_proxy</term>
+<listitem><para>Only honored when the option --honor-http-proxy is set.</para></listitem>
 </varlistentry>
     </variablelist>
 

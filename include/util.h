@@ -198,6 +198,12 @@ char *strlwr(char *a);
   #define stricmp(a,b)	 strcasecmp( (a), (b) )
 #endif
 
+/*-- w32reg.c --*/
+#ifdef __MINGW32__
+char *read_w32_registry_string( const char *root,
+				const char *dir, const char *name );
+#endif
+
 /**** other missing stuff ****/
 #ifndef HAVE_ATEXIT  /* For SunOS */
   #define atexit(a)    (on_exit((a),0))

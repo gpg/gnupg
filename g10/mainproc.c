@@ -509,7 +509,7 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig )
 	}
 	else if( sig->sig_class == 0x20 ) {
 	    log_info(_("standalone revocation - "
-		       "use \"gpg --import\" to apply\n"), sig->sig_class);
+		       "use \"gpg --import\" to apply\n"));
 	    return G10ERR_NOT_PROCESSED;
 	}
 	else {

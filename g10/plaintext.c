@@ -308,7 +308,7 @@ ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
     fp = open_sigfile( inname ); /* open default file */
     if( !fp && !opt.batch ) {
 	int any=0;
-	tty_printf("Detached signature.\n");
+	tty_printf(_("Detached signature.\n"));
 	do {
 	    m_free(answer);
 	    answer = cpr_get("detached_signature.filename",

@@ -17,6 +17,7 @@ without prior subscribing (but please request to CC you if you want
 to get an answer).
 
 
+
 Installation instructions:
 --------------------------
  1. Unpack the ZIP archive (alright, you already did this)
@@ -25,14 +26,17 @@ Installation instructions:
  3. Create a directory "c:\gnupg" (or any other as you like)
  4. Copy the file "entropy.dll" to this directory.
  5. If you did not use the default directory "c:\gnupg", you
-    should put a line:
-    "set GNUPGHOME=c:\my_gnupg_directory"
-    into your autoexec.bat or wherever you setup the environment
-    variables. The create a file named "options" in this
-    directory with the contents:
-    "entropy-dll-name c:/my_gnupg_directory/entropy.dll"
-    (Please notice that you have to use a normal slash and not
-     a backslash here)
+    should enter a string with the directory into the Registry
+    under the key:
+	 \\HKEY_CURRENT_USER\Software\GNU\GnuPG\HomeDir
+    Because the default location for the entropy DLL is also the
+    c:\gnupg; you have to set another Registry entry with the
+    full name of the DLL (e.g. "c:\foo\bar\entropy.dll") under
+    the key:
+	 \\HKEY_LOCAL_MACHINE\Software\GNU\GnuPG\EntropyDLL
+    Please use forward slashes and not the backslashes when
+    setting filenames for GnuPG into the Registry.
+
  6. Enter "gpg" and see what happens
  7. Read the file README and the online HOWTOs
 
@@ -41,10 +45,12 @@ Internationalization support:
 -----------------------------
   1. Decide where to store the translation files for your language.
      Here we assume the directory "c:/gnu/locale/fr"
-  2. Set an environment Variable:
-     "set MINGW32_NLS_DIR=c:/gnu/locale/fr"
-  3. Select which language to use.  If you want the French translation,
-     copy the file "fr.mo" to "c:/gnu/locale/fr/gnupg.mo".
+  2. Set the directory with the translations into the Registry under the key:
+	\\HKEY_CURRENT_USER\Control Panel\Mingw32\NLS\MODir
+     (Example entry: "c:/gnu/locale/fr")
+  3. Select which language to use and copy the currect translation file
+     under the name "gnupg.mo" into the directory set in step 2
+     (Example:	"copy fr.mo c:\gnu\locale\fr\gnupg.mo")
   4. Done.
 
 Currently we only support the Codepages 437, 850 und Latin1.  If you have

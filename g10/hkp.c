@@ -55,6 +55,7 @@ hkp_ask_import( u32 *keyid )
     struct http_context hd;
     char *request;
     int rc;
+    unsigned int hflags = opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY : 0;
 
     if( !opt.keyserver_name )
 	return -1;
@@ -65,7 +66,7 @@ hkp_ask_import( u32 *keyid )
      * nicer one */
     sprintf( request, "x-hkp://%s:11371/pks/lookup?op=get&search=0x%08lX",
 			opt.keyserver_name, (ulong)keyid[1] );
-    rc = http_open_document( &hd, request, 0 );
+    rc = http_open_document( &hd, request, hflags );
     if( rc ) {
 	log_info("can't get key from keyserver: %s\n",
 			rc == G10ERR_NETWORK? strerror(errno)
@@ -120,6 +121,7 @@ hkp_export( STRLIST users )
     struct http_context hd;
     char *request;
     unsigned int status;
+    unsigned int hflags = opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY : 0;
 
     if( !opt.keyserver_name ) {
 	log_error("no keyserver known (use option --keyserver)\n");
@@ -142,7 +144,7 @@ hkp_export( STRLIST users )
 
     request = m_alloc( strlen( opt.keyserver_name ) + 100 );
     sprintf( request, "x-hkp://%s:11371/pks/add", opt.keyserver_name );
-    rc = http_open( &hd, HTTP_REQ_POST, request , 0 );
+    rc = http_open( &hd, HTTP_REQ_POST, request , hflags );
     if( rc ) {
 	log_error("can't connect to `%s': %s\n",
 		   opt.keyserver_name,

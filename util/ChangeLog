@@ -1,3 +1,12 @@
+Fri Oct  8 20:32:01 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* w32reg.c: New.
+	* simple-gettext.c: Use the Registry to locate the mo file.
+
+	* http.c (send_request): Add support for proxys; suggested by
+	Walter Hofmann.
+	(http_open_document): Pass flags to http_open.
+
 Fri Sep 17 12:56:42 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

@@ -83,6 +83,7 @@ struct {
     int allow_non_selfsigned_uid;
     int no_literal;
     ulong set_filesize;
+    int honor_http_proxy;
 } opt;
 
 

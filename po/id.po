@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Privacy Guard 1.0.0\n"
-"POT-Creation-Date: 1999-09-23 08:53+0200\n"
+"POT-Creation-Date: 1999-10-04 21:57+0200\n"
 "PO-Revision-Date: 1999-09-17 15:21+07:00\n"
 "Last-Translator: Tedi Heriyanto <tedi-h@usa.net>\n"
 "Language-Team: Indonesia <id@li.org>\n"
@@ -241,6 +241,11 @@ msgstr "kesalahan jaringan"
 msgid "not encrypted"
 msgstr "tidak dienkripsi"
 
+#: util/errors.c:103
+#, fuzzy
+msgid "not processed"
+msgstr "%lu kunci diproses\n"
+
 #: util/logger.c:218
 #, c-format
 msgid "... this is a bug (%s:%d:%s)\n"
@@ -280,7 +285,7 @@ msgstr ""
 "Tidak tersedia cukup byte random. Silakan melakukan aktivitas lain agar\n"
 "memungkinkan SO mengumpulkan lebih banyak entropi! (Perlu %d byte lagi)\n"
 
-#: g10/g10.c:187
+#: g10/g10.c:188
 msgid ""
 "@Commands:\n"
 " "
@@ -288,135 +293,135 @@ msgstr ""
 "@Perintah:\n"
 "  "
 
-#: g10/g10.c:189
+#: g10/g10.c:190
 msgid "|[file]|make a signature"
 msgstr "|[file]|buat signature"
 
-#: g10/g10.c:190
+#: g10/g10.c:191
 msgid "|[file]|make a clear text signature"
 msgstr "|[file]|buat signature teks"
 
-#: g10/g10.c:191
+#: g10/g10.c:192
 msgid "make a detached signature"
 msgstr "buat detached signature"
 
-#: g10/g10.c:192
+#: g10/g10.c:193
 msgid "encrypt data"
 msgstr "enkripsi data"
 
-#: g10/g10.c:193
+#: g10/g10.c:194
 msgid "encryption only with symmetric cipher"
 msgstr "enkripsi hanya dengan symmetric cipher"
 
-#: g10/g10.c:194
+#: g10/g10.c:195
 msgid "store only"
 msgstr "hanya disimpan"
 
-#: g10/g10.c:195
+#: g10/g10.c:196
 msgid "decrypt data (default)"
 msgstr "dekripsi data (default)"
 
-#: g10/g10.c:196
+#: g10/g10.c:197
 msgid "verify a signature"
 msgstr "verifikasi signature"
 
-#: g10/g10.c:198
+#: g10/g10.c:199
 msgid "list keys"
 msgstr "tampilkan kunci"
 
-#: g10/g10.c:200
+#: g10/g10.c:201
 msgid "list keys and signatures"
 msgstr "tampilkan kunci dan signature"
 
-#: g10/g10.c:201
+#: g10/g10.c:202
 msgid "check key signatures"
 msgstr "periksa signature kunci"
 
-#: g10/g10.c:202
+#: g10/g10.c:203
 msgid "list keys and fingerprints"
 msgstr "tampilkan kunci dan fingerprint"
 
-#: g10/g10.c:203
+#: g10/g10.c:204
 msgid "list secret keys"
 msgstr "tampilkan kunci rahasia"
 
-#: g10/g10.c:204
+#: g10/g10.c:205
 msgid "generate a new key pair"
 msgstr "buat sepasang kunci baru"
 
-#: g10/g10.c:205
+#: g10/g10.c:206
 msgid "remove key from the public keyring"
 msgstr "hapus kunci dari keyring publik"
 
-#: g10/g10.c:206
+#: g10/g10.c:207
 msgid "sign a key"
 msgstr "tandai kunci"
 
-#: g10/g10.c:207
+#: g10/g10.c:208
 msgid "sign a key locally"
 msgstr "tandai kunci secara lokal"
 
-#: g10/g10.c:208
+#: g10/g10.c:209
 msgid "sign or edit a key"
 msgstr "tandai atau edit kunci"
 
-#: g10/g10.c:209
+#: g10/g10.c:210
 msgid "generate a revocation certificate"
 msgstr "buat sertifikat revokasi"
 
-#: g10/g10.c:210
+#: g10/g10.c:211
 msgid "export keys"
 msgstr "ekspor kunci"
 
-#: g10/g10.c:211
+#: g10/g10.c:212
 msgid "export keys to a key server"
 msgstr "ekspor kunci ke server kunci"
 
-#: g10/g10.c:212
+#: g10/g10.c:213
 msgid "import keys from a key server"
 msgstr "impor kunci dari server kunci"
 
-#: g10/g10.c:215
+#: g10/g10.c:216
 msgid "import/merge keys"
 msgstr "impor/gabung kunci"
 
-#: g10/g10.c:217
+#: g10/g10.c:218
 msgid "list only the sequence of packets"
 msgstr "tampilkan hanya urutan paket"
 
-#: g10/g10.c:219
+#: g10/g10.c:220
 msgid "export the ownertrust values"
 msgstr "ekspor nilai ownertrust"
 
-#: g10/g10.c:221
+#: g10/g10.c:222
 msgid "import ownertrust values"
 msgstr "import nilai ownertrust"
 
-#: g10/g10.c:223
+#: g10/g10.c:224
 msgid "update the trust database"
 msgstr "perbarui database trust"
 
-#: g10/g10.c:225
+#: g10/g10.c:226
 msgid "|[NAMES]|check the trust database"
 msgstr "|[NAMA]|periksa database trust"
 
-#: g10/g10.c:226
+#: g10/g10.c:227
 msgid "fix a corrupted trust database"
 msgstr "perbaiki database trust yang terkorupsi"
 
-#: g10/g10.c:227
+#: g10/g10.c:228
 msgid "De-Armor a file or stdin"
 msgstr "De-Armor file atau stdin"
 
-#: g10/g10.c:229
+#: g10/g10.c:230
 msgid "En-Armor a file or stdin"
 msgstr "En-Armor file atau stdin"
 
-#: g10/g10.c:231
+#: g10/g10.c:232
 msgid "|algo [files]|print message digests"
 msgstr "|algo [file]|cetak digest pesan"
 
-#: g10/g10.c:235
+#: g10/g10.c:236
 msgid ""
 "@\n"
 "Options:\n"
@@ -426,168 +431,168 @@ msgstr ""
 "Pilihan:\n"
 "  "
 
-#: g10/g10.c:237
+#: g10/g10.c:238
 msgid "create ascii armored output"
 msgstr "ciptakan output ascii"
 
-#: g10/g10.c:239
+#: g10/g10.c:240
 msgid "|NAME|encrypt for NAME"
 msgstr "|NAMA|enkripsi untuk NAMA"
 
-#: g10/g10.c:242
+#: g10/g10.c:243
 msgid "|NAME|use NAME as default recipient"
 msgstr "|NAMA|gunakan NAMA sebagai penerima baku"
 
-#: g10/g10.c:244
+#: g10/g10.c:245
 msgid "use the default key as default recipient"
 msgstr "gunakan kunci baku sebagai penerima baku"
 
-#: g10/g10.c:248
+#: g10/g10.c:249
 msgid "use this user-id to sign or decrypt"
 msgstr "gunakan id-user ini untuk menandai atau dekripsi"
 
-#: g10/g10.c:249
+#: g10/g10.c:250
 msgid "|N|set compress level N (0 disables)"
 msgstr "|N|set tingkat kompresi N (0 tidak ada)"
 
-#: g10/g10.c:251
+#: g10/g10.c:252
 msgid "use canonical text mode"
 msgstr "gunakan mode teks kanonikal"
 
-#: g10/g10.c:252
+#: g10/g10.c:253
 msgid "use as output file"
 msgstr "gunakan sebagai file output"
 
-#: g10/g10.c:253
+#: g10/g10.c:254
 msgid "verbose"
 msgstr "detil"
 
-#: g10/g10.c:254
+#: g10/g10.c:255
 msgid "be somewhat more quiet"
 msgstr "lebih diam"
 
-#: g10/g10.c:255
+#: g10/g10.c:256
 msgid "don't use the terminal at all"
 msgstr "jangan menggunakan terminal"
 
-#: g10/g10.c:256
+#: g10/g10.c:257
 msgid "force v3 signatures"
 msgstr "paksa signature v3"
 
-#: g10/g10.c:257
+#: g10/g10.c:258
 msgid "always use a MDC for encryption"
 msgstr "selalu gunakan MDC untuk enkripsi"
 
-#: g10/g10.c:258
+#: g10/g10.c:259
 msgid "do not make any changes"
 msgstr "jangan buat perubahan"
 
 #. { oInteractive, "interactive", 0, N_("prompt before overwriting") },
-#: g10/g10.c:260
+#: g10/g10.c:261
 msgid "batch mode: never ask"
 msgstr "mode batch: tanpa tanya"
 
-#: g10/g10.c:261
+#: g10/g10.c:262
 msgid "assume yes on most questions"
 msgstr "asumsikan ya untuk seluruh pertanyaan"
 
-#: g10/g10.c:262
+#: g10/g10.c:263
 msgid "assume no on most questions"
 msgstr "asumsikan tidak untuk seluruh pertanyaan"
 
-#: g10/g10.c:263
+#: g10/g10.c:264
 msgid "add this keyring to the list of keyrings"
 msgstr "tambah keyring ini ke daftar keyring"
 
-#: g10/g10.c:264
+#: g10/g10.c:265
 msgid "add this secret keyring to the list"
 msgstr "tambah keyring rahasia ini ke daftar"
 
-#: g10/g10.c:265
+#: g10/g10.c:266
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NAMA|gunakan NAMA sebagai kunci rahasia baku"
 
-#: g10/g10.c:266
+#: g10/g10.c:267
 msgid "|HOST|use this keyserver to lookup keys"
 msgstr "|HOST|gunakan sebagai server kunci untuk melihat kunci"
 
-#: g10/g10.c:267
+#: g10/g10.c:268
 msgid "|NAME|set terminal charset to NAME"
 msgstr "|NAMA|set charset terminal ke NAMA"
 
-#: g10/g10.c:268
+#: g10/g10.c:269
 msgid "read options from file"
 msgstr "baca pilihan dari file"
 
-#: g10/g10.c:270
+#: g10/g10.c:271
 msgid "set debugging flags"
 msgstr "set flag debugging"
 
-#: g10/g10.c:271
+#: g10/g10.c:272
 msgid "enable full debugging"
 msgstr "aktifkan full debugging"
 
-#: g10/g10.c:272
+#: g10/g10.c:273
 msgid "|FD|write status info to this FD"
 msgstr "|FD|tulis info status ke FD ini"
 
-#: g10/g10.c:273
+#: g10/g10.c:274
 msgid "do not write comment packets"
 msgstr "jangan menulis komentar paket"
 
-#: g10/g10.c:274
+#: g10/g10.c:275
 msgid "(default is 1)"
 msgstr "(baku adalah 1)"
 
-#: g10/g10.c:275
+#: g10/g10.c:276
 msgid "(default is 3)"
 msgstr "(baku adalah 3)"
 
-#: g10/g10.c:277
+#: g10/g10.c:278
 msgid "|FILE|load extension module FILE"
 msgstr "|FILE|muat modul ekstensi FILE"
 
-#: g10/g10.c:278
+#: g10/g10.c:279
 msgid "emulate the mode described in RFC1991"
 msgstr "emulasikan mode seperti dalam RFC1991"
 
-#: g10/g10.c:279
+#: g10/g10.c:280
 msgid "set all packet, cipher and digest options to OpenPGP behavior"
 msgstr "set seluruh pilihan paket, cipher dan digest ke OpenPGP"
 
-#: g10/g10.c:280
+#: g10/g10.c:281
 msgid "|N|use passphrase mode N"
 msgstr "|N|gunakan passphrase mode N"
 
-#: g10/g10.c:282
+#: g10/g10.c:283
 msgid "|NAME|use message digest algorithm NAME for passphrases"
 msgstr "|NAMA|gunakan algoritma digest pesan NAMA untuk passphrase"
 
-#: g10/g10.c:284
+#: g10/g10.c:285
 msgid "|NAME|use cipher algorithm NAME for passphrases"
 msgstr "|NAMA|gunakan algoritma cipher NAMA untuk passphrase"
 
-#: g10/g10.c:285
+#: g10/g10.c:286
 msgid "|NAME|use cipher algorithm NAME"
 msgstr "|NAMA|gunakan algoritma cipher NAMA"
 
-#: g10/g10.c:286
+#: g10/g10.c:287
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NAMA|gunakan algoritma digest pesan NAMA"
 
-#: g10/g10.c:287
+#: g10/g10.c:288
 msgid "|N|use compress algorithm N"
 msgstr "|N|gunakan algoritma kompresi N"
 
-#: g10/g10.c:288
+#: g10/g10.c:289
 msgid "throw keyid field of encrypted packets"
 msgstr "buang field keyid paket terenkripsi"
 
-#: g10/g10.c:289
+#: g10/g10.c:290
 msgid "|NAME=VALUE|use this notation data"
 msgstr "|NAMA=NILAI|gunakan notasi data ini"
 
-#: g10/g10.c:291
+#: g10/g10.c:292
 msgid ""
 "@\n"
 "Examples:\n"
@@ -607,15 +612,15 @@ msgstr ""
 " --list-keys [nama]      tampilkan kunci\n"
 " --fingerprint [nama]    tampilkan fingerprint\n"
 
-#: g10/g10.c:378
+#: g10/g10.c:380
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 msgstr "Silakan laporkan kesalahan ke <gnupg-bugs@gnu.org>.\n"
 
-#: g10/g10.c:382
+#: g10/g10.c:384
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Pemakaian: gpg [pilihan] [file] (-h untuk bantuan)"
 
-#: g10/g10.c:385
+#: g10/g10.c:387
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "sign, check, encrypt or decrypt\n"
@@ -625,7 +630,7 @@ msgstr ""
 "tandai, cek, enkripsi atau dekripsi\n"
 "operasi baku tergantung pada data input\n"
 
-#: g10/g10.c:390
+#: g10/g10.c:392
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -633,182 +638,182 @@ msgstr ""
 "\n"
 "Algoritma yang didukung:\n"
 
-#: g10/g10.c:468
+#: g10/g10.c:470
 msgid "usage: gpg [options] "
 msgstr "pemakaian: gpg [pilihan] "
 
-#: g10/g10.c:521
+#: g10/g10.c:523
 msgid "conflicting commands\n"
 msgstr "perintah saling konflik\n"
 
-#: g10/g10.c:656
+#: g10/g10.c:658
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "CATATAN: tidak ada file pilihan baku `%s'\n"
 
-#: g10/g10.c:660
+#: g10/g10.c:662
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "file pilihan `%s': %s\n"
 
-#: g10/g10.c:667
+#: g10/g10.c:669
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "membaca pilihan dari `%s'\n"
 
-#: g10/g10.c:848
+#: g10/g10.c:851
 #, c-format
 msgid "%s is not a valid character set\n"
 msgstr "%s bukanlah set karakter yang valid\n"
 
-#: g10/g10.c:912 g10/g10.c:921
+#: g10/g10.c:915 g10/g10.c:924
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "CATATAN: %s tidak untuk pemakaian normal!\n"
 
-#: g10/g10.c:914
+#: g10/g10.c:917
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s tidak dibolehkan dengan %s!\n"
 
-#: g10/g10.c:917
+#: g10/g10.c:920
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s tidak masuk akal dengan %s!\n"
 
-#: g10/g10.c:936 g10/g10.c:948
+#: g10/g10.c:939 g10/g10.c:951
 msgid "selected cipher algorithm is invalid\n"
 msgstr "algoritma cipher yang dipilih tidak valid\n"
 
-#: g10/g10.c:942 g10/g10.c:954
+#: g10/g10.c:945 g10/g10.c:957
 msgid "selected digest algorithm is invalid\n"
 msgstr "algoritma digest yang dipilih tidak valid\n"
 
-#: g10/g10.c:958
+#: g10/g10.c:961
 msgid "the given policy URL is invalid\n"
 msgstr "kebijakan URL yang diberikan tidak valid\n"
 
-#: g10/g10.c:961
+#: g10/g10.c:964
 #, c-format
 msgid "compress algorithm must be in range %d..%d\n"
 msgstr "algoritma kompresi harus di antara %d..%d\n"
 
-#: g10/g10.c:963
+#: g10/g10.c:966
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed harus lebih dari 0\n"
 
-#: g10/g10.c:965
+#: g10/g10.c:968
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed harus lebih dari 1\n"
 
-#: g10/g10.c:967
+#: g10/g10.c:970
 msgid "max-cert-depth must be in range 1 to 255\n"
 msgstr "max-cert-depth harus di antara 1 hingga 255\n"
 
-#: g10/g10.c:970
+#: g10/g10.c:973
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "CATATAN: mode S2K sederhana (0) tidak dianjurkan\n"
 
-#: g10/g10.c:974
+#: g10/g10.c:977
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "mode S2K yang tidak valid; harus 0, 1 atau 3\n"
 
-#: g10/g10.c:1051
+#: g10/g10.c:1054
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "gagal inisialisasi TrustDB: %s\n"
 
-#: g10/g10.c:1057
+#: g10/g10.c:1060
 msgid "--store [filename]"
 msgstr "--store [namafile]"
 
-#: g10/g10.c:1064
+#: g10/g10.c:1067
 msgid "--symmetric [filename]"
 msgstr "--symmetric [namafile]"
 
-#: g10/g10.c:1072
+#: g10/g10.c:1075
 msgid "--encrypt [filename]"
 msgstr "--encrypt [namafile]"
 
-#: g10/g10.c:1085
+#: g10/g10.c:1088
 msgid "--sign [filename]"
 msgstr "--sign [namafile]"
 
-#: g10/g10.c:1098
+#: g10/g10.c:1101
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [namafile]"
 
-#: g10/g10.c:1112
+#: g10/g10.c:1115
 msgid "--clearsign [filename]"
 msgstr "--clearsign [namafile]"
 
-#: g10/g10.c:1129
+#: g10/g10.c:1132
 msgid "--decrypt [filename]"
 msgstr "--decrypt [namafile]"
 
-#: g10/g10.c:1137
+#: g10/g10.c:1140
 msgid "--sign-key user-id"
 msgstr "--sign-key id-user"
 
-#: g10/g10.c:1145
+#: g10/g10.c:1148
 msgid "--lsign-key user-id"
 msgstr "--lsign-key id-user"
 
-#: g10/g10.c:1153
+#: g10/g10.c:1156
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key id-user [perintah]"
 
-#: g10/g10.c:1169
+#: g10/g10.c:1172
 msgid "--delete-secret-key user-id"
 msgstr "--delete-secret-key id-user"
 
-#: g10/g10.c:1172
+#: g10/g10.c:1175
 msgid "--delete-key user-id"
 msgstr "--delete-key id-user"
 
-#: g10/encode.c:259 g10/g10.c:1196 g10/sign.c:366
+#: g10/encode.c:260 g10/g10.c:1199 g10/sign.c:366
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "tidak dapat membuka %s: %s\n"
 
-#: g10/g10.c:1207
+#: g10/g10.c:1210
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [id-user] [keyring]"
 
-#: g10/g10.c:1268
+#: g10/g10.c:1261
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "gagal dearmoring: %s\n"
 
-#: g10/g10.c:1276
+#: g10/g10.c:1269
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "gagal enarmoring: %s\n"
 
-#: g10/g10.c:1344
+#: g10/g10.c:1337
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "algoritma hash tidak valid `%s'\n"
 
-#: g10/g10.c:1425
+#: g10/g10.c:1418
 msgid "[filename]"
 msgstr "[namafile]"
 
-#: g10/g10.c:1429
+#: g10/g10.c:1422
 msgid "Go ahead and type your message ...\n"
 msgstr "Teruskan dan ketikkan pesan anda ....\n"
 
-#: g10/decrypt.c:59 g10/g10.c:1432 g10/verify.c:67 g10/verify.c:109
+#: g10/decrypt.c:59 g10/g10.c:1425 g10/verify.c:68 g10/verify.c:113
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "tidak dapat membuka `%s'\n"
 
-#: g10/g10.c:1601
+#: g10/g10.c:1594
 msgid ""
 "the first character of a notation name must be a letter or an underscore\n"
 msgstr "karakter pertama nama notasi harus huruf atau garis bawah\n"
 
-#: g10/g10.c:1607
+#: g10/g10.c:1600
 msgid ""
 "a notation name must have only letters, digits, dots or underscores and end "
 "with an '='\n"
@@ -816,11 +821,11 @@ msgstr ""
 "nama notasi terdiri hanya dari huruf, digit, titik atau garis bawah dan "
 "diakhiri dengan sebuah '='\n"
 
-#: g10/g10.c:1613
+#: g10/g10.c:1606
 msgid "dots in a notation name must be surrounded by other characters\n"
 msgstr "titik dalam nama notasi harus diapit oleh karakter lain\n"
 
-#: g10/g10.c:1621
+#: g10/g10.c:1614
 msgid "a notation value must not use any control characters\n"
 msgstr "nilai notasi tidak boleh menggunakan karakter kendali\n"
 
@@ -887,12 +892,12 @@ msgstr "kesalahan dalam garis trailer\n"
 msgid "no valid OpenPGP data found.\n"
 msgstr "tidak ditemukan data OpenPGP yang valid.\n"
 
-#: g10/armor.c:1005
+#: g10/armor.c:1006
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
 msgstr "armor tidak valid: baris melebihi %d karakter\n"
 
-#: g10/armor.c:1009
+#: g10/armor.c:1010
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
@@ -994,36 +999,36 @@ msgstr ""
 "Tidak ada perubahan nilai trust.\n"
 "\n"
 
-#: g10/pkclist.c:350
+#: g10/pkclist.c:351
 #, c-format
 msgid "key %08lX: key has been revoked!\n"
 msgstr "kunci %08lX: kunci telah dibatalkan!\n"
 
-#: g10/pkclist.c:356 g10/pkclist.c:366 g10/pkclist.c:475
+#: g10/pkclist.c:357 g10/pkclist.c:368 g10/pkclist.c:481
 msgid "Use this key anyway? "
 msgstr "Tetap gunakan kunci ini? "
 
-#: g10/pkclist.c:360
+#: g10/pkclist.c:362
 #, c-format
 msgid "key %08lX: subkey has been revoked!\n"
 msgstr "kunci %08lX: subkey telah dibatalkan!\n"
 
-#: g10/pkclist.c:390
+#: g10/pkclist.c:395
 #, c-format
 msgid "%08lX: key has expired\n"
 msgstr "%08lX: kunci telah berakhir\n"
 
-#: g10/pkclist.c:396
+#: g10/pkclist.c:401
 #, c-format
 msgid "%08lX: no info to calculate a trust probability\n"
 msgstr "%08lX: tidak ada info untuk menghitung probabilitas trust\n"
 
-#: g10/pkclist.c:410
+#: g10/pkclist.c:416
 #, c-format
 msgid "%08lX: We do NOT trust this key\n"
 msgstr "%08lX: Kita tidak percaya kunci ini\n"
 
-#: g10/pkclist.c:416
+#: g10/pkclist.c:422
 #, c-format
 msgid ""
 "%08lX: It is not sure that this key really belongs to the owner\n"
@@ -1032,15 +1037,15 @@ msgstr ""
 "%08lX: Tidak pasti kunci ini milik pemiliknya\n"
 "tapi tetap diterima\n"
 
-#: g10/pkclist.c:422
+#: g10/pkclist.c:428
 msgid "This key probably belongs to the owner\n"
 msgstr "Kunci ini mungkin milik pemiliknya\n"
 
-#: g10/pkclist.c:427
+#: g10/pkclist.c:433
 msgid "This key belongs to us\n"
 msgstr "Kunci ini milik kita\n"
 
-#: g10/pkclist.c:470
+#: g10/pkclist.c:476
 msgid ""
 "It is NOT certain that the key belongs to its owner.\n"
 "If you *really* know what you are doing, you may answer\n"
@@ -1052,107 +1057,107 @@ msgstr ""
 "menjawab\n"
 "pertanyaan berikut dengan ya\n"
 
-#: g10/pkclist.c:484 g10/pkclist.c:507
+#: g10/pkclist.c:490 g10/pkclist.c:513
 msgid "WARNING: Using untrusted key!\n"
 msgstr "PERINGATAN: Menggunakan kunci tidak dipercaya!\n"
 
-#: g10/pkclist.c:528
+#: g10/pkclist.c:534
 msgid "WARNING: This key has been revoked by its owner!\n"
 msgstr "PERINGATAN: Kunci ini telah dibatalkan oleh pemiliknya!\n"
 
-#: g10/pkclist.c:529
+#: g10/pkclist.c:535
 msgid "         This could mean that the signature is forgery.\n"
 msgstr "        Mungkin signature adalah palsu.\n"
 
-#: g10/pkclist.c:533
+#: g10/pkclist.c:539
 msgid "WARNING: This subkey has been revoked by its owner!\n"
 msgstr "PERINGATAN: Subkey ini telah dibatalkan oleh pemiliknya!\n"
 
-#: g10/pkclist.c:554
+#: g10/pkclist.c:560
 msgid "Note: This key has expired!\n"
 msgstr "Catatan: Kunci ini telah berakhir!\n"
 
-#: g10/pkclist.c:562
+#: g10/pkclist.c:568
 msgid "WARNING: This key is not certified with a trusted signature!\n"
 msgstr ""
 "PERINGATAN: Kunci ini tidak disertifikasi dengan sig yang terpercaya!\n"
 
-#: g10/pkclist.c:564
+#: g10/pkclist.c:570
 msgid ""
 "         There is no indication that the signature belongs to the owner.\n"
 msgstr "  Tidak ada indikasi signature milik pemilik.\n"
 
-#: g10/pkclist.c:581
+#: g10/pkclist.c:587
 msgid "WARNING: We do NOT trust this key!\n"
 msgstr "PERINGATAN: Kita tidak percaya kunci ini!\n"
 
-#: g10/pkclist.c:582
+#: g10/pkclist.c:588
 msgid "         The signature is probably a FORGERY.\n"
 msgstr "        Signature mungkin palsu.\n"
 
-#: g10/pkclist.c:589
+#: g10/pkclist.c:595
 msgid ""
 "WARNING: This key is not certified with sufficiently trusted signatures!\n"
 msgstr ""
 "PERINGATAN: Kunci ini tidak disertifikasi dengan signature terpercaya yang "
 "cukup!\n"
 
-#: g10/pkclist.c:592
+#: g10/pkclist.c:598
 msgid "         It is not certain that the signature belongs to the owner.\n"
 msgstr "        Tidak pasti signature milik pemilik.\n"
 
-#: g10/pkclist.c:694 g10/pkclist.c:716 g10/pkclist.c:841 g10/pkclist.c:886
+#: g10/pkclist.c:700 g10/pkclist.c:722 g10/pkclist.c:847 g10/pkclist.c:892
 #, c-format
 msgid "%s: skipped: %s\n"
 msgstr "%s: dilewati: %s\n"
 
-#: g10/pkclist.c:702 g10/pkclist.c:868
+#: g10/pkclist.c:708 g10/pkclist.c:874
 #, c-format
 msgid "%s: skipped: public key already present\n"
 msgstr "%s: dilewati: kunci publik telah ada\n"
 
-#: g10/pkclist.c:729
+#: g10/pkclist.c:735
 msgid ""
 "You did not specify a user ID. (you may use \"-r\")\n"
 "\n"
 msgstr "Anda tidak menspesifikasikan ID user. (anda dapat gunakan \"-r\")\n"
 
-#: g10/pkclist.c:739
+#: g10/pkclist.c:745
 msgid "Enter the user ID: "
 msgstr "Masukkan ID user: "
 
-#: g10/pkclist.c:751
+#: g10/pkclist.c:757
 msgid "No such user ID.\n"
 msgstr "Tidak ada ID user tersebut.\n"
 
-#: g10/pkclist.c:756
+#: g10/pkclist.c:762
 msgid "skipped: public key already set as default recipient\n"
 msgstr "dilewati: kunci publik telah diset sebagai penerima baku\n"
 
-#: g10/pkclist.c:778
+#: g10/pkclist.c:784
 msgid "Public key is disabled.\n"
 msgstr "Kunci publik dimatikan.\n"
 
-#: g10/pkclist.c:785
+#: g10/pkclist.c:791
 msgid "skipped: public key already set with --encrypt-to\n"
 msgstr "dilewati: kunci publik telah diset dengan --encrypt-to\n"
 
-#: g10/pkclist.c:816
+#: g10/pkclist.c:822
 #, c-format
 msgid "unknown default recipient `%s'\n"
 msgstr "penerima baku tidak dikenal `%s'\n"
 
-#: g10/pkclist.c:849
+#: g10/pkclist.c:855
 #, c-format
 msgid "%s: error checking key: %s\n"
 msgstr "%s: kesalahan memeriksa kunci: %s\n"
 
-#: g10/pkclist.c:854
+#: g10/pkclist.c:860
 #, c-format
 msgid "%s: skipped: public key is disabled\n"
 msgstr "%s: dilewati: kunci publik dimatikan\n"
 
-#: g10/pkclist.c:892
+#: g10/pkclist.c:898
 msgid "no valid addressees\n"
 msgstr "tidak ada alamat yang valid\n"
 
@@ -1490,17 +1495,17 @@ msgstr "%s: tidak dapat dibuka: %s\n"
 msgid "error creating passphrase: %s\n"
 msgstr "kesalahan penciptaan passphrase: %s\n"
 
-#: g10/encode.c:171 g10/encode.c:318
+#: g10/encode.c:171 g10/encode.c:319
 #, c-format
 msgid "%s: WARNING: empty file\n"
 msgstr "%s: PERINGATAN: file kosong\n"
 
-#: g10/encode.c:265
+#: g10/encode.c:266
 #, c-format
 msgid "reading from `%s'\n"
 msgstr "Membaca dari `%s'\n"
 
-#: g10/encode.c:482
+#: g10/encode.c:483
 #, c-format
 msgid "%s/%s encrypted for: %s\n"
 msgstr "%s/%s dienkripsi untuk: %s\n"
@@ -1549,243 +1554,243 @@ msgstr "Tidak ada ID user untuk kunci\n"
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "menggunakan kunci sekunder %08lX selain kunci primer %08lX\n"
 
-#: g10/import.c:118
+#: g10/import.c:124
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "tidak dapat membuka `%s': %s\n"
 
-#: g10/import.c:162
+#: g10/import.c:178
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "melewati blok tipe %d\n"
 
-#: g10/import.c:169 g10/trustdb.c:1658 g10/trustdb.c:1697
+#: g10/import.c:185 g10/trustdb.c:1721 g10/trustdb.c:1762
 #, c-format
 msgid "%lu keys so far processed\n"
 msgstr "%lu kunci telah diproses\n"
 
-#: g10/import.c:174
+#: g10/import.c:190
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "kesalahan membaca `%s': %s\n"
 
-#: g10/import.c:177
+#: g10/import.c:200
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "Jumlah yang telah diproses: %lu\n"
 
-#: g10/import.c:179
+#: g10/import.c:202
 #, c-format
 msgid "          w/o user IDs: %lu\n"
 msgstr "         tanpa ID user: %lu\n"
 
-#: g10/import.c:181
+#: g10/import.c:204
 #, c-format
 msgid "              imported: %lu"
 msgstr "             diimpor: %lu"
 
-#: g10/import.c:187
+#: g10/import.c:210
 #, c-format
 msgid "             unchanged: %lu\n"
 msgstr "            tidak berubah: %lu\n"
 
-#: g10/import.c:189
+#: g10/import.c:212
 #, c-format
 msgid "          new user IDs: %lu\n"
 msgstr "         ID user baru: %lu\n"
 
-#: g10/import.c:191
+#: g10/import.c:214
 #, c-format
 msgid "           new subkeys: %lu\n"
 msgstr "          subkey baru: %lu\n"
 
-#: g10/import.c:193
+#: g10/import.c:216
 #, c-format
 msgid "        new signatures: %lu\n"
 msgstr "       signature baru: %lu\n"
 
-#: g10/import.c:195
+#: g10/import.c:218
 #, c-format
 msgid "   new key revocations: %lu\n"
 msgstr "  pembatalan kunci baru: %lu\n"
 
-#: g10/import.c:197
+#: g10/import.c:220
 #, c-format
 msgid "      secret keys read: %lu\n"
 msgstr "     kunci rahasia dibaca: %lu\n"
 
-#: g10/import.c:199
+#: g10/import.c:222
 #, c-format
 msgid "  secret keys imported: %lu\n"
 msgstr "  kunci rahasia diimpor: %lu\n"
 
-#: g10/import.c:201
+#: g10/import.c:224
 #, c-format
 msgid " secret keys unchanged: %lu\n"
 msgstr " kunci rahasia tetap: %lu\n"
 
-#: g10/import.c:362 g10/import.c:554
+#: g10/import.c:383 g10/import.c:575
 #, c-format
 msgid "key %08lX: no user ID\n"
 msgstr "kunci %08lX: tidak ada ID user\n"
 
-#: g10/import.c:376
+#: g10/import.c:397
 #, c-format
 msgid "key %08lX: no valid user IDs\n"
 msgstr "kunci %08lX: tidak ada ID user yang valid\n"
 
-#: g10/import.c:378
+#: g10/import.c:399
 msgid "this may be caused by a missing self-signature\n"
 msgstr "mungkin disebabkan oleh self-signature yang tidak ada\n"
 
-#: g10/import.c:389 g10/import.c:621
+#: g10/import.c:410 g10/import.c:642
 #, c-format
 msgid "key %08lX: public key not found: %s\n"
 msgstr "kunci %08lX: kunci publik tidak ditemukan: %s\n"
 
-#: g10/import.c:395
+#: g10/import.c:416
 msgid "no default public keyring\n"
 msgstr "tidak ada keyring publik baku\n"
 
-#: g10/import.c:399 g10/openfile.c:213 g10/sign.c:268 g10/sign.c:580
+#: g10/import.c:420 g10/openfile.c:213 g10/sign.c:268 g10/sign.c:580
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "menulis ke `%s'\n"
 
-#: g10/import.c:402 g10/import.c:460 g10/import.c:569 g10/import.c:670
+#: g10/import.c:423 g10/import.c:481 g10/import.c:590 g10/import.c:691
 #, c-format
 msgid "can't lock keyring `%s': %s\n"
 msgstr "tidak dapat mengunci keyring `%s': %s\n"
 
-#: g10/import.c:405 g10/import.c:463 g10/import.c:572 g10/import.c:673
+#: g10/import.c:426 g10/import.c:484 g10/import.c:593 g10/import.c:694
 #, c-format
 msgid "error writing keyring `%s': %s\n"
 msgstr "kesalahan menulis keyring `%s': %s\n"
 
-#: g10/import.c:410
+#: g10/import.c:431
 #, c-format
 msgid "key %08lX: public key imported\n"
 msgstr "kunci %08lX: kunci publik diimpor\n"
 
-#: g10/import.c:427
+#: g10/import.c:448
 #, c-format
 msgid "key %08lX: doesn't match our copy\n"
 msgstr "kunci %08lX: tidak cocok dengan duplikat kami\n"
 
-#: g10/import.c:436 g10/import.c:629
+#: g10/import.c:457 g10/import.c:650
 #, c-format
 msgid "key %08lX: can't locate original keyblock: %s\n"
 msgstr "kunci %08lX: tidak dapat mengalokasi keyblok orisinal: %s\n"
 
-#: g10/import.c:442 g10/import.c:635
+#: g10/import.c:463 g10/import.c:656
 #, c-format
 msgid "key %08lX: can't read original keyblock: %s\n"
 msgstr "kunci %08lX: tidak dapat membaca keyblok orisinal: %s\n"
 
-#: g10/import.c:469
+#: g10/import.c:490
 #, c-format
 msgid "key %08lX: 1 new user ID\n"
 msgstr "kunci %08lX: 1 user ID baru\n"
 
-#: g10/import.c:472
+#: g10/import.c:493
 #, c-format
 msgid "key %08lX: %d new user IDs\n"
 msgstr "kunci %08lX: %d user ID baru\n"
 
-#: g10/import.c:475
+#: g10/import.c:496
 #, c-format
 msgid "key %08lX: 1 new signature\n"
 msgstr "kunci %08lX: 1 signature baru\n"
 
-#: g10/import.c:478
+#: g10/import.c:499
 #, c-format
 msgid "key %08lX: %d new signatures\n"
 msgstr "kunci %08lX: %d signature baru\n"
 
-#: g10/import.c:481
+#: g10/import.c:502
 #, c-format
 msgid "key %08lX: 1 new subkey\n"
 msgstr "kunci %08lX: 1 subkey baru\n"
 
-#: g10/import.c:484
+#: g10/import.c:505
 #, c-format
 msgid "key %08lX: %d new subkeys\n"
 msgstr "kunci %08lX: %d subkey baru\n"
 
-#: g10/import.c:494
+#: g10/import.c:515
 #, c-format
 msgid "key %08lX: not changed\n"
 msgstr "kunci %08lX: tidak berubah\n"
 
-#: g10/import.c:577
+#: g10/import.c:598
 #, c-format
 msgid "key %08lX: secret key imported\n"
 msgstr "kunci %08lX: kunci rahasia diimpor\n"
 
 #. we can't merge secret keys
-#: g10/import.c:581
+#: g10/import.c:602
 #, c-format
 msgid "key %08lX: already in secret keyring\n"
 msgstr "kunci %08lX: sudah ada di keyring rahasia\n"
 
-#: g10/import.c:586
+#: g10/import.c:607
 #, c-format
 msgid "key %08lX: secret key not found: %s\n"
 msgstr "kunci %08lX: kunci rahasia tidak ditemukan: %s\n"
 
-#: g10/import.c:615
+#: g10/import.c:636
 #, c-format
 msgid "key %08lX: no public key - can't apply revocation certificate\n"
 msgstr ""
 "kunci %08lX: tidak ada kunci publik - tidak dapat mengaplikasikan sertifikat "
 "pembatalan\n"
 
-#: g10/import.c:646
+#: g10/import.c:667
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - rejected\n"
 msgstr "kunci %08lX: sertifikat pembatalan tidak valid: %s - ditolak\n"
 
-#: g10/import.c:678
+#: g10/import.c:699
 #, c-format
 msgid "key %08lX: revocation certificate imported\n"
 msgstr "kunci %08lX: sertifikat pembatalan diimpor\n"
 
-#: g10/import.c:711
+#: g10/import.c:741
 #, c-format
 msgid "key %08lX: no user ID for signature\n"
 msgstr "kunci %08lX: tidak ada ID user untuk signature\n"
 
-#: g10/import.c:718 g10/import.c:742
+#: g10/import.c:748 g10/import.c:772
 #, c-format
 msgid "key %08lX: unsupported public key algorithm\n"
 msgstr "kunci %08lX: algoritma publik key tidak didukung\n"
 
-#: g10/import.c:719
+#: g10/import.c:749
 #, c-format
 msgid "key %08lX: invalid self-signature\n"
 msgstr "kunci %08lX: self-signature tidak valid\n"
 
-#: g10/import.c:734
+#: g10/import.c:764
 #, c-format
 msgid "key %08lX: no subkey for key binding\n"
 msgstr "kunci %08lX: tidak ada subkey untuk key binding\n"
 
-#: g10/import.c:743
+#: g10/import.c:773
 #, c-format
 msgid "key %08lX: invalid subkey binding\n"
 msgstr "kunci %08lX: subkey binding tidak valid\n"
 
-#: g10/import.c:769
+#: g10/import.c:799
 #, c-format
 msgid "key %08lX: accepted non self-signed user ID '"
 msgstr "kunci %08lX: menerima ID user yang tidak self-signed "
 
-#: g10/import.c:798
+#: g10/import.c:828
 #, c-format
 msgid "key %08lX: skipped user ID '"
 msgstr "kunci %08lX: melewati ID user "
 
-#: g10/import.c:821
+#: g10/import.c:851
 #, c-format
 msgid "key %08lX: skipped subkey\n"
 msgstr "kunci %08lX: melewati subkey\n"
@@ -1794,32 +1799,32 @@ msgstr "kunci %08lX: melewati subkey\n"
 #. * to import non-exportable signature when we have the
 #. * the secret key used to create this signature - it
 #. * seems that this makes sense
-#: g10/import.c:846
+#: g10/import.c:876
 #, c-format
 msgid "key %08lX: non exportable signature (class %02x) - skipped\n"
 msgstr "kunci %08lX: signature tidak dapat diekpor (kelas %02x) - dilewati\n"
 
-#: g10/import.c:855
+#: g10/import.c:885
 #, c-format
 msgid "key %08lX: revocation certificate at wrong place - skipped\n"
 msgstr "kunci %08lX: sertifikat pembatalan di tempat yang salah - dilewati\n"
 
-#: g10/import.c:863
+#: g10/import.c:893
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - skipped\n"
 msgstr "kunci %08lX: sertifikat pembatalan tidak valid: %s - dilewati\n"
 
-#: g10/import.c:963
+#: g10/import.c:993
 #, c-format
 msgid "key %08lX: duplicated user ID detected - merged\n"
 msgstr "kunci %08lX: terdeteksi ID user duplikat - digabungkan\n"
 
-#: g10/import.c:1014
+#: g10/import.c:1044
 #, c-format
 msgid "key %08lX: revocation certificate added\n"
 msgstr "kunci %08lX: penambahan sertifikat pembatalan\n"
 
-#: g10/import.c:1128 g10/import.c:1181
+#: g10/import.c:1158 g10/import.c:1211
 #, c-format
 msgid "key %08lX: our copy has no self-signature\n"
 msgstr "kunci %08lX: salinan kita tidak memiliki self-signature\n"
@@ -2412,50 +2417,59 @@ msgstr "CATATAN: pengirim meminta \"for-your-eyes-only\"\n"
 msgid "original file name='%.*s'\n"
 msgstr "nama file asli='%.*s'\n"
 
-#: g10/mainproc.c:589 g10/mainproc.c:598
+#: g10/mainproc.c:511
+msgid "standalone revocation - use \"gpg --import\" to apply\n"
+msgstr ""
+
+#: g10/mainproc.c:594 g10/mainproc.c:603
 msgid "WARNING: invalid notation data found\n"
 msgstr "PERINGATAN: ditemukan notasi data tidak valid\n"
 
-#: g10/mainproc.c:601
+#: g10/mainproc.c:606
 msgid "Notation: "
 msgstr "Notasi: "
 
-#: g10/mainproc.c:608
+#: g10/mainproc.c:613
 msgid "Policy: "
 msgstr "Kebijakan: "
 
-#: g10/mainproc.c:1027
+#: g10/mainproc.c:1032
 msgid "signature verification suppressed\n"
 msgstr "verifikasi signature tidak optimal\n"
 
-#: g10/mainproc.c:1033
+#: g10/mainproc.c:1038
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Signature membuat %.*s menggunakan kunci %s ID %08lX\n"
 
 #. just in case that we have no userid
-#: g10/mainproc.c:1059 g10/mainproc.c:1070
+#: g10/mainproc.c:1064 g10/mainproc.c:1075
 msgid "BAD signature from \""
 msgstr "signature BURUK dari \""
 
-#: g10/mainproc.c:1060 g10/mainproc.c:1071
+#: g10/mainproc.c:1065 g10/mainproc.c:1076
 msgid "Good signature from \""
 msgstr "Signature baik dari \""
 
-#: g10/mainproc.c:1062
+#: g10/mainproc.c:1067
 msgid "                aka \""
 msgstr "              alias \""
 
-#: g10/mainproc.c:1117
+#: g10/mainproc.c:1123
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Tidak dapat memeriksa signature: %s\n"
 
-#: g10/mainproc.c:1214
+#: g10/mainproc.c:1184
+#, fuzzy, c-format
+msgid "standalone signature of class 0x%02x\n"
+msgstr "kelas signature tidak dikenal"
+
+#: g10/mainproc.c:1223
 msgid "old style (PGP 2.x) signature\n"
 msgstr "signature model lama (PGP 2.X)\n"
 
-#: g10/mainproc.c:1219
+#: g10/mainproc.c:1228
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "terdeteksi root paket tidak valid dalam proc_tree()\n"
 
@@ -2628,17 +2642,17 @@ msgstr "PERINGATAN: `%s' adalah file kosong\n"
 msgid "can't handle text lines longer than %d characters\n"
 msgstr "tidak dapat menangani baris teks lebih dari %d karakter\n"
 
-#: g10/textfilter.c:197
+#: g10/textfilter.c:218
 #, c-format
 msgid "input line longer than %d characters\n"
 msgstr "baris input lebih dari %d karakter\n"
 
-#: g10/tdbio.c:121 g10/tdbio.c:1635
+#: g10/tdbio.c:121 g10/tdbio.c:1637
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb rec %lu: lseek gagal: %s\n"
 
-#: g10/tdbio.c:127 g10/tdbio.c:1642
+#: g10/tdbio.c:127 g10/tdbio.c:1644
 #, c-format
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr "trustdb rec %lu: gagal menulis (n=%d): %s\n"
@@ -2708,7 +2722,7 @@ msgid "%s: error updating version record: %s\n"
 msgstr "%s: kesalahan memperbaharui catatan versi: %s\n"
 
 #: g10/tdbio.c:588 g10/tdbio.c:627 g10/tdbio.c:649 g10/tdbio.c:679
-#: g10/tdbio.c:704 g10/tdbio.c:1568 g10/tdbio.c:1595
+#: g10/tdbio.c:704 g10/tdbio.c:1570 g10/tdbio.c:1597
 #, c-format
 msgid "%s: error reading version record: %s\n"
 msgstr "%s: kesalahan membaca catatan versi: %s\n"
@@ -2718,334 +2732,346 @@ msgstr "%s: kesalahan membaca catatan versi: %s\n"
 msgid "%s: error writing version record: %s\n"
 msgstr "%s: kesalahan menulis catatan versi: %s\n"
 
-#: g10/tdbio.c:1247
+#: g10/tdbio.c:1249
 #, c-format
 msgid "trustdb: lseek failed: %s\n"
 msgstr "trustdb: lseek gagal: %s\n"
 
-#: g10/tdbio.c:1255
+#: g10/tdbio.c:1257
 #, c-format
 msgid "trustdb: read failed (n=%d): %s\n"
 msgstr "trustdb: gagal membaca (n=%d): %s\n"
 
-#: g10/tdbio.c:1276
+#: g10/tdbio.c:1278
 #, c-format
 msgid "%s: not a trustdb file\n"
 msgstr "%s: bukan file trustdb\n"
 
-#: g10/tdbio.c:1292
+#: g10/tdbio.c:1294
 #, c-format
 msgid "%s: version record with recnum %lu\n"
 msgstr "%s: catatan versi dengan recnum %lu\n"
 
-#: g10/tdbio.c:1297
+#: g10/tdbio.c:1299
 #, c-format
 msgid "%s: invalid file version %d\n"
 msgstr "%s: versi file %d tidak valid\n"
 
-#: g10/tdbio.c:1601
+#: g10/tdbio.c:1603
 #, c-format
 msgid "%s: error reading free record: %s\n"
 msgstr "%s: kesalahan membaca record bebas: %s\n"
 
-#: g10/tdbio.c:1609
+#: g10/tdbio.c:1611
 #, c-format
 msgid "%s: error writing dir record: %s\n"
 msgstr "%s: kesalahan menulis dir record: %s\n"
 
-#: g10/tdbio.c:1619
+#: g10/tdbio.c:1621
 #, c-format
 msgid "%s: failed to zero a record: %s\n"
 msgstr "%s: gagal mengosongkan record: %s\n"
 
-#: g10/tdbio.c:1649
+#: g10/tdbio.c:1651
 #, c-format
 msgid "%s: failed to append a record: %s\n"
 msgstr "%s: gagal menambahkan record: %s\n"
 
-#: g10/tdbio.c:1760
+#: g10/tdbio.c:1762
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr "trustdb terkorupsi; silakan jalankan \"gpg --fix-trustdb\".\n"
 
-#: g10/trustdb.c:160
+#: g10/trustdb.c:169
 #, c-format
 msgid "trust record %lu, req type %d: read failed: %s\n"
 msgstr "trust record %lu, req tipe %d: gagal baca: %s\n"
 
-#: g10/trustdb.c:175
+#: g10/trustdb.c:184
 #, c-format
 msgid "trust record %lu, type %d: write failed: %s\n"
 msgstr "trust record %lu, tipe %d: gagal menulis: %s\n"
 
-#: g10/trustdb.c:189
+#: g10/trustdb.c:198
 #, c-format
 msgid "trust record %lu: delete failed: %s\n"
 msgstr "trust record %lu: gagal menghapus: %s\n"
 
-#: g10/trustdb.c:203
+#: g10/trustdb.c:212
 #, c-format
 msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: gagal sync: %s\n"
 
-#: g10/trustdb.c:347
+#: g10/trustdb.c:377
 #, c-format
 msgid "error reading dir record for LID %lu: %s\n"
 msgstr "gagal membaca dir record untuk LID %lu: %s\n"
 
-#: g10/trustdb.c:354
+#: g10/trustdb.c:384
 #, c-format
 msgid "lid %lu: expected dir record, got type %d\n"
 msgstr "lid %lu: diharapkan dir record, didapat tipe %d\n"
 
-#: g10/trustdb.c:359
+#: g10/trustdb.c:389
 #, c-format
 msgid "no primary key for LID %lu\n"
 msgstr "bukan kunci primer untuk LID %lu\n"
 
-#: g10/trustdb.c:364
+#: g10/trustdb.c:394
 #, c-format
 msgid "error reading primary key for LID %lu: %s\n"
 msgstr "gagal membaca kunci primer untuk LID %lu: %s\n"
 
-#: g10/trustdb.c:403
+#: g10/trustdb.c:433
 #, c-format
 msgid "get_dir_record: search_record failed: %s\n"
 msgstr "get_dir_record: gagal search_record: %s\n"
 
-#: g10/trustdb.c:458
+#: g10/trustdb.c:488
 #, c-format
 msgid "NOTE: secret key %08lX is NOT protected.\n"
 msgstr "CATATAN: kunci rahasia %08lX tidak diproteksi.\n"
 
-#: g10/trustdb.c:466
+#: g10/trustdb.c:496
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "kunci %08lX: kunci rahasia tanpa kunci publik - dilewati\n"
 
-#: g10/trustdb.c:473
+#: g10/trustdb.c:503
 #, c-format
 msgid "key %08lX: secret and public key don't match\n"
 msgstr "kunci %08lX: kunci publik dan rahasia tidak cocok\n"
 
-#: g10/trustdb.c:485
+#: g10/trustdb.c:515
 #, c-format
 msgid "key %08lX: can't put it into the trustdb\n"
 msgstr "kunci %08lX: tidak dapat meletakkan ke trustdb\n"
 
-#: g10/trustdb.c:491
+#: g10/trustdb.c:521
 #, c-format
 msgid "key %08lX: query record failed\n"
 msgstr "kunci %08lX: gagal query record\n"
 
-#: g10/trustdb.c:500
+#: g10/trustdb.c:530
 #, c-format
 msgid "key %08lX: already in trusted key table\n"
 msgstr "kunci %08lX: sudah ada dalam tabel kunci trustdb\n"
 
-#: g10/trustdb.c:503
+#: g10/trustdb.c:533
 #, c-format
 msgid "key %08lX: accepted as trusted key.\n"
 msgstr "kunci %08lX: diterima sebagai kunci terpercaya.\n"
 
-#: g10/trustdb.c:511
+#: g10/trustdb.c:541
 #, c-format
 msgid "enumerate secret keys failed: %s\n"
 msgstr "gagal enumerasi kunci rahasia: %s\n"
 
-#: g10/trustdb.c:877
+#: g10/trustdb.c:919
 #, c-format
 msgid "key %08lX.%lu: Good subkey binding\n"
 msgstr "kunci %08lX.%lu: binding subkey baik\n"
 
-#: g10/trustdb.c:883 g10/trustdb.c:918
+#: g10/trustdb.c:925 g10/trustdb.c:960
 #, c-format
 msgid "key %08lX.%lu: Invalid subkey binding: %s\n"
 msgstr "kunci %08lX.%lu: binding subkey tidak valid: %s\n"
 
-#: g10/trustdb.c:895
+#: g10/trustdb.c:937
 #, c-format
 msgid "key %08lX.%lu: Valid key revocation\n"
 msgstr "kunci %08lX.%lu: pembatalan kunci valid\n"
 
-#: g10/trustdb.c:901
+#: g10/trustdb.c:943
 #, c-format
 msgid "key %08lX.%lu: Invalid key revocation: %s\n"
 msgstr "kunci %08lX.%lu: pembatalan kunci tidak valid: %s\n"
 
-#: g10/trustdb.c:912
+#: g10/trustdb.c:954
 #, c-format
 msgid "key %08lX.%lu: Valid subkey revocation\n"
 msgstr "kunci %08lX.%lu: pembatalan subkey valid\n"
 
-#: g10/trustdb.c:1023
+#: g10/trustdb.c:1065
 msgid "Good self-signature"
 msgstr "Self-signature yang baik"
 
-#: g10/trustdb.c:1033
+#: g10/trustdb.c:1075
 msgid "Invalid self-signature"
 msgstr "Self-signature tidak valid"
 
-#: g10/trustdb.c:1060
+#: g10/trustdb.c:1102
 msgid "Valid user ID revocation skipped due to a newer self signature"
 msgstr ""
 "Pembatalan ID user valid dilewati karena ada self signature yang lebih baru"
 
-#: g10/trustdb.c:1066
+#: g10/trustdb.c:1108
 msgid "Valid user ID revocation"
 msgstr "Pembatalan ID user valid"
 
-#: g10/trustdb.c:1071
+#: g10/trustdb.c:1113
 msgid "Invalid user ID revocation"
 msgstr "Pembatalan ID user tidak valid"
 
-#: g10/trustdb.c:1112
+#: g10/trustdb.c:1154
 msgid "Valid certificate revocation"
 msgstr "Pembatalan sertifikat valid"
 
-#: g10/trustdb.c:1113
+#: g10/trustdb.c:1155
 msgid "Good certificate"
 msgstr "Sertifikat yang baik"
 
-#: g10/trustdb.c:1134
+#: g10/trustdb.c:1176
 msgid "Invalid certificate revocation"
 msgstr "Pembatalan sertifikat tidak valid"
 
-#: g10/trustdb.c:1135
+#: g10/trustdb.c:1177
 msgid "Invalid certificate"
 msgstr "Sertifikat tidak valid"
 
-#: g10/trustdb.c:1152 g10/trustdb.c:1156
+#: g10/trustdb.c:1194 g10/trustdb.c:1198
 #, c-format
 msgid "sig record %lu[%d] points to wrong record.\n"
 msgstr "sig record %lu[%d] menunjuk ke record yang salah.\n"
 
-#: g10/trustdb.c:1208
+#: g10/trustdb.c:1251
 msgid "duplicated certificate - deleted"
 msgstr "sertifikat ganda - dihapus"
 
-#: g10/trustdb.c:1514
+#: g10/trustdb.c:1565
 #, c-format
 msgid "tdbio_search_dir failed: %s\n"
 msgstr "tdbio_search_dir gagal: %s\n"
 
-#: g10/trustdb.c:1636
+#: g10/trustdb.c:1699
 #, c-format
 msgid "lid ?: insert failed: %s\n"
 msgstr "lid ?: gagal menyisipkan: %s\n"
 
-#: g10/trustdb.c:1641
+#: g10/trustdb.c:1704
 #, c-format
 msgid "lid %lu: insert failed: %s\n"
 msgstr "lid %lu: gagal menyisipkan: %s\n"
 
-#: g10/trustdb.c:1647
+#: g10/trustdb.c:1710
 #, c-format
 msgid "lid %lu: inserted\n"
 msgstr "lid %lu: menyisipkan\n"
 
-#: g10/trustdb.c:1652
+#: g10/trustdb.c:1715
 #, c-format
 msgid "error reading dir record: %s\n"
 msgstr "kesalahan membaca dir record: %s\n"
 
-#: g10/trustdb.c:1660 g10/trustdb.c:1714
+#: g10/trustdb.c:1723 g10/trustdb.c:1786
 #, c-format
 msgid "%lu keys processed\n"
 msgstr "%lu kunci diproses\n"
 
-#: g10/trustdb.c:1662 g10/trustdb.c:1718
+#: g10/trustdb.c:1725 g10/trustdb.c:1792
 #, c-format
 msgid "\t%lu keys with errors\n"
 msgstr "\t%lu kunci dengan kesalahan\n"
 
-#: g10/trustdb.c:1664
+#: g10/trustdb.c:1727
 #, c-format
 msgid "\t%lu keys inserted\n"
 msgstr "%lu kunci disisipkan\n"
 
-#: g10/trustdb.c:1667
+#: g10/trustdb.c:1730
 #, c-format
 msgid "enumerate keyblocks failed: %s\n"
 msgstr "gagal enumerasi keyblok: %s\n"
 
-#: g10/trustdb.c:1705
+#: g10/trustdb.c:1778
 #, c-format
 msgid "lid %lu: dir record w/o key - skipped\n"
 msgstr "lid %lu: dir record tanpa kunci - dilewati\n"
 
-#: g10/trustdb.c:1716
+#: g10/trustdb.c:1788
+#, fuzzy, c-format
+msgid "\t%lu due to new pubkeys\n"
+msgstr "kunci %08lX: %d subkey baru\n"
+
+#: g10/trustdb.c:1790
 #, c-format
 msgid "\t%lu keys skipped\n"
 msgstr "%lu kunci dilewati\n"
 
-#: g10/trustdb.c:1720
+#: g10/trustdb.c:1794
 #, c-format
 msgid "\t%lu keys updated\n"
 msgstr "%lu kunci diperbaharui\n"
 
-#: g10/trustdb.c:2057
+#: g10/trustdb.c:2133
 msgid "Ooops, no keys\n"
 msgstr "Ooops, tanpa kunci\n"
 
-#: g10/trustdb.c:2061
+#: g10/trustdb.c:2137
 msgid "Ooops, no user IDs\n"
 msgstr "Ooops, tanpa ID user\n"
 
-#: g10/trustdb.c:2218
+#: g10/trustdb.c:2295
 #, c-format
 msgid "check_trust: search dir record failed: %s\n"
 msgstr "check_trust: gagal mencari di record: %s\n"
 
-#: g10/trustdb.c:2227
+#: g10/trustdb.c:2304
 #, c-format
 msgid "key %08lX: insert trust record failed: %s\n"
 msgstr "kunci %08lX: gagal menyisipkan record trust: %s\n"
 
-#: g10/trustdb.c:2231
+#: g10/trustdb.c:2308
 #, c-format
 msgid "key %08lX.%lu: inserted into trustdb\n"
 msgstr "kunci %08lX.%lu: menyisipkan ke trustdb\n"
 
-#: g10/trustdb.c:2239
+#: g10/trustdb.c:2316
 #, c-format
 msgid "key %08lX.%lu: created in future (time warp or clock problem)\n"
 msgstr "kunci %08lX.%lu: tercipta di masa datang (masalah waktu atau jam)\n"
 
-#: g10/trustdb.c:2248
+#: g10/trustdb.c:2330
 #, c-format
 msgid "key %08lX.%lu: expired at %s\n"
 msgstr "kunci %08lX.%lu: berakhir pada %s\n"
 
-#: g10/trustdb.c:2256
+#: g10/trustdb.c:2338
 #, c-format
 msgid "key %08lX.%lu: trust check failed: %s\n"
 msgstr "kunci %08lX.%lu: gagal periksa trust: %s\n"
 
-#: g10/trustdb.c:2362
+#: g10/trustdb.c:2489
 #, c-format
 msgid "user '%s' not found: %s\n"
 msgstr "user '%s' tidak ditemukan: %s\n"
 
-#: g10/trustdb.c:2364
+#: g10/trustdb.c:2491
 #, c-format
 msgid "problem finding '%s' in trustdb: %s\n"
 msgstr "masalah menemukan '%s' dalam trustdb: %s\n"
 
-#: g10/trustdb.c:2367
+#: g10/trustdb.c:2494
 #, c-format
 msgid "user '%s' not in trustdb - inserting\n"
 msgstr "pemakai '%s' tidak ada di trustdb - menyisipkan\n"
 
-#: g10/trustdb.c:2370
+#: g10/trustdb.c:2497
 #, c-format
 msgid "failed to put '%s' into trustdb: %s\n"
 msgstr "gagal menaruh '%s' ke dalam trustdb: %s\n"
 
-#: g10/trustdb.c:2556 g10/trustdb.c:2586
+#: g10/trustdb.c:2683 g10/trustdb.c:2713
 msgid "WARNING: can't yet handle long pref records\n"
 msgstr "PERINGATAN: belum dapat menangani record pref panjang\n"
 
-#: g10/verify.c:143
+#: g10/verify.c:82
+msgid ""
+"the signature could not be verified.\n"
+"Please remember that the signature file (.sig or .asc)\n"
+"should be the first file given on the command line.\n"
+msgstr ""
+
+#: g10/verify.c:147
 #, c-format
 msgid "input line %u too long or missing LF\n"
 msgstr ""

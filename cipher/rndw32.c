@@ -68,8 +68,6 @@ static WIN32_SEEDER slow_seeder, fast_seeder;
 static byte *entropy_buffer;
 static size_t entropy_buffer_size;
 
-static char *entropy_dll;
-
 /****************
  * Load and initialize the winseed DLL
  * NOTE: winseed is not part of the GnuPG distribution.  It should be available
@@ -84,7 +82,13 @@ load_and_init_winseed( void )
     void *addr;
     unsigned int reason = 0;
     unsigned int n1, n2;
-    const char *dllname = entropy_dll? entropy_dll : "c:/gnupg/entropy.dll";
+    const char *dllname;
+
+    dllname = read_w32_registry_string( "HKEY_LOCAL_MACHINE",
+					"Software\\GNU\\GnuPG",
+					"EntropyDLL" );
+    if( !dllname )
+	dllname = "c:/gnupg/entropy.dll";
 
     hInstance = LoadLibrary( dllname );
     if( !hInstance )
@@ -119,15 +123,14 @@ load_and_init_winseed( void )
 	g10_log_fatal("error creating winseed fast seeder: rc=%u\n", reason );
 	goto failure;
     }
-    g10_log_info("slow and fast seeders created.\n");
     n1 = get_internal_seed_size( slow_seeder );
-    g10_log_info("slow buffer size=%u\n", n1);
+    /*g10_log_info("slow buffer size=%u\n", n1);*/
     n2 = get_internal_seed_size( fast_seeder );
-    g10_log_info("fast buffer size=%u\n", n2);
+    /*g10_log_info("fast buffer size=%u\n", n2);*/
 
     entropy_buffer_size =  n1 > n2? n1: n2;
     entropy_buffer = m_alloc( entropy_buffer_size );
-    g10_log_info("using a buffer of size=%u\n", entropy_buffer_size );
+    /*g10_log_info("using a buffer of size=%u\n", entropy_buffer_size );*/
 
     return;
 
@@ -173,13 +176,12 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 	    g10_log_fatal("rndw32: get_seed(slow) failed: rc=%u\n", result);
 	    return -1; /* actually never reached */
 	}
-	g10_log_info("rndw32: slow poll level %d, need %u, got %u\n",
-		      level, (unsigned int)length, (unsigned int)nbytes );
+	/*g10_log_info("rndw32: slow poll level %d, need %u, got %u\n",
+		      level, (unsigned int)length, (unsigned int)nbytes );*/
 	(*add)( entropy_buffer, nbytes, requester );
 	if( length <= nbytes )
 	    return 0; /* okay */
 	length -= nbytes;
-	g10_log_info("rndw32: need more\n");
     }
 }
 
@@ -245,14 +247,6 @@ gnupgext_enum_func( int what, int *sequence, int *class, int *vers )
     *sequence = i;
     return ret;
 }
-
-#ifdef USE_STATIC_RNDW32
-void
-rndw32_set_dll_name( const char *name )
-{
-    entropy_dll = m_strdup( name );
-}
-#endif
 
 #ifndef IS_MODULE
 void

@@ -1,3 +1,11 @@
+Fri Oct  8 20:32:01 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* configure.in: Fixed quoting in test for development version.
+
+	* THANKS: Add entries for Michael, Brenno and J Horacio who did
+	very nice Howto documents - I apoligize for forgetting to mention them
+	earlier.
+
 Tue Sep 28 20:54:37 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* textfilter.c (copy_clearsig_text) [__MINGW32__): Use CR,LF.

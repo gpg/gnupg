@@ -1,3 +1,14 @@
+Fri Oct  8 20:32:01 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* ringedit.c (enum_keyblocks): Zero the entire kbpos out on open.
+
+	* g10.c (oEntropyDLL): Removed option.
+	(main): Made the warning on development versions more verbose.
+
+	* g10.c (oHonorHttpProxy): New option.
+	* hkp.c (hkp_ask_import,hkp_export): Implement this option.
+	* options.skel: Enable this option for new installations
+
 Mon Oct  4 21:23:04 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* import.c (import_keys): Changed calling interface, adjusted caller.

@@ -737,7 +737,7 @@ enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
 
     if( !mode || mode == 5 || mode == 100 ) {
 	int i;
-	kbpos->fp = NULL;
+	memset( kbpos, 0, sizeof *kbpos );
 	if( !mode ) {
 	    kbpos->secret = 0;
 	    i = 0;
