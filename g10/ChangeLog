@@ -1,5 +1,8 @@
 2002-10-03  David Shaw  <dshaw@jabberwocky.com>
 
+	* keylist.c (print_capabilities): Secret-parts-missing keys should
+	show that fact in the capabilities.
+
 	* packet.h, parse_packet (parse_key): Add is_primary flag for
 	public keys (it already exists for secret keys).
 
