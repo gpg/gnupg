@@ -31,6 +31,10 @@
 
 #define MAX_FINGERPRINT_LEN 20
 
+typedef struct getkey_ctx_s *GETKEY_CTX;
+#ifndef DEFINES_GETKEY_CTX
+struct getkey_ctx_s { char hidden[1]; };
+#endif
 
 /****************
  * A Keyblock is all packets which form an entire certificate;
@@ -124,8 +128,13 @@ void set_next_passphrase( const char *s );
 char *get_last_passphrase(void);
 
 /*-- getkey.c --*/
+int classify_user_id( const char *name, u32 *keyid, byte *fprint,
+		      const char **retstr, size_t *retlen );
 int get_pubkey( PKT_public_key *pk, u32 *keyid );
-int get_pubkey_byname( PKT_public_key *pk, const char *name );
+int get_pubkey_byname( GETKEY_CTX *rx, PKT_public_key *pk,
+		       const char *name, KBNODE *ret_keyblock );
+int get_pubkey_next( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock );
+void get_pubkey_end( GETKEY_CTX ctx );
 int get_seckey( PKT_secret_key *sk, u32 *keyid );
 int get_pubkey_byfprint( PKT_public_key *pk, const byte *fprint,
 						 size_t fprint_len );

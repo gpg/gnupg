@@ -963,7 +963,7 @@ list_trustdb( const char *username )
 	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 	int rc;
 
-	if( (rc = get_pubkey_byname( pk, username )) )
+	if( (rc = get_pubkey_byname( NULL, pk, username, NULL )) )
 	    log_error("user '%s' not found: %s\n", username, g10_errstr(rc) );
 	else if( (rc=tdbio_search_dir_bypk( pk, &rec )) && rc != -1 )
 	    log_error("problem finding '%s' in trustdb: %s\n",
@@ -1165,7 +1165,7 @@ list_trust_path( int max_depth, const char *username )
 	max_depth = -max_depth;
     }
 
-    if( (rc = get_pubkey_byname( pk, username )) )
+    if( (rc = get_pubkey_byname(NULL, pk, username, NULL )) )
 	log_error("user '%s' not found: %s\n", username, g10_errstr(rc) );
     else if( (rc=tdbio_search_dir_bypk( pk, &rec )) && rc != -1 )
 	log_error("problem finding '%s' in trustdb: %s\n",
@@ -1860,7 +1860,7 @@ create_shadow_dir( PKT_signature *sig, ulong lid  )
 {
     TRUSTREC sdir, hlst, tmphlst;
     ulong recno, newlid;
-    int tmpidx;
+    int tmpidx=0; /* avoids gcc warnign - this is controlled by tmphlst */
     int rc;
 
     /* first see whether we already have such a record */
@@ -2366,7 +2366,7 @@ upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
     TRUSTREC rec;
     ulong recno;
     TRUSTREC delrec;
-    int delrecidx;
+    int delrecidx=0;
     int newflag = 0;
     ulong newlid = 0;
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );

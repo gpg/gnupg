@@ -215,7 +215,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified )
     SK_LIST sk_rover = NULL;
     PKT_secret_key *sk = NULL;
     KBNODE node, uidnode;
-    PKT_public_key *primary_pk;
+    PKT_public_key *primary_pk=NULL;
     int select_all = !count_selected_uids(keyblock);
     int upd_trust = 0;
 

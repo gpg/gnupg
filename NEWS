@@ -1,3 +1,5 @@
+Noteworthy changes in version 0.4.3
+-----------------------------------
 
     * Fixed the gettext configure bug.
 
@@ -17,6 +19,9 @@
 
     * commandline option processing now works as expected for GNU programs
       with the execption that you can't mix options and normal arguments.
+
+    * Now --list-key lists all matching keys.  This is needed in some
+      other places too.
 
 
 Noteworthy changes in version 0.4.2

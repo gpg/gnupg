@@ -18,6 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#define DEFINES_GETKEY_CTX 1
+
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,9 +35,29 @@
 #include "main.h"
 #include "i18n.h"
 
-#define MAX_UNK_CACHE_ENTRIES 1000
+#define MAX_UNK_CACHE_ENTRIES 1000   /* we use a linked list - so I guess
+				      * this is a reasonable limit */
 #define MAX_PK_CACHE_ENTRIES	50
 #define MAX_UID_CACHE_ENTRIES	50
+
+
+struct getkey_ctx_s {
+    int mode;
+    int internal;
+    u32 keyid[2];
+    char *namebuf;
+    const char *name;
+    int primary;
+    KBNODE keyblock;
+    KBPOS kbpos;
+    int last_rc;
+    ulong count;
+};
+
+
+
+
+
 
 static struct {
     int any;
@@ -82,9 +104,12 @@ static int uid_cache_entries;	/* number of entries in uid cache */
 
 
 
-static int lookup( PKT_public_key *pk,
+static int lookup( GETKEY_CTX *ctx, PKT_public_key *pk,
 		   int mode,  u32 *keyid, const char *name,
 		   KBNODE *ret_keyblock, int primary  );
+static void lookup_close( GETKEY_CTX ctx );
+static int  lookup_read( GETKEY_CTX ctx,
+			 PKT_public_key *pk, KBNODE *ret_keyblock );
 static int lookup_sk( PKT_secret_key *sk,
 		   int mode,  u32 *keyid, const char *name, int primary );
 
@@ -223,7 +248,7 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
 
 
     /* do a lookup */
-    rc = lookup( pk, 11, keyid, NULL, NULL, 0 );
+    rc = lookup( NULL, pk, 11, keyid, NULL, NULL, 0 );
     if( !rc )
 	goto leave;
 
@@ -251,7 +276,7 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
     if( !rc )
 	cache_public_key( pk );
     if( internal )
-	m_free(pk);
+	free_public_key(pk);
     return rc;
 }
 
@@ -282,12 +307,24 @@ hextobyte( const byte *s )
 }
 
 
+
 /****************
- * Try to get the pubkey by the userid. This function looks for the
- * first pubkey certificate which has the given name in a user_id.
- * if pk has the pubkey algo set, the function will only return
- * a pubkey with that algo.
+ * Return the type of the user id:
  *
+ *  0 = Invalid user ID
+ *  1 = exact match
+ *  2 = match a substring
+ *  3 = match an email address
+ *  4 = match a substring of an email address
+ *  5 = match an email address, but compare from end
+ * 10 = it is a short KEYID (don't care about keyid[0])
+ * 11 = it is a long  KEYID
+ * 16 = it is a 16 byte fingerprint
+ * 20 = it is a 20 byte fingerprint
+ *
+ * if fprint is not NULL, it should be an array of at least 20 bytes.
+ *
+ * Rules used:
  * - If the username starts with 8,9,16 or 17 hex-digits (the first one
  *   must be in the range 0..9), this is considered a keyid; depending
  *   on the length a short or complete one.
@@ -301,19 +338,14 @@ hextobyte( const byte *s )
  *   email address
  * - If the userid start with an '=' an exact compare is done.
  * - If the userid starts with a '*' a case insensitive substring search is
- *   done (This is also the default).
+ *   done (This is the default).
  */
 
-
-static int
-key_byname( int secret,
-	    PKT_public_key *pk, PKT_secret_key *sk, const char *name )
+int
+classify_user_id( const char *name, u32 *keyid, byte *fprint,
+		  const char **retstr, size_t *retlen )
 {
-    int internal = 0;
-    int rc = 0;
     const char *s;
-    u32 keyid[2] = {0}; /* init to avoid compiler warning */
-    byte fprint[20];
     int mode = 0;
 
     /* check what kind of name it is */
@@ -328,11 +360,14 @@ key_byname( int secret,
 	for(i=0; isxdigit(s[i]); i++ )
 	    ;
 	if( s[i] && !isspace(s[i]) ) /* not terminated by EOS or blank*/
-	    rc = G10ERR_INV_USER_ID;
+	    return 0;
 	else if( i == 8 || (i == 9 && *s == '0') ) { /* short keyid */
 	    if( i==9 )
 		s++;
-	    keyid[1] = strtoul( s, NULL, 16 );
+	    if( keyid ) {
+		keyid[0] = 0;
+		keyid[1] = strtoul( s, NULL, 16 );
+	    }
 	    mode = 10;
 	}
 	else if( i == 16 || (i == 17 && *s == '0') ) { /* complete keyid */
@@ -347,29 +382,27 @@ key_byname( int secret,
 	    if( i==33 )
 		s++;
 	    memset(fprint+16, 4, 0);
-	    for(j=0; !rc && j < 16; j++, s+=2 ) {
+	    for(j=0; j < 16; j++, s+=2 ) {
 		int c = hextobyte( s );
 		if( c == -1 )
-		    rc = G10ERR_INV_USER_ID;
-		else
-		    fprint[j] = c;
+		    return 0;
+		fprint[j] = c;
 	    }
 	    mode = 16;
 	}
 	else if( i == 40 || ( i == 41 && *s == '0' ) ) { /* sha1/rmd160 fprint*/
 	    if( i==33 )
 		s++;
-	    for(j=0; !rc && j < 20; j++, s+=2 ) {
+	    for(j=0; j < 20; j++, s+=2 ) {
 		int c = hextobyte( s );
 		if( c == -1 )
-		    rc = G10ERR_INV_USER_ID;
-		else
-		    fprint[j] = c;
+		    return 0;
+		fprint[j] = c;
 	    }
 	    mode = 20;
 	}
 	else
-	    rc = G10ERR_INV_USER_ID;
+	    return 0;
     }
     else if( *s == '=' ) { /* exact search */
 	mode = 1;
@@ -391,15 +424,47 @@ key_byname( int secret,
 	s++;
     }
     else if( *s == '#' ) { /* use local id */
-	rc = G10ERR_INV_USER_ID; /* not yet implemented */
+	return 0;
     }
     else if( !*s )  /* empty string */
-	rc = G10ERR_INV_USER_ID;
+	return 0;
     else
 	mode = 2;
 
-    if( rc )
+    if( retstr )
+	*retstr = s;
+    if( retlen )
+	*retlen = strlen(s);
+
+    return mode;
+}
+
+
+
+/****************
+ * Try to get the pubkey by the userid. This function looks for the
+ * first pubkey certificate which has the given name in a user_id.
+ * if pk has the pubkey algo set, the function will only return
+ * a pubkey with that algo.
+ */
+
+static int
+key_byname( int secret, GETKEY_CTX *retctx,
+	    PKT_public_key *pk, PKT_secret_key *sk,
+	    const char *name, KBNODE *ret_kb )
+{
+    int internal = 0;
+    int rc = 0;
+    const char *s;
+    u32 keyid[2] = {0}; /* init to avoid compiler warning */
+    byte fprint[20];
+    int mode;
+
+    mode = classify_user_id( name, keyid, fprint, &s, NULL );
+    if( !mode ) {
+	rc = G10ERR_INV_USER_ID;
 	goto leave;
+    }
 
     if( secret ) {
 	if( !sk ) {
@@ -414,8 +479,8 @@ key_byname( int secret,
 	    pk = m_alloc_clear( sizeof *pk );
 	    internal++;
 	}
-	rc = mode < 16? lookup( pk, mode, keyid, s, NULL, 1 )
-		      : lookup( pk, mode, keyid, fprint, NULL, 1 );
+	rc = mode < 16? lookup( retctx, pk, mode, keyid, s, ret_kb, 1 )
+		      : lookup( retctx, pk, mode, keyid, fprint, ret_kb, 1 );
     }
 
 
@@ -428,11 +493,46 @@ key_byname( int secret,
 }
 
 int
-get_pubkey_byname( PKT_public_key *pk, const char *name )
+get_pubkey_byname( GETKEY_CTX *retctx, PKT_public_key *pk,
+		   const char *name, KBNODE *ret_keyblock )
 {
-    return key_byname( 0, pk, NULL, name );
+    int rc;
+
+    if( !pk ) {
+	/* fixme: key_byname should not need a pk in this case */
+	pk = m_alloc_clear( sizeof *pk );
+	rc = key_byname( 0, retctx, pk, NULL, name, ret_keyblock );
+	free_public_key( pk );
+    }
+    else
+	rc = key_byname( 0, retctx, pk, NULL, name, ret_keyblock );
+    return rc;
 }
 
+int
+get_pubkey_next( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock )
+{
+    int rc;
+
+    if( !pk ) {
+	/* fixme: lookup_read should not need a pk in this case */
+	pk = m_alloc_clear( sizeof *pk );
+	rc = lookup_read( ctx, pk, ret_keyblock );
+	free_public_key( pk );
+    }
+    else
+	rc = lookup_read( ctx, pk, ret_keyblock );
+    return rc;
+}
+
+void
+get_pubkey_end( GETKEY_CTX ctx )
+{
+    if( ctx ) {
+	lookup_close( ctx );
+	m_free( ctx );
+    }
+}
 
 /****************
  * Search for a key with the given fingerprint.
@@ -443,7 +543,7 @@ get_pubkey_byfprint( PKT_public_key *pk, const byte *fprint, size_t fprint_len)
     int rc;
 
     if( fprint_len == 20 || fprint_len == 16 )
-	rc = lookup( pk, fprint_len, NULL, fprint, NULL, 0 );
+	rc = lookup( NULL, pk, fprint_len, NULL, fprint, NULL, 0 );
     else
 	rc = G10ERR_GENERAL; /* Oops */
     return rc;
@@ -461,7 +561,7 @@ get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 
     if( fprint_len == 20 || fprint_len == 16 )
-	rc = lookup( pk, fprint_len, NULL, fprint, ret_keyblock, 0 );
+	rc = lookup( NULL, pk, fprint_len, NULL, fprint, ret_keyblock, 0 );
     else
 	rc = G10ERR_GENERAL; /* Oops */
 
@@ -517,11 +617,11 @@ get_seckey_byname( PKT_secret_key *sk, const char *name, int unprotect )
     int rc;
 
     if( !name && opt.def_secret_key && *opt.def_secret_key )
-	rc = key_byname( 1, NULL, sk, opt.def_secret_key );
+	rc = key_byname( 1, NULL, NULL, sk, opt.def_secret_key, NULL );
     else if( !name ) /* use the first one as default key */
 	rc = lookup_sk( sk, 15, NULL, NULL, 1 );
     else
-	rc = key_byname( 1, NULL, sk, name );
+	rc = key_byname( 1, NULL, NULL, sk, name, NULL );
     if( !rc && unprotect )
 	rc = check_secret_key( sk, 0 );
 
@@ -860,8 +960,6 @@ finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
     }
 }
 
-
-
 /****************
  * Lookup a key by scanning all keyresources
  *   mode 1 = lookup by NAME (exact)
@@ -880,93 +978,142 @@ finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
  * and the caller must release it.
  */
 static int
-lookup( PKT_public_key *pk, int mode,  u32 *keyid,
+lookup( GETKEY_CTX *retctx, PKT_public_key *pk, int mode, u32 *keyid,
 	const char *name, KBNODE *ret_keyblock, int primary )
 {
+    struct getkey_ctx_s help_ctx;
+    GETKEY_CTX ctx;
     int rc;
-    KBNODE keyblock = NULL;
+
+    if( !retctx )
+	ctx = &help_ctx;
+    else {
+	ctx = m_alloc( sizeof *ctx );
+	*retctx = ctx;
+    }
+
+    memset( ctx, 0, sizeof *ctx );
+    ctx->mode = mode;
+    if( keyid ) {
+	ctx->keyid[0] = keyid[0];
+	ctx->keyid[1] = keyid[1];
+    }
+    if( retctx ) {
+	ctx->namebuf = name? m_strdup(name) : NULL;
+	ctx->name = ctx->namebuf;
+    }
+    else
+	ctx->name = name;
+    ctx->primary = primary;
+    rc = lookup_read( ctx, pk, ret_keyblock );
+    if( !retctx )
+	lookup_close( ctx );
+    return rc;
+}
+
+static void
+lookup_close( GETKEY_CTX ctx )
+{
+    enum_keyblocks( 2, &ctx->kbpos, NULL ); /* close */
+    m_free( ctx->namebuf );
+}
+
+static int
+lookup_read( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock )
+{
+    int rc;
     KBNODE k;
-    KBPOS kbpos;
     int oldmode = set_packet_list_mode(0);
     byte namehash[20];
     int use_namehash=0;
 
     /* try the quick functions */
-    k = NULL;
-    switch( mode ) {
-      case 10:
-      case 11:
-	rc = locate_keyblock_by_keyid( &kbpos, keyid, mode==10, 0 );
-	if( !rc )
-	    rc = read_keyblock( &kbpos, &keyblock );
-	if( !rc )
-	    k = find_by_keyid( keyblock, pk, keyid, mode );
-	break;
+    if( !ctx->count ) {
+	k = NULL;
+	switch( ctx->mode ) {
+	  case 10:
+	  case 11:
+	    rc = locate_keyblock_by_keyid( &ctx->kbpos, ctx->keyid,
+							ctx->mode==10, 0 );
+	    if( !rc )
+		rc = read_keyblock( &ctx->kbpos, &ctx->keyblock );
+	    if( !rc )
+		k = find_by_keyid( ctx->keyblock, pk, ctx->keyid, ctx->mode );
+	    break;
 
-      case 16:
-      case 20:
-	rc = locate_keyblock_by_fpr( &kbpos, name, mode, 0 );
-	if( !rc )
-	    rc = read_keyblock( &kbpos, &keyblock );
-	if( !rc )
-	    k = find_by_fpr( keyblock, pk, name, mode );
-	break;
+	  case 16:
+	  case 20:
+	    rc = locate_keyblock_by_fpr( &ctx->kbpos, ctx->name, ctx->mode, 0 );
+	    if( !rc )
+		rc = read_keyblock( &ctx->kbpos, &ctx->keyblock );
+	    if( !rc )
+		k = find_by_fpr( ctx->keyblock, pk, ctx->name, ctx->mode );
+	    break;
 
-      default: rc = G10ERR_UNSUPPORTED;
-    }
-    if( !rc ) {
-	if( !k ) {
-	    log_error("lookup: key has been located but was not found\n");
-	    rc = G10ERR_INV_KEYRING;
+	  default: rc = G10ERR_UNSUPPORTED;
 	}
-	else
-	    finish_lookup( keyblock, pk, k, namehash, 0, primary );
+	if( !rc ) {
+	    if( !k ) {
+		log_error("lookup: key has been located but was not found\n");
+		rc = G10ERR_INV_KEYRING;
+	    }
+	    else
+		finish_lookup( ctx->keyblock, pk, k, namehash, 0, ctx->primary );
+	}
     }
+    else
+	rc = G10ERR_UNSUPPORTED;
 
     /* if this was not possible, loop over all keyblocks
      * fixme: If one of the resources in the quick functions above
      *	      works, but the key was not found, we will not find it
      *	      in the other resources */
     if( rc == G10ERR_UNSUPPORTED ) {
-	rc = enum_keyblocks( 0, &kbpos, &keyblock );
+	if( !ctx->count )
+	    rc = enum_keyblocks( 0, &ctx->kbpos, &ctx->keyblock );
+	else
+	    rc = 0;
 	if( !rc ) {
-	    while( !(rc = enum_keyblocks( 1, &kbpos, &keyblock )) ) {
-		if( mode < 10 )
-		    k = find_by_name( keyblock, pk, name, mode,
-						namehash, &use_namehash);
-		else if( mode == 10 || mode == 11 )
-		    k = find_by_keyid( keyblock, pk, keyid, mode );
-		else if( mode == 15 )
-		    k = find_first( keyblock, pk );
-		else if( mode == 16 || mode == 20 )
-		    k = find_by_fpr( keyblock, pk, name, mode );
+	    while( !(rc = enum_keyblocks( 1, &ctx->kbpos, &ctx->keyblock )) ) {
+		/* fixme: we don´t enum the complete keyblock, but
+		 * use the first match and that continue with the next keyblock
+		 */
+		if( ctx->mode < 10 )
+		    k = find_by_name( ctx->keyblock, pk, ctx->name, ctx->mode,
+						    namehash, &use_namehash);
+		else if( ctx->mode == 10 ||ctx-> mode == 11 )
+		    k = find_by_keyid( ctx->keyblock, pk, ctx->keyid,
+								ctx->mode );
+		else if( ctx->mode == 15 )
+		    k = find_first( ctx->keyblock, pk );
+		else if( ctx->mode == 16 || ctx->mode == 20 )
+		    k = find_by_fpr( ctx->keyblock, pk, ctx->name, ctx->mode );
 		else
 		    BUG();
 		if( k ) {
-		    finish_lookup( keyblock, pk, k, namehash,
-						    use_namehash, primary );
+		    finish_lookup( ctx->keyblock, pk, k, namehash,
+						 use_namehash, ctx->primary );
 		    break; /* found */
 		}
-		release_kbnode( keyblock );
-		keyblock = NULL;
+		release_kbnode( ctx->keyblock );
+		ctx->keyblock = NULL;
 	    }
 	}
-	enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
 	if( rc && rc != -1 )
 	    log_error("enum_keyblocks failed: %s\n", g10_errstr(rc));
     }
 
     if( !rc ) {
 	if( ret_keyblock ) {
-	    *ret_keyblock = keyblock;
-	    keyblock = NULL;
+	    *ret_keyblock = ctx->keyblock;
+	    ctx->keyblock = NULL;
 	}
     }
     else if( rc == -1 )
 	rc = G10ERR_NO_PUBKEY;
 
-
-    release_kbnode( keyblock );
+    release_kbnode( ctx->keyblock );
+    ctx->keyblock = NULL;
     set_packet_list_mode(oldmode);
     if( opt.debug & DBG_MEMSTAT_VALUE ) {
 	static int initialized;
@@ -976,18 +1123,21 @@ lookup( PKT_public_key *pk, int mode,  u32 *keyid,
 	    atexit( print_stats );
 	}
 
-	assert( mode < DIM(lkup_stats) );
-	lkup_stats[mode].any = 1;
+	assert( ctx->mode < DIM(lkup_stats) );
+	lkup_stats[ctx->mode].any = 1;
 	if( !rc )
-	    lkup_stats[mode].okay_count++;
+	    lkup_stats[ctx->mode].okay_count++;
 	else if ( rc == G10ERR_NO_PUBKEY )
-	    lkup_stats[mode].nokey_count++;
+	    lkup_stats[ctx->mode].nokey_count++;
 	else
-	    lkup_stats[mode].error_count++;
+	    lkup_stats[ctx->mode].error_count++;
     }
 
+    ctx->last_rc = rc;
+    ctx->count++;
     return rc;
 }
+
 
 /****************
  * Ditto for secret keys

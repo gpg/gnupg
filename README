@@ -1,3 +1,5 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+
 		  GnuPG - The GNU Privacy Guard
 		 -------------------------------
 			  Version 0.4
@@ -331,3 +333,12 @@
     please subscribe before posting, see above (~line 33)).
 
 
+-----BEGIN PGP SIGNATURE-----
+Version: GNUPG v0.4.2 (GNU/Linux)
+Comment: For info finger gcrypt@ftp.guug.de
+
+iQB1AwUBNkXLyx0Z9MEMmFelAQExuwMArLtkLI3vpxZ7tCoit6hELkpyEHe10Bo6
+Ms72TXasJ8L0tKNKRE2kagV7Ie7wxl0dyENlumOxsZIKLq8DGSyjSoE7GmMQEEff
+ZU+4xpO3KMw6XpJMvUWwlxpm2/WDpYTa
+=Y10x
+-----END PGP SIGNATURE-----

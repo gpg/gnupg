@@ -130,5 +130,7 @@ int hash_datafiles( MD_HANDLE md, STRLIST files, const char *sigfilename,
 /*-- signal.c --*/
 void init_signals(void);
 void pause_on_sigusr( int which );
+void block_all_signals(void);
+void unblock_all_signals(void);
 
 #endif /*G10_MAIN_H*/

@@ -432,7 +432,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage )
 		free_public_key( pk );
 	    pk = m_alloc_clear( sizeof *pk );
 	    pk->pubkey_usage = usage;
-	    rc = get_pubkey_byname( pk, answer );
+	    rc = get_pubkey_byname( NULL, pk, answer, NULL );
 	    if( rc )
 		tty_printf(_("No such user ID.\n"));
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, usage)) ) {
@@ -466,7 +466,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage )
 
 	    pk = m_alloc_clear( sizeof *pk );
 	    pk->pubkey_usage = usage;
-	    if( (rc = get_pubkey_byname( pk, remusr->d )) ) {
+	    if( (rc = get_pubkey_byname( NULL, pk, remusr->d, NULL )) ) {
 		free_public_key( pk ); pk = NULL;
 		log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
 	    }

@@ -1,22 +1,17 @@
 
-    * rmove assert in random.c:160 4096 bit keys need more random.
-
-    * list all matching user ids
-
     * use zlib 1.1.13 to avoid a bug with 13 bit windows
 
     * FreeBSD:
-#define USE_DYNAMIC_LINKING
-#define HAVE_DL_DLOPEN
-
-and the ld option -export-dynamic.
+	#define USE_DYNAMIC_LINKING
+	#define HAVE_DL_DLOPEN
+	and the ld option -export-dynamic.
 
     *
-Well, there was one thing extra I needed to do.  While configure found the
-gdbm library, it didn't add the path the the include file list.  I had to
-re-run configure with CPPFLAGS set:
+     Well, there was one thing extra I needed to do.  While configure found the
+     gdbm library, it didn't add the path the the include file list.  I had to
+     re-run configure with CPPFLAGS set:
 
-    env CPPFLAGS='-I/usr/local/include' configure ...
+     env CPPFLAGS='-I/usr/local/include' configure ...
 
 
     * clearsig: keep lineendings as they are. Remember that trailings

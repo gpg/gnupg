@@ -157,7 +157,6 @@ read_random_source( byte *buffer, size_t length, int level )
 	    continue;
 	}
 
-	assert( length < 500 );
 	do {
 	    n = read(fd, buffer, length );
 	    if( n >= 0 && n > length ) {

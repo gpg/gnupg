@@ -1,3 +1,15 @@
+Sun Nov  8 17:20:39 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* mainproc.c (check_sig_and_print): Why did I use strlen()-1
+	in the printf? - This truncated the TZ.
+
+Sat Nov  7 15:57:28 1998  me,,,  (wk@tobold)
+
+	* getkey.c (lookup): Changes to support a read_next.
+	(get_pubkey): Fixed a memory leak.
+
+	* keylist.c (list_one): Now lists all matching user IDs.
+
 Tue Nov  3 16:19:21 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* keygen.c (ask_user_id): Now converted to UTF-8
@@ -10,7 +22,7 @@ Fri Oct 30 16:40:39 1998  me,,,  (wk@tobold)
 	(unblock_all_signals): New
 	* tdbio.c (tdbio_end_transaction): Now blocks all signals.
 
-	* trustdb.c (new_lid_table): Changed the represenation of the
+	* trustdb.c (new_lid_table): Changed the representation of the
 	former local_lid_info stuff.
 
 	* trustdb.c (update_trust_record): Reorganized the whole thing.

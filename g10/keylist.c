@@ -115,23 +115,41 @@ list_one( const char *name, int secret )
 {
     int rc = 0;
     KBNODE keyblock = NULL;
-    KBPOS kbpos;
 
-    rc = secret? find_secret_keyblock_byname( &kbpos, name )
-	       : find_keyblock_byname( &kbpos, name );
-    if( rc ) {
-	log_error("%s: user not found\n", name );
-	return;
-    }
+    if( secret ) {
+	KBPOS kbpos;
 
-    rc = read_keyblock( &kbpos, &keyblock );
-    if( rc ) {
-	log_error("%s: keyblock read problem: %s\n", name, g10_errstr(rc) );
-	return;
+	rc = secret? find_secret_keyblock_byname( &kbpos, name )
+		   : find_keyblock_byname( &kbpos, name );
+	if( rc ) {
+	    log_error("%s: user not found\n", name );
+	    return;
+	}
+
+	rc = read_keyblock( &kbpos, &keyblock );
+	if( rc ) {
+	    log_error("%s: keyblock read problem: %s\n", name, g10_errstr(rc) );
+	    return;
+	}
+	merge_keys_and_selfsig( keyblock );
+	list_keyblock( keyblock, secret );
+	release_kbnode( keyblock );
     }
-    merge_keys_and_selfsig( keyblock );
-    list_keyblock( keyblock, secret );
-    release_kbnode( keyblock );
+    else {
+	GETKEY_CTX ctx;
+
+	rc = get_pubkey_byname( &ctx, NULL, name, &keyblock );
+	if( rc ) {
+	    log_error("%s: %s\n", name, g10_errstr(rc) );
+	    get_pubkey_end( ctx );
+	    return;
+	}
+	do {
+	    list_keyblock( keyblock, 0 );
+	    release_kbnode( keyblock );
+	} while( !get_pubkey_next( ctx, NULL, &keyblock ) );
+	get_pubkey_end( ctx );
+    }
 }
 
 

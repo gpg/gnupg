@@ -1,3 +1,7 @@
+Sun Nov  8 18:20:35 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* VERSION: Set to 0.4.3
+
 Sun Oct 25 19:49:37 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* Makefile.am (g10defs.h): New macro GNUPG_DATADIR.

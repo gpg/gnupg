@@ -431,7 +431,7 @@ find_keyblock_byname( KBPOS *kbpos, const char *username )
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     int rc;
 
-    rc = get_pubkey_byname( pk, username );
+    rc = get_pubkey_byname( NULL, pk, username, NULL );
     if( rc ) {
 	free_public_key(pk);
 	return rc;
