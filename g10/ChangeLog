@@ -1,3 +1,9 @@
+2002-05-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (strusage, build_list): Add compress algorithms to
+	--version list.  Show algorithm numbers when --verbose --version
+	is done.
+
 2002-05-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, main.h, keygen.c (keygen_set_set_prefs,

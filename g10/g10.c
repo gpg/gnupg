@@ -575,7 +575,7 @@ int g10_errors_seen = 0;
 static int utf8_strings = 0;
 static int maybe_setuid = 1;
 
-static char *build_list( const char *text,
+static char *build_list( const char *text, char letter,
 			 const char *(*mapf)(int), int (*chkf)(int) );
 static void set_cmd( enum cmd_and_opt_values *ret_cmd,
 			enum cmd_and_opt_values new_cmd );
@@ -615,22 +615,28 @@ strusage( int level )
 #endif /* __riscos__ */
       case 33: p = _("\nSupported algorithms:\n"); break;
       case 34:
-	if( !ciphers )
-	    ciphers = build_list("Cipher: ", cipher_algo_to_string,
-							check_cipher_algo );
-	p = ciphers;
-	break;
-      case 35:
 	if( !pubkeys )
-	    pubkeys = build_list("Pubkey: ", pubkey_algo_to_string,
+	    pubkeys = build_list("Pubkey: ", 0, pubkey_algo_to_string,
 							check_pubkey_algo );
 	p = pubkeys;
 	break;
+      case 35:
+	if( !ciphers )
+	    ciphers = build_list("Cipher: ", 'S', cipher_algo_to_string,
+							check_cipher_algo );
+	p = ciphers;
+	break;
       case 36:
 	if( !digests )
-	    digests = build_list("Hash: ", digest_algo_to_string,
+	    digests = build_list("Hash: ", 'H', digest_algo_to_string,
 							check_digest_algo );
 	p = digests;
+	break;
+      case 37:
+	if(opt.verbose)
+	  p = "Compress: Uncompressed (Z0), ZIP (Z1), ZLIB (Z2)\n";
+	else
+	  p = "Compress: Uncompressed, ZIP, ZLIB\n";
 	break;
 
 
@@ -641,27 +647,52 @@ strusage( int level )
 
 
 static char *
-build_list( const char *text, const char * (*mapf)(int), int (*chkf)(int) )
+build_list( const char *text, char letter,
+	    const char * (*mapf)(int), int (*chkf)(int) )
 {
     int i;
     const char *s;
     size_t n=strlen(text)+2;
-    char *list, *p;
+    char *list, *p, *line=NULL;
 
     if( maybe_setuid )
 	secmem_init( 0 );    /* drop setuid */
 
     for(i=1; i <= 110; i++ )
 	if( !chkf(i) && (s=mapf(i)) )
-	    n += strlen(s) + 2;
+	    n += strlen(s) + 7 + 2;
     list = m_alloc( 21 + n ); *list = 0;
     for(p=NULL, i=1; i <= 110; i++ ) {
 	if( !chkf(i) && (s=mapf(i)) ) {
-	    if( !p )
+	    if( !p ) {
 		p = stpcpy( list, text );
+		line=p;
+	    }
 	    else
 		p = stpcpy( p, ", ");
+
+	    if(strlen(line)>60) {
+	      int spaces=strlen(text);
+
+	      list=m_realloc(list,n+spaces+1);
+	      /* realloc could move the block, so find the end again */
+	      p=list;
+	      while(*p)
+		p++;
+
+	      p=stpcpy(p, "\n");
+	      line=p;
+	      for(;spaces;spaces--)
+		p=stpcpy(p, " ");
+	    }
+
 	    p = stpcpy(p, s );
+	    if(opt.verbose && letter)
+	      {
+		char num[8];
+		sprintf(num," (%c%d)",letter,i);
+		p = stpcpy(p,num);
+	      }
 	}
     }
     if( p )
