@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: gnupg 1.1.92\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2004-06-16 12:05+0200\n"
-"PO-Revision-Date: 2003-12-03 21:18+0100\n"
+"PO-Revision-Date: 2004-06-16 17:01+0200\n"
 "Last-Translator: Marco d'Itri <md@linux.it>\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
 "MIME-Version: 1.0\n"
@@ -855,9 +855,9 @@ msgid "WARNING: unsafe enclosing directory permissions on %s \"%s\"\n"
 msgstr "ATTENZIONE: i permessi \"%s\" di %s sono insicuri\n"
 
 #: g10/g10.c:1223
-#, fuzzy, c-format
+#, c-format
 msgid "unknown configuration item \"%s\"\n"
-msgstr "creato un nuovo file di configurazione `%s'\n"
+msgstr "elemento della configurazione sconosciuto \"%s\"\n"
 
 #: g10/g10.c:1437
 #, c-format
@@ -997,14 +997,12 @@ msgid "max-cert-depth must be in range 1 to 255\n"
 msgstr "max-cert-depth deve essere tra 1 e 255\n"
 
 #: g10/g10.c:2201
-#, fuzzy
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
-msgstr "default-check-level non valido; deve essere 0, 1 o 3\n"
+msgstr "default-cert-level non valido; deve essere 0, 1, 2 o 3\n"
 
 #: g10/g10.c:2203
-#, fuzzy
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
-msgstr "default-check-level non valido; deve essere 0, 1 o 3\n"
+msgstr "min-cert-level non valido; deve essere 1, 2 o 3\n"
 
 #: g10/g10.c:2206
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
@@ -1473,16 +1471,14 @@ msgid "WARNING: Using untrusted key!\n"
 msgstr "ATTENZIONE: uso di una chiave non fidata!\n"
 
 #: g10/pkclist.c:602
-#, fuzzy
 msgid "WARNING: this key might be revoked (revocation key not present)\n"
 msgstr ""
-"ATTENZIONE: la chiave %08lX può essere stata revocata: la chiave di\n"
-"revoca %08lX non è presente.\n"
+"ATTENZIONE: questa chiave può essere stata revocata (la chiave di revoca\n"
+"non è presente).\n"
 
 #: g10/pkclist.c:611
-#, fuzzy
 msgid "WARNING: This key has been revoked by its designated revoker!\n"
-msgstr "ATTENZIONE: questa chiave è stata revocata dal suo proprietario!\n"
+msgstr "ATTENZIONE: questa chiave è stata revocata dal suo revocatore designato!\n"
 
 #: g10/pkclist.c:614
 msgid "WARNING: This key has been revoked by its owner!\n"
@@ -2036,9 +2032,9 @@ msgstr ""
 "impossibile usare un pacchetto ESK simmetrico a causa della modalità S2K\n"
 
 #: g10/encode.c:223
-#, fuzzy, c-format
+#, c-format
 msgid "using cipher %s\n"
-msgstr "firma fallita: %s\n"
+msgstr "uso il cifrario %s\n"
 
 #: g10/encode.c:233 g10/encode.c:494
 #, c-format
@@ -4114,12 +4110,14 @@ msgstr "ATTENZIONE: conflitto del digest delle firme nel messaggio\n"
 #: g10/sig-check.c:93
 #, c-format
 msgid "WARNING: signing subkey %08lX is not cross-certified\n"
-msgstr ""
+msgstr "ATTENZIONE: la sottochiave per firme %08lX non ha una certificature incrociata\n"
 
 #: g10/sig-check.c:96
 #, c-format
 msgid "WARNING: signing subkey %08lX has an invalid cross-certification\n"
 msgstr ""
+"ATTENZIONE: la sottochiave per firme %08lX ha una certificature incrociata\n"
+"non valida\n"
 
 #: g10/sig-check.c:233
 #, c-format

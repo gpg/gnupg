@@ -1,5 +1,9 @@
 2004-06-16  Werner Koch  <wk@gnupg.org>
 
+	* it.po: Updated. That is the fasted update I've ever seen;
+	received it within 17 minutes after sending out the notice to the
+	translators (and there are even uucp polling delays).
+
 	* nl.po: Updated.
 	* zh_CN.po: New.
 
