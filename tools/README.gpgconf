@@ -82,7 +82,9 @@ argument depends on the type of the option and on some flags:
 The simplest case is that the option does not take an argument at all
 (TYPE is 0).  Then the option argument is either empty if the option
 is not set, or an unsigned number that specifies how often the option
-occurs.  If the LIST flag is not set, then the only valid number is 1.
+occurs.  If the LIST flag is not set, then the only valid numbers are
+0 and 1.  0 often has a special meaning in this context as it actually
+negates setting the option one or more times.
 
 If the option takes a number argument (ALT-TYPE is 2 or 3), and it can
 only occur once (LIST flag is not set), then the option argument is
@@ -318,5 +320,5 @@ Example:
 $ dirmngr --gpgconf-list
 gpgconf-config-file:/mnt/marcus/.gnupg/dirmngr.conf
 ldapservers-file:/mnt/marcus/.gnupg/dirmngr_ldapservers.conf
-add-servers:
+add-servers:0
 max-replies:10

@@ -1,5 +1,8 @@
 2004-02-23  Marcus Brinkmann  <marcus@g10code.de>
 
+	* README.gpgconf: Change meaning of type 0 options value if it is
+	the empty string or "0".
+
 	* gpgconf.h (struct): Add member runtime.
 	* gpgconf.c: Add new option oRuntime.
 	(main): Same here.
