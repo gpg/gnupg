@@ -23,7 +23,7 @@ dnlAC_REVISION($Revision$)dnl
 AC_PREREQ(2.52)
 
 # Remember to change the version number immediately *after* a release
-# and remove the "-cvs" or suffix immediately *before* a release.
+# and remove the "-cvs" or "rc" suffix immediately *before* a release.
 AC_INIT(gnupg, 1.2.1rc1, bug-gnupg@gnu.org)
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
@@ -288,7 +288,7 @@ MPI_OPT_FLAGS=""
 
 try_gettext=yes
 case "${target}" in
-    *-*-mingw32*|*-*-cygwin*)
+    *-*-mingw32*)
         # special stuff for Windoze NT
         ac_cv_have_dev_random=no
         AC_DEFINE(USE_ONLY_8DOT3,1,

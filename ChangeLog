@@ -1,3 +1,16 @@
+2002-10-21  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (try_gettext): Remove special case for cygwin.
+	This removes all the DOS specific macros and let Cygwin work like
+	a real OS.  Needs a couple of changes elsewhere but after all,
+	GnuPG presents itself much more like a Posix program and can be
+	used in a full Cygwin environment; e.g. used along with mutt.
+	Changes suggested by Volker Quetschke.
+	
+	* acinclude.m4 (GNUPG_SYS_NM_PARSE): Allow for underscore in test
+	symbols.  Useful for Cygwin builds.
+	(GNUPG_SYS_SYMBOL_UNDERSCORE): Don't hardwire to yes for Cygwin.
+
 2002-10-17  Werner Koch  <wk@gnupg.org>
 
         Released 1.2.1rc1.
