@@ -65,7 +65,8 @@ typedef struct duptable_s *duptable_t;
 
 
 static void print_short_info (ksba_cert_t cert, FILE *fp);
-static gpg_error_t export_p12 (const unsigned char *certimg, size_t certimglen,
+static gpg_error_t export_p12 (ctrl_t ctrl,
+                               const unsigned char *certimg, size_t certimglen,
                                const char *prompt, const char *keygrip,
                                FILE **retfp);
 
@@ -423,7 +424,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
 
 
   prompt = gpgsm_format_keydesc (cert);
-  rc = export_p12 (image, imagelen, prompt, keygrip, &datafp);
+  rc = export_p12 (ctrl, image, imagelen, prompt, keygrip, &datafp);
   xfree (prompt);
   if (rc)
     goto leave;
@@ -587,6 +588,7 @@ popen_protect_tool (const char *pgmname,
               "--homedir", opt.homedir,
               "--p12-export",
               "--prompt", prompt?prompt:"", 
+              "--enable-status-msg",
               "--",
               keygrip,
               NULL);
@@ -610,7 +612,7 @@ popen_protect_tool (const char *pgmname,
 
 
 static gpg_error_t
-export_p12 (const unsigned char *certimg, size_t certimglen,
+export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
             const char *prompt, const char *keygrip,
             FILE **retfp)
 {
@@ -621,6 +623,7 @@ export_p12 (const unsigned char *certimg, size_t certimglen,
   FILE *infp = NULL, *outfp = NULL, *fp = NULL;
   char buffer[1024];
   pid_t pid = -1;
+  int bad_pass = 0;
 
   if (!opt.protect_tool_program || !*opt.protect_tool_program)
     pgmname = GNUPG_DEFAULT_PROTECT_TOOL;
@@ -675,7 +678,21 @@ export_p12 (const unsigned char *certimg, size_t certimglen,
           if (cont_line)
             log_printf ("%s", buffer);
           else
-            log_info ("%s", buffer);
+            {
+              if (!strncmp (buffer, "gpg-protect-tool: [PROTECT-TOOL:] ",34))
+                {
+                  char *p, *pend;
+
+                  p = buffer + 34;
+                  pend = strchr (p, ' ');
+                  if (pend)
+                    *pend = 0;
+                  if ( !strcmp (p, "bad-passphrase"))
+                    bad_pass++;
+                }
+              else 
+                log_info ("%s", buffer);
+            }
           pos = 0;
           cont_line = (c != '\n');
         }
@@ -731,6 +748,14 @@ export_p12 (const unsigned char *certimg, size_t certimglen,
     }
   else
     *retfp = outfp;
+  if (bad_pass)
+    {
+      /* During export this is the passphrase used to unprotect the
+         key and not the pkcs#12 thing as in export.  Therefore we can
+         issue the regular passphrase status.  FIXME: replace the all
+         zero keyid by a regular one. */
+      gpgsm_status (ctrl, STATUS_BAD_PASSPHRASE, "0000000000000000");
+    }
   return err;
 }
 

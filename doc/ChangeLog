@@ -1,5 +1,8 @@
 2004-09-29  Werner Koch  <wk@g10code.com>
 
+	* gpg-agent.texi (Invoking GPG-AGENT): Add a few words about the
+	expected pinentry filename.
+
         Changed license of the manual stuff to GPL.
 	
 	* gnupg.texi (Top): New menu item Helper Tools.

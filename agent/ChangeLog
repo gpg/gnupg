@@ -1,3 +1,8 @@
+2004-09-29  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (parse_bag_encrypted_data): Print error if a bad
+	passphrase has been given.
+
 2004-09-28  Werner Koch  <wk@g10code.com>
 
 	* protect.c (agent_unprotect): Fixed wiping of CLEARTEXT.  Thanks

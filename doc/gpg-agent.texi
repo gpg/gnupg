@@ -52,8 +52,16 @@ GPG_TTY=`tty`
 export GPG_TTY
 @end smallexample
 
+@noindent
 It is important that this environment variable always reflects the
 output of the @code{tty} command.
+
+Please make sure that a proper pinentry program has been installed
+under the default filename (which is system dependant) or use the
+option @code{pinentry-pgm} to specify the full name of that program.
+It is often useful to install a symbolic link from the actual used
+pinentry (e.g. @file{/usr/bin/pinentry-gtk}) to the expected
+one (e.g. @file{/usr/bin/pinentry}).
 
 @c man end
 

@@ -86,7 +86,8 @@ might want to have an agent context for each service request
 * doc/
 ** Explain how to setup a root CA key as trusted
 ** Explain how trustlist.txt might be managed.
-
+** Document watchgnupg
+** Write a script to generate man pages from texi.
 
 * Requirements by the BSI
 ** Support authorityKeyIdentifier.keyIdentifier

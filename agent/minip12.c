@@ -379,7 +379,6 @@ crypt_block (unsigned char *buffer, size_t length, char *salt, int iter,
   
 
 
-
 static int
 parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
                           int startoffset, const char *pw,
@@ -393,8 +392,8 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   char salt[8];
   unsigned int iter;
   unsigned char *plain = NULL;
-
-
+  int bad_pass = 0;
+  
   where = "start";
   if (parse_tag (&p, &n, &ti))
     goto bailout;
@@ -495,12 +494,21 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
 
   where = "outer.outer.seq";
   if (parse_tag (&p, &n, &ti))
-    goto bailout;
+    {
+      bad_pass = 1;
+      goto bailout;
+    }
   if (ti.class || ti.tag != TAG_SEQUENCE)
-    goto bailout;
+    {
+      bad_pass = 1;
+      goto bailout;
+    }
 
   if (parse_tag (&p, &n, &ti))
-    goto bailout;
+    {
+      bad_pass = 1;
+      goto bailout;
+    }
 
   /* Loop over all certificates inside the bab. */
   while (n)
@@ -611,6 +619,13 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   gcry_free (plain);
   log_error ("encryptedData error at \"%s\", offset %u\n",
              where, (p - buffer)+startoffset);
+  if (bad_pass)
+    {
+      /* Note, that the following string might be used by other programs
+         to check for a bad passphrase; it should therefore not be
+         translated or changed. */
+      log_error ("possibly bad passphrase given\n");
+    }
   return -1;
 }
 

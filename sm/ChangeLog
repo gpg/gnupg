@@ -1,3 +1,9 @@
+2004-09-29  Werner Koch  <wk@g10code.com>
+
+	* import.c (parse_p12): Write an error status line for bad
+	passphrases. Add new arg CTRL and changed caller.
+	* export.c (export_p12): Likewise.
+
 2004-09-14  Werner Koch  <wk@g10code.com>
 
 	* certchain.c (gpgsm_validate_chain): Give expired certificates a

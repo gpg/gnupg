@@ -55,7 +55,7 @@ struct stats_s {
  };
 
 
-static gpg_error_t parse_p12 (ksba_reader_t reader, FILE **retfp,
+static gpg_error_t parse_p12 (ctrl_t ctrl, ksba_reader_t reader, FILE **retfp,
                               struct stats_s *stats);
 
 
@@ -341,7 +341,7 @@ import_one (CTRL ctrl, struct stats_s *stats, int in_fd)
           Base64Context b64p12rdr;
           ksba_reader_t p12rdr;
           
-          rc = parse_p12 (reader, &certfp, stats);
+          rc = parse_p12 (ctrl, reader, &certfp, stats);
           if (!rc)
             {
               any = 1;
@@ -572,13 +572,14 @@ popen_protect_tool (const char *pgmname,
 
 
 /* Assume that the reader is at a pkcs#12 message and try to import
-   certificates from that stupid format. We will alos store secret
+   certificates from that stupid format.  We will also store secret
    keys.  All of the pkcs#12 parsing and key storing is handled by the
    gpg-protect-tool, we merely have to take care of receiving the
    certificates. On success RETFP returns a temporary file with
    certificates. */
 static gpg_error_t
-parse_p12 (ksba_reader_t reader, FILE **retfp, struct stats_s *stats)
+parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
+           FILE **retfp, struct stats_s *stats)
 {
   const char *pgmname;
   gpg_error_t err = 0, child_err = 0;
@@ -588,6 +589,7 @@ parse_p12 (ksba_reader_t reader, FILE **retfp, struct stats_s *stats)
   char buffer[1024];
   size_t nread;
   pid_t pid = -1;
+  int bad_pass = 0;
 
   if (!opt.protect_tool_program || !*opt.protect_tool_program)
     pgmname = GNUPG_DEFAULT_PROTECT_TOOL;
@@ -681,8 +683,13 @@ parse_p12 (ksba_reader_t reader, FILE **retfp, struct stats_s *stats)
                   else if ( !strcmp (p, "bad-passphrase"))
                     ;
                 }
-              else
-                log_info ("%s", buffer);
+              else 
+                {
+                  log_info ("%s", buffer);
+                  if (!strncmp (buffer, "gpg-protect-tool: "
+                                "possibly bad passphrase given",46))
+                    bad_pass++;
+                }
             }
           pos = 0;
           cont_line = (c != '\n');
@@ -697,6 +704,7 @@ parse_p12 (ksba_reader_t reader, FILE **retfp, struct stats_s *stats)
       else
         log_info ("%s\n", buffer);
     }
+
 
   /* If we found no error in the output of the cild, setup a suitable
      error code, which will later be reset if the exit status of the
@@ -738,5 +746,17 @@ parse_p12 (ksba_reader_t reader, FILE **retfp, struct stats_s *stats)
     }
   else
     *retfp = certfp;
+
+  if (bad_pass)
+    {
+      /* We only write a plain error code and not direct
+         BAD_PASSPHRASE because the pkcs12 parser might issue this
+         message multiple times, BAd_PASSPHRASE in general requires a
+         keyID and parts of the import might actually succeed so that
+         IMPORT_PROBLEM is also not appropriate. */
+      gpgsm_status_with_err_code (ctrl, STATUS_ERROR,
+                                  "import.parsep12", GPG_ERR_BAD_PASSPHRASE);
+    }
+  
   return err;
 }

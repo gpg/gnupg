@@ -882,6 +882,8 @@ export_p12_file (const char *fname)
       release_passphrase (pw);
       if (rc)
         {
+          if (opt_status_msg && gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE )
+            log_info ("[PROTECT-TOOL:] bad-passphrase\n");
           log_error ("unprotecting key `%s' failed: %s\n",
                      fname, gpg_strerror (rc));
           xfree (key);
