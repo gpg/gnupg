@@ -1335,7 +1335,9 @@ msgstr "%08lX: Schlüssel ist verfallen!\n"
 #, c-format
 msgid ""
 "%08lX: There is no indication that this key really belongs to the owner\n"
-msgstr "%08lX: Es gibt keinen Hinweis, daß die Signatur wirklich dem vorgeblichen Besitzer gehört.\n"
+msgstr ""
+"%08lX: Es gibt keinen Hinweis, daß die Signatur wirklich dem vorgeblichen "
+"Besitzer gehört.\n"
 
 #: g10/pkclist.c:484
 #, c-format
@@ -3612,7 +3614,8 @@ msgstr "keine abgetrennte Unterschrift\n"
 #: g10/mainproc.c:1605
 msgid ""
 "WARNING: multiple signatures detected.  Only the first will be checked.\n"
-msgstr "WARNUNG: Mehrfache Signaturen erkannt.  Es wird nur die erste geprüft.\n"
+msgstr ""
+"WARNUNG: Mehrfache Signaturen erkannt.  Es wird nur die erste geprüft.\n"
 
 #: g10/mainproc.c:1609
 #, c-format
