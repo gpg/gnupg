@@ -1,0 +1,76 @@
+<!-- gcryptref.sgml - libgcrypt reference
+    Copyright (C) 2000 Free Software Foundation, Inc.
+
+    This file is part of GnuPG.
+
+    GnuPG is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    GnuPG is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+-->
+
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DocBook V3.1//EN" [
+<!entity libgcrypt "Libgcrypt">
+<!entity cipherref system "gcryptref-cipher.sgml">
+<!entity digestref system "gcryptref-digest.sgml">
+<!entity pubkeyref system "gcryptref-pubkey.sgml">
+<!entity miscref   system "gcryptref-misc.sgml">
+]>
+
+<!--
+<refentry>
+  <refnamediv>
+    <refname>XXX</refname>
+    <refpurpose>xxx</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>int <function>XXX</function></funcdef>
+	<paramdef>int <parameter>algo</parameter></paramdef>
+      </funcprototype>
+  </refsynopsisdiv>
+
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>cipher functions</primary>
+	     <secondary>XXX</secondary>
+	     </indexterm>
+  <function>XXX</function> xxx
+
+  </para>
+</refentry>
+-->
+
+<reference>
+<title>&libgcrypt; Reference Pages</title>
+
+<subtitle>Symmetric Cipher Functions</subtitle>
+&cipherref;
+
+<subtitle>Hash Functions</subtitle>
+&digestref;
+
+<subtitle>Public Key Functions</subtitle>
+&pubkeyref;
+
+
+<subtitle>Miscellaneous Functions</subtitle>
+&miscref;
+
+</reference>
+

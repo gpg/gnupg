@@ -1,0 +1,191 @@
+<!-- gcryptref-digest.sgml - libgcrypt reference (digests)
+    Copyright (C) 2000 Free Software Foundation, Inc.
+
+    This file is part of GnuPG.
+
+    GnuPG is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    GnuPG is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+-->
+
+<refentry>
+  <refnamediv>
+    <refname>gcry_md_open</refname>
+    <refname>gcry_md_enable</refname>
+    <refname>gcry_md_close</refname>
+    <refpurpose>create and destroy a message digest context</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>GCRY_MD_HD <function>gcry_md_open</function></funcdef>
+	<paramdef>int <parameter>algo</parameter></paramdef>
+	<paramdef>unsigned int <parameter>flags</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+	<funcdef>void <function>gcry_md_enable</function></funcdef>
+	<paramdef>GCRY_MD_HD <parameter>h</parameter></paramdef>
+	<paramdef>int <parameter>algo</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+	<funcdef>void <function>gcry_md_close</function></funcdef>
+	<paramdef>GCRY_MD_HD <parameter>h</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>hash functions</primary>
+	     <secondary>gcry_md_open</secondary>
+	     <secondary>gcry_md_enable</secondary>
+	     <secondary>gcry_md_close</secondary>
+	     </indexterm>
+  <function>gcry_md_open</function> creates the context required for
+  the message digest functions.  The hash algorithm may optionally be
+  specified.
+  <function>gcry_md_close</function> releases all resources associated
+  with the context.
+  <function>gcry_md_enable</function> may be used to enable hash
+  algorithms.  This function may be used multiple times to create
+  a hash context for multiple algorithms.  Adding an already enabled algorithm
+  has no effect.  A algorithm must be enabled prios to calculate hash
+  algorithms.
+  </para>
+</refentry>
+
+<refentry>
+  <refnamediv>
+    <refname>gcry_md_copy</refname>
+    <refpurpose>create and copy of a message digest context</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>GCRY_MD_HD <function>gcry_md_copy</function></funcdef>
+	<paramdef>GCRY_MD_HD <parameter>h</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>hash functions</primary>
+	     <secondary>gcry_md_copy</secondary>
+	     </indexterm>
+  <function>gcry_md_copy</function> creates an excat copy of the given context.
+  This is useful to calculate hashes with a common initial part of the
+  plaintext.
+  </para>
+</refentry>
+
+<refentry>
+  <refnamediv>
+    <refname>gcry_md_reset</refname>
+    <refpurpose>reset a message digest context</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>void <function>gcry_md_reset</function></funcdef>
+	<paramdef>GCRY_MD_HD <parameter>h</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>hash functions</primary>
+	     <secondary>gcry_md_reset</secondary>
+	     </indexterm>
+  <function>gcry_md_reset</function> is used to reuse a message context
+  without the overhead of an open and close operation.
+  </para>
+</refentry>
+
+
+  <refnamediv>
+    <refname>gcry_md_ctl</refname>
+    <refpurpose>perform special operations on a digest context</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>int <function>gcry_md_ctl</function></funcdef>
+	<paramdef>GCRY_MD_HD <parameter>h</parameter></paramdef>
+	<paramdef>int <parameter>cmd</parameter></paramdef>
+	<paramdef>unsigned char * <parameter>buffer</parameter></paramdef>
+	<paramdef>size_t <parameter>buflen</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>hash functions</primary>
+	     <secondary>gcry_md_ctl</secondary>
+	     </indexterm>
+  <function>gcry_md_ctl</function> is a multi-purpose function
+  to control the behaviour of all gcry_md functions or one instance
+  of it.
+  </para>
+</refentry>
+
+
+void gcry_md_write( GCRY_MD_HD hd, const byte *buffer, size_t length);
+byte *gcry_md_read( GCRY_MD_HD hd, int algo );
+void gcry_md_hash_buffer( int algo, char *digest,
+			  const char *buffer, size_t length);
+int gcry_md_get_algo( GCRY_MD_HD hd );
+unsigned int gcry_md_get_algo_dlen( int algo );
+int gcry_md_info( GCRY_MD_HD h, int what, void *buffer, size_t *nbytes);
+int gcry_md_algo_info( int algo, int what, void *buffer, size_t *nbytes);
+const char *gcry_md_algo_name( int algo );
+int gcry_md_map_name( const char* name );
+
+#define gcry_md_putc(h,c)  \
+	    do {					\
+		if( (h)->bufpos == (h)->bufsize )	\
+		    gcry_md_write( (h), NULL, 0 );	\
+		(h)->buf[(h)->bufpos++] = (c) & 0xff;	\
+	    } while(0)
+
+#define gcry_md_final(a) \
+	    gcry_md_ctl( (a), GCRYCTL_FINALIZE, NULL, 0 )
+
+#define gcry_md_is_secure(a) \
+	    gcry_md_info( (a), GCRYCTL_IS_SECURE, NULL, NULL )
+
+#define gcry_md_test_algo(a) \
+	    gcry_md_algo_info( (a), GCRYCTL_TEST_ALGO, NULL, NULL )
+

@@ -1,0 +1,242 @@
+<!-- gcryptref-cipher.sgml - libgcrypt reference (ciphers)
+    Copyright (C) 2000 Free Software Foundation, Inc.
+
+    This file is part of GnuPG.
+
+    GnuPG is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    GnuPG is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+-->
+
+<refentry>
+  <refnamediv>
+    <refname>gcry_cipher_open</refname>
+    <refname>gcry_cipher_close</refname>
+    <refpurpose>create and destroy an encryption context</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>GCRY_CIPHER_HD <function>gcry_cipher_open</function></funcdef>
+	<paramdef>int <parameter>algo</parameter></paramdef>
+	<paramdef>int <parameter>mode</parameter></paramdef>
+	<paramdef>unsigned in <parameter>flags</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+	<funcdef>void <function>gcry_cipher_close</function></funcdef>
+	<paramdef>GCRY_CIPHER_HD <parameter>h</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>cipher functions</primary>
+	     <secondary>gcry_cipher_open</secondary>
+	     <secondary>gcry_cipher_close</secondary>
+	     </indexterm>
+  <function>gcry_cipher_open</function> creates the context required for
+  most of the cipher functions.
+  </para>
+</refentry>
+
+
+<refentry>
+  <refnamediv>
+    <refname>gcry_cipher_ctl</refname>
+    <refname>gcry_cipher_setkey</refname>
+    <refname>gcry_cipher_setiv</refname>
+    <refname>gcry_cipher_setiv</refname>
+    <refpurpose>control cipher functions</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>int <function>gcry_cipher_ctl</function></funcdef>
+	<paramdef>GCRY_CIPHER_HD <parameter>h</parameter></paramdef>
+	<paramdef>int <parameter>cmd</parameter></paramdef>
+	<paramdef>void *<parameter>buffer</parameter></paramdef>
+	<paramdef>size_t <parameter>buflen</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>cipher functions</primary>
+	     <secondary>gcry_cipher_ctl</secondary>
+	     </indexterm>
+  <function>gcry_cipher_ctl</function> controls various aspects of the
+  cipher module and specific cipher contexts.  A couple of macros may
+  be used for convenience:
+
+  gcry_cipher_setkey(h,k,l)
+  gcry_cipher_setiv(h,k,l)
+  gcry_cipher_sync(h)
+
+  </para>
+</refentry>
+
+
+<refentry>
+  <refnamediv>
+    <refname>gcry_cipher_info</refname>
+    <refpurpose>return information about a cipher context</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>int <function>gcry_cipher_info</function></funcdef>
+	<paramdef>GCRY_CIPHER_HD <parameter>h</parameter></paramdef>
+	<paramdef>int <parameter>what</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>cipher functions</primary>
+	     <secondary>gcry_cipher_info</secondary>
+	     </indexterm>
+  <function>gcry_cipher_info</function> is used to retrieve various
+  information about a cipher context or the cipher module in general.
+  Currently no information is available.
+  </para>
+</refentry>
+
+
+<refentry>
+  <refnamediv>
+    <refname>gcry_cipher_algo_name</refname>
+    <refpurpose>return the name of a cipher algorithm</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>const char *<function>gcry_cipher_algo_name</function></funcdef>
+	<paramdef>int <parameter>algo</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>cipher functions</primary>
+	     <secondary>gcry_cipher_algo_name</secondary>
+	     </indexterm>
+  <function>gcry_cipher_algo_name</function> returns a string with the
+  name of the cipher algorithm <parameter>algo</parameter>.  If the algorithm
+  is not known or an other error occured, an empty string is return.  This
+  function will never return NULL.
+  </para>
+</refentry>
+
+<refentry>
+  <refnamediv>
+    <refname>gcry_cipher_map_name</refname>
+    <refpurpose>return an algorithm identifier for string</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>int <function>gcry_cipher_map_name</function></funcdef>
+	<paramdef>const char *<parameter>name</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>cipher functions</primary>
+	     <secondary>gcry_cipher_map_name</secondary>
+	     </indexterm>
+  <function>gcry_cipher_map_name</function> returns the algorithm identifier
+  for the cipher algorithm described by the string <parameter>name</parameter>.
+  If this algorith is not available 0 is returned.
+  </para>
+</refentry>
+
+
+<refentry>
+  <refnamediv>
+    <refname>gcry_cipher_encrypt</refname>
+    <refname>gcry_cipher_decrypt</refname>
+    <refpurpose>encrypt data or decrypt data</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>int <function>gcry_cipher_encrypt</function></funcdef>
+	<paramdef>GCRY_CIPHER_HD <parameter>h</parameter></paramdef>
+	<paramdef>unsigned char <parameter>out</parameter></paramdef>
+	<paramdef>size_t <parameter>outsize</parameter></paramdef>
+	<paramdef>unsigned char <parameter>in</parameter></paramdef>
+	<paramdef>size_t <parameter>insize</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+	<funcdef>int <function>gcry_cipher_decrypt</function></funcdef>
+	<paramdef>GCRY_CIPHER_HD <parameter>h</parameter></paramdef>
+	<paramdef>unsigned char <parameter>out</parameter></paramdef>
+	<paramdef>size_t <parameter>outsize</parameter></paramdef>
+	<paramdef>unsigned char <parameter>in</parameter></paramdef>
+	<paramdef>size_t <parameter>insize</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>cipher functions</primary>
+	     <secondary>gcry_cipher_encrypt</secondary>
+	     <secondary>gcry_cipher_decrypt</secondary>
+	     </indexterm>
+  <function>gcry_cipher_encrypt</function> is used to encrypt the data.
+  the complemetary function <function>gcry_cipher_decrypt</function> is
+  be used to decrypt the data. The calling convention for both functions
+  is the same.
+  </para>
+  <para>These functions can either work in place or with two buffers.
+  Overlapping buffers are not allowed.
+  </para>
+</refentry>
+
