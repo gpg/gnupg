@@ -397,6 +397,7 @@ static void set_cmd (enum cmd_and_opt_values *ret_cmd,
 
 static int check_special_filename (const char *fname);
 static int open_read (const char *filename);
+static FILE *open_fwrite (const char *filename);
 
 
 static int
@@ -1146,14 +1147,26 @@ main ( int argc, char **argv)
       break;
 
     case aVerify:
-      if (!argc)
-        gpgsm_verify (&ctrl, 0, -1, NULL); /* normal signature from stdin */
-      else if (argc == 1)
-        gpgsm_verify (&ctrl, open_read (*argv), -1, NULL); /* std signature */
-      else if (argc == 2) /* detached signature (sig, detached) */
-        gpgsm_verify (&ctrl, open_read (*argv), open_read (argv[1]), NULL); 
-      else
-        wrong_args (_("--verify [signature [detached_data]]"));
+      {
+        FILE *fp = NULL;
+
+        if (argc == 2 && *opt.outfile)
+          log_info ("option --output ignored for a detached signature\n");
+        else if (opt.outfile)
+          fp = open_fwrite (opt.outfile);
+
+        if (!argc)
+          gpgsm_verify (&ctrl, 0, -1, fp); /* normal signature from stdin */
+        else if (argc == 1)
+          gpgsm_verify (&ctrl, open_read (*argv), -1, fp); /* std signature */
+        else if (argc == 2) /* detached signature (sig, detached) */
+          gpgsm_verify (&ctrl, open_read (*argv), open_read (argv[1]), NULL); 
+        else
+          wrong_args (_("--verify [signature [detached_data]]"));
+
+        if (fp && fp != stdout)
+          fclose (fp);
+      }
       break;
 
     case aVerifyFiles:
@@ -1340,9 +1353,9 @@ check_special_filename (const char *fname)
 
 
 
-/* Open the FILENAME for read and return the fieldescriptor.  Stop
+/* Open the FILENAME for read and return the filedescriptor.  Stop
    with an error message in case of problems.  "-" denotes stdin and
-   if special filenames are allowed the given fd is opend instead. */
+   if special filenames are allowed the given fd is opened instead. */
 static int 
 open_read (const char *filename)
 {
@@ -1360,4 +1373,37 @@ open_read (const char *filename)
       gpgsm_exit (2);
     }
   return fd;
+}
+
+/* Open FILENAME for fwrite and return the stream.  Stop with an error
+   message in case of problems.  "-" denotes stdout and if special
+   filenames are allowed the given fd is opened instead. Caller must
+   close the returned stream unless it is stdout. */
+static FILE *
+open_fwrite (const char *filename)
+{
+  int fd;
+  FILE *fp;
+
+  if (filename[0] == '-' && !filename[1])
+    return stdout;
+
+  fd = check_special_filename (filename);
+  if (fd != -1)
+    {
+      fp = fdopen (dup (fd), "wb");
+      if (!fp)
+        {
+          log_error ("fdopen(%d) failed: %s\n", fd, strerror (errno));
+          gpgsm_exit (2);
+        }
+      return fp;
+    }
+  fp = fopen (filename, "wb");
+  if (!fp)
+    {
+      log_error (_("can't open `%s': %s\n"), filename, strerror (errno));
+      gpgsm_exit (2);
+    }
+  return fp;
 }

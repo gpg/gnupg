@@ -1,9 +1,12 @@
 2002-06-12  Werner Koch  <wk@gnupg.org>
 
+	* gpgsm.c (open_fwrite): New.
+	(main): Allow --output for --verify.
+
 	* sign.c (hash_and_copy_data): New.
 	(gpgsm_sign): Implemented normal (non-detached) signatures.
 	* gpgsm.c (main): Ditto.
-
+	
 	* certpath.c (gpgsm_validate_path): Special error handling for
 	no policy match.
 
