@@ -5,16 +5,13 @@
   * Check for consistent spelling of user ID, key ID etc.
     Replace "user id not found" in getkey.c by "no valid user ID found".
  
-  * Return status information even when an imported key is already
-    stored.  This is useful for GPGME's detailed info function.
-
   * Describe some pitfalls when using EGD.  Check that ~/.gnupg/entropy
     really is the default.  What about needed permission?  
 
   * Using an expired key for signing should give an error message
     "expired key" and not "unusable key'.  Furthermore the error should
     also be thrown when the default key has expired.  Reported by
-    Eric.VanBuggenhaut@AdValvas.be.
+    Eric.VanBuggenhaut add AdValvas.be.
 
   * pause scrolling help in --edit-key and elsewhere.
 
@@ -27,8 +24,6 @@
   * Check the changes to the gpg random gatherer on all W32 platforms.
 
   * Show more info does not work from edit->trust
-
-  * set default charset from nl_langinfo.
 
   * Check that no secret temporary results are stored in the result parameter
     of the mpi functions.  We have already done this for mpi-mul.c 
