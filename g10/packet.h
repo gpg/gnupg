@@ -154,7 +154,7 @@ typedef struct {
 struct user_attribute {
   byte type;
   const byte *data;
-  unsigned long len;
+  u32 len;
 };
 
 typedef struct {
@@ -413,8 +413,8 @@ void build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 void build_sig_subpkt_from_sig( PKT_signature *sig );
 int  delete_sig_subpkt(subpktarea_t *buffer, sigsubpkttype_t type );
 void build_attribute_subpkt(PKT_user_id *uid,byte type,
-			    const void *buf,int buflen,
-			    const void *header,int headerlen);
+			    const void *buf,u32 buflen,
+			    const void *header,u32 headerlen);
 
 /*-- free-packet.c --*/
 void free_symkey_enc( PKT_symkey_enc *enc );

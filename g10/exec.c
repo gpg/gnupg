@@ -172,7 +172,7 @@ static int make_tempdir(struct exec_info *info)
 static int expand_args(struct exec_info *info,const char *args_in)
 {
   const char *ch=args_in;
-  int size,len;
+  unsigned int size,len;
 
   info->use_temp_files=0;
   info->keep_temp_files=0;

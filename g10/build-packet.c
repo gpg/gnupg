@@ -872,8 +872,8 @@ build_sig_subpkt_from_sig( PKT_signature *sig )
 
 void
 build_attribute_subpkt(PKT_user_id *uid,byte type,
-		       const void *buf,int buflen,
-		       const void *header,int headerlen)
+		       const void *buf,u32 buflen,
+		       const void *header,u32 headerlen)
 {
   byte *attrib;
   int idx;
@@ -912,7 +912,8 @@ build_attribute_subpkt(PKT_user_id *uid,byte type,
 
   /* Tack on our data at the end */
 
-  memcpy(&attrib[idx],header,headerlen);
+  if(headerlen>0)
+    memcpy(&attrib[idx],header,headerlen);
   memcpy(&attrib[idx+headerlen],buf,buflen);
   uid->attrib_len+=idx+headerlen+buflen;
 }

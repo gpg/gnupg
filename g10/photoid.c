@@ -158,7 +158,7 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
 /* Returns 0 for error, 1 for valid */
 int parse_image_header(const struct user_attribute *attr,byte *type,u32 *len)
 {
-  int headerlen;
+  u16 headerlen;
 
   if(attr->len<3)
     return 0;

@@ -1,3 +1,9 @@
+2002-07-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* packet.h, build-packet.c (build_attribute_subpkt), exec.c
+	(expand_args), mkdtemp.c (mkdtemp), photoid.c
+	(parse_image_header): Fix some signedness compiler warnings.
+
 2002-07-01  Werner Koch  <wk@gnupg.org>
 
 	* encode.c (encode_symmetric): Do not use the new encryption code.

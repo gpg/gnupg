@@ -38,7 +38,7 @@
 
 char *mkdtemp(char *template)
 {
-  int attempts,idx,count=0;
+  unsigned int attempts,idx,count=0;
   byte *ch;
 
   idx=strlen(template);
@@ -61,7 +61,7 @@ char *mkdtemp(char *template)
   /* Try 4 times to make the temp directory */
   for(attempts=0;attempts<4;attempts++)
     {
-      int remaining=count;
+      unsigned int remaining=count;
       char *marker=ch;
       byte *randombits;
 
