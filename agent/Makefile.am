@@ -24,7 +24,9 @@ INCLUDES = -I$(top_srcdir)/common -I$(top_srcdir)/intl
 LDFLAGS = @LDFLAGS@ 
 
 gpg_agent_SOURCES = \
-	gpg-agent.c
+	gpg-agent.c agent.h \
+	command.c \
+	pksign.c 
 
 gpg_agent_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a  \
               ../../libgcrypt/src/.libs/libgcrypt.so.1 

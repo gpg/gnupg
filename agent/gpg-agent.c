@@ -18,16 +18,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-/*
- * How to use the client mode:
- *  printf '\0\0\0\002AAAAAAAAAAAAAAAAAAAAAPlease enter the passphrase for\n 
- *          key 0x12345678\nJoe Hacker <joe@hackworld.foo>\n' 
- *     | ./gpg-agent --client | od
- * Or use a builtin command to shut the agent down.
- *   ./gpg-agent --shutdown | od
- *
- */
-
 #include <config.h>
 
 #include <stdio.h>
@@ -43,9 +33,12 @@
 
 #include <gcrypt.h>
 
-#include "util.h"
+#include "agent.h"
 #include "../assuan/assuan.h" /* malloc hooks */
-#include "i18n.h"
+
+
+#define N_(a) a
+#define _(a) a
 
 
 enum cmd_and_opt_values 
@@ -72,6 +65,7 @@ enum cmd_and_opt_values
 aTest };
 
 
+
 static ARGPARSE_OPTS opts[] = {
   
   { 301, NULL, 0, N_("@Options:\n ") },
@@ -95,17 +89,6 @@ static ARGPARSE_OPTS opts[] = {
 };
 
 
-static struct {
-  const char *homedir;
-  int client;
-  int verbose;
-  int quiet;
-  unsigned int debug;
-  int nodetach;
-  int grab;
-  const char *logfile;
-  int csh_style;
-} opt;
 
 typedef struct {
     int used;
@@ -231,8 +214,13 @@ main (int argc, char **argv )
   int greeting = 0;
   int nogreeting = 0;
   int server_mode = 0;
+  int client = 0;
   int do_shutdown = 0;
   int do_flush = 0;
+  int nodetach = 0;
+  int grab = 0;
+  int csh_style = 0;
+  char *logfile = NULL;
 
   set_strusage( my_strusage );
   /*   log_set_name ("gpg-agent"); */
@@ -252,7 +240,7 @@ main (int argc, char **argv )
 
   shell = getenv("SHELL");
   if (shell && strlen(shell) >= 3 && !strcmp(shell+strlen(shell)-3, "csh") )
-    opt.csh_style = 1;
+    csh_style = 1;
   
   opt.homedir = getenv("GNUPGHOME");
   if (!opt.homedir || !*opt.homedir)
@@ -263,7 +251,7 @@ main (int argc, char **argv )
       opt.homedir = "~/.gnupg-test";
 #endif
     }
-  opt.grab = 1;
+  grab = 1;
 
   /* check whether we have a config file on the commandline */
   orig_argc = argc;
@@ -345,14 +333,14 @@ main (int argc, char **argv )
         case oNoVerbose: opt.verbose = 0; break;
         case oNoOptions: break; /* no-options */
         case oHomedir: opt.homedir = pargs.r.ret_str; break;
-        case oNoDetach: opt.nodetach = 1; break;
-        case oNoGrab: opt.grab = 0; break;
-        case oClient: opt.client = 1; break;
-        case oShutdown: opt.client = 1; do_shutdown = 1; break;
-        case oFlush: opt.client = 1; do_flush = 1; break;
-        case oLogFile: opt.logfile = pargs.r.ret_str; break;
-        case oCsh: opt.csh_style = 1; break;
-        case oSh: opt.csh_style = 0; break;
+        case oNoDetach: nodetach = 1; break;
+        case oNoGrab: grab = 0; break;
+        case oClient: client = 1; break;
+        case oShutdown: client = 1; do_shutdown = 1; break;
+        case oFlush: client = 1; do_flush = 1; break;
+        case oLogFile: logfile = pargs.r.ret_str; break;
+        case oCsh: csh_style = 1; break;
+        case oSh: csh_style = 0; break;
         case oServer: server_mode = 1; break;
 
         default : pargs.err = configfp? 1:2; break;
@@ -390,7 +378,7 @@ main (int argc, char **argv )
       exit (1);
     }
    
-  if (opt.client)
+  if (client)
     { /* a client for testing this agent */
 #if 0 /* FIXME: We are going to use assuan here */
       int fd;
@@ -444,6 +432,10 @@ main (int argc, char **argv )
       close (fd );
 #endif
     }
+  else if (server_mode)
+    { /* for now this is the simple pipe based server */
+      start_command_handler ();
+    }
   else
     { /* regular server mode */
       int listen_fd;
@@ -495,7 +487,7 @@ main (int argc, char **argv )
             }
           /* print the environment string, so that the caller can use
              eval to set it */
-          if (opt.csh_style)
+          if (csh_style)
             {
               *strchr (infostr, '=') = ' ';
               printf ( "setenv %s\n", infostr);
@@ -510,7 +502,7 @@ main (int argc, char **argv )
       if ( (opt.debug & 1) )
         sleep( 20 ); /* give us some time to attach gdb to the child */
 
-      if (opt.logfile)
+      if (logfile)
         {
           /* FIXME:log_set_logfile (opt.logfile, -1);*/
         }
@@ -522,7 +514,7 @@ main (int argc, char **argv )
           exit (1);
         }
 
-      if ( !opt.nodetach )
+      if ( !nodetach )
         {
           for (i=0 ; i <= 2; i++ ) 
             {
@@ -587,6 +579,28 @@ main (int argc, char **argv )
     }
   
   return 0;
+}
+
+void
+agent_exit (int rc)
+{
+  #if 0
+#warning no update_random_seed_file
+  update_random_seed_file();
+  #endif
+#if 0
+  /* at this time a bit annoying */
+  if (opt.debug & DBG_MEMSTAT_VALUE)
+    {
+      gcry_control( GCRYCTL_DUMP_MEMORY_STATS );
+      gcry_control( GCRYCTL_DUMP_RANDOM_STATS );
+    }
+  if (opt.debug)
+    gcry_control (GCRYCTL_DUMP_SECMEM_STATS );
+#endif
+  gcry_control (GCRYCTL_TERM_SECMEM );
+  rc = rc? rc : log_get_errorcount(0)? 2 : 0;
+  exit (rc);
 }
 
 
