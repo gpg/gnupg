@@ -68,7 +68,9 @@ for i in ${srcdir}/po/*.po; do
    fromset=`sed -n '/^"Content-Type:/ s/.*charset=\([a-zA-Z0-9_-]*\).*/\1/p' $i`
    case $lang in 
      cs|pl) toset="CP1250" ;;
-     el|eo|et|ja|tr) toset="" ;;
+     tr) toset="CP1254" ;;   # DOS: CP857
+     el) toset="CP1253" ;;   # same as latin-7?
+     el|eo|et|ja) toset="" ;;
       *) toset="CP850" ;;
    esac
    if [ -n "$toset" ]; then
