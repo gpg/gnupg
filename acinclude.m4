@@ -226,7 +226,7 @@ define(GNUPG_CHECK_RDYNAMIC,
             CFLAGS_RDYNAMIC="-Wl,-E"
             ;;
 
-          openbsd* | freebsd2* | osf4* | irix* | netbsd* )
+          openbsd* | freebsd2* | osf4* | irix* | netbsd* | bsdi* )
             CFLAGS_RDYNAMIC=""
             ;;
 
@@ -463,7 +463,7 @@ case "$host_os" in
 aix*)
   ac_symcode='[BCDTU]'
   ;;
-freebsd* | netbsd* | openbsd* | sunos* | cygwin32* | mingw32*)
+freebsd* | netbsd* | openbsd* | bsdi* | sunos* | cygwin32* | mingw32*)
   ac_sympat='_\([_A-Za-z][_A-Za-z0-9]*\)'
   ac_symxfrm='_\1 \1'
   ;;

@@ -1,3 +1,10 @@
+Sun May 28 13:55:17 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * random.c (read_seed_file): Binary open for DOSish system
+  (update_random_seed_file): Ditto.
+
+  * rndw32.c: Add some debuging code enabled by an environment variable.
+
 Tue May 23 09:19:00 CEST 2000  Werner Koch  <wk@openit.de>
 
 	* rndw32.c: Started with alternative code to replace entropy.dll

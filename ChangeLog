@@ -1,3 +1,8 @@
+Sun May 28 13:55:17 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* acinclude.m4 (GNUPG_SYS_NM_PARSE): Added BSDI support.
+	(GNUPG_CHECK_RDYNAMIC): Ditto.
+
 Wed Apr 19 10:57:26 CEST 2000  Werner Koch  <wk@openit.de>
 
 	* acconfig.h (HAVE_MLOCK): Added

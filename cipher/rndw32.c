@@ -18,6 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  *
+ *************************************************************************
  * The code here is based on code from Cryptlib 3.0 beta by Peter Gutmann.
  * Source file misc/rndwin32.c "Win32 Randomness-Gathering Code" with this
  * copyright notice:
@@ -55,6 +56,7 @@
  * Although not required under the terms of the GPL, it would still be nice if
  * you could make any changes available to the author to allow a consistent
  * code base to be maintained
+ *************************************************************************
  */
 
 #include <config.h>
@@ -66,28 +68,14 @@
 
 #include <windows.h>
 
-/* We need to define these types and constants:
-`HEAPENTRY32'
-`HEAPLIST32'
-`IOCTL_DISK_PERFORMANCE'
-`LPHEAPLIST32'
-`LPMODULEENTRY32'
-`LPPROCESSENTRY32'
-`LPTHREADENTRY32'
-`MODULEENTRY32'
-`PPERF_DATA_BLOCK'
-`PROCESSENTRY32'
-`RESOURCE_DATA'
-`TH32CS_SNAPALL'
-`THREADENTRY32'
-`VER_PLATFORM_WIN32_WINDOWS'
-*/
 
 #include "types.h"
 #include "util.h"
 #include "dynload.h"
 
-#define USE_ENTROPY_DLL
+/* We do not use the netropy DLL anymore because a standalone program is
+ * easier to maintain and */
+/*#define USE_ENTROPY_DLL*/
 
 
 
@@ -97,6 +85,8 @@
   #include "i18n.h"
 #endif
 
+
+static int debug_me;
 
 #ifdef USE_ENTROPY_DLL
 
@@ -305,16 +295,105 @@ gather_random_fast( void (*add)(const void*, size_t, int), int requester )
 #else /* !USE_ENTROPY_DLL */
 /* This is the new code which does not require the entropy.dll */
 
+/*
+ * Definitions which are missing from the current GNU Windows32Api
+ */
+
+#define TH32CS_SNAPHEAPLIST 1
+#define TH32CS_SNAPPROCESS  2
+#define TH32CS_SNAPTHREAD   4
+#define TH32CS_SNAPMODULE   8
+#define TH32CS_SNAPALL	    (1|2|4|8)
+#define TH32CS_INHERIT	    0x80000000
+
+#define IOCTL_DISK_PERFORMANCE	0x00070020
+#define VER_PLATFORM_WIN32_WINDOWS 1
+
+
+typedef struct {
+    DWORD dwSize;
+    DWORD th32ProcessID;
+    DWORD th32HeapID;
+    DWORD dwFlags;
+} HEAPLIST32;
+
+typedef struct {
+    DWORD dwSize;
+    HANDLE hHandle;
+    DWORD dwAddress;
+    DWORD dwBlockSize;
+    DWORD dwFlags;
+    DWORD dwLockCount;
+    DWORD dwResvd;
+    DWORD th32ProcessID;
+    DWORD th32HeapID;
+} HEAPENTRY32;
+
+typedef struct {
+    DWORD dwSize;
+    DWORD cntUsage;
+    DWORD th32ProcessID;
+    DWORD th32DefaultHeapID;
+    DWORD th32ModuleID;
+    DWORD cntThreads;
+    DWORD th32ParentProcessID;
+    LONG  pcPriClassBase;
+    DWORD dwFlags;
+    char  szExeFile[260];
+} PROCESSENTRY32;
+
+typedef struct {
+    DWORD dwSize;
+    DWORD cntUsage;
+    DWORD th32ThreadID;
+    DWORD th32OwnerProcessID;
+    LONG  tpBasePri;
+    LONG  tpDeltaPri;
+    DWORD dwFlags;
+} THREADENTRY32;
+
+typedef struct {
+    DWORD dwSize;
+    DWORD th32ModuleID;
+    DWORD th32ProcessID;
+    DWORD GlblcntUsage;
+    DWORD ProccntUsage;
+    BYTE  *modBaseAddr;
+    DWORD modBaseSize;
+    HMODULE hModule;
+    char  szModule[256];
+    char  szExePath[260];
+} MODULEENTRY32;
+
+
+
 /* Type definitions for function pointers to call Toolhelp32 functions
  * used with the windows95 gatherer */
-typedef BOOL (WINAPI * MODULEWALK) (HANDLE hSnapshot, LPMODULEENTRY32 lpme);
-typedef BOOL (WINAPI * THREADWALK) (HANDLE hSnapshot, LPTHREADENTRY32 lpte);
-typedef BOOL (WINAPI * PROCESSWALK) (HANDLE hSnapshot, LPPROCESSENTRY32 lppe);
-typedef BOOL (WINAPI * HEAPLISTWALK) (HANDLE hSnapshot, LPHEAPLIST32 lphl);
-typedef BOOL (WINAPI * HEAPFIRST) (LPHEAPENTRY32 lphe, DWORD th32ProcessID,
+typedef BOOL (WINAPI * MODULEWALK) (HANDLE hSnapshot, MODULEENTRY32 *lpme);
+typedef BOOL (WINAPI * THREADWALK) (HANDLE hSnapshot, THREADENTRY32 *lpte);
+typedef BOOL (WINAPI * PROCESSWALK) (HANDLE hSnapshot, PROCESSENTRY32 *lppe);
+typedef BOOL (WINAPI * HEAPLISTWALK) (HANDLE hSnapshot, HEAPLIST32 *lphl);
+typedef BOOL (WINAPI * HEAPFIRST) (HEAPENTRY32 *lphe, DWORD th32ProcessID,
 				   DWORD th32HeapID);
-typedef BOOL (WINAPI * HEAPNEXT) (LPHEAPENTRY32 lphe);
+typedef BOOL (WINAPI * HEAPNEXT) (HEAPENTRY32 *lphe);
 typedef HANDLE (WINAPI * CREATESNAPSHOT) (DWORD dwFlags, DWORD th32ProcessID);
+
+/* Type definitions for function pointers to call NetAPI32 functions */
+typedef DWORD (WINAPI * NETSTATISTICSGET) (LPWSTR szServer, LPWSTR szService,
+					   DWORD dwLevel, DWORD dwOptions,
+					   LPBYTE * lpBuffer);
+typedef DWORD (WINAPI * NETAPIBUFFERSIZE) (LPVOID lpBuffer, LPDWORD cbBuffer);
+typedef DWORD (WINAPI * NETAPIBUFFERFREE) (LPVOID lpBuffer);
+
+
+/* When we query the performance counters, we allocate an initial buffer and
+ * then reallocate it as required until RegQueryValueEx() stops returning
+ * ERROR_MORE_DATA.  The following values define the initial buffer size and
+ * step size by which the buffer is increased
+ */
+#define PERFORMANCE_BUFFER_SIZE 	65536	/* Start at 64K */
+#define PERFORMANCE_BUFFER_STEP 	16384	/* Step by 16K */
+
 
 static void
 slow_gatherer_windows95( void (*add)(const void*, size_t, int), int requester )
@@ -336,6 +415,9 @@ slow_gatherer_windows95( void (*add)(const void*, size_t, int), int requester )
     /* initialize the Toolhelp32 function pointers */
     if ( !pCreateToolhelp32Snapshot ) {
 	HANDLE hKernel;
+
+	if ( debug_me )
+	    log_debug ("rndw32#slow_gatherer_95: init toolkit\n" );
 
 	/* Obtain the module handle of the kernel to retrieve the addresses
 	 * of the Toolhelp32 functions */
@@ -381,6 +463,8 @@ slow_gatherer_windows95( void (*add)(const void*, size_t, int), int requester )
     {	HEAPLIST32 hl32;
 	hl32.dwSize = sizeof (HEAPLIST32);
 	if (pHeap32ListFirst (hSnapshot, &hl32)) {
+	    if ( debug_me )
+		log_debug ("rndw32#slow_gatherer_95: walk heap\n" );
 	    do {
 		HEAPENTRY32 he32;
 
@@ -404,6 +488,8 @@ slow_gatherer_windows95( void (*add)(const void*, size_t, int), int requester )
     {	PROCESSENTRY32 pe32;
 	pe32.dwSize = sizeof (PROCESSENTRY32);
 	if (pProcess32First (hSnapshot, &pe32)) {
+	    if ( debug_me )
+		log_debug ("rndw32#slow_gatherer_95: walk processes\n" );
 	    do {
 		(*add) ( &pe32, sizeof (pe32), requester );
 	    } while (pProcess32Next (hSnapshot, &pe32));
@@ -414,6 +500,8 @@ slow_gatherer_windows95( void (*add)(const void*, size_t, int), int requester )
     {	THREADENTRY32 te32;
 	te32.dwSize = sizeof (THREADENTRY32);
 	if (pThread32First (hSnapshot, &te32)) {
+	    if ( debug_me )
+		log_debug ("rndw32#slow_gatherer_95: walk threads\n" );
 	    do {
 		(*add) ( &te32, sizeof (te32), requester );
 	    } while (pThread32Next (hSnapshot, &te32));
@@ -424,6 +512,8 @@ slow_gatherer_windows95( void (*add)(const void*, size_t, int), int requester )
     {	MODULEENTRY32 me32;
 	me32.dwSize = sizeof (MODULEENTRY32);
 	if (pModule32First (hSnapshot, &me32)) {
+	    if ( debug_me )
+		log_debug ("rndw32#slow_gatherer_95: walk modules\n" );
 	    do {
 		(*add) ( &me32, sizeof (me32), requester );
 	    } while (pModule32Next (hSnapshot, &me32));
@@ -434,20 +524,6 @@ slow_gatherer_windows95( void (*add)(const void*, size_t, int), int requester )
 }
 
 
-/* Type definitions for function pointers to call NetAPI32 functions */
-typedef DWORD (WINAPI * NETSTATISTICSGET) (LPWSTR szServer, LPWSTR szService,
-					   DWORD dwLevel, DWORD dwOptions,
-					   LPBYTE * lpBuffer);
-typedef DWORD (WINAPI * NETAPIBUFFERSIZE) (LPVOID lpBuffer, LPDWORD cbBuffer);
-typedef DWORD (WINAPI * NETAPIBUFFERFREE) (LPVOID lpBuffer);
-
-/* When we query the performance counters, we allocate an initial buffer and
- * then reallocate it as required until RegQueryValueEx() stops returning
- * ERROR_MORE_DATA.  The following values define the initial buffer size and
- * step size by which the buffer is increased
- */
-#define PERFORMANCE_BUFFER_SIZE 	65536	/* Start at 64K */
-#define PERFORMANCE_BUFFER_STEP 	16384	/* Step by 16K */
 
 static void
 slow_gatherer_windowsNT( void (*add)(const void*, size_t, int), int requester )
@@ -459,15 +535,16 @@ slow_gatherer_windowsNT( void (*add)(const void*, size_t, int), int requester )
     static int is_workstation = 1;
 
     static int cbPerfData = PERFORMANCE_BUFFER_SIZE;
-    RESOURCE_DATA msgData;
-    PPERF_DATA_BLOCK pPerfData;
-    HANDLE hDevice;
+    PERF_DATA_BLOCK *pPerfData;
+    HANDLE hDevice, hNetAPI32 = NULL;
     DWORD dwSize, status;
     int nDrive;
 
     if ( !is_initialized ) {
 	HKEY hKey;
 
+	if ( debug_me )
+	    log_debug ("rndw32#slow_gatherer_nt: init toolkit\n" );
 	/* Find out whether this is an NT server or workstation if necessary */
 	if (RegOpenKeyEx (HKEY_LOCAL_MACHINE,
 			  "SYSTEM\\CurrentControlSet\\Control\\ProductOptions",
@@ -475,6 +552,8 @@ slow_gatherer_windowsNT( void (*add)(const void*, size_t, int), int requester )
 	    BYTE szValue[32];
 	    dwSize = sizeof (szValue);
 
+	    if ( debug_me )
+		log_debug ("rndw32#slow_gatherer_nt: check product options\n" );
 	    status = RegQueryValueEx (hKey, "ProductType", 0, NULL,
 				      szValue, &dwSize);
 	    if (status == ERROR_SUCCESS && stricmp (szValue, "WinNT")) {
@@ -482,13 +561,16 @@ slow_gatherer_windowsNT( void (*add)(const void*, size_t, int), int requester )
 		 * WinNT = NT Workstation, ServerNT = NT Server, LanmanNT =
 		 * NT Server acting as a Domain Controller */
 		is_workstation = 0;
-		g10_log_debug ("rndw32: this is a NT server\n");
+		if ( debug_me )
+		    log_debug ("rndw32: this is a NT server\n");
 	    }
 	    RegCloseKey (hKey);
 	}
 
 	/* Initialize the NetAPI32 function pointers if necessary */
 	if ( (hNetAPI32 = LoadLibrary ("NETAPI32.DLL")) ) {
+	    if ( debug_me )
+		log_debug ("rndw32#slow_gatherer_nt: netapi32 loaded\n" );
 	    pNetStatisticsGet = (NETSTATISTICSGET) GetProcAddress (hNetAPI32,
 						       "NetStatisticsGet");
 	    pNetApiBufferSize = (NETAPIBUFFERSIZE) GetProcAddress (hNetAPI32,
@@ -516,6 +598,8 @@ slow_gatherer_windowsNT( void (*add)(const void*, size_t, int), int requester )
 	if (hNetAPI32 && !pNetStatisticsGet (NULL,
 			   is_workstation ? L"LanmanWorkstation" :
 			   L"LanmanServer", 0, 0, &lpBuffer) ) {
+	    if ( debug_me )
+		log_debug ("rndw32#slow_gatherer_nt: get netstats\n" );
 	    pNetApiBufferSize (lpBuffer, &dwSize);
 	    (*add) ( lpBuffer, dwSize,requester );
 	    pNetApiBufferFree (lpBuffer);
@@ -532,16 +616,23 @@ slow_gatherer_windowsNT( void (*add)(const void*, size_t, int), int requester )
 	hDevice = CreateFile (szDevice, 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
 			      NULL, OPEN_EXISTING, 0, NULL);
 	if (hDevice == INVALID_HANDLE_VALUE)
-	  break;
+	    break;
 
 	/* Note: This only works if you have turned on the disk performance
 	 * counters with 'diskperf -y'.  These counters are off by default */
 	if (DeviceIoControl (hDevice, IOCTL_DISK_PERFORMANCE, NULL, 0,
 			     &diskPerformance, sizeof (DISK_PERFORMANCE),
 			     &dwSize, NULL))
-	  {
-	    (*add) ( &diskPerformance, dwSize);
-	  }
+	{
+	    if ( debug_me )
+		log_debug ("rndw32#slow_gatherer_nt: iostats drive %d\n",
+								  nDrive );
+	    (*add) ( &diskPerformance, dwSize, requester );
+	}
+	else {
+	    log_info ("NOTE: you should run 'diskperf -y' "
+		      "to enable the disk statistics\n");
+	}
 	CloseHandle (hDevice);
     }
 
@@ -596,6 +687,8 @@ slow_gatherer_windowsNT( void (*add)(const void*, size_t, int), int requester )
     {	pPerfData =  m_alloc (cbPerfData);
 	for (;;) {
 	    dwSize = cbPerfData;
+	    if ( debug_me )
+		log_debug ("rndw32#slow_gatherer_nt: get perf data\n" );
 	    status = RegQueryValueEx (HKEY_PERFORMANCE_DATA, "Global", NULL,
 				      NULL, (LPBYTE) pPerfData, &dwSize);
 	    if (status == ERROR_SUCCESS) {
@@ -615,7 +708,7 @@ slow_gatherer_windowsNT( void (*add)(const void*, size_t, int), int requester )
 		break;
 	    }
 	}
-	m_free (cbPerfData);
+	m_free (pPerfData);
     }
     /* Although this isn't documented in the Win32 API docs, it's necessary
        to explicitly close the HKEY_PERFORMANCE_DATA key after use (it's
@@ -637,10 +730,11 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
     if( !level )
 	return 0;
     /* We don't differentiate between level 1 and 2 here because
-     * there is no nternal entropy pool as ascary resource.  It may
+     * there is no nternal entropy pool as a scary resource.  It may
      * all work slower, but because our entropy source will never
      * block but deliver some not easy to measure entropy, we assume level 2
      */
+
 
     if ( !is_initialized ) {
 	OSVERSIONINFO osvi = { sizeof( osvi ) };
@@ -654,8 +748,14 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 	    g10_log_fatal("can't run on a W32s platform\n" );
 	}
 	is_initialized = 1;
+	if ( debug_me )
+	    log_debug ("rndw32#gather_random: platform=%d\n", (int)platform );
     }
 
+
+    if ( debug_me )
+	log_debug ("rndw32#gather_random: req=%d len=%u lvl=%d\n",
+			   requester, (unsigned int)length, level );
 
     if (is_windows95 ) {
 	slow_gatherer_windows95( add, requester );
@@ -673,6 +773,9 @@ static int
 gather_random_fast( void (*add)(const void*, size_t, int), int requester )
 {
     static int addedFixedItems = 0;
+
+    if ( debug_me )
+	log_debug ("rndw32#gather_random_fast: req=%d\n", requester );
 
     /* Get various basic pieces of system information: Handle of active
      * window, handle of window with mouse capture, handle of clipboard owner
@@ -734,6 +837,7 @@ gather_random_fast( void (*add)(const void*, size_t, int), int requester )
        and time in user mode in 100ns intervals */
     {	HANDLE handle;
 	FILETIME creationTime, exitTime, kernelTime, userTime;
+	DWORD minimumWorkingSetSize, maximumWorkingSetSize;
 
 	handle = GetCurrentThread ();
 	GetThreadTimes (handle, &creationTime, &exitTime,
@@ -750,17 +854,16 @@ gather_random_fast( void (*add)(const void*, size_t, int), int requester )
 	(*add) ( &exitTime, sizeof (exitTime), requester );
 	(*add) ( &kernelTime, sizeof (kernelTime), requester );
 	(*add) ( &userTime, sizeof (userTime), requester );
+
+	/* Get the minimum and maximum working set size for the current process */
+	GetProcessWorkingSetSize (handle, &minimumWorkingSetSize,
+					  &maximumWorkingSetSize);
+	(*add) ( &minimumWorkingSetSize,
+				   sizeof (&minimumWorkingSetSize), requester );
+	(*add) ( &maximumWorkingSetSize,
+				   sizeof (&maximumWorkingSetSize), requester );
     }
 
-    /* Get the minimum and maximum working set size for the current process */
-    {	DWORD minimumWorkingSetSize, maximumWorkingSetSize;
-	GetProcessWorkingSetSize (handle, &minimumWorkingSetSize,
-				  &maximumWorkingSetSize);
-	(*add) ( &minimumWorkingSetSize,
-			       sizeof (&minimumWorkingSetSize), requester );
-	(*add) ( &maximumWorkingSetSize,
-			       sizeof (&maximumWorkingSetSize), requester );
-    }
 
     /* The following are fixed for the lifetime of the process so we only
      * add them once */
@@ -784,11 +887,13 @@ gather_random_fast( void (*add)(const void*, size_t, int), int requester )
      * running NT), but who's going to run NT on a '386? */
     {	LARGE_INTEGER performanceCount;
 	if (QueryPerformanceCounter (&performanceCount)) {
+	    if ( debug_me )
+		log_debug ("rndw32#gather_random_fast: perf data\n");
 	    (*add) (&performanceCount, sizeof (&performanceCount), requester);
 	}
 	else { /* Millisecond accuracy at best... */
 	    DWORD aword = GetTickCount ();
-	    (*add) (&aword, soeof (aword), requester );
+	    (*add) (&aword, sizeof (aword), requester );
 	}
     }
 
@@ -825,6 +930,8 @@ gnupgext_enum_func( int what, int *sequence, int *class, int *vers )
 {
     void *ret;
     int i = *sequence;
+
+    debug_me = !!getenv("DEBUG_RNDW32");
 
     do {
 	if ( i >= DIM(func_table) || i < 0 ) {

@@ -297,7 +297,11 @@ read_seed_file()
     if( !seed_file_name )
 	return 0;
 
+  #ifdef HAVE_DOSISH_SYSTEM
+    fd = open( seed_file_name, O_RDONLY | O_BINARY );
+  #else
     fd = open( seed_file_name, O_RDONLY );
+  #endif
     if( fd == -1 && errno == ENOENT) {
 	allow_seed_file_update = 1;
 	return 0;
@@ -383,7 +387,12 @@ update_random_seed_file()
     mix_pool(rndpool); rndstats.mixrnd++;
     mix_pool(keypool); rndstats.mixkey++;
 
+  #ifdef HAVE_DOSISH_SYSTEM
+    fd = open( seed_file_name, O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,
+							S_IRUSR|S_IWUSR );
+  #else
     fd = open( seed_file_name, O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR );
+  #endif
     if( fd == -1 ) {
 	log_info(_("can't create `%s': %s\n"), seed_file_name, strerror(errno) );
 	return;
