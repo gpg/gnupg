@@ -1,3 +1,15 @@
+2003-05-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* README: Remove note about HP/UX inline problem since autoconf
+	now handles this automatically.
+
+	* configure.ac: Remove some stuff no longer needed with newer
+	autoconf.  Use AC_GNU_SOURCE instead of defining _GNU_SOURCE
+	manually.  Add check for strchr() for gettext.  Add "ngettext"
+	check for gettext, since that check supposedly implies a check for
+	bind_textdomain_codeset.  Add check for times() for random.c.  Fix
+	URL for EGD.
+
 2003-05-01  Werner Koch  <wk@gnupg.org>
 
 	Released 1.2.2.

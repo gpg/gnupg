@@ -600,13 +600,6 @@
         Due to problems with the ESIX as, you probably want to do
             CFLAGS="-O -K pentium" ./configure --disable-asm
 
-    * HP/UX 11 with HP's C compiler:
-
-        This compiler has some issues with inline functions.  If you
-        get an error like "Unexpected symbol: SWAP" in gettextP.h,
-        read and follow the instructions at the top of
-        intl/gettextP.h.
-
 
     The Random Device
     -----------------

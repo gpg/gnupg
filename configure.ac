@@ -33,20 +33,13 @@ development_version=no
 
 ALL_LINGUAS="ca cs da de eo el es et fi fr gl hu id it ja nl pl pt_BR pt sk sv tr zh_TW"
 
-PACKAGE=$PACKAGE_NAME
-VERSION=$PACKAGE_VERSION
-
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_SRCDIR(g10/g10.c)
 AC_CANONICAL_TARGET()
-AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
+AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
 
-AC_SUBST(PACKAGE)
-AC_SUBST(VERSION)
-AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of this package])
-AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version of this package])
-AC_DEFINE(_GNU_SOURCE,1,[Some tests rely on this (stpcpy) and it should be used for new programs anyway])
+AC_GNU_SOURCE
 
 dnl
 dnl  Check for random module options
@@ -514,7 +507,17 @@ AC_SUBST(MPI_OPT_FLAGS)
 dnl Checks for libraries.
 
 if test "$try_gettext" = yes; then
-  AM_GNU_GETTEXT
+
+# we specify that we need ngettext since that check implies a check
+# for bind_textdomain_codeset, which we really need.
+
+  AM_GNU_GETTEXT(,[need-ngettext])
+
+# gettext requires some extra checks.  These really should be part of
+# the basic AM_GNU_GETTEXT macro.  TODO: move other gettext-specific
+# function checks to here.
+
+  AC_CHECK_FUNCS(strchr)
 else
   USE_NLS=no
   USE_INCLUDED_LIBINTL=no
@@ -583,7 +586,7 @@ AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
 AC_FUNC_FORK
 AC_CHECK_FUNCS(strerror stpcpy strsep strlwr tcgetattr strtoul mmap)
-AC_CHECK_FUNCS(strcasecmp strncasecmp ctermid)
+AC_CHECK_FUNCS(strcasecmp strncasecmp ctermid times)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(atexit raise getpagesize strftime nl_langinfo setlocale)
 AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe stat)
@@ -864,9 +867,10 @@ if test "$print_egd_warning" = yes; then
 *** in Perl and available at the GnuPG FTP servers.  For more information
 *** consult the GnuPG webpages:
 ***
-***           http://www.gnupg.org/download.html#egd
+***           http://www.gnupg.org/download/#EGD
 ***
-*** You may want to run ./configure with --enable-static-rnd=egd to use it.
+*** You may want to run ./configure with --enable-static-rnd=egd or
+*** --enable-static-rnd=auto to use it.
 ***]])
 fi
 
