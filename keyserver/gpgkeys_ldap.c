@@ -382,7 +382,7 @@ get_key(char *getkey)
 		{
 		  /* it's not a duplicate, so add it */
 
-		  int rc=add_key_to_keylist(vals[0],&dupelist);
+		  int rc=add_key_to_keylist(certid[0],&dupelist);
 		  if(rc)
 		    {
 		      ret=rc;
