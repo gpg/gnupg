@@ -107,6 +107,40 @@ init_sockets (void)
 }
 #endif /*_WIN32*/
 
+static byte bintoasc[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			 "abcdefghijklmnopqrstuvwxyz"
+			 "0123456789+/";
+
+/****************
+ * create a radix64 encoded string.
+ */
+
+/* TODO: This is a duplicate of code in g10/armor.c.  Better to use a
+   single copy in strgutil.c */
+static char *
+make_radix64_string( const byte *data, size_t len )
+{
+    char *buffer, *p;
+
+    buffer = p = m_alloc( (len+2)/3*4 + 1 );
+    for( ; len >= 3 ; len -= 3, data += 3 ) {
+	*p++ = bintoasc[(data[0] >> 2) & 077];
+	*p++ = bintoasc[(((data[0] <<4)&060)|((data[1] >> 4)&017))&077];
+	*p++ = bintoasc[(((data[1]<<2)&074)|((data[2]>>6)&03))&077];
+	*p++ = bintoasc[data[2]&077];
+    }
+    if( len == 2 ) {
+	*p++ = bintoasc[(data[0] >> 2) & 077];
+	*p++ = bintoasc[(((data[0] <<4)&060)|((data[1] >> 4)&017))&077];
+	*p++ = bintoasc[((data[1]<<2)&074)];
+    }
+    else if( len == 1 ) {
+	*p++ = bintoasc[(data[0] >> 2) & 077];
+	*p++ = bintoasc[(data[0] <<4)&060];
+    }
+    *p = 0;
+    return buffer;
+}
 
 int
 http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
@@ -294,6 +328,15 @@ do_parse_uri( PARSED_URI uri, int only_local_part )
 	    p++;
 	    if( (p2 = strchr(p, '/')) )
 		*p2++ = 0;
+
+	    /* Check for username/password encoding */
+	    if((p3=strchr(p,'@')))
+	      {
+		uri->auth=p;
+		*p3++='\0';
+		p=p3;
+	      }
+
 	    strlwr( p );
 	    uri->host = p;
 	    if( (p3=strchr( p, ':' )) ) {
@@ -465,6 +508,7 @@ send_request( HTTP_HD hd, const char *proxy )
     byte *request, *p;
     ushort port;
     int rc;
+    char *auth=NULL;
 
     server = *hd->uri->host? hd->uri->host : "localhost";
     port   = hd->uri->port?  hd->uri->port : 80;
@@ -482,34 +526,52 @@ send_request( HTTP_HD hd, const char *proxy )
 	  }
 	hd->sock = connect_server( *uri->host? uri->host : "localhost",
 				   uri->port? uri->port : 80, 0 );
+	if(uri->auth)
+	  {
+	    char *x=make_radix64_string(uri->auth,strlen(uri->auth));
+	    auth=m_alloc(50+strlen(x));
+	    sprintf(auth,"Proxy-Authorization: Basic %s\r\n",x);
+	    m_free(x);
+	  }
+
 	release_parsed_uri( uri );
       }
     else
-      hd->sock = connect_server( server, port, hd->flags );
+      {
+	hd->sock = connect_server( server, port, hd->flags );
+	if(hd->uri->auth)
+	  {
+	    char *x=make_radix64_string(hd->uri->auth,strlen(hd->uri->auth));
+	    auth=m_alloc(50+strlen(x));
+	    sprintf(auth,"Authorization: Basic %s\r\n",x);
+	    m_free(x);
+	  }
+      }
 
     if( hd->sock == -1 )
 	return G10ERR_NETWORK;
 
     p = build_rel_path( hd->uri );
-    request = m_alloc( strlen(server)*2 + strlen(p) + 50 );
-    if( proxy ) {
-	sprintf( request, "%s http://%s:%hu%s%s HTTP/1.0\r\n",
-			  hd->req_type == HTTP_REQ_GET ? "GET" :
-			  hd->req_type == HTTP_REQ_HEAD? "HEAD":
-			  hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
-			  server, port,  *p == '/'? "":"/", p );
-    }
-    else {
-	sprintf( request, "%s %s%s HTTP/1.0\r\nHost: %s\r\n",
-			  hd->req_type == HTTP_REQ_GET ? "GET" :
-			  hd->req_type == HTTP_REQ_HEAD? "HEAD":
-			  hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
-						 *p == '/'? "":"/", p, server);
-    }
+
+    request=m_alloc(strlen(server)*2 + strlen(p) + (auth?strlen(auth):0) + 50);
+    if( proxy )
+      sprintf( request, "%s http://%s:%hu%s%s HTTP/1.0\r\n%s",
+	       hd->req_type == HTTP_REQ_GET ? "GET" :
+	       hd->req_type == HTTP_REQ_HEAD? "HEAD":
+	       hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
+	       server, port,  *p == '/'? "":"/", p, auth?auth:"" );
+    else
+      sprintf( request, "%s %s%s HTTP/1.0\r\nHost: %s\r\n%s",
+	       hd->req_type == HTTP_REQ_GET ? "GET" :
+	       hd->req_type == HTTP_REQ_HEAD? "HEAD":
+	       hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
+	       *p == '/'? "":"/", p, server, auth?auth:"");
+
     m_free(p);
 
     rc = write_server( hd->sock, request, strlen(request) );
     m_free( request );
+    m_free(auth);
 
     return rc;
 }
