@@ -1,3 +1,8 @@
+2002-08-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* longlong.h: Remove space between \ and newline. gcc is
+	complaining.
+
 2002-08-13  Werner Koch  <wk@gnupg.org>
 
 	* mpicoder.c (do_get_buffer): Don't remove leading zeros if the

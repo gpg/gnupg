@@ -746,7 +746,7 @@ extern USItype __udiv_qrnnd ();
 #else
 #define umul_ppmm(w1, w0, u, v) \
   __asm__ ("dmultu %2,%3 \n"    \
-	   "mflo %0 \n"         \ 
+	   "mflo %0 \n"         \
 	   "mfhi %1"                                                        \
 	   : "=d" ((UDItype)(w0)),                                      \
 	     "=d" ((UDItype)(w1))                                       \
@@ -1002,7 +1002,7 @@ extern USItype __udiv_qrnnd ();
        "m	r2,%3    \n" \
        "m	r2,%3    \n" \
        "m	r2,%3    \n" \
-       "cas	%0,r2,r0 \n" \ 
+       "cas	%0,r2,r0 \n" \
        "mfs	r10,%1"                                                 \
 	     : "=r" ((USItype)(ph)),                                    \
 	       "=r" ((USItype)(pl))                                     \
