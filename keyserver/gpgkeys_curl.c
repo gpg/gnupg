@@ -55,12 +55,55 @@ curl_err_to_gpg_err(CURLcode error)
     }
 }
 
-/* We wrap fwrite so to avoid DLL problems on Win32 (see curl faq for
-   more). */
 static size_t
 writer(const void *ptr,size_t size,size_t nmemb,void *stream)
 {
-  return fwrite(ptr,size,nmemb,stream);
+  const char *buf=ptr;
+  size_t i;
+  static int markeridx=0,begun=0,done=0;
+  static const char *marker=BEGIN;
+
+  /* scan the incoming data for our marker */
+  for(i=0;!done && i<(size*nmemb);i++)
+    {
+      if(buf[i]==marker[markeridx])
+	{
+	  markeridx++;
+	  if(marker[markeridx]=='\0')
+	    {
+	      if(begun)
+		done=1;
+	      else
+		{
+		  /* We've found the BEGIN marker, so now we're looking
+		     for the END marker. */
+		  begun=1;
+		  marker=END;
+		  markeridx=0;
+		  fprintf(output,BEGIN);
+		  continue;
+		}
+	    }
+	}
+      else
+	markeridx=0;
+
+      if(begun)
+	{
+	  /* Canonicalize CRLF to just LF by stripping CRs.  This
+	     actually makes sense, since on Unix-like machines LF is
+	     correct, and on win32-like machines, our output buffer is
+	     opened in textmode and will re-canonicalize line endings
+	     back to CRLF.  Since we only need to handle armored keys,
+	     we don't have to worry about odd cases like CRCRCR and
+	     the like. */
+
+	  if(buf[i]!='\r')
+	    fputc(buf[i],output);
+	}
+    }
+
+  return size*nmemb;
 }
 
 static int
@@ -87,10 +130,10 @@ get_key(char *getkey)
     {
       fprintf(console,"gpgkeys: %s fetch error %d: %s\n",scheme,
 	      res,errorbuffer);
-      fprintf(output,"KEY 0x%s FAILED %d\n",getkey,curl_err_to_gpg_err(res));
+      fprintf(output,"\nKEY 0x%s FAILED %d\n",getkey,curl_err_to_gpg_err(res));
     }
   else
-    fprintf(output,"KEY 0x%s END\n",getkey);
+    fprintf(output,"\nKEY 0x%s END\n",getkey);
 
   return KEYSERVER_OK;
 }
@@ -319,6 +362,10 @@ main(int argc,char *argv[])
   else if(strcasecmp(scheme,"ftp")==0)
     ;
 #endif /* FTP_VIA_LIBCURL */
+#ifdef FTPS_VIA_LIBCURL
+  else if(strcasecmp(scheme,"ftps")==0)
+    ;
+#endif /* FTPS_VIA_LIBCURL */
   else
     {
       fprintf(console,"gpgkeys: scheme `%s' not supported\n",scheme);

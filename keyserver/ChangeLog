@@ -1,4 +1,13 @@
-2005-01-21  David Shaw  <dshaw@grover.jabberwocky.com>
+2005-01-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (print_nocr): New.
+	(get_key): Call it here to canonicalize line endings.
+
+	* gpgkeys_curl.c (writer): Discard everything outside the BEGIN
+	and END lines when retrieving keys.  Canonicalize line endings.
+	(main): Accept FTPS.
+
+2005-01-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c (main): Add "check-cert" option to disable SSL
 	certificate checking (which is on by default).
@@ -7,7 +16,7 @@
 	helper.  Add "check-cert" option to disable SSL certificate
 	checking (which is on by default).
 
-2005-01-18  David Shaw  <dshaw@grover.jabberwocky.com>
+2005-01-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_curl.c: Fix typo.
 
@@ -19,7 +28,7 @@
 	* gpgkeys_http.c: Ditto.
 	* ksutil.h: s/MAX_PATH/URLMAX_PATH/.
 
-2005-01-17  David Shaw  <dshaw@grover.jabberwocky.com>
+2005-01-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_curl.c (main): Only allow specified protocols to use the
 	curl handler.

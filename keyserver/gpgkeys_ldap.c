@@ -952,6 +952,17 @@ build_info(const char *certid,LDAPMessage *each)
   fprintf(output,"INFO %s END\n",certid);
 }
 
+static void
+print_nocr(FILE *stream,const char *str)
+{
+  while(*str)
+    {
+      if(*str!='\r')
+	fputc(*str,stream);
+      str++;
+    }
+}
+
 /* Note that key-not-found is not a fatal error */
 static int
 get_key(char *getkey)
@@ -1091,7 +1102,8 @@ get_key(char *getkey)
 		    }
 		  else
 		    {
-		      fprintf(output,"%sKEY 0x%s END\n",vals[0],getkey);
+		      print_nocr(output,vals[0]);
+		      fprintf(output,"\nKEY 0x%s END\n",getkey);
 
 		      ldap_value_free(vals);
 		    }
