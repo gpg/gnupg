@@ -1,5 +1,18 @@
 2004-07-15  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (sign_uids): Properly handle remaking a self-sig on
+	revoked or expired user IDs.  Also, once we've established that a
+	given uid cannot or will not be signed, don't continue to ask
+	about each sig.
+
+	* mainproc.c (proc_symkey_enc), seckey-cert.c (do_check): Check
+	the S2K hash algorithm before we try to generate a passphrase
+	using it.  This prevents hitting BUG() when generating a
+	passphrase using a hash that we don't have.
+
+	* sign.c (sign_symencrypt_file): Allow using --force-mdc in --sign
+	--symmetric messages.
+
 	* g10.c (main): Alias --charset as --display-charset to help avoid
 	the continuing confusion and make room for possible changes in
 	devel.

@@ -304,6 +304,13 @@ proc_symkey_enc( CTX c, PACKET *pkt )
 	else
 	  log_error(_("encrypted with unknown algorithm %d\n"), algo );
 
+	if(check_digest_algo(enc->s2k.hash_algo))
+	  {
+	    log_error(_("passphrase generated with unknown digest"
+			" algorithm %d\n"),enc->s2k.hash_algo);
+	    s=NULL;
+	  }
+
 	c->last_was_session_key = 2;
 	if(!s || opt.list_only)
 	  goto leave;
