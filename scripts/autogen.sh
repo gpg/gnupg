@@ -34,7 +34,7 @@ if test "$1" = "--build-w32"; then
         echo "We need at least version 0.3 of MingW32/CPD" >&2
         exit 1
     fi
-g
+
     if [ -f "$tsdir/config.log" ]; then
         if ! head $tsdir/config.log | grep i386--mingw32 >/dev/null; then
             echo "Pease run a 'make distclean' first" >&2
