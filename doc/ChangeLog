@@ -1,3 +1,9 @@
+2004-08-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Remove show-long-keyids since it is replaced by
+	--keyid-format.  Rename show-validity as
+	show-uid-validity. --ask-cert-level defaults to no.
+
 2004-06-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* DETAILS: Document PLAINTEXT and PLAINTEXT_LENGTH.

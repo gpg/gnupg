@@ -1047,7 +1047,7 @@ When making a key signature, prompt for a certification level.  If
 this option is not specified, the certification level used is set via
 --default-cert-level.  See --default-cert-level for information on the
 specific levels and how they are used. --no-ask-cert-level disables
-this option.  This option defaults to yes.
+this option.  This option defaults to no.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1375,17 +1375,10 @@ listings.  Defaults to no.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>show-validity</term>
+<term>show-uid-validity</term>
 <listitem><para>
-Display the calculated validity of keys and user IDs during key
-listings.  Defaults to no.
-</para></listitem></varlistentry>
-
-<varlistentry>
-<term>show-long-keyids</term>
-<listitem><para>
-Display all 64 bits (16 digits) of key IDs during key listings, rather
-than the more common 32 bit (8 digit) IDs.  Defaults to no.
+Display the calculated validity of user IDs during key listings.
+Defaults to no.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1455,18 +1448,10 @@ Defaults to no.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>show-validity</term>
+<term>show-uid-validity</term>
 <listitem><para>
 Display the calculated validity of the user IDs on the key that issued
 the signature.  Defaults to no.
-</para></listitem></varlistentry>
-
-<varlistentry>
-<term>show-long-keyids</term>
-<listitem><para>
-Display all 64 bits (16 digits) of key IDs during signature
-verification, rather than the more common 32 bit (8 digit) IDs.
-Defaults to no.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2250,10 +2235,10 @@ issues with signatures.
 <term>--ignore-crc-error</term>
 <listitem><para>
 The ASCII armor used by OpenPGP is protected by a CRC checksum against
-transmission errors.  Sometimes it happens that the CRC gets mangled
-somewhere on the transmission channel but the actual content (which is
-protected by the OpenPGP protocol anyway) is still okay.  This option
-will let gpg ignore CRC errors.
+transmission errors.  Occasionally the CRC gets mangled somewhere on
+the transmission channel but the actual content (which is protected by
+the OpenPGP protocol anyway) is still okay.  This option allows GnuPG
+to ignore CRC errors.
 </para></listitem></varlistentry>
 
 <varlistentry>
