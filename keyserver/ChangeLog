@@ -1,3 +1,10 @@
+2005-01-17  David Shaw  <dshaw@grover.jabberwocky.com>
+
+	* gpgkeys_curl.c (main): Only allow specified protocols to use the
+	curl handler.
+
+	* Makefile.am: Use LIBCURL_CPPFLAGS instead of LIBCURL_INCLUDES.
+
 2005-01-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* ksutil.h, gpgkeys_curl.c, gpgkeys_hkp.c, gpgkeys_ldap.c,

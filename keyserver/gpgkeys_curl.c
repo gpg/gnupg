@@ -292,20 +292,23 @@ main(int argc,char *argv[])
       fprintf(console,"gpgkeys: no scheme supplied!\n");
       return KEYSERVER_SCHEME_NOT_FOUND;
     }
-#ifndef HTTP_VIA_LIBCURL
+#ifdef HTTP_VIA_LIBCURL
   else if(strcasecmp(scheme,"http")==0)
-    {
-      fprintf(console,"gpgkeys: scheme `%s' not supported\n",scheme);
-      return KEYSERVER_SCHEME_NOT_FOUND;
-    }
+    ;
 #endif /* HTTP_VIA_LIBCURL */
-#ifndef FTP_VIA_LIBCURL
+#ifdef HTTPS_VIA_LIBCURL
+  else if(strcasecmp(scheme,"https")==0)
+    ;
+#endif /* HTTP_VIA_LIBCURL */
+#ifdef FTP_VIA_LIBCURL
   else if(strcasecmp(scheme,"ftp")==0)
+    ;
+#endif /* FTP_VIA_LIBCURL */
+  else
     {
       fprintf(console,"gpgkeys: scheme `%s' not supported\n",scheme);
       return KEYSERVER_SCHEME_NOT_FOUND;
     }
-#endif /* FTP_VIA_LIBCURL */
 
   if(timeout && register_timeout()==-1)
     {
