@@ -1431,7 +1431,20 @@ keyedit_menu( const char *username, STRLIST locusr,
 	goto leave;
       }
 
-    /* get the public key */
+#ifdef HAVE_W32_SYSTEM
+    /* Due to Windows peculiarities we need to make sure that the
+       trustdb stale check is done before we open another file
+       (i.e. by searching for a key).  In theory we could make sure
+       that the files are closed after use but the open/close caches
+       inhibits that and flushing the cache right before the stale
+       check is not easy to implement.  Thus we take the easy way out
+       and run the stale check as early as possible.  Note, that for
+       non- W32 platforms it is run indirectly trough a call to
+       get_validity ().  */
+    check_trustdb_stale ();
+#endif
+
+    /* Get the public key */
     rc = get_pubkey_byname (NULL, username, &keyblock, &kdbhd, 1);
     if( rc )
 	goto leave;

@@ -1,3 +1,8 @@
+2005-03-10  Werner Koch  <wk@g10code.com>
+
+	* keyedit.c (keyedit_menu) [W32]: Run the trustdb stale check
+	earlier.
+
 2005-03-07  Werner Koch  <wk@g10code.com>
 
 	* cardglue.c (agent_scd_pkdecrypt, agent_scd_pksign) 
