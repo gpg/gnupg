@@ -1,3 +1,10 @@
+Thu Jul 27 17:33:04 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * g10.c: New option --merge-only.  Suggested by Brendan O'Dea.
+  * import.c (import_one): Implemented it here
+  (import_secret_one): Ditto.
+  (print_stats): and give some stats.
+
 Thu Jul 27 12:01:00 CEST 2000  Werner Koch  <wk@openit.de>
 
   * g10.c: New options --show-session-key and --override-session-key

@@ -192,6 +192,7 @@ enum cmd_and_opt_values { aNull = 0,
     oOverrideSessionKey,
     oNoRandomSeedFile,
     oNoAutoKeyRetrieve,
+    oMergeOnly,
     oEmu3DESS2KBug,  /* will be removed in 1.1 */
     oEmuMDEncodeBug,
 aTest };
@@ -376,6 +377,7 @@ static ARGPARSE_OPTS opts[] = {
     { oOverrideSessionKey, "override-session-key", 2, "@" },
     { oNoRandomSeedFile,  "no-random-seed-file", 0, "@" },
     { oNoAutoKeyRetrieve, "no-auto-key-retrieve", 0, "@" },
+    { oMergeOnly,	  "merge-only", 0, "@" },
     { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
     { oEmuMDEncodeBug,	"emulate-md-encode-bug", 0, "@"},
 {0} };
@@ -928,6 +930,7 @@ main( int argc, char **argv )
 	  case oOverrideSessionKey:
 		opt.override_session_key = pargs.r.ret_str;
 		break;
+	  case oMergeOnly: opt.merge_only = 1; break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}

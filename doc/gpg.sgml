@@ -462,6 +462,11 @@ keyring.
 The fast version does not build
 the trustdb; this can be done at any time with the
 command --update-trustdb.
+</para>
+<para>
+There are a few other options which control how this command works.
+Most notable here is the --merge-only options which does not insert new keys
+but does only the merging of new signatures, user-IDs and subkeys.
 </para></listitem></varlistentry>
 
 
@@ -1359,6 +1364,12 @@ string is the same as the one printed by --show-session-key.  This option
 is normally not used but comes handy in case someone forces you to reveal the
 content of an encrypted message; using this option you can do this without
 handing out the secret key.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--merge-only</term>
+<listitem><para>
+Don't insert new keys into the keyrings while doing an import.
 </para></listitem></varlistentry>
 
 

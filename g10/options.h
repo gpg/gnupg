@@ -93,6 +93,7 @@ struct {
     int auto_key_retrieve;
     const char *override_session_key;
     int show_session_key;
+    int merge_only;
 } opt;
 
 
