@@ -1714,7 +1714,7 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
 
 
 static int
-search_skipfnc (void *opaque, u32 *kid)
+search_skipfnc (void *opaque, u32 *kid, PKT_user_id *dummy)
 {
   return test_key_hash_table ((KeyHashTable)opaque, kid);
 }

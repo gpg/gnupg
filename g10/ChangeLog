@@ -1,3 +1,12 @@
+2003-09-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* keydb.h, keyring.c (keyring_search), trustdb.c (search_skipfnc):
+	Expand the skipfnc to include a pointer to the user ID that
+	matched.
+
+	* getkey.c (skip_disabled): Rename to skip_unusable, and add
+	checks for expired or revoked user IDs.
+
 2003-09-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Deprecate --default-comment in favor of
