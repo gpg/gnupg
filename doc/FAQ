@@ -282,6 +282,20 @@
      For more see the chapter "The Web of Trust" in the
      Manual [gpg: Oops: Internal error: manual not found - sorry]
 
-
-
+  Q: How do interpret some of the informational outputs:
+  A: While checking the validness of a key, GnuPG sometimes print
+     some informations which are prefixed with information about
+     the checked item:
+	"key 12345678.3456"
+     This is about the key with key ID 12345678 and the internal
+     number 3456, which is the record number of the so called
+     directory record in the trustdb.
+	"uid 12345678.3456/ACDE"
+     This is about the user ID for the same key; to identify the
+     user ID the last two bytes of a ripe-md-160 over the user ID
+     tring is printed.
+	"sig 12345678.3456/ACDE/9A8B7C6D"
+     This is about the signature with key ID 9A8B7C6D for the
+     above key and user ID, if it is a signature which is direct
+     on a key, the user ID part is empty (..//..).
 
