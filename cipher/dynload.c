@@ -335,7 +335,6 @@ enum_gnupgext_digests( void **enum_context,
     else
 	ctx = *enum_context;
 
-    /* fixme: have a look at the hint string */
     for( r = ctx->r; r; r = r->next )  {
 	int class, vers;
 

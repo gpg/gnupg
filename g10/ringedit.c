@@ -298,7 +298,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 			rc = G10ERR_OPEN_FILE;
 			goto leave;
 		    }
-		    else
+		    else if( !opt.quiet )
 			log_info( _("%s: directory created\n"), filename );
 		    copy_options_file( filename );
 		}
@@ -329,7 +329,8 @@ add_keyblock_resource( const char *url, int force, int secret )
 		    }
 		}
 	      #endif
-		log_info(_("%s: keyring created\n"), filename );
+		if( !opt.quiet )
+		    log_info(_("%s: keyring created\n"), filename );
 	    }
 	}
       #if HAVE_DOSISH_SYSTEM || 1
@@ -1344,7 +1345,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	    unlock_rentry( rentry );
 	    return G10ERR_OPEN_FILE;
 	}
-	else
+	else if( !opt.quiet )
 	    log_info(_("%s: keyring created\n"), rentry->fname );
 
 	kbctx=NULL;

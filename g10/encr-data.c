@@ -71,7 +71,7 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
 	BUG();
 
     dfx.cipher_hd = cipher_open( dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
- /*log_hexdump( "thekey", dek->key, dek->keylen );*/
+/* log_hexdump( "thekey", dek->key, dek->keylen );*/
     rc = cipher_setkey( dfx.cipher_hd, dek->key, dek->keylen );
     if( rc == G10ERR_WEAK_KEY )
 	log_info(_("WARNING: message was encrypted with "
@@ -79,7 +79,7 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
     else if( rc )
 	log_error("key setup failed: %s\n", g10_errstr(rc) );
 
-    cipher_setiv( dfx.cipher_hd, NULL );
+    cipher_setiv( dfx.cipher_hd, NULL, 0 );
 
     if( ed->len ) {
 	for(i=0; i < (nprefix+2) && ed->len; i++, ed->len-- ) {
@@ -99,7 +99,7 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
     cipher_decrypt( dfx.cipher_hd, temp, temp, nprefix+2);
     cipher_sync( dfx.cipher_hd );
     p = temp;
- /*log_hexdump( "prefix", temp, nprefix+2 );*/
+/* log_hexdump( "prefix", temp, nprefix+2 ); */
     if( p[nprefix-2] != p[nprefix] || p[nprefix-1] != p[nprefix+1] ) {
 	cipher_close(dfx.cipher_hd);
 	return G10ERR_BAD_KEY;

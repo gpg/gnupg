@@ -197,15 +197,20 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
 }
 
 
-
 static void
 store_alias( ARGPARSE_ARGS *arg, char *name, char *value )
 {
+    /* TODO: replace this dummy function with a rea one
+     * and fix the probelms IRIX has with (ALIAS_DEV)arg..
+     * used as lvalue
+     */
+#if 0
     ALIAS_DEF a = m_alloc( sizeof *a );
     a->name = name;
     a->value = value;
     a->next = (ALIAS_DEF)arg->internal.aliases;
     (ALIAS_DEF)arg->internal.aliases = a;
+#endif
 }
 
 /****************
@@ -418,7 +423,7 @@ find_long_option( ARGPARSE_ARGS *arg,
 	/* see whether it is an alias */
 	for( a = args->internal.aliases; a; a = a->next ) {
 	    if( !strcmp( a->name, keyword) ) {
-		/* fixme: must parse the alias here */
+		/* todo: must parse the alias here */
 		args->internal.cur_alias = a;
 		return -3; /* alias available */
 	    }

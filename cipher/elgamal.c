@@ -245,11 +245,16 @@ encrypt(MPI a, MPI b, MPI input, ELG_public_key *pkey )
 {
     MPI k;
 
+    /* Note: maybe we should change the interface, so that it
+     * is possible to check that input is < p and return an
+     * error code.
+     */
+
     k = gen_k( pkey->p );
     mpi_powm( a, pkey->g, k, pkey->p );
     /* b = (y^k * input) mod p
      *	 = ((y^k mod p) * (input mod p)) mod p
-     * and because input is < p  (FIXME: check this!)
+     * and because input is < p
      *	 = ((y^k mod p) * input) mod p
      */
     mpi_powm( b, pkey->y, k, pkey->p );

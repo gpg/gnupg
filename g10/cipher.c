@@ -64,10 +64,10 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     temp[nprefix+1] = temp[nprefix-1];
     print_cipher_algo_note( cfx->dek->algo );
     cfx->cipher_hd = cipher_open( cfx->dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
- /*log_hexdump( "thekey", cfx->dek->key, cfx->dek->keylen );*/
+/*   log_hexdump( "thekey", cfx->dek->key, cfx->dek->keylen );*/
     cipher_setkey( cfx->cipher_hd, cfx->dek->key, cfx->dek->keylen );
-    cipher_setiv( cfx->cipher_hd, NULL );
-  /* log_hexdump( "prefix", temp, nprefix+2 );*/
+    cipher_setiv( cfx->cipher_hd, NULL, 0 );
+/*  log_hexdump( "prefix", temp, nprefix+2 ); */
     cipher_encrypt( cfx->cipher_hd, temp, temp, nprefix+2);
     cipher_sync( cfx->cipher_hd );
     iobuf_write(a, temp, nprefix+2);

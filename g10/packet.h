@@ -139,7 +139,8 @@ typedef struct {
     struct {
 	byte algo;  /* cipher used to protect the secret information*/
 	STRING2KEY s2k;
-	byte iv[8]; /* initialization vector for CFB mode */
+	byte ivlen;  /* used length of the iv */
+	byte iv[16]; /* initialization vector for CFB mode */
     } protect;
     MPI skey[PUBKEY_MAX_NSKEY];
     u16 csum;		/* checksum */

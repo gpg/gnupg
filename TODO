@@ -6,7 +6,7 @@
 
   * Check calculation of key validity.
 
-  * See why we always get this "Hmmm public key lost" - Is it fixed?
+  * See why we always get this "Hmmm, public key not anymore available"
 
   * print a warning when a revoked/expired secret key is used.
 
@@ -24,10 +24,13 @@
   * Solaris make has problems with the generated POTFILES - seems to be a
     gettext bug.
 
+  * cvs -d :pserver:anoncvs@anoncvs.gnu.org:/gd/gnu/anoncvsroot co common
+
 
 
 Nice to have
 ------------
+  * Offcial test vectors for 3DES-EDE3
   * use DEL and ^H for erasing the previous character (util/ttyio.c).
   * Print a warning if the directory mode is wrong.
   * replace the keyserver stuff either by a call to a specialized
@@ -45,4 +48,6 @@ Nice to have
     really make sense?
   * change the fake_data stuff to mpi_set_opaque
   * Stats about used random numbers.
+  * the pubkey encrypt functions should do some sanity checks.
+  * dynload: implement the hint stuff.
 

@@ -45,10 +45,6 @@
 #include "g10defs.h"
 #include "hkp.h"
 
-#ifndef IS_G10MAINT
-  #define IS_G10 1
-#endif
-
 
 enum cmd_and_opt_values { aNull = 0,
     oArmor	  = 'a',
@@ -165,7 +161,6 @@ static ARGPARSE_OPTS opts[] = {
 
     { 300, NULL, 0, N_("@Commands:\n ") },
 
-  #ifdef IS_G10
     { aSign, "sign",      256, N_("|[file]|make a signature")},
     { aClearsign, "clearsign", 256, N_("|[file]|make a clear text signature") },
     { aDetachedSign, "detach-sign", 256, N_("make a detached signature")},
@@ -174,21 +169,16 @@ static ARGPARSE_OPTS opts[] = {
     { aStore, "store",     256, N_("store only")},
     { aDecrypt, "decrypt",   256, N_("decrypt data (default)")},
     { aVerify, "verify"   , 256, N_("verify a signature")},
-  #endif
     { aListKeys, "list-keys", 256, N_("list keys")},
     { aListKeys, "list-public-keys", 256, "@" },
     { aListSigs, "list-sigs", 256, N_("list keys and signatures")},
     { aCheckKeys, "check-sigs",256, N_("check key signatures")},
     { oFingerprint, "fingerprint", 256, N_("list keys and fingerprints")},
     { aListSecretKeys, "list-secret-keys", 256, N_("list secret keys")},
-  #ifdef IS_G10
     { aKeygen, "gen-key",   256, N_("generate a new key pair")},
-  #endif
     { aDeleteKey, "delete-key",256, N_("remove key from the public keyring")},
-  #ifdef IS_G10
     { aEditKey, "edit-key"  ,256, N_("sign or edit a key")},
     { aGenRevoke, "gen-revoke",256, N_("generate a revocation certificate")},
-  #endif
     { aExport, "export"           , 256, N_("export keys") },
     { aSendKeys, "send-keys"     , 256, N_("export keys to a key server") },
     { aRecvKeys, "recv-keys"     , 256, N_("import keys from a key server") },
@@ -197,7 +187,6 @@ static ARGPARSE_OPTS opts[] = {
     { aImport, "import",      256     , N_("import/merge keys")},
     { aFastImport, "fast-import",  256 , "@"},
     { aListPackets, "list-packets",256,N_("list only the sequence of packets")},
-  #ifdef IS_G10MAINT
     { aExportOwnerTrust,
 	      "export-ownertrust", 256, N_("export the ownertrust values")},
     { aImportOwnerTrust,
@@ -215,7 +204,6 @@ static ARGPARSE_OPTS opts[] = {
     { aPrimegen, "gen-prime" , 256, "@" },
     { aGenRandom, "gen-random" , 256, "@" },
     #endif
-  #endif
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
 
@@ -224,12 +212,10 @@ static ARGPARSE_OPTS opts[] = {
     { oRecipient, "remote-user", 2, "@"},  /* old option name */
     { oEncryptTo, "encrypt-to", 2, "@" },
     { oNoEncryptTo, "no-encrypt-to", 0, "@" },
-  #ifdef IS_G10
     { oUser, "local-user",2, N_("use this user-id to sign or decrypt")},
     { oCompress, NULL,	      1, N_("|N|set compress level N (0 disables)") },
     { oTextmodeShort, NULL,   0, "@"},
     { oTextmode, "textmode",  0, N_("use canonical text mode")},
-  #endif
     { oOutput, "output",    2, N_("use as output file")},
     { oVerbose, "verbose",   0, N_("verbose") },
     { oQuiet,	"quiet",   0, N_("be somewhat more quiet") },
@@ -259,37 +245,25 @@ static ARGPARSE_OPTS opts[] = {
 		N_("|NAME|use message digest algorithm NAME for passphrases")},
     { oS2KCipher, "s2k-cipher-algo",2,
 		N_("|NAME|use cipher algorithm NAME for passphrases")},
-  #ifdef IS_G10
     { oCipherAlgo, "cipher-algo", 2 , N_("|NAME|use cipher algorithm NAME")},
     { oDigestAlgo, "digest-algo", 2 , N_("|NAME|use message digest algorithm NAME")},
     { oCompressAlgo, "compress-algo", 1 , N_("|N|use compress algorithm N")},
     { oThrowKeyid, "throw-keyid", 0, N_("throw keyid field of encrypted packets")},
-  #else /* some dummies */
-    { oCipherAlgo, "cipher-algo", 2 , "@"},
-    { oDigestAlgo, "digest-algo", 2 , "@"},
-    { oCompressAlgo, "compress-algo", 1 , "@"},
-  #endif
 
-  #ifdef IS_G10
     { 302, NULL, 0, N_("@\nExamples:\n\n"
     " -se -r Bob [file]          sign and encrypt for user Bob\n"
     " --clearsign [file]         make a clear text signature\n"
     " --detach-sign [file]       make a detached signature\n"
     " --list-keys [names]        show keys\n"
     " --fingerprint [names]      show fingerprints\n"  ) },
-  #endif
 
   /* hidden options */
-  #ifdef IS_G10MAINT
     { aExportOwnerTrust, "list-ownertrust",0 , "@"},  /* alias */
     { aListTrustDB, "list-trustdb",0 , "@"},
     { aListTrustPath, "list-trust-path",0, "@"},
-  #endif
-  #ifdef IS_G10
     { oKOption, NULL,	 0, "@"},
     { oPasswdFD, "passphrase-fd",1, "@" },
     { aSignKey, "sign-key"  ,256, "@" }, /* alias for edit-key */
-  #endif
     { aDeleteSecretKey, "delete-secret-key",0, "@" },
     { oQuickRandom, "quick-random", 0, "@"},
     { oNoVerbose, "no-verbose", 0, "@"},
@@ -330,10 +304,8 @@ static char *build_list( const char *text,
 			 const char *(*mapf)(int), int (*chkf)(int) );
 static void set_cmd( enum cmd_and_opt_values *ret_cmd,
 			enum cmd_and_opt_values new_cmd );
-#ifdef IS_G10MAINT
 static void print_hex( byte *p, size_t n );
 static void print_mds( const char *fname, int algo );
-#endif
 
 const char *
 strusage( int level )
@@ -341,12 +313,7 @@ strusage( int level )
   static char *digests, *pubkeys, *ciphers;
     const char *p;
     switch( level ) {
-      case 11: p =
-	  #ifdef IS_G10MAINT
-	    "gpgm (GnuPG)";
-	  #else
-	    "gpg (GnuPG)";
-	  #endif
+      case 11: p = "gpg (GnuPG)";
 	break;
       case 13: p = VERSION; break;
       case 17: p = PRINTABLE_OS_NAME; break;
@@ -355,21 +322,12 @@ strusage( int level )
 	break;
       case 1:
       case 40:	p =
-	  #ifdef IS_G10MAINT
-	    _("Usage: gpgm [options] [files] (-h for help)");
-	  #else
 	    _("Usage: gpg [options] [files] (-h for help)");
-	  #endif
 	break;
       case 41:	p =
-	  #ifdef IS_G10MAINT
-	    _("Syntax: gpgm [options] [files]\n"
-	      "GnuPG maintenance utility\n");
-	  #else
 	    _("Syntax: gpg [options] [files]\n"
 	      "sign, check, encrypt or decrypt\n"
 	      "default operation depends on the input data\n");
-	  #endif
 	break;
 
       case 31: p = _("\nSupported algorithms:\n"); break;
@@ -446,11 +404,7 @@ i18n_init(void)
 static void
 wrong_args( const char *text)
 {
-  #ifdef IS_G10MAINT
-    fputs(_("usage: gpgm [options] "),stderr);
-  #else
     fputs(_("usage: gpg [options] "),stderr);
-  #endif
     fputs(text,stderr);
     putc('\n',stderr);
     g10_exit(2);
@@ -532,11 +486,6 @@ main( int argc, char **argv )
 
     trap_unaligned();
     secmem_set_flags( secmem_get_flags() | 2 ); /* suspend warnings */
-  #ifdef IS_G10MAINT
-    secmem_init( 0 );	   /* disable use of secmem */
-    maybe_setuid = 0;
-    log_set_name("gpgm");
-  #else
     /* Please note that we may running SUID(ROOT), so be very CAREFUL
      * when adding any stuff between here and the call to
      * secmem_init()  somewhere after the option parsing
@@ -544,7 +493,6 @@ main( int argc, char **argv )
     log_set_name("gpg");
     secure_random_alloc(); /* put random number into secure memory */
     disable_core_dumps();
-  #endif
     init_signals();
     create_dotlock(NULL); /* register locking cleanup */
     i18n_init();
@@ -600,19 +548,13 @@ main( int argc, char **argv )
 
   #ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess ) {
-      #ifdef IS_G10
 	init_shm_coprocessing(requested_shm_size, 1 );
-      #else
-	init_shm_coprocessing(requested_shm_size, 0 );
-      #endif
     }
   #endif
-  #ifdef IS_G10
     /* initialize the secure memory. */
     secmem_init( 16384 );
     maybe_setuid = 0;
     /* Okay, we are now working under our real uid */
-  #endif
 
     if( default_config )
 	configname = make_filename(opt.homedir, "options", NULL );
@@ -661,7 +603,6 @@ main( int argc, char **argv )
 	  case aDeleteSecretKey: set_cmd( &cmd, aDeleteSecretKey); break;
 	  case aDeleteKey: set_cmd( &cmd, aDeleteKey); break;
 
-	#ifdef IS_G10
 	  case aDetachedSign: detached_sig = 1; set_cmd( &cmd, aSign ); break;
 	  case aSym: set_cmd( &cmd, aSym); break;
 	  case aDecrypt: set_cmd( &cmd, aDecrypt); break;
@@ -674,11 +615,10 @@ main( int argc, char **argv )
 	  case aClearsign: set_cmd( &cmd, aClearsign); break;
 	  case aGenRevoke: set_cmd( &cmd, aGenRevoke); break;
 	  case aVerify: set_cmd( &cmd, aVerify); break;
-	#else
-	  #ifdef MAINTAINER_OPTIONS
-	    case aPrimegen: set_cmd( &cmd, aPrimegen); break;
-	    case aGenRandom: set_cmd( &cmd, aGenRandom); break;
-	  #endif
+	#ifdef MAINTAINER_OPTIONS
+	  case aPrimegen: set_cmd( &cmd, aPrimegen); break;
+	  case aGenRandom: set_cmd( &cmd, aGenRandom); break;
+	#endif
 	  case aPrintMD: set_cmd( &cmd, aPrintMD); break;
 	  case aPrintMDs: set_cmd( &cmd, aPrintMDs); break;
 	  case aListTrustDB: set_cmd( &cmd, aListTrustDB); break;
@@ -686,13 +626,10 @@ main( int argc, char **argv )
 	  case aUpdateTrustDB: set_cmd( &cmd, aUpdateTrustDB); break;
 	  case aFixTrustDB: set_cmd( &cmd, aFixTrustDB); break;
 	  case aListTrustPath: set_cmd( &cmd, aListTrustPath); break;
-	  case aDeArmor: set_cmd( &cmd, aDeArmor); break;
-	  case aEnArmor: set_cmd( &cmd, aEnArmor); break;
+	  case aDeArmor: set_cmd( &cmd, aDeArmor); greeting = 0; break;
+	  case aEnArmor: set_cmd( &cmd, aEnArmor); greeting = 0; break;
 	  case aExportOwnerTrust: set_cmd( &cmd, aExportOwnerTrust); break;
 	  case aImportOwnerTrust: set_cmd( &cmd, aImportOwnerTrust); break;
-	#endif /* IS_G10MAINT */
-
-
 
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
 	  case oOutput: opt.outfile = pargs.r.ret_str; break;
@@ -773,7 +710,6 @@ main( int argc, char **argv )
 	    sl = add_to_strlist( &remusr, pargs.r.ret_str );
 	    sl->flags = 1;
 	    break;
-	#ifdef IS_G10
 	  case oRecipient: /* store the recipient */
 	    add_to_strlist( &remusr, pargs.r.ret_str );
 	    break;
@@ -787,12 +723,6 @@ main( int argc, char **argv )
 	  case oCipherAlgo: def_cipher_string = m_strdup(pargs.r.ret_str); break;
 	  case oDigestAlgo: def_digest_string = m_strdup(pargs.r.ret_str); break;
 	  case oNoSecmemWarn: secmem_set_flags( secmem_get_flags() | 1 ); break;
-	#else
-	  case oCipherAlgo:
-	  case oDigestAlgo:
-	  case oNoSecmemWarn:
-	    break;  /* dummies */
-	#endif
 	  case oCharset:
 	    if( set_native_charset( pargs.r.ret_str ) )
 		log_error(_("%s is not a valid character set\n"),
@@ -824,6 +754,8 @@ main( int argc, char **argv )
 	log_info("NOTE: this is a development version!\n");
       #endif
     }
+    if( opt.batch )
+	tty_batchmode( 1 );
 
     secmem_set_flags( secmem_get_flags() & ~2 ); /* resume warnings */
 
@@ -958,7 +890,6 @@ main( int argc, char **argv )
 	    log_error_f( print_fname_stdin(fname),
 			"store failed: %s\n", g10_errstr(rc) );
 	break;
-    #ifdef IS_G10
       case aSym: /* encrypt the given file only with the symmetric cipher */
 	if( argc > 1 )
 	    wrong_args(_("--symmetric [filename]"));
@@ -1042,8 +973,6 @@ main( int argc, char **argv )
 	    keyedit_menu(fname, locusr, NULL );
 	break;
 
-      #endif /* IS_G10 */
-
       case aDeleteSecretKey:
 	if( argc != 1 )
 	    wrong_args(_("--delete-secret-key username"));
@@ -1086,13 +1015,11 @@ main( int argc, char **argv )
 	    wrong_args(_("-k[v][v][v][c] [userid] [keyring]") );
 	break;
 
-    #ifdef IS_G10
       case aKeygen: /* generate a key (interactive) */
 	if( argc )
 	    wrong_args("--gen-key");
 	generate_keypair();
 	break;
-    #endif
 
       case aFastImport:
       case aImport:
@@ -1133,15 +1060,12 @@ main( int argc, char **argv )
 	free_strlist(sl);
 	break;
 
-    #ifdef IS_G10
       case aGenRevoke:
 	if( argc != 1 )
 	    wrong_args("--gen-revoke user-id");
 	gen_revoke( *argv );
 	break;
-    #endif
 
-    #ifdef IS_G10MAINT
       case aDeArmor:
 	if( argc > 1 )
 	    wrong_args("--dearmor [file]");
@@ -1292,13 +1216,9 @@ main( int argc, char **argv )
 	import_ownertrust( argc? *argv:NULL );
 	break;
 
-     #endif /* IS_G10MAINT */
-
-
       case aListPackets:
 	opt.list_packets=1;
       default:
-	/* fixme: g10maint should do regular maintenace tasks here */
 	if( argc > 1 )
 	    wrong_args(_("[filename]"));
 	/* Issue some output for the unix newbie */
@@ -1351,7 +1271,6 @@ g10_exit( int rc )
 
 
 
-#ifdef IS_G10MAINT
 static void
 print_hex( byte *p, size_t n )
 {
@@ -1451,8 +1370,4 @@ print_mds( const char *fname, int algo )
     if( fp != stdin )
 	fclose(fp);
 }
-
-
-
-#endif /* IS_G10MAINT */
 

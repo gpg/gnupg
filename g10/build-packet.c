@@ -343,7 +343,7 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 	if( is_RSA(sk->pubkey_algo) && sk->version < 4
 				    && !sk->protect.s2k.mode ) {
 	    iobuf_put(a, sk->protect.algo );
-	    iobuf_write(a, sk->protect.iv, 8 );
+	    iobuf_write(a, sk->protect.iv, sk->protect.ivlen );
 	}
 	else {
 	    iobuf_put(a, 0xff );
@@ -355,7 +355,7 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 		iobuf_write(a, sk->protect.s2k.salt, 8 );
 	    if( sk->protect.s2k.mode == 3 )
 		iobuf_put(a, sk->protect.s2k.count );
-	    iobuf_write(a, sk->protect.iv, 8 );
+	    iobuf_write(a, sk->protect.iv, sk->protect.ivlen );
 	}
     }
     else

@@ -163,7 +163,7 @@ import( IOBUF inp, int fast, const char* fname )
 	release_kbnode(keyblock);
 	if( rc )
 	    break;
-	if( !(++count % 100) )
+	if( !(++count % 100) && !opt.quiet )
 	    log_info(_("%lu keys so far processed\n"), count );
     }
     if( rc == -1 )
@@ -171,31 +171,33 @@ import( IOBUF inp, int fast, const char* fname )
     else if( rc && rc != G10ERR_INV_KEYRING )
 	log_error_f( fname, _("read error: %s\n"), g10_errstr(rc));
 
-    log_info(_("Total number processed: %lu\n"), count );
-    if( stats.no_user_id )
-	log_info(_("          w/o user IDs: %lu\n"), stats.no_user_id );
-    if( stats.imported || stats.imported_rsa ) {
-	log_info(_("              imported: %lu"), stats.imported );
-	if( stats.imported_rsa )
-	    fprintf(stderr, "  (RSA: %lu)", stats.imported_rsa );
-	putc('\n', stderr);
+    if( !opt.quiet ) {
+	log_info(_("Total number processed: %lu\n"), count );
+	if( stats.no_user_id )
+	    log_info(_("          w/o user IDs: %lu\n"), stats.no_user_id );
+	if( stats.imported || stats.imported_rsa ) {
+	    log_info(_("              imported: %lu"), stats.imported );
+	    if( stats.imported_rsa )
+		fprintf(stderr, "  (RSA: %lu)", stats.imported_rsa );
+	    putc('\n', stderr);
+	}
+	if( stats.unchanged )
+	    log_info(_("             unchanged: %lu\n"), stats.unchanged );
+	if( stats.n_uids )
+	    log_info(_("          new user IDs: %lu\n"), stats.n_uids );
+	if( stats.n_subk )
+	    log_info(_("           new subkeys: %lu\n"), stats.n_subk );
+	if( stats.n_sigs )
+	    log_info(_("        new signatures: %lu\n"), stats.n_sigs );
+	if( stats.n_revoc )
+	    log_info(_("   new key revocations: %lu\n"), stats.n_revoc );
+	if( stats.secret_read )
+	    log_info(_("      secret keys read: %lu\n"), stats.secret_read );
+	if( stats.secret_imported )
+	    log_info(_("  secret keys imported: %lu\n"), stats.secret_imported );
+	if( stats.secret_dups )
+	    log_info(_(" secret keys unchanged: %lu\n"), stats.secret_dups );
     }
-    if( stats.unchanged )
-	log_info(_("             unchanged: %lu\n"), stats.unchanged );
-    if( stats.n_uids )
-	log_info(_("          new user IDs: %lu\n"), stats.n_uids );
-    if( stats.n_subk )
-	log_info(_("           new subkeys: %lu\n"), stats.n_subk );
-    if( stats.n_sigs )
-	log_info(_("        new signatures: %lu\n"), stats.n_sigs );
-    if( stats.n_revoc )
-	log_info(_("   new key revocations: %lu\n"), stats.n_revoc );
-    if( stats.secret_read )
-	log_info(_("      secret keys read: %lu\n"), stats.secret_read );
-    if( stats.secret_imported )
-	log_info(_("  secret keys imported: %lu\n"), stats.secret_imported );
-    if( stats.secret_dups )
-	log_info(_(" secret keys unchanged: %lu\n"), stats.secret_dups );
 
     return rc;
 }
@@ -553,7 +555,9 @@ import_secret_one( const char *fname, KBNODE keyblock )
 		      _("can't write keyring: %s\n"), g10_errstr(rc) );
 	unlock_keyblock( &kbpos );
 	/* we are ready */
-	log_info_f(fname, _("key %08lX: secret key imported\n"), (ulong)keyid[1]);
+	if( !opt.quiet )
+	    log_info_f(fname, _("key %08lX: secret key imported\n"),
+						      (ulong)keyid[1]);
 	stats.secret_imported++;
     }
     else if( !rc ) { /* we can't merge secret keys */

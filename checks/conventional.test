@@ -2,6 +2,10 @@
 
 . $srcdir/defs.inc || exit 3
 
+# temp. hack cause the format for 128 biut blocksize messages may change
+GNUPG_ENABLE_TWOFISH=1
+export GNUPG_ENABLE_TWOFISH
+
 #info Checking conventional encryption
 for i in plain-2 data-32000 ; do
     echo "Hier spricht HAL" | $srcdir/run-gpg --passphrase-fd 0 -c -o x --yes $i

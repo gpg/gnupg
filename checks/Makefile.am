@@ -18,7 +18,8 @@ TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
 
 DATA_FILES = data-500 data-9000 data-32000 data-80000 plain-large
 
-EXTRA_DIST = defs.inc run-gpg run-gpgm run-gpg.patterns $(TESTS) $(TEST_FILES)
+EXTRA_DIST = defs.inc run-gpg run-gpg.patterns $(TESTS) $(TEST_FILES) \
+	     mkdemodirs signdemokey
 CLEANFILES = prepared.stamp x y yy z out err  $(DATA_FILES) \
 	     plain-1 plain-2 plain-3 options trustdb.gpg *.lock .\#lk* \
 	     pubring.gpg secring.gpg pubring.pkr secring.skr
@@ -27,31 +28,34 @@ CLEANFILES = prepared.stamp x y yy z out err  $(DATA_FILES) \
 
 all-local: prepared.stamp
 
+distclean-local:
+	./mkdemodirs --clean
+
 prepared.stamp: ./pubring.gpg ./secring.gpg ./plain-1 ./plain-2 ./plain-3 \
 		./pubring.pkr ./secring.skr $(DATA_FILES)
 	 echo timestamp >./prepared.stamp
 
 
 ./pubring.gpg: $(srcdir)/pubring.asc
-	 ../g10/gpgm --yes --dearmor -o ./pubring.gpg $(srcdir)/pubring.asc
+	 ../g10/gpg --yes --dearmor -o ./pubring.gpg $(srcdir)/pubring.asc
 
 ./secring.gpg: $(srcdir)/secring.asc
-	 ../g10/gpgm --yes --dearmor -o ./secring.gpg $(srcdir)/secring.asc
+	 ../g10/gpg --yes --dearmor -o ./secring.gpg $(srcdir)/secring.asc
 
 ./pubring.pkr: $(srcdir)/pubring.pkr.asc
-	 ../g10/gpgm --yes --dearmor -o ./pubring.pkr $(srcdir)/pubring.pkr.asc
+	 ../g10/gpg --yes --dearmor -o ./pubring.pkr $(srcdir)/pubring.pkr.asc
 
 ./secring.skr: $(srcdir)/secring.skr.asc
-	 ../g10/gpgm --yes --dearmor -o ./secring.skr $(srcdir)/secring.skr.asc
+	 ../g10/gpg --yes --dearmor -o ./secring.skr $(srcdir)/secring.skr.asc
 
 ./plain-1: $(srcdir)/plain-1o.asc
-	 ../g10/gpgm --yes --dearmor -o ./plain-1 $(srcdir)/plain-1o.asc
+	 ../g10/gpg --yes --dearmor -o ./plain-1 $(srcdir)/plain-1o.asc
 
 ./plain-2: $(srcdir)/plain-2o.asc
-	 ../g10/gpgm --yes --dearmor -o ./plain-2 $(srcdir)/plain-2o.asc
+	 ../g10/gpg --yes --dearmor -o ./plain-2 $(srcdir)/plain-2o.asc
 
 ./plain-3: $(srcdir)/plain-3o.asc
-	 ../g10/gpgm --yes --dearmor -o ./plain-3 $(srcdir)/plain-3o.asc
+	 ../g10/gpg --yes --dearmor -o ./plain-3 $(srcdir)/plain-3o.asc
 
 
 

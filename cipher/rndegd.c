@@ -83,7 +83,10 @@ do_read( int fd, void *buf, size_t nbytes )
 
 
 
-/* fixme: level 1 is not yet handled */
+/* Note: we always use the highest level.
+ * TO boost the performance we may want to add some
+ * additional code for level 1
+ */
 static int
 gather_random( void (*add)(const void*, size_t, int), int requester,
 					  size_t length, int level )

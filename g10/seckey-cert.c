@@ -48,7 +48,6 @@ do_check( PKT_secret_key *sk )
 	u32 keyid[4]; /* 4! because we need two of them */
 	CIPHER_HANDLE cipher_hd=NULL;
 	PKT_secret_key *save_sk;
-	char save_iv[8];
 
 	if( sk->protect.algo == CIPHER_ALGO_NONE )
 	    BUG();
@@ -70,11 +69,9 @@ do_check( PKT_secret_key *sk )
 	cipher_hd = cipher_open( sk->protect.algo,
 				 CIPHER_MODE_AUTO_CFB, 1);
 	cipher_setkey( cipher_hd, dek->key, dek->keylen );
-	cipher_setiv( cipher_hd, NULL );
 	m_free(dek);
 	save_sk = copy_secret_key( NULL, sk );
-	memcpy(save_iv, sk->protect.iv, 8 );
-	cipher_decrypt( cipher_hd, sk->protect.iv, sk->protect.iv, 8 );
+	cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen );
 	csum = 0;
 	if( sk->version >= 4 ) {
 	    int ndata;
@@ -129,7 +126,6 @@ do_check( PKT_secret_key *sk )
 	if( csum != sk->csum ) {
 	    copy_secret_key( sk, save_sk );
 	    free_secret_key( save_sk );
-	    memcpy( sk->protect.iv, save_iv, 8 );
 	    return G10ERR_BAD_PASS;
 	}
 	/* the checksum may fail, so we also check the key itself */
@@ -137,7 +133,6 @@ do_check( PKT_secret_key *sk )
 	if( res ) {
 	    copy_secret_key( sk, save_sk );
 	    free_secret_key( save_sk );
-	    memcpy( sk->protect.iv, save_iv, 8 );
 	    return G10ERR_BAD_PASS;
 	}
 	free_secret_key( save_sk );
@@ -231,8 +226,12 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	    if( cipher_setkey( cipher_hd, dek->key, dek->keylen ) )
 		log_info(_("WARNING: Weak key detected"
 			   " - please change passphrase again.\n"));
-	    cipher_setiv( cipher_hd, NULL );
-	    cipher_encrypt( cipher_hd, sk->protect.iv, sk->protect.iv, 8 );
+	    sk->protect.ivlen = cipher_get_blocksize( sk->protect.algo );
+	    assert( sk->protect.ivlen <= DIM(sk->protect.iv) );
+	    if( sk->protect.ivlen != 8 && sk->protect.ivlen != 16 )
+		BUG(); /* yes, we are very careful */
+	    randomize_buffer(sk->protect.iv, sk->protect.ivlen, 1);
+	    cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen );
 	    if( sk->version >= 4 ) {
 	      #define NMPIS (PUBKEY_MAX_NSKEY - PUBKEY_MAX_NPKEY)
 		byte *bufarr[NMPIS];

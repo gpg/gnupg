@@ -2,8 +2,11 @@
     * Full Twofish support.  It is now statically linked by default.
       The experimental 128 bit version is now disabled.
    ---->   Hmmm, there is an internal conflict in the RFC
+   ---->   For now it is disabled
 
     * Dropped support for the ancient Blowfish160 which is not OpenPGP.
+
+    * Merged gpgm and gpg into one binary.
 
 
 Noteworthy changes in version 0.9.5

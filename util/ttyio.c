@@ -57,6 +57,7 @@ static FILE *ttyfp = NULL;
 
 static int initialized;
 static int last_prompt_len;
+static int batchmode;
 
 #ifdef HAVE_TCGETATTR
 static struct termios termsave;
@@ -108,9 +109,11 @@ init_ttyfp(void)
   #elif defined(__EMX__)
     ttyfp = stdout; /* Fixme: replace by the real functions: see wklib */
   #else
-    ttyfp = fopen("/dev/tty", "r+");
-    if( !ttyfp )
-	log_fatal("cannot open /dev/tty: %s\n", strerror(errno) );
+    ttyfp = batchmode? stderr : fopen("/dev/tty", "r+");
+    if( !ttyfp ) {
+	log_error("cannot open /dev/tty: %s\n", strerror(errno) );
+	exit(2);
+    }
   #endif
   #ifdef HAVE_TCGETATTR
     atexit( cleanup );
@@ -118,6 +121,14 @@ init_ttyfp(void)
     initialized = 1;
 }
 
+int
+tty_batchmode( int onoff )
+{
+    int old = batchmode;
+    if( onoff != -1 )
+	batchmode = onoff;
+    return old;
+}
 
 void
 tty_printf( const char *fmt, ... )
@@ -219,6 +230,11 @@ do_get( const char *prompt, int hidden )
     char *buf;
     byte cbuf[1];
     int c, n, i;
+
+    if( batchmode ) {
+	log_error("Sorry, we are in batchmode - can't get input\n");
+	exit(2);
+    }
 
     if( !initialized )
 	init_ttyfp();
@@ -336,6 +352,8 @@ tty_kill_prompt()
 
     if( !initialized )
 	init_ttyfp();
+    if( batchmode )
+	last_prompt_len = 0;
     if( !last_prompt_len )
 	return;
   #if __MINGW32__

@@ -324,6 +324,8 @@ secmem_free( void *a )
 
     mb = (MEMBLOCK*)((char*)a - ((size_t) &((MEMBLOCK*)0)->u.aligned.c));
     size = mb->size;
+    /* This does not make much sense: probably this memory is held in the
+     * cache. We do it anyway: */
     memset(mb, 0xff, size );
     memset(mb, 0xaa, size );
     memset(mb, 0x55, size );

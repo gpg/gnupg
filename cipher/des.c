@@ -799,7 +799,7 @@ selftest (void)
   /*
    * Triple-DES test  (Do somebody known on official test?)
    *
-   * FIXME: This test doesn't use tripledes_set3keys() !
+   * Note: This test doesn't use tripledes_set3keys() !
    */
   {
     int i;

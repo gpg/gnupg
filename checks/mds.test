@@ -13,7 +13,7 @@ test_one () {
 failed=""
 
 #info Checking message digests
-cat /dev/null | $srcdir/run-gpgm -v --print-mds >y
+cat /dev/null | $srcdir/run-gpg -v --print-mds >y
 test_one "MD5"    "D41D8CD98F00B204E9800998ECF8427E"
 test_one "SHA1"   "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709"
 test_one "RMD160" "9C1185A5C5E9FC54612808977EE8F548B2258D31"
@@ -25,7 +25,7 @@ fi
 
 [ "$failed" != "" ] && error "$failed failed for empty string"
 
-/bin/echo "abcdefghijklmnopqrstuvwxyz\c" | $srcdir/run-gpgm --print-mds >y
+/bin/echo "abcdefghijklmnopqrstuvwxyz\c" | $srcdir/run-gpg --print-mds >y
 test_one "MD5"    "C3FCD3D76192E4007DFB496CCA67E13B"
 test_one "SHA1"   "32D10C7B8CF96570CA04CE37F2A19D84240D3A89"
 test_one "RMD160" "F71C27109C692C1B56BBDCEB5B9D2865B3708DBC"

@@ -1,3 +1,8 @@
+Sun Apr 18 10:11:28 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* mpih-mul.c (mpihelp_mul_n): Fixed use of memory region.
+	(mpihelp_mul): Ditto.
+
 Wed Apr  7 20:51:39 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* Makefile.am: Explicit rules to invoke cpp on *.S

@@ -702,6 +702,8 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
     if( retctx ) /* caller wants the context */
 	*retctx = ctx;
     else {
+	/* Hmmm, why not get_pubkey-end here?? */
+	enum_keyblocks( 2, &ctx->kbpos, NULL ); /* close */
 	for(n=0; n < ctx->nitems; n++ )
 	    m_free( ctx->items[n].namebuf );
 	m_free( ctx );

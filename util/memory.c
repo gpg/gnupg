@@ -123,19 +123,20 @@ static void check_allmem( const char *info );
 static void
 add_entry( byte *p, unsigned n, int mode, const char *info, const char *by )
 {
-    unsigned idx;
+    unsigned index;
     struct memtbl_entry *e;
     struct info_entry *ie;
 
     if( memtbl_len < memtbl_size  )
-	idx = memtbl_len++;
+	index = memtbl_len++;
     else {
+	struct memtbl_entry *e;
 	/* look for a used entry in the table.	We take the first one,
 	 * so that freed entries remain as long as possible in the table
 	 * (free appends a new one)
 	 */
 	if( (e = memtbl_unused) ) {
-	    idx = e - memtbl;
+	    index = e - memtbl;
 	    memtbl_unused = e->next;
 	    e->next = NULL;
 	}
@@ -144,33 +145,32 @@ add_entry( byte *p, unsigned n, int mode, const char *info, const char *by )
 		memtbl_size = 100;
 		if( !(memtbl = calloc( memtbl_size, sizeof *memtbl )) )
 		    membug("memory debug table malloc failed\n");
-		idx = 0;
+		index = 0;
 		memtbl_len = 1;
 		atexit( dump_table_at_exit );
 	    }
 	    else { /* realloc */
-		unsigned nn = memtbl_size / 4; /* enlarge by 25% */
-		if(!(memtbl = realloc(memtbl, (memtbl_size+nn)*sizeof *memtbl)))
+		unsigned n = memtbl_size / 4; /* enlarge by 25% */
+		if(!(memtbl = realloc(memtbl, (memtbl_size+n)*sizeof *memtbl)))
 		    membug("memory debug table realloc failed\n");
 		memset(memtbl+memtbl_size, 0, n*sizeof *memtbl );
-		memtbl_size += nn;
-		idx = memtbl_len++;
+		memtbl_size += n;
+		index = memtbl_len++;
 	    }
 	}
     }
-    e = memtbl+idx;
+    e = memtbl+index;
     if( e->inuse )
-	membug("Ooops: entry %u is flagged as in use\n", idx);
+	membug("Ooops: entry %u is flagged as in use\n", index);
     e->user_p = p + 4;
     e->user_n = n;
     e->count++;
     if( e->next )
 	membug("Ooops: entry is in free entry list\n");
     /* do we already have this info string */
-    for( ie = info_strings[info_hash(info)]; ie; ie = ie->next ) {
+    for( ie = info_strings[info_hash(info)]; ie; ie = ie->next )
 	if( ie->info == info )
 	    break;
-    }
     if( !ie ) { /* no: make a new entry */
 	if( !(ie = malloc( sizeof *ie )) )
 	    membug("can't allocate info entry\n");
@@ -184,9 +184,9 @@ add_entry( byte *p, unsigned n, int mode, const char *info, const char *by )
     e->inuse = 1;
 
     /* put the index at the start of the memory */
-    p[0] = idx;
-    p[1] = idx >> 8 ;
-    p[2] = idx >> 16 ;
+    p[0] = index;
+    p[1] = index >> 8 ;
+    p[2] = index >> 16 ;
     p[3] = mode? MAGIC_SEC_BYTE : MAGIC_NOR_BYTE  ;
     if( DBG_MEMORY )
 	log_debug( "%s allocates %u bytes using %s\n", info, e->user_n, by );

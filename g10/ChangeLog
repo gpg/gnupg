@@ -1,3 +1,28 @@
+Sun Apr 18 10:11:28 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* seckey-cert.c (do_check): Use real IV instead of a 0 one, so that
+	it works even if the length of the IV doesn't match the blocksize.
+	Removed the save_iv stuff.
+	(protect_secret_key): Likewise.  Create the IV here.
+	* packet.h (PKT_secret_key): Increased size of IV field and add a
+	ivlen field.
+	* parse-packet.c (parse_key): Use the len protect.ivlen.
+	* build-packet.c (do_secret_key). Ditto.
+
+	* getkey.c (key_byname): Close keyblocks.
+
+	* Makefile.am (gpgm): Removed this
+	* g10.c: Merged gpg and gpgm
+
+	* import.c (import): Utilize option quiet.
+	* tdbio.c (tdbio_set_dbname): Ditto.
+	* ringedit.c (add_keyblock_resource,keyring_copy): Ditto.
+
+	* keyedit.c (sign_uids): Add some batch support.
+
+	* g10.c (main): add call to tty_batchmode.
+
 Fri Apr  9 12:26:25 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* status.c (write_status_text): Some more status codes.

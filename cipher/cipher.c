@@ -83,6 +83,7 @@ setup_cipher_table(void)
     int i;
 
     i = 0;
+  if( getenv("GNUPG_ENABLE_TWOFISH") ) {
     cipher_table[i].algo = CIPHER_ALGO_TWOFISH;
     cipher_table[i].name = twofish_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
@@ -94,6 +95,7 @@ setup_cipher_table(void)
     if( !cipher_table[i].name )
 	BUG();
     i++;
+  }
     cipher_table[i].algo = CIPHER_ALGO_BLOWFISH;
     cipher_table[i].name = blowfish_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
@@ -368,12 +370,17 @@ cipher_setkey( CIPHER_HANDLE c, byte *key, unsigned keylen )
 
 
 void
-cipher_setiv( CIPHER_HANDLE c, const byte *iv )
+cipher_setiv( CIPHER_HANDLE c, const byte *iv, unsigned ivlen )
 {
-    if( iv )
-	memcpy( c->iv, iv, c->blocksize );
-    else
-	memset( c->iv, 0, c->blocksize );
+    memset( c->iv, 0, c->blocksize );
+    if( iv ) {
+	if( ivlen != c->blocksize )
+	    log_info("WARNING: cipher_setiv: ivlen=%u blklen=%u\n",
+					     ivlen, c->blocksize );
+	if( ivlen > c->blocksize )
+	    ivlen = c->blocksize;
+	memcpy( c->iv, iv, ivlen );
+    }
     c->unused = 0;
 }
 

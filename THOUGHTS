@@ -15,22 +15,6 @@ AM_CONDITIONAL(WITH_EGD, $perl_present)
 and add util/egd to the top-level Makefile directory list inside a WITH_EGD
 conditional.
 
-
-
-====
-
-	/* we still have these if a signed signed more than one
-	 * user ID.  I don't think that is makes sense to sign
-	 * more than one user ID; an exception might be a user ID
-	 * which is to be removed in near future.  Anyway it is
-	 * always good to sign only those user ID which are
-	 * unlikely to change.	It might be good to insert a
-	 * user ID which does not contain an email address and
-	 * mark this one with a special signature flag or let
-	 * sign_key() suggest a user ID w/o an email address
-	 */
-
-
     * What shall we do if we have a valid subkey revocation certificate
       but no subkey binding?  Is this a valid but revoked key?
 

@@ -458,8 +458,8 @@ md_digest_length( int algo )
 }
 
 
-/* fixme: add a mode to enumerate the OIDs
- *	  to make g10/sig-check.c more portable */
+/* Hmmm: add a mode to enumerate the OIDs
+ *	to make g10/sig-check.c more portable */
 const byte *
 md_asn_oid( int algo, size_t *asnlen, size_t *mdlen )
 {

@@ -37,7 +37,7 @@
 #endif
 
 /****************
- * fixme: It was a bad idea to use the number of limbs to allocate
+ * Note:  It was a bad idea to use the number of limbs to allocate
  *	  because on a alpha the limbs are large but we normally need
  *	  integers of n bits - So we should chnage this to bits (or bytes).
  *
@@ -159,7 +159,11 @@ mpi_resize( MPI a, unsigned nlimbs )
 {
     if( nlimbs <= a->alloced )
 	return; /* no need to do it */
-    /* FIXME: add realloc_secure based on a->secure */
+    /* Note: a->secure is not used - instead the realloc functions
+     * take care of it. Maybe we should drop a->secure completely
+     * and rely on a mpi_is_secure function, which would be
+     * a wrapper around m_is_secure
+     */
   #ifdef M_DEBUG
     if( a->d )
 	a->d = m_debug_realloc(a->d, nlimbs * sizeof(mpi_limb_t), info );

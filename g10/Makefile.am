@@ -7,7 +7,7 @@ LDFLAGS = @LDFLAGS@ @DYNLINK_LDFLAGS@
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
 #noinst_PROGRAMS = gpgd
-bin_PROGRAMS = gpg gpgm
+bin_PROGRAMS = gpg
 
 common_source =  \
 	      build-packet.c	\
@@ -64,11 +64,8 @@ gpg_SOURCES  = g10.c		\
 	      verify.c		\
 	      decrypt.c 	\
 	      keyedit.c 	\
+	      dearmor.c 	\
 	      keygen.c
-
-
-gpgm_SOURCES = dearmor.c     \
-	      $(common_source)
 
 #gpgd_SOURCES = gpgd.c \
 #	       ks-proto.h \
@@ -80,11 +77,6 @@ gpgm_SOURCES = dearmor.c     \
 
 LDADD =  $(needed_libs) @ZLIBS@ @INTLLIBS@
 
-gpgm_LDADD = g10maint.o $(LDADD)
-
-g10maint.o: $(srcdir)/g10.c
-	$(COMPILE) -DIS_G10MAINT  -o g10maint.o -c $(srcdir)/g10.c
-
 
 $(PROGRAMS): $(needed_libs)
 
@@ -92,6 +84,6 @@ $(PROGRAMS): $(needed_libs)
 install-data-local:
 	$(mkinstalldirs) $(pkgdatadir)
 	$(INSTALL_DATA) $(srcdir)/options.skel $(pkgdatadir)/options.skel
-
+	rm $(bindir)/gpgm || ln -s $(bindir)/gpgm gpg
 
 

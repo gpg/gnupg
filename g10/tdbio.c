@@ -443,7 +443,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 		  #endif
 			log_fatal( _("%s: can't create directory: %s\n"),
 						    fname,  strerror(errno) );
-		    else
+		    else if( !opt.quiet )
 			log_info( _("%s: directory created\n"), fname );
 		    copy_options_file( fname );
 		}
@@ -489,7 +489,8 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    if( tdbio_read_record( 0, &rec, RECTYPE_VER ) )
 		log_fatal( _("%s: invalid trustdb created\n"), db_name );
 
-	    log_info(_("%s: trustdb created\n"), db_name);
+	    if( !opt.quiet )
+		log_info(_("%s: trustdb created\n"), db_name);
 
 	    return 0;
 	}

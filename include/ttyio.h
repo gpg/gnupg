@@ -1,5 +1,5 @@
 /* ttyio.h
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -20,6 +20,7 @@
 #ifndef G10_TTYIO_H
 #define G10_TTYIO_H
 
+int tty_batchmode( int onoff );
 void tty_printf( const char *fmt, ... );
 void tty_print_string( byte *p, size_t n );
 char *tty_get( const char *prompt );

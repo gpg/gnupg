@@ -1,19 +1,14 @@
 =head1 NAME
 
-gpg, gpgm - GNU Privacy Guard
+gpg - GNU Privacy Guard
 
 =head1 SYNOPSIS
 
 B<gpg> [--homedir name] [--options file] [options] command [args]
 
-B<gpgm> [--homedir name] [--options file] [options] command [args]
-
 =head1 DESCRIPTION
 
-B<gpg> is the main program for the GnuPG system. B<gpgm> is a maintenance
-tool which has some commands B<gpg> does not have; it is there because
-it does not handle sensitive data and therefore has no need to allocate
-secure memory.  Both programs may be merged in the future.
+B<gpg> is the main program for the GnuPG system.
 
 =head1 COMMANDS
 
@@ -219,12 +214,12 @@ B<--recv-keys> I<key_IDs>
 
 B<--export-ownertrust>
     List the assigned ownertrust values in ASCII format
-    for backup purposes [B<gpgm> only].
+    for backup purposes
 
 B<--import-ownertrust> [I<filename>]
     Update the trustdb with the ownertrust values stored
     in I<filename> (or stdin if not given); existing
-    values will be overwritten. [B<gpgm> only].
+    values will be overwritten.
 
 =head1 OPTIONS
 
@@ -552,7 +547,7 @@ F</usr[/local]/lib/gnupg/>  Default location for extensions
 
 =head1 SEE ALSO
 
-gpg(1)  gpgm(1)
+gpg(1)
 
 
 =head1 WARNINGS

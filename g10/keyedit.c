@@ -306,8 +306,11 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 	    tty_printf(
 		  _("The signature will be marked as non-exportable.\n\n"));
 
-	if( !cpr_get_answer_is_yes("sign_uid.okay", _("Really sign? ")) )
-	    continue;;
+
+	if( opt.batch && opt.answer_yes )
+	    ;
+	else if( !cpr_get_answer_is_yes("sign_uid.okay", _("Really sign? ")) )
+	    continue;
 	/* now we can sign the user ids */
       reloop: /* (must use this, because we are modifing the list) */
 	primary_pk = NULL;

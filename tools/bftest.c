@@ -97,7 +97,7 @@ main(int argc, char **argv)
 
     hd = cipher_open( algo, CIPHER_MODE_CFB, 0 );
     cipher_setkey( hd, *argv, strlen(*argv) );
-    cipher_setiv( hd, NULL );
+    cipher_setiv( hd, NULL, 0 );
     while( (n = fread( buf, 1, size, stdin )) > 0 ) {
 	if( encode )
 	    cipher_encrypt( hd, buf, buf, n );

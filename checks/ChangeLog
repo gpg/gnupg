@@ -1,3 +1,9 @@
+Sun Apr 18 10:11:28 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* mkdemodirs: New
+	* signdemokey: New.
+	* Makefile.am (distclean-local): New.
+
 Wed Mar 17 13:09:03 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* mds.test: replaced the "echo -n"

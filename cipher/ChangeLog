@@ -1,3 +1,13 @@
+Sun Apr 18 10:11:28 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* cipher.c (cipher_setiv): Add ivlen arg, changed all callers.
+
+	* random.c (randomize_buffer): alway use secure memory because
+	we can't use m_is_secure() on a statically allocated buffer.
+
+	* twofish.c: Replaced some macros by a loop to reduce text size.
+	* Makefile.am (twofish): No more need for sed editing.
+
 Fri Apr  9 12:26:25 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* cipher.c (cipher_open): Reversed the changes for AUTO_CFB.

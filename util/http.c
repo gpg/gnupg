@@ -270,7 +270,7 @@ do_parse_uri( PARSED_URI uri, int only_local_part )
     if( !p || !*p ) /* we don't have a path */
 	return 0; /* and this is okay */
 
-    /* fixme: here we have to check params */
+    /* todo: here we have to check params */
 
     /* do we have a query part */
     if( (p2 = strchr( p, '?' )) )
@@ -463,7 +463,7 @@ build_rel_path( PARSED_URI uri )
 
     /* count the needed space */
     n = insert_escapes( NULL, uri->path, "%;?&" );
-    /* fixme: add params */
+    /* todo: build params */
     for( r=uri->query; r; r = r->next ) {
 	n++; /* '?'/'&' */
 	n += insert_escapes( NULL, r->name, "%;?&=" );
@@ -476,13 +476,13 @@ build_rel_path( PARSED_URI uri )
     p = rel_path = m_alloc( n );
     n = insert_escapes( p, uri->path, "%;?&" );
     p += n;
-    /* fixme: add params */
+    /* todo: add params */
     for( r=uri->query; r; r = r->next ) {
 	*p++ = r == uri->query? '?':'&';
 	n = insert_escapes( p, r->name, "%;?&=" );
 	p += n;
 	*p++ = '=';
-	/* fixme: use valuelen */
+	/* todo: use valuelen */
 	n = insert_escapes( p, r->value, "%;?&=" );
 	p += n;
     }
@@ -526,7 +526,7 @@ parse_response( HTTP_HD hd )
     if( !p2 )
 	return 0; /* assume http 0.9 */
     p = p2;
-    /* fixme: add HTTP version number check here */
+    /* todo: add HTTP version number check here */
     if( (p2 = strpbrk( p, " \t" ) ) )
 	*p2++ = 0;
     if( !isdigit(p[0]) || !isdigit(p[1]) || !isdigit(p[2]) || p[3] ) {

@@ -1,6 +1,5 @@
 /* mpihelp-mul.c  -  MPI helper functions
- *	Copyright (C) 1998 Free Software Foundation, Inc.
- *	Copyright (C) 1994, 1996 Free Software Foundation, Inc.
+ * Copyright (C) 1994, 1996, 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -346,14 +345,15 @@ mpih_sqr_n( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t size, mpi_ptr_t tspace)
 void
 mpihelp_mul_n( mpi_ptr_t prodp, mpi_ptr_t up, mpi_ptr_t vp, mpi_size_t size)
 {
-    /* FIXME: mpi_alloc_limb_space, secure arg is wrong! */
+    int secure;
 
     if( up == vp ) {
 	if( size < KARATSUBA_THRESHOLD )
 	    mpih_sqr_n_basecase( prodp, up, size );
 	else {
 	    mpi_ptr_t tspace;
-	    tspace = mpi_alloc_limb_space( 2 * size, 0 );
+	    secure = m_is_secure( up );
+	    tspace = mpi_alloc_limb_space( 2 * size, secure );
 	    mpih_sqr_n( prodp, up, size, tspace );
 	    mpi_free_limb_space( tspace );
 	}
@@ -363,7 +363,8 @@ mpihelp_mul_n( mpi_ptr_t prodp, mpi_ptr_t up, mpi_ptr_t vp, mpi_size_t size)
 	    mul_n_basecase( prodp, up, vp, size );
 	else {
 	    mpi_ptr_t tspace;
-	    tspace = mpi_alloc_limb_space( 2 * size, 0 );
+	    secure = m_is_secure( up ) || m_is_secure( vp );
+	    tspace = mpi_alloc_limb_space( 2 * size, secure );
 	    mul_n (prodp, up, vp, size, tspace);
 	    mpi_free_limb_space( tspace );
 	}
@@ -436,16 +437,16 @@ mpihelp_mul( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t usize,
 	return cy;
     }
 
-    /* FIXME: mpi_alloc_limb_space, secure arg is wrong! */
-    tspace = mpi_alloc_limb_space( 2 * vsize, 0 );
+    tspace = mpi_alloc_limb_space( 2 * vsize,
+				   m_is_secure( up ) || m_is_secure( vp ) );
     MPN_MUL_N_RECURSE( prodp, up, vp, vsize, tspace );
 
     prodp += vsize;
     up += vsize;
     usize -= vsize;
     if( usize >= vsize ) {
-	/* FIXME: mpi_alloc_limb_space, secure arg is wrong! */
-	mpi_ptr_t tp = mpi_alloc_limb_space( 2 * vsize, 0 );
+	mpi_ptr_t tp = mpi_alloc_limb_space( 2 * vsize, m_is_secure( up )
+							|| m_is_secure( vp ) );
 	do {
 	    MPN_MUL_N_RECURSE( tp, up, vp, vsize, tspace );
 	    cy = mpihelp_add_n( prodp, prodp, tp, vsize );

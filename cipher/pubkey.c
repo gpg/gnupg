@@ -425,8 +425,6 @@ pubkey_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
 {
     int i, rc;
 
-    /* FIXME: check that data fits into the key (in xxx_encrypt)*/
-
     if( DBG_CIPHER ) {
 	log_debug("pubkey_encrypt: algo=%d\n", algo );
 	for(i=0; i < pubkey_get_npkey(algo); i++ )

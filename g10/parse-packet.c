@@ -1,5 +1,5 @@
 /* parse-packet.c  - read packets
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1310,19 +1310,33 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		    printf(  "\tprotect algo: %d  (hash algo: %d)\n",
 			 sk->protect.algo, sk->protect.s2k.hash_algo );
 	    }
-	    if( pktlen < 8 ) {
+	    /* It is really ugly that we don't know the size
+	     * of the IV here in cases we are not aware of the algorithm.
+	     * so a
+	     *	 sk->protect.ivlen = cipher_get_blocksize(sk->protect.algo);
+	     * won't work.  The only solution I see is to hardwire it here.
+	     */
+	    switch( sk->protect.algo ) {
+	      case 7: case 8: case 9: /* reserved for AES */
+	      case 10: /* Twofish */
+		sk->protect.ivlen = 16;
+		break;
+	      default:
+		sk->protect.ivlen = 8;
+	    }
+	    if( pktlen < sk->protect.ivlen ) {
 		rc = G10ERR_INVALID_PACKET;
 		goto leave;
 	    }
-	    for(i=0; i < 8 && pktlen; i++, pktlen-- )
+	    for(i=0; i < sk->protect.ivlen && pktlen; i++, pktlen-- )
 		temp[i] = iobuf_get_noeof(inp);
 	    if( list_mode ) {
 		printf(  "\tprotect IV: ");
-		for(i=0; i < 8; i++ )
+		for(i=0; i < sk->protect.ivlen; i++ )
 		    printf(" %02x", temp[i] );
 		putchar('\n');
 	    }
-	    memcpy(sk->protect.iv, temp, 8 );
+	    memcpy(sk->protect.iv, temp, sk->protect.ivlen );
 	}
 	else
 	    sk->is_protected = 0;
@@ -1330,7 +1344,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	 * If the user is so careless, not to protect his secret key,
 	 * we can assume, that he operates an open system :=(.
 	 * So we put the key into secure memory when we unprotect it. */
-	if( is_v4 && sk->is_protected ){
+	if( is_v4 && sk->is_protected ) {
 	    /* ugly; the length is encrypted too, so we read all
 	     * stuff up to the end of the packet into the first
 	     * skey element */
@@ -1539,14 +1553,14 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
     ed->len = pktlen;
     ed->buf = NULL;
     ed->new_ctb = new_ctb;
-    if( pktlen && pktlen < 10 ) {
+    if( pktlen && pktlen < 10 ) { /* actually this is blocksize+2 */
 	log_error("packet(%d) too short\n", pkttype);
 	skip_rest(inp, pktlen);
 	goto leave;
     }
     if( list_mode ) {
 	if( pktlen )
-	    printf(":encrypted data packet:\n\tlength: %lu\n", pktlen-10);
+	    printf(":encrypted data packet:\n\tlength: %lu\n", pktlen);
 	else
 	    printf(":encrypted data packet:\n\tlength: unknown\n");
     }
