@@ -1,3 +1,11 @@
+2005-01-18  Werner Koch  <wk@g10code.com>
+
+	* gpgkeys_curl.c: s/MAX_PATH/URLMAX_PATH/g to avoid a clash with
+	the W32 defined macro.  Removed unneeded initialization of static
+	variables.
+	* gpgkeys_http.c: Ditto.
+	* ksutil.h: s/MAX_PATH/URLMAX_PATH/.
+
 2005-01-17  David Shaw  <dshaw@grover.jabberwocky.com>
 
 	* gpgkeys_curl.c (main): Only allow specified protocols to use the

@@ -36,9 +36,10 @@
 #define MAX_AUTH     128
 #define MAX_HOST      80
 #define MAX_PORT      10
-#define MAX_PATH    1024
+#define URLMAX_PATH 1024
 #define MAX_PROXY    128
-#define MAX_URL (MAX_SCHEME+1+3+MAX_AUTH+1+1+MAX_HOST+1+1+MAX_PORT+1+1+MAX_PATH+1+50)
+#define MAX_URL     (MAX_SCHEME+1+3+MAX_AUTH+1+1+MAX_HOST+1+1 \
+                     +MAX_PORT+1+1+URLMAX_PATH+1+50)
 
 #define STRINGIFY(x) #x
 #define MKSTRING(x) STRINGIFY(x)

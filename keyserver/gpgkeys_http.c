@@ -38,8 +38,12 @@ extern int optind;
 
 static int verbose=0;
 static unsigned int http_flags=0;
-static char auth[MAX_AUTH+1]={'\0'},host[MAX_HOST+1]={'\0'},proxy[MAX_PROXY+1]={'\0'},port[MAX_PORT+1]={'\0'},path[MAX_PATH+1]={'\0'};
-static FILE *input=NULL,*output=NULL,*console=NULL;
+static char auth[MAX_AUTH+1];
+static char host[MAX_HOST+1];
+static char proxy[MAX_PROXY+1];
+static char port[MAX_PORT+1];
+static char path[URLMAX_PATH+1];
+static FILE *input,*output,*console;
 
 #ifdef __riscos__
 #define HTTP_PROXY_ENV           "GnuPG$HttpProxy"
@@ -231,9 +235,9 @@ main(int argc,char *argv[])
 	  continue;
 	}
 
-      if(sscanf(line,"PATH %" MKSTRING(MAX_PATH) "s\n",path)==1)
+      if(sscanf(line,"PATH %" MKSTRING(URLMAX_PATH) "s\n",path)==1)
 	{
-	  path[MAX_PATH]='\0';
+	  path[URLMAX_PATH]='\0';
 	  continue;
 	}
 
