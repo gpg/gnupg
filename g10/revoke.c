@@ -130,7 +130,7 @@ gen_revoke( const char *uname )
     tty_printf("\nsec  %4u%c/%08lX %s   ",
 	      nbits_from_sk( sk ),
 	      pubkey_letter( sk->pubkey_algo ),
-	      sk_keyid[1], datestr_from_sk(sk) );
+	      (ulong)sk_keyid[1], datestr_from_sk(sk) );
     {
 	size_t n;
 	char *p = get_user_id( sk_keyid, &n );

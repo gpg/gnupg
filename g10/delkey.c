@@ -120,12 +120,12 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
 	    tty_printf("sec  %4u%c/%08lX %s   ",
 		      nbits_from_sk( sk ),
 		      pubkey_letter( sk->pubkey_algo ),
-		      keyid[1], datestr_from_sk(sk) );
+		      (ulong)keyid[1], datestr_from_sk(sk) );
 	else
 	    tty_printf("pub  %4u%c/%08lX %s   ",
 		      nbits_from_pk( pk ),
 		      pubkey_letter( pk->pubkey_algo ),
-		      keyid[1], datestr_from_pk(pk) );
+		      (ulong)keyid[1], datestr_from_pk(pk) );
 	p = get_user_id( keyid, &n );
 	tty_print_utf8_string( p, n );
 	m_free(p);

@@ -308,7 +308,7 @@ do_get( const char *prompt, int hidden )
 	init_ttyfp();
 
     last_prompt_len = 0;
-    tty_printf( prompt );
+    tty_printf( "%s", prompt );
     buf = m_alloc(n=50);
     i = 0;
 

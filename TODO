@@ -56,6 +56,12 @@
   * Replace the printing of the user name by [self-signature] when
     appropriate so that a key listing does not get clobbered.
 
+  * "Michael T. Babcock" <mbabcock@fibrespeed.net> suggested to write
+    an even log so that other software can display a key history or
+    alike with GnuPG results.  This should be connected to the keyrings.
+
+  * Show whether a signature is exportable or not.  In --edit-key and
+    in --with-colon listing?
 
 Scheduled for 1.1
 -----------------

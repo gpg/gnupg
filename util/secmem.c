@@ -42,6 +42,11 @@
 #if defined(MAP_ANON) && !defined(MAP_ANONYMOUS)
   #define MAP_ANONYMOUS MAP_ANON
 #endif
+/* It seems that Slackware 7.1 does not know about EPERM */
+#if !defined(EPERM) && defined(ENOMEM)
+  #define EPERM  ENOMEM
+#endif
+
 
 #define DEFAULT_POOLSIZE 16384
 

@@ -1,3 +1,12 @@
+2001-05-25  Werner Koch  <wk@gnupg.org>
+
+	* ttyio.c (do_get): Fixed a serious format string bug.  Thanks to
+	fish stiqz.
+
+2001-05-23  Werner Koch  <wk@gnupg.org>
+
+	* secmem.c (EPERM): Try to work around a Slackware problem.
+
 2001-05-05  Werner Koch  <wk@gnupg.org>
 
 	* http.c (http_start_data): Flush before writing.

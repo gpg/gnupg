@@ -1,3 +1,16 @@
+2001-05-25  Werner Koch  <wk@gnupg.org>
+
+	* revoke.c (gen_revoke): Add a cast to a tty_printf arg.
+	* delkey.c (do_delete_key): Ditto.
+	* keyedit.c (print_and_check_one_sig): Ditto.
+	(ask_revoke_sig): Ditto.
+	(menu_revsig): Ditto.
+	(check_all_keysigs): Removed unused arg.
+
+2001-05-23  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (opts): Typo fix by Robert C. Ames.
+
 2001-05-06  Werner Koch  <wk@gnupg.org>
 
 	* revoke.c: Small typo fix

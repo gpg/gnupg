@@ -1,3 +1,6 @@
+
+    * Security fix for a format string bug in the tty code.
+
 Noteworthy changes in version 1.0.5 (2001-04-29)
 ------------------------------------------------
 

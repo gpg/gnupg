@@ -147,7 +147,7 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
     if( sigrc != '?' || print_without_key ) {
 	tty_printf("%s%c       %08lX %s   ",
 		is_rev? "rev":"sig",
-		sigrc, sig->keyid[1], datestr_from_sig(sig));
+		sigrc, (ulong)sig->keyid[1], datestr_from_sig(sig));
 	if( sigrc == '%' )
 	    tty_printf("[%s] ", g10_errstr(rc) );
 	else if( sigrc == '?' )
@@ -218,7 +218,7 @@ check_all_keysigs( KBNODE keyblock, int only_selected )
     if( !has_selfsig )
 	mis_selfsig++;
     if( inv_sigs == 1 )
-	tty_printf(_("1 bad signature\n"), inv_sigs );
+	tty_printf(_("1 bad signature\n") );
     else if( inv_sigs )
 	tty_printf(_("%d bad signatures\n"), inv_sigs );
     if( no_key == 1 )
@@ -1797,7 +1797,7 @@ ask_revoke_sig( KBNODE keyblock, KBNODE node )
     tty_print_utf8_string( unode->pkt->pkt.user_id->name,
 			   unode->pkt->pkt.user_id->len );
     tty_printf(_("\"\nsigned with your key %08lX at %s\n"),
-		sig->keyid[1], datestr_from_sig(sig) );
+		(ulong)sig->keyid[1], datestr_from_sig(sig) );
 
     if( cpr_get_answer_is_yes("ask_revoke_sig.one",
 	 _("Create a revocation certificate for this signature? (y/N)")) ) {
@@ -1839,12 +1839,12 @@ menu_revsig( KBNODE keyblock )
 		     !seckey_available( sig->keyid )  ) ) {
 	    if( (sig->sig_class&~3) == 0x10 ) {
 		tty_printf(_("   signed by %08lX at %s\n"),
-			    sig->keyid[1], datestr_from_sig(sig) );
+			    (ulong)sig->keyid[1], datestr_from_sig(sig) );
 		node->flag |= NODFLG_SELSIG;
 	    }
 	    else if( sig->sig_class == 0x30 ) {
 		tty_printf(_("   revoked by %08lX at %s\n"),
-			    sig->keyid[1], datestr_from_sig(sig) );
+			    (ulong)sig->keyid[1], datestr_from_sig(sig) );
 	    }
 	}
     }
@@ -1874,7 +1874,7 @@ menu_revsig( KBNODE keyblock )
 	else if( node->pkt->pkttype == PKT_SIGNATURE ) {
 	    sig = node->pkt->pkt.signature;
 	    tty_printf(_("   signed by %08lX at %s\n"),
-			    sig->keyid[1], datestr_from_sig(sig) );
+			    (ulong)sig->keyid[1], datestr_from_sig(sig) );
 	}
     }
     if( !any )

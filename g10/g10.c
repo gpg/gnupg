@@ -307,7 +307,7 @@ static ARGPARSE_OPTS opts[] = {
     { oCompletesNeeded, "completes-needed", 1, "@"},
     { oMarginalsNeeded, "marginals-needed", 1, "@"},
     { oMaxCertDepth,	"max-cert-depth", 1, "@" },
-    { oTrustedKey, "trusted-key", 2, N_("|KEYID|ulimately trust this key")},
+    { oTrustedKey, "trusted-key", 2, N_("|KEYID|ultimately trust this key")},
     { oLoadExtension, "load-extension" ,2, N_("|FILE|load extension module FILE")},
     { oRFC1991, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
     { oOpenPGP, "openpgp", 0, N_("set all packet, cipher and digest options to OpenPGP behavior")},

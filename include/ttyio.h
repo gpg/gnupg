@@ -21,7 +21,11 @@
 #define G10_TTYIO_H
 
 int tty_batchmode( int onoff );
-void tty_printf( const char *fmt, ... );
+#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
+ void tty_printf (const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
+#else
+ void tty_printf  const char *fmt, ... );
+#endif
 void tty_print_string( byte *p, size_t n );
 void tty_print_utf8_string( byte *p, size_t n );
 void tty_print_utf8_string2( byte *p, size_t n, size_t max_n );
