@@ -3328,22 +3328,31 @@ menu_set_keyserver_url (const char *url,
 	  if ( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
 	       && (uid && (sig->sig_class&~3) == 0x10) )
 	    {
+	      char *user=utf8_to_native(uid->name,strlen(uid->name),0);
 	      if( sig->version < 4 )
-		{
-		  char *user=utf8_to_native(uid->name,strlen(uid->name),0);
-
-		  log_info(_("skipping v3 self-signature on user id \"%s\"\n"),
-			   user);
-		  m_free(user);
-		}
+		log_info(_("skipping v3 self-signature on user id \"%s\"\n"),
+			 user);
 	      else
 		{
-		  /* This is a selfsignature which is to be replaced 
+		  /* This is a selfsignature which is to be replaced
 		   * We have to ignore v3 signatures because they are
-		   * not able to carry the preferences */
+		   * not able to carry the subpacket. */
 		  PKT_signature *newsig;
 		  PACKET *newpkt;
 		  int rc;
+		  const byte *p;
+		  size_t plen;
+
+		  p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_PREF_KS,&plen);
+		  if(p && plen)
+		    {
+		      tty_printf("Current preferred keyserver for user"
+				 " ID \"%s\": %.*s\n",user,plen,p);
+		      if(!cpr_get_answer_is_yes("keyedit.confirm_keyserver",
+						_("Are you sure you want"
+						  " to replace it? (y/N) ")))
+			continue;
+		    }
 
 		  rc = update_keysig_packet (&newsig, sig,
 					     main_pk, uid, NULL,
@@ -3367,6 +3376,8 @@ menu_set_keyserver_url (const char *url,
 		  node->pkt = newpkt;
 		  modified = 1;
 		}
+
+	      m_free(user);
 	    }
 	}
     }
