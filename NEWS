@@ -19,6 +19,12 @@ Noteworthy changes in version 1.2.2 (unreleased)
     * New option --no-mangle-dos-filenames so that filenames are not
       truncated in the W32 version.
 
+    * Disabled keys are now skipped when selecting keys for
+      encryption.
+
+    * Minor trustdb changes to make the trust calculations match
+      common usage.
+
 
 Noteworthy changes in version 1.2.1 (2002-10-25)
 ------------------------------------------------
