@@ -187,14 +187,6 @@ start_agent (void)
     }
 
   log_debug ("connection to agent established\n");
-
-  if (DBG_AGENT)
-    {
-      log_debug ("waiting for debugger [hit RETURN when ready] .....\n");
-      getchar ();
-      log_debug ("... okay\n");
-    }
-
   return 0;
 }
 

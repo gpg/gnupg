@@ -1,5 +1,8 @@
 2001-12-14  Werner Koch  <wk@gnupg.org>
 
+	* gpgsm.c (main): New option --debug-wait n, so that it is
+	possible to attach gdb when used in server mode.
+
 	* sign.c (get_default_signer): Use keydb_classify_name here.
 
 2001-12-14  Marcus Brinkmann  <marcus@g10code.de>

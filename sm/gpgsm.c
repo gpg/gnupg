@@ -76,8 +76,17 @@ enum cmd_and_opt_values {
   aCheckKeys,
   aServer,                        
 
+  oOptions,
+  oDebug,
+  oDebugAll,
+  oDebugWait,
+
   oEnableSpecialFilenames,
   oAgentProgram,
+
+
+
+
 
   oAssumeArmor,
   oAssumeBase64,
@@ -85,6 +94,7 @@ enum cmd_and_opt_values {
 
   oBase64,
   oNoArmor,
+
 
 
   oTextmode,
@@ -98,9 +108,6 @@ enum cmd_and_opt_values {
   oDefRecipient,
   oDefRecipientSelf,
   oNoDefRecipient,
-  oOptions,
-  oDebug,
-  oDebugAll,
   oStatusFD,
   oNoComment,
   oNoVersion,
@@ -259,6 +266,7 @@ static ARGPARSE_OPTS opts[] = {
 
     { oDebug, "debug"     ,4|16, "@"},
     { oDebugAll, "debug-all" ,0, "@"},
+    { oDebugWait, "debug-wait" ,1, "@"},
     { oStatusFD, "status-fd" ,1, N_("|FD|write status info to this FD") },
     { aDummy, "no-comment", 0,   "@"},
     { aDummy, "completes-needed", 1, "@"},
@@ -537,6 +545,7 @@ main ( int argc, char **argv)
   int default_keyring = 1;
   int greeting = 0;
   int nogreeting = 0;
+  int debug_wait = 0;
   int use_random_seed = 1;
   int with_fpr = 0;
   char *def_digest_string = NULL;
@@ -749,6 +758,7 @@ main ( int argc, char **argv)
 
         case oDebug: opt.debug |= pargs.r.ret_ulong; break;
         case oDebugAll: opt.debug = ~0; break;
+        case oDebugWait: debug_wait = pargs.r.ret_int; break;
 
         case oStatusFD: ctrl.status_fd = pargs.r.ret_int; break;
         case oLoggerFD: /* fixme: log_set_logfile (NULL, pargs.r.ret_int );*/ break;
@@ -950,12 +960,13 @@ main ( int argc, char **argv)
   switch (cmd)
     {
     case aServer:
-#if 0
-      log_debug ("waiting for debugger my pid is %u .....\n",
-                 (unsigned int)getpid());
-      sleep (5);
-      log_debug ("... okay\n");
-#endif
+      if (debug_wait)
+        {
+          log_debug ("waiting for debugger - my pid is %u .....\n",
+                     (unsigned int)getpid());
+          sleep (debug_wait);
+          log_debug ("... okay\n");
+         }
       gpgsm_server ();
       break;
 
