@@ -1,3 +1,12 @@
+2003-06-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (sign_uids): Do not sign expired uids without --expert
+	(same behavior as revoked uids).
+
+	* mainproc.c (print_notation_data, check_sig_and_print): Only show
+	the "key available from" preferred keyserver line if the key is
+	not currently present.
+
 2003-06-07  Werner Koch  <wk@gnupg.org>
 
 	* g10.c (add_notation_data): Make sure that only ascii is passed

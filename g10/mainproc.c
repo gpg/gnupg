@@ -796,15 +796,6 @@ print_notation_data( PKT_signature *sig )
         write_status_buffer ( STATUS_POLICY_URL, p, n, 0 );
     }
 
-    seq=0;
-
-    while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_PREF_KS,&n,&seq,NULL))) {
-	log_info(_("Preferred keyserver: ") );
-	print_string( log_stream(), p, n, 0 );
-	putc( '\n', log_stream() );
-	/* TODO: put in a status-fd tag for preferred keyservers */
-    }
-
     /* Now check whether the key of this signature has some
      * notation data */
 
@@ -1323,6 +1314,23 @@ check_sig_and_print( CTX c, KBNODE node )
 	if( keyserver_import_keyid ( sig->keyid )==0 )
 	    rc = do_check_sig(c, node, NULL, &is_expkey );
     }
+
+    /* If the key still isn't found, try to inform the user where it
+       can be found. */
+    if(rc==G10ERR_NO_PUBKEY)
+      {
+	const byte *p;
+	int seq=0;
+	size_t n;
+
+	while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_PREF_KS,&n,&seq,NULL)))
+	  {
+	    log_info(_("Key available from: ") );
+	    print_string( log_stream(), p, n, 0 );
+	    putc( '\n', log_stream() );
+	  }
+      }
+
     if( !rc || rc == G10ERR_BAD_SIGN ) {
 	KBNODE un, keyblock;
 	int count=0, statno;
