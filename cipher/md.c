@@ -95,10 +95,8 @@ load_digest_module (void)
 
   /* We load them in reverse order so that the most
      frequently used are the first in the list. */
-#ifdef USE_TIGER
   if (!new_list_item (DIGEST_ALGO_TIGER, tiger_get_info))
     BUG();
-#endif
   if (!new_list_item (DIGEST_ALGO_MD5, md5_get_info)) 
     BUG ();
   if (!new_list_item (DIGEST_ALGO_RMD160, rmd160_get_info)) 
