@@ -1,3 +1,8 @@
+2004-09-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Give warning when using capabilities.  Check for
+	usb_get_string_simple for old libusb reasons.
+
 2004-09-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Note HTTP basic auth.
