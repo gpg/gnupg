@@ -14,6 +14,11 @@
 
 2004-12-16  Werner Koch  <wk@g10code.com>
 
+	* THANKS: Added John Clizbe for help testing the 1.4.0a W32
+	binary.
+
+2004-12-16  Werner Koch  <wk@g10code.com>
+
 	Released 1.4.0.
 
 2004-12-14  Werner Koch  <wk@g10code.com>

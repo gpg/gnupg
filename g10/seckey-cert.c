@@ -147,12 +147,20 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                 }
             }
 
-            /* must check it here otherwise the mpi_read_xx would fail
+            /* Must check it here otherwise the mpi_read_xx would fail
                because the length may have an arbitrary value */
             if( sk->csum == csum ) {
                 for( ; i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
                     nbytes = ndata;
                     sk->skey[i] = mpi_read_from_buffer(p, &nbytes, 1 );
+                    if (!sk->skey[i])
+                      {
+                        /* Checksum was okay, but not correctly
+                           decrypted.  */
+                        sk->csum = 0;
+                        csum = 1;
+                        break;
+                      }
                     ndata -= nbytes;
                     p += nbytes;
                 }
@@ -179,8 +187,15 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                 csum += checksum (buffer, ndata);
                 mpi_free (sk->skey[i]);
                 sk->skey[i] = mpi_read_from_buffer (buffer, &ndata, 1);
-                assert (sk->skey[i]);
 		m_free (buffer);
+                if (!sk->skey[i])
+                  {
+                    /* Checksum was okay, but not correctly
+                       decrypted.  */
+                    sk->csum = 0;
+                    csum = 1;
+                    break;
+                  }
 /*  		csum += checksum_mpi (sk->skey[i]); */
 	    }
 	}

@@ -1,3 +1,9 @@
+2004-12-20  Werner Koch  <wk@g10code.com>
+
+	* mpicoder.c (mpi_read_from_buffer): Don't abort in case of an
+	invalid MPI but print a message and return NULL.  Use log_info and
+	not log_error.
+
 2004-10-26  Werner Koch  <wk@g10code.com>
 
 	* config.links: Use HOST instead of TARGET.
