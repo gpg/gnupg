@@ -67,6 +67,8 @@ enum {
   GNUPG_Bad_Public_Key = 38,
   GNUPG_Bad_Secret_Key = 39,
   GNUPG_Bad_Data = 40,
+  GNUPG_Invalid_Parameter = 41,
+  GNUPG_Tribute_to_D_A = 42
 };
 
 /* Status codes - fixme: should go into another file */

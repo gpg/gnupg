@@ -53,9 +53,11 @@ int map_ksba_err (int err);
 int map_gcry_err (int err);
 int map_kbx_err (int err);
 int map_assuan_err (int err);
+int map_to_assuan_status (int rc);
 
 
 /* some macros to replace ctype ones and avoid locale problems */
+#define spacep(p)   (*(p) == ' ' || *(p) == '\t')
 #define digitp(p)   (*(p) >= '0' && *(p) <= '9')
 #define hexdigitp(a) (digitp (a)                     \
                       || (*(a) >= 'A' && *(a) <= 'F')  \
@@ -71,5 +73,11 @@ int map_assuan_err (int err);
 
 
 #endif /*GNUPG_COMMON_UTIL_H*/
+
+
+
+
+
+
 
 

@@ -1,5 +1,5 @@
 /* maperror.c - Error mapping
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -146,4 +146,55 @@ map_assuan_err (int err)
     }
   return err;
 }
+
+/* Map GNUPG_xxx error codes to Assuan status codes */
+int
+map_to_assuan_status (int rc)
+{
+  switch (rc)
+    {
+    case 0: break;
+    case GNUPG_Bad_Certificate:   rc = ASSUAN_Bad_Certificate; break;
+    case GNUPG_Bad_Certificate_Path: rc = ASSUAN_Bad_Certificate_Path; break;
+    case GNUPG_Missing_Certificate: rc = ASSUAN_Missing_Certificate; break;
+    case GNUPG_No_Data:           rc = ASSUAN_No_Data_Available; break;
+    case GNUPG_Bad_Signature:     rc = ASSUAN_Bad_Signature; break;
+    case GNUPG_Not_Implemented:   rc = ASSUAN_Not_Implemented; break;
+    case GNUPG_No_Agent:          rc = ASSUAN_No_Agent; break;
+    case GNUPG_Agent_Error:       rc = ASSUAN_Agent_Error; break;
+    case GNUPG_No_Public_Key:     rc = ASSUAN_No_Public_Key; break;
+    case GNUPG_No_Secret_Key:     rc = ASSUAN_No_Secret_Key; break;
+    case GNUPG_Invalid_Data:      rc = ASSUAN_Invalid_Data; break;
+    case GNUPG_Invalid_Name:      rc = ASSUAN_Invalid_Name; break;
+
+    case GNUPG_Bad_PIN:
+    case GNUPG_Bad_Passphrase:
+      rc = ASSUAN_No_Secret_Key;
+      break;
+
+    case GNUPG_Read_Error: 
+    case GNUPG_Write_Error:
+    case GNUPG_IO_Error: 
+      rc = ASSUAN_Server_IO_Error;
+      break;
+    case GNUPG_Out_Of_Core:    
+    case GNUPG_Resource_Limit: 
+      rc = ASSUAN_Server_Resource_Problem;
+      break;
+    case GNUPG_Bug: 
+    case GNUPG_Internal_Error:   
+      rc = ASSUAN_Server_Bug;
+      break;
+    default: 
+      rc = ASSUAN_Server_Fault;
+      break;
+    }
+  return rc;
+}
+
+
+
+
+
+
 
