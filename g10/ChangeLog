@@ -1,3 +1,11 @@
+2002-05-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (menu_adduid): 2440bis04 says that multiple attribute
+	packets on a given key are legal.
+
+	* keyserver.c (keyserver_refresh): the fake v3 keyid hack applies
+	to "mailto" URLs as well since they are also served by pksd.
+
 2002-04-29  Werner Koch  <wk@gnupg.org>
 
 	Added a copyright year for files changed this year.

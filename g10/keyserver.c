@@ -838,13 +838,14 @@ keyserver_refresh(STRLIST users)
   int rc,count,fakev3=0;
   KEYDB_SEARCH_DESC *desc;
 
-  /* If refresh_add_fake_v3_keyids is on and it's a HKP scheme, then
-     enable fake v3 keyid generation. */
+  /* If refresh_add_fake_v3_keyids is on and it's a HKP or MAILTO
+     scheme, then enable fake v3 keyid generation. */
   if(opt.keyserver_options.refresh_add_fake_v3_keyids &&
      opt.keyserver_scheme &&
      (strcasecmp(opt.keyserver_scheme,"x-hkp")==0 ||
       strcasecmp(opt.keyserver_scheme,"hkp")==0 ||
-      strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0))
+      strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0 ||
+      strcasecmp(opt.keyserver_scheme,"mailto")==0))
     fakev3=1;
 
   rc=keyidlist(users,&desc,&count,fakev3);
