@@ -1,3 +1,7 @@
+2003-09-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* cipher.h: Drop TIGER/192 support.
+
 2003-08-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* util.h: s/__MINGW32__/_WIN32/ to help building on native Windows

@@ -58,7 +58,6 @@
 #define DIGEST_ALGO_MD5       1
 #define DIGEST_ALGO_SHA1      2
 #define DIGEST_ALGO_RMD160    3
-#define DIGEST_ALGO_TIGER     6
 #define DIGEST_ALGO_SHA256    8
 #define DIGEST_ALGO_SHA384    9
 #define DIGEST_ALGO_SHA512   10
