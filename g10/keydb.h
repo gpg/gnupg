@@ -190,6 +190,7 @@ int classify_user_id( const char *name, KEYDB_SEARCH_DESC *desc);
 void cache_public_key( PKT_public_key *pk );
 void getkey_disable_caches(void);
 int get_pubkey( PKT_public_key *pk, u32 *keyid );
+int get_pubkey_fast ( PKT_public_key *pk, u32 *keyid );
 KBNODE get_pubkeyblock( u32 *keyid );
 int get_pubkey_byname( PKT_public_key *pk,  const char *name,
                        KBNODE *ret_keyblock, KEYDB_HANDLE *ret_kdbhd);
@@ -201,6 +202,8 @@ int get_seckey( PKT_secret_key *sk, u32 *keyid );
 int get_primary_seckey( PKT_secret_key *sk, u32 *keyid );
 int get_pubkey_byfprint( PKT_public_key *pk, const byte *fprint,
 						 size_t fprint_len );
+int get_pubkey_byfprint_fast (PKT_public_key *pk,
+                              const byte *fprint, size_t fprint_len);
 int get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
 						 size_t fprint_len );
 int get_keyblock_bylid( KBNODE *ret_keyblock, ulong lid );

@@ -96,7 +96,6 @@ static int uid_cache_entries;	/* number of entries in uid cache */
 
 static void merge_selfsigs( KBNODE keyblock );
 static int lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode );
-static int get_pubkey_direct (PKT_public_key *pk, u32 *keyid);
 
 #if 0
 static void
@@ -376,8 +375,8 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
 /* Get a public key and store it into the allocated pk.  This function
    differs from get_pubkey() in that it does not do a check of the key
    to avoid recursion.  It should be used only in very certain cases.  */
-static int
-get_pubkey_direct (PKT_public_key *pk, u32 *keyid)
+int
+get_pubkey_fast (PKT_public_key *pk, u32 *keyid)
 {
   int rc = 0;
   KEYDB_HANDLE hd;
@@ -907,6 +906,58 @@ get_pubkey_byfprint( PKT_public_key *pk,
 	rc = G10ERR_GENERAL; /* Oops */
     return rc;
 }
+
+
+/* Get a public key and store it into the allocated pk.  This function
+   differs from get_pubkey_byfprint() in that it does not do a check
+   of the key to avoid recursion.  It should be used only in very
+   certain cases.  PK may be NULL to check just for the existance of
+   the key. */
+int
+get_pubkey_byfprint_fast (PKT_public_key *pk,
+                          const byte *fprint, size_t fprint_len)
+{
+  int rc = 0;
+  KEYDB_HANDLE hd;
+  KBNODE keyblock;
+  unsigned char fprbuf[MAX_FINGERPRINT_LEN];
+  int i;
+  
+  for (i=0; i < MAX_FINGERPRINT_LEN && i < fprint_len; i++)
+    fprbuf[i] = fprint[i];
+  while (i < MAX_FINGERPRINT_LEN) 
+    fprbuf[i++] = 0;
+
+  hd = keydb_new (0);
+  rc = keydb_search_fpr (hd, fprbuf);
+  if (rc == -1)
+    {
+      keydb_release (hd);
+      return G10ERR_NO_PUBKEY;
+    }
+  rc = keydb_get_keyblock (hd, &keyblock);
+  keydb_release (hd);
+  if (rc) 
+    {
+      log_error ("keydb_get_keyblock failed: %s\n", g10_errstr(rc));
+      return G10ERR_NO_PUBKEY;
+    }
+  
+  assert ( keyblock->pkt->pkttype == PKT_PUBLIC_KEY
+           ||  keyblock->pkt->pkttype == PKT_PUBLIC_SUBKEY );
+  if (pk)
+    copy_public_key (pk, keyblock->pkt->pkt.public_key );
+  release_kbnode (keyblock);
+
+  /* Not caching key here since it won't have all of the fields
+     properly set. */
+
+  return 0;
+}
+
+
+
+
 
 /****************
  * Search for a key with the given fingerprint and return the
@@ -1520,7 +1571,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
 
 		    ultimate_pk=m_alloc_clear(sizeof(*ultimate_pk));
 
-		    if(get_pubkey_direct(ultimate_pk,sig->keyid)==0 &&
+		    if(get_pubkey_fast(ultimate_pk,sig->keyid)==0 &&
 		       check_key_signature(keyblock,k,NULL)==0 &&
 		       get_ownertrust(ultimate_pk)==TRUST_ULTIMATE)
 		      {

@@ -1983,13 +1983,6 @@ main( int argc, char **argv )
       case aEnArmor:
       case aFixTrustDB:
 	break;
-      case aKMode:
-      case aListKeys:
-      case aListSecretKeys:
-      case aCheckKeys:
-	if( opt.with_colons ) /* need this to list the trust */
-	    rc = setup_trustdb(1, trustdb_name );
-	break;
       case aExportOwnerTrust: rc = setup_trustdb( 0, trustdb_name ); break;
       case aListTrustDB: rc = setup_trustdb( argc? 1:0, trustdb_name ); break;
       default: rc = setup_trustdb(1, trustdb_name ); break;

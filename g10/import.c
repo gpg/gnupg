@@ -626,7 +626,7 @@ import_one( const char *fname, KBNODE keyblock, int fast,
 
     /* do we have this key already in one of our pubrings ? */
     pk_orig = m_alloc_clear( sizeof *pk_orig );
-    rc = get_pubkey( pk_orig, keyid );
+    rc = get_pubkey_fast ( pk_orig, keyid );
     if( rc && rc != G10ERR_NO_PUBKEY && rc != G10ERR_UNU_PUBKEY ) {
 	log_error( _("key %08lX: public key not found: %s\n"),
 				(ulong)keyid[1], g10_errstr(rc));
@@ -1401,8 +1401,8 @@ revocation_present(KBNODE keyblock)
                          itself? */
 		      int rc;
 
-		      rc=get_pubkey_byfprint(NULL,sig->revkey[idx]->fpr,
-					     MAX_FINGERPRINT_LEN);
+		      rc=get_pubkey_byfprint_fast (NULL,sig->revkey[idx]->fpr,
+                                                   MAX_FINGERPRINT_LEN);
 		      if(rc==G10ERR_NO_PUBKEY || rc==G10ERR_UNU_PUBKEY)
 			{
 			  /* No, so try and get it */
@@ -1417,7 +1417,7 @@ revocation_present(KBNODE keyblock)
 						      MAX_FINGERPRINT_LEN);
 
 			      /* Do we have it now? */
-			      rc=get_pubkey_byfprint(NULL,
+			      rc=get_pubkey_byfprint_fast (NULL,
 						     sig->revkey[idx]->fpr,
 						     MAX_FINGERPRINT_LEN);
 			    }
