@@ -261,6 +261,16 @@ By default the @acronym{CRL} checks are enabled and the DirMngr is used
 to check for revoked certificates.  The disable option is most useful
 with an off-line network connection to suppress this check.
 
+@item --force-crl-refresh
+@opindex force-crl-refresh
+Tell the dirmngr to reload the CRL for each request.  For better
+performance, the dirmngr will actually optimize this by suppressing
+the loading for short time intervalls (e.g. 30 minutes). This option
+is useful to make sure that a fresh CRL is available for certificates
+hold in the keybox.  The suggested way of doing this is by using it
+along with the option @code{--with-validation} for a ke listing
+command.  This option should not be used in a configuration file. 
+
 @item  --enable-ocsp
 @itemx --disable-ocsp
 @opindex enable-ocsp
