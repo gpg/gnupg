@@ -1,6 +1,35 @@
 Noteworthy changes in version 1.3
 -------------------------------------------------
 
+    * The last piece of internal keyserver support has been removed,
+      and now all keyserver access is done via the keyserver plugins.
+      There is also a newer keyserver protocol used between GnuPG and
+      the plugins, so plugins from earlier versions of GnuPG may not
+      work properly.
+
+    * The HKP keyserver plugin supports the new machine-readable key
+      listing format for those keyservers that provide it.
+
+    * When using a HKP keyserver with multiple DNS records (such as
+      wwwkeys.pgp.net which has the addresses of multiple servers
+      around the world), try all records until one succeeds (not on
+      MINGW32).
+
+    * The library dependencies for OpenLDAP seem to change fairly
+      frequently, and GnuPG's configure script cannot guess all the
+      combinations.  Use ./configure LDAPLIBS="-L libdir -l libs" to
+      override the script and use the libraries selected.
+
+    * Secret keys generated with --export-secret-subkeys are now
+      indicated in key listings with a '#' after the "sec", and in
+      --with-colons listings by showing no capabilities (no lowercase
+      characters).
+
+    * --trusted-key has been un-obsoleted, as it is useful for adding
+      ultimately trusted keys from the config file.  It is identical
+      to using --edit and "trust" to change a key to ultimately
+      trusted.
+
 Noteworthy changes in version 1.1.92 (2002-09-11)
 -------------------------------------------------
 
