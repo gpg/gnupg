@@ -131,15 +131,15 @@ fi
 
 if test "$use_exec" = yes ; then
   AC_MSG_CHECKING([whether to use a restricted exec-path])
-  AC_ARG_ENABLE(exec-path,
-      [  --enable-exec-path=PATH restrict exec-path to PATH],
-      [if test "$enableval" = yes ; then
-         enableval=no
-      else
-         AC_DEFINE_UNQUOTED(USE_EXEC_PATH,"$enableval",
+  AC_ARG_WITH(exec-path,
+      [  --with-exec-path=PATH   restrict exec-path to PATH],
+      [if test "$withval" = yes ; then
+         withval=no
+      elif test "$withval" != no ; then
+         AC_DEFINE_UNQUOTED(FIXED_EXEC_PATH,"$withval",
 	                    [if set, restrict exec-path to this value])
-      fi],enableval=no)
-  AC_MSG_RESULT($enableval)
+      fi],withval=no)
+  AC_MSG_RESULT($withval)
 
   AC_MSG_CHECKING([whether to enable photo ID viewing])
   AC_ARG_ENABLE(photo-viewers,
@@ -154,7 +154,9 @@ if test "$use_exec" = yes ; then
     AC_MSG_CHECKING([whether to use a fixed photo ID viewer])
     AC_ARG_WITH(photo-viewer,
         [  --with-photo-viewer=FIXED_VIEWER  set a fixed photo ID viewer],
-        [if test "$withval" != yes ; then
+        [if test "$withval" = yes ; then
+           withval=no
+        elif test "$withval" != no ; then
            AC_DEFINE_UNQUOTED(FIXED_PHOTO_VIEWER,"$withval",
   	                    [if set, restrict photo-viewer to this])
         fi],withval=no)

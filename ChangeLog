@@ -1,5 +1,8 @@
 2002-07-04  David Shaw  <dshaw@jabberwocky.com>
 
+	* configure.ac: --enable-exec-path should be a 'with'.  Fix 'no'
+	cases of --with-exec-path and --with-photo-viewer.
+
 	* README: Document --disable-exec, --disable-photo-viewers,
 	--disable-keyserver-helpers, --enable-exec-path, and
 	--with-photo-viewer.
