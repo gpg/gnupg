@@ -1,6 +1,9 @@
 Noteworthy changes in version 1.9.11
 -------------------------------------------------
 
+ * When using --import along with --with-validation, the imported
+   certificates are validated and only imported if they are fully
+   valid.
 
 Noteworthy changes in version 1.9.10 (2004-07-22)
 -------------------------------------------------

@@ -358,7 +358,13 @@ secret key.
 @opindex with-validation
 When doing a key listing, do a full validation check for each key and
 print the result.  This is usually a slow operation because it
-requires a CRL lookup and other operations.
+requires a CRL lookup and other operations. 
+
+When used along with --import, a validation of the certificate to
+import is done and only imported if it succeeds the test.  Note that
+this does not affect an already available cwertificate in the DB.
+This option is therefore useful to simply verify a certificate.
+
 
 @item --with-md5-fingerprint
 For standard key listings, also print the MD5 fingerprint of the
@@ -469,6 +475,12 @@ lets gpgsm bypass all certificate chain validation checks.
 This is actually not a debugging option but only useful as such.  It
 lets gpgsm ignore all notAfter dates, this is used by the regresssion
 tests.
+
+@item --fixed-passphrase @var{string}
+@opindex fixed-passphrase
+Supply the passphrase @var{string} to the gpg-protect-tool.  This
+option is only useful for the regression tests included with this
+package and may be revised or removed at any time without notice.
 
 @end table
 

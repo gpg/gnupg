@@ -39,9 +39,9 @@
 #include "i18n.h"
 
 
-/* If LISTMODE is true, print FORMAT in liting mode to FP.  If
+/* If LISTMODE is true, print FORMAT using LISTMODE to FP.  If
    LISTMODE is false, use the string to print an log_info or, if
-   IS_ERROR is true, an log_error. */
+   IS_ERROR is true, and log_error. */
 static void
 do_list (int is_error, int listmode, FILE *fp, const char *format, ...)
 {
@@ -925,9 +925,11 @@ gpgsm_basic_cert_check (ksba_cert_t cert)
 
   if (subject && !strcmp (issuer, subject))
     {
-      if (gpgsm_check_cert_sig (cert, cert) )
+      rc = gpgsm_check_cert_sig (cert, cert);
+      if (rc)
         {
-          log_error ("selfsigned certificate has a BAD signature\n");
+          log_error ("selfsigned certificate has a BAD signature: %s\n",
+                     gpg_strerror (rc));
           rc = gpg_error (GPG_ERR_BAD_CERT);
           goto leave;
         }
@@ -960,9 +962,11 @@ gpgsm_basic_cert_check (ksba_cert_t cert)
           goto leave;
         }
 
-      if (gpgsm_check_cert_sig (issuer_cert, cert) )
+      rc = gpgsm_check_cert_sig (issuer_cert, cert);
+      if (rc)
         {
-          log_error ("certificate has a BAD signature\n");
+          log_error ("certificate has a BAD signature: %s\n",
+                     gpg_strerror (rc));
           rc = gpg_error (GPG_ERR_BAD_CERT);
           goto leave;
         }

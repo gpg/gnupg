@@ -35,6 +35,8 @@ might want to have an agent context for each service request
    while gpg-protect-tool wants to pop up the pinentry.  Solution is
    to release the connection.  This is not trivial, thus we are going
    to do that while changing gpgsm to allow concurrent operations.
+** support the anyPolicy semantic
+** Check that we are really following the verification procedures in rfc3280.
 
 * sm/keydb.c
 ** Check file permissions
@@ -44,14 +46,15 @@ might want to have an agent context for each service request
 
 * agent/gpg-agent.c
 ** A SIGHUP should also restart the scdaemon
-   But do this only after all connections terminated.
-   As of now we only send a RESET.
+   But do this only after all connections terminated.  As of now we
+   only send a RESET.
 
 * agent/command.c
 ** Make sure that secure memory is used where appropriate
 
 * agent/pkdecrypt.c, agent/pksign.c
 ** Don't use stdio to return results.
+** Support DSA
 
 * agent/divert-scd.c
  Remove the agent_reset_scd kludge.

@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg2 1.9.10\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-07-22 09:54+0200\n"
+"POT-Creation-Date: 2004-08-05 11:31+0200\n"
 "PO-Revision-Date: 2004-07-22 10:05+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: de\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: agent/gpg-agent.c:96 agent/protect-tool.c:94 scd/scdaemon.c:92
+#: agent/gpg-agent.c:96 agent/protect-tool.c:94 scd/scdaemon.c:93
 msgid ""
 "@Options:\n"
 " "
@@ -26,28 +26,28 @@ msgstr ""
 "@Optionen:\n"
 " "
 
-#: agent/gpg-agent.c:98 scd/scdaemon.c:94
+#: agent/gpg-agent.c:98 scd/scdaemon.c:95
 msgid "run in server mode (foreground)"
 msgstr "Im Server Modus ausführen"
 
-#: agent/gpg-agent.c:99 scd/scdaemon.c:95
+#: agent/gpg-agent.c:99 scd/scdaemon.c:96
 msgid "run in daemon mode (background)"
 msgstr "Im Daemon Modus ausführen"
 
-#: agent/gpg-agent.c:100 kbx/kbxutil.c:75 scd/scdaemon.c:96 sm/gpgsm.c:313
+#: agent/gpg-agent.c:100 kbx/kbxutil.c:75 scd/scdaemon.c:97 sm/gpgsm.c:313
 #: tools/gpgconf.c:62
 msgid "verbose"
 msgstr "ausführlich"
 
-#: agent/gpg-agent.c:101 kbx/kbxutil.c:76 scd/scdaemon.c:97 sm/gpgsm.c:314
+#: agent/gpg-agent.c:101 kbx/kbxutil.c:76 scd/scdaemon.c:98 sm/gpgsm.c:314
 msgid "be somewhat more quiet"
 msgstr "etwas weniger Aussageb erzeugen"
 
-#: agent/gpg-agent.c:102 scd/scdaemon.c:98
+#: agent/gpg-agent.c:102 scd/scdaemon.c:99
 msgid "sh-style command output"
 msgstr "Ausgabe für /bin/sh"
 
-#: agent/gpg-agent.c:103 scd/scdaemon.c:99
+#: agent/gpg-agent.c:103 scd/scdaemon.c:100
 msgid "csh-style command output"
 msgstr "Ausgabe für /bin/csh"
 
@@ -55,7 +55,7 @@ msgstr "Ausgabe für /bin/csh"
 msgid "|FILE|read options from FILE"
 msgstr "|DATEI|Konfigurationsoptionen aus DATEI lesen"
 
-#: agent/gpg-agent.c:109 scd/scdaemon.c:106
+#: agent/gpg-agent.c:109 scd/scdaemon.c:107
 msgid "do not detach from the console"
 msgstr "Im Vordergrund laufen lassen"
 
@@ -63,7 +63,7 @@ msgstr "Im Vordergrund laufen lassen"
 msgid "do not grab keyboard and mouse"
 msgstr "Tastatur und Maus nicht \"grabben\""
 
-#: agent/gpg-agent.c:111 scd/scdaemon.c:107 sm/gpgsm.c:316
+#: agent/gpg-agent.c:111 scd/scdaemon.c:108 sm/gpgsm.c:316
 msgid "use a log file for the server"
 msgstr "Logausgaben in eine Datei umlenken"
 
@@ -99,12 +99,12 @@ msgstr "benutze PINs im Cache nicht bem Signieren"
 msgid "allow clients to mark keys as \"trusted\""
 msgstr "erlaube Aufrufern Schlüssel als \"vertrauenswürdig\" zu markieren"
 
-#: agent/gpg-agent.c:191 agent/protect-tool.c:127 scd/scdaemon.c:165
+#: agent/gpg-agent.c:191 agent/protect-tool.c:127 scd/scdaemon.c:168
 #: sm/gpgsm.c:481 tools/gpgconf.c:85
 msgid "Please report bugs to <"
 msgstr "Fehlerberichte bitte an <"
 
-#: agent/gpg-agent.c:191 agent/protect-tool.c:127 scd/scdaemon.c:165
+#: agent/gpg-agent.c:191 agent/protect-tool.c:127 scd/scdaemon.c:168
 #: sm/gpgsm.c:481 tools/gpgconf.c:85
 msgid ">.\n"
 msgstr ">.\n"
@@ -121,35 +121,35 @@ msgstr ""
 "Syntax: gpg-agent [Optionen] [Kommando [Argumente]]\n"
 "Verwaltung von geheimen Schlüssel für GnuPG\n"
 
-#: agent/gpg-agent.c:267 scd/scdaemon.c:239 sm/gpgsm.c:604
+#: agent/gpg-agent.c:267 scd/scdaemon.c:242 sm/gpgsm.c:604
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr "ungültige Debugebene `%s' angegeben\n"
 
 #: agent/gpg-agent.c:439 agent/protect-tool.c:1040 kbx/kbxutil.c:232
-#: scd/scdaemon.c:352 sm/gpgsm.c:726
+#: scd/scdaemon.c:357 sm/gpgsm.c:726
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
 "Die Bibliothek \"libgcrypt\" is zu alt (benötigt wird %s, vorhanden ist %s)\n"
 
-#: agent/gpg-agent.c:512 scd/scdaemon.c:432 sm/gpgsm.c:824
+#: agent/gpg-agent.c:512 scd/scdaemon.c:437 sm/gpgsm.c:824
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "Notiz: Voreingestellte Konfigurationsdatei `%s' fehlt\n"
 
-#: agent/gpg-agent.c:517 agent/gpg-agent.c:983 scd/scdaemon.c:437
+#: agent/gpg-agent.c:517 agent/gpg-agent.c:983 scd/scdaemon.c:442
 #: sm/gpgsm.c:828
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "Konfigurationsdatei `%s': %s\n"
 
-#: agent/gpg-agent.c:525 scd/scdaemon.c:445 sm/gpgsm.c:835
+#: agent/gpg-agent.c:525 scd/scdaemon.c:450 sm/gpgsm.c:835
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "Optionen werden aus `%s' gelesen\n"
 
-#: agent/gpg-agent.c:668 scd/scdaemon.c:619
+#: agent/gpg-agent.c:668 scd/scdaemon.c:630
 msgid "please use the option `--daemon' to run the program in the background\n"
 msgstr ""
 "Bitte die Option `--daemon' nutzen um das Programm im Hintergund "
@@ -362,43 +362,43 @@ msgstr ""
 "Syntax: kbxutil [Optionen] [Dateien]\n"
 "Anlistem exportieren und Importieren von KeyBox Dateien\n"
 
-#: scd/scdaemon.c:100 sm/gpgsm.c:333
+#: scd/scdaemon.c:101 sm/gpgsm.c:333
 msgid "read options from file"
 msgstr "Konfigurationsoptionen aus Datei lesen"
 
-#: scd/scdaemon.c:105
+#: scd/scdaemon.c:106
 msgid "|N|set OpenSC debug level to N"
 msgstr "|N|Den OpenSC Debugstufe auf N setzen"
 
-#: scd/scdaemon.c:108
+#: scd/scdaemon.c:109
 msgid "|N|connect to reader at port N"
 msgstr "|N|Verbinde mit dem Leser auf Port N"
 
-#: scd/scdaemon.c:109
+#: scd/scdaemon.c:110
 msgid "|NAME|use NAME as ct-API driver"
 msgstr "|NAME|Benutze NAME als CT-API Treiber"
 
-#: scd/scdaemon.c:110
+#: scd/scdaemon.c:111
 msgid "|NAME|use NAME as PC/SC driver"
 msgstr "|NAME|Benutze NAME als PC/SC Treiber"
 
-#: scd/scdaemon.c:113
+#: scd/scdaemon.c:114
 msgid "do not use the internal CCID driver"
 msgstr "Den internen CCID Treiber nicht benutzen"
 
-#: scd/scdaemon.c:120
+#: scd/scdaemon.c:121
 msgid "do not use the OpenSC layer"
 msgstr "Den OpenSC basierten Kartenzugriff nicht nutzen"
 
-#: scd/scdaemon.c:125
+#: scd/scdaemon.c:126
 msgid "allow the use of admin card commands"
 msgstr "Erlaube die Benuztung von \"Admin\" Kommandos"
 
-#: scd/scdaemon.c:168
+#: scd/scdaemon.c:171
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "Gebrauch: scdaemon [Optionen] (-h für Hilfe)"
 
-#: scd/scdaemon.c:170
+#: scd/scdaemon.c:173
 msgid ""
 "Syntax: scdaemon [options] [command [args]]\n"
 "Smartcard daemon for GnuPG\n"

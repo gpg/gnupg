@@ -95,6 +95,7 @@ enum cmd_and_opt_values {
   oDebugAllowCoreDump,
   oDebugNoChainValidation,
   oDebugIgnoreExpiration,
+  oFixedPassphrase,
   oLogFile,
 
   oEnableSpecialFilenames,
@@ -340,6 +341,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDebugAllowCoreDump, "debug-allow-core-dump", 0, "@" },
     { oDebugNoChainValidation, "debug-no-chain-validation", 0, "@"},
     { oDebugIgnoreExpiration,  "debug-ignore-expiration", 0, "@"},
+    { oFixedPassphrase,        "fixed-passphrase", 2, "@"},
     { oStatusFD, "status-fd" ,1, N_("|FD|write status info to this FD") },
     { aDummy, "no-comment", 0,   "@"},
     { aDummy, "completes-needed", 1, "@"},
@@ -706,6 +708,7 @@ main ( int argc, char **argv)
   CERTLIST signerlist = NULL;
   int do_not_setup_keys = 0;
 
+
   /* trap_unaligned ();*/
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
@@ -802,10 +805,10 @@ main ( int argc, char **argv)
   ctrl.status_fd = -1; /* not status output */
   ctrl.autodetect_encoding = 1;
 
-  /* set the default option file */
+  /* Set the default option file */
   if (default_config )
     configname = make_filename (opt.homedir, "gpgsm.conf", NULL);
-  /* cet the default policy file */
+  /* Set the default policy file */
   opt.policy_file = make_filename (opt.homedir, "policies.txt", NULL);
   
   argc        = orig_argc;
@@ -1019,6 +1022,7 @@ main ( int argc, char **argv)
           break;
         case oDebugNoChainValidation: opt.no_chain_validation = 1; break;
         case oDebugIgnoreExpiration: opt.ignore_expiration = 1; break;
+        case oFixedPassphrase: opt.fixed_passphrase = pargs.r.ret_str; break;
 
         case oStatusFD: ctrl.status_fd = pargs.r.ret_int; break;
         case oLoggerFD: log_set_fd (pargs.r.ret_int ); break;

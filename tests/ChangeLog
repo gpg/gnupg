@@ -1,3 +1,7 @@
+2004-08-16  Werner Koch  <wk@g10code.de>
+
+	* Makefile.am: Descend into the new pkits directory
+
 2004-02-20  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am: Reset GPG_AGENT_INFO here

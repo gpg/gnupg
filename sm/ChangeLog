@@ -1,4 +1,19 @@
+2004-08-17  Werner Koch  <wk@g10code.de>
+
+	* import.c (check_and_store): Do a full validation if
+	--with-validation is set.
+
+	* certchain.c (gpgsm_basic_cert_check): Print more detailed error
+	messages.
+	
+	* certcheck.c (do_encode_md): Partly support DSA.  Add new arg
+	PKALGO. Changed all callers to pass it.
+	(pk_algo_from_sexp): New.
+
 2004-08-16  Werner Koch  <wk@g10code.de>
+
+	* gpgsm.c: New option --fixed-passphrase.
+	* import.c (popen_protect_tool): Pass it to the protect-tool.
 
 	* server.c (cmd_encrypt): Use DEFAULT_RECPLIST and not recplist
 	for encrypt-to keys.

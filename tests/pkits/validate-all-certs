@@ -1,0 +1,55 @@
+#!/bin/sh
+# validate-all-certs                                    -*- sh -*-
+# Copyright (C) 2004 Free Software Foundation, Inc.  
+#
+# This file is part of GnuPG.
+# 
+# GnuPG is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# GnuPG is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+
+. ${srcdir:-.}/common.sh || exit 2
+
+while read dummy flag name; do 
+    case $dummy in \#*) continue;; esac
+    [ -z "$dummy" ] && continue;
+
+    if ${GPGSM} -q --import --with-validation --disable-crl-checks \
+             certs/$name ; then
+        if [ "$flag" = 'p' ]; then
+            pass "validating certificate \`$name' succeeded"
+        elif [ "$flag" = 'f' ]; then
+            fail "validating certificate \`$name' succeeded"
+        elif [ "$flag" = '?' ]; then
+            unresolved "validating certificate \`$name' succeeded"
+        elif [ "$flag" = 'u' ]; then
+            unsupported "validating certificate \`$name' succeeded"
+        else
+            info "validating certificate \`$name' succeeded - (flag=$flag)"
+        fi
+    else
+        if [ "$flag" = 'p' ]; then
+            fail "validating certificate \`$name' failed"
+        elif [ "$flag" = 'f' ]; then
+            pass "validating certificate \`$name' failed"
+        elif [ "$flag" = '?' ]; then
+            unresolved "validating certificate \`$name' failed"
+        elif [ "$flag" = 'u' ]; then
+            unsupported "validating certificate \`$name' failed"
+        else
+            info "validating certificate \`$name' failed - (flag=$flag)"
+        fi
+    fi
+done < $srcdir/import-all-certs.data
+
+final_result

@@ -76,7 +76,7 @@ static ARGPARSE_OPTS opts[] = {
   { oQuiet,       "quiet", 0, "quiet" },
   { oVerbose, "verbose",   0, "verbose" },
   { oReaderPort, "reader-port", 2, "|N|connect to reader at port N"},
-  { octapiDriver, "ctapi-driver", 2, "NAME|use NAME as ctAPI driver"},
+  { octapiDriver, "ctapi-driver", 2, "|NAME|use NAME as ctAPI driver"},
   { oDisableCCID, "disable-ccid", 0,
 #ifdef HAVE_LIBUSB
                                     "do not use the internal CCID driver"

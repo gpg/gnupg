@@ -172,13 +172,19 @@ check_and_store (CTRL ctrl, struct stats_s *stats, ksba_cert_t cert, int depth)
 
   /* Some basic checks, but don't care about missing certificates;
      this is so that we are able to import entire certificate chains
-     w/o requirening a special order (i.e. root-CA first).  This used
+     w/o requiring a special order (i.e. root-CA first).  This used
      to be different but because gpgsm_verify even imports
      certificates without any checks, it doesn't matter much and the
      code gets much cleaner.  A housekeeping function to remove
-     certificates w/o an anchor would be nice, though. */
+     certificates w/o an anchor would be nice, though. 
+     
+     Optionally we do a full validation in addition to the basic test.
+  */
   rc = gpgsm_basic_cert_check (cert);
-  if (!rc || gpg_err_code (rc) == GPG_ERR_MISSING_CERT)
+  if (!rc && ctrl->with_validation)
+    rc = gpgsm_validate_chain (ctrl, cert, NULL, 0, NULL, 0);
+  if (!rc || (!ctrl->with-validation
+              && gpg_err_code (rc) == GPG_ERR_MISSING_CERT) )
     {
       int existed;
 
@@ -527,14 +533,25 @@ popen_protect_tool (const char *pgmname,
 
       setup_pinentry_env ();
 
-      execlp (pgmname, arg0,
-              "--homedir", opt.homedir,
-              "--p12-import",
-              "--store", 
-              "--no-fail-on-exist",
-              "--enable-status-msg",
-              "--",
-              NULL);
+      if (opt.fixed_passphrase)
+        execlp (pgmname, arg0,
+                "--homedir", opt.homedir,
+                "--p12-import",
+                "--store", 
+                "--no-fail-on-exist",
+                "--enable-status-msg",
+                "--passphrase", opt.fixed_passphrase,
+                "--",
+                NULL);
+      else
+        execlp (pgmname, arg0,
+                "--homedir", opt.homedir,
+                "--p12-import",
+                "--store", 
+                "--no-fail-on-exist",
+                "--enable-status-msg",
+                "--",
+                NULL);
       /* No way to print anything, as we have closed all streams. */
       _exit (31);
     }

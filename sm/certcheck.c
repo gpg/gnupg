@@ -1,5 +1,5 @@
 /* certcheck.c - check one certificate
- *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -36,51 +36,71 @@
 
 
 static int
-do_encode_md (gcry_md_hd_t md, int algo,  unsigned int nbits,
+do_encode_md (gcry_md_hd_t md, int algo, int pkalgo, unsigned int nbits,
               gcry_mpi_t *r_val)
 {
-  int nframe = (nbits+7) / 8;
-  byte *frame;
-  int i, n;
-  byte asn[100];
-  size_t asnlen;
-  size_t len;
+  int n, nframe;
+  unsigned char *frame;
 
-  asnlen = DIM(asn);
-  if (gcry_md_algo_info (algo, GCRYCTL_GET_ASNOID, asn, &asnlen))
+  if (pkalgo == GCRY_PK_DSA)
     {
-      log_error ("no object identifier for algo %d\n", algo);
-      return gpg_error (GPG_ERR_INTERNAL);
+      nframe = gcry_md_get_algo_dlen (algo);
+      if (nframe != 20)
+        {
+          log_error (_("DSA requires the use of a 160 bit hash algorithm\n"));
+          return gpg_error (GPG_ERR_INTERNAL);
+        }
+      frame = xtrymalloc (nframe);
+      if (!frame)
+        return OUT_OF_CORE (errno);
+      memcpy (frame, gcry_md_read (md, algo), nframe);
+      n = nframe;
     }
+  else
+    {
+      int i;
+      unsigned char asn[100];
+      size_t asnlen;
+      size_t len;
 
-  len = gcry_md_get_algo_dlen (algo);
-  
-  if ( len + asnlen + 4  > nframe )
-    {
-      log_error ("can't encode a %d bit MD into a %d bits frame\n",
-                 (int)(len*8), (int)nbits);
-      return gpg_error (GPG_ERR_INTERNAL);
+      nframe = (nbits+7) / 8;
+
+      asnlen = DIM(asn);
+      if (gcry_md_algo_info (algo, GCRYCTL_GET_ASNOID, asn, &asnlen))
+        {
+          log_error ("no object identifier for algo %d\n", algo);
+          return gpg_error (GPG_ERR_INTERNAL);
+        }
+      
+      len = gcry_md_get_algo_dlen (algo);
+      
+      if ( len + asnlen + 4  > nframe )
+        {
+          log_error ("can't encode a %d bit MD into a %d bits frame\n",
+                     (int)(len*8), (int)nbits);
+          return gpg_error (GPG_ERR_INTERNAL);
+        }
+      
+      /* We encode the MD in this way:
+       *
+       *	   0  A PAD(n bytes)   0  ASN(asnlen bytes)  MD(len bytes)
+       *
+       * PAD consists of FF bytes.
+       */
+      frame = xtrymalloc (nframe);
+      if (!frame)
+        return OUT_OF_CORE (errno);
+      n = 0;
+      frame[n++] = 0;
+      frame[n++] = 1; /* block type */
+      i = nframe - len - asnlen -3 ;
+      assert ( i > 1 );
+      memset ( frame+n, 0xff, i ); n += i;
+      frame[n++] = 0;
+      memcpy ( frame+n, asn, asnlen ); n += asnlen;
+      memcpy ( frame+n, gcry_md_read(md, algo), len ); n += len;
+      assert ( n == nframe );
     }
-  
-  /* We encode the MD in this way:
-   *
-   *	   0  A PAD(n bytes)   0  ASN(asnlen bytes)  MD(len bytes)
-   *
-   * PAD consists of FF bytes.
-   */
-  frame = xtrymalloc (nframe);
-  if (!frame)
-    return OUT_OF_CORE (errno);
-  n = 0;
-  frame[n++] = 0;
-  frame[n++] = 1; /* block type */
-  i = nframe - len - asnlen -3 ;
-  assert ( i > 1 );
-  memset ( frame+n, 0xff, i ); n += i;
-  frame[n++] = 0;
-  memcpy ( frame+n, asn, asnlen ); n += asnlen;
-  memcpy ( frame+n, gcry_md_read(md, algo), len ); n += len;
-  assert ( n == nframe );
   if (DBG_X509)
     {
       int j;
@@ -93,6 +113,38 @@ do_encode_md (gcry_md_hd_t md, int algo,  unsigned int nbits,
   gcry_mpi_scan (r_val, GCRYMPI_FMT_USG, frame, n, &nframe);
   xfree (frame);
   return 0;
+}
+
+/* Return the public key algorithm id from the S-expression PKEY.
+   FIXME: libgcrypt should provide such a function.  Note that this
+   implementation uses the names as used by libksba.  */
+static int
+pk_algo_from_sexp (gcry_sexp_t pkey)
+{
+  gcry_sexp_t l1, l2;
+  const char *name;
+  size_t n;
+  int algo;
+
+  l1 = gcry_sexp_find_token (pkey, "public-key", 0);
+  if (!l1)
+    return 0; /* Not found.  */
+  l2 = gcry_sexp_cadr (l1);
+  gcry_sexp_release (l1);
+
+  name = gcry_sexp_nth_data (l2, 0, &n);
+  if (!name)
+    algo = 0; /* Not found. */
+  else if (n==3 && !memcmp (name, "rsa", 3))
+    algo = GCRY_PK_RSA;
+  else if (n==3 && !memcmp (name, "dsa", 3))
+    algo = GCRY_PK_DSA;
+  else if (n==13 && !memcmp (name, "ambiguous-rsa", 13))
+    algo = GCRY_PK_RSA;
+  else
+    algo = 0;
+  gcry_sexp_release (l2);
+  return algo;
 }
 
 
@@ -182,7 +234,8 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
       return rc;
     }
 
-  rc = do_encode_md (md, algo, gcry_pk_get_nbits (s_pkey), &frame);
+  rc = do_encode_md (md, algo, pk_algo_from_sexp (s_pkey),
+                     gcry_pk_get_nbits (s_pkey), &frame);
   if (rc)
     {
       gcry_md_close (md);
@@ -254,7 +307,8 @@ gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
     }
 
 
-  rc = do_encode_md (md, algo, gcry_pk_get_nbits (s_pkey), &frame);
+  rc = do_encode_md (md, algo, pk_algo_from_sexp (s_pkey),
+                     gcry_pk_get_nbits (s_pkey), &frame);
   if (rc)
     {
       gcry_sexp_release (s_sig);

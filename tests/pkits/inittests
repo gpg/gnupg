@@ -1,0 +1,94 @@
+#!/bin/sh
+#     	Copyright (C) 2004 Free Software Foundation, Inc.  -*- sh -*-
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+#
+# This file is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+set -e
+
+
+clean_files='
+ReadMe.txt pkits.ldif
+gpgsm.conf gpg-agent.conf trustlist.txt policies.txt pubring.kbx
+msg msg.sig msg.unsig
+'
+
+[ -z "$srcdir" ] && srcdir=.
+[ -z "$GPGSM" ] && GPGSM=../../sm/gpgsm
+
+if [ -f $srcdir/README ] \
+   && grep tests/pkits/README README >/dev/null 2>&1; then
+ :
+else
+   # During make distclean the Makefile has already been removed,
+   # so we need this extra test.
+   if ! grep gnupg-test-pkits-directory testdir.stamp >/dev/null 2>&1; then
+      echo "inittests: please cd to the tests/pkits directory first" >&2
+      exit 1
+   fi
+fi
+
+if [ "$1" = "--clean" ]; then
+    if [ -d private-keys-v1.d ]; then
+       rm private-keys-v1.d/* 2>/dev/null || true
+       rmdir private-keys-v1.d
+    fi
+    rm ${clean_files} testdir.stamp 2>/dev/null || true
+    for i in certs certpairs crls pkcs12 smime; do 
+        if [ -d $i ]; then
+            rm $i/* 2>/dev/null || true
+            rmdir $i
+        fi
+    done
+    exit 0
+fi
+
+if [ "$GNUPGHOME" != "`pwd`" ]; then
+    echo "inittests: please set GNUPGHOME to the tests/pkits directory" >&2
+    exit 1
+fi
+
+if [ -n "$GPG_AGENT_INFO" ]; then
+    echo "inittests: please unset GPG_AGENT_INFO" >&2
+    exit 1
+fi
+
+if ! bunzip2 -c PKITS_data.tar.bz2 | tar xf - ; then
+    echo "inittests: failed to untar the test data" >&2
+    exit 1
+fi    
+
+
+# A stamp file used with --clean
+echo gnupg-test-pkits-directory > testdir.stamp
+
+
+# Create the configuration scripts
+cat > gpgsm.conf <<EOF
+no-secmem-warning
+no-greeting
+batch
+disable-crl-checks
+agent-program ../../agent/gpg-agent
+EOF
+
+# Fixme: we need to write a dummy pinentry program
+cat > gpg-agent.conf <<EOF
+no-grab
+EOF
+
+# Mark the root CA trusted
+cat > trustlist.txt <<EOF
+# /CN=Trust Anchor/O=Test Certificates/C=US
+66:8A:47:56:A2:DC:88:FF:DA:B8:95:E1:3C:63:37:55:5F:0A:F7:BF S
+EOF
+
+# Define the standard policies as NIST test-policy-1
+#cat >policies.txt <<EOF
+#2.16.840.1.101.3.2.1.48.1
+#EOF

@@ -940,6 +940,14 @@ else
 fi
 AC_SUBST(ZLIBS)
 
+
+# See wether we want to run the long test suite.
+AC_ARG_WITH(pkits-tests,
+    AC_HELP_STRING([--with-pkits-tests],[run the PKITS based tests]),
+    [run_pkits_tests=$withval], [run_pkits_tests=no])
+AM_CONDITIONAL(RUN_PKITS_TESTS, test "$run_pkits_tests" = "yes")
+
+
 # Allow users to append something to the version string without
 # flagging it as development version.  The user version parts is
 # considered everything after a dash. 
@@ -1121,6 +1129,7 @@ scd/Makefile
 tools/Makefile
 doc/Makefile
 tests/Makefile
+tests/pkits/Makefile
 ])
 AC_OUTPUT
 
@@ -1137,10 +1146,12 @@ echo "
         Agent:     $build_agent $build_agent_threaded
         Smartcard: $build_scdaemon $build_scdaemon_extra
 
-        Protect tool:     $show_gnupg_protect_tool_pgm
-        Default agent:    $show_gnupg_agent_pgm
-        Default pinentry: $show_gnupg_pinentry_pgm
-        Default scdaemon: $show_gnupg_scdaemon_pgm
-        Default dirmngr:  $show_gnupg_dirmngr_pgm
+        Protect tool:      $show_gnupg_protect_tool_pgm
+        Default agent:     $show_gnupg_agent_pgm
+        Default pinentry:  $show_gnupg_pinentry_pgm
+        Default scdaemon:  $show_gnupg_scdaemon_pgm
+        Default dirmngr:   $show_gnupg_dirmngr_pgm
+
+        PKITS based tests: $run_pkits_tests
 "
 
