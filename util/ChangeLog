@@ -1,3 +1,8 @@
+2004-03-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* iobuf.c (block_filter): Properly handle a partial body stream
+	that ends with a 5-byte length that happens to be zero.
+
 2004-02-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* unsetenv.c: Fixed debugging typo.
