@@ -1,3 +1,7 @@
+2002-05-22  Werner Koch  <wk@gnupg.org>
+
+	* util.h: Add strncasecmp.  Removed stricmp and memicmp.
+
 2002-05-10  Stefan Bellon  <sbellon@sbellon.de>
 
 	* mpi.h: New function mpi_debug_alloc_like for M_DEBUG.

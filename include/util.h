@@ -205,9 +205,6 @@ int ascii_tolower (int c);
 int ascii_strcasecmp( const char *a, const char *b );
 int ascii_memcasecmp( const char *a, const char *b, size_t n );
 
-#ifndef HAVE_MEMICMP
-int memicmp( const char *a, const char *b, size_t n );
-#endif
 #ifndef HAVE_STPCPY
 char *stpcpy(char *a,const char *b);
 #endif
@@ -220,14 +217,14 @@ char *strsep (char **stringp, const char *delim);
 #ifndef HAVE_STRCASECMP
 int strcasecmp( const char *, const char *b);
 #endif
+#ifndef HAVE_STRNCASECMP
+int strncasecmp (const char *, const char *b, size_t n);
+#endif
 #ifndef HAVE_STRTOUL
   #define strtoul(a,b,c)  ((unsigned long)strtol((a),(b),(c)))
 #endif
 #ifndef HAVE_MEMMOVE
   #define memmove(d, s, n) bcopy((s), (d), (n))
-#endif
-#ifndef HAVE_STRICMP
-  #define stricmp(a,b)	 strcasecmp( (a), (b) )
 #endif
 
 #if defined (__MINGW32__) || defined (__CYGWIN32__)
