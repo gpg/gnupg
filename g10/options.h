@@ -88,7 +88,7 @@ struct {
     int skip_verify;
     int compress_keys;
     int compress_sigs;
-    enum {TM_OPENPGP, TM_CLASSIC, TM_ALWAYS} trust_model;
+    enum {TM_CLASSIC=0, TM_OPENPGP=1, TM_ALWAYS} trust_model;
     unsigned int force_ownertrust;
     int pgp2;
     int pgp6;

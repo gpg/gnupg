@@ -418,6 +418,29 @@ cleanup(void)
     }
 }
 
+/* Caller must sync */
+int
+tdbio_update_version_record (void)
+{
+  TRUSTREC rec;
+  int rc;
+
+  memset( &rec, 0, sizeof rec );
+
+  rc=tdbio_read_record( 0, &rec, RECTYPE_VER);
+  if(rc==0)
+    {
+      rec.r.ver.created     = make_timestamp();
+      rec.r.ver.marginals   = opt.marginals_needed;
+      rec.r.ver.completes   = opt.completes_needed;
+      rec.r.ver.cert_depth  = opt.max_cert_depth;
+      rec.r.ver.trust_model = opt.trust_model;
+      rc=tdbio_write_record(&rec);
+    }
+
+  return rc;
+}
+
 static int
 create_version_record (void)
 {
@@ -425,11 +448,12 @@ create_version_record (void)
   int rc;
   
   memset( &rec, 0, sizeof rec );
-  rec.r.ver.version = 3;
-  rec.r.ver.created = make_timestamp();
-  rec.r.ver.marginals =  opt.marginals_needed;
-  rec.r.ver.completes =  opt.completes_needed;
-  rec.r.ver.cert_depth = opt.max_cert_depth;
+  rec.r.ver.version     = 3;
+  rec.r.ver.created     = make_timestamp();
+  rec.r.ver.marginals   = opt.marginals_needed;
+  rec.r.ver.completes   = opt.completes_needed;
+  rec.r.ver.cert_depth  = opt.max_cert_depth;
+  rec.r.ver.trust_model = opt.trust_model;
   rec.rectype = RECTYPE_VER;
   rec.recnum = 0;
   rc = tdbio_write_record( &rec );
@@ -1060,12 +1084,13 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
       case 0: fprintf(fp, "blank\n");
 	break;
       case RECTYPE_VER: fprintf(fp,
-	    "version, td=%lu, f=%lu, m/c/d=%d/%d/%d nc=%lu (%s)\n",
+	    "version, td=%lu, f=%lu, m/c/d=%d/%d/%d tm=%d nc=%lu (%s)\n",
                                    rec->r.ver.trusthashtbl,
 				   rec->r.ver.firstfree,
 				   rec->r.ver.marginals,
 				   rec->r.ver.completes,
 				   rec->r.ver.cert_depth,
+				   rec->r.ver.trust_model,
                                    rec->r.ver.nextcheck,
 				   strtimestamp(rec->r.ver.nextcheck)
                                  );
@@ -1158,7 +1183,8 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	rec->r.ver.marginals = *p++;
 	rec->r.ver.completes = *p++;
 	rec->r.ver.cert_depth = *p++;
-	p += 4; /* lock flags */
+	rec->r.ver.trust_model = *p++;
+	p += 3;
 	rec->r.ver.created  = buftoulong(p); p += 4;
 	rec->r.ver.nextcheck = buftoulong(p); p += 4;
 	p += 4;
@@ -1242,7 +1268,8 @@ tdbio_write_record( TRUSTREC *rec )
 	*p++ = rec->r.ver.marginals;
 	*p++ = rec->r.ver.completes;
 	*p++ = rec->r.ver.cert_depth;
-	p += 4; /* skip lock flags */
+	*p++ = rec->r.ver.trust_model;
+	p += 3;
 	ulongtobuf(p, rec->r.ver.created); p += 4;
 	ulongtobuf(p, rec->r.ver.nextcheck); p += 4;
 	p += 4;

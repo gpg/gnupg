@@ -1912,6 +1912,7 @@ validate_keys (int interactive)
           log_info (_("next trustdb check due at %s\n"),
                     strtimestamp (next_expire));
         }
+      tdbio_update_version_record();
       do_sync ();
       pending_check_trustdb = 0;
     }

@@ -1,5 +1,17 @@
 2002-12-03  David Shaw  <dshaw@jabberwocky.com>
 
+	* tdbio.h, tdbio.c (tdbio_read_record, tdbio_write_record): Store
+	trust model in the trustdb version record.
+	(tdbio_update_version_record): New function to update version
+	record values during a trustdb check or update.
+	(tdbio_dump_record): Show trust model in dump.
+
+	* trustdb.c (validate_keys): Call tdbio_update_version_record on
+	success so that the correct options are stored in the trustdb.
+
+	* options.h: rearrange trust models so that CLASSIC is 0 and
+	OPENPGP is 1.
+
 	* options.h, g10.c (main), encode.c (write_pubkey_enc_from_list),
 	pkclist.c (algo_available), revoke.c (gen_revoke): Add --pgp8
 	mode.  This is basically identical to --pgp7 in all ways except
