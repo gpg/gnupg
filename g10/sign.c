@@ -1249,6 +1249,7 @@ update_keysig_packet( PKT_signature **ret_sig,
                       PKT_signature *orig_sig,
                       PKT_public_key *pk,
                       PKT_user_id *uid, 
+                      PKT_public_key *subpk,
                       PKT_secret_key *sk,
                       int (*mksubpkt)(PKT_signature *, void *),
                       void *opaque
@@ -1258,10 +1259,10 @@ update_keysig_packet( PKT_signature **ret_sig,
     int rc=0;
     MD_HANDLE md;
 
-    if (!orig_sig || !pk || !uid || !sk)
-        return G10ERR_GENERAL;
-    if (orig_sig->sig_class < 0x10 || orig_sig->sig_class > 0x13 )
-        return G10ERR_GENERAL;
+    if ((!orig_sig || !pk || !sk)
+	|| (orig_sig->sig_class >= 0x10 && orig_sig->sig_class <= 0x13 && !uid)
+	|| (orig_sig->sig_class == 0x18 && !subpk))
+      return G10ERR_GENERAL;
 
     md = md_open( orig_sig->digest_algo, 0 );
 

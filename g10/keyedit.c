@@ -2684,7 +2684,7 @@ menu_set_primary_uid ( KBNODE pub_keyblock, KBNODE sec_keyblock )
 
                 if (action) {
                     int rc = update_keysig_packet (&newsig, sig,
-                                               main_pk, uid, 
+					       main_pk, uid, NULL,
                                                sk,
                                                change_primary_uid_cb,
                                                action > 0? "x":NULL );
@@ -2769,7 +2769,7 @@ menu_set_preferences (KBNODE pub_keyblock, KBNODE sec_keyblock )
                 int rc;
 
                 rc = update_keysig_packet (&newsig, sig,
-                                           main_pk, uid, 
+                                           main_pk, uid, NULL,
                                            sk,
                                            keygen_upd_std_prefs,
                                            NULL );

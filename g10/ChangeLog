@@ -1,3 +1,10 @@
+2002-12-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* packet.h, sign.c (update_keysig_packet), keyedit.c
+	(menu_set_primary_uid, menu_set_preferences): Add ability to issue
+	0x18 subkey binding sigs to update_keysig_packet and change all
+	callers.
+
 2002-12-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, g10.c (main), encode.c (write_pubkey_enc_from_list),
