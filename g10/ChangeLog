@@ -11,13 +11,14 @@
 	--delete-secret-key(s) and --delete-secret-and-public-key(s) as
 	well.
 
-2001-01-09  Timo Schulz  <ts@winpt.org>
+2002-01-09  Timo Schulz  <ts@winpt.org>
 
 	* encode.c (encode_crypt_files): Now it behaves like verify_files.
+	
 	* g10.c (main): We don't need to check argc for encode_crypt_files
 	any longer.
 
-2001-01-09  Timo Schulz  <ts@winpt.org>
+2002-01-09  Timo Schulz  <ts@winpt.org>
 
 	* exec.c: Include windows.h for dosish systems.
 

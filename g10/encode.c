@@ -569,32 +569,61 @@ void
 encode_crypt_files(int nfiles, char **files, STRLIST remusr)
 {
     int rc = 0;
+
+    if (opt.outfile)
+      {
+        if (opt.verbose)
+          log_info(_("ignore --output for multiple files"));
+        opt.outfile = NULL;
+      }
     
-    if (!nfiles) {
-	char line[2048];
-	unsigned int lno = 0;
-	while ( fgets(line, DIM(line), stdin) ) {
-	    lno++;
-	    if (!*line || line[strlen(line)-1] != '\n') {
-	    log_error("input line %u too long or missing LF\n", lno);
-	    return;
-	    }
-	    line[strlen(line)-1] = '\0';
-	    print_file_status(STATUS_FILE_START, line, 2);
-	    if ( (rc = encode_crypt(line, remusr)) )
-		log_error("%s: encryption failed: %s\n", print_fname_stdin(line),
-						    g10_errstr(rc) );
-	    write_status( STATUS_FILE_DONE );
-	}
-    }
-    else {
-	while (nfiles--) {
-	    print_file_status(STATUS_FILE_START, *files, 2);
-	    if ( (rc = encode_crypt(*files, remusr)) )
-        	log_error("%s: encryption failed: %s\n", print_fname_stdin(*files),
-                                                    	g10_errstr(rc) );
-	    write_status( STATUS_FILE_DONE );
-	    files++;
-    	}
-    }
+    if (!nfiles)
+      {
+        char line[2048];
+        unsigned int lno = 0;
+        while ( fgets(line, DIM(line), stdin) )
+          {
+            lno++;
+            if (!*line || line[strlen(line)-1] != '\n')
+              {
+                log_error("input line %u too long or missing LF\n", lno);
+                return;
+              }
+            line[strlen(line)-1] = '\0';
+            print_file_status(STATUS_FILE_START, line, 2);
+            if ( (rc = encode_crypt(line, remusr)) )
+              log_error("%s: encryption failed: %s\n",
+                        print_fname_stdin(line), g10_errstr(rc) );
+            write_status( STATUS_FILE_DONE );
+          }
+      }
+    else
+      {
+        while (nfiles--)
+          {
+            print_file_status(STATUS_FILE_START, *files, 2);
+            if ( (rc = encode_crypt(*files, remusr)) )
+              log_error("%s: encryption failed: %s\n",
+                        print_fname_stdin(*files), g10_errstr(rc) );
+            write_status( STATUS_FILE_DONE );
+            files++;
+          }
+      }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
