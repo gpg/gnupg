@@ -297,7 +297,22 @@ if test "$try_ldap" = yes ; then
                   [gnupg_cv_func_ldap_init=yes],
                   [gnupg_cv_func_ldap_init=no])])
 
-  if test $gnupg_cv_func_ldap_init = yes; then
+  if test $gnupg_cv_func_ldap_init = no; then
+    AC_CACHE_CHECK([whether I can make LDAP be sane with lber.h],
+		         [gnupg_cv_func_ldaplber_init],
+                	 [AC_TRY_LINK([#include <lber.h>
+#include <ldap.h>],
+                  	  [ldap_open("foobar",1234);],
+  		          [gnupg_cv_func_ldaplber_init=yes],
+                          [gnupg_cv_func_ldaplber_init=no])])
+  fi
+
+  if test "$gnupg_cv_func_ldaplber_init" = yes ; then
+     AC_DEFINE(NEED_LBER_H,1,[Define if the LDAP library requires including lber.h before ldap.h])
+  fi
+
+  if test "$gnupg_cv_func_ldap_init" = yes || \
+	test "$gnupg_cv_func_ldaplber_init" = yes ; then
      GPGKEYS_LDAP="gpgkeys_ldap"
   fi
 

@@ -1,3 +1,8 @@
+2002-05-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: If LDAP comes up unusable, try #including <lber.h>
+	before giving up.  Old versions of OpenLDAP require that.
+
 2002-05-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: In g10defs.h, use \ for the directory separator
