@@ -51,7 +51,9 @@ libcipher_a_SOURCES = cipher.c	\
 		 rndw32.c  	\
 		 md5.c     	\
 		 rmd160.c  	\
-		 sha1.c
+		 sha1.c         \
+		 sha256.c       \
+		 sha512.c
 
 EXTRA_libcipher_a_SOURCES = idea-stub.c tiger.c
 

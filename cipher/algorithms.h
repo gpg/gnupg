@@ -22,8 +22,6 @@
 
 const char *dynload_enum_module_names (int seq);
 
-
-
 const char *
 md5_get_info (int algo, size_t *contextsize,
               byte **r_asnoid, int *r_asnlen, int *r_mdlen,
@@ -61,6 +59,32 @@ tiger_get_info (int algo, size_t *contextsize,
                 byte *(**r_read)( void *c )
                 );
 
+const char *
+sha256_get_info (int algo, size_t *contextsize,
+		 byte **r_asnoid, int *r_asnlen, int *r_mdlen,
+		 void (**r_init)( void *c ),
+		 void (**r_write)( void *c, byte *buf, size_t nbytes ),
+		 void (**r_final)( void *c ),
+		 byte *(**r_read)( void *c )
+		 );
+
+const char *
+sha384_get_info (int algo, size_t *contextsize,
+		 byte **r_asnoid, int *r_asnlen, int *r_mdlen,
+		 void (**r_init)( void *c ),
+		 void (**r_write)( void *c, byte *buf, size_t nbytes ),
+		 void (**r_final)( void *c ),
+		 byte *(**r_read)( void *c )
+		 );
+
+const char *
+sha512_get_info (int algo, size_t *contextsize,
+		 byte **r_asnoid, int *r_asnlen, int *r_mdlen,
+		 void (**r_init)( void *c ),
+		 void (**r_write)( void *c, byte *buf, size_t nbytes ),
+		 void (**r_final)( void *c ),
+		 byte *(**r_read)( void *c )
+		 );
 
 const char *
 des_get_info( int algo, size_t *keylen,
