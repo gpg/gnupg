@@ -179,7 +179,7 @@ struct {
     int show_keyring;
     struct groupitem *grouplist;
     int strict;
-    int mangle_dos_names; 
+    int mangle_dos_filenames; 
 } opt;
 
 
