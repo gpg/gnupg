@@ -1,3 +1,8 @@
+2003-04-08  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (EXTRA_DIST): Add autogen.sh wrapper which is
+	useful for some cross-compiling targets.
+
 2003-04-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* acinclude.m4: Fix URL to faqprog.pl.

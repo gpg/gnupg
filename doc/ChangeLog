@@ -6,6 +6,20 @@
 	SGML tags are closed, clarify --pgp8 allows SHA-256, and document
 	--no-emit-version.
 
+2003-04-01  Werner Koch  <wk@gnupg.org>
+
+	* DETAILS (VALIDSIG): Add primary keys fingerprint. 
+
+2003-04-01  David D. Scribner <dscribner@bigfoot.com>
+
+	* faq.raw (Question 4.15): Fixed URL
+	<http://http://gpgrelay.sourceforge.net>, corrected to be
+	<http://gpgrelay.sourceforge.net> (had two "httpd://")
+        (Question 5.9): Appended <br> tag to end of first line in command
+        example for proper cr/lf treatment within a <samp> tag.
+        (Footer): Extended copyright to 2003.
+	Applied by Werner Koch.
+
 2003-02-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Document "revuid".  Clarify that --openpgp resets

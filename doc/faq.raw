@@ -16,8 +16,8 @@ The most recent version of the FAQ is available from
 
 
 [H p]
-Version: 1.6.1[H br]
-Last-Modified: Dec 28, 2002[H br]
+Version: 1.6.2[H br]
+Last-Modified: Feb 25, 2003[H br]
 Maintained-by: [$maintainer]
 [H /p]
 
@@ -545,7 +545,7 @@ you could search in the mailing list archive.
     [H a href=http://www.bretschneidernet.de/tips/secmua.html]<http://www.bretschneidernet.de/tips/secmua.html>[H /a].
 
     Users of Win32 MUAs that lack OpenPGP support may look into
-    using GPGrelay [H a href=http://http://gpgrelay.sourceforge.net]<http://gpgrelay.sourceforge.net>[H /a], a small
+    using GPGrelay [H a href=http://gpgrelay.sourceforge.net]<http://gpgrelay.sourceforge.net>[H /a], a small
     email-relaying server that uses GnuPG to enable many email clients
     to send and receive emails that conform to PGP-MIME (RFC 2015).
 
@@ -853,7 +853,7 @@ you could search in the mailing list archive.
     Now we can do the usual export:
 
     [H samp]
-       $ gpg --export KeyID > mypublickey.pgp
+       $ gpg --export KeyID > mypublickey.pgp[H br]
        $ gpg --export-secret-key KeyID > mysecretkey.pgp
     [H /samp]
 
@@ -1295,7 +1295,7 @@ you could search in the mailing list archive.
 
 [H hr]
 
-Copyright (C) 2000-2002 Free Software Foundation, Inc.,
+Copyright (C) 2000-2003 Free Software Foundation, Inc.,
 59 Temple Place - Suite 330, Boston, MA 02111, USA
 
 Verbatim copying and distribution of this entire article is permitted in

@@ -1,4 +1,5 @@
-# Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+# Top Makefile for GnuPG
+# Copyright (C) 1998,1999,2000,2001,2003 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -25,7 +26,7 @@ checks = checks
 endif
 
 SUBDIRS = intl zlib util mpi cipher tools g10 keyserver po doc ${checks}
-EXTRA_DIST = PROJECTS BUGS config.h.in
+EXTRA_DIST = PROJECTS BUGS config.h.in autogen.sh
 DISTCLEANFILES = g10defs.h 
 
 # Add all the files listed in "distfiles" files to the distribution,
