@@ -64,7 +64,7 @@ static void remove_bad_stuff (KBNODE keyblock);
 static int import_one( const char *fname, KBNODE keyblock,
                        struct stats_s *stats, unsigned int options);
 static int import_secret_one( const char *fname, KBNODE keyblock,
-                              struct stats_s *stats );
+                              struct stats_s *stats, unsigned int options);
 static int import_revoke_cert( const char *fname, KBNODE node,
                                struct stats_s *stats);
 static int chk_self_sigs( const char *fname, KBNODE keyblock,
@@ -83,7 +83,6 @@ static int merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
 static int merge_keysigs( KBNODE dst, KBNODE src, int *n_sigs,
 			     const char *fname, u32 *keyid );
 
-
 int
 parse_import_options(char *str,unsigned int *options)
 {
@@ -98,6 +97,7 @@ parse_import_options(char *str,unsigned int *options)
       {"allow-local-sigs",IMPORT_ALLOW_LOCAL_SIGS},
       {"repair-hkp-subkey-bug",IMPORT_REPAIR_HKP_SUBKEY_BUG},
       {"fast-import",IMPORT_FAST_IMPORT},
+      {"convert-sk-to-pk",IMPORT_SK2PK},
       {NULL,0}
     };
 
@@ -262,7 +262,7 @@ import( IOBUF inp, const char* fname,
 	if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
 	    rc = import_one( fname, keyblock, stats, options );
 	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY ) 
-                rc = import_secret_one( fname, keyblock, stats );
+                rc = import_secret_one( fname, keyblock, stats, options );
 	else if( keyblock->pkt->pkttype == PKT_SIGNATURE
 		 && keyblock->pkt->pkt.signature->sig_class == 0x20 )
 	    rc = import_revoke_cert( fname, keyblock, stats );
@@ -808,6 +808,65 @@ import_one( const char *fname, KBNODE keyblock,
     return rc;
 }
 
+/* Walk a secret keyblock and produce a public keyblock out of it. */
+static KBNODE
+sec_to_pub_keyblock(KBNODE sec_keyblock)
+{
+  KBNODE secnode,pub_keyblock=NULL,ctx=NULL;
+
+  while((secnode=walk_kbnode(sec_keyblock,&ctx,0)))
+    {
+      KBNODE pubnode;
+
+      if(secnode->pkt->pkttype==PKT_SECRET_KEY ||
+	 secnode->pkt->pkttype==PKT_SECRET_SUBKEY)
+	{
+	  /* Make a public key.  We only need to convert enough to
+	     write the keyblock out. */
+
+	  PKT_secret_key *sk=secnode->pkt->pkt.secret_key;
+	  PACKET *pkt=m_alloc_clear(sizeof(PACKET));
+	  PKT_public_key *pk=m_alloc_clear(sizeof(PKT_public_key));
+	  int n;
+
+	  if(secnode->pkt->pkttype==PKT_SECRET_KEY)
+	    pkt->pkttype=PKT_PUBLIC_KEY;
+	  else
+	    pkt->pkttype=PKT_PUBLIC_SUBKEY;
+
+	  pkt->pkt.public_key=pk;
+
+	  pk->version=sk->version;
+	  pk->timestamp=sk->timestamp;
+	  pk->expiredate=sk->expiredate;
+	  pk->pubkey_algo=sk->pubkey_algo;
+
+	  n=pubkey_get_npkey(pk->pubkey_algo);
+	  if(n==0)
+	    pk->pkey[0]=mpi_copy(sk->skey[0]);
+	  else
+	    {
+	      int i;
+
+	      for(i=0;i<n;i++)
+		pk->pkey[i]=mpi_copy(sk->skey[i]);
+	    }
+
+	  pubnode=new_kbnode(pkt);
+	}
+      else
+	{
+	  pubnode=clone_kbnode(secnode);
+	}
+
+      if(pub_keyblock==NULL)
+	pub_keyblock=pubnode;
+      else
+	add_kbnode(pub_keyblock,pubnode);
+    }
+
+  return pub_keyblock;
+}
 
 /****************
  * Ditto for secret keys.  Handling is simpler than for public keys.
@@ -817,7 +876,7 @@ import_one( const char *fname, KBNODE keyblock,
  */
 static int
 import_secret_one( const char *fname, KBNODE keyblock, 
-                   struct stats_s *stats)
+                   struct stats_s *stats, unsigned int options)
 {
     PKT_secret_key *sk;
     KBNODE node, uidnode;
@@ -882,6 +941,16 @@ import_secret_one( const char *fname, KBNODE keyblock,
 	stats->secret_imported++;
         if (is_status_enabled ()) 
              print_import_ok (NULL, sk, 1|16);
+
+	if(options&IMPORT_SK2PK)
+	  {
+	    /* Try and make a public key out of this. */
+
+	    KBNODE pub_keyblock=sec_to_pub_keyblock(keyblock);
+	    import_one(fname,pub_keyblock,stats,opt.import_options);
+	    release_kbnode(pub_keyblock);
+	  }
+
     }
     else if( !rc ) { /* we can't merge secret keys */
 	log_error( _("key %08lX: already in secret keyring\n"),
@@ -889,6 +958,9 @@ import_secret_one( const char *fname, KBNODE keyblock,
 	stats->secret_dups++;
         if (is_status_enabled ()) 
              print_import_ok (NULL, sk, 16);
+
+	/* TODO: if we ever do merge secret keys, make sure to handle
+	   the sec_to_pub_keyblock feature as well. */
     }
     else
 	log_error( _("key %08lX: secret key not found: %s\n"),

@@ -1128,7 +1128,7 @@ main( int argc, char **argv )
     opt.pgp2_workarounds = 1;
     opt.force_v3_sigs = 1;
     opt.escape_from = 1;
-    opt.import_options=0;
+    opt.import_options=IMPORT_SK2PK;
     opt.export_options=
       EXPORT_INCLUDE_NON_RFC|EXPORT_INCLUDE_ATTRIBUTES;
     opt.keyserver_options.import_options=IMPORT_REPAIR_HKP_SUBKEY_BUG;

@@ -1,3 +1,10 @@
+2002-10-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, import.c (sec_to_pub_keyblock, import_secret_one,
+	parse_import_options), g10.c (main): New import-option
+	"convert-sk-to-pk" to convert a secret key into a public key
+	during import.  It is on by default.
+
 2002-10-23  Werner Koch  <wk@gnupg.org>
 
 	* pubkey-enc.c (get_it): Fix segv, test for revoked only when PK
