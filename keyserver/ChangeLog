@@ -1,3 +1,10 @@
+2004-05-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_http.c: New program to do a simple HTTP file fetch using
+	the keyserver interface.
+
+	* Makefile.am: Build it.
+
 2004-02-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Don't split LDADD across two lines since some make
