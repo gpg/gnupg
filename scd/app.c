@@ -1,5 +1,5 @@
 /* app.c - Application selection.
- *	Copyright (C) 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -45,6 +45,7 @@ is_app_allowed (const char *name)
   return 1; /* yes */
 }
 
+
 /* If called with NAME as NULL, select the best fitting application
    and return a context; otherwise select the application with NAME
    and return a context.  SLOT identifies the reader device. Returns
@@ -81,31 +82,50 @@ select_application (ctrl_t ctrl, int slot, const char *name)
       const unsigned char *p;
 
       p = find_tlv (result, resultlen, 0x5A, &n);
-      if (p && n && n >= (resultlen - (p - result)))
+      if (p)
+        resultlen -= (p-result);
+      if (p && n > resultlen && n == 0x0d && resultlen+1 == n)
+        {
+          /* The object it does not fit into the buffer.  This is an
+             invalid encoding (or the buffer is too short.  However, I
+             have some test cards with such an invalid encoding and
+             therefore I use this ugly workaround to return something
+             I can further experiment with. */
+          log_debug ("enabling BMI testcard workaround\n");
+          n--;
+        }
+
+      if (p && n <= resultlen)
         {
           /* The GDO file is pretty short, thus we simply reuse it for
              storing the serial number. */
           memmove (result, p, n);
           app->serialno = result;
           app->serialnolen = n;
+          rc = app_munge_serialno (app);
+          if (rc)
+            goto leave;
         }
       else
         xfree (result);
       result = NULL;
     }
 
-
+  
   rc = gpg_error (GPG_ERR_NOT_FOUND);
 
   if (rc && is_app_allowed ("openpgp") && (!name || !strcmp (name, "openpgp")))
     rc = app_select_openpgp (app);
   if (rc && is_app_allowed ("nks") && (!name || !strcmp (name, "nks")))
     rc = app_select_nks (app);
+/*   if (rc && is_app_allowed ("p12") && (!name || !strcmp (name, "p12"))) */
+/*     rc = app_select_p12 (app); */
   if (rc && is_app_allowed ("dinsig") && (!name || !strcmp (name, "dinsig")))
     rc = app_select_dinsig (app);
   if (rc && name)
     rc = gpg_error (GPG_ERR_NOT_SUPPORTED);
 
+ leave:
   if (rc)
     {
       if (name)
@@ -137,6 +157,39 @@ release_application (app_t app)
 
   xfree (app->serialno);
   xfree (app);
+}
+
+
+
+/* The serial number may need some cosmetics.  Do it here.  This
+   function shall only be called once after a new serial number has
+   been put into APP->serialno. 
+
+   Prefixes we use:
+   
+     FF 00 00 = For serial numbers starting with an FF
+     FF 01 00 = Some german p15 cards return an empty serial number so the
+                serial number from the EF(TokeInfo is used instead.
+     
+     All other serial number not starting with FF are used as they are.
+*/
+int
+app_munge_serialno (app_t app)
+{
+  if (app->serialnolen && app->serialno[0] == 0xff)
+    { 
+      /* The serial number starts with our special prefix.  This
+         requires that we put our default prefix "FF0000" in front. */
+      unsigned char *p = xtrymalloc (app->serialnolen + 3);
+      if (!p)
+        return gpg_error (gpg_err_code_from_errno (errno));
+      memcpy (p, "\xff\0", 3);
+      memcpy (p+3, app->serialno, app->serialnolen);
+      app->serialnolen += 3;
+      xfree (app->serialno);
+      app->serialno = p;
+    }
+  return 0;
 }
 
 

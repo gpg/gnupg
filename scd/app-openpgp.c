@@ -1394,6 +1394,13 @@ app_select_openpgp (APP app)
           log_info ("got AID: ");
           log_printhex ("", buffer, buflen);
         }
+#if GNUPG_MAJOR_VERSION != 1
+      /* A valid OpenPGP card should never need this but well the test
+         is cheap. */
+      rc = app_number_serialno (app);
+      if (rc)
+        goto leave;
+#endif
 
       app->card_version = buffer[6] << 8;
       app->card_version |= buffer[7];

@@ -95,6 +95,7 @@ size_t app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff);
 /*-- app.c --*/
 app_t select_application (ctrl_t ctrl, int slot, const char *name);
 void release_application (app_t app);
+int app_munge_serialno (app_t app);
 int app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp);
 int app_write_learn_status (app_t app, ctrl_t ctrl);
 int app_readcert (app_t app, const char *certid,
@@ -158,6 +159,9 @@ int app_select_nks (app_t app);
 
 /*-- app-dinsig.c --*/
 int app_select_dinsig (app_t app);
+
+/*-- app-p15.c --*/
+int app_select_p15 (app_t app);
 
 
 #endif

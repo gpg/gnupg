@@ -1,3 +1,10 @@
+2004-08-20  Werner Koch  <wk@g10code.de>
+
+	* app.c (select_application): Fixed serial number extraction and
+	added the BMI card workaround.
+	(app_munge_serialno): New.
+	* app-openpgp.c (app_select_openpgp): Try munging serialno.
+
 2004-08-05  Werner Koch  <wk@g10code.de>
 
 	* scdaemon.c (main): New option --disable-application.
