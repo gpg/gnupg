@@ -634,7 +634,13 @@ if test "$try_extensions" = yes || test x"$card_support" = xyes ; then
   if test x"$found_dlopen" = "xyes" ; then
     AC_DEFINE(HAVE_DL_DLOPEN,1,
               [Defined when the dlopen function family is available])
-    AC_SUBST(DLLIBS,"-ldl")
+    case "${target}" in
+        *-*-mingw32*)
+          ;;
+        *)
+          AC_SUBST(DLLIBS,"-ldl")
+          ;;
+    esac
 
     if test "$try_extensions" = yes ; then
        AC_DEFINE(USE_DYNAMIC_LINKING,1,
