@@ -868,9 +868,11 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
           m_free (orig_codeset);
           return pw;
         }
-      else if (nread > 7 && !memcmp (pw, "ERR 111", 7)
-               && (pw[7] == ' ' || pw[7] == '\n') ) 
-        {
+      else if (nread > 4 && !memcmp (pw, "ERR ", 4)
+	       && (0xffff & strtoul (&pw[4], NULL, 0)) == 99)
+	{
+	  /* 99 is GPG_ERR_CANCELED.  FIXME: Check tail and overflow,
+	     and use gpg-error.  */
           log_info (_("cancelled by user\n") );
           if (canceled)
             *canceled = 1;
