@@ -122,17 +122,18 @@ struct {
       int include_revoked;
       int include_disabled;
       int include_subkeys;
-      int include_attributes;
       int honor_http_proxy;
       int broken_http_proxy;
       int use_temp_files;
       int keep_temp_files;
       int fake_v3_keyids;
       int auto_key_retrieve;
+      unsigned int import_options;
       unsigned int export_options;
       STRLIST other;
     } keyserver_options;
     int exec_disable;
+    unsigned int import_options;
     unsigned int export_options;
     char *def_preference_list;
     prefitem_t *personal_cipher_prefs,

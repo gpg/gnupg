@@ -81,6 +81,48 @@ static int merge_keysigs( KBNODE dst, KBNODE src, int *n_sigs,
 			     const char *fname, u32 *keyid );
 
 
+int
+parse_import_options(char *str,unsigned int *options)
+{
+  char *tok;
+  int hit=0;
+  struct
+  {
+    char *name;
+    unsigned int bit;
+  } import_opts[]=
+    {
+      {"allow-local-sigs",IMPORT_ALLOW_LOCAL_SIGS},
+      {NULL,0}
+    };
+
+  while((tok=strsep(&str," ,")))
+    {
+      int i,rev=0;
+
+      if(ascii_memcasecmp("no-",tok,3)==0)
+	rev=1;
+
+      for(i=0;import_opts[i].name;i++)
+	{
+	  if(ascii_strcasecmp(import_opts[i].name,tok)==0)
+	    {
+	      if(rev)
+		*options&=~import_opts[i].bit;
+	      else
+		*options|=import_opts[i].bit;
+	      hit=1;
+	      break;
+	    }
+	}
+
+      if(!hit && !import_opts[i].name)
+	return 0;
+    }
+
+  return hit;
+}
+
 void *
 import_new_stats_handle (void)
 {
@@ -1039,6 +1081,7 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 	    delete_kbnode( node ); /* build_packet() can't handle this */
 	else if( node->pkt->pkttype == PKT_SIGNATURE &&
 		 !node->pkt->pkt.signature->flags.exportable &&
+		 !(opt.import_options&IMPORT_ALLOW_LOCAL_SIGS) &&
 		 seckey_available( node->pkt->pkt.signature->keyid ) ) {
 	    /* here we violate the rfc a bit by still allowing
 	     * to import non-exportable signature when we have the

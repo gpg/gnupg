@@ -54,7 +54,6 @@ struct kopts
   {"include-revoked",1,&opt.keyserver_options.include_revoked},
   {"include-disabled",1,&opt.keyserver_options.include_disabled},
   {"include-subkeys",1,&opt.keyserver_options.include_subkeys},
-  {"include-attributes",0,&opt.keyserver_options.include_attributes},
   {"keep-temp-files",0,&opt.keyserver_options.keep_temp_files},
   {"honor-http-proxy",1,&opt.keyserver_options.honor_http_proxy},
   {"broken-http-proxy",1,&opt.keyserver_options.broken_http_proxy},
@@ -110,9 +109,12 @@ parse_keyserver_options(char *options)
 	  else if(ascii_strcasecmp(tok,"no-use-temp-files")==0)
 	    opt.keyserver_options.use_temp_files=0;
 #endif
-	  else if(!parse_export_options(tok,
-					&opt.keyserver_options.export_options))
-	    add_to_strlist(&opt.keyserver_options.other,tok);
+	  else
+	    if(!parse_import_options(tok,
+				     &opt.keyserver_options.import_options) &&
+	       !parse_export_options(tok,
+				     &opt.keyserver_options.export_options))
+	      add_to_strlist(&opt.keyserver_options.other,tok);
 	}
     }
 }

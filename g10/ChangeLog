@@ -1,5 +1,16 @@
 2002-07-22  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, main.h, g10.c (main), import.c
+	(parse_import_options, delete_inv_parts), keyserver.c
+	(parse_keyserver_options): add new --import-options option.  The
+	only current flag is "allow-local-sigs".
+
+	* g10.c (main): Don't disable MDC in pgp7 mode.
+
+	* options.h, g10.c (main), keyserver.c (parse_keyserver_options):
+	Remove old keyserver-option include-attributes now that there is
+	an export-option for the same thing.
+
 	* options.h, main.h, export.c (parse_export_options,
 	do_export_stream), g10.c (main): add new --export-options option.
 	Current flags are "include-non-rfc", "include-local-sigs",

@@ -150,6 +150,11 @@ KBNODE make_comment_node( const char *s );
 KBNODE make_mpi_comment_node( const char *s, MPI a );
 
 /*-- import.c --*/
+/* 1, 4, and 8 are reserved so they match the EXPORT_* flags below */
+#define IMPORT_ALLOW_LOCAL_SIGS 2
+#define IMPORT_DEFAULT          0
+
+int parse_import_options(char *str,unsigned int *options);
 void import_keys( char **fnames, int nnames, int fast, void *stats_hd );
 int import_keys_stream( IOBUF inp, int fast, void *stats_hd );
 void *import_new_stats_handle (void);
@@ -159,11 +164,11 @@ void import_print_stats (void *hd);
 int collapse_uids( KBNODE *keyblock );
 
 /*-- export.c --*/
-#define EXPORT_INCLUDE_NON_RFC    1
-#define EXPORT_INCLUDE_LOCAL_SIGS 2
-#define EXPORT_INCLUDE_ATTRIBUTES 4
+#define EXPORT_INCLUDE_NON_RFC           1
+#define EXPORT_INCLUDE_LOCAL_SIGS        2
+#define EXPORT_INCLUDE_ATTRIBUTES        4
 #define EXPORT_INCLUDE_SENSITIVE_REVKEYS 8
-#define EXPORT_DEFAULT (1|4)
+#define EXPORT_DEFAULT                   (1|4)
 
 int parse_export_options(char *str,unsigned int *options);
 int export_pubkeys( STRLIST users, unsigned int options );

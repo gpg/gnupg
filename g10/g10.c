@@ -237,6 +237,7 @@ enum cmd_and_opt_values { aNull = 0,
     oLockNever,
     oKeyServer,
     oKeyServerOptions,
+    oImportOptions,
     oExportOptions,
     oTempDir,
     oExecPath,
@@ -410,6 +411,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDefaultKey, "default-key" ,2, N_("|NAME|use NAME as default secret key")},
     { oKeyServer, "keyserver",2, N_("|HOST|use this keyserver to lookup keys")},
     { oKeyServerOptions, "keyserver-options",2,"@"},
+    { oImportOptions, "import-options",2,"@"},
     { oExportOptions, "export-options",2,"@"},
     { oCharset, "charset"   , 2, N_("|NAME|set terminal charset to NAME") },
     { oOptions, "options"   , 2, N_("read options from file")},
@@ -904,10 +906,11 @@ main( int argc, char **argv )
     opt.pgp2_workarounds = 1;
     opt.force_v3_sigs = 1;
     opt.escape_from = 1;
+    opt.import_options=IMPORT_DEFAULT;
     opt.export_options=EXPORT_DEFAULT;
+    opt.keyserver_options.import_options=IMPORT_DEFAULT;
     opt.keyserver_options.export_options=EXPORT_DEFAULT;
     opt.keyserver_options.include_subkeys=1;
-    opt.keyserver_options.include_attributes=1;
 #if defined (__MINGW32__) || defined (__CYGWIN32__)
     opt.homedir = read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" );
 #else
@@ -1335,6 +1338,16 @@ main( int argc, char **argv )
 	  case oKeyServerOptions:
 	    parse_keyserver_options(pargs.r.ret_str);
 	    break;
+	  case oImportOptions:
+	    if(!parse_import_options(pargs.r.ret_str,&opt.import_options))
+	      {
+		if(configname)
+		  log_error(_("%s:%d: invalid import options\n"),
+			    configname,configlineno);
+		else
+		  log_error(_("invalid import options\n"));
+	      }
+	    break;
 	  case oExportOptions:
 	    if(!parse_export_options(pargs.r.ret_str,&opt.export_options))
 	      {
@@ -1591,13 +1604,17 @@ main( int argc, char **argv )
 
 	if(opt.pgp6 || opt.pgp7)
 	  {
-	    opt.force_mdc=0;
-	    opt.disable_mdc=1;
 	    opt.sk_comments=0;
 	    opt.escape_from=1;
 	    opt.force_v3_sigs=1;
 	    opt.ask_sig_expire=0;
 	    opt.def_compress_algo=1;
+
+	    if(opt.pgp6) /* pgp7 has MDC */
+	      {
+		opt.force_mdc=0;
+		opt.disable_mdc=1;
+	      }
 	  }
       }
 
