@@ -122,9 +122,16 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	break;
     }
     if( sigrc != '?' || print_without_key ) {
-	tty_printf("%s%c       %08lX %s   ",
-		is_rev? "rev":"sig",
-		sigrc, (ulong)sig->keyid[1], datestr_from_sig(sig));
+        tty_printf("%s%c%c %c%c%c%c%c %08lX %s   ",
+		   is_rev? "rev":"sig",sigrc,
+		   (sig->sig_class-0x10>0 &&
+		    sig->sig_class-0x10<4)?'0'+sig->sig_class-0x10:' ',
+		   sig->flags.exportable?' ':'L',
+		   sig->flags.revocable?' ':'R',
+		   sig->flags.policy_url?'P':' ',
+		   sig->flags.notation?'N':' ',
+                   sig->flags.expired?'X':' ',
+		   (ulong)sig->keyid[1], datestr_from_sig(sig));
 	if( sigrc == '%' )
 	    tty_printf("[%s] ", g10_errstr(rc) );
 	else if( sigrc == '?' )
@@ -140,7 +147,14 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	    m_free(p);
 	}
 	tty_printf("\n");
+
+	if(sig->flags.policy_url && opt.show_policy_url)
+	  show_policy_url(sig);
+
+	if(sig->flags.notation && opt.show_notation)
+	  show_notation(sig);
     }
+
     return (sigrc == '!');
 }
 
@@ -245,13 +259,17 @@ static int
 sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 {
     int rc = 0;
+    int class=0;
     SK_LIST sk_list = NULL;
     SK_LIST sk_rover = NULL;
     PKT_secret_key *sk = NULL;
     KBNODE node, uidnode;
     PKT_public_key *primary_pk=NULL;
     int select_all = !count_selected_uids(keyblock);
-    int upd_trust = 0;
+    int upd_trust = 0, force_v4=0;
+
+    if(local || opt.set_policy_url || opt.notation_data)
+      force_v4=1;
 
     /* build a list of all signators.
      *    
@@ -318,23 +336,81 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 	tty_printf("\n");
 	show_key_with_all_names( keyblock, 1, 1, 0, 0 );
 	tty_printf("\n");
-	tty_printf(_(
-	     "Are you really sure that you want to sign this key\n"
-	     "with your key: \""));
+
+	if(opt.batch)
+	  class=0x10+opt.def_check_level;
+	else
+	  {
+	    char *answer;
+
+	    tty_printf(_("How carefully have you verified the key you are "
+			 "about to sign actually belongs\nto the person named "
+			 "above?  If you don't know what to answer, enter \"0\".\n"));
+	    tty_printf("\n");
+	    tty_printf(_("   (0) I will not answer.%s\n"),
+		       opt.def_check_level==0?" (default)":"");
+	    tty_printf(_("   (1) I have not checked at all.%s\n"),
+		       opt.def_check_level==1?" (default)":"");
+	    tty_printf(_("   (2) I have done casual checking.%s\n"),
+		       opt.def_check_level==2?" (default)":"");
+	    tty_printf(_("   (3) I have done very careful checking.%s\n"),
+		       opt.def_check_level==3?" (default)":"");
+	    tty_printf("\n");
+
+	    while(class==0)
+	      {
+		answer = cpr_get("sign_uid.class",_("Your selection? "));
+
+		if(answer[0]=='\0')
+		  class=0x10+opt.def_check_level; /* Default */
+		else if(strcasecmp(answer,"0")==0)
+		  class=0x10; /* Generic */
+		else if(strcasecmp(answer,"1")==0)
+		  class=0x11; /* Persona */
+		else if(strcasecmp(answer,"2")==0)
+		  class=0x12; /* Casual */
+		else if(strcasecmp(answer,"3")==0)
+		  class=0x13; /* Positive */
+		else
+		  tty_printf(_("Invalid selection.\n"));
+
+		m_free(answer);
+	      }
+	  }
+
+	tty_printf(_("Are you really sure that you want to sign this key\n"
+		     "with your key: \""));
 	p = get_user_id( sk_keyid, &n );
 	tty_print_utf8_string( p, n );
 	m_free(p); p = NULL;
-	tty_printf("\"\n\n");
+	tty_printf("\"\n");
 
 	if( local )
 	    tty_printf(
-		  _("The signature will be marked as non-exportable.\n\n"));
+		  _("\nThe signature will be marked as non-exportable.\n"));
 
+	switch(class)
+	  {
+	  case 0x11:
+	    tty_printf(_("\nI have not checked this key at all.\n"));
+	    break;
+
+	  case 0x12:
+	    tty_printf(_("\nI have checked this key casually.\n"));
+	    break;
+
+	  case 0x13:
+	    tty_printf(_("\nI have checked this key very carefully.\n"));
+	    break;
+	  }
+
+	tty_printf("\n");
 
 	if( opt.batch && opt.answer_yes )
-	    ;
+	  ;
 	else if( !cpr_get_answer_is_yes("sign_uid.okay", _("Really sign? ")) )
 	    continue;
+
 	/* now we can sign the user ids */
       reloop: /* (must use this, because we are modifing the list) */
 	primary_pk = NULL;
@@ -357,12 +433,12 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
                  * subpacket with v3 keys and the signature becomes
                  * exportable */
 		rc = make_keysig_packet( &sig, primary_pk,
-					       node->pkt->pkt.user_id,
-					       NULL,
-					       sk,
-                                         0x10, 0, local?4:0,
-					       sign_mk_attrib,
-					       &attrib );
+					 node->pkt->pkt.user_id,
+					 NULL,
+					 sk,
+                                         class, 0, force_v4?4:0,
+					 sign_mk_attrib,
+					 &attrib );
 		if( rc ) {
 		    log_error(_("signing failed: %s\n"), g10_errstr(rc));
 		    goto leave;

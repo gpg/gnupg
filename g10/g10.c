@@ -68,6 +68,8 @@ enum cmd_and_opt_values { aNull = 0,
     oVerbose	  = 'v',
     oCompress	  = 'z',
     oNotation	  = 'N',
+    oShowNotation,
+    oNoShowNotation,
     oBatch	  = 500,
     aClearsign,
     aStore,
@@ -121,6 +123,8 @@ enum cmd_and_opt_values { aNull = 0,
     oWithFingerprint,
     oAnswerYes,
     oAnswerNo,
+    oDefCheckLevel,
+    oNoDefCheckLevel,
     oKeyring,
     oSecretKeyring,
     oDefaultKey,
@@ -175,6 +179,8 @@ enum cmd_and_opt_values { aNull = 0,
     oRunAsShmCP,
     oSetFilename,
     oSetPolicyURL,
+    oShowPolicyURL,
+    oNoShowPolicyURL,
     oUseEmbeddedFilename,
     oComment,
     oDefaultComment,
@@ -407,11 +413,17 @@ static ARGPARSE_OPTS opts[] = {
     { oSkipVerify, "skip-verify",0, "@" },
     { oCompressKeys, "compress-keys",0, "@"},
     { oCompressSigs, "compress-sigs",0, "@"},
+    { oDefCheckLevel, "default-check-level", 1, "@"},
+    { oNoDefCheckLevel, "no-default-check-level", 0, "@"},
     { oAlwaysTrust, "always-trust", 0, "@"},
     { oEmuChecksumBug, "emulate-checksum-bug", 0, "@"},
     { oRunAsShmCP, "run-as-shm-coprocess", 4, "@" },
     { oSetFilename, "set-filename", 2, "@" },
     { oSetPolicyURL, "set-policy-url", 2, "@" },
+    { oShowPolicyURL, "show-policy-url", 0, "@" },
+    { oNoShowPolicyURL, "no-show-policy-url", 0, "@" },
+    { oShowNotation, "show-notation", 0, "@" },
+    { oNoShowNotation, "no-show-notation", 0, "@" },
     { oComment, "comment", 2, "@" },
     { oDefaultComment, "default-comment", 0, "@" },
     { oNoVersion, "no-version", 0, "@"},
@@ -924,6 +936,8 @@ main( int argc, char **argv )
 	    break;
 	  case oNoArmor: opt.no_armor=1; opt.armor=0; break;
 	  case oNoDefKeyring: default_keyring = 0; break;
+	  case oNoDefCheckLevel: opt.def_check_level=0; break;
+          case oDefCheckLevel: opt.def_check_level=pargs.r.ret_int; break;
 	  case oNoGreeting: nogreeting = 1; break;
 	  case oNoVerbose: g10_opt_verbose = 0;
 			   opt.verbose = 0; opt.list_sigs=0; break;
@@ -1007,6 +1021,8 @@ main( int argc, char **argv )
 	    break;
 	  case oSetFilename: opt.set_filename = pargs.r.ret_str; break;
 	  case oSetPolicyURL: opt.set_policy_url = pargs.r.ret_str; break;
+          case oShowPolicyURL: opt.show_policy_url=1; break;
+    	  case oNoShowPolicyURL: opt.show_policy_url=0; break;
 	  case oUseEmbeddedFilename: opt.use_embedded_filename = 1; break;
 	  case oComment: opt.comment_string = pargs.r.ret_str; break;
 	  case oDefaultComment: opt.comment_string = NULL; break;
@@ -1079,6 +1095,8 @@ main( int argc, char **argv )
 	    break;
 	  case oTempDir: opt.temp_dir=pargs.r.ret_str; break;
 	  case oNotation: add_notation_data( pargs.r.ret_str ); break;
+	  case oShowNotation: opt.show_notation=1; break;
+	  case oNoShowNotation: opt.show_notation=0; break;
 	  case oUtf8Strings: utf8_strings = 1; break;
 	  case oNoUtf8Strings: utf8_strings = 0; break;
 	  case oDisableCipherAlgo:
@@ -1220,6 +1238,9 @@ main( int argc, char **argv )
       default:
 	log_error(_("invalid S2K mode; must be 0, 1 or 3\n"));
     }
+
+    if(opt.def_check_level<0 || opt.def_check_level>3)
+      log_error(_("invalid default-check-level; must be 0, 1, 2, or 3\n"));
 
     if (preference_list && keygen_set_std_prefs (preference_list))
         log_error(_("invalid preferences\n"));

@@ -1,3 +1,46 @@
+2001-12-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* Force a V4 sig if the user has a notation or policy URL set.
+
+2001-12-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c: Add options --keyserver-options, --temp-directory, and
+	auto-key-retrieve (the opposite of no-auto-key-retrieve).
+
+	* hkp.c (hkp_search): New function to handle searching a HKP
+	keyserver for a key
+
+	* hkp.c (hkp_ask_import, hkp_export): Pretty large changes to make
+	them communicate via the generic functions in keyserver.c
+
+	* keyserver.c: new file with generic keyserver routines for
+	getting keys from a keyserver, sending keys to a keyserver, and
+	searching for keys on a keyserver.  Calls the internal HKP stuff
+	in hkp.c for HKP keyserver functions.  Other calls are handled by
+	an external program which is spawned and written to and read from
+	via pipes.  Platforms that don't have pipes use temp files.
+
+2001-11-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c: New options show-notation, no-show-notation,
+	default-check-level, no-default-check-level, show-policy-url,
+	no-show-policy-url.
+
+	* packet.h, sign.c (make_keysig_packet), parse-packet.c
+	(parse_signature), free-packet.c (free_seckey_enc): Fill in
+	structures for notation, policy, sig class, exportability, etc.
+
+	* keyedit.c, keylist.c (print_and_check_one_sig,
+	list_keyblock_print): Show flags in signature display for cert
+	details (class, local, notation, policy, revocable).  If selected,
+	show the notation and policy url.
+
+	* keyedit.c (sign_uids): Prompt for and use different key sig
+	classes.
+
+	* helptext.c (helptexts): Add help text to explain different
+	key signature classes
+
 2001-11-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* trustdb.c (mark_usable_uid_certs): Fix segfault from bad

@@ -910,6 +910,7 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_KEY_FLAGS:
           return 0;  
       case SIGSUBPKT_EXPORTABLE:
+      case SIGSUBPKT_REVOCABLE:
 	if( !n )
 	    break;
 	return 0;
@@ -974,9 +975,9 @@ can_handle_critical( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_KEY_FLAGS:
       case SIGSUBPKT_PRIMARY_UID:
       case SIGSUBPKT_FEATURES:
+      case SIGSUBPKT_POLICY: /* Is it enough to show the policy? */
 	return 1;
 
-      case SIGSUBPKT_POLICY: /* Is it enough to show the policy? */
       default:
 	return 0;
     }
@@ -1108,7 +1109,6 @@ parse_sig_subpkt2 (PKT_signature *sig, sigsubpkttype_t reqtype,
 }
 
 
-
 static int
 parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 					  PKT_signature *sig )
@@ -1143,6 +1143,8 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
     }
     sig->pubkey_algo = iobuf_get_noeof(inp); pktlen--;
     sig->digest_algo = iobuf_get_noeof(inp); pktlen--;
+    sig->flags.exportable=1;
+    sig->flags.revocable=1;
     if( is_v4 ) { /* read subpackets */
 	n = read_16(inp); pktlen -= 2; /* length of hashed data */
 	if( n > 10000 ) {
@@ -1218,6 +1220,33 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	    sig->keyid[0] = buffer_to_u32(p);
 	    sig->keyid[1] = buffer_to_u32(p+4);
 	}
+
+	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_SIG_EXPIRE,NULL);
+	if(p)
+	  sig->expiredate=sig->timestamp+buffer_to_u32(p);
+	if(sig->expiredate>0 && sig->expiredate<make_timestamp())
+ 	    sig->flags.expired=1;
+
+	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_POLICY,NULL);
+	if(p)
+	  sig->flags.policy_url=1;
+
+	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_NOTATION,NULL);
+	if(p)
+	  sig->flags.notation=1;
+
+	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_REVOCABLE,NULL);
+	if(p && *p==0)
+	  sig->flags.revocable=0;
+
+	/* We accept this subpacket from either the hashed or unhashed
+	   areas as older versions of gpg put it in the unhashed area.
+	   In theory, anyway, we should never see this packet off of a
+	   local keyring. */
+
+	p=parse_sig_subpkt2(sig,SIGSUBPKT_EXPORTABLE,NULL);
+	if(p && *p==0)
+	  sig->flags.exportable=0;
     }
 
     if( list_mode ) {
@@ -1992,5 +2021,3 @@ create_gpg_control( ctrlpkttype_t type, const byte *data, size_t datalen )
 
     return packet;
 }
-
-

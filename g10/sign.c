@@ -1025,6 +1025,8 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     /* and make the signature packet */
     sig = m_alloc_clear( sizeof *sig );
     sig->version = sigversion;
+    sig->flags.exportable=1;
+    sig->flags.revocable=1;
     keyid_from_sk( sk, sig->keyid );
     sig->pubkey_algo = sk->pubkey_algo;
     sig->digest_algo = digest_algo;

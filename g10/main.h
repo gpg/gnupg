@@ -156,6 +156,8 @@ void release_revocation_reason_info( struct revocation_reason_info *reason );
 void public_key_list( STRLIST list );
 void secret_key_list( STRLIST list );
 void print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode);
+void show_policy_url(PKT_signature *sig);
+void show_notation(PKT_signature *sig);
 
 /*-- verify.c --*/
 int verify_signatures( int nfiles, char **files );

@@ -152,6 +152,24 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
  "Answer \"yes\" or \"no\""
 )},
 
+{ "sign_uid.class", N_(
+"When you sign a user ID on a key, you should first verify that the key\n"
+"belongs to the person named in the user ID.  It is useful for others to\n"
+"know how carefully you verified this.\n\n"
+"\"0\" means you make no particular claim as to how carefully you verified the\n"
+"    key.\n\n"
+"\"1\" means you believe the key is owned by the person who claims to own it\n"
+"    but you could not, or did not verify the key at all.  This is useful for\n"
+"    a \"persona\" verification, where you sign the key of a pseudonymous user.\n\n"
+"\"2\" means you did casual verification of the key.  For example, this could\n"
+"    mean that you verified the key fingerprint and checked the user ID on the\n"
+"    key against a photo ID.\n\n"
+"\"3\" means you did extensive verification of the key.  For example, this could\n"
+"    mean that you verified the key fingerprint and checked the user ID on the\n"
+"    key against a photo ID, and also verified the email address on the key\n"
+"    belongs to the key owner.\n\n"
+"If you don't know what the right answer is, answer \"0\"."
+)},
 
 { "change_passwd.empty.okay", N_(
  "Answer \"yes\" or \"no\""

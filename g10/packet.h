@@ -120,9 +120,15 @@ typedef struct {
 	unsigned checked:1; /* signature has been checked */
 	unsigned valid:1;   /* signature is good (if checked is set) */
 	unsigned unknown_critical:1;
+        unsigned exportable:1;
+        unsigned revocable:1;
+        unsigned policy_url:1; /* Policy URL is present */
+        unsigned notation:1; /* At least one notation is present */
+        unsigned expired:1;
     } flags;
     u32     keyid[2];	    /* 64 bit keyid */
     u32     timestamp;	    /* signature made */
+    u32     expiredate;     /* expires at this date or 0 if not at all */
     byte    version;
     byte    sig_class;	    /* sig classification, append for MD calculation*/
     byte    pubkey_algo;    /* algorithm used for public key scheme */

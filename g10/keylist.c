@@ -63,6 +63,58 @@ secret_key_list( STRLIST list )
 	list_one( list, 1 );
 }
 
+void
+show_policy_url(PKT_signature *sig)
+{
+  const byte *p;
+  int len;
+
+  p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_POLICY,&len);
+  if(p)
+    {
+      /* This isn't UTF8 as it is a URL(?) */
+      printf("           %s: ",_("Signature policy"));
+      print_string(stdout,p,len,0);
+      printf("\n");
+    }
+}
+
+void
+show_notation(PKT_signature *sig)
+{
+  const byte *p;
+  int len,seq=0;
+
+  /* There may be multiple notations in the same sig. */
+
+  while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_NOTATION,&len,&seq)))
+    if(len>=8)
+      {
+	int n1,n2;
+	n1=(p[4]<<8)|p[5];
+	n2=(p[6]<<8)|p[7];
+
+	if(8+n1+n2!=len)
+	  {
+	    log_info(_("WARNING: invalid notation data found\n"));
+	    return;
+	  }
+
+	/* This is UTF8 */
+	printf("           %s: ",_("Signature notation"));
+	print_utf8_string(stdout,p+8,n1);
+	printf("=");
+
+	if(*p&0x80)
+	  print_utf8_string(stdout,p+8+n1,n2);
+	else
+	  printf("[ %s ]",_("not human readable"));
+
+	printf("\n");
+      }
+  else
+    log_info(_("WARNING: invalid notation data found\n"));
+}
 
 static void
 list_all( int secret )
@@ -374,8 +426,15 @@ list_keyblock_print ( KBNODE keyblock, int secret )
 		sigrc = ' ';
 	    }
             fputs( sigstr, stdout );
-            printf("%c       %08lX %s  ",
-		    sigrc, (ulong)sig->keyid[1], datestr_from_sig(sig));
+	    printf("%c%c %c%c%c%c%c %08lX %s   ",
+                   sigrc,(sig->sig_class-0x10>0 &&
+                          sig->sig_class-0x10<4)?'0'+sig->sig_class-0x10:' ',
+                   sig->flags.exportable?' ':'L',
+                   sig->flags.revocable?' ':'R',
+                   sig->flags.policy_url?'P':' ',
+                   sig->flags.notation?'N':' ',
+                   sig->flags.expired?'X':' ',
+                   (ulong)sig->keyid[1], datestr_from_sig(sig));
 	    if( sigrc == '%' )
 		printf("[%s] ", g10_errstr(rc) );
 	    else if( sigrc == '?' )
@@ -387,6 +446,13 @@ list_keyblock_print ( KBNODE keyblock, int secret )
 		m_free(p);
 	    }
 	    putchar('\n');
+
+	    if(sig->flags.policy_url && opt.show_policy_url)
+	      show_policy_url(sig);
+
+	    if(sig->flags.notation && opt.show_notation)
+	      show_notation(sig);
+
 	    /* fixme: check or list other sigs here */
 	}
     }

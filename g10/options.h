@@ -65,6 +65,7 @@ struct {
     const char *def_secret_key;
     char *def_recipient;
     int def_recipient_self;
+    int def_check_level;
     int no_comment;
     int no_version;
     int marginals_needed;
@@ -106,7 +107,9 @@ struct {
     int no_encrypt_to;
     int interactive;
     STRLIST notation_data;
+    int show_notation;
     const char *set_policy_url;
+    int show_policy_url;
     int use_embedded_filename;
     int allow_non_selfsigned_uid;
     int allow_freeform_uid;
