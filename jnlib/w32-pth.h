@@ -18,9 +18,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA 
  */
 
-/* Note that this header is usually through a symlinked pth.h file.
-   This is needed so that we don't have a pth.h file here which would
-   conflict if a system really has pth available. */
+/* Note that this header is usually used through a symlinked pth.h
+   file.  This is needed so that we don't have a pth.h file here which
+   would conflict if a system really has pth available. */
 #ifndef W32_PTH_H
 #define W32_PTH_H
 

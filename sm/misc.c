@@ -38,6 +38,7 @@
 void
 setup_pinentry_env (void)
 {
+#ifndef HAVE_W32_SYSTEM
   char *lc;
 
   if (opt.display)
@@ -75,6 +76,6 @@ setup_pinentry_env (void)
   else if ( (lc = setlocale (LC_MESSAGES, "")) )
     setenv ("LC_MESSAGES", lc, 1);
 #endif
-
+#endif /*!HAVE_W32_SYSTEM*/
 }
 

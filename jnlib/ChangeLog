@@ -1,3 +1,7 @@
+2004-12-07  Werner Koch  <wk@g10code.com>
+
+	* w32-pth.c, w32-pth.h: New.
+
 2004-11-26  Werner Koch  <wk@g10code.com>
 
 	* logging.c [_WIN32]: Don't include socket headers.

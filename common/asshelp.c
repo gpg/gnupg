@@ -66,8 +66,13 @@ send_pinentry_environment (assuan_context_t ctx,
   if (!opt_ttyname)
     {
       dft_ttyname = getenv ("GPG_TTY");
+#ifdef HAVE_DOSISH_SYSTEM
+      if (!dft_ttyname || !*dft_ttyname )
+        dft_ttyname = "/dev/tty"; /* Use a fake. */
+#else      
       if ((!dft_ttyname || !*dft_ttyname) && ttyname (0))
         dft_ttyname = ttyname (0);
+#endif
     }
   if (opt_ttyname || dft_ttyname)
     {

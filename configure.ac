@@ -345,7 +345,7 @@ try_gettext=yes
 have_dosish_system=no
 have_w32_system=no
 case "${host}" in
-    *-*-mingw32*)
+    *-mingw32*)
         # special stuff for Windoze NT
         ac_cv_have_dev_random=no
         AC_DEFINE(USE_ONLY_8DOT3,1,
@@ -677,7 +677,7 @@ fi
 AC_SUBST(GPGKEYS_MAILTO)
 
 case "${host}" in
-    *-*-mingw32*)
+    *-mingw32*)
         PRINTABLE_OS_NAME="MingW32"
         ;;
     *-*-cygwin*)

@@ -1,3 +1,10 @@
+2004-12-07  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (gpgsm_LDADD): Put libassuan before jnlib because
+	under W32 we need the w32 pth code from jnlib.
+
+	* misc.c (setup_pinentry_env) [W32]: Disabled.
+
 2004-12-06  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (run_protect_tool) [_WIN32]: Disabled.

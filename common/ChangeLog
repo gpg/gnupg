@@ -1,3 +1,7 @@
+2004-12-07  Werner Koch  <wk@g10code.com>
+
+	* asshelp.c (send_pinentry_environment) [W32]: Do not use ttyname.
+
 2004-12-06  Werner Koch  <wk@g10code.com>
 
 	* exechelp.h, exechelp.c: New.  Based on code from ../sm/import.c.

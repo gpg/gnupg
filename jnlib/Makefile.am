@@ -37,7 +37,9 @@ libjnlib_a_SOURCES = \
 	argparse.c argparse.h \
 	logging.c logging.h  \
 	dotlock.c dotlock.h  \
-	types.h mischelp.h
+	types.h mischelp.h \
+	w32-pth.c w32-pth.h \
+	w32-afunix.c w32-afunix.h 
 
 #		     xmalloc.c xmalloc.h       
 
