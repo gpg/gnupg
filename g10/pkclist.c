@@ -525,17 +525,23 @@ do_we_trust_pre( PKT_public_key *pk, unsigned int trustlevel )
 	return 0;
 
     if( !opt.batch && !rc ) {
-	char *p;
 	u32 keyid[2];
-	size_t n;
 
 	keyid_from_pk( pk, keyid);
 	tty_printf( "%4u%c/%08lX %s \"",
 		  nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
 		  (ulong)keyid[1], datestr_from_pk( pk ) );
-	p = get_user_id( keyid, &n );
-	tty_print_utf8_string( p, n ),
-	m_free(p);
+	/* If the pk was chosen by a particular user ID, this is the
+	   one to ask about. */
+	if(pk->user_id)
+	  tty_print_utf8_string(pk->user_id->name,pk->user_id->len);
+	else
+	  {
+	    size_t n;
+	    char *p = get_user_id( keyid, &n );
+	    tty_print_utf8_string( p, n );
+	    m_free(p);
+	  }
 	tty_printf("\"\n");
         print_fingerprint (pk, NULL, 2);
 	tty_printf("\n");
@@ -889,8 +895,8 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 		}
 		else {
 		    int trustlevel;
-
-		    trustlevel = get_validity (pk, NULL);
+		    
+		    trustlevel = get_validity (pk, pk->user_id);
 		    if( (trustlevel & TRUST_FLAG_DISABLED) ) {
 			tty_printf(_("Public key is disabled.\n") );
 		    }
@@ -903,8 +909,6 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 			}
 			else {
 			    PK_LIST r;
-			    char *p;
-			    size_t n;
 			    u32 keyid[2];
 
 			    keyid_from_pk( pk, keyid);
@@ -913,9 +917,16 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 				       pubkey_letter( pk->pubkey_algo ),
 				       (ulong)keyid[1],
 				       datestr_from_pk( pk ) );
-			    p = get_user_id( keyid, &n );
-			    tty_print_utf8_string( p, n );
-			    m_free(p);
+			    if(pk->user_id)
+			      tty_print_utf8_string(pk->user_id->name,
+						    pk->user_id->len);
+			    else
+			      {
+				size_t n;
+				char *p = get_user_id( keyid, &n );
+				tty_print_utf8_string( p, n );
+				m_free(p);
+			      }
 			    tty_printf("\"\n");
 
 			    r = m_alloc( sizeof *r );
@@ -985,7 +996,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
 		int trustlevel;
 
-		trustlevel = get_validity (pk, NULL);
+		trustlevel = get_validity (pk, pk->user_id);
 		if( (trustlevel & TRUST_FLAG_DISABLED) ) {
 		    free_public_key(pk); pk = NULL;
 		    log_info(_("%s: skipped: public key is disabled\n"),

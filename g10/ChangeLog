@@ -1,3 +1,20 @@
+2003-04-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* pkclist.c (do_we_trust_pre): If an untrusted key was chosen by a
+	particular user ID, use that ID as the one to ask about when
+	prompting whether to use the key anyway.
+	(build_pk_list): Similar change here when adding keys to the
+	recipient list.
+
+	* trustdb.c (update_validity): Fix bug that prevented more than
+	one validity record per trust record.
+	(get_validity): When retrieving validity for a (user) supplied
+	user ID, return the validity for that user ID only, and do not
+	fall back to the general key validity.
+	(validate_one_keyblock): Some commentary on whether
+	non-self-signed user IDs belong in the web of trust (arguably,
+	they do).
+
 2003-04-29  Werner Koch  <wk@gnupg.org>
 
 	* sig-check.c (check_key_signature2): Made "no subkey for subkey
