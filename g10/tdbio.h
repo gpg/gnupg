@@ -50,7 +50,7 @@ struct trust_record {
     ulong recnum;
     union {
 	struct {	     /* version record: */
-	    byte version;    /* should be 3 */
+	    byte  version;   /* should be 3 */
 	    byte  marginals;
 	    byte  completes;
 	    byte  cert_depth;
@@ -82,6 +82,8 @@ struct trust_record {
         byte namehash[20];
         ulong next;  
         byte validity;
+	byte full_count;
+	byte marginal_count;
       } valid;
     } r;
 };

@@ -49,7 +49,7 @@ typedef enum {
 	PKT_OLD_COMMENT   =16, /* comment packet from an OpenPGP draft */
 	PKT_ATTRIBUTE     =17, /* PGP's attribute packet */
 	PKT_ENCRYPTED_MDC =18, /* integrity protected encrypted data */
-	PKT_MDC 	  =19, /* manipulaion detection code packet */
+	PKT_MDC 	  =19, /* manipulation detection code packet */
 	PKT_COMMENT	  =61, /* new comment packet (private) */
         PKT_GPG_CONTROL   =63  /* internal control packet */
 } pkttype_t;
@@ -166,6 +166,8 @@ typedef struct {
     unsigned long attrib_len;
     int help_key_usage;
     u32 help_key_expire;
+    int help_full_count;
+    int help_marginal_count;
     int is_primary;
     int is_revoked;
     int is_expired;

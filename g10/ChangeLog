@@ -1,5 +1,19 @@
 2003-01-06  David Shaw  <dshaw@jabberwocky.com>
 
+	* packet.h, tdbio.h, tdbio.c (tdbio_read_record,
+	tdbio_write_record), trustdb.c (update_validity): Store temporary
+	full & marginal counts in the trustdb.
+	(clear_validity, get_validity_counts): Return and clear temp
+	counts.
+	(store_validation_status): Keep track of which keyids have been
+	stored.
+	(validate_one_keyblock, validate_key_list): Use per-uid copies of
+	the full & marginal counts so they can be recalled for multiple
+	levels.
+	(validate_keys): Only use unused keys for each new round.
+	(reset_unconnected_keys): Rename to reset_trust_records, and only
+	skip specifically excluded records.
+
 	* keylist.c (print_capabilities): Show 'D' for disabled keys in
 	capabilities section.
 
