@@ -345,6 +345,10 @@ Check all selected user ids.</para></listitem></varlistentry>
     <listitem><para>
 List preferences.</para></listitem></varlistentry>
     <varlistentry>
+    <term>showpref</term>
+    <listitem><para>
+More verbose preferences listing.</para></listitem></varlistentry>
+    <varlistentry>
     <term>toggle</term>
     <listitem><para>
 Toggle between public and secret key listing.</para></listitem></varlistentry>

@@ -1,3 +1,11 @@
+2001-04-25  Werner Koch  <wk@gnupg.org>
+
+	* keyedit.c (show_prefs): Add a verbose mode.
+	(show_key_with_all_names): Pass verbose flag for special value of
+	with_pref.
+	(keyedit_menu): New command "showpref"
+	(show_key_with_all_names): Mark revoked uids and the primary key.
+
 2001-04-24  Werner Koch  <wk@gnupg.org>
 
 	* getkey.c (get_primary_uid): Return a different string in case of

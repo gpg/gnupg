@@ -5,8 +5,6 @@
   * check whether we can remove all the expire stuff in trustdb because this
     is now done in getkey.  
 
-  * Can we output things like the preferences?      
-
   * We need another special packet at the end of a clearsign message to mark
     it's end and allow for multiple signature for one message.  And
     add a real grammar to the code in mainproc.c

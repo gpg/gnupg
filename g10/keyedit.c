@@ -40,7 +40,7 @@
 #include "status.h"
 #include "i18n.h"
 
-static void show_prefs( KBNODE keyblock, PKT_user_id *uid );
+static void show_prefs( KBNODE keyblock, PKT_user_id *uid, int verbose );
 static void show_key_with_all_names( KBNODE keyblock,
 	    int only_marked, int with_fpr, int with_subkeys, int with_prefs );
 static void show_key_and_fingerprint( KBNODE keyblock );
@@ -569,7 +569,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	   cmdLSIGN, cmdREVSIG, cmdREVKEY, cmdDELSIG,
 	   cmdDEBUG, cmdSAVE, cmdADDUID, cmdDELUID, cmdADDKEY, cmdDELKEY,
 	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE,
-	   cmdENABLEKEY, cmdDISABLEKEY,
+           cmdENABLEKEY, cmdDISABLEKEY,  cmdSHOWPREF,
 	   cmdINVCMD, cmdNOP };
     static struct { const char *name;
 		    enum cmdids id;
@@ -604,6 +604,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 						   "and public key listing") },
 	{ N_("t"     )  , cmdTOGGLE    , 1,0,0, NULL },
 	{ N_("pref")    , cmdPREF      , 0,1,0, N_("list preferences") },
+	{ N_("showpref"), cmdSHOWPREF  , 0,1,0, N_("list preferences") },
 	{ N_("passwd")  , cmdPASSWD    , 1,1,0, N_("change the passphrase") },
 	{ N_("trust")   , cmdTRUST     , 0,1,0, N_("change the ownertrust") },
 	{ N_("revsig")  , cmdREVSIG    , 0,1,0, N_("revoke signatures") },
@@ -932,6 +933,10 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    show_key_with_all_names( keyblock, 0, 0, 0, 1 );
 	    break;
 
+	  case cmdSHOWPREF:
+	    show_key_with_all_names( keyblock, 0, 0, 0, 2 );
+	    break;
+
 	  case cmdNOP:
 	    break;
 
@@ -1015,7 +1020,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
  * show preferences of a public keyblock.
  */
 static void
-show_prefs( KBNODE keyblock, PKT_user_id *uid )
+show_prefs( KBNODE keyblock, PKT_user_id *uid, int verbose )
 {
     KBNODE node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
     PKT_public_key *pk;
@@ -1041,14 +1046,58 @@ show_prefs( KBNODE keyblock, PKT_user_id *uid )
     if( !p )
 	return;
 
-    tty_printf("    ");
-    for(i=0; i < n; i+=2 ) {
-	if( p[i] )
-	    tty_printf( " %c%d", p[i] == PREFTYPE_SYM    ? 'S' :
-				 p[i] == PREFTYPE_HASH	 ? 'H' :
-				 p[i] == PREFTYPE_COMPR  ? 'Z' : '?', p[i+1]);
+    if (verbose) {
+        int any, des_seen=0;
+
+        tty_printf ("     Cipher: ");
+        for(i=any=0; i < n; i+=2 ) {
+            if( p[i] == PREFTYPE_SYM ) {
+                const char *s = cipher_algo_to_string (p[i+1]);
+                
+                if (any)
+                    tty_printf (", ");
+                any = 1;
+                /* We don't want to display strings for experimental algos */
+                if (s && p[i+1] < 100 )
+                    tty_printf ("%s", s );
+                else
+                    tty_printf ("[%d]", p[i+1]);
+                if (p[i+1] == CIPHER_ALGO_3DES )
+                    des_seen = 1;
+            }    
+        }
+        if (!des_seen) {
+            if (any)
+                tty_printf (", ");
+            tty_printf ("3DES");
+        }
+        tty_printf ("\n     Hash: ");
+        for(i=any=0; i < n; i+=2 ) {
+            if( p[i] == PREFTYPE_HASH ) {
+                const char *s = digest_algo_to_string (p[i+1]);
+                
+                if (any)
+                    tty_printf (", ");
+                any = 1;
+                /* We don't want to display strings for experimental algos */
+                if (s && p[i+1] < 100 )
+                    tty_printf ("%s", s );
+                else
+                    tty_printf ("[%d]", p[i+1]);
+            }    
+        }
+        tty_printf("\n");
     }
-    tty_printf("\n");
+    else {
+        tty_printf("    ");
+        for(i=0; i < n; i+=2 ) {
+            if( p[i] )
+                tty_printf( " %c%d", p[i] == PREFTYPE_SYM   ? 'S' :
+                                     p[i] == PREFTYPE_HASH  ? 'H' :
+                                     p[i] == PREFTYPE_COMPR ? 'Z':'?', p[i+1]);
+        }
+        tty_printf("\n");
+    }
 
     m_free(p);
 }
@@ -1141,12 +1190,16 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 		   tty_printf("     ");
 		else if( node->flag & NODFLG_SELUID )
 		   tty_printf("(%d)* ", i);
+		else if( uid->is_primary )
+		   tty_printf("(%d). ", i);
 		else
 		   tty_printf("(%d)  ", i);
+                if ( uid->is_revoked )
+                    tty_printf ("[revoked] ");
 		tty_print_utf8_string( uid->name, uid->len );
 		tty_printf("\n");
 		if( with_prefs )
-		    show_prefs( keyblock, uid );
+		    show_prefs( keyblock, uid, with_prefs == 2 );
 	    }
 	}
     }
