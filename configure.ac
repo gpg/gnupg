@@ -25,13 +25,13 @@ AC_PREREQ(2.52)
 
 # Remember to change the version number immediately *after* a release
 # and remove the "-cvs" or "rc" suffix immediately *before* a release.
-AC_INIT(gnupg, 1.2.4-cvs, bug-gnupg@gnu.org)
+AC_INIT(gnupg, 1.2.4rc1, bug-gnupg@gnu.org)
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.
-development_version=no
+development_version=yes
 
-ALL_LINGUAS="ca cs da de eo el es et fi fr gl hu id it ja nl pl pt_BR pt ro sk sv tr zh_TW"
+ALL_LINGUAS="be ca cs da de eo el es et fi fr gl hu id it ja nl pl pt_BR pt ro ru sk sv tr zh_TW"
 
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_SRCDIR(g10/g10.c)

@@ -1,3 +1,13 @@
+2003-12-03  Werner Koch  <wk@gnupg.org>
+
+	Released 1.2.4rc1.
+
+	* THANKS: Added Phong Nguyen, who found the Elgamal signing key
+	problem.
+
+	* configure.ac (ALL_LINGUAS): Added a Russian translation; thanks
+	to Maxim Britov.  Added Belarusion; thanks to Ales Nyakhaychyk.
+
 2003-12-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Note that Elgamal sign+encrypt keys are not part of the

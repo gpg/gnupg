@@ -1342,7 +1342,7 @@ check_sig_and_print( CTX c, KBNODE node )
 
     tstr = asctimestamp(sig->timestamp);
     astr = pubkey_algo_to_string( sig->pubkey_algo );
-    log_info(_("Signature made %.*s using %s key ID 0x%08lX\n"),
+    log_info(_("Signature made %.*s using %s key ID %08lX\n"),
              (int)strlen(tstr), tstr, astr? astr: "?", (ulong)sig->keyid[1] );
     
     rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );

@@ -200,7 +200,8 @@ Create an alternate user id.
 
 @item addphoto
 Create a photographic user id. This will prompt for a JPEG file that
-will be embedded into the user ID.
+will be embedded into the user ID. A very large JPEG will make for a
+very large key.
 
 @item deluid
 Delete a user id.
@@ -374,10 +375,6 @@ Option ---keyserver must be used to give the name
 of this keyserver. Don't send your complete keyring
 to a keyserver - select only those keys which are new
 or changed by you.
-
-@item ---export-all @code{names}
-Same as ---export, but also exports keys which
-are not compatible with OpenPGP.
 
 @item ---export-secret-keys @code{names}
 @itemx ---export-secret-subkeys @code{names}
@@ -554,7 +551,7 @@ twice, the input data is listed in detail.
 @item -q, ---quiet
 Try to be as quiet as possible.
 
-@item -z @code{n}, ---compress @code{n}
+@item -z @code{n}, ---compress-level @code{n}
 Set compression level to @code{n}. A value of 0 for @code{n}
 disables compression. Default is to use the default
 compression level of zlib (normally 6).
@@ -643,18 +640,18 @@ ID is bound to the key.
 @end table
 
 @item ---always-trust
-Identical to `---trust-model always'
+Identical to `---trust-model always'. This option is deprecated.
 
 @item ---keyserver @code{name}
 Use @code{name} as your keyserver. This is the server that ---recv-keys,
 ---send-keys, and --search-keys will communicate with to receive keys
 from, send keys to, and search for keys on. The format of the
 @code{name} is a URI: `scheme:[//]keyservername[:port]' The scheme is
-the type of keyserver: "hkp" for the Horowitz (or compatible)
-keyservers, "ldap" for the NAI LDAP keyserver, or "mailto" for the
-Horowitz email keyserver. Note that your particular installation of
-GnuPG may have other keyserver types available as well. Keyserver
-schemes are case-insensitive.
+the type of keyserver: "hkp" for the HTTP (or compatible) keyservers,
+"ldap" for the NAI LDAP keyserver, or "mailto" for the Graff email
+keyserver. Note that your particular installation of GnuPG may have
+other keyserver types available as well. Keyserver schemes are
+case-insensitive.
 
 Most keyservers synchronize with each other, so there is generally no
 need to send keys to more than one server. Using the command "host -l
@@ -712,6 +709,12 @@ keyserver over the proxy set with the environment variable
 This option enables the automatic retrieving of keys from a keyserver
 when verifying signatures made by keys that are not on the local
 keyring.
+
+Note that this option makes a "web bug" like behavior possible.
+Keyserver operators can see which keys you request, so by sending you
+a message signed by a brand new key (which you naturally will not have
+on your local keyring), the operator can tell both your IP address and
+the time when you verified the signature.
 
 @end table
 
@@ -1158,6 +1161,10 @@ behavior. Use this option to reset all previous options like
 ---compress-algo to OpenPGP compliant values. All PGP workarounds are
 disabled.
 
+@item ---rfc2440
+Reset all packet, cipher and digest options to strict RFC-2440
+behavior. Note that this is currently the same thing as ---openpgp.
+
 @item ---rfc1991
 Try to be more RFC-1991 (PGP 2.x) compliant.
 
@@ -1203,7 +1210,7 @@ the SHA-256 digest algorithm.
 @item ---force-v3-sigs
 @itemx ---no-force-v3-sigs
 OpenPGP states that an implementation should generate v4 signatures
-but PGP versions 5 and higher only recognize v4 signatures on key
+but PGP versions 5 through 7 only recognize v4 signatures on key
 material. This option forces v3 signatures for signatures on data.
 Note that this option overrides ---ask-sig-expire, as v3 signatures
 cannot have expiration dates. ---no-force-v3-sigs disables this
@@ -1439,6 +1446,9 @@ two different values. Note also there is only one level of expansion
 from the command line, it may be necessary to quote the argument to
 this option to prevent the shell from treating it as multiple
 arguments.
+
+@item ---no-groups
+Clear the ---group list.
 
 @item ---preserve-permissions
 Don't change the permissions of a secret keyring back to user

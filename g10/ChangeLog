@@ -1,3 +1,8 @@
+2003-12-03  Werner Koch  <wk@gnupg.org>
+
+	* mainproc.c (check_sig_and_print): Removed the "0x" again.
+	Reverts change from 2003-10-03.
+
 2003-12-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (strusage, main): Show development version warning in
