@@ -306,7 +306,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
   int signer;
   const char *algoid;
   int algo;
-  time_t signed_at;
+  ksba_isotime_t signed_at;
   CERTLIST cl;
   int release_signerlist = 0;
 
@@ -462,7 +462,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
         }
     }
 
-  signed_at = gnupg_get_time ();
+  gnupg_get_isotime (signed_at);
   for (cl=signerlist,signer=0; cl; cl = cl->next, signer++)
     {
       err = ksba_cms_set_signing_time (cms, signer, signed_at);
@@ -577,11 +577,11 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
                   gcry_md_close (md);
                   goto leave;
                 }
-              rc = asprintf (&buf, "%c %d %d 00 %lu %s",
+              rc = asprintf (&buf, "%c %d %d 00 %s %s",
                              detached? 'D':'S',
                              GCRY_PK_RSA,  /* FIXME: get pk algo from cert */
                              algo, 
-                             (ulong)signed_at,
+                             signed_at,
                              fpr);
               xfree (fpr);
               if (rc < 0)

@@ -408,23 +408,26 @@ gpgsm_is_root_cert (KsbaCert cert)
 /* Validate a chain and optionally return the nearest expiration time
    in R_EXPTIME */
 int
-gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
+gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, ksba_isotime_t r_exptime)
 {
   int rc = 0, depth = 0, maxdepth;
   char *issuer = NULL;
   char *subject = NULL;
   KEYDB_HANDLE kh = keydb_new (0);
   KsbaCert subject_cert = NULL, issuer_cert = NULL;
-  time_t current_time = gnupg_get_time ();
-  time_t exptime = 0;
+  ksba_isotime_t current_time;
+  ksba_isotime_t exptime;
   int any_expired = 0;
   int any_revoked = 0;
   int any_no_crl = 0;
   int any_crl_too_old = 0;
   int any_no_policy_match = 0;
 
+
+  gnupg_get_isotime (current_time);
   if (r_exptime)
     *r_exptime = 0;
+  *exptime = 0;
 
   if (opt.no_chain_validation)
     {
@@ -460,26 +463,28 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
         }
 
       {
-        time_t not_before, not_after;
+        ksba_isotime_t not_before, not_after;
 
-        not_before = ksba_cert_get_validity (subject_cert, 0);
-        not_after = ksba_cert_get_validity (subject_cert, 1);
-        if (not_before == (time_t)(-1) || not_after == (time_t)(-1))
+        rc = ksba_cert_get_validity (subject_cert, 0, not_before);
+        if (!rc)
+          rc = ksba_cert_get_validity (subject_cert, 1, not_after);
+        if (rc)
           {
-            log_error ("certificate with invalid validity\n");
+            log_error (_("certificate with invalid validity: %s\n"),
+                       ksba_strerror (rc));
             rc = gpg_error (GPG_ERR_BAD_CERT);
             goto leave;
           }
 
-        if (not_after)
+        if (*not_after)
           {
-            if (!exptime)
-              exptime = not_after;
-            else if (not_after < exptime)
-              exptime = not_after;
+            if (!*exptime)
+              gnupg_copy_time (exptime, not_after);
+            else if (strcmp (not_after, exptime) < 0 )
+              gnupg_copy_time (exptime, not_after);
           }
 
-        if (not_before && current_time < not_before)
+        if (*not_before && strcmp (current_time, not_before) < 0 )
           {
             log_error ("certificate too young; valid from ");
             gpgsm_dump_time (not_before);
@@ -487,7 +492,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
             rc = gpg_error (GPG_ERR_CERT_TOO_YOUNG);
             goto leave;
           }            
-        if (not_after && current_time > not_after)
+        if (not_after && strcmp (current_time, not_after) > 0 )
           {
             log_error ("certificate has expired at ");
             gpgsm_dump_time (not_after);
@@ -692,7 +697,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
   
  leave:
   if (r_exptime)
-    *r_exptime = exptime;
+    gnupg_copy_time (r_exptime, exptime);
   xfree (issuer);
   keydb_release (kh); 
   ksba_cert_release (issuer_cert);

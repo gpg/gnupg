@@ -177,12 +177,12 @@ void gpgsm_destroy_writer (Base64Context ctx);
 
 /*-- certdump.c --*/
 void gpgsm_print_serial (FILE *fp, KsbaConstSexp p);
-void gpgsm_print_time (FILE *fp, time_t t);
+void gpgsm_print_time (FILE *fp, ksba_isotime_t t);
 void gpgsm_print_name (FILE *fp, const char *string);
 
 void gpgsm_dump_cert (const char *text, KsbaCert cert);
 void gpgsm_dump_serial (KsbaConstSexp p);
-void gpgsm_dump_time (time_t t);
+void gpgsm_dump_time (ksba_isotime_t t);
 void gpgsm_dump_string (const char *string);
 
 
@@ -199,7 +199,7 @@ int gpgsm_create_cms_signature (KsbaCert cert, gcry_md_hd_t md, int mdalgo,
 /*-- certchain.c --*/
 int gpgsm_walk_cert_chain (KsbaCert start, KsbaCert *r_next);
 int gpgsm_is_root_cert (KsbaCert cert);
-int gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime);
+int gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, ksba_isotime_t r_exptime);
 int gpgsm_basic_cert_check (KsbaCert cert);
 
 /*-- certlist.c --*/

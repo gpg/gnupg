@@ -93,42 +93,22 @@ gpgsm_dump_serial (KsbaConstSexp p)
 }
 
 void
-gpgsm_print_time (FILE *fp, time_t t)
+gpgsm_print_time (FILE *fp, ksba_isotime_t t)
 {
-  if (!t)
+  if (!t || !*t)
     fputs (_("none"), fp);
-  else if ( t == (time_t)(-1) )
-    fputs ("[Error - Invalid time]", fp);
   else
-    {
-      struct tm *tp;
-
-      tp = gmtime (&t);
-      fprintf (fp, "%04d-%02d-%02d %02d:%02d:%02d Z",
-               1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
-               tp->tm_hour, tp->tm_min, tp->tm_sec);
-      assert (!tp->tm_isdst);
-    }
+    fprintf (fp, "%.4s-%.2s-%.2s %.2s:%.2s:%s", t, t+4, t+6, t+9, t+11, t+13);
 }
 
 void
-gpgsm_dump_time (time_t t)
+gpgsm_dump_time (ksba_isotime_t t)
 {
-
-  if (!t)
+  if (!t || !*t)
     log_printf (_("[none]"));
-  else if ( t == (time_t)(-1) )
-    log_printf (_("[error]"));
   else
-    {
-      struct tm *tp;
-
-      tp = gmtime (&t);
-      log_printf ("%04d-%02d-%02d %02d:%02d:%02d",
-                  1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
-                  tp->tm_hour, tp->tm_min, tp->tm_sec);
-      assert (!tp->tm_isdst);
-    }
+    log_printf ("%.4s-%.2s-%.2s %.2s:%.2s:%s",
+                t, t+4, t+6, t+9, t+11, t+13);
 }
 
 
@@ -167,7 +147,7 @@ gpgsm_dump_cert (const char *text, KsbaCert cert)
   KsbaSexp sexp;
   unsigned char *p;
   char *dn;
-  time_t t;
+  ksba_isotime_t t;
 
   log_debug ("BEGIN Certificate `%s':\n", text? text:"");
   if (cert)
@@ -178,11 +158,11 @@ gpgsm_dump_cert (const char *text, KsbaCert cert)
       ksba_free (sexp);
       log_printf ("\n");
 
-      t = ksba_cert_get_validity (cert, 0);
+      ksba_cert_get_validity (cert, 0, t);
       log_debug ("  notBefore: ");
       gpgsm_dump_time (t);
       log_printf ("\n");
-      t = ksba_cert_get_validity (cert, 1);
+      ksba_cert_get_validity (cert, 1, t);
       log_debug ("   notAfter: ");
       gpgsm_dump_time (t);
       log_printf ("\n");

@@ -101,14 +101,12 @@ print_capabilities (KsbaCert cert, FILE *fp)
 
 
 static void
-print_time (time_t t, FILE *fp)
+print_time (gnupg_isotime_t t, FILE *fp)
 {
-  if (!t)
+  if (!t || !*t)
     ;
-  else if ( t == (time_t)(-1) )
-    putc ('?', fp);
-  else
-    fprintf (fp, "%lu", (unsigned long)t);
+  else 
+    fputs (t, fp);
 }
 
 
@@ -153,6 +151,7 @@ list_cert_colon (KsbaCert cert, FILE *fp, int have_secret)
   char *p;
   KsbaSexp sexp;
   char *fpr;
+  ksba_isotime_t t;
 
   fputs (have_secret? "crs:":"crt:", fp);
   trustletter = 0;
@@ -177,9 +176,11 @@ list_cert_colon (KsbaCert cert, FILE *fp, int have_secret)
            fpr+24);
 
   /* we assume --fixed-list-mode for gpgsm */
-  print_time ( ksba_cert_get_validity (cert, 0), fp);
+  ksba_cert_get_validity (cert, 0, t);
+  print_time (t, fp);
   putc (':', fp);
-  print_time ( ksba_cert_get_validity (cert, 1), fp);
+  ksba_cert_get_validity (cert, 1, t);
+  print_time ( t, fp);
   putc (':', fp);
   /* field 8, serial number: */
   if ((sexp = ksba_cert_get_serial (cert)))
@@ -280,7 +281,7 @@ list_cert_std (KsbaCert cert, FILE *fp, int have_secret)
   KsbaError kerr;
   KsbaSexp sexp;
   char *dn;
-  time_t t;
+  ksba_isotime_t t;
   int idx;
   int is_ca, chainlen;
   unsigned int kusage;
@@ -318,11 +319,11 @@ list_cert_std (KsbaCert cert, FILE *fp, int have_secret)
       putc ('\n', fp);
     }
 
-  t = ksba_cert_get_validity (cert, 0);
+  ksba_cert_get_validity (cert, 0, t);
   fputs ("     validity: ", fp);
   gpgsm_print_time (fp, t);
   fputs (" through ", fp);
-  t = ksba_cert_get_validity (cert, 1);
+  ksba_cert_get_validity (cert, 1, t);
   gpgsm_print_time (fp, t);
   putc ('\n', fp);
 

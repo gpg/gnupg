@@ -35,22 +35,14 @@
 #include "i18n.h"
 
 static char *
-strtimestamp_r (time_t atime)
+strtimestamp_r (ksba_isotime_t atime)
 {
   char *buffer = xmalloc (15);
   
-  if (atime < 0) 
-    strcpy (buffer, "????" "-??" "-??");
-  else if (!atime)
+  if (!atime || !*atime)
     strcpy (buffer, "none");
   else
-    {
-      struct tm *tp;
-      
-      tp = gmtime( &atime );
-      sprintf (buffer, "%04d-%02d-%02d",
-               1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday);
-    }
+    sprintf (buffer, "%.4s-%.2s-%.2s", atime, atime+4, atime+6);
   return buffer;
 }
 
@@ -251,7 +243,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
     {
       char *issuer = NULL;
       KsbaSexp sigval = NULL;
-      time_t sigtime, keyexptime;
+      ksba_isotime_t sigtime, keyexptime;
       KsbaSexp serial;
       char *msgdigest = NULL;
       size_t msgdigestlen;
@@ -279,13 +271,14 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
           log_printf ("\n");
         }
 
-      err = ksba_cms_get_signing_time (cms, signer, &sigtime);
+      err = ksba_cms_get_signing_time (cms, signer, sigtime);
       if (err == KSBA_No_Data)
-        sigtime = 0;
+        *sigtime = 0;
       else if (err)
         {
           log_error ("error getting signing time: %s\n", ksba_strerror (err));
-          sigtime = (time_t)-1;
+          *sigtime = 0; /* FIXME: we can't encode an error in the time
+                           string. */
         }
 
       err = ksba_cms_get_message_digest (cms, signer,
@@ -383,7 +376,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
         }
 
       log_info (_("Signature made "));
-      if (sigtime)
+      if (*sigtime)
         gpgsm_dump_time (sigtime);
       else
         log_printf (_("[date not given]"));
@@ -459,7 +452,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
 
       if (DBG_X509)
         log_debug ("signature okay - checking certs\n");
-      rc = gpgsm_validate_chain (ctrl, cert, &keyexptime);
+      rc = gpgsm_validate_chain (ctrl, cert, keyexptime);
       if (gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED)
         {
           gpgsm_status (ctrl, STATUS_EXPKEYSIG, NULL);
@@ -474,8 +467,8 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
         fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
         tstr = strtimestamp_r (sigtime);
         buf = xmalloc ( strlen(fpr) + strlen (tstr) + 120);
-        sprintf (buf, "%s %s %lu %lu", fpr, tstr,
-                 (unsigned long)sigtime, (unsigned long)keyexptime );
+        sprintf (buf, "%s %s %s %s", fpr, tstr,
+                 sigtime, keyexptime );
         xfree (tstr);
         xfree (fpr);
         gpgsm_status (ctrl, STATUS_VALIDSIG, buf);

@@ -1,3 +1,16 @@
+2003-10-31  Werner Koch  <wk@gnupg.org>
+
+
+	* verify.c (strtimestamp_r, gpgsm_verify): 
+
+	* sign.c (gpgsm_sign): 
+
+	* keylist.c (print_time, list_cert_std, list_cert_colon): 
+
+	* certdump.c (gpgsm_print_time, gpgsm_dump_time, gpgsm_dump_cert): 
+
+	* certchain.c (gpgsm_validate_chain): Changed to use ksba_isotime_t.
+
 2003-10-25  Werner Koch  <wk@gnupg.org>
 
 	* certreqgen.c (read_parameters): Fixed faulty of !spacep().

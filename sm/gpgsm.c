@@ -1035,8 +1035,11 @@ main ( int argc, char **argv)
 
   if (gnupg_faked_time_p ())
     {
+      gnupg_isotime_t tbuf;
+
       log_info (_("WARNING: running with faked system time: "));
-      gpgsm_dump_time (gnupg_get_time ());
+      gnupg_get_isotime (tbuf);
+      gpgsm_dump_time (tbuf);
       log_printf ("\n");
     }
   
