@@ -46,8 +46,8 @@
   #ifndef __riscos__
     typedef unsigned char byte;
   #else 
-    /* FIXME it seems that char is unsigned by default and we workaround 
-     * signed/unsigned mismacthes here. */
+    /* Norcroft treats char  == unsigned char
+                   but char* != unsigned char*  */
     typedef char byte;
   #endif 
   #define HAVE_BYTE_TYPEDEF
