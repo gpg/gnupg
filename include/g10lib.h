@@ -79,6 +79,10 @@ unsigned g10m_get_size( MPI a );
  *******  miscellaneous functions  *******
  *****************************************/
 
+const char *g10m_revision_string(int mode);
+const char *g10c_revision_string(int mode);
+const char *g10u_revision_string(int mode);
+
 MPI	      g10c_generate_secret_prime( unsigned nbits );
 unsigned char g10c_get_random_byte( int level );
 

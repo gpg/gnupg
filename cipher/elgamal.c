@@ -476,7 +476,8 @@ elg_sign( int algo, MPI *resarr, MPI data, MPI *skey )
 }
 
 int
-elg_verify( int algo, MPI hash, MPI *data, MPI *pkey )
+elg_verify( int algo, MPI hash, MPI *data, MPI *pkey,
+		    int (*cmp)(void *, MPI), void *opaquev )
 {
     ELG_public_key pk;
 

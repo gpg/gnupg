@@ -25,6 +25,10 @@
 #define _g10lib_INTERNAL 1
 #include "g10lib.h"
 
+
+const char *g10u_revision_string(int dummy) { return "$Revision$"; }
+
+
 void *g10_malloc( size_t n )	     { return m_alloc( n ); }
 void *g10_calloc( size_t n )	     { return m_alloc_clear( n ); }
 void *g10_malloc_secure( size_t n )  { return m_alloc_secure( n ); }

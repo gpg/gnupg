@@ -1,6 +1,13 @@
+Sun Jun 14 21:28:31 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* misc.c (checksum_u16): Fixed a stupid bug which caused a
+	wrong checksum calculation for the secret key protection and
+	add a backward compatibility option.
+	* g10.c (main): Add option --emulate-checksum-bug.
+
 Thu Jun 11 13:26:44 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
-	* packet.h: Mjor chnages to the structure of public key material
+	* packet.h: Major changes to the structure of public key material
 	which is now stored in an array and not anaymore in a union of
 	algorithm specific structures.	These is needed to make the system
 	more extendable and makes a lot of stuff much simpler. Changed

@@ -48,6 +48,7 @@ struct {
     int compress_keys;
     int always_trust;
     int rfc1991;
+    unsigned emulate_bugs; /* bug emulation flags */
 } opt;
 
 

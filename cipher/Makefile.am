@@ -2,6 +2,7 @@
 
 INCLUDES =  -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
 
+EXTRA_DIST = tiger.c
 noinst_LIBRARIES = libcipher.a
 
 
@@ -15,7 +16,6 @@ libcipher_a_SOURCES = cipher.c	\
 		 blowfish.h	\
 		 cast5.c	\
 		 cast5.h	\
-		 des.h		\
 		 elgamal.c	\
 		 elgamal.h	\
 		 md5.c		\
@@ -29,8 +29,6 @@ libcipher_a_SOURCES = cipher.c	\
 		 rand-dummy.c	\
 		 rmd.h		\
 		 rmd160.c	\
-		 tiger.h	\
-		 tiger.c	\
 		 sha1.h 	\
 		 sha1.c 	\
 		 dsa.h		\

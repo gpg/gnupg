@@ -32,6 +32,11 @@
 #include "main.h"
 #include "status.h"
 
+struct cmp_help_context_s {
+    PKT_signature *sig;
+    MD_HANDLE md;
+};
+
 
 static int do_check( PKT_public_cert *pkc, PKT_signature *sig,
 						MD_HANDLE digest );
@@ -62,11 +67,87 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 }
 
 
+/****************
+ * This function gets called by pubkey_verify() if the algorithm needs it.
+ */
+static int
+cmp_help( void *opaque, MPI result )
+{
+  #if 0 /* we do not use this anymore */
+    int rc=0, i, j, c, old_enc;
+    byte *dp;
+    const byte *asn;
+    size_t mdlen, asnlen;
+    struct cmp_help_context_s *ctx = opaque;
+    PKT_signature *sig = ctx->sig;
+    MD_HANDLE digest = ctx->md;
+
+    old_enc = 0;
+    for(i=j=0; (c=mpi_getbyte(result, i)) != -1; i++ ) {
+	if( !j ) {
+	    if( !i && c != 1 )
+		break;
+	    else if( i && c == 0xff )
+		; /* skip the padding */
+	    else if( i && !c )
+		j++;
+	    else
+		break;
+	}
+	else if( ++j == 18 && c != 1 )
+	    break;
+	else if( j == 19 && c == 0 ) {
+	    old_enc++;
+	    break;
+	}
+    }
+    if( old_enc ) {
+	log_error("old encoding scheme is not supported\n");
+	return G10ERR_GENERAL;
+    }
+
+    if( (rc=check_digest_algo(sig->digest_algo)) )
+	return rc; /* unsupported algo */
+    asn = md_asn_oid( sig->digest_algo, &asnlen, &mdlen );
+
+    for(i=mdlen,j=asnlen-1; (c=mpi_getbyte(result, i)) != -1 && j >= 0;
+							   i++, j-- )
+	if( asn[j] != c )
+	    break;
+    if( j != -1 || mpi_getbyte(result, i) )
+	return G10ERR_BAD_PUBKEY;  /* ASN is wrong */
+    for(i++; (c=mpi_getbyte(result, i)) != -1; i++ )
+	if( c != 0xff  )
+	    break;
+    i++;
+    if( c != sig->digest_algo || mpi_getbyte(result, i) ) {
+	/* Padding or leading bytes in signature is wrong */
+	return G10ERR_BAD_PUBKEY;
+    }
+    if( mpi_getbyte(result, mdlen-1) != sig->digest_start[0]
+	|| mpi_getbyte(result, mdlen-2) != sig->digest_start[1] ) {
+	/* Wrong key used to check the signature */
+	return G10ERR_BAD_PUBKEY;
+    }
+
+    dp = md_read( digest, sig->digest_algo );
+    for(i=mdlen-1; i >= 0; i--, dp++ ) {
+	if( mpi_getbyte( result, i ) != *dp )
+	    return G10ERR_BAD_SIGN;
+    }
+    return 0;
+  #else
+    return -1;
+  #endif
+}
+
+
 static int
 do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 {
     MPI result = NULL;
     int rc=0;
+    struct cmp_help_context_s ctx;
 
     if( pkc->version == 4 && pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
 	log_info("this is a PGP generated "
@@ -77,169 +158,56 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
     if( pkc->timestamp > sig->timestamp )
 	return G10ERR_TIME_CONFLICT; /* pubkey newer that signature */
 
-    if( is_ELGAMAL(pkc->pubkey_algo) ) {
-	if( (rc=check_digest_algo(sig->digest_algo)) )
-	    goto leave;
-	/* make sure the digest algo is enabled (in case of a detached
-	 * signature */
-	md_enable( digest, sig->digest_algo );
-	/* complete the digest */
-	md_putc( digest, sig->sig_class );
-	{   u32 a = sig->timestamp;
-	    md_putc( digest, (a >> 24) & 0xff );
-	    md_putc( digest, (a >> 16) & 0xff );
-	    md_putc( digest, (a >>  8) & 0xff );
-	    md_putc( digest,  a        & 0xff );
-	}
-	md_final( digest );
-	result = encode_md_value( digest, sig->digest_algo,
-					  mpi_get_nbits(pkc->pkey[0]));
-	if( DBG_CIPHER )
-	    log_mpidump("calc sig frame (elg): ", result);
-	rc = pubkey_verify( pkc->pubkey_algo, result, sig->data, pkc->pkey );
+    if( (rc=check_digest_algo(sig->digest_algo)) )
+	return rc;
+    if( (rc=check_pubkey_algo(sig->pubkey_algo)) )
+	return rc;
+
+    /* make sure the digest algo is enabled (in case of a detached signature)*/
+    md_enable( digest, sig->digest_algo );
+
+    /* complete the digest */
+    if( sig->version >= 4 )
+	md_putc( digest, sig->version );
+    md_putc( digest, sig->sig_class );
+    if( sig->version < 4 ) {
+	u32 a = sig->timestamp;
+	md_putc( digest, (a >> 24) & 0xff );
+	md_putc( digest, (a >> 16) & 0xff );
+	md_putc( digest, (a >>	8) & 0xff );
+	md_putc( digest,  a	   & 0xff );
     }
-    else if( pkc->pubkey_algo == PUBKEY_ALGO_DSA ) {
-	if( (rc=check_digest_algo(sig->digest_algo)) )
-	    goto leave;
-	/* make sure the digest algo is enabled (in case of a detached
-	 * signature */
-	md_enable( digest, sig->digest_algo );
-
-	/* complete the digest */
-	if( sig->version >= 4 )
-	    md_putc( digest, sig->version );
-	md_putc( digest, sig->sig_class );
-	if( sig->version < 4 ) {
-	    u32 a = sig->timestamp;
-	    md_putc( digest, (a >> 24) & 0xff );
-	    md_putc( digest, (a >> 16) & 0xff );
-	    md_putc( digest, (a >>  8) & 0xff );
-	    md_putc( digest,  a        & 0xff );
-	}
-	else {
-	    byte buf[6];
-	    size_t n;
-	    md_putc( digest, sig->pubkey_algo );
-	    md_putc( digest, sig->digest_algo );
-	    if( sig->hashed_data ) {
-		n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
-		md_write( digest, sig->hashed_data, n+2 );
-		n += 6;
-	    }
-	    else
-		n = 6;
-	    /* add some magic */
-	    buf[0] = sig->version;
-	    buf[1] = 0xff;
-	    buf[2] = n >> 24;
-	    buf[3] = n >> 16;
-	    buf[4] = n >>  8;
-	    buf[5] = n;
-	    md_write( digest, buf, 6 );
-	}
-	md_final( digest );
-
-	result = mpi_alloc( (md_digest_length(sig->digest_algo)
-			     +BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
-	mpi_set_buffer( result, md_read(digest, sig->digest_algo),
-				md_digest_length(sig->digest_algo), 0 );
-	if( DBG_CIPHER )
-	    log_mpidump("calc sig frame: ", result);
-	rc = pubkey_verify( pkc->pubkey_algo, result, sig->data, pkc->pkey );
-    }
-  #if 0 /* WORK!!! */
-    else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA
-	     || pkc->pubkey_algo == PUBKEY_ALGO_RSA_S ) {
-	int i, j, c, old_enc;
-	byte *dp;
-	const byte *asn;
-	size_t mdlen, asnlen;
-
-	result = mpi_alloc(40);
-	rsa_public( result, sig->d.rsa.rsa_integer, &pkc->d.rsa );
-
-	old_enc = 0;
-	for(i=j=0; (c=mpi_getbyte(result, i)) != -1; i++ ) {
-	    if( !j ) {
-		if( !i && c != 1 )
-		    break;
-		else if( i && c == 0xff )
-		    ; /* skip the padding */
-		else if( i && !c )
-		    j++;
-		else
-		    break;
-	    }
-	    else if( ++j == 18 && c != 1 )
-		break;
-	    else if( j == 19 && c == 0 ) {
-		old_enc++;
-		break;
-	    }
-	}
-	if( old_enc ) {
-	    log_error("old encoding scheme is not supported\n");
-	    rc = G10ERR_GENERAL;
-	    goto leave;
-	}
-
-	if( (rc=check_digest_algo(sig->digest_algo)) )
-	    goto leave; /* unsupported algo */
-	md_enable( digest, sig->digest_algo );
-	asn = md_asn_oid( sig->digest_algo, &asnlen, &mdlen );
-
-	for(i=mdlen,j=asnlen-1; (c=mpi_getbyte(result, i)) != -1 && j >= 0;
-							       i++, j-- )
-	    if( asn[j] != c )
-		break;
-	if( j != -1 || mpi_getbyte(result, i) ) { /* ASN is wrong */
-	    rc = G10ERR_BAD_PUBKEY;
-	    goto leave;
-	}
-	for(i++; (c=mpi_getbyte(result, i)) != -1; i++ )
-	    if( c != 0xff  )
-		break;
-	i++;
-	if( c != sig->digest_algo || mpi_getbyte(result, i) ) {
-	    /* Padding or leading bytes in signature is wrong */
-	    rc = G10ERR_BAD_PUBKEY;
-	    goto leave;
-	}
-	if( mpi_getbyte(result, mdlen-1) != sig->digest_start[0]
-	    || mpi_getbyte(result, mdlen-2) != sig->digest_start[1] ) {
-	    /* Wrong key used to check the signature */
-	    rc = G10ERR_BAD_PUBKEY;
-	    goto leave;
-	}
-
-	/* complete the digest */
-	md_putc( digest, sig->sig_class );
-	{   u32 a = sig->timestamp;
-	    md_putc( digest, (a >> 24) & 0xff );
-	    md_putc( digest, (a >> 16) & 0xff );
-	    md_putc( digest, (a >>  8) & 0xff );
-	    md_putc( digest,  a        & 0xff );
-	}
-	md_final( digest );
-	dp = md_read( digest, sig->digest_algo );
-	for(i=mdlen-1; i >= 0; i--, dp++ ) {
-	    if( mpi_getbyte( result, i ) != *dp ) {
-		rc = G10ERR_BAD_SIGN;
-		goto leave;
-	    }
-	}
-    }
-  #endif
     else {
-	/*log_debug("signature_check: unsupported pubkey algo %d\n",
-			pkc->pubkey_algo );*/
-	rc = G10ERR_PUBKEY_ALGO;
-	goto leave;
+	byte buf[6];
+	size_t n;
+	md_putc( digest, sig->pubkey_algo );
+	md_putc( digest, sig->digest_algo );
+	if( sig->hashed_data ) {
+	    n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
+	    md_write( digest, sig->hashed_data, n+2 );
+	    n += 6;
+	}
+	else
+	    n = 6;
+	/* add some magic */
+	buf[0] = sig->version;
+	buf[1] = 0xff;
+	buf[2] = n >> 24;
+	buf[3] = n >> 16;
+	buf[4] = n >>  8;
+	buf[5] = n;
+	md_write( digest, buf, 6 );
     }
+    md_final( digest );
 
-
-  leave:
+    result = encode_md_value( pkc->pubkey_algo, digest, sig->digest_algo,
+				      mpi_get_nbits(pkc->pkey[0]));
+    ctx.sig = sig;
+    ctx.md = digest;
+    rc = pubkey_verify( pkc->pubkey_algo, result, sig->data, pkc->pkey,
+			cmp_help, &ctx );
     mpi_free( result );
+
     return rc;
 }
 

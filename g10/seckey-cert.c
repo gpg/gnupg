@@ -39,7 +39,7 @@ do_check( PKT_secret_cert *cert )
 {
     byte *buffer;
     u16 csum=0;
-    int res;
+    int i, res;
     unsigned nbytes;
 
     if( cert->is_protected ) { /* remove the protection */
@@ -60,60 +60,34 @@ do_check( PKT_secret_cert *cert )
 				 CIPHER_MODE_AUTO_CFB, 1);
 	cipher_setkey( cipher_hd, dek->key, dek->keylen );
 	cipher_setiv( cipher_hd, NULL );
-	m_free(dek); /* pw is in secure memory, so m_free() burns it */
+	m_free(dek);
 	save_cert = copy_secret_cert( NULL, cert );
 	memcpy(save_iv, cert->protect.iv, 8 );
 	cipher_decrypt( cipher_hd, cert->protect.iv, cert->protect.iv, 8 );
-	switch( cert->pubkey_algo ) {
-	  case PUBKEY_ALGO_ELGAMAL:
-	  case PUBKEY_ALGO_ELGAMAL_E:
-	    /* FIXME: removed ELG knowledge from this function */
-	    buffer = mpi_get_secure_buffer( cert->skey[3], &nbytes, NULL );
+	csum = 0;
+	for(i=pubkey_get_npkey(cert->pubkey_algo);
+		i < pubkey_get_nskey(cert->pubkey_algo); i++ ) {
+	    buffer = mpi_get_secure_buffer( cert->skey[i], &nbytes, NULL );
+	    cipher_sync( cipher_hd );
 	    cipher_decrypt( cipher_hd, buffer, buffer, nbytes );
-	    mpi_set_buffer( cert->skey[3], buffer, nbytes, 0 );
-	    csum = checksum_mpi( cert->skey[3] );
+	    mpi_set_buffer( cert->skey[i], buffer, nbytes, 0 );
+	    csum += checksum_mpi( cert->skey[i] );
 	    m_free( buffer );
-	    break;
-	  case PUBKEY_ALGO_DSA:
-	    buffer = mpi_get_secure_buffer( cert->skey[4], &nbytes, NULL );
-	    cipher_decrypt( cipher_hd, buffer, buffer, nbytes );
-	    mpi_set_buffer( cert->skey[4], buffer, nbytes, 0 );
-	    csum = checksum_mpi( cert->skey[4] );
-	    m_free( buffer );
-	    break;
-	  case PUBKEY_ALGO_RSA:
-	  case PUBKEY_ALGO_RSA_E:
-	  case PUBKEY_ALGO_RSA_S:
-	    csum = 0;
-	    #define X(a) do { \
-		buffer = mpi_get_secure_buffer( cert->skey[(a)],     \
-						&nbytes, NULL );     \
-		csum += checksum_u16( nbytes*8 );		     \
-		cipher_decrypt( cipher_hd, buffer, buffer, nbytes ); \
-		csum += checksum( buffer, nbytes );		     \
-		mpi_set_buffer(cert->skey[(a)], buffer, nbytes, 0 ); \
-		m_free( buffer );				     \
-	       } while(0)
-	    X(2);
-	    X(3);
-	    X(4);
-	    X(5);
-	    #undef X
-	    break;
-
-	  default: BUG();
+	}
+	if( opt.emulate_bugs & 1 ) {
+	   log_debug("secret key csum is=%04hx should=%04hx algos=%d/%d\n",
+		     csum, cert->csum, cert->pubkey_algo,cert->protect.algo );
+	   csum = cert->csum;
 	}
 	cipher_close( cipher_hd );
 	/* now let's see whether we have used the right passphrase */
 	if( csum != cert->csum ) {
-	    if( csum != cert->csum ) {
-		copy_secret_cert( cert, save_cert );
-		free_secret_cert( save_cert );
-		memcpy( cert->protect.iv, save_iv, 8 );
-		return G10ERR_BAD_PASS;
-	    }
+	    copy_secret_cert( cert, save_cert );
+	    free_secret_cert( save_cert );
+	    memcpy( cert->protect.iv, save_iv, 8 );
+	    return G10ERR_BAD_PASS;
 	}
-
+	/* the checksum may fail, so we also check the key itself */
 	res = pubkey_check_secret_key( cert->pubkey_algo, cert->skey );
 	if( res ) {
 	    copy_secret_cert( cert, save_cert );
@@ -124,37 +98,11 @@ do_check( PKT_secret_cert *cert )
 	free_secret_cert( save_cert );
 	cert->is_protected = 0;
     }
-    else { /* not protected */
-	switch( cert->pubkey_algo ) {
-	  case PUBKEY_ALGO_ELGAMAL_E:
-	  case PUBKEY_ALGO_ELGAMAL:
-	    csum = checksum_mpi( cert->skey[3] );
-	    break;
-	  case PUBKEY_ALGO_DSA:
-	    csum = checksum_mpi( cert->skey[4] );
-	    break;
-	  case PUBKEY_ALGO_RSA_E:
-	  case PUBKEY_ALGO_RSA_S:
-	  case PUBKEY_ALGO_RSA:
-	    csum =0;
-	    buffer = mpi_get_buffer( cert->skey[2], &nbytes, NULL );
-	    csum += checksum_u16( nbytes*8 );
-	    csum += checksum( buffer, nbytes );
-	    m_free( buffer );
-	    buffer = mpi_get_buffer( cert->skey[3], &nbytes, NULL );
-	    csum += checksum_u16( nbytes*8 );
-	    csum += checksum( buffer, nbytes );
-	    m_free( buffer );
-	    buffer = mpi_get_buffer( cert->skey[4], &nbytes, NULL );
-	    csum += checksum_u16( nbytes*8 );
-	    csum += checksum( buffer, nbytes );
-	    m_free( buffer );
-	    buffer = mpi_get_buffer( cert->skey[5], &nbytes, NULL );
-	    csum += checksum_u16( nbytes*8 );
-	    csum += checksum( buffer, nbytes );
-	    m_free( buffer );
-	    break;
-	  default: BUG();
+    else { /* not protected, assume it is okay if the checksum is okay */
+	csum = 0;
+	for(i=pubkey_get_npkey(cert->pubkey_algo);
+		i < pubkey_get_nskey(cert->pubkey_algo); i++ ) {
+	    csum += checksum_mpi( cert->skey[i] );
 	}
 	if( csum != cert->csum )
 	    return G10ERR_CHECKSUM;
@@ -212,34 +160,6 @@ is_secret_key_protected( PKT_secret_cert *cert )
 }
 
 
-static int
-do_protect( void (*fnc)(CIPHER_HANDLE, byte *, byte *, unsigned),
-	    CIPHER_HANDLE fnc_hd, PKT_secret_cert *cert )
-{
-    byte *buffer;
-    unsigned nbytes;
-
-    switch( cert->pubkey_algo ) {
-      case PUBKEY_ALGO_ELGAMAL_E:
-      case PUBKEY_ALGO_ELGAMAL:
-	buffer = mpi_get_buffer( cert->skey[3], &nbytes, NULL );
-	(*fnc)( fnc_hd, buffer, buffer, nbytes );
-	mpi_set_buffer( cert->skey[3], buffer, nbytes, 0 );
-	m_free( buffer );
-	break;
-
-      case PUBKEY_ALGO_DSA:
-	buffer = mpi_get_buffer( cert->skey[4], &nbytes, NULL );
-	(*fnc)( fnc_hd, buffer, buffer, nbytes );
-	mpi_set_buffer( cert->skey[4], buffer, nbytes, 0 );
-	m_free( buffer );
-	break;
-
-      default: return G10ERR_PUBKEY_ALGO;
-    }
-    return 0;
-}
-
 
 /****************
  * Protect the secret key certificate with the passphrase from DEK
@@ -247,7 +167,10 @@ do_protect( void (*fnc)(CIPHER_HANDLE, byte *, byte *, unsigned),
 int
 protect_secret_key( PKT_secret_cert *cert, DEK *dek )
 {
-    int rc=0;
+    int i, rc = 0;
+    byte *buffer;
+    unsigned nbytes;
+    u16 csum;
 
     if( !dek )
 	return 0;
@@ -263,8 +186,21 @@ protect_secret_key( PKT_secret_cert *cert, DEK *dek )
 	    cipher_setkey( cipher_hd, dek->key, dek->keylen );
 	    cipher_setiv( cipher_hd, NULL );
 	    cipher_encrypt( cipher_hd, cert->protect.iv, cert->protect.iv, 8 );
-	    if( !do_protect( &cipher_encrypt, cipher_hd, cert ) )
-		cert->is_protected = 1;
+	    /* NOTE: we always recalculate the checksum because there are some
+	     * test releases which calculated it wrong */
+	    csum = 0;
+	    for(i=pubkey_get_npkey(cert->pubkey_algo);
+		    i < pubkey_get_nskey(cert->pubkey_algo); i++ ) {
+		csum += checksum_mpi_counted_nbits( cert->skey[i] );
+		buffer = mpi_get_buffer( cert->skey[i], &nbytes, NULL );
+	   log_debug("protecing i=%d csum=%04hx nbytes=%u\n", i, csum, nbytes );
+		cipher_sync( cipher_hd );
+		cipher_encrypt( cipher_hd, buffer, buffer, nbytes );
+		mpi_set_buffer( cert->skey[i], buffer, nbytes, 0 );
+		m_free( buffer );
+	    }
+	    cert->csum = csum;
+	    cert->is_protected = 1;
 	    cipher_close( cipher_hd );
 	}
     }

@@ -53,14 +53,8 @@ do_sign( PKT_secret_cert *skc, PKT_signature *sig,
     sig->digest_algo = digest_algo;
     sig->digest_start[0] = dp[0];
     sig->digest_start[1] = dp[1];
-    if( skc->pubkey_algo == PUBKEY_ALGO_DSA ) {
-	frame = mpi_alloc( (md_digest_length(digest_algo)+BYTES_PER_MPI_LIMB-1)
-			   / BYTES_PER_MPI_LIMB );
-	mpi_set_buffer( frame, md_read(md, digest_algo),
-			       md_digest_length(digest_algo), 0 );
-    }
-    else
-	frame = encode_md_value( md, digest_algo, mpi_get_nbits(skc->skey[0]));
+    frame = encode_md_value( skc->pubkey_algo, md,
+			     digest_algo, mpi_get_nbits(skc->skey[0]));
     rc = pubkey_sign( skc->pubkey_algo, sig->data, frame, skc->skey );
     mpi_free(frame);
     if( rc )

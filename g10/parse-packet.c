@@ -64,6 +64,7 @@ static int  parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen,
 static int  parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
 
+
 static unsigned short
 read_16(IOBUF inp)
 {
@@ -1006,9 +1007,6 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 
 	    cert->csum = read_16(inp); pktlen -= 2;
 	    if( list_mode ) {
-	    printf("\telg x: ");
-	    mpi_print(stdout, cert->skey[3], mpi_print_mode  );
-	    putchar('\n');
 		printf("\t[secret value x is not shown]\n"
 		       "\tchecksum: %04hx\n", cert->csum);
 	    }
@@ -1174,8 +1172,7 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 			printf(" %02x", temp[i] );
 		    putchar('\n');
 		}
-		if( cert->protect.algo == CIPHER_ALGO_BLOWFISH160 )
-		    memcpy(cert->protect.iv, temp, 8 );
+		memcpy(cert->protect.iv, temp, 8 );
 		/* old version, we don't have a S2K, so we fake one */
 		cert->protect.s2k.mode = 0;
 		cert->protect.s2k.hash_algo = DIGEST_ALGO_MD5;

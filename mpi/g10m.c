@@ -25,6 +25,9 @@
 #define _g10lib_INTERNAL 1
 #include "g10lib.h"
 
+
+const char *g10m_revision_string(int dummy) { return "$Revision$"; }
+
 MPI
 g10m_new( unsigned nbits )
 {

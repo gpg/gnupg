@@ -28,6 +28,8 @@
 #include "errors.h"
 #include "mpi.h"
 #include "cipher.h"
+#include "elgamal.h"
+#include "dsa.h"
 #include "dynload.h"
 
 
@@ -46,7 +48,8 @@ struct pubkey_table_s {
     int (*encrypt)( int algo, MPI *resarr, MPI data, MPI *pkey );
     int (*decrypt)( int algo, MPI *result, MPI *data, MPI *skey );
     int (*sign)( int algo, MPI *resarr, MPI data, MPI *skey );
-    int (*verify)( int algo, MPI hash, MPI *data, MPI *pkey );
+    int (*verify)( int algo, MPI hash, MPI *data, MPI *pkey,
+		   int (*cmp)(void *, MPI), void *opaquev );
     unsigned (*get_nbits)( int algo, MPI *pkey );
 };
 
@@ -75,7 +78,8 @@ dummy_sign( int algo, MPI *resarr, MPI data, MPI *skey )
 { log_bug("no sign() for %d\n", algo ); return G10ERR_PUBKEY_ALGO; }
 
 static int
-dummy_verify( int algo, MPI hash, MPI *data, MPI *pkey )
+dummy_verify( int algo, MPI hash, MPI *data, MPI *pkey,
+		int (*cmp)(void *, MPI), void *opaquev )
 { log_bug("no verify() for %d\n", algo ); return G10ERR_PUBKEY_ALGO; }
 
 static unsigned
@@ -523,7 +527,8 @@ pubkey_sign( int algo, MPI *resarr, MPI data, MPI *skey )
  * Return 0 if the signature is good
  */
 int
-pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey )
+pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey,
+		    int (*cmp)(void *, MPI), void *opaquev )
 {
     int i, rc;
 
@@ -531,7 +536,8 @@ pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey )
     do {
 	for(i=0; pubkey_table[i].name; i++ )
 	    if( pubkey_table[i].algo == algo ) {
-		rc = (*pubkey_table[i].verify)( algo, hash, data, pkey );
+		rc = (*pubkey_table[i].verify)( algo, hash, data, pkey,
+							    cmp, opaquev );
 		goto ready;
 	    }
     } while( load_pubkey_modules() );

@@ -127,7 +127,7 @@ add_entry( byte *p, unsigned n, int mode, const char *info, const char *by )
 	index = memtbl_len++;
     else {
 	struct memtbl_entry *e;
-	/* look for a used entry in the table.  We take the first one,
+	/* look for a used entry in the table.	We take the first one,
 	 * so that freed entries remain as long as possible in the table
 	 * (free appends a new one)
 	 */
@@ -338,6 +338,7 @@ out_of_core(size_t n, int secure)
 {
     log_fatal("out of %s memory while allocating %u bytes\n",
 			secure? "secure":"" ,(unsigned)n );
+
 }
 
 /****************

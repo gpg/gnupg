@@ -1,3 +1,13 @@
+Noteworthy changes in version 0.3.0
+-----------------------------------
+    * New option --emulate-checksum-bug.  If your passphrase does not
+      work anymore, use this option and --change-passphrase to rewrite
+      your passphrase.
+
+
+
+
+
 Noteworthy changes in version 0.2.19
 ------------------------------------
 

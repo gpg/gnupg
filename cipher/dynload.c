@@ -221,7 +221,8 @@ enum_gnupgext_pubkeys( void **enum_context, int *algo,
     int (**encrypt)( int algo, MPI *resarr, MPI data, MPI *pkey ),
     int (**decrypt)( int algo, MPI *result, MPI *data, MPI *skey ),
     int (**sign)( int algo, MPI *resarr, MPI data, MPI *skey ),
-    int (**verify)( int algo, MPI hash, MPI *data, MPI *pkey ),
+    int (**verify)( int algo, MPI hash, MPI *data, MPI *pkey,
+		    int (*cmp)(void *, MPI), void *opaquev ),
     unsigned (**get_nbits)( int algo, MPI *pkey ) )
 {
     EXTLIST r;
@@ -232,7 +233,8 @@ enum_gnupgext_pubkeys( void **enum_context, int *algo,
 			   int (**)( int, MPI *, MPI , MPI * ),
 			   int (**)( int, MPI *, MPI *, MPI * ),
 			   int (**)( int, MPI *, MPI , MPI * ),
-			   int (**)( int, MPI , MPI *, MPI * ),
+			   int (**)( int, MPI , MPI *, MPI *,
+					    int (*)(void*,MPI), void *),
 			   unsigned (**)( int , MPI * ) );
 
     if( !*enum_context ) { /* init context */

@@ -25,7 +25,13 @@
 #include <assert.h>
 #include "util.h"
 #include "types.h"
-#include "des.h"
+
+#define DES_BLOCKSIZE 8
+#define DES_ROUNDS 16
+
+typedef struct {
+    int tripledes;
+} DES_context;
 
 
 static const int IP[64] = {

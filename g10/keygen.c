@@ -168,7 +168,7 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     skc->is_protected = 0;
     skc->protect.algo = 0;
 
-    skc->csum = checksum_mpi( skc->skey[3] );
+    skc->csum = checksum_mpi_counted_nbits( skc->skey[3] );
     if( ret_skc ) /* not a subkey: return an unprotected version of the skc */
 	*ret_skc = copy_secret_cert( NULL, skc );
 
@@ -232,10 +232,10 @@ gen_rsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     skc->d.rsa.rsa_p = sk.p;
     skc->d.rsa.rsa_q = sk.q;
     skc->d.rsa.rsa_u = sk.u;
-    skc->d.rsa.csum  = checksum_mpi( skc->d.rsa.rsa_d );
-    skc->d.rsa.csum += checksum_mpi( skc->d.rsa.rsa_p );
-    skc->d.rsa.csum += checksum_mpi( skc->d.rsa.rsa_q );
-    skc->d.rsa.csum += checksum_mpi( skc->d.rsa.rsa_u );
+    skc->d.rsa.csum  = checksum_mpi_counted_nbits( skc->d.rsa.rsa_d );
+    skc->d.rsa.csum += checksum_mpi_counted_nbits( skc->d.rsa.rsa_p );
+    skc->d.rsa.csum += checksum_mpi_counted_nbits( skc->d.rsa.rsa_q );
+    skc->d.rsa.csum += checksum_mpi_counted_nbits( skc->d.rsa.rsa_u );
 
     if( ret_skc ) /* not a subkey: return an unprotected version of the skc */
 	*ret_skc = copy_secret_cert( NULL, skc );
@@ -244,7 +244,8 @@ gen_rsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	skc->d.rsa.is_protected = 1;
 	skc->d.rsa.protect_algo = CIPHER_ALGO_BLOWFISH;
 	randomize_buffer( skc->d.rsa.protect.blowfish.iv, 8, 1);
-	skc->d.rsa.csum += checksum( skc->d.rsa.protect.blowfish.iv, 8 );
+	skc->d.rsa.csum += checksum_counted_nbits(
+					skc->d.rsa.protect.blowfish.iv, 8 );
 	rc = protect_secret_key( skc, dek );
 	if( rc ) {
 	    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
@@ -314,7 +315,7 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     skc->is_protected = 0;
     skc->protect.algo = 0;
 
-    skc->csum = checksum_mpi( skc->skey[4] );
+    skc->csum = checksum_mpi_counted_nbits( skc->skey[4] );
     if( ret_skc ) /* not a subkey: return an unprotected version of the skc */
 	 *ret_skc = copy_secret_cert( NULL, skc );
 

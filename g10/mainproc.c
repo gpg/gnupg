@@ -246,7 +246,8 @@ proc_plaintext( CTX c, PACKET *pkt )
     /*md_start_debug(c->mfx.md, "proc_plaintext");*/
     md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
     md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
-    md_enable( c->mfx.md, DIGEST_ALGO_TIGER );
+    if( !check_digest_algo(DIGEST_ALGO_TIGER) )
+	md_enable( c->mfx.md, DIGEST_ALGO_TIGER );
     rc = handle_plaintext( pt, &c->mfx );
     if( rc )
 	log_error( "handle plaintext failed: %s\n", g10_errstr(rc));

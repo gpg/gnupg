@@ -29,11 +29,6 @@
 
 #include "mpi.h"
 #include "../cipher/md.h"
-#ifdef HAVE_RSA_CIPHER
-  #include "../cipher/rsa.h"
-#endif
-#include "../cipher/elgamal.h"
-#include "../cipher/dsa.h"
 #include "../cipher/random.h"
 
 
@@ -57,9 +52,7 @@
 #define DIGEST_ALGO_MD5       1
 #define DIGEST_ALGO_SHA1      2
 #define DIGEST_ALGO_RMD160    3
-#ifdef WITH_TIGER_HASH
 #define DIGEST_ALGO_TIGER     6
-#endif
 
 #define is_RSA(a)     ((a)==PUBKEY_ALGO_RSA || (a)==PUBKEY_ALGO_RSA_E \
 		       || (a)==PUBKEY_ALGO_RSA_S )
@@ -123,7 +116,8 @@ int pubkey_check_secret_key( int algo, MPI *skey );
 int pubkey_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey );
 int pubkey_decrypt( int algo, MPI *result, MPI *data, MPI *skey );
 int pubkey_sign( int algo, MPI *resarr, MPI hash, MPI *skey );
-int pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey );
+int pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey,
+		      int (*cmp)(void *, MPI), void *opaque );
 
 /*-- smallprime.c --*/
 extern ushort small_prime_numbers[];

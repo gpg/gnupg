@@ -36,7 +36,8 @@ enum_gnupgext_pubkeys( void **enum_context, int *algo,
     int (**encrypt)( int algo, MPI *resarr, MPI data, MPI *pkey ),
     int (**decrypt)( int algo, MPI *result, MPI *data, MPI *skey ),
     int (**sign)( int algo, MPI *resarr, MPI data, MPI *skey ),
-    int (**verify)( int algo, MPI hash, MPI *data, MPI *pkey ),
+    int (**verify)( int algo, MPI hash, MPI *data, MPI *pkey,
+		    int (*cmp)(void *, MPI), void *opaquev ),
     unsigned (**get_nbits)( int algo, MPI *pkey ) );
 
 #endif /*G10_CIPHER_DYNLOAD_H*/

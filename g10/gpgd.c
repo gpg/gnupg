@@ -129,7 +129,7 @@ set_debug(void)
     if( opt.debug & DBG_MPI_VALUE )
 	mpi_debug_mode = 1;
     if( opt.debug & DBG_CIPHER_VALUE )
-	cipher_debug_mode = 1;
+	g10c_debug_mode = 1;
     if( opt.debug & DBG_IOBUF_VALUE )
 	iobuf_debug_mode = 1;
 }

@@ -25,9 +25,15 @@
 #include <assert.h>
 #include "util.h"
 #include "memory.h"
-#include "tiger.h"
 
-#ifdef WITH_TIGER_HASH
+
+typedef struct {
+    u64  a, b, c;
+    u32  nblocks;
+    byte buf[64];
+    int  count;
+} TIGER_CONTEXT;
+
 
 /*********************************
  * Okay, okay, this is not the fastest code - improvements are welcome.
@@ -844,6 +850,4 @@ tiger_final( TIGER_CONTEXT *hd )
     X(c);
   #undef X
 }
-
-#endif /* WITH_TIGER_HASH */
 

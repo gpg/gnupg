@@ -49,6 +49,7 @@ void trap_unaligned(void);
 u16 checksum_u16( unsigned n );
 u16 checksum( byte *p, unsigned n );
 u16 checksum_mpi( MPI a );
+u16 checksum_mpi_counted_nbits( MPI a );
 
 /*-- encode.c --*/
 int encode_symmetric( const char *filename );
@@ -85,7 +86,8 @@ IOBUF open_sigfile( const char *iname );
 /*-- seskey.c --*/
 void make_session_key( DEK *dek );
 MPI encode_session_key( DEK *dek, unsigned nbits );
-MPI encode_md_value( MD_HANDLE md, int hash_algo, unsigned nbits );
+MPI encode_md_value( int pubkey_algo,  MD_HANDLE md,
+		     int hash_algo, unsigned nbits );
 
 /*-- comment.c --*/
 KBNODE make_comment_node( const char *s );

@@ -144,13 +144,25 @@ do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
 
 
 MPI
-encode_md_value( MD_HANDLE md, int hash_algo, unsigned nbits )
+encode_md_value( int pubkey_algo, MD_HANDLE md, int hash_algo, unsigned nbits )
 {
     int algo = hash_algo? hash_algo : md_get_algo(md);
     const byte *asn;
     size_t asnlen, mdlen;
+    MPI frame;
 
-    asn = md_asn_oid( algo, &asnlen, &mdlen );
-    return do_encode_md( md, algo, mdlen, nbits, asn, asnlen );
+    if( pubkey_algo == PUBKEY_ALGO_DSA ) {
+	frame = md_is_secure(md)? mpi_alloc_secure((md_digest_length(hash_algo)
+				 +BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB )
+				: mpi_alloc((md_digest_length(hash_algo)
+				 +BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
+	mpi_set_buffer( frame, md_read(md, hash_algo),
+			       md_digest_length(hash_algo), 0 );
+    }
+    else {
+       asn = md_asn_oid( algo, &asnlen, &mdlen );
+       frame = do_encode_md( md, algo, mdlen, nbits, asn, asnlen );
+    }
+    return frame;
 }
 

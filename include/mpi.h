@@ -55,6 +55,7 @@ typedef struct mpi_struct {
 #define MPI_NULL NULL
 
 #define mpi_get_nlimbs(a)     ((a)->nlimbs)
+#define mpi_get_nbit_info(a)  ((a)->nbits)
 #define mpi_is_neg(a)	      ((a)->sign)
 
 /*-- mpiutil.c --*/

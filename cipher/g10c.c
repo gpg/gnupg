@@ -27,6 +27,7 @@
 #define _g10lib_INTERNAL 1
 #include "g10lib.h"
 
+const char *g10c_revision_string(int dummy) { return "$Revision$"; }
 
 MPI
 g10c_generate_secret_prime( unsigned nbits )

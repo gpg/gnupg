@@ -25,7 +25,6 @@
 #include "rmd.h"
 #include "sha1.h"
 #include "md5.h"
-#include "tiger.h"
 
 #define MD_BUFFER_SIZE 512
 

@@ -28,7 +28,15 @@
 #endif
 #include "util.h"
 #include "main.h"
+#include "options.h"
 
+volatile int
+pull_in_libs(void)
+{
+    g10m_revision_string(0);
+    g10c_revision_string(0);
+    g10u_revision_string(0);
+}
 
 
 #if defined(__linux__) && defined(__alpha__)
@@ -63,7 +71,22 @@ checksum_u16( unsigned n )
     u16 a;
 
     a  = (n >> 8) & 0xff;
-    a |= n & 0xff;
+    if( opt.emulate_bugs & 1 ) {
+       a |= n & 0xff;
+       log_debug("csum_u16 emulated for n=%u\n", n);
+    }
+    else
+       a += n & 0xff;
+    return a;
+}
+
+static u16
+checksum_u16_nobug( unsigned n )
+{
+    u16 a;
+
+    a  = (n >> 8) & 0xff;
+    a += n & 0xff;
     return a;
 }
 
@@ -83,12 +106,43 @@ checksum_mpi( MPI a )
     u16 csum;
     byte *buffer;
     unsigned nbytes;
+    unsigned nbits;
 
     buffer = mpi_get_buffer( a, &nbytes, NULL );
-    csum = checksum_u16( mpi_get_nbits(a) );
+    /* some versions of gpg encode wrong values for the length of an mpi
+     * so that mpi_get_nbits() which counts the mpi yields another (shorter)
+     * value than the one store with the mpi.  mpi_get_nbit_info() returns
+     * this stored value if it is still available.
+     */
+
+    if( opt.emulate_bugs & 1 )
+	nbits = 0;
+    else
+	nbits = mpi_get_nbit_info(a);
+    if( !nbits )
+       nbits = mpi_get_nbits(a);
+    csum = checksum_u16( nbits );
     csum += checksum( buffer, nbytes );
     m_free( buffer );
     return csum;
 }
 
+/****************
+ * This is the correct function
+ */
+u16
+checksum_mpi_counted_nbits( MPI a )
+{
+    u16 csum;
+    byte *buffer;
+    unsigned nbytes;
+    unsigned nbits;
+
+    buffer = mpi_get_buffer( a, &nbytes, NULL );
+    nbits = mpi_get_nbits(a);
+    csum = checksum_u16_nobug( nbits );
+    csum += checksum( buffer, nbytes );
+    m_free( buffer );
+    return csum;
+}
 

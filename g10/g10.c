@@ -164,6 +164,7 @@ static ARGPARSE_OPTS opts[] = {
     { 553, "skip-verify",0, "@" },
     { 557, "compress-keys",0, "@"},
     { 559, "always-trust", 0, "@"},
+    { 562, "emulate-checksum-bug", 0, "@"},
 
 {0} };
 
@@ -310,11 +311,6 @@ wrong_args( const char *text)
 static void
 set_debug(void)
 {
-    volatile char *p = g10_malloc(1);
-    volatile MPI a = g10m_new(1);
-    *p = g10c_get_random_byte( 0 );
-
-
     if( opt.debug & DBG_MEMORY_VALUE )
 	memory_debug_mode = 1;
     if( opt.debug & DBG_MEMSTAT_VALUE )
@@ -598,6 +594,7 @@ main( int argc, char **argv )
 	  case 559: opt.always_trust = 1; break;
 	  case 560: register_cipher_extension(pargs.r.ret_str); break;
 	  case 561: opt.rfc1991 = 1; break;
+	  case 562: opt.emulate_bugs |= 1; break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -1111,9 +1108,8 @@ print_mds( const char *fname, int algo )
 	md_enable( md, DIGEST_ALGO_MD5 );
 	md_enable( md, DIGEST_ALGO_SHA1 );
 	md_enable( md, DIGEST_ALGO_RMD160 );
-      #ifdef WITH_TIGER_HASH
-	md_enable( md, DIGEST_ALGO_TIGER );
-      #endif
+	if( !check_digest_algo(DIGEST_ALGO_TIGER) )
+	    md_enable( md, DIGEST_ALGO_TIGER );
     }
 
     while( (n=fread( buf, 1, DIM(buf), fp )) )
@@ -1134,10 +1130,10 @@ print_mds( const char *fname, int algo )
 			    print_hex(md_read(md, DIGEST_ALGO_SHA1), 20 );
 	    printf("\n%sRMD160 = ", fname?pname:""  );
 			    print_hex(md_read(md, DIGEST_ALGO_RMD160), 20 );
-	  #ifdef WITH_TIGER_HASH
-	    printf("\n%s TIGER = ", fname?pname:""  );
+	    if( !check_digest_algo(DIGEST_ALGO_TIGER) ) {
+		printf("\n%s TIGER = ", fname?pname:""  );
 			    print_hex(md_read(md, DIGEST_ALGO_TIGER), 24 );
-	  #endif
+	    }
 	}
 	putchar('\n');
     }

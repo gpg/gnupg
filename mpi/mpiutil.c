@@ -252,6 +252,7 @@ mpi_copy( MPI a )
 	b->nlimbs = a->nlimbs;
 	b->sign = a->sign;
 	b->secure = a->secure;
+	b->nbits = a->nbits;
 	for(i=0; i < b->nlimbs; i++ )
 	    b->d[i] = a->d[i];
     }
@@ -273,6 +274,7 @@ mpi_set( MPI w, MPI u)
     up = u->d;
     MPN_COPY( wp, up, usize );
     w->nlimbs = usize;
+    w->nbits = u->nbits;
     w->sign = usign;
 }
 
@@ -284,6 +286,7 @@ mpi_set_ui( MPI w, unsigned long u)
     w->d[0] = u;
     w->nlimbs = u? 1:0;
     w->sign = 0;
+    w->nbits = 0;
 }
 
 

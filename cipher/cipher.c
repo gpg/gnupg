@@ -31,7 +31,6 @@
 #include "cipher.h"
 #include "blowfish.h"
 #include "cast5.h"
-#include "des.h"
 #include "dynload.h"
 
 
@@ -62,7 +61,6 @@ struct cipher_handle_s {
     void (*decrypt)( void *c, byte *outbuf, byte *inbuf );
     byte context[1];
 };
-
 
 
 static void
