@@ -1,3 +1,8 @@
+2002-04-04  Werner Koch  <wk@gnupg.org>
+
+	* assuan-buffer.c (my_log_prefix): New.  Use it for all i/o debug
+	output.
+
 2002-03-06  Werner Koch  <wk@gnupg.org>
 
 	* assuan-client.c (_assuan_read_from_server): Detect END.

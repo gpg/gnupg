@@ -30,6 +30,21 @@
 #endif
 #include "assuan-defs.h"
 
+#ifdef HAVE_JNLIB_LOGGING
+#include "../jnlib/logging.h"
+#endif
+
+
+static const char *
+my_log_prefix (void)
+{
+#ifdef HAVE_JNLIB_LOGGING
+  return log_get_prefix (NULL);
+#else
+  return "";
+#endif
+}
+
 
 static int
 writen ( int fd, const char *buffer, size_t length )
@@ -132,15 +147,15 @@ _assuan_read_line (ASSUAN_CONTEXT ctx)
   if (rc)
     {
       if (ctx->log_fp)
-        fprintf (ctx->log_fp, "%p <- [Error: %s]\n",
-                 ctx, strerror (errno)); 
+        fprintf (ctx->log_fp, "%s[%p] <- [Error: %s]\n",
+                 my_log_prefix (), ctx, strerror (errno)); 
       return ASSUAN_Read_Error;
     }
   if (!nread)
     {
       assert (ctx->inbound.eof);
       if (ctx->log_fp)
-        fprintf (ctx->log_fp, "%p <- [EOF]\n", ctx); 
+        fprintf (ctx->log_fp, "%s[%p] <- [EOF]\n", my_log_prefix (),ctx); 
       return -1; 
     }
 
@@ -173,7 +188,7 @@ _assuan_read_line (ASSUAN_CONTEXT ctx)
           ctx->inbound.linelen = n;
           if (ctx->log_fp)
             {
-              fprintf (ctx->log_fp, "%p <- ", ctx); 
+              fprintf (ctx->log_fp, "%s[%p] <- ", my_log_prefix (), ctx); 
               if (ctx->confidential)
                 fputs ("[Confidential data not shown]", ctx->log_fp);
               else
@@ -187,7 +202,7 @@ _assuan_read_line (ASSUAN_CONTEXT ctx)
     }
 
   if (ctx->log_fp)
-    fprintf (ctx->log_fp, "%p <- [Invalid line]\n", ctx);
+    fprintf (ctx->log_fp, "%s[%p] <- [Invalid line]\n", my_log_prefix (), ctx);
   *line = 0;
   ctx->inbound.linelen = 0;
   return ctx->inbound.eof? ASSUAN_Line_Not_Terminated : ASSUAN_Line_Too_Long;
@@ -239,7 +254,7 @@ assuan_write_line (ASSUAN_CONTEXT ctx, const char *line )
   /* fixme: we should do some kind of line buffering */
   if (ctx->log_fp)
     {
-      fprintf (ctx->log_fp, "%p -> ", ctx); 
+      fprintf (ctx->log_fp, "%s[%p] -> ", my_log_prefix (), ctx); 
       if (ctx->confidential)
         fputs ("[Confidential data not shown]", ctx->log_fp);
       else
@@ -310,7 +325,7 @@ _assuan_cookie_write_data (void *cookie, const char *buffer, size_t size)
         {
           if (ctx->log_fp)
             {
-              fprintf (ctx->log_fp, "%p -> ", ctx); 
+              fprintf (ctx->log_fp, "%s[%p] -> ", my_log_prefix (), ctx); 
               if (ctx->confidential)
                 fputs ("[Confidential data not shown]", ctx->log_fp);
               else 
@@ -355,7 +370,7 @@ _assuan_cookie_write_flush (void *cookie)
     {
       if (ctx->log_fp)
         {
-          fprintf (ctx->log_fp, "%p -> ", ctx); 
+          fprintf (ctx->log_fp, "%s[%p] -> ", my_log_prefix (), ctx); 
           if (ctx->confidential)
             fputs ("[Confidential data not shown]", ctx->log_fp);
           else
