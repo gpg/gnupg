@@ -719,6 +719,10 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 
   assert(keyserver);
 
+#ifdef EXEC_TEMPFILE_ONLY
+  opt.keyserver_options.use_temp_files=1;
+#endif
+
   /* Push the libexecdir into path.  If DISABLE_KEYSERVER_PATH is set,
      use the 0 arg to replace the path. */
 #ifdef DISABLE_KEYSERVER_PATH

@@ -236,10 +236,14 @@ show_keyserver_url(PKT_signature *sig,int indent,int mode)
   mode=0 for stdout.
   mode=1 for log_info + status messages
   mode=2 for status messages only
+
+  which=0 for both standard and user notations
+  which=1 for standard notations only
+  which=2 for user notations only
 */
 
 void
-show_notation(PKT_signature *sig,int indent,int mode)
+show_notation(PKT_signature *sig,int indent,int mode,int which)
 {
   const byte *p;
   size_t len;
@@ -259,8 +263,13 @@ show_notation(PKT_signature *sig,int indent,int mode)
 	if(8+n1+n2!=len)
 	  {
 	    log_info(_("WARNING: invalid notation data found\n"));
-	    return;
+	    continue;
 	  }
+
+	if(which==1 && memchr(p+8,'@',n1))
+	  continue;
+	else if(which==2 && !memchr(p+8,'@',n1))
+	  continue;
 
 	if(mode!=2)
 	  {
@@ -864,7 +873,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 
 	    if(sig->flags.notation
 	       && (opt.list_options&LIST_SHOW_NOTATIONS))
-	      show_notation(sig,3,0);
+	      show_notation(sig,3,0,0);
 
 	    if(sig->flags.pref_ks
 	       && (opt.list_options&LIST_SHOW_KEYSERVER_URLS))

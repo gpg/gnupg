@@ -1,3 +1,11 @@
+2004-04-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, keylist.c (show_notation): Add argument to show only
+	user notations, only standard notations, or both.  Change all
+	callers.
+
+	* keyserver.c (keyserver_spawn): We still need EXEC_TEMPFILE_ONLY.
+
 2004-04-28  Werner Koch  <wk@gnupg.org>
 
 	* card-util.c (card_edit): Require PIN only for generate. 

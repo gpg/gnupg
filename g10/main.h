@@ -222,7 +222,7 @@ void list_keyblock( KBNODE keyblock, int secret, int fpr, void *opaque );
 void print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode);
 void show_policy_url(PKT_signature *sig,int indent,int mode);
 void show_keyserver_url(PKT_signature *sig,int indent,int mode);
-void show_notation(PKT_signature *sig,int indent,int mode);
+void show_notation(PKT_signature *sig,int indent,int mode,int which);
 void dump_attribs(const PKT_user_id *uid,
 		  PKT_public_key *pk,PKT_secret_key *sk);
 void set_attrib_fd(int fd);

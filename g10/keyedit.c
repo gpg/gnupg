@@ -170,7 +170,7 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	  show_policy_url(sig,3,0);
 
 	if(sig->flags.notation && (opt.list_options&LIST_SHOW_NOTATIONS))
-	  show_notation(sig,3,0);
+	  show_notation(sig,3,0,0);
 
 	if(sig->flags.pref_ks && (opt.list_options&LIST_SHOW_KEYSERVER_URLS))
 	  show_keyserver_url(sig,3,0);
