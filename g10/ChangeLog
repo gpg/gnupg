@@ -1,3 +1,15 @@
+2001-12-23  Timo Schulz <ts@winpt.org>
+
+    * misc.c (check_permissions): Do not use it for W32 systems.
+
+    * tdbio.c (migrate_from_v2): Define ftruncate as chsize() for W32.
+
+    * mkdtemp.c: W32 support.
+
+    * photoid.c: Ditto.
+
+    * exec.c: Ditto.
+
 2001-12-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* exec.c (make_tempdir): avoid compiler warning with const

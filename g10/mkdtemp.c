@@ -11,6 +11,11 @@
 #include "types.h"
 #include "cipher.h"
 
+#ifdef MKDIR_TAKES_ONE_ARG
+# undef mkdir
+# define mkdir(a,b) mkdir(a)
+#endif
+
 char *mkdtemp(char *template)
 {
   int attempts,idx,count=0;

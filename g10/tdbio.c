@@ -39,6 +39,9 @@
 #include "trustdb.h"
 #include "tdbio.h"
 
+#ifdef HAVE_DOSISH_SYSTEM
+#define ftruncate chsize
+#endif
 
 /****************
  * Yes, this is a very simple implementation. We should really

@@ -24,7 +24,9 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#ifndef HAVE_DOSISH_SYSTEM
 #include <sys/wait.h>
+#endif
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
@@ -380,7 +382,9 @@ int exec_read(struct exec_info *info)
 	  goto fail;
 	}
 
+    #ifndef HAVE_DOSISH_SYSTEM
       info->progreturn=WEXITSTATUS(info->progreturn);
+    #endif      
 
       if(info->progreturn==127)
 	{

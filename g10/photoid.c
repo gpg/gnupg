@@ -24,7 +24,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#ifndef HAVE_DOSISH_SYSTEM
 #include <sys/wait.h>
+#endif
 #include <errno.h>
 #include <limits.h>
 #include "keydb.h"

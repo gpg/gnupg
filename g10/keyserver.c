@@ -26,7 +26,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <sys/types.h>
+#ifndef HAVE_DOSISH_SYSTEM
 #include <sys/wait.h>
+#endif
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "keyserver-internal.h"

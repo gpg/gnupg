@@ -341,6 +341,7 @@ openpgp_md_test_algo( int algo )
 int
 check_permissions(const char *path,int checkonly)
 {
+#ifndef HAVE_DOSISH_SYSTEM
 #ifdef HAVE_STAT
   struct stat statbuf;
   int isdir=0;
@@ -392,6 +393,7 @@ check_permissions(const char *path,int checkonly)
       return 1;
     }
 #endif
+#endif /*!HAVE_DOSISH_SYSTEM*/
 
   return 0;
 }

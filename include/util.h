@@ -21,7 +21,7 @@
 #define G10_UTIL_H
 
 #if defined (__MINGW32__) || defined (__CYGWIN32__)
-# include <stdarg.>
+# include <stdarg.h>
 #endif
 
 #include "types.h"
