@@ -955,10 +955,9 @@ dump_sig_subpkt( int hashed, int type, int critical,
 }
 
 /****************
- * Returns: >= 0 offset into buffer
- *	    -1 unknown type
- *	    -2 unsupported type
- *	    -3 subpacket too short
+ * Returns: >= 0 use this offset into buffer
+ *	    -1 explicitly reject returning this type
+ *	    -2 subpacket too short
  */
 int
 parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
@@ -1008,9 +1007,9 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
       if ( n != 2 )
 	break;
       return 0;
-    default: return -1;
+    default: return 0;
     }
-  return -3;
+  return -2;
 }
 
 
@@ -1130,13 +1129,11 @@ enum_sig_subpkt( const subpktarea_t *pktbuf, sigsubpkttype_t reqtype,
 		*ret_n = n;
 	    offset = parse_one_sig_subpkt(buffer, n, type );
 	    switch( offset ) {
-	      case -3:
+	      case -2:
 		log_error("subpacket of type %d too short\n", type);
 		return NULL;
-	      case -2:
-		return NULL;
 	      case -1:
-		BUG(); /* not yet needed */
+		return NULL;
 	      default:
 		break;
 	    }

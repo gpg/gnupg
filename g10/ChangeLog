@@ -1,3 +1,8 @@
+2004-10-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (parse_one_sig_subpkt, enum_sig_subpkt): Don't
+	BUG() on unknown subpackets.  Rather, just return them silently.
+	
 2004-10-15  Werner Koch  <wk@g10code.com>
 
 	* status.h (STATUS_NEED_PASSPHRASE_PIN): New.
