@@ -1,4 +1,12 @@
 
+  * use-emmbeded-filename ist nicht dokumentiert.
+
+  * --disable-asm should still assemble _udiv_qrnnd when needed
+
+  * Skip RO keyrings when importing a key.
+
+  * help the translaters to catch changes made to helptext.c
+    and tell that, that they have to translate those strings.
 
 Scheduled for 1.1
 -----------------

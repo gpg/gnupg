@@ -443,7 +443,7 @@ do_cbc_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nblocks )
 	 * bytes.  Maybe it is a good idea to enhance the cipher backend
 	 * API to allow for CBC handling in the backend */
 	for(ivp=c->iv,i=0; i < blocksize; i++ )
-	    outbuf[i] ^= *ivp++;
+	    outbuf[i] = inbuf[i] ^ *ivp++;
 	(*c->encrypt)( &c->context.c, outbuf, outbuf );
 	memcpy(c->iv, outbuf, blocksize );
 	inbuf  += c->blocksize;

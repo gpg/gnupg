@@ -41,8 +41,8 @@ static volatile int caught_sigusr1 = 0;
 static const char *
 signal_name( int signum )
 {
-  #if SYS_SIGLIST_DECLARED
-    return sys_siglist[signum];
+  #if defined(SYS_SIGLIST_DECLARED) && defined(NSIG)
+    return (signum >= 0 && signum < NSIG) ? sys_siglist[signum] : "?";
   #else
     static char buf[20];
     sprintf(buf, "signal %d", signum );

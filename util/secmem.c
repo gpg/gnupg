@@ -57,7 +57,7 @@ struct memblock_struct {
 
 
 static void  *pool;
-static int   pool_okay;
+static volatile int pool_okay; /* may be checked in an atexit function */
 static int   pool_is_mmapped;
 static size_t poolsize; /* allocated length */
 static size_t poollen;	/* used length */

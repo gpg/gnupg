@@ -1,3 +1,27 @@
+gnupg (0.9.10-2) unstable; urgency=low
+
+  * debian/rules (binary-arch): install lspgpot.  Requested by Kai
+    Henningsen <kai@khms.westfalen.de>. [#42288]
+  * debian/rules (binary-arch): correct the path where modules are looked
+    for.  Reported by Karl M. Hegbloom <karlheg@odin.cc.pdx.edu>. [#40881]
+  * debian/postinst, debian/postrm: under protest, register gpg the
+    package with suidmanager and make it suid by default.
+    [#29780,#32590,#40391]
+
+ -- James Troup <james@nocrew.org>  Tue, 10 Aug 1999 00:12:40 +0100
+
+gnupg (0.9.10-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- James Troup <james@nocrew.org>  Fri,  6 Aug 1999 01:16:21 +0100
+
+gnupg (0.9.9-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- James Troup <james@nocrew.org>  Sun, 25 Jul 1999 01:06:31 +0100
+
 gnupg (0.9.8-1) unstable; urgency=low
 
   * New upstream version.  

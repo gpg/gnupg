@@ -714,7 +714,7 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 		}
 		rc = check_key_signature( keyblock, n, NULL);
 		if( rc ) {
-		    log_error( rc == G10ERR_PUBKEY_ALGO ?
+		    log_info( rc == G10ERR_PUBKEY_ALGO ?
 			 _("key %08lX: unsupported public key algorithm\n"):
 			 _("key %08lX: invalid self-signature\n"),
 				     (ulong)keyid[1]);
@@ -731,14 +731,14 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 						 n, PKT_SECRET_SUBKEY );
 
 		if( !knode ) {
-		    log_error( _("key %08lX: no subkey for key binding\n"),
+		    log_info( _("key %08lX: no subkey for key binding\n"),
 					    (ulong)keyid[1]);
 		    n->flag |= 4; /* delete this */
 		}
 		else {
 		    rc = check_key_signature( keyblock, n, NULL);
 		    if( rc ) {
-			log_error(  rc == G10ERR_PUBKEY_ALGO ?
+			log_info(  rc == G10ERR_PUBKEY_ALGO ?
 			   _("key %08lX: unsupported public key algorithm\n"):
 			   _("key %08lX: invalid subkey binding\n"),
 					 (ulong)keyid[1]);

@@ -82,6 +82,7 @@ trap_unaligned(void)
 void
 disable_core_dumps()
 {
+ #ifndef HAVE_DOSISH_SYSTEM
   #ifdef HAVE_SETRLIMIT
     struct rlimit limit;
 
@@ -94,6 +95,7 @@ disable_core_dumps()
   #endif
     if( !opt.quiet )
 	log_info(_("WARNING: program may create a core file!\n"));
+ #endif
 }
 
 

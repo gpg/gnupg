@@ -253,10 +253,22 @@ answer_is_yes( const char *s )
 {
     char *long_yes = _("yes");
     char *short_yes = _("yY");
+    char *long_no = _("no");
+    char *short_no = _("nN");
 
     if( !stricmp(s, long_yes ) )
 	return 1;
     if( strchr( short_yes, *s ) && !s[1] )
+	return 1;
+    /* test for no strings to catch ambiguities for the next test */
+    if( !stricmp(s, long_no ) )
+	return 0;
+    if( strchr( short_no, *s ) && !s[1] )
+	return 0;
+    /* test for the english version (for those who are used to type yes) */
+    if( !stricmp(s, "yes" ) )
+	return 1;
+    if( strchr( "yY", *s ) && !s[1] )
 	return 1;
     return 0;
 }
@@ -269,17 +281,31 @@ int
 answer_is_yes_no_quit( const char *s )
 {
     char *long_yes = _("yes");
+    char *long_no = _("no");
     char *long_quit = _("quit");
     char *short_yes = _("yY");
+    char *short_no = _("nN");
     char *short_quit = _("qQ");
 
     if( !stricmp(s, long_yes ) )
 	return 1;
+    if( !stricmp(s, long_no ) )
+	return 0;
     if( !stricmp(s, long_quit ) )
 	return -1;
     if( strchr( short_yes, *s ) && !s[1] )
 	return 1;
+    if( strchr( short_no, *s ) && !s[1] )
+	return 0;
     if( strchr( short_quit, *s ) && !s[1] )
+	return -1;
+    if( !stricmp(s, "yes" ) )
+	return 1;
+    if( !stricmp(s, "quit" ) )
+	return -1;
+    if( strchr( "yY", *s ) && !s[1] )
+	return 1;
+    if( strchr( "qQ", *s ) && !s[1] )
 	return -1;
     return 0;
 }

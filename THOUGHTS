@@ -216,6 +216,12 @@ of the existing key servers (I think they bail out on some rfc2440
 packet formats).
 
 
+DJGPP
+=====
+Don't use symlinks but try to do the preprocessing in the config-links script.
+DJPGG has problems to distinguish betwen .s and .S becaus the FAT filesystem
+is not case sensitive (Mark Elbrecht).
+
 
 Special procmail addresses
 ==========================

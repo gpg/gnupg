@@ -201,6 +201,15 @@ case "${target}" in
         try_gdbm="no"
         ;;
 
+    i*86-*-msdosdjgpp*)
+        # DOS with the DJGPP environment
+        ac_cv_have_dev_random=no
+        AC_DEFINE(HAVE_DRIVE_LETTERS)
+        AC_DEFINE(HAVE_DOSISH_SYSTEM)
+        try_gettext="no"
+        try_gdbm="no"
+        ;;
+
     *-*-hpux*)
         if test -z "$GCC" ; then
             CFLAGS="$CFLAGS -Ae -D_HPUX_SOURCE"
@@ -237,6 +246,10 @@ case "${target}" in
         ;;
     *-linux*)
         PRINTABLE_OS_NAME="GNU/Linux"
+        ;;
+    i*86-*-msdosdjgpp*)
+        PRINTABLE_OS_NAME="MSDOS/DJGPP"
+        try_dynload=no
         ;;
     *)
         PRINTABLE_OS_NAME=`uname -s || echo "Unknown"`
@@ -477,6 +490,9 @@ if test "$use_static_rnd" = default; then
               ;;
           m68k-atari-mint)
               static_modules="$static_modules rndatari"
+              ;;
+          i*86-*-msdosdjgpp*)
+              static_modules="$static_modules"
               ;;
           *)
               static_modules="$static_modules rndunix"

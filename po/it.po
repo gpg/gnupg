@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-0.9.7\n"
-"POT-Creation-Date: 1999-08-04 09:56+0200\n"
-"PO-Revision-Date: 1999-07-25 14:36+02:00\n"
+"POT-Creation-Date: 1999-08-30 19:40+0200\n"
+"PO-Revision-Date: 1999-08-17 23:04+02:00\n"
 "Last-Translator: Marco d'Itri <md@linux.it>\n"
 "Language-Team: Italian <it@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -25,19 +25,27 @@ msgstr "l'operazione non è possibile senza memoria sicura inizializzata\n"
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(potresti avere usato il programma sbagliato per questa funzione)\n"
 
-#: util/miscutil.c:254 util/miscutil.c:271
+#: util/miscutil.c:254 util/miscutil.c:283
 msgid "yes"
 msgstr "sì"
 
-#: util/miscutil.c:255 util/miscutil.c:273
+#: util/miscutil.c:255 util/miscutil.c:286
 msgid "yY"
 msgstr "sS"
 
-#: g10/keyedit.c:564 util/miscutil.c:272
+#: util/miscutil.c:256 util/miscutil.c:284
+msgid "no"
+msgstr ""
+
+#: util/miscutil.c:257 util/miscutil.c:287
+msgid "nN"
+msgstr ""
+
+#: g10/keyedit.c:564 util/miscutil.c:285
 msgid "quit"
 msgstr "quit"
 
-#: util/miscutil.c:274
+#: util/miscutil.c:288
 msgid "qQ"
 msgstr "qQ"
 
@@ -103,7 +111,7 @@ msgstr "armatura non valida"
 
 #: util/errors.c:69
 msgid "no such user id"
-msgstr "l'user ID non esiste"
+msgstr "l'user id non esiste"
 
 #: util/errors.c:70
 msgid "secret key not available"
@@ -155,7 +163,7 @@ msgstr "algoritmo di cifratura non implementato"
 
 #: util/errors.c:82
 msgid "unknown signature class"
-msgstr "classe della firma sconosciuta."
+msgstr "classe della firma sconosciuta"
 
 #: util/errors.c:83
 msgid "trust database error"
@@ -215,7 +223,7 @@ msgstr "chiave debole"
 
 #: util/errors.c:97
 msgid "invalid argument"
-msgstr "armatura non valida"
+msgstr "argomento non valido"
 
 #: util/errors.c:98
 msgid "bad URI"
@@ -258,6 +266,9 @@ msgid ""
 msgstr ""
 "Il generatore di numeri casuali è solo un ripiego per fare\n"
 "compilare il programma - non è assolutamente un RNG forte!\n"
+"\n"
+"NON USARE ALCUN DATO GENERATO DA QUESTO PROGRAMMA!\n"
+"\n"
 
 #: cipher/rndlinux.c:135
 #, c-format
@@ -269,7 +280,7 @@ msgstr ""
 "\n"
 "Non ci sono abbastanza byte casuali disponibili. Per favore fai qualche\n"
 "altra cosa per dare all'OS la possibilità di raccogliere altra entropia!\n"
-"(Servono ancora %d altri byte)\n"
+"(Servono altri %d byte)\n"
 
 #: g10/g10.c:185
 msgid ""
@@ -476,15 +487,15 @@ msgstr "non fa cambiamenti"
 #. { oInteractive, "interactive", 0, N_("prompt before overwriting") },
 #: g10/g10.c:254
 msgid "batch mode: never ask"
-msgstr "modo batch: non fare domande"
+msgstr "modo batch: non fa domande"
 
 #: g10/g10.c:255
 msgid "assume yes on most questions"
-msgstr "assumi \"sì\" a quasi tutte le domande"
+msgstr "assumi \"sì\" per quasi tutte le domande"
 
 #: g10/g10.c:256
 msgid "assume no on most questions"
-msgstr "assumi \"no\" a quasi tutte le domande"
+msgstr "assumi \"no\" per quasi tutte le domande"
 
 #: g10/g10.c:257
 msgid "add this keyring to the list of keyrings"
@@ -520,7 +531,7 @@ msgstr "abilita il debugging completo"
 
 #: g10/g10.c:266
 msgid "|FD|write status info to this FD"
-msgstr "|FD|scrivi le informazioni di stato su questo fd"
+msgstr "|FD|scrivi le informazioni di stato su questo FD"
 
 #: g10/g10.c:267
 msgid "do not write comment packets"
@@ -554,7 +565,7 @@ msgstr "|N|usa il modo N per la passphrase"
 
 #: g10/g10.c:276
 msgid "|NAME|use message digest algorithm NAME for passphrases"
-msgstr "|NOME|usa l'algoritmo di message digest NOME"
+msgstr "|NOME|usa l'algoritmo di message digest NOME per le passphrase"
 
 #: g10/g10.c:278
 msgid "|NAME|use cipher algorithm NAME for passphrases"
@@ -606,7 +617,7 @@ msgstr "Per favore segnala i bug a <gnupg-bugs@gnu.org>.\n"
 
 #: g10/g10.c:374
 msgid "Usage: gpg [options] [files] (-h for help)"
-msgstr "Uso: gpg [opzioni] [file] (-h per l'aiuto)"
+msgstr "Uso: gpg [opzioni] [files] (-h per l'aiuto)"
 
 #: g10/g10.c:377
 msgid ""
@@ -614,7 +625,7 @@ msgid ""
 "sign, check, encrypt or decrypt\n"
 "default operation depends on the input data\n"
 msgstr ""
-"Sintassi: gpg [opzioni] [file]\n"
+"Sintassi: gpg [opzioni] [files]\n"
 "firma, controlla, cifra o decifra\n"
 "l'operazione predefinita dipende dai dati di input\n"
 
@@ -628,7 +639,7 @@ msgstr ""
 
 #: g10/g10.c:456
 msgid "usage: gpg [options] "
-msgstr "uso: gpg [options] "
+msgstr "uso: gpg [opzioni] "
 
 #: g10/g10.c:509
 msgid "conflicting commands\n"
@@ -637,7 +648,7 @@ msgstr "comandi in conflitto\n"
 #: g10/g10.c:644
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
-msgstr "NOTA: manca il file con le opzioni predefinite `%s'\n"
+msgstr "NOTA: manca il file `%s' con le opzioni predefinite\n"
 
 #: g10/g10.c:648
 #, c-format
@@ -657,17 +668,17 @@ msgstr "%s non è un set di caratteri valido\n"
 #: g10/g10.c:892 g10/g10.c:901
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
-msgstr ""
+msgstr "NOTA: %s normalmente non deve essere usato!\n"
 
 #: g10/g10.c:894
 #, c-format
 msgid "%s not allowed with %s!\n"
-msgstr ""
+msgstr "Non è permesso usare %s con %s!\n"
 
 #: g10/g10.c:897
 #, c-format
 msgid "%s makes no sense with %s!\n"
-msgstr ""
+msgstr "Non ha senso usare %s con %s!\n"
 
 #: g10/g10.c:916 g10/g10.c:928
 msgid "selected cipher algorithm is invalid\n"
@@ -765,9 +776,8 @@ msgid "can't open %s: %s\n"
 msgstr "impossibile aprire `%s': %s\n"
 
 #: g10/g10.c:1182
-#, fuzzy
 msgid "-k[v][v][v][c] [user-id] [keyring]"
-msgstr "-k[v][v][v][c] [userid] [portachiavi]"
+msgstr "-k[v][v][v][c] [user-id] [portachiavi]"
 
 #: g10/g10.c:1243
 #, c-format
@@ -839,7 +849,7 @@ msgstr "header della firma in chiaro non valido\n"
 
 #: g10/armor.c:389
 msgid "nested clear text signatures\n"
-msgstr "firme in chiaro innestate\n"
+msgstr "firme in chiaro annidate\n"
 
 #: g10/armor.c:500
 msgid "invalid dash escaped line: "
@@ -886,7 +896,7 @@ msgstr "Non sono stati trovati dati OpenPGP validi.\n"
 #: g10/armor.c:1005
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
-msgstr "armatura non valida: linea piu` lunga di %d caratteri\n"
+msgstr "armatura non valida: linea più lunga di %d caratteri\n"
 
 #: g10/armor.c:1009
 msgid ""
@@ -899,12 +909,11 @@ msgstr ""
 #. * data is properly aligned with the user ID
 #: g10/pkclist.c:53
 msgid "             Fingerprint:"
-msgstr "             Fingerprint:"
+msgstr "       Impronta digitale:"
 
 #: g10/pkclist.c:80
-#, fuzzy
 msgid "Fingerprint:"
-msgstr "mostra le impronte digitali"
+msgstr "Impronta digitale:"
 
 # valid user replies (not including 1..4)
 # [Marco, you can change 'm' and 's' to whatever letters you like]
@@ -1013,8 +1022,7 @@ msgstr "%08lX: la chiave è scaduta\n"
 #: g10/pkclist.c:396
 #, c-format
 msgid "%08lX: no info to calculate a trust probability\n"
-msgstr ""
-"%08lX: mancano informazioni su come calcolare una probabilità di fiducia\n"
+msgstr "%08lX: mancano informazioni per calcolare una probabilità di fiducia\n"
 
 #: g10/pkclist.c:410
 #, c-format
@@ -1129,9 +1137,9 @@ msgid "Public key is disabled.\n"
 msgstr "La chiave pubblica è disabilitata.\n"
 
 #: g10/pkclist.c:800
-#, fuzzy, c-format
+#, c-format
 msgid "unknown default recipient `%s'\n"
-msgstr "destinatario predefinito sconosciuto `s'\n"
+msgstr "destinatario predefinito `%s' sconosciuto\n"
 
 #: g10/pkclist.c:833
 #, c-format
@@ -1153,7 +1161,7 @@ msgstr "scrittura della autofirma\n"
 
 #: g10/keygen.c:160
 msgid "writing key binding signature\n"
-msgstr "scrittura della autofirma\n"
+msgstr "scrittura della firma di collegamento alla chiave\n"
 
 #: g10/keygen.c:386
 msgid "Please select what kind of key you want:\n"
@@ -1215,7 +1223,7 @@ msgstr "Di che dimensioni vuoi la chiave? (1024) "
 
 #: g10/keygen.c:454
 msgid "DSA only allows keysizes from 512 to 1024\n"
-msgstr "DSA permette solo chiavi di dimensioni da 512 a 1024\n"
+msgstr "DSA permette solo chiavi di dimensioni tra 512 e 1024\n"
 
 #: g10/keygen.c:456
 msgid "keysize too small; 768 is smallest value allowed.\n"
@@ -1261,7 +1269,7 @@ msgstr "Ti serve davvero una chiave così lunga? "
 #: g10/keygen.c:489
 #, c-format
 msgid "Requested keysize is %u bits\n"
-msgstr "Le dimensioni della chiave richieste sono %u bit\n"
+msgstr "La dimensione richiesta della chiave è %u bit\n"
 
 #: g10/keygen.c:492 g10/keygen.c:496
 #, c-format
@@ -1279,7 +1287,8 @@ msgid ""
 msgstr ""
 "Per favore specifica per quanto la chiave sarà valida.\n"
 "         0 = la chiave non scadrà\n"
-"      <n>w = la chiave scadrà dopo n giorni\n"
+"      <n>  = la chiave scadrà dopo n giorni\n"
+"      <n>w = la chiave scadrà dopo n settimane\n"
 "      <n>m = la chiave scadrà dopo n mesi\n"
 "      <n>y = la chiave scadrà dopo n anni\n"
 
@@ -1433,7 +1442,7 @@ msgstr "scrittura del certificato pubblico in `%s'\n"
 #: g10/keygen.c:882
 #, c-format
 msgid "writing secret certificate to `%s'\n"
-msgstr "scrittura del certificato privato in `%s'\n"
+msgstr "scrittura del certificato segreto in `%s'\n"
 
 #: g10/keygen.c:959
 msgid "public and secret key created and signed.\n"
@@ -1528,17 +1537,15 @@ msgstr "troppe voci nella unk cache - disabilitata\n"
 
 #: g10/getkey.c:1289 g10/getkey.c:1328
 msgid "RSA key cannot be used in this version\n"
-msgstr ""
+msgstr "In questa versione non possono essere usate chiavi RSA\n"
 
 #: g10/getkey.c:1291 g10/getkey.c:1330
-#, fuzzy
 msgid "No key for user-id\n"
-msgstr "chiave %08lX: nessun user id\n"
+msgstr "Non ci sono chiavi per questo user-id\n"
 
 #: g10/getkey.c:1369 g10/getkey.c:1409
-#, fuzzy
 msgid "No user-id for key\n"
-msgstr "manca la chiave segreta\n"
+msgstr "Non ci sono user-id per questa chiave\n"
 
 #: g10/getkey.c:1565 g10/getkey.c:1621
 #, c-format
@@ -1573,32 +1580,32 @@ msgstr "Numero totale esaminato: %lu\n"
 #: g10/import.c:179
 #, c-format
 msgid "          w/o user IDs: %lu\n"
-msgstr "senza user ID: %lu\n"
+msgstr "         senza user ID: %lu\n"
 
 #: g10/import.c:181
 #, c-format
 msgid "              imported: %lu"
-msgstr "importate: %lu"
+msgstr "             importate: %lu"
 
 #: g10/import.c:187
 #, c-format
 msgid "             unchanged: %lu\n"
-msgstr "non modificate: %lu\n"
+msgstr "        non modificate: %lu\n"
 
 #: g10/import.c:189
 #, c-format
 msgid "          new user IDs: %lu\n"
-msgstr "nuovi user ID: %lu\n"
+msgstr "         nuovi user ID: %lu\n"
 
 #: g10/import.c:191
 #, c-format
 msgid "           new subkeys: %lu\n"
-msgstr "nuove subchiavi: %lu\n"
+msgstr "       nuove subchiavi: %lu\n"
 
 #: g10/import.c:193
 #, c-format
 msgid "        new signatures: %lu\n"
-msgstr "nuove firme: %lu\n"
+msgstr "           nuove firme: %lu\n"
 
 #: g10/import.c:195
 #, c-format
@@ -1608,17 +1615,17 @@ msgstr "nuove revoche di chiavi: %lu\n"
 #: g10/import.c:197
 #, c-format
 msgid "      secret keys read: %lu\n"
-msgstr "chiavi segrete lette: %lu\n"
+msgstr "  chiavi segrete lette: %lu\n"
 
 #: g10/import.c:199
 #, c-format
 msgid "  secret keys imported: %lu\n"
-msgstr "chiavi segrete importate %lu\n"
+msgstr "chiavi segrete importate: %lu\n"
 
 #: g10/import.c:201
 #, c-format
 msgid " secret keys unchanged: %lu\n"
-msgstr "chiavi segrete non cambiate %lu\n"
+msgstr "chiavi segrete non cambiate: %lu\n"
 
 #: g10/import.c:362 g10/import.c:554
 #, c-format
@@ -1772,14 +1779,14 @@ msgid "key %08lX: invalid subkey binding\n"
 msgstr "chiave %08lX: legame con la subchiave non valido:\n"
 
 #: g10/import.c:769
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: accepted non self-signed user-id '"
-msgstr "chiave %08lX: accettato l'userid non autofirmato '"
+msgstr "chiave %08lX: accettato l'user-id non autofirmato '"
 
 #: g10/import.c:798
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: skipped user-id '"
-msgstr "chiave %08lX: saltato l'user id '"
+msgstr "chiave %08lX: saltato l'user-id '"
 
 #: g10/import.c:821
 #, c-format
@@ -1793,7 +1800,7 @@ msgstr "chiave %08lX: saltata la subchiave\n"
 #: g10/import.c:846
 #, c-format
 msgid "key %08lX: non exportable signature (class %02x) - skipped\n"
-msgstr "chiave %08lX: firma non esportabile (chiave %02x) - saltata\n"
+msgstr "chiave %08lX: firma non esportabile (classe %02x) - saltata\n"
 
 #: g10/import.c:855
 #, c-format
@@ -2157,7 +2164,7 @@ msgstr "abilita una chiave"
 
 #: g10/keyedit.c:614
 msgid "can't do that in batchmode\n"
-msgstr "impossibile fare questo in batch mode\n"
+msgstr "impossibile fare questo in modo batch\n"
 
 #. check that they match
 #. fixme: check that they both match
@@ -2359,7 +2366,7 @@ msgstr "cifrato con la chiave %2$s di %1$u bit, ID %3$08lX, creata il %4$s\n"
 #: g10/mainproc.c:285
 #, c-format
 msgid "encrypted with %s key, ID %08lX\n"
-msgstr "Firma fatta con la chiave %s con ID %08lX\n"
+msgstr "Cifrato con la chiave %s con ID %08lX\n"
 
 #: g10/mainproc.c:291
 msgid "no secret key for decryption available\n"
@@ -2439,20 +2446,20 @@ msgstr "firma vecchio stile (PGP 2.x)\n"
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "individuato un pacchetto radice non valido in proc_tree()\n"
 
-#: g10/misc.c:93
+#: g10/misc.c:94
 #, c-format
 msgid "can't disable core dumps: %s\n"
 msgstr "impossibile disabilitare i core dump: %s\n"
 
-#: g10/misc.c:96
+#: g10/misc.c:97
 msgid "WARNING: program may create a core file!\n"
-msgstr "ATTENZIONE: il programma potrebbe creare un file di core!\n"
+msgstr "ATTENZIONE: il programma potrebbe creare un file core!\n"
 
-#: g10/misc.c:203
+#: g10/misc.c:205
 msgid "Experimental algorithms should not be used!\n"
 msgstr "Gli algoritmi sperimentali non dovrebbero essere usati!\n"
 
-#: g10/misc.c:217
+#: g10/misc.c:219
 msgid ""
 "RSA keys are deprecated; please consider creating a new key and use this key "
 "in the future\n"
@@ -2461,9 +2468,9 @@ msgstr ""
 "chiave\n"
 "e usarla in futuro\n"
 
-#: g10/misc.c:239
+#: g10/misc.c:241
 msgid "this cipher algorithm is depreciated; please use a more standard one!\n"
-msgstr "questo algoritmo di cifratura è deprecato; usatene uno più standard!\n"
+msgstr "questo algoritmo di cifratura è deprecato; usane uno più standard!\n"
 
 #: g10/parse-packet.c:113
 #, c-format
@@ -2497,7 +2504,7 @@ msgstr " (key ID principale %08lX)"
 
 #: g10/passphrase.c:190
 msgid "can't query password in batchmode\n"
-msgstr "impossibile chiedere la password in batch mode\n"
+msgstr "impossibile chiedere la password in modo batch\n"
 
 #: g10/passphrase.c:194
 msgid "Enter passphrase: "
@@ -2561,7 +2568,7 @@ msgstr ""
 
 #: g10/sig-check.c:199
 msgid "assuming bad MDC due to an unknown critical bit\n"
-msgstr "si presume un MDC non valido a causa di un bit critico sconosciuto\n"
+msgstr "si suppone un MDC non valido a causa di un bit critico sconosciuto\n"
 
 #: g10/sig-check.c:295
 msgid ""
@@ -2587,7 +2594,7 @@ msgstr "NOTA: chiave per firmare scaduta il %s\n"
 #: g10/sig-check.c:377
 msgid "assuming bad signature due to an unknown critical bit\n"
 msgstr ""
-"si presume una firma non valida a causa di un bit critico sconosciuto\n"
+"si suppone una firma non valida a causa di un bit critico sconosciuto\n"
 
 #: g10/sign.c:132
 #, c-format
@@ -2755,7 +2762,7 @@ msgstr "Il trustdb è danneggiato; eseguire \"gpg --fix-trust-db\".\n"
 #: g10/trustdb.c:160
 #, c-format
 msgid "trust record %lu, req type %d: read failed: %s\n"
-msgstr "trust record %lu, req type %d: read fallita: %s\n"
+msgstr "trust record %lu, tipo %d: read fallita: %s\n"
 
 #: g10/trustdb.c:175
 #, c-format
@@ -3079,7 +3086,7 @@ msgid ""
 "skipped `%s': this is a PGP generated ElGamal key which is not secure for "
 "signatures!\n"
 msgstr ""
-"%s: questa è una chiave ElGamal generata da PGP che NON è sicura per\n"
+"saltata %s: questa è una chiave ElGamal generata da PGP che NON è sicura per "
 "le firme!\n"
 
 #. do not overwrite
@@ -3099,7 +3106,7 @@ msgstr "%s: suffisso sconosciuto\n"
 
 #: g10/openfile.c:119
 msgid "Enter new filename"
-msgstr "Inserire il nome del nuovo file"
+msgstr "Inserire il nuovo nome del file"
 
 #: g10/openfile.c:160
 msgid "writing to stdout\n"
@@ -3108,7 +3115,7 @@ msgstr "scrivo su stdout\n"
 #: g10/openfile.c:219
 #, c-format
 msgid "assuming signed data in `%s'\n"
-msgstr "presumo che i dati firmati siano in `%s'\n"
+msgstr "suppongo che i dati firmati siano in `%s'\n"
 
 #: g10/openfile.c:269
 #, c-format
@@ -3143,145 +3150,319 @@ msgstr ""
 "Impossibile evitare una chiave debole per il cifrario simmetrico;\n"
 "ho provato %d volte!\n"
 
-#. begin of list
-#: g10/helptext.c:48
-msgid "edit_ownertrust.value"
-msgstr "edit_ownertrust.value"
+#: g10/helptext.c:47
+msgid ""
+"It's up to you to assign a value here; this value will never be exported\n"
+"to any 3rd party.  We need it to implement the web-of-trust; it has nothing\n"
+"to do with the (implicitly created) web-of-certificates."
+msgstr ""
 
-#: g10/helptext.c:54
-msgid "revoked_key.override"
-msgstr "revoked_key.override"
+#: g10/helptext.c:53
+msgid "If you want to use this revoked key anyway, answer \"yes\"."
+msgstr ""
 
-#: g10/helptext.c:58
-msgid "untrusted_key.override"
-msgstr "untrusted_key.override"
+#: g10/helptext.c:57
+msgid "If you want to use this untrusted key anyway, answer \"yes\"."
+msgstr ""
 
-#: g10/helptext.c:62
-msgid "pklist.user_id.enter"
-msgstr "pklist.user_id.enter"
+#: g10/helptext.c:61
+msgid ""
+"Enter the user id of the addressee to whom you want to send the message."
+msgstr ""
 
-#: g10/helptext.c:66
-msgid "keygen.algo"
-msgstr "keygen.algo"
+#: g10/helptext.c:65
+msgid ""
+"Select the algorithm to use.\n"
+"DSA (aka DSS) is the digital signature algorithm which can only be used\n"
+"for signatures.  This is the suggested algorithm because verification of\n"
+"DSA signatures are much faster than those of ElGamal.\n"
+"ElGamal is an algorithm which can be used for signatures and encryption.\n"
+"OpenPGP distunguishs between two flavors of this algorithms: an encrypt "
+"only\n"
+"and a sign+encrypt; actually it is the same, but some parameters must be\n"
+"selected in a special way to create a safe key for signatures: this program\n"
+"does this but other OpenPGP implementations are not required to understand\n"
+"the signature+encryption flavor.\n"
+"The first (primary) key must always be a key which is capable of signing;\n"
+"this is the reason why the encryption only ElGamal key is not available in\n"
+"this menu."
+msgstr ""
 
 #: g10/helptext.c:82
-msgid "keygen.algo.elg_se"
-msgstr "keygen.algo.elg_se"
+msgid ""
+"Although these keys are defined in RFC2440 they are not suggested\n"
+"because they are not supported by all programs and signatures created\n"
+"with them are quite large and very slow to verify."
+msgstr ""
 
 #: g10/helptext.c:89
-msgid "keygen.size"
-msgstr "keygen.size"
+#, fuzzy
+msgid "Enter the size of the key"
+msgstr "Inserisci l'user ID: "
 
-#: g10/helptext.c:93
-msgid "keygen.size.huge.okay"
-msgstr "keygen.size.huge.okay"
-
-#: g10/helptext.c:98
-msgid "keygen.size.large.okay"
-msgstr "keygen.size.large.okay"
+#: g10/helptext.c:93 g10/helptext.c:98 g10/helptext.c:110 g10/helptext.c:142
+#: g10/helptext.c:147 g10/helptext.c:152 g10/helptext.c:157
+msgid "Answer \"yes\" or \"no\""
+msgstr ""
 
 #: g10/helptext.c:103
-msgid "keygen.valid"
-msgstr "keygen.valid"
-
-#: g10/helptext.c:110
-msgid "keygen.valid.okay"
-msgstr "keygen.valid.okay"
+msgid ""
+"Enter the required value as shown in the pronpt.\n"
+"It is possible to enter a ISO date (YYYY-MM-DD) but you won't\n"
+"get a good error response - instead the system tries to interpret\n"
+"the given value as an interval."
+msgstr ""
 
 #: g10/helptext.c:115
-msgid "keygen.name"
-msgstr "keygen.name"
+msgid "Enter the name of the key holder"
+msgstr ""
 
 #: g10/helptext.c:120
-msgid "keygen.email"
-msgstr "keygen.email"
+msgid "please enter an optional but highly suggested email address"
+msgstr ""
 
 #: g10/helptext.c:124
-msgid "keygen.comment"
-msgstr "keygen.comment"
+#, fuzzy
+msgid "Please enter an optional comment"
+msgstr "Inserisci il nome del file di dati: "
 
 #: g10/helptext.c:129
-msgid "keygen.userid.cmd"
-msgstr "keygen.userid.cmd"
+msgid ""
+"N  to change the name.\n"
+"C  to change the comment.\n"
+"E  to change the email address.\n"
+"O  to continue with key generation.\n"
+"Q  to to quit the key generation."
+msgstr ""
 
 #: g10/helptext.c:138
-msgid "keygen.sub.okay"
-msgstr "keygen.sub.okay"
-
-#: g10/helptext.c:142
-msgid "sign_uid.okay"
-msgstr "sign_uid.okay"
-
-#: g10/helptext.c:147
-msgid "change_passwd.empty.okay"
-msgstr "change_passwd.empty.okay"
-
-#: g10/helptext.c:152
-msgid "keyedit.save.okay"
-msgstr "keyedit.save.okay"
-
-#: g10/helptext.c:157
-msgid "keyedit.cancel.okay"
-msgstr "keyedit.cancel.okay"
+msgid "Answer \"yes\" (or just \"y\") if it is okay to generate the sub key."
+msgstr ""
 
 #: g10/helptext.c:161
-msgid "keyedit.sign_all.okay"
-msgstr "keyedit.sign_all.okay"
+msgid "Answer \"yes\" is you want to sign ALL the user IDs"
+msgstr ""
 
 #: g10/helptext.c:165
-msgid "keyedit.remove.uid.okay"
-msgstr "keyedit.remove.uid.okay"
+msgid ""
+"Answer \"yes\" if you really want to delete this user ID.\n"
+"All certificates are then also lost!"
+msgstr ""
 
 #: g10/helptext.c:170
-msgid "keyedit.remove.subkey.okay"
-msgstr "keyedit.remove.subkey.okay"
+msgid "Answer \"yes\" if it is okay to delete the subkey"
+msgstr ""
 
 #: g10/helptext.c:175
-msgid "keyedit.delsig.valid"
-msgstr "keyedit.delsig.valid"
+msgid ""
+"This is a valid signature on the key; you normally don't want\n"
+"to delete this signature may be important to establish a trust\n"
+"connection to the key or another key certified by this key."
+msgstr ""
 
 #: g10/helptext.c:180
-msgid "keyedit.delsig.unknown"
-msgstr "keyedit.delsig.unknown"
+msgid ""
+"This signature can't be checked because you don't have the\n"
+"corresponding key.  You should postpone its deletion until you\n"
+"know which key was used because this signing key might establisha trust "
+"connection through another already certified key."
+msgstr ""
 
 #: g10/helptext.c:186
-msgid "keyedit.delsig.invalid"
-msgstr "keyedit.delsig.invalid"
+msgid ""
+"The signature is not valid.  It does make sense to remove it from\n"
+"your keyring."
+msgstr ""
 
 #: g10/helptext.c:190
-msgid "keyedit.delsig.selfsig"
-msgstr "keyedit.delsig.selfsig<"
+msgid ""
+"This is a signature which binds the user ID to the key. It is\n"
+"usually not a good idea to remove such a signature.  Actually\n"
+"GnuPG might not be able to use this key anymore.  So do this\n"
+"only if this self-signature is for some reason not valid and\n"
+"a second one is available."
+msgstr ""
 
 #: g10/helptext.c:199
-msgid "passphrase.enter"
-msgstr "passphrase.enter"
+msgid ""
+"Please enter the passhrase; this is a secret sentence \n"
+"  Blurb, blurb,.... "
+msgstr ""
 
 #: g10/helptext.c:206
-msgid "passphrase.repeat"
-msgstr "passphrase.repeat"
+msgid "Please repeat the last passphrase, so you are sure what you typed in."
+msgstr ""
 
 #: g10/helptext.c:210
-msgid "detached_signature.filename"
-msgstr "detached_signature.filename"
+msgid "Give the name fo the file to which the signature applies"
+msgstr ""
 
-#. openfile.c (overwrite_filep)
 #: g10/helptext.c:215
-msgid "openfile.overwrite.okay"
-msgstr "openfile.overwrite.okay"
+msgid "Answer \"yes\" if it is okay to overwrite the file"
+msgstr ""
 
-#. openfile.c (ask_outfile_name)
 #: g10/helptext.c:220
-msgid "openfile.askoutname"
-msgstr "openfile.askoutname"
+msgid ""
+"Please enter a new filename. If you just hit RETURN the default\n"
+"file (which is shown in brackets) will be used."
+msgstr ""
 
-#: g10/helptext.c:235
+#: g10/helptext.c:234
 msgid "No help available"
 msgstr "Non è disponibile un aiuto"
 
-#: g10/helptext.c:247
+#: g10/helptext.c:242
 #, c-format
 msgid "No help available for `%s'"
 msgstr "Non è disponibile un aiuto per `%s'"
 
-#~ msgid "tdbio_search_sdir failed: %s\n"
-#~ msgstr "tdbio_search_sdir fallita: %s\n"
+#~ msgid "edit_ownertrust.value"
+#~ msgstr ""
+#~ "È compito tuo assegnare un valore; questo valore non sarà mai esportato a\n"
+#~ "terzi. Ci serve per implementare il web-of-trust; non ha nulla a che fare\n"
+#~ "con il web-of-certificates (creato implicitamente)."
+
+#~ msgid "revoked_key.override"
+#~ msgstr "Se vuoi usare comunque questa chiave revocata, rispondi \"sì\"."
+
+#~ msgid "untrusted_key.override"
+#~ msgstr "Se vuoi usare comunque questa chiave non fidata, rispondi \"sì\"."
+
+#~ msgid "pklist.user_id.enter"
+#~ msgstr ""
+#~ "Inserisci l'user id del destinatario a cui vuoi mandare il messaggio."
+
+#~ msgid "keygen.algo"
+#~ msgstr ""
+#~ "Seleziona l'algoritmo da usare.\n"
+#~ "DSA (alias DSS) è un algoritmo usabile solo per firmare. È l'algoritmo\n"
+#~ "suggerito perché verificare firme DSA è molto più veloce di quelle ElGamal.\n"
+#~ "ElGamal è un algoritmo usabile per firmare e cifrare.\n"
+#~ "OpenPGP distingue tra due versioni di questo algoritmo: una solo per "
+#~ "firmare\n"
+#~ "e una per firmare e cifrare. In realtà è sempre lo stesso, per creare firme\n"
+#~ "sicure per la cifratura occorre scegliere in un modo particolare alcuni\n"
+#~ "parametri: questo programma lo fa ma non è richiesto che altre "
+#~ "implementazioni\n"
+#~ "di OpenPGP capiscano la versione per firmare e cifrare.\n"
+#~ "La prima chiave (primaria) deve sempre essere una chiave in grado di "
+#~ "firmare;\n"
+#~ "questo è il motivo per cui le chiavi ElGamal solo per cifrare sono\n"
+#~ "disabilitate."
+
+#~ msgid "keygen.algo.elg_se"
+#~ msgstr ""
+#~ "Anche se queste chiavi sono definite da RFC2400 non sono suggerite perché "
+#~ "non\n"
+#~ "sono gestite da tutti i programmi e le firme create sono grandi e lunghe da\n"
+#~ "verificare."
+
+#~ msgid "keygen.size"
+#~ msgstr "Inserisci le dimensioni della chiave"
+
+#~ msgid "keygen.size.huge.okay"
+#~ msgstr "Rispondi \"sì\" o \"no\""
+
+#~ msgid "keygen.size.large.okay"
+#~ msgstr "Rispondi \"sì\" o \"no\""
+
+#~ msgid "keygen.valid"
+#~ msgstr ""
+#~ "Inserisci il valore richiesto come indicato dal prompt.\n"
+#~ "È possibile inserire una data in formato ISO (YYYY-MM-DD) ma non avrai un\n"
+#~ "messaggio di errore corretto: il sistema cerca di interpretare il valore\n"
+#~ "dato come un intervallo."
+
+#~ msgid "keygen.valid.okay"
+#~ msgstr "Rispondi \"sì\" o \"no\""
+
+#~ msgid "keygen.name"
+#~ msgstr "Inserisci il nome del proprietario della chiave"
+
+#~ msgid "keygen.email"
+#~ msgstr "Inserisci un indirizzo di email opzionale (ma fortemente suggerito)"
+
+#~ msgid "keygen.comment"
+#~ msgstr "Inserisci un commento opzionale"
+
+#~ msgid "keygen.userid.cmd"
+#~ msgstr ""
+#~ "N  per cambiare il nome\n"
+#~ "C  per cambiare il commento\n"
+#~ "E  per cambiare l'indirizzo di email\n"
+#~ "O  per continuare con la generazione della chiave\n"
+#~ "Q  per abbandonare il processo di generazione della chiave"
+
+#~ msgid "keygen.sub.okay"
+#~ msgstr "Rispondi \"sì\" (o \"y\") se va bene generare la subchiave."
+
+#~ msgid "sign_uid.okay"
+#~ msgstr "Rispondi \"sì\" o \"no\""
+
+#~ msgid "change_passwd.empty.okay"
+#~ msgstr "Rispondi \"sì\" o \"no\""
+
+#~ msgid "keyedit.save.okay"
+#~ msgstr "Rispondi \"sì\" o \"no\""
+
+#~ msgid "keyedit.cancel.okay"
+#~ msgstr "Rispondi \"sì\" o \"no\""
+
+#~ msgid "keyedit.sign_all.okay"
+#~ msgstr "Rispondi \"sì\" se vuoi firmare TUTTI gli user id."
+
+#~ msgid "keyedit.remove.uid.okay"
+#~ msgstr ""
+#~ "Rispondi \"sì\" se vuoi davvero cancellare questo user id.\n"
+#~ "Tutti i certificati saranno persi!"
+
+#~ msgid "keyedit.remove.subkey.okay"
+#~ msgstr "Rispondi \"sì\" se va bene cancellare la subchiave"
+
+#~ msgid "keyedit.delsig.valid"
+#~ msgstr ""
+#~ "Questa è una firma valida per la chiave. Normalmente non vorresti "
+#~ "cancellare\n"
+#~ "questa firma perchè può essere importante per stabilire una connessione di\n"
+#~ "fiducia alla chiave o a un'altra chiave certificata da questa chiave."
+
+#~ msgid "keyedit.delsig.unknown"
+#~ msgstr ""
+#~ "Questa firma non può essere verificata perchè non hai la chiave "
+#~ "corrispondente.\n"
+#~ "Dovresti rimandare la sua cancellazione finchè non saprai quale chiave è "
+#~ "stata\n"
+#~ "usata perchè questa chiave potrebbe stabilire una connessione di fiducia\n"
+#~ "attraverso una chiave già certificata."
+
+#~ msgid "keyedit.delsig.invalid"
+#~ msgstr "Questa firma non è valida. Ha senso rimuoverla dal tuo portachiavi."
+
+#~ msgid "keyedit.delsig.selfsig"
+#~ msgstr ""
+#~ "Questa è la firma che collega l'user id alla chiave. Solitamente non è una\n"
+#~ "buona idea rimuovere questo tipo di firme. In realtà GnuPG potrebbe non "
+#~ "essere\n"
+#~ "più in grado di usare questa chiave. Quindi fallo solo se questa autofirma "
+#~ "non\n"
+#~ "è valida per qualche ragione e ne è disponibile un'altra."
+
+#~ msgid "passphrase.enter"
+#~ msgstr ""
+#~ "Inserisci la passphrase, cioè una frase segreta.\n"
+#~ "bla, bla, bla..."
+
+#~ msgid "passphrase.repeat"
+#~ msgstr "Ripeti l'ultima passphrase per essere sicuro di cosa hai scritto."
+
+#~ msgid "detached_signature.filename"
+#~ msgstr "Inserisci il nome del file a cui la firma si riferisce."
+
+#~ msgid "openfile.overwrite.okay"
+#~ msgstr "Rispondi \"sì\" se va bene sovrascrivere il file."
+
+#~ msgid "openfile.askoutname"
+#~ msgstr ""
+#~ "Inserisci il nuovo nome del file.\n"
+#~ "Se premi INVIO sarà usato il nome predefinito (quello indicato tra "
+#~ "parentesi)."

@@ -123,6 +123,7 @@ create_dotlock( const char *file_to_lock )
 			  S_IRUSR|S_IRGRP|S_IROTH|S_IWUSR );
     } while( fd == -1 && errno == EINTR );
     if( fd == -1 ) {
+	all_lockfiles = h->next;
 	log_error( "failed to create temporary file `%s': %s\n",
 					    h->tname, strerror(errno));
 	m_free(h->tname);

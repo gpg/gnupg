@@ -1,3 +1,9 @@
+Mon Aug 30 20:38:33 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* cipher.c (do_cbc_encrypt): Fixed serious bug occuring when not using
+	in place encryption. Pointed out by Frank Stajano.
+
 Mon Jul 26 09:34:46 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

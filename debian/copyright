@@ -4,7 +4,7 @@ have some bugs and some features may not work at all.
 
 This package was put together by me, James Troup
 <james@nocrew.org>, from the sources, which I obtained from
-ftp://ftp.gnupg.org/pub/gcrypt/gnupg-0.9.8.tar.gz.  The changes were
+ftp://ftp.gnupg.org/pub/gcrypt/gnupg-0.9.10.tar.gz.  The changes were
 minimal, namely:
 
 - adding support for the Debian package maintenance scheme, by adding

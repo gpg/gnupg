@@ -7,7 +7,7 @@
 # GPG version: 0.9.7
 msgid ""
 msgstr ""
-"POT-Creation-Date: 1999-08-04 09:56+0200\n"
+"POT-Creation-Date: 1999-08-30 19:40+0200\n"
 "PO-Revision-Date: 1999-06-06 18:33+0200\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Date: 1998-11-13 10:49:25+0100\n"
@@ -34,19 +34,27 @@ msgstr "operación imposible sin memoria segura inicializada\n"
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(es posible que haya usado el programa incorrecto para esta tarea)\n"
 
-#: util/miscutil.c:254 util/miscutil.c:271
+#: util/miscutil.c:254 util/miscutil.c:283
 msgid "yes"
 msgstr "sí"
 
-#: util/miscutil.c:255 util/miscutil.c:273
+#: util/miscutil.c:255 util/miscutil.c:286
 msgid "yY"
 msgstr "sS"
 
-#: g10/keyedit.c:564 util/miscutil.c:272
+#: util/miscutil.c:256 util/miscutil.c:284
+msgid "no"
+msgstr ""
+
+#: util/miscutil.c:257 util/miscutil.c:287
+msgid "nN"
+msgstr ""
+
+#: g10/keyedit.c:564 util/miscutil.c:285
 msgid "quit"
 msgstr ""
 
-#: util/miscutil.c:274
+#: util/miscutil.c:288
 msgid "qQ"
 msgstr ""
 
@@ -2479,20 +2487,20 @@ msgstr "firma viejo estilo (PGP 2.x)\n"
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "paquete raíz no válido detectado en proc_tree()\n"
 
-#: g10/misc.c:93
+#: g10/misc.c:94
 #, c-format
 msgid "can't disable core dumps: %s\n"
 msgstr "no se pueden desactivar los core dumps: %s\n"
 
-#: g10/misc.c:96
+#: g10/misc.c:97
 msgid "WARNING: program may create a core file!\n"
 msgstr "ATENCIÓN: ¡el programa podría crear un fichero core dump!\n"
 
-#: g10/misc.c:203
+#: g10/misc.c:205
 msgid "Experimental algorithms should not be used!\n"
 msgstr "¡No se deberían usar algoritmos experimentales!\n"
 
-#: g10/misc.c:217
+#: g10/misc.c:219
 msgid ""
 "RSA keys are deprecated; please consider creating a new key and use this key "
 "in the future\n"
@@ -2500,7 +2508,7 @@ msgstr ""
 "Las claves RSA están en desuso, considere la creación de una nueva clave "
 "para futuros usos\n"
 
-#: g10/misc.c:239
+#: g10/misc.c:241
 msgid "this cipher algorithm is depreciated; please use a more standard one!\n"
 msgstr ""
 "este algoritmo de cifrado está en desuso, considere el uso de uno más "
@@ -3184,142 +3192,168 @@ msgstr ""
 "¡imposible evitar clave débil para cifrado simétrico después de %d "
 "intentos!\n"
 
-#. begin of list
-#: g10/helptext.c:48
-msgid "edit_ownertrust.value"
+#: g10/helptext.c:47
+msgid ""
+"It's up to you to assign a value here; this value will never be exported\n"
+"to any 3rd party.  We need it to implement the web-of-trust; it has nothing\n"
+"to do with the (implicitly created) web-of-certificates."
 msgstr ""
 
-#: g10/helptext.c:54
-msgid "revoked_key.override"
+#: g10/helptext.c:53
+msgid "If you want to use this revoked key anyway, answer \"yes\"."
 msgstr ""
 
-#: g10/helptext.c:58
-msgid "untrusted_key.override"
+#: g10/helptext.c:57
+msgid "If you want to use this untrusted key anyway, answer \"yes\"."
 msgstr ""
 
-#: g10/helptext.c:62
-msgid "pklist.user_id.enter"
+#: g10/helptext.c:61
+msgid ""
+"Enter the user id of the addressee to whom you want to send the message."
 msgstr ""
 
-#: g10/helptext.c:66
-msgid "keygen.algo"
+#: g10/helptext.c:65
+msgid ""
+"Select the algorithm to use.\n"
+"DSA (aka DSS) is the digital signature algorithm which can only be used\n"
+"for signatures.  This is the suggested algorithm because verification of\n"
+"DSA signatures are much faster than those of ElGamal.\n"
+"ElGamal is an algorithm which can be used for signatures and encryption.\n"
+"OpenPGP distunguishs between two flavors of this algorithms: an encrypt "
+"only\n"
+"and a sign+encrypt; actually it is the same, but some parameters must be\n"
+"selected in a special way to create a safe key for signatures: this program\n"
+"does this but other OpenPGP implementations are not required to understand\n"
+"the signature+encryption flavor.\n"
+"The first (primary) key must always be a key which is capable of signing;\n"
+"this is the reason why the encryption only ElGamal key is not available in\n"
+"this menu."
 msgstr ""
 
 #: g10/helptext.c:82
-msgid "keygen.algo.elg_se"
+msgid ""
+"Although these keys are defined in RFC2440 they are not suggested\n"
+"because they are not supported by all programs and signatures created\n"
+"with them are quite large and very slow to verify."
 msgstr ""
 
 #: g10/helptext.c:89
-msgid "keygen.size"
-msgstr ""
+#, fuzzy
+msgid "Enter the size of the key"
+msgstr "Introduzca el ID de usuario: "
 
-#: g10/helptext.c:93
-msgid "keygen.size.huge.okay"
-msgstr ""
-
-#: g10/helptext.c:98
-msgid "keygen.size.large.okay"
+#: g10/helptext.c:93 g10/helptext.c:98 g10/helptext.c:110 g10/helptext.c:142
+#: g10/helptext.c:147 g10/helptext.c:152 g10/helptext.c:157
+msgid "Answer \"yes\" or \"no\""
 msgstr ""
 
 #: g10/helptext.c:103
-msgid "keygen.valid"
-msgstr ""
-
-#: g10/helptext.c:110
-msgid "keygen.valid.okay"
+msgid ""
+"Enter the required value as shown in the pronpt.\n"
+"It is possible to enter a ISO date (YYYY-MM-DD) but you won't\n"
+"get a good error response - instead the system tries to interpret\n"
+"the given value as an interval."
 msgstr ""
 
 #: g10/helptext.c:115
-msgid "keygen.name"
+msgid "Enter the name of the key holder"
 msgstr ""
 
 #: g10/helptext.c:120
-msgid "keygen.email"
+msgid "please enter an optional but highly suggested email address"
 msgstr ""
 
 #: g10/helptext.c:124
-msgid "keygen.comment"
-msgstr ""
+#, fuzzy
+msgid "Please enter an optional comment"
+msgstr "Introduzca el nombre del fichero de datos: "
 
 #: g10/helptext.c:129
-msgid "keygen.userid.cmd"
+msgid ""
+"N  to change the name.\n"
+"C  to change the comment.\n"
+"E  to change the email address.\n"
+"O  to continue with key generation.\n"
+"Q  to to quit the key generation."
 msgstr ""
 
 #: g10/helptext.c:138
-msgid "keygen.sub.okay"
-msgstr ""
-
-#: g10/helptext.c:142
-msgid "sign_uid.okay"
-msgstr ""
-
-#: g10/helptext.c:147
-msgid "change_passwd.empty.okay"
-msgstr ""
-
-#: g10/helptext.c:152
-msgid "keyedit.save.okay"
-msgstr ""
-
-#: g10/helptext.c:157
-msgid "keyedit.cancel.okay"
+msgid "Answer \"yes\" (or just \"y\") if it is okay to generate the sub key."
 msgstr ""
 
 #: g10/helptext.c:161
-msgid "keyedit.sign_all.okay"
+msgid "Answer \"yes\" is you want to sign ALL the user IDs"
 msgstr ""
 
 #: g10/helptext.c:165
-msgid "keyedit.remove.uid.okay"
+msgid ""
+"Answer \"yes\" if you really want to delete this user ID.\n"
+"All certificates are then also lost!"
 msgstr ""
 
 #: g10/helptext.c:170
-msgid "keyedit.remove.subkey.okay"
+msgid "Answer \"yes\" if it is okay to delete the subkey"
 msgstr ""
 
 #: g10/helptext.c:175
-msgid "keyedit.delsig.valid"
+msgid ""
+"This is a valid signature on the key; you normally don't want\n"
+"to delete this signature may be important to establish a trust\n"
+"connection to the key or another key certified by this key."
 msgstr ""
 
 #: g10/helptext.c:180
-msgid "keyedit.delsig.unknown"
+msgid ""
+"This signature can't be checked because you don't have the\n"
+"corresponding key.  You should postpone its deletion until you\n"
+"know which key was used because this signing key might establisha trust "
+"connection through another already certified key."
 msgstr ""
 
 #: g10/helptext.c:186
-msgid "keyedit.delsig.invalid"
+msgid ""
+"The signature is not valid.  It does make sense to remove it from\n"
+"your keyring."
 msgstr ""
 
 #: g10/helptext.c:190
-msgid "keyedit.delsig.selfsig"
+msgid ""
+"This is a signature which binds the user ID to the key. It is\n"
+"usually not a good idea to remove such a signature.  Actually\n"
+"GnuPG might not be able to use this key anymore.  So do this\n"
+"only if this self-signature is for some reason not valid and\n"
+"a second one is available."
 msgstr ""
 
 #: g10/helptext.c:199
-msgid "passphrase.enter"
+msgid ""
+"Please enter the passhrase; this is a secret sentence \n"
+"  Blurb, blurb,.... "
 msgstr ""
 
 #: g10/helptext.c:206
-msgid "passphrase.repeat"
+msgid "Please repeat the last passphrase, so you are sure what you typed in."
 msgstr ""
 
 #: g10/helptext.c:210
-msgid "detached_signature.filename"
+msgid "Give the name fo the file to which the signature applies"
 msgstr ""
 
-#. openfile.c (overwrite_filep)
 #: g10/helptext.c:215
-msgid "openfile.overwrite.okay"
+msgid "Answer \"yes\" if it is okay to overwrite the file"
 msgstr ""
 
-#. openfile.c (ask_outfile_name)
 #: g10/helptext.c:220
-msgid "openfile.askoutname"
+msgid ""
+"Please enter a new filename. If you just hit RETURN the default\n"
+"file (which is shown in brackets) will be used."
 msgstr ""
 
-#: g10/helptext.c:235
+#: g10/helptext.c:234
 msgid "No help available"
 msgstr "Ayuda no disponible"
 
-#: g10/helptext.c:247
+#: g10/helptext.c:242
 #, c-format
 msgid "No help available for `%s'"
 msgstr "Ayuda no disponible para `%s'"

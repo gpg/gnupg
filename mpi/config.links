@@ -34,6 +34,16 @@ case "${target}" in
 	cat  $srcdir/mpi/i386/syntax.h	    >>./mpi/asm-syntax.h
 	path="i586 i386"
 	;;
+    i[34]86*-msdosdjgpp*)
+	echo '#define BSD_SYNTAX'        >>./mpi/asm-syntax.h
+	cat  $srcdir/mpi/i386/syntax.h	 >>./mpi/asm-syntax.h
+	path="i386"
+	;;
+    i[56]86*-msdosdjgpp*)
+	echo '#define BSD_SYNTAX'        >>./mpi/asm-syntax.h
+	cat  $srcdir/mpi/i386/syntax.h	 >>./mpi/asm-syntax.h
+	path="i586 i386"
+	;;
     i[34]86*-*-*)
 	echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/i386/syntax.h	    >>./mpi/asm-syntax.h

@@ -1,3 +1,19 @@
+Mon Aug 30 20:38:33 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* import.c (chk_self_sigs): some s/log_error/log_info/ so that gpg
+	does not return an error if a key has some invalid packets.
+
+	* helptext.c: Fixed some typos and changed the way the
+	translation works.  The english text is now the keyword for gettext
+	and not anymore the keyword supplied to the function.  Done after
+	some discussion with Walter who thinks this is much easier for the
+	translators.
+
+	* misc.c (disable_core_dumps): Don't do it for DOSish systems.
+
+	* signal.c (signal_name): Bounds check on signum.
+
 Wed Aug  4 10:34:18 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 
