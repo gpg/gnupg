@@ -1,3 +1,7 @@
+2002-10-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.h: Go to KEYSERVER_PROTO_VERSION 1.
+
 2002-10-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.h: Add new error code KEYSERVER_UNREACHABLE.

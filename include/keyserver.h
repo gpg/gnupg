@@ -21,6 +21,8 @@
 #ifndef _KEYSERVER_H_
 #define _KEYSERVER_H_
 
+#define KEYSERVER_PROTO_VERSION    1
+
 /* These are usable for return codes for the gpgkeys_ process, and
    also KEY FAILED codes. */
 #define KEYSERVER_OK               0 /* not an error */
