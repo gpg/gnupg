@@ -1,3 +1,7 @@
+2003-12-09  Werner Koch  <wk@gnupg.org>
+
+	* Makevars (MSGID_BUGS_ADDRESS): New.
+
 2003-04-29  Werner Koch  <wk@gnupg.org>
 
 	* LINUGAS: NEW.
