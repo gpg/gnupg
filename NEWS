@@ -6,6 +6,12 @@ Noteworthy changes in version 1.3.5 (unreleased)
       embedded use where space is tight.  --enable-minimal includes
       --disable-rsa.
 
+    * Some performance improvements with large keyrings.
+
+    * Some portability fixes for the OpenBSD/i386 and HPPA platforms.
+
+    * The last support for Elgamal sign+encrypt keys has been removed.
+
 
 Noteworthy changes in version 1.3.4 (2003-11-27)
 ------------------------------------------------

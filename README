@@ -584,6 +584,13 @@
 		    example) "--enable-minimal --enable-rsa" to have
 		    RSA added to the minimal build.
 
+     --enable-key-cache=SIZE
+                    Set the internal key and UID cache size.  This has
+                    a significant impact on performance with large
+                    keyrings.  The default is 4096, but for use on
+                    platforms where memory is an issue, it can be set
+                    as low as 5.
+
 
     Installation Problems
     ---------------------
