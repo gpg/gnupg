@@ -102,6 +102,11 @@ keybox_release (KEYBOX_HANDLE hd)
   if (!hd)
     return;
   _keybox_release_blob (hd->found.blob);
+  if (hd->fp)
+    {
+      fclose (hd->fp);
+      hd->fp = NULL;
+    }
   xfree (hd->word_match.name);
   xfree (hd->word_match.pattern);
   xfree (hd);
