@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.9.8
+Noteworthy changes in version 1.9.8 (2004-04-29)
 ------------------------------------------------
 
  * [scdaemon] Overhauled the internal CCID driver.
@@ -11,6 +11,9 @@ Noteworthy changes in version 1.9.8
 
  * The keybox gets now compressed after 3 hours and ephemeral
    stored certificates are deleted after about a day.
+
+ * [gpg] Usability fixes for --card-edit.  Note, that this has already
+   been ported back to gnupg-1.3
 
 
 Noteworthy changes in version 1.9.7 (2004-04-06)
