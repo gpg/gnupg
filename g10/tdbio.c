@@ -474,9 +474,18 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	atexit( cleanup );
 	initialized = 1;
     }
-    fname = new_dbname? m_strdup( new_dbname )
-		      : make_filename(opt.homedir,
-		                      "trustdb" EXTSEP_S "gpg", NULL );
+
+    if(new_dbname==NULL)
+      fname=make_filename(opt.homedir,"trustdb" EXTSEP_S "gpg", NULL);
+    else if (*new_dbname != DIRSEP_C )
+      {
+	if (strchr(new_dbname, DIRSEP_C) )
+	  fname = make_filename (new_dbname, NULL);
+	else
+	  fname = make_filename (opt.homedir, new_dbname, NULL);
+      }
+    else
+      fname = m_strdup (new_dbname);
 
     if( access( fname, R_OK ) ) {
 	if( errno != ENOENT ) {

@@ -1,3 +1,8 @@
+2003-01-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* tdbio.c (tdbio_set_dbname): Fix assertion failure with
+	non-fully-qualified trustdb names.
+
 2003-01-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* trustdb.c (get_validity_info, get_ownertrust_info,
