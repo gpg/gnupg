@@ -1,6 +1,6 @@
 /* armor.c - Armor flter
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *                                             Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -464,7 +464,8 @@ check_input( armor_filter_context_t *afx, IOBUF a )
     return rc;
 }
 
-
+#define PARTIAL_CHUNK 512
+#define PARTIAL_POW   9
 
 /****************
  * Fake a literal data packet and wait for the next armor line
@@ -480,19 +481,31 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
     int lastline = 0;
     unsigned maxlen, n;
     byte *p;
+    byte tempbuf[PARTIAL_CHUNK];
+    size_t tempbuf_len=0;
 
-    len = 2;	/* reserve 2 bytes for the length header */
-    size -= 2;	/* and 2 for the terminating header */
-    while( !rc && len < size ) {
+    while( !rc && size-len>=(PARTIAL_CHUNK+1)) {
 	/* copy what we have in the line buffer */
 	if( afx->faked == 1 )
 	    afx->faked++; /* skip the first (empty) line */
-	else {
-	    while( len < size && afx->buffer_pos < afx->buffer_len )
-		buf[len++] = afx->buffer[afx->buffer_pos++];
-	    if( len >= size )
+	else
+	  {
+	    /* It's full, so write this partial chunk */
+	    if(tempbuf_len==PARTIAL_CHUNK)
+	      {
+		buf[len++]=0xE0+PARTIAL_POW;
+		memcpy(&buf[len],tempbuf,PARTIAL_CHUNK);
+		len+=PARTIAL_CHUNK;
+		tempbuf_len=0;
 		continue;
-	}
+	      }
+
+	    while( tempbuf_len < PARTIAL_CHUNK
+		   && afx->buffer_pos < afx->buffer_len )
+	      tempbuf[tempbuf_len++] = afx->buffer[afx->buffer_pos++];
+	    if( tempbuf_len==PARTIAL_CHUNK )
+	      continue;
+	  }
 
 	/* read the next line */
 	maxlen = MAX_LINELEN;
@@ -560,13 +573,17 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	}
     }
 
-    buf[0] = (len-2) >> 8;
-    buf[1] = (len-2);
     if( lastline ) { /* write last (ending) length header */
-	if( buf[0] || buf[1] ) { /* only if we have some text */
-	    buf[len++] = 0;
-	    buf[len++] = 0;
-	}
+        if(tempbuf_len<192)
+	  buf[len++]=tempbuf_len;
+	else
+	  {
+	    buf[len++]=((tempbuf_len-192)/256) + 192;
+	    buf[len++]=(tempbuf_len-192) % 256;
+	  }
+	memcpy(&buf[len],tempbuf,tempbuf_len);
+	len+=tempbuf_len;
+
 	rc = 0;
 	afx->faked = 0;
 	afx->in_cleartext = 0;
@@ -842,9 +859,10 @@ armor_filter( void *opaque, int control,
 	*ret_len = n;
     }
     else if( control == IOBUFCTRL_UNDERFLOW ) {
-        /* We need some space for the faked packet.  The minmum required
-         * size is ~18 + length of the session marker */
-	if( size < 50 ) 
+        /* We need some space for the faked packet.  The minmum
+         * required size is the PARTIAL_CHUNK size plus a byte for the
+         * length itself */
+	if( size < PARTIAL_CHUNK+1 ) 
 	    BUG(); /* supplied buffer too short */
 
 	if( afx->faked )
@@ -901,12 +919,17 @@ armor_filter( void *opaque, int control,
                     buf[n++] = DIGEST_ALGO_SHA512;
                 buf[1] = n - 2;
 
-		/* followed by a plaintext packet */
-		buf[n++] = 0xaf; /* old packet format, type 11, var length */
-		buf[n++] = 0;	 /* set the length header */
-		buf[n++] = 6;
+		/* followed by an invented plaintext packet.
+		   Amusingly enough, this packet is not compliant with
+		   2440 as the initial partial length is less than 512
+		   bytes.  Of course, we'll accept it anyway ;) */
+
+		buf[n++] = 0xCB; /* new packet format, type 11 */
+		buf[n++] = 0xE3; /* 2^3 */
 		buf[n++] = 't';  /* canonical text mode */
-		buf[n++] = 0;	 /* namelength */
+		buf[n++] = 2;	 /* namelength */
+		buf[n++] = 'i';  /* padding to get us to 2^3 bytes */
+		buf[n++] = 's';  /* this comment intentionally left blank */
 		memset(buf+n, 0, 4); /* timestamp */
 		n += 4;
 	    }
