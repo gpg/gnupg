@@ -1,3 +1,8 @@
+2003-11-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* config.links: sparc64 assembler doesn't work on FreeBSD or
+	OpenBSD either.
+
 2003-10-20  Werner Koch  <wk@gnupg.org>
 
 	* longlong.h: Added PowerPC 64 bit code from GPM-4.1.2 but didn't
