@@ -3,7 +3,8 @@
 		   -------------------------------
 			    Version 1.2.2
 
-	  Copyright 1998-2003 Free Software Foundation, Inc.
+	     Copyright 1998, 1999, 2000, 2001, 2002, 2003
+		    Free Software Foundation, Inc.
 
     This file is free software; as a special exception the author gives
     unlimited permission to copy and/or distribute it, with or without
@@ -655,4 +656,3 @@
 
     Commercial grade support for GnuPG is available; please see
     the GNU service directory or search other resources.
-

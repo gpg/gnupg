@@ -137,31 +137,31 @@ if test "$use_m_guard" = yes ; then
     AC_DEFINE(M_GUARD,1,[Define to use the (obsolete) malloc guarding feature])
 fi
 
-AC_MSG_CHECKING([whether to enable experimental TIGER digest support])
+AC_MSG_CHECKING([whether to enable experimental TIGER/192 digest support])
 AC_ARG_ENABLE(tiger,
-    [  --enable-tiger          enable experimental TIGER digest support],
+    [  --enable-tiger          enable experimental TIGER/192 digest support],
     use_tiger=$enableval, use_tiger=no)
 AC_MSG_RESULT($use_tiger)
 if test "$use_tiger" = yes ; then
     AC_SUBST(TIGER_O,tiger.o)
-    AC_DEFINE(USE_TIGER,1,[Define to include experimental TIGER digest support])
-    AC_DEFINE(USE_OLD_TIGER,1,[Define to use the old fake OID for TIGER digest support])
+    AC_DEFINE(USE_TIGER,1,[Define to include experimental TIGER/192 digest support])
+    AC_DEFINE(USE_OLD_TIGER,1,[Define to use the old fake OID for TIGER/192 digest support])
 else
-    AC_MSG_CHECKING([whether to enable new-style experimental TIGER digest support])
+    AC_MSG_CHECKING([whether to enable new-style experimental TIGER/192 digest support])
     AC_ARG_ENABLE(new-tiger,
-        [  --enable-new-tiger      enable new-style experimental TIGER digest support],
+        [  --enable-new-tiger      enable new-style experimental TIGER/192 digest support],
         use_new_tiger=$enableval, use_new_tiger=no)
     AC_MSG_RESULT($use_new_tiger)
     if test "$use_new_tiger" = yes ; then
         AC_SUBST(TIGER_O,tiger.o)
-        AC_DEFINE(USE_TIGER,1,[Define to include experimental TIGER digest support])
+        AC_DEFINE(USE_TIGER,1,[Define to include experimental TIGER/192 digest support])
     fi
 fi
 
 if test x"$use_tiger" = xyes || test x"$use_new_tiger" = xyes ; then
    AC_MSG_WARN([[
 ***
-*** The TIGER digest is in the process of being removed from the
+*** The TIGER/192 digest is in the process of being removed from the
 *** OpenPGP standard.  While it hasn't been removed from GnuPG yet, it
 *** will be removed in a future version.  For the sake of future
 *** compatibility, please do not use this digest.
