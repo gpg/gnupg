@@ -1,3 +1,7 @@
+2003-10-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Include -ldl when card support is used.
+
 2003-10-10  Werner Koch  <wk@gnupg.org>
 
 	Release 1.3.3.

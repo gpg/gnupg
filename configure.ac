@@ -108,16 +108,11 @@ AC_ARG_ENABLE(card-support,
     [  --enable-card-support   enable OpenPGP card support],
     card_support=$enableval, card_support=no)
 AC_MSG_RESULT($card_support)
-if test "$card_support" = yes ; then
-    AC_DEFINE(ENABLE_CARD_SUPPORT,1,
-             [Define to include the OpenPGP card support])
-fi
-AM_CONDITIONAL(ENABLE_CARD_SUPPORT, test "$card_support" = yes)
 
 dnl See if we are disabling any algorithms or features for a smaller
 dnl binary
 
-try_dynload=no
+try_extensions=no
 
 use_idea=yes
 use_cast5=yes
@@ -160,7 +155,7 @@ if test x"$use_idea" = xyes ; then
    else
       IDEA_O=idea-stub.o
       tmp=no
-      try_dynload=yes
+      try_extensions=yes
    fi
    AC_SUBST(IDEA_O)
    AC_MSG_RESULT($tmp)
@@ -584,7 +579,7 @@ case "${target}" in
         ;;
     i?86-*-msdosdjgpp*)
         PRINTABLE_OS_NAME="MSDOS/DJGPP"
-        try_dynload=no
+        try_extensions=no
         ;;
     *-linux*)
         PRINTABLE_OS_NAME="GNU/Linux"
@@ -638,19 +633,35 @@ else
   AC_SUBST(BUILD_INCLUDED_LIBINTL)
 fi
 
-if test "$try_dynload" = yes ; then
+if test "$try_extensions" = yes || test x"$card_support" = xyes ; then
   AC_CHECK_FUNC(dlopen,,AC_CHECK_LIB(dl,dlopen,found_dlopen=yes))
   if test x"$found_dlopen" = "xyes" ; then
-    AC_DEFINE(USE_DYNAMIC_LINKING,1,[define to enable the use of extensions])
     AC_DEFINE(HAVE_DL_DLOPEN,1,
               [Defined when the dlopen function family is available])
     AC_SUBST(DLLIBS,"-ldl")
+
+    if test "$try_extensions" = yes ; then
+       AC_DEFINE(USE_DYNAMIC_LINKING,1,
+		 [define to enable the use of extensions])
+    fi
+
+    if test "$card_support" = yes ; then
+       AC_DEFINE(ENABLE_CARD_SUPPORT,1,
+		 [Define to include the OpenPGP card support])
+    fi
+  else
+    if test "$try_extensions" = yes ; then
+       AC_MSG_WARN([dlopen not found.  Disabling extensions.])
+    fi
+
+    if test "$card_support" = yes ; then
+       AC_MSG_WARN([dlopen not found.  Disabling OpenPGP card support.])
+       card_support=no
+    fi
   fi
-else
-  AC_MSG_CHECKING(for dynamic loading)
-  AC_MSG_RESULT(has been disabled)
 fi
 
+AM_CONDITIONAL(ENABLE_CARD_SUPPORT, test "$card_support" = yes)
 
 dnl Checks for header files.
 AC_HEADER_STDC
