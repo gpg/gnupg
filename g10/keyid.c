@@ -280,7 +280,7 @@ keyid_from_sk( PKT_secret_key *sk, u32 *keyid )
 	  sk->keyid[1]=keyid[1];
 	}
       else
-	sk->keyid[0]=sk->keyid[1]=keyid[0]=keyid[1]=lowbits=0;
+	sk->keyid[0]=sk->keyid[1]=keyid[0]=keyid[1]=lowbits=0xFFFFFFFF;
     }
   else
     {
@@ -298,7 +298,7 @@ keyid_from_sk( PKT_secret_key *sk, u32 *keyid )
 	  sk->keyid[1] = keyid[1];
 	}
       else
-	sk->keyid[0]=sk->keyid[1]=keyid[0]=keyid[1]=lowbits=0;
+	sk->keyid[0]=sk->keyid[1]=keyid[0]=keyid[1]=lowbits=0xFFFFFFFF;
     }
 
   return lowbits;
@@ -334,7 +334,7 @@ keyid_from_pk( PKT_public_key *pk, u32 *keyid )
 	  pk->keyid[1] = keyid[1];
 	}
       else
-	pk->keyid[0]=pk->keyid[1]=keyid[0]=keyid[1]=lowbits=0;
+	pk->keyid[0]=pk->keyid[1]=keyid[0]=keyid[1]=lowbits=0xFFFFFFFF;
     }
   else
     {
@@ -352,7 +352,7 @@ keyid_from_pk( PKT_public_key *pk, u32 *keyid )
 	  pk->keyid[1] = keyid[1];
 	}
       else
-	pk->keyid[0]=pk->keyid[1]=keyid[0]=keyid[1]=lowbits=0;
+	pk->keyid[0]=pk->keyid[1]=keyid[0]=keyid[1]=lowbits=0xFFFFFFFF;
     }
 
   return lowbits;

@@ -1110,7 +1110,7 @@ change_passphrase( KBNODE keyblock )
 	    no_primary_secrets = 1;
 	}
 	else if( sk->protect.s2k.mode == 1002 ) {
-	    tty_printf(_("Secret parts of primary key are store on-card.\n"));
+	    tty_printf(_("Secret parts of primary key are stored on-card.\n"));
 	    no_primary_secrets = 1;
 	}
 	else {

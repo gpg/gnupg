@@ -3049,7 +3049,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	tty_printf(_("This key is not protected.\n"));
 	break;
       case -2:
-        tty_printf(_("Secret parts of primary key are store on-card.\n"));
+        tty_printf(_("Secret parts of primary key are stored on-card.\n"));
         ask_pass = 1;
         break;
       default:
