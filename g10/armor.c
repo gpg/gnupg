@@ -999,6 +999,7 @@ armor_filter( void *opaque, int control,
 	}
 	else if( !afx->any_data && !afx->inp_bypass ) {
 	    log_error(_("no valid OpenPGP data found.\n"));
+	    afx->no_openpgp_data = 1;
 	    write_status_text( STATUS_NODATA, "1" );
 	}
 	if( afx->truncated )

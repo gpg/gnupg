@@ -35,6 +35,9 @@ typedef struct {
     int only_keyblocks;     /* skip all headers but ".... key block" */
     const char *hdrlines;   /* write these headerlines */
 
+    /* these fileds must be initialized to zero */
+    int no_openpgp_data;    /* output flag: "No valid OpenPGP data found" */
+
     /* the following fields must be initialized to zero */
     int inp_checked;	    /* set if the input has been checked */
     int inp_bypass;	    /* set if the input is not armored */

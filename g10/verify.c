@@ -59,6 +59,7 @@ verify_signatures( int nfiles, char **files )
     int i, rc;
     STRLIST sl;
 
+    memset( &afx, 0, sizeof afx);
     sigfile = nfiles? *files : NULL;
 
     /* open the signature file */
@@ -68,12 +69,8 @@ verify_signatures( int nfiles, char **files )
 	return G10ERR_OPEN_FILE;
     }
 
-    if( !opt.no_armor ) {
-	if( use_armor_filter( fp ) ) {
-	    memset( &afx, 0, sizeof afx);
-	    iobuf_push_filter( fp, armor_filter, &afx );
-	}
-    }
+    if( !opt.no_armor && use_armor_filter( fp ) )
+	iobuf_push_filter( fp, armor_filter, &afx );
 
     sl = NULL;
     for(i=1 ; i < nfiles; i++ )
@@ -81,6 +78,13 @@ verify_signatures( int nfiles, char **files )
     rc = proc_signature_packets( NULL, fp, sl, sigfile );
     free_strlist(sl);
     iobuf_close(fp);
+    if( afx.no_openpgp_data && rc == -1 ) {
+	log_error(_("the signature could not be verified.\n"
+		   "Please remember that the signature file (.sig or .asc)\n"
+		   "should be the first file given on the command line.\n") );
+	rc = 0;
+    }
+
     return rc;
 }
 

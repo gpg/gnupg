@@ -1,3 +1,7 @@
+Tue Sep 28 20:54:37 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* textfilter.c (copy_clearsig_text) [__MINGW32__): Use CR,LF.
+
 Fri Sep 17 12:56:42 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* configure.in: Add "-lcap" when capabilities are requested.

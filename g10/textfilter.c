@@ -183,11 +183,32 @@ copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
 	    iobuf_put( out, '-' );
 	    iobuf_put( out, ' ' );
 	}
+      #ifdef __MINGW32__
+	/* make sure the lines do end in CR,LF */
+	if( n > 1 && ( (buffer[n-2] == '\r' && buffer[n-1] == '\n' )
+			    || (buffer[n-2] == '\n' && buffer[n-1] == '\r'))) {
+	    iobuf_write( out, buffer, n-2 );
+	    iobuf_put( out, '\r');
+	    iobuf_put( out, '\n');
+	}
+	else if( n && buffer[n-1] == '\n' ) {
+	    iobuf_write( out, buffer, n-1 );
+	    iobuf_put( out, '\r');
+	    iobuf_put( out, '\n');
+	}
+	else
+	    iobuf_write( out, buffer, n );
+
+      #else
 	iobuf_write( out, buffer, n );
+      #endif
     }
 
     /* at eof */
     if( !pending_lf ) { /* make sure that the file ends with a LF */
+      #ifndef __MINGW32__
+	iobuf_put( out, '\r');
+      #endif
 	iobuf_put( out, '\n');
 	if( !escape_dash )
 	    md_putc( md, '\n' );

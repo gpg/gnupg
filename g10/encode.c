@@ -177,6 +177,7 @@ encode_simple( const char *filename, int mode )
 	pt->timestamp = make_timestamp();
 	pt->mode = opt.textmode? 't' : 'b';
 	pt->len = filesize;
+	pt->new_ctb = !pt->len && !opt.rfc1991;
 	pt->buf = inp;
 	pkt.pkttype = PKT_PLAINTEXT;
 	pkt.pkt.plaintext = pt;

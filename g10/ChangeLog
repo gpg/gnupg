@@ -1,3 +1,13 @@
+Tue Sep 28 20:54:37 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* encode.c (encode_simple): Use new CTB when we don't have the
+	length of the file.  This is somewhat strange as the comment above
+	indicates that this part is actually fixed for PGP 5 - maybe I simply
+	lost the source line, tsss.
+
+	* armor.c (armor_filter): Set a flag if no OpenPGP data has been found.
+	* verify.c (verify_signatures): Add an error helptext.
+
 Thu Sep 23 19:24:30 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* openfile.c (open_outfile): Fixed the 8dot3 handling.

@@ -1,7 +1,8 @@
 
     * New command --verify-files.
 
-    * Fixed some minor bugs.
+    * Fixed some minor bugs and the problem with conventional encrypted
+      packets which did use the gpg v3 partial length headers.
 
     * Add Indonesian and Portugese translations.
 
