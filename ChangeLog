@@ -1,3 +1,10 @@
+2003-09-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note --list-options, --verify-options, the deprecation of
+	--show-photos, --show-policy-url, --show-notation, and
+	--show-keyring, and getting the signer's fingerprint in sig
+	records.
+
 2003-08-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* AUTHORS, THANKS: Updates from stable.

@@ -1,6 +1,33 @@
 Noteworthy changes in version 1.3.3 (unreleased)
 ------------------------------------------------
 
+    * New --list-options option.  This option takes a list of
+      arguments that allows the user to customize exactly what key
+      listings (including the --edit-key listing) look like, enabling
+      or disabling things such as photo display, policy URL, preferred
+      keyserver URL, or notation display, long or short keyIDs,
+      calculated validity for each user ID, etc.  See the manual for
+      the complete list of list-options.
+
+    * New --verify-options option.  This option takes a list of
+      arguments that allows the user to customize exactly what happens
+      during signature verification, enabling or disabling things such
+      as photo display, policy URL, preferred keyserver URL, or
+      notation display, long or short keyIDs, calculated validity for
+      each user ID, etc.  See the manual for the complete list of
+      verify-options.
+
+    * The options --show-photos, --show-policy-url, --show-notation,
+      and --show-keyring are all deprecated in favor of those
+      arguments to --list-options and --verify-options.  The new
+      method is more flexible since a user can specify (for example)
+      showing photos during sig verification, but not in key listings.
+
+    * The complete fingerprint of the key that made a given key
+      certification is now available in the --with-colons output.  For
+      technical reasons, this is only available when running with
+      --no-sig-cache set.  See doc/DETAILS for the specifics of this.
+
     * IPv6 support for HKP keyserver access.  IPv6 for LDAP keyserver
       access is also supported, but is dependent on the LDAP library
       used.
@@ -26,6 +53,7 @@ Noteworthy changes in version 1.3.3 (unreleased)
 
     * A number of portability changes to make building GnuPG on
       less-common platforms easier.
+
 
 Noteworthy changes in version 1.3.2 (2003-05-27)
 ------------------------------------------------
