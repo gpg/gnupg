@@ -247,10 +247,14 @@ fi
 
 
 #
-# OpenSC is needed by the SCdaemon - if it is not availbale we won't 
-# build the SCdaemon
+# OpenSC is needed by the SCdaemon - if it is not availbale we can only
+# build a limited SCdaemon
 #
 AM_PATH_OPENSC("$NEED_OPENSC_VERSION",have_opensc=yes,have_opensc=no)
+if test $have_opensc = yes; then
+  AC_DEFINE(HAVE_OPENSC,1,
+            [defined if the OpenSC library is available])
+fi
 
 
 #
@@ -330,10 +334,6 @@ AC_DEFINE(HAVE_JNLIB_LOGGING, 1,
 #
 # Decide what to build
 #
-if test $have_opensc = no; then
-  build_scdaemon=no
-fi
-
 if test $have_ksba = no; then
   build_gpgsm=no
   build_scdaemon=no
@@ -346,10 +346,19 @@ if test "$build_agent" = "yes"; then
   fi
 fi
 
-build_scdaemon_threaded=""
+build_scdaemon_extra=""
 if test "$build_scdaemon" = "yes"; then
+  tmp=""
   if test $have_pth = no; then
-     build_scdaemon_threaded="(not multi-threaded)"
+     build_scdaemon_extra="not multi-threaded"
+     tmp=", "
+  fi
+  if test $have_opensc = no; then
+     build_scdaemon_extra="${build_scdaemon_extra}${tmp}no pkcs#15"
+     tmp=", "
+  fi      
+  if test -n "$build_scdaemon_extra"; then
+     build_scdaemon_extra="(${build_scdaemon_extra})"
   fi
 fi
 
@@ -376,12 +385,12 @@ AC_OUTPUT
 
 
 echo "
-	GnuPG v${VERSION} has been configured as follows:
+        GnuPG v${VERSION} has been configured as follows:
         
         OpenPGP:   $build_gpg
         S/MIME:    $build_gpgsm
         Agent:     $build_agent $build_agent_threaded
-        Smartcard: $build_scdaemon $build_scdaemon_threaded  
+        Smartcard: $build_scdaemon $build_scdaemon_extra
 
         Protect tool:     $gnupg_protect_tool
         Default agent:    $gnupg_agent_pgm
@@ -389,3 +398,4 @@ echo "
         Default scdaemon: $gnupg_scdaemon_pgm
         Default dirmngr:  $gnupg_dirmngr_pgm
 "
+

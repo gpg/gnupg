@@ -1,6 +1,10 @@
 2003-04-29  Werner Koch  <wk@gnupg.org>
 
+	* configure.ac: Build a limited version of scdaemon if libopensc
+	is not available.
+	
 	* configure.ac (ALL_LINUGAS): Removed.
+
 	* Makefile.am (ACLOCAL_AMFLAGS): New.
 	* configure.ac (AM_GNU_GETTEXT_VERSION): New.  Set to 0.11.5.
 
