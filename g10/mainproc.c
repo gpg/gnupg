@@ -431,7 +431,7 @@ print_pkenc_list( struct kidlist_item *list, int failed )
 	    }
 	}
 	else if (list->reason)
-	    log_error(_("public key decryption failed: %s\n"),
+	    log_info(_("public key decryption failed: %s\n"),
 						g10_errstr(list->reason));
     }
 }
