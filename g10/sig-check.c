@@ -475,12 +475,14 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 {
     u32 dummy;
     int dum2;
-    return check_key_signature2(root, node, is_selfsig, &dummy, &dum2 );
+    return check_key_signature2(root, node, NULL, is_selfsig, &dummy, &dum2 );
 }
 
+/* If check_pk is set, then use it to check the signature in node
+   rather than getting it from root or the keydb. */
 int
-check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
-				       u32 *r_expiredate, int *r_expired )
+check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
+		      int *is_selfsig, u32 *r_expiredate, int *r_expired )
 {
     MD_HANDLE md;
     PKT_public_key *pk;
@@ -595,14 +597,17 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	    md = md_open( algo, 0 );
 	    hash_public_key( md, pk );
 	    hash_uid_node( unode, md, sig );
-	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
+	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
+	      {
 		if( is_selfsig )
-		    *is_selfsig = 1;
+		  *is_selfsig = 1;
 		rc = do_check( pk, sig, md, r_expired );
-	    }
-	    else {
-		rc = signature_check2( sig, md, r_expiredate, r_expired );
-	    }
+	      }
+	    else if (check_pk)
+	      rc=do_check(check_pk,sig,md,r_expired);
+	    else
+	      rc = signature_check2( sig, md, r_expiredate, r_expired );
+
             cache_sig_result ( sig, rc );
 	    md_close(md);
 	}
