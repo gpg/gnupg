@@ -20,7 +20,7 @@
 
 /****************
  * We will change the whole system to use only KBX.  This file here
- * will implements the methods needed to operate on plain KBXfiles.
+ * will implement the methods needed to operate on plain KBXfiles.
  * Most stuff from getkey and ringedit will be replaced by stuff here.
  * To make things even mor easier we will only allow one updateable kbxfile
  * and optionally some read-only files.

@@ -1,3 +1,11 @@
+Fri Mar 24 11:25:45 CET 2000  Werner Koch  <wk@openit.de>
+
+	* gpg.c (print_mds): Add arg keys as a kludge to print hmacs
+	(main): New option --print-hmac.
+
+	* trustdb.c (verify_own_keys): Do not print warning about unprotected
+	key when in quiet mode.
+
 Mon Mar 13 19:22:46 CET 2000  Werner Koch  <wk@openit.de>
 
 	* build-paket.c (do_user_id): Save offset where name has been stored.

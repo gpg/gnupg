@@ -1,3 +1,13 @@
+Fri Mar 24 11:25:45 CET 2000  Werner Koch  <wk@openit.de>
+
+	* md.c (md_open): Add hmac arg and allocate space for the pads.
+	(md_finalize): Add HMAC support.
+	(md_copy): Ditto.
+	(md_close): Ditto.
+	(gcry_md_reset): Ditto.
+	(gcry_md_ctl): Ditto.
+	(prepare_macpdas): New.
+
 Mon Mar 13 19:22:46 CET 2000  Werner Koch  <wk@openit.de>
 
 	* md.c (gcry_md_hash_buffer): Add support for the other algorithms.

@@ -12,12 +12,12 @@ echo '/* created by config.links - do not edit */' >./mpi/asm-syntax.h
 
 if test "$try_asm_modules" = "yes" ; then
 case "${target}" in
-    i[34]86*-*-freebsd*-elf | i[34]86*-*-freebsd[34]* | i[34]86*-*-freebsdelf*)
+    i[34]86*-*-freebsd*-elf | i[34]86*-*-freebsd[3-9]* | i[34]86*-*-freebsdelf*)
        echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
        cat  $srcdir/mpi/i386/syntax.h	   >>./mpi/asm-syntax.h
        path="i386"
        ;;
-    i[56]86*-*-freebsd*-elf | i[56]86*-*-freebsd[34]* | i[56]86*-*-freebsdelf*)
+    i[56]86*-*-freebsd*-elf | i[56]86*-*-freebsd[3-9]* | i[56]86*-*-freebsdelf*)
        echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
        cat  $srcdir/mpi/i386/syntax.h	   >>./mpi/asm-syntax.h
        path="i586 i386"

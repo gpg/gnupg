@@ -89,6 +89,7 @@ enum cmd_and_opt_values { aNull = 0,
     aGenRevoke,
     aPrimegen,
     aPrintMD,
+    aPrintHMAC,
     aPrintMDs,
     aCheckTrustDB,
     aUpdateTrustDB,
@@ -226,6 +227,7 @@ static ARGPARSE_OPTS opts[] = {
     { aEnArmor, "enarmor", 256, N_("En-Armor a file or stdin") },
     { aEnArmor, "enarmour", 256, "@" },
     { aPrintMD,  "print-md" , 256, N_("|algo [files]|print message digests")},
+    { aPrintHMAC,  "print-hmac" , 256, "@"},
     { aPrimegen, "gen-prime" , 256, "@" },
     { aGenRandom, "gen-random" , 256, "@" },
 
@@ -354,7 +356,7 @@ static char *build_list( const char *text, const char * (*mapf)(int),
 static void set_cmd( enum cmd_and_opt_values *ret_cmd,
 			enum cmd_and_opt_values new_cmd );
 static void print_hex( byte *p, size_t n );
-static void print_mds( const char *fname, int algo );
+static void print_mds( const char *fname, int algo, const char *key );
 static void add_notation_data( const char *string );
 static int  check_policy_url( const char *s );
 
@@ -739,6 +741,7 @@ main( int argc, char **argv )
 	  case aPrimegen: set_cmd( &cmd, aPrimegen); break;
 	  case aGenRandom: set_cmd( &cmd, aGenRandom); break;
 	  case aPrintMD: set_cmd( &cmd, aPrintMD); break;
+	  case aPrintHMAC: set_cmd( &cmd, aPrintHMAC); break;
 	  case aPrintMDs: set_cmd( &cmd, aPrintMDs); break;
 	  case aListTrustDB: set_cmd( &cmd, aListTrustDB); break;
 	  case aCheckTrustDB: set_cmd( &cmd, aCheckTrustDB); break;
@@ -1074,6 +1077,7 @@ main( int argc, char **argv )
     switch( cmd ) {
       case aPrimegen:
       case aPrintMD:
+      case aPrintHMAC:
       case aPrintMDs:
       case aGenRandom:
       case aDeArmor:
@@ -1387,10 +1391,34 @@ main( int argc, char **argv )
 	    else {
 		argc--; argv++;
 		if( !argc )
-		    print_mds(NULL, algo);
+		    print_mds(NULL, algo, NULL);
 		else {
 		    for(; argc; argc--, argv++ )
-			print_mds(*argv, algo);
+			print_mds(*argv, algo, NULL);
+		}
+	    }
+	}
+	break;
+
+      case aPrintHMAC:
+	if( argc < 2 )
+	    wrong_args("--print-hmac hash-algo key [files]");
+	{
+	    int all_algos = (**argv=='*' && !(*argv)[1]);
+	    int algo = all_algos? 0 : gcry_md_map_name(*argv);
+
+	    if( !algo && !all_algos )
+		log_error(_("invalid hash algorithm `%s'\n"), *argv );
+	    else {
+		const char *key;
+		argc--; argv++;
+		key = *argv;
+		argc--; argv++;
+		if( !argc )
+		    print_mds(NULL, algo, key );
+		else {
+		    for(; argc; argc--, argv++ )
+			print_mds(*argv, algo, key );
 		}
 	    }
 	}
@@ -1398,10 +1426,10 @@ main( int argc, char **argv )
 
       case aPrintMDs: /* old option */
 	if( !argc )
-	    print_mds(NULL,0);
+	    print_mds(NULL,0,NULL);
 	else {
 	    for(; argc; argc--, argv++ )
-		print_mds(*argv,0);
+		print_mds(*argv,0,NULL);
 	}
 	break;
 
@@ -1554,7 +1582,7 @@ print_hex( byte *p, size_t n )
 }
 
 static void
-print_mds( const char *fname, int algo )
+print_mds( const char *fname, int algo, const char *key )
 {
     FILE *fp;
     char buf[1024];
@@ -1578,15 +1606,18 @@ print_mds( const char *fname, int algo )
 	return;
     }
 
-    md = gcry_md_open( 0, 0 );
+    md = gcry_md_open( 0, key? GCRY_MD_FLAG_HMAC : 0 );
     if( algo )
 	gcry_md_enable( md, algo );
     else {
+	/* Fixme: this does not work with hmac */
 	gcry_md_enable( md, GCRY_MD_MD5 );
 	gcry_md_enable( md, GCRY_MD_SHA1 );
 	gcry_md_enable( md, GCRY_MD_RMD160 );
 	have_tiger = !gcry_md_enable( md, GCRY_MD_TIGER );
     }
+    if( key )
+	gcry_md_setkey( md, key, strlen(key) );
 
     while( (n=fread( buf, 1, DIM(buf), fp )) )
 	gcry_md_write( md, buf, n );

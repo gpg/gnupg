@@ -90,7 +90,7 @@ The standard KBX Blob looks like this:
 
     maybe we put a sigture here later.
 
- b16	MD5 checksum  (useful for KS syncronsiation)
+ b16	MD5 checksum  (useful for KS syncronisation)
  *
  */
 
@@ -539,4 +539,62 @@ kbx_release_blob ( KBXBLOB blob )
     gcry_free( blob->sigs );
     gcry_free( blob );
 }
+
+static ulong
+get32( const byte *buffer )
+{
+    ulong a;
+    a =  *buffer << 24;
+    a |= buffer[1] << 16;
+    a |= buffer[2] << 8;
+    a |= buffer[3];
+    return a;
+}
+
+static ulong
+get16( const byte *buffer )
+{
+    ulong a;
+    a =  *buffer << 8;
+    a |= buffer[0];
+    return a;
+}
+
+
+int
+kbx_dump_blob ( FILE *fp, const byte* buffer, size_t length  )
+{
+  #if 0
+    ulong n;
+    ulong keyblock_off, keyblock_len;
+
+    if( length < 40 )  {
+	fprintf( fp, "blob too short\n");
+	return -1;
+    }
+    n = get32( buffer );
+    if( n > length ) {
+	fprintf( fp, "blob larger than length - output truncated\n");
+    }
+    else
+	length = n;  /* ignore the rest */
+    fprintf( fp, "Length: %lu\n", n );
+    fprintf( fp, "Type:   %d\n", buffer[4] ),
+    fprintf( fp, "Version: %d\n", buffer[5] ),
+    if( buffer[4] != 2 ) {
+	fprintf( fp, "can't dump this blob type\n" );
+	return 0;
+    }
+
+    n = get16( buffer + 6 );
+    fprintf( fp, "Blob-Flags: %04lX\n", n );
+    keyblock_off = get32( buffer + 8 );
+    keyblock_len = get32( buffer + 12 );
+    fprintf( fp, "Keyblock-Offset: %lu\n", keyblock_off );
+    fprintf( fp, "Keyblock-Length: %lu\n", keyblock_len );
+
+  #endif
+
+}
+
 

@@ -41,13 +41,14 @@ struct gcry_md_context {
     FILE  *debug;
     int finalized;
     struct md_digest_list_s *list;
+    byte *macpads;
 };
 #define CTX_MAGIC_NORMAL 0x11071961
 #define CTX_MAGIC_SECURE 0x16917011
 
 static const char * digest_algo_to_string( int algo );
 static int check_digest_algo( int algo );
-static GCRY_MD_HD md_open( int algo, int secure );
+static GCRY_MD_HD md_open( int algo, int secure, int hmac );
 static int  md_enable( GCRY_MD_HD hd, int algo );
 static GCRY_MD_HD md_copy( GCRY_MD_HD a );
 static void md_close(GCRY_MD_HD a);
@@ -239,7 +240,7 @@ check_digest_algo( int algo )
  * may be 0.
  */
 static GCRY_MD_HD
-md_open( int algo, int secure )
+md_open( int algo, int secure, int hmac )
 {
     GCRY_MD_HD hd;
     struct gcry_md_context *ctx;
@@ -280,6 +281,14 @@ md_open( int algo, int secure )
     memset( hd->ctx, 0, sizeof *hd->ctx );
     ctx->magic = secure ? CTX_MAGIC_SECURE : CTX_MAGIC_NORMAL;
     ctx->secure = secure;
+    if( hmac ) {
+	ctx->macpads = g10_malloc_secure( 128 );
+	if( !ctx->macpads ) {
+	    md_close( hd );
+	    set_lasterr( GCRYERR_NO_MEM );
+	    return NULL;
+	}
+    }
     fast_random_poll(); /* FIXME: should we really do that? */
     if( algo && md_enable( hd, algo ) ) {
 	md_close( hd );
@@ -295,7 +304,8 @@ gcry_md_open( int algo, unsigned int flags )
     GCRY_MD_HD hd;
     /* fixme: check that algo is available and that only valid
      * flag values are used */
-    hd = md_open( algo, (flags & GCRY_MD_FLAG_SECURE) );
+    hd = md_open( algo, (flags & GCRY_MD_FLAG_SECURE),
+			(flags & GCRY_MD_FLAG_HMAC) );
     return hd;
 }
 
@@ -371,6 +381,10 @@ md_copy( GCRY_MD_HD ahd )
     memcpy( b, a, sizeof *a );
     b->list = NULL;
     b->debug = NULL;
+    if( a->macpads ) {
+	b->macpads = g10_malloc_secure( 128 );
+	memcpy( b->macpads, a->macpads, 128 );
+    }
     /* and now copy the complete list of algorithms */
     /* I know that the copied list is reversed, but that doesn't matter */
     for( ar=a->list; ar; ar = ar->next ) {
@@ -409,6 +423,9 @@ gcry_md_reset( GCRY_MD_HD a )
 	memset( r->context.c, 0, r->contextsize );
 	(*r->init)( &r->context.c );
     }
+    if( a->ctx->macpads ) {
+	md_write( a, a->ctx->macpads, 64 ); /* inner pad */
+    }
 }
 
 
@@ -425,6 +442,7 @@ md_close(GCRY_MD_HD a)
 	r2 = r->next;
 	g10_free(r);
     }
+    g10_free(a->ctx->macpads);
     g10_free(a);
 }
 
@@ -479,17 +497,74 @@ md_final(GCRY_MD_HD a)
 	(*r->final)( &r->context.c );
     }
     a->ctx->finalized = 1;
+    if( a->ctx->macpads ) {  /* finish the hmac */
+	int algo = md_get_algo( a );
+	byte *p = md_read( a, algo );
+	size_t dlen = md_digest_length(algo);
+
+	GCRY_MD_HD om = md_open( algo, a->ctx->secure, 0 );
+	if( !om )
+	    g10_fatal_error( gcry_errno(), NULL );
+	md_write( om, a->ctx->macpads+64, 64 );
+	md_write( om, p, dlen );
+	md_final( om );
+	/* replace our digest with the mac (they have the same size) */
+	memcpy( p, md_read( om, algo ), dlen );
+	md_close( om );
+    }
 }
 
+
+
+static int
+prepare_macpads( GCRY_MD_HD hd, byte *key, size_t keylen)
+{
+    int i;
+    int algo = md_get_algo( hd );
+    byte *helpkey = NULL;
+    byte *ipad, *opad;
+
+    if( !algo )
+	return GCRYERR_INV_MD_ALGO; /* i.e. no algo enabled */
+
+    if( keylen > 64 ) {
+	helpkey = g10_malloc_secure( md_digest_length( algo ) );
+	if( !helpkey )
+	    return GCRYERR_NO_MEM;
+	gcry_md_hash_buffer( algo, helpkey, key, keylen );
+	key = helpkey;
+	keylen = md_digest_length( algo );
+	assert( keylen <= 64 );
+    }
+
+    memset( hd->ctx->macpads, 0, 128 );
+    ipad = hd->ctx->macpads;
+    opad = hd->ctx->macpads+64;
+    memcpy( ipad, key, keylen );
+    memcpy( opad, key, keylen );
+    for(i=0; i < 64; i++ ) {
+	ipad[i] ^= 0x36;
+	opad[i] ^= 0x5c;
+    }
+    g10_free( helpkey );
+    return 0;
+}
 
 int
 gcry_md_ctl( GCRY_MD_HD hd, int cmd, byte *buffer, size_t buflen)
 {
+    int rc = 0;
     if( cmd == GCRYCTL_FINALIZE )
 	md_final( hd );
+    else if( cmd == GCRYCTL_SET_KEY ) {
+	if( !(hd->ctx->macpads ) )
+	    rc = GCRYERR_CONFLICT;
+	else if ( !(rc = prepare_macpads( hd, buffer, buflen )) )
+	    gcry_md_reset( hd );
+    }
     else
-	return GCRYERR_INV_OP;
-    return 0;
+	rc = GCRYERR_INV_OP;
+    return set_lasterr( rc );
 }
 
 
@@ -605,7 +680,7 @@ gcry_md_hash_buffer( int algo, char *digest, const char *buffer, size_t length)
 	rmd160_hash_buffer( digest, buffer, length );
     else { /* for the others we do not have a fast function, so
 	    * we use the normal functions to do it */
-	GCRY_MD_HD h = md_open( algo, 0 );
+	GCRY_MD_HD h = md_open( algo, 0, 0 );
 	if( !h )
 	    BUG(); /* algo not available */
 	md_write( h, (byte*)buffer, length );

@@ -1,5 +1,7 @@
 # Some notes used by the maintainers
 
+print-hmac
+# test function to print a HMAC
 
 store
 # simply packs the input data into a rfc1991 packet format

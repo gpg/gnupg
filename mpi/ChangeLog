@@ -1,3 +1,7 @@
+2000-03-21 16:17:30  Werner Koch  (wk@habibti.openit.de)
+
+	* config.links: Add support for FreeBSD 5.
+
 Mon Jan 24 22:24:38 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* mpicoder.c (gcry_mpi_aprint): Now really returns the length.
