@@ -70,6 +70,121 @@ struct {
 };
 
 
+/* A table mapping OIDs to a descriptive string. */
+static struct {
+  char *oid;
+  char *name;
+  unsigned int flag;
+} oidtranstbl[] = {
+
+  /* Algorithms. */
+  { "1.2.840.10040.4.1", "dsa" },
+  { "1.2.840.10040.4.3", "dsaWithSha1" },
+
+  { "1.2.840.113549.1.1.1", "rsaEncryption" },
+  { "1.2.840.113549.1.1.2", "md2WithRSAEncryption" },
+  { "1.2.840.113549.1.1.3", "md4WithRSAEncryption" },
+  { "1.2.840.113549.1.1.4", "md5WithRSAEncryption" },
+  { "1.2.840.113549.1.1.5", "sha1WithRSAEncryption" },
+  { "1.2.840.113549.1.1.7", "rsaOAEP" },
+  { "1.2.840.113549.1.1.8", "rsaOAEP-MGF" },
+  { "1.2.840.113549.1.1.9", "rsaOAEP-pSpecified" },
+  { "1.2.840.113549.1.1.10", "rsaPSS" },
+  { "1.2.840.113549.1.1.11", "sha256WithRSAEncryption" },
+  { "1.2.840.113549.1.1.12", "sha384WithRSAEncryption" },
+  { "1.2.840.113549.1.1.13", "sha512WithRSAEncryption" },
+
+  { "1.3.14.3.2.26", "sha1" },
+  { "1.3.14.3.2.29",  "sha-1WithRSAEncryption" },
+  { "1.3.36.3.3.1.2", "rsaSignatureWithripemd160" },
+
+
+  /* Telesec extensions. */
+  { "0.2.262.1.10.12.0", "certExtensionLiabilityLimitationExt" },
+  { "0.2.262.1.10.12.1", "telesecCertIdExt" },
+  { "0.2.262.1.10.12.2", "telesecPolicyIdentifier" },
+  { "0.2.262.1.10.12.3", "telesecPolicyQualifierID" },
+  { "0.2.262.1.10.12.4", "telesecCRLFilteredExt" },
+  { "0.2.262.1.10.12.5", "telesecCRLFilterExt"},
+  { "0.2.262.1.10.12.6", "telesecNamingAuthorityExt" },
+
+  /* PKIX private extensions. */
+  { "1.3.6.1.5.5.7.1.1", "authorityInfoAccess" },
+  { "1.3.6.1.5.5.7.1.2", "biometricInfo" },
+  { "1.3.6.1.5.5.7.1.3", "qcStatements" },
+  { "1.3.6.1.5.5.7.1.4", "acAuditIdentity" },
+  { "1.3.6.1.5.5.7.1.5", "acTargeting" },
+  { "1.3.6.1.5.5.7.1.6", "acAaControls" },
+  { "1.3.6.1.5.5.7.1.7", "sbgp-ipAddrBlock" },
+  { "1.3.6.1.5.5.7.1.8", "sbgp-autonomousSysNum" },
+  { "1.3.6.1.5.5.7.1.9", "sbgp-routerIdentifier" },
+  { "1.3.6.1.5.5.7.1.10", "acProxying" },
+  { "1.3.6.1.5.5.7.1.11", "subjectInfoAccess" },
+
+  /* X.509 id-ce */
+  { "2.5.29.14", "subjectKeyIdentifier"},
+  { "2.5.29.15", "keyUsage", 1 },
+  { "2.5.29.16", "privateKeyUsagePeriod" },
+  { "2.5.29.17", "subjectAltName", 1 },
+  { "2.5.29.18", "issuerAltName", 1 },
+  { "2.5.29.19", "basicConstraints", 1},
+  { "2.5.29.20", "cRLNumber" },
+  { "2.5.29.21", "cRLReason" },
+  { "2.5.29.22", "expirationDate" },
+  { "2.5.29.23", "instructionCode" }, 
+  { "2.5.29.24", "invalidityDate" },
+  { "2.5.29.27", "deltaCRLIndicator" },
+  { "2.5.29.28", "issuingDistributionPoint" },
+  { "2.5.29.29", "certificateIssuer" },
+  { "2.5.29.30", "nameConstraints" },
+  { "2.5.29.31", "cRLDistributionPoints", 1 },
+  { "2.5.29.32", "certificatePolicies", 1 },
+  { "2.5.29.32.0", "anyPolicy" },
+  { "2.5.29.33", "policyMappings" },
+  { "2.5.29.35", "authorityKeyIdentifier", 1 },
+  { "2.5.29.36", "policyConstraints" },
+  { "2.5.29.37", "extKeyUsage", 1 },
+  { "2.5.29.46", "freshestCRL" },
+  { "2.5.29.54", "inhibitAnyPolicy" },
+
+  /* Netscape certificate extensions. */
+  { "2.16.840.1.113730.1.1", "netscape-cert-type" },
+  { "2.16.840.1.113730.1.2", "netscape-base-url" },
+  { "2.16.840.1.113730.1.3", "netscape-revocation-url" },
+  { "2.16.840.1.113730.1.4", "netscape-ca-revocation-url" },
+  { "2.16.840.1.113730.1.7", "netscape-cert-renewal-url" },
+  { "2.16.840.1.113730.1.8", "netscape-ca-policy-url" },
+  { "2.16.840.1.113730.1.9", "netscape-homePage-url" },
+  { "2.16.840.1.113730.1.10", "netscape-entitylogo" },
+  { "2.16.840.1.113730.1.11", "netscape-userPicture" },
+  { "2.16.840.1.113730.1.12", "netscape-ssl-server-name" },
+  { "2.16.840.1.113730.1.13", "netscape-comment" },
+
+  { NULL }
+};
+
+
+/* Return the description for OID; if no description is available 
+   NULL is returned. */
+static const char *
+get_oid_desc (const char *oid, unsigned int *flag)
+{
+  int i;
+
+  if (oid)
+    for (i=0; oidtranstbl[i].oid; i++)
+      if (!strcmp (oidtranstbl[i].oid, oid))
+        {
+          if (flag)
+            *flag = oidtranstbl[i].flag;
+          return oidtranstbl[i].name;
+        }
+  if (flag)
+    *flag = 0;
+  return NULL;
+}
+
+
 static void
 print_key_data (ksba_cert_t cert, FILE *fp)
 {
@@ -325,6 +440,40 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
 }
 
 
+static void
+print_name_raw (FILE *fp, const char *string)
+{
+  if (!string)
+    fputs ("[error]", fp);
+  else
+    print_sanitized_string (fp, string, 0);
+}
+
+static void
+print_names_raw (FILE *fp, int indent, ksba_name_t name)
+{
+  int idx;
+  const char *s;
+  int indent_all;
+
+  if ((indent_all = (indent < 0)))
+    indent = - indent;
+
+  if (!name)
+    {
+      fputs ("none\n", fp);
+      return;
+    }
+  
+  for (idx=0; (s = ksba_name_enum (name, idx)); idx++)
+    {
+      char *p = ksba_name_get_uri (name, idx);
+      printf ("%*s%s\n", idx||indent_all?indent:0, "", p?p:s);
+      xfree (p);
+    }
+}
+
+
 /* List one certificate in raw mode useful to have a closer look at
    the certificate.  This one does not beautification and only minimal
    output sanitation.  It is mainly useful for debugging. */
@@ -333,6 +482,7 @@ list_cert_raw (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
                int with_validation)
 {
   gpg_error_t err;
+  size_t off, len;
   ksba_sexp_t sexp;
   char *dn;
   ksba_isotime_t t;
@@ -340,6 +490,9 @@ list_cert_raw (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
   int is_ca, chainlen;
   unsigned int kusage;
   char *string, *p, *pend;
+  const char *oid, *s;
+  ksba_name_t name, name2;
+  unsigned int reason;
 
   sexp = ksba_cert_get_serial (cert);
   fputs ("Serial number: ", fp);
@@ -349,42 +502,74 @@ list_cert_raw (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
 
   dn = ksba_cert_get_issuer (cert, 0);
   fputs ("       Issuer: ", fp);
-  gpgsm_print_name (fp, dn);
+  print_name_raw (fp, dn);
   ksba_free (dn);
   putc ('\n', fp);
   for (idx=1; (dn = ksba_cert_get_issuer (cert, idx)); idx++)
     {
       fputs ("          aka: ", fp);
-      gpgsm_print_name (fp, dn);
+      print_name_raw (fp, dn);
       ksba_free (dn);
       putc ('\n', fp);
     }
 
   dn = ksba_cert_get_subject (cert, 0);
   fputs ("      Subject: ", fp);
-  gpgsm_print_name (fp, dn);
+  print_name_raw (fp, dn);
   ksba_free (dn);
   putc ('\n', fp);
   for (idx=1; (dn = ksba_cert_get_subject (cert, idx)); idx++)
     {
       fputs ("          aka: ", fp);
-      gpgsm_print_name (fp, dn);
+      print_name_raw (fp, dn);
       ksba_free (dn);
       putc ('\n', fp);
     }
 
+  dn = gpgsm_get_fingerprint_string (cert, 0);
+  fprintf (fp, "     sha1_fpr: %s\n", dn?dn:"error");
+  xfree (dn);
+
+  dn = gpgsm_get_fingerprint_string (cert, GCRY_MD_MD5);
+  fprintf (fp, "      md5_fpr: %s\n", dn?dn:"error");
+  xfree (dn);
+
   ksba_cert_get_validity (cert, 0, t);
-  fputs ("     validity: ", fp);
+  fputs ("    notBefore: ", fp);
   gpgsm_print_time (fp, t);
-  fputs (" through ", fp);
+  putc ('\n', fp);
+  fputs ("     notAfter: ", fp);
   ksba_cert_get_validity (cert, 1, t);
   gpgsm_print_time (fp, t);
   putc ('\n', fp);
 
+  oid = ksba_cert_get_digest_algo (cert);
+  s = get_oid_desc (oid, NULL);
+  fprintf (fp, "     hashAlgo: %s%s%s%s\n", oid, s?" (":"",s?s:"",s?")":"");
+
+  /* authorityKeyIdentifier */
+  fputs ("    authKeyId: ", fp);
+  err = ksba_cert_get_auth_key_id (cert, NULL, &name, &sexp);
+  if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA)
+    {
+      if (gpg_err_code (err) == GPG_ERR_NO_DATA || !name)
+        fputs ("[none]\n", fp);
+      else
+        {
+          gpgsm_print_serial (fp, sexp);
+          ksba_free (sexp);
+          putc ('\n', fp);
+          print_names_raw (fp, -15, name);
+          ksba_name_release (name);
+        }
+    }
+  else
+    fputs ("[?]\n", fp);
+
+  fputs ("     keyUsage:", fp);
   err = ksba_cert_get_key_usage (cert, &kusage);
   if (gpg_err_code (err) != GPG_ERR_NO_DATA)
     {
-      fputs ("    key usage:", fp);
       if (err)
         fprintf (fp, " [error: %s]", gpg_strerror (err));
       else
@@ -410,11 +595,13 @@ list_cert_raw (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
         }
       putc ('\n', fp);
     }
+  else
+    fputs ("[none]\n", fp);
 
+  fputs ("  extKeyUsage: ", fp);
   err = ksba_cert_get_ext_key_usages (cert, &string);
   if (gpg_err_code (err) != GPG_ERR_NO_DATA)
     { 
-      fputs ("ext key usage: ", fp);
       if (err)
         fprintf (fp, "[error: %s]", gpg_strerror (err));
       else
@@ -433,37 +620,53 @@ list_cert_raw (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
               if ((p = strchr (p, '\n')))
                 {
                   p++;
-                  fputs (", ", fp);
+                  fputs ("\n               ", fp);
                 }
             }
           xfree (string);
         }
       putc ('\n', fp);
     }
+  else
+    fputs ("[none]\n", fp);
 
+
+  fputs ("     policies: ", fp);
   err = ksba_cert_get_cert_policies (cert, &string);
   if (gpg_err_code (err) != GPG_ERR_NO_DATA)
     {
-      fputs ("     policies: ", fp);
       if (err)
         fprintf (fp, "[error: %s]", gpg_strerror (err));
       else
         {
-          for (p=string; *p; p++)
+          p = string;
+          while (p && (pend=strchr (p, ':')))
             {
-              if (*p == '\n')
-                *p = ',';
+              *pend++ = 0;
+              for (i=0; key_purpose_map[i].oid; i++)
+                if ( !strcmp (key_purpose_map[i].oid, p) )
+                  break;
+              fputs (p, fp);
+              p = pend;
+              if (*p == 'C')
+                fputs (" (critical)", fp);
+              if ((p = strchr (p, '\n')))
+                {
+                  p++;
+                  fputs ("\n               ", fp);
+                }
             }
-          print_sanitized_string (fp, string, 0);
           xfree (string);
         }
       putc ('\n', fp);
     }
+  else
+    fputs ("[none]\n", fp);
 
+  fputs ("  chainLength: ", fp);
   err = ksba_cert_is_ca (cert, &is_ca, &chainlen);
   if (err || is_ca)
     {
-      fputs (" chain length: ", fp);
       if (err)
         fprintf (fp, "[error: %s]", gpg_strerror (err));
       else if (chainlen == -1)
@@ -472,14 +675,92 @@ list_cert_raw (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
         fprintf (fp, "%d", chainlen);
       putc ('\n', fp);
     }
+  else
+    fputs ("not a CA\n", fp);
 
-  dn = gpgsm_get_fingerprint_string (cert, GCRY_MD_MD5);
-  fprintf (fp, "      md5 fpr: %s\n", dn?dn:"error");
-  xfree (dn);
 
-  dn = gpgsm_get_fingerprint_string (cert, 0);
-  fprintf (fp, "  fingerprint: %s\n", dn?dn:"error");
-  xfree (dn);
+  /* CRL distribution point */
+  for (idx=0; !(err=ksba_cert_get_crl_dist_point (cert, idx, &name, &name2,
+                                                  &reason)) ;idx++)
+    {
+      fputs ("        crlDP: ", fp);
+      print_names_raw (fp, 15, name);
+      if (reason)
+        {
+          fputs ("               reason: ", fp);
+          if ( (reason & KSBA_CRLREASON_UNSPECIFIED))
+            fputs (" unused", stdout);
+          if ( (reason & KSBA_CRLREASON_KEY_COMPROMISE))
+            fputs (" keyCompromise", stdout);
+          if ( (reason & KSBA_CRLREASON_CA_COMPROMISE))
+            fputs (" caCompromise", stdout);
+          if ( (reason & KSBA_CRLREASON_AFFILIATION_CHANGED))
+            fputs (" affiliationChanged", stdout);
+          if ( (reason & KSBA_CRLREASON_SUPERSEDED))
+            fputs (" superseded", stdout);
+          if ( (reason & KSBA_CRLREASON_CESSATION_OF_OPERATION))
+            fputs (" cessationOfOperation", stdout);
+          if ( (reason & KSBA_CRLREASON_CERTIFICATE_HOLD))
+            fputs (" certificateHold", stdout);
+          putchar ('\n');
+        }
+      fputs ("               issuer: ", fp);
+      print_names_raw (fp, 23, name2);
+      ksba_name_release (name);
+      ksba_name_release (name2);
+    }
+  if (err && gpg_err_code (err) != GPG_ERR_EOF)
+    fputs ("        crlDP: [error]\n", fp);
+  else if (!idx)
+    fputs ("        crlDP: [none]\n", fp);
+
+
+  /* authorityInfoAccess. */
+  for (idx=0; !(err=ksba_cert_get_authority_info_access (cert, idx, &string,
+                                                         &name)); idx++)
+    {
+      fputs ("     authInfo: ", fp);
+      s = get_oid_desc (string, NULL);
+      fprintf (fp, "%s%s%s%s\n", string, s?" (":"", s?s:"", s?")":"");
+      print_names_raw (fp, -15, name);
+      ksba_name_release (name);
+      ksba_free (string);
+    }
+  if (err && gpg_err_code (err) != GPG_ERR_EOF)
+    fputs ("     authInfo: [error]\n", fp);
+  else if (!idx)
+    fputs ("     authInfo: [none]\n", fp);
+
+  /* subjectInfoAccess. */
+  for (idx=0; !(err=ksba_cert_get_subject_info_access (cert, idx, &string,
+                                                         &name)); idx++)
+    {
+      fputs ("  subjectInfo: ", fp);
+      s = get_oid_desc (string, NULL);
+      fprintf (fp, "%s%s%s%s\n", string, s?" (":"", s?s:"", s?")":"");
+      print_names_raw (fp, -15, name);
+      ksba_name_release (name);
+      ksba_free (string);
+    }
+  if (err && gpg_err_code (err) != GPG_ERR_EOF)
+    fputs ("     subjInfo: [error]\n", fp);
+  else if (!idx)
+    fputs ("     subjInfo: [none]\n", fp);
+
+
+  for (idx=0; !(err=ksba_cert_get_extension (cert, idx,
+                                             &oid, &i, &off, &len));idx++)
+    {
+      unsigned int flag;
+
+      s = get_oid_desc (oid, &flag);
+
+      if (!(flag & 1))
+        fprintf (fp, "     %s: %s%s%s%s  [%d octets]\n",
+                 i? "critExtn":"    extn",
+                 oid, s?" (":"", s?s:"", s?")":"", (int)len);
+    }
+
 
   if (with_validation)
     {

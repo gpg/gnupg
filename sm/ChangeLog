@@ -1,3 +1,10 @@
+2004-04-23  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (oidtranstbl): New.  OIDs collected from several sources.
+	(print_name_raw, print_names_raw, list_cert_raw): New.
+	(gpgsm_list_keys): Check the dump mode and pass it down as
+	necessary.
+
 2004-04-22  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.c (main): New commands --dump-keys, --dump-external-keys,
