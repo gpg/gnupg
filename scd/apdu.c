@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <signal.h>
 #ifdef USE_GNU_PTH
 # include <pth.h>
 # include <unistd.h>

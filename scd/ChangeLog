@@ -1,3 +1,9 @@
+2004-07-27  Moritz Schulte  <moritz@g10code.com>
+
+	* apdu.c: Include <signal.h>.
+
+	* Makefile.am: Use @DL_LIBS@ instead of -ldl.
+
 2004-07-22  Werner Koch  <wk@g10code.de>
 
 	* Makefile.am: Make OpenSC lib link after libgcrypt. Do not link
