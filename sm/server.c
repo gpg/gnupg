@@ -375,6 +375,48 @@ cmd_import (ASSUAN_CONTEXT ctx, char *line)
   return map_to_assuan_status (rc);
 }
 
+
+static int 
+cmd_export (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+  FILE *fp = assuan_get_data_fp (ctx);
+  char *p;
+  STRLIST list, sl;
+
+  if (!fp)
+    return set_error (General_Error, "no data stream");
+  
+  /* break the line down into an STRLIST */
+  list = NULL;
+  for (p=line; *p; line = p)
+    {
+      while (*p && *p != ' ')
+        p++;
+      if (*p)
+        *p++ = 0;
+      if (*line)
+        {
+          sl = xtrymalloc (sizeof *sl + strlen (line));
+          if (!sl)
+            {
+              free_strlist (list);
+              return ASSUAN_Out_Of_Core;
+            }
+          sl->flags = 0;
+          strcpy_escaped_plus (sl->d, line);
+          sl->next = list;
+          list = sl;
+        }
+    }
+
+  gpgsm_export (ctrl, list, fp);
+  free_strlist (list);
+  return 0;
+}
+
+
+
 /* MESSAGE FD=<n>
 
    Set the file descriptor to read a message which is used with
@@ -507,6 +549,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "VERIFY",     0,  cmd_verify },
     { "SIGN",       0,  cmd_sign },
     { "IMPORT",     0,  cmd_import },
+    { "EXPORT",     0,  cmd_export },
     { "",     ASSUAN_CMD_INPUT, NULL }, 
     { "",     ASSUAN_CMD_OUTPUT, NULL }, 
     { "MESSAGE",    0,  cmd_message },

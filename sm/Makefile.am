@@ -1,4 +1,4 @@
-# Copyright (C) 2001 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -43,6 +43,7 @@ gpgsm_SOURCES = \
 	encrypt.c \
 	decrypt.c \
 	import.c \
+	export.c \
 	certreqgen.c 
 
 

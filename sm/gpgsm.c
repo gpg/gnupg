@@ -73,7 +73,6 @@ enum cmd_and_opt_values {
   aSendKeys,
   aRecvKeys,
   aExport,
-  aExportAll,
   aCheckKeys,
   aServer,                        
   aLearnCard,
@@ -214,10 +213,10 @@ static ARGPARSE_OPTS opts[] = {
     { aListSecretKeys, "list-secret-keys", 256, N_("list secret keys")},
     { aKeygen,	   "gen-key",  256, N_("generate a new key pair")},
     { aDeleteKey, "delete-key",256, N_("remove key from the public keyring")},
-    { aExport, "export"           , 256, N_("export keys") },
     { aSendKeys, "send-keys"     , 256, N_("export keys to a key server") },
     { aRecvKeys, "recv-keys"     , 256, N_("import keys from a key server") },
-    { aImport, "import",      256     , N_("import/merge keys")},
+    { aImport, "import",      256     , N_("import certificates")},
+    { aExport, "export",      256     , N_("export certificates")},
     { aLearnCard, "learn-card", 256 ,N_("register a smartcard")},
     { aServer, "server",      256, N_("run in server mode")},
     
@@ -1186,8 +1185,14 @@ main ( int argc, char **argv)
         }
       break;
 
-      
     case aExport:
+      for (sl=NULL; argc; argc--, argv++)
+        add_to_strlist (&sl, *argv);
+      gpgsm_export (&ctrl, sl, stdout);
+      free_strlist(sl);
+      break;
+
+      
     case aSendKeys:
     case aRecvKeys:
       log_error ("this command has not yet been implemented\n");
