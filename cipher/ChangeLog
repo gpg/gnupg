@@ -1,3 +1,8 @@
+Tue Sep  7 16:23:36 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* Makefile.am: Fixed seds for latest egcc. By Ollivier Robert.
+
 Mon Sep  6 19:59:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

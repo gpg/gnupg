@@ -72,20 +72,20 @@ libcipher_la_LIBADD =	    @STATIC_CIPHER_OBJS@
 
 tiger: $(srcdir)/tiger.c
 	`echo $(COMPILE) $(DYNLINK_MOD_CFLAGS) -o tiger $(srcdir)/tiger.c | \
-	    sed -e 's/-O[2-9]*/-O1/g' `
+	    sed -e 's/-O[2-9s]*/-O1/g' `
 
 tiger.o: $(srcdir)/tiger.c
-	`echo $(COMPILE) -c $(srcdir)/tiger.c | sed -e 's/-O[2-9]*/-O1/g' `
+	`echo $(COMPILE) -c $(srcdir)/tiger.c | sed -e 's/-O[2-9s]*/-O1/g' `
 
 #twofish: $(srcdir)/twofish.c
 #	 `echo $(COMPILE) $(DYNLINK_MOD_CFLAGS) -o twofish $(srcdir)/twofish.c | \
-#	     sed -e 's/-O[0-9]*/  /g' `
+#	     sed -e 's/-O[0-9s]*/  /g' `
 
 twofish: $(srcdir)/twofish.c
 	$(COMPILE) $(DYNLINK_MOD_CFLAGS) -o twofish $(srcdir)/twofish.c
 
 #twofish.o: $(srcdir)/twofish.c
-#	 `echo $(COMPILE) -c $(srcdir)/twofish.c | sed -e 's/-O[0-9]*/  /g' `
+#	 `echo $(COMPILE) -c $(srcdir)/twofish.c | sed -e 's/-O[0-9s]*/  /g' `
 
 
 rndunix: $(srcdir)/rndunix.c
