@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 INCLUDES =  -I$(top_srcdir)/include
-CFLAGS += -O2
+CFLAGS = @CFLAGS@ @MPI_OPT_FLAGS@
 SFLAGS = @MPI_SFLAGS@
 
 SUFFIXES = .S .s

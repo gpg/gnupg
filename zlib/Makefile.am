@@ -3,8 +3,6 @@
 # For conditions of distribution and use, see copyright notice in zlib.h
 # This is used if a systems lacks support of zlib
 
-CFLAGS = -O -Wall
-
 EXTRA_DIST = README algorithm.doc ChangeLog
 
 # I found no other easy way to use this only if zlib is neede

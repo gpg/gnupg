@@ -200,13 +200,14 @@ define(GNUPG_CHECK_RDYNAMIC,
         AC_MSG_RESULT(assume none)
     else
         case "$host_os" in
-          solaris*)
+          solaris* )
             CFLAGS_RDYNAMIC="-Wl,-dy"
             ;;
-          freebsd2*)
+
+          freebsd2* | osf4* )
             CFLAGS_RDYNAMIC=""
             ;;
-          *)
+          * )
             CFLAGS_RDYNAMIC="-Wl,-export-dynamic"
             ;;
         esac

@@ -26,8 +26,7 @@ subdir = po
 
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
-### This doe not work: MKINSTALLDIRS = $(top_srcdir)/@MKINSTALLDIRS@
-MKINSTALLDIRS = $(top_srcdir)/scripts/mkinstalldirs
+MKINSTALLDIRS = $(top_srcdir)/@MKINSTALLDIRS@
 
 CC = @CC@
 GENCAT = @GENCAT@
@@ -44,15 +43,13 @@ INCLUDES = -I.. -I$(top_srcdir)/intl
 
 COMPILE = $(CC) -c $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS) $(XCFLAGS)
 
-SOURCES = cat-id-tbl.c	de.glo
+SOURCES = cat-id-tbl.c
 POFILES = @POFILES@
 GMOFILES = @GMOFILES@
 DISTFILES = ChangeLog Makefile.in.in POTFILES.in $(PACKAGE).pot \
 stamp-cat-id $(POFILES) $(GMOFILES) $(SOURCES)
 
 POTFILES = \
-
-
 
 CATALOGS = @CATALOGS@
 CATOBJEXT = @CATOBJEXT@
@@ -123,7 +120,7 @@ install-data-yes: all
 	  cat=`basename $$cat`; \
 	  case "$$cat" in \
 	    *.gmo) destdir=$(gnulocaledir);; \
-	    *)	   destdir=$(localedir);; \
+	    *)     destdir=$(localedir);; \
 	  esac; \
 	  lang=`echo $$cat | sed 's/\$(CATOBJEXT)$$//'`; \
 	  dir=$$destdir/$$lang/LC_MESSAGES; \
@@ -235,8 +232,8 @@ POTFILES: POTFILES.in
 	    posrcprefix="../"; \
 	  fi; \
 	  rm -f $@-t $@ \
-	    && (sed -e '/^#/d' -e '/^[  ]*$$/d' \
-		    -e "s@.*@   $$posrcprefix& \\\\@" < $(srcdir)/$@.in \
+	    && (sed -e '/^#/d' -e '/^[ 	]*$$/d' \
+		    -e "s@.*@	$$posrcprefix& \\\\@" < $(srcdir)/$@.in \
 		| sed -e '$$s/\\$$//') > $@-t \
 	    && chmod a-w $@-t \
 	    && mv $@-t $@ )

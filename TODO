@@ -11,6 +11,8 @@ Bugs
     * README does not verify okay. verify inserts an extra CR,LF
       just before "Esoteric Command" (after ~8k of text).
 
+    * Did I add -lsocket and -lnls for Solaris?
+
 Important
 ----------
     * replace gettext by a non exploitable one.
@@ -26,6 +28,9 @@ Important
 
 Needed
 ------
+    * encrypttoself, damit keine Angabe von -r immer noch zu einer
+      abfrage führt.
+
     * remove more "Fixmes"
 
     * Replace Blowfish by Twofish and add the new encrypted packet type

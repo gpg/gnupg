@@ -46,17 +46,22 @@ if (gettext --version </dev/null 2>/dev/null | awk 'NR==1 { split($4,A,"\."); \
 fi
 
 
-
 if test "$DIE" = "yes"; then
     exit 1
 fi
 
+echo "Running gettextize...  Ignore non-fatal messages."
+echo "no" | gettextize --force 
 
+
+echo "Running aclocal..."
 aclocal
+echo "Running autoheader..."
 autoheader
+echo "Running automake --gnu ..."
 automake --gnu;
-autoheader
+echo "Running autoconf..."
 autoconf
 
-echo "Ready to run ./configure"
+echo "You can now run \"./configure\" and then \"make\"."
 

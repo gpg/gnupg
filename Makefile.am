@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS =  intl po zlib util mpi cipher tools g10 doc checks
+SUBDIRS = intl zlib util mpi cipher tools g10 po doc checks
 EXTRA_DIST = VERSION  PROJECTS
 
 all-am: g10defs.h
