@@ -216,8 +216,13 @@ B<-k> [I<username>] [I<keyring>]
 <term>--list-keys &OptParmNames;</term>
 <term>--list-public-keys &OptParmNames;</term>
 <listitem><para>
-List all keys from the public keyrings, or just the
-ones given on the command line.
+List all keys from the public keyrings, or just the ones given on the
+command line.
+</para><para>
+Avoid using the output of this command in scripts or other programs as
+it is likely to change as GnuPG changes.  See --with-colons for a
+machine-parseable key listing command that is appropriate for use in
+scripts and other programs.
 </para></listitem></varlistentry>
 
 
@@ -235,6 +240,18 @@ is not usable (for example, if it was created via
 <term>--list-sigs &OptParmNames;</term>
 <listitem><para>
 Same as --list-keys, but the signatures are listed too.
+</para><para>
+For each signature listed, there are several flags in between the
+"sig" tag and keyid.  These flags give additional information about
+each signature.  From left to right, they are the numbers 1-3 for
+certificate check level (see --default-cert-check-level), "L" for a
+local or non-exportable signature (see --lsign-key), "R" for a
+nonRevocable signature (see --nrsign-key), "P" for a signature that
+contains a policy URL (see --cert-policy-url), "N" for a signature
+that contains a notation (see --cert-notation), "X" for an eXpired
+signature (see --ask-cert-expire), and the numbers 1-9 or "T" for 10
+and above to indicate trust signature levels (see the --edit-key
+command "tsign").
 </para></listitem></varlistentry>
 
 
@@ -1214,6 +1231,7 @@ photo ID attached to the key, if any.  See also --photo-viewer.
 <varlistentry>
 <term>--photo-viewer &ParmString;</term>
 <listitem><para>
+
 This is the command line that should be run to view a photo ID.  "%i"
 will be expanded to a filename containing the photo.  "%I" does the
 same, except the file will not be deleted once the viewer exits.
@@ -1224,7 +1242,8 @@ and "%%" for an actual percent sign.  If neither %i or %I are present,
 then the photo will be supplied to the viewer on standard input.
 </para><para>
 The default viewer is "xloadimage -fork -quiet -title 'KeyID 0x%k'
-stdin"
+stdin".  Note that if your image viewer program is not secure, then
+executing it from GnuPG does not make it secure.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1464,7 +1483,7 @@ Force inclusion of the version string in ASCII armored output.
 <varlistentry>
 <term>--sig-notation &ParmNameValue;</term>
 <term>--cert-notation &ParmNameValue;</term>
-<term>-N, --notation-data &ParmNameValue;</term>
+<term>-N, --set-notation &ParmNameValue;</term>
 <listitem><para>
 Put the name value pair into the signature as notation data.
 &ParmName; must consist only of printable characters or spaces, and
@@ -1475,18 +1494,20 @@ encoded in UTF8, so you should check that your --charset is set
 correctly.  If you prefix &ParmName; with an exclamation mark, the
 notation data will be flagged as critical (rfc2440:5.2.3.15).
 --sig-notation sets a notation for data signatures.  --cert-notation
-sets a notation for key signatures (certifications).  --notation-data
+sets a notation for key signatures (certifications).  --set-notation
 sets both.
 </para>
 
 <para>
 There are special codes that may be used in notation names.  "%k" will
-be expanded into the key ID of the key being signed, "%K" for the long
-key ID of the key being signed, "%f" for the key fingerprint of the
-key being signed, "%s" for the key ID of the key making the signature,
-"%S" for the long key ID of the key making the signature, and "%%"
-results in a single "%".  %k, %K, and %f are only meaningful when
-making a key signature (certification).
+be expanded into the key ID of the key being signed, "%K" into the
+long key ID of the key being signed, "%f" into the fingerprint of the
+key being signed, "%s" into the key ID of the key making the
+signature, "%S" into the long key ID of the key making the signature,
+"%g" into the fingerprint of the key making the signature (which might
+be a subkey), "%p" into the fingerprint of the primary key of the key
+making the signature, and "%%" results in a single "%".  %k, %K, and
+%f are only meaningful when making a key signature (certification).
 </para>
 
 </listitem></varlistentry>
@@ -1933,18 +1954,20 @@ it does not ensure the de-facto standard format of user IDs.
 <term>--ignore-time-conflict</term>
 <listitem><para>
 GnuPG normally checks that the timestamps associated with keys and
-signatures have plausible values.  However, sometimes a signature seems to
-be older than the key due to clock problems.  This option makes these
-checks just a warning.
+signatures have plausible values.  However, sometimes a signature
+seems to be older than the key due to clock problems.  This option
+makes these checks just a warning.  See also --ignore-valid-from for
+timestamp issues on subkeys.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--ignore-valid-from</term>
 <listitem><para>
-GnuPG normally does not select and use subkeys created in the future.  This
-option allows the use of such keys and thus exhibits the pre-1.0.7
-behaviour.  You should not use this option unless you there is some
-clock problem.
+GnuPG normally does not select and use subkeys created in the future.
+This option allows the use of such keys and thus exhibits the
+pre-1.0.7 behaviour.  You should not use this option unless you there
+is some clock problem.  See also --ignore-time-conflict for timestamp
+issues with signatures.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2023,11 +2046,18 @@ Suppress the warning about "using insecure memory".
 <varlistentry>
 <term>--no-permission-warning</term>
 <listitem><para>
-Suppress the warning about unsafe file permissions.  Note that the
-file permission checks that GnuPG performs are not intended to be
-authoritative, rather they simply warn about certain common permission
-problems.  Do not assume that the lack of a warning means that your
-system is secure.
+
+Suppress the warning about unsafe file and home directory (--homedir)
+permissions.  Note that the permission checks that GnuPG performs are
+not intended to be authoritative, but rather they simply warn about
+certain common permission problems.  Do not assume that the lack of a
+warning means that your system is secure.
+</para><para>
+Note that the warning for unsafe --homedir permissions cannot be
+supressed in the gpg.conf file, as this would allow an attacker to
+place an unsafe gpg.conf file in place, and use this file to supress
+warnings about itself.  The --homedir permissions warning may only be
+supressed on the command line.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2064,8 +2094,12 @@ verification is not needed.
 <varlistentry>
 <term>--with-colons</term>
 <listitem><para>
-Print key listings delimited by colons.  Note, that the output will be
-encoded in UTF-8 regardless of any --charset setting.
+Print key listings delimited by colons.  Note that the output will be
+encoded in UTF-8 regardless of any --charset setting.  This format is
+useful when GnuPG is called from scripts and other programs as it is
+easily machine parsed.  The details of this format are documented in
+the file doc/DETAILS, which is included in the GnuPG source
+distribution.
 </para></listitem></varlistentry>
 
 
@@ -2260,7 +2294,8 @@ should be a string similar to the one printed by the command "pref" in
 the edit menu.  This allows the user to factor in their own preferred
 algorithms when algorithms are chosen via recipient key preferences.
 The most highly ranked digest algorithm in this list is algo used when
-signing without encryption (e.g. --clearsign or --sign).
+signing without encryption (e.g. --clearsign or --sign).  The default
+value is "H2" indicating SHA-1.
 </para></listitem></varlistentry>
 
 <varlistentry>

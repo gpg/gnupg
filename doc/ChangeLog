@@ -1,3 +1,15 @@
+2003-07-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* DETAILS: Document the --attribute-fd data.
+
+	* gpg.sgml: Document --set-notation.  Explain why it is not
+	possible to disable permission warnings in the gpg.conf file about
+	the homedir.  Add pointer in --ignore-time-conflict to see
+	--ignore-valid from, and vice versa.  Warning not to try and parse
+	--list-keys in scripts. Document the signature flags
+	(1-3/L/R/P/N/X), Document expandos %g and %p.  Note the default
+	--personal-digest-preferences are "H2".
+
 2003-05-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml, gpgv.sgml: Small SGML fixes. (From wk on stable
