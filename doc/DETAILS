@@ -61,7 +61,7 @@ record.
  4. Field:  Algorithm:	1 = RSA
 		       16 = ElGamal (encrypt only)
 		       17 = DSA (sometimes called DH, sign only)
-		       20 = ElGamal (sign and encrypt)
+		       20 = ElGamal (sign and encrypt - don't use them!)
 	    (for other id's see include/cipher.h)
  5. Field:  KeyID
  6. Field:  Creation Date (in UTC).  For UID and UAT records, this is the
