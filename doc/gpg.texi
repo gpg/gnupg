@@ -779,12 +779,11 @@ useful when you're listing a specific key or set of keys. It has no
 effect when listing all keys.
 
 @item ---keyring @code{file}
-Add @code{file} to the list of keyrings.
-If @code{file} begins with a tilde and a slash, these
-are replaced by the HOME directory. If the filename
-does not contain a slash, it is assumed to be in the
-home-directory ("~/.gnupg" if ---homedir is not used).
-The filename may be prefixed with a scheme:
+Add @code{file} to the list of keyrings. If @code{file} begins with a
+tilde and a slash, these are replaced by the HOME directory. If the
+filename does not contain a slash, it is assumed to be in the GnuPG
+home directory ("~/.gnupg" if ---homedir is not used). The filename
+may be prefixed with a scheme:
 
 "gnupg-ring:" is the default one.
 
@@ -792,6 +791,12 @@ It might make sense to use it together with ---no-default-keyring.
 
 @item ---secret-keyring @code{file}
 Same as ---keyring but for the secret keyrings.
+
+@item ---trustdb-name @code{file}
+Use @code{file} instead of the default trustdb. If @code{file} begins
+with a tilde and a slash, these are replaced by the HOME directory. If
+the filename does not contain a slash, it is assumed to be in the
+GnuPG home directory ("~/.gnupg" if ---homedir is not used).
 
 @item ---homedir @code{directory}
 Set the name of the home directory to @code{directory} If this
@@ -885,11 +890,12 @@ text signatures or armor headers. ---no-sk-comments disables this
 option.
 
 @item ---no-comment
-See ---sk-comments. This option is deprecated and may be removed soon.
+See ---no-sk-comments. This option is deprecated and may be removed
+soon.
 
 @item ---comment @code{string}
-Use @code{string} as comment string in clear text signatures.
-The default is not do write a comment string.
+Use @code{string} as the comment string in clear text signatures. The
+default behavior is not to use a comment string.
 
 @item ---default-comment
 Force to write the standard comment string in clear
@@ -904,7 +910,7 @@ Force inclusion of the version string in ASCII armored output.
 
 @item ---sig-notation @code{name=value}
 @itemx ---cert-notation @code{name=value}
-@itemx -N, ---notation-data @code{name=value}
+@itemx -N, ---set-notation @code{name=value}
 Put the name value pair into the signature as notation data.
 @code{name} must consist only of printable characters or spaces, and
 must contain a '@@' character. This is to help prevent pollution of
@@ -914,7 +920,7 @@ encoded in UTF8, so you should check that your ---charset is set
 correctly. If you prefix @code{name} with an exclamation mark, the
 notation data will be flagged as critical (rfc2440:5.2.3.15).
 ---sig-notation sets a notation for data signatures. --cert-notation
-sets a notation for key signatures (certifications). ---notation-data
+sets a notation for key signatures (certifications). ---set-notation
 sets both.
 
 There are special codes that may be used in notation names. "%k" will
@@ -938,7 +944,7 @@ Use @code{string} as Policy URL for signatures (rfc2440:5.2.3.19). If
 you prefix it with an exclamation mark, the policy URL packet will be
 flagged as critical. ---sig-policy-url sets a a policy url for data
 signatures. ---cert-policy-url sets a policy url for key signatures
-(certifications). -set-policy-url sets both.
+(certifications). ---set-policy-url sets both.
 
 The same %-expandos used for notation data are available here as well.
 
@@ -949,8 +955,9 @@ as when verifying a signature with a policy URL in it.
 ---no-show-policy-url disables this option.
 
 @item ---set-filename @code{string}
-Use @code{string} as the name of file which is stored in
-messages.
+Use @code{string} as the filename which is stored inside messages.
+This overrides the default, which is to use the actual filename of the
+file being encrypted.
 
 @item ---for-your-eyes-only
 @itemx ---no-for-your-eyes-only
@@ -1111,25 +1118,45 @@ option.
 Override the value of the environment variable
 @samp{GPG_AGENT_INFO}. This is only used when ---use-agent has been given
 
+@item Compliance options
+These options control what GnuPG is compliant to. Only one of these
+options may be active at a time. Note that the default setting of
+this is nearly always the correct one. See the INTEROPERABILITY WITH
+OTHER OPENPGP PROGRAMS section below before using one of these
+options.
+
+@table @asis
+@item ---gnupg
+Use standard GnuPG behavior. This is essentially OpenPGP behavior
+(see ---openpgp), but with some additional workarounds for common
+compatibility problems in different versions of PGP. This is the
+default option, so it is not generally needed, but it may be useful to
+override a different compliance option in the gpg.conf file.
+
+@item ---openpgp
+Reset all packet, cipher and digest options to strict OpenPGP
+behavior. Use this option to reset all previous options like
+---rfc1991, --force-v3-sigs, --s2k-*, --cipher-algo, --digest-algo and
+---compress-algo to OpenPGP compliant values. All PGP workarounds are
+disabled.
+
 @item ---rfc1991
-Try to be more RFC1991 (PGP 2.x) compliant.
+Try to be more RFC-1991 (PGP 2.x) compliant.
 
 @item ---pgp2
-@itemx ---no-pgp2
 Set up all options to be as PGP 2.x compliant as possible, and warn if
 an action is taken (e.g. encrypting to a non-RSA key) that will create
 a message that PGP 2.x will not be able to handle. Note that `PGP
 2.x' here means `MIT PGP 2.6.2'. There are other versions of PGP 2.x
 available, but the MIT release is a good common baseline.
 
-This option implies `---rfc1991 --no-openpgp --disable-mdc
----no-force-v4-certs --no-comment --escape-from-lines --force-v3-sigs
+This option implies `---rfc1991 --disable-mdc --no-force-v4-certs
+---no-sk-comment --escape-from-lines --force-v3-sigs
 ---no-ask-sig-expire --no-ask-cert-expire --cipher-algo IDEA
 ---digest-algo MD5 --compress-algo 1'. It also disables --textmode
-when encrypting. ---no-pgp2 disables this option.
+when encrypting.
 
 @item ---pgp6
-@itemx ---no-pgp6
 Set up all options to be as PGP 6 compliant as possible. This
 restricts you to the ciphers IDEA (if the IDEA plugin is installed),
 3DES, and CAST5, the hashes MD5, SHA1 and RIPEMD160, and the
@@ -1137,32 +1164,23 @@ compression algorithms none and ZIP. This also disables
 ---throw-keyid, and making signatures with signing subkeys as PGP 6
 does not understand signatures made by signing subkeys.
 
-This option implies `---disable-mdc --no-comment --escape-from-lines
----force-v3-sigs --no-ask-sig-expire --compress-algo 1' --no-pgp6
-disables this option.
+This option implies `---disable-mdc --no-sk-comment --escape-from-lines
+---force-v3-sigs --no-ask-sig-expire'
 
 @item ---pgp7
-@itemx ---no-pgp7
 Set up all options to be as PGP 7 compliant as possible. This is
 identical to ---pgp6 except that MDCs are not disabled, and the list of
 allowable ciphers is expanded to add AES128, AES192, AES256, and
-TWOFISH. ---no-pgp7 disables this option.
+TWOFISH.
 
 @item ---pgp8
-@itemx ---no-pgp8
 Set up all options to be as PGP 8 compliant as possible. PGP 8 is a
 lot closer to the OpenPGP standard than previous versions of PGP, so
-all this does is disable ---throw-keyid and set --escape-from-lines and
----compress-algo 1. The allowed algorithms list is the same as --pgp7
-with the addition of the SHA-256 digest algorithm. ---no-pgp8 disables
-this option.
+all this does is disable ---throw-keyid and set --escape-from-lines.
+The allowed algorithms list is the same as ---pgp7 with the addition of
+the SHA-256 digest algorithm.
 
-@item ---openpgp
-Reset all packet, cipher and digest options to OpenPGP behavior. Use
-this option to reset all previous options like ---rfc1991,
----force-v3-sigs, --s2k-*, --cipher-algo, --digest-algo and
----compress-algo to OpenPGP compliant values. All PGP workarounds and
----pgpX modes are also disabled.
+@end table
 
 @item ---force-v3-sigs
 @itemx ---no-force-v3-sigs
@@ -1203,15 +1221,17 @@ it does not ensure the de-facto standard format of user IDs.
 
 @item ---ignore-time-conflict
 GnuPG normally checks that the timestamps associated with keys and
-signatures have plausible values. However, sometimes a signature seems to
-be older than the key due to clock problems. This option makes these
-checks just a warning.
+signatures have plausible values. However, sometimes a signature
+seems to be older than the key due to clock problems. This option
+makes these checks just a warning. See also ---ignore-valid-from for
+timestamp issues on subkeys.
 
 @item ---ignore-valid-from
-GnuPG normally does not select and use subkeys created in the future. This
-option allows the use of such keys and thus exhibits the pre-1.0.7
-behaviour. You should not use this option unless you there is some
-clock problem.
+GnuPG normally does not select and use subkeys created in the future.
+This option allows the use of such keys and thus exhibits the
+pre-1.0.7 behaviour. You should not use this option unless you there
+is some clock problem. See also ---ignore-time-conflict for timestamp
+issues with signatures.
 
 @item ---ignore-crc-error
 The ASCII armor used by OpenPGP is protected by a CRC checksum against
@@ -1260,11 +1280,17 @@ Suppress the initial copyright message.
 Suppress the warning about "using insecure memory".
 
 @item ---no-permission-warning
-Suppress the warning about unsafe file permissions. Note that the
-file permission checks that GnuPG performs are not intended to be
-authoritative, rather they simply warn about certain common permission
-problems. Do not assume that the lack of a warning means that your
-system is secure.
+Suppress the warning about unsafe file and home directory (---homedir)
+permissions. Note that the permission checks that GnuPG performs are
+not intended to be authoritative, but rather they simply warn about
+certain common permission problems. Do not assume that the lack of a
+warning means that your system is secure.
+
+Note that the warning for unsafe ---homedir permissions cannot be
+supressed in the gpg.conf file, as this would allow an attacker to
+place an unsafe gpg.conf file in place, and use this file to supress
+warnings about itself. The ---homedir permissions warning may only be
+supressed on the command line.
 
 @item ---no-mdc-warning
 Suppress the warning about missing MDC integrity protection.
