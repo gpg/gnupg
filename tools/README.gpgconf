@@ -330,7 +330,7 @@ Example:
 To set the option force, which is of basic type 0 (none).
 $ echo 'force:0:1' | gpgconf --change-options dirmngr
 To delete the option force:
-$ echo 'force:16:0' | gpgconf --change-options dirmngr
+$ echo 'force:16:' | gpgconf --change-options dirmngr
 
 
 Option --runtime
