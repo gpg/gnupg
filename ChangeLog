@@ -1,3 +1,13 @@
+2004-05-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note the addition of preferred keyserver support,
+	--ask-cert-level, --keyid-format, and the removal of
+	show-long-keyids, the quasi-1991 partial length encoding,
+	--export-all, and include-non-rfc.
+
+	* acinclude.m4 (GNUPG_SYS_NM_PARSE): Remove a leftover slash in a
+	sed expression.
+
 2004-05-01  Werner Koch  <wk@gnupg.org>
 
 	* acinclude.m4 (ac_pipe_works): Fixed BRE syntax \? -> \{0,1\}.

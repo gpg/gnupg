@@ -609,7 +609,7 @@ dld_preloaded_symbols[] =
 changequote([,])dnl
 {
 EOF
-        sed 's/^_\{0,1\}/\(.*\) _\{0,1\}\(.*\)$/  {"\1", (__ptr_t) \&\2},/' < "$ac_nlist" >> conftest.c
+        sed 's/^_\{0,1\}\(.*\) _\{0,1\}\(.*\)$/  {"\1", (__ptr_t) \&\2},/' < "$ac_nlist" >> conftest.c
         cat <<\EOF >> conftest.c
   {0, (__ptr_t) 0}
 };
