@@ -1463,9 +1463,14 @@ parse_list_options(char *str)
       {"show-unusable-subkeys",LIST_SHOW_UNUSABLE_SUBKEYS,NULL},
       {"show-keyring",LIST_SHOW_KEYRING,NULL},
       {"show-sig-expire",LIST_SHOW_SIG_EXPIRE,NULL},
-      {"show-sig-subpackets",LIST_SHOW_SIG_SUBPACKETS,&subpackets},
+      {"show-sig-subpackets",LIST_SHOW_SIG_SUBPACKETS,NULL},
       {NULL,0,NULL}
     };
+
+  /* C99 allows for non-constant initializers, but we'd like to
+  compile everywhere, so fill in the show-sig-subpackets argument
+  here. */
+  lopts[12].value=&subpackets;
 
   if(parse_options(str,&opt.list_options,lopts,1))
     {

@@ -1,16 +1,11 @@
-2004-10-20  Werner Koch  <wk@g10code.com>
+2004-10-20  David Shaw  <dshaw@jabberwocky.com>
 
-	* apdu.c (apdu_open_reader): Load pcsc_get_status_change fucntion.
-	(pcsc_get_status): Implemented.
-	(reset_pcsc_reader): Implemented.
-	(open_pcsc_reader): Succeed even with no card inserted.
-	(open_ccid_reader): Set LAST_STATUS.
+	* g10.c (parse_list_options): Fix non-constant initializer so we
+	can build with C89.
 
-	* iso7816.c (iso7816_select_application): Always use 0 for P1.
+2004-10-17  David Shaw  <dshaw@jabberwocky.com>
 
-2004-10-18  Werner Koch  <wk@g10code.com>
-
-	* ccid-driver.c (ccid_get_atr): Reset T=1 state info.
+	* keylist.c (print_one_subpacket): The flags field should be hex.
 
 2004-10-17  Werner Koch  <wk@g10code.com>
 
