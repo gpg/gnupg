@@ -1,3 +1,23 @@
+Fri Jul 23 13:53:03 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* ringedit.c (enum_keyblocks): Removed annoying error message in cases
+	when we have no keyring at all to enum.
+
+	* getkey.c (classify_user_id): Rewrote to relax the recognition of
+	keyIDs and fingerprints (Michael).
+
+	* mainproc.c (check_sig_and_print): Print status NO_PUBKEY.
+	(print_failed_pkenc): Print status NO_SECKEY.
+
+	* import.c (mark_non_selfsigned_uids_valid): New.
+	* g10.c: New option --allow-non-selfsigned-uid.
+
+	* pkclist.c (print_fpr): New.
+	(do_we_trust_pre): Print the fpr before asking whether to use the key
+	anyway.
+	(do_edit_ownertrust): Likewise.
+
 Thu Jul 22 20:03:03 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

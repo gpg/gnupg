@@ -29,14 +29,6 @@ and after about half a day in the rsync snapshots.
     The for loop the exp.date is set before v3 detection?
     [is this bug still alive? - can someone please check it]
 
-[  *] #5
-    /home/jam/.gnupg/pubring.gpg: can't open gdbm file: Can't be writer
-    keyblock resource `/home/jam/.gnupg/pubring.gpg': file open error
-    OOPS in close enum_keyblocks - ignored
-    [gdbm is experimental and will be replaced by the new keybox code]
-    FIX: 1999-07-22 (Fixed the second error, there will be no fix for
-    the first one, becuase GDBM is to be replaced)
-
 [ **] #6 1999-02-22 <backes@rhrk.uni-kl.de> 0.9.3
     Buserror on IRIX 6.4: Crash while doing a keygen. I think while creating
     the prime.	Other buserrors are reported when doing a "gpg README"
@@ -47,11 +39,6 @@ and after about half a day in the rsync snapshots.
 [  *] #18 1999-05-27 <Steffen.Zahn@icn.siemens.de> 0.9.7
     rndunix hangs on hp/ux.  The problem is related to my_plcose which is
     not always called.	(I suggest to use EGD instead of rndunix.)
-
-[ **] #19 1999-06-11
-    "trustdb transaction too large" with about 500 signatures on a key
-    FAEBD5FC.
-    FIX: 1999-07-12  (less memory requirement and increased the limit)
 
 [  *] #22 1999-07-22
     Solaris make has problems with the generated POTFILES - seems to be a

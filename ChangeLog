@@ -1,3 +1,10 @@
+Fri Jul 23 13:53:03 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* VERSION: Set to 0.9.9.
+
+	* configure.in: Print a notice when rndunix is used.
+
 Thu Jul 15 10:15:35 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* acinclude.m4 (GNUPG_SYS_SYMBOL_UNDERSCORE): Fixed last modification.

@@ -19,6 +19,14 @@
     gpg:[stdin]: key A6A59DB9: secret key not found: public key not found
     FIX: 1999-02-22 wk
 
+[  *] #5
+    /home/jam/.gnupg/pubring.gpg: can't open gdbm file: Can't be writer
+    keyblock resource `/home/jam/.gnupg/pubring.gpg': file open error
+    OOPS in close enum_keyblocks - ignored
+    [gdbm is experimental and will be replaced by the new keybox code]
+    FIX: 1999-07-22 (Fixed the second error, there will be no fix for
+    the first one, becuase GDBM is to be replaced)
+
 [  *] #7 1999-02-22 <dwpalmer@dwpalm.jf.intel.com> 0.9.3
     Conventional encrytion incompatibilty:
      $ gpg -c --cipher-algo cast5 --compress-algo 1 --no-comment secrets.txt
@@ -76,6 +84,11 @@
 [ **] #17 1999-05-18 <Bodo_Moeller@public.uni-hamburg.de> 0.9.6
     Import does not detect identical user IDs.
     FIX: 1999-05-22
+
+[ **] #19 1999-06-11
+    "trustdb transaction too large" with about 500 signatures on a key
+    FAEBD5FC.
+    FIX: 1999-07-12  (less memory requirement and increased the limit)
 
 [ **] #20 1999-06-16 <jashley@yorktown.designlab.ukans.edu>  0.9.7
     Using "addkey" in the edit menu with more than 1 subkey leads to

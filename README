@@ -1,6 +1,8 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-			   Version 0.9.8
+			   Version 0.9.9
 
     GnuPG is now in Beta test and you should report all bugs to the
     mailing list (see below).  The 0.9.x versions are released mainly
@@ -445,3 +447,12 @@
 
     Have fun and remember: Echelon is looking at you kid.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v0.9.8a (GNU/Linux)
+Comment: For info see http://www.gnupg.org
+
+iQB1AwUBN5g4Lx0Z9MEMmFelAQE+RwL/Ws+kNklTHJnABT8YU8BqN8x310DyUm+e
+ViS23npv3S/kRnHbCOOQo4cEjUYZFFrJXzQgodBvKbLVzMgdj4XQvkulTSBYK6pm
+B7GeQptWRCNJ7m+Hw0Z4gwJ7giQTdfF8
+=pJ7c
+-----END PGP SIGNATURE-----

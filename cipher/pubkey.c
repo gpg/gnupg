@@ -278,7 +278,7 @@ disable_pubkey_algo( int algo )
 	    return;
 	}
     }
-    log_fatal("can't disable pubkey algo %d: table full\n");
+    log_fatal("can't disable pubkey algo %d: table full\n", algo );
 }
 
 

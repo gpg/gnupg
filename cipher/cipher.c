@@ -260,7 +260,7 @@ disable_cipher_algo( int algo )
 	}
     }
     /* fixme: we should use a linked list */
-    log_fatal("can't disable cipher algo %d: table full\n");
+    log_fatal("can't disable cipher algo %d: table full\n", algo );
 }
 
 /****************
@@ -396,7 +396,7 @@ cipher_setiv( CIPHER_HANDLE c, const byte *iv, unsigned ivlen )
     if( iv ) {
 	if( ivlen != c->blocksize )
 	    log_info("WARNING: cipher_setiv: ivlen=%u blklen=%u\n",
-					     ivlen, c->blocksize );
+					     ivlen, (unsigned)c->blocksize );
 	if( ivlen > c->blocksize )
 	    ivlen = c->blocksize;
 	memcpy( c->iv, iv, ivlen );

@@ -39,6 +39,36 @@
 
 #define CONTROL_D ('D' - 'A' + 1)
 
+/* fixme: we have nearly the same code in keyedit.c */
+static void
+print_fpr( PKT_public_key *pk )
+{
+    byte array[MAX_FINGERPRINT_LEN], *p;
+    size_t i, n;
+
+    fingerprint_from_pk( pk, array, &n );
+    p = array;
+    /* Translators: this shoud fit into 24 bytes to that the fingerprint
+     * data is properly aligned with the user ID */
+    tty_printf(_("             Fingerprint:"));
+    if( n == 20 ) {
+	for(i=0; i < n ; i++, i++, p += 2 ) {
+	    if( i == 10 )
+		tty_printf(" ");
+	    tty_printf(" %02X%02X", *p, p[1] );
+	}
+    }
+    else {
+	for(i=0; i < n ; i++, p++ ) {
+	    if( i && !(i%8) )
+		tty_printf(" ");
+	    tty_printf(" %02X", *p );
+	}
+    }
+    tty_printf("\n");
+}
+
+
 
 static void
 show_paths( ulong lid, int only_first )
@@ -148,7 +178,9 @@ do_edit_ownertrust( ulong lid, int mode, unsigned *new_trust, int defer_help )
 		p = get_user_id( keyid, &n );
 		tty_print_string( p, n ),
 		m_free(p);
-		tty_printf("\"\n\n");
+		tty_printf("\"\n");
+		print_fpr( pk );
+		tty_printf("\n");
 	    }
 	    tty_printf(_(
 "Please decide how far you trust this user to correctly\n"
@@ -375,6 +407,7 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 }
 
 
+
 /****************
  * wrapper around do_we_trust, so we can ask whether to use the
  * key anyway.
@@ -402,7 +435,9 @@ do_we_trust_pre( PKT_public_key *pk, int trustlevel )
 	p = get_user_id( keyid, &n );
 	tty_print_string( p, n ),
 	m_free(p);
-	tty_printf("\"\n\n");
+	tty_printf("\"\n");
+	print_fpr( pk );
+	tty_printf("\n");
 
 	tty_printf(_(
 "It is NOT certain that the key belongs to its owner.\n"

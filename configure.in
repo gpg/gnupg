@@ -50,6 +50,8 @@ case "$use_static_rnd" in
       ;;
 esac
 
+
+
 dnl
 dnl See whether the user wants to disable checking for /dev/random
 
@@ -116,8 +118,11 @@ if test x$compile_libgcrypt = xyes ; then
     else
         compile_libgcrypt=no
         AC_MSG_WARN([[
+***
 *** LIBGCRYPT is not yet ready for public testing.
-*** Maybe you have more luck with the next release of GnuPG]])
+*** Maybe you have more luck with the next release of GnuPG
+*** Watch the gnupg-announce mailing list or the webpage.
+***]])
     fi
 fi
 AM_CONDITIONAL(COMPILE_LIBGCRYPT, test x$compile_libgcrypt = xyes)
@@ -400,13 +405,15 @@ if test "$ac_cv_header_sys_capability_h" = "yes" ; then
 fi
 if test "$use_capabilities" = "no" ; then
     AC_MSG_WARN([[
+***
 *** The use of capabilities on this system is not possible.
 *** You need a recent Linux kernel and some patches:
 ***   fcaps-2.2.9-990610.patch      (kernel patch for 2.2.9)
 ***   fcap-module-990613.tar.gz     (kernel module)
 ***   libcap-1.92.tar.gz            (user mode library and utilities)
 *** And you have to configure the kernel with CONFIG_VFS_CAP_PLUGIN
-*** set (filesystems menu). Be warned: This code is *really* ALPHA.]])
+*** set (filesystems menu). Be warned: This code is *really* ALPHA.
+***]])
 fi
 fi
 
@@ -455,6 +462,7 @@ dnl
 dnl Figure out the default linkage mode for cipher modules
 dnl
 dnl (We always need a static rmd160)
+print_egd_notice=no
 static_modules="$static_modules rmd160"
 if test "$use_static_rnd" = default; then
   if test "$ac_cv_have_dev_random" = yes; then
@@ -472,6 +480,7 @@ if test "$use_static_rnd" = default; then
               ;;
           *)
               static_modules="$static_modules rndunix"
+              print_egd_notice=yes
              ;;
       esac
   fi
@@ -480,7 +489,32 @@ else
     :
   else
     static_modules="$static_modules rnd$use_static_rnd"
+    if test "$use_static_rnd" = "unix"; then
+        print_egd_notice=yes
+    fi
   fi
+fi
+
+
+if test "$print_egd_notice" = "yes"; then
+    AC_MSG_WARN([[
+***
+*** The performance of the UNIX random gatherer module is not very good
+*** and it does not keep the entropy pool over multiple invocations of
+*** GnuPG.  The suggested way to overcome this problem is to use the
+***
+***               Entropy Gathering Daemon (EGD)
+***
+*** which provides a entropy source for the whole system.  It is written
+*** in Perl and available at the GnuPG FTP servers.  For more information
+*** consult the GnuPG webpages:
+***
+***           http://www.gnupg.org/donwload.html#egd
+***
+*** You may want to run ./configure with --enable-static-rnd=none to be
+*** able to load the EGD client code dynamically; this way you can choose
+*** between RNDUNIX and RNDEGD without recompilation.
+***]])
 fi
 
 dnl

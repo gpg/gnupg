@@ -655,7 +655,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
     toggle = 0;
     cur_keyblock = keyblock;
     for(;;) { /* main loop */
-	int i, arg_number=0;
+	int i, arg_number;
 	char *p;
 
 	tty_printf("\n");
