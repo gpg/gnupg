@@ -1106,7 +1106,7 @@ change_passphrase( KBNODE keyblock )
 	set_next_passphrase( NULL );
 	for(;;) {
 	    s2k->mode = opt.s2k_mode;
-	    s2k->hash_algo = opt.s2k_digest_algo;
+	    s2k->hash_algo = S2K_DIGEST_ALGO;
 	    dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo,
                                      s2k, 2, errtext, NULL);
 	    if( !dek ) {

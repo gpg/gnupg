@@ -1465,9 +1465,6 @@ parse_list_options(char *str)
       {NULL,0,NULL}
     };
 
-  /* this is wrong since the show-sig-subpackets could have been set
-     from a previous incarnation of list-options */
-
   if(parse_options(str,&opt.list_options,lopts,1))
     {
       if(opt.list_options&LIST_SHOW_SIG_SUBPACKETS)
@@ -1587,7 +1584,6 @@ main( int argc, char **argv )
     opt.cert_digest_algo = 0;
     opt.compress_algo = -1; /* defaults to DEFAULT_COMPRESS_ALGO */
     opt.s2k_mode = 3; /* iterated+salted */
-    opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
 #ifdef USE_CAST5
     opt.s2k_cipher_algo = CIPHER_ALGO_CAST5;
 #else
@@ -2613,6 +2609,8 @@ main( int argc, char **argv )
 	    opt.ask_cert_expire = 0;
 	    m_free(def_digest_string);
 	    def_digest_string = m_strdup("md5");
+	    m_free(s2k_digest_string);
+	    s2k_digest_string = m_strdup("md5");
 	    opt.compress_algo = COMPRESS_ALGO_ZIP;
 	  }
       }
@@ -3784,8 +3782,7 @@ add_notation_data( const char *string, int which )
 
     if(!saw_at && !opt.expert)
       {
-	log_error(
-	        _("a user notation name must contain the '@' character\n"));
+	log_error(_("a user notation name must contain the '@' character\n"));
 	return;
       }
 

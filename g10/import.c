@@ -719,7 +719,7 @@ import_one( const char *fname, KBNODE keyblock,
 	    char *user=utf8_to_native(node->pkt->pkt.user_id->name,
 				      node->pkt->pkt.user_id->len,0);
 	    node->flag |= 1;
-	    log_info( _("key %s: accepted non self-signed user ID '%s'\n"),
+	    log_info( _("key %s: accepted non self-signed user ID \"%s\"\n"),
 		      keystr_from_pk(pk),user);
 	    m_free(user);
 	  }
@@ -1297,9 +1297,9 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 				      strlen(unode->pkt->pkt.user_id->name),0);
 			  log_info( rc == G10ERR_PUBKEY_ALGO ?
 				    _("key %s: unsupported public key "
-				      "algorithm on user id \"%s\"\n"):
+				      "algorithm on user ID \"%s\"\n"):
 				    _("key %s: invalid self-signature "
-				      "on user id \"%s\"\n"),
+				      "on user ID \"%s\"\n"),
 				    keystr(keyid),p);
 			  m_free(p);
 			}
@@ -1436,7 +1436,7 @@ delete_inv_parts( const char *fname, KBNODE keyblock,
 		  {
 		    char *p=utf8_to_native(node->pkt->pkt.user_id->name,
 					   node->pkt->pkt.user_id->len,0);
-		    log_info( _("key %s: skipped user ID '%s'\n"),
+		    log_info( _("key %s: skipped user ID \"%s\"\n"),
 			      keystr(keyid),p);
 		    m_free(p);
 		  }
@@ -1485,7 +1485,7 @@ delete_inv_parts( const char *fname, KBNODE keyblock,
 	     * seems that this makes sense */
 	    if(opt.verbose)
 	      log_info( _("key %s: non exportable signature"
-			  " (class %02x) - skipped\n"),
+			  " (class 0x%02X) - skipped\n"),
 			keystr(keyid), node->pkt->pkt.signature->sig_class );
 	    delete_kbnode( node );
 	  }

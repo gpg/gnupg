@@ -362,7 +362,7 @@ check_card_serialno (APP app, const char *serialno)
       else
         card_close ();
       tty_printf (_("Please remove the current card and "
-                    "insert the one with the serial number:\n"
+                    "insert the one with serial number:\n"
                     "   %.*s\n"), 32, serialno);
 
       sprintf (buf, "1 %.32s", serialno);

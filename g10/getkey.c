@@ -183,7 +183,7 @@ get_primary_uid ( KBNODE keyblock, size_t *uidlen )
     } 
     /* fixme: returning translatable constants instead of a user ID is 
      * not good because they are probably not utf-8 encoded. */
-    s = _("[User id not found]");
+    s = _("[User ID not found]");
     *uidlen = strlen (s);
     return s;
 }
@@ -2688,7 +2688,7 @@ get_user_id( u32 *keyid, size_t *rn )
             }
         }
     } while( ++pass < 2 && !get_pubkey( NULL, keyid ) );
-    p = m_strdup( _("[User id not found]") );
+    p = m_strdup( _("[User ID not found]") );
     *rn = strlen(p);
     return p;
 }

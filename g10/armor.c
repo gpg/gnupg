@@ -562,7 +562,7 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 		    ; /* this is okay */
 		else {
 		    if( type != BEGIN_SIGNATURE ) {
-			log_info(_("unexpected armor:"));
+			log_info(_("unexpected armor: "));
 			print_string( stderr, p, n, 0 );
 			putc('\n', stderr);
 		    }
@@ -692,7 +692,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	    break;
 	}
 	else if( (c = asctobin[(c2=c)]) == 255 ) {
-	    log_error(_("invalid radix64 character %02x skipped\n"), c2);
+	    log_error(_("invalid radix64 character %02X skipped\n"), c2);
 	    continue;
 	}
 	switch(idx) {
@@ -781,7 +781,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		rc = invalid_crc();
 	    }
 	    else if( mycrc != afx->crc ) {
-                log_info (_("CRC error; %06lx - %06lx\n"),
+                log_info (_("CRC error; %06lX - %06lX\n"),
 				    (ulong)afx->crc, (ulong)mycrc);
                 rc = invalid_crc();
 	    }
@@ -801,7 +801,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		if( rc == -1 )
 		    rc = 0;
 		else if( rc == 2 ) {
-		    log_error(_("premature eof (in Trailer)\n"));
+		    log_error(_("premature eof (in trailer)\n"));
 		    rc = G10ERR_INVALID_ARMOR;
 		}
 		else {
@@ -1277,7 +1277,7 @@ unarmor_pump (UnarmorPump x, int c)
         {
             int c2;
             if( (c = asctobin[(c2=c)]) == 255 ) {
-                log_error(_("invalid radix64 character %02x skipped\n"), c2);
+                log_error(_("invalid radix64 character %02X skipped\n"), c2);
                 break;
             }
         }
@@ -1314,7 +1314,7 @@ unarmor_pump (UnarmorPump x, int c)
         if( (c = asctobin[c]) == 255 ) {
             rval = -1; /* ready */
             if( x->crc != x->mycrc ) {
-                log_info (_("CRC error; %06lx - %06lx\n"),
+                log_info (_("CRC error; %06lX - %06lX\n"),
                           (ulong)x->crc, (ulong)x->mycrc);
                 if ( invalid_crc() )
                     rval = -3;

@@ -1506,8 +1506,8 @@ ask_user_id( int mode )
 
     if( !mode )
 	tty_printf( _("\n"
-"You need a User-ID to identify your key; the software constructs the user id\n"
-"from Real Name, Comment and Email Address in this form:\n"
+"You need a user ID to identify your key; the software constructs the user ID\n"
+"from the Real Name, Comment and Email Address in this form:\n"
 "    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n\n") );
     uid = aname = acomment = amail = NULL;
     for(;;) {
@@ -1676,7 +1676,7 @@ do_ask_passphrase( STRING2KEY **ret_s2k )
     s2k = m_alloc_secure( sizeof *s2k );
     for(;;) {
 	s2k->mode = opt.s2k_mode;
-	s2k->hash_algo = opt.s2k_digest_algo;
+	s2k->hash_algo = S2K_DIGEST_ALGO;
 	dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k,2,
                                  errtext, NULL);
 	if( !dek ) {
@@ -2012,7 +2012,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
 
 	s2k = m_alloc_secure( sizeof *s2k );
 	s2k->mode = opt.s2k_mode;
-	s2k->hash_algo = opt.s2k_digest_algo;
+	s2k->hash_algo = S2K_DIGEST_ALGO;
 	set_next_passphrase( r->u.value );
 	dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k, 2,
                                  NULL, NULL);
@@ -2912,7 +2912,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     if( passphrase ) {
 	s2k = m_alloc_secure( sizeof *s2k );
 	s2k->mode = opt.s2k_mode;
-	s2k->hash_algo = opt.s2k_digest_algo;
+	s2k->hash_algo = S2K_DIGEST_ALGO;
 	set_next_passphrase( passphrase );
 	dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k, 2,
                                  NULL, NULL );

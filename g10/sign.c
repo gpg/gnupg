@@ -1133,7 +1133,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     /* prepare key */
     s2k = m_alloc_clear( sizeof *s2k );
     s2k->mode = RFC1991? 0:opt.s2k_mode;
-    s2k->hash_algo = opt.s2k_digest_algo;
+    s2k->hash_algo = S2K_DIGEST_ALGO;
 
     algo = default_cipher_algo();
     if (!opt.quiet || !opt.batch)

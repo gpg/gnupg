@@ -1,5 +1,14 @@
 2004-09-24  David Shaw  <dshaw@jabberwocky.com>
 
+	* main.h: Create S2K_DIGEST_ALGO macro so we do not need to always
+	set opt.s2k_digest_algo.  This helps fix a problem with PGP 2.x
+	encrypted symmetric messages.  Change all callers (encode.c,
+	g10.c, keyedit.c, keygen.c, passphrase.c, sign.c).
+
+	* armor.c, cardglue.c, getkey.c, import.c, keygen.c: Be consistent
+	in some more quoted strings.  Always use 'user ID', not 'user id',
+	"quotes" for user IDs, etc.
+
 	* keyedit.c (keyedit_menu), gpgv.c (agent_scd_getattr (stub)),
 	keygen.c (copy_mpi, generate_raw_key): Fix a compile problem and a
 	few warnings when building without card support.

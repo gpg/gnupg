@@ -1083,7 +1083,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
          * Note: This must match the code in encode.c with opt.rfc1991 set */
 	s2k = &help_s2k;
 	s2k->mode = 0;
-	s2k->hash_algo = opt.s2k_digest_algo;
+	s2k->hash_algo = S2K_DIGEST_ALGO;
     }
 
     /* If we do not have a passphrase available in NEXT_PW and status
