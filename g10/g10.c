@@ -607,7 +607,7 @@ const char *__dynamic_da_name = "GnuPG Heap";
 const char *
 strusage( int level )
 {
-  static char *digests, *pubkeys, *ciphers;
+  static char *digests, *pubkeys, *ciphers, *zips;
     const char *p;
     switch( level ) {
       case 11: p = "gpg (GnuPG)";
@@ -653,12 +653,11 @@ strusage( int level )
 	p = digests;
 	break;
       case 37:
-	if(opt.verbose)
-	  p = "Compress: Uncompressed (Z0), ZIP (Z1), ZLIB (Z2)\n";
-	else
-	  p = "Compress: Uncompressed, ZIP, ZLIB\n";
+	if( !zips )
+	    zips = build_list("Compress: ",'Z',compress_algo_to_string,
+			                                check_compress_algo);
+	p = zips;
 	break;
-
 
       default:	p = default_strusage(level);
     }
@@ -678,11 +677,11 @@ build_list( const char *text, char letter,
     if( maybe_setuid )
 	secmem_init( 0 );    /* drop setuid */
 
-    for(i=1; i <= 110; i++ )
+    for(i=0; i <= 110; i++ )
 	if( !chkf(i) && (s=mapf(i)) )
 	    n += strlen(s) + 7 + 2;
     list = m_alloc( 21 + n ); *list = 0;
-    for(p=NULL, i=1; i <= 110; i++ ) {
+    for(p=NULL, i=0; i <= 110; i++ ) {
 	if( !chkf(i) && (s=mapf(i)) ) {
 	    if( !p ) {
 		p = stpcpy( list, text );

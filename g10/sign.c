@@ -679,24 +679,39 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
    /* If we're encrypting and signing, it is reasonable to pick the
        hash algorithm to use out of the recepient key prefs. */
-    if(pk_list && !opt.def_digest_algo)
+    if(pk_list)
       {
-	int hashlen=0,algo;
+	if(opt.def_digest_algo)
+	  {
+	    if(!opt.expert &&
+	       select_algo_from_prefs(pk_list,PREFTYPE_HASH,
+				      opt.def_digest_algo,
+				      NULL)!=opt.def_digest_algo)
+	  log_info(_("forcing digest algorithm %s (%d) "
+		     "violates recipient preferences\n"),
+		   digest_algo_to_string(opt.def_digest_algo),
+		   opt.def_digest_algo);
+	  }
+	else
+	  {
+	    int hashlen=0,algo;
 
-	/* Of course, if the recipient asks for something unreasonable
-	   (like a non-160-bit hash for DSA, for example), then don't
-	   do it.  Check all sk's - if any are DSA, then the hash must
-	   be 160-bit.  In the future this can be more complex with
-	   different hashes for each sk, but so long as there is only
-	   one signing algorithm with hash restrictions, this is
-	   ok. -dms */
+	    /* Of course, if the recipient asks for something
+	       unreasonable (like a non-160-bit hash for DSA, for
+	       example), then don't do it.  Check all sk's - if any
+	       are DSA, then the hash must be 160-bit.  In the future
+	       this can be more complex with different hashes for each
+	       sk, but so long as there is only one signing algorithm
+	       with hash restrictions, this is ok. -dms */
 
-	for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
-	  if(sk_rover->sk->pubkey_algo==PUBKEY_ALGO_DSA)
-	    hashlen=20;
+	    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
+	      if(sk_rover->sk->pubkey_algo==PUBKEY_ALGO_DSA)
+		hashlen=20;
 
-	if((algo=select_algo_from_prefs(pk_list,PREFTYPE_HASH,&hashlen))>0)
-	  recipient_digest_algo=algo;
+	    if((algo=
+		select_algo_from_prefs(pk_list,PREFTYPE_HASH,-1,&hashlen))>0)
+	      recipient_digest_algo=algo;
+	  }
       }
 
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
@@ -724,19 +739,25 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
         int compr_algo=opt.def_compress_algo;
 
 	/* If not forced by user */
-        if(compr_algo==-1)
+	if(compr_algo==-1)
 	  {
 	    /* If we're not encrypting, then select_algo_from_prefs
-               will fail and we'll end up with the default.  If we are
-               encrypting, select_algo_from_prefs cannot fail since
-               there is an assumed preference for uncompressed data.
-               Still, if it did fail, we'll also end up with the
-               default. */
-
+	       will fail and we'll end up with the default.  If we are
+	       encrypting, select_algo_from_prefs cannot fail since
+	       there is an assumed preference for uncompressed data.
+	       Still, if it did fail, we'll also end up with the
+	       default. */
+ 
 	    if((compr_algo=
-		select_algo_from_prefs(pk_list,PREFTYPE_ZIP,NULL))==-1)
+		select_algo_from_prefs(pk_list,PREFTYPE_ZIP,-1,NULL))==-1)
 	      compr_algo=DEFAULT_COMPRESS_ALGO;
 	  }
+ 	else if(!opt.expert &&
+ 		select_algo_from_prefs(pk_list,PREFTYPE_ZIP,
+ 				       compr_algo,NULL)!=compr_algo)
+ 	  log_info(_("forcing compression algorithm %s (%d) "
+ 		     "violates recipient preferences\n"),
+ 		   compress_algo_to_string(compr_algo),compr_algo);
 
 	/* algo 0 means no compression */
 	if( compr_algo )

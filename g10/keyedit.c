@@ -1503,21 +1503,7 @@ show_prefs (PKT_user_id *uid, int verbose)
         tty_printf ("\n     Compression: ");
         for(i=any=0; prefs[i].type; i++ ) {
             if( prefs[i].type == PREFTYPE_ZIP ) {
-                const char *s=NULL;
-		switch(prefs[i].value)
-		  {
-		  case 0:
-		    s="Uncompressed";
-		    break;
-
-		  case 1:
-		    s="ZIP";
-		    break;
-
-		  case 2:
-		    s="ZLIB";
-		    break;
-		  }
+                const char *s=compress_algo_to_string(prefs[i].value);
                 
                 if (any)
                     tty_printf (", ");
@@ -1534,9 +1520,11 @@ show_prefs (PKT_user_id *uid, int verbose)
         if (!uncomp_seen) {
             if (any)
                 tty_printf (", ");
-	    else
-	        tty_printf ("ZIP, ");
-	    tty_printf ("Uncompressed");
+	    else {
+	      tty_printf ("%s",compress_algo_to_string(1));
+	      tty_printf (", ");
+	    }
+	    tty_printf ("%s",compress_algo_to_string(0));
         }
         tty_printf ("\n     Features: ");
 	if(uid->mdc_feature)

@@ -1058,7 +1058,7 @@ algo_available( int preftype, int algo, void *hint )
         if ( ( opt.pgp6 || opt.pgp7 ) && ( algo !=0 && algo != 1) )
 	  return 0;
 
-	return !algo || algo == 1 || algo == 2;
+	return !check_compress_algo( algo );
     }
     else
 	return 0;
@@ -1070,7 +1070,7 @@ algo_available( int preftype, int algo, void *hint )
  * Return -1 if we could not find an algorithm.
  */
 int
-select_algo_from_prefs( PK_LIST pk_list, int preftype, void *hint )
+select_algo_from_prefs(PK_LIST pk_list, int preftype, int request, void *hint)
 {
     PK_LIST pkr;
     u32 bits[8];
@@ -1189,6 +1189,11 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype, void *hint )
 		}
 	    }
     }
+
+    /* Can we use the requested algorithm? */
+    if(request>-1 && request==i)
+      return i;
+
   #if 0
     log_debug("prefs of type %d: selected %d\n", preftype, i );
   #endif

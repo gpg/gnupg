@@ -657,3 +657,35 @@ deprecated_warning(const char *configname,unsigned int configlineno,
 
   log_info(_("please use \"%s%s\" instead\n"),repl1,repl2);
 }
+
+const char *
+compress_algo_to_string(int algo)
+{
+  const char *s="?";
+
+  switch(algo)
+    {
+    case 0:
+      s="Uncompressed";
+      break;
+
+    case 1:
+      s="ZIP";
+      break;
+
+    case 2:
+      s="ZLIB";
+      break;
+    }
+
+  return s;
+}
+
+int
+check_compress_algo(int algo)
+{
+  if(algo>=0 && algo<=2)
+    return 0;
+
+  return G10ERR_COMPR_ALGO;
+}

@@ -198,11 +198,6 @@ set_one_pref (ulong val, int type, int (*cf)(int), byte *buf, int *nbuf)
     return 0;
 }
 
-static int 
-check_zip_algo (int algo)
-{
-    return algo < 0 || algo > 2;
-}
 
 /*
  * Parse the supplied string and use it to set the standard preferences.
@@ -252,7 +247,7 @@ keygen_set_std_prefs (const char *string,int personal)
         }
         else if ((*s=='z' || *s == 'Z') && isdigit(s[1]) ) {
             val = strtoul (++s, (char**)&s2, 10);
-            if (set_one_pref (val, 'Z', check_zip_algo, zip, &nzip))
+            if (set_one_pref (val, 'Z', check_compress_algo, zip, &nzip))
                 rc = -1;
         }
 	else if (ascii_strcasecmp(s,"mdc")==0) {

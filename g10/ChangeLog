@@ -1,3 +1,22 @@
+2002-06-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* keydb.h, pkclist.c (select_algo_from_prefs): Allow passing a
+	suggested algorithm which will be used if available.
+
+	* encode.c (encode_crypt, encrypt_filter), sign.c (sign_file): Use
+	new select_algo_from_prefs feature to check if forcing an
+	algorithm would violate the recipient preferences.
+
+	* photoid.c (get_default_photo_command, show_photos): Use
+	different default viewers on different platforms.  Currently we
+	have Win 9x, Win NT (2k, xp), Mac OSX, RISC OS, and "everybody
+	else".  These are #ifdefs as much as possible to avoid clutter.
+
+	* g10.c (strusage, build_list), keyedit.c (show_prefs), main.h,
+	misc.c (compress_algo_to_string, check_compress_algo), pkclist.c
+	(algo_available), keygen.c (keygen_set_std_prefs): New
+	algo_to_string and check functions for compress algorithms.
+
 2002-06-20  Werner Koch  <wk@gnupg.org>
 
 	* misc.c (setsysinfo): Removed a #warning for Alpha's uniligedn

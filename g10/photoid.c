@@ -22,7 +22,9 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-
+#ifdef HAVE_DOSISH_SYSTEM
+#include <windows.h>
+#endif
 #include "packet.h"
 #include "status.h"
 #include "exec.h"
@@ -34,12 +36,6 @@
 #include "options.h"
 #include "main.h"
 #include "photoid.h"
-
-#ifdef HAVE_DOSISH_SYSTEM
-#define DEFAULT_PHOTO_COMMAND "start /w %i"
-#else
-#define DEFAULT_PHOTO_COMMAND "xloadimage -fork -quiet -title 'KeyID 0x%k' stdin"
-#endif
 
 /* Generate a new photo id packet, or return NULL if canceled */
 PKT_user_id *generate_photo_id(PKT_public_key *pk)
@@ -219,6 +215,29 @@ char *image_type_to_string(byte type,int style)
   return string;
 }
 
+static const char *get_default_photo_command(void)
+{
+#if defined(HAVE_DOSISH_SYSTEM)
+  OSVERSIONINFO osvi;
+
+  memset(&osvi,0,sizeof(osvi));
+  osvi.dwOSVersionInfoSize=sizeof(osvi);
+  GetVersionEx(&osvi);
+
+  if(osvi.dwPlatformId==VER_PLATFORM_WIN32_WINDOWS)
+    return "start /w %i";
+  else
+    return "cmd /c start /w %i";
+#elif defined(__APPLE__)
+  /* OS X.  This really needs more than just __APPLE__. */
+  return "open %I";
+#elif defined(__riscos__)
+  return "Filer_Run %I";
+#else
+  return "xloadimage -fork -quiet -title 'KeyID 0x%k' stdin";
+#endif
+}
+
 void show_photos(const struct user_attribute *attrs,
 		 int count,PKT_public_key *pk,PKT_secret_key *sk)
 {
@@ -244,9 +263,11 @@ void show_photos(const struct user_attribute *attrs,
 	struct exec_info *spawn;
 	int offset=attrs[i].len-len;
 
+	if(!opt.photo_viewer)
+	  opt.photo_viewer=get_default_photo_command();
+
 	/* make command grow */
-	command=pct_expando(opt.photo_viewer?
-			    opt.photo_viewer:DEFAULT_PHOTO_COMMAND,&args);
+	command=pct_expando(opt.photo_viewer,&args);
 	if(!command)
 	  goto fail;
 

@@ -387,7 +387,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     /* create a session key */
     cfx.dek = m_alloc_secure_clear (sizeof *cfx.dek);
     if( !opt.def_cipher_algo ) { /* try to get it from the prefs */
-	cfx.dek->algo = select_algo_from_prefs( pk_list, PREFTYPE_SYM, NULL );
+	cfx.dek->algo = select_algo_from_prefs(pk_list,PREFTYPE_SYM,-1,NULL);
 	/* The only way select_algo_from_prefs can fail here is when
            mixing v3 and v4 keys, as v4 keys have an implicit
            preference entry for 3DES, and the pk_list cannot be empty.
@@ -406,8 +406,17 @@ encode_crypt( const char *filename, STRLIST remusr )
 	    }
 	}
     }
-    else
-	cfx.dek->algo = opt.def_cipher_algo;
+    else {
+      if(!opt.expert &&
+	 select_algo_from_prefs(pk_list,PREFTYPE_SYM,
+				opt.def_cipher_algo,NULL)!=opt.def_cipher_algo)
+	log_info(_("forcing symmetric cipher %s (%d) "
+		   "violates recipient preferences\n"),
+		 cipher_algo_to_string(opt.def_cipher_algo),
+		 opt.def_cipher_algo);
+
+      cfx.dek->algo = opt.def_cipher_algo;
+    }
     cfx.dek->use_mdc = select_mdc_from_pklist (pk_list);
 
     make_session_key( cfx.dek );
@@ -467,9 +476,15 @@ encode_crypt( const char *filename, STRLIST remusr )
 	if(compr_algo==-1)
 	  {
 	    if((compr_algo=
-		select_algo_from_prefs(pk_list,PREFTYPE_ZIP,NULL))==-1)
+		select_algo_from_prefs(pk_list,PREFTYPE_ZIP,-1,NULL))==-1)
 	      compr_algo=DEFAULT_COMPRESS_ALGO;
 	  }
+	else if(!opt.expert &&
+		select_algo_from_prefs(pk_list,PREFTYPE_ZIP,
+				       compr_algo,NULL)!=compr_algo)
+	  log_info(_("forcing compression algorithm %s (%d) "
+		     "violates recipient preferences\n"),
+		   compress_algo_to_string(compr_algo),compr_algo);
 
 	/* algo 0 means no compression */
 	if( compr_algo )
@@ -537,15 +552,25 @@ encrypt_filter( void *opaque, int control,
 
 	    if( !opt.def_cipher_algo  ) { /* try to get it from the prefs */
 		efx->cfx.dek->algo =
-		  select_algo_from_prefs( efx->pk_list, PREFTYPE_SYM, NULL );
+		  select_algo_from_prefs(efx->pk_list,PREFTYPE_SYM,-1,NULL);
 		if( efx->cfx.dek->algo == -1 ) {
                     /* because 3DES is implicitly in the prefs, this can only
                      * happen if we do not have any public keys in the list */
 		    efx->cfx.dek->algo = DEFAULT_CIPHER_ALGO;
                 }
 	    }
-	    else
-		efx->cfx.dek->algo = opt.def_cipher_algo;
+	    else {
+	      if(!opt.expert &&
+		 select_algo_from_prefs(efx->pk_list,PREFTYPE_SYM,
+					opt.def_cipher_algo,
+					NULL)!=opt.def_cipher_algo)
+		log_info(_("forcing symmetric cipher %s (%d) "
+			   "violates recipient preferences\n"),
+			 cipher_algo_to_string(opt.def_cipher_algo),
+			 opt.def_cipher_algo);
+
+	      efx->cfx.dek->algo = opt.def_cipher_algo;
+	    }
 
             efx->cfx.dek->use_mdc = select_mdc_from_pklist (efx->pk_list);
 
