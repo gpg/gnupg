@@ -86,6 +86,11 @@ int ccid_slot_status (ccid_driver_t handle, int *statusbits);
 int ccid_transceive (ccid_driver_t handle,
                      const unsigned char *apdu, size_t apdulen,
                      unsigned char *resp, size_t maxresplen, size_t *nresp);
+int ccid_transceive_secure (ccid_driver_t handle,
+                     const unsigned char *apdu, size_t apdulen,
+                     int pin_mode, 
+                     int pinlen_min, int pinlen_max, int pin_padlen, 
+                     unsigned char *resp, size_t maxresplen, size_t *nresp);
 
 
 

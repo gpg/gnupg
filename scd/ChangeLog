@@ -1,3 +1,13 @@
+2004-10-06  Werner Koch  <wk@g10code.de>
+
+	* ccid-driver.c (ccid_open_reader): Store the vendor ID.
+	(ccid_transceive_secure): New.
+	(parse_ccid_descriptor): Workaround for an SCM reader problem.
+
+2004-10-04  Werner Koch  <wk@g10code.de>
+
+	* ccid-driver.c (send_escape_cmd): New.
+
 2004-09-30  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am: Adjusted for gettext 0.14.
