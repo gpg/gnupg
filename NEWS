@@ -14,7 +14,7 @@ Noteworthy changes in version 1.1.92
       with other programs (most commonly PGP earlier than version 7.x)
       that do not support MDCs.
 
-    * The option --interactive has now the desired effect when
+    * The option --interactive now has the desired effect when
       importing keys.
 
     * The file permission and ownership checks on files have been
@@ -76,6 +76,7 @@ Noteworthy changes in version 1.1.91 (2002-08-04)
 
     * The LDAP keyserver handler now works properly with very old
       (version 1) LDAP keyservers.
+
 
 Noteworthy changes in version 1.1.90 (2002-07-01)
 -------------------------------------------------

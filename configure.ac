@@ -355,11 +355,11 @@ AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt,
 	[NETLIBS="-lsocket $NETLIBS"]))
 
 # Try and link a LDAP test program to weed out unusable LDAP
-# libraries.  -lldap -llber -lresolv is for OpenLDAP.  -lldapssl41 is
-# for Mozilla LDAP.
+# libraries.  -lldap -llber [-lresolv] is for OpenLDAP.  -lldapssl41
+# is for Mozilla LDAP.
 
 if test "$try_ldap" = yes ; then
-  for LDAPLIBS in "-lldap -llber -lresolv" "-lldapssl41"; do
+  for LDAPLIBS in "-lldap -llber -lresolv" "-lldap -llber" "-lldapssl41"; do
     _ldap_save_libs=$LIBS
     LIBS="$LDAPLIBS $NETLIBS $LIBS"
 
@@ -536,7 +536,7 @@ AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
 AC_FUNC_FORK
 AC_CHECK_FUNCS(strerror stpcpy strsep strlwr tcgetattr strtoul mmap)
-AC_CHECK_FUNCS(strcasecmp strncasecmp hstrerror)
+AC_CHECK_FUNCS(strcasecmp strncasecmp)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(atexit raise getpagesize strftime nl_langinfo setlocale)
 AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe stat)
