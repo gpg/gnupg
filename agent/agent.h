@@ -47,26 +47,28 @@ out_of_core (void)
 
 /* A large struct name "opt" to keep global flags */
 struct {
-  unsigned int debug; /* debug flags (DBG_foo_VALUE) */
-  int verbose;      /* verbosity level */
-  int quiet;        /* be as quiet as possible */
-  int dry_run;      /* don't change any persistent data */
-  int batch;        /* batch mode */
-  const char *homedir; /* configuration directory name */
-  const char *pinentry_program; 
-  const char *scdaemon_program; 
-  int no_grab;      /* don't let the pinentry grab the keyboard */
+  unsigned int debug;  /* Debug flags (DBG_foo_VALUE) */
+  int verbose;         /* Verbosity level */
+  int quiet;           /* Be as quiet as possible */
+  int dry_run;         /* Don't change any persistent data */
+  int batch;           /* Batch mode */
+  const char *homedir; /* Configuration directory name */
+  const char *pinentry_program; /* Filename of the program to start as
+                                   pinentry.  */
+  const char *scdaemon_program; /* Filename of the program to handle
+                                   smartcard tasks.  */
+  int no_grab;         /* Don't let the pinentry grab the keyboard */
   unsigned long def_cache_ttl;
   unsigned long max_cache_ttl;
 
-  int running_detached; /* we are running detached from the tty. */
+  int running_detached; /* We are running detached from the tty. */
 
   int ignore_cache_for_signing;
   int allow_mark_trusted;
   int allow_preset_passphrase;
-  int keep_tty;  /* don't switch the TTY (for pinentry) on request */
-  int keep_display;  /* don't switch the DISPLAY (for pinentry) on request */
-  int ssh_support;		/* Enable ssh-agent emulation.  */
+  int keep_tty;      /* Don't switch the TTY (for pinentry) on request */
+  int keep_display;  /* Don't switch the DISPLAY (for pinentry) on request */
+  int ssh_support;   /* Enable ssh-agent emulation.  */
 } opt;
 
 
@@ -131,7 +133,7 @@ enum {
 };
 
 /*-- gpg-agent.c --*/
-void agent_exit (int rc); /* also implemented in other tools */
+void agent_exit (int rc) JNLIB_GCC_A_NR; /* Also implemented in other tools */
 void agent_init_default_ctrl (struct server_control_s *ctrl);
 
 /*-- command.c --*/

@@ -51,6 +51,7 @@
 #include "../jnlib/w32-afunix.h"
 #endif
 
+
 enum cmd_and_opt_values 
 { aNull = 0,
   oCsh		  = 'c',
@@ -146,7 +147,7 @@ static ARGPARSE_OPTS opts[] = {
                              N_("allow clients to mark keys as \"trusted\"")},
   { oAllowPresetPassphrase, "allow-preset-passphrase", 0,
                              N_("allow presetting passphrase")},
-  { oSSHSupport, "ssh-support", 0, "Enable SSH-Agent emulation" },
+  { oSSHSupport, "ssh-support", 0, N_("enable secure ssh-agent emulation") },
   {0}
 };
 
@@ -163,7 +164,7 @@ static int shutdown_pending;
 /* It is possible that we are currently running under setuid permissions */
 static int maybe_setuid = 1;
 
-/* Name of the communication socket */
+/* Name of the communication socket used for native gpg-agent requests.  */
 static char *socket_name;
 
 /* Name of the communication socket used for ssh-agent-emulation.  */
@@ -186,8 +187,15 @@ static const char *debug_level;
    the log file after a SIGHUP if it didn't changed. Malloced. */
 static char *current_logfile;
 
-/* Local prototypes. */
+/*
+   Local prototypes. 
+ */
+
+static char *create_socket_name (int use_standard_socket,
+                                 char *standard_name, char *template);
+static int create_server_socket (int is_standard_name, const char *name);
 static void create_directories (void);
+
 #ifdef USE_GNU_PTH
 static void handle_connections (int listen_fd, int listen_fd_ssh);
 /* Pth wrapper function definitions. */
@@ -196,6 +204,12 @@ GCRY_THREAD_OPTION_PTH_IMPL;
 
 static int check_for_running_agent (int);
 
+
+
+
+/*
+   Functions. 
+ */
 
 
 static const char *
@@ -302,8 +316,9 @@ set_debug (void)
 }
  
 
+/* Helper for cleanup to remove one socket with NAME.  */
 static void
-cleanup_do (char *name)
+remove_socket (char *name)
 {
   if (name && *name)
     {
@@ -324,8 +339,8 @@ cleanup_do (char *name)
 static void
 cleanup (void)
 {
-  cleanup_do (socket_name);
-  cleanup_do (socket_name_ssh);
+  remove_socket (socket_name);
+  remove_socket (socket_name_ssh);
 }
 
 
@@ -414,105 +429,6 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       return 0; /* not handled */
     }
   return 1; /* handled */
-}
-
-
-static void
-create_socket_name (char **name, int standard_socket,
-		    struct sockaddr_un *serv_addr,
-		    char *standard_identifier, char *identifier)
-{
-  char *p;
-
-  if (standard_socket)
-    *name = make_filename (opt.homedir, standard_identifier, NULL);
-  else
-    {
-      *name = xstrdup (identifier);
-      p = strrchr (*name, '/');
-      if (! p)
-	BUG ();
-      *p = 0;
-      if (!mkdtemp (*name))
-	{
-	  log_error (_("can't create directory `%s': %s\n"),
-		     *name, strerror (errno));
-	  exit (1);
-	}
-      *p = '/';
-    }
-
-  if (strchr (*name, PATHSEP_C))
-    {
-      log_error ("`%s' are not allowed in the socket name\n", PATHSEP_S);
-      exit (1);
-    }
-  if (strlen (*name) + 1 >= sizeof serv_addr->sun_path)
-    {
-      log_error ("name of socket too long\n");
-      exit (1);
-    }
-}
-
-static int
-create_server_socket (struct sockaddr_un *serv_addr,
-		      int standard_socket, const char *name)
-{
-  socklen_t len;
-  int fd;
-  int rc;
-
-#ifdef HAVE_W32_SYSTEM
-  fd = _w32_sock_new (AF_UNIX, SOCK_STREAM, 0);
-#else
-  fd = socket (AF_UNIX, SOCK_STREAM, 0);
-#endif
-  if (fd == -1)
-    {
-      log_error ("can't create socket: %s\n", strerror (errno));
-      exit (1);
-    }
-
-  memset (serv_addr, 0, sizeof *serv_addr);
-  serv_addr->sun_family = AF_UNIX;
-  strcpy (serv_addr->sun_path, name);
-  len = (offsetof (struct sockaddr_un, sun_path)
-	 + strlen (serv_addr->sun_path) + 1);
-
-#ifdef HAVE_W32_SYSTEM
-  rc = _w32_sock_bind (fd, (struct sockaddr*) serv_addr, len);
-  if ((rc == -1) && standard_socket)
-    {
-      remove (name);
-      rc = bind (fd, (struct sockaddr*) serv_addr, len);
-    }
-#else
-  rc = bind (fd, (struct sockaddr*) serv_addr, len);
-  if ((rc == -1) && standard_socket && (errno == EADDRINUSE))
-    {
-      remove (name);
-      rc = bind (fd, (struct sockaddr*) serv_addr, len);
-    }
-#endif
-  if (rc == -1)
-    {
-      log_error ("error binding socket to `%s': %s\n",
-		 serv_addr->sun_path, strerror (errno));
-      close (fd);
-      exit (1);
-    }
-
-  if (listen (fd, 5 ) == -1)
-    {
-      log_error ("listen() failed: %s\n", strerror (errno));
-      close (fd);
-      exit (1);
-    }
-
-  if (opt.verbose)
-    log_info ("listening on socket `%s'\n", socket_name);
-
-  return fd;
 }
 
 
@@ -865,8 +781,6 @@ main (int argc, char **argv )
       int fd;
       int fd_ssh;
       pid_t pid;
-      struct sockaddr_un serv_addr;
-      struct sockaddr_un serv_addr_ssh;
 
       /* Remove the DISPLAY variable so that a pinentry does not
          default to a specific display.  There is still a default
@@ -877,26 +791,26 @@ main (int argc, char **argv )
         unsetenv ("DISPLAY");
 #endif
 
-      /* Create the socket name . */
-      create_socket_name (&socket_name, standard_socket, &serv_addr,
-			  "S.gpg-agent", "/tmp/gpg-XXXXXX/S.gpg-agent");
-      if (opt.ssh_support)
-	create_socket_name (&socket_name_ssh, standard_socket, &serv_addr_ssh,
-			    "S.gpg-agent.ssh", "/tmp/gpg-XXXXXX/S.gpg-agent.ssh");
 
-      fd = create_server_socket (&serv_addr,
-				 standard_socket, socket_name);
+      /* Create the sockets.  */
+      socket_name = create_socket_name (standard_socket,
+                                        "S.gpg-agent",
+                                        "/tmp/gpg-XXXXXX/S.gpg-agent");
       if (opt.ssh_support)
-	fd_ssh = create_server_socket (&serv_addr_ssh,
-				       standard_socket, socket_name_ssh);
+	socket_name_ssh = create_socket_name (standard_socket, 
+                                            "S.gpg-agent.ssh",
+                                            "/tmp/gpg-XXXXXX/S.gpg-agent.ssh");
+
+      fd = create_server_socket (standard_socket, socket_name);
+      if (opt.ssh_support)
+	fd_ssh = create_server_socket (standard_socket, socket_name_ssh);
       else
-	/* Make the compiler happy.  */
 	fd_ssh = -1;
+
 
       fflush (NULL);
 #ifdef HAVE_W32_SYSTEM
       pid = getpid ();
-      printf ("set GPG_AGENT_INFO=%s;%lu;1\n", socket_name, (ulong)pid);
       printf ("set GPG_AGENT_INFO=%s;%lu;1\n", socket_name, (ulong)pid);
 #else /*!HAVE_W32_SYSTEM*/
       pid = fork ();
@@ -911,7 +825,7 @@ main (int argc, char **argv )
           
           close (fd);
           
-          /* create the info string: <name>:<pid>:<protocol_version> */
+          /* Create the info string: <name>:<pid>:<protocol_version> */
           if (asprintf (&infostr, "GPG_AGENT_INFO=%s:%lu:1",
                         socket_name, (ulong)pid ) < 0)
             {
@@ -937,13 +851,14 @@ main (int argc, char **argv )
 		}
 	    }
 
-          *socket_name = 0; /* don't let cleanup() remove the socket -
+          *socket_name = 0; /* Don't let cleanup() remove the socket -
                                the child should do this from now on */
 	  if (opt.ssh_support)
 	    *socket_name_ssh = 0;
 
+
           if (argc) 
-            { /* run the program given on the commandline */
+            { /* Run the program given on the commandline.  */
               if (putenv (infostr))
                 {
                   log_error ("failed to set environment: %s\n",
@@ -972,18 +887,18 @@ main (int argc, char **argv )
             }
           else
             {
-              /* print the environment string, so that the caller can use
+              /* Print the environment string, so that the caller can use
                  shell's eval to set it */
               if (csh_style)
                 {
                   *strchr (infostr, '=') = ' ';
-                  printf ( "setenv %s\n", infostr);
+                  printf ("setenv %s\n", infostr);
 		  if (opt.ssh_support)
 		    {
 		      *strchr (infostr_ssh_sock, '=') = ' ';
-		      printf ( "setenv %s\n", infostr_ssh_sock);
+		      printf ("setenv %s\n", infostr_ssh_sock);
 		      *strchr (infostr_ssh_pid, '=') = ' ';
-		      printf ( "setenv %s\n", infostr_ssh_pid);
+		      printf ("setenv %s\n", infostr_ssh_pid);
 		    }
                 }
               else
@@ -991,10 +906,11 @@ main (int argc, char **argv )
                   printf ( "%s; export GPG_AGENT_INFO;\n", infostr);
 		  if (opt.ssh_support)
 		    {
-		      printf ( "%s; export SSH_AUTH_SOCK;\n", infostr_ssh_sock);
-		      printf ( "%s; export SSH_AGENT_PID;\n", infostr_ssh_pid);
+		      printf ("%s; export SSH_AUTH_SOCK;\n", infostr_ssh_sock);
+		      printf ("%s; export SSH_AGENT_PID;\n", infostr_ssh_pid);
 		    }
                 }
+              /* Note: teh standard free is here correct.  */
               free (infostr);
 	      if (opt.ssh_support)
 		{
@@ -1003,8 +919,8 @@ main (int argc, char **argv )
 		}
               exit (0); 
             }
-          /*NEVER REACHED*/
-        } /* end parent */
+          /*NOTREACHED*/
+        } /* End parent */
 
       /* 
          This is the child
@@ -1181,6 +1097,125 @@ reread_configuration (void)
 }
 
 
+
+
+/* Create a name for the socket.  With USE_STANDARD_SOCKET given as
+   true ising STANDARD_NAME in the home directory or if given has
+   false from the mkdir type name TEMPLATE.  In the latter case a
+   unique name in a unique new directory will be created.  In both
+   cases check for valid characters as well as against a maximum
+   allowed length for a unix domain socket is done.  The function
+   terminates the process in case of an error.  Retunrs: Pointer to an
+   allcoated string with the absolute name of the socket used.  */
+static char *
+create_socket_name (int use_standard_socket,
+		    char *standard_name, char *template)
+{
+  char *name, *p;
+
+  if (use_standard_socket)
+    name = make_filename (opt.homedir, standard_name, NULL);
+  else
+    {
+      name = xstrdup (template);
+      p = strrchr (name, '/');
+      if (!p)
+	BUG ();
+      *p = 0;
+      if (!mkdtemp (name))
+	{
+	  log_error (_("can't create directory `%s': %s\n"),
+		     name, strerror (errno));
+	  agent_exit (2);
+	}
+      *p = '/';
+    }
+
+  if (strchr (name, PATHSEP_C))
+    {
+      log_error (("`%s' are not allowed in the socket name\n"), PATHSEP_S);
+      agent_exit (2);
+    }
+  if (strlen (name) + 1 >= DIMof (struct sockaddr_un, sun_path) )
+    {
+      log_error (_("name of socket too long\n"));
+      agent_exit (2);
+    }
+  return name;
+}
+
+
+
+/* Create a Unix domain socket with NAME.  IS_STANDARD_NAME indicates
+   whether a non-random socket is used.  Returns the filedescriptor or
+   terminates the process in case of an error. */
+static int
+create_server_socket (int is_standard_name, const char *name)
+{
+  struct sockaddr_un *serv_addr;
+  socklen_t len;
+  int fd;
+  int rc;
+
+#ifdef HAVE_W32_SYSTEM
+  fd = _w32_sock_new (AF_UNIX, SOCK_STREAM, 0);
+#else
+  fd = socket (AF_UNIX, SOCK_STREAM, 0);
+#endif
+  if (fd == -1)
+    {
+      log_error (_("can't create socket: %s\n"), strerror (errno));
+      agent_exit (2);
+    }
+
+
+  memset (serv_addr, 0, sizeof *serv_addr);
+  serv_addr->sun_family = AF_UNIX;
+  assert (strlen (name) + 1 < sizeof (serv_addr->sun_path));
+  strcpy (serv_addr->sun_path, name);
+  len = (offsetof (struct sockaddr_un, sun_path)
+	 + strlen (serv_addr->sun_path) + 1);
+
+#ifdef HAVE_W32_SYSTEM
+  rc = _w32_sock_bind (fd, (struct sockaddr*) serv_addr, len);
+  if (is_standard_name && rc == -1 )
+    {
+      remove (name);
+      rc = bind (fd, (struct sockaddr*) serv_addr, len);
+    }
+#else
+  rc = bind (fd, (struct sockaddr*) serv_addr, len);
+  if (is_standard_name && rc == -1 && errno == EADDRINUSE)
+    {
+      remove (name);
+      rc = bind (fd, (struct sockaddr*) serv_addr, len);
+    }
+#endif
+  if (rc == -1)
+    {
+      log_error (_("error binding socket to `%s': %s\n"),
+		 serv_addr->sun_path, strerror (errno));
+      close (fd);
+      agent_exit (2);
+    }
+
+  if (listen (fd, 5 ) == -1)
+    {
+      log_error (_("listen() failed: %s\n"), strerror (errno));
+      close (fd);
+      agent_exit (2);
+    }
+          
+  if (opt.verbose)
+    log_info (_("listening on socket `%s'\n"), serv_addr->sun_path);
+
+  return fd;
+}
+
+
+/* Check that the directory for storing the private keys exists and
+   create it if not.  This function won't fail as it is only a
+   convenience function and not strictly necessary.  */
 static void
 create_private_keys_directory (const char *home)
 {
@@ -1218,7 +1253,7 @@ create_directories (void)
   const char *defhome = GNUPG_DEFAULT_HOMEDIR;
   char *home;
 
-  home  = make_filename (opt.homedir, NULL);
+  home = make_filename (opt.homedir, NULL);
   if ( stat (home, &statbuf) )
     {
       if (errno == ENOENT)
@@ -1248,11 +1283,11 @@ create_directories (void)
             }
         }
       else
-        log_error ("error stat-ing `%s': %s\n", home, strerror (errno));
+        log_error (_("stat() failed for `%s': %s\n"), home, strerror (errno));
     }
   else if ( !S_ISDIR(statbuf.st_mode))
     {
-      log_error ("can't use `%s' as home directory\n", home);
+      log_error (_("can't use `%s' as home directory\n"), home);
     }
   else /* exists and is a directory. */
     {
@@ -1315,13 +1350,14 @@ handle_signal (int signo)
 }
 
 
+/* This is the standard connection thread's main function.  */
 static void *
 start_connection_thread (void *arg)
 {
   int fd = (int)arg;
 
   if (opt.verbose)
-    log_info ("handler for fd %d started\n", fd);
+    log_info (_("handler for fd %d started\n"), fd);
 
   /* FIXME: Move this housekeeping into a ticker function.  Calling it
      for each connection should work but won't work anymore if our
@@ -1330,31 +1366,33 @@ start_connection_thread (void *arg)
 
   start_command_handler (-1, fd);
   if (opt.verbose)
-    log_info ("handler for fd %d terminated\n", fd);
+    log_info (_("handler for fd %d terminated\n"), fd);
   
   return NULL;
 }
 
+
+/* This is the ssh connection thread's main function.  */
 static void *
 start_connection_thread_ssh (void *arg)
 {
   int fd = (int)arg;
 
   if (opt.verbose)
-    log_info ("ssh handler for fd %d started\n", fd);
+    log_info (_("ssh handler for fd %d started\n"), fd);
 
-  /* FIXME: Move this housekeeping into a ticker function.  Calling it
-     for each connection should work but won't work anymore if our
-     cleints start to keep connections. */
   agent_trustlist_housekeeping ();
 
   start_command_handler_ssh (fd);
   if (opt.verbose)
-    log_info ("ssh handler for fd %d terminated\n", fd);
+    log_info (_("ssh handler for fd %d terminated\n"), fd);
   
   return NULL;
 }
 
+
+/* Connection handler loop.  Wait for coecntion requests and spawn a
+   thread after accepting a connection.  */
 static void
 handle_connections (int listen_fd, int listen_fd_ssh)
 {
@@ -1363,7 +1401,7 @@ handle_connections (int listen_fd, int listen_fd_ssh)
   sigset_t sigs;
   int signo;
   struct sockaddr_un paddr;
-  socklen_t plen = sizeof ( paddr );
+  socklen_t plen;
   fd_set fdset, read_fdset;
   int ret;
   int fd;
@@ -1406,74 +1444,62 @@ handle_connections (int listen_fd, int listen_fd_ssh)
           continue;
 	}
 
+      /* POSIX says that fd_set should be implemented as a structure,
+         thus a simple assignment is fine to copy the entire set.  */
       read_fdset = fdset;
-      ret = pth_select (FD_SETSIZE, &read_fdset, NULL, NULL, NULL);
+
+      ret = pth_select_ev (FD_SETSIZE, &read_fdset, NULL, NULL, NULL, ev);
       if (ret == -1)
 	{
-	  log_error ("pth_select failed: %s - waiting 1s\n",
-		     strerror (errno));
-	  pth_sleep (1);
+          log_error (_("pth_select failed: %s - waiting 1s\n"),
+                     strerror (errno));
+          pth_sleep (1);
 	  continue;
 	}
-      
+
+      if (pth_event_occurred (ev))
+        {
+          handle_signal (signo);
+        }
 
       if (FD_ISSET (listen_fd, &read_fdset))
 	{
-	  fd = pth_accept_ev (listen_fd, (struct sockaddr *)&paddr, &plen, ev);
+          plen = sizeof paddr;
+	  fd = pth_accept (listen_fd, (struct sockaddr *)&paddr, &plen);
 	  if (fd == -1)
 	    {
-#ifdef PTH_STATUS_OCCURRED     /* This is Pth 2 */
-	      if (pth_event_status (ev) == PTH_STATUS_OCCURRED)
-#else
-		if (pth_event_occurred (ev))
-#endif
-		  {
-		    handle_signal (signo);
-		    continue;
-		  }
-	      log_error ("accept failed: %s - waiting 1s\n", strerror (errno));
-	      pth_sleep(1);
-	      continue;
+	      log_error ("accept failed: %s\n", strerror (errno));
 	    }
-
-	  if (!pth_spawn (tattr, start_connection_thread, (void*)fd))
+          else if (!pth_spawn (tattr, start_connection_thread, (void*)fd))
 	    {
 	      log_error ("error spawning connection handler: %s\n",
 			 strerror (errno) );
 	      close (fd);
 	    }
+          fd = -1;
 	}
-      else if ((listen_fd_ssh != -1) && FD_ISSET (listen_fd_ssh, &read_fdset))
+
+      if (listen_fd_ssh != -1 && FD_ISSET (listen_fd_ssh, &read_fdset))
 	{
-	  fd = pth_accept_ev (listen_fd_ssh, (struct sockaddr *)&paddr, &plen, ev);
+          plen = sizeof paddr;
+	  fd = pth_accept (listen_fd_ssh, (struct sockaddr *)&paddr, &plen);
 	  if (fd == -1)
 	    {
-#ifdef PTH_STATUS_OCCURRED     /* This is Pth 2 */
-	      if (pth_event_status (ev) == PTH_STATUS_OCCURRED)
-#else
-		if (pth_event_occurred (ev))
-#endif
-		  {
-		    handle_signal (signo);
-		    continue;
-		  }
-	      log_error ("accept failed: %s - waiting 1s\n", strerror (errno));
-	      pth_sleep(1);
-	      continue;
+	      log_error ("accept failed for ssh: %s\n", strerror (errno));
 	    }
-
-	  if (!pth_spawn (tattr, start_connection_thread_ssh, (void*)fd))
+          else if (!pth_spawn (tattr, start_connection_thread_ssh, (void*)fd))
 	    {
-	      log_error ("error spawning connection handler: %s\n",
+	      log_error ("error spawning ssh connection handler: %s\n",
 			 strerror (errno) );
 	      close (fd);
 	    }
+          fd = -1;
 	}
     }
 
   pth_event_free (ev, PTH_FREE_ALL);
   cleanup ();
-  log_info ("%s %s stopped\n", strusage(11), strusage(13));
+  log_info (_("%s %s stopped\n"), strusage(11), strusage(13));
 }
 #endif /*USE_GNU_PTH*/
 
@@ -1527,6 +1553,7 @@ check_for_running_agent (int mode)
   else /* MODE != 0 */
     {
       infostr = make_filename (opt.homedir, "S.gpg-agent", NULL);
+      pid = (pid_t)(-1);
     }
 
 

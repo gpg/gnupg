@@ -22,7 +22,7 @@
 /* Only v2 of the ssh-agent protocol is implemented.  */
 
 #include <config.h>
-#include <stdint.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -33,9 +33,8 @@
 
 #include "agent.h"
 
-#include <gcrypt.h>
-
 #include "estream.h"
+#include "i18n.h"
 
 
 
@@ -59,13 +58,17 @@
 #define SSH_RESPONSE_IDENTITIES_ANSWER    12
 #define SSH_RESPONSE_SIGN_RESPONSE        14
 
+/* Other constants.  */
+#define SSH_DSA_SIGNATURE_PADDING 20
+#define SSH_DSA_SIGNATURE_ELEMS    2
+#define SPEC_FLAG_USE_PKCS1V2 (1 << 0)
+
+
+
 
 
 
 /* Basic types.  */
-
-/* A "byte".  */
-typedef unsigned char byte_t;
 
 typedef gpg_error_t (*ssh_request_handler_t) (ctrl_t ctrl,
 					      estream_t request,
@@ -73,12 +76,13 @@ typedef gpg_error_t (*ssh_request_handler_t) (ctrl_t ctrl,
 
 typedef struct ssh_request_spec
 {
-  byte_t type;
+  unsigned char type;
   ssh_request_handler_t handler;
   const char *identifier;
 } ssh_request_spec_t;
 
-typedef gpg_error_t (*ssh_key_modifier_t) (const char *elems, gcry_mpi_t *mpis);
+typedef gpg_error_t (*ssh_key_modifier_t) (const char *elems,
+                                           gcry_mpi_t *mpis);
 typedef gpg_error_t (*ssh_signature_encoder_t) (estream_t signature_blob,
 						gcry_mpi_t *mpis);
 
@@ -96,10 +100,91 @@ typedef struct ssh_key_type_spec
   unsigned int flags;
 } ssh_key_type_spec_t;
 
+
+/* Prototypes.  */
+static gpg_error_t ssh_handler_request_identities (ctrl_t ctrl,
+                                                   estream_t request,
+                                                   estream_t response);
+static gpg_error_t ssh_handler_sign_request (ctrl_t ctrl,
+                                             estream_t request,
+                                             estream_t response);
+static gpg_error_t ssh_handler_add_identity (ctrl_t ctrl,
+                                             estream_t request,
+                                             estream_t response);
+static gpg_error_t ssh_handler_remove_identity (ctrl_t ctrl,
+                                                estream_t request,
+                                                estream_t response);
+static gpg_error_t ssh_handler_remove_all_identities (ctrl_t ctrl,
+                                                      estream_t request,
+                                                      estream_t response);
+static gpg_error_t ssh_handler_lock (ctrl_t ctrl,
+                                     estream_t request,
+                                     estream_t response);
+static gpg_error_t ssh_handler_unlock (ctrl_t ctrl,
+                                     estream_t request,
+                                     estream_t response);
+
+static gpg_error_t ssh_key_modifier_rsa (const char *elems, gcry_mpi_t *mpis);
+static gpg_error_t ssh_signature_encoder_rsa (estream_t signature_blob,
+                                              gcry_mpi_t *mpis);
+static gpg_error_t ssh_signature_encoder_dsa (estream_t signature_blob,
+                                              gcry_mpi_t *mpis);
+
+
+
+/* Global variables.  */
+   
+
+/* Associating request types with the corresponding request
+   handlers.  */
+
+#define REQUEST_SPEC_DEFINE(id, name) \
+  { SSH_REQUEST_##id, ssh_handler_##name, #name }
+
+static ssh_request_spec_t request_specs[] =
+  {
+    REQUEST_SPEC_DEFINE (REQUEST_IDENTITIES,    request_identities),
+    REQUEST_SPEC_DEFINE (SIGN_REQUEST,          sign_request),
+    REQUEST_SPEC_DEFINE (ADD_IDENTITY,          add_identity),
+    REQUEST_SPEC_DEFINE (ADD_ID_CONSTRAINED,    add_identity),
+    REQUEST_SPEC_DEFINE (REMOVE_IDENTITY,       remove_identity),
+    REQUEST_SPEC_DEFINE (REMOVE_ALL_IDENTITIES, remove_all_identities),
+    REQUEST_SPEC_DEFINE (LOCK,                  lock),
+    REQUEST_SPEC_DEFINE (UNLOCK,                unlock)
+  };
+#undef REQUEST_SPEC_DEFINE
+
+
+/* Table holding key type specifications.  */
+static ssh_key_type_spec_t ssh_key_types[] =
+  {
+    {
+      "ssh-rsa", "rsa", "nedupq", "en",   "dupq", "s",  "nedpqu",
+      ssh_key_modifier_rsa, ssh_signature_encoder_rsa,
+      SPEC_FLAG_USE_PKCS1V2
+    },
+    {
+      "ssh-dss", "dsa", "pqgyx",  "pqgy", "x",    "rs", "pqgyx",
+      NULL,                 ssh_signature_encoder_dsa,
+      0
+    },
+  };
+
 
 
-/* General utility functions.  */
 
+
+
+
+
+/*
+   General utility functions. 
+ */
+
+/* A secure realloc, i.e. it amkese sure to allocate secure memory if
+   A is NULL.  This is required becuase the standard gcry_realloc does
+   not know whether to allocate secure or normal if NULL is passed as
+   existing buffer.  */
 static void *
 realloc_secure (void *a, size_t n)
 {
@@ -113,10 +198,39 @@ realloc_secure (void *a, size_t n)
   return p;
 }
 
-/* Primitive I/O functions.  */
+
+
+static char *
+make_cstring (const char *data, size_t data_n)
+{
+  char *s;
+
+  s = xtrymalloc (data_n + 1);
+  if (s)
+    {
+      strncpy (s, data, data_n);
+      s[data_n] = 0;
+    }
+
+  return s;
+}
+
+
+
+
+/* 
+   Primitive I/O functions.  
+
+   FIXME: Needs documentation.
+
+   Why are all these functions prefixed with es_ ? They are not part
+   of libestream, thus they should not use this prefix.
+
+ */
+
 
 static gpg_error_t
-es_read_byte (estream_t stream, byte_t *b)
+es_read_byte (estream_t stream, unsigned char *b)
 {
   gpg_error_t err;
   int ret;
@@ -138,8 +252,9 @@ es_read_byte (estream_t stream, byte_t *b)
   return err;
 }
 
+
 static gpg_error_t
-es_write_byte (estream_t stream, byte_t b)
+es_write_byte (estream_t stream, unsigned char b)
 {
   gpg_error_t err;
   int ret;
@@ -153,8 +268,9 @@ es_write_byte (estream_t stream, byte_t b)
   return err;
 }
 
+
 static gpg_error_t
-es_read_uint32 (estream_t stream, uint32_t *uint32)
+es_read_uint32 (estream_t stream, u32 *uint32)
 {
   unsigned char buffer[4];
   size_t bytes_read;
@@ -170,13 +286,20 @@ es_read_uint32 (estream_t stream, uint32_t *uint32)
 	err = gpg_error (GPG_ERR_EOF);
       else
 	{
-	  uint32_t n;
+	  u32 n;
 
+          /* FIXME: For what is the cast good for? The proper way of
+             wrinting it - assuming an unsigned buffer - is:
+
+             n = (buffer[0]<< 24)|(buffer[0]<< 16)|(buffer[0]<<8)|(buffer[0]);
+            
+             -wk
+          */
 	  n = (0
-	       | ((uint32_t) (buffer[0] << 24))
-	       | ((uint32_t) (buffer[1] << 16))
-	       | ((uint32_t) (buffer[2] <<  8))
-	       | ((uint32_t) (buffer[3] <<  0)));
+	       | ((u32) (buffer[0] << 24))
+	       | ((u32) (buffer[1] << 16))
+	       | ((u32) (buffer[2] <<  8))
+	       | ((u32) (buffer[3] <<  0)));
 	  *uint32 = n;
 	  err = 0;
 	}
@@ -185,13 +308,15 @@ es_read_uint32 (estream_t stream, uint32_t *uint32)
   return err;
 }
 
+
 static gpg_error_t
-es_write_uint32 (estream_t stream, uint32_t uint32)
+es_write_uint32 (estream_t stream, u32 uint32)
 {
   unsigned char buffer[4];
   gpg_error_t err;
   int ret;
 
+  /* Fixme:  The 0xFF mask is superfluous.  */
   buffer[0] = (uint32 >> 24) & 0xFF;
   buffer[1] = (uint32 >> 16) & 0xFF;
   buffer[2] = (uint32 >>  8) & 0xFF;
@@ -205,6 +330,7 @@ es_write_uint32 (estream_t stream, uint32_t uint32)
 
   return err;
 }
+
 
 static gpg_error_t
 es_read_data (estream_t stream, unsigned char *buffer, size_t size)
@@ -227,6 +353,7 @@ es_read_data (estream_t stream, unsigned char *buffer, size_t size)
   return err;
 }
 
+
 static gpg_error_t
 es_write_data (estream_t stream, const unsigned char *buffer, size_t size)
 {
@@ -242,13 +369,14 @@ es_write_data (estream_t stream, const unsigned char *buffer, size_t size)
   return err;
 }
 
+
 static gpg_error_t
 es_read_string (estream_t stream, unsigned int secure,
-		unsigned char **string, uint32_t *string_size)
+		unsigned char **string, u32 *string_size)
 {
   gpg_error_t err;
   unsigned char *buffer;
-  uint32_t length;
+  u32 length;
 
   buffer = NULL;
 
@@ -289,6 +417,7 @@ es_read_string (estream_t stream, unsigned int secure,
   return err;
 }
 
+
 static gpg_error_t
 es_read_cstring (estream_t stream, char **string)
 {
@@ -306,9 +435,11 @@ es_read_cstring (estream_t stream, char **string)
   return err;
 }
 
+
+/* FIXME: Needs documentation.  */
 static gpg_error_t
 es_write_string (estream_t stream,
-		 const unsigned char *string, uint32_t string_n)
+		 const unsigned char *string, u32 string_n)
 {
   gpg_error_t err;
 
@@ -323,6 +454,7 @@ es_write_string (estream_t stream,
   return err;
 }
 
+
 static gpg_error_t
 es_write_cstring (estream_t stream, const char *string)
 {
@@ -334,11 +466,12 @@ es_write_cstring (estream_t stream, const char *string)
   return err;
 }			  
 
+
 static gpg_error_t
 es_read_mpi (estream_t stream, unsigned int secure, gcry_mpi_t *mpint)
 {
   unsigned char *mpi_data;
-  uint32_t mpi_data_size;
+  u32 mpi_data_size;
   gpg_error_t err;
   gcry_mpi_t mpi;
 
@@ -361,6 +494,7 @@ es_read_mpi (estream_t stream, unsigned int secure, gcry_mpi_t *mpint)
   return err;
 }
 
+
 static gpg_error_t
 es_write_mpi (estream_t stream, gcry_mpi_t mpint)
 {
@@ -382,6 +516,7 @@ es_write_mpi (estream_t stream, gcry_mpi_t mpint)
 
   return err;
 }
+
 
 static gpg_error_t
 es_read_file (const char *filename, unsigned char **buffer, size_t *buffer_n)
@@ -434,6 +569,7 @@ es_read_file (const char *filename, unsigned char **buffer, size_t *buffer_n)
   return err;
 }
 
+
 static gpg_error_t
 es_copy (estream_t dst, estream_t src)
 {
@@ -463,9 +599,14 @@ es_copy (estream_t dst, estream_t src)
   return err;
 }
 
+
 
 
-/* MPI lists.  */
+/*
+
+  MPI lists. 
+
+ */
 
 static void
 mpint_list_free (gcry_mpi_t *mpi_list)
@@ -479,6 +620,7 @@ mpint_list_free (gcry_mpi_t *mpi_list)
       xfree (mpi_list);
     }
 }
+
 
 static gpg_error_t
 ssh_receive_mpint_list (estream_t stream, int secret,
@@ -593,8 +735,7 @@ ssh_signature_encoder_rsa (estream_t signature_blob, gcry_mpi_t *mpis)
   return err;
 }
 
-#define SSH_DSA_SIGNATURE_PADDING 20
-#define SSH_DSA_SIGNATURE_ELEMS    2
+
 
 static gpg_error_t
 ssh_signature_encoder_dsa (estream_t signature_blob, gcry_mpi_t *mpis)
@@ -639,27 +780,9 @@ ssh_signature_encoder_dsa (estream_t signature_blob, gcry_mpi_t *mpis)
   return err;
 }
 
-#define SPEC_FLAG_USE_PKCS1V2 (1 << 0)
-
-
-/* Table holding key type specifications.  */
-static ssh_key_type_spec_t ssh_key_types[] =
-  {
-    {
-      "ssh-rsa", "rsa", "nedupq", "en",   "dupq", "s",  "nedpqu",
-      ssh_key_modifier_rsa, ssh_signature_encoder_rsa,
-      SPEC_FLAG_USE_PKCS1V2
-    },
-    {
-      "ssh-dss", "dsa", "pqgyx",  "pqgy", "x",    "rs", "pqgyx",
-      NULL,                 ssh_signature_encoder_dsa,
-      0
-    },
-  };
-
-
-
-/* S-Expressions.  */
+/* 
+   S-Expressions. 
+ */
 
 static gpg_error_t
 ssh_sexp_construct (gcry_sexp_t *sexp,
@@ -685,7 +808,9 @@ ssh_sexp_construct (gcry_sexp_t *sexp,
     elems = key_spec.elems_key_public;
   elems_n = strlen (elems);
 
-  sexp_template_n = 33 + strlen (key_spec.identifier) + (elems_n * 6) - (! secret);
+  /* FIXME: Why 33? -wk */
+  sexp_template_n = (33 + strlen (key_spec.identifier)
+                     + (elems_n * 6) - (!secret));
   sexp_template = xtrymalloc (sexp_template_n);
   if (! sexp_template)
     {
@@ -765,13 +890,13 @@ ssh_sexp_extract (gcry_sexp_t sexp,
       goto out;
     }
 
-  if ((data_n == 10) && (! strncmp (data, "public-key", 10)))
+  if (data_n == 10 && !strncmp (data, "public-key", 10))
     {
       is_secret = 0;
       elems = key_spec.elems_key_public;
     }
-  else if (((data_n == 11) && (! strncmp (data, "private-key", 11)))
-	   || ((data_n == 21) && (! strncmp (data, "protected-private-key", 21))))
+  else if ((data_n == 11 && !strncmp (data, "private-key", 11))
+	   || (data_n == 21 && !strncmp (data, "protected-private-key", 21)))
     {
       is_secret = 1;
       elems = key_spec.elems_key_secret;
@@ -934,8 +1059,8 @@ ssh_key_type_lookup (const char *ssh_name, const char *name,
 }
 
 static gpg_error_t
-ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret, int read_comment,
-		 ssh_key_type_spec_t *key_spec)
+ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
+                 int read_comment, ssh_key_type_spec_t *key_spec)
 {
   gpg_error_t err;
   char *key_type;
@@ -1093,7 +1218,8 @@ ssh_send_key_public (estream_t stream, gcry_sexp_t key_public)
   if (err)
     goto out;
 
-  err = ssh_convert_key_to_blob (&blob, &blob_n, spec.ssh_identifier, mpi_list);
+  err = ssh_convert_key_to_blob (&blob, &blob_n,
+                                 spec.ssh_identifier, mpi_list);
   if (err)
     goto out;
   
@@ -1268,27 +1394,13 @@ key_secret_to_public (gcry_sexp_t *key_public,
 
 
 
-static char *
-make_cstring (const char *data, size_t data_n)
-{
-  char *s;
-
-  s = xtrymalloc (data_n + 1);
-  if (s)
-    {
-      strncpy (s, data, data_n);
-      s[data_n] = 0;
-    }
-
-  return s;
-}
-
-
-
-/* Request handler.  */
+/*
+  Request handler.  
+ */
 
 static gpg_error_t
-ssh_handler_request_identities (ctrl_t ctrl, estream_t request, estream_t response)
+ssh_handler_request_identities (ctrl_t ctrl,
+                                estream_t request, estream_t response)
 {
   const char *key_type;
   ssh_key_type_spec_t spec;
@@ -1298,7 +1410,7 @@ ssh_handler_request_identities (ctrl_t ctrl, estream_t request, estream_t respon
   char *key_path;
   unsigned char *buffer;
   size_t buffer_n;
-  uint32_t key_counter;
+  u32 key_counter;
   estream_t key_blobs;
   gcry_sexp_t key_secret;
   gcry_sexp_t key_public;
@@ -1468,11 +1580,11 @@ data_hash (unsigned char *data, size_t data_n,
   return 0;
 }
 
+
 static gpg_error_t
-data_sign (CTRL ctrl, ssh_signature_encoder_t sig_encoder,
+data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
 	   unsigned char **sig, size_t *sig_n)
 {
-  char description[] = "Please provide the passphrase for key `%c':";
   gpg_error_t err;
   gcry_sexp_t signature_sexp;
   estream_t stream;
@@ -1501,7 +1613,9 @@ data_sign (CTRL ctrl, ssh_signature_encoder_t sig_encoder,
   sig_value = NULL;
   mpis = NULL;
 
-  err = agent_pksign_do (ctrl, description, &signature_sexp, 0);
+  err = agent_pksign_do (ctrl,
+                         _("Please provide the passphrase "
+                           "for the ssh key `%c':"), &signature_sexp, 0);
   if (err)
     goto out;
 
@@ -1632,12 +1746,12 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
   unsigned int hash_n;
   unsigned char key_grip[20];
   unsigned char *key_blob;
-  uint32_t key_blob_size;
+  u32 key_blob_size;
   unsigned char *data;
   unsigned char *sig;
   size_t sig_n;
-  uint32_t data_size;
-  uint32_t flags;
+  u32 data_size;
+  u32 flags;
   const void *p;
   gpg_error_t err;
   gpg_error_t ret_err;
@@ -1886,6 +2000,11 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   if (err)
     goto out;
 
+
+  /* FIXME: What the hell is that: Never have use sprintf in that way.
+     When marking a string translatbale you might get a buffer
+     overflow.  We have never done this elsewhere.  Using [x]asprintf
+     is the right way!! */
   description_length = 95 + (comment ? strlen (comment) : 0);
   description = malloc (description_length);
   if (! description)
@@ -1896,7 +2015,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   else
     sprintf (description,
 	     "Please provide the passphrase, which should be used "
-	     "for protecting the received secret key `%s':",
+               "for protecting the received secret key `%s':",
 	     comment ? comment : "");
 
   err = get_passphrase (ctrl, description, sizeof (passphrase), passphrase);
@@ -1954,7 +2073,7 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
   gpg_error_t ret_err;
   gpg_error_t err;
   gcry_sexp_t key;
-  byte_t b;
+  unsigned char b;
   int confirm;
   int ttl;
   
@@ -1980,7 +2099,7 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
 	{
 	case SSH_OPT_CONSTRAIN_LIFETIME:
 	  {
-	    uint32_t n = 0;
+	    u32 n = 0;
 
 	    err = es_read_uint32 (request, &n);
 	    if (! err)
@@ -2017,10 +2136,11 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
 }
 
 static gpg_error_t
-ssh_handler_remove_identity (ctrl_t ctrl, estream_t request, estream_t response)
+ssh_handler_remove_identity (ctrl_t ctrl, estream_t request,
+                             estream_t response)
 {
   unsigned char *key_blob;
-  uint32_t key_blob_size;
+  u32 key_blob_size;
   gcry_sexp_t key;
   gpg_error_t ret_err;
   gpg_error_t err;
@@ -2065,7 +2185,8 @@ ssh_identities_remove_all (void)
 }
 
 static gpg_error_t
-ssh_handler_remove_all_identities (ctrl_t ctrl, estream_t request, estream_t response)
+ssh_handler_remove_all_identities (ctrl_t ctrl, estream_t request,
+                                   estream_t response)
 {
   gpg_error_t ret_err;
   gpg_error_t err;
@@ -2083,7 +2204,7 @@ ssh_lock (void)
   gpg_error_t err;
 
   /* FIXME */
-  log_error ("[gpg-agent/ssh] lock command is not implemented\n");
+  log_error (_("lock command is not implemented\n"));
   err = 0;
 
   return err;
@@ -2094,7 +2215,7 @@ ssh_unlock (void)
 {
   gpg_error_t err;
 
-  log_error ("[gpg-agent/ssh] unlock command is not implemented\n");
+  log_error (_("unlock command is not implemented\n"));
   err = 0;
 
   return err;
@@ -2128,39 +2249,19 @@ ssh_handler_unlock (ctrl_t ctrl, estream_t request, estream_t response)
 
 
 
-/* Associating request types with the corresponding request
-   handlers.  */
-
-#define REQUEST_SPEC_DEFINE(id, name) \
-  { SSH_REQUEST_##id, ssh_handler_##name, #name }
-
-static ssh_request_spec_t request_specs[] =
-  {
-    REQUEST_SPEC_DEFINE (REQUEST_IDENTITIES,    request_identities),
-    REQUEST_SPEC_DEFINE (SIGN_REQUEST,          sign_request),
-    REQUEST_SPEC_DEFINE (ADD_IDENTITY,          add_identity),
-    REQUEST_SPEC_DEFINE (ADD_ID_CONSTRAINED,    add_identity),
-    REQUEST_SPEC_DEFINE (REMOVE_IDENTITY,       remove_identity),
-    REQUEST_SPEC_DEFINE (REMOVE_ALL_IDENTITIES, remove_all_identities),
-    REQUEST_SPEC_DEFINE (LOCK,                  lock),
-    REQUEST_SPEC_DEFINE (UNLOCK,                unlock)
-  };
-
-
-
 static int
 ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
 {
   estream_t response;
   estream_t request;
-  byte_t request_type;
+  unsigned char request_type;
   gpg_error_t err;
   unsigned int i;
   int send_err;
   int ret;
   unsigned char *request_data;
-  uint32_t request_data_size;
-  uint32_t response_size;
+  u32 request_data_size;
+  u32 response_size;
 
   request_data = NULL;
   response = NULL;
@@ -2170,15 +2271,22 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
   /* Create memory streams for request/response data.  The entire
      request will be stored in secure memory, since it might contain
      secret key material.  The response does not have to be stored in
-     secure memory, since we never give out secret keys.  */
+     secure memory, since we never give out secret keys. 
+
+     FIXME: This is a pretty good DoS.  We only have a limited amount
+     of secure memory, we can't trhow hin everything we get from a
+     client -wk */
       
   /* Retrieve request.  */
   err = es_read_string (stream_sock, 1, &request_data, &request_data_size);
   if (err)
     goto out;
 
-  if (opt.verbose)
-    log_debug ("[gpg-agent/ssh] Received request of length: %u\n",
+  if (opt.verbose) /* FIXME: using log_debug is not good with
+                      verbose. log_debug should only be used in
+                      debugging mode or in sitattions which are
+                      unexpected. */
+    log_debug ("received request of length: %u\n",
 	       request_data_size);
 
   request = es_mopen (NULL, 0, 0, 1, realloc_secure, gcry_free, "r+");
@@ -2217,14 +2325,14 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
       break;
   if (i == DIM (request_specs))
     {
-      log_debug ("[gpg-agent/ssh] request %u is not supported\n",
+      log_debug ("request %u is not supported\n",
 		 request_type);
       send_err = 1;
       goto out;
     }
 
   if (opt.verbose)
-    log_debug ("[gpg-agent/ssh] Executing request handler: %s (%u)\n",
+    log_debug ("executing request handler: %s (%u)\n",
 	       request_specs[i].identifier, request_specs[i].type);
 
   err = (*request_specs[i].handler) (ctrl, request, response);
@@ -2260,7 +2368,7 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
  out:
 
   if (err && es_feof (stream_sock))
-    log_error ("[gpg-agent/ssh] Error occured while processing request: %s\n",
+    log_error ("error occured while processing request: %s\n",
 	       gpg_strerror (err));
 
   if (send_err)
@@ -2301,10 +2409,10 @@ start_command_handler_ssh (int sock_client)
 
   /* Create stream from socket.  */
   stream_sock = es_fdopen (sock_client, "r+");
-  if (! stream_sock)
+  if (!stream_sock)
     {
       err = gpg_error_from_errno (errno);
-      log_error ("[gpg-agent/ssh] Failed to create stream from socket: %s\n",
+      log_error (_("failed to create stream from socket: %s\n"),
 		 gpg_strerror (err));
       goto out;
     }
@@ -2314,14 +2422,13 @@ start_command_handler_ssh (int sock_client)
   if (ret)
     {
       err = gpg_error_from_errno (errno);
-      log_error ("[gpg-agent/ssh] Failed to disable buffering "
-		 "on socket stream: %s\n", gpg_strerror (err));
+      log_error (_("failed to disable buffering "
+                   "on socket stream: %s\n"), gpg_strerror (err));
       goto out;
     }
 
   while (1)
     {
-      /* Process request.  */
       bad = ssh_request_process (&ctrl, stream_sock);
       if (bad)
 	break;

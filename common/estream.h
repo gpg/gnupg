@@ -198,4 +198,5 @@ estream_t es_tmpfile (void);
 void es_opaque_set (estream_t ES__RESTRICT stream, void *ES__RESTRICT opaque);
 void *es_opaque_get (estream_t stream);
 
-#endif
+#endif /*ESTREAM_H*/
+

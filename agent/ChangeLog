@@ -1,3 +1,37 @@
+2005-02-03  Werner Koch  <wk@g10code.com>
+
+	* agent.h (agent_exit): Add JNLIB_GCC_A_NR to indicate that this
+	function won't return.
+
+	* gpg-agent.c (check_for_running_agent): Initialize pid to a
+	default value if not needed.
+
+	* command-ssh.c: Removed stdint.h.  s/byte_t/unsigned char/,
+	s/uint32/u32/ becuase that is what we have always used in GnuPG.
+	(ssh_request_specs): Moved to top of file.
+	(ssh_key_types): Ditto.
+	(make_cstring): Ditto.
+	(data_sign): Don't use a variable for the passphrase prompt, make
+	it translatable.
+	(ssh_request_process): 
+	
+
+	* findkey.c (modify_description): Renamed arguments for clarity,
+	polished documentation.  Make comment a C-string.  Fixed case of
+	DESCRIPTION being just "%".
+	(agent_key_from_file): Make sure comment string to a C-string.
+
+	* gpg-agent.c (create_socket_name): Cleanup the implemntation, use
+	DIMof, agent_exit, removed superflous args and return the
+	allocated string as value.  Documented.  Changed callers.
+	(create_server_socket): Cleanups similar to above.  Changed callers.
+	(cleanup_do): Renamed to ..
+	(remove_socket): .. this.  Changed caller.
+	(handle_connections): The signals are to be handled in the select
+	and not in the accept.  Test all FDs after returning from a
+	select.  Remove the event tests from the accept calls.  The select
+	already assured that the accept won't block.
+
 2005-01-29  Moritz Schulte  <moritz@g10code.com>
 
 	* command-ssh.c (ssh_handler_request_identities)
@@ -67,7 +101,7 @@
 	and ssh-agent protocol.
 
 	* agent.h (struct opt): New member: ssh_support.
-	Declare function: start_command_handler_ssh.
+	(start_command_handler_ssh): Add prototype.
 
 2005-01-04  Werner Koch  <wk@g10code.com>
 

@@ -143,101 +143,79 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
 /* Modify a Key description, replacing certain special format
    characters.  List of currently supported replacements:
 
-   %% -> %
-   %c -> <COMMENT>. */
-static int
-modify_description (const char *description,
-		    const char *comment, size_t comment_length,
-		    char **description_modified)
+   %% - Replaced by a single %
+   %c - Replaced by the content of COMMENT.
+
+   The functions returns 0 on success or an error code.  On success a
+   newly allocated string is stored at the address of RESULT.
+ */
+static gpg_error_t
+modify_description (const char *in, const char *comment, char **result)
 {
-  size_t description_length;
-  size_t description_new_length;
-  gpg_error_t err;
-  char *description_new;
-  unsigned int i, j;
-  unsigned int special;
+  size_t comment_length;
+  size_t in_len;
+  size_t out_len;
+  char *out;
+  size_t i;
+  int special, pass;
 
-  description_length  = strlen (description);
-  description_new_length = description_length;
-  description_new = NULL;
+  comment_length = strlen (comment);
+  in_len  = strlen (in);
 
-  /* Calculate length.  */
-  special = 0;
-  for (i = 0; i < description_length; i++)
+  /* First pass calculates the length, second pass does the actual
+     copying.  */
+  out = NULL;
+  out_len = 0;
+  for (pass=0; pass < 2; pass++)
     {
-      if (description[i] == '%')
-	special = 1;
-      else
-	{
-	  if (special)
-	    {
-	      description_new_length -= 2;
-	      switch (description[i])
-		{
-		case 'c':
-		  /* Comment.  */
-		  description_new_length += comment_length;
-		  break;
-		  
-		case '%':
-		  description_new_length += 1;
-		  break;
-		}
-	      special = 0;
-	    }
-	}
+      special = 0;
+      for (i = 0; i < in_len; i++)
+        {
+          if (in[i] == '%')
+            special = 1;
+          else if (special)
+            {
+              special = 0;
+              switch (in[i])
+                {
+                case '%':
+                  out_len++;
+                  if (out)
+                    *out++ = '%';
+                  break;
+
+                case 'c': /* Comment.  */
+                  out_len += comment_length;
+                  if (out && comment_length)
+                    {
+                      memcpy (out, comment, comment_length);
+                      out += comment_length;
+                    }
+                  break;
+
+                default: /* Invalid special sequences are ignored.  */
+                  break;
+                }
+            }
+          else
+            {
+              out_len++;
+              if (out)
+                *out++ = in[i];
+            }
+        }
+      
+      if (!pass)
+        {
+          *result = out = xtrymalloc (out_len + 1);
+          if (!out)
+            return gpg_error_from_errno (errno);
+        }
     }
 
-  /* Allocate.  */
-  description_new = xtrymalloc (description_new_length + 1);
-  if (! description_new)
-    {
-      err = gpg_error_from_errno (errno);
-      goto out;
-    }
-
-  /* Fill.  */
-  for (i = j = 0; i < description_length; i++)
-    {
-      if (description[i] == '%')
-	special = 1;
-      else
-	{
-	  if (special)
-	    {
-	      switch (description[i])
-		{
-		case 'c':
-		  /* Comment.  */
-		  if (comment)
-		    {
-		      strncpy (description_new + j, comment, comment_length);
-		      j += comment_length;
-		    }
-		  break;
-		  
-		case '%':
-		  description_new[j] = '%';
-		  j++;
-		  break;
-		}
-	      special = 0;
-	    }
-	  else
-	    {
-	      description_new[j] = description[i];
-	      j++;
-	    }
-	}
-    }
-
-  description_new[j] = 0;
-  *description_modified = description_new;
-  err = 0;
-
- out:
-
-  return err;
+  *out = 0;
+  assert (*result + out_len == out);
+  return 0;
 }
 
   
@@ -398,35 +376,51 @@ agent_key_from_file (CTRL ctrl, const char *desc_text,
 	gcry_sexp_t comment_sexp;
 	size_t comment_length;
 	char *desc_text_final;
-	const char *comment;
-	
+	const char *comment = NULL;
+
+        /* Note, that we will take the comment as a C styring for
+           display purposes; i.e. all stuff beyond a Nul character is
+           ignored.  */
 	comment_sexp = gcry_sexp_find_token (s_skey, "comment", 0);
 	if (comment_sexp)
 	  comment = gcry_sexp_nth_data (comment_sexp, 1, &comment_length);
-	else
+	if (!comment)
 	  {
-	    comment = NULL;
+	    comment = "";
 	    comment_length = 0;
 	  }
 
+        desc_text_final = NULL;
 	if (desc_text)
 	  {
-	    rc = modify_description (desc_text,
-				     comment, comment_length, &desc_text_final);
-	    if (rc)
-	      log_error ("failed to modify description: %s\n", gpg_strerror (rc));
+            if (comment[comment_length])
+              {
+                /* Not a C-string; create one.  We might here allocate
+                   more than actually displayed but well, that
+                   shouldn't be a problem.  */
+                char *tmp = xtrymalloc (comment_length+1);
+                if (!tmp)
+                  rc = gpg_error_from_errno (errno);
+                else
+                  {
+                    memcpy (tmp, comment, comment_length);
+                    tmp[comment_length] = 0;
+                    rc = modify_description (desc_text, tmp, &desc_text_final);
+                    xfree (tmp);
+                  }
+              }
+            else
+              rc = modify_description (desc_text, comment, &desc_text_final);
 	  }
-	else
-	  desc_text_final = NULL;
 
-	if (! rc)
+	if (!rc)
 	  {
 	    rc = unprotect (ctrl, desc_text_final, &buf, grip, ignore_cache);
 	    if (rc)
 	      log_error ("failed to unprotect the secret key: %s\n",
 			 gpg_strerror (rc));
 	  }
-
+        
 	gcry_sexp_release (comment_sexp);
 	xfree (desc_text_final);
       }
