@@ -72,6 +72,7 @@ struct {
     int lock_once;
     const char *keyserver_name;
     int no_encrypt_to;
+    int interactive;
 } opt;
 
 

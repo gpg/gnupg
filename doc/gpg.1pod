@@ -295,6 +295,9 @@ B<-t>, B<--textmode>
 B<-n>, B<--dry-run>
     Don't make any changes (not yet implemented).
 
+B<-i>, B<--interactive>
+    Prompt before overwriting any files.
+
 B<--batch>
     Use batch mode.  Never ask, do not allow interactive
     commands.

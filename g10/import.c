@@ -423,8 +423,11 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	}
 	/* and try to merge the block */
 	clear_kbnode_flags( keyblock_orig );
-	clear_kbnode_flags( keyblock );
 	n_uids = n_sigs = n_subk = 0;
+	rc = collapse_uids( fname, keyblock, keyid );
+	if( rc )
+	    goto leave;
+	clear_kbnode_flags( keyblock );
 	rc = merge_blocks( fname, keyblock_orig, keyblock,
 				keyid, &n_uids, &n_sigs, &n_subk );
 	if( rc )
@@ -845,6 +848,43 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 
 
 /****************
+ * It may happen that the imported keyblock has duplicated user IDs.
+ * We check this here and collapse those user IDs together with their
+ * sigs into one.
+ * This function modifies the node flags!
+ */
+static int
+collapse_uids( const char *fname, KBNODE keyblock, u32 *keyid )
+{
+    KBNODE n, n2, n3;
+    int rc, found;
+
+    for(found = 0, n=keyblock; n && !found ; n = n->next ) {
+	if( n->pkt->pkttype == PKT_USER_ID ) {
+	    for( n2 = n->next; n2; n2 = n2->next ) {
+		if( n2->pkt->pkttype == PKT_USER_ID
+		    && !cmp_user_ids( n->pkt->pkt.user_id,
+				      n2->pkt->pkt.user_id ) ) {
+		    found = 1;
+		    break;
+		}
+	    }
+	}
+    }
+    if( !found )
+	return 0; /* nothing to do */
+
+    clear_kbnode_flags( keyblock );
+
+    /* now transfer the cloned nodes to the original ones */
+    #warning We are working HERE!!!
+
+    return 0;
+}
+
+
+
+/****************
  * compare and merge the blocks
  *
  * o compare the signatures: If we already have this signature, check
@@ -991,11 +1031,6 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 
 /****************
  * append the userid starting with NODE and all signatures to KEYBLOCK.
- * Mark all new and copied packets by setting flag bit 0.
- * FIXME: It may happen that two identical user ID gets imported; should we
- *	  add another check and how can we handle the signature?  Maybe
- *	  we have to collapse both UIDs into one and then remove duplicated
- *	  signatures.
  */
 static int
 append_uid( KBNODE keyblock, KBNODE node, int *n_sigs,

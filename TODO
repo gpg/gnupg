@@ -5,6 +5,7 @@
   * Speed up calculation of key validity.
 
   * See why we always get this "Hmmm, public key not anymore available"
+    Rewrite that stuff.
 
   * print a warning when a revoked/expired _secret_ key is used.
 
@@ -20,8 +21,6 @@
 
   * Solaris make has problems with the generated POTFILES - seems to be a
     gettext bug.
-
-  * cvs -d :pserver:anoncvs@anoncvs.gnu.org:/gd/gnu/anoncvsroot co common
 
   * find a way to allow the import of non-self-signed keys.  This is needed
     for the IN ENCR/SIGN hack.
@@ -50,4 +49,7 @@ Nice to have
   * Stats about used random numbers.
   * the pubkey encrypt functions should do some sanity checks.
   * dynload: implement the hint stuff.
+  * "gpg filename.tar.gz.asc" sollte wie mit --verify funktionieren (-sab).
+  * Den Dateinamen aus der message nicht benutzen, sondern nur
+    das gpg/asc strippen.
 

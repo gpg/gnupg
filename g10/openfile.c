@@ -39,6 +39,8 @@
   #define SKELEXT ".skel"
 #endif
 
+#warning Implement opt.interactive.
+
 /****************
  * Check whether FNAME exists and ask if it's okay to overwrite an
  * existing one.

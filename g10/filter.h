@@ -25,6 +25,7 @@
 
 typedef struct {
     MD_HANDLE md;      /* catch all */
+    MD_HANDLE md2;     /* if we want to calculate an alternate hash */
     size_t maxbuf_size;
 } md_filter_context_t;
 

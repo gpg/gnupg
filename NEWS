@@ -1,7 +1,8 @@
 
+    * New option --interactive to prompt before overwriting files.
 
-
-
+    * Add a work around for a bug in pgp 2 which led to bad signatures
+      when used with canoncial texts in some cases.
 
 
 Noteworthy changes in version 0.9.6

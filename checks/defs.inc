@@ -25,6 +25,9 @@ plain_files="plain-1 plain-2 plain-3"
 data_files="data-500 data-9000 data-32000 data-80000"
 exp_files=""
 
+# The testscripts expect the original language
+LANG=
+LANGUAGE=
 
 #--------------------------------
 #------ utility functions -------

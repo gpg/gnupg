@@ -247,7 +247,7 @@ ask_for_detached_datafile( md_filter_context_t *mfx, const char *inname )
 
 
 static void
-do_hash( MD_HANDLE md, IOBUF fp, int textmode )
+do_hash( MD_HANDLE md, MD_HANDLE md2, IOBUF fp, int textmode )
 {
     text_filter_context_t tfx;
     int c;
@@ -256,8 +256,18 @@ do_hash( MD_HANDLE md, IOBUF fp, int textmode )
 	memset( &tfx, 0, sizeof tfx);
 	iobuf_push_filter( fp, text_filter, &tfx );
     }
-    while( (c = iobuf_get(fp)) != -1 )
-	md_putc(md, c );
+    if( md2 ) { /* work around a strange behaviour in pgp2 */
+	while( (c = iobuf_get(fp)) != -1 ) {
+	    if( c == '\n' )
+	       md_putc(md2, '\r' );
+	    md_putc(md, c );
+	    md_putc(md2, c );
+	}
+    }
+    else {
+	while( (c = iobuf_get(fp)) != -1 )
+	    md_putc(md, c );
+    }
 }
 
 
@@ -266,7 +276,7 @@ do_hash( MD_HANDLE md, IOBUF fp, int textmode )
  * If FILES is NULL, hash stdin.
  */
 int
-hash_datafiles( MD_HANDLE md, STRLIST files,
+hash_datafiles( MD_HANDLE md, MD_HANDLE md2, STRLIST files,
 		const char *sigfilename, int textmode )
 {
     IOBUF fp;
@@ -276,7 +286,7 @@ hash_datafiles( MD_HANDLE md, STRLIST files,
 	/* check whether we can open the signed material */
 	fp = open_sigfile( sigfilename );
 	if( fp ) {
-	    do_hash( md, fp, textmode );
+	    do_hash( md, md2, fp, textmode );
 	    iobuf_close(fp);
 	    return 0;
 	}
@@ -295,7 +305,7 @@ hash_datafiles( MD_HANDLE md, STRLIST files,
 		free_strlist(sl);
 	    return G10ERR_OPEN_FILE;
 	}
-	do_hash( md, fp, textmode );
+	do_hash( md, md2, fp, textmode );
 	iobuf_close(fp);
     }
 

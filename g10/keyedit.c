@@ -474,7 +474,7 @@ change_passphrase( KBNODE keyblock )
 /****************
  * There are some keys out (due to a bug in gnupg), where the sequence
  * of the packets is wrong.  This function fixes that.
- * Returns: true if the keyblock has fixed.
+ * Returns: true if the keyblock has been fixed.
  */
 static int
 fix_keyblock( KBNODE keyblock )

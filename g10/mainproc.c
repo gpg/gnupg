@@ -268,7 +268,7 @@ static void
 proc_plaintext( CTX c, PACKET *pkt )
 {
     PKT_plaintext *pt = pkt->pkt.plaintext;
-    int any, clearsig, rc;
+    int any, clearsig, only_md5, rc;
     KBNODE n;
 
     if( pt->namelen == 8 && !memcmp( pt->name, "_CONSOLE", 8 ) )
@@ -283,13 +283,21 @@ proc_plaintext( CTX c, PACKET *pkt )
      * Should we assume that plaintext in mode 't' has always sigclass 1??
      * See: Russ Allbery's mail 1999-02-09
      */
-    any = clearsig = 0;
+    any = clearsig = only_md5 = 0;
     for(n=c->list; n; n = n->next ) {
 	if( n->pkt->pkttype == PKT_ONEPASS_SIG ) {
 	    if( n->pkt->pkt.onepass_sig->digest_algo ) {
 		md_enable( c->mfx.md, n->pkt->pkt.onepass_sig->digest_algo );
+		if( !any && n->pkt->pkt.onepass_sig->digest_algo
+						      == DIGEST_ALGO_MD5 )
+		    only_md5 = 1;
+		else
+		    only_md5 = 0;
 		any = 1;
 	    }
+	    if( n->pkt->pkt.onepass_sig->sig_class != 0x01 )
+		only_md5 = 0;
+
 	    /* Check whether this is a cleartext signature.  We assume that
 	     * we have one if the sig_class is 1 and the keyid is 0, that
 	     * are the faked packets produced by armor.c.  There is a
@@ -308,6 +316,14 @@ proc_plaintext( CTX c, PACKET *pkt )
 	md_enable( c->mfx.md, DIGEST_ALGO_RMD160 );
 	md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
 	md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
+    }
+    if( only_md5 ) {
+	/* This is a kludge to work around a bug in pgp2.  It does only
+	 * catch those mails which are armored.  To catch the non-armored
+	 * pgp mails we could see whether there is the signature packet
+	 * in front of the plaintext.  If someone needs this, send me a patch.
+	 */
+	c->mfx.md2 = md_open( DIGEST_ALGO_MD5, 0);
     }
   #if 0
     #warning md_start_debug is enabled
@@ -366,7 +382,7 @@ static int
 do_check_sig( CTX c, KBNODE node, int *is_selfsig )
 {
     PKT_signature *sig;
-    MD_HANDLE md;
+    MD_HANDLE md = NULL, md2 = NULL;
     int algo, rc;
 
     assert( node->pkt->pkttype == PKT_SIGNATURE );
@@ -387,10 +403,16 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig )
     else if( sig->sig_class == 0x01 ) {
 	/* how do we know that we have to hash the (already hashed) text
 	 * in canonical mode ??? (calculating both modes???) */
-	if( c->mfx.md )
+	if( c->mfx.md ) {
 	    md = md_copy( c->mfx.md );
-	else /* detached signature */
+	    if( c->mfx.md2 )
+	       md2 = md_copy( c->mfx.md2 );
+	}
+	else { /* detached signature */
+	  log_debug("Do we really need this here?");
 	    md = md_open( 0, 0 ); /* signature_check() will enable the md*/
+	    md2 = md_open( 0, 0 );
+	}
     }
     else if( (sig->sig_class&~3) == 0x10
 	     || sig->sig_class == 0x18
@@ -409,7 +431,10 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig )
     else
 	return G10ERR_SIG_CLASS;
     rc = signature_check( sig, md );
+    if( rc == G10ERR_BAD_SIGN && md2 )
+	rc = signature_check( sig, md2 );
     md_close(md);
+    md_close(md2);
 
     return rc;
 }
@@ -978,13 +1003,15 @@ proc_tree( CTX c, KBNODE node )
 	    free_md_filter_context( &c->mfx );
 	    /* prepare to create all requested message digests */
 	    c->mfx.md = md_open(0, 0);
+
 	    /* fixme: why looking for the signature packet and not 1passpacket*/
 	    for( n1 = node; (n1 = find_next_kbnode(n1, PKT_SIGNATURE )); ) {
 		md_enable( c->mfx.md, n1->pkt->pkt.signature->digest_algo);
 	    }
 	    /* ask for file and hash it */
 	    if( c->sigs_only )
-		rc = hash_datafiles( c->mfx.md, c->signed_data, c->sigfilename,
+		rc = hash_datafiles( c->mfx.md, NULL,
+				     c->signed_data, c->sigfilename,
 			n1? (n1->pkt->pkt.onepass_sig->sig_class == 0x01):0 );
 	    else
 		rc = ask_for_detached_datafile( &c->mfx,
@@ -1004,8 +1031,14 @@ proc_tree( CTX c, KBNODE node )
 	if( !c->have_data ) {
 	    free_md_filter_context( &c->mfx );
 	    c->mfx.md = md_open(sig->digest_algo, 0);
+	    if( sig->digest_algo == DIGEST_ALGO_MD5
+		&& is_RSA( sig->pubkey_algo ) ) {
+		/* enable a workaround for a pgp2 bug */
+		c->mfx.md2 = md_open( DIGEST_ALGO_MD5, 0 );
+	    }
 	    if( c->sigs_only )
-		rc = hash_datafiles( c->mfx.md, c->signed_data, c->sigfilename,
+		rc = hash_datafiles( c->mfx.md, c->mfx.md2,
+				     c->signed_data, c->sigfilename,
 				     sig->sig_class == 0x01 );
 	    else
 		rc = ask_for_detached_datafile( &c->mfx,

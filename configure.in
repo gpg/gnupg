@@ -195,6 +195,7 @@ esac
 AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME")
 
 dnl  Fixme: Are these the best flags for OpenBSD????
+dnl (I have removed the -lc from * ...CFLAGS for test purposes.)
 case "${target}" in
     *-openbsd*)
         NAME_OF_DEV_RANDOM="/dev/srandom"
@@ -204,7 +205,7 @@ case "${target}" in
     *)
         NAME_OF_DEV_RANDOM="/dev/random"
         NAME_OF_DEV_URANDOM="/dev/urandom"
-        DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC -lc"
+        DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"
         ;;
 esac
 AC_DEFINE_UNQUOTED(NAME_OF_DEV_RANDOM, "$NAME_OF_DEV_RANDOM")

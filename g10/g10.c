@@ -52,6 +52,7 @@ enum cmd_and_opt_values { aNull = 0,
     aSym	  = 'c',
     aDecrypt	  = 'd',
     aEncr	  = 'e',
+    oInteractive  = 'i',
     oKOption	  = 'k',
     oDryRun	  = 'n',
     oOutput	  = 'o',
@@ -223,6 +224,7 @@ static ARGPARSE_OPTS opts[] = {
     { oForceV3Sigs, "force-v3-sigs", 0, N_("force v3 signatures") },
     { oForceMDC, "force-mdc", 0, N_("always use a MDC for encryption") },
     { oDryRun, "dry-run",   0, N_("do not make any changes") },
+    { oInteractive, "interactive", 0, N_("prompt before overwriting") },
     { oBatch, "batch",     0, N_("batch mode: never ask")},
     { oAnswerYes, "yes",       0, N_("assume yes on most questions")},
     { oAnswerNo,  "no",        0, N_("assume no on most questions")},
@@ -637,6 +639,7 @@ main( int argc, char **argv )
 	  case oOutput: opt.outfile = pargs.r.ret_str; break;
 	  case oQuiet: opt.quiet = 1; break;
 	  case oDryRun: opt.dry_run = 1; break;
+	  case oInteractive: opt.interactive = 1; break;
 	  case oVerbose: g10_opt_verbose++;
 		    opt.verbose++; opt.list_sigs=1; break;
 	  case oKOption: set_cmd( &cmd, aKMode ); break;

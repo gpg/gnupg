@@ -1,5 +1,15 @@
-Mon May 17 21:54:43 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+Wed May 19 16:04:30 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
+	* g10.c: New option --interactive.
+
+	* mainproc.c (proc_plaintext): Add workaround for pgp2 bug
+	(do_check_sig): Ditto.
+	(proc_tree): Ditto.
+	* plaintext.c (do_hash): Ditto.
+	(hash_datafiles): Ditto, add an arg, changed all callers.
+	* mdfilter.c (md_filter): Add support for the alternate hash context.
+
+Mon May 17 21:54:43 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* parse-packet.c (parse_encrypted): Support for PKT_ENCRYPTED_MDC.
 	* build-packet.c (do_encrypted_mdc): Ditto.
@@ -12,7 +22,6 @@ Mon May 17 21:54:43 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 	* parse-packet.c (parse_sig_subpkt): Fixed stupid bug for subpkt
 	length calculation
 	(parse_signature): Fixed even more stupid bug.
-
 
 Sat May  8 19:28:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 

@@ -137,8 +137,8 @@ int verify_signatures( int nfiles, char **files );
 int decrypt_message( const char *filename );
 
 /*-- plaintext.c --*/
-int hash_datafiles( MD_HANDLE md, STRLIST files, const char *sigfilename,
-		    int textmode );
+int hash_datafiles( MD_HANDLE md, MD_HANDLE md2,
+		    STRLIST files, const char *sigfilename, int textmode );
 
 /*-- signal.c --*/
 void init_signals(void);
