@@ -1,5 +1,8 @@
 2003-12-29  David Shaw  <dshaw@jabberwocky.com>
 
+	* idea-stub.c (load_module, idea_get_info): Return the proper type
+	for idea_get_info from inside load_module.  From Stefan Bellon.
+
 	* rijndael.c, rndunix.c, twofish.c: Remove dead IS_MODULE code.
 
 	* g10c.c: Dead code.  Remove.

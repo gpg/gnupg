@@ -1,5 +1,5 @@
 /* idea-stub.c - Dummy module for the deprecated IDEA cipher.
- *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -50,7 +50,6 @@
 #ifndef RTLD_NOW
 #define RTLD_NOW  1
 #endif
-
 
 #ifdef _WIN32
 #define HAVE_DL_DLOPEN
@@ -108,8 +107,13 @@ dlsym ( void *handle, const char *name )
 #undef USE_DYNAMIC_LINKING
 #endif
 
+typedef
+const char *(*INFO_FNC)(int, size_t*, size_t*, size_t*,
+                        int  (**)( void *, byte *, unsigned),
+                        void (**)( void *, byte *, byte *),
+                        void (**)( void *, byte *, byte *));
 
-static void *
+static INFO_FNC
 load_module (const char *name)
 {
 #ifdef USE_DYNAMIC_LINKING
@@ -146,14 +150,6 @@ load_module (const char *name)
   return NULL;
 }
 
-#ifdef __riscos__
-typedef
-const char *(*INFO_CAST)(int, size_t*, size_t*, size_t*,
-                         int  (**)( void *, byte *, unsigned),
-                         void (**)( void *, byte *, byte *),
-                         void (**)( void *, byte *, byte *));
-#endif /* __riscos__ */
-
 const char *
 idea_get_info( int algo, size_t *keylen,
 		   size_t *blocksize, size_t *contextsize,
@@ -163,10 +159,7 @@ idea_get_info( int algo, size_t *keylen,
 		 )
 {
   static int initialized;
-  static const char * (*info_fnc)(int, size_t*, size_t*, size_t*,
-                                  int  (**)( void *, byte *, unsigned),
-                                  void (**)( void *, byte *, byte *),
-                                  void (**)( void *, byte *, byte *));
+  static INFO_FNC info_fnc;
   const char *rstr;
   int i;
 
@@ -175,11 +168,7 @@ idea_get_info( int algo, size_t *keylen,
       initialized = 1;
       for (i=0; (rstr = dynload_enum_module_names (i)); i++)
         {
-#ifndef __riscos__
           info_fnc = load_module (rstr);
-#else /* __riscos__ */
-          info_fnc = (INFO_CAST) load_module (rstr);
-#endif /* __riscos__ */
           if (info_fnc)
             break;
         }
