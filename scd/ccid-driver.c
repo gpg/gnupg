@@ -98,7 +98,7 @@
 #  include "scdaemon.h"
 # endif
 
-/* Disable all debgging output for now. */
+/* Disable all debugging output for now. */
 #undef DBG_CARD_IO
 #define DBG_CARD_IO 0
 

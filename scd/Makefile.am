@@ -18,13 +18,15 @@
 
 ## Process this file with automake to produce Makefile.in
 
-localedir = $(datadir)/locale
-INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
-
 bin_PROGRAMS = scdaemon sc-investigate sc-copykeys
 
-AM_CPPFLAGS = -I$(top_srcdir)/common $(OPENSC_CFLAGS) $(LIBGCRYPT_CFLAGS) \
+AM_CPPFLAGS = -I$(top_srcdir)/intl -I$(top_srcdir)/common
+
+include $(top_srcdir)/am/cmacros.am
+
+AM_CFLAGS =  $(OPENSC_CFLAGS) $(LIBGCRYPT_CFLAGS) \
 	      $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS)
+
 
 card_apps = app-openpgp.c app-nks.c app-dinsig.c
 

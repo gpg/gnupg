@@ -1,3 +1,7 @@
+2004-02-12  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Include cmacros.am for common flags.
+
 2004-01-29  Werner Koch  <wk@gnupg.org>
 
 	* command.c (reset_notify): Release the application context and
