@@ -33,9 +33,10 @@ Hi!
 
 Please find attached the latest version of the PO file for your GnuPG
 translation ($file).  I would appreciate if you can fix any remaining
-fuzzy or untranslated entries.  If you need access to the code
-please use http://cvs.gnupg.org or get the latest snapshot at
-ftp://ftp.gnupg.org/gcrypt/alpha/gnupg/gnupg-1.1.92.tar.gz
+fuzzy or untranslated entries so that we are able to prepare a fine
+and fully translated 1.2.2 release ASAP.  If you need access to the
+code please get the latest release candidate at
+ftp://ftp.gnupg.org/gcrypt/alpha/gnupg/gnupg-1.2.2rc2.tar.gz
 
 IMHO it is important to have a basic understanding of GnuPG's
 functionality to do a correct translation.  A false translation might
