@@ -1,3 +1,8 @@
+2003-10-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* pkclist.c (build_pk_list): Show all recipients rather than
+	showing each recipient as they are added.
+
 2003-10-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* misc.c (compress_algo_to_string, check_compress_algo): Add
