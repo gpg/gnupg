@@ -493,13 +493,14 @@ trust_letter (unsigned int value)
    trust_value_to_string(), but are a fixed length.  This is needed to
    make attractive information listings where columns line up
    properly.  The value "10" should be the length of the strings you
-   choose to translate to.  This is the length in printable
-   columns. */
+   choose to translate to.  This is the length in printable columns.
+   It gets passed to atoi() so everything after the number is
+   essentially a comment and need not be translated. */
 const char *
 uid_trust_string_fixed(PKT_public_key *key,PKT_user_id *uid)
 {
   if(!key && !uid)
-    return _("10");
+    return _("10 translator see trustdb.c:uid_trust_string_fixed");
   else if(uid->is_revoked)
     return                         _("[ revoked]");
   else if(uid->is_expired)

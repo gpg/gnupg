@@ -1,5 +1,8 @@
 2004-11-24  David Shaw  <dshaw@jabberwocky.com>
 
+	* trustdb.c (uid_trust_string_fixed): Use a string that can be
+	atoi-ed, but also has a comment for the translator.
+
 	* trustdb.h, trustdb.c (uid_trust_string_fixed): New.  Return a
 	fixed-size translatable string similar to trust_value_to_string.
 	This allows for easier lining up of displays.
