@@ -543,6 +543,7 @@ keyserver_spawn(int action,STRLIST list,
   for(;;)
     {
       char *ptr;
+      int plen;
 
       if(iobuf_read_line(spawn->fromchild,&line,&buflen,&maxlen)==0)
 	{
@@ -552,11 +553,11 @@ keyserver_spawn(int action,STRLIST list,
 
       ptr=line;
 
-      if(*ptr=='\r')
-	ptr++;
-
-      if(*ptr=='\n')
-	ptr++;
+      /* remove trailing whitespace */
+      plen=strlen(ptr);
+      while(plen>0 && isspace(ptr[plen-1]))
+	plen--;
+      plen[ptr]='\0';
 
       if(*ptr=='\0')
 	break;

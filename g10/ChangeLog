@@ -1,3 +1,8 @@
+2002-09-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_spawn): Remove whitespace after keyserver
+	commands.
+
 2002-09-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* exec.c (expand_args): Remove loop left over from earlier
