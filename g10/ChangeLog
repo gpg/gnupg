@@ -7,7 +7,8 @@
 	fingerprint when checking a signature with --always-trust enabled.
 
 	* filter.h (progress_filter_context_t), progress.c
-	(handle_progress): Fix compiler warnings.  Make "what" constant.
+	(handle_progress), plaintext.c (ask_for_detached_datafile,
+	hash_datafiles): Fix compiler warnings.  Make "what" constant.
 
 	* build-packet.c (do_plaintext): Do not create invalid literal
 	packets with >255-byte names.
