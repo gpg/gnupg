@@ -191,6 +191,7 @@ OR-wise combination of the following flag values:
 	 1 group	If this flag is set, this is a line describing
 			a group and not an option.
   O	 2 optional arg	If this flag is set, the argument is optional.
+			This is never set for arg type 0 (none) options.
   O	 4 list		If this flag is set, the option can be given
 			multiple times.
   O	 8 runtime	If this flag is set, the option can be changed

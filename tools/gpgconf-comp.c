@@ -289,7 +289,7 @@ static struct
    flag set.  */
 #define GC_OPT_FLAG_GROUP	(1UL << 0)
 /* The ARG_OPT flag for an option indicates that the argument is
-   optional.  */
+   optional.  This is never set for GC_ARG_TYPE_NONE options.  */
 #define GC_OPT_FLAG_ARG_OPT	(1UL << 1)
 /* The LIST flag for an option indicates that the option can occur
    several times.  A comma separated list of arguments is used as the
@@ -1216,23 +1216,116 @@ gc_component_retrieve_options (int component)
 }
 
 
-/* Perform a simple validity check based on the type.  */
+/* Perform a simple validity check based on the type.  Return in
+   NEW_VALUE_NR the value of the number in NEW_VALUE if OPTION is of
+   type GC_ARG_TYPE_NONE.  */
 static void
 option_check_validity (gc_option_t *option, unsigned long flags,
-		       const char *new_value)
+		       char *new_value, unsigned long *new_value_nr)
 {
   if (option->new_flags || option->new_value)
     gc_error (1, 0, "option %s already changed", option->name);
 
-  if ((flags & GC_OPT_FLAG_DEFAULT) && *new_value)
-    gc_error (1, 0, "value %s provided for deleted option %s",
-	      new_value, option->name);
+  if (flags & GC_OPT_FLAG_DEFAULT)
+    {
+      if (*new_value)
+	gc_error (1, 0, "argument %s provided for deleted option %s",
+		  new_value, option->name);
+    }
+  else
+    {
+      /* This is even correct for GC_ARG_TYPE_NONE options, for which
+	 GC_OPT_FLAG_ARG_OPT is never set.  */
+      if (!(option->flags & GC_OPT_FLAG_ARG_OPT) && (*new_value == '\0'))
+	gc_error (1, 0, "no argument for option %s", option->name);
 
-  if (!*new_value)
-    return;
+      if (*new_value)
+	{
+	  if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_NONE)
+	    {
+	      char *tail;
 
-  /* FIXME.  Verify that lists are lists, numbers are numbers, strings
-     are strings, etc.  */
+	      errno = 0;
+	      *new_value_nr = strtoul (new_value, &tail, 0);
+
+	      if (errno)
+		gc_error (1, errno, "invalid argument for option %s",
+			  option->name);
+	      if (*tail)
+		gc_error (1, 0, "garbage after argument for option %s",
+			  option->name);
+
+	      if (!(option->flags & GC_OPT_FLAG_LIST))
+		{
+		  if (*new_value_nr != 1)
+		    gc_error (1, 0, "argument for non-list option %s of type 0 "
+			      "(none) must be 1", option->name);
+		}
+	      else
+		{
+		  if (*new_value_nr == 0)
+		    gc_error (1, 0, "argument for option %s of type 0 (none) "
+			      "must be positive", option->name);
+		}
+	    }
+	  else if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_STRING)
+	    {
+	      if (*new_value != '"')
+		gc_error (1, 0, "string argument for option %s must begin "
+			  "with a quote (\") character", option->name);
+	    }
+	  else if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_INT32)
+	    {
+	      char *tail = new_value;
+
+	      while (*tail)
+		{
+		  errno = 0;
+		  (void) strtol (new_value, &tail, 0);
+
+		  if (errno)
+		    gc_error (1, errno, "invalid argument for option %s",
+			      option->name);
+		  if (*tail == ',')
+		    {
+		      if (!(option->flags & GC_OPT_FLAG_LIST))
+			gc_error (1, 0, "list found for non-list option %s",
+				  option->name);
+		      tail++;
+		    }
+		  else if (*tail)
+		    gc_error (1, 0, "garbage after argument for option %s",
+			      option->name);
+		}
+	    }
+	  else if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_UINT32)
+	    {
+	      char *tail = new_value;
+
+	      while (*tail)
+		{
+		  errno = 0;
+		  (void) strtoul (new_value, &tail, 0);
+
+		  if (errno)
+		    gc_error (1, errno, "invalid argument for option %s",
+			      option->name);
+		  if (*tail == ',')
+		    {
+		      if (!(option->flags & GC_OPT_FLAG_LIST))
+			gc_error (1, 0, "list found for non-list option %s",
+				  option->name);
+		      tail++;
+		    }
+		  else if (*tail)
+		    gc_error (1, 0, "garbage after argument for option %s",
+			      option->name);
+		}
+	    }
+	  else
+	    assert (!"Unexpected argument type");
+	}
+    }
 }
 
 
@@ -1342,7 +1435,8 @@ change_options_program (gc_component_t component, gc_backend_t backend,
 
 	      option = find_option (component, start, backend);
 	      *end = saved_end;
-	      if (option && (option->new_flags & GC_OPT_FLAG_DEFAULT))
+	      if (option && ((option->new_flags & GC_OPT_FLAG_DEFAULT)
+			     || option->new_value))
 		disable = 1;
 	    }
 	  if (disable)
@@ -1472,6 +1566,7 @@ change_options_program (gc_component_t component, gc_backend_t backend,
   return -1;
 }
 
+
 /* Read the modifications from IN and apply them.  */
 void
 gc_component_change_options (int component, FILE *in)
@@ -1498,6 +1593,7 @@ gc_component_change_options (int component, FILE *in)
       char *linep;
       unsigned long flags = 0;
       char *new_value = "";
+      unsigned long new_value_nr;
 
       /* Strip newline and carriage return, if present.  */
       while (length > 0
@@ -1547,11 +1643,32 @@ gc_component_change_options (int component, FILE *in)
       if (!option)
 	gc_error (1, 0, "unknown option %s", line);
 
-      option_check_validity (option, flags, new_value);
+      option_check_validity (option, flags, new_value, &new_value_nr);
 
       option->new_flags = flags;
       if (!(flags & GC_OPT_FLAG_DEFAULT))
-	option->new_value = xstrdup (new_value);
+	{
+	  if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_NONE
+	      && (option->flags & GC_OPT_FLAG_LIST))
+	    {
+	      char *str;
+
+	      /* We convert the number to a list of 1's for
+		 convenient list handling.  */
+	      assert (new_value_nr > 0);
+	      option->new_value = xmalloc ((2 * (new_value_nr - 1) + 1) + 1);
+	      str = option->new_value;
+	      *(str++) = '1';
+	      while (--new_value_nr > 0)
+		{
+		  *(str++) = ',';
+		  *(str++) = '1';
+		}
+	      *(str++) = '\0';
+	    }
+	  else
+	    option->new_value = xstrdup (new_value);
+	}
     }
 
   /* Now that we have collected and locally verified the changes,
