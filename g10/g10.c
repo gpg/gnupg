@@ -179,6 +179,7 @@ enum cmd_and_opt_values { aNull = 0,
     oDefaultComment,
     oThrowKeyid,
     oForceV3Sigs,
+    oNoForceV3Sigs,
     oForceMDC,
     oS2KMode,
     oS2KDigest,
@@ -309,6 +310,7 @@ static ARGPARSE_OPTS opts[] = {
     { oQuiet,	"quiet",   0, N_("be somewhat more quiet") },
     { oNoTTY, "no-tty", 0, N_("don't use the terminal at all") },
     { oForceV3Sigs, "force-v3-sigs", 0, N_("force v3 signatures") },
+    { oNoForceV3Sigs, "no-force-v3-sigs", 0, N_("do not force v3 signatures") },
     { oForceMDC, "force-mdc", 0, N_("always use a MDC for encryption") },
     { oDryRun, "dry-run",   0, N_("do not make any changes") },
   /*{ oInteractive, "interactive", 0, N_("prompt before overwriting") }, */
@@ -995,6 +997,7 @@ main( int argc, char **argv )
 	  case oDefaultComment: opt.comment_string = NULL; break;
 	  case oThrowKeyid: opt.throw_keyid = 1; break;
 	  case oForceV3Sigs: opt.force_v3_sigs = 1; break;
+	  case oNoForceV3Sigs: opt.force_v3_sigs = 0; break;
 	  case oForceMDC: opt.force_mdc = 1; break;
 	  case oS2KMode:   opt.s2k_mode = pargs.r.ret_int; break;
 	  case oS2KDigest: s2k_digest_string = m_strdup(pargs.r.ret_str); break;
