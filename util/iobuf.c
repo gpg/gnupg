@@ -41,7 +41,7 @@ typedef struct {
 
 /* The first partial length header block must be of size 512
  * to make it easier (and efficienter) we use a min. block size of 512
- * for all chznks (but the last one) */
+ * for all chunks (but the last one) */
 #define OP_MIN_PARTIAL_CHUNK	  512
 #define OP_MIN_PARTIAL_CHUNK_2POW 9
 
@@ -259,7 +259,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 
 	    assert( a->buflen <= OP_MIN_PARTIAL_CHUNK );
 	    if( nbytes < OP_MIN_PARTIAL_CHUNK ) {
-		/* not enough to write a partial block out , so we store it*/
+		/* not enough to write a partial block out; so we store it*/
 		if( !a->buffer )
 		    a->buffer = m_alloc( OP_MIN_PARTIAL_CHUNK );
 		memcpy( a->buffer + a->buflen, buf, size );
@@ -272,7 +272,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    /* find the best matching block length - this is limited
 		     * by the size of the internal buffering */
 		    for( blen=OP_MIN_PARTIAL_CHUNK*2,
-			    c=OP_MIN_PARTIAL_CHUNK_2POW+1; blen < nbytes;
+			    c=OP_MIN_PARTIAL_CHUNK_2POW+1; blen <= nbytes;
 							    blen *=2, c++ )
 			;
 		    blen /= 2; c--;
@@ -305,7 +305,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		}
 	    }
 	}
-	else { /* the gnupg scheme */
+	else { /* the gnupg scheme (which is not openpgp compliant) */
 	    size_t avail, n;
 
 	    for(p=buf; !rc && size; ) {
@@ -361,7 +361,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		 * and frankly we can't do so, because this length must be
 		 * a power of 2. This is _really_ complicated because we
 		 * have to check the possible length of a packet prior
-		 * to it's creation: a chein of filters becomes complicated
+		 * to it's creation: a chain of filters becomes complicated
 		 * and we need a lot of code to handle compressed packets etc.
 		 *   :-(((((((
 		 */

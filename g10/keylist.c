@@ -68,7 +68,7 @@ secret_key_list( int nnames, char **names )
 	STRLIST list = NULL;
 	for( ; nnames ; nnames--, names++ )
 	    add_to_strlist( &list, *names );
-	list_one( list, 0 );
+	list_one( list, 1 );
 	free_strlist( list );
     }
 }

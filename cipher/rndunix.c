@@ -477,13 +477,14 @@ slow_poll(FILE *dbgfp, int dbgall, size_t *nbytes )
 
 			/* Try and estimate how much entropy we're getting
 			 * from a data source */
-			if (dataSources[i].usefulness)
+			if (dataSources[i].usefulness) {
 			    if (dataSources[i].usefulness < 0)
 				total = (dataSources[i].length + 999)
 					/ -dataSources[i].usefulness;
 			    else
 				total = dataSources[i].length
 					/ dataSources[i].usefulness;
+			}
 			if( dbgfp )
 			    fprintf(dbgfp,
 			       "%s %s contributed %d bytes, "

@@ -60,7 +60,7 @@ struct cipher_handle_s {
     int  (*setkey)( void *c, byte *key, unsigned keylen );
     void (*encrypt)( void *c, byte *outbuf, byte *inbuf );
     void (*decrypt)( void *c, byte *outbuf, byte *inbuf );
-    byte context[1];
+    PROPERLY_ALIGNED_TYPE context;
 };
 
 
@@ -328,8 +328,10 @@ cipher_open( int algo, int mode, int secure )
     /* ? perform selftest here and mark this with a flag in cipher_table ? */
 
     hd = secure ? m_alloc_secure_clear( sizeof *hd
-					+ cipher_table[i].contextsize )
-		: m_alloc_clear( sizeof *hd + cipher_table[i].contextsize );
+					+ cipher_table[i].contextsize
+					- sizeof(PROPERLY_ALIGNED_TYPE) )
+		: m_alloc_clear( sizeof *hd + cipher_table[i].contextsize
+					   - sizeof(PROPERLY_ALIGNED_TYPE)  );
     hd->algo = algo;
     hd->blocksize = cipher_table[i].blocksize;
     hd->setkey	= cipher_table[i].setkey;
@@ -360,7 +362,7 @@ cipher_close( CIPHER_HANDLE c )
 int
 cipher_setkey( CIPHER_HANDLE c, byte *key, unsigned keylen )
 {
-    return (*c->setkey)( &c->context, key, keylen );
+    return (*c->setkey)( &c->context.c, key, keylen );
 }
 
 
@@ -383,7 +385,7 @@ do_ecb_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nblocks )
     unsigned n;
 
     for(n=0; n < nblocks; n++ ) {
-	(*c->encrypt)( &c->context, outbuf, inbuf );
+	(*c->encrypt)( &c->context.c, outbuf, inbuf );
 	inbuf  += c->blocksize;
 	outbuf += c->blocksize;
     }
@@ -395,7 +397,7 @@ do_ecb_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nblocks )
     unsigned n;
 
     for(n=0; n < nblocks; n++ ) {
-	(*c->decrypt)( &c->context, outbuf, inbuf );
+	(*c->decrypt)( &c->context.c, outbuf, inbuf );
 	inbuf  += c->blocksize;
 	outbuf += c->blocksize;
     }
@@ -428,7 +430,7 @@ do_cfb_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
 	int i;
 	/* encrypt the IV (and save the current one) */
 	memcpy( c->lastiv, c->iv, blocksize );
-	(*c->encrypt)( &c->context, c->iv, c->iv );
+	(*c->encrypt)( &c->context.c, c->iv, c->iv );
 	/* XOR the input with the IV and store input into IV */
 	for(ivp=c->iv,i=0; i < blocksize; i++ )
 	    *outbuf++ = (*ivp++ ^= *inbuf++);
@@ -437,7 +439,7 @@ do_cfb_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
     if( nbytes ) { /* process the remaining bytes */
 	/* encrypt the IV (and save the current one) */
 	memcpy( c->lastiv, c->iv, blocksize );
-	(*c->encrypt)( &c->context, c->iv, c->iv );
+	(*c->encrypt)( &c->context.c, c->iv, c->iv );
 	c->unused = blocksize;
 	/* and apply the xor */
 	c->unused -= nbytes;
@@ -479,7 +481,7 @@ do_cfb_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
 	int i;
 	/* encrypt the IV (and save the current one) */
 	memcpy( c->lastiv, c->iv, blocksize );
-	(*c->encrypt)( &c->context, c->iv, c->iv );
+	(*c->encrypt)( &c->context.c, c->iv, c->iv );
 	/* XOR the input with the IV and store input into IV */
 	for(ivp=c->iv,i=0; i < blocksize; i++ ) {
 	    temp = *inbuf++;
@@ -491,7 +493,7 @@ do_cfb_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
     if( nbytes ) { /* process the remaining bytes */
 	/* encrypt the IV (and save the current one) */
 	memcpy( c->lastiv, c->iv, blocksize );
-	(*c->encrypt)( &c->context, c->iv, c->iv );
+	(*c->encrypt)( &c->context.c, c->iv, c->iv );
 	c->unused = blocksize;
 	/* and apply the xor */
 	c->unused -= nbytes;

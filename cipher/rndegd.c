@@ -24,11 +24,12 @@
 #include <assert.h>
 #include <errno.h>
 #include <sys/time.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 #include "types.h"
 #include "util.h"
 #include "ttyio.h"
@@ -40,16 +41,9 @@
   #include "i18n.h"
 #endif
 
-static int gather_random( void (*add)(const void*, size_t, int), int requester,
-					  size_t length, int level );
-
-#ifdef IS_MODULE
-static void tty_printf(const char *fmt, ... )
-{
-    g10_log_info("tty_printf not available (%s)\n", fmt );
-}
+#ifndef offsetof
+#define offsetof(type, member) ((size_t) &((type *)0)->member)
 #endif
-
 
 static int
 do_write( int fd, void *buf, size_t nbytes )
@@ -60,7 +54,7 @@ do_write( int fd, void *buf, size_t nbytes )
     while( nleft > 0 ) {
 	nwritten = write( fd, buf, nleft);
 	if( nwritten < 0 ) {
-	    if( errno = EINTR )
+	    if( errno == EINTR )
 		continue;
 	    return -1;
 	}
@@ -70,18 +64,6 @@ do_write( int fd, void *buf, size_t nbytes )
     return 0;
 }
 
-    my $bytes = shift;
-    $msg = pack("CC", 0x01, $bytes);
-    $s->syswrite($msg, length($msg));
-    my $nread = $s->sysread($buf, 1);
-    die unless $nread == 1;
-    my $count = unpack("C",$buf);
-    $nread = $s->sysread($buf, $count);
-    die "didn't get all the entropy" unless $nread == $count;
-    print "got $count bytes of entropy: ",unpack("H*",$buf),"\n";
-
-
-
 
 static int
 gather_random( void (*add)(const void*, size_t, int), int requester,
@@ -90,7 +72,7 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
     static int fd = -1;
     int n;
     int warn=0;
-    byte buffer[768];
+    byte buffer[256+2];
 
     if( fd == -1 ) {
 	const char *name = "/tmp/entropy";
@@ -100,7 +82,8 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 	memset( &addr, 0, sizeof addr );
 	addr.sun_family = AF_UNIX;
 	strcpy( addr.sun_path, name );	  /* fixme: check that it is long enough */
-	addr_len = strlen(addr.sun_path) + sizeof addr.sun_family;
+	addr_len = offsetof( struct sockaddr_un, sun_path )
+		   + strlen( addr.sun_path );
 
 	fd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if( fd == -1 )
@@ -111,44 +94,65 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 						    name, strerror(errno) );
     }
 
-    if( do_write( fd, "\x01", 1 ) == -1 )
-	g10_log_fatal("can't write to the EGD: %s\n", strerror(errno) );
 
     while( length ) {
 	fd_set rfds;
 	struct timeval tv;
 	int rc;
+	int nbytes;
+	int cmd;
 
+	nbytes = length < 255? length : 255;
+	/* send request */
+	cmd = level >= 2 ? 2 : 1;
+	buffer[0] = cmd;
+	buffer[1] = nbytes;
+	if( do_write( fd, buffer, 2 ) == -1 )
+	    g10_log_fatal("can't write to the EGD: %s\n", strerror(errno) );
+	/* wait on reply */
 	FD_ZERO(&rfds);
 	FD_SET(fd, &rfds);
 	tv.tv_sec = 3;
 	tv.tv_usec = 0;
 	if( !(rc=select(fd+1, &rfds, NULL, NULL, &tv)) ) {
 	    if( !warn )
-		tty_printf( _(
+	      #ifdef IS_MODULE
+		fprintf( stderr,
+	      #else
+		tty_printf(
+	      #endif
+			    _(
 "\n"
 "Not enough random bytes available.  Please do some other work to give\n"
 "the OS a chance to collect more entropy! (Need %d more bytes)\n"), length );
-	    warn = 0; /* set to 1 to print onyl one warning */
+	    warn = 0; /*  <--- set to 1 to display the message only once */
 	    continue;
 	}
 	else if( rc == -1 ) {
-	    tty_printf("select() error: %s\n", strerror(errno));
+	    g10_log_error("select error on EGD: %s\n", strerror(errno));
 	    continue;
 	}
 
+	/* collect reply */
 	do {
-	    int nbytes = length < sizeof(buffer)? length : sizeof(buffer);
-	    n = read(fd, buffer, nbytes );
-	    if( n >= 0 && n > nbytes ) {
-		g10_log_error("bogus read from random device (n=%d)\n", n );
-		n = nbytes;
-	    }
+	    n = read(fd, buffer, nbytes+2 );
 	} while( n == -1 && errno == EINTR );
+	/* process reply */
 	if( n == -1 )
-	    g10_log_fatal("read error on EGD: %s\n", strerror(errno));
-	(*add)( buffer, n, requester );
-	length -= n;
+	    g10_log_error("read error on EGD: %s\n", strerror(errno));
+	else if( n < 2 )
+	    g10_log_error("bad EGD reply: too short\n");
+	else if( buffer[0] != cmd )
+	    g10_log_error("bad EGD reply: cmd mismatch %d/%d\n",
+							cmd, *buffer );
+	else if( buffer[1] != nbytes )
+	    g10_log_error("bad EGD reply: count mismatch %d/%d\n",
+						      nbytes, buffer[1] );
+	else {
+	    n -= 2;
+	    (*add)( buffer+2, n, requester );
+	    length -= n;
+	}
     }
     memset(buffer, 0, sizeof(buffer) );
 

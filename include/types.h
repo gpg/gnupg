@@ -97,8 +97,17 @@
   #endif
 #endif
 
-
-
+typedef union {
+    int a;
+    short b;
+    char c[1];
+    long d;
+  #ifdef HAVE_U64_TYPEDEF
+    u64 e;
+  #endif
+    float f;
+    double g;
+} PROPERLY_ALIGNED_TYPE;
 
 typedef struct string_list {
     struct string_list *next;

@@ -1,3 +1,9 @@
+Wed Feb 24 11:07:27 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* keylist.c (secret_key_list): Now really list the secret key.
+
+	* trustdb.c (do_init_trustdb): New. Init is now deferred.
+
 Mon Feb 22 20:04:00 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* getkey.c (lookup_sk): Return G10ERR_NO_SECKEY and not x_PUBKEY.

@@ -1,3 +1,7 @@
+Wed Feb 24 11:07:27 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* iobuf.c (block_filter): Fixed the oscillating partial packet chunks.
+
 Fri Feb 19 15:49:15 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* iobuf.c (iobuf_push_filter2): New to allow transer of context

@@ -47,7 +47,7 @@ struct md_digest_list_s {
     void (*final)( void *c );
     byte *(*read)( void *c );
     size_t contextsize; /* allocate this amount of context */
-    char context[1];
+    PROPERLY_ALIGNED_TYPE context;
 };
 
 static struct md_digest_list_s *digest_list;
@@ -238,13 +238,15 @@ md_enable( MD_HANDLE h, int algo )
 	return;
     }
     /* and allocate a new list entry */
-    ac = h->secure? m_alloc_secure( sizeof *ac + r->contextsize )
-		  : m_alloc( sizeof *ac + r->contextsize );
+    ac = h->secure? m_alloc_secure( sizeof *ac + r->contextsize
+					       - sizeof(r->context) )
+		  : m_alloc( sizeof *ac + r->contextsize
+					       - sizeof(r->context) );
     *ac = *r;
     ac->next = h->list;
     h->list = ac;
     /* and init this instance */
-    (*ac->init)( &ac->context );
+    (*ac->init)( &ac->context.c );
 }
 
 
@@ -264,9 +266,12 @@ md_copy( MD_HANDLE a )
     /* and now copy the complete list of algorithms */
     /* I know that the copied list is reversed, but that doesn't matter */
     for( ar=a->list; ar; ar = ar->next ) {
-	br = a->secure ? m_alloc_secure( sizeof *br + ar->contextsize )
-		       : m_alloc( sizeof *br + ar->contextsize );
-	memcpy( br, ar, sizeof(*br) + ar->contextsize );
+	br = a->secure ? m_alloc_secure( sizeof *br + ar->contextsize
+					       - sizeof(ar->context) )
+		       : m_alloc( sizeof *br + ar->contextsize
+					       - sizeof(ar->context) );
+	memcpy( br, ar, sizeof(*br) + ar->contextsize
+				    - sizeof(ar->context) );
 	br->next = b->list;
 	b->list = br;
     }
@@ -288,8 +293,8 @@ md_reset( MD_HANDLE a )
 
     a->bufcount = 0;
     for( r=a->list; r; r = r->next ) {
-	memset( r->context, 0, r->contextsize );
-	(*r->init)( &r->context );
+	memset( r->context.c, 0, r->contextsize );
+	(*r->init)( &r->context.c );
     }
 }
 
@@ -323,8 +328,8 @@ md_write( MD_HANDLE a, byte *inbuf, size_t inlen)
 	    BUG();
     }
     for(r=a->list; r; r = r->next ) {
-	(*r->write)( &r->context, a->buffer, a->bufcount );
-	(*r->write)( &r->context, inbuf, inlen );
+	(*r->write)( &r->context.c, a->buffer, a->bufcount );
+	(*r->write)( &r->context.c, inbuf, inlen );
     }
     a->bufcount = 0;
 }
@@ -340,7 +345,7 @@ md_final(MD_HANDLE a)
 	md_write( a, NULL, 0 );
 
     for(r=a->list; r; r = r->next ) {
-	(*r->final)( &r->context );
+	(*r->final)( &r->context.c );
     }
 }
 
@@ -357,13 +362,13 @@ md_read( MD_HANDLE a, int algo )
 	if( (r=a->list) ) {
 	    if( r->next )
 		log_debug("more than algorithm in md_read(0)\n");
-	    return (*r->read)( &r->context );
+	    return (*r->read)( &r->context.c );
 	}
     }
     else {
 	for(r=a->list; r; r = r->next )
 	    if( r->algo == algo )
-		return (*r->read)( &r->context );
+		return (*r->read)( &r->context.c );
     }
     BUG();
     return NULL;
@@ -408,7 +413,7 @@ md_digest( MD_HANDLE a, int algo, byte *buffer, int buflen )
      * the context (extra overhead - should be fixed)*/
     context = a->secure ? m_alloc_secure( r->contextsize )
 			: m_alloc( r->contextsize );
-    memcpy( context, r->context, r->contextsize );
+    memcpy( context, r->context.c, r->contextsize );
     (*r->final)( context );
     digest = (*r->read)( context );
 

@@ -17,6 +17,10 @@
   * Use capabilities if available.  glibc2 does not support it yet?
     What about 2.2 or should we use the system calls directly?
 
+  * wehndecryptiong multiple key: print a warning only if no usable pubkey
+    encrypte package was found.  Extension: display a list of all recipients.
+
+
 
 Nice to have
 ------------

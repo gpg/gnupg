@@ -127,6 +127,15 @@ static LOCAL_ID_TABLE ultikey_table;
 static LOCAL_ID_TABLE unused_lid_tables;
 static struct local_id_item *unused_lid_items;
 
+static struct {
+    int init;
+    int level;
+    char *dbname;
+} trustdb_args;
+#define INIT_TRUSTDB() do { if( !trustdb_args.init ) \
+				do_init_trustdb();   \
+			  } while(0)
+static void do_init_trustdb(void);
 
 #define HEXTOBIN(a) ( (a) >= '0' && (a) <= '9' ? ((a)-'0') : \
 		      (a) >= 'A' && (a) <= 'F' ? ((a)-'A'+10) : ((a)-'a'+10))
@@ -324,6 +333,7 @@ keyid_from_lid( ulong lid, u32 *keyid )
     TRUSTREC rec;
     int rc;
 
+    INIT_TRUSTDB();
     rc = tdbio_read_record( lid, &rec, 0 );
     if( rc ) {
 	log_error(_("error reading dir record for LID %lu: %s\n"),
@@ -364,6 +374,7 @@ lid_from_keyblock( KBNODE keyblock )
     pk = node->pkt->pkt.public_key;
     if( !pk->local_id ) {
 	TRUSTREC rec;
+	INIT_TRUSTDB();
 
 	get_dir_record( pk, &rec );
     }
@@ -1186,30 +1197,44 @@ do_check( TRUSTREC *dr, unsigned *validity )
 int
 init_trustdb( int level, const char *dbname )
 {
+    /* just store the args */
+    if( trustdb_args.init )
+	return 0;
+    trustdb_args.level = level;
+    trustdb_args.dbname = dbname? m_strdup(dbname): NULL;
+    return 0;
+}
+
+static void
+do_init_trustdb()
+{
     int rc=0;
+    int level = trustdb_args.level;
+    const char* dbname = trustdb_args.dbname;
+
+    trustdb_args.init = 1;
 
     if( !ultikey_table )
 	ultikey_table = new_lid_table();
 
     if( !level || level==1 ) {
 	rc = tdbio_set_dbname( dbname, !!level );
-	if( rc )
-	    return rc;
-	if( !level )
-	    return 0;
+	if( !rc ) {
+	    if( !level )
+		return;
 
-	/* verify that our own keys are in the trustDB
-	 * or move them to the trustdb. */
-	rc = verify_own_keys();
+	    /* verify that our own keys are in the trustDB
+	     * or move them to the trustdb. */
+	    rc = verify_own_keys();
 
-	/* should we check whether there is no other ultimately trusted
-	 * key in the database? */
-
+	    /* should we check whether there is no other ultimately trusted
+	     * key in the database? */
+	}
     }
     else
 	BUG();
-
-    return rc;
+    if( rc )
+	log_fatal("can't init trustdb: %s\n", g10_errstr(rc) );
 }
 
 
@@ -1217,6 +1242,8 @@ void
 list_trustdb( const char *username )
 {
     TRUSTREC rec;
+
+    INIT_TRUSTDB();
 
     if( username && *username == '#' ) {
 	int rc;
@@ -1274,6 +1301,7 @@ export_ownertrust()
     byte *p;
     int rc;
 
+    INIT_TRUSTDB();
     printf(_("# List of assigned trustvalues, created %s\n"
 	     "# (Use \"gpgm --import-ownertrust\" to restore them)\n"),
 	   asctimestamp( make_timestamp() ) );
@@ -1309,6 +1337,7 @@ import_ownertrust( const char *fname )
     size_t n, fprlen;
     unsigned otrust;
 
+    INIT_TRUSTDB();
     if( !fname || (*fname == '-' && !fname[1]) ) {
 	fp = stdin;
 	fname = "[stdin]";
@@ -1481,6 +1510,7 @@ list_trust_path( const char *username )
     TRUST_SEG_LIST trust_seg_list, tsl, tsl2;
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 
+    INIT_TRUSTDB();
     if( (rc = get_pubkey_byname(NULL, pk, username, NULL )) )
 	log_error(_("user '%s' not found: %s\n"), username, g10_errstr(rc) );
     else if( (rc=tdbio_search_dir_bypk( pk, &rec )) && rc != -1 )
@@ -1557,6 +1587,7 @@ check_trustdb( const char *username )
     int rc;
     int recheck = username && *username == '*' && !username[1];
 
+    INIT_TRUSTDB();
     if( username && !recheck ) {
 	rc = find_keyblock_byname( &kbpos, username );
 	if( !rc )
@@ -1657,6 +1688,7 @@ update_trustdb( )
     KBPOS kbpos;
     int rc;
 
+    INIT_TRUSTDB();
     rc = enum_keyblocks( 0, &kbpos, &keyblock );
     if( !rc ) {
 	ulong count=0, upd_count=0, err_count=0, new_count=0;
@@ -1749,6 +1781,7 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel )
     u32 keyid[2];
 
 
+    INIT_TRUSTDB();
     keyid_from_pk( pk, keyid );
 
     /* get the pubkey record */
@@ -1814,6 +1847,7 @@ query_trust_info( PKT_public_key *pk )
     unsigned trustlevel;
     int c;
 
+    INIT_TRUSTDB();
     if( check_trust( pk, &trustlevel ) )
 	return '?';
     if( trustlevel & TRUST_FLAG_REVOKED )
@@ -1851,6 +1885,7 @@ enum_cert_paths( void **context, ulong *lid,
     struct enum_cert_paths_ctx *ctx;
     TRUST_SEG_LIST tsl;
 
+    INIT_TRUSTDB();
     if( !lid ) {  /* release the context */
 	if( *context ) {
 	    TRUST_SEG_LIST tsl2;
@@ -1919,6 +1954,7 @@ enum_cert_paths_print( void **context, FILE *fp,
 
     if( !*context )
 	return;
+    INIT_TRUSTDB();
     ctx = *context;
     if( !ctx->tsl )
 	return;
@@ -1959,6 +1995,7 @@ get_ownertrust( ulong lid )
 {
     TRUSTREC rec;
 
+    INIT_TRUSTDB();
     read_record( lid, &rec, RECTYPE_DIR );
     return rec.r.dir.ownertrust;
 }
@@ -1969,6 +2006,7 @@ get_ownertrust_info( ulong lid )
     unsigned otrust;
     int c;
 
+    INIT_TRUSTDB();
     otrust = get_ownertrust( lid );
     c = trust_letter( (otrust & TRUST_MASK) );
     if( !c )
@@ -1991,6 +2029,7 @@ get_pref_data( ulong lid, const byte *namehash, size_t *ret_n )
     TRUSTREC rec;
     ulong recno;
 
+    INIT_TRUSTDB();
     read_record( lid, &rec, RECTYPE_DIR );
     for( recno=rec.r.dir.uidlist; recno; recno = rec.r.uid.next ) {
 	read_record( recno, &rec, RECTYPE_UID );
@@ -2023,6 +2062,7 @@ is_algo_in_prefs( ulong lid, int preftype, int algo )
     int i;
     byte *pref;
 
+    INIT_TRUSTDB();
     read_record( lid, &rec, RECTYPE_DIR );
     for( recno=rec.r.dir.uidlist; recno; recno = rec.r.uid.next ) {
 	read_record( recno, &rec, RECTYPE_UID );
@@ -2070,6 +2110,7 @@ int
 query_trust_record( PKT_public_key *pk )
 {
     TRUSTREC rec;
+    INIT_TRUSTDB();
     return get_dir_record( pk, &rec );
 }
 
@@ -2080,6 +2121,7 @@ clear_trust_checked_flag( PKT_public_key *pk )
     TRUSTREC rec;
     int rc;
 
+    INIT_TRUSTDB();
     rc = get_dir_record( pk, &rec );
     if( rc )
 	return rc;
@@ -3066,6 +3108,7 @@ update_trust_record( KBNODE keyblock, int recheck, int *modified )
     RECNO_LIST recno_list = NULL; /* list of verified records */
     /* fixme: replace recno_list by a lookup on node->recno */
 
+    INIT_TRUSTDB();
     if( modified )
 	*modified = 0;
 
@@ -3194,6 +3237,8 @@ insert_trust_record( PKT_public_key *pk )
     int rc = 0;
     ulong hintlist = 0;
 
+    INIT_TRUSTDB();
+
     if( pk->local_id )
 	log_bug("pk->local_id=%lu\n", pk->local_id );
 
@@ -3292,6 +3337,7 @@ update_ownertrust( ulong lid, unsigned new_trust )
 {
     TRUSTREC rec;
 
+    INIT_TRUSTDB();
     read_record( lid, &rec, RECTYPE_DIR );
     rec.r.dir.ownertrust = new_trust;
     write_record( &rec );

@@ -1,3 +1,7 @@
+Wed Feb 24 11:07:27 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* configure.in: New option --enable-static-rnd.
+
 Mon Feb 22 20:04:00 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* BUGS: Now we assign bug numbers.

@@ -42,6 +42,8 @@ an "info standards" to find out why a disclaimer is needed for GNU.)
     Buserror on IRIX 6.4: Crash while doing a keygen. I think while creating
     the prime.	Other buserrors are reported when doing a "gpg README"
     on sparc-solaris2.6.
+    --> I hope I've fixed this: Please, can someone it. I can't reproduce it
+	on the alpha I have access to.
 
 [ **] #7 1999-02-22 <dwpalmer@dwpalm.jf.intel.com> 0.9.3
     Conventional encrytion incompatibilty:

@@ -120,4 +120,4 @@ mpihelp_sub_n:
 	or	$2,$2,$8
 
 	.end	mpihelp_sub_n
-	n
+

@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "POT-Creation-Date: 1999-02-19 15:31+0100\n"
-"PO-Revision-Date: 1998-12-27 13:34+0100\n"
+"PO-Revision-Date: 1999-02-21 13:34+0100\n"
 "Last-Translator: Walter Koch <walterk@mail.dip.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -30,11 +30,11 @@ msgstr ""
 
 #: util/secmem.c:250
 msgid "operation is not possible without initialized secure memory\n"
-msgstr ""
+msgstr "Vorgang ist ohne sicheren Hauptspeichern nicht möglich\n"
 
 #: util/secmem.c:251
 msgid "(you may have used the wrong program for this task)\n"
-msgstr ""
+msgstr "(möglicherweise haben Sie das falsche Programm für diese Aufgabe benutzt)\n"
 
 #: util/miscutil.c:143
 msgid "yes"
@@ -217,24 +217,20 @@ msgid "weak key"
 msgstr "Unsicherer Schlüssel"
 
 #: util/errors.c:97
-#, fuzzy
 msgid "invalid argument"
-msgstr "Ungültige ASCII-Hülle"
+msgstr "Ungültiges Argument"
 
 #: util/errors.c:98
-#, fuzzy
 msgid "bad URI"
-msgstr "Falsche MPI"
+msgstr "fehlerhafter URI"
 
 #: util/errors.c:99
-#, fuzzy
 msgid "unsupported URI"
-msgstr "Wird nicht unterstützt"
+msgstr "Nicht unterstützter URI"
 
 #: util/errors.c:100
-#, fuzzy
 msgid "network error"
-msgstr "Allgemeiner Fehler"
+msgstr "Netzwerkfehler"
 
 #: util/logger.c:178
 #, c-format
@@ -420,9 +416,8 @@ msgid "create ascii armored output"
 msgstr "Ausgabe mit ASCII-Hülle versehen"
 
 #: g10/g10.c:221
-#, fuzzy
 msgid "|NAME|encrypt for NAME"
-msgstr "|NAME|Terminalzeichensatz NAME benutzen"
+msgstr "|NAME|verschlüsseln für NAME"
 
 #: g10/g10.c:226
 msgid "use this user-id to sign or decrypt"
@@ -1334,14 +1329,13 @@ msgid "public and secret key created and signed.\n"
 msgstr "Öffentlichen und geheimen Schlüssel erzeugt und signiert.\n"
 
 #: g10/keygen.c:929
-#, fuzzy
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a secondary key for this purpose.\n"
 msgstr ""
 "Bitte beachten Sie, daß dieser Schlüssel nicht zum Verschlüsseln benutzt\n"
-"werden kann.  Sie können aber mit dem Befehl \"--add-key\" einen\n"
-"Zweitschlüssel zu diesem Schlüssel hinzufügen.\n"
+"werden kann.  Sie können aber mit dem Befehl \"--edit-key\" einen\n"
+"Zweitschlüssel für diesem Zweck erzeugen.\n"
 
 #: g10/keygen.c:943 g10/keygen.c:1042
 #, c-format
@@ -1349,19 +1343,19 @@ msgid "Key generation failed: %s\n"
 msgstr "Schlüsselerzeugung fehlgeschlagen: %s\n"
 
 #: g10/keygen.c:987 g10/sig-check.c:172 g10/sign.c:52
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr ""
-"Öffentlicher Schlüssel wurde in der Zukunft %lu %s erzeugt (Zeitreise oder "
+"Der Schlüssel wurde %lu Sekunde in der Zukunft erzeugt (Zeitreise oder "
 "Uhren stimmen nicht überein)\n"
 
 #: g10/keygen.c:989 g10/sig-check.c:174 g10/sign.c:54
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
 msgstr ""
-"Öffentlicher Schlüssel wurde in der Zukunft %lu %s erzeugt (Zeitreise oder "
+"Der Schlüssel wurde %lu Sekunden in der Zukunft erzeugt (Zeitreise oder "
 "Uhren stimmen nicht überein)\n"
 
 #: g10/keygen.c:1020
@@ -1667,14 +1661,14 @@ msgid "key %08lX: invalid self-signature\n"
 msgstr "Schlüssel %08lX: Ungültige Eigenbeglaubigung\n"
 
 #: g10/import.c:719
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: no subkey for key binding\n"
-msgstr "Schlüssel %08lX.%lu: Korrekte Unterschlüssel-Anbindung\n"
+msgstr "Schlüssel %08lX: Kein Unterschlüssel für die Schlüsselanbindung\n"
 
 #: g10/import.c:728
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: invalid subkey binding\n"
-msgstr "Schlüssel %08lX.%lu: Ungültige Unterschlüssel-Anbindung\n"
+msgstr "Schlüssel %08lX: Ungültige Unterschlüssel-Anbindung\n"
 
 #: g10/import.c:759
 #, c-format
@@ -1684,7 +1678,7 @@ msgstr "Schlüssel %08lX: übergehe User-ID '"
 #: g10/import.c:779
 #, fuzzy, c-format
 msgid "key %08lX: skipped subkey\n"
-msgstr "Schlüssel %08lX: 1 neuer Unterschlüssel\n"
+msgstr "Schlüssel %08lX: Unterschlüssel ignoriert\n"
 
 #: g10/import.c:798
 #, c-format
@@ -2149,9 +2143,8 @@ msgid "Good signature from \""
 msgstr "Korrekte Unterschrift von \""
 
 #: g10/mainproc.c:866
-#, fuzzy
-msgid "                aka \""
-msgstr "           importiert: %lu"
+msgid  "                aka \""
+msgstr "                alias \""
 
 #: g10/mainproc.c:908
 #, c-format
@@ -2191,7 +2184,7 @@ msgstr ""
 #, fuzzy
 msgid "this cipher algorithm is depreciated; please use a more standard one!\n"
 msgstr ""
-"Diees Verschlüsselungsmethode ist nicht viel wert; verwenden Sie eine "
+"Diees Verschlüsselungsmethode taugt nicht mehr viel; verwenden Sie eine "
 "stärker standardisierte Methode!\n"
 
 #: g10/parse-packet.c:113
