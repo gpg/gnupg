@@ -1,3 +1,16 @@
+2003-09-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Error out if --multifile is used with the commands
+	that don't support it yet (--sign, --clearsign, --detach-sign,
+	--symmetric, and --store).
+
+	* g10.c (main): Add --multifile as an alias to turn --encrypt into
+	--encrypt-files (plus --verify-files, --decrypt-files).
+
+	* encode.c (use_mdc), g10.c (main): Use RFC1991 and RFC2440
+	directly to check for MDC usability.  Do not set the force_mdc or
+	disable_mdc flags since there is no point any longer.
+
 2003-09-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* armor.c (parse_hash_header, armor_filter), g10.c (print_hex,

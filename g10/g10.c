@@ -315,7 +315,8 @@ enum cmd_and_opt_values { aNull = 0,
     oNoStrict,
     oMangleDosFilenames,
     oNoMangleDosFilenames,
-    oEnableProgressFilter,                          
+    oEnableProgressFilter,
+    oMultifile,
 aTest };
 
 
@@ -627,6 +628,7 @@ static ARGPARSE_OPTS opts[] = {
     { oMangleDosFilenames, "mangle-dos-filenames", 0, "@" },
     { oNoMangleDosFilenames, "no-mangle-dos-filenames", 0, "@" },
     { oEnableProgressFilter, "enable-progress-filter", 0, "@" },
+    { oMultifile, "multifile", 0, "@" },
 {0} };
 
 
@@ -1129,6 +1131,7 @@ main( int argc, char **argv )
     char *pers_digest_list = NULL;
     char *pers_compress_list = NULL;
     int eyes_only=0;
+    int multifile=0;
     int pwfd = -1;
     int with_fpr = 0; /* make an option out of --fingerprint */
     int any_explicit_recipient = 0;
@@ -1357,11 +1360,15 @@ main( int argc, char **argv )
 	  case aDetachedSign: detached_sig = 1; set_cmd( &cmd, aSign ); break;
 	  case aSym: set_cmd( &cmd, aSym); break;
 
+	  case aDecryptFiles: multifile=1; /* fall through */
 	  case aDecrypt: set_cmd( &cmd, aDecrypt); break;
-          case aDecryptFiles: set_cmd( &cmd, aDecryptFiles); break;
 
+	  case aEncrFiles: multifile=1; /* fall through */
 	  case aEncr: set_cmd( &cmd, aEncr); break;
-	  case aEncrFiles: set_cmd( &cmd, aEncrFiles ); break;
+
+	  case aVerifyFiles: multifile=1; /* fall through */
+	  case aVerify: set_cmd( &cmd, aVerify); break;
+
 	  case aSign: set_cmd( &cmd, aSign );  break;
 	  case aKeygen: set_cmd( &cmd, aKeygen); greeting=1; break;
 	  case aSignKey: set_cmd( &cmd, aSignKey); break;
@@ -1373,8 +1380,6 @@ main( int argc, char **argv )
 	  case aClearsign: set_cmd( &cmd, aClearsign); break;
 	  case aGenRevoke: set_cmd( &cmd, aGenRevoke); break;
 	  case aDesigRevoke: set_cmd( &cmd, aDesigRevoke); break;
-	  case aVerify: set_cmd( &cmd, aVerify); break;
-	  case aVerifyFiles: set_cmd( &cmd, aVerifyFiles); break;
 	  case aPrimegen: set_cmd( &cmd, aPrimegen); break;
 	  case aGenRandom: set_cmd( &cmd, aGenRandom); break;
 	  case aPrintMD: set_cmd( &cmd, aPrintMD); break;
@@ -1544,7 +1549,6 @@ main( int argc, char **argv )
 	  case oRFC1991:
 	    opt.compliance = CO_RFC1991;
 	    opt.force_v4_certs = 0;
-	    opt.disable_mdc = 1;
 	    opt.escape_from = 1;
 	    break;
 	  case oRFC2440:
@@ -1552,7 +1556,6 @@ main( int argc, char **argv )
 	    /* TODO: When 2440bis becomes a RFC, these may need
                changing. */
 	    opt.compliance = CO_RFC2440;
-	    opt.disable_mdc = 1;
 	    opt.allow_non_selfsigned_uid = 1;
 	    opt.allow_freeform_uid = 1;
 	    opt.pgp2_workarounds = 0;
@@ -1899,11 +1902,10 @@ main( int argc, char **argv )
 	  case oGroup: add_group(pargs.r.ret_str); break;
 	  case oStrict: opt.strict=1; log_set_strict(1); break;
 	  case oNoStrict: opt.strict=0; log_set_strict(0); break;
-
           case oMangleDosFilenames: opt.mangle_dos_filenames = 1; break;
           case oNoMangleDosFilenames: opt.mangle_dos_filenames = 0; break;
-
           case oEnableProgressFilter: opt.enable_progress_filter = 1; break;
+	  case oMultifile: multifile=1; break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}
@@ -2027,8 +2029,6 @@ main( int argc, char **argv )
 	  compliance_failure();
 	else
 	  {
-	    opt.force_mdc = 0;
-	    opt.disable_mdc = 1;
 	    opt.force_v4_certs = 0;
 	    opt.sk_comments = 0;
 	    opt.escape_from = 1;
@@ -2047,8 +2047,6 @@ main( int argc, char **argv )
 	opt.escape_from=1;
 	opt.force_v3_sigs=1;
 	opt.ask_sig_expire=0;
-	opt.force_mdc=0;
-	opt.disable_mdc=1;
       }
     else if(PGP7)
       {
@@ -2143,6 +2141,37 @@ main( int argc, char **argv )
     if(pers_compress_list &&
        keygen_set_std_prefs(pers_compress_list,PREFTYPE_ZIP))
       log_error(_("invalid personal compress preferences\n"));
+
+    /* We don't support all possible commands with multifile yet */
+    if(multifile)
+      {
+	char *cmdname;
+
+	switch(cmd)
+	  {
+	  case aSign:
+	    cmdname="--sign";
+	    break;
+	  case aClearsign:
+	    cmdname="--clearsign";
+	    break;
+	  case aDetachedSign:
+	    cmdname="--detach-sign";
+	    break;
+	  case aSym:
+	    cmdname="--symmetric";
+	    break;
+	  case aStore:
+	    cmdname="--store";
+	    break;
+	  default:
+	    cmdname=NULL;
+	    break;
+	  }
+
+	if(cmdname)
+	  log_error(_("%s does not yet work with %s\n"),cmdname,"--multifile");
+      }
 
     if( log_get_errorcount(0) )
 	g10_exit(2);
@@ -2252,8 +2281,7 @@ main( int argc, char **argv )
 	&& !(cmd == aKMode && argc == 2 ) ) 
       {
         if (cmd != aCheckKeys && cmd != aListSigs && cmd != aListKeys
-            && cmd != aVerify && cmd != aVerifyFiles
-            && cmd != aSym)
+            && cmd != aVerify && cmd != aSym)
           {
             if (!sec_nrings || default_keyring) /* add default secret rings */
               keydb_add_resource ("secring" EXTSEP_S "gpg", 0, 1);
@@ -2322,15 +2350,17 @@ main( int argc, char **argv )
 	break;
 
       case aEncr: /* encrypt the given file */
-	if( argc > 1 )
-	    wrong_args(_("--encrypt [filename]"));
-	if( (rc = encode_crypt(fname,remusr)) )
-	    log_error("%s: encryption failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
+	if(multifile)
+	  encode_crypt_files(argc, argv, remusr);
+	else
+	  {
+	    if( argc > 1 )
+	      wrong_args(_("--encrypt [filename]"));
+	    if( (rc = encode_crypt(fname,remusr)) )
+	      log_error("%s: encryption failed: %s\n",
+			print_fname_stdin(fname), g10_errstr(rc) );
+	  }
 	break;
-
-      case aEncrFiles: /* encrypt the given files */
-        encode_crypt_files(argc, argv, remusr);
-    	break;
           
       case aSign: /* sign the given file */
 	sl = NULL;
@@ -2383,25 +2413,29 @@ main( int argc, char **argv )
 	break;
 
       case aVerify:
-	if( (rc = verify_signatures( argc, argv ) ))
-	    log_error("verify signatures failed: %s\n", g10_errstr(rc) );
-	break;
-
-      case aVerifyFiles:
-	if( (rc = verify_files( argc, argv ) ))
-	    log_error("verify files failed: %s\n", g10_errstr(rc) );
+	if(multifile)
+	  {
+	    if( (rc = verify_files( argc, argv ) ))
+	      log_error("verify files failed: %s\n", g10_errstr(rc) );
+	  }
+	else
+	  {
+	    if( (rc = verify_signatures( argc, argv ) ))
+	      log_error("verify signatures failed: %s\n", g10_errstr(rc) );
+	  }
 	break;
 
       case aDecrypt:
-	if( argc > 1 )
-	    wrong_args(_("--decrypt [filename]"));
-	if( (rc = decrypt_message( fname ) ))
-	    log_error("decrypt_message failed: %s\n", g10_errstr(rc) );
+        if(multifile)
+	  decrypt_messages(argc, argv);
+	else
+	  {
+	    if( argc > 1 )
+	      wrong_args(_("--decrypt [filename]"));
+	    if( (rc = decrypt_message( fname ) ))
+	      log_error("decrypt_message failed: %s\n", g10_errstr(rc) );
+	  }
 	break;
-
-      case aDecryptFiles:
-        decrypt_messages(argc, argv);
-        break;
             
       case aSignKey: /* sign the key given as argument */
 	if( argc != 1 )
