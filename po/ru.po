@@ -9,7 +9,7 @@
 # QingLong <qinglong@Bolizm> (couldn't send an email to let you know)
 msgid ""
 msgstr ""
-"POT-Creation-Date: 1999-09-02 14:44+0200\n"
+"POT-Creation-Date: 1999-09-03 08:52+0200\n"
 "Content-Type: text/plain; charset=\n"
 "Date: 1998-01-26 22:08:36+0100\n"
 "From: Gregory Steuck <steuck@iname.com>\n"
@@ -1184,12 +1184,12 @@ msgstr "ВНИМАНИЕ: Этот ключ не заверен достаточно доверенными подписями!\n"
 msgid "         It is not certain that the signature belongs to the owner.\n"
 msgstr "          Нет уверенности, что подпись принадлежит владельцу.\n"
 
-#: g10/pkclist.c:694 g10/pkclist.c:716 g10/pkclist.c:825 g10/pkclist.c:870
+#: g10/pkclist.c:694 g10/pkclist.c:716 g10/pkclist.c:841 g10/pkclist.c:886
 #, c-format
 msgid "%s: skipped: %s\n"
 msgstr "%s: пропущен: %s\n"
 
-#: g10/pkclist.c:702 g10/pkclist.c:852
+#: g10/pkclist.c:702 g10/pkclist.c:868
 #, c-format
 msgid "%s: skipped: public key already present\n"
 msgstr ""
@@ -1211,27 +1211,35 @@ msgstr "Введите идентификатор пользователя: "
 msgid "No such user ID.\n"
 msgstr "Нет такого идентификатора пользователя.\n"
 
-#: g10/pkclist.c:771
+#: g10/pkclist.c:756
+msgid "skipped: public key already set as default recipient\n"
+msgstr ""
+
+#: g10/pkclist.c:778
 #, fuzzy
 msgid "Public key is disabled.\n"
 msgstr "Открытый ключ не найден"
 
-#: g10/pkclist.c:800
+#: g10/pkclist.c:785
+msgid "skipped: public key already set with --encrypt-to\n"
+msgstr ""
+
+#: g10/pkclist.c:816
 #, fuzzy, c-format
 msgid "unknown default recipient `%s'\n"
 msgstr "замечание: файл параметров по умолчанию `%s' отсутствует\n"
 
-#: g10/pkclist.c:833
+#: g10/pkclist.c:849
 #, c-format
 msgid "%s: error checking key: %s\n"
 msgstr "%s: ошибка при проверке ключа: %s\n"
 
-#: g10/pkclist.c:838
+#: g10/pkclist.c:854
 #, c-format
 msgid "%s: skipped: public key is disabled\n"
 msgstr ""
 
-#: g10/pkclist.c:876
+#: g10/pkclist.c:892
 msgid "no valid addressees\n"
 msgstr "нет допустимых адресов\n"
 
@@ -2660,15 +2668,15 @@ msgstr "Повторите ключевую фразу: %s\n"
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "данные не были сохранены; воспользуйтесь --\"output\" для сохранения\n"
 
-#: g10/plaintext.c:267
+#: g10/plaintext.c:315
 msgid "Please enter name of data file: "
 msgstr "Пожалуйста, введите имя файла данных: "
 
-#: g10/plaintext.c:288
+#: g10/plaintext.c:336
 msgid "reading stdin ...\n"
 msgstr ""
 
-#: g10/plaintext.c:371
+#: g10/plaintext.c:379
 #, c-format
 msgid "can't open signed data `%s'\n"
 msgstr "невозможно открыть подписанные данные `%s' .\n"

@@ -1058,8 +1058,8 @@ check_sig_and_print( CTX c, KBNODE node )
 			   : _("Good signature from \""));
 	    else
 		log_info(    _("                aka \""));
-	    print_string( log_stream(), un->pkt->pkt.user_id->name,
-					un->pkt->pkt.user_id->len, '\"' );
+	    print_utf8_string( log_stream(), un->pkt->pkt.user_id->name,
+					     un->pkt->pkt.user_id->len );
 	    fputs("\"\n", log_stream() );
 	    if( rc )
 		break; /* print only one id in this case */

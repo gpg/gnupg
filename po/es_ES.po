@@ -7,7 +7,7 @@
 # GPG version: 0.9.7
 msgid ""
 msgstr ""
-"POT-Creation-Date: 1999-09-02 14:44+0200\n"
+"POT-Creation-Date: 1999-09-03 08:52+0200\n"
 "PO-Revision-Date: 1999-06-06 18:33+0200\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Date: 1998-11-13 10:49:25+0100\n"
@@ -1127,12 +1127,12 @@ msgstr ""
 msgid "         It is not certain that the signature belongs to the owner.\n"
 msgstr "         No es seguro que la firma pertenezca al propietario.\n"
 
-#: g10/pkclist.c:694 g10/pkclist.c:716 g10/pkclist.c:825 g10/pkclist.c:870
+#: g10/pkclist.c:694 g10/pkclist.c:716 g10/pkclist.c:841 g10/pkclist.c:886
 #, c-format
 msgid "%s: skipped: %s\n"
 msgstr "%s: ignorado: %s\n"
 
-#: g10/pkclist.c:702 g10/pkclist.c:852
+#: g10/pkclist.c:702 g10/pkclist.c:868
 #, fuzzy, c-format
 msgid "%s: skipped: public key already present\n"
 msgstr "%s: problema lectura del bloque de clave: %s\n"
@@ -1153,27 +1153,37 @@ msgstr "Introduzca el ID de usuario: "
 msgid "No such user ID.\n"
 msgstr "ID de usuario inexistente.\n"
 
-#: g10/pkclist.c:771
+#: g10/pkclist.c:756
+#, fuzzy
+msgid "skipped: public key already set as default recipient\n"
+msgstr "%s: problema lectura del bloque de clave: %s\n"
+
+#: g10/pkclist.c:778
 #, fuzzy
 msgid "Public key is disabled.\n"
 msgstr "la clave pública es %08lX\n"
 
-#: g10/pkclist.c:800
+#: g10/pkclist.c:785
+#, fuzzy
+msgid "skipped: public key already set with --encrypt-to\n"
+msgstr "%s: problema lectura del bloque de clave: %s\n"
+
+#: g10/pkclist.c:816
 #, fuzzy, c-format
 msgid "unknown default recipient `%s'\n"
 msgstr "NOTA: no existe el fichero de opciones predefinido `%s'\n"
 
-#: g10/pkclist.c:833
+#: g10/pkclist.c:849
 #, c-format
 msgid "%s: error checking key: %s\n"
 msgstr "%s: error comprobando la clave: %s\n"
 
-#: g10/pkclist.c:838
+#: g10/pkclist.c:854
 #, fuzzy, c-format
 msgid "%s: skipped: public key is disabled\n"
 msgstr "%s: problema lectura del bloque de clave: %s\n"
 
-#: g10/pkclist.c:876
+#: g10/pkclist.c:892
 msgid "no valid addressees\n"
 msgstr "no hay direcciones válidas\n"
 
@@ -2572,15 +2582,15 @@ msgstr "Repita contraseña: "
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "datos no grabados; use la opción \"--output\" para grabarlos\n"
 
-#: g10/plaintext.c:267
+#: g10/plaintext.c:315
 msgid "Please enter name of data file: "
 msgstr "Introduzca el nombre del fichero de datos: "
 
-#: g10/plaintext.c:288
+#: g10/plaintext.c:336
 msgid "reading stdin ...\n"
 msgstr "leyendo stdin...\n"
 
-#: g10/plaintext.c:371
+#: g10/plaintext.c:379
 #, c-format
 msgid "can't open signed data `%s'\n"
 msgstr "imposible abrir datos firmados `%s'\n"

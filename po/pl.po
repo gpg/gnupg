@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-0.9.7\n"
-"POT-Creation-Date: 1999-09-02 14:44+0200\n"
+"POT-Creation-Date: 1999-09-03 08:52+0200\n"
 "PO-Revision-Date: 1999-05-30 19:08+02:00\n"
 "Last-Translator: Janusz A. Urbanowicz <alex@bofh.net.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -1127,12 +1127,12 @@ msgid "         It is not certain that the signature belongs to the owner.\n"
 msgstr ""
 "         Nie ma pewno¶ci ¿e ten podpis zosta³ z³o¿nony przez w³a¶ciciela.\n"
 
-#: g10/pkclist.c:694 g10/pkclist.c:716 g10/pkclist.c:825 g10/pkclist.c:870
+#: g10/pkclist.c:694 g10/pkclist.c:716 g10/pkclist.c:841 g10/pkclist.c:886
 #, c-format
 msgid "%s: skipped: %s\n"
 msgstr "%s: pominiêty: %s\n"
 
-#: g10/pkclist.c:702 g10/pkclist.c:852
+#: g10/pkclist.c:702 g10/pkclist.c:868
 #, fuzzy, c-format
 msgid "%s: skipped: public key already present\n"
 msgstr "%s: problem przy odczycie bloku klucza: %s\n"
@@ -1153,27 +1153,37 @@ msgstr "Wprowad¼ identyfikator u¿ytkownika (user ID): "
 msgid "No such user ID.\n"
 msgstr "Brak takiego identyfikatora u¿ytkownika.\n"
 
-#: g10/pkclist.c:771
+#: g10/pkclist.c:756
+#, fuzzy
+msgid "skipped: public key already set as default recipient\n"
+msgstr "%s: problem przy odczycie bloku klucza: %s\n"
+
+#: g10/pkclist.c:778
 #, fuzzy
 msgid "Public key is disabled.\n"
 msgstr "klucz publiczny %08lX\n"
 
-#: g10/pkclist.c:800
+#: g10/pkclist.c:785
+#, fuzzy
+msgid "skipped: public key already set with --encrypt-to\n"
+msgstr "%s: problem przy odczycie bloku klucza: %s\n"
+
+#: g10/pkclist.c:816
 #, fuzzy, c-format
 msgid "unknown default recipient `%s'\n"
 msgstr "UWAGA: brak domy¶lnego pliku opcji '%s'\n"
 
-#: g10/pkclist.c:833
+#: g10/pkclist.c:849
 #, c-format
 msgid "%s: error checking key: %s\n"
 msgstr "%s: b³±d podczas sprawdzania klucza: %s\n"
 
-#: g10/pkclist.c:838
+#: g10/pkclist.c:854
 #, fuzzy, c-format
 msgid "%s: skipped: public key is disabled\n"
 msgstr "%s: problem przy odczycie bloku klucza: %s\n"
 
-#: g10/pkclist.c:876
+#: g10/pkclist.c:892
 msgid "no valid addressees\n"
 msgstr "brak poprawnych adresów\n"
 
@@ -2585,15 +2595,15 @@ msgid "data not saved; use option \"--output\" to save it\n"
 msgstr ""
 "dane nie zosta³y zapisane; nale¿y u¿yæ opcji \"--output\" aby je zapisaæ\n"
 
-#: g10/plaintext.c:267
+#: g10/plaintext.c:315
 msgid "Please enter name of data file: "
 msgstr "Nazwa pliku danych: "
 
-#: g10/plaintext.c:288
+#: g10/plaintext.c:336
 msgid "reading stdin ...\n"
 msgstr "czytam strumieñ standardowego wej¶cia\n"
 
-#: g10/plaintext.c:371
+#: g10/plaintext.c:379
 #, c-format
 msgid "can't open signed data `%s'\n"
 msgstr "nie mo¿na otworzyæ podpisanego pliku '%s'\n"

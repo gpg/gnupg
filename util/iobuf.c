@@ -168,7 +168,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    break;
 		}
 		else if( a->partial ) {
-		    /* These OpenPGP introduced huffman encoded length
+		    /* These OpenPGP introduced huffman like encoded length
 		     * bytes are really a mess :-( */
 		    if( a->first_c ) {
 			c = a->first_c;
@@ -220,6 +220,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    else { /* next partial body length */
 			a->size = 1 << (c & 0x1f);
 		    }
+	    /*	log_debug("partial: ctx=%p c=%02x size=%u\n", a, c, a->size);*/
 		}
 		else { /* the gnupg partial length scheme - much better :-) */
 		    c = iobuf_get(chain);
@@ -372,6 +373,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		 */
 		/* construct header */
 		len = a->buflen;
+		/*log_debug("partial: remaining length=%u\n", len );*/
 		if( len < 192 )
 		    rc = iobuf_put(chain, len );
 		else if( len < 8384 ) {

@@ -751,11 +751,18 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		tty_printf(_("No such user ID.\n"));
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) {
 		if( have_def_rec ) {
-		    PK_LIST r = m_alloc( sizeof *r );
-		    r->pk = pk; pk = NULL;
-		    r->next = pk_list;
-		    r->mark = 0;
-		    pk_list = r;
+		    if (key_present_in_pk_list(pk_list, pk) == 0) {
+			free_public_key(pk); pk = NULL;
+			log_info(_("skipped: public key "
+				   "already set as default recipient\n") );
+		    }
+		    else {
+			PK_LIST r = m_alloc( sizeof *r );
+			r->pk = pk; pk = NULL;
+			r->next = pk_list;
+			r->mark = 0;
+			pk_list = r;
+		    }
 		    any_recipients = 1;
 		    break;
 		}
@@ -771,13 +778,22 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 			tty_printf(_("Public key is disabled.\n") );
 		    }
 		    else if( do_we_trust_pre( pk, trustlevel ) ) {
-			PK_LIST r;
+			/* Skip the actual key if the key is already present
+			 * in the list */
+			if (key_present_in_pk_list(pk_list, pk) == 0) {
+			    free_public_key(pk); pk = NULL;
+			    log_info(_("skipped: public key "
+				       "already set with --encrypt-to\n") );
+			}
+			else {
+			    PK_LIST r;
 
-			r = m_alloc( sizeof *r );
-			r->pk = pk; pk = NULL;
-			r->next = pk_list;
-			r->mark = 0;
-			pk_list = r;
+			    r = m_alloc( sizeof *r );
+			    r->pk = pk; pk = NULL;
+			    r->next = pk_list;
+			    r->mark = 0;
+			    pk_list = r;
+			}
 			any_recipients = 1;
 			break;
 		    }

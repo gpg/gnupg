@@ -166,10 +166,19 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	}
 	else { /* binary mode */
 	    byte *buffer = m_alloc( 32768 );
-	    for( ;; ) {
+	    int eof;
+	    for( eof=0; !eof; ) {
+		/* Why do we check for len < 32768:
+		 * If we won´ we would practically read 2 EOFS but
+		 * the first one has already popped the block_filter
+		 * off and therefore we don't catch the boundary.
+		 * Always assume EOF if iobuf_read returns less bytes
+		 * then requested */
 		int len = iobuf_read( pt->buf, buffer, 32768 );
 		if( len == -1 )
 		    break;
+		if( len < 32768 )
+		    eof = 1;
 		if( mfx->md )
 		    md_write( mfx->md, buffer, len );
 		if( fp ) {
@@ -243,6 +252,46 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     return rc;
 }
 
+static void
+do_hash( MD_HANDLE md, MD_HANDLE md2, IOBUF fp, int textmode )
+{
+    text_filter_context_t tfx;
+    int c;
+
+    if( textmode ) {
+	memset( &tfx, 0, sizeof tfx);
+	iobuf_push_filter( fp, text_filter, &tfx );
+    }
+    if( md2 ) { /* work around a strange behaviour in pgp2 */
+	/* It seems that at least PGP5 converts a single CR to a CR,LF too */
+	int lc = -1;
+	while( (c = iobuf_get(fp)) != -1 ) {
+	    if( c == '\n' && lc == '\r' )
+		md_putc(md2, c);
+	    else if( c == '\n' ) {
+		md_putc(md2, '\r');
+		md_putc(md2, c);
+	    }
+	    else if( c != '\n' && lc == '\r' ) {
+		md_putc(md2, '\n');
+		md_putc(md2, c);
+	    }
+	    else
+		md_putc(md2, c);
+
+	    if( md )
+		md_putc(md, c );
+	    lc = c;
+	}
+    }
+    else {
+	while( (c = iobuf_get(fp)) != -1 ) {
+	    if( md )
+		md_putc(md, c );
+	}
+    }
+}
+
 
 /****************
  * Ask for the detached datafile and calculate the digest from it.
@@ -255,7 +304,6 @@ ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
     char *answer = NULL;
     IOBUF fp;
     int rc = 0;
-    int c;
 
     fp = open_sigfile( inname ); /* open default file */
     if( !fp && !opt.batch ) {
@@ -298,46 +346,6 @@ ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
     return rc;
 }
 
-
-static void
-do_hash( MD_HANDLE md, MD_HANDLE md2, IOBUF fp, int textmode )
-{
-    text_filter_context_t tfx;
-    int c;
-
-    if( textmode ) {
-	memset( &tfx, 0, sizeof tfx);
-	iobuf_push_filter( fp, text_filter, &tfx );
-    }
-    if( md2 ) { /* work around a strange behaviour in pgp2 */
-	/* It seems that at least PGP5 converts a single CR to a CR,LF too */
-	int lc = -1;
-	while( (c = iobuf_get(fp)) != -1 ) {
-	    if( c == '\n' && lc == '\r' )
-		md_putc(md2, c);
-	    else if( c == '\n' ) {
-		md_putc(md2, '\r');
-		md_putc(md2, c);
-	    }
-	    else if( c != '\n' && lc == '\r' ) {
-		md_putc(md2, '\n');
-		md_putc(md2, c);
-	    }
-	    else
-		md_putc(md2, c);
-
-	    if( md )
-		md_putc(md, c );
-	    lc = c;
-	}
-    }
-    else {
-	while( (c = iobuf_get(fp)) != -1 ) {
-	    if( md )
-		md_putc(md, c );
-	}
-    }
-}
 
 
 /****************

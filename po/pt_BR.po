@@ -5,7 +5,7 @@
 #
 msgid ""
 msgstr ""
-"POT-Creation-Date: 1999-09-02 14:44+0200\n"
+"POT-Creation-Date: 1999-09-03 08:52+0200\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Date: 1998-11-20 23:46:36-0200\n"
 "From: Thiago Jung Bauermann <jungmann@usa.net>\n"
@@ -1139,12 +1139,12 @@ msgstr ""
 msgid "         It is not certain that the signature belongs to the owner.\n"
 msgstr "         Não se tem certeza de que a assinatura pertence ao dono.\n"
 
-#: g10/pkclist.c:694 g10/pkclist.c:716 g10/pkclist.c:825 g10/pkclist.c:870
+#: g10/pkclist.c:694 g10/pkclist.c:716 g10/pkclist.c:841 g10/pkclist.c:886
 #, c-format
 msgid "%s: skipped: %s\n"
 msgstr "%s: ignorado: %s\n"
 
-#: g10/pkclist.c:702 g10/pkclist.c:852
+#: g10/pkclist.c:702 g10/pkclist.c:868
 #, c-format
 msgid "%s: skipped: public key already present\n"
 msgstr "%s: ignorado: a chave pública já está presente\n"
@@ -1165,26 +1165,36 @@ msgstr "Digite o identificador de usuário: "
 msgid "No such user ID.\n"
 msgstr "Identificador de usuário inexistente.\n"
 
-#: g10/pkclist.c:771
+#: g10/pkclist.c:756
+#, fuzzy
+msgid "skipped: public key already set as default recipient\n"
+msgstr "%s: ignorado: a chave pública já está presente\n"
+
+#: g10/pkclist.c:778
 msgid "Public key is disabled.\n"
 msgstr "A chave pública está desativada.\n"
 
-#: g10/pkclist.c:800
+#: g10/pkclist.c:785
+#, fuzzy
+msgid "skipped: public key already set with --encrypt-to\n"
+msgstr "%s: ignorado: a chave pública já está presente\n"
+
+#: g10/pkclist.c:816
 #, c-format
 msgid "unknown default recipient `%s'\n"
 msgstr "destinatário padrão desconhecido `%s'\n"
 
-#: g10/pkclist.c:833
+#: g10/pkclist.c:849
 #, c-format
 msgid "%s: error checking key: %s\n"
 msgstr "%s: erro na verificação da chave: %s\n"
 
-#: g10/pkclist.c:838
+#: g10/pkclist.c:854
 #, c-format
 msgid "%s: skipped: public key is disabled\n"
 msgstr "%s: ignorado: a chave pública está desativada\n"
 
-#: g10/pkclist.c:876
+#: g10/pkclist.c:892
 msgid "no valid addressees\n"
 msgstr "nenhum endereço válido\n"
 
@@ -2591,15 +2601,15 @@ msgstr "Repita a frase secreta: "
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "dados não salvos; use a opção \"--output\" para salvá-los\n"
 
-#: g10/plaintext.c:267
+#: g10/plaintext.c:315
 msgid "Please enter name of data file: "
 msgstr "Por favor digite o nome do arquivo de dados: "
 
-#: g10/plaintext.c:288
+#: g10/plaintext.c:336
 msgid "reading stdin ...\n"
 msgstr "lendo de \"stdin\" ...\n"
 
-#: g10/plaintext.c:371
+#: g10/plaintext.c:379
 #, c-format
 msgid "can't open signed data `%s'\n"
 msgstr "impossível abrir dados assinados `%s'\n"

@@ -1,3 +1,15 @@
+Fri Sep  3 10:04:45 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* pkclist.c (build_pk_list): Skip keys set with --encrypt-to also
+	when asking for a key.
+
+	* plaintext.c (handle_plaintext): Make sure that we don't read a
+	second EOF in the read loop for partial length packets.
+
+	* mainproc.c (check_sig_and_print): print user ID as utf-8.
+
+
 Thu Sep  2 16:40:55 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 
