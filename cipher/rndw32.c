@@ -104,7 +104,9 @@ static int debug_me;
 #define VER_PLATFORM_WIN32_WINDOWS 1
 #endif
 
-#define SIZEOF_DISK_PERFORMANCE_STRUCT (6*8+5*4+8*2)
+/* This used to be (6*8+5*4+8*2), but Peter Gutmann figured a larger
+   value in a newer release. So we use a far larger value. */
+#define SIZEOF_DISK_PERFORMANCE_STRUCT 256
 
 
 typedef struct {

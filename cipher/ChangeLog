@@ -1,3 +1,7 @@
+2002-09-17  Werner Koch  <wk@gnupg.org>
+
+	* rndw32.c (SIZEOF_DISK_PERFORMANCE_STRUCT): Increased to 256.
+
 2002-09-12  Stefan Bellon  <sbellon@sbellon.de>
 
 	* rand-internal.h (rndriscos_gather_random): Added prototype.
