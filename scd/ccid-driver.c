@@ -198,6 +198,9 @@ struct ccid_driver_s
   unsigned short id_vendor;
   unsigned short id_product;
   unsigned short bcd_device;
+  int ep_bulk_out;
+  int ep_bulk_in;
+  int ep_intr;
   int seqno;
   unsigned char t1_ns;
   unsigned char t1_nr;
@@ -207,6 +210,7 @@ struct ccid_driver_s
   int ifsd;
   int powered_off;
   int has_pinpad;
+  int apdu_level;     /* Reader supports short APDU level exchange.  */
 };
 
 
@@ -260,6 +264,7 @@ parse_ccid_descriptor (ccid_driver_t handle,
   handle->max_ifsd = 32;
   handle->ifsd = 0;
   handle->has_pinpad = 0;
+  handle->apdu_level = 0;
   DEBUGOUT_3 ("idVendor: %04X  idProduct: %04X  bcdDevice: %04X\n",
               handle->id_vendor, handle->id_product, handle->bcd_device);
   if (buflen < 54 || buf[0] < 54)
@@ -372,9 +377,15 @@ parse_ccid_descriptor (ccid_driver_t handle,
       have_tpdu = 1;
     } 
   else if ((us & 0x00020000))
-    DEBUGOUT ("    Short APDU level exchange\n");
+    {
+      DEBUGOUT ("    Short APDU level exchange\n");
+      handle->apdu_level = 1;
+    }
   else if ((us & 0x00040000))
-    DEBUGOUT ("    Short and extended APDU level exchange\n");
+    {
+      DEBUGOUT ("    Short and extended APDU level exchange\n");
+      handle->apdu_level = 1;
+    }
   else if ((us & 0x00070000))
     DEBUGOUT ("    WARNING: conflicting exchange levels\n");
 
@@ -421,10 +432,10 @@ parse_ccid_descriptor (ccid_driver_t handle,
     DEBUGOUT_LF ();
   }
 
-  if (!have_t1 || !have_tpdu || !have_auto_conf)
+  if (!have_t1 || !(have_tpdu  || handle->apdu_level) || !have_auto_conf)
     {
       DEBUGOUT ("this drivers requires that the reader supports T=1, "
-                "TPDU level exchange and auto configuration - "
+                "TPDU or APDU level exchange and auto configuration - "
                 "this is not available\n");
       return -1;
     }
@@ -546,6 +557,36 @@ make_reader_id (usb_dev_handle *idev,
 }
 
 
+/* Helper to find the endpoint from an interface descriptor.  */
+static int
+find_endpoint (struct usb_interface_descriptor *ifcdesc, int mode)
+{
+  int no;
+  int want_bulk_in = 0;
+
+  if (mode == 1)
+    want_bulk_in = 0x80;
+  for (no=0; no < ifcdesc->bNumEndpoints; no++)
+    {
+      struct usb_endpoint_descriptor *ep = ifcdesc->endpoint + no;
+      if (ep->bDescriptorType != USB_DT_ENDPOINT)
+        ;
+      else if (mode == 2
+          && ((ep->bmAttributes & USB_ENDPOINT_TYPE_MASK)
+              == USB_ENDPOINT_TYPE_INTERRUPT)
+          && (ep->bEndpointAddress & 0x80))
+        return (ep->bEndpointAddress & 0x0f);
+      else if (((ep->bmAttributes & USB_ENDPOINT_TYPE_MASK)
+                == USB_ENDPOINT_TYPE_BULK)
+               && (ep->bEndpointAddress & 0x80) == want_bulk_in)
+        return (ep->bEndpointAddress & 0x0f);
+    }
+  /* Should never happen.  */
+  return mode == 2? 0x83 : mode == 1? 0x82 :1;
+}
+
+
+
 /* Combination function to either scan all CCID devices or to find and
    open one specific device. 
 
@@ -579,7 +620,9 @@ scan_or_find_devices (int readerno, const char *readerid,
                       char **r_rid,
                       struct usb_device **r_dev,
                       unsigned char **ifcdesc_extra,
-                      size_t *ifcdesc_extra_len)
+                      size_t *ifcdesc_extra_len,
+                      int *interface_number,
+                      int *ep_bulk_out, int *ep_bulk_in, int *ep_intr)
 {
   char *rid_list = NULL;
   int count = 0;
@@ -597,6 +640,8 @@ scan_or_find_devices (int readerno, const char *readerid,
     *ifcdesc_extra = NULL;
   if (ifcdesc_extra_len)
     *ifcdesc_extra_len = 0;
+  if (interface_number)
+    *interface_number = 0;
 
   /* See whether we want scan or find mode. */
   if (scan_mode) 
@@ -721,6 +766,16 @@ scan_or_find_devices (int readerno, const char *readerid,
                                               ifcdesc->extralen);
                                       *ifcdesc_extra_len = ifcdesc->extralen;
                                     }
+                                  if (interface_number)
+                                    *interface_number = (ifcdesc->
+                                                         bInterfaceNumber);
+                                  if (ep_bulk_out)
+                                    *ep_bulk_out = find_endpoint (ifcdesc, 0);
+                                  if (ep_bulk_in)
+                                    *ep_bulk_in = find_endpoint (ifcdesc, 1);
+                                  if (ep_intr)
+                                    *ep_intr = find_endpoint (ifcdesc, 2);
+
 
                                   if (r_dev)
                                     *r_dev = dev;
@@ -787,7 +842,8 @@ ccid_get_reader_list (void)
       initialized_usb = 1;
     }
 
-  scan_or_find_devices (-1, NULL, &reader_list, NULL, NULL, NULL);
+  scan_or_find_devices (-1, NULL, &reader_list, NULL, NULL, NULL, NULL,
+                        NULL, NULL, NULL);
   return reader_list;
 }
 
@@ -804,6 +860,7 @@ ccid_open_reader (ccid_driver_t *handle, const char *readerid)
   unsigned char *ifcdesc_extra = NULL;
   size_t ifcdesc_extra_len;
   int readerno;
+  int ifc_no, ep_bulk_out, ep_bulk_in, ep_intr;
 
   *handle = NULL;
 
@@ -832,7 +889,8 @@ ccid_open_reader (ccid_driver_t *handle, const char *readerid)
     readerno = 0;  /* Default. */
 
   idev = scan_or_find_devices (readerno, readerid, &rid, &dev,
-                               &ifcdesc_extra, &ifcdesc_extra_len);
+                               &ifcdesc_extra, &ifcdesc_extra_len,
+                               &ifc_no, &ep_bulk_out, &ep_bulk_in, &ep_intr);
   if (!idev)
     {
       if (readerno == -1)
@@ -856,6 +914,9 @@ ccid_open_reader (ccid_driver_t *handle, const char *readerid)
   (*handle)->id_vendor = dev->descriptor.idVendor;
   (*handle)->id_product = dev->descriptor.idProduct;
   (*handle)->bcd_device = dev->descriptor.bcdDevice;
+  (*handle)->ep_bulk_out = ep_bulk_out;
+  (*handle)->ep_bulk_in = ep_bulk_in;
+  (*handle)->ep_intr = ep_intr;
 
   DEBUGOUT_2 ("using CCID reader %d (ID=%s)\n",  readerno, rid );
 
@@ -867,9 +928,7 @@ ccid_open_reader (ccid_driver_t *handle, const char *readerid)
       goto leave;
     }
   
-  /* fixme: Do we need to claim and set the interface as
-     determined above? */
-  rc = usb_claim_interface (idev, 0);
+  rc = usb_claim_interface (idev, ifc_no);
   if (rc)
     {
       DEBUGOUT_1 ("usb_claim_interface failed: %d\n", rc);
@@ -877,9 +936,6 @@ ccid_open_reader (ccid_driver_t *handle, const char *readerid)
       goto leave;
     }
   
-  /* FIXME: Do we need to get the endpoint addresses from the
-     structure and store them with the handle? */
-              
  leave:
   free (ifcdesc_extra);
   if (rc)
@@ -944,6 +1000,7 @@ ccid_shutdown_reader (ccid_driver_t handle)
   usb_dev_handle *idev = NULL;
   unsigned char *ifcdesc_extra = NULL;
   size_t ifcdesc_extra_len;
+  int ifc_no, ep_bulk_out, ep_bulk_in, ep_intr;
 
   if (!handle || !handle->rid)
     return CCID_DRIVER_ERR_INV_VALUE;
@@ -951,7 +1008,8 @@ ccid_shutdown_reader (ccid_driver_t handle)
   do_close_reader (handle);
 
   idev = scan_or_find_devices (-1, handle->rid, NULL, &dev,
-                               &ifcdesc_extra, &ifcdesc_extra_len);
+                               &ifcdesc_extra, &ifcdesc_extra_len,
+                               &ifc_no, &ep_bulk_out, &ep_bulk_in, &ep_intr);
   if (!idev)
     {
       DEBUGOUT_1 ("no CCID reader with ID %s\n", handle->rid);
@@ -960,6 +1018,9 @@ ccid_shutdown_reader (ccid_driver_t handle)
 
 
   handle->idev = idev;
+  handle->ep_bulk_out = ep_bulk_out;
+  handle->ep_bulk_in = ep_bulk_in;
+  handle->ep_intr = ep_intr;
 
   if (parse_ccid_descriptor (handle, ifcdesc_extra, ifcdesc_extra_len))
     {
@@ -968,9 +1029,7 @@ ccid_shutdown_reader (ccid_driver_t handle)
       goto leave;
     }
   
-  /* fixme: Do we need to claim and set the interface as
-     determined above? */
-  rc = usb_claim_interface (idev, 0);
+  rc = usb_claim_interface (idev, ifc_no);
   if (rc)
     {
       DEBUGOUT_1 ("usb_claim_interface failed: %d\n", rc);
@@ -1022,7 +1081,7 @@ bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen)
   int rc;
 
   rc = usb_bulk_write (handle->idev, 
-                       1, /*endpoint */
+                       handle->ep_bulk_out,
                        msg, msglen,
                        1000 /* ms timeout */);
   if (rc == msglen)
@@ -1053,7 +1112,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
   memset (buffer, 0, length);
  retry:
   rc = usb_bulk_read (handle->idev, 
-                      0x82,
+                      handle->ep_bulk_in,
                       buffer, length,
                       10000 /* ms timeout */ );
   /* Fixme: instead of using a 10 second timeout we should better
@@ -1160,7 +1219,7 @@ ccid_poll (ccid_driver_t handle)
   int i, j;
 
   rc = usb_bulk_read (handle->idev, 
-                      0x83,
+                      handle->ep_intr,
                       msg, sizeof msg,
                       0 /* ms timeout */ );
   if (rc < 0 && errno == ETIMEDOUT)
@@ -1402,6 +1461,78 @@ compute_edc (const unsigned char *data, size_t datalen, int use_crc)
 }
 
 
+/* Helper for ccid_transceive used for APDU level exchanges.  */
+static int
+ccid_transceive_apdu_level (ccid_driver_t handle,
+                            const unsigned char *apdu_buf, size_t apdu_buflen,
+                            unsigned char *resp, size_t maxresplen,
+                            size_t *nresp)
+{
+  int rc;
+  unsigned char send_buffer[10+259], recv_buffer[10+259];
+  const unsigned char *apdu;
+  size_t apdulen;
+  unsigned char *msg;
+  size_t msglen;
+  unsigned char seqno;
+  int i;
+
+  msg = send_buffer;
+
+  apdu = apdu_buf;
+  apdulen = apdu_buflen;
+  assert (apdulen);
+
+  if (apdulen > 254)
+    return CCID_DRIVER_ERR_INV_VALUE; /* Invalid length. */
+
+  msg[0] = PC_to_RDR_XfrBlock;
+  msg[5] = 0; /* slot */
+  msg[6] = seqno = handle->seqno++;
+  msg[7] = 4; /* bBWI */
+  msg[8] = 0; /* RFU */
+  msg[9] = 0; /* RFU */
+  memcpy (msg+10, apdu, apdulen);
+  set_msg_len (msg, apdulen);
+  msglen = 10 + apdulen;
+
+  DEBUGOUT ("sending");
+  for (i=0; i < msglen; i++)
+    DEBUGOUT_CONT_1 (" %02X", msg[i]);
+  DEBUGOUT_LF ();
+  
+  rc = bulk_out (handle, msg, msglen);
+  if (rc)
+    return rc;
+
+  msg = recv_buffer;
+  rc = bulk_in (handle, msg, sizeof recv_buffer, &msglen,
+                RDR_to_PC_DataBlock, seqno);
+  if (rc)
+    return rc;
+      
+  apdu = msg + 10;
+  apdulen = msglen - 10;
+      
+  if (resp)
+    {
+      if (apdulen > maxresplen)
+        {
+          DEBUGOUT_2 ("provided buffer too short for received data "
+                      "(%u/%u)\n",
+                      (unsigned int)apdulen, (unsigned int)maxresplen);
+          return CCID_DRIVER_ERR_INV_VALUE;
+        }
+      
+      memcpy (resp, apdu, apdulen); 
+      *nresp = apdulen;
+    }
+          
+  return 0;
+}
+
+
+
 /*
   Protocol T=1 overview
 
@@ -1477,6 +1608,13 @@ ccid_transceive (ccid_driver_t handle,
   if (!nresp)
     nresp = &dummy_nresp;
   *nresp = 0;
+
+  /* Smarter readers allow to send APDUs directly; divert here. */
+  if (handle->apdu_level)
+    return ccid_transceive_apdu_level (handle, apdu_buf, apdu_buflen,
+                                       resp, maxresplen, nresp);
+
+  /* The other readers we support require sending TPDUs.  */
 
   tpdulen = 0; /* Avoid compiler warning about no initialization. */
   msg = send_buffer;
@@ -1828,7 +1966,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   
   if (tpdulen < 4) 
     {
-      usb_clear_halt (handle->idev, 0x82);
+      usb_clear_halt (handle->idev, handle->ep_bulk_in);
       return CCID_DRIVER_ERR_ABORTED; 
     }
 #ifdef DEBUG_T1
