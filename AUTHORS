@@ -1,88 +1,55 @@
-Authors of GNU Privacy Guard (GnuPG)
-====================================
+Program: GnuPG
+Maintainer:  Werner Koch <wk@gnupg.org>
 
-GNUPG	Werner Koch		  1998-02-23
-Assigns GNU Privacy Guard and future changes.
-werner.koch@guug.de
-Designed and implemented GnuPG and is the current maintainer.
+Authors
+=======
 
+Daniel Resare  <daniel@resare.com> xxxx [sv]
 
-GNUPG	Matthew Skala		   1998-08-10
-Disclaims changes.
-mskala@ansuz.sooke.bc.ca
-Wrote cipher/twofish.c.
+Gael Queri  <gqueri@mail.dotcom.fr>  Translations [fr]
+    (fixed a lot of typos)
 
-GNUPG	Natural Resources Canada    1998-08-11
-Disclaims changes by Matthew Skala.
+Gregory Steuck <steuck@iname.com> Translations [ru]
 
+Janusz Aleksander Urbanowicz <alex@bofh.torun.pl> Translations [po]
 
-GNUPG	Michael Roth	Germany     1998-09-17
-Assigns changes.
-mroth@nessie.de
-Wrote cipher/des.c.
-Changes and bug fixes all over the place.
+Michael Roth  <mroth@nessie.de>  Assignment
+    (wrote cipher/des.c., changes and bug fixes all over the place)
 
+Marco d'Itri <md@linux.it> Translations [it]
 
-GNUPG	Niklas Hernaeus 	1998-09-18
-Disclaims changes.
-nh@df.lth.se
-Weak key patches.
+Matthew Skala <mskala@ansuz.sooke.bc.ca>  Disclaimer
+    (wrote cipher/twofish.c)
 
+Niklas Hernaeus <nh@df.lth.se> Disclaimer
+    (weak key patches)
 
-GNUPG	Rémi Guyomarch		1999-05-25
-Assigns past and future changes. (g10/compress.c, g10/encr-data.c,
-g10/free-packet.c, g10/mdfilter.c, g10/plaintext.c, util/iobuf.c)
-rguyom@mail.dotcom.fr
+Pedro Morais <morais@poli.org> Translations [pt_BR]
 
+Rémi Guyomarch	<rguyom@mail.dotcom.fr> Assignment
+    (g10/compress.c, g10/encr-data.c,
+     g10/free-packet.c, g10/mdfilter.c, g10/plaintext.c, util/iobuf.c)
 
-TRANSLATIONS	Marco d'Itri    1997-02-22
-Disclaimer.  [it]
-md@linux.it
+Tedi Heriyanto	<tedi-h@usa.net> Translations [id]
 
+Thiago Jung Bauermann <jungmann@cwb.matrix.com.br> Translations [pt_BR]
 
-TRANSLATIONS	Gael Queri	1998-09-08
-Disclaimer.  [fr]
-gqueri@mail.dotcom.fr
-Fixed a lot of typos.
+Urko Lusa <ulusa@euskalnet.net> Translations [es_ES]
+
+Walter Koch <koch@hsp.de>  Translations [de]
+
+Werner Koch  <wk@gnupg.org>  Assignment
+    (started the whole thing)
+
+Yosiaki IIDA <iida@secom.ne.jp> xxxx [ja]
 
 
-TRANSLATIONS	Walter Koch	1998-09-08
-Disclaimer.  [de]
-koch@hsp.de
 
+Other legal information
+=======================
 
-TRANSLATIONS	Gregory Steuck	1998-10-20
-Disclaimer.  [ru]
-steuck@iname.com
+Natural Resources Canada disclaims changes by Matthew Skala.
 
-
-TRANSLATIONS	Urko Lusa
-Disclaimer.  [es_ES]
-ulusa@euskalnet.net
-
-
-TRANSLATIONS	Thiago Jung Bauermann
-Disclaimer.  [pt_BR]
-jungmann@cwb.matrix.com.br
-
-
-TRANSLATIONS   Pedro Morais
-Disclaimer.  [pt_PT]
-morais@poli.org
-
-
-TRANSLATIONS	Janusz Aleksander Urbanowicz	1999-01-09
-Disclaimer.  [po]
-alex@bofh.torun.pl
-
-
-TRANSLATIONS	Tedi Heriyanto	1999-05-20
-Disclaimer.  [id]
-tedi-h@usa.net
-
-
-More credits
-============
 This program uses the zlib compression library written by
 Jean-loup Gailly and Mark Adler.
 

@@ -1,3 +1,11 @@
+Wed Feb 16 14:09:00 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* configure.in (ALL_LINGUAS): Add sv and ja.
+
+	* AUTHORS: Converted to a more compact format.
+
+	* INSTALL: Wrote a note about a Solaris problem.
+
 Thu Feb 10 17:39:44 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* configure.in: Use /usr/local for CFLAGS and LDFLAGS when
