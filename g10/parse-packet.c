@@ -1063,13 +1063,15 @@ enum_sig_subpkt( const subpktarea_t *pktbuf, sigsubpkttype_t reqtype,
 	    if( *critical ) {
 		if( n-1 > buflen+1 )
 		    goto too_short;
-		if( !can_handle_critical(buffer+1, n-1, type ) ) {
-		    log_info(_("subpacket of type %d has critical bit set\n"),
-									type);
+		if( !can_handle_critical(buffer+1, n-1, type ) )
+		  {
+		    if(opt.verbose)
+		      log_info(_("subpacket of type %d has "
+				 "critical bit set\n"),type);
 		    if( start )
-			*start = seq;
+		      *start = seq;
 		    return NULL; /* this is an error */
-		}
+		  }
 	    }
 	}
 	else if( reqtype < 0 ) /* list packets */

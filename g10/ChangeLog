@@ -1,3 +1,12 @@
+2003-04-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* mainproc.c (check_sig_and_print): Show digest algorithm when
+	verifying a sig with --verbose on.
+
+	* parse-packet.c (enum_sig_subpkt): Make a warning message a
+	--verbose warning message since the devel version can make
+	signatures that trigger it each time.
+
 2003-04-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* hkp.c (hkp_ask_import, hkp_export, hkp_search): Make sure to

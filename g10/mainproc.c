@@ -1489,6 +1489,10 @@ check_sig_and_print( CTX c, KBNODE node )
 	else if(sig->expiredate)
 	  log_info("Signature expires %s\n",asctimestamp(sig->expiredate));
 
+	if(opt.verbose)
+	  log_info(_("digest algorithm %s\n"),
+		   digest_algo_to_string(sig->digest_algo));
+
 	if( rc )
 	    g10_errors_seen = 1;
 	if( opt.batch && rc )
