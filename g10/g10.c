@@ -859,7 +859,7 @@ static void add_group(char *string)
     }
 
   /* Break apart the values */
-  while ((value= strsep(&string," ")))
+  while ((value= strsep(&string," \t")))
     {
       if (*value)
         add_to_strlist2 (&values,value,utf8_strings);

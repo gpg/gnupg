@@ -1,3 +1,11 @@
+2003-01-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.c (init_trustdb, get_validity): Don't use a changed
+	trust model to indicate a dirty trustdb, and never auto-rebuild a
+	dirty trustdb with the "always" trust model.
+
+	* g10.c (add_group): Last commit missed the \t ;)
+
 2003-01-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* packet.h, parse-packet.c (setup_user_id), free-packet.c

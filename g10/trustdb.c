@@ -425,7 +425,8 @@ init_trustdb()
   if( rc )
     log_fatal("can't init trustdb: %s\n", g10_errstr(rc) );
 
-  if(!tdbio_db_matches_options())
+  if(!tdbio_db_matches_options()
+     && (opt.trust_model==TM_CLASSIC || opt.trust_model==TM_OPENPGP))
     pending_check_trustdb=1;
 }
 
@@ -971,7 +972,8 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
     namehash_from_uid(uid);
   
   init_trustdb ();
-  if (!did_nextcheck)
+  if (!did_nextcheck
+      && (opt.trust_model==TM_CLASSIC || opt.trust_model==TM_OPENPGP))
     {
       ulong scheduled;
 
