@@ -1595,8 +1595,6 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
 	    else if ( k->pkt->pkttype == PKT_SIGNATURE && uidnode )
 	      {
 		PKT_signature *sig = k->pkt->pkt.signature;
-		u32 dummy;
-		int dum2;
 
 		if(sig->keyid[0] != kid[0] || sig->keyid[1]!=kid[1])
 		  {
@@ -1606,7 +1604,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
 
 		    if(get_pubkey_fast(ultimate_pk,sig->keyid)==0
 		       && check_key_signature2(keyblock,k,ultimate_pk,
-					       NULL,&dummy,&dum2)==0
+					       NULL,NULL,NULL)==0
 		       && get_ownertrust(ultimate_pk)==TRUST_ULTIMATE)
 		      {
 			free_public_key(ultimate_pk);

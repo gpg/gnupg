@@ -1,3 +1,11 @@
+2003-07-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* sig-check.c (signature_check, signature_check2,
+	check_key_signature, check_key_signature2): Allow passing NULLs
+	for unused parameters in the x2 form of each function to avoid the
+	need for dummy variables.  getkey.c, mainproc.c: Change all
+	callers.
+	
 2003-07-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (do_add_key_flags): Don't set the certify flag for
