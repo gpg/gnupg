@@ -1,3 +1,8 @@
+2003-02-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Do not set GNUPG_LIBEXECDIR in ./configure, so
+	that makefiles can override it.
+
 2003-02-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac (ALL_LINGUAS): Needs to be on one line to avoid

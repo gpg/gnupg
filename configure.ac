@@ -839,11 +839,7 @@ if test "$print_egd_warning" = yes; then
 ***]])
 fi
 
-
-
 # Note the \\\\ for backslashes.  Autoconf eats one layer, leaving \\
-
-AC_SUBST(GNUPG_LIBEXECDIR,"${libexecdir}/gnupg")
 
 AC_CONFIG_COMMANDS(g10defs.h,[[
 cat >g10defs.tmp <<G10EOF
@@ -857,7 +853,6 @@ cat >g10defs.tmp <<G10EOF
 #else
   #define G10_LOCALEDIR     "${datadir}/locale"
   #define GNUPG_LIBDIR      "${libdir}/gnupg"
-  #define GNUPG_LIBEXECDIR  "${libexecdir}/gnupg"
   #define GNUPG_DATADIR     "${datadir}/gnupg"
   #ifdef __VMS
     #define GNUPG_HOMEDIR "/SYS\$LOGIN/gnupg" 
