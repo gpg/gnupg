@@ -715,23 +715,34 @@ argsplit(char *string)
   equals=strchr(string,'=');
   if(equals)
     {
-      char *space;
+      char *quote,*space;
 
-      space=strchr(string,' ');
-      if(space)
+      *equals='\0';
+      arg=equals+1;
+
+      /* Quoted arg? */
+      quote=strchr(arg,'"');
+      if(quote)
 	{
-	  *space='\0';
-	  arg=space+1;
+	  arg=quote+1;
+
+	  quote=strchr(arg,'"');
+	  if(quote)
+	    *quote='\0';
 	}
       else
 	{
-	  *equals='\0';
-	  arg=equals+1;
+	  size_t spaces;
+
+	  /* Trim leading spaces off of the arg */
+	  spaces=strspn(arg," ");
+	  arg+=spaces;
 	}
 
-      space=strrchr(arg,' ');
+      /* Trim tailing spaces off of the tag */
+      space=strchr(string,' ');
       if(space)
-	arg=space+1;
+	*space='\0';
     }
 
   return arg;
