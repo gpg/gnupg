@@ -1,5 +1,13 @@
 2001-03-13  Werner Koch  <wk@gnupg.org>
 
+	* getkey.c (merge_keys_and_selfsig): Divert merging of public keys
+	to the function used in key selection..
+	* keylist.c (is_uid_valid): Removed.
+	(list_keyblock): Splitted into ..
+	(list_keyblock_print, list_keyblock_colon): .. these.
+	functions.  Changed them to use the flags set in the key lookup code.
+	(reorder_keyblock): New, so that primary user IDs are listed first.
+
 	* ringedit.c (keyring_copy): flush the new iobuf chaces before
 	rename or remove operations.  This is mainly needed for W32.
 

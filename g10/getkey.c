@@ -156,6 +156,7 @@ static int uid_cache_entries;	/* number of entries in uid cache */
 
 static char* prepare_word_match( const byte *name );
 static int lookup( GETKEY_CTX ctx, KBNODE *ret_kb, int secmode );
+static void merge_selfsigs( KBNODE keyblock );
 
 
 #if 0
@@ -1285,6 +1286,13 @@ merge_keys_and_selfsig( KBNODE keyblock )
     u32 kid[2] = { 0, 0 };
     u32 sigdate = 0;
 
+    if (keyblock && keyblock->pkt->pkttype == PKT_PUBLIC_KEY ) {
+        /* divert to our new function */
+        merge_selfsigs (keyblock);
+        return;
+    }
+    /* still need the old one because the new one can't handle secret keys */
+
     for(k=keyblock; k; k = k->next ) {
 	if( k->pkt->pkttype == PKT_PUBLIC_KEY
 	    || k->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
@@ -1733,6 +1741,7 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
     subpk->pubkey_usage = key_usage;
     
     p = parse_sig_subpkt ( sig->hashed_data, SIGSUBPKT_KEY_EXPIRE, NULL);
+
     if ( p ) 
         key_expire = sig->timestamp + buffer_to_u32(p);
     else
