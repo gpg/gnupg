@@ -1,3 +1,7 @@
+Thu Dec  9 10:31:05 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* INSTALL: Add a hint for AIX. By Jos Backus.
+
 Sat Dec  4 12:30:28 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* configure.in (dlopen): Use CHECK_FUNC for a test of dlopen in libc.

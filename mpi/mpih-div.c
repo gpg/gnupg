@@ -338,7 +338,7 @@ mpihelp_divrem( mpi_ptr_t qp, mpi_size_t qextra_limbs,
 		}
 		else {
 		    n2 = np[dsize - 1];
-		    MPN_COPY_DECR (np + 1, np, dsize);
+		    MPN_COPY_DECR (np + 1, np, dsize - 1);
 		    np[0] = 0;
 		}
 

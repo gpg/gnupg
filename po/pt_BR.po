@@ -52,7 +52,7 @@ msgstr "sair"
 
 #: util/miscutil.c:311
 msgid "qQ"
-msgstr ""
+msgstr "qQ"
 
 #: util/errors.c:54
 msgid "general error"
@@ -102,7 +102,6 @@ msgstr "chave pública não encontrada"
 msgid "unknown cipher algorithm"
 msgstr "algoritmo de criptografia desconhecido"
 
-# keyring == molho ???
 #: util/errors.c:66
 msgid "can't open the keyring"
 msgstr "não é possível abrir o chaveiro"
@@ -156,7 +155,6 @@ msgstr "erro na abertura de arquivo"
 msgid "file create error"
 msgstr "erro na criação de arquivo"
 
-# frase secreta ???
 #: util/errors.c:79
 msgid "invalid passphrase"
 msgstr "frase secreta inválida"
@@ -250,9 +248,8 @@ msgid "not encrypted"
 msgstr "não criptografado"
 
 #: util/errors.c:103
-#, fuzzy
 msgid "not processed"
-msgstr "%lu chaves processadas\n"
+msgstr "não processado(s)"
 
 #: util/logger.c:218
 #, c-format
@@ -365,9 +362,8 @@ msgid "remove key from the public keyring"
 msgstr "remover a chave do chaveiro público"
 
 #: g10/g10.c:209
-#, fuzzy
 msgid "remove key from the secret keyring"
-msgstr "remover a chave do chaveiro público"
+msgstr "remover a chave do chaveiro secreto"
 
 #: g10/g10.c:210
 msgid "sign a key"
@@ -954,11 +950,10 @@ msgstr "       Impressão digital:"
 msgid "Fingerprint:"
 msgstr "Impressão digital:"
 
-# ???
 #. a string with valid answers
 #: g10/pkclist.c:197
 msgid "sSmMqQ"
-msgstr ""
+msgstr "sSmMqQ"
 
 #: g10/pkclist.c:201
 #, c-format
@@ -994,7 +989,7 @@ msgstr ""
 
 #: g10/pkclist.c:222
 msgid " m = back to the main menu\n"
-msgstr " m = volta ao menu principal\n"
+msgstr " m = voltar ao menu principal\n"
 
 #: g10/pkclist.c:224
 msgid " q = quit\n"
@@ -1108,7 +1103,7 @@ msgstr "AVISO: Esta chave foi revogada pelo seu dono!\n"
 
 #: g10/pkclist.c:535
 msgid "         This could mean that the signature is forgery.\n"
-msgstr "         Isto pode significar que a assinatura é falsificada.\n"
+msgstr "       Isto pode significar que a assinatura é falsificada.\n"
 
 #: g10/pkclist.c:539
 msgid "WARNING: This subkey has been revoked by its owner!\n"
@@ -1125,7 +1120,7 @@ msgstr "AVISO: Esta chave não está certificada com uma assinatura confiável!\n"
 #: g10/pkclist.c:570
 msgid ""
 "         There is no indication that the signature belongs to the owner.\n"
-msgstr "         Não há indicação de que a assinatura pertence ao dono.\n"
+msgstr "       Não há indicação de que a assinatura pertence ao dono.\n"
 
 #: g10/pkclist.c:587
 msgid "WARNING: We do NOT trust this key!\n"
@@ -1133,7 +1128,7 @@ msgstr "AVISO: Nós NÃO confiamos nesta chave!\n"
 
 #: g10/pkclist.c:588
 msgid "         The signature is probably a FORGERY.\n"
-msgstr "         A assinatura é provavelmente uma FALSIFICAÇÃO.\n"
+msgstr "       A assinatura é provavelmente uma FALSIFICAÇÃO.\n"
 
 #: g10/pkclist.c:595
 msgid ""
@@ -1144,7 +1139,7 @@ msgstr ""
 
 #: g10/pkclist.c:598
 msgid "         It is not certain that the signature belongs to the owner.\n"
-msgstr "         Não se tem certeza de que a assinatura pertence ao dono.\n"
+msgstr "       Não se tem certeza de que a assinatura pertence ao dono.\n"
 
 #: g10/pkclist.c:700 g10/pkclist.c:722 g10/pkclist.c:848 g10/pkclist.c:893
 #, c-format
@@ -1364,6 +1359,8 @@ msgid ""
 "Your system can't display dates beyond 2038.\n"
 "However, it will be correctly handled up to 2106.\n"
 msgstr ""
+"Seu sistema não consegue mostrar datas além de 2038.\n"
+"Apesar disso, elas serão corretamente manipuladas até 2106.\n"
 
 #: g10/keygen.c:567
 msgid "Is this correct (y/n)? "
@@ -2010,11 +2007,11 @@ msgstr "sair deste menu"
 
 #: g10/keyedit.c:565
 msgid "q"
-msgstr ""
+msgstr "q"
 
 #: g10/keyedit.c:566
 msgid "save"
-msgstr ""
+msgstr "save"
 
 #: g10/keyedit.c:566
 msgid "save and quit"
@@ -2022,7 +2019,7 @@ msgstr "gravar e sair"
 
 #: g10/keyedit.c:567
 msgid "help"
-msgstr ""
+msgstr "help"
 
 #: g10/keyedit.c:567
 msgid "show this help"
@@ -2030,7 +2027,7 @@ msgstr "mostra esta ajuda"
 
 #: g10/keyedit.c:569
 msgid "fpr"
-msgstr ""
+msgstr "fpr"
 
 #: g10/keyedit.c:569
 msgid "show fingerprint"
@@ -2038,20 +2035,19 @@ msgstr "mostra impressão digital"
 
 #: g10/keyedit.c:570
 msgid "list"
-msgstr ""
+msgstr "list"
 
 #: g10/keyedit.c:570
 msgid "list key and user IDs"
 msgstr "lista chave e identificadores de usuários"
 
-# ???
 #: g10/keyedit.c:571
 msgid "l"
-msgstr ""
+msgstr "l"
 
 #: g10/keyedit.c:572
 msgid "uid"
-msgstr ""
+msgstr "uid"
 
 #: g10/keyedit.c:572
 msgid "select user ID N"
@@ -2059,7 +2055,7 @@ msgstr "seleciona ID de usuário N"
 
 #: g10/keyedit.c:573
 msgid "key"
-msgstr ""
+msgstr "key"
 
 #: g10/keyedit.c:573
 msgid "select secondary key N"
@@ -2067,33 +2063,31 @@ msgstr "seleciona chave secundária N"
 
 #: g10/keyedit.c:574
 msgid "check"
-msgstr ""
+msgstr "check"
 
 #: g10/keyedit.c:574
 msgid "list signatures"
 msgstr "lista assinaturas"
 
-# ???
 #: g10/keyedit.c:575
 msgid "c"
-msgstr ""
+msgstr "c"
 
 #: g10/keyedit.c:576
 msgid "sign"
-msgstr ""
+msgstr "sign"
 
 #: g10/keyedit.c:576
 msgid "sign the key"
 msgstr "assina a chave"
 
-# ???
 #: g10/keyedit.c:577
 msgid "s"
-msgstr ""
+msgstr "s"
 
 #: g10/keyedit.c:578
 msgid "lsign"
-msgstr ""
+msgstr "lsign"
 
 #: g10/keyedit.c:578
 msgid "sign the key locally"
@@ -2101,11 +2095,11 @@ msgstr "assina a chave localmente"
 
 #: g10/keyedit.c:579
 msgid "debug"
-msgstr ""
+msgstr "debug"
 
 #: g10/keyedit.c:580
 msgid "adduid"
-msgstr ""
+msgstr "adduid"
 
 #: g10/keyedit.c:580
 msgid "add a user ID"
@@ -2113,7 +2107,7 @@ msgstr "adiciona um novo ID de usuário"
 
 #: g10/keyedit.c:581
 msgid "deluid"
-msgstr ""
+msgstr "deluid"
 
 #: g10/keyedit.c:581
 msgid "delete user ID"
@@ -2121,7 +2115,7 @@ msgstr "remove ID de usuário"
 
 #: g10/keyedit.c:582
 msgid "addkey"
-msgstr ""
+msgstr "addkey"
 
 #: g10/keyedit.c:582
 msgid "add a secondary key"
@@ -2129,7 +2123,7 @@ msgstr "adiciona nova chave secundária"
 
 #: g10/keyedit.c:583
 msgid "delkey"
-msgstr ""
+msgstr "delkey"
 
 #: g10/keyedit.c:583
 msgid "delete a secondary key"
@@ -2137,7 +2131,7 @@ msgstr "remove uma chave secundária"
 
 #: g10/keyedit.c:584
 msgid "delsig"
-msgstr ""
+msgstr "delsig"
 
 #: g10/keyedit.c:584
 msgid "delete signatures"
@@ -2145,7 +2139,7 @@ msgstr "remove assinaturas"
 
 #: g10/keyedit.c:585
 msgid "expire"
-msgstr ""
+msgstr "expire"
 
 #: g10/keyedit.c:585
 msgid "change the expire date"
@@ -2153,7 +2147,7 @@ msgstr "muda a data de validade"
 
 #: g10/keyedit.c:586
 msgid "toggle"
-msgstr ""
+msgstr "toggle"
 
 #: g10/keyedit.c:586
 msgid "toggle between secret and public key listing"
@@ -2161,11 +2155,11 @@ msgstr "alterna entre listagem de chave secreta e pública"
 
 #: g10/keyedit.c:588
 msgid "t"
-msgstr ""
+msgstr "t"
 
 #: g10/keyedit.c:589
 msgid "pref"
-msgstr ""
+msgstr "pref"
 
 #: g10/keyedit.c:589
 msgid "list preferences"
@@ -2173,7 +2167,7 @@ msgstr "lista preferências"
 
 #: g10/keyedit.c:590
 msgid "passwd"
-msgstr ""
+msgstr "passwd"
 
 #: g10/keyedit.c:590
 msgid "change the passphrase"
@@ -2181,7 +2175,7 @@ msgstr "muda a frase secreta"
 
 #: g10/keyedit.c:591
 msgid "trust"
-msgstr ""
+msgstr "trust"
 
 #: g10/keyedit.c:591
 msgid "change the ownertrust"
@@ -2189,7 +2183,7 @@ msgstr "muda os valores de confiança"
 
 #: g10/keyedit.c:592
 msgid "revsig"
-msgstr ""
+msgstr "revsig"
 
 #: g10/keyedit.c:592
 msgid "revoke signatures"
@@ -2197,7 +2191,7 @@ msgstr "revoga assinaturas"
 
 #: g10/keyedit.c:593
 msgid "revkey"
-msgstr ""
+msgstr "revkey"
 
 #: g10/keyedit.c:593
 msgid "revoke a secondary key"
@@ -2205,7 +2199,7 @@ msgstr "revoga uma chave secundária"
 
 #: g10/keyedit.c:594
 msgid "disable"
-msgstr ""
+msgstr "disable"
 
 #: g10/keyedit.c:594
 msgid "disable a key"
@@ -2213,7 +2207,7 @@ msgstr "desativa uma chave"
 
 #: g10/keyedit.c:595
 msgid "enable"
-msgstr ""
+msgstr "enable"
 
 #: g10/keyedit.c:595
 msgid "enable a key"
@@ -2477,7 +2471,7 @@ msgstr "nome de arquivo original='%.*s'\n"
 
 #: g10/mainproc.c:513
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
-msgstr ""
+msgstr "revogação isolada - use \"gpg --import\" para aplicá-la\n"
 
 #: g10/mainproc.c:596 g10/mainproc.c:605
 msgid "WARNING: invalid notation data found\n"
@@ -2519,9 +2513,9 @@ msgid "Can't check signature: %s\n"
 msgstr "Impossível verificar assinatura: %s\n"
 
 #: g10/mainproc.c:1189
-#, fuzzy, c-format
+#, c-format
 msgid "standalone signature of class 0x%02x\n"
-msgstr "classe de assinatura desconhecida"
+msgstr "assinatura isolada da classe 0x%02x\n"
 
 #: g10/mainproc.c:1228
 msgid "old style (PGP 2.x) signature\n"
@@ -2605,9 +2599,8 @@ msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "dados não salvos; use a opção \"--output\" para salvá-los\n"
 
 #: g10/plaintext.c:311
-#, fuzzy
 msgid "Detached signature.\n"
-msgstr "%d assinatura removida.\n"
+msgstr "Assinatura separada.\n"
 
 #: g10/plaintext.c:315
 msgid "Please enter name of data file: "
@@ -3046,9 +3039,9 @@ msgid "lid %lu: dir record w/o key - skipped\n"
 msgstr "lid %lu: registro de diretório sem chave - ignorado\n"
 
 #: g10/trustdb.c:1794
-#, fuzzy, c-format
+#, c-format
 msgid "\t%lu due to new pubkeys\n"
-msgstr "chave %08lX: %d novas subchaves\n"
+msgstr "\t%lu devido a novas chaves públicas\n"
 
 #: g10/trustdb.c:1796
 #, c-format
@@ -3130,6 +3123,9 @@ msgid ""
 "Please remember that the signature file (.sig or .asc)\n"
 "should be the first file given on the command line.\n"
 msgstr ""
+"a assinatura não pôde ser verificada.\n"
+"Por favor lembre-se de que o arquivo com a assinatura (.sig ou .asc)\n"
+"deve ser o primeiro arquivo dado na linha de comando.\n"
 
 #: g10/verify.c:147
 #, c-format
@@ -3229,7 +3225,8 @@ msgstr "%s: diretório criado\n"
 
 #: g10/openfile.c:318
 msgid "you have to start GnuPG again, so it can read the new options file\n"
-msgstr ""
+msgstr "você deve reiniciar o GnuPG, para que ele possa ler o novo arquivo\n"
+"de opções\n"
 
 #: g10/encr-data.c:66
 #, c-format

@@ -22,6 +22,11 @@ case "${target}" in
        cat  $srcdir/mpi/i386/syntax.h	   >>./mpi/asm-syntax.h
        path="i586 i386"
        ;;
+    i[34]86*-*-bsdi4*)
+       echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
+       cat  $srcdir/mpi/i386/syntax.h	 >>./mpi/asm-syntax.h
+       path="i386"
+       ;;
     i[34]86*-*-linuxaout* | i[34]86*-*-linuxoldld* | i[34]86*-*-*bsd*)
 	echo '#define BSD_SYNTAX' >>./mpi/asm-syntax.h
 	echo '#define X86_BROKEN_ALIGN' >>./mpi/asm-syntax.h
@@ -80,7 +85,7 @@ case "${target}" in
 	;;
     sparc8*-*-* | microsparc*-*-*)
 	echo '/* configured for sparc8 */' >>./mpi/asm-syntax.h
-	path="sparc32v8"
+	path="sparc32v8 sparc32"
 	;;
     supersparc*-*-*)
 	echo '/* configured for supersparc */' >>./mpi/asm-syntax.h

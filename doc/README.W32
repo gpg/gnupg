@@ -1,7 +1,7 @@
 This is an alpha release of GnuPG for MS-Windows and WNT.
 The random number generator should now work but has not undergone
 a thorough testing, so we won't say anything about the quality of
-the generated key and Suggest that you don't use this version with
+the generated key and suggest that you don't use this version with
 your production secret keys!  It is however okay to verify signatures
 or encrypt files using this version.
 

@@ -1,3 +1,13 @@
+Thu Dec  9 10:31:05 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* power/: Add all files from GMP for this CPU.
+
+	* config.links:  Support for BSDI 4.x. By Wayne Chapeskie.
+	(sparc8): Made the search path the same as sparc9
+
+	* mpih-div.c (mpihelp_divrem): The MPN_COPY_DECR copied one
+	elemnat too many.  This is gmp2.0.2p9.txt patch.
+
 Sat Oct  9 20:34:41 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* Makefile.am:	Removed libtool.

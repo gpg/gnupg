@@ -70,6 +70,19 @@ This doesn't matter and we know about it (actually it is due to the some
 warning options which we have enabled for gcc)
 
 
+Specific problems on some machines
+==================================
+
+  * IBM RS/6000 running AIX:
+
+	Due to a change in gcc (since version 2.8) the MPI stuff may
+	not build. In this case try to run configure using:
+	    CFLAGS="-g -O2 -mcpu=powerpc" ./configure
+
+
+
+
+
 The Random Device
 =================
 Random devices are available in Linux, FreeBSD and OpenBSD.

@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "POT-Creation-Date: 1999-12-04 14:36+0100\n"
-"PO-Revision-Date: 1999-11-07 10:36+0100\n"
+"PO-Revision-Date: 1999-12-05 10:36+0100\n"
 "Last-Translator: Walter Koch <koch@hsp.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -352,12 +352,11 @@ msgstr "Ein neues Schlüsselpaar erzeugen"
 
 #: g10/g10.c:207
 msgid "remove key from the public keyring"
-msgstr "Schlüssel entfernen"
+msgstr "Schlüssel aus dem öff. Schlüsselbund entfernen"
 
 #: g10/g10.c:209
-#, fuzzy
 msgid "remove key from the secret keyring"
-msgstr "Schlüssel entfernen"
+msgstr "Schlüssel aus dem geh. Schlüsselbund entfernen"
 
 #: g10/g10.c:210
 msgid "sign a key"
@@ -369,7 +368,7 @@ msgstr "Schlüssel nur auf diesem Rechner signieren"
 
 #: g10/g10.c:212
 msgid "sign or edit a key"
-msgstr "Unterschreiben o. Bearbeiten eines Schlüssels"
+msgstr "Unterschreiben oder Bearbeiten eines Schl."
 
 #: g10/g10.c:213
 msgid "generate a revocation certificate"
@@ -1353,6 +1352,8 @@ msgid ""
 "Your system can't display dates beyond 2038.\n"
 "However, it will be correctly handled up to 2106.\n"
 msgstr ""
+"Ihr Rechner kann Daten jenseits des Jahres 2038 nicht anzeigen.\n"
+"Trotzdem werden Daten bis 2106 korrekt verarbeitet.\n"
 
 #: g10/keygen.c:567
 msgid "Is this correct (y/n)? "
@@ -2471,7 +2472,7 @@ msgstr "Ursprünglicher Dateiname='%.*s'\n"
 
 #: g10/mainproc.c:513
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
-msgstr ""
+msgstr "Einzelner Widerruf - verwenden Sie \"gpg --import\" um ihn anzuwenden\n"
 
 #: g10/mainproc.c:596 g10/mainproc.c:605
 msgid "WARNING: invalid notation data found\n"
@@ -3237,7 +3238,7 @@ msgstr "%s: Verzeichnis erzeugt\n"
 
 #: g10/openfile.c:318
 msgid "you have to start GnuPG again, so it can read the new options file\n"
-msgstr ""
+msgstr "Sie müssen GnuPG noch einmal starten, damit es die neue Optionsdatei liest\n"
 
 #: g10/encr-data.c:66
 #, c-format
