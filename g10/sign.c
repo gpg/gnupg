@@ -433,7 +433,8 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
  */
 static int
 write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
-                         int sigclass, int old_style, int status_letter)
+                         int sigclass, u32 timestamp, u32 duration,
+			 int old_style, int status_letter)
 {
     SK_LIST sk_rover;
 
@@ -448,11 +449,21 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
 
 	/* build the signature packet */
 	sig = m_alloc_clear (sizeof *sig);
-	sig->version = (old_style || opt.force_v3_sigs)? 3 : sk->version;
+	if(old_style || opt.force_v3_sigs)
+	  sig->version=3;
+	else if(duration)
+	  sig->version=4;
+	else
+	  sig->version=sk->version;
 	keyid_from_sk (sk, sig->keyid);
 	sig->digest_algo = hash_for (sk->pubkey_algo, sk->version);
 	sig->pubkey_algo = sk->pubkey_algo;
-	sig->timestamp = make_timestamp();
+	if(timestamp)
+	  sig->timestamp = timestamp;
+	else
+	  sig->timestamp = make_timestamp();
+	if(duration)
+	  sig->expiredate = sig->timestamp+duration;
 	sig->sig_class = sigclass;
 
 	md = md_copy (hash);
@@ -520,7 +531,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     int multifile = 0;
     int old_style = opt.rfc1991;
     int compr_algo = -1; /* unknown */
-
+    u32 timestamp=0,duration=0;
 
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
@@ -539,9 +550,12 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     if( fname && filenames->next && (!detached || encryptflag) )
 	log_bug("multiple files can only be detached signed");
 
+    if(opt.expert && !opt.batch && !opt.force_v3_sigs && !old_style)
+      duration=ask_expire_interval(1);
+
     if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
 	goto leave;
-    if( !old_style )
+    if( !old_style && !duration )
 	old_style = only_old_style( sk_list );
 
     if( encryptflag ) {
@@ -662,6 +676,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     /* write the signatures */
     rc = write_signature_packets (sk_list, out, mfx.md,
                                   opt.textmode && !outfile? 0x01 : 0x00,
+				  timestamp, duration,
                                   old_style, detached ? 'D':'S');
     if( rc )
         goto leave;
@@ -699,13 +714,17 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     SK_LIST sk_rover = NULL;
     int old_style = opt.rfc1991;
     int only_md5 = 0;
+    u32 timestamp=0,duration=0;
 
     memset( &afx, 0, sizeof afx);
     init_packet( &pkt );
 
+    if(opt.expert && !opt.batch && !opt.force_v3_sigs && !old_style)
+      duration=ask_expire_interval(1);
+
     if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
 	goto leave;
-    if( !old_style )
+    if( !old_style && !duration )
 	old_style = only_old_style( sk_list );
 
     /* prepare iobufs */
@@ -789,8 +808,8 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     iobuf_push_filter( out, armor_filter, &afx );
 
     /* write the signatures */
-    rc = write_signature_packets (sk_list, out, textmd,
-                                  0x01, old_style, 'C');
+    rc = write_signature_packets (sk_list, out, textmd, 0x01,
+				  timestamp, duration, old_style, 'C');
     if( rc )
         goto leave;
 
@@ -826,6 +845,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     int old_style = opt.rfc1991;
     int compr_algo = -1; /* unknown */
     int algo;
+    u32 timestamp=0,duration=0;
 
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
@@ -834,10 +854,13 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     memset( &cfx, 0, sizeof cfx);
     init_packet( &pkt );
 
+    if(opt.expert && !opt.batch && !opt.force_v3_sigs && !old_style)
+      duration=ask_expire_interval(1);
+
     rc = build_sk_list (locusr, &sk_list, 1, PUBKEY_USAGE_SIG);
     if (rc) 
 	goto leave;
-    if( !old_style )
+    if( !old_style && !duration )
 	old_style = only_old_style( sk_list );
 
     /* prepare iobufs */
@@ -934,7 +957,8 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     /* Write the signatures */
     /*(current filters: zip - encrypt - armor)*/
     rc = write_signature_packets (sk_list, out, mfx.md,
-                                  opt.textmode? 0x01 : 0x00,
+				  opt.textmode? 0x01 : 0x00,
+				  timestamp, duration,
                                   old_style, 'S');
     if( rc )
         goto leave;
@@ -963,14 +987,14 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
  * DIGEST_ALGO is 0 the function selects an appropriate one.
  * SIGVERSION gives the minimal required signature packet version;
  * this is needed so that special properties like local sign are not
- * applied (actually: dropped) when a v3 key is used.
- */
+ * applied (actually: dropped) when a v3 key is used.  TIMESTAMP is
+ * the timestamp to use for the signature. 0 means "now" */
 int
 make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 		    PKT_user_id *uid, PKT_public_key *subpk,
 		    PKT_secret_key *sk,
 		    int sigclass, int digest_algo,
-                    int sigversion,
+                    int sigversion, u32 timestamp,
 		    int (*mksubpkt)(PKT_signature *, void *), void *opaque
 		   )
 {
@@ -1030,7 +1054,10 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     keyid_from_sk( sk, sig->keyid );
     sig->pubkey_algo = sk->pubkey_algo;
     sig->digest_algo = digest_algo;
-    sig->timestamp = make_timestamp();
+    if(timestamp)
+      sig->timestamp=timestamp;
+    else
+      sig->timestamp = make_timestamp();
     sig->sig_class = sigclass;
     if( sig->version >= 4 )
 	build_sig_subpkt_from_sig( sig );

@@ -318,7 +318,6 @@ datestr_from_sig( PKT_signature *sig )
     return mk_datestr (buffer, atime);
 }
 
-
 const char *
 expirestr_from_pk( PKT_public_key *pk )
 {
@@ -340,6 +339,18 @@ expirestr_from_sk( PKT_secret_key *sk )
     if( !sk->expiredate )
 	return "never     ";
     atime = sk->expiredate;
+    return mk_datestr (buffer, atime);
+}
+
+const char *
+expirestr_from_sig( PKT_signature *sig )
+{
+    static char buffer[11+5];
+    time_t atime;
+
+    if(!sig->expiredate)
+      return "never     ";
+    atime=sig->expiredate;
     return mk_datestr (buffer, atime);
 }
 
@@ -389,6 +400,18 @@ colon_datestr_from_sig (PKT_signature *sig)
     return datestr_from_sig (sig);
 }
 
+const char *
+colon_expirestr_from_sig (PKT_signature *sig)
+{
+    if(!sig->expiredate)
+        return "";
+    if (opt.fixed_list_mode) {
+        static char buf[15];
+        sprintf (buf, "%lu", (ulong)sig->expiredate);
+        return buf;
+    }
+    return expirestr_from_sig (sig);
+}
 
 
 /**************** .

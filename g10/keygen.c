@@ -387,7 +387,7 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
     cache_public_key (pk);
 
     /* and make the signature */
-    rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0, 0,
+    rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0, 0, 0,
         		     keygen_add_std_prefs, pk );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
@@ -436,7 +436,7 @@ write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
     /* and make the signature */
     oduap.usage = use;
     oduap.pk = subpk;
-    rc = make_keysig_packet( &sig, pk, NULL, subpk, sk, 0x18, 0, 0,
+    rc = make_keysig_packet( &sig, pk, NULL, subpk, sk, 0x18, 0, 0, 0,
         		     keygen_add_key_flags_and_expire, &oduap );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
@@ -905,20 +905,38 @@ parse_expire_string( const char *string )
     return valid_days;
 }
 
-
-static u32
-ask_expire_interval(void)
+/* object == 0 for a key, and 1 for a sig */
+u32
+ask_expire_interval(int object)
 {
     char *answer;
     int valid_days=0;
     u32 interval = 0;
 
-    tty_printf(_("Please specify how long the key should be valid.\n"
-		 "         0 = key does not expire\n"
-		 "      <n>  = key expires in n days\n"
-		 "      <n>w = key expires in n weeks\n"
-		 "      <n>m = key expires in n months\n"
-		 "      <n>y = key expires in n years\n"));
+    switch(object)
+      {
+      case 0:
+	tty_printf(_("Please specify how long the key should be valid.\n"
+		     "         0 = key does not expire\n"
+		     "      <n>  = key expires in n days\n"
+		     "      <n>w = key expires in n weeks\n"
+		     "      <n>m = key expires in n months\n"
+		     "      <n>y = key expires in n years\n"));
+	break;
+
+      case 1:
+	tty_printf(_("Please specify how long the signature should be valid.\n"
+		     "         0 = signature does not expire\n"
+		     "      <n>  = signature expires in n days\n"
+		     "      <n>w = signature expires in n weeks\n"
+		     "      <n>m = signature expires in n months\n"
+		     "      <n>y = signature expires in n years\n"));
+	break;
+
+      default:
+	BUG();
+      }
+
     /* Note: The elgamal subkey for DSA has no expiration date because
      * it must be signed with the DSA key and this one has the expiration
      * date */
@@ -928,7 +946,10 @@ ask_expire_interval(void)
 	u32 curtime=make_timestamp();
 
 	m_free(answer);
-	answer = cpr_get("keygen.valid",_("Key is valid for? (0) "));
+	if(object==0)
+	  answer = cpr_get("keygen.valid",_("Key is valid for? (0) "));
+	else
+	  answer = cpr_get("siggen.valid",_("Signature is valid for? (0) "));
 	cpr_kill_prompt();
 	trim_spaces(answer);
 	valid_days = parse_expire_string( answer );
@@ -938,13 +959,15 @@ ask_expire_interval(void)
 	}
 
 	if( !valid_days ) {
-	    tty_printf(_("Key does not expire at all\n"));
+	    tty_printf(_("%s does not expire at all\n"),
+		       object==0?"Key":"Signature");
 	    interval = 0;
 	}
 	else {
 	    interval = valid_days * 86400L;
 	    /* print the date when the key expires */
-	    tty_printf(_("Key expires at %s\n"),
+	    tty_printf(_("%s expires at %s\n"),
+		        object==0?"Key":"Signature",
 			asctimestamp((ulong)(curtime + interval) ) );
             /* FIXME: This check yields warning on alhas:
                write a configure check and to this check here only for 32 bit machines */
@@ -964,7 +987,7 @@ ask_expire_interval(void)
 u32
 ask_expiredate()
 {
-    u32 x = ask_expire_interval();
+    u32 x = ask_expire_interval(0);
     return x? make_timestamp() + x : 0;
 }
 
@@ -1725,7 +1748,7 @@ generate_keypair( const char *fname )
     r->next = para;
     para = r;
 
-    expire = ask_expire_interval();
+    expire = ask_expire_interval(0);
     r = m_alloc_clear( sizeof *r + 20 );
     r->key = pKEYEXPIRE;
     r->u.expire = expire;
@@ -2045,7 +2068,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     algo = ask_algo( 1, &use );
     assert(algo);
     nbits = ask_keysize( algo );
-    expire = ask_expire_interval();
+    expire = ask_expire_interval(0);
     if( !cpr_enabled() && !cpr_get_answer_is_yes("keygen.sub.okay",
 						  _("Really create? ") ) )
 	goto leave;

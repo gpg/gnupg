@@ -1336,6 +1336,7 @@ check_sig_and_print( CTX c, KBNODE node )
             }
 	}
 	release_kbnode( keyblock );
+
 	if( !rc )
 	    print_notation_data( sig );
 
@@ -1362,6 +1363,15 @@ check_sig_and_print( CTX c, KBNODE node )
 
 	if( !rc )
 	    rc = check_signatures_trust( sig );
+
+	if(sig->flags.expired)
+	  {
+	    log_info("Signature expired %s\n",asctimestamp(sig->expiredate));
+	    rc=G10ERR_GENERAL; /* need a better error here? */
+	  }
+	else if(sig->expiredate)
+	  log_info("Signature expires %s\n",asctimestamp(sig->expiredate));
+
 	if( rc )
 	    g10_errors_seen = 1;
 	if( opt.batch && rc )

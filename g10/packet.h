@@ -436,8 +436,8 @@ int write_comment( IOBUF out, const char *s );
 /*-- sign.c --*/
 int make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 			PKT_user_id *uid, PKT_public_key *subpk,
-			PKT_secret_key *sk,
-			int sigclass, int digest_algo, int sigversion,
+			PKT_secret_key *sk, int sigclass, int digest_algo,
+			int sigversion, u32 timestamp,
 			int (*mksubpkt)(PKT_signature *, void *),
 			void *opaque  );
 int update_keysig_packet( PKT_signature **ret_sig,

@@ -777,6 +777,7 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
           case SIGSUBPKT_PREF_HASH:
           case SIGSUBPKT_PREF_COMPR:
           case SIGSUBPKT_FEATURES:
+          case SIGSUBPKT_SIG_EXPIRE:
             delete_sig_subpkt (sig->hashed, type);
             break;
           default:
@@ -891,6 +892,17 @@ build_sig_subpkt_from_sig( PKT_signature *sig )
     buf[2] = (u >>  8) & 0xff;
     buf[3] = u & 0xff;
     build_sig_subpkt( sig, SIGSUBPKT_SIG_CREATED, buf, 4 );
+
+    if(sig->expiredate)
+      {
+	u = sig->expiredate-sig->timestamp;
+	buf[0] = (u >> 24) & 0xff;
+	buf[1] = (u >> 16) & 0xff;
+	buf[2] = (u >>  8) & 0xff;
+	buf[3] = u & 0xff;
+	build_sig_subpkt( sig, SIGSUBPKT_SIG_EXPIRE | SIGSUBPKT_FLAG_CRITICAL,
+			  buf, 4 );
+      }
 }
 
 

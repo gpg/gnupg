@@ -1,3 +1,36 @@
+2001-12-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* sign.c (sign_file, clearsign_file, sign_symencrypt_file): Prompt
+	for sig expiration if --expert is set and --force-v3-sigs is not
+	set (v3 sigs cannot expire).
+
+	* mainproc.c (check_sig_and_print): After checking a sig, print
+	expiration status.  This causes a error return if the sig is
+	expired.
+
+	* build-packet.c (build_sig_subpkt_from_sig): Include a critical
+	sig expiration subpacket if the sig is to expire.
+
+	* keyedit.c (sign_uids): Do not sign an expired key unless
+	--expert is set, in which case prompt.  Also, offer to expire a
+	signature when the key the user is signing expires.
+
+	* keygen.c (ask_expire_interval): Add a value to determine whether
+	to prompt for a key or sig expiration and change all callers.
+
+	* keyid.c: New functions: expirestr_from_sig and
+	colon_expirestr_from_sig.
+
+	* keylist.c (list_keyblock_colon): Show sig expiration date in the
+	--with-colons listing.
+
+	* sign.c (make_keysig_packet, write_signature_packets): Pass in an
+	optional timestamp for the signature packet, and change all
+	callers.
+
+	* keyedit.c (sign_mk_attrib): Include a critical expiration
+	subpacket in the signature if an expiration date is given.
+
 2001-12-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (sign_uids): If the user tries to sign a

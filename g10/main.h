@@ -98,6 +98,7 @@ void keyedit_menu( const char *username, STRLIST locusr, STRLIST cmds,
 							    int sign_mode );
 
 /*-- keygen.c --*/
+u32 ask_expire_interval(int object);
 u32 ask_expiredate(void);
 void generate_keypair( const char *fname );
 int keygen_set_std_prefs (const char *string);

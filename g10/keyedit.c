@@ -78,6 +78,7 @@ static int enable_disable_key( KBNODE keyblock, int disable );
 
 struct sign_attrib {
     int non_exportable;
+    u32 duration;
     struct revocation_reason_info *reason;
 };
 
@@ -243,6 +244,19 @@ sign_mk_attrib( PKT_signature *sig, void *opaque )
 	buf[0] = 0; /* not exportable */
 	build_sig_subpkt( sig, SIGSUBPKT_EXPORTABLE, buf, 1 );
     }
+
+    if(attrib->duration>0) {
+        buf[0]=(attrib->duration >> 24) & 0xff;
+	buf[1]=(attrib->duration >> 16) & 0xff;
+	buf[2]=(attrib->duration >>  8) & 0xff;
+	buf[3]=attrib->duration & 0xff;
+	/* Mark this CRITICAL, so if any implementation doesn't
+           understand sigs that can expire, it'll just disregard this
+           sig altogether. */
+	build_sig_subpkt( sig, SIGSUBPKT_SIG_EXPIRE | SIGSUBPKT_FLAG_CRITICAL,
+			  buf, 4 );
+    }
+
     if( attrib->reason )
 	revocation_reason_build_cb( sig, attrib->reason );
 
@@ -288,6 +302,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 	u32 sk_keyid[2];
 	size_t n;
 	char *p;
+	u32 duration=0,timestamp=0;
 
 	/* we have to use a copy of the sk, because make_keysig_packet
 	 * may remove the protection from sk and if we did other
@@ -307,7 +322,10 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 	/* reset mark for uids which are already signed */
 	uidnode = NULL;
 	for( node=keyblock; node; node = node->next ) {
-	    if( node->pkt->pkttype == PKT_USER_ID ) {
+	    if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
+  	        primary_pk=node->pkt->pkt.public_key;
+	    }
+	    else if( node->pkt->pkttype == PKT_USER_ID ) {
 		uidnode = (node->flag & NODFLG_MARK_A)? node : NULL;
 		if(uidnode && uidnode->pkt->pkt.user_id->is_revoked)
 		  {
@@ -381,6 +399,54 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 	tty_printf("\n");
 	show_key_with_all_names( keyblock, 1, 1, 0, 0 );
 	tty_printf("\n");
+
+	if(primary_pk->expiredate)
+	  {
+	    u32 now=make_timestamp();
+
+	    if(primary_pk->expiredate<=now)
+	      {
+		tty_printf(_("This key has expired!"));
+
+		if(opt.expert)
+		  {
+		    tty_printf(_("  Are you sure you still "
+				 "want to sign it?\n"));
+		    if(!cpr_get_answer_is_yes("sign_uid.okay",
+					      _("Really sign? ")))
+		      continue;
+		  }
+		else
+		  {
+		    tty_printf("\n");
+		    continue;
+		  }
+	      }
+	    else
+	      {
+		tty_printf(_("This key is due to expire on %s.\n"),
+			   expirestr_from_pk(primary_pk));
+		if(cpr_get_answer_is_yes("sign_uid.expire",_("Do you want your signature to expire at the same time? (y/n) ")))
+		  {
+		    /* This fixes the signature timestamp we're going
+		       to make as now.  This is so the expiration date
+		       is exactly correct, and not a few seconds off
+		       (due to the time it takes to answer the
+		       questions, enter the passphrase, etc). */
+		    timestamp=now;
+		    duration=primary_pk->expiredate-now;
+		    force_v4=1;
+		  }
+	      }
+	  }
+
+	/* Only ask for duration if we haven't already set it to match
+           the expiration of the pk */
+	if(opt.expert && !duration)
+	  duration=ask_expire_interval(1);
+
+	if(duration)
+	  force_v4=1;
 
 	if(opt.batch)
 	  class=0x10+opt.def_check_level;
@@ -471,6 +537,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 		assert( primary_pk );
 		memset( &attrib, 0, sizeof attrib );
 		attrib.non_exportable = local;
+		attrib.duration = duration;
 		node->flag &= ~NODFLG_MARK_A;
 
                 /* we force createion of a v4 signature for local
@@ -482,7 +549,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 					 NULL,
 					 sk,
                                          class, 0, force_v4?4:0,
-					 sign_mk_attrib,
+					 timestamp, sign_mk_attrib,
 					 &attrib );
 		if( rc ) {
 		    log_error(_("signing failed: %s\n"), g10_errstr(rc));
@@ -1459,7 +1526,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	sec_where = NULL;
     assert(pk && sk );
 
-    rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0, 0,
+    rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0, 0, 0,
 			     keygen_add_std_prefs, pk );
     free_secret_key( sk );
     if( rc ) {
@@ -1754,11 +1821,11 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 		/* create new self signature */
 		if( mainkey )
 		    rc = make_keysig_packet( &newsig, main_pk, uid, NULL,
-					     sk, 0x13, 0, 0,
+					     sk, 0x13, 0, 0, 0,
 					     keygen_add_std_prefs, main_pk );
 		else
 		    rc = make_keysig_packet( &newsig, main_pk, NULL, sub_pk,
-					     sk, 0x18, 0, 0,
+					     sk, 0x18, 0, 0, 0,
 					     keygen_add_key_expire, sub_pk );
 		if( rc ) {
 		    log_error("make_keysig_packet failed: %s\n",
@@ -2275,7 +2342,7 @@ menu_revsig( KBNODE keyblock )
 				       unode->pkt->pkt.user_id,
 				       NULL,
 				       sk,
-                                       0x30, 0, 0,
+				       0x30, 0, 0, 0,
 				       sign_mk_attrib,
 				       &attrib );
 	free_secret_key(sk);
@@ -2338,7 +2405,7 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	    node->flag &= ~NODFLG_SELKEY;
 	    sk = copy_secret_key( NULL, sec_keyblock->pkt->pkt.secret_key );
 	    rc = make_keysig_packet( &sig, mainpk, NULL, subpk, sk,
-                                     0x28, 0, 0, 
+                                     0x28, 0, 0, 0,
 				     sign_mk_attrib, &attrib );
 	    free_secret_key(sk);
 	    if( rc ) {

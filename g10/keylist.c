@@ -425,6 +425,7 @@ list_keyblock_print ( KBNODE keyblock, int secret )
 		rc = 0;
 		sigrc = ' ';
 	    }
+
             fputs( sigstr, stdout );
 	    printf("%c%c %c%c%c%c%c %08lX %s   ",
                    sigrc,(sig->sig_class-0x10>0 &&
@@ -716,9 +717,10 @@ list_keyblock_colon( KBNODE keyblock, int secret )
             putchar(':');
             if( sigrc != ' ' )
                 putchar(sigrc);
-            printf("::%d:%08lX%08lX:%s::::", sig->pubkey_algo,
+            printf("::%d:%08lX%08lX:%s:%s:::", sig->pubkey_algo,
 						 (ulong)sig->keyid[0],
-			   (ulong)sig->keyid[1], colon_datestr_from_sig(sig));
+			   (ulong)sig->keyid[1], colon_datestr_from_sig(sig),
+		           colon_expirestr_from_sig(sig));
 	    if( sigrc == '%' )
 		printf("[%s] ", g10_errstr(rc) );
 	    else if( sigrc == '?' )
