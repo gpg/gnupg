@@ -168,7 +168,23 @@ strlist_last( STRLIST node )
     return node;
 }
 
+char *
+pop_strlist( STRLIST *list )
+{
+  char *str=NULL;
+  STRLIST sl=*list;
 
+  if(sl)
+    {
+      str=m_alloc(strlen(sl->d)+1);
+      strcpy(str,sl->d);
+
+      *list=sl->next;
+      m_free(sl);
+    }
+
+  return str;
+}
 
 /****************
  * look for the substring SUB in buffer and return a pointer to that

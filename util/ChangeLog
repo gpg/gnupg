@@ -1,3 +1,8 @@
+2002-06-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* strgutil.c (pop_strlist): New function to pop the head off of a
+	strlist.
+
 2002-06-05  Timo Schulz  <ts@winpt.org>
 
 	* fileutil.c (is_file_compressed): Corrected the magic values
