@@ -196,7 +196,7 @@ do_comment( IOBUF out, int ctb, PKT_comment *rem )
 {
     if( opt.sk_comments )
       {
-	write_header2(out, ctb, rem->len, 1, 1);
+	write_header2(out, ctb, rem->len, 2, 1);
 	if( iobuf_write( out, rem->data, rem->len ) )
 	  return G10ERR_WRITE_FILE;
       }
@@ -214,7 +214,7 @@ do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
       }
     else
       {
-        write_header2( out, ctb, uid->len, 1, 1 );
+        write_header2( out, ctb, uid->len, 2, 1 );
 	if( iobuf_write( out, uid->name, uid->len ) )
 	  return G10ERR_WRITE_FILE;
       }
