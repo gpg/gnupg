@@ -1,7 +1,7 @@
 /* i80386   rshift
  *
  *      Copyright (C) 1992, 1994, 1998, 
- *                    2001 Free Software Foundation, Inc.
+ *                    2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -60,21 +60,21 @@ C_SYMBOL_NAME(mpihelp_rshift:)
 
 	movl	(%esi,%edx,4),%ebx	/* read least significant limb */
 	xorl	%eax,%eax
-	shrdl	%cl,%ebx,%eax		/* compute carry limb */
+	shrdl	%ebx,%eax		/* compute carry limb */
 	incl	%edx
 	jz	Lend2
 	pushl	%eax			/* push carry limb onto stack */
-	testb	$1,%edx
+	testb	$1,%dl
 	jnz	L2			/* enter loop in the middle */
 	movl	%ebx,%eax
 
 	ALIGN (3)
-Loop2:	 movl	 (%esi,%edx,4),%ebx	 /* load next higher limb */
-	shrdl	%cl,%ebx,%eax		/* compute result limb */
+Loop2:	movl	 (%esi,%edx,4),%ebx	 /* load next higher limb */
+	shrdl	%ebx,%eax		/* compute result limb */
 	movl	%eax,(%edi,%edx,4)	/* store it */
 	incl	%edx
 L2:	movl	(%esi,%edx,4),%eax
-	shrdl	%cl,%eax,%ebx
+	shrdl	%eax,%ebx
 	movl	%ebx,(%edi,%edx,4)
 	incl	%edx
 	jnz	Loop2

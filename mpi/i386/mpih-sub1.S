@@ -2,7 +2,7 @@
  *		   sum in a third limb vector.
  *
  *      Copyright (C) 1992, 1994, 1995, 1998, 
- *                    2001 Free Software Foundation, Inc.
+ *                    2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -76,7 +76,7 @@ L0:	leal	(%eax,%eax,8),%eax
 	addl	$4,%esp
 #else
 /* Calculate start address in loop for non-PIC.  */
-	leal	(Loop - 3)(%eax,%eax,8),%eax
+	leal	Loop-3(%eax,%eax,8),%eax
 #endif
 	jmp	*%eax			/* jump into loop */
 	ALIGN (3)

@@ -45,7 +45,7 @@
 #define ALIGN(log) .align log
 #endif
 #if defined (ELF_SYNTAX)
-#define ALIGN(log) .align 1<<(log)
+#define ALIGN(log) .align 1<<log
 #endif
 #define GLOBL .globl
 #endif

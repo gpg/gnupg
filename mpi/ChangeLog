@@ -1,3 +1,10 @@
+2002-04-18  Werner Koch  <wk@gnupg.org>
+
+	* i386/syntax.h (ALIGN): Removed parens from definition
+	* i386/mpih-add1.S, i386/mpih-sub1.S, i386/mpih-rshift.S,
+	i386/mpih-lshift.S: Minor syntax changes suggested by Mark Pettit
+	after comparing the files with those for GMP 4.
+	
 2001-11-08  Werner Koch  <wk@gnupg.org>
 
 	* config.links (mpi_sflags): Add extra rule for sparc64-sun-solaris2.
