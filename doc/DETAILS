@@ -549,6 +549,8 @@ more arguments in future versions.
                to request a specific card.
            2 = Request removal of a card.
            3 = Card with serialnumber detected
+           4 = No card available.
+
 
     PLAINTEXT <format> <timestamp>
         This indicates the format of the plaintext that is about to be

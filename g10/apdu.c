@@ -65,11 +65,16 @@
 #include "dynload.h"
 #include "ccid-driver.h"
 
+
+/* To to conflicting use of threading libraries we usually can't link
+   against libpcsclite.   Instead we use a wrapper program.  */
 #ifdef USE_GNU_PTH
+#ifndef HAVE_W32_SYSTEM
 #define NEED_PCSC_WRAPPER 1
 #endif
+#endif
 
-
+ 
 #define MAX_READER 4 /* Number of readers we support concurrently. */
 
 
@@ -1482,7 +1487,6 @@ open_pcsc_reader (const char *portstr)
     }
   strcpy (reader_table[slot].rdrname, portstr? portstr : list);
   xfree (list);
-  list = NULL;
 
   err = pcsc_connect (reader_table[slot].pcsc.context,
                       reader_table[slot].rdrname,
@@ -1496,11 +1500,11 @@ open_pcsc_reader (const char *portstr)
     {
       log_error ("pcsc_connect failed: %s (0x%lx)\n",
                   pcsc_error_string (err), err);
-  
-    pcsc_release_context (reader_table[slot].pcsc.context);
+      pcsc_release_context (reader_table[slot].pcsc.context);
       xfree (reader_table[slot].rdrname);
       reader_table[slot].rdrname = NULL;
       reader_table[slot].used = 0;
+      xfree (list);
       return -1;
     }      
 
@@ -2717,8 +2721,8 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
   resultlen -= 2;
   if (DBG_CARD_IO)
     {
-      log_debug (" response: sw=%04X  datalen=%u\n",
-		 sw, (unsigned int)resultlen);
+      log_debug (" response: sw=%04X  datalen=%d\n",
+                 sw, (unsigned int)resultlen);
       if ( !retbuf && (sw == SW_SUCCESS || (sw & 0xff00) == SW_MORE_DATA))
         log_printhex ("     dump: ", result, resultlen);
     }
@@ -2784,8 +2788,8 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
           resultlen -= 2;
           if (DBG_CARD_IO)
             {
-              log_debug ("     more: sw=%04X  datalen=%u\n",
-			 sw, (unsigned int)resultlen);
+              log_debug ("     more: sw=%04X  datalen=%d\n",
+                         sw, (unsigned int)resultlen);
               if (!retbuf && (sw==SW_SUCCESS || (sw&0xff00)==SW_MORE_DATA))
                 log_printhex ("     dump: ", result, resultlen);
             }
@@ -2918,8 +2922,8 @@ apdu_send_direct (int slot, const unsigned char *apdudata, size_t apdudatalen,
   resultlen -= 2;
   if (DBG_CARD_IO)
     {
-      log_debug (" response: sw=%04X  datalen=%u\n",
-		 sw, (unsigned int)resultlen);
+      log_debug (" response: sw=%04X  datalen=%d\n",
+                 sw, (unsigned int)resultlen);
       if ( !retbuf && (sw == SW_SUCCESS || (sw & 0xff00) == SW_MORE_DATA))
         log_printhex ("     dump: ", result, resultlen);
     }
@@ -2971,8 +2975,8 @@ apdu_send_direct (int slot, const unsigned char *apdudata, size_t apdudatalen,
           resultlen -= 2;
           if (DBG_CARD_IO)
             {
-              log_debug ("     more: sw=%04X  datalen=%u\n",
-			 sw, (unsigned int)resultlen);
+              log_debug ("     more: sw=%04X  datalen=%d\n",
+                         sw, (unsigned int)resultlen);
               if (!retbuf && (sw==SW_SUCCESS || (sw&0xff00)==SW_MORE_DATA))
                 log_printhex ("     dump: ", result, resultlen);
             }

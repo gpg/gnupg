@@ -1,3 +1,19 @@
+2005-01-25  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (get_cached_data): New arg GET_IMMEDIATE to bypass
+	the cache.  Changed all callers.
+	(get_one_do): Bypass the cache if the value would have been read
+	directly for v1.1 cards.It makes things a bit slower but obnly for
+	1.0 cards and there are not that many cards out in the wild.  This
+	is required to fix a caching bug when generating new keys; as a
+	side effect of the retrieval of the the C4 DO from the 6E DO the
+	chaced fingerprint will get updated to the old value and later
+	when signing the generated key the checking of the fingerprint
+	fails becuase it won't match the new one.  Thanks to Moritz for
+	analyzing this problem.
+	(verify_chv3): Removed the CHV status reread logic because we
+	won't cache the C4 DO anymore.
+
 2005-01-21  David Shaw  <dshaw@grover.jabberwocky.com>
 
 	* keyserver.c (free_keyserver_spec): Fix small leak.

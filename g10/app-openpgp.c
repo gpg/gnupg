@@ -1,5 +1,5 @@
 /* app-openpgp.c - The OpenPGP card application.
- *	Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -138,10 +138,12 @@ do_deinit (app_t app)
 
 
 /* Wrapper around iso7816_get_data which first tries to get the data
-   from the cache. */
+   from the cache.  With GET_IMMEDIATE passed as true, the cache is
+   bypassed. */
 static gpg_error_t
 get_cached_data (app_t app, int tag, 
-                 unsigned char **result, size_t *resultlen)
+                 unsigned char **result, size_t *resultlen,
+                 int get_immediate)
 {
   gpg_error_t err;
   int i;
@@ -152,23 +154,25 @@ get_cached_data (app_t app, int tag,
   *result = NULL;
   *resultlen = 0;
 
-  for (c=app->app_local->cache; c; c = c->next)
-    if (c->tag == tag)
-      {
-        if(c->length)
+  if (!get_immediate)
+    {
+      for (c=app->app_local->cache; c; c = c->next)
+        if (c->tag == tag)
           {
-            p = xtrymalloc (c->length);
-            if (!p)
-              return gpg_error (gpg_err_code_from_errno (errno));
-            memcpy (p, c->data, c->length);
-            *result = p;
+            if(c->length)
+              {
+                p = xtrymalloc (c->length);
+                if (!p)
+                  return gpg_error (gpg_err_code_from_errno (errno));
+                memcpy (p, c->data, c->length);
+                *result = p;
+              }
+            
+            *resultlen = c->length;
+            
+            return 0;
           }
-
-        *resultlen = c->length;
-
-        return 0;
-      }
- 
+    }
   
   err = iso7816_get_data (app->slot, tag, &p, &len);
   if (err)
@@ -177,6 +181,9 @@ get_cached_data (app_t app, int tag,
   *resultlen = len;
 
   /* Check whether we should cache this object. */
+  if (get_immediate)
+    return 0;
+
   for (i=0; data_objects[i].tag; i++)
     if (data_objects[i].tag == tag)
       {
@@ -185,8 +192,7 @@ get_cached_data (app_t app, int tag,
         break;
       }
 
-  /* No, cache it. */
-
+  /* Okay, cache it. */
   for (c=app->app_local->cache; c; c = c->next)
     assert (c->tag != tag);
   
@@ -299,7 +305,8 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes)
   if (data_objects[i].tag && data_objects[i].get_from)
     {
       rc = get_cached_data (app, data_objects[i].get_from,
-                            &buffer, &buflen);
+                            &buffer, &buflen,
+                            data_objects[i].get_immediate_in_v11);
       if (!rc)
         {
           const unsigned char *s;
@@ -320,7 +327,8 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes)
 
   if (!value) /* Not in a constructed DO, try simple. */
     {
-      rc = get_cached_data (app, tag, &buffer, &buflen);
+      rc = get_cached_data (app, tag, &buffer, &buflen,
+                            data_objects[i].get_immediate_in_v11);
       if (!rc)
         {
           value = buffer;
@@ -426,7 +434,7 @@ count_bits (const unsigned char *a, size_t len)
    at any time and should be called after changing the login-data DO.
 
    Everything up to a LF is considered a mailbox or account name.  If
-   the first LF is follewed by DC4 (0x14) control sequence are
+   the first LF is followed by DC4 (0x14) control sequence are
    expected up to the next LF.  Control sequences are separated by FS
    (0x28) and consist of key=value pairs.  There is one key defined:
 
@@ -836,8 +844,6 @@ verify_chv3 (app_t app,
       void *relptr;
       unsigned char *value;
       size_t valuelen;
-      int reread_chv_status;
-      
 
       relptr = get_one_do (app, 0x00C4, &value, &valuelen);
       if (!relptr || valuelen < 7)
@@ -853,13 +859,11 @@ verify_chv3 (app_t app,
           return gpg_error (GPG_ERR_BAD_PIN);
         }
 
-      reread_chv_status = (value[6] < 3);
-
       log_info(_("%d Admin PIN attempts remaining before card"
                  " is permanently locked\n"), value[6]);
       xfree (relptr);
 
-      /* Note to translators: Do not translate the "|A|" prefix but
+      /* TRANSLATORS: Do not translate the "|A|" prefix but
          keep it at the start of the string.  We need this elsewhere
          to get some infos on the string. */
       rc = pincb (pincb_arg, _("|A|Admin PIN"), &pinvalue); 
@@ -886,13 +890,6 @@ verify_chv3 (app_t app,
           return rc;
         }
       app->did_chv3 = 1;
-      /* If the PIN has been entered wrongly before, we need to flush
-         the cached value so that the next read correctly reflects the
-         resetted retry counter.  Note that version 1.1 of the specs
-         allow direct reading of that DO, so that we could actually
-         flush it in all cases. */
-      if (reread_chv_status)
-        flush_cache_item (app, 0x00C4);
     }
   return rc;
 }
@@ -1227,7 +1224,7 @@ compare_fingerprint (app_t app, int keyno, unsigned char *sha1fpr)
   
   assert (keyno >= 1 && keyno <= 3);
 
-  rc = get_cached_data (app, 0x006E, &buffer, &buflen);
+  rc = get_cached_data (app, 0x006E, &buffer, &buflen, 0);
   if (rc)
     {
       log_error (_("error reading application data\n"));
