@@ -305,44 +305,47 @@ if test "$use_exec" = yes ; then
   AC_MSG_RESULT($enableval)
 
   if test "$gnupg_cv_enable_keyserver_helpers" = yes ; then
+dnl LDAP is defined only after we confirm the library is available later
     AC_MSG_CHECKING([whether LDAP keyserver support is requested])
     AC_ARG_ENABLE(ldap,
-    [  --disable-ldap          disable LDAP keyserver interface],
-        try_ldap=$enableval, try_ldap=yes)
+      AC_HELP_STRING([--disable-ldap],[disable LDAP keyserver interface only]),
+      try_ldap=$enableval, try_ldap=yes)
     AC_MSG_RESULT($try_ldap)
 
     AC_MSG_CHECKING([whether HKP keyserver support is requested])
     AC_ARG_ENABLE(hkp,
-    [  --disable-hkp           disable HKP keyserver interface],
-        try_hkp=$enableval, try_hkp=yes)
+      AC_HELP_STRING([--disable-hkp],[disable HKP keyserver interface only]),
+      try_hkp=$enableval, try_hkp=yes)
     AC_MSG_RESULT($try_hkp)
 
     AC_MSG_CHECKING([whether HTTP key fetching support is requested])
     AC_ARG_ENABLE(http,
       AC_HELP_STRING([--disable-http],[disable HTTP key fetching interface]),
-        try_http=$enableval, try_http=yes)
+      try_http=$enableval, try_http=yes)
     AC_MSG_RESULT($try_http)
 
-    AC_MSG_CHECKING([whether Finger key fetching support is requested])
+    AC_MSG_CHECKING([whether finger key fetching support is requested])
     AC_ARG_ENABLE(finger,
       AC_HELP_STRING([--disable-finger],
-                     [disable Finger key fetching interface]),
-        try_finger=$enableval, try_finger=yes)
+        [disable finger key fetching interface only]),
+      try_finger=$enableval, try_finger=yes)
     AC_MSG_RESULT($try_finger)
 
     AC_MSG_CHECKING([whether email keyserver support is requested])
     AC_ARG_ENABLE(mailto,
-    [  --disable-mailto        disable email keyserver interface],
-        try_mailto=$enableval, try_mailto=yes)
+      AC_HELP_STRING([--disable-mailto],
+	[disable email keyserver interface only]),
+      try_mailto=$enableval, try_mailto=yes)
     AC_MSG_RESULT($try_mailto)
     fi
 
     AC_MSG_CHECKING([whether keyserver exec-path is enabled])
     AC_ARG_ENABLE(keyserver-path,
-        [  --disable-keyserver-path disable the exec-path option for keyserver helpers],
-        [if test "$enableval" = no ; then
+      AC_HELP_STRING([--disable-keyserver-path],
+        [disable the exec-path option for keyserver helpers]),
+      [if test "$enableval" = no ; then
   	 AC_DEFINE(DISABLE_KEYSERVER_PATH,1,[define to disable exec-path for keyserver helpers])
-        fi],enableval=yes)
+      fi],enableval=yes)
     AC_MSG_RESULT($enableval)
   fi
 
@@ -591,6 +594,16 @@ AC_SUBST(SRVLIBS)
 # LDAPLIBS="-Lfoo -lbar"
 
 if test "$try_ldap" = yes ; then
+
+  AC_ARG_WITH(ldap,
+     AC_HELP_STRING([--with-ldap=DIR],[look for the LDAP library in DIR]),
+     [
+     if test -d "$withval" ; then
+        CPPFLAGS="${CPPFLAGS} -I$withval/include"
+        LDFLAGS="${LDFLAGS} -L$withval/lib"
+     fi
+     ])
+
   for MY_LDAPLIBS in ${LDAPLIBS+"$LDAPLIBS"} "-lldap" "-lldap -llber" "-lldap -llber -lresolv" "-lwldap32"; do
     _ldap_save_libs=$LIBS
     LIBS="$MY_LDAPLIBS $NETLIBS $LIBS"
@@ -1040,8 +1053,9 @@ AC_SUBST(MPI_SFLAGS)
 
 AC_MSG_CHECKING([whether regular expression support is requested])
 AC_ARG_ENABLE(regex,
-[  --disable-regex         do not handle regular expressions in trust sigs],
-     use_regex=$enableval, use_regex=yes)
+  AC_HELP_STRING([--disable-regex],
+    [do not handle regular expressions in trust signatures]),
+  use_regex=$enableval, use_regex=yes)
 AC_MSG_RESULT($use_regex)
 
 if test "$use_regex" = yes ; then
