@@ -690,6 +690,7 @@ main ( int argc, char **argv)
   CERTLIST recplist = NULL;
   CERTLIST signerlist = NULL;
   int do_not_setup_keys = 0;
+  char *config_filename = NULL;
 
   /* trap_unaligned ();*/
   set_strusage (my_strusage);
@@ -1116,7 +1117,8 @@ main ( int argc, char **argv)
     {
       fclose (configfp);
       configfp = NULL;
-      xfree (configname);
+      /* Keep a copy of the config filename. */
+      config_filename = configname;
       configname = NULL;
       goto next_pass;
     }
@@ -1259,21 +1261,47 @@ main ( int argc, char **argv)
     {
     case aGPGConfList: 
       { /* List options and default values in the GPG Conf format.  */
-        char *filename;
 
-        /* First the default configuration file.  This is not an
-	 option, but it is vital information for GPG Conf.  */
-        filename = make_filename (opt.homedir, "gpgsm.conf", NULL);
-        printf ("gpgconf-gpgsm.conf:\"%s\n", filename);
-        xfree (filename);
+        /* The following list is taken from gnupg/tools/gpgconf-comp.c.  */
+        /* Option flags.  YOU MUST NOT CHANGE THE NUMBERS OF THE EXISTING
+           FLAGS, AS THEY ARE PART OF THE EXTERNAL INTERFACE.  */
+#define GC_OPT_FLAG_NONE	0UL
+        /* The RUNTIME flag for an option indicates that the option can be
+           changed at runtime.  */
+#define GC_OPT_FLAG_RUNTIME	(1UL << 3)
+        /* The DEFAULT flag for an option indicates that the option has a
+           default value.  */
+#define GC_OPT_FLAG_DEFAULT	(1UL << 4)
+        /* The DEF_DESC flag for an option indicates that the option has a
+           default, which is described by the value of the default field.  */
+#define GC_OPT_FLAG_DEF_DESC	(1UL << 5)
+        /* The NO_ARG_DESC flag for an option indicates that the argument has
+           a default, which is described by the value of the ARGDEF field.  */
+#define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
 
-        printf ("verbose:\n"
-                "quiet:\n"
-                "debug-level:none\n"
-                "log-file:\n"
-                "force:\n"
-                "faked-system-time:\n"
-                "no-greeting:\n");
+        printf ("gpgconf-gpgsm.conf:%lu:\"%s\"\n",
+                GC_OPT_FLAG_DEFAULT,
+                config_filename?config_filename:"/dev/null");
+        
+        printf ("verbose:%lu:\n"
+                "quiet:%lu:\n"
+                "debug-level:%lu:\"none\":\n"
+                "log-file:%lu:\n",
+                GC_OPT_FLAG_NONE,
+                GC_OPT_FLAG_NONE,
+                GC_OPT_FLAG_DEFAULT,
+                GC_OPT_FLAG_NONE );
+        printf ("disable-crl-checks:%lu:\n",
+                GC_OPT_FLAG_NONE );
+        printf ("enable-ocsp:%lu:\n",
+                GC_OPT_FLAG_NONE );
+        printf ("include-certs:%lu:1:\n",
+                GC_OPT_FLAG_DEFAULT );
+        printf ("disable-policy-checks:%lu:\n",
+                GC_OPT_FLAG_NONE );
+        printf ("auto-issuer-key-retrieve:%lu:\n",
+                GC_OPT_FLAG_NONE );
+
       }
       break;
 
