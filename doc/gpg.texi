@@ -376,6 +376,8 @@ The second form of the command has the special property to
 render the secret part of the primary key useless; this is
 a GNU extension to OpenPGP and other implementations can
 not be expected to successfully import such a key.
+See the option ---simple-sk-checksum if you want to import such an
+exported key with an older OpenPGP implementation.
 
 @item ---import @code{files}
 @itemx ---fast-import @code{files}
@@ -617,17 +619,12 @@ For keyserver schemes that use HTTP (such as HKP), try to access the
 keyserver over the proxy set with the environment variable
 "http_proxy".
 
-@end table
-
-@item ---auto-key-retrieve
+@item auto-key-retrieve
 This option enables the automatic retrieving of keys from a keyserver
 when verifying signatures made by keys that are not on the local
 keyring.
 
-@item ---no-auto-key-retrieve
-This option disables the automatic retrieving of keys from a keyserver
-while verifying signatures. This may be of use if ---auto-key-retrieve
-is enabled from an options file.
+@end table
 
 @item ---keyring @code{file}
 Add @code{file} to the list of keyrings.
@@ -823,6 +820,14 @@ a 3 iterates the whole process a couple of times.
 Unless ---rfc1991 is used, this mode is also used
 for conventional encryption.
 
+@item ---simple-sk-checksum
+Secret keys are integrity protected by using a SHA-1 checksum. This
+method will be part of an enhanced OpenPGP specification but GnuPG
+already uses it as a countermeasure against certain attacks. Old
+applications don't understand this new format, so this option may be
+used to switch back to the old behaviour. Using this this option
+bears a security risk.
+
 @item ---compress-algo @code{n}
 Use compression algorithm @code{n}. Default is 2 which is RFC1950
 compression. You may use 1 to use the old zlib version (RFC1951) which
@@ -918,8 +923,9 @@ a message that PGP 2.x will not be able to handle. Note that `PGP
 2.x' here means `MIT PGP 2.6.2'. There are other versions of PGP 2.x
 available, but the MIT release is a good common baseline.
 
-This option implies `---rfc1991 --no-openpgp --no-force-v4-certs
----no-comment --escape-from --no-force-v3-sigs --cipher-algo IDEA
+This option implies `---rfc1991 --no-openpgp --disable-mdc
+---no-force-v4-certs --no-comment --escape-from --force-v3-sigs
+---no-ask-sig-expire --no-ask-cert-expire --cipher-algo IDEA
 ---digest-algo MD5 --compress-algo 1'
 
 @item ---no-pgp2

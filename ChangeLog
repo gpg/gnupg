@@ -1,3 +1,7 @@
+2002-04-19  Werner Koch  <wk@gnupg.org>
+
+	Released 1.0.6e snapshot.
+
 2002-04-12  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac: Add a warning note to the definition of the

@@ -61,9 +61,6 @@
   * Replace the printing of the user name by [self-signature] when
     appropriate so that a key listing does not get clobbered.
 
-  * Check that the way we select cipher and digest algorithms w/o
-    preferences is okay and make AES the default in some future.
-
   * Concatenated encryption messages don't work corectly - only the
     first one is processed.
 
@@ -87,7 +84,7 @@
 
   * add test cases for invalid data (scrambled armor or other random data)
 
-  * add checking of armor trailers
+  * add checking of armor trailers.  Try to detect garbled header lines.
 
   * the pubkey encrypt functions should do some sanity checks.
 
