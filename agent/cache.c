@@ -82,7 +82,7 @@ static void
 housekeeping (void)
 {
   ITEM r, rprev;
-  time_t current = time (NULL);
+  time_t current = gnupg_get_time ();
 
   /* first expire the actual data */
   for (r=thecache; r; r = r->next)
@@ -170,7 +170,7 @@ agent_put_cache (const char *key, const char *data, int ttl)
         }
       if (data)
         {
-          r->created = r->accessed = time (NULL); 
+          r->created = r->accessed = gnupg_get_time (); 
           r->ttl = ttl;
           r->pw = new_data (data, strlen (data)+1);
           if (!r->pw)
@@ -185,7 +185,7 @@ agent_put_cache (const char *key, const char *data, int ttl)
       else
         {
           strcpy (r->key, key);
-          r->created = r->accessed = time (NULL); 
+          r->created = r->accessed = gnupg_get_time (); 
           r->ttl = ttl;
           r->pw = new_data (data, strlen (data)+1);
           if (!r->pw)
@@ -223,7 +223,7 @@ agent_get_cache (const char *key)
         {
           /* put_cache does only put strings into the cache, so we
              don't need the lengths */
-          r->accessed = time (NULL);
+          r->accessed = gnupg_get_time ();
           if (DBG_CACHE)
             log_debug ("... hit\n");
           return r->pw->data;

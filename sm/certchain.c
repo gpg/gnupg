@@ -315,7 +315,7 @@ gpgsm_validate_path (KsbaCert cert, time_t *r_exptime)
   char *subject = NULL;
   KEYDB_HANDLE kh = keydb_new (0);
   KsbaCert subject_cert = NULL, issuer_cert = NULL;
-  time_t current_time = time (NULL);
+  time_t current_time = gnupg_get_time ();
   time_t exptime = 0;
 
   if (r_exptime)

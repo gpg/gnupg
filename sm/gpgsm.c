@@ -92,8 +92,7 @@ enum cmd_and_opt_values {
   oLCmessages,
 
   oDirmngrProgram,
-
-
+  oFakedSystemTime,
 
 
   oAssumeArmor,
@@ -111,7 +110,7 @@ enum cmd_and_opt_values {
   oDisablePolicyChecks,
   oEnablePolicyChecks,
 
-
+  
 
   oTextmode,
   oFingerprint,
@@ -353,6 +352,8 @@ static ARGPARSE_OPTS opts[] = {
     { oLCctype,    "lc-ctype",    2, "@" },
     { oLCmessages, "lc-messages", 2, "@" },
     { oDirmngrProgram, "dirmngr-program", 2 , "@" },
+    { oFakedSystemTime, "faked-system-time", 4, "@" }, /* (epoch time) */
+
 
     { oNoBatch, "no-batch", 0, "@" },
     { oWithColons, "with-colons", 0, "@"},
@@ -861,6 +862,10 @@ main ( int argc, char **argv)
         case oLCmessages: opt.lc_messages = xstrdup (pargs.r.ret_str); break;
         case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str;  break;
           
+        case oFakedSystemTime:
+          gnupg_set_time ( (time_t)pargs.r.ret_ulong, 0);
+          break;
+
         case oNoDefKeyring: default_keyring = 0; break;
         case oNoGreeting: nogreeting = 1; break;
 
@@ -975,6 +980,13 @@ main ( int argc, char **argv)
 
   if (may_coredump && !opt.quiet)
     log_info (_("WARNING: program may create a core file!\n"));
+
+  if (gnupg_faked_time_p ())
+    {
+      log_info (_("WARNING: running with faked system time: "));
+      gpgsm_dump_time (gnupg_get_time ());
+      log_printf ("\n");
+    }
   
 /*FIXME    if (opt.batch) */
 /*      tty_batchmode (1); */

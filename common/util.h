@@ -22,6 +22,7 @@
 #define GNUPG_COMMON_UTIL_H
 
 #include <gcrypt.h> /* we need this for the memory function protos */
+#include <time.h>   /* we need time_t */
 
 /* to pass hash functions to libksba we need to cast it */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)
@@ -54,6 +55,12 @@ int map_gcry_err (int err);
 int map_kbx_err (int err);
 int map_assuan_err (int err);
 int map_to_assuan_status (int rc);
+
+/*-- gettime.c --*/
+time_t gnupg_get_time (void);
+void   gnupg_set_time (time_t newtime, int freeze);
+int    gnupg_faked_time_p (void);
+
 
 /*-- replacement functions from funcname.c --*/
 #if !HAVE_VASPRINTF

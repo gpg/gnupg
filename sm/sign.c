@@ -393,7 +393,7 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
         }
     }
 
-  signed_at = time (NULL);
+  signed_at = gnupg_get_time ();
   err = ksba_cms_set_signing_time (cms, signer, signed_at);
   if (err)
     {

@@ -1,3 +1,7 @@
+2002-05-14  Werner Koch  <wk@gnupg.org>
+
+	* cache.c (housekeeping, agent_put_cache): Use our time() wrapper.
+
 2002-04-26  Werner Koch  <wk@gnupg.org>
 
 	* cache.c (agent_put_cache): Reinitialize the creation time and
