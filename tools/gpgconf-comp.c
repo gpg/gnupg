@@ -861,6 +861,7 @@ static struct
 void
 gpg_agent_runtime_change (void)
 {
+#ifndef HAVE_W32_SYSTEM
   char *agent = getenv ("GPG_AGENT_INFO");
   char *pid_str;
   unsigned long pid_long;
@@ -888,6 +889,7 @@ gpg_agent_runtime_change (void)
 
   /* Ignore any errors here.  */
   kill (pid, SIGHUP);
+#endif /*!HAVE_W32_SYSTEM*/
 }
 
 
@@ -1741,7 +1743,12 @@ change_options_file (gc_component_t component, gc_backend_t backend,
 	arg = NULL;
     }
 
+#if HAVE_W32_SYSTEM
+  res = 0; 
+#warning no backups for W32 yet - need to write a copy function
+#else
   res = link (dest_filename, orig_filename);
+#endif
   if (res < 0 && errno != ENOENT)
     return -1;
   if (res < 0)
@@ -2005,7 +2012,12 @@ change_options_program (gc_component_t component, gc_backend_t backend,
   src_filename = xasprintf ("%s.gpgconf.%i.new", dest_filename, getpid ());
   orig_filename = xasprintf ("%s.gpgconf.%i.bak", dest_filename, getpid ());
 
+#if HAVE_W32_SYSTEM
+  res = 0; 
+#warning no backups for W32 yet - need to write a copy function
+#else
   res = link (dest_filename, orig_filename);
+#endif
   if (res < 0 && errno != ENOENT)
     return -1;
   if (res < 0)
@@ -2418,12 +2430,18 @@ gc_component_change_options (int component, FILE *in)
 		err = rename (src_pathname[i], dest_pathname[i]);
 	      else
 		{
+#ifdef HAVE_W32_SYSTEM
+                  /* FIXME: Won't work becuase W32 doesn't silently
+                     overwrite. */
+                  err = rename (src_pathname[i], dest_pathname[i]);
+#else /*!HAVE_W32_SYSTEM*/
 		  /* This is a bit safer than rename() because we
 		     expect DEST_PATHNAME not to be there.  If it
 		     happens to be there, this will fail.  */
 		  err = link (src_pathname[i], dest_pathname[i]);
 		  if (!err)
 		    unlink (src_pathname[i]);
+#endif /*!HAVE_W32_SYSTEM*/
 		}
 	      if (err)
 		break;

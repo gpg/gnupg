@@ -1096,7 +1096,7 @@ iobuf_cancel (iobuf_t a)
       if (s && *s)
 	{
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
-	  remove_name = m_strdup (s);
+	  remove_name = xstrdup (s);
 #else
 	  remove (s);
 #endif
@@ -1267,7 +1267,7 @@ iobuf_sockopen (int fd, const char *mode)
   size_t len;
 
   a = iobuf_alloc (strchr (mode, 'w') ? 2 : 1, 8192);
-  scx = m_alloc (sizeof *scx + 25);
+  scx = xmalloc (sizeof *scx + 25);
   scx->sock = fd;
   scx->print_only_name = 1;
   sprintf (scx->fname, "[sock %d]", fd);

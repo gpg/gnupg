@@ -31,7 +31,7 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-#ifdef _WIN32
+#ifdef HAVE_W32_SYSTEM
 #include <winsock2.h>
 #else
 #include <sys/socket.h>
@@ -182,10 +182,8 @@ agent_send_all_options (int fd)
     }
 
   dft_ttyname = getenv ("GPG_TTY");
-#ifndef HAVE_W32_SYSTEM
   if ((!dft_ttyname || !*dft_ttyname) && ttyname (0))
     dft_ttyname = ttyname (0);
-#endif
   if (dft_ttyname && *dft_ttyname)
     {
       if ((rc=agent_send_option (fd, "ttyname", dft_ttyname)))
@@ -261,7 +259,7 @@ agent_send_all_options (int fd)
 static int
 agent_open (int *rfd)
 {
-#ifdef _WIN32
+#ifdef HAVE_W32_SYSTEM
   return SPWQ_NO_AGENT;  /* FIXME */
 #else
   int rc;

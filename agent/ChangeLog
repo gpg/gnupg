@@ -1,3 +1,16 @@
+2004-12-15  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c [W32]: Various hacks to make it work.
+
+	* findkey.c (agent_write_private_key) [W32]: Adjust open call.
+
+	* call-scd.c (start_scd) [W32]: Don't check whether the daemon
+	didn't died.  To hard to do under Windows.
+	(start_scd) [W32]: Disable sending of the event signal option.
+
+	* protect-tool.c (read_file, export_p12_file) [W32]: Use setmode
+	to get stdout and stin into binary mode.
+
 2004-12-05  Moritz Schulte  <moritz@g10code.com>
 
 	* query.c (start_pinentry): Allow CTRL be NULL.

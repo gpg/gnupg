@@ -215,7 +215,7 @@ start_scd (ctrl_t ctrl)
 
       /* We better do a sanity check now to see whether it has
          accidently died. */
-#ifndef HAVE_W32_SYSTEM /* fixme */
+#ifndef HAVE_W32_SYSTEM 
       pid = assuan_get_pid (scd_ctx);
       if (pid != (pid_t)(-1) && pid
           && ((rc=waitpid (pid, NULL, WNOHANG))==-1 || (rc == pid)) )

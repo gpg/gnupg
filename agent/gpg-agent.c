@@ -33,7 +33,7 @@
 #ifndef HAVE_W32_SYSTEM
 #include <sys/socket.h>
 #include <sys/un.h>
-#endif
+#endif /*HAVE_W32_SYSTEM*/
 #include <unistd.h>
 #include <signal.h>
 #ifdef USE_GNU_PTH
@@ -438,17 +438,18 @@ main (int argc, char **argv )
 
   /* Libgcrypt requires us to register the threading model first.
      Note that this will also do the pth_init. */
-#if defined(USE_GNU_PTH) && !defined(HAVE_W32_SYSTEM)
+#ifdef USE_GNU_PTH
+# ifdef HAVE_W32_SYSTEM
+  pth_init ();
+# else /*!HAVE_W32_SYSTEM*/
   err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
   if (err)
     {
       log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
                  gpg_strerror (err));
     }
-#endif /*USE_GNU_PTH && !HAVE_W32_SYSTEM*/
-#ifdef HAVE_W32_SYSTEM
-  pth_init ();
-#endif
+# endif/*!HAVE_W32_SYSTEM*/
+#endif /*USE_GNU_PTH*/
 
   /* Check that the libraries are suitable.  Do it here because
      the option parsing may need services of the library. */
@@ -716,12 +717,11 @@ main (int argc, char **argv )
     }
 
   /* Make sure that we have a default ttyname. */
-#ifndef HAVE_W32_SYSTEM
   if (!default_ttyname && ttyname (1))
     default_ttyname = xstrdup (ttyname (1));
   if (!default_ttytype && getenv ("TERM"))
     default_ttytype = xstrdup (getenv ("TERM"));
-#endif
+
 
   if (pipe_server)
     { /* this is the simple pipe based server */

@@ -147,7 +147,9 @@ int asprintf (char **result, const char *format, ...) JNLIB_GCC_A_PRINTF(2,3);
 #ifndef HAVE_STRSEP
 char *strsep (char **stringp, const char *delim);
 #endif
-
+#ifndef HAVE_TTYNAME
+char *ttyname (int fd);
+#endif
 
 /*-- some macros to replace ctype ones and avoid locale problems --*/
 #define spacep(p)   (*(p) == ' ' || *(p) == '\t')

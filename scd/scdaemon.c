@@ -29,8 +29,10 @@
 #include <assert.h>
 #include <time.h>
 #include <fcntl.h>
+#ifndef HAVE_W32_SYSTEM
 #include <sys/socket.h>
 #include <sys/un.h>
+#endif /*HAVE_W32_SYSTEM*/
 #include <unistd.h>
 #include <signal.h>
 #ifdef USE_GNU_PTH
@@ -47,6 +49,9 @@
 #include "i18n.h"
 #include "sysutils.h"
 #include "app-common.h"
+#ifdef HAVE_W32_SYSTEM
+#include "../jnlib/w32-afunix.h"
+#endif
 
 
 enum cmd_and_opt_values 
@@ -131,7 +136,12 @@ static ARGPARSE_OPTS opts[] = {
 };
 
 
+/* The card dirver we use by default for PC/SC.  */
+#ifdef HAVE_W32_SYSTEM
+#define DEFAULT_PCSC_DRIVER "winscard.dll"
+#else
 #define DEFAULT_PCSC_DRIVER "libpcsclite.so"
+#endif
 
 
 static volatile int caught_fatal_sig = 0;
@@ -148,8 +158,10 @@ static char socket_name[128];
 
 #ifndef HAVE_OPENSC
 #ifdef USE_GNU_PTH
+#ifndef HAVE_W32_SYSTEM
 /* Pth wrapper function definitions. */
 GCRY_THREAD_OPTION_PTH_IMPL;
+#endif
 
 static void *ticker_thread (void *arg);
 #endif /*USE_GNU_PTH*/
@@ -341,12 +353,16 @@ main (int argc, char **argv )
      Note that this will also do the pth_init. */
 #ifndef HAVE_OPENSC
 #ifdef USE_GNU_PTH
+# ifdef HAVE_W32_SYSTEM
+  pth_init ();
+# else /*!HAVE_W32_SYSTEM*/
   err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
   if (err)
     {
       log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
                  gpg_strerror (err));
     }
+# endif /*!HAVE_W32_SYSTEM*/
 #endif /*USE_GNU_PTH*/
 #endif /*!HAVE_OPENSC*/
 
@@ -649,12 +665,15 @@ main (int argc, char **argv )
       if (!p)
         BUG ();
       *p = 0;;
+
+#ifndef HAVE_W32_SYSTEM
       if (!mkdtemp(socket_name))
         {
           log_error ("can't create directory `%s': %s\n",
 	             socket_name, strerror(errno) );
           exit (1);
         }
+#endif
       *p = '/';
 
       if (strchr (socket_name, ':') )
@@ -669,7 +688,11 @@ main (int argc, char **argv )
         }
    
 
+#ifdef HAVE_W32_SYSTEM
+      fd = _w32_sock_new (AF_UNIX, SOCK_STREAM, 0);
+#else
       fd = socket (AF_UNIX, SOCK_STREAM, 0);
+#endif
       if (fd == -1)
         {
           log_error ("can't create socket: %s\n", strerror(errno) );
@@ -682,7 +705,13 @@ main (int argc, char **argv )
       len = (offsetof (struct sockaddr_un, sun_path)
              + strlen(serv_addr.sun_path) + 1);
 
-      if (bind (fd, (struct sockaddr*)&serv_addr, len) == -1)
+      if (
+#ifdef HAVE_W32_SYSTEM
+          _w32_sock_bind
+#else
+          bind 
+#endif
+          (fd, (struct sockaddr*)&serv_addr, len) == -1)
         {
           log_error ("error binding socket to `%s': %s\n",
                      serv_addr.sun_path, strerror (errno) );
@@ -702,6 +731,7 @@ main (int argc, char **argv )
 
 
       fflush (NULL);
+#ifndef HAVE_W32_SYSTEM
       pid = fork ();
       if (pid == (pid_t)-1) 
         {
@@ -800,6 +830,8 @@ main (int argc, char **argv )
           exit (1);
         }
 
+#endif /*!HAVE_W32_SYSTEM*/
+
       scd_command_handler (fd);
 
       close (fd);
@@ -846,6 +878,7 @@ handle_signal (int signo)
 {
   switch (signo)
     {
+#ifndef HAVE_W32_SYSTEM
     case SIGHUP:
       log_info ("SIGHUP received - "
                 "re-reading configuration and resetting cards\n");
@@ -882,6 +915,7 @@ handle_signal (int signo)
       cleanup ();
       scd_exit (0);
       break;
+#endif /*!HAVE_W32_SYSTEM*/
 
     default:
       log_info ("signal %d received - no action defined\n", signo);
@@ -901,6 +935,7 @@ ticker_thread (void *dummy_arg)
   sigset_t sigs;
   int signo;
 
+#ifndef HAVE_W32_SYSTEM /* fixme */
   sigemptyset (&sigs );
   sigaddset (&sigs, SIGHUP);
   sigaddset (&sigs, SIGUSR1);
@@ -908,6 +943,9 @@ ticker_thread (void *dummy_arg)
   sigaddset (&sigs, SIGINT);
   sigaddset (&sigs, SIGTERM);
   sigs_ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
+#else
+  sigs_ev = NULL;
+#endif
   
   for (;;)
     {

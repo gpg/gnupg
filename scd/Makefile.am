@@ -19,7 +19,7 @@
 ## Process this file with automake to produce Makefile.in
 
 bin_PROGRAMS = scdaemon sc-copykeys
-if HAVE_W32_SYSTEM
+if ! HAVE_W32_SYSTEM
 pkglib_PROGRAMS = pcsc-wrapper
 endif
 
@@ -53,10 +53,8 @@ scdaemon_SOURCES = \
 
 
 scdaemon_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
-	   $(LIBGCRYPT_LIBS) $(pth_libs) \
-          $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
-	  $(LIBUSB_LIBS) $(OPENSC_LIBS) -lgpg-error @LIBINTL@ \
-	  @DL_LIBS@
+	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(pth_libs) $(LIBASSUAN_LIBS) \
+	$(LIBUSB_LIBS) $(OPENSC_LIBS) -lgpg-error $(LIBINTL) $(DL_LIBS)
 
 sc_copykeys_SOURCES = \
 	sc-copykeys.c scdaemon.h \
@@ -70,10 +68,10 @@ sc_copykeys_SOURCES = \
 sc_copykeys_LDADD = \
 	../jnlib/libjnlib.a ../common/libcommon.a \
 	../common/libsimple-pwquery.a \
-	$(LIBGCRYPT_LIBS) $(pth_libs) \
-	$(KSBA_LIBS) $(LIBUSB_LIBS) $(OPENSC_LIBS) \
+	$(LIBGCRYPT_LIBS) $(pth_libs) $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
+	 $(LIBUSB_LIBS) $(OPENSC_LIBS) \
         -lgpg-error @LIBINTL@ @DL_LIBS@
 
 pcsc_wrapper_SOURCES = pcsc-wrapper.c
-pcsc_wrapper_LDADD = @DL_LIBS@
+pcsc_wrapper_LDADD = $(DL_LIBS)
 pcsc_wrapper_CFLAGS = 

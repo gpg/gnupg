@@ -53,8 +53,14 @@ else
 scd =
 endif
 
+if HAVE_W32_SYSTEM
+tests =
+else
+tests = tests
+endif
+
 SUBDIRS = m4 intl jnlib common ${kbx} \
- ${gpg} ${sm} ${agent} ${scd} tools po doc tests
+ ${gpg} ${sm} ${agent} ${scd} tools po doc ${tests}
 
 dist-hook:
 	@set -e; \

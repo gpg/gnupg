@@ -1260,8 +1260,13 @@ scd_update_reader_status_file (void)
                 int signo = primary_connection->server_local->event_signal;
 
                 log_info ("client pid is %d, sending signal %d\n", pid, signo);
+
+#ifdef HAVE_W32_SYSTEM
+#warning  Need to implement a notification service                
+#else
                 if (pid != (pid_t)(-1) && pid && signo > 0)
                   kill (pid, signo);
+#endif
               }
           }
       }

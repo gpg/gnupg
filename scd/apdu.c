@@ -65,11 +65,16 @@
 #include "dynload.h"
 #include "ccid-driver.h"
 
+
+/* To to conflicting use of threading libraries we usually can't link
+   against libpcsclite.   Instead we use a wrapper program.  */
 #ifdef USE_GNU_PTH
+#ifndef HAVE_W32_SYSTEM
 #define NEED_PCSC_WRAPPER 1
 #endif
+#endif
 
-
+ 
 #define MAX_READER 4 /* Number of readers we support concurrently. */
 
 

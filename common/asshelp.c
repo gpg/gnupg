@@ -32,8 +32,32 @@
 
 #include "asshelp.h"
 
-/* Send the assuan command pertaining to the pinenry environment.  The
-   OPT_* arguments are optional and may be used to overide the
+
+static gpg_error_t
+send_one_option (assuan_context_t ctx, const char *name, const char *value)
+{
+  gpg_error_t err;
+  char *optstr;
+
+  if (!value || !*value)
+    err = 0;  /* Avoid sending empty strings.  */
+  else if (asprintf (&optstr, "OPTION %s=%s", name, value ) < 0)
+    err = gpg_error_from_errno (errno);
+  else
+    {
+      assuan_error_t ae;
+
+      ae = assuan_transact (ctx, optstr, NULL, NULL, NULL, NULL, NULL, NULL);
+      err = ae? map_assuan_err (ae) : 0;
+      free (optstr);
+    }
+
+  return err;
+}
+
+
+/* Send the assuan commands pertaining to the pinenry environment.  The
+   OPT_* arguments are optional and may be used to override the
    defaults taken from the current locale. */
 gpg_error_t
 send_pinentry_environment (assuan_context_t ctx,
@@ -43,62 +67,49 @@ send_pinentry_environment (assuan_context_t ctx,
                            const char *opt_lc_ctype,
                            const char *opt_lc_messages)
 {
-  int rc = 0;
+  gpg_error_t err = 0;
   char *dft_display = NULL;
   char *dft_ttyname = NULL;
   char *dft_ttytype = NULL;
   char *old_lc = NULL; 
   char *dft_lc = NULL;
 
+  /* Send the DISPLAY variable.  */
   dft_display = getenv ("DISPLAY");
   if (opt_display || dft_display)
     {
-      char *optstr;
-      if (asprintf (&optstr, "OPTION display=%s",
-		    opt_display ? opt_display : dft_display) < 0)
-	return gpg_error_from_errno (errno);
-      rc = assuan_transact (ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-			    NULL);
-      free (optstr);
-      if (rc)
-	return map_assuan_err (rc);
+      err = send_one_option (ctx, "display", 
+                             opt_display ? opt_display : dft_display);
+      if (err)
+        return err;
     }
+
+  /* Send the name of the TTY.  */
   if (!opt_ttyname)
     {
       dft_ttyname = getenv ("GPG_TTY");
-#ifdef HAVE_DOSISH_SYSTEM
-      if (!dft_ttyname || !*dft_ttyname )
-        dft_ttyname = "/dev/tty"; /* Use a fake. */
-#else      
       if ((!dft_ttyname || !*dft_ttyname) && ttyname (0))
         dft_ttyname = ttyname (0);
-#endif
     }
   if (opt_ttyname || dft_ttyname)
     {
-      char *optstr;
-      if (asprintf (&optstr, "OPTION ttyname=%s",
-		    opt_ttyname ? opt_ttyname : dft_ttyname) < 0)
-	return gpg_error_from_errno (errno);
-      rc = assuan_transact (ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-			    NULL);
-      free (optstr);
-      if (rc)
-	return map_assuan_err (rc);
+      err = send_one_option (ctx, "ttyname", 
+                             opt_ttyname ? opt_ttyname : dft_ttyname);
+      if (err)
+        return err;
     }
+
+  /* Send the type of the TTY.  */
   dft_ttytype = getenv ("TERM");
   if (opt_ttytype || (dft_ttyname && dft_ttytype))
     {
-      char *optstr;
-      if (asprintf (&optstr, "OPTION ttytype=%s",
-		    opt_ttyname ? opt_ttytype : dft_ttytype) < 0)
-	return gpg_error_from_errno (errno);
-      rc = assuan_transact (ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-			    NULL);
-      free (optstr);
-      if (rc)
-	return map_assuan_err (rc);
+      err = send_one_option (ctx, "ttytype", 
+                             opt_ttyname ? opt_ttytype : dft_ttytype);
+      if (err)
+        return err;
     }
+
+  /* Send the value for LC_CTYPE.  */
 #if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
   old_lc = setlocale (LC_CTYPE, NULL);
   if (old_lc)
@@ -111,18 +122,8 @@ send_pinentry_environment (assuan_context_t ctx,
 #endif
   if (opt_lc_ctype || (dft_ttyname && dft_lc))
     {
-      char *optstr;
-      if (asprintf (&optstr, "OPTION lc-ctype=%s",
-		    opt_lc_ctype ? opt_lc_ctype : dft_lc) < 0)
-	rc = gpg_error_from_errno (errno);
-      else
-	{
-	  rc = assuan_transact (ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-				NULL);
-	  free (optstr);
-	  if (rc)
-	    rc = map_assuan_err (rc);
-	}
+      err = send_one_option (ctx, "lc-ctype", 
+                             opt_lc_ctype ? opt_lc_ctype : dft_lc);
     }
 #if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
   if (old_lc)
@@ -131,8 +132,10 @@ send_pinentry_environment (assuan_context_t ctx,
       free (old_lc);
     }
 #endif
-  if (rc)
-    return rc;
+  if (err)
+    return err;
+
+  /* Send the value for LC_MESSAGES.  */
 #if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)
   old_lc = setlocale (LC_MESSAGES, NULL);
   if (old_lc)
@@ -145,18 +148,8 @@ send_pinentry_environment (assuan_context_t ctx,
 #endif
   if (opt_lc_messages || (dft_ttyname && dft_lc))
     {
-      char *optstr;
-      if (asprintf (&optstr, "OPTION lc-messages=%s",
-		    opt_lc_messages ? opt_lc_messages : dft_lc) < 0)
-	rc = gpg_error_from_errno (errno);
-      else
-	{
-	  rc = assuan_transact (ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-				NULL);
-	  free (optstr);
-	  if (rc)
-	    rc = map_assuan_err (rc);
-	}
+      err = send_one_option (ctx, "display", 
+                             opt_lc_messages ? opt_lc_messages : dft_lc);
     }
 #if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)
   if (old_lc)
@@ -165,7 +158,9 @@ send_pinentry_environment (assuan_context_t ctx,
       free (old_lc);
     }
 #endif
+  if (err)
+    return err;
 
-  return rc;
+  return 0;
 }
 

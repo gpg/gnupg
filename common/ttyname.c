@@ -1,5 +1,5 @@
-/* sysutils.h - System utility functions for Gnupg
- *	Copyright (C) 2002 Free Software Foundation, Inc.
+/* ttyname.c - Replacement for ttyname.
+ * Copyright (C) 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -18,21 +18,15 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef GNUPG_COMMON_SYSUTILS_H
-#define GNUPG_COMMON_SYSUTILS_H
+/* This one is a simple dummy and suitable for Dosish systems.  */
 
-void trap_unaligned (void);
-int  disable_core_dumps (void);
-int  enable_core_dumps (void);
-const unsigned char *get_session_marker (size_t *rlen);
-int check_permissions (const char *path,int extension,int checkonly);
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+#include <stdio.h>
 
-#ifdef HAVE_W32_SYSTEM
-/*-- w32reg.c --*/
-char *read_w32_registry_string( const char *root,
-				const char *dir, const char *name );
-int write_w32_registry_string(const char *root, const char *dir,
-                              const char *name, const char *value);
-#endif /*HAVE_W32_SYSTEM*/
-
-#endif /*GNUPG_COMMON_SYSUTILS_H*/
+char *
+ttyname (int fd)
+{
+  return NULL;
+}

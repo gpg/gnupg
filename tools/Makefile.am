@@ -32,7 +32,10 @@ sbin_SCRIPTS = addgnupghome
 
 bin_SCRIPTS = gpgsm-gencert.sh
 
-bin_PROGRAMS = gpgconf watchgnupg
+bin_PROGRAMS = gpgconf
+if !HAVE_W32_SYSTEM
+bin_PROGRAMS += watchgnupg
+endif
 
 gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 

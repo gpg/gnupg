@@ -26,6 +26,9 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <fcntl.h>
+#ifdef USE_GNU_PTH
+# include <pth.h>
+#endif
 
 #include "gpgsm.h"
 #include <gcrypt.h>
@@ -736,6 +739,11 @@ main ( int argc, char **argv)
                  NEED_KSBA_VERSION, ksba_check_version (NULL) );
     }
 
+#ifdef HAVE_W32_SYSTEM
+  pth_init ();
+#endif
+
+
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
 
   may_coredump = disable_core_dumps ();
@@ -746,7 +754,8 @@ main ( int argc, char **argv)
   i18n_init();
 
   opt.def_cipher_algoid = "1.2.840.113549.3.7";  /*des-EDE3-CBC*/
-#ifdef __MINGW32__
+
+#ifdef HAVE_W32_SYSTEM
   opt.homedir = read_w32_registry_string ( NULL,
                                            "Software\\GNU\\GnuPG", "HomeDir" );
 #else
@@ -1688,7 +1697,7 @@ open_fwrite (const char *filename)
 static void
 run_protect_tool (int argc, char **argv)
 {
-#ifndef _WIN32
+#ifndef HAVE_W32_SYSTEM
   const char *pgm;
   char **av;
   int i;
@@ -1707,6 +1716,6 @@ run_protect_tool (int argc, char **argv)
   av[i] = NULL;
   execv (pgm, av); 
   log_error ("error executing `%s': %s\n", pgm, strerror (errno));
-#endif
+#endif /*HAVE_W32_SYSTEM*/
   gpgsm_exit (2);
 }

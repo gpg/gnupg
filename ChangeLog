@@ -1,3 +1,13 @@
+2004-12-15  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (SUBDIRS) [W32]: Do not build in tests/.
+
+	* acinclude.m4: Add proper macro name quoting for use with
+	automake 1.9.
+
+	* configure.ac: Add replacement check for ttyname.
+	Removed support for a included zlib.
+
 2004-12-06  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (have_w32_system): New.  Disable Pth checks for W32.

@@ -35,6 +35,9 @@
 #ifdef HAVE_LANGINFO_CODESET
 #include <langinfo.h>
 #endif
+#ifdef HAVE_DOSISH_SYSTEM
+#include <fcntl.h> /* for setmode() */
+#endif
 
 #define JNLIB_NEED_LOG_LOGV
 #include "agent.h"
@@ -262,6 +265,9 @@ read_file (const char *fname, size_t *r_length)
       size_t nread, bufsize = 0;
 
       fp = stdin;
+#ifdef HAVE_DOSISH_SYSTEM
+      setmode ( fileno(fp) , O_BINARY );
+#endif
       buf = NULL;
       buflen = 0;
 #define NCHUNK 8192
@@ -975,6 +981,9 @@ export_p12_file (const char *fname)
   if (!key)
     return;
   
+#ifdef HAVE_DOSISH_SYSTEM
+  setmode ( fileno (stdout) , O_BINARY );
+#endif
   fwrite (key, keylen, 1, stdout);
   xfree (key);
 }
@@ -1056,12 +1065,12 @@ main (int argc, char **argv )
   gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
 
 
-#ifdef __MINGW32__
+#ifdef HAVE_W32_SYSTEM
   opt_homedir = read_w32_registry_string ( NULL,
                                            "Software\\GNU\\GnuPG", "HomeDir" );
-#else
+#else /*!HAVE_W32_SYSTEM*/
   opt_homedir = getenv ("GNUPGHOME");
-#endif
+#endif /*!HAVE_W32_SYSTEM*/
   if (!opt_homedir || !*opt_homedir)
     opt_homedir = GNUPG_DEFAULT_HOMEDIR;
 
@@ -1213,9 +1222,10 @@ get_passphrase (int promptno)
   if (!pw)
     {
       if (err)
-        log_error ("error while asking for the passphrase\n");
+        log_error (_("error while asking for the passphrase: %s\n"),
+                   gpg_strerror (err));
       else
-        log_info ("cancelled\n");
+        log_info (_("cancelled\n"));
       agent_exit (0);
     }
 

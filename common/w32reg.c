@@ -19,7 +19,7 @@
  */
 
 #include <config.h>
-#if defined (_WIN32) || defined (__CYGWIN32__)
+#ifdef HAVE_W32_SYSTEM
  /* This module is only used in this environment */
 
 #include <stdio.h>
@@ -29,6 +29,7 @@
 #include <windows.h>
 
 #include "util.h"
+#include "sysutils.h"
 
 static HKEY
 get_root_key(const char *root)
@@ -169,4 +170,4 @@ write_w32_registry_string(const char *root, const char *dir,
     return 0;
 }
 
-#endif /* __MINGW32__ || __CYGWIN32__ */
+#endif /*HAVE_W32_SYSTEM*/

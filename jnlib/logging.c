@@ -35,16 +35,13 @@
 #include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifndef _WIN32
+#ifndef HAVE_W32_SYSTEM
 #include <sys/socket.h>
 #include <sys/un.h>
-#endif
+#endif /*!HAVE_W32_SYSTEM*/
 #include <unistd.h>
 #include <fcntl.h>
 #include <assert.h>
-#ifdef __MINGW32__
-#  include <io.h>
-#endif
 
 
 #define JNLIB_NEED_LOG_LOGV 1

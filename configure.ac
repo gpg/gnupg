@@ -218,12 +218,6 @@ if test "$use_exec" = yes ; then
     AC_MSG_RESULT($enableval)
   fi
 
-AC_MSG_CHECKING([whether the included zlib is requested])
-AC_ARG_WITH(included-zlib,
-    [  --with-included-zlib    use the zlib code included here],
-[g10_force_zlib=yes], [g10_force_zlib=no] )
-AC_MSG_RESULT($g10_force_zlib)
-
 dnl
 dnl Check whether we want to use Linux capabilities
 dnl
@@ -799,6 +793,7 @@ AC_REPLACE_FUNCS(fseeko ftello)
 AC_REPLACE_FUNCS(isascii)
 AC_REPLACE_FUNCS(putc_unlocked)
 AC_REPLACE_FUNCS(strsep)
+AC_REPLACE_FUNCS(ttyname)
 
 
 
@@ -923,14 +918,10 @@ fi
 
 dnl Do we have zlib? Must do it here because Solaris failed
 dnl when compiling a conftest (due to the "-lz" from LIBS).
-use_local_zlib=yes
-if test "$g10_force_zlib" = "yes"; then
-  :
-else
-  _cppflags="${CPPFLAGS}"
-  _ldflags="${LDFLAGS}"
+_cppflags="${CPPFLAGS}"
+_ldflags="${LDFLAGS}"
 
-  AC_ARG_WITH(zlib,
+AC_ARG_WITH(zlib,
   [  --with-zlib=DIR         use libz in DIR],[
     if test -d "$withval"; then
       CPPFLAGS="${CPPFLAGS} -I$withval/include"
@@ -938,23 +929,12 @@ else
     fi
   ])
 
-  AC_CHECK_HEADER(zlib.h,
+AC_CHECK_HEADER(zlib.h,
       AC_CHECK_LIB(z, deflateInit2_,
-       use_local_zlib=no
        LIBS="$LIBS -lz",
        CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}),
        CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags})
-fi
  
-if test "$use_local_zlib" = yes ; then
-    AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, true)
-    AC_CONFIG_LINKS(zlib.h:zlib/zlib.h zconf.h:zlib/zconf.h )
-    ZLIBS="../zlib/libzlib.a"
-else
-    AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, false)
-    ZLIBS=
-fi
-AC_SUBST(ZLIBS)
 
 
 # See wether we want to run the long test suite.

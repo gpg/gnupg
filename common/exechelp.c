@@ -30,14 +30,16 @@
 #ifdef USE_GNU_PTH      
 #include <pth.h>
 #endif
-#ifdef _WIN32
-#else
+#ifndef HAVE_W32_SYSTEM
 #include <sys/wait.h>
 #endif
 
 #include "util.h"
 #include "i18n.h"
 #include "exechelp.h"
+
+/* Define to 1 do enable debugging.  */
+#define DEBUG_W32_SPAWN 1
 
 
 #ifdef _POSIX_OPEN_MAX
@@ -57,6 +59,105 @@
 #endif
 
 
+#ifdef HAVE_W32_SYSTEM
+/* We assume that a HANDLE can be represented by an int which should
+   be true for all i386 systems (HANDLE is defined as void *) and
+   these are the only systems for which Windows is available.  Further
+   we assume that -1 denotes an invalid handle.  */
+# define fd_to_handle(a)  ((HANDLE)(a))
+# define handle_to_fd(a)  ((int)(a))
+# define pid_to_handle(a) ((HANDLE)(a))
+# define handle_to_pid(a) ((int)(a))
+#endif
+
+
+#ifdef HAVE_W32_SYSTEM
+/* Build a command line for use with W32's CreateProcess.  On success
+   CMDLINE gets the address of a newly allocated string.  */
+static gpg_error_t
+build_w32_commandline (const char *pgmname, const char **argv, char **cmdline)
+{
+  int i, n;
+  const char *s;
+  char *buf, *p;
+
+  *cmdline = NULL;
+  n = strlen (pgmname);
+  for (i=0; (s=argv[i]); i++)
+    {
+      n += strlen (s) + 1 + 2;  /* (1 space, 2 quoting */
+      for (; *s; s++)
+        if (*s == '\"')
+          n++;  /* Need to double inner quotes.  */
+    }
+  n++;
+
+  buf = p = xtrymalloc (n);
+  if (!buf)
+    return gpg_error_from_errno (errno);
+
+  /* fixme: PGMNAME may not contain spaces etc. */
+  p = stpcpy (p, pgmname);
+  for (i=0; argv[i]; i++) 
+    {
+      if (!*argv[i]) /* Empty string. */
+        p = stpcpy (p, " \"\"");
+      else if (strpbrk (argv[i], " \t\n\v\f\""))
+        {
+          p = stpcpy (p, " \"");
+          for (s=argv[i]; *s; s++)
+            {
+              *p++ = *s;
+              if (*s == '\"')
+                *p++ = *s;
+            }
+          *p++ = '\"';
+          *p = 0;
+        }
+      else
+        p = stpcpy (stpcpy (p, " "), argv[i]);
+    }
+
+  *cmdline= buf;
+  return 0;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
+#ifdef HAVE_W32_SYSTEM
+/* Create  pipe where the write end is inheritable.  */
+static int
+create_inheritable_pipe (int filedes[2])
+{
+  HANDLE r, w, h;
+  SECURITY_ATTRIBUTES sec_attr;
+
+  memset (&sec_attr, 0, sizeof sec_attr );
+  sec_attr.nLength = sizeof sec_attr;
+  sec_attr.bInheritHandle = FALSE;
+    
+  if (!CreatePipe (&r, &w, &sec_attr, 0))
+    return -1;
+
+  if (!DuplicateHandle (GetCurrentProcess(), w,
+                        GetCurrentProcess(), &h, 0,
+                        TRUE, DUPLICATE_SAME_ACCESS ))
+    {
+      log_error ("DuplicateHandle failed: %s\n", w32_strerror (-1));
+      CloseHandle (r);
+      CloseHandle (w);
+      return -1;
+    }
+  CloseHandle (w);
+  w = h;
+
+  filedes[0] = handle_to_fd (r);
+  filedes[1] = handle_to_fd (w);
+  return 0;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
 
 /* Fork and exec the PGMNAME, connect the file descriptor of INFILE to
    stdin, write the output to OUTFILE, return a new stream in
@@ -73,10 +174,121 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
                      void (*preexec)(void),
                      FILE **statusfile, pid_t *pid)
 {
-#ifdef _WIN32
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#ifdef HAVE_W32_SYSTEM
+  gpg_error_t err;
+  SECURITY_ATTRIBUTES sec_attr;
+  PROCESS_INFORMATION pi = 
+    {
+      NULL,      /* Returns process handle.  */
+      0,         /* Returns primary thread handle.  */
+      0,         /* Returns pid.  */
+      0          /* Returns tid.  */
+    };
+  STARTUPINFO si;
+  int cr_flags;
+  char *cmdline;
+  int fd, fdout, rp[2];
 
-#else /* !_WIN32 */
+  /* Setup return values.  */
+  *statusfile = NULL;
+  *pid = (pid_t)(-1);
+  fflush (infile);
+  rewind (infile);
+  fd = _get_osfhandle (fileno (infile));
+  fdout = _get_osfhandle (fileno (outfile));
+  if (fd == -1 || fdout == -1)
+    log_fatal ("no file descriptor for file passed to gnupg_spawn_process\n");
+
+  /* Prepare security attributes.  */
+  memset (&sec_attr, 0, sizeof sec_attr );
+  sec_attr.nLength = sizeof sec_attr;
+  sec_attr.bInheritHandle = FALSE;
+  
+  /* Build the command line.  */
+  err = build_w32_commandline (pgmname, argv, &cmdline);
+  if (err)
+    return err; 
+
+  /* Create a pipe.  */
+  if (create_inheritable_pipe (rp))
+    {
+      err = gpg_error (GPG_ERR_GENERAL);
+      log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
+      xfree (cmdline);
+      return err;
+    }
+  
+  /* Start the process.  Note that we can't run the PREEXEC function
+     because this would change our own environment. */
+  memset (&si, 0, sizeof si);
+  si.cb = sizeof (si);
+  si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+  si.wShowWindow = DEBUG_W32_SPAWN? SW_SHOW : SW_MINIMIZE;
+  si.hStdInput  = fd_to_handle (fd);
+  si.hStdOutput = fd_to_handle (fdout);
+  si.hStdError  = fd_to_handle (rp[1]);
+
+  cr_flags = (CREATE_DEFAULT_ERROR_MODE
+              | GetPriorityClass (GetCurrentProcess ())
+              | CREATE_SUSPENDED); 
+  log_debug ("CreateProcess, path=`%s' cmdline=`%s'", pgmname, cmdline);
+  if (!CreateProcess (pgmname,       /* Program to start.  */
+                      cmdline,       /* Command line arguments.  */
+                      &sec_attr,     /* Process security attributes.  */
+                      &sec_attr,     /* Thread security attributes.  */
+                      TRUE,          /* Inherit handles.  */
+                      cr_flags,      /* Creation flags.  */
+                      NULL,          /* Environment.  */
+                      NULL,          /* Use current drive/directory.  */
+                      &si,           /* Startup information. */
+                      &pi            /* Returns process information.  */
+                      ))
+    {
+      log_error ("CreateProcess failed: %s\n", w32_strerror (-1));
+      xfree (cmdline);
+      CloseHandle (fd_to_handle (rp[0]));
+      CloseHandle (fd_to_handle (rp[1]));
+      return gpg_error (GPG_ERR_GENERAL);
+    }
+  xfree (cmdline);
+  cmdline = NULL;
+
+  /* Close the other end of the pipe.  */
+  CloseHandle (fd_to_handle (rp[1]));
+  
+  log_debug ("CreateProcess ready: hProcess=%p hThread=%p"
+             " dwProcessID=%d dwThreadId=%d\n",
+             pi.hProcess, pi.hThread,
+             (int) pi.dwProcessId, (int) pi.dwThreadId);
+
+  /* Process ha been created suspended; resume it now. */
+  ResumeThread (pi.hThread);
+  CloseHandle (pi.hThread); 
+
+  {
+    int x;
+
+    x = _open_osfhandle (rp[0], 0);
+    if (x == -1)
+      log_error ("failed to translate osfhandle %p\n", (void*)rp[0] );
+    else 
+      {
+        log_debug ("_open_osfhandle %p yields %d\n", (void*)fd, x );
+        *statusfile = fdopen (x, "r");
+      }
+  }
+  if (!*statusfile)
+    {
+      err = gpg_error_from_errno (errno);
+      log_error (_("can't fdopen pipe for reading: %s\n"), gpg_strerror (err));
+      CloseHandle (pi.hProcess);
+      return err;
+    }
+
+  *pid = handle_to_pid (pi.hProcess);
+  return 0;
+
+#else /* !HAVE_W32_SYSTEM */
   gpg_error_t err;
   int fd, fdout, rp[2];
 
@@ -87,8 +299,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   fd = fileno (infile);
   fdout = fileno (outfile);
   if (fd == -1 || fdout == -1)
-    log_fatal ("no file descriptor for file passed"
-               " to gnupg_spawn_process: %s\n",  strerror (errno) );
+    log_fatal ("no file descriptor for file passed to gnupg_spawn_process\n");
 
   if (pipe (rp) == -1)
     {
@@ -170,7 +381,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     }
 
   return 0;
-#endif /* !_WIN32 */
+#endif /* !HAVE_W32_SYSTEM */
 }
 
 
@@ -183,10 +394,51 @@ gnupg_wait_process (const char *pgmname, pid_t pid)
 {
   gpg_err_code_t ec;
 
-#ifdef _WIN32
-  ec = GPG_ERR_NOT_IMPLEMENTED;
+#ifdef HAVE_W32_SYSTEM
+  HANDLE proc = fd_to_handle (pid);
+  int code;
+  DWORD exc;
 
-#else /* !_WIN32 */
+  if (pid == (pid_t)(-1))
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  /* FIXME: We should do a pth_waitpid here.  However this has not yet
+     been implemented.  A special W32 pth system call would even be
+     better.  */
+  code = WaitForSingleObject (proc, INFINITE);
+  switch (code) 
+    {
+      case WAIT_FAILED:
+        log_error (_("waiting for process %d to terminate failed: %s\n"),
+                   (int)pid, w32_strerror (-1));
+        ec = GPG_ERR_GENERAL;
+        break;
+
+      case WAIT_OBJECT_0:
+        if (!GetExitCodeProcess (proc, &exc))
+          {
+            log_error (_("error getting exit code of process %d: %s\n"),
+                         (int)pid, w32_strerror (-1) );
+            ec = GPG_ERR_GENERAL;
+          }
+        else if (exc)
+          {
+            log_error (_("error running `%s': exit status %d\n"),
+                       pgmname, (int)exc );
+            ec = GPG_ERR_GENERAL;
+          }
+        else
+          ec = 0;
+        break;
+
+      default:
+        log_error ("WaitForSingleObject returned unexpected "
+                   "code %d for pid %d\n", code, (int)pid );
+        ec = GPG_ERR_GENERAL;
+        break;
+    }
+
+#else /* !HAVE_W32_SYSTEM */
   int i, status;
 
   if (pid == (pid_t)(-1))
@@ -222,7 +474,7 @@ gnupg_wait_process (const char *pgmname, pid_t pid)
     }
   else 
     ec = 0;
-#endif /* !_WIN32 */
+#endif /* !HAVE_W32_SYSTEM */
 
   return gpg_err_make (GPG_ERR_SOURCE_DEFAULT, ec);
 

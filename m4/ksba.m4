@@ -14,7 +14,7 @@ dnl AM_PATH_KSBA([MINIMUM-VERSION,
 dnl              [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
 dnl Test for libksba and define KSBA_CFLAGS and KSBA_LIBS
 dnl
-AC_DEFUN(AM_PATH_KSBA,
+AC_DEFUN([AM_PATH_KSBA],
 [ AC_ARG_WITH(ksba-prefix,
             AC_HELP_STRING([--with-ksba-prefix=PFX],
                            [prefix where KSBA is installed (optional)]),

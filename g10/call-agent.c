@@ -171,6 +171,8 @@ start_agent (void)
   if (rc)
     return map_assuan_err (rc);
 
+#warning put this code into common/asshelp.c
+
   dft_display = getenv ("DISPLAY");
   if (opt.display || dft_display)
     {

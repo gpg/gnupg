@@ -51,9 +51,9 @@ gpgsm_SOURCES = \
 	certreqgen.c 
 
 
-gpgsm_LDADD = $(LIBASSUAN_LIBS) ../jnlib/libjnlib.a ../kbx/libkeybox.a	\
-               ../common/libcommon.a \
-               $(LIBGCRYPT_LIBS)  $(KSBA_LIBS) -lgpg-error \
-	       $(LIBINTL)
+gpgsm_LDADD = ../jnlib/libjnlib.a ../kbx/libkeybox.a	\
+              ../common/libcommon.a \
+              $(LIBGCRYPT_LIBS)  $(KSBA_LIBS) $(LIBASSUAN_LIBS) -lgpg-error \
+	      $(LIBINTL)
 
 

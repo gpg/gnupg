@@ -20,7 +20,7 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 dnl GNUPG_CHECK_TYPEDEF(TYPE, HAVE_NAME)
 dnl Check whether a typedef exists and create a #define $2 if it exists
 dnl
-AC_DEFUN(GNUPG_CHECK_TYPEDEF,
+AC_DEFUN([GNUPG_CHECK_TYPEDEF],
   [ AC_MSG_CHECKING(for $1 typedef)
     AC_CACHE_VAL(gnupg_cv_typedef_$1,
     [AC_TRY_COMPILE([#define _GNU_SOURCE 1
@@ -38,7 +38,7 @@ AC_DEFUN(GNUPG_CHECK_TYPEDEF,
 
 dnl GNUPG_CHECK_GNUMAKE
 dnl
-AC_DEFUN(GNUPG_CHECK_GNUMAKE,
+AC_DEFUN([GNUPG_CHECK_GNUMAKE],
   [ 
     if ${MAKE-make} --version 2>/dev/null | grep '^GNU ' >/dev/null 2>&1; then
         :
@@ -55,7 +55,7 @@ AC_DEFUN(GNUPG_CHECK_GNUMAKE,
 
 dnl GNUPG_CHECK_FAQPROG
 dnl
-AC_DEFUN(GNUPG_CHECK_FAQPROG,
+AC_DEFUN([GNUPG_CHECK_FAQPROG],
   [ AC_MSG_CHECKING(for faqprog.pl)
     if faqprog.pl -V 2>/dev/null | grep '^faqprog.pl ' >/dev/null 2>&1; then
         working_faqprog=yes
@@ -82,7 +82,7 @@ dnl     fi
 
 dnl GNUPG_CHECK_DOCBOOK_TO_TEXI
 dnl
-AC_DEFUN(GNUPG_CHECK_DOCBOOK_TO_TEXI,
+AC_DEFUN([GNUPG_CHECK_DOCBOOK_TO_TEXI],
   [
     AC_CHECK_PROG(DOCBOOK_TO_TEXI, docbook2texi, yes, no)
     AC_MSG_CHECKING(for sgml to texi tools)
@@ -101,7 +101,7 @@ AC_DEFUN(GNUPG_CHECK_DOCBOOK_TO_TEXI,
 dnl GNUPG_CHECK_ENDIAN
 dnl define either LITTLE_ENDIAN_HOST or BIG_ENDIAN_HOST
 dnl
-define(GNUPG_CHECK_ENDIAN,
+AC_DEFUN([GNUPG_CHECK_ENDIAN],
   [
     tmp_assumed_endian=big
     if test "$cross_compiling" = yes; then
@@ -158,7 +158,7 @@ define(GNUPG_CHECK_ENDIAN,
 
 
 # Check for the getsockopt SO_PEERCRED
-AC_DEFUN(GNUPG_SYS_SO_PEERCRED,
+AC_DEFUN([GNUPG_SYS_SO_PEERCRED],
   [ AC_MSG_CHECKING(for SO_PEERCRED)
     AC_CACHE_VAL(gnupg_cv_sys_so_peercred,
       [AC_TRY_COMPILE([#include <sys/socket.h>], 
@@ -183,7 +183,7 @@ AC_DEFUN(GNUPG_SYS_SO_PEERCRED,
 # either be "yes" or "no" and decided on the default value for
 # build_NAME and whether --enable-NAME or --disable-NAME is shown with 
 # ./configure --help
-AC_DEFUN(GNUPG_BUILD_PROGRAM,
+AC_DEFUN([GNUPG_BUILD_PROGRAM],
   [build_$1=$2
    m4_if([$2],[yes],[
       AC_ARG_ENABLE([$1], AC_HELP_STRING([--disable-$1],
@@ -210,7 +210,7 @@ AC_DEFUN(GNUPG_BUILD_PROGRAM,
 # If the version is sufficient, HAVE_PTH will be set to yes.
 #
 # Taken form the m4 macros which come with Pth
-AC_DEFUN(GNUPG_PTH_VERSION_CHECK,
+AC_DEFUN([GNUPG_PTH_VERSION_CHECK],
   [
     _pth_version=`$PTH_CONFIG --version | awk 'NR==1 {print [$]3}'`
     _req_version="ifelse([$1],,1.2.0,$1)"
@@ -253,7 +253,7 @@ AC_DEFUN(GNUPG_PTH_VERSION_CHECK,
 # mlock is there a macro using memlk()
 dnl GNUPG_CHECK_MLOCK
 dnl
-define(GNUPG_CHECK_MLOCK,
+AC_DEFUN([GNUPG_CHECK_MLOCK],
   [ AC_CHECK_FUNCS(mlock)
     if test "$ac_cv_func_mlock" = "no"; then
         AC_CHECK_HEADERS(sys/mman.h)
@@ -343,7 +343,7 @@ define(GNUPG_CHECK_MLOCK,
 dnl Stolen from gcc
 dnl Define MKDIR_TAKES_ONE_ARG if mkdir accepts only one argument instead
 dnl of the usual 2.
-AC_DEFUN(GNUPG_FUNC_MKDIR_TAKES_ONE_ARG,
+AC_DEFUN([GNUPG_FUNC_MKDIR_TAKES_ONE_ARG],
 [AC_CHECK_HEADERS(sys/stat.h unistd.h direct.h)
 AC_CACHE_CHECK([if mkdir takes one argument], gnupg_cv_mkdir_takes_one_arg,
 [AC_TRY_COMPILE([
@@ -371,7 +371,7 @@ dnl AM_PATH_OPENSC([MINIMUM-VERSION,
 dnl               [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
 dnl Test for OpenSC and define OPENSC_CFLAGS and OPENSC_LIBS
 dnl
-AC_DEFUN(AM_PATH_OPENSC,
+AC_DEFUN([AM_PATH_OPENSC],
 [ AC_ARG_WITH(opensc-prefix,
             AC_HELP_STRING([--with-opensc-prefix=PFX],
                            [prefix where OpenSC is installed (optional)]),
