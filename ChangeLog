@@ -1,3 +1,7 @@
+2004-05-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Try for wldap32 on Win32 platforms.
+
 2004-05-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Note --ask-cert-level.

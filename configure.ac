@@ -330,6 +330,7 @@ case "${target}" in
                    we use a simplified version of gettext])
         have_dosish_system=yes
         try_gettext="no"
+	LDAPLIBS="-lwldap32"
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
         # OS/2 with the EMX environment
