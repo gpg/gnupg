@@ -23,15 +23,26 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 #ifdef HAVE_LANGINFO_CODESET
 #include <langinfo.h>
+#endif
+
+#ifndef HAVE_ICONV
+#undef USE_GNUPG_ICONV
+#endif
+
+#ifdef USE_GNUPG_ICONV
+#include <limits.h>
+#include <iconv.h>
 #endif
 
 #include "types.h"
 #include "util.h"
 #include "memory.h"
+#include "i18n.h"
 
-
+#ifndef USE_GNUPG_ICONV
 static ushort koi8_unicode[128] = {
     0x2500,0x2502,0x250c,0x2510,0x2514,0x2518,0x251c,0x2524,
     0x252c,0x2534,0x253c,0x2580,0x2584,0x2588,0x258c,0x2590,
@@ -69,11 +80,18 @@ static ushort latin2_unicode[128] = {
     0x0111,0x0144,0x0148,0x00F3,0x00F4,0x0151,0x00F6,0x00F7,
     0x0159,0x016F,0x00FA,0x0171,0x00FC,0x00FD,0x0163,0x02D9
 };
+#endif /*!USE_GNUPG_ICONV*/
+
+
+#ifndef MB_LEN_MAX
+#define MB_LEN_MAX 16
+#endif
 
 
 static const char *active_charset_name = "iso-8859-1";
 static ushort *active_charset = NULL;
 static int no_translation = 0;
+static int use_iconv = 0;
 
 void
 free_strlist( STRLIST sl )
@@ -101,7 +119,7 @@ add_to_strlist( STRLIST *list, const char *string )
 }
 
 /****************
- * ame as add_to_strlist() but if is_utf8 is *not* set a conversion
+ * Same as add_to_strlist() but if is_utf8 is *not* set a conversion
  * to UTF8 is done
  */
 STRLIST
@@ -192,7 +210,7 @@ pop_strlist( STRLIST *list )
 }
 
 /****************
- * look for the substring SUB in buffer and return a pointer to that
+ * Look for the substring SUB in buffer and return a pointer to that
  * substring in BUF or NULL if not found.
  * Comparison is case-insensitive.
  */
@@ -234,12 +252,11 @@ ascii_memistr( const char *buf, size_t buflen, const char *sub )
     return NULL ;
 }
 
-/****************
- * Wie strncpy(), aber es werden maximal n-1 zeichen kopiert und ein
- * '\0' angehängt. Ist n = 0, so geschieht nichts, ist Destination
- * gleich NULL, so wird via m_alloc Speicher besorgt, ist dann nicht
- * genügend Speicher vorhanden, so bricht die funktion ab.
- */
+
+/* Like strncpy() but copy at max N-1 bytes and append a '\0'.  With
+ * N given as 0 nothing is copied at all. With DEST given as NULL
+ * sufficient memory is allocated using m_alloc (note that m_alloc is
+ * guaranteed to succeed or to abort the process).  */
 char *
 mem2str( char *dest , const void *src , size_t n )
 {
@@ -260,8 +277,8 @@ mem2str( char *dest , const void *src , size_t n )
 }
 
 
-/****************
- * remove leading and trailing white spaces
+/*
+ * Remove leading and trailing white spaces
  */
 char *
 trim_spaces( char *str )
@@ -269,10 +286,10 @@ trim_spaces( char *str )
     char *string, *p, *mark;
 
     string = str;
-    /* find first non space character */
+    /* Find first non space character. */
     for( p=string; *p && isspace( *(byte*)p ) ; p++ )
 	;
-    /* move characters */
+    /* Move characters. */
     for( (mark = NULL); (*string = *p); string++, p++ )
 	if( isspace( *(byte*)p ) ) {
 	    if( !mark )
@@ -281,7 +298,7 @@ trim_spaces( char *str )
 	else
 	    mark = NULL ;
     if( mark )
-	*mark = '\0' ;  /* remove trailing spaces */
+	*mark = '\0' ;  /* Remove trailing spaces.  */
 
     return str ;
 }
@@ -311,13 +328,14 @@ trim_trailing_chars( byte *line, unsigned len, const char *trimchars )
 }
 
 /****************
- * remove trailing white spaces and return the length of the buffer
+ * Remove trailing white spaces and return the length of the buffer
  */
 unsigned
 trim_trailing_ws( byte *line, unsigned len )
 {
     return trim_trailing_chars( line, len, " \t\r\n" );
 }
+
 
 unsigned int
 check_trailing_chars( const byte *line, unsigned int len,
@@ -341,8 +359,9 @@ check_trailing_chars( const byte *line, unsigned int len,
     return len;
 }
 
+
 /****************
- * remove trailing white spaces and return the length of the buffer
+ * Remove trailing white spaces and return the length of the buffer
  */
 unsigned int
 check_trailing_ws( const byte *line, unsigned int len )
@@ -362,17 +381,46 @@ string_count_chr( const char *string, int c )
     return count;
 }
 
+#ifdef USE_GNUPG_ICONV
+static void
+handle_iconv_error (const char *from, const char *to, int use_fallback)
+{
+  if (errno == EINVAL)
+    log_error (_("conversion from `%s' to `%s' not available\n"),
+               from, "utf-8");
+  else
+    log_error (_("iconv_open failed: %s\n"), strerror (errno));
+
+  if (use_fallback)
+    {
+      /* To avoid further error messages we fallback to Latin-1 for the
+         native encoding.  This is justified as one can expect that on a
+         utf-8 enabled system nl_langinfo() will work and thus we won't
+         never get to here.  Thus Latin-1 seems to be a reasonable
+         default.  */
+      active_charset_name = "iso-8859-1";
+      no_translation = 0;
+      active_charset = NULL;
+      use_iconv = 0;
+    }
+}
+#endif /*USE_GNUPG_ICONV*/
 
 int
 set_native_charset( const char *newset )
 {
+    const char *full_newset;
+
     if (!newset) 
+      {
 #ifdef HAVE_LANGINFO_CODESET
         newset = nl_langinfo (CODESET);
 #else
-        newset = "8859-1";
+        newset = "iso-8859-1";
 #endif
+      }
 
+    full_newset = newset;
     if (strlen (newset) > 3 && !ascii_memcasecmp (newset, "iso", 3)) {
         newset += 3;
         if (*newset == '-' || *newset == '_')
@@ -385,25 +433,54 @@ set_native_charset( const char *newset )
         active_charset_name = "iso-8859-1";
         no_translation = 0;
 	active_charset = NULL;
-    }
-    else if( !ascii_strcasecmp( newset, "8859-2" ) ) {
-	active_charset_name = "iso-8859-2";
-        no_translation = 0;
-	active_charset = latin2_unicode;
-    }
-    else if( !ascii_strcasecmp( newset, "koi8-r" ) ) {
-	active_charset_name = "koi8-r";
-        no_translation = 0;
-	active_charset = koi8_unicode;
+        use_iconv = 0;
     }
     else if( !ascii_strcasecmp (newset, "utf8" )
              || !ascii_strcasecmp(newset, "utf-8") ) {
 	active_charset_name = "utf-8";
         no_translation = 1;
 	active_charset = NULL;
+        use_iconv = 0;
+    }
+#ifdef USE_GNUPG_ICONV
+    else {
+      iconv_t cd;
+
+      cd = iconv_open (full_newset, "utf-8");
+      if (cd == (iconv_t)-1)
+        {
+          handle_iconv_error (full_newset, "utf-8", 0);
+          return G10ERR_GENERAL;
+        }
+      iconv_close (cd);
+      cd = iconv_open ("utf-8", full_newset);
+      if (cd == (iconv_t)-1)
+        {
+          handle_iconv_error ("utf-8", full_newset, 0);
+          return G10ERR_GENERAL;
+        }
+      iconv_close (cd);
+      active_charset_name = full_newset;
+      no_translation = 0;
+      active_charset = NULL; 
+      use_iconv = 1;
+    }
+#else /*!USE_GNUPG_ICONV*/
+    else if( !ascii_strcasecmp( newset, "8859-2" ) ) {
+	active_charset_name = "iso-8859-2";
+        no_translation = 0;
+	active_charset = latin2_unicode;
+        use_iconv = 0;
+    }
+    else if( !ascii_strcasecmp( newset, "koi8-r" ) ) {
+	active_charset_name = "koi8-r";
+        no_translation = 0;
+	active_charset = koi8_unicode;
+        use_iconv = 0;
     }
     else
 	return G10ERR_GENERAL;
+#endif /*!USE_GNUPG_ICONV*/
     return 0;
 }
 
@@ -420,57 +497,110 @@ get_native_charset()
 char *
 native_to_utf8( const char *string )
 {
-    const byte *s;
-    char *buffer;
-    byte *p;
-    size_t length=0;
+  const byte *s;
+  char *buffer;
+  byte *p;
+  size_t length=0;
+  
+  if (no_translation)
+    { /* Already utf-8 encoded. */
+      buffer = m_strdup (string);
+    }
+  else if( !active_charset && !use_iconv) /* Shortcut implementation
+                                             for Latin-1.  */
+    { 
+      for(s=string; *s; s++ ) 
+        {
+          length++;
+          if( *s & 0x80 )
+            length++;
+	}
+      buffer = m_alloc( length + 1 );
+      for(p=buffer, s=string; *s; s++ )
+        {
+          if( *s & 0x80 )
+            {
+              *p++ = 0xc0 | ((*s >> 6) & 3);
+              *p++ = 0x80 | ( *s & 0x3f );
+            }
+          else
+            *p++ = *s;
+        }
+      *p = 0;
+    }
+  else       /* Need to use a translation table. */
+    { 
+#ifdef USE_GNUPG_ICONV
+      iconv_t cd;
+      const char *inptr;
+      char *outptr;
+      size_t inbytes, outbytes;
+     
+      cd = iconv_open (active_charset_name, "utf-8");
+      if (cd == (iconv_t)-1)
+        {
+          handle_iconv_error (active_charset_name, "utf-8", 1);
+          return native_to_utf8 (string);
+        }
 
-    if (no_translation) {
-        buffer = m_strdup (string);
+      for (s=string; *s; s++ ) 
+        {
+          length++;
+          if ((*s & 0x80))
+            length += 5; /* We may need up to 6 bytes for the utf8 output. */
+        }
+      buffer = m_alloc (length + 1);
+
+      inptr = string;
+      inbytes = strlen (string);
+      outptr = buffer;
+      outbytes = length;
+      if ( iconv (cd, (ICONV_CONST char **)&inptr, &inbytes,
+                  &outptr, &outbytes) == (size_t)-1)
+        {
+          log_error (_("conversion from `%s' to `%s' failed: %s\n"),
+                       active_charset_name, "utf-8", strerror (errno));
+          /* We don't do any conversion at all but use the strings as is. */
+          strcpy (buffer, string);
+        }
+      else /* Success.  */
+        {
+          *outptr = 0;
+          /* We could realloc the buffer now but I doubt that it makes
+             much sense given that it will get freed anyway soon
+             after.  */
+        }
+      iconv_close (cd);
+
+#else /*!USE_GNUPG_ICONV*/
+      for(s=string; *s; s++ ) 
+        {
+          length++;
+          if( *s & 0x80 )
+            length += 2; /* We may need up to 3 bytes. */
+        }
+      buffer = m_alloc( length + 1 );
+      for(p=buffer, s=string; *s; s++ ) {
+        if( *s & 0x80 ) {
+          ushort val = active_charset[ *s & 0x7f ];
+          if( val < 0x0800 ) {
+            *p++ = 0xc0 | ( (val >> 6) & 0x1f );
+            *p++ = 0x80 | (  val & 0x3f );
+          }
+          else {
+            *p++ = 0xe0 | ( (val >> 12) & 0x0f );
+            *p++ = 0x80 | ( (val >>  6) & 0x3f );
+            *p++ = 0x80 | (  val & 0x3f );
+          }
+        }
+        else
+          *p++ = *s;
+      }
+      *p = 0;
+#endif /*!USE_GNUPG_ICONV*/
+
     }
-    else if( active_charset ) {
-	for(s=string; *s; s++ ) {
-	    length++;
-	    if( *s & 0x80 )
-		length += 2; /* we may need 3 bytes */
-	}
-	buffer = m_alloc( length + 1 );
-	for(p=buffer, s=string; *s; s++ ) {
-	    if( *s & 0x80 ) {
-		ushort val = active_charset[ *s & 0x7f ];
-		if( val < 0x0800 ) {
-		    *p++ = 0xc0 | ( (val >> 6) & 0x1f );
-		    *p++ = 0x80 | (  val & 0x3f );
-		}
-		else {
-		    *p++ = 0xe0 | ( (val >> 12) & 0x0f );
-		    *p++ = 0x80 | ( (val >>  6) & 0x3f );
-		    *p++ = 0x80 | (  val & 0x3f );
-		}
-	    }
-	    else
-		*p++ = *s;
-	}
-	*p = 0;
-    }
-    else {
-	for(s=string; *s; s++ ) {
-	    length++;
-	    if( *s & 0x80 )
-		length++;
-	}
-	buffer = m_alloc( length + 1 );
-	for(p=buffer, s=string; *s; s++ ) {
-	    if( *s & 0x80 ) {
-		*p++ = 0xc0 | ((*s >> 6) & 3);
-		*p++ = 0x80 | ( *s & 0x3f );
-	    }
-	    else
-		*p++ = *s;
-	}
-	*p = 0;
-    }
-    return buffer;
+  return buffer;
 }
 
 
@@ -604,6 +734,30 @@ utf8_to_native( const char *string, size_t length, int delim )
                         n += encidx;
                         encidx = 0;
                     }
+#ifdef USE_GNUPG_ICONV
+                    else if(use_iconv) {
+                        /* Our strategy for using iconv is a bit
+                         * strange but it better keeps compatibility
+                         * with previous versions in regard to how
+                         * invalid encodings are displayed.  What we
+                         * do is to keep the utf-8 as is and have the
+                         * real translation step then at the end.
+                         * Yes, I know that this is ugly.  However we
+                         * are short of the 1.4 release and for this
+                         * branch we should not mee too much around
+                         * with iconv things.  One reason for this is
+                         * that we don't know enough about non-GNU
+                         * iconv implementation and want to minimize
+                         * the risk of breaking the code on too many
+                         * platforms.  */
+                        if( p ) {
+                            for(i=0; i < encidx; i++ )
+                                *p++ = encbuf[i];
+                        }
+                        n += encidx;
+                        encidx = 0;
+                    }
+#endif /*USE_GNUPG_ICONV*/
 		    else if( active_charset ) { /* table lookup */
 			for(i=0; i < 128; i++ ) {
 			    if( active_charset[i] == val )
@@ -647,6 +801,57 @@ utf8_to_native( const char *string, size_t length, int delim )
 	if( !buffer ) { /* allocate the buffer after the first pass */
 	    buffer = p = m_alloc( n + 1 );
 	}
+#ifdef USE_GNUPG_ICONV
+        else if(use_iconv) {
+            /* Note: See above for comments.  */
+            iconv_t cd;
+            const char *inptr;
+            char *outbuf, *outptr;
+            size_t inbytes, outbytes;
+            
+            *p = 0;  /* Terminate the buffer. */
+
+            cd = iconv_open ("utf-8", active_charset_name);
+            if (cd == (iconv_t)-1)
+                {
+                    handle_iconv_error ("utf-8", active_charset_name, 1);
+                    m_free (buffer);
+                    return utf8_to_native (string, length, delim);
+                }
+
+            /* Allocate a new buffer large enough to hold all possible
+             * encodings. */
+            n = p - buffer + 1;
+            inbytes = n - 1;;
+            inptr = buffer;
+            outbytes = n * MB_LEN_MAX;
+            if (outbytes / MB_LEN_MAX != n) 
+                BUG (); /* Actually an overflow. */
+            outbuf = outptr = m_alloc (outbytes);
+            if ( iconv (cd, (ICONV_CONST char **)&inptr, &inbytes,
+                        &outptr, &outbytes) == (size_t)-1) {
+                log_error (_("conversion from `%s' to `%s' failed: %s\n"),
+                           "utf-8", active_charset_name, strerror (errno));
+                /* Didn't worked out.  Temporary disable the use of
+                 * iconv and fall back to our old code. */
+                m_free (buffer);
+                buffer = NULL;
+                m_free (outbuf);
+                use_iconv = 0;
+                outbuf = utf8_to_native (string, length, delim);
+                use_iconv = 1;
+            }
+            else { /* Success.  */
+                *outptr = 0;
+                /* We could realloc the buffer now but I doubt that it makes
+                   much sense given that it will get freed anyway soon
+                   after.  */
+                m_free (buffer);
+            }
+            iconv_close (cd);
+            return outbuf;
+        }
+#endif /*USE_GNUPG_ICONV*/
 	else {
 	    *p = 0; /* make a string */
 	    return buffer;

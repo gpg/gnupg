@@ -1,3 +1,11 @@
+2004-10-26  Werner Koch  <wk@g10code.com>
+
+	* strgutil.c (mem2str): Translated comment to English.
+	(handle_iconv_error) [USE_GNUPG_ICONV]: New.
+	(set_native_charset) [USE_GNUPG_ICONV]: Added iconv based
+	conversion checks.
+	(native_to_utf8, utf8_to_native): Added iconv based conversion.
+
 2004-10-21  Werner Koch  <wk@g10code.com>
 
 	* vasprintf.c: Removed. It was used only at one place and I don't
