@@ -159,8 +159,7 @@ char *make_filename( const char *first_part, ... );
 int compare_filenames( const char *a, const char *b );
 const char *print_fname_stdin( const char *s );
 const char *print_fname_stdout( const char *s );
-int  is_file_compressed(const char *s, int *r_status);
-
+int is_file_compressed(const char *s, int *r_status);
 
 /*-- miscutil.c --*/
 u32 make_timestamp(void);
@@ -179,6 +178,7 @@ int answer_is_yes( const char *s );
 int answer_is_yes_no_quit( const char *s );
 int answer_is_okay_cancel (const char *s, int def_answer);
 int match_multistr(const char *multistr,const char *match);
+int hextobyte( const char *s );
 
 /*-- strgutil.c --*/
 void free_strlist( STRLIST sl );
