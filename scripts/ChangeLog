@@ -1,3 +1,7 @@
+2002-07-01  Werner Koch  <wk@gnupg.org>
+
+	* mk-gpg-texi: New.
+
 2002-06-30  Werner Koch  <wk@gnupg.org>
 
 	* mk-w32-dist (bindir): Fixes vor VPATH builds in a subdir,
