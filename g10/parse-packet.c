@@ -899,10 +899,12 @@ dump_sig_subpkt( int hashed, int type, int critical,
         for( i=0; i < length; i++ )
             printf(" %02x", buffer[i] );
 	break;
-      case SIGSUBPKT_PRIV_VERIFY_CACHE:
-	p = "obsolete verification cache";
+      default:
+	if(type>=100 && type<=110)
+	  p="experimental / private subpacket";
+	else
+	  p = "?";
 	break;
-      default: p = "?"; break;
     }
 
     printf("%s)\n", p? p: "");
@@ -957,19 +959,6 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
           if ( n != 1 )
               break;
           return 0;   
-      case SIGSUBPKT_PRIV_VERIFY_CACHE:
-        /* We used this in gpg 1.0.5 and 1.0.6 to cache signature
-         * verification results - it is no longer used.
-         * "GPG" 0x00 <mode> <stat>
-         * where mode == 1: valid data, stat == 0: invalid signature
-         * stat == 1: valid signature 
-	 * (because we use private data, we check our marker) */
-	if( n < 6 )
-	    break;
-	if( buffer[0] != 'G' || buffer[1] != 'P'
-            || buffer[2] != 'G' || buffer[3] )
-	    return -2;
-	return 4;
       default: return -1;
     }
     return -3;

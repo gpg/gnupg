@@ -782,9 +782,6 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
 	nlen = 1; /* just a 1 byte length header */
 
     switch( type ) {
-      case SIGSUBPKT_PRIV_VERIFY_CACHE: /*(obsolete)*/
-	BUG();
-	break;
 	/* The issuer being unhashed is a historical oddity.  It
 	   should work equally as well hashed.  Of course, if even an
 	   unhashed issuer is tampered with, it makes it awfully hard

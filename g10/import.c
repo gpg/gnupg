@@ -60,7 +60,6 @@ static int import( IOBUF inp, int fast, const char* fname,
                    struct stats_s *stats, unsigned int options );
 static int read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root );
 static void revocation_present(KBNODE keyblock);
-static void remove_bad_stuff (KBNODE keyblock);
 static int import_one( const char *fname, KBNODE keyblock, int fast,
                        struct stats_s *stats, unsigned int options);
 static int import_secret_one( const char *fname, KBNODE keyblock,
@@ -247,7 +246,6 @@ import( IOBUF inp, int fast, const char* fname,
     }
 
     while( !(rc = read_block( inp, &pending_pkt, &keyblock) )) {
-        remove_bad_stuff (keyblock);
 	if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
 	    rc = import_one( fname, keyblock, fast, stats, options );
 	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY ) 
@@ -435,22 +433,6 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
     free_packet( pkt );
     m_free( pkt );
     return rc;
-}
-
-
-static void
-remove_bad_stuff (KBNODE keyblock)
-{
-    KBNODE node;
-
-    for (node=keyblock; node; node = node->next ) {
-        if( node->pkt->pkttype == PKT_SIGNATURE ) {
-            /* delete the subpackets we used to use for the
-               verification cache */
-            delete_sig_subpkt (node->pkt->pkt.signature->unhashed,
-                               SIGSUBPKT_PRIV_VERIFY_CACHE);
-        }
-    }
 }
 
 /* Walk through the subkeys on a pk to find if we have the PKS

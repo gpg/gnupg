@@ -280,10 +280,6 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 		if(i<node->pkt->pkt.signature->numrevkeys)
 		  continue;
 	      }
-
-	      /* delete our verification cache */
-	      delete_sig_subpkt (node->pkt->pkt.signature->unhashed,
-				 SIGSUBPKT_PRIV_VERIFY_CACHE);
 	    }
 
 	    /* Don't export attribs? */
