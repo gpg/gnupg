@@ -547,6 +547,17 @@ release_pk_list( PK_LIST pk_list )
     }
 }
 
+
+static int
+key_present_in_pk_list(PK_LIST pk_list, PKT_public_key *pk)
+{
+    for( ; pk_list; pk_list = pk_list->next)
+	if (cmp_public_keys(pk_list->pk, pk) == 0)
+	    return 0;
+
+    return -1;
+}
+
 int
 build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 {
@@ -569,13 +580,22 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
 	    }
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
-		PK_LIST r;
 
-		r = m_alloc( sizeof *r );
-		r->pk = pk; pk = NULL;
-		r->next = pk_list;
-		r->mark = 0;
-		pk_list = r;
+		/* Skip the actual key if the key is already present
+		 * in the list */
+		if (key_present_in_pk_list(pk_list, pk) == 0) {
+		    free_public_key(pk); pk = NULL;
+		    log_info(_("%s: skipped: public key already present\n"),
+							    rov->d);
+		}
+		else {
+		    PK_LIST r;
+		    r = m_alloc( sizeof *r );
+		    r->pk = pk; pk = NULL;
+		    r->next = pk_list;
+		    r->mark = 0;
+		    pk_list = r;
+		}
 	    }
 	    else {
 		free_public_key( pk ); pk = NULL;
@@ -655,14 +675,26 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		}
 		else if( do_we_trust_pre( pk, trustlevel ) ) {
 		    /* note: do_we_trust may have changed the trustlevel */
-		    PK_LIST r;
 
-		    r = m_alloc( sizeof *r );
-		    r->pk = pk; pk = NULL;
-		    r->next = pk_list;
-		    r->mark = 0;
-		    pk_list = r;
+		    /* We have at least one valid recipient. It doesn't matters
+		     * if this recipient is already present. */
 		    any_recipients = 1;
+
+		    /* Skip the actual key if the key is already present
+		     * in the list */
+		    if (key_present_in_pk_list(pk_list, pk) == 0) {
+			free_public_key(pk); pk = NULL;
+			log_info(_("%s: skipped: public key already present\n"),
+								    remusr->d);
+		    }
+		    else {
+			PK_LIST r;
+			r = m_alloc( sizeof *r );
+			r->pk = pk; pk = NULL;
+			r->next = pk_list;
+			r->mark = 0;
+			pk_list = r;
+		    }
 		}
 		else { /* we don't trust this pk */
 		    free_public_key( pk ); pk = NULL;

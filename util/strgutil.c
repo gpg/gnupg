@@ -27,8 +27,7 @@
 #include "memory.h"
 
 
-static int use_koi8 = 0;
-static ushort koi82unicode[128] = {
+static ushort koi8_unicode[128] = {
     0x2500,0x2502,0x250c,0x2510,0x2514,0x2518,0x251c,0x2524,
     0x252c,0x2534,0x253c,0x2580,0x2584,0x2588,0x258c,0x2590,
     0x2591,0x2592,0x2593,0x2320,0x25a0,0x2219,0x221a,0x2248,
@@ -47,7 +46,6 @@ static ushort koi82unicode[128] = {
     0x042c,0x042b,0x0417,0x0428,0x042d,0x0429,0x0427,0x042a
 };
 
-#if 0
 static ushort latin2_unicode[128] = {
     0x0080,0x0081,0x0082,0x0083,0x0084,0x0085,0x0086,0x0087,
     0x0088,0x0089,0x008A,0x008B,0x008C,0x008D,0x008E,0x008F,
@@ -66,7 +64,9 @@ static ushort latin2_unicode[128] = {
     0x0111,0x0144,0x0148,0x00F3,0x00F4,0x0151,0x00F6,0x00F7,
     0x0159,0x016F,0x00FA,0x0171,0x00FC,0x00FD,0x0163,0x02D9
 };
-#endif
+
+static const char *active_charset_name = "iso-8859-1";
+static ushort *active_charset = NULL;
 
 
 void
@@ -261,10 +261,18 @@ string_count_chr( const char *string, int c )
 int
 set_native_charset( const char *newset )
 {
-    if( !stricmp( newset, "iso-8859-1" ) )
-	use_koi8 = 0;
-    else if( !stricmp( newset, "koi8-r" ) )
-	use_koi8 = 1;
+    if( !stricmp( newset, "iso-8859-1" ) ) {
+	active_charset_name = "iso-8859-1";
+	active_charset = NULL;
+    }
+    else if( !stricmp( newset, "iso-8859-2" ) ) {
+	active_charset_name = "iso-8859-2";
+	active_charset = latin2_unicode;
+    }
+    else if( !stricmp( newset, "koi8-r" ) ) {
+	active_charset_name = "koi8-r";
+	active_charset = koi8_unicode;
+    }
     else
 	return G10ERR_GENERAL;
     return 0;
@@ -273,7 +281,7 @@ set_native_charset( const char *newset )
 const char*
 get_native_charset()
 {
-    return use_koi8? "koi8-r" : "iso-8859-1";
+    return active_charset_name;
 }
 
 /****************
@@ -288,7 +296,7 @@ native_to_utf8( const char *string )
     byte *p;
     size_t length=0;
 
-    if( use_koi8 ) {
+    if( active_charset ) {
 	for(s=string; *s; s++ ) {
 	    length++;
 	    if( *s & 0x80 )
@@ -297,7 +305,7 @@ native_to_utf8( const char *string )
 	buffer = m_alloc( length + 1 );
 	for(p=buffer, s=string; *s; s++ ) {
 	    if( *s & 0x80 ) {
-		ushort val = koi82unicode[ *s & 0x7f ];
+		ushort val = active_charset[ *s & 0x7f ];
 		if( val < 0x0800 ) {
 		    *p++ = 0xc0 | ( (val >> 6) & 0x1f );
 		    *p++ = 0x80 | (  val & 0x3f );

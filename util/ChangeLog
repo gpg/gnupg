@@ -1,3 +1,7 @@
+Sat Jun  5 15:30:33 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* strgutil.c (set_native_charset): Support Latin-2
+
 Tue Jun  1 16:01:46 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* iobuf.c (iobuf_get_real_fname): Made global and now keep a

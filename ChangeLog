@@ -1,3 +1,7 @@
+Sat Jun  5 15:30:33 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* pkclist.c (key_present_in_pk_list): New (Michael).
+
 Tue May 25 19:50:32 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* configure.in (IS_DEVELOPMENT_VERSION): Fixed detection.
