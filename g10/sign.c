@@ -614,7 +614,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     SK_LIST sk_list = NULL;
     SK_LIST sk_rover = NULL;
     int multifile = 0;
-    u32 timestamp=0,duration=0;
+    u32 duration=0;
 
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
@@ -827,7 +827,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     /* write the signatures */
     rc = write_signature_packets (sk_list, out, mfx.md,
                                   opt.textmode && !outfile? 0x01 : 0x00,
-				  timestamp, duration, detached ? 'D':'S');
+				  0, duration, detached ? 'D':'S');
     if( rc )
         goto leave;
 
@@ -865,7 +865,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     SK_LIST sk_rover = NULL;
     int old_style = opt.rfc1991;
     int only_md5 = 0;
-    u32 timestamp=0,duration=0;
+    u32 duration=0;
 
     memset( &afx, 0, sizeof afx);
     init_packet( &pkt );
@@ -966,8 +966,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     iobuf_push_filter( out, armor_filter, &afx );
 
     /* write the signatures */
-    rc = write_signature_packets (sk_list, out, textmd, 0x01,
-				  timestamp, duration, 'C');
+    rc=write_signature_packets (sk_list, out, textmd, 0x01, 0, duration, 'C');
     if( rc )
         goto leave;
 
@@ -1001,7 +1000,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     SK_LIST sk_list = NULL;
     SK_LIST sk_rover = NULL;
     int algo;
-    u32 timestamp=0,duration=0;
+    u32 duration=0;
 
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
@@ -1117,7 +1116,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     /*(current filters: zip - encrypt - armor)*/
     rc = write_signature_packets (sk_list, out, mfx.md,
 				  opt.textmode? 0x01 : 0x00,
-				  timestamp, duration, 'S');
+				  0, duration, 'S');
     if( rc )
         goto leave;
 
