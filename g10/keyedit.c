@@ -1224,7 +1224,9 @@ keyedit_menu( const char *username, STRLIST locusr,
 	/* delphoto is really deluid in disguise */
 	{ N_("delphoto"), cmdDELUID    , 0,1, NULL },
 	{ N_("addkey")  , cmdADDKEY    , 1,1, N_("add a secondary key") },
+#ifdef ENABLE_CARD_SUPPORT
 	{ N_("addcardkey"), cmdADDCARDKEY , 1,1, N_("add a key to a smartcard") },
+#endif /* ENABLE_CARD_SUPPORT */
 	{ N_("delkey")  , cmdDELKEY    , 0,1, N_("delete a secondary key") },
 	{ N_("addrevoker"),cmdADDREVOKER,1,1, N_("add a revocation key") },
 	{ N_("delsig")  , cmdDELSIG    , 0,1, N_("delete signatures") },

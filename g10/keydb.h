@@ -136,7 +136,7 @@ struct keydb_search_desc {
     void *skipfncvalue;
     union {
         const char *name;
-        char fpr[MAX_FINGERPRINT_LEN];
+        byte fpr[MAX_FINGERPRINT_LEN];
         u32  kid[2];
     } u;
     int exact;

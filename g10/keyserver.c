@@ -346,13 +346,13 @@ print_keyrec(int number,struct keyrec *keyrec)
     case KEYDB_SEARCH_MODE_FPR16:
       printf("key ");
       for(i=0;i<16;i++)
-	printf("%02X",(unsigned char)keyrec->desc.u.fpr[i]);
+	printf("%02X",keyrec->desc.u.fpr[i]);
       break;
 
     case KEYDB_SEARCH_MODE_FPR20:
       printf("key ");
       for(i=0;i<20;i++)
-	printf("%02X",(unsigned char)keyrec->desc.u.fpr[i]);
+	printf("%02X",keyrec->desc.u.fpr[i]);
       break;
 
     default:
@@ -859,7 +859,7 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 		fprintf(spawn->tochild,"0x");
 
 		for(f=0;f<MAX_FINGERPRINT_LEN;f++)
-		  fprintf(spawn->tochild,"%02X",(byte)desc[i].u.fpr[f]);
+		  fprintf(spawn->tochild,"%02X",desc[i].u.fpr[f]);
 
 		fprintf(spawn->tochild,"\n");
 	      }
@@ -870,7 +870,7 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 		fprintf(spawn->tochild,"0x");
 
 		for(f=0;f<16;f++)
-		  fprintf(spawn->tochild,"%02X",(byte)desc[i].u.fpr[f]);
+		  fprintf(spawn->tochild,"%02X",desc[i].u.fpr[f]);
 
 		fprintf(spawn->tochild,"\n");
 	      }

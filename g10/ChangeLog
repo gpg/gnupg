@@ -1,3 +1,11 @@
+2004-09-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (keyedit_menu): Don't show "addcardkey" in the menu if
+	we do not have card support.
+
+	* keydb.h, keyserver.c (print_keyrec, keyserver_spawn): fpr is an
+	array of unsigned bytes.
+
 2004-09-20  Werner Koch  <wk@g10code.com>
 
 	* g10.c: Make -K an alias for --list-secret-keys.
