@@ -1,3 +1,8 @@
+2003-01-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (keygen_set_std_prefs): Warn when setting an IDEA
+	preference when IDEA is not available.
+
 2003-01-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* trustdb.c (get_validity_info): 'd' for disabled is not a

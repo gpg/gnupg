@@ -240,7 +240,7 @@ keygen_set_std_prefs (const char *string,int personal)
          <=2048 bits, as that is what won't break PGP2, but that is
          difficult with the current code, and not really worth
          checking as a non-RSA <=2048 bit key wouldn't be usable by
-         PGP2 anyway -dms */
+         PGP2 anyway. -dms */
     }
     else if (!ascii_strcasecmp (string, "none"))
         string = "";
@@ -275,6 +275,12 @@ keygen_set_std_prefs (const char *string,int personal)
 	    else
 	      {
 		log_info (_("invalid item `%s' in preference string\n"),tok);
+
+		/* Complain if IDEA is not available. */
+		if(ascii_strcasecmp(tok,"s1")==0
+		   || ascii_strcasecmp(tok,"idea")==0)
+		  idea_cipher_warn(1);
+
 		rc=-1;
 	      }
 	  }
