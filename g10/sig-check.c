@@ -478,13 +478,14 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
     return check_key_signature2(root, node, NULL, is_selfsig, &dummy, &dum2 );
 }
 
-/* If pk is NULL, then it is set from ROOT.  Note that is_selfsig is
-   set from the pk. */
+/* If check_pk is set, then use it to check the signature in node
+   rather than getting it from root or the keydb. */
 int
-check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *pk,
+check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 		      int *is_selfsig, u32 *r_expiredate, int *r_expired )
 {
     MD_HANDLE md;
+    PKT_public_key *pk;
     PKT_signature *sig;
     int algo;
     int rc;
@@ -496,9 +497,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *pk,
     assert( node->pkt->pkttype == PKT_SIGNATURE );
     assert( root->pkt->pkttype == PKT_PUBLIC_KEY );
 
-    if(pk==NULL)
-      pk = root->pkt->pkt.public_key;
-
+    pk = root->pkt->pkt.public_key;
     sig = node->pkt->pkt.signature;
     algo = sig->digest_algo;
 
@@ -598,14 +597,17 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *pk,
 	    md = md_open( algo, 0 );
 	    hash_public_key( md, pk );
 	    hash_uid_node( unode, md, sig );
-	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
+	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
+	      {
 		if( is_selfsig )
-		    *is_selfsig = 1;
+		  *is_selfsig = 1;
 		rc = do_check( pk, sig, md, r_expired );
-	    }
-	    else {
-		rc = signature_check2( sig, md, r_expiredate, r_expired );
-	    }
+	      }
+	    else if (check_pk)
+	      rc=do_check(check_pk,sig,md,r_expired);
+	    else
+	      rc = signature_check2( sig, md, r_expiredate, r_expired );
+
             cache_sig_result ( sig, rc );
 	    md_close(md);
 	}
