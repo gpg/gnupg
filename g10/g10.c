@@ -1158,6 +1158,8 @@ main( int argc, char **argv )
     maybe_setuid = 0;
     /* Okay, we are now working under our real uid */
 
+    set_native_charset (NULL); /* Try to auto set the character set */
+
     if( default_config )
       {
 	configname = make_filename(opt.homedir, "gpg" EXTSEP_S "conf", NULL );
@@ -1520,7 +1522,7 @@ main( int argc, char **argv )
 	  case oNoSecmemWarn: secmem_set_flags( secmem_get_flags() | 1 ); break;
 	  case oNoPermissionWarn: opt.no_perm_warn=1; break;
 	  case oNoMDCWarn: opt.no_mdc_warn=1; break;
-	  case oCharset:
+          case oCharset:
 	    if( set_native_charset( pargs.r.ret_str ) )
 		log_error(_("%s is not a valid character set\n"),
 						    pargs.r.ret_str);
@@ -1682,6 +1684,9 @@ main( int argc, char **argv )
 	log_info("used in a production environment or with production keys!\n");
     }
   #endif
+
+    if (opt.verbose > 2)
+        log_info ("using character set `%s'\n", get_native_charset ());
 
     if( may_coredump && !opt.quiet )
 	log_info(_("WARNING: program may create a core file!\n"));

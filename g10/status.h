@@ -97,6 +97,7 @@
 #define STATUS_EXPSIG           65
 #define STATUS_EXPKEYSIG        66
 #define STATUS_ATTRIBUTE        67
+#define STATUS_IMPORT_OK 	68
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

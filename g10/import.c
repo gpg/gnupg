@@ -516,6 +516,29 @@ fix_hkp_corruption(KBNODE keyblock)
   return changed;
 }
 
+
+static void
+print_import_ok (PKT_public_key *pk, PKT_secret_key *sk, unsigned int reason)
+{
+  byte array[MAX_FINGERPRINT_LEN], *s;
+  char buf[MAX_FINGERPRINT_LEN*2+30], *p;
+  size_t i, n;
+
+  sprintf (buf, "%u ", reason);
+  p = buf + strlen (buf);
+
+  if (pk)
+    fingerprint_from_pk (pk, array, &n);
+  else
+    fingerprint_from_sk (sk, array, &n);
+  s = array;
+  for (i=0; i < n ; i++, s++, p += 2)
+    sprintf (p, "%02X", *s);
+
+  write_status_text (STATUS_IMPORT_OK, buf);
+}
+
+
 /****************
  * Try to import one keyblock.	Return an error only in serious cases, but
  * never for an invalid keyblock.  It uses log_error to increase the
@@ -645,6 +668,7 @@ import_one( const char *fname, KBNODE keyblock, int fast,
 	    char *us = get_long_user_id_string( keyid );
 	    write_status_text( STATUS_IMPORTED, us );
 	    m_free(us);
+            print_import_ok (pk,NULL, 1);
 	}
 	stats->imported++;
 	if( is_RSA( pk->pubkey_algo ) )
@@ -736,8 +760,15 @@ import_one( const char *fname, KBNODE keyblock, int fast,
 	    stats->n_uids +=n_uids;
 	    stats->n_sigs +=n_sigs;
 	    stats->n_subk +=n_subk;
+
+            if (is_status_enabled ()) 
+                 print_import_ok (pk, NULL,
+                                  ((n_uids?2:0)|(n_sigs?4:0)|(n_subk?8:0)));
 	}
 	else {
+             if (is_status_enabled ()) 
+                  print_import_ok (pk, NULL, 0);
+	
 	    if( !opt.quiet ) {
 	        char *p=get_user_id_printable(keyid);
 		log_info( _("key %08lX: \"%s\" not changed\n"),
@@ -823,11 +854,15 @@ import_secret_one( const char *fname, KBNODE keyblock,
 	if( !opt.quiet )
 	    log_info( _("key %08lX: secret key imported\n"), (ulong)keyid[1]);
 	stats->secret_imported++;
+        if (is_status_enabled ()) 
+             print_import_ok (NULL, sk, 1|16);
     }
     else if( !rc ) { /* we can't merge secret keys */
 	log_error( _("key %08lX: already in secret keyring\n"),
 							(ulong)keyid[1]);
 	stats->secret_dups++;
+        if (is_status_enabled ()) 
+             print_import_ok (NULL, sk, 16);
     }
     else
 	log_error( _("key %08lX: secret key not found: %s\n"),

@@ -1,3 +1,12 @@
+2002-09-02  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): Try to set a default character set.  Print the
+	used one in verbosity level 3.
+	* gpgv.c (main): Try to set a default character set.
+
+	* status.c, status.h (STATUS_IMPORT_OK): New.
+	* import.c (import_one,import_secret_one): Print new status.
+
 2002-08-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* pkclist.c (build_pk_list): Add new status code to indicate an
@@ -73,7 +82,7 @@
 2002-08-21  Werner Koch  <wk@gnupg.org>
 
 	* import.c (import_print_stats): Print new non_imported counter
-	which is currently not used becuase we terminate on errors.
+	which is currently not used because we terminate on errors.
 
 2002-08-20  David Shaw  <dshaw@jabberwocky.com>
 

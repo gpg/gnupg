@@ -164,6 +164,8 @@ main( int argc, char **argv )
     tty_no_terminal(1);
     tty_batchmode(1);
     disable_dotlock();
+
+    set_native_charset (NULL); /* Try to auto set the character set */
     
     pargs.argc = &argc;
     pargs.argv = &argv;
