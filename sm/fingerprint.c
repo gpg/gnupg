@@ -153,7 +153,7 @@ gpgsm_get_keygrip (ksba_cert_t cert, char *array)
     return NULL; /* oops */
 
   if (DBG_X509)
-    log_debug ("get_keygrip for public key: %s\n", p);
+    log_debug ("get_keygrip for public key\n");
   n = gcry_sexp_canon_len (p, 0, NULL, NULL);
   if (!n)
     {

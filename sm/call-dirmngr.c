@@ -149,6 +149,8 @@ start_dirmngr (void)
   if (dirmngr_ctx)
     return 0; /* fixme: We need a context for each thread or serialize
                  the access to the dirmngr */
+  /* Note: if you change this to multiple connections, you also need
+     to take care of the implicit option sending caching. */
 
   infostr = force_pipe_server? NULL : getenv ("DIRMNGR_INFO");
   if (!infostr || !*infostr)
@@ -359,11 +361,13 @@ int
 gpgsm_dirmngr_isvalid (ctrl_t ctrl,
                        ksba_cert_t cert, ksba_cert_t issuer_cert, int use_ocsp)
 {
+  static int did_options;
   int rc;
   char *certid;
   char line[ASSUAN_LINELENGTH];
   struct inq_certificate_parm_s parm;
   struct isvalid_status_parm_s stparm;
+
 
   rc = start_dirmngr ();
   if (rc)
@@ -402,6 +406,15 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
      option to dirmngr, so that no fallback CRL check is done after an
      ocsp check. */
 
+  /* It is sufficient to send the options only once because we have
+     one connection per process only. */
+  if (!did_options)
+    {
+      if (opt.force_crl_refresh)
+        assuan_transact (dirmngr_ctx, "OPTION force-crl-refresh=1",
+                         NULL, NULL, NULL, NULL, NULL, NULL);
+      did_options = 1;
+    }
   snprintf (line, DIM(line)-1, "ISVALID %s", certid);
   line[DIM(line)-1] = 0;
   xfree (certid);

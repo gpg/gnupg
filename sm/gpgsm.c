@@ -115,9 +115,10 @@ enum cmd_and_opt_values {
 
   oDisableCRLChecks,
   oEnableCRLChecks,
+  oForceCRLRefresh,
+
   oDisableOCSP,
   oEnableOCSP,
-
 
   oIncludeCerts,
   oPolicyFile,
@@ -262,6 +263,7 @@ static ARGPARSE_OPTS opts[] = {
 
     { oDisableCRLChecks, "disable-crl-checks", 0, N_("never consult a CRL")},
     { oEnableCRLChecks, "enable-crl-checks", 0, "@"},
+    { oForceCRLRefresh, "force-crl-refresh", 0, "@"},
 
     { oDisableOCSP, "disable-ocsp", 0, "@" },
     { oEnableOCSP,  "enable-ocsp", 0, N_("check validity using OCSP")},
@@ -930,6 +932,9 @@ main ( int argc, char **argv)
           break;
         case oEnableCRLChecks:
           opt.no_crl_check = 0;
+          break;
+        case oForceCRLRefresh:
+          opt.force_crl_refresh = 1;
           break;
 
         case oDisableOCSP:

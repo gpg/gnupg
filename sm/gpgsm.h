@@ -89,6 +89,7 @@ struct {
   int ignore_time_conflict; /* Ignore certain time conflicts */
 
   int no_crl_check;         /* Don't do a CRL check */
+  int force_crl_refresh;    /* Force refreshing the CRL. */
   int enable_ocsp;          /* Default to use OCSP checks. */
 
   char *policy_file;        /* full pathname of policy file */
