@@ -352,8 +352,21 @@ more arguments in future versions.
         The output was truncated to MAXNO items.  This status code is issued
         for certain external requests
 
-    ATTRIBUTE <fpr> <octets> <type> <index> <count> <timestamp> <expiredate> <flags>
-        Issued when an attribute packet was detected.
+    ATTRIBUTE <fpr> <octets> <type> <index> <count>
+	      <timestamp> <expiredate> <flags>
+	This is one long line issued for each attribute subpacket when
+	an attribute packet is seen during key listing.  <fpr> is the
+	fingerprint of the key. <octets> is the length of the
+	attribute subpacket. <type> is the attribute type
+	(1==image). <index>/<count> indicates that this is the Nth
+	indexed subpacket of count total subpackets in this attribute
+	packet.  <timestamp> and <expiredate> are from the
+	self-signature on the attribute packet.  If the attribute
+	packet does not have a valid self-signature, then the
+	timestamp is 0.  <flags> are a bitwise OR of:
+		0x01 = this attribute packet is a primary uid
+		0x02 = this attribute packet is revoked
+		0x04 = this attribute packet is expired
 
 
 Key generation

@@ -1182,6 +1182,16 @@ Write log output to file descriptor &ParmN; and not to stderr.
 
 
 <varlistentry>
+<term>--attribute-fd &ParmN;</term>
+<listitem><para>
+Write attribute subpackets to the file descriptor &ParmN;.  This is
+most useful for use with --status-fd, since the status messages are
+needed to separate out the various subpackets from the stream
+delivered to the file descriptor.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
 <term>--sk-comments</term>
 <listitem><para>
 Include secret key comment packets when exporting secret keys.  This
