@@ -63,6 +63,7 @@ enum {
   GNUPG_PIN_Entry_Error = 34,
   GNUPG_Bad_PIN = 35,
   GNUPG_Bad_Passphrase = 36,
+  GNUPG_Invalid_Name = 37,
 };
 
 /* Status codes - fixme: should go into another file */
