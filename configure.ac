@@ -20,11 +20,11 @@
 
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.52)
-min_automake_version="1.7.6"
+min_automake_version="1.7.9"
 
 # Version number: Remember to change it immediately *after* a release.
 #                 Add a "-cvs" prefix for non-released code.
-AC_INIT(gnupg, 1.9.12, gnupg-devel@gnupg.org)
+AC_INIT(gnupg, 1.9.13-cvs, gnupg-devel@gnupg.org)
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.
