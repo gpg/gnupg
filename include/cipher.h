@@ -168,10 +168,14 @@ int pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey,
 extern ushort small_prime_numbers[];
 
 /*-- primegen.c --*/
+void register_primegen_progress ( void (*cb)( void *, int), void *cb_data );
 MPI generate_secret_prime( unsigned nbits );
 MPI generate_public_prime( unsigned nbits );
 MPI generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 					   MPI g, MPI **factors );
 
+/*-- elsewhere --*/
+void register_pk_dsa_progress ( void (*cb)( void *, int), void *cb_data );
+void register_pk_elg_progress ( void (*cb)( void *, int), void *cb_data );
 
 #endif /*G10_CIPHER_H*/

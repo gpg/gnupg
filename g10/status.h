@@ -75,6 +75,11 @@
 #define STATUS_END_ENCRYPTION	44
 
 #define STATUS_DELETE_PROBLEM	45
+#define STATUS_GET_BOOL 	46
+#define STATUS_GET_LINE 	47
+#define STATUS_GET_HIDDEN	48
+#define STATUS_GOT_IT		49
+#define STATUS_PROGRESS 	50
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

@@ -88,6 +88,7 @@ struct {
     int honor_http_proxy;
     int fast_list_mode;
     int ignore_time_conflict;
+    int command_fd;
 } opt;
 
 

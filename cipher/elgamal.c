@@ -56,11 +56,26 @@ static void sign(MPI a, MPI b, MPI input, ELG_secret_key *skey);
 static int  verify(MPI a, MPI b, MPI input, ELG_public_key *pkey);
 
 
+static void (*progress_cb) ( void *, int );
+static void *progress_cb_data;
+
+void
+register_pk_elg_progress ( void (*cb)( void *, int), void *cb_data )
+{
+    progress_cb = cb;
+    progress_cb_data = cb_data;
+}
+
+
 static void
 progress( int c )
 {
-    fputc( c, stderr );
+    if ( progress_cb )
+	progress_cb ( progress_cb_data, c );
+    else
+	fputc( c, stderr );
 }
+
 
 /****************
  * Michael Wiener's table about subgroup sizes to match field sizes

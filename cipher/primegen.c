@@ -38,11 +38,24 @@ static int check_prime( MPI prime, MPI val_2 );
 static int is_prime( MPI n, int steps, int *count );
 static void m_out_of_n( char *array, int m, int n );
 
+static void (*progress_cb) ( void *, int );
+static void *progress_cb_data;
+
+void
+register_primegen_progress ( void (*cb)( void *, int), void *cb_data )
+{
+    progress_cb = cb;
+    progress_cb_data = cb_data;
+}
+
 
 static void
 progress( int c )
 {
-    fputc( c, stderr );
+    if ( progress_cb )
+	progress_cb ( progress_cb_data, c );
+    else
+	fputc( c, stderr );
 }
 
 

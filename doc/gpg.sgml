@@ -1108,6 +1108,16 @@ can only be used if only one passphrase is supplied.
 Don't use this option if you can avoid it.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--command-fd &ParmN;</term>
+<listitem><para>
+This is a replacement for the depreciated shared-memory IPC mode.
+If this option is enabled, user input on questions is not expected
+from the TTY but from the given file descriptor.  It should be used
+together with --status-fd. See the file doc/DETAILS in the source
+distribution for details on how to use it.
+</para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--rfc1991</term>

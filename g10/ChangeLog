@@ -1,3 +1,17 @@
+Thu May 18 11:38:54 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* keyedit.c (keyedit_menu): Add a keyword arg to the prompt.
+
+	* status.c, status.h: Added 3 new status tokens.
+	* status.c (do_get_from_fd): New.
+	(cpr_enabled,cpr_get,cpr_get_hidden,cpr_kill_prompt,
+	 cpr_get_answer_is_yes,cpr_get_answer_yes_no_quit): Modified to work
+	 with the new function.
+	* g10.c: Add new option --command-fd.
+
+	* status.c (progress_cb): New.
+	(set_status_fd): Register progress functions
+
 Fri May 12 14:01:20 CEST 2000  Werner Koch  <wk@openit.de>
 
 	* delkey.c (delete_key): Add 2 new status messages

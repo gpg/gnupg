@@ -133,6 +133,7 @@ enum cmd_and_opt_values { aNull = 0,
     oDigestAlgo,
     oCompressAlgo,
     oPasswdFD,
+    oCommandFD,
     oQuickRandom,
     oNoVerbose,
     oTrustDBName,
@@ -316,6 +317,7 @@ static ARGPARSE_OPTS opts[] = {
     { aListTrustPath, "list-trust-path",0, "@"},
     { oKOption, NULL,	 0, "@"},
     { oPasswdFD, "passphrase-fd",1, "@" },
+    { oCommandFD, "command-fd",1, "@" },
     { oQuickRandom, "quick-random", 0, "@"},
     { oNoVerbose, "no-verbose", 0, "@"},
     { oTrustDBName, "trustdb-name", 2, "@" },
@@ -596,6 +598,7 @@ main( int argc, char **argv )
     init_signals();
     create_dotlock(NULL); /* register locking cleanup */
     i18n_init();
+    opt.command_fd = -1; /* no command fd */
     opt.compress = -1; /* defaults to standard compress level */
     /* note: if you change these lines, look at oOpenPGP */
     opt.def_cipher_algo = 0;
@@ -873,6 +876,7 @@ main( int argc, char **argv )
 	    break;
 	  case oCompress: opt.compress = pargs.r.ret_int; break;
 	  case oPasswdFD: pwfd = pargs.r.ret_int; break;
+	  case oCommandFD: opt.command_fd = pargs.r.ret_int; break;
 	  case oCipherAlgo: def_cipher_string = m_strdup(pargs.r.ret_str); break;
 	  case oDigestAlgo: def_digest_string = m_strdup(pargs.r.ret_str); break;
 	  case oNoSecmemWarn: secmem_set_flags( secmem_get_flags() | 1 ); break;

@@ -36,6 +36,11 @@ Noteworthy changes in the current test release
       as default to the one in the homedirectory.  Prior versions
       ignored all --keyring options.
 
+    * New option --command-fd to take user input from a file descriptor;
+      to be used with --status-fd by software which uses GnuPG as a backend.
+
+    * There is a new status PROGRESS which is used to show progress during
+      key generation.
 
 Noteworthy changes in version 1.0.1 (1999-12-16)
 -----------------------------------

@@ -134,6 +134,11 @@ more arguments in future versions.
     SHM_GET_BOOL
     SHM_GET_HIDDEN
 
+    GET_BOOL
+    GET_LINE
+    GET_HIDDEN
+    GOT_IT
+
     NEED_PASSPHRASE <long keyid>  <keytype>  <keylength>
 	Issued whenever a passphrase is needed.
 	keytype is the numerical value of the public key algorithm
@@ -204,6 +209,13 @@ more arguments in future versions.
 	    1 - No such key
 	    2 - Must delete secret key first
 
+    PROGRESS what char cur total
+	Used by the primegen and Public key functions to indicate progress.
+	"char" is the character displayed with no --status-fd enabled, with
+	the linefeed replaced by an 'X'.  "cur" is the current amount
+	done and "total" is amount to be done; a "total" of 0 indicates that
+	the toatal amount is not known. 100/100 may be used to detect the
+	end of operation.
 
 
 Key generation
