@@ -614,7 +614,15 @@
                     support.  This option allows to explicity disable
                     the use of iconv.  Note, that iconv is also
                     disabled if getext has been disabled.
-                    
+
+     --enable-backsigs
+                    Enables "backsigs" support.  This is a currently
+		    experimental solution to a subtle OpenPGP protocol
+		    problem involving signing subkeys.  It is
+		    specified in the 2440bis drafts that will become
+		    the new OpenPGP standard, but is not finalized yet
+		    and has not had interoperability testing.  Use at
+		    your own risk.
 
 
     Installation Problems
