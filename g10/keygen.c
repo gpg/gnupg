@@ -1524,7 +1524,7 @@ do_create( int algo, unsigned int nbits, KBNODE pub_root, KBNODE sec_root,
     else
 	BUG();
 
-  #ifdef ENABLE_COMMENT_PACKETS
+#ifdef ENABLE_COMMENT_PACKETS
     if( !rc ) {
 	add_kbnode( pub_root,
 		make_comment_node("#created by GNUPG v" VERSION " ("
@@ -1533,7 +1533,7 @@ do_create( int algo, unsigned int nbits, KBNODE pub_root, KBNODE sec_root,
 		make_comment_node("#created by GNUPG v" VERSION " ("
 					    PRINTABLE_OS_NAME ")"));
     }
-  #endif
+#endif
     return rc;
 }
 

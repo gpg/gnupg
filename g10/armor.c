@@ -39,9 +39,9 @@
 #include "i18n.h"
 
 #ifdef HAVE_DOSISH_SYSTEM
-  #define LF "\r\n"
+#define LF "\r\n"
 #else
-  #define LF "\n"
+#define LF "\n"
 #endif
 
 #define MAX_LINELEN 20000
@@ -773,7 +773,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
                 /* FIXME: Here we should emit another control packet,
                  * so that we know in mainproc that we are processing
                  * a clearsign message */
-	      #if 0
+#if 0
 		for(rc=0;!rc;) {
 		    rc = 0 /*check_trailer( &fhdr, c )*/;
 		    if( !rc ) {
@@ -791,7 +791,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		    log_error(_("error in trailer line\n"));
 		    rc = G10ERR_INVALID_ARMOR;
 		}
-	      #endif
+#endif
 	    }
 	}
     }
@@ -817,14 +817,14 @@ armor_filter( void *opaque, int control,
     int  idx, idx2;
     size_t n=0;
     u32 crc;
-  #if 0
+#if 0
     static FILE *fp ;
 
     if( !fp ) {
 	fp = fopen("armor.out", "w");
 	assert(fp);
     }
-  #endif
+#endif
 
     if( DBG_FILTER )
 	log_debug("armor-filter: control: %d\n", control );
@@ -921,11 +921,11 @@ armor_filter( void *opaque, int control,
 	}
 	else
 	    rc = radix64_read( afx, a, &n, buf, size );
-      #if 0
+#if 0
 	if( n )
 	    if( fwrite(buf, n, 1, fp ) != 1 )
 		BUG();
-      #endif
+#endif
 	*ret_len = n;
     }
     else if( control == IOBUFCTRL_FLUSH && !afx->cancel ) {
@@ -960,10 +960,10 @@ armor_filter( void *opaque, int control,
 
 	    if ( afx->hdrlines ) {
                 for ( s = afx->hdrlines; *s; s++ ) {
-                  #ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_DOSISH_SYSTEM
                     if ( *s == '\n' )
                         iobuf_put( a, '\r');
-                  #endif
+#endif
                     iobuf_put(a, *s );
                 }
             }

@@ -34,9 +34,9 @@
 #include "options.h"
 
 #ifdef HAVE_DOSISH_SYSTEM
-  #define LF "\r\n"
+#define LF "\r\n"
 #else
-  #define LF "\n"
+#define LF "\n"
 #endif
 
 #define MAX_LINELEN 19995 /* a little bit smaller than in armor.c */
@@ -193,7 +193,7 @@ copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
 	    iobuf_put( out, ' ' );
 	}
 
-      #if  0 /*defined(HAVE_DOSISH_SYSTEM)*/
+#if  0 /*defined(HAVE_DOSISH_SYSTEM)*/
 	/* We don't use this anymore because my interpretation of rfc2440 7.1
 	 * is that there is no conversion needed.  If one decides to
 	 * clearsign a unix file on a DOS box he will get a mixed line endings.
@@ -215,9 +215,9 @@ copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
 	else
 	    iobuf_write( out, buffer, n );
 
-      #else
+#else
 	iobuf_write( out, buffer, n );
-      #endif
+#endif
     }
 
     /* at eof */
@@ -232,4 +232,3 @@ copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
 
     return 0; /* okay */
 }
-

@@ -54,12 +54,12 @@ static void
 free_node( KBNODE n )
 {
     if( n ) {
-      #if USE_UNUSED_NODES
+#if USE_UNUSED_NODES
 	n->next = unused_nodes;
 	unused_nodes = n;
-      #else
+#else
 	m_free( n );
-      #endif
+#endif
     }
 }
 

@@ -37,20 +37,20 @@
 #include "i18n.h"
 
 #ifdef USE_ONLY_8DOT3
-  #define SKELEXT ".skl"
+#define SKELEXT ".skl"
 #else
-  #define SKELEXT EXTSEP_S "skel"
+#define SKELEXT EXTSEP_S "skel"
 #endif
 
 #if defined (HAVE_DRIVE_LETTERS) || defined (__riscos__)
-  #define CMP_FILENAME(a,b) ascii_strcasecmp( (a), (b) )
+#define CMP_FILENAME(a,b) ascii_strcasecmp( (a), (b) )
 #else
-  #define CMP_FILENAME(a,b) strcmp( (a), (b) )
+#define CMP_FILENAME(a,b) strcmp( (a), (b) )
 #endif
 
 #ifdef MKDIR_TAKES_ONE_ARG
-# undef mkdir
-# define mkdir(a,b) mkdir(a)
+#undef mkdir
+#define mkdir(a,b) mkdir(a)
 #endif
 
 /* FIXME:  Implement opt.interactive. */

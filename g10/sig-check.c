@@ -135,7 +135,7 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest,
 static int
 cmp_help( void *opaque, MPI result )
 {
-  #if 0 /* we do not use this anymore */
+#if 0 /* we do not use this anymore */
     int rc=0, i, j, c, old_enc;
     byte *dp;
     const byte *asn;
@@ -198,9 +198,9 @@ cmp_help( void *opaque, MPI result )
 	    return G10ERR_BAD_SIGN;
     }
     return 0;
-  #else
+#else
     return -1;
-  #endif
+#endif
 }
 
 static int

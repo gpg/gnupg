@@ -39,7 +39,7 @@
 #define MAX_UID_CACHE_ENTRIES  200
 
 #if MAX_PK_CACHE_ENTRIES < 2
-  #error We need the cache for key creation
+#error We need the cache for key creation
 #endif
 
 
@@ -84,7 +84,7 @@ typedef struct keyid_list {
 #endif
 
 #if MAX_UID_CACHE_ENTRIES < 5
-    #error we really need the userid cache
+#error we really need the userid cache
 #endif
 typedef struct user_id_db {
     struct user_id_db *next;
@@ -119,7 +119,7 @@ print_stats()
 void
 cache_public_key( PKT_public_key *pk )
 {
-  #if MAX_PK_CACHE_ENTRIES
+#if MAX_PK_CACHE_ENTRIES
     pk_cache_entry_t ce;
     u32 keyid[2];
 
@@ -158,7 +158,7 @@ cache_public_key( PKT_public_key *pk )
     ce->pk = copy_public_key( NULL, pk );
     ce->keyid[0] = keyid[0];
     ce->keyid[1] = keyid[1];
-  #endif
+#endif
 }
 
 
@@ -266,7 +266,7 @@ cache_user_id( KBNODE keyblock )
 void
 getkey_disable_caches()
 {
-  #if MAX_PK_CACHE_ENTRIES
+#if MAX_PK_CACHE_ENTRIES
     {
 	pk_cache_entry_t ce, ce2;
 
@@ -279,7 +279,7 @@ getkey_disable_caches()
 	pk_cache_entries = 0;
 	pk_cache = NULL;
     }
-  #endif
+#endif
     /* fixme: disable user id cache ? */
 }
 
@@ -319,7 +319,7 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
     int internal = 0;
     int rc = 0;
 
-  #if MAX_PK_CACHE_ENTRIES
+#if MAX_PK_CACHE_ENTRIES
     {	/* Try to get it from the cache */
 	pk_cache_entry_t ce;
 	for( ce = pk_cache; ce; ce = ce->next ) {
@@ -330,7 +330,7 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
 	    }
 	}
     }
-  #endif
+#endif
     /* more init stuff */
     if( !pk ) {
 	pk = m_alloc_clear( sizeof *pk );
@@ -2133,7 +2133,7 @@ finish_lookup (GETKEY_CTX ctx)
     KBNODE k;
     KBNODE foundk = NULL;
     PKT_user_id *foundu = NULL;
-  #define USAGE_MASK  (PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC)
+#define USAGE_MASK  (PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC)
     unsigned int req_usage = ( ctx->req_usage & USAGE_MASK );
     /* Request the primary if we're certifying another key, and also
        if signing data while --pgp6 or --pgp7 is on since pgp 6 and 7

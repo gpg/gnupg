@@ -722,6 +722,3 @@ keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr)
     memcpy (desc.u.fpr, fpr, MAX_FINGERPRINT_LEN);
     return keydb_search (hd, &desc, 1);
 }
-
-
-

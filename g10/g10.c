@@ -27,7 +27,7 @@
 #include <unistd.h>
 #include <assert.h>
 #ifdef HAVE_DOSISH_SYSTEM
-  #include <fcntl.h> /* for setmode() */
+#include <fcntl.h> /* for setmode() */
 #endif
 #ifdef HAVE_STAT
 #include <sys/stat.h> /* for stat() */
@@ -758,15 +758,15 @@ build_list( const char *text, char letter,
 static void
 i18n_init(void)
 {
-  #ifdef USE_SIMPLE_GETTEXT
+#ifdef USE_SIMPLE_GETTEXT
     set_gettext_file( PACKAGE );
-  #else
-  #ifdef ENABLE_NLS
+#else
+#ifdef ENABLE_NLS
     setlocale( LC_ALL, "" );
     bindtextdomain( PACKAGE, G10_LOCALEDIR );
     textdomain( PACKAGE );
-  #endif
-  #endif
+#endif
+#endif
 }
 
 static void
@@ -1122,14 +1122,14 @@ main( int argc, char **argv )
     int pwfd = -1;
     int with_fpr = 0; /* make an option out of --fingerprint */
     int any_explicit_recipient = 0;
-  #ifdef USE_SHM_COPROCESSING
+#ifdef USE_SHM_COPROCESSING
     ulong requested_shm_size=0;
-  #endif
+#endif
 
-  #ifdef __riscos__
+#ifdef __riscos__
     riscos_global_defaults();
     opt.lock_once = 1;
-  #endif /* __riscos__ */
+#endif /* __riscos__ */
 
     trap_unaligned();
     secmem_set_flags( secmem_get_flags() | 2 ); /* suspend warnings */
@@ -1215,7 +1215,7 @@ main( int argc, char **argv )
 	    opt.strict=0;
 	    log_set_strict(0);
 	  }
-      #ifdef USE_SHM_COPROCESSING
+#ifdef USE_SHM_COPROCESSING
 	else if( pargs.r_opt == oRunAsShmCP ) {
 	    /* does not make sense in a options file, we do it here,
 	     * so that we are the able to drop setuid as soon as possible */
@@ -1227,7 +1227,7 @@ main( int argc, char **argv )
 	     * initialized when init_shm_coprocessing() is called */
 	    set_status_fd( iobuf_translate_file_handle (pargs.r.ret_int, 1) );
 	}
-      #endif
+#endif
     }
 
 #ifdef HAVE_DOSISH_SYSTEM
@@ -1838,13 +1838,13 @@ main( int argc, char **argv )
 			strusage(11), strusage(13), strusage(14) );
 	fprintf(stderr, "%s\n", strusage(15) );
     }
-  #ifdef IS_DEVELOPMENT_VERSION
+#ifdef IS_DEVELOPMENT_VERSION
     if( !opt.batch ) {
 	log_info("NOTE: THIS IS A DEVELOPMENT VERSION!\n");
 	log_info("It is only intended for test purposes and should NOT be\n");
 	log_info("used in a production environment or with production keys!\n");
     }
-  #endif
+#endif
 
     if (opt.verbose > 2)
         log_info ("using character set `%s'\n", get_native_charset ());
@@ -2589,9 +2589,9 @@ main( int argc, char **argv )
 		size_t n = !endless && count < 99? count : 99;
 
 		p = get_random_bits( n*8, level, 0);
-	      #ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_DOSISH_SYSTEM
 		setmode ( fileno(stdout), O_BINARY );
-	      #endif
+#endif
                 if (opt.armor) {
                     char *tmp = make_radix64_string (p, n);
                     fputs (tmp, stdout);
@@ -2878,9 +2878,9 @@ print_mds( const char *fname, int algo )
 
     if( !fname ) {
 	fp = stdin;
-      #ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_DOSISH_SYSTEM
 	setmode ( fileno(fp) , O_BINARY );
-      #endif
+#endif
     }
     else {
 	fp = fopen( fname, "rb" );

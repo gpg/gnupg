@@ -266,12 +266,12 @@ hash_public_key( MD_HANDLE md, PKT_public_key *pk )
     ulong pktlen;
     int c;
     IOBUF a = iobuf_temp();
-  #if 0
+#if 0
     FILE *fp = fopen("dump.pk", "a");
     int i=0;
 
     fprintf(fp, "\nHashing PK (v%d):\n", pk->version);
-  #endif
+#endif
 
     /* build the packet */
     init_packet(&pkt);
@@ -316,19 +316,19 @@ hash_public_key( MD_HANDLE md, PKT_public_key *pk )
     }
     /* hash the packet body */
     while( (c=iobuf_get(a)) != -1 ) {
-      #if 0
+#if 0
 	fprintf( fp," %02x", c );
 	if( (++i == 24) ) {
 	    putc('\n', fp);
 	    i=0;
 	}
-      #endif
+#endif
 	md_putc( md, c );
     }
-  #if 0
+#if 0
     putc('\n', fp);
     fclose(fp);
-  #endif
+#endif
     iobuf_cancel(a);
 }
 

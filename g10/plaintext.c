@@ -25,7 +25,7 @@
 #include <errno.h>
 #include <assert.h>
 #ifdef HAVE_DOSISH_SYSTEM
-#  include <fcntl.h> /* for setmode() */
+#include <fcntl.h> /* for setmode() */
 #endif
 
 #include "util.h"
@@ -450,8 +450,3 @@ hash_datafiles( MD_HANDLE md, MD_HANDLE md2, STRLIST files,
 
     return 0;
 }
-
-
-
-
-

@@ -42,9 +42,9 @@ static int list_mode = 0;
 
 static int  parse( IOBUF inp, PACKET *pkt, int onlykeypkts,
                   off_t *retpos, int *skip, IOBUF out, int do_skip
-	    #ifdef DEBUG_PARSE_PACKET
+#ifdef DEBUG_PARSE_PACKET
 		   ,const char *dbg_w, const char *dbg_f, int dbg_l
-	    #endif
+#endif
 		 );
 static int  copy_packet( IOBUF inp, IOBUF out, int pkttype,
 					       unsigned long pktlen );

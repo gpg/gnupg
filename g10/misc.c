@@ -25,13 +25,13 @@
 #include <unistd.h>
 #include <errno.h>
 #if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
-  #include <asm/sysinfo.h>
-  #include <asm/unistd.h>
+#include <asm/sysinfo.h>
+#include <asm/unistd.h>
 #endif
 #ifdef HAVE_SETRLIMIT
-  #include <time.h>
-  #include <sys/time.h>
-  #include <sys/resource.h>
+#include <time.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 #endif
 #include "util.h"
 #include "main.h"
@@ -84,10 +84,10 @@ trap_unaligned(void)
 int
 disable_core_dumps()
 {
- #ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_DOSISH_SYSTEM
     return 0;
- #else
-  #ifdef HAVE_SETRLIMIT
+#else
+#ifdef HAVE_SETRLIMIT
     struct rlimit limit;
 
     limit.rlim_cur = 0;
@@ -96,9 +96,9 @@ disable_core_dumps()
 	return 0;
     if( errno != EINVAL && errno != ENOSYS )
 	log_fatal(_("can't disable core dumps: %s\n"), strerror(errno) );
-  #endif
+#endif
     return 1;
- #endif
+#endif
 }
 
 

@@ -1647,7 +1647,7 @@ proc_tree( CTX c, KBNODE node )
 		 * signature has been created in textmode */
 		c->mfx.md2 = md_open( sig->digest_algo, 0 );
 	    }
-	  #if 0 /* workaround disabled */
+#if 0 /* workaround disabled */
 	    /* Here we have another hack to work around a pgp 2 bug
 	     * It works by not using the textmode for detached signatures;
 	     * this will let the first signature check (on md) fail
@@ -1656,7 +1656,7 @@ proc_tree( CTX c, KBNODE node )
 	     * hack but it may help in some cases (and break others)
 	     */
 		    /*	c->mfx.md2? 0 :(sig->sig_class == 0x01) */
-	  #endif
+#endif
             if ( DBG_HASHING ) {
                 md_start_debug( c->mfx.md, "verify" );
                 if ( c->mfx.md2  )

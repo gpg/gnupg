@@ -26,7 +26,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #ifdef HAVE_DOSISH_SYSTEM
-  #include <fcntl.h> /* for setmode() */
+#include <fcntl.h> /* for setmode() */
 #endif
 
 #define INCLUDED_BY_MAIN_MODULE 1
@@ -114,20 +114,20 @@ strusage( int level )
 static void
 i18n_init(void)
 {
-  #ifdef USE_SIMPLE_GETTEXT
+#ifdef USE_SIMPLE_GETTEXT
     set_gettext_file( PACKAGE );
-  #else
-  #ifdef ENABLE_NLS
-    #ifdef HAVE_LC_MESSAGES
+#else
+#ifdef ENABLE_NLS
+#ifdef HAVE_LC_MESSAGES
        setlocale( LC_TIME, "" );
        setlocale( LC_MESSAGES, "" );
-    #else
+#else
        setlocale( LC_ALL, "" );
-    #endif
+#endif
     bindtextdomain( PACKAGE, G10_LOCALEDIR );
     textdomain( PACKAGE );
-  #endif
-  #endif
+#endif
+#endif
 }
 
 
@@ -140,9 +140,9 @@ main( int argc, char **argv )
     STRLIST nrings=NULL;
     unsigned configlineno;
 
-  #ifdef __riscos__
+#ifdef __riscos__
     riscos_global_defaults();
-  #endif /* __riscos__ */
+#endif /* __riscos__ */
 
     log_set_name("gpgv");
     init_signals();
@@ -153,11 +153,11 @@ main( int argc, char **argv )
     opt.trust_model = TM_ALWAYS;
     opt.batch = 1;
 
-  #if defined (__MINGW32__)
+#if defined (__MINGW32__)
     opt.homedir = read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" );
-  #else
+#else
     opt.homedir = getenv("GNUPGHOME");
-  #endif
+#endif
     if( !opt.homedir || !*opt.homedir ) {
 	opt.homedir = GNUPG_HOMEDIR;
     }
