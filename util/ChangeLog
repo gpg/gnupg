@@ -1,3 +1,11 @@
+2002-09-12  Stefan Bellon  <sbellon@sbellon.de>
+
+	* fileutil.c (make_filename): Removed variable for RISC OS to
+	avoid compiler warning.
+
+	* secmem.c: Removed static variable for RISC OS to avoid
+	compiler warning.
+
 2002-09-11  Werner Koch  <wk@gnupg.org>
 
 	* simple-gettext.c: Disable charset mappings.  We do it now when

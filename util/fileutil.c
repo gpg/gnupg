@@ -99,7 +99,11 @@ make_filename( const char *first_part, ... )
     va_list arg_ptr ;
     size_t n;
     const char *s;
+#ifndef __riscos__
     char *name, *home, *p;
+#else
+    char *name, *p;
+#endif
 
     va_start( arg_ptr, first_part ) ;
     n = strlen(first_part)+1;
