@@ -281,8 +281,13 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
 	    md_write (digest, sig->hashed->data, n);
 	    n += 6;
 	}
-	else
-	    n = 6;
+	else {
+	  /* Two octets for the (empty) length of the hashed
+             section. */
+          md_putc (digest, 0);
+	  md_putc (digest, 0);
+	  n = 6;
+	}
 	/* add some magic */
 	buf[0] = sig->version;
 	buf[1] = 0xff;
