@@ -178,6 +178,7 @@ struct {
     int no_homedir_creation;
     int show_keyring;
     struct groupitem *grouplist;
+    int mangle_dos_filenames;
 } opt;
 
 

@@ -149,13 +149,9 @@ enum cmd_and_opt_values { aNull = 0,
     oDebug,
     oDebugAll,
     oStatusFD,
-#ifdef __riscos__
-    oStatusFile,
-#endif /* __riscos__ */
+    oStatusFile, /* only used with risc os */
     oAttributeFD,
-#ifdef __riscos__
-    oAttributeFile,
-#endif /* __riscos__ */
+    oAttributeFile, /* only used with risc os */
     oSKComments,
     oNoSKComments,
     oNoVersion,
@@ -179,13 +175,9 @@ enum cmd_and_opt_values { aNull = 0,
     oCertDigestAlgo,
     oCompressAlgo,
     oPasswdFD,
-#ifdef __riscos__
-    oPasswdFile,
-#endif /* __riscos__ */
+    oPasswdFile, /* only used with risc os */
     oCommandFD,
-#ifdef __riscos__
-    oCommandFile,
-#endif /* __riscos__ */
+    oCommandFile, /* only used with risc os */
     oQuickRandom,
     oNoVerbose,
     oTrustDBName,
@@ -251,9 +243,7 @@ enum cmd_and_opt_values { aNull = 0,
     oEncryptTo,
     oNoEncryptTo,
     oLoggerFD,
-#ifdef __riscos__
-    oLoggerFile,
-#endif /* __riscos__ */
+    oLoggerFile, /* only used with risc os */
     oUtf8Strings,
     oNoUtf8Strings,
     oDisableCipherAlgo,
@@ -304,6 +294,8 @@ enum cmd_and_opt_values { aNull = 0,
     oGroup,
     oStrict,
     oNoStrict,
+    oMangleDosFilenames,
+    oNoMangleDosFilenames,
 aTest };
 
 
@@ -597,6 +589,8 @@ static ARGPARSE_OPTS opts[] = {
     { oGroup,      "group",       2, "@" },
     { oStrict,     "strict",      0, "@" },
     { oNoStrict,   "no-strict",   0, "@" },
+    { oMangleDosFilenames, "mangle-dos-filenames", 0, "@" },
+    { oNoMangleDosFilenames, "no-mangle-dos-filenames", 0, "@" },
 {0} };
 
 
@@ -1112,6 +1106,7 @@ main( int argc, char **argv )
       EXPORT_INCLUDE_NON_RFC|EXPORT_INCLUDE_ATTRIBUTES;
     opt.keyserver_options.include_subkeys=1;
     opt.keyserver_options.include_revoked=1;
+    opt.mangle_dos_filenames = 1;
 #if defined (__MINGW32__)
     set_homedir ( read_w32_registry_string( NULL,
                                     "Software\\GNU\\GnuPG", "HomeDir" ));
@@ -1685,6 +1680,10 @@ main( int argc, char **argv )
 	  case oGroup: add_group(pargs.r.ret_str); break;
 	  case oStrict: /* noop */ break;
 	  case oNoStrict: /* noop */ break;
+
+          case oMangleDosFilenames: opt.mangle_dos_filenames = 1; break;
+          case oNoMangleDosFilenames: opt.mangle_dos_filenames = 0; break;
+
 	  default : pargs.err = configfp? 1:2; break;
 	}
     }
