@@ -1,5 +1,9 @@
 2004-02-02  Werner Koch  <wk@gnupg.org>
 
+	* import.c (check_and_store): Import certificates even with
+	missing issuer's cert.  Fixed an "depending on the verbose
+	setting" bug.
+
 	* certchain.c (gpgsm_validate_chain): Mark revoked certs in the
 	keybox.
 

@@ -130,8 +130,15 @@ check_and_store (CTRL ctrl, struct stats_s *stats, ksba_cert_t cert, int depth)
       return;
     }
 
+  /* Some basic checks, but don't care about missing certificates;
+     this is so that we are able to import entire certificate chains
+     w/o requirening a special order (i.e. root-CA first).  This used
+     to be different but becuase gpgsm_verify even imports
+     certificates without any checks, it doesn't matter much and the
+     code gets much cleaner.  A housekeeping function to remove
+     certificates w/o an anchor would be nice, though. */
   rc = gpgsm_basic_cert_check (cert);
-  if (!rc)
+  if (!rc || gpg_err_code (rc) == GPG_ERR_MISSING_CERT)
     {
       int existed;
 
@@ -161,9 +168,11 @@ check_and_store (CTRL ctrl, struct stats_s *stats, ksba_cert_t cert, int depth)
               else
                 log_info ("certificate imported\n");
             }
+
           /* Now lets walk up the chain and import all certificates up
-             the chain.*/
-          else if (!gpgsm_walk_cert_chain (cert, &next))
+             the chain.  This is required in case we already stored
+             parent certificates in the ephemeral keybox. */
+          if (!gpgsm_walk_cert_chain (cert, &next))
             {
               check_and_store (ctrl, stats, next, depth+1);
               ksba_cert_release (next);
@@ -205,7 +214,7 @@ import_one (CTRL ctrl, struct stats_s *stats, int in_fd)
     {
       rc = gpg_error (gpg_err_code_from_errno (errno));
       log_error ("fdopen() failed: %s\n", strerror (errno));
-      goto leave;
+  q    goto leave;
     }
 
   rc = gpgsm_create_reader (&b64reader, ctrl, fp, &reader);
