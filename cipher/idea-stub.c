@@ -124,9 +124,9 @@ load_module (const char *name)
 #endif
 
   handle = dlopen (name, RTLD_NOW);
-  if (!name)
+  if (!handle)
     {
-      /*log_error ("error loading module `%s': %s\n", name, dlerror());*/
+      err=dlerror();
       goto failure;
     }
 
@@ -134,14 +134,12 @@ load_module (const char *name)
   if (dlerror ())
     sym = dlsym (handle, "_idea_get_info");
   if ((err=dlerror())) 
-    {
-      log_info ("invalid module `%s': %s\n", name, err);
-      goto failure;
-    }
+    goto failure;
 
   return sym;
   
  failure:
+  log_info ("invalid module `%s': %s\n", name?name:"???", err?err:"???");
   if (handle)
       dlclose (handle);
 #endif /*USE_DYNAMIC_LINKING*/

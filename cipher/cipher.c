@@ -176,16 +176,20 @@ setup_cipher_table(void)
     if( !cipher_table[i].name )
 	BUG();
     i++;
+
+#ifdef USE_IDEA
     cipher_table[i].algo = CIPHER_ALGO_IDEA;
     cipher_table[i].name = idea_get_info( cipher_table[i].algo,
-					 &cipher_table[i].keylen,
-					 &cipher_table[i].blocksize,
-					 &cipher_table[i].contextsize,
-					 &cipher_table[i].setkey,
-					 &cipher_table[i].encrypt,
-					 &cipher_table[i].decrypt     );
+					  &cipher_table[i].keylen,
+					  &cipher_table[i].blocksize,
+					  &cipher_table[i].contextsize,
+					  &cipher_table[i].setkey,
+					  &cipher_table[i].encrypt,
+					  &cipher_table[i].decrypt     );
     if (cipher_table[i].name)
-      i++;  /* Note that IDEA is usually not available. */
+      i++;  /* Note that the loadable IDEA module may not be
+	       available. */
+#endif
 
 #ifdef ALLOW_DUMMY
     cipher_table[i].algo = CIPHER_ALGO_DUMMY;

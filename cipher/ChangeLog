@@ -1,3 +1,20 @@
+2003-05-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* cipher.c (setup_cipher_table): #ifdef IDEA.
+
+	* random.c (fast_random_poll): Only use times() if we HAVE_TIMES.
+
+	* sha512.c, tiger.c: Use the U64_C() macro to specify 64-bit
+	constants.  U64_C is defined in include/types.h and uses the
+	correct suffix depending on the underlying type of u64.
+
+	* idea-stub.c (load_module): Catch an error if the idea module
+	file is unloadable for some reason (unreadable, bad permissions,
+	etc.)
+
+	* md.c (string_to_digest_algo): Give a warning about TIGER192 not
+	being part of OpenPGP.
+
 2003-04-15  Werner Koch  <wk@gnupg.org>
 
 	* md.c (md_start_debug): Need to open the file in binary mode.

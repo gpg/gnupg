@@ -144,6 +144,12 @@ string_to_digest_algo( const char *string )
 	return 0;
       }
 
+#ifdef USE_TIGER192
+    if(!ascii_strcasecmp("tiger192",string))
+      log_info(_("WARNING: digest `%s' is not part of OpenPGP.  "
+		 "Use at your own risk!\n"),string);
+#endif
+
     do {
 	for(r = digest_list; r; r = r->next )
 	    if( !ascii_strcasecmp( r->name, string ) )
