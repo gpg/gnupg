@@ -1,3 +1,8 @@
+2003-04-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Clarify that "hkp corruption" (repair-hkp-subkey-bug)
+	is really "pks corruption" (repair-pks-subkey-bug).
+
 2003-04-15  Werner Koch  <wk@gnupg.org>
 
 	* gpg.sgml: Document --enable-progress-filter.
