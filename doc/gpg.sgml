@@ -1401,50 +1401,59 @@ signatures.  Use this to overwrite a previous
 
 
 <varlistentry>
+<term>--sig-notation &ParmNameValue;</term>
+<term>--cert-notation &ParmNameValue;</term>
 <term>-N, --notation-data &ParmNameValue;</term>
 <listitem><para>
 Put the name value pair into the signature as notation data.
-&ParmName; must consist only of alphanumeric characters, digits
-or the underscore; the first character must not be a digit.
-&ParmValue; may be any printable string; it will be encoded in UTF8,
-so you should check that your --charset is set correctly.
-If you prefix &ParmName; with an exclamation mark, the notation
-data will be flagged as critical (rfc2440:5.2.3.15).
+&ParmName; must consist only of printable characters or spaces, and
+must contain a '@' character.  This is to help prevent pollution of
+the IETF reserved notation namespace.  The --expert flag overrides the
+'@' check.  &ParmValue; may be any printable string; it will be
+encoded in UTF8, so you should check that your --charset is set
+correctly.  If you prefix &ParmName; with an exclamation mark, the
+notation data will be flagged as critical (rfc2440:5.2.3.15).
+--sig-notation sets a notation for data signatures.  --cert-notation
+sets a notation for key signatures (certifications).  --notation-data
+sets both.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--show-notation</term>
 <listitem><para>
-Show key signature notations in the --list-sigs or --check-sigs
-listings.
+Show signature notations in the --list-sigs or --check-sigs listings
+as well as when verifying a signature with a notation in it.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--no-show-notation</term>
 <listitem><para>
-Do not show key signature notations in the --list-sigs or --check-sigs
-listings.
+Do not show signature notations.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--sig-policy-url &ParmString;</term>
+<term>--cert-policy-url &ParmString;</term>
 <term>--set-policy-url &ParmString;</term>
 <listitem><para>
-Use &ParmString; as Policy URL for signatures (rfc2440:5.2.3.19).
-If you prefix it with an exclamation mark, the policy URL
-packet will be flagged as critical.
+Use &ParmString; as Policy URL for signatures (rfc2440:5.2.3.19).  If
+you prefix it with an exclamation mark, the policy URL packet will be
+flagged as critical.  --sig-policy-url sets a a policy url for data
+signatures.  --cert-policy-url sets a policy url for key signatures
+(certifications).  -set-policy-url sets both.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--show-policy-url</term>
 <listitem><para>
-Show any policy URLs set in the --list-sigs or --check-sigs listings.
+Show policy URLs in the --list-sigs or --check-sigs listings as well
+as when verifying a signature with a policy URL in it.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--no-show-policy-url</term>
 <listitem><para>
-Do not show any policy URLs set in the --list-sigs or --check-sigs
-listings.
+Do not show policy URLs.
 </para></listitem></varlistentry>
 
 <varlistentry>

@@ -1,3 +1,11 @@
+2002-11-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document --sig-policy-url, --cert-policy-url,
+	--sig-notation, --cert-notation.  Clarify --show-notation and
+	--show-policy-url that policy URLs and notations can be used in
+	data signatures as well.  Add note about '@' being a required
+	character in notation names.
+
 2002-11-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Add an interoperability section.
