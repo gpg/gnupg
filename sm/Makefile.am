@@ -1,4 +1,4 @@
-# Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -24,8 +24,7 @@ INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
 bin_PROGRAMS = gpgsm
 
 AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/intl \
-	       $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
-LDFLAGS = @LDFLAGS@ 
+	       $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(KSBA_CFLAGS)
 
 gpgsm_SOURCES = \
 	gpgsm.c	gpgsm.h \
@@ -51,7 +50,7 @@ gpgsm_SOURCES = \
 	certreqgen.c 
 
 
-gpgsm_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a ../kbx/libkeybox.a \
-              ../common/libcommon.a $(LIBGCRYPT_LIBS) $(KSBA_LIBS)
+gpgsm_LDADD = ../jnlib/libjnlib.a ../kbx/libkeybox.a ../common/libcommon.a \
+               $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(KSBA_LIBS)
 
 

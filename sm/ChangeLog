@@ -1,3 +1,8 @@
+2003-04-29  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Use libassuan.  Don't override LDFLAGS anymore.
+	* server.c (register_commands): Adjust for new Assuan semantics.
+
 2002-12-03  Werner Koch  <wk@gnupg.org>
 
 	* call-agent.c (gpgsm_agent_passwd): New.
@@ -762,7 +767,7 @@
 	* server.c (rc_to_assuan_status): New.  Use it for all commands.
 
 	
- Copyright 2001, 2002 Free Software Foundation, Inc.
+ Copyright 2001, 2002, 2003 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

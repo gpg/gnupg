@@ -1,5 +1,5 @@
 /* server.c - Server mode and main entry point 
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -27,8 +27,9 @@
 #include <ctype.h>
 #include <unistd.h>
 
+#include <assuan.h>
+
 #include "gpgsm.h"
-#include "../assuan/assuan.h"
 
 #define set_error(e,t) assuan_set_error (ctx, ASSUAN_ ## e, (t))
 
@@ -719,34 +720,30 @@ register_commands (ASSUAN_CONTEXT ctx)
 {
   static struct {
     const char *name;
-    int cmd_id;
     int (*handler)(ASSUAN_CONTEXT, char *line);
   } table[] = {
-    { "RECIPIENT",  0,  cmd_recipient },
-    { "SIGNER",     0,  cmd_signer },
-    { "ENCRYPT",    0,  cmd_encrypt },
-    { "DECRYPT",    0,  cmd_decrypt },
-    { "VERIFY",     0,  cmd_verify },
-    { "SIGN",       0,  cmd_sign },
-    { "IMPORT",     0,  cmd_import },
-    { "EXPORT",     0,  cmd_export },
-    { "",     ASSUAN_CMD_INPUT, NULL }, 
-    { "",     ASSUAN_CMD_OUTPUT, NULL }, 
-    { "MESSAGE",    0,  cmd_message },
-    { "LISTKEYS",   0,  cmd_listkeys },
-    { "LISTSECRETKEYS",  0,  cmd_listsecretkeys },
-    { "GENKEY",     0,  cmd_genkey },
-    { "DELKEYS",    0,  cmd_delkeys },
+    { "RECIPIENT",     cmd_recipient },
+    { "SIGNER",        cmd_signer },
+    { "ENCRYPT",       cmd_encrypt },
+    { "DECRYPT",       cmd_decrypt },
+    { "VERIFY",        cmd_verify },
+    { "SIGN",          cmd_sign },
+    { "IMPORT",        cmd_import },
+    { "EXPORT",        cmd_export },
+    { "INPUT",         NULL }, 
+    { "OUTPUT",        NULL }, 
+    { "MESSAGE",       cmd_message },
+    { "LISTKEYS",      cmd_listkeys },
+    { "LISTSECRETKEYS",cmd_listsecretkeys },
+    { "GENKEY",        cmd_genkey },
+    { "DELKEYS",       cmd_delkeys },
     { NULL }
   };
-  int i, j, rc;
+  int i, rc;
 
-  for (i=j=0; table[i].name; i++)
+  for (i=0; table[i].name; i++)
     {
-      rc = assuan_register_command (ctx,
-                                    table[i].cmd_id? table[i].cmd_id
-                                                   : (ASSUAN_CMD_USER + j++),
-                                    table[i].name, table[i].handler);
+      rc = assuan_register_command (ctx, table[i].name, table[i].handler);
       if (rc)
         return rc;
     } 

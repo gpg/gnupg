@@ -101,8 +101,8 @@ hash_and_copy_data (int fd, GCRY_MD_HD md, KsbaWriter writer)
   fclose (fp);
   if (!any)
     {
-      /* We can't allow to sign an empty message becuase it does not
-         make mnuch sense and more seriously, ksba-cms_build has
+      /* We can't allow to sign an empty message because it does not
+         make much sense and more seriously, ksba-cms_build has
          already written the tag for data and now expects an octet
          string but an octet string of zeize 0 is illegal. */
       log_error ("cannot sign an empty message\n");
