@@ -390,7 +390,7 @@ int tty_no_terminal(int onoff) {return 0;}
 /* We do not do any locking, so use these stubs here */
 void disable_dotlock(void) {}
 DOTLOCK create_dotlock( const char *file_to_lock ) { return NULL; }
-void destroy_dotlock (DOTLOCK h) { };
+void destroy_dotlock (DOTLOCK h) {}
 int make_dotlock( DOTLOCK h, long timeout ) { return 0;}
 int release_dotlock( DOTLOCK h ) {return 0;}
 void remove_lockfiles(void) {}

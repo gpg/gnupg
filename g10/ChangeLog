@@ -1,3 +1,7 @@
+2004-08-16  Werner Koch  <wk@g10code.de>
+
+	* gpgv.c: Removed stray semicolon.
+
 2004-08-11  Werner Koch  <wk@g10code.de>
 
 	* gpgv.c (destroy_dotlock): New stub.
