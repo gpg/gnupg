@@ -42,6 +42,7 @@ typedef struct {
     int hashes; 	    /* detected hash algorithms */
     int faked;		    /* we are faking a literal data packet */
     int truncated;	    /* number of truncated lines */
+    int qp_detected;
 
     byte *buffer;	    /* malloced buffer */
     unsigned buffer_size;   /* and size of this buffer */

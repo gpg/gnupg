@@ -550,6 +550,38 @@ iobuf_open( const char *fname )
 }
 
 /****************
+ * Create a head iobuf for reading from a file
+ * returns: NULL if an error occures and sets errno
+ */
+IOBUF
+iobuf_fdopen( int fd, const char *mode )
+{
+    IOBUF a;
+    FILE *fp;
+    file_filter_ctx_t *fcx;
+    size_t len;
+
+    if( strchr( mode, 'w' ) )
+	log_bug("iobuf_fdopen: mode `%s' is not supported", mode);
+
+    if( !(fp = fdopen(fd, mode)) )
+	return NULL;
+    a = iobuf_alloc(1, 8192 );
+    fcx = m_alloc( sizeof *fcx + 20 );
+    fcx->fp = fp;
+    fcx->print_only_name = 1;
+    sprintf(fcx->fname, "[fd %d]", fd );
+    a->filter = file_filter;
+    a->filter_ov = fcx;
+    file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
+    file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
+    if( DBG_IOBUF )
+	log_debug("iobuf-%d.%d: fdopen `%s'\n", a->no, a->subno, fcx->fname );
+
+    return a;
+}
+
+/****************
  * create an iobuf for writing to a file; the file will be created.
  */
 IOBUF

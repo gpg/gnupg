@@ -646,6 +646,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		    c <<= 4;
 		    c |= isdigit(c2)? (c2 - '0'): (toupper(c2)-'A'+10);
 		    afx->buffer_pos += 2;
+		    afx->qp_detected = 1;
 		    goto again;
 		}
 	    }
@@ -1027,6 +1028,10 @@ armor_filter( void *opaque, int control,
 	if( afx->truncated )
 	    log_info(_("invalid armor: line longer than %d characters\n"),
 		      MAX_LINELEN );
+	/* issue an error to enforce dissemination of correct software */
+	if( afx->qp_detected )
+	    log_error(_("quoted printable character in armor - "
+			"probably a buggy MTA has been used\n") );
 	m_free( afx->buffer );
 	afx->buffer = NULL;
     }
