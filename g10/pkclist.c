@@ -219,11 +219,12 @@ show_paths (const PKT_public_key *pk, int only_first )
 /****************
  * mode: 0 = standard
  *       1 = Without key info and additional menu option 'm'
+ *           this does also add an option to set the key to ultimately trusted.
  * Returns: 
  *      -2 = nothing changed - caller should show some additional info
  *      -1 = quit operation
  *       0 = nothing changed
- *       1 = new ownertrust now ion new_trust
+ *       1 = new ownertrust now in new_trust
  */
 static int
 do_edit_ownertrust (PKT_public_key *pk, int mode,
@@ -257,15 +258,17 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
             print_fingerprint (pk, NULL, 2);
             tty_printf("\n");
           }
-        tty_printf(_(
+        tty_printf (_(
                      "Please decide how far you trust this user to correctly\n"
                      "verify other users' keys (by looking at passports,\n"
-                     "checking fingerprints from different sources...)?\n\n"
-                     " 1 = Don't know\n"
-                     " 2 = I do NOT trust\n"
-                     " 3 = I trust marginally\n"
-                     " 4 = I trust fully\n"
-                     " s = please show me more information\n") );
+                     "checking fingerprints from different sources...)?\n\n"));
+        tty_printf (_(" %d = Don't know\n"), 1);
+        tty_printf (_(" %d = I do NOT trust\n"), 2);
+        tty_printf (_(" %d = I trust marginally\n"), 3);
+        tty_printf (_(" %d = I trust fully\n"), 4);
+        if (mode)
+          tty_printf (_(" %d = I trust ultimately\n"), 5);
+        tty_printf (_(" s = please show me more information\n") );
         if( mode )
           tty_printf(_(" m = back to the main menu\n"));
         else
@@ -282,20 +285,29 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
       did_help = 0;
     else if( *p && p[1] )
       ;
-    else if( !p[1] && (*p >= '1' && *p <= '4') ) 
+    else if( !p[1] && (*p >= '1' && *p <= (mode?'5':'4')) ) 
       {
-        unsigned trust;
+        unsigned int trust;
         switch( *p )
           {
           case '1': trust = TRUST_UNDEFINED; break;
           case '2': trust = TRUST_NEVER    ; break;
           case '3': trust = TRUST_MARGINAL ; break;
           case '4': trust = TRUST_FULLY    ; break;
+          case '5': trust = TRUST_ULTIMATE ; break;
           default: BUG();
           }
-        *new_trust = trust;
-        changed = 1;
-        break;
+        if (trust == TRUST_ULTIMATE
+            && !cpr_get_answer_is_yes ("edit_ownertrust.set_ultimate.okay",
+                                       _("Do you really want to set this key"
+                                         " to ultimate trust? ")))
+          ; /* no */
+        else
+          {
+            *new_trust = trust;
+            changed = 1;
+            break;
+          }
       }
     else if( *p == ans[0] || *p == ans[1] ) 
       {
@@ -350,73 +362,37 @@ edit_ownertrust (PKT_public_key *pk, int mode )
     }
 }
 
-static int
-add_ownertrust_cb (PKT_public_key *pk )
-{
-    unsigned int trust;
-    int rc = do_edit_ownertrust (pk, 0, &trust, 0 );
-
-    if( rc == 1 )
-	return trust & TRUST_MASK;
-    return rc > 0? 0 : rc;
-}
-
-/****************
- * Try to add some more owner trusts (interactive)
- * This function presents all the signator in a certificate
- * chain who have no ownertrust value assigned.
- * Returns: -1 if no ownertrust were added.
- */
-static int
-add_ownertrust( PKT_public_key *pk, int *quit, int *trustlevel )
-{
-    int rc;
-    unsigned flags = 0;
-
-#warning This function does not make sense anymore
-    *quit = 0;
-    *trustlevel = 0;
-    tty_printf(
-_("Could not find a valid trust path to the key.  Let's see whether we\n"
-  "can assign some missing owner trust values.\n\n"));
-
-    *trustlevel = get_validity ( pk, NULL);
-
-    if( !(flags & 1) )
-	tty_printf(_("No path leading to one of our keys found.\n\n") );
-    else if( !(flags & 2) )
-	tty_printf(_("No certificates with undefined trust found.\n\n") );
-    else if( !(flags & 4) )
-	tty_printf(_("No trust values changed.\n\n") );
-
-    return (flags & 4)? 0:-1;
-}
 
 /****************
  * Check whether we can trust this pk which has a trustlevel of TRUSTLEVEL
- * Returns: true if we trust. Might change the trustlevel
+ * Returns: true if we trust.
  */
 static int
-do_we_trust( PKT_public_key *pk, int *trustlevel )
+do_we_trust( PKT_public_key *pk, unsigned int *trustlevel )
 {
-    int rc;
-    int did_add = 0;
-    int trustmask = 0;
+    unsigned int trustmask = 0;
 
-  retry:
+    /* FIXME: get_pubkey_byname already checks the validity and won't
+     * return keys which are either expired or revoked - so these
+     * question here won't get triggered.  We have to find a solution
+     * for this.  It might make sense to have a function in getkey.c
+     * which does only the basic checks and returns even revoked and
+     * expired keys.  This fnction could then also returhn a list of
+     * keys if the speicified name is ambiguous
+     */
     if( (*trustlevel & TRUST_FLAG_REVOKED) ) {
 	log_info(_("key %08lX: key has been revoked!\n"),
 					(ulong)keyid_from_pk( pk, NULL) );
 	show_revocation_reason( pk );
 	if( opt.batch )
-	    return 0;
+          return 0; /* no */
 
 	if( !cpr_get_answer_is_yes("revoked_key.override",
 				    _("Use this key anyway? ")) )
-	    return 0;
+          return 0; /* no */
 	trustmask |= TRUST_FLAG_REVOKED;
     }
-    else if( (*trustlevel & TRUST_FLAG_SUB_REVOKED) ) {
+    if( (*trustlevel & TRUST_FLAG_SUB_REVOKED) ) {
 	log_info(_("key %08lX: subkey has been revoked!\n"),
 					(ulong)keyid_from_pk( pk, NULL) );
 	show_revocation_reason( pk );
@@ -433,43 +409,25 @@ do_we_trust( PKT_public_key *pk, int *trustlevel )
     if( opt.always_trust) {
 	if( opt.verbose )
 	    log_info("No trust check due to --always-trust option\n");
-	/* The problem with this, is that EXPIRE can't be checked as
-	 * this needs to insert a new key into the trustdb first and
-	 * we don't want that - IS this still true? */
 	return 1;
     }
 
-
     switch( (*trustlevel & TRUST_MASK) ) {
-      case TRUST_UNKNOWN: /* No pubkey in trustDB: Insert and check again */
-	*trustlevel = get_validity (pk, NULL);
-	*trustlevel &= ~trustmask;
-	if( *trustlevel == TRUST_UNKNOWN || *trustlevel == TRUST_EXPIRED ) {
-	    log_debug("do_we_trust: oops at %d\n", __LINE__ );
-	    return 0;
-	}
-	return do_we_trust( pk, trustlevel );
-
       case TRUST_EXPIRED:
 	log_info(_("%08lX: key has expired\n"),
 				    (ulong)keyid_from_pk( pk, NULL) );
 	return 0; /* no */
 
+      default:
+         log_error ("invalid trustlevel %u returned from validation layer\n",
+                    *trustlevel);
+         /* fall thru */
+      case TRUST_UNKNOWN: 
       case TRUST_UNDEFINED:
-	if( opt.batch || opt.answer_no )
-	    log_info(_("%08lX: no info to calculate a trust probability\n"),
-					(ulong)keyid_from_pk( pk, NULL) );
-	else {
-	    int quit;
-
-	    rc = add_ownertrust( pk, &quit, trustlevel );
-	    *trustlevel &= ~trustmask;
-	    if( !rc && !did_add && !quit ) {
-		did_add = 1;
-		goto retry;
-	    }
-	}
-	return 0;
+        log_info(_("%08lX: There is no indication that this key "
+                   "really belongs to the owner\n"),
+                 (ulong)keyid_from_pk( pk, NULL) );
+	return 0; /* no */
 
       case TRUST_NEVER:
 	log_info(_("%08lX: We do NOT trust this key\n"),
@@ -491,8 +449,6 @@ do_we_trust( PKT_public_key *pk, int *trustlevel )
 	if( opt.verbose )
 	    log_info(_("This key belongs to us\n"));
 	return 1; /* yes */
-
-      default: BUG();
     }
 
     return 1; /* yes */
@@ -505,7 +461,7 @@ do_we_trust( PKT_public_key *pk, int *trustlevel )
  * key anyway.
  */
 static int
-do_we_trust_pre( PKT_public_key *pk, int trustlevel )
+do_we_trust_pre( PKT_public_key *pk, unsigned int trustlevel )
 {
     int rc;
 
@@ -515,7 +471,8 @@ do_we_trust_pre( PKT_public_key *pk, int trustlevel )
 	return 0;
     if( (trustlevel & TRUST_FLAG_SUB_REVOKED) && !rc )
 	return 0;
-    else if( !opt.batch && !rc ) {
+
+    if( !opt.batch && !rc ) {
 	char *p;
 	u32 keyid[2];
 	size_t n;
@@ -540,7 +497,7 @@ do_we_trust_pre( PKT_public_key *pk, int trustlevel )
 				  _("Use this key anyway? "))  )
 	    rc = 1;
 
-	/* Hmmm: Should we set a flag to tell the user the user about
+	/* Hmmm: Should we set a flag to tell the user about
 	 *	 his decision the next time he encrypts for this recipient?
 	 */
     }
@@ -561,117 +518,105 @@ do_we_trust_pre( PKT_public_key *pk, int trustlevel )
 int
 check_signatures_trust( PKT_signature *sig )
 {
-    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
-    int trustlevel;
-    int did_add = 0;
-    int rc=0;
+  PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+  unsigned int trustlevel;
+  int did_add = 0;
+  int rc=0;
 
-
-    if( opt.always_trust ) {
-	if( !opt.quiet )
-	    log_info(_("WARNING: Using untrusted key!\n"));
-        if (opt.with_fingerprint)
-            print_fingerprint (pk, NULL, 1);
-	rc = 0;
-        goto leave;
-    }
-
-
-    rc = get_pubkey( pk, sig->keyid );
-    if( rc ) { /* this should not happen */
-	log_error("Ooops; the key vanished  - can't check the trust\n");
-	rc = G10ERR_NO_PUBKEY;
-	goto leave;
-    }
-
-    trustlevel = get_validity (pk, NULL);
-
-  retry:
-    if( (trustlevel & TRUST_FLAG_REVOKED) ) {
-	write_status( STATUS_KEYREVOKED );
-	log_info(_("WARNING: This key has been revoked by its owner!\n"));
-	log_info(_("         This could mean that the signature is forgery.\n"));
-	show_revocation_reason( pk );
-    }
-    else if( (trustlevel & TRUST_FLAG_SUB_REVOKED) ) {
-	write_status( STATUS_KEYREVOKED );
-	log_info(_("WARNING: This subkey has been revoked by its owner!\n"));
-	show_revocation_reason( pk );
-    }
-
-
-    switch( (trustlevel & TRUST_MASK) ) {
-      case TRUST_UNKNOWN: /* No pubkey in trustDB: Insert and check again */
-	trustlevel = get_validity (pk, NULL);
-	if( trustlevel == TRUST_UNKNOWN || trustlevel == TRUST_EXPIRED )
-	    BUG();
-	goto retry;
-
-      case TRUST_EXPIRED:
-	log_info(_("Note: This key has expired!\n"));
+  if ( opt.always_trust)
+    {
+      if( !opt.quiet )
+        log_info(_("WARNING: Using untrusted key!\n"));
+      if (opt.with_fingerprint)
         print_fingerprint (pk, NULL, 1);
-	break;
-
-      case TRUST_UNDEFINED:
-	if( did_add || opt.batch || opt.answer_no ) {
-	    write_status( STATUS_TRUST_UNDEFINED );
-	    log_info(_(
-	    "WARNING: This key is not certified with a trusted signature!\n"));
-	    log_info(_(
-	    "         There is no indication that the "
-				    "signature belongs to the owner.\n" ));
-            print_fingerprint (pk, NULL, 1);
-	}
-	else {
-	    int quit;
-	    rc = add_ownertrust( pk, &quit, &trustlevel );
-	    if( rc || quit ) {
-		did_add = 1;
-		rc = 0;
-	    }
-	    goto retry;
-	}
-	break;
-
-      case TRUST_NEVER:
-	write_status( STATUS_TRUST_NEVER );
-	log_info(_("WARNING: We do NOT trust this key!\n"));
-	log_info(_("         The signature is probably a FORGERY.\n"));
-        if (opt.with_fingerprint)
-            print_fingerprint (pk, NULL, 1);
-	rc = G10ERR_BAD_SIGN;
-	break;
-
-      case TRUST_MARGINAL:
-	write_status( STATUS_TRUST_MARGINAL );
-	log_info(_(
-	 "WARNING: This key is not certified with sufficiently trusted signatures!\n"
-		));
-	log_info(_(
-	 "         It is not certain that the signature belongs to the owner.\n"
-		 ));
-        print_fingerprint (pk, NULL, 1);
-	break;
-
-      case TRUST_FULLY:
-	write_status( STATUS_TRUST_FULLY );
-        if (opt.with_fingerprint)
-            print_fingerprint (pk, NULL, 1);
-	break;
-
-      case TRUST_ULTIMATE:
-	write_status( STATUS_TRUST_ULTIMATE );
-        if (opt.with_fingerprint)
-            print_fingerprint (pk, NULL, 1);
-	break;
-
-      default: BUG();
+      goto leave;
     }
 
+  rc = get_pubkey( pk, sig->keyid );
+  if (rc) 
+    { /* this should not happen */
+      log_error("Ooops; the key vanished  - can't check the trust\n");
+      rc = G10ERR_NO_PUBKEY;
+      goto leave;
+    }
 
-  leave:
-    free_public_key( pk );
-    return rc;
+  trustlevel = get_validity (pk, NULL);
+
+  if ( (trustlevel & TRUST_FLAG_REVOKED) ) 
+    {
+      write_status( STATUS_KEYREVOKED );
+      log_info(_("WARNING: This key has been revoked by its owner!\n"));
+      log_info(_("         This could mean that the signature is forgery.\n"));
+      show_revocation_reason( pk );
+    }
+  else if ((trustlevel & TRUST_FLAG_SUB_REVOKED) ) 
+    {
+      write_status( STATUS_KEYREVOKED );
+      log_info(_("WARNING: This subkey has been revoked by its owner!\n"));
+      show_revocation_reason( pk );
+    }
+  
+  if ((trustlevel & TRUST_FLAG_DISABLED))
+    log_info (_("Note: This key has been disabled.\n"));
+
+  switch ( (trustlevel & TRUST_MASK) ) 
+    {
+    case TRUST_EXPIRED:
+      log_info(_("Note: This key has expired!\n"));
+      print_fingerprint (pk, NULL, 1);
+      break;
+        
+    default:
+      log_error ("invalid trustlevel %u returned from validation layer\n",
+                 trustlevel);
+      /* fall thru */
+    case TRUST_UNKNOWN: 
+    case TRUST_UNDEFINED:
+      if( did_add || opt.batch || opt.answer_no ) {
+        write_status( STATUS_TRUST_UNDEFINED );
+        log_info(_("WARNING: This key is not certified with"
+                   " a trusted signature!\n"));
+        log_info(_("         There is no indication that the "
+                   "signature belongs to the owner.\n" ));
+        print_fingerprint (pk, NULL, 1);
+      }
+      break;
+
+    case TRUST_NEVER:
+      /* currently we won't get that status */
+      write_status( STATUS_TRUST_NEVER );
+      log_info(_("WARNING: We do NOT trust this key!\n"));
+      log_info(_("         The signature is probably a FORGERY.\n"));
+      if (opt.with_fingerprint)
+        print_fingerprint (pk, NULL, 1);
+      rc = G10ERR_BAD_SIGN;
+      break;
+
+    case TRUST_MARGINAL:
+      write_status( STATUS_TRUST_MARGINAL );
+      log_info(_("WARNING: This key is not certified with"
+                 " sufficiently trusted signatures!\n"));
+      log_info(_("         It is not certain that the"
+                 " signature belongs to the owner.\n" ));
+      print_fingerprint (pk, NULL, 1);
+      break;
+
+    case TRUST_FULLY:
+      write_status( STATUS_TRUST_FULLY );
+      if (opt.with_fingerprint)
+        print_fingerprint (pk, NULL, 1);
+      break;
+
+    case TRUST_ULTIMATE:
+      write_status( STATUS_TRUST_ULTIMATE );
+      if (opt.with_fingerprint)
+        print_fingerprint (pk, NULL, 1);
+      break;
+    }
+
+ leave:
+  free_public_key( pk );
+  return rc;
 }
 
 

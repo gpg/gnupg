@@ -1,4 +1,19 @@
+2001-09-27  Werner Koch  <wk@gnupg.org>
+
+	* pkclist.c (do_edit_ownertrust): Allow settin of ultimate trust.
+
+	* trustdb.c (mark_keyblock_seen): New.
+	(make_key_array): Use it to mark the subkeys too.
+	(validate_keys): Store validity for ultimatly trusted keys.
+
 2001-09-26  Werner Koch  <wk@gnupg.org>
+
+	* pkclist.c (check_signatures_trust, do_we_trust): Removed the
+	invocation of add_ownertrust. Minor changes to the wording.
+	(add_ownertrust, add_ownertrust_cb): Removed.
+
+	* trustdb.c (get_validity): Allow to lookup the validity using a
+	subkey.
 
 	* trustdb.c (new_key_hash_table): Increased the table size to 1024
 	and changed the masks accordingly.
@@ -121,7 +136,7 @@
 2001-09-14  Werner Koch  <wk@gnupg.org>
 
 	* parse-packet.c (dump_sig_subpkt): List key server preferences
-	and show the revocable flag correctly. Contributed by Davod Shaw.
+	and show the revocable flag correctly. Contributed by David Shaw.
 
 2001-09-09  Werner Koch  <wk@gnupg.org>
 
@@ -653,7 +668,7 @@
 	* cipher.c (write_header): Set extralen.
 	* build-packet.c (do_encrypted): Use extralen instead of const 10.
 	(do_encrypted_mdc): Ditto.
-	* parse-packet.c (parse_encrypted): Set extralen to 0 becuase we
+	* parse-packet.c (parse_encrypted): Set extralen to 0 because we
 	don't know it here.
 
 2001-03-30  Werner Koch  <wk@gnupg.org>

@@ -928,19 +928,6 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	  case cmdTRUST:
 	    show_key_with_all_names( keyblock, 0, 0, 1, 0 );
 	    tty_printf("\n");
-            if ( sec_keyblock
-                 && cpr_get_answer_is_yes(
-			"keyedit.trust.set_ultimate.okay",
-                _("Do you want to set this key to ultimately trusted? "))) {
-                PKT_public_key *pk = keyblock->pkt->pkt.public_key;
-              
-                update_ownertrust (pk,
-                                   ((get_ownertrust (pk) & ~TRUST_MASK)
-                                    | TRUST_ULTIMATE ));
-		redisplay = 1;
-                break;
-            }
-            
 	    if( edit_ownertrust( find_kbnode( keyblock,
 		      PKT_PUBLIC_KEY )->pkt->pkt.public_key, 1 ) )
 		redisplay = 1;

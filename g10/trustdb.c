@@ -165,7 +165,6 @@ add_key_hash_table (KeyHashTable tbl, u32 *kid)
   tbl[(kid[1] & 0x03ff)] = kk;
 }
 
-
 /*
  * Release a key_array
  */
@@ -671,6 +670,8 @@ get_validity (PKT_public_key *pk, const byte *namehash)
   int rc;
   ulong recno;
   unsigned int validity;
+  u32 kid[2];
+  PKT_public_key *main_pk;
   
   init_trustdb ();
   if (!did_nextcheck)
@@ -690,14 +691,33 @@ get_validity (PKT_public_key *pk, const byte *namehash)
         }
     }
 
-  rc = read_trust_record (pk, &trec);
+  keyid_from_pk (pk, kid);
+  if (pk->main_keyid[0] != kid[0] || pk->main_keyid[1] != kid[1])
+    { /* this is a subkey - get the mainkey */
+      main_pk = m_alloc_clear (sizeof *main_pk);
+      rc = get_pubkey (main_pk, pk->main_keyid);
+      if (rc)
+        {
+          log_error ("error getting main key %08lX of subkey %08lX: %s\n",
+                     (ulong)pk->main_keyid[1], (ulong)kid[1], g10_errstr(rc));
+          validity = TRUST_UNKNOWN; 
+          goto leave;
+	}
+    }
+  else
+    main_pk = pk;
+
+  rc = read_trust_record (main_pk, &trec);
   if (rc && rc != -1)
     {
       tdbio_invalid ();
       return 0;
     }
   if (rc == -1) /* no record found */
-    return TRUST_UNKNOWN; 
+    {
+      validity = TRUST_UNKNOWN; 
+      goto leave;
+    }
 
   /* loop over all user IDs */
   recno = trec.r.trust.validlist;
@@ -719,13 +739,18 @@ get_validity (PKT_public_key *pk, const byte *namehash)
     validity |= TRUST_FLAG_DISABLED;
 
   /* set some flags direct from the key */
-  if (pk->is_revoked)
+  if (main_pk->is_revoked)
     validity |= TRUST_FLAG_REVOKED;
+  if (main_pk != pk && pk->is_revoked)
+    validity |= TRUST_FLAG_SUB_REVOKED;
   /* Note: expiration is a trust value and not a flag - don't know why
    * I initially designed it that way */
-  if (pk->has_expired)
+  if (main_pk->has_expired || pk->has_expired)
     validity = (validity & ~TRUST_MASK) | TRUST_EXPIRED;
 
+ leave:
+  if (main_pk != pk)
+    free_public_key (main_pk);
   return validity;
 }
 
@@ -825,10 +850,25 @@ ask_ownertrust (u32 *kid)
 }
 
 
+static void
+mark_keyblock_seen (KeyHashTable tbl, KBNODE node)
+{
+  for ( ;node; node = node->next )
+    if (node->pkt->pkttype == PKT_PUBLIC_KEY
+        || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+      {
+        u32 aki[2];
+
+        keyid_from_pk (node->pkt->pkt.public_key, aki);
+        add_key_hash_table (tbl, aki);
+      }
+}
+
+
 static int
 search_skipfnc (void *opaque, u32 *kid)
 {
-    return test_key_hash_table ((KeyHashTable)opaque, kid);
+  return test_key_hash_table ((KeyHashTable)opaque, kid);
 }
 
 /*
@@ -882,7 +922,6 @@ make_key_array (KEYDB_HANDLE hd, KeyHashTable visited,
   do
     {
       PKT_public_key *pk;
-      u32 kid[2];
         
       rc = keydb_get_keyblock (hd, &keyblock);
       if (rc) 
@@ -905,12 +944,10 @@ make_key_array (KEYDB_HANDLE hd, KeyHashTable visited,
       merge_keys_and_selfsig (keyblock); 
       clear_kbnode_flags (keyblock);
       pk = keyblock->pkt->pkt.public_key;
-      keyid_from_pk (pk, kid); /*(cheap: should already be cached in the pk)*/
-
       if (pk->has_expired || pk->is_revoked)
         {
           /* it does not make sense to look further at those keys */
-          add_key_hash_table (visited, kid);
+          mark_keyblock_seen (visited, keyblock);
         }
       else if (cmpfnc (keyblock, cmpval))
         {
@@ -920,7 +957,7 @@ make_key_array (KEYDB_HANDLE hd, KeyHashTable visited,
           }
           keys[nkeys++].keyblock = keyblock;
           /* This key is signed - don't check it again */
-          add_key_hash_table (visited, kid);
+          mark_keyblock_seen (visited, keyblock);
         }
       else 
         release_kbnode (keyblock);
@@ -1256,8 +1293,38 @@ validate_keys (int interactive)
       goto leave;
     }
 
+  /* mark all UTKs as visited and set validity to ultimate */
   for (k=utk_list; k; k = k->next)
-    add_key_hash_table (visited, k->kid);
+    {
+      KBNODE keyblock;
+
+      keyblock = get_pubkeyblock (k->kid);
+      if (!keyblock)
+        {
+          log_error (_("public key of ultimately"
+                       " trusted key %08lX not found\n"), (ulong)k->kid[1]);
+          continue;
+        }
+      mark_keyblock_seen (visited, keyblock);
+      for (node=keyblock; node; node = node->next)
+        {
+          if (node->pkt->pkttype == PKT_USER_ID)
+            {
+              byte namehash[20];
+              PKT_user_id *uid = node->pkt->pkt.user_id;
+              
+              if( uid->photo )
+                rmd160_hash_buffer (namehash, uid->photo, uid->photolen);
+              else
+                rmd160_hash_buffer (namehash, uid->name, uid->len );
+              update_validity (keyblock->pkt->pkt.public_key,
+                               namehash, 0, TRUST_ULTIMATE);
+            }
+        }
+      release_kbnode (keyblock);
+      do_sync ();
+    }
+
 
   klist = utk_list;
   kdb = keydb_new (0);
