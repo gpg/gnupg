@@ -295,7 +295,7 @@ mpi_set_secure( MPI a )
 
 
 MPI
-mpi_set_opaque( MPI a, void *p, int len )
+mpi_set_opaque( MPI a, void *p, unsigned int len )
 {
     if( !a ) {
 #ifdef M_DEBUG
@@ -325,7 +325,7 @@ mpi_set_opaque( MPI a, void *p, int len )
 
 
 void *
-mpi_get_opaque( MPI a, int *len )
+mpi_get_opaque( MPI a, unsigned int *len )
 {
     if( !(a->flags & 4) )
 	log_bug("mpi_get_opaque on normal mpi\n");
