@@ -873,6 +873,8 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
 	if( n < 4 )
 	    break;
 	return 0;
+      case SIGSUBPKT_KEY_FLAGS:
+          return 0;  
       case SIGSUBPKT_EXPORTABLE:
 	if( !n )
 	    break;
@@ -894,6 +896,10 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_PREF_COMPR:
       case SIGSUBPKT_POLICY:
 	return 0;
+      case SIGSUBPKT_PRIMARY_UID:
+          if ( n != 1 )
+              break;
+          return 0;   
       case SIGSUBPKT_PRIV_ADD_SIG:
 	/* because we use private data, we check the GNUPG marker */
 	if( n < 24 )
@@ -924,6 +930,8 @@ can_handle_critical( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_PREF_SYM:
       case SIGSUBPKT_PREF_HASH:
       case SIGSUBPKT_PREF_COMPR:
+      case SIGSUBPKT_KEY_FLAGS:
+      case SIGSUBPKT_PRIMARY_UID:
 	return 1;
 
       case SIGSUBPKT_POLICY: /* Is it enough to show the policy? */

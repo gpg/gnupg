@@ -1,5 +1,12 @@
 2001-02-08  Werner Koch  <wk@gnupg.org>
 
+	* getkey.c (key_byname): I can happe that we have both, sk and pk
+	NULL, fix for that.
+
+	* parse-packet.c (parse_one_sig_subpkt): Add support for
+	primary_uid and key_flags.
+	(can_handle_critical): Ditto
+
 	* parse-packet.c (parse_encrypted): Fixed listing of pktlen for
 	MDC packets.
 

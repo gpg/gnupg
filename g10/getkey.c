@@ -857,8 +857,10 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
         }
     }
     else {
-        ctx->req_algo  = pk->req_algo;
-        ctx->req_usage = pk->req_usage;
+        if (pk) {
+            ctx->req_algo  = pk->req_algo;
+            ctx->req_usage = pk->req_usage;
+        }
 	rc = lookup( ctx, ret_kb, 0 );
         if ( !rc && pk ) {
             pk_from_block ( ctx, pk, *ret_kb, NULL /* FIXME need to get the namehash*/ );
