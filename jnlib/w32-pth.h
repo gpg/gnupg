@@ -53,7 +53,9 @@ enum
 /* Mutex values. */
 #define PTH_MUTEX_INITIALIZED  (1<<0)
 #define PTH_MUTEX_LOCKED       (1<<1)
-#define PTH_MUTEX_INIT         {PTH_MUTEX_INITIALIZED}
+
+/* Note: We can't do static initialization, thus we don't define the
+   initializer PTH_MUTEX_INIT.  */
 
 
 #define PTH_KEY_INIT	       (1<<0)
@@ -158,12 +160,7 @@ typedef void *pth_t;
 
 
 /* The Mutex object.  */
-struct pth_mutex_s 
-{
-  unsigned mx_state;
-  W32_PTH_HANDLE_INTERNAL mx; 
-};
-typedef struct pth_mutex_s pth_mutex_t;
+typedef W32_PTH_HANDLE_INTERNAL pth_mutex_t;
 
 
 /* The Event object.  */
@@ -214,6 +211,7 @@ int pth_attr_destroy (pth_attr_t hd);
 int pth_attr_set (pth_attr_t hd, int field, ...);
 
 pth_t pth_spawn (pth_attr_t hd, void *(*func)(void *), void *arg);
+pth_t pth_self (void);
 int pth_join (pth_t hd, void **value);
 int pth_abort (pth_t hd);
 void pth_exit (void *value);

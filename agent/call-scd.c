@@ -52,7 +52,7 @@
 
 static ASSUAN_CONTEXT scd_ctx = NULL;
 #ifdef USE_GNU_PTH
-static pth_mutex_t scd_lock = PTH_MUTEX_INIT;
+static pth_mutex_t scd_lock;
 #endif
 /* We need to keep track of the connection currently using the SCD.
    For a pipe server this is all a NOP because the connection will
@@ -153,6 +153,23 @@ get_membuf (struct membuf *mb, size_t *len)
 
 
 
+/* This function must be called once to initialize this module.  This
+   has to be done before a second thread is spawned.  We can't do the
+   static initialization because Pth emulation code might not be able
+   to do a static init; in particualr, it is not possible for W32. */
+void
+initialize_module_call_scd (void)
+{
+#ifdef USE_GNU_PTH
+  static int initialized;
+
+  if (!initialized)
+    if (pth_mutex_init (&scd_lock))
+      initialized = 1;
+#endif /*USE_GNU_PTH*/
+}
+
+
 static int 
 unlock_scd (int rc)
 {
@@ -163,7 +180,7 @@ unlock_scd (int rc)
       if (!rc)
         rc = gpg_error (GPG_ERR_INTERNAL);
     }
-#endif
+#endif /*USE_GNU_PTH*/
   return rc;
 }
 

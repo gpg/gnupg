@@ -1,6 +1,9 @@
 2004-12-19  Werner Koch  <wk@g10code.com>
 
 	* w32-pth.c (pth_init): Enable debugging depending on env var.
+	(pth_self): New.
+	(pth_mutex_release, pth_mutex_acquire): Implemented directly using
+	the W32 API.
 
 2004-12-18  Werner Koch  <wk@g10code.com>
 

@@ -51,7 +51,7 @@
 
 static ASSUAN_CONTEXT entry_ctx = NULL;
 #ifdef USE_GNU_PTH
-static pth_mutex_t entry_lock = PTH_MUTEX_INIT;
+static pth_mutex_t entry_lock;
 #endif
 
 /* data to be passed to our callbacks */
@@ -64,6 +64,25 @@ struct entry_parm_s {
 
 
 
+/* This function must be called once to initialize this module.  This
+   has to be done before a second thread is spawned.  We can't do the
+   static initialization because Pth emulation code might not be able
+   to do a static init; in particualr, it is not possible for W32. */
+void
+initialize_module_query (void)
+{
+#ifdef USE_GNU_PTH
+  static int initialized;
+
+  if (!initialized)
+    if (pth_mutex_init (&entry_lock))
+      initialized = 1;
+#endif /*USE_GNU_PTH*/
+}
+
+
+
+
 /* Unlock the pinentry so that another thread can start one and
    disconnect that pinentry - we do this after the unlock so that a
    stalled pinentry does not block other threads.  Fixme: We should

@@ -351,12 +351,17 @@ main (int argc, char **argv )
      Note that this will also do the pth_init. */
 #ifndef HAVE_OPENSC
 #ifdef USE_GNU_PTH
+#ifdef HAVE_W32_SYSTEM
+  /* For W32 we need pth.  */
+  pth_init ();
+#else
   err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
   if (err)
     {
       log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
                  gpg_strerror (err));
     }
+#endif
 #endif /*USE_GNU_PTH*/
 #endif /*!HAVE_OPENSC*/
 

@@ -145,6 +145,7 @@ gpg_error_t agent_key_from_file (ctrl_t ctrl,
 int agent_key_available (const unsigned char *grip);
 
 /*-- query.c --*/
+void initialize_module_query (void);
 int agent_askpin (ctrl_t ctrl,
                   const char *desc_text, const char *inital_errtext,
                   struct pin_entry_info_s *pininfo);
@@ -212,6 +213,7 @@ int divert_generic_cmd (ctrl_t ctrl,
 
 
 /*-- call-scd.c --*/
+void initialize_module_call_scd (void);
 int agent_reset_scd (ctrl_t ctrl);
 int agent_card_learn (ctrl_t ctrl,
                       void (*kpinfo_cb)(void*, const char *),

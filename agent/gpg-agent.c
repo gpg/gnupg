@@ -627,6 +627,10 @@ main (int argc, char **argv )
       exit (1);
     }
 
+  initialize_module_query ();
+  initialize_module_call_scd ();
+  
+  /* Try to create missing directories. */
   create_directories ();
 
   if (debug_wait && pipe_server)

@@ -68,7 +68,6 @@ static HANDLE pth_signo_ev;
 static CRITICAL_SECTION pth_shd;
 
 
-
 struct pth_event_s
 {
   struct pth_event_s * next;
@@ -306,8 +305,6 @@ pth_write (int fd, const void * buffer, size_t size)
           fprintf (stderr, "%s: pth_write(%d) failed in write: %s\n",
                    log_get_prefix (NULL), fd,
                    w32_strerror (strerr, sizeof strerr));
-          fprintf (stderr, "--> fd = %d, handle = %p, size = %lu\n",
-                   fd, (HANDLE)fd, size);
           n = -1;
         }
       else
@@ -444,107 +441,94 @@ pth_connect (int fd, struct sockaddr *name, int namelen)
 
 
 int
-pth_mutex_release (pth_mutex_t *hd)
+pth_mutex_release (pth_mutex_t *mutex)
 {
-  if (!hd)
-    return -1;
+  int rc;
+
   implicit_init ();
   enter_pth (__FUNCTION__);
-  if (hd->mx)
+
+  if (!ReleaseMutex (*mutex))
     {
-      CloseHandle (hd->mx);
-      hd->mx = NULL;
+      char strerr[256];
+
+      fprintf (stderr, "%s: pth_release_mutex %p failed: %s\n",
+               log_get_prefix (NULL), *mutex,
+               w32_strerror (strerr, sizeof strerr));
+      rc = FALSE;
     }
-  free (hd);
+  else
+    rc = TRUE;
+
   leave_pth (__FUNCTION__);
-  return 0;
+  return rc;
 }
 
 
 int
-pth_mutex_acquire (pth_mutex_t *hd, int tryonly, pth_event_t ev_extra)
+pth_mutex_acquire (pth_mutex_t *mutex, int tryonly, pth_event_t ev_extra)
 {
+  int code;
+  int rc;
+
   implicit_init ();
   enter_pth (__FUNCTION__);
 
-  if (!hd || !hd->mx)
+  /* FIXME: ev_extra is not yet supported.  */
+  
+  code = WaitForSingleObject (*mutex, INFINITE);
+  switch (code) 
     {
-      leave_pth (__FUNCTION__);
-      return FALSE;
-    }
-    
-#if 0
-  /* still not locked, so simply acquire mutex? */
-  if (!(mutex->mx_state & PTH_MUTEX_LOCKED))
-    {
-      mutex->mx_state |= PTH_MUTEX_LOCKED;
-      mutex->mx_count = 1;
-      pth_ring_append(&(pth_current->mutexring), &(mutex->mx_node));
-      pth_debug1("pth_mutex_acquire: immediately locking mutex");
-      return 0;
-    }
-
-  /* already locked by caller? */
-  if (mutex->mx_count >= 1 && mutex->mx_owner == pth_current)
-    {
-      /* recursive lock */
-      mutex->mx_count++;
-      pth_debug1("pth_mutex_acquire: recursive locking");
-      return 0;
-    }
-
-  if (tryonly)
-    {
-      leave_pth (__FUNCTION__);
-      return -1;
-    }
-
-  for (;;)
-    {
-      ev = pth_event(PTH_EVENT_MUTEX|PTH_MODE_STATIC, &ev_key, mutex);
-      if (ev_extra != NULL)
-        pth_event_concat (ev, ev_extra, NULL);
-      pth_wait (ev);
-      if (ev_extra != NULL)
+      case WAIT_FAILED:
         {
-          pth_event_isolate (ev);
-          if (do_pth_event_status(ev) == PTH_STATUS_PENDING)
-            {
-              leave_pth (__FUNCTION__);
-              return -1;
-            }
+          char strerr[256];
+          
+          fprintf (stderr, "%s: pth_mutex_acquire for %p failed: %s\n",
+                   log_get_prefix (NULL), *mutex,
+                   w32_strerror (strerr, sizeof strerr));
         }
-      if (!(mutex->mx_state & PTH_MUTEX_LOCKED))
+        rc = FALSE;
+        break;
+        
+      case WAIT_OBJECT_0:
+        rc = TRUE;
+        break;
+
+      default:
+        fprintf (stderr, "%s: WaitForSingleObject returned unexpected "
+                 "code %d for mutex %p\n",
+                 log_get_prefix (NULL), code, *mutex);
+        rc = FALSE;
         break;
     }
-#endif
 
-  hd->mx_state |= PTH_MUTEX_LOCKED;
   leave_pth (__FUNCTION__);
-  return TRUE;
+  return rc;
 }
 
 
+
 int
-pth_mutex_init (pth_mutex_t *hd)
+pth_mutex_init (pth_mutex_t *mutex)
 {
   SECURITY_ATTRIBUTES sa;
   
   implicit_init ();
   enter_pth (__FUNCTION__);
 
-  if (hd->mx)
-    {
-      ReleaseMutex (hd->mx);
-      CloseHandle (hd->mx);
-    }
   memset (&sa, 0, sizeof sa);
   sa.bInheritHandle = TRUE;
   sa.lpSecurityDescriptor = NULL;
   sa.nLength = sizeof sa;
-  hd->mx = CreateMutex (&sa, FALSE, NULL);
-  hd->mx_state = PTH_MUTEX_INITIALIZED;
-
+  *mutex = CreateMutex (&sa, FALSE, NULL);
+  if (!*mutex)
+   {
+      free (*mutex);
+      *mutex = NULL;
+      leave_pth (__FUNCTION__);
+      return FALSE;
+    }
+    
   leave_pth (__FUNCTION__);
   return TRUE;
 }
@@ -694,6 +678,12 @@ pth_spawn (pth_attr_t hd, void *(*func)(void *), void *arg)
   return th;
 }
 
+
+pth_t 
+pth_self (void)
+{
+  return GetCurrentThread ();
+}
 
 int
 pth_join (pth_t hd, void **value)
@@ -1271,9 +1261,6 @@ do_pth_wait (pth_event_t ev)
 
         case PTH_EVENT_MUTEX:
           fprintf (stderr, "pth_wait: add mutex event.\n");
-          hdidx[i++] = pos;
-          waitbuf[pos++] = tmp->u.mx->mx;
-          /* XXX: Use SetEvent(hd->ev) */
           break;
         }
     }
