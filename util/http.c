@@ -714,8 +714,7 @@ connect_server( const char *server, ushort port, unsigned int flags )
   struct srventry *srvlist=NULL;
 
 #ifdef _WIN32
-  in_addr_t inaddr;
-#warning check the windoze type
+  unsigned long inaddr;
 
   init_sockets();
   /* Win32 gethostbyname doesn't handle IP addresses internally, so we

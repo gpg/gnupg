@@ -26,6 +26,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _WIN32
+#define MB_CUR_MAX 2
+#endif
+
 #if defined HAVE_WCHAR_H || defined _LIBC
 # include <wchar.h>
 #endif /* HAVE_WCHAR_H || _LIBC */

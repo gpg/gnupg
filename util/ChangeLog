@@ -1,3 +1,8 @@
+2003-09-21  Timo Schulz  <twoaday@freakmail.de>
+
+	* http.c [WIN32]: Define MB_CUR_MAX.
+	(connect_server): use unsigned long since W32 does not have in_addr_t.
+	
 2003-08-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* dotlock.c, http.c, iobuf.c, simple-gettext.c, srv.c, srv.h,
