@@ -1,6 +1,8 @@
 2002-08-16  Werner Koch  <wk@gnupg.org>
 
-	Renamed all all usages of "path" with certificates to "chain"
+	* certpath.c: Renamed to ..
+	* certchain.c: this. Renamed all all other usages of "path" in the
+	context of certificates to "chain".
 
 	* call-agent.c (learn_cb): Special treatment when the issuer
 	certificate is missing.

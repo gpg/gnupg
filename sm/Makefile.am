@@ -39,8 +39,8 @@ gpgsm_SOURCES = \
 	certlist.c \
 	certdump.c \
 	certcheck.c \
-	certpath.c \
-	keylist.c \
+	certchain.c \
+	keylist.ccvs ta \
 	verify.c \
 	sign.c \
 	encrypt.c \

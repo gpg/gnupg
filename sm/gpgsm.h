@@ -186,7 +186,7 @@ int gpgsm_create_cms_signature (KsbaCert cert, GCRY_MD_HD md, int mdalgo,
                                 char **r_sigval);
 
 
-/*-- certpath.c --*/
+/*-- certchain.c --*/
 int gpgsm_walk_cert_chain (KsbaCert start, KsbaCert *r_next);
 int gpgsm_is_root_cert (KsbaCert cert);
 int gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime);
