@@ -756,9 +756,9 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
     if( pref ) {
 	for(j=0; j+1 < npref; j+=2 ) {
 	    if( pref[j] == preftype ) {
-		any = 1;
 		if( (bits[pref[j+1]/32] & (1<<(pref[j+1]%32))) ) {
 		    if( algo_available( preftype, pref[j+1] ) ) {
+			any = 1;
 			i = pref[j+1];
 			break;
 		    }

@@ -164,6 +164,7 @@ list_keyblock( KBNODE keyblock, int secret )
     u32 keyid[2];
     int any=0;
     int trustletter = 0;
+    int ulti_hack = 0;
 
     /* get the keyid from the keyblock */
     node = find_kbnode( keyblock, secret? PKT_SECRET_KEY : PKT_PUBLIC_KEY );
@@ -197,6 +198,8 @@ list_keyblock( KBNODE keyblock, int secret )
 	keyid_from_pk( pk, keyid );
 	if( opt.with_colons ) {
 	    trustletter = query_trust_info( pk, NULL );
+	    if( trustletter == 'u' )
+		ulti_hack = 1;
 	    printf("pub:%c:%u:%d:%08lX%08lX:%s:%s:",
 		    trustletter,
 		    nbits_from_pk( pk ),
@@ -225,7 +228,7 @@ list_keyblock( KBNODE keyblock, int secret )
 		if( opt.with_colons ) {
 		    byte namehash[20];
 
-		    if( pk ) {
+		    if( pk && !ulti_hack ) {
 			rmd160_hash_buffer( namehash,
 					node->pkt->pkt.user_id->name,
 					node->pkt->pkt.user_id->len  );

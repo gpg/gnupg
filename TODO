@@ -26,7 +26,8 @@
 
   * cvs -d :pserver:anoncvs@anoncvs.gnu.org:/gd/gnu/anoncvsroot co common
 
-
+  * find a way to allow the import of non-self-signed keys.  This is needed
+    for the IN ENCR/SIGN hack.
 
 Nice to have
 ------------

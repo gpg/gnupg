@@ -1,3 +1,10 @@
+Sun Apr 18 20:48:15 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* pkclist.c (select_algo_from_prefs): Fixed the case that one key
+	has no preferences (Remi Guyomarch).
+
+	keylist.c (list_keyblock): ulti_hack to propagate trust to all uids.
+
 Sun Apr 18 10:11:28 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 
