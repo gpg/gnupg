@@ -1,3 +1,14 @@
+2002-03-06  Werner Koch  <wk@gnupg.org>
+
+	* pt_PT.po: Removed.
+	* pt.po: and replaced by this updated one.  My machine voted 30 to
+	2 for just pt.  So we go with the crowd.  Thanks for Pedro Morais
+	for suggesting this.
+
+2002-03-05  Werner Koch  <wk@gnupg.org>
+
+	* tr.po, id.po: Updated.
+
 2002-03-03  gettextize  <bug-gnu-utils@gnu.org>
 
 	* Makefile.in.in: Upgrade to gettext-0.10.40.
