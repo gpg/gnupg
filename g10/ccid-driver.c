@@ -423,6 +423,9 @@ read_device_info (ccid_driver_t handle, struct usb_device *dev)
       struct usb_config_descriptor *config = dev->config + cfg_no;
       int ifc_no;
 
+      if(!config)
+	continue;
+
       for (ifc_no=0; ifc_no < config->bNumInterfaces; ifc_no++)
         {
           struct usb_interface *interface = config->interface + ifc_no;
@@ -564,7 +567,12 @@ ccid_open_reader (ccid_driver_t *handle, int readerno)
   
   usb_find_busses();
   usb_find_devices();
+
+#ifdef HAVE_USB_GET_BUSSES
   busses = usb_get_busses();
+#else
+  busses = usb_busses;
+#endif
 
   for (bus = busses; bus; bus = bus->next) 
     {

@@ -1,3 +1,10 @@
+2004-09-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* ccid-driver.c (read_device_info): Fix segfault when usb device
+	is not accessible.
+	(ccid_open_reader): Allow working with an even older version of
+	libusb (usb_busses global instead of usb_get_busses()).
+
 2004-09-09  Werner Koch  <wk@g10code.com>
 
 	* cardglue.h: Add members for CA fingerprints.
