@@ -208,7 +208,7 @@ EXTERN_UNLESS_MAIN_MODULE
 struct {
   int in_auto_key_retrieve; /* True if we are doing an
                                auto_key_retrieve. */
-} ctrl;
+} glo_ctrl;
 
 #define DBG_PACKET_VALUE  1	/* debug packet reading/writing */
 #define DBG_MPI_VALUE	  2	/* debug mpi details */

@@ -513,8 +513,13 @@ ccid_open_reader (ccid_driver_t *handle, int readerno)
           if (rc)
             {
               DEBUGOUT_1 ("usb_claim_interface failed: %d\n", rc);
-
-              XXXXX;
+#if defined(GNUPG_MAJOR_VERSION) \
+    || (defined(GNUPG_SCD_MAIN_HEADER) && defined(HAVE_JNLIB_LOGGING))
+              log_info ("CCID can't be used - "
+                        "please check that the device file "
+                        "(e.g. /proc/bus/usb) "
+                        "has appropriate permissions\n" );
+#endif
 
               free (*handle);
               *handle = NULL;

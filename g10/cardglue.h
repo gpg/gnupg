@@ -123,7 +123,7 @@ void card_set_reader_port (const char *portstr);
 
 char *serialno_and_fpr_from_sk (const unsigned char *sn, size_t snlen,
                                 PKT_secret_key *sk);
-void send_status_info (CTRL ctrl, const char *keyword, ...);
+void send_status_info (ctrl_t ctrl, const char *keyword, ...);
 void gcry_md_hash_buffer (int algo, void *digest,
 			  const void *buffer, size_t length);
 void log_printf (const char *fmt, ...);

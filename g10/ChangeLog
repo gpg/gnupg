@@ -1,3 +1,14 @@
+2004-05-22  Werner Koch  <wk@gnupg.org>
+
+	* trustdb.c (check_regexp): s/EXP/EXPR/.
+
+	* keyedit.c (trustsig_prompt): Remoev useless range check.
+
+	* options.h: Renamed ctrl to glo_ctrl.  Changed all users.
+
+	* ccid-driver.c (ccid_open_reader): Print a warning when CCID
+	can't be used.
+
 2004-05-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* mainproc.c (check_sig_and_print): If we're honoring preferred

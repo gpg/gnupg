@@ -1374,9 +1374,9 @@ check_sig_and_print( CTX c, KBNODE node )
 		  {
 		    int res;
 
-		    ctrl.in_auto_key_retrieve++;
+		    glo_ctrl.in_auto_key_retrieve++;
 		    res=keyserver_import_keyid(sig->keyid,spec);
-		    ctrl.in_auto_key_retrieve--;
+		    glo_ctrl.in_auto_key_retrieve--;
 		    if(!res)
 		      rc=do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
 		    free_keyserver_spec(spec);
@@ -1396,9 +1396,9 @@ check_sig_and_print( CTX c, KBNODE node )
       {
 	int res;
 
-	ctrl.in_auto_key_retrieve++;
+	glo_ctrl.in_auto_key_retrieve++;
 	res=keyserver_import_keyid ( sig->keyid, opt.keyserver );
-	ctrl.in_auto_key_retrieve--;
+	glo_ctrl.in_auto_key_retrieve--;
 	if(!res)
 	  rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
       }

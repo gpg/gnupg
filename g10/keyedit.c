@@ -343,8 +343,6 @@ trustsig_prompt(byte *trust_value,byte *trust_depth,char **regexp)
       cpr_kill_prompt();
       *trust_depth=atoi(p);
       m_free(p);
-      if(*trust_depth<1 || *trust_depth>255)
-	*trust_depth=0;
     }
 
   tty_printf("\n");

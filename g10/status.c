@@ -167,7 +167,7 @@ get_status_string ( int no )
 static int
 status_currently_allowed (int no)
 {
-  if (!ctrl.in_auto_key_retrieve)
+  if (!glo_ctrl.in_auto_key_retrieve)
     return 1; /* Yes. */
 
   /* We allow some statis anyway, so that import statistics are
