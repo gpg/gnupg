@@ -1,6 +1,11 @@
 Noteworthy changes in version 1.2.5 (unreleased)
 ------------------------------------------------
 
+    * Some performance improvements with large keyrings.
+
+    * Some portability fixes for the OpenBSD/i386 and HPPA platforms.
+
+
 Noteworthy changes in version 1.2.4 (2003-12-23)
 ------------------------------------------------
 
@@ -24,6 +29,7 @@ Noteworthy changes in version 1.2.4 (2003-12-23)
 
     * A Russian translation is included again as well as a new
       Belarusian translation.
+
 
 Noteworthy changes in version 1.2.3 (2003-08-21)
 ------------------------------------------------

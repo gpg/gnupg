@@ -241,6 +241,30 @@ AC_ARG_WITH(included-zlib,
 [g10_force_zlib=yes], [g10_force_zlib=no] )
 AC_MSG_RESULT($g10_force_zlib)
 
+dnl
+dnl Check for the key/uid cache size.  This can't be zero, but can be
+dnl pretty small on embedded systems.
+dnl
+AC_MSG_CHECKING([for the size of the key and uid cache])
+AC_ARG_ENABLE(key-cache,
+	AC_HELP_STRING([--enable-key-cache=SIZE],[Set key cache to SIZE (default 4096)]),,enableval=4096)
+
+if test "$enableval" = "no"; then
+   enableval=5
+elif test "$enableval" = "yes" || test "$enableval" = ""; then
+   enableval=4096
+fi
+
+changequote(,)dnl
+key_cache_size=`echo "$enableval" | sed 's/[A-Za-z]//g'`
+changequote([,])dnl
+
+if test "$enableval" != "$key_cache_size" || test "$key_cache_size" -lt 5; then
+   AC_MSG_ERROR([invalid key-cache size])
+fi
+
+AC_MSG_RESULT($key_cache_size)
+AC_DEFINE_UNQUOTED(PK_UID_CACHE_SIZE,$key_cache_size,[Size of the key and UID caches])
 
 dnl
 dnl Check whether we want to use Linux capabilities
@@ -288,7 +312,6 @@ GNUPG_CHECK_FAQPROG
 GNUPG_CHECK_DOCBOOK_TO_TEXI
 
 MPI_OPT_FLAGS=""
-
 
 
 try_gettext=yes

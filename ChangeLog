@@ -1,3 +1,10 @@
+2004-01-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note --enable-key-cache and OpenBSD/i386 and HPPA fixes.
+
+	* README, configure.ac: Add --enable-key-cache=SIZE configure
+	option.  This sets the key/uid cache size.  Default is 4096.
+
 2003-12-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Include stdio.h when checking for bzlib.h.
