@@ -838,6 +838,11 @@ keyserver_refresh(STRLIST users)
   int rc,count,fakev3=0;
   KEYDB_SEARCH_DESC *desc;
 
+  /* We switch merge_only on during a refresh, as 'refresh' should
+     never import new keys, even if their keyids match.  Is it worth
+     preserving the old merge_only value here? */
+  opt.merge_only=1;
+
   /* If refresh_add_fake_v3_keyids is on and it's a HKP or MAILTO
      scheme, then enable fake v3 keyid generation. */
   if(opt.keyserver_options.refresh_add_fake_v3_keyids &&
