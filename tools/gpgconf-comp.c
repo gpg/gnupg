@@ -42,6 +42,13 @@
 
 /* TODO:
    Portability - Add gnulib replacements for getline, etc.
+ 
+XXX Marcus: Please use the read_line code from dirmngr/src/http.c - it
+has been in use for may years and provides the ability to limit the
+length of the line and thus thwart DoS (not a issue here but at many
+other places).
+
+
    Backend: File backend must be able to write out changes !!!
    Components: Add more components and their options.
    Robustness: Do more validation.  Call programs to do validation for us.
@@ -52,8 +59,7 @@
 */
 
 
-#if defined (__riscos__) \
-    || (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 ))
+#if (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 ))
 void gc_error (int status, int errnum, const char *fmt, ...) \
   __attribute__ ((format (printf, 3, 4)));
 #endif
