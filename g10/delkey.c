@@ -127,23 +127,11 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
         log_info (_("(unless you specify the key by fingerprint)\n"));
       }
     else {
-	char *p;
-	size_t n;
-
-	if( secret )
-	    tty_printf("sec  %4u%c/%08lX %s   ",
-		      nbits_from_sk( sk ),
-		      pubkey_letter( sk->pubkey_algo ),
-		      (ulong)keyid[1], datestr_from_sk(sk) );
-	else
-	    tty_printf("pub  %4u%c/%08lX %s   ",
-		      nbits_from_pk( pk ),
-		      pubkey_letter( pk->pubkey_algo ),
-		      (ulong)keyid[1], datestr_from_pk(pk) );
-	p = get_user_id( keyid, &n );
-	tty_print_utf8_string( p, n );
-	m_free(p);
-	tty_printf("\n\n");
+        if( secret )
+            print_seckey_info( sk );
+        else
+            print_pubkey_info( pk );
+	tty_printf( "\n" );
 
 	yes = cpr_get_answer_is_yes( secret? "delete_key.secret.okay"
 					   : "delete_key.okay",

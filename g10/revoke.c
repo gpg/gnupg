@@ -260,35 +260,16 @@ gen_desig_revoke( const char *uname )
 	/* We have the revocation key */
 	if(!rc)
 	  {
-	    size_t n;
-	    char *p;
-	    u32 sk_keyid[2];
-	    PKT_signature *revkey=NULL;
+	    PKT_signature *revkey = NULL;
 
-	    any=1;
-	    keyid_from_sk(sk,sk_keyid);
+	    any = 1;
 
-	    tty_printf("\npub  %4u%c/%08lX %s   ",
-		       nbits_from_pk( pk ),
-		       pubkey_letter( pk->pubkey_algo ),
-		       (ulong)keyid[1], datestr_from_pk(pk) );
+            print_pubkey_info (pk);
+	    tty_printf ("\n");
 
-	    p = get_user_id( keyid, &n );
-	    tty_print_utf8_string( p, n );
-	    m_free(p);
-	    tty_printf("\n\n");
+	    tty_printf (_("To be revoked by:\n"));
+            print_seckey_info (sk);
 
-	    tty_printf(_("To be revoked by:\n"));
-
-	    tty_printf("\nsec  %4u%c/%08lX %s   ",
-		       nbits_from_sk( sk ),
-		       pubkey_letter( sk->pubkey_algo ),
-		       (ulong)sk_keyid[1], datestr_from_sk(sk) );
-
-	    p = get_user_id( sk_keyid, &n );
-	    tty_print_utf8_string( p, n );
-	    m_free(p);
-	    tty_printf("\n");
 	    if(pk->revkey[i].class&0x40)
 	      tty_printf(_("(This is a sensitive revocation key)\n"));
 	    tty_printf("\n");
@@ -464,17 +445,8 @@ gen_revoke( const char *uname )
      * it's used all over the source */
     sk = node->pkt->pkt.secret_key;
     keyid_from_sk( sk, sk_keyid );
-    tty_printf("\nsec  %4u%c/%08lX %s   ",
-	      nbits_from_sk( sk ),
-	      pubkey_letter( sk->pubkey_algo ),
-	      (ulong)sk_keyid[1], datestr_from_sk(sk) );
-    {
-	size_t n;
-	char *p = get_user_id( sk_keyid, &n );
-	tty_print_utf8_string( p, n );
-	m_free(p);
-	tty_printf("\n");
-    }
+    print_seckey_info (sk);
+
     pk = m_alloc_clear( sizeof *pk );
 
     /* FIXME: We should get the public key direct from the secret one */

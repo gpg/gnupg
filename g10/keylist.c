@@ -73,6 +73,48 @@ secret_key_list( STRLIST list )
 }
 
 void
+print_seckey_info (PKT_secret_key *sk)
+{
+    u32 sk_keyid[2];
+    size_t n;
+    char *p;
+
+    keyid_from_sk (sk, sk_keyid);
+    tty_printf ("\nsec  %4u%c/%08lX %s   ",
+                nbits_from_sk (sk),
+                pubkey_letter (sk->pubkey_algo),
+                (ulong)sk_keyid[1], datestr_from_sk (sk));
+    
+    p = get_user_id (sk_keyid, &n);
+    tty_print_utf8_string (p, n);
+    m_free (p);
+
+    tty_printf ("\n");   
+}
+
+void
+print_pubkey_info (PKT_public_key *pk)
+{
+  u32 pk_keyid[2];
+  size_t n;
+  char *p;
+
+  keyid_from_pk (pk, pk_keyid);
+  tty_printf ("\npub  %4u%c/%08lX %s   ",
+              nbits_from_pk (pk),
+              pubkey_letter (pk->pubkey_algo),
+              (ulong)pk_keyid[1], datestr_from_pk (pk));
+
+
+  p = get_user_id (pk_keyid, &n);
+  tty_print_utf8_string (p, n);
+  m_free (p);
+  
+  tty_printf ("\n\n"); 
+}
+
+
+void
 show_policy_url(PKT_signature *sig,int indent)
 {
   const byte *p;

@@ -198,6 +198,8 @@ void print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode);
 void show_policy_url(PKT_signature *sig,int indent);
 void show_notation(PKT_signature *sig,int indent);
 void set_attrib_fd(int fd);
+void print_seckey_info (PKT_secret_key *sk);
+void print_pubkey_info (PKT_public_key *pk);
 
 /*-- verify.c --*/
 void print_file_status( int status, const char *name, int what );

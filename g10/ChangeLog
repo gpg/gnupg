@@ -1,3 +1,11 @@
+2002-10-18  Timo Schulz  <ts@winpt.org>
+
+	* keylist.c: (print_pubkey_info): New.
+	(print_seckey_info): New.
+	* main.h: Prototypes for the new functions.       
+	* delkey.c (do_delete_key): Use it here.
+	* revoke.c (gen_desig_revoke): Ditto.
+	
 2002-10-17  Werner Koch  <wk@gnupg.org>
 
 	* pkclist.c (do_edit_ownertrust): Show all user IDs.  This should
