@@ -1,8 +1,33 @@
+2003-05-01  Werner Koch  <wk@gnupg.org>
+
+	* de.po: Added recent translatable strings and fixed fuzzies.
+	What a Labour.
+
+2003-04-30  Werner Koch  <wk@gnupg.org>
+
+	* zh_TW.po: Fixed a few LF mismatches and one format bug.
+	* sv.po: Fixed a few LF and format mismatches.  See fixmes.
+	* fi.po: Fixed a few LF mismatches.
+
+	* cs.po, sv.po, gl.po, hu.po, tr.po, zh_TW.po, el.po, fi.po
+	* et.po, ca.po, es.po, it.po, fr.po, sk.po, id.po: Updated from
+	respective translators.
+
+2003-04-24  Werner Koch  <wk@gnupg.org>
+
+	* POTFILES.in: Added a couple of missing source files.  Noted by
+	Pascal Hartig and Walter Koch.
+
+	* et.po, fi.po, fr.po, gl.po, id.po, it.po, ja.po, pt.po: Updated
+	from respective translators.
+
+	* hu.po: New.
+	
 2003-04-15  Werner Koch  <wk@gnupg.org>
 
-	* pl.po: New from Alex.
+	* pl.po: Updated from Alex.
 
-	* de.po, de.glo: New from Walter. 
+	* de.po, de.glo: Updated from Walter. 
 
 	* sk.po: New.
 	
