@@ -102,6 +102,71 @@ mk_notation_and_policy( PKT_signature *sig )
 }
 
 
+/*
+ * Helper to hash a user ID packet.  
+ */
+static void
+hash_uid (MD_HANDLE md, int sigversion, const PKT_user_id *uid)
+{
+    if ( sigversion >= 4 ) {
+        byte buf[5];
+        buf[0] = 0xb4;	          /* indicates a userid packet */
+        buf[1] = uid->len >> 24;  /* always use 4 length bytes */
+        buf[2] = uid->len >> 16;
+        buf[3] = uid->len >>  8;
+        buf[4] = uid->len;
+        md_write( md, buf, 5 );
+    }
+    md_write (md, uid->name, uid->len );
+}
+
+
+/*
+ * Helper to hash some parts from the signature
+ */
+static void
+hash_sigversion_to_magic (MD_HANDLE md, const PKT_signature *sig)
+{
+    if (sig->version >= 4) 
+        md_putc (md, sig->version);
+    md_putc (md, sig->sig_class);
+    if (sig->version < 4) {
+        u32 a = sig->timestamp;
+        md_putc (md, (a >> 24) & 0xff );
+        md_putc (md, (a >> 16) & 0xff );
+        md_putc (md, (a >>  8) & 0xff );
+        md_putc (md,  a	       & 0xff );
+    }
+    else {
+        byte buf[6];
+        size_t n;
+        
+        md_putc (md, sig->pubkey_algo);
+        md_putc (md, sig->digest_algo);
+        if (sig->hashed) {
+            n = sig->hashed->len;
+            md_putc (md, (n >> 8) );
+            md_putc (md,  n       );
+            md_write (md, sig->hashed->data, n );
+            n += 6;
+        }
+        else {
+            md_putc (md, 0);  /* always hash the length of the subpacket*/
+            md_putc (md, 0);
+            n = 6;
+        }
+        /* add some magic */
+        buf[0] = sig->version;
+        buf[1] = 0xff;
+        buf[2] = n >> 24; /* hmmm, n is only 16 bit, so this is always 0 */
+        buf[3] = n >> 16;
+        buf[4] = n >>  8;
+        buf[5] = n;
+        md_write (md, buf, 6);
+    }
+}
+
+
 static int
 do_sign( PKT_secret_key *sk, PKT_signature *sig,
 	 MD_HANDLE md, int digest_algo )
@@ -231,6 +296,199 @@ print_status_sig_created ( PKT_secret_key *sk, PKT_signature *sig, int what )
 }
 
 
+/*
+ * Loop over the secret certificates in SK_LIST and build the one pass
+ * signature packets.  OpenPGP says that the data should be bracket by
+ * the onepass-sig and signature-packet; so we build these onepass
+ * packet here in reverse order 
+ */
+static int
+write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
+{
+    int skcount;
+    SK_LIST sk_rover;
+
+    for (skcount=0, sk_rover=sk_list; sk_rover; sk_rover = sk_rover->next)
+        skcount++;
+
+    for (; skcount; skcount--) {
+        PKT_secret_key *sk;
+        PKT_onepass_sig *ops;
+        PACKET pkt;
+        int i, rc;
+        
+        for (i=0, sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
+            if (++i == skcount)
+                break;
+        }
+
+        sk = sk_rover->sk;
+        ops = m_alloc_clear (sizeof *ops);
+        ops->sig_class = sigclass;
+        ops->digest_algo = hash_for (sk->pubkey_algo, sk->version);
+        ops->pubkey_algo = sk->pubkey_algo;
+        keyid_from_sk (sk, ops->keyid);
+        ops->last = (skcount == 1);
+        
+        init_packet(&pkt);
+        pkt.pkttype = PKT_ONEPASS_SIG;
+        pkt.pkt.onepass_sig = ops;
+        rc = build_packet (out, &pkt);
+        free_packet (&pkt);
+        if (rc) {
+            log_error ("build onepass_sig packet failed: %s\n",
+                       g10_errstr(rc));
+            return rc;
+        }
+    }
+
+    return 0;
+}
+
+/*
+ * Helper to write the plaintext (literal data) packet
+ */
+static int
+write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
+{
+    PKT_plaintext *pt = NULL;
+    u32 filesize;
+    int rc = 0;
+
+    if (!opt.no_literal) {
+        if (fname || opt.set_filename) {
+            char *s = make_basename (opt.set_filename? opt.set_filename
+                                                     : fname);
+            pt = m_alloc (sizeof *pt + strlen(s) - 1);
+            pt->namelen = strlen (s);
+            memcpy (pt->name, s, pt->namelen);
+            m_free (s);
+        }
+        else { /* no filename */
+            pt = m_alloc (sizeof *pt - 1);
+            pt->namelen = 0;
+        }
+    }
+
+    /* try to calculate the length of the data */
+    if (fname) {
+        if( !(filesize = iobuf_get_filelength(inp)) )
+            log_info (_("WARNING: `%s' is an empty file\n"), fname);
+
+        /* we can't yet encode the length of very large files,
+         * so we switch to partial length encoding in this case */
+        if (filesize >= IOBUF_FILELENGTH_LIMIT)
+            filesize = 0;
+
+        /* because the text_filter modifies the length of the
+         * data, it is not possible to know the used length
+         * without a double read of the file - to avoid that
+         * we simple use partial length packets.
+         */
+        if ( ptmode == 't' )
+            filesize = 0;
+    }
+    else {
+        filesize = opt.set_filesize? opt.set_filesize : 0; /* stdin */
+    }
+
+    if (!opt.no_literal) {
+        PACKET pkt;
+
+        pt->timestamp = make_timestamp ();
+        pt->mode = ptmode;
+        pt->len = filesize;
+        pt->new_ctb = !pt->len && !opt.rfc1991;
+        pt->buf = inp;
+        init_packet(&pkt);
+        pkt.pkttype = PKT_PLAINTEXT;
+        pkt.pkt.plaintext = pt;
+        /*cfx.datalen = filesize? calc_packet_length( &pkt ) : 0;*/
+        if( (rc = build_packet (out, &pkt)) )
+            log_error ("build_packet(PLAINTEXT) failed: %s\n",
+                       g10_errstr(rc) );
+        pt->buf = NULL;
+    }
+    else {
+        byte copy_buffer[4096];
+        int  bytes_copied;
+
+        while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
+            if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
+                rc = G10ERR_WRITE_FILE;
+                log_error ("copying input to output failed: %s\n",
+                           g10_errstr(rc));
+                break;
+            }
+        memset(copy_buffer, 0, 4096); /* burn buffer */
+    }
+    /* fixme: it seems that we never freed pt/pkt */
+    
+    return rc;
+}
+
+/*
+ * Write the signatures from the SK_LIST to OUT. HASH must be a non-finalized
+ * hash which will not be changes here.
+ */
+static int
+write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
+                         int sigclass, int old_style, int status_letter)
+{
+    SK_LIST sk_rover;
+
+    /* loop over the secret certificates */
+    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next) {
+	PKT_secret_key *sk;
+	PKT_signature *sig;
+	MD_HANDLE md;
+        int rc;
+
+	sk = sk_rover->sk;
+
+	/* build the signature packet */
+	sig = m_alloc_clear (sizeof *sig);
+	sig->version = (old_style || opt.force_v3_sigs)? 3 : sk->version;
+	keyid_from_sk (sk, sig->keyid);
+	sig->digest_algo = hash_for (sk->pubkey_algo, sk->version);
+	sig->pubkey_algo = sk->pubkey_algo;
+	sig->timestamp = make_timestamp();
+	sig->sig_class = sigclass;
+
+	md = md_copy (hash);
+
+	if (sig->version >= 4)
+	    build_sig_subpkt_from_sig (sig);
+	mk_notation_and_policy (sig);
+
+        hash_sigversion_to_magic (md, sig);
+	md_final (md);
+
+	rc = do_sign( sk, sig, md, hash_for (sig->pubkey_algo, sk->version) );
+	md_close (md);
+
+	if( !rc ) { /* and write it */
+            PACKET pkt;
+
+	    init_packet(&pkt);
+	    pkt.pkttype = PKT_SIGNATURE;
+	    pkt.pkt.signature = sig;
+	    rc = build_packet (out, &pkt);
+	    if (!rc && is_status_enabled()) {
+		print_status_sig_created ( sk, sig, status_letter);
+	    }
+	    free_packet (&pkt);
+	    if (rc)
+		log_error ("build signature packet failed: %s\n",
+                           g10_errstr(rc) );
+	}
+	if( rc )
+	    return rc;;
+    }
+
+    return 0;
+}
+
 /****************
  * Sign the files whose names are in FILENAME.
  * If DETACHED has the value true,
@@ -255,8 +513,6 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     encrypt_filter_context_t efx;
     IOBUF inp = NULL, out = NULL;
     PACKET pkt;
-    PKT_plaintext *pt = NULL;
-    u32 filesize;
     int rc = 0;
     PK_LIST pk_list = NULL;
     SK_LIST sk_list = NULL;
@@ -335,14 +591,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
     if( opt.armor && !outfile  )
 	iobuf_push_filter( out, armor_filter, &afx );
-  #ifdef ENABLE_COMMENT_PACKETS
-    else {
-	write_comment( out, "#created by GNUPG v" VERSION " ("
-					    PRINTABLE_OS_NAME ")");
-	if( opt.comment_string )
-	    write_comment( out, opt.comment_string );
-    }
-  #endif
+
     if( encrypt ) {
 	efx.pk_list = pk_list;
 	/* fixme: set efx.cfx.datalen if known */
@@ -361,42 +610,12 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	}
     }
 
-    if( !detached && !old_style ) {
-	int skcount=0;
-	/* loop over the secret certificates and build headers
-	 * The specs now say that the data should be bracket by
-	 * the onepass-sig and signature-packet; so we must build it
-	 * here in reverse order */
-	for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
-	    skcount++;
-	for( ; skcount; skcount-- ) {
-	    PKT_secret_key *sk;
-	    PKT_onepass_sig *ops;
-	    int i = 0;
-
-	    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
-		if( ++i == skcount )
-		    break;
-
-	    sk = sk_rover->sk;
-	    ops = m_alloc_clear( sizeof *ops );
-	    ops->sig_class = opt.textmode && !outfile ? 0x01 : 0x00;
-	    ops->digest_algo = hash_for(sk->pubkey_algo, sk->version);
-	    ops->pubkey_algo = sk->pubkey_algo;
-	    keyid_from_sk( sk, ops->keyid );
-	    ops->last = skcount == 1;
-
-	    init_packet(&pkt);
-	    pkt.pkttype = PKT_ONEPASS_SIG;
-	    pkt.pkt.onepass_sig = ops;
-	    rc = build_packet( out, &pkt );
-	    free_packet( &pkt );
-	    if( rc ) {
-		log_error("build onepass_sig packet failed: %s\n",
-							g10_errstr(rc));
-		goto leave;
-	    }
-	}
+    /* Write the one-pass signature packets if needed */
+    if (!detached && !old_style) {
+        rc = write_onepass_sig_packets (sk_list, out,
+                                        opt.textmode && !outfile ? 0x01:0x00);
+        if (rc)
+            goto leave;
     }
 
     /* setup the inner packet */
@@ -432,153 +651,20 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	}
     }
     else {
-	if (!opt.no_literal) {
-	    if( fname || opt.set_filename ) {
-		char *s = make_basename( opt.set_filename ? opt.set_filename : fname );
-		pt = m_alloc( sizeof *pt + strlen(s) - 1 );
-		pt->namelen = strlen(s);
-		memcpy(pt->name, s, pt->namelen );
-		m_free(s);
-	    }
-	    else { /* no filename */
-		pt = m_alloc( sizeof *pt - 1 );
-		pt->namelen = 0;
-	    }
-	}
-
-	if( fname ) {
-	    if( !(filesize = iobuf_get_filelength(inp)) )
-		log_info(_("WARNING: `%s' is an empty file\n"), fname );
-            /* we can't yet encode the length of very large files,
-             * so we switch to partial length encoding in this case */
-            if ( filesize >= IOBUF_FILELENGTH_LIMIT )
-                filesize = 0;
-
-	    /* because the text_filter modifies the length of the
-	     * data, it is not possible to know the used length
-	     * without a double read of the file - to avoid that
-	     * we simple use partial length packets.
-	     */
-	    if( opt.textmode && !outfile )
-		filesize = 0;
-	}
-	else
-	    filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
-
-	if (!opt.no_literal) {
-	    pt->timestamp = make_timestamp();
-	    pt->mode = opt.textmode && !outfile ? 't':'b';
-	    pt->len = filesize;
-	    pt->new_ctb = !pt->len && !opt.rfc1991;
-	    pt->buf = inp;
-	    pkt.pkttype = PKT_PLAINTEXT;
-	    pkt.pkt.plaintext = pt;
-	    /*cfx.datalen = filesize? calc_packet_length( &pkt ) : 0;*/
-	    if( (rc = build_packet( out, &pkt )) )
-		log_error("build_packet(PLAINTEXT) failed: %s\n", g10_errstr(rc) );
-	    pt->buf = NULL;
-	}
-	else {
-	    byte copy_buffer[4096];
-	    int  bytes_copied;
-	    while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
-		if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
-		    rc = G10ERR_WRITE_FILE;
-		    log_error("copying input to output failed: %s\n", g10_errstr(rc));
-		    break;
-		}
-	    memset(copy_buffer, 0, 4096); /* burn buffer */
-	}
+        rc = write_plaintext_packet (out, inp, fname,
+                                     opt.textmode && !outfile ? 't':'b');
     }
 
-    /* catch errors from above blocks */
+    /* catch errors from above */
     if (rc)
 	goto leave;
 
-    /* loop over the secret certificates */
-    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
-	PKT_secret_key *sk;
-	PKT_signature *sig;
-	MD_HANDLE md;
-
-	sk = sk_rover->sk;
-
-	/* build the signature packet */
-	/* fixme: this code is partly duplicated in make_keysig_packet */
-	sig = m_alloc_clear( sizeof *sig );
-	sig->version = old_style || opt.force_v3_sigs ? 3 : sk->version;
-	keyid_from_sk( sk, sig->keyid );
-	sig->digest_algo = hash_for(sk->pubkey_algo, sk->version);
-	sig->pubkey_algo = sk->pubkey_algo;
-	sig->timestamp = make_timestamp();
-	sig->sig_class = opt.textmode && !outfile? 0x01 : 0x00;
-
-	md = md_copy( mfx.md );
-
-	if( sig->version >= 4 ) {
-	    build_sig_subpkt_from_sig( sig );
-	    md_putc( md, sig->version );
-	}
-
-	mk_notation_and_policy( sig );
-
-	md_putc( md, sig->sig_class );
-	if( sig->version < 4 ) {
-	    u32 a = sig->timestamp;
-	    md_putc( md, (a >> 24) & 0xff );
-	    md_putc( md, (a >> 16) & 0xff );
-	    md_putc( md, (a >>	8) & 0xff );
-	    md_putc( md,  a	   & 0xff );
-	}
-	else {
-	    byte buf[6];
-	    size_t n;
-
-	    md_putc( md, sig->pubkey_algo );
-	    md_putc( md, sig->digest_algo );
-	    if( sig->hashed ) {
-                n = sig->hashed->len;
-                md_putc (md, (n >> 8) );
-                md_putc (md,  n       );
-		md_write (md, sig->hashed->data, n );
-		n += 6;
-	    }
-	    else {
-		md_putc( md, 0 );  /* always hash the length of the subpacket*/
-		md_putc( md, 0 );
-		n = 6;
-	    }
-	    /* add some magic */
-	    buf[0] = sig->version;
-	    buf[1] = 0xff;
-	    buf[2] = n >> 24; /* hmmm, n is only 16 bit, so this is always 0 */
-	    buf[3] = n >> 16;
-	    buf[4] = n >>  8;
-	    buf[5] = n;
-	    md_write( md, buf, 6 );
-
-	}
-	md_final( md );
-
-	rc = do_sign( sk, sig, md, hash_for(sig->pubkey_algo, sk->version) );
-	md_close( md );
-
-	if( !rc ) { /* and write it */
-	    init_packet(&pkt);
-	    pkt.pkttype = PKT_SIGNATURE;
-	    pkt.pkt.signature = sig;
-	    rc = build_packet( out, &pkt );
-	    if( !rc && is_status_enabled() ) {
-		print_status_sig_created ( sk, sig, detached ? 'D':'S');
-	    }
-	    free_packet( &pkt );
-	    if( rc )
-		log_error("build signature packet failed: %s\n", g10_errstr(rc) );
-	}
-	if( rc )
-	    goto leave;
-
-    }
+    /* write the signatures */
+    rc = write_signature_packets (sk_list, out, mfx.md,
+                                  opt.textmode && !outfile? 0x01 : 0x00,
+                                  old_style, detached ? 'D':'S');
+    if( rc )
+        goto leave;
 
 
   leave:
@@ -702,89 +788,11 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     afx.what = 2;
     iobuf_push_filter( out, armor_filter, &afx );
 
-    /* loop over the secret certificates */
-    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
-	PKT_secret_key *sk;
-	PKT_signature *sig;
-	MD_HANDLE md;
-
-	sk = sk_rover->sk;
-
-	/* build the signature packet */
-	/* fixme: this code is duplicated above */
-	sig = m_alloc_clear( sizeof *sig );
-	sig->version = old_style || opt.force_v3_sigs ? 3 : sk->version;
-	keyid_from_sk( sk, sig->keyid );
-	sig->digest_algo = hash_for(sk->pubkey_algo, sk->version);
-	sig->pubkey_algo = sk->pubkey_algo;
-	sig->timestamp = make_timestamp();
-	sig->sig_class = 0x01;
-
-	md = md_copy( textmd );
-	if( sig->version >= 4 ) {
-	    build_sig_subpkt_from_sig( sig );
-	    md_putc( md, sig->version );
-	}
-
-	mk_notation_and_policy( sig );
-
-	md_putc( md, sig->sig_class );
-	if( sig->version < 4 ) {
-	    u32 a = sig->timestamp;
-	    md_putc( md, (a >> 24) & 0xff );
-	    md_putc( md, (a >> 16) & 0xff );
-	    md_putc( md, (a >>	8) & 0xff );
-	    md_putc( md,  a	   & 0xff );
-	}
-	else {
-	    byte buf[6];
-	    size_t n;
-
-	    md_putc( md, sig->pubkey_algo );
-	    md_putc( md, sig->digest_algo );
-	    if( sig->hashed ) {
-                n = sig->hashed->len;
-                md_putc (md, (n >> 8) );
-                md_putc (md,  n       );
-		md_write (md, sig->hashed->data, n);
-		n += 6;
-	    }
-	    else {
-		md_putc( md, 0 );  /* always hash the length of the subpacket*/
-		md_putc( md, 0 );
-		n = 6;
-	    }
-	    /* add some magic */
-	    buf[0] = sig->version;
-	    buf[1] = 0xff;
-	    buf[2] = n >> 24; /* hmmm, n is only 16 bit, so this is always 0 */
-	    buf[3] = n >> 16;
-	    buf[4] = n >>  8;
-	    buf[5] = n;
-	    md_write( md, buf, 6 );
-
-	}
-	md_final( md );
-
-	rc = do_sign( sk, sig, md, hash_for(sig->pubkey_algo, sk->version) );
-	md_close( md );
-
-	if( !rc ) { /* and write it */
-	    init_packet(&pkt);
-	    pkt.pkttype = PKT_SIGNATURE;
-	    pkt.pkt.signature = sig;
-	    rc = build_packet( out, &pkt );
-	    if( !rc && is_status_enabled() ) {
-		print_status_sig_created ( sk, sig, 'C');
-	    }
-	    free_packet( &pkt );
-	    if( rc )
-		log_error("build signature packet failed: %s\n", g10_errstr(rc) );
-	}
-	if( rc )
-	    goto leave;
-    }
-
+    /* write the signatures */
+    rc = write_signature_packets (sk_list, out, textmd,
+                                  0x01, old_style, 'C');
+    if( rc )
+        goto leave;
 
   leave:
     if( rc )
@@ -811,9 +819,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     cipher_filter_context_t cfx;
     IOBUF inp = NULL, out = NULL;
     PACKET pkt;
-    PKT_plaintext *pt = NULL;
     STRING2KEY *s2k = NULL;
-    u32 filesize;
     int rc = 0;
     SK_LIST sk_list = NULL;
     SK_LIST sk_rover = NULL;
@@ -913,195 +919,25 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     /* Write the one-pass signature packets */
     /*(current filters: zip - encrypt - armor)*/
     if (!old_style) {
-	int skcount=0;
-	/* loop over the secret certificates and build headers
-	 * The specs now say that the data should be bracket by
-	 * the onepass-sig and signature-packet; so we must build it
-	 * here in reverse order */
-	for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
-	    skcount++;
-	for( ; skcount; skcount-- ) {
-	    PKT_secret_key *sk;
-	    PKT_onepass_sig *ops;
-	    int i = 0;
-
-	    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
-		if( ++i == skcount )
-		    break;
-
-	    sk = sk_rover->sk;
-	    ops = m_alloc_clear( sizeof *ops );
-	    ops->sig_class = opt.textmode? 0x01 : 0x00;
-	    ops->digest_algo = hash_for(sk->pubkey_algo, sk->version);
-	    ops->pubkey_algo = sk->pubkey_algo;
-	    keyid_from_sk( sk, ops->keyid );
-	    ops->last = skcount == 1;
-
-	    init_packet(&pkt);
-	    pkt.pkttype = PKT_ONEPASS_SIG;
-	    pkt.pkt.onepass_sig = ops;
-	    rc = build_packet( out, &pkt );
-	    free_packet( &pkt );
-	    if( rc ) {
-		log_error("build onepass_sig packet failed: %s\n",
-							g10_errstr(rc));
-		goto leave;
-	    }
-	}
+        rc = write_onepass_sig_packets (sk_list, out,
+                                        opt.textmode? 0x01:0x00);
+        if (rc)
+            goto leave;
     }
 
     /* Pipe data through all filters; i.e. write the signed stuff */
     /*(current filters: zip - encrypt - armor)*/
-    if (!opt.no_literal) {
-        if (fname || opt.set_filename) {
-            char *s = make_basename (opt.set_filename? opt.set_filename
-                                     : fname );
-            pt = m_alloc (sizeof *pt + strlen(s) - 1 );
-            pt->namelen = strlen (s);
-            memcpy (pt->name, s, pt->namelen );
-            m_free (s);
-        }
-        else { /* no filename */
-            pt = m_alloc( sizeof *pt - 1 );
-            pt->namelen = 0;
-        }
-    }
-
-    /* try to calculate the length of the data */
-    if (fname) {
-        if( !(filesize = iobuf_get_filelength(inp)) )
-            log_info(_("WARNING: `%s' is an empty file\n"), fname );
-        /* we can't yet encode the length of very large files,
-         * so we switch to partial length encoding in this case */
-        if (filesize >= IOBUF_FILELENGTH_LIMIT)
-            filesize = 0;
-        
-        /* because the text_filter modifies the length of the
-         * data, it is not possible to know the used length
-         * without a double read of the file - to avoid that
-         * we simple use partial length packets.
-         */
-        if (opt.textmode)
-            filesize = 0;
-    }
-    else {
-        filesize = opt.set_filesize? opt.set_filesize : 0; /* stdin */
-    }
-        
-    if (!opt.no_literal) {
-        pt->timestamp = make_timestamp();
-        pt->mode = opt.textmode? 't':'b';
-        pt->len = filesize;
-        pt->new_ctb = !pt->len && !opt.rfc1991;
-        pt->buf = inp; /* take data from this iobuf */
-        pkt.pkttype = PKT_PLAINTEXT;
-        pkt.pkt.plaintext = pt;
-        /* build packet automagically write all the data */
-        if( (rc = build_packet( out, &pkt )) )
-            log_error("build_packet(PLAINTEXT) failed: %s\n", g10_errstr(rc) );
-        pt->buf = NULL;
-    }
-    else {
-        byte copy_buffer[4096];
-        int  bytes_copied;
-        while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
-            if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
-                rc = G10ERR_WRITE_FILE;
-                log_error("copying input to output failed: %s\n", g10_errstr(rc));
-                break;
-            }
-        memset(copy_buffer, 0, 4096); /* burn buffer */
-    }
-        
-    /* catch errors from above */
+    rc = write_plaintext_packet (out, inp, fname, opt.textmode ? 't':'b');
     if (rc)
 	goto leave;
     
-    /* Write the signature by looping over the secret certificates */
+    /* Write the signatures */
     /*(current filters: zip - encrypt - armor)*/
-    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
-	PKT_secret_key *sk;
-	PKT_signature *sig;
-	MD_HANDLE md;
-
-	sk = sk_rover->sk;
-
-	/* build the signature packet */
-	/* fixme: this code is partly duplicated in make_keysig_packet */
-	sig = m_alloc_clear( sizeof *sig );
-	sig->version = old_style || opt.force_v3_sigs ? 3 : sk->version;
-	keyid_from_sk( sk, sig->keyid );
-	sig->digest_algo = hash_for(sk->pubkey_algo, sk->version);
-	sig->pubkey_algo = sk->pubkey_algo;
-	sig->timestamp = make_timestamp();
-	sig->sig_class = opt.textmode? 0x01 : 0x00;
-
-	md = md_copy( mfx.md );
-
-	if( sig->version >= 4 ) {
-	    build_sig_subpkt_from_sig( sig );
-	    md_putc( md, sig->version );
-	}
-
-	mk_notation_and_policy( sig );
-
-	md_putc( md, sig->sig_class );
-	if( sig->version < 4 ) {
-	    u32 a = sig->timestamp;
-	    md_putc( md, (a >> 24) & 0xff );
-	    md_putc( md, (a >> 16) & 0xff );
-	    md_putc( md, (a >>	8) & 0xff );
-	    md_putc( md,  a	   & 0xff );
-	}
-	else {
-	    byte buf[6];
-	    size_t n;
-
-	    md_putc( md, sig->pubkey_algo );
-	    md_putc( md, sig->digest_algo );
-	    if( sig->hashed ) {
-                n = sig->hashed->len;
-                md_putc (md, (n >> 8) );
-                md_putc (md,  n       );
-		md_write (md, sig->hashed->data, n );
-		n += 6;
-	    }
-	    else {
-		md_putc( md, 0 );  /* always hash the length of the subpacket*/
-		md_putc( md, 0 );
-		n = 6;
-	    }
-	    /* add some magic */
-	    buf[0] = sig->version;
-	    buf[1] = 0xff;
-	    buf[2] = n >> 24; /* hmmm, n is only 16 bit, so this is always 0 */
-	    buf[3] = n >> 16;
-	    buf[4] = n >>  8;
-	    buf[5] = n;
-	    md_write( md, buf, 6 );
-
-	}
-	md_final( md );
-
-	rc = do_sign( sk, sig, md, hash_for(sig->pubkey_algo, sk->version) );
-	md_close( md );
-
-	if( !rc ) { /* and write it */
-	    init_packet(&pkt);
-	    pkt.pkttype = PKT_SIGNATURE;
-	    pkt.pkt.signature = sig;
-	    rc = build_packet( out, &pkt );
-	    if( !rc && is_status_enabled() ) {
-		print_status_sig_created ( sk, sig, 'S');
-	    }
-	    free_packet( &pkt );
-	    if( rc )
-		log_error("build signature packet failed: %s\n", g10_errstr(rc) );
-	}
-	if( rc )
-	    goto leave;
-
-    }
+    rc = write_signature_packets (sk_list, out, mfx.md,
+                                  opt.textmode? 0x01 : 0x00,
+                                  old_style, 'S');
+    if( rc )
+        goto leave;
 
 
   leave:
@@ -1165,16 +1001,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 	hash_public_key( md, subpk );
     }
     else if( sigclass != 0x20 ) {
-	if( sigversion >=4 ) {
-	    byte buf[5];
-	    buf[0] = 0xb4;	      /* indicates a userid packet */
-	    buf[1] = uid->len >> 24;  /* always use 4 length bytes */
-	    buf[2] = uid->len >> 16;
-	    buf[3] = uid->len >>  8;
-	    buf[4] = uid->len;
-	    md_write( md, buf, 5 );
-	}
-	md_write( md, uid->name, uid->len );
+        hash_uid (md, sigversion, uid);
     }
     /* and make the signature packet */
     sig = m_alloc_clear( sizeof *sig );
@@ -1192,44 +1019,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 
     if( !rc ) {
 	mk_notation_and_policy( sig );
-	if( sig->version >= 4 )
-	    md_putc( md, sig->version );
-	md_putc( md, sig->sig_class );
-	if( sig->version < 4 ) {
-	    u32 a = sig->timestamp;
-	    md_putc( md, (a >> 24) & 0xff );
-	    md_putc( md, (a >> 16) & 0xff );
-	    md_putc( md, (a >>	8) & 0xff );
-	    md_putc( md,  a	   & 0xff );
-	}
-	else {
-	    byte buf[6];
-	    size_t n;
-
-	    md_putc( md, sig->pubkey_algo );
-	    md_putc( md, sig->digest_algo );
-	    if( sig->hashed ) {
-                n = sig->hashed->len;
-                md_putc (md, (n >> 8) );
-                md_putc (md,  n       );
-		md_write (md, sig->hashed->data, n );
-		n += 6;
-	    }
-	    else {
-		md_putc( md, 0 );  /* always hash the length of the subpacket*/
-		md_putc( md, 0 );
-		n = 6;
-	    }
-	    /* add some magic */
-	    buf[0] = sig->version;
-	    buf[1] = 0xff;
-	    buf[2] = n >> 24; /* hmmm, n is only 16 bit, so this is always 0 */
-	    buf[3] = n >> 16;
-	    buf[4] = n >>  8;
-	    buf[5] = n;
-	    md_write( md, buf, 6 );
-
-	}
+        hash_sigversion_to_magic (md, sig);
 	md_final(md);
 
 	rc = complete_sig( sig, sk, md );
@@ -1247,7 +1037,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 
 /****************
  * Create a new signature packet based on an existing one.
- * Only user ID signaturs are supported for now.
+ * Only user ID signatures are supported for now.
  * TODO: Merge this with make_keysig_packet.
  */
 int
@@ -1273,16 +1063,7 @@ update_keysig_packet( PKT_signature **ret_sig,
 
     /* hash the public key certificate and the user id */
     hash_public_key( md, pk );
-    if( orig_sig->version >= 4 ) {
-        byte buf[5];
-        buf[0] = 0xb4;	          /* indicates a userid packet */
-        buf[1] = uid->len >> 24;  /* always use 4 length bytes */
-        buf[2] = uid->len >> 16;
-        buf[3] = uid->len >>  8;
-        buf[4] = uid->len;
-        md_write( md, buf, 5 );
-    }
-    md_write( md, uid->name, uid->len );
+    hash_uid (md, orig_sig->version, uid);
 
     /* create a new signature packet */
     sig = copy_signature (NULL, orig_sig);
@@ -1300,43 +1081,7 @@ update_keysig_packet( PKT_signature **ret_sig,
 	build_sig_subpkt_from_sig( sig );
 
     if (!rc) {
-	if (sig->version >= 4)
-	    md_putc (md, sig->version);
-	md_putc (md, sig->sig_class);
-	if (sig->version < 4) {
-	    u32 a = sig->timestamp;
-	    md_putc( md, (a >> 24) & 0xff );
-	    md_putc( md, (a >> 16) & 0xff );
-	    md_putc( md, (a >>	8) & 0xff );
-	    md_putc( md,  a	   & 0xff );
-	}
-	else {
-	    byte buf[6];
-	    size_t n;
-
-	    md_putc( md, sig->pubkey_algo );
-	    md_putc( md, sig->digest_algo );
-	    if( sig->hashed ) {
-                n = sig->hashed->len;
-                md_putc (md, (n >> 8) );
-                md_putc (md,  n       );
-		md_write (md, sig->hashed->data, n );
-		n += 6;
-	    }
-	    else {
-		md_putc( md, 0 );  /* always hash the length of the subpacket*/
-		md_putc( md, 0 );
-		n = 6;
-	    }
-	    /* add some magic */
-	    buf[0] = sig->version;
-	    buf[1] = 0xff;
-	    buf[2] = n >> 24; /* hmmm, n is only 16 bit, so this is always 0 */
-	    buf[3] = n >> 16;
-	    buf[4] = n >>  8;
-	    buf[5] = n;
-	    md_write( md, buf, 6 );
-	}
+        hash_sigversion_to_magic (md, sig);
 	md_final(md);
 
 	rc = complete_sig( sig, sk, md );

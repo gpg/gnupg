@@ -1,3 +1,17 @@
+2001-08-24  Werner Koch  <wk@gnupg.org>
+
+	* sign.c (sign_file): Stripped the disabled comment packet code.
+	(sign_file, sign_symencrypt_file): Moved common code to ..
+	(write_onepass_sig_packets): .. this new function.
+	(sign_file, clearsign_file, sign_symencrypt_file): Moved common
+	code to 
+	(write_signature_packets): this new function.
+	(write_signature_packets, make_keysig_packet)
+	(update_keysig_packet): Moved common code to 
+	(hash_uid, hash_sigclass_to_magic): these new functions
+	(sign_file, sign_symencrypt_file): Moved common code to 
+	(write_plaintext_packet):  this new function.
+
 2001-08-21  Stefan Bellon  <sbellon@sbellon.de>
 
 	* trustdb.c (query_trust_info): Changed trustlevel to signed int.
