@@ -1,3 +1,21 @@
+2002-04-19  Werner Koch  <wk@gnupg.org>
+
+	* tdbio.c (tdbio_write_nextcheck): Return a status whether the
+	stamp was actually changed.
+	* trustdb.c (revalidation_mark): Sync the changes.  Removed the
+	sync operation done by its callers.
+	(get_validity): Add logic for maintaining a pending_check flag.
+	(clear_ownertrust): New.
+	
+	* keyedit.c (sign_uids): Don't call revalidation_mark depending on
+	primary_pk.
+	(keyedit_menu): Call revalidation_mark after "trust".
+	(show_key_with_all_names): Print a warning on the wrong listed key
+	validity.
+
+	* delkey.c (do_delete_key): Clear the owenertrust information when
+	deleting a public key.
+	
 2002-04-18  Werner Koch  <wk@gnupg.org>
 
 	* seskey.c (encode_md_value): Print an error message if a wrong

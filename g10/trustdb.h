@@ -35,7 +35,7 @@
 #define TRUST_FLAG_REVOKED 32 /* r: revoked */
 #define TRUST_FLAG_SUB_REVOKED 64 /* r: revoked but for subkeys */
 #define TRUST_FLAG_DISABLED 128 /* d: key/uid disabled */
-
+#define TRUST_FLAG_PENDING_CHECK 256 /* a check-trustdb is pending */
 
 /*-- trustdb.c --*/
 void register_trusted_key( const char *string );
@@ -62,6 +62,7 @@ void enum_cert_paths_print( void **context, FILE *fp,
 unsigned int get_ownertrust (PKT_public_key *pk);
 int get_ownertrust_info (PKT_public_key *pk);
 void update_ownertrust (PKT_public_key *pk, unsigned int new_trust );
+int clear_ownertrust (PKT_public_key *pk);
 
 
 /*-- tdbdump.c --*/

@@ -71,9 +71,7 @@ static struct {
 static struct key_item *user_utk_list; /* temp. used to store --trusted-keys */
 static struct key_item *utk_list;      /* all ultimately trusted keys */
 
-/* Keep track on whether we did an update trustDB already */
-static int did_nextcheck;
-
+static int pending_check_trustdb;
 
 static int validate_keys (int interactive);
 
@@ -499,7 +497,9 @@ revalidation_mark (void)
   init_trustdb();
   /* we simply set the time for the next check to 1 (far back in 1970)
    * so that a --update-trustdb will be scheduled */
-  tdbio_write_nextcheck (1);
+  if (tdbio_write_nextcheck (1))
+      do_sync ();
+  pending_check_trustdb = 1;
 }
 
 
@@ -593,7 +593,6 @@ update_ownertrust (PKT_public_key *pk, unsigned int new_trust )
           rec.r.trust.ownertrust = new_trust;
           write_record( &rec );
           revalidation_mark ();
-          do_sync();
         }
     }
   else if (rc == -1)
@@ -610,13 +609,40 @@ update_ownertrust (PKT_public_key *pk, unsigned int new_trust )
       rec.r.trust.ownertrust = new_trust;
       write_record (&rec);
       revalidation_mark ();
-      do_sync();
       rc = 0;
     }
   else 
     {
       tdbio_invalid ();
     }
+}
+
+/* Clear the ownertrust value.  Return true if a changed actually happend. */
+int
+clear_ownertrust (PKT_public_key *pk)
+{
+  TRUSTREC rec;
+  int rc;
+  
+  rc = read_trust_record (pk, &rec);
+  if (!rc)
+    {
+      if (DBG_TRUST)
+        log_debug ("clearing ownertrust (old value %u)\n",
+                   (unsigned int)rec.r.trust.ownertrust);
+      if (rec.r.trust.ownertrust)
+        {
+          rec.r.trust.ownertrust = 0;
+          write_record( &rec );
+          revalidation_mark ();
+          return 1;
+        }
+    }
+  else if (rc != -1)
+    {
+      tdbio_invalid ();
+    }
+  return 0;
 }
 
 /* 
@@ -723,6 +749,7 @@ clear_validity (PKT_public_key *pk)
 unsigned int
 get_validity (PKT_public_key *pk, const byte *namehash)
 {
+  static int did_nextcheck;
   TRUSTREC trec, vrec;
   int rc;
   ulong recno;
@@ -739,12 +766,16 @@ get_validity (PKT_public_key *pk, const byte *namehash)
       scheduled = tdbio_read_nextcheck ();
       if (scheduled && scheduled <= make_timestamp ())
         {
-          if (opt.no_auto_check_trustdb)
-            log_info ("please do a --check-trustdb\n");
-          else {
-            log_info (_("checking the trustdb\n"));
-            validate_keys (0);
-          }
+          if (opt.no_auto_check_trustdb) 
+            {
+              pending_check_trustdb = 1;
+              log_info ("please do a --check-trustdb\n");
+            }
+          else
+            {
+              log_info (_("checking the trustdb\n"));
+              validate_keys (0);
+            }
         }
     }
 
@@ -805,6 +836,9 @@ get_validity (PKT_public_key *pk, const byte *namehash)
    * I initially designed it that way */
   if (main_pk->has_expired || pk->has_expired)
     validity = (validity & ~TRUST_MASK) | TRUST_EXPIRED;
+  
+  if (pending_check_trustdb)
+    validity |= TRUST_FLAG_PENDING_CHECK;
 
   if (main_pk != pk)
     free_public_key (main_pk);
@@ -1605,6 +1639,7 @@ validate_keys (int interactive)
                     strtimestamp (next_expire));
         }
       do_sync ();
+      pending_check_trustdb = 0;
     }
   return rc;
 }

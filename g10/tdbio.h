@@ -95,7 +95,7 @@ int tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected );
 int tdbio_write_record( TRUSTREC *rec );
 int tdbio_db_matches_options(void);
 ulong tdbio_read_nextcheck (void);
-void tdbio_write_nextcheck (ulong stamp);
+int tdbio_write_nextcheck (ulong stamp);
 int tdbio_is_dirty(void);
 int tdbio_sync(void);
 int tdbio_begin_transaction(void);

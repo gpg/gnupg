@@ -611,9 +611,8 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	  if( node->flag & NODFLG_DELSIG)
 	    delete_kbnode(node);
     } /* end loop over signators */
-    if( upd_trust && primary_pk ) {
+    if (upd_trust) 
 	revalidation_mark ();
-    }
 
 
   leave:
@@ -799,7 +798,8 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	   cmdPRIMARY, cmdDEBUG, cmdSAVE, cmdADDUID, cmdADDPHOTO, cmdDELUID,
            cmdADDKEY, cmdDELKEY, cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST,
            cmdPREF, cmdEXPIRE, cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF,
-	   cmdSETPREF, cmdUPDPREF, cmdINVCMD, cmdSHOWPHOTO, cmdNOP };
+           cmdSETPREF, cmdUPDPREF, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST,
+           cmdCHKTRUST, cmdNOP };
     static struct { const char *name;
 		    enum cmdids id;
 		    int need_sk;
@@ -1215,8 +1215,10 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    show_key_with_all_names( keyblock, 0, 0, 0, 1, 0 );
 	    tty_printf("\n");
 	    if( edit_ownertrust( find_kbnode( keyblock,
-		      PKT_PUBLIC_KEY )->pkt->pkt.public_key, 1 ) )
+                                 PKT_PUBLIC_KEY )->pkt->pkt.public_key, 1 ) ) {
 		redisplay = 1;
+                revalidation_mark ();
+            }
 	    break;
 
 	  case cmdPREF:
@@ -1439,6 +1441,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 {
     KBNODE node;
     int i, rc;
+    int do_warn = 0;
 
     /* the keys */
     for( node = keyblock; node; node = node->next ) {
@@ -1450,9 +1453,17 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	    if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
 		/* do it here, so that debug messages don't clutter the
 		 * output */
-              
+                static int did_warn = 0;
+
                 trust = get_validity_info (pk, NULL);
 		otrust = get_ownertrust_info (pk);
+
+                /* Show a warning once */
+                if (!did_warn
+                    && (get_validity (pk, NULL) & TRUST_FLAG_PENDING_CHECK)) {
+                    did_warn = 1;
+                    do_warn = 1;
+                }
 	    }
 
 	    if(with_revoker)
@@ -1549,6 +1560,12 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	    }
 	}
     }
+
+    if (do_warn)
+        tty_printf (_("Please note that the shown key validity "
+                      "is not necessary correct\n"
+                      "unless you restart the program.\n")); 
+
 }
 
 static void

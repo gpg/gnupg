@@ -659,7 +659,8 @@ tdbio_read_nextcheck ()
     return vr.r.ver.nextcheck;
 }
 
-void
+/* Return true when the stamp was actually changed. */
+int
 tdbio_write_nextcheck (ulong stamp)
 {
     TRUSTREC vr;
@@ -671,13 +672,14 @@ tdbio_write_nextcheck (ulong stamp)
 				       db_name, g10_errstr(rc) );
 
     if (vr.r.ver.nextcheck == stamp)
-      return;
+      return 0;
 
     vr.r.ver.nextcheck = stamp;
     rc = tdbio_write_record( &vr );
     if( rc )
 	log_fatal( _("%s: error writing version record: %s\n"),
 				       db_name, g10_errstr(rc) );
+    return 1;
 }
 
 
