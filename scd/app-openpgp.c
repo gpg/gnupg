@@ -370,7 +370,7 @@ store_fpr (int slot, int keynumber, u32 timestamp,
            const unsigned char *e, size_t elen, 
            unsigned char *fpr, unsigned int card_version)
 {
-  unsigned int n, nbits;;
+  unsigned int n, nbits;
   unsigned char *buffer, *p;
   int rc;
   
