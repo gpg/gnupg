@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gnupg2 1.9.10\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "POT-Creation-Date: 2004-10-01 14:54+0200\n"
-"PO-Revision-Date: 2004-10-01 14:27+0200\n"
+"PO-Revision-Date: 2004-10-04 13:48+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: de\n"
 "MIME-Version: 1.0\n"
@@ -1011,7 +1011,7 @@ msgstr "|NAME|Den Zeichensatz für das Terminal auf NAME setzen"
 
 #: sm/gpgsm.c:338
 msgid "|LEVEL|set the debugging level to LEVEL"
-msgstr "|STRING|Die Debugstufe auf STING setzen"
+msgstr "|NAME|Die Debugstufe auf NAME setzen"
 
 #: sm/gpgsm.c:345
 msgid "|FD|write status info to this FD"
@@ -1023,7 +1023,7 @@ msgstr "|DATEI|Das Erweiterungsmodul DATEI laden"
 
 #: sm/gpgsm.c:358
 msgid "|NAME|use cipher algorithm NAME"
-msgstr "|NAME|Den Verhsclüsselungsalgrithmus NAME benutzen"
+msgstr "|NAME|Den Verschlüsselungsalgrithmus NAME benutzen"
 
 #: sm/gpgsm.c:360
 msgid "|NAME|use message digest algorithm NAME"
