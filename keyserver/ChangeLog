@@ -1,3 +1,9 @@
+2002-10-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (get_key): Don't print keysize unless it's >0.
+	(printquoted): Use %-encoding instead of \-encoding.
+	(search_key): Use new keyserver key listing format.
+
 2002-10-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c (search_key, main): Make sure LDAP values are

@@ -110,9 +110,7 @@ int
 send_key(int *eof)
 {
   int err,gotit=0,keysize=1,ret=KEYSERVER_INTERNAL_ERROR;
-  char *dn=NULL;
-  char line[MAX_LINE];
-  char *key[2]={NULL,NULL};
+  char *dn=NULL,line[MAX_LINE],*key[2]={NULL,NULL};
   char keyid[17];
   LDAPMod mod, *attrs[2];
 
@@ -435,7 +433,8 @@ get_key(char *getkey)
 		  vals=ldap_get_values(ldap,each,"pgpkeysize");
 		  if(vals!=NULL)
 		    {
-		      fprintf(console,"Key size:\t%d\n",atoi(vals[0]));
+		      if(atoi(vals[0])>0)
+			fprintf(console,"Key size:\t%d\n",atoi(vals[0]));
 		      ldap_value_free(vals);
 		    }
 
@@ -485,7 +484,8 @@ get_key(char *getkey)
   return ret;
 }
 
-time_t ldap2epochtime(const char *timestr)
+time_t
+ldap2epochtime(const char *timestr)
 {
   struct tm pgptime;
 
@@ -508,12 +508,13 @@ time_t ldap2epochtime(const char *timestr)
   return mktime(&pgptime);
 }
 
-void printquoted(FILE *stream,char *string,char delim)
+void
+printquoted(FILE *stream,char *string,char delim)
 {
   while(*string)
     {
-      if(*string==delim || *string=='\\')
-	fprintf(stream,"\\x%02x",*string);
+      if(*string==delim || *string=='%')
+	fprintf(stream,"%%%02x",*string);
       else
 	fputc(*string,stream);
 
@@ -567,91 +568,37 @@ search_key(char *searchkey)
   count=ldap_count_entries(ldap,res);
 
   if(count<1)
-    fprintf(output,"COUNT 0\n");
+    fprintf(output,"info:1:0\n");
   else
     {
-      fprintf(output,"COUNT %d\n",count);
+      fprintf(output,"info:1:%d\n",count);
 
       each=ldap_first_entry(ldap,res);
       while(each!=NULL)
 	{
-	  int flags=0;
+	  fprintf(output,"pub:");
 
 	  vals=ldap_get_values(ldap,each,"pgpcertid");
 	  if(vals!=NULL)
 	    {
-	      fprintf(output,"%s:",vals[0]);
-	      ldap_value_free(vals);
-	    }
-	  else
-	    fputc(':',output);
-
-	  vals=ldap_get_values(ldap,each,"pgpuserid");
-	  if(vals!=NULL)
-	    {
-	      /* Need to escape any colons */
-	      printquoted(output,vals[0],':');
-	      fputc(':',output);
-	      ldap_value_free(vals);
-	    }
-	  else
-	    fputc(':',output);
-
-	  vals=ldap_get_values(ldap,each,"pgprevoked");
-	  if(vals!=NULL)
-	    {
-	      if(atoi(vals[0])==1)
-		flags|=1;
+	      fprintf(output,"%s",vals[0]);
 	      ldap_value_free(vals);
 	    }
 
-	  vals=ldap_get_values(ldap,each,"pgpdisabled");
-	  if(vals!=NULL)
-	    {
-	      if(atoi(vals[0])==1)
-		flags|=2;
-	      ldap_value_free(vals);
-	    }
-
-	  fprintf(output,"%d:",flags);
-
-	  /* YYYYMMDDHHmmssZ */
-
-	  vals=ldap_get_values(ldap,each,"pgpkeycreatetime");
-	  if(vals!=NULL && strlen(vals[0])==15)
-	    {
-	      fprintf(output,"%u:",(unsigned int)ldap2epochtime(vals[0]));
-	      ldap_value_free(vals);
-	    }
-	  else
-	    fputc(':',output);
-
-	  vals=ldap_get_values(ldap,each,"pgpkeyexpiretime");
-	  if(vals!=NULL && strlen(vals[0])==15)
-	    {
-	      fprintf(output,"%u:",(unsigned int)ldap2epochtime(vals[0]));
-	      ldap_value_free(vals);
-	    }
-	  else
-	    fputc(':',output);
-
-	  vals=ldap_get_values(ldap,each,"modifytimestamp");
-	  if(vals!=NULL && strlen(vals[0])==15)
-	    {
-	      fprintf(output,"%u:",(unsigned int)ldap2epochtime(vals[0]));
-	      ldap_value_free(vals);
-	    }
-	  else
-	    fputc(':',output);
+	  fputc(':',output);
 
 	  vals=ldap_get_values(ldap,each,"pgpkeytype");
 	  if(vals!=NULL)
 	    {
-	      fprintf(output,"%s:",vals[0]);
+	      /* The LDAP server doesn't exactly handle this well. */
+	      if(strcasecmp(vals[0],"RSA")==0)
+		fprintf(output,"1");
+	      else if(strcasecmp(vals[0],"DSS/DH")==0)
+		fprintf(output,"17");
 	      ldap_value_free(vals);
 	    }
-	  else
-	    fputc(':',output);
+
+	  fputc(':',output);
 
 	  vals=ldap_get_values(ldap,each,"pgpkeysize");
 	  if(vals!=NULL)
@@ -663,7 +610,64 @@ search_key(char *searchkey)
 	      ldap_value_free(vals);
 	    }
 
-	  fputc('\n',output);
+	  fputc(':',output);
+
+	  /* YYYYMMDDHHmmssZ */
+
+	  vals=ldap_get_values(ldap,each,"pgpkeycreatetime");
+	  if(vals!=NULL && strlen(vals[0])==15)
+	    {
+	      fprintf(output,"%u",(unsigned int)ldap2epochtime(vals[0]));
+	      ldap_value_free(vals);
+	    }
+
+	  fputc(':',output);
+
+	  vals=ldap_get_values(ldap,each,"pgpkeyexpiretime");
+	  if(vals!=NULL && strlen(vals[0])==15)
+	    {
+	      fprintf(output,"%u",(unsigned int)ldap2epochtime(vals[0]));
+	      ldap_value_free(vals);
+	    }
+
+	  fputc(':',output);
+
+	  vals=ldap_get_values(ldap,each,"pgprevoked");
+	  if(vals!=NULL)
+	    {
+	      if(atoi(vals[0])==1)
+		fprintf(output,"r");
+	      ldap_value_free(vals);
+	    }
+
+	  vals=ldap_get_values(ldap,each,"pgpdisabled");
+	  if(vals!=NULL)
+	    {
+	      if(atoi(vals[0])==1)
+		fprintf(output,"d");
+	      ldap_value_free(vals);
+	    }
+
+	  fputc(':',output);
+
+	  vals=ldap_get_values(ldap,each,"modifytimestamp");
+	  if(vals!=NULL && strlen(vals[0])==15)
+	    {
+	      fprintf(output,"%u",(unsigned int)ldap2epochtime(vals[0]));
+	      ldap_value_free(vals);
+	    }
+
+	  fprintf(output,"\nuid:");
+
+	  vals=ldap_get_values(ldap,each,"pgpuserid");
+	  if(vals!=NULL)
+	    {
+	      /* Need to escape any colons */
+	      printquoted(output,vals[0],':');
+	      ldap_value_free(vals);
+	    }
+
+	  fprintf(output,"\n");
 
 	  each=ldap_next_entry(ldap,each);
 	}
@@ -700,7 +704,8 @@ fail_all(struct keylist *keylist,int action,int err)
       }
 }
 
-int main(int argc,char *argv[])
+int
+main(int argc,char *argv[])
 {
   int port=0,arg,err,action=-1,ret=KEYSERVER_INTERNAL_ERROR;
   char line[MAX_LINE],**vals;
@@ -796,7 +801,7 @@ int main(int argc,char *argv[])
 
       if(sscanf(line,"VERSION %d\n",&version)==1)
 	{
-	  if(version!=0)
+	  if(version!=KEYSERVER_PROTO_VERSION)
 	    {
 	      ret=KEYSERVER_VERSION_ERROR;
 	      goto fail;
@@ -904,7 +909,7 @@ int main(int argc,char *argv[])
 
   /* Send the response */
 
-  fprintf(output,"VERSION 0\n");
+  fprintf(output,"VERSION %d\n",KEYSERVER_PROTO_VERSION);
   fprintf(output,"PROGRAM %s\n\n",VERSION);
 
   if(verbose>1)
@@ -916,6 +921,8 @@ int main(int argc,char *argv[])
 	      action==SEND?"SEND":"SEARCH");
     }
 
+  /* Note that this tries all A records on a given host (or at least,
+     OpenLDAP does). */
   ldap=ldap_init(host,port);
   if(ldap==NULL)
     {
