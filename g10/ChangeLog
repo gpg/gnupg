@@ -1,3 +1,9 @@
+2004-05-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_refresh): Keep track of keys already
+	fetched so we don't do a regular keyserver fetch if the preferred
+	keyserver fetch has exhausted the list.
+
 2004-05-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* verify.c (verify_signatures): Verify multiple files in the same

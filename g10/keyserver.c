@@ -1487,7 +1487,7 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 int 
 keyserver_refresh(STRLIST users)
 {
-  int rc,count,fakev3=0;
+  int rc,count,numdesc,fakev3=0;
   KEYDB_SEARCH_DESC *desc;
 
   /* We switch merge_only on during a refresh, as 'refresh' should
@@ -1502,10 +1502,11 @@ keyserver_refresh(STRLIST users)
 	 ascii_strcasecmp(opt.keyserver->scheme,"mailto")==0))
     fakev3=1;
 
-  rc=keyidlist(users,&desc,&count,fakev3);
+  rc=keyidlist(users,&desc,&numdesc,fakev3);
   if(rc)
     return rc;
 
+  count=numdesc;
   if(count>0)
     {
       int i;
@@ -1532,12 +1533,16 @@ keyserver_refresh(STRLIST users)
 		     get it again from the regular keyserver. */
 
 		  desc[i].mode=KEYDB_SEARCH_MODE_NONE;
+		  count--;
 		}
 
 	      free_keyserver_spec(keyserver);
 	    }
 	}
+    }
 
+  if(count>0)
+    {
       if(opt.keyserver)
 	{
 	  if(count==1)
@@ -1547,7 +1552,7 @@ keyserver_refresh(STRLIST users)
 		     count,opt.keyserver->uri);
 	}
 
-      rc=keyserver_work(GET,NULL,desc,count,opt.keyserver);
+      rc=keyserver_work(GET,NULL,desc,numdesc,opt.keyserver);
     }
 
   m_free(desc);
