@@ -1,3 +1,20 @@
+2003-06-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* keylist.c (list_keyblock_colon): Don't include validity values
+	when listing secret keys since they can be incorrect and/or
+	misleading.  This is a temporary kludge, and will be handled
+	properly in 1.9/2.0.
+
+	* signal.c (init_one_signal, pause_on_sigusr, do_block): Only use
+	sigprocmask() if we have sigset_t, and only use sigaction() if we
+	have struct sigaction.  This is for Forte c89 on Solaris which
+	seems to define only the function call half of the two pairs by
+	default.
+	(pause_on_sigusr): Typo.
+	(do_block): If we can't use sigprocmask() and sigset_t, try to get
+	the number of signals from NSIG as well as MAXSIG, and if we
+	can't, fail with an explanation.
+
 2003-06-10  Werner Koch  <wk@gnupg.org>
 
 	* parse-packet.c (parse): Disallow old style partial length for

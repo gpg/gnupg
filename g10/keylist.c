@@ -1,5 +1,5 @@
 /* keylist.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -649,7 +649,7 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 	pk = NULL;
 	sk = node->pkt->pkt.secret_key;
 	keyid_from_sk( sk, keyid );
-        printf("sec:u:%u:%d:%08lX%08lX:%s:%s:::",
+        printf("sec::%u:%d:%08lX%08lX:%s:%s:::",
 		    nbits_from_sk( sk ),
 		    sk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
@@ -713,13 +713,17 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
              */
 	    if( any ) {
 	        char *str=node->pkt->pkt.user_id->attrib_data?"uat":"uid";
-                if ( node->pkt->pkt.user_id->is_revoked )
+		/* If we're listing a secret key, leave out the
+		   validity values for now.  This is handled better in
+		   1.9. */
+		if ( sk )
+		    printf("%s:::::::::",str);
+		else if ( node->pkt->pkt.user_id->is_revoked )
         	    printf("%s:r::::::::",str);
                 else if ( node->pkt->pkt.user_id->is_expired )
         	    printf("%s:e::::::::",str);
-		else if ( opt.no_expensive_trust_checks ) {
+		else if ( opt.no_expensive_trust_checks )
         	    printf("%s:::::::::",str);
-	        }
                 else {
 		    int uid_validity;
 
