@@ -1,3 +1,8 @@
+2004-05-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (ldap2epochtime): We can always rely on timegm()
+	being available now, since it's a replacement function.
+
 2004-05-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_http.c: New program to do a simple HTTP file fetch using

@@ -53,12 +53,8 @@ static char *pgpkeystr="pgpKey";
 static FILE *input=NULL,*output=NULL,*console=NULL;
 static LDAP *ldap=NULL;
 
-#if !HAVE_SETENV
-int setenv(const char *name, const char *value, int overwrite);
-#endif
-
-#if !HAVE_UNSETENV
-int unsetenv(const char *name);
+#ifndef HAVE_TIMEGM
+time_t timegm(struct tm *tm);
 #endif
 
 struct keylist
@@ -185,24 +181,9 @@ ldap2epochtime(const char *timestr)
   pgptime.tm_isdst=-1;
   pgptime.tm_mon--;
 
-  /* mktime takes the timezone into account, and we can't have that.
-     I'd use timegm, but it's not portable. */
+  /* mktime() takes the timezone into account, so we use timegm() */
 
-#ifdef HAVE_TIMEGM
   answer=timegm(&pgptime);
-#else
-  {
-    char *zone=getenv("TZ");
-    setenv("TZ","UTC",1);
-    tzset();
-    answer=mktime(&pgptime);
-    if(zone)
-      setenv("TZ",zone,1);
-    else
-      unsetenv("TZ");
-    tzset();
-  }
-#endif
 
   return answer;
 }
