@@ -69,6 +69,7 @@ static int count_selected_keys( KBNODE keyblock );
 static int menu_revsig( KBNODE keyblock );
 static int menu_revuid( KBNODE keyblock, KBNODE sec_keyblock );
 static int menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
+static int menu_revsubkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int enable_disable_key( KBNODE keyblock, int disable );
 static void menu_showphoto( KBNODE keyblock );
 
@@ -1748,25 +1749,37 @@ keyedit_menu( const char *username, STRLIST locusr,
 	    }
 	    break;
 
-	  case cmdREVKEY: {
-		int n1;
+	  case cmdREVKEY:
+	    {
+	      int n1;
 
-		if( !(n1=count_selected_keys( keyblock )) )
-		    tty_printf(_("You must select at least one key.\n"));
-		else if( sec_keyblock && !cpr_get_answer_is_yes(
-			    "keyedit.revoke.subkey.okay",
-		       n1 > 1?
-		   _("Do you really want to revoke the selected keys? (y/N) "):
-		   _("Do you really want to revoke this key? (y/N) ")
-		       ))
-		    ;
-		else {
-		    if( menu_revkey( keyblock, sec_keyblock ) ) {
-			modified = 1;
-			/*sec_modified = 1;*/
+	      if( !(n1=count_selected_keys( keyblock )) )
+		{
+		  if(cpr_get_answer_is_yes("keyedit.revoke.subkey.okay",
+					   _("Do you really want to revoke"
+					     " the entire key? (y/N) ")))
+		    {
+		      if(menu_revkey(keyblock,sec_keyblock))
+			modified=1;
+
+		      redisplay=1;
 		    }
-		    redisplay = 1;
 		}
+	      else if(cpr_get_answer_is_yes("keyedit.revoke.subkey.okay",
+					    n1 > 1?
+					    _("Do you really want to revoke"
+					      " the selected subkeys? (y/N) "):
+					    _("Do you really want to revoke"
+					      " this subkey? (y/N) ")))
+		{
+		  if( menu_revsubkey( keyblock, sec_keyblock ) )
+		    modified = 1;
+
+		  redisplay = 1;
+		}
+
+	      if(modified)
+		merge_keys_and_selfsig( keyblock );
 	    }
 	    break;
 
@@ -4068,12 +4081,51 @@ menu_revuid( KBNODE pub_keyblock, KBNODE sec_keyblock )
 }
 
 /****************
- * Revoke some of the secondary keys.
- * Hmmm: Should we add a revocation to the secret keyring too?
- *	 Does its all make sense to duplicate most of the information?
+ * Revoke the whole key.
  */
 static int
 menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
+{
+  PKT_public_key *pk=pub_keyblock->pkt->pkt.public_key;
+  PKT_secret_key *sk;
+  int rc,changed = 0;
+  struct revocation_reason_info *reason;
+  PACKET *pkt;
+  PKT_signature *sig;
+
+  reason = ask_revocation_reason( 1, 0, 0 );
+  /* user decided to cancel */
+  if( !reason )
+    return 0;
+
+  sk = copy_secret_key( NULL, sec_keyblock->pkt->pkt.secret_key );
+  rc = make_keysig_packet( &sig, pk, NULL, NULL, sk,
+			   0x20, 0, opt.force_v4_certs?4:0, 0, 0,
+			   revocation_reason_build_cb, reason );
+  free_secret_key(sk);
+  if( rc )
+    {
+      log_error(_("signing failed: %s\n"), g10_errstr(rc));
+      goto scram;
+    }
+
+  changed = 1; /* we changed the keyblock */
+
+  pkt = m_alloc_clear( sizeof *pkt );
+  pkt->pkttype = PKT_SIGNATURE;
+  pkt->pkt.signature = sig;
+  insert_kbnode( pub_keyblock, new_kbnode(pkt), 0 );
+  commit_kbnode( &pub_keyblock );
+
+  /* TODO: set update_trust here? */
+
+ scram:
+  release_revocation_reason_info( reason );
+  return changed;
+}
+
+static int
+menu_revsubkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
 {
     PKT_public_key *mainpk;
     KBNODE node;

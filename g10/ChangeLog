@@ -1,5 +1,11 @@
 2004-12-18  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (menu_revkey): Rename to menu_revsubkey.
+	(menu_revkey): New.  Revoke a whole key.
+	(keyedit_menu): Call it here for when 'revkey' is used without any
+	subkeys selected.  This is to be consistent with the other
+	functions which are "selected part if selected, whole key if not".
+
 	* signal.c: Use only HAVE_LIBREADLINE to detect readline
 	availability.
 
