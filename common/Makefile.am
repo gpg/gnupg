@@ -34,6 +34,7 @@ libcommon_a_SOURCES = \
 	sysutils.c sysutils.h \
 	gettime.c \
 	yesno.c \
+	b64enc.c \
 	miscellaneous.c \
 	xasprintf.c \
 	membuf.c membuf.h \

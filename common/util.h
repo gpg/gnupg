@@ -1,5 +1,5 @@
-/* util.h - Utility functions for Gnupg
- *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+/* util.h - Utility functions for GnuPG
+ * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -96,6 +96,22 @@ void gnupg_unblock_all_signals (void);
 int answer_is_yes (const char *s);
 int answer_is_yes_no_default (const char *s, int def_answer);
 int answer_is_yes_no_quit (const char *s);
+
+
+/*-- b64enc.c --*/
+struct b64state 
+{ 
+  unsigned int flags;
+  int idx;
+  int quad_count;
+  FILE *fp;
+  char *title;
+  unsigned char radbuf[4];
+};
+gpg_error_t b64enc_start (struct b64state *state, FILE *fp, const char *title);
+gpg_error_t b64enc_write (struct b64state *state,
+                          const void *buffer, size_t nbytes);
+gpg_error_t b64enc_finish (struct b64state *state);
 
 
 /*-- miscellaneous.c --*/
