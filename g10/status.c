@@ -358,3 +358,29 @@ cpr_get_answer_is_yes( const char *keyword, const char *prompt )
     }
 }
 
+int
+cpr_get_answer_yes_no_quit( const char *keyword, const char *prompt )
+{
+    int yes;
+    char *p;
+
+  #ifdef USE_SHM_COPROCESSING
+    if( opt.shm_coprocess )
+	return !!do_shm_get( keyword, 0, 1 );
+  #endif
+    for(;;) {
+	p = tty_get( prompt );
+	trim_spaces(p); /* it is okay to do this here */
+	if( *p == '?' && !p[1] ) {
+	    m_free(p);
+	    display_online_help( keyword );
+	}
+	else {
+	    tty_kill_prompt();
+	    yes = answer_is_yes_no_quit(p);
+	    m_free(p);
+	    return yes;
+	}
+    }
+}
+

@@ -80,6 +80,7 @@ char *cpr_get_utf8( const char *keyword, const char *prompt );
 char *cpr_get_hidden( const char *keyword, const char *prompt );
 void cpr_kill_prompt(void);
 int  cpr_get_answer_is_yes( const char *keyword, const char *prompt );
+int  cpr_get_answer_yes_no_quit( const char *keyword, const char *prompt );
 
 
 #endif /*G10_STATUS_H*/

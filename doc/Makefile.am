@@ -6,13 +6,6 @@ man_MANS = gpg.1
 
 
 
-install-data-hook:
-	 if test -f $(man1dir)/gpgm.1; then rm $(man1dir)/gpgm.1; fi
-	 ln -s $(man1dir)/gpg.1 $(man1dir)/gpgm.1 \
-	    || ln $(man1dir)/gpg.1 $(man1dir)/gpgm.1
-
-
-
 %: %pod
 	 pod2man $< --section=`echo $@ | sed 's/^.*(?)$$/$$&/'`\
 		    --release="`date -r $< '+%d %b %Y'`"\

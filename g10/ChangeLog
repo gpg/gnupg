@@ -1,3 +1,10 @@
+Thu May 27 09:40:55 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* status.c (cpr_get_answer_yes_no_quit): New.
+	* keyedit.c (menu_delsig): New.
+	(check_all_keysigs): Splitted.
+	(print_and_check_one_sig): New.
+
 Wed May 26 14:36:29 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* build-packet.c (build_sig_subpkt): Support large packets.

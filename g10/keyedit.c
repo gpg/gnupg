@@ -47,6 +47,7 @@ static void show_key_and_fingerprint( KBNODE keyblock );
 static void show_fingerprint( PKT_public_key *pk );
 static int menu_adduid( KBNODE keyblock, KBNODE sec_keyblock );
 static void menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock );
+static int  menu_delsig( KBNODE pub_keyblock );
 static void menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_select_uid( KBNODE keyblock, int idx );
@@ -104,6 +105,68 @@ get_keyblock_byname( KBNODE *keyblock, KBPOS *kbpos, const char *username )
 
 
 /****************
+ * Print information about a signature, chek it and return true
+ * if the signature is okay. NODE must be a signature packet.
+ */
+static int
+print_and_check_one_sig( KBNODE keyblock, KBNODE node,
+			 int *inv_sigs, int *no_key, int *oth_err,
+					int *is_selfsig )
+{
+    PKT_signature *sig = node->pkt->pkt.signature;
+    int rc, sigrc;
+    int is_rev = sig->sig_class == 0x30;
+
+    switch( (rc = check_key_signature( keyblock, node, is_selfsig)) ) {
+      case 0:
+	node->flag &= ~(NODFLG_BADSIG|NODFLG_NOKEY|NODFLG_SIGERR);
+	sigrc = '!';
+	break;
+      case G10ERR_BAD_SIGN:
+	node->flag = NODFLG_BADSIG;
+	sigrc = '-';
+	if( inv_sigs )
+	    ++*inv_sigs;
+	break;
+      case G10ERR_NO_PUBKEY:
+	node->flag = NODFLG_NOKEY;
+	sigrc = '?';
+	if( no_key )
+	    ++*no_key;
+	break;
+      default:
+	node->flag = NODFLG_SIGERR;
+	sigrc = '%';
+	if( oth_err )
+	    ++*oth_err;
+	break;
+    }
+    if( sigrc != '?' ) {
+	tty_printf("%s%c       %08lX %s   ",
+		is_rev? "rev":"sig",
+		sigrc, sig->keyid[1], datestr_from_sig(sig));
+	if( sigrc == '%' )
+	    tty_printf("[%s] ", g10_errstr(rc) );
+	else if( sigrc == '?' )
+	    ;
+	else if( *is_selfsig ) {
+	    tty_printf( is_rev? _("[revocation]")
+			      : _("[self-signature]") );
+	}
+	else {
+	    size_t n;
+	    char *p = get_user_id( sig->keyid, &n );
+	    tty_print_string( p, n > 40? 40 : n );
+	    m_free(p);
+	}
+	tty_printf("\n");
+    }
+    return (sigrc == '!');
+}
+
+
+
+/****************
  * Check the keysigs and set the flags to indicate errors.
  * Returns true if error found.
  */
@@ -112,7 +175,6 @@ check_all_keysigs( KBNODE keyblock, int only_selected )
 {
     KBNODE kbctx;
     KBNODE node;
-    int rc;
     int inv_sigs = 0;
     int no_key = 0;
     int oth_err = 0;
@@ -140,54 +202,14 @@ check_all_keysigs( KBNODE keyblock, int only_selected )
 	else if( selected && node->pkt->pkttype == PKT_SIGNATURE
 		 && ( (node->pkt->pkt.signature->sig_class&~3) == 0x10
 		     || node->pkt->pkt.signature->sig_class == 0x30 )  ) {
-	    PKT_signature *sig = node->pkt->pkt.signature;
-	    int sigrc, selfsig;
-	    int is_rev = sig->sig_class == 0x30;
+	    int selfsig;
 
-	    switch( (rc = check_key_signature( keyblock, node, &selfsig)) ) {
-	      case 0:
-		node->flag &= ~(NODFLG_BADSIG|NODFLG_NOKEY|NODFLG_SIGERR);
-		sigrc = '!';
-		break;
-	      case G10ERR_BAD_SIGN:
-		node->flag = NODFLG_BADSIG;
-		sigrc = '-';
-		inv_sigs++;
-		break;
-	      case G10ERR_NO_PUBKEY:
-		node->flag = NODFLG_NOKEY;
-		sigrc = '?';
-		no_key++;
-		break;
-	      default:
-		node->flag = NODFLG_SIGERR;
-		sigrc = '%';
-		oth_err++;
-		break;
+	    if( print_and_check_one_sig( keyblock, node, &inv_sigs,
+					 &no_key, &oth_err, &selfsig ) ) {
+		if( selfsig )
+		    has_selfsig = 1;
 	    }
-	    if( sigrc != '?' ) {
-		tty_printf("%s%c       %08lX %s   ",
-			is_rev? "rev":"sig",
-			sigrc, sig->keyid[1], datestr_from_sig(sig));
-		if( sigrc == '%' )
-		    tty_printf("[%s] ", g10_errstr(rc) );
-		else if( sigrc == '?' )
-		    ;
-		else if( selfsig ) {
-		    tty_printf( is_rev? _("[revocation]")
-				      : _("[self-signature]") );
-		    if( sigrc == '!' )
-			has_selfsig = 1;
-		}
-		else {
-		    size_t n;
-		    char *p = get_user_id( sig->keyid, &n );
-		    tty_print_string( p, n > 40? 40 : n );
-		    m_free(p);
-		}
-		tty_printf("\n");
-		/* fixme: Should we update the trustdb here */
-	    }
+	    /* Hmmm: should we update the trustdb here? */
 	}
     }
     if( !has_selfsig )
@@ -525,7 +547,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 {
     enum cmdids { cmdNONE = 0,
 	   cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
-	   cmdLSIGN, cmdREVSIG, cmdREVKEY,
+	   cmdLSIGN, cmdREVSIG, cmdREVKEY, cmdDELSIG,
 	   cmdDEBUG, cmdSAVE, cmdADDUID, cmdDELUID, cmdADDKEY, cmdDELKEY,
 	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE,
 	   cmdNOP };
@@ -554,6 +576,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 	{ N_("deluid")  , cmdDELUID , 0, N_("delete user id") },
 	{ N_("addkey")  , cmdADDKEY , 1, N_("add a secondary key") },
 	{ N_("delkey")  , cmdDELKEY , 0, N_("delete a secondary key") },
+	{ N_("delsig")  , cmdDELSIG , 0, N_("delete signatures") },
 	{ N_("expire")  , cmdEXPIRE , 1, N_("change the expire date") },
 	{ N_("toggle")  , cmdTOGGLE , 1, N_("toggle between secret "
 					    "and public key listing") },
@@ -801,6 +824,19 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 		    modified = 1;
 		    if( sec_keyblock )
 		       sec_modified = 1;
+		}
+	    }
+	    break;
+
+	  case cmdDELSIG: {
+		int n1;
+
+		if( !(n1=count_selected_uids(keyblock)) )
+		    tty_printf(_("You must select at least one user id.\n"));
+		else if( menu_delsig( keyblock ) ) {
+		    /* no redisplay here, because it may scroll away some
+		     * status output of delsig */
+		    modified = 1;
 		}
 	    }
 	    break;
@@ -1224,6 +1260,61 @@ menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock )
     commit_kbnode( &pub_keyblock );
     if( sec_keyblock )
 	commit_kbnode( &sec_keyblock );
+}
+
+
+static int
+menu_delsig( KBNODE pub_keyblock )
+{
+    KBNODE node;
+    PKT_user_id *uid = NULL;
+    int changed=0;
+
+    for( node = pub_keyblock; node; node = node->next ) {
+	if( node->pkt->pkttype == PKT_USER_ID ) {
+	    uid = (node->flag & NODFLG_SELUID)? node->pkt->pkt.user_id : NULL;
+	}
+	else if( uid && node->pkt->pkttype == PKT_SIGNATURE ) {
+	    int okay, valid, selfsig;
+
+	    tty_printf("uid  ");
+	    tty_print_string( uid->name, uid->len );
+	    tty_printf("\n");
+
+	    valid = print_and_check_one_sig( pub_keyblock, node,
+					     NULL, NULL, NULL, &selfsig );
+
+	    okay = valid ? cpr_get_answer_yes_no_quit(
+			       "keyedit.delsig.valid",
+			      _("Delete this good signature? (y/N/q)"))
+			 : cpr_get_answer_yes_no_quit(
+			       "keyedit.delsig.invalid",
+			      _("Delete this invalid signature? (y/N/q)"));
+	    if( okay == -1 )
+		break;
+	    if( okay && !cpr_get_answer_is_yes(
+			       "keyedit.delsig.selfsig",
+			      _("Really delete this self-signature? (y/N)") ))
+		okay = 0;
+	    if( okay ) {
+		delete_kbnode( node );
+		changed++;
+	    }
+
+	}
+	else if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+	    uid = NULL;
+    }
+
+    if( changed ) {
+	commit_kbnode( &pub_keyblock );
+	tty_printf( changed == 1? _("Deleted %d signature.\n")
+				: _("Deleted %d signatures.\n"), changed );
+    }
+    else
+	tty_printf( _("Nothing deleted.\n") );
+
+    return changed;
 }
 
 

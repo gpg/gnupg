@@ -1,7 +1,7 @@
 
     * New option -N to insert notations and a --set-policy-url.
 
-
+    * New subcommand "delsig" in th edit menu.
 
 
 Noteworthy changes in version 0.9.7

@@ -164,3 +164,26 @@ answer_is_yes( const char *s )
 }
 
 
+/****************
+ * Return 1 for yes, -1 for quit, or 0 for no
+ */
+int
+answer_is_yes_no_quit( const char *s )
+{
+    char *long_yes = _("yes");
+    char *long_quit = _("quit");
+    char *short_yes = _("yY");
+    char *short_quit = _("qQ");
+
+    if( !stricmp(s, long_yes ) )
+	return 1;
+    if( !stricmp(s, long_quit ) )
+	return -1;
+    if( strchr( short_yes, *s ) && !s[1] )
+	return 1;
+    if( strchr( short_quit, *s ) && !s[1] )
+	return -1;
+    return 0;
+}
+
+

@@ -172,6 +172,26 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
  "Answer \"yes\" if it is okay to delete the subkey"
 },
 
+
+{ N_("keyedit.delsig.valid"),
+ "This is a valid signature on the key; you normally don't want\n"
+ "to delete this signature may be important to establish a trust\n"
+ "connection to the key or another key certified by this key."
+},
+{ N_("keyedit.delsig.invalid"),
+ "The signature is not valid.  It does make sense to remove it from\n"
+ "your keyring if it is really invalid and not just unchecked due to\n"
+ "a missing public key (marked by \"sig?\")."
+},
+{ N_("keyedit.delsig.selfsig"),
+ "This is a signature which binds the user ID to the key. It is\n"
+ "usually not a good idea to remove such a signature.  Actually\n"
+ "GnuPG might not be able to use this key anymore.  So do this\n"
+ "only if this self-signature is for some reason not valid and\n"
+ "a second one is available."
+},
+
+
 { N_("passphrase.enter"),
  ""
 "Please enter the passhrase; this is a secret sentence \n"

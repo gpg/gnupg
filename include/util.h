@@ -154,6 +154,7 @@ const char *strtimestamp( u32 stamp ); /* GMT */
 const char *asctimestamp( u32 stamp ); /* localized */
 void print_string( FILE *fp, const byte *p, size_t n, int delim );
 int answer_is_yes( const char *s );
+int answer_is_yes_no_quit( const char *s );
 
 /*-- strgutil.c --*/
 void free_strlist( STRLIST sl );
