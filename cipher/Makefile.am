@@ -46,10 +46,12 @@ EXTRA_twofish_SOURCES = twofish.c
 
 
 tiger: $(srcdir)/tiger.c
-	$(COMPILE) -shared  -fPIC -O1 -o tiger $(srcdir)/tiger.c
+	`echo $(COMPILE) -shared  -fPIC -o tiger $(srcdir)/tiger.c | \
+	    sed -e 's/-O2/-O1/' `
 
 twofish: $(srcdir)/twofish.c
-	$(COMPILE) -shared  -fPIC -o twofish $(srcdir)/twofish.c
+	`echo $(COMPILE) -shared  -fPIC -o twofish $(srcdir)/twofish.c | \
+	    sed -e 's/-O2/  /' `
 
 
 install-exec-hook:
