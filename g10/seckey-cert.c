@@ -32,6 +32,7 @@
 #include "main.h"
 #include "options.h"
 #include "i18n.h"
+#include "status.h"
 
 
 static int
@@ -175,6 +176,14 @@ check_secret_key( PKT_secret_key *sk, int n )
 	if( i )
 	    log_info(_("Invalid passphrase; please try again ...\n"));
 	rc = do_check( sk );
+	if( rc == G10ERR_BAD_PASS && is_status_enabled() ) {
+	    u32 kid[2];
+	    char buf[50];
+
+	    keyid_from_sk( sk, kid );
+	    sprintf(buf, "%08lX%08lX", (ulong)kid[0], (ulong)kid[1]);
+	    write_status_text( STATUS_BAD_PASSPHRASE, buf );
+	}
 	if( have_static_passphrase() )
 	    break;
     }

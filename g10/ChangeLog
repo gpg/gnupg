@@ -1,3 +1,31 @@
+Wed Mar 17 13:09:03 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* trustdb.c (check_trust): add new arg add_fnc and changed all callers.
+	(do_check): Ditto.
+	(verify_key): Ditto.
+	(propagate_validity): Use the new add_fnc arg.
+	(print_user_id): Add the FILE arg.
+	(propagate_ownertrust): New.
+	* pkclist.c (add_ownertrust_cb): New and changed the add_ownertrust
+	logic.
+
+	* getkey.c (get_keyblock_bylid): New.
+	* trustdb.c (print_uid_from_keyblock): New.
+	(dump_tn_tree_with_colons): New.
+	(list_trust_path): Add colon print mode.
+
+	* trustdb.c (insert_trust_record): Always use the primary key.
+
+	* encode.c (encode_simple): Added text_mode filter (Rémi Guyomarch)
+	(encode_crypt): Ditto.
+
+	* mainproc.c (proc_pubkey_enc): Added status ENC_TO.
+	* armor.c (armor_filter): Added status NODATA.
+	* passphrase.c (passphrase_to_dek): Always print NEED_PASSPHRASE
+	* seckey_cert.c (check_secret_key): Added BAD_PASS status.
+
+	* g10.c (main): Set g10_opt_homedir.
+
 Sun Mar 14 19:34:36 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* keygen.c (do_create): Changed wording of the note (Hugh Daniel)

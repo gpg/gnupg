@@ -31,6 +31,7 @@
 #include "keydb.h"
 #include "options.h"
 #include "main.h"
+#include "trustdb.h"
 #include "i18n.h"
 
 #define MAX_UNK_CACHE_ENTRIES 1000   /* we use a linked list - so I guess
@@ -825,6 +826,34 @@ get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
     }
     else
 	rc = G10ERR_GENERAL; /* Oops */
+
+    free_public_key( pk );
+    return rc;
+}
+
+
+
+/****************
+ * Search for a key with the given lid and return the complete keyblock
+ */
+int
+get_keyblock_bylid( KBNODE *ret_keyblock, ulong lid )
+{
+    int rc;
+    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+    struct getkey_ctx_s ctx;
+    u32 kid[2];
+
+    if( keyid_from_lid( lid, kid ) )
+	kid[0] = kid[1] = 0;
+    memset( &ctx, 0, sizeof ctx );
+    ctx.not_allocated = 1;
+    ctx.nitems = 1;
+    ctx.items[0].mode = 12;
+    ctx.items[0].keyid[0] = kid[0];
+    ctx.items[0].keyid[1] = kid[1];
+    rc = lookup_pk( &ctx, pk, ret_keyblock );
+    get_pubkey_end( &ctx );
 
     free_public_key( pk );
     return rc;

@@ -41,6 +41,7 @@
 #include "main.h"
 #include "i18n.h"
 #include "tdbio.h"
+#include "ttyio.h"
 
 #if MAX_FINGERPRINT_LEN > 20
   #error Must change structure of trustdb
@@ -115,16 +116,20 @@ static int ins_lid_table_item( LOCAL_ID_TABLE tbl, ulong lid, unsigned flag );
 static int qry_lid_table_flag( LOCAL_ID_TABLE tbl, ulong lid, unsigned *flag );
 
 
-static void propagate_validity( TN node );
+static int propagate_validity( TN root, TN node,
+			       int (*add_fnc)(ulong), unsigned *retflgs );
 
-static void print_user_id( const char *text, u32 *keyid );
-static int do_check( TRUSTREC *drec, unsigned *trustlevel, const char *nhash);
+static void print_user_id( FILE *fp, const char *text, u32 *keyid );
+static int do_check( TRUSTREC *drec, unsigned *trustlevel,
+		     const char *nhash, int (*add_fnc)(ulong),
+						unsigned *retflgs);
 static int get_dir_record( PKT_public_key *pk, TRUSTREC *rec );
 
 static void upd_pref_record( TRUSTREC *urec, u32 *keyid, PKT_signature *sig );
 static void upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 		 TRUSTREC *drec, RECNO_LIST *recno_list, int recheck,
-		 TRUSTREC *urec, const byte *uidhash, int revoked );
+		 TRUSTREC *urec, const byte *uidhash, int revoked,
+					int *mod_up, int *mod_down );
 
 /* a table used to keep track of ultimately trusted keys
  * which are the ones from our secrings and the trusted keys */
@@ -375,6 +380,7 @@ keyid_from_lid( ulong lid, u32 *keyid )
     int rc;
 
     init_trustdb();
+    keyid[0] = keyid[1] = 0;
     rc = tdbio_read_record( lid, &rec, 0 );
     if( rc ) {
 	log_error(_("error reading dir record for LID %lu: %s\n"),
@@ -622,20 +628,23 @@ init_trustdb()
  *************	Print helpers	****************
  ***********************************************/
 static void
-print_user_id( const char *text, u32 *keyid )
+print_user_id( FILE *fp, const char *text, u32 *keyid )
 {
     char *p;
     size_t n;
 
     p = get_user_id( keyid, &n );
-    if( *text ) {
-	fputs( text, stdout);
-	putchar(' ');
+    if( fp ) {
+	fprintf( fp, "%s \"", text );
+	print_string( fp, p, n, 0 );
+	putc('\"', fp);
+	putc('\n', fp);
     }
-    putchar('\"');
-    print_string( stdout, p, n, 0 );
-    putchar('\"');
-    putchar('\n');
+    else {
+	tty_printf( "%s \"", text );
+	tty_print_string( p, n );
+	tty_printf( "\"\n" );
+    }
     m_free(p);
 }
 
@@ -699,35 +708,122 @@ print_path( int pathlen, TN ME .........., FILE *fp, ulong highlight )
 
 
 static void
-print_default_uid( ulong lid )
+print_default_uid( FILE *fp, ulong lid )
 {
     u32 keyid[2];
 
     if( !keyid_from_lid( lid, keyid ) )
-	print_user_id( "", keyid );
+	print_user_id( fp, "", keyid );
 }
 
 
 static void
-dump_tn_tree( int indent, TN tree )
+print_uid_from_keyblock( FILE *fp, KBNODE keyblock, ulong urecno )
+{
+    TRUSTREC urec;
+    KBNODE node;
+    byte uhash[20];
+
+    read_record( urecno, &urec, RECTYPE_UID );
+    for( node=keyblock; node; node = node->next ) {
+	if( node->pkt->pkttype == PKT_USER_ID ) {
+	    PKT_user_id *uidpkt = node->pkt->pkt.user_id;
+
+	    rmd160_hash_buffer( uhash, uidpkt->name, uidpkt->len );
+	    if( !memcmp( uhash, urec.r.uid.namehash, 20 ) ) {
+		print_string( fp,  uidpkt->name, uidpkt->len, ':' );
+		return;
+	    }
+	}
+    }
+
+    fputs("[?]", fp );
+}
+
+
+
+static void
+dump_tn_tree( FILE *fp, int level, TN tree )
 {
     TN kr, ur;
 
     for( kr=tree; kr; kr = kr->next ) {
-	printf("%*s", indent*4, "" );
-	printf("K%lu(ot=%d,val=%d)  ", kr->lid,
-					 kr->n.k.ownertrust,
-					 kr->n.k.validity  );
-	print_default_uid( kr->lid );
-	for( ur=kr->list; ur; ur = ur->next ) {
-	    printf("%*s  ", indent*4, "" );
-	    printf("U%lu(mc=%d,fc=%d,val=%d)\n", ur->lid,
-						 ur->n.u.marginal_count,
-						 ur->n.u.fully_count,
-						 ur->n.u.validity
-					    );
-	    dump_tn_tree( indent+1, ur->list );
+	if( fp ) {
+	    fprintf( fp, "%*s", level*4, "" );
+	    fprintf( fp, "K%lu(ot=%d,val=%d)  ", kr->lid,
+					     kr->n.k.ownertrust,
+					     kr->n.k.validity  );
 	}
+	else {
+	    tty_printf("%*s", level*4, "" );
+	    tty_printf("K%lu(ot=%d,val=%d)  ", kr->lid,
+					     kr->n.k.ownertrust,
+					     kr->n.k.validity  );
+	}
+	print_default_uid( fp, kr->lid );
+	for( ur=kr->list; ur; ur = ur->next ) {
+	    if( fp ) {
+		fprintf(fp, "%*s  ", level*4, "" );
+		fprintf(fp, "U%lu(mc=%d,fc=%d,val=%d)\n", ur->lid,
+						     ur->n.u.marginal_count,
+						     ur->n.u.fully_count,
+						     ur->n.u.validity
+						);
+	    }
+	    else {
+		tty_printf("%*s  ", level*4, "" );
+		tty_printf("U%lu(mc=%d,fc=%d,val=%d)\n", ur->lid,
+						     ur->n.u.marginal_count,
+						     ur->n.u.fully_count,
+						     ur->n.u.validity
+						);
+	    }
+	    dump_tn_tree( fp, level+1, ur->list );
+	}
+    }
+}
+
+/****************
+ * Special version of dump_tn_tree, which prints it colon delimited.
+ * Format:
+ *   level:keyid:type:recno:ot:val:mc:cc:name:
+ * With TYPE = U for a user ID
+ *	       K for a key
+ * The RECNO is either the one of the dir record or the one of the uid record.
+ * OT is the the usual trust letter and only availabel on K lines.
+ * VAL is the calcualted validity
+ * MC is the marginal trust counter and only available on U lines
+ * CC is the same for the complete count
+ * NAME ist the username and only printed on U lines
+ */
+static void
+dump_tn_tree_with_colons( int level, TN tree )
+{
+    TN kr, ur;
+
+    for( kr=tree; kr; kr = kr->next ) {
+	KBNODE kb = NULL;
+	u32 kid[2];
+
+	keyid_from_lid( kr->lid, kid );
+	get_keyblock_bylid( &kb, kr->lid );
+
+	printf( "%d:%08lX%08lX:K:%lu:%c:%c::::\n",
+			level, (ulong)kid[0], (ulong)kid[1], kr->lid,
+			trust_letter( kr->n.k.ownertrust ),
+			trust_letter( kr->n.k.validity ) );
+	for( ur=kr->list; ur; ur = ur->next ) {
+	    printf( "%d:%08lX%08lX:U:%lu::%c:%d:%d:",
+			level, (ulong)kid[0], (ulong)kid[1], ur->lid,
+			trust_letter( kr->n.u.validity ),
+			ur->n.u.marginal_count,
+			ur->n.u.fully_count );
+	    print_uid_from_keyblock( stdout, kb, ur->lid );
+	    putchar(':');
+	    putchar('\n');
+	    dump_tn_tree_with_colons( level+1, ur->list );
+	}
+	release_kbnode( kb );
     }
 }
 
@@ -851,6 +947,7 @@ check_hint_sig( ulong lid, KBNODE keyblock, u32 *keyid, byte *uidrec_hash,
  * Process a hintlist.
  * Fixme: this list is not anymore anchored to another
  *	  record, so it should be put elsewehere in case of an error
+ * FIXME: add mod_up/down handling
  */
 static void
 process_hintlist( ulong hintlist, ulong hint_owner )
@@ -1184,7 +1281,8 @@ upd_key_record( KBNODE keyblock, KBNODE keynode, u32 *keyid,
  */
 static void
 upd_uid_record( KBNODE keyblock, KBNODE uidnode, u32 *keyid,
-		TRUSTREC *drec, RECNO_LIST *recno_list, int recheck )
+		TRUSTREC *drec, RECNO_LIST *recno_list,
+		int recheck, int *mod_up, int *mod_down )
 {
     ulong lid = drec->recnum;
     PKT_user_id *uid = uidnode->pkt->pkt.user_id;
@@ -1327,10 +1425,10 @@ upd_uid_record( KBNODE keyblock, KBNODE uidnode, u32 *keyid,
 	    write_record( &urec );
 	    if(   !( urec.r.uid.uidflags & UIDF_VALID )
 		|| ( urec.r.uid.uidflags & UIDF_REVOKED ) )
-		; /*FIXME: mark as modified down */
+		*mod_down=1;
 	    else
-		; /*FIXME: mark as modified up (maybe a new uuser id)*/
-
+		*mod_up=1; /*(maybe a new user id)*/
+	    /* Hmmm, did we catch changed expiration dates? */
 	}
 
     } /* end check self-signatures */
@@ -1362,11 +1460,11 @@ upd_uid_record( KBNODE keyblock, KBNODE uidnode, u32 *keyid,
 
 	if( (sig->sig_class&~3) == 0x10 ) { /* regular certification */
 	    upd_cert_record( keyblock, node, keyid, drec, recno_list,
-			     recheck, &urec, uidhash, 0 );
+			     recheck, &urec, uidhash, 0, mod_up, mod_down );
 	}
 	else if( sig->sig_class == 0x30 ) { /* cert revocation */
 	    upd_cert_record( keyblock, node, keyid, drec, recno_list,
-			     recheck, &urec, uidhash, 1 );
+			     recheck, &urec, uidhash, 1, mod_up, mod_down );
 	}
     } /* end check certificates */
 
@@ -1490,11 +1588,11 @@ upd_pref_record( TRUSTREC *urec, u32 *keyid, PKT_signature *sig )
 }
 
 
-/* FIXME: add logic to set the modify_{down,up} */
 static void
 upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 		 TRUSTREC *drec, RECNO_LIST *recno_list, int recheck,
-		 TRUSTREC *urec, const byte *uidhash, int revoked )
+		 TRUSTREC *urec, const byte *uidhash, int revoked,
+		 int *mod_up, int *mod_down )
 {
     /* We simply insert the signature into the sig records but
      * avoid duplicate ones.  We do not check them here because
@@ -1577,8 +1675,12 @@ upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 				revoked? _("Valid certificate revocation")
 				       : _("Good certificate") );
 		    rec.r.sig.sig[i].flag = SIGF_CHECKED | SIGF_VALID;
-		    if( revoked ) /* we are investigating revocations */
+		    if( revoked ) { /* we are investigating revocations */
 			rec.r.sig.sig[i].flag |= SIGF_REVOKED;
+			*mod_down = 1;
+		    }
+		    else
+			*mod_up = 1;
 		}
 		else if( rc == G10ERR_NO_PUBKEY ) {
 		    /* This may happen if the key is still in the trustdb
@@ -1589,6 +1691,7 @@ upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 				 uidhash[19], (ulong)sig->keyid[1],
 				 _("public key not anymore available") );
 		    rec.r.sig.sig[i].flag = SIGF_NOPUBKEY;
+		    *mod_down = 1;
 		    if( revoked )
 			rec.r.sig.sig[i].flag |= SIGF_REVOKED;
 		}
@@ -1600,8 +1703,10 @@ upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 				       : _("Invalid certificate"),
 						    g10_errstr(rc));
 		    rec.r.sig.sig[i].flag = SIGF_CHECKED;
-		    if( revoked )
+		    if( revoked ) {
 			rec.r.sig.sig[i].flag |= SIGF_REVOKED;
+			*mod_down = 1;
+		    }
 		}
 		rec.dirty = 1;
 	    }
@@ -1662,8 +1767,12 @@ upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 				       : _("Good certificate") );
 	newlid = pk_lid;  /* this is the pk of the signature */
 	newflag = SIGF_CHECKED | SIGF_VALID;
-	if( revoked )
+	if( revoked ) {
 	    newflag |= SIGF_REVOKED;
+	    *mod_down = 1;
+	}
+	else
+	    *mod_up = 1;
     }
     else if( rc == G10ERR_NO_PUBKEY ) {
 	if( opt.verbose > 1 || DBG_TRUST )
@@ -1686,6 +1795,7 @@ upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 	newflag = SIGF_CHECKED;
 	if( revoked )
 	    newflag |= SIGF_REVOKED;
+	*mod_down = 1;
     }
 
     if( delrec.recnum ) { /* we can reuse an unused slot */
@@ -1730,6 +1840,8 @@ update_trust_record( KBNODE keyblock, int recheck, int *modified )
     int rc = 0;
     u32 keyid[2]; /* keyid of primary key */
     ulong recno, lastrecno;
+    int mod_up = 0;
+    int mod_down = 0;
     RECNO_LIST recno_list = NULL; /* list of verified records */
     /* fixme: replace recno_list by a lookup on node->recno */
 
@@ -1767,7 +1879,7 @@ update_trust_record( KBNODE keyblock, int recheck, int *modified )
     for( node=keyblock; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_USER_ID )
 	    upd_uid_record( keyblock, node, keyid,
-			    &drec, &recno_list, recheck );
+			    &drec, &recno_list, recheck, &mod_up, &mod_down );
     }
 
     /* delete keyrecords from the trustdb which are not anymore used */
@@ -1842,6 +1954,7 @@ update_trust_record( KBNODE keyblock, int recheck, int *modified )
 	drec.r.dir.dirflags |= DIRF_CHECKED;
 	drec.r.dir.valcheck = 0;
 	write_record( &drec );
+	tdbio_write_modify_stamp( mod_up, mod_down );
 	rc = tdbio_end_transaction();
     }
     rel_recno_list( &recno_list );
@@ -1854,7 +1967,7 @@ update_trust_record( KBNODE keyblock, int recheck, int *modified )
  * This function assumes that the record does not yet exist.
  */
 int
-insert_trust_record( PKT_public_key *pk )
+insert_trust_record( PKT_public_key *orig_pk )
 {
     TRUSTREC dirrec;
     TRUSTREC shadow;
@@ -1864,6 +1977,7 @@ insert_trust_record( PKT_public_key *pk )
     size_t fingerlen;
     int rc = 0;
     ulong hintlist = 0;
+    PKT_public_key *pk;
 
 
     if( opt.dry_run )
@@ -1871,7 +1985,7 @@ insert_trust_record( PKT_public_key *pk )
 
     init_trustdb();
 
-    fingerprint_from_pk( pk, fingerprint, &fingerlen );
+    fingerprint_from_pk( orig_pk, fingerprint, &fingerlen );
 
     /* fixme: assert that we do not have this record.
      * we can do this by searching for the primary keyid
@@ -1883,6 +1997,10 @@ insert_trust_record( PKT_public_key *pk )
      * to the primary one which has the user ids etc.)
      */
 
+    if( orig_pk->local_id )
+	log_debug("insert_trust_record with pk->local_id=%lu (1)\n",
+						   orig_pk->local_id );
+
     /* get the keyblock which has the key */
     rc = get_keyblock_byfprint( &keyblock, fingerprint, fingerlen );
     if( rc ) { /* that should never happen */
@@ -1891,30 +2009,16 @@ insert_trust_record( PKT_public_key *pk )
 	goto leave;
     }
 
+    /* make sure that we use the primary key */
+    pk = find_kbnode( keyblock, PKT_PUBLIC_KEY )->pkt->pkt.public_key;
+
     if( pk->local_id ) {
-	log_debug("insert_trust_reord with pk->local_id=%lu\n", pk->local_id );
+	orig_pk->local_id = pk->local_id;
+	log_debug("insert_trust_record with pk->local_id=%lu (2)\n",
+							pk->local_id );
 	rc = update_trust_record( keyblock, 1, NULL );
 	release_kbnode( keyblock );
 	return rc;
-    }
-
-    /* check that we used the primary key (we are little bit paranoid) */
-    {	PKT_public_key *a_pk;
-	u32 akid[2], bkid[2];
-
-	node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
-	a_pk = node->pkt->pkt.public_key;
-
-	/* we can't use cmp_public_keys here because some parts (expiredate)
-	 * might not be set in pk <--- but why (fixme) */
-	keyid_from_pk( a_pk, akid );
-	keyid_from_pk( pk, bkid );
-
-	if( akid[0] != bkid[0] || akid[1] != bkid[1] ) {
-	    log_error(_("did not use primary key for insert_trust_record()\n"));
-	    rc = G10ERR_GENERAL;
-	    goto leave;
-	}
     }
 
     /* We have to look for a shadow dir record which must be reused
@@ -1942,6 +2046,7 @@ insert_trust_record( PKT_public_key *pk )
 
     /* out the LID into the keyblock */
     pk->local_id = dirrec.r.dir.lid;
+    orig_pk->local_id = dirrec.r.dir.lid;
     for( node=keyblock; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_PUBLIC_KEY
 	    || node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
@@ -1954,7 +2059,8 @@ insert_trust_record( PKT_public_key *pk )
 	}
     }
 
-    /* FIXME: mark tdb as modified upwards */
+    /* mark tdb as modified upwards */
+    tdbio_write_modify_stamp( 1, 0 );
 
     /* and put all the other stuff into the keydb */
     rc = update_trust_record( keyblock, 1, NULL );
@@ -2100,9 +2206,57 @@ build_cert_tree( ulong lid, int depth, int max_depth, TN helproot )
 }
 
 
-
 static void
-propagate_validity( TN node )
+upd_one_ownertrust( ulong lid, unsigned new_trust, unsigned *retflgs )
+{
+    TRUSTREC rec;
+
+    read_record( lid, &rec, RECTYPE_DIR );
+    if( DBG_TRUST )
+	log_debug("upd_one_ownertrust of %lu from %u to %u\n",
+			   lid, (unsigned)rec.r.dir.ownertrust, new_trust );
+    if( retflgs ) {
+	if( new_trust > rec.r.dir.ownertrust )
+	    *retflgs |= 16; /* modified up */
+	else
+	    *retflgs |= 32; /* modified down */
+    }
+    rec.r.dir.ownertrust = new_trust;
+    write_record( &rec );
+}
+
+/****************
+ * Update the ownertrust in the complete tree.
+ */
+static void
+propagate_ownertrust( TN kr, ulong lid, unsigned trust )
+{
+    TN ur;
+
+    for( ; kr; kr = kr->next ) {
+	if( kr->lid == lid )
+	    kr->n.k.ownertrust = trust;
+	for( ur=kr->list; ur; ur = ur->next )
+	    propagate_ownertrust( ur->list, lid, trust );
+    }
+}
+
+/****************
+ * Calculate the validity of all keys in the tree and especially
+ * the one of the top key.  If add_fnc is not NULL, it is used to
+ * ask for missing ownertrust values (but only if this will help
+ * us to increase the validity.
+ * add_fnc is expected to take the LID of the key under question
+ * and return a ownertrust value or an error:  positive values
+ * are assumed to be the new ownertrust value; a 0 does mean no change,
+ * a -1 is a request to cancel this validation procedure, a -2 requests
+ * a listing of the sub-tree using the tty functions.
+ *
+ *
+ * Returns: 0 = okay
+ */
+static int
+propagate_validity( TN root, TN node, int (*add_fnc)(ulong), unsigned *retflgs )
 {
     TN kr, ur;
     int max_validity = 0;
@@ -2112,7 +2266,9 @@ propagate_validity( TN node )
 	/* this is one of our keys */
 	assert( !node->list ); /* it should be a leaf */
 	node->n.k.validity = TRUST_ULTIMATE;
-	return;
+	if( retflgs )
+	    *retflgs |= 1;  /* found a path to an ultimately trusted key */
+	return 0;
     }
 
     /* loop over all user ids */
@@ -2120,11 +2276,39 @@ propagate_validity( TN node )
 	assert( ur->is_uid );
 	/* loop over all signators */
 	for(kr=ur->list; kr; kr = kr->next ) {
-	    propagate_validity( kr );
+	    if( propagate_validity( root, kr, add_fnc, retflgs ) )
+		return -1; /* quit */
 	    if( kr->n.k.validity == TRUST_ULTIMATE ) {
 		ur->n.u.fully_count = opt.completes_needed;
 	    }
 	    else if( kr->n.k.validity == TRUST_FULLY ) {
+		if( add_fnc && !kr->n.k.ownertrust ) {
+		    int rc;
+
+		    if( retflgs )
+			*retflgs |= 2; /* found key with undefined ownertrust*/
+		    do {
+			rc = add_fnc( kr->lid );
+			switch( rc ) {
+			  case TRUST_NEVER:
+			  case TRUST_MARGINAL:
+			  case TRUST_FULLY:
+			    propagate_ownertrust( root, kr->lid, rc );
+			    upd_one_ownertrust( kr->lid, rc, retflgs );
+			    if( retflgs )
+				*retflgs |= 4; /* changed */
+			    break;
+			  case -1:
+			    return -1; /* cancel */
+			  case -2:
+			    dump_tn_tree( NULL, 0, kr );
+			    tty_printf("\n");
+			    break;
+			  default:
+			    break;
+			}
+		    } while( rc == -2 );
+		}
 		if( kr->n.k.ownertrust == TRUST_FULLY )
 		    ur->n.u.fully_count++;
 		else if( kr->n.k.ownertrust == TRUST_MARGINAL )
@@ -2145,6 +2329,7 @@ propagate_validity( TN node )
     }
 
     node->n.k.validity = max_validity;
+    return 0;
 }
 
 
@@ -2155,15 +2340,17 @@ propagate_validity( TN node )
  * checking all key signatures up to a some depth.
  */
 static int
-verify_key( int max_depth, TRUSTREC *drec, const char *namehash )
+verify_key( int max_depth, TRUSTREC *drec, const char *namehash,
+			    int (*add_fnc)(ulong), unsigned *retflgs )
 {
     TN tree;
     int keytrust;
+    int pv_result;
 
     tree = build_cert_tree( drec->r.dir.lid, 0, opt.max_cert_depth, NULL );
     if( !tree )
 	return TRUST_UNDEFINED;
-    propagate_validity( tree );
+    pv_result = propagate_validity( tree, tree, add_fnc, retflgs );
     if( namehash ) {
 	/* find the matching user id.
 	 * fixme: the way we handle this is too inefficient */
@@ -2183,7 +2370,8 @@ verify_key( int max_depth, TRUSTREC *drec, const char *namehash )
 	keytrust = tree->n.k.validity;
 
     /* update the cached validity values */
-    if( keytrust >= TRUST_UNDEFINED
+    if( !pv_result
+	&& keytrust >= TRUST_UNDEFINED
 	&& tdbio_db_matches_options()
 	&& ( !drec->r.dir.valcheck || drec->r.dir.validity != keytrust ) ) {
 	TN ur;
@@ -2213,7 +2401,8 @@ verify_key( int max_depth, TRUSTREC *drec, const char *namehash )
  * but nothing more is known.
  */
 static int
-do_check( TRUSTREC *dr, unsigned *validity, const char *namehash )
+do_check( TRUSTREC *dr, unsigned *validity,
+	  const char *namehash, int (*add_fnc)(ulong), unsigned *retflgs )
 {
     if( !dr->r.dir.keylist ) {
 	log_error(_("Ooops, no keys\n"));
@@ -2224,21 +2413,38 @@ do_check( TRUSTREC *dr, unsigned *validity, const char *namehash )
 	return G10ERR_TRUSTDB;
     }
 
+    if( retflgs )
+	*retflgs &= ~(16|32);  /* reset the 2 special flags */
+
 
     if( namehash ) {
 	/* Fixme: use the cache */
-	*validity = verify_key( opt.max_cert_depth, dr, namehash );
+	*validity = verify_key( opt.max_cert_depth, dr, namehash,
+							add_fnc, retflgs );
     }
-    else if( tdbio_db_matches_options()
+    else if( !add_fnc
+	&& tdbio_db_matches_options()
 	&& dr->r.dir.valcheck
 	    > tdbio_read_modify_stamp( (dr->r.dir.validity < TRUST_FULLY) )
 	&& dr->r.dir.validity )
 	*validity = dr->r.dir.validity;
     else
-	*validity = verify_key( opt.max_cert_depth, dr, NULL );
+	*validity = verify_key( opt.max_cert_depth, dr, NULL,
+							add_fnc, retflgs );
+
+    if( !(*validity & TRUST_MASK) )
+	*validity = TRUST_UNDEFINED;
 
     if( dr->r.dir.dirflags & DIRF_REVOKED )
 	*validity |= TRUST_FLAG_REVOKED;
+
+    /* If we have changed some ownertrusts, set the trustdb timestamps
+     * and do a sync */
+    if( retflgs && (*retflgs & (16|32)) ) {
+	tdbio_write_modify_stamp( (*retflgs & 16), (*retflgs & 32) );
+	do_sync();
+    }
+
 
     return 0;
 }
@@ -2256,6 +2462,9 @@ update_ownertrust( ulong lid, unsigned new_trust )
 
     init_trustdb();
     read_record( lid, &rec, RECTYPE_DIR );
+    if( DBG_TRUST )
+	log_debug("update_ownertrust of %lu from %u to %u\n",
+			   lid, (unsigned)rec.r.dir.ownertrust, new_trust );
     rec.r.dir.ownertrust = new_trust;
     write_record( &rec );
     do_sync();
@@ -2512,7 +2721,8 @@ query_trust_record( PKT_public_key *pk )
  *	     is not necessary to check this if we use a local pubring. Hmmmm.
  */
 int
-check_trust( PKT_public_key *pk, unsigned *r_trustlevel, const byte *namehash )
+check_trust( PKT_public_key *pk, unsigned *r_trustlevel,
+	     const byte *namehash, int (*add_fnc)(ulong), unsigned *retflgs )
 {
     TRUSTREC rec;
     unsigned trustlevel = TRUST_UNKNOWN;
@@ -2562,7 +2772,7 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel, const byte *namehash )
 	 trustlevel = TRUST_EXPIRED;
     }
     else {
-	rc = do_check( &rec, &trustlevel, namehash );
+	rc = do_check( &rec, &trustlevel, namehash, add_fnc, retflgs );
 	if( rc ) {
 	    log_error(_("key %08lX.%lu: trust check failed: %s\n"),
 			    (ulong)keyid[1], pk->local_id, g10_errstr(rc));
@@ -2586,7 +2796,7 @@ query_trust_info( PKT_public_key *pk, const byte *namehash )
     int c;
 
     init_trustdb();
-    if( check_trust( pk, &trustlevel, namehash ) )
+    if( check_trust( pk, &trustlevel, namehash, NULL, NULL ) )
 	return '?';
     if( trustlevel & TRUST_FLAG_REVOKED )
 	return 'r';
@@ -2656,12 +2866,15 @@ list_trust_path( const char *username )
 
     tree = build_cert_tree( lid, 0, opt.max_cert_depth, NULL );
     if( tree )
-	propagate_validity( tree );
-    dump_tn_tree( 0, tree );
-    printf("(alloced tns=%d  max=%d)\n", alloced_tns, max_alloced_tns );
+	propagate_validity( tree, tree, NULL, NULL );
+    if( opt.with_colons )
+	dump_tn_tree_with_colons( 0, tree );
+    else
+	dump_tn_tree( stdout, 0, tree );
+    /*printf("(alloced tns=%d  max=%d)\n", alloced_tns, max_alloced_tns );*/
     release_tn_tree( tree );
-    printf("Ownertrust=%c Validity=%c\n", get_ownertrust_info( lid ),
-					  query_trust_info( pk, NULL ) );
+    /*printf("Ownertrust=%c Validity=%c\n", get_ownertrust_info( lid ),
+					  query_trust_info( pk, NULL ) ); */
 
     free_public_key( pk );
 

@@ -54,10 +54,9 @@ more arguments in future versions.
     BADSIG	<long keyid>  <username>
 	The signature with the keyid has not been verified okay.
 
-    ERRSIG
+    ERRSIG  <long keyid>  <algorithm_number>
 	It was not possible to check the signature.  This may be
 	caused by a missing public key or an unsupported algorithm.
-	No argument yet.
 
     VALIDSIG	<fingerprint in hex>
 	The signature with the keyid is good. This is the same
@@ -71,6 +70,13 @@ more arguments in future versions.
 	of signed messages.  Note that only DLP algorithms give
 	unique ids - others may yield duplicated ones when they
 	have been created in the same second.
+
+    ENC_TO  <long keyid>
+	The message is encrypted to this keyid.
+
+    NODATA  <what>
+	No data has been found. Codes for what are:
+	    1 - No armored data.
 
     TRUST_UNDEFINED
     TRUST_NEVER
@@ -98,10 +104,16 @@ more arguments in future versions.
     SHM_GET
     SHM_GET_BOOL
     SHM_GET_HIDDEN
-    NEED_PASSPHRASE
-	[Needs documentation]
 
+    NEED_PASSPHRASE <long keyid>
+	Issued whenever a passphrase is needed.
 
+    BAD_PASSPHRASE <long keyid>
+	The supplied passphrase was wrong
+
+    NO_PUBKEY  <long keyid>
+    NO_SECKEY  <long keyid>
+	The key is not available
 
 
 Key generation
@@ -280,31 +292,6 @@ Record type 8: (shadow directory record)
 			but that the code cares about this.
     18 byte reserved
 
-
-
-Record type 9:	(cache record) NOT USED
---------------
-    Used to bind the trustDB to the concrete instance of keyblock in
-    a pubring. This is used to cache information.
-
-     1 byte   value 9
-     1 byte   reserved
-     1 u32    Local-Id.
-     8 bytes  keyid of the primary key (needed?)
-     1 byte   cache-is-valid the following stuff is only
-	      valid if this is set.
-     1 byte   reserved
-     20 bytes rmd160 hash value over the complete keyblock
-	      This is used to detect any changes of the keyblock with all
-	      CTBs and lengths headers. Calculation is easy if the keyblock
-	      is obtained from a keyserver: simply create the hash from all
-	      received data bytes.
-
-     1 byte   number of untrusted signatures.
-     1 byte   number of marginal trusted signatures.
-     1 byte   number of fully trusted signatures.
-	      (255 is stored for all values greater than 254)
-     1 byte   Trustlevel  (see trustdb.h)
 
 
 Record Type 10 (hash table)

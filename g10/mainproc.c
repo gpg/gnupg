@@ -182,6 +182,14 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
      * function to check it. */
     if( opt.verbose )
 	log_info(_("public key is %08lX\n"), (ulong)enc->keyid[1] );
+
+    if( is_status_enabled() ) {
+	char buf[50];
+	sprintf(buf, "%08lX%08lX", (ulong)enc->keyid[0], (ulong)enc->keyid[1]);
+	write_status_text( STATUS_ENC_TO, buf );
+    }
+
+
     if( is_ELGAMAL(enc->pubkey_algo)
 	|| enc->pubkey_algo == PUBKEY_ALGO_DSA
 	|| is_RSA(enc->pubkey_algo)  ) {
@@ -914,7 +922,11 @@ check_sig_and_print( CTX c, KBNODE node )
 	    g10_exit(1);
     }
     else {
-	write_status( STATUS_ERRSIG );
+	char buf[50];
+	sprintf(buf, "%08lX%08lX %d",
+		     (ulong)sig->keyid[0], (ulong)sig->keyid[1],
+		     sig->pubkey_algo );
+	write_status_text( STATUS_ERRSIG, buf );
 	log_error(_("Can't check signature: %s\n"), g10_errstr(rc) );
     }
     return rc;

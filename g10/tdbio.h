@@ -176,7 +176,7 @@ int tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected );
 int tdbio_write_record( TRUSTREC *rec );
 int tdbio_db_matches_options(void);
 ulong tdbio_read_modify_stamp( int modify_down );
-void tdbio_write_modify_stamp( int down, int up );
+void tdbio_write_modify_stamp( int up, int down );
 int tdbio_is_dirty(void);
 int tdbio_sync(void);
 int tdbio_begin_transaction(void);

@@ -76,11 +76,13 @@ encode_simple( const char *filename, int mode )
     cipher_filter_context_t cfx;
     armor_filter_context_t afx;
     compress_filter_context_t zfx;
+    text_filter_context_t tfx;
     int do_compress = opt.compress && !opt.rfc1991;
 
     memset( &cfx, 0, sizeof cfx);
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
+    memset( &tfx, 0, sizeof tfx);
     init_packet(&pkt);
 
     /* prepare iobufs */
@@ -89,6 +91,9 @@ encode_simple( const char *filename, int mode )
 					strerror(errno) );
 	return G10ERR_OPEN_FILE;
     }
+
+    if( opt.textmode )
+	iobuf_push_filter( inp, text_filter, &tfx );
 
     cfx.dek = NULL;
     if( mode ) {
@@ -151,19 +156,19 @@ encode_simple( const char *filename, int mode )
 	pt->namelen = 0;
     }
     /* pgp5 has problems to decrypt symmetrically encrypted data from
-     * GnuPOG if the filelength is in the inner packet.  It works
+     * GnuPG if the filelength is in the inner packet.	It works
      * when only partial length headers are use.  Until we have
      * tracked this problem down. We use this temporary fix
      * (fixme: remove the && !mode )
      */
-    if( filename && !mode ) {
+    if( filename && !opt.textmode && !mode ) {
 	if( !(filesize = iobuf_get_filelength(inp)) )
 	    log_info(_("%s: WARNING: empty file\n"), filename );
     }
     else
 	filesize = 0; /* stdin */
     pt->timestamp = make_timestamp();
-    pt->mode = 'b';
+    pt->mode = opt.textmode? 't' : 'b';
     pt->len = filesize;
     pt->buf = inp;
     pkt.pkttype = PKT_PLAINTEXT;
@@ -206,12 +211,14 @@ encode_crypt( const char *filename, STRLIST remusr )
     cipher_filter_context_t cfx;
     armor_filter_context_t afx;
     compress_filter_context_t zfx;
+    text_filter_context_t tfx;
     PK_LIST pk_list;
     int do_compress = opt.compress && !opt.rfc1991;
 
     memset( &cfx, 0, sizeof cfx);
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
+    memset( &tfx, 0, sizeof tfx);
     init_packet(&pkt);
 
     if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC)) )
@@ -226,6 +233,9 @@ encode_crypt( const char *filename, STRLIST remusr )
     }
     else if( opt.verbose )
 	log_info(_("reading from `%s'\n"), filename? filename: "[stdin]");
+
+    if( opt.textmode )
+	iobuf_push_filter( inp, text_filter, &tfx );
 
     if( (rc = open_outfile( filename, opt.armor? 1:0, &out )) )
 	goto leave;
@@ -270,14 +280,14 @@ encode_crypt( const char *filename, STRLIST remusr )
 	pt = m_alloc( sizeof *pt - 1 );
 	pt->namelen = 0;
     }
-    if( filename ) {
+    if( filename && !opt.textmode ) {
 	if( !(filesize = iobuf_get_filelength(inp)) )
 	    log_info(_("%s: WARNING: empty file\n"), filename );
     }
     else
 	filesize = 0; /* stdin */
     pt->timestamp = make_timestamp();
-    pt->mode = 'b';
+    pt->mode = opt.textmode ? 't' : 'b';
     pt->len = filesize;
     pt->new_ctb = !pt->len && !opt.rfc1991;
     pt->buf = inp;

@@ -633,11 +633,14 @@ tdbio_read_modify_stamp( int modify_down )
 }
 
 void
-tdbio_write_modify_stamp( int down, int up )
+tdbio_write_modify_stamp( int up, int down )
 {
     TRUSTREC vr;
     int rc;
     ulong stamp;
+
+    if( !(up || down) )
+	return;
 
     rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
     if( rc )
@@ -651,7 +654,7 @@ tdbio_write_modify_stamp( int down, int up )
 	vr.r.ver.mod_up = stamp;
 
     rc = tdbio_write_record( &vr );
-    if( !rc )
+    if( rc )
 	log_fatal( _("%s: error writing version record: %s\n"),
 				       db_name, g10_errstr(rc) );
 }

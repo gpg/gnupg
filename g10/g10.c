@@ -824,6 +824,7 @@ main( int argc, char **argv )
     secmem_set_flags( secmem_get_flags() & ~2 ); /* resume warnings */
 
     set_debug();
+    g10_opt_homedir = opt.homedir;
 
     /* must do this after dropping setuid, because string_to...
      * may try to load an module */

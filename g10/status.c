@@ -99,6 +99,11 @@ write_status_text ( int no, const char *text)
       case STATUS_NEED_PASSPHRASE: s = "NEED_PASSPHRASE\n"; break;
       case STATUS_VALIDSIG	 : s = "VALIDSIG\n"; break;
       case STATUS_SIG_ID	 : s = "SIG_ID\n"; break;
+      case STATUS_ENC_TO	 : s = "ENC_TO\n"; break;
+      case STATUS_NODATA	 : s = "NODATA\n"; break;
+      case STATUS_BAD_PASSPHRASE : s = "BAD_PASSPHRASE\n"; break;
+      case STATUS_NO_PUBKEY	 : s = "NO_PUBKEY\n"; break;
+      case STATUS_NO_SECKEY	 : s = "NO_SECKEY\n"; break;
       default: s = "?\n"; break;
     }
 

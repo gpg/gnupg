@@ -107,8 +107,8 @@ show_paths( ulong lid, int only_first )
 /****************
  * Returns true if an ownertrust has changed.
  */
-int
-edit_ownertrust( ulong lid, int mode )
+static int
+do_edit_ownertrust( ulong lid, int mode, unsigned *new_trust )
 {
     char *p;
     int rc;
@@ -117,6 +117,7 @@ edit_ownertrust( ulong lid, int mode )
     PKT_public_key *pk ;
     int changed=0;
     int quit=0;
+    int show=0;
 
     rc = keyid_from_lid( lid, keyid );
     if( rc ) {
@@ -177,14 +178,15 @@ edit_ownertrust( ulong lid, int mode )
 	      case '4': trust = TRUST_FULLY    ; break;
 	      default: BUG();
 	    }
-	    if( !update_ownertrust( lid, trust ) )
-		changed++;
+	    *new_trust = trust;
+	    changed = 1;
 	    break;
 	}
 	else if( *p == ans[0] || *p == ans[1] ) {
 	    tty_printf(_(
 		"Certificates leading to an ultimately trusted key:\n"));
-	    show_paths( lid, 1	);
+	    show = 1;
+	    break;
 	}
 	else if( mode && (*p == ans[2] || *p == ans[3] || *p == CONTROL_D ) ) {
 	    break ; /* back to the menu */
@@ -197,73 +199,71 @@ edit_ownertrust( ulong lid, int mode )
     }
     m_free(p);
     m_free(pk);
-    return quit? -1 : changed;
+    return show? -2: quit? -1 : changed;
 }
 
+
+int
+edit_ownertrust( ulong lid, int mode )
+{
+    unsigned trust;
+
+    for(;;) {
+	switch( do_edit_ownertrust( lid, mode, &trust ) ) {
+	  case -1:
+	    return 0;
+	  case -2:
+	    show_paths( lid, 1	);
+	    break;
+	  case 1:
+	    if( !update_ownertrust( lid, trust ) )
+		return 1;
+	    return 0;
+	  default:
+	    return 0;
+	}
+    }
+}
+
+static int
+add_ownertrust_cb( ulong lid )
+{
+    unsigned trust;
+    int rc = do_edit_ownertrust( lid, 0, &trust );
+
+    if( rc == 1 )
+	return trust & TRUST_MASK;
+    return rc > 0? 0 : rc;
+}
 
 /****************
  * Try to add some more owner trusts (interactive)
  * This function presents all the signator in a certificate
- * chain who have no trust value assigned.
+ * chain who have no ownertrust value assigned.
  * Returns: -1 if no ownertrust were added.
  */
 static int
-add_ownertrust( PKT_public_key *pk, int *quit )
+add_ownertrust( PKT_public_key *pk, int *quit, unsigned *trustlevel )
 {
     int rc;
-    void *context = NULL;
-    ulong lid;
-    unsigned otrust, validity;
-    int any=0, changed=0, any_undefined=0;
+    unsigned flags = 0;
 
     *quit = 0;
+    *trustlevel = 0;
     tty_printf(
 _("Could not find a valid trust path to the key.  Let's see whether we\n"
   "can assign some missing owner trust values.\n\n"));
 
-    rc = query_trust_record( pk );
-    if( rc ) {
-	log_error("Ooops: not in trustdb\n");
-	return -1;
-    }
+    rc = check_trust( pk, trustlevel, NULL, add_ownertrust_cb, &flags );
 
-    lid = pk->local_id;
-    while( enum_cert_paths( &context, &lid, &otrust, &validity ) != -1 ) {
-	if( lid == pk->local_id )
-	    continue;
-	any=1;
-	if( changed ) {
-	    /* because enum_cert_paths() makes a snapshop of the
-	     * trust paths, the otrust and validity are not anymore
-	     * valid after changing an entry - we have to reread
-	     * those values from then on
-	     */
-	    otrust = get_ownertrust( lid );
-	    /* fixme: and the validity? */
-	}
-	if( otrust == TRUST_UNDEFINED ) {
-	    any_undefined=1;
-	    enum_cert_paths_print( &context, NULL, changed, lid );
-	    tty_printf("\n");
-	    rc = edit_ownertrust( lid, 0 );
-	    if( rc == -1 ) {
-		*quit = 1;
-		break;
-	    }
-	    else if( rc > 0 )
-	       changed = 1;
-	}
-    }
-    enum_cert_paths( &context, NULL, NULL, NULL ); /* release context */
-
-    if( !any )
+    if( !(flags & 1) )
 	tty_printf(_("No path leading to one of our keys found.\n\n") );
-    else if( !any_undefined )
+    else if( !(flags & 2) )
 	tty_printf(_("No certificates with undefined trust found.\n\n") );
-    else if( !changed )
+    else if( !(flags & 4) )
 	tty_printf(_("No trust values changed.\n\n") );
 
-    return changed? 0:-1;
+    return (flags & 4)? 0:-1;
 }
 
 /****************
@@ -274,7 +274,9 @@ static int
 do_we_trust( PKT_public_key *pk, int trustlevel )
 {
     int rc;
+    int did_add = 0;
 
+  retry:
     if( (trustlevel & TRUST_FLAG_REVOKED) ) {
 	log_info(_("key %08lX: key has been revoked!\n"),
 					(ulong)keyid_from_pk( pk, NULL) );
@@ -295,7 +297,7 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 						      g10_errstr(rc) );
 	    return 0; /* no */
 	}
-	rc = check_trust( pk, &trustlevel, NULL );
+	rc = check_trust( pk, &trustlevel, NULL, NULL, NULL );
 	if( rc )
 	    log_fatal("trust check after insert failed: %s\n",
 						      g10_errstr(rc) );
@@ -317,14 +319,10 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 	else {
 	    int quit;
 
-	    rc = add_ownertrust( pk, &quit );
-	    if( !rc && !quit ) {
-		rc = check_trust( pk, &trustlevel, NULL );
-		if( rc )
-		    log_fatal("trust check after add_ownertrust failed: %s\n",
-							      g10_errstr(rc) );
-		/* fixme: this is recursive; we should unroll it */
-		return do_we_trust( pk, trustlevel );
+	    rc = add_ownertrust( pk, &quit, &trustlevel );
+	    if( !rc && !did_add && !quit ) {
+		did_add = 1;
+		goto retry;
 	    }
 	}
 	return 0;
@@ -352,10 +350,6 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 
       default: BUG();
     }
-
-
-    /* Eventuell fragen falls der trustlevel nicht ausreichend ist */
-
 
     return 1; /* yes */
 }
@@ -419,7 +413,7 @@ check_signatures_trust( PKT_signature *sig )
 {
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     int trustlevel;
-    int dont_try = 0;
+    int did_add = 0;
     int rc=0;
 
     rc = get_pubkey( pk, sig->keyid );
@@ -429,13 +423,13 @@ check_signatures_trust( PKT_signature *sig )
 	goto leave;
     }
 
-  retry:
-    rc = check_trust( pk, &trustlevel, NULL );
+    rc = check_trust( pk, &trustlevel, NULL, NULL, NULL );
     if( rc ) {
 	log_error("check trust failed: %s\n", g10_errstr(rc));
 	goto leave;
     }
 
+  retry:
     if( (trustlevel & TRUST_FLAG_REVOKED) ) {
 	write_status( STATUS_KEYREVOKED );
 	log_info(_("WARNING: This key has been revoked by its owner!\n"));
@@ -451,7 +445,7 @@ check_signatures_trust( PKT_signature *sig )
 						      g10_errstr(rc) );
 	    goto leave;
 	}
-	rc = check_trust( pk, &trustlevel, NULL );
+	rc = check_trust( pk, &trustlevel, NULL, NULL, NULL );
 	if( rc )
 	    log_fatal("trust check after insert failed: %s\n",
 						      g10_errstr(rc) );
@@ -464,7 +458,7 @@ check_signatures_trust( PKT_signature *sig )
 	break;
 
       case TRUST_UNDEFINED:
-	if( dont_try || opt.batch || opt.answer_no ) {
+	if( did_add || opt.batch || opt.answer_no ) {
 	    write_status( STATUS_TRUST_UNDEFINED );
 	    log_info(_(
 	    "WARNING: This key is not certified with a trusted signature!\n"));
@@ -474,9 +468,9 @@ check_signatures_trust( PKT_signature *sig )
 	}
 	else {
 	    int quit;
-	    rc = add_ownertrust( pk, &quit );
+	    rc = add_ownertrust( pk, &quit, &trustlevel );
 	    if( rc || quit ) {
-		dont_try = 1;
+		did_add = 1;
 		rc = 0;
 	    }
 	    goto retry;
@@ -591,7 +585,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) {
 		int trustlevel;
 
-		rc = check_trust( pk, &trustlevel, NULL );
+		rc = check_trust( pk, &trustlevel, NULL, NULL, NULL );
 		if( rc ) {
 		    log_error("error checking pk of `%s': %s\n",
 						      answer, g10_errstr(rc) );
@@ -630,7 +624,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
 		int trustlevel;
 
-		rc = check_trust( pk, &trustlevel, NULL );
+		rc = check_trust( pk, &trustlevel, NULL, NULL, NULL );
 		if( rc ) {
 		    free_public_key( pk ); pk = NULL;
 		    log_error(_("%s: error checking key: %s\n"),

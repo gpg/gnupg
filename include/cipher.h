@@ -88,6 +88,7 @@ typedef struct {
 
 int g10c_debug_mode;
 int g10_opt_verbose;
+const char *g10_opt_homedir;
 
 /*-- dynload.c --*/
 void register_cipher_extension( const char *mainpgm, const char *fname );

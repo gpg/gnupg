@@ -989,8 +989,10 @@ armor_filter( void *opaque, int control,
 	    iobuf_writestr(a, tail_strings[afx->what] );
 	    iobuf_writestr(a, "-----\n");
 	}
-	else if( !afx->any_data && !afx->inp_bypass )
+	else if( !afx->any_data && !afx->inp_bypass ) {
 	    log_error(_("no valid OpenPGP data found.\n"));
+	    write_status_text( STATUS_NODATA, "1" );
+	}
 	if( afx->truncated )
 	    log_info(_("invalid armor: line longer than %d characters\n"),
 		      MAX_LINELEN );

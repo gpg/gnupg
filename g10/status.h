@@ -50,6 +50,11 @@
 #define STATUS_NEED_PASSPHRASE 20
 #define STATUS_VALIDSIG        21
 #define STATUS_SIG_ID	       22
+#define STATUS_ENC_TO	       23
+#define STATUS_NODATA	       24
+#define STATUS_BAD_PASSPHRASE  25
+#define STATUS_NO_PUBKEY       26
+#define STATUS_NO_SECKEY       27
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

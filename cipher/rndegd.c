@@ -34,6 +34,7 @@
 #include "util.h"
 #include "ttyio.h"
 #include "dynload.h"
+#include "cipher.h"
 
 #ifdef IS_MODULE
   #define _(a) (a)
@@ -64,18 +65,47 @@ do_write( int fd, void *buf, size_t nbytes )
     return 0;
 }
 
+static int
+do_read( int fd, void *buf, size_t nbytes )
+{
+    int n, nread = 0;
 
+    do {
+	do {
+	    n = read(fd, (char*)buf + nread, nbytes );
+	} while( n == -1 && errno == EINTR );
+	if( n == -1 )
+	    return -1;
+	nread += n;
+    } while( nread < nbytes );
+    return nbytes;
+}
+
+
+/* fixme: level 1 is not yet handled */
 static int
 gather_random( void (*add)(const void*, size_t, int), int requester,
 					  size_t length, int level )
 {
     static int fd = -1;
     int n;
-    int warn=0;
     byte buffer[256+2];
+    int nbytes;
+    int do_restart = 0;
 
+    if( !length )
+	return 0;
+
+
+  restart:
+    if( do_restart ) {
+	if( fd != -1 ) {
+	    close( fd );
+	    fd = -1;
+	}
+    }
     if( fd == -1 ) {
-	const char *name = "/tmp/entropy";
+	char *name = make_filename( g10_opt_homedir, "entropy", NULL );
 	struct sockaddr_un addr;
 	int addr_len;
 
@@ -92,73 +122,63 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 	if( connect( fd, (struct sockaddr*)&addr, addr_len) == -1 )
 	    g10_log_fatal("can't connect to `%s': %s\n",
 						    name, strerror(errno) );
+	m_free(name);
+    }
+    do_restart = 0;
+
+    nbytes = length < 255? length : 255;
+    /* first time we do it with a non blocking request */
+    buffer[0] = 1; /* non blocking */
+    buffer[1] = nbytes;
+    if( do_write( fd, buffer, 2 ) == -1 )
+	g10_log_fatal("can't write to the EGD: %s\n", strerror(errno) );
+    n = do_read( fd, buffer, 1 );
+    if( n == -1 ) {
+	g10_log_error("read error on EGD: %s\n", strerror(errno));
+	do_restart = 1;
+	goto restart;
+    }
+    if( !n ) {
+	g10_log_error("bad EGD reply: too short\n");
+	do_restart = 1;
+	goto restart;
+    }
+    if( n > 1 ) {
+	n--;
+	(*add)( buffer+1, n, requester );
+	length -= n;
     }
 
-
+    if( length ) {
+      #ifdef IS_MODULE
+	fprintf( stderr,
+      #else
+	tty_printf(
+      #endif
+	 _("Please wait, entropy is being gathered. Do some work if it would\n"
+	   "keep you from getting bored, because it will improve the quality\n"
+	   "of the entropy.\n") );
+    }
     while( length ) {
-	fd_set rfds;
-	struct timeval tv;
-	int rc;
-	int nbytes;
-	int cmd;
-
 	nbytes = length < 255? length : 255;
-	/* send request */
-	cmd = level >= 2 ? 2 : 1;
-	buffer[0] = cmd;
+
+	buffer[0] = 2; /* blocking */
 	buffer[1] = nbytes;
 	if( do_write( fd, buffer, 2 ) == -1 )
 	    g10_log_fatal("can't write to the EGD: %s\n", strerror(errno) );
-	/* wait on reply */
-	FD_ZERO(&rfds);
-	FD_SET(fd, &rfds);
-	tv.tv_sec = 3;
-	tv.tv_usec = 0;
-	if( !(rc=select(fd+1, &rfds, NULL, NULL, &tv)) ) {
-	    if( !warn )
-	      #ifdef IS_MODULE
-		fprintf( stderr,
-	      #else
-		tty_printf(
-	      #endif
-			    _(
-"\n"
-"Not enough random bytes available.  Please do some other work to give\n"
-"the OS a chance to collect more entropy! (Need %d more bytes)\n"), length );
-	    warn = 1;
-	    continue;
-	}
-	else if( rc == -1 ) {
-	    g10_log_error("select error on EGD: %s\n", strerror(errno));
-	    continue;
-	}
-
-	/* collect reply */
-	do {
-	    n = read(fd, buffer, nbytes+2 );
-	} while( n == -1 && errno == EINTR );
-	/* process reply */
-	if( n == -1 )
+	n = do_read( fd, buffer, nbytes );
+	if( n == -1 ) {
 	    g10_log_error("read error on EGD: %s\n", strerror(errno));
-	else if( cmd == 2 && n != nbytes  ) {
+	    do_restart = 1;
+	    goto restart;
+	}
+	if( n != nbytes  ) {
 	    g10_log_error("bad EGD reply: too short %d/%d\n", nbytes, n );
+	    do_restart = 1;
+	    goto restart;
 	}
-	else if( cmd == 2 ) {
-	    (*add)( buffer, n, requester );
-	    length -= n;
-	}
-	else if( !n )
-	    g10_log_error("bad EGD reply: too short\n");
-	else if( buffer[0] != n-1 )
-	    g10_log_error("bad EGD reply: count mismatch %d/%d\n",
-						      n-1, buffer[0] );
-	else if( n==1 )
-	    g10_log_info("no data from EGD\n");
-	else {
-	    n -= 1;
-	    (*add)( buffer+1, n, requester );
-	    length -= n;
-	}
+	(*add)( buffer, n, requester );
+	length -= n;
     }
     memset(buffer, 0, sizeof(buffer) );
 

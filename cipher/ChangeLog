@@ -1,3 +1,8 @@
+Wed Mar 17 13:09:03 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* rndegd.c (do_read): New.
+	(gather_random): Changed the implementation.
+
 Mon Mar  8 20:47:17 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* dynload.c (DLSYM_NEEDS_UNDERSCORE): Renamed.

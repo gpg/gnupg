@@ -4,6 +4,8 @@
 
     * A bunch of changes to the key validation code.
 
+    * --list-trust-path now has an optional --with-colons format.
+
 
 Noteworthy changes in version 0.9.4
 -----------------------------------

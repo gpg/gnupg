@@ -28,11 +28,11 @@ dnl
 dnl  Check for random module options
 dnl
 dnl  Fixme: get the list of available modules from MODULES_IN_CIPHER
-dnl         and check agiants this list
+dnl         and check against this list
 
 AC_MSG_CHECKING([which static random module to use])
 AC_ARG_ENABLE(static-rnd,
-    [  --enable-static-rnd=[egd|unix|linux|nonde]  ],
+    [  --enable-static-rnd=[egd|unix|linux|none]  ],
 [use_static_rnd=$enableval], [use_static_rnd=default] )
 
 if test "$use_static_rnd" = no; then
@@ -169,7 +169,7 @@ case "${target}" in
 esac
 
 AC_SUBST(MPI_OPT_FLAGS)
-AM_SYS_SYMBOL_UNDERSCORE
+GNUPG_SYS_SYMBOL_UNDERSCORE
 GNUPG_CHECK_PIC
 GNUPG_CHECK_RDYNAMIC
 if test "$NO_PIC" = yes; then

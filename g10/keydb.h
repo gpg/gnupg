@@ -144,6 +144,7 @@ int get_pubkey_byfprint( PKT_public_key *pk, const byte *fprint,
 						 size_t fprint_len );
 int get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
 						 size_t fprint_len );
+int get_keyblock_bylid( KBNODE *ret_keyblock, ulong lid );
 int seckey_available( u32 *keyid );
 int get_seckey_byname( PKT_secret_key *sk, const char *name, int unlock );
 int get_seckey_bynames( GETKEY_CTX *rx, PKT_secret_key *sk,
