@@ -74,7 +74,7 @@ Noteworthy changes in version 1.3.2 (2003-05-27)
     * New option --enable-progress-filter for use with frontends.
 
     * DNS SRV records are used in HKP keyserver lookups to allow
-      administrators to load balance and select keyserver port
+      administrators to load balance and select keyserver ports
       automatically.  This is as specified in
       draft-shaw-openpgp-hkp-00.txt.
 

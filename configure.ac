@@ -292,10 +292,6 @@ if test "$use_exec" = yes ; then
         try_hkp=$enableval, try_hkp=yes)
     AC_MSG_RESULT($try_hkp)
 
-    if test "$try_hkp" = yes ; then
-      AC_SUBST(GPGKEYS_HKP,"gpgkeys_hkp$EXEEXT")
-    fi
-
     AC_MSG_CHECKING([whether email keyserver support is requested])
     AC_ARG_ENABLE(mailto,
     [  --disable-mailto        disable email keyserver interface],
@@ -442,6 +438,11 @@ AM_CONDITIONAL(HAVE_DOSISH_SYSTEM, test "$have_dosish_system" = yes)
 
 AC_SUBST(MPI_OPT_FLAGS)
 GNUPG_SYS_SYMBOL_UNDERSCORE
+
+dnl This needs to go after AC_PROG_CC so that $EXEEXT is defined
+if test "$try_hkp" = yes ; then
+  AC_SUBST(GPGKEYS_HKP,"gpgkeys_hkp$EXEEXT")
+fi
 
 dnl Must check for network library requirements before doing link tests
 dnl for ldap, for example. If ldap libs are static (or dynamic and without
@@ -652,31 +653,23 @@ else
   AC_SUBST(BUILD_INCLUDED_LIBINTL)
 fi
 
-
 if test "$try_dynload" = yes ; then
-  AC_CHECK_LIB(dl,dlopen)
-  if test "$ac_cv_lib_dl_dlopen" = "yes"; then
-    AC_DEFINE(USE_DYNAMIC_LINKING,1,
-              [define to enable the use of extensions])
+  AC_CHECK_FUNC(dlopen,,AC_CHECK_LIB(dl,dlopen,found_dlopen=yes))
+  if test x"$found_dlopen" = "xyes" ; then
+    AC_DEFINE(USE_DYNAMIC_LINKING,1,[define to enable the use of extensions])
     AC_DEFINE(HAVE_DL_DLOPEN,1,
               [Defined when the dlopen function family is available])
-  else
-    AC_CHECK_FUNCS(dlopen)
-    if test "$ac_cv_func_dlopen" = "yes"; then
-      AC_DEFINE(USE_DYNAMIC_LINKING)
-      AC_DEFINE(HAVE_DL_DLOPEN)
-    fi
+    AC_SUBST(DLLIBS,"-ldl")
   fi
 else
   AC_MSG_CHECKING(for dynamic loading)
-  DYNLINK_LDFLAGS=
-  DYNLINK_MOD_CFLAGS=
   AC_MSG_RESULT(has been disabled)
 fi
 
+
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(unistd.h langinfo.h termio.h locale.h)
+AC_CHECK_HEADERS(unistd.h langinfo.h termio.h locale.h getopt.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -741,6 +734,9 @@ AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(atexit raise getpagesize strftime nl_langinfo setlocale)
 AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe stat)
 AC_REPLACE_FUNCS(mkdtemp)
+
+dnl see if getopt is in libiberty
+AC_CHECK_FUNC(getopt,,AC_CHECK_LIB(iberty,getopt,AC_SUBST(GETOPT,"-liberty")))
 
 #
 # check for gethrtime and run a testprogram to see whether
@@ -991,18 +987,17 @@ else
   AC_CHECK_HEADER(zlib.h,
       AC_CHECK_LIB(z, deflateInit2_,
        use_local_zlib=no
-       LIBS="$LIBS -lz",
+       ZLIBS="-lz",
        CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}),
        CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags})
 fi
- 
+
 if test "$use_local_zlib" = yes ; then
     AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, true)
     AC_CONFIG_LINKS(zlib.h:zlib/zlib.h zconf.h:zlib/zconf.h )
     ZLIBS="../zlib/libzlib.a"
 else
     AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, false)
-    ZLIBS=
 fi
 AC_SUBST(ZLIBS)
 
@@ -1031,12 +1026,13 @@ GNUPG_CHECK_GNUMAKE
 # mysterious reasons - the final link step should bail out. 
 case "${target}" in
     *-*-mingw32*)
-        LIBS="$LIBS -lwsock32"
+        NETLIBS="$NETLIBS -lwsock32"
         ;;
     *)
        ;;
 esac
 
+AC_SUBST(NETLIBS)
 
 if test "$GCC" = yes; then
     if test "$USE_MAINTAINER_MODE" = "yes"; then
@@ -1045,8 +1041,6 @@ if test "$GCC" = yes; then
         CFLAGS="$CFLAGS -Wall"
     fi
 fi
-
-AC_SUBST(NETLIBS)
 
 
 if test "$print_egd_warning" = yes; then
