@@ -1,3 +1,9 @@
+2002-05-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Add entries for --sk-comments, --no-sk-comments,
+	--pgp7, and --no-pgp7.  Fix --pgp2 and --pgp6: the proper name is
+	--escape-from-lines and not --escape-from.
+
 2002-04-30  Timo Schulz  <ts@winpt.org>
 
 	* gpg.sgml: Add an entry for --encrypt-files and --decrypt-files.
