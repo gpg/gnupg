@@ -21,7 +21,7 @@ dnl
 dnl (Process this file with autoconf to produce a configure script.)
 dnlAC_REVISION($Revision$)dnl
 
-AC_PREREQ(2.52)
+AC_PREREQ(2.57)
 
 # Remember to change the version number immediately *after* a release
 # and remove the "-cvs" or "rc" suffix immediately *before* a release.
@@ -30,8 +30,6 @@ AC_INIT(gnupg, 1.3.4-cvs, bug-gnupg@gnu.org)
 # feel that the default check for a development version is not
 # sufficient.
 development_version=yes
-
-ALL_LINGUAS="de"
 
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_SRCDIR(g10/g10.c)
@@ -1141,6 +1139,7 @@ DATADIRNAME=$DATADIRNAME
 
 AC_CONFIG_FILES([
 Makefile
+m4/Makefile
 intl/Makefile
 po/Makefile.in
 util/Makefile

@@ -18,14 +18,16 @@
 
 ## Process this file with automake to produce Makefile.in
 
+ACLOCAL_AMFLAGS = -I m4
+
 if CROSS_COMPILING
 checks =
 else
 checks = checks
 endif
 
-SUBDIRS = intl zlib util mpi cipher tools g10 keyserver po doc ${checks}
-EXTRA_DIST = PROJECTS BUGS config.h.in autogen.sh
+SUBDIRS = m4 intl zlib util mpi cipher tools g10 keyserver po doc ${checks}
+EXTRA_DIST = scripts/config.rpath  PROJECTS BUGS config.h.in autogen.sh
 DISTCLEANFILES = g10defs.h 
 
 # Add all the files listed in "distfiles" files to the distribution,
@@ -46,9 +48,4 @@ dist-hook:
 	    $(top_srcdir)/scripts/gnupg.spec.in \
 	    > $(distdir)/gnupg.spec
 	echo "$(VERSION)" > $(distdir)/VERSION
-
-
-
-
-
 
