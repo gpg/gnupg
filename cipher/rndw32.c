@@ -318,6 +318,9 @@ gather_random_fast( void (*add)(const void*, size_t, int), int requester )
 #define VER_PLATFORM_WIN32_WINDOWS 1
 #endif
 
+#define SIZEOF_DISK_PERFORMANCE_STRUCT (6*8+5*4+8*2)
+
+
 typedef struct {
     DWORD dwSize;
     DWORD th32ProcessID;
@@ -617,7 +620,7 @@ slow_gatherer_windowsNT( void (*add)(const void*, size_t, int), int requester )
 
     /* Get disk I/O statistics for all the hard drives */
     for (nDrive = 0;; nDrive++) {
-	DISK_PERFORMANCE diskPerformance;
+        char diskPerformance[SIZEOF_DISK_PERFORMANCE_STRUCT];
 	char szDevice[50];
 
 	/* Check whether we can access this device */
@@ -630,13 +633,13 @@ slow_gatherer_windowsNT( void (*add)(const void*, size_t, int), int requester )
 	/* Note: This only works if you have turned on the disk performance
 	 * counters with 'diskperf -y'.  These counters are off by default */
 	if (DeviceIoControl (hDevice, IOCTL_DISK_PERFORMANCE, NULL, 0,
-			     &diskPerformance, sizeof (DISK_PERFORMANCE),
+			     diskPerformance, SIZEOF_DISK_PERFORMANCE_STRUCT,
 			     &dwSize, NULL))
 	{
 	    if ( debug_me )
 		log_debug ("rndw32#slow_gatherer_nt: iostats drive %d\n",
 								  nDrive );
-	    (*add) ( &diskPerformance, dwSize, requester );
+	    (*add) (diskPerformance, dwSize, requester );
 	}
 	else {
 	    log_info ("NOTE: you should run 'diskperf -y' "
