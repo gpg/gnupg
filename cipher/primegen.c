@@ -327,7 +327,7 @@ gen_prime( unsigned  nbits, int secret, int randomlevel )
 }
 
 /****************
- * Returns: true if this is may me a prime
+ * Returns: true if this may be a prime
  */
 static int
 check_prime( MPI prime )
@@ -365,7 +365,7 @@ check_prime( MPI prime )
 
 
 /****************
- * Return true if n is propably a prime
+ * Return true if n is probably a prime
  */
 static int
 is_prime( MPI n, int steps, int *count )

@@ -124,12 +124,12 @@ typedef struct {
     byte    hdrbytes;	    /* number of header bytes */
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
-    byte is_protected;	/* The secret infos are protected and must */
-			/* be decrypteded before use, the protected */
+    byte is_protected;	/* The secret info is protected and must */
+			/* be decrypted before use, the protected */
 			/* MPIs are simply (void*) pointers to memory */
 			/* and should never be passed to a mpi_xxx() */
     struct {
-	byte algo;  /* cipher used to protect the secret informations*/
+	byte algo;  /* cipher used to protect the secret information*/
 	byte s2k;
 	byte hash;
 	byte salt[8];

@@ -659,7 +659,7 @@ usage( int level )
  *    18: Optional thanks list	 (with LFs)
  *    19: Bug report info
  *20..29: Additional lib version strings.
- *30..39: Additional program infos (with LFs)
+ *30..39: Additional program info (with LFs)
  *    40: short usage note (with LF)
  *    41: long usage note (with LF)
  */

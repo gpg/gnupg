@@ -203,7 +203,7 @@ elg_generate( ELG_public_key *pk, ELG_secret_key *sk,
 
 
 /****************
- * Test wether the secret key is valid.
+ * Test whether the secret key is valid.
  * Returns: if this is a valid key.
  */
 int
@@ -320,7 +320,7 @@ elg_sign(MPI a, MPI b, MPI input, ELG_secret_key *skey )
 
 
 /****************
- * Returns true if the signature composed from A and B is valid.
+ * Returns true if the signature composed of A and B is valid.
  */
 int
 elg_verify(MPI a, MPI b, MPI input, ELG_public_key *pkey )

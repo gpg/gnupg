@@ -176,11 +176,11 @@ gen_revoke( const char *uname )
 
     /* and issue a usage notice */
     tty_printf("Revocation certificate created.\n\n"
-"Please move it to a media, which you can hide away; if Mallory gets\n"
+"Please move it to a medium which you can hide away; if Mallory gets\n"
 "access to this certificate he can use it to make your key unusable.\n"
-"It is clever to print this certificate and store it away, just in the case\n"
-"your media gets unreadable.  But have some caution:  The printer system of\n"
-"your machine might store the data and make it availabe to others!\n");
+"It is smart to print this certificate and store it away, just in case\n"
+"your media become unreadable.  But have some caution:  The print system of\n"
+"your machine might store the data and make it available to others!\n");
 
 
 

@@ -50,7 +50,7 @@ static int underflow(IOBUF a);
  * Read data from a file into buf which has an allocated length of *LEN.
  * return the number of read bytes in *LEN. OPAQUE is the FILE * of
  * the stream. A is not used.
- * control maybe:
+ * control may be:
  * IOBUFCTRL_INIT: called just before the function is linked into the
  *		   list of function. This can be used to prepare internal
  *		   data structures of the function.
@@ -392,7 +392,7 @@ iobuf_open( const char *fname )
 }
 
 /****************
- * create a iobuf for writing to a file; the file will be created.
+ * create an iobuf for writing to a file; the file will be created.
  */
 IOBUF
 iobuf_create( const char *fname )
@@ -423,8 +423,8 @@ iobuf_create( const char *fname )
 }
 
 /****************
- * append to a iobuf if the file does not exits; create it.
- * cannont be used for stdout.
+ * append to an iobuf; if the file does not exist, create it.
+ * cannot be used for stdout.
  */
 IOBUF
 iobuf_append( const char *fname )
@@ -579,7 +579,7 @@ iobuf_pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 	return rc;
     }
 
-    /* and look how to remove it */
+    /* and see how to remove it */
     if( a == b && !b->chain )
 	log_bug("can't remove the last filter from the chain\n");
     else if( a == b ) { /* remove the first iobuf from the chain */
@@ -743,7 +743,7 @@ iobuf_read(IOBUF a, byte *buf, unsigned buflen )
 
 /****************
  * Have a look at the iobuf.
- * NOTE: This does only work in special cases.
+ * NOTE: This only works in special cases.
  */
 int
 iobuf_peek(IOBUF a, byte *buf, unsigned buflen )
@@ -845,7 +845,7 @@ iobuf_unget_and_close_temp( IOBUF a, IOBUF temp )
 
 
 /****************
- * Set a limit, how much bytes may be read from the input stream A.
+ * Set a limit on how many bytes may be read from the input stream A.
  * Setting the limit to 0 disables this feature.
  */
 void
@@ -893,7 +893,7 @@ iobuf_tell( IOBUF a )
 
 /****************
  * This is a very limited implementation. It simply discards all internal
- * buffering and remove all filters but the first one.
+ * buffering and removes all filters but the first one.
  */
 int
 iobuf_seek( IOBUF a, ulong newpos )
@@ -968,7 +968,7 @@ iobuf_set_block_mode( IOBUF a, size_t n )
 }
 
 /****************
- * enable patial block mode as descriped in the OpenPGP draft.
+ * enable partial block mode as described in the OpenPGP draft.
  * LEN is the first length
  */
 void
@@ -990,7 +990,7 @@ iobuf_set_partial_block_mode( IOBUF a, size_t len )
 
 
 /****************
- * Checks wether the stream is in block mode
+ * Checks whether the stream is in block mode
  * Note: This does not work if other filters are pushed on the stream.
  */
 int

@@ -37,7 +37,7 @@
 
 
 /****************
- * This filter is used to en/de-cipher data with a conventinal algorithm
+ * This filter is used to en/de-cipher data with a conventional algorithm
  */
 int
 cipher_filter( void *opaque, int control,

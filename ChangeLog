@@ -1,3 +1,7 @@
+Tue Apr 14 19:08:05 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* [all files]: Applied Matthew Skala's typo and grammar fixes.
+
 Wed Mar  4 10:32:40 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* configure.in (getrusage,gettimeofday): New tests.

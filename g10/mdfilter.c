@@ -34,7 +34,7 @@
 
 
 /****************
- * The filter is used to collect a message digest
+ * This filter is used to collect a message digest
  */
 int
 md_filter( void *opaque, int control,

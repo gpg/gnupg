@@ -8,14 +8,14 @@ B<gpg> [--homedir name] [--options file] [options] command [args]
 
 =head1 DESCRIPTION
 
-This is the main program from the GNUPG system.
+This is the main program for the GNUPG system.
 
 =head1 COMMANDS
 
 B<gpg> recognizes these commands:
 
 B<-s>, B<--sign>
-    Make a signature. This option maybe combined
+    Make a signature. This option may be combined
     with B<--encrypt>.
 
 B<--clearsign>
@@ -28,7 +28,7 @@ B<-e>, B<--encrypt>
     Encrypt data. This option may be combined with B<--sign>.
 
 B<-c>, B<--symmetric>
-    Encrypt only with symmetric cipher
+    Encrypt with symmetric cipher only
     This command asks for a passphrase.
 
 B<--store>
@@ -39,8 +39,8 @@ B<--decrypt> [I<file>]
     write it to stdout (or the file specified with
     B<--output>). If the decrypted file is signed, the
     signature is also verified. This command differs
-    from the default operation, as it never write to the
-    filename which is included in the file and that it
+    from the default operation, as it never writes to the
+    filename which is included in the file and it
     rejects files which don't begin with an encrypted
     message.
 
@@ -49,27 +49,27 @@ B<--verify> [[I<sigfile>] {I<signed-files>}]
     without generating any output.  With no arguments,
     the signature packet is read from stdin (it may be a
     detached signature when not used in batch mode). If
-    only a sigfile is given, is maybe a complete signature
-    or a detached signature in which case the signed stuff
+    only a sigfile is given, it may be a complete signature
+    or a detached signature, in which case the signed stuff
     is expected from stdin. With more than 1 argument, the
     first should be a detached signature and the remaining
     files are the signed stuff.
 
 B<-k> [I<username>] [I<keyring>]
-    Kludge to be somewhat compatibe to PGP.
-    Without arguments, all public key-rings are listed,
-    with one argument, only I<keyring> is listed.
+    Kludge to be somewhat compatible with PGP.
+    Without arguments, all public key-rings are listed.
+    With one argument, only I<keyring> is listed.
     Special combinations are also allowed, but it may
-    give starnge results when combined with more options.
+    give strange results when combined with more options.
     B<-kv>    Same as B<-k>
     B<-kvv>   List the signatures with every key.
-    B<-kvvv>  Additional check all signatures.
+    B<-kvvv>  Additionally check all signatures.
     B<-kvc>   List fingerprints
     B<-kvvc>  List fingerprints and signatures
 
 B<--list-keys>	[I<names>]
-    List all keys from the default public keyring or just the ones
-    given on the commandline.
+    List all keys from the default public keyring, or just the ones
+    given on the command line.
 
 B<--list-sigs>	[I<names>]
     Same as B<--list-keys>, but the signatures are listed too.
@@ -97,8 +97,8 @@ B<--sign-key> I<name>
     all existing signatures of this key. If the key is
     not yet signed by the default user (or the users given
     with B<-u>), the program displays the information of
-    the key again, together with it's fingerprint and
-    asked whether it should be signed. This question
+    the key again, together with its fingerprint and
+    asks whether it should be signed. This question
     is repeated for all users specified with B<-u>.
     The key is then signed and the keyring which
     contains the key is updated.
@@ -121,7 +121,7 @@ B<--gen-revoke>
 
 B<--export> [I<names>]
     Either export all keys from all key-rings (default
-    key-rings and those registered via option B<--keyring>,
+    key-rings and those registered via option B<--keyring>),
     or if at least one name is given, those of the given
     name. The new keyring is written to F<stdout> or to
     the file given with option "output".  Use together
@@ -135,8 +135,8 @@ B<--import>
 
 Long options can be put in an options file (default F<~/.gnupg/options>);
 do not write the 2 dashes, but simply the name of the option and any
-arguments if required, lines with a hash as the first non-white-space
-character are ignored. Commands maybe put in this file too, but that
+arguments if required.  Lines with a hash as the first non-white-space
+character are ignored. Commands may be put in this file too, but that
 does not make sense.
 
 B<gpg> recognizes these options:
@@ -159,8 +159,8 @@ B<-r>  I<name>, B<--remote-user>  I<name>
     so that it can be used in an options file.
 
 B<-v>, B<--verbose>
-    Give more informations during processing. If used
-    2 times, the input data is listed in detail.
+    Give more information during processing. If used
+    twice, the input data is listed in detail.
 
 
 B<-z> I<n>
@@ -229,7 +229,7 @@ B<--no-comment>
     Do not write comment packets.
 
 B<--completes-needed> I<n>
-    Number of completey trusted users to introduce a new
+    Number of completely trusted users to introduce a new
     key signator (defaults to 1).
 
 B<--marginals-needed> I<n>
@@ -238,17 +238,17 @@ B<--marginals-needed> I<n>
 
 B<--cipher-algo> I<name>
     Use I<name> as cipher algorithm. Running the program
-    with the option B<--verbose> yields a list off supported
+    with the option B<--verbose> yields a list of supported
     algorithms.
 
 B<--pubkey-algo> I<name>
     Use I<name> as puplic key algorithm. Running the program
-    with the option B<--verbose> yields a list off supported
+    with the option B<--verbose> yields a list of supported
     algorithms.
 
 B<--digest-algo> I<name>
     Use I<name> as message digest algorithm. Running the
-    program with the option B<--verbose> yields a list off
+    program with the option B<--verbose> yields a list of
     supported algorithms.
 
 B<--passphrase-fd> I<n>

@@ -1,8 +1,7 @@
-GNUPG has originally been written by Werner Koch.  Other people contributed
-by reporting problems, suggesting various improvements or submitting actual
-code.  Here is a list of these people.	Help me keeping it complete and
-exempt of errors.
-
+GNUPG was originally written by Werner Koch.  Other people contributed by
+reporting problems, suggesting various improvements or submitting actual
+code.  Here is a list of those people.	Help me keep it complete and free of
+errors.
 
 Anand Kumria		wildfire@progsoc.uts.edu.au
 Daniel Eisenbud 	eisenbud@cs.swarthmore.edu
@@ -16,6 +15,7 @@ Jens Bachem		bachem@rrz.uni-koeln.de
 Marco d'Itri            md@linux.it
 Mark Adler		madler@alumni.caltech.edu
 Martin Schulte		schulte@thp.uni-koeln.de
+Matthew Skala		mskala@ansuz.sooke.bc.ca
 Peter Gutmann		pgut001@cs.auckland.ac.nz
 Ralph Gillen		gillen@theochem.uni-duesseldorf.de
 Thomas Roessler 	roessler@guug.de
@@ -24,7 +24,6 @@ Ulf Möller		3umoelle@informatik.uni-hamburg.de
 Walter Koch		walterk@ddorf.rhein-ruhr.de
 Werner Koch		werner.koch@guug.de
 Wim Vandeputte		bunbun@reptile.rug.ac.be
-
 
 Thanks to the German Unix User Group for providing FTP space and
 Martin Hamilton for hosting the mailing list.

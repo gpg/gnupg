@@ -26,7 +26,7 @@
 #define TRUST_MASK	 15
 #define TRUST_UNKNOWN	  0  /* not yet calculated */
 #define TRUST_EXPIRED	  1  /* calculation may be invalid */
-#define TRUST_UNDEFINED   2  /* not enough informations for calculation */
+#define TRUST_UNDEFINED   2  /* not enough information for calculation */
 #define TRUST_NEVER	  3  /* never trust this pubkey */
 #define TRUST_MARGINAL	  4  /* marginally trusted */
 #define TRUST_FULLY	  5  /* fully trusted	   */

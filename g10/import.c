@@ -52,9 +52,9 @@ static int merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
 
 /****************
  * Import the public keys from the given filename. Input may be armored.
- * This function rejects alls keys which are not valid self signed on at
+ * This function rejects all keys which are not validly self signed on at
  * least one userid. Only user ids which are self signed will be imported.
- * Other signatures are not not checked.
+ * Other signatures are not checked.
  *
  * Actually this functtion does a merge. It works like this:
  *
@@ -62,23 +62,23 @@ static int merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
  *  - check self-signatures and remove all userids and their signatures
  *    without/invalid self-signatures.
  *  - reject the keyblock, if we have no valid userid.
- *  - See wether we have this key already in one of our pubrings.
+ *  - See whether we have this key already in one of our pubrings.
  *    If not, simply add it to the default keyring.
  *  - Compare the key and the self-signatures of the new and the one in
- *    our keyring.  If they are differen something weird is going on;
+ *    our keyring.  If they are different something weird is going on;
  *    ask what to do.
- *  - See wether we have only non-self-signature on one user id; if not
+ *  - See whether we have only non-self-signature on one user id; if not
  *    ask the user what to do.
  *  - compare the signatures: If we already have this signature, check
  *    that they compare okay; if not, issue a warning and ask the user.
- *    (consider to look at the timestamp and use the newest?)
+ *    (consider looking at the timestamp and use the newest?)
  *  - Simply add the signature.  Can't verify here because we may not have
- *    the signatures public key yet; verification is done when putting it
+ *    the signature's public key yet; verification is done when putting it
  *    into the trustdb, which is done automagically as soon as this pubkey
  *    is used.
  *  - Proceed with next signature.
  *
- *  Key revocation certificates have a special handling.
+ *  Key revocation certificates have special handling.
  *
  */
 int
@@ -241,7 +241,7 @@ import_one( const char *fname, KBNODE keyblock )
     u32 keyid[2];
     int rc = 0;
 
-    /* get the key and print some infos about it */
+    /* get the key and print some info about it */
     node = find_kbnode( keyblock, PKT_PUBLIC_CERT );
     if( !node ) {
 	log_error("%s: Oops; public key not found anymore!\n", fname);
@@ -316,7 +316,7 @@ import_one( const char *fname, KBNODE keyblock )
 	    goto leave;
 	}
 
-	/* See wether we have only non-self-signature on one user id; if not
+	/* See whether we have only non-self-signature on one user id; if not
 	 * ask the user what to do. <--- fixme */
 
 	/* now read the original keyblock */
@@ -377,7 +377,7 @@ import_one( const char *fname, KBNODE keyblock )
 
 
 /****************
- * Import a revocation certificate, this is a single signature packet.
+ * Import a revocation certificate; this is a single signature packet.
  */
 static int
 import_revoke_cert( const char *fname, KBNODE node )
@@ -436,7 +436,7 @@ import_revoke_cert( const char *fname, KBNODE node )
     }
 
 
-    /* check wether we already have this */
+    /* check whether we already have this */
     for(onode=keyblock->next; onode; onode=onode->next ) {
 	if( onode->pkt->pkttype == PKT_USER_ID )
 	    break;
@@ -476,7 +476,7 @@ import_revoke_cert( const char *fname, KBNODE node )
 
 
 /****************
- * loop over the keyblock an check all self signatures.
+ * loop over the keyblock and check all self signatures.
  * Mark all user-ids with a self-signature by setting flag bit 0.
  * Mark all user-ids with an invalid self-signature by setting bit 1.
  */
@@ -515,8 +515,8 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 }
 
 /****************
- * delete all parts which are invalidand those signatures whos
- * public key algorithm is not availabe in this implemenation;
+ * delete all parts which are invalid and those signatures whose
+ * public key algorithm is not available in this implemenation;
  * but consider RSA as valid, because parse/build_packets knows
  * about it.
  * returns: true if at least one valid user-id is left over.
@@ -583,10 +583,10 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
  *
  * o compare the signatures: If we already have this signature, check
  *   that they compare okay; if not, issue a warning and ask the user.
- *   FIXME: add the check, that we don't have duplicate signatures and the
- *   warning in cases that the old/new signatures don't match.
+ *   FIXME: add the check that we don't have duplicate signatures and the
+ *   warning in cases where the old/new signatures don't match.
  * o Simply add the signature.	Can't verify here because we may not have
- *   the signatures public key yet; verification is done when putting it
+ *   the signature's public key yet; verification is done when putting it
  *   into the trustdb, which is done automagically as soon as this pubkey
  *   is used.
  * Note: We indicate newly inserted packets with flag bit 0
@@ -604,7 +604,7 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 	    break;
 	else if( node->pkt->pkttype == PKT_SIGNATURE
 		 && node->pkt->pkt.signature->sig_class == 0x20 )  {
-	    /* check wether we already have this */
+	    /* check whether we already have this */
 	    found = 0;
 	    for(onode=keyblock_orig->next; onode; onode=onode->next ) {
 		if( onode->pkt->pkttype == PKT_USER_ID )
@@ -742,9 +742,9 @@ merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
 
 	if( found ) { /* we already have this signature */
 	    /* Hmmm: should we compare the timestamp etc?
-	     * but then we have first to see wether this signature is valid
-	     * - or - simply add it in such a case and let trustdb logic
-	     * decide wether to remove the old one
+	     * but then we have first to see whether this signature is valid
+	     * - or simply add it in such a case and let trustdb logic
+	     * decide whether to remove the old one
 	     */
 	    continue;
 	}

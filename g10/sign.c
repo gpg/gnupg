@@ -55,7 +55,7 @@ complete_sig( PKT_signature *sig, PKT_secret_cert *skc, MD_HANDLE md )
     else
 	BUG();
 
-    /* fixme: should we check wether the signature is okay?
+    /* fixme: should we check whether the signature is okay?
      * maybe by using an option */
 
     return rc;

@@ -66,8 +66,8 @@ encode_session_key( DEK *dek, unsigned nbits )
     u16 csum;
     MPI a;
 
-    /* the current limitation is, that we can only use a session key
-     * which length is a multiple of BITS_PER_MPI_LIMB
+    /* the current limitation is that we can only use a session key
+     * whose length is a multiple of BITS_PER_MPI_LIMB
      * I think we can live with that.
      */
     if( dek->keylen + 7 > nframe || !nframe )
@@ -79,7 +79,7 @@ encode_session_key( DEK *dek, unsigned nbits )
      *	   0  2  RND(n bytes)  0  A  DEK(k bytes)  CSUM(2 bytes)
      *
      * (But how can we store the leading 0 - the external representaion
-     *	of MPIs don't allow leading zeroes =:-)
+     *	of MPIs doesn't allow leading zeroes =:-)
      *
      * RND are non-zero random bytes.
      * A   is the cipher algorithm

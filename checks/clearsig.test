@@ -3,7 +3,7 @@
 . defs.inc || exit 3
 
 #info Checking cleartext signatures
-# There is a minor glitch, which appends a lf to the cleartext.
+# There is a minor glitch, which appends an lf to the cleartext.
 # I do not consider that a bug, but I have to use the head .. mimic.
 # It is not clear what should happen to leading LFs, we must
 # change the defintion of cleartext, so that only 1 empty line

@@ -10,7 +10,7 @@ define(WK_MSG_PRINT,
 
 
 dnl WK_CHECK_TYPEDEF(TYPE, HAVE_NAME)
-dnl Check wether a typedef exists and create a #define $2 if it exists
+dnl Check whether a typedef exists and create a #define $2 if it exists
 dnl
 AC_DEFUN(WK_CHECK_TYPEDEF,
   [ AC_MSG_CHECKING(for $1 typedef)

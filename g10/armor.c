@@ -80,7 +80,7 @@ typedef enum {
 
 
 /* if we encounter this armor string with this index, go
- * into a mode, which fakes packets and wait for the next armor */
+ * into a mode which fakes packets and wait for the next armor */
 #define BEGIN_SIGNED_MSG_IDX 3
 static char *head_strings[] = {
     "BEGIN PGP MESSAGE",
@@ -136,7 +136,7 @@ initialize(void)
 }
 
 /****************
- * Check wether this is a armored file or not
+ * Check whether this is an armored file or not
  * See also parse-packet.c for details on this code
  * Returns: True if it seems to be armored
  */
@@ -167,7 +167,7 @@ is_armored( byte *buf )
 
 
 /****************
- * Try to check wether the iobuf is armored
+ * Try to check whether the iobuf is armored
  * Returns true if this may be the case; the caller should use the
  *	   filter to do further processing.
  */
@@ -179,7 +179,7 @@ use_armor_filter( IOBUF a )
 
     n = iobuf_peek(a, buf, 1 );
     if( n == -1 )
-	return 0; /* EOF, doesn't matter wether armored or not */
+	return 0; /* EOF, doesn't matter whether armored or not */
     if( !n )
 	return 1; /* can't check it: try armored */
     return is_armored(buf);
@@ -197,11 +197,11 @@ invalid_armor(void)
 
 
 /****************
- * check wether the armor header is valid on a signed message.
+ * check whether the armor header is valid on a signed message.
  * this is for security reasons: the header lines are not included in the
  * hash and by using some creative formatting rules, Mallory could fake
  * any text at the beginning of a document; assuming it is read with
- * a simple viewer. We do only allow the Hash Header.
+ * a simple viewer. We only allow the Hash Header.
  */
 static int
 parse_hash_header( const char *line )
@@ -268,7 +268,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
     do {
 	switch( state ) {
 	  case fhdrHASArmor:
-	    /* read at least the first byte to check wether it is armored
+	    /* read at least the first byte to check whether it is armored
 	     * or not */
 	    c = 0;
 	    for(n=0; n < 28 && (c=iobuf_get2(a)) != -1 && c != '\n'; )
@@ -382,8 +382,8 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 		    state = fhdrCHECKDashEscaped3;
 	    }
 	    else {
-		/* fixme: we should check wether this line continues
-		 *   it is poosible that we have only read ws until here
+		/* fixme: we should check whether this line continues
+		 *   it is possible that we have only read ws until here
 		 *   and more stuff is to come */
 		state = fhdrEOF;
 	    }
@@ -425,7 +425,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	  case fhdrEMPTYClearsig:
 	  case fhdrREADClearsig:
 	    /* we are at the start of a line: read a clearsig into the buffer
-	     * we have to look for a the header line or dashed escaped text*/
+	     * we have to look for a header line or dashed escaped text*/
 	    n = 0;
 	    c = 0;
 	    while( n < buflen && (c=iobuf_get2(a)) != -1 && c != '\n' )
@@ -508,11 +508,11 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    break;
 
 	  case fhdrTESTSpaces: {
-	    /* but must check wether the rest of the line
-	     * does only contain white spaces; this is problematic
-	     * since we may have to restore the stuffs. simply
+	    /* but must check whether the rest of the line
+	     * only contains white spaces; this is problematic
+	     * since we may have to restore the stuff.  simply
 	     * counting spaces is not enough, because it may be a
-	     * mix of different white space chacters */
+	     * mix of different white space characters */
 	    IOBUF b = iobuf_temp();
 	    while( (c=iobuf_get2(a)) != -1 && c != '\n' ) {
 		iobuf_put(b,c);
@@ -589,7 +589,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 }
 
 
-/* figure out wether the data is armored or not */
+/* figure out whether the data is armored or not */
 static int
 check_input( armor_filter_context_t *afx, IOBUF a )
 {
@@ -844,7 +844,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 
 
 /****************
- * The filter is used to handle the armor stuff
+ * This filter is used to handle the armor stuff
  */
 int
 armor_filter( void *opaque, int control,
@@ -906,7 +906,7 @@ armor_filter( void *opaque, int control,
 		 * is easy to construct the packets */
 
 		/* first a onepass signature packet */
-		buf[0] = 0x90; /* old packet forma, type 4, 1 length byte */
+		buf[0] = 0x90; /* old packet format, type 4, 1 length byte */
 		buf[1] = 13;   /* length */
 		buf[2] = 3;    /* version */
 		buf[3] = 0x01; /* sigclass 0x01 (data in canonical text mode)*/

@@ -137,7 +137,7 @@ AC_CHECK_FUNCS(gettimeofday getrusage)
 
 
 
-dnl check wether we have a random device
+dnl check whether we have a random device
 AC_CACHE_CHECK(for random device, ac_cv_have_dev_random,
 [if test -c /dev/random && test -c /dev/urandom ; then
   ac_cv_have_dev_random=yes; else ac_cv_have_dev_random=no; fi])

@@ -408,7 +408,7 @@ cipher_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
 
 
 /****************
- * Used for PGP's somewhat strange CFB mode. Does only work if
+ * Used for PGP's somewhat strange CFB mode. Only works if
  * the handle is in PHILS_CFB mode
  */
 void

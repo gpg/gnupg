@@ -4,7 +4,7 @@
  * We use our own memory allocation functions instead of plain malloc(),
  * so that we can provide some special enhancements:
  *  a) functions to provide memory from a secure memory.
- *  b) By looking at the requested allocation size we
+ *  b) by looking at the requested allocation size we
  *     can reuse memory very quickly (e.g. MPI storage)
  *     (really needed?)
  *  c) memory usage reporting if compiled with M_DEBUG
@@ -103,7 +103,7 @@ struct memtbl_entry {
 #define info_hash(p)  ( *(u32*)((p)) % INFO_BUCKETS )
 static struct info_entry *info_strings[INFO_BUCKETS]; /* hash table */
 
-static struct memtbl_entry *memtbl;  /* the table with the memory infos */
+static struct memtbl_entry *memtbl;  /* the table with the memory info */
 static unsigned memtbl_size;	/* number of allocated entries */
 static unsigned memtbl_len;	/* number of used entries */
 static struct memtbl_entry *memtbl_unused;/* to keep track of unused entries */
@@ -127,7 +127,7 @@ add_entry( byte *p, unsigned n, int mode, const char *info, const char *by )
 	index = memtbl_len++;
     else {
 	struct memtbl_entry *e;
-	/* look for an used entry in the table. We take the first one,
+	/* look for a used entry in the table.  We take the first one,
 	 * so that freed entries remain as long as possible in the table
 	 * (free appends a new one)
 	 */
@@ -193,9 +193,9 @@ add_entry( byte *p, unsigned n, int mode, const char *info, const char *by )
 /****************
  * Check that the memory block is correct. The magic byte has already been
  * checked. Checks which are done here:
- *    - see wether the index points into our memory table
- *    - see wether P is the same as the one stored in the table
- *    - see wether we have already freed this block.
+ *    - see whether the index points into our memory table
+ *    - see whether P is the same as the one stored in the table
+ *    - see whether we have already freed this block.
  */
 struct memtbl_entry *
 check_mem( const byte *p, const char *info )

@@ -47,7 +47,7 @@ typedef struct {
     PKT_user_id     *last_user_id;
     md_filter_context_t mfx;
     int sigs_only;   /* process only signatures and reject all other stuff */
-    int encrypt_only; /* process onyl encrytion messages */
+    int encrypt_only; /* process only encrytion messages */
     STRLIST signed_data;
     DEK *dek;
     int last_was_pubkey_enc;
@@ -123,12 +123,12 @@ add_signature( CTX c, PACKET *pkt )
     KBNODE node;
 
     if( pkt->pkttype == PKT_SIGNATURE && !c->list ) {
-	/* This is the first signature for a following datafile.
-	 * G10 does not write such packets, instead it always uses
+	/* This is the first signature for the following datafile.
+	 * G10 does not write such packets; instead it always uses
 	 * onepass-sig packets.  The drawback of PGP's method
-	 * of prepending the signtaure to the data is,
+	 * of prepending the signature to the data is
 	 * that it is not possible to make a signature from data read
-	 * from stdin.	(Anyway, G10 is able to read these stuff) */
+	 * from stdin.	(G10 is able to read PGP stuff anyway.) */
 	node = new_kbnode( pkt );
 	c->list = node;
 	return 1;
@@ -222,7 +222,7 @@ proc_plaintext( CTX c, PACKET *pkt )
     free_md_filter_context( &c->mfx );
     /* fixme: take the digest algo(s) to use from the
      * onepass_sig packet (if we have these)
-     * And look at the sigclass to check wether we should use the
+     * And look at the sigclass to check whether we should use the
      * textmode filter (sigclass 0x01)
      */
     c->mfx.md = md_open( DIGEST_ALGO_RMD160, 0);

@@ -31,7 +31,7 @@
 
 
 /****************
- * Construct a filename form the NULL terminated list of parts.
+ * Construct a filename from the NULL terminated list of parts.
  * Tilde expansion is done here.
  */
 char *
@@ -66,7 +66,7 @@ make_filename( const char *first_part, ... )
 
 
 /****************
- * A simple function to decide, wether the filename ist stdout
+ * A simple function to decide whether the filename is stdout
  * or a real filename.
  */
 const char *

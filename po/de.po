@@ -78,6 +78,14 @@ msgstr "Aufruf: gpgm [Optionen] [Dateien] (-h für Hilfe)"
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Aufruf: gpg [Optionen] [Dateien] (-h für Hilfe)"
 
+#: g10/g10.c:298
+msgid "usage: gpgm [options] "
+msgstr "Aufruf: gpgm [Optionen] "
+
+#: g10/g10.c:300
+msgid "usage: gpg [options] "
+msgstr "Aufruf: gpg [Optionen] "
+
 
 #: g10/g10.c:152
 msgid "conflicting commands\n"
@@ -262,7 +270,7 @@ msgid "select default cipher algorithm"
 msgstr "Den Cipher Algorithmus auswählen"
 
 #: g10/g10.c:206
-msgid "select default puplic key algorithm"
+msgid "select default public key algorithm"
 msgstr "Den Public-Key Algorithmus auswählen"
 
 #: g10/g10.c:207
@@ -339,6 +347,9 @@ msgstr "Die Trust-DB kann nicht initialisiert werden: %s\n"
 msgid "can't open '%s'\n"
 msgstr "Datei '%s' kann nicht geöffnet werden\n"
 
+#: g10/g10.c:799
+msgid "can't open %s: %s\n"
+msgstr "Datei '%s' kann nicht geöffnet werden: %s\n"
 
 #: g10/g10.c:113
 msgid "write status info to this fd"
@@ -417,6 +428,31 @@ msgstr "--delete-key Benutzername"
 msgid "--change-passphrase [username]"
 msgstr "--change-passphrase [Benutzername]"
 
+#: g10/g10.c:810
+msgid "-k[v][v][v][c] [userid] [keyring]"
+msgstr "-h[v][v][v][c] [Benutzername] [Keyring]"
+
+#: g10/g10.c:857
+msgid "dearmoring failed: %s\n"
+msgstr "De-Armor fehlgeschlagen: %s\n"
+
+#: g10/g10.c:865
+msgid "enarmoring failed: %s\n"
+msgstr "En-Armor fehlgeschlagen: %s\n"
+
+
+
+
+
+
+
+
+
+#: g10/pkclist.c:157
+msgid ""
+"No ownertrust values changed.\n"
+"\n"
+msgstr "Keine \"Ownertrust\" Werte geändert.\n"
 
 
 
@@ -432,15 +468,15 @@ msgstr ""
 msgid ""
 "\"\n"
 "\n"
-"Please decide in how far do you trust this user to\n"
-"correctly sign other users keys (looking at his passport,\n"
-"checking the fingerprints from different sources ...)?\n"
+"Please decide how far you trust this user to correctly\n"
+"verify other users' keys (by looking at passports,\n"
+"checking fingerprints from different sources...)?\n"
 "\n"
 " 1 = Don't know\n"
 " 2 = I do NOT trust\n"
 " 3 = I trust marginally\n"
 " 4 = I trust fully\n"
-" s = please show me more informations\n"
+" s = please show me more information\n"
 "\n"
 msgstr ""
 "\"\n"
@@ -473,13 +509,41 @@ msgstr "Sie sollten hier eigentlich eine Liste der Signierer sehen.\n"
 
 #: g10/pkclist.c:132
 msgid ""
-"Could not find a valid trust path to the key.  Lets see, wether we\n"
+"Could not find a valid trust path to the key.  Let's see whether we\n"
 "can assign some missing owner trust values.\n"
 "\n"
 msgstr ""
 "Ein gültiger Trust Path konnte für diesen Key nicht gefunden werden.\n"
 "Mal sehen ob wir now weitere Ownertrust Werte zuordnen können.\n"
 "\n"
+
+
+#: g10/pkclist.c:267
+msgid ""
+"It is NOT certain that the key belongs to its owner.\n"
+"If you *really* know what you are doing, you may answer\n"
+"the next question with yes\n"
+"\n"
+msgstr ""
+"Es ist NICHT sicher, daß der Key dem vorgeblichen Besitzer gehört.\n"
+"Wenn Sie *wirklich* wissen, was Sie tun, können Sie die nächste\n"
+"Frage mit ja beantworten\n"
+
+
+#: g10/pkclist.c:304
+msgid ""
+"You did not specify a user ID. (you may use \"-r\")\n"
+"\n"
+msgstr ""
+"Sie gaben keine User-ID angegeben. (benutzen Sie die Option \"-r\")\n"
+"\n"
+
+
+#: g10/pkclist.c:308
+msgid "Enter the user ID: "
+msgstr "Geben Sie die User-ID ein: "
+
+
 
 #: g10/keygen.c:109
 msgid "writing self signature\n"
@@ -532,7 +596,7 @@ msgid "What keysize do you want? (1024) "
 msgstr "Welche Schlüssellänge wünschen Sie? (1024)"
 
 #: g10/keygen.c:357
-msgid "DSA does only allow keysizes from 512 to 1024\n"
+msgid "DSA only allows keysizes from 512 to 1024\n"
 msgstr ""
 
 #: g10/keygen.c:359
@@ -636,8 +700,8 @@ msgstr ""
 
 #: g10/keygen.c:508
 msgid ""
-"You don't what a passphrase - this is probably a *bad* idea!\n"
-"I will do it anyway.  You can change your passphrase at anytime,\n"
+"You don't want a passphrase - this is probably a *bad* idea!\n"
+"I will do it anyway.  You can change your passphrase at any time,\n"
 "using this program with the option \"--change-passphrase\"\n"
 "\n"
 msgstr ""

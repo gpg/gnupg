@@ -7,7 +7,7 @@ Configure options for GNUPG
 --with-included-zlib Forces usage of the local zlib sources. Default is
 		     to use the (shared) library of the system.
 
---with-included-gettext Forces usage of the local gettext sources instead of.
+--with-included-gettext Forces usage of the local gettext sources instead of
 		    the one provided by your system.
 
 --disable-nls	    Disable NLS support (See ABOUT-NLS)
@@ -32,12 +32,12 @@ Problems
 If you have compile problems, try the configure options "--with-included-zlib"
 or "--disable-nls" (See ABOUT-NLS).
 
-I cant check all assembler files; so if you have problems assembling them
+I can't check all assembler files, so if you have problems assembling them
 (or the program crashes), simply delete the files in the mpi/<cpu> directory.
 The configure scripts may consider several subdirectories to get all
 available assembler files; be sure to delete the correct ones. The
 assembler replacements are in C and in mpi/generic; never delete udiv-qrnnd.S
-in any CPU directory, because there maybe no C substitute.
+in any CPU directory, because there may be no C substitute.
 Don't forget to delete "config.cache" and run "./config.status --recheck".
 
 

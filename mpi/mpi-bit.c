@@ -75,7 +75,7 @@ mpi_get_nbits( MPI a )
 
 
 /****************
- * Test wether bit N is set.
+ * Test whether bit N is set.
  */
 int
 mpi_test_bit( MPI a, unsigned n )

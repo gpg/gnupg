@@ -28,7 +28,7 @@
 
 
 /****************
- * A Keyblock are all packets which form an entire certificate;
+ * A Keyblock is all packets which form an entire certificate;
  * i.e. the public key, certificate, trust packets, user ids,
  * signatures, and subkey.
  *
@@ -44,7 +44,7 @@ struct kbnode_struct {
 };
 
 /****************
- * A data structre to hold informations about the external position
+ * A data structre to hold information about the external position
  * of a keyblock.
  */
 struct keyblock_pos_struct {
@@ -73,7 +73,7 @@ struct skc_list {
     int mark;
 };
 
-/* structure to collect all informations which can be used to
+/* structure to collect all information which can be used to
  * identify a public key */
 typedef struct pubkey_find_info *PUBKEY_FIND_INFO;
 struct pubkey_find_info {

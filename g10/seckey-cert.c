@@ -105,7 +105,7 @@ do_check( PKT_secret_cert *cert )
 	      default: BUG();
 	    }
 	    cipher_close( cipher_hd );
-	    /* now let's see wether we have used the right passphrase */
+	    /* now let's see whether we have used the right passphrase */
 	    if( csum != cert->csum ) {
 		if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 		    /* very bad kludge to work around an early bug */
@@ -205,7 +205,7 @@ do_check( PKT_secret_cert *cert )
 
 /****************
  * Check the secret key certificate
- * Ask up to 3 time for a correct passphrase
+ * Ask up to 3 times for a correct passphrase
  */
 int
 check_secret_key( PKT_secret_cert *cert )
@@ -230,7 +230,7 @@ check_secret_key( PKT_secret_cert *cert )
 }
 
 /****************
- * check wether the secret key is protected.
+ * check whether the secret key is protected.
  * Returns: 0 not protected, -1 on error or the protection algorithm
  */
 int

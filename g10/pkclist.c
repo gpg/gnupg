@@ -36,7 +36,7 @@
 #include "i18n.h"
 
 /****************
- * Returns true if a ownertrust has changed.
+ * Returns true if an ownertrust has changed.
  */
 static int
 query_ownertrust( ulong lid )
@@ -70,14 +70,14 @@ query_ownertrust( ulong lid )
     tty_print_string( p, n ),
     m_free(p);
     tty_printf(_("\"\n\n"
-"Please decide in how far do you trust this user to\n"
-"correctly sign other users keys (looking at his passport,\n"
-"checking the fingerprints from different sources ...)?\n\n"
+"Please decide how far you trust this user to correctly\n"
+"verify other users' keys (by looking at passports,\n"
+"checking fingerprints from different sources...)?\n\n"
 " 1 = Don't know\n"
 " 2 = I do NOT trust\n"
 " 3 = I trust marginally\n"
 " 4 = I trust fully\n"
-" s = please show me more informations\n\n") );
+" s = please show me more information\n\n") );
 
     for(;;) {
 	p = tty_get(_("Your decision? "));
@@ -129,7 +129,7 @@ add_ownertrust( PKT_public_cert *pkc )
     int any=0;
 
     tty_printf(
-_("Could not find a valid trust path to the key.  Lets see, wether we\n"
+_("Could not find a valid trust path to the key.  Let's see whether we\n"
   "can assign some missing owner trust values.\n\n"));
 
     rc = query_trust_record( pkc );
@@ -160,7 +160,7 @@ _("Could not find a valid trust path to the key.  Lets see, wether we\n"
 }
 
 /****************
- * Check wether we can trust this pkc which has a trustlevel of TRUSTLEVEL
+ * Check whether we can trust this pkc which has a trustlevel of TRUSTLEVEL
  * Returns: true if we trust.
  */
 static int
@@ -215,7 +215,7 @@ do_we_trust( PKT_public_cert *pkc, int trustlevel )
 		if( rc )
 		    log_fatal("trust check after add_ownertrust failed: %s\n",
 							      g10_errstr(rc) );
-		/* fixme: this is recursive; we better should unroll it */
+		/* fixme: this is recursive; we should unroll it */
 		return do_we_trust( pkc, trustlevel );
 	    }
 	}
@@ -226,7 +226,7 @@ do_we_trust( PKT_public_cert *pkc, int trustlevel )
 	return 0; /* no */
 
       case TRUST_MARGINAL:
-	log_info("I'm not sure wether this keys really belongs to the owner\n"
+	log_info("I'm not sure whether this key really belongs to the owner\n"
 		 "but I proceed anyway\n");
 	return 1; /* yes */
 
@@ -252,7 +252,7 @@ do_we_trust( PKT_public_cert *pkc, int trustlevel )
 
 
 /****************
- * wrapper arounf do_we_trust, so we can ask wether to use the
+ * wrapper around do_we_trust, so we can ask whether to use the
  * key anyway.
  */
 static int
@@ -264,7 +264,7 @@ do_we_trust_pre( PKT_public_cert *pkc, int trustlevel )
 	char *answer;
 
 	tty_printf(_(
-"It is NOT certain, that the key belongs to his owner.\n"
+"It is NOT certain that the key belongs to its owner.\n"
 "If you *really* know what you are doing, you may answer\n"
 "the next question with yes\n\n") );
 

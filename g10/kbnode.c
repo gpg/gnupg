@@ -70,8 +70,8 @@ release_kbnode( KBNODE n )
 
 
 /****************
- * Delete NODE from ROOT, ROOT must exist!
- * Note: This does only work with walk_kbnode!!
+ * Delete NODE from ROOT.  ROOT must exist!
+ * Note: This only works with walk_kbnode!!
  */
 void
 delete_kbnode( KBNODE node )
@@ -81,7 +81,7 @@ delete_kbnode( KBNODE node )
 
 
 /****************
- * Append NODE to ROOT, ROOT must exist!
+ * Append NODE to ROOT.  ROOT must exist!
  */
 void
 add_kbnode( KBNODE root, KBNODE node )
@@ -178,7 +178,7 @@ find_kbnode( KBNODE node, int pkttype )
 
 
 /****************
- * Walk through a list of kbnodes. This functions returns
+ * Walk through a list of kbnodes. This function returns
  * the next kbnode for each call; before using the function the first
  * time, the caller must set CONTEXT to NULL (This has simply the effect
  * to start with ROOT).
@@ -213,9 +213,9 @@ clear_kbnode_flags( KBNODE n )
 
 /****************
  * Commit changes made to the kblist at ROOT. Note that ROOT my change,
- * and it is therefor passed by reference.
+ * and it is therefore passed by reference.
  * The function has the effect of removing all nodes marked as deleted.
- * returns true, if any node has been changed
+ * returns true if any node has been changed
  */
 int
 commit_kbnode( KBNODE *root )

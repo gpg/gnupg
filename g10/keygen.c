@@ -147,8 +147,8 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     pkt->pkt.public_cert = pkc;
     add_kbnode(pub_root, new_kbnode( pkt ));
 
-    /* don't know wether it make sense to have the factors, so for now
-     * we store them in the secret keyring (but they are of secret) */
+    /* don't know whether it makes sense to have the factors, so for now
+     * we store them in the secret keyring (but they are secret) */
     pkt = m_alloc_clear(sizeof *pkt);
     pkt->pkttype = PKT_SECRET_CERT;
     pkt->pkt.secret_cert = skc;
@@ -338,7 +338,7 @@ generate_keypair()
 	nbits = *answer? atoi(answer): 1024;
 	m_free(answer);
 	if( algo == PUBKEY_ALGO_DSA && (nbits < 512 || nbits > 1024) )
-	    tty_printf(_("DSA does only allow keysizes from 512 to 1024\n"));
+	    tty_printf(_("DSA only allows keysizes from 512 to 1024\n"));
 	else if( nbits < 768 )
 	    tty_printf(_("keysize too small; 768 is smallest value allowed.\n"));
 	else if( nbits > 2048 ) {
@@ -495,7 +495,7 @@ generate_keypair()
 
 
 	tty_printf(_("You selected this USER-ID:\n    \"%s\"\n\n"), uid);
-	/* fixme: add a warning if this the user-id already exists */
+	/* fixme: add a warning if this user-id already exists */
 	for(;;) {
 	    answer = tty_get(_("Edit (N)ame, (C)omment, (E)mail or (O)kay? "));
 	    tty_kill_prompt();
@@ -539,8 +539,8 @@ generate_keypair()
 	if( rc == -1 ) {
 	    m_free(dek); dek = NULL;
 	    tty_printf(_(
-	    "You don't what a passphrase - this is probably a *bad* idea!\n"
-	    "I will do it anyway.  You can change your passphrase at anytime,\n"
+	    "You don't want a passphrase - this is probably a *bad* idea!\n"
+	    "I will do it anyway.  You can change your passphrase at any time,\n"
 	    "using this program with the option \"--change-passphrase\"\n\n"));
 	    break;
 	}
@@ -558,7 +558,7 @@ generate_keypair()
     }
 
 
-    /* now check wether we a are allowed to write to the keyrings */
+    /* now check whether we are allowed to write to the keyrings */
     pub_fname = make_filename(opt.homedir, "pubring.gpg", NULL );
     sec_fname = make_filename(opt.homedir, "secring.gpg", NULL );
     if( opt.verbose ) {

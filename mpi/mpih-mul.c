@@ -120,7 +120,7 @@ mul_n( mpi_ptr_t prodp, mpi_ptr_t up, mpi_ptr_t vp,
 			mpi_size_t size, mpi_ptr_t tspace )
 {
     if( size & 1 ) {
-      /* The size is odd, the code code below doesn't handle that.
+      /* The size is odd, and the code below doesn't handle that.
        * Multiply the least significant (size - 1) limbs with a recursive
        * call, and handle the most significant limb of S1 and S2
        * separately.
@@ -269,7 +269,7 @@ void
 mpih_sqr_n( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t size, mpi_ptr_t tspace)
 {
     if( size & 1 ) {
-	/* The size is odd, the code code below doesn't handle that.
+	/* The size is odd, and the code below doesn't handle that.
 	 * Multiply the least significant (size - 1) limbs with a recursive
 	 * call, and handle the most significant limb of S1 and S2
 	 * separately.

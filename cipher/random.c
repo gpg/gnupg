@@ -134,7 +134,7 @@ quick_random_gen( int onoff )
 
 
 /****************
- * Fill the buffer with LENGTH bytes of cryptologic strong
+ * Fill the buffer with LENGTH bytes of cryptographically strong
  * random bytes. level 0 is not very strong, 1 is strong enough
  * for most usage, 2 is good for key generation stuff but may be very slow.
  */

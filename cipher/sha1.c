@@ -1,7 +1,7 @@
 /* sha1.c - SHA1 hash function
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * Please see below for more legal informations!
+ * Please see below for more legal information!
  *
  * This file is part of GNUPG.
  *

@@ -266,7 +266,7 @@ release_lid_table( LOCAL_ID_INFO *tbl )
 
 /****************
  * Add a new item to the table or return 1 if we already have this item
- * fixme: maybe its a good idea to take items from an unused item list.
+ * fixme: maybe it's a good idea to take items from an unused item list.
  */
 static int
 ins_lid_table_item( LOCAL_ID_INFO *tbl, ulong lid, unsigned flag )
@@ -677,7 +677,7 @@ search_record( PKT_public_cert *pkc, TRUSTREC *rec )
 
 /****************
  * If we do not have a local_id in a signature packet, find the owner of
- * the signature packet in our trustdb or insert him into the trustdb
+ * the signature packet in our trustdb or insert them into the trustdb
  */
 static int
 set_signature_packets_local_id( PKT_signature *sig )
@@ -728,7 +728,7 @@ keyid_from_local_id( ulong lid, u32 *keyid )
 }
 
 /****************
- * Walk throug the signatures of a public key.
+ * Walk through the signatures of a public key.
  * The caller must provide a context structure, with all fields set
  * to zero, but the local_id field set to the requested key;
  * This function does not change this field.  On return the context
@@ -823,7 +823,7 @@ walk_sigrecs( SIGREC_CONTEXT *c, int create )
 
 
 /****************
- * Verify, that all our public keys are in the trustDB.
+ * Verify that all our public keys are in the trustDB.
  */
 static int
 verify_own_certs()
@@ -848,7 +848,7 @@ verify_own_certs()
 	if( DBG_TRUST )
 	    log_debug("checking secret key %08lX\n", (ulong)keyid[1] );
 
-	/* look wether we can access the public key of this secret key */
+	/* see whether we can access the public key of this secret key */
 	memset( pkc, 0, sizeof *pkc );
 	rc = get_pubkey( pkc, keyid );
 	if( rc ) {
@@ -944,7 +944,7 @@ do_list_sigs( ulong root, ulong pubkey, int depth,
 	else {
 	    printf("%6u: %*s%08lX(%lu:%02x) ", *lineno, depth*4, "",
 			      (ulong)keyid[1], sx.sig_id, sx.sig_flag );
-	    /* check wether we already checked this pubkey */
+	    /* check whether we already checked this pubkey */
 	    if( !qry_lid_table_flag( ultikey_table, sx.sig_id, NULL ) ) {
 		print_user_id("[ultimately trusted]", keyid);
 		++*lineno;
@@ -1023,7 +1023,7 @@ do_list_path( TRUST_INFO *stack, int depth, int max_depth,
 
     /*printf("%2lu/%d: scrutinizig\n", stack[depth-1], depth);*/
     if( depth >= max_depth || depth >= MAX_LIST_SIGS_DEPTH-1 ) {
-	/*printf("%2lu/%d: to deeply nested\n", stack[depth-1], depth);*/
+	/*printf("%2lu/%d: too deeply nested\n", stack[depth-1], depth);*/
 	return 0;
     }
     memset( &sx, 0, sizeof sx );
@@ -1085,7 +1085,7 @@ do_list_path( TRUST_INFO *stack, int depth, int max_depth,
  * Check all the sigs of the given keyblock and mark them
  * as checked. Valid signatures which are duplicates are
  * also marked [shall we check them at all?]
- * FIXME: what shall we do if we have duplicate signatures were only
+ * FIXME: what shall we do if we have duplicate signatures where only
  *	  some of them are bad?
  */
 static int
@@ -1204,9 +1204,9 @@ build_sigrecs( ulong pubkeyid )
 		/* the next function should always succeed, because
 		 * we have already checked the signature, and for this
 		 * it was necessary to have the pubkey. The only reason
-		 * this can fail are I/o errors of the trustdb or a
+		 * this can fail are I/O errors of the trustdb or a
 		 * remove operation on the pubkey database - which should
-		 * not disturb us, because we have to chace them anyway. */
+		 * not disturb us, because we have to chance them anyway. */
 		rc = set_signature_packets_local_id( node->pkt->pkt.signature );
 		if( rc )
 		    log_fatal("set_signature_packets_local_id failed: %s\n",
@@ -1339,7 +1339,7 @@ make_tsl( ulong pubkey_id, TRUST_SEG_LIST *ret_tslist )
  * to assign a trustvalue to the first segment (which is the requested key)
  * of each path.
  *
- * FIXME: We have to do more thinks here. e.g. we should never increase
+ * FIXME: We have to do more thinking here. e.g. we should never increase
  *	  the trust value.
  *
  * Do not do it for duplicates.
@@ -1355,7 +1355,7 @@ propagate_trust( TRUST_SEG_LIST tslist )
 	if( tsl->dup )
 	    continue;
 	assert( tsl->nseg );
-	/* the last segment is always a ultimately trusted one, so we can
+	/* the last segment is always an ultimately trusted one, so we can
 	 * assign a fully trust to the next one */
 	i = tsl->nseg-1;
 	tsl->seg[i].trust = TRUST_ULTIMATE;
@@ -1409,7 +1409,7 @@ do_check( ulong pubkeyid, TRUSTREC *dr, unsigned *trustlevel )
 	tflags |= TRUST_FLAG_REVOKED;
 
     if( !rc && !dr->r.dir.sigrec ) {
-	/* See wether this is our own key */
+	/* See whether this is our own key */
 	if( !qry_lid_table_flag( ultikey_table, pubkeyid, NULL ) )
 	    *trustlevel = tflags | TRUST_ULTIMATE;
 	return 0;
@@ -1439,7 +1439,7 @@ do_check( ulong pubkeyid, TRUSTREC *dr, unsigned *trustlevel )
 	}
     }
 
-    /* and look wether there is a trusted path.
+    /* and see whether there is a trusted path.
      * We only have to look at the first segment, because
      * propagate_trust has investigated all other segments */
     marginal = fully = 0;
@@ -1478,9 +1478,9 @@ do_check( ulong pubkeyid, TRUSTREC *dr, unsigned *trustlevel )
 }
 
 
-/*********************************************************
- ****************  API Interface  ************************
- *********************************************************/
+/***********************************************
+ ****************  API  ************************
+ ***********************************************/
 
 /****************
  * Perform some checks over the trustdb
@@ -1536,11 +1536,11 @@ init_trustdb( int level, const char *dbname )
 	 * in ~/.gnupg/ here */
 	rc = verify_private_data();
 	if( !rc ) {
-	    /* verify, that our own certificates are in the trustDB
+	    /* verify that our own certificates are in the trustDB
 	     * or move them to the trustdb. */
 	    rc = verify_own_certs();
 
-	    /* should we check wether there is no other ultimately trusted
+	    /* should we check whether there is no other ultimately trusted
 	     * key in the database? */
 
 	}
@@ -1769,7 +1769,7 @@ check_trust( PKT_public_cert *pkc, unsigned *r_trustlevel )
  *  3) call this function as long as it does not return -1
  *     to indicate EOF. LID does contain the next key used to build the web
  *  4) Always call this function a last time with LID set to NULL,
- *     so that it can free it's context.
+ *     so that it can free its context.
  */
 int
 enum_trust_web( void **context, ulong *lid )
@@ -1874,7 +1874,7 @@ query_trust_record( PKT_public_cert *pkc )
 
 /****************
  * Insert a trust record into the TrustDB
- * This function failes if this record already exists.
+ * This function fails if this record already exists.
  */
 int
 insert_trust_record( PKT_public_cert *pkc )

@@ -116,8 +116,12 @@ static ARGPARSE_OPTS opts[] = {
     { 536, "marginals-needed", 1, N_("(default is 3)")},
   #ifdef IS_G10
     { 527, "cipher-algo", 2 , N_("select default cipher algorithm")},
-    { 528, "pubkey-algo", 2 , N_("select default puplic key algorithm")},
+    { 528, "pubkey-algo", 2 , N_("select default public key algorithm")},
     { 529, "digest-algo", 2 , N_("select default message digest algorithm")},
+  #else /* some dummies */
+    { 527, "cipher-algo", 2 , "\r"},
+    { 528, "pubkey-algo", 2 , "\r"},
+    { 529, "digest-algo", 2 , "\r"},
   #endif
 
   #ifdef IS_G10
@@ -412,7 +416,7 @@ main( int argc, char **argv )
       #endif
     }
 
-    /* check wether we have a config file on the commandline */
+    /* check whether we have a config file on the commandline */
     orig_argc = argc;
     orig_argv = argv;
     pargs.argc = &argc;
@@ -509,7 +513,12 @@ main( int argc, char **argv )
 	  case 540: secmem_set_flags( secmem_get_flags() | 1 ); break;
 	  case 542: set_cmd( &cmd, aGenRevoke); break;
 	  case 550: set_cmd( &cmd, aVerify); break;
-	#endif /* IS_G10 */
+	#else
+	  case 527:
+	  case 528:
+	  case 529:
+	    break;
+	#endif /* !IS_G10 */
 
 	#ifdef IS_G10MAINT
 	  case 513: set_cmd( &cmd, aPrimegen); break;
@@ -632,9 +641,9 @@ main( int argc, char **argv )
     else {
 	fname = NULL;
 	if( get_passphrase_fd() == 0 ) {
-	    /* reading data and passphrase form stdin:
+	    /* reading data and passphrase from stdin:
 	     * we assume the first line is the passphrase, so
-	     * we better should read it now.
+	     * we should read it now.
 	     *
 	     * We should do it here, but for now it is not needed.
 	     * Anyway, this password scheme is not quite good
@@ -804,7 +813,7 @@ main( int argc, char **argv )
     #ifdef IS_G10
       case aKeygen: /* generate a key (interactive) */
 	if( argc )
-	    wrong_args(_("--gen-key"));
+	    wrong_args("--gen-key");
 	generate_keypair();
 	break;
     #endif
@@ -932,7 +941,7 @@ main( int argc, char **argv )
       case aListPackets:
 	opt.list_packets=1;
       default:
-	/* fixme: g10maint should to regular maintenace tasks here */
+	/* fixme: g10maint should do regular maintenace tasks here */
 	if( argc > 1 )
 	    wrong_args(_("[filename]"));
 	if( !(a = iobuf_open(fname)) )

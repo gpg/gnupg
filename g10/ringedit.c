@@ -98,7 +98,7 @@ check_pos( KBPOS *kbpos )
  ****************************************************************/
 
 /****************
- * Register a resource (which currently may ionly be a keyring file).
+ * Register a resource (which currently may only be a keyring file).
  */
 int
 add_keyblock_resource( const char *filename, int force, int secret )
@@ -165,12 +165,12 @@ get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos )
 
 
 /****************
- * Search a keyblock which starts with the given packet and put all
- * informations into KBPOS, which can be used later to access this key block.
+ * Search a keyblock which starts with the given packet and puts all
+ * information into KBPOS, which can be used later to access this key block.
  * This function looks into all registered keyblock sources.
  * PACKET must be a packet with either a secret_cert or a public_cert
  *
- * This function is intended to check wether a given certificate
+ * This function is intended to check whether a given certificate
  * is already in a keyring or to prepare it for editing.
  *
  * Returns: 0 if found, -1 if not found or an errorcode.
@@ -276,7 +276,7 @@ find_secret_keyblock_byname( KBPOS *kbpos, const char *username )
 /****************
  * Lock the keyblock; wait until it's available
  * This function may change the internal data in kbpos, in cases
- * when the to be locked keyblock has been modified.
+ * when the keyblock to be locked has been modified.
  * fixme: remove this function and add an option to search()?
  */
 int
@@ -310,7 +310,7 @@ read_keyblock( KBPOS *kbpos, KBNODE *ret_root )
 
 
 /****************
- * This functions can be used to read trough a complete keyring.
+ * This functions can be used to read through a complete keyring.
  * Mode is: 0 = open
  *	    1 = read
  *	    2 = close
@@ -410,7 +410,7 @@ insert_keyblock( KBPOS *kbpos, KBNODE root )
 /****************
  * Delete the keyblock described by KBPOS.
  * The current code simply changes the keyblock in the keyring
- * to packet of type 0 with the correct length.  To help detecting errors,
+ * to packet of type 0 with the correct length.  To help detect errors,
  * zero bytes are written.
  */
 int
@@ -671,7 +671,7 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
 	    break;
 
 	  default:
-	    /* skip pakets at the begin of a keyring, until we find
+	    /* skip pakets at the beginning of a keyring, until we find
 	     * a start packet; issue a warning if it is not a comment */
 	    if( !root && pkt->pkttype != PKT_COMMENT )
 		log_info("keyring_enum: skipped packet of type %d\n",
@@ -703,7 +703,7 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
 
 
 /****************
- * Peromf insert/delete/update operation.
+ * Perform insert/delete/update operation.
  * mode 1 = insert
  *	2 = delete
  *	3 = update

@@ -148,7 +148,7 @@ add_secret_keyring( const char *name )
     sl->next = secret_keyrings;
     secret_keyrings = sl;
 
-    /* fixme: We should remove much out of this mpdule and
+    /* fixme: We should remove much out of this module and
      * combine it with the keyblock stuff from ringedit.c
      * For now we will simple add the filename as keyblock resource
      */
@@ -239,7 +239,7 @@ get_pubkey( PKT_public_cert *pkc, u32 *keyid )
     int rc = 0;
     pkc_cache_entry_t ce;
 
-    /* lets see wether we checked the keyid already */
+    /* let's see whether we checked the keyid already */
     for( kl = unknown_keyids; kl; kl = kl->next )
 	if( kl->keyid[0] == keyid[0] && kl->keyid[1] == keyid[1] )
 	    return G10ERR_NO_PUBKEY; /* already checked and not found */
@@ -307,7 +307,7 @@ hextobyte( const byte *s )
 
 
 /****************
- * Try to get the pubkey by the userid. This functions looks for the
+ * Try to get the pubkey by the userid. This function looks for the
  * first pubkey certificate which has the given name in a user_id.
  * if pkc has the pubkey algo set, the function will only return
  * a pubkey with that algo.
@@ -499,7 +499,7 @@ get_seckey( PKT_secret_cert *skc, u32 *keyid )
 }
 
 /****************
- * Check wether the secret key is available
+ * Check whether the secret key is available
  * Returns: 0 := key is available
  *	    G10ERR_NO_SECKEY := not availabe
  */

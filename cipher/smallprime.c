@@ -24,7 +24,7 @@
 #include "util.h"
 #include "types.h"
 
-/* Note: 2 is not included because it can be testest more easily
+/* Note: 2 is not included because it can be tested more easily
  * by looking at bit 0. The last entry in this list is marked by a zero
  */
 ushort

@@ -75,7 +75,7 @@ strlist_last( STRLIST node )
 /****************
  * look for the substring SUB in buffer and return a pointer to that
  * substring in BUF or NULL if not found.
- * Comparison is case-in-sensitive.
+ * Comparison is case-insensitive.
  */
 const char *
 memistr( const char *buf, size_t buflen, const char *sub )

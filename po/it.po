@@ -242,7 +242,7 @@ msgid "select default cipher algorithm"
 msgstr "seleziona l'algoritmo di cifratura predefinito"
 
 #: g10/g10.c:119
-msgid "select default puplic key algorithm"
+msgid "select default public key algorithm"
 msgstr "seleziona l'algoritmo a chiave pubblica predefinito"
 
 #: g10/g10.c:120
@@ -410,10 +410,6 @@ msgstr "impossibile aprire '%s': %s\n"
 msgid "-k[v][v][v][c] [userid] [keyring]"
 msgstr "-k[v][v][v][c] [userid] [portachiavi]"
 
-#: g10/g10.c:804
-msgid "--gen-key"
-msgstr ""
-
 #: g10/g10.c:845
 #, c-format
 msgid "dearmoring failed: %s\n"
@@ -447,15 +443,15 @@ msgstr ""
 msgid ""
 "\"\n"
 "\n"
-"Please decide in how far do you trust this user to\n"
-"correctly sign other users keys (looking at his passport,\n"
-"checking the fingerprints from different sources ...)?\n"
+"Please decide how far you trust this user to correctly\n"
+"verify other users' keys (by looking at passports,\n"
+"checking fingerprints from different sources...)?\n"
 "\n"
 " 1 = Don't know\n"
 " 2 = I do NOT trust\n"
 " 3 = I trust marginally\n"
 " 4 = I trust fully\n"
-" s = please show me more informations\n"
+" s = please show me more information\n"
 "\n"
 msgstr ""
 "\"\n"
@@ -493,7 +489,7 @@ msgstr "Qui vedrai una lista di firmatari, ecc.\n"
 
 #: g10/pkclist.c:132
 msgid ""
-"Could not find a valid trust path to the key.  Lets see, wether we\n"
+"Could not find a valid trust path to the key.  Let's see whether we\n"
 "can assign some missing owner trust values.\n"
 "\n"
 msgstr ""
@@ -511,7 +507,7 @@ msgstr ""
 
 #: g10/pkclist.c:267
 msgid ""
-"It is NOT certain, that the key belongs to his owner.\n"
+"It is NOT certain that the key belongs to its owner.\n"
 "If you *really* know what you are doing, you may answer\n"
 "the next question with yes\n"
 "\n"
@@ -564,7 +560,7 @@ msgid "Your selection? (1,2) "
 msgstr "Cosa scegli? (1,2) "
 
 #: g10/keygen.c:336
-msgid "Sorry; DSA is not yet supported.\n"
+msgid "Sorry; DSA key generation is not yet supported.\n"
 msgstr "Mi spiace, DSA non è gestito.\n"
 
 #: g10/keygen.c:349
@@ -585,7 +581,7 @@ msgid "What keysize do you want? (1024) "
 msgstr "Di che dimensioni vuoi la chiave? (1024) "
 
 #: g10/keygen.c:363
-msgid "DSA does only allow keysizes from 512 to 1024\n"
+msgid "DSA only allows keysizes from 512 to 1024\n"
 msgstr "DSA permette solo chiavi di dimensioni da 512 a 1024\n"
 
 #: g10/keygen.c:365
@@ -625,17 +621,16 @@ msgstr "arrotondate a %u bit"
 #: g10/keygen.c:397
 msgid ""
 "\n"
-"You need a User-ID to identify your key; the software constructs the user "
-"id\n"
+"You need a User-ID to identify your key; the software constructs the user id\n"
 "from Real Name, Comment and Email Address in this form:\n"
-"    \"Heinrich Heine (Der Dichter) <heinrichh@uni-duesseldorf.de>\"\n"
+"    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n"
 "\n"
 msgstr ""
 "\n"
 "Ti serve un User ID per identificare la tua chiave; il software costruisce "
 "l'user id a partire da Nome e Cognome, Commento e Indirizzo di Email "
 "indicati in questa forma:\n"
-"    \"Heinrich Heine (Der Dichter) <heinrichh@uni-duesseldorf.de>\"\n"
+"    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n"
 "\n"
 
 #: g10/keygen.c:409
@@ -695,8 +690,8 @@ msgstr ""
 
 #: g10/keygen.c:516
 msgid ""
-"You don't what a passphrase - this is probably a *bad* idea!\n"
-"I will do it anyway.  You can change your passphrase at anytime,\n"
+"You don't want a passphrase - this is probably a *bad* idea!\n"
+"I will do it anyway.  You can change your passphrase at any time,\n"
 "using this program with the option \"--change-passphrase\"\n"
 "\n"
 msgstr ""

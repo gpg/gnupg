@@ -42,7 +42,7 @@ static int write_pubkey_enc_from_list( PKC_LIST pkc_list, DEK *dek, IOBUF out );
 
 
 /****************
- * Encode FILENAME only with the symmetric cipher. Take input from
+ * Encode FILENAME with only the symmetric cipher.  Take input from
  * stdin if FILENAME is NULL.
  */
 int
@@ -52,7 +52,7 @@ encode_symmetric( const char *filename )
 }
 
 /****************
- * Encode FILENAME as literal data packet only. Take input from
+ * Encode FILENAME as a literal data packet only. Take input from
  * stdin if FILENAME is NULL.
  */
 int

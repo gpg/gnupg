@@ -35,9 +35,9 @@
 
 
 /****************
- * Export the public keys (to standard out or --outout).
+ * Export the public keys (to standard out or --output).
  * Depending on opt.armor the output is armored.
- * If USERS is NULL, the complete ring wil. be exported.
+ * If USERS is NULL, the complete ring will be exported.
  */
 int
 export_pubkeys( STRLIST users )
@@ -80,7 +80,7 @@ export_pubkeys( STRLIST users )
 	all = 2;
     }
 
-    /* use the correct sequence. strlist_last,prev do work correct with
+    /* use the correct sequence. strlist_last,prev do work correctly with
      * NULL pointers :-) */
     for( sl=strlist_last(users); sl || all ; sl=strlist_prev( users, sl )) {
 	if( all ) { /* get the next user */

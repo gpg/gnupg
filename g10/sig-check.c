@@ -235,9 +235,9 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 
 
 /****************
- * check the signature pointed to by NODE. This is a key signatures.
+ * check the signature pointed to by NODE. This is a key signature.
  * If the function detects a self-signature, it uses the PKC from
- * NODE and does not read the any public key.
+ * NODE and does not read any public key.
  */
 int
 check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )

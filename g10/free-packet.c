@@ -65,7 +65,7 @@ free_seckey_enc( PKT_signature *sig )
 
 /****************
  * Return the digest algorithm from the signature packet.
- * We need this function because the digeste algo depends on the
+ * We need this function because the digest algo depends on the
  * used pubkey algorithm.
  */
 int
@@ -215,7 +215,7 @@ void
 free_compressed( PKT_compressed *zd )
 {
     if( zd->buf ) { /* have to skip some bytes */
-	/* don't have any informations about the length, so
+	/* don't have any information about the length, so
 	 * we assume this is the last packet */
 	while( iobuf_get(zd->buf) != -1 )
 	    ;

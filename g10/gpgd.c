@@ -153,7 +153,7 @@ main( int argc, char **argv )
     opt.compress = -1; /* defaults to standard compress level */
     opt.batch = 1;
 
-    /* check wether we have a config file on the commandline */
+    /* check whether we have a config file on the commandline */
     orig_argc = argc;
     orig_argv = argv;
     pargs.argc = &argc;
@@ -290,7 +290,7 @@ become_daemon()
 	log_fatal("chdir to root failed: %s\n", strerror(errno) );
     umask(0);
 
-    /* do not let possible childs become zombies */
+    /* do not let possible children become zombies */
     signal(SIGCHLD, SIG_IGN);
     if( opt.verbose )
 	log_info("now running as daemon\n");

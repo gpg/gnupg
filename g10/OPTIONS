@@ -1,8 +1,8 @@
 # This is a sample option file
 #
 # Unless you you specify which option file to use with the
-# commandline option "--options filename", gpg uses per
-# default the file ~/.gnupg/options.
+# commandline option "--options filename", gpg uses the
+# file ~/.gnupg/options by default.
 #
 # An option file can contain all long options which are
 # available in GNUPG. If the first non white space character of
@@ -17,7 +17,7 @@
 #-----------------------------------------------
 #------------------- Commands ------------------
 #-----------------------------------------------
-# With some expections, those cannot be combined
+# With some expections, these cannot be combined
 
 gen-prime
 # Generate a prime.

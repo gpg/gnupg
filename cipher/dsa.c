@@ -75,7 +75,7 @@ dsa_free_secret_key( DSA_secret_key *sk )
 
 
 /****************
- * Test wether the secret key is valid.
+ * Test whether the secret key is valid.
  * Returns: if this is a valid key.
  */
 int

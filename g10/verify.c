@@ -41,9 +41,9 @@
 
 /****************
  * Assume that the input is a signature and verify it without
- * generating any output.  With no arguments, the sigature packet
+ * generating any output.  With no arguments, the signature packet
  * is read from stdin (it may be a detached signature when not
- * used in batch mode). If only a sigfile is given, is maybe a complete
+ * used in batch mode). If only a sigfile is given, it may be a complete
  * signature or a detached signature in which case the signed stuff
  * is expected from stdin. With more than 1 argument, the first should
  * be a detached signature and the remaining files are the signed stuff.

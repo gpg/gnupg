@@ -33,7 +33,7 @@
 
 
 /****************
- * Check wether FNAME exists and ask if it's okay to overwrite an
+ * Check whether FNAME exists and ask if it's okay to overwrite an
  * existing one.
  * Returns: -1 : Do not overwrite
  *	    0 : it's okay to overwrite or the file does not exist

@@ -1,10 +1,10 @@
 /* mpitest.c - test the mpi functions
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This is a RPN calculator; values must be given in hex.
- * Operaion is like dc(1) except that the input/output radix is
+ * This is an RPN calculator; values must be given in hex.
+ * Operation is like dc(1) except that the input/output radix is
  * always 16 and you can use a '-' to prefix a negative number.
- * Addition operators: ++ and --. All operators must be delimeted by a blank
+ * Addition operators: ++ and --. All operators must be delimited by a blank
  *
  *
  * This file is part of GNUPG.

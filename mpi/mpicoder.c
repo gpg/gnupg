@@ -125,7 +125,7 @@ mpi_read(IOBUF inp, unsigned *ret_nread, int secure)
 
 
 /****************
- * Make a mpi from a character string.
+ * Make an mpi from a character string.
  */
 int
 mpi_fromstr(MPI val, const char *str)
@@ -200,7 +200,7 @@ mpi_fromstr(MPI val, const char *str)
 
 
 /****************
- * print an MPI to the give stream and return the number of characters
+ * print an MPI to the given stream and return the number of characters
  * printed.
  */
 int
@@ -236,9 +236,9 @@ mpi_print( FILE *fp, MPI a, int mode )
 
 
 /****************
- * Special function to get the low 8 bytes from a mpi,
- * this can be used as a keyid, KEYID is an 2 element array.
- * Does return the low 4 bytes.
+ * Special function to get the low 8 bytes from an mpi.
+ * This can be used as a keyid; KEYID is an 2 element array.
+ * Return the low 4 bytes.
  */
 u32
 mpi_get_keyid( MPI a, u32 *keyid )
@@ -262,7 +262,7 @@ mpi_get_keyid( MPI a, u32 *keyid )
 
 
 /****************
- * Return a m_alloced buffer with the MPI (msb first).
+ * Return an m_alloced buffer with the MPI (msb first).
  * NBYTES receives the length of this buffer. Caller must free the
  * return string (This function does return a 0 byte buffer with NBYTES
  * set to zero if the value of A is zero. If sign is not NULL, it will

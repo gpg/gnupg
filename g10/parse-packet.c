@@ -33,8 +33,8 @@
 #include "filter.h"
 #include "options.h"
 
-static mpi_print_mode = 0;
-static list_mode = 0;
+static int mpi_print_mode = 0;
+static int list_mode = 0;
 
 static int  parse( IOBUF inp, PACKET *pkt, int reqtype,
 		   ulong *retpos, int *skip, IOBUF out, int do_skip );
@@ -122,7 +122,7 @@ parse_packet( IOBUF inp, PACKET *pkt )
 }
 
 /****************
- * Like parse packet, but do only return packets of the given type.
+ * Like parse packet, but only return packets of the given type.
  */
 int
 search_packet( IOBUF inp, PACKET *pkt, int pkttype, ulong *retpos )
@@ -151,7 +151,7 @@ copy_all_packets( IOBUF inp, IOBUF out )
 
 /****************
  * Copy some packets from INP to OUT, thereby removing unused spaces.
- * Stop after at offset STOPoff (i.e. don't copy the packet at this offset)
+ * Stop at offset STOPoff (i.e. don't copy packets at this or later offsets)
  */
 int
 copy_some_packets( IOBUF inp, IOBUF out, ulong stopoff )
@@ -629,7 +629,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
     sig->digest_start[0] = iobuf_get_noeof(inp); pktlen--;
     sig->digest_start[1] = iobuf_get_noeof(inp); pktlen--;
 
-    if( is_v4 ) { /*extract required informations */
+    if( is_v4 ) { /*extract required information */
 	const byte *p;
 	p = parse_subpkt( sig->hashed_data, 2 );
 	if( !p )
@@ -926,7 +926,7 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    /* It does not make sense to read it into secure memory.
 	     * If the user is so careless, not to protect his secret key,
 	     * we can assume, that he operates an open system :=(.
-	     * So we put the key into secure memory when we unprotect him. */
+	     * So we put the key into secure memory when we unprotect it. */
 	    n = pktlen; cert->d.elg.x = mpi_read(inp, &n, 0 ); pktlen -=n;
 
 	    cert->csum = read_16(inp); pktlen -= 2;
@@ -1056,7 +1056,7 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    /* It does not make sense to read it into secure memory.
 	     * If the user is so careless, not to protect his secret key,
 	     * we can assume, that he operates an open system :=(.
-	     * So we put the key into secure memory when we unprotect him. */
+	     * So we put the key into secure memory when we unprotect it. */
 	    n = pktlen; cert->d.dsa.x = mpi_read(inp, &n, 0 ); pktlen -=n;
 
 	    cert->csum = read_16(inp); pktlen -= 2;
@@ -1288,11 +1288,12 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
 	skip_rest(inp, pktlen);
 	goto leave;
     }
-    if( list_mode )
+    if( list_mode ) {
 	if( pktlen )
 	    printf(":encrypted data packet:\n\tlength: %lu\n", pktlen-10);
 	else
 	    printf(":encrypted data packet:\n\tlength: unknown\n");
+    }
 
     ed->buf = inp;
     pktlen = 0;

@@ -39,9 +39,9 @@
 
 /****************
  * Assume that the input is an encrypted message and decrypt
- * (and if signed, verify the signature) it.
+ * (and if signed, verify the signature on) it.
  * This command differs from the default operation, as it never
- * write to the filename which is included in the file and that it
+ * writes to the filename which is included in the file and it
  * rejects files which don't begin with an encrypted message.
  */
 

@@ -311,7 +311,7 @@ mpi_tdiv_q_2exp( MPI w, MPI u, unsigned count )
 }
 
 /****************
- * Check wether dividend is divisible by divisor
+ * Check whether dividend is divisible by divisor
  * (note: divisor must fit into a limb)
  */
 int

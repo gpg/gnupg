@@ -107,9 +107,9 @@ transform( MD5_CONTEXT *ctx, const void *buffer, size_t len )
 	u32 D_save = D;
 
       /* First round: using the given function, the context and a constant
-	 the next context is computed.	Because the algorithms processing
-	 unit is a 32-bit word and it is determined to work on words in
-	 little endian byte order we perhaps have to change the byte order
+	 the next context is computed.	Because the algorithm's processing
+	 unit is a 32-bit word, and it is determined to work on words in
+	 little endian byte order, we perhaps have to change the byte order
 	 before the computation.  To reduce the work for the next steps
 	 we store the swapped words in the array CORRECT_WORDS.  */
 
@@ -127,7 +127,7 @@ transform( MD5_CONTEXT *ctx, const void *buffer, size_t len )
 	 cyclic rotation.  Hope the C compiler is smart enough.  */
 #define CYCLIC(w, s) (w = (w << s) | (w >> (32 - s)))
 
-	/* Before we start, one word to the strange constants.
+	/* Before we start, one word about the strange constants.
 	   They are defined in RFC 1321 as
 
 	   T[i] = (int) (4294967296.0 * fabs (sin (i))), i=1..64

@@ -102,7 +102,7 @@ init_uncompress( compress_filter_context_t *zfx, z_stream *zs )
     /****************
      * PGP uses a windowsize of 13 bits. Using a negative value for
      * it forces zlib not to expect a zlib header.  This is a
-     * undocumented feature, Peter Gutmann told me about.
+     * undocumented feature Peter Gutmann told me about.
      */
     if( (rc = zfx->pgpmode? inflateInit2( zs, -13)
 			  : inflateInit( zs )) != Z_OK ) {

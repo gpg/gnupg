@@ -5,7 +5,7 @@
     THIS IS ALPHA SOFTWARE, YOU MAY ENCOUNTER SOOME BUGS.
 
     On a Linux box (version 2.x.x, alpha or x86 CPU) it should
-    work reliable. You may create your key on such a machine and
+    work reliably.  You may create your key on such a machine and
     use it.  Please verify the tar file; there is a PGP and a GNUPG
     signature available. My PGP key is well known and published in
     the "Global Trust Register for 1998", ISBN 0-9532397-0-5.
@@ -25,14 +25,14 @@
     See the file COPYING for copyright and warranty information.
 
     Due to the fact that GNUPG does not use use any patented algorithm,
-    it cannot be compatible to old PGP versions, because those use
-    IDEA (which is worldwide patented) and RSA (which is patented in
+    it cannot be compatible with old PGP versions, because those use
+    IDEA (which is patented worldwide) and RSA (which is patented in
     the United States until Sep 20, 2000).  I'm sorry about this, but
     this is the world we have created (e.g. by using proprietary software).
 
     Because the OpenPGP standard is still a draft, GNUPG is not yet
-    compatible to it (or PGP 5) - but it will.	The data structures
-    used are compatible with PGP 2.x, so it can parse an list such files
+    compatible with it (or PGP 5) - but it will be.  The data structures
+    used are compatible with PGP 2.x, so it can parse and list such files
     and PGP should be able to parse data created by GNUPG and complain
     about unsupported algorithms.
 
@@ -40,9 +40,9 @@
     encryption and signing; Blowfish with a 160 bit key for protecting
     the secret-key components, conventional and session encryption;
     RIPE MD-160 to create message digest.  DSA, SHA-1 and CAST are
-    also implemented, but not used on default.	I decided not
-    to use DSA as default signing algorithm, because it allows only for
-    1024 bit keys and this may be not enough in a couple of years.
+    also implemented, but not used by default.	I decided not
+    to use DSA as the default signing algorithm, because it allows only
+    for 1024 bit keys and this may not be enough in a couple of years.
 
 
 
@@ -70,16 +70,16 @@
 
     This asks some questions and then starts key generation. To create
     good random numbers for prime number generation, it uses a /dev/random
-    which will emit only bytes if the kernel can gather enough entropy.
+    which will only emit bytes if the kernel can gather enough entropy.
     If you see no progress, you should start some other activities such
-    as mouse moves, "find /" or using the keyboard (on another window).
-    Because we have no hardware device to generate random we have to use
-    this method.
+    as mouse moves, "find /" or using the keyboard (in another window).
+    Because we have no hardware device to generate randomness we have to
+    use this method.
 
     Key generation shows progress by printing different characters to
     stderr:
-	     "."  Last 10 Miller-Rabin tests failed.
-	     "+"  Miller-Rabin test succeeded.
+	     "."  Last 10 Miller-Rabin tests failed
+	     "+"  Miller-Rabin test succeeded
 	     "!"  Reloading the pool with fresh prime numbers
 	     "^"  Checking a new value for the generator
 	     "<"  Size of one factor decreased
@@ -87,10 +87,10 @@
 
     The prime number for ElGamal is generated this way:
 
-    1) Make a prime number q of 160, 200, 240 bits (depending on the keysize).
+    1) Make a prime number q of 160, 200, 240 bits (depending on the keysize)
     2) Select the length of the other prime factors to be at least the size
        of q and calculate the number of prime factors needed
-    3) Make a pool of prime number, each of the length determined in step 2
+    3) Make a pool of prime numbers, each of the length determined in step 2
     4) Get a new permutation out of the pool or continue with step 3
        if we have tested all permutations.
     5) Calculate a candidate prime p = 2 * q * p[1] * ... * p[n] + 1
@@ -121,12 +121,12 @@
 
     This let you sign the key of of "Donald" with the userids of "Karl"
     and "Joe".
-    All existing signatures are checked, if some are invalid, a menu is
-    offered to delete some of them, and the you are asked for every user
-    wether you want to sign this key.
+    All existing signatures are checked; if some are invalid, a menu is
+    offered to delete some of them, and then you are asked for every user
+    whether you want to sign this key.
 
     You may remove a signature at any time using the option "--edit-sig",
-    which asks for the sigs to remove. Self-signatures are not removable.
+    which asks for the sigs to remove.  Self-signatures are not removable.
 
 
 
@@ -253,7 +253,7 @@
     Batch mode
     ----------
     If you use the option "--batch", GNUPG runs in non-interactive mode and
-    never prompts for input data.  This even does not allow to enter
+    never prompts for input data.  This does not even allow entering the
     passphrase; until we have a better solution (something like ssh-agent),
     you can use the option "--passhrase-fd n", which works like PGPs
     PGPPASSFD.
@@ -267,7 +267,7 @@
     GNUPG returns with an exit status of 1 if in batch mode and a bad signature
     has been detected or 2 or higher for all other errors.  You should parse
     stderr or the output of the fd specified with --status-fd to get detailed
-    informations about the errors.
+    information about the errors.
 
 
     Esoteric commands
@@ -291,7 +291,7 @@
 
     List the possible trust paths for the given username, up to the specified
     depth.  If depth is negative, duplicate introducers are not listed,
-    because those would increase the trust probabilty only minimal.
+    because those would increase the trust probability only minimally.
     (you must use the special option "--" to stop option parsing when
      using a negative number). This option may create new entries in the
     trustdb.
@@ -307,7 +307,7 @@
 	gpgm --gen-prime n q
 
     Generate a prime number suitable for ElGamal signatures of size n with
-    a q as largest primefactor of n-1.
+    a q as largest prime factor of n-1.
 
 	gpgm --gen-prime n q 1
 
@@ -319,7 +319,7 @@
 
     Debug Flags
     -----------
-    Use the option "--debug n" to output debug informations. This option
+    Use the option "--debug n" to output debug information. This option
     can be used multiple times, all values are ORed; n maybe prefixed with
     0x to use hex-values.
 
@@ -339,7 +339,7 @@
     Other Notes
     -----------
     This is work in progress, so you may find duplicated code fragments,
-    ugly data structures, weird usage of filenames and other thinks.
+    ugly data structures, weird usage of filenames and other things.
     I will run "indent" over the source when making a real distribution,
     but for now I stick to my own formatting rules.
 

@@ -542,7 +542,7 @@ write_header( IOBUF out, int ctb, u32 len )
 
 /****************
  * if HDRLEN is > 0, try to build a header of this length.
- * we need this, so hat we can hash packets without reading them again.
+ * we need this, so that we can hash packets without reading them again.
  */
 static int
 write_header2( IOBUF out, int ctb, u32 len, int hdrlen, int blkmode )
