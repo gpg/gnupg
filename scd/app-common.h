@@ -29,6 +29,7 @@ struct app_ctx_s {
   int slot;         /* Used reader. */
   unsigned char *serialno; /* Serialnumber in raw form, allocated. */
   size_t serialnolen;      /* Length in octets of serialnumber. */
+  unsigned int card_version;
   int did_chv1;
   int did_chv2;
   int did_chv3;

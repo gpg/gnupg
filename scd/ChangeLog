@@ -1,3 +1,10 @@
+2003-07-24  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (do_learn_status): Print more status information.
+	(app_select_openpgp): Store the card version.
+	(store_fpr): Add argument card_version and fix DOs for old cards.
+	(app_openpgp_storekey): Likewise.
+
 2003-07-23  Werner Koch  <wk@gnupg.org>
 
 	* command.c (cmd_pkauth): New.

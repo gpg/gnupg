@@ -61,6 +61,9 @@ static struct {
 };
 
 
+static unsigned long get_sig_counter (APP app);
+
+
 /* Locate a TLV encoded data object in BUFFER of LENGTH and
    return a pointer to value as well as its length in NBYTES.  Return
    NULL if it was not found.  Note, that the function does not check
@@ -365,7 +368,7 @@ static int
 store_fpr (int slot, int keynumber, u32 timestamp,
            const unsigned char *m, size_t mlen,
            const unsigned char *e, size_t elen, 
-           unsigned char *fpr)
+           unsigned char *fpr, unsigned int card_version)
 {
   unsigned int n, nbits;;
   unsigned char *buffer, *p;
@@ -404,7 +407,8 @@ store_fpr (int slot, int keynumber, u32 timestamp,
 
   xfree (buffer);
 
-  rc = iso7816_put_data (slot, 0xC6 + keynumber, fpr, 20);
+  rc = iso7816_put_data (slot, (card_version > 0x0007? 0xC7 : 0xC6)
+                               + keynumber, fpr, 20);
   if (rc)
     log_error ("failed to store the fingerprint: rc=%04X\n", rc);
 
@@ -467,10 +471,28 @@ do_learn_status (APP app, CTRL ctrl)
       send_status_info (ctrl, "DISP-NAME", value, valuelen, NULL, 0);
       xfree (relptr);
     }
+  relptr = get_one_do (app->slot, 0x5F2D, &value, &valuelen);
+  if (relptr)
+    {
+      send_status_info (ctrl, "DISP-LANG", value, valuelen, NULL, 0);
+      xfree (relptr);
+    }
+  relptr = get_one_do (app->slot, 0x5F35, &value, &valuelen);
+  if (relptr)
+    {
+      send_status_info (ctrl, "DISP-SEX", value, valuelen, NULL, 0);
+      xfree (relptr);
+    }
   relptr = get_one_do (app->slot, 0x5F50, &value, &valuelen);
   if (relptr)
     {
       send_status_info (ctrl, "PUBKEY-URL", value, valuelen, NULL, 0);
+      xfree (relptr);
+    }
+  relptr = get_one_do (app->slot, 0x005E, &value, &valuelen);
+  if (relptr)
+    {
+      send_status_info (ctrl, "LOGIN-DATA", value, valuelen, NULL, 0);
       xfree (relptr);
     }
 
@@ -488,6 +510,24 @@ do_learn_status (APP app, CTRL ctrl)
         send_fpr_if_not_null (ctrl, "CA-FPR", i+1, value+i*20);
     }
   xfree (relptr);
+  relptr = get_one_do (app->slot, 0x00C4, &value, &valuelen);
+  if (relptr)
+    {
+      char numbuf[7*23];
+
+      for (i=0,*numbuf=0; i < valuelen && i < 7; i++)
+        sprintf (numbuf+strlen (numbuf), " %d", value[i]); 
+      send_status_info (ctrl, "CHV-STATUS", numbuf, strlen (numbuf), NULL, 0);
+      xfree (relptr);
+    }
+
+  {
+    unsigned long ul = get_sig_counter (app);
+    char numbuf[23];
+
+    sprintf (numbuf, "%lu", ul);
+    send_status_info (ctrl, "SIG-COUNTER", numbuf, strlen (numbuf), NULL, 0);
+  }
   return 0;
 }
 
@@ -779,7 +819,7 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
                     numbuf, (size_t)strlen(numbuf), NULL, 0);
 
   rc = store_fpr (app->slot, keyno, (u32)created_at,
-                  m, mlen, e, elen, fprbuf);
+                  m, mlen, e, elen, fprbuf, app->card_version);
   if (rc)
     goto leave;
   send_fpr_if_not_null (ctrl, "KEY-FPR", -1, fprbuf);
@@ -1201,6 +1241,8 @@ app_select_openpgp (APP app, unsigned char **sn, size_t *snlen)
         {
           *sn = buffer;
           *snlen = buflen;
+          app->card_version = buffer[6] << 8;
+          app->card_version |= buffer[7];
         }
       else
         xfree (buffer);
@@ -1350,7 +1392,9 @@ app_openpgp_storekey (APP app, int keyno,
       goto leave;
     }
 
-  rc = iso7816_put_data (app->slot, 0xE9 + keyno, template, template_len);
+  rc = iso7816_put_data (app->slot,
+                         (app->card_version > 0x0007? 0xE0 : 0xE9) + keyno,
+                         template, template_len);
   if (rc)
     {
       log_error ("failed to store the key: rc=%04X\n", rc);
@@ -1358,11 +1402,11 @@ app_openpgp_storekey (APP app, int keyno,
       goto leave;
     }
  
-  log_printhex ("RSA n:", m, mlen); 
-  log_printhex ("RSA e:", e, elen); 
+/*    log_printhex ("RSA n:", m, mlen);  */
+/*    log_printhex ("RSA e:", e, elen);  */
 
   rc = store_fpr (app->slot, keyno, (u32)created_at,
-                  m, mlen, e, elen, fprbuf);
+                  m, mlen, e, elen, fprbuf, app->card_version);
 
  leave:
   return rc;
