@@ -21,7 +21,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-EXTRA_DIST = scripts/config.rpath  autogen.sh
+EXTRA_DIST = scripts/config.rpath  autogen.sh README-alpha
 DISTCLEANFILES = g10defs.h 
 
 if BUILD_GPG
