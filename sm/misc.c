@@ -30,7 +30,7 @@
 #endif
 
 #include "gpgsm.h"
-
+#include "i18n.h"
 
 /* Setup the environment so that the pinentry is able to get all
    required information.  This is used prior to an exec of the
@@ -42,8 +42,23 @@ setup_pinentry_env (void)
 
   if (opt.display)
     setenv ("DISPLAY", opt.display, 1);
+
+  /* Try to make sure that GPG_TTY has been set.  This is needed if we
+     call for example the protect-tools with redirected stdin and thus
+     it won't be able to ge a default by itself.  Try to do it here
+     but print a warning.  */
   if (opt.ttyname)
     setenv ("GPG_TTY", opt.ttyname, 1);
+  else if (!(lc=getenv ("GPG_TTY")) || !*lc)
+    {
+      log_error (_("GPG_TTY has not been set - "
+                   "using maybe bogus default\n"));
+      lc = ttyname (0);
+      if (!lc)
+        lc = "/dev/tty";
+      setenv ("GPG_TTY", lc, 1);
+    }
+
   if (opt.ttytype)
     setenv ("TERM", opt.ttytype, 1);
 
