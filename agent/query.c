@@ -95,12 +95,11 @@ start_pinentry (void)
   
   log_debug ("connection to PIN entry established\n");
 
-  if (DBG_COMMAND)
-    {
-      log_debug ("waiting for debugger [hit RETURN when ready] .....\n");
-      getchar ();
-      log_debug ("... okay\n");
-    }
+  rc = assuan_transact (entry_ctx, 
+                        opt.no_grab? "OPTION no-grab":"OPTION grab",
+                        NULL, NULL, NULL, NULL);
+  if (rc)
+    return map_assuan_err (rc);
 
   return 0;
 }

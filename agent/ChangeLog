@@ -1,3 +1,10 @@
+2002-01-20  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_get_passphrase): Remove the plus signs.
+
+	* query.c (start_pinentry): Send no-grab option to pinentry
+	* gpg-agent.c (main): Move variable grab as no_grab to agent.h.
+
 2002-01-19  Werner Koch  <wk@gnupg.org>
 
 	* gpg-agent.c (main): Disable core dumps.

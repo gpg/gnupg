@@ -229,7 +229,6 @@ main (int argc, char **argv )
   int nogreeting = 0;
   int pipe_server = 0;
   int nodetach = 0;
-  int grab = 0;
   int csh_style = 0;
   char *logfile = NULL;
   int debug_wait = 0;
@@ -269,7 +268,6 @@ main (int argc, char **argv )
       opt.homedir = "~/.gnupg-test";
 #endif
     }
-  grab = 1;
 
   /* check whether we have a config file on the commandline */
   orig_argc = argc;
@@ -363,7 +361,7 @@ main (int argc, char **argv )
         case oNoOptions: break; /* no-options */
         case oHomedir: opt.homedir = pargs.r.ret_str; break;
         case oNoDetach: nodetach = 1; break;
-        case oNoGrab: grab = 0; break;
+        case oNoGrab: opt.no_grab = 1; break;
         case oLogFile: logfile = pargs.r.ret_str; break;
         case oCsh: csh_style = 1; break;
         case oSh: csh_style = 0; break;

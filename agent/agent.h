@@ -36,6 +36,7 @@ struct {
   int batch;        /* batch mode */
   const char *homedir; /* configuration directory name */
   const char *pinentry_program; 
+  int no_grab;      /* don't let the pinentry grab the keyboard */
 
 } opt;
 

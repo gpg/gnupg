@@ -266,6 +266,16 @@ cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
+static void
+plus_to_blank (char *s)
+{
+  for (; *s; s++)
+    {
+      if (*s == '+')
+        *s = ' ';
+    }
+}
+
 /* GET_PASSPHRASE <cache_id> [<error_message> <prompt> <description>]
 
    This function is usually used to ask for a passphrase to be used
@@ -340,6 +350,17 @@ cmd_get_passphrase (ASSUAN_CONTEXT ctx, char *line)
     }
   else
     {
+      /* Note, that we only need to repalce the + characters and
+         should leave the other escaping in place becuase the escaped
+         sting is send verbatim to the pinentry which does the
+         unescaping (but not the + replacing) */
+      if (errtext)
+        plus_to_blank (errtext);
+      if (prompt)
+        plus_to_blank (prompt);
+      if (desc)
+        plus_to_blank (desc);
+
       rc = agent_get_passphrase (&response, desc, prompt, errtext);
       if (!rc)
         {
