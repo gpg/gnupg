@@ -412,3 +412,11 @@ TODO
 * Extend the backend interface to include gettext domain and
 description, if available, to avoid repeating this information in
 gpgconf.
+
+* Left out string arguments (optional) are written out exactly as
+empty string arguments.  Should we do quoting?
+
+* More string argument trouble: Special characters like newlines etc
+cause trouble.  Again, should we do quoting?
+
+

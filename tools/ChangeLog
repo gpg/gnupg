@@ -1,9 +1,12 @@
 2004-02-26  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgconf-comp.c (change_options_program): Support all types of
+	options, including list types.
+
 	* README.gpgconf: Fix description of arguments.
 	* gpgconf-comp.c (option_check_validity): Rewritten to properly
 	support optional arguments in lists.
-	
+
 	* README.gpgconf: Add info about optional arg and arg type 0.
 	* gpgconf-comp.c (gc_component_change_options): Parse list of
 	arg type 0 options.

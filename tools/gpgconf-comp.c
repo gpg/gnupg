@@ -1474,21 +1474,73 @@ change_options_program (gc_component_t component, gc_backend_t backend,
   option = gc_component[component].options;
   while (option->name)
     {
-      /* FIXME: Add support for lists and default arg (new_value eq "").  */
       if (!(option->flags & GC_OPT_FLAG_GROUP)
 	  && option->backend == backend
-	  && option->new_value
-	  && *option->new_value)
+	  && option->new_value)
 	{
-	  if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_STRING)
-	    fprintf (src_file, "%s %s\n", option->name,
-		     percent_deescape (&option->new_value[1]));
-	  else if (option->arg_type == GC_ARG_TYPE_NONE)
-	    fprintf (src_file, "%s\n", option->name);
-	  else
-	    fprintf (src_file, "%s %s\n", option->name, option->new_value);
-	  if (ferror (src_file))
-	    goto change_one_err;
+	  char *arg = option->new_value;
+
+	  do
+	    {
+	      if (*arg == '\0' || *arg == ',')
+		{
+		  fprintf (src_file, "%s\n", option->name);
+		  if (ferror (src_file))
+		    goto change_one_err;
+		}
+	      else if (gc_arg_type[option->arg_type].fallback
+		       == GC_ARG_TYPE_NONE)
+		{
+		  assert (*arg == '1');
+		  fprintf (src_file, "%s\n", option->name);
+		  if (ferror (src_file))
+		    goto change_one_err;
+
+		  arg++;
+		}
+	      else if (gc_arg_type[option->arg_type].fallback
+		       == GC_ARG_TYPE_STRING)
+		{
+		  char *end;
+		  
+		  assert (*arg == '"');
+		  arg++;
+		  
+		  end = strchr (arg, ',');
+		  if (end)
+		    *end = '\0';
+
+		  fprintf (src_file, "%s %s\n", option->name,
+			   percent_deescape (arg));
+		  if (ferror (src_file))
+		    goto change_one_err;
+
+		  if (end)
+		    *end = ',';
+		  arg = end;
+		}
+	      else
+		{
+		  char *end;
+
+		  end = strchr (arg, ',');
+		  if (end)
+		    *end = '\0';
+
+		  fprintf (src_file, "%s %s\n", option->name, arg);
+		  if (ferror (src_file))
+		    goto change_one_err;
+
+		  if (end)
+		    *end = ',';
+		  arg = end;
+		}
+
+	      assert (arg == NULL || *arg == '\0' || *arg == ',');
+	      if (arg && *arg == ',')
+		arg++;
+	    }
+	  while (arg && *arg);
 	}
       option++;
     }
@@ -1692,6 +1744,7 @@ gc_component_change_options (int component, FILE *in)
 	  
       option++;
     }
+
   if (!err)
     {
       int i;
