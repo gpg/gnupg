@@ -1,3 +1,10 @@
+2003-10-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* mainproc.c (proc_symkey_enc, proc_encrypted): Keep a count of
+	the number of passphrases that can decrypt a symmetric or mixed
+	symmetric/pk message and include it in the list of keys shown to
+	the user.
+
 2003-10-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* mainproc.c (symkey_decrypt_sesskey): There is no way to tell the
