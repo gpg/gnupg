@@ -820,10 +820,17 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 		if(!(unode->flag&1)) {
 		  rc = check_key_signature( keyblock, n, NULL);
 		  if( rc )
-		    log_info( rc == G10ERR_PUBKEY_ALGO ?
-			   _("key %08lX: unsupported public key algorithm\n"):
-			   _("key %08lX: invalid self-signature\n"),
-			      (ulong)keyid[1]);
+		    {
+		      char *p=utf8_to_native(unode->pkt->pkt.user_id->name,
+				      strlen(unode->pkt->pkt.user_id->name),0);
+		      log_info( rc == G10ERR_PUBKEY_ALGO ?
+				_("key %08lX: unsupported public key "
+				  "algorithm on user id \"%s\"\n"):
+				_("key %08lX: invalid self-signature "
+				  "on user id \"%s\"\n"),
+				(ulong)keyid[1],p);
+		      m_free(p);
+		    }
 		  else
 		    unode->flag |= 1; /* mark that signature checked */
 		}
