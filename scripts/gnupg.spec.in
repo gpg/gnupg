@@ -21,9 +21,17 @@ Group(it): Applicazioni/Crittografia
 Source: ftp://ftp.gnupg.org/gcrypt/gnupg/%{name}-%{version}.tar.gz
 URL: http://www.gnupg.org/
 Provides: gpg openpgp
-BuildRoot: /tmp/rpmbuild_%{name}
+Requires(post,preun): /sbin/install-info
+BuildRoot: %{_tmppath}/rpmbuild_%{name}-%{version}
 
 %changelog
+* Wed Jul 30 2003 David Shaw <dshaw@jabberwocky.com>
+- Rework much of the spec to use %-macros throughout.
+- Fix to work properly with RPM 4.1 (all files in buildroot must be packaged)
+- Package and install info files.
+- Tweak the English description.
+- There is no need to install gpgv and gpgsplit setuid root.
+
 * Sat Nov 30 2002 David Shaw <dshaw@jabberwocky.com>
 - Add convert-from-106 script
 
@@ -90,13 +98,16 @@ BuildRoot: /tmp/rpmbuild_%{name}
 - Updates for version 0.4.5 of GnuPG (.mo files)
 
 %description
+
 GnuPG (GNU Privacy Guard) is a GNU utility for encrypting data and
 creating digital signatures. GnuPG has advanced key management
 capabilities and is compliant with the proposed OpenPGP Internet
-standard described in RFC2440. Since GnuPG doesn't use any patented
-algorithm, it is not compatible with any version of PGP2 (PGP2.x uses
-only IDEA, patented worldwide, and RSA, which is patented in the US
-until 9/20/00).
+standard described in RFC-2440.  Since GnuPG doesn't use any patented
+algorithms, it is not compatible with some versions of PGP 2 which use
+only the patented IDEA algorithm.  See
+http://www.gnupg.org/why-not-idea.html for information on using IDEA
+if the patent does not apply to you and you need to be compatible with
+these versions of PGP 2.
 
 %description -l it
 GnuPG (GNU Privacy Guard) è una utility GNU per la cifratura di dati e
@@ -139,7 +150,6 @@ patent na terenie Stanów Zjednoczonych wygasa 20 wrzesnia 2000).
 
 %prep
 rm -rf $RPM_BUILD_ROOT
-rm -rf $RPM_BUILD_DIR/%{name}-%{version}
 
 %setup
 
@@ -147,39 +157,41 @@ rm -rf $RPM_BUILD_DIR/%{name}-%{version}
 if test -n "$LINGUAS"; then
  unset LINGUAS
 fi    
-CFLAGS="$RPM_OPT_FLAGS" ./configure --prefix=/usr --enable-shared
+%configure --program-prefix=%{?_program_prefix:%{_program_prefix}}
 make
 
 %install
-make install-strip prefix=$RPM_BUILD_ROOT/usr
+%makeinstall
+%find_lang %{name}
+rm %{buildroot}%{_datadir}/%{name}/FAQ
+rm %{buildroot}%{_datadir}/%{name}/faq.html
+rm %{buildroot}%{_infodir}/dir
 
-%files
+%files -f %{name}.lang
+%defattr (-,root,root)
 
-%doc %attr (-,root,root) INSTALL
-%doc %attr (-,root,root) AUTHORS
-%doc %attr (-,root,root) COPYING
-%doc %attr (-,root,root) ChangeLog
-%doc %attr (-,root,root) NEWS
-%doc %attr (-,root,root) README
-%doc %attr (-,root,root) THANKS
-%doc %attr (-,root,root) TODO   
-%doc %attr (-,root,root) PROJECTS
-%doc %attr (-,root,root) doc/DETAILS
-%doc %attr (-,root,root) doc/FAQ
-%doc %attr (-,root,root) doc/faq.html
-%doc %attr (-,root,root) doc/HACKING
-%doc %attr (-,root,root) doc/OpenPGP
-%doc %attr (-,root,root) doc/samplekeys.asc
+%doc INSTALL AUTHORS COPYING NEWS README THANKS TODO PROJECTS doc/DETAILS
+%doc doc/FAQ doc/faq.html doc/HACKING doc/OpenPGP doc/samplekeys.asc
 %doc %attr (0755,root,root) tools/convert-from-106
+%config %{_datadir}/%{name}/options.skel
+%{_mandir}/man1/*
+%{_mandir}/man7/*
+%{_infodir}/gpg.info*
+%{_infodir}/gpgv.info*
+%attr (4755,root,root) %{_bindir}/gpg
+%attr (0755,root,root) %{_bindir}/gpgv
+%attr (0755,root,root) %{_bindir}/gpgsplit
+%attr (0755,root,root) %{_libexecdir}/*
 
-%attr (-,root,root) /usr/man/man1/gpg*.1*
-%attr (-,root,root) /usr/man/man7/gnupg.7*
-%attr (4755,root,root) /usr/bin/gpg
-%attr (4755,root,root) /usr/bin/gpgv
-%attr (4755,root,root) /usr/bin/gpgsplit
-%attr (-,root,root) /usr/libexec/%{name}
-%attr (-,root,root) /usr/share/locale/*/*/%{name}.mo
-%config %attr (-,root,root) /usr/share/%{name}/options.skel
+%post
+/sbin/install-info %{_infodir}/gpg.info %{_infodir}/dir
+/sbin/install-info %{_infodir}/gpgv.info %{_infodir}/dir
+
+%preun
+if [ $1 = 0 ]; then
+   /sbin/install-info --delete %{_infodir}/gpg.info %{_infodir}/dir
+   /sbin/install-info --delete %{_infodir}/gpgv.info %{_infodir}/dir
+fi
 
 %clean
 rm -rf $RPM_BUILD_ROOT
