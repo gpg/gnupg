@@ -50,6 +50,7 @@ int encrypt_filter( void *opaque, int control,
 /*-- sign.c --*/
 int sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	       int encrypt, STRLIST remusr, const char *outfile );
+int clearsign_file( const char *fname, STRLIST locusr, const char *outfile );
 int sign_key( const char *username, STRLIST locusr );
 int edit_keysigs( const char *username );
 int change_passphrase( const char *username );

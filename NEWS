@@ -1,6 +1,13 @@
 
-    * added option "--status-fd": see g10/OPTIONS
+    * It's now 64 bit clean and runs fine on an alpha--linux.
 
+    * Key generation is much faster now.  I fixed this by using not
+      so strong random number for the primes (this was a bug because the
+      ElGamal primes are public parameters and it does not make sense
+      to generate them from strong random).  The real secret is the x value
+      which is still generated from strong (okay: /dev/random) random bits.
+
+    * added option "--status-fd": see g10/OPTIONS
 
     * We have secure memeory on systems which support mlock().
       It is not complete yet, because we do not have signal handler

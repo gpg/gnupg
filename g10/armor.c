@@ -32,6 +32,8 @@
 #include "filter.h"
 #include "packet.h"
 #include "options.h"
+#include "main.h"
+#include "status.h"
 
 
 
@@ -65,8 +67,12 @@ typedef enum {
     fhdrEMPTYClearsig,
     fhdrCHECKClearsig,
     fhdrCHECKClearsig2,
+    fhdrCHECKDashEscaped,
+    fhdrCHECKDashEscaped2,
+    fhdrCHECKDashEscaped3,
     fhdrREADClearsigNext,
     fhdrENDClearsig,
+    fhdrTESTSpaces,
     fhdrTEXT,
     fhdrERROR,
     fhdrERRORShow,
@@ -92,8 +98,8 @@ static char *tail_strings[] = {
 };
 
 
-static fhdr_state_t find_header( fhdr_state_t state,
-			  byte *buf, size_t *r_buflen, IOBUF a, size_t n);
+static fhdr_state_t find_header( fhdr_state_t state, byte *buf,
+		     size_t *r_buflen, IOBUF a, size_t n, unsigned *r_empty);
 
 
 static void
@@ -156,26 +162,36 @@ is_armored( byte *buf )
     return 1;
 }
 
+static void
+invalid_armor(void)
+{
+    write_status(STATUS_BADARMOR);
+    g10_exit(1); /* stop here */
+}
+
 
 /****************
  * parse an ascii armor.
  * Returns: the state,
  *	    the remaining bytes in BUF are returned in RBUFLEN.
+ *	    r_empty return the # of empty lines before the buffer
  */
 static fhdr_state_t
-find_header( fhdr_state_t state, byte *buf, size_t *r_buflen, IOBUF a, size_t n)
+find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
+					IOBUF a, size_t n, unsigned *r_empty)
 {
     int c, i;
     const char *s;
-    char *p;
+    byte *p;
     size_t buflen;
     int cont;
     int clearsig=0;
     int hdr_line=0;
+    unsigned empty = 0;
 
     buflen = *r_buflen;
     assert(buflen >= 100 );
-    buflen--;
+    buflen -= 3; /* reserved room for CR,LF and one extra */
 
     do {
 	switch( state ) {
@@ -183,7 +199,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen, IOBUF a, size_t n)
 	    /* read 28 bytes, which is the bare minimum for a BEGIN...
 	     * and check wether this has a Armor. */
 	    c = 0;
-	    for(n=0; n < 28 && (c=iobuf_get(a)) != -1 && c != '\n'; )
+	    for(n=0; n < 28 && (c=iobuf_get2(a)) != -1 && c != '\n'; )
 		buf[n++] = c;
 	    if( n < 28 || c == -1 )
 		state = fhdrNOArmor; /* too short */
@@ -197,27 +213,27 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen, IOBUF a, size_t n)
 	    n = 0;
 	  case fhdrINITCont: /* read more stuff into buffer */
 	    c = 0;
-	    for(; n < buflen && (c=iobuf_get(a)) != -1 && c != '\n'; )
+	    for(; n < buflen && (c=iobuf_get2(a)) != -1 && c != '\n'; )
 		buf[n++] = c;
 	    state = c == '\n' ? fhdrCHECKBegin :
 		     c == -1  ? fhdrEOF : fhdrINITSkip;
 	    break;
 
 	  case fhdrINITSkip:
-	    while( (c=iobuf_get(a)) != -1 && c != '\n' )
+	    while( (c=iobuf_get2(a)) != -1 && c != '\n' )
 		;
 	    state =  c == -1? fhdrEOF : fhdrINIT;
 	    break;
 
 	  case fhdrSKIPHeader:
-	    while( (c=iobuf_get(a)) != -1 && c != '\n' )
+	    while( (c=iobuf_get2(a)) != -1 && c != '\n' )
 		;
 	    state =  c == -1? fhdrEOF : fhdrWAITHeader;
 	    break;
 
 	  case fhdrWAITHeader: /* wait for Header lines */
 	    c = 0;
-	    for(n=0; n < buflen && (c=iobuf_get(a)) != -1 && c != '\n'; )
+	    for(n=0; n < buflen && (c=iobuf_get2(a)) != -1 && c != '\n'; )
 		buf[n++] = c;
 	    buf[n] = 0;
 	    if( n < buflen || c == '\n' ) {
@@ -229,21 +245,21 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen, IOBUF a, size_t n)
 			state = fhdrWAITHeader;
 		    }
 		    else
-			state = fhdrTEXT;
+			state = fhdrCHECKDashEscaped3;
 		}
 		else if( !n || (buf[0] == '\r' && !buf[1]) ) { /* empty line */
 		    if( clearsig )
 			state = fhdrWAITClearsig;
 		    else {
 			/* this is not really correct: if we do not have
-			 * a clearsig and not armor lines we are not allowed
+			 * a clearsig and no armor lines we are not allowed
 			 * to have an empty line */
 			n = 0;
 			state = fhdrTEXT;
 		    }
 		}
 		else {
-		    log_debug("invalid armor header: ");
+		    log_error("invalid armor header: ");
 		    print_string( stderr, buf, n );
 		    putc('\n', stderr);
 		    state = fhdrERROR;
@@ -265,17 +281,21 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen, IOBUF a, size_t n)
 
 	  case fhdrWAITClearsig: /* skip all empty lines (for clearsig) */
 	    c = 0;
-	    for(n=0; n < buflen && (c=iobuf_get(a)) != -1 && c != '\n'; )
+	    for(n=0; n < buflen && (c=iobuf_get2(a)) != -1 && c != '\n'; )
 		buf[n++] = c;
 	    if( n < buflen || c == '\n' ) {
 		buf[n] = 0;
 		if( !n || (buf[0]=='\r' && !buf[1]) ) /* empty line */
 		    ;
 		else
-		    state = fhdrTEXT;
+		    state = fhdrCHECKDashEscaped3;
 	    }
-	    else
+	    else {
+		/* fixme: we should check wether this linee continues
+		 *   it is poosible that we have only read ws until here
+		 *   and more stuff is to come */
 		state = fhdrEOF;
+	    }
 	    break;
 
 	  case fhdrENDClearsig:
@@ -313,17 +333,17 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen, IOBUF a, size_t n)
 	  case fhdrEMPTYClearsig:
 	  case fhdrREADClearsig:
 	    /* we are at the start of a line: read a clearsig into the buffer
-	     * we have to look for a the header line or dashd escaped text*/
+	     * we have to look for a the header line or dashed escaped text*/
 	    n = 0;
 	    c = 0;
-	    for(; n < buflen && (c=iobuf_get(a)) != -1 && c != '\n'; )
+	    while( n < buflen && (c=iobuf_get2(a)) != -1 && c != '\n' )
 		buf[n++] = c;
 	    buf[n] = 0;
 	    if( c == -1 )
 		state = fhdrEOF;
 	    else if( !n || ( buf[0]=='\r' && !buf[1] ) ) {
 		state = fhdrEMPTYClearsig;
-		/* FIXME: handle it */
+		empty++;
 	    }
 	    else if( c == '\n' )
 		state = fhdrCHECKClearsig2;
@@ -331,43 +351,86 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen, IOBUF a, size_t n)
 		state = fhdrCHECKClearsig;
 	    break;
 
+	  case fhdrCHECKDashEscaped3:
+	    if( !(n > 1 && buf[0] == '-' && buf[1] == ' ' ) ) {
+		state = fhdrTEXT;
+		break;
+	    }
+	    /* fall through */
+	  case fhdrCHECKDashEscaped2:
+	  case fhdrCHECKDashEscaped:
+	    /* check dash escaped line */
+	    if( buf[2] == '-' || ( n > 6 && !memcmp(buf+2, "From ", 5))) {
+		for(i=2; i < n; i++ )
+		    buf[i-2] = buf[i];
+		n -= 2;
+		buf[n] = 0; /* not really needed */
+		state = state == fhdrCHECKDashEscaped3 ? fhdrTEXT :
+			state == fhdrCHECKDashEscaped2 ?
+				 fhdrREADClearsig : fhdrTESTSpaces;
+	    }
+	    else {
+		log_error("invalid dash escaped line: ");
+		print_string( stderr, buf, n );
+		putc('\n', stderr);
+		state = fhdrERROR;
+	    }
+	    break;
+
 	  case fhdrCHECKClearsig:
 	  case fhdrCHECKClearsig2:
 	    /* check the clearsig line */
 	    if( n > 15 && !memcmp(buf, "-----", 5 ) )
 		state = fhdrENDClearsig;
-	    else if( buf[0] == '-' && buf[1] == ' ' ) {
-		/* dash escaped line */
-		if( buf[2] == '-' || ( n > 6 && !memcmp(buf+2, "From ", 5))) {
-		    for(i=2; i < n; i++ )
-			buf[i-2] = buf[i];
-		    n -= 2;
-		    buf[n] = 0; /* not really needed */
-		    state = state == fhdrCHECKClearsig2 ?
-				     fhdrREADClearsig : fhdrREADClearsigNext;
-		    /* FIXME: add the lf to the buffer */
-		}
-		else {
-		    log_debug("invalid dash escaped line: ");
-		    print_string( stderr, buf, n );
-		    putc('\n', stderr);
-		    state = fhdrERROR;
-		}
-	    }
+	    else if( buf[0] == '-' && buf[1] == ' ' )
+		state = fhdrCHECKDashEscaped;
 	    else {
 		state = state == fhdrCHECKClearsig2 ?
-				  fhdrREADClearsig : fhdrREADClearsigNext;
-		/* FIXME: add the lf to the buffer */
+				  fhdrREADClearsig : fhdrTESTSpaces;
 	    }
 	    break;
 
 	  case fhdrREADClearsigNext:
 	    /* Read to the end of the line, do not care about checking
 	     * for dashed escaped text of headers */
+	    c = 0;
+	    n = 0;
+	    while( n < buflen && (c=iobuf_get2(a)) != -1 && c != '\n' )
+		buf[n++] = c;
+	    buf[n] = 0;
+	    if( c == -1 )
+		state = fhdrEOF;
+	    else if( c == '\n' )
+		state = fhdrREADClearsig;
+	    else
+		state = fhdrTESTSpaces;
 	    break;
 
+	  case fhdrTESTSpaces: {
+	    /* but must check wether the rest of the line
+	     * does only contain white spaces; this is problematic
+	     * since we may have to restore the stuffs. simply
+	     * counting spaces is not enough, because it may be a
+	     * mix of different white space chacters */
+	    IOBUF b = iobuf_temp();
+	    while( (c=iobuf_get2(a)) != -1 && c != '\n' ) {
+		iobuf_put(b,c);
+		if( c != ' ' && c != '\t' && c != '\r' )
+		    break;
+	    }
+	    if( c == '\n' ) {
+		/* okay we can skip the rest of the line */
+		iobuf_close(b);
+		state = fhdrREADClearsig;
+	    }
+	    else {
+		iobuf_unget_and_close_temp(a,b);
+		state = fhdrREADClearsigNext;
+	    }
+	  } break;
+
 	  case fhdrERRORShow:
-	    log_debug("invalid clear text header: ");
+	    log_error("invalid clear text header: ");
 	    print_string( stderr, buf, n );
 	    putc('\n', stderr);
 	    state = fhdrERROR;
@@ -386,6 +449,10 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen, IOBUF a, size_t n)
 	  case fhdrEMPTYClearsig:
 	  case fhdrCHECKClearsig:
 	  case fhdrCHECKClearsig2:
+	  case fhdrCHECKDashEscaped:
+	  case fhdrCHECKDashEscaped2:
+	  case fhdrCHECKDashEscaped3:
+	  case fhdrTESTSpaces:
 	  case fhdrERRORShow:
 	    cont = 1;
 	    break;
@@ -395,7 +462,28 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen, IOBUF a, size_t n)
 
     if( clearsig && state == fhdrTEXT )
 	state = fhdrCLEARSIG;
+
+    if( state == fhdrCLEARSIG || state == fhdrREADClearsig ) {
+	/* append CR,LF after removing trailing wspaces */
+	for(p=buf+n-1; n; n--, p-- ) {
+	    assert( *p != '\n' );
+	    if( *p != ' ' && *p != '\t' && *p != '\r' ) {
+		p[1] = '\r';
+		p[2] = '\n';
+		n += 2;
+		break;
+	    }
+	}
+	if( !n ) {
+	    buf[0] = '\r';
+	    buf[1] = '\n';
+	    n = 2;
+	}
+    }
+
+
     *r_buflen = n;
+    *r_empty = empty;
     return state;
 }
 
@@ -407,12 +495,13 @@ check_input( armor_filter_context_t *afx, IOBUF a )
     int rc = 0;
     size_t n;
     fhdr_state_t state = afx->parse_state;
+    unsigned emplines;
 
     if( state != fhdrENDClearsig )
 	state = fhdrHASArmor;
 
     n = DIM(afx->helpbuf);
-    state = find_header( state, afx->helpbuf, &n, a, afx->helplen );
+    state = find_header( state, afx->helpbuf, &n, a, afx->helplen, &emplines);
     switch( state ) {
       case fhdrNOArmor:
 	afx->inp_checked = 1;
@@ -421,6 +510,9 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 	break;
 
       case fhdrERROR:
+	invalid_armor();
+	break;
+
       case fhdrEOF:
 	rc = -1;
 	break;
@@ -458,12 +550,21 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
     size_t len = 0;
     size_t n, nn;
     fhdr_state_t state = afx->parse_state;
+    unsigned emplines = afx->empty;
 
     size = 100; /* FIXME: only used for testing (remove it)  */
 
     len = 2;	/* reserve 2 bytes for the length header */
-    size -= 2;	/* and 2 for the term header */
+    size -= 3;	/* and 1 for empline handling and 2 for the term header */
     while( !rc && len < size ) {
+	if( emplines ) {
+	    while( emplines && len < size ) {
+		buf[len++] = '\r';
+		buf[len++] = '\n';
+		emplines--;
+	    }
+	    continue;
+	}
 	if( afx->helpidx < afx->helplen ) { /* flush the last buffer */
 	    n = afx->helplen;
 	    for(nn=afx->helpidx; len < size && nn < n ; nn++ )
@@ -478,14 +579,19 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	/* read a new one */
 	n = DIM(afx->helpbuf);
 	afx->helpidx = 0;
-	state = find_header( state, afx->helpbuf, &n, a, 0 );
+	state = find_header( state, afx->helpbuf, &n, a, 0, &emplines );
 	switch( state) {
 	  case fhdrERROR:
+	    invalid_armor();
+	    break;
+
 	  case fhdrEOF:
 	    rc = -1;
 	    break;
 
 	  case fhdrCLEARSIG:
+	    BUG();
+
 	  case fhdrREADClearsig:
 	  case fhdrREADClearsigNext:
 	    afx->helplen = n;
@@ -509,6 +615,7 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
     }
 
     afx->parse_state = state;
+    afx->empty = emplines;
     *retn = len;
     return rc;
 }
@@ -600,6 +707,8 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		log_error("CRC error; %06lx - %06lx\n",
 				    (ulong)afx->crc, (ulong)mycrc);
 	    else {
+		rc = 0;
+	      #if 0
 		for(rc=0;!rc;) {
 		    rc = 0 /*check_trailer( &fhdr, c )*/;
 		    if( !rc ) {
@@ -615,6 +724,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		    log_error("premature eof (in Trailer)\n");
 		else
 		    log_error("error in trailer line\n");
+	      #endif
 	    }
 	}
     }
@@ -641,6 +751,12 @@ armor_filter( void *opaque, int control,
     int  idx, idx2;
     size_t n=0;
     u32 crc;
+    static FILE *fp ;
+
+    if( !fp ) {
+	fp = fopen("armor.out", "w");
+	assert(fp);
+    }
 
     if( DBG_FILTER )
 	log_debug("armor-filter: control: %d\n", control );
@@ -655,8 +771,8 @@ armor_filter( void *opaque, int control,
 	*ret_len = n;
     }
     else if( control == IOBUFCTRL_UNDERFLOW ) {
-	if( size < 20 )
-	    BUG(); /* supplied buffer maybe too short */
+	if( size < 30 )
+	    BUG(); /* supplied buffer too short */
 
 	if( afx->inp_eof ) {
 	    *ret_len = 0;
@@ -672,22 +788,36 @@ armor_filter( void *opaque, int control,
 	    if( afx->inp_bypass )
 		;
 	    else if( afx->faked ) {
-		/* the buffer is at least 20 bytes long, so it
-		 * is easy to construct a packet */
-		buf[0] = 0xaf; /* old packet format, type 11, var length */
-		buf[1] = 0;    /* set the length header */
-		buf[2] = 6;
-		buf[3] = 't';  /* canonical text */
-		buf[4] = 0;    /* namelength */
-		buf[5] = buf[6] = buf[7] = buf[8] = 0; /* timestamp */
-		n = 9;
+		/* the buffer is at least 30 bytes long, so it
+		 * is easy to construct the packets */
+
+		/* first a onepass signature packet */
+		buf[0] = 0x90; /* old packet forma, type 4, 1 length byte */
+		buf[1] = 13;   /* length */
+		buf[2] = 3;    /* version */
+		buf[3] = 0x01; /* sigclass 0x01 (data in canonical text mode)*/
+		buf[4] = 0;    /* digest algo (don't know) */
+		buf[5] = 0;    /* public key algo (don't know) */
+		memset(buf+6, 0, 8); /* don't know the keyid */
+		buf[14] = 1;   /* this is the last one */
+
+		/* followed by a plaintext packet */
+		buf[15] = 0xaf; /* old packet format, type 11, var length */
+		buf[16] = 0;	/* set the length header */
+		buf[17] = 6;
+		buf[18] = 't';  /* canonical text mode */
+		buf[19] = 0;	/* namelength */
+		memset(buf+20, 0, 4); /* timestamp */
+		n = 24;
 	    }
 	    else if( !rc )
 		rc = radix64_read( afx, a, &n, buf, size );
 	}
 	else
 	    rc = radix64_read( afx, a, &n, buf, size );
-
+	if( n )
+	    if( fwrite(buf, n, 1, fp ) != 1 )
+		BUG();
 	*ret_len = n;
     }
     else if( control == IOBUFCTRL_FLUSH ) {

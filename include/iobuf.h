@@ -56,6 +56,12 @@ struct iobuf_struct {
     const char *desc;
     void *opaque;      /* can be used to hold any information	 */
 		       /* this value is copied to all instances */
+    struct {
+	size_t size;   /* allocated size */
+	size_t start;  /* number of invalid bytes at the begin of the buffer */
+	size_t len;    /* currently filled to this size */
+	byte *buf;
+    } unget;
 };
 
 int iobuf_debug_mode;
@@ -88,6 +94,7 @@ int  iobuf_writestr(IOBUF a, const char *buf );
 
 int  iobuf_write_temp( IOBUF a, IOBUF temp );
 size_t iobuf_temp_to_buffer( IOBUF a, byte *buffer, size_t buflen );
+void iobuf_unget_and_close_temp( IOBUF a, IOBUF temp );
 
 u32 iobuf_get_filelength( IOBUF a );
 const char *iobuf_get_fname( IOBUF a );
@@ -106,6 +113,10 @@ int  iobuf_in_block_mode( IOBUF a );
 	iobuf_readbyte((a)) : ( (a)->nbytes++, (a)->d.buf[(a)->d.start++] ) )
 #define iobuf_get_noeof(a)    (iobuf_get((a))&0xff)
 
+/* use this if you have ungetted stuff */
+#define iobuf_get2(a)  \
+     (	( (a)->unget.buf || (a)->nlimit || (a)->d.start >= (a)->d.len )?  \
+	iobuf_readbyte((a)) : ( (a)->nbytes++, (a)->d.buf[(a)->d.start++] ) )
 
 /* write a byte to the iobuf and return true on write error
  * This macro does only write the low order byte

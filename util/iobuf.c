@@ -700,6 +700,15 @@ iobuf_readbyte(IOBUF a)
 {
     int c;
 
+    /* nlimit does not work together with unget */
+    /* nbytes is also not valid! */
+    if( a->unget.buf ) {
+	if( a->unget.start < a->unget.len )
+	    return a->unget.buf[a->unget.start++];
+	m_free(a->unget.buf);
+	a->unget.buf = NULL;
+    }
+
     if( a->nlimit && a->nbytes >= a->nlimit )
 	return -1; /* forced EOF */
 
@@ -768,6 +777,27 @@ iobuf_temp_to_buffer( IOBUF a, byte *buffer, size_t buflen )
 	n = buflen;
     memcpy( buffer, a->d.buf, n );
     return n;
+}
+
+/****************
+ * unget the contents of the temp io stream to A and close temp
+ * Could be optimized!!
+ */
+void
+iobuf_unget_and_close_temp( IOBUF a, IOBUF temp )
+{
+    if( a->unget.buf ) {
+	if( a->unget.start < a->unget.len )
+	    log_fatal("cannot do any more ungets on this buffer\n");
+	/* not yet cleaned up; do it now */
+	m_free(a->unget.buf);
+	a->unget.buf = NULL;
+    }
+    a->unget.size = temp->d.len;
+    a->unget.buf = m_alloc( a->unget.size );
+    a->unget.len = temp->d.len;
+    memcpy( a->unget.buf, temp->d.buf, a->unget.len );
+    iobuf_close(temp);
 }
 
 

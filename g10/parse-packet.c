@@ -829,6 +829,8 @@ parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
     pktlen = 0;
 
     if( list_mode ) {
+	/* a value if 'c' is used by armor to indicate a faked packet
+	 * it should be considered as 't' */
 	printf(":literal data packet:\n"
 	       "\tmode %c, created %lu, name=\"",
 		    mode >= ' ' && mode <'z'? mode : '?',

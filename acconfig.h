@@ -20,6 +20,10 @@
 #ifndef G10_CONFIG_H
 #define G10_CONFIG_H
 
+/* need this, because some autoconf tests rely on this (e.g. stpcpy)
+ * and it should be used for new programs
+ */
+#define _GNU_SOURCE  1
 
 @TOP@
 

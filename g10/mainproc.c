@@ -274,6 +274,7 @@ proc_plaintext( CTX c, PACKET *pkt )
      * textmode filter (sigclass 0x01)
      */
     c->mfx.md = md_open( DIGEST_ALGO_RMD160, 0);
+    md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
     rc = handle_plaintext( pt, &c->mfx );
     if( rc )
 	log_error( "handle plaintext failed: %s\n", g10_errstr(rc));
@@ -323,6 +324,11 @@ do_check_sig( CTX c, KBNODE node )
 	return rc;
 
     if( sig->sig_class == 0x00 ) {
+	md = md_copy( c->mfx.md );
+    }
+    else if( sig->sig_class == 0x01 ) {
+	/* how do we know that we have to hash the (already hashed) text
+	 * in canonical mode ??? (calculating both modes???) */
 	md = md_copy( c->mfx.md );
     }
     else if( (sig->sig_class&~3) == 0x10 ) { /* classes 0x10 .. 0x13 */

@@ -301,6 +301,145 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
 
 
+static int
+write_dash_escaped( IOBUF inp, IOBUF out, MD_HANDLE md )
+{
+    int c;
+    int lastlf = 1;
+
+    while( (c = iobuf_get(inp)) != -1 ) {
+	/* Note: We don't escape "From " because the MUA should cope with it */
+	if( lastlf && c == '-' ) {
+	    iobuf_put( out, c );
+	    iobuf_put( out, ' ' );
+	}
+
+	md_putc(md, c );
+	iobuf_put( out, c );
+	lastlf = c == '\n';
+    }
+    return 0; /* fixme: add error handling */
+}
+
+
+/****************
+ * make a clear signature. note that opt.armor is not needed
+ */
+int
+clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
+{
+    armor_filter_context_t afx;
+    compress_filter_context_t zfx;
+    text_filter_context_t tfx;
+    MD_HANDLE textmd;
+    IOBUF inp = NULL, out = NULL;
+    PACKET pkt;
+    int rc = 0;
+    SKC_LIST skc_list = NULL;
+    SKC_LIST skc_rover = NULL;
+
+    memset( &afx, 0, sizeof afx);
+    memset( &zfx, 0, sizeof zfx);
+    memset( &tfx, 0, sizeof tfx);
+    init_packet( &pkt );
+
+    if( (rc=build_skc_list( locusr, &skc_list, 1 )) )
+	goto leave;
+
+    /* prepare iobufs */
+    if( !(inp = iobuf_open(fname)) ) {
+	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
+					strerror(errno) );
+	rc = G10ERR_OPEN_FILE;
+	goto leave;
+    }
+
+    if( outfile ) {
+	if( !(out = iobuf_create( outfile )) ) {
+	    log_error("can't create %s: %s\n", outfile, strerror(errno) );
+	    rc = G10ERR_CREATE_FILE;
+	    goto leave;
+	}
+	else if( opt.verbose )
+	    log_info("writing to '%s'\n", outfile );
+    }
+    else if( !(out = open_outfile( fname, 1 )) ) {
+	rc = G10ERR_CREATE_FILE;
+	goto leave;
+    }
+
+    iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----\n\n" );
+
+    textmd = md_open(DIGEST_ALGO_RMD160, 0);
+    iobuf_push_filter( inp, text_filter, &tfx );
+    rc = write_dash_escaped( inp, out, textmd );
+    if( rc )
+	goto leave;
+
+    iobuf_writestr(out, "\n\n" );
+    afx.what = 2;
+    iobuf_push_filter( out, armor_filter, &afx );
+
+    /* loop over the secret certificates */
+    for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
+	PKT_secret_cert *skc;
+	PKT_signature *sig;
+	MD_HANDLE md;
+
+	skc = skc_rover->skc;
+
+	/* build the signature packet */
+	sig = m_alloc_clear( sizeof *sig );
+	sig->pubkey_algo = skc->pubkey_algo;
+	sig->timestamp = make_timestamp();
+	sig->sig_class = 0x01;
+
+	md = md_copy( textmd );
+	md_putc( md, sig->sig_class );
+	{   u32 a = sig->timestamp;
+	    md_putc( md, (a >> 24) & 0xff );
+	    md_putc( md, (a >> 16) & 0xff );
+	    md_putc( md, (a >>	8) & 0xff );
+	    md_putc( md,  a	   & 0xff );
+	}
+	md_final( md );
+
+	if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
+	    g10_elg_sign( skc, sig, md, DIGEST_ALGO_RMD160 );
+	else if( sig->pubkey_algo == PUBKEY_ALGO_RSA )
+	    g10_rsa_sign( skc, sig, md, DIGEST_ALGO_RMD160 );
+	else
+	    BUG();
+
+	md_close( md );
+
+	/* and write it */
+	init_packet(&pkt);
+	pkt.pkttype = PKT_SIGNATURE;
+	pkt.pkt.signature = sig;
+	rc = build_packet( out, &pkt );
+	free_packet( &pkt );
+	if( rc ) {
+	    log_error("build signature packet failed: %s\n", g10_errstr(rc) );
+	    goto leave;
+	}
+    }
+
+
+  leave:
+    if( rc )
+	iobuf_cancel(out);
+    else
+	iobuf_close(out);
+    iobuf_close(inp);
+    md_close( textmd );
+    release_skc_list( skc_list );
+    return rc;
+}
+
+
+
+
 static void
 show_fingerprint( PKT_public_cert *pkc )
 {

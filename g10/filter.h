@@ -35,6 +35,7 @@ typedef struct {
     u32 crc;
     byte helpbuf[100];
     int  helpidx, helplen;
+    unsigned empty;    /* empty line counter */
     int faked;
     int parse_state;
     int inp_checked;   /* set if inp has been checked */
@@ -64,11 +65,10 @@ typedef struct {
 
 
 typedef struct {
-    size_t linesize;
-    byte *line;
-    size_t linelen;
-    size_t pos;
     int eof;
+    size_t idx;
+    size_t len;
+    byte buf[256];
 } text_filter_context_t;
 
 

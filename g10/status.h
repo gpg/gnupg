@@ -30,6 +30,7 @@
 #define STATUS_ERRSIG	 6
 
 
+#define STATUS_BADARMOR  7
 
 
 

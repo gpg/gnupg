@@ -49,6 +49,7 @@ write_status( int no )
       case STATUS_GOODSIG: s = "GOODSIG\n"; break;
       case STATUS_BADSIG : s = "BADSIG\n"; break;
       case STATUS_ERRSIG : s = "ERRSIG\n"; break;
+      case STATUS_BADARMOR : s = "BADARMOR\n"; break;
       default: s = "?\n"; break;
     }
 

@@ -43,7 +43,7 @@
 
 enum cmd_values { aNull = 0,
     aSym, aStore, aEncr, aKeygen, aSign, aSignEncr,
-    aSignKey, aClearsig, aListPackets, aEditSig,
+    aSignKey, aClearsign, aListPackets, aEditSig,
     aKMode, aKModeC, aChangePass, aImport,
     aExport,
 aTest };
@@ -146,9 +146,9 @@ set_cmd( enum cmd_values *ret_cmd, enum cmd_values new_cmd )
 	cmd = aSignEncr;
     else if( cmd == aKMode && new_cmd == aSym )
 	cmd = aKModeC;
-    else if(	( cmd == aSign	   && new_cmd == aClearsig )
-	     || ( cmd == aClearsig && new_cmd == aSign )  )
-	cmd = aClearsig;
+    else if(	( cmd == aSign	   && new_cmd == aClearsign )
+	     || ( cmd == aClearsign && new_cmd == aSign )  )
+	cmd = aClearsign;
     else {
 	log_error(_("conflicting commands\n"));
 	g10_exit(2);
@@ -210,6 +210,7 @@ main( int argc, char **argv )
     { 536, "marginals-needed", 1, N_("(default is 3)")},
     { 537, "export", 0, N_("export all or the given keys") },
     { 538, "trustdb-name", 2, "\r" },
+    { 539, "clearsign", 0, N_("make a clear text signature") },
 
     {0} };
     ARGPARSE_ARGS pargs;
@@ -303,7 +304,7 @@ main( int argc, char **argv )
 	  case 'e': set_cmd( &cmd, aEncr); break;
 	  case 'b': detached_sig = 1; /* fall trough */
 	  case 's': set_cmd( &cmd, aSign );  break;
-	  case 't': set_cmd( &cmd , aClearsig);  break;
+	  case 't': set_cmd( &cmd , aClearsign);  break;
 	  case 'u': /* store the local users */
 	    sl = m_alloc( sizeof *sl + strlen(pargs.r.ret_str));
 	    strcpy(sl->d, pargs.r.ret_str);
@@ -362,6 +363,7 @@ main( int argc, char **argv )
 	  case 536: opt.marginals_needed = pargs.r.ret_int; break;
 	  case 537: set_cmd( &cmd, aExport); break;
 	  case 538: trustdb_name = pargs.r.ret_str; break;
+	  case 539: set_cmd( &cmd, aClearsign); break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -454,24 +456,24 @@ main( int argc, char **argv )
     switch( cmd ) {
       case aStore: /* only store the file */
 	if( argc > 1 )
-	    usage(1);
+	    wrong_args(_("--store [filename]"));
 	if( (rc = encode_store(fname)) )
-	    log_error("encode_store('%s'): %s\n",
+	    log_error("%s: store failed: %s\n",
 				    fname_print, g10_errstr(rc) );
 	break;
 
       case aSym: /* encrypt the given file only with the symmetric cipher */
 	if( argc > 1 )
-	    usage(1);
+	    wrong_args(_("--symmetric [filename]"));
 	if( (rc = encode_symmetric(fname)) )
-	    log_error("encode_symmetric('%s'): %s\n", fname_print, g10_errstr(rc) );
+	    log_error("%s: symmetric encryption failed: %s\n", fname_print, g10_errstr(rc) );
 	break;
 
       case aEncr: /* encrypt the given file */
 	if( argc > 1 )
-	    usage(1);
+	    wrong_args(_("--encrypt [filename]"));
 	if( (rc = encode_crypt(fname,remusr)) )
-	    log_error("encode_crypt('%s'): %s\n", fname_print, g10_errstr(rc) );
+	    log_error("%s: encryption failed: %s\n", fname_print, g10_errstr(rc) );
 	break;
 
       case aSign: /* sign the given file */
@@ -482,20 +484,20 @@ main( int argc, char **argv )
 	}
 	else {
 	    if( argc > 1 )
-		usage(1);
+		wrong_args(_("--sign [filename]"));
 	    if( argc ) {
 		sl = m_alloc_clear( sizeof *sl + strlen(fname));
 		strcpy(sl->d, fname);
 	    }
 	}
 	if( (rc = sign_file( sl, detached_sig, locusr, 0, NULL, NULL)) )
-	    log_error("sign_file: %s\n", g10_errstr(rc) );
+	    log_error("signing failed: %s\n", g10_errstr(rc) );
 	free_strlist(sl);
 	break;
 
       case aSignEncr: /* sign and encrypt the given file */
 	if( argc > 1 )
-	    usage(1);
+	    wrong_args(_("--sign --encrypt [filename]"));
 	if( argc ) {
 	    sl = m_alloc_clear( sizeof *sl + strlen(fname));
 	    strcpy(sl->d, fname);
@@ -503,33 +505,40 @@ main( int argc, char **argv )
 	else
 	    sl = NULL;
 	if( (rc = sign_file(sl, detached_sig, locusr, 1, remusr, NULL)) )
-	    log_error("sign_file('%s'): %s\n", fname_print, g10_errstr(rc) );
+	    log_error("%s: sign+encrypt failed: %s\n", fname_print, g10_errstr(rc) );
 	free_strlist(sl);
+	break;
+
+      case aClearsign: /* make a clearsig */
+	if( argc > 1 )
+	    wrong_args(_("--clearsign [filename]"));
+	if( (rc = clearsign_file(fname, locusr, NULL)) )
+	    log_error("%s: clearsign failed: %s\n", fname_print, g10_errstr(rc) );
 	break;
 
 
       case aSignKey: /* sign the key given as argument */
 	if( argc != 1 )
-	    usage(1);
+	    wrong_args(_("--sign-key username"));
 	/* note: fname is the user id! */
 	if( (rc = sign_key(fname, locusr)) )
-	    log_error("sign_key('%s'): %s\n", fname_print, g10_errstr(rc) );
+	    log_error("%s: sign key failed: %s\n", fname_print, g10_errstr(rc) );
 	break;
 
       case aEditSig: /* Edit a key signature */
 	if( argc != 1 )
-	    usage(1);
+	    wrong_args(_("--edit-sig username"));
 	/* note: fname is the user id! */
 	if( (rc = edit_keysigs(fname)) )
-	    log_error("edit_keysig('%s'): %s\n", fname_print, g10_errstr(rc) );
+	    log_error("%s: edit signature failed: %s\n", fname_print, g10_errstr(rc) );
 	break;
 
       case aChangePass: /* Chnage the passphrase */
 	if( argc > 1 ) /* no arg: use default, 1 arg use this one */
-	    usage(1);
+	    wrong_args(_("--change-passphrase [username]"));
 	/* note: fname is the user id! */
 	if( (rc = change_passphrase(fname)) )
-	    log_error("change_passphrase('%s'): %s\n", fname_print,
+	    log_error("%s: change passphrase failed: %s\n", fname_print,
 						       g10_errstr(rc) );
 	break;
 
@@ -562,18 +571,18 @@ main( int argc, char **argv )
 	    iobuf_close(a);
 	}
 	else
-	    usage(1);
+	    wrong_args(_("-k[v][v][v][c] [keyring]"));
 	break;
 
       case aKeygen: /* generate a key (interactive) */
 	if( argc )
-	    usage(1);
+	    wrong_args(_("--gen-key"));
 	generate_keypair();
 	break;
 
       case aImport:
 	if( !argc  )
-	    usage(1);
+	    wrong_args(_("nyi"));
 	for( ; argc; argc--, argv++ ) {
 	    rc = import_pubkeys( *argv );
 	    if( rc )
@@ -594,7 +603,7 @@ main( int argc, char **argv )
 	opt.list_packets=1;
       default:
 	if( argc > 1 )
-	    usage(1);
+	    wrong_args(_("[filename]"));
 	if( !(a = iobuf_open(fname)) )
 	    log_fatal(_("can't open '%s'\n"), fname_print);
 	if( !opt.no_armor ) {
