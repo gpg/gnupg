@@ -41,3 +41,8 @@ compress-algo 1
 #charset koi8-r
 
 
+# You may define aliases like this:
+#   alias mynames  -u 0x12345678 -u 0x456789ab -z 9
+# everytime you use --mynames, it will be expanded to the options
+# in the above defintion.  The name of the alias may not be abbreviated.
+

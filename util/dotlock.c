@@ -126,7 +126,7 @@ make_dotlock( const char *file_to_lock, long timeout )
 int
 release_dotlock( const char *lockfile )
 {
-    int pid = rad_lockfile( lockfile );
+    int pid = read_lockfile( lockfile );
     if( pid == -1 ) {
 	log_error( "release_dotlock: lockfile error");
 	return -1;

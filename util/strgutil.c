@@ -285,6 +285,20 @@ utf8_to_native( const char *string )
 }
 
 
+/****************
+ * check whether string is a valid UTF8 string.
+ * Returns 0 = Okay
+ *	   1 = Too short
+ *	   2 = invalid encoding
+ */
+int
+check_utf8_string( const char *string )
+{
+    /*fixme */
+    return 0;
+}
+
+
 /*********************************************
  ********** missing string functions *********
  *********************************************/

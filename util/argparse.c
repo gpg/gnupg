@@ -51,6 +51,7 @@
  *	struct {
  *	    int index;
  *	    const char *last;
+ *	    void *aliases;
  *	} internal;		  DO NOT CHANGE
  *  } ARGPARSE_ARGS;
  *
@@ -127,6 +128,12 @@
  *
  */
 
+typedef struct alias_def_s *ALIAS_DEF;
+struct alias_def_s {
+    ALIAS_DEF next;
+    char *name;   /* malloced buffer with name, \0, value */
+    const char *value; /* ptr into name */
+};
 
 static int  set_opt_arg(ARGPARSE_ARGS *arg, unsigned flags, char *s);
 static void show_help(ARGPARSE_OPTS *opts, unsigned flags);
@@ -139,7 +146,8 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
 	arg->internal.index = 0;
 	arg->internal.last = NULL;
 	arg->internal.inarg = 0;
-	arg->internal.stopped= 0;
+	arg->internal.stopped = 0;
+	arg->internal.aliases = NULL;
 	arg->err = 0;
 	arg->flags |= 1<<15; /* mark initialized */
 	if( *arg->argc < 0 )
@@ -160,6 +168,8 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
 		s = "%s:%u: missing argument\n";
 	    else if( arg->r_opt == -7 )
 		s = "%s:%u: invalid command\n";
+	    else if( arg->r_opt == -10 )
+		s = "%s:%u: invalid alias definition\n";
 	    else
 		s = "%s:%u: invalid option\n";
 	    log_error(s, filename, *lineno );
@@ -187,6 +197,16 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
 
 
 
+static void
+store_alias( ARGPARSE_ARGS *arg, char *name, char *value )
+{
+    ALIAS_DEF a = m_alloc( sizeof *a );
+    a->name = name;
+    a->value = value;
+    a->next = (ALIAS_DEF)arg->internal.aliases;
+    (ALIAS_DEF)arg->internal.aliases = a;
+}
+
 /****************
  * Get options from a file.
  * Lines starting with '#' are comment lines.
@@ -194,6 +214,8 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
  * Valid keywords are all keywords from the long_opt list without
  * the leading dashes. The special keywords "help", "warranty" and "version"
  * are not valid here.
+ * The special keyword "alias" may be used to store alias definitions,
+ * which are later expanded like long options.
  * Caller must free returned strings.
  * If called with FP set to NULL command line args are parse instead.
  *
@@ -212,6 +234,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
     char *buffer = NULL;
     size_t buflen = 0;
     int inverse=0;
+    int in_alias=0;
 
     if( !fp ) /* same as arg_parse() in this case */
 	return arg_parse( arg, opts );
@@ -234,9 +257,9 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 			break;
 		index = i;
 		arg->r_opt = opts[index].short_opt;
-		if( inverse )
+		if( inverse ) /* this does not have an effect, hmmm */
 		    arg->r_opt = -arg->r_opt;
-		if( !opts[index].short_opt )	 /* unknown command/option */
+		if( !opts[index].short_opt )   /* unknown command/option */
 		    arg->r_opt = (opts[index].flags & 256)? -7:-2;
 		else if( (opts[index].flags & 8) ) /* no argument */
 		    arg->r_opt = -3;	       /* error */
@@ -245,7 +268,9 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		break;
 	    }
 	    else if( state == 3 ) {	       /* no argument found */
-		if( !(opts[index].flags & 7) ) /* does not take an argument */
+		if( in_alias )
+		    arg->r_opt = -3;	       /* error */
+		else if( !(opts[index].flags & 7) ) /* does not take an arg */
 		    arg->r_type = 0;	       /* okay */
 		else if( (opts[index].flags & 8) )  /* no optional argument */
 		    arg->r_type = 0;	       /* okay */
@@ -254,7 +279,28 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		break;
 	    }
 	    else if( state == 4 ) {	/* have an argument */
-		if( !(opts[index].flags & 7) )	/* does not take an argument */
+		if( in_alias ) {
+		    if( !buffer )
+			arg->r_opt = -6;
+		    else {
+			char *p;
+
+			buffer[i] = 0;
+			p = strpbrk( buffer, " \t" );
+			if( p ) {
+			    *p++ = 0;
+			    trim_spaces( p );
+			}
+			if( !p || !*p ) {
+			    m_free( buffer );
+			    arg->r_opt = -10;
+			}
+			else {
+			    store_alias( arg, buffer, p );
+			}
+		    }
+		}
+		else if( !(opts[index].flags & 7) )  /* does not take an arg */
 		    arg->r_opt = -6;	    /* error */
 		else {
 		    if( !buffer ) {
@@ -296,8 +342,14 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 	    index = i;
 	    arg->r_opt = opts[index].short_opt;
 	    if( !opts[index].short_opt ) {
-		arg->r_opt = (opts[index].flags & 256)? -7:-2;
-		state = -1;	   /* skip rest of line and leave */
+		if( !strcmp( keyword, "alias" ) ) {
+		    in_alias = 1;
+		    state = 3;
+		}
+		else {
+		    arg->r_opt = (opts[index].flags & 256)? -7:-2;
+		    state = -1;        /* skip rest of line and leave */
+		}
 	    }
 	    else
 		state = 3;
@@ -344,10 +396,12 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 
 
 static int
-find_long_option( ARGPARSE_OPTS *opts, const char *keyword )
+find_long_option( ARGPARSE_ARGS *arg,
+		  ARGPARSE_OPTS *opts, const char *keyword )
 {
     int i;
     size_t n;
+    ALIAS_DEF a;
 
     /* Would be better if we can do a binary search, but it is not
        possible to reorder our option table because we would mess
@@ -358,7 +412,14 @@ find_long_option( ARGPARSE_OPTS *opts, const char *keyword )
     for(i=0; opts[i].short_opt; i++ )
 	if( opts[i].long_opt && !strcmp( opts[i].long_opt, keyword) )
 	    return i;
+   #if 0
+    /* see whether it is an alias */
+    for( a= argds->internal.aliases; a; a = a->next )
+	if( !strcmp( a->name, keyword) )
+	    return what_do_we_return_here;
+   #endif
     /* not found, see whether it is an abbreviation */
+    /* aliases may not be abbreviated */
     n = strlen( keyword );
     for(i=0; opts[i].short_opt; i++ ) {
 	if( opts[i].long_opt && !strncmp( opts[i].long_opt, keyword, n ) ) {
@@ -424,7 +485,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 	argpos = strchr( s+2, '=' );
 	if( argpos )
 	    *argpos = 0;
-	i = find_long_option( opts, s+2 );
+	i = find_long_option( arg, opts, s+2 );
 	if( argpos )
 	    *argpos = '=';
 

@@ -40,6 +40,49 @@
 #define CONTROL_D ('D' - 'A' + 1)
 
 
+static void
+show_paths( ulong lid )
+{
+    void *context = NULL;
+    unsigned otrust, validity;
+    int level;
+
+    while( (level=enum_cert_paths( &context, &lid, &otrust, &validity)) != -1){
+	char *p;
+	int rc;
+	size_t n;
+	u32 keyid[2];
+	PKT_public_key *pk ;
+
+	rc = keyid_from_lid( lid, keyid );
+	if( rc ) {
+	    log_error("ooops: can't get keyid for lid %lu\n", lid);
+	    return;
+	}
+
+	pk = m_alloc_clear( sizeof *pk );
+	rc = get_pubkey( pk, keyid );
+	if( rc ) {
+	    log_error("key %08lX: public key not found: %s\n",
+				    (ulong)keyid[1], g10_errstr(rc) );
+	    return;
+	}
+
+	tty_printf("%*s%4u%c/%08lX.%lu %s \"",
+		  level*2,
+		  nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
+		  (ulong)keyid[1], lid, datestr_from_pk( pk ) );
+	p = get_user_id( keyid, &n );
+	tty_print_string( p, n ),
+	m_free(p);
+	tty_printf("\"\n\n");
+    }
+    enum_cert_paths( &context, NULL, NULL, NULL ); /* release context */
+}
+
+
+
+
 /****************
  * Returns true if an ownertrust has changed.
  */
@@ -68,7 +111,7 @@ edit_ownertrust( ulong lid, int mode )
     }
 
     if( !mode ) {
-	tty_printf(_("No owner trust defined for %lu:\n"
+	tty_printf(_("No trust value assigned to %lu:\n"
 		   "%4u%c/%08lX %s \""), lid,
 		  nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
 		  (ulong)keyid[1], datestr_from_pk( pk ) );
@@ -115,7 +158,9 @@ edit_ownertrust( ulong lid, int mode )
 	    break;
 	}
 	else if( *p == ans[0] || *p == ans[1] ) {
-	    tty_printf(_("You will see a list of signators etc. here\n"));
+	    tty_printf(_(
+		"Certificates leading to an ultimately trusted key:\n"));
+	    show_paths( lid );
 	}
 	else if( mode && (*p == ans[2] || *p == ans[3] || *p == CONTROL_D ) ) {
 	    break ; /* back to the menu */
@@ -138,8 +183,8 @@ add_ownertrust( PKT_public_key *pk )
     int rc;
     void *context = NULL;
     ulong lid;
-    unsigned trust;
-    int any=0;
+    unsigned otrust, validity;
+    int any=0, changed=0, any_undefined=0;
 
     tty_printf(
 _("Could not find a valid trust path to the key.  Let's see whether we\n"
@@ -152,22 +197,25 @@ _("Could not find a valid trust path to the key.  Let's see whether we\n"
     }
 
     lid = pk->local_id;
-    while( !(rc=enum_trust_web( &context, &lid )) ) {
-	trust = get_ownertrust( lid );
-	if( trust == TRUST_UNDEFINED || trust == TRUST_EXPIRED ||
-	    trust == TRUST_UNKNOWN ) {
+    while( enum_cert_paths( &context, &lid, &otrust, &validity ) != -1 ) {
+	any=1;
+	if( otrust == TRUST_UNDEFINED || otrust == TRUST_EXPIRED ||
+	    otrust == TRUST_UNKNOWN ) {
+	    any_undefined=1;
 	    if( edit_ownertrust( lid, 0 ) )
-		any=1;
+		changed=1;
 	}
     }
-    if( rc == -1 )
-	rc = 0;
-    enum_trust_web( &context, NULL ); /* close */
+    enum_cert_paths( &context, NULL, NULL, NULL ); /* release context */
 
     if( !any )
-	tty_printf(_("No owner trust values changed.\n\n") );
+	tty_printf(_("No path leading to one of our keys found.\n\n") );
+    else if( !any_undefined )
+	tty_printf(_("No certificates with undefined trust found.\n\n") );
+    else if( !changed )
+	tty_printf(_("No trust values changed.\n\n") );
 
-    return rc? rc : any? 0:-1;
+    return any? 0:-1;
 }
 
 /****************

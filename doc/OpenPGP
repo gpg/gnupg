@@ -1,28 +1,15 @@
 		    GnuPG and OpenPGP
 		    =================
 
-   The current OpenPGP draft expires 1999-02.
+   See RFC2440 for a description of OpenPGP.
 
-   OpenPGP is an Internet-Draft.  Internet-Drafts are working
-   documents of the Internet Engineering Task Force (IETF), its areas,
-   and its working groups.  Note that other groups may also distribute
-   working documents as Internet-Drafts.
-
-   Internet-Drafts are draft documents valid for a maximum of six
-   months and may be updated, replaced, or obsoleted by other documents
-   at any time.  It is inappropriate to use Internet-Drafts as
-   reference material or to cite them other than as "work in progress."
-
-   To view the entire list of current Internet-Drafts, please check the
-   "1id-abstracts.txt" listing contained in the Internet-Drafts Shadow
-   Directories on ftp.is.co.za (Africa), ftp.nordu.net (Northern
-   Europe), ftp.nis.garr.it (Southern Europe), munnari.oz.au (Pacific
-   Rim), ftp.ietf.org (US East Coast), or ftp.isi.edu (US West Coast).
 
 
   Compatibility Notes
   ===================
-   GnuPG (>=0.4.1) is in compliance with OpenPGP despite these exeptions:
+   GnuPG (>=0.4.1) is in compliance with RFC2440 despite these exeptions:
+
+    ===> Please can someone check this <=========
 
     * (5.1) The critical bit in signature subpackets is currently
       ignored.	This will be fixed soon.

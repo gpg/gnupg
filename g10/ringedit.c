@@ -832,6 +832,127 @@ update_keyblock( KBPOS *kbpos, KBNODE root )
 
 
 /****************************************************************
+ ********** Implemenation of a user ID database    **************
+ ****************************************************************/
+#if 0
+/****************
+ * Layout of the user ID db
+ *
+ * This user ID DB provides fast lookup of user ID, but the user ids are
+ * not in any specific order.
+ *
+ * A string "GnuPG user db", a \n.
+ * user ids of one key, delimited by \t,
+ * a # or ^ followed by a 20 byte fingerprint, followed by an \n 
+ * The literal characters =, \n, \t, #, ^ must be replaced by a equal sign
+ * and their hex value.
+ *
+ * (We use Boyer/Moore pattern matching)
+ */
+
+/****************
+ * This compiles pattern to the distance table, the table will be allocate
+ * here and must be freed by using free().
+ * Returns: Ptr to new allocated Table
+ *	    Caller must free the table.
+ */
+
+static size_t *
+compile_bm_table( const byte *pattern, size_t len )
+{
+    ushort *dist;
+    int i;
+
+    dist = m_alloc_clear( 256 * sizeof *dist );
+    for(i=0; i < 256; i++ )
+	dist[i] = len;
+    for(i=0; i < len-1; i++ )
+	dTbl[p[i]] = len-i-1;
+    return dist;
+}
+
+
+
+
+/****************
+ * Search BUF of BUFLEN for pattern P of length PATLEN.
+ * dist is the Boyer/Moore distance table of 256 Elements,
+ * case insensitive search is done if IGNCASE is true (In this case
+ * the distance table has to compiled from uppercase chacaters and
+ * PAT must also be uppercase.
+ * Returns: Prt to maching string in BUF, or NULL if not found.
+ */
+
+static const *
+do_bm_search( const byte *buf, size_t buflen,
+	      const byte *pat, size_t patlen, size_t *dist, int igncase )
+{
+    int i, j, k;
+
+    if( igncase ) {
+	int c, c1;
+
+	for( i = --patlen; i < buflen; i += dist[c1] )
+	    for( j=patlen, k=i, c1=c=toupper(buf[k]); c == pat[j];
+					  j--, k--, c=toupper(buf[k]) ) {
+		if( !j )
+		    return buf+k;
+	    }
+    }
+    else {
+	for( i = --patlen; i < buflen; i += dist[buf[i]] )
+	    for( j=patlen, k=i; buf[k] == pat[j]; j--, k-- ) {
+		if( !j )
+		    return buf+k;
+	    }
+    }
+    return NULL;
+}
+
+
+typedef struct {
+    size_t dist[256];
+} *SCAN_USER_HANDLE;
+
+static SCAN_USER_HANDLE
+scan_user_file_open( const byte *name )
+{
+    SCAN_USER_HANDLE hd;
+    size_t *dist;
+    int i;
+
+    hd = m_alloc_clear( sizeof *hd );
+    dist = hd->dist;
+    /* compile the distance table */
+    for(i=0; i < 256; i++ )
+	dist[i] = len;
+    for(i=0; i < len-1; i++ )
+	dTbl[p[i]] = len-i-1;
+    /* setup other things */
+
+    return hd;
+}
+
+static int
+scan_user_file_close( SCAN_USER_HANDLE hd )
+{
+    m_free( hd );
+}
+
+static int
+scan_user_file_read( SCAN_USER_HANDLE hd, byte *fpr )
+{
+    char record[1000];
+
+    /* read a record */
+
+
+}
+#endif
+
+
+
+/****************************************************************
  ********** Functions which operates on regular keyrings ********
  ****************************************************************/
 

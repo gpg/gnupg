@@ -49,6 +49,7 @@ struct {
     int no_comment;
     int marginals_needed;
     int completes_needed;
+    int max_cert_depth;
     const char *homedir;
     int skip_verify;
     int compress_keys;

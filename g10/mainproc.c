@@ -483,7 +483,8 @@ list_node( CTX c, KBNODE node )
 	    if( c->local_id )
 		printf("%lu", c->local_id );
 	    putchar(':');
-	    /* fixme: add ownertrust here */
+	    if( c->local_id )
+		putchar( get_ownertrust_info( c->local_id ) );
 	    putchar(':');
 	}
 	else

@@ -1,3 +1,25 @@
+Fri Nov 13 07:39:58 1998  Werner Koch  <werner.koch@guug.de>
+
+	* trustdb.c (collect_paths): Removed a warning message.
+	(enum_trust_web): Removed.
+	(enum_cert_paths): New.
+	* pkclist.c (add_ownertrust): Changed to use enum_cert_paths.
+	(edit_ownertrust): Now list ceritficates on request.
+	(show_paths): New.
+
+Wed Nov 11 18:05:44 1998  Werner Koch  <werner.koch@guug.de>
+
+	* g10.c (main): New option --max-cert-depth
+	* tdbio.h: add new fields to ver and dir record.
+	* tdbio.c: read/write/dump of these fields.
+	(tdbio_db_matches_options): New.
+	* trustdb.c: replaced MAC_CERT_DEPTH by opt.max_cert_depth.
+	(do_check): cache validity and changed other functions
+	to reset the cached value.
+
+	* keylist.c (list_one): Now lists the ownertrust.
+	* mainproc.c (list_node): Ditto.
+
 Tue Nov 10 10:08:59 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* g10.c (g10_exit): Now looks at the new g10_errors_seen.

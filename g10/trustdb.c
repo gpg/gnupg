@@ -42,8 +42,6 @@
 #include "i18n.h"
 #include "tdbio.h"
 
-#define MAX_CERT_DEPTH 5
-
 #if MAX_FINGERPRINT_LEN > 20
   #error Must change structure of trustdb
 #endif
@@ -67,7 +65,7 @@ typedef struct trust_info TRUST_INFO;
 struct trust_info {
     ulong    lid;
     byte     otrust; /* ownertrust (assigned trust) */
-    byte     trust; /* calculated trust (validity) */
+    byte     trust;  /* calculated trust (validity) */
 };
 
 typedef struct trust_seg_list *TRUST_SEG_LIST;
@@ -806,14 +804,15 @@ collect_paths( int depth, int max_depth, int all, TRUSTREC *drec,
 		    continue; /* skip revoked signatures */
 
 		/* visit every signer only once (a signer may have
-		 * signed multizple user IDs */
+		 * signed more than one user ID) */
 		if( sigs_seen && ins_lid_table_item( sigs_seen,
 						     rec.r.sig.sig[i].lid, 0) )
-		    continue; /* we alread have this one */
+		    continue; /* we already have this one */
 
 		read_record( rec.r.sig.sig[i].lid, &tmp, 0 );
 		if( tmp.rectype != RECTYPE_DIR ) {
-		    log_info("oops: lid %lu: sig %lu has rectype %d"
+		    if( tmp.rectype != RECTYPE_SDIR )
+			log_info("oops: lid %lu: sig %lu has rectype %d"
 			     " - skipped\n",
 			    drec->r.dir.lid, tmp.recnum, tmp.rectype );
 		    continue;
@@ -892,7 +891,7 @@ verify_key( int max_depth, TRUSTREC *drec )
  * but nothing more is known.
  */
 static int
-do_check( TRUSTREC *dr, unsigned *trustlevel )
+do_check( TRUSTREC *dr, unsigned *validity )
 {
     if( !dr->r.dir.keylist ) {
 	log_error(_("Ooops, no keys\n"));
@@ -903,10 +902,23 @@ do_check( TRUSTREC *dr, unsigned *trustlevel )
 	return G10ERR_TRUSTDB;
     }
 
-    *trustlevel = verify_key( MAX_CERT_DEPTH, dr );
+    if( tdbio_db_matches_options()
+	&& (dr->r.dir.dirflags & DIRF_VALVALID)
+	&& dr->r.dir.validity )
+	*validity = dr->r.dir.validity;
+    else {
+	*validity = verify_key( opt.max_cert_depth, dr );
+	if( (*validity & TRUST_MASK) >= TRUST_UNDEFINED
+	    && tdbio_db_matches_options() ) {
+	    /* update the cached validity value */
+	    dr->r.dir.validity = (*validity & TRUST_MASK);
+	    dr->r.dir.dirflags |= DIRF_VALVALID;
+	    write_record( dr );
+	}
+    }
 
     if( dr->r.dir.dirflags & DIRF_REVOKED )
-	*trustlevel |= TRUST_FLAG_REVOKED;
+	*validity |= TRUST_FLAG_REVOKED;
 
     return 0;
 }
@@ -1496,7 +1508,10 @@ query_trust_info( PKT_public_key *pk )
 /****************
  * Enumerate all keys, which are needed to build all trust paths for
  * the given key.  This function does not return the key itself or
- * the ultimate key.
+ * the ultimate key (the last point in cerificate chain).  Only
+ * certificate chains which ends up at an ultimately trusted key
+ * are listed.	If ownertrust or validity is not NULL, the corresponding
+ * value for the returned LID is also returned in these variable(s).
  *
  *  1) create a void pointer and initialize it to NULL
  *  2) pass this void pointer by reference to this function.
@@ -1505,51 +1520,73 @@ query_trust_info( PKT_public_key *pk )
  *     to indicate EOF. LID does contain the next key used to build the web
  *  4) Always call this function a last time with LID set to NULL,
  *     so that it can free its context.
+ *
+ * Returns: -1 on EOF or the level of the returned LID
  */
 int
-enum_trust_web( void **context, ulong *lid )
+enum_cert_paths( void **context, ulong *lid,
+		 unsigned *ownertrust, unsigned *validity )
 {
-  #if 0
     struct {
        int init;
+       TRUST_SEG_LIST tsl_head;
+       TRUST_SEG_LIST tsl;
+       int idx;
     } *ctx;
-    int rc;
-    int wipe=0;
-    TRUSTREC rec;
-    TRUST_INFO *tmppath;
-    TRUST_SEG_LIST trust_seg_list, tsl, tsl2;
-    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+    TRUST_SEG_LIST tsl;
+
+    if( !lid ) {  /* release the context */
+	if( *context ) {
+	    TRUST_SEG_LIST tsl2;
+
+	    ctx = *context;
+	    for(tsl = ctx->tsl_head; tsl; tsl = tsl2 ) {
+		tsl2 = tsl->next;
+		m_free( tsl );
+	    }
+	    *context = NULL;
+	}
+	return -1;
+    }
 
     if( !*context ) {
-	asssert( *lid );
+	TRUST_INFO *tmppath;
+	TRUSTREC rec;
+
+	if( !lid )
+	    return -1;
 
 	ctx = m_alloc_clear( sizeof *ctx );
 	*context = ctx;
 	/* collect the paths */
 	read_record( *lid, &rec, RECTYPE_DIR );
-	tmppath = m_alloc_clear( (MAX_CERT_DEPTH+1)* sizeof *tmppath );
-	trust_seg_list = NULL;
-	collect_paths( 0, MAX_CERT_DEPTH, 1, &rec, tmppath, &trust_seg_list );
+	tmppath = m_alloc_clear( (opt.max_cert_depth+1)* sizeof *tmppath );
+	tsl = NULL;
+	collect_paths( 0, opt.max_cert_depth, 1, &rec, tmppath, &tsl );
 	m_free( tmppath );
 	/* and now print them */
-	for(tsl = trust_seg_list; tsl; tsl = tsl->next ) {
-	    print_path( tsl->pathlen, tsl->path );
-	}
+	ctx->tsl_head = tsl;
+	ctx->tsl = ctx->tsl_head;
+	ctx->idx = 0;
     }
     else
 	ctx = *context;
 
-    if( !lid ) {  /* release the context */
-	if( *
-	 /* release the list */
-	 for(tsl = trust_seg_list; tsl; tsl = tsl2 ) {
-	     tsl2 = tsl->next;
-	     m_free( tsl );
-	 }
-	 trust_seg_list = NULL;
+    while( ctx->tsl && ctx->idx >= tsl->pathlen )  {
+	ctx->tsl = ctx->tsl->next;
+	ctx->idx = 0;
     }
-   #endif
-    return -1; /* eof */
+    tsl = ctx->tsl;
+    if( !tsl )
+	return -1; /* eof */
+
+    if( ownertrust )
+	*ownertrust = tsl->path[ctx->idx].otrust;
+    if( validity )
+	*validity = tsl->path[ctx->idx].trust;
+    *lid = tsl->path[ctx->idx].lid;
+    ctx->idx++;
+    return ctx->idx-1;
 }
 
 
@@ -1671,7 +1708,7 @@ query_trust_record( PKT_public_key *pk )
     return get_dir_record( pk, &rec );
 }
 
-/* FIXME: Brauchen wir das?? */
+
 int
 clear_trust_checked_flag( PKT_public_key *pk )
 {
@@ -1682,11 +1719,14 @@ clear_trust_checked_flag( PKT_public_key *pk )
     if( rc )
 	return rc;
 
-    if( !(rec.r.dir.dirflags & DIRF_CHECKED) )
+    /* check whether they are already reset */
+    if(   !(rec.r.dir.dirflags & DIRF_CHECKED)
+       && !(rec.r.dir.dirflags & DIRF_VALVALID) )
 	return 0;
 
     /* reset the flag */
     rec.r.dir.dirflags &= ~DIRF_CHECKED;
+    rec.r.dir.dirflags &= ~DIRF_VALVALID;
     write_record( &rec );
     do_sync();
     return 0;
@@ -2735,6 +2775,8 @@ update_trust_record( KBNODE keyblock, int recheck, int *modified )
     if( rc )
 	rc = tdbio_cancel_transaction();
     else {
+	drec.r.dir.dirflags |= DIRF_CHECKED;
+	drec.r.dir.dirflags &= ~DIRF_VALVALID;
 	write_record( &drec );
 	if( modified && tdbio_is_dirty() )
 	    *modified = 1;

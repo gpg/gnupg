@@ -207,7 +207,8 @@ list_keyblock( KBNODE keyblock, int secret )
 	    if( pk->local_id )
 		printf("%lu", pk->local_id );
 	    putchar(':');
-	    /* fixme: add ownertrust here */
+	    if( pk->local_id )
+		putchar( get_ownertrust_info( pk->local_id ) );
 	    putchar(':');
 	}
 	else

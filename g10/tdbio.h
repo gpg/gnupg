@@ -47,11 +47,12 @@
 #define RECTYPE_FREE 254
 
 
-#define DIRF_CHECKED  1 /* has been checkd - other bits are valid */
+#define DIRF_CHECKED  1 /* has been checked - bits 1,2,3 are valid */
 #define DIRF_VALID    2 /* This key is valid:  There is at least */
 			/* one uid with a selfsignature or an revocation */
 #define DIRF_EXPIRED  4 /* the complete key has expired */
 #define DIRF_REVOKED  8 /* the complete key has been revoked */
+#define DIRF_VALVALID 16 /* The validity field is valid */
 
 #define KEYF_CHECKED  1 /* This key has been checked */
 #define KEYF_VALID    2 /* This is a valid (sub)key */
@@ -77,6 +78,9 @@ struct trust_record {
     union {
 	struct {	     /* version record: */
 	    byte version;    /* should be 2 */
+	    byte  marginals;
+	    byte  completes;
+	    byte  cert_depth;
 	    ulong created;   /* timestamp of trustdb creation  */
 	    ulong modified;  /* timestamp of last modification */
 	    ulong validated; /* timestamp of last validation   */
@@ -94,6 +98,7 @@ struct trust_record {
 	    ulong cacherec; /* the cache record */
 	    byte ownertrust;
 	    byte dirflags;
+	    byte validity; /* calculated trustlevel */
 	} dir;
 	struct {	    /* primary public key record */
 	    ulong lid;
@@ -168,6 +173,7 @@ const char *tdbio_get_dbname(void);
 void tdbio_dump_record( TRUSTREC *rec, FILE *fp );
 int tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected );
 int tdbio_write_record( TRUSTREC *rec );
+int tdbio_db_matches_options(void);
 int tdbio_is_dirty(void);
 int tdbio_sync(void);
 int tdbio_begin_transaction(void);

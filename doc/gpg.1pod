@@ -345,6 +345,9 @@ B<--marginals-needed> I<n>
     Number of marginally trusted users to introduce a new
     key signator (defaults to 3)
 
+B<--max-cert-depth> I<n>
+    Maximum depth of a certification chain (default is 5).
+
 B<--cipher-algo> I<name>
     Use I<name> as cipher algorithm. Running the program
     with the command B<--version> yields a list of supported

@@ -419,6 +419,9 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    memset( &rec, 0, sizeof rec );
 	    rec.r.ver.version = 2;
 	    rec.r.ver.created = make_timestamp();
+	    rec.r.ver.marginals =  opt.marginals_needed;
+	    rec.r.ver.completes =  opt.completes_needed;
+	    rec.r.ver.cert_depth = opt.max_cert_depth;
 	    rec.rectype = RECTYPE_VER;
 	    rec.recnum = 0;
 	    rc = tdbio_write_record( &rec );
@@ -510,6 +513,41 @@ create_hashtable( TRUSTREC *vr, int type )
 						  db_name, g10_errstr(rc));
 }
 
+
+int
+tdbio_db_matches_options()
+{
+    static int yes_no = -1;
+
+    if( yes_no == -1 ) {
+	TRUSTREC vr;
+	int rc;
+
+	rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
+	if( rc )
+	    log_fatal( _("%s: error reading version record: %s\n"),
+						    db_name, g10_errstr(rc) );
+
+	if( !vr.r.ver.marginals && !vr.r.ver.completes
+				&& !vr.r.ver.cert_depth )
+	{   /* special hack for trustdbs created by old versions of GnuPG */
+	    vr.r.ver.marginals =  opt.marginals_needed;
+	    vr.r.ver.completes =  opt.completes_needed;
+	    vr.r.ver.cert_depth = opt.max_cert_depth;
+	    rc = tdbio_write_record( &vr );
+	    if( !rc && !in_transaction )
+		rc = tdbio_sync();
+	    if( rc )
+		log_error( _("%s: error writing version record: %s\n"),
+						db_name, g10_errstr(rc) );
+	}
+
+	yes_no = vr.r.ver.marginals == opt.marginals_needed
+		 && vr.r.ver.completes == opt.completes_needed
+		 && vr.r.ver.cert_depth == opt.max_cert_depth;
+    }
+    return yes_no;
+}
 
 
 /****************
@@ -839,19 +877,24 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
     switch( rec->rectype ) {
       case 0: fprintf(fp, "blank\n");
 	break;
-      case RECTYPE_VER: fprintf(fp, "version, kd=%lu, sd=%lu, free=%lu\n",
+      case RECTYPE_VER: fprintf(fp,
+	    "version, kd=%lu, sd=%lu, free=%lu, m/c/d=%d/%d/%d\n",
 	    rec->r.ver.keyhashtbl, rec->r.ver.sdirhashtbl,
-				   rec->r.ver.firstfree );
+				   rec->r.ver.firstfree,
+				   rec->r.ver.marginals,
+				   rec->r.ver.completes,
+				   rec->r.ver.cert_depth );
 	break;
       case RECTYPE_FREE: fprintf(fp, "free, next=%lu\n", rec->r.free.next );
 	break;
       case RECTYPE_DIR:
-	fprintf(fp, "dir %lu, keys=%lu, uids=%lu, cach=%lu, ot=%02x",
+	fprintf(fp, "dir %lu, keys=%lu, uids=%lu, t=%02x",
 		    rec->r.dir.lid,
 		    rec->r.dir.keylist,
 		    rec->r.dir.uidlist,
-		    rec->r.dir.cacherec,
 		    rec->r.dir.ownertrust );
+	if( rec->r.dir.dirflags & DIRF_VALVALID )
+	    fprintf( fp, ", v=%02x", rec->r.dir.validity );
 	if( rec->r.dir.dirflags & DIRF_CHECKED ) {
 	    if( rec->r.dir.dirflags & DIRF_VALID )
 		fputs(", valid", fp );
@@ -863,7 +906,7 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 	putc('\n', fp);
 	break;
       case RECTYPE_KEY:
-	fprintf(fp, "key %lu, next=%lu, algo=%d, ",
+	fprintf(fp, "key %lu, n=%lu a=%d ",
 		   rec->r.key.lid,
 		   rec->r.key.next,
 		   rec->r.key.pubkey_algo );
@@ -1005,7 +1048,9 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	}
 	p += 2; /* skip "pgp" */
 	rec->r.ver.version  = *p++;
-	p += 3; /* reserved bytes */
+	rec->r.ver.marginals = *p++;
+	rec->r.ver.completes = *p++;
+	rec->r.ver.cert_depth = *p++;
 	p += 4; /* lock flags */
 	rec->r.ver.created  = buftoulong(p); p += 4;
 	rec->r.ver.modified = buftoulong(p); p += 4;
@@ -1034,6 +1079,18 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	rec->r.dir.cacherec = buftoulong(p); p += 4;
 	rec->r.dir.ownertrust = *p++;
 	rec->r.dir.dirflags   = *p++;
+	rec->r.dir.validity   = *p++;
+	switch( rec->r.dir.validity ) {
+	  case 0:
+	  case TRUST_UNDEFINED:
+	  case TRUST_NEVER:
+	  case TRUST_MARGINAL:
+	  case TRUST_FULLY:
+	  case TRUST_ULTIMATE:
+	    break;
+	  default:
+	    log_info("lid %lu: invalid validity value - cleared\n", recnum);
+	}
 	if( rec->r.dir.lid != recnum ) {
 	    log_error( "%s: dir LID != recnum (%lu,%lu)\n",
 			      db_name, rec->r.dir.lid, (ulong)recnum );
@@ -1137,7 +1194,10 @@ tdbio_write_record( TRUSTREC *rec )
 	    BUG();
 	memcpy(p-1, "gpg", 3 ); p += 2;
 	*p++ = rec->r.ver.version;
-	p += 7; /* skip reserved bytes and lock flags */
+	*p++ = rec->r.ver.marginals;
+	*p++ = rec->r.ver.completes;
+	*p++ = rec->r.ver.cert_depth;
+	p += 4; /* skip lock flags */
 	ulongtobuf(p, rec->r.ver.created); p += 4;
 	ulongtobuf(p, rec->r.ver.modified); p += 4;
 	ulongtobuf(p, rec->r.ver.validated); p += 4;
@@ -1157,6 +1217,7 @@ tdbio_write_record( TRUSTREC *rec )
 	ulongtobuf(p, rec->r.dir.cacherec); p += 4;
 	*p++ = rec->r.dir.ownertrust;
 	*p++ = rec->r.dir.dirflags;
+	*p++ = rec->r.dir.validity;
 	assert( rec->r.dir.lid == recnum );
 	break;
 

@@ -43,8 +43,8 @@
     IDEA (which is patented worldwide) and RSA (which is patented in
     the United States until Sep 20, 2000).
 
-    GnuPG is in almost all  aspects compatible with other OpenPGP
-    implementations.
+    GnuPG is in compliance with RFC2440 (OpenPGP), see doc/OpenPGP for
+    deatils.
 
     The default algorithms are now DSA and ELGamal.  ELGamal for signing
     is still available, but due to the larger size of such signatures it

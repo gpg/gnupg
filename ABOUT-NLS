@@ -137,7 +137,8 @@ Each translation team has its own mailing list, courtesy of Linux
 International.  You may reach your translation team at the address
 `LL@li.org', replacing LL by the two-letter ISO 639 code for your
 language.  Language codes are *not* the same as the country codes given
-in ISO 3166.  The following translation teams exist, as of August 1998:
+in ISO 3166.  The following translation teams exist, as of December
+1997:
 
      Chinese `zh', Czech `cs', Danish `da', Dutch `nl', English `en',
      Esperanto `eo', Finnish `fi', French `fr', German `de', Hungarian
@@ -172,79 +173,42 @@ Available Packages
 ==================
 
    Languages are not equally supported in all packages.  The following
-matrix shows the current state of internationalization, as of August
-1998.  The matrix shows, in regard of each package, for which languages
+matrix shows the current state of internationalization, as of December
+1997.  The matrix shows, in regard of each package, for which languages
 PO files have been submitted to translation coordination.
 
-     Ready PO files    cs da de el en es fi fr it
-                     .----------------------------.
-     bash            |       []             []    |
-     bison           |       []             []    |
-     clisp           |       []    [] []    []    |
-     cpio            |       []       []    []    |
-     diffutils       |       []       []    []    |
-     enscript        |       []       [] [] []    |
-     fileutils       | []    []       []    []    |
-     findutils       |       []       []    [] [] |
-     flex            |                []    []    |
-     gcal            |       []             []    |
-     gettext         |    [] [] []    []    []    |
-     grep            |       [] []    []    []    |
-     hello           |    [] []       []    [] [] |
-     id-utils        |       []             []    |
-     indent          |    [] []                   |
-     libc            |       []       []    []    |
-     m4              |       []             []    |
-     make            |       []       []    []    |
-     music           |                      []    |
-     ptx             |       []       []    []    |
-     recode          |    [] []       []    []    |
-     sed             |                            |
-     sh-utils        |       []       []    []    |
-     sharutils       | []    [] []    []    []    |
-     tar             | []    []             [] [] |
-     texinfo         | []    []             []    |
-     textutils       | []    []       []    []    |
-     wdiff           | []    []       []    []    |
-     wget            | []    [] []             [] |
-                     `----------------------------'
-                       cs da de el en es fi fr it
-                        7  4 26  4  1 18  1 26  4
-     
-                       ja ko nl no pl pt ru sl sv
-                     .----------------------------.
-     bash            |       []                   |  3
-     bison           |       []                   |  3
-     clisp           |                            |  4
-     cpio            |    [] []    []             |  6
-     diffutils       |             []          [] |  5
-     enscript        |       []             []    |  6
-     fileutils       |    [] []    [] [] [] [] [] | 11
-     findutils       |    [] []    []    []    [] |  9
-     flex            |    []                   [] |  4
-     gcal            |       []    []          [] |  5
-     gettext         |    [] [] [] [] []    [] [] | 13
-     grep            |    [] [] [] []    [] [] [] | 11
-     hello           |    [] [] [] [] []    [] [] | 12
-     id-utils        |             []             |  3
-     indent          |    []       []    []       |  5
-     libc            |    [] [] [] []          [] |  8
-     m4              | []    []          []    [] |  6
-     make            |    [] []    []             |  6
-     music           |             []             |  2
-     ptx             |       [] [] [] []       [] |  8
-     recode          |       []    [] []    [] [] |  9
-     sed             |                            |  0
-     sh-utils        |       [] [] [] []       [] |  8
-     sharutils       |       []                [] |  7
-     tar             |    [] [] [] [] []    [] [] | 11
-     texinfo         |       []                   |  4
-     textutils       |    [] [] [] []          [] |  9
-     wdiff           |       [] [] []          [] |  8
-     wget            |          []                |  5
-                     `----------------------------'
-       18 teams        ja ko nl no pl pt ru sl sv
-       29 domains       1 12 21 11 19  7  5  7 17  191
+     Ready PO files    cs da de en es fi fr it ja ko nl no pl pt ru sl sv
+                     .----------------------------------------------------.
+     bash            |       []          []          []                   |  3
+     bison           |       []          []          []                   |  3
+     clisp           |       [] [] []    []                               |  4
+     cpio            |       []    []    []       [] []    []             |  6
+     diffutils       |       []    []    []                []          [] |  5
+     enscript        |       []    [] [] []          []             []    |  6
+     fileutils       | []    []    []    []       [] []    [] []    [] [] | 10
+     findutils       |       []    []    [] []    [] []    []    []    [] |  9
+     flex            |             []    []       []                   [] |  4
+     gcal            |       []          []          []    []          [] |  5
+     gettext         |    [] []    []    []       [] [] [] [] []    [] [] | 12
+     grep            |       []    []    []       [] [] [] []    [] [] [] | 10
+     hello           |    [] []    []    []       [] [] [] [] []    [] [] | 11
+     id-utils        |       []          []                []             |  3
+     indent          |    [] []                   []       []    []       |  5
+     libc            |       []    []    []       [] []    []          [] |  7
+     m4              |       []          []    []    []          []    [] |  6
+     make            |       []    []    []       [] []    []             |  6
+     music           |                   []                []             |  2
+     ptx             |       []    []    []          [] [] [] []       [] |  8
+     recode          |    [] []    []    []          []    [] []    [] [] |  9
+     sh-utils        |       []    []    []          [] [] [] []       [] |  8
+     sharutils       | []    []    []    []          []                [] |  6
+     tar             | []    []          [] []    [] [] [] [] []    [] [] | 11
+     texinfo         | []    []          []                               |  3
+     textutils       | []    []    []    []       [] [] [] []          [] |  9
+     wdiff           | []    []    []    []          [] [] []          [] |  8
+                     `----------------------------------------------------'
+       17 languages    cs da de en es fi fr it ja ko nl no pl pt ru sl sv
+       27 packages      6  4 25  1 18  1 26  2  1 12 20  9 19  7  4  7 17  179
 
    Some counters in the preceding matrix are higher than the number of
 visible blocks let us expect.  This is because a few extra PO files are
@@ -257,23 +221,6 @@ distributed as such by its maintainer.  There might be an observable
 lag between the mere existence a PO file and its wide availability in a
 distribution.
 
-   If August 1998 seems to be old, you may fetch a more recent copy of
-this `ABOUT-NLS' file on most GNU archive sites.
-
-Using `gettext' in new packages
-===============================
-
-   If you are writing a freely available program and want to
-internationalize it you are welcome to use GNU `gettext' in your
-package.  Of course the GNU Public License applies to your sources from
-then if you include `gettext' directly in your distribution on but
-since you are writing free software anyway this is no restriction.
-
-   Once the sources are change appropriately and the setup can handle to
-use of `gettext' the only thing missing are the translations.  The Free
-Translation Project is also available for packages which are not
-developed inside the GNU project.  Therefore the information given above
-applies also for every other Free Software Project.  Contact
-`translation@iro.umontreal.ca' to make the `.pot' files available to
-the translation teams.
+   If December 1997 seems to be old, you may fetch a more recent copy
+of this `ABOUT-NLS' file on most GNU archive sites.
 

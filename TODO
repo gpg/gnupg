@@ -1,5 +1,12 @@
 
-    * Update the keyring on ftp.ggug.de
+    * I noticed, that we sometimes have only 3 items in atrustrecord, but
+      a next pointer ro more records - check wehther the reuse code really
+      works. Maybe this is the reason for the "Hmmm puiblic key lost"
+
+    * Update the keyring at ftp.ggug.de
+
+    * expire date is not shown in --edit-key for subkeys.
+      and prefs are not correctly listed for some keys???? (Brian)
 
     * support for mpi/powerpc  split is still combined or whatever
 
@@ -84,6 +91,5 @@
 
     * Add some stuff for DU cc
 
-    * use "passphrase" instead of "pass phrase"
     * Use "user ID", "trustdb" and "WARNING".
 

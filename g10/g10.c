@@ -114,6 +114,7 @@ enum cmd_and_opt_values { aNull = 0,
     oNoComment,
     oCompletesNeeded,
     oMarginalsNeeded,
+    oMaxCertDepth,
     oLoadExtension,
     oRFC1991,
     oCipherAlgo,
@@ -230,6 +231,7 @@ static ARGPARSE_OPTS opts[] = {
     { oNoComment, "no-comment", 0,   N_("do not write comment packets")},
     { oCompletesNeeded, "completes-needed", 1, N_("(default is 1)")},
     { oMarginalsNeeded, "marginals-needed", 1, N_("(default is 3)")},
+    { oMaxCertDepth,	"max-cert-depth", 1, "@" },
     { oLoadExtension, "load-extension" ,2, N_("|FILE|load extension module FILE")},
     { oRFC1991, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
     { oS2KMode, "s2k-mode",  1, N_("|N|use passphrase mode N")},
@@ -533,6 +535,7 @@ main( int argc, char **argv )
     opt.s2k_cipher_algo = CIPHER_ALGO_BLOWFISH;
     opt.completes_needed = 1;
     opt.marginals_needed = 3;
+    opt.max_cert_depth = 5;
     opt.homedir = getenv("GNUPGHOME");
     if( !opt.homedir || !*opt.homedir ) {
       #ifdef __MINGW32__
@@ -699,6 +702,7 @@ main( int argc, char **argv )
 	  case oNoComment: opt.no_comment=1; break;
 	  case oCompletesNeeded: opt.completes_needed = pargs.r.ret_int; break;
 	  case oMarginalsNeeded: opt.marginals_needed = pargs.r.ret_int; break;
+	  case oMaxCertDepth: opt.max_cert_depth = pargs.r.ret_int; break;
 	  case oTrustDBName: trustdb_name = pargs.r.ret_str; break;
 	  case oDefaultKey: opt.def_secret_key = pargs.r.ret_str; break;
 	  case oNoOptions: break; /* no-options */
@@ -819,6 +823,8 @@ main( int argc, char **argv )
 	log_error(_("completes-needed must be greater than 0\n"));
     if( opt.marginals_needed < 2 )
 	log_error(_("marginals-needed must be greater than 1\n"));
+    if( opt.max_cert_depth < 1 || opt.max_cert_depth > 255 )
+	log_error(_("max-cert-depth must be in range 1 to 255\n"));
     switch( opt.s2k_mode ) {
       case 0:
 	log_info(_("NOTE: simple S2K mode (0) is strongly discouraged\n"));
