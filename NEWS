@@ -1,6 +1,22 @@
 Noteworthy changes in version 1.3.3 (unreleased)
 ------------------------------------------------
 
+    * Full support for the SHA-256 hash has been added.
+
+    * Support for the TIGER/192 hash has been dropped.  This should
+      not be interpreted as a statement as to the strength of
+      TIGER/192: the upcoming revision to the OpenPGP standard removes
+      support for several unused (or mostly unused) hashes.
+
+    * Revoked or expired user IDs are now skipped when selecting keys
+      for encryption.  Specifying a key by the key ID overrides this
+      check and allows the selection of any key.
+
+    * Note that --no-mangle-dos-filenames is now the default.  If you
+      are upgrading from a 1.2.x version of GnuPG, and are running a
+      very old version of Windows that has the 8.3 filename limit, you
+      may need to change this.
+
     * New --list-options option.  This option takes a list of
       arguments that allows the user to customize exactly what key
       listings (including the --edit-key listing) look like, enabling

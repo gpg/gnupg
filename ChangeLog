@@ -1,3 +1,9 @@
+2003-09-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note that SHA-256 is read-write now, that TIGER/192 is no
+	more, that revoked and expired uids are skipped in -r, and that
+	--no-mangle-dos-filenames is now the default.
+
 2003-09-27  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac (LIBUSB_LIBS,HAVE_LIBUSB): Check for Libusb.
