@@ -890,33 +890,13 @@ After the hash algorithm the 3 bytes "GNU" are used to make
 clear that these are extensions for GNU, the next bytes gives the
 GNU protection mode - 1000.  Defined modes are:
   1001 - do not store the secret part at all
-
-
-Usage of gdbm files for keyrings
-================================
-    The key to store the keyblock is its fingerprint, other records
-    are used for secondary keys.  Fingerprints are always 20 bytes
-    where 16 bit fingerprints are appended with zero.
-    The first byte of the key gives some information on the type of the
-    key.
-      1 = key is a 20 bit fingerprint (16 bytes fpr are padded with zeroes)
-	  data is the keyblock
-      2 = key is the complete 8 byte keyid
-	  data is a list of 20 byte fingerprints
-      3 = key is the short 4 byte keyid
-	  data is a list of 20 byte fingerprints
-      4 = key is the email address
-	  data is a list of 20 byte fingerprints
-
-    Data is prepended with a type byte:
-      1 = keyblock
-      2 = list of 20 byte padded fingerprints
-      3 = list of list fingerprints (but how to we key them?)
-
+  1002 - a stub to access smartcards (not used in 1.2.x)
 
 
 Pipemode
 ========
+NOTE:  This is deprecated and will be removed in future versions.
+
 This mode can be used to perform multiple operations with one call to
 gpg. It comes handy in cases where you have to verify a lot of
 signatures. Currently we support only detached signatures.  This mode

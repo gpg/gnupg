@@ -1,3 +1,8 @@
+2003-08-23  Werner Koch  <wk@gnupg.org>
+
+	* DETAILS: Removed paragraph on gdbm usage.  Notes that pipemode
+	is deprecated.
+
 2003-08-21  Werner Koch  <wk@gnupg.org>
 
 	* samplekeys.asc: Refreshed the keys.
