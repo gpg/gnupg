@@ -1,3 +1,9 @@
+2002-11-09  Werner Koch  <wk@gnupg.org>
+
+	* ttyio.c (TERMDEVICE): Removed.
+	(tty_get_ttyname): New.
+	(init_ttyfp): Use it here instead of the TERMDEVICE macro.
+
 2002-11-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* w32reg.c (read_w32_registry_string): Fixed expanding of the

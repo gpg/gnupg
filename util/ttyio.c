@@ -1,5 +1,5 @@
 /* ttyio.c -  tty i/O functions
- *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -50,11 +50,6 @@
 #include "ttyio.h"
 
 #define CONTROL_D ('D' - 'A' + 1)
-#ifdef __VMS
-  #define TERMDEVICE "/dev/tty"
-#else
-  #define TERMDEVICE "/dev/tty"
-#endif
 
 #ifdef __MINGW32__ /* use the odd Win32 functions */
 static struct {
@@ -80,6 +75,36 @@ static int no_terminal;
 #endif
 
 
+
+/* This is a wrapper around ttyname so that we can use it even when
+   the standard streams are redirected.  It figures the name out the
+   first time and returns it in a statically allocated buffer. */
+const char *
+tty_get_ttyname (void)
+{
+  static char *name;
+
+  /* On a GNU system ctermid() always return /dev/tty, so this does
+     not make much sense - however if it is ever changed we do the
+     Right Thing now. */
+#ifdef HAVE_CTERMID
+  static int got_name;
+
+  if (!got_name)
+    {
+      const char *s;
+      s = ctermid (NULL);
+      if (s)
+        name = strdup (s);
+      got_name = 1;
+    }
+#endif
+  /* Assume the staandrd tty on memory error or when tehre is no
+     certmid. */
+  return name? name : "/dev/tty";
+}
+
+
 #ifdef HAVE_TCGETATTR
 static void
 cleanup(void)
@@ -98,7 +123,7 @@ init_ttyfp(void)
     if( initialized )
 	return;
 
-  #if defined(__MINGW32__)
+#if defined(__MINGW32__)
     {
 	SECURITY_ATTRIBUTES sa;
 
@@ -122,18 +147,19 @@ init_ttyfp(void)
     SetConsoleMode(con.in, DEF_INPMODE );
     SetConsoleMode(con.out, DEF_OUTMODE );
 
-  #elif defined(__EMX__)
+#elif defined(__EMX__)
     ttyfp = stdout; /* Fixme: replace by the real functions: see wklib */
-  #else
-    ttyfp = batchmode? stderr : fopen(TERMDEVICE, "r+");
+#else
+    ttyfp = batchmode? stderr : fopen( tty_get_ttyname (), "r+");
     if( !ttyfp ) {
-	log_error("cannot open /dev/tty: %s\n", strerror(errno) );
+	log_error("cannot open `%s': %s\n",
+                  tty_get_ttyname (), strerror(errno) );
 	exit(2);
     }
-  #endif
-  #ifdef HAVE_TCGETATTR
+#endif
+#ifdef HAVE_TCGETATTR
     atexit( cleanup );
-  #endif
+#endif
     initialized = 1;
 }
 
