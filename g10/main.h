@@ -254,6 +254,9 @@ int hash_datafiles( MD_HANDLE md, MD_HANDLE md2,
 /*-- pipemode.c --*/
 void run_in_pipemode (void);
 
+/*-- card-util.c --*/
+void change_pin (int no);
+
 /*-- signal.c --*/
 void init_signals(void);
 void pause_on_sigusr( int which );

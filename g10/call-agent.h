@@ -42,6 +42,10 @@ struct agent_card_genkey_s {
   gcry_mpi_t e;
 };
 
+
+/* Release the card info structure. */
+void agent_release_card_info (struct agent_card_info_s *info);
+
 /* Return card info. */
 int agent_learn (struct agent_card_info_s *info);
 
@@ -66,6 +70,8 @@ int agent_scd_pkdecrypt (const char *serialno,
                          const unsigned char *indata, size_t indatalen,
                          char **r_buf, size_t *r_buflen);
 
+/* Change the PIN of an OpenPGP card or reset the retry counter. */
+int agent_scd_change_pin (int chvno);
 
 
 #endif /*GNUPG_G10_CALL_AGENT_H*/

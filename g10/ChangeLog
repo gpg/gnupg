@@ -1,3 +1,17 @@
+2003-07-23  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (generate_keypair): Create an AUTHKEYTYPE entry for cards.
+	(do_generate_keypair): Abd generate the authkey.
+	(check_smartcard): Changed menu accordingly.
+
+2003-07-22  Werner Koch  <wk@gnupg.org>
+
+	* g10.c: New command --change-pin.
+	* card-util.c: New.
+	* call-agent.c (agent_scd_change_pin): New.
+	(agent_release_card_info): New.
+	* keygen.c (check_smartcard): Use it here.
+
 2003-07-16  Werner Koch  <wk@gnupg.org>
 
 	* export.c (parse_export_options): New option sexp-format.

@@ -449,6 +449,19 @@ agent_havekey (const char *hexkeygrip)
 }
 
 
+/* Release the card info structure INFO. */
+void
+agent_release_card_info (struct agent_card_info_s *info)
+{
+  if (!info)
+    return;
+
+  xfree (info->serialno); info->serialno = NULL;
+  xfree (info->disp_name); info->disp_name = NULL;
+  xfree (info->pubkey_url); info->pubkey_url = NULL;
+  info->fpr1valid = info->fpr2valid = info->fpr3valid = 0;
+}
+
 static AssuanError
 learn_status_cb (void *opaque, const char *line)
 {
@@ -508,7 +521,6 @@ agent_learn (struct agent_card_info_s *info)
   
   return map_assuan_err (rc);
 }
-
 
 
 /* Send an setattr command to the SCdaemon. */
@@ -672,7 +684,12 @@ agent_scd_pksign (const char *serialno, int hashalgo,
     return map_assuan_err (rc);
 
   init_membuf (&data, 1024);
-  snprintf (line, DIM(line)-1, "SCD PKSIGN %s", serialno);
+#if 0
+  if (!hashalgo) /* Temporary test hack. */
+    snprintf (line, DIM(line)-1, "SCD PKAUTH %s", serialno);
+  else
+#endif
+   snprintf (line, DIM(line)-1, "SCD PKSIGN %s", serialno);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (agent_ctx, line, membuf_data_cb, &data,
                         NULL, NULL, NULL, NULL);
@@ -736,5 +753,36 @@ agent_scd_pkdecrypt (const char *serialno,
     return gpg_error (GPG_ERR_ENOMEM);
 
   return 0;
+}
+
+
+/* Change the PIN of an OpenPGP card or reset the retry counter.
+   CHVNO 1: Change the digital signature PIN
+         2: Change the decryption and authentication PIN
+         3: Change the admin PIN
+       101: Set a new digital signature PIN and reset the retry counter
+       102: Set a decryption and authentication PIN
+            and reset the retry counter
+ */
+int
+agent_scd_change_pin (int chvno)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+  const char *reset = "";
+
+  if (chvno >= 100)
+    reset = "--reset";
+  chvno %= 100;
+
+  rc = start_agent ();
+  if (rc)
+    return rc;
+
+  snprintf (line, DIM(line)-1, "SCD PASSWD %s %d", reset, chvno);
+  line[DIM(line)-1] = 0;
+  rc = assuan_transact (agent_ctx, line, NULL, NULL,
+                        NULL, NULL, NULL, NULL);
+  return map_assuan_err (rc);
 }
 

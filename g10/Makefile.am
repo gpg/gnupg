@@ -96,6 +96,7 @@ gpg_SOURCES  = g10.c		\
 	      keyserver-internal.h \
 	      photoid.c photoid.h \
 	      call-agent.c call-agent.h \
+	      card-util.c \
 	      exec.c exec.h
 
 gpgv_SOURCES = gpgv.c           \

@@ -50,6 +50,7 @@ enum para_name {
   pSUBKEYTYPE,
   pSUBKEYLENGTH,
   pSUBKEYUSAGE,
+  pAUTHKEYTYPE,
   pNAMEREAL,
   pNAMEEMAIL,
   pNAMECOMMENT,
@@ -2134,6 +2135,12 @@ generate_keypair( const char *fname )
       strcpy (r->u.value, "encrypt");
       r->next = para;
       para = r;
+
+      r = xcalloc (1, sizeof *r + 20 );
+      r->key = pAUTHKEYTYPE;
+      sprintf( r->u.value, "%d", algo );
+      r->next = para;
+      para = r;
     }
   else
     {
@@ -2407,6 +2414,18 @@ do_generate_keypair (struct para_data_s *para,
 	rc = write_keybinding (sec_root, pub_root, sk,
 			       get_parameter_uint (para, pSUBKEYUSAGE));
       did_sub = 1;
+    }
+
+  if (card && get_parameter (para, pAUTHKEYTYPE))
+    {
+      rc = gen_card_key (PUBKEY_ALGO_RSA, 3, pub_root, sec_root,
+                         get_parameter_u32 (para, pKEYEXPIRE), para);
+
+      /* FIXME: Change the usage to AUTH. */
+      if (!rc)
+	rc = write_keybinding (pub_root, pub_root, sk, PUBKEY_USAGE_SIG);
+      if (!rc)
+	rc = write_keybinding (sec_root, pub_root, sk, PUBKEY_USAGE_SIG);
     }
 
 
@@ -2832,8 +2851,7 @@ check_smartcard (char **r_serialno)
       tty_printf ("\n"
                   "N - change cardholder name\n"
                   "U - change public key URL\n"
-                  "K - generate signature and encryption key\n"
-                  "A - generate authentication key\n"
+                  "K - generate all keys\n"
                   "Q - quit\n"
                   "\n");
 
@@ -2856,7 +2874,8 @@ check_smartcard (char **r_serialno)
       else if ( *answer == 'K' || *answer == 'k')
         {
           if ( (info.fpr1valid && !fpr_is_zero (info.fpr1))
-               || (info.fpr2valid && !fpr_is_zero (info.fpr2)))
+               || (info.fpr2valid && !fpr_is_zero (info.fpr2))
+               || (info.fpr3valid && !fpr_is_zero (info.fpr3)))
             {
               tty_printf ("\n");
               log_error ("WARNING: key does already exists!\n");
@@ -2874,11 +2893,6 @@ check_smartcard (char **r_serialno)
               break;
             }
         }
-      else if ( *answer == 'A' || *answer == 'a' )
-        {
-          tty_printf (_("Generation of authentication key"
-                        " not yet implemented\n"));
-        }
       else if ( *answer == 'q' || *answer == 'Q')
         {
           rc = -1;
@@ -2887,9 +2901,7 @@ check_smartcard (char **r_serialno)
 
       if (reread)
         {
-          xfree (info.serialno); info.serialno = NULL;
-          xfree (info.disp_name); info.disp_name = NULL;
-          xfree (info.pubkey_url); info.pubkey_url = NULL;
+          agent_release_card_info (&info);
           rc = agent_learn (&info);
           if (rc)
             {
@@ -2902,11 +2914,11 @@ check_smartcard (char **r_serialno)
     }
 
   if (r_serialno && rc > 0)
-    *r_serialno = info.serialno;
-  else
-    xfree (info.serialno); 
-  xfree (info.disp_name); 
-  xfree (info.pubkey_url);
+    {
+      *r_serialno = info.serialno;
+      info.serialno = NULL;
+    }
+  agent_release_card_info (&info);
 
   return rc;
 }
