@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"POT-Creation-Date: 1999-03-08 19:50+0100\n"
+"POT-Creation-Date: 1999-03-08 20:45+0100\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Date: 1998-11-20 23:46:36-0200\n"
 "From: Thiago Jung Bauermann <jungmann@usa.net>\n"
@@ -1385,14 +1385,14 @@ msgstr ""
 msgid "Key generation failed: %s\n"
 msgstr "A geração de chaves falhou: %s\n"
 
-#: g10/keygen.c:995 g10/sig-check.c:209 g10/sign.c:52
+#: g10/keygen.c:995 g10/sig-check.c:212 g10/sign.c:52
 #, fuzzy, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr ""
 "chave pública criada no futuro (viagem no tempo ou problema no relógio)\n"
 
-#: g10/keygen.c:997 g10/sig-check.c:211 g10/sign.c:54
+#: g10/keygen.c:997 g10/sig-check.c:214 g10/sign.c:54
 #, fuzzy, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -2316,28 +2316,28 @@ msgid "WARNING: Weak key detected - please change passphrase again.\n"
 msgstr ""
 "AVISO: Chave fraca detectada - por favor mude a frase secreta novamente\n"
 
-#: g10/sig-check.c:192
+#: g10/sig-check.c:195
 msgid ""
 "this is a PGP generated ElGamal key which is NOT secure for signatures!\n"
 msgstr ""
 "esta é uma chave ElGamal gerada pelo PGP que NÃO é segura para assinaturas!\n"
 
-#: g10/sig-check.c:200
+#: g10/sig-check.c:203
 #, fuzzy, c-format
 msgid "public key is %lu second newer than the signature\n"
 msgstr "lid %lu: id de usuário sem assinatura\n"
 
-#: g10/sig-check.c:201
+#: g10/sig-check.c:204
 #, fuzzy, c-format
 msgid "public key is %lu seconds newer than the signature\n"
 msgstr "lid %lu: id de usuário sem assinatura\n"
 
-#: g10/sig-check.c:217
+#: g10/sig-check.c:220
 #, c-format
 msgid "NOTE: signature key expired %s\n"
 msgstr "NOTA: chave de assinatura expirou %s\n"
 
-#: g10/sig-check.c:274
+#: g10/sig-check.c:277
 msgid "assuming bad signature due to an unknown critical bit\n"
 msgstr ""
 

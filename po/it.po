@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-0.4.3\n"
-"POT-Creation-Date: 1999-03-08 19:50+0100\n"
+"POT-Creation-Date: 1999-03-08 20:45+0100\n"
 "PO-Revision-Date: 1998-11-09 16:19+01:00\n"
 "Last-Translator: Marco d'Itri <md@linux.it>\n"
 "Language-Team: Italian <it@li.org>\n"
@@ -1378,7 +1378,7 @@ msgstr ""
 msgid "Key generation failed: %s\n"
 msgstr "Generazione della chiave fallita: %s\n"
 
-#: g10/keygen.c:995 g10/sig-check.c:209 g10/sign.c:52
+#: g10/keygen.c:995 g10/sig-check.c:212 g10/sign.c:52
 #, fuzzy, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -1386,7 +1386,7 @@ msgstr ""
 "chiave pubblica creata nel futuro (salto nel tempo o problema con\n"
 "l'orologio)\n"
 
-#: g10/keygen.c:997 g10/sig-check.c:211 g10/sign.c:54
+#: g10/keygen.c:997 g10/sig-check.c:214 g10/sign.c:54
 #, fuzzy, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -2318,28 +2318,28 @@ msgstr ""
 "Attenzione: individuata una chiave debole - per favore cambia ancora la\n"
 "passphrase.\n"
 
-#: g10/sig-check.c:192
+#: g10/sig-check.c:195
 msgid ""
 "this is a PGP generated ElGamal key which is NOT secure for signatures!\n"
 msgstr ""
 "questa è una chiave ElGamal generata da PGP che NON è sicura per le firme!\n"
 
-#: g10/sig-check.c:200
+#: g10/sig-check.c:203
 #, fuzzy, c-format
 msgid "public key is %lu second newer than the signature\n"
 msgstr "chiave %08lX: user id senza firma\n"
 
-#: g10/sig-check.c:201
+#: g10/sig-check.c:204
 #, fuzzy, c-format
 msgid "public key is %lu seconds newer than the signature\n"
 msgstr "chiave %08lX: user id senza firma\n"
 
-#: g10/sig-check.c:217
+#: g10/sig-check.c:220
 #, fuzzy, c-format
 msgid "NOTE: signature key expired %s\n"
 msgstr "attenzione: firma della chiave scaduta il %s\n"
 
-#: g10/sig-check.c:274
+#: g10/sig-check.c:277
 msgid "assuming bad signature due to an unknown critical bit\n"
 msgstr ""
 

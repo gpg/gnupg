@@ -9,7 +9,7 @@
 # QingLong <qinglong@Bolizm> (couldn't send an email to let you know)
 msgid ""
 msgstr ""
-"POT-Creation-Date: 1999-03-08 19:50+0100\n"
+"POT-Creation-Date: 1999-03-08 20:45+0100\n"
 "Content-Type: text/plain; charset=\n"
 "Date: 1998-01-26 22:08:36+0100\n"
 "From: Gregory Steuck <steuck@iname.com>\n"
@@ -1407,7 +1407,7 @@ msgstr ""
 msgid "Key generation failed: %s\n"
 msgstr "Генерация ключа не удалась: %s\n"
 
-#: g10/keygen.c:995 g10/sig-check.c:209 g10/sign.c:52
+#: g10/keygen.c:995 g10/sig-check.c:212 g10/sign.c:52
 #, fuzzy, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -1415,7 +1415,7 @@ msgstr ""
 "открытый ключ сгенерирован в будущем (искривление времени или неправильно "
 "установлены часы)\n"
 
-#: g10/keygen.c:997 g10/sig-check.c:211 g10/sign.c:54
+#: g10/keygen.c:997 g10/sig-check.c:214 g10/sign.c:54
 #, fuzzy, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -2367,27 +2367,27 @@ msgstr "Неправильная ключевая фраза, попробуйте снова ...\n"
 msgid "WARNING: Weak key detected - please change passphrase again.\n"
 msgstr "Предупреждение: обнаружен слабый ключ - смените ключевую фразу.\n"
 
-#: g10/sig-check.c:192
+#: g10/sig-check.c:195
 msgid ""
 "this is a PGP generated ElGamal key which is NOT secure for signatures!\n"
 msgstr "этот ElGamal ключ, созданный PGP, не надежен для создания подписей!\n"
 
-#: g10/sig-check.c:200
+#: g10/sig-check.c:203
 #, fuzzy, c-format
 msgid "public key is %lu second newer than the signature\n"
 msgstr "ключ %08lX: нет идентификатора пользователя для подписи\n"
 
-#: g10/sig-check.c:201
+#: g10/sig-check.c:204
 #, fuzzy, c-format
 msgid "public key is %lu seconds newer than the signature\n"
 msgstr "ключ %08lX: нет идентификатора пользователя для подписи\n"
 
-#: g10/sig-check.c:217
+#: g10/sig-check.c:220
 #, fuzzy, c-format
 msgid "NOTE: signature key expired %s\n"
 msgstr "предупреждение: ключ подписи устарел %s\n"
 
-#: g10/sig-check.c:274
+#: g10/sig-check.c:277
 msgid "assuming bad signature due to an unknown critical bit\n"
 msgstr ""
 

@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 0.9.0a\n"
-"POT-Creation-Date: 1999-03-08 19:50+0100\n"
+"POT-Creation-Date: 1999-03-08 20:45+0100\n"
 "PO-Revision-Date: 1999-01-09 00:25+01:00\n"
 "Last-Translator: Gaël Quéri <gqueri@mail.dotcom.fr>\n"
 "Language-Team: French <fr@li.org>\n"
@@ -1341,13 +1341,13 @@ msgstr ""
 msgid "Key generation failed: %s\n"
 msgstr "La génération de clé a échoué : %s\n"
 
-#: g10/keygen.c:995 g10/sig-check.c:209 g10/sign.c:52
+#: g10/keygen.c:995 g10/sig-check.c:212 g10/sign.c:52
 #, fuzzy, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr "clé publique créée %lu %s dans le futur\n"
 
-#: g10/keygen.c:997 g10/sig-check.c:211 g10/sign.c:54
+#: g10/keygen.c:997 g10/sig-check.c:214 g10/sign.c:54
 #, fuzzy, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -2274,29 +2274,29 @@ msgstr "Mot de passe invalide ; réessayez...\n"
 msgid "WARNING: Weak key detected - please change passphrase again.\n"
 msgstr "ATTENTION : Mauvaise clé détectée - changez encore le mot de passe.\n"
 
-#: g10/sig-check.c:192
+#: g10/sig-check.c:195
 msgid ""
 "this is a PGP generated ElGamal key which is NOT secure for signatures!\n"
 msgstr ""
 "Ceci est une clé ElGamal générée par PGP qui n'est PAS sûre pour les\n"
 "signatures!\n"
 
-#: g10/sig-check.c:200
+#: g10/sig-check.c:203
 #, fuzzy, c-format
 msgid "public key is %lu second newer than the signature\n"
 msgstr "lid %lu : utilisateur sans signature\n"
 
-#: g10/sig-check.c:201
+#: g10/sig-check.c:204
 #, fuzzy, c-format
 msgid "public key is %lu seconds newer than the signature\n"
 msgstr "lid %lu : utilisateur sans signature\n"
 
-#: g10/sig-check.c:217
+#: g10/sig-check.c:220
 #, c-format
 msgid "NOTE: signature key expired %s\n"
 msgstr "NOTE : la clé de signature a expiré le %s\n"
 
-#: g10/sig-check.c:274
+#: g10/sig-check.c:277
 msgid "assuming bad signature due to an unknown critical bit\n"
 msgstr ""
 "la signature est supposée être fausse car un bit critique est\n"
