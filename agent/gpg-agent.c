@@ -437,13 +437,19 @@ main (int argc, char **argv )
   /* Libgcrypt requires us to register the threading model first.
      Note that this will also do the pth_init. */
 #ifdef USE_GNU_PTH
+#ifdef HAVE_W32_SYSTEM
+  /* For W32 we need pth.  */
+  pth_init ();
+#else
   err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
   if (err)
     {
       log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
                  gpg_strerror (err));
     }
+#endif
 #endif /*USE_GNU_PTH*/
+
 
   /* Check that the libraries are suitable.  Do it here because
      the option parsing may need services of the library. */

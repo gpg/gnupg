@@ -40,6 +40,9 @@
 #define W32_PTH_HANDLE_INTERNAL  HANDLE
 #include "w32-pth.h"
 
+#define DEBUG_ENTER_LEAVE 1 /* Set to 1 to enable full debugging. */
+
+
 #ifndef FALSE
 #define FALSE 0
 #endif
@@ -51,12 +54,15 @@
 #endif
 
 
+/* States whether trhis module has been initialized.  */
+static int pth_initialized;
 
-static int pth_initialized = 0;
+/* Controls whether debugging is enabled.  */
+static int debug_enter_leave;
 
 /* Variables to support event handling. */
-static int pth_signo = 0;
-static HANDLE pth_signo_ev = NULL;
+static int pth_signo;
+static HANDLE pth_signo_ev;
 
 /* Mutex to make sure only one thread is running. */
 static CRITICAL_SECTION pth_shd;
@@ -124,6 +130,8 @@ pth_init (void)
     return TRUE;
 
   fprintf (stderr, "%s: pth_init: called.\n", log_get_prefix (NULL));
+  debug_enter_leave = !!getenv ("DEBUG_PTH");
+
   if (WSAStartup (0x202, &wsadat))
     return FALSE;
   pth_signo = 0;
@@ -177,8 +185,9 @@ enter_pth (const char *function)
 {
   /* Fixme: I am not sure whether the same thread my enter a critical
      section twice.  */
-/*   fprintf (stderr, "%s: enter_pth (%s)\n",
-              log_get_prefix (NULL), function? function:""); */
+  if (debug_enter_leave)
+    fprintf (stderr, "%s: enter_pth (%s)\n",
+             log_get_prefix (NULL), function? function:"");
   LeaveCriticalSection (&pth_shd);
 }
 
@@ -187,8 +196,9 @@ static void
 leave_pth (const char *function)
 {
   EnterCriticalSection (&pth_shd);
-/*   fprintf (stderr, "%s: leave_pth (%s)\n",
-                      log_get_prefix (NULL), function? function:""); */
+  if (debug_enter_leave)
+    fprintf (stderr, "%s: leave_pth (%s)\n",
+             log_get_prefix (NULL), function? function:"");
 }
 
 
@@ -296,6 +306,8 @@ pth_write (int fd, const void * buffer, size_t size)
           fprintf (stderr, "%s: pth_write(%d) failed in write: %s\n",
                    log_get_prefix (NULL), fd,
                    w32_strerror (strerr, sizeof strerr));
+          fprintf (stderr, "--> fd = %d, handle = %p, size = %lu\n",
+                   fd, (HANDLE)fd, size);
           n = -1;
         }
       else

@@ -1149,8 +1149,8 @@ list_internal_keys (ctrl_t ctrl, STRLIST names, FILE *fp,
           char *p = gpgsm_get_keygrip_hexstring (cert);
           if (p)
             {
-              rc = gpgsm_agent_havekey (ctrl, p);
-              if (!rc)
+              rc = gpgsm_agent_havekey (ctrl, p); 
+             if (!rc)
                 have_secret = 1;
               else if ( gpg_err_code (rc) != GPG_ERR_NO_SECKEY)
                 goto leave;
