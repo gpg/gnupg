@@ -1030,27 +1030,25 @@ keyserver types, some common options are:
 <varlistentry>
 <term>include-revoked</term>
 <listitem><para>
-When searching for a key, include keys that are marked on the
-keyserver as revoked.  Note that this option is always set when using
-the NAI HKP keyserver, as this keyserver does not differentiate
-between revoked and unrevoked keys.  When using the LDAP keyserver,
-this applies to both searching (--search-keys) and receiving
-(--recv-keys).
+When searching for a key with --search-keys, include keys that are
+marked on the keyserver as revoked.  Note that this option is always
+set when using the NAI HKP keyserver, as this keyserver does not
+differentiate between revoked and unrevoked keys.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>include-disabled</term>
 <listitem><para>
-When receiving or searching for a key, include keys that are marked on
-the keyserver as disabled.  Note that this option is not used with HKP
-keyservers, as they do not support disabling keys.
+When searching for a key with --search-keys, include keys that are
+marked on the keyserver as disabled.  Note that this option is not
+used with HKP keyservers.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>include-subkeys</term>
 <listitem><para>
-When receiving a key, include subkeys in the search.  Note that this
-option is not used with HKP keyservers, as they do not support
+When receiving a key, include subkeys as potential targets.  Note that
+this option is not used with HKP keyservers, as they do not support
 retrieving keys by subkey id.
 </para></listitem></varlistentry>
 
