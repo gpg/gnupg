@@ -11,7 +11,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.1.92\n"
-"POT-Creation-Date: 2002-09-20 19:09+0200\n"
+"POT-Creation-Date: 2002-10-17 16:39+0200\n"
 "PO-Revision-Date: 2002-09-20 21:12+0200\n"
 "Last-Translator: Jordi Mallach <jordi@sindominio.net>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -786,302 +786,302 @@ msgstr ""
 msgid "usage: gpg [options] "
 msgstr "ús: gpg [opcions] "
 
-#: g10/g10.c:802
+#: g10/g10.c:813
 msgid "conflicting commands\n"
 msgstr "ordres en conflicte\n"
 
-#: g10/g10.c:820
+#: g10/g10.c:831
 #, c-format
 msgid "no = sign found in group definition \"%s\"\n"
 msgstr "no s'ha trobat cap signe = en la definició de grup «%s»\n"
 
-#: g10/g10.c:983
+#: g10/g10.c:994
 #, c-format
 msgid "WARNING: unsafe ownership on %s \"%s\"\n"
 msgstr "AVÍS: propietari insegur en %s «%s»\n"
 
-#: g10/g10.c:986
+#: g10/g10.c:997
 #, c-format
 msgid "WARNING: unsafe permissions on %s \"%s\"\n"
 msgstr "AVÍS: permissos insegurs en %s «%s»\n"
 
-#: g10/g10.c:989
+#: g10/g10.c:1000
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on %s \"%s\"\n"
 msgstr "AVÍS: propietari del directori envoltant insegur en %s «%s»\n"
 
-#: g10/g10.c:993
+#: g10/g10.c:1004
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on %s \"%s\"\n"
 msgstr "AVÍS: permissos del directori envoltant insegurs en %s «%s»\n"
 
-#: g10/g10.c:1168
+#: g10/g10.c:1179
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "NOTA: fitxer d'opcions predeterminades antic «%s» ignorat\n"
 
-#: g10/g10.c:1204
+#: g10/g10.c:1215
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTA: no existeix el fitxer d'opcions predeterminades «%s»\n"
 
-#: g10/g10.c:1208
+#: g10/g10.c:1219
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "fitxer d'opcions «%s»: %s\n"
 
-#: g10/g10.c:1215
+#: g10/g10.c:1226
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "s'estan llegint opcions de «%s»\n"
 
-#: g10/g10.c:1390
+#: g10/g10.c:1401
 #, c-format
 msgid "cipher extension \"%s\" not loaded due to unsafe permissions\n"
 msgstr ""
 "la extensió de xifrat «%s» no s'ha carregat per tindre permissos insegurs\n"
 
-#: g10/g10.c:1523
+#: g10/g10.c:1534
 #, c-format
 msgid "%s is not a valid character set\n"
 msgstr "%s no és un joc de caràcters vàlid\n"
 
-#: g10/g10.c:1541
+#: g10/g10.c:1552
 msgid "could not parse keyserver URI\n"
 msgstr "no s'ha pogut analitzar sintàcticament la URI del servidor de claus\n"
 
-#: g10/g10.c:1550
+#: g10/g10.c:1561
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: opcions d'importanció no vàlides\n"
 
-#: g10/g10.c:1553
+#: g10/g10.c:1564
 msgid "invalid import options\n"
 msgstr "opcions d'importació no vàlides\n"
 
-#: g10/g10.c:1560
+#: g10/g10.c:1571
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d opcions d'exportació no vàlides\n"
 
-#: g10/g10.c:1563
+#: g10/g10.c:1574
 msgid "invalid export options\n"
 msgstr "opcions d'exportació no vàlides\n"
 
-#: g10/g10.c:1569
+#: g10/g10.c:1580
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "no s'ha pogut fixar el exec-path a %s\n"
 
-#: g10/g10.c:1688
+#: g10/g10.c:1699
 msgid "WARNING: program may create a core file!\n"
 msgstr "AVÍS: el programa podria crear un fitxer core!\n"
 
 # FIXME: preferència? jm
-#: g10/g10.c:1692
+#: g10/g10.c:1703
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "AVÍS: %s te preferència sobre %s\n"
 
-#: g10/g10.c:1699 g10/g10.c:1710
+#: g10/g10.c:1710 g10/g10.c:1721
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTA: %s no és per a ús normal!\n"
 
-#: g10/g10.c:1701 g10/g10.c:1721
+#: g10/g10.c:1712 g10/g10.c:1731
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s no és permés amb %s!\n"
 
-#: g10/g10.c:1704
+#: g10/g10.c:1715
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s no té sentit amb %s!\n"
 
-#: g10/g10.c:1731
+#: g10/g10.c:1741
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr "només podeu fer signatures separades o clares en el mode --pgp2\n"
 
-#: g10/g10.c:1737
+#: g10/g10.c:1747
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr "no podeu signar i xifrar al mateix temps en el mode --pgp2\n"
 
-#: g10/g10.c:1743
+#: g10/g10.c:1753
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr ""
 "heu de utilitzar fitxers (i no un conducte) mentre treballeu amb --pgp2 "
 "habilitat.\n"
 
-#: g10/g10.c:1756
+#: g10/g10.c:1766
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "xifrar un missatge en mode --pgp2 requereix el xifrat IDEA\n"
 
-#: g10/encode.c:408 g10/encode.c:458 g10/encode.c:707 g10/g10.c:1770
+#: g10/encode.c:408 g10/encode.c:458 g10/encode.c:707 g10/g10.c:1791
 #: g10/sign.c:646 g10/sign.c:878
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "aquest missatge pot no ser usable per %s\n"
 
-#: g10/g10.c:1818 g10/g10.c:1836
+#: g10/g10.c:1839 g10/g10.c:1857
 msgid "selected cipher algorithm is invalid\n"
 msgstr "l'algoritme de xifratge triat no és vàlid\n"
 
-#: g10/g10.c:1824 g10/g10.c:1842
+#: g10/g10.c:1845 g10/g10.c:1863
 msgid "selected digest algorithm is invalid\n"
 msgstr "el algorime de digest seleccionat no és vàlid\n"
 
-#: g10/g10.c:1830
+#: g10/g10.c:1851
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "l'algorime de digest de certificació seleccionat no és vàlid\n"
 
-#: g10/g10.c:1845
+#: g10/g10.c:1866
 #, c-format
 msgid "compress algorithm must be in range %d..%d\n"
 msgstr "l'algoritme de compressió ha d'estar en l'interval %d..%d\n"
 
-#: g10/g10.c:1847
+#: g10/g10.c:1868
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed ha de ser major que 0\n"
 
-#: g10/g10.c:1849
+#: g10/g10.c:1870
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed ha de ser major que 1\n"
 
-#: g10/g10.c:1851
+#: g10/g10.c:1872
 msgid "max-cert-depth must be in range 1 to 255\n"
 msgstr "max-cert-depth ha d'estar entre el rang 1 a 255\n"
 
-#: g10/g10.c:1854
+#: g10/g10.c:1875
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "NOTA: el mode S2K simple (0) no és gens recomanable\n"
 
-#: g10/g10.c:1858
+#: g10/g10.c:1879
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "mode S2K invàlid; ha de ser 0, 1 o 3\n"
 
-#: g10/g10.c:1862
+#: g10/g10.c:1883
 msgid "invalid default-check-level; must be 0, 1, 2, or 3\n"
 msgstr "default-check-level invàlid; ha de ser 0, 1, 2 o 3\n"
 
-#: g10/g10.c:1868
+#: g10/g10.c:1889
 msgid "invalid default preferences\n"
 msgstr "preferències per defecte no vàlides\n"
 
-#: g10/g10.c:1876
+#: g10/g10.c:1897
 msgid "invalid personal cipher preferences\n"
 msgstr "preferències personals de xifrat no vàlides\n"
 
-#: g10/g10.c:1880
+#: g10/g10.c:1901
 msgid "invalid personal digest preferences\n"
 msgstr "preferències personals de digest no vàlides\n"
 
-#: g10/g10.c:1884
+#: g10/g10.c:1905
 msgid "invalid personal compress preferences\n"
 msgstr "preferències personals de compressió no vàlides\n"
 
-#: g10/g10.c:1977
+#: g10/g10.c:1998
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "no s'ha pogut inicialitzar la base de dades de confiança: %s\n"
 
-#: g10/g10.c:1987
+#: g10/g10.c:2008
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "AVÍS: s'han donat destinataris (-r) sense usar xifratge de clau pública\n"
 
-#: g10/g10.c:1997
+#: g10/g10.c:2018
 msgid "--store [filename]"
 msgstr "--store [nom_del_fitxer]"
 
-#: g10/g10.c:2004
+#: g10/g10.c:2025
 msgid "--symmetric [filename]"
 msgstr "--symmetric [nom_del_fitxer]"
 
-#: g10/g10.c:2012
+#: g10/g10.c:2033
 msgid "--encrypt [filename]"
 msgstr "--encrypt [nom_del_fitxer]"
 
-#: g10/g10.c:2029
+#: g10/g10.c:2050
 msgid "--sign [filename]"
 msgstr "--sign [nom_del_fitxer]"
 
-#: g10/g10.c:2042
+#: g10/g10.c:2063
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [nom_del_fitxer]"
 
-#: g10/g10.c:2056
+#: g10/g10.c:2077
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [nom_del_fitxer]"
 
-#: g10/g10.c:2065
+#: g10/g10.c:2086
 msgid "--clearsign [filename]"
 msgstr "--clearsign [nom_del_fitxer]"
 
-#: g10/g10.c:2083
+#: g10/g10.c:2104
 msgid "--decrypt [filename]"
 msgstr "--decrypt [nom_del_fitxer]"
 
-#: g10/g10.c:2094
+#: g10/g10.c:2115
 msgid "--sign-key user-id"
 msgstr "--sign-key user-id"
 
-#: g10/g10.c:2102
+#: g10/g10.c:2123
 msgid "--lsign-key user-id"
 msgstr "--lsign-key user-id"
 
-#: g10/g10.c:2110
+#: g10/g10.c:2131
 msgid "--nrsign-key user-id"
 msgstr "--nrsign-key user-id"
 
-#: g10/g10.c:2118
+#: g10/g10.c:2139
 msgid "--nrlsign-key user-id"
 msgstr "--nrlsign-key user-id"
 
-#: g10/g10.c:2126
+#: g10/g10.c:2147
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key user-id [ordres]"
 
-#: g10/encode.c:416 g10/g10.c:2182 g10/sign.c:789
+#: g10/encode.c:416 g10/g10.c:2203 g10/sign.c:789
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "no s'ha pogut obrir %s: %s\n"
 
-#: g10/g10.c:2197
+#: g10/g10.c:2218
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [user-id] [anell]"
 
-#: g10/g10.c:2289
+#: g10/g10.c:2310
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "no s'ha pogut llevar l'armadura: %s\n"
 
-#: g10/g10.c:2297
+#: g10/g10.c:2318
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "no s'ha pogut crear l'armadura: %s\n"
 
-#: g10/g10.c:2384
+#: g10/g10.c:2405
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr ""
 "algoritme de hash invàlid «%s»\n"
 "\n"
 
-#: g10/g10.c:2470
+#: g10/g10.c:2491
 msgid "[filename]"
 msgstr "[nom_del_fitxer]"
 
-#: g10/g10.c:2474
+#: g10/g10.c:2495
 msgid "Go ahead and type your message ...\n"
 msgstr "Endavant, escriviu el missatge...\n"
 
-#: g10/decrypt.c:60 g10/decrypt.c:106 g10/g10.c:2477 g10/verify.c:94
+#: g10/decrypt.c:60 g10/decrypt.c:106 g10/g10.c:2498 g10/verify.c:94
 #: g10/verify.c:139
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "no s'ha pogut obrir «%s»\n"
 
-#: g10/g10.c:2691
+#: g10/g10.c:2712
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
@@ -1089,15 +1089,15 @@ msgstr ""
 "un nom de notació només pot tenir caràcters imprimibles o espais i acabar "
 "amb el signe «=»\n"
 
-#: g10/g10.c:2700
+#: g10/g10.c:2721
 msgid "a notation value must not use any control characters\n"
 msgstr "un valor de notació no pot utilitzar cap caràcter de control\n"
 
-#: g10/g10.c:2737
+#: g10/g10.c:2758
 msgid "the given certification policy URL is invalid\n"
 msgstr "la URL de política de certificació donada no és vàlida\n"
 
-#: g10/g10.c:2739
+#: g10/g10.c:2760
 msgid "the given signature policy URL is invalid\n"
 msgstr "la URL de política de signatura donada no és vàlida\n"
 
@@ -1176,40 +1176,40 @@ msgstr ""
 "caràcter «quoted printable» en l'armadura - probablement s'ha utilitzat un "
 "MTA amb errors\n"
 
-#: g10/pkclist.c:61
+#: g10/pkclist.c:62
 msgid "No reason specified"
 msgstr "No s'ha especificat cap raó"
 
-#: g10/pkclist.c:63
+#: g10/pkclist.c:64
 msgid "Key is superseded"
 msgstr "La clau ha estat substituïda"
 
-#: g10/pkclist.c:65
+#: g10/pkclist.c:66
 msgid "Key has been compromised"
 msgstr "La clau ha estat compromesa"
 
-#: g10/pkclist.c:67
+#: g10/pkclist.c:68
 msgid "Key is no longer used"
 msgstr "La clau ja no s'usa"
 
-#: g10/pkclist.c:69
+#: g10/pkclist.c:70
 msgid "User ID is no longer valid"
 msgstr "La ID d'usuari ja no és vàlid"
 
-#: g10/pkclist.c:73
+#: g10/pkclist.c:74
 msgid "reason for revocation: "
 msgstr "raó de la revocació: "
 
-#: g10/pkclist.c:90
+#: g10/pkclist.c:91
 msgid "revocation comment: "
 msgstr "comentari de la revocació: "
 
 #. a string with valid answers
-#: g10/pkclist.c:252
+#: g10/pkclist.c:253
 msgid "iImMqQsS"
 msgstr "iImMqQsS"
 
-#: g10/pkclist.c:258
+#: g10/pkclist.c:261
 #, c-format
 msgid ""
 "No trust value assigned to:\n"
@@ -1218,7 +1218,11 @@ msgstr ""
 "No hi ha cap valor de confiança assignat a:\n"
 "%4u%c/%08lX %s \""
 
-#: g10/pkclist.c:270
+#: g10/mainproc.c:1428 g10/pkclist.c:289
+msgid "                aka \""
+msgstr "              alias \""
+
+#: g10/pkclist.c:300
 msgid ""
 "Please decide how far you trust this user to correctly\n"
 "verify other users' keys (by looking at passports,\n"
@@ -1229,92 +1233,92 @@ msgstr ""
 "verificar les claus d'altres usuaris (mirant passaports,\n"
 "comprovant empremtes de diferents fonts...)?\n"
 
-#: g10/pkclist.c:273
+#: g10/pkclist.c:303
 #, c-format
 msgid " %d = Don't know\n"
 msgstr " %d = No ho sé\n"
 
-#: g10/pkclist.c:274
+#: g10/pkclist.c:304
 #, c-format
 msgid " %d = I do NOT trust\n"
 msgstr " %d: NO confie\n"
 
-#: g10/pkclist.c:275
+#: g10/pkclist.c:305
 #, c-format
 msgid " %d = I trust marginally\n"
 msgstr " %d = Hi confie marginalment\n"
 
-#: g10/pkclist.c:276
+#: g10/pkclist.c:306
 #, c-format
 msgid " %d = I trust fully\n"
 msgstr " %d = Hi confie plenament\n"
 
-#: g10/pkclist.c:278
+#: g10/pkclist.c:308
 #, c-format
 msgid " %d = I trust ultimately\n"
 msgstr " %d = Hi confie absolutament\n"
 
 #. not yet implemented
-#: g10/pkclist.c:281
+#: g10/pkclist.c:311
 msgid " i = please show me more information\n"
 msgstr " i = mostra més informació\n"
 
-#: g10/pkclist.c:284
+#: g10/pkclist.c:314
 msgid " m = back to the main menu\n"
 msgstr " m = torna al menú principal\n"
 
-#: g10/pkclist.c:287
+#: g10/pkclist.c:317
 msgid " s = skip this key\n"
 msgstr " s = omet aquesta clau\n"
 
-#: g10/pkclist.c:288
+#: g10/pkclist.c:318
 msgid " q = quit\n"
 msgstr " q = ix\n"
 
-#: g10/pkclist.c:295
+#: g10/pkclist.c:325
 msgid "Your decision? "
 msgstr "La vostra decisió? "
 
-#: g10/pkclist.c:316
+#: g10/pkclist.c:346
 msgid "Do you really want to set this key to ultimate trust? "
 msgstr "Realment voleu assignar confiança absoluta a aquesta clau? "
 
-#: g10/pkclist.c:330
+#: g10/pkclist.c:360
 msgid "Certificates leading to an ultimately trusted key:\n"
 msgstr "Certificats que duen a una clau de confiança absoluta:\n"
 
-#: g10/pkclist.c:405
+#: g10/pkclist.c:435
 #, c-format
 msgid "key %08lX: key has been revoked!\n"
 msgstr "clau %08lX: aquesta clau ha estat revocada!\n"
 
-#: g10/pkclist.c:412 g10/pkclist.c:424 g10/pkclist.c:518
+#: g10/pkclist.c:442 g10/pkclist.c:454 g10/pkclist.c:548
 msgid "Use this key anyway? "
 msgstr "Voleu usar de tota manera aquesta clau?"
 
-#: g10/pkclist.c:417
+#: g10/pkclist.c:447
 #, c-format
 msgid "key %08lX: subkey has been revoked!\n"
 msgstr "clau %08lX: aquesta subclau ha estat revocada!\n"
 
-#: g10/pkclist.c:438
+#: g10/pkclist.c:468
 #, c-format
 msgid "%08lX: key has expired\n"
 msgstr "%08lX: la clau ha caducat\n"
 
-#: g10/pkclist.c:448
+#: g10/pkclist.c:478
 #, c-format
 msgid ""
 "%08lX: There is no indication that this key really belongs to the owner\n"
 msgstr ""
 "%08lX: No hi ha res que indique que la signatura pertany al seu propietari.\n"
 
-#: g10/pkclist.c:454
+#: g10/pkclist.c:484
 #, c-format
 msgid "%08lX: We do NOT trust this key\n"
 msgstr "%08lX: La clau no és de confiança\n"
 
-#: g10/pkclist.c:460
+#: g10/pkclist.c:490
 #, c-format
 msgid ""
 "%08lX: It is not sure that this key really belongs to the owner\n"
@@ -1323,15 +1327,15 @@ msgstr ""
 "%08lX: No hi ha garanties que aquesta clau pertanga realment al seu\n"
 "propietari però s'accepta de tota manera\n"
 
-#: g10/pkclist.c:466
+#: g10/pkclist.c:496
 msgid "This key probably belongs to the owner\n"
 msgstr "Aquesta clau pertany probablement al seu propietari\n"
 
-#: g10/pkclist.c:471
+#: g10/pkclist.c:501
 msgid "This key belongs to us\n"
 msgstr "Aquesta clau és nostra\n"
 
-#: g10/pkclist.c:513
+#: g10/pkclist.c:543
 msgid ""
 "It is NOT certain that the key belongs to the person named\n"
 "in the user ID.  If you *really* know what you are doing,\n"
@@ -1343,72 +1347,72 @@ msgstr ""
 "«sí» a la següent pregunta\n"
 "\n"
 
-#: g10/pkclist.c:527 g10/pkclist.c:549
+#: g10/pkclist.c:557 g10/pkclist.c:579
 msgid "WARNING: Using untrusted key!\n"
 msgstr "AVÍS: S'està usant una clau no fiable!\n"
 
-#: g10/pkclist.c:568
+#: g10/pkclist.c:598
 msgid "WARNING: This key has been revoked by its owner!\n"
 msgstr "AVÍS: Aquesta clau ha estat revocada pel propietari!\n"
 
-#: g10/pkclist.c:569
+#: g10/pkclist.c:599
 msgid "         This could mean that the signature is forgery.\n"
 msgstr "      Açò podria significar que la signatura és falsificada.\n"
 
-#: g10/pkclist.c:575
+#: g10/pkclist.c:605
 msgid "WARNING: This subkey has been revoked by its owner!\n"
 msgstr "AVÍS: Aquesta subclau ha estat revocada pel propietari!\n"
 
-#: g10/pkclist.c:580
+#: g10/pkclist.c:610
 msgid "Note: This key has been disabled.\n"
 msgstr "Nota: Aquesta clau ha estat desactivada.\n"
 
-#: g10/pkclist.c:585
+#: g10/pkclist.c:615
 msgid "Note: This key has expired!\n"
 msgstr "Nota: La clau ha caducat!\n"
 
-#: g10/pkclist.c:596
+#: g10/pkclist.c:626
 msgid "WARNING: This key is not certified with a trusted signature!\n"
 msgstr "AVÍS: Aquesta clau no ve certificada per una firma de confiança!\n"
 
-#: g10/pkclist.c:598
+#: g10/pkclist.c:628
 msgid ""
 "         There is no indication that the signature belongs to the owner.\n"
 msgstr ""
 "    No hi ha res que indique que la signatura pertany al seu propietari.\n"
 
-#: g10/pkclist.c:606
+#: g10/pkclist.c:636
 msgid "WARNING: We do NOT trust this key!\n"
 msgstr "AVÍS: La clau no és de confiança!\n"
 
-#: g10/pkclist.c:607
+#: g10/pkclist.c:637
 msgid "         The signature is probably a FORGERY.\n"
 msgstr "          Probablement la signatura és falsa.\n"
 
-#: g10/pkclist.c:615
+#: g10/pkclist.c:645
 msgid ""
 "WARNING: This key is not certified with sufficiently trusted signatures!\n"
 msgstr "AVÍS: Aquesta clau no ve certificada per signatures prou fiables!\n"
 
-#: g10/pkclist.c:617
+#: g10/pkclist.c:647
 msgid "         It is not certain that the signature belongs to the owner.\n"
 msgstr "No és segur que la signatura pertanga al seu propietari.\n"
 
-#: g10/pkclist.c:770 g10/pkclist.c:794 g10/pkclist.c:946 g10/pkclist.c:1006
+#: g10/pkclist.c:800 g10/pkclist.c:824 g10/pkclist.c:976 g10/pkclist.c:1036
 #, c-format
 msgid "%s: skipped: %s\n"
 msgstr "%s: ignorat: %s\n"
 
-#: g10/pkclist.c:780 g10/pkclist.c:978
+#: g10/pkclist.c:810 g10/pkclist.c:1008
 #, c-format
 msgid "%s: skipped: public key already present\n"
 msgstr "%s: ignorat: clau pública ja present\n"
 
-#: g10/pkclist.c:811
+#: g10/pkclist.c:841
 msgid "You did not specify a user ID. (you may use \"-r\")\n"
 msgstr "No heu especificat una ID d'usuari. (podeu usar «-r»)\n"
 
-#: g10/pkclist.c:824
+#: g10/pkclist.c:854
 msgid ""
 "\n"
 "Enter the user ID.  End with an empty line: "
@@ -1416,33 +1420,33 @@ msgstr ""
 "\n"
 "Introduïu l'ID d'usuari. Finalitzeu amb una línia en blanc: "
 
-#: g10/pkclist.c:840
+#: g10/pkclist.c:870
 msgid "No such user ID.\n"
 msgstr "Usuari inexistent.\n"
 
-#: g10/pkclist.c:845 g10/pkclist.c:921
+#: g10/pkclist.c:875 g10/pkclist.c:951
 msgid "skipped: public key already set as default recipient\n"
 msgstr "ignorat: la clau pública ja s'ha especificat com a destinatari\n"
 
-#: g10/pkclist.c:863
+#: g10/pkclist.c:893
 msgid "Public key is disabled.\n"
 msgstr "La clau pública està desactivada.\n"
 
-#: g10/pkclist.c:870
+#: g10/pkclist.c:900
 msgid "skipped: public key already set\n"
 msgstr "ignorat: clau pública ja establida\n"
 
-#: g10/pkclist.c:913
+#: g10/pkclist.c:943
 #, c-format
 msgid "unknown default recipient `%s'\n"
 msgstr "destinatari predeterminat desconegut «%s»\n"
 
-#: g10/pkclist.c:958
+#: g10/pkclist.c:988
 #, c-format
 msgid "%s: skipped: public key is disabled\n"
 msgstr "%s: ignorat: la clau pública està desactivada\n"
 
-#: g10/pkclist.c:1013
+#: g10/pkclist.c:1043
 msgid "no valid addressees\n"
 msgstr "no hi ha adreces vàlides\n"
 
@@ -1810,49 +1814,49 @@ msgstr "La parella de claus DSA ha de tenir 1024 bits.\n"
 msgid "Key generation canceled.\n"
 msgstr "Generació de claus cancel·lada.\n"
 
-#: g10/keygen.c:2128 g10/keygen.c:2216
+#: g10/keygen.c:2146 g10/keygen.c:2234
 #, c-format
 msgid "writing public key to `%s'\n"
 msgstr "s'està escrivint la clau pública a «%s»\n"
 
-#: g10/keygen.c:2129 g10/keygen.c:2218
+#: g10/keygen.c:2147 g10/keygen.c:2236
 #, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "s'està escrivint la clau secreta a «%s»\n"
 
-#: g10/keygen.c:2205
+#: g10/keygen.c:2223
 #, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr ""
 "s'ha trobat un anell públic de només lectura: %s\n"
 "\n"
 
-#: g10/keygen.c:2211
+#: g10/keygen.c:2229
 #, c-format
 msgid "no writable secret keyring found: %s\n"
 msgstr ""
 "s'ha trobat un anell secret de només lectura: %s\n"
 "\n"
 
-#: g10/keygen.c:2225
+#: g10/keygen.c:2243
 #, c-format
 msgid "error writing public keyring `%s': %s\n"
 msgstr "error mentre s'escrivia l'anell públic «%s»: %s\n"
 
-#: g10/keygen.c:2232
+#: g10/keygen.c:2250
 #, c-format
 msgid "error writing secret keyring `%s': %s\n"
 msgstr "error mentre s'escrivia l'anell secret «%s»: %s\n"
 
-#: g10/keygen.c:2252
+#: g10/keygen.c:2270
 msgid "public and secret key created and signed.\n"
 msgstr "claus pública i secreta creades i signades.\n"
 
-#: g10/keygen.c:2253
+#: g10/keygen.c:2271
 msgid "key marked as ultimately trusted.\n"
 msgstr "clau marcada com confiada absolutament.\n"
 
-#: g10/keygen.c:2264
+#: g10/keygen.c:2282
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a secondary key for this purpose.\n"
@@ -1860,12 +1864,12 @@ msgstr ""
 "Noteu que aquesta clau no serveix per a xifrar. Potser vulgueu usar l'ordre\n"
 "\"--edit-key\" per a generar una clau secundària per a tal propòsit.\n"
 
-#: g10/keygen.c:2276 g10/keygen.c:2384
+#: g10/keygen.c:2294 g10/keygen.c:2412
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "La generació de claus ha fallat: %s\n"
 
-#: g10/keygen.c:2320 g10/sign.c:257
+#: g10/keygen.c:2340 g10/sign.c:257
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -1873,7 +1877,7 @@ msgstr ""
 "la clau s'ha creat %lu segons en el futur (salt en el temps o problemes\n"
 "amb el rellotge)\n"
 
-#: g10/keygen.c:2322 g10/sign.c:259
+#: g10/keygen.c:2342 g10/sign.c:259
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -1881,11 +1885,11 @@ msgstr ""
 "la clau s'ha creat %lu segons en el futur (salt en el temps o problemes\n"
 "amb el rellotge)\n"
 
-#: g10/keygen.c:2331
+#: g10/keygen.c:2351
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "NOTA: crear subclaus per a claus v3 no és conformant amb OpenPGP\n"
 
-#: g10/keygen.c:2360
+#: g10/keygen.c:2380
 msgid "Really create? "
 msgstr "Crear realment? "
 
@@ -1987,28 +1991,28 @@ msgstr "clau %08lX: clau d'estil PGP 2.x - ignorada\n"
 msgid "WARNING: nothing exported\n"
 msgstr "AVÍS: no s'hi ha exportat res\n"
 
-#: g10/getkey.c:150
+#: g10/getkey.c:151
 msgid "too many entries in pk cache - disabled\n"
 msgstr "massa entrades en la memòria cau de claus públiques - desactivada\n"
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
-#: g10/getkey.c:186 g10/getkey.c:2394
+#: g10/getkey.c:187 g10/getkey.c:2451
 msgid "[User id not found]"
 msgstr "[No s'ha trobat l'usuari]"
 
-#: g10/getkey.c:1439
+#: g10/getkey.c:1496
 #, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "La clau invàlida %08lX s'ha fet vàlida amb --allow-non-selfsigned-uid\n"
 
-#: g10/getkey.c:2110
+#: g10/getkey.c:2167
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "s'usarà la clau secundària %08lX en lloc de la primària %08lX\n"
 
-#: g10/getkey.c:2157
+#: g10/getkey.c:2214
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "clau %08lX: clau secreta sense clau pública - ignorada\n"
@@ -2093,7 +2097,7 @@ msgstr "claus privades no canviades: %lu\n"
 msgid "          not imported: %lu\n"
 msgstr "            importades: %lu\n"
 
-#: g10/import.c:581 g10/import.c:830
+#: g10/import.c:581 g10/import.c:838
 #, c-format
 msgid "key %08lX: no user ID\n"
 msgstr "clau %08lX: sense ID\n"
@@ -2117,7 +2121,7 @@ msgstr "clau %08lX: l'ID no és vàlid\n"
 msgid "this may be caused by a missing self-signature\n"
 msgstr "açò pot ser causat per l'absència d'autofirma\n"
 
-#: g10/import.c:631 g10/import.c:903
+#: g10/import.c:631 g10/import.c:918
 #, c-format
 msgid "key %08lX: public key not found: %s\n"
 msgstr "clau %08lX: no s'ha trobat la clau pública: %s\n"
@@ -2137,132 +2141,137 @@ msgstr "no s'ha trobat cap anell escrivible: %s\n"
 msgid "writing to `%s'\n"
 msgstr "s'està escrivint en «%s»\n"
 
-#: g10/import.c:654 g10/import.c:731 g10/import.c:850 g10/import.c:963
+#: g10/import.c:654 g10/import.c:739 g10/import.c:865 g10/import.c:978
 #, c-format
 msgid "error writing keyring `%s': %s\n"
 msgstr "error mentre s'escrivia l'anell «%s»: %s\n"
 
-#: g10/import.c:663
+#: g10/import.c:671
 #, c-format
 msgid "key %08lX: public key \"%s\" imported\n"
 msgstr "clau %08lX: clau pública «%s» importada\n"
 
-#: g10/import.c:685
+#: g10/import.c:693
 #, c-format
 msgid "key %08lX: doesn't match our copy\n"
 msgstr "clau %08lX: no correspon a la nostra còpia\n"
 
-#: g10/import.c:702 g10/import.c:920
+#: g10/import.c:710 g10/import.c:935
 #, c-format
 msgid "key %08lX: can't locate original keyblock: %s\n"
 msgstr "clau %08lX: no s'ha trobat el bloc de claus original: %s\n"
 
-#: g10/import.c:709 g10/import.c:926
+#: g10/import.c:717 g10/import.c:941
 #, c-format
 msgid "key %08lX: can't read original keyblock: %s\n"
 msgstr "clau %08lX: no s'ha pogut llegir el bloc de claus original: %s\n"
 
-#: g10/import.c:740
+#: g10/import.c:748
 #, c-format
 msgid "key %08lX: \"%s\" 1 new user ID\n"
 msgstr "clau %08lX: «%s» 1 ID d'usuari nou\n"
 
-#: g10/import.c:743
+#: g10/import.c:751
 #, c-format
 msgid "key %08lX: \"%s\" %d new user IDs\n"
 msgstr "clau %08lX: «%s» %d ID d'usuari nous\n"
 
-#: g10/import.c:746
+#: g10/import.c:754
 #, c-format
 msgid "key %08lX: \"%s\" 1 new signature\n"
 msgstr "clau %08lX: «%s» 1 signatura nova\n"
 
-#: g10/import.c:749
+#: g10/import.c:757
 #, c-format
 msgid "key %08lX: \"%s\" %d new signatures\n"
 msgstr "clau %08lX: «%s» %d signatures noves\n"
 
-#: g10/import.c:752
+#: g10/import.c:760
 #, c-format
 msgid "key %08lX: \"%s\" 1 new subkey\n"
 msgstr "clau %08lX: «%s» 1 subclau nova\n"
 
-#: g10/import.c:755
+#: g10/import.c:763
 #, c-format
 msgid "key %08lX: \"%s\" %d new subkeys\n"
 msgstr "clau %08lX: «%s» %d subclaus noves\n"
 
-#: g10/import.c:774
+#: g10/import.c:782
 #, c-format
 msgid "key %08lX: \"%s\" not changed\n"
 msgstr "clau %08lX: «%s» no modificada\n"
 
 #: g10/import.c:844
+#, fuzzy, c-format
+msgid "key %08lX: secret key with invalid cipher %d - skipped\n"
+msgstr "clau %08lX: clau secreta sense clau pública - ignorada\n"
+
+#: g10/import.c:859
 #, c-format
 msgid "no default secret keyring: %s\n"
 msgstr "no hi ha anell secret predeterminat: %s\n"
 
-#: g10/import.c:855
+#: g10/import.c:870
 #, c-format
 msgid "key %08lX: secret key imported\n"
 msgstr "clau %08lX: clau secreta importada\n"
 
 #. we can't merge secret keys
-#: g10/import.c:861
+#: g10/import.c:876
 #, c-format
 msgid "key %08lX: already in secret keyring\n"
 msgstr "clau %08lX: ja es troba en l'anell privat\n"
 
-#: g10/import.c:868
+#: g10/import.c:883
 #, c-format
 msgid "key %08lX: secret key not found: %s\n"
 msgstr "clau %08lX: no s'ha trobat la clau secreta: %s\n"
 
-#: g10/import.c:897
+#: g10/import.c:912
 #, c-format
 msgid "key %08lX: no public key - can't apply revocation certificate\n"
 msgstr ""
 "clau %08lX: falta la clau pública: no es pot aplicar el certificat\n"
 "de revocació\n"
 
-#: g10/import.c:937
+#: g10/import.c:952
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - rejected\n"
 msgstr "clau %08lX: certificat de revocació invàlid: %s: rebutjat\n"
 
-#: g10/import.c:969
+#: g10/import.c:984
 #, c-format
 msgid "key %08lX: \"%s\" revocation certificate imported\n"
 msgstr "clau %08lX: «%s» certificat de revocació importat\n"
 
-#: g10/import.c:1017
+#: g10/import.c:1040
 #, c-format
 msgid "key %08lX: no user ID for signature\n"
 msgstr "clau %08lX: no hi ha ID per a la signatura\n"
 
-#: g10/import.c:1030
+#: g10/import.c:1053
 #, c-format
 msgid "key %08lX: unsupported public key algorithm on user id \"%s\"\n"
 msgstr ""
 "clau %08lX: algoritme de clau pública no suportat en l'id d'usuari «%s»\n"
 "\n"
 
-#: g10/import.c:1032
+#: g10/import.c:1055
 #, c-format
 msgid "key %08lX: invalid self-signature on user id \"%s\"\n"
 msgstr "clau %08lX: autofirma no vàlida en l'id d'usuari «%s»\n"
 
-#: g10/import.c:1047
+#: g10/import.c:1070
 #, c-format
 msgid "key %08lX: no subkey for key binding\n"
 msgstr "clau %08lX: no hi ha una subclau per a l'enllaç de la clau\n"
 
-#: g10/import.c:1055 g10/import.c:1096
+#: g10/import.c:1078 g10/import.c:1119
 #, c-format
 msgid "key %08lX: unsupported public key algorithm\n"
 msgstr "clau %08lX: algoritme de clau pública no suportat\n"
 
-#: g10/import.c:1056
+#: g10/import.c:1079
 #, c-format
 msgid "key %08lX: invalid subkey binding\n"
 msgstr "clau %08lX: enllaç de subclau invàlid\n"
@@ -2270,17 +2279,17 @@ msgstr "clau %08lX: enllaç de subclau invàlid\n"
 #. Delete the last binding
 #. sig since this one is
 #. newer
-#: g10/import.c:1068
+#: g10/import.c:1091
 #, c-format
 msgid "key %08lX: removed multiple subkey binding\n"
 msgstr "clau %08lX: s'ha eliminat un enllaç de subclau múltiple\n"
 
-#: g10/import.c:1088
+#: g10/import.c:1111
 #, c-format
 msgid "key %08lX: no subkey for key revocation\n"
 msgstr "clau %08lX: no hi ha una subclau per a la clau de revocació\n"
 
-#: g10/import.c:1097
+#: g10/import.c:1120
 #, c-format
 msgid "key %08lX: invalid subkey revocation\n"
 msgstr "clau %08lX: Subclau de revocació no vàlida\n"
@@ -2288,17 +2297,17 @@ msgstr "clau %08lX: Subclau de revocació no vàlida\n"
 #. Delete the last revocation
 #. sig since this one is
 #. newer
-#: g10/import.c:1108
+#: g10/import.c:1131
 #, c-format
 msgid "key %08lX: removed multiple subkey revocation\n"
 msgstr "clau %08lX: s'han eliminat subclaus de revocació múltiples\n"
 
-#: g10/import.c:1145
+#: g10/import.c:1168
 #, c-format
 msgid "key %08lX: skipped user ID '"
 msgstr "clau %08lX: ID ignorat '"
 
-#: g10/import.c:1168
+#: g10/import.c:1191
 #, c-format
 msgid "key %08lX: skipped subkey\n"
 msgstr "clau %08lX: subclau ignorada\n"
@@ -2307,51 +2316,51 @@ msgstr "clau %08lX: subclau ignorada\n"
 #. * to import non-exportable signature when we have the
 #. * the secret key used to create this signature - it
 #. * seems that this makes sense
-#: g10/import.c:1194
+#: g10/import.c:1217
 #, c-format
 msgid "key %08lX: non exportable signature (class %02x) - skipped\n"
 msgstr "clau %08lX: signatura inexportable (classe %02x) - ignorada\n"
 
-#: g10/import.c:1203
+#: g10/import.c:1226
 #, c-format
 msgid "key %08lX: revocation certificate at wrong place - skipped\n"
 msgstr "clau %08lX: certificat de revocació en el lloc equivocat - ignorat\n"
 
-#: g10/import.c:1220
+#: g10/import.c:1243
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - skipped\n"
 msgstr "clau %08lX: certificat de revocació no vàlid: %s - ignorat\n"
 
-#: g10/import.c:1232
+#: g10/import.c:1255
 #, c-format
 msgid "key %08lX: subkey signature in wrong place - skipped\n"
 msgstr "clau %08lX: signatura de la subclau en el lloc equivocat - ignorat\n"
 
-#: g10/import.c:1330
+#: g10/import.c:1353
 #, c-format
 msgid "key %08lX: duplicated user ID detected - merged\n"
 msgstr "clau %08lX: detectat ID duplicat - fusionat\n"
 
-#: g10/import.c:1389
+#: g10/import.c:1412
 #, c-format
 msgid "WARNING: key %08lX may be revoked: fetching revocation key %08lX\n"
 msgstr ""
 "AVÍS: la clau %08lX pot estar revocada: adquirint la clau de revocació %"
 "08lX\n"
 
-#: g10/import.c:1403
+#: g10/import.c:1426
 #, c-format
 msgid "WARNING: key %08lX may be revoked: revocation key %08lX not present.\n"
 msgstr ""
 "AVÍS: la clau %08lX pot estar revocada: la clau de revocació %08lX no està "
 "present.\n"
 
-#: g10/import.c:1460
+#: g10/import.c:1483
 #, c-format
 msgid "key %08lX: \"%s\" revocation certificate added\n"
 msgstr "clau %08lX: s'hi ha afegit el certificat de revocació «%s»\n"
 
-#: g10/import.c:1491
+#: g10/import.c:1514
 #, c-format
 msgid "key %08lX: direct key signature added\n"
 msgstr "clau %08lX: signatura de clau directa afegida\n"
@@ -2595,7 +2604,7 @@ msgstr ""
 msgid "Really sign? "
 msgstr "Signar realment? "
 
-#: g10/keyedit.c:688 g10/keyedit.c:3094 g10/keyedit.c:3156 g10/sign.c:308
+#: g10/keyedit.c:688 g10/keyedit.c:3095 g10/keyedit.c:3157 g10/sign.c:308
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "Ha fallat el procés de signatura: %s\n"
@@ -3169,54 +3178,54 @@ msgstr "no es pot designar a una clau d'estil PGP 2.x com a revocador\n"
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "no podeu designar una clau com el seu propi revocador\n"
 
-#: g10/keyedit.c:2423
+#: g10/keyedit.c:2424
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Per favor, elimineu les seleccions de les claus secretes.\n"
 
-#: g10/keyedit.c:2429
+#: g10/keyedit.c:2430
 msgid "Please select at most one secondary key.\n"
 msgstr "Per favor, seleccioneu com a molt una clau secundària.\n"
 
-#: g10/keyedit.c:2433
+#: g10/keyedit.c:2434
 msgid "Changing expiration time for a secondary key.\n"
 msgstr "Canviant la data de caducitat per a una clau secundària.\n"
 
-#: g10/keyedit.c:2435
+#: g10/keyedit.c:2436
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Canviant la data de caducitat per a una clau primària.\n"
 
-#: g10/keyedit.c:2477
+#: g10/keyedit.c:2478
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "No podeu canviar la data de caducitat de les claus v3\n"
 
-#: g10/keyedit.c:2493
+#: g10/keyedit.c:2494
 msgid "No corresponding signature in secret ring\n"
 msgstr "No hi ha cap signatura corresponent en l'anell secret\n"
 
-#: g10/keyedit.c:2576
+#: g10/keyedit.c:2577
 msgid "Please select exactly one user ID.\n"
 msgstr "Heu de seleccionar exactament un ID.\n"
 
-#: g10/keyedit.c:2613 g10/keyedit.c:2720
+#: g10/keyedit.c:2614 g10/keyedit.c:2721
 #, c-format
 msgid "skipping v3 self-signature on user id \"%s\"\n"
 msgstr "ignorant autosignatura v3 en l'id d'usuari «%s»\n"
 
-#: g10/keyedit.c:2780
+#: g10/keyedit.c:2781
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "No hi ha cap ID amb l'índex %d\n"
 
-#: g10/keyedit.c:2826
+#: g10/keyedit.c:2827
 #, c-format
 msgid "No secondary key with index %d\n"
 msgstr "No hi ha cap clau secundària amb l'índex %d\n"
 
-#: g10/keyedit.c:2940
+#: g10/keyedit.c:2941
 msgid "user ID: \""
 msgstr "ID d'usuari: «"
 
-#: g10/keyedit.c:2945
+#: g10/keyedit.c:2946
 #, c-format
 msgid ""
 "\"\n"
@@ -3225,7 +3234,7 @@ msgstr ""
 "»\n"
 "signat amb la vostra clau %08lX el %s\n"
 
-#: g10/keyedit.c:2948
+#: g10/keyedit.c:2949
 #, c-format
 msgid ""
 "\"\n"
@@ -3234,56 +3243,56 @@ msgstr ""
 "»\n"
 "signat localment amb la vostra clau %08lX el %s\n"
 
-#: g10/keyedit.c:2953
+#: g10/keyedit.c:2954
 #, c-format
 msgid "This signature expired on %s.\n"
 msgstr "Aquesta signatura va caducar el %s.\n"
 
-#: g10/keyedit.c:2957
+#: g10/keyedit.c:2958
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "Esteu segur de que encara voleu revocarla? (s/N) "
 
-#: g10/keyedit.c:2961
+#: g10/keyedit.c:2962
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Crear un certificat de revocació per a aquesta signatura? (y/N) "
 
 #. FIXME: detect duplicates here
-#: g10/keyedit.c:2986
+#: g10/keyedit.c:2987
 msgid "You have signed these user IDs:\n"
 msgstr "Heu signat els següents ID d'usuari:\n"
 
-#: g10/keyedit.c:3005
+#: g10/keyedit.c:3006
 #, c-format
 msgid "   signed by %08lX at %s%s%s\n"
 msgstr "   signat per %08lX el %s%s%s\n"
 
-#: g10/keyedit.c:3013
+#: g10/keyedit.c:3014
 #, c-format
 msgid "   revoked by %08lX at %s\n"
 msgstr "   revocat per %08lX el %s\n"
 
-#: g10/keyedit.c:3033
+#: g10/keyedit.c:3034
 msgid "You are about to revoke these signatures:\n"
 msgstr "Esteu a punt de revocar aquestes signatures:\n"
 
-#: g10/keyedit.c:3043
+#: g10/keyedit.c:3044
 #, c-format
 msgid "   signed by %08lX at %s%s\n"
 msgstr "   signat per %08lX el %s%s\n"
 
-#: g10/keyedit.c:3045
+#: g10/keyedit.c:3046
 msgid " (non-exportable)"
 msgstr " (no-exportable)"
 
-#: g10/keyedit.c:3052
+#: g10/keyedit.c:3053
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Crear els certificats de revocació? (y/N) "
 
-#: g10/keyedit.c:3082
+#: g10/keyedit.c:3083
 msgid "no secret key\n"
 msgstr "ho hi ha clau secreta\n"
 
-#: g10/keyedit.c:3237
+#: g10/keyedit.c:3238
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key 0x%08lX (uid %d)\n"
 msgstr ""
@@ -3297,7 +3306,7 @@ msgstr "Política de signatura crítica: "
 msgid "Signature policy: "
 msgstr "Política de signatura: "
 
-#: g10/keylist.c:118 g10/keylist.c:141 g10/mainproc.c:768 g10/mainproc.c:777
+#: g10/keylist.c:118 g10/keylist.c:141 g10/mainproc.c:769 g10/mainproc.c:778
 msgid "WARNING: invalid notation data found\n"
 msgstr "AVÍS: s'hi ha trobat dades de notació invàlides\n"
 
@@ -3318,29 +3327,29 @@ msgid "Keyring"
 msgstr "Anell"
 
 #. of subkey
-#: g10/keylist.c:478 g10/mainproc.c:904
+#: g10/keylist.c:494 g10/mainproc.c:905
 #, c-format
 msgid " [expires: %s]"
 msgstr " [caduca: %s]"
 
-#: g10/keylist.c:1003
+#: g10/keylist.c:1019
 msgid "Primary key fingerprint:"
 msgstr "Empremtes digital de la clau primària:"
 
-#: g10/keylist.c:1005
+#: g10/keylist.c:1021
 msgid "     Subkey fingerprint:"
 msgstr "     Empremta digital de la subclau:"
 
-#: g10/keylist.c:1012
+#: g10/keylist.c:1028
 msgid " Primary key fingerprint:"
 msgstr " Empremta digital de la clau primària:"
 
-#: g10/keylist.c:1014
+#: g10/keylist.c:1030
 msgid "      Subkey fingerprint:"
 msgstr "      Empremta digital de la subclau:"
 
 #. use tty
-#: g10/keylist.c:1018 g10/keylist.c:1022
+#: g10/keylist.c:1034 g10/keylist.c:1038
 msgid "     Key fingerprint ="
 msgstr "     Empremta digital ="
 
@@ -3349,144 +3358,140 @@ msgstr "     Empremta digital ="
 msgid "weird size for an encrypted session key (%d)\n"
 msgstr "mida extranya per a una clau de sessió xifrada (%d)\n"
 
-#: g10/mainproc.c:258
+#: g10/mainproc.c:259
 #, c-format
 msgid "invalid symkey algorithm detected (%d)\n"
 msgstr "algoritme de clau simètric invàlid detectat (%d)\n"
 
-#: g10/encr-data.c:66 g10/mainproc.c:287
+#: g10/encr-data.c:66 g10/mainproc.c:288
 #, c-format
 msgid "%s encrypted data\n"
 msgstr "dades xifrades amb %s\n"
 
-#: g10/encr-data.c:68 g10/mainproc.c:289
+#: g10/encr-data.c:68 g10/mainproc.c:290
 #, c-format
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "xifrat amb l'algoritme %d (desconegut)\n"
 
-#: g10/mainproc.c:317
+#: g10/mainproc.c:318
 #, c-format
 msgid "public key is %08lX\n"
 msgstr "la clau pública és %08lX\n"
 
-#: g10/mainproc.c:363
+#: g10/mainproc.c:364
 msgid "public key encrypted data: good DEK\n"
 msgstr "dades xifrades amb clau pública: bona clau de xifratge (DEK)\n"
 
-#: g10/mainproc.c:415
+#: g10/mainproc.c:416
 #, c-format
 msgid "encrypted with %u-bit %s key, ID %08lX, created %s\n"
 msgstr "xifrat amb una clau %2$s de %1$u bits, ID %3$08lX, creada en %4$s\n"
 
-#: g10/mainproc.c:425
+#: g10/mainproc.c:426
 #, c-format
 msgid "encrypted with %s key, ID %08lX\n"
 msgstr "xifrat amb una clau %s, ID %08lX\n"
 
-#: g10/mainproc.c:439
+#: g10/mainproc.c:440
 #, c-format
 msgid "public key decryption failed: %s\n"
 msgstr "ha fallat el desxifratge amb la clau pública: %s\n"
 
-#: g10/mainproc.c:466 g10/mainproc.c:485
+#: g10/mainproc.c:467 g10/mainproc.c:486
 #, c-format
 msgid "assuming %s encrypted data\n"
 msgstr "s'assumeixen %s dades xifrades\n"
 
-#: g10/mainproc.c:473
+#: g10/mainproc.c:474
 #, c-format
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr ""
 "El xifratge IDEA no està disponible, s'intentarà utilitzar optimisticament %"
 "s en el seu lloc\n"
 
-#: g10/mainproc.c:503
+#: g10/mainproc.c:504
 msgid "decryption okay\n"
 msgstr "desxifratge correcte\n"
 
-#: g10/mainproc.c:510
+#: g10/mainproc.c:511
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "AVÍS: el missatge xifrat ha estat manipulat!\n"
 
-#: g10/mainproc.c:516
+#: g10/mainproc.c:517
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "ha fallat el desxifratge: %s\n"
 
-#: g10/mainproc.c:535
+#: g10/mainproc.c:536
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgstr "NOTA: el remitent ha sol·licitat \"alt secret\"\n"
 
-#: g10/mainproc.c:537
+#: g10/mainproc.c:538
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "nom del fitxer original='%.*s'\n"
 
-#: g10/mainproc.c:712
+#: g10/mainproc.c:713
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "revocació autònoma: useu \"gpg --import\" per a aplicar-la\n"
 
-#: g10/mainproc.c:780
+#: g10/mainproc.c:781
 msgid "Notation: "
 msgstr "Notació: "
 
-#: g10/mainproc.c:792
+#: g10/mainproc.c:793
 msgid "Policy: "
 msgstr "Política: "
 
-#: g10/mainproc.c:1247
+#: g10/mainproc.c:1248
 msgid "signature verification suppressed\n"
 msgstr "verificació de signatura eliminada\n"
 
 #. plaintext before signatures but no one-pass packets
-#: g10/mainproc.c:1289 g10/mainproc.c:1299
+#: g10/mainproc.c:1290 g10/mainproc.c:1300
 msgid "can't handle these multiple signatures\n"
 msgstr "no es poden manejar aquestes signatures múltiples\n"
 
-#: g10/mainproc.c:1310
+#: g10/mainproc.c:1311
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Signatura creada %.*s usant una clau %s ID %08lX\n"
 
-#: g10/mainproc.c:1359 g10/mainproc.c:1392
+#: g10/mainproc.c:1360 g10/mainproc.c:1393
 msgid "BAD signature from \""
 msgstr "Signatura INCORRECTA de \""
 
-#: g10/mainproc.c:1360 g10/mainproc.c:1393
+#: g10/mainproc.c:1361 g10/mainproc.c:1394
 msgid "Expired signature from \""
 msgstr "Signatura caducada de \""
 
-#: g10/mainproc.c:1361 g10/mainproc.c:1394
+#: g10/mainproc.c:1362 g10/mainproc.c:1395
 msgid "Good signature from \""
 msgstr "Signatura correcta de \""
 
-#: g10/mainproc.c:1396
+#: g10/mainproc.c:1397
 msgid "[uncertain]"
 msgstr "[incert]"
 
-#: g10/mainproc.c:1427
-msgid "                aka \""
-msgstr "              alias \""
-
-#: g10/mainproc.c:1488
+#: g10/mainproc.c:1489
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "No s'ha pogut comprovar la signatura: %s\n"
 
-#: g10/mainproc.c:1557 g10/mainproc.c:1573 g10/mainproc.c:1635
+#: g10/mainproc.c:1558 g10/mainproc.c:1574 g10/mainproc.c:1636
 msgid "not a detached signature\n"
 msgstr "no és una signatura separada\n"
 
-#: g10/mainproc.c:1584
+#: g10/mainproc.c:1585
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "signatura autònoma de classe 0x%02x\n"
 
-#: g10/mainproc.c:1641
+#: g10/mainproc.c:1642
 msgid "old style (PGP 2.x) signature\n"
 msgstr "signatura de l'estil antic (PGP 2.x)\n"
 
-#: g10/mainproc.c:1648
+#: g10/mainproc.c:1649
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "paquet arrel invàlid detectat en proc_tree()\n"
 
@@ -3572,11 +3577,11 @@ msgstr "no s'ha pogut connectar amb «%s»: %s\n"
 msgid "communication problem with gpg-agent\n"
 msgstr "problema de comunicació amb el gpg-agent\n"
 
-#: g10/passphrase.c:561 g10/passphrase.c:811 g10/passphrase.c:919
+#: g10/passphrase.c:561 g10/passphrase.c:812 g10/passphrase.c:920
 msgid "problem with the agent - disabling agent use\n"
 msgstr "hi ha un problema amb l'agent: es deshabilitarà el seu ús\n"
 
-#: g10/passphrase.c:631 g10/passphrase.c:1017
+#: g10/passphrase.c:631 g10/passphrase.c:1018
 #, c-format
 msgid " (main key ID %08lX)"
 msgstr " (ID de la clau principal %08lX)"
@@ -3616,16 +3621,16 @@ msgstr "contrasenya massa llarga\n"
 msgid "invalid response from agent\n"
 msgstr "resposta invàlida de l'agent\n"
 
-#: g10/passphrase.c:727 g10/passphrase.c:808
+#: g10/passphrase.c:727 g10/passphrase.c:809
 msgid "cancelled by user\n"
 msgstr "cancel·lat per l'usuari\n"
 
-#: g10/passphrase.c:729 g10/passphrase.c:890
+#: g10/passphrase.c:729 g10/passphrase.c:891
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr "hi ha un problema amb l'agent: l'agent ha tornat 0x%lx\n"
 
-#: g10/passphrase.c:1003
+#: g10/passphrase.c:1004
 msgid ""
 "\n"
 "You need a passphrase to unlock the secret key for\n"
@@ -3635,20 +3640,20 @@ msgstr ""
 "Necessiteu la contrasenya per desbloquejar la clau secreta de\n"
 "l'usuari: \""
 
-#: g10/passphrase.c:1012
+#: g10/passphrase.c:1013
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
 msgstr "clau %2$s de %1$u bits, ID %3$08lX, creada en %4$s"
 
-#: g10/passphrase.c:1063
+#: g10/passphrase.c:1064
 msgid "can't query password in batchmode\n"
 msgstr "no es pot demanar la contrasenya en mode batch\n"
 
-#: g10/passphrase.c:1067
+#: g10/passphrase.c:1068
 msgid "Enter passphrase: "
 msgstr "Introduïu contrasenya: "
 
-#: g10/passphrase.c:1071
+#: g10/passphrase.c:1072
 msgid "Repeat passphrase: "
 msgstr "Repetiu contrasenya: "
 
@@ -3762,20 +3767,20 @@ msgstr "parts de la clau secreta no estan disponbles\n"
 msgid "protection algorithm %d%s is not supported\n"
 msgstr "l'algoritme de protecció %d%s no està suportat\n"
 
-#: g10/seckey-cert.c:224
+#: g10/seckey-cert.c:225
 msgid "Invalid passphrase; please try again"
 msgstr "La contrasenya no és vàlida; torneu a intentar-ho"
 
-#: g10/seckey-cert.c:225
+#: g10/seckey-cert.c:226
 #, c-format
 msgid "%s ...\n"
 msgstr "%s ...\n"
 
-#: g10/seckey-cert.c:282
+#: g10/seckey-cert.c:283
 msgid "WARNING: Weak key detected - please change passphrase again.\n"
 msgstr "AVÍS: la clau és feble; per favor, canvieu la contrasenya.\n"
 
-#: g10/seckey-cert.c:320
+#: g10/seckey-cert.c:321
 msgid "generating the deprecated 16-bit checksum for secret key protection\n"
 msgstr ""
 "s'està generant la suma de comprovació desaconsellada de 16-bits per a la "
@@ -3785,7 +3790,7 @@ msgstr ""
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "AVÍS: conflicte de signatures digest en el missatge\n"
 
-#: g10/sig-check.c:215
+#: g10/sig-check.c:213
 #, c-format
 msgid ""
 "key %08lX: this is a PGP generated ElGamal key which is NOT secure for "
@@ -3793,17 +3798,17 @@ msgid ""
 msgstr ""
 "clau %08lX: aquesta és una clau ElGamal que NO és segura per a signatures!\n"
 
-#: g10/sig-check.c:224
+#: g10/sig-check.c:222
 #, c-format
 msgid "public key %08lX is %lu second newer than the signature\n"
 msgstr "la clau pública %08lX és %lu segons anterior a la signatura\n"
 
-#: g10/sig-check.c:225
+#: g10/sig-check.c:223
 #, c-format
 msgid "public key %08lX is %lu seconds newer than the signature\n"
 msgstr "la clau pública %08lX és %lu segons anterior a la signatura\n"
 
-#: g10/sig-check.c:234
+#: g10/sig-check.c:232
 #, c-format
 msgid ""
 "key %08lX has been created %lu second in future (time warp or clock "
@@ -3813,7 +3818,7 @@ msgstr ""
 "problemes\n"
 "amb el rellotge)\n"
 
-#: g10/sig-check.c:236
+#: g10/sig-check.c:234
 #, c-format
 msgid ""
 "key %08lX has been created %lu seconds in future (time warp or clock "
@@ -3823,19 +3828,19 @@ msgstr ""
 "problemes\n"
 "amb el rellotge)\n"
 
-#: g10/sig-check.c:249
+#: g10/sig-check.c:247
 #, c-format
 msgid "NOTE: signature key %08lX expired %s\n"
 msgstr "NOTA: la clau de signatura %08lX va caducar el %s\n"
 
-#: g10/sig-check.c:348
+#: g10/sig-check.c:346
 #, c-format
 msgid "assuming bad signature from key %08lX due to an unknown critical bit\n"
 msgstr ""
 "es supossa una signatura incorrècta de la clau %08lX a causa d'un bit crític "
 "desconegut\n"
 
-#: g10/sig-check.c:549
+#: g10/sig-check.c:550
 #, c-format
 msgid "key %08lX: no subkey for subkey revocation packet\n"
 msgstr ""
@@ -4059,64 +4064,69 @@ msgstr "«%s» no és un ID de clau llarg vàlid\n"
 msgid "key %08lX: accepted as trusted key\n"
 msgstr "clau %08lX: acceptada com a clau fiable\n"
 
-#: g10/trustdb.c:274
+#: g10/trustdb.c:273
 #, c-format
 msgid "key %08lX occurs more than once in the trustdb\n"
 msgstr ""
 "clau %08lX:  apareix més d'una vegada en la base de dades de confiança\n"
 
-#: g10/trustdb.c:290
+#: g10/trustdb.c:289
 #, c-format
 msgid "key %08lX: no public key for trusted key - skipped\n"
 msgstr ""
 "clau %08lX: no hi ha una clau pública per a la clau fiable - ignorada\n"
 
-#: g10/trustdb.c:332
+#: g10/trustdb.c:298
+#, fuzzy, c-format
+msgid "key %08lX marked as ultimately trusted\n"
+msgstr "clau marcada com confiada absolutament.\n"
+
+#: g10/trustdb.c:324
 #, c-format
 msgid "trust record %lu, req type %d: read failed: %s\n"
 msgstr "registre de confiança %lu, tipus %d: no s'ha pogut llegir: %s\n"
 
-#: g10/trustdb.c:338
+#: g10/trustdb.c:330
 #, c-format
 msgid "trust record %lu is not of requested type %d\n"
 msgstr "el registre de confiança %lu no és del tipus demanat %d\n"
 
-#: g10/trustdb.c:353
+#: g10/trustdb.c:345
 #, c-format
 msgid "trust record %lu, type %d: write failed: %s\n"
 msgstr "registre de confiança %lu, tipus %d: no s'ha pogut escriure: %s\n"
 
-#: g10/trustdb.c:368
+#: g10/trustdb.c:360
 #, c-format
 msgid "trustdb: sync failed: %s\n"
 msgstr "base de dades de confiança: no s'ha pogut sincronitzar: %s\n"
 
-#: g10/trustdb.c:468
+#: g10/trustdb.c:460
 msgid "no need for a trustdb check\n"
 msgstr ""
 "no és necessària una comprovació de la base de dades de confiança\n"
 "\n"
 
-#: g10/trustdb.c:474 g10/trustdb.c:1641
+#: g10/trustdb.c:466 g10/trustdb.c:1633
 #, c-format
 msgid "next trustdb check due at %s\n"
 msgstr "la pròxima comprovació de la base de dades de confiança serà el %s\n"
 
-#: g10/trustdb.c:779
+#: g10/trustdb.c:771
 msgid "checking the trustdb\n"
 msgstr "s'està comprovant la base de dades de confiança\n"
 
-#: g10/trustdb.c:933
+#: g10/trustdb.c:925
 #, c-format
 msgid "public key %08lX not found: %s\n"
 msgstr "clau pública %08lX no trobada: %s\n"
 
-#: g10/trustdb.c:1515
+#: g10/trustdb.c:1507
 #, c-format
 msgid "public key of ultimately trusted key %08lX not found\n"
 msgstr "clau pública de la clau %08lX amb confiança absoluta no trobada\n"
 
-#: g10/trustdb.c:1593
+#: g10/trustdb.c:1585
 #, c-format
 msgid "checking at depth %d signed=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"
 msgstr ""

@@ -1,3 +1,8 @@
+2002-10-17  Werner Koch  <wk@gnupg.org>
+
+	* et.po: Updated.
+	* de.po: Fixed 2 fuzzy entries.
+	
 2002-10-01  Werner Koch  <wk@gnupg.org>
 
 	* pl.po: Fixed Content-Type entry to utf-8 which is the actual
