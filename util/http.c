@@ -501,21 +501,28 @@ send_request( HTTP_HD hd )
 	return G10ERR_NETWORK;
 
     p = build_rel_path( hd->uri );
-    request = m_alloc( strlen(server)*2 + strlen(p) + 50 );
-    if( http_proxy ) {
+    request = m_alloc( strlen(server)*2 + strlen(p) + 65 );
+    if( http_proxy )
+      {
 	sprintf( request, "%s http://%s:%hu%s%s HTTP/1.0\r\n",
-			  hd->req_type == HTTP_REQ_GET ? "GET" :
-			  hd->req_type == HTTP_REQ_HEAD? "HEAD":
-			  hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
-			  server, port,  *p == '/'? "":"/", p );
-    }
-    else {
-	sprintf( request, "%s %s%s HTTP/1.0\r\nHost: %s\r\n",
-			  hd->req_type == HTTP_REQ_GET ? "GET" :
-			  hd->req_type == HTTP_REQ_HEAD? "HEAD":
-			  hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
-						 *p == '/'? "":"/", p, server);
-    }
+		 hd->req_type == HTTP_REQ_GET ? "GET" :
+		 hd->req_type == HTTP_REQ_HEAD? "HEAD":
+		 hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
+		 server, port,  *p == '/'? "":"/", p );
+      }
+    else
+      {
+	char portstr[15];
+
+	if(port!=80)
+	  sprintf(portstr,":%u",port);
+
+	sprintf( request, "%s %s%s HTTP/1.0\r\nHost: %s%s\r\n",
+		 hd->req_type == HTTP_REQ_GET ? "GET" :
+		 hd->req_type == HTTP_REQ_HEAD? "HEAD":
+		 hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
+		 *p == '/'? "":"/", p, server, (port!=80)?portstr:"");
+      }
     m_free(p);
 
     rc = write_server( hd->sock, request, strlen(request) );

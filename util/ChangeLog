@@ -1,3 +1,8 @@
+2004-12-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.c (send_request): Include the port if non-80 in the Host:
+	header.  Noted by Jason Harris.
+
 2004-08-23  Werner Koch  <wk@g10code.de>
 
 	* dotlock.c (destroy_dotlock): Remove the handle from the list of
