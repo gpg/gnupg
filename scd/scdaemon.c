@@ -60,6 +60,7 @@ enum cmd_and_opt_values
   oDebug,
   oDebugAll,
   oDebugWait,
+  oDebugSC,
   oNoGreeting,
   oNoOptions,
   oHomedir,
@@ -86,6 +87,7 @@ static ARGPARSE_OPTS opts[] = {
   { oDebug,	"debug"     ,4|16, N_("set debugging flags")},
   { oDebugAll, "debug-all" ,0, N_("enable full debugging")},
   { oDebugWait,"debug-wait",1, "@"},
+  { oDebugSC,  "debug-sc",  1, N_("N|set OpenSC debug level to N")},
   { oNoDetach, "no-detach" ,0, N_("do not detach from the console")},
   { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
 
@@ -344,6 +346,7 @@ main (int argc, char **argv )
         case oDebug: opt.debug |= pargs.r.ret_ulong; break;
         case oDebugAll: opt.debug = ~0; break;
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
+        case oDebugSC: opt.debug_sc = pargs.r.ret_int; break;
 
         case oOptions:
           /* config files may not be nested (silently ignore them) */

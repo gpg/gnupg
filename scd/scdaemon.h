@@ -31,6 +31,7 @@
 /* A large struct name "opt" to keep global flags */
 struct {
   unsigned int debug; /* debug flags (DBG_foo_VALUE) */
+  int debug_sc;     /* OpenSC debug level */
   int verbose;      /* verbosity level */
   int quiet;        /* be as quiet as possible */
   int dry_run;      /* don't change any persistent data */

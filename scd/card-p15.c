@@ -32,9 +32,6 @@
 #include "card-common.h"
 
 
-
-
-
 /* See card.c for interface description */
 static int
 p15_enum_keypairs (CARD card, int idx,
@@ -198,26 +195,19 @@ p15_read_cert (CARD card, const char *certidstr,
 }
 
 
+
+
 
-/* See card.c for interface description */
-static int 
-p15_sign (CARD card, const char *keyidstr, int hashalgo,
-          int (pincb)(void*, const char *, char **),
-          void *pincb_arg,
-          const void *indata, size_t indatalen,
-          void **outdata, size_t *outdatalen )
+static int
+p15_prepare_key (CARD card, const char *keyidstr,
+                 int (pincb)(void*, const char *, char **),
+                 void *pincb_arg, struct sc_pkcs15_object **r_keyobj)
 {
-  unsigned int cryptflags = 0;
   struct sc_pkcs15_id keyid;
   struct sc_pkcs15_pin_info *pin;
   struct sc_pkcs15_object *keyobj, *pinobj;
   char *pinvalue;
   int rc;
-  unsigned char *outbuf = NULL;
-  size_t outbuflen;
-
-  if (hashalgo != GCRY_MD_SHA1)
-    return GNUPG_Unsupported_Algorithm;
 
   rc = idstr_to_id (keyidstr, &keyid);
   if (rc)
@@ -227,18 +217,15 @@ p15_sign (CARD card, const char *keyidstr, int hashalgo,
   if (rc < 0)
     {
       log_error ("private key not found: %s\n", sc_strerror(rc));
-      rc = GNUPG_No_Secret_Key;
-      goto leave;
+      return GNUPG_No_Secret_Key;
     }
-  rc = 0;
 
   rc = sc_pkcs15_find_pin_by_auth_id (card->p15card,
                                       &keyobj->auth_id, &pinobj);
   if (rc)
     {
       log_error ("failed to find PIN by auth ID: %s\n", sc_strerror (rc));
-      rc = GNUPG_Bad_PIN_Method;
-      goto leave;
+      return GNUPG_Bad_PIN_Method;
     }
   pin = pinobj->data;
 
@@ -249,7 +236,7 @@ p15_sign (CARD card, const char *keyidstr, int hashalgo,
   if (rc)
     {
       log_info ("PIN callback returned error: %s\n", gnupg_strerror (rc));
-      goto leave;
+      return rc;
     }
 
   rc = sc_pkcs15_verify_pin (card->p15card, pin,
@@ -258,11 +245,37 @@ p15_sign (CARD card, const char *keyidstr, int hashalgo,
   if (rc)
     {
       log_info ("PIN verification failed: %s\n", sc_strerror (rc));
-      rc = GNUPG_Bad_PIN;
-      goto leave;
+      return GNUPG_Bad_PIN;
     }
 
-  cryptflags |= SC_ALGORITHM_RSA_PAD_PKCS1;
+  /* fixme: check wheter we need to release KEYOBJ in case of an error */
+  *r_keyobj = keyobj;
+  return 0;
+}
+
+
+/* See card.c for interface description */
+static int 
+p15_sign (CARD card, const char *keyidstr, int hashalgo,
+          int (pincb)(void*, const char *, char **),
+          void *pincb_arg,
+          const void *indata, size_t indatalen,
+          void **outdata, size_t *outdatalen )
+{
+  unsigned int cryptflags;
+  struct sc_pkcs15_object *keyobj;
+  int rc;
+  unsigned char *outbuf = NULL;
+  size_t outbuflen;
+
+  if (hashalgo != GCRY_MD_SHA1)
+    return GNUPG_Unsupported_Algorithm;
+
+  rc = p15_prepare_key (card, keyidstr, pincb, pincb_arg, &keyobj);
+  if (rc)
+    return rc;
+
+  cryptflags = SC_ALGORITHM_RSA_PAD_PKCS1;
 
   outbuflen = 1024; 
   outbuf = xtrymalloc (outbuflen);
@@ -286,8 +299,6 @@ p15_sign (CARD card, const char *keyidstr, int hashalgo,
       rc = 0;
     }
 
-
-leave:
   xfree (outbuf);
   return rc;
 }
@@ -301,55 +312,31 @@ p15_decipher (CARD card, const char *keyidstr,
               const void *indata, size_t indatalen,
               void **outdata, size_t *outdatalen )
 {
-  struct sc_pkcs15_id keyid;
-  struct sc_pkcs15_pin_info *pin;
-  struct sc_pkcs15_object *keyobj, *pinobj;
-  char *pinvalue;
+  struct sc_pkcs15_object *keyobj;
   int rc;
   unsigned char *outbuf = NULL;
   size_t outbuflen;
 
-  rc = idstr_to_id (keyidstr, &keyid);
+  rc = p15_prepare_key (card, keyidstr, pincb, pincb_arg, &keyobj);
   if (rc)
     return rc;
 
-  rc = sc_pkcs15_find_prkey_by_id (card->p15card, &keyid, &keyobj);
-  if (rc < 0)
+  if (card && card->scard && card->scard->driver
+      && !strcasecmp (card->scard->driver->short_name, "tcos"))
     {
-      log_error ("private key not found: %s\n", sc_strerror(rc));
-      rc = GNUPG_No_Secret_Key;
-      goto leave;
-    }
-  rc = 0;
-
-  rc = sc_pkcs15_find_pin_by_auth_id (card->p15card,
-                                      &keyobj->auth_id, &pinobj);
-  if (rc)
-    {
-      log_error ("failed to find PIN by auth ID: %s\n", sc_strerror (rc));
-      rc = GNUPG_Bad_PIN_Method;
-      goto leave;
-    }
-  pin = pinobj->data;
-
-  /* Fixme: pack this into a verification loop */
-  /* Fixme: we might want to pass pin->min_length and 
-     pin->stored_length */
-  rc = pincb (pincb_arg, pinobj->label, &pinvalue);
-  if (rc)
-    {
-      log_info ("PIN callback returned error: %s\n", gnupg_strerror (rc));
-      goto leave;
-    }
-
-  rc = sc_pkcs15_verify_pin (card->p15card, pin,
-                             pinvalue, strlen (pinvalue));
-  xfree (pinvalue);
-  if (rc)
-    {
-      log_info ("PIN verification failed: %s\n", sc_strerror (rc));
-      rc = GNUPG_Bad_PIN;
-      goto leave;
+      /* very ugly hack to force the use of a local key.  We need this
+         until we have fixed the initialization code for TCOS cards */
+      struct sc_pkcs15_prkey_info *prkey = keyobj->data;
+      if ( !(prkey->key_reference & 0x80))
+        {
+          prkey->key_reference |= 0x80;
+          log_debug ("using TCOS hack to force the use of local keys\n");
+        }
+      if (*keyidstr && keyidstr[strlen(keyidstr)-1] == '6')
+        {
+          prkey->key_reference |= 1;
+          log_debug ("warning: using even more TCOS hacks\n");
+        }
     }
 
   outbuflen = indatalen < 256? 256 : indatalen; 
@@ -357,17 +344,12 @@ p15_decipher (CARD card, const char *keyidstr,
   if (!outbuf)
     return GNUPG_Out_Of_Core;
 
-  /* OpenSC does not yet support decryption for cryptflex cards */  
-/*    rc = sc_pkcs15_decipher (card->p15card, key, */
-/*                             indata, indatalen, */
-/*                             outbuf, outbuflen); */
-  rc = sc_pkcs15_compute_signature (card->p15card, keyobj,
-                                    0,
-                                    indata, indatalen,
-                                    outbuf, outbuflen );
+  rc = sc_pkcs15_decipher (card->p15card, keyobj, 
+                           indata, indatalen, 
+                           outbuf, outbuflen); 
   if (rc < 0)
     {
-      log_error ("failed to decipger the data: %s\n", sc_strerror (rc));
+      log_error ("failed to decipher the data: %s\n", sc_strerror (rc));
       rc = GNUPG_Card_Error;
     }
   else
@@ -378,12 +360,9 @@ p15_decipher (CARD card, const char *keyidstr,
       rc = 0;
     }
 
-
-leave:
   xfree (outbuf);
   return rc;
 }
-
 
 
 

@@ -141,10 +141,9 @@ card_open (CARD *rcard)
       goto leave;
     }
   card->ctx->error_file = log_get_stream ();
-  if (opt.debug)
-    {
-       card->ctx->debug_file = log_get_stream ();
-    }
+  card->ctx->debug = opt.debug_sc;
+  card->ctx->debug_file = log_get_stream ();
+
   if (sc_detect_card_presence (card->ctx->reader[card->reader], 0) != 1)
     {
       rc = GNUPG_Card_Not_Present;
@@ -258,7 +257,9 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
 
   /* We should lookup the iso 7812-1 and 8583-3 - argh ISO
      practice is suppressing innovation - IETF rules!  So we
-     always get the serialnumber from the 2F00 GDO file.  */
+     always get the serialnumber from the 2F02 GDO file.  */
+  /* FIXME: in case we can't parse the 2F02 EF and we have a P15 card,
+     we should get the serial number from the respective P15 file */
   sc_format_path ("3F002F02", &path);
   rc = sc_select_file (card->scard, &path, &file);
   if (rc)

@@ -1,3 +1,12 @@
+2002-04-12  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c: New option --debug-sc N.
+	* card.c (card_open): set it here.
+
+	* card-p15.c (p15_prepare_key): Factored out common code from ...
+	(p15_sign, p15_decipher): here and made the decryption work the
+	regular way.
+
 2002-04-10  Werner Koch  <wk@gnupg.org>
 
 	* card.c (card_open): Return immediately when no reader is available.
