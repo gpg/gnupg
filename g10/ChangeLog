@@ -1,3 +1,8 @@
+2002-05-21  Werner Koch  <wk@gnupg.org>
+
+	* signal.c (got_fatal_signal): Don't write the Nul to stderr.
+	Reported by David Hollenberg.
+
 2002-05-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* main.h, g10.c (main), revoke.c (gen_desig_revoke): Generate a

@@ -94,7 +94,7 @@ got_fatal_signal( int sig )
     s = log_get_name(); if( s ) write(2, s, strlen(s) );
     write(2, ": ", 2 );
     s = get_signal_name(sig); write(2, s, strlen(s) );
-    write(2, " caught ... exiting\n", 21 );
+    write(2, " caught ... exiting\n", 20 );
 
     /* reset action to default action and raise signal again */
     init_one_signal (sig, SIG_DFL, 0);
