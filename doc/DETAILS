@@ -1,16 +1,44 @@
 
+Format of "---with-colons" listings
+===================================
 
-    * For packet version 3 we calculate the keyids this way:
-	RSA	:= low 64 bits of n
-	ELGAMAL := build a v3 pubkey packet (with CTB 0x99) and calculate
-		   a rmd160 hash value from it. This is used as the
-		   fingerprint and the low 64 bits are the keyid.
+sec::1024:17:6C7EE1B8621CC013:1998-07-07:0:::Werner Koch <werner.koch@guug.de>:
+ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
 
-    * Revocation certificates consist only of the signature packet;
-      "import" knows how to handle this.  The rationale behind it is
-      to keep them small.
+ 1. Field:  Type of record
+	    pub = public key
+	    sub = subkey (secondary key)
+	    sec = secret key
+	    ssb = secret subkey (secondary key)
+	    uid = user id (only field 10 is used).
+	    fpr = fingerprint: (fingerprint is in field 10)
+
+ 2. Field:  A letter describing the calculated trust, see doc/FAQ
+	    (not used for secret keys)
+ 3. Field:  length of key in bits.
+ 4. Field:  Algorithm:	1 = RSA
+		       16 = ElGamal (encrypt only)
+		       17 = DSA (sometimes called DH, sign only)
+		       20 = ElGamal (sign and encrypt)
+ 5. Field:  KeyID
+ 6. Field:  Creation Date (in UTC)
+ 7. Field:  key expieres n days after creation.
+	    (I will change this to a key exiration date)
+ 8. Field:  Local ID: record number of the dir record in the trustdb
+	    this value is only valid as long as the trustdb is not
+	    deleted.  May be later used to lookup the key: You will be
+	    able to use "#<local-id> as the user id.  This is needed
+	    because keyids may not be unique - a program may use this
+	    number to access keys later.
+ 9. Field:  Ownertrust (primary public keys only)
+10. Field:  User-ID.  The value is quoted like a C string to avoid
+	    control characters (the colon is quoted "\x3a").
+
+More fields may be added later.
 
 
+Key generation
+==============
     Key generation shows progress by printing different characters to
     stderr:
 	     "."  Last 10 Miller-Rabin tests failed
@@ -35,7 +63,6 @@
        Miller-Rabin test.
     8) Continue with step 4 if we did not find a prime in step 7.
     9) Find a generator for that prime.
-
 
 
 
@@ -66,7 +93,10 @@ Record type 1:
 	     against the pubring)
      1 u32  record number of keyhashtable
      1 u32  first free record
-     8 bytes reserved
+     1 u32  record number of shadow directory hash table
+	    It does not make sense to combine this table with the key table
+	    becuase the keyid is not in every case a part of the fingerprint.
+     4 bytes reserved for version extension record
 
 
 Record type 2: (directory record)
@@ -131,17 +161,46 @@ Record type 5: (pref record)
 
 Record type 6  (sigrec)
 -------------
-    Used to keep track of valid key signatures. Self-signatures are not
-    stored.
+    Used to keep track of key signatures. Self-signatures are not
+    stored.  If a public key is not in the DB, the signature points to
+    a shadow dir record, which in turn has a list of records which
+    might be interested in this key (and the signature record here
+    is one).
 
      1 byte   value 6
      1 byte   reserved
      1 u32    LID	    points back to the dir record
-     1 u32    next   next sigrec of this owner or 0 to indicate the
+     1 u32    next   next sigrec of this uid or 0 to indicate the
 		     last sigrec.
      6 times
-	1 u32  Local_id of signators dir record
-	1 byte reserved
+	1 u32  Local_id of signators dir or shadow dir record
+	1 byte Flag: Bit 0 = checked: Bit 1 is valid (we have a real
+			      directory record for this)
+			 1 = valid is set (but my be revoked)
+
+
+
+Record type 8: (shadow directory record)
+--------------
+    This record is used to reserved a LID for a public key.  We
+    need this to create the sig records of other keys, even if we
+    do not yet have the public key of the signature.
+    This record (the record number to be more precise) will be reused
+    as the dir record when we import the real public key.
+
+     1 byte value 8
+     1 byte  reserved
+     1 u32   LID      (This is simply the record number of this record.)
+     2 u32   keyid
+     1 byte  pubkey algorithm
+     3 byte reserved
+     1 u32   hintlist	A list of records which have references to
+			this key.  This is used for fast access to
+			signature records which are not yet checked.
+			Note, that this is only a hint and the actual records
+			may not anymore hold signature records for that key
+			but that the code cares about this.
+    18 byte reserved
 
 
 
@@ -191,6 +250,9 @@ Record Type 10 (hash table)
     big table. The hash value is simple the 1st, 2nd, ... byte of
     the fingerprint (depending on the indirection level).
 
+    When used to hash shadow directory records, a different table is used
+    and indexed by the keyid.
+
      1 byte value 10
      1 byte reserved
      n u32  recnum; n depends on the record length:
@@ -214,6 +276,7 @@ Record Type 10 (hash table)
 Record type 11 (hash list)
 --------------
     see hash table for an explanation.
+    This is also used for other purposes.
 
     1 byte value 11
     1 byte reserved
@@ -223,7 +286,11 @@ Record type 11 (hash list)
 
     For the current record length of 40, n is 7
 
-Record type 254: (free record)
+
+
+Record type 254 (free record)
+---------------
+    All these records form a linked list of unused records.
      1 byte  value 254
      1 byte  reserved (0)
      1 u32   next_free
@@ -282,6 +349,20 @@ There is one enhancement used with the old style packet headers:
 +  another packet version to tell the application that it can not assume,
 +  that this is the last packet.
 
+
+
+
+Other Notes
+===========
+    * For packet version 3 we calculate the keyids this way:
+	RSA	:= low 64 bits of n
+	ELGAMAL := build a v3 pubkey packet (with CTB 0x99) and calculate
+		   a rmd160 hash value from it. This is used as the
+		   fingerprint and the low 64 bits are the keyid.
+
+    * Revocation certificates consist only of the signature packet;
+      "import" knows how to handle this.  The rationale behind it is
+      to keep them small.
 
 
 

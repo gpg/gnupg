@@ -12,7 +12,7 @@ B<gpgm> [--homedir name] [--options file] [options] command [args]
 
 B<gpg> is the main program for the GNUPG system. B<gpgm> is a maintenance
 tool which has some commands B<gpgm> does not have; it is there because
-it does not handle sensitive data ans therefore has no need to allocate
+it does not handle sensitive data and therefore has no need to allocate
 secure memory.
 
 =head1 COMMANDS
@@ -315,13 +315,13 @@ B<--marginals-needed> I<n>
 
 B<--cipher-algo> I<name>
     Use I<name> as cipher algorithm. Running the program
-    with the option B<--verbose> yields a list of supported
+    with the command B<--version> yields a list of supported
     algorithms. If this is not used the cipher algorithm is
     selected from the preferences stored with the key.
 
 B<--digest-algo> I<name>
     Use I<name> as message digest algorithm. Running the
-    program with the option B<--verbose> yields a list of
+    program with the command B<--version> yields a list of
     supported algorithms.  Please note that using this
     option may violate the OpenPGP requirement, that a
     160 bit hash is to be used for DSA.
@@ -357,7 +357,7 @@ B<--compress-algo> I<number>
 
 B<--digest-algo> I<name>
     Use I<name> as message digest algorithm. Running the
-    program with the option B<--verbose> yields a list of
+    program with the command B<--version> yields a list of
     supported algorithms.
 
 

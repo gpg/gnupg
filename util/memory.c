@@ -80,6 +80,10 @@ const void membug( const char *fmt, ... );
 #endif
 
 
+#ifdef M_GUARD
+static long used_memory;
+#endif
+
 #ifdef M_DEBUG	/* stuff used for memory debuging */
 
 struct info_entry {
@@ -302,6 +306,7 @@ dump_table( void)
 							   sum, chunks );
 }
 
+
 static void
 check_allmem( const char *info )
 {
@@ -333,6 +338,40 @@ membug( const char *fmt, ... )
 }
 
 
+void
+m_print_stats( const char *prefix )
+{
+  #ifdef M_DEBUG
+    unsigned n;
+    struct memtbl_entry *e;
+    ulong sum = 0, chunks =0;
+
+    for( e = memtbl, n = 0; n < memtbl_len; n++, e++ ) {
+	if(e->inuse) {
+	    sum += e->user_n;
+	    chunks++;
+	}
+    }
+
+    log_debug( "%s%smemstat: %8lu bytes in %ld chunks used\n",
+		prefix? prefix:"", prefix? ": ":"", sum, chunks );
+  #elif defined(M_GUARD)
+    log_debug( "%s%smemstat: %8ld bytes\n",
+		prefix? prefix:"", prefix? ": ":"", used_memory );
+  #endif
+}
+
+void
+m_dump_table( const char *prefix )
+{
+  #if M_DEBUG
+    fprintf(stderr,"Memory-Table-Dump: %s\n", prefix);
+    dump_table();
+  #endif
+    m_print_stats( prefix );
+}
+
+
 static void
 out_of_core(size_t n, int secure)
 {
@@ -354,6 +393,7 @@ FNAME(alloc)( size_t n FNAMEPRT )
     if( !(p = malloc( n + EXTRA_ALIGN+5 )) )
 	out_of_core(n,0);
     store_len(p,n,0);
+    used_memory += n;
     p[4+EXTRA_ALIGN+n] = MAGIC_END_BYTE;
     return p+EXTRA_ALIGN+4;
   #else
@@ -457,8 +497,10 @@ FNAME(free)( void *a FNAMEPRT )
     m_check(p);
     if( m_is_secure(a) )
 	secmem_free(p-EXTRA_ALIGN-4);
-    else
+    else {
+	used_memory -= m_size(a);
 	free(p-EXTRA_ALIGN-4);
+    }
   #else
     if( m_is_secure(a) )
 	secmem_free(p);

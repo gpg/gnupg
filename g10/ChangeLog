@@ -1,3 +1,15 @@
+Thu Oct  8 11:35:51 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* armor.c (is_armored): Ad test on old comment packets.
+
+	* tdbio.c (tdbio_search_dir_bypk): fixed memory leak.
+
+	* getkey.c: Changed the caching algorithms.
+
+Wed Oct  7 19:33:28 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* kbnodes.c (unused_nodes): New.
+
 Wed Oct  7 11:15:36 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* keyedit.c (sign_uids): Fixed a problem with SK which could caused

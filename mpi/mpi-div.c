@@ -146,8 +146,7 @@ mpi_tdiv_qr( MPI quot, MPI rem, MPI num, MPI den)
      * We need space for an extra limb in the remainder, because it's
      * up-shifted (normalized) below.  */
     rsize = nsize + 1;
-    if( rem->alloced < rsize )
-	mpi_resize( rem, rsize);
+    mpi_resize( rem, rsize);
 
     qsize = rsize - dsize;	  /* qsize cannot be bigger than this.	*/
     if( qsize <= 0 ) {
@@ -165,7 +164,7 @@ mpi_tdiv_qr( MPI quot, MPI rem, MPI num, MPI den)
 	return;
     }
 
-    if( quot && quot->alloced < qsize )
+    if( quot )
 	mpi_resize( quot, qsize);
 
     /* Read pointers here, when reallocation is finished.  */
@@ -198,7 +197,8 @@ mpi_tdiv_qr( MPI quot, MPI rem, MPI num, MPI den)
 	/* Make sure QP and NP point to different objects.  Otherwise the
 	 * numerator would be gradually overwritten by the quotient limbs.  */
 	if(qp == np) { /* Copy NP object to temporary space.  */
-	    np = marker[markidx++] = mpi_alloc_limb_space(nsize,mpi_is_secure(quot));
+	    np = marker[markidx++] = mpi_alloc_limb_space(nsize,
+							  mpi_is_secure(quot));
 	    MPN_COPY(np, qp, nsize);
 	}
     }

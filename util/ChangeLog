@@ -1,3 +1,7 @@
+Wed Oct  7 19:27:50 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* memory.c (m_print_stats): New.
+
 Tue Oct  6 09:53:56 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* strgutil.c (memicmp): Add HAVE_MEMICMP.

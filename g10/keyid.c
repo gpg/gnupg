@@ -330,7 +330,7 @@ expirestr_from_sk( PKT_secret_key *sk )
 /**************** .
  * Return a byte array with the fingerprint for the given PK/SK
  * The length of the array is returned in ret_len. Caller must free
- * the array or provide array as buffer of length MAX_FINGERPRINT_LEN
+ * the array or provide an array of length MAX_FINGERPRINT_LEN.
  */
 
 byte *

@@ -39,6 +39,18 @@
 #include "trustdb.h"
 #include "tdbio.h"
 
+/* a type used to pass infomation to cmp_krec_fpr */
+struct cmp_krec_fpr_struct {
+    int pubkey_algo;
+    const char *fpr;
+    int fprlen;
+};
+
+/* a type used to pass infomation to cmp_sdir */
+struct cmp_sdir_struct {
+    int pubkey_algo;
+    u32 keyid[2];
+};
 
 
 static char *db_name;
@@ -149,6 +161,47 @@ open_db()
 
 
 /****************
+ * Make a hashtable: type 0 = key hash, 1 = sdir hash
+ */
+static void
+create_hashtable( TRUSTREC *vr, int type )
+{
+    TRUSTREC rec;
+    off_t offset;
+    ulong recnum;
+    int i, n, rc;
+
+    offset = lseek( db_fd, 0, SEEK_END );
+    if( offset == -1 )
+	log_fatal("trustdb: lseek to end failed: %s\n", strerror(errno) );
+    recnum = offset / TRUST_RECORD_LEN;
+    assert(recnum); /* this is will never be the first record */
+
+    if( !type )
+	vr->r.ver.keyhashtbl = recnum;
+    else
+	vr->r.ver.sdirhashtbl = recnum;
+    /* Now write the records */
+    n = (256+ITEMS_PER_HTBL_RECORD-1) / ITEMS_PER_HTBL_RECORD;
+    for(i=0; i < n; i++, recnum++ ) {
+	 memset( &rec, 0, sizeof rec );
+	 rec.rectype = RECTYPE_HTBL; /* free record */
+	 rec.recnum = recnum;
+	 rc = tdbio_write_record( &rec );
+	 if( rc )
+	     log_fatal_f(db_name,_("failed to create hashtable: %s\n"),
+						 g10_errstr(rc));
+    }
+    /* update the version record */
+    rc = tdbio_write_record( vr );
+    if( rc )
+	log_fatal_f( db_name, _("error updating version record: %s\n"),
+							     g10_errstr(rc));
+}
+
+
+
+/****************
  * Return the record number of the keyhash tbl or create a new one.
  */
 static ulong
@@ -165,48 +218,45 @@ get_keyhashrec()
     if( rc )
 	log_fatal_f( db_name, _("error reading version record: %s\n"),
 							g10_errstr(rc) );
-    if( vr.r.ver.keyhashtbl )
-	keyhashtbl = vr.r.ver.keyhashtbl;
-    else {
-	TRUSTREC rec;
-	off_t offset;
-	ulong recnum;
-	int i, n;
+    if( !vr.r.ver.keyhashtbl )
+	create_hashtable( &vr, 0 );
 
-	offset = lseek( db_fd, 0, SEEK_END );
-	if( offset == -1 )
-	    log_fatal("trustdb: lseek to end failed: %s\n", strerror(errno) );
-	recnum = offset / TRUST_RECORD_LEN;
-	assert(recnum); /* this is will never be the first record */
 
-	keyhashtbl = recnum;
-	/* Now write the records */
-	n = (256+ITEMS_PER_HTBL_RECORD-1) / ITEMS_PER_HTBL_RECORD;
-	for(i=0; i < n; i++, recnum++ ) {
-	     memset( &rec, 0, sizeof rec );
-	     rec.rectype = RECTYPE_HTBL; /* free record */
-	     rec.recnum = recnum;
-	     rc = tdbio_write_record( &rec );
-	     if( rc )
-		 log_fatal_f(db_name,_("failed to create hashtable: %s\n"),
-						     g10_errstr(rc));
-	}
-	/* update the version record */
-	vr.r.ver.keyhashtbl = keyhashtbl;
-	rc = tdbio_write_record( &vr );
-	if( rc )
-	    log_fatal_f( db_name, _("error updating version record: %s\n"),
-							     g10_errstr(rc));
-    }
-    return keyhashtbl;
+    return vr.r.ver.keyhashtbl;
+}
+
+/****************
+ * Return the record number of the shadow direcory hash table
+ * or create a new one.
+ */
+static ulong
+get_sdirhashrec()
+{
+    static ulong sdirhashtbl; /* record number of the hashtable */
+    TRUSTREC vr;
+    int rc;
+
+    if( sdirhashtbl )
+	return sdirhashtbl;
+
+    rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
+    if( rc )
+	log_fatal_f( db_name, _("error reading version record: %s\n"),
+							g10_errstr(rc) );
+    if( !vr.r.ver.sdirhashtbl )
+	create_hashtable( &vr, 1 );
+
+    return vr.r.ver.sdirhashtbl;
 }
 
 
 /****************
- * Update the key hashtbl or create the table if it does not exist
+ * Update a hashtable.
+ * table gives the start of the table, key and keylen is the key,
+ * newrecnum is the record number to insert.
  */
 static int
-update_keyhashtbl( TRUSTREC *kr )
+upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 {
     TRUSTREC lastrec, rec;
     ulong hashrec, item;
@@ -214,40 +264,40 @@ update_keyhashtbl( TRUSTREC *kr )
     int level=0;
     int rc, i;
 
-    hashrec = get_keyhashrec();
+    hashrec = table;
   next_level:
-    msb = kr->r.key.fingerprint[level];
+    msb = key[level];
     hashrec += msb / ITEMS_PER_HTBL_RECORD;
     rc = tdbio_read_record( hashrec, &rec, RECTYPE_HTBL );
     if( rc ) {
-	log_error( db_name, "update_keyhashtbl read failed: %s\n",
+	log_error( db_name, "upd_hashtable: read failed: %s\n",
 							g10_errstr(rc) );
 	return rc;
     }
 
     item = rec.r.htbl.item[msb % ITEMS_PER_HTBL_RECORD];
-    if( !item ) { /* insert new one */
-	rec.r.htbl.item[msb % ITEMS_PER_HTBL_RECORD] = kr->recnum;
+    if( !item ) { /* insert a new item into the hash table */
+	rec.r.htbl.item[msb % ITEMS_PER_HTBL_RECORD] = newrecnum;
 	rc = tdbio_write_record( &rec );
 	if( rc ) {
-	    log_error( db_name, "update_keyhashtbl write htbl failed: %s\n",
+	    log_error( db_name, "upd_hashtable: write htbl failed: %s\n",
 							    g10_errstr(rc) );
 	    return rc;
 	}
     }
-    else if( item != kr->recnum ) {  /* must do an update */
+    else if( item != newrecnum ) {  /* must do an update */
 	lastrec = rec;
 	rc = tdbio_read_record( item, &rec, 0 );
 	if( rc ) {
-	    log_error( db_name, "update_keyhashtbl read item failed: %s\n",
+	    log_error( db_name, "upd_hashtable: read item failed: %s\n",
 							    g10_errstr(rc) );
 	    return rc;
 	}
 	if( rec.rectype == RECTYPE_HTBL ) {
 	    hashrec = item;
 	    level++;
-	    if( level >= kr->r.key.fingerprint_len ) {
-		log_error( db_name, "keyhashtbl has invalid indirections\n");
+	    if( level >= keylen ) {
+		log_error( db_name, "hashtable has invalid indirections.\n");
 		return G10ERR_TRUSTDB;
 	    }
 	    goto next_level;
@@ -256,15 +306,13 @@ update_keyhashtbl( TRUSTREC *kr )
 	    /* see whether the key is already in this list */
 	    for(;;) {
 		for(i=0; i < ITEMS_PER_HLST_RECORD; i++ ) {
-		    if( rec.r.hlst.rnum[i] == kr->recnum ) {
-			log_debug("HTBL: no update needed for keyrec %lu\n",
-				    kr->recnum );
-			return 0;
+		    if( rec.r.hlst.rnum[i] == newrecnum ) {
+			return 0; /* okay, already in the list */
 		    }
 		}
 		if( rec.r.hlst.next ) {
 		    rc = tdbio_read_record( rec.r.hlst.next,
-							&rec, RECTYPE_HLST);
+						       &rec, RECTYPE_HLST);
 		    if( rc ) {
 			log_error( db_name,
 				   "scan keyhashtbl read hlst failed: %s\n",
@@ -279,13 +327,13 @@ update_keyhashtbl( TRUSTREC *kr )
 	    for(;;) {
 		for(i=0; i < ITEMS_PER_HLST_RECORD; i++ ) {
 		    if( !rec.r.hlst.rnum[i] ) {
-			rec.r.hlst.rnum[i] = kr->recnum;
+			rec.r.hlst.rnum[i] = newrecnum;
 			rc = tdbio_write_record( &rec );
 			if( rc )
 			    log_error( db_name,
-				   "update_keyhashtbl write hlst failed: %s\n",
+				   "upd_hashtable: write hlst failed: %s\n",
 							      g10_errstr(rc) );
-			return rc; /* ready */
+			return rc; /* done */
 		    }
 		}
 		if( rec.r.hlst.next ) {
@@ -293,7 +341,7 @@ update_keyhashtbl( TRUSTREC *kr )
 						      &rec, RECTYPE_HLST );
 		    if( rc ) {
 			log_error( db_name,
-				   "update_keyhashtbl read hlst failed: %s\n",
+				   "upd_hashtable: read hlst failed: %s\n",
 							     g10_errstr(rc) );
 			return rc;
 		    }
@@ -303,26 +351,26 @@ update_keyhashtbl( TRUSTREC *kr )
 		    rc = tdbio_write_record( &rec );
 		    if( rc ) {
 			log_error( db_name,
-			       "update_keyhashtbl write hlst failed: %s\n",
+			       "upd_hashtable: write hlst failed: %s\n",
 							  g10_errstr(rc) );
 			return rc;
 		    }
 		    memset( &rec, 0, sizeof rec );
 		    rec.rectype = RECTYPE_HLST;
 		    rec.recnum = item;
-		    rec.r.hlst.rnum[0] = kr->recnum;
+		    rec.r.hlst.rnum[0] = newrecnum;
+		    rc = tdbio_write_record( &rec );
 		    if( rc )
 			log_error( db_name,
-			       "update_keyhashtbl write ext hlst failed: %s\n",
+			       "upd_hashtable: write ext hlst failed: %s\n",
 							  g10_errstr(rc) );
-		    return rc; /* ready */
+		    return rc; /* done */
 		}
-	    }
+	    } /* end loop over hlst slots */
 	}
-	else if( rec.rectype == RECTYPE_KEY ) { /* insert a list record */
-	    if( rec.recnum == kr->recnum ) {
-		log_debug("HTBL: no update needed for keyrec %lu\n",
-							 kr->recnum );
+	else if( rec.rectype == RECTYPE_KEY
+		 || rec.rectype == RECTYPE_SDIR ) { /* insert a list record */
+	    if( rec.recnum == newrecnum ) {
 		return 0;
 	    }
 	    item = rec.recnum; /* save number of key record */
@@ -330,11 +378,11 @@ update_keyhashtbl( TRUSTREC *kr )
 	    rec.rectype = RECTYPE_HLST;
 	    rec.recnum = tdbio_new_recnum();
 	    rec.r.hlst.rnum[0] = item;	     /* old keyrecord */
-	    rec.r.hlst.rnum[1] = kr->recnum; /* and new one */
+	    rec.r.hlst.rnum[1] = newrecnum; /* and new one */
 	    rc = tdbio_write_record( &rec );
 	    if( rc ) {
 		log_error( db_name,
-		       "update_keyhashtbl write new hlst failed: %s\n",
+		       "upd_hashtable: write new hlst failed: %s\n",
 						  g10_errstr(rc) );
 		return rc;
 	    }
@@ -342,13 +390,12 @@ update_keyhashtbl( TRUSTREC *kr )
 	    lastrec.r.htbl.item[msb % ITEMS_PER_HTBL_RECORD] = rec.recnum;
 	    rc = tdbio_write_record( &lastrec );
 	    if( rc )
-		log_error( db_name,
-		       "update_keyhashtbl update htbl failed: %s\n",
-						  g10_errstr(rc) );
+		log_error( db_name, "upd_hashtable: update htbl failed: %s\n",
+							     g10_errstr(rc) );
 	    return rc; /* ready */
 	}
 	else {
-	    log_error( db_name, "keyhashtbl %lu points to an invalid record\n",
+	    log_error( db_name, "hashtbl %lu points to an invalid record\n",
 								    item);
 	    return G10ERR_TRUSTDB;
 	}
@@ -356,6 +403,119 @@ update_keyhashtbl( TRUSTREC *kr )
 
     return 0;
 }
+
+
+
+/****************
+ * Lookup a record via the hashtable tablewith key/keylen and return the
+ * result in rec.  cmp() should return if the record is the desired one.
+ * Returns -1 if not found, 0 if found or another errocode
+ */
+static int
+lookup_hashtable( ulong table, const byte *key, size_t keylen,
+		  int (*cmpfnc)(void*, const TRUSTREC *), void *cmpdata,
+						TRUSTREC *rec )
+{
+    int rc;
+    ulong hashrec, item;
+    int msb;
+    int level=0;
+
+    hashrec = table;
+  next_level:
+    msb = key[level];
+    hashrec += msb / ITEMS_PER_HTBL_RECORD;
+    rc = tdbio_read_record( hashrec, rec, RECTYPE_HTBL );
+    if( rc ) {
+	log_error( db_name, "lookup_hashtable failed: %s\n", g10_errstr(rc) );
+	return rc;
+    }
+
+    item = rec->r.htbl.item[msb % ITEMS_PER_HTBL_RECORD];
+    if( !item )
+	return -1; /* not found */
+
+    rc = tdbio_read_record( item, rec, 0 );
+    if( rc ) {
+	log_error( db_name, "hashtable read failed: %s\n", g10_errstr(rc) );
+	return rc;
+    }
+    if( rec->rectype == RECTYPE_HTBL ) {
+	hashrec = item;
+	level++;
+	if( level >= keylen ) {
+	    log_error( db_name, "hashtable has invalid indirections\n");
+	    return G10ERR_TRUSTDB;
+	}
+	goto next_level;
+    }
+    else if( rec->rectype == RECTYPE_HLST ) {
+	for(;;) {
+	    int i;
+
+	    for(i=0; i < ITEMS_PER_HLST_RECORD; i++ ) {
+		if( rec->r.hlst.rnum[i] ) {
+		    TRUSTREC tmp;
+
+		    rc = tdbio_read_record( rec->r.hlst.rnum[i], &tmp, 0 );
+		    if( rc ) {
+			log_error( "lookup_hashtable: read item failed: %s\n",
+							      g10_errstr(rc) );
+			return rc;
+		    }
+		    if( (*cmpfnc)( cmpdata, &tmp ) ) {
+			*rec = tmp;
+			return 0;
+		    }
+		}
+	    }
+	    if( rec->r.hlst.next ) {
+		rc = tdbio_read_record( rec->r.hlst.next, rec, RECTYPE_HLST );
+		if( rc ) {
+		    log_error( "lookup_hashtable: read hlst failed: %s\n",
+							 g10_errstr(rc) );
+		    return rc;
+		}
+	    }
+	    else
+		return -1; /* not found */
+	}
+    }
+
+
+    if( (*cmpfnc)( cmpdata, rec ) )
+	return 0; /* really found */
+
+    return -1; /* no: not found */
+}
+
+
+
+
+/****************
+ * Update the key hashtbl or create the table if it does not exist
+ */
+static int
+update_keyhashtbl( TRUSTREC *kr )
+{
+    return upd_hashtable( get_keyhashrec(),
+			  kr->r.key.fingerprint,
+			  kr->r.key.fingerprint_len, kr->recnum );
+}
+
+/****************
+ * Update the shadow dir hashtbl or create the table if it does not exist
+ */
+static int
+update_sdirhashtbl( TRUSTREC *sr )
+{
+    byte key[8];
+
+    u32tobuf( key   , sr->r.sdir.keyid[0] );
+    u32tobuf( key+4 , sr->r.sdir.keyid[1] );
+    return upd_hashtable( get_sdirhashrec(), key, 8, sr->recnum );
+}
+
 
 
 
@@ -371,8 +531,9 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
     switch( rec->rectype ) {
       case 0: fprintf(fp, "blank\n");
 	break;
-      case RECTYPE_VER: fprintf(fp, "version, keyhashtbl=%lu, firstfree=%lu\n",
-	    rec->r.ver.keyhashtbl, rec->r.ver.firstfree );
+      case RECTYPE_VER: fprintf(fp, "version, kd=%lu, sd=%lu, free=%lu\n",
+	    rec->r.ver.keyhashtbl, rec->r.ver.sdirhashtbl,
+				   rec->r.ver.firstfree );
 	break;
       case RECTYPE_FREE: fprintf(fp, "free, next=%lu\n", rec->r.free.next );
 	break;
@@ -411,6 +572,10 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 		    rec->r.uid.prefrec,
 		    rec->r.uid.siglist,
 		    rec->r.uid.namehash[18], rec->r.uid.namehash[19]);
+	if( rec->r.uid.uidflags & UIDF_CHECKED )
+	    fputs(", checked", fp );
+	if( rec->r.uid.uidflags & UIDF_VALID )
+	    fputs(", valid", fp );
 	if( rec->r.uid.uidflags & UIDF_REVOKED )
 	    fputs(", revoked", fp );
 	putc('\n', fp);
@@ -435,6 +600,14 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 					  rec->r.sig.sig[i].flag );
 	}
 	putc('\n', fp);
+	break;
+      case RECTYPE_SDIR:
+	fprintf(fp, "sdir %lu, keyid=%08lX%08lX, algo=%d, hint=%lu\n",
+		    rec->r.sdir.lid,
+		    (ulong)rec->r.sdir.keyid[0],
+		    (ulong)rec->r.sdir.keyid[1],
+		    rec->r.sdir.pubkey_algo,
+		    (ulong)rec->r.sdir.hintlist );
 	break;
       case RECTYPE_CACH:
 	fprintf(fp, "cach\n");
@@ -483,6 +656,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	return G10ERR_READ_FILE;
     }
     rec->recnum = recnum;
+    rec->dirty = 0;
     p = buf;
     rec->rectype = *p++;
     if( expected && rec->rectype != expected ) {
@@ -508,6 +682,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	rec->r.ver.validated= buftoulong(p); p += 4;
 	rec->r.ver.keyhashtbl=buftoulong(p); p += 4;
 	rec->r.ver.firstfree =buftoulong(p); p += 4;
+	rec->r.ver.sdirhashtbl =buftoulong(p); p += 4;
 	if( recnum ) {
 	    log_error_f( db_name, "version record with recnum %lu\n",
 							     (ulong)recnum );
@@ -568,6 +743,19 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	    rec->r.sig.sig[i].flag = *p++;
 	}
 	break;
+      case RECTYPE_SDIR:   /* shadow directory record */
+	rec->r.sdir.lid     = buftoulong(p); p += 4;
+	rec->r.sdir.keyid[0]= buftou32(p); p += 4;
+	rec->r.sdir.keyid[1]= buftou32(p); p += 4;
+	rec->r.sdir.pubkey_algo = *p++;
+	p += 3;
+	rec->r.sdir.hintlist = buftoulong(p);
+	if( rec->r.sdir.lid != recnum ) {
+	    log_error_f( db_name, "sdir LID != recnum (%lu,%lu)\n",
+					 rec->r.sdir.lid, (ulong)recnum );
+	    rc = G10ERR_TRUSTDB;
+	}
+	break;
       case RECTYPE_CACH:   /* cache record (FIXME)*/
 	rec->r.cache.lid    = buftoulong(p); p += 4;
 	memcpy(rec->r.cache.blockhash, p, 20); p += 20;
@@ -609,6 +797,8 @@ tdbio_write_record( TRUSTREC *rec )
     if( db_fd == -1 )
 	open_db();
 
+tdbio_dump_record( rec, stdout );
+
     memset(buf, 0, TRUST_RECORD_LEN);
     p = buf;
     *p++ = rec->rectype; p++;
@@ -626,6 +816,7 @@ tdbio_write_record( TRUSTREC *rec )
 	ulongtobuf(p, rec->r.ver.validated); p += 4;
 	ulongtobuf(p, rec->r.ver.keyhashtbl); p += 4;
 	ulongtobuf(p, rec->r.ver.firstfree ); p += 4;
+	ulongtobuf(p, rec->r.ver.sdirhashtbl ); p += 4;
 	break;
 
       case RECTYPE_FREE:
@@ -677,6 +868,15 @@ tdbio_write_record( TRUSTREC *rec )
 	}
 	break;
 
+      case RECTYPE_SDIR:
+	ulongtobuf( p, rec->r.sdir.lid); p += 4;
+	u32tobuf( p, rec->r.sdir.keyid[0] ); p += 4;
+	u32tobuf( p, rec->r.sdir.keyid[1] ); p += 4;
+	*p++ = rec->r.sdir.pubkey_algo;
+	p += 3;
+	ulongtobuf( p, rec->r.sdir.hintlist );
+	break;
+
       case RECTYPE_CACH:   /* FIXME*/
 	ulongtobuf(p, rec->r.cache.lid); p += 4;
 	memcpy(p, rec->r.cache.blockhash, 20); p += 20;
@@ -711,6 +911,8 @@ tdbio_write_record( TRUSTREC *rec )
     }
     else if( rec->rectype == RECTYPE_KEY )
 	rc = update_keyhashtbl( rec );
+    else if( rec->rectype == RECTYPE_SDIR )
+	rc = update_sdirhashtbl( rec );
 
     return rc;
 }
@@ -805,13 +1007,13 @@ tdbio_new_recnum()
 int
 tdbio_search_dir_bypk( PKT_public_key *pk, TRUSTREC *rec )
 {
-    byte *fingerprint;
+    byte fingerprint[MAX_FINGERPRINT_LEN];
     size_t fingerlen;
     u32 keyid[2];
     int rc;
 
     keyid_from_pk( pk, keyid );
-    fingerprint = fingerprint_from_pk( pk, NULL, &fingerlen );
+    fingerprint_from_pk( pk, fingerprint, &fingerlen );
     rc = tdbio_search_dir_byfpr( fingerprint, fingerlen,
 				 pk->pubkey_algo, rec );
 
@@ -827,185 +1029,74 @@ tdbio_search_dir_bypk( PKT_public_key *pk, TRUSTREC *rec )
 }
 
 
+static int
+cmp_krec_fpr( void *dataptr, const TRUSTREC *rec )
+{
+    const struct cmp_krec_fpr_struct *d = dataptr;
+
+    return rec->rectype == RECTYPE_KEY
+	   && ( !d->pubkey_algo || rec->r.key.pubkey_algo == d->pubkey_algo )
+	   && rec->r.key.fingerprint_len == d->fprlen
+	   && !memcmp( rec->r.key.fingerprint, d->fpr, d->fprlen );
+}
+
 int
 tdbio_search_dir_byfpr( const byte *fingerprint, size_t fingerlen,
 			int pubkey_algo, TRUSTREC *rec )
 {
+    struct cmp_krec_fpr_struct cmpdata;
     ulong recnum;
     int rc;
-    ulong hashrec, item;
-    int msb;
-    int level=0;
 
     assert( fingerlen == 20 || fingerlen == 16 );
 
     /* locate the key using the hash table */
-    hashrec = get_keyhashrec();
-  next_level:
-    msb = fingerprint[level];
-    hashrec += msb / ITEMS_PER_HTBL_RECORD;
-    rc = tdbio_read_record( hashrec, rec, RECTYPE_HTBL );
-    if( rc ) {
-	log_error( db_name, "scan keyhashtbl failed: %s\n", g10_errstr(rc) );
-	return rc;
+    cmpdata.pubkey_algo = pubkey_algo;
+    cmpdata.fpr = fingerprint;
+    cmpdata.fprlen = fingerlen;
+    rc = lookup_hashtable( get_keyhashrec(), fingerprint, fingerlen,
+			   cmp_krec_fpr, &cmpdata, rec );
+    if( !rc ) {
+	recnum = rec->r.key.lid;
+	/* Now read the dir record */
+	rc = tdbio_read_record( recnum, rec, RECTYPE_DIR);
+	if( rc )
+	    log_error_f(db_name, "can't read dirrec %lu: %s\n",
+						    recnum, g10_errstr(rc) );
     }
-
-    item = rec->r.htbl.item[msb % ITEMS_PER_HTBL_RECORD];
-    if( !item )
-	return -1; /* not found */
-
-    rc = tdbio_read_record( item, rec, 0 );
-    if( rc ) {
-	log_error( db_name, "keyhashtbl read failed: %s\n", g10_errstr(rc) );
-	return rc;
-    }
-    if( rec->rectype == RECTYPE_HTBL ) {
-	hashrec = item;
-	level++;
-	if( level >= fingerlen ) {
-	    log_error( db_name, "keyhashtbl has invalid indirections\n");
-	    return G10ERR_TRUSTDB;
-	}
-	goto next_level;
-    }
-    else if( rec->rectype == RECTYPE_HLST ) {
-	for(;;) {
-	    int i;
-
-	    for(i=0; i < ITEMS_PER_HLST_RECORD; i++ ) {
-		if( rec->r.hlst.rnum[i] ) {
-		    TRUSTREC tmp;
-
-		    rc = tdbio_read_record( rec->r.hlst.rnum[i],
-					     &tmp, RECTYPE_KEY );
-		    if( rc ) {
-			log_error( db_name,
-				   "scan keyhashtbl read key failed: %s\n",
-							     g10_errstr(rc) );
-			return rc;
-		    }
-		    if( (!pubkey_algo || tmp.r.key.pubkey_algo == pubkey_algo)
-			&& tmp.r.key.fingerprint_len == fingerlen
-			&& !memcmp(tmp.r.key.fingerprint,
-					    fingerprint, fingerlen) ) {
-			*rec = tmp;
-			goto found;
-		    }
-		}
-	    }
-	    if( rec->r.hlst.next ) {
-		rc = tdbio_read_record( rec->r.hlst.next, rec, RECTYPE_HLST );
-		if( rc ) {
-		    log_error( db_name,
-			       "scan keyhashtbl read hlst failed: %s\n",
-							 g10_errstr(rc) );
-		    return rc;
-		}
-	    }
-	    else
-		return -1; /* not found */
-	}
-      found:
-	;
-    }
-    else if( rec->rectype == RECTYPE_KEY ) {
-	/* must check that it is the requested key */
-	if( (pubkey_algo && rec->r.key.pubkey_algo != pubkey_algo)
-	    || rec->r.key.fingerprint_len != fingerlen
-	    || memcmp(rec->r.key.fingerprint, fingerprint, fingerlen) )
-	    return -1; /* no: not found */
-    }
-    else {
-	log_error( db_name, "keyhashtbl %lu points to an invalid record\n",
-								item);
-	return G10ERR_TRUSTDB;
-    }
-
-    recnum = rec->r.key.lid;
-    /* Now read the dir record */
-    rc = tdbio_read_record( recnum, rec, RECTYPE_DIR);
-    if( rc )
-	log_error_f(db_name, "can't read dirrec %lu: %s\n",
-						recnum, g10_errstr(rc) );
-
     return rc;
 }
 
-static int
-del_reclist( ulong recno, int type )
-{
-    TRUSTREC rec;
-    int rc;
 
-    while( recno ) {
-	rc = tdbio_read_record( recno, &rec, type);
-	if( rc ) {
-	    log_error_f(db_name, "can't read record %lu: %s\n",
-						recno, g10_errstr(rc));
-	    return rc;
-	}
-	switch( type ) {
-	    case RECTYPE_PREF: recno = rec.r.pref.next; break;
-	    case RECTYPE_UID:  recno = rec.r.uid.next;	break;
-	    default: BUG();
-	}
-	rc = tdbio_delete_record( rec.recnum );
-	if( rc ) {
-	    log_error_f(db_name, "can't delete record %lu: %s\n",
-						rec.recnum, g10_errstr(rc));
-	    return rc;
-	}
-    }
-    return 0;
+
+static int
+cmp_sdir( void *dataptr, const TRUSTREC *rec )
+{
+    const struct cmp_sdir_struct *d = dataptr;
+
+    return rec->rectype == RECTYPE_SDIR
+	   && ( !d->pubkey_algo || rec->r.sdir.pubkey_algo == d->pubkey_algo )
+	   && rec->r.sdir.keyid[0] == d->keyid[0]
+	   && rec->r.sdir.keyid[1] == d->keyid[1];
 }
 
-/****************
- * Delete the Userid UIDLID from DIRLID
- */
-int
-tdbio_delete_uidrec( ulong dirlid, ulong uidlid )
-{
-    TRUSTREC dirrec, rec;
-    ulong recno;
-    int rc;
 
-    rc = tdbio_read_record( dirlid, &dirrec, RECTYPE_DIR);
-    if( rc ) {
-	log_error_f(db_name, "can't read dirrec %lu: %s\n", dirlid, g10_errstr(rc));
-	return rc;
-    }
-    recno = dirrec.r.dir.uidlist;
-    for( ; recno; recno = rec.r.uid.next ) {
-	rc = tdbio_read_record( recno, &rec, RECTYPE_UID);
-	if( rc ) {
-	    log_error_f(db_name, "can't read uidrec %lu: %s\n",
-						    recno, g10_errstr(rc));
-	    return rc;
-	}
-	if( recno == uidlid ) {
-	    rc = del_reclist( rec.r.uid.prefrec, RECTYPE_PREF );
-	    if( rc )
-		return rc;
-	    rc = del_reclist( rec.r.uid.siglist, RECTYPE_SIG );
-	    if( rc )
-		return rc;
-	    rc = tdbio_delete_record( recno );
-	    if( rc ) {
-		log_error_f(db_name, "can't delete uidrec %lu: %s\n",
-						    recno, g10_errstr(rc));
-		return rc;
-	    }
-	    dirrec.r.dir.uidlist = 0;
-	    rc = tdbio_write_record( &dirrec );
-	    if( rc ) {
-		log_error_f(db_name, "can't update dirrec %lu: %s\n",
-						  dirrec.recnum, g10_errstr(rc));
-		return rc;
-	    }
-	    return 0;
-	}
-    }
-    return -1; /* not found */
+int
+tdbio_search_sdir( u32 *keyid, int pubkey_algo, TRUSTREC *rec )
+{
+    struct cmp_sdir_struct cmpdata;
+    int rc;
+    byte key[8];
+
+    /* locate the shadow dir record using the hash table */
+    u32tobuf( key   , keyid[0] );
+    u32tobuf( key+4 , keyid[1] );
+    cmpdata.pubkey_algo = pubkey_algo;
+    cmpdata.keyid[0] = keyid[0];
+    cmpdata.keyid[1] = keyid[1];
+    rc = lookup_hashtable( get_sdirhashrec(), key, 8,
+			   cmp_sdir, &cmpdata, rec );
+    return rc;
 }
 
 

@@ -413,11 +413,14 @@ print_userid( PACKET *pkt )
 static void
 print_fingerprint( PKT_public_key *pk, PKT_secret_key *sk )
 {
-    byte *array, *p;
+    byte array[MAX_FINGERPRINT_LEN], *p;
     size_t i, n;
 
-    p = array = sk? fingerprint_from_sk( sk, NULL, &n )
-		   : fingerprint_from_pk( pk, NULL, &n );
+    if( sk )
+	fingerprint_from_sk( sk, array, &n );
+    else
+	fingerprint_from_pk( pk, array, &n );
+    p = array;
     if( opt.with_colons ) {
 	printf("fpr:::::::::");
 	for(i=0; i < n ; i++, p++ )
@@ -442,7 +445,6 @@ print_fingerprint( PKT_public_key *pk, PKT_secret_key *sk )
 	}
     }
     putchar('\n');
-    m_free(array);
 }
 
 

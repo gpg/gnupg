@@ -679,9 +679,11 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
 	    /* skip pakets at the beginning of a keyring, until we find
 	     * a start packet; issue a warning if it is not a comment */
 	    if( !root && pkt->pkttype != PKT_COMMENT
-		      && pkt->pkttype != PKT_OLD_COMMENT )
+		      && pkt->pkttype != PKT_OLD_COMMENT ) {
 		log_info("keyring_enum: skipped packet of type %d\n",
 			    pkt->pkttype );
+		break;
+	    }
 	    if( !root || (skipsigs && ( pkt->pkttype == PKT_SIGNATURE
 				      ||pkt->pkttype == PKT_COMMENT
 				      ||pkt->pkttype == PKT_OLD_COMMENT )) ) {
@@ -704,6 +706,7 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
 	*ret_root = root;
     free_packet( pkt );
     m_free( pkt );
+
     return rc;
 }
 

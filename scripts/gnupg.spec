@@ -26,14 +26,12 @@ tar -xvzf $RPM_SOURCE_DIR/gnupg-@pkg_version@.tar.gz
 %build
 cd gnupg-@pkg_version@
 chown -R root.root *
-./configure
+./configure  --prefix=/usr
 make
 
 %install
 cd gnupg-@pkg_version@
 make install
-chmod +s /usr/local/bin/gpg
-chmod +s /usr/local/bin/gpgm
 
 %files
 %doc gnupg-@pkg_version@/doc/DETAILS
@@ -47,13 +45,16 @@ chmod +s /usr/local/bin/gpgm
 %doc gnupg-@pkg_version@/README
 %doc gnupg-@pkg_version@/THANKS
 %doc gnupg-@pkg_version@/TODO
-/usr/local/man/man1/gpg.1
-/usr/local/bin/gpg
-/usr/local/bin/gpgm
-/usr/local/share/locale/en/LC_MESSAGES/gnupg.mo
-/usr/local/share/locale/de/LC_MESSAGES/gnupg.mo
-/usr/local/share/locale/it/LC_MESSAGES/gnupg.mo
-/usr/local/share/locale/fr/LC_MESSAGES/gnupg.mo
-/usr/local/lib/gnupg/tiger
-/usr/local/lib/gnupg/twofish
+/usr/man/man1/gpg.1
+/usr/bin/gpg
+/usr/bin/gpgm
+/usr/share/locale/en/LC_MESSAGES/gnupg.mo
+/usr/share/locale/de/LC_MESSAGES/gnupg.mo
+/usr/share/locale/it/LC_MESSAGES/gnupg.mo
+/usr/share/locale/fr/LC_MESSAGES/gnupg.mo
+/usr/lib/gnupg/tiger
+/usr/lib/gnupg/twofish
+
+%attr (4755,root,root) /usr/bin/gpg
+%attr (4755,root,root) /usr/bin/gpgm
 

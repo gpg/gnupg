@@ -171,7 +171,7 @@
   (ownertrust) to a key.  I have plans to use a cache for calculated
   trust values to speed up calcualtion.
 
-  You can see the calculated trust value using this command:
+  You can see the validity (calculated trust value) using this command:
 
       gpgm --list-keys --with-colons
 
@@ -187,8 +187,8 @@
 	 is only used for keys for which
 	 the secret key is also available.
 
-  You can get a list of the assigned ownertrust values (how far you trust
-  the owner to correctly sign another another ones key)
+  You can get a list of the assigned trust values (how far you trust
+  the owner to correctly sign another one's key)
 
       gpgm --list-ownertrust
 
@@ -259,5 +259,23 @@
    gpg [--options] --sign --encrypt foo.txt
 
 
+  Q: What kind of output is this: "key C26EE891.298, uid 09FB: ...."?
+  A: This is the internal representaion of a user id in the trustdb.
+     "C26EE891" is the keyid, "298" is the local id (a record number
+     in the trustdb) and "09FB" are the last two bytes of a ripe-md-160
+     hash of the user id for this key.
 
-[That's it for now.)]
+
+  Q: What is trust, validity and ownertrust?
+  A: "ownertrust" is used instead of "trust" to make clear that
+     this is the value you have assigned to key to express, how far you
+     trust the owner of this key to correctly sign (and so introduce)
+     other keys.  "validity" or calculated trust is a value which
+     says, how far the gnupg thinks a key is valid (that it really belongs
+     to the one who claims to be the owner of the key).
+     For more see the chapter "The Web of Trust" in the
+     Manual [gpg: Oops: Internal error: manual not found - sorry]
+
+
+
+

@@ -1,3 +1,7 @@
+1998-10-10  SL Baur  <steve@altair.xemacs.org>
+
+	* Makefile.am: fix sed -O substitutions to catch -O6, etc.
+
 Tue Oct  6 10:06:32 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* rand-unix.c (HAVE_GETTIMEOFDAY): Fixed (was ..GETTIMEOFTIME :-)

@@ -63,7 +63,7 @@ The Linux files should look like this:
     cr--r--r--	 1 root     sys        1,   9 Feb 16 08:23 /dev/urandom
 You can create them with:
     mknod /dev/random c 1 8
-    mknod /dev/random c 1 8
+    mknod /dev/urandom c 1 9
 
 The FreeBSD files [from the 970202 snapshot]:
     crw-r--r--	1 root	wheel	 2,   3 Feb 25 16:54 /dev/random

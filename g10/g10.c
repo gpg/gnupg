@@ -41,6 +41,7 @@
 #include "ttyio.h"
 #include "i18n.h"
 #include "status.h"
+#include "g10defs.h"
 
 #ifndef IS_G10MAINT
   #define IS_G10 1
@@ -503,8 +504,8 @@ main( int argc, char **argv )
     log_set_name("gpg");
     secure_random_alloc(); /* put random number into secure memory */
     disable_core_dumps();
-    init_signals();
   #endif
+    init_signals();
     i18n_init();
     opt.compress = -1; /* defaults to standard compress level */
     /* fixme: set the next two to zero and decide where used */
@@ -570,7 +571,6 @@ main( int argc, char **argv )
     maybe_setuid = 0;
     /* Okay, we are now working under our real uid */
   #endif
-
 
     if( default_config )
 	configname = make_filename(opt.homedir, "options", NULL );
@@ -1232,6 +1232,8 @@ main( int argc, char **argv )
 void
 g10_exit( int rc )
 {
+    if( opt.debug & DBG_MEMSTAT_VALUE )
+	m_print_stats("on exit");
     if( opt.debug )
 	secmem_dump_stats();
     secmem_term();

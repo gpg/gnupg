@@ -1,6 +1,10 @@
 msgid ""
 msgstr ""
 "POT-Creation-Date: 1998-10-07 14:24+0200\n"
+"PO-Revision-Date: 1998-10-11 20:10+0200\n"
+"Last-Translator: Walter Koch <walterk@mail.dip.de>\n"
+"Language-Team: German <de@li.org>\n"
+"MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=\n"
 "Date: 1998-01-26 22:08:36+0100\n"
 "From: Werner Koch <wk@frodo>\n"
@@ -61,7 +65,7 @@ msgstr "Falsche Signatur"
 
 #: util/errors.c:62
 msgid "Checksum error"
-msgstr "Prüfsummen Fehler"
+msgstr "Prüfsummen-Fehler"
 
 #: util/errors.c:63
 msgid "Bad passphrase"
@@ -311,7 +315,7 @@ msgstr "Schlüssel entfernen"
 
 #: g10/g10.c:169
 msgid "sign or edit a key"
-msgstr ""
+msgstr "Unterschreiben oder Bearbeiten eines Schlüssels"
 
 #: g10/g10.c:170
 msgid "generate a revocation certificate"
@@ -341,11 +345,11 @@ msgstr "Keine \"Owner trust\" Werte geändert.\n"
 
 #: g10/g10.c:180
 msgid "|[NAMES]|check the trust database"
-msgstr ""
+msgstr "|[NAMES]|Überprüfen der \"Trust\"-Datenbank"
 
 #: g10/g10.c:181
 msgid "fix a corrupted trust database"
-msgstr ""
+msgstr "Reparieren einer beschädigten \"Trust\"-Datenbank"
 
 #: g10/g10.c:182
 msgid "De-Armor a file or stdin"
@@ -357,7 +361,7 @@ msgstr "Datei oder stdin in eine ASCII-Hülle einpacken"
 
 #: g10/g10.c:184
 msgid "|algo [files]|print message digests"
-msgstr "|algo [files]|Hashwerte der Dateien ausgeben"
+msgstr "|algo [files]|Message-Digests für die Dateien ausgeben"
 
 #: g10/g10.c:185
 msgid "print all message digests"
@@ -471,7 +475,7 @@ msgstr "Fehler beim Erzeugen der \"Passphrase\": %s\n"
 #: g10/g10.c:222
 #, fuzzy
 msgid "|NAME|use message digest algorithm NAME for passphrases"
-msgstr "|NAME|Die Hashmethode NAME benutzen"
+msgstr "|NAME|Die Hashmethode NAME für die \"Passphrase\" benutzen"
 
 #: g10/g10.c:224
 #, fuzzy
@@ -2013,7 +2017,7 @@ msgstr "Eine abgetrennte Signatur erzeugen"
 
 #: g10/plaintext.c:215
 msgid "Please enter name of data file: "
-msgstr ""
+msgstr "Bitte geben Sie den Namen der Datendatei ein: "
 
 #: g10/plaintext.c:299
 #, c-format
@@ -2031,12 +2035,12 @@ msgstr "Ungültige \"passphrase\"; versuchen Sie's doch noch einmal ...\n"
 
 #: g10/seckey-cert.c:215
 msgid "Warning: Weak key detected - please change passphrase again.\n"
-msgstr ""
+msgstr "Warnung: Unsicherer Schlüssel entdeckt - bitte die \"Passphrase\" nochmal eingeben.\n"
 
 #: g10/sig-check.c:155
 msgid ""
 "this is a PGP generated ElGamal key which is NOT secure for signatures!\n"
-msgstr ""
+msgstr "Dieser durch PGP erzeugte ElGamal-Schlüssel ist für Signaturen NICHT sicher genug!\n"
 
 #: g10/sig-check.c:165
 msgid "public key created in future (time warp or clock problem)\n"
@@ -2051,12 +2055,12 @@ msgstr "Achtung: Schlüssel der Signatur ist verfallen am %s.\n"
 
 #: g10/trustdb.c:127
 msgid "The trust DB is corrupted; please run \"gpgm --fix-trust-db\".\n"
-msgstr ""
+msgstr "Die \"Trust\"-Datenbank ist beschädigt; verwenden Sie \"gpgm --fix-trust-db\".\n"
 
 #: g10/trustdb.c:406
 #, c-format
 msgid "chained sigrec %lu has a wrong owner\n"
-msgstr ""
+msgstr "Verketteter Signatursatz %lu hat einen falschen Besitzer\n"
 
 #: g10/trustdb.c:453
 #, c-format
@@ -2138,11 +2142,11 @@ msgstr "Keine Hilfe für '%s' vorhanden."
 #: g10/pubkey-enc.c:78
 #, c-format
 msgid "anonymous receiver; trying secret key %08lX ...\n"
-msgstr ""
+msgstr "Ungenannter Empfänger: Versuch mit geheimen Schlüssel %08lX ...\n"
 
 #: g10/pubkey-enc.c:84
 msgid "okay, we are the anonymous receiver.\n"
-msgstr ""
+msgstr "Gut, wir sind der ungenannte Empfänger.\n"
 
 #: g10/pubkey-enc.c:183
 #, c-format
@@ -2167,15 +2171,18 @@ msgstr "Überschreiben (j/N)? "
 msgid ""
 "Warning: Message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr ""
+"Warnung: Botschaft wurde mit einem unsicheren Schlüssel verschlüsselt.\n"
 
 #: g10/seskey.c:52
 msgid "weak key created - retrying\n"
-msgstr ""
+msgstr "Unsicherer Schlüssel erzeugt - neuer Versuch\n"
 
 #: g10/seskey.c:57
 #, c-format
 msgid "cannot avoid weak key for symmetric cipher; tried %d times!\n"
 msgstr ""
+"Trotz %d-fachen Versuch konnte die Erzeugung eines unsicheren Schlüssel" 
+"für sym.Verschlüsselung nicht vermieden werden!\n"
 
 #, fuzzy
 #~ msgid "error reading sigrec: %s\n"

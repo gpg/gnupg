@@ -1,4 +1,16 @@
 
+    * calculation of marginals never yields a completely trusted key.
+
+    * list-keys:  change valid-days to key expiration date
+
+    * disable comments but those in secret keyrings.
+
+    * abgelaufene secret keys verhinder ein korrektes initialisieren der
+      Trustdb.
+
+    * import should skip all ascii armored messages headers which are
+      not keys (some folks are mailing signed public keyblocks :-)
+
     * The critical bit of signature subpackets is not yet supported; i.e.
       it is ignored.
 

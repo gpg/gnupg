@@ -1,3 +1,9 @@
+Thu Oct  8 10:55:15 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* Makefile.am (g10defs.h): creates include file
+	* acconfig.h: now includes g10defs.h
+	* configure.in: Removed G10_LOCALEDIR and GNUPG_LIB
+
 Thu Sep 17 18:49:40 1998  Werner Koch  (wk@(none))
 
 	* Makefile.am (dist-hook): Now creates RPM file.

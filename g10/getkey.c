@@ -33,26 +33,10 @@
 #include "main.h"
 #include "i18n.h"
 
-#define MAX_PK_CACHE_ENTRIES 500
+#define MAX_UNK_CACHE_ENTRIES 1000
+#define MAX_PK_CACHE_ENTRIES	50
+#define MAX_UID_CACHE_ENTRIES	50
 
-
-typedef struct keyid_list {
-    struct keyid_list *next;
-    u32 keyid[2];
-} *keyid_list_t;
-
-typedef struct user_id_db {
-    struct user_id_db *next;
-    u32 keyid[2];
-    int len;
-    char name[1];
-} *user_id_db_t;
-
-typedef struct pk_cache_entry {
-    struct pk_cache_entry *next;
-    u32 keyid[2];
-    PKT_public_key *pk;
-} *pk_cache_entry_t;
 
 typedef struct enum_seckey_context {
     int eof;
@@ -64,10 +48,39 @@ typedef struct enum_seckey_context {
 static STRLIST keyrings;
 static STRLIST secret_keyrings;
 
-static keyid_list_t unknown_keyids;
+#if MAX_UNK_CACHE_ENTRIES
+  typedef struct keyid_list {
+      struct keyid_list *next;
+      u32 keyid[2];
+  } *keyid_list_t;
+  static keyid_list_t unknown_keyids;
+  static int unk_cache_entries;   /* number of entries in unknown keys cache */
+  static int unk_cache_disabled;
+#endif
+
+#if MAX_PK_CACHE_ENTRIES
+  typedef struct pk_cache_entry {
+      struct pk_cache_entry *next;
+      u32 keyid[2];
+      PKT_public_key *pk;
+  } *pk_cache_entry_t;
+  static pk_cache_entry_t pk_cache;
+  static int pk_cache_entries;	 /* number of entries in pk cache */
+  static int pk_cache_disabled;
+#endif
+
+#if MAX_UID_CACHE_ENTRIES < 5
+    #error we really need the userid cache
+#endif
+typedef struct user_id_db {
+    struct user_id_db *next;
+    u32 keyid[2];
+    int len;
+    char name[1];
+} *user_id_db_t;
 static user_id_db_t user_id_db;
-static pk_cache_entry_t pk_cache;
-static int pk_cache_entries;   /* number of entries in pk cache */
+static int uid_cache_entries;	/* number of entries in uid cache */
+
 
 
 static int lookup( PKT_public_key *pk,
@@ -166,8 +179,12 @@ add_secret_keyring( const char *name )
 static void
 cache_public_key( PKT_public_key *pk )
 {
+  #if MAX_PK_CACHE_ENTRIES
     pk_cache_entry_t ce;
     u32 keyid[2];
+
+    if( pk_cache_disabled )
+	return;
 
     if( is_ELGAMAL(pk->pubkey_algo)
 	|| pk->pubkey_algo == PUBKEY_ALGO_DSA
@@ -184,24 +201,20 @@ cache_public_key( PKT_public_key *pk )
 	    return;
 	}
 
-    if( pk_cache_entries > MAX_PK_CACHE_ENTRIES ) {
-	/* FIMXE: use another algorithm to free some cache slots */
-	if( pk_cache_entries == MAX_PK_CACHE_ENTRIES )	{
-	    pk_cache_entries++;
-	    log_info("too many entries in pk cache - disabled\n");
-	}
-	ce = pk_cache;
-	free_public_key( ce->pk );
+    if( pk_cache_entries >= MAX_PK_CACHE_ENTRIES ) {
+	/* fixme: use another algorithm to free some cache slots */
+	pk_cache_disabled=1;
+	log_info("too many entries in pk cache - disabled\n");
+	return;
     }
-    else {
-	pk_cache_entries++;
-	ce = m_alloc( sizeof *ce );
-	ce->next = pk_cache;
-	pk_cache = ce;
-    }
+    pk_cache_entries++;
+    ce = m_alloc( sizeof *ce );
+    ce->next = pk_cache;
+    pk_cache = ce;
     ce->pk = copy_public_key( NULL, pk );
     ce->keyid[0] = keyid[0];
     ce->keyid[1] = keyid[1];
+  #endif
 }
 
 
@@ -220,6 +233,13 @@ cache_user_id( PKT_user_id *uid, u32 *keyid )
 	    return;
 	}
 
+    if( uid_cache_entries >= MAX_UID_CACHE_ENTRIES ) {
+	/* fixme: use another algorithm to free some cache slots */
+	r = user_id_db;
+	user_id_db = r->next;
+	m_free(r);
+	uid_cache_entries--;
+    }
     r = m_alloc( sizeof *r + uid->len-1 );
     r->keyid[0] = keyid[0];
     r->keyid[1] = keyid[1];
@@ -227,6 +247,7 @@ cache_user_id( PKT_user_id *uid, u32 *keyid )
     memcpy(r->name, uid->name, r->len);
     r->next = user_id_db;
     user_id_db = r;
+    uid_cache_entries++;
 }
 
 
@@ -239,23 +260,30 @@ cache_user_id( PKT_user_id *uid, u32 *keyid )
 int
 get_pubkey( PKT_public_key *pk, u32 *keyid )
 {
-    keyid_list_t kl;
     int internal = 0;
     int rc = 0;
-    pk_cache_entry_t ce;
 
-    /* let's see whether we checked the keyid already */
-    for( kl = unknown_keyids; kl; kl = kl->next )
-	if( kl->keyid[0] == keyid[0] && kl->keyid[1] == keyid[1] )
-	    return G10ERR_NO_PUBKEY; /* already checked and not found */
+  #if MAX_UNK_CACHE_ENTRIES
+    {	/* let's see whether we checked the keyid already */
+	keyid_list_t kl;
+	for( kl = unknown_keyids; kl; kl = kl->next )
+	    if( kl->keyid[0] == keyid[0] && kl->keyid[1] == keyid[1] )
+		return G10ERR_NO_PUBKEY; /* already checked and not found */
+    }
+  #endif
 
-    /* Try to get it from our cache */
-    for( ce = pk_cache; ce; ce = ce->next )
-	if( ce->keyid[0] == keyid[0] && ce->keyid[1] == keyid[1] ) {
-	    if( pk )
-		copy_public_key( pk, ce->pk );
-	    return 0;
+  #if MAX_PK_CACHE_ENTRIES
+    {	/* Try to get it from the cache */
+	pk_cache_entry_t ce;
+	for( ce = pk_cache; ce; ce = ce->next ) {
+	    if( ce->keyid[0] == keyid[0] && ce->keyid[1] == keyid[1] ) {
+		if( pk )
+		    copy_public_key( pk, ce->pk );
+		return 0;
+	    }
 	}
+    }
+  #endif
     /* more init stuff */
     if( !pk ) {
 	pk = m_alloc_clear( sizeof *pk );
@@ -268,12 +296,24 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
     if( !rc )
 	goto leave;
 
+  #if MAX_UNK_CACHE_ENTRIES
     /* not found: store it for future reference */
-    kl = m_alloc( sizeof *kl );
-    kl->keyid[0] = keyid[0];
-    kl->keyid[1] = keyid[1];
-    kl->next = unknown_keyids;
-    unknown_keyids = kl;
+    if( unk_cache_disabled )
+	;
+    else if( ++unk_cache_entries > MAX_UNK_CACHE_ENTRIES ) {
+	unk_cache_disabled = 1;
+	log_info("too many entries in unk cache - disabled\n");
+    }
+    else {
+	keyid_list_t kl;
+
+	kl = m_alloc( sizeof *kl );
+	kl->keyid[0] = keyid[0];
+	kl->keyid[1] = keyid[1];
+	kl->next = unknown_keyids;
+	unknown_keyids = kl;
+    }
+  #endif
     rc = G10ERR_NO_PUBKEY;
 
   leave:
@@ -829,9 +869,10 @@ lookup( PKT_public_key *pk, int mode,  u32 *keyid,
 			    break;
 		    }
 		    else if( mode == 16 || mode == 20 ) {
+			byte afp[MAX_FINGERPRINT_LEN];
 			size_t an;
-			byte *afp = fingerprint_from_pk(
-					k->pkt->pkt.public_key, NULL, &an );
+
+			fingerprint_from_pk(k->pkt->pkt.public_key, afp, &an );
 
 			if( DBG_CACHE ) {
 			    u32 aki[2];
@@ -845,10 +886,8 @@ lookup( PKT_public_key *pk, int mode,  u32 *keyid,
 			    && ( !pk->pubkey_algo
 				 || pk->pubkey_algo
 				    == k->pkt->pkt.public_key->pubkey_algo) ) {
-			    m_free(afp);
 			    break;
 			}
-			m_free(afp);
 		    }
 		    else
 			BUG();
@@ -1008,16 +1047,15 @@ lookup_sk( PKT_secret_key *sk, int mode,  u32 *keyid, const char *name,
 		    }
 		    else if( mode == 16 || mode == 20 ) {
 			size_t an;
-			byte *afp = fingerprint_from_sk(
-					k->pkt->pkt.secret_key, NULL, &an );
+			byte afp[MAX_FINGERPRINT_LEN];
+
+			fingerprint_from_sk(k->pkt->pkt.secret_key, afp, &an );
 			if( an == mode && !memcmp( afp, name, an)
 			    && ( !sk->pubkey_algo
 				 || sk->pubkey_algo
 				    == k->pkt->pkt.secret_key->pubkey_algo) ) {
-			    m_free(afp);
 			    break;
 			}
-			m_free(afp);
 		    }
 		    else
 			BUG();

@@ -57,7 +57,7 @@ gen_revoke( const char *uname )
     KBPOS kbpos;
 
     if( opt.batch ) {
-	log_error("sorry, can't do this in batch mode\n");
+	log_error(_("sorry, can't do this in batch mode\n"));
 	return G10ERR_GENERAL;
     }
 
@@ -70,21 +70,21 @@ gen_revoke( const char *uname )
     /* search the userid */
     rc = find_secret_keyblock_byname( &kbpos, uname );
     if( rc ) {
-	log_error("secret key for user '%s' not found\n", uname );
+	log_error(_("secret key for user '%s' not found\n"), uname );
 	goto leave;
     }
 
     /* read the keyblock */
     rc = read_keyblock( &kbpos, &keyblock );
     if( rc ) {
-	log_error("error reading the certificate: %s\n", g10_errstr(rc) );
+	log_error(_("error reading the certificate: %s\n"), g10_errstr(rc) );
 	goto leave;
     }
 
     /* get the keyid from the keyblock */
     node = find_kbnode( keyblock, PKT_SECRET_KEY );
     if( !node ) { /* maybe better to use log_bug ? */
-	log_error("Oops; secret key not found anymore!\n");
+	log_error(_("Oops; secret key not found anymore!\n"));
 	rc = G10ERR_GENERAL;
 	goto leave;
     }
@@ -107,11 +107,11 @@ gen_revoke( const char *uname )
     pk = m_alloc_clear( sizeof *pk );
     rc = get_pubkey( pk, sk_keyid );
     if( rc ) {
-	log_error("no corresponding public key: %s\n", g10_errstr(rc) );
+	log_error(_("no corresponding public key: %s\n"), g10_errstr(rc) );
 	goto leave;
     }
     if( cmp_public_secret_key( pk, sk ) ) {
-	log_error("public key does not match secret key!\n" );
+	log_error(_("public key does not match secret key!\n") );
 	rc = G10ERR_GENERAL;
 	goto leave;
     }
@@ -125,11 +125,11 @@ gen_revoke( const char *uname )
 
     switch( is_secret_key_protected( sk ) ) {
       case -1:
-	log_error("unknown protection algorithm\n");
+	log_error(_("unknown protection algorithm\n"));
 	rc = G10ERR_PUBKEY_ALGO;
 	break;
       case 0:
-	tty_printf("Warning: This key is not protected!\n");
+	tty_printf(_("note: This key is not protected!\n"));
 	break;
       default:
 	rc = check_secret_key( sk, 0 );
@@ -140,7 +140,7 @@ gen_revoke( const char *uname )
 
 
     if( !opt.armor )
-	tty_printf("ASCII armored output forced.\n");
+	tty_printf(_("ASCII armored output forced.\n"));
 
     if( (rc = open_outfile( NULL, 0, &out )) )
 	goto leave;
@@ -155,7 +155,7 @@ gen_revoke( const char *uname )
     /* create it */
     rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x20, 0, NULL, NULL);
     if( rc ) {
-	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc));
+	log_error(_("make_keysig_packet failed: %s\n"), g10_errstr(rc));
 	goto leave;
     }
     init_packet( &pkt );
@@ -164,17 +164,17 @@ gen_revoke( const char *uname )
 
     rc = build_packet( out, &pkt );
     if( rc ) {
-	log_error("build_packet failed: %s\n", g10_errstr(rc) );
+	log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
 	goto leave;
     }
 
     /* and issue a usage notice */
-    tty_printf("Revocation certificate created.\n\n"
+    tty_printf(_("Revocation certificate created.\n\n"
 "Please move it to a medium which you can hide away; if Mallory gets\n"
 "access to this certificate he can use it to make your key unusable.\n"
 "It is smart to print this certificate and store it away, just in case\n"
 "your media become unreadable.  But have some caution:  The print system of\n"
-"your machine might store the data and make it available to others!\n");
+"your machine might store the data and make it available to others!\n"));
 
 
 

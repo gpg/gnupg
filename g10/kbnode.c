@@ -28,12 +28,20 @@
 #include "packet.h"
 #include "keydb.h"
 
+#define USE_UNUSED_NODES 1
 
+static KBNODE unused_nodes;
 
 KBNODE
 new_kbnode( PACKET *pkt )
 {
-    KBNODE n = m_alloc( sizeof *n );
+    KBNODE n;
+
+    n = unused_nodes;
+    if( n )
+	unused_nodes = n->next;
+    else
+	n = m_alloc( sizeof *n );
     n->next = NULL;
     n->pkt = pkt;
     n->flag = 0;
@@ -45,7 +53,13 @@ new_kbnode( PACKET *pkt )
 KBNODE
 clone_kbnode( KBNODE node )
 {
-    KBNODE n = m_alloc( sizeof *n );
+    KBNODE n;
+
+    n = unused_nodes;
+    if( n )
+	unused_nodes = n->next;
+    else
+	n = m_alloc( sizeof *n );
     n->next = NULL;
     n->pkt = node->pkt;
     n->flag = 0;
@@ -61,9 +75,16 @@ release_kbnode( KBNODE n )
 
     while( n ) {
 	n2 = n->next;
-	if( !(n->private_flag & 2) )
+	if( !(n->private_flag & 2) ) {
 	    free_packet( n->pkt );
+	    m_free( n->pkt );
+	}
+      #if USE_UNUSED_NODES
+	n->next = unused_nodes;
+	unused_nodes = n;
+      #else
 	m_free( n );
+      #endif
 	n = n2;
     }
 }
@@ -230,9 +251,16 @@ commit_kbnode( KBNODE *root )
 		*root = nl = n->next;
 	    else
 		nl->next = n->next;
-	    if( !(n->private_flag & 2) )
+	    if( !(n->private_flag & 2) ) {
 		free_packet( n->pkt );
+		m_free( n->pkt );
+	    }
+	  #if USE_UNUSED_NODES
+	    n->next = unused_nodes;
+	    unused_nodes = n;
+	  #else
 	    m_free( n );
+	  #endif
 	    changed = 1;
 	}
 	else

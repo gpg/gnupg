@@ -260,6 +260,9 @@ mpi_invm( MPI x, MPI a, MPI n )
     mpi_free(u3);
     mpi_free(v3);
     mpi_free(t3);
+
+    mpi_free(u);
+    mpi_free(v);
   #endif
 }
 

@@ -59,6 +59,7 @@ char *m_strdup( const char * a);
 #endif
 
 size_t m_size( const void *a );
+void m_print_stats(const char *prefix);
 
 /*-- secmem.c --*/
 void secmem_init( size_t npool );

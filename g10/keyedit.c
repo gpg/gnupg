@@ -902,10 +902,11 @@ show_key_and_fingerprint( KBNODE keyblock )
 static void
 show_fingerprint( PKT_public_key *pk )
 {
-    byte *array, *p;
+    byte array[MAX_FINGERPRINT_LEN], *p;
     size_t i, n;
 
-    p = array = fingerprint_from_pk( pk, NULL, &n );
+    fingerprint_from_pk( pk, array, &n );
+    p = array;
     tty_printf("             Fingerprint:");
     if( n == 20 ) {
 	for(i=0; i < n ; i++, i++, p += 2 ) {
@@ -922,7 +923,6 @@ show_fingerprint( PKT_public_key *pk )
 	}
     }
     tty_printf("\n");
-    m_free(array);
 }
 
 

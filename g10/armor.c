@@ -165,6 +165,7 @@ is_armored( byte *buf )
       case PKT_PUBKEY_ENC:
       case PKT_SIGNATURE:
       case PKT_COMMENT:
+      case PKT_OLD_COMMENT:
       case PKT_PLAINTEXT:
       case PKT_COMPRESSED:
       case PKT_ENCRYPTED:

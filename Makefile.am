@@ -3,6 +3,22 @@
 SUBDIRS =  intl po zlib util mpi cipher tools g10 doc checks
 EXTRA_DIST = VERSION  PROJECTS
 
+all-am: g10defs.h
+all-recursive-am: g10defs.h
+
+
+g10defs.h : config.h
+	@( set -e; \
+	echo "/* Generated automatically by Makefile */" ; \
+	echo "#ifdef __MINGW32__"; \
+	echo "#define G10_LOCALEDIR \"c:/lib/gnupg/locale\""; \
+	echo "#define GNUPG_LIBDIR \"c:/lib/gnupg\""; \
+	echo "#else";\
+	echo "#define G10_LOCALEDIR \"$(prefix)/$(DATADIRNAME)/locale\""; \
+	echo "#define GNUPG_LIBDIR \"$(libdir)/gnupg\""; \
+	echo "#endif";\
+	) >g10defs.h
+
 
 dist-hook:
 	@set -e; \

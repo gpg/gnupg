@@ -1,3 +1,8 @@
+Noteworthy changes in version 0.4.2
+-----------------------------------
+    * Fixed this huge memory leak.
+
+
 Noteworthy changes in version 0.4.1
 -----------------------------------
     * A secondary key is used when the primary key is specified but cannot

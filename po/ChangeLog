@@ -1,3 +1,12 @@
+Mon Oct 12 09:08:09 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* it.po: Imported new version.
+	* de.po: Imported new version.
+
+Sun Oct 11 16:24:27 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* fr.po: Imported new version
+
 Wed Oct  7 13:12:00 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* Makefile.in.in: Fixed mkinstalldirs problems

@@ -31,9 +31,7 @@
 #undef M_GUARD
 #undef VERSION
 #undef PACKAGE
-#undef G10_LOCALEDIR
 #undef PRINTABLE_OS_NAME
-#undef GNUPG_LIBDIR
 
 /* Define if your locale.h file contains LC_MESSAGES.  */
 #undef HAVE_LC_MESSAGES
@@ -84,5 +82,7 @@
 #undef IPC_RMID_DEFERRED_RELEASE
 
 @BOTTOM@
+
+#include "g10defs.h"
 
 #endif /*G10_CONFIG_H*/

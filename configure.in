@@ -8,17 +8,6 @@ AC_CONFIG_AUX_DIR(scripts)
 AM_CONFIG_HEADER(config.h)
 
 
-if test "x$exec_prefix" = xNONE ; then
-    if test "x$prefix" = xNONE ; then
-	g10_prefix="$ac_default_prefix"
-    else
-	g10_prefix="$prefix"
-    fi
-else
-    g10_prefix="$exec_prefix"
-fi
-
-
 VERSION=`cat $srcdir/VERSION`
 PACKAGE=gnupg
 ALL_LINGUAS="en de it fr"
@@ -84,6 +73,8 @@ AC_PROG_CPP
 AC_ISC_POSIX
 AC_PROG_RANLIB
 AC_PROG_INSTALL
+AM_CYGWIN32
+
 
 case "${target}" in
     i386--mingw32)
@@ -94,14 +85,11 @@ case "${target}" in
 	RANLIB="i386--mingw32-ranlib"
 	ac_cv_have_dev_random=no
 	AC_DEFINE(USE_RAND_W32)
-	GNUPG_LIBDIR="c:/lib/gnupg"
 	;;
     *)
 	AC_DEFINE(USE_RAND_UNIX)
-	GNUPG_LIBDIR="$g10_prefix/lib/gnupg"
        ;;
 esac
-AC_DEFINE_UNQUOTED(GNUPG_LIBDIR, "$GNUPG_LIBDIR")
 
 case "${target}" in
     i386--mingw32)
@@ -254,10 +242,7 @@ fi
 AC_SUBST(ZLIBS)
 
 
-G10_LOCALEDIR="$g10_prefix/$DATADIRNAME/locale"
-AC_SUBST(G10_LOCALEDIR)
-AC_DEFINE_UNQUOTED(G10_LOCALEDIR, "$G10_LOCALEDIR")
-dnl WK_LINK_FILES($nls_cv_header_libgt, $nls_cv_header_intl )
+WK_LINK_FILES($nls_cv_header_libgt, $nls_cv_header_intl )
 
 WK_DO_LINK_FILES
 
@@ -275,5 +260,7 @@ doc/Makefile
 tools/Makefile
 zlib/Makefile
 checks/Makefile
-],[echo timestamp >stamp-h; sed -e "/POTFILES =/r po/POTFILES" po/Makefile.in > po/Makefile])
+],[echo timestamp >stamp-h; \
+   sed -e "/POTFILES =/r po/POTFILES" po/Makefile.in > po/Makefile
+])
 

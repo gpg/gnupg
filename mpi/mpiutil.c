@@ -372,4 +372,3 @@ mpi_swap( MPI a, MPI b)
     tmp = *a; *a = *b; *b = tmp;
 }
 
-

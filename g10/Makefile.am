@@ -86,3 +86,4 @@ g10maint.o: $(srcdir)/g10.c
 
 $(PROGRAMS): $(needed_libs)
 
+

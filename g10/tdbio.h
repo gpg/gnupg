@@ -39,6 +39,7 @@
 #define RECTYPE_UID  4
 #define RECTYPE_PREF 5
 #define RECTYPE_SIG  6
+#define RECTYPE_SDIR 8
 #define RECTYPE_CACH 9
 #define RECTYPE_HTBL 10
 #define RECTYPE_HLST 11
@@ -47,19 +48,28 @@
 
 #define DIRF_CHECKED  1 /* everything has been checked, the other bits are
 			   valid */
-#define DIRF_MISKEY   2 /* some keys are missing, so they could not be checked*/
+#define DIRF_MISKEY   2 /* not all signatures are checked */
+			/* this flag is used as a quick hint, that we */
+			/* do not need to look at the sig records */
 #define DIRF_ERROR    4 /* severe errors: the key is not valid for some reasons
 			   but we mark it to avoid duplicate checks */
 #define DIRF_REVOKED  8 /* the complete key has been revoked */
 
-#define KEYF_REVOKED DIRF_REVOKED   /* this key has been revoked
-				       (only useful on subkeys)*/
-#define UIDF_REVOKED DIRF_REVOKED   /* this user id has been revoked */
+#define KEYF_REVOKED  8 /* this key has been revoked (only useful on subkeys)*/
 
+#define UIDF_CHECKED  1 /* user id has been checked - other bits are valid */
+#define UIDF_VALID    2 /* this is a valid user id */
+#define UIDF_REVOKED  8 /* this user id has been revoked */
+
+#define SIGF_CHECKED  1 /* signature has been checked - bits 0..6 are valid */
+#define SIGF_VALID    2 /* the signature is valid */
+#define SIGF_REVOKED  8 /* this signature has been revoked */
+#define SIGF_NOPUBKEY 128 /* there is no pubkey for this sig */
 
 struct trust_record {
     int  rectype;
     int  mark;
+    int  dirty; 		/* for now only used internal by functions */
     struct trust_record *next;	/* help pointer to build lists in memory */
     ulong recnum;
     union {
@@ -70,6 +80,7 @@ struct trust_record {
 	    ulong validated; /* timestamp of last validation   */
 	    ulong keyhashtbl;
 	    ulong firstfree;
+	    ulong sdirhashtbl;
 	} ver;
 	struct {	    /* free record */
 	    ulong next;
@@ -109,9 +120,15 @@ struct trust_record {
 	    ulong next;   /* recnno of next record or NULL for last one */
 	    struct {
 		ulong lid;	 /* of pubkey record of signator (0=unused) */
-		byte flag;	 /* SIGRF_xxxxx */
+		byte flag;	 /* SIGF_xxxxx */
 	    } sig[SIGS_PER_RECORD];
 	} sig;
+	struct {
+	    ulong lid;
+	    u32  keyid[2];
+	    byte pubkey_algo;
+	    u32  hintlist;
+	} sdir;
 	struct {	    /* cache record */
 	    ulong lid;
 	    byte blockhash[20];
@@ -122,7 +139,7 @@ struct trust_record {
 	} htbl;
 	struct {
 	    ulong next;
-	    ulong rnum[ITEMS_PER_HLST_RECORD]; /* of a key record */
+	    ulong rnum[ITEMS_PER_HLST_RECORD]; /* of another record */
 	} hlst;
     } r;
 };
@@ -154,7 +171,7 @@ ulong tdbio_new_recnum(void);
 int tdbio_search_dir_bypk( PKT_public_key *pk, TRUSTREC *rec );
 int tdbio_search_dir_byfpr( const byte *fingerprint, size_t fingerlen,
 					int pubkey_algo, TRUSTREC *rec );
-int tdbio_delete_uidrec( ulong dirlid, ulong uidlid );
+int tdbio_search_sdir( u32 *keyid, int pubkey_algo, TRUSTREC *rec );
 
 
 #define buftoulong( p )  ((*(byte*)(p) << 24) | (*((byte*)(p)+1)<< 16) | \
