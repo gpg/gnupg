@@ -1,3 +1,8 @@
+2003-08-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* random.c (getfnc_gather_random): Don't check NAME_OF_DEV_RANDOM
+	twice.  Use NAME_OF_DEV_URANDOM.
+
 2003-07-30  Werner Koch  <wk@gnupg.org>
 
 	* idea-stub.c, random.c: Replaced some __MINGW32__ by _WIN32 and
