@@ -1,3 +1,12 @@
+2004-03-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* keydb.h, keyid.c (keystr_from_pk, keystr_from_sk): New functions
+	to pull a key string from a key in one step.  This isn't faster
+	than before, but makes for neater code.
+
+	* keylist.c (list_keyblock_print): Use keystr_from_xx here.
+	(print_key_data): No need to pass a keyid in.
+
 2004-03-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyid.c (keyid_from_sk): Minor performance boost by caching
@@ -9,7 +18,7 @@
 
 	* passphrase.c (passphrase_to_dek): Give a little more information
 	when we have room to do so.
-	
+
 2004-03-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* revoke.c (export_minimal_pk), export.c (do_export_stream),

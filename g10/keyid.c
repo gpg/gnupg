@@ -196,6 +196,21 @@ keystr(u32 *keyid)
   return keyid_str;
 }
 
+const char *
+keystr_from_pk(PKT_public_key *pk)
+{
+  keyid_from_pk(pk,NULL);
+
+  return keystr(pk->keyid);
+}
+
+const char *
+keystr_from_sk(PKT_secret_key *sk)
+{
+  keyid_from_sk(sk,NULL);
+
+  return keystr(sk->keyid);
+}
 
 /****************
  * Get the keyid from the secret key and put it into keyid
@@ -258,43 +273,50 @@ keyid_from_sk( PKT_secret_key *sk, u32 *keyid )
 u32
 keyid_from_pk( PKT_public_key *pk, u32 *keyid )
 {
-    u32 lowbits;
-    u32 dummy_keyid[2];
+  u32 lowbits;
+  u32 dummy_keyid[2];
 
-    if( !keyid )
-	keyid = dummy_keyid;
+  if( !keyid )
+    keyid = dummy_keyid;
 
-    if( pk->keyid[0] || pk->keyid[1] ) {
-	keyid[0] = pk->keyid[0];
-	keyid[1] = pk->keyid[1];
-	lowbits = keyid[1];
+  if( pk->keyid[0] || pk->keyid[1] )
+    {
+      keyid[0] = pk->keyid[0];
+      keyid[1] = pk->keyid[1];
+      lowbits = keyid[1];
     }
-    else if( pk->version < 4 )
-      {
-	if( is_RSA(pk->pubkey_algo) )
-	  {
-	    lowbits = pubkey_get_npkey(pk->pubkey_algo) ?
-	      mpi_get_keyid( pk->pkey[0], keyid ) : 0 ; /* from n */
-	    pk->keyid[0] = keyid[0];
-	    pk->keyid[1] = keyid[1];
-	  }
-	else
-	  pk->keyid[0]=pk->keyid[1]=keyid[0]=keyid[1]=lowbits=0;
-      }
-    else {
-	const byte *dp;
-	MD_HANDLE md;
-	md = do_fingerprint_md(pk);
-	dp = md_read( md, 0 );
-	keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
-	keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
-	lowbits = keyid[1];
-	md_close(md);
-	pk->keyid[0] = keyid[0];
-	pk->keyid[1] = keyid[1];
+  else if( pk->version < 4 )
+    {
+      if( is_RSA(pk->pubkey_algo) )
+	{
+	  lowbits = pubkey_get_npkey(pk->pubkey_algo) ?
+	    mpi_get_keyid( pk->pkey[0], keyid ) : 0 ; /* from n */
+	  pk->keyid[0] = keyid[0];
+	  pk->keyid[1] = keyid[1];
+	}
+      else
+	pk->keyid[0]=pk->keyid[1]=keyid[0]=keyid[1]=lowbits=0;
+    }
+  else
+    {
+      const byte *dp;
+      MD_HANDLE md;
+      md = do_fingerprint_md(pk);
+      if(md)
+	{
+	  dp = md_read( md, 0 );
+	  keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
+	  keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
+	  lowbits = keyid[1];
+	  md_close(md);
+	  pk->keyid[0] = keyid[0];
+	  pk->keyid[1] = keyid[1];
+	}
+      else
+	pk->keyid[0]=pk->keyid[1]=keyid[0]=keyid[1]=lowbits=0;
     }
 
-    return lowbits;
+  return lowbits;
 }
 
 

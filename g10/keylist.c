@@ -460,7 +460,7 @@ list_one( STRLIST names, int secret )
 }
 
 static void
-print_key_data( PKT_public_key *pk, u32 *keyid )
+print_key_data( PKT_public_key *pk )
 {
     int n = pk ? pubkey_get_npkey( pk->pubkey_algo ) : 0;
     int i;
@@ -600,7 +600,6 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
     KBNODE node;
     PKT_public_key *pk;
     PKT_secret_key *sk;
-    u32 keyid[2];
     int any=0;
     struct sig_stats *stats=opaque;
     int skip_sigs=0;
@@ -621,12 +620,11 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
       {
 	pk = NULL;
 	sk = node->pkt->pkt.secret_key;
-	keyid_from_sk( sk, keyid );
 
         printf("sec%c  %4u%c/%s %s%s",(sk->protect.s2k.mode==1001)?'#':
 	       (sk->protect.s2k.mode==1002)?'>':' ',
 	       nbits_from_sk( sk ),pubkey_letter( sk->pubkey_algo ),
-	       keystr(keyid),datestr_from_sk( sk ),newformat?"":" " );
+	       keystr_from_sk(sk),datestr_from_sk( sk ),newformat?"":" " );
 
 	if(newformat && sk->expiredate )
 	  printf(_(" [expires: %s]"), expirestr_from_sk( sk ) );
@@ -638,7 +636,6 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 #endif
 	pk = node->pkt->pkt.public_key;
 	sk = NULL;
-	keyid_from_pk( pk, keyid );
 
 #if 0
 	validity=get_validity(pk,NULL);
@@ -648,7 +645,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 
 	printf("pub   %4u%c/%s %s%s",
 	       nbits_from_pk(pk),pubkey_letter(pk->pubkey_algo),
-	       keystr(keyid),datestr_from_pk( pk ),newformat?"":" " );
+	       keystr_from_pk(pk),datestr_from_pk( pk ),newformat?"":" " );
 
 	/* We didn't include this before in the key listing, but there
 	   is room in the new format, so why not? */
@@ -721,15 +718,15 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 		if( fpr )
 		    print_fingerprint( pk, sk, 0 );
 		if( opt.with_key_data )
-		    print_key_data( pk, keyid );
+		    print_key_data( pk );
 		any = 1;
 	    }
 
 	    if((opt.list_options&LIST_SHOW_PHOTOS) && uid->attribs!=NULL)
 	      show_photos(uid->attribs,uid->numattribs,pk,sk);
 	}
-	else if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
-	    u32 keyid2[2];
+	else if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+	  {
 	    PKT_public_key *pk2 = node->pkt->pkt.public_key;
 
 	    if((pk2->is_revoked || pk2->has_expired)
@@ -741,52 +738,52 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    else
 	      skip_sigs=0;
 
-	    if( !any ) {
+	    if( !any )
+	      {
 		putchar('\n');
 		if( fpr )
-		    print_fingerprint( pk, sk, 0 ); /* of the main key */
+		  print_fingerprint( pk, sk, 0 ); /* of the main key */
 		any = 1;
-	    }
+	      }
 
-	    keyid_from_pk( pk2, keyid2 );
             printf("sub   %4u%c/%s %s",
 		   nbits_from_pk( pk2 ),pubkey_letter( pk2->pubkey_algo ),
-		   keystr(keyid2),datestr_from_pk(pk2));
+		   keystr_from_pk(pk2),datestr_from_pk(pk2));
 	    if( pk2->is_revoked )
 	      printf(_(" [revoked: %s]"), revokestr_from_pk(pk2));
 	    else if( pk2->has_expired )
-                printf(_(" [expired: %s]"), expirestr_from_pk( pk2 ) );
+	      printf(_(" [expired: %s]"), expirestr_from_pk( pk2 ) );
 	    else if( pk2->expiredate )
-                printf(_(" [expires: %s]"), expirestr_from_pk( pk2 ) );
+	      printf(_(" [expires: %s]"), expirestr_from_pk( pk2 ) );
             putchar('\n');
 	    if( fpr > 1 )
-		print_fingerprint( pk2, NULL, 0 );
+	      print_fingerprint( pk2, NULL, 0 );
 	    if( opt.with_key_data )
-		print_key_data( pk2, keyid2 );
-	}
-	else if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
-	    u32 keyid2[2];
+	      print_key_data( pk2 );
+	  }
+	else if( node->pkt->pkttype == PKT_SECRET_SUBKEY )
+	  {
 	    PKT_secret_key *sk2 = node->pkt->pkt.secret_key;
 
-	    if( !any ) {
+	    if( !any )
+	      {
 		putchar('\n');
 		if( fpr )
-		    print_fingerprint( pk, sk, 0 ); /* of the main key */
+		  print_fingerprint( pk, sk, 0 ); /* of the main key */
 		any = 1;
-	    }
+	      }
 
-	    keyid_from_sk( sk2, keyid2 );
             printf("ssb%c  %4u%c/%s %s",
                    (sk->protect.s2k.mode==1001)?'#':
                    (sk->protect.s2k.mode==1002)?'>':' ',
 		   nbits_from_sk( sk2 ),pubkey_letter( sk2->pubkey_algo ),
-		   keystr(keyid2),datestr_from_sk( sk2 ) );
+		   keystr_from_sk(sk2),datestr_from_sk( sk2 ) );
             if( sk2->expiredate )
 	      printf(_(" [expires: %s]"), expirestr_from_sk( sk2 ) );
 	    putchar('\n');
 	    if( fpr > 1 )
-		print_fingerprint( NULL, sk2, 0 );
-	}
+	      print_fingerprint( NULL, sk2, 0 );
+	  }
 	else if( opt.list_sigs
 		 && node->pkt->pkttype == PKT_SIGNATURE
 		 && !skip_sigs ) {
@@ -980,7 +977,7 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
         if( fpr )
             print_fingerprint( pk, sk, 0 );
         if( opt.with_key_data )
-            print_key_data( pk, keyid );
+            print_key_data( pk );
         any = 1;
     }
 
@@ -1040,7 +1037,7 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 		if( fpr )
 		    print_fingerprint( pk, sk, 0 );
 		if( opt.with_key_data )
-		    print_key_data( pk, keyid );
+		    print_key_data( pk );
 		any = 1;
 	    }
 	}
@@ -1086,7 +1083,7 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 	    if( fpr > 1 )
 		print_fingerprint( pk2, NULL, 0 );
 	    if( opt.with_key_data )
-		print_key_data( pk2, keyid2 );
+		print_key_data( pk2 );
 	}
 	else if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
 	    u32 keyid2[2];
