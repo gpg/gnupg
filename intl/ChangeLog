@@ -1,13 +1,4 @@
-2003-04-29  David Shaw  <dshaw@jabberwocky.com>
+2004-01-29  GNU  <bug-gnu-gettext@gnu.org>
 
-	* gettextP.h: Add comment for HP/UX users.  Local fix for GnuPG.
-
-2003-03-23  David Shaw  <dshaw@jabberwocky.com>
-
-	* dcigettext.c (plural_lookup): Name conflict on some platforms
-	with "index".  Local fix for GnuPG.
-
-2001-09-13  GNU  <bug-gnu-utils@gnu.org>
-
-	* Version 0.10.40 released.
+	* Version 0.14.1 released.
 
