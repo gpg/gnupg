@@ -303,16 +303,28 @@ This is a shortcut version of the subcommand "nrsign" from ---edit.
 The default to use for the check level when signing a key.
 
 0 means you make no particular claim as to how carefully you verified
-the key. 1 means you believe the key is owned by the person who
-claims to own it but you could not, or did not verify the key at all.
-This is useful for a "persona" verification, where you sign the key of
-a pseudonymous user. 2 means you did casual verification of the key.
-For example, this could mean that you verified that the key
-fingerprint and checked the user ID on the key against a photo ID. 3
-means you did extensive verification of the key. For example, this
-could mean that you verified the key fingerprint and checked the user
-ID on the key against a photo ID, and also verified the email address
-on the key belongs to the key owner.
+the key.
+
+1 means you believe the key is owned by the person who claims to own
+it but you could not, or did not verify the key at all. This is
+useful for a "persona" verification, where you sign the key of a
+pseudonymous user.
+
+2 means you did casual verification of the key. For example, this
+could mean that you verified that the key fingerprint and checked the
+user ID on the key against a photo ID.
+
+3 means you did extensive verification of the key. For example, this
+could mean that you verified the key fingerprint with the owner of the
+key in person, and that you checked, by means of a hard to forge
+document with a photo ID (such as a passport) that the name of the key
+owner matches the name in the user ID on the key, and finally that you
+verified (by exchange of email) that the email address on the key
+belongs to the key owner.
+
+Note that the examples given above for levels 2 and 3 are just that:
+examples. In the end, it is up to you to decide just what "casual"
+and "extensive" mean to you.
 
 This option defaults to 0.
 
@@ -883,6 +895,10 @@ Try to use the GnuPG-Agent. Please note that this agent is still under
 development. With this option, GnuPG first tries to connect to the
 agent before it asks for a passphrase.
 
+@item ---gpg-agent-info
+Override the value of the environment variable
+@samp{GPG_AGENT_INFO}. This is only used when ---use-agent has been given
+
 @item ---rfc1991
 Try to be more RFC1991 (PGP 2.x) compliant.
 
@@ -908,7 +924,8 @@ disabled.
 
 @item ---force-v3-sigs
 OpenPGP states that an implementation should generate
-v4 signatures but PGP 5.x recognizes v4 signatures only
+v4 signatures but PGP versions 5 and higher do only recognizes
+v4 signatures 
 on key material. This option forces v3 signatures for
 signatures on data.
 
@@ -1066,11 +1083,26 @@ is normally not used but comes handy in case someone forces you to reveal the
 content of an encrypted message; using this option you can do this without
 handing out the secret key.
 
+@item ---ask-sig-expire
+When making a data signature, prompt for an expiration time. If this
+option is not specified, the expiration time is "never".
+
+@item ---no-ask-sig-expire
+Resets the ---ask-sig-expire option.
+
+@item ---ask-cert-expire
+When making a key signature, prompt for an expiration time. If this
+option is not specified, the expiration time is "never".
+
+@item ---no-ask-cert-expire
+Resets the ---ask-cert-expire option.
+
 @item ---expert
-Enable certain options, such as prompting for a signature expiration
-date, that are not frequently used by regular users. Also permits the
-user to do certain "silly" things like signing an expired or revoked
-key.
+Allow the user to do certain nonsenical or "silly" things like signing
+an expired or revoked key, or certain potentially incompatible things
+like adding more than one photo ID to a single key. In general, this
+option is for experts only. If you don't really understand what it is
+doing, leave this off.
 
 @item ---no-expert
 Resets the ---expert option.
@@ -1197,6 +1229,15 @@ Used to locate the default home directory.
 
 @item GNUPGHOME
 If set directory used instead of "~/.gnupg".
+
+@item GPG_AGENT_INFO
+Used to locate the gpg-agent; only honred when
+---use-agent is set. The value constist of 3 colon delimited fields: 
+The first is the path to the Unix Domain Socket, the second the PID of
+the gpg-agent and the protocol version which should be set to 1. When
+starting the gpg-agent as described in its documentation, this
+variable is set to the correct value. The option ---gpg-agent-info can
+be used to overide it.
 
 @item http_proxy
 Only honored when the option ---honor-http-proxy is set.

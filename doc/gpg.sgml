@@ -1442,6 +1442,13 @@ development.  With this option, GnuPG first tries to connect to the
 agent before it asks for a passphrase.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--gpg-agent-info</term>
+<listitem><para>
+Override the value of the environment variable
+<literal>GPG_AGENT_INFO</>.  This is only used when --use-agent has been given
+</para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--rfc1991</term>
@@ -1483,7 +1490,8 @@ disabled.
 <term>--force-v3-sigs</term>
 <listitem><para>
 OpenPGP states that an implementation should generate
-v4 signatures but PGP 5.x recognizes v4 signatures only
+v4 signatures but PGP versions 5 and higher do only recognizes
+v4 signatures 
 on key material.  This option forces v3 signatures for
 signatures on data.
 </para></listitem></varlistentry>
@@ -2000,6 +2008,16 @@ constructed by cutting off the extension (".asc" or ".sig") of
 <varlistentry>
 <term>GNUPGHOME</term>
 <listitem><para>If set directory used instead of "~/.gnupg".</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>GPG_AGENT_INFO</term>
+<listitem><para>Used to locate the gpg-agent; only honred when
+--use-agent is set.  The value constist of 3 colon delimited fields: 
+The first is the path to the Unix Domain Socket, the second the PID of
+the gpg-agent and the protocol version which should be set to 1.  When
+starting the gpg-agent as described in its documentation, this
+variable is set to the correct value.  The option --gpg-agent-info can
+be used to overide it.</para></listitem>
 </varlistentry>
 <varlistentry>
 <term>http_proxy</term>
