@@ -19,6 +19,7 @@
 ## Process this file with automake to produce Makefile.in
 
 bin_PROGRAMS = gpg-agent
+noinst_PROGRAMS = protect-tool
 
 AM_CPPFLAGS = -I$(top_srcdir)/common $(LIBGCRYPT_CFLAGS)
 LDFLAGS = @LDFLAGS@ 
@@ -33,11 +34,16 @@ gpg_agent_SOURCES = \
 	pksign.c \
 	pkdecrypt.c \
 	genkey.c \
+	protect.c \
 	trustlist.c 
 
 gpg_agent_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a  \
 		../common/libcommon.a $(LIBGCRYPT_LIBS)
 
+protect_tool_SOURCES = \
+	protect-tool.c \
+	protect.c
 
-
+protect_tool_LDADD = ../jnlib/libjnlib.a \
+		     ../common/libcommon.a $(LIBGCRYPT_LIBS)
 

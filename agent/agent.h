@@ -84,7 +84,7 @@ struct pin_entry_info_s {
 
 
 /*-- gpg-agent.c --*/
-void agent_exit (int rc);
+void agent_exit (int rc); /* also implemented in other tools */
 
 /*-- trans.c --*/
 const char *trans (const char *text);
@@ -97,7 +97,8 @@ GCRY_SEXP agent_key_from_file (const unsigned char *grip);
 int agent_key_available (const unsigned char *grip);
 
 /*-- query.c --*/
-int agent_askpin (const char *desc_text, struct pin_entry_info_s *pininfo);
+int agent_askpin (const char *desc_text, const char *err_text,
+                  struct pin_entry_info_s *pininfo);
 int agent_get_passphrase (char **retpass,
                           const char *desc, const char *prompt,
                           const char *errtext);
@@ -118,6 +119,13 @@ int agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
 /*-- genkey.c --*/
 int agent_genkey (CTRL ctrl,
                   const char *keyparam, size_t keyparmlen, FILE *outfp);
+
+/*-- protect.c --*/
+int agent_protect (const unsigned char *plainkey, const char *passphrase,
+                   unsigned char **result, size_t *resultlen);
+int agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
+                     unsigned char **result, size_t *resultlen);
+
 
 /*-- trustlist.c --*/
 int agent_istrusted (const char *fpr);

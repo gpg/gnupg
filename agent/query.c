@@ -137,13 +137,13 @@ all_digitsp( const char *s)
    number here and repeat it as long as we have invalid formed
    numbers. */
 int
-agent_askpin (const char *desc_text,
+agent_askpin (const char *desc_text, const char *start_err_text,
               struct pin_entry_info_s *pininfo)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
   struct entry_parm_s parm;
-  const char *errtext = NULL;
+  const char *errtext = start_err_text;
 
   if (opt.batch)
     return 0; /* fixme: we should return BAD PIN */
@@ -180,8 +180,14 @@ agent_askpin (const char *desc_text,
       if (errtext)
         { 
           /* fixme: should we show the try count? It must be translated */
-          snprintf (line, DIM(line)-1, "SETERROR %s (try %d of %d)",
-                    errtext, pininfo->failed_tries+1, pininfo->max_tries);
+          if (start_err_text)
+            {
+              snprintf (line, DIM(line)-1, "SETERROR %s", errtext);
+              start_err_text = NULL;
+            }
+          else
+            snprintf (line, DIM(line)-1, "SETERROR %s (try %d of %d)",
+                      errtext, pininfo->failed_tries+1, pininfo->max_tries);
           line[DIM(line)-1] = 0;
           rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL);
           if (rc)

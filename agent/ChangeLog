@@ -1,3 +1,16 @@
+2002-01-31  Werner Koch  <wk@gnupg.org>
+
+	* genkey.c (store_key): Protect the key.
+	(agent_genkey): Ask for the passphrase.
+	* findkey.c (unprotect): Actually unprotect the key.
+	* query.c (agent_askpin): Add an optional start_err_text. 
+
+2002-01-30  Werner Koch  <wk@gnupg.org>
+
+	* protect.c: New.  
+	(hash_passphrase): Based on the GnuPG 1.0.6 version.
+	* protect-tool.c: New
+
 2002-01-29  Werner Koch  <wk@gnupg.org>
 
 	* findkey.c (agent_key_available): New.

@@ -132,7 +132,7 @@ housekeeping (void)
 
 
 /* Store DATA of length DATALEN in the cache under KEY and mark it
-   with a maxiumum lifetime of TTL seconds.  If tehre is already data
+   with a maximum lifetime of TTL seconds.  If tehre is already data
    under this key, it will be replaced.  Using a DATA of NULL deletes
    the entry */
 int
@@ -206,7 +206,7 @@ agent_get_cache (const char *key)
     {
       if (r->pw && !strcmp (r->key, key))
         {
-          /* put_cache does onlu put strings into the cache, so we
+          /* put_cache does only put strings into the cache, so we
              don't need the lengths */
           r->accessed = time (NULL);
           return r->pw->data;

@@ -30,8 +30,9 @@
 
 #include "agent.h"
 
+
 static int
-store_key (GCRY_SEXP private)
+store_key (GCRY_SEXP private, const char *passphrase)
 {
   int i;
   char *fname;
@@ -58,9 +59,11 @@ store_key (GCRY_SEXP private)
       xfree (fname);
       return seterr (General_Error);
     }
-  fp = fopen (fname, "wbx");
-  if (!fp)
-    {
+  fp = fopen (fname, "wbx");  /* FIXME: the x is a GNU extension - let
+                                 configure check whether this actually
+                                 works */
+  if (!fp) 
+    { 
       log_error ("can't create `%s': %s\n", fname, strerror (errno));
       xfree (fname);
       return seterr (File_Create_Error);
@@ -78,6 +81,24 @@ store_key (GCRY_SEXP private)
     }
   len = gcry_sexp_sprint (private, GCRYSEXP_FMT_CANON, buf, len);
   assert (len);
+
+  if (passphrase)
+    {
+      unsigned char *p;
+      int rc;
+
+      rc = agent_protect (buf, passphrase, &p, &len);
+      if (rc)
+        {
+          fclose (fp);
+          remove (fname);
+          xfree (fname);
+          xfree (buf);
+          return rc;
+        }
+      xfree (buf);
+      buf = p;
+    }
 
   if (fwrite (buf, len, 1, fp) != 1)
     {
@@ -111,6 +132,7 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
               FILE *outfp) 
 {
   GCRY_SEXP s_keyparam, s_key, s_private, s_public;
+  struct pin_entry_info_s *pi, *pi2;
   int rc;
   size_t len;
   char *buf;
@@ -122,13 +144,48 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
       return seterr (Invalid_Data);
     }
 
-  /* fixme: Get the passphrase now, cause key generation may take a while */
+  /* Get the passphrase now, cause key generation may take a while */
+  {
+    const char *text1 = trans ("Please enter the passphrase to%0A"
+                               "to protect your new key");
+    const char *text2 = trans ("Please re-enter this passphrase");
+    const char *nomatch = trans ("does not match - try again");
+    int tries = 0;
+
+    pi = gcry_calloc_secure (2, sizeof (*pi) + 100);
+    pi2 = pi + sizeof *pi;
+    pi->max_length = 100;
+    pi->max_tries = 3;
+    pi2->max_length = 100;
+    pi2->max_tries = 3;
+
+    rc = agent_askpin (text1, NULL, pi);
+    if (!rc)
+      {
+        do 
+          {
+            rc = agent_askpin (text2, tries? nomatch:NULL, pi2);
+            tries++;
+          }
+        while (!rc && tries < 3 && strcmp (pi->pin, pi2->pin));
+        if (!rc && strcmp (pi->pin, pi2->pin))
+          rc = GNUPG_Canceled;
+      }
+    if (rc)
+      return rc;
+    if (!*pi->pin)
+      {
+        xfree (pi);
+        pi = NULL; /* use does not want a passphrase */
+      }
+  }
 
   rc = gcry_pk_genkey (&s_key, s_keyparam );
   gcry_sexp_release (s_keyparam);
   if (rc)
     {
       log_error ("key generation failed: %s\n", gcry_strerror (rc));
+      xfree (pi);
       return map_gcry_err (rc);
     }
 
@@ -138,6 +195,7 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
     {
       log_error ("key generation failed: invalid return value\n");
       gcry_sexp_release (s_key);
+      xfree (pi);
       return seterr (Invalid_Data);
     }
   s_public = gcry_sexp_find_token (s_key, "public-key", 0);
@@ -146,13 +204,15 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
       log_error ("key generation failed: invalid return value\n");
       gcry_sexp_release (s_private);
       gcry_sexp_release (s_key);
+      xfree (pi);
       return seterr (Invalid_Data);
     }
   gcry_sexp_release (s_key); s_key = NULL;
   
   /* store the secret key */
   log_debug ("storing private key\n");
-  rc = store_key (s_private);
+  rc = store_key (s_private, pi->pin);
+  xfree (pi); pi = NULL;
   gcry_sexp_release (s_private);
   if (rc)
     {

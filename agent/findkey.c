@@ -31,24 +31,39 @@
 #include "agent.h"
 
 static int
-unprotect (GCRY_SEXP s_skey)
+unprotect (unsigned char **keybuf)
 {
   struct pin_entry_info_s *pi;
   int rc;
+  unsigned char *result;
+  size_t resultlen;
+  int tries = 0;
 
   /* fixme: check whether the key needs unprotection */
 
-  /* fixme: allocate the pin in secure memory */
-  pi = xtrycalloc (1, sizeof (*pi) + 100);
+  pi = gcry_calloc_secure (1, sizeof (*pi) + 100);
   pi->max_length = 100;
-  pi->min_digits = 4;
+  pi->min_digits = 0;  /* we want a real passphrase */
   pi->max_digits = 8;
   pi->max_tries = 3;
 
-  rc = agent_askpin (NULL, pi);
-  /* fixme: actually unprotect the key and ask again until we get a valid
-     PIN - agent_askpin takes care of counting failed tries */
-
+  do
+    {
+      rc = agent_askpin (NULL, NULL, pi);
+      if (!rc)
+        {
+          rc = agent_unprotect (*keybuf, pi->pin, &result, &resultlen);
+          if (!rc)
+            {
+              xfree (*keybuf);
+              *keybuf = result;
+              xfree (pi);
+              return 0;
+            }
+        }
+    }
+  while ((rc == GNUPG_Bad_Passphrase || rc == GNUPG_Bad_PIN)
+         && tries++ < 3);
   xfree (pi);
   return rc;
 }
@@ -64,8 +79,8 @@ agent_key_from_file (const unsigned char *grip)
   char *fname;
   FILE *fp;
   struct stat st;
-  char *buf;
-  size_t buflen, erroff;
+  unsigned char *buf;
+  size_t len, buflen, erroff;
   GCRY_SEXP s_skey;
   char hexgrip[41];
   
@@ -111,13 +126,35 @@ agent_key_from_file (const unsigned char *grip)
                  (unsigned int)erroff, gcry_strerror (rc));
       return NULL;
     }
-
-  rc = unprotect (s_skey);
-  if (rc)
+  len = gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, NULL, 0);
+  assert (len);
+  buf = xtrymalloc (len);
+  if (!buf)
     {
       gcry_sexp_release (s_skey);
+      return NULL;
+    }
+  len = gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, buf, len);
+  assert (len);
+  gcry_sexp_release (s_skey);
+
+  rc = unprotect (&buf);
+  if (rc)
+    {
       log_error ("failed to unprotect the secret key: %s\n",
                  gcry_strerror (rc));
+      xfree (buf);
+      return NULL;
+    }
+
+  /* arggg FIXME: does scna support secure memory? */
+  rc = gcry_sexp_sscan (&s_skey, &erroff,
+                        buf, gcry_sexp_canon_len (buf, 0, NULL, NULL));
+  xfree (buf);
+  if (rc)
+    {
+      log_error ("failed to build S-Exp (off=%u): %s\n",
+                 (unsigned int)erroff, gcry_strerror (rc));
       return NULL;
     }
 
