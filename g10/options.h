@@ -223,7 +223,7 @@ struct {
 #define DBG_TRUST_VALUE   256	/* debug the trustdb */
 #define DBG_HASHING_VALUE 512	/* debug hashing operations */
 #define DBG_EXTPROG_VALUE 1024  /* debug external program calls */
-#define DBG_CARD_IO_VALUE 2048
+#define DBG_CARD_IO_VALUE 2048  /* debug smart card I/O.  */
 
 #define DBG_PACKET (opt.debug & DBG_PACKET_VALUE)
 #define DBG_FILTER (opt.debug & DBG_FILTER_VALUE)

@@ -1,3 +1,14 @@
+2005-03-30  Werner Koch  <wk@g10code.com>
+
+	* cardglue.c (pin_cb): Print a warning if the info string hack is
+	not there.  This may happen due to typos in the translation.
+
+2005-03-22  Werner Koch  <wk@g10code.com>
+
+	* misc.c (w32_shgetfolderpath) [W32]: Changed declaration of
+	function ptr.  Noted by Tim Costello. 
+	* apdu.c [W32]: Changed	declaration of dlopened function pointers.
+
 2005-03-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgv.c: Stubs for tty_enable_completion() &

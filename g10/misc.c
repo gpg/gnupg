@@ -1027,7 +1027,7 @@ static HRESULT
 w32_shgetfolderpath (HWND a, int b, HANDLE c, DWORD d, LPSTR e)
 {
   static int initialized;
-  static HRESULT (* WINAPI func)(HWND,int,HANDLE,DWORD,LPSTR);
+  static HRESULT (WINAPI * func)(HWND,int,HANDLE,DWORD,LPSTR);
 
   if (!initialized)
     {

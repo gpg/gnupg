@@ -674,6 +674,8 @@ pin_cb (void *opaque, const char *info, char **retstr)
         }
       info = ends+1;
     }
+  else
+    log_debug ("pin_cb called without proper PIN info hack\n");
 
  again:
   if (is_status_enabled())
