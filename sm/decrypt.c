@@ -333,6 +333,11 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                                numbuf, algoid?algoid:"?", NULL);
               }
 
+              /* If it seems that this is not an ecrypted message we
+                 return a more sensible error code. */
+              if (!algoid)
+                rc = gpg_error (GPG_ERR_NO_DATA);
+
               goto leave;
             }
           dfparm.algo = algo;
