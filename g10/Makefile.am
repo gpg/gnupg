@@ -84,6 +84,9 @@ $(PROGRAMS): $(needed_libs)
 install-data-local:
 	$(mkinstalldirs) $(pkgdatadir)
 	$(INSTALL_DATA) $(srcdir)/options.skel $(pkgdatadir)/options.skel
-	rm $(bindir)/gpgm || ln -s $(bindir)/gpgm gpg
+	@set -e;\
+	 if test -f $(bindir)/gpgm ; then \
+	   rm $(bindir)/gpgm ; ln -s gpg $(bindir)/gpgm ; \
+	 fi
 
 
