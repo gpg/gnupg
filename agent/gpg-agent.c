@@ -389,7 +389,7 @@ main (int argc, char **argv )
   /* Please note that we may running SUID(ROOT), so be very CAREFUL
      when adding any stuff between here and the call to INIT_SECMEM()
      somewhere after the option parsing */
-  log_set_prefix ("gpg-agent", 1|4); 
+  log_set_prefix ("gpg-agent", JNLIB_LOG_WITH_PREFIX|JNLIB_LOG_WITH_PID); 
 
   /* Try to auto set the character set.  */
   set_native_charset (NULL); 
@@ -652,11 +652,13 @@ main (int argc, char **argv )
     bind_textdomain_codeset (PACKAGE_GT, "UTF-8");
 #endif
 
-  /* now start with logging to a file if this is desired */
+  /* Now start with logging to a file if this is desired. */
   if (logfile)
     {
       log_set_file (logfile);
-      log_set_prefix (NULL, 1|2|4);
+      log_set_prefix (NULL, (JNLIB_LOG_WITH_PREFIX
+                             |JNLIB_LOG_WITH_TIME
+                             |JNLIB_LOG_WITH_PID));
     }
 
   /* Make sure that we have a default ttyname. */
@@ -754,7 +756,7 @@ main (int argc, char **argv )
           exit (1);
         }
       else if (pid) 
-        { /* we are the parent */
+        { /* We are the parent */
           char *infostr;
           
           close (fd);
@@ -803,17 +805,20 @@ main (int argc, char **argv )
         } /* end parent */
       
 
-      /* this is the child */
+      /* 
+         This is the child
+       */
 
-      /* detach from tty and put process into a new session */
+      /* Detach from tty and put process into a new session */
       if (!nodetach )
         { 
           int i;
+          unsigned int oldflags;
 
-          /* close stdin, stdout and stderr unless it is the log stream */
+          /* Close stdin, stdout and stderr unless it is the log stream */
           for (i=0; i <= 2; i++) 
             {
-              if ( log_get_fd () != i)
+              if (!log_test_fd (i) )
                 close (i);
             }
           if (setsid() == -1)
@@ -822,6 +827,9 @@ main (int argc, char **argv )
               cleanup ();
               exit (1);
             }
+
+          log_get_prefix (&oldflags);
+          log_set_prefix (NULL, oldflags | JNLIB_LOG_RUN_DETACHED);
           opt.running_detached = 1;
         }
 

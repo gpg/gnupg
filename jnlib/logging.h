@@ -1,5 +1,5 @@
 /* logging.h
- *	Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,6 +24,11 @@
 #include <stdio.h>
 #include "mischelp.h"
 
+/* Flag values for log_set_prefix. */
+#define JNLIB_LOG_WITH_PREFIX  1
+#define JNLIB_LOG_WITH_TIME    2
+#define JNLIB_LOG_WITH_PID     4
+#define JNLIB_LOG_RUN_DETACHED 256
 
 int  log_get_errorcount (int clear);
 void log_inc_errorcount (void);
@@ -31,6 +36,7 @@ void log_set_file( const char *name );
 void log_set_fd (int fd);
 void log_set_prefix (const char *text, unsigned int flags);
 const char *log_get_prefix (unsigned int *flags);
+int log_test_fd (int fd);
 int  log_get_fd(void);
 FILE *log_get_stream (void);
 

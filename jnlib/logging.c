@@ -1,5 +1,6 @@
 /* logging.c -	useful logging functions
- * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -46,10 +47,12 @@
 
 
 static FILE *logstream;
+static int log_socket = -1;
 static char prefix_buffer[80];
 static int with_time;
 static int with_prefix;
 static int with_pid;
+static int running_detached;
 static int force_prefixes;
 
 static int missing_lf;
@@ -125,9 +128,14 @@ fun_writer (void *cookie_arg, const char *buffer, size_t size)
 {
   struct fun_cookie_s *cookie = cookie_arg;
 
-  /* Note that we always try to reconnect to the socket but print error
-     messages only the first time an error occured. */
-  if (cookie->fd == -1 )
+  /* Note that we always try to reconnect to the socket but print
+     error messages only the first time an error occured.  IF
+     RUNNING_DETACHED is set we don't fall back to stderr and even do
+     not print any error messages.  This is needed becuase detached
+     processes often close stderr and my printing to fiel descriptor 2
+     we might send the log message to a file not intended for logging
+     (e.g. a pipe or network connection). */
+  if (cookie->fd == -1)
     {
       /* Note yet open or meanwhile closed due to an error. */
       struct sockaddr_un addr;
@@ -136,11 +144,12 @@ fun_writer (void *cookie_arg, const char *buffer, size_t size)
       cookie->fd = socket (PF_LOCAL, SOCK_STREAM, 0);
       if (cookie->fd == -1)
         {
-          if (!cookie->quiet)
+          if (!cookie->quiet && !running_detached)
             fprintf (stderr, "failed to create socket for logging: %s\n",
                      strerror(errno));
           goto failure;
         }
+      log_socket = cookie->fd;
       
       memset (&addr, 0, sizeof addr);
       addr.sun_family = PF_LOCAL;
@@ -151,7 +160,8 @@ fun_writer (void *cookie_arg, const char *buffer, size_t size)
       
       if (connect (cookie->fd, (struct sockaddr *) &addr, addrlen) == -1)
         {
-          if (!cookie->quiet)
+          log_socket = -1;
+          if (!cookie->quiet && !running_detached)
             fprintf (stderr, "can't connect to `%s': %s\n",
                      cookie->name, strerror(errno));
           close (cookie->fd);
@@ -165,19 +175,24 @@ fun_writer (void *cookie_arg, const char *buffer, size_t size)
   if (!writen (cookie->fd, buffer, size))
     return size; /* Okay. */ 
 
-  fprintf (stderr, "error writing to `%s': %s\n",
-           cookie->name, strerror(errno));
+  log_socket = -1;
+  if (!running_detached)
+    fprintf (stderr, "error writing to `%s': %s\n",
+             cookie->name, strerror(errno));
   close (cookie->fd);
   cookie->fd = -1;
 
  failure: 
-  if (!cookie->quiet)
+  if (!running_detached)
     {
-      fputs ("switching logging to stderr\n", stderr);
-      cookie->quiet = 1;
+      if (!cookie->quiet)
+        {
+          fputs ("switching logging to stderr\n", stderr);
+          cookie->quiet = 1;
+        }
+      
+      fwrite (buffer, size, 1, stderr);
     }
-
-  fwrite (buffer, size, 1, stderr);
   return size;
 }
 
@@ -297,9 +312,10 @@ log_set_prefix (const char *text, unsigned int flags)
       prefix_buffer[sizeof (prefix_buffer)-1] = 0;
     }
   
-  with_prefix = (flags & 1);
-  with_time = (flags & 2);
-  with_pid  = (flags & 4);
+  with_prefix = (flags & JNLIB_LOG_WITH_PREFIX);
+  with_time = (flags & JNLIB_LOG_WITH_TIME);
+  with_pid  = (flags & JNLIB_LOG_WITH_PID);
+  running_detached = (flags & JNLIB_LOG_RUN_DETACHED);
 }
 
 
@@ -310,30 +326,45 @@ log_get_prefix (unsigned int *flags)
     {
       *flags = 0;
       if (with_prefix)
-        *flags |= 1;
+        *flags |= JNLIB_LOG_WITH_PREFIX;
       if (with_time)
-        *flags |= 2;
+        *flags |= JNLIB_LOG_WITH_TIME;
       if (with_pid)
-        *flags |=4;
+        *flags |= JNLIB_LOG_WITH_PID;
+      if (running_detached)
+        *flags |= JNLIB_LOG_RUN_DETACHED;
     }
   return prefix_buffer;
 }
 
+/* This function returns true if the file descriptor FD is in use for
+   logging.  This is preferable over a test using log_get_fd in that
+   it allows the logging code to use more then one file descriptor. */
 int
-log_get_fd()
+log_test_fd (int fd)
 {
-    return fileno(logstream?logstream:stderr);
+  if (fileno (logstream?logstream:stderr) == fd)
+    return 1;
+  if (log_socket == fd)
+    return 1;
+  return 0;
+}
+
+int
+log_get_fd ()
+{
+  return fileno(logstream?logstream:stderr);
 }
 
 FILE *
 log_get_stream ()
 {
-    return logstream?logstream:stderr;
+  return logstream?logstream:stderr;
 }
 
 
 static void
-do_logv( int level, const char *fmt, va_list arg_ptr )
+do_logv (int level, const char *fmt, va_list arg_ptr)
 {
   if (!logstream)
     logstream = stderr;
