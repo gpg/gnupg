@@ -453,7 +453,7 @@ static gc_option_t gc_options_gpg_agent[] =
    { "debug-level", GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED,
      "gnupg", "|LEVEL|set the debugging level to LEVEL",
      GC_ARG_TYPE_STRING, GC_BACKEND_GPG_AGENT },
-   { "log-file", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+   { "log-file", GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED,
      "gnupg", "|FILE|write logs to FILE",
      GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPG_AGENT },
    { "faked-system-time", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
