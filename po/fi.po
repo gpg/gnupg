@@ -21,8 +21,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-07-20 14:26+0200\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
+"POT-Creation-Date: 2004-08-09 21:19+0200\n"
 "PO-Revision-Date: 2004-06-16 22:40+0300\n"
 "Last-Translator: Tommi Vainikainen <Tommi.Vainikainen@iki.fi>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
@@ -46,7 +46,6 @@ msgstr "toiminto on mahdollinen vain, jos suojattu muisti alustetaan\n"
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(olet ehkä käyttänyt tehtävään väärää ohjelmaa)\n"
 
-#. NOTE TO TRANSLATOR: See doc/TRANSLATE about this string.
 #: util/miscutil.c:307 util/miscutil.c:344
 msgid "yes"
 msgstr "kyllä|kylla|joo"
@@ -55,7 +54,6 @@ msgstr "kyllä|kylla|joo"
 msgid "yY"
 msgstr "kK"
 
-#. NOTE TO TRANSLATOR: See doc/TRANSLATE about this string.
 #: util/miscutil.c:310 util/miscutil.c:346
 msgid "no"
 msgstr "ei"
@@ -64,7 +62,6 @@ msgstr "ei"
 msgid "nN"
 msgstr "eE"
 
-#. NOTE TO TRANSLATOR: See doc/TRANSLATE about this string.
 #: util/miscutil.c:348 g10/keyedit.c:996
 msgid "quit"
 msgstr "lopeta|sulje"
@@ -269,7 +266,6 @@ msgstr "salaamaton"
 msgid "not processed"
 msgstr "ei käsitelty"
 
-#. the key cannot be used for a specific usage
 #: util/errors.c:105
 msgid "unusable public key"
 msgstr "julkista avainta ei voi käyttää"
@@ -749,19 +745,19 @@ msgstr "|N|käytä pakkausalgoritmia N"
 msgid "throw keyid field of encrypted packets"
 msgstr "jätä avaintunnistekenttä pois salatuista paketeista"
 
-#: g10/g10.c:488
+#: g10/g10.c:489
 msgid "Show Photo IDs"
 msgstr "Näytä valokuvatunnisteet"
 
-#: g10/g10.c:489
+#: g10/g10.c:490
 msgid "Don't show Photo IDs"
 msgstr "Älä näytä valokuvatunnisteita"
 
-#: g10/g10.c:490
+#: g10/g10.c:491
 msgid "Set command line to view Photo IDs"
 msgstr "Aseta valokuvatunnisteiden katsomiskomento"
 
-#: g10/g10.c:497
+#: g10/g10.c:498
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
@@ -770,7 +766,7 @@ msgstr ""
 "(Katso täydellinen luettelo kaikista komennoista ja valitsimista man-"
 "sivuilta)\n"
 
-#: g10/g10.c:500
+#: g10/g10.c:501
 msgid ""
 "@\n"
 "Examples:\n"
@@ -789,16 +785,16 @@ msgstr ""
 " --list-keys [nimet]        näytä avaimet\n"
 " --fingerprint [nimet]      näytä sormenjäljet\n"
 
-#: g10/g10.c:666 g10/gpgv.c:95
+#: g10/g10.c:667 g10/gpgv.c:95
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 msgstr ""
 "Ilmoita ohjelmistovioista (englanniksi) osoitteeseen <gnupg-bugs@gnu.org>.\n"
 
-#: g10/g10.c:683
+#: g10/g10.c:684
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Käyttö: gpg [valitsimet] [tiedostot] (-h näyttää ohjeen)"
 
-#: g10/g10.c:686
+#: g10/g10.c:687
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "sign, check, encrypt or decrypt\n"
@@ -808,7 +804,7 @@ msgstr ""
 "allekirjoita, tarkista, salaa tai avaa\n"
 "oletustoiminto riippuu syötteestä\n"
 
-#: g10/g10.c:697
+#: g10/g10.c:698
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -816,371 +812,371 @@ msgstr ""
 "\n"
 "Tuetut algoritmit:\n"
 
-#: g10/g10.c:700
+#: g10/g10.c:701
 msgid "Pubkey: "
 msgstr "JulkAvain: "
 
-#: g10/g10.c:706 g10/keyedit.c:1588
+#: g10/g10.c:707 g10/keyedit.c:1588
 msgid "Cipher: "
 msgstr "Salaus: "
 
-#: g10/g10.c:712
+#: g10/g10.c:713
 msgid "Hash: "
 msgstr "Tiiviste: "
 
-#: g10/g10.c:718 g10/keyedit.c:1634
+#: g10/g10.c:719 g10/keyedit.c:1634
 msgid "Compression: "
 msgstr "Pakkaus: "
 
-#: g10/g10.c:801
+#: g10/g10.c:802
 msgid "usage: gpg [options] "
 msgstr "käyttö: gpg [valitsimet] "
 
-#: g10/g10.c:869
+#: g10/g10.c:870
 msgid "conflicting commands\n"
 msgstr "ristiriitainen komento\n"
 
-#: g10/g10.c:887
+#: g10/g10.c:888
 #, c-format
 msgid "no = sign found in group definition \"%s\"\n"
 msgstr "=-merkkiä ei löytynyt ryhmämäärityksessä \"%s\"\n"
 
-#: g10/g10.c:1087
+#: g10/g10.c:1088
 #, c-format
 msgid "WARNING: unsafe ownership on %s \"%s\"\n"
 msgstr "VAROITUS: omistussuhde kohteessa %s \"%s\" ei ole turvallinen\"\n"
 
-#: g10/g10.c:1090
+#: g10/g10.c:1091
 #, c-format
 msgid "WARNING: unsafe permissions on %s \"%s\"\n"
 msgstr "VAROITUS: oikeudet kohteessa %s \"%s\" eivät ole turvallisia\"\n"
 
-#: g10/g10.c:1093
+#: g10/g10.c:1094
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on %s \"%s\"\n"
 msgstr "VAROITUS: %s \"%s\" hakemiston oikeudet eivät ole turvallisia\"\n"
 
-#: g10/g10.c:1097
+#: g10/g10.c:1098
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on %s \"%s\"\n"
 msgstr "VAROITUS: Hakemiston %s \"%s\" oikeudet eivät ole turvallisia\"\n"
 
-#: g10/g10.c:1223
+#: g10/g10.c:1224
 #, c-format
 msgid "unknown configuration item \"%s\"\n"
 msgstr "tuntematon asetus \"%s\"\n"
 
-#: g10/g10.c:1437
+#: g10/g10.c:1445
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "HUOM: Vanhat oletusarvoiset asetukset löytyvät tiedostosta \"%s\"\n"
 
-#: g10/g10.c:1473
+#: g10/g10.c:1481
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "HUOM: Ei oletusasetustiedostoa \"%s\"\n"
 
-#: g10/g10.c:1477
+#: g10/g10.c:1485
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "asetustiedosto \"%s\": %s\n"
 
-#: g10/g10.c:1484
+#: g10/g10.c:1492
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "luetaan asetukset tiedostosta \"%s\"\n"
 
-#: g10/g10.c:1693
+#: g10/g10.c:1701
 #, c-format
 msgid "cipher extension \"%s\" not loaded due to unsafe permissions\n"
 msgstr "Oikeudet eivät ole turvallisia, salainlaajennuksia \"%s\" ei ladattu\n"
 
-#: g10/g10.c:1828
+#: g10/g10.c:1836
 #, c-format
 msgid "%s is not a valid character set\n"
 msgstr "%s ei kelpaa merkistöksi\n"
 
-#: g10/g10.c:1846
+#: g10/g10.c:1854
 msgid "could not parse keyserver URI\n"
 msgstr "avainpalvelimen URI:iä ei voi jäsentää\n"
 
-#: g10/g10.c:1855
+#: g10/g10.c:1863
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: virheelliset tuontivalitsimet\n"
 
-#: g10/g10.c:1858
+#: g10/g10.c:1866
 msgid "invalid import options\n"
 msgstr "virheelliset tuontivalitsimet\n"
 
-#: g10/g10.c:1865
+#: g10/g10.c:1873
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: virheelliset vientivalitsimet\n"
 
-#: g10/g10.c:1868
+#: g10/g10.c:1876
 msgid "invalid export options\n"
 msgstr "virheelliset vientivalitsimet\n"
 
-#: g10/g10.c:1874
+#: g10/g10.c:1882
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "exec-polkua kohteeseen %s ei voi asettaa\n"
 
-#: g10/g10.c:2032
+#: g10/g10.c:2040
 msgid "WARNING: program may create a core file!\n"
 msgstr "VAROITUS: ohjelma voi luoda core-tiedoston!\n"
 
-#: g10/g10.c:2036
+#: g10/g10.c:2044
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "VAROITUS: %s korvaa %s:n\n"
 
-#: g10/g10.c:2043 g10/g10.c:2054
+#: g10/g10.c:2051 g10/g10.c:2062
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "HUOM: %s ei ole normaaliin käyttöön!\n"
 
-#: g10/g10.c:2045
+#: g10/g10.c:2053
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s ja %s eivät ole sallittuja yhdessä!\n"
 
-#: g10/g10.c:2048
+#: g10/g10.c:2056
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s ja %s yhdessä on järjetöntä!\n"
 
-#: g10/g10.c:2069
+#: g10/g10.c:2077
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr "erillisen allekirjoituksen voi luoda vain --pgp2-tilassa\n"
 
-#: g10/g10.c:2075
+#: g10/g10.c:2083
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr "--pgp2-tilassa ei voi allekirjoittaa ja salata samanaikaisesti\n"
 
-#: g10/g10.c:2081
+#: g10/g10.c:2089
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr ""
 "sinun tulee käyttää tiedostoja (eikä putkitusta) kun --pgp2 on käytössä.\n"
 
-#: g10/g10.c:2094
+#: g10/g10.c:2102
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "viestin salaaaminen --pgp2-tilassa vaatii IDEA-salaimen\n"
 
-#: g10/g10.c:2161 g10/g10.c:2179
+#: g10/g10.c:2169 g10/g10.c:2187
 msgid "selected cipher algorithm is invalid\n"
 msgstr "valittu salausalgoritmi ei kelpaa\n"
 
-#: g10/g10.c:2167 g10/g10.c:2185
+#: g10/g10.c:2175 g10/g10.c:2193
 msgid "selected digest algorithm is invalid\n"
 msgstr "valittu tiivistealgoritmi ei kelpaa\n"
 
-#: g10/g10.c:2173
+#: g10/g10.c:2181
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "valittu varmenteen tiivistealgoritmi ei kelpaa\n"
 
-#: g10/g10.c:2189
+#: g10/g10.c:2197
 #, c-format
 msgid "compress algorithm `%s' is read-only in this release\n"
 msgstr "tiivistealgoritmia \"%s\" voidaan ainoastaan lukea tässä julkaisussa\n"
 
-#: g10/g10.c:2193
+#: g10/g10.c:2201
 #, c-format
 msgid "compress algorithm must be in range %d..%d\n"
 msgstr "pakkausalgoritmin täytyy olla väliltä %d..%d\n"
 
-#: g10/g10.c:2195
+#: g10/g10.c:2203
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed täytyy olla suurempi kuin 0\n"
 
-#: g10/g10.c:2197
+#: g10/g10.c:2205
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed täytyy olla suurempi kuin 1\n"
 
-#: g10/g10.c:2199
+#: g10/g10.c:2207
 msgid "max-cert-depth must be in range 1 to 255\n"
 msgstr "max-cert-depth tulee olla välillä 1-255\n"
 
-#: g10/g10.c:2201
+#: g10/g10.c:2209
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "default-cert-level ei kelpaa; täytyy olla 0, 1, 2 tai 3\n"
 
-#: g10/g10.c:2203
+#: g10/g10.c:2211
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "min-cert-level ei kelpaa; täytyy olla 1, 2 tai 3\n"
 
-#: g10/g10.c:2206
+#: g10/g10.c:2214
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr ""
 "HUOM: yksinkertaista S2K-tilaa (0) ei todellakaan suositella käytettäväksi\n"
 
-#: g10/g10.c:2210
+#: g10/g10.c:2218
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "virheellinen S2K-tila; täytyy olla 0, 1 tai 3\n"
 
-#: g10/g10.c:2217
+#: g10/g10.c:2225
 msgid "invalid default preferences\n"
 msgstr "virheelliset oletusarvoiset valinnat\n"
 
-#: g10/g10.c:2226
+#: g10/g10.c:2234
 msgid "invalid personal cipher preferences\n"
 msgstr "virheelliset henkilökohtaisen salaimen valinnat\n"
 
-#: g10/g10.c:2230
+#: g10/g10.c:2238
 msgid "invalid personal digest preferences\n"
 msgstr "virheelliset henkilökohtaiset tiivisteen valinnat\n"
 
-#: g10/g10.c:2234
+#: g10/g10.c:2242
 msgid "invalid personal compress preferences\n"
 msgstr "virheelliset henkilökohtaiset pakkausvalinnat\n"
 
-#: g10/g10.c:2264
+#: g10/g10.c:2272
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s ja %s eivät vielä toimi yhdessä\n"
 
-#: g10/g10.c:2308
+#: g10/g10.c:2316
 #, c-format
 msgid "you may not use cipher algorithm \"%s\" while in %s mode\n"
 msgstr "salausalgoritmia \"%s\" ei voi käyttää %s-tilassa\n"
 
-#: g10/g10.c:2313
+#: g10/g10.c:2321
 #, c-format
 msgid "you may not use digest algorithm \"%s\" while in %s mode\n"
 msgstr "tiivistealgoritmia \"%s\" ei voi käyttää %s-tilassa\n"
 
-#: g10/g10.c:2318
+#: g10/g10.c:2326
 #, c-format
 msgid "you may not use compression algorithm \"%s\" while in %s mode\n"
 msgstr "pakkausalgoritmia \"%s\" ei voi käyttää %s-tilassa\n"
 
-#: g10/g10.c:2410
+#: g10/g10.c:2418
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "TrustDB:n alustaminen ei onnistu: %s\n"
 
-#: g10/g10.c:2421
+#: g10/g10.c:2429
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "VAROITUS: vastaanottajia (-r) annettu käyttämättä julkisen avaimen salausta\n"
 
-#: g10/g10.c:2432
+#: g10/g10.c:2440
 msgid "--store [filename]"
 msgstr "--store [tiedostonimi]"
 
-#: g10/g10.c:2439
+#: g10/g10.c:2447
 msgid "--symmetric [filename]"
 msgstr "--symmetric [tiedostonimi]"
 
-#: g10/g10.c:2451
+#: g10/g10.c:2459
 msgid "--encrypt [filename]"
 msgstr "--encrypt [tiedostonimi]"
 
-#: g10/g10.c:2466
+#: g10/g10.c:2474
 msgid "--sign [filename]"
 msgstr "--allekirjoita [tiedostonimi]"
 
-#: g10/g10.c:2479
+#: g10/g10.c:2487
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [tiedostonimi]"
 
-#: g10/g10.c:2493
+#: g10/g10.c:2501
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [tiedostonimi]"
 
-#: g10/g10.c:2502
+#: g10/g10.c:2510
 msgid "--clearsign [filename]"
 msgstr "--clearsign [tiedostonimi]"
 
-#: g10/g10.c:2527
+#: g10/g10.c:2535
 msgid "--decrypt [filename]"
 msgstr "--decrypt [tiedostonimi]"
 
-#: g10/g10.c:2535
+#: g10/g10.c:2543
 msgid "--sign-key user-id"
 msgstr "--sign-key käyttäjätunnus"
 
-#: g10/g10.c:2543
+#: g10/g10.c:2551
 msgid "--lsign-key user-id"
 msgstr "--lsign-key käyttäjätunnus"
 
-#: g10/g10.c:2551
+#: g10/g10.c:2559
 msgid "--nrsign-key user-id"
 msgstr "--nrlsign-key käyttäjätunnus"
 
-#: g10/g10.c:2559
+#: g10/g10.c:2567
 msgid "--nrlsign-key user-id"
 msgstr "--nrlsign-key käyttäjätunnus"
 
-#: g10/g10.c:2567
+#: g10/g10.c:2575
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key käyttäjätunnus [komennot]"
 
-#: g10/g10.c:2623 g10/encode.c:423 g10/sign.c:809
+#: g10/g10.c:2631 g10/encode.c:423 g10/sign.c:809
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "tiedostoa %s ei voi avata: %s\n"
 
-#: g10/g10.c:2638
+#: g10/g10.c:2646
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [käyttäjätunnus] [avainrengas]"
 
-#: g10/g10.c:2675
+#: g10/g10.c:2683
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "avainpalvelimelle lähettäminen epäonnistui: %s\n"
 
-#: g10/g10.c:2677
+#: g10/g10.c:2685
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "avainpalvelimelta vastaanotto epäonnistui: %s\n"
 
-#: g10/g10.c:2679
+#: g10/g10.c:2687
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "avaimen vienti epäonnistui: %s\n"
 
-#: g10/g10.c:2690
+#: g10/g10.c:2698
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "avainpalvelimelta etsiminen epäonnistui: %s\n"
 
-#: g10/g10.c:2700
+#: g10/g10.c:2708
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "avainpalvelimen päivitys epäonnistui: %s\n"
 
-#: g10/g10.c:2741
+#: g10/g10.c:2749
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "ascii-koodauksen purku epäonnistui: %s\n"
 
-#: g10/g10.c:2749
+#: g10/g10.c:2757
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "ascii-koodaaminen epäonnistui: %s\n"
 
-#: g10/g10.c:2836
+#: g10/g10.c:2844
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "virheellinen tiivistealgoritmi \"%s\"\n"
 
-#: g10/g10.c:2930
+#: g10/g10.c:2938
 msgid "[filename]"
 msgstr "[tiedostonimi]"
 
-#: g10/g10.c:2934
+#: g10/g10.c:2942
 msgid "Go ahead and type your message ...\n"
 msgstr "Kirjoita viestisi...\n"
 
-#: g10/g10.c:2937 g10/decrypt.c:62 g10/decrypt.c:145 g10/verify.c:95
+#: g10/g10.c:2945 g10/decrypt.c:62 g10/decrypt.c:145 g10/verify.c:95
 #: g10/verify.c:142
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "tiedostoa \"%s\" ei voi avata\n"
 
-#: g10/g10.c:3210
+#: g10/g10.c:3218
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
@@ -1188,19 +1184,19 @@ msgstr ""
 "notaation nimen täytyy sisältää vain tulostettavia merkkejä tai "
 "välilyöntejä, ja sen täytyy loppua merkkiin \"=\"\n"
 
-#: g10/g10.c:3219
+#: g10/g10.c:3227
 msgid "a user notation name must contain the '@' character\n"
 msgstr "käyttäjänotaatin täytyy sisältää \"@\"-merkki\n"
 
-#: g10/g10.c:3229
+#: g10/g10.c:3237
 msgid "a notation value must not use any control characters\n"
 msgstr "notaatiosssa ei saa olla erikoismerkkejä\n"
 
-#: g10/g10.c:3264
+#: g10/g10.c:3272
 msgid "the given certification policy URL is invalid\n"
 msgstr "annettu varmennekäytännön URL on virheellinen\n"
 
-#: g10/g10.c:3266
+#: g10/g10.c:3274
 msgid "the given signature policy URL is invalid\n"
 msgstr "annettu allekirjoituskäytännön URL on virheellinen\n"
 
@@ -1328,7 +1324,6 @@ msgstr "mitätöinnin syy: "
 msgid "revocation comment: "
 msgstr "mitätöintikommentti: "
 
-#. a string with valid answers
 #: g10/pkclist.c:254
 msgid "iImMqQsS"
 msgstr "iImMlLoO"
@@ -1383,7 +1378,6 @@ msgstr " %d = Luotan täysin\n"
 msgid " %d = I trust ultimately\n"
 msgstr " %d = Luotan ehdottomasti\n"
 
-#. not yet implemented
 #: g10/pkclist.c:313
 msgid " i = please show me more information\n"
 msgstr " i = näytä lisätietoja\n"
@@ -1702,14 +1696,6 @@ msgstr "avainkoko on liian pieni; RSA vaatii vähintään 1024.\n"
 msgid "keysize too small; 768 is smallest value allowed.\n"
 msgstr "avainkoko on liian pieni; pienin sallittu arvo on 768.\n"
 
-#. It is ridiculous and an annoyance to use larger key sizes!
-#. * GnuPG can handle much larger sizes; but it takes an eternity
-#. * to create such a key (but less than the time the Sirius
-#. * Computer Corporation needs to process one of the usual
-#. * complaints) and {de,en}cryption although needs some time.
-#. * So, before you complain about this limitation, I suggest that
-#. * you start a discussion with Marvin about this theme and then
-#. * do whatever you want.
 #: g10/keygen.c:1155
 #, c-format
 msgid "keysize too large; %d is largest value allowed.\n"
@@ -1794,7 +1780,6 @@ msgstr "arvo ei kelpaa\n"
 msgid "%s does not expire at all\n"
 msgstr "%s ei vanhene koskaan\n"
 
-#. print the date when the key expires
 #: g10/keygen.c:1281
 #, c-format
 msgid "%s expires at %s\n"
@@ -2115,7 +2100,6 @@ msgstr "avain %08lX: ei suojattu - ohitetaan\n"
 msgid "key %08lX: PGP 2.x style key - skipped\n"
 msgstr "avain %08lX: PGP 2.x -muodon avain - ohitetaan\n"
 
-#. I hope this warning doesn't confuse people.
 #: g10/export.c:284
 #, c-format
 msgid "WARNING: secret key %08lX does not have a simple SK checksum\n"
@@ -2131,8 +2115,6 @@ msgstr "VAROITUS: mitään ei viety\n"
 msgid "too many entries in pk cache - disabled\n"
 msgstr "pk-välimuistissa on liian monta kohdetta - poistettu käytöstä\n"
 
-#. fixme: returning translatable constants instead of a user ID is
-#. * not good because they are probably not utf-8 encoded.
 #: g10/getkey.c:186 g10/getkey.c:2672
 msgid "[User id not found]"
 msgstr "[Käyttäjätunnusta ei löytynyt]"
@@ -2368,7 +2350,6 @@ msgstr "salaiselle avainrenkaalle ei ole asetettu oletusarvoa: %s\n"
 msgid "key %08lX: secret key imported\n"
 msgstr "avain %08lX: salainen avain tuotu\n"
 
-#. we can't merge secret keys
 #: g10/import.c:870
 #, c-format
 msgid "key %08lX: already in secret keyring\n"
@@ -2607,8 +2588,6 @@ msgstr ""
 msgid "Do you want to issue a new signature to replace the expired one? (y/N) "
 msgstr "Haluatko tehdä uuden allekirjoituksen korvaamaan vanhentuneen? (k/E) "
 
-#. It's a local sig, and we want to make a
-#. exportable sig.
 #: g10/keyedit.c:501
 #, c-format
 msgid ""
@@ -2962,7 +2941,6 @@ msgstr "deluid"
 msgid "delete user ID"
 msgstr "poista käyttäjätunnus"
 
-#. delphoto is really deluid in disguise
 #: g10/keyedit.c:1018
 msgid "delphoto"
 msgstr "delphoto"
@@ -3260,8 +3238,6 @@ msgstr "Tämä avain voidaan mitätöidä %s-avaimella "
 msgid " (sensitive)"
 msgstr " (luottamuksellinen)"
 
-#. Note, we use the same format string as in other show
-#. functions to make the translation job easier.
 #: g10/keyedit.c:1907 g10/keyedit.c:1933 g10/keyedit.c:2018 g10/keyedit.c:2033
 #, c-format
 msgid "%s%c %4u%c/%08lX  created: %s expires: %s"
@@ -3388,9 +3364,6 @@ msgstr "Syötä määrätyn mitätöijän käyttäjätunnus: "
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr "PGP 2.x -avainta ei voi nimetä määrätyksi mitätöijäksi\n"
 
-#. This actually causes no harm (after all, a key that
-#. designates itself as a revoker is the same as a
-#. regular key), but it's easy enough to check.
 #: g10/keyedit.c:2521
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "et voi nimittää avainta sen omaksi määrätyksi mitätöijäksi\n"
@@ -3483,7 +3456,6 @@ msgstr "Haluatko varmasti mitätöidä sen? (k/E) "
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Luodaanko tälle alekirjoitukselle mitätöintivarmenne? (k/E) "
 
-#. FIXME: detect duplicates here
 #: g10/keyedit.c:3181
 msgid "You have signed these user IDs:\n"
 msgstr "Olet allekirjoittanut seuraavat käyttäjätunnukset:\n"
@@ -3524,10 +3496,6 @@ msgstr "salainen avain ei ole saatavilla\n"
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "käyttäjätunnus \"%s\" on jo mitätöity\n"
 
-#. Okay, this is a problem.  The user ID selfsig was
-#. created in the future, so we need to warn the user and
-#. set our revocation timestamp one second after that so
-#. everything comes out clean.
 #: g10/keyedit.c:3364
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
@@ -3595,7 +3563,6 @@ msgstr " Ensisijaisen avaimen sormenjälki:"
 msgid "      Subkey fingerprint:"
 msgstr "      Aliavaimen sormenjälki:"
 
-#. use tty
 #: g10/keylist.c:1061 g10/keylist.c:1065
 msgid "     Key fingerprint ="
 msgstr "     Avaimen sormenjälki ="
@@ -3605,8 +3572,6 @@ msgstr "     Avaimen sormenjälki ="
 msgid "weird size for an encrypted session key (%d)\n"
 msgstr "outo koko salatulle istuntoavaimelle (%d)\n"
 
-#. There is no way to tell the difference here between a bad
-#. passphrase and a cipher algorithm that we don't have.
 #: g10/mainproc.c:262
 #, c-format
 msgid "bad passphrase or unknown cipher algorithm (%d)\n"
@@ -3719,7 +3684,6 @@ msgstr "Käytäntö: "
 msgid "signature verification suppressed\n"
 msgstr "allekirjoituksen varmistus vaiennetaan\n"
 
-#. plaintext before signatures but no one-pass packets
 #: g10/mainproc.c:1333 g10/mainproc.c:1343
 msgid "can't handle these multiple signatures\n"
 msgstr "näitä allekirjoituksia ei voi käsitellä\n"
@@ -3730,10 +3694,6 @@ msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr ""
 "Allekirjoitus tehty %.*s käyttämällä %s-algoritmia avaintunnuksella %08lX\n"
 
-#. According to my favorite copy editor, in English
-#. grammar, you say "at" if the key is located on a web
-#. page, but "from" if it is located on a keyserver.  I'm
-#. not going to even try to make two strings here :)
 #: g10/mainproc.c:1381
 msgid "Key available at: "
 msgstr "Avain saatavilla kohteessa: "
@@ -4508,9 +4468,6 @@ msgstr "ehdottomasti luotettavia avaimia ei löytynyt\n"
 msgid "public key of ultimately trusted key %08lX not found\n"
 msgstr "ehdottomasti luotettu julkinen avain %08lX ei löytynyt\n"
 
-#. This should be valid=%d now, but I'm not changing it so I
-#. don't break the translated strings in the stable branch.
-#. Change it in devel. -dms
 #: g10/trustdb.c:1755
 #, c-format
 msgid "checking at depth %d signed=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"
@@ -4562,7 +4519,6 @@ msgstr ""
 "ohitetaan \"%s\": tämä on PGP:n luoma ElGamal-avain, jolla ei voi "
 "allekirjoittaa turvallisesti!\n"
 
-#. do not overwrite
 #: g10/openfile.c:84
 #, c-format
 msgid "File `%s' exists. "
@@ -5155,7 +5111,6 @@ msgid "this platform requires temp files when calling external programs\n"
 msgstr ""
 "tämä ympäristö vaatii väliaikaistiedoston kutsuttaessa ulkoisia ohjelmia\n"
 
-#. If we get this far the exec failed.  Clean up and return.
 #: g10/exec.c:432
 #, c-format
 msgid "unable to execute %s \"%s\": %s\n"
@@ -5233,7 +5188,6 @@ msgstr "ASCII-koodattu tuloste määritetty.\n"
 msgid "make_keysig_packet failed: %s\n"
 msgstr "make_keysig_packet epäonnistui: %s\n"
 
-#. and issue a usage notice
 #: g10/revoke.c:387
 msgid "Revocation certificate created.\n"
 msgstr "Mitätöintivarmenne luotu.\n"
@@ -5265,7 +5219,6 @@ msgstr "tuntematon suojausalgoritmi\n"
 msgid "NOTE: This key is not protected!\n"
 msgstr "HUOM: Tätä avainta ei ole suojattu!\n"
 
-#. and issue a usage notice
 #: g10/revoke.c:574
 msgid ""
 "Revocation certificate created.\n"
@@ -5346,7 +5299,6 @@ msgstr "virhe: sormenjälki on väärä\n"
 msgid "error: no ownertrust value\n"
 msgstr "virhe: ei luottamusarvoa\n"
 
-#. error
 #: g10/tdbdump.c:204
 #, c-format
 msgid "error finding trust record: %s\n"

@@ -31,7 +31,7 @@ libutil_a_SOURCES = g10u.c logger.c fileutil.c miscutil.c strgutil.c  \
 
 http-test:  http.c
 	gcc -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) -g -Wall -DTEST \
-	    -o http-test http.c libutil.a ../mpi/libmpi.a @INTLLIBS@
+	    -o http-test http.c libutil.a ../mpi/libmpi.a @LIBINTL@
 
 
 

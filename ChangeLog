@@ -1,3 +1,13 @@
+2004-08-09  Werner Koch  <wk@g10code.de>
+
+	* configure.ac (ALL_LINGUAS): Removed.
+
+2004-08-09  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* Makefile.am (SUBDIRS): Add m4.
+	(ACLOCAL_AMFLAGS): New variable.
+	* configure.ac (AC_CONFIG_FILES): Add m4/Makefile.
+
 2004-08-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Give warning when using capabilities.

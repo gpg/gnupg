@@ -1,3 +1,7 @@
+2004-08-09  Werner Koch  <wk@g10code.de>
+
+	* Makefile.am (gpgkeys_hkp_LDADD): Replaced INTLLIBS by LIBINTL.
+
 2004-07-20  Werner Koch  <wk@gnupg.org>
 
 	* gpgkeys_ldap.c [_WIN32]: Include Windows specific header files.

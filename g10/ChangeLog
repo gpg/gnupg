@@ -1,3 +1,12 @@
+2004-08-09  Werner Koch  <wk@g10code.de>
+
+	* Makefile.am (LDADD): Replaced INTLLIBS by LIBINTL.
+
+2004-08-02  Werner Koch  <wk@g10code.de>
+
+	* g10.c (main): Extra paranoid check to make sure we are not
+	running setuid anymore.
+
 2004-07-30  Werner Koch  <wk@g10code.de>
 
 	* g10.c: New alias --throw-keyid for --throw-keyids, so that it

@@ -1,3 +1,22 @@
+2004-08-09  Werner Koch  <wk@g10code.de>
+
+	* ca.po: Updated.
+
+	* LINGUAS: New.
+
+	* Makevars: New.
+
+2004-08-09  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* Makefile.in.in: Upgrade to gettext-0.14.1.
+	* Rules-quot: New file, from gettext-0.14.1.
+	* boldquot.sed: New file, from gettext-0.14.1.
+	* en@boldquot.header: New file, from gettext-0.14.1.
+	* en@quot.header: New file, from gettext-0.14.1.
+	* insert-header.sin: New file, from gettext-0.14.1.
+	* quot.sed: New file, from gettext-0.14.1.
+	* remove-potcdate.sin: New file, from gettext-0.14.1.
+
 2004-07-20  Werner Koch  <wk@gnupg.org>
 
 	* fr.po, cs.po, et.po, el.po, id.po, pl.po, ro.po, sk.po, tr.po

@@ -1,3 +1,7 @@
+2004-08-09  Werner Koch  <wk@g10code.de>
+
+	* Makefile.am: Replaced INTLLIBS by LIBINTL.
+
 2004-06-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* ring-a-party: ElGamal -> Elgamal

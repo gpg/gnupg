@@ -31,8 +31,6 @@ AC_INIT(gnupg, 1.2.6-cvs, bug-gnupg@gnu.org)
 # sufficient.
 development_version=no
 
-ALL_LINGUAS="be ca cs da de eo el es et fi fr gl hu id it ja nl pl pt_BR pt ro ru sk sv tr zh_TW zh_CN"
-
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_SRCDIR(g10/g10.c)
 AC_CANONICAL_TARGET()
@@ -1018,6 +1016,7 @@ DATADIRNAME=$DATADIRNAME
 
 AC_CONFIG_FILES([
 Makefile
+m4/Makefile 
 intl/Makefile
 po/Makefile.in
 util/Makefile

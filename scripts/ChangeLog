@@ -1,3 +1,7 @@
+2004-08-09  Werner Koch  <wk@g10code.de>
+
+	* autogen.sh: Run aclocal with -I m4.
+
 2004-07-20  Werner Koch  <wk@gnupg.org>
 
 	* mk-w32-dist: Do not convert zh_CN. 

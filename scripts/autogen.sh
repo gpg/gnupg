@@ -250,7 +250,7 @@ if test "$DIE" = "yes"; then
 fi
 
 echo "Running aclocal..."
-aclocal
+aclocal -I m4
 echo "Running autoheader..."
 autoheader
 echo "Running automake --gnu ..."

@@ -25,7 +25,7 @@ else
 checks = checks
 endif
 
-SUBDIRS = intl zlib util mpi cipher tools g10 keyserver po doc ${checks}
+SUBDIRS = m4 intl zlib util mpi cipher tools g10 keyserver po doc ${checks}
 EXTRA_DIST = PROJECTS BUGS config.h.in autogen.sh
 DISTCLEANFILES = g10defs.h 
 
@@ -53,3 +53,5 @@ dist-hook:
 
 
 
+
+ACLOCAL_AMFLAGS = -I m4

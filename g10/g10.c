@@ -1426,6 +1426,13 @@ main( int argc, char **argv )
     maybe_setuid = 0;
     /* Okay, we are now working under our real uid */
 
+#if defined(HAVE_GETUID) && defined(HAVE_GETEUID)
+    /* There should be no way to get to this spot while still carrying
+       setuid privs.  Just in case, bomb out if we are. */
+    if(getuid()!=geteuid())
+      BUG();
+#endif
+
     set_native_charset (NULL); /* Try to auto set the character set */
 
     if( default_config )
