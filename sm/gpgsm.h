@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef GNUPG_H
-#define GNUPG_H
+#ifndef GPGSM_H
+#define GPGSM_H
 
 #include <ksba.h>
 #include "../common/util.h"
@@ -72,12 +72,14 @@ struct {
 #define DBG_CACHE_VALUE   64	/* debug the caching */
 #define DBG_MEMSTAT_VALUE 128	/* show memory statistics */
 #define DBG_HASHING_VALUE 512	/* debug hashing operations */
+#define DBG_AGENT_VALUE  1024   /* debug communication with the agent */
 
 #define DBG_X509    (opt.debug & DBG_X509_VALUE)
 #define DBG_CRYPTO  (opt.debug & DBG_CRYPTO_VALUE)
 #define DBG_MEMORY  (opt.debug & DBG_MEMORY_VALUE)
 #define DBG_CACHE   (opt.debug & DBG_CACHE_VALUE)
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
+#define DBG_AGENT   (opt.debug & DBG_AGENT_VALUE)
 
 struct server_local_s;
 
@@ -134,9 +136,11 @@ int gpgsm_verify (CTRL ctrl, int in_fd, int data_fd);
 int gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp);
 
 
+/*-- call-agent.c --*/
+int gpgsm_agent_pksign (const char *keygrip,
+                        unsigned char *digest,
+                        size_t digestlen,
+                        int digestalgo,
+                        char **r_buf, size_t *r_buflen);
 
-/*-- errors.c (built) --*/
-const char *gnupg_strerror (int err);
-
-
-#endif /*GNUPG_H*/
+#endif /*GPGSM_H*/

@@ -26,6 +26,7 @@
 #include <ctype.h>
 #include <assert.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 #include "agent.h"
 
@@ -88,54 +89,84 @@ do_encode_md (const unsigned char *digest, size_t digestlen, int algo,
 }
 
 
+static GCRY_SEXP
+key_from_file (const unsigned char *grip)
+{
+  int i, rc;
+  char *fname;
+  FILE *fp;
+  struct stat st;
+  char *buf;
+  size_t buflen, erroff;
+  GCRY_SEXP s_skey;
+  char hexgrip[41];
+  
+  for (i=0; i < 20; i++)
+    sprintf (hexgrip+2*i, "%02X", grip[i]);
+  hexgrip[40] = 0;
+
+  fname = make_filename (opt.homedir, "private-keys-v1.d", hexgrip, NULL );
+  fp = fopen (fname, "rb");
+  if (!fp)
+    {
+      log_error ("can't open `%s': %s\n", fname, strerror (errno));
+      xfree (fname);
+      return NULL;
+    }
+  
+  if (fstat (fileno(fp), &st))
+    {
+      log_error ("can't stat `%s': %s\n", fname, strerror (errno));
+      xfree (fname);
+      fclose (fp);
+      return NULL;
+    }
+
+  buflen = st.st_size;
+  buf = xmalloc (buflen+1);
+  if (fread (buf, buflen, 1, fp) != 1)
+    {
+      log_error ("error reading `%s': %s\n", fname, strerror (errno));
+      xfree (fname);
+      fclose (fp);
+      xfree (buf);
+      return NULL;
+    }
+
+  rc = gcry_sexp_sscan (&s_skey, &erroff, buf, buflen);
+  xfree (fname);
+  fclose (fp);
+  xfree (buf);
+  if (rc)
+    {
+      log_error ("failed to build S-Exp (off=%u): %s\n",
+                 (unsigned int)erroff, gcry_strerror (rc));
+      return NULL;
+    }
+
+  return s_skey;
+}
+
+
+
 /* SIGN whatever information we have accumulated in CTRL and write it
    back to OUTFP. */
 int
 agent_pksign (CTRL ctrl, FILE *outfp) 
 {
-  /* our sample key */
-  const char n[] = "#8732A669BB7C5057AD070EFA54E035C86DF474F7A7EBE2435"
-    "3DADEB86FFE74C32AEEF9E5C6BD7584CB572520167B3E8C89A1FA75C74FF9E938"
-    "2710F3B270B638EB96E7486491D81C53CA8A50B4E840B1C7458A4A1E52EC18D681"
-    "8A2805C9165827F77EF90D55014E4B2AF9386AE8F6462F46A547CB593ABD509311"
-    "4D3D16375F#";
-  const char e[] = "#11#";
-  const char d[] = "#07F3EBABDDDA22D7FB1E8869140D30571586D9B4370DE02213F"
-    "DD0DDAC3C24FC6BEFF0950BB0CAAD755F7AA788DA12BCF90987341AC8781CC7115"
-    "B59A115B05D9D99B3D7AF77854DC2EE6A36154512CC0EAD832601038A88E837112"
-    "AB2A39FD9FBE05E30D6FFA6F43D71C59F423CA43BC91C254A8C89673AB61F326B0"
-    "762FBC9#";
-  const char p[] = "#B2ABAD4328E66303E206C53CFBED17F18F712B1C47C966EE13DD"
-    "AA9AD3616A610ADF513F8376FA48BAE12FED64CECC1E73091A77B45119AF0FC1286A"
-    "85BD9BBD#";
-  const char q[] = "#C1B648B294BB9AEE7FEEB77C4F64E9333E4EA9A7C54D521356FB"
-    "BBB7558A0E7D6331EC7B42E3F0CD7BBBA9B7A013422F615F10DCC1E8462828BF8FC7"
-    "39C5E34B#";
-  const char  u[] = "#A9B5EFF9C80A4A356B9A95EB63E381B262071E5CE9C1F32FF03"
-    "83AD8289BED8BC690555E54411FA2FDB9B49638A21B2046C325F5633B4B1ECABEBFD"
-    "1B3519072#";
-
   GCRY_SEXP s_skey, s_hash, s_sig;
   GCRY_MPI frame;
   int rc;
   char *buf;
   size_t len;
 
-  /* create a secret key as an sexp */
-  log_debug ("Using HARDWIRED secret key\n");
-  asprintf (&buf, "(private-key(oid.1.2.840.113549.1.1.1"
-           "(n %s)(e %s)(d %s)(p %s)(q %s)(u %s)))",
-           n, e, d, p, q, u);
-  /* asprintf does not use our allocation fucntions, so we can't
-     use our free */
-  rc = gcry_sexp_sscan (&s_skey, NULL, buf, strlen(buf));
-  free (buf);
-  if (rc)
+  s_skey = key_from_file (ctrl->keygrip);
+  if (!s_skey)
     {
-      log_error ("failed to build S-Exp: %s\n", gcry_strerror (rc));
-      return map_gcry_err (rc);
+      log_error ("failed to read the secret key\n");
+      return seterr (No_Secret_Key);
     }
-  
+
   /* put the hash into a sexp */
   rc = do_encode_md (ctrl->digest.value,
                      ctrl->digest.valuelen,
@@ -165,6 +196,9 @@ agent_pksign (CTRL ctrl, FILE *outfp)
   len = gcry_sexp_sprint (s_sig, GCRYSEXP_FMT_CANON, buf, len);
   assert (len);
 
+  /* FIXME: we must make sure that no buffering takes place or we are
+     in full control of the buffer memory (easy to do) - should go
+     into assuan. */
   fwrite (buf, 1, strlen(buf), outfp);
   return 0;
 }

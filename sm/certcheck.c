@@ -244,6 +244,8 @@ int
 gpgsm_create_cms_signature (KsbaCert cert, GCRY_MD_HD md, int mdalgo,
                             char **r_sigval)
 {
+#if 0
+
   /* our sample key */
   const char n[] = "#8732A669BB7C5057AD070EFA54E035C86DF474F7A7EBE2435"
     "3DADEB86FFE74C32AEEF9E5C6BD7584CB572520167B3E8C89A1FA75C74FF9E938"
@@ -313,7 +315,26 @@ gpgsm_create_cms_signature (KsbaCert cert, GCRY_MD_HD md, int mdalgo,
   assert (len);
 
   *r_sigval = buf;
-  return 0;
+#else
+  int rc;
+  char *grip;
+  size_t siglen;
+
+  grip = gpgsm_get_keygrip_hexstring (cert);
+  if (!grip)
+    return seterr (Bad_Certificate);
+
+  rc = gpgsm_agent_pksign (grip, gcry_md_read(md, mdalgo), 
+                           gcry_md_get_algo_dlen (mdalgo), mdalgo,
+                           r_sigval, &siglen);
+  xfree (grip);
+  /* FIXME: we should check that the returnes S-Exp is valid fits int
+     siglen.  It ould probaly be a good idea to scan and print it
+     again to make this sure and be sure that we have canocical
+     encoding */
+
+#endif
+  return rc;
 }
 
 

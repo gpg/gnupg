@@ -29,6 +29,7 @@ gpgsm_SOURCES = \
 	misc.c \
 	keydb.c keydb.h \
 	server.c \
+	call-agent.c \
 	fingerprint.c \
 	certdump.c \
 	certcheck.c \

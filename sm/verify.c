@@ -319,7 +319,6 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
       unsigned char *serial;
       char *msgdigest = NULL;
       size_t msgdigestlen;
-      time_t sigcreated;
 
       err = ksba_cms_get_issuer_serial (cms, signer, &issuer, &serial);
       if (err)

@@ -40,7 +40,15 @@ enum {
   GNUPG_Bad_Signature = 11,
   GNUPG_Not_Implemented = 12,
   GNUPG_Conflict = 13,
-  GNUPG_Bug = 14
+  GNUPG_Bug = 14,
+  GNUPG_Read_Error = 15,
+  GNUPG_Write_Error = 16,
+  GNUPG_Incomplete_Line = 17,
+  GNUPG_Invalid_Response = 18,
+  GNUPG_No_Agent = 19,
+  GNUPG_Agent_Error = 20,
+  GNUPG_No_Public_Key = 21,
+  GNUPG_No_Secret_Key = 22,
 };
 
 /* Status codes - fixme: should go into another file */
