@@ -22,7 +22,9 @@ ln ../g10/gpg gpg.exe
 i386--mingw32-strip gpg.exe
 man -T latin1 -l ../doc/gpg.1 >gpg.man
 todos gpg.man
-ln ${srcdir}/README .
+cp ${srcdir}/README .
+todos README
 ln ${srcdir}/doc/README.W32 .
+todos README.W32
 for i in ${srcdir}/po/*.gmo; do ln $i "$(basename $i .gmo).mo" ; done
 zip "gnupg-w32-$(cat ${srcdir}/VERSION).zip" *

@@ -64,6 +64,7 @@ struct {
     int compress_sigs;
     int always_trust;
     int rfc1991;
+    int rfc2440;
     int pgp2_workarounds;
     unsigned emulate_bugs; /* bug emulation flags EMUBUG_xxxx */
     int shm_coprocess;

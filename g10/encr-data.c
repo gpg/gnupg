@@ -32,9 +32,9 @@
 #include "i18n.h"
 
 
-static int decode_filter( void *opaque, int control, IOBUF a,
-					byte *buf, size_t *ret_len);
 static int mdc_decode_filter( void *opaque, int control, IOBUF a,
+					      byte *buf, size_t *ret_len);
+static int decode_filter( void *opaque, int control, IOBUF a,
 					byte *buf, size_t *ret_len);
 
 typedef struct {
@@ -76,8 +76,10 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
     if( ed->len && ed->len < (nprefix+2) )
 	BUG();
 
-    if( ed->mdc_method )
+    if( ed->mdc_method ) {
 	dfx.mdc_hash = md_open( ed->mdc_method, 0 );
+	/*md_start_debug(dfx.mdc_hash, "checkmdc");*/
+    }
     dfx.cipher_hd = cipher_open( dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
 /* log_hexdump( "thekey", dek->key, dek->keylen );*/
     rc = cipher_setkey( dfx.cipher_hd, dek->key, dek->keylen );
@@ -107,8 +109,6 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 		temp[i] = c;
     }
     cipher_decrypt( dfx.cipher_hd, temp, temp, nprefix+2);
-    if( dfx.mdc_hash )
-	md_write( dfx.mdc_hash, temp, nprefix+2 );
     cipher_sync( dfx.cipher_hd );
     p = temp;
 /* log_hexdump( "prefix", temp, nprefix+2 ); */
@@ -116,28 +116,35 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 	rc = G10ERR_BAD_KEY;
 	goto leave;
     }
+
     if( ed->mdc_method )
 	iobuf_push_filter( ed->buf, mdc_decode_filter, &dfx );
     else
 	iobuf_push_filter( ed->buf, decode_filter, &dfx );
-    proc_packets( procctx, ed->buf);
+
+    proc_packets( procctx, ed->buf );
     ed->buf = NULL;
     if( ed->mdc_method && dfx.eof_seen == 2 )
 	rc = G10ERR_INVALID_PACKET;
     else if( ed->mdc_method ) { /* check the mdc */
 	int datalen = md_digest_length( ed->mdc_method );
+
+	cipher_decrypt( dfx.cipher_hd, dfx.defer, dfx.defer, 20);
 	md_final( dfx.mdc_hash );
 	if( datalen != 20
 	    || memcmp(md_read( dfx.mdc_hash, 0 ), dfx.defer, datalen) )
 	    rc = G10ERR_BAD_SIGN;
-	log_hexdump("MDC calculated:", md_read( dfx.mdc_hash, 0), datalen);
-	log_hexdump("MDC message   :", dfx.defer, 20);
+	/*log_hexdump("MDC calculated:", md_read( dfx.mdc_hash, 0), datalen);*/
+	/*log_hexdump("MDC message   :", dfx.defer, 20);*/
     }
+
   leave:
     cipher_close(dfx.cipher_hd);
     md_close( dfx.mdc_hash );
     return rc;
 }
+
+
 
 /* I think we should merge this with cipher_filter */
 static int
@@ -166,10 +173,13 @@ mdc_decode_filter( void *opaque, int control, IOBUF a,
 	if( n == 40 ) {
 	    /* we have enough stuff - flush the deferred stuff */
 	    /* (we have asserted that the buffer is large enough) */
-	    if( !dfx->defer_filled ) /* the first time */
+	    if( !dfx->defer_filled ) { /* the first time */
 		memcpy(buf, buf+20, 20 );
-	    else
+		n = 20;
+	    }
+	    else {
 		memcpy(buf, dfx->defer, 20 );
+	    }
 	    /* now fill up */
 	    for(; n < size; n++ ) {
 		if( (c = iobuf_get(a)) == -1 )
@@ -183,7 +193,7 @@ mdc_decode_filter( void *opaque, int control, IOBUF a,
 	    dfx->defer_filled = 1;
 	}
 	else if( !dfx->defer_filled ) { /* eof seen buf empty defer */
-	    /* this is very bad because there is an incomplete hash */
+	    /* this is bad because there is an incomplete hash */
 	    n -= 20;
 	    memcpy(buf, buf+20, n );
 	    dfx->eof_seen = 2; /* eof with incomplete hash */

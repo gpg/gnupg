@@ -23,7 +23,9 @@ AC_SUBST(PACKAGE)
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 
-MODULES_IN_CIPHER=`awk '/^EXTRA_PROGRAMS/ { for(i=3;i<=NF;i++) print $i}' \
+AC_PROG_AWK
+
+MODULES_IN_CIPHER=`$AWK '/^EXTRA_PROGRAMS/ { for(i=3;i<=NF;i++) print $i}' \
                                               $srcdir/cipher/Makefile.am`
 
 dnl
@@ -221,7 +223,7 @@ esac
 AC_SUBST(MPI_OPT_FLAGS)
 GNUPG_SYS_SYMBOL_UNDERSCORE
 GNUPG_CHECK_PIC
-GNUPG_CHECK_RDYNAMIC
+GNUPG_CHECK_EXPORTDYNAMIC
 if test "$NO_PIC" = yes; then
     try_dynload=no
 fi
@@ -320,21 +322,21 @@ if test "$try_dynload" = yes ; then
   if test "$ac_cv_lib_dl_dlopen" = "yes"; then
     AC_DEFINE(USE_DYNAMIC_LINKING)
     AC_DEFINE(HAVE_DL_DLOPEN)
-    DYNLINK_LDFLAGS="$CFLAGS_RDYNAMIC"
+    DYNLINK_LDFLAGS="$CFLAGS_EXPORTDYNAMIC"
     use_gnupg_extensions=yes
   else
     AC_CHECK_FUNCS(dlopen)
     if test "$ac_cv_func_dlopen" = "yes"; then
       AC_DEFINE(USE_DYNAMIC_LINKING)
       AC_DEFINE(HAVE_DL_DLOPEN)
-      DYNLINK_LDFLAGS="$CFLAGS_RDYNAMIC"
+      DYNLINK_LDFLAGS="$CFLAGS_EXPORTDYNAMIC"
       use_gnupg_extensions=yes
     else
       AC_CHECK_LIB(dld,shl_load)
       if test "$ac_cv_lib_dld_shl_load" = "yes"; then
         AC_DEFINE(USE_DYNAMIC_LINKING)
         AC_DEFINE(HAVE_DL_SHL_LOAD)
-        DYNLINK_LDFLAGS="$CFLAGS_RDYNAMIC"
+        DYNLINK_LDFLAGS="$CFLAGS_EXPORTDYNAMIC"
         use_gnupg_extensions=yes
 dnl -----------------
 dnl  DLD is not ready for use. So I better disable this test
@@ -343,7 +345,7 @@ dnl    AC_CHECK_LIB(dld,dld_link)
 dnl    if test "$ac_cv_lib_dld_dld_link" = "yes"; then
 dnl      AC_DEFINE(USE_DYNAMIC_LINKING)
 dnl      AC_DEFINE(HAVE_DLD_DLD_LINK)
-dnl      DYNLINK_LDFLAGS="$CFLAGS_RDYNAMIC"
+dnl      DYNLINK_LDFLAGS="$CFLAGS_EXPORTDYNAMIC"
 dnl      use_gnupg_extensions=yes
 dnl ---------------
       fi

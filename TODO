@@ -7,11 +7,10 @@
 
   * Fix localtime() in W32.
 
-  * export sollte exit(1) machen bei einem Fehler - testen! Es wird ein
-    leerer File erzeugt.  Nur unter Windows?
-
   * No TCP support yet for W32? arggg - should go into a separate program
     anyway.
+
+  * Replace Valid/Invalid by Known/Unknown?
 
 
 Scheduled for 1.1

@@ -73,6 +73,8 @@ static int  parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen,
 					       PACKET *packet, int new_ctb );
 static int  parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 					       PACKET *packet, int new_ctb);
+static int  parse_mdc( IOBUF inp, int pkttype, unsigned long pktlen,
+					       PACKET *packet, int new_ctb);
 
 static unsigned short
 read_16(IOBUF inp)
@@ -440,6 +442,9 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
       case PKT_ENCRYPTED:
       case PKT_ENCRYPTED_MDC:
 	rc = parse_encrypted(inp, pkttype, pktlen, pkt, new_ctb );
+	break;
+      case PKT_MDC:
+	rc = parse_mdc(inp, pkttype, pktlen, pkt, new_ctb );
 	break;
       default:
 	skip_packet(inp, pkttype, pktlen);
@@ -1697,9 +1702,8 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
     ed->new_ctb = new_ctb;
     ed->mdc_method = 0;
     if( pkttype == PKT_ENCRYPTED_MDC ) {
-	/* test: this is the new encrypted_mdc packet */
 	/* fixme: add some pktlen sanity checks */
-	int version, method;
+	int version;
 
 	version = iobuf_get_noeof(inp); pktlen--;
 	if( version != 1 ) {
@@ -1707,12 +1711,7 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 								version);
 	    goto leave;
 	}
-	method = iobuf_get_noeof(inp); pktlen--;
-	if( method != DIGEST_ALGO_SHA1 ) {
-	    log_error("encrypted_mdc does not use SHA1 method\n" );
-	    goto leave;
-	}
-	ed->mdc_method = method;
+	ed->mdc_method = DIGEST_ALGO_SHA1;
     }
     if( pktlen && pktlen < 10 ) { /* actually this is blocksize+2 */
 	log_error("packet(%d) too short\n", pkttype);
@@ -1730,6 +1729,29 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 
     ed->buf = inp;
     pktlen = 0;
+
+  leave:
+    return 0;
+}
+
+
+static int
+parse_mdc( IOBUF inp, int pkttype, unsigned long pktlen,
+				   PACKET *pkt, int new_ctb )
+{
+    PKT_mdc *mdc;
+    byte *p;
+
+    mdc = pkt->pkt.mdc=  m_alloc(sizeof *pkt->pkt.mdc );
+    if( list_mode )
+	printf(":mdc packet: length=%lu\n", pktlen);
+    if( !new_ctb || pktlen != 20 ) {
+	log_error("mdc_packet with invalid encoding\n");
+	goto leave;
+    }
+    p = mdc->hash;
+    for( ; pktlen; pktlen--, p++ )
+	*p = iobuf_get_noeof(inp);
 
   leave:
     return 0;

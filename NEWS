@@ -1,5 +1,5 @@
-Noteworthy changes in version 1.0.1-ePit-1
-------------------------------------------
+Noteworthy changes in the current test release
+----------------------------------------------
 
     * Fixed expiration handling of encryption keys.
 
@@ -44,6 +44,12 @@ Noteworthy changes in version 1.0.1-ePit-1
 
     * There is a new status PROGRESS which is used to show progress during
       key generation.
+
+    * Support for the new MDC encryption packets.  To create them either
+      --force-mdc must be use or cipher algorithm with a blocksize other
+      than 64 bits is to be used.  --openpgp currently disables MDC packets
+      entirely.
+
 
 Noteworthy changes in version 1.0.1 (1999-12-16)
 -----------------------------------

@@ -1,3 +1,18 @@
+Mon Jun  5 12:37:43 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * build-packet.c (do_mdc): New.
+  (do_encrypted_mdc): Changed for the new proposal.
+  * parse-packet.c (parse_mdc): New.
+  (parse_encrypted): Fixed for the new proposal.
+  * packet.h (PKT_MDC): New.
+  * cipher.c (cipher_filter): Build the MDC packet here.
+  * g10.c (main): Enable --force-mdc.
+  * encr-data.c (mdc_decode_filter): Fixed for new MDC method
+
+  * options.h(rfc2440): New.
+  * g10.c (main): Changed the selected values for --openpgp to not include
+  optional algorithms.
+
 Thu May 18 11:38:54 CEST 2000  Werner Koch  <wk@openit.de>
 
 	* keyedit.c (keyedit_menu): Add a keyword arg to the prompt.

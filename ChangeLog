@@ -1,3 +1,13 @@
+Mon Jun  5 12:37:43 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * acnclude.m4 (GNUPG_CHECK_EXPORTDYNAMIC): Replacement for
+  GNUPG_CHECK_RDYNAMIC which should handle gcc with non GNU ld nicer.
+  Contributed by Dave Dykstra.
+  * configure.in (GNYPG_CHECK_RDYNAMIC): Replaced by the new check.
+
+  * configure.in (AC_CHECK_AWK): Moved before the first use of AWK. Suggested
+  by Dave Dykstra.
+
 Tue May 30 16:37:55 CEST 2000  Werner Koch  <wk@openit.de>
 
   Version 1.0.1-ePit-1

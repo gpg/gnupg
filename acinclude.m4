@@ -206,38 +206,37 @@ define(GNUPG_CHECK_PIC,
 
 
 ######################################################################
-# Check for rdynamic flag
-# This sets CFLAGS_RDYNAMIC to the required flags
+# Check for export-dynamic flag
+# This sets CFLAGS_EXPORTDYNAMIC to the required flags
 ######################################################################
-dnl GNUPG_CHECK_RDYNAMIC
+dnl GNUPG_CHECK_EXPORTDYNAMIC
 dnl
-define(GNUPG_CHECK_RDYNAMIC,
-  [ AC_MSG_CHECKING(how to specify -rdynamic)
-    CFLAGS_RDYNAMIC=
+define(GNUPG_CHECK_EXPORTDYNAMIC,
+  [ AC_MSG_CHECKING(how to specify -export-dynamic)
     if test "$cross_compiling" = yes; then
-        AC_MSG_RESULT(assume none)
+      AC_MSG_RESULT(assume none)
+      CFLAGS_EXPORTDYNAMIC=""
     else
-        case "$host_os" in
-          solaris* )
-            CFLAGS_RDYNAMIC="-Wl,-dy"
-            ;;
-
-          hpux* )
-            CFLAGS_RDYNAMIC="-Wl,-E"
-            ;;
-
-          openbsd* | freebsd2* | osf4* | irix* | netbsd* | bsdi* )
-            CFLAGS_RDYNAMIC=""
-            ;;
-
-          * )
-            CFLAGS_RDYNAMIC="-Wl,-export-dynamic"
-            ;;
-        esac
-        AC_MSG_RESULT($CFLAGS_RDYNAMIC)
+      AC_CACHE_VAL(gnupg_cv_export_dynamic,[
+      if AC_TRY_COMMAND([${CC-cc} $CFLAGS -Wl,--version 2>&1 |
+                                          grep "GNU ld" >/dev/null]); then
+          # using gnu's linker
+          gnupg_cv_export_dynamic="-Wl,-export-dynamic"
+      else
+          case "$host_os" in
+            hpux* )
+              gnupg_cv_export_dynamic="-Wl,-E"
+              ;;
+            * )
+              gnupg_cv_export_dynamic=""
+              ;;
+          esac
+      fi
+      ])
+      AC_MSG_RESULT($gnupg_cv_export_dynamic)
+      CFLAGS_EXPORTDYNAMIC="$gnupg_cv_export_dynamic"
     fi
   ])
-
 
 #####################################################################
 # Check for SysV IPC  (from GIMP)

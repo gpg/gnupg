@@ -821,11 +821,13 @@ main( int argc, char **argv )
 	    break;
 	  case oRFC1991:
 	    opt.rfc1991 = 1;
+	    opt.rfc2440 = 0;
 	    opt.no_comment = 1;
 	    opt.escape_from = 1;
 	    break;
 	  case oOpenPGP:
 	    opt.rfc1991 = 0;
+	    opt.rfc2440 = 1;
 	    opt.pgp2_workarounds = 0;
 	    opt.escape_from = 0;
 	    opt.force_v3_sigs = 0;
@@ -834,10 +836,10 @@ main( int argc, char **argv )
 	    opt.not_dash_escaped = 0;
 	    opt.def_cipher_algo = 0;
 	    opt.def_digest_algo = 0;
-	    opt.def_compress_algo = 2;
+	    opt.def_compress_algo = 1;
 	    opt.s2k_mode = 3; /* iterated+salted */
-	    opt.s2k_digest_algo = DIGEST_ALGO_RMD160;
-	    opt.s2k_cipher_algo = CIPHER_ALGO_BLOWFISH;
+	    opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
+	    opt.s2k_cipher_algo = CIPHER_ALGO_CAST5;
 	    break;
 	  case oEmuChecksumBug: opt.emulate_bugs |= EMUBUG_GPGCHKSUM; break;
 	  case oEmu3DESS2KBug:	opt.emulate_bugs |= EMUBUG_3DESS2K; break;
@@ -936,11 +938,6 @@ main( int argc, char **argv )
 	log_info("used in a production environment or with production keys!\n");
     }
   #endif
-    if( opt.force_mdc ) {
-	log_info("--force-mdc ignored because"
-		 " the OpenPGP WG has not yet aggreed on MDCs\n");
-	opt.force_mdc = 0;
-    }
     if (opt.no_literal) {
 	log_info(_("NOTE: %s is not for normal use!\n"), "--no-literal");
 	if (opt.textmode)

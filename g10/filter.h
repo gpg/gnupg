@@ -83,6 +83,8 @@ typedef struct {
     CIPHER_HANDLE cipher_hd;
     int header;
     MD_HANDLE mdc_hash;
+    byte enchash[20];
+    int create_mdc; /* flag will be set by the cipher filter */
 } cipher_filter_context_t;
 
 

@@ -333,6 +333,7 @@ proc_encrypted( CTX c, PACKET *pkt )
 	result = G10ERR_NO_SECKEY;
     if( !result )
 	result = decrypt_data( c, pkt->pkt.encrypted, c->dek );
+
     m_free(c->dek); c->dek = NULL;
     if( result == -1 )
 	;
@@ -350,7 +351,7 @@ proc_encrypted( CTX c, PACKET *pkt )
     else {
 	write_status( STATUS_DECRYPTION_FAILED );
 	log_error(_("decryption failed: %s\n"), g10_errstr(result));
-	/* Hmmm: does this work when we have encrypted using a multiple
+	/* Hmmm: does this work when we have encrypted using multiple
 	 * ways to specify the session key (symmmetric and PK)*/
     }
     free_packet(pkt);
@@ -884,6 +885,7 @@ list_node( CTX c, KBNODE node )
 }
 
 
+
 int
 proc_packets( void *anchor, IOBUF a )
 {
@@ -895,6 +897,8 @@ proc_packets( void *anchor, IOBUF a )
     m_free( c );
     return rc;
 }
+
+
 
 int
 proc_signature_packets( void *anchor, IOBUF a,

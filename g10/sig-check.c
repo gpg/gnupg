@@ -518,6 +518,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 
 	    keyid_from_pk( pk, keyid );
 	    md = md_open( algo, 0 );
+	    md_start_debug( md, "rsa" );
 	    hash_public_key( md, pk );
 	    hash_uid_node( unode, md, sig );
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {

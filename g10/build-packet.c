@@ -44,6 +44,7 @@ static u32 calc_plaintext( PKT_plaintext *pt );
 static int do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt );
 static int do_encrypted( IOBUF out, int ctb, PKT_encrypted *ed );
 static int do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed );
+static int do_mdc( IOBUF out, PKT_mdc *mdc );
 static int do_compressed( IOBUF out, int ctb, PKT_compressed *cd );
 static int do_signature( IOBUF out, int ctb, PKT_signature *sig );
 static int do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops );
@@ -120,6 +121,9 @@ build_packet( IOBUF out, PACKET *pkt )
 	break;
       case PKT_ENCRYPTED_MDC:
 	rc = do_encrypted_mdc( out, ctb, pkt->pkt.encrypted );
+	break;
+      case PKT_MDC:
+	rc = do_mdc( out, pkt->pkt.mdc );
 	break;
       case PKT_COMPRESSED:
 	rc = do_compressed( out, ctb, pkt->pkt.compressed );
@@ -550,11 +554,22 @@ do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed )
     n = ed->len ? (ed->len + 10) : 0;
     write_header(out, ctb, n );
     iobuf_put(out, 1 );  /* version */
-    iobuf_put(out, ed->mdc_method );
 
     /* This is all. The caller has to write the real data */
 
     return rc;
+}
+
+
+static int
+do_mdc( IOBUF out, PKT_mdc *mdc )
+{
+    /* This packet requires a fixed header encoding */
+    iobuf_put( out, 0xd3 ); /* packet ID and 1 byte length */
+    iobuf_put( out, 0x14 ); /* length = 20 */
+    if( iobuf_write( out, mdc->hash, sizeof(mdc->hash) ) )
+	return G10ERR_WRITE_FILE;
+    return 0;
 }
 
 static int
