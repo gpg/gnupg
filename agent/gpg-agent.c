@@ -607,8 +607,9 @@ main (int argc, char **argv )
 #define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
 
       printf ("gpgconf-gpg-agent.conf:%lu:\"%s\n",
-              GC_OPT_FLAG_DEFAULT, config_filename);
-      
+              GC_OPT_FLAG_DEFAULT, 
+              config_filename?config_filename:"/dev/null");
+
       printf ("verbose:%lu:\n"
               "quiet:%lu:\n"
               "debug-level:%lu:\"none\":\n"
