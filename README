@@ -1,9 +1,9 @@
 
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-			   Version 1.2.1
+			    Version 1.2.2
 
-    Copyright 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+	  Copyright 1998-2003 Free Software Foundation, Inc.
 
     This file is free software; as a special exception the author gives
     unlimited permission to copy and/or distribute it, with or without
@@ -522,6 +522,10 @@
                     Force the photo viewer to be FIXED_VIEWER and
 		    disable any ability for the user to change it in
 		    their options file.
+
+     --enable-sha512
+                    Enable read-only SHA-384 and SHA-512 digest
+                    support.
 
 
     Installation Problems
