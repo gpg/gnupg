@@ -1,3 +1,15 @@
+2002-04-29  Werner Koch  <wk@gnupg.org>
+
+	* pl.po: Update.
+	* el.po: Updated, removed one entry due to non-matching printf and
+	one removed one printf specifier.
+
+	Fixed fuzzy entries due to the change of (y/N) to (Y/n) in most files.
+	
+2002-04-25  gettextize  <bug-gnu-utils@gnu.org>
+
+	* Makefile.in.in: Upgrade to gettext-0.10.40.
+
 2002-04-22  Werner Koch  <wk@gnupg.org>
 
 	* et.po, tr.po, cs.po, it.po, id.po: Updated.
