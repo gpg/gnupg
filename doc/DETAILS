@@ -349,6 +349,28 @@ There is one enhancement used with the old style packet headers:
 +  that this is the last packet.
 
 
+Usage of gdbm files for keyrings
+================================
+    The key to store the keyblokc is it's fingerpint, other records
+    are used for secondary keys.  fingerprints are always 20 bytes
+    where 16 bit fingerprints are appded with zero.
+    The first byte of the key gives some information on the type of the
+    key.
+      1 = key is a 20 bit fingerprint (16 bytes fpr are padded with zeroes)
+	  data is the keyblock
+      2 = key is the complete 8 byte keyid
+	  data is a list of 20 byte fingerprints
+      3 = key is the short 4 byte keyid
+	  data is a list of 20 byte fingerprints
+      4 = key is the email address
+	  data is a list of 20 byte fingerprints
+
+    Data is prepended with a type byte:
+      1 = keyblock
+      2 = list of 20 byte padded fingerprints
+      3 = list of list fingerprints (but how to we key them?)
+
+
 
 
 Other Notes

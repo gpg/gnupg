@@ -21,6 +21,7 @@
 #ifndef G10_TDBIO_H
 #define G10_TDBIO_H
 
+#include "host2net.h"
 
 #define TRUST_RECORD_LEN 40
 #define SIGS_PER_RECORD 	((TRUST_RECORD_LEN-10)/5)
@@ -46,15 +47,14 @@
 #define RECTYPE_FREE 254
 
 
-#define DIRF_CHECKED  1 /* everything has been checked, the other bits are
-			   valid */
-#define DIRF_MISKEY   2 /* not all signatures are checked */
-			/* this flag is used as a quick hint, that we */
-			/* do not need to look at the sig records */
-#define DIRF_ERROR    4 /* severe errors: the key is not valid for some reasons
-			   but we mark it to avoid duplicate checks */
+#define DIRF_CHECKED  1 /* has been checkd - other bits are valid */
+#define DIRF_VALID    2 /* This key is valid:  There is at least */
+			/* one uid with a selfsignature or an revocation */
+#define DIRF_EXPIRED  4 /* the complete key has expired */
 #define DIRF_REVOKED  8 /* the complete key has been revoked */
 
+#define KEYF_CHECKED  1 /* This key has been checked */
+#define KEYF_VALID    2 /* This is a valid (sub)key */
 #define KEYF_EXPIRED  4 /* this key is expired */
 #define KEYF_REVOKED  8 /* this key has been revoked */
 
@@ -64,6 +64,7 @@
 
 #define SIGF_CHECKED  1 /* signature has been checked - bits 0..6 are valid */
 #define SIGF_VALID    2 /* the signature is valid */
+#define SIGF_EXPIRED  4 /* the key of this signature has expired */
 #define SIGF_REVOKED  8 /* this signature has been revoked */
 #define SIGF_NOPUBKEY 128 /* there is no pubkey for this sig */
 
@@ -174,24 +175,6 @@ int tdbio_search_dir_bypk( PKT_public_key *pk, TRUSTREC *rec );
 int tdbio_search_dir_byfpr( const byte *fingerprint, size_t fingerlen,
 					int pubkey_algo, TRUSTREC *rec );
 int tdbio_search_sdir( u32 *keyid, int pubkey_algo, TRUSTREC *rec );
-
-
-#define buftoulong( p )  ((*(byte*)(p) << 24) | (*((byte*)(p)+1)<< 16) | \
-		       (*((byte*)(p)+2) << 8) | (*((byte*)(p)+3)))
-#define buftoushort( p )  ((*((byte*)(p)) << 8) | (*((byte*)(p)+1)))
-#define ulongtobuf( p, a ) do { 			  \
-			    ((byte*)p)[0] = a >> 24;	\
-			    ((byte*)p)[1] = a >> 16;	\
-			    ((byte*)p)[2] = a >>  8;	\
-			    ((byte*)p)[3] = a	   ;	\
-			} while(0)
-#define ushorttobuf( p, a ) do {			   \
-			    ((byte*)p)[0] = a >>  8;	\
-			    ((byte*)p)[1] = a	   ;	\
-			} while(0)
-#define buftou32( p)	buftoulong( (p) )
-#define u32tobuf( p, a) ulongtobuf( (p), (a) )
-
 
 
 #endif /*G10_TDBIO_H*/

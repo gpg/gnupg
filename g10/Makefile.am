@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
+INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 EXTRA_DIST = OPTIONS  pubring.asc
 OMIT_DEPENDENCIES = zlib.h zconf.h
 LDFLAGS = @LDFLAGS@ @DYNLINK_LDFLAGS@
@@ -76,7 +76,7 @@ gpgm_SOURCES = dearmor.c     \
 #	       $(common_source)
 
 
-LDADD = @INTLLIBS@ $(needed_libs) @ZLIBS@
+LDADD =  $(needed_libs) @ZLIBS@ @INTLLIBS@
 
 gpgm_LDADD = g10maint.o $(LDADD)
 

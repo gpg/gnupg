@@ -1,3 +1,8 @@
+Wed Oct 21 12:20:29 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* util.c (iobuf_flush): autoincreasing of a temp. iobuf
+	(iobuf_temp_with_content): New.
+
 Tue Oct 13 12:40:13 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* util.c (.nofast): set this variable

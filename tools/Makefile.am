@@ -1,8 +1,8 @@
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
+INCLUDES = -I$(top_srcdir)/include
 needed_libs = ../cipher/libcipher.a  ../util/libutil.a \
-	      ../mpi/libmpi.a ../util/libutil.a
+	      ../mpi/libmpi.a ../util/libutil.a @INTLLIBS@
 
 noinst_PROGRAMS = mpicalc bftest clean-sat mk-tdata shmtest
 
@@ -15,10 +15,10 @@ mk_tdata_SOURCES = mk-tdata.c
 shmtest_SOURCES = shmtest.c
 
 
-mpicalc_LDADD = @INTLLIBS@  $(needed_libs)
-bftest_LDADD = @INTLLIBS@  $(needed_libs)
+mpicalc_LDADD =  $(needed_libs)
+bftest_LDADD =	$(needed_libs)
 
-shmtest_LDADD = @INTLLIBS@ $(needed_libs)
+shmtest_LDADD =  $(needed_libs)
 
 mpicalc bftest shmtest: $(needed_libs)
 

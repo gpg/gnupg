@@ -46,6 +46,7 @@ new_kbnode( PACKET *pkt )
     n->pkt = pkt;
     n->flag = 0;
     n->private_flag=0;
+    n->recno = 0;
     return n;
 }
 

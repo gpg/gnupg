@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
+INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 
 noinst_LIBRARIES = libutil.a
 

@@ -1,3 +1,16 @@
+Wed Oct 21 17:24:24 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* configure.in: Removed gettext kludge
+	* acinclude.m4: Add patched AM_WITH_NKS macro
+
+Tue Oct 20 19:03:36 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* configure.in: Kludge to make AM_GNU_GETTEXT work,
+	changed some macors to more modern versions. Also
+	changeg the all makefiles to remove duplicate ../intl.
+	* acinclude.m4: Removed the gettext stuff, as this
+	already comes with automake now.
+
 Wed Oct 14 12:11:34 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* configure.in (NAME_OF_DEV_RANDOM): New.

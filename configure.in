@@ -3,6 +3,9 @@ dnl Configure template for GNUPG
 dnl
 dnl (Process this file with autoconf to produce a configure script.)
 
+dnl Must reset CDPATH so that bash's cd does not print to stdout
+CDPATH=
+
 AC_INIT(g10/g10.c)
 AC_CONFIG_AUX_DIR(scripts)
 AM_CONFIG_HEADER(config.h)
@@ -53,15 +56,12 @@ AC_ARG_WITH(included-zlib,
 [g10_force_zlib=yes], [g10_force_zlib=no] )
 AC_MSG_RESULT($g10_force_zlib)
 
-
-AC_CANONICAL_SYSTEM
-WK_CHECK_CACHE
-
 dnl Checks for programs.
 
-AC_PROG_MAKE_SET
+AC_CANONICAL_SYSTEM
 AC_ARG_PROGRAM
-
+AC_PROG_MAKE_SET
+AM_SANITY_CHECK
 missing_dir=`cd $ac_aux_dir && pwd`
 AM_MISSING_PROG(ACLOCAL, aclocal, $missing_dir)
 AM_MISSING_PROG(AUTOCONF, autoconf, $missing_dir)
@@ -86,6 +86,12 @@ case "${target}" in
 	RANLIB="i386--mingw32-ranlib"
 	ac_cv_have_dev_random=no
 	AC_DEFINE(USE_RAND_W32)
+	;;
+    *-*-hpux*)
+	if test -z "$GCC" ; then
+	    CFLAGS="$CFLAGS -Ae -D_HPUX_SOURCE"
+	fi
+	AC_DEFINE(USE_RAND_UNIX)
 	;;
     *)
 	AC_DEFINE(USE_RAND_UNIX)
@@ -123,6 +129,8 @@ AC_DEFINE_UNQUOTED(NAME_OF_DEV_URANDOM, "$NAME_OF_DEV_URANDOM")
 
 
 dnl Checks for libraries.
+
+AM_GNU_GETTEXT
 
 AC_CHECK_LIB(gdbm,gdbm_firstkey)
 
@@ -261,12 +269,8 @@ fi
 fi
 AC_SUBST(ZLIBS)
 
-
-WK_LINK_FILES($nls_cv_header_libgt, $nls_cv_header_intl )
-
 WK_DO_LINK_FILES
 
-AM_GNU_GETTEXT
 
 AC_OUTPUT([
 Makefile
@@ -280,7 +284,5 @@ doc/Makefile
 tools/Makefile
 zlib/Makefile
 checks/Makefile
-],[echo timestamp >stamp-h; \
-   sed -e "/POTFILES =/r po/POTFILES" po/Makefile.in > po/Makefile
 ])
 

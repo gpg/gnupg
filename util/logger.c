@@ -161,7 +161,7 @@ g10_log_bug( const char *fmt, ... )
     va_list arg_ptr ;
 
     putc('\n', stderr );
-    print_prefix("Ooops: ");
+    print_prefix("Ohhhh jeeee: ");
     va_start( arg_ptr, fmt ) ;
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -174,7 +174,7 @@ g10_log_bug( const char *fmt, ... )
 void
 g10_log_bug0( const char *file, int line, const char *func )
 {
-    log_bug(_("Ohhhh jeeee ... this is a bug (%s:%d:%s)\n"), file, line, func );
+    log_bug(_("... this is a bug (%s:%d:%s)\n"), file, line, func );
 }
 #else
 void

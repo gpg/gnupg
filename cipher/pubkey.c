@@ -309,6 +309,8 @@ pubkey_get_npkey( int algo )
 	    if( pubkey_table[i].algo == algo )
 		return pubkey_table[i].npkey;
     } while( load_pubkey_modules() );
+    if( is_RSA(algo) )	  /* special hack, so that we are able to */
+	return 2;	  /* see the RSA keyids */
     return 0;
 }
 
@@ -324,6 +326,8 @@ pubkey_get_nskey( int algo )
 	    if( pubkey_table[i].algo == algo )
 		return pubkey_table[i].nskey;
     } while( load_pubkey_modules() );
+    if( is_RSA(algo) )	  /* special hack, so that we are able to */
+	return 6;	  /* see the RSA keyids */
     return 0;
 }
 
@@ -339,6 +343,8 @@ pubkey_get_nsig( int algo )
 	    if( pubkey_table[i].algo == algo )
 		return pubkey_table[i].nsig;
     } while( load_pubkey_modules() );
+    if( is_RSA(algo) )	  /* special hack, so that we are able to */
+	return 1;	  /* see the RSA keyids */
     return 0;
 }
 
@@ -354,6 +360,8 @@ pubkey_get_nenc( int algo )
 	    if( pubkey_table[i].algo == algo )
 		return pubkey_table[i].nenc;
     } while( load_pubkey_modules() );
+    if( is_RSA(algo) )	  /* special hack, so that we are able to */
+	return 1;	  /* see the RSA keyids */
     return 0;
 }
 
@@ -370,6 +378,8 @@ pubkey_nbits( int algo, MPI *pkey )
 	    if( pubkey_table[i].algo == algo )
 		return (*pubkey_table[i].get_nbits)( algo, pkey );
     } while( load_pubkey_modules() );
+    if( is_RSA(algo) )	/* we always wanna see the length of a key :-) */
+	return mpi_get_nbits( pkey[0] );
     return 0;
 }
 

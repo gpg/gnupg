@@ -1,6 +1,10 @@
 
-  - abstraction of the MPI
+  * abstraction of the MPI
 
-  - Add a way to override the current cipher/md implementations
+  * Add a way to override the current cipher/md implementations
     by others (using extensions)
+
+  * add a fast-import command which does not do the signature checks
+    of other keys (processing of the sdir hintlist).  The signatures
+    may then be verified by a maintainence pass.
 

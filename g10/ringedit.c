@@ -35,8 +35,6 @@
  *
  *  - Delete a key block
  *
- * FIXME:  Keep track of all nodes, so that a change is propagated
- *	   to all nodes. (or use shallow copies and ref-counting?)
  */
 
 
@@ -59,10 +57,10 @@
 #include "mpi.h"
 #include "iobuf.h"
 #include "keydb.h"
+#include "host2net.h"
 #include "options.h"
 #include "i18n.h"
 
-#undef HAVE_LIBGDBM  /* <--- not ready */
 
 struct resource_table_struct {
     int used;
@@ -88,6 +86,14 @@ static int keyring_read( KBPOS *kbpos, KBNODE *ret_root );
 static int keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs );
 static int keyring_copy( KBPOS *kbpos, int mode, KBNODE root );
 
+#ifdef HAVE_LIBGDBM
+static int do_gdbm_store( KBPOS *kbpos, KBNODE root, int update );
+static int do_gdbm_locate( GDBM_FILE dbf, KBPOS *kbpos,
+					  const byte *fpr, int fprlen );
+static int do_gdbm_locate_by_keyid( GDBM_FILE dbf, KBPOS *kbpos, u32 *keyid );
+static int do_gdbm_read( KBPOS *kbpos, KBNODE *ret_root );
+static int do_gdbm_enum( KBPOS *kbpos, KBNODE *ret_root );
+#endif
 
 
 static RESTBL *
@@ -100,6 +106,14 @@ check_pos( KBPOS *kbpos )
     return resource_table + kbpos->resno;
 }
 
+#ifdef HAVE_LIBGDBM
+static void
+fatal_gdbm_error( const char *string )
+{
+    log_fatal("gdbm failed: %s\n", string);
+}
+
+#endif /* HAVE_LIBGDBM */
 
 /****************************************************************
  ****************** public functions ****************************
@@ -188,9 +202,33 @@ add_keyblock_resource( const char *url, int force, int secret )
 	goto leave;
     }
 
+    /* see whether we can determine the filetype */
+    if( rt == rt_UNKNOWN ) {
+	FILE *fp = fopen( filename, "rb" );
+
+	if( fp ) {
+	    u32 magic;
+
+	    if( fread( &magic, 4, 1, fp) == 1 ) {
+		if( magic == 0x13579ace )
+		    rt = rt_GDBM;
+		else if( magic == 0xce9a5713 )
+		    log_error("%s: endianess does not match\n", url );
+		else
+		    rt = rt_RING;
+	    }
+	    fclose( fp );
+	}
+	else /* no file yet: create ring */
+	    rt = rt_RING;
+    }
 
     switch( rt ) {
       case rt_UNKNOWN:
+	log_error("%s: unknown resource type\n", url );
+	rc = G10ERR_GENERAL;
+	goto leave;
+
       case rt_RING:
 	iobuf = iobuf_fopen( filename, "rb" );
 	if( !iobuf && !force ) {
@@ -199,20 +237,46 @@ add_keyblock_resource( const char *url, int force, int secret )
 	}
 
 	if( !iobuf ) {
+	    char *last_slash_in_filename;
+
+	    last_slash_in_filename = strrchr(filename, '/');
+	    *last_slash_in_filename = 0;
+
+	    if( access(filename, F_OK) ) {
+		if( strlen(filename) >= 7
+		    && !strcmp(filename+strlen(filename)-7, "/.gnupg") ) {
+		  #if __MINGW32__
+		    if( mkdir(filename) )
+		  #else
+		    if( mkdir(filename, S_IRUSR|S_IWUSR|S_IXUSR) )
+		  #endif
+		    {
+			log_error( _("%s: can't create directory: %s\n"),
+				  filename, strerror(errno));
+			rc = G10ERR_OPEN_FILE;
+			goto leave;
+		    }
+		    else
+			log_info( _("%s: directory created\n"), filename );
+		}
+		else
+		{
+		    rc = G10ERR_OPEN_FILE;
+		    goto leave;
+		}
+	    }
+
+	    *last_slash_in_filename = '/';
+
 	    iobuf = iobuf_create( filename );
 	    if( !iobuf ) {
-		log_error("%s: can't create: %s\n", filename, strerror(errno));
+		log_error("%s: can't create keyring: %s\n", filename, strerror(errno));
 		rc = G10ERR_OPEN_FILE;
 		goto leave;
 	    }
 	    else
 		log_info("%s: keyring created\n", filename );
 	}
-	/* fixme: see whether it is really a ring or if type is unknown,
-	 * try to figure out of what type it is
-	 */
-	rt = rt_RING; /* <--- FIXME */
-
       #ifdef __MINGW32__
 	/* must close it again */
 	iobuf_close( iobuf );
@@ -222,6 +286,17 @@ add_keyblock_resource( const char *url, int force, int secret )
 
     #ifdef HAVE_LIBGDBM
       case rt_GDBM:
+	resource_table[i].dbf = gdbm_open( filename, 0,
+					   force? GDBM_WRCREAT : GDBM_WRITER,
+					   S_IRUSR | S_IWUSR |
+					   S_IRGRP | S_IWGRP | S_IROTH,
+					   fatal_gdbm_error );
+	if( !resource_table[i].dbf ) {
+	    log_error("%s: can't open gdbm file: %s\n",
+			    filename, gdbm_strerror(gdbm_errno));
+	    rc = G10ERR_OPEN_FILE;
+	    goto leave;
+	}
 	break;
     #endif
 
@@ -310,14 +385,21 @@ search( PACKET *pkt, KBPOS *kbpos, int secret )
 						 resource_table[i].fname );
 		break;
 	     #ifdef HAVE_LIBGDBM
-	      case rt_GDBM
-		rc = do_gdbm_search( pkt, kbpos, resource_table[i].dbf,
-						 resource_table[i].fname );
+	      case rt_GDBM: {
+		    PKT_public_key *req_pk = pkt->pkt.public_key;
+		    byte fpr[20];
+		    size_t fprlen;
+
+		    fingerprint_from_pk( req_pk, fpr, &fprlen );
+		    rc = do_gdbm_locate( resource_table[i].dbf,
+					 kbpos, fpr, fprlen );
+		}
 		break;
 	     #endif
 	      default: BUG();
 	    }
 
+	    kbpos->rt = resource_table[i].rt;
 	    if( !rc ) {
 		kbpos->resno = i;
 		kbpos->fp = NULL;
@@ -402,6 +484,92 @@ find_secret_keyblock_byname( KBPOS *kbpos, const char *username )
     free_secret_key(sk);
     return rc;
 }
+
+
+/****************
+ * Locate a keyblock in a database which is capable of direct access
+ * Put all information into KBPOS, which can be later be to access this
+ * key block.
+ * This function looks into all registered keyblock sources.
+ *
+ * Returns: 0 if found,
+ *	    -1 if not found
+ *	    G10ERR_UNSUPPORTED if no resource is able to handle this
+ *	    or another errorcode.
+ */
+int
+locate_keyblock_by_fpr( KBPOS *kbpos, const byte *fpr, int fprlen, int secret )
+{
+    RESTBL *rentry;
+    int i, rc, any=0, last_rc=-1;
+
+
+    for(i=0, rentry = resource_table; i < MAX_RESOURCES; i++, rentry++ ) {
+	if( rentry->used && !rentry->secret == !secret ) {
+	    kbpos->rt = rentry->rt;
+	    switch( rentry->rt ) {
+	      case rt_GDBM:
+		any = 1;
+		rc = do_gdbm_locate( rentry->dbf, kbpos, fpr, fprlen );
+		break;
+	      default:
+		break;
+	    }
+
+	    if( !rc ) {
+		kbpos->resno = i;
+		kbpos->fp = NULL;
+		return 0;
+	    }
+	    else if( rc != -1 ) {
+		log_error("error searching resource %d: %s\n",
+						  i, g10_errstr(rc));
+		last_rc = rc;
+	    }
+	}
+    }
+
+    return (last_rc == -1 && !any)? G10ERR_UNSUPPORTED : last_rc;
+}
+
+
+int
+locate_keyblock_by_keyid( KBPOS *kbpos, u32 *keyid, int shortkid, int secret )
+{
+    RESTBL *rentry;
+    int i, rc, any=0, last_rc=-1;
+
+    if( shortkid )
+	return G10ERR_UNSUPPORTED;
+
+    for(i=0, rentry = resource_table; i < MAX_RESOURCES; i++, rentry++ ) {
+	if( rentry->used && !rentry->secret == !secret ) {
+	    kbpos->rt = rentry->rt;
+	    switch( rentry->rt ) {
+	      case rt_GDBM:
+		any = 1;
+		rc = do_gdbm_locate_by_keyid( rentry->dbf, kbpos, keyid );
+		break;
+	      default:
+		break;
+	    }
+
+	    if( !rc ) {
+		kbpos->resno = i;
+		kbpos->fp = NULL;
+		return 0;
+	    }
+	    else if( rc != -1 ) {
+		log_error("error searching resource %d: %s\n",
+						  i, g10_errstr(rc));
+		last_rc = rc;
+	    }
+	}
+    }
+
+    return (last_rc == -1 && !any)? G10ERR_UNSUPPORTED : last_rc;
+}
+
 
 
 
@@ -502,7 +670,8 @@ enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
 	    break;
 	 #ifdef HAVE_LIBGDBM
 	  case rt_GDBM:
-	    /* FIXME!!!! */
+	    /* FIXME: make sure that there is only one enum at a time */
+	    kbpos->offset = 0;
 	    break;
 	 #endif
 	  default: BUG();
@@ -521,7 +690,7 @@ enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
 		break;
 	     #ifdef HAVE_LIBGDBM
 	      case rt_GDBM:
-		/* FIXME!!!! */
+		rc = do_gdbm_enum( kbpos, ret_root );
 		break;
 	     #endif
 	      default: BUG();
@@ -548,11 +717,8 @@ enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
 		kbpos->fp = NULL;
 	    }
 	    break;
-	 #ifdef HAVE_LIBGDBM
 	  case rt_GDBM:
-	    /* FIXME!!!! */
 	    break;
-	 #endif
 	  default: BUG();
 	}
 	/* release pending packet */
@@ -583,7 +749,7 @@ insert_keyblock( KBPOS *kbpos, KBNODE root )
 	break;
      #ifdef HAVE_LIBGDBM
       case rt_GDBM:
-	/* FIXME!!!! */
+	rc = do_gdbm_store( kbpos, root, 0 );
 	break;
      #endif
       default: BUG();
@@ -639,7 +805,7 @@ update_keyblock( KBPOS *kbpos, KBNODE root )
 	break;
      #ifdef HAVE_LIBGDBM
       case rt_GDBM:
-	/* FIXME!!!! */
+	rc = do_gdbm_store( kbpos, root, 1 );
 	break;
      #endif
       default: BUG();
@@ -1129,56 +1295,177 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
  ********** Functions which operates on GDM files ***************
  ****************************************************************/
 
+#if MAX_FINGERPRINT_LEN > 20
+  #error A GDBM keyring assumes that fingerprints are less than 21
+#endif
+
+/****************
+ * Insert the keyblock into the GDBM database
+ */
+
+static int
+do_gdbm_store( KBPOS *kbpos, KBNODE root, int update )
+{
+    RESTBL *rentry;
+    PKT_public_key *pk;
+    KBNODE kbctx, node;
+    IOBUF fp = NULL;
+    byte fpr[20];
+    byte contbuf[21];
+    byte keybuf[21];
+    size_t fprlen;
+    datum key, content;
+    int i, rc;
+
+    if( !(rentry = check_pos( kbpos )) )
+	return G10ERR_GENERAL;
+
+    /* construct the fingerprint which is used as the primary key */
+    node = find_kbnode( root, PKT_PUBLIC_KEY );
+    if( !node )
+	log_bug("a gdbm database can't store secret keys\n");
+    pk = node->pkt->pkt.public_key;
+
+    fingerprint_from_pk( pk, fpr, &fprlen );
+    for(i=fprlen; i < DIM(fpr); i++ )
+	fpr[i] = 0;
+
+    /* build the keyblock */
+    kbctx=NULL;
+    fp = iobuf_temp();
+    iobuf_put( fp, 1 ); /* data is a keyblock */
+    while( (node = walk_kbnode( root, &kbctx, 0 )) ) {
+	if( (rc = build_packet( fp, node->pkt )) ) {
+	    log_error("build_packet(%d) failed: %s\n",
+			node->pkt->pkttype, g10_errstr(rc) );
+	    rc = G10ERR_WRITE_FILE;
+	    goto leave;
+	}
+    }
+    /* store data and key */
+    *keybuf = 1;   /* key is a padded fingerprint */
+    memcpy(keybuf+1, fpr, 20 );
+    key.dptr  = keybuf;
+    key.dsize = 21;
+    content.dptr  = iobuf_get_temp_buffer( fp );
+    content.dsize = iobuf_get_temp_length( fp );
+    rc = gdbm_store( rentry->dbf, key, content,
+				  update? GDBM_REPLACE : GDBM_INSERT );
+    if( rc ) {
+	log_error("%s: gdbm_store failed: %s\n", rentry->fname,
+			    rc == 1 ? "already stored"
+				    : gdbm_strerror(gdbm_errno) );
+	rc = G10ERR_WRITE_FILE;
+	goto leave;
+    }
+    /* now store all keyids */
+    *contbuf = 2;  /* data is a list of fingerprints */
+    memcpy(contbuf+1, fpr, 20 );
+    content.dptr = contbuf;
+    content.dsize= 21;
+    kbctx=NULL;
+    while( (node = walk_kbnode( root, &kbctx, 0 )) ) {
+	if(    node->pkt->pkttype == PKT_PUBLIC_KEY
+	    || node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
+	    u32 aki[2];
+
+	    keyid_from_pk( node->pkt->pkt.public_key, aki );
+	    *keybuf = 2; /* key is a 8 byte keyid */
+	    u32tobuf( keybuf+1	, aki[0] );
+	    u32tobuf( keybuf+5, aki[1] );
+	    key.dptr = keybuf;
+	    key.dsize= 9;
+	    /* fixme: must be more clever when a insert failed:
+	     *	      build a list of fingerprints in this case */
+	    rc = gdbm_store( rentry->dbf, key, content,
+					  update? GDBM_REPLACE : GDBM_INSERT );
+	    if( rc ) {
+		log_info("%s: gdbm_store keyid failed: %s\n", rentry->fname,
+				    rc == 1 ? "already stored"
+					    : gdbm_strerror(gdbm_errno) );
+		rc = 0;
+	    }
+	}
+    }
+
+  leave:
+    iobuf_close(fp); /* don't need a cancel because it is a temp iobuf */
+    return rc;
+}
+
+
+
 /****************
  * search one keybox, return 0 if found, -1 if not found or an errorcode.
  */
 static int
-do_gdbm_search( PACKET *req, KBPOS *kbpos, GDBM_FILE dbf, const char *fname )
+do_gdbm_locate( GDBM_FILE dbf, KBPOS *kbpos, const byte *fpr, int fprlen )
 {
+    byte *keybuf = kbpos->keybuf;
+    datum key;
+    int i;
+
+    *keybuf = 1;
+    for(i=0; i < fprlen; i++ )
+	keybuf[i+1] = fpr[i];
+    for(; i < 20; i++ )
+	keybuf[i+1] = 0;
+
+    /* fetch the data */
+    key.dptr  = keybuf;
+    key.dsize = 21;
+    if( !gdbm_exists( dbf, key ) )
+	return -1; /* not found */
+    return 0;
+}
+
+/****************
+ * locate by keyid.
+ * FIXME: we must have a way to enumerate thru the list opf fingerprints
+ */
+static int
+do_gdbm_locate_by_keyid( GDBM_FILE dbf, KBPOS *kbpos, u32 *keyid )
+{
+    byte keybuf[9];
+    datum key, content;
     int rc;
-    PACKET pkt;
-    int save_mode;
-    ulong offset;
-    int pkttype = req->pkttype;
-    PKT_public_key *req_pk = req->pkt.public_key;
-    PKT_secret_key *req_sk = req->pkt.secret_key;
 
-    init_packet(&pkt);
-    save_mode = set_packet_list_mode(0);
+    /* construct the fingerprint which is used as the primary key */
+    *keybuf = 2;
+    u32tobuf( keybuf+1, keyid[0] );
+    u32tobuf( keybuf+5, keyid[1] );
 
+    /* fetch the data */
+    key.dptr  = keybuf;
+    key.dsize = 9;
+    content = gdbm_fetch( dbf, key );
+    if( !content.dptr )
+	return -1;
 
-    while( !(rc=search_packet(iobuf, &pkt, pkttype, &offset)) ) {
-	if( pkt.pkttype == PKT_SECRET_KEY ) {
-	    PKT_secret_key *sk = pkt.pkt.secret_key;
-
-	    if(   req_sk->timestamp == sk->timestamp
-	       && req_sk->pubkey_algo == sk->pubkey_algo
-	       && !cmp_seckey( req_sk, sk) )
-		break; /* found */
-	}
-	else if( pkt.pkttype == PKT_PUBLIC_KEY ) {
-	    PKT_public_key *pk = pkt.pkt.public_key;
-
-	    if(   req_pk->timestamp == pk->timestamp
-	       && req_pk->pubkey_algo == pk->pubkey_algo
-	       && !cmp_pubkey( req_pk, pk ) )
-		break; /* found */
-	}
-	else
-	    BUG();
-	free_packet(&pkt);
+    if( content.dsize < 2 ) {
+	log_error("gdbm_fetch did not return enough data\n" );
+	free( content.dptr ); /* can't use m_free() here */
+	return G10ERR_INV_KEYRING;
     }
-    if( !rc )
-	kbpos->offset = offset;
+    if( *content.dptr != 2 ) {
+	log_error("gdbm_fetch returned unexpected type %d\n",
+		    *(byte*)content.dptr );
+	free( content.dptr ); /* can't use m_free() here */
+	return G10ERR_INV_KEYRING;
+    }
+    if( content.dsize < 21 ) {
+	log_error("gdbm_fetch did not return a complete fingerprint\n" );
+	free( content.dptr ); /* can't use m_free() here */
+	return G10ERR_INV_KEYRING;
+    }
+    if( content.dsize > 21 )
+	log_info("gdbm_fetch: warning: more than one fingerprint\n" );
 
-  leave:
-    free_packet(&pkt);
-    set_packet_list_mode(save_mode);
-  #if __MINGW32__
-    iobuf_close(iobuf);
-  #endif
+    rc = do_gdbm_locate( dbf, kbpos, content.dptr+1, 20 );
+    free( content.dptr ); /* can't use m_free() here */
     return rc;
 }
+
 
 
 static int
@@ -1189,22 +1476,32 @@ do_gdbm_read( KBPOS *kbpos, KBNODE *ret_root )
     RESTBL *rentry;
     KBNODE root = NULL;
     IOBUF a;
-    int in_cert = 0;
+    datum key, content;
 
     if( !(rentry=check_pos(kbpos)) )
 	return G10ERR_GENERAL;
 
-    a = iobuf_fopen( rentry->fname, "rb" );
-    if( !a ) {
-	log_error("can't open '%s'\n", rentry->fname );
-	return G10ERR_OPEN_FILE;
+    key.dptr  = kbpos->keybuf;
+    key.dsize = 21;
+    content = gdbm_fetch( rentry->dbf, key );
+    if( !content.dptr ) {
+	log_error("gdbm_fetch failed: %s\n", gdbm_strerror(gdbm_errno) );
+	return G10ERR_INV_KEYRING;
+    }
+    if( content.dsize < 2 ) {
+	log_error("gdbm_fetch did not return enough data\n" );
+	free( content.dptr ); /* can't use m_free() here */
+	return G10ERR_INV_KEYRING;
+    }
+    if( *content.dptr != 1 ) {
+	log_error("gdbm_fetch returned unexpected type %d\n",
+		    *(byte*)content.dptr );
+	free( content.dptr ); /* can't use m_free() here */
+	return G10ERR_INV_KEYRING;
     }
 
-    if( iobuf_seek( a, kbpos->offset ) ) {
-	log_error("can't seek to %lu\n", kbpos->offset);
-	iobuf_close(a);
-	return G10ERR_KEYRING_OPEN;
-    }
+    a = iobuf_temp_with_content( content.dptr+1, content.dsize-1 );
+    free( content.dptr ); /* can't use m_free() here */
 
     pkt = m_alloc( sizeof *pkt );
     init_packet(pkt);
@@ -1214,7 +1511,7 @@ do_gdbm_read( KBPOS *kbpos, KBNODE *ret_root )
 	    if( rc != G10ERR_UNKNOWN_PACKET ) {
 		log_error("read_keyblock: read error: %s\n", g10_errstr(rc) );
 		rc = G10ERR_INV_KEYRING;
-		goto ready;
+		break;
 	    }
 	    kbpos->count++;
 	    free_packet( pkt );
@@ -1222,27 +1519,16 @@ do_gdbm_read( KBPOS *kbpos, KBNODE *ret_root )
 	    continue;
 	}
 	/* make a linked list of all packets */
-	switch( pkt->pkttype ) {
-	  case PKT_PUBLIC_KEY:
-	  case PKT_SECRET_KEY:
-	    if( in_cert )
-		goto ready;
-	    in_cert = 1;
-	  default:
-	    kbpos->count++;
-	    if( !root )
-		root = new_kbnode( pkt );
-	    else
-		add_kbnode( root, new_kbnode( pkt ) );
-	    pkt = m_alloc( sizeof *pkt );
-	    init_packet(pkt);
-	    break;
-	}
+	kbpos->count++;
+	if( !root )
+	    root = new_kbnode( pkt );
+	else
+	    add_kbnode( root, new_kbnode( pkt ) );
+	pkt = m_alloc( sizeof *pkt );
+	init_packet(pkt);
     }
-  ready:
     if( rc == -1 && root )
 	rc = 0;
-
     if( rc )
 	release_kbnode( root );
     else
@@ -1254,84 +1540,43 @@ do_gdbm_read( KBPOS *kbpos, KBNODE *ret_root )
 }
 
 
+/****************
+ * Enum over keyblok data
+ */
 static int
-do_gdbm_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
+do_gdbm_enum( KBPOS *kbpos, KBNODE *ret_root )
 {
-    PACKET *pkt;
-    int rc;
     RESTBL *rentry;
-    KBNODE root = NULL;
+    datum key, helpkey;
 
     if( !(rentry=check_pos(kbpos)) )
 	return G10ERR_GENERAL;
 
-    if( kbpos->pkt ) {
-	root = new_kbnode( kbpos->pkt );
-	kbpos->pkt = NULL;
+    if( !kbpos->offset ) {
+	kbpos->offset = 1;
+	key = gdbm_firstkey( rentry->dbf );
     }
-
-    pkt = m_alloc( sizeof *pkt );
-    init_packet(pkt);
-    while( (rc=parse_packet(kbpos->fp, pkt)) != -1 ) {
-	if( rc ) {  /* ignore errors */
-	    if( rc != G10ERR_UNKNOWN_PACKET ) {
-		log_error("read_keyblock: read error: %s\n", g10_errstr(rc) );
-		rc = G10ERR_INV_KEYRING;
-		goto ready;
-	    }
-	    free_packet( pkt );
-	    init_packet( pkt );
-	    continue;
-	}
-	/* make a linked list of all packets */
-	switch( pkt->pkttype ) {
-	  case PKT_PUBLIC_KEY:
-	  case PKT_SECRET_KEY:
-	    if( root ) { /* store this packet */
-		kbpos->pkt = pkt;
-		pkt = NULL;
-		goto ready;
-	    }
-	    root = new_kbnode( pkt );
-	    pkt = m_alloc( sizeof *pkt );
-	    init_packet(pkt);
-	    break;
-
-	  default:
-	    /* skip pakets at the beginning of a keyring, until we find
-	     * a start packet; issue a warning if it is not a comment */
-	    if( !root && pkt->pkttype != PKT_COMMENT
-		      && pkt->pkttype != PKT_OLD_COMMENT ) {
-		log_info("keyring_enum: skipped packet of type %d\n",
-			    pkt->pkttype );
-		break;
-	    }
-	    if( !root || (skipsigs && ( pkt->pkttype == PKT_SIGNATURE
-				      ||pkt->pkttype == PKT_COMMENT
-				      ||pkt->pkttype == PKT_OLD_COMMENT )) ) {
-		init_packet(pkt);
-		break;
-	    }
-	    add_kbnode( root, new_kbnode( pkt ) );
-	    pkt = m_alloc( sizeof *pkt );
-	    init_packet(pkt);
-	    break;
-	}
+    else {
+	helpkey.dptr = kbpos->keybuf;
+	helpkey.dsize= 21;
+	key = gdbm_nextkey( rentry->dbf, helpkey );
     }
-  ready:
-    if( rc == -1 && root )
-	rc = 0;
+    while( key.dptr && (!key.dsize || *key.dptr != 1) ) {
+	helpkey = key;
+	key = gdbm_nextkey( rentry->dbf, helpkey );
+	free( helpkey.dptr ); /* free and not m_free() ! */
+    }
+    if( !key.dptr )
+	return -1; /* eof */
 
-    if( rc )
-	release_kbnode( root );
-    else
-	*ret_root = root;
-    free_packet( pkt );
-    m_free( pkt );
-
-    return rc;
+    if( key.dsize < 21 ) {
+	free( key.dptr ); /* free and not m_free() ! */
+	log_error("do_gdm_enum: key is too short\n" );
+	return G10ERR_INV_KEYRING;
+    }
+    memcpy( kbpos->keybuf, key.dptr, 21 );
+    free( key.dptr ); /* free and not m_free() ! */
+    return do_gdbm_read( kbpos, ret_root );
 }
 
 #endif /*HAVE_LIBGDBM*/
-
-

@@ -46,6 +46,7 @@ struct kbnode_struct {
     PACKET *pkt;
     int flag;
     int private_flag;
+    ulong recno;  /* used while updating the trustdb */
 };
 
 
@@ -69,6 +70,7 @@ struct keyblock_pos_struct {
     int secret;      /* working on a secret keyring */
   #ifdef HAVE_LIBGDBM
     GDBM_FILE dbf;
+    byte keybuf[21];
   #endif
     PACKET *pkt;     /* ditto */
 };
@@ -172,6 +174,10 @@ const char *enum_keyblock_resources( int *sequence, int secret );
 int add_keyblock_resource( const char *resname, int force, int secret );
 const char *keyblock_resource_name( KBPOS *kbpos );
 int get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos );
+int locate_keyblock_by_fpr( KBPOS *kbpos, const byte *fpr,
+					    int fprlen, int secret );
+int locate_keyblock_by_keyid( KBPOS *kbpos, u32 *keyid,
+					    int shortkid, int secret );
 int find_keyblock( PUBKEY_FIND_INFO info, KBPOS *kbpos );
 int find_keyblock_byname( KBPOS *kbpos, const char *username );
 int find_keyblock_bypk( KBPOS *kbpos, PKT_public_key *pk );

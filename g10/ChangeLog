@@ -1,3 +1,27 @@
+Wed Oct 21 18:19:36 1998  Michael Roth <mroth@nessie.de>
+
+	* ringedit.c (add_keyblock_resource): Directory is now created.
+	* tdbio.c (tdbio_set_dbname): New info message.
+
+Wed Oct 21 11:52:04 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* trustdb.c (update_trustdb): released keyblock in loop.
+
+	* keylist.c (list_block): New.
+	(list_all): Changed to use list_block.
+
+	* trustdb.c: Completed support for GDBM
+
+	* sign.c (only_old_style): Changed the way force_v3 is handled
+	(sign_file): Ditto.
+	(clearsign_file): Ditto.
+
+	* keygen.c (has_invalid_email_chars): Splitted into mailbox and
+	host part.
+
+	* keylist.c (list_one): Add a merge_keys_and_selfsig.
+	* mainproc.c (proc_tree): Ditto.
+
 Sun Oct 18 11:49:03 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* sign.c (only_old_style): Add option force_v3_sigs

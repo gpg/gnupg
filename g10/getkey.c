@@ -683,6 +683,182 @@ merge_keys_and_selfsig( KBNODE keyblock )
 }
 
 
+static KBNODE
+find_by_name( KBNODE keyblock, PKT_public_key *pk, const char *name,
+	      int mode, byte *namehash, int *use_namehash )
+{
+    KBNODE k, kk;
+
+    for(k=keyblock; k; k = k->next ) {
+	if( k->pkt->pkttype == PKT_USER_ID
+	    && !compare_name( k->pkt->pkt.user_id->name,
+			      k->pkt->pkt.user_id->len, name, mode)) {
+	    /* we found a matching name, look for the key */
+	    for(kk=keyblock; kk; kk = kk->next ) {
+		if( (	 kk->pkt->pkttype == PKT_PUBLIC_KEY
+		      || kk->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+		    && ( !pk->pubkey_algo
+			 || pk->pubkey_algo
+			    == kk->pkt->pkt.public_key->pubkey_algo)
+		    && ( !pk->pubkey_usage
+			 || !check_pubkey_algo2(
+			       kk->pkt->pkt.public_key->pubkey_algo,
+						   pk->pubkey_usage ))
+		  )
+		    break;
+	    }
+	    if( kk ) {
+		u32 aki[2];
+		keyid_from_pk( kk->pkt->pkt.public_key, aki );
+		cache_user_id( k->pkt->pkt.user_id, aki );
+		rmd160_hash_buffer( namehash,
+				    k->pkt->pkt.user_id->name,
+				    k->pkt->pkt.user_id->len );
+		*use_namehash = 1;
+		return kk;
+	    }
+	    else if( is_RSA(pk->pubkey_algo) )
+		log_error("RSA key cannot be used in this version\n");
+	    else
+		log_error("No key for userid\n");
+	}
+    }
+    return NULL;
+}
+
+
+static KBNODE
+find_by_keyid( KBNODE keyblock, PKT_public_key *pk, u32 *keyid, int mode )
+{
+    KBNODE k;
+
+    if( DBG_CACHE )
+	log_debug("lookup keyid=%08lx%08lx req_algo=%d mode=%d\n",
+		   (ulong)keyid[0], (ulong)keyid[1], pk->pubkey_algo, mode );
+
+    for(k=keyblock; k; k = k->next ) {
+	if(    k->pkt->pkttype == PKT_PUBLIC_KEY
+	    || k->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
+	    u32 aki[2];
+	    keyid_from_pk( k->pkt->pkt.public_key, aki );
+	    if( DBG_CACHE )
+		log_debug("         aki=%08lx%08lx algo=%d\n",
+				(ulong)aki[0], (ulong)aki[1],
+				 k->pkt->pkt.public_key->pubkey_algo	);
+
+	    if( aki[1] == keyid[1]
+		&& ( mode == 10 || aki[0] == keyid[0] )
+		&& ( !pk->pubkey_algo
+		     || pk->pubkey_algo
+			== k->pkt->pkt.public_key->pubkey_algo) ){
+		KBNODE kk;
+		/* cache the userid */
+		for(kk=keyblock; kk; kk = kk->next )
+		    if( kk->pkt->pkttype == PKT_USER_ID )
+			break;
+		if( kk )
+		    cache_user_id( kk->pkt->pkt.user_id, aki );
+		else
+		    log_error("No userid for key\n");
+		return k; /* found */
+	    }
+	}
+    }
+    return NULL;
+}
+
+
+static KBNODE
+find_first( KBNODE keyblock, PKT_public_key *pk )
+{
+    KBNODE k;
+
+    for(k=keyblock; k; k = k->next ) {
+	if(    k->pkt->pkttype == PKT_PUBLIC_KEY
+	    || k->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+	{
+	    if( !pk->pubkey_algo
+		|| pk->pubkey_algo == k->pkt->pkt.public_key->pubkey_algo )
+		return k;
+	}
+    }
+    return NULL;
+}
+
+
+static KBNODE
+find_by_fpr( KBNODE keyblock, PKT_public_key *pk, const char *name, int mode )
+{
+    KBNODE k;
+
+    for(k=keyblock; k; k = k->next ) {
+	if(    k->pkt->pkttype == PKT_PUBLIC_KEY
+	    || k->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
+	    byte afp[MAX_FINGERPRINT_LEN];
+	    size_t an;
+
+	    fingerprint_from_pk(k->pkt->pkt.public_key, afp, &an );
+
+	    if( DBG_CACHE ) {
+		u32 aki[2];
+		keyid_from_pk( k->pkt->pkt.public_key, aki );
+		log_debug("         aki=%08lx%08lx algo=%d mode=%d an=%u\n",
+				(ulong)aki[0], (ulong)aki[1],
+			k->pkt->pkt.public_key->pubkey_algo, mode, an );
+	    }
+
+	    if( an == mode
+		&& !memcmp( afp, name, an)
+		&& ( !pk->pubkey_algo
+		     || pk->pubkey_algo == k->pkt->pkt.public_key->pubkey_algo) )
+		return k;
+	}
+    }
+    return NULL;
+}
+
+
+static void
+finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
+					       int use_namehash, int primary )
+{
+    assert(    k->pkt->pkttype == PKT_PUBLIC_KEY
+	    || k->pkt->pkttype == PKT_PUBLIC_SUBKEY );
+    assert( keyblock->pkt->pkttype == PKT_PUBLIC_KEY );
+    if( primary && !pk->pubkey_usage ) {
+	copy_public_key_new_namehash( pk, keyblock->pkt->pkt.public_key,
+				      use_namehash? namehash:NULL);
+	merge_one_pk_and_selfsig( keyblock, keyblock );
+    }
+    else {
+	if( primary && pk->pubkey_usage
+	    && check_pubkey_algo2( k->pkt->pkt.public_key->pubkey_algo,
+		       pk->pubkey_usage ) == G10ERR_WR_PUBKEY_ALGO ) {
+	    /* if the usage is not correct, try to use a subkey */
+	    KBNODE save_k = k;
+
+	    for( ; k; k = k->next ) {
+		if( k->pkt->pkttype == PKT_PUBLIC_SUBKEY
+		    && !check_pubkey_algo2(
+			    k->pkt->pkt.public_key->pubkey_algo,
+					     pk->pubkey_usage ) )
+		    break;
+	    }
+	    if( !k )
+		k = save_k;
+	    else
+		log_info(_("using secondary key %08lX "
+			   "instead of primary key %08lX\n"),
+		      (ulong)keyid_from_pk( k->pkt->pkt.public_key, NULL),
+		      (ulong)keyid_from_pk( save_k->pkt->pkt.public_key, NULL)
+			);
+	}
+
+	copy_public_key_new_namehash( pk, k->pkt->pkt.public_key,
+				      use_namehash? namehash:NULL);
+	merge_one_pk_and_selfsig( keyblock, k );
+    }
+}
 
 
 
@@ -709,175 +885,87 @@ lookup( PKT_public_key *pk, int mode,  u32 *keyid,
 {
     int rc;
     KBNODE keyblock = NULL;
+    KBNODE k;
     KBPOS kbpos;
     int oldmode = set_packet_list_mode(0);
     byte namehash[20];
     int use_namehash=0;
 
-    rc = enum_keyblocks( 0, &kbpos, &keyblock );
-    if( rc ) {
-	if( rc == -1 )
-	    rc = G10ERR_NO_PUBKEY;
-	else if( rc )
-	    log_error("enum_keyblocks(open) failed: %s\n", g10_errstr(rc) );
-	goto leave;
+    /* try the quick functions */
+    k = NULL;
+    switch( mode ) {
+      case 10:
+      case 11:
+	rc = locate_keyblock_by_keyid( &kbpos, keyid, mode==10, 0 );
+	if( !rc )
+	    rc = read_keyblock( &kbpos, &keyblock );
+	if( !rc )
+	    k = find_by_keyid( keyblock, pk, keyid, mode );
+	break;
+
+      case 16:
+      case 20:
+	rc = locate_keyblock_by_fpr( &kbpos, name, mode, 0 );
+	if( !rc )
+	    rc = read_keyblock( &kbpos, &keyblock );
+	if( !rc )
+	    k = find_by_fpr( keyblock, pk, name, mode );
+	break;
+
+      default: rc = G10ERR_UNSUPPORTED;
+    }
+    if( !rc ) {
+	if( !k ) {
+	    log_error("lookup: key has been located but was not found\n");
+	    rc = G10ERR_INV_KEYRING;
+	}
+	else
+	    finish_lookup( keyblock, pk, k, namehash, 0, primary );
     }
 
-    while( !(rc = enum_keyblocks( 1, &kbpos, &keyblock )) ) {
-	KBNODE k, kk;
-	if( mode < 10 ) { /* name lookup */
-	    for(k=keyblock; k; k = k->next ) {
-		if( k->pkt->pkttype == PKT_USER_ID
-		    && !compare_name( k->pkt->pkt.user_id->name,
-				      k->pkt->pkt.user_id->len, name, mode)) {
-		    /* we found a matching name, look for the key */
-		    for(kk=keyblock; kk; kk = kk->next ) {
-			if( (	 kk->pkt->pkttype == PKT_PUBLIC_KEY
-			      || kk->pkt->pkttype == PKT_PUBLIC_SUBKEY )
-			    && ( !pk->pubkey_algo
-				 || pk->pubkey_algo
-				    == kk->pkt->pkt.public_key->pubkey_algo)
-			    && ( !pk->pubkey_usage
-				 || !check_pubkey_algo2(
-				       kk->pkt->pkt.public_key->pubkey_algo,
-							   pk->pubkey_usage ))
-			  )
-			    break;
-		    }
-		    if( kk ) {
-			u32 aki[2];
-			keyid_from_pk( kk->pkt->pkt.public_key, aki );
-			cache_user_id( k->pkt->pkt.user_id, aki );
-			rmd160_hash_buffer( namehash,
-					    k->pkt->pkt.user_id->name,
-					    k->pkt->pkt.user_id->len );
-			use_namehash = 1;
-			k = kk;
-			break;
-		    }
-		    else
-			log_error("No key for userid\n");
+    /* if this was not possible, loop over all keyblocks
+     * fixme: If one of the resources in the quick functions above
+     *	      works, but the key was not found, we will not find it
+     *	      in the other resources */
+    if( rc == G10ERR_UNSUPPORTED ) {
+	rc = enum_keyblocks( 0, &kbpos, &keyblock );
+	if( !rc ) {
+	    while( !(rc = enum_keyblocks( 1, &kbpos, &keyblock )) ) {
+		if( mode < 10 )
+		    k = find_by_name( keyblock, pk, name, mode,
+						namehash, &use_namehash);
+		else if( mode == 10 || mode == 11 )
+		    k = find_by_keyid( keyblock, pk, keyid, mode );
+		else if( mode == 15 )
+		    k = find_first( keyblock, pk );
+		else if( mode == 16 || mode == 20 )
+		    k = find_by_fpr( keyblock, pk, name, mode );
+		else
+		    BUG();
+		if( k ) {
+		    finish_lookup( keyblock, pk, k, namehash,
+						    use_namehash, primary );
+		    break; /* found */
 		}
-	    }
-	}
-	else { /* keyid or fingerprint lookup */
-	    if( DBG_CACHE && (mode== 10 || mode==11) ) {
-		log_debug("lookup keyid=%08lx%08lx req_algo=%d mode=%d\n",
-				(ulong)keyid[0], (ulong)keyid[1],
-				 pk->pubkey_algo, mode );
-	    }
-	    for(k=keyblock; k; k = k->next ) {
-		if(    k->pkt->pkttype == PKT_PUBLIC_KEY
-		    || k->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
-		    if( mode == 10 || mode == 11 ) {
-			u32 aki[2];
-			keyid_from_pk( k->pkt->pkt.public_key, aki );
-			if( DBG_CACHE ) {
-			    log_debug("         aki=%08lx%08lx algo=%d\n",
-					    (ulong)aki[0], (ulong)aki[1],
-				    k->pkt->pkt.public_key->pubkey_algo    );
-			}
-			if( aki[1] == keyid[1]
-			    && ( mode == 10 || aki[0] == keyid[0] )
-			    && ( !pk->pubkey_algo
-				 || pk->pubkey_algo
-				    == k->pkt->pkt.public_key->pubkey_algo) ){
-			    /* cache the userid */
-			    for(kk=keyblock; kk; kk = kk->next )
-				if( kk->pkt->pkttype == PKT_USER_ID )
-				    break;
-			    if( kk )
-				cache_user_id( kk->pkt->pkt.user_id, aki );
-			    else
-				log_error("No userid for key\n");
-			    break; /* found */
-			}
-		    }
-		    else if( mode == 15 ) { /* get the first key */
-			if( !pk->pubkey_algo
-			    || pk->pubkey_algo
-				  == k->pkt->pkt.public_key->pubkey_algo )
-			    break;
-		    }
-		    else if( mode == 16 || mode == 20 ) {
-			byte afp[MAX_FINGERPRINT_LEN];
-			size_t an;
-
-			fingerprint_from_pk(k->pkt->pkt.public_key, afp, &an );
-
-			if( DBG_CACHE ) {
-			    u32 aki[2];
-			    keyid_from_pk( k->pkt->pkt.public_key, aki );
-			    log_debug("         aki=%08lx%08lx algo=%d mode=%d an=%u\n",
-					    (ulong)aki[0], (ulong)aki[1],
-				    k->pkt->pkt.public_key->pubkey_algo,
-							mode, an );
-			}
-			if( an == mode && !memcmp( afp, name, an)
-			    && ( !pk->pubkey_algo
-				 || pk->pubkey_algo
-				    == k->pkt->pkt.public_key->pubkey_algo) ) {
-			    break;
-			}
-		    }
-		    else
-			BUG();
-		} /* end compare public keys */
-	    }
-	}
-	if( k ) { /* found */
-	    assert(    k->pkt->pkttype == PKT_PUBLIC_KEY
-		    || k->pkt->pkttype == PKT_PUBLIC_SUBKEY );
-	    assert( keyblock->pkt->pkttype == PKT_PUBLIC_KEY );
-	    if( primary && !pk->pubkey_usage ) {
-		copy_public_key_new_namehash( pk, keyblock->pkt->pkt.public_key,
-					      use_namehash? namehash:NULL);
-		merge_one_pk_and_selfsig( keyblock, keyblock );
-	    }
-	    else {
-		if( primary && pk->pubkey_usage
-		    && check_pubkey_algo2( k->pkt->pkt.public_key->pubkey_algo,
-			       pk->pubkey_usage ) == G10ERR_WR_PUBKEY_ALGO ) {
-		    /* if the usage is not correct, try to use a subkey */
-		    KBNODE save_k = k;
-
-		    for( ; k; k = k->next ) {
-			if( k->pkt->pkttype == PKT_PUBLIC_SUBKEY
-			    && !check_pubkey_algo2(
-				    k->pkt->pkt.public_key->pubkey_algo,
-						     pk->pubkey_usage ) )
-			    break;
-		    }
-		    if( !k )
-			k = save_k;
-		    else
-			log_info(_("using secondary key %08lX "
-				   "instead of primary key %08lX\n"),
-		      (ulong)keyid_from_pk( k->pkt->pkt.public_key, NULL),
-		      (ulong)keyid_from_pk( save_k->pkt->pkt.public_key, NULL)
-				);
-		}
-
-		copy_public_key_new_namehash( pk, k->pkt->pkt.public_key,
-					      use_namehash? namehash:NULL);
-		merge_one_pk_and_selfsig( keyblock, k );
-	    }
-	    if( ret_keyblock ) {
-		*ret_keyblock = keyblock;
+		release_kbnode( keyblock );
 		keyblock = NULL;
 	    }
-	    break; /* enumeration */
 	}
-	release_kbnode( keyblock );
-	keyblock = NULL;
+	enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
+	if( rc && rc != -1 )
+	    log_error("enum_keyblocks failed: %s\n", g10_errstr(rc));
     }
-    if( rc == -1 )
-	rc = G10ERR_NO_PUBKEY;
-    else if( rc )
-	log_error("enum_keyblocks(read) failed: %s\n", g10_errstr(rc));
 
-  leave:
-    enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
+    if( !rc ) {
+	if( ret_keyblock ) {
+	    *ret_keyblock = keyblock;
+	    keyblock = NULL;
+	}
+    }
+    else if( rc == -1 )
+	rc = G10ERR_NO_PUBKEY;
+
+
     release_kbnode( keyblock );
     set_packet_list_mode(oldmode);
     if( opt.debug & DBG_MEMSTAT_VALUE ) {

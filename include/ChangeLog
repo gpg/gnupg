@@ -1,3 +1,7 @@
+Tue Oct 20 11:40:00 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* iobuf.h (iobuf_get_temp_buffer): New.
+
 Tue Oct 13 12:40:48 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* iobuf.h (iobuf_get): Now uses .nofast

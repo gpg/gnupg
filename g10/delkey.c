@@ -1,4 +1,4 @@
-/* delkey.c - delte keys
+/* delkey.c - delete keys
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.

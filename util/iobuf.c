@@ -483,6 +483,18 @@ iobuf_temp()
     return a;
 }
 
+IOBUF
+iobuf_temp_with_content( const char *buffer, size_t length )
+{
+    IOBUF a;
+
+    a = iobuf_alloc(3, length );
+    memcpy( a->d.buf, buffer, length );
+    a->d.len = length;
+
+    return a;
+}
+
 
 /****************
  * Create a head iobuf for reading from a file
@@ -877,8 +889,19 @@ iobuf_flush(IOBUF a)
 	return 0;
 
     /*log_debug("iobuf-%d.%d: flush\n", a->no, a->subno );*/
-    if( a->usage == 3 )
-	log_bug("temp buffer too short\n");
+    if( a->usage == 3 ) { /* must increase the size of the temp buffer */
+	char *newbuf;
+	size_t newsize = a->d.size + 8192;
+
+	log_debug("increasing temp iobuf from %lu to %lu\n",
+		    (ulong)a->d.size, (ulong)newsize );
+	newbuf = m_alloc( newsize );
+	memcpy( newbuf, a->d.buf, a->d.len );
+	m_free(a->d.buf);
+	a->d.buf = newbuf;
+	a->d.size = newsize;
+	return 0;
+    }
     else if( a->usage != 2 )
 	log_bug("flush on non-output iobuf\n");
     else if( !a->filter )

@@ -37,6 +37,7 @@
 
 static void list_all(int);
 static void list_one(const char *name, int secret);
+static void list_keyblock( KBNODE keyblock, int secret );
 static void fingerprint( PKT_public_key *pk, PKT_secret_key *sk );
 
 
@@ -70,63 +71,87 @@ secret_key_list( int nnames, char **names )
 static void
 list_all( int secret )
 {
-    int i, seq=0;
-    const char *s;
-    IOBUF a;
+    KBPOS kbpos;
+    KBNODE keyblock = NULL;
+    int rc=0;
+    int lastresno;
 
-    /* FIXME: this assumes a keyring resource is a plain keyring file */
-    while( (s = enum_keyblock_resources( &seq, secret )) ) {
-	if( !(a = iobuf_open(s)) ) {
-	    log_error(_("can't open %s: %s\n"), s, strerror(errno));
-	    continue;
-	}
-	if( seq > 1 )
-	    putchar('\n');
-	printf("%s\n", s );
-	for(i=strlen(s); i; i-- )
-	    putchar('-');
-	putchar('\n');
-
-	proc_packets( a );
-	iobuf_close(a);
+    rc = enum_keyblocks( secret? 5:0, &kbpos, &keyblock );
+    if( rc ) {
+	if( rc != -1 )
+	    log_error("enum_keyblocks(open) failed: %s\n", g10_errstr(rc) );
+	goto leave;
     }
+
+    lastresno = -1;
+    while( !(rc = enum_keyblocks( 1, &kbpos, &keyblock )) ) {
+	if( lastresno != kbpos.resno ) {
+	    const char *s = keyblock_resource_name( &kbpos );
+	    int i;
+
+	    lastresno = kbpos.resno;
+	    printf("%s\n", s );
+	    for(i=strlen(s); i; i-- )
+		putchar('-');
+	    putchar('\n');
+	}
+	merge_keys_and_selfsig( keyblock );
+	list_keyblock( keyblock, secret );
+	release_kbnode( keyblock ); keyblock = NULL;
+    }
+
+    if( rc && rc != -1 )
+	log_error("enum_keyblocks(read) failed: %s\n", g10_errstr(rc));
+
+  leave:
+    enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
+    release_kbnode( keyblock );
 }
+
+
 
 static void
 list_one( const char *name, int secret )
 {
     int rc = 0;
     KBNODE keyblock = NULL;
+    KBPOS kbpos;
+
+    rc = secret? find_secret_keyblock_byname( &kbpos, name )
+	       : find_keyblock_byname( &kbpos, name );
+    if( rc ) {
+	log_error("%s: user not found\n", name );
+	return;
+    }
+
+    rc = read_keyblock( &kbpos, &keyblock );
+    if( rc ) {
+	log_error("%s: keyblock read problem: %s\n", name, g10_errstr(rc) );
+	return;
+    }
+    merge_keys_and_selfsig( keyblock );
+    list_keyblock( keyblock, secret );
+    release_kbnode( keyblock );
+}
+
+
+static void
+list_keyblock( KBNODE keyblock, int secret )
+{
+    int rc = 0;
     KBNODE kbctx;
     KBNODE node;
-    KBPOS kbpos;
     PKT_public_key *pk;
     PKT_secret_key *sk;
     u32 keyid[2];
     int any=0;
     int trustletter = 0;
 
-    /* search the userid */
-    rc = secret? find_secret_keyblock_byname( &kbpos, name )
-	       : find_keyblock_byname( &kbpos, name );
-    if( rc ) {
-	log_error("%s: user not found\n", name );
-	goto leave;
-    }
-
-    /* read the keyblock */
-    rc = read_keyblock( &kbpos, &keyblock );
-    if( rc ) {
-	log_error("%s: keyblock read problem: %s\n", name, g10_errstr(rc) );
-	goto leave;
-    }
-
-
     /* get the keyid from the keyblock */
     node = find_kbnode( keyblock, secret? PKT_SECRET_KEY : PKT_PUBLIC_KEY );
     if( !node ) {
 	log_error("Oops; key lost!\n");
-	goto leave;
+	return;
     }
 
     if( secret ) {
@@ -336,11 +361,9 @@ list_one( const char *name, int secret )
 	    putchar(':');
 	putchar('\n');
     }
-
-
-  leave:
-    release_kbnode( keyblock );
 }
+
+
 
 static void
 fingerprint( PKT_public_key *pk, PKT_secret_key *sk )

@@ -541,10 +541,18 @@ ask_expiredate()
 static int
 has_invalid_email_chars( const char *s )
 {
+    int at_seen=0;
+
     for( ; *s; s++ ) {
 	if( *s & 0x80 )
 	    return 1;
-	if( !strchr("01234567890abcdefghijklmnopqrstuvwxyz_-.@", *s ) )
+	if( *s == '@' )
+	    at_seen=1;
+	else if( !at_seen
+		 && !strchr("01234567890abcdefghijklmnopqrstuvwxyz_-.+", *s ))
+	    return 1;
+	else if( at_seen
+		 && !strchr("01234567890abcdefghijklmnopqrstuvwxyz_-.", *s ) )
 	    return 1;
     }
     return 0;

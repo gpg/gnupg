@@ -1370,6 +1370,8 @@ update_trustdb( )
 	    else
 		log_info("lid %lu: updated\n",
 				lid_from_keyblock(keyblock) );
+
+	    release_kbnode( keyblock ); keyblock = NULL;
 	}
     }
     if( rc && rc != -1 )
@@ -1910,7 +1912,6 @@ upd_key_record( PKT_public_key *pk, TRUSTREC *drec, RECNO_LIST *recno_list )
     }
     if( recno ) { /* yes */
 	ins_recno_list( recno_list, recno, RECTYPE_KEY );
-	/* here we would compare/update the keyflags */
     }
     else { /* no: insert this new key */
 	memset( &krec, 0, sizeof(krec) );
@@ -2110,6 +2111,8 @@ upd_sig_record( PKT_signature *sig, TRUSTREC *drec,
 	    }
 	}
 	else if( sig->sig_class == 0x18 ) { /* key binding */
+	    /* get the corresponding key */
+
 	    /* FIXME */
 	}
 	else if( sig->sig_class == 0x20 ) { /* key revocation */
@@ -2427,6 +2430,7 @@ update_trust_record( KBNODE keyblock )
     ulong uidrecno = 0;
     byte uidhash[20];
     RECNO_LIST recno_list = NULL; /* list of verified records */
+    /* fixme: replace recno_list by a lookup on node->recno */
 
     node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
     primary_pk = node->pkt->pkt.public_key;
@@ -2459,6 +2463,7 @@ update_trust_record( KBNODE keyblock )
 
 	  case PKT_SIGNATURE:
 	    if( drec.dirty ) { /* upd_sig_recrod may read the drec */
+
 		write_record( &drec );
 		drec.dirty = 0;
 	    }

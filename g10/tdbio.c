@@ -269,7 +269,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 
     if( access( fname, R_OK ) ) {
 	if( errno != ENOENT ) {
-	    log_error_f( fname, _("can't access: %s\n"), strerror(errno) );
+	    log_error( _("%s: can't access: %s\n"), fname, strerror(errno) );
 	    m_free(fname);
 	    return G10ERR_TRUSTDB;
 	}
@@ -289,17 +289,19 @@ tdbio_set_dbname( const char *new_dbname, int create )
 		  #else
 		    if( mkdir( fname, S_IRUSR|S_IWUSR|S_IXUSR ) )
 		  #endif
-			log_fatal_f( fname, _("can't create directory: %s\n"),
-							    strerror(errno) );
+			log_fatal( _("%s: can't create directory: %s\n"),
+						    fname,  strerror(errno) );
+		    else
+			log_info( _("%s: directory created\n"), fname );
 		}
 		else
-		    log_fatal_f(fname, _("directory does not exist!\n") );
+		    log_fatal( _("%s: directory does not exist!\n"), fname );
 	    }
 	    *p = '/';
 
 	    fp =fopen( fname, "wb" );
 	    if( !fp )
-		log_fatal_f( fname, _("can't create: %s\n"), strerror(errno) );
+		log_fatal( _("%s: can't create: %s\n"), fname, strerror(errno) );
 	    fclose(fp);
 	    m_free(db_name);
 	    db_name = fname;
@@ -309,7 +311,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    db_fd = open( db_name, O_RDWR );
 	  #endif
 	    if( db_fd == -1 )
-		log_fatal_f( db_name, _("can't open: %s\n"), strerror(errno) );
+		log_fatal( _("%s: can't open: %s\n"), db_name, strerror(errno) );
 
 	    memset( &rec, 0, sizeof rec );
 	    rec.r.ver.version = 2;
@@ -320,11 +322,14 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    if( !rc )
 		tdbio_sync();
 	    if( rc )
-		log_fatal_f( fname, _("failed to create version record: %s"),
-							       g10_errstr(rc));
+		log_fatal( _("%s: failed to create version record: %s"),
+						   fname, g10_errstr(rc));
 	    /* and read again to check that we are okay */
 	    if( tdbio_read_record( 0, &rec, RECTYPE_VER ) )
-		log_fatal_f( db_name, "invalid trust-db created\n" );
+		log_fatal( _("%s: invalid trust-db created\n"), db_name );
+
+	    log_info(_("%s: trust-db created\n"), db_name);
+
 	    return 0;
 	}
     }
@@ -354,9 +359,9 @@ open_db()
     db_fd = open( db_name, O_RDWR );
   #endif
     if( db_fd == -1 )
-	log_fatal_f( db_name, _("can't open: %s\n"), strerror(errno) );
+	log_fatal( _("%s: can't open: %s\n"), db_name, strerror(errno) );
     if( tdbio_read_record( 0, &rec, RECTYPE_VER ) )
-	log_fatal_f( db_name, _("invalid trust-db\n") );
+	log_fatal( _("%s: invalid trust-db\n"), db_name );
     /* fixme: check ->locked and other stuff */
 }
 
@@ -390,16 +395,16 @@ create_hashtable( TRUSTREC *vr, int type )
 	 rec.recnum = recnum;
 	 rc = tdbio_write_record( &rec );
 	 if( rc )
-	     log_fatal_f(db_name,_("failed to create hashtable: %s\n"),
-						 g10_errstr(rc));
+	     log_fatal( _("%s: failed to create hashtable: %s\n"),
+					db_name, g10_errstr(rc));
     }
     /* update the version record */
     rc = tdbio_write_record( vr );
     if( !rc )
 	rc = tdbio_sync();
     if( rc )
-	log_fatal_f( db_name, _("error updating version record: %s\n"),
-							     g10_errstr(rc));
+	log_fatal( _("%s: error updating version record: %s\n"),
+						  db_name, g10_errstr(rc));
 }
 
 
@@ -418,8 +423,8 @@ get_keyhashrec()
 
 	rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
 	if( rc )
-	    log_fatal_f( db_name, _("error reading version record: %s\n"),
-							    g10_errstr(rc) );
+	    log_fatal( _("%s: error reading version record: %s\n"),
+					    db_name, g10_errstr(rc) );
 	if( !vr.r.ver.keyhashtbl )
 	    create_hashtable( &vr, 0 );
 
@@ -443,8 +448,8 @@ get_sdirhashrec()
 
 	rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
 	if( rc )
-	    log_fatal_f( db_name, _("error reading version record: %s\n"),
-							    g10_errstr(rc) );
+	    log_fatal( _("%s: error reading version record: %s\n"),
+						    db_name, g10_errstr(rc) );
 	if( !vr.r.ver.sdirhashtbl )
 	    create_hashtable( &vr, 1 );
 
@@ -744,14 +749,14 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 		    rec->r.dir.uidlist,
 		    rec->r.dir.cacherec,
 		    rec->r.dir.ownertrust );
-	if( rec->r.dir.dirflags & DIRF_ERROR )
-	    fputs(", error", fp );
-	if( rec->r.dir.dirflags & DIRF_CHECKED )
-	    fputs(", checked", fp );
-	if( rec->r.dir.dirflags & DIRF_REVOKED )
-	    fputs(", revoked", fp );
-	if( rec->r.dir.dirflags & DIRF_MISKEY )
-	    fputs(", miskey", fp );
+	if( rec->r.dir.dirflags & DIRF_CHECKED ) {
+	    if( rec->r.dir.dirflags & DIRF_VALID )
+		fputs(", valid", fp );
+	    if( rec->r.dir.dirflags & DIRF_EXPIRED )
+		fputs(", expired", fp );
+	    if( rec->r.dir.dirflags & DIRF_REVOKED )
+		fputs(", revoked", fp );
+	}
 	putc('\n', fp);
 	break;
       case RECTYPE_KEY:
@@ -761,8 +766,14 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 		   rec->r.key.pubkey_algo );
 	for(i=0; i < rec->r.key.fingerprint_len; i++ )
 	    fprintf(fp, "%02X", rec->r.key.fingerprint[i] );
-	if( rec->r.key.keyflags & KEYF_REVOKED )
-	    fputs(", revoked", fp );
+	if( rec->r.key.keyflags & KEYF_CHECKED ) {
+	    if( rec->r.key.keyflags & KEYF_VALID )
+		fputs(", valid", fp );
+	    if( rec->r.key.keyflags & KEYF_EXPIRED )
+		fputs(", expired", fp );
+	    if( rec->r.key.keyflags & KEYF_REVOKED )
+		fputs(", revoked", fp );
+	}
 	putc('\n', fp);
 	break;
       case RECTYPE_UID:
@@ -772,12 +783,12 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 		    rec->r.uid.prefrec,
 		    rec->r.uid.siglist,
 		    rec->r.uid.namehash[18], rec->r.uid.namehash[19]);
-	if( rec->r.uid.uidflags & UIDF_CHECKED )
-	    fputs(", checked", fp );
-	if( rec->r.uid.uidflags & UIDF_VALID )
-	    fputs(", valid", fp );
-	if( rec->r.uid.uidflags & UIDF_REVOKED )
-	    fputs(", revoked", fp );
+	if( rec->r.uid.uidflags & UIDF_CHECKED ) {
+	    if( rec->r.uid.uidflags & UIDF_VALID )
+		fputs(", valid", fp );
+	    if( rec->r.uid.uidflags & UIDF_REVOKED )
+		fputs(", revoked", fp );
+	}
 	putc('\n', fp);
 	break;
       case RECTYPE_PREF:
@@ -795,9 +806,19 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 	fprintf(fp, "sig %lu, next=%lu,",
 			 rec->r.sig.lid, rec->r.sig.next );
 	for(i=0; i < SIGS_PER_RECORD; i++ ) {
-	    if( rec->r.sig.sig[i].lid )
-		fprintf(fp, " %lu:%02x", rec->r.sig.sig[i].lid,
-					  rec->r.sig.sig[i].flag );
+	    if( rec->r.sig.sig[i].lid ) {
+		fprintf(fp, " %lu:", rec->r.sig.sig[i].lid );
+		if( rec->r.sig.sig[i].flag & SIGF_CHECKED ) {
+		    fprintf(fp,"%c%c%c",
+		       (rec->r.sig.sig[i].flag & SIGF_VALID)   ? 'V':'-',
+		       (rec->r.sig.sig[i].flag & SIGF_EXPIRED) ? 'E':'-',
+		       (rec->r.sig.sig[i].flag & SIGF_REVOKED) ? 'R':'-');
+		}
+		else if( rec->r.sig.sig[i].flag & SIGF_NOPUBKEY)
+		    fputs("?--", fp);
+		else
+		    fputs("---", fp);
+	    }
 	}
 	putc('\n', fp);
 	break;
@@ -876,7 +897,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	break;
       case RECTYPE_VER: /* version record */
 	if( memcmp(buf+1, "gpg", 3 ) ) {
-	    log_error_f( db_name, _("not a trustdb file\n") );
+	    log_error( _("%s: not a trustdb file\n"), db_name );
 	    rc = G10ERR_TRUSTDB;
 	}
 	p += 2; /* skip "pgp" */
@@ -890,12 +911,12 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	rec->r.ver.firstfree =buftoulong(p); p += 4;
 	rec->r.ver.sdirhashtbl =buftoulong(p); p += 4;
 	if( recnum ) {
-	    log_error_f( db_name, "version record with recnum %lu\n",
+	    log_error( _("%s: version record with recnum %lu\n"), db_name,
 							     (ulong)recnum );
 	    rc = G10ERR_TRUSTDB;
 	}
 	else if( rec->r.ver.version != 2 ) {
-	    log_error_f( db_name, "invalid file version %d\n",
+	    log_error( _("%s: invalid file version %d\n"), db_name,
 							rec->r.ver.version );
 	    rc = G10ERR_TRUSTDB;
 	}
@@ -911,8 +932,8 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	rec->r.dir.ownertrust = *p++;
 	rec->r.dir.dirflags   = *p++;
 	if( rec->r.dir.lid != recnum ) {
-	    log_error_f( db_name, "dir LID != recnum (%lu,%lu)\n",
-					 rec->r.dir.lid, (ulong)recnum );
+	    log_error( "%s: dir LID != recnum (%lu,%lu)\n",
+			      db_name, rec->r.dir.lid, (ulong)recnum );
 	    rc = G10ERR_TRUSTDB;
 	}
 	break;
@@ -957,8 +978,8 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	p += 3;
 	rec->r.sdir.hintlist = buftoulong(p);
 	if( rec->r.sdir.lid != recnum ) {
-	    log_error_f( db_name, "sdir LID != recnum (%lu,%lu)\n",
-					 rec->r.sdir.lid, (ulong)recnum );
+	    log_error( "%s: sdir LID != recnum (%lu,%lu)\n",
+			       db_name, rec->r.sdir.lid, (ulong)recnum );
 	    rc = G10ERR_TRUSTDB;
 	}
 	break;
@@ -979,8 +1000,8 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	}
 	break;
       default:
-	log_error_f( db_name, "invalid record type %d at recnum %lu\n",
-					      rec->rectype, (ulong)recnum );
+	log_error( "%s: invalid record type %d at recnum %lu\n",
+				   db_name, rec->rectype, (ulong)recnum );
 	rc = G10ERR_TRUSTDB;
 	break;
     }
@@ -1122,8 +1143,8 @@ tdbio_delete_record( ulong recnum )
 
     rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
     if( rc )
-	log_fatal_f( db_name, _("error reading version record: %s\n"),
-							g10_errstr(rc) );
+	log_fatal( _("%s: error reading version record: %s\n"),
+				       db_name, g10_errstr(rc) );
 
     rec.recnum = recnum;
     rec.rectype = RECTYPE_FREE;
@@ -1149,22 +1170,22 @@ tdbio_new_recnum()
     /* look for unused records */
     rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
     if( rc )
-	log_fatal_f( db_name, _("error reading version record: %s\n"),
-							g10_errstr(rc) );
+	log_fatal( _("%s: error reading version record: %s\n"),
+					     db_name, g10_errstr(rc) );
     if( vr.r.ver.firstfree ) {
 	recnum = vr.r.ver.firstfree;
 	rc = tdbio_read_record( recnum, &rec, RECTYPE_FREE );
 	if( rc ) {
-	    log_error_f( db_name, _("error reading free record: %s\n"),
-							    g10_errstr(rc) );
+	    log_error( _("%s: error reading free record: %s\n"),
+						  db_name,  g10_errstr(rc) );
 	    return rc;
 	}
 	/* update dir record */
 	vr.r.ver.firstfree = rec.r.free.next;
 	rc = tdbio_write_record( &vr );
 	if( rc ) {
-	    log_error_f( db_name, _("error writing dir record: %s\n"),
-							    g10_errstr(rc) );
+	    log_error( _("%s: error writing dir record: %s\n"),
+						     db_name, g10_errstr(rc) );
 	    return rc;
 	}
 	/*zero out the new record */
@@ -1173,8 +1194,8 @@ tdbio_new_recnum()
 	rec.recnum = recnum;
 	rc = tdbio_write_record( &rec );
 	if( rc )
-	    log_fatal_f(db_name,_("failed to zero a record: %s\n"),
-						g10_errstr(rc));
+	    log_fatal(_("%s: failed to zero a record: %s\n"),
+				       db_name, g10_errstr(rc));
     }
     else { /* not found, append a new record */
 	offset = lseek( db_fd, 0, SEEK_END );
@@ -1203,8 +1224,8 @@ tdbio_new_recnum()
 	}
 
 	if( rc )
-	    log_fatal_f(db_name,_("failed to append a record: %s\n"),
-						g10_errstr(rc));
+	    log_fatal(_("%s: failed to append a record: %s\n"),
+				    db_name,	g10_errstr(rc));
     }
     return recnum ;
 }
@@ -1230,10 +1251,9 @@ tdbio_search_dir_bypk( PKT_public_key *pk, TRUSTREC *rec )
 
     if( !rc ) {
 	if( pk->local_id && pk->local_id != rec->recnum )
-	    log_error_f(db_name,
-		       "found record, but LID from memory does "
+	    log_error("%s: found record, but LID from memory does "
 		       "not match recnum (%lu,%lu)\n",
-				      pk->local_id, rec->recnum );
+			    db_name,  pk->local_id, rec->recnum );
 	pk->local_id = rec->recnum;
     }
     return rc;
@@ -1272,8 +1292,8 @@ tdbio_search_dir_byfpr( const byte *fingerprint, size_t fingerlen,
 	/* Now read the dir record */
 	rc = tdbio_read_record( recnum, rec, RECTYPE_DIR);
 	if( rc )
-	    log_error_f(db_name, "can't read dirrec %lu: %s\n",
-						    recnum, g10_errstr(rc) );
+	    log_error("%s: can't read dirrec %lu: %s\n",
+				     db_name, recnum, g10_errstr(rc) );
     }
     return rc;
 }

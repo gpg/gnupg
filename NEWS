@@ -1,3 +1,18 @@
+
+    * Fixed the gettext configure bug.
+
+    * Kludge for RSA keys: keyid and length of a RSA key are
+      correctly reported, but you get an error if you try to use
+      this key (If you do not have the non-US version).
+
+    * Experimental support for keyrings stored in a GDBM database.
+      This is *much* faster than a standard keyring.  You will notice
+      that the import gets slower with time; the reason is that all
+      new keys are used to verify signatures of previous inserted
+      keys.  Use "--keyring gnupg-gdbm:<name-of-gdbm-file>".  This is
+      not (yet) supported for secret keys.
+
+
 Noteworthy changes in version 0.4.2
 -----------------------------------
 

@@ -71,6 +71,7 @@ int iobuf_debug_mode;
 
 IOBUF iobuf_alloc(int usage, size_t bufsize);
 IOBUF iobuf_temp(void);
+IOBUF iobuf_temp_with_content( const char *buffer, size_t length );
 IOBUF iobuf_open( const char *fname );
 IOBUF iobuf_fopen( const char *fname, const char *mode );
 IOBUF iobuf_create( const char *fname );
@@ -129,6 +130,7 @@ int  iobuf_in_block_mode( IOBUF a );
 #define iobuf_where(a)	"[don't know]"
 #define iobuf_id(a)	((a)->no)
 
+#define iobuf_get_temp_buffer(a) ( (a)->d.buf )
 #define iobuf_get_temp_length(a) ( (a)->d.len )
 #define iobuf_is_temp(a)	 ( (a)->usage == 3 )
 

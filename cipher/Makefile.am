@@ -2,7 +2,7 @@
 
 gnupg_extensions = tiger twofish
 
-INCLUDES =  -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
+INCLUDES =  -I$(top_srcdir)/include -I$(top_srcdir)/intl
 
 noinst_LIBRARIES = libcipher.a
 if ENABLE_GNUPG_EXTENSIONS

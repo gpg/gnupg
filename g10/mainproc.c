@@ -886,10 +886,14 @@ proc_tree( CTX c, KBNODE node )
     c->local_id = 0;
     c->trustletter = ' ';
     if( node->pkt->pkttype == PKT_PUBLIC_KEY
-	|| node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+	|| node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
+	merge_keys_and_selfsig( node );
 	list_node( c, node );
-    else if( node->pkt->pkttype == PKT_SECRET_KEY )
+    }
+    else if( node->pkt->pkttype == PKT_SECRET_KEY ) {
+	merge_keys_and_selfsig( node );
 	list_node( c, node );
+    }
     else if( node->pkt->pkttype == PKT_ONEPASS_SIG ) {
 	/* check all signatures */
 	if( !c->have_data ) {

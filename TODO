@@ -1,6 +1,4 @@
 
-    * There is a new memory leak in update-trustdb :-(
-
     * Fix ;) revocation and expire stuff.
 
     * OpenBSD: dynamic loading with dlopen works on OpenBSD, but:

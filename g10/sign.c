@@ -108,9 +108,6 @@ only_old_style( SK_LIST sk_list )
     SK_LIST sk_rover = NULL;
     int old_style = 0;
 
-    if( opt.force_v3_sigs )
-	return 1;
-
     /* if there are only old style capable key we use the old sytle */
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;
@@ -159,7 +156,6 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     int compr_algo = -1; /* unknown */
 
 
-
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
     memset( &mfx, 0, sizeof mfx);
@@ -181,6 +177,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	goto leave;
     if( !old_style )
 	old_style = only_old_style( sk_list );
+
     if( encrypt ) {
 	if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC )) )
 	    goto leave;
@@ -372,7 +369,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	/* build the signature packet */
 	/* fixme: this code is partly duplicated in make_keysig_packet */
 	sig = m_alloc_clear( sizeof *sig );
-	sig->version = old_style? 3 : sk->version;
+	sig->version = old_style || opt.force_v3_sigs ? 3 : sk->version;
 	keyid_from_sk( sk, sig->keyid );
 	sig->digest_algo = hash_for(sk->pubkey_algo);
 	sig->pubkey_algo = sk->pubkey_algo;
@@ -608,7 +605,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	/* build the signature packet */
 	/* fixme: this code is duplicated above */
 	sig = m_alloc_clear( sizeof *sig );
-	sig->version = old_style? 3 : sk->version;
+	sig->version = old_style || opt.force_v3_sigs ? 3 : sk->version;
 	keyid_from_sk( sk, sig->keyid );
 	sig->digest_algo = hash_for(sk->pubkey_algo);
 	sig->pubkey_algo = sk->pubkey_algo;
