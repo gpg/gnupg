@@ -120,6 +120,37 @@ cmd_marktrusted (ASSUAN_CONTEXT ctx, char *line)
 
 
 
+/* HAVEKEY <hexstring_with_keygrip>
+  
+   Return success when the secret key is available */
+static int
+cmd_havekey (ASSUAN_CONTEXT ctx, char *line)
+{
+  int n;
+  char *p;
+  unsigned char buf[20];
+
+  /* parse the hash value */
+  for (p=line,n=0; hexdigitp (p); p++, n++)
+    ;
+  if (*p)
+    return set_error (Parameter_Error, "invalid hexstring");
+  if ((n&1))
+    return set_error (Parameter_Error, "odd number of digits");
+  n /= 2;
+  if (n != 20)
+    return set_error (Parameter_Error, "invalid length of keygrip");
+
+  for (p=line, n=0; n < 20; p += 2, n++)
+    buf[n] = xtoi_2 (p);
+
+  if (agent_key_available (buf))
+    return ASSUAN_No_Secret_Key;
+
+  return 0;
+}
+
+
 /* SIGKEY <hexstring_with_keygrip>
    SETKEY <hexstring_with_keygrip>
   
@@ -414,6 +445,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     int (*handler)(ASSUAN_CONTEXT, char *line);
   } table[] = {
     { "ISTRUSTED",  0,  cmd_istrusted },
+    { "HAVEKEY",    0,  cmd_havekey },
     { "SIGKEY",     0,  cmd_sigkey },
     { "SETKEY",     0,  cmd_sigkey },
     { "SETHASH",    0,  cmd_sethash },

@@ -94,6 +94,7 @@ void start_command_handler (int);
 
 /*-- findkey.c --*/
 GCRY_SEXP agent_key_from_file (const unsigned char *grip);
+int agent_key_available (const unsigned char *grip);
 
 /*-- query.c --*/
 int agent_askpin (const char *desc_text, struct pin_entry_info_s *pininfo);

@@ -1,3 +1,9 @@
+2002-01-29  Werner Koch  <wk@gnupg.org>
+
+	* findkey.c (agent_key_available): New.
+	* command.c (cmd_havekey): New.
+	(register_commands): And register new command.
+
 2002-01-20  Werner Koch  <wk@gnupg.org>
 
 	* command.c (cmd_get_passphrase): Remove the plus signs.

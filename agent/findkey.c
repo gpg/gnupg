@@ -55,9 +55,8 @@ unprotect (GCRY_SEXP s_skey)
 
 
 
-
-
-/* Return the secret key as an S-Exp after locating it using the grip.  Returns NULL if key is not available. */
+/* Return the secret key as an S-Exp after locating it using the grip.
+   Returns NULL if key is not available. */
 GCRY_SEXP
 agent_key_from_file (const unsigned char *grip)
 {
@@ -123,6 +122,25 @@ agent_key_from_file (const unsigned char *grip)
     }
 
   return s_skey;
+}
+
+/* Return the secret key as an S-Exp after locating it using the grip.
+   Returns NULL if key is not available. 0 = key is available */
+int
+agent_key_available (const unsigned char *grip)
+{
+  int i;
+  char *fname;
+  char hexgrip[41];
+  
+  for (i=0; i < 20; i++)
+    sprintf (hexgrip+2*i, "%02X", grip[i]);
+  hexgrip[40] = 0;
+
+  fname = make_filename (opt.homedir, "private-keys-v1.d", hexgrip, NULL );
+  i = !access (fname, R_OK)? 0 : -1;
+  xfree (fname);
+  return i;
 }
 
 
