@@ -1,3 +1,7 @@
+  * Using an expired key for signing should give an error message
+    "expired key"and not "unusable key'.  Furthermore the error should
+    also be thrown when the defaultkey has expired.  Reported by
+    Eric.VanBuggenhaut@AdValvas.be.
 
   * Update the manual pages and NEWS (David's new features)
 
