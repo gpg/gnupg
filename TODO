@@ -1,4 +1,10 @@
 
+  * gppm links in doc und bin sind inkonsistent
+
+  * remove signature:
+Got an idea:  just specify the keyid of the signature - this can be
+done quite easily.
+
   * add some status output put for signing and encryption.
     replace the putc in primegen with some kind of status-fd outputs.
 

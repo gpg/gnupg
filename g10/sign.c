@@ -39,6 +39,46 @@
 #include "i18n.h"
 
 
+
+/****************
+ * Create a notation.  It is assumed that the stings in STRLIST
+ * are already checked to contain only printable data and have a valid
+ * NAME=VALUE format.
+ */
+static void
+mk_notation( PKT_signature *sig, STRLIST nd )
+{
+    const char *string, *s;
+    byte *buf;
+    unsigned n1, n2;
+
+    if( sig->version < 4 ) {
+	log_info("can't put notation data into v3 signatures\n");
+	return;
+    }
+
+    for( ; nd; nd = nd->next )	{
+	string = nd->d;
+	s = strchr( string, '=' );
+	if( !s )
+	    BUG(); /* we have already parsed this */
+	n1 = s - string;
+	s++;
+	n2 = strlen(s);
+	buf = m_alloc( 8 + n1 + n2 );
+	buf[0] = 0x80; /* human readable */
+	buf[1] = buf[2] = buf[3] = 0;
+	buf[4] = n1 >> 8;
+	buf[5] = n1;
+	buf[6] = n2 >> 8;
+	buf[7] = n2;
+	memcpy(buf+8, string, n1 );
+	memcpy(buf+8+n1, s, n2 );
+	build_sig_subpkt( sig, SIGSUBPKT_NOTATION, buf, 8+n1+n2 );
+    }
+}
+
+
 static int
 do_sign( PKT_secret_key *sk, PKT_signature *sig,
 	 MD_HANDLE md, int digest_algo )
@@ -253,8 +293,10 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	if( !compr_algo )
 	    ; /* don't use compression */
 	else {
-	    if( old_style || compr_algo == 1 )
-		zfx.algo = 1;
+	    if( old_style
+		|| compr_algo == 1
+		|| (compr_algo == -1 && !encrypt) )
+		zfx.algo = 1; /* use the non optional algorithm */
 	    iobuf_push_filter( out, compress_filter, &zfx );
 	}
     }
@@ -392,6 +434,10 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    build_sig_subpkt_from_sig( sig );
 	    md_putc( md, sig->version );
 	}
+
+	if( opt.notation_data )
+	     mk_notation( sig, opt.notation_data );
+
 	md_putc( md, sig->sig_class );
 	if( sig->version < 4 ) {
 	    u32 a = sig->timestamp;
@@ -578,6 +624,10 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	    build_sig_subpkt_from_sig( sig );
 	    md_putc( md, sig->version );
 	}
+
+	if( opt.notation_data )
+	     mk_notation( sig, opt.notation_data );
+
 	md_putc( md, sig->sig_class );
 	if( sig->version < 4 ) {
 	    u32 a = sig->timestamp;
@@ -706,6 +756,8 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 	rc = (*mksubpkt)( sig, opaque );
 
     if( !rc ) {
+	if( opt.notation_data )
+	     mk_notation( sig, opt.notation_data );
 	if( sig->version >= 4 )
 	    md_putc( md, sig->version );
 	md_putc( md, sig->sig_class );

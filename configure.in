@@ -494,7 +494,10 @@ fi
 fi
 AC_SUBST(ZLIBS)
 
-if echo "$VERSION" | grep '[a-zA-Z]' >/dev/null ; then
+changequote(,)dnl
+tmp_pat='[a-zA-Z]'
+changequote([,])dnl
+if echo "$VERSION" | grep $tmp_pat >/dev/null ; then
     AC_DEFINE(IS_DEVELOPMENT_VERSION)
 fi
 

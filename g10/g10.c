@@ -63,6 +63,7 @@ enum cmd_and_opt_values { aNull = 0,
     oUser	  = 'u',
     oVerbose	  = 'v',
     oCompress	  = 'z',
+    oNotation	  = 'N',
     oBatch	  = 500,
     aClearsign,
     aStore,
@@ -254,6 +255,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDigestAlgo, "digest-algo", 2 , N_("|NAME|use message digest algorithm NAME")},
     { oCompressAlgo, "compress-algo", 1 , N_("|N|use compress algorithm N")},
     { oThrowKeyid, "throw-keyid", 0, N_("throw keyid field of encrypted packets")},
+    { oNotation,   "notation-data", 2, N_("|NAME=VALUE|use this notation data")},
 
     { 302, NULL, 0, N_("@\nExamples:\n\n"
     " -se -r Bob [file]          sign and encrypt for user Bob\n"
@@ -312,6 +314,7 @@ static void set_cmd( enum cmd_and_opt_values *ret_cmd,
 			enum cmd_and_opt_values new_cmd );
 static void print_hex( byte *p, size_t n );
 static void print_mds( const char *fname, int algo );
+static void add_notation_data( const char *string );
 
 const char *
 strusage( int level )
@@ -741,6 +744,7 @@ main( int argc, char **argv )
 	  case oEscapeFrom: opt.escape_from = 1; break;
 	  case oLockOnce: opt.lock_once = 1; break;
 	  case oKeyServer: opt.keyserver_name = pargs.r.ret_str; break;
+	  case oNotation: add_notation_data( pargs.r.ret_str ); break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}
@@ -1380,5 +1384,55 @@ print_mds( const char *fname, int algo )
 
     if( fp != stdin )
 	fclose(fp);
+}
+
+
+/****************
+ * Check the supplied name,value string and add it to the notation
+ * data to be used for signatures.
+ */
+static void
+add_notation_data( const char *string )
+{
+    const char *s = string;
+    const char *s2;
+    int highbit=0;
+
+    if( !*s || (*s & 0x80) || (!isalpha(*s) && *s != '_') ) {
+	log_error(_("the first character of a notation name "
+		    "must be a letter or an underscore\n") );
+	return;
+    }
+    for(s++; *s != '='; s++ ) {
+	if( !*s || (*s & 0x80) || (!isalnum(*s) && *s != '_' && *s != '.' ) ) {
+	    log_error(_("a notation name must have only letters, "
+			"digits, dots or underscores and end with an '='\n") );
+	    return;
+	}
+    }
+    if( s[-1] == '.' || ((s2=strstr(string, "..")) && s2 < s ) ) {
+	log_error(_("dots in a notation name must be surrounded "
+		    "by other characters\n") );
+	return;
+    }
+    /* we do only support printabe text - therefore we enforce the use
+     * of only printable characters (an empty value is valid) */
+    for( s++; *s ; s++ ) {
+	if( iscntrl(*s) ) {
+	    log_error(_("a notation value must not use "
+			"any control characters\n") );
+	    return;
+	}
+	else if( *s & 0x80 )
+	    highbit = 1;
+    }
+
+    if( highbit ) {  /* must use UTF8 encoding */
+	char *p = native_to_utf8( string );
+	add_to_strlist( &opt.notation_data, p );
+	m_free( p );
+    }
+    else
+	add_to_strlist( &opt.notation_data, string );
 }
 

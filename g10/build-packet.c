@@ -646,6 +646,7 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
       case SIGSUBPKT_PREF_COMPR:
       case SIGSUBPKT_KS_FLAGS:
       case SIGSUBPKT_KEY_EXPIRE:
+      case SIGSUBPKT_NOTATION:
 	       hashed = 1; break;
       default: hashed = 0; break;
     }

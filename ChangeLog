@@ -1,3 +1,7 @@
+Tue May 25 19:50:32 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* configure.in (IS_DEVELOPMENT_VERSION): Fixed detection.
+
 Sun May 23 14:20:22 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* acinclude.m4 (GNUPG_SYS_SYMBOL_UNDERSCORE): assume yes when

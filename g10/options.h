@@ -20,6 +20,7 @@
 #ifndef G10_OPTIONS_H
 #define G10_OPTIONS_H
 
+#include <types.h>
 
 #undef ENABLE_COMMENT_PACKETS  /* don't create comment packets */
 
@@ -73,6 +74,7 @@ struct {
     const char *keyserver_name;
     int no_encrypt_to;
     int interactive;
+    STRLIST notation_data;
 } opt;
 
 

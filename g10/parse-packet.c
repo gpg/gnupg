@@ -745,7 +745,28 @@ dump_sig_subpkt( int hashed, int type, int critical,
 		      (ulong)buffer_to_u32(buffer+4) );
 	break;
       case SIGSUBPKT_NOTATION:
-	p = "notation data";
+	{
+	    fputs("notation: ", stdout );
+	    if( length < 8 )
+		p = "[too short]";
+	    else if( !(*buffer & 0x80) )
+		p = "[not human readable]";
+	    else {
+		const byte *s = buffer;
+		size_t n1, n2;
+
+		n1 = (s[4] << 8) | s[5];
+		n2 = (s[6] << 8) | s[7];
+		s += 8;
+		if( 8+n1+n2 != length )
+		    p = "[error]";
+		else {
+		    print_string( stdout, s, n1, 0 );
+		    putc( '=', stdout );
+		    print_string( stdout, s+n1, n2, 0 );
+		}
+	    }
+	}
 	break;
       case SIGSUBPKT_PREF_HASH:
 	fputs("pref-hash-algos:", stdout );
@@ -806,6 +827,10 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
 	return 0;
       case SIGSUBPKT_ISSUER:/* issuer key ID */
 	if( n < 8 )
+	    break;
+	return 0;
+      case SIGSUBPKT_NOTATION:
+	if( n < 8 ) /* minimum length needed */
 	    break;
 	return 0;
       case SIGSUBPKT_PREF_SYM:

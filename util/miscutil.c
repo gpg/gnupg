@@ -125,7 +125,7 @@ asctimestamp( u32 stamp )
  * Print a string to FP, but filter all control characters out.
  */
 void
-print_string( FILE *fp, byte *p, size_t n, int delim )
+print_string( FILE *fp, const byte *p, size_t n, int delim )
 {
     for( ; n; n--, p++ )
 	if( iscntrl( *p ) || *p == delim ) {

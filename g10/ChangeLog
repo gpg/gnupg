@@ -1,3 +1,16 @@
+Tue May 25 19:50:32 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* sign.c (sign_file): Always use compression algo 1 for signed
+	onyl file becuase we can´ be sure the the verifier supports other
+	algorithms.
+
+	* build-packet.c (build_sig_subpkt): Support for notation data.
+	* sign.c (sign_file,clearsign_file,make_keysig_packet): Ditto.
+	(mk_notation): New.
+	* g10.c (add_notation_data): New and add option -N
+	* mainproc.c (print_notation_data): New.
+	(check_sig_and_print): Print any notation data of the signed text.
+
 Sun May 23 14:20:22 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* pkclist.c (check_signatures_trust): Print a warning and return

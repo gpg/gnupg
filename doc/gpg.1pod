@@ -390,6 +390,13 @@ B<--no-comment>
 B<--comment> I<string>
     Use I<string> as comment string in clear text signatures.
 
+B<--notation-data>, B<-N> I<name>=<value>
+    Put the name value pair into the signature as notation data.
+    I<name> Must consists only of alphanumeric characters, digits
+    or the underscore; the first character muts not be a digit.
+    B<value> May be any printable string; it will encoded in UTF8,
+    so sou should have check that your B<--charset> is set right.
+
 B<--set-filename> I<string>
     Use I<string> as the name of file which is stored in
     messages.

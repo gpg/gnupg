@@ -152,7 +152,7 @@ u32 add_days_to_timestamp( u32 stamp, u16 days );
 const char *strtimevalue( u32 stamp );
 const char *strtimestamp( u32 stamp ); /* GMT */
 const char *asctimestamp( u32 stamp ); /* localized */
-void print_string( FILE *fp, byte *p, size_t n, int delim );
+void print_string( FILE *fp, const byte *p, size_t n, int delim );
 int answer_is_yes( const char *s );
 
 /*-- strgutil.c --*/

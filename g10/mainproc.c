@@ -492,6 +492,35 @@ print_fingerprint( PKT_public_key *pk, PKT_secret_key *sk )
     putchar('\n');
 }
 
+static void
+print_notation_data( PKT_signature *sig )
+{
+    size_t n, n1, n2;
+    const byte *p;
+
+    /* FIXME: we can not handle multiple notaion data packets yet */
+    p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_NOTATION, &n );
+    if( !p )
+	return;
+    if( n < 8 ) {
+	log_info(_("WARNING: invalid notation data found\n"));
+	return;
+    }
+    if( !(*p & 0x80) )
+	return; /* not human readable */
+    n1 = (p[4] << 8) | p[5];
+    n2 = (p[6] << 8) | p[7];
+    p += 8;
+    if( 8+n1+n2 != n ) {
+	log_info(_("WARNING: invalid notation data found\n"));
+	return;
+    }
+    log_info(_("Notation: ") );
+    print_string( log_stream(), p, n1, 0 );
+    putc( '=', log_stream() );
+    print_string( log_stream(), p+n1, n2, 0 );
+    putc( '\n', log_stream() );
+}
 
 /****************
  * List the certificate in a user friendly way
@@ -935,7 +964,8 @@ check_sig_and_print( CTX c, KBNODE node )
 	    fputs("[?]\"\n", log_stream() );
 	}
 	release_kbnode( keyblock );
-
+	if( !rc )
+	    print_notation_data( sig );
 
 	if( !rc && is_status_enabled() ) {
 	    /* print a status response with the fingerprint */
