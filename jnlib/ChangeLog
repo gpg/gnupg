@@ -1,3 +1,8 @@
+2004-06-21  Werner Koch  <wk@g10code.com>
+
+	* logging.c (log_set_file): Do not close an old logstream if it
+	used to be stderr or stdout.
+
 2004-05-05  Werner Koch  <wk@gnupg.org>
 
 	* logging.c (log_set_file): Oops, don't close if LOGSTREAM is NULL.

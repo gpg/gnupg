@@ -129,15 +129,15 @@ fun_writer (void *cookie_arg, const char *buffer, size_t size)
   struct fun_cookie_s *cookie = cookie_arg;
 
   /* Note that we always try to reconnect to the socket but print
-     error messages only the first time an error occured.  IF
+     error messages only the first time an error occured.  If
      RUNNING_DETACHED is set we don't fall back to stderr and even do
-     not print any error messages.  This is needed becuase detached
-     processes often close stderr and my printing to fiel descriptor 2
+     not print any error messages.  This is needed because detached
+     processes often close stderr and by writing to file descriptor 2
      we might send the log message to a file not intended for logging
      (e.g. a pipe or network connection). */
   if (cookie->fd == -1)
     {
-      /* Note yet open or meanwhile closed due to an error. */
+      /* Not yet open or meanwhile closed due to an error. */
       struct sockaddr_un addr;
       size_t addrlen;
 
@@ -256,13 +256,14 @@ log_set_file (const char *name)
 #endif /* Neither fopencookie nor funopen. */
 
       /* We always need to print the prefix and the pid, so that the
-         server reading the socket can do something meanigful. */
+         server reading the socket can do something meaningful. */
       force_prefixes = 1;
       /* On success close the old logstream right now, so that we are
          really sure it has been closed. */
       if (fp && logstream)
         {
-          fclose (logstream);
+          if (logstream != stderr && logstream != stdout)
+            fclose (logstream);
           logstream = NULL;
         }
     }
