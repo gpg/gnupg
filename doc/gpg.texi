@@ -1144,11 +1144,11 @@ updated, it automatically runs the ---check-trustdb command internally.
 This may be a time consuming process. ---no-auto-check-trustdb
 disables this option.
 
-@item ---throw-keyid
-Do not put the keyid into encrypted packets. This option
-hides the receiver of the message and is a countermeasure
-against traffic analysis. It may slow down the decryption
-process because all available secret keys are tried.
+@item ---throw-keyids
+Do not put the recipient keyid into encrypted packets. This option
+hides the receiver of the message and is a countermeasure against
+traffic analysis. It may slow down the decryption process because all
+available secret keys are tried.
 
 @item ---not-dash-escaped
 This option changes the behavior of cleartext signatures
@@ -1238,7 +1238,7 @@ Set up all options to be as PGP 6 compliant as possible. This
 restricts you to the ciphers IDEA (if the IDEA plugin is installed),
 3DES, and CAST5, the hashes MD5, SHA1 and RIPEMD160, and the
 compression algorithms none and ZIP. This also disables
----throw-keyid, and making signatures with signing subkeys as PGP 6
+---throw-keyids, and making signatures with signing subkeys as PGP 6
 does not understand signatures made by signing subkeys.
 
 This option implies `---disable-mdc --no-sk-comment --escape-from-lines
@@ -1253,9 +1253,8 @@ TWOFISH.
 @item ---pgp8
 Set up all options to be as PGP 8 compliant as possible. PGP 8 is a
 lot closer to the OpenPGP standard than previous versions of PGP, so
-all this does is disable ---throw-keyid and set --escape-from-lines.
-The allowed algorithms list is the same as ---pgp7 with the addition of
-the SHA-256 digest algorithm.
+all this does is disable ---throw-keyids and set --escape-from-lines.
+All algorithms are allowed except for the SHA384 and SHA512 digests.
 
 @end table
 
@@ -1477,10 +1476,11 @@ Don't insert new keys into the keyrings while doing an import.
 This is an obsolete option and is not used anywhere.
 
 @item ---try-all-secrets
-Don't look at the key ID as stored in the message but try all secret keys in
-turn to find the right decryption key. This option forces the behaviour as
-used by anonymous recipients (created by using ---throw-keyid) and might come
-handy in case where an encrypted message contains a bogus key ID.
+Don't look at the key ID as stored in the message but try all secret
+keys in turn to find the right decryption key. This option forces the
+behaviour as used by anonymous recipients (created by using
+---throw-keyids) and might come handy in case where an encrypted
+message contains a bogus key ID.
 
 @item ---enable-special-filenames
 This options enables a mode in which filenames of the form
@@ -1707,13 +1707,13 @@ Keep in mind that, if this program is used over a network (telnet), it
 is *very* easy to spy out your passphrase!
 
 If you are going to verify detached signatures, make sure that the
-program knows about it; either be giving both filenames on the
-command line or using @samp{-} to specify stdin.
+program knows about it; either give both filenames on the command line
+or use @samp{-} to specify stdin.
 
 @majorheading INTEROPERABILITY WITH OTHER OPENPGP PROGRAMS
 GnuPG tries to be a very flexible implementation of the OpenPGP
-standard. In particular, GnuPG implements many of the "optional"
-parts of the standard, such as the RIPEMD/160 hash, and the ZLIB
+standard. In particular, GnuPG implements many of the optional parts
+of the standard, such as the SHA-512 hash, and the ZLIB and BZIP2
 compression algorithms. It is important to be aware that not all
 OpenPGP programs implement these optional algorithms and that by
 forcing their use via the ---cipher-algo, --digest-algo,
@@ -1721,14 +1721,15 @@ forcing their use via the ---cipher-algo, --digest-algo,
 possible to create a perfectly valid OpenPGP message, but one that
 cannot be read by the intended recipient.
 
-For example, as of this writing, no (unhacked) version of PGP supports
-the BLOWFISH cipher algorithm. If you use it, no PGP user will be
-able to decrypt your message. The same thing applies to the ZLIB
-compression algorithm. By default, GnuPG uses the standard OpenPGP
-preferences system that will always do the right thing and create
-messages that are usable by all recipients, regardless of which
-OpenPGP program they use. Only override this safe default if you know
-what you are doing.
+There are dozens of variations of OpenPGP programs available, and each
+supports a slightly different subset of these optional algorithms.
+For example, until recently, no (unhacked) version of PGP supported
+the BLOWFISH cipher algorithm. A message using BLOWFISH simply could
+not be read by a PGP user. By default, GnuPG uses the standard
+OpenPGP preferences system that will always do the right thing and
+create messages that are usable by all recipients, regardless of which
+OpenPGP program they use. Only override this safe default if you
+really know what you are doing.
 
 If you absolutely must override the safe default, or if the
 preferences on a given key are invalid for some reason, you are far

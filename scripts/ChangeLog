@@ -1,3 +1,7 @@
+2004-08-13  Werner Koch  <wk@g10code.de>
+
+	* config.sub, config.guess: Updated.
+
 2004-08-09  Werner Koch  <wk@g10code.de>
 
 	* autogen.sh: Run aclocal with -I m4.
