@@ -1,4 +1,4 @@
-# Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -43,7 +43,7 @@ EXTRA_DIST = defs.inc $(TESTS) $(TEST_FILES) \
 	     mkdemodirs signdemokey
 CLEANFILES = prepared.stamp x y yy z out err  $(DATA_FILES) \
 	     plain-1 plain-2 plain-3 trustdb.gpg *.lock .\#lk* \
-	     *.test.log gpg_dearmor \
+	     *.test.log gpg_dearmor gpg.conf \
 	     pubring.gpg secring.gpg pubring.pkr secring.skr
 DISTCLEANFILES = pubring.gpg~ random_seed
 

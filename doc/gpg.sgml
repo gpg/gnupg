@@ -1266,7 +1266,7 @@ Same as --keyring but for the secret keyrings.
 
 <varlistentry>
 <term>--primary-keyring &ParmFile;</term>
-<listitem<para>
+<listitem><para>
 Designate &ParmFile; as the primary public keyring.  This means that
 newly imported keys (via --import or keyserver --recv-from) will go to
 this keyring.
