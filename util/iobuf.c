@@ -756,7 +756,7 @@ iobuf_pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 	return rc;
     }
     /* and tell the filter to free it self */
-    if( (rc = b->filter(b->filter_ov, IOBUFCTRL_FREE, b->chain,
+    if( b->filter && (rc = b->filter(b->filter_ov, IOBUFCTRL_FREE, b->chain,
 		       NULL, &dummy_len)) ) {
 	log_error("IOBUFCTRL_FREE failed: %s\n", g10_errstr(rc) );
 	return rc;

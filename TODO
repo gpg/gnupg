@@ -14,8 +14,6 @@
       a next pointer ro more records - check wehther the reuse code really
       works. Maybe this is the reason for the "Hmmm public key lost"
 
-    * Update the keyring at ftp.guug.de
-
     * check support for mpi/powerpc (see Brian's mail)
 
     * use zlib 1.1.13 to avoid a bug with 13 bit windows

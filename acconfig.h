@@ -65,10 +65,13 @@
 #undef HAVE_BROKEN_MLOCK
 
 /* One of the following macros is defined to select which of
- * the cipher/rand-xxxx.c should be used */
-#undef USE_RAND_DUMMY
-#undef USE_RAND_UNIX
-#undef USE_RAND_W32
+ * the cipher/rndxxxx.c is linked into the program */
+#undef USE_RNDLINUX
+#undef USE_RNDUNIX
+#undef USE_RNDOS2
+#undef USE_RNDATARI
+#undef USE_RNDW32
+#undef USE_RNDMVS
 /* defined if we have a /dev/random and /dev/urandom */
 #undef HAVE_DEV_RANDOM
 /* and the real names of the random devices */

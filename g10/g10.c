@@ -25,7 +25,7 @@
 #include <string.h>
 #include <unistd.h>
 
-/* #define MAINTAINER_OPTIONS */
+#define MAINTAINER_OPTIONS
 
 #include "packet.h"
 #include "iobuf.h"
@@ -262,7 +262,6 @@ static ARGPARSE_OPTS opts[] = {
 
   /* hidden options */
   #ifdef IS_G10MAINT
-    { aTest, "test"      , 0, "@" },
     { aExportOwnerTrust, "list-ownertrust",0 , "@"},  /* alias */
     { aListTrustDB, "list-trustdb",0 , "@"},
     { aListTrustPath, "list-trust-path",0, "@"},
@@ -652,7 +651,6 @@ main( int argc, char **argv )
 	#else
 	  #ifdef MAINTAINER_OPTIONS
 	    case aPrimegen: set_cmd( &cmd, aPrimegen); break;
-	    case aTest: set_cmd( &cmd, aTest); break;
 	    case aGenRandom: set_cmd( &cmd, aGenRandom); break;
 	  #endif
 	  case aPrintMD: set_cmd( &cmd, aPrintMD); break;
@@ -1148,15 +1146,20 @@ main( int argc, char **argv )
 	if( argc < 1 || argc > 2 )
 	    wrong_args("--gen-random level [hex]");
 	{
+	    int c;
 	    int level = atoi(*argv);
 	    for(;;) {
-		byte *p = get_random_bits( 8, level, 0);
-		if( argc == 1 ) {
+		byte *p;
+		if( argc == 2 ) {
+		    p = get_random_bits( 8, level, 0);
 		    printf("%02x", *p );
 		    fflush(stdout);
 		}
-		else
-		    putchar(c&0xff);
+		else {
+		    p = get_random_bits( 800, level, 0);
+		    for(c=0; c < 100; c++ )
+			putchar( p[c] );
+		}
 		m_free(p);
 	    }
 	}
@@ -1191,10 +1194,6 @@ main( int argc, char **argv )
 		print_mds(*argv,0);
 	}
 	break;
-
-     #ifdef MAINTAINER_OPTIONS
-      case aTest: do_test( argc? atoi(*argv): 1 ); break;
-      #endif /* MAINTAINER OPTIONS */
 
       case aListTrustDB:
 	if( !argc )
@@ -1418,12 +1417,5 @@ print_mds( const char *fname, int algo )
 
 
 
-#ifdef MAINTAINER_OPTIONS
-static void
-do_test(int times)
-{
-    m_check(NULL);
-}
-#endif /* MAINTAINER OPTIONS */
 #endif /* IS_G10MAINT */
 

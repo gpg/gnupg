@@ -1,3 +1,7 @@
+Wed Nov 25 11:30:07 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* iobuf.c (iobuf_pop_filter): Fixed sigsegv after error.
+
 Thu Nov 19 07:09:55 1998  Werner Koch  <werner.koch@guug.de>
 
 	* miscutil.c (strtimevalue): New.

@@ -61,7 +61,12 @@ chdir () {
 
 
 have_hash_algo () {
-    ../g10/gpgm --homedir .  --version | grep "Hash:.*$1" >/dev/null
+  if  ../g10/gpgm --homedir .  --version | grep "Hash:.*$1" >/dev/null
+  then
+	true
+  else
+	false
+  fi
 }
 
 set -e

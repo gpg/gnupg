@@ -96,16 +96,15 @@ case "${target}" in
         CPP="i386--mingw32-gcc -E"
         RANLIB="i386--mingw32-ranlib"
         ac_cv_have_dev_random=no
-        AC_DEFINE(USE_RAND_W32)
+        AC_DEFINE(USE_RNDW32)
         ;;
     *-*-hpux*)
         if test -z "$GCC" ; then
             CFLAGS="$CFLAGS -Ae -D_HPUX_SOURCE"
         fi
-        AC_DEFINE(USE_RAND_UNIX)
+        AC_DEFINE(USE_RNDUNIX)
         ;;
     *)
-        AC_DEFINE(USE_RAND_UNIX)
        ;;
 esac
 
@@ -227,6 +226,7 @@ AC_CACHE_CHECK(for random device, ac_cv_have_dev_random,
   ac_cv_have_dev_random=yes; else ac_cv_have_dev_random=no; fi])
 if test "$ac_cv_have_dev_random" = yes; then
     AC_DEFINE(HAVE_DEV_RANDOM)
+    AC_DEFINE(USE_RNDLINUX)
 fi
 else
     AC_MSG_CHECKING(for random device)

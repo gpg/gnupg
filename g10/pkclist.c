@@ -291,7 +291,7 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 
       case TRUST_MARGINAL:
 	log_info(
-       _("%08lX: It is not sure taht this key really belongs to the owner\n"
+       _("%08lX: It is not sure that this key really belongs to the owner\n"
 	 "but it is accepted anyway\n"), (ulong)keyid_from_pk( pk, NULL) );
 	return 1; /* yes */
 

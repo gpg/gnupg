@@ -1,51 +1,80 @@
+# Glossary for GnuPG german translation
+# Copyright (C) 1998 Free Software Foundation, Inc.
+# Walter Koch <walterk@dip.de>, 1998.
+# This is just a textfile for your information.
+# It will _not_ be read or processed automatically by any program
 
+........		Authentisierung
 algorithm		Verfahren
 anonymous		ungenannter
 armor			ASCII-Hülle
+bad [signature] 	falsch[e] Unterschrift
 bug			Wanze (Programmfehler)
 certificate		Zertifikat
+character set		Zeichensatz
 checksum		Prüfsumme
 cipher algorithm	Verschlüsselungsverfahren
-compress algorithm	Komprimierverfahren
+clearsig header 	Klartextsignatur-Einleitung
+compress algorithm	Komprimierverfahren *
+core dump		core-dump
 corrupted		beschädigter
+dash escaped		mit Bindestrich \"escapte\"
+decryption		Enschlüsselung
+DEK			Session Schlüssel \"data encryption key\"  (wk)
+delete			entfernen
 digest algorithm	Hashmethode
+encrypted		verschlüsselte
 expire date		Verfallsdatum
+failed			fehlgeschlagen
+fingerprint		Fingerabdruck
+for-your-eyes-only	Vertraulichkeit (\"for-your-eyes-only\")
 generated		erzeugter
-Good certificate	Korrektes Zertifikat
+good certificate	Korrektes Zertifikat
+handle			benutzt
 hint			Tip
 key-ID			Schlüssel-ID
-keyring 		Schlüsselring -> Schlüsselbund
-malformed		Ungünstig aufgebaute
+keyring 		Schlüsselbund
+maintenance utility	Wartungs-Hilfsprogramm
+malformed		ungünstig aufgebaute
 message 		Botschaft
+mode			Modus, Methode	 *
 note			Hinweis
+okay			in Ordnung
+Ooops			Huch
+original		Ursprünglicher
 ownertrust		\"Owner trust\"
 packet			Paket
 packet type		Pakettyp
 passphrase		\"Passphrase\"
-preferences		bevorzugt
+preference items	????
+preferences		Einstellungen
+preferred		bevorzugt
 primary keys		Hauptschlüssel
-protection algorithm	Schutzmethode
-pubkey algorithm	Public-Key Verfahren	 (*1)
+protection algorithm	Schutzverfahren
+pubkey algorithm	Public-Key Verfahren	 (*)
 public key		öffentlicher Schüssel
-........		Authentisierung
+public key algorithm	Public-Key Verfahren
+radix64 		radix64
 retry			????
 revo... 		Widerruf
 secondary key		Zweitschlüssel
 secret key		geheimer Schlüssel
-self-signature		Eigensignatur
+self-signature		Eigenbeglaubigung
 sender			Absender
-sign user id		User-ID beglaubigen
+sign user id		User-ID beglaubigen   *
+signature (files)	Unterschrift	      *
+signature (keys)	Beglaubigung	      *
+simple S2K mode 	????
+terminal charset	Terminalzeichensatz
 throw			verwerfe
 Timestamp conflict	Zeitangaben differieren
 Trust-DB		'Trust'-Datenbank
 trying			Versuch
-update
+update			Ändern, Änderung
 user ID 		User-ID
 user IDs		User-IDs
+username		Username
+warning 		Warnung
 weak key		unsicherer Schlüssel
 
-(*1) Uneinheitlich verwendet
---
-Walter Koch			    Hochdahl am Neandertal
-walterk@mail.dip.de		    ham:dg9ep@db0iz
-http://home.pages.de/~dg9ep/	    qrv:db0iz-9
+ (*) Uneinheitlich verwendet

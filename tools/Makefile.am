@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES = -I$(top_srcdir)/include
+INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 needed_libs = ../cipher/libcipher.a  ../util/libutil.a \
 	      ../mpi/libmpi.a ../util/libutil.a @INTLLIBS@
 

@@ -1,3 +1,7 @@
+Wed Nov 25 12:38:29 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* configure.in (USE_RNDLINUX): New.
+
 Fri Nov 20 19:34:57 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* VERSION: Released 0.4.4

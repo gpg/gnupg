@@ -299,3 +299,18 @@
      above key and user ID, if it is a signature which is direct
      on a key, the user ID part is empty (..//..).
 
+
+  Q: How do I sign a patch file?
+  A: Use "gpg --clearsign --not-dash-escaped ...".
+     The problem with --clearsign is
+     that all lines starting with a dash are quoted with "- "; obviously
+     diff produces many of lines starting with a dash and these are
+     then quoted and that is not good for patch ;-).  In order to use
+     a patch file without removing the cleartext signature, the special
+     option --not-dash-escaped may be used to suppress generation of
+     these escape sequences.  You should not mail such a patch because
+     spaces and line endings are also subject to the signature and a mailer
+     may not preserve these.  If you want to mail a file you can simply sign
+     it using your MUA.
+
+
