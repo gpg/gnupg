@@ -1,3 +1,7 @@
+Sun Jan 17 11:04:33 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* strgutil.c (trim_trailing_ws): New.
+
 Sat Jan 16 12:03:27 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* http.c (connect_server): Fixed stupid bug.

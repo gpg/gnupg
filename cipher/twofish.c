@@ -19,14 +19,14 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h> /* for assert() */
 #include <string.h> /* for memcmp() */
 
 #include "types.h"  /* for byte and u32 typedefs */
-#include "util.h"   /* for log_fatal() */
+#include "errors.h"
+
 
 /* Prototype for the self-test function. */
-static void selftest(void);
+static const char *selftest(void);
 
 /* Macros used by the info function. */
 #define FNCCAST_SETKEY(f)  ((int(*)(void*, byte*, unsigned))(f))
@@ -456,17 +456,23 @@ twofish_setkey (TWOFISH_context *ctx, const byte *key, const unsigned keylen)
    /* Temporary for CALC_S. */
    byte tmp;
 
-   /* Flag for self-test. */
+   /* Flags for self-test. */
    static int initialized = 0;
+   static const char *selftest_failed=0;
 
    /* Check key length. */
-   assert (keylen == 16);
+   if( keylen != 16 )
+       return G10ERR_WRONG_KEYLEN;
 
    /* Do self-test if necessary. */
    if (!initialized) {
       initialized = 1;
-      selftest ();
+      selftest_failed = selftest ();
+      if( selftest_failed )
+	fprintf(stderr, "%s\n", selftest_failed );
    }
+   if( selftest_failed )
+      return G10ERR_SELFTEST_FAILED;
 
    /* Compute the S vector.  The magic numbers are the entries of the RS
     * matrix, preprocessed through poly_to_exp.  The numbers in the comments
@@ -709,7 +715,7 @@ twofish_decrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
 
 /* Test a single encryption and decryption, as a sanity check. */
 
-static void
+static const char*
 selftest (void)
 {
    TWOFISH_context ctx; /* Expanded key. */
@@ -736,10 +742,11 @@ selftest (void)
    twofish_setkey (&ctx, key, sizeof(key));
    twofish_encrypt (&ctx, scratch, plaintext);
    if (memcmp (scratch, ciphertext, sizeof (ciphertext)))
-     log_fatal ("Twofish test encryption failed\n");
+     return "Twofish test encryption failed.";
    twofish_decrypt (&ctx, scratch, scratch);
    if (memcmp (scratch, plaintext, sizeof (plaintext)))
-     log_fatal ("Twofish test decryption failed\n");
+     return "Twofish test decryption failed.";
+   return NULL;
 }
 
 /* More complete test program.	This does a thousand encryptions and

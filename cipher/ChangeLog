@@ -1,3 +1,13 @@
+Sun Jan 17 11:04:33 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* des.c (is_weak_key): Replace system memcmp due to bugs
+	in SunOS's memcmp.
+	(des_get_info): Return error on failed selftest.
+	* twofish.c (twofish_setkey): Return error on failed selftest or
+	invalid keylength.
+	* cast5.c (cast_setkey): Ditto.
+	* blowfish.c (bf_setkey): Return error on failed selftest.
+
 Tue Jan 12 11:17:18 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* random.c (random_is_faked): New.

@@ -191,6 +191,34 @@ trim_spaces( char *str )
 }
 
 
+
+/****************
+ * remove trailing white spaces and return the length of the buffer
+ */
+unsigned
+trim_trailing_ws( byte *line, unsigned len )
+{
+    byte *p, *mark;
+    unsigned n;
+
+    for(mark=NULL, p=line, n=0; n < len; n++, p++ ) {
+	if( strchr(" \t\r\n", *p ) ) {
+	    if( !mark )
+		mark = p;
+	}
+	else
+	    mark = NULL;
+    }
+
+    if( mark ) {
+	*mark = 0;
+	return mark - line;
+    }
+    return len;
+}
+
+
+
 int
 string_count_chr( const char *string, int c )
 {

@@ -113,11 +113,29 @@
 
 
 #include <config.h>
+#include <stdio.h>
 #include <string.h>	       /* memcpy, memcmp */
-#include <assert.h>
 #include "types.h"             /* for byte and u32 typedefs */
-#include "util.h"              /* for log_fatal() */
+#include "errors.h"
 #include "des.h"
+
+#if defined(__GNUC__) && defined(__GNU_LIBRARY__)
+#define working_memcmp memcmp
+#else
+/*
+ * According to the SunOS man page, memcmp returns indeterminate sign
+ * depending on whether characters are signed or not.
+ */
+int
+working_memcmp( const char *a, const char *b, size_t n )
+{
+    for( ; n; n--, a++, b++ )
+	if( *a != *b )
+	    return (int)(*(byte*)a) - (int)(*(byte*)b);
+    return 0;
+}
+#endif
+
 
 
 /* Some defines/checks to support standalone modules */
@@ -127,19 +145,6 @@
 #elif CIPHER_ALGO_3DES != 2
   #error CIPHER_ALGO_3DES is defined to a wrong value.
 #endif
-
-#ifndef G10ERR_WEAK_KEY
-  #define G10ERR_WEAK_KEY 43
-#elif G10ERR_WEAK_KEY != 43
-  #error G10ERR_WEAK_KEY is defined to a wrong value.
-#endif
-
-#ifndef G10ERR_WRONG_KEYLEN
-  #define G10ERR_WRONG_KEYLEN 44
-#elif G10ERR_WRONG_KEYLEN != 44
-  #error G10ERR_WRONG_KEYLEN is defined to a wrong value.
-#endif
-
 
 
 /* Macros used by the info function. */
@@ -167,6 +172,7 @@ typedef struct _tripledes_ctx
   }
 tripledes_ctx[1];
 
+static const char *selftest_failed;
 
 static void des_key_schedule (const byte *, u32 *);
 static int des_setkey (struct _des_ctx *, const byte *);
@@ -542,6 +548,9 @@ des_setkey (struct _des_ctx *ctx, const byte * key)
 {
   int i;
 
+  if( selftest_failed )
+    return G10ERR_SELFTEST_FAILED;
+
   des_key_schedule (key, ctx->encrypt_subkeys);
 
   for(i=0; i<32; i+=2)
@@ -706,6 +715,8 @@ tripledes_ecb_crypt (struct _tripledes_ctx *ctx, const byte * from, byte * to, i
 
 
 
+
+
 /*
  * Check whether the 8 byte key is weak.
  * Dose not check the parity bits of the key but simple ignore them.
@@ -727,7 +738,7 @@ is_weak_key ( const byte *key )
     {
       middle = (left + right) / 2;
 
-      if ( !(cmp_result=memcmp(work, weak_keys[middle], 8)) )
+      if ( !(cmp_result=working_memcmp(work, weak_keys[middle], 8)) )
 	  return -1;
 
       if ( cmp_result > 0 )
@@ -836,6 +847,8 @@ selftest (void)
 static int
 do_tripledes_setkey ( struct _tripledes_ctx *ctx, byte *key, unsigned keylen )
 {
+    if( selftest_failed )
+	return G10ERR_SELFTEST_FAILED;
     if( keylen != 24 )
 	return G10ERR_WRONG_KEYLEN;
 
@@ -879,9 +892,12 @@ des_get_info( int algo, size_t *keylen,
 
     if( !did_selftest ) {
 	const char *s = selftest();
-	if( s )
-	    log_fatal("selftest failed: %s\n", s );
 	did_selftest = 1;
+	if( s ) {
+	    fprintf(stderr,"%s\n", s );
+	    selftest_failed = s;
+	    return NULL;
+	}
     }
 
 

@@ -1,3 +1,7 @@
+Sun Jan 17 11:04:33 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* autogen.sh: Now checks for installed gettext
+
 Sat Jan 16 09:27:30 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* config.guess (m68k-atari-mint): New.

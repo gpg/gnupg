@@ -80,10 +80,11 @@ typedef struct {
 
 
 typedef struct {
-    int eof;
-    size_t idx;
-    size_t len;
-    byte buf[256];
+    byte *buffer;	    /* malloced buffer */
+    unsigned buffer_size;   /* and size of this buffer */
+    unsigned buffer_len;    /* used length of the buffer */
+    unsigned buffer_pos;    /* read position */
+    int truncated;	    /* number of truncated lines */
 } text_filter_context_t;
 
 

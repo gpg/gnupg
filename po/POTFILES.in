@@ -35,6 +35,7 @@ g10/hkp.c
 g10/seckey-cert.c
 g10/sig-check.c
 g10/sign.c
+g10/textfilter.c
 g10/tdbio.c
 g10/trustdb.c
 g10/verify.c

@@ -349,8 +349,6 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	     * data, it is not possible to know the used length
 	     * without a double read of the file - to avoid that
 	     * we simple use partial length packets.
-	     * FIXME: We have to do the double read when opt.rfc1991
-	     *	      is active.
 	     */
 	    if( opt.textmode && !outfile )
 		filesize = 0;

@@ -39,9 +39,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
-#include "util.h"
 #include "types.h"
+#include "errors.h"
 #include "cast5.h"
 
 
@@ -455,7 +454,7 @@ decrypt_block(	CAST5_context *c, byte *outbuf, byte *inbuf )
 
 
 
-static void
+static const char*
 selftest()
 {
     CAST5_context c;
@@ -468,10 +467,10 @@ selftest()
     cast_setkey( &c, key, 16 );
     encrypt_block( &c, buffer, plain );
     if( memcmp( buffer, cipher, 8 ) )
-	log_error("wrong cast5-128 encryption\n");
+	return "1";
     decrypt_block( &c, buffer, buffer );
     if( memcmp( buffer, plain, 8 ) )
-	log_bug("cast5-128 failed\n");
+	return "2";
 
   #if 0 /* full maintenance test */
     {
@@ -494,10 +493,11 @@ selftest()
 	    encrypt_block( &c, b0+8, b0+8 );
 	}
 	if( memcmp( a0, a1, 16 ) || memcmp( b0, b1, 16 ) )
-	    log_bug("cast5-128 maintenance test failed\n");
+	    return "3";
 
     }
   #endif
+    return NULL;
 }
 
 
@@ -553,6 +553,7 @@ static int
 cast_setkey( CAST5_context *c, byte *key, unsigned keylen )
 {
   static int initialized;
+  static const char* selftest_failed;
     int i;
     u32 x[4];
     u32 z[4];
@@ -560,10 +561,16 @@ cast_setkey( CAST5_context *c, byte *key, unsigned keylen )
 
     if( !initialized ) {
 	initialized = 1;
-	selftest();
+	selftest_failed = selftest();
+	if( selftest_failed )
+	    fprintf(stderr,"CAST5 selftest failed (%s).\n", selftest_failed );
     }
+    if( selftest_failed )
+	return G10ERR_SELFTEST_FAILED;
 
-    assert(keylen==16);
+    if( keylen != 16 )
+	return G10ERR_WRONG_KEYLEN;
+
     x[0] = key[0]  << 24 | key[1]  << 16 | key[2]  << 8 | key[3];
     x[1] = key[4]  << 24 | key[5]  << 16 | key[6]  << 8 | key[7];
     x[2] = key[8]  << 24 | key[9]  << 16 | key[10] << 8 | key[11];

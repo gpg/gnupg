@@ -256,31 +256,6 @@ parse_hash_header( const char *line )
 
 
 
-
-static unsigned
-trim_trailing_spaces( byte *line, unsigned len )
-{
-    byte *p, *mark;
-    unsigned n;
-
-    for(mark=NULL, p=line, n=0; n < len; n++, p++ ) {
-	if( strchr(" \t\r\n", *p ) ) {
-	    if( !mark )
-		mark = p;
-	}
-	else
-	    mark = NULL;
-    }
-
-    if( mark ) {
-	*mark = 0;
-	return mark - line;
-    }
-    return len;
-}
-
-
-
 /****************
  * Check whether this is a armor line.
  * returns: -1 if it is not a armor header or the index number of the
@@ -339,7 +314,7 @@ parse_header_line( armor_filter_context_t *afx, byte *line, unsigned len )
 
     if( *line == '\n' || ( len && (*line == '\r' && line[1]=='\n') ) )
 	return 0; /* empty line */
-    len = trim_trailing_spaces( line, len );
+    len = trim_trailing_ws( line, len );
     p = strchr( line, ':');
     if( !p || !p[1] ) {
 	log_error(_("invalid armor header: "));
@@ -521,8 +496,7 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	if( !maxlen )
 	    afx->truncated++;
 	if( !afx->not_dash_escaped )
-	    afx->buffer_len = trim_trailing_spaces( afx->buffer,
-						    afx->buffer_len );
+	    afx->buffer_len = trim_trailing_ws( afx->buffer, afx->buffer_len );
 	p = afx->buffer;
 	n = afx->buffer_len;
 

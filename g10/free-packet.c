@@ -444,6 +444,11 @@ cmp_signatures( PKT_signature *a, PKT_signature *b )
     return 0;
 }
 
+
+
+/****************
+ * Returns: true if the user ids do not match
+ */
 int
 cmp_user_ids( PKT_user_id *a, PKT_user_id *b )
 {

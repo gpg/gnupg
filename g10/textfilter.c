@@ -30,72 +30,10 @@
 #include "memory.h"
 #include "util.h"
 #include "filter.h"
+#include "i18n.h"
 
 
-
-
-static int
-read_line( byte *buf, size_t *r_buflen, IOBUF a )
-{
-    int c;
-    int rc = 0;
-    byte *p;
-    size_t buflen;
-    int no_lf=0;
-    size_t n;
-
-    buflen = *r_buflen;
-    assert(buflen >= 20 );
-    buflen -= 3; /* leave some room for CR,LF and one extra */
-
-    for(c=0, n=0; n < buflen && (c=iobuf_get(a)) != -1 && c != '\n'; )
-	buf[n++] = c;
-    buf[n] = 0;
-    if( c == -1 ) {
-	rc = -1;
-	if( !n || buf[n-1] != '\n' )
-	    no_lf = 1;
-    }
-    else if( c != '\n' ) {
-	IOBUF b = iobuf_temp();
-	while( (c=iobuf_get(a)) != -1 && c != '\n' ) {
-	    iobuf_put(b,c);
-	    if( c != ' ' && c != '\t' && c != '\r' )
-		break;
-	}
-	if( c == '\n' ) { /* okay we can skip the rest of the line */
-	    iobuf_close(b);
-	}
-	else {
-	    iobuf_unget_and_close_temp(a,b);
-	    no_lf = 1;
-	}
-    }
-
-    if( !no_lf ) {
-	/* append CR,LF after removing trailing wspaces */
-	for(p=buf+n-1; n; n--, p-- ) {
-	    assert( *p != '\n' );
-	    if( *p != ' ' && *p != '\t' && *p != '\r' ) {
-		p[1] = '\r';
-		p[2] = '\n';
-		n += 2;
-		break;
-	    }
-	}
-	if( !n ) {
-	    buf[0] = '\r';
-	    buf[1] = '\n';
-	    n = 2;
-	}
-    }
-
-
-    *r_buflen = n;
-    return rc;
-}
-
-
+#define MAX_LINELEN 20000
 
 
 /****************
@@ -109,33 +47,52 @@ text_filter( void *opaque, int control,
     size_t size = *ret_len;
     text_filter_context_t *tfx = opaque;
     int rc=0;
-    size_t len, n, nn;
 
     if( control == IOBUFCTRL_UNDERFLOW ) {
-	assert( size > 30 );
-	len = 0;
+	size_t len = 0;
+	unsigned maxlen;
+
+	assert( size > 10 );
+	size -= 2;  /* reserve 2 bytes to append CR,LF */
 	while( !rc && len < size ) {
-	    if( tfx->idx < tfx->len ) { /* flush the last buffer */
-		n = tfx->len;
-		for(nn=tfx->idx; len < size && nn < n ; nn++ )
-		    buf[len++] = tfx->buf[nn];
-		tfx->idx = nn;
+	    int lf_seen;
+
+	    while( len < size && tfx->buffer_pos < tfx->buffer_len )
+		buf[len++] = tfx->buffer[tfx->buffer_pos++];
+	    if( len >= size )
 		continue;
+
+	    /* read the next line */
+	    maxlen = MAX_LINELEN;
+	    tfx->buffer_pos = 0;
+	    tfx->buffer_len = iobuf_read_line( a, &tfx->buffer,
+					       &tfx->buffer_size, &maxlen );
+	    if( !maxlen )
+		tfx->truncated++;
+	    if( !tfx->buffer_len ) {
+		if( !len )
+		    rc = -1; /* eof */
+		break;
 	    }
-	    if( tfx->eof ) {
-		rc = -1;
-		continue;
+	    lf_seen = tfx->buffer[tfx->buffer_len-1] == '\n';
+	    tfx->buffer_len = trim_trailing_ws( tfx->buffer, tfx->buffer_len );
+	    if( lf_seen ) {
+		tfx->buffer[tfx->buffer_len++] = '\r';
+		tfx->buffer[tfx->buffer_len++] = '\n';
 	    }
-	    n = DIM(tfx->buf);
-	    tfx->idx = 0;
-	    if( read_line( tfx->buf, &n, a ) == -1 )
-		tfx->eof = 1;
-	    tfx->len = n;
 	}
+
 	*ret_len = len;
     }
     else if( control == IOBUFCTRL_DESC )
 	*(char**)buf = "text_filter";
+    else if( control == IOBUFCTRL_FREE ) {
+	if( tfx->truncated )
+	    log_error(_("can't handle text lines longer than %d characters\n"),
+			MAX_LINELEN );
+	m_free( tfx->buffer );
+	tfx->buffer = NULL;
+    }
     return rc;
 }
 

@@ -34,9 +34,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "util.h"
 #include "types.h"
+#include "errors.h"
 #include "blowfish.h"
+
+
 
 #define CIPHER_ALGO_BLOWFISH	 4  /* blowfish 128 bit key */
 #define CIPHER_ALGO_BLOWFISH160 42  /* blowfish 160 bit key (not in OpenPGP)*/
@@ -451,7 +453,7 @@ decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 }
 
 
-static void
+static const char*
 selftest()
 {
     BLOWFISH_context c;
@@ -464,18 +466,19 @@ selftest()
     bf_setkey( &c, "abcdefghijklmnopqrstuvwxyz", 26 );
     encrypt_block( &c, buffer, plain );
     if( memcmp( buffer, "\x32\x4E\xD0\xFE\xF4\x13\xA2\x03", 8 ) )
-	log_error("wrong blowfish encryption\n");
+	return "Blowfish selftest failed (1).";
     decrypt_block( &c, buffer, buffer );
     if( memcmp( buffer, plain, 8 ) )
-	log_bug("blowfish failed\n");
+	return "Blowfish selftest failed (2).";
 
     bf_setkey( &c, key3, 8 );
     encrypt_block( &c, buffer, plain3 );
     if( memcmp( buffer, cipher3, 8 ) )
-	log_error("wrong blowfish encryption (3)\n");
+	return "Blowfish selftest failed (3).";
     decrypt_block( &c, buffer, buffer );
     if( memcmp( buffer, plain3, 8 ) )
-	log_bug("blowfish failed (3)\n");
+	return "Blowfish selftest failed (4).";
+    return NULL;
 }
 
 
@@ -486,11 +489,16 @@ bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
     int i, j;
     u32 data, datal, datar;
     static int initialized;
+    static const char *selftest_failed;
 
     if( !initialized ) {
 	initialized = 1;
-	selftest();
+	selftest_failed = selftest();
+	if( selftest_failed )
+	    fprintf(stderr,"%s\n", selftest_failed );
     }
+    if( selftest_failed )
+	return G10ERR_SELFTEST_FAILED;
 
     for(i=0; i < BLOWFISH_ROUNDS+2; i++ )
 	c->p[i] = ps[i];

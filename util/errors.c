@@ -98,6 +98,7 @@ g10_errstr( int err )
       X(BAD_URI        ,N_("bad URI"))
       X(INVALID_URI    ,N_("unsupported URI"))
       X(NETWORK        ,N_("network error"))
+      X(SELFTEST_FAILED,"selftest failed")
       default: p = buf; sprintf(buf, "g10err=%d", err); break;
     }
   #undef X

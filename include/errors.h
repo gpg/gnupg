@@ -69,6 +69,7 @@
 #define G10ERR_INVALID_URI    47  /* e.g. unsupported scheme */
 #define G10ERR_NETWORK	      48  /* general network error */
 #define G10ERR_UNKNOWN_HOST   49
+#define G10ERR_SELFTEST_FAILED 50
 
 
 #ifndef HAVE_STRERROR
