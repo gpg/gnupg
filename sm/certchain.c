@@ -480,7 +480,8 @@ is_cert_still_valid (ctrl_t ctrl, int lm, FILE *fp,
     {
       gpg_error_t err;
 
-      err = gpgsm_dirmngr_isvalid (subject_cert, issuer_cert, ctrl->use_ocsp);
+      err = gpgsm_dirmngr_isvalid (ctrl,
+                                   subject_cert, issuer_cert, ctrl->use_ocsp);
       if (err)
         {
           /* Fixme: We should change the wording because we may
@@ -522,10 +523,13 @@ is_cert_still_valid (ctrl_t ctrl, int lm, FILE *fp,
 /* Validate a chain and optionally return the nearest expiration time
    in R_EXPTIME. With LISTMODE set to 1 a special listmode is
    activated where only information about the certificate is printed
-   to FP and no outputis send to the usual log stream. */
+   to FP and no output is send to the usual log stream. 
+
+   Defined flag bits: 0 - do not do any dirmngr isvalid checks.
+*/
 int
 gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
-                      int listmode, FILE *fp)
+                      int listmode, FILE *fp, unsigned int flags)
 {
   int rc = 0, depth = 0, maxdepth;
   char *issuer = NULL;
@@ -698,10 +702,13 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
             }
           
           /* Check for revocations etc. */
-          rc = is_cert_still_valid (ctrl, lm, fp,
-                                    subject_cert, subject_cert,
-                                    &any_revoked, &any_no_crl,
-                                    &any_crl_too_old);
+          if ((flags & 1))
+            rc = 0;
+          else
+            rc = is_cert_still_valid (ctrl, lm, fp,
+                                      subject_cert, subject_cert,
+                                      &any_revoked, &any_no_crl,
+                                      &any_crl_too_old);
           if (rc)
             goto leave;
 
@@ -818,14 +825,17 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
               sprintf (numbuf, "%d", rc);
               gpgsm_status2 (ctrl, STATUS_ERROR, "certcert.issuer.keyusage",
                              numbuf, NULL);
-              rc = 0;
+              goto leave;
             }
         }
 
       /* Check for revocations etc. */
-      rc = is_cert_still_valid (ctrl, lm, fp,
-                                subject_cert, issuer_cert,
-                                &any_revoked, &any_no_crl, &any_crl_too_old);
+      if ((flags & 1))
+        rc = 0;
+      else
+        rc = is_cert_still_valid (ctrl, lm, fp,
+                                  subject_cert, issuer_cert,
+                                  &any_revoked, &any_no_crl, &any_crl_too_old);
       if (rc)
         goto leave;
 

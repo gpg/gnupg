@@ -378,7 +378,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
          valid. */
       rc = gpgsm_cert_use_sign_p (cert);
       if (!rc)
-        rc = gpgsm_validate_chain (ctrl, cert, NULL, 0, NULL);
+        rc = gpgsm_validate_chain (ctrl, cert, NULL, 0, NULL, 0);
       if (rc)
         goto leave;
 

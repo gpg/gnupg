@@ -182,7 +182,7 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   gpg_error_t valerr;
 
   if (ctrl->with_validation)
-    valerr = gpgsm_validate_chain (ctrl, cert, NULL, 1, NULL);
+    valerr = gpgsm_validate_chain (ctrl, cert, NULL, 1, NULL, 0);
   else
     valerr = 0;
 
@@ -483,7 +483,7 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
 
   if (with_validation)
     {
-      err = gpgsm_validate_chain (ctrl, cert, NULL, 1, fp);
+      err = gpgsm_validate_chain (ctrl, cert, NULL, 1, fp, 0);
       if (!err)
         fprintf (fp, "  [certificate is good]\n");
       else

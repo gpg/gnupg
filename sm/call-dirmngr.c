@@ -33,6 +33,8 @@
 #include <assuan.h>
 
 #include "i18n.h"
+#include "keydb.h"
+
 
 struct membuf {
   size_t len;
@@ -51,6 +53,12 @@ struct inq_certificate_parm_s {
   ksba_cert_t cert;
   ksba_cert_t issuer_cert;
 };
+
+struct isvalid_status_parm_s {
+  int seen;
+  unsigned char fpr[20];
+};
+
 
 struct lookup_parm_s {
   CTRL ctrl;
@@ -300,6 +308,42 @@ inq_certificate (void *opaque, const char *line)
 }
 
 
+/* Take a 20 byte hexencoded string and put it into the the provided
+   20 byte buffer FPR in binary format. */
+static int
+unhexify_fpr (const char *hexstr, unsigned char *fpr)
+{
+  const char *s;
+  int n;
+
+  for (s=hexstr, n=0; hexdigitp (s); s++, n++)
+    ;
+  if (*s || (n != 40))
+    return 0; /* no fingerprint (invalid or wrong length). */
+  n /= 2;
+  for (s=hexstr, n=0; *s; s += 2, n++)
+    fpr[n] = xtoi_2 (s);
+  return 1; /* okay */
+}
+
+
+static assuan_error_t
+isvalid_status_cb (void *opaque, const char *line)
+{
+  struct isvalid_status_parm_s *parm = opaque;
+
+  if (!strncmp (line, "ONLY_VALID_IF_CERT_VALID", 24)
+      && (line[24]==' ' || !line[24]))
+    {
+      parm->seen++;
+      if (!line[24] || !unhexify_fpr (line+25, parm->fpr))
+        parm->seen++; /* Bumb it to indicate an error. */
+    }
+  return 0;
+}
+
+
+
 
 /* Call the directory manager to check whether the certificate is valid
    Returns 0 for valid or usually one of the errors:
@@ -312,12 +356,14 @@ inq_certificate (void *opaque, const char *line)
   request first.
  */
 int
-gpgsm_dirmngr_isvalid (ksba_cert_t cert, ksba_cert_t issuer_cert, int use_ocsp)
+gpgsm_dirmngr_isvalid (ctrl_t ctrl,
+                       ksba_cert_t cert, ksba_cert_t issuer_cert, int use_ocsp)
 {
   int rc;
   char *certid;
   char line[ASSUAN_LINELENGTH];
   struct inq_certificate_parm_s parm;
+  struct isvalid_status_parm_s stparm;
 
   rc = start_dirmngr ();
   if (rc)
@@ -349,6 +395,9 @@ gpgsm_dirmngr_isvalid (ksba_cert_t cert, ksba_cert_t issuer_cert, int use_ocsp)
   parm.cert = cert;
   parm.issuer_cert = issuer_cert;
 
+  stparm.seen = 0;
+  memset (stparm.fpr, 0, 20);
+
   /* FIXME: If --disable-crl-checks has been set, we should pass an
      option to dirmngr, so that no fallback CRL check is done after an
      ocsp check. */
@@ -358,10 +407,66 @@ gpgsm_dirmngr_isvalid (ksba_cert_t cert, ksba_cert_t issuer_cert, int use_ocsp)
   xfree (certid);
 
   rc = assuan_transact (dirmngr_ctx, line, NULL, NULL,
-                        inq_certificate, &parm, NULL, NULL);
+                        inq_certificate, &parm,
+                        isvalid_status_cb, &stparm);
   if (opt.verbose > 1)
     log_info ("response of dirmngr: %s\n", rc? assuan_strerror (rc): "okay");
-  return map_assuan_err (rc);
+  rc = map_assuan_err (rc);
+
+  if (!rc && stparm.seen)
+    {
+      /* Need to also check the certificate validity. */
+      if (stparm.seen != 1)
+        {
+          log_error ("communication problem with dirmngr detected\n");
+          rc = gpg_error (GPG_ERR_INV_CRL);
+        }
+      else
+        {
+          KEYDB_HANDLE kh;
+          ksba_cert_t rspcert = NULL;
+
+          /* Fixme: First try to get the certificate from the
+             dirmngr's cache - it should be there. */
+          kh = keydb_new (0);
+          if (!kh)
+            rc = gpg_error (GPG_ERR_ENOMEM);
+          if (!rc)
+            rc = keydb_search_fpr (kh, stparm.fpr);
+          if (!rc)
+            rc = keydb_get_cert (kh, &rspcert);
+          if (rc)
+            {
+              log_error ("unable to find the certificate used "
+                         "by the dirmngr: %s\n", gpg_strerror (rc));
+              rc = gpg_error (GPG_ERR_INV_CRL);
+            }
+          keydb_release (kh);
+
+          if (!rc)
+            {
+              /* fixme: We should refine the check to check for
+                 certificates allowed for CRL/OCPS. */
+              rc = gpgsm_cert_use_verify_p (rspcert);
+              if (rc)
+                rc = gpg_error (GPG_ERR_INV_CRL);
+              else
+                {
+                  /* Note, the flag = 1: This avoids checking this
+                     certificate over and over again. */
+                  rc = gpgsm_validate_chain (ctrl, rspcert, NULL, 0, NULL, 1);
+                  if (rc)
+                    {
+                      log_error ("invalid certificate used for CRL/OCSP: %s\n",
+                                 gpg_strerror (rc));
+                      rc = gpg_error (GPG_ERR_INV_CRL);
+                    }
+                }
+            }
+          ksba_cert_release (rspcert);
+        }
+    }
+  return rc;
 }
 
 

@@ -263,6 +263,9 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
             err = 0;
           break;
         }
+
+      gpgsm_status (ctrl, STATUS_NEWSIG, NULL);
+
       if (DBG_X509)
         {
           log_debug ("signer %d - issuer: `%s'\n",
@@ -458,7 +461,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
 
       if (DBG_X509)
         log_debug ("signature okay - checking certs\n");
-      rc = gpgsm_validate_chain (ctrl, cert, keyexptime, 0, NULL);
+      rc = gpgsm_validate_chain (ctrl, cert, keyexptime, 0, NULL, 0);
       if (gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED)
         {
           gpgsm_status (ctrl, STATUS_EXPKEYSIG, NULL);

@@ -222,7 +222,8 @@ int gpgsm_walk_cert_chain (ksba_cert_t start, ksba_cert_t *r_next);
 int gpgsm_is_root_cert (ksba_cert_t cert);
 int gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert,
                           ksba_isotime_t r_exptime,
-                          int listmode, FILE *listfp);
+                          int listmode, FILE *listfp,
+                          unsigned int flags);
 int gpgsm_basic_cert_check (ksba_cert_t cert);
 
 /*-- certlist.c --*/
@@ -288,7 +289,8 @@ int gpgsm_agent_learn (void);
 int gpgsm_agent_passwd (const char *hexkeygrip, const char *desc);
 
 /*-- call-dirmngr.c --*/
-int gpgsm_dirmngr_isvalid (ksba_cert_t cert, ksba_cert_t issuer_cert,
+int gpgsm_dirmngr_isvalid (ctrl_t ctrl,
+                           ksba_cert_t cert, ksba_cert_t issuer_cert,
                            int use_ocsp);
 int gpgsm_dirmngr_lookup (ctrl_t ctrl, STRLIST names,
                           void (*cb)(void*, ksba_cert_t), void *cb_value);

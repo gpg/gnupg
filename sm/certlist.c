@@ -130,7 +130,8 @@ cert_usage_p (ksba_cert_t cert, int mode)
     {
       if ((use & (KSBA_KEYUSAGE_KEY_CERT_SIGN)))
         return 0;
-      log_info ( _("certificate should have not been used certification\n"));
+      log_info (_("certificate should have not "
+                  "been used for certification\n"));
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
     }
 
@@ -347,7 +348,7 @@ gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
                     }
                 }
               if (!rc)
-                rc = gpgsm_validate_chain (ctrl, cert, NULL, 0, NULL);
+                rc = gpgsm_validate_chain (ctrl, cert, NULL, 0, NULL, 0);
               if (!rc)
                 {
                   CERTLIST cl = xtrycalloc (1, sizeof *cl);

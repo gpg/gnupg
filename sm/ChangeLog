@@ -1,3 +1,19 @@
+2004-04-05  Werner Koch  <wk@gnupg.org>
+
+	* verify.c (gpgsm_verify): Print STATUS_NEWSIG for each signature.
+
+	* certchain.c (gpgsm_validate_chain) <gpgsm_cert_use_cer_p>: Do
+	not just warn if a cert is not suitable; bail out immediately.
+
+2004-04-01  Werner Koch  <wk@gnupg.org>
+
+	* call-dirmngr.c (isvalid_status_cb): New.
+	(unhexify_fpr): New. Taken from ../g10/call-agent.c
+	(gpgsm_dirmngr_isvalid): Add new arg CTRL, changed caller to pass
+	it thru.  Detect need to check the respondert cert and do that.
+	* certchain.c (gpgsm_validate_chain): Add new arg FLAGS.  Changed
+	all callers.
+
 2004-03-24  Werner Koch  <wk@gnupg.org>
 
 	* sign.c (gpgsm_sign): Include a short list of capabilities.
