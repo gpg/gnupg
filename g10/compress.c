@@ -26,6 +26,9 @@
 #include <assert.h>
 #include <errno.h>
 #include <zlib.h>
+#ifdef __riscos__
+# include "zlib-riscos.h"
+#endif
 
 #include "util.h"
 #include "memory.h"
@@ -34,12 +37,18 @@
 #include "main.h"
 #include "options.h"
 
-
 static void
 init_compress( compress_filter_context_t *zfx, z_stream *zs )
 {
     int rc;
     int level;
+
+#ifdef __riscos__
+    static int zlib_initialized = 0;
+
+    if (!zlib_initialized)
+        zlib_initialized = riscos_load_module("ZLib", zlib_path, 1);
+#endif
 
     if( opt.compress >= 0 && opt.compress <= 9 )
 	level = opt.compress;

@@ -1,3 +1,13 @@
+2002-10-31  Stefan Bellon  <sbellon@sbellon.de>
+
+	* riscos.c (riscos_load_module, riscos_check_regexp): New.
+	(riscos_set_filetype_by_mimetype, riscos_dump_fdlist)
+	(riscos_fdopenfile, riscos_close_fds, riscos_renamefile)
+	(riscos_gstrans, riscos_list_openfiles, riscos_not_implemented):
+	Renamed functions to contain riscos prefix.
+	* dotlock.c [__riscos__]: Renames due to changes in riscos.c.
+	* fileutil.c [__riscos__]: Likewise.
+
 2002-10-29  Stefan Bellon  <sbellon@sbellon.de>
 
 	* fileutil.c: Removed unnecessary left-over includes for RISC OS.

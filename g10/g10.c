@@ -1349,7 +1349,7 @@ main( int argc, char **argv )
             opt.use_agent = 1;
 #else /* __riscos__ */
             opt.use_agent = 0;
-            not_implemented("use-agent");
+            riscos_not_implemented("use-agent");
 #endif /* __riscos__ */
             break;
           case oNoUseAgent: opt.use_agent = 0; break;
@@ -1365,7 +1365,7 @@ main( int argc, char **argv )
             break;
 #ifdef __riscos__
 	  case oStatusFile:
-            set_status_fd( iobuf_translate_file_handle ( fdopenfile (pargs.r.ret_str, 1), 1) );
+            set_status_fd( iobuf_translate_file_handle ( riscos_fdopenfile (pargs.r.ret_str, 1), 1) );
             break;
 #endif /* __riscos__ */
 	  case oAttributeFD:
@@ -1373,7 +1373,7 @@ main( int argc, char **argv )
             break;
 #ifdef __riscos__
 	  case oAttributeFile:
-            set_attrib_fd(iobuf_translate_file_handle ( fdopenfile (pargs.r.ret_str, 1), 1) );
+            set_attrib_fd(iobuf_translate_file_handle ( riscos_fdopenfile (pargs.r.ret_str, 1), 1) );
             break;
 #endif /* __riscos__ */
 	  case oLoggerFD:
@@ -1383,7 +1383,7 @@ main( int argc, char **argv )
 #ifdef __riscos__
 	  case oLoggerFile:
             log_set_logfile( NULL,
-                             iobuf_translate_file_handle ( fdopenfile (pargs.r.ret_str, 1), 1) );
+                             iobuf_translate_file_handle ( riscos_fdopenfile (pargs.r.ret_str, 1), 1) );
             break;
 #endif /* __riscos__ */
 	  case oWithFingerprint:
@@ -1449,7 +1449,7 @@ main( int argc, char **argv )
 					pargs.r.ret_str);
 #endif
 #else /* __riscos__ */
-            not_implemented("load-extension");
+            riscos_not_implemented("load-extension");
 #endif /* __riscos__ */
 	    break;
 	  case oRFC1991:
@@ -1497,7 +1497,7 @@ main( int argc, char **argv )
 	    log_error("shared memory coprocessing is not available\n");
 # endif
 #else /* __riscos__ */
-            not_implemented("run-as-shm-coprocess");
+            riscos_not_implemented("run-as-shm-coprocess");
 #endif /* __riscos__ */
 	    break;
 	  case oSetFilename: opt.set_filename = pargs.r.ret_str; break;
@@ -1556,7 +1556,7 @@ main( int argc, char **argv )
             break;
 #ifdef __riscos__
 	  case oPasswdFile:
-            pwfd = iobuf_translate_file_handle ( fdopenfile (pargs.r.ret_str, 0), 0);
+            pwfd = iobuf_translate_file_handle ( riscos_fdopenfile (pargs.r.ret_str, 0), 0);
             break;
 #endif /* __riscos__ */
 	  case oCommandFD:
@@ -1564,7 +1564,7 @@ main( int argc, char **argv )
             break;
 #ifdef __riscos__
 	  case oCommandFile:
-            opt.command_fd = iobuf_translate_file_handle ( fdopenfile (pargs.r.ret_str, 0), 0);
+            opt.command_fd = iobuf_translate_file_handle ( riscos_fdopenfile (pargs.r.ret_str, 0), 0);
             break;
 #endif /* __riscos__ */
 	  case oCipherAlgo: def_cipher_string = m_strdup(pargs.r.ret_str); break;
@@ -1587,7 +1587,7 @@ main( int argc, char **argv )
 #ifndef __riscos__
 	    opt.lock_once = 0;
 #else /* __riscos__ */
-            not_implemented("lock-multiple");
+            riscos_not_implemented("lock-multiple");
 #endif /* __riscos__ */
             break;
 	  case oKeyServer:

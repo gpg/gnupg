@@ -306,8 +306,8 @@ void show_photos(const struct user_attribute *attrs,
 	  }
 
 #ifdef __riscos__
-        riscos_set_filetype(spawn->tempfile_in,
-                            image_type_to_string(args.imagetype,2));
+        riscos_set_filetype_by_mimetype(spawn->tempfile_in,
+                                        image_type_to_string(args.imagetype,2));
 #endif
 
 	m_free(name);

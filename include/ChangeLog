@@ -1,3 +1,11 @@
+2002-10-31  Stefan Bellon  <sbellon@sbellon.de>
+
+	* util.h [__riscos__]: Prefixed all RISC OS prototypes with
+	riscos_*
+
+	* zlib-riscos.h: New. This is macro magic in order to make the
+	zlib library calls indeed call the RISC OS ZLib module.
+
 2002-10-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* util.h: Add wipememory() macro.

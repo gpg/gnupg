@@ -35,6 +35,7 @@
 #endif
 #include <zlib.h>
 #ifdef __riscos__
+# include "zlib-riscos.h"
 # include <unixlib/local.h>
 #endif /* __riscos__ */
 
@@ -376,6 +377,12 @@ write_part ( const char *fname, FILE *fpin, unsigned long pktlen,
   unsigned char *p;
   const char *outname = create_filename (pkttype);
   
+#ifdef __riscos__
+  static int initialized = 0;
+
+  if (!initialized)
+      initialized = riscos_load_module("ZLib", zlib_path, 1);
+#endif
   if (opt_no_split)
     fpout = stdout;
   else

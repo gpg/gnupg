@@ -1331,6 +1331,8 @@ check_regexp(const char *exp,const char *string)
   /* When DISABLE_REGEXP is defined, assume all regexps do not
      match. */
   return 0;
+#elif defined(__riscos__)
+  return riscos_check_regexp(exp, string, DBG_TRUST);
 #else
   int ret;
   regex_t pat;

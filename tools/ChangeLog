@@ -1,3 +1,8 @@
+2002-10-31  Stefan Bellon  <sbellon@sbellon.de>
+
+	* gpgsplit.c (write_part) [__riscos__]: Use riscos_load_module()
+	to load ZLib module.
+
 2002-10-23  Werner Koch  <wk@gnupg.org>
 
 	* gpgsplit.c: New options --secret-to-public and --no-split.

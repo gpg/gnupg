@@ -100,7 +100,7 @@ got_fatal_signal( int sig )
     init_one_signal (sig, SIG_DFL, 0);
     remove_lockfiles ();
 #ifdef __riscos__
-    close_fds ();
+    riscos_close_fds ();
 #endif /* __riscos__ */
     raise( sig );
 }

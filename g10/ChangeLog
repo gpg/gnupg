@@ -1,3 +1,16 @@
+2002-10-31  Stefan Bellon  <sbellon@sbellon.de>
+
+	* compress.c (init_compress) [__riscos__]: Use
+	riscos_load_module() to load ZLib module.
+
+	* g10.c (main) [__riscos__]: Renames due to changes in riscos.c
+	(e.g. prefixes all RISC OS specific functions with riscos_*).
+	* photoid.c (show_photos) [__riscos__]: Likewise.
+	* signal.c (got_fatal_signal) [__riscos__]: Likewise.
+
+	* trustdb.c (check_regexp) [__riscos__]: Branch to RISC OS RegEx
+	handling.
+
 2002-10-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* build-packet.c (do_plaintext), encode.c (encode_sesskey,

@@ -1,3 +1,8 @@
+2002-10-31  Stefan Bellon  <sbellon@sbellon.de>
+
+	* rndriscos.c (rndriscos_gather_random): Use riscos_load_module()
+	to load CryptRandom module.
+
 2002-10-12  Werner Koch  <wk@gnupg.org>
 
 	* rndunix.c (my_popen): Make sure that stdin and stderr are

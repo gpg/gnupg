@@ -1,13 +1,26 @@
 # Makefile for the RISC OS version of GnuPG
 CC=cc
 LINK=link
+AR=libfile
 AS=objasm
 MAKE=amu
 DEPEND=-depend !Depend
 LIBLDAP=^.^.openldap-2/0/18
-CC_FLAGS=-Wpc -apcs 3/26bit/fpe2 -throwback -Otime -IUnix:,include,mpi,intl,zlib,$(LIBLDAP).include -JUnix: -D__riscos__ -DHAVE_CONFIG_H -DNO_ASM -UIS_MODULE -DVERSION="\"$(GnuPG$Version)\"" $(GnuPG$DevDefine)
+
+# 26-bit configuration
+CC_FLAGS=-Wpc -zo -fw -apcs 3/26bit/fpe2 -throwback -Otime -IUnix:,include,mpi,intl,util,zlib,$(LIBLDAP).include,^.^.regex-0/12 -JUnix: -D__riscos__ -DHAVE_CONFIG_H -DNO_ASM -UIS_MODULE -DVERSION="\"$(GnuPG$Version)\"" $(GnuPG$DevDefine)
+AR_FLAGS=
 AS_FLAGS=-apcs 3/26bit -throwback -predefine "ARMv4 SETA 0"
-LD_FLAGS=Unix:o.unixlib
+LD_FLAGS=
+UNIXLIB=Unix:o.UnixLib
+
+# 32-bit configuration (not yet fully working!)
+#CC_FLAGS=-Wpc -zo -fw -apcs 3/32bit/fpe3 -throwback -Otime -IUnix:,include,mpi,intl,util,zlib,$(LIBLDAP).include,^.^.regex-0/12 -JUnix: -D__riscos__ -DHAVE_CONFIG_H -DNO_ASM -UIS_MODULE -DVERSION="\"$(GnuPG$Version)\"" $(GnuPG$DevDefine)
+#AR_FLAGS=
+#AS_FLAGS=-apcs 3/32bit -throwback -predefine "ARMv4 SETA 0"
+#LD_FLAGS=
+#UNIXLIB=Unix:o.UnixLib32
+
 CIPHER_OBJS=cipher.o.blowfish \
 	cipher.o.cast5 \
 	cipher.o.cipher \
@@ -31,7 +44,10 @@ CIPHER_OBJS=cipher.o.blowfish \
 	cipher.o.twofish
 GETTEXT_OBJS=intl.o.bindtextdom \
 	intl.o.dcgettext \
+	intl.o.dcigettext \
+	intl.o.dcngettext \
 	intl.o.dgettext \
+	intl.o.dngettext \
 	intl.o.explodename \
 	intl.o.finddomain \
 	intl.o.gettext \
@@ -39,6 +55,8 @@ GETTEXT_OBJS=intl.o.bindtextdom \
 	intl.o.l10nflist \
 	intl.o.loadmsgcat \
 	intl.o.localealias \
+	intl.o.ngettext \
+	intl.o.plural \
 	intl.o.textdomain
 MPI_OBJS=mpi.o.mpi-add \
 	mpi.o.mpi-bit \
@@ -71,19 +89,6 @@ UTIL_OBJS=util.o.argparse \
 	util.o.strgutil \
 	util.o.ttyio \
 	util.o.riscos
-ZLIB_OBJS=zlib.o.adler32 \
-	zlib.o.compress \
-	zlib.o.crc32 \
-	zlib.o.deflate \
-	zlib.o.infblock \
-	zlib.o.infcodes \
-	zlib.o.inffast \
-	zlib.o.inflate \
-	zlib.o.inftrees \
-	zlib.o.infutil \
-	zlib.o.trees \
-	zlib.o.uncompr \
-	zlib.o.zutil
 G10_OBJS=g10.o.armor \
 	g10.o.build-packet \
 	g10.o.cipher \
@@ -97,10 +102,8 @@ G10_OBJS=g10.o.armor \
 	g10.o.exec \
 	g10.o.export \
 	g10.o.free-packet \
-	g10.o.g10 \
 	g10.o.getkey \
 	g10.o.helptext \
-	g10.o.hkp \
 	g10.o.import \
 	g10.o.kbnode \
 	g10.o.keydb \
@@ -180,13 +183,8 @@ GPGV_OBJS=g10.o.armor \
 	cipher.o.rsa \
 	cipher.o.sha1 \
 	cipher.o.tiger32 \
-	mpi.mpi \
-	zlib.zlib
-GPGKEYS_OBJS=util.o.riscos \
-	util.o.strgutil \
-	util.o.memory \
-	util.o.logger \
-	util.o.secmem \
+	mpi.mpi
+GPGKEYS_OBJS=util.util \
 	intl.gettext
 
 ## Rule Patterns ##
@@ -208,23 +206,28 @@ all:
 	@echo All other targets are internal and shouldn't be used!
 
 cipher.cipher: $(CIPHER_OBJS)
-	$(LINK) -aof $(CIPHER_OBJS) -o cipher.cipher
+	$(AR) $(AR_FLAGS) -c -o cipher.cipher $(CIPHER_OBJS)
 
 intl.gettext: $(GETTEXT_OBJS)
-	$(LINK) -aof $(GETTEXT_OBJS) -o intl.gettext
+	$(AR) $(AR_FLAGS) -c -o intl.gettext $(GETTEXT_OBJS)
 
 mpi.mpi: $(MPI_OBJS)
-	$(LINK) -aof $(MPI_OBJS) -o mpi.mpi
+	$(AR) $(AR_FLAGS) -c -o mpi.mpi $(MPI_OBJS)
 
-tools.gpgsplit: tools.o.gpgsplit util.util intl.gettext zlib.zlib
-	$(LINK) $(LD_FLAGS) tools.o.gpgsplit util.util intl.gettext zlib.zlib -o tools.gpgsplit
+tools.gpgsplit: tools.o.gpgsplit util.util intl.gettext
+	$(LINK) $(LD_FLAGS) -o tools.gpgsplit tools.o.gpgsplit util.util intl.gettext $(UNIXLIB)
 	-squeeze tools.gpgsplit
 	-copy tools.gpgsplit ADFS::A5.$.tmp.!GnuPG.gpgsplit ~CF~V
 
 keyserver.gpgkeys_ldap: keyserver.o.gpgkeys_ldap $(GPGKEYS_OBJS) $(LIBLDAP).libraries.libldap.libldap
-	$(LINK) $(LD_FLAGS) keyserver.o.gpgkeys_ldap $(GPGKEYS_OBJS) $(LIBLDAP).libraries.libldap.libldap -o keyserver.gpgkeys_ldap
+	$(LINK) $(LD_FLAGS) -o keyserver.gpgkeys_ldap keyserver.o.gpgkeys_ldap $(GPGKEYS_OBJS) $(LIBLDAP).libraries.libldap.libldap $(UNIXLIB)
 	-squeeze keyserver.gpgkeys_ldap
 	-copy keyserver.gpgkeys_ldap ADFS::A5.$.tmp.!GnuPG.gpgkeys_ldap ~CF~V
+
+keyserver.gpgkeys_hkp: keyserver.o.gpgkeys_hkp $(GPGKEYS_OBJS)
+	$(LINK) $(LD_FLAGS) -o keyserver.gpgkeys_hkp keyserver.o.gpgkeys_hkp $(GPGKEYS_OBJS) $(UNIXLIB)
+	-squeeze keyserver.gpgkeys_hkp
+	-copy keyserver.gpgkeys_hkp ADFS::A5.$.tmp.!GnuPG.gpgkeys_hkp ~CF~V
 
 riscos.jpegview.jpegview:
 	-dir riscos.jpegview
@@ -232,21 +235,23 @@ riscos.jpegview.jpegview:
 	-back
 
 util.util: $(UTIL_OBJS)
-	$(LINK) -aof $(UTIL_OBJS) -o util.util
+	$(AR) $(AR_FLAGS) -c -o util.util $(UTIL_OBJS)
 
-zlib.zlib: $(ZLIB_OBJS)
-	$(LINK) -aof zlib.o.* -o zlib.zlib
-
-g10.gpg: $(G10_OBJS) cipher.o.idea cipher.cipher intl.gettext mpi.mpi util.util zlib.zlib BUILD
-	$(LINK) $(G10_OBJS) $(LD_FLAGS) cipher.o.idea cipher.cipher intl.gettext mpi.mpi util.util zlib.zlib -o g10.gpg
+g10.gpg: g10.o.g10 $(G10_OBJS) cipher.o.idea cipher.cipher intl.gettext mpi.mpi util.util BUILD
+	$(LINK) $(LD_FLAGS) -o g10.gpg g10.o.g10 $(G10_OBJS) cipher.o.idea cipher.cipher intl.gettext mpi.mpi util.util $(UNIXLIB)
 	-copy g10.gpg ADFS::A5.$.tmp.!GnuPG.gpg ~CFR~V
 
 g10.gpgv: $(GPGV_OBJS) intl.gettext BUILD
-	$(LINK) $(GPGV_OBJS) intl.gettext $(LD_FLAGS) -o g10.gpgv
+	$(LINK) $(LD_FLAGS) -o g10.gpgv $(GPGV_OBJS) intl.gettext $(UNIXLIB)
 	-copy g10.gpgv ADFS::A5.$.tmp.!GnuPG.gpgv ~CFR~V
 
-g10.gpgpart: $(G10_OBJS) cipher.cipher intl.gettext mpi.mpi util.util zlib.zlib BUILD
-	drlink034 -aof $(G10_OBJS) $(LD_FLAGS) cipher.cipher intl.gettext mpi.mpi util.util zlib.zlib -o g10.gpgpart
+g10.gpgpart: $(G10_OBJS) BUILD
+	copy $(UNIXLIB) g10.gpgpart ~CF~V
+	$(AR) $(AR_FLAGS) -i g10.gpgpart $(CIPHER_OBJS)
+	$(AR) $(AR_FLAGS) -i g10.gpgpart $(GETTEXT_OBJS)
+	$(AR) $(AR_FLAGS) -i g10.gpgpart $(MPI_OBJS)
+	$(AR) $(AR_FLAGS) -i g10.gpgpart $(UTIL_OBJS)
+	$(AR) $(AR_FLAGS) -i g10.gpgpart $(G10_OBJS)
 
 select-idea-src:
 	-copy distrib.idea-addon.cipher.c.idea cipher.c.idea ~CF~NR~V
@@ -259,7 +264,7 @@ select-gpl-src:
 distrib.gnupgsrc/zip: select-gpl-src
 	-zip -9@ distrib.gnupgsrc/zip < distrib.resources.distfiles
 
-distrib.gnupg/zip: distrib.gpl-bin.!GnuPG.JPEGview distrib.gpl-bin.!GnuPG.gpgsplit distrib.gpl-bin.!GnuPG.gpg distrib.gpl-bin.!GnuPG.gpgv select-gpl-src
+distrib.gnupg/zip: distrib.gpl-bin.!GnuPG.JPEGview distrib.gpl-bin.!GnuPG.gpgsplit distrib.private.!GnuPG.gpgkeys_hkp distrib.gpl-bin.!GnuPG.gpg distrib.gpl-bin.!GnuPG.gpgv select-gpl-src
 	-copy distrib.resources.History distrib.gpl-bin.History ~CFR~V
 	-copy distrib.resources.Upgrading distrib.gpl-bin.Upgrading ~CFR~V
 	-copy distrib.resources.ReadMe_bin distrib.gpl-bin.!ReadMe1st ~CFR~V
@@ -271,7 +276,7 @@ distrib.gnupg/zip: distrib.gpl-bin.!GnuPG.JPEGview distrib.gpl-bin.!GnuPG.gpgspl
 	-zip -r9 ^.gnupg/zip *
 	-back
 
-distrib.gnupgdev/zip: distrib.private.!GnuPG.JPEGview distrib.private.!GnuPG.gpgsplit distrib.private.!GnuPG.gpgkeys_ldap distrib.private.!GnuPG.gpg distrib.private.!GnuPG.gpgv select-idea-src
+distrib.gnupgdev/zip: distrib.private.!GnuPG.JPEGview distrib.private.!GnuPG.gpgsplit distrib.private.!GnuPG.gpgkeys_ldap distrib.private.!GnuPG.gpgkeys_hkp distrib.private.!GnuPG.gpg distrib.private.!GnuPG.gpgv select-idea-src
 	-ifthere distrib.private.!GnuPG.locale then wipe distrib.private.!GnuPG.locale ~CFR~V
 	-copy distrib.intl.!GnuPG.locale distrib.private.!GnuPG.locale ~CFR~V
 	-copy distrib.resources.History distrib.private.History ~CFR~V
@@ -292,9 +297,10 @@ distrib.gnupgidea/zip: cipher.o.idea select-idea-src
 	-zip -r9 ^.gnupgidea/zip *
 	-back
 
-distrib.gnupgpart/zip: g10.gpgpart select-idea-src
+distrib.gnupgpart/zip: g10.o.g10 g10.gpgpart select-idea-src
 	-copy distrib.resources.ReadMe_part distrib.part.!ReadMe1st ~CFR~V
 	-copy g10.gpgpart distrib.part.g10.gpgpart ~CFR~V
+	-copy g10.o.g10 distrib.part.g10.g10 ~CFR~V
 	-dir distrib.part
 	-zip -r9 ^.gnupgpart/zip *
 	-back
@@ -323,6 +329,10 @@ distrib.gpl-bin.!GnuPG.gpgsplit: tools.gpgsplit
 	-copy tools.gpgsplit distrib.gpl-bin.!GnuPG.gpgsplit ~CFR~V
 	-squeeze distrib.gpl-bin.!GnuPG.gpgsplit
 
+distrib.gpl-bin.!GnuPG.gpgkeys_hkp: keyserver.gpgkeys_hkp
+	-copy keyserver.gpgkeys_hkp distrib.gpl-bin.!GnuPG.gpgkeys_hkp ~CFR~V
+	-squeeze distrib.gpl-bin.!GnuPG.gpgkeys_hkp
+
 distrib.gpl-bin.!GnuPG.JPEGview: riscos.jpegview.jpegview
 	-copy riscos.jpegview.jpegview distrib.gpl-bin.!GnuPG.JPEGview ~CFR~V
 
@@ -341,6 +351,10 @@ distrib.private.!GnuPG.gpgsplit: tools.gpgsplit
 distrib.private.!GnuPG.gpgkeys_ldap: keyserver.gpgkeys_ldap
 	-copy keyserver.gpgkeys_ldap distrib.private.!GnuPG.gpgkeys_ldap ~CFR~V
 	-squeeze distrib.private.!GnuPG.gpgkeys_ldap
+
+distrib.private.!GnuPG.gpgkeys_hkp: keyserver.gpgkeys_hkp
+	-copy keyserver.gpgkeys_hkp distrib.private.!GnuPG.gpgkeys_hkp ~CFR~V
+	-squeeze distrib.private.!GnuPG.gpgkeys_hkp
 
 distrib.private.!GnuPG.JPEGview: riscos.jpegview.jpegview
 	-copy riscos.jpegview.jpegview distrib.private.!GnuPG.JPEGview ~CFR~V
@@ -362,10 +376,6 @@ clean-util:
 	-ifthere util.o.* then wipe util.o.* ~CFR~V
 	-ifthere util.util then wipe util.util ~CFR~V
 
-clean-zlib:
-	-ifthere zlib.o.* then wipe zlib.o.* ~CFR~V
-	-ifthere zlib.zlib then wipe zlib.zlib ~CFR~V
-
 clean-dist:
 	-ifthere distrib.*/zip then wipe distrib.*/zip ~CFR~V
 
@@ -377,6 +387,7 @@ clean-g10:
 
 clean-keyserver:
 	-ifthere keyserver.gpgkeys_ldap then wipe keyserver.gpgkeys_ldap ~CFR~V
+	-ifthere keyserver.gpgkeys_hkp then wipe keyserver.gpgkeys_hkp ~CFR~V
 	-ifthere keyserver.o.* then wipe keyserver.o.* ~CFR~V
 
 clean-tools:
@@ -392,12 +403,12 @@ clean-version:
 	-ifthere g10.o.g10 then wipe g10.o.g10 ~CFR~V
 	-ifthere g10.o.gpgv then wipe g10.o.gpgv ~CFR~V
 	-ifthere g10.o.keygen then wipe g10.o.keygen ~CFR~V
-	-ifthere g10.o.sign then wipe g10.o.sign ~CFR~V
+	-ifthere g10.o.keyserver then wipe g10.o.keyserver ~CFR~V
 	-ifthere g10.gpg then wipe g10.gpg ~CFR~V
 	-ifthere g10.gpgv then wipe g10.gpgv ~CFR~V
 	-ifthere g10.gpgpart then wipe g10.gpgpart ~CFR~V
 
-clean: clean-dist clean-cipher clean-intl clean-mpi clean-util clean-zlib clean-g10 clean-keyserver clean-tools clean-riscos
+clean: clean-dist clean-cipher clean-intl clean-mpi clean-util clean-g10 clean-keyserver clean-tools clean-riscos
 
 g10.o.armor: BUILD
 	$(CC) $(CC_FLAGS) $(DEPEND) -c -o g10.o.armor g10.c.armor
@@ -414,8 +425,8 @@ g10.o.gpgv: BUILD
 g10.o.keygen: BUILD
 	$(CC) $(CC_FLAGS) $(DEPEND) -c -o g10.o.keygen g10.c.keygen
 
-g10.o.sign: BUILD
-	$(CC) $(CC_FLAGS) $(DEPEND) -c -o g10.o.sign g10.c.sign
+g10.o.keyserver: BUILD
+	$(CC) $(CC_FLAGS) $(DEPEND) -c -o g10.o.keyserver g10.c.keyserver
 
 dev: clean-version
 	$(MAKE) fast-dev

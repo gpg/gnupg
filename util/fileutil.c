@@ -124,7 +124,7 @@ make_filename( const char *first_part, ... )
 #ifndef __riscos__
     return name;
 #else /* __riscos__ */
-    p = gstrans(name);
+    p = riscos_gstrans(name);
     m_free(name);
     return p;
 #endif /* __riscos__ */
@@ -147,8 +147,8 @@ compare_filenames( const char *a, const char *b )
     int c = 0;
     char *abuf, *bbuf;
 
-    abuf = gstrans(a);
-    bbuf = gstrans(b);
+    abuf = riscos_gstrans(a);
+    bbuf = riscos_gstrans(b);
 
     c = ascii_strcasecmp (abuf, bbuf);
 

@@ -246,7 +246,7 @@ make_dotlock( DOTLOCK h, long timeout )
 	    return -1;
 	}
 #else /* __riscos__ */
-        if( !renamefile(h->tname, h->lockname) ) {
+        if( !riscos_renamefile(h->tname, h->lockname) ) {
             h->locked = 1;
             return 0; /* okay */
         }
@@ -340,7 +340,7 @@ release_dotlock( DOTLOCK h )
 	return -1;
     }
 #else /* __riscos__ */
-    if( renamefile(h->lockname, h->tname) ) {
+    if( riscos_renamefile(h->lockname, h->tname) ) {
 	log_error( "release_dotlock: error renaming lockfile `%s' to `%s'",
 							h->lockname, h->tname);
 	return -1;

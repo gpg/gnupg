@@ -273,23 +273,25 @@ int vasprintf ( char **result, const char *format, va_list args);
 #include <unixlib/features.h>
 void riscos_global_defaults(void);
 #define RISCOS_GLOBAL_STATICS(a) const char *__dynamic_da_name = (a);
+int riscos_load_module(const char *name, const char * const path[], int fatal);
 int riscos_get_filetype_from_string(const char *string, int len);
 int riscos_get_filetype(const char *filename);
 void riscos_set_filetype_by_number(const char *filename, int type);
-void riscos_set_filetype(const char *filename, const char *mimetype);
+void riscos_set_filetype_by_mimetype(const char *filename, const char *mimetype);
 pid_t riscos_getpid(void);
 int riscos_kill(pid_t pid, int sig);
 int riscos_access(const char *path, int amode);
 int riscos_getchar(void);
-int fdopenfile(const char *filename, const int allow_write);
-void close_fds(void);
-int renamefile(const char *old, const char *new);
-char *gstrans(const char *old);
 char *riscos_make_basename(const char *filepath, const char *inputpath);
-void not_implemented(const char *feature);
+int riscos_check_regexp(const char *exp, const char *string, int debug);
+int riscos_fdopenfile(const char *filename, const int allow_write);
+void riscos_close_fds(void);
+int riscos_renamefile(const char *old, const char *new);
+char *riscos_gstrans(const char *old);
+void riscos_not_implemented(const char *feature);
 #ifdef DEBUG
-void dump_fdlist(void);
-void list_openfiles(void);
+void riscos_dump_fdlist(void);
+void riscos_list_openfiles(void);
 #endif
 #ifndef __RISCOS__C__
   #define getpid riscos_getpid

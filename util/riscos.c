@@ -23,9 +23,7 @@
 
 #include <config.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <signal.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
@@ -35,8 +33,7 @@
 #include "memory.h"
 
 #define __UNIXLIB_INTERNALS
-#include <unixlib/unix.h>
-#include <unixlib/swiparams.h>
+#include <unixlib/swiparams.h> /* needed for MMM_TYPE_* definitions */
 #undef __UNIXLIB_INTERNALS
 
 
@@ -47,7 +44,7 @@ struct fds_item {
     struct fds_item *next;
 };
 static struct fds_item *fds_list = NULL;
-static int initialized = 0;
+static int fdlist_initialized = 0;
 
 
 /* local RISC OS functions */
@@ -59,10 +56,10 @@ is_read_only(const char *filename)
     
     if (_swix(OS_File, _INR(0,1) | _OUT(0) | _OUT(5),
               17, filename, &type, &attr))
-        log_fatal("Can't get file attributes for %s!\n", filename);
+        log_fatal("Can't get file attributes for file \"%s\"!\n", filename);
     
     if (type == 0)
-        log_fatal("Can't find file %s!\n", filename);
+        log_fatal("Can't find file \"%s\"!\n", filename);
 
     if (_swix(OS_File, _INR(0,1) | _IN(5), 4, filename, attr))
         return 1;
@@ -77,6 +74,30 @@ riscos_global_defaults(void)
 {
     __riscosify_control = __RISCOSIFY_NO_PROCESS;
     __feature_imagefs_is_file = 1;
+}
+
+int
+riscos_load_module(const char *name, const char * const path[], int fatal)
+{
+    int i;
+
+    /* Is module already loaded? */
+    if (!_swix(OS_Module, _INR(0,1), 18, name))
+        return 1;
+
+    /* Check all the places where the module could be located */
+    for (i=0; path[i]; ++i)
+        if (!_swix(OS_Module, _INR(0,1), 1, path[i]))
+            return 1;
+
+    /* Can't find module in the default locations */
+    if (fatal)
+        log_fatal("Operation cannot be performed without \"%s\" module!\n",
+                  name);
+    else
+        log_info("Can't load \"%s\" module, continuing anyway!\n", name);
+
+    return 0;
 }
 
 int
@@ -98,7 +119,7 @@ riscos_get_filetype(const char *filename)
     int result;
 
     if (_swix(OS_File, _INR(0,1) | _OUT(6), 23, filename, &result))
-        log_fatal("Can't get filetype for file %s!\n", filename);
+        log_fatal("Can't get filetype for file \"%s\"!\n", filename);
 
     return result;
 }        
@@ -107,18 +128,18 @@ void
 riscos_set_filetype_by_number(const char *filename, int type)
 {
     if (_swix(OS_File, _INR(0,2), 18, filename, type))
-        log_fatal("Can't set filetype for file %s!\n"
+        log_fatal("Can't set filetype for file \"%s\"!\n"
                   "Is the file on a read-only file system?\n", filename);
 }        
 
 void
-riscos_set_filetype(const char *filename, const char *mimetype)
+riscos_set_filetype_by_mimetype(const char *filename, const char *mimetype)
 {
     int result;
 
     if (_swix(MimeMap_Translate, _INR(0,2) | _OUT(3),
               MMM_TYPE_MIME, mimetype, MMM_TYPE_RISCOS, &result))
-        log_fatal("Can't translate MIME type %s!\n", mimetype);
+        log_fatal("Can't translate MIME type \"%s\"!\n", mimetype);
 
     riscos_set_filetype_by_number(filename, result);
 }        
@@ -133,7 +154,8 @@ riscos_getpid(void)
 
     if (state)
         if (_swix(Wimp_ReadSysInfo, _IN(0) | _OUT(0), 5, &state))
-            log_fatal("Wimp_ReadSysInfo failed: Can't get task handle (R0=5)!\n");
+            log_fatal("Wimp_ReadSysInfo failed: "
+                      "Can't get task handle (R0=5)!\n");
 
     return (pid_t) state;
 }
@@ -181,7 +203,7 @@ riscos_getchar(void)
 
 #ifdef DEBUG
 void
-dump_fdlist(void)
+riscos_dump_fdlist(void)
 {
     struct fds_item *iter = fds_list;
     printf("List of open file descriptors:\n");
@@ -193,7 +215,7 @@ dump_fdlist(void)
 #endif /* DEBUG */
 
 int
-fdopenfile(const char *filename, const int allow_write)
+riscos_fdopenfile(const char *filename, const int allow_write)
 {
     struct fds_item *h;
     int fd;
@@ -202,11 +224,12 @@ fdopenfile(const char *filename, const int allow_write)
     else
         fd = open(filename, O_RDONLY);
     if (fd == -1)
-        log_error("Can't open file %s: %i, %s!\n", filename, errno, strerror(errno));
+        log_error("Can't open file \"%s\": %i, %s!\n",
+                  filename, errno, strerror(errno));
 
-    if (!initialized) {
-        atexit (close_fds);
-        initialized = 1;
+    if (!fdlist_initialized) {
+        atexit (riscos_close_fds);
+        fdlist_initialized = 1;
     }
 
     h = fds_list;
@@ -220,7 +243,7 @@ fdopenfile(const char *filename, const int allow_write)
 }
 
 void
-close_fds(void)
+riscos_close_fds(void)
 {
     FILE *fp;
     struct fds_item *h = fds_list;
@@ -236,7 +259,7 @@ close_fds(void)
 }
 
 int
-renamefile(const char *old, const char *new)
+riscos_renamefile(const char *old, const char *new)
 {
     _kernel_oserror *e;
 
@@ -252,7 +275,7 @@ renamefile(const char *old, const char *new)
 }
 
 char *
-gstrans(const char *old)
+riscos_gstrans(const char *old)
 {
     int size = 256, last;
     char *buf, *tmp;
@@ -284,7 +307,7 @@ gstrans(const char *old)
 char *
 riscos_make_basename(const char *filepath, const char *realfname)
 {
-    char *p = (char*)filepath-1, *result;
+    char *result, *p = (char*)filepath-1;
     int i, filetype;
 
     if ( !(p=strrchr(filepath, DIRSEP_C)) )
@@ -311,9 +334,61 @@ riscos_make_basename(const char *filepath, const char *realfname)
     return result;
 }
 
+#define RegEx_CompilePattern         0x52AC0
+#define RegEx_Search                 0x52AC2
+#define RegEx_Free                   0x52AC7
+#define RegEx_CompileExtendedPattern 0x52AC9
+
+static const char * const regex_path[] = {
+    "GnuPG:RegEx",
+    "System:310.Modules.RegEx",
+    "System:Modules.RegEx",
+    NULL
+};
+
+int
+riscos_check_regexp(const char *exp, const char *string, int debug)
+{
+    static int regex_initialized = 0;
+    int ret;
+    char *buf;
+  
+    if (!regex_initialized)
+        regex_initialized = riscos_load_module("RegEx", regex_path, 0);
+  
+    if (!regex_initialized) {
+        log_info("Regular expressions cannot be used!\n");
+        return 0;
+    }
+  
+    if (_swix(RegEx_CompileExtendedPattern, _INR(0,2) | _OUT(0) | _OUT(3),
+              0, exp, 1<<18,
+              &buf, &ret)) {
+        log_info("RegEx could not compile pattern \"%s\".\n", exp);
+        log_info("ErrorCode = %i\n", ret);
+        return 0;
+    }
+  
+    if (_swix(RegEx_Search, _INR(0,4) | _OUT(5),
+              buf, string, -1, 0, -1,
+              &ret)) {
+        log_info("RegEx error during execution of serach pattern \"%s\"\n",
+                 exp);
+        log_info("on string \"%s\"\n", string);
+        return 0;
+    }
+  
+    _swix(RegEx_Free, _IN(0), buf);
+  
+    if(debug)
+        log_debug("regexp \"%s\" on \"%s\": %s\n",exp,string,ret>=0?"YES":"NO");
+  
+    return (ret>=0);
+}
+
 #ifdef DEBUG
 void
-list_openfiles(void)
+riscos_list_openfiles(void)
 {
     char *name;
     int i, len;
@@ -345,7 +420,7 @@ list_openfiles(void)
 #endif
 
 void
-not_implemented(const char *feature)
+riscos_not_implemented(const char *feature)
 {
     log_info("%s is not implemented in the RISC OS version!\n", feature);
 }

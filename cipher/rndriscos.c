@@ -27,41 +27,17 @@
 #include <swis.h>
 #include "util.h"
 
-static int init_device(void);
-
 #define CryptRandom_Byte 0x51980
 
-static const char * const path[] = {
+static const char * const cryptrandom_path[] = {
     "GnuPG:CryptRandom",
     "GnuPG:CryptRand",
-    "System:Modules.CryptRandom"
+    "System:310.Modules.CryptRandom",
+    "System:310.Modules.CryptRand",
+    "System:Modules.CryptRandom",
     "System:Modules.CryptRand",
     NULL
 };
-
-/****************
- * Used to load the CryptRandom module if it isn't already loaded
- */
-static int
-init_device(void)
-{
-    int i;
-
-    /* Is CryptRandom already loaded? */
-    if (!_swix(OS_Module, _INR(0,1), 18, "CryptRandom"))
-        return 1;
-
-    /* Check all the places where the module could be located */
-    for (i=0; path[i]; ++i)
-        if (!_swix(OS_Module, _INR(0,1), 1, path[i]))
-            return 1;
-
-    /* Can't find CryptRandom in the default locations */
-    g10_log_fatal("Can't load module CryptRandom.\n");
-
-    return 0; /* never reached, but don't throw a warning */
-}
-
 
 /****************
  * Get the random bytes from module
@@ -70,12 +46,13 @@ int
 rndriscos_gather_random(void (*add)(const void*, size_t, int), int requester,
 	                size_t length, int level)
 {
-    static int initialized = 0;
+    static int rndriscos_initialized = 0;
     int n;
     byte buffer[768];
 
-    if (!initialized)
-        initialized = init_device();
+    if (!rndriscos_initialized)
+        rndriscos_initialized = riscos_load_module("CryptRandom",
+                                                   cryptrandom_path, 1);
 
     while (length) {
         int nbytes = length < sizeof(buffer) ? length : sizeof(buffer);
@@ -87,7 +64,7 @@ rndriscos_gather_random(void (*add)(const void*, size_t, int), int requester,
 	(*add)(buffer, n, requester);
 	length -= n;
     }
-    memset(buffer, 0, sizeof(buffer));
+    wipememory(buffer, sizeof(buffer)); /* burn the buffer */
 
     return 0; /* success */
 }
