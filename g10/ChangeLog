@@ -1,5 +1,25 @@
 2002-11-13  David Shaw  <dshaw@jabberwocky.com>
 
+	* encode.c (encode_simple): Make sure that files larger than about
+	4G use partial length encoding.  This is required because OpenPGP
+	allows only for 32 bit length fields.  From Werner on stable
+	branch.
+
+	* getkey.c (get_pubkey_direct): Renamed to...
+	(get_pubkey_fast): this and made extern.
+	(get_pubkey_byfprint_fast): New.  From Werner on stable branch.
+
+	* keydb.h, import.c (import_one): Use get_pubkey_fast instead of
+	get_pubkey.  We don't need a merged key and actually this might
+	lead to recursions.
+	(revocation_present): Likewise for search by fingerprint.  From
+	Werner on stable branch.
+
+	* g10.c (main): Try to create the trustdb even for non-colon-mode
+	list-key operations.  This is required because getkey needs to
+	know whether a a key is ultimately trusted.  From Werner on stable
+	branch.
+	
 	* exec.c [__CYGWIN32__]: Keep cygwin separate from Mingw32;
 	we don't need it here as it behaves more like a Posix system.
 	From Werner on stable branch.

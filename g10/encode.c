@@ -292,13 +292,18 @@ encode_simple( const char *filename, int mode, int compat )
        messages. */
 
     if( filename && !opt.textmode ) {
-	if( !(filesize = iobuf_get_filelength(inp)) )
-	    log_info(_("%s: WARNING: empty file\n"), filename );
-        /* we can't yet encode the length of very large files,
-         * so we switch to partial lengthn encoding in this case */
-        if ( filesize >= IOBUF_FILELENGTH_LIMIT )
-            filesize = 0;
+        off_t tmpsize;
 
+	if ( !(tmpsize = iobuf_get_filelength(inp)) )
+          log_info(_("%s: WARNING: empty file\n"), filename );
+        /* We can't encode the length of very large files because
+           OpenPGP uses only 32 bit for file sizes.  So if the the
+           size of a file is larger than 2^32 minus some bytes for
+           packet headers, we switch to partial length encoding. */
+        if ( tmpsize < (IOBUF_FILELENGTH_LIMIT - 65536) )
+          filesize = tmpsize;
+        else
+          filesize = 0;
     }
     else
 	filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
@@ -519,12 +524,18 @@ encode_crypt( const char *filename, STRLIST remusr )
     }
 
     if( filename && !opt.textmode ) {
-	if( !(filesize = iobuf_get_filelength(inp)) )
-	    log_info(_("%s: WARNING: empty file\n"), filename );
-        /* we can't yet encode the length of very large files,
-         * so we switch to partial length encoding in this case */
-        if ( filesize >= IOBUF_FILELENGTH_LIMIT )
-            filesize = 0;
+        off_t tmpsize;
+
+	if ( !(tmpsize = iobuf_get_filelength(inp)) )
+          log_info(_("%s: WARNING: empty file\n"), filename );
+        /* We can't encode the length of very large files because
+           OpenPGP uses only 32 bit for file sizes.  So if the the
+           size of a file is larger than 2^32 minus some bytes for
+           packet headers, we switch to partial length encoding. */
+        if ( tmpsize < (IOBUF_FILELENGTH_LIMIT - 65536) )
+          filesize = tmpsize;
+        else
+          filesize = 0;
     }
     else
 	filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
