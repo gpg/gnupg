@@ -705,7 +705,7 @@ verify_chv3 (APP app,
 #if GNUPG_MAJOR_VERSION != 1
   if (!opt.allow_admin)
     {
-      log_info (_("access to admin commands is not configured\n");
+      log_info (_("access to admin commands is not configured\n"));
       return gpg_error (GPG_ERR_EACCES);
     }
 #endif

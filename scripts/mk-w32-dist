@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+# Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -70,18 +70,16 @@ done
 for i in ${srcdir}/po/*.po; do
    lang=$(basename $i .po)
    fromset=`sed -n '/^"Content-Type:/ s/.*charset=\([a-zA-Z0-9_-]*\).*/\1/p' $i`
-   # pl,hu,sk are also cp1250 but the current PO file can't be converted.
+   # pl,sk are also cp1250 but the current PO file can't be converted.
    case $lang in 
-     cs) toset="CP852" ;;  
+     cs|hu|ro) toset="CP852" ;;  
      tr) toset="CP1254" ;;   # DOS: CP857
      el) toset="CP1253" ;;   # same as latin-7?
-     el|eo|et|ja|pl|hu|sk|zh_TW) toset="" ;;
-     en@*) toset="skip" ;;
+     ru|be) toset="CP1251" ;;   # same as latin-7?
+     el|eo|et|ja|pl|sk|zh_TW|zh_CN) toset="" ;;
       *) toset="CP850" ;;
    esac
-   if [ "$toset" = "skip" ]; then
-       :
-   elif [ -n "$toset" ]; then
+   if [ -n "$toset" ]; then
        echo "$lang: converting from $fromset to $toset" >&2 
        iconv --silent --from-code=$fromset --to-code=$toset < $i | \
          sed "/^\"Content-Type:/ s/charset=[a-zA-Z0-9_-]*/charset=$toset/" | \

@@ -21,12 +21,12 @@ dnl
 dnl (Process this file with autoconf to produce a configure script.)
 dnlAC_REVISION($Revision$)dnl
 
-AC_PREREQ(2.57)
+AC_PREREQ(2.59)
 min_automake_version="1.7.9"
 
 # Remember to change the version number immediately *after* a release
 # and remove the "-cvs" or "rc" suffix immediately *before* a release.
-AC_INIT(gnupg, 1.3.90-cvs, bug-gnupg@gnu.org)
+AC_INIT(gnupg, 1.3.90, bug-gnupg@gnu.org)
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.

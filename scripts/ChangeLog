@@ -1,3 +1,12 @@
+2004-10-01  Werner Koch  <wk@g10code.com>
+
+	* mk-w32-dist: Updated from stable branch. 
+
+	* mk-gpg-texi: Changed to use the newer docbook2x-texi utility.
+
+	* config.guess, config.sub, mkinstalldirs, missing
+	* depcomp, install-sh: Upgraded.
+
 2004-07-27  Werner Koch  <wk@g10code.de>
 
 	* autogen.sh: Updated to the moder version, grepping the required

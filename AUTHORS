@@ -105,9 +105,6 @@ The files cipher/rndunix.c and cipher/rndw32.c are based on rndunix.c
 and rndwin32.c from cryptlib.
 Copyright Peter Gutmann, Paul Kendall, and Chris Wedgwood 1996-1999.
 
-The files in debian/ are by James Troup who is the Debian maintainer
-for GnuPG.
-
 The RPM specs file scripts/gnupg.spec has been contributed by
 several people.
 

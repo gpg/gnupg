@@ -1,3 +1,7 @@
+2004-09-30  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (verify_chv3) [GNUPG_MAJOR_VERSION!=1]: Typo fix.
+
 2004-09-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgv.c, keydb.c (keydb_add_resource): Factored keyring creation

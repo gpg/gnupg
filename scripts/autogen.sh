@@ -38,6 +38,8 @@ ACLOCAL=${AUTOMAKE_PREFIX}${ACLOCAL:-aclocal}${AUTOMAKE_SUFFIX}
 GETTEXT=${GETTEXT_PREFIX}${GETTEXT:-gettext}${GETTEXT_SUFFIX}
 MSGMERGE=${GETTEXT_PREFIX}${MSGMERGE:-msgmerge}${GETTEXT_SUFFIX}
 
+DIE=no
+
 # Used to cross-compile GnuPG for Windows.
 if test "$1" = "--build-w32"; then
     tmp=`dirname $0`

@@ -14,32 +14,35 @@
 set -e
 
 for file in gpg gpgv; do
-  sgml2xml -x lower ${file}.sgml >${file}.xml
-  docbook2texi ${file}.xml | sed 's,--,---,' | (
-  case "$file" in
-    *gpgv)
-        sed '/@setfilename/a \
-@dircategory GnuPG\
-@direntry\
-* gpgv: (gpgv).                       GnuPG signature verification tool.\
-@end direntry
-'
-         ;;
+   sgml2xml -x lower ${file}.sgml >${file}.xml
+#  docbook2texi ${file}.xml | sed 's,--,---,' | (
+  docbook2x-texi --to-stdout ${file}.xml >${file}.texi
+#  | (
+#    case "$file" in
+#      *gpgv)
+#          sed '/@setfilename/a \
+#  @dircategory GnuPG\
+#  @direntry\
+#  * gpgv: (gpgv).                       GnuPG signature verification tool.\
+#  @end direntry
+#  '
+#           ;;
+#  
+#      gpg)
+#          sed '/@setfilename/a \
+#  @dircategory GnuPG\
+#  @direntry\
+#  * gpg: (gpg).                         GnuPG encryption and signing tool.\
+#  @end direntry
+#  '
+#          ;;
+#  
+#      *)
+#      cat
+#          ;;
+#    esac
+#    ) >${file}.texi 
 
-    gpg)
-        sed '/@setfilename/a \
-@dircategory GnuPG\
-@direntry\
-* gpg: (gpg).                         GnuPG encryption and signing tool.\
-@end direntry
-'
-        ;;
-
-    *)
-    cat
-        ;;
-  esac
-  ) >${file}.texi 
 done
 
 
