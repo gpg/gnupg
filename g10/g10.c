@@ -1064,37 +1064,122 @@ check_permissions(const char *path,int item)
 }
 
 
-/* In the future, we can do all sorts of interesting configuration
-   output here.  For now, just give ugr, for User GRoups as the
-   Enigmail folks need it. */
 static void
-list_config(const char *items)
+print_algo_numbers(int (*checker)(int))
 {
-  struct groupitem *iter;
+  int i,first=1;
+
+  for(i=0;i<=110;i++)
+    {
+      if(!checker(i))
+	{
+	  if(first)
+	    first=0;
+	  else
+	    printf(";");
+	  printf("%d",i);
+	}
+    }
+}
+
+
+/* In the future, we can do all sorts of interesting configuration
+   output here.  For now, just give "group" as the Enigmail folks need
+   it, and pubkey, cipher, hash, and compress as they may be useful
+   for frontends. */
+static void
+list_config(char *items)
+{
+  int show_all=(items==NULL);
+  char *name;
 
   if(!opt.with_colons)
     return;
- 
-  if(!items || (items && ascii_strcasecmp(items,"ugr")==0))
+
+  while(show_all || (name=strsep(&items," ")))
     {
-      for(iter=opt.grouplist;iter;iter=iter->next)
+      if(show_all || ascii_strcasecmp(name,"pubkey")==0)
 	{
-	  STRLIST sl;
-
-	  printf("cfg:ugr:");
-	  print_string(stdout,iter->name,strlen(iter->name),':');
-	  printf(":");
-
-	  for(sl=iter->values;sl;sl=sl->next)
-	    {
-	      print_string2(stdout,sl->d,strlen(sl->d),':',';');
-	      if(sl->next)
-		printf(";");
-	    }
-
+	  printf("cfg:pubkey:");
+	  print_algo_numbers(check_pubkey_algo);
 	  printf("\n");
 	}
+
+      if(show_all || ascii_strcasecmp(name,"cipher")==0)
+	{
+	  printf("cfg:cipher:");
+	  print_algo_numbers(check_cipher_algo);
+	  printf("\n");
+	}
+
+      if(show_all
+	 || ascii_strcasecmp(name,"digest")==0
+	 || ascii_strcasecmp(name,"hash")==0)
+	{
+	  printf("cfg:digest:");
+	  print_algo_numbers(check_digest_algo);
+	  printf("\n");
+	}
+
+      if(show_all || ascii_strcasecmp(name,"compress")==0)
+	{
+	  printf("cfg:compress:");
+	  print_algo_numbers(check_compress_algo);
+	  printf("\n");
+	}
+
+      if(show_all || ascii_strcasecmp(name,"group")==0)
+	{
+	  struct groupitem *iter;
+
+	  for(iter=opt.grouplist;iter;iter=iter->next)
+	    {
+	      STRLIST sl;
+
+	      printf("cfg:group:");
+	      print_string(stdout,iter->name,strlen(iter->name),':');
+	      printf(":");
+
+	      for(sl=iter->values;sl;sl=sl->next)
+		{
+		  print_string2(stdout,sl->d,strlen(sl->d),':',';');
+		  if(sl->next)
+		    printf(";");
+		}
+
+	      printf("\n");
+	    }
+	}
+
+      if(show_all)
+	break;
     }
+}
+
+
+/* Collapses argc/argv into a single string that must be freed */
+static char *
+collapse_args(int argc,char *argv[])
+{
+  char *str=NULL;
+  int i,first=1,len=0;
+
+  for(i=0;i<argc;i++)
+    {
+      len+=strlen(argv[i])+2;
+      str=m_realloc(str,len);
+      if(first)
+	{
+	  str[0]='\0';
+	  first=0;
+	}
+      else
+	strcat(str," ");
+
+      strcat(str,argv[i]);
+    }
+
+  return str;
 }
 
 
@@ -2710,9 +2795,11 @@ main( int argc, char **argv )
         break;
 
       case aListConfig:
-	if(argc>1)
-	  wrong_args("--list-config [items]");
-	list_config(argc?*argv:NULL);
+	{
+	  char *str=collapse_args(argc,argv);
+	  list_config(str);
+	  m_free(str);
+	}
 	break;
 
       case aListPackets:
