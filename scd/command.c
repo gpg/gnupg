@@ -438,7 +438,7 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
   /* We have to use a copy of the key ID because the function may use
      the pin_cb which in turn uses the assuan line buffer and thus
      overwriting the original line with the keyid */
-  keyidstr = xtrystrdup (line);
+  keyidstr = strdup (line);
   if (!keyidstr)
     return ASSUAN_Out_Of_Core;
   rc = card_sign (ctrl->card_ctx,
@@ -446,7 +446,7 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
                   pin_cb, ctx,
                   ctrl->in_data.value, ctrl->in_data.valuelen,
                   &outdata, &outdatalen);
-  xfree (keyidstr);
+  free (keyidstr);
   if (rc)
     {
       log_error ("card_sign failed: %s\n", gnupg_strerror (rc));
@@ -477,7 +477,7 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
   if ((rc = open_card (ctrl)))
     return rc;
 
-  keyidstr = xtrystrdup (line);
+  keyidstr = strdup (line);
   if (!keyidstr)
     return ASSUAN_Out_Of_Core;
   rc = card_decipher (ctrl->card_ctx,
@@ -485,7 +485,7 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
                       pin_cb, ctx,
                       ctrl->in_data.value, ctrl->in_data.valuelen,
                       &outdata, &outdatalen);
-  xfree (keyidstr);
+  free (keyidstr);
   if (rc)
     {
       log_error ("card_create_signature failed: %s\n", gnupg_strerror (rc));

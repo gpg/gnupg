@@ -264,8 +264,14 @@ start_agent (void)
       if (rc)
 	return map_assuan_err (rc);
     }
-#ifdef LC_CTYPE
+#if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
   old_lc = setlocale (LC_CTYPE, NULL);
+  if (old_lc)
+    {
+      old_lc = strdup (old_lc);
+      if (!old_lc)
+        return GNUPG_Out_Of_Core;
+    }
   dft_lc = setlocale (LC_CTYPE, "");
 #endif
   if (opt.lc_ctype || (dft_ttyname && dft_lc))
@@ -283,14 +289,23 @@ start_agent (void)
 	    rc = map_assuan_err (rc);
 	}
     }
-#ifdef LC_CTYPE
+#if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
   if (old_lc)
-    setlocale (LC_CTYPE, old_lc);
+    {
+      setlocale (LC_CTYPE, old_lc);
+      free (old_lc);
+    }
 #endif
   if (rc)
     return rc;
-#ifdef LC_MESSAGES
+#if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)
   old_lc = setlocale (LC_MESSAGES, NULL);
+  if (old_lc)
+    {
+      old_lc = strdup (old_lc);
+      if (!old_lc)
+        return GNUPG_Out_Of_Core;
+    }
   dft_lc = setlocale (LC_MESSAGES, "");
 #endif
   if (opt.lc_messages || (dft_ttyname && dft_lc))
@@ -308,9 +323,12 @@ start_agent (void)
 	    rc = map_assuan_err (rc);
 	}
     }
-#ifdef LC_MESSAGES
+#if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)
   if (old_lc)
-    setlocale (LC_MESSAGES, old_lc);
+    {
+      setlocale (LC_MESSAGES, old_lc);
+      free (old_lc);
+    }
 #endif
 
   return rc;

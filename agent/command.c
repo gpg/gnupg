@@ -498,8 +498,11 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
 static int
 option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+/*    CTRL ctrl = assuan_get_pointer (ctx); */
 
+  /* FIXME: We should not change opt. here.  It is not a problem right
+     now but as soon as we are allowing concurrent connections we mess
+     things up */
   if (!strcmp (key, "display"))
     {
       if (opt.display)
