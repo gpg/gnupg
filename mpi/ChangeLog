@@ -1,3 +1,14 @@
+Fri Dec 31 14:06:56 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* mpi-bit.c (gcry_mpi_get_nbits): New.
+
+	* mpiutil.c (mpi_set_secure): made static.
+	(gcry_mpi_get_flag): New.
+	(gcry_mpi_set_flag): New.
+	(gcry_mpi_clear_flag): New.
+	(mpi_set_opaque): renamed to gcry_mpi_set_opaque.
+	(mpi_get_opaque): renamed to gcry_mpi_get_opaque.
+
 Fri Dec 31 12:48:31 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* mpicoder.c (mpi_read_from_buffer): Made static.

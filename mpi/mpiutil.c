@@ -159,7 +159,7 @@ mpi_free( MPI a )
     g10_free(a);
 }
 
-void
+static void
 mpi_set_secure( MPI a )
 {
     mpi_ptr_t ap, bp;
@@ -180,7 +180,7 @@ mpi_set_secure( MPI a )
 
 
 MPI
-mpi_set_opaque( MPI a, void *p, unsigned int nbits )
+gcry_mpi_set_opaque( MPI a, void *p, unsigned int nbits )
 {
     if( !a ) {
 	a = mpi_alloc(0);
@@ -202,7 +202,7 @@ mpi_set_opaque( MPI a, void *p, unsigned int nbits )
 
 
 void *
-mpi_get_opaque( MPI a, unsigned int *nbits )
+gcry_mpi_get_opaque( MPI a, unsigned int *nbits )
 {
     if( !(a->flags & 4) )
 	log_bug("mpi_get_opaque on normal mpi\n");
@@ -226,7 +226,7 @@ mpi_copy( MPI a )
 	void *p = g10_is_secure(a->d)? g10_xmalloc_secure( (a->sign+7)/8 )
 				     : g10_xmalloc( (a->sign+7)/8 );
 	memcpy( p, a->d, (a->sign+7)/8 );
-	b = mpi_set_opaque( NULL, p, a->sign );
+	b = gcry_mpi_set_opaque( NULL, p, a->sign );
     }
     else if( a ) {
 	b = mpi_is_secure(a)? mpi_alloc_secure( a->nlimbs )
@@ -258,7 +258,7 @@ mpi_alloc_like( MPI a )
 	void *p = g10_is_secure(a->d)? g10_malloc_secure( n )
 				     : g10_malloc( n );
 	memcpy( p, a->d, n );
-	b = mpi_set_opaque( NULL, p, a->sign );
+	b = gcry_mpi_set_opaque( NULL, p, a->sign );
     }
     else if( a ) {
 	b = mpi_is_secure(a)? mpi_alloc_secure( a->nlimbs )
@@ -386,6 +386,37 @@ gcry_mpi_randomize( GCRY_MPI w,
 			       : gcry_random_bytes_secure( (nbits+7)/8, level );
     mpi_set_buffer( w, p, (nbits+7)/8, 0 );
     m_free(p);
+}
+
+
+void
+gcry_mpi_set_flag( GCRY_MPI a, enum gcry_mpi_flag flag )
+{
+    switch( flag ) {
+      case GCRYMPI_FLAG_SECURE:  mpi_set_secure(a); break;
+      case GCRYMPI_FLAG_OPAQUE:
+      default: log_bug("invalid flag value\n");
+    }
+}
+
+void
+gcry_mpi_clear_flag( GCRY_MPI a, enum gcry_mpi_flag flag )
+{
+    switch( flag ) {
+      case GCRYMPI_FLAG_SECURE:
+      case GCRYMPI_FLAG_OPAQUE:
+      default: log_bug("invalid flag value\n");
+    }
+}
+
+int
+gcry_mpi_get_flag( GCRY_MPI a, enum gcry_mpi_flag flag )
+{
+    switch( flag ) {
+      case GCRYMPI_FLAG_SECURE: return (a->flags & 1);
+      case GCRYMPI_FLAG_OPAQUE: return (a->flags & 4);
+      default: log_bug("invalid flag value\n");
+    }
 }
 
 

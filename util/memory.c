@@ -38,7 +38,7 @@
 #include "util.h"
 
 /* FXIME: ugly hack.  Need a prototype here but can't include g10lib.h */
-int g10_private_is_secure( void *p );
+int g10_private_is_secure( const void *p );
 
 
 #define MAGIC_NOR_BYTE 0x55

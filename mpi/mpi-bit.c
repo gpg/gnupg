@@ -90,6 +90,11 @@ mpi_get_nbits( MPI a )
     return n;
 }
 
+unsigned int
+gcry_mpi_get_nbits( MPI a )
+{
+    return mpi_get_nbits( a );
+}
 
 /****************
  * Test whether bit N is set.

@@ -330,7 +330,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		    csum += checksum_mpi( sk->skey[i] );
 		    buffer = mpi_get_buffer( sk->skey[i], &nbytes, NULL );
 		    gcry_cipher_sync( cipher_hd );
-		    assert( !mpi_is_opaque(sk->skey[i]) );
+		    assert( !gcry_mpi_get_flag( sk->skey[i], GCRYMPI_FLAG_OPAQUE ) );
 		    gcry_cipher_encrypt( cipher_hd, buffer, nbytes, NULL, 0 );
 		    mpi_set_buffer( sk->skey[i], buffer, nbytes, 0 );
 		    m_free( buffer );

@@ -596,7 +596,7 @@ main( int argc, char **argv )
     log_set_name("gpg");
     /* check that the libraries are suitable.  Do it here because
      * the option parse may need services of the library */
-    if ( !gcry_check_version ( "1.1.1" ) ) {
+    if ( !gcry_check_version ( "1.1.0a" ) ) {
 	log_fatal(_("libgcrypt is too old (need %s, have %s)\n"),
 				VERSION, gcry_check_version(NULL) );
     }
