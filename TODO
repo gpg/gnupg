@@ -11,6 +11,7 @@ We should always use valid S-Exp and not just parts.
 ** When we allow concurrent service request in gpgsm, we
 might want to have an agent context for each service request
 (i.e. Assuan context).
+** There is no error report if GPG_AGENT_INFO has been set but the agent is not anymore running. 
 
 * sm/certreqgen.c
 ** Improve error reporting
@@ -23,6 +24,11 @@ might want to have an agent context for each service request
 ** Try all available root certs in case we have several of them in our keybox.
  For example TC TrustCenter Class 1 CA certs are ambiguous becuase
  user certs don't come with a authorityKeyIdentifier.
+** Support extKeyUsage
+ The only value which makes sense for us is emailProtection (I have
+ not yet found a test cetificate with that).  We might want to allow
+ other usages depending on special options (e.g. an option used for code
+ signing).
 
 * sm/decrypt.c
 ** replace leading zero in integer hack by a cleaner solution
@@ -42,6 +48,10 @@ might want to have an agent context for each service request
 ** Check that all error code mapping is done.
 ** Remove the inter-module dependencies between gpgsm and keybox
 ** Add an source_of_key field
+
+* agent/gpg-agent.c
+** A SIGHUP should also restart the scdaemon
+   But do this only after all connections terminated.
 
 * agent/command.c
 ** Make sure that secure memory is used where appropriate
