@@ -1539,7 +1539,9 @@ check_sig_and_print( CTX c, KBNODE node )
 	      show_keyserver_url(sig,0,2);
 
 	    if(opt.verify_options&VERIFY_SHOW_NOTATIONS)
-	      show_notation(sig,0,1,0);
+	      show_notation(sig,0,1,
+		        ((opt.verify_options&VERIFY_SHOW_STD_NOTATIONS)?1:0)+
+			((opt.verify_options&VERIFY_SHOW_USER_NOTATIONS)?2:0));
 	    else
 	      show_notation(sig,0,2,0);
 	  }

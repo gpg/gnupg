@@ -237,9 +237,9 @@ show_keyserver_url(PKT_signature *sig,int indent,int mode)
   mode=1 for log_info + status messages
   mode=2 for status messages only
 
-  which=0 for both standard and user notations
-  which=1 for standard notations only
-  which=2 for user notations only
+  which bits:
+  1 == standard notations
+  2 == user notations
 */
 
 void
@@ -249,6 +249,9 @@ show_notation(PKT_signature *sig,int indent,int mode,int which)
   size_t len;
   int seq=0,crit;
   FILE *fp=mode?log_stream():stdout;
+
+  if(which==0)
+    which=3;
 
   /* There may be multiple notations in the same sig. */
 
@@ -266,37 +269,37 @@ show_notation(PKT_signature *sig,int indent,int mode,int which)
 	    continue;
 	  }
 
-	if(which==1 && memchr(p+8,'@',n1))
-	  continue;
-	else if(which==2 && !memchr(p+8,'@',n1))
-	  continue;
-
 	if(mode!=2)
 	  {
-	    int i;
-	    char *str;
+	    int has_at=!!memchr(p+8,'@',n1);
 
-	    for(i=0;i<indent;i++)
-	      putchar(' ');
+	    if((which&1 && !has_at) || (which&2 && has_at))
+	      {
+		int i;
+		char *str;
 
-	    /* This is UTF8 */
-	    if(crit)
-	      str=_("Critical signature notation: ");
-	    else
-	      str=_("Signature notation: ");
-	    if(mode)
-	      log_info("%s",str);
-	    else
-	      printf("%s",str);
-	    print_utf8_string(fp,p+8,n1);
-	    fprintf(fp,"=");
+		for(i=0;i<indent;i++)
+		  putchar(' ');
 
-	    if(*p&0x80)
-	      print_utf8_string(fp,p+8+n1,n2);
-	    else
-	      fprintf(fp,"[ %s ]",_("not human readable"));
+		/* This is UTF8 */
+		if(crit)
+		  str=_("Critical signature notation: ");
+		else
+		  str=_("Signature notation: ");
+		if(mode)
+		  log_info("%s",str);
+		else
+		  printf("%s",str);
+		print_utf8_string(fp,p+8,n1);
+		fprintf(fp,"=");
 
-	    fprintf(fp,"\n");
+		if(*p&0x80)
+		  print_utf8_string(fp,p+8+n1,n2);
+		else
+		  fprintf(fp,"[ %s ]",_("not human readable"));
+
+		fprintf(fp,"\n");
+	      }
 	  }
 
 	if(mode)
@@ -770,8 +773,8 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	      }
 
             printf("ssb%c  %4u%c/%s %s",
-                   (sk->protect.s2k.mode==1001)?'#':
-                   (sk->protect.s2k.mode==1002)?'>':' ',
+                   (sk2->protect.s2k.mode==1001)?'#':
+                   (sk2->protect.s2k.mode==1002)?'>':' ',
 		   nbits_from_sk( sk2 ),pubkey_letter( sk2->pubkey_algo ),
 		   keystr_from_sk(sk2),datestr_from_sk( sk2 ) );
             if( sk2->expiredate )
@@ -871,9 +874,10 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	       && (opt.list_options&LIST_SHOW_POLICY_URLS))
 	      show_policy_url(sig,3,0);
 
-	    if(sig->flags.notation
-	       && (opt.list_options&LIST_SHOW_NOTATIONS))
-	      show_notation(sig,3,0,0);
+	    if(sig->flags.notation && (opt.list_options&LIST_SHOW_NOTATIONS))
+	      show_notation(sig,3,0,
+			    ((opt.list_options&LIST_SHOW_STD_NOTATIONS)?1:0)+
+			    ((opt.list_options&LIST_SHOW_USER_NOTATIONS)?2:0));
 
 	    if(sig->flags.pref_ks
 	       && (opt.list_options&LIST_SHOW_KEYSERVER_URLS))

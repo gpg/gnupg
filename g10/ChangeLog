@@ -1,3 +1,13 @@
+2004-05-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* keylist.c (show_notation): Use bits to select which sort of
+	notation to show.  Don't allow a not-shown notation to prevent us
+	from issuing the proper --status-fd message.
+
+	* options.h, g10.c (main): Add show-std/standard-notations and
+	show-user-notations.  show-notations is both.  Default is to show
+	standard notations only during verify.  Change all callers.
+
 2004-04-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* main.h, keylist.c (show_notation): Add argument to show only

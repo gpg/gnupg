@@ -1447,7 +1447,7 @@ main( int argc, char **argv )
     opt.keyserver_options.options=
       KEYSERVER_INCLUDE_SUBKEYS|KEYSERVER_INCLUDE_REVOKED|KEYSERVER_TRY_DNS_SRV|KEYSERVER_HONOR_KEYSERVER_URL;
     opt.verify_options=
-      VERIFY_SHOW_POLICY_URLS|VERIFY_SHOW_NOTATIONS|VERIFY_SHOW_KEYSERVER_URLS;
+      VERIFY_SHOW_POLICY_URLS|VERIFY_SHOW_STD_NOTATIONS|VERIFY_SHOW_KEYSERVER_URLS;
     opt.trust_model=TM_AUTO;
     opt.mangle_dos_filenames=0;
     opt.min_cert_level=2;
@@ -2126,6 +2126,9 @@ main( int argc, char **argv )
 		  {"show-photos",LIST_SHOW_PHOTOS,NULL},
 		  {"show-policy-urls",LIST_SHOW_POLICY_URLS,NULL},
 		  {"show-notations",LIST_SHOW_NOTATIONS,NULL},
+		  {"show-std-notations",LIST_SHOW_STD_NOTATIONS,NULL},
+		  {"show-standard-notations",LIST_SHOW_STD_NOTATIONS,NULL},
+		  {"show-user-notations",LIST_SHOW_USER_NOTATIONS,NULL},
 		  {"show-keyserver-urls",LIST_SHOW_KEYSERVER_URLS,NULL},
 		  {"show-validity",LIST_SHOW_VALIDITY,NULL},
 		  {"show-unusable-uids",LIST_SHOW_UNUSABLE_UIDS,NULL},
@@ -2152,6 +2155,9 @@ main( int argc, char **argv )
 		  {"show-photos",VERIFY_SHOW_PHOTOS,NULL},
 		  {"show-policy-urls",VERIFY_SHOW_POLICY_URLS,NULL},
 		  {"show-notations",VERIFY_SHOW_NOTATIONS,NULL},
+		  {"show-std-notations",VERIFY_SHOW_STD_NOTATIONS,NULL},
+		  {"show-standard-notations",VERIFY_SHOW_STD_NOTATIONS,NULL},
+		  {"show-user-notations",VERIFY_SHOW_USER_NOTATIONS,NULL},
 		  {"show-keyserver-urls",VERIFY_SHOW_KEYSERVER_URLS,NULL},
 		  {"show-validity",VERIFY_SHOW_VALIDITY,NULL},
 		  {"show-unusable-uids",VERIFY_SHOW_UNUSABLE_UIDS,NULL},
