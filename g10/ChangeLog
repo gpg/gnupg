@@ -1,6 +1,14 @@
+2004-10-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), mainproc.c (check_sig_and_print):
+	Rename verify-option show-validity to show-uid-validity to match
+	the similar list-option.
+
+	* app-openpgp.c (verify_chv3): Fix typo.
+
 2004-10-21  Werner Koch  <wk@g10code.com>
 
-	* app-common.h (app_openpgp_storekey: Add prototype.
+	* app-common.h (app_openpgp_storekey): Add prototype.
 
 	* app-openpgp.c (do_sign): Replace asprintf by direct allocation.
 	This avoids problems with missing vasprintf implementations.

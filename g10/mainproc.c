@@ -1485,7 +1485,7 @@ check_sig_and_print( CTX c, KBNODE node )
 
 	    m_free(p);
 
-	    if(opt.verify_options&VERIFY_SHOW_VALIDITY)
+	    if(opt.verify_options&VERIFY_SHOW_UID_VALIDITY)
 	      fprintf(log_stream()," [%s]\n",trust_value_to_string(valid));
 	    else
 	      fputs("\n", log_stream() );
@@ -1568,7 +1568,7 @@ check_sig_and_print( CTX c, KBNODE node )
 		log_info(_("                aka \"%s\""),p);
 		m_free(p);
 
-		if(opt.verify_options&VERIFY_SHOW_VALIDITY)
+		if(opt.verify_options&VERIFY_SHOW_UID_VALIDITY)
 		  {
 		    const char *valid;
 		    if(un->pkt->pkt.user_id->is_revoked)

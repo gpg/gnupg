@@ -1468,8 +1468,9 @@ parse_list_options(char *str)
     };
 
   /* C99 allows for non-constant initializers, but we'd like to
-  compile everywhere, so fill in the show-sig-subpackets argument
-  here. */
+     compile everywhere, so fill in the show-sig-subpackets argument
+     here.  Note that if the parse_options array changes, we'll have
+     to change the subscript here. */
   lopts[12].value=&subpackets;
 
   if(parse_options(str,&opt.list_options,lopts,1))
@@ -2328,7 +2329,7 @@ main( int argc, char **argv )
 		  {"show-standard-notations",VERIFY_SHOW_STD_NOTATIONS,NULL},
 		  {"show-user-notations",VERIFY_SHOW_USER_NOTATIONS,NULL},
 		  {"show-keyserver-urls",VERIFY_SHOW_KEYSERVER_URLS,NULL},
-		  {"show-validity",VERIFY_SHOW_VALIDITY,NULL},
+		  {"show-uid-validity",VERIFY_SHOW_UID_VALIDITY,NULL},
 		  {"show-unusable-uids",VERIFY_SHOW_UNUSABLE_UIDS,NULL},
 		  {NULL,0,NULL}
 		};

@@ -824,7 +824,7 @@ verify_chv3 (app_t app,
 
       if (strlen (pinvalue) < 6)
         {
-          log_error (_("prassphrase (CHV%d) is too short;"
+          log_error (_("passphrase (CHV%d) is too short;"
                        " minimum length is %d\n"), 3, 6);
           xfree (pinvalue);
           return gpg_error (GPG_ERR_BAD_PIN);
