@@ -146,53 +146,62 @@ parse_keyserver_options(char *options)
     }
 }
 
-int 
+struct keyserver_spec *
 parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
 {
   int assume_hkp=0;
+  struct keyserver_spec *keyserver;
+  char *scheme;
 
   assert(uri!=NULL);
 
-  opt.keyserver.host=NULL;
-  opt.keyserver.port=NULL;
-  opt.keyserver.opaque=NULL;
+  keyserver=m_alloc_clear(sizeof(struct keyserver_spec));
+
+  keyserver->uri=m_strdup(uri);
 
   /* Get the scheme */
 
-  opt.keyserver.scheme=strsep(&uri,":");
+  scheme=strsep(&uri,":");
   if(uri==NULL)
     {
       /* Assume HKP if there is no scheme */
       assume_hkp=1;
-      uri=opt.keyserver.scheme;
-      opt.keyserver.scheme="hkp";
+      uri=scheme;
+      scheme="hkp";
     }
   else
     {
       /* Force to lowercase */
       char *i;
 
-      for(i=opt.keyserver.scheme;*i!='\0';i++)
+      for(i=scheme;*i!='\0';i++)
 	*i=ascii_tolower(*i);
     }
 
-  if(ascii_strcasecmp(opt.keyserver.scheme,"x-broken-hkp")==0)
+  if(ascii_strcasecmp(scheme,"x-broken-hkp")==0)
     {
       deprecated_warning(configname,configlineno,"x-broken-hkp",
 			 "--keyserver-options ","broken-http-proxy");
-      opt.keyserver.scheme="hkp";
+      scheme="hkp";
       add_to_strlist(&opt.keyserver_options.other,"broken-http-proxy");
     }
-  else if(ascii_strcasecmp(opt.keyserver.scheme,"x-hkp")==0
-	  || ascii_strcasecmp(opt.keyserver.scheme,"http")==0)
+  else if(ascii_strcasecmp(scheme,"x-hkp")==0
+	  || ascii_strcasecmp(scheme,"http")==0)
     {
       /* Canonicalize this to "hkp" so it works with both the internal
 	 and external keyserver interface. */
-      opt.keyserver.scheme="hkp";
+      scheme="hkp";
     }
+
+  if(scheme[0]=='\0')
+    goto fail;
+
+  keyserver->scheme=m_strdup(scheme);
 
   if(assume_hkp || (uri[0]=='/' && uri[1]=='/'))
     {
+      char *host,*port;
+
       /* Two slashes means network path. */
 
       /* Skip over the "//", if any */
@@ -200,25 +209,27 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
 	uri+=2;
 
       /* Get the host */
-      opt.keyserver.host=strsep(&uri,":/");
-      if(opt.keyserver.host[0]=='\0')
-	return G10ERR_BAD_URI;
+      host=strsep(&uri,":/");
+      if(host[0]=='\0')
+	goto fail;
+
+      keyserver->host=m_strdup(host);
 
       if(uri==NULL || uri[0]=='\0')
-	opt.keyserver.port=NULL;
+	port=NULL;
       else
 	{
 	  char *ch;
 
 	  /* Get the port */
-	  opt.keyserver.port=strsep(&uri,"/");
+	  port=strsep(&uri,"/");
 
 	  /* Ports are digits only */
-	  ch=opt.keyserver.port;
+	  ch=port;
 	  while(*ch!='\0')
 	    {
 	      if(!digitp(ch))
-		return G10ERR_BAD_URI;
+		goto fail;
 
 	      ch++;
 	    }
@@ -227,6 +238,8 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
 	     ports to values between 1-65535, but RFC 1738 and 1808
 	     imply there is no limit.  Of course, the real world has
 	     limits. */
+
+	  keyserver->port=m_strdup(port);
 	}
 
       /* (any path part of the URI is discarded for now as no keyserver
@@ -236,20 +249,25 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
     {
       /* No slash means opaque.  Just record the opaque blob and get
 	 out. */
-      opt.keyserver.opaque=uri;
-      return 0;
+      keyserver->opaque=m_strdup(uri);
     }
   else
     {
       /* One slash means absolute path.  We don't need to support that
 	 yet. */
-      return G10ERR_BAD_URI;
+      goto fail;
     }
 
-  if(opt.keyserver.scheme[0]=='\0')
-    return G10ERR_BAD_URI;
+  return keyserver;
 
-  return 0;
+ fail:
+  m_free(keyserver->uri);
+  m_free(keyserver->host);
+  m_free(keyserver->port);
+  m_free(keyserver->opaque);
+  m_free(keyserver);
+
+  return NULL;
 }
 
 static void
@@ -705,6 +723,8 @@ keyserver_spawn(int action,STRLIST list,
   struct kopts *kopts;
   struct exec_info *spawn;
 
+  assert(opt.keyserver);
+
 #ifdef EXEC_TEMPFILE_ONLY
   opt.keyserver_options.use_temp_files=1;
 #endif
@@ -718,9 +738,9 @@ keyserver_spawn(int action,STRLIST list,
 #endif
 
   /* Build the filename for the helper to execute */
-  command=m_alloc(strlen("gpgkeys_")+strlen(opt.keyserver.scheme)+1);
+  command=m_alloc(strlen("gpgkeys_")+strlen(opt.keyserver->scheme)+1);
   strcpy(command,"gpgkeys_");
-  strcat(command,opt.keyserver.scheme);
+  strcat(command,opt.keyserver->scheme);
 
   if(opt.keyserver_options.use_temp_files)
     {
@@ -748,17 +768,17 @@ keyserver_spawn(int action,STRLIST list,
   fprintf(spawn->tochild,"# This is a gpg keyserver communications file\n");
   fprintf(spawn->tochild,"VERSION %d\n",KEYSERVER_PROTO_VERSION);
   fprintf(spawn->tochild,"PROGRAM %s\n",VERSION);
-  fprintf(spawn->tochild,"SCHEME %s\n",opt.keyserver.scheme);
+  fprintf(spawn->tochild,"SCHEME %s\n",opt.keyserver->scheme);
 
-  if(opt.keyserver.opaque)
-    fprintf(spawn->tochild,"OPAQUE %s\n",opt.keyserver.opaque);
+  if(opt.keyserver->opaque)
+    fprintf(spawn->tochild,"OPAQUE %s\n",opt.keyserver->opaque);
   else
     {
-      if(opt.keyserver.host)
-	fprintf(spawn->tochild,"HOST %s\n",opt.keyserver.host);
+      if(opt.keyserver->host)
+	fprintf(spawn->tochild,"HOST %s\n",opt.keyserver->host);
 
-      if(opt.keyserver.port)
-	fprintf(spawn->tochild,"PORT %s\n",opt.keyserver.port);
+      if(opt.keyserver->port)
+	fprintf(spawn->tochild,"PORT %s\n",opt.keyserver->port);
     }
 
   /* Write options */
@@ -1112,7 +1132,7 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 {
   int rc=0,ret=0;
 
-  if(opt.keyserver.scheme==NULL)
+  if(!opt.keyserver)
     {
       log_error(_("no keyserver known (use option --keyserver)\n"));
       return G10ERR_BAD_URI;
@@ -1133,7 +1153,7 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 	{
 	case KEYSERVER_SCHEME_NOT_FOUND:
 	  log_error(_("no handler for keyserver scheme \"%s\"\n"),
-		    opt.keyserver.scheme);
+		    opt.keyserver->scheme);
 	  break;
 
 	case KEYSERVER_NOT_SUPPORTED:
@@ -1141,12 +1161,12 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 		      "scheme \"%s\"\n"),
 		    action==GET?"get":action==SEND?"send":
 		    action==SEARCH?"search":"unknown",
-		    opt.keyserver.scheme);
+		    opt.keyserver->scheme);
 	  break;
 
 	case KEYSERVER_VERSION_ERROR:
 	  log_error(_("gpgkeys_%s does not support handler version %d\n"),
-		    opt.keyserver.scheme,KEYSERVER_PROTO_VERSION);
+		    opt.keyserver->scheme,KEYSERVER_PROTO_VERSION);
 	  break;
 
 	case KEYSERVER_INTERNAL_ERROR:
@@ -1403,9 +1423,9 @@ keyserver_refresh(STRLIST users)
 
   /* If refresh_add_fake_v3_keyids is on and it's a HKP or MAILTO
      scheme, then enable fake v3 keyid generation. */
-  if(opt.keyserver_options.fake_v3_keyids && opt.keyserver.scheme &&
-     (ascii_strcasecmp(opt.keyserver.scheme,"hkp")==0 ||
-      ascii_strcasecmp(opt.keyserver.scheme,"mailto")==0))
+  if(opt.keyserver_options.fake_v3_keyids && opt.keyserver
+     && (ascii_strcasecmp(opt.keyserver->scheme,"hkp")==0 ||
+	 ascii_strcasecmp(opt.keyserver->scheme,"mailto")==0))
     fakev3=1;
 
   rc=keyidlist(users,&desc,&count,fakev3);
@@ -1414,13 +1434,13 @@ keyserver_refresh(STRLIST users)
 
   if(count>0)
     {
-      if(opt.keyserver.uri)
+      if(opt.keyserver)
 	{
 	  if(count==1)
-	    log_info(_("refreshing 1 key from %s\n"),opt.keyserver.uri);
+	    log_info(_("refreshing 1 key from %s\n"),opt.keyserver->uri);
 	  else
 	    log_info(_("refreshing %d keys from %s\n"),
-		     count,opt.keyserver.uri);
+		     count,opt.keyserver->uri);
 	}
 
       rc=keyserver_work(GET,NULL,desc,count);

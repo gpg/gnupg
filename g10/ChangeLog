@@ -1,5 +1,10 @@
 2004-04-14  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, import.c, keyserver-internal.h, g10.c, mainproc.c,
+	keyserver.c (parse_keyserver_uri): Parse keyserver URI into a
+	structure.  Cleanup for new "guess my keyserver" functionality, as
+	well as refreshing via a preferred keyserver subpacket.
+
 	* options.h: Encapsulate keyserver details.  Change all callers.
 
 2004-03-27  David Shaw  <dshaw@jabberwocky.com>

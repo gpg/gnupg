@@ -1691,8 +1691,8 @@ revocation_present(KBNODE keyblock)
 			  char *tempkeystr=m_strdup(keystr_from_pk(pk));
 
 			  /* No, so try and get it */
-			  if(opt.keyserver.scheme &&
-			     opt.keyserver_options.auto_key_retrieve)
+			  if(opt.keyserver
+			     && opt.keyserver_options.auto_key_retrieve)
 			    {
 			      log_info(_("WARNING: key %s may be revoked:"
 					 " fetching revocation key %s\n"),

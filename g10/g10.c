@@ -2074,8 +2074,9 @@ main( int argc, char **argv )
 #endif /* __riscos__ */
             break;
 	  case oKeyServer:
-	    opt.keyserver.uri=m_strdup(pargs.r.ret_str);
-	    if(parse_keyserver_uri(pargs.r.ret_str,configname,configlineno))
+	    opt.keyserver=parse_keyserver_uri(pargs.r.ret_str,
+					      configname,configlineno);
+	    if(!opt.keyserver)
 	      log_error(_("could not parse keyserver URI\n"));
 	    break;
 	  case oKeyServerOptions:

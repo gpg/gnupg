@@ -1345,7 +1345,7 @@ check_sig_and_print( CTX c, KBNODE node )
 	       keystr(sig->keyid));
 
     rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
-    if( rc == G10ERR_NO_PUBKEY && opt.keyserver.scheme
+    if( rc == G10ERR_NO_PUBKEY && opt.keyserver
 	&& opt.keyserver_options.auto_key_retrieve)
       {
 	if( keyserver_import_keyid ( sig->keyid )==0 )

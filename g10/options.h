@@ -132,7 +132,7 @@ struct
     char *host;
     char *port;
     char *opaque;
-  } keyserver;
+  } *keyserver;
   struct
   {
     int verbose;
