@@ -1,5 +1,5 @@
 /* util.h
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998,1999 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -19,6 +19,10 @@
  */
 #ifndef G10_UTIL_H
 #define G10_UTIL_H
+
+#ifdef _GCRYPT_IN_LIBGCRYPT
+  #error This header should not be used internally by libgcrypt
+#endif
 
 #include "types.h"
 #include "errors.h"
@@ -120,11 +124,8 @@ int arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts);
 int optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		   ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts);
 void usage( int level );
-const char *default_strusage( int level );
-
-
-/*-- (main program) --*/
 const char *strusage( int level );
+void set_strusage( const char *(*f)( int ) );
 
 
 /*-- dotlock.c --*/

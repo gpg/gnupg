@@ -29,7 +29,6 @@
 #include <string.h>
 #include <assert.h>
 #include "g10lib.h"
-#include "util.h"
 #include "mpi.h"
 #include "cipher.h"
 
@@ -307,10 +306,7 @@ gen_prime( unsigned  nbits, int secret, int randomlevel )
 	int dotcount=0;
 
 	/* generate a random number */
-	{   char *p = get_random_bits( nbits, randomlevel, secret );
-	    mpi_set_buffer( prime, p, (nbits+7)/8, 0 );
-	    g10_free(p);
-	}
+	gcry_mpi_randomize( prime, nbits, randomlevel );
 
 	/* set high order bit to 1, set low order bit to 1 */
 	mpi_set_highbit( prime, nbits-1 );
@@ -434,11 +430,8 @@ is_prime( MPI n, int steps, int *count )
 	    mpi_set_ui( x, 2 );
 	}
 	else {
-	    /*mpi_set_bytes( x, nbits-1, get_random_byte, 0 );*/
-	    {	char *p = get_random_bits( nbits, 0, 0 );
-		mpi_set_buffer( x, p, (nbits+7)/8, 0 );
-		g10_free(p);
-	    }
+	    gcry_mpi_randomize( x, nbits, GCRY_WEAK_RANDOM );
+
 	    /* make sure that the number is smaller than the prime
 	     * and keep the randomness of the high bit */
 	    if( mpi_test_bit( x, nbits-2 ) ) {

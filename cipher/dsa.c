@@ -24,7 +24,6 @@
 #include <string.h>
 #include <assert.h>
 #include "g10lib.h"
-#include "util.h"
 #include "mpi.h"
 #include "cipher.h"
 #include "dsa.h"
@@ -130,10 +129,7 @@ test_keys( DSA_secret_key *sk, unsigned qbits )
     pk.q = sk->q;
     pk.g = sk->g;
     pk.y = sk->y;
-    {	char *p = gcry_random_bytes( (qbits+7)/8, GCRY_WEAK_RANDOM );
-	mpi_set_buffer( test, p, (qbits+7)/8, 0 );
-	g10_free(p);
-    }
+    gcry_mpi_randomize( test, qbits, GCRY_WEAK_RANDOM );
 
     sign( out1_a, out1_b, test, sk );
     if( !verify( out1_a, out1_b, test, &pk ) )

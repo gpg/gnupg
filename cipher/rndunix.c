@@ -97,7 +97,7 @@
 #ifndef IS_MODULE
 #include "dynload.h"
 #endif
-#include "util.h"
+#include "g10lib.h"
 
 #ifndef EAGAIN
   #define EAGAIN  EWOULDBLOCK

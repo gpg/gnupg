@@ -29,7 +29,6 @@
 
 #include "types.h"
 #include "g10lib.h"
-#include "util.h"
 #include "dynload.h"
 
 

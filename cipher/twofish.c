@@ -28,7 +28,6 @@
 
 #include "types.h"  /* for byte and u32 typedefs */
 #include "g10lib.h"
-#include "util.h"
 #include "dynload.h"
 
 

@@ -1,3 +1,23 @@
+Fri Nov 19 17:15:20 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* mpicoder.c (g10_log_mpidump): Add a temporary workaround
+
+	* mpih-mul.c (mpihelp_mul_n): s/m_is_ecure/g10_is_secure/
+
+	* mpiutil.c (mpi_alloc): Remved the debug mode because it has turned
+	out, that this feature was not very useful in the past.  Use the
+	new alloc functions.
+	(mpi_alloc_secure): Ditto.
+	(mpi_alloc_limb_space): Ditto.
+	(mpi_free_limb_space): Ditto.
+	(mpi_resize): Ditto.
+	(mpi_free): Ditto.
+	(mpi_set_secure): Removed the debug stuff.
+	(mpi_set_opaque): Ditto.
+	(mpi_copy): Ditto.
+	(mpi_alloc_set_ui): Ditto.
+	(mpi_m_check): Use g10_ wrapper.
+
 Mon Aug 30 20:38:33 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

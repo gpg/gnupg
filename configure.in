@@ -172,8 +172,8 @@ dnl
 dnl Build shared libraries only when compilation of libgcrypt
 dnl has been requested
 dnl
-AM_DISABLE_SHARED
-enable_shared="$compile_libgcrypt"
+dnl AM_DISABLE_STATIC
+dnl enable_shared="$compile_libgcrypt"
 AM_PROG_LIBTOOL
 
 

@@ -67,7 +67,6 @@ void secmem_term( void );
 void *secmem_malloc( size_t size );
 void *secmem_realloc( void *a, size_t newsize );
 void secmem_free( void *a );
-int  m_is_secure( const void *p );
 void secmem_dump_stats(void);
 void secmem_set_flags( unsigned flags );
 unsigned secmem_get_flags(void);

@@ -1,3 +1,24 @@
+Fri Nov 19 17:15:20 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* argparse.c (default_strusage): Renamed to strusage. Fall back
+	to the old behaviour if no sepcial strhandler has been set.
+
+	* memory.c (g10_private_check_heap): New.
+
+	* secmem.c (m_is_secure): Renamed to ...
+	(g10_private_is_secure): ... this.
+	* memory.c (g10_private_malloc): New. Takes core functionalty of ...
+	(m_alloc): ... and calls it.
+	(g10_private_malloc_secure): New. Takes core functionalty of ...
+	(m_alloc_secure): ... and calls it.
+	(g10_private_realloc): New. Takes core functionalty of ...
+	(m_realloc): ... and this one calls it.
+	(g10_private_free): Wraps around m_free().
+
+	* argparse.c (g10_set_strusage): New.
+	(default_strusage): renamed to ...
+	(g10_default_strusage): .. this.
+
 Sat Nov 13 17:44:23 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* g10u.c: Removed.

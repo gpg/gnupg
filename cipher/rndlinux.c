@@ -41,8 +41,7 @@
   #endif
 #endif
 #include "types.h"
-#include "g10lib.h"  /* need this for i18n */
-#include "util.h"
+#include "g10lib.h"
 #include "ttyio.h"
 #include "dynload.h"
 
@@ -121,12 +120,9 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 	tv.tv_sec = 3;
 	tv.tv_usec = 0;
 	if( !(rc=select(fd+1, &rfds, NULL, NULL, &tv)) ) {
+	    #warning FIXME: Replace fprintf by a callback
 	    if( !warn )
-	      #ifdef IS_MODULE
 		fprintf(stderr,
-	      #else
-		tty_printf(
-	      #endif
 _("\n"
 "Not enough random bytes available.  Please do some other work to give\n"
 "the OS a chance to collect more entropy! (Need %d more bytes)\n"), length );
@@ -134,12 +130,7 @@ _("\n"
 	    continue;
 	}
 	else if( rc == -1 ) {
-	  #ifdef IS_MODULE
-	    fprintf(stderr,
-	  #else
-	    tty_printf(
-	  #endif
-		       "select() error: %s\n", strerror(errno));
+	    fprintf(stderr, "select() error: %s\n", strerror(errno));
 	    continue;
 	}
 

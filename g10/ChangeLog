@@ -1,3 +1,16 @@
+Fri Nov 19 17:15:20 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* g10.c (register_extension): New...
+	(main): Use it here instead of register_cipher_extesnion.
+	(strusage): s/strusage/my_strusage/ . Made static.
+	(main): Use set_strusage().
+
+	* tdbdump.c (HEXTOBIN): Changed the name of the argument, so that
+	traditional cpp don't mess up the macros. Suggested by Jos Backus.
+
+	* armor.c (parse_header_line): Stop parsing on a only WS line too.
+	Suggested by Aric Cyr.
+
 Mon Nov 15 21:36:02 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* misc.c (pull_in_libs): Removed.

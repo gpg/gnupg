@@ -370,8 +370,9 @@ secmem_free( void *a )
     cur_alloced -= size;
 }
 
+
 int
-m_is_secure( const void *p )
+g10_private_is_secure( const void *p )
 {
     return p >= pool && p < (void*)((char*)pool+poolsize);
 }

@@ -36,7 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "util.h"
+#include "g10lib.h"
 #include "memory.h"
 #include "dynload.h"
 #include "bithelp.h"

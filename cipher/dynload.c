@@ -32,7 +32,6 @@
   #include <errno.h>
 #endif
 #include "g10lib.h"
-#include "util.h"
 #include "cipher.h"
 #include "dynload.h"
 
@@ -102,6 +101,20 @@ static int dld_available;
 #endif
 
 
+static int
+cmp_filenames( const char *a, const char *b )
+{
+    /* ? check whether this is an absolute filename and
+     * resolve symlinks?
+     */
+  #ifdef HAVE_DRIVE_LETTERS
+    return stricmp(a,b);
+  #else
+    return strcmp(a,b);
+  #endif
+}
+
+
 /****************
  * Register an extension module.  The last registered module will
  * be loaded first.  A name may have a list of classes
@@ -125,21 +138,9 @@ register_cipher_extension( const char *mainpgm, const char *fname )
     if( !mainpgm_path && mainpgm && *mainpgm )
 	mainpgm_path = m_strdup(mainpgm);
   #endif
-    if( *fname != '/' ) { /* do tilde expansion etc */
-	char *tmp;
+    el = g10_xcalloc( 1, sizeof *el + strlen(fname) );
+    strcpy(el->name, fname );
 
-	if( strchr(fname, '/') )
-	    tmp = make_filename(fname, NULL);
-	else
-	    tmp = make_filename(GNUPG_LIBDIR, fname, NULL);
-	el = g10_xcalloc( 1, sizeof *el + strlen(tmp) );
-	strcpy(el->name, tmp );
-	g10_free(tmp);
-    }
-    else {
-	el = g10_xcalloc( 1, sizeof *el + strlen(fname) );
-	strcpy(el->name, fname );
-    }
     /* check whether we have a class hint */
     if( (p=strchr(el->name,'(')) && (pe=strchr(p+1,')')) && !pe[1] ) {
 	*p = *pe = 0;
@@ -151,7 +152,7 @@ register_cipher_extension( const char *mainpgm, const char *fname )
     /* check that it is not already registered */
     intex = NULL;
     for(r = extensions; r; r = r->next ) {
-	if( !compare_filenames(r->name, el->name) ) {
+	if( !cmp_filenames(r->name, el->name) ) {
 	    log_info("extension `%s' already registered\n", el->name );
 	    g10_free(el);
 	    return;
@@ -187,7 +188,7 @@ register_internal_cipher_extension(
 
     /* check that it is not already registered */
     for(r = extensions; r; r = r->next ) {
-	if( !compare_filenames(r->name, el->name) ) {
+	if( !cmp_filenames(r->name, el->name) ) {
 	    log_info("extension `%s' already registered\n", el->name );
 	    g10_free(el);
 	    return;

@@ -26,7 +26,6 @@
 #include <assert.h>
 
 #include "g10lib.h"
-#include "util.h"
 #include "cipher.h"
 #include "dynload.h"
 #include "rmd.h"

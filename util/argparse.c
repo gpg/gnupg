@@ -135,9 +135,12 @@ struct alias_def_s {
     const char *value; /* ptr into name */
 };
 
+static const char *(*strusage_handler)( int ) = NULL;
+
 static int  set_opt_arg(ARGPARSE_ARGS *arg, unsigned flags, char *s);
 static void show_help(ARGPARSE_OPTS *opts, unsigned flags);
 static void show_version(void);
+
 
 static void
 initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
@@ -886,9 +889,13 @@ usage( int level )
  *    41: long usage note (with LF)
  */
 const char *
-default_strusage( int level )
+strusage( int level )
 {
-    const char *p = NULL;
+    const char *p = strusage_handler? strusage_handler(level) : NULL;
+
+    if( p )
+	return p;
+
     switch( level ) {
       case 11: p = "foo"; break;
       case 13: p = "0.0"; break;
@@ -917,6 +924,11 @@ default_strusage( int level )
     return p;
 }
 
+void
+set_strusage( const char *(*f)( int ) )
+{
+    strusage_handler = f;
+}
 
 
 #ifdef TEST

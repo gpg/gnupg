@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "util.h"
+#include "g10lib.h"
 #include "memory.h"
 #include "rmd.h"
 #include "cipher.h" /* only used for the rmd160_hash_buffer() prototype */

@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include "mpi-internal.h"
 #include "longlong.h"
+#include "g10lib.h" /* for g10_is_secure() */
 
 
 
@@ -352,7 +353,7 @@ mpihelp_mul_n( mpi_ptr_t prodp, mpi_ptr_t up, mpi_ptr_t vp, mpi_size_t size)
 	    mpih_sqr_n_basecase( prodp, up, size );
 	else {
 	    mpi_ptr_t tspace;
-	    secure = m_is_secure( up );
+	    secure = g10_is_secure( up );
 	    tspace = mpi_alloc_limb_space( 2 * size, secure );
 	    mpih_sqr_n( prodp, up, size, tspace );
 	    mpi_free_limb_space( tspace );
@@ -363,7 +364,7 @@ mpihelp_mul_n( mpi_ptr_t prodp, mpi_ptr_t up, mpi_ptr_t vp, mpi_size_t size)
 	    mul_n_basecase( prodp, up, vp, size );
 	else {
 	    mpi_ptr_t tspace;
-	    secure = m_is_secure( up ) || m_is_secure( vp );
+	    secure = g10_is_secure( up ) || g10_is_secure( vp );
 	    tspace = mpi_alloc_limb_space( 2 * size, secure );
 	    mul_n (prodp, up, vp, size, tspace);
 	    mpi_free_limb_space( tspace );
@@ -438,15 +439,15 @@ mpihelp_mul( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t usize,
     }
 
     tspace = mpi_alloc_limb_space( 2 * vsize,
-				   m_is_secure( up ) || m_is_secure( vp ) );
+				   g10_is_secure( up ) || g10_is_secure( vp ) );
     MPN_MUL_N_RECURSE( prodp, up, vp, vsize, tspace );
 
     prodp += vsize;
     up += vsize;
     usize -= vsize;
     if( usize >= vsize ) {
-	mpi_ptr_t tp = mpi_alloc_limb_space( 2 * vsize, m_is_secure( up )
-							|| m_is_secure( vp ) );
+	mpi_ptr_t tp = mpi_alloc_limb_space( 2 * vsize, g10_is_secure( up )
+							|| g10_is_secure( vp ) );
 	do {
 	    MPN_MUL_N_RECURSE( tp, up, vp, vsize, tspace );
 	    cy = mpihelp_add_n( prodp, prodp, tp, vsize );

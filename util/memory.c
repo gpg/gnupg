@@ -37,6 +37,9 @@
 #include "memory.h"
 #include "util.h"
 
+/* FXIME: ugly hack.  Need a prototype here bug can't include g10lib.h */
+int g10_private_is_secure( void *p );
+
 
 #define MAGIC_NOR_BYTE 0x55
 #define MAGIC_SEC_BYTE 0xcc
@@ -384,6 +387,29 @@ out_of_core(size_t n, int secure)
 
 }
 
+
+
+/****************
+ * Allocate memory of size n.
+ * Return NULL if we are out of memory.
+ */
+void *
+g10_private_malloc( size_t n)
+{
+    char *p;
+
+  #ifdef M_GUARD
+    if( !(p = malloc( n + EXTRA_ALIGN+5 )) )
+	return NULL;
+    store_len(p,n,0);
+    used_memory += n;
+    p[4+EXTRA_ALIGN+n] = MAGIC_END_BYTE;
+    return p+EXTRA_ALIGN+4;
+  #else /* fixme: This can be done with a macro */
+    return malloc( n );
+  #endif
+}
+
 /****************
  * Allocate memory of size n.
  * This function gives up if we do not have enough memory
@@ -391,19 +417,30 @@ out_of_core(size_t n, int secure)
 void *
 FNAME(alloc)( size_t n FNAMEPRT )
 {
+    char *p = g10_private_malloc( n );
+    if( !p )
+	out_of_core(n,0);
+    return p;
+}
+
+
+/****************
+ * Allocate memory of size n from the secure memory pool.
+ * Return NULL if we are out of memory.
+ */
+void *
+g10_private_malloc_secure( size_t n)
+{
     char *p;
 
   #ifdef M_GUARD
-    if( !(p = malloc( n + EXTRA_ALIGN+5 )) )
-	out_of_core(n,0);
-    store_len(p,n,0);
-    used_memory += n;
+    if( !(p = secmem_malloc( n +EXTRA_ALIGN+ 5 )) )
+	return NULL;
+    store_len(p,n,1);
     p[4+EXTRA_ALIGN+n] = MAGIC_END_BYTE;
     return p+EXTRA_ALIGN+4;
   #else
-    if( !(p = malloc( n )) )
-	out_of_core(n,0);
-    return p;
+    return secmem_malloc( n );
   #endif
 }
 
@@ -414,19 +451,10 @@ FNAME(alloc)( size_t n FNAMEPRT )
 void *
 FNAME(alloc_secure)( size_t n FNAMEPRT )
 {
-    char *p;
-
-  #ifdef M_GUARD
-    if( !(p = secmem_malloc( n +EXTRA_ALIGN+ 5 )) )
-	out_of_core(n,1);
-    store_len(p,n,1);
-    p[4+EXTRA_ALIGN+n] = MAGIC_END_BYTE;
-    return p+EXTRA_ALIGN+4;
-  #else
-    if( !(p = secmem_malloc( n )) )
+    char *p = g10_private_malloc_secure( n );
+    if( !p )
 	out_of_core(n,1);
     return p;
-  #endif
 }
 
 void *
@@ -447,12 +475,12 @@ FNAME(alloc_secure_clear)( size_t n FNAMEPRT)
     return p;
 }
 
-
 /****************
  * realloc and clear the old space
+ * Return NULL if there is not enoug memory.
  */
 void *
-FNAME(realloc)( void *a, size_t n FNAMEPRT )
+g10_private_realloc( void *a, size_t n )
 {
   #ifdef M_GUARD
     unsigned char *p = a;
@@ -462,27 +490,38 @@ FNAME(realloc)( void *a, size_t n FNAMEPRT )
     if( len >= n ) /* we don't shrink for now */
 	return a;
     if( p[-1] == MAGIC_SEC_BYTE )
-	b = FNAME(alloc_secure_clear)(n FNAMEARG);
+	b = g10_private_malloc_secure(n);
     else
-	b = FNAME(alloc_clear)(n FNAMEARG);
+	b = g10_private_malloc(n);
+    if( !b )
+	return NULL;
+    memset(p, 0, n );
     FNAME(check)(NULL FNAMEARG);
     memcpy(b, a, len );
     FNAME(free)(p FNAMEARG);
+    return b;
   #else
-    void *b;
-
-    if( m_is_secure(a) ) {
-	if( !(b = secmem_realloc( a, n )) )
-	    out_of_core(n,1);
+    if( g10_private_is_secure(a) ) {
+	return secmem_realloc( a, n );
     }
     else {
-	if( !(b = realloc( a, n )) )
-	    out_of_core(n,0);
+	return realloc( a, n );
     }
   #endif
-    return b;
 }
 
+
+/****************
+ * realloc and clear the old space
+ */
+void *
+FNAME(realloc)( void *a, size_t n FNAMEPRT )
+{
+    void *b = g10_private_realloc( a, n );
+    if( !b )
+	out_of_core(n, g10_private_is_secure(a));
+    return b;
+}
 
 
 /****************
@@ -499,20 +538,25 @@ FNAME(free)( void *a FNAMEPRT )
     free_entry(p-EXTRA_ALIGN-4, info);
   #elif  M_GUARD
     m_check(p);
-    if( m_is_secure(a) )
+    if( g10_private_is_secure(a) )
 	secmem_free(p-EXTRA_ALIGN-4);
     else {
 	used_memory -= m_size(a);
 	free(p-EXTRA_ALIGN-4);
     }
   #else
-    if( m_is_secure(a) )
+    if( g10_private_is_secure(a) )
 	secmem_free(p);
     else
 	free(p);
   #endif
 }
 
+void
+g10_private_free( void *a )
+{
+    m_free(a);
+}
 
 void
 FNAME(check)( const void *a FNAMEPRT )
@@ -534,6 +578,13 @@ FNAME(check)( const void *a FNAMEPRT )
 	membug("memory at %p corrupted (overflow=%02x)\n", p, p[-1] );
   #endif
   #endif
+}
+
+
+void
+g10_private_check_heap( const void *p )
+{
+    m_check(p);
 }
 
 
@@ -573,7 +624,7 @@ FNAME(copy)( const void *a FNAMEPRT )
 	return NULL;
 
     n = m_size(a); Aiiiih woher nehmen
-    if( m_is_secure(a) )
+    if( g10_private_is_secure(a) )
 	b = FNAME(alloc_secure)(n FNAMEARG);
     else
 	b = FNAME(alloc)(n FNAMEARG);
@@ -590,4 +641,5 @@ FNAME(strdup)( const char *a FNAMEPRT )
     strcpy(p, a);
     return p;
 }
+
 

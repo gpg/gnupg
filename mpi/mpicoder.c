@@ -42,6 +42,9 @@
 int
 mpi_write( IOBUF out, MPI a )
 {
+    return -1;
+  #warning Function is disabled
+  #if 0
     int rc;
     unsigned nbits = mpi_get_nbits(a);
     byte *p, *buf;
@@ -57,6 +60,7 @@ mpi_write( IOBUF out, MPI a )
     rc = iobuf_write( out, p, n );
     m_free(buf);
     return rc;
+  #endif
 }
 
 
@@ -73,6 +77,9 @@ mpi_debug_read(IOBUF inp, unsigned *ret_nread, int secure, const char *info)
 mpi_read(IOBUF inp, unsigned *ret_nread, int secure)
 #endif
 {
+  return NULL;
+  #warning Function is disabled
+  #if 0
     int c, i, j;
     unsigned nbits, nbytes, nlimbs, nread=0;
     mpi_limb_t a;
@@ -120,6 +127,7 @@ mpi_read(IOBUF inp, unsigned *ret_nread, int secure)
     else
 	*ret_nread = nread;
     return val;
+  #endif
 }
 
 
@@ -246,6 +254,7 @@ mpi_fromstr(MPI val, const char *str)
 /****************
  * print an MPI to the given stream and return the number of characters
  * printed.
+ * FIXME: Replace this by the more generic gcry_mpi_print()
  */
 int
 mpi_print( FILE *fp, MPI a, int mode )
@@ -289,9 +298,10 @@ mpi_print( FILE *fp, MPI a, int mode )
 void
 g10_log_mpidump( const char *text, MPI a )
 {
-    FILE *fp = log_stream();
+    FILE *fp = stderr; /* used to be log_stream() */
 
-    g10_log_print_prefix(text);
+    /* FIXME: Replace this function by a g10_log_xxx one */
+    fprintf(fp,"%s: ",text);
     mpi_print(fp, a, 1 );
     fputc('\n', fp);
 }

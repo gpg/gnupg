@@ -367,8 +367,8 @@ our_pk_test_algo( int algo )
 }
 
 
-const char *
-strusage( int level )
+static const char *
+my_strusage( int level )
 {
   static char *digests, *pubkeys, *ciphers;
     const char *p;
@@ -410,7 +410,7 @@ strusage( int level )
 	p = digests;
 	break;
 
-      default:	p = default_strusage(level);
+      default:	p = NULL;
     }
     return p;
 }
@@ -484,6 +484,25 @@ make_username( const char *string )
 	p = m_strdup(string);
     return p;
 }
+
+
+static void
+register_extension( const char *mainpgm, const char *fname )
+{
+    if( *fname != '/' ) { /* do tilde expansion etc */
+	char *tmp;
+
+	if( strchr(fname, '/') )
+	    tmp = make_filename(fname, NULL);
+	else
+	    tmp = make_filename(GNUPG_LIBDIR, fname, NULL);
+	register_cipher_extension( mainpgm, tmp );
+	m_free(tmp);
+    }
+    else
+	register_cipher_extension( mainpgm, fname );
+}
+
 
 
 static void
@@ -564,6 +583,7 @@ main( int argc, char **argv )
   #endif
 
     trap_unaligned();
+    set_strusage( my_strusage );
     secmem_set_flags( secmem_get_flags() | 2 ); /* suspend warnings */
     /* Please note that we may running SUID(ROOT), so be very CAREFUL
      * when adding any stuff between here and the call to
@@ -782,8 +802,7 @@ main( int argc, char **argv )
 	  case aListSecretKeys: set_cmd( &cmd, aListSecretKeys); break;
 	  case oAlwaysTrust: opt.always_trust = 1; break;
 	  case oLoadExtension:
-	    register_cipher_extension(orig_argc? *orig_argv:NULL,
-				      pargs.r.ret_str);
+	    register_extension(orig_argc? *orig_argv:NULL, pargs.r.ret_str);
 	    break;
 	  case oRFC1991:
 	    opt.rfc1991 = 1;

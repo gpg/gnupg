@@ -32,7 +32,6 @@
 #include <sys/un.h>
 #include "types.h"
 #include "g10lib.h"
-#include "util.h"
 #include "ttyio.h"
 #include "dynload.h"
 #include "cipher.h"
@@ -40,6 +39,44 @@
 #ifndef offsetof
 #define offsetof(type, member) ((size_t) &((type *)0)->member)
 #endif
+
+
+/* FIXME: this is duplicated code from util/fileutil
+ * I don't think that this code should go into libgcrypt anyway.
+ */
+char *
+my_make_filename( const char *first_part, ... )
+{
+    va_list arg_ptr ;
+    size_t n;
+    const char *s;
+    char *name, *home, *p;
+
+    va_start( arg_ptr, first_part ) ;
+    n = strlen(first_part)+1;
+    while( (s=va_arg(arg_ptr, const char *)) )
+	n += strlen(s) + 1;
+    va_end(arg_ptr);
+
+    home = NULL;
+    if( *first_part == '~' && first_part[1] == '/'
+			   && (home = getenv("HOME")) && *home )
+	n += strlen(home);
+
+    name = m_alloc(n);
+    p = home ? stpcpy(stpcpy(name,home), first_part+1)
+	     : stpcpy(name, first_part);
+    va_start( arg_ptr, first_part ) ;
+    while( (s=va_arg(arg_ptr, const char *)) )
+	p = stpcpy(stpcpy(p,"/"), s);
+    va_end(arg_ptr);
+
+    return name;
+}
+
+
+
+
 
 static int
 do_write( int fd, void *buf, size_t nbytes )
@@ -104,7 +141,7 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 	}
     }
     if( fd == -1 ) {
-	char *name = make_filename( g10_opt_homedir, "entropy", NULL );
+	char *name = my_make_filename( g10_opt_homedir, "entropy", NULL );
 	struct sockaddr_un addr;
 	int addr_len;
 

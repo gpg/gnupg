@@ -26,7 +26,6 @@
 #include <assert.h>
 
 #include "g10lib.h"
-#include "util.h"
 #include "cipher.h"
 #include "des.h"
 #include "blowfish.h"
@@ -418,10 +417,9 @@ gcry_cipher_close( GCRY_CIPHER_HD h )
 {
     if( !h )
 	return;
-    if( h->magic != CTX_MAGIC_SECURE && h->magic != CTX_MAGIC_NORMAL )	{
-	fatal_invalid_arg("gcry_cipher_close: already closed/invalid handle");
-	return;
-    }
+    if( h->magic != CTX_MAGIC_SECURE && h->magic != CTX_MAGIC_NORMAL )
+	g10_fatal_error(GCRYERR_INTERNAL,
+			"gcry_cipher_close: already closed/invalid handle");
     h->magic = 0;
     g10_free(h);
 }

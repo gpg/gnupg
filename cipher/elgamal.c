@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "g10lib.h"
-#include "util.h"
 #include "mpi.h"
 #include "cipher.h"
 #include "elgamal.h"
@@ -77,12 +76,7 @@ test_keys( ELG_secret_key *sk, unsigned nbits )
     pk.g = sk->g;
     pk.y = sk->y;
 
-    /*mpi_set_bytes( test, nbits, get_random_byte, 0 );*/
-    {	char *p = gcry_random_bytes( (nbits+7)/8, GCRY_WEAK_RANDOM );
-	mpi_set_buffer( test, p, (nbits+7)/8, 0 );
-	g10_free(p);
-    }
-
+    gcry_mpi_randomize( test, nbits, GCRY_WEAK_RANDOM );
 
     encrypt( out1_a, out1_b, test, &pk );
     decrypt( out2, out1_a, out1_b, sk );

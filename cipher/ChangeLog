@@ -1,3 +1,24 @@
+Fri Nov 19 17:15:20 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* dynload.c (cmp_filenames): New to replaced compare_filename() in
+	module.
+	(register_cipher_extension): Removed the tilde expansion stuff.
+	* rndeg.c (my_make_filename): New.
+
+	* : Replaced header util.h by g10lib.h
+
+	* random.c (gather_faked): Replaced make_timestamp by time(2).
+	Disabled wrning printed with tty_printf.
+	* rndlinux.c (gather_random): Always use fprintf instead of tty_xxx;
+	this should be replaced by a callback function.
+
+	* primegen.c (gen_prime): Use gcry_mpi_randomize.
+	(is_prime): Ditto.
+	* elgamal.c (test_keys): Ditto.
+	* dsa.c (test_keys): Ditto.
+
+	* cipher.c (gcry_cipher_close): Die on invalid handle.
+
 Mon Nov 15 21:36:02 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* elgamal.c (gen_k): Use the new random API.

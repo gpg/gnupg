@@ -43,8 +43,8 @@
 #include "tdbio.h"
 
 
-#define HEXTOBIN(a) ( (a) >= '0' && (a) <= '9' ? ((a)-'0') : \
-		      (a) >= 'A' && (a) <= 'F' ? ((a)-'A'+10) : ((a)-'a'+10))
+#define HEXTOBIN(x) ( (x) >= '0' && (x) <= '9' ? ((x)-'0') : \
+		      (x) >= 'A' && (x) <= 'F' ? ((x)-'A'+10) : ((x)-'a'+10))
 
 /****************
  * Read a record but die if it does not exist

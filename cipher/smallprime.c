@@ -21,7 +21,6 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "util.h"
 #include "types.h"
 
 /* Note: 2 is not included because it can be tested more easily
