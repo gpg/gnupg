@@ -1,3 +1,7 @@
+Thu Feb 10 17:39:44 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* mkdemodirs: Fixed the --clean loop.
+
 Thu Jan 13 19:31:58 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* defs.inc (chdir): Removed becuase it is unsused an plain old sh

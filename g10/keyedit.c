@@ -1486,7 +1486,8 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	}
 	else if( node->pkt->pkttype == PKT_USER_ID )
 	    uid = node->pkt->pkt.user_id;
-	else if( main_pk && node->pkt->pkttype == PKT_SIGNATURE ) {
+	else if( main_pk && node->pkt->pkttype == PKT_SIGNATURE
+		 && sub_pk != NULL ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
 		&& (	(mainkey && uid && (sig->sig_class&~3) == 0x10)
@@ -1550,6 +1551,7 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 		    m_free( sn->pkt );
 		    sn->pkt = newpkt;
 		}
+		sub_pk = NULL;
 	    }
 	}
     }

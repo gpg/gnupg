@@ -1,3 +1,8 @@
+Thu Feb 10 17:39:44 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* keyedit.c (menu_expire): Fixed segv due to unitialized sub_pk.
+	By Rémi.
+
 Thu Feb 10 11:39:41 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* keylist.c (list_keyblock): Don't print warnings in the middle of

@@ -1,3 +1,8 @@
+Thu Feb 10 17:39:44 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* configure.in: Use /usr/local for CFLAGS and LDFLAGS when
+	target is freebsd.  By Rémi.
+
 Thu Jan 13 19:31:58 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* configure.in: Do not set development version when the version has
