@@ -108,7 +108,7 @@ show_paths( ulong lid, int only_first )
  * Returns true if an ownertrust has changed.
  */
 static int
-do_edit_ownertrust( ulong lid, int mode, unsigned *new_trust )
+do_edit_ownertrust( ulong lid, int mode, unsigned *new_trust, int defer_help )
 {
     char *p;
     int rc;
@@ -118,6 +118,7 @@ do_edit_ownertrust( ulong lid, int mode, unsigned *new_trust )
     int changed=0;
     int quit=0;
     int show=0;
+    int did_help=defer_help;
 
     rc = keyid_from_lid( lid, keyid );
     if( rc ) {
@@ -133,17 +134,23 @@ do_edit_ownertrust( ulong lid, int mode, unsigned *new_trust )
 	return 0;
     }
 
-    if( !mode ) {
-	tty_printf(_("No trust value assigned to %lu:\n"
-		   "%4u%c/%08lX %s \""), lid,
-		  nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
-		  (ulong)keyid[1], datestr_from_pk( pk ) );
-	p = get_user_id( keyid, &n );
-	tty_print_string( p, n ),
-	m_free(p);
-	tty_printf("\"\n\n");
-    }
-    tty_printf(_(
+
+    for(;;) {
+	/* a string with valid answers */
+	char *ans = _("sSmMqQ");
+
+	if( !did_help ) {
+	    if( !mode ) {
+		tty_printf(_("No trust value assigned to %lu:\n"
+			   "%4u%c/%08lX %s \""), lid,
+			  nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
+			  (ulong)keyid[1], datestr_from_pk( pk ) );
+		p = get_user_id( keyid, &n );
+		tty_print_string( p, n ),
+		m_free(p);
+		tty_printf("\"\n\n");
+	    }
+	    tty_printf(_(
 "Please decide how far you trust this user to correctly\n"
 "verify other users' keys (by looking at passports,\n"
 "checking fingerprints from different sources...)?\n\n"
@@ -152,22 +159,21 @@ do_edit_ownertrust( ulong lid, int mode, unsigned *new_trust )
 " 3 = I trust marginally\n"
 " 4 = I trust fully\n"
 " s = please show me more information\n") );
-    if( mode )
-	tty_printf(_(" m = back to the main menu\n"));
-    else
-	tty_printf(_(" q = quit\n"));
-    tty_printf("\n");
-
-    for(;;) {
-	/* a string with valid answers */
-	char *ans = _("sSmMqQ");
-
+	    if( mode )
+		tty_printf(_(" m = back to the main menu\n"));
+	    else
+		tty_printf(_(" q = quit\n"));
+	    tty_printf("\n");
+	    did_help = 1;
+	}
 	if( strlen(ans) != 6 )
 	    BUG();
 	p = cpr_get("edit_ownertrust.value",_("Your decision? "));
 	trim_spaces(p);
 	cpr_kill_prompt();
-	if( *p && p[1] )
+	if( !*p )
+	    did_help = 0;
+	else if( *p && p[1] )
 	    ;
 	else if( !p[1] && (*p >= '1' && *p <= '4') ) {
 	    unsigned trust;
@@ -207,13 +213,15 @@ int
 edit_ownertrust( ulong lid, int mode )
 {
     unsigned int trust;
+    int no_help = 0;
 
     for(;;) {
-	switch( do_edit_ownertrust( lid, mode, &trust ) ) {
+	switch( do_edit_ownertrust( lid, mode, &trust, no_help ) ) {
 	  case -1:
 	    return 0;
 	  case -2:
 	    show_paths( lid, 1	);
+	    no_help = 1;
 	    break;
 	  case 1:
 	    trust &= ~TRUST_FLAG_DISABLED;
@@ -231,7 +239,7 @@ static int
 add_ownertrust_cb( ulong lid )
 {
     unsigned trust;
-    int rc = do_edit_ownertrust( lid, 0, &trust );
+    int rc = do_edit_ownertrust( lid, 0, &trust, 0 );
 
     if( rc == 1 )
 	return trust & TRUST_MASK;
@@ -560,6 +568,42 @@ key_present_in_pk_list(PK_LIST pk_list, PKT_public_key *pk)
     return -1;
 }
 
+
+/****************
+ * Return a malloced string with a default reciepient if there is any
+ */
+static char *
+default_recipient(void)
+{
+    PKT_secret_key *sk;
+    byte fpr[MAX_FINGERPRINT_LEN+1];
+    size_t n;
+    char *p;
+    int i;
+
+    if( opt.def_recipient )
+	return m_strdup( opt.def_recipient );
+    if( !opt.def_recipient_self )
+	return NULL;
+    sk = m_alloc_clear( sizeof *sk );
+    i = get_seckey_byname( sk, NULL, 0 );
+    if( i ) {
+	free_secret_key( sk );
+	return NULL;
+    }
+    n = MAX_FINGERPRINT_LEN;
+    fingerprint_from_sk( sk, fpr, &n );
+    free_secret_key( sk );
+    p = m_alloc( 2*n+3 );
+    *p++ = '0';
+    *p++ = 'x';
+    for(i=0; i < n; i++ )
+	sprintf( p+2*i, "%02X", fpr[i] );
+    p -= 2;
+    return p;
+}
+
+
 int
 build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 {
@@ -568,6 +612,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
     int rc=0;
     int any_recipients=0;
     STRLIST rov;
+    char *def_rec = NULL;
 
     /* check whether there are any recipients in the list and build the
      * list of the encrypt-to ones (we always trust them) */
@@ -608,16 +653,26 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 
     if( !any_recipients && !opt.batch ) { /* ask */
 	char *answer=NULL;
+	int have_def_rec;
 
-	tty_printf(_(
+	def_rec = default_recipient();
+	have_def_rec = !!def_rec;
+	if( !have_def_rec )
+	    tty_printf(_(
 		"You did not specify a user ID. (you may use \"-r\")\n\n"));
 	for(;;) {
 	    rc = 0;
 	    m_free(answer);
-	    answer = cpr_get_utf8("pklist.user_id.enter",
-				   _("Enter the user ID: "));
-	    trim_spaces(answer);
-	    cpr_kill_prompt();
+	    if( have_def_rec ) {
+		answer = def_rec;
+		def_rec = NULL;
+	    }
+	    else {
+		answer = cpr_get_utf8("pklist.user_id.enter",
+				       _("Enter the user ID: "));
+		trim_spaces(answer);
+		cpr_kill_prompt();
+	    }
 	    if( !*answer )
 		break;
 	    if( pk )
@@ -628,20 +683,8 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    if( rc )
 		tty_printf(_("No such user ID.\n"));
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) {
-		int trustlevel;
-
-		rc = check_trust( pk, &trustlevel, NULL, NULL, NULL );
-		if( rc ) {
-		    log_error("error checking pk of `%s': %s\n",
-						      answer, g10_errstr(rc) );
-		}
-		else if( (trustlevel & TRUST_FLAG_DISABLED) ) {
-		    tty_printf(_("Public key is disabled.\n") );
-		}
-		else if( do_we_trust_pre( pk, trustlevel ) ) {
-		    PK_LIST r;
-
-		    r = m_alloc( sizeof *r );
+		if( have_def_rec ) {
+		    PK_LIST r = m_alloc( sizeof *r );
 		    r->pk = pk; pk = NULL;
 		    r->next = pk_list;
 		    r->mark = 0;
@@ -649,13 +692,58 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		    any_recipients = 1;
 		    break;
 		}
+		else {
+		    int trustlevel;
+
+		    rc = check_trust( pk, &trustlevel, NULL, NULL, NULL );
+		    if( rc ) {
+			log_error("error checking pk of `%s': %s\n",
+						     answer, g10_errstr(rc) );
+		    }
+		    else if( (trustlevel & TRUST_FLAG_DISABLED) ) {
+			tty_printf(_("Public key is disabled.\n") );
+		    }
+		    else if( do_we_trust_pre( pk, trustlevel ) ) {
+			PK_LIST r;
+
+			r = m_alloc( sizeof *r );
+			r->pk = pk; pk = NULL;
+			r->next = pk_list;
+			r->mark = 0;
+			pk_list = r;
+			any_recipients = 1;
+			break;
+		    }
+		}
 	    }
+	    m_free(def_rec); def_rec = NULL;
+	    have_def_rec = 0;
 	}
 	m_free(answer);
 	if( pk ) {
 	    free_public_key( pk );
 	    pk = NULL;
 	}
+    }
+    else if( !any_recipients && (def_rec = default_recipient()) ) {
+	pk = m_alloc_clear( sizeof *pk );
+	pk->pubkey_usage = use;
+	rc = get_pubkey_byname( NULL, pk, def_rec, NULL );
+	if( rc )
+	    log_error(_("unknown default recipient `s'\n"), def_rec );
+	else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) {
+	    PK_LIST r = m_alloc( sizeof *r );
+	    r->pk = pk; pk = NULL;
+	    r->next = pk_list;
+	    r->mark = 0;
+	    pk_list = r;
+	    any_recipients = 1;
+	}
+	if( pk ) {
+	    free_public_key( pk );
+	    pk = NULL;
+	}
+	m_free(def_rec); def_rec = NULL;
     }
     else {
 	any_recipients = 0;

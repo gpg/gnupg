@@ -465,6 +465,34 @@ values will be overwritten.
 
 
 <varlistentry>
+<term>--print-md <parameter>algo</parameter> &OptParmFiles;</term>
+<listitem><para>
+Print message digest og algorithm ALGO for all given files of stdin.
+If "*" is used for the algorithm, digests for all available algorithms
+are printed.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
+<term>--gen-random <parameter>0|1|2</parameter>
+		   <optional><parameter>count</parameter></optional></term>
+<listitem><para>
+Emit COUNT random bytes of the given quality level. If count is not given
+or zero, an endless sequenece of random bytes will be emitted.
+PLEASE, don't use this command unless you know waht you are doing, it may
+remove precious entropy from the system!
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--gen-prime <parameter>mode</parameter>
+		  <parameter>bits</parameter>
+		   <optional><parameter>qbits</parameter></optional></term>
+<listitem><para>
+Use the source, Luke :-). The output format is still subject to change.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
 <term>--version</term>
 <listitem><para>
 Print version information along with a list
@@ -544,9 +572,30 @@ found in the secret keyring.
 <term></term>
 <listitem><para>
 Encrypt for user id &ParmName;. If this option is not
-specified, GnuPG asks for the user id.
+specified, GnuPG asks for the user-id unless --default-recipient is given
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--default-recipient &ParmName;</term>
+<listitem><para>
+Use &ParmName; as default recipient if option --recipient is not used and
+don't ask if this is a valid one. &ParmName; must be a non empty.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--default-recipient-self</term>
+<listitem><para>
+Use the default key as default recipient if option --recipient is not used and
+don't ask if this is a valid one. The default key is the first one from the
+secret keyring or the one set with --default-key.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
+<term>--no-default-recipient</term>
+<listitem><para>
+Reset --default-recipient and --default-recipient-self.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--encrypt-to &ParmName;</term>

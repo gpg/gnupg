@@ -19,13 +19,6 @@
 #-----------------------------------------------
 # With some exceptions, these cannot be combined
 
-print-md algo
-# print the message digest of algorithm ALGO for stdin or all
-# given filenames
-
-print-mds
-# print all message digests of all give filenames
-
 store
 # simply packs the input data into a rfc1991 packet format
 

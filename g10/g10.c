@@ -26,7 +26,6 @@
 #include <ctype.h>
 #include <unistd.h>
 
-#define MAINTAINER_OPTIONS
 
 #include "packet.h"
 #include "iobuf.h"
@@ -112,6 +111,9 @@ enum cmd_and_opt_values { aNull = 0,
     oKeyring,
     oSecretKeyring,
     oDefaultKey,
+    oDefRecipient,
+    oDefRecipientSelf,
+    oNoDefRecipient,
     oOptions,
     oDebug,
     oDebugAll,
@@ -217,17 +219,19 @@ static ARGPARSE_OPTS opts[] = {
     { aDeArmor, "dearmor", 256, N_("De-Armor a file or stdin") },
     { aEnArmor, "enarmor", 256, N_("En-Armor a file or stdin") },
     { aPrintMD,  "print-md" , 256, N_("|algo [files]|print message digests")},
-    { aPrintMDs, "print-mds" , 256, N_("print all message digests")},
-    #ifdef MAINTAINER_OPTIONS
     { aPrimegen, "gen-prime" , 256, "@" },
     { aGenRandom, "gen-random" , 256, "@" },
-    #endif
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
 
     { oArmor, "armor",     0, N_("create ascii armored output")},
     { oRecipient, "recipient", 2, N_("|NAME|encrypt for NAME")},
     { oRecipient, "remote-user", 2, "@"},  /* old option name */
+    { oDefRecipient, "default-recipient" ,2,
+				  N_("|NAME|use NAME as default recipient")},
+    { oDefRecipientSelf, "default-recipient-self" ,0,
+				N_("use the default key as default recipient")},
+    { oNoDefRecipient, "no-default-recipient", 0, "@" },
     { oEncryptTo, "encrypt-to", 2, "@" },
     { oNoEncryptTo, "no-encrypt-to", 0, "@" },
     { oUser, "local-user",2, N_("use this user-id to sign or decrypt")},
@@ -282,6 +286,7 @@ static ARGPARSE_OPTS opts[] = {
 
   /* hidden options */
     { aExportOwnerTrust, "list-ownertrust",0 , "@"},  /* alias */
+    { aPrintMDs, "print-mds" , 256, "@"}, /* old */
     { aListTrustDB, "list-trustdb",0 , "@"},
     { aListTrustPath, "list-trust-path",0, "@"},
     { oKOption, NULL,	 0, "@"},
@@ -520,7 +525,7 @@ main( int argc, char **argv )
     int parse_debug = 0;
     int default_config =1;
     int default_keyring = 1;
-    int greeting = 1;
+    int greeting = 0;
     enum cmd_and_opt_values cmd = 0;
     const char *trustdb_name = NULL;
     char *def_cipher_string = NULL;
@@ -654,26 +659,25 @@ main( int argc, char **argv )
 	  case aListKeys: set_cmd( &cmd, aListKeys); break;
 	  case aListSigs: set_cmd( &cmd, aListSigs); break;
 	  case aExportSecret: set_cmd( &cmd, aExportSecret); break;
-	  case aDeleteSecretKey: set_cmd( &cmd, aDeleteSecretKey); break;
-	  case aDeleteKey: set_cmd( &cmd, aDeleteKey); break;
+	  case aDeleteSecretKey: set_cmd( &cmd, aDeleteSecretKey);
+							greeting=1; break;
+	  case aDeleteKey: set_cmd( &cmd, aDeleteKey); greeting=1; break;
 
 	  case aDetachedSign: detached_sig = 1; set_cmd( &cmd, aSign ); break;
 	  case aSym: set_cmd( &cmd, aSym); break;
 	  case aDecrypt: set_cmd( &cmd, aDecrypt); break;
 	  case aEncr: set_cmd( &cmd, aEncr); break;
 	  case aSign: set_cmd( &cmd, aSign );  break;
-	  case aKeygen: set_cmd( &cmd, aKeygen); break;
+	  case aKeygen: set_cmd( &cmd, aKeygen); greeting=1; break;
 	  case aSignKey: set_cmd( &cmd, aSignKey); break;
 	  case aLSignKey: set_cmd( &cmd, aLSignKey); break;
 	  case aStore: set_cmd( &cmd, aStore); break;
-	  case aEditKey: set_cmd( &cmd, aEditKey); break;
+	  case aEditKey: set_cmd( &cmd, aEditKey); greeting=1; break;
 	  case aClearsign: set_cmd( &cmd, aClearsign); break;
 	  case aGenRevoke: set_cmd( &cmd, aGenRevoke); break;
 	  case aVerify: set_cmd( &cmd, aVerify); break;
-	#ifdef MAINTAINER_OPTIONS
 	  case aPrimegen: set_cmd( &cmd, aPrimegen); break;
 	  case aGenRandom: set_cmd( &cmd, aGenRandom); break;
-	#endif
 	  case aPrintMD: set_cmd( &cmd, aPrintMD); break;
 	  case aPrintMDs: set_cmd( &cmd, aPrintMDs); break;
 	  case aListTrustDB: set_cmd( &cmd, aListTrustDB); break;
@@ -681,8 +685,8 @@ main( int argc, char **argv )
 	  case aUpdateTrustDB: set_cmd( &cmd, aUpdateTrustDB); break;
 	  case aFixTrustDB: set_cmd( &cmd, aFixTrustDB); break;
 	  case aListTrustPath: set_cmd( &cmd, aListTrustPath); break;
-	  case aDeArmor: set_cmd( &cmd, aDeArmor); greeting = 0; break;
-	  case aEnArmor: set_cmd( &cmd, aEnArmor); greeting = 0; break;
+	  case aDeArmor: set_cmd( &cmd, aDeArmor); break;
+	  case aEnArmor: set_cmd( &cmd, aEnArmor); break;
 	  case aExportOwnerTrust: set_cmd( &cmd, aExportOwnerTrust); break;
 	  case aImportOwnerTrust: set_cmd( &cmd, aImportOwnerTrust); break;
 
@@ -730,6 +734,18 @@ main( int argc, char **argv )
 	  case oMaxCertDepth: opt.max_cert_depth = pargs.r.ret_int; break;
 	  case oTrustDBName: trustdb_name = pargs.r.ret_str; break;
 	  case oDefaultKey: opt.def_secret_key = pargs.r.ret_str; break;
+	  case oDefRecipient:
+		    if( *pargs.r.ret_str )
+			opt.def_recipient = make_username(pargs.r.ret_str);
+		    break;
+	  case oDefRecipientSelf:
+		    m_free(opt.def_recipient); opt.def_recipient = NULL;
+		    opt.def_recipient_self = 1;
+		    break;
+	  case oNoDefRecipient:
+		    m_free(opt.def_recipient); opt.def_recipient = NULL;
+		    opt.def_recipient_self = 0;
+		    break;
 	  case oNoOptions: break; /* no-options */
 	  case oHomedir: opt.homedir = pargs.r.ret_str; break;
 	  case oNoBatch: opt.batch = 0; break;
@@ -834,10 +850,11 @@ main( int argc, char **argv )
 	fprintf(stderr, "%s %s; %s\n",
 			strusage(11), strusage(13), strusage(14) );
 	fprintf(stderr, "%s\n", strusage(15) );
-      #ifdef IS_DEVELOPMENT_VERSION
-	log_info("NOTE: this is a development version!\n");
-      #endif
     }
+  #ifdef IS_DEVELOPMENT_VERSION
+    if( !opt.batch )
+	log_info("NOTE: this is a development version!\n");
+  #endif
     if( opt.batch )
 	tty_batchmode( 1 );
 
@@ -1191,68 +1208,70 @@ main( int argc, char **argv )
 	break;
 
 
-     #ifdef MAINTAINER_OPTIONS
       case aPrimegen:
-	if( argc == 1 ) {
-	    mpi_print( stdout, generate_public_prime( atoi(argv[0]) ), 1);
-	    putchar('\n');
-	}
-	else if( argc == 2 ) {
-	    mpi_print( stdout, generate_elg_prime( 0, atoi(argv[0]),
-						   atoi(argv[1]), NULL,NULL ), 1);
-	    putchar('\n');
-	}
-	else if( argc == 3 ) {
-	    MPI g = mpi_alloc(1);
-	    mpi_print( stdout, generate_elg_prime( 0, atoi(argv[0]),
-						   atoi(argv[1]), g, NULL ), 1);
-	    printf("\nGenerator: ");
-	    mpi_print( stdout, g, 1 );
-	    putchar('\n');
-	    mpi_free(g);
-	}
-	else if( argc == 4 ) {
-	    mpi_print( stdout, generate_elg_prime( 1, atoi(argv[0]),
-						   atoi(argv[1]), NULL,NULL ), 1);
-	    putchar('\n');
-	}
-	else
-	    usage(1);
-	break;
-      #endif /* MAINTAINER OPTIONS */
+	{   int mode = argc < 2 ? 0 : atoi(*argv);
 
-      #ifdef MAINTAINER_OPTIONS
+	    if( mode == 1 && argc == 2 ) {
+		mpi_print( stdout, generate_public_prime( atoi(argv[1]) ), 1);
+	    }
+	    else if( mode == 2 && argc == 3 ) {
+		mpi_print( stdout, generate_elg_prime(
+					     0, atoi(argv[1]),
+					     atoi(argv[2]), NULL,NULL ), 1);
+	    }
+	    else if( mode == 3 && argc == 3 ) {
+		MPI *factors;
+		mpi_print( stdout, generate_elg_prime(
+					     1, atoi(argv[1]),
+					     atoi(argv[2]), NULL,&factors ), 1);
+		putchar('\n');
+		mpi_print( stdout, factors[0], 1 ); /* print q */
+	    }
+	    else if( mode == 4 && argc == 3 ) {
+		MPI g = mpi_alloc(1);
+		mpi_print( stdout, generate_elg_prime(
+						 0, atoi(argv[1]),
+						 atoi(argv[2]), g, NULL ), 1);
+		putchar('\n');
+		mpi_print( stdout, g, 1 );
+		mpi_free(g);
+	    }
+	    else
+		wrong_args("--gen-prime mode bits [qbits] ");
+	    putchar('\n');
+	}
+	break;
+
       case aGenRandom:
-	if( argc < 1 || argc > 2 )
-	    wrong_args("--gen-random level [hex]");
 	{
-	    int c;
-	    int level = atoi(*argv);
-	    for(;;) {
+	    int level = argc ? atoi(*argv):0;
+	    int count = argc > 1 ? atoi(argv[1]): 0;
+	    int endless = !count;
+
+	    if( argc < 1 || argc > 2 || level < 0 || level > 2 || count < 0 )
+		wrong_args("--gen-random 0|1|2 [count]");
+
+	    while( endless || count ) {
 		byte *p;
-		if( argc == 2 ) {
-		    p = get_random_bits( 8, level, 0);
-		    printf("%02x", *p );
-		    fflush(stdout);
-		}
-		else {
-		    p = get_random_bits( 800, level, 0);
-		    for(c=0; c < 100; c++ )
-			putchar( p[c] );
-		}
+		size_t n = !endless && count < 100? count : 100;
+
+		p = get_random_bits( n*8, level, 0);
+		fwrite( p, n, 1, stdout );
 		m_free(p);
+		if( !endless )
+		    count -= n;
 	    }
 	}
 	break;
-      #endif /* MAINTAINER OPTIONS */
 
       case aPrintMD:
 	if( argc < 1)
-	    wrong_args("--print-md algo [file]");
-	else {
-	    int algo = string_to_digest_algo(*argv);
+	    wrong_args("--print-md algo [files]");
+	{
+	    int all_algos = (**argv=='*' && !(*argv)[1]);
+	    int algo = all_algos? 0 : string_to_digest_algo(*argv);
 
-	    if( !algo )
+	    if( !algo && !all_algos )
 		log_error(_("invalid hash algorithm `%s'\n"), *argv );
 	    else {
 		argc--; argv++;
@@ -1266,7 +1285,7 @@ main( int argc, char **argv )
 	}
 	break;
 
-      case aPrintMDs:
+      case aPrintMDs: /* old option */
 	if( !argc )
 	    print_mds(NULL,0);
 	else {

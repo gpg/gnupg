@@ -14,6 +14,8 @@
   * find a way to allow the import of non-self-signed keys.  This is needed
     for the IN ENCR/SIGN hack.
 
+  * add an option to use a OpenPGP packet as input (and don't build a literal
+    data packet)
 
 Nice to have
 ------------

@@ -1624,7 +1624,7 @@ update_trustdb()
 	ulong count=0, err_count=0, new_count=0;
 
 	while( !(rc = enum_keyblocks( 1, &kbpos, &keyblock )) ) {
-	    int modified;
+	    /*int modified;*/
 	    TRUSTREC drec;
 	    PKT_public_key *pk = find_kbnode( keyblock, PKT_PUBLIC_KEY )
 					->pkt->pkt.public_key;

@@ -1,3 +1,16 @@
+Tue Jul 13 17:39:25 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* pkclist.c (do_edit_ownertrust): Changed the way help works.
+	(build_pk_list): Implemented default recipient stuff.
+	* g10.c: New options --default-recipient[-self]
+	(main): Suppress greeting in most cases, entering a passphrase or
+	a missing value is not considered to be interactive use.
+	Merged --print-md and --print-mds; the latter is now obsolete.
+	Changed the way --gen-random works and documented it.
+	Changed the way --gen-prime works and add a man entry.
+	* g10.c (MAINTAINER_OPTIONS): Removed.
+
 Mon Jul 12 18:45:57 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

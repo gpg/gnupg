@@ -22,6 +22,15 @@ $Id$
 
 # default-key 621CC013
 
+# If you do not pass a recipient to gpg, it will ask for one.
+# Using this option you can encrypt to a default key.  key validation
+# will not be done in this case.
+# The second form uses the default key as default recipient.
+
+# default-recipient some-user-id
+# default-recipient-self
+
+
 # The next option is enabled because this one is needed for interoperation
 # with PGP 5 users.  To enable full OpenPGP compliance you have to remove
 # this option.
@@ -52,8 +61,11 @@ escape-from-lines
 # every time it is needed - normally this is not needed.
 lock-once
 
-# If you have configured GnuPG without a random gatherer,
-# you have to uncomment one of the following lines.
+# If you have configured GnuPG without a random gatherer
+# (./configure --enable-static-rnd=none), you have to
+# uncomment _one_ of the following lines.  These
+# extensions won't get used if you have a random gatherer
+# compiled in (which is the default for GNU and xxxBSD systems)
 #load-extension rndlinux
 #load-extension rndunix
 #load-extension rndegd

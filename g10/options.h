@@ -50,6 +50,8 @@ struct {
     int def_digest_algo;
     int def_compress_algo;
     const char *def_secret_key;
+    char *def_recipient;
+    int def_recipient_self;
     int no_comment;
     int no_version;
     int marginals_needed;

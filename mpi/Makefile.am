@@ -9,9 +9,7 @@ DISTCLEANFILES = mpih-add1.S mpih-mul1.S mpih-mul2.S mpih-mul3.S  \
 		 mpih-lshift.S mpih-rshift.S mpih-sub1.S asm-syntax.h sysdep.h
 CLEANFILES = tmp-*.s
 
-
 noinst_LTLIBRARIES = libmpi.la
-
 
 libmpi_la_LDFLAGS =
 libmpi_la_SOURCES = longlong.h	   \
