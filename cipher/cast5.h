@@ -25,11 +25,8 @@
 #define CAST5_BLOCKSIZE 8
 
 typedef struct {
-    u32 s0[256];
-    u32 s1[256];
-    u32 s2[256];
-    u32 s3[256];
-    u32 p[16+2];
+    u32  Km[16];
+    byte Kr[16];
     byte iv[CAST5_BLOCKSIZE];
     byte eniv[CAST5_BLOCKSIZE];
     int  count;
@@ -45,6 +42,7 @@ void cast5_encode_cfb( CAST5_context *c, byte *outbuf,
 					 byte *inbuf, unsigned nbytes);
 void cast5_decode_cfb( CAST5_context *c, byte *outbuf,
 					 byte *inbuf, unsigned nbytes);
+void cast5_sync_cfb( CAST5_context *c );
 
 
 #endif /*G10_CAST5_H*/

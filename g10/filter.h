@@ -61,6 +61,7 @@ typedef struct {
     DEK *dek;
     u32 datalen;
     BLOWFISH_context *bf_ctx;
+    CAST5_context *cast5_ctx;
     int header;
 } cipher_filter_context_t;
 

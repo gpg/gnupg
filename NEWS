@@ -1,3 +1,11 @@
+Noteworthy changes in version 0.2.15
+------------------------------------
+
+    * CAST5 works (using the PGP's special CFB mode).
+
+
+
+
 Noteworthy changes in version 0.2.14
 ------------------------------------
 

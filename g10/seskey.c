@@ -41,6 +41,7 @@ make_session_key( DEK *dek )
 	randomize_buffer( dek->key, dek->keylen, 1 );
 	break;
       case CIPHER_ALGO_BLOWFISH128:
+      case CIPHER_ALGO_CAST:
 	dek->keylen = 16;
 	randomize_buffer( dek->key, dek->keylen, 1 );
 	break;

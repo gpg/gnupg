@@ -33,6 +33,7 @@
   #include "../cipher/rsa.h"
 #endif
 #include "../cipher/blowfish.h"
+#include "../cipher/cast5.h"
 #include "../cipher/elgamal.h"
 #include "../cipher/dsa.h"
 #include "../cipher/random.h"

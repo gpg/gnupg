@@ -31,7 +31,10 @@
 #include "cipher.h"
 
 #if  BLOWFISH_BLOCKSIZE != 8
-  #error unsupportted blocksize
+  #error unsupported blocksize
+#endif
+#if  CAST5_BLOCKSIZE != 8
+  #error unsupported blocksize
 #endif
 
 static u16
@@ -71,10 +74,12 @@ check_elg( PKT_secret_cert *cert )
 	DEK *dek = NULL;
 	MPI test_x;
 	BLOWFISH_context *blowfish_ctx=NULL;
+	CAST5_context *cast5_ctx=NULL;
 
 	switch( cert->protect.algo ) {
 	  case CIPHER_ALGO_NONE: BUG(); break;
 	  case CIPHER_ALGO_BLOWFISH:
+	  case CIPHER_ALGO_CAST:
 	    keyid_from_skc( cert, keyid );
 	    if( cert->protect.s2k == 1 || cert->protect.s2k == 3 )
 		dek = get_passphrase_hash( keyid, NULL,
@@ -82,23 +87,41 @@ check_elg( PKT_secret_cert *cert )
 	    else
 		dek = get_passphrase_hash( keyid, NULL, NULL );
 
-	    blowfish_ctx = m_alloc_secure( sizeof *blowfish_ctx );
-	    blowfish_setkey( blowfish_ctx, dek->key, dek->keylen );
+	    if( cert->protect.algo == CIPHER_ALGO_CAST )
+		cast5_ctx = m_alloc_secure( sizeof *cast5_ctx );
+	    else
+		blowfish_ctx = m_alloc_secure( sizeof *blowfish_ctx );
+
+	    if( blowfish_ctx ) {
+		blowfish_setkey( blowfish_ctx, dek->key, dek->keylen );
+		blowfish_setiv( blowfish_ctx, NULL );
+	    }
+	    else {
+		cast5_setkey( cast5_ctx, dek->key, dek->keylen );
+		cast5_setiv( cast5_ctx, NULL );
+	    }
 	    m_free(dek); /* pw is in secure memory, so m_free() burns it */
-	    blowfish_setiv( blowfish_ctx, NULL );
 	    memcpy(save_iv, cert->protect.iv, 8 );
-	    blowfish_decode_cfb( blowfish_ctx, cert->protect.iv,
-					       cert->protect.iv, 8 );
+	    if( blowfish_ctx )
+		blowfish_decode_cfb( blowfish_ctx, cert->protect.iv,
+						   cert->protect.iv, 8 );
+	    else
+		cast5_decode_cfb( cast5_ctx, cert->protect.iv,
+						cert->protect.iv, 8 );
 	    mpi_set_secure(cert->d.elg.x );
 	    /*fixme: maybe it is better to set the buffer secure with a
 	     * new get_buffer_secure() function */
 	    buffer = mpi_get_buffer( cert->d.elg.x, &nbytes, NULL );
 	    csum = checksum_u16( nbytes*8 );
-	    blowfish_decode_cfb( blowfish_ctx, buffer, buffer, nbytes );
+	    if( blowfish_ctx )
+		blowfish_decode_cfb( blowfish_ctx, buffer, buffer, nbytes );
+	    else
+		cast5_decode_cfb( cast5_ctx, buffer, buffer, nbytes );
 	    csum += checksum( buffer, nbytes );
 	    test_x = mpi_alloc_secure( mpi_get_nlimbs(cert->d.elg.x) );
 	    mpi_set_buffer( test_x, buffer, nbytes, 0 );
 	    m_free( buffer );
+	    m_free( cast5_ctx );
 	    m_free( blowfish_ctx );
 	    /* now let's see wether we have used the right passphrase */
 	    if( csum != cert->csum ) {
@@ -155,10 +178,12 @@ check_dsa( PKT_secret_cert *cert )
 	DEK *dek = NULL;
 	MPI test_x;
 	BLOWFISH_context *blowfish_ctx=NULL;
+	CAST5_context *cast5_ctx=NULL;
 
 	switch( cert->protect.algo ) {
 	  case CIPHER_ALGO_NONE: BUG(); break;
 	  case CIPHER_ALGO_BLOWFISH:
+	  case CIPHER_ALGO_CAST:
 	    keyid_from_skc( cert, keyid );
 	    if( cert->protect.s2k == 1 || cert->protect.s2k == 3 )
 		dek = get_passphrase_hash( keyid, NULL,
@@ -166,24 +191,38 @@ check_dsa( PKT_secret_cert *cert )
 	    else
 		dek = get_passphrase_hash( keyid, NULL, NULL );
 
-	    blowfish_ctx = m_alloc_secure( sizeof *blowfish_ctx );
-	    blowfish_setkey( blowfish_ctx, dek->key, dek->keylen );
+	    if( cert->protect.algo == CIPHER_ALGO_CAST ) {
+		cast5_ctx = m_alloc_secure( sizeof *cast5_ctx );
+		cast5_setkey( cast5_ctx, dek->key, dek->keylen );
+		cast5_setiv( cast5_ctx, NULL );
+	    }
+	    else {
+		blowfish_ctx = m_alloc_secure( sizeof *blowfish_ctx );
+		blowfish_setkey( blowfish_ctx, dek->key, dek->keylen );
+		blowfish_setiv( blowfish_ctx, NULL );
+	    }
 	    m_free(dek); /* pw is in secure memory, so m_free() burns it */
-	    blowfish_setiv( blowfish_ctx, NULL );
 	    memcpy(save_iv, cert->protect.iv, 8 );
-	    blowfish_decode_cfb( blowfish_ctx,
-				 cert->protect.iv,
-				 cert->protect.iv, 8 );
+	    if( blowfish_ctx )
+		blowfish_decode_cfb( blowfish_ctx, cert->protect.iv,
+						   cert->protect.iv, 8 );
+	    else
+		cast5_decode_cfb( cast5_ctx, cert->protect.iv,
+					     cert->protect.iv, 8 );
 	    mpi_set_secure(cert->d.dsa.x );
 	    /*fixme: maybe it is better to set the buffer secure with a
 	     * new get_buffer_secure() function */
 	    buffer = mpi_get_buffer( cert->d.dsa.x, &nbytes, NULL );
 	    csum = checksum_u16( nbytes*8 );
-	    blowfish_decode_cfb( blowfish_ctx, buffer, buffer, nbytes );
+	    if( blowfish_ctx )
+		blowfish_decode_cfb( blowfish_ctx, buffer, buffer, nbytes );
+	    else
+		cast5_decode_cfb( cast5_ctx, buffer, buffer, nbytes );
 	    csum += checksum( buffer, nbytes );
 	    test_x = mpi_alloc_secure( mpi_get_nlimbs(cert->d.dsa.x) );
 	    mpi_set_buffer( test_x, buffer, nbytes, 0 );
 	    m_free( buffer );
+	    m_free( cast5_ctx );
 	    m_free( blowfish_ctx );
 	    /* now let's see wether we have used the right passphrase */
 	    if( csum != cert->csum ) {
@@ -399,6 +438,7 @@ protect_secret_key( PKT_secret_cert *cert, DEK *dek )
 
     if( !cert->is_protected ) { /* okay, apply the protection */
 	BLOWFISH_context *blowfish_ctx=NULL;
+	CAST5_context *cast5_ctx=NULL;
 
 	switch( cert->protect.algo ) {
 	  case CIPHER_ALGO_NONE: BUG(); break;
@@ -412,6 +452,18 @@ protect_secret_key( PKT_secret_cert *cert, DEK *dek )
 			     &blowfish_encode_cfb, blowfish_ctx, cert ) )
 		cert->is_protected = 1;
 	    m_free( blowfish_ctx );
+	    break;
+
+	  case CIPHER_ALGO_CAST:
+	    cast5_ctx = m_alloc_secure( sizeof *cast5_ctx );
+	    cast5_setkey( cast5_ctx, dek->key, dek->keylen );
+	    cast5_setiv( cast5_ctx, NULL );
+	    cast5_encode_cfb( cast5_ctx, cert->protect.iv,
+					       cert->protect.iv, 8 );
+	    if( !do_protect( (void (*)(void*,byte*,byte*,unsigned))
+			     &cast5_encode_cfb, cast5_ctx, cert ) )
+		cert->is_protected = 1;
+	    m_free( cast5_ctx );
 	    break;
 
 	  default:

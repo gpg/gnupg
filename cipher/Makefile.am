@@ -8,6 +8,8 @@ noinst_LIBRARIES = libcipher.a
 
 libcipher_a_SOURCES = blowfish.c     \
 		 blowfish.h	\
+		 cast5.c	\
+		 cast5.h	\
 		 elgamal.c	\
 		 elgamal.h	\
 		 md5.c		\

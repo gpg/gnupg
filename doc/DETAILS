@@ -234,3 +234,52 @@ There is one enhavement used ith the old style packet headers:
 +  another packet version to tell the application that it can not assume,
 +  that this is the last packet.
 
+
+
+
+
+Keyserver Message Format
+-------------------------
+
+The keyserver may be contacted by a Unix Domain socket or via TCP.
+
+The Format of a request is:
+
+----
+command-tag
+"Content-length:" digits
+CRLF
+------
+
+Where command-tag is
+
+GET <user-name>
+PUT
+DELETE <user-name>
+
+
+The format of a response is:
+
+------
+"GNUPG/1.0" status-code status-text
+"Content-length:" digits
+CRLF
+------------
+followed by <digits> bytes of data
+
+
+Status codes are:
+
+     o	1xx: Informational - Request received, continuing process
+
+     o	2xx: Success - The action was successfully received, understood,
+	and accepted
+
+     o	4xx: Client Error - The request contains bad syntax or cannot be
+	fulfilled
+
+     o	5xx: Server Error - The server failed to fulfill an apparently
+	valid request
+
+
+

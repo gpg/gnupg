@@ -1,3 +1,14 @@
+Sat Apr  4 20:07:01 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* cipher.c (cipher_filter): Support for CAST5
+	* encr-data.c (decode_filter): Ditto.
+	(decrypt_data): Ditto.
+	* seskey.c (make_session_key): Ditto.
+	* seckey-cert.c (check_elg, check_dsa): Ditto,
+	(protect_secret_key): Ditto.
+	* pubkey-enc.c (get_session_key): Ditto.
+	* passphrase.c (hash_passphrase): Ditto.
+
 Thu Apr  2 20:22:35 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* gpgd.c: New

@@ -162,6 +162,7 @@ check_cipher_algo( int algo )
     switch( algo ) {
       case CIPHER_ALGO_BLOWFISH128:
       case CIPHER_ALGO_BLOWFISH:
+      case CIPHER_ALGO_CAST:
 	return 0;
       default:
 	return G10ERR_CIPHER_ALGO;

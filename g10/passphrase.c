@@ -156,6 +156,19 @@ hash_passphrase( DEK *dek, char *pw, byte *salt )
 	memcpy( dek->key, md_read(md,0), dek->keylen );
 	md_close(md);
     }
+    else if( dek->algo == CIPHER_ALGO_CAST ) {
+	MD_HANDLE md;
+
+	md = md_open(DIGEST_ALGO_SHA1, 1);
+	if( salt )
+	    md_write( md, salt, 8 );
+	md_write( md, pw, strlen(pw) );
+	md_final( md );
+	/* use only the low 128 bits */
+	dek->keylen = 16;
+	memcpy( dek->key, md_read(md,0), dek->keylen );
+	md_close(md);
+    }
     else
 	rc = G10ERR_UNSUPPORTED;
     return rc;

@@ -18,6 +18,23 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+/* Test vectors:
+ *
+ * 128-bit key	       = 01 23 45 67 12 34 56 78 23 45 67 89 34 56 78 9A
+ *	   plaintext   = 01 23 45 67 89 AB CD EF
+ *	   ciphertext  = 23 8B 4F E5 84 7E 44 B2
+ *
+ * 80-bit  key	       = 01 23 45 67 12 34 56 78 23 45
+ *		       = 01 23 45 67 12 34 56 78 23 45 00 00 00 00 00 00
+ *	   plaintext   = 01 23 45 67 89 AB CD EF
+ *	   ciphertext  = EB 6A 71 1A 2C 02 27 1B
+ *
+ * 40-bit  key	       = 01 23 45 67 12
+ *		       = 01 23 45 67 12 00 00 00 00 00 00 00 00 00 00 00
+ *	   plaintext   = 01 23 45 67 89 AB CD EF
+ *	   ciphertext  = 7A C8 16 D1 6E 9B 30 2E
+ */
+
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,6 +43,7 @@
 #include "util.h"
 #include "types.h"
 #include "cast5.h"
+#include "random.h"
 
 static const u32 s1[256] = {
 0x30fb40d4, 0x9fa0ff0b, 0x6beccd2f, 0x3f258c7a, 0x1e213f2f, 0x9c004dd3, 0x6003e540, 0xcf9fc949,
@@ -301,171 +319,251 @@ static const u32 s8[256] = {
 };
 
 
-
-
-
-static u32
-function_F( CAST5_context *bc, u32 x )
+#if defined(__GNUC__) && defined(__i386__)
+static inline u32
+rol(int n, u32 x)
 {
-    u16 a, b, c, d, y;
-
-    d = x & 0x00ff;
-    x >>= 8;
-    c = x & 0x00ff;
-    x >>= 8;
-    b = x & 0x00ff;
-    x >>= 8;
-    a = x & 0x00ff;
-    y = bc->s0[a] + bc->s1[b];
-    y ^= bc->s2[c];
-    y += bc->s3[d];
-
-    return y;
+	__asm__("roll %%cl,%0"
+		:"=r" (x)
+		:"0" (x),"c" (n));
+	return x;
 }
+#else
+  #define rol(n,x) ( ((x) << (n)) | ((x) >> (32-(n))) )
+#endif
 
+#define F1(D,m,r)  (  (I = ((m) + (D))), (I=rol((r),I)),   \
+    (((s1[I >> 24] ^ s2[(I>>16)&0xff]) - s3[(I>>8)&0xff]) + s4[I&0xff]) )
+#define F2(D,m,r)  (  (I = ((m) ^ (D))), (I=rol((r),I)),   \
+    (((s1[I >> 24] - s2[(I>>16)&0xff]) + s3[(I>>8)&0xff]) ^ s4[I&0xff]) )
+#define F3(D,m,r)  (  (I = ((m) - (D))), (I=rol((r),I)),   \
+    (((s1[I >> 24] + s2[(I>>16)&0xff]) ^ s3[(I>>8)&0xff]) - s4[I&0xff]) )
 
 static void
-encrypt( CAST5_context *bc, u32 *ret_xl, u32 *ret_xr )
+encrypt_block( CAST5_context *c, byte *outbuf, byte *inbuf )
 {
-    u32 xl, xr, temp;
-    int i;
+    u32 l, r, t;
+    u32 I;   /* used by the Fx macros */
+    u32 *Km;
+    byte *Kr;
+
+    Km = c->Km;
+    Kr = c->Kr;
 
     /* (L0,R0) <-- (m1...m64).	(Split the plaintext into left and
      * right 32-bit halves L0 = m1...m32 and R0 = m33...m64.)
      */
-    xl = *ret_xl;
-    xr = *ret_xr;
+    l = inbuf[0] << 24 | inbuf[1] << 16 | inbuf[2] << 8 | inbuf[3];
+    r = inbuf[4] << 24 | inbuf[5] << 16 | inbuf[6] << 8 | inbuf[7];
 
-    for(i=0; i < 16; i++ ) {
-       /* (16 rounds) for i from 1 to 16, compute Li and Ri as follows:
-	*  Li = Ri-1;
-	*  Ri = Li-1 ^ f(Ri-1,Kmi,Kri), where f is defined in Section 2.2
-	* (f is of Type 1, Type 2, or Type 3, depending on i).
-	*/
-	xl ^= bc->p[i];
-	xr ^= function_F(bc, xl);
-	temp = xl;
-	xl = xr;
-	xr = temp;
-    }
+    /* (16 rounds) for i from 1 to 16, compute Li and Ri as follows:
+     *	Li = Ri-1;
+     *	Ri = Li-1 ^ f(Ri-1,Kmi,Kri), where f is defined in Section 2.2
+     * Rounds 1, 4, 7, 10, 13, and 16 use f function Type 1.
+     * Rounds 2, 5, 8, 11, and 14 use f function Type 2.
+     * Rounds 3, 6, 9, 12, and 15 use f function Type 3.
+     */
+
+    t = l; l = r; r = t ^ F1(r, Km[ 0], Kr[ 0]);
+    t = l; l = r; r = t ^ F2(r, Km[ 1], Kr[ 1]);
+    t = l; l = r; r = t ^ F3(r, Km[ 2], Kr[ 2]);
+    t = l; l = r; r = t ^ F1(r, Km[ 3], Kr[ 3]);
+    t = l; l = r; r = t ^ F2(r, Km[ 4], Kr[ 4]);
+    t = l; l = r; r = t ^ F3(r, Km[ 5], Kr[ 5]);
+    t = l; l = r; r = t ^ F1(r, Km[ 6], Kr[ 6]);
+    t = l; l = r; r = t ^ F2(r, Km[ 7], Kr[ 7]);
+    t = l; l = r; r = t ^ F3(r, Km[ 8], Kr[ 8]);
+    t = l; l = r; r = t ^ F1(r, Km[ 9], Kr[ 9]);
+    t = l; l = r; r = t ^ F2(r, Km[10], Kr[10]);
+    t = l; l = r; r = t ^ F3(r, Km[11], Kr[11]);
+    t = l; l = r; r = t ^ F1(r, Km[12], Kr[12]);
+    t = l; l = r; r = t ^ F2(r, Km[13], Kr[13]);
+    t = l; l = r; r = t ^ F3(r, Km[14], Kr[14]);
+    t = l; l = r; r = t ^ F1(r, Km[15], Kr[15]);
 
     /* c1...c64 <-- (R16,L16).	(Exchange final blocks L16, R16 and
      *	concatenate to form the ciphertext.) */
-    temp = xl;
-    xl = xr;
-    xr = temp;
-
-    xr ^= bc->p[CAST5_ROUNDS];
-    xl ^= bc->p[CAST5_ROUNDS+1];
-
-    *ret_xl = xl;
-    *ret_xr = xr;
+    outbuf[0] = (r >> 24) & 0xff;
+    outbuf[1] = (r >> 16) & 0xff;
+    outbuf[2] = (r >>  8) & 0xff;
+    outbuf[3] =  r	  & 0xff;
+    outbuf[4] = (l >> 24) & 0xff;
+    outbuf[5] = (l >> 16) & 0xff;
+    outbuf[6] = (l >>  8) & 0xff;
+    outbuf[7] =  l	  & 0xff;
 }
 
 static void
-decrypted(  CAST5_context *bc, u32 *ret_xl, u32 *ret_xr )
+decrypt_block(	CAST5_context *c, byte *outbuf, byte *inbuf )
 {
-    u32 xl, xr, temp;
-    int i;
+    u32 l, r, t;
+    u32 I;
+    u32 *Km;
+    byte *Kr;
 
-    xl = *ret_xl;
-    xr = *ret_xr;
+    Km = c->Km;
+    Kr = c->Kr;
 
-    for(i=CAST5_ROUNDS+1; i > 1; i-- ) {
-	xl ^= bc->p[i];
-	xr ^= function_F(bc, xl);
-	temp = xl;
-	xl = xr;
-	xr = temp;
+    l = inbuf[0] << 24 | inbuf[1] << 16 | inbuf[2] << 8 | inbuf[3];
+    r = inbuf[4] << 24 | inbuf[5] << 16 | inbuf[6] << 8 | inbuf[7];
+
+    t = l; l = r; r = t ^ F1(r, Km[15], Kr[15]);
+    t = l; l = r; r = t ^ F3(r, Km[14], Kr[14]);
+    t = l; l = r; r = t ^ F2(r, Km[13], Kr[13]);
+    t = l; l = r; r = t ^ F1(r, Km[12], Kr[12]);
+    t = l; l = r; r = t ^ F3(r, Km[11], Kr[11]);
+    t = l; l = r; r = t ^ F2(r, Km[10], Kr[10]);
+    t = l; l = r; r = t ^ F1(r, Km[ 9], Kr[ 9]);
+    t = l; l = r; r = t ^ F3(r, Km[ 8], Kr[ 8]);
+    t = l; l = r; r = t ^ F2(r, Km[ 7], Kr[ 7]);
+    t = l; l = r; r = t ^ F1(r, Km[ 6], Kr[ 6]);
+    t = l; l = r; r = t ^ F3(r, Km[ 5], Kr[ 5]);
+    t = l; l = r; r = t ^ F2(r, Km[ 4], Kr[ 4]);
+    t = l; l = r; r = t ^ F1(r, Km[ 3], Kr[ 3]);
+    t = l; l = r; r = t ^ F3(r, Km[ 2], Kr[ 2]);
+    t = l; l = r; r = t ^ F2(r, Km[ 1], Kr[ 1]);
+    t = l; l = r; r = t ^ F1(r, Km[ 0], Kr[ 0]);
+
+    outbuf[0] = (r >> 24) & 0xff;
+    outbuf[1] = (r >> 16) & 0xff;
+    outbuf[2] = (r >>  8) & 0xff;
+    outbuf[3] =  r	  & 0xff;
+    outbuf[4] = (l >> 24) & 0xff;
+    outbuf[5] = (l >> 16) & 0xff;
+    outbuf[6] = (l >>  8) & 0xff;
+    outbuf[7] =  l	  & 0xff;
+}
+
+
+
+static void
+selftest()
+{
+    CAST5_context c;
+    byte key[16]  = { 0x01, 0x23, 0x45, 0x67, 0x12, 0x34, 0x56, 0x78,
+		      0x23, 0x45, 0x67, 0x89, 0x34, 0x56, 0x78, 0x9A  };
+    byte plain[8] = { 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF };
+    byte cipher[8]= { 0x23, 0x8B, 0x4F, 0xE5, 0x84, 0x7E, 0x44, 0xB2 };
+    byte buffer[8];
+
+    cast5_setkey( &c, key, 16 );
+    encrypt_block( &c, buffer, plain );
+    if( memcmp( buffer, cipher, 8 ) )
+	log_error("wrong cast5-128 encryption\n");
+    decrypt_block( &c, buffer, buffer );
+    if( memcmp( buffer, plain, 8 ) )
+	log_bug("cast5-128 failed\n");
+
+  #if 0 /* full maintenance test */
+    {
+	int i;
+	byte a0[16] = { 0x01,0x23,0x45,0x67,0x12,0x34,0x56,0x78,
+			0x23,0x45,0x67,0x89,0x34,0x56,0x78,0x9A };
+	byte b0[16] = { 0x01,0x23,0x45,0x67,0x12,0x34,0x56,0x78,
+			0x23,0x45,0x67,0x89,0x34,0x56,0x78,0x9A };
+	byte a1[16] = { 0xEE,0xA9,0xD0,0xA2,0x49,0xFD,0x3B,0xA6,
+			0xB3,0x43,0x6F,0xB8,0x9D,0x6D,0xCA,0x92 };
+	byte b1[16] = { 0xB2,0xC9,0x5E,0xB0,0x0C,0x31,0xAD,0x71,
+			0x80,0xAC,0x05,0xB8,0xE8,0x3D,0x69,0x6E };
+
+	for(i=0; i < 1000000; i++ ) {
+	    cast5_setkey( &c, b0, 16 );
+	    encrypt_block( &c, a0, a0 );
+	    encrypt_block( &c, a0+8, a0+8 );
+	    cast5_setkey( &c, a0, 16 );
+	    encrypt_block( &c, b0, b0 );
+	    encrypt_block( &c, b0+8, b0+8 );
+	}
+	if( memcmp( a0, a1, 16 ) || memcmp( b0, b1, 16 ) )
+	    log_bug("cast5-128 maintenance test failed\n");
+
     }
-
-    temp = xl;
-    xl = xr;
-    xr = temp;
-
-    xr ^= bc->p[1];
-    xl ^= bc->p[0];
-
-    *ret_xl = xl;
-    *ret_xr = xr;
+  #endif
 }
 
-static void
-encrypted_block( CAST5_context *bc, byte *outbuf, byte *inbuf )
-{
-    u32 d1, d2;
-
-    d1 = ((u32*)inbuf)[0];
-    d2 = ((u32*)inbuf)[1];
-    encrypted( bc, &d1, &d2 );
-    ((u32*)outbuf)[0] = d1;
-    ((u32*)outbuf)[1] = d2;
-}
 
 static void
-decrypted_block( CAST5_context *bc, byte *outbuf, byte *inbuf )
+key_schedule( u32 *x, u32 *z, u32 *k )
 {
-    u32 d1, d2;
 
-    d1 = ((u32*)inbuf)[0];
-    d2 = ((u32*)inbuf)[1];
-    decrypted( bc, &d1, &d2 );
-    ((u32*)outbuf)[0] = d1;
-    ((u32*)outbuf)[1] = d2;
+  #define xi(i)   ((x[(i)/4] >> (8*(3-((i)%4)))) & 0xff)
+  #define zi(i)   ((z[(i)/4] >> (8*(3-((i)%4)))) & 0xff)
+
+    z[0] = x[0] ^ s5[xi(13)]^s6[xi(15)]^s7[xi(12)]^s8[xi(14)]^s7[xi( 8)];
+    z[1] = x[2] ^ s5[zi( 0)]^s6[zi( 2)]^s7[zi( 1)]^s8[zi( 3)]^s8[xi(10)];
+    z[2] = x[3] ^ s5[zi( 7)]^s6[zi( 6)]^s7[zi( 5)]^s8[zi( 4)]^s5[xi( 9)];
+    z[3] = x[1] ^ s5[zi(10)]^s6[zi( 9)]^s7[zi(11)]^s8[zi( 8)]^s6[xi(11)];
+    k[0] = s5[zi( 8)]^s6[zi( 9)]^s7[zi( 7)]^s8[zi( 6)]^s5[zi( 2)];
+    k[1] = s5[zi(10)]^s6[zi(11)]^s7[zi( 5)]^s8[zi( 4)]^s6[zi( 6)];
+    k[2] = s5[zi(12)]^s6[zi(13)]^s7[zi( 3)]^s8[zi( 2)]^s7[zi( 9)];
+    k[3] = s5[zi(14)]^s6[zi(15)]^s7[zi( 1)]^s8[zi( 0)]^s8[zi(12)];
+
+    x[0] = z[2] ^ s5[zi( 5)]^s6[zi( 7)]^s7[zi( 4)]^s8[zi( 6)]^s7[zi( 0)];
+    x[1] = z[0] ^ s5[xi( 0)]^s6[xi( 2)]^s7[xi( 1)]^s8[xi( 3)]^s8[zi( 2)];
+    x[2] = z[1] ^ s5[xi( 7)]^s6[xi( 6)]^s7[xi( 5)]^s8[xi( 4)]^s5[zi( 1)];
+    x[3] = z[3] ^ s5[xi(10)]^s6[xi( 9)]^s7[xi(11)]^s8[xi( 8)]^s6[zi( 3)];
+    k[4] = s5[xi( 3)]^s6[xi( 2)]^s7[xi(12)]^s8[xi(13)]^s5[xi( 8)];
+    k[5] = s5[xi( 1)]^s6[xi( 0)]^s7[xi(14)]^s8[xi(15)]^s6[xi(13)];
+    k[6] = s5[xi( 7)]^s6[xi( 6)]^s7[xi( 8)]^s8[xi( 9)]^s7[xi( 3)];
+    k[7] = s5[xi( 5)]^s6[xi( 4)]^s7[xi(10)]^s8[xi(11)]^s8[xi( 7)];
+
+    z[0] = x[0] ^ s5[xi(13)]^s6[xi(15)]^s7[xi(12)]^s8[xi(14)]^s7[xi( 8)];
+    z[1] = x[2] ^ s5[zi( 0)]^s6[zi( 2)]^s7[zi( 1)]^s8[zi( 3)]^s8[xi(10)];
+    z[2] = x[3] ^ s5[zi( 7)]^s6[zi( 6)]^s7[zi( 5)]^s8[zi( 4)]^s5[xi( 9)];
+    z[3] = x[1] ^ s5[zi(10)]^s6[zi( 9)]^s7[zi(11)]^s8[zi( 8)]^s6[xi(11)];
+    k[8] = s5[zi( 3)]^s6[zi( 2)]^s7[zi(12)]^s8[zi(13)]^s5[zi( 9)];
+    k[9] = s5[zi( 1)]^s6[zi( 0)]^s7[zi(14)]^s8[zi(15)]^s6[zi(12)];
+    k[10]= s5[zi( 7)]^s6[zi( 6)]^s7[zi( 8)]^s8[zi( 9)]^s7[zi( 2)];
+    k[11]= s5[zi( 5)]^s6[zi( 4)]^s7[zi(10)]^s8[zi(11)]^s8[zi( 6)];
+
+    x[0] = z[2] ^ s5[zi( 5)]^s6[zi( 7)]^s7[zi( 4)]^s8[zi( 6)]^s7[zi( 0)];
+    x[1] = z[0] ^ s5[xi( 0)]^s6[xi( 2)]^s7[xi( 1)]^s8[xi( 3)]^s8[zi( 2)];
+    x[2] = z[1] ^ s5[xi( 7)]^s6[xi( 6)]^s7[xi( 5)]^s8[xi( 4)]^s5[zi( 1)];
+    x[3] = z[3] ^ s5[xi(10)]^s6[xi( 9)]^s7[xi(11)]^s8[xi( 8)]^s6[zi( 3)];
+    k[12]= s5[xi( 8)]^s6[xi( 9)]^s7[xi( 7)]^s8[xi( 6)]^s5[xi( 3)];
+    k[13]= s5[xi(10)]^s6[xi(11)]^s7[xi( 5)]^s8[xi( 4)]^s6[xi( 7)];
+    k[14]= s5[xi(12)]^s6[xi(13)]^s7[xi( 3)]^s8[xi( 2)]^s7[xi( 8)];
+    k[15]= s5[xi(14)]^s6[xi(15)]^s7[xi( 1)]^s8[xi( 0)]^s8[xi(13)];
+
+  #undef xi
+  #undef zi
 }
 
 
 void
 cast5_setkey( CAST5_context *c, byte *key, unsigned keylen )
 {
-    int i, j, k;
-    u32 data, datal, datar;
+  static int initialized;
+    int i;
+    u32 x[4];
+    u32 z[4];
+    u32 k[16];
 
-    for(i=0; i < CAST5_ROUNDS+2; i++ )
-	c->p[i] = ps[i];
-    for(i=0; i < 256; i++ ) {
-	c->s0[i] = ks0[i];
-	c->s1[i] = ks1[i];
-	c->s2[i] = ks2[i];
-	c->s3[i] = ks3[i];
+    if( !initialized ) {
+	initialized = 1;
+	selftest();
     }
+    fast_random_poll();
 
-    for(i=j=0; i < BLOWFISH_ROUNDS+2; i++ ) {
-	data = 0;
-	for(k=0; k < 4; k++) {
-	    data = (data << 8) | key[j];
-	    if( ++j >= keylen )
-		j = 0;
-	}
-	c->p[i] ^= data;
-    }
+    assert(keylen==16);
+    x[0] = key[0]  << 24 | key[1]  << 16 | key[2]  << 8 | key[3];
+    x[1] = key[4]  << 24 | key[5]  << 16 | key[6]  << 8 | key[7];
+    x[2] = key[8]  << 24 | key[9]  << 16 | key[10] << 8 | key[11];
+    x[3] = key[12] << 24 | key[13] << 16 | key[14] << 8 | key[15];
 
-    datal = datar = 0;
-    for(i=0; i < CAST5_ROUNDS+2; i += 2 ) {
-	encrypted( c, &datal, &datar );
-	c->p[i]   = datal;
-	c->p[i+1] = datar;
-    }
-    for(i=0; i < 256; i += 2 )	{
-	encrypted( c, &datal, &datar );
-	c->s0[i]   = datal;
-	c->s0[i+1] = datar;
-    }
-    for(i=0; i < 256; i += 2 )	{
-	encrypted( c, &datal, &datar );
-	c->s1[i]   = datal;
-	c->s1[i+1] = datar;
-    }
-    for(i=0; i < 256; i += 2 )	{
-	encrypted( c, &datal, &datar );
-	c->s2[i]   = datal;
-	c->s2[i+1] = datar;
-    }
-    for(i=0; i < 256; i += 2 )	{
-	encrypted( c, &datal, &datar );
-	c->s3[i]   = datal;
-	c->s3[i+1] = datar;
-    }
+    key_schedule( x, z, k );
+    for(i=0; i < 16; i++ )
+	c->Km[i] = k[i];
+    key_schedule( x, z, k );
+    for(i=0; i < 16; i++ )
+	c->Kr[i] = k[i] & 0x1f;
+
+    memset(&x,0, sizeof x);
+    memset(&z,0, sizeof z);
+    memset(&k,0, sizeof k);
+
+  #undef xi
+  #undef zi
 }
 
 
@@ -477,7 +575,7 @@ cast5_setiv( CAST5_context *c, byte *iv )
     else
 	memset( c->iv, 0, CAST5_BLOCKSIZE );
     c->count = 0;
-    encrypted_block( c, c->eniv, c->iv );
+    encrypt_block( c, c->eniv, c->iv );
 }
 
 
@@ -488,7 +586,7 @@ cast5_encode( CAST5_context *c, byte *outbuf, byte *inbuf,
     unsigned n;
 
     for(n=0; n < nblocks; n++ ) {
-	encrypted_block( c, outbuf, inbuf );
+	encrypt_block( c, outbuf, inbuf );
 	inbuf  += CAST5_BLOCKSIZE;;
 	outbuf += CAST5_BLOCKSIZE;
     }
@@ -501,7 +599,7 @@ cast5_decode( CAST5_context *c, byte *outbuf, byte *inbuf,
     unsigned n;
 
     for(n=0; n < nblocks; n++ ) {
-	decrypted_block( c, outbuf, inbuf );
+	decrypt_block( c, outbuf, inbuf );
 	inbuf  += CAST5_BLOCKSIZE;;
 	outbuf += CAST5_BLOCKSIZE;
     }
@@ -527,9 +625,10 @@ xorblock( byte *out, byte *a, byte *b, unsigned count )
  */
 void
 cast5_encode_cfb( CAST5_context *c, byte *outbuf,
-					  byte *inbuf, unsigned nbytes)
+				       byte *inbuf, unsigned nbytes)
 {
     unsigned n;
+    int is_aligned;
 
     if( c->count ) {  /* must make a full block first */
 	assert( c->count < CAST5_BLOCKSIZE );
@@ -544,17 +643,35 @@ cast5_encode_cfb( CAST5_context *c, byte *outbuf,
 	outbuf += n;
 	assert( c->count <= CAST5_BLOCKSIZE);
 	if( c->count == CAST5_BLOCKSIZE ) {
-	    encrypted_block( c, c->eniv, c->iv );
+	    encrypt_block( c, c->eniv, c->iv );
 	    c->count = 0;
 	}
 	else
 	    return;
     }
     assert(!c->count);
+    is_aligned = !((ulong)inbuf % SIZEOF_UNSIGNED_LONG);
     while( nbytes >= CAST5_BLOCKSIZE ) {
-	xorblock( outbuf, c->eniv, inbuf, CAST5_BLOCKSIZE);
+	if( is_aligned ) {
+	  #if SIZEOF_UNSIGNED_LONG == CAST5_BLOCKSIZE
+	    *(ulong*)outbuf = *(ulong*)c->eniv ^ *(ulong*)inbuf;
+	  #elif (2*SIZEOF_UNSIGNED_LONG) == CAST5_BLOCKSIZE
+	    ((ulong*)outbuf)[0] = ((ulong*)c->eniv)[0] ^ ((ulong*)inbuf)[0];
+	    ((ulong*)outbuf)[1] = ((ulong*)c->eniv)[1] ^ ((ulong*)inbuf)[1];
+	  #elif (4*SIZEOF_UNSIGNED_LONG) == CAST5_BLOCKSIZE
+	    ((ulong*)outbuf)[0] = ((ulong*)c->eniv)[0] ^ ((ulong*)inbuf)[0];
+	    ((ulong*)outbuf)[1] = ((ulong*)c->eniv)[1] ^ ((ulong*)inbuf)[1];
+	    ((ulong*)outbuf)[2] = ((ulong*)c->eniv)[2] ^ ((ulong*)inbuf)[2];
+	    ((ulong*)outbuf)[3] = ((ulong*)c->eniv)[3] ^ ((ulong*)inbuf)[3];
+	  #else
+	    #error Please remove this info line.
+	    xorblock( outbuf, c->eniv, inbuf, CAST5_BLOCKSIZE);
+	  #endif
+	}
+	else  /* not aligned */
+	    xorblock( outbuf, c->eniv, inbuf, CAST5_BLOCKSIZE);
 	memcpy( c->iv, outbuf, CAST5_BLOCKSIZE);
-	encrypted_block( c, c->eniv, c->iv );
+	encrypt_block( c, c->eniv, c->iv );
 	nbytes -= CAST5_BLOCKSIZE;
 	inbuf += CAST5_BLOCKSIZE;
 	outbuf += CAST5_BLOCKSIZE;
@@ -571,9 +688,10 @@ cast5_encode_cfb( CAST5_context *c, byte *outbuf,
 
 void
 cast5_decode_cfb( CAST5_context *c, byte *outbuf,
-					  byte *inbuf, unsigned nbytes)
+				    byte *inbuf, unsigned nbytes)
 {
     unsigned n;
+    int is_aligned;
 
     if( c->count ) {  /* must make a full block first */
 	assert( c->count < CAST5_BLOCKSIZE );
@@ -588,7 +706,7 @@ cast5_decode_cfb( CAST5_context *c, byte *outbuf,
 	outbuf += n;
 	assert( c->count <= CAST5_BLOCKSIZE);
 	if( c->count == CAST5_BLOCKSIZE ) {
-	    encrypted_block( c, c->eniv, c->iv );
+	    encrypt_block( c, c->eniv, c->iv );
 	    c->count = 0;
 	}
 	else
@@ -596,10 +714,28 @@ cast5_decode_cfb( CAST5_context *c, byte *outbuf,
     }
 
     assert(!c->count);
+    is_aligned = !((ulong)inbuf % SIZEOF_UNSIGNED_LONG);
     while( nbytes >= CAST5_BLOCKSIZE ) {
 	memcpy( c->iv, inbuf, CAST5_BLOCKSIZE);
-	xorblock( outbuf, c->eniv, inbuf, CAST5_BLOCKSIZE);
-	encrypted_block( c, c->eniv, c->iv );
+	if( is_aligned ) {
+	  #if SIZEOF_UNSIGNED_LONG == CAST5_BLOCKSIZE
+	    *(ulong*)outbuf = *(ulong*)c->eniv ^ *(ulong*)inbuf;
+	  #elif (2*SIZEOF_UNSIGNED_LONG) == CAST5_BLOCKSIZE
+	    ((ulong*)outbuf)[0] = ((ulong*)c->eniv)[0] ^ ((ulong*)inbuf)[0];
+	    ((ulong*)outbuf)[1] = ((ulong*)c->eniv)[1] ^ ((ulong*)inbuf)[1];
+	  #elif (4*SIZEOF_UNSIGNED_LONG) == CAST5_BLOCKSIZE
+	    ((ulong*)outbuf)[0] = ((ulong*)c->eniv)[0] ^ ((ulong*)inbuf)[0];
+	    ((ulong*)outbuf)[1] = ((ulong*)c->eniv)[1] ^ ((ulong*)inbuf)[1];
+	    ((ulong*)outbuf)[2] = ((ulong*)c->eniv)[2] ^ ((ulong*)inbuf)[2];
+	    ((ulong*)outbuf)[3] = ((ulong*)c->eniv)[3] ^ ((ulong*)inbuf)[3];
+	  #else
+	    #error Please remove this info line.
+	    xorblock( outbuf, c->eniv, inbuf, CAST5_BLOCKSIZE);
+	  #endif
+	}
+	else  /* not aligned */
+	    xorblock( outbuf, c->eniv, inbuf, CAST5_BLOCKSIZE);
+	encrypt_block( c, c->eniv, c->iv );
 	nbytes -= CAST5_BLOCKSIZE;
 	inbuf += CAST5_BLOCKSIZE;
 	outbuf += CAST5_BLOCKSIZE;
@@ -612,4 +748,17 @@ cast5_decode_cfb( CAST5_context *c, byte *outbuf,
     }
 
 }
+
+
+
+void
+cast5_sync_cfb( CAST5_context *c )
+{
+    if( c->count ) {
+	memmove(c->iv + c->count, c->iv, CAST5_BLOCKSIZE - c->count );
+	memcpy(c->iv, c->eniv + CAST5_BLOCKSIZE - c->count, c->count);
+	c->count = 0;
+    }
+}
+
 
