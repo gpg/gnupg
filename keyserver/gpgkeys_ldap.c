@@ -839,7 +839,7 @@ int main(int argc,char *argv[])
 
   err=ldap_search_s(ldap,"cn=PGPServerInfo",LDAP_SCOPE_BASE,
 		    "(objectclass=*)",attrs,0,&res);
-  if(err==-1)
+  if(err!=0)
     {
       fprintf(console,"gpgkeys: error retrieving LDAP server info: %s\n",
 	      ldap_err2string(err));
