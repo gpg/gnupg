@@ -1,3 +1,8 @@
+2002-11-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* cipher.c (string_to_cipher_algo), md.c (string_to_digest_algo):
+	Allow the Sxxx and Hxxx format for cipher and digest names.
+
 2002-10-31  Stefan Bellon  <sbellon@sbellon.de>
 
 	* rndriscos.c (rndriscos_gather_random): Use riscos_load_module()

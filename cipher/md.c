@@ -120,9 +120,22 @@ string_to_digest_algo( const char *string )
 	    if( !ascii_strcasecmp( r->name, string ) )
 		return r->algo;
     } while( !r && load_digest_module () );
+
+    /* Didn't find it, so try the Hx format */
+    if(string[0]=='H' || string[0]=='h')
+      {
+	long val;
+	char *endptr;
+
+	string++;
+
+	val=strtol(string,&endptr,10);
+	if(*string!='\0' && *endptr=='\0' && check_digest_algo(val)==0)
+	  return val;
+      }
+
     return 0;
 }
-
 
 /****************
  * Map a digest algo to a string

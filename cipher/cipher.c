@@ -211,12 +211,6 @@ load_cipher_modules(void)
   return 0;
 }
 
-
-
-
-
-
-
 /****************
  * Map a string to the cipher algo
  */
@@ -245,6 +239,20 @@ string_to_cipher_algo( const char *string )
             return cipher_table[i].algo;
         }
     } while( load_cipher_modules() );
+
+    /* Didn't find it, so try the Sx format */
+    if(string[0]=='S' || string[0]=='s')
+      {
+	long val;
+	char *endptr;
+
+	string++;
+
+	val=strtol(string,&endptr,10);
+	if(*string!='\0' && *endptr=='\0' && check_cipher_algo(val)==0)
+	  return val;
+      }
+
   return 0;
 }
 
@@ -675,4 +683,3 @@ cipher_sync( CIPHER_HANDLE c )
 	c->unused = 0;
     }
 }
-
