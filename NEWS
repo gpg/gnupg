@@ -15,9 +15,12 @@ Noteworthy changes in version 1.3.4 (unreleased)
       version 1.3.4 will try for gpg.conf-1.3.4, gpg.conf-1.3, and
       gpg.conf-1 before falling back to the regular gpg.conf file.
 
-    * Fixed a format string bug in external HKP support.
+    * Fixed a format string bug in the HKP keyserver handler.
 
-    * Disabled the creation of ELGamal signatures.
+    * Support for Elgamal sign+encrypt keys has been removed.  Old
+      signatures may still be verified, and existing encrypted
+      messages may still be decrypted, but no new signatures may be
+      issued by, and no new messages will be encrypted to, these keys.
 
 
 Noteworthy changes in version 1.3.3 (2003-10-10)

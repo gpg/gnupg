@@ -1,5 +1,8 @@
 2003-11-27  David Shaw  <dshaw@jabberwocky.com>
 
+	* NEWS: Note that we won't encrypt to an Elgamal sign+encrypt key
+	any longer.
+
 	* configure.ac: Use MSG_NOTICE instead of MSG_WARN for less
 	serious notifications.
 
