@@ -1,5 +1,10 @@
 2003-12-03  David Shaw  <dshaw@jabberwocky.com>
 
+	* g10.c (strusage, main): Show development version warning in
+	--version output.
+	(main): Set --bzip2-compress-level to the default value at
+	startup.  Remove --emulate-checksum-bug noop.
+
 	* options.h, g10.c (main), main.h, seskey.c (do_encode_md,
 	encode_md_value), sig-check.c (do_check), sign.c (do_sign): Remove
 	--emulate-md-encode-bug as it only applied to Elgamal signatures,
