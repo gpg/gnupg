@@ -255,7 +255,13 @@ int get_key(char *getkey)
 
 	  /* Use the long keyid to remove duplicates.  The LDAP server
 	     returns the same keyid more than once if there are
-	     multiple user IDs on the key. */
+	     multiple user IDs on the key.  Note that this does NOT
+	     mean that a keyid that exists multiple times on the
+	     keyserver will not be fetched.  It means that each KEY,
+	     no matter how many user IDs share it's keyid, will be
+	     fetched only once.  If a keyid that belongs to more than
+	     one key is fetched, the server quite properly responds
+	     with all matching keys. -ds */
 
 	  vals=ldap_get_values(ldap,each,"pgpcertid");
 	  if(vals!=NULL)
