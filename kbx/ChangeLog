@@ -1,3 +1,15 @@
+2002-02-25  Werner Koch  <wk@gnupg.org>
+
+	* keybox-search.c (blob_cmp_mail): Use case-insensitive compare
+	because mail addresses are in general case insensitive (well
+	RFC2822 allows for case sensitive mailbox parts, but this is in
+	general considired a Bad Thing). Add additional substr parameter
+	to allow for substring matches within the mail address.  Change
+	all callers to pass this along.
+	(blob_cmp_name): Likewise but do the case-insensitive search only
+	in sub string mode.
+	(keybox_search): Implement MAILSUB and SUBSTR mode.
+
 2002-01-21  Werner Koch  <wk@gnupg.org>
 
 	* keybox-search.c (keybox_search): Allow KEYDB_SEARCH_MODE_FPR20.

@@ -24,6 +24,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "../jnlib/stringhelp.h" /* ascii_xxxx() */
 #include "keybox-defs.h"
 
 #define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
@@ -138,7 +139,8 @@ blob_cmp_fpr (KEYBOXBLOB blob, const unsigned char *fpr)
 
 
 static int
-blob_cmp_name (KEYBOXBLOB blob, int idx, const char *name, size_t namelen)
+blob_cmp_name (KEYBOXBLOB blob, int idx,
+               const char *name, size_t namelen, int substr)
 {
   const unsigned char *buffer;
   size_t length;
@@ -190,8 +192,16 @@ blob_cmp_name (KEYBOXBLOB blob, int idx, const char *name, size_t namelen)
           if (len < 2)
             continue; /* empty name or 0 not stored */
           len--;
-          if (len == namelen && !memcmp (buffer+off, name, len))
-            return 1; /* found */
+          if (substr)
+            {
+              if (ascii_memcasemem (buffer+off, len, name, namelen))
+                return 1; /* found */
+            }
+          else
+            {
+              if (len == namelen && !memcmp (buffer+off, name, len))
+                return 1; /* found */
+            }
         }
       return 0; /* not found */
     }
@@ -206,15 +216,23 @@ blob_cmp_name (KEYBOXBLOB blob, int idx, const char *name, size_t namelen)
         return 0; /* out of bounds */
       if (len < 1)
         return 0; /* empty name */
-      
-      return len == namelen && !memcmp (buffer+off, name, len);
+
+      if (substr)
+        {
+          return !!ascii_memcasemem (buffer+off, len, name, namelen);
+        }
+      else
+        {
+          return len == namelen && !memcmp (buffer+off, name, len);
+        }
     }
 }
 
 
-/* compare all email addresses of the subject */
+/* compare all email addresses of the subject.  With SUBSTR given as
+   True a substring search is done in the mail address */
 static int
-blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen)
+blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr)
 {
   const unsigned char *buffer;
   size_t length;
@@ -268,10 +286,18 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen)
         continue; /* empty name or trailing 0 not stored */
       len--; /* one back */
       if ( len < 3 || buffer[off+len] != '>')
-        continue; /* not a prober email address */
+        continue; /* not a proper email address */
       len--; 
-      if (len == namelen && !memcmp (buffer+off+1, name, len))
-        return 1; /* found */
+      if (substr)
+        {
+          if (ascii_memcasemem (buffer+off+1, len, name, namelen))
+            return 1; /* found */
+        }
+      else
+        {
+          if (len == namelen && !ascii_memcasecmp (buffer+off+1, name, len))
+            return 1; /* found */
+        }
     }
   return 0; /* not found */
 }
@@ -314,7 +340,7 @@ has_issuer (KEYBOXBLOB blob, const char *name)
     return 0;
 
   namelen = strlen (name);
-  return blob_cmp_name (blob, 0 /* issuer */, name, namelen);
+  return blob_cmp_name (blob, 0 /* issuer */, name, namelen, 0);
 }
 
 static int
@@ -332,7 +358,7 @@ has_issuer_sn (KEYBOXBLOB blob, const char *name,
   namelen = strlen (name);
   
   return (blob_cmp_sn (blob, sn, snlen)
-          && blob_cmp_name (blob, 0 /* issuer */, name, namelen));
+          && blob_cmp_name (blob, 0 /* issuer */, name, namelen, 0));
 }
 
 static int
@@ -356,11 +382,11 @@ has_subject (KEYBOXBLOB blob, const char *name)
     return 0;
 
   namelen = strlen (name);
-  return blob_cmp_name (blob, 1 /* subject */, name, namelen);
+  return blob_cmp_name (blob, 1 /* subject */, name, namelen, 0);
 }
 
 static int
-has_subject_or_alt (KEYBOXBLOB blob, const char *name)
+has_subject_or_alt (KEYBOXBLOB blob, const char *name, int substr)
 {
   size_t namelen;
 
@@ -370,12 +396,13 @@ has_subject_or_alt (KEYBOXBLOB blob, const char *name)
     return 0;
 
   namelen = strlen (name);
-  return blob_cmp_name (blob, -1 /* all subject names*/, name, namelen);
+  return blob_cmp_name (blob, -1 /* all subject names*/, name,
+                        namelen, substr);
 }
 
 
 static int
-has_mail (KEYBOXBLOB blob, const char *name)
+has_mail (KEYBOXBLOB blob, const char *name, int substr)
 {
   size_t namelen;
 
@@ -387,7 +414,7 @@ has_mail (KEYBOXBLOB blob, const char *name)
   namelen = strlen (name);
   if (namelen && name[namelen-1] == '>')
     namelen--;
-  return blob_cmp_mail (blob, name, namelen);
+  return blob_cmp_mail (blob, name, namelen, substr);
 }
 
 
@@ -564,15 +591,21 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
               never_reached ();
               break;
             case KEYDB_SEARCH_MODE_EXACT: 
-              if (has_subject_or_alt (blob, desc[n].u.name))
+              if (has_subject_or_alt (blob, desc[n].u.name, 0))
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_MAIL:
-              if (has_mail (blob, desc[n].u.name))
+              if (has_mail (blob, desc[n].u.name, 0))
+                goto found;
+              break;
+            case KEYDB_SEARCH_MODE_MAILSUB:
+              if (has_mail (blob, desc[n].u.name, 1))
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_SUBSTR:
-            case KEYDB_SEARCH_MODE_MAILSUB:
+              if (has_subject_or_alt (blob, desc[n].u.name, 1))
+                goto found;
+              break;
             case KEYDB_SEARCH_MODE_MAILEND:
             case KEYDB_SEARCH_MODE_WORDS: 
               never_reached (); /* not yet implemented */
