@@ -42,8 +42,8 @@
     <title>Introduction</title>
     <sect1 id="feedback">
       <title>Feedback</title>
-      <para>Well, I'm german and I find it hard to express myself in
-	english. So if you find some phrases and/or words that I used
+      <para>Well, I'm German and I find it hard to express myself in
+	English. So if you find some phrases and/or words that I used
 	in a wrong way (and you will find them :-) ), please send me a
 	mail, to let me correct this. Please send me notes about
 	typos, too.</para>
@@ -51,7 +51,7 @@
 
 
     <sect1 id="whatis">
-	<title>What is GBUPG</title>
+	<title>What is GNUPG</title>
       <para>GNUPG is a free data encryption and signing tool.
 
 	<screen>
@@ -81,7 +81,7 @@
      <optional><parameter>options</parameter></optional>
      <replaceable class="parameter">file name</replaceable>
      </synopsis>
-     <refpurpose>is the GNUU tool for signing and exncryption</>
+     <refpurpose>is the GNU tool for signing and encryption</>
      <refsect1>
      <title>Description</title>
      <para> </para>

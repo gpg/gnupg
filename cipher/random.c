@@ -162,6 +162,13 @@ randomize_buffer( byte *buffer, size_t length, int level )
 }
 
 
+int
+random_is_faked()
+{
+    if( !is_initialized )
+	initialize();
+    return faked_rng || quick_test;
+}
 
 /****************
  * Return a pointer to a randomized buffer of level 0 and LENGTH bits

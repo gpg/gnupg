@@ -106,12 +106,16 @@ case "${target}" in
     m680[234]0*-*-linux* | m68k*-*-linux*)
 	echo '#define ELF_SYNTAX'           >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
-	path="m68k/mc68020 m68k"
 	;;
     m68060*-*-linux*)
 	echo '#define ELF_SYNTAX'           >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
 	path="m68k"
+	;;
+    m68k-atari-mint)
+	echo '#define MIT_SYNTAX'           >>./mpi/asm-syntax.h
+	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
+	path="m68k/mc68020 m68k"
 	;;
     m68000*-*-* | m68060*-*-*)
 	echo '#define MIT_SYNTAX'           >>./mpi/asm-syntax.h

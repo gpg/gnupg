@@ -21,7 +21,7 @@
   public key, and he would only be able to decrypt it by having the secret
   key and putting in the password to use his secret key.
 
-  GNUPG is also usefull for signing things.  Things that are encrypted with
+  GNUPG is also useful for signing things.  Things that are encrypted with
   the secret key can be decrypted with the public key. To sign something, a
   hash is taken of the data, and then the hash is in some form encoded
   with the secret
@@ -38,23 +38,23 @@
   You can 'conventionally' encrypt something by using the option 'gpg -c'.
   It is encrypted using a passphrase, and does not use public and secret
   keys.  If the person you send the data to knows that passphrase, they can
-  decrypt it. This is usually most usefull for encrypting things to
+  decrypt it. This is usually most useful for encrypting things to
   yourself, although you can encrypt things to your own public key in the
   same way.  It should be used for communication with partners you know and
   where it is easy to exchange the passphrases (e.g. with your boy friend or
-  your wife).  The advantage is that you can chnage the passphrase from time
-  to time and decrease the risk, that many old messages may be decryptted by
+  your wife).  The advantage is that you can change the passphrase from time
+  to time and decrease the risk, that many old messages may be decrypted by
   people who accidently got your passphrase.
 
   You can add and copy keys to and from your keyring with the 'gpg --import'
   and 'gpg --export' option. 'gpg --export-secret-keys' will export secret
-  keys. This is normally not usefull, but you can generate the key on one
+  keys. This is normally not useful, but you can generate the key on one
   machine then move it to another machine.
 
   Keys can be signed under the 'gpg --edit-key' option.  When you sign a
   key, you are saying that you are certain that the key belongs to the
   person it says it comes from.  You should be very sure that is really
-  taht person:	You should verify the key fingerprint
+  that person:	You should verify the key fingerprint
 
       gpg --fingerprint user-id
 
@@ -69,7 +69,7 @@
 
   Oh yeah, this is important. By default all data is encrypted in some weird
   binary format.  If you want to have things appear in ascii text that is
-  readable, just add the '-a' option.  But the preferred methos is to use
+  readable, just add the '-a' option.  But the preferred method is to use
   a MIME aware mail reader (Mutt, Pine and many more).
 
   There is a small security glitch in the OpenPGP (and therefor GNUPG) system;
@@ -80,7 +80,7 @@
  Q: What is the recommended key size?
  A: 1024 bit for DSA signatures; even for plain ElGamal
     signatures this is sufficient as the size of the hash
-    is probably the weakest link if the keyssize is larger
+    is probably the weakest link if the keysize is larger
     than 1024 bits.  Encryption keys may have greater sizes,
     but you should than check the fingerprint of this key.
 
@@ -100,7 +100,7 @@
     at least for decryption).  To be better interoperable, GNUPG
     (starting with version 0.3.3) now also uses type 16 for the
     ElGamal subkey which is created if the default key algorithm
-    is choosen.  You may add an type 16 ElGamal key to your public
+    is chosen.  You may add an type 16 ElGamal key to your public
     key which is easy as your key signatures are still valid.
 
  Q: Why is PGP 5.x not able to verify my messages.
@@ -109,14 +109,14 @@
     data.  Use the option "--force-v3-sigs" to generate V3 signatures
     for data.
 
- Q: I can't delete a user id because it is already deleted on my
+ Q: I can't delete an user id because it is already deleted on my
     public keyring.
  A: Because you can only select from the public key ring, there is
     no direct way to do this.  However it is not so complicated
     do to it anyway:  Create a new user id with exactly the same name,
     you will notice that there are two identical user ids on the
     secret ring now.  Now select this user id and delete it; both
-    user ids from the secret ring will be remoed.
+    user ids from the secret ring will be removed.
 
  Q: How can I encrypt a message in way pgp 2.x is able to decrypt it later?
  A: You can't do that because pgp 2.x normally uses IDEA which is not
@@ -175,7 +175,7 @@
   trustdb which holds a list of valid key signatures.  If you are not
   running in batch mode you will be asked to assign a trust parameter
   (ownertrust) to a key.  I have plans to use a cache for calculated
-  trust values to speed up calcualtion.
+  trust values to speed up calculation.
 
   You can see the validity (calculated trust value) using this command:
 
@@ -202,19 +202,19 @@
   the assigned value:
 
       - = No Ownertrust value yet assigned.
-      n = Never trust this keyholder to correctly verifiy others signatures.
+      n = Never trust this keyholder to correctly verify others signatures.
       m = Have marginal trust in the keyholders capability to sign other keys.
       f = Assume that the key holder really knows how to sign keys.
       u = No need to trust ourself because we have the secret key.
 
-  Please keep these values confidential, as they express some opiones of
+  Please keep these values confidential, as they express some opinions of
   you about others. PGP does store these information with the keyring, so
   it is not a good idea to publish the keyring instead of exporting the
   keyring - gnupg stores the trust in the trust-DB and therefor it is okay
   to give the keyring away (but we have a --export command too).
 
 
-  Q: What is the differenc between options and commands?
+  Q: What is the difference between options and commands?
   A: If you do a "gpg --help", you will get two separate lists. The first is a list
   of commands. The second is a list of options. Whenever you run GPG, you *must*
   pick exactly one command (**with one exception, see below). You *may* pick one
@@ -266,7 +266,7 @@
 
 
   Q: What kind of output is this: "key C26EE891.298, uid 09FB: ...."?
-  A: This is the internal representaion of a user id in the trustdb.
+  A: This is the internal representation of an user id in the trustdb.
      "C26EE891" is the keyid, "298" is the local id (a record number
      in the trustdb) and "09FB" are the last two bytes of a ripe-md-160
      hash of the user id for this key.
@@ -293,7 +293,7 @@
 	"uid 12345678.3456/ACDE"
      This is about the user ID for the same key; to identify the
      user ID the last two bytes of a ripe-md-160 over the user ID
-     tring is printed.
+     ring is printed.
 	"sig 12345678.3456/ACDE/9A8B7C6D"
      This is about the signature with key ID 9A8B7C6D for the
      above key and user ID, if it is a signature which is direct

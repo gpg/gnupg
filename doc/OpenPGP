@@ -26,7 +26,7 @@
     * (9.2) states that IDEA SHOULD be implemented.  This is not done
       due to patent problems.
 
-    * (12.1) states that an implementaion MUST NOT use a symmetric
+    * (12.1) states that an implementation MUST NOT use a symmetric
       algorithm which is not in the preference list.  GnuPG has an
       option to override this.
 
@@ -79,8 +79,8 @@
        it with a V3 keyid, and can properly use only a V3 format RSA
        key.
 
-     * Neither PGP 5.x nor PGP 6.0 recognize Elgamal Encrypt and Sign
-       keys. They only handle Elgamal Encrypt-only keys.
+     * Neither PGP 5.x nor PGP 6.0 recognize ElGamal Encrypt and Sign
+       keys. They only handle ElGamal Encrypt-only keys.
 
 
   Parts of this document are taken from:

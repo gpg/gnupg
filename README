@@ -34,7 +34,7 @@
     the word "subscribe" in the body to "g10-request@net.lut.ac.uk".
     This mailing list is a closed one (only subscribers are allowed
     to post) to avoid misuse by folks who don't know the Netiquette
-    and trash you mailspool with commercial junk.
+    and trash your mailspool with commercial junk.
 
     See the file COPYING for copyright and warranty information.
 
@@ -301,7 +301,7 @@
     user ID is the one with an email address you prefer - because
     you have no signatures on this email address it is easy to change
     this address.  Remember: Your signators sign your public key (the
-    primary one) together with one od your user IDs - so it is not possible
+    primary one) together with one of your user IDs - so it is not possible
     to change the user ID later without voiding all the signatures.
 
     Tip: If you hear about a key signing party on a computer conference
@@ -412,7 +412,7 @@
     The primary FTP site is "ftp://ftp.gnupg.org/pub/gcrypt/"
     The primary WWW page is "http://www.gnupg.org"
 
-    See http://www.gnugp.org/mirrors.html for a list of FTP mirrors
+    See http://www.gnupg.org/mirrors.html for a list of FTP mirrors
     and use them if possible.
 
     Please direct bug reports to <gnupg-bugs@gnu.org> or better
@@ -420,7 +420,7 @@
     closed list - subscribe before posting, see above (~line 33)).
     Please direct questions about GnuPG to the mailing list or
     one of the pgp newsgroups; this gives me more time to improve
-    GnuPG.  Commercial support for GnuPG will be availabe soon.
+    GnuPG.  Commercial support for GnuPG will be available soon.
 
     Have fun and remember: Echelon is looking at you kid.
 

@@ -661,12 +661,13 @@ import_revoke_cert( const char *fname, KBNODE node )
  * loop over the keyblock and check all self signatures.
  * Mark all user-ids with a self-signature by setting flag bit 0.
  * Mark all user-ids with an invalid self-signature by setting bit 1.
+ * This works allso for subkeys, here the subkey is marked.
  */
 static int
 chk_self_sigs( const char *fname, KBNODE keyblock,
 	       PKT_public_key *pk, u32 *keyid )
 {
-    KBNODE n, unode;
+    KBNODE n;
     PKT_signature *sig;
     int rc;
 
@@ -675,22 +676,50 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 	    continue;
 	sig = n->pkt->pkt.signature;
 	if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
-	    unode = find_prev_kbnode( keyblock, n, PKT_USER_ID );
-	    if( !unode )  {
-		log_error_f(fname, _("key %08lX: no user-id for signature\n"),
-					(ulong)keyid[1]);
-		return -1;  /* the complete keyblock is invalid */
-	    }
-	    rc = check_key_signature( keyblock, n, NULL);
-	    if( rc ) {
-		log_error_f( fname,  rc == G10ERR_PUBKEY_ALGO ?
-			  _("key %08lX: unsupported public key algorithm\n"):
-			  _("key %08lX: invalid self-signature\n"),
-				 (ulong)keyid[1]);
+	    if( (sig->sig_class&~3) == 0x10 ) {
+		KBNODE unode = find_prev_kbnode( keyblock, n, PKT_USER_ID );
+		if( !unode )  {
+		    log_error_f(fname,
+				_("key %08lX: no user-id for signature\n"),
+					    (ulong)keyid[1]);
+		    return -1;	/* the complete keyblock is invalid */
+		}
+		rc = check_key_signature( keyblock, n, NULL);
+		if( rc ) {
+		    log_error_f( fname,  rc == G10ERR_PUBKEY_ALGO ?
+			 _("key %08lX: unsupported public key algorithm\n"):
+			 _("key %08lX: invalid self-signature\n"),
+				     (ulong)keyid[1]);
 
-		unode->flag |= 2; /* mark as invalid */
+		    unode->flag |= 2; /* mark as invalid */
+		}
+		unode->flag |= 1; /* mark that signature checked */
 	    }
-	    unode->flag |= 1; /* mark that signature checked */
+	    else if( sig->sig_class == 0x18 ) {
+		KBNODE knode = find_prev_kbnode( keyblock,
+						 n, PKT_PUBLIC_SUBKEY );
+		if( !knode )
+		    knode = find_prev_kbnode( keyblock,
+						 n, PKT_SECRET_SUBKEY );
+
+		if( !knode )  {
+		    log_error_f(fname,
+			      _("key %08lX: no subkey for key binding\n"),
+					    (ulong)keyid[1]);
+		}
+		else {
+		    rc = check_key_signature( keyblock, n, NULL);
+		    if( rc ) {
+			log_error_f( fname,  rc == G10ERR_PUBKEY_ALGO ?
+			   _("key %08lX: unsupported public key algorithm\n"):
+			   _("key %08lX: invalid subkey binding\n"),
+					 (ulong)keyid[1]);
+
+			knode->flag |= 2; /* mark as invalid */
+		    }
+		}
+		knode->flag |= 1; /* mark that signature checked */
+	    }
 	}
     }
     return 0;
@@ -729,6 +758,22 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 	    }
 	    else
 		nvalid++;
+	}
+	else if(    node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+		 || node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
+	    if( (node->flag & 2) || !(node->flag & 1) ) {
+		if( opt.verbose ) {
+		    log_info_f(fname, _("key %08lX: skipped subkey\n"),
+							 (ulong)keyid[1]);
+		}
+		delete_kbnode( node ); /* the subkey */
+		/* and all following signature packets */
+		while( node->next
+		       && node->next->pkt->pkttype == PKT_SIGNATURE ) {
+		    delete_kbnode( node->next );
+		    node = node->next;
+		}
+	    }
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE
 		 && check_pubkey_algo( node->pkt->pkt.signature->pubkey_algo)
@@ -845,7 +890,7 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 	}
     }
 
-    /* merge subkey certifcates */
+    /* merge subkey certificates */
     for(onode=keyblock_orig->next; onode; onode=onode->next ) {
 	if( !(onode->flag & 1)
 	    &&	(   onode->pkt->pkttype == PKT_PUBLIC_SUBKEY

@@ -45,7 +45,7 @@ Format of the "--status-fd" output
 Every line is prefixed with "[GNUPG:] ", followed by a keyword with
 the type of the status line and a some arguments depending on the
 type (maybe none); an application should always be prepared to see
-more argumnents in future versions.
+more arguments in future versions.
 
 
     GOODSIG	<long keyid>  <username>
@@ -57,12 +57,12 @@ more argumnents in future versions.
     ERRSIG
 	It was not possible to check the signature.  This may be
 	caused by a missing public key or an unsupported algorithm.
-	No argumens yet.
+	No argument yet.
 
     VALIDSIG	<fingerprint in hex>
 	The signature with the keyid is good. This is the same
 	as GOODSIG but has the fingerprint as the argument. Both
-	status lines ere emmited for a good signature.
+	status lines ere emitted for a good signature.
 
     TRUST_UNDEFINED
     TRUST_NEVER
@@ -70,7 +70,7 @@ more argumnents in future versions.
     TRUST_FULLY
     TRUST_ULTIMATE
 	For good signatures one of these status lines are emitted
-	to indicate how trustworthy the signatur is.  No arguments yet.
+	to indicate how trustworthy the signature is.  No arguments yet.
 
     SIGEXPIRED
 	The signature key has expired.	No arguments yet.
@@ -158,7 +158,7 @@ Record type 1:
      1 u32  first free record
      1 u32  record number of shadow directory hash table
 	    It does not make sense to combine this table with the key table
-	    becuase the keyid is not in every case a part of the fingerprint.
+	    because the keyid is not in every case a part of the fingerprint.
      4 bytes reserved for version extension record
 
 
@@ -283,7 +283,7 @@ Record type 9:	(cache record)
      20 bytes rmd160 hash value over the complete keyblock
 	      This is used to detect any changes of the keyblock with all
 	      CTBs and lengths headers. Calculation is easy if the keyblock
-	      is optained from a keyserver: simply create the hash from all
+	      is obtained from a keyserver: simply create the hash from all
 	      received data bytes.
 
      1 byte   number of untrusted signatures.
@@ -323,14 +323,14 @@ Record Type 10 (hash table)
 	    n = (reclen-2)/4  which yields 9 for the current record length
 	    of 40 bytes.
 
-    the total number of surch record which makes up the table is:
+    the total number of such record which makes up the table is:
 	 m = (256+n-1) / n
     which is 29 for a record length of 40.
 
     To look up a key we use the first byte of the fingerprint to get
     the recnum from this hashtable and look up the addressed record:
        - If this record is another hashtable, we use 2nd byte
-	 to index this hast table and so on.
+	 to index this hash table and so on.
        - if this record is a hashlist, we walk all entries
 	 until we found one a matching one.
        - if this record is a key record, we compare the
@@ -398,12 +398,12 @@ There is one enhancement used with the old style packet headers:
 +
 +  It works like this: After the CTB (with a length field of 11) a
 +  marker field is used, which gives the length of the following datablock.
-+  This is a simple 2 byte field (MSB first) containig the amount of data
++  This is a simple 2 byte field (MSB first) containing the amount of data
 +  following this field, not including this length field. After this datablock
 +  another length field follows, which gives the size of the next datablock.
 +  A value of 0 indicates the end of the packet. The maximum size of a
 +  data block is limited to 65534, thereby reserving a value of 0xffff for
-+  future extensions. These length markers must be insereted into the data
++  future extensions. These length markers must be inserted into the data
 +  stream just before writing the data out.
 +
 +  This 2 byte filed is large enough, because the application must buffer
@@ -416,7 +416,7 @@ There is one enhancement used with the old style packet headers:
 
 Usage of gdbm files for keyrings
 ================================
-    The key to store the keyblokc is it's fingerpint, other records
+    The key to store the keyblock is it's fingerprint, other records
     are used for secondary keys.  fingerprints are always 20 bytes
     where 16 bit fingerprints are appded with zero.
     The first byte of the key gives some information on the type of the

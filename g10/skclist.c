@@ -32,6 +32,7 @@
 #include "memory.h"
 #include "util.h"
 #include "i18n.h"
+#include "cipher.h"
 
 
 void
@@ -45,6 +46,19 @@ release_sk_list( SK_LIST sk_list )
 	m_free( sk_list );
     }
 }
+
+
+/* Check that we are only using keys which don't have
+ * the string "(insecure!)" or "not secure" or "do not use"
+ * in one of the user ids
+ */
+static int
+is_insecure( PKT_secret_key *sk )
+{
+
+    BUG();
+}
+
 
 int
 build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
@@ -66,8 +80,13 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 	    SK_LIST r;
 	    if( sk->version == 4 && (usage & PUBKEY_USAGE_SIG)
 		&& sk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
-		log_error("this is a PGP generated "
+		log_info("this is a PGP generated "
 		    "ElGamal key which is NOT secure for signatures!\n");
+		free_secret_key( sk ); sk = NULL;
+	    }
+	    else if( random_is_faked() && !is_insecure( sk ) ) {
+		log_info(_("key is not flagged as insecure - "
+			   "can't use it with the faked RNG!\n"));
 		free_secret_key( sk ); sk = NULL;
 	    }
 	    else {
@@ -100,6 +119,11 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 		    log_info(_("skipped `%s': this is a PGP generated "
 			"ElGamal key which is not secure for signatures!\n"),
 			locusr->d );
+		    free_secret_key( sk ); sk = NULL;
+		}
+		else if( random_is_faked() && !is_insecure( sk ) ) {
+		    log_info(_("key is not flagged as insecure - "
+			       "can't use it with the faked RNG!\n"));
 		    free_secret_key( sk ); sk = NULL;
 		}
 		else {

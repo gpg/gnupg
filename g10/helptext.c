@@ -36,7 +36,7 @@
  * Translators should use the key as msgid, this is to keep the msgid short
  * and to allow for easy changing of the helptexts.
  *
- * Mini gloassary:
+ * Mini glossary:
  *
  * "user ID", "trustdb", "NOTE" and "WARNING".
  */
@@ -60,14 +60,14 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 },
 
 { N_("pklist.user_id.enter"),
-"Enter the user id of the addresse to whom you want to send the message."
+"Enter the user id of the addressee to whom you want to send the message."
 },
 
 { N_("keygen.algo"),
 "Select the algorithm to use.\n"
 "DSA (aka DSS) is the digital signature algorithm which can only be used\n"
 "for signatures.  This is the suggested algorithm because verification of\n"
-"DSA signatures are much faster than those of ElGamal\n"
+"DSA signatures are much faster than those of ElGamal.\n"
 "ElGamal is a algorithm which can be used for signatures and encryption.\n"
 "OpenPGP distunguishs between two flavors of this algorithms: a encrypt only\n"
 "and a sign+encrypt; actually it is the same, but some parameters must be\n"
@@ -75,7 +75,7 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 "does this but other OpenPGP implemenations are not required to understand\n"
 "the signature+encryption flavor.\n"
 "The first (primary) key must always be a key which is capable of signing;\n"
-"this is the reason why the ecrytion only ElGamal key is disabled in this."
+"this is the reason why the encryption only ElGamal key is disabled in this."
 },
 
 
@@ -165,7 +165,7 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 
 { N_("keyedit.remove.uid.okay"),
  "Answer \"yes\" if you really want to delete this user ID.\n"
- "All ceritifcates are then also lost!"
+ "All certificates are then also lost!"
 },
 
 { N_("keyedit.remove.subkey.okay"),

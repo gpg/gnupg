@@ -27,6 +27,11 @@
 #include "memory.h"
 
 
+#ifdef HAVE_U64_TYPEDEF
+
+/* we really need it here, but as this is only experiment we
+ * can live without Tiger */
+
 typedef struct {
     u64  a, b, c;
     byte buf[64];
@@ -964,4 +969,5 @@ gnupgext_enum_func( int what, int *sequence, int *class, int *vers )
     return ret;
 }
 
+#endif /* HAVE_U64_TYPEDEF */
 

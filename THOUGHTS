@@ -14,6 +14,16 @@
     * What shall we do if we have a valid subkey revocation certificate
       but no subkey binding?  Is this a valid but revoked key?
 
+    * use a mmaped file for secure memory if mlock does not work and
+      make sure that this file is always wiped out.  Is this really
+      more secure than swapping out to the swap disk?  I don't
+      believe so because if an attacker has access to the physical
+      box (and he needs this to look at the swap area) he can also
+      leave a trojan horse which is far more easier than to analyze
+      memory dumps.  Question:	Is it possible that a Unix pages
+      an old (left over by some other process) swap page in for
+      another process - this should be considered a serious design
+      flow/bug.
 
 Date: Mon, 4 Jan 1999 19:34:29 -0800 (PST)
 From: Matthew Skala <mskala@ansuz.sooke.bc.ca>
@@ -172,7 +182,7 @@ o  Keep a blacklist of known bad signatures to minimize
 
 o  Should be fast - I currently designing a new storage
    system called keybox which takes advantage of the fact
-   that the keyID is higly random and can be directly be
+   that the keyID is highly random and can be directly be
    used as a hash value and this keyID is (for v4 keys)
    part of the fingerprint: So it is possible to use the
    fingerprint as key but do an lookup by the keyID.
@@ -186,7 +196,7 @@ o  Use the HKS protocol and enhance it in a way that binary
    keyrings can be transmitted.  (I already wrote some
    http server and client code which can be used for this)
 
-o  Keep a checkcsum (hash) of the entire keyblock so that a
+o  Keep a checksum (hash) of the entire keyblock so that a
    client can easy check whether this keyblock has changed.
    (keyblock = the entire key with all certificates etc.)
 

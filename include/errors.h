@@ -62,8 +62,11 @@
 #define G10ERR_TIME_CONFLICT  40
 #define G10ERR_WR_PUBKEY_ALGO 41 /* unusabe pubkey algo */
 #define G10ERR_FILE_EXISTS    42
-#define G10ERR_WEAK_KEY       43 /* NOTE: hardcoded intothe cipher modules */
-#define G10ERR_WRONG_KEYLEN   44 /* NOTE: hardcoded intothe cipher modules */
+#define G10ERR_WEAK_KEY       43 /* NOTE: hardcoded into the cipher modules */
+#define G10ERR_WRONG_KEYLEN   44 /* NOTE: hardcoded into the cipher modules */
+#define G10ERR_INV_ARG	      45
+#define G10ERR_BAD_URI	      46  /* syntax error in URI */
+#define G10ERR_INVALID_URI    47  /* e.g. unsupported scheme */
 
 
 #ifndef HAVE_STRERROR

@@ -1,3 +1,11 @@
+Tue Jan 12 11:17:18 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* config.links (m68k-atari-mint): New
+
+Tue Jan 12 09:17:19 CET 1999  Gaël Quéri <gqueri@mail.dotcom.fr>
+
+	* all: Fixed typos all over the place
+
 Sat Jan  9 16:02:23 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* configure.in: Add a way to statically link rndunix
@@ -24,7 +32,8 @@ Thu Dec 10 20:15:36 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 Tue Dec  8 15:09:29 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
-    * VERSION: Set to 0.4.5
+	* VERSION: Set to 0.4.5
+
 Wed Nov 25 12:38:29 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* configure.in (USE_RNDLINUX): New.

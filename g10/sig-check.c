@@ -157,15 +157,22 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
 	return G10ERR_PUBKEY_ALGO;
     }
 
-    if( pk->timestamp > sig->timestamp )
+    if( pk->timestamp > sig->timestamp ) {
+	ulong d = pk->timestamp - sig->timestamp;
+	log_info( d==1
+		  ? _("public key is %lu second newer than the signature\n")
+		  : _("public key is %lu seconds newer than the signature\n"),
+		       d );
 	return G10ERR_TIME_CONFLICT; /* pubkey newer than signature */
+    }
 
     cur_time = make_timestamp();
     if( pk->timestamp > cur_time ) {
 	ulong d = pk->timestamp - cur_time;
-	log_info(_("public key created %lu %s "
-		   "in future (time warp or clock problem)\n"),
-		    d, d==1? _("second"):_("seconds") );
+	log_info( d==1 ? _("key has been created %lu second "
+			   "in future (time warp or clock problem)\n")
+		       : _("key has been created %lu seconds "
+			   "in future (time warp or clock problem)\n"), d );
 	return G10ERR_TIME_CONFLICT;
     }
 
@@ -331,7 +338,6 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 
 	    keyid_from_pk( pk, keyid );
 	    md = md_open( algo, 0 );
-	    /*md_start_debug(md, "check");*/
 	    hash_public_key( md, pk );
 	    hash_uid_node( unode, md, sig );
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {

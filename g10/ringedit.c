@@ -480,6 +480,23 @@ find_keyblock_bypk( KBPOS *kbpos, PKT_public_key *pk )
     return rc;
 }
 
+/****************
+ * Combined function to search for a key and get the position
+ * of the keyblock.
+ */
+int
+find_keyblock_bysk( KBPOS *kbpos, PKT_secret_key *sk )
+{
+    PACKET pkt;
+    int rc;
+
+    init_packet( &pkt );
+    pkt.pkttype = PKT_SECRET_KEY;
+    pkt.pkt.secret_key = sk;
+    rc = search( &pkt, kbpos, 0 );
+    return rc;
+}
+
 
 /****************
  * Combined function to search for a username and get the position

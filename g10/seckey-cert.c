@@ -1,4 +1,4 @@
-/* seckey-cert.c -  secret key certifucate packet handling
+/* seckey-cert.c -  secret key certificate packet handling
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.

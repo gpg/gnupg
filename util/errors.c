@@ -94,6 +94,9 @@ g10_errstr( int err )
       X(WR_PUBKEY_ALGO ,N_("unusable pubkey algorithm"))
       X(FILE_EXISTS    ,N_("file exists"))
       X(WEAK_KEY       ,N_("weak key"))
+      X(INV_ARG        ,N_("invalid argument"))
+      X(BAD_URI        ,N_("bad URI"))
+      X(INVALID_URI    ,N_("unsupported URI"))
       default: p = buf; sprintf(buf, "g10err=%d", err); break;
     }
   #undef X

@@ -6,6 +6,8 @@ Bugs
       if the clearsign has been created by pgp263ia.
       Needs more investigation - anyone?
 
+    * clearsign bug Greg Troxel Jan 11.
+
 Important
 ----------
     * Check revocation and expire stuff.  PLEASE: THIS MUST BE TESTED!
@@ -13,28 +15,25 @@ Important
     * Check calculation of key validity. PLEASE: IT IS IMPORTED THAT
       THIS GET TESTED.
 
-    * It has been reported that lockfiles are not removed in all cases.
-      cleanup is done with atexit() and all signals trigger exit() -
-      anything wrong with this?  - ah yes: a signal while still in
-      dotlock_make
-
     * See why we always get this "Hmmm public key lost"
 
     * print a warning when a revoked/expired secret key is used.
 
-    * Allow the use of a the faked RNG only for keys which are
-      flagged as INSECURE.
-
 > 0.9.1: I get some occasional segfaults during 'make check' unless I use
 > --with-included-zlib. It's strange, I have zlib-1.1.2 on one machine, and
 > zlib-1.1.3 on another, and both of them fail on occasion (maybe half of the
+
+> gpg: /home/jam/.gnupg/pubring.gpg: can't open gdbm file: Can't be writer
+> gpg: keyblock resource `/home/jam/.gnupg/pubring.gpg': file open error
+> gpg: OOPS in close enum_keyblocks - ignored
+
 
 
 Needed
 ------
     * remove more "Fixmes"
 
-    * Replace Blowfish by Twofish and add the new encrypted packet typ
+    * Replace Blowfish by Twofish and add the new encrypted packet type
       which has a MACing option (append SHA1 hash to the plaintext and
       encrypt this all) - We need an identifier for Twofish to put this
       one into the cipher preferences.
@@ -48,6 +47,12 @@ Needed
 Minor Bugs
 ----------
 
+    * There is a race condition which leaves lock files after process
+      termination (a signal while in make_dotlock).  Change the dotlock
+      implementaion to a create handle, make and release implemenation
+      and use an atexit to cleanup all pending locks.  This is also
+      faster.
+
 Nice to have
 ------------
     * preferences of hash algorithms are not yet used.
@@ -59,5 +64,6 @@ Nice to have
     * Burn the buffers used by fopen(), or use read(2). Does this
       really make sense?
     * change the fake_data stuff to mpi_set_opaque
-
+    * How about letting something like 'gpg --version -v', list the
+      effective options. Yep.
 

@@ -971,6 +971,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     char *passphrase = NULL;
     DEK *dek = NULL;
     STRING2KEY *s2k = NULL;
+    u32 cur_time;
 
     /* break out the primary secret key */
     node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
@@ -981,6 +982,19 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 
     /* make a copy of the sk to keep the protected one in the keyblock */
     sk = copy_secret_key( NULL, node->pkt->pkt.secret_key );
+
+    cur_time = make_timestamp();
+    if( sk->timestamp > cur_time ) {
+	ulong d = sk->timestamp - cur_time;
+	log_info( d==1 ? _("key has been created %lu second "
+			   "in future (time warp or clock problem)\n")
+		       : _("key has been created %lu seconds "
+			   "in future (time warp or clock problem)\n"), d );
+	rc = G10ERR_TIME_CONFLICT;
+	goto leave;
+    }
+
+
     /* unprotect to get the passphrase */
     switch( is_secret_key_protected( sk ) ) {
       case -1:

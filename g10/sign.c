@@ -47,6 +47,16 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     byte *dp;
     int rc;
 
+    if( sk->timestamp > sig->timestamp ) {
+	ulong d = sk->timestamp - sig->timestamp;
+	log_info( d==1 ? _("key has been created %lu second "
+			   "in future (time warp or clock problem)\n")
+		       : _("key has been created %lu seconds "
+			   "in future (time warp or clock problem)\n"), d );
+	return G10ERR_TIME_CONFLICT;
+    }
+
+
     print_pubkey_algo_note(sk->pubkey_algo);
 
     if( !digest_algo )

@@ -194,6 +194,7 @@ int locate_keyblock_by_keyid( KBPOS *kbpos, u32 *keyid,
 int find_keyblock( PUBKEY_FIND_INFO info, KBPOS *kbpos );
 int find_keyblock_byname( KBPOS *kbpos, const char *username );
 int find_keyblock_bypk( KBPOS *kbpos, PKT_public_key *pk );
+int find_keyblock_bysk( KBPOS *kbpos, PKT_secret_key *sk );
 int find_secret_keyblock_byname( KBPOS *kbpos, const char *username );
 int lock_keyblock( KBPOS *kbpos );
 void unlock_keyblock( KBPOS *kbpos );

@@ -1,3 +1,18 @@
+Tue Jan 12 11:17:18 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* ringedit.c (find_keyblock_bysk): New.
+
+	* skc_list.c (is_insecure): New.
+	(build_sk_list): usage check for insecure keys.
+
+	* import.c (chk_self_sigs): Add handling for subkeys.
+	(delete_inv_parts): Skip unsigned subkeys
+
+	* sig-check.c (do_check): Print info if the signature is older
+	than the key.
+	* keygen.c (generate_subkeypair): Fail on time warp.
+	* sign.c (do_sign): Ditto.
+
 Sun Jan 10 15:10:02 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* armor.c (fake_packet): Fixed not-dash-escaped bug.

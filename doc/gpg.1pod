@@ -237,7 +237,7 @@ B<--trusted-key>  I<keyid>
     Assume that the key with the I<keyid> (which must be
     a full (8 byte) keyid) is as trustworthy as one of
     your own secret keys.  This may be used to make keys
-    valid which are not directly ceritified by you but
+    valid which are not directly certified by you but
     by a CA you trust.	The advantage of this option is
     that it shortens the path of certification.
 
@@ -392,7 +392,7 @@ B<--s2k-mode> I<number>
     Selects how passphrases are mangled: A number of I<0>
     uses the plain passphrase (which is not recommended),
     a I<1> (default) adds a salt to the passphrase and
-    I<3> interates the whole process a couple of times.
+    I<3> iterates the whole process a couple of times.
     Unless -B<--rfc1991> is used, this mode is also used
     for conventional encryption.
 
@@ -403,7 +403,7 @@ B<--compress-algo> I<number>
     The default algorithm may give better
     results because the window size is not limited to 8K.
     If this is not used the OpenPGP behavior is used; i.e.
-    the compression algorith is selected from the preferences.
+    the compression algorithm is selected from the preferences.
 
 B<--digest-algo> I<name>
     Use I<name> as message digest algorithm. Running the
@@ -444,7 +444,7 @@ B<--rfc1991>
     Try to be more RFC1991 (PGP 2.x) compliant.
 
 B<--force-v3-sigs>
-    OpenPGP states that a implemenation should generate
+    OpenPGP states that a implementation should generate
     v4 signatures but PGP 5.x does only recognize such
     signatures on key material.  This options forces
     v3 signatures for signatures on data.

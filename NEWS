@@ -1,3 +1,7 @@
+
+    * add some additional time warp checks.
+
+
 Noteworthy changes in version 0.9.1
 -----------------------------------
 
@@ -24,7 +28,7 @@ Noteworthy changes in version 0.9.0
 -----------------------------------
 
     * --export does now only exports rfc2440 compatible keys; the
-      old behavious is available with --export-all.
+      old behaviour is available with --export-all.
       Generation of v3 ElGamal (sign and encrypt) keys is not longer
       supported.
 
@@ -87,7 +91,7 @@ Noteworthy changes in version 0.4.4
       you are put into normal mode unless you use "quit" or "save" as
       one of the commands.  When in batch mode, the program quits after
       the last command, so you have to use "save" if you did some changes.
-      It does not yet work completey, but may be used to list so the
+      It does not yet work completely, but may be used to list so the
       keys etc.
 
 
@@ -111,7 +115,7 @@ Noteworthy changes in version 0.4.3
       the contrib directory of the FTP servers)
 
     * commandline option processing now works as expected for GNU programs
-      with the execption that you can't mix options and normal arguments.
+      with the exception that you can't mix options and normal arguments.
 
     * Now --list-key lists all matching keys.  This is needed in some
       other places too.
@@ -138,7 +142,7 @@ Noteworthy changes in version 0.4.2
       prime product.
 
     * --import now only looks for KEYBLOCK headers, so you can now simply
-      remove the "- " in front of such a header if someone accdently signed
+      remove the "- " in front of such a header if someone accidently signed
       such a message or the keyblock is part of a cleartext signed message.
 
     * --with-colons now lists the key expiration time and not anymore
@@ -206,7 +210,7 @@ Noteworthy changes in version 0.3.5
 
     * Fixed a bug with 5 byte length headers.
 
-    * --delete-[secret-]key is now also availabe in gpgm.
+    * --delete-[secret-]key is now also available in gpgm.
 
     * cleartext signatures are not anymore converted to LF only.
 
@@ -230,21 +234,21 @@ Noteworthy changes in version 0.3.3
 -----------------------------------
     * IMPORTANT: I found yet another bug in the way the secret keys
       are encrypted - I did it the way pgp 2.x did it, but OpenPGP
-      and pgp 5.x specifiy another (in some aspects simpler) method.
+      and pgp 5.x specify another (in some aspects simpler) method.
       To convert your secret keys you have to do this:
 	1. Build the new release but don't install it and keep
 	   a copy of the old program.
 	2. Disable the network, make sure that you are the only
-	   user, be sure that there are no trojan horses etc ....
+	   user, be sure that there are no Trojan horses etc ....
 	3. Use your old gpg (version 0.3.[12]) and set the
 	   passphrases of ALL your secret keys to empty!
 	   (gpg --change-passphrase your-user-id).
 	4. Save your ownertrusts (see the next point)
-	5. rm ~/.gnupg/trustd.gpg
+	5. rm ~/.gnupg/trustdb.gpg
 	6. install the new version of gpg (0.3.3)
 	7. For every secret key call "gpg --edit-key your-user-id",
 	   enter "passwd" at the prompt, follow the instructions and
-	   change your passward back, enter "save" to store it.
+	   change your password back, enter "save" to store it.
 	8. Restore the ownertrust (see next point).
 
     * The format of the trust database has changed; you must delete
@@ -257,7 +261,7 @@ Noteworthy changes in version 0.3.3
       release and it does now only export defined ownertrusts.
 
     * The command --edit-key now provides a commandline driven menu
-      which can be used vor vaious tasks.  --sign-key is only an
+      which can be used for various tasks.  --sign-key is only an
       an alias to --edit-key and maybe removed in future: use the
       command "sign" of this new menu - you can select which user ids
       you want to sign.
@@ -267,7 +271,7 @@ Noteworthy changes in version 0.3.3
     * Owner trust values can now be changed with --edit-key (trust)
 
     * GNUPG can now run as a coprocess; this enables sophisticated
-      frontends.  tools/shmtest.c is a simple sample implemenation.
+      frontends.  tools/shmtest.c is a simple sample implementation.
       This needs some more work: all tty_xxx() are to be replaced
       by cpr_xxx() and some changes in the display logics is needed.
 
@@ -306,7 +310,7 @@ Noteworthy changes in version 0.3.2
     * Now displays the trust status of a positive verified message.
 
     * Keyrings are now scanned in the sequence they are added with
-      --[secret-]keyring.  Note that the default keyring is implictly
+      --[secret-]keyring.  Note that the default keyring is implicitly
       added as the very first one unless --no-default-keyring is used.
 
     * Fixed setuid and dlopen bug.
@@ -346,7 +350,7 @@ Noteworthy changes in version 0.3.0
 
     * A complete new structure for representing the key parameters.
 
-    * Removed most public key knowledge into the cipher libray.
+    * Removed most public key knowledge into the cipher library.
 
     * Support for dynamic loading of new algorithms.
 
@@ -420,7 +424,7 @@ Noteworthy changes in version 0.2.17
 Noteworthy changes in version 0.2.16
 ------------------------------------
 
-    * Add experimental support for the TIGER/192 message diigest algorithm.
+    * Add experimental support for the TIGER/192 message digest algorithm.
       (But there is only a dummy ASN OID).
 
     * Standard cipher is now Blowfish with 128 bit key in OpenPGP's CFB
@@ -451,7 +455,7 @@ Noteworthy changes in version 0.2.14
 
     * Changed the internal handling of keyrings.
 
-    * Add support to list PGP 5 keyrings with supkeys
+    * Add support to list PGP 5 keyrings with subkeys
 
     * Timestamps of signatures are now verified.
 
@@ -494,7 +498,7 @@ Noteworthy changes in version 0.2.11
 
     * "--delete-key" works for public keys. What semantics shall I use
       when there is a secret key too? Delete the secret key or leave him
-      and auto-regenerate the public key, netxt time the secret key is used?
+      and auto-regenerate the public key, next time the secret key is used?
 
 Noteworthy changes in version 0.2.10
 ------------------------------------
@@ -507,7 +511,7 @@ Noteworthy changes in version 0.2.10
 
     * Changed some configure options and add an option
       --disable-m-guard to remove the memory checking code
-      and to compile everthing with optimization on.
+      and to compile everything with optimization on.
 
     * New environment variable GNUPGHOME, which can be used to set
       another homedir than ~/.gnupg.  Changed default homedir for
@@ -584,7 +588,7 @@ Noteworthy changes in version 0.2.4
 
     * backup copies of keyrings are created.
 
-    * assembler stuff for Pentium; gives about 15% better perfomance.
+    * assembler stuff for Pentium; gives about 15% better performance.
 
     * fixed a lot of bugs.
 
@@ -610,7 +614,7 @@ Noteworthy changes in version 0.2.3
 
     * added option "--status-fd": see g10/OPTIONS
 
-    * We have secure memeory on systems which support mlock().
+    * We have secure memory on systems which support mlock().
       It is not complete yet, because we do not have signal handler
       which does a cleanup in very case.
       We should also check the ulimit for the user in the case
