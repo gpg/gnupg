@@ -1,0 +1,5 @@
+Mon Feb 16 13:00:27 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* config.links : Add detection of m68k cpus
+
+

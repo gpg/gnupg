@@ -68,6 +68,39 @@ case "${target}" in
 	path="sparc32"
 	mpi_extra_modules="udiv"
 	;;
+
+    # Motorola 68k configurations.  Let m68k mean 68020-68040.
+    # mc68000 or mc68060 configurations need to be specified explicitly
+    m680[234]0*-*-linuxaout* | m68k*-*-linuxaout*)
+	echo '#define MIT_SYNTAX'            >./mpi/asm-syntax.h
+	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
+	path="m68k/mc68020 m68k"
+	;;
+    m68060*-*-linuxaout*)
+	echo '#define MIT_SYNTAX'            >./mpi/asm-syntax.h
+	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
+	path="m68k"
+	;;
+    m680[234]0*-*-linux* | m68k*-*-linux*)
+	echo '#define ELF_SYNTAX'            >./mpi/asm-syntax.h
+	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
+	path="m68k/mc68020 m68k"
+	;;
+    m68060*-*-linux*)
+	echo '#define ELF_SYNTAX'            >./mpi/asm-syntax.h
+	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
+	path="m68k"
+	;;
+    m68000*-*-* | m68060*-*-*)
+	echo '#define MIT_SYNTAX'            >./mpi/asm-syntax.h
+	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
+	path="m68k/mc68000"
+	;;
+    m680[234]0*-*-* | m68k*-*-*)
+	echo '#define MIT_SYNTAX'            >./mpi/asm-syntax.h
+	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
+	path="m68k/mc68020 m68k"
+	;;
     *)
 	echo '/* No assembler modules configured */' >>./mpi/asm-syntax.h
 	path=""

@@ -125,6 +125,7 @@ common_asm_objects = mpih-mul1.o    \
 		     mpih-sub1.o    \
 		     mpih-shift.o
 
+libmpi_a_DEPENDENCIES = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
 libmpi_a_LIBADD = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
 mkinstalldirs = $(SHELL) $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
@@ -136,8 +137,6 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-libmpi_a_DEPENDENCIES =  mpih-mul1.o mpih-mul2.o mpih-mul3.o mpih-add1.o \
-mpih-sub1.o mpih-shift.o
 libmpi_a_OBJECTS =  mpi-add.o mpi-bit.o mpi-cmp.o mpi-div.o mpi-gcd.o \
 mpi-inv.o mpi-mul.o mpi-pow.o mpi-mpow.o mpi-scan.o mpicoder.o \
 mpih-cmp.o mpih-add.o mpih-sub.o mpih-div.o mpih-mul.o mpiutil.o
@@ -333,8 +332,6 @@ installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 CFLAGS += -O2
-
-$(LIBRARIES): $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

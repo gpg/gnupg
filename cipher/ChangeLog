@@ -1,0 +1,7 @@
+Mon Feb 16 10:08:47 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* misc.c (cipher_algo_to_string): New
+	(pubkey_algo_to_string): New.
+	(digest_algo_to_string): New.
+
+

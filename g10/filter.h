@@ -79,6 +79,7 @@ int md_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len);
 void free_md_filter_context( md_filter_context_t *mfx );
 
 /*-- armor.c --*/
+int use_armor_filter( IOBUF a );
 int armor_filter( void *opaque, int control,
 		  IOBUF chain, byte *buf, size_t *ret_len);
 

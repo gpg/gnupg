@@ -1,3 +1,12 @@
+Noteworthy changes in version 0.2.7
+-----------------------------------
+
+    * new option --dearmot for g10maint
+
+    * option --version now conforming to the GNU standards and lists
+      the available ciphers, message digests and public key algorithms.
+
+
 Noteworthy changes in version 0.2.6
 -----------------------------------
 

@@ -1,3 +1,12 @@
+Sat Feb 14 15:37:55 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* configure.in (mpi_config_done): Removed asm links caching.
+
+Sat Feb 14 14:02:20 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* configure.in (PRINTABLE_OS_NAME): New.
+	* acconfig.h: Likewise.
+
 Fri Feb 13 19:43:41 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* configure.in : Fixed zlib stuff

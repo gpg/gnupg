@@ -27,8 +27,7 @@ libcipher_a_SOURCES = blowfish.c     \
 		 misc.c 	\
 		 smallprime.c
 
+libcipher_a_DEPENDENCIES = @CIPHER_EXTRA_OBJS@
 libcipher_a_LIBADD = @CIPHER_EXTRA_OBJS@
-
-$(LIBRARIES): @CIPHER_EXTRA_OBJS@
 
 

@@ -460,6 +460,7 @@ static int
 scan_keyring( PKT_public_cert *pkc, u32 *keyid,
 	      const char *name, const char *filename )
 {
+    compress_filter_context_t cfx;
     int rc=0;
     int found = 0;
     IOBUF a;
@@ -498,6 +499,19 @@ scan_keyring( PKT_public_cert *pkc, u32 *keyid,
 	else if( keyid && found && pkt.pkttype == PKT_PUBLIC_CERT ) {
 	    log_error("Hmmm, pubkey without an user id in '%s'\n", filename);
 	    goto leave;
+	}
+	else if( pkt.pkttype == PKT_COMPRESSED ) {
+	    memset( &cfx, 0, sizeof cfx );
+	    if( pkt.pkt.compressed->algorithm == 1 )
+		cfx.pgpmode = 1;
+	    else if( pkt.pkt.compressed->algorithm != 2  ){
+		rc = G10ERR_COMPR_ALGO;
+		log_error("compressed keyring: %s\n", g10_errstr(rc) );
+		break;
+	    }
+
+	    pkt.pkt.compressed->buf = NULL;
+	    iobuf_push_filter( a, compress_filter, &cfx );
 	}
 	else if( keyid && pkt.pkttype == PKT_PUBLIC_CERT ) {
 	    switch( pkt.pkt.public_cert->pubkey_algo ) {

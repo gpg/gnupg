@@ -152,7 +152,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
     if( opt.armor && !outfile  )
 	iobuf_push_filter( out, armor_filter, &afx );
-    write_comment( out, "#Created by G10 pre-release " VERSION );
+    write_comment( out, "#created by G10 v" VERSION " ("
+					    PRINTABLE_OS_NAME ")");
     if( opt.compress && !outfile )
 	iobuf_push_filter( out, compress_filter, &zfx );
 
@@ -629,7 +630,7 @@ remove_keysigs( KBNODE keyblock, int all )
 
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 1)) ; ) {
 	if( node->flag & 128)
-	    delete_kbnode( keyblock, node );
+	    delete_kbnode(node );
     }
 
     return 1;
@@ -969,6 +970,7 @@ change_passphrase( const char *username )
 /****************
  * Create a signature packet for the given public key certificate
  * and the user id and return it in ret_sig. User signature class SIGCLASS
+ * user-id is not used (and may be NULL if sigclass is 0x20)
  */
 int
 make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
@@ -979,11 +981,12 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
     int rc=0;
     MD_HANDLE md;
 
-    assert( sigclass >= 0x10 && sigclass <= 0x13 );
+    assert( (sigclass >= 0x10 && sigclass <= 0x13) || sigclass == 0x20 );
     md = md_open( digest_algo, 0 );
     /* hash the public key certificate and the user id */
     hash_public_cert( md, pkc );
-    md_write( md, uid->name, uid->len );
+    if( sigclass != 0x20 )
+	md_write( md, uid->name, uid->len );
     /* and make the signature packet */
     sig = m_alloc_clear( sizeof *sig );
     sig->pubkey_algo = skc->pubkey_algo;

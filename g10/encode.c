@@ -106,7 +106,8 @@ encode_simple( const char *filename, int mode )
     if( opt.armor )
 	iobuf_push_filter( out, armor_filter, &afx );
 
-    write_comment( out, "#Created by G10 pre-release " VERSION );
+    write_comment( out, "#created by G10 v" VERSION " ("
+					    PRINTABLE_OS_NAME ")");
 
     if( opt.compress )
 	iobuf_push_filter( out, compress_filter, &zfx );
@@ -192,7 +193,8 @@ encode_crypt( const char *filename, STRLIST remusr )
     if( opt.armor )
 	iobuf_push_filter( out, armor_filter, &afx );
 
-    write_comment( out, "#Created by G10 pre-release " VERSION );
+    write_comment( out, "#created by G10 v" VERSION " ("
+					    PRINTABLE_OS_NAME ")");
 
     if( opt.compress )
 	iobuf_push_filter( out, compress_filter, &zfx );

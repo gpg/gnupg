@@ -61,6 +61,7 @@ static ARGPARSE_OPTS opts[] = {
     { 505, "delete-key",0, N_("remove key from the public keyring")},
     { 524, "edit-sig"  ,0, N_("edit a key signature")},
     { 525, "change-passphrase", 0, N_("change the passphrase of your secret keyring")},
+    { 542, "gen-revoke",0, N_("generate a revocation certificate")},
     { 537, "export"          , 0, N_("export keys") },
     { 530, "import",      0     , N_("import/merge keys")},
 
@@ -119,48 +120,89 @@ enum cmd_values { aNull = 0,
     aSym, aStore, aEncr, aKeygen, aSign, aSignEncr,
     aSignKey, aClearsign, aListPackets, aEditSig,
     aKMode, aKModeC, aChangePass, aImport,
-    aExport, aCheckKeys,
+    aExport, aCheckKeys, aGenRevoke,
 aNOP };
 
 
+static char *build_list( const char *text,
+			 const char *(*mapf)(int), int (*chkf)(int) );
 static void set_cmd( enum cmd_values *ret_cmd,
 			enum cmd_values new_cmd );
 
 const char *
 strusage( int level )
 {
+  static char *digests, *pubkeys, *ciphers;
     const char *p;
     switch( level ) {
-      case 10:
-      case 0:	p = "g10 - v" VERSION "; "
-		    "Copyright 1998 Werner Koch (dd9jn)\n" ; break;
-      case 13:	p = "g10"; break;
-      case 14:	p = VERSION; break;
+      case 11: p = "g10"; break;
+      case 13: p = VERSION; break;
+      case 17: p = PRINTABLE_OS_NAME; break;
+      case 19: p = _(
+"Please report bugs to <g10-bugs@isil.d.shuttle.de>."
+	); break;
       case 1:
-      case 11:	p = "Usage: g10 [options] [files] (-h for help)";
-		break;
-      case 2:
-      case 12:	p =
-    _("Syntax: g10 [options] [files]\n"
-      "sign, check, encrypt or decrypt\n"
-      "default operation depends on the input data\n"); break;
+      case 40:	p = _(
+"Usage: g10 [options] [files] (-h for help)"
+	); break;
+      case 41:	p = _(
+"Syntax: g10 [options] [files]\n"
+"sign, check, encrypt or decrypt\n"
+"default operation depends on the input data\n"
+	); break;
 
-      case 26:
-	p = _("Please report bugs to <g10-bugs@isil.d.shuttle.de>.\n");
+      case 31: p = "\n"; break;
+      case 32:
+	if( !ciphers )
+	    ciphers = build_list("Supported ciphers: ", cipher_algo_to_string,
+							check_cipher_algo );
+	p = ciphers;
+	break;
+      case 33:
+	if( !pubkeys )
+	    pubkeys = build_list("Supported pubkeys: ", pubkey_algo_to_string,
+							check_pubkey_algo );
+	p = pubkeys;
+	break;
+      case 34:
+	if( !digests )
+	    digests = build_list("Supported digests: ", digest_algo_to_string,
+							check_digest_algo );
+	p = digests;
 	break;
 
-  #if defined(HAVE_RSA_CIPHER)
-      case 30: p = _(
-    "WARNING: This version has RSA support! Your are not allowed to\n"
-    "         use it inside the Unites States before Sep 30, 2000!\n" );
-  #else
-      case 30: p = "";
-  #endif
-	break;
       default:	p = default_strusage(level);
     }
     return p;
 }
+
+
+static char *
+build_list( const char *text, const char * (*mapf)(int), int (*chkf)(int) )
+{
+    int i;
+    const char *s;
+    size_t n=strlen(text)+2;
+    char *list, *p;
+
+    for(i=1; i < 100; i++ )
+	if( !chkf(i) && (s=mapf(i)) )
+	    n += strlen(s) + 2;
+    list = m_alloc( 21 + n ); *list = 0;
+    for(p=NULL, i=1; i < 100; i++ ) {
+	if( !chkf(i) && (s=mapf(i)) ) {
+	    if( !p )
+		p = stpcpy( list, text );
+	    else
+		p = stpcpy( p, ", ");
+	    p = stpcpy(p, s );
+	}
+    }
+    if( p )
+	p = stpcpy(p, "\n" );
+    return list;
+}
+
 
 static void
 i18n_init(void)
@@ -257,7 +299,6 @@ main( int argc, char **argv )
     STRLIST sl, remusr= NULL, locusr=NULL;
     int nrings=0, sec_nrings=0;
     armor_filter_context_t afx;
-    const char *s;
     int detached_sig = 0;
     FILE *configfp = NULL;
     char *configname = NULL;
@@ -405,6 +446,7 @@ main( int argc, char **argv )
 	  case 539: set_cmd( &cmd, aClearsign); break;
 	  case 540: secmem_set_flags( secmem_get_flags() | 1 ); break;
 	  case 541: set_cmd( &cmd, aNOP); break;
+	  case 542: set_cmd( &cmd, aGenRevoke); break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -420,10 +462,8 @@ main( int argc, char **argv )
 	g10_exit(2);
 
     if( greeting ) {
-	if( *(s=strusage(10))  )
-	    tty_printf("%s", s);
-	if( *(s=strusage(30))  )
-	    tty_printf("%s", s);
+	tty_printf("%s %s; %s\n", strusage(11), strusage(13), strusage(14) );
+	tty_printf("%s", strusage(15) );
     }
 
     /* initialize the secure memory. */
@@ -630,6 +670,12 @@ main( int argc, char **argv )
 	free_strlist(sl);
 	break;
 
+      case aGenRevoke:
+	if( argc != 1 )
+	    wrong_args("--gen-revoke user-id");
+	gen_revoke( *argv );
+	break;
+
       case aNOP:
 	break;
 
@@ -642,9 +688,10 @@ main( int argc, char **argv )
 	    log_error(_("can't open '%s'\n"), fname_print);
 	else {
 	    if( !opt.no_armor ) {
-		/* push the armor filter, so it can peek at the input data */
-		memset( &afx, 0, sizeof afx);
-		iobuf_push_filter( a, armor_filter, &afx );
+		if( use_armor_filter( a ) ) {
+		    memset( &afx, 0, sizeof afx);
+		    iobuf_push_filter( a, armor_filter, &afx );
+		}
 	    }
 	    if( cmd == aListPackets ) {
 		set_packet_list_mode(1);

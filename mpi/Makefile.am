@@ -43,7 +43,6 @@ common_asm_objects = mpih-mul1.o    \
 		     mpih-sub1.o    \
 		     mpih-shift.o
 
+libmpi_a_DEPENDENCIES = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
 libmpi_a_LIBADD = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
-
-$(LIBRARIES): $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
 

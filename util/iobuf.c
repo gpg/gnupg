@@ -741,6 +741,29 @@ iobuf_read(IOBUF a, byte *buf, unsigned buflen )
 }
 
 
+/****************
+ * Have a look at the iobuf.
+ * NOTE: This does only work in special cases.
+ */
+int
+iobuf_peek(IOBUF a, byte *buf, unsigned buflen )
+{
+    int n=0;
+
+    if( !(a->d.start < a->d.len) ) {
+	if( underflow(a) == -1 )
+	    return -1;
+	/* and unget this character */
+	assert(a->d.start == 1);
+	a->d.start = 0;
+    }
+
+    for(n=0 ; n < buflen && (a->d.start+n) < a->d.len ; n++, buf++ )
+	*buf = a->d.buf[n];
+    return n;
+}
+
+
 
 
 int

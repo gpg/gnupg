@@ -43,49 +43,90 @@
 
 enum cmd_values { aNull = 0,
     aPrimegen, aPrintMDs, aListPackets, aKMode, aKModeC,
-    aListTrustDB, aListTrustPath,
+    aListTrustDB, aListTrustPath, aDeArmor,
 aTest };
 
 
+static char *build_list( const char *text,
+			 const char *(*mapf)(int), int (*chkf)(int) );
 static void set_cmd( enum cmd_values *ret_cmd,
 			enum cmd_values new_cmd );
 static void print_hex( byte *p, size_t n );
 static void print_mds( const char *fname );
 static void do_test(int);
 
+
 const char *
 strusage( int level )
 {
+  static char *digests, *pubkeys, *ciphers;
     const char *p;
     switch( level ) {
-      case 10:
-      case 0:	p = "g10maint - v" VERSION "; "
-		    "Copyright 1997 Werner Koch (dd9jn)\n" ; break;
-      case 13:	p = "g10"; break;
-      case 14:	p = VERSION; break;
+      case 11: p = "g10maint"; break;
+      case 13: p = VERSION; break;
+      case 17: p = PRINTABLE_OS_NAME; break;
+      case 19: p = _(
+"Please report bugs to <g10-bugs@isil.d.shuttle.de>."
+	); break;
       case 1:
-      case 11:	p = "Usage: g10main [options] (-h for help)";
-		break;
-      case 2:
-      case 12:	p =
-    _("Syntax: g10maint [options]\n"
-      "The G10 maintenace utility\n"); break;
+      case 40:	p = _(
+"Usage: g10maint [options] [files] (-h for help)"
+	); break;
+      case 41:	p = _(
+"Syntax: g10maint [options] [files]\n"
+"G10 maintenance utility\n"
+	); break;
 
-      case 26:
-	p = _("Please report bugs to <g10-bugs@isil.d.shuttle.de>.\n");
+      case 31: p = "\n"; break;
+      case 32:
+	if( !ciphers )
+	    ciphers = build_list("Supported ciphers: ", cipher_algo_to_string,
+							check_cipher_algo );
+	p = ciphers;
+	break;
+      case 33:
+	if( !pubkeys )
+	    pubkeys = build_list("Supported pubkeys: ", pubkey_algo_to_string,
+							check_pubkey_algo );
+	p = pubkeys;
+	break;
+      case 34:
+	if( !digests )
+	    digests = build_list("Supported digests: ", digest_algo_to_string,
+							check_digest_algo );
+	p = digests;
 	break;
 
-  #if defined(HAVE_RSA_CIPHER)
-      case 30: p = _(
-    "WARNING: This version has RSA support! Your are not allowed to\n"
-    "         use it inside the Unites States before Sep 30, 2000!\n" );
-  #else
-      case 30: p = "";
-  #endif
-	break;
       default:	p = default_strusage(level);
     }
     return p;
+}
+
+
+static char *
+build_list( const char *text, const char * (*mapf)(int), int (*chkf)(int) )
+{
+    int i;
+    const char *s;
+    size_t n=strlen(text)+2;
+    char *list, *p;
+
+    for(i=1; i < 100; i++ )
+	if( !chkf(i) && (s=mapf(i)) )
+	    n += strlen(s) + 2;
+    list = m_alloc( 21 + n ); *list = 0;
+    for(p=NULL, i=1; i < 100; i++ ) {
+	if( !chkf(i) && (s=mapf(i)) ) {
+	    if( !p )
+		p = stpcpy( list, text );
+	    else
+		p = stpcpy( p, ", ");
+	    p = stpcpy(p, s );
+	}
+    }
+    if( p )
+	p = stpcpy(p, "\n" );
+    return list;
 }
 
 static void
@@ -178,6 +219,7 @@ main( int argc, char **argv )
     { 535, "completes-needed", 1, N_("(default is 1)")},
     { 536, "marginals-needed", 1, N_("(default is 3)")},
     { 538, "trustdb-name", 2, "\r" },
+    { 540, "dearmor", 0, N_("De-Armor a file or stdin") },
 
     {0} };
     ARGPARSE_ARGS pargs;
@@ -189,7 +231,6 @@ main( int argc, char **argv )
     STRLIST remusr= NULL, locusr=NULL;
     int nrings=0, sec_nrings=0;
     armor_filter_context_t afx;
-    const char *s;
     FILE *configfp = NULL;
     char *configname = NULL;
     unsigned configlineno;
@@ -308,6 +349,7 @@ main( int argc, char **argv )
 	  case 535: opt.completes_needed = pargs.r.ret_int; break;
 	  case 536: opt.marginals_needed = pargs.r.ret_int; break;
 	  case 538: trustdb_name = pargs.r.ret_str; break;
+	  case 540: set_cmd( &cmd, aDeArmor); break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -360,10 +402,8 @@ main( int argc, char **argv )
     if( opt.verbose > 1 )
 	set_packet_list_mode(1);
     if( greeting ) {
-	if( *(s=strusage(10))  )
-	    tty_printf("%s", s);
-	if( *(s=strusage(30))  )
-	    tty_printf("%s", s);
+	tty_printf("%s %s; %s\n", strusage(11), strusage(13), strusage(14) );
+	tty_printf("%s", strusage(15) );
     }
 
     if( !sec_nrings || default_keyring ) { /* add default secret rings */
@@ -435,6 +475,15 @@ main( int argc, char **argv )
 	else
 	    usage(1);
 	break;
+
+      case aDeArmor:
+	if( argc > 1 )
+	    wrong_args("--dearmor [file]");
+	rc = dearmor_file( argc? *argv: NULL );
+	if( rc )
+	    log_error(_("dearmoring failed: %s\n"), g10_errstr(rc));
+	break;
+
 
       case aPrimegen:
 	if( argc == 1 ) {

@@ -4,7 +4,6 @@
     * add a way to difference between errors and eof in the underflow/flush
       function of iobuf.
     * add checking of armor trailers
-    * look for a way to reuse RSA signatures
     * remove all "Fixmes"
     * speed up the RIPE-MD-160
     * add signal handling
@@ -33,5 +32,7 @@
       self-signature. New user ids will only have your self signature to bind
       them to your key and because the user id which is signed by others has
       also be signed by you, all user-ids are bound together.
+
+    * create directory .g10
 
 

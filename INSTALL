@@ -7,7 +7,7 @@ Configure options for G10
 --with-zlib	    Forces usage of the local zlib sources. Default is
 		    to use the (sahred) library of the system.
 
---without-nls	    Disable NLS support
+--disable-nls	    Disable NLS support
 
 --enable-m-debug    Compile with the integrated malloc debugging stuff.
 		    This makes the program slower but is checks every
@@ -22,7 +22,7 @@ Problems
 ========
 
 If you have compile problems, use the configure options "--with-zlib" and
-"--without-nls".
+"--disable-nls".
 
 I cant check alls assembles files; so if you have problems assembling them
 (or the program crashes), simply delete the files in the mpi/<cpu> directory.

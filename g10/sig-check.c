@@ -32,6 +32,10 @@
 #include "main.h"
 
 
+static int do_check( PKT_public_cert *pkc, PKT_signature *sig,
+						MD_HANDLE digest );
+
+
 /****************
  * Check the signature which is contained in the rsa_integer.
  * The md5handle should be currently open, so that this function
@@ -41,14 +45,23 @@ int
 signature_check( PKT_signature *sig, MD_HANDLE digest )
 {
     PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
-    MPI result = NULL;
     int rc=0;
 
-
-    if( get_pubkey( pkc, sig->keyid ) ) {
+    if( get_pubkey( pkc, sig->keyid ) )
 	rc = G10ERR_NO_PUBKEY;
-	goto leave;
-    }
+    else
+	rc = do_check( pkc, sig, digest );
+
+    free_public_cert( pkc );
+    return rc;
+}
+
+
+static int
+do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
+{
+    MPI result = NULL;
+    int rc=0;
 
     if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	ELG_public_key pkey;
@@ -164,8 +177,6 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 
 
   leave:
-    if( pkc )
-	free_public_cert( pkc );
     mpi_free( result );
     return rc;
 }
@@ -217,7 +228,7 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 	md = md_open( algo, 0 );
 	hash_public_cert( md, pkc );
 	md_write( md, uid->name, uid->len );
-	rc = signature_check( sig, md );
+	rc = do_check( pkc, sig, md );
 	md_close(md);
     }
     else {

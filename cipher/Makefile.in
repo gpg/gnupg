@@ -112,6 +112,7 @@ libcipher_a_SOURCES = blowfish.c     \
 		 misc.c 	\
 		 smallprime.c
 
+libcipher_a_DEPENDENCIES = @CIPHER_EXTRA_OBJS@
 libcipher_a_LIBADD = @CIPHER_EXTRA_OBJS@
 mkinstalldirs = $(SHELL) $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
@@ -123,7 +124,6 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-libcipher_a_DEPENDENCIES = 
 libcipher_a_OBJECTS =  blowfish.o elgamal.o gost.o md5.o primegen.o \
 random.o rmd160.o sha1.o dsa.o md.o misc.o smallprime.o
 AR = ar
@@ -315,8 +315,6 @@ installcheck install-exec install-data install uninstall all \
 installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
-
-$(LIBRARIES): @CIPHER_EXTRA_OBJS@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

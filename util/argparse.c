@@ -376,11 +376,12 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 
 	if( !opts[i].short_opt && !strcmp( "help", s+2) )
 	    show_help(opts, arg->flags);
-	else if( !opts[i].short_opt && !strcmp( "version", s+2) )
+	else if( !opts[i].short_opt && !strcmp( "version", s+2) ) {
 	    show_version();
+	    exit(0);
+	}
 	else if( !opts[i].short_opt && !strcmp( "warranty", s+2) ) {
-	    puts( strusage(10) );
-	    puts( strusage(31) );
+	    puts( strusage(16) );
 	    exit(0);
 	}
 
@@ -525,13 +526,9 @@ show_help( ARGPARSE_OPTS *opts, unsigned flags )
 {
     const char *s;
 
-    s = strusage(10);
-    fputs( s, stdout );
-    if( *s && s[strlen(s)-1] != '\n' )
-	putchar( '\n' );
-    s = strusage(12);
-    if( *s == '\n' )
-	s++;
+    show_version();
+    putchar('\n');
+    s = strusage(41);
     puts(s);
     if( opts[0].description ) { /* auto format the option description */
 	int i,j, indent;
@@ -591,11 +588,7 @@ show_help( ARGPARSE_OPTS *opts, unsigned flags )
 	if( flags & 32 )
 	    puts("\n(A single dash may be used instead of the double ones)");
     }
-    if( *(s=strusage(26)) ) {  /* bug reports to ... */
-	putchar('\n');
-	fputs(s, stdout);
-    }
-    if( *(s=strusage(30)) ) {  /* special notes */
+    if( (s=strusage(19)) ) {  /* bug reports to ... */
 	putchar('\n');
 	fputs(s, stdout);
     }
@@ -607,189 +600,96 @@ static void
 show_version()
 {
     const char *s;
-    printf("%s version %s (%s", strusage(13), strusage(14), strusage(45) );
-    if( (s = strusage(24)) && *s ) {
-      #ifdef DEBUG
-	printf(", %s, dbg)\n", s);
-      #else
-	printf(", %s)\n", s);
-      #endif
-    }
-    else {
-      #ifdef DEBUG
-	printf(", dbg)\n");
-      #else
-	printf(")\n");
-      #endif
-    }
+    int i;
+    /* version line */
+    fputs(strusage(11), stdout);
+    if( (s=strusage(12)) )
+	printf(" (%s)", s );
+    printf(" %s\n", strusage(13) );
+    /* additional version lines */
+    for(i=20; i < 30; i++ )
+	if( (s=strusage(i)) )
+	    printf("%s\n", s );
+    /* copyright string */
+    if( (s=strusage(14)) )
+	printf("%s\n", s );
+    /* copying conditions */
+    if( (s=strusage(15)) )
+	fputs(s, stdout);
+    /* thanks */
+    if( (s=strusage(18)) )
+	fputs(s, stdout);
+    /* additional program info */
+    for(i=30; i < 40; i++ )
+	if( (s=strusage(i)) )
+	    fputs(s, stdout);
     fflush(stdout);
-    exit(0);
 }
-
 
 
 void
 usage( int level )
 {
-    static int sentinel=0;
-
-    if( sentinel )
-	return;
-
-    sentinel++;
     if( !level ) {
-	fputs( strusage(level), stderr ); putc( '\n', stderr );
-	fputs( strusage(31), stderr);
-      #if DEBUG
-	fprintf(stderr, "%s (%s - Debug)\n", strusage(32), strusage(24) );
-      #else
-	fprintf(stderr, "%s (%s)\n", strusage(32), strusage(24) );
-      #endif
+	fprintf(stderr,"%s %s; %s\n", strusage(11), strusage(13),
+						     strusage(14) );
 	fflush(stderr);
     }
     else if( level == 1 ) {
-	fputs(strusage(level),stderr);putc('\n',stderr);
-	exit(2);}
+	fputs(strusage(40),stderr);
+	exit(2);
+    }
     else if( level == 2 ) {
-	puts(strusage(level)); exit(0);}
-    sentinel--;
+	puts(strusage(41));
+	exit(0);
+    }
 }
 
-
+/* Level
+ *     0: Copyright String auf stderr ausgeben
+ *     1: Kurzusage auf stderr ausgeben und beenden
+ *     2: Langusage auf stdout ausgeben und beenden
+ *    11: name of program
+ *    12: optional name of package which includes this program.
+ *    13: version  string
+ *    14: copyright string
+ *    15: Short copying conditions (with LFs)
+ *    16: Long copying conditions (with LFs)
+ *    17: Optional printable OS name
+ *    18: Optional thanks list	 (with LFs)
+ *    19: Bug report info
+ *20..29: Additional lib version strings.
+ *30..39: Additional program infos (with LFs)
+ *    40: short usage note (with LF)
+ *    41: long usage note (with LF)
+ */
 const char *
 default_strusage( int level )
 {
-    const char *p;
+    const char *p = NULL;
     switch( level ) {
-      case  0:	p = strusage(10); break;
-      case  1:	p = strusage(11); break;
-      case  2:	p = strusage(12); break;
-      case 10:	p = "WkLib"
-		  #if DOS386 && __WATCOMC__
-		    " (DOS4G)"
-		  #elif DOS386
-		    " (DOSX)"
-		  #elif DOS16RM
-		    " (DOS16RM)"
-		  #elif M_I86VM
-		    " (VCM)"
-		  #elif UNIX || POSIX
-		    " (Posix)"
-		  #elif OS2
-		    " (OS/2)"
-		  #elif WINNT && __CYGWIN32__
-		    " (CygWin)"
-		  #elif WINNT
-		    " (WinNT)"
-		  #elif NETWARE
-		    " (Netware)"
-		  #elif VMS
-		    " (VMS)"
-		  #endif
-		    "; Copyright (c) 1997 by Werner Koch (dd9jn)" ; break;
-      case 11:	p = "usage: ?"; break;
-      case 16:
-      case 15:	p = "[Untitled]"; break;
-      case 23:	p = "[unknown]"; break;
-      case 24:	p = ""; break;
-      case 26:	p = ""; break;
-      case 12:	p =
-   "This is free software; you can redistribute it and/or modify\n"
-   "it under the terms of the GNU General Public License as published by\n"
-   "the Free Software Foundation; either version 2 of the License, or\n"
-   "(at your option) any later version.\n\n"
-   "It is distributed in the hope that it will be useful,\n"
-   "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-   "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-   "GNU General Public License for more details.\n\n"
-   "You should have received a copy of the GNU General Public License\n"
-   "along with this program; if not, write to the Free Software\n"
-   "Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,"
-								  " USA.\n" ;
+      case 11: p = "foo"; break;
+      case 13: p = "0.0"; break;
+      case 14: p = "Copyright (C) 1998 Werner Koch (dd9jn)" ; break;
+      case 15: p =
+"This program comes with ABSOLUTELY NO WARRANTY.\n"
+"This is free software, and you are welcome to redistribute it\n"
+"under certain conditions. See the file COPYING for details.\n"; break;
+      case 16:	p =
+"This is free software; you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation; either version 2 of the License, or\n"
+"(at your option) any later version.\n\n"
+"It is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with this program; if not, write to the Free Software\n"
+"Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.\n";
 	break;
-      case 22:
-	  #if MSDOS
-	    #if USE_EMS
-	      p = "MSDOS+EMS";
-	    #else
-	      p = "MSDOS";
-	    #endif
-	  #elif OS2
-	    p = "OS/2";
-	  #elif WINNT && __CYGWIN32__
-	    p = "CygWin";
-	  #elif WINNT
-	    p = "WinNT";
-	  #elif DOS386
-	    p = "DOS386";
-	  #elif EMX
-	    p = "EMX";
-	  #elif DOS16RM
-	    p = "DOS16RM";
-	  #elif NETWARE
-	    p = "Netware";
-	  #elif __linux__
-	    p = "Linux";
-	  #elif UNIX || M_UNIX || M_XENIX
-	    p = "UNIX";
-	  #elif VMS
-	    p = "VMS";
-	  #else
-	    p = "UnknownOS";
-	  #endif
-	    break;
-      case 30: p = ""; break;
-      case 31: p =
-    "This program comes with ABSOLUTELY NO WARRANTY.\n"
-    "This is free software, and you are welcome to redistribute it\n"
-    "under certain conditions. See the file COPYING for details.\n";
-	    break;
-      case 32: p = "["
-	  #if MSDOS
-	      "MSDOS Version"
-	  #elif DOS386 && __ZTC__
-	    "32-Bit MSDOS Version (Zortech's DOSX)"
-	  #elif DOS386
-	    "32-Bit MSDOS Version"
-	  #elif OS20 && EMX
-	    "OS/2 2.x EMX Version"
-	  #elif OS20
-	    "OS/2 2.x Version"
-	  #elif OS2
-	    "OS/2 1.x Version"
-	  #elif WINNT && __CYGWIN32__
-	    "Cygnus WinAPI Version"
-	  #elif WINNT
-	    "Windoze NT Version"
-	  #elif EMX
-	    "EMX Version"
-	  #elif NETWARE
-	    "NLM Version"
-	  #elif DOS16RM
-	    "DOS16RM Version"
-	  #elif __linux__
-	    "Linux Version"
-	  #elif VMS
-	    "OpenVMS Version"
-	  #elif POSIX
-	    "POSIX Version"
-	  #elif M_UNIX || M_XENIX
-	    "*IX Version"
-	  #endif
-	    "]";
-	    break;
-      case 33: p =
-	  #ifdef MULTI_THREADED
-	    "mt"
-	  #else
-	    ""
-	  #endif
-	    ; break;
-      case 42:
-      case 43:
-      case 44:
-      case 45: p = ""; break;
-      default: p = "?";
+      case 40: /* short and long usage */
+      case 41: p = ""; break;
     }
 
     return p;

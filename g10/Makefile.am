@@ -45,6 +45,7 @@ common_source =  \
 	      plaintext.c	\
 	      encr-data.c	\
 	      encode.c		\
+	      revoke.c		\
 	      sig-check.c
 
 g10_SOURCES  = g10.c		\
@@ -53,6 +54,7 @@ g10_SOURCES  = g10.c		\
 
 
 g10maint_SOURCES = g10maint.c	\
+	      dearmor.c 	\
 	      $(common_source)
 
 LDADD = @INTLLIBS@ $(needed_libs) @ZLIBS@

@@ -538,8 +538,8 @@ generate_keypair()
      * The first packet is a dummy comment packet which we flag
      * as deleted.  The very first packet must always be a CERT packet.
      */
-    pub_root = make_comment_node("#"); delete_kbnode(pub_root, pub_root);
-    sec_root = make_comment_node("#"); delete_kbnode(sec_root, sec_root);
+    pub_root = make_comment_node("#"); delete_kbnode(pub_root);
+    sec_root = make_comment_node("#"); delete_kbnode(sec_root);
 
     tty_printf(_(
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
@@ -559,9 +559,11 @@ generate_keypair()
 	BUG();
     if( !rc ) {
 	add_kbnode( pub_root,
-		make_comment_node("#created by G10 release " VERSION ));
+		make_comment_node("#created by G10 v" VERSION " ("
+					    PRINTABLE_OS_NAME ")"));
 	add_kbnode( sec_root,
-		make_comment_node("#created by G10 release " VERSION ));
+		make_comment_node("#created by G10 v" VERSION " ("
+					    PRINTABLE_OS_NAME ")"));
     }
     if( !rc )
 	write_uid(pub_root, uid );

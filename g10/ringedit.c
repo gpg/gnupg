@@ -123,10 +123,24 @@ add_keyblock_resource( const char *filename, int force, int secret )
     return 0;
 }
 
+/****************
+ * Return the resource name of the keyblock associated with KBPOS.
+ */
+const char *
+keyblock_resource_name( KBPOS *kbpos )
+{
+    RESTBL *rentry;
+
+    if( !(rentry = check_pos( kbpos )) || !rentry->fname )
+	log_bug("no name for keyblock resource %d\n", kbpos->resno );
+    return rentry->fname;
+}
+
 
 /****************
  * Get a keyblock handle KBPOS from a filename. This can be used
  * to get a handle for insert_keyblock for a new keyblock.
+ * Using a filename of NULL returns the default resource
  */
 int
 get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos )
@@ -136,7 +150,7 @@ get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos )
     for(i=0; i < MAX_RESOURCES; i++ )
 	if( resource_table[i].used && !resource_table[i].secret == !secret ) {
 	    /* fixme: dos needs case insensitive file compare */
-	    if( !strcmp( resource_table[i].fname, filename ) ) {
+	    if( !filename || !strcmp( resource_table[i].fname, filename ) ) {
 		memset( kbpos, 0, sizeof *kbpos );
 		kbpos->resno = i;
 		return 0;
@@ -598,6 +612,7 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
 	    }
 	    kbpos->count++;
 	    free_packet( pkt );
+	    init_packet( pkt );
 	    continue;
 	}
 	/* make a linked list of all packets */
@@ -660,6 +675,7 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root )
 		goto ready;
 	    }
 	    free_packet( pkt );
+	    init_packet( pkt );
 	    continue;
 	}
 	/* make a linked list of all packets */

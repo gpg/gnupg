@@ -128,7 +128,7 @@ byte *fingerprint_from_pkc( PKT_public_cert *pkc, size_t *ret_len );
 /*-- kbnode.c --*/
 KBNODE new_kbnode( PACKET *pkt );
 void release_kbnode( KBNODE n );
-void delete_kbnode( KBNODE root, KBNODE node );
+void delete_kbnode( KBNODE node );
 void add_kbnode( KBNODE root, KBNODE node );
 void insert_kbnode( KBNODE root, KBNODE node, int pkttype );
 KBNODE find_prev_kbnode( KBNODE root, KBNODE node, int pkttype );
@@ -136,9 +136,11 @@ KBNODE find_next_kbnode( KBNODE node, int pkttype );
 KBNODE find_kbnode( KBNODE node, int pkttype );
 KBNODE walk_kbnode( KBNODE root, KBNODE *context, int all );
 void clear_kbnode_flags( KBNODE n );
+int  commit_kbnode( KBNODE *root );
 
 /*-- ringedit.c --*/
 int add_keyblock_resource( const char *filename, int force, int secret );
+const char *keyblock_resource_name( KBPOS *kbpos );
 int get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos );
 int find_keyblock( PUBKEY_FIND_INFO info, KBPOS *kbpos );
 int find_keyblock_byname( KBPOS *kbpos, const char *username );

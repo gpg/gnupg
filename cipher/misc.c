@@ -75,6 +75,21 @@ string_to_cipher_algo( const char *string )
 
 
 /****************
+ * Map a cipher algo to a string
+ */
+const char *
+cipher_algo_to_string( int algo )
+{
+    int i;
+
+    for(i=0; cipher_names[i].name; i++ )
+	if( cipher_names[i].algo == algo )
+	    return cipher_names[i].name;
+    return NULL;
+}
+
+
+/****************
  * Map a string to the pubkey algo
  */
 int
@@ -88,6 +103,23 @@ string_to_pubkey_algo( const char *string )
 	    return pubkey_names[i].algo;
     return 0;
 }
+
+
+/****************
+ * Map a pubkey algo to a string
+ */
+const char *
+pubkey_algo_to_string( int algo )
+{
+    int i;
+
+    for(i=0; pubkey_names[i].name; i++ )
+	if( pubkey_names[i].algo == algo )
+	    return pubkey_names[i].name;
+    return NULL;
+}
+
+
 
 /****************
  * Map a string to the digest algo
@@ -103,6 +135,24 @@ string_to_digest_algo( const char *string )
 	    return digest_names[i].algo;
     return 0;
 }
+
+
+/****************
+ * Map a digest algo to a string
+ */
+const char *
+digest_algo_to_string( int algo )
+{
+    int i;
+
+    for(i=0; digest_names[i].name; i++ )
+	if( digest_names[i].algo == algo )
+	    return digest_names[i].name;
+    return NULL;
+}
+
+
+
 
 /****************
  * Return 0 if the cipher algo is available

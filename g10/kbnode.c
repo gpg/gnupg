@@ -61,7 +61,7 @@ release_kbnode( KBNODE n )
  * Note: This does only work with walk_kbnode!!
  */
 void
-delete_kbnode( KBNODE root, KBNODE node )
+delete_kbnode( KBNODE node )
 {
     node->private_flag |= 1;
 }
@@ -194,5 +194,31 @@ clear_kbnode_flags( KBNODE n )
     for( ; n; n = n->next ) {
 	n->flag = 0;
     }
+}
+
+
+/****************
+ * Commit changes made to the kblist at ROOT. Note that ROOT my change,
+ * and it is therefor passed by reference.
+ * The function has the effect of removing all nodes marked as deleted.
+ * returns true, if any node has been changed
+ */
+int
+commit_kbnode( KBNODE *root )
+{
+    KBNODE n, n2;
+    int changed = 0;
+
+    for(n=*root; n; n = n2 ) {
+	n2 = n->next;
+	if( (n->private_flag & 1) ) {
+	    if( n == *root )
+		*root = n2;
+	    free_packet( n->pkt );
+	    m_free( n );
+	    changed = 1;
+	}
+    }
+    return changed;
 }
 

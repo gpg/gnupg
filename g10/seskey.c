@@ -121,7 +121,8 @@ do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
     MPI a;
 
     if( len + asnlen + 4  > nframe )
-	log_bug("can't encode a %d bit MD into a %d bits frame\n",len*8, nbits);
+	log_bug("can't encode a %d bit MD into a %d bits frame\n",
+		    (int)(len*8), (int)nbits);
 
     /* We encode the MD in this way:
      *

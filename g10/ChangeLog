@@ -1,3 +1,51 @@
+Mon Feb 16 20:02:03 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* kbnode.c (commit_kbnode): New.
+	(delete_kbnode): removed unused first arg. Changed all Callers.
+
+	* ringedit.c (keyblock_resource_name): New.
+	(get_keyblock_handle): NULL for filename returns default resource.
+
+Mon Feb 16 19:38:48 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* sig-check.s (check_key_signature): Now uses the supplied
+	public key to check the signature and not any more the one
+	from the getkey.c
+	(do_check): New.
+	(check_signature): Most work moved to do_check.
+
+Mon Feb 16 14:48:57 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* armor.c (find_header): Fixed another bug.
+
+Mon Feb 16 12:18:34 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* getkey.c (scan_keyring): Add handling of compressed keyrings.
+
+Mon Feb 16 10:44:51 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c, g10maint.c (strusage): Rewrote.
+	(build_list): New
+
+Mon Feb 16 08:58:41 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* armor.c (use_armor): New.
+
+Sat Feb 14 14:30:57 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* mainproc.c (proc_tree): Sigclass fix.
+
+Sat Feb 14 14:16:33 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* armor.c (armor_filter): Changed version and comment string.
+	* encode.c, sign.c, keygen.c: Changed all comment packet strings.
+
+Sat Feb 14 12:39:24 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c (aGenRevoke): New command.
+	* revoke.c: New.
+	* sign.c (make_keysig_packet): Add support for sigclass 0x20.
+
 Fri Feb 13 20:18:14 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* ringedit.c (enum_keyblocks, keyring_enum): New.

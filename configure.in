@@ -64,15 +64,17 @@ case "${target}" in
 	CPP="i386--mingw32-gcc -E"
 	RANLIB="i386--mingw32-ranlib"
 	ac_cv_have_dev_random=no
+	PRINTABLE_OS_NAME="MingW32"
 	;;
     *)
 AC_PROG_RANLIB
 AC_PROG_INSTALL
 AC_PROG_CC
 AC_PROG_CPP
+	PRINTABLE_OS_NAME=`uname -s || echo "Unknown"`
        ;;
 esac
-
+AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME")
 
 dnl Checks for libraries.
 
@@ -131,13 +133,6 @@ fi
 
 dnl setup assembler stuff
 AC_MSG_CHECKING(for mpi assembler functions)
-mpi_config_done="no"
-AC_CACHE_VAL(ac_cv_mpi_config_done,
-	     [ ac_cv_mpi_config_done="$mpi_config_done" ])
-if test "$ac_cv_mpi_config_done" = yes; then
-    AC_MSG_RESULT(done)
-else
-ac_cv_mpi_config_done=""
 if test -f $srcdir/mpi/config.links ; then
     . $srcdir/mpi/config.links
     WK_LINK_FILES($mpi_ln_src, $mpi_ln_dst)
@@ -147,7 +142,6 @@ if test -f $srcdir/mpi/config.links ; then
 else
     AC_MSG_RESULT(failed)
     AC_MSG_ERROR([mpi/config.links missing!])
-fi
 fi
 MPI_EXTRA_ASM_OBJS=""
 if test "$ac_cv_mpi_extra_asm_modules" != ""; then
@@ -163,7 +157,7 @@ AC_SUBST(MPI_EXTRA_ASM_OBJS)
 dnl Do we have zlib? Must do it here because Solaris failed
 dnl when compiling a conftest (due to the "-lz" from LIBS).
 if test "$g10_force_zlib" = "yes"; then
-    ZLIBS="-L\${top_srcdir}/zlib -lzlib"
+    ZLIBS="../zlib/libzlib.a"
     AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, true)
     WK_LINK_FILES(zlib/zlib.h, zlib.h )
     WK_LINK_FILES(zlib/zconf.h, zconf.h )
@@ -174,7 +168,7 @@ if test "$ac_cv_header_zlib_h" = yes ; then
     ZLIBS=
     AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, false)
 else
-    ZLIBS="-L\${top_srcdir}/zlib -lzlib"
+    ZLIBS="../zlib/libzlib.a"
     AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, true)
     WK_LINK_FILES(zlib/zlib.h, zlib.h )
     WK_LINK_FILES(zlib/zconf.h, zconf.h )

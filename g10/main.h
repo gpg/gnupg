@@ -89,6 +89,10 @@ void g10_rsa_sign( PKT_secret_cert *skc, PKT_signature *sig,
 int import_pubkeys( const char *filename );
 /*-- export.c --*/
 int export_pubkeys( STRLIST users );
+/* dearmor.c --*/
+int dearmor_file( const char *fname );
 
+/*-- revoke.c --*/
+int gen_revoke( const char *uname );
 
 #endif /*G10_MAIN_H*/

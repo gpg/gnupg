@@ -619,15 +619,17 @@ proc_tree( CTX c, KBNODE node )
     else if( node->pkt->pkttype == PKT_SIGNATURE ) {
 	PKT_signature *sig = node->pkt->pkt.signature;
 
-	log_info("proc_tree: old style signature\n");
-	if( !c->have_data ) {
-	    free_md_filter_context( &c->mfx );
-	    c->mfx.md = md_open(digest_algo_from_sig(sig), 0);
-	    rc = ask_for_detached_datafile( &c->mfx,
-					    iobuf_get_fname(c->iobuf));
-	    if( rc ) {
-		log_error("can't hash datafile: %s\n", g10_errstr(rc));
-		return;
+	if( !c->have_data && (sig->sig_class&~3) == 0x10 ) {
+	    log_info("old style signature\n");
+	    if( !c->have_data ) {
+		free_md_filter_context( &c->mfx );
+		c->mfx.md = md_open(digest_algo_from_sig(sig), 0);
+		rc = ask_for_detached_datafile( &c->mfx,
+						iobuf_get_fname(c->iobuf));
+		if( rc ) {
+		    log_error("can't hash datafile: %s\n", g10_errstr(rc));
+		    return;
+		}
 	    }
 	}
 

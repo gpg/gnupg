@@ -36,8 +36,6 @@
 #include "status.h"
 
 
-
-
 #define CRCINIT 0xB704CE
 #define CRCPOLY 0X864CFB
 #define CRCUPDATE(a,c) do {						    \
@@ -163,6 +161,29 @@ is_armored( byte *buf )
     return 1;
 }
 
+
+/****************
+ * Try to check wether the iobuf is armored
+ * Returns true if this may be the case; the caller should use the
+ *	   filter to do further processing.
+ */
+int
+use_armor_filter( IOBUF a )
+{
+    byte buf[1];
+    int n;
+
+    n = iobuf_peek(a, buf, 1 );
+    if( n == -1 )
+	return 0; /* EOF, doesn't matter wether armored or not */
+    if( !n )
+	return 1; /* can't check it: try armored */
+    return is_armored(buf);
+}
+
+
+
+
 static void
 invalid_armor(void)
 {
@@ -248,7 +269,9 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    c = 0;
 	    for(n=0; n < 28 && (c=iobuf_get2(a)) != -1 && c != '\n'; )
 		buf[n++] = c;
-	    if( !n  || c == -1 )
+	    if( !n && c == '\n' )
+		state = fhdrCHECKBegin;
+	    else if( !n  || c == -1 )
 		state = fhdrNOArmor; /* too short */
 	    else if( !is_armored( buf ) )
 		state = fhdrNOArmor;
@@ -269,8 +292,12 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    break;
 
 	  case fhdrINITSkip:
-	    while( (c=iobuf_get2(a)) != -1 && c != '\n' )
-		;
+	    if( c == '\n' )
+		n = 0;
+	    else {
+		while( (c=iobuf_get2(a)) != -1 && c != '\n' )
+		    ;
+	    }
 	    state =  c == -1? fhdrEOF : fhdrINIT;
 	    break;
 
@@ -912,8 +939,9 @@ armor_filter( void *opaque, int control,
 	    iobuf_writestr(a, "-----");
 	    iobuf_writestr(a, head_strings[afx->what] );
 	    iobuf_writestr(a, "-----\n");
-	    iobuf_writestr(a, "Version: G10 pre-release "  VERSION "\n");
-	    iobuf_writestr(a, "Comment: This is an alpha test version!\n\n");
+	    iobuf_writestr(a, "Version: G10 v"  VERSION " ("
+					    PRINTABLE_OS_NAME ")\n");
+	    iobuf_writestr(a, "Comment: This is an alpha version!\n\n");
 	    afx->status++;
 	    afx->idx = 0;
 	    afx->idx2 = 0;
@@ -1011,4 +1039,6 @@ armor_filter( void *opaque, int control,
 	*(char**)buf = "armor_filter";
     return rc;
 }
+
+
 
