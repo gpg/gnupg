@@ -1033,7 +1033,7 @@ static int
 delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 {
     KBNODE node;
-    int nvalid=0, uid_seen=0;
+    int nvalid=0, uid_seen=0, subkey_seen=0;
 
     for(node=keyblock->next; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_USER_ID ) {
@@ -1074,6 +1074,8 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 		    node = node->next;
 		}
 	    }
+	    else
+	      subkey_seen = 1;
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE
 		 && check_pubkey_algo( node->pkt->pkt.signature->pubkey_algo)
@@ -1120,6 +1122,15 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 		    }
 		}
 	    }
+	}
+	else if( node->pkt->pkttype == PKT_SIGNATURE &&
+		 (node->pkt->pkt.signature->sig_class == 0x18 ||
+		  node->pkt->pkt.signature->sig_class == 0x28) &&
+		 !subkey_seen ) {
+	    log_error( _("key %08lX: subkey signature "
+			 "in wrong place - skipped\n"),
+		       (ulong)keyid[1]);
+	    delete_kbnode( node );
 	}
 	else if( (node->flag & 4) ) /* marked for deletion */
 	    delete_kbnode( node );

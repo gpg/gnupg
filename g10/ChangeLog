@@ -1,5 +1,8 @@
 2002-07-23  David Shaw  <dshaw@jabberwocky.com>
 
+	* import.c (delete_inv_parts): Discard subkey signatures (0x18 and
+	0x28) if found in the userid section of the key.
+
 	* sig-check.c (signature_check2): Signatures made by invalid
 	subkeys (bad/missing binding sig) are also invalid.
 
