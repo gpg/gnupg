@@ -25,6 +25,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include <assuan.h>
 
@@ -33,14 +34,21 @@
 #include "app-common.h"
 #include "apdu.h" /* Required for apdu_*_reader (). */
 
-/* maximum length aloowed as a PIN; used for INQUIRE NEEDPIN */
+/* Maximum length allowed as a PIN; used for INQUIRE NEEDPIN */
 #define MAXLEN_PIN 100
+
+
+/* We keep track of the primary client using scdaemon.  This one will
+   for example receive signal on card change. */
+static ctrl_t primary_connection;
+
 
 #define set_error(e,t) assuan_set_error (ctx, ASSUAN_ ## e, (t))
 
 /* Data used to associate an Assuan context with local server data */
 struct server_local_s {
   ASSUAN_CONTEXT assuan_ctx;
+  int event_signal;        /* Or 0 if not used. */
 };
 
 
@@ -96,7 +104,18 @@ reset_notify (ASSUAN_CONTEXT ctx)
 static int
 option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 {
-  return 0;
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+
+  if (!strcmp (key, "event-signal"))
+    {
+      /* A value of 0 is allowed to reset the event signal. */
+      int i = *value? atoi (value) : -1;
+      if (i < 0)
+        return ASSUAN_Parameter_Error;
+      ctrl->server_local->event_signal = i;
+    }
+
+ return 0;
 }
 
 
@@ -1096,6 +1115,10 @@ scd_command_handler (int listen_fd)
   if (DBG_ASSUAN)
     assuan_set_log_stream (ctx, log_get_stream ());
 
+  /* Store the primary connection's assuan context. */
+  if (!primary_connection)
+    primary_connection = &ctrl;
+
   /* We open the reader right at startup so that the ticker is able to
      update the status file. */
   if (ctrl.reader_slot == -1)
@@ -1122,6 +1145,12 @@ scd_command_handler (int listen_fd)
           continue;
         }
     }
+
+  /* The next client will be the primary conenction if this one
+     terminates. */
+  if (primary_connection == &ctrl)
+    primary_connection = NULL;
+
   do_reset (&ctrl, 1); /* Cleanup. */
 
   assuan_deinit_server (ctx);
@@ -1221,6 +1250,19 @@ scd_update_reader_status_file (void)
                 fclose (fp);
               }
             xfree (fname);
+
+            /* Send a signal to the primary client, if any. */
+            if (primary_connection && primary_connection->server_local
+                && primary_connection->server_local->assuan_ctx)
+              {
+                pid_t pid = assuan_get_pid (primary_connection
+                                            ->server_local->assuan_ctx);
+                int signo = primary_connection->server_local->event_signal;
+
+                log_info ("client pid is %d, sending signal %d\n", pid, signo);
+                if (pid != (pid_t)(-1) && pid && signo > 0)
+                  kill (pid, signo);
+              }
           }
       }
 }

@@ -1,3 +1,12 @@
+2004-04-21  Werner Koch  <wk@gnupg.org>
+
+	* command.c (scd_update_reader_status_file): Send a signal back to
+	the client.
+	(option_handler): Parse the new event-signal option.
+
+	* scdaemon.c (handle_signal): Do not use SIGUSR{1,2} anymore for
+	changing the verbosity.
+
 2004-04-20  Werner Koch  <wk@gnupg.org>
 
 	* command.c (scd_update_reader_status_file): Write status files.
