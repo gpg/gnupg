@@ -1,3 +1,7 @@
+2003-11-14  Werner Koch  <wk@gnupg.org>
+
+	* cryptmiss.c: Removed.
+
 2003-11-13  Werner Koch  <wk@gnupg.org>
 
 	* util.h (vasprintf): Also fixed the prototype.

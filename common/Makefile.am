@@ -31,7 +31,6 @@ libcommon_a_SOURCES = \
 	errors.h \
 	maperror.c \
 	sysutils.c sysutils.h \
-	cryptmiss.c \
 	gettime.c \
 	yesno.c \
 	miscellaneous.c \
