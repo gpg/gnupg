@@ -1,3 +1,8 @@
+2004-02-20  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Reset GPG_AGENT_INFO here
+	* runtest: and not anymore here.
+
 2002-12-04  Werner Koch  <wk@gnupg.org>
 
 	* inittests (gpgsm.conf): Fake system time.

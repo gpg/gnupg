@@ -21,8 +21,7 @@
 
 GPGSM = ../sm/gpgsm
 
-# We can't unset a variable here so we unset GPG_AGENT_INFO in runtest
-TESTS_ENVIRONMENT = GNUPGHOME=`pwd` LC_ALL=C GPGSM=$(GPGSM) \
+TESTS_ENVIRONMENT = GNUPGHOME=`pwd` GPG_AGENT_INFO= LC_ALL=C GPGSM=$(GPGSM) \
 		    LD_LIBRARY_PATH=$$(seen=0; \
                            for i in $(LDFLAGS) $(LIBGCRYPT_LIBS) $(PTH_LIBS); \
                            do \
