@@ -1,3 +1,9 @@
+2002-07-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* config.links: Add special rule for OpenBSD on x86 to use special
+	i386-openbsd files.  OpenBSD (at least until version 3.1) has an
+	older assembler that won't work with the files in i386.
+
 2002-07-24  Stefan Bellon  <sbellon@sbellon.de>
 
 	* longlong.h [__riscos__]: Removed #pragma which is not needed

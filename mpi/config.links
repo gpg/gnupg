@@ -54,6 +54,13 @@ case "${target}" in
        cat  $srcdir/mpi/i386/syntax.h	 >>./mpi/asm-syntax.h
        path="i386"
        ;;
+# Use old assembler syntax for OpenBSD as their assembler is really old.
+    i[34567]86*-*-openbsd*)
+	echo '#define BSD_SYNTAX' >>./mpi/asm-syntax.h
+	echo '#define X86_BROKEN_ALIGN' >>./mpi/asm-syntax.h
+	cat  $srcdir/mpi/i386-openbsd/syntax.h	    >>./mpi/asm-syntax.h
+	path="i386-openbsd"
+	;;
     i[3467]86*-*-linuxaout*  | \
     i[3467]86*-*-linuxoldld* | \
     i[3467]86*-*-*bsd*)
