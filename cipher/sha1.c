@@ -90,9 +90,9 @@ transform( SHA1_CONTEXT *hd, byte *data )
     d = hd->h3;
     e = hd->h4;
 
-  #ifdef BIG_ENDIAN_HOST
+#ifdef BIG_ENDIAN_HOST
     memcpy( x, data, 64 );
-  #else
+#else
     { int i;
       byte *p2;
       for(i=0, p2=(byte*)x; i < 16; i++, p2 += 4 ) {
@@ -102,7 +102,7 @@ transform( SHA1_CONTEXT *hd, byte *data )
 	p2[0] = *data++;
       }
     }
-  #endif
+#endif
 
 
 #define K1  0x5A827999L
@@ -304,19 +304,18 @@ sha1_final(SHA1_CONTEXT *hd)
     burn_stack (88+4*sizeof(void*));
 
     p = hd->buf;
-  #ifdef BIG_ENDIAN_HOST
-    #define X(a) do { *(u32*)p = hd->h##a ; p += 4; } while(0)
-  #else /* little endian */
-    #define X(a) do { *p++ = hd->h##a >> 24; *p++ = hd->h##a >> 16;	 \
+#ifdef BIG_ENDIAN_HOST
+#define X(a) do { *(u32*)p = hd->h##a ; p += 4; } while(0)
+#else /* little endian */
+#define X(a) do { *p++ = hd->h##a >> 24; *p++ = hd->h##a >> 16;	 \
 		      *p++ = hd->h##a >> 8; *p++ = hd->h##a; } while(0)
-  #endif
+#endif
     X(0);
     X(1);
     X(2);
     X(3);
     X(4);
-  #undef X
-
+#undef X
 }
 
 static byte *

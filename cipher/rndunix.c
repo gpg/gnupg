@@ -328,9 +328,9 @@ typedef struct {
 pid_t
 waitpid(pid_t pid, int *statptr, int options)
 {
-     #ifdef HAVE_WAIT4
+#ifdef HAVE_WAIT4
 	return wait4(pid, statptr, options, NULL);
-     #else
+#else
 	/* If wait4 is also not available, try wait3 for SVR3 variants */
 	/* Less ideal because can't actually request a specific pid */
 	/* For that reason, first check to see if pid is for an */
@@ -346,7 +346,7 @@ waitpid(pid_t pid, int *statptr, int options)
 		    (tmp_pid != -1) && (tmp_pid != 0) && (pid != -1))
 	    ;
 	return tmp_pid;
-     #endif
+#endif
 }
 #endif
 
@@ -494,11 +494,11 @@ slow_poll(FILE *dbgfp, int dbgall, size_t *nbytes )
     int moreSources;
     struct timeval tv;
     fd_set fds;
-  #if defined( __hpux )
+#if defined( __hpux )
     size_t maxFD = 0;
-  #else
+#else
     int maxFD = 0;
-  #endif /* OS-specific brokenness */
+#endif /* OS-specific brokenness */
     int bufPos, i, usefulness = 0;
 
 
@@ -521,9 +521,9 @@ slow_poll(FILE *dbgfp, int dbgall, size_t *nbytes )
 	    dataSources[i].pipeFD = fileno(dataSources[i].pipe);
 	    if (dataSources[i].pipeFD > maxFD)
 		maxFD = dataSources[i].pipeFD;
-	  #ifdef O_NONBLOCK /* Ohhh what a hack (used for Atari) */
+#ifdef O_NONBLOCK /* Ohhh what a hack (used for Atari) */
 	    fcntl(dataSources[i].pipeFD, F_SETFL, O_NONBLOCK);
-	  #endif
+#endif
 	    FD_SET(dataSources[i].pipeFD, &fds);
 	    dataSources[i].length = 0;
 
@@ -550,11 +550,11 @@ slow_poll(FILE *dbgfp, int dbgall, size_t *nbytes )
 	tv.tv_sec = 10;
 	tv.tv_usec = 0;
 
-      #if defined( __hpux ) && ( OS_VERSION == 9 )
+#if defined( __hpux ) && ( OS_VERSION == 9 )
 	if (select(maxFD + 1, (int *)&fds, NULL, NULL, &tv) == -1)
-      #else  /*  */
+#else  /*  */
 	if (select(maxFD + 1, &fds, NULL, NULL, &tv) == -1)
-      #endif /* __hpux */
+#endif /* __hpux */
 	    break;
 
 	/* One of the sources has data available, read it into the buffer */
@@ -684,27 +684,27 @@ start_gatherer( int pipefd )
      * return an error, so the read data won't be added to the randomness
      * pool.  There are two types of SIGC(H)LD naming, the SysV SIGCLD and
      * the BSD/Posix SIGCHLD, so we need to handle either possibility */
-  #ifdef SIGCLD
+#ifdef SIGCLD
     signal(SIGCLD, SIG_DFL);
-  #else
+#else
     signal(SIGCHLD, SIG_DFL);
-  #endif
+#endif
 
     fflush (stderr);
     /* Arrghh!!  It's Stuart code!! */
     /* (close all files but the ones we need) */
     {	int nmax, n1, i;
-      #ifdef _SC_OPEN_MAX
+#ifdef _SC_OPEN_MAX
 	if( (nmax=sysconf( _SC_OPEN_MAX )) < 0 ) {
-	  #ifdef _POSIX_OPEN_MAX
+#ifdef _POSIX_OPEN_MAX
 	    nmax = _POSIX_OPEN_MAX;
-	  #else
+#else
 	    nmax = 20; /* assume a reasonable value */
-	  #endif
+#endif
 	}
-      #else
+#else
 	nmax = 20; /* assume a reasonable value */
-      #endif
+#endif
 	{  
 	  int fd;
 	  if ((fd = open ("/dev/null", O_RDWR)) != -1) {

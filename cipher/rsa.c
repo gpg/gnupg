@@ -301,9 +301,9 @@ stronger_key_check ( RSA_secret_key *skey )
 static void
 secret(MPI output, MPI input, RSA_secret_key *skey )
 {
-  #if 0
+#if 0
     mpi_powm( output, input, skey->d, skey->n );
-  #else
+#else
     MPI m1   = mpi_alloc_secure( mpi_get_nlimbs(skey->n)+1 );
     MPI m2   = mpi_alloc_secure( mpi_get_nlimbs(skey->n)+1 );
     MPI h    = mpi_alloc_secure( mpi_get_nlimbs(skey->n)+1 );
@@ -329,7 +329,7 @@ secret(MPI output, MPI input, RSA_secret_key *skey )
     mpi_free ( h );
     mpi_free ( m1 );
     mpi_free ( m2 );
-  #endif
+#endif
 }
 
 
@@ -489,6 +489,3 @@ rsa_get_info( int algo,
       default:*r_usage = 0; return NULL;
     }
 }
-
-
-

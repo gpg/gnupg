@@ -34,7 +34,7 @@ rol( u32 x, int n)
 	return x;
 }
 #else
-  #define rol(x,n) ( ((x) << (n)) | ((x) >> (32-(n))) )
+#define rol(x,n) ( ((x) << (n)) | ((x) >> (32-(n))) )
 #endif
 
 

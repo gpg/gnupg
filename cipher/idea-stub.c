@@ -39,16 +39,16 @@
 #include <string.h>
 #include <unistd.h>
 #ifdef HAVE_DL_DLOPEN
-  #include <dlfcn.h>
+#include <dlfcn.h>
 #endif
 #ifdef __MINGW32__
-  #include <windows.h>
+#include <windows.h>
 #endif
 #include "util.h"
 #include "algorithms.h"
 
 #ifndef RTLD_NOW
-  #define RTLD_NOW  1
+#define RTLD_NOW  1
 #endif
 
 
@@ -193,4 +193,3 @@ idea_get_info( int algo, size_t *keylen,
     return rstr;
   return NULL;
 }
-

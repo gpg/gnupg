@@ -175,7 +175,7 @@ static void
 transform( RMD160_CONTEXT *hd, byte *data )
 {
     u32 a,b,c,d,e,aa,bb,cc,dd,ee,t;
-  #ifdef BIG_ENDIAN_HOST
+#ifdef BIG_ENDIAN_HOST
     u32 x[16];
     { int i;
       byte *p2, *p1;
@@ -186,10 +186,10 @@ transform( RMD160_CONTEXT *hd, byte *data )
 	p2[0] = *p1++;
       }
     }
-  #else
-   #if 0
+#else
+#if 0
     u32 *x =(u32*)data;
-   #else
+#else
     /* this version is better because it is always aligned;
      * The performance penalty on a 586-100 is about 6% which
      * is acceptable - because the data is more local it might
@@ -199,8 +199,8 @@ transform( RMD160_CONTEXT *hd, byte *data )
      * [measured with a 4MB data and "gpgm --print-md rmd160"] */
     u32 x[16];
     memcpy( x, data, 64 );
-   #endif
-  #endif
+#endif
+#endif
 
 
 #define K0  0x00000000
@@ -454,13 +454,13 @@ rmd160_mixblock( RMD160_CONTEXT *hd, char *buffer )
 {
     char *p = buffer;
     transform( hd, buffer );
-  #define X(a) do { *(u32*)p = hd->h##a ; p += 4; } while(0)
+#define X(a) do { *(u32*)p = hd->h##a ; p += 4; } while(0)
     X(0);
     X(1);
     X(2);
     X(3);
     X(4);
-  #undef X
+#undef X
 }
 
 
@@ -514,18 +514,18 @@ rmd160_final( RMD160_CONTEXT *hd )
     burn_stack (108+5*sizeof(void*));
 
     p = hd->buf;
-  #ifdef BIG_ENDIAN_HOST
-    #define X(a) do { *p++ = hd->h##a	   ; *p++ = hd->h##a >> 8;	\
+#ifdef BIG_ENDIAN_HOST
+#define X(a) do { *p++ = hd->h##a	   ; *p++ = hd->h##a >> 8;	\
 		      *p++ = hd->h##a >> 16; *p++ = hd->h##a >> 24; } while(0)
-  #else /* little endian */
-    #define X(a) do { *(u32*)p = hd->h##a ; p += 4; } while(0)
-  #endif
+#else /* little endian */
+#define X(a) do { *(u32*)p = hd->h##a ; p += 4; } while(0)
+#endif
     X(0);
     X(1);
     X(2);
     X(3);
     X(4);
-  #undef X
+#undef X
 }
 
 static byte *
@@ -585,4 +585,3 @@ rmd160_get_info( int algo, size_t *contextsize,
 
     return "RIPEMD160";
 }
-

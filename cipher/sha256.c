@@ -256,12 +256,12 @@ sha256_final(SHA256_CONTEXT *hd)
     burn_stack (328);
 
     p = hd->buf;
-  #ifdef BIG_ENDIAN_HOST
-    #define X(a) do { *(u32*)p = hd->h##a ; p += 4; } while(0)
-  #else /* little endian */
-    #define X(a) do { *p++ = hd->h##a >> 24; *p++ = hd->h##a >> 16;	 \
+#ifdef BIG_ENDIAN_HOST
+#define X(a) do { *(u32*)p = hd->h##a ; p += 4; } while(0)
+#else /* little endian */
+#define X(a) do { *p++ = hd->h##a >> 24; *p++ = hd->h##a >> 16;	 \
 		      *p++ = hd->h##a >> 8; *p++ = hd->h##a; } while(0)
-  #endif
+#endif
     X(0);
     X(1);
     X(2);
@@ -270,8 +270,7 @@ sha256_final(SHA256_CONTEXT *hd)
     X(5);
     X(6);
     X(7);
-  #undef X
-
+#undef X
 }
 
 static byte *
