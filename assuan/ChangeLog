@@ -1,5 +1,7 @@
 2001-11-24  Werner Koch  <wk@gnupg.org>
 
+	* assuan-connect.c (assuan_get_pid): New.
+
 	* assuan-buffer.c (_assuan_read_line): Deal with reads of more
 	than a line.
 	* assuan-defs.h: Add space in the context for this.

@@ -24,7 +24,7 @@
 #include <sys/types.h>
 #include "assuan.h"
 
-#define LINELENGTH 102 /* 1000 + [CR,]LF */
+#define LINELENGTH 1002 /* 1000 + [CR,]LF */
 
 struct cmdtbl_s {
   const char *name;

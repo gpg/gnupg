@@ -127,3 +127,9 @@ assuan_pipe_disconnect (ASSUAN_CONTEXT ctx)
   waitpid (ctx->pid, NULL, 0);  /* FIXME Check return value.  */
   assuan_deinit_pipe_server (ctx);
 }
+
+pid_t
+assuan_get_pid (ASSUAN_CONTEXT ctx)
+{
+  return ctx ? ctx->pid : -1;
+}

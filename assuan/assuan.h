@@ -21,6 +21,9 @@
 #ifndef ASSUAN_H
 #define ASSUAN_H
 
+#include <stdio.h>
+#include <sys/types.h>
+
 #ifdef __cplusplus
 extern "C" { 
 #if 0
@@ -101,6 +104,7 @@ void assuan_deinit_pipe_server (ASSUAN_CONTEXT ctx);
 AssuanError assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name,
                                  char *const argv[]);
 void assuan_pipe_disconnect (ASSUAN_CONTEXT ctx);
+pid_t assuan_get_pid (ASSUAN_CONTEXT ctx);
 
 /*-- assuan-util.c --*/
 void assuan_set_malloc_hooks ( void *(*new_alloc_func)(size_t n),
