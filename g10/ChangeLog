@@ -1,3 +1,7 @@
+Thu Apr  2 20:22:35 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* gpgd.c: New
+
 Thu Apr  2 10:38:16 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* keygen.c (generate_keypair): Add valid_days stuff.

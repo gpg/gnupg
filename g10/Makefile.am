@@ -6,7 +6,7 @@ OMIT_DEPENDENCIES = zlib.h zconf.h
 BUILT_SOURCES = g10maint.c
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
-bin_PROGRAMS = gpg gpgm
+bin_PROGRAMS = gpg gpgm gpgd
 
 common_source =  \
 	      build-packet.c	\
@@ -63,6 +63,10 @@ gpg_SOURCES  = g10.c		\
 gpgm_SOURCES = g10maint.c   \
 	      dearmor.c     \
 	      $(common_source)
+
+gpgd_SOURCES = gpgd.c \
+	      $(common_source)
+
 
 LDADD = @INTLLIBS@ $(needed_libs) @ZLIBS@
 
