@@ -73,6 +73,8 @@ enum cmd_and_opt_values
   opcscDriver,
   oDisableCCID,
   oDisableOpenSC,
+  oAllowAdmin,
+  oDenyAdmin,
 
 aTest };
 
@@ -112,8 +114,8 @@ static ARGPARSE_OPTS opts[] = {
                                     "@"
 #endif
                                          /* end --disable-opensc */},
-
-
+  { oAllowAdmin, "allow-admin", 0, N_("allow the use of admin card commands")},
+  { oDenyAdmin,  "deny-admin",  0, "@" },  
 
   {0}
 };
@@ -396,6 +398,9 @@ main (int argc, char **argv )
         case opcscDriver: opt.pcsc_driver = pargs.r.ret_str; break;
         case oDisableCCID: opt.disable_ccid = 1; break;
         case oDisableOpenSC: opt.disable_opensc = 1; break;
+
+        case oAllowAdmin: opt.allow_admin = 1; break;
+        case oDenyAdmin: opt.allow_admin = 0; break;
 
         default : pargs.err = configfp? 1:2; break;
 	}

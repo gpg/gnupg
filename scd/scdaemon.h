@@ -57,6 +57,8 @@ struct {
   const char *pcsc_driver;  /* Library to access the PC/SC system. */
   int disable_opensc;  /* Disable the use of the OpenSC framework. */
   int disable_ccid;    /* Disable the use of the internal CCID driver. */
+  int allow_admin;     /* Allow the use of admin commands for certain
+                          cards. */
 } opt;
 
 

@@ -569,6 +569,12 @@ verify_chv3 (APP app,
 {
   int rc = 0;
 
+  if (!opt.allow_admin)
+    {
+      log_info ("access to admin commands is not configured\n");
+      return gpg_error (GPG_ERR_EACCES);
+    }
+      
   if (!app->did_chv3) 
     {
       char *pinvalue;

@@ -1,3 +1,8 @@
+2003-11-17  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c, scdaemon.h: New options --allow-admin and --deny-admin.
+	* app-openpgp.c (verify_chv3): Check it here.
+
 2003-11-12  Werner Koch  <wk@gnupg.org>
 
 	Adjusted for API changes in Libksba.
