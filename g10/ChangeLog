@@ -1,3 +1,8 @@
+2002-10-04  Werner Koch  <wk@gnupg.org>
+
+	* passphrase.c (agent_get_passphrase): Fixed signed/unsigned char
+	problem in %-escaping.  Noted by Ingo Klöcker.
+
 2002-10-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* keylist.c (print_capabilities): Secret-parts-missing keys should
