@@ -1,0 +1,201 @@
+
+	/* we still have these if a signed signed more than one
+	 * user ID.  I don't think that is makes sense to sign
+	 * more than one user ID; an exception might be a user ID
+	 * which is to be removed in near future.  Anyway it is
+	 * always good to sign only those user ID which are
+	 * unlikely to change.	It might be good to insert a
+	 * user ID which does not contain an email address and
+	 * mark this one with a special signature flag or let
+	 * sign_key() suggest a user ID w/o an email address
+	 */
+
+
+    * What shall we do if we have a valid subkey revocation certificate
+      but no subkey binding?  Is this a valid but revoked key?
+
+
+Date: Mon, 4 Jan 1999 19:34:29 -0800 (PST)
+From: Matthew Skala <mskala@ansuz.sooke.bc.ca>
+
+- Signing with an expired key doesn't work by default, does work with a
+  special option.
+- Verifying a signature that appears to have been made by an expired key
+  after its expiry date but is otherwise good reports the signature as BAD,
+  preferably with a message indicating that it's a key-expiry problem rather
+  than a cryptographically bad signature.
+- Verifying a signature from a key that is now expired, where the
+  signature was made before the expiry date, reports the signature as
+  GOOD, possibly with a warning that the key has since expired.
+- Encrypting to an expired key doesn't work by default, does work with a
+  special option.
+- Decrypting always works, if you have the appropriate secret key and
+  passphrase.
+
+
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Hi Werner..
+
+I was looking at some of the PROJECTS items in the recent gpg CVS and wanted
+to comment on one of them:
+
+  * Add a way to override the current cipher/md implementations
+    by others (using extensions)
+
+As you know I've been thinking about how to use a PalmPilot or an iButton in
+some useful way in GPG. The two things that seem reasonable are:
+ 1) keep the secret key in the device, only transferring it to the host
+    computer for the duration of the secret-key operation (sign or decrypt).
+    The key is never kept on disk, only in RAM. This removes the chance that
+    casual snooping on your office workstation will reveal your key (it
+    doesn't help against an active attack, but the attacker must leave a
+    tampered version of GPG around or otherwise get their code to run while
+    the key-storage device is attached to attack the key)
+ 2) perform the secret-key operation on the device, so the secret key never
+    leaves the confines of that device. There are still attacks possible,
+    based upon talking to the device while it is connected and trying to
+    convince the device (and possibly the user) that it is the real GPG,
+    but in general this protects the key pretty strongly. Any individual
+    message is still vulnerable, but that's a tradeoff of the convenience of
+    composing that message on a full-sized screen+keyboard (plus the added
+    speed of encryption) vs. the security of writing the message on a
+    secure device.
+
+I think there are a variety of ways of implementing these things, but a few
+extension mechanisms in GPG should be enough to try various ways later on.
+
+1) pass an argument string to loadable extension modules (maybe
+    gpg --load-extension foofish=arg1,arg2,arg3 ?)
+2) allow multiple instances of the same extension module (presumably with
+   different arguments)
+3) allow extension modules to use stdin/stdout/stderr as normal (probably
+   already in there), for giving feedback to the user, or possibly asking them
+   for a password of some sort
+4) have an extension to provide secret keys:
+
+   It looks like most of the hooks for this are already in place, it just
+   needs an extension module which can register itself as a keyblock resource.
+
+   I'm thinking of a module for this that is given an external program name as
+   an argument. When the keyblock resource is asked to enumerate its keys, it
+   runs the external program (first with a "0" argument, then a "1", and so on
+   until the program reports that no more keys are available). The external
+   program returns one (possibly armored) secret key block each time. The
+   program might have some kind of special protocol to talk to the storage
+   device.  One thing that comes to mind is to simply include a random number
+   in the message sent over the serial port: the program would display this
+   number, the Pilot at the other end would display the number it receives, if
+   the user sees that both are the same they instruct the Pilot to release the
+   key, as basic protection against someone else asking for the key while it
+   is attached. More sophisticated schemes are possible depending upon how
+   much processing power and IO is available on the device. But the same
+   extension module should be able to handle as complex a scheme as one could
+   wish.
+
+   The current keyblock-resource interface would work fine, although it
+   might be more convenient if a resource could be asked for a key by id
+   instead of enumerating all of them and then searching through the resulting
+   list for a match. A module that provided public keys would have to work this
+   way (imagine a module that could automatically do an http fetch for a
+   particular key.. easily-added automatic key fetching). Without that ability
+   to fetch by id (which would require it to fall back to the other keyblock
+   resources if it failed), the user's device might be asked to release the
+   key even though some other secret key was the one needed.
+
+
+5) have an extension to perform a secret-key operation without the actual
+   secret key material
+
+ basically something to indicate that any decrypt or sign operations that
+ occur for a specific keyid should call the extension module instead. The
+ secret key would not be extracted (it wouldn't be available anyway). The
+ module is given the keyid and the MPI of the block it is supposed to sign
+ or decrypt.
+
+ The module could then run an external program to do the operation. I'm
+ imagining a Pilot program which receives the data, asks the user if it can go
+ along with the operation (after displaying a hash of the request, which is
+ also displayed by the extension module's program to make sure the Pilot is
+ being asked to do the right operation), performs the signature or decryption,
+ then returns the data. This protocol could be made arbitrarily complex, with
+ a D-H key to encrypt the link, and both sides signing requests to
+ authenticate one to the other (although this transforms the the problem of
+ getting your secret key off your office workstation into the problem of
+ your workstation holding a key tells your Pilot that it is allowed to perform
+ the secret key operation, and if someone gets a hold of that key they may
+ be able to trick your pilot [plugged in somewhere else] to do the same thing
+ for them).
+
+ This is basically red/black separation, with the Pilot or iButton having the
+ perimeter beyond which the red data doesn't pass. Better than the secret-key
+ storage device but requires a lot more power on the device (the new iButtons
+ with the exponentiator could do it, but it would take way too much code space
+ on the old ones, although they would be fine for just carrying the keys).
+
+The signature code might need to be extended to verify the signature you just
+made, since an active intruder pretending to the the Pilot wouldn't be able to
+make a valid signature (but they might sign your message with a different key
+just to be annoying).
+
+Anyway, just wanted to share my thoughts on some possibilities. I've been
+carrying this little Java iButton on my keyring for months now, looking for
+something cool to do with it, and I think that secure storage for my GPG key
+would be just the right application.
+
+cheers,
+ -Brian
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v0.4.5 (GNU/Linux)
+Comment: For info finger gcrypt@ftp.guug.de
+
+iD8DBQE2c5oZkDmgv9E5zEwRArAwAKDWV5fpTtbGPiMPgl2Bpp0gvhbfQgCgzJuY
+AmIQTk4s62/y2zMAHDdOzK0=
+=jr7m
+-----END PGP SIGNATURE-----
+
+
+
+About a new Keyserver  (discussion with Allan Clark <allanc@sco.com>):
+=====================
+
+Some ideas:
+
+o  the KS should verify signatures and only accept those
+   which are good.
+
+o  Keep a blacklist of known bad signatures to minimize
+   the time needed to check them
+
+o  Should be fast - I currently designing a new storage
+   system called keybox which takes advantage of the fact
+   that the keyID is higly random and can be directly be
+   used as a hash value and this keyID is (for v4 keys)
+   part of the fingerprint: So it is possible to use the
+   fingerprint as key but do an lookup by the keyID.
+
+o  To be used as the "public keyring" in a LAN so that there
+   is no need to keep one on every machine.
+
+o  Allow more that one file for key storage.
+
+o  Use the HKS protocol and enhance it in a way that binary
+   keyrings can be transmitted.  (I already wrote some
+   http server and client code which can be used for this)
+
+o  Keep a checkcsum (hash) of the entire keyblock so that a
+   client can easy check whether this keyblock has changed.
+   (keyblock = the entire key with all certificates etc.)
+
+o  Allow efficient propagation of new keys and revocation
+   certificates.
+
+
+Probably more things but this keyserver is not a goal for the
+1.0 release. Someone should be able to fix some of the limitations
+of the existing key servers (I think they bail out on some rfc2440
+packet formats).
+

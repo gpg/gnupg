@@ -40,6 +40,62 @@ ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
 More fields may be added later.
 
 
+Format of the "--status-fd" output
+==================================
+Every line is prefixed with "[GNUPG:] ", followed by a keyword with
+the type of the status line and a some arguments depending on the
+type (maybe none); an application should always be prepared to see
+more argumnents in future versions.
+
+
+    GOODSIG	<long keyid>  <username>
+	The signature with the keyid is good.
+
+    BADSIG	<long keyid>  <username>
+	The signature with the keyid has not been verified okay.
+
+    ERRSIG
+	It was not possible to check the signature.  This may be
+	caused by a missing public key or an unsupported algorithm.
+	No argumens yet.
+
+    VALIDSIG	<fingerprint in hex>
+	The signature with the keyid is good. This is the same
+	as GOODSIG but has the fingerprint as the argument. Both
+	status lines ere emmited for a good signature.
+
+    TRUST_UNDEFINED
+    TRUST_NEVER
+    TRUST_MARGINAL
+    TRUST_FULLY
+    TRUST_ULTIMATE
+	For good signatures one of these status lines are emitted
+	to indicate how trustworthy the signatur is.  No arguments yet.
+
+    SIGEXPIRED
+	The signature key has expired.	No arguments yet.
+
+    KEYREVOKED
+	The used key has been revoked by his owner.  No arguments yet.
+
+    BADARMOR
+	The ascii armor is corrupted.  No arguments yet.
+
+    RSA_OR_IDEA
+	The RSA or IDEA algorithms has been used in the data.  A
+	program might want to fallback to another program to handle
+	the data if GnuPG failed.
+
+    SHM_INFO
+    SHM_GET
+    SHM_GET_BOOL
+    SHM_GET_HIDDEN
+    NEED_PASSPHRASE
+	[Needs documentation]
+
+
+
+
 Key generation
 ==============
     Key generation shows progress by printing different characters to

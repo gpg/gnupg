@@ -8,6 +8,15 @@
       fixed an infinite loop bug in the 3DES code and in the code
       which looks for trusted signatures.
 
+    * Fixed a bug in the mpi library which caused signatures not to
+      compare okay.
+
+    * Rewrote the handling of cleartext signatures; the code is now
+      better maintainable (I hope so).
+
+    * New status output VALIDSIG only for valid signatures together
+      with the fingerprint of the signer's key.
+
 
 Noteworthy changes in version 0.9.0
 -----------------------------------

@@ -56,6 +56,11 @@ set_status_fd ( int newfd )
     fd = newfd;
 }
 
+int
+is_status_enabled()
+{
+    return fd != -1;
+}
 
 void
 write_status ( int no )
@@ -92,6 +97,7 @@ write_status_text ( int no, const char *text)
       case STATUS_SHM_GET_BOOL	 : s = "SHM_GET_BOOL\n"; break;
       case STATUS_SHM_GET_HIDDEN : s = "SHM_GET_HIDDEN\n"; break;
       case STATUS_NEED_PASSPHRASE: s = "NEED_PASSPHRASE\n"; break;
+      case STATUS_VALIDSIG	 : s = "VALIDSIG\n"; break;
       default: s = "?\n"; break;
     }
 

@@ -162,7 +162,10 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
 
     cur_time = make_timestamp();
     if( pk->timestamp > cur_time ) {
-	log_info(_("public key created in future (time warp or clock problem)\n"));
+	ulong d = pk->timestamp - cur_time;
+	log_info(_("public key created %lu %s "
+		   "in future (time warp or clock problem)\n"),
+		    d, d==1? _("second"):_("seconds") );
 	return G10ERR_TIME_CONFLICT;
     }
 

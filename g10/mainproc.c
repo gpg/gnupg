@@ -278,7 +278,7 @@ proc_plaintext( CTX c, PACKET *pkt )
 	md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
 	md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
     }
-    md_start_debug( c->mfx.md, "verify" );
+    /*md_start_debug( c->mfx.md, "verify" );*/
     rc = handle_plaintext( pt, &c->mfx, c->sigs_only, clearsig );
     if( rc == G10ERR_CREATE_FILE && !c->sigs_only) {
 	/* can't write output but we hash it anyway to
@@ -849,6 +849,24 @@ check_sig_and_print( CTX c, KBNODE node )
 	print_keyid( stderr, sig->keyid );
 	putc('\"', stderr);
 	putc('\n', stderr);
+	if( !rc && is_status_enabled() ) {
+	    /* print a status response with the fingerprint */
+	    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+
+	    if( !get_pubkey( pk, sig->keyid ) ) {
+		byte array[MAX_FINGERPRINT_LEN], *p;
+		char buf[MAX_FINGERPRINT_LEN*2+1];
+		size_t i, n;
+
+		fingerprint_from_pk( pk, array, &n );
+		p = array;
+		for(i=0; i < n ; i++, p++ )
+		    sprintf(buf+2*i, "%02X", *p );
+		write_status_text( STATUS_VALIDSIG, buf );
+	    }
+	    free_public_key( pk );
+	}
+
 	if( !rc )
 	    rc = check_signatures_trust( sig );
 	if( rc )

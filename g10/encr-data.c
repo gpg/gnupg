@@ -1,5 +1,5 @@
 /* encr-data.c -  process an encrypted data packet
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -79,10 +79,12 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
     cipher_setiv( dfx.cipher_hd, NULL );
 
     if( ed->len ) {
-	/*iobuf_set_limit( ed->buf, ed->len );*/
-
-	for(i=0; i < (blocksize+2) && ed->len; i++, ed->len-- )
-	    temp[i] = iobuf_get(ed->buf);
+	for(i=0; i < (blocksize+2) && ed->len; i++, ed->len-- ) {
+	    if( (c=iobuf_get(ed->buf)) == -1 )
+		break;
+	    else
+		temp[i] = c;
+	}
     }
     else {
 	for(i=0; i < (blocksize+2); i++ )
@@ -100,13 +102,6 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
     }
     iobuf_push_filter( ed->buf, decode_filter, &dfx );
     proc_packets(ed->buf);
-  #if 0
-    iobuf_pop_filter( ed->buf, decode_filter, &dfx );
-    if( ed->len )
-	iobuf_set_limit( ed->buf, 0 ); /* disable the readlimit */
-    else
-	iobuf_clear_eof( ed->buf );
-  #endif
     ed->buf = NULL;
     cipher_close(dfx.cipher_hd);
     return 0;

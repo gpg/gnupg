@@ -1,5 +1,5 @@
 /* plaintext.c -  process an plaintext packet
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -35,46 +35,6 @@
 #include "i18n.h"
 
 
-/****************
- * Defer the last CR,LF
- */
-static void
-special_md_putc( MD_HANDLE md, int c, int *state )
-{
-    if( c == -1 ) { /* flush */
-	if( *state == 1 ) {
-	    md_putc(md, '\r');
-	}
-
-	*state = 0;
-	return;
-    }
-  again:
-    switch( *state ) {
-      case 0:
-	if( c == '\r' )
-	    *state = 1;
-	else
-	    md_putc(md, c );
-	break;
-      case 1:
-	if( c == '\n' )
-	    *state = 2;
-	else {
-	    md_putc(md, '\r');
-	    *state = 0;
-	    goto again;
-	}
-	break;
-      case 2:
-	md_putc(md, '\r');
-	md_putc(md, '\n');
-	*state = 0;
-	goto again;
-      default: BUG();
-    }
-}
-
 
 /****************
  * Handle a plaintext packet.  If MFX is not NULL, update the MDs
@@ -91,7 +51,6 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     int rc = 0;
     int c;
     int convert = pt->mode == 't';
-    int special_state = 0;
 
     /* create the filename as C string */
     if( nooutput )
@@ -137,12 +96,8 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		rc = G10ERR_READ_FILE;
 		goto leave;
 	    }
-	    if( mfx->md ) {
-		if( 0 && convert && clearsig )
-		    special_md_putc(mfx->md, c, &special_state );
-		else
-		    md_putc(mfx->md, c );
-	    }
+	    if( mfx->md )
+		md_putc(mfx->md, c );
 	    if( convert && !clearsig && c == '\r' )
 		continue; /* fixme: this hack might be too simple */
 	    if( fp ) {
@@ -157,12 +112,8 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     }
     else {
 	while( (c = iobuf_get(pt->buf)) != -1 ) {
-	    if( mfx->md ) {
-		if( 0 && convert && clearsig )
-		    special_md_putc(mfx->md, c, &special_state	);
-		else
-		    md_putc(mfx->md, c );
-	    }
+	    if( mfx->md )
+		md_putc(mfx->md, c );
 	    if( convert && !clearsig && c == '\r' )
 		continue; /* fixme: this hack might be too simple */
 	    if( fp ) {
@@ -176,8 +127,6 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	}
 	pt->buf = NULL;
     }
-    if( 0 && mfx->md && convert && clearsig )
-	special_md_putc(mfx->md, -1, &special_state  ); /* flush */
 
     if( fp && fp != stdout && fclose(fp) ) {
 	log_error("Error closing `%s': %s\n", fname, strerror(errno) );

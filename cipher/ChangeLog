@@ -1,3 +1,9 @@
+Sat Jan  9 16:02:23 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* rndunix.c (gather_random): check for setuid.
+
+	* Makefile.am: Add a way to staically link random modules
+
 Thu Jan  7 18:00:58 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* md.c (md_stop_debug): Do a flush first.

@@ -264,7 +264,6 @@ free_encrypted( PKT_encrypted *ed )
 	if( iobuf_in_block_mode(ed->buf) ) {
 	    while( iobuf_get(ed->buf) != -1 )
 		;
-	    iobuf_set_block_mode(ed->buf, 0);
 	}
 	else {
 	    for( ; ed->len; ed->len-- ) /* skip the packet */
@@ -282,7 +281,6 @@ free_plaintext( PKT_plaintext *pt )
 	if( iobuf_in_block_mode(pt->buf) ) {
 	    while( iobuf_get(pt->buf) != -1 )
 		;
-	    iobuf_set_block_mode(pt->buf, 0);
 	}
 	else {
 	    for( ; pt->len; pt->len-- ) /* skip the packet */

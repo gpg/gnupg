@@ -48,9 +48,11 @@
 #define STATUS_SHM_GET_HIDDEN  19
 
 #define STATUS_NEED_PASSPHRASE 20
+#define STATUS_VALIDSIG        21
 
 /*-- status.c --*/
 void set_status_fd ( int fd );
+int  is_status_enabled ( void );
 void write_status ( int no );
 void write_status_text ( int no, const char *text );
 

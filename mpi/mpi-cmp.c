@@ -1,5 +1,5 @@
 /* mpi-cmp.c  -  MPI functions
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -28,6 +28,7 @@ mpi_cmp_ui( MPI u, unsigned long v )
 {
     mpi_limb_t limb = v;
 
+    mpi_normalize( u );
     if( !u->nlimbs && !limb )
 	return 0;
     if( u->sign )

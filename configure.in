@@ -259,6 +259,48 @@ else
 fi
 
 
+dnl
+dnl Figure how to link the random modules
+dnl
+if test "$ac_cv_have_dev_random" = yes; then
+    AC_DEFINE(USE_RNDLINUX)
+    STATIC_RANDOM_OBJS="rndlinux.o"
+    DYNAMIC_RANDOM_MODS=""
+else
+    case "${target}" in
+        i386--mingw32)
+            AC_DEFINE(USE_RNDW32)
+            STATIC_RANDOM_OBJS=""
+            DYNAMIC_RANDOM_MODS=""
+            ;;
+        m68k-atari-mint)
+            AC_DEFINE(USE_RNDATARI)
+            STATIC_RANDOM_OBJS=""
+            DYNAMIC_RANDOM_MODS=""
+            ;;
+        *)
+            AC_DEFINE(USE_RNDUNIX)
+            STATIC_RANDOM_OBJS="rndunix.o"
+            DYNAMIC_RANDOM_MODS=""
+           ;;
+    esac
+fi
+
+AC_SUBST(STATIC_RANDOM_OBJS)
+AC_SUBST(DYNAMIC_RANDOM_MODS)
+
+
+dnl
+dnl Figure how to link the cipher modules
+dnl
+dnl (form now these are only dynamic)
+STATIC_CIPHER_OBJS=""
+DYNAMIC_CIPHER_MODS="twofish tiger"
+AC_SUBST(STATIC_CIPHER_OBJS)
+AC_SUBST(DYNAMIC_CIPHER_MODS)
+
+
+
 dnl setup assembler stuff
 AC_MSG_CHECKING(for mpi assembler functions)
 if test -f $srcdir/mpi/config.links ; then

@@ -2,6 +2,7 @@
  *									    *
  *   BeOS Randomness-Gathering Code					    *
  *   Copyright Peter Gutmann, Paul Kendall, and Chris Wedgwood 1996-1998    *
+ *   Copyright (C) 1998, 1999  Werner Koch
  *									    *
  ****************************************************************************/
 
@@ -678,6 +679,9 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
     size_t n;
 
     if( !gatherer_pid ) {
+	/* make sure we are not setuid */
+	if( getuid() != geteuid() )
+	    BUG();
 	/* time to start the gatherer process */
 	if( pipe( pipedes ) ) {
 	    g10_log_error("pipe() failed: %s\n", strerror(errno));

@@ -1,18 +1,18 @@
 ## Process this file with automake to produce Makefile.in
 
-gnupg_extensions = tiger twofish rndunix
-
 INCLUDES =  -I$(top_srcdir)/include -I$(top_srcdir)/intl
 
 noinst_LIBRARIES = libcipher.a
+
+EXTRA_PROGRAMS	 = tiger twofish rndunix rndlinux
 if ENABLE_GNUPG_EXTENSIONS
-pkglib_PROGRAMS  = $(gnupg_extensions)
+pkglib_PROGRAMS  = @DYNAMIC_CIPHER_MODS@ @DYNAMIC_RANDOM_MODS@
 else
 pkglib_PROGRAMS  =
 endif
 
-DYNLINK_MOD_CFLAGS = -DIS_MODULE @DYNLINK_MOD_CFLAGS@
 
+DYNLINK_MOD_CFLAGS = -DIS_MODULE @DYNLINK_MOD_CFLAGS@
 
 libcipher_a_SOURCES = cipher.c	\
 		 pubkey.c	\
@@ -33,7 +33,6 @@ libcipher_a_SOURCES = cipher.c	\
 		 random.h	\
 		 random.c	\
 		 rand-internal.h \
-		 rndlinux.c	\
 		 rmd.h		\
 		 rmd160.c	\
 		 sha1.h 	\
@@ -43,8 +42,13 @@ libcipher_a_SOURCES = cipher.c	\
 		 g10c.c 	\
 		 smallprime.c
 
+
+EXTRA_libcipher_a_SOURCES = rndlinux.c rndunix.c
 EXTRA_tiger_SOURCES = tiger.c
 EXTRA_twofish_SOURCES = twofish.c
+
+libcipher_a_DEPENDENCIES = @STATIC_RANDOM_OBJS@ @STATIC_CIPHER_OBJS@
+libcipher_a_LIBADD =	   @STATIC_RANDOM_OBJS@ @STATIC_CIPHER_OBJS@
 
 
 tiger: $(srcdir)/tiger.c

@@ -1,5 +1,5 @@
 /* armor.c - Armor flter
- *	Copyright (C) 1998,1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -254,415 +254,6 @@ parse_hash_header( const char *line )
 
 
 
-#if 0 /* old code */
-/****************
- * parse an ascii armor.
- * Returns: the state,
- *	    the remaining bytes in BUF are returned in RBUFLEN.
- *	    r_empty return the # of empty lines before the buffer
- */
-static fhdr_state_t
-find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
-	     IOBUF a, size_t n, unsigned *r_empty, int *r_hashes,
-	     int only_keyblocks, int *not_dashed )
-{
-    int c=0, i;
-    const char *s;
-    byte *p;
-    size_t buflen;
-    int cont;
-    int clearsig=0;
-    int hdr_line=0;
-    unsigned empty = 0;
-
-    buflen = *r_buflen;
-    assert(buflen >= 100 );
-    buflen -= 4; /* reserved room for CR,LF, and two extra */
-    do {
-	switch( state ) {
-	  case fhdrHASArmor:
-	    /* read at least the first byte to check whether it is armored
-	     * or not */
-	    c = 0;
-	    for(n=0; n < 28 && (c=iobuf_get(a)) != -1 && c != '\n'; )
-		buf[n++] = c;
-	    if( !n && c == '\n' )
-		state = fhdrCHECKBegin;
-	    else if( !n  || c == -1 )
-		state = fhdrNOArmor; /* too short */
-	    else if( !is_armored( buf ) ) {
-		state = fhdrNOArmor;
-		if( c == '\n' )
-		    buf[n++] = c;
-	    }
-	    else if( c == '\n' )
-		state = fhdrCHECKBegin;
-	    else
-		state = fhdrINITCont;
-	    break;
-
-	  case fhdrINIT: /* read some stuff into buffer */
-	    n = 0;
-	  case fhdrINITCont: /* read more stuff into buffer */
-	    c = 0;
-	    for(; n < buflen && (c=iobuf_get(a)) != -1 && c != '\n'; )
-		buf[n++] = c;
-	    state = c == '\n' ? fhdrCHECKBegin :
-		     c == -1  ? fhdrEOF : fhdrINITSkip;
-	    break;
-
-	  case fhdrINITSkip:
-	    if( c == '\n' )
-		n = 0;
-	    else {
-		while( (c=iobuf_get(a)) != -1 && c != '\n' )
-		    ;
-	    }
-	    state =  c == -1? fhdrEOF : fhdrINIT;
-	    break;
-
-	  case fhdrSKIPHeader:
-	    while( (c=iobuf_get(a)) != -1 && c != '\n' )
-		;
-	    state =  c == -1? fhdrEOF : fhdrWAITHeader;
-	    break;
-
-	  case fhdrWAITHeader: /* wait for Header lines */
-	    c = 0;
-	    for(n=0; n < buflen && (c=iobuf_get(a)) != -1 && c != '\n'; )
-		buf[n++] = c;
-	    buf[n] = 0;
-	    if( n < buflen || c == '\n' ) {
-		if( n && buf[0] != '\r') { /* maybe a header */
-		    if( strchr( buf, ':') ) { /* yes */
-			int hashes=0;
-			if( buf[n-1] == '\r' )
-			    buf[--n] = 0;
-			if( opt.verbose ) {
-			    log_info(_("armor header: "));
-			    print_string( stderr, buf, n, 0 );
-			    putc('\n', stderr);
-			}
-			if( clearsig && !(hashes=parse_hash_header( buf )) ) {
-			    if( strlen(buf) > 15
-				&& !memcmp( buf, "NotDashEscaped:", 15 ) ) {
-				*not_dashed = 1;
-				state = fhdrWAITHeader;
-			    }
-			    else {
-				log_error(_("invalid clearsig header\n"));
-				state = fhdrERROR;
-			    }
-			}
-			else {
-			    state = fhdrWAITHeader;
-			    if( r_hashes )
-				*r_hashes |= hashes;
-			}
-		    }
-		    else if( clearsig && n > 15 && !memcmp(buf, "-----", 5 ) )
-			state = fhdrNullClearsig;
-		    else
-			state = fhdrCHECKDashEscaped3;
-		}
-		else if( !n || (buf[0] == '\r' && !buf[1]) ) { /* empty line */
-		    if( clearsig )
-			state = fhdrWAITClearsig;
-		    else {
-			/* this is not really correct: if we do not have
-			 * a clearsig and no armor lines we are not allowed
-			 * to have an empty line */
-			n = 0;
-			state = fhdrTEXT;
-		    }
-		}
-		else {
-		    log_error(_("invalid armor header: "));
-		    print_string( stderr, buf, n, 0 );
-		    putc('\n', stderr);
-		    state = fhdrERROR;
-		}
-	    }
-	    else if( c != -1 ) {
-		if( strchr( buf, ':') ) { /* buffer to short, but this is okay*/
-		    if( opt.verbose ) {
-			log_info(_("armor header: "));
-			print_string( stderr, buf, n, 0 );
-			fputs("[...]\n", stderr);  /* indicate it is truncated */
-		    }
-		    state = fhdrSKIPHeader;  /* skip rest of line */
-		}
-		else /* line too long */
-		    state = fhdrERROR;
-	    }
-	    else
-		state = fhdrEOF;
-	    break;
-
-	  case fhdrWAITClearsig: /* skip the empty line (for clearsig) */
-	    c = 0;
-	    for(n=0; n < buflen && (c=iobuf_get(a)) != -1 && c != '\n'; )
-		buf[n++] = c;
-	    if( c != -1 ) {
-		if( n > 15 && !memcmp(buf, "-----", 5 ) )
-		    state = fhdrNullClearsig;
-		else if( c != '\n' )
-		    state = fhdrREADClearsigNext;
-		else
-		    state = fhdrCHECKDashEscaped3;
-	    }
-	    else {
-		/* fixme: we should check whether this line continues
-		 *   it is possible that we have only read ws until here
-		 *   and more stuff is to come */
-		state = fhdrEOF;
-	    }
-	    break;
-
-	  case fhdrNullClearsig: /* zero length cleartext */
-	    state = fhdrENDClearsig;
-	    break;
-
-	  case fhdrENDClearsig:
-	  case fhdrCHECKBegin:
-	    state = state == fhdrCHECKBegin ? fhdrINITSkip : fhdrERRORShow;
-	    if( n < 15 )
-		break;	/* too short */
-	    if( memcmp( buf, "-----", 5 ) )
-		break;
-	    buf[n] = 0;
-	    p = strstr(buf+5, "-----");
-	    if( !p )
-		break;
-	    *p = 0;
-	    p += 5;
-	    if( *p == '\r' )
-		p++;
-	    if( *p )
-		break; /* garbage after dashes */
-	    p = buf+5;
-	    for(i=0; (s=head_strings[i]); i++ )
-		if( !strcmp(s, p) )
-		    break;
-	    if( !s )
-		break; /* unknown begin line */
-	    if( only_keyblocks && i != 1 && i != 5 && i != 6 )
-		break; /* not a keyblock armor */
-
-	    /* found the begin line */
-	    hdr_line = i;
-	    state = fhdrWAITHeader;
-	    *not_dashed = 0;
-	    if( hdr_line == BEGIN_SIGNED_MSG_IDX )
-		clearsig = 1;
-	    if( opt.verbose > 1 )
-		log_info(_("armor: %s\n"), head_strings[hdr_line]);
-	    break;
-
-	  case fhdrCLEARSIGSimple:
-	    /* we are at the begin of a new line */
-	  case fhdrCLEARSIGSimpleNext:
-	    n = 0;
-	    c = 0;
-	    while( n < buflen && (c=iobuf_get(a)) != -1 ) {
-		buf[n++] = c;
-		if( c == '\n' )
-		    break;
-	    }
-	    buf[n] = 0;
-	    if( c == -1 )
-		state = fhdrEOF;
-	    else if( state == fhdrCLEARSIGSimple
-		     && n > 15 && !memcmp(buf, "-----", 5 ) ) {
-		if( c == '\n' )
-		    buf[n-1] = 0;
-		state = fhdrENDClearsig;
-	    }
-	    else if( c == '\n' )
-		state = fhdrCLEARSIGSimple;
-	    else
-		state = fhdrCLEARSIGSimpleNext;
-	    break;
-
-	  case fhdrCLEARSIG:
-	  case fhdrEMPTYClearsig:
-	  case fhdrREADClearsig:
-	    /* we are at the start of a line: read a clearsig into the buffer
-	     * we have to look for a header line or dashed escaped text*/
-	    n = 0;
-	    c = 0;
-	    while( n < buflen && (c=iobuf_get(a)) != -1 && c != '\n' )
-		buf[n++] = c;
-	    buf[n] = 0;
-	    if( c == -1 )
-		state = fhdrEOF;
-	    else if( !n || ( buf[0]=='\r' && !buf[1] ) ) {
-		state = fhdrEMPTYClearsig;
-		empty++;
-	    }
-	    else if( c == '\n' )
-		state = fhdrCHECKClearsig2;
-	    else
-		state = fhdrCHECKClearsig;
-	    break;
-
-	  case fhdrCHECKDashEscaped3:
-	    if( *not_dashed ) {
-		state = fhdrTEXTSimple;
-		break;
-	    }
-	    if( !(n > 1 && buf[0] == '-' && buf[1] == ' ' ) ) {
-		state = fhdrTEXT;
-		break;
-	    }
-	    /* fall through */
-	  case fhdrCHECKDashEscaped2:
-	  case fhdrCHECKDashEscaped:
-	    /* check dash escaped line */
-	    if( buf[2] == '-' || ( n > 6 && !memcmp(buf+2, "From ", 5))) {
-		for(i=2; i < n; i++ )
-		    buf[i-2] = buf[i];
-		n -= 2;
-		buf[n] = 0; /* not really needed */
-		state = state == fhdrCHECKDashEscaped3 ? fhdrTEXT :
-			state == fhdrCHECKDashEscaped2 ?
-				 fhdrREADClearsig : fhdrTESTSpaces;
-	    }
-	    else {
-		log_error(_("invalid dash escaped line: "));
-		print_string( stderr, buf, n, 0 );
-		putc('\n', stderr);
-		state = fhdrERROR;
-	    }
-	    break;
-
-	  case fhdrCHECKClearsig:
-	    /* check the clearsig line */
-	    if( n > 15 && !memcmp(buf, "-----", 5 ) )
-		state = fhdrENDClearsig;
-	    else if( buf[0] == '-' && buf[1] == ' ' && !*not_dashed )
-		state = fhdrCHECKDashEscaped;
-	    else {
-		state = fhdrTESTSpaces;
-	    }
-	    break;
-
-	  case fhdrCHECKClearsig2:
-	    /* check the clearsig line */
-	    if( n > 15 && !memcmp(buf, "-----", 5 ) )
-		state = fhdrENDClearsig;
-	    else if( buf[0] == '-' && buf[1] == ' ' && !*not_dashed )
-		state = fhdrCHECKDashEscaped2;
-	    else {
-		state = fhdrREADClearsig;
-	    }
-	    break;
-
-	  case fhdrREADClearsigNext:
-	    /* Read to the end of the line, do not care about checking
-	     * for dashed escaped text of headers */
-	    c = 0;
-	    n = 0;
-	    while( n < buflen && (c=iobuf_get(a)) != -1 && c != '\n' )
-		buf[n++] = c;
-	    buf[n] = 0;
-	    if( c == -1 )
-		state = fhdrEOF;
-	    else if( c == '\n' )
-		state = fhdrREADClearsig;
-	    else
-		state = fhdrTESTSpaces;
-	    break;
-
-	  case fhdrTESTSpaces: {
-	    /* but must check whether the rest of the line
-	     * only contains white spaces; this is problematic
-	     * since we may have to restore the stuff.	simply
-	     * counting spaces is not enough, because it may be a
-	     * mix of different white space characters */
-	    IOBUF b = iobuf_temp();
-	    while( (c=iobuf_get(a)) != -1 && c != '\n' ) {
-		iobuf_put(b,c);
-		if( c != ' ' && c != '\t' && c != '\r' )
-		    break;
-	    }
-	    if( c == '\n' ) {
-		/* okay we can skip the rest of the line */
-		iobuf_close(b);
-		state = fhdrREADClearsig;
-	    }
-	    else {
-		iobuf_unget_and_close_temp(a,b);
-		state = fhdrREADClearsigNext;
-	    }
-	  } break;
-
-	  case fhdrERRORShow:
-	    log_error(_("invalid clear text header: "));
-	    print_string( stderr, buf, n, 0 );
-	    putc('\n', stderr);
-	    state = fhdrERROR;
-	    break;
-
-	  default: BUG();
-	}
-	switch( state ) {
-	  case fhdrINIT:
-	  case fhdrINITCont:
-	  case fhdrINITSkip:
-	  case fhdrCHECKBegin:
-	  case fhdrWAITHeader:
-	  case fhdrWAITClearsig:
-	  case fhdrSKIPHeader:
-	  case fhdrEMPTYClearsig:
-	  case fhdrCHECKClearsig:
-	  case fhdrCHECKClearsig2:
-	  case fhdrCHECKDashEscaped:
-	  case fhdrCHECKDashEscaped2:
-	  case fhdrCHECKDashEscaped3:
-	  case fhdrTESTSpaces:
-	  case fhdrERRORShow:
-	    cont = 1;
-	    break;
-	  default: cont = 0;
-	}
-    } while( cont );
-
-    if( clearsig && state == fhdrTEXT ) {
-	state = fhdrCLEARSIG;
-    }
-    else if( clearsig && state == fhdrTEXTSimple ) {
-	state = fhdrCLEARSIGSimple;
-	buf[n] = '\n';
-	n++;
-    }
-
-    if( state == fhdrCLEARSIG || state == fhdrREADClearsig ) {
-	/* append CR,LF after removing trailing wspaces */
-	for(p=buf+n-1; n; n--, p-- ) {
-	    assert( *p != '\n' );
-	    if( *p != ' ' && *p != '\t' && *p != '\r' ) {
-		p[1] = '\r';
-		p[2] = '\n';
-		n += 2;
-		break;
-	    }
-	}
-	if( !n ) {
-	    buf[0] = '\r';
-	    buf[1] = '\n';
-	    n = 2;
-	}
-    }
-
-  fprintf(stderr,"ARMOR READ (state=%d): %.*s", state, n, buf );
-
-    *r_buflen = n;
-    *r_empty = empty;
-    return state;
-}
-#endif
-
 
 static unsigned
 trim_trailing_spaces( byte *line, unsigned len )
@@ -909,8 +500,10 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	else {
 	    while( len < size && afx->buffer_pos < afx->buffer_len )
 		buf[len++] = afx->buffer[afx->buffer_pos++];
-	    buf[len++] = '\r';
-	    buf[len++] = '\n';
+	    if( afx->buffer_pos >= afx->buffer_len ) {
+		buf[len++] = '\r';
+		buf[len++] = '\n';
+	    }
 	    if( len >= size )
 		continue;
 	}
@@ -948,8 +541,8 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 		    putc('\n', stderr);
 		}
 		lastline = 1;
-		assert( len >= 4 );
-		len -= 2; /* remove the last CR,LF */
+		if( len >= 2 )
+		    len -= 2; /* remove the last CR,LF */
 		rc = -1;
 	    }
 	}
@@ -958,7 +551,7 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
     buf[0] = (len-2) >> 8;
     buf[1] = (len-2);
     if( lastline ) { /* write last (ending) length header */
-	if( buf[0] && buf[1] ) { /* only if we have some text */
+	if( buf[0] || buf[1] ) { /* only if we have some text */
 	    buf[len++] = 0;
 	    buf[len++] = 0;
 	}
@@ -1134,7 +727,7 @@ armor_filter( void *opaque, int control,
     int  idx, idx2;
     size_t n=0;
     u32 crc;
-  #if 1
+  #if 0
     static FILE *fp ;
 
     if( !fp ) {
@@ -1232,7 +825,7 @@ armor_filter( void *opaque, int control,
 	}
 	else
 	    rc = radix64_read( afx, a, &n, buf, size );
-      #if 1
+      #if 0
 	if( n )
 	    if( fwrite(buf, n, 1, fp ) != 1 )
 		BUG();
@@ -1367,6 +960,9 @@ armor_filter( void *opaque, int control,
 	}
 	else if( !afx->any_data && !afx->inp_bypass )
 	    log_error(_("no valid OpenPGP data found.\n"));
+	if( afx->truncated )
+	    log_info(_("invalid armor: line longer than %d characters\n"),
+		      MAX_LINELEN );
 	m_free( afx->buffer );
 	afx->buffer = NULL;
     }

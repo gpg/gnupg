@@ -22,7 +22,7 @@ Important
 
     * print a warning when a revoked/expired secret key is used.
 
-    * Allow the use of a the faked RNG onyl for keys which are
+    * Allow the use of a the faked RNG only for keys which are
       flagged as INSECURE.
 
 
@@ -55,6 +55,5 @@ Nice to have
     * Burn the buffers used by fopen(), or use read(2). Does this
       really make sense?
     * change the fake_data stuff to mpi_set_opaque
-    * rewrite the ugly armor code.
 
 

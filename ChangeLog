@@ -1,3 +1,7 @@
+Sat Jan  9 16:02:23 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* configure.in: Add a way to statically link rndunix
+
 Sun Jan  3 15:28:44 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* acinclude.m4 (GNUPG_CHECK_RDYNAMIC): New.

@@ -426,7 +426,7 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
 {
     int i, rc = 0;
     u32 n;
-    byte buf[1000]; /* FIXME: this buffer has the plaintext! */
+    byte buf[1000]; /* this buffer has the plaintext! */
     int nbytes;
 
     write_header(out, ctb, calc_plaintext( pt ) );

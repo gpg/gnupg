@@ -1,5 +1,5 @@
 /* secmem.c  -	memory allocation from a secure heap
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998,1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -104,7 +104,7 @@ lock_pool( void *p, size_t n )
   #endif
 
     if( uid && !geteuid() ) {
-	if( setuid( uid ) )
+	if( setuid( uid ) || getuid() != geteuid()  )
 	    log_fatal("failed to reset uid: %s\n", strerror(errno));
     }
 
@@ -223,7 +223,7 @@ secmem_init( size_t n )
 	disable_secmem=1;
 	uid = getuid();
 	if( uid != geteuid() ) {
-	    if( setuid( uid ) )
+	    if( setuid( uid ) || getuid() != geteuid() )
 		log_fatal("failed to drop setuid\n" );
 	}
       #endif

@@ -1,5 +1,5 @@
 /* iobuf.c  -  file handling
- *	Copyright (C) 1998,1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -401,6 +401,24 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 }
 
 
+static void
+print_chain( IOBUF a )
+{
+    if( !DBG_IOBUF )
+	return;
+    for(; a; a = a->chain ) {
+	size_t dummy_len = 0;
+	const char *desc = "[none]";
+
+	if( a->filter )
+	    a->filter( a->filter_ov, IOBUFCTRL_DESC, NULL,
+						(byte*)&desc, &dummy_len );
+
+	log_debug("iobuf chain: %d.%d `%s' filter_eof=%d start=%d len=%d\n",
+		   a->no, a->subno, desc, a->filter_eof,
+		   a->d.start, a->d.len );
+    }
+}
 
 /****************
  * Allocate a new io buffer, with no function assigned.
@@ -709,8 +727,7 @@ iobuf_push_filter( IOBUF a,
 
     if( DBG_IOBUF ) {
 	log_debug("iobuf-%d.%d: push `%s'\n", a->no, a->subno, a->desc );
-	for(b=a; b; b = b->chain )
-	    log_debug("\tchain: %d.%d `%s'\n", b->no, b->subno, b->desc );
+	print_chain( a );
     }
 
     /* now we can initialize the new function if we have one */
@@ -804,14 +821,15 @@ underflow(IOBUF a)
 	return -1; /* EOF because a temp buffer can't do an underflow */
 
     if( a->filter_eof ) {
-	if( a->chain ) {
+	if( a->chain && a->filter_eof == 1 ) {
 	    IOBUF b = a->chain;
+	    if( DBG_IOBUF )
+		log_debug("iobuf-%d.%d: pop `%s' in underflow\n",
+					a->no, a->subno, a->desc );
 	    m_free(a->d.buf);
 	    memcpy(a, b, sizeof *a);
 	    m_free(b);
-	    if( DBG_IOBUF )
-		log_debug("iobuf-%d.%d: popped filter in underflow\n",
-							 a->no, a->subno );
+	    print_chain(a);
 	}
 	else
 	    a->filter_eof = 0;
@@ -844,9 +862,17 @@ underflow(IOBUF a)
 	len = a->d.size;
 	rc = a->filter( a->filter_ov, IOBUFCTRL_UNDERFLOW, a->chain,
 			a->d.buf, &len );
-	if( DBG_IOBUF )
+	if( DBG_IOBUF ) {
 	    log_debug("iobuf-%d.%d: underflow: req=%lu got=%lu rc=%d\n",
 		    a->no, a->subno, (ulong)a->d.size, (ulong)len, rc );
+	  #if 0
+	    if( a->no == 7 ) {
+		print_string(stderr, a->d.buf, len, 0 );
+		putc('\n', stderr );
+	    }
+	  #endif
+
+	}
 	if( a->usage == 1 && rc == -1 ) { /* EOF: we can remove the filter */
 	    size_t dummy_len;
 
@@ -860,12 +886,16 @@ underflow(IOBUF a)
 	    a->filter_eof = 1;
 	    if( !len && a->chain ) {
 		IOBUF b = a->chain;
+		if( DBG_IOBUF )
+		    log_debug("iobuf-%d.%d: pop `%s' in underflow (!len)\n",
+					       a->no, a->subno, a->desc );
+		print_chain(a);
 		m_free(a->d.buf);
 		memcpy(a,b, sizeof *a);
 		m_free(b);
-		if( DBG_IOBUF )
-		    log_debug("iobuf-%d.%d: popped filter in underflow (!len)\n",
-							     a->no, a->subno );
+		print_chain(a);
+
+
 	    }
 	}
 	else if( rc )
@@ -1009,6 +1039,7 @@ iobuf_peek(IOBUF a, byte *buf, unsigned buflen )
 
     if( a->filter_eof )
 	return -1;
+
     if( !(a->d.start < a->d.len) ) {
 	if( underflow(a) == -1 )
 	    return -1;
@@ -1275,7 +1306,8 @@ iobuf_set_block_mode( IOBUF a, size_t n )
     assert( a->usage == 1 || a->usage == 2 );
     ctx->usage = a->usage;
     if( !n ) {
-	log_debug("pop_filter called in set_block_mode - please report\n");
+	if( a->usage == 1 )
+	    log_debug("pop_filter called in set_block_mode - please report\n");
 	pop_filter(a, block_filter, NULL );
     }
     else {
@@ -1296,7 +1328,9 @@ iobuf_set_partial_block_mode( IOBUF a, size_t len )
     assert( a->usage == 1 || a->usage == 2 );
     ctx->usage = a->usage;
     if( !len ) {
-	log_debug("pop_filter called in set_partial_block_mode - please report\n");
+	if( a->usage == 1 )
+	    log_debug("pop_filter called in set_partial_block_mode"
+						    " - please report\n");
 	pop_filter(a, block_filter, NULL );
     }
     else {

@@ -1,3 +1,18 @@
+Sat Jan  9 16:02:23 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* sig-check.c (do_check): Output time diff on error
+
+	* status.c (STATUS_VALIDSIG): New.
+	(is_status_enabled): New.
+	* mainproc.c (check_sig_and_print): Issue that status message.
+
+	* plaintext.c (special_md_putc): Removed
+
+	* armor.c (armor_filter): print error for truncated lines.
+
+	* free-packet.c (free_encrypted): Revomed call to set_block_mode.
+	(free_plaintext): Ditto.
+
 Thu Jan  7 18:00:58 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* pkclist.c (add_ownertrust): Fixed return value.

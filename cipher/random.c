@@ -122,13 +122,9 @@ initialize()
   #elif USE_RNDUNIX
     rndunix_constructor();
   #elif USE_RNDW32
-    rndw32_constructor();
   #elif USE_RNDOS2
-    rndos2_constructor();
   #elif USE_RNDATARI
-    rndatari_constructor();
   #elif USE_RNDMVS
-    rndmvs_constructor();
   #endif
 }
 
