@@ -135,7 +135,7 @@ same_subject_issuer (const char *subject, const char *issuer, KsbaCert cert)
 
 /* Add a certificate to a list of certificate and make sure that it is
    a valid certificate.  With SECRET set to true a secret key must be
-   avaibale for the certificate. */
+   available for the certificate. */
 int
 gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
                        CERTLIST *listaddr)
@@ -190,7 +190,7 @@ gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
 
                 }
             }
-          /* we want the error code from the first match in this case */
+          /* We want the error code from the first match in this case. */
           if (rc && wrong_usage)
             rc = wrong_usage;
           

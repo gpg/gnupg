@@ -124,7 +124,7 @@ hash_and_copy_data (int fd, gcry_md_hd_t md, KsbaWriter writer)
 
 
 /* Get the default certificate which is defined as the first one our
-   keyDB retruns and has a secret key available */
+   keyDB returns and has a secret key available. */
 int
 gpgsm_get_default_cert (KsbaCert *r_cert)
 {
@@ -364,6 +364,17 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
           rc = gpg_error (GPG_ERR_GENERAL);
           goto leave;
         }
+
+      /* Although we don't check for ambigious specification we will
+         check that the signer's certificate is is usable and
+         valid. */
+      rc = gpgsm_cert_use_sign_p (cert);
+      if (!rc)
+        rc = gpgsm_validate_chain (ctrl, cert, NULL);
+      if (rc)
+        goto leave;
+
+      /* That one is fine - create signerlist. */
       signerlist = xtrycalloc (1, sizeof *signerlist);
       if (!signerlist)
         {

@@ -44,7 +44,8 @@ enum cmd_and_opt_values {
   aDecrypt	= 'd',
   aEncr	        = 'e',
   oInteractive  = 'i',
-  oKOption	= 'k',
+  aListKeys	= 'k',
+  aListSecretKeys = 'K',
   oDryRun	= 'n',
   oOutput	= 'o',
   oQuiet	= 'q',
@@ -68,10 +69,8 @@ enum cmd_and_opt_values {
   aImport,
   aVerify,
   aVerifyFiles,
-  aListKeys,
   aListExternalKeys,
   aListSigs,
-  aListSecretKeys,
   aSendKeys,
   aRecvKeys,
   aExport,
@@ -695,7 +694,11 @@ main ( int argc, char **argv)
   */
 
   ksba_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free );
+
   assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
+  assuan_set_assuan_log_stream (log_get_stream ());
+  assuan_set_assuan_log_prefix (log_get_prefix (NULL));
+
   keybox_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
 
   /* Setup a default control structure for command line mode */
