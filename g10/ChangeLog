@@ -1,5 +1,22 @@
 2001-08-08  Werner Koch  <wk@gnupg.org>
 
+	* packet.h (subpktarea_t): New.
+	(PKT_signature): Use that type for hashed_data and unhashed_data and
+	removed the _data prefix from those fields.  Changed all users.
+	* parse-packet.c (parse_signature): Changed allocation for that.
+	(parse_sig_subpkt): Changed declaration
+	(enum_sig_subpkt): Ditto and changed implementation accordingly.
+	* free-packet.c (cp_subpktarea): Renamed from cp_data_block and
+	adjusted implementation. Changed caller.
+	* sig-check.c (mdc_kludge_check): Adjusted the hashing.
+	(do_check): Ditto.
+	* sign.c (sign_file, clearsign_file, make_keysig_packet,
+	update_keysig_packet): Ditto.
+	* build-packet.c (build_sig_subpkt): Partial rewrite.
+	(find_subpkt): Adjusted and made static.
+	(delete_sig_subpkt): Adjusted.
+	(do_signature): Ditto.
+
 	* keygen.c (ask_keysize): Do not print the notes about suggested
 	key sizes if just a DSA key is generated.
 

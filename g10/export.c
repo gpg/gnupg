@@ -199,8 +199,8 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 		    continue; /* not exportable */
 
                 /* delete our verification cache */
-                delete_sig_subpkt (node->pkt->pkt.signature->unhashed_data,
-                   SIGSUBPKT_PRIV_VERIFY_CACHE);
+                delete_sig_subpkt (node->pkt->pkt.signature->unhashed,
+                                   SIGSUBPKT_PRIV_VERIFY_CACHE);
 	    }
 
 	    if( secret == 2 && node->pkt->pkttype == PKT_SECRET_KEY ) {

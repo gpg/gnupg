@@ -1380,7 +1380,7 @@ merge_keys_and_selfsig( KBNODE keyblock )
 	    const byte *p;
 	    u32 ed;
 
-	    p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_KEY_EXPIRE, NULL );
+	    p = parse_sig_subpkt( sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL );
 	    if( pk ) {
 		ed = p? pk->timestamp + buffer_to_u32(p):0;
 		if( sig->timestamp > sigdate ) {
@@ -1418,7 +1418,7 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
  
     /* store the key flags in the helper variable for later processing */
     uid->help_key_usage = 0;
-    p = parse_sig_subpkt ( sig->hashed_data, SIGSUBPKT_KEY_FLAGS, &n );
+    p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_FLAGS, &n );
     if ( p && n ) {
         /* first octet of the keyflags */   
         if ( (*p & 3) )
@@ -1429,7 +1429,7 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
 
     /* ditto or the key expiration */
     uid->help_key_expire = 0;
-    p = parse_sig_subpkt ( sig->hashed_data, SIGSUBPKT_KEY_EXPIRE, NULL);
+    p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
     if ( p ) { 
         uid->help_key_expire = keycreated + buffer_to_u32(p);
     }
@@ -1437,7 +1437,7 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
     /* Set the primary user ID flag - we will later wipe out some
      * of them to only have one in out keyblock */
     uid->is_primary = 0;
-    p = parse_sig_subpkt ( sig->hashed_data, SIGSUBPKT_PRIMARY_UID, NULL );
+    p = parse_sig_subpkt ( sig->hashed, SIGSUBPKT_PRIMARY_UID, NULL );
     if ( p && *p )
         uid->is_primary = 1;
     /* We could also query this from the unhashed area if it is not in
@@ -1505,7 +1505,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
                 else if ( IS_KEY_SIG (sig) && sig->timestamp >= sigdate ) {
                     const byte *p;
                     
-                    p = parse_sig_subpkt( sig->hashed_data,
+                    p = parse_sig_subpkt( sig->hashed,
                                           SIGSUBPKT_SIG_EXPIRE, NULL );
                     if ( p && (sig->timestamp + buffer_to_u32(p)) >= curtime )
                         ; /* signature has expired - ignore it */
@@ -1526,7 +1526,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
         const byte *p;
         size_t n;
         
-        p = parse_sig_subpkt ( sig->hashed_data, SIGSUBPKT_KEY_FLAGS, &n );
+        p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_FLAGS, &n );
         if ( p && n ) {
             /* first octet of the keyflags */   
             if ( (*p & 3) )
@@ -1536,8 +1536,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
         }
 
         if ( pk->version > 3 ) {
-            p = parse_sig_subpkt ( sig->hashed_data,
-                                   SIGSUBPKT_KEY_EXPIRE, NULL);
+            p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
             if ( p ) {
                 key_expire = keytimestamp + buffer_to_u32(p);
                 key_expire_seen = 1;
@@ -1580,7 +1579,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
                      */                    
                     const byte *p;
                     
-                    p = parse_sig_subpkt( sig->hashed_data,
+                    p = parse_sig_subpkt (sig->hashed,
                                           SIGSUBPKT_SIG_EXPIRE, NULL );
                     if ( p && (sig->timestamp + buffer_to_u32(p)) >= curtime )
                         ; /* signature/revocation has expired - ignore it */
@@ -1733,7 +1732,7 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
                      * time */
                 }
                 else if ( IS_SUBKEY_SIG (sig) && sig->timestamp >= sigdate ) {
-                    p = parse_sig_subpkt( sig->hashed_data,
+                    p = parse_sig_subpkt (sig->hashed,
                                           SIGSUBPKT_SIG_EXPIRE, NULL );
                     if ( p && (sig->timestamp + buffer_to_u32(p)) >= curtime )
                         ; /* signature has expired - ignore it */
@@ -1753,7 +1752,7 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
     subpk->is_valid = 1;
     sig = signode->pkt->pkt.signature;
         
-    p = parse_sig_subpkt ( sig->hashed_data, SIGSUBPKT_KEY_FLAGS, &n );
+    p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_FLAGS, &n );
     if ( p && n ) {
         /* first octet of the keyflags */   
         if ( (*p & 3) )
@@ -1771,7 +1770,7 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
     }
     subpk->pubkey_usage = key_usage;
     
-    p = parse_sig_subpkt ( sig->hashed_data, SIGSUBPKT_KEY_EXPIRE, NULL);
+    p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
 
     if ( p ) 
         key_expire = keytimestamp + buffer_to_u32(p);

@@ -536,9 +536,11 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
 	    md_putc( md, sig->pubkey_algo );
 	    md_putc( md, sig->digest_algo );
-	    if( sig->hashed_data ) {
-		n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
-		md_write( md, sig->hashed_data, n+2 );
+	    if( sig->hashed ) {
+                n = sig->hashed->len;
+                md_putc (md, (n >> 8) );
+                md_putc (md,  n       );
+		md_write (md, sig->hashed->data, n );
 		n += 6;
 	    }
 	    else {
@@ -740,9 +742,11 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 
 	    md_putc( md, sig->pubkey_algo );
 	    md_putc( md, sig->digest_algo );
-	    if( sig->hashed_data ) {
-		n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
-		md_write( md, sig->hashed_data, n+2 );
+	    if( sig->hashed ) {
+                n = sig->hashed->len;
+                md_putc (md, (n >> 8) );
+                md_putc (md,  n       );
+		md_write (md, sig->hashed->data, n);
 		n += 6;
 	    }
 	    else {
@@ -882,9 +886,11 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 
 	    md_putc( md, sig->pubkey_algo );
 	    md_putc( md, sig->digest_algo );
-	    if( sig->hashed_data ) {
-		n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
-		md_write( md, sig->hashed_data, n+2 );
+	    if( sig->hashed ) {
+                n = sig->hashed->len;
+                md_putc (md, (n >> 8) );
+                md_putc (md,  n       );
+		md_write (md, sig->hashed->data, n );
 		n += 6;
 	    }
 	    else {
@@ -988,9 +994,11 @@ update_keysig_packet( PKT_signature **ret_sig,
 
 	    md_putc( md, sig->pubkey_algo );
 	    md_putc( md, sig->digest_algo );
-	    if( sig->hashed_data ) {
-		n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
-		md_write( md, sig->hashed_data, n+2 );
+	    if( sig->hashed ) {
+                n = sig->hashed->len;
+                md_putc (md, (n >> 8) );
+                md_putc (md,  n       );
+		md_write (md, sig->hashed->data, n );
 		n += 6;
 	    }
 	    else {

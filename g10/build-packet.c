@@ -589,24 +589,25 @@ do_compressed( IOBUF out, int ctb, PKT_compressed *cd )
 
 
 /****************
- * Find a subpacket of type REQTYPE in BUFFER and a return a pointer
+ * Find a subpacket of type REQTYPE in AREA and a return a pointer
  * to the first byte of that subpacket data.
  * And return the length of the packet in RET_N and the number of
  * header bytes in RET_HLEN (length header and type byte).
  */
-byte *
-find_subpkt( byte *buffer, sigsubpkttype_t reqtype,
+static byte *
+find_subpkt (subpktarea_t *area, sigsubpkttype_t reqtype,
 	     size_t *ret_hlen, size_t *ret_n )
 {
+    byte *buffer;
     int buflen;
     sigsubpkttype_t type;
     byte *bufstart;
     size_t n;
 
-    if( !buffer )
+    if( !area )
 	return NULL;
-    buflen = (*buffer << 8) | buffer[1];
-    buffer += 2;
+    buflen = area->len;
+    buffer = area->data;
     for(;;) {
 	if( !buflen )
 	    return NULL; /* end of packets; not found */
@@ -616,7 +617,7 @@ find_subpkt( byte *buffer, sigsubpkttype_t reqtype,
 	    if( buflen < 4 )
 		break;
 	    n = (buffer[0] << 24) | (buffer[1] << 16)
-				  | (buffer[2] << 8) | buffer[3];
+                | (buffer[2] << 8) | buffer[3];
 	    buffer += 4;
 	    buflen -= 4;
 	}
@@ -649,25 +650,23 @@ find_subpkt( byte *buffer, sigsubpkttype_t reqtype,
 }
 
 /****************
- * Delete all subpackets of type REQTYPE and return the number of bytes
- * which are now unused at the end of the buffer.
+ * Delete all subpackets of type REQTYPE and return a bool whether a packet
+ * was deleted.
  */
-size_t
-delete_sig_subpkt( byte *buffer, sigsubpkttype_t reqtype )
+int
+delete_sig_subpkt (subpktarea_t *area, sigsubpkttype_t reqtype )
 {
-    int buflen, orig_buflen;
+    int buflen;
     sigsubpkttype_t type;
-    byte *bufstart, *orig_buffer;
+    byte *buffer, *bufstart;
     size_t n;
     size_t unused = 0;
     int okay = 0;
 
-    if( !buffer )
+    if( !area )
 	return 0;
-    orig_buffer = buffer;
-    buflen = (*buffer << 8) | buffer[1];
-    buffer += 2;
-    orig_buflen = buflen;
+    buflen = area->len;
+    buffer = area->data;
     for(;;) {
 	if( !buflen ) {
             okay = 1;
@@ -679,7 +678,7 @@ delete_sig_subpkt( byte *buffer, sigsubpkttype_t reqtype )
 	    if( buflen < 4 )
 		break;
 	    n = (buffer[0] << 24) | (buffer[1] << 16)
-				  | (buffer[2] << 8) | buffer[3];
+                | (buffer[2] << 8) | buffer[3];
 	    buffer += 4;
 	    buflen -= 4;
 	}
@@ -692,6 +691,7 @@ delete_sig_subpkt( byte *buffer, sigsubpkttype_t reqtype )
 	}
 	if( buflen < n )
 	    break;
+        
 	type = *buffer & 0x7f;
 	if( type == reqtype ) {
 	    buffer++;
@@ -699,10 +699,11 @@ delete_sig_subpkt( byte *buffer, sigsubpkttype_t reqtype )
 	    n--;
 	    if( n > buflen )
 		break;
-            memmove (bufstart, buffer + n, n + (buffer-bufstart)); /* shift */
-            unused += n + (buffer-bufstart);
-            buffer = bufstart;
+            buffer += n; /* point to next subpkt */
             buflen -= n;
+            memmove (bufstart, buffer, buflen); /* shift */
+            unused +=  buffer - bufstart;
+            buffer = bufstart;
 	}
         else {
             buffer += n; buflen -=n;
@@ -710,65 +711,62 @@ delete_sig_subpkt( byte *buffer, sigsubpkttype_t reqtype )
     }
 
     if (!okay)
-        log_error("delete_subpkt: buffer shorter than subpacket\n");
-    assert (unused <= orig_buflen);
-    orig_buflen -= unused;
-    orig_buffer[0] = (orig_buflen >> 8) & 0xff;
-    orig_buffer[1] = orig_buflen & 0xff;
-    return unused;
+        log_error ("delete_subpkt: buffer shorter than subpacket\n");
+    assert (unused <= area->len);
+    area->len -= unused;
+    return !!unused;
 }
 
 
 /****************
- * Create or update a signature subpacket for SIG of TYPE.
- * This functions knows where to put the data (hashed or unhashed).
- * The function may move data from the unhashed part to the hashed one.
- * Note: All pointers into sig->[un]hashed are not valid after a call
- * to this function.  The data to put into the subpaket should be
- * in buffer with a length of buflen.
+ * Create or update a signature subpacket for SIG of TYPE.  This
+ * functions knows where to put the data (hashed or unhashed).  The
+ * function may move data from the unhashed part to the hashed one.
+ * Note: All pointers into sig->[un]hashed (e.g. returned by
+ * parse_sig_subpkt) are not valid after a call to this function.  The
+ * data to put into the subpaket should be in a buffer with a length
+ * of buflen. 
  */
 void
-build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
+build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
 		  const byte *buffer, size_t buflen )
 {
-    byte *data;
-    size_t hlen, dlen, nlen;
-    int found=0;
-    int critical, hashed, realloced;
-    size_t n, n0;
-    size_t unused = 0;
+    byte *p;
+    int critical, hashed;
+    subpktarea_t *oldarea, *newarea;
+    size_t nlen, n, n0;
 
     critical = (type & SIGSUBPKT_FLAG_CRITICAL);
     type &= ~SIGSUBPKT_FLAG_CRITICAL;
-
+    
     if( type == SIGSUBPKT_NOTATION )
 	; /* we allow multiple packets */
-    else if( (data = find_subpkt( sig->hashed_data, type, &hlen, &dlen )) )
-	found = 1;
-    else if( (data = find_subpkt( sig->unhashed_data, type, &hlen, &dlen )))
-	found = 2;
-
-    if (found==1 && (type == SIGSUBPKT_SIG_CREATED) ) {
-        unused = delete_sig_subpkt (sig->hashed_data, type);
-        assert (unused);
-        found = 0;
+    else if (find_subpkt (sig->hashed, type, NULL, NULL) ) {
+        switch (type) {
+          case SIGSUBPKT_SIG_CREATED:
+            delete_sig_subpkt (sig->hashed, type);
+            break;
+          default:
+            log_bug("build_sig_packet: update of hashed type %d nyi\n", type);
+        }
     }
-    else if (found==2 && (   type == SIGSUBPKT_PRIV_VERIFY_CACHE
-                          || type == SIGSUBPKT_ISSUER
-                         ) ) {
-        unused = delete_sig_subpkt (sig->unhashed_data, type);
-        assert (unused);
-        found = 0;
+    else if (find_subpkt (sig->unhashed, type, NULL, NULL)) {
+        switch (type) {
+          case SIGSUBPKT_PRIV_VERIFY_CACHE:
+          case SIGSUBPKT_ISSUER:
+            delete_sig_subpkt (sig->unhashed, type);
+            break;
+          default:
+            log_bug("build_sig_packet: update of unhashed type %d nyi\n",type);
+        }
     }
 
-    if( found )
-	log_bug("build_sig_packet: update nyi\n");
     if( (buflen+1) >= 8384 )
-	nlen = 5;
+	nlen = 5; /* write 5 byte length header */
     else if( (buflen+1) >= 192 )
-	nlen = 2;
+	nlen = 2; /* write 2 byte length header */
     else
-	nlen = 1;
+	nlen = 1; /* just a 1 byte length header */
 
     switch( type ) {
       case SIGSUBPKT_SIG_CREATED:
@@ -785,67 +783,55 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
       default: hashed = 0; break;
     }
 
-    if( hashed ) {
-	n0 = sig->hashed_data ? ((*sig->hashed_data << 8)
-				    | sig->hashed_data[1]) : 0;
-	n = n0 + nlen + 1 + buflen; /* length, type, buffer */
-	realloced = !!sig->hashed_data;
-	data = sig->hashed_data ? m_realloc( sig->hashed_data, n+2 )
-				: m_alloc( n+2 );
-    }
-    else {
-	n0 = sig->unhashed_data ? ((*sig->unhashed_data << 8)
-				      | sig->unhashed_data[1]) : 0;
-	n = n0 + nlen + 1 + buflen; /* length, type, buffer */
-        if ( sig->unhashed_data && (nlen + 1 + buflen) <= unused ) {
-            /* does fit into the freed area */
-            data = sig->unhashed_data;
-            realloced = 1;
-            log_debug ("updating area of type %d\n", type );
-        }
-        else {
-            realloced = !!sig->unhashed_data;
-            data = sig->unhashed_data ? m_realloc( sig->unhashed_data, n+2 )
-                                      : m_alloc( n+2 );
-        }
-    }
-
     if( critical )
 	type |= SIGSUBPKT_FLAG_CRITICAL;
 
-    data[0] = (n >> 8) & 0xff;
-    data[1] = n & 0xff;
-    if( nlen == 5 ) {
-	data[n0+2] = 255;
-	data[n0+3] = (buflen+1) >> 24;
-	data[n0+4] = (buflen+1) >> 16;
-	data[n0+5] = (buflen+1) >>  8;
-	data[n0+6] = (buflen+1);
-	data[n0+7] = type;
-	memcpy(data+n0+8, buffer, buflen );
+    oldarea = hashed? sig->hashed : sig->unhashed;
+
+    /* Calculate new size of the area and allocate */
+    n0 = oldarea? oldarea->len : 0;
+    n = n0 + nlen + 1 + buflen; /* length, type, buffer */
+    if (oldarea && n <= oldarea->size) { /* fits into the unused space */
+        newarea = oldarea;
+        /*log_debug ("updating area for type %d\n", type );*/
     }
-    else if( nlen == 2 ) {
-	data[n0+2] = (buflen+1-192) / 256 + 192;
-	data[n0+3] = (buflen+1-192) % 256;
-	data[n0+4] = type;
-	memcpy(data+n0+5, buffer, buflen );
+    else if (oldarea) {
+        newarea = m_realloc (oldarea, sizeof (*newarea) + n - 1);
+        newarea->size = sizeof (*newarea) + n - 1;
+        /*log_debug ("reallocating area for type %d\n", type );*/
     }
     else {
-	data[n0+2] = buflen+1;
-	data[n0+3] = type;
-	memcpy(data+n0+4, buffer, buflen );
+        newarea = m_alloc (sizeof (*newarea) + n - 1);
+        /*log_debug ("allocating area for type %d\n", type );*/
+    }
+    newarea->len = n;
+
+    p = newarea->data + n0;
+    if (nlen == 5) {
+	*p++ = 255;
+	*p++ = (buflen+1) >> 24;
+	*p++ = (buflen+1) >> 16;
+	*p++ = (buflen+1) >>  8;
+	*p++ = (buflen+1);
+	*p++ = type;
+	memcpy (p, buffer, buflen);
+    }
+    else if (nlen == 2) {
+	*p++ = (buflen+1-192) / 256 + 192;
+	*p++ = (buflen+1-192) % 256;
+	*p++ = type;
+	memcpy (p, buffer, buflen);
+    }
+    else {
+	*p++ = buflen+1;
+	*p++ = type;
+	memcpy (p, buffer, buflen);
     }
 
-    if( hashed ) {
-	if( !realloced )
-	    m_free(sig->hashed_data);
-	sig->hashed_data = data;
-    }
-    else {
-	if( !realloced )
-	    m_free(sig->unhashed_data);
-	sig->unhashed_data = data;
-    }
+    if (hashed) 
+	sig->hashed = newarea;
+    else
+	sig->unhashed = newarea;
 }
 
 /****************
@@ -905,16 +891,14 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
 	/* timestamp and keyid must have been packed into the
 	 * subpackets prior to the call of this function, because
 	 * these subpackets are hashed */
-	nn = sig->hashed_data?((sig->hashed_data[0]<<8)
-				|sig->hashed_data[1])	:0;
+	nn = sig->hashed? sig->hashed->len : 0;
 	write_16(a, nn);
 	if( nn )
-	    iobuf_write( a, sig->hashed_data+2, nn );
-	nn = sig->unhashed_data?((sig->unhashed_data[0]<<8)
-				  |sig->unhashed_data[1])   :0;
+	    iobuf_write( a, sig->hashed->data, nn );
+	nn = sig->unhashed? sig->unhashed->len : 0;
 	write_16(a, nn);
 	if( nn )
-	    iobuf_write( a, sig->unhashed_data+2, nn );
+	    iobuf_write( a, sig->unhashed->data, nn );
     }
     iobuf_put(a, sig->digest_start[0] );
     iobuf_put(a, sig->digest_start[1] );

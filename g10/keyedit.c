@@ -1653,8 +1653,8 @@ change_primary_uid_cb ( PKT_signature *sig, void *opaque )
 
     /* first clear all primary uid flags so that we are sure none are
      * lingering around */
-    delete_sig_subpkt (sig->hashed_data,   SIGSUBPKT_PRIMARY_UID);
-    delete_sig_subpkt (sig->unhashed_data, SIGSUBPKT_PRIMARY_UID);
+    delete_sig_subpkt (sig->hashed,   SIGSUBPKT_PRIMARY_UID);
+    delete_sig_subpkt (sig->unhashed, SIGSUBPKT_PRIMARY_UID);
 
     /* if opaque is set,we want to set the primary id */
     if (opaque) { 
@@ -1725,10 +1725,10 @@ menu_set_primary_uid ( KBNODE pub_keyblock, KBNODE sec_keyblock )
                 int action;
 
                 /* see whether this signature has the primary UID flag */
-                p = parse_sig_subpkt (sig->hashed_data,
+                p = parse_sig_subpkt (sig->hashed,
                                       SIGSUBPKT_PRIMARY_UID, NULL );
                 if ( !p )
-                    p = parse_sig_subpkt (sig->unhashed_data,
+                    p = parse_sig_subpkt (sig->unhashed,
                                           SIGSUBPKT_PRIMARY_UID, NULL );
                 if ( p && *p ) /* yes */
                     action = selected? 0 : -1;

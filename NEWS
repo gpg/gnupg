@@ -12,6 +12,9 @@
     * There is no default comment string with ascii armors anymore
       except for revocation certificates and --enarmor mode.
 
+    * The command "primary" in the edit menu can be used to change the
+      primary UID.
+
 Noteworthy changes in version 1.0.6 (2001-05-29)
 ------------------------------------------------
 

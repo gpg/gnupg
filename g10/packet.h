@@ -97,6 +97,12 @@ typedef struct {
 
 
 typedef struct {
+    size_t size;  /* allocated */
+    size_t len;   /* used */
+    byte data[1];
+} subpktarea_t;
+
+typedef struct {
     ulong   local_id;	    /* internal use, valid if > 0 */
     struct {
 	unsigned checked:1; /* signature has been checked */
@@ -110,8 +116,8 @@ typedef struct {
     byte    pubkey_algo;    /* algorithm used for public key scheme */
 			    /* (PUBKEY_ALGO_xxx) */
     byte digest_algo;	    /* algorithm used for digest (DIGEST_ALGO_xxxx) */
-    byte *hashed_data;	    /* all subpackets with hashed  data (v4 only) */
-    byte *unhashed_data;    /* ditto for unhashed data */
+    subpktarea_t *hashed;    /* all subpackets with hashed  data (v4 only) */
+    subpktarea_t *unhashed;  /* ditto for unhashed data */
     byte digest_start[2];   /* first 2 bytes of the digest */
     MPI  data[PUBKEY_MAX_NSIG];
 } PKT_signature;
@@ -325,14 +331,18 @@ int copy_some_packets( IOBUF inp, IOBUF out, off_t stopoff );
 int skip_some_packets( IOBUF inp, unsigned n );
 #endif
 
-const byte *enum_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype,
-					      size_t *ret_n, int *start );
-const byte *parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype,
-				       size_t *ret_n );
-const byte *parse_sig_subpkt2( PKT_signature *sig,
-			       sigsubpkttype_t reqtype, size_t *ret_n );
+const byte *enum_sig_subpkt ( const subpktarea_t *subpkts,
+                              sigsubpkttype_t reqtype,
+                              size_t *ret_n, int *start );
+const byte *parse_sig_subpkt ( const subpktarea_t *buffer,
+                               sigsubpkttype_t reqtype,
+                               size_t *ret_n );
+const byte *parse_sig_subpkt2 ( PKT_signature *sig,
+                                sigsubpkttype_t reqtype,
+                                size_t *ret_n );
 PACKET *create_gpg_control ( ctrlpkttype_t type,
-                             const byte *data, size_t datalen );
+                             const byte *data,
+                             size_t datalen );
 
 /*-- build-packet.c --*/
 int build_packet( IOBUF inp, PACKET *pkt );
@@ -341,7 +351,7 @@ void hash_public_key( MD_HANDLE md, PKT_public_key *pk );
 void build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 			const byte *buffer, size_t buflen );
 void build_sig_subpkt_from_sig( PKT_signature *sig );
-size_t delete_sig_subpkt( byte *buffer, sigsubpkttype_t type );
+int  delete_sig_subpkt(subpktarea_t *buffer, sigsubpkttype_t type );
 
 /*-- free-packet.c --*/
 void free_symkey_enc( PKT_symkey_enc *enc );

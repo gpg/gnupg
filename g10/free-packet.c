@@ -59,8 +59,8 @@ free_seckey_enc( PKT_signature *sig )
 	mpi_free(sig->data[0]);
     for(i=0; i < n; i++ )
 	mpi_free( sig->data[i] );
-    m_free(sig->hashed_data);
-    m_free(sig->unhashed_data);
+    m_free(sig->hashed);
+    m_free(sig->unhashed);
     m_free(sig);
 }
 
@@ -92,17 +92,17 @@ free_public_key( PKT_public_key *pk )
 }
 
 
-static void *
-cp_data_block( byte *s )
+static subpktarea_t *
+cp_subpktarea (subpktarea_t *s )
 {
-    byte *d;
-    u16 len;
+    subpktarea_t *d;
 
     if( !s )
 	return NULL;
-    len = (s[0] << 8) | s[1];
-    d = m_alloc( len+2 );
-    memcpy(d, s, len+2);
+    d = m_alloc (sizeof (*d) + s->size - 1 );
+    d->size = s->size;
+    d->len = s->len;
+    memcpy (d->data, s->data, s->len);
     return d;
 }
 
@@ -177,8 +177,8 @@ copy_signature( PKT_signature *d, PKT_signature *s )
 	for(i=0; i < n; i++ )
 	    d->data[i] = mpi_copy( s->data[i] );
     }
-    d->hashed_data = cp_data_block(s->hashed_data);
-    d->unhashed_data = cp_data_block(s->unhashed_data);
+    d->hashed = cp_subpktarea (s->hashed);
+    d->unhashed = cp_subpktarea (s->unhashed);
     return d;
 }
 

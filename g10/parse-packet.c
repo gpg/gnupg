@@ -954,9 +954,10 @@ can_handle_critical( const byte *buffer, size_t n, int type )
 
 
 const byte *
-enum_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype,
+enum_sig_subpkt( const subpktarea_t *pktbuf, sigsubpkttype_t reqtype,
 		 size_t *ret_n, int *start )
 {
+    const byte *buffer;
     int buflen;
     int type;
     int critical;
@@ -965,26 +966,25 @@ enum_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype,
     int seq = 0;
     int reqseq = start? *start: 0;
 
-    if( !buffer || reqseq == -1 ) {
+    if( !pktbuf || reqseq == -1 ) {
 	/* return some value different from NULL to indicate that
-	 * there is no crtitical bit we do not understand.  The caller
+	 * there is no critical bit we do not understand.  The caller
 	 * will never use the value.  Yes I know, it is an ugly hack */
-	return reqtype == SIGSUBPKT_TEST_CRITICAL? (const byte*)&buffer : NULL;
+	return reqtype == SIGSUBPKT_TEST_CRITICAL? (const byte*)&pktbuf : NULL;
     }
-    buflen = (*buffer << 8) | buffer[1];
-    buffer += 2;
+    buffer = pktbuf->data;
+    buflen = pktbuf->len;
     while( buflen ) {
 	n = *buffer++; buflen--;
-	if( n == 255 ) {
+	if( n == 255 ) { /* 4 byte length header */
 	    if( buflen < 4 )
 		goto too_short;
 	    n = (buffer[0] << 24) | (buffer[1] << 16)
-				  | (buffer[2] << 8) | buffer[3];
+                | (buffer[2] << 8) | buffer[3];
 	    buffer += 4;
 	    buflen -= 4;
-
 	}
-	else if( n >= 192 ) {
+	else if( n >= 192 ) { /* 2 byte special encoded length header */
 	    if( buflen < 2 )
 		goto too_short;
 	    n = (( n - 192 ) << 8) + *buffer + 192;
@@ -1059,19 +1059,21 @@ enum_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype,
 
 
 const byte *
-parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
+parse_sig_subpkt (const subpktarea_t *buffer, sigsubpkttype_t reqtype,
+                  size_t *ret_n)
 {
     return enum_sig_subpkt( buffer, reqtype, ret_n, NULL );
 }
 
 const byte *
-parse_sig_subpkt2( PKT_signature *sig, sigsubpkttype_t reqtype, size_t *ret_n )
+parse_sig_subpkt2 (PKT_signature *sig, sigsubpkttype_t reqtype,
+                   size_t *ret_n )
 {
     const byte *p;
 
-    p = parse_sig_subpkt( sig->hashed_data, reqtype, ret_n );
+    p = parse_sig_subpkt (sig->hashed, reqtype, ret_n );
     if( !p )
-	p = parse_sig_subpkt( sig->unhashed_data, reqtype, ret_n );
+	p = parse_sig_subpkt (sig->unhashed, reqtype, ret_n );
     return p;
 }
 
@@ -1119,11 +1121,12 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	    goto leave;
 	}
 	if( n ) {
-	    sig->hashed_data = m_alloc( n + 2 );
-	    sig->hashed_data[0] = n >> 8;
-	    sig->hashed_data[1] = n;
-	    if( iobuf_read(inp, sig->hashed_data+2, n ) != n ) {
-		log_error("premature eof while reading hashed signature data\n");
+	    sig->hashed = m_alloc (sizeof (*sig->hashed) + n - 1 );
+            sig->hashed->size = n;
+	    sig->hashed->len = n;
+	    if( iobuf_read (inp, sig->hashed->data, n ) != n ) {
+		log_error ("premature eof while reading "
+                           "hashed signature data\n");
 		rc = -1;
 		goto leave;
 	    }
@@ -1136,11 +1139,15 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	    goto leave;
 	}
 	if( n ) {
-	    sig->unhashed_data = m_alloc( n + 2 );
-	    sig->unhashed_data[0] = n >> 8;
-	    sig->unhashed_data[1] = n;
-	    if( iobuf_read(inp, sig->unhashed_data+2, n ) != n ) {
-		log_error("premature eof while reading unhashed signature data\n");
+            /* we add 6 extra bytes so that we have space for the signature
+             * status cache.  Well we are wastin this if there is a cache
+             * packet already, but in the other case it avoids an realloc */
+	    sig->unhashed = m_alloc (sizeof(*sig->unhashed) + n + 8 - 1 );
+            sig->unhashed->size = n + 8;
+	    sig->unhashed->len = n;
+	    if( iobuf_read(inp, sig->unhashed->data, n ) != n ) {
+		log_error("premature eof while reading "
+                          "unhashed signature data\n");
 		rc = -1;
 		goto leave;
 	    }
@@ -1162,14 +1169,14 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 
 	/* set sig->flags.unknown_critical if there is a
 	 * critical bit set for packets which we do not understand */
-	if( !parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_TEST_CRITICAL, NULL)
-	   || !parse_sig_subpkt( sig->unhashed_data, SIGSUBPKT_TEST_CRITICAL,
+	if( !parse_sig_subpkt (sig->hashed, SIGSUBPKT_TEST_CRITICAL, NULL)
+	   || !parse_sig_subpkt (sig->unhashed, SIGSUBPKT_TEST_CRITICAL,
 									NULL) )
 	{
 	    sig->flags.unknown_critical = 1;
 	}
 
-	p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_SIG_CREATED, NULL );
+	p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIG_CREATED, NULL );
 	if( !p )
 	    log_error("signature packet without timestamp\n");
 	else
@@ -1193,8 +1200,8 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 		sig->digest_algo,
 		sig->digest_start[0], sig->digest_start[1] );
 	if( is_v4 ) {
-	    parse_sig_subpkt( sig->hashed_data,  SIGSUBPKT_LIST_HASHED, NULL );
-	    parse_sig_subpkt( sig->unhashed_data,SIGSUBPKT_LIST_UNHASHED, NULL);
+	    parse_sig_subpkt (sig->hashed,   SIGSUBPKT_LIST_HASHED, NULL );
+	    parse_sig_subpkt (sig->unhashed, SIGSUBPKT_LIST_UNHASHED, NULL);
 	}
     }
 

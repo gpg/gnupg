@@ -359,7 +359,7 @@ remove_bad_stuff (KBNODE keyblock)
     for (node=keyblock; node; node = node->next ) {
         if( node->pkt->pkttype == PKT_SIGNATURE ) {
             /* delete the subpackets we use for the verification cache */
-            delete_sig_subpkt (node->pkt->pkt.signature->unhashed_data,
+            delete_sig_subpkt (node->pkt->pkt.signature->unhashed,
                                SIGSUBPKT_PRIV_VERIFY_CACHE);
         }
     }

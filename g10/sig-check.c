@@ -153,9 +153,11 @@ mdc_kludge_check( PKT_signature *sig, MD_HANDLE digest )
 	size_t n;
 	md_putc( digest, sig->pubkey_algo );
 	md_putc( digest, sig->digest_algo );
-	if( sig->hashed_data ) {
-	    n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
-	    md_write( digest, sig->hashed_data, n+2 );
+	if( sig->hashed ) {
+	    n = sig->hashed->len;
+            md_putc (digest, (n >> 8) );
+            md_putc (digest,  n       );
+	    md_write (digest, sig->hashed->data, n);
 	    n += 6;
 	}
 	else
@@ -357,9 +359,11 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
 	size_t n;
 	md_putc( digest, sig->pubkey_algo );
 	md_putc( digest, sig->digest_algo );
-	if( sig->hashed_data ) {
-	    n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
-	    md_write( digest, sig->hashed_data, n+2 );
+	if( sig->hashed ) {
+	    n = sig->hashed->len;
+            md_putc (digest, (n >> 8) );
+            md_putc (digest,  n       );
+	    md_write (digest, sig->hashed->data, n);
 	    n += 6;
 	}
 	else
@@ -510,7 +514,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
         const byte *p;
         size_t len;
 
-        p = parse_sig_subpkt( sig->unhashed_data,
+        p = parse_sig_subpkt( sig->unhashed,
                               SIGSUBPKT_PRIV_VERIFY_CACHE, &len );
         if ( p && len >= 2 && p[0] == 1 ) { /* cache hit */
 	    if( is_selfsig ) {	
