@@ -8,8 +8,14 @@ Noteworthy changes in version 1.9.5
  * [gpgsm] The --import command is now able to autodetect pkcs#12
    files and import secret and private keys from this file format.
 
- * [gpgsm] The pinentry will no present a description of the key for
+ * [gpgsm] The pinentry will now present a description of the key for
    whom the passphrase is requests.
+
+ * [gpgsm] New option --with-validation to check the validity of key
+   while listing it.
+
+ * New option --debug-level={none,basic,advanced,expert,guru} to map
+   the debug flags to sensitive levels on a per program base.
 
 
 Noteworthy changes in version 1.9.4 (2004-01-30)

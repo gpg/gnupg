@@ -872,6 +872,10 @@ main (int argc, char **argv )
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
   log_set_prefix ("gpg-protect-tool", 1); 
+
+  /* Try to auto set the character set.  */
+  set_native_charset (NULL); 
+
   i18n_init ();
 
   if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
@@ -883,6 +887,7 @@ main (int argc, char **argv )
   gcry_set_log_handler (my_gcry_logger, NULL);
   
   gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
+
 
 #ifdef __MINGW32__
   opt_homedir = read_w32_registry_string ( NULL,

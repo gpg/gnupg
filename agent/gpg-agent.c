@@ -51,11 +51,13 @@ enum cmd_and_opt_values
   oQuiet	  = 'q',
   oSh		  = 's',
   oVerbose	  = 'v',
-  
+
   oNoVerbose = 500,
+  aGPGConfList,
   oOptions,
   oDebug,
   oDebugAll,
+  oDebugLevel,
   oDebugWait,
   oNoGreeting,
   oNoOptions,
@@ -86,6 +88,8 @@ aTest };
 
 
 static ARGPARSE_OPTS opts[] = {
+
+  { aGPGConfList, "gpgconf-list", 256, "@" },
   
   { 301, NULL, 0, N_("@Options:\n ") },
 
@@ -96,8 +100,9 @@ static ARGPARSE_OPTS opts[] = {
   { oSh,	"sh",        0, N_("sh-style command output") },
   { oCsh,	"csh",       0, N_("csh-style command output") },
   { oOptions, "options"  , 2, N_("read options from file")},
-  { oDebug,	"debug"     ,4|16, N_("set debugging flags")},
-  { oDebugAll, "debug-all" ,0, N_("enable full debugging")},
+  { oDebug,	"debug"     ,4|16, "@"},
+  { oDebugAll, "debug-all"     ,0, "@"},
+  { oDebugLevel, "debug-level" ,2, "@"},
   { oDebugWait,"debug-wait",1, "@"},
   { oNoDetach, "no-detach" ,0, N_("do not detach from the console")},
   { oNoGrab, "no-grab"     ,0, N_("do not grab keyboard and mouse")},
@@ -145,6 +150,8 @@ static char *default_lc_messages;
 /* Name of a config file, which will be reread on a HUP if it is not NULL. */
 static char *config_filename;
 
+/* Helper to implement --debug-level */
+static const char *debug_level;
 
 /* Local prototypes. */
 static void create_directories (void);
@@ -216,6 +223,48 @@ my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
 }
 
 
+/* Setup the debugging.  With a LEVEL of NULL only the active debug
+   flags are propagated to the subsystems.  With LEVEL set, a specific
+   set of debug flags is set; thus overriding all flags already
+   set. Note that we don't fail here, because it is important to keep
+   gpg-agent running even after re-reading the options due to a
+   SIGHUP. */
+static void
+set_debug (void)
+{
+  if (!debug_level)
+    ;
+  else if (!strcmp (debug_level, "none"))
+    opt.debug = 0;
+  else if (!strcmp (debug_level, "basic"))
+    opt.debug = DBG_ASSUAN_VALUE;
+  else if (!strcmp (debug_level, "advanced"))
+    opt.debug = DBG_ASSUAN_VALUE|DBG_COMMAND_VALUE;
+  else if (!strcmp (debug_level, "expert"))
+    opt.debug = (DBG_ASSUAN_VALUE|DBG_COMMAND_VALUE
+                 |DBG_CACHE_VALUE);
+  else if (!strcmp (debug_level, "guru"))
+    opt.debug = ~0;
+  else
+    {
+      log_error (_("invalid debug-level `%s' given\n"), debug_level);
+      opt.debug = 0; /* Reset debugging, so that prior debug
+                        statements won't have an undesired effect. */
+    }
+
+  if (opt.debug && !opt.verbose)
+    opt.verbose = 1;
+  if (opt.debug && opt.quiet)
+    opt.quiet = 0;
+
+  if (opt.debug & DBG_MPI_VALUE)
+    gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 2);
+  if (opt.debug & DBG_CRYPTO_VALUE )
+    gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
+  gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
+}
+ 
+
 static void
 cleanup (void)
 {
@@ -286,6 +335,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs)
 
     case oDebug: opt.debug |= pargs->r.ret_ulong; break;
     case oDebugAll: opt.debug = ~0; break;
+    case oDebugLevel: debug_level = pargs->r.ret_str; break;
 
     case oNoGrab: opt.no_grab = 1; break;
       
@@ -325,6 +375,7 @@ main (int argc, char **argv )
   char *logfile = NULL;
   int debug_wait = 0;
   int disable_pth = 0;
+  int gpgconf_list = 0;
 
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
@@ -332,6 +383,10 @@ main (int argc, char **argv )
      when adding any stuff between here and the call to INIT_SECMEM()
      somewhere after the option parsing */
   log_set_prefix ("gpg-agent", 1|4); 
+
+  /* Try to auto set the character set.  */
+  set_native_charset (NULL); 
+
   i18n_init ();
 
   /* We need to initialize Pth before libgcrypt, because the libgcrypt
@@ -446,6 +501,7 @@ main (int argc, char **argv )
         continue; /* Already handled */
       switch (pargs.r_opt)
         {
+        case aGPGConfList: gpgconf_list = 1; break;
         case oBatch: opt.batch=1; break;
 
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
@@ -509,6 +565,7 @@ main (int argc, char **argv )
   log_info ("NOTE: this is a development version!\n");
 #endif
 
+  set_debug ();
   
   if (atexit (cleanup))
     {
@@ -525,6 +582,22 @@ main (int argc, char **argv )
                  (unsigned int)getpid());
       sleep (debug_wait);
       log_debug ("... okay\n");
+    }
+  
+  if (gpgconf_list)
+    { /* List options and default values in the GPG Conf format.  */
+
+      printf ("gpgconf-gpg-agent.conf:\"%s\n", config_filename);
+      
+      printf ("verbose:\n"
+              "quiet:\n"
+              "debug-level:none\n"
+              "log-file:\n"
+              "force:\n"
+              "faked-system-time:\n"
+              "no-greeting:\n");
+
+      agent_exit (0);
     }
 
   if (!pipe_server && !is_daemon)
@@ -853,6 +926,7 @@ reread_configuration (void)
         parse_rereadable_options (&pargs);
     }
   fclose (fp);
+  set_debug ();
 }
 
 

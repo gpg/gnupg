@@ -51,7 +51,6 @@ gpg_agent_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
 gpg_protect_tool_SOURCES = \
 	protect-tool.c \
 	protect.c \
-	simple-pwquery.c simple-pwquery.h \
 	minip12.c minip12.h 
 
 gpg_protect_tool_LDADD = ../jnlib/libjnlib.a \

@@ -1,3 +1,18 @@
+2004-02-18  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c (main): Setup the used character set.
+	* gpg-agent.c (main): Ditto.
+
+	* gpg-agent.c (set_debug): New.  New option --debug-level.
+	(main): New option --gpgconf-list.
+
+2004-02-17  Werner Koch  <wk@gnupg.org>
+
+	* pksign.c (do_encode_md): Cleaned up by using gcry_sexp_build.
+
+	* Makefile.am (gpg_protect_tool_SOURCES): Removed
+	simple-pwquery.[ch], as we once moved it to ../common.
+
 2004-02-13  Werner Koch  <wk@gnupg.org>
 
 	* command.c (cmd_setkeydesc): New.

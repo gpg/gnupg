@@ -1,5 +1,5 @@
-/* pksign.c - public key signing (well, acually using a secret key)
- *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+/* pksign.c - public key signing (well, actually using a secret key)
+ * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -35,17 +35,10 @@ static int
 do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash)
 {
   gcry_sexp_t hash;
-  const char * s;
-  char * p, tmp[16];
+  const char *s;
+  char tmp[16+1];
   int i, rc;
 
-#ifdef __GNUC__
-#warning I do not like that stuff - libgcrypt provides easier interfaces. -wk
-#endif
-  /* FIXME: Either use the build function or create canonical encoded
-     S-expressions. */
-
-  p = xmalloc (64 + 2 * mdlen);
   s = gcry_md_algo_name (algo);
   if (s && strlen (s) < 16)
     {
@@ -53,15 +46,10 @@ do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash)
         tmp[i] = tolower (s[i]);
       tmp[i] = '\0';   
     }
-  sprintf (p, "(data\n (flags pkcs1)\n (hash %s #", tmp);
-  for (i=0; i < mdlen; i++)
-    {
-      sprintf (tmp, "%02x", (byte)md[i]);
-      strcat (p, tmp);   
-    }
-  strcat (p, "#))\n");
-  rc = gcry_sexp_sscan (&hash, NULL, p, strlen (p));
-  xfree (p);
+  rc = gcry_sexp_build (&hash, NULL,
+                        "(data (flags pkcs1) (hash %s %b))",
+                        tmp,
+                        mdlen, md);
   *r_hash = hash;
   return rc;   
 }
