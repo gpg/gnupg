@@ -23,11 +23,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <dlfcn.h>
 
 #include "scdaemon.h"
 #include "iso7816.h"
 #include "apdu.h"
+#include "dynload.h"
 
 #define CMD_SELECT_FILE 0xA4
 #define CMD_VERIFY      0x20

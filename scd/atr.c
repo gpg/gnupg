@@ -23,12 +23,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <dlfcn.h>
 #include <assert.h>
 
 #include "scdaemon.h"
 #include "apdu.h"
 #include "atr.h"
+#include "dynload.h"
 
 static int const fi_table[16] = { 0, 372, 558, 744, 1116,1488, 1860, -1,
                                   -1, 512, 768, 1024, 1536, 2048, -1, -1 };

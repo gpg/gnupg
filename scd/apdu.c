@@ -23,11 +23,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <dlfcn.h>
 #include <assert.h>
 
 #include "scdaemon.h"
 #include "apdu.h"
+#include "dynload.h"
 
 #define MAX_READER 4 /* Number of readers we support concurrently. */
 #define CARD_CONNECT_TIMEOUT 1 /* Number of seconds to wait for
@@ -232,40 +232,37 @@ ct_activate_card (int reader)
           return -1;
         }
 
-      if (buf[0] == 0x05)
-        { /* Connected, now activate the card. */           
-          dad[0] = 1;    /* Destination address: CT. */    
-          sad[0] = 2;    /* Source address: Host. */
+      /* Connected, now activate the card. */           
+      dad[0] = 1;    /* Destination address: CT. */    
+      sad[0] = 2;    /* Source address: Host. */
 
-          cmd[0] = 0x20;  /* Class byte. */
-          cmd[1] = 0x12;  /* Request ICC. */
-          cmd[2] = 0x01;  /* From first interface. */
-          cmd[3] = 0x01;  /* Return card's ATR. */
-          cmd[4] = 0x00;
+      cmd[0] = 0x20;  /* Class byte. */
+      cmd[1] = 0x12;  /* Request ICC. */
+      cmd[2] = 0x01;  /* From first interface. */
+      cmd[3] = 0x01;  /* Return card's ATR. */
+      cmd[4] = 0x00;
 
-          buflen = DIM(buf);
+      buflen = DIM(buf);
 
-          rc = CT_data (reader, dad, sad, 5, cmd, &buflen, buf);
-          if (rc || buflen < 2 || buf[buflen-2] != 0x90)
-            {
-              log_error ("ct_activate_card(%d): activation failed: %s\n",
-                         reader, ct_error_string (rc));
-              return -1;
-            }
-
-          /* Store the type and the ATR. */
-          if (buflen - 2 > DIM (reader_table[0].atr))
-            {
-              log_error ("ct_activate_card(%d): ATR too long\n", reader);
-              return -1;
-            }
-
-          reader_table[reader].status = buf[buflen - 1];
-          memcpy (reader_table[reader].atr, buf, buflen - 2);
-          reader_table[reader].atrlen = buflen - 2;
-          return 0;
+      rc = CT_data (reader, dad, sad, 5, cmd, &buflen, buf);
+      if (rc || buflen < 2 || buf[buflen-2] != 0x90)
+        {
+          log_error ("ct_activate_card(%d): activation failed: %s\n",
+                     reader, ct_error_string (rc));
+          return -1;
         }
 
+      /* Store the type and the ATR. */
+      if (buflen - 2 > DIM (reader_table[0].atr))
+        {
+          log_error ("ct_activate_card(%d): ATR too long\n", reader);
+          return -1;
+        }
+
+      reader_table[reader].status = buf[buflen - 1];
+      memcpy (reader_table[reader].atr, buf, buflen - 2);
+      reader_table[reader].atrlen = buflen - 2;
+      return 0;
     }
  
   log_info ("ct_activate_card(%d): timeout waiting for card\n", reader);

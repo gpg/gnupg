@@ -23,12 +23,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <dlfcn.h>
+
 
 #include "scdaemon.h"
 #include "app-common.h"
 #include "apdu.h"
 #include "iso7816.h"
+#include "dynload.h"
 
 static char *default_reader_port;
 
