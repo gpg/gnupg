@@ -1,3 +1,7 @@
+2004-07-24  Moritz Schulte  <moritz@g10code.com>
+
+	* gpg-stream-config.h: New file (was missing before).
+
 2004-07-19  Moritz Schulte  <moritz@g10code.com>
 
 	* command-ssh.c: Only log debugging message if asked to do so.
