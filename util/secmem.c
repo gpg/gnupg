@@ -128,7 +128,9 @@ lock_pool( void *p, size_t n )
   #endif
 
     if( uid && !geteuid() ) {
-	if( setuid( uid ) || getuid() != geteuid()  )
+	/* check that we really dropped the privs.
+	 * Note: setuid(0) should always fail */
+	if( setuid( uid ) || getuid() != geteuid() || !setuid(0) )
 	    log_fatal("failed to reset uid: %s\n", strerror(errno));
     }
 
@@ -260,7 +262,7 @@ secmem_init( size_t n )
 	disable_secmem=1;
 	uid = getuid();
 	if( uid != geteuid() ) {
-	    if( setuid( uid ) || getuid() != geteuid() )
+	    if( setuid( uid ) || getuid() != geteuid() || !setuid(0) )
 		log_fatal("failed to drop setuid\n" );
 	}
       #endif

@@ -1,3 +1,7 @@
+Thu Jun  8 20:22:00 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * secmem.c (lock_pool,secmem_init): Additional check for dropped privs.
+
 Tue May 30 16:37:55 CEST 2000  Werner Koch  <wk@openit.de>
 
   * iobuf.c (iobuf_cancel): Fix for MSDOS.
