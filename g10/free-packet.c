@@ -100,8 +100,8 @@ release_public_cert_parts( PKT_public_cert *cert )
 	mpi_free( cert->d.dsa.y ); cert->d.dsa.y = NULL;
     }
     else if( cert->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	mpi_free( cert->d.rsa.rsa_n ); cert->d.rsa.rsa_n = NULL;
-	mpi_free( cert->d.rsa.rsa_e ); cert->d.rsa.rsa_e = NULL;
+	mpi_free( cert->d.rsa.n ); cert->d.rsa.n = NULL;
+	mpi_free( cert->d.rsa.e ); cert->d.rsa.e = NULL;
     }
 }
 
@@ -130,8 +130,8 @@ copy_public_cert( PKT_public_cert *d, PKT_public_cert *s )
 	d->d.dsa.y = mpi_copy( s->d.dsa.y );
     }
     else if( s->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	d->d.rsa.rsa_n = mpi_copy( s->d.rsa.rsa_n );
-	d->d.rsa.rsa_e = mpi_copy( s->d.rsa.rsa_e );
+	d->d.rsa.n = mpi_copy( s->d.rsa.n );
+	d->d.rsa.e = mpi_copy( s->d.rsa.e );
     }
     return d;
 }
@@ -153,12 +153,12 @@ release_secret_cert_parts( PKT_secret_cert *cert )
 	mpi_free( cert->d.dsa.x ); cert->d.dsa.x = NULL;
     }
     else if( cert->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	mpi_free( cert->d.rsa.rsa_n ); cert->d.rsa.rsa_n = NULL;
-	mpi_free( cert->d.rsa.rsa_e ); cert->d.rsa.rsa_e = NULL;
-	mpi_free( cert->d.rsa.rsa_d ); cert->d.rsa.rsa_d = NULL;
-	mpi_free( cert->d.rsa.rsa_p ); cert->d.rsa.rsa_p = NULL;
-	mpi_free( cert->d.rsa.rsa_q ); cert->d.rsa.rsa_q = NULL;
-	mpi_free( cert->d.rsa.rsa_u ); cert->d.rsa.rsa_u = NULL;
+	mpi_free( cert->d.rsa.n ); cert->d.rsa.n = NULL;
+	mpi_free( cert->d.rsa.e ); cert->d.rsa.e = NULL;
+	mpi_free( cert->d.rsa.d ); cert->d.rsa.d = NULL;
+	mpi_free( cert->d.rsa.p ); cert->d.rsa.p = NULL;
+	mpi_free( cert->d.rsa.q ); cert->d.rsa.q = NULL;
+	mpi_free( cert->d.rsa.u ); cert->d.rsa.u = NULL;
     }
 }
 
@@ -189,12 +189,12 @@ copy_secret_cert( PKT_secret_cert *d, PKT_secret_cert *s )
 	d->d.dsa.x = mpi_copy( s->d.dsa.x );
     }
     else if( s->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	d->d.rsa.rsa_n = mpi_copy( s->d.rsa.rsa_n );
-	d->d.rsa.rsa_e = mpi_copy( s->d.rsa.rsa_e );
-	d->d.rsa.rsa_d = mpi_copy( s->d.rsa.rsa_d );
-	d->d.rsa.rsa_p = mpi_copy( s->d.rsa.rsa_p );
-	d->d.rsa.rsa_q = mpi_copy( s->d.rsa.rsa_q );
-	d->d.rsa.rsa_u = mpi_copy( s->d.rsa.rsa_u );
+	d->d.rsa.n = mpi_copy( s->d.rsa.n );
+	d->d.rsa.e = mpi_copy( s->d.rsa.e );
+	d->d.rsa.d = mpi_copy( s->d.rsa.d );
+	d->d.rsa.p = mpi_copy( s->d.rsa.p );
+	d->d.rsa.q = mpi_copy( s->d.rsa.q );
+	d->d.rsa.u = mpi_copy( s->d.rsa.u );
     }
     return d;
 }
@@ -337,9 +337,9 @@ cmp_public_certs( PKT_public_cert *a, PKT_public_cert *b )
 	    return -1;
     }
     else if( a->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	if( mpi_cmp( a->d.rsa.rsa_n , b->d.rsa.rsa_n ) )
+	if( mpi_cmp( a->d.rsa.n , b->d.rsa.n ) )
 	    return -1;
-	if( mpi_cmp( a->d.rsa.rsa_e , b->d.rsa.rsa_e ) )
+	if( mpi_cmp( a->d.rsa.e , b->d.rsa.e ) )
 	    return -1;
     }
 
@@ -378,9 +378,9 @@ cmp_public_secret_cert( PKT_public_cert *pkc, PKT_secret_cert *skc )
 	    return -1;
     }
     else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	if( mpi_cmp( pkc->d.rsa.rsa_n , skc->d.rsa.rsa_n ) )
+	if( mpi_cmp( pkc->d.rsa.n , skc->d.rsa.n ) )
 	    return -1;
-	if( mpi_cmp( pkc->d.rsa.rsa_e , skc->d.rsa.rsa_e ) )
+	if( mpi_cmp( pkc->d.rsa.e , skc->d.rsa.e ) )
 	    return -1;
     }
 

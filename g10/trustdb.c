@@ -849,6 +849,7 @@ verify_own_certs()
 	    log_debug("checking secret key %08lX\n", (ulong)keyid[1] );
 
 	/* look wether we can access the public key of this secret key */
+	memset( pkc, 0, sizeof *pkc );
 	rc = get_pubkey( pkc, keyid );
 	if( rc ) {
 	    log_error("keyid %08lX: secret key without public key\n",
@@ -1146,8 +1147,6 @@ static int
 build_sigrecs( ulong pubkeyid )
 {
     TRUSTREC rec, krec, rec2;
-    PUBKEY_FIND_INFO finfo=NULL;
-    KBPOS kbpos;
     KBNODE keyblock = NULL;
     KBNODE node;
     int rc=0;
@@ -1163,23 +1162,13 @@ build_sigrecs( ulong pubkeyid )
 	log_error("%lu: build_sigrecs: can't read dir record\n", pubkeyid );
 	goto leave;
     }
-    finfo = m_alloc_clear( sizeof *finfo );
-    finfo->keyid[0] = rec.r.dir.keyid[0];
-    finfo->keyid[1] = rec.r.dir.keyid[1];
     if( (rc=read_record( rec.r.dir.keyrec, &krec, RECTYPE_KEY )) ) {
 	log_error("%lu: build_sigrecs: can't read key record\n", pubkeyid);
 	goto leave;
     }
-    finfo->pubkey_algo = krec.r.key.pubkey_algo;
-    memcpy( finfo->fingerprint, krec.r.key.fingerprint, 20);
-    rc = find_keyblock( finfo, &kbpos );
+    rc = get_keyblock_byfprint( &keyblock, krec.r.key.fingerprint );
     if( rc ) {
-	log_error("build_sigrecs: find_keyblock failed\n" );
-	goto leave;
-    }
-    rc = read_keyblock( &kbpos, &keyblock );
-    if( rc ) {
-	log_error("build_sigrecs: read_keyblock failed\n" );
+	log_error("build_sigrecs: get_keyblock_byfprint failed\n" );
 	goto leave;
     }
     /* check all key signatures */
@@ -1290,7 +1279,6 @@ build_sigrecs( ulong pubkeyid )
 	update_no_sigs( pubkeyid, revoked? 3:1 ); /* no signatures */
 
   leave:
-    m_free( finfo );
     release_kbnode( keyblock );
     if( DBG_TRUST )
 	log_debug("trustdb: build_sigrecs: %s\n", g10_errstr(rc) );

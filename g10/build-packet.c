@@ -190,8 +190,8 @@ do_public_cert( IOBUF out, int ctb, PKT_public_cert *pkc )
 	mpi_write(a, pkc->d.dsa.y );
     }
     else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	mpi_write(a, pkc->d.rsa.rsa_n );
-	mpi_write(a, pkc->d.rsa.rsa_e );
+	mpi_write(a, pkc->d.rsa.n );
+	mpi_write(a, pkc->d.rsa.e );
     }
     else {
 	rc = G10ERR_PUBKEY_ALGO;
@@ -286,8 +286,8 @@ do_secret_cert( IOBUF out, int ctb, PKT_secret_cert *skc )
 	write_16(a, skc->csum );
     }
     else if( skc->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	mpi_write(a, skc->d.rsa.rsa_n );
-	mpi_write(a, skc->d.rsa.rsa_e );
+	mpi_write(a, skc->d.rsa.n );
+	mpi_write(a, skc->d.rsa.e );
 	if( skc->is_protected ) {
 	    assert( skc->protect.algo == CIPHER_ALGO_BLOWFISH
 		    || skc->protect.algo == CIPHER_ALGO_CAST );
@@ -296,10 +296,10 @@ do_secret_cert( IOBUF out, int ctb, PKT_secret_cert *skc )
 	}
 	else
 	    iobuf_put(a, 0 );
-	mpi_write(a, skc->d.rsa.rsa_d );
-	mpi_write(a, skc->d.rsa.rsa_p );
-	mpi_write(a, skc->d.rsa.rsa_q );
-	mpi_write(a, skc->d.rsa.rsa_u );
+	mpi_write(a, skc->d.rsa.d );
+	mpi_write(a, skc->d.rsa.p );
+	mpi_write(a, skc->d.rsa.q );
+	mpi_write(a, skc->d.rsa.u );
 	write_16(a, skc->csum );
     }
     else {

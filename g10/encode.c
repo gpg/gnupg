@@ -172,7 +172,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
 
-    if( (rc=build_pkc_list( remusr, &pkc_list)) )
+    if( (rc=build_pkc_list( remusr, &pkc_list, 2)) )
 	return rc;
 
     /* prepare iobufs */

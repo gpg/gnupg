@@ -69,7 +69,8 @@ static int pkc_cache_entries;	/* number of entries in pkc cache */
 
 
 static int lookup( PKT_public_cert *pkc,
-		   int mode,  u32 *keyid, const char *name );
+		   int mode,  u32 *keyid, const char *name,
+		   KBNODE *ret_keyblock  );
 static int lookup_skc( PKT_secret_cert *skc,
 		   int mode,  u32 *keyid, const char *name );
 
@@ -238,7 +239,6 @@ get_pubkey( PKT_public_cert *pkc, u32 *keyid )
     int rc = 0;
     pkc_cache_entry_t ce;
 
-
     /* lets see wether we checked the keyid already */
     for( kl = unknown_keyids; kl; kl = kl->next )
 	if( kl->keyid[0] == keyid[0] && kl->keyid[1] == keyid[1] )
@@ -259,7 +259,7 @@ get_pubkey( PKT_public_cert *pkc, u32 *keyid )
 
 
     /* do a lookup */
-    rc = lookup( pkc, 11, keyid, NULL );
+    rc = lookup( pkc, 11, keyid, NULL, NULL );
     if( !rc )
 	goto leave;
 
@@ -329,8 +329,11 @@ hextobyte( const byte *s )
  * - If the userid starts with a '*' a case insensitive substring search is
  *   done (This is also the default).
  */
-int
-get_pubkey_byname( PKT_public_cert *pkc, const char *name )
+
+
+static int
+key_byname( int secret,
+	    PKT_public_cert *pkc, PKT_secret_cert *skc, const char *name )
 {
     int internal = 0;
     int rc = 0;
@@ -424,23 +427,60 @@ get_pubkey_byname( PKT_public_cert *pkc, const char *name )
     if( rc )
 	goto leave;
 
-    if( !pkc ) {
-	pkc = m_alloc_clear( sizeof *pkc );
-	internal++;
+    if( secret ) {
+	if( !skc ) {
+	    skc = m_alloc_clear( sizeof *skc );
+	    internal++;
+	}
+	rc = mode < 16? lookup_skc( skc, mode, keyid, name )
+		      : lookup_skc( skc, mode, keyid, fprint );
+    }
+    else {
+	if( !pkc ) {
+	    pkc = m_alloc_clear( sizeof *pkc );
+	    internal++;
+	}
+	rc = mode < 16? lookup( pkc, mode, keyid, name, NULL )
+		      : lookup( pkc, mode, keyid, fprint, NULL );
     }
 
-    rc = mode < 16? lookup( pkc, mode, keyid, name )
-		  : lookup( pkc, mode, keyid, fprint );
 
   leave:
-    if( internal )
-	m_free(pkc);
+    if( internal && secret )
+	m_free( skc );
+    else if( internal )
+	m_free( pkc );
     return rc;
 }
 
+int
+get_pubkey_byname( PKT_public_cert *pkc, const char *name )
+{
+    return key_byname( 0, pkc, NULL, name );
+}
+
+
 
 /****************
- * Get a secret key and store it into skey
+ * Search for a key with the given fingerprint and return the
+ * complete keyblock which may have more than only this key.
+ * The fingerprint should always be 20 bytes, fill with zeroes
+ * for 16 byte fprints.
+ */
+int
+get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint )
+{
+    int rc;
+    PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
+
+    rc = lookup( pkc, 20, NULL, fprint, ret_keyblock );
+
+    free_public_cert( pkc );
+    return rc;
+}
+
+/****************
+ * Get a secret key and store it into skc
  */
 int
 get_seckey( PKT_secret_cert *skc, u32 *keyid )
@@ -486,8 +526,8 @@ get_seckey_byname( PKT_secret_cert *skc, const char *name, int unprotect )
 {
     int rc;
 
-    /* fixme: add support for compare_name */
-    rc = lookup_skc( skc, name? 2:15, NULL, name );
+    rc = name ? key_byname( 1, NULL, skc, name )
+	      : lookup_skc( skc, 15, NULL, NULL );
     if( !rc && unprotect )
 	rc = check_secret_key( skc );
 
@@ -547,9 +587,12 @@ compare_name( const char *uid, size_t uidlen, const char *name, int mode )
  *	 20 = lookup by 20 byte fingerprint which is stored in NAME
  * Caller must provide an empty PKC, if the pubkey_algo is filled in, only
  * a key of this algo will be returned.
+ * If ret_keyblock is not NULL, the complete keyblock is returned also
+ * and the caller must release it.
  */
 static int
-lookup( PKT_public_cert *pkc, int mode,  u32 *keyid, const char *name )
+lookup( PKT_public_cert *pkc, int mode,  u32 *keyid,
+	const char *name, KBNODE *ret_keyblock )
 {
     int rc;
     KBNODE keyblock = NULL;
@@ -593,12 +636,22 @@ lookup( PKT_public_cert *pkc, int mode,  u32 *keyid, const char *name )
 	    }
 	}
 	else { /* keyid or fingerprint lookup */
+	    if( DBG_CACHE && (mode== 10 || mode==11) ) {
+		log_debug("lookup keyid=%08lx%08lx req_algo=%d mode=%d\n",
+				(ulong)keyid[0], (ulong)keyid[1],
+				 pkc->pubkey_algo, mode );
+	    }
 	    for(k=keyblock; k; k = k->next ) {
 		if(    k->pkt->pkttype == PKT_PUBLIC_CERT
 		    || k->pkt->pkttype == PKT_PUBKEY_SUBCERT ) {
 		    if( mode == 10 || mode == 11 ) {
 			u32 aki[2];
 			keyid_from_pkc( k->pkt->pkt.public_cert, aki );
+			if( DBG_CACHE ) {
+			    log_debug("         aki=%08lx%08lx algo=%d\n",
+					    (ulong)aki[0], (ulong)aki[1],
+				    k->pkt->pkt.public_cert->pubkey_algo    );
+			}
 			if( aki[1] == keyid[1]
 			    && ( mode == 10 || aki[0] == keyid[0] )
 			    && ( !pkc->pubkey_algo
@@ -643,6 +696,10 @@ lookup( PKT_public_cert *pkc, int mode,  u32 *keyid, const char *name )
 	    assert(    k->pkt->pkttype == PKT_PUBLIC_CERT
 		    || k->pkt->pkttype == PKT_PUBKEY_SUBCERT );
 	    copy_public_cert( pkc, k->pkt->pkt.public_cert );
+	    if( ret_keyblock ) {
+		*ret_keyblock = keyblock;
+		keyblock = NULL;
+	    }
 	    break; /* enumeration */
 	}
 	release_kbnode( keyblock );
@@ -708,12 +765,22 @@ lookup_skc( PKT_secret_cert *skc, int mode,  u32 *keyid, const char *name )
 	    }
 	}
 	else { /* keyid or fingerprint lookup */
+	    if( DBG_CACHE && (mode== 10 || mode==11) ) {
+		log_debug("lookup_skc keyid=%08lx%08lx req_algo=%d mode=%d\n",
+				(ulong)keyid[0], (ulong)keyid[1],
+				 skc->pubkey_algo, mode );
+	    }
 	    for(k=keyblock; k; k = k->next ) {
 		if(    k->pkt->pkttype == PKT_SECRET_CERT
 		    || k->pkt->pkttype == PKT_SECKEY_SUBCERT ) {
 		    if( mode == 10 || mode == 11 ) {
 			u32 aki[2];
 			keyid_from_skc( k->pkt->pkt.secret_cert, aki );
+			if( DBG_CACHE ) {
+			    log_debug("             aki=%08lx%08lx algo=%d\n",
+					    (ulong)aki[0], (ulong)aki[1],
+				    k->pkt->pkt.secret_cert->pubkey_algo    );
+			}
 			if( aki[1] == keyid[1]
 			    && ( mode == 10 || aki[0] == keyid[0] )
 			    && ( !skc->pubkey_algo
@@ -825,7 +892,8 @@ enum_secret_keys( void **context, PKT_secret_cert *skc )
 	while( (rc=parse_packet(c->iobuf, &pkt)) != -1 ) {
 	    if( rc )
 		; /* e.g. unknown packet */
-	    else if( pkt.pkttype == PKT_SECRET_CERT ) {
+	    else if( pkt.pkttype == PKT_SECRET_CERT
+		    || pkt.pkttype == PKT_SECKEY_SUBCERT ) {
 		copy_secret_cert( skc, pkt.pkt.secret_cert );
 		set_packet_list_mode(save_mode);
 		return 0; /* found */

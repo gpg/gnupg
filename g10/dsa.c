@@ -39,7 +39,6 @@ void
 g10_dsa_sign( PKT_secret_cert *skc, PKT_signature *sig,
 	      MD_HANDLE md, int digest_algo )
 {
-    DSA_secret_key skey;
     MPI frame;
     byte *dp;
 
@@ -58,12 +57,9 @@ g10_dsa_sign( PKT_secret_cert *skc, PKT_signature *sig,
 		       / BYTES_PER_MPI_LIMB );
     mpi_set_buffer( frame, md_read(md, digest_algo),
 			   md_digest_length(digest_algo), 0 );
-    skey.p = skc->d.elg.p;
-    skey.g = skc->d.elg.g;
-    skey.y = skc->d.elg.y;
-    skey.x = skc->d.elg.x;
-    dsa_sign( sig->d.dsa.r, sig->d.dsa.s, frame, &skey);
-    memset( &skey, 0, sizeof skey );
+    if( DBG_CIPHER )
+	log_mpidump("used sig frame: ", frame);
+    dsa_sign( sig->d.dsa.r, sig->d.dsa.s, frame, &skc->d.dsa );
     mpi_free(frame);
     if( opt.verbose ) {
 	char *ustr = get_user_id_string( sig->keyid );

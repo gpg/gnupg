@@ -87,11 +87,12 @@ struct pubkey_find_info {
 
 /*-- pkclist.c --*/
 void release_pkc_list( PKC_LIST pkc_list );
-int  build_pkc_list( STRLIST remusr, PKC_LIST *ret_pkc_list );
+int  build_pkc_list( STRLIST remusr, PKC_LIST *ret_pkc_list, unsigned usage );
 
 /*-- skclist.c --*/
 void release_skc_list( SKC_LIST skc_list );
-int  build_skc_list( STRLIST locusr, SKC_LIST *ret_skc_list, int unlock );
+int  build_skc_list( STRLIST locusr, SKC_LIST *ret_skc_list,
+					    int unlock, unsigned usage );
 
 /*-- passphrase.h --*/
 void set_passphrase_fd( int fd );
@@ -103,11 +104,10 @@ int make_dek_from_passphrase( DEK *dek, int mode, byte *salt );
 void add_keyring( const char *name );
 const char *get_keyring( int sequence );
 void add_secret_keyring( const char *name );
-/*void cache_public_cert( PKT_public_cert *pkc );
-void cache_user_id( PKT_user_id *uid, u32 *keyid );*/
 int get_pubkey( PKT_public_cert *pkc, u32 *keyid );
 int get_pubkey_byname( PKT_public_cert *pkc, const char *name );
 int get_seckey( PKT_secret_cert *skc, u32 *keyid );
+int get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint );
 int seckey_available( u32 *keyid );
 int get_seckey_byname( PKT_secret_cert *skc, const char *name, int unlock );
 int enum_secret_keys( void **context, PKT_secret_cert *skc );

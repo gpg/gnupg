@@ -97,6 +97,7 @@ int string_to_digest_algo( const char *string );
 const char * pubkey_algo_to_string( int algo );
 const char * digest_algo_to_string( int algo );
 int check_pubkey_algo( int algo );
+int check_pubkey_algo2( int algo, unsigned usage );
 int check_digest_algo( int algo );
 
 /*-- smallprime.c --*/

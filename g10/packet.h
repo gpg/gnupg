@@ -27,6 +27,12 @@
 #include "cipher.h"
 #include "filter.h"
 
+#ifndef HAVE_RSA_CIPHER
+/* although we don't have RSA we need these structures to handle keyrings */
+typedef struct { MPI e, n;	       } RSA_public_key;
+typedef struct { MPI e, n, p, q, d, u; } RSA_secret_key;
+#endif
+
 typedef enum {
 	PKT_NONE	   =0,
 	PKT_PUBKEY_ENC	   =1, /* public key encrypted packet */
@@ -106,21 +112,9 @@ typedef struct {
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     ulong   local_id;	    /* internal use, valid if > 0 */
     union {
-      struct {
-	MPI p;		    /* prime */
-	MPI g;		    /* group generator */
-	MPI y;		    /* g^x mod p */
-      } elg;
-      struct {
-	MPI p;		    /* prime */
-	MPI q;		    /* group order */
-	MPI g;		    /* group generator */
-	MPI y;		    /* g^x mod p */
-      } dsa;
-      struct {
-	MPI rsa_n;	    /* public modulus */
-	MPI rsa_e;	    /* public exponent */
-      } rsa;
+	ELG_public_key elg;
+	DSA_public_key dsa;
+	RSA_public_key rsa;
     } d;
 } PKT_public_cert;
 
@@ -143,27 +137,9 @@ typedef struct {
 	byte iv[8]; /* initialization vector for CFB mode */
     } protect;
     union {
-      struct {
-	MPI p;		    /* prime */
-	MPI g;		    /* group generator */
-	MPI y;		    /* g^x mod p */
-	MPI x;		    /* secret exponent */
-      } elg;
-      struct {
-	MPI p;		    /* prime */
-	MPI q;		    /* group order */
-	MPI g;		    /* group generator */
-	MPI y;		    /* g^x mod p */
-	MPI x;		    /* secret exponent */
-      } dsa;
-      struct {
-	MPI rsa_n;	    /* public modulus */
-	MPI rsa_e;	    /* public exponent */
-	MPI rsa_d;	    /* secret descryption exponent */
-	MPI rsa_p;	    /* secret first prime number */
-	MPI rsa_q;	    /* secret second prime number */
-	MPI rsa_u;	    /* secret multiplicative inverse */
-      } rsa;
+	ELG_secret_key elg;
+	DSA_secret_key dsa;
+	RSA_secret_key rsa;
     } d;
     u16 csum;		/* checksum */
 } PKT_secret_cert;

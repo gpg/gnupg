@@ -275,7 +275,8 @@ dump_kbnode( KBNODE node )
 	    fprintf(stderr, "  keyid=%08lX\n",
 		   (ulong)node->pkt->pkt.signature->keyid[1] );
 	}
-	else if( node->pkt->pkttype == PKT_PUBLIC_CERT ) {
+	else if( node->pkt->pkttype == PKT_PUBLIC_CERT
+		 || node->pkt->pkttype == PKT_PUBKEY_SUBCERT ) {
 	    fprintf(stderr, "  keyid=%08lX\n", (ulong)
 		  keyid_from_pkc( node->pkt->pkt.public_cert, NULL ));
 	}

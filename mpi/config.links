@@ -111,7 +111,7 @@ esac
 
 
 case "${target}" in
-    *-*-linuxaout* | *-*-linuxoldld*)
+    *-*-linuxaout* | *-*-linuxoldld* | *-*-linux-gnuoldld*)
 	needs_underscore="y"
 	;;
     *-*-linux* | *-sysv* | *-solaris* | *-gnu*)

@@ -226,6 +226,7 @@ proc_plaintext( CTX c, PACKET *pkt )
      * textmode filter (sigclass 0x01)
      */
     c->mfx.md = md_open( DIGEST_ALGO_RMD160, 0);
+    md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
     md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
     rc = handle_plaintext( pt, &c->mfx );
     if( rc )

@@ -41,7 +41,6 @@ check_elg( PKT_secret_cert *cert )
     int res;
     unsigned nbytes;
     u32 keyid[2];
-    ELG_secret_key skey;
     char save_iv[8];
 
     if( cert->is_protected ) { /* remove the protection */
@@ -93,12 +92,9 @@ check_elg( PKT_secret_cert *cert )
 			 "\"--change-passphrase\" to convert.\n");
 	    }
 
-	    skey.p = cert->d.elg.p;
-	    skey.g = cert->d.elg.g;
-	    skey.y = cert->d.elg.y;
-	    skey.x = test_x;
-	    res = elg_check_secret_key( &skey );
-	    memset( &skey, 0, sizeof skey );
+	    mpi_swap( cert->d.elg.x, test_x );
+	    res = elg_check_secret_key( &cert->d.elg );
+	    mpi_swap( cert->d.elg.x, test_x );
 	    if( !res ) {
 		mpi_free(test_x);
 		memcpy( cert->protect.iv, save_iv, 8 );
@@ -140,7 +136,6 @@ check_dsa( PKT_secret_cert *cert )
     int res;
     unsigned nbytes;
     u32 keyid[2];
-    DSA_secret_key skey;
     char save_iv[8];
 
     if( cert->is_protected ) { /* remove the protection */
@@ -183,13 +178,9 @@ check_dsa( PKT_secret_cert *cert )
 		return G10ERR_BAD_PASS;
 	    }
 
-	    skey.p = cert->d.dsa.p;
-	    skey.q = cert->d.dsa.q;
-	    skey.g = cert->d.dsa.g;
-	    skey.y = cert->d.dsa.y;
-	    skey.x = test_x;
-	    res = dsa_check_secret_key( &skey );
-	    memset( &skey, 0, sizeof skey );
+	    mpi_swap( cert->d.dsa.x, test_x );
+	    res = dsa_check_secret_key( &cert->d.dsa );
+	    mpi_swap( cert->d.dsa.x, test_x );
 	    if( !res ) {
 		mpi_free(test_x);
 		memcpy( cert->protect.iv, save_iv, 8 );
@@ -227,7 +218,6 @@ check_rsa( PKT_secret_cert *cert )
     int res;
     unsigned nbytes;
     u32 keyid[2];
-    RSA_secret_key skey;
 
     if( cert->is_protected ) { /* remove the protection */
 	DEK *dek = NULL;
@@ -266,12 +256,7 @@ check_rsa( PKT_secret_cert *cert )
 	    if( csum != cert->csum )
 		return G10ERR_BAD_PASS;
 
-	    skey.d = cert->d.rsa.rsa_d;
-	    skey.p = cert->d.rsa.rsa_p;
-	    skey.q = cert->d.rsa.rsa_q;
-	    skey.u = cert->d.rsa.rsa_u;
-	    res = rsa_check_secret_key( &skey );
-	    memset( &skey, 0, sizeof skey );
+	    res = rsa_check_secret_key( &cert->d.rsa );
 	    if( !res )
 		return G10ERR_BAD_PASS;
 	    break;

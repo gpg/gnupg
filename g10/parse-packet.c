@@ -1084,15 +1084,15 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    putchar('\n');
 	}
 	if( pkttype == PKT_PUBLIC_CERT || pkttype == PKT_PUBKEY_SUBCERT ) {
-	    pkt->pkt.public_cert->d.rsa.rsa_n = rsa_pub_mod;
-	    pkt->pkt.public_cert->d.rsa.rsa_e = rsa_pub_exp;
+	    pkt->pkt.public_cert->d.rsa.n = rsa_pub_mod;
+	    pkt->pkt.public_cert->d.rsa.e = rsa_pub_exp;
 	}
 	else {
 	    PKT_secret_cert *cert = pkt->pkt.secret_cert;
 	    byte temp[8];
 
-	    pkt->pkt.secret_cert->d.rsa.rsa_n = rsa_pub_mod;
-	    pkt->pkt.secret_cert->d.rsa.rsa_e = rsa_pub_exp;
+	    pkt->pkt.secret_cert->d.rsa.n = rsa_pub_mod;
+	    pkt->pkt.secret_cert->d.rsa.e = rsa_pub_exp;
 	    cert->protect.algo = iobuf_get_noeof(inp); pktlen--;
 	    if( list_mode )
 		printf(  "\tprotect algo: %d\n", cert->protect.algo);
@@ -1112,22 +1112,22 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    else
 		cert->is_protected = 0;
 	    /* (See comments at the code for elg keys) */
-	    n = pktlen; cert->d.rsa.rsa_d = mpi_read(inp, &n, 0 ); pktlen -=n;
-	    n = pktlen; cert->d.rsa.rsa_p = mpi_read(inp, &n, 0 ); pktlen -=n;
-	    n = pktlen; cert->d.rsa.rsa_q = mpi_read(inp, &n, 0 ); pktlen -=n;
-	    n = pktlen; cert->d.rsa.rsa_u = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    n = pktlen; cert->d.rsa.d = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    n = pktlen; cert->d.rsa.p = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    n = pktlen; cert->d.rsa.q = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    n = pktlen; cert->d.rsa.u = mpi_read(inp, &n, 0 ); pktlen -=n;
 
 	    cert->csum = read_16(inp); pktlen -= 2;
 	    if( list_mode ) {
 		printf("\t[secret values d,p,q,u are not shown]\n"
 		       "\tchecksum: %04hx\n", cert->csum);
 	    }
-	 /* log_mpidump("rsa n=", cert->d.rsa.rsa_n );
-	    log_mpidump("rsa e=", cert->d.rsa.rsa_e );
-	    log_mpidump("rsa d=", cert->d.rsa.rsa_d );
-	    log_mpidump("rsa p=", cert->d.rsa.rsa_p );
-	    log_mpidump("rsa q=", cert->d.rsa.rsa_q );
-	    log_mpidump("rsa u=", cert->d.rsa.rsa_u ); */
+	 /* log_mpidump("rsa n=", cert->d.rsa.n );
+	    log_mpidump("rsa e=", cert->d.rsa.e );
+	    log_mpidump("rsa d=", cert->d.rsa.d );
+	    log_mpidump("rsa p=", cert->d.rsa.p );
+	    log_mpidump("rsa q=", cert->d.rsa.q );
+	    log_mpidump("rsa u=", cert->d.rsa.u ); */
 	}
     }
     else if( list_mode )

@@ -72,6 +72,7 @@ g10_errstr( int err )
       X(DELETE_FILE    ,"File delete error")
       X(UNEXPECTED     ,"Unexpected data")
       X(TIME_CONFLICT  ,"Timestamp conflict")
+      X(WR_PUBKEY_ALGO ,"Unusable pubkey algorithm")
 
       default: p = buf; sprintf(buf, "g10err=%d", err); break;
     }

@@ -116,10 +116,10 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     if( fname && filenames->next && (!detached || encrypt) )
 	log_bug("multiple files can only be detached signed");
 
-    if( (rc=build_skc_list( locusr, &skc_list, 1 )) )
+    if( (rc=build_skc_list( locusr, &skc_list, 1, 1 )) )
 	goto leave;
     if( encrypt ) {
-	if( (rc=build_pkc_list( remusr, &pkc_list )) )
+	if( (rc=build_pkc_list( remusr, &pkc_list, 2 )) )
 	    goto leave;
     }
 
@@ -150,7 +150,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     /* prepare to calculate the MD over the input */
     if( opt.textmode && !outfile )
 	iobuf_push_filter( inp, text_filter, &tfx );
-    mfx.md = md_open(DIGEST_ALGO_RMD160, 0);
+    mfx.md = md_open(opt.def_digest_algo, 0);
     if( !multifile )
 	iobuf_push_filter( inp, md_filter, &mfx );
 
@@ -176,7 +176,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    skc = skc_rover->skc;
 	    ops = m_alloc_clear( sizeof *ops );
 	    ops->sig_class = opt.textmode && !outfile ? 0x01 : 0x00;
-	    ops->digest_algo = DIGEST_ALGO_RMD160;
+	    ops->digest_algo = opt.def_digest_algo;
 	    ops->pubkey_algo = skc->pubkey_algo;
 	    keyid_from_skc( skc, ops->keyid );
 	    ops->last = !skc_rover->next;
@@ -276,11 +276,11 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	md_final( md );
 
 	if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
-	    g10_elg_sign( skc, sig, md, DIGEST_ALGO_RMD160 );
+	    g10_elg_sign( skc, sig, md, opt.def_digest_algo );
 	else if( sig->pubkey_algo == PUBKEY_ALGO_DSA )
-	    g10_dsa_sign( skc, sig, md, DIGEST_ALGO_SHA1 );
+	    g10_dsa_sign( skc, sig, md, opt.def_digest_algo );
 	else if( sig->pubkey_algo == PUBKEY_ALGO_RSA )
-	    g10_rsa_sign( skc, sig, md, DIGEST_ALGO_RMD160 );
+	    g10_rsa_sign( skc, sig, md, opt.def_digest_algo );
 	else
 	    BUG();
 
@@ -369,7 +369,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     memset( &tfx, 0, sizeof tfx);
     init_packet( &pkt );
 
-    if( (rc=build_skc_list( locusr, &skc_list, 1 )) )
+    if( (rc=build_skc_list( locusr, &skc_list, 1, 1 )) )
 	goto leave;
 
     /* prepare iobufs */
@@ -397,7 +397,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----\n"
 			"Hash: RIPEMD160\n\n" );
 
-    textmd = md_open(DIGEST_ALGO_RMD160, 0);
+    textmd = md_open(opt.def_digest_algo, 0);
     iobuf_push_filter( inp, text_filter, &tfx );
     rc = write_dash_escaped( inp, out, textmd );
     if( rc )
@@ -432,11 +432,11 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	md_final( md );
 
 	if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
-	    g10_elg_sign( skc, sig, md, DIGEST_ALGO_RMD160 );
+	    g10_elg_sign( skc, sig, md, opt.def_digest_algo );
 	else if( sig->pubkey_algo == PUBKEY_ALGO_DSA )
-	    g10_dsa_sign( skc, sig, md, DIGEST_ALGO_SHA1 );
+	    g10_dsa_sign( skc, sig, md, opt.def_digest_algo );
 	else if( sig->pubkey_algo == PUBKEY_ALGO_RSA )
-	    g10_rsa_sign( skc, sig, md, DIGEST_ALGO_RMD160 );
+	    g10_rsa_sign( skc, sig, md, opt.def_digest_algo );
 	else
 	    BUG();
 
@@ -682,7 +682,7 @@ sign_key( const char *username, STRLIST locusr )
     }
 
     /* build a list of all signators */
-    rc=build_skc_list( locusr, &skc_list, 0 );
+    rc=build_skc_list( locusr, &skc_list, 0, 1 );
     if( rc )
 	goto leave;
 

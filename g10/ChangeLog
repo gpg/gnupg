@@ -1,3 +1,23 @@
+Wed Apr  8 16:19:39 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* packet.h: packet structs now uses structs from the pubkey,
+	removed all copy operations from packet to pubkey structs.
+
+Wed Apr  8 13:40:33 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* trustdb.c (verify_own_certs): Fixed "public key not found".
+
+	* getkey.c (key_byname): New, combines public and secret key search.
+
+	* pkclist.c (build_pkc_list): Add new arg usage, changed all callers.
+	* skclist.c (build_skc_list): Likewise.
+
+	* ringedit.c (find_keyblock, keyring_search2): Removed.
+
+Wed Apr  8 09:47:21 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* sig-check.c (do_check): Applied small fix from Ulf Möller.
+
 Tue Apr  7 19:28:07 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* cipher.c, encr-data.c, seckey-cert.c: Now uses cipher_xxxx

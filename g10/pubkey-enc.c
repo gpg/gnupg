@@ -50,36 +50,20 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	goto leave;
 
     if( k->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
-	ELG_secret_key skey;
-
 	if( DBG_CIPHER ) {
 	    log_mpidump("Encr DEK a:", k->d.elg.a );
 	    log_mpidump("     DEK b:", k->d.elg.b );
 	}
-	skey.p = skc->d.elg.p;
-	skey.g = skc->d.elg.g;
-	skey.y = skc->d.elg.y;
-	skey.x = skc->d.elg.x;
-	plain_dek = mpi_alloc_secure( mpi_get_nlimbs(skey.p) );
-	elg_decrypt( plain_dek, k->d.elg.a, k->d.elg.b, &skey );
-	memset( &skey, 0, sizeof skey );
+	plain_dek = mpi_alloc_secure( mpi_get_nlimbs(skc->d.elg.p) );
+	elg_decrypt( plain_dek, k->d.elg.a, k->d.elg.b, &skc->d.elg );
     }
   #ifdef HAVE_RSA_CIPHER
     else if( k->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	RSA_secret_key skey;
-
 	if( DBG_CIPHER )
 	    log_mpidump("Encr DEK frame:", k->d.rsa.rsa_integer );
 
-	skey.e = skc->d.rsa.rsa_e;
-	skey.n = skc->d.rsa.rsa_n;
-	skey.p = skc->d.rsa.rsa_p;
-	skey.q = skc->d.rsa.rsa_q;
-	skey.d = skc->d.rsa.rsa_d;
-	skey.u = skc->d.rsa.rsa_u;
-	plain_dek = mpi_alloc_secure( mpi_get_nlimbs(skey.n) );
-	rsa_secret( plain_dek, k->d.rsa.rsa_integer, &skey );
-	memset( &skey, 0, sizeof skey );
+	plain_dek = mpi_alloc_secure( mpi_get_nlimbs(skc->d.rsa.n) );
+	rsa_secret( plain_dek, k->d.rsa.rsa_integer, &skc->d.rsa );
     }
   #endif/*HAVE_RSA_CIPHER*/
     else {

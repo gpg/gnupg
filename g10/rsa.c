@@ -38,18 +38,14 @@ void
 g10_rsa_encrypt( PKT_public_cert *pkc, PKT_pubkey_enc *enc, DEK *dek )
 {
   #ifdef HAVE_RSA_CIPHER
-    RSA_public_key pkey;
-
     assert( enc->pubkey_algo == PUBKEY_ALGO_RSA );
 
     keyid_from_pkc( pkc, enc->keyid );
     enc->d.rsa.rsa_integer = encode_session_key( dek,
 				mpi_get_nbits(pkc->d.rsa.rsa_n) );
-    pkey.n = pkc->d.rsa.rsa_n;
-    pkey.e = pkc->d.rsa.rsa_e;
     if( DBG_CIPHER )
 	log_mpidump("Plain DEK frame: ", enc->d.rsa.rsa_integer);
-    rsa_public( enc->d.rsa.rsa_integer, enc->d.rsa.rsa_integer, &pkey);
+    rsa_public( enc->d.rsa.rsa_integer, enc->d.rsa.rsa_integer, &pkc->d.rsa);
     if( DBG_CIPHER )
 	log_mpidump("Encry DEK frame: ", enc->d.rsa.rsa_integer);
     if( opt.verbose ) {
@@ -68,7 +64,6 @@ g10_rsa_sign( PKT_secret_cert *skc, PKT_signature *sig,
 				    MD_HANDLE md, int digest_algo )
 {
  #ifdef HAVE_RSA_CIPHER
-    RSA_secret_key skey;
     byte *dp;
 
     assert( sig->pubkey_algo == PUBKEY_ALGO_RSA );
@@ -82,14 +77,7 @@ g10_rsa_sign( PKT_secret_cert *skc, PKT_signature *sig,
     sig->digest_start[1] = dp[1];
     sig->d.rsa.rsa_integer =
 		   encode_md_value( md, mpi_get_nbits(skc->d.rsa.rsa_n));
-    skey.e = skc->d.rsa.rsa_e;
-    skey.n = skc->d.rsa.rsa_n;
-    skey.p = skc->d.rsa.rsa_p;
-    skey.q = skc->d.rsa.rsa_q;
-    skey.d = skc->d.rsa.rsa_d;
-    skey.u = skc->d.rsa.rsa_u;
-    rsa_secret( sig->d.rsa.rsa_integer, sig->d.rsa.rsa_integer, &skey);
-    memset( &skey, 0, sizeof skey );
+    rsa_secret( sig->d.rsa.rsa_integer, sig->d.rsa.rsa_integer, &skc->d.rsa );
     if( opt.verbose ) {
 	char *ustr = get_user_id_string( sig->keyid );
 	log_info("RSA signature from: %s\n", ustr );

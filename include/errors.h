@@ -60,5 +60,6 @@
 #define G10ERR_DELETE_FILE    38
 #define G10ERR_UNEXPECTED     39
 #define G10ERR_TIME_CONFLICT  40
+#define G10ERR_WR_PUBKEY_ALGO 41 /* unusabe pubkey algo */
 
 #endif /*G10_ERRORS_H*/

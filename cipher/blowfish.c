@@ -396,35 +396,17 @@ blowfish_encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 {
     u32 d1, d2;
 
-  #ifdef BIG_ENDIAN_HOST
-    d1 = ((u32*)inbuf)[0]; /* fixme: this may not be aligned */
-    d2 = ((u32*)inbuf)[1];
-  #else
-    ((byte*)&d1)[3] = inbuf[0];
-    ((byte*)&d1)[2] = inbuf[1];
-    ((byte*)&d1)[1] = inbuf[2];
-    ((byte*)&d1)[0] = inbuf[3];
-    ((byte*)&d2)[3] = inbuf[4];
-    ((byte*)&d2)[2] = inbuf[5];
-    ((byte*)&d2)[1] = inbuf[6];
-    ((byte*)&d2)[0] = inbuf[7];
-  #endif
-
+    d1 = inbuf[0] << 24 | inbuf[1] << 16 | inbuf[2] << 8 | inbuf[3];
+    d2 = inbuf[4] << 24 | inbuf[5] << 16 | inbuf[6] << 8 | inbuf[7];
     encrypt( bc, &d1, &d2 );
-
-  #ifdef BIG_ENDIAN_HOST
-    ((u32*)outbuf)[0] = d1;
-    ((u32*)outbuf)[1] = d2;
-  #else
-    outbuf[0] = ((byte*)&d1)[3];
-    outbuf[1] = ((byte*)&d1)[2];
-    outbuf[2] = ((byte*)&d1)[1];
-    outbuf[3] = ((byte*)&d1)[0];
-    outbuf[4] = ((byte*)&d2)[3];
-    outbuf[5] = ((byte*)&d2)[2];
-    outbuf[6] = ((byte*)&d2)[1];
-    outbuf[7] = ((byte*)&d2)[0];
-  #endif
+    outbuf[0] = (d1 >> 24) & 0xff;
+    outbuf[1] = (d1 >> 16) & 0xff;
+    outbuf[2] = (d1 >>	8) & 0xff;
+    outbuf[3] =  d1	   & 0xff;
+    outbuf[4] = (d2 >> 24) & 0xff;
+    outbuf[5] = (d2 >> 16) & 0xff;
+    outbuf[6] = (d2 >>	8) & 0xff;
+    outbuf[7] =  d2	   & 0xff;
 }
 
 
@@ -433,35 +415,17 @@ blowfish_decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 {
     u32 d1, d2;
 
-  #ifdef BIG_ENDIAN_HOST
-    d1 = ((u32*)inbuf)[0]; /* fixme: this may not be aligned */
-    d2 = ((u32*)inbuf)[1];
-  #else
-    ((byte*)&d1)[3] = inbuf[0];
-    ((byte*)&d1)[2] = inbuf[1];
-    ((byte*)&d1)[1] = inbuf[2];
-    ((byte*)&d1)[0] = inbuf[3];
-    ((byte*)&d2)[3] = inbuf[4];
-    ((byte*)&d2)[2] = inbuf[5];
-    ((byte*)&d2)[1] = inbuf[6];
-    ((byte*)&d2)[0] = inbuf[7];
-  #endif
-
+    d1 = inbuf[0] << 24 | inbuf[1] << 16 | inbuf[2] << 8 | inbuf[3];
+    d2 = inbuf[4] << 24 | inbuf[5] << 16 | inbuf[6] << 8 | inbuf[7];
     decrypt( bc, &d1, &d2 );
-
-  #ifdef BIG_ENDIAN_HOST
-    ((u32*)outbuf)[0] = d1;
-    ((u32*)outbuf)[1] = d2;
-  #else
-    outbuf[0] = ((byte*)&d1)[3];
-    outbuf[1] = ((byte*)&d1)[2];
-    outbuf[2] = ((byte*)&d1)[1];
-    outbuf[3] = ((byte*)&d1)[0];
-    outbuf[4] = ((byte*)&d2)[3];
-    outbuf[5] = ((byte*)&d2)[2];
-    outbuf[6] = ((byte*)&d2)[1];
-    outbuf[7] = ((byte*)&d2)[0];
-  #endif
+    outbuf[0] = (d1 >> 24) & 0xff;
+    outbuf[1] = (d1 >> 16) & 0xff;
+    outbuf[2] = (d1 >>	8) & 0xff;
+    outbuf[3] =  d1	   & 0xff;
+    outbuf[4] = (d2 >> 24) & 0xff;
+    outbuf[5] = (d2 >> 16) & 0xff;
+    outbuf[6] = (d2 >>	8) & 0xff;
+    outbuf[7] =  d2	   & 0xff;
 }
 
 

@@ -291,7 +291,7 @@ release_pkc_list( PKC_LIST pkc_list )
 }
 
 int
-build_pkc_list( STRLIST remusr, PKC_LIST *ret_pkc_list )
+build_pkc_list( STRLIST remusr, PKC_LIST *ret_pkc_list, unsigned usage )
 {
     PKC_LIST pkc_list = NULL;
     PKT_public_cert *pkc=NULL;
@@ -316,7 +316,7 @@ build_pkc_list( STRLIST remusr, PKC_LIST *ret_pkc_list )
 	    rc = get_pubkey_byname( pkc, answer );
 	    if( rc )
 		tty_printf("No such user ID.\n");
-	    else if( !(rc=check_pubkey_algo(pkc->pubkey_algo)) ) {
+	    else if( !(rc=check_pubkey_algo2(pkc->pubkey_algo, usage)) ) {
 		int trustlevel;
 
 		rc = check_trust( pkc, &trustlevel );
@@ -350,7 +350,7 @@ build_pkc_list( STRLIST remusr, PKC_LIST *ret_pkc_list )
 		free_public_cert( pkc ); pkc = NULL;
 		log_error("skipped '%s': %s\n", remusr->d, g10_errstr(rc) );
 	    }
-	    else if( !(rc=check_pubkey_algo(pkc->pubkey_algo)) ) {
+	    else if( !(rc=check_pubkey_algo2(pkc->pubkey_algo, usage )) ) {
 		int trustlevel;
 
 		rc = check_trust( pkc, &trustlevel );

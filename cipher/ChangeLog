@@ -1,3 +1,7 @@
+Wed Apr  8 14:57:11 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* misc.c (check_pubkey_algo2): New.
+
 Tue Apr  7 18:46:49 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* cipher.c: New

@@ -114,18 +114,31 @@ digest_algo_to_string( int algo )
 
 
 
-
-
 int
 check_pubkey_algo( int algo )
 {
+    return check_pubkey_algo2( algo, 0 );
+}
+
+/****************
+ * a usage of 0 means: don't care
+ */
+int
+check_pubkey_algo2( int algo, unsigned usage )
+{
     switch( algo ) {
-      case PUBKEY_ALGO_ELGAMAL:
       case PUBKEY_ALGO_DSA:
+	if( usage & 2 )
+	    return G10ERR_WR_PUBKEY_ALGO;
+	return 0;
+
+      case PUBKEY_ALGO_ELGAMAL:
+	return 0;
+
     #ifdef HAVE_RSA_CIPHER
       case PUBKEY_ALGO_RSA:
-    #endif
 	return 0;
+    #endif
       default:
 	return G10ERR_PUBKEY_ALGO;
     }

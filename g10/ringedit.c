@@ -75,8 +75,6 @@ static int search( PACKET *pkt, KBPOS *kbpos, int secret );
 
 static int keyring_search( PACKET *pkt, KBPOS *kbpos, IOBUF iobuf,
 						const char *fname );
-static int keyring_search2( PUBKEY_FIND_INFO info, KBPOS *kbpos,
-						   const char *fname);
 static int keyring_read( KBPOS *kbpos, KBNODE *ret_root );
 static int keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs );
 static int keyring_copy( KBPOS *kbpos, int mode, KBNODE root );
@@ -162,36 +160,6 @@ get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos )
 	    }
 	}
     return -1; /* not found */
-}
-
-
-/****************
- * Find a keyblock from the informations provided in INFO
- * This can only be used fro public keys
- */
-int
-find_keyblock( PUBKEY_FIND_INFO info, KBPOS *kbpos )
-{
-    int i, rc, last_rc=-1;
-
-    for(i=0; i < MAX_RESOURCES; i++ ) {
-	if( resource_table[i].used && !resource_table[i].secret ) {
-	    /* note: here we have to add different search functions,
-	     * depending on the type of the resource */
-	    rc = keyring_search2( info, kbpos, resource_table[i].fname );
-	    if( !rc ) {
-		kbpos->resno = i;
-		kbpos->fp = NULL;
-		return 0;
-	    }
-	    if( rc != -1 ) {
-		log_error("error searching resource %d: %s\n",
-						  i, g10_errstr(rc));
-		last_rc = rc;
-	    }
-	}
-    }
-    return last_rc;
 }
 
 
@@ -535,9 +503,9 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
 			&& !mpi_cmp( req_skc->d.dsa.x, skc->d.dsa.x )
 		      )
 		   || ( skc->pubkey_algo == PUBKEY_ALGO_RSA
-			&& !mpi_cmp( req_skc->d.rsa.rsa_n, skc->d.rsa.rsa_n )
-			&& !mpi_cmp( req_skc->d.rsa.rsa_e, skc->d.rsa.rsa_e )
-			&& !mpi_cmp( req_skc->d.rsa.rsa_d, skc->d.rsa.rsa_d )
+			&& !mpi_cmp( req_skc->d.rsa.n, skc->d.rsa.n )
+			&& !mpi_cmp( req_skc->d.rsa.e, skc->d.rsa.e )
+			&& !mpi_cmp( req_skc->d.rsa.d, skc->d.rsa.d )
 		      )
 		  )
 	      )
@@ -561,8 +529,8 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
 			&& !mpi_cmp( req_pkc->d.dsa.y, pkc->d.dsa.y )
 		      )
 		   || ( pkc->pubkey_algo == PUBKEY_ALGO_RSA
-			&& !mpi_cmp( req_pkc->d.rsa.rsa_n, pkc->d.rsa.rsa_n )
-			&& !mpi_cmp( req_pkc->d.rsa.rsa_e, pkc->d.rsa.rsa_e )
+			&& !mpi_cmp( req_pkc->d.rsa.n, pkc->d.rsa.n )
+			&& !mpi_cmp( req_pkc->d.rsa.e, pkc->d.rsa.e )
 		      )
 		  )
 	      )
@@ -581,60 +549,6 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
   #if __MINGW32__
     iobuf_close(iobuf);
   #endif
-    return rc;
-}
-
-/****************
- * search one keyring, return 0 if found, -1 if not found or an errorcode.
- * this version uses the finger print and other informations
- */
-static int
-keyring_search2( PUBKEY_FIND_INFO info, KBPOS *kbpos, const char *fname )
-{
-    int rc;
-    PACKET pkt;
-    int save_mode;
-    ulong offset;
-    IOBUF iobuf;
-
-    init_packet(&pkt);
-    save_mode = set_packet_list_mode(0);
-
-    iobuf = iobuf_open( fname );
-    if( !iobuf ) {
-	log_error("can't open '%s'\n", fname );
-	rc = G10ERR_OPEN_FILE;
-	goto leave;
-    }
-
-    while( !(rc=search_packet(iobuf, &pkt, PKT_PUBLIC_CERT, &offset)) ) {
-	PKT_public_cert *pkc = pkt.pkt.public_cert;
-	u32 keyid[2];
-
-	assert( pkt.pkttype == PKT_PUBLIC_CERT );
-	keyid_from_pkc( pkc, keyid );
-	if( keyid[0] == info->keyid[0] && keyid[1] == info->keyid[1]
-	    && pkc->pubkey_algo == info->pubkey_algo ) {
-	    /* fixme: shall we check nbits too? (good for rsa keys) */
-	    /* fixme: check userid???? */
-	    size_t len;
-	    byte *fp = fingerprint_from_pkc( pkc, &len );
-
-	    if( !memcmp( fp, info->fingerprint, len ) ) {
-		m_free(fp);
-		break; /* found */
-	    }
-	    m_free(fp);
-	}
-	free_packet(&pkt);
-    }
-    if( !rc )
-	kbpos->offset = offset;
-
-  leave:
-    iobuf_close(iobuf);
-    free_packet(&pkt);
-    set_packet_list_mode(save_mode);
     return rc;
 }
 

@@ -225,8 +225,7 @@ do_cfb_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
     if( nbytes <= c->unused ) {
 	/* short enough to be encoded by the remaining XOR mask */
 	/* XOR the input with the IV and store input into IV */
-	c->unused -= nbytes;
-	for(ivp=c->iv+STD_BLOCKSIZE - c->unused; nbytes; nbytes-- )
+	for(ivp=c->iv+STD_BLOCKSIZE - c->unused; nbytes; nbytes--, c->unused-- )
 	    *outbuf++ = (*ivp++ ^= *inbuf++);
 	return;
     }
@@ -271,8 +270,7 @@ do_cfb_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
     if( nbytes <= c->unused ) {
 	/* short enough to be encoded by the remaining XOR mask */
 	/* XOR the input with the IV and store input into IV */
-	c->unused -= nbytes;
-	for(ivp=c->iv+STD_BLOCKSIZE - c->unused; nbytes; nbytes-- ) {
+	for(ivp=c->iv+STD_BLOCKSIZE - c->unused; nbytes; nbytes--,c->unused--){
 	    temp = *inbuf++;
 	    *outbuf++ = *ivp ^ temp;
 	    *ivp++ = temp;

@@ -262,7 +262,7 @@ keyid_from_skc( PKT_secret_cert *skc, u32 *keyid )
 	md_close(md);
     }
     else if( skc->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	lowbits = mpi_get_keyid( skc->d.rsa.rsa_n, keyid );
+	lowbits = mpi_get_keyid( skc->d.rsa.n, keyid );
     }
     else {
 	keyid[0] = keyid[1] = lowbits = 0;
@@ -311,7 +311,7 @@ keyid_from_pkc( PKT_public_cert *pkc, u32 *keyid )
 	md_close(md);
     }
     else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	lowbits = mpi_get_keyid( pkc->d.rsa.rsa_n, keyid );
+	lowbits = mpi_get_keyid( pkc->d.rsa.n, keyid );
     }
     else {
 	keyid[0] = keyid[1] = lowbits = 0;
@@ -344,7 +344,7 @@ nbits_from_pkc( PKT_public_cert *pkc )
 	return mpi_get_nbits( pkc->d.dsa.p );
     }
     else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	return mpi_get_nbits( pkc->d.rsa.rsa_n );
+	return mpi_get_nbits( pkc->d.rsa.n );
     }
     else
 	return 0;
@@ -363,7 +363,7 @@ nbits_from_skc( PKT_secret_cert *skc )
 	return mpi_get_nbits( skc->d.dsa.p );
     }
     else if( skc->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	return mpi_get_nbits( skc->d.rsa.rsa_n );
+	return mpi_get_nbits( skc->d.rsa.n );
     }
     else
 	return 0;
@@ -442,8 +442,8 @@ fingerprint_from_skc( PKT_secret_cert *skc, size_t *ret_len )
 	pkc.d.dsa.y = skc->d.dsa.y;
     }
     else if( pkc.pubkey_algo == PUBKEY_ALGO_RSA ) {
-	pkc.d.rsa.rsa_n = skc->d.rsa.rsa_n;
-	pkc.d.rsa.rsa_e = skc->d.rsa.rsa_e;
+	pkc.d.rsa.n = skc->d.rsa.n;
+	pkc.d.rsa.e = skc->d.rsa.e;
     }
     p = fingerprint_from_pkc( &pkc, ret_len );
     memset(&pkc, 0, sizeof pkc); /* not really needed */
@@ -489,10 +489,10 @@ fingerprint_from_pkc( PKT_public_cert *pkc, size_t *ret_len )
 	MD_HANDLE md;
 
 	md = md_open( DIGEST_ALGO_MD5, 0);
-	p = buf = mpi_get_buffer( pkc->d.rsa.rsa_n, &n, NULL );
+	p = buf = mpi_get_buffer( pkc->d.rsa.n, &n, NULL );
 	md_write( md, p, n );
 	m_free(buf);
-	p = buf = mpi_get_buffer( pkc->d.rsa.rsa_e, &n, NULL );
+	p = buf = mpi_get_buffer( pkc->d.rsa.e, &n, NULL );
 	md_write( md, p, n );
 	m_free(buf);
 	md_final(md);

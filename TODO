@@ -49,12 +49,7 @@
 
     * fix the problems with "\v" in gettext
 
-    * calculation of cechksums for secret keys is wrong. We used a
-      the complete chunk length instead of the real number of bits.
-      The problme ist that it is how to stay compatible to old
-      keys? - Do wee need a kludge to calculate both versions of
-      checksums???? (keygen.c, seckey-cert.c)
-
+    * replace getkey.c#enum_secret_keys
 
 
 

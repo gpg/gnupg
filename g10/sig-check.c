@@ -63,13 +63,14 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
     MPI result = NULL;
     int rc=0;
 
+    if( pkc->version == 4 && pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
+	log_info("WARNING: This is probably a PGP generated "
+		 "ElGamal key which is NOT secure for signatures!\n");
 
     if( pkc->timestamp > sig->timestamp )
 	return G10ERR_TIME_CONFLICT; /* pubkey newer that signature */
 
     if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
-	ELG_public_key pkey;
-
 	if( (rc=check_digest_algo(sig->digest_algo)) )
 	    goto leave;
 	/* make sure the digest algo is enabled (in case of a detached
@@ -85,15 +86,10 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 	}
 	md_final( digest );
 	result = encode_md_value( digest, mpi_get_nbits(pkc->d.elg.p));
-	pkey.p = pkc->d.elg.p;
-	pkey.g = pkc->d.elg.g;
-	pkey.y = pkc->d.elg.y;
-	if( !elg_verify( sig->d.elg.a, sig->d.elg.b, result, &pkey ) )
+	if( !elg_verify( sig->d.elg.a, sig->d.elg.b, result, &pkc->d.elg ) )
 	    rc = G10ERR_BAD_SIGN;
     }
     else if( pkc->pubkey_algo == PUBKEY_ALGO_DSA ) {
-	DSA_public_key pkey;
-
 	if( (rc=check_digest_algo(sig->digest_algo)) )
 	    goto leave;
 	/* make sure the digest algo is enabled (in case of a detached
@@ -135,27 +131,22 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 	md_final( digest );
 	result = mpi_alloc( (md_digest_length(sig->digest_algo)
 			     +BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
-	mpi_set_buffer( result, md_read(digest, DIGEST_ALGO_SHA1),
+	mpi_set_buffer( result, md_read(digest, sig->digest_algo),
 				md_digest_length(sig->digest_algo), 0 );
-	pkey.p = pkc->d.dsa.p;
-	pkey.q = pkc->d.dsa.q;
-	pkey.g = pkc->d.dsa.g;
-	pkey.y = pkc->d.dsa.y;
-	if( !dsa_verify( sig->d.dsa.r, sig->d.dsa.s, result, &pkey ) )
+	if( DBG_CIPHER )
+	    log_mpidump("calc sig frame: ", result);
+	if( !dsa_verify( sig->d.dsa.r, sig->d.dsa.s, result, &pkc->d.dsa ) )
 	    rc = G10ERR_BAD_SIGN;
     }
  #ifdef HAVE_RSA_CIPHER
     else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	int i, j, c, old_enc;
 	byte *dp;
-	RSA_public_key pkey;
 	const byte *asn;
 	size_t mdlen, asnlen;
 
 	result = mpi_alloc(40);
-	pkey.n = pkc->d.rsa.rsa_n;
-	pkey.e = pkc->d.rsa.rsa_e;
-	rsa_public( result, sig->d.rsa.rsa_integer, &pkey );
+	rsa_public( result, sig->d.rsa.rsa_integer, &pkc->d.rsa );
 
 	old_enc = 0;
 	for(i=j=0; (c=mpi_getbyte(result, i)) != -1; i++ ) {
@@ -204,8 +195,8 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 	    rc = G10ERR_BAD_PUBKEY;
 	    goto leave;
 	}
-	if( mpi_getbyte(result, mdlen-1) != sig->d.rsa.digest_start[0]
-	    || mpi_getbyte(result, mdlen-2) != sig->d.rsa.digest_start[1] ) {
+	if( mpi_getbyte(result, mdlen-1) != sig->digest_start[0]
+	    || mpi_getbyte(result, mdlen-2) != sig->digest_start[1] ) {
 	    /* Wrong key used to check the signature */
 	    rc = G10ERR_BAD_PUBKEY;
 	    goto leave;
