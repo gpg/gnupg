@@ -37,6 +37,7 @@ struct {
   const char *homedir; /* configuration directory name */
   const char *pinentry_program; 
   int no_grab;      /* don't let the pinentry grab the keyboard */
+  unsigned long def_cache_ttl;
 
 } opt;
 

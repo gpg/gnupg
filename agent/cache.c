@@ -125,7 +125,7 @@ housekeeping (void)
           if (!rprev)
             thecache = r2;
           else
-            rprev = r2;
+            rprev->next = r2;
           r = r2;
         }
       else
@@ -152,7 +152,9 @@ agent_put_cache (const char *key, const char *data, int ttl)
   housekeeping ();
 
   if (ttl < 1)
-    ttl = 60*5; /* default is 5 minutes */
+    ttl = opt.def_cache_ttl;
+  if (!ttl)
+    return 0;
 
   for (r=thecache; r; r = r->next)
     {

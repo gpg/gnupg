@@ -69,6 +69,7 @@ enum cmd_and_opt_values
   oBatch,
   
   oPinentryProgram,
+  oDefCacheTTL,
 
 aTest };
 
@@ -91,8 +92,9 @@ static ARGPARSE_OPTS opts[] = {
   { oNoGrab, "no-grab"     ,0, N_("do not grab keyboard and mouse")},
   { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
 
-  { oPinentryProgram, "pinentry-program", 2 , "Path of PIN Entry program" },
-
+  { oPinentryProgram, "pinentry-program", 2 , "path of PIN Entry program" },
+  { oDefCacheTTL, "default-cache-ttl", 4,
+                                 "|N|expire cached PINs after N seconds"},
 
   {0}
 };
@@ -268,6 +270,8 @@ main (int argc, char **argv )
       opt.homedir = "~/.gnupg-test";
 #endif
     }
+  opt.def_cache_ttl = 10*60; /* default to 10 minutes */
+
 
   /* check whether we have a config file on the commandline */
   orig_argc = argc;
@@ -368,6 +372,7 @@ main (int argc, char **argv )
         case oServer: pipe_server = 1; break;
 
         case oPinentryProgram: opt.pinentry_program = pargs.r.ret_str; break;
+        case oDefCacheTTL: opt.def_cache_ttl = pargs.r.ret_ulong; break;
 
         default : pargs.err = configfp? 1:2; break;
 	}
@@ -457,7 +462,7 @@ main (int argc, char **argv )
         }
       if (strlen (socket_name)+1 >= sizeof serv_addr.sun_path ) 
         {
-          log_error ("name of socket to long\n");
+          log_error ("name of socket too long\n");
           exit (1);
         }
    

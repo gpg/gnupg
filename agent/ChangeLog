@@ -1,5 +1,12 @@
+2002-02-06  Werner Koch  <wk@gnupg.org>
+
+	* cache.c (housekeeping): Fixed linking in the remove case.
+
 2002-02-01  Werner Koch  <wk@gnupg.org>
 
+	* gpg-agent.c: New option --default-cache-ttl.
+	* cache.c (agent_put_cache): Use it.
+	
 	* cache.c: Add a few debug outputs.
 
 	* protect.c (agent_private_key_type): New.
