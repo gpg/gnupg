@@ -115,7 +115,7 @@ gpgsm_dump_cert (const char *text, KsbaCert cert)
       ksba_free (dn);
       log_printf ("\n");
 
-      log_debug ("  hash algo: %d\n", ksba_cert_get_digest_algo (cert));
+      log_debug ("  hash algo: %s\n", ksba_cert_get_digest_algo (cert));
 
       p = gpgsm_get_fingerprint_string (cert, 0);
       log_debug ("  SHA1 Fingerprint: %s\n", p);

@@ -103,13 +103,19 @@ do_encode_md (GCRY_MD_HD md, int algo,  unsigned int nbits,
 int
 gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
 {
+  const char *algoid;
   GCRY_MD_HD md;
   int rc, algo;
   GCRY_MPI frame;
   char *p;
   GCRY_SEXP s_sig, s_hash, s_pkey;
 
-  algo = ksba_cert_get_digest_algo (cert);
+  algo = gcry_md_map_name ( (algoid=ksba_cert_get_digest_algo (cert)));
+  if (!algo)
+    {
+      log_error ("unknown hash algorithm `%s'\n", algoid? algoid:"?");
+      return GPGSM_General_Error;
+    }
   md = gcry_md_open (algo, 0);
   if (!md)
     {

@@ -40,7 +40,7 @@ gpgsm_SOURCES = \
 
 gpgsm_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a ../kbx/libkeybox.a \
               ../../libksba/src/.libs/libksba.a \
-              ../../libgcrypt/src/.libs/libgcrypt.so.1
+              ../../libgcrypt/src/.libs/libgcrypt.so.1 
 
 
 errors.c : gpgsm.h mkerrors

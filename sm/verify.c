@@ -127,12 +127,12 @@ print_integer (unsigned char *p)
   unsigned long len;
 
   if (!p)
-    printf ("none");
+    log_printf ("none");
   else
     {
       len = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
       for (p+=4; len; len--, p++)
-        printf ("%02X", *p);
+        log_printf ("%02X", *p);
     }
 }
 
@@ -180,6 +180,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
   GCRY_MD_HD data_md = NULL;
   struct reader_cb_parm_s rparm;
   int signer;
+  const char *algoid;
   int algo;
   int is_detached;
 
@@ -270,9 +271,13 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
       if (stopreason == KSBA_SR_NEED_HASH
           || stopreason == KSBA_SR_BEGIN_DATA)
         { /* We are now able to enable the hash algorithms */
-          for (i=0; (algo = ksba_cms_get_digest_algo_list (cms, i)) >= 0; i++)
+          for (i=0; (algoid=ksba_cms_get_digest_algo_list (cms, i)); i++)
             {
-              if (algo)
+              algo = gcry_md_map_name (algoid);
+              if (!algo)
+                log_error ("unknown hash algorithm `%s'\n",
+                           algoid? algoid:"?");
+              else
                 gcry_md_enable (data_md, algo);
             }
           if (is_detached)
@@ -319,18 +324,19 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
       err = ksba_cms_get_issuer_serial (cms, signer, &issuer, &serial);
       if (err)
         break;
-      printf ("signer %d - issuer: `%s'\n", signer, issuer? issuer:"[NONE]");
-      printf ("signer %d - serial: ", signer);
+      log_debug ("signer %d - issuer: `%s'\n", signer, issuer? issuer:"[NONE]");
+      log_debug ("signer %d - serial: ", signer);
       print_integer (serial);
-      putchar ('\n');
+      log_printf ("\n");
 
       err = ksba_cms_get_message_digest (cms, signer,
                                          &msgdigest, &msgdigestlen);
       if (err)
         break;
 
-      algo = ksba_cms_get_digest_algo (cms, signer);
-      printf ("signer %d - digest algo: %d\n", signer, algo);
+      algoid = ksba_cms_get_digest_algo (cms, signer);
+      algo = gcry_md_map_name (algoid);
+      log_debug ("signer %d - digest algo: %d\n", signer, algo);
       if ( !gcry_md_info (data_md, GCRYCTL_IS_ALGO_ENABLED, &algo, NULL) )
         {
           log_debug ("digest algo %d has not been enabled\n", algo);
@@ -338,8 +344,8 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
         }
 
       sigval = ksba_cms_get_sig_val (cms, signer);
-      printf ("signer %d - signature: `%s'\n",
-              signer, sigval? sigval: "[ERROR]");
+      log_debug ("signer %d - signature: `%s'\n",
+                 signer, sigval? sigval: "[ERROR]");
 
       /* Find the certificate of the signer */
       keydb_search_reset (kh);
