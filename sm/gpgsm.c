@@ -1339,7 +1339,7 @@ emergency_cleanup (void)
 void
 gpgsm_exit (int rc)
 {
-  gcry_control (GCRYCTL_UPDATE_RANDOM_SEED_FILE);update_random_seed_file();
+  gcry_control (GCRYCTL_UPDATE_RANDOM_SEED_FILE);
   if (opt.debug & DBG_MEMSTAT_VALUE)
     {
       gcry_control( GCRYCTL_DUMP_MEMORY_STATS );
