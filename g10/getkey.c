@@ -419,7 +419,10 @@ get_pubkey_direct (PKT_public_key *pk, u32 *keyid)
            ||  keyblock->pkt->pkttype == PKT_PUBLIC_SUBKEY );
   copy_public_key (pk, keyblock->pkt->pkt.public_key );
   release_kbnode (keyblock);
-  cache_public_key (pk);
+
+  /* Not caching key here since it won't have all of the fields
+     properly set. */
+
   return 0;
 }
 

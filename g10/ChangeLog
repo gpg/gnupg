@@ -1,3 +1,12 @@
+2002-10-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (get_pubkey_direct): Don't cache keys retrieved via
+	this function as they may not have all their fields filled in.
+
+	* sig-check.c (signature_check2): Use new is_primary flag to check
+	rather than comparing main_keyid with keyid as this still works in
+	the case of a not fully filled in pk.
+
 2002-10-04  Werner Koch  <wk@gnupg.org>
 
 	* passphrase.c (agent_get_passphrase): Fixed signed/unsigned char
@@ -8,7 +17,7 @@
 	* keylist.c (print_capabilities): Secret-parts-missing keys should
 	show that fact in the capabilities.
 
-	* packet.h, parse_packet (parse_key): Add is_primary flag for
+	* packet.h, parse_packet.c (parse_key): Add is_primary flag for
 	public keys (it already exists for secret keys).
 
 	* keylist.c (print_capabilities): Only primary signing keys can
