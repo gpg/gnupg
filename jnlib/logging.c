@@ -1,6 +1,6 @@
 /* logging.c -	useful logging functions
  * Copyright (C) 1998, 1999, 2000, 2001, 2003,
- *               2004 Free Software Foundation, Inc.
+ *               2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -19,11 +19,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-
-/* This file should replace logger.c in the future - for now it is not
- * used by GnuPG but by GPA.
- * It is a quite simple implemenation but sufficient for most purposes.
- */
 
 #include <config.h>
 #include <stdlib.h>
@@ -64,23 +59,6 @@ static int force_prefixes;
 static int missing_lf;
 static int errorcount;
 
-#if 0
-static void
-write2stderr( const char *s )
-{
-    write( 2, s, strlen(s) );
-}
-
-
-static void
-do_die(int rc, const char *text )
-{
-    write2stderr("\nFatal error: ");
-    write2stderr(text);
-    write2stderr("\n");
-    abort();
-}
-#endif
 
 int
 log_get_errorcount (int clear)
@@ -150,7 +128,8 @@ fun_writer (void *cookie_arg, const char *buffer, size_t size)
       cookie->fd = socket (PF_LOCAL, SOCK_STREAM, 0);
       if (cookie->fd == -1)
         {
-          if (!cookie->quiet && !running_detached)
+          if (!cookie->quiet && !running_detached
+              && isatty (fileno (stderr)))
             fprintf (stderr, "failed to create socket for logging: %s\n",
                      strerror(errno));
         }
@@ -168,7 +147,8 @@ fun_writer (void *cookie_arg, const char *buffer, size_t size)
       
           if (connect (cookie->fd, (struct sockaddr *) &addr, addrlen) == -1)
             {
-              if (!cookie->quiet && !running_detached)
+              if (!cookie->quiet && !running_detached
+                  && isatty (fileno (stderr)))
                 fprintf (stderr, "can't connect to `%s': %s\n",
                          cookie->name, strerror(errno));
               close (cookie->fd);
@@ -180,12 +160,16 @@ fun_writer (void *cookie_arg, const char *buffer, size_t size)
         {
           if (!running_detached)
             {
+              /* Due to all the problems with apps not running
+                 detahced but beeing caled with stderr closed or
+                 used for a different purposes, it does not make
+                 sense to switch to stderr.  We tehrefore disable it. */
               if (!cookie->quiet)
                 {
-                  fputs ("switching logging to stderr\n", stderr);
+                  /* fputs ("switching logging to stderr\n", stderr);*/
                   cookie->quiet = 1;
                 }
-              cookie->fd = fileno (stderr);
+              cookie->fd = -1; /*fileno (stderr);*/
             }
         }
       else /* Connection has been established. */
@@ -199,7 +183,8 @@ fun_writer (void *cookie_arg, const char *buffer, size_t size)
   if (cookie->fd != -1 && !writen (cookie->fd, buffer, size))
     return size; /* Okay. */ 
 
-  if (!running_detached && cookie->fd != -1)
+  if (!running_detached && cookie->fd != -1
+      && isatty (fileno (stderr)))
     {
       if (*cookie->name)
         fprintf (stderr, "error writing to `%s': %s\n",

@@ -1,5 +1,5 @@
 /* app-openpgp.c - The OpenPGP card application.
- *	Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -79,8 +79,13 @@ static struct {
   { 0x00C4, 0, 0x6E, 1, 0, 1, 1, "CHV Status Bytes" },
   { 0x00C5, 0, 0x6E, 1, 0, 0, 0, "Fingerprints" },
   { 0x00C6, 0, 0x6E, 1, 0, 0, 0, "CA Fingerprints" },
+  { 0x00CD, 0, 0x6E, 1, 0, 0, 0, "Generation time" },
   { 0x007A, 1,    0, 1, 0, 0, 0, "Security Support Template" },
   { 0x0093, 0, 0x7A, 1, 1, 0, 0, "Digital Signature Counter" },
+  { 0x0101, 0,    0, 0, 0, 0, 0, "Private DO 1"},
+  { 0x0102, 0,    0, 0, 0, 0, 0, "Private DO 2"},
+  { 0x0103, 0,    0, 0, 0, 0, 0, "Private DO 3"},
+  { 0x0104, 0,    0, 0, 0, 0, 0, "Private DO 4"},
   { 0 }
 };
 
@@ -133,10 +138,12 @@ do_deinit (app_t app)
 
 
 /* Wrapper around iso7816_get_data which first tries to get the data
-   from the cache. */
+   from the cache.  With GET_IMMEDIATE passed as true, the cache is
+   bypassed. */
 static gpg_error_t
 get_cached_data (app_t app, int tag, 
-                 unsigned char **result, size_t *resultlen)
+                 unsigned char **result, size_t *resultlen,
+                 int get_immediate)
 {
   gpg_error_t err;
   int i;
@@ -147,23 +154,25 @@ get_cached_data (app_t app, int tag,
   *result = NULL;
   *resultlen = 0;
 
-  for (c=app->app_local->cache; c; c = c->next)
-    if (c->tag == tag)
-      {
-        if(c->length)
+  if (!get_immediate)
+    {
+      for (c=app->app_local->cache; c; c = c->next)
+        if (c->tag == tag)
           {
-            p = xtrymalloc (c->length);
-            if (!p)
-              return gpg_error (gpg_err_code_from_errno (errno));
-            memcpy (p, c->data, c->length);
-            *result = p;
+            if(c->length)
+              {
+                p = xtrymalloc (c->length);
+                if (!p)
+                  return gpg_error (gpg_err_code_from_errno (errno));
+                memcpy (p, c->data, c->length);
+                *result = p;
+              }
+            
+            *resultlen = c->length;
+            
+            return 0;
           }
-
-        *resultlen = c->length;
-
-        return 0;
-      }
- 
+    }
   
   err = iso7816_get_data (app->slot, tag, &p, &len);
   if (err)
@@ -172,6 +181,9 @@ get_cached_data (app_t app, int tag,
   *resultlen = len;
 
   /* Check whether we should cache this object. */
+  if (get_immediate)
+    return 0;
+
   for (i=0; data_objects[i].tag; i++)
     if (data_objects[i].tag == tag)
       {
@@ -180,8 +192,7 @@ get_cached_data (app_t app, int tag,
         break;
       }
 
-  /* No, cache it. */
-
+  /* Okay, cache it. */
   for (c=app->app_local->cache; c; c = c->next)
     assert (c->tag != tag);
   
@@ -294,7 +305,8 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes)
   if (data_objects[i].tag && data_objects[i].get_from)
     {
       rc = get_cached_data (app, data_objects[i].get_from,
-                            &buffer, &buflen);
+                            &buffer, &buflen,
+                            data_objects[i].get_immediate_in_v11);
       if (!rc)
         {
           const unsigned char *s;
@@ -315,7 +327,8 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes)
 
   if (!value) /* Not in a constructed DO, try simple. */
     {
-      rc = get_cached_data (app, tag, &buffer, &buflen);
+      rc = get_cached_data (app, tag, &buffer, &buflen,
+                            data_objects[i].get_immediate_in_v11);
       if (!rc)
         {
           value = buffer;
@@ -421,7 +434,7 @@ count_bits (const unsigned char *a, size_t len)
    at any time and should be called after changing the login-data DO.
 
    Everything up to a LF is considered a mailbox or account name.  If
-   the first LF is follewed by DC4 (0x14) control sequence are
+   the first LF is followed by DC4 (0x14) control sequence are
    expected up to the next LF.  Control sequences are separated by FS
    (0x28) and consist of key=value pairs.  There is one key defined:
 
@@ -576,6 +589,23 @@ send_fpr_if_not_null (ctrl_t ctrl, const char *keyword,
 }
 
 static void
+send_fprtime_if_not_null (ctrl_t ctrl, const char *keyword,
+                          int number, const unsigned char *stamp)
+{                      
+  char numbuf1[50], numbuf2[50];
+  unsigned long value;
+
+  value = (stamp[0] << 24) | (stamp[1]<<16) | (stamp[2]<<8) | stamp[3];
+  if (!value)
+    return;
+  sprintf (numbuf1, "%d", number);
+  sprintf (numbuf2, "%lu", value);
+  send_status_info (ctrl, keyword,
+                    numbuf1, (size_t)strlen(numbuf1),
+                    numbuf2, (size_t)strlen(numbuf2), NULL, 0);
+}
+
+static void
 send_key_data (ctrl_t ctrl, const char *name, 
                const unsigned char *a, size_t alen)
 {
@@ -607,12 +637,17 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     { "DISP-SEX",     0x5F35 },
     { "PUBKEY-URL",   0x5F50 },
     { "KEY-FPR",      0x00C5, 3 },
+    { "KEY-TIME",     0x00CD, 4 },
     { "CA-FPR",       0x00C6, 3 },
-    { "CHV-STATUS",   0x00C4, 1 },
+    { "CHV-STATUS",   0x00C4, 1 }, 
     { "SIG-COUNTER",  0x0093, 2 },
     { "SERIALNO",     0x004F, -1 },
     { "AID",          0x004F },
     { "EXTCAP",       0x0000, -2 },
+    { "PRIVATE-DO-1", 0x0101 },
+    { "PRIVATE-DO-2", 0x0102 },
+    { "PRIVATE-DO-3", 0x0103 },
+    { "PRIVATE-DO-4", 0x0104 },
     { NULL, 0 }
   };
   int idx, i;
@@ -686,6 +721,12 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
             for (i=0; i < 3; i++)
               send_fpr_if_not_null (ctrl, table[idx].name, i+1, value+i*20);
         }
+      else if (table[idx].special == 4)
+        {
+          if (valuelen >= 12)
+            for (i=0; i < 3; i++)
+              send_fprtime_if_not_null (ctrl, table[idx].name, i+1, value+i*4);
+        }
       else
         send_status_info (ctrl, table[idx].name, value, valuelen, NULL, 0);
 
@@ -705,9 +746,20 @@ do_learn_status (app_t app, ctrl_t ctrl)
   do_getattr (app, ctrl, "PUBKEY-URL");
   do_getattr (app, ctrl, "LOGIN-DATA");
   do_getattr (app, ctrl, "KEY-FPR");
+  if (app->card_version > 0x0100)
+    do_getattr (app, ctrl, "KEY-TIME");
   do_getattr (app, ctrl, "CA-FPR");
   do_getattr (app, ctrl, "CHV-STATUS");
   do_getattr (app, ctrl, "SIG-COUNTER");
+  if (app->app_local->extcap.private_dos)
+    {
+      do_getattr (app, ctrl, "PRIVATE-DO-1");
+      do_getattr (app, ctrl, "PRIVATE-DO-2");
+      if (app->did_chv2)
+        do_getattr (app, ctrl, "PRIVATE-DO-3");
+      if (app->did_chv3)
+        do_getattr (app, ctrl, "PRIVATE-DO-4");
+    }
 
   return 0;
 }
@@ -792,8 +844,6 @@ verify_chv3 (app_t app,
       void *relptr;
       unsigned char *value;
       size_t valuelen;
-      int reread_chv_status;
-      
 
       relptr = get_one_do (app, 0x00C4, &value, &valuelen);
       if (!relptr || valuelen < 7)
@@ -809,13 +859,14 @@ verify_chv3 (app_t app,
           return gpg_error (GPG_ERR_BAD_PIN);
         }
 
-      reread_chv_status = (value[6] < 3);
-
       log_info(_("%d Admin PIN attempts remaining before card"
                  " is permanently locked\n"), value[6]);
       xfree (relptr);
 
-      rc = pincb (pincb_arg, _("Admin PIN"), &pinvalue); 
+      /* TRANSLATORS: Do not translate the "|A|" prefix but
+         keep it at the start of the string.  We need this elsewhere
+         to get some infos on the string. */
+      rc = pincb (pincb_arg, _("|A|Admin PIN"), &pinvalue); 
       if (rc)
         {
           log_info (_("PIN callback returned error: %s\n"), gpg_strerror (rc));
@@ -839,13 +890,6 @@ verify_chv3 (app_t app,
           return rc;
         }
       app->did_chv3 = 1;
-      /* If the PIN has been entered wrongly before, we need to flush
-         the cached value so that the next read correctly reflects the
-         resetted retry counter.  Note that version 1.1 of the specs
-         allow direct reading of that DO, so that we could actually
-         flush it in all cases. */
-      if (reread_chv_status)
-        flush_cache_item (app, 0x00C4);
     }
   return rc;
 }
@@ -864,17 +908,22 @@ do_setattr (app_t app, const char *name,
   static struct {
     const char *name;
     int tag;
+    int need_chv;
     int special;
   } table[] = {
-    { "DISP-NAME",    0x005B },
-    { "LOGIN-DATA",   0x005E, 2 },
-    { "DISP-LANG",    0x5F2D },
-    { "DISP-SEX",     0x5F35 },
-    { "PUBKEY-URL",   0x5F50 },
-    { "CHV-STATUS-1", 0x00C4, 1 },
-    { "CA-FPR-1",     0x00CA },
-    { "CA-FPR-2",     0x00CB },
-    { "CA-FPR-3",     0x00CC },
+    { "DISP-NAME",    0x005B, 3 },
+    { "LOGIN-DATA",   0x005E, 3, 2 },
+    { "DISP-LANG",    0x5F2D, 3 },
+    { "DISP-SEX",     0x5F35, 3 },
+    { "PUBKEY-URL",   0x5F50, 3 },
+    { "CHV-STATUS-1", 0x00C4, 3, 1 },
+    { "CA-FPR-1",     0x00CA, 3 },
+    { "CA-FPR-2",     0x00CB, 3 },
+    { "CA-FPR-3",     0x00CC, 3 },
+    { "PRIVATE-DO-1", 0x0101, 2 },
+    { "PRIVATE-DO-2", 0x0102, 3 },
+    { "PRIVATE-DO-3", 0x0103, 2 },
+    { "PRIVATE-DO-4", 0x0104, 3 },
     { NULL, 0 }
   };
 
@@ -884,7 +933,17 @@ do_setattr (app_t app, const char *name,
   if (!table[idx].name)
     return gpg_error (GPG_ERR_INV_NAME); 
 
-  rc = verify_chv3 (app, pincb, pincb_arg);
+  switch (table[idx].need_chv)
+    {
+    case 2:
+      rc = verify_chv2 (app, pincb, pincb_arg);
+      break;
+    case 3:
+      rc = verify_chv3 (app, pincb, pincb_arg);
+      break;
+    default:
+      rc = 0;
+    }
   if (rc)
     return rc;
 
@@ -953,10 +1012,14 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr, int reset_mode,
   else
     app->did_chv1 = app->did_chv2 = 0;
 
-  rc = pincb (pincb_arg, chvno == 3? "New Admin PIN" : "New PIN", &pinvalue); 
+  /* Note to translators: Do not translate the "|*|" prefixes but
+     keep it at the start of the string.  We need this elsewhere
+     to get some infos on the string. */
+  rc = pincb (pincb_arg, chvno == 3? _("|AN|New Admin PIN") : _("|N|New PIN"), 
+              &pinvalue); 
   if (rc)
     {
-      log_error ("error getting new PIN: %s\n", gpg_strerror (rc));
+      log_error (_("error getting new PIN: %s\n"), gpg_strerror (rc));
       goto leave;
     }
 
@@ -1022,14 +1085,14 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   rc = iso7816_get_data (app->slot, 0x006E, &buffer, &buflen);
   if (rc)
     {
-      log_error ("error reading application data\n");
+      log_error (_("error reading application data\n"));
       return gpg_error (GPG_ERR_GENERAL);
     }
   fpr = find_tlv (buffer, buflen, 0x00C5, &n);
   if (!fpr || n != 60)
     {
       rc = gpg_error (GPG_ERR_GENERAL);
-      log_error ("error reading fingerprint DO\n");
+      log_error (_("error reading fingerprint DO\n"));
       goto leave;
     }
   fpr += 20*keyno;
@@ -1038,13 +1101,13 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   if (i!=20 && !force)
     {
       rc = gpg_error (GPG_ERR_EEXIST);
-      log_error ("key already exists\n");
+      log_error (_("key already exists\n"));
       goto leave;
     }
   else if (i!=20)
-    log_info ("existing key will be replaced\n");
+    log_info (_("existing key will be replaced\n"));
   else
-    log_info ("generating new key\n");
+    log_info (_("generating new key\n"));
 
 
   rc = verify_chv3 (app, pincb, pincb_arg);
@@ -1054,7 +1117,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   xfree (buffer); buffer = NULL;
 
 #if 1
-  log_info ("please wait while key is being generated ...\n");
+  log_info (_("please wait while key is being generated ...\n"));
   start_at = time (NULL);
   rc = iso7816_generate_keypair 
 #else
@@ -1069,16 +1132,16 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   if (rc)
     {
       rc = gpg_error (GPG_ERR_CARD);
-      log_error ("generating key failed\n");
+      log_error (_("generating key failed\n"));
       goto leave;
     }
-  log_info ("key generation completed (%d seconds)\n",
+  log_info (_("key generation completed (%d seconds)\n"),
             (int)(time (NULL) - start_at));
   keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen);
   if (!keydata)
     {
       rc = gpg_error (GPG_ERR_CARD);
-      log_error ("response does not contain the public key data\n");
+      log_error (_("response does not contain the public key data\n"));
       goto leave;
     }
  
@@ -1086,7 +1149,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   if (!m)
     {
       rc = gpg_error (GPG_ERR_CARD);
-      log_error ("response does not contain the RSA modulus\n");
+      log_error (_("response does not contain the RSA modulus\n"));
       goto leave;
     }
 /*    log_printhex ("RSA n:", m, mlen); */
@@ -1096,7 +1159,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   if (!e)
     {
       rc = gpg_error (GPG_ERR_CARD);
-      log_error ("response does not contain the RSA public exponent\n");
+      log_error (_("response does not contain the RSA public exponent\n"));
       goto leave;
     }
 /*    log_printhex ("RSA e:", e, elen); */
@@ -1129,7 +1192,7 @@ convert_sig_counter_value (const unsigned char *value, size_t valuelen)
     ul = (value[0] << 16) | (value[1] << 8) | value[2];
   else
     {
-      log_error ("invalid structure of OpenPGP card (DO 0x93)\n");
+      log_error (_("invalid structure of OpenPGP card (DO 0x93)\n"));
       ul = 0;
     }
   return ul;
@@ -1161,17 +1224,17 @@ compare_fingerprint (app_t app, int keyno, unsigned char *sha1fpr)
   
   assert (keyno >= 1 && keyno <= 3);
 
-  rc = get_cached_data (app, 0x006E, &buffer, &buflen);
+  rc = get_cached_data (app, 0x006E, &buffer, &buflen, 0);
   if (rc)
     {
-      log_error ("error reading application data\n");
+      log_error (_("error reading application data\n"));
       return gpg_error (GPG_ERR_GENERAL);
     }
   fpr = find_tlv (buffer, buflen, 0x00C5, &n);
   if (!fpr || n != 60)
     {
       xfree (buffer);
-      log_error ("error reading fingerprint DO\n");
+      log_error (_("error reading fingerprint DO\n"));
       return gpg_error (GPG_ERR_GENERAL);
     }
   fpr += (keyno-1)*20;
@@ -1290,7 +1353,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   memcpy (data+15, indata, indatalen);
 
   sigcount = get_sig_counter (app);
-  log_info ("signatures created so far: %lu\n", sigcount);
+  log_info (_("signatures created so far: %lu\n"), sigcount);
 
   if (!app->did_chv1 || app->force_chv1 ) 
     {

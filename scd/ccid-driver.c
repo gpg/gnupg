@@ -403,7 +403,7 @@ parse_ccid_descriptor (ccid_driver_t handle,
   if (buf[49] == 0xff)
     DEBUGOUT_CONT ("echo\n");
   else
-    DEBUGOUT_1 ("  %02X\n", buf[48]);
+    DEBUGOUT_CONT_1 ("  %02X\n", buf[48]);
 
   DEBUGOUT (  "  wlcdLayout           ");
   if (!buf[50] && !buf[51])
@@ -450,7 +450,7 @@ parse_ccid_descriptor (ccid_driver_t handle,
   if (handle->id_vendor == VENDOR_SCM
       /* FIXME: check whether it is the same
                 firmware version for all drivers.  */
-      && handle->bcd_device < 0x0513
+      && handle->bcd_device < 0x0519
       && handle->max_ifsd > 48)
     {
       DEBUGOUT ("enabling workaround for buggy SCM readers\n");

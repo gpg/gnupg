@@ -889,7 +889,7 @@ if test "$use_regex" = yes ; then
   AC_MSG_CHECKING([whether the included regex lib is requested])
   AC_ARG_WITH(included-regex,
       [  --with-included-regex   use the included GNU regex library],
-      [gnupg_cv_included_regex=yes],[gnupg_cv_included_regex=no])
+      [gnupg_cv_included_regex="$withval"],[gnupg_cv_included_regex=no])
   AC_MSG_RESULT($gnupg_cv_included_regex)
 
   if test $gnupg_cv_included_regex = no ; then
@@ -1060,7 +1060,7 @@ if test "$have_gpg_error" = "no"; then
 ***  
 *** You need libgpg-error to build this program.
 **  This library is for example available at
-***   ftp://ftp.gnupg.org/gcrypt/alpha/libgpg-error
+***   ftp://ftp.gnupg.org/gcrypt/libgpg-error
 *** (at least version $NEED_GPG_ERROR_VERSION is required.)
 ***]])
 fi
@@ -1070,7 +1070,7 @@ if test "$have_libgcrypt" = "no"; then
 ***  
 *** You need libgcrypt to build this program.
 **  This library is for example available at
-***   ftp://ftp.gnupg.org/gcrypt/alpha/libgcrypt/
+***   ftp://ftp.gnupg.org/gcrypt/libgcrypt/
 *** (at least version $NEED_LIBGCRYPT_VERSION using API $NEED_LIBGCRYPT_API) is required.)
 ***]])
 fi
