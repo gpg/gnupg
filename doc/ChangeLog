@@ -1,3 +1,7 @@
+2002-04-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* samplekeys.asc: Added 0x5B0358A2
+
 2002-04-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Add "%t" flag for photo IDs, a note about primary
