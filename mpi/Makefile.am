@@ -34,7 +34,8 @@ libmpi_a_SOURCES = longlong.h	  \
 	      mpih-sub.c     \
 	      mpih-div.c     \
 	      mpih-mul.c     \
-	      mpiutil.c
+	      mpiutil.c      \
+	      g10m.c
 
 # Note this objects are actually links, the sourcefiles are
 # distributed by special code in dist-hook

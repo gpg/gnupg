@@ -1,4 +1,4 @@
-/* elgamal.h
+/* g10c.c  -  Wrapper for cipher functions
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
@@ -17,18 +17,27 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef G10_ELGAMAL_H
-#define G10_ELGAMAL_H
 
-int elg_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors );
-int elg_check_secret_key( int algo, MPI *skey );
-int elg_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey );
-int elg_decrypt( int algo, MPI *result, MPI *data, MPI *skey );
-int elg_sign( int algo, MPI *resarr, MPI data, MPI *skey );
-int elg_verify( int algo, MPI hash, MPI *data, MPI *pkey );
-unsigned elg_get_nbits( int algo, MPI *pkey );
-const char *elg_get_info( int algo, int *npkey, int *nskey,
-				    int *nenc, int *nsig, int *usage );
+#include <config.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "mpi.h"
+#include "random.h"
+#include "cipher.h"
+#define _g10lib_INTERNAL 1
+#include "g10lib.h"
 
 
-#endif /*G10_ELGAMAL_H*/
+MPI
+g10c_generate_secret_prime( unsigned nbits )
+{
+    return generate_secret_prime( nbits );
+}
+
+byte
+g10c_get_random_byte( int level )
+{
+    return get_random_byte( level );
+}
+
+

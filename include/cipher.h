@@ -25,7 +25,7 @@
 #ifndef G10_CIPHER_H
 #define G10_CIPHER_H
 
-#define DBG_CIPHER cipher_debug_mode
+#define DBG_CIPHER g10c_debug_mode
 
 #include "mpi.h"
 #include "../cipher/md.h"
@@ -84,9 +84,8 @@ struct cipher_handle_s { char does_not_matter[1]; };
 #define CIPHER_MODE_DUMMY     5  /* used with algo DUMMY for no encryption */
 
 
-
-
-int cipher_debug_mode;
+int g10c_debug_mode;
+int g10_opt_verbose;
 
 /*-- dynload.c --*/
 void register_cipher_extension( const char *fname );
@@ -110,26 +109,21 @@ void cipher_sync( CIPHER_HANDLE c );
 #define PUBKEY_MAX_NSIG   2
 #define PUBKEY_MAX_NENC   2
 
+int string_to_pubkey_algo( const char *string );
+const char * pubkey_algo_to_string( int algo );
+int check_pubkey_algo( int algo );
+int check_pubkey_algo2( int algo, unsigned usage );
 int pubkey_get_npkey( int algo );
 int pubkey_get_nskey( int algo );
 int pubkey_get_nsig( int algo );
 int pubkey_get_nenc( int algo );
 unsigned pubkey_nbits( int algo, MPI *pkey );
+int pubkey_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors );
 int pubkey_check_secret_key( int algo, MPI *skey );
 int pubkey_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey );
 int pubkey_decrypt( int algo, MPI *result, MPI *data, MPI *skey );
 int pubkey_sign( int algo, MPI *resarr, MPI hash, MPI *skey );
 int pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey );
-
-
-/*-- misc.c --*/
-int string_to_pubkey_algo( const char *string );
-int string_to_digest_algo( const char *string );
-const char * pubkey_algo_to_string( int algo );
-const char * digest_algo_to_string( int algo );
-int check_pubkey_algo( int algo );
-int check_pubkey_algo2( int algo, unsigned usage );
-int check_digest_algo( int algo );
 
 /*-- smallprime.c --*/
 extern ushort small_prime_numbers[];

@@ -1,7 +1,15 @@
+Sat Jun 13 14:16:57 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* pubkey.c: Major changes to allow extensions. Changed the inteface
+	of all public key ciphers and added the ability to load extensions
+	on demand.
+
+	* misc.c: Removed.
+
 Wed Jun 10 07:52:08 1998  Werner Koch,mobil,,,	(wk@tobold)
 
-	* dynload.c: New
-	* cipher.c: Major changes to allow  extensions.
+	* dynload.c: New.
+	* cipher.c: Major changes to allow extensions.
 
 Mon Jun  8 22:43:00 1998  Werner Koch  (wk@isil.d.shuttle.de)
 

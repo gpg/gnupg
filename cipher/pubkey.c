@@ -30,18 +30,282 @@
 #include "cipher.h"
 #include "dynload.h"
 
+
+#define TABLE_SIZE 20
+
+struct pubkey_table_s {
+    const char *name;
+    int algo;
+    int npkey;
+    int nskey;
+    int nenc;
+    int nsig;
+    int usage;
+    int (*generate)( int algo, unsigned nbits, MPI *skey, MPI **retfactors );
+    int (*check_secret_key)( int algo, MPI *skey );
+    int (*encrypt)( int algo, MPI *resarr, MPI data, MPI *pkey );
+    int (*decrypt)( int algo, MPI *result, MPI *data, MPI *skey );
+    int (*sign)( int algo, MPI *resarr, MPI data, MPI *skey );
+    int (*verify)( int algo, MPI hash, MPI *data, MPI *pkey );
+    unsigned (*get_nbits)( int algo, MPI *pkey );
+};
+
+static struct pubkey_table_s pubkey_table[TABLE_SIZE];
+
+
+
+static int
+dummy_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors )
+{ log_bug("no generate() for %d\n", algo ); return G10ERR_PUBKEY_ALGO; }
+
+static int
+dummy_check_secret_key( int algo, MPI *skey )
+{ log_bug("no check_secret_key() for %d\n", algo ); return G10ERR_PUBKEY_ALGO; }
+
+static int
+dummy_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
+{ log_bug("no encrypt() for %d\n", algo ); return G10ERR_PUBKEY_ALGO; }
+
+static int
+dummy_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
+{ log_bug("no decrypt() for %d\n", algo ); return G10ERR_PUBKEY_ALGO; }
+
+static int
+dummy_sign( int algo, MPI *resarr, MPI data, MPI *skey )
+{ log_bug("no sign() for %d\n", algo ); return G10ERR_PUBKEY_ALGO; }
+
+static int
+dummy_verify( int algo, MPI hash, MPI *data, MPI *pkey )
+{ log_bug("no verify() for %d\n", algo ); return G10ERR_PUBKEY_ALGO; }
+
+static unsigned
+dummy_get_nbits( int algo, MPI *pkey )
+{ log_bug("no get_nbits() for %d\n", algo ); return 0; }
+
+
+/****************
+ * Put the static entries into the table.
+ */
+static void
+setup_pubkey_table()
+{
+
+    static int initialized = 0;
+    int i;
+
+    if( initialized )
+	return;
+
+    i = 0;
+    pubkey_table[i].algo = PUBKEY_ALGO_ELGAMAL;
+    pubkey_table[i].name = elg_get_info( pubkey_table[i].algo,
+					 &pubkey_table[i].npkey,
+					 &pubkey_table[i].nskey,
+					 &pubkey_table[i].nenc,
+					 &pubkey_table[i].nsig,
+					 &pubkey_table[i].usage );
+    pubkey_table[i].generate	     = elg_generate;
+    pubkey_table[i].check_secret_key = elg_check_secret_key;
+    pubkey_table[i].encrypt	     = elg_encrypt;
+    pubkey_table[i].decrypt	     = elg_decrypt;
+    pubkey_table[i].sign	     = elg_sign;
+    pubkey_table[i].verify	     = elg_verify;
+    pubkey_table[i].get_nbits	     = elg_get_nbits;
+    if( !pubkey_table[i].name )
+	BUG();
+    i++;
+    pubkey_table[i].algo = PUBKEY_ALGO_ELGAMAL_E;
+    pubkey_table[i].name = elg_get_info( pubkey_table[i].algo,
+					 &pubkey_table[i].npkey,
+					 &pubkey_table[i].nskey,
+					 &pubkey_table[i].nenc,
+					 &pubkey_table[i].nsig,
+					 &pubkey_table[i].usage );
+    pubkey_table[i].generate	     = elg_generate;
+    pubkey_table[i].check_secret_key = elg_check_secret_key;
+    pubkey_table[i].encrypt	     = elg_encrypt;
+    pubkey_table[i].decrypt	     = elg_decrypt;
+    pubkey_table[i].sign	     = elg_sign;
+    pubkey_table[i].verify	     = elg_verify;
+    pubkey_table[i].get_nbits	     = elg_get_nbits;
+    if( !pubkey_table[i].name )
+	BUG();
+    i++;
+    pubkey_table[i].algo = PUBKEY_ALGO_DSA;
+    pubkey_table[i].name = dsa_get_info( pubkey_table[i].algo,
+					 &pubkey_table[i].npkey,
+					 &pubkey_table[i].nskey,
+					 &pubkey_table[i].nenc,
+					 &pubkey_table[i].nsig,
+					 &pubkey_table[i].usage );
+    pubkey_table[i].generate	     = dsa_generate;
+    pubkey_table[i].check_secret_key = dsa_check_secret_key;
+    pubkey_table[i].encrypt	     = dummy_encrypt;
+    pubkey_table[i].decrypt	     = dummy_decrypt;
+    pubkey_table[i].sign	     = dsa_sign;
+    pubkey_table[i].verify	     = dsa_verify;
+    pubkey_table[i].get_nbits	     = dsa_get_nbits;
+    if( !pubkey_table[i].name )
+	BUG();
+    i++;
+
+    for( ; i < TABLE_SIZE; i++ )
+	pubkey_table[i].name = NULL;
+    initialized = 1;
+}
+
+
+/****************
+ * Try to load all modules and return true if new modules are available
+ */
+static int
+load_pubkey_modules()
+{
+    static int done = 0;
+    void *context = NULL;
+    struct pubkey_table_s *ct;
+    int ct_idx;
+    int i;
+    const char *name;
+    int any = 0;
+
+    if( done )
+	return 0;
+    done = 1;
+    for(ct_idx=0, ct = pubkey_table; ct_idx < TABLE_SIZE; ct_idx++,ct++ ) {
+	if( !ct->name )
+	    break;
+    }
+    if( ct_idx >= TABLE_SIZE-1 )
+	BUG(); /* table already full */
+    /* now load all extensions */
+    while( (name = enum_gnupgext_pubkeys( &context, &ct->algo,
+				&ct->npkey, &ct->nskey, &ct->nenc,
+				&ct->nsig,  &ct->usage,
+				&ct->generate,
+				&ct->check_secret_key,
+				&ct->encrypt,
+				&ct->decrypt,
+				&ct->sign,
+				&ct->verify,
+				&ct->get_nbits )) ) {
+	for(i=0; pubkey_table[i].name; i++ )
+	    if( pubkey_table[i].algo == ct->algo )
+		break;
+	if( pubkey_table[i].name ) {
+	    log_info("skipping pubkey %d: already loaded\n", ct->algo );
+	    continue;
+	}
+
+	if( !ct->generate  )  ct->generate = dummy_generate;
+	if( !ct->check_secret_key )  ct->check_secret_key =
+						    dummy_check_secret_key;
+	if( !ct->encrypt   )  ct->encrypt  = dummy_encrypt;
+	if( !ct->decrypt   )  ct->decrypt  = dummy_decrypt;
+	if( !ct->sign	   )  ct->sign	   = dummy_sign;
+	if( !ct->verify    )  ct->verify   = dummy_verify;
+	if( !ct->get_nbits )  ct->get_nbits= dummy_get_nbits;
+	/* put it into the table */
+	if( g10_opt_verbose > 1 )
+	    log_info("loaded pubkey %d (%s)\n", ct->algo, name);
+	ct->name = name;
+	ct_idx++;
+	ct++;
+	any = 1;
+	/* check whether there are more available table slots */
+	if( ct_idx >= TABLE_SIZE-1 ) {
+	    log_info("pubkey table full; ignoring other extensions\n");
+	    break;
+	}
+    }
+    enum_gnupgext_pubkeys( &context, NULL, NULL, NULL, NULL, NULL, NULL,
+			       NULL, NULL, NULL, NULL, NULL, NULL, NULL );
+    return any;
+}
+
+
+/****************
+ * Map a string to the pubkey algo
+ */
+int
+string_to_pubkey_algo( const char *string )
+{
+    int i;
+    const char *s;
+
+    setup_pubkey_table();
+    do {
+	for(i=0; (s=pubkey_table[i].name); i++ )
+	    if( !stricmp( s, string ) )
+		return pubkey_table[i].algo;
+    } while( load_pubkey_modules() );
+    return 0;
+}
+
+
+/****************
+ * Map a pubkey algo to a string
+ */
+const char *
+pubkey_algo_to_string( int algo )
+{
+    int i;
+
+    setup_pubkey_table();
+    do {
+	for(i=0; pubkey_table[i].name; i++ )
+	    if( pubkey_table[i].algo == algo )
+		return pubkey_table[i].name;
+    } while( load_pubkey_modules() );
+    return NULL;
+}
+
+
+
+int
+check_pubkey_algo( int algo )
+{
+    return check_pubkey_algo2( algo, 0 );
+}
+
+/****************
+ * a usage of 0 means: don't care
+ */
+int
+check_pubkey_algo2( int algo, unsigned usage )
+{
+    int i;
+
+    setup_pubkey_table();
+    do {
+	for(i=0; pubkey_table[i].name; i++ )
+	    if( pubkey_table[i].algo == algo ) {
+		if( (usage & 1) && !(pubkey_table[i].usage & 1) )
+		    return G10ERR_WR_PUBKEY_ALGO;
+		if( (usage & 2) && !(pubkey_table[i].usage & 2) )
+		    return G10ERR_WR_PUBKEY_ALGO;
+		return 0; /* okay */
+	    }
+    } while( load_pubkey_modules() );
+    return G10ERR_PUBKEY_ALGO;
+}
+
+
+
+
 /****************
  * Return the number of public key material numbers
  */
 int
 pubkey_get_npkey( int algo )
 {
-    if( is_ELGAMAL(algo) )
-	return 3;
-    if( is_RSA(algo) )
-	return 2;
-    if( algo == PUBKEY_ALGO_DSA )
-	return 4;
+    int i;
+    setup_pubkey_table();
+    do {
+	for(i=0; pubkey_table[i].name; i++ )
+	    if( pubkey_table[i].algo == algo )
+		return pubkey_table[i].npkey;
+    } while( load_pubkey_modules() );
     return 0;
 }
 
@@ -51,12 +315,13 @@ pubkey_get_npkey( int algo )
 int
 pubkey_get_nskey( int algo )
 {
-    if( is_ELGAMAL(algo) )
-	return 4;
-    if( is_RSA(algo) )
-	return 6;
-    if( algo == PUBKEY_ALGO_DSA )
-	return 5;
+    int i;
+    setup_pubkey_table();
+    do {
+	for(i=0; pubkey_table[i].name; i++ )
+	    if( pubkey_table[i].algo == algo )
+		return pubkey_table[i].nskey;
+    } while( load_pubkey_modules() );
     return 0;
 }
 
@@ -66,12 +331,13 @@ pubkey_get_nskey( int algo )
 int
 pubkey_get_nsig( int algo )
 {
-    if( is_ELGAMAL(algo) )
-	return 2;
-    if( is_RSA(algo) )
-	return 1;
-    if( algo == PUBKEY_ALGO_DSA )
-	return 2;
+    int i;
+    setup_pubkey_table();
+    do {
+	for(i=0; pubkey_table[i].name; i++ )
+	    if( pubkey_table[i].algo == algo )
+		return pubkey_table[i].nsig;
+    } while( load_pubkey_modules() );
     return 0;
 }
 
@@ -81,10 +347,13 @@ pubkey_get_nsig( int algo )
 int
 pubkey_get_nenc( int algo )
 {
-    if( is_ELGAMAL(algo) )
-	return 2;
-    if( is_RSA(algo) )
-	return 1;
+    int i;
+    setup_pubkey_table();
+    do {
+	for(i=0; pubkey_table[i].name; i++ )
+	    if( pubkey_table[i].algo == algo )
+		return pubkey_table[i].nenc;
+    } while( load_pubkey_modules() );
     return 0;
 }
 
@@ -94,61 +363,46 @@ pubkey_get_nenc( int algo )
 unsigned
 pubkey_nbits( int algo, MPI *pkey )
 {
-    if( is_ELGAMAL( algo ) )
-	return mpi_get_nbits( pkey[0] );
+    int i;
 
-    if( algo == PUBKEY_ALGO_DSA )
-	return mpi_get_nbits( pkey[0] );
-
-    if( is_RSA( algo) )
-	return mpi_get_nbits( pkey[0] );
-
+    setup_pubkey_table();
+    do {
+	for(i=0; pubkey_table[i].name; i++ )
+	    if( pubkey_table[i].algo == algo )
+		return (*pubkey_table[i].get_nbits)( algo, pkey );
+    } while( load_pubkey_modules() );
     return 0;
+}
+
+
+int
+pubkey_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors )
+{
+    int i;
+
+    setup_pubkey_table();
+    do {
+	for(i=0; pubkey_table[i].name; i++ )
+	    if( pubkey_table[i].algo == algo )
+		return (*pubkey_table[i].generate)( algo, nbits,
+						    skey, retfactors );
+    } while( load_pubkey_modules() );
+    return G10ERR_PUBKEY_ALGO;
 }
 
 
 int
 pubkey_check_secret_key( int algo, MPI *skey )
 {
-    int rc = 0;
+    int i;
 
-    if( is_ELGAMAL(algo) ) {
-	ELG_secret_key sk;
-	sk.p = skey[0];
-	sk.g = skey[1];
-	sk.y = skey[2];
-	sk.x = skey[3];
-	if( !elg_check_secret_key( &sk ) )
-	    rc = G10ERR_BAD_SECKEY;
-    }
-    else if( algo == PUBKEY_ALGO_DSA ) {
-	DSA_secret_key sk;
-	sk.p = skey[0];
-	sk.q = skey[1];
-	sk.g = skey[2];
-	sk.y = skey[3];
-	sk.x = skey[4];
-	if( !dsa_check_secret_key( &sk ) )
-	    rc = G10ERR_BAD_SECKEY;
-    }
- #ifdef HAVE_RSA_CIPHER
-    else if( is_RSA(k->pubkey_algo) ) {
-	/* FIXME */
-	RSA_secret_key sk;
-	assert( ndata == 1 && nskey == 6 );
-	sk.n = skey[0];
-	sk.e = skey[1];
-	sk.d = skey[2];
-	sk.p = skey[3];
-	sk.q = skey[4];
-	sk.u = skey[5];
-	plain = mpi_alloc_secure( mpi_get_nlimbs(sk.n) );
-	rsa_secret( plain, data[0], &sk );
-    }
-  #endif
-    else
-	rc = G10ERR_PUBKEY_ALGO;
-    return rc;
+    setup_pubkey_table();
+    do {
+	for(i=0; pubkey_table[i].name; i++ )
+	    if( pubkey_table[i].algo == algo )
+		return (*pubkey_table[i].check_secret_key)( algo, skey );
+    } while( load_pubkey_modules() );
+    return G10ERR_PUBKEY_ALGO;
 }
 
 
@@ -161,41 +415,32 @@ pubkey_check_secret_key( int algo, MPI *skey )
 int
 pubkey_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
 {
+    int i, rc;
+
+    /* FIXME: check that data fits into the key (in xxx_encrypt)*/
+
+    setup_pubkey_table();
     if( DBG_CIPHER ) {
-	int i;
 	log_debug("pubkey_encrypt: algo=%d\n", algo );
 	for(i=0; i < pubkey_get_npkey(algo); i++ )
 	    log_mpidump("  pkey:", pkey[i] );
 	log_mpidump("  data:", data );
     }
-    /* FIXME: check that data fits into the key */
-    if( is_ELGAMAL(algo) ) {
-	ELG_public_key pk;
-	pk.p = pkey[0];
-	pk.g = pkey[1];
-	pk.y = pkey[2];
-	resarr[0] = mpi_alloc( mpi_get_nlimbs( pk.p ) );
-	resarr[1] = mpi_alloc( mpi_get_nlimbs( pk.p ) );
-	elg_encrypt( resarr[0], resarr[1], data, &pk );
-    }
- #ifdef HAVE_RSA_CIPHER
-    else if( algo == PUBKEY_ALGO_RSA || algo == PUBKEY_ALGO_RSA_E ) {
-	RSA_public_key pk;
-	pk.n = pkey[0];
-	pk.e = pkey[1];
-	resarr[0] = mpi_alloc( mpi_get_nlimbs( pk.p ) );
-	rsa_public( resarr[0], data, &pk );
-    }
-  #endif
-    else
-	return G10ERR_PUBKEY_ALGO;
 
-    if( DBG_CIPHER ) {
-	int i;
+    do {
+	for(i=0; pubkey_table[i].name; i++ )
+	    if( pubkey_table[i].algo == algo ) {
+		rc = (*pubkey_table[i].encrypt)( algo, resarr, data, pkey );
+		goto ready;
+	    }
+    } while( load_pubkey_modules() );
+    rc = G10ERR_PUBKEY_ALGO;
+  ready:
+    if( !rc && DBG_CIPHER ) {
 	for(i=0; i < pubkey_get_nenc(algo); i++ )
 	    log_mpidump("  encr:", resarr[i] );
     }
-    return 0;
+    return rc;
 }
 
 
@@ -210,44 +455,31 @@ pubkey_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
 int
 pubkey_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
 {
-    MPI plain = NULL;
+    int i, rc;
 
+    setup_pubkey_table();
     *result = NULL; /* so the caller can always do an mpi_free */
     if( DBG_CIPHER ) {
-	int i;
 	log_debug("pubkey_decrypt: algo=%d\n", algo );
 	for(i=0; i < pubkey_get_nskey(algo); i++ )
 	    log_mpidump("  skey:", skey[i] );
 	for(i=0; i < pubkey_get_nenc(algo); i++ )
 	    log_mpidump("  data:", data[i] );
     }
-    if( is_ELGAMAL(algo) ) {
-	ELG_secret_key sk;
-	sk.p = skey[0];
-	sk.g = skey[1];
-	sk.y = skey[2];
-	sk.x = skey[3];
-	plain = mpi_alloc_secure( mpi_get_nlimbs( sk.p ) );
-	elg_decrypt( plain, data[0], data[1], &sk );
-    }
- #ifdef HAVE_RSA_CIPHER
-    else if( algo == PUBKEY_ALGO_RSA || algo == PUBKEY_ALGO_RSA_E ) {
-	RSA_secret_key sk;
-	sk.n = skey[0];
-	sk.e = skey[1];
-	sk.d = skey[2];
-	sk.p = skey[3];
-	sk.q = skey[4];
-	sk.u = skey[5];
-	plain = mpi_alloc_secure( mpi_get_nlimbs(sk.n) );
-	rsa_secret( plain, data[0], &sk );
-    }
-  #endif
-    else
-	return G10ERR_PUBKEY_ALGO;
 
-    *result = plain;
-    return 0;
+    do {
+	for(i=0; pubkey_table[i].name; i++ )
+	    if( pubkey_table[i].algo == algo ) {
+		rc = (*pubkey_table[i].decrypt)( algo, result, data, skey );
+		goto ready;
+	    }
+    } while( load_pubkey_modules() );
+    rc = G10ERR_PUBKEY_ALGO;
+  ready:
+    if( !rc && DBG_CIPHER ) {
+	log_mpidump(" plain:", *result );
+    }
+    return rc;
 }
 
 
@@ -260,58 +492,30 @@ pubkey_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
 int
 pubkey_sign( int algo, MPI *resarr, MPI data, MPI *skey )
 {
+    int i, rc;
+
+    setup_pubkey_table();
     if( DBG_CIPHER ) {
-	int i;
 	log_debug("pubkey_sign: algo=%d\n", algo );
 	for(i=0; i < pubkey_get_nskey(algo); i++ )
 	    log_mpidump("  skey:", skey[i] );
 	log_mpidump("  data:", data );
     }
 
-    if( is_ELGAMAL(algo) ) {
-	ELG_secret_key sk;
-	sk.p = skey[0];
-	sk.g = skey[1];
-	sk.y = skey[2];
-	sk.x = skey[3];
-	resarr[0] = mpi_alloc( mpi_get_nlimbs( sk.p ) );
-	resarr[1] = mpi_alloc( mpi_get_nlimbs( sk.p ) );
-	elg_sign( resarr[0], resarr[1], data, &sk );
-    }
-    else if( algo == PUBKEY_ALGO_DSA ) {
-	DSA_secret_key sk;
-	sk.p = skey[0];
-	sk.q = skey[1];
-	sk.g = skey[2];
-	sk.y = skey[3];
-	sk.x = skey[4];
-	resarr[0] = mpi_alloc( mpi_get_nlimbs( sk.p ) );
-	resarr[1] = mpi_alloc( mpi_get_nlimbs( sk.p ) );
-	dsa_sign( resarr[0], resarr[1], data, &sk );
-    }
- #ifdef HAVE_RSA_CIPHER
-    else if( algo == PUBKEY_ALGO_RSA || algo == PUBKEY_ALGO_RSA_S ) {
-	RSA_secret_key sk;
-	sk.n = skey[0];
-	sk.e = skey[1];
-	sk.d = skey[2];
-	sk.p = skey[3];
-	sk.q = skey[4];
-	sk.u = skey[5];
-	plain = mpi_alloc_secure( mpi_get_nlimbs(sk.n) );
-	rsa_sign( plain, data[0], &sk );
-    }
-  #endif
-    else
-	return G10ERR_PUBKEY_ALGO;
-
-    if( DBG_CIPHER ) {
-	int i;
+    do {
+	for(i=0; pubkey_table[i].name; i++ )
+	    if( pubkey_table[i].algo == algo ) {
+		rc = (*pubkey_table[i].sign)( algo, resarr, data, skey );
+		goto ready;
+	    }
+    } while( load_pubkey_modules() );
+    rc = G10ERR_PUBKEY_ALGO;
+  ready:
+    if( !rc && DBG_CIPHER ) {
 	for(i=0; i < pubkey_get_nsig(algo); i++ )
 	    log_mpidump("   sig:", resarr[i] );
     }
-
-    return 0;
+    return rc;
 }
 
 /****************
@@ -321,113 +525,18 @@ pubkey_sign( int algo, MPI *resarr, MPI data, MPI *skey )
 int
 pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey )
 {
-    int rc = 0;
+    int i, rc;
 
-    if( is_ELGAMAL( algo ) ) {
-	ELG_public_key pk;
-	pk.p = pkey[0];
-	pk.g = pkey[1];
-	pk.y = pkey[2];
-	if( !elg_verify( data[0], data[1], hash, &pk ) )
-	    rc = G10ERR_BAD_SIGN;
-    }
-    else if( algo == PUBKEY_ALGO_DSA ) {
-	DSA_public_key pk;
-	pk.p = pkey[0];
-	pk.q = pkey[1];
-	pk.g = pkey[2];
-	pk.y = pkey[3];
-	if( !dsa_verify( data[0], data[1], hash, &pk ) )
-	    rc = G10ERR_BAD_SIGN;
-    }
- #ifdef HAVE_RSA_CIPHER
-    else if( algo == PUBKEY_ALGO_RSA || algo == PUBKEY_ALGO_RSA_S ) {
-	RSA_public_key pk;
-	int i, j, c, old_enc;
-	byte *dp;
-	const byte *asn;
-	size_t mdlen, asnlen;
-
-	pk.e = pkey[0];
-	pk.n = pkey[1];
-	result = mpi_alloc(40);
-	rsa_public( result, data[0], &pk );
-
-	old_enc = 0;
-	for(i=j=0; (c=mpi_getbyte(result, i)) != -1; i++ ) {
-	    if( !j ) {
-		if( !i && c != 1 )
-		    break;
-		else if( i && c == 0xff )
-		    ; /* skip the padding */
-		else if( i && !c )
-		    j++;
-		else
-		    break;
+    setup_pubkey_table();
+    do {
+	for(i=0; pubkey_table[i].name; i++ )
+	    if( pubkey_table[i].algo == algo ) {
+		rc = (*pubkey_table[i].verify)( algo, hash, data, pkey );
+		goto ready;
 	    }
-	    else if( ++j == 18 && c != 1 )
-		break;
-	    else if( j == 19 && c == 0 ) {
-		old_enc++;
-		break;
-	    }
-	}
-	if( old_enc ) {
-	    log_error("old encoding scheme is not supported\n");
-	    rc = G10ERR_GENERAL;
-	    goto leave;
-	}
-
-	if( (rc=check_digest_algo(sig->digest_algo)) )
-	    goto leave; /* unsupported algo */
-	md_enable( digest, sig->digest_algo );
-	asn = md_asn_oid( sig->digest_algo, &asnlen, &mdlen );
-
-	for(i=mdlen,j=asnlen-1; (c=mpi_getbyte(result, i)) != -1 && j >= 0;
-							       i++, j-- )
-	    if( asn[j] != c )
-		break;
-	if( j != -1 || mpi_getbyte(result, i) ) { /* ASN is wrong */
-	    rc = G10ERR_BAD_PUBKEY;
-	    goto leave;
-	}
-	for(i++; (c=mpi_getbyte(result, i)) != -1; i++ )
-	    if( c != 0xff  )
-		break;
-	i++;
-	if( c != sig->digest_algo || mpi_getbyte(result, i) ) {
-	    /* Padding or leading bytes in signature is wrong */
-	    rc = G10ERR_BAD_PUBKEY;
-	    goto leave;
-	}
-	if( mpi_getbyte(result, mdlen-1) != sig->digest_start[0]
-	    || mpi_getbyte(result, mdlen-2) != sig->digest_start[1] ) {
-	    /* Wrong key used to check the signature */
-	    rc = G10ERR_BAD_PUBKEY;
-	    goto leave;
-	}
-
-	/* complete the digest */
-	md_putc( digest, sig->sig_class );
-	{   u32 a = sig->timestamp;
-	    md_putc( digest, (a >> 24) & 0xff );
-	    md_putc( digest, (a >> 16) & 0xff );
-	    md_putc( digest, (a >>  8) & 0xff );
-	    md_putc( digest,  a        & 0xff );
-	}
-	md_final( digest );
-	dp = md_read( digest, sig->digest_algo );
-	for(i=mdlen-1; i >= 0; i--, dp++ ) {
-	    if( mpi_getbyte( result, i ) != *dp ) {
-		rc = G10ERR_BAD_SIGN;
-		break;
-	    }
-	}
-    }
-  #endif
-    else
-	rc = G10ERR_PUBKEY_ALGO;
-
+    } while( load_pubkey_modules() );
+    rc = G10ERR_PUBKEY_ALGO;
+  ready:
     return rc;
 }
 

@@ -310,6 +310,11 @@ wrong_args( const char *text)
 static void
 set_debug(void)
 {
+    volatile char *p = g10_malloc(1);
+    volatile MPI a = g10m_new(1);
+    *p = g10c_get_random_byte( 0 );
+
+
     if( opt.debug & DBG_MEMORY_VALUE )
 	memory_debug_mode = 1;
     if( opt.debug & DBG_MEMSTAT_VALUE )
@@ -317,9 +322,10 @@ set_debug(void)
     if( opt.debug & DBG_MPI_VALUE )
 	mpi_debug_mode = 1;
     if( opt.debug & DBG_CIPHER_VALUE )
-	cipher_debug_mode = 1;
+	g10c_debug_mode = 1;
     if( opt.debug & DBG_IOBUF_VALUE )
 	iobuf_debug_mode = 1;
+
 }
 
 
@@ -542,7 +548,8 @@ main( int argc, char **argv )
 	#endif /* IS_G10MAINT */
 
 	  case 'o': opt.outfile = pargs.r.ret_str; break;
-	  case 'v': opt.verbose++; opt.list_sigs=1; break;
+	  case 'v': g10_opt_verbose++;
+		    opt.verbose++; opt.list_sigs=1; break;
 	  case 'k': set_cmd( &cmd, aKMode ); break;
 
 	  case 500: opt.batch = 1; greeting = 0; break;
@@ -567,7 +574,8 @@ main( int argc, char **argv )
 	  case 520: default_keyring = 0; break;
 	  case 521: set_cmd( &cmd, aListPackets); break;
 	  case 522: greeting = 0; break;
-	  case 526: opt.verbose = 0; opt.list_sigs=0; break;
+	  case 526: g10_opt_verbose = 0;
+		    opt.verbose = 0; opt.list_sigs=0; break;
 	  case 530: set_cmd( &cmd, aImport); break;
 	  case 532: quick_random_gen(1); break;
 	  case 534: opt.no_comment=1; break;
@@ -633,6 +641,7 @@ main( int argc, char **argv )
 	    opt.list_sigs++;
 
 	opt.verbose = opt.verbose > 1;
+	g10_opt_verbose = opt.verbose;
     }
 
 

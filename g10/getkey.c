@@ -474,16 +474,18 @@ get_pubkey_byname( PKT_public_cert *pkc, const char *name )
 /****************
  * Search for a key with the given fingerprint and return the
  * complete keyblock which may have more than only this key.
- * The fingerprint should always be 20 bytes, fill with zeroes
- * for 16 byte fprints.
  */
 int
-get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint )
+get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
+						size_t fprint_len )
 {
     int rc;
     PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
 
-    rc = lookup( pkc, 20, NULL, fprint, ret_keyblock );
+    if( fprint_len == 20 || fprint_len == 16 )
+	rc = lookup( pkc, fprint_len, NULL, fprint, ret_keyblock );
+    else
+	rc = G10ERR_GENERAL; /* Oops */
 
     free_public_cert( pkc );
     return rc;

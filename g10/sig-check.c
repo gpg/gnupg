@@ -49,10 +49,8 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
     int rc=0;
 
 
-  #ifndef HAVE_RSA_CIPHER
     if( is_RSA(sig->pubkey_algo) )
 	write_status(STATUS_RSA_OR_IDEA);
-  #endif
 
     if( get_pubkey( pkc, sig->keyid ) )
 	rc = G10ERR_NO_PUBKEY;
@@ -149,7 +147,7 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 	    log_mpidump("calc sig frame: ", result);
 	rc = pubkey_verify( pkc->pubkey_algo, result, sig->data, pkc->pkey );
     }
- #ifdef HAVE_RSA_CIPHER
+  #if 0 /* WORK!!! */
     else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA
 	     || pkc->pubkey_algo == PUBKEY_ALGO_RSA_S ) {
 	int i, j, c, old_enc;
@@ -231,7 +229,7 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 	    }
 	}
     }
-  #endif/*HAVE_RSA_CIPHER*/
+  #endif
     else {
 	/*log_debug("signature_check: unsupported pubkey algo %d\n",
 			pkc->pubkey_algo );*/

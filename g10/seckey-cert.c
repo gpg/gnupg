@@ -81,27 +81,25 @@ do_check( PKT_secret_cert *cert )
 	    csum = checksum_mpi( cert->skey[4] );
 	    m_free( buffer );
 	    break;
-	#ifdef HAVE_RSA_CIPHER
 	  case PUBKEY_ALGO_RSA:
 	  case PUBKEY_ALGO_RSA_E:
 	  case PUBKEY_ALGO_RSA_S:
 	    csum = 0;
 	    #define X(a) do { \
-		buffer = mpi_get_secure_buffer( cert->d.rsa.##a,     \
+		buffer = mpi_get_secure_buffer( cert->skey[(a)],     \
 						&nbytes, NULL );     \
 		csum += checksum_u16( nbytes*8 );		     \
 		cipher_decrypt( cipher_hd, buffer, buffer, nbytes ); \
 		csum += checksum( buffer, nbytes );		     \
-		mpi_set_buffer(cert->d.rsa.##a, buffer, nbytes, 0 ); \
+		mpi_set_buffer(cert->skey[(a)], buffer, nbytes, 0 ); \
 		m_free( buffer );				     \
 	       } while(0)
-	    X(d);
-	    X(p);
-	    X(q);
-	    X(u);
+	    X(2);
+	    X(3);
+	    X(4);
+	    X(5);
 	    #undef X
 	    break;
-	#endif /* HAVE_RSA_CIPHER */
 
 	  default: BUG();
 	}
@@ -135,29 +133,27 @@ do_check( PKT_secret_cert *cert )
 	  case PUBKEY_ALGO_DSA:
 	    csum = checksum_mpi( cert->skey[4] );
 	    break;
-	#ifdef HAVE_RSA_CIPHER
 	  case PUBKEY_ALGO_RSA_E:
 	  case PUBKEY_ALGO_RSA_S:
 	  case PUBKEY_ALGO_RSA:
 	    csum =0;
-	    buffer = mpi_get_buffer( cert->d.rsa.rsa_d, &nbytes, NULL );
+	    buffer = mpi_get_buffer( cert->skey[2], &nbytes, NULL );
 	    csum += checksum_u16( nbytes*8 );
 	    csum += checksum( buffer, nbytes );
 	    m_free( buffer );
-	    buffer = mpi_get_buffer( cert->d.rsa.rsa_p, &nbytes, NULL );
+	    buffer = mpi_get_buffer( cert->skey[3], &nbytes, NULL );
 	    csum += checksum_u16( nbytes*8 );
 	    csum += checksum( buffer, nbytes );
 	    m_free( buffer );
-	    buffer = mpi_get_buffer( cert->d.rsa.rsa_q, &nbytes, NULL );
+	    buffer = mpi_get_buffer( cert->skey[4], &nbytes, NULL );
 	    csum += checksum_u16( nbytes*8 );
 	    csum += checksum( buffer, nbytes );
 	    m_free( buffer );
-	    buffer = mpi_get_buffer( cert->d.rsa.rsa_u, &nbytes, NULL );
+	    buffer = mpi_get_buffer( cert->skey[5], &nbytes, NULL );
 	    csum += checksum_u16( nbytes*8 );
 	    csum += checksum( buffer, nbytes );
 	    m_free( buffer );
 	    break;
-	#endif
 	  default: BUG();
 	}
 	if( csum != cert->csum )
@@ -182,36 +178,22 @@ check_secret_key( PKT_secret_cert *cert )
     for(i=0; i < 3 && rc == G10ERR_BAD_PASS; i++ ) {
 	if( i )
 	    log_error(_("Invalid passphrase; please try again ...\n"));
-	switch( cert->pubkey_algo ) {
-	  case PUBKEY_ALGO_ELGAMAL_E:
-	  case PUBKEY_ALGO_ELGAMAL:
-	  case PUBKEY_ALGO_DSA:
+	rc = do_check( cert );
+      #if 0 /* set to 1 to enable the workaround */
+	if( rc == G10ERR_BAD_PASS && cert->is_protected
+	    && cert->protect.algo == CIPHER_ALGO_BLOWFISH
+	    && cert->pubkey_algo != PUBKEY_ALGO_ELGAMAL ) {
+	    /* Workaround for a bug in 0.2.16 which still used
+	     * a 160 bit key for BLOWFISH. */
+	    log_info("trying workaround for 0.2.16 passphrase bug ...\n");
+	    log_info("If you don't need this, uncomment it in g10/seckey-cert.c\n\n");
+	    cert->protect.algo = CIPHER_ALGO_BLOWFISH160;
 	    rc = do_check( cert );
-	  #if 0 /* set to 1 to enable the workaround */
-	    if( rc == G10ERR_BAD_PASS && cert->is_protected
-		&& cert->protect.algo == CIPHER_ALGO_BLOWFISH
-		&& cert->pubkey_algo != PUBKEY_ALGO_ELGAMAL ) {
-		/* Workaround for a bug in 0.2.16 which still used
-		 * a 160 bit key for BLOWFISH. */
-     log_info("trying workaround for 0.2.16 passphrase bug ...\n");
-     log_info("If you don't need this, uncomment it in g10/seckey-cert.c\n\n");
-		cert->protect.algo = CIPHER_ALGO_BLOWFISH160;
-		rc = do_check( cert );
-		if( rc )
-		    rc = G10ERR_BAD_PASS;
-		cert->protect.algo = CIPHER_ALGO_BLOWFISH;
-	    }
-	  #endif
-	    break;
-	#ifdef HAVE_RSA_CIPHER
-	  case PUBKEY_ALGO_RSA:
-	  case PUBKEY_ALGO_RSA_E:
-	  case PUBKEY_ALGO_RSA_S:
-	    rc = do_check( cert );
-	    break;
-	#endif
-	  default: rc = G10ERR_PUBKEY_ALGO;
+	    if( rc )
+		rc = G10ERR_BAD_PASS;
+	    cert->protect.algo = CIPHER_ALGO_BLOWFISH;
 	}
+      #endif
 	if( get_passphrase_fd() != -1 )
 	    break;
     }

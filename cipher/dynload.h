@@ -28,4 +28,15 @@ enum_gnupgext_ciphers( void **enum_context, int *algo,
 		       void (**decrypt)( void *c, byte *outbuf, byte *inbuf )
 		     );
 
+const char *
+enum_gnupgext_pubkeys( void **enum_context, int *algo,
+    int *npkey, int *nskey, int *nenc, int *nsig, int *usage,
+    int (**generate)( int algo, unsigned nbits, MPI *skey, MPI **retfactors ),
+    int (**check_secret_key)( int algo, MPI *skey ),
+    int (**encrypt)( int algo, MPI *resarr, MPI data, MPI *pkey ),
+    int (**decrypt)( int algo, MPI *result, MPI *data, MPI *skey ),
+    int (**sign)( int algo, MPI *resarr, MPI data, MPI *skey ),
+    int (**verify)( int algo, MPI hash, MPI *data, MPI *pkey ),
+    unsigned (**get_nbits)( int algo, MPI *pkey ) );
+
 #endif /*G10_CIPHER_DYNLOAD_H*/

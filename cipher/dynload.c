@@ -71,11 +71,12 @@ register_cipher_extension( const char *fname )
     /* check that it is not already registered */
     for(r = extensions; r; r = r->next )
 	if( !compare_filenames(r->name, el->name) ) {
-	    log_debug("extension '%s' already registered\n", el->name );
+	    log_info("extension '%s' already registered\n", el->name );
 	    m_free(el);
 	    return;
 	}
-    log_debug("extension '%s' registered\n", el->name );
+    if( DBG_CIPHER )
+	log_debug("extension '%s' registered\n", el->name );
     /* and register */
     el->next = extensions;
     extensions = el;
@@ -91,7 +92,7 @@ load_extension( EXTLIST el )
     int seq = 0;
     int class, vers;
 
-    el->handle = dlopen(el->name, RTLD_LAZY);
+    el->handle = dlopen(el->name, RTLD_NOW);
     if( !el->handle ) {
 	log_error("%s: error loading extension: %s\n", el->name, dlerror() );
 	goto failure;
@@ -102,7 +103,8 @@ load_extension( EXTLIST el )
 	goto failure;
     }
 
-    log_info("%s: version '%s'\n", el->name, *name );
+    if( g10_opt_verbose )
+	log_info("%s: version '%s'\n", el->name, *name );
 
     sym = dlsym(el->handle, "gnupgext_enum_func");
     if( (err=dlerror()) ) {
@@ -111,23 +113,26 @@ load_extension( EXTLIST el )
     }
     el->enumfunc = (void *(*)(int,int*,int*,int*))sym;
 
-    /* list the contents of the module */
-    while( (sym = (*el->enumfunc)(0, &seq, &class, &vers)) ) {
-	if( vers != 1 ) {
-	    log_error("%s: ignoring func with version %d\n", el->name, vers);
-	    continue;
-	}
-	switch( class ) {
-	  case 11:
-	  case 21:
-	  case 31:
-	    log_info("%s: provides %s algorithm %d\n", el->name,
-			    class == 11? "md"     :
-			    class == 21? "cipher" : "pubkey",
-						   *(int*)sym);
-	    break;
-	  default:
-	    log_debug("%s: skipping class %d\n", el->name, class);
+    if( g10_opt_verbose > 1 ) {
+	/* list the contents of the module */
+	while( (sym = (*el->enumfunc)(0, &seq, &class, &vers)) ) {
+	    if( vers != 1 ) {
+		log_info("%s: ignoring func with version %d\n",el->name,vers);
+		continue;
+	    }
+	    switch( class ) {
+	      case 11:
+	      case 21:
+	      case 31:
+		log_info("%s: provides %s algorithm %d\n", el->name,
+				class == 11? "md"     :
+				class == 21? "cipher" : "pubkey",
+						       *(int*)sym);
+		break;
+	      default:
+		/*log_debug("%s: skipping class %d\n", el->name, class);*/
+		break;
+	    }
 	}
     }
     return 0;
@@ -195,7 +200,78 @@ enum_gnupgext_ciphers( void **enum_context, int *algo,
 		*algo = *(int*)sym;
 		algname = (*finfo)( *algo, keylen, blocksize, contextsize,
 				    setkey, encrypt, decrypt );
-		log_debug("found algo %d (%s)\n", *algo, algname );
+		if( algname ) {
+		    ctx->r = r;
+		    return algname;
+		}
+	    }
+	    ctx->seq2 = 0;
+	}
+	ctx->seq1 = 0;
+    }
+    ctx->r = r;
+    return NULL;
+}
+
+const char *
+enum_gnupgext_pubkeys( void **enum_context, int *algo,
+    int *npkey, int *nskey, int *nenc, int *nsig, int *usage,
+    int (**generate)( int algo, unsigned nbits, MPI *skey, MPI **retfactors ),
+    int (**check_secret_key)( int algo, MPI *skey ),
+    int (**encrypt)( int algo, MPI *resarr, MPI data, MPI *pkey ),
+    int (**decrypt)( int algo, MPI *result, MPI *data, MPI *skey ),
+    int (**sign)( int algo, MPI *resarr, MPI data, MPI *skey ),
+    int (**verify)( int algo, MPI hash, MPI *data, MPI *pkey ),
+    unsigned (**get_nbits)( int algo, MPI *pkey ) )
+{
+    EXTLIST r;
+    ENUMCONTEXT *ctx;
+    const char * (*finfo)( int, int *, int *, int *, int *, int *,
+			   int (**)( int, unsigned, MPI *, MPI **),
+			   int (**)( int, MPI * ),
+			   int (**)( int, MPI *, MPI , MPI * ),
+			   int (**)( int, MPI *, MPI *, MPI * ),
+			   int (**)( int, MPI *, MPI , MPI * ),
+			   int (**)( int, MPI , MPI *, MPI * ),
+			   unsigned (**)( int , MPI * ) );
+
+    if( !*enum_context ) { /* init context */
+	ctx = m_alloc_clear( sizeof( *ctx ) );
+	ctx->r = extensions;
+	*enum_context = ctx;
+    }
+    else if( !algo ) { /* release the context */
+	m_free(*enum_context);
+	*enum_context = NULL;
+	return NULL;
+    }
+    else
+	ctx = *enum_context;
+
+    for( r = ctx->r; r; r = r->next )  {
+	int class, vers;
+
+	if( r->failed )
+	    continue;
+	if( !r->handle && load_extension(r) )
+	    continue;
+	/* get a pubkey info function */
+	if( ctx->sym )
+	    goto inner_loop;
+	while( (ctx->sym = (*r->enumfunc)(30, &ctx->seq1, &class, &vers)) ) {
+	    void *sym;
+	    if( vers != 1 || class != 30 )
+		continue;
+	  inner_loop:
+	    finfo = ctx->sym;
+	    while( (sym = (*r->enumfunc)(31, &ctx->seq2, &class, &vers)) ) {
+		const char *algname;
+		if( vers != 1 || class != 31 )
+		    continue;
+		*algo = *(int*)sym;
+		algname = (*finfo)( *algo, npkey, nskey, nenc, nsig, usage,
+				    generate, check_secret_key, encrypt,
+				    decrypt, sign, verify, get_nbits );
 		if( algname ) {
 		    ctx->r = r;
 		    return algname;

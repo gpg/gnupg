@@ -972,15 +972,15 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 
 		}
 		else {
-		    if( list_mode )
-			printf(  "\tprotect algo: %d\n",
-						cert->protect.algo);
 		    /* old version, we don't have a S2K, so we fake one */
 		    cert->protect.s2k.mode = 0;
 		    /* We need this kludge to cope with old GNUPG versions */
 		    cert->protect.s2k.hash_algo =
 			 cert->protect.algo == CIPHER_ALGO_BLOWFISH160?
 				      DIGEST_ALGO_RMD160 : DIGEST_ALGO_MD5;
+		    if( list_mode )
+			printf(  "\tprotect algo: %d  (hash algo: %d)\n",
+			     cert->protect.algo, cert->protect.s2k.hash_algo );
 		}
 		if( pktlen < 8 ) {
 		    rc = G10ERR_INVALID_PACKET;
@@ -1176,6 +1176,9 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 		}
 		if( cert->protect.algo == CIPHER_ALGO_BLOWFISH160 )
 		    memcpy(cert->protect.iv, temp, 8 );
+		/* old version, we don't have a S2K, so we fake one */
+		cert->protect.s2k.mode = 0;
+		cert->protect.s2k.hash_algo = DIGEST_ALGO_MD5;
 	    }
 	    else
 		cert->is_protected = 0;

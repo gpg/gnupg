@@ -55,6 +55,9 @@ typedef struct {
 	    } while(0)
 
 /*-- md.c --*/
+int string_to_digest_algo( const char *string );
+const char * digest_algo_to_string( int algo );
+int check_digest_algo( int algo );
 MD_HANDLE md_open( int algo, int secure );
 void md_enable( MD_HANDLE hd, int algo );
 MD_HANDLE md_copy( MD_HANDLE a );

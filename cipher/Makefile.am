@@ -35,7 +35,7 @@ libcipher_a_SOURCES = cipher.c	\
 		 sha1.c 	\
 		 dsa.h		\
 		 dsa.c		\
-		 misc.c 	\
+		 g10c.c 	\
 		 smallprime.c
 
 

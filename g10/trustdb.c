@@ -83,6 +83,7 @@ struct trust_record {
 	    ulong owner;
 	    u32  keyid[2];
 	    byte pubkey_algo;
+	    byte fingerprint_len;
 	    byte fingerprint[20];
 	    byte ownertrust;
 	} key;
@@ -387,9 +388,11 @@ dump_record( ulong rnum, TRUSTREC *rec, FILE *fp  )
 	    fputs(", (??)", fp );
 	putc('\n', fp);
 	break;
-      case RECTYPE_KEY: fprintf(fp, "key keyid=%08lX, own=%lu, ownertrust=%02x\n",
+      case RECTYPE_KEY: fprintf(fp,
+		    "key keyid=%08lX, own=%lu, ownertrust=%02x, fl=%d\n",
 		   (ulong)rec->r.key.keyid[1],
-		   rec->r.key.owner, rec->r.key.ownertrust );
+		   rec->r.key.owner, rec->r.key.ownertrust,
+		   rec->r.key.fingerprint_len );
 	break;
       case RECTYPE_CTL: fprintf(fp, "ctl\n");
 	break;
@@ -497,7 +500,10 @@ read_record( ulong recnum, TRUSTREC *rec, int expected )
 	rec->r.key.owner    = buftoulong(p); p += 4;
 	rec->r.dir.keyid[0] = buftou32(p); p += 4;
 	rec->r.dir.keyid[1] = buftou32(p); p += 4;
-	rec->r.key.pubkey_algo = *p++; p++;
+	rec->r.key.pubkey_algo = *p++;
+	rec->r.key.fingerprint_len = *p++;
+	if( rec->r.key.fingerprint_len < 1 || rec->r.key.fingerprint_len > 20 )
+	    rec->r.key.fingerprint_len = 20;
 	memcpy( rec->r.key.fingerprint, p, 20); p += 20;
 	rec->r.key.ownertrust = *p++;
 	break;
@@ -562,7 +568,8 @@ write_record( ulong recnum, TRUSTREC *rec )
 	ulongtobuf(p, rec->r.key.owner); p += 4;
 	u32tobuf(p, rec->r.key.keyid[0]); p += 4;
 	u32tobuf(p, rec->r.key.keyid[1]); p += 4;
-	*p++ = rec->r.key.pubkey_algo; p++;
+	*p++ = rec->r.key.pubkey_algo;
+	*p++ = rec->r.key.fingerprint_len;
 	memcpy( p, rec->r.key.fingerprint, 20); p += 20;
 	*p++ = rec->r.key.ownertrust;
 	break;
@@ -1166,7 +1173,8 @@ build_sigrecs( ulong pubkeyid )
 	log_error(_("%lu: build_sigrecs: can't read key record\n"), pubkeyid);
 	goto leave;
     }
-    rc = get_keyblock_byfprint( &keyblock, krec.r.key.fingerprint );
+    rc = get_keyblock_byfprint( &keyblock, krec.r.key.fingerprint,
+					   krec.r.key.fingerprint_len );
     if( rc ) {
 	log_error(_("build_sigrecs: get_keyblock_byfprint failed\n") );
 	goto leave;
@@ -1938,6 +1946,7 @@ insert_trust_record( PKT_public_cert *pkc )
     rec.r.key.keyid[0] = keyid[0];
     rec.r.key.keyid[1] = keyid[1];
     rec.r.key.pubkey_algo = pkc->pubkey_algo;
+    rec.r.key.fingerprint_len = fingerlen;
     memcpy(rec.r.key.fingerprint, fingerprint, fingerlen );
     rec.r.key.ownertrust = 0;
     if( write_record( knum, &rec ) ) {

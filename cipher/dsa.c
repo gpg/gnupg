@@ -28,6 +28,30 @@
 #include "cipher.h"
 #include "dsa.h"
 
+typedef struct {
+    MPI p;	    /* prime */
+    MPI q;	    /* group order */
+    MPI g;	    /* group generator */
+    MPI y;	    /* g^x mod p */
+} DSA_public_key;
+
+
+typedef struct {
+    MPI p;	    /* prime */
+    MPI q;	    /* group order */
+    MPI g;	    /* group generator */
+    MPI y;	    /* g^x mod p */
+    MPI x;	    /* secret exponent */
+} DSA_secret_key;
+
+
+static MPI gen_k( MPI q );
+static void test_keys( DSA_secret_key *sk, unsigned qbits );
+static int  check_secret_key( DSA_secret_key *sk );
+static void generate( DSA_secret_key *sk, unsigned nbits, MPI **ret_factors );
+static void sign(MPI r, MPI s, MPI input, DSA_secret_key *skey);
+static int  verify(MPI r, MPI s, MPI input, DSA_public_key *pkey);
+
 /****************
  * Generate a random secret exponent k less than q
  */
@@ -55,37 +79,23 @@ gen_k( MPI q )
     return k;
 }
 
-void
-dsa_free_public_key( DSA_public_key *pk )
-{
-    mpi_free( pk->p ); pk->p = NULL;
-    mpi_free( pk->q ); pk->q = NULL;
-    mpi_free( pk->g ); pk->g = NULL;
-    mpi_free( pk->y ); pk->y = NULL;
-}
-
-void
-dsa_free_secret_key( DSA_secret_key *sk )
-{
-    mpi_free( sk->p ); sk->p = NULL;
-    mpi_free( sk->q ); sk->q = NULL;
-    mpi_free( sk->g ); sk->g = NULL;
-    mpi_free( sk->y ); sk->y = NULL;
-    mpi_free( sk->x ); sk->x = NULL;
-}
-
 
 static void
-test_keys( DSA_public_key *pk, DSA_secret_key *sk, unsigned qbits )
+test_keys( DSA_secret_key *sk, unsigned qbits )
 {
+    DSA_public_key pk;
     MPI test = mpi_alloc( qbits / BITS_PER_MPI_LIMB );
     MPI out1_a = mpi_alloc( qbits / BITS_PER_MPI_LIMB );
     MPI out1_b = mpi_alloc( qbits / BITS_PER_MPI_LIMB );
 
+    pk.p = sk->p;
+    pk.q = sk->q;
+    pk.g = sk->g;
+    pk.y = sk->y;
     mpi_set_bytes( test, qbits, get_random_byte, 0 );
 
-    dsa_sign( out1_a, out1_b, test, sk );
-    if( !dsa_verify( out1_a, out1_b, test, pk ) )
+    sign( out1_a, out1_b, test, sk );
+    if( !verify( out1_a, out1_b, test, &pk ) )
 	log_fatal("DSA:: sign, verify failed\n");
 
     mpi_free( test );
@@ -100,9 +110,8 @@ test_keys( DSA_public_key *pk, DSA_secret_key *sk, unsigned qbits )
  * Returns: 2 structures filled with all needed values
  *	    and an array with the n-1 factors of (p-1)
  */
-void
-dsa_generate( DSA_public_key *pk, DSA_secret_key *sk,
-	      unsigned nbits, MPI **ret_factors )
+static void
+generate( DSA_secret_key *sk, unsigned nbits, MPI **ret_factors )
 {
     MPI p;    /* the prime */
     MPI q;    /* the 160 bit prime factor */
@@ -176,10 +185,6 @@ dsa_generate( DSA_public_key *pk, DSA_secret_key *sk,
     }
 
     /* copy the stuff to the key structures */
-    pk->p = mpi_copy(p);
-    pk->q = mpi_copy(q);
-    pk->g = mpi_copy(g);
-    pk->y = mpi_copy(y);
     sk->p = p;
     sk->q = q;
     sk->g = g;
@@ -187,7 +192,7 @@ dsa_generate( DSA_public_key *pk, DSA_secret_key *sk,
     sk->x = x;
 
     /* now we can test our keys (this should never fail!) */
-    test_keys( pk, sk, qbits );
+    test_keys( sk, qbits );
 }
 
 
@@ -196,8 +201,8 @@ dsa_generate( DSA_public_key *pk, DSA_secret_key *sk,
  * Test whether the secret key is valid.
  * Returns: if this is a valid key.
  */
-int
-dsa_check_secret_key( DSA_secret_key *sk )
+static int
+check_secret_key( DSA_secret_key *sk )
 {
     int rc;
     MPI y = mpi_alloc( mpi_get_nlimbs(sk->y) );
@@ -214,8 +219,8 @@ dsa_check_secret_key( DSA_secret_key *sk )
  * Make a DSA signature from HASH and put it into r and s.
  */
 
-void
-dsa_sign(MPI r, MPI s, MPI hash, DSA_secret_key *skey )
+static void
+sign(MPI r, MPI s, MPI hash, DSA_secret_key *skey )
 {
     MPI k;
     MPI kinv;
@@ -247,8 +252,8 @@ dsa_sign(MPI r, MPI s, MPI hash, DSA_secret_key *skey )
 /****************
  * Returns true if the signature composed from R and S is valid.
  */
-int
-dsa_verify(MPI r, MPI s, MPI hash, DSA_public_key *pkey )
+static int
+verify(MPI r, MPI s, MPI hash, DSA_public_key *pkey )
 {
     int rc;
     MPI w, u1, u2, v;
@@ -289,4 +294,119 @@ dsa_verify(MPI r, MPI s, MPI hash, DSA_public_key *pkey )
     mpi_free(v);
     return rc;
 }
+
+
+/*********************************************
+ **************  interface  ******************
+ *********************************************/
+
+int
+dsa_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors )
+{
+    DSA_secret_key sk;
+
+    if( algo != PUBKEY_ALGO_DSA )
+	return G10ERR_PUBKEY_ALGO;
+
+    generate( &sk, nbits, retfactors );
+    skey[0] = sk.p;
+    skey[1] = sk.q;
+    skey[2] = sk.g;
+    skey[3] = sk.y;
+    skey[4] = sk.x;
+    return 0;
+}
+
+
+int
+dsa_check_secret_key( int algo, MPI *skey )
+{
+    DSA_secret_key sk;
+
+    if( algo != PUBKEY_ALGO_DSA )
+	return G10ERR_PUBKEY_ALGO;
+
+    sk.p = skey[0];
+    sk.q = skey[1];
+    sk.g = skey[2];
+    sk.y = skey[3];
+    sk.x = skey[4];
+    if( !check_secret_key( &sk ) )
+	return G10ERR_BAD_SECKEY;
+
+    return 0;
+}
+
+
+
+int
+dsa_sign( int algo, MPI *resarr, MPI data, MPI *skey )
+{
+    DSA_secret_key sk;
+
+    if( algo != PUBKEY_ALGO_DSA )
+	return G10ERR_PUBKEY_ALGO;
+
+    sk.p = skey[0];
+    sk.q = skey[1];
+    sk.g = skey[2];
+    sk.y = skey[3];
+    sk.x = skey[4];
+    resarr[0] = mpi_alloc( mpi_get_nlimbs( sk.p ) );
+    resarr[1] = mpi_alloc( mpi_get_nlimbs( sk.p ) );
+    sign( resarr[0], resarr[1], data, &sk );
+    return 0;
+}
+
+int
+dsa_verify( int algo, MPI hash, MPI *data, MPI *pkey )
+{
+    DSA_public_key pk;
+
+    if( algo != PUBKEY_ALGO_DSA )
+	return G10ERR_PUBKEY_ALGO;
+
+    pk.p = pkey[0];
+    pk.q = pkey[1];
+    pk.g = pkey[2];
+    pk.y = pkey[3];
+    if( !verify( data[0], data[1], hash, &pk ) )
+	return G10ERR_BAD_SIGN;
+    return 0;
+}
+
+
+
+unsigned
+dsa_get_nbits( int algo, MPI *pkey )
+{
+    if( algo != PUBKEY_ALGO_DSA )
+	return 0;
+    return mpi_get_nbits( pkey[0] );
+}
+
+
+/****************
+ * Return some information about the algorithm.  We need algo here to
+ * distinguish different flavors of the algorithm.
+ * Returns: A pointer to string describing the algorithm or NULL if
+ *	    the ALGO is invalid.
+ * Usage: Bit 0 set : allows signing
+ *	      1 set : allows encryption
+ */
+const char *
+dsa_get_info( int algo, int *npkey, int *nskey, int *nenc, int *nsig,
+							 int *usage )
+{
+    *npkey = 4;
+    *nskey = 5;
+    *nenc = 0;
+    *nsig = 2;
+
+    switch( algo ) {
+      case PUBKEY_ALGO_DSA:   *usage = 1; return "DSA";
+      default: *usage = 0; return NULL;
+    }
+}
+
 

@@ -109,7 +109,8 @@ void add_secret_keyring( const char *name );
 int get_pubkey( PKT_public_cert *pkc, u32 *keyid );
 int get_pubkey_byname( PKT_public_cert *pkc, const char *name );
 int get_seckey( PKT_secret_cert *skc, u32 *keyid );
-int get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint );
+int get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
+						 size_t fprint_len );
 int seckey_available( u32 *keyid );
 int get_seckey_byname( PKT_secret_cert *skc, const char *name, int unlock );
 int enum_secret_keys( void **context, PKT_secret_cert *skc );

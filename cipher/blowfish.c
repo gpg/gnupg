@@ -55,9 +55,9 @@ typedef struct {
     u32 p[BLOWFISH_ROUNDS+2];
 } BLOWFISH_context;
 
-static void blowfish_setkey( BLOWFISH_context *c, byte *key, unsigned keylen );
-static void blowfish_encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf );
-static void blowfish_decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf );
+static void setkey( BLOWFISH_context *c, byte *key, unsigned keylen );
+static void encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf );
+static void decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf );
 
 
 /* precomputed S boxes */
@@ -414,7 +414,7 @@ decrypt(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
 #undef R
 
 static void
-blowfish_encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
+encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 {
     u32 d1, d2;
 
@@ -433,7 +433,7 @@ blowfish_encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 
 
 static void
-blowfish_decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
+decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 {
     u32 d1, d2;
 
@@ -461,19 +461,19 @@ selftest()
     byte key3[] = { 0x41, 0x79, 0x6E, 0xA0, 0x52, 0x61, 0x6E, 0xE4 };
     byte cipher3[] = { 0xE1, 0x13, 0xF4, 0x10, 0x2C, 0xFC, 0xCE, 0x43 };
 
-    blowfish_setkey( &c, "abcdefghijklmnopqrstuvwxyz", 26 );
-    blowfish_encrypt_block( &c, buffer, plain );
+    setkey( &c, "abcdefghijklmnopqrstuvwxyz", 26 );
+    encrypt_block( &c, buffer, plain );
     if( memcmp( buffer, "\x32\x4E\xD0\xFE\xF4\x13\xA2\x03", 8 ) )
 	log_error("wrong blowfish encryption\n");
-    blowfish_decrypt_block( &c, buffer, buffer );
+    decrypt_block( &c, buffer, buffer );
     if( memcmp( buffer, plain, 8 ) )
 	log_bug("blowfish failed\n");
 
-    blowfish_setkey( &c, key3, 8 );
-    blowfish_encrypt_block( &c, buffer, plain3 );
+    setkey( &c, key3, 8 );
+    encrypt_block( &c, buffer, plain3 );
     if( memcmp( buffer, cipher3, 8 ) )
 	log_error("wrong blowfish encryption (3)\n");
-    blowfish_decrypt_block( &c, buffer, buffer );
+    decrypt_block( &c, buffer, buffer );
     if( memcmp( buffer, plain3, 8 ) )
 	log_bug("blowfish failed (3)\n");
 }
@@ -481,7 +481,7 @@ selftest()
 
 
 static void
-blowfish_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
+setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
 {
     int i, j;
     u32 data, datal, datar;
@@ -555,17 +555,17 @@ blowfish_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
 const char *
 blowfish_get_info( int algo, size_t *keylen,
 		   size_t *blocksize, size_t *contextsize,
-		   void (**setkey)( void *c, byte *key, unsigned keylen ),
-		   void (**encrypt)( void *c, byte *outbuf, byte *inbuf ),
-		   void (**decrypt)( void *c, byte *outbuf, byte *inbuf )
+		   void (**r_setkey)( void *c, byte *key, unsigned keylen ),
+		   void (**r_encrypt)( void *c, byte *outbuf, byte *inbuf ),
+		   void (**r_decrypt)( void *c, byte *outbuf, byte *inbuf )
 		 )
 {
     *keylen = algo == CIPHER_ALGO_BLOWFISH ? 128 : 160;
     *blocksize = BLOWFISH_BLOCKSIZE;
     *contextsize = sizeof(BLOWFISH_context);
-    *setkey = FNCCAST_SETKEY(blowfish_setkey);
-    *encrypt= FNCCAST_CRYPT(blowfish_encrypt_block);
-    *decrypt= FNCCAST_CRYPT(blowfish_decrypt_block);
+    *r_setkey = FNCCAST_SETKEY(setkey);
+    *r_encrypt= FNCCAST_CRYPT(encrypt_block);
+    *r_decrypt= FNCCAST_CRYPT(decrypt_block);
 
     if( algo == CIPHER_ALGO_BLOWFISH )
 	return "BLOWFISH";

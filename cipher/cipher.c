@@ -178,7 +178,8 @@ load_cipher_modules()
 	    continue;
 	}
 	/* put it into the table */
-	log_info("loaded cipher %d (%s)\n", ct->algo, name);
+	if( g10_opt_verbose > 1 )
+	    log_info("loaded cipher %d (%s)\n", ct->algo, name);
 	ct->name = name;
 	ct_idx++;
 	ct++;

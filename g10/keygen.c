@@ -35,7 +35,7 @@
 #include "i18n.h"
 
 
-#if defined(HAVE_RSA_CIPHER) && 0
+#if 0
   #define ENABLE_RSA_KEYGEN 1
 #endif
 
@@ -143,11 +143,14 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     PACKET *pkt;
     PKT_secret_cert *skc;
     PKT_public_cert *pkc;
-    ELG_public_key pk;
-    ELG_secret_key sk;
+    MPI skey[4];
     MPI *factors;
 
-    elg_generate( &pk, &sk, nbits, &factors );
+    rc = pubkey_generate( PUBKEY_ALGO_ELGAMAL, nbits, skey, &factors );
+    if( rc ) {
+	log_error("pubkey_generate failed: %s\n", g10_errstr(rc) );
+	return rc;
+    }
 
     skc = m_alloc_clear( sizeof *skc );
     pkc = m_alloc_clear( sizeof *pkc );
@@ -155,13 +158,13 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     skc->version = pkc->version = version;
     skc->valid_days = pkc->valid_days = valid_days;
     skc->pubkey_algo = pkc->pubkey_algo = PUBKEY_ALGO_ELGAMAL;
-		       pkc->pkey[0] = pk.p;
-		       pkc->pkey[1] = pk.g;
-		       pkc->pkey[2] = pk.y;
-    skc->skey[0] = sk.p;
-    skc->skey[1] = sk.g;
-    skc->skey[2] = sk.y;
-    skc->skey[3] = sk.x;
+		       pkc->pkey[0] = mpi_copy( skey[0] );
+		       pkc->pkey[1] = mpi_copy( skey[1] );
+		       pkc->pkey[2] = mpi_copy( skey[2] );
+    skc->skey[0] = skey[0];
+    skc->skey[1] = skey[1];
+    skc->skey[2] = skey[2];
+    skc->skey[3] = skey[3];
     skc->is_protected = 0;
     skc->protect.algo = 0;
 
@@ -278,14 +281,17 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     PACKET *pkt;
     PKT_secret_cert *skc;
     PKT_public_cert *pkc;
-    DSA_public_key pk;
-    DSA_secret_key sk;
+    MPI skey[5];
     MPI *factors;
 
     if( nbits > 1024 )
 	nbits = 1024;
 
-    dsa_generate( &pk, &sk, nbits, &factors );
+    rc = pubkey_generate( PUBKEY_ALGO_DSA, nbits, skey, &factors );
+    if( rc ) {
+	log_error("pubkey_generate failed: %s\n", g10_errstr(rc) );
+	return rc;
+    }
 
     skc = m_alloc_clear( sizeof *skc );
     pkc = m_alloc_clear( sizeof *pkc );
@@ -296,15 +302,15 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
      */
     skc->valid_days = pkc->valid_days = valid_days;
     skc->pubkey_algo = pkc->pubkey_algo = PUBKEY_ALGO_DSA;
-		       pkc->pkey[0] = pk.p;
-		       pkc->pkey[1] = pk.q;
-		       pkc->pkey[2] = pk.g;
-		       pkc->pkey[3] = pk.y;
-    skc->skey[0] = sk.p;
-    skc->skey[1] = sk.q;
-    skc->skey[2] = sk.g;
-    skc->skey[3] = sk.y;
-    skc->skey[4] = sk.x;
+		       pkc->pkey[0] = skey[0];
+		       pkc->pkey[1] = skey[1];
+		       pkc->pkey[2] = skey[2];
+		       pkc->pkey[3] = skey[3];
+    skc->skey[0] = skey[0];
+    skc->skey[1] = skey[1];
+    skc->skey[2] = skey[2];
+    skc->skey[3] = skey[3];
+    skc->skey[4] = skey[4];
     skc->is_protected = 0;
     skc->protect.algo = 0;
 

@@ -103,7 +103,7 @@ Record type 3:
 	     and useful if we have duplicate keyids
 	     It points back to the directory node.
      1 byte pubkey algorithm
-     1 byte reserved
+     1 byte length of the fingerprint (in bytes)
      20 bytes fingerprint of the public key
      1 byte ownertrust:
      3 byte reserved

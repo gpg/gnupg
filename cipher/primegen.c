@@ -112,6 +112,8 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 
     /* make a pool of 3n+5 primes (this is an arbitrary value) */
     m = n*3+5;
+    if( mode == 1 )
+	m += 5; /* need some more for DSA */
     if( m < 25 )
 	m = 25;
     pool = m_alloc_clear( m * sizeof *pool );

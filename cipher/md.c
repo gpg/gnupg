@@ -27,6 +27,76 @@
 #include "cipher.h"
 #include "errors.h"
 
+
+
+/* Note: the first string is the one used by ascii armor */
+static struct { const char *name; int algo;} digest_names[] = {
+    { "MD5",           DIGEST_ALGO_MD5    },
+    { "SHA1",          DIGEST_ALGO_SHA1   },
+    { "SHA-1",         DIGEST_ALGO_SHA1   },
+    { "RIPEMD160",     DIGEST_ALGO_RMD160 },
+    { "RMD160",        DIGEST_ALGO_RMD160 },
+    { "RMD-160",       DIGEST_ALGO_RMD160 },
+    { "RIPE-MD-160",   DIGEST_ALGO_RMD160 },
+    { "TIGER",         DIGEST_ALGO_TIGER  },
+    {NULL} };
+
+
+
+
+/****************
+ * Map a string to the digest algo
+ */
+int
+string_to_digest_algo( const char *string )
+{
+    int i;
+    const char *s;
+
+    for(i=0; (s=digest_names[i].name); i++ )
+	if( !stricmp( s, string ) )
+	    return digest_names[i].algo;
+    return 0;
+}
+
+
+/****************
+ * Map a digest algo to a string
+ */
+const char *
+digest_algo_to_string( int algo )
+{
+    int i;
+
+    for(i=0; digest_names[i].name; i++ )
+	if( digest_names[i].algo == algo )
+	    return digest_names[i].name;
+    return NULL;
+}
+
+
+int
+check_digest_algo( int algo )
+{
+    switch( algo ) {
+    #ifdef WITH_TIGER_HASH
+      case DIGEST_ALGO_TIGER:
+    #endif
+      case DIGEST_ALGO_MD5:
+      case DIGEST_ALGO_RMD160:
+      case DIGEST_ALGO_SHA1:
+	return 0;
+      default:
+	return G10ERR_DIGEST_ALGO;
+    }
+}
+
+
+
+
+
+
+
 /****************
  * Open a message digest handle for use with algorithm ALGO.
  * More algorithms may be added by md_enable(). The initial algorithm

@@ -8,4 +8,6 @@ types.h
 util.h
 i18n.h
 
+g10lib.h
+
 ChangeLog

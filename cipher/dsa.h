@@ -20,31 +20,12 @@
 #ifndef G10_DSA_H
 #define G10_DSA_H
 
-#include "mpi.h"
-
-typedef struct {
-    MPI p;	    /* prime */
-    MPI q;	    /* group order */
-    MPI g;	    /* group generator */
-    MPI y;	    /* g^x mod p */
-} DSA_public_key;
-
-
-typedef struct {
-    MPI p;	    /* prime */
-    MPI q;	    /* group order */
-    MPI g;	    /* group generator */
-    MPI y;	    /* g^x mod p */
-    MPI x;	    /* secret exponent */
-} DSA_secret_key;
-
-
-void dsa_free_public_key( DSA_public_key *pk );
-void dsa_free_secret_key( DSA_secret_key *sk );
-int  dsa_check_secret_key( DSA_secret_key *sk );
-void dsa_generate( DSA_public_key *pk, DSA_secret_key *sk,
-		   unsigned nbits, MPI **ret_factors );
-void dsa_sign(MPI r, MPI s, MPI input, DSA_secret_key *skey);
-int  dsa_verify(MPI r, MPI s, MPI input, DSA_public_key *pkey);
+int dsa_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors );
+int dsa_check_secret_key( int algo, MPI *skey );
+int dsa_sign( int algo, MPI *resarr, MPI data, MPI *skey );
+int dsa_verify( int algo, MPI hash, MPI *data, MPI *pkey );
+unsigned dsa_get_nbits( int algo, MPI *pkey );
+const char *dsa_get_info( int algo, int *npkey, int *nskey,
+				    int *nenc, int *nsig, int *usage );
 
 #endif /*G10_DSA_H*/

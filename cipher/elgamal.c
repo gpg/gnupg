@@ -31,42 +31,53 @@
 #include "cipher.h"
 #include "elgamal.h"
 
+typedef struct {
+    MPI p;	    /* prime */
+    MPI g;	    /* group generator */
+    MPI y;	    /* g^x mod p */
+} ELG_public_key;
 
-void
-elg_free_public_key( ELG_public_key *pk )
-{
-    mpi_free( pk->p ); pk->p = NULL;
-    mpi_free( pk->g ); pk->g = NULL;
-    mpi_free( pk->y ); pk->y = NULL;
-}
 
-void
-elg_free_secret_key( ELG_secret_key *sk )
-{
-    mpi_free( sk->p ); sk->p = NULL;
-    mpi_free( sk->g ); sk->g = NULL;
-    mpi_free( sk->y ); sk->y = NULL;
-    mpi_free( sk->x ); sk->x = NULL;
-}
+typedef struct {
+    MPI p;	    /* prime */
+    MPI g;	    /* group generator */
+    MPI y;	    /* g^x mod p */
+    MPI x;	    /* secret exponent */
+} ELG_secret_key;
+
+
+static void test_keys( ELG_secret_key *sk, unsigned nbits );
+static MPI gen_k( MPI p );
+static void generate( ELG_secret_key *sk, unsigned nbits, MPI **factors );
+static int  check_secret_key( ELG_secret_key *sk );
+static void encrypt(MPI a, MPI b, MPI input, ELG_public_key *pkey );
+static void decrypt(MPI output, MPI a, MPI b, ELG_secret_key *skey );
+static void sign(MPI a, MPI b, MPI input, ELG_secret_key *skey);
+static int  verify(MPI a, MPI b, MPI input, ELG_public_key *pkey);
 
 
 static void
-test_keys( ELG_public_key *pk, ELG_secret_key *sk, unsigned nbits )
+test_keys( ELG_secret_key *sk, unsigned nbits )
 {
+    ELG_public_key pk;
     MPI test = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
     MPI out1_a = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
     MPI out1_b = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
     MPI out2 = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
 
+    pk.p = sk->p;
+    pk.g = sk->g;
+    pk.y = sk->y;
+
     mpi_set_bytes( test, nbits, get_random_byte, 0 );
 
-    elg_encrypt( out1_a, out1_b, test, pk );
-    elg_decrypt( out2, out1_a, out1_b, sk );
+    encrypt( out1_a, out1_b, test, &pk );
+    decrypt( out2, out1_a, out1_b, sk );
     if( mpi_cmp( test, out2 ) )
 	log_fatal("ElGamal operation: encrypt, decrypt failed\n");
 
-    elg_sign( out1_a, out1_b, test, sk );
-    if( !elg_verify( out1_a, out1_b, test, pk ) )
+    sign( out1_a, out1_b, test, sk );
+    if( !verify( out1_a, out1_b, test, &pk ) )
 	log_fatal("ElGamal operation: sign, verify failed\n");
 
     mpi_free( test );
@@ -115,9 +126,8 @@ gen_k( MPI p )
  * Returns: 2 structures filles with all needed values
  *	    and an array with n-1 factors of (p-1)
  */
-void
-elg_generate( ELG_public_key *pk, ELG_secret_key *sk,
-	      unsigned nbits, MPI **ret_factors )
+static void
+generate(  ELG_secret_key *sk, unsigned nbits, MPI **ret_factors )
 {
     MPI p;    /* the prime */
     MPI p_min1;
@@ -186,16 +196,13 @@ elg_generate( ELG_public_key *pk, ELG_secret_key *sk,
     }
 
     /* copy the stuff to the key structures */
-    pk->p = mpi_copy(p);
-    pk->g = mpi_copy(g);
-    pk->y = mpi_copy(y);
     sk->p = p;
     sk->g = g;
     sk->y = y;
     sk->x = x;
 
     /* now we can test our keys (this should never fail!) */
-    test_keys( pk, sk, nbits - 64 );
+    test_keys( sk, nbits - 64 );
 
     mpi_free( p_min1 );
     mpi_free( temp   );
@@ -206,8 +213,8 @@ elg_generate( ELG_public_key *pk, ELG_secret_key *sk,
  * Test whether the secret key is valid.
  * Returns: if this is a valid key.
  */
-int
-elg_check_secret_key( ELG_secret_key *sk )
+static int
+check_secret_key( ELG_secret_key *sk )
 {
     int rc;
     MPI y = mpi_alloc( mpi_get_nlimbs(sk->y) );
@@ -219,8 +226,8 @@ elg_check_secret_key( ELG_secret_key *sk )
 }
 
 
-void
-elg_encrypt(MPI a, MPI b, MPI input, ELG_public_key *pkey )
+static void
+encrypt(MPI a, MPI b, MPI input, ELG_public_key *pkey )
 {
     MPI k;
 
@@ -249,8 +256,8 @@ elg_encrypt(MPI a, MPI b, MPI input, ELG_public_key *pkey )
 
 
 
-void
-elg_decrypt(MPI output, MPI a, MPI b, ELG_secret_key *skey )
+static void
+decrypt(MPI output, MPI a, MPI b, ELG_secret_key *skey )
 {
     MPI t1 = mpi_alloc_secure( mpi_get_nlimbs( skey->p ) );
 
@@ -276,8 +283,8 @@ elg_decrypt(MPI output, MPI a, MPI b, ELG_secret_key *skey )
  * Make an Elgamal signature out of INPUT
  */
 
-void
-elg_sign(MPI a, MPI b, MPI input, ELG_secret_key *skey )
+static void
+sign(MPI a, MPI b, MPI input, ELG_secret_key *skey )
 {
     MPI k;
     MPI t   = mpi_alloc( mpi_get_nlimbs(a) );
@@ -322,8 +329,8 @@ elg_sign(MPI a, MPI b, MPI input, ELG_secret_key *skey )
 /****************
  * Returns true if the signature composed of A and B is valid.
  */
-int
-elg_verify(MPI a, MPI b, MPI input, ELG_public_key *pkey )
+static int
+verify(MPI a, MPI b, MPI input, ELG_public_key *pkey )
 {
     int rc;
     MPI t1;
@@ -374,4 +381,152 @@ elg_verify(MPI a, MPI b, MPI input, ELG_public_key *pkey )
     mpi_free(t2);
     return rc;
 }
+
+/*********************************************
+ **************  interface  ******************
+ *********************************************/
+
+int
+elg_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors )
+{
+    ELG_secret_key sk;
+
+    if( !is_ELGAMAL(algo) )
+	return G10ERR_PUBKEY_ALGO;
+
+    generate( &sk, nbits, retfactors );
+    skey[0] = sk.p;
+    skey[1] = sk.g;
+    skey[2] = sk.y;
+    skey[3] = sk.x;
+    return 0;
+}
+
+
+int
+elg_check_secret_key( int algo, MPI *skey )
+{
+    ELG_secret_key sk;
+
+    if( !is_ELGAMAL(algo) )
+	return G10ERR_PUBKEY_ALGO;
+
+    sk.p = skey[0];
+    sk.g = skey[1];
+    sk.y = skey[2];
+    sk.x = skey[3];
+    if( !check_secret_key( &sk ) )
+	return G10ERR_BAD_SECKEY;
+
+    return 0;
+}
+
+
+
+int
+elg_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
+{
+    ELG_public_key pk;
+
+    if( !is_ELGAMAL(algo) )
+	return G10ERR_PUBKEY_ALGO;
+
+    pk.p = pkey[0];
+    pk.g = pkey[1];
+    pk.y = pkey[2];
+    resarr[0] = mpi_alloc( mpi_get_nlimbs( pk.p ) );
+    resarr[1] = mpi_alloc( mpi_get_nlimbs( pk.p ) );
+    encrypt( resarr[0], resarr[1], data, &pk );
+    return 0;
+}
+
+int
+elg_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
+{
+    ELG_secret_key sk;
+
+    if( !is_ELGAMAL(algo) )
+	return G10ERR_PUBKEY_ALGO;
+
+    sk.p = skey[0];
+    sk.g = skey[1];
+    sk.y = skey[2];
+    sk.x = skey[3];
+    *result = mpi_alloc_secure( mpi_get_nlimbs( sk.p ) );
+    decrypt( *result, data[0], data[1], &sk );
+    return 0;
+}
+
+int
+elg_sign( int algo, MPI *resarr, MPI data, MPI *skey )
+{
+    ELG_secret_key sk;
+
+    if( !is_ELGAMAL(algo) )
+	return G10ERR_PUBKEY_ALGO;
+
+    sk.p = skey[0];
+    sk.g = skey[1];
+    sk.y = skey[2];
+    sk.x = skey[3];
+    resarr[0] = mpi_alloc( mpi_get_nlimbs( sk.p ) );
+    resarr[1] = mpi_alloc( mpi_get_nlimbs( sk.p ) );
+    sign( resarr[0], resarr[1], data, &sk );
+    return 0;
+}
+
+int
+elg_verify( int algo, MPI hash, MPI *data, MPI *pkey )
+{
+    ELG_public_key pk;
+
+    if( !is_ELGAMAL(algo) )
+	return G10ERR_PUBKEY_ALGO;
+
+    pk.p = pkey[0];
+    pk.g = pkey[1];
+    pk.y = pkey[2];
+    if( !verify( data[0], data[1], hash, &pk ) )
+	return G10ERR_BAD_SIGN;
+    return 0;
+}
+
+
+
+unsigned
+elg_get_nbits( int algo, MPI *pkey )
+{
+    if( !is_ELGAMAL(algo) )
+	return 0;
+    return mpi_get_nbits( pkey[0] );
+}
+
+
+/****************
+ * Return some information about the algorithm.  We need algo here to
+ * distinguish different flavors of the algorithm.
+ * Returns: A pointer to string describing the algorithm or NULL if
+ *	    the ALGO is invalid.
+ * Usage: Bit 0 set : allows signing
+ *	      1 set : allows encryption
+ * NOTE: This function allows signing also for ELG-E, chich is not
+ * okay but a bad hack to allow to work with olf gpg keys. The real check
+ * is done in the gnupg ocde depending on the packet version.
+ */
+const char *
+elg_get_info( int algo, int *npkey, int *nskey, int *nenc, int *nsig,
+							 int *usage )
+{
+    *npkey = 3;
+    *nskey = 4;
+    *nenc = 2;
+    *nsig = 2;
+
+    switch( algo ) {
+      case PUBKEY_ALGO_ELGAMAL:   *usage = 2|1; return "ELG";
+      case PUBKEY_ALGO_ELGAMAL_E: *usage = 2|1; return "ELG-E";
+      default: *usage = 0; return NULL;
+    }
+}
+
 
