@@ -41,6 +41,10 @@
 #include "main.h"
 #include "hkp.h"
 
+#ifndef HAVE_MKDTEMP
+char *mkdtemp(char *template);
+#endif
+
 #if !(defined(HAVE_FORK) && defined(HAVE_PIPE))
 #define KEYSERVER_TEMPFILE_ONLY
 #endif
@@ -296,38 +300,19 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
 
   if(opt.keyserver_options.use_temp_files)
     {
-      int attempts;
       const char *tmp=get_temp_dir();
-      byte *randombits;
 
-      tempdir=m_alloc(strlen(tmp)+1+12+1);
+      tempdir=m_alloc(strlen(tmp)+1+10+1);
+      sprintf(tempdir,"%s" DIRSEP_S "gpg-XXXXXX",tmp);
 
-      /* Try 4 times to make the temp directory */
-      for(attempts=0;attempts<4;attempts++)
+      if(mkdtemp(tempdir)==NULL)
 	{
-	  /* Using really random bits is probably overkill here.  The
-	     worst thing that can happen with a directory name collision
-	     is that the user will get an error message. */
-	  randombits=get_random_bits(8*4,0,0);
-
-	  sprintf(tempdir,"%s" DIRSEP_S "gpg-%02X%02X%02X%02X",tmp,
-		  randombits[0],randombits[1],randombits[2],randombits[3]);
-
-	  m_free(randombits);
-
-	  if(mkdir(tempdir,0700)==0)
-	    {
-	      madedir=1;
-	      break;
-	    }
-	}
-
-      if(!madedir)
-	{
-	  log_error(_("%s: can't create temp directory after %d tries: %s\n"),
-		    tempdir,attempts,strerror(errno));
+	  log_error(_("%s: can't create temp directory: %s\n"),
+		    tempdir,strerror(errno));
 	  goto fail;
 	}
+
+      madedir=1;
 
       tempfile_in=m_alloc(strlen(tempdir)+1+10+1);
       sprintf(tempfile_in,"%s" DIRSEP_S "ksrvin" EXTSEP_S "txt",tempdir);
