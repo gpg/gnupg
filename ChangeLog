@@ -1,4 +1,10 @@
+2001-03-12  Werner Koch  <wk@gnupg.org>
+
+	* INSTALL: Add a note to VPATH builds. 
+
 2001-03-08  Werner Koch  <wk@gnupg.org>
+
+	* debian/: Applied update from James.
 
 	Added copyright and license notices to some more files.
 

@@ -1004,6 +1004,8 @@ twofish_get_info (int algo, size_t *keylen,
 }
 
 
+#ifdef IS_MODULE
+static
 const char * const gnupgext_version = "TWOFISH ($Revision$)";
 
 static struct {
@@ -1034,7 +1036,7 @@ static struct {
  *		  version = interface version of the function/pointer
  *			    (currently this is 1 for all functions)
  */
-void *
+static void *
 gnupgext_enum_func ( int what, int *sequence, int *class, int *vers )
 {
     void *ret;
@@ -1062,4 +1064,4 @@ gnupgext_enum_func ( int what, int *sequence, int *class, int *vers )
     *sequence = i;
     return ret;
 }
-
+#endif

@@ -1574,7 +1574,7 @@ main( int argc, char **argv )
         break;
 
       case aListPackets:
-	opt.list_packets=1;
+	opt.list_packets=2;
       default:
 	if( argc > 1 )
 	    wrong_args(_("[filename]"));

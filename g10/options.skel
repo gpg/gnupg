@@ -48,7 +48,7 @@ force-v3-sigs
 
 # Because some mailers change lines starting with "From " to ">From "
 # it is good to handle such lines in a special way when creating
-# cleartext signatures; all other PGP versions it this way too.
+# cleartext signatures; all other PGP versions do it this way too.
 # To enable full OpenPGP compliance you have to remove this option.
 
 escape-from-lines
@@ -81,12 +81,12 @@ lock-once
 
 
 # GnuPG can import a key from a HKP keyerver if one is missing
-# for sercain operations. Is you set this option to a keyserver
+# for certain operations. Is you set this option to a keyserver
 # you will be asked in such a case whether GnuPG should try to
 # import the key from that server (server do syncronize with each
-# others and DNS Round-Robin may give you a random server each time).
+# other and DNS Round-Robin may give you a random server each time).
 # Use "host -l pgp.net | grep www" to figure out a keyserver.
-#keyserver wwwkeys.eu.pgp.net
+#keyserver wwwkeys.nl.pgp.net
 
 # The environment variable http_proxy is only used when the
 # this option is set.

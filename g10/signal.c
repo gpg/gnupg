@@ -38,6 +38,36 @@
 static volatile int caught_fatal_sig = 0;
 static volatile int caught_sigusr1 = 0;
 
+static void
+init_one_signal (int sig, RETSIGTYPE (*handler)(int), int check_ign )
+{
+ #ifndef HAVE_DOSISH_SYSTEM
+  #if HAVE_SIGACTION
+    struct sigaction oact, nact;
+
+    if (check_ign) {
+        /* we don't want to change an IGN handler */
+        sigaction (sig, NULL, &oact );
+        if (oact.sa_handler == SIG_IGN )
+            return;
+    }
+
+    nact.sa_handler = handler;
+    sigemptyset (&nact.sa_mask);
+    nact.sa_flags = 0;
+    sigaction ( sig, &nact, NULL);
+  #else 
+    RETSIGTYPE (*ohandler)(int);
+
+    ohandler = signal (sig, handler);
+    if (check_ign && ohandler == SIG_IGN) {
+        /* Change it back if it was already set to IGN */
+        signal (sig, SIG_IGN);
+    }
+  #endif
+ #endif /*!HAVE_DOSISH_SYSTEM*/
+}
+
 static const char *
 get_signal_name( int signum )
 {
@@ -66,18 +96,9 @@ got_fatal_signal( int sig )
     s = get_signal_name(sig); write(2, s, strlen(s) );
     write(2, " caught ... exiting\n", 21 );
 
-  #ifndef HAVE_DOSISH_SYSTEM
-    {	/* reset action to default action and raise signal again */
-	struct sigaction nact;
-	nact.sa_handler = SIG_DFL;
-	sigemptyset( &nact.sa_mask );
-	nact.sa_flags = 0;
-	sigaction( sig, &nact, NULL);
-    }
-  #endif
-    
+    /* reset action to default action and raise signal again */
+    init_one_signal (sig, SIG_DFL, 0);
     remove_lockfiles ();
-
     raise( sig );
 }
 
@@ -88,37 +109,18 @@ got_usr_signal( int sig )
     caught_sigusr1 = 1;
 }
 
-#ifndef HAVE_DOSISH_SYSTEM
-static void
-do_sigaction( int sig, struct sigaction *nact )
-{
-    struct sigaction oact;
-
-    sigaction( sig, NULL, &oact );
-    if( oact.sa_handler != SIG_IGN )
-	sigaction( sig, nact, NULL);
-}
-#endif
 
 void
 init_signals()
 {
   #ifndef HAVE_DOSISH_SYSTEM
-    struct sigaction nact;
-
-    nact.sa_handler = got_fatal_signal;
-    sigemptyset( &nact.sa_mask );
-    nact.sa_flags = 0;
-
-    do_sigaction( SIGINT, &nact );
-    do_sigaction( SIGHUP, &nact );
-    do_sigaction( SIGTERM, &nact );
-    do_sigaction( SIGQUIT, &nact );
-    do_sigaction( SIGSEGV, &nact );
-    nact.sa_handler = got_usr_signal;
-    sigaction( SIGUSR1, &nact, NULL );
-    nact.sa_handler = SIG_IGN;
-    sigaction( SIGPIPE, &nact, NULL );
+    init_one_signal (SIGINT, got_fatal_signal, 1 );
+    init_one_signal (SIGHUP, got_fatal_signal, 1 );
+    init_one_signal (SIGTERM, got_fatal_signal, 1 );
+    init_one_signal (SIGQUIT, got_fatal_signal, 1 );
+    init_one_signal (SIGSEGV, got_fatal_signal, 1 );
+    init_one_signal (SIGUSR1, got_usr_signal, 0 );
+    init_one_signal (SIGPIPE, SIG_IGN, 0 );
   #endif
 }
 
@@ -127,6 +129,7 @@ void
 pause_on_sigusr( int which )
 {
   #ifndef HAVE_DOSISH_SYSTEM
+   #ifdef HAVE_SIGPROCMASK
     sigset_t mask, oldmask;
 
     assert( which == 1 );
@@ -138,6 +141,14 @@ pause_on_sigusr( int which )
 	sigsuspend( &oldmask );
     caught_sigusr1 = 0;
     sigprocmask( SIG_UNBLOCK, &mask, NULL );
+   #else 
+     assert (which == 1);
+     sighold (SIGUSR1);
+     while (!caught_sigusr1)
+         sigpause(SIGUSR1);
+     caught_sigusr1 = 0;
+     sigrelse(SIGUSR1); ????
+   #endif /*!HAVE_SIGPROCMASK*/
   #endif
 }
 
@@ -145,12 +156,13 @@ pause_on_sigusr( int which )
 static void
 do_block( int block )
 {
-  #ifndef HAVE_DOSISH_SYSTEM
+ #ifndef HAVE_DOSISH_SYSTEM
     static int is_blocked;
+  #ifdef HAVE_SIGPROCMASK
     static sigset_t oldmask;
 
     if( block ) {
-	sigset_t newmask;
+        sigset_t newmask;
 
 	if( is_blocked )
 	    log_bug("signals are already blocked\n");
@@ -164,7 +176,28 @@ do_block( int block )
 	sigprocmask( SIG_SETMASK, &oldmask, NULL );
 	is_blocked = 0;
     }
-  #endif /*HAVE_DOSISH_SYSTEM*/
+  #else /*!HAVE_SIGPROCMASK*/
+    static void (*disposition[MAXSIG])();
+    int sig;
+
+    if( block ) {
+	if( is_blocked )
+	    log_bug("signals are already blocked\n");
+        for (sig=1; sig < MAXSIG; sig++) {
+            disposition[sig] = sigset (sig, SIG_HOLD);
+        }
+	is_blocked = 1;
+    }
+    else {
+	if( !is_blocked )
+	    log_bug("signals are not blocked\n");
+        for (sig=1; sig < MAXSIG; sig++) {
+            sigset (sig, disposition[sig]);
+        }
+	is_blocked = 0;
+    }
+  #endif /*!HAVE_SIGPROCMASK*/
+ #endif /*HAVE_DOSISH_SYSTEM*/
 }
 
 
@@ -179,4 +212,3 @@ unblock_all_signals()
 {
     do_block(0);
 }
-

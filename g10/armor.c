@@ -245,7 +245,9 @@ parse_hash_header( const char *line )
 	    found |= 2;
 	else if( !strncmp( s, "MD5", s2-s ) )
 	    found |= 4;
-	else if( !strncmp( s, "TIGER", s2-s ) )
+	else if( !strncmp( s, "TIGER192", s2-s ) )
+	    found |= 8;
+	else if( !strncmp( s, "TIGER", s2-s ) ) /* used by old versions */
 	    found |= 8;
 	else
 	    return 0;
@@ -312,19 +314,19 @@ is_armor_header( byte *line, unsigned len )
  *	 >0: Good header line
  */
 static int
-parse_header_line( armor_filter_context_t *afx, byte *line, unsigned len )
+parse_header_line( armor_filter_context_t *afx, byte *line, unsigned int len )
 {
     byte *p;
     int hashes=0;
+    unsigned int len2;
 
-    /* fixme: why this double check?  I think the original code w/o the
-     * second check for an empty line was done from an early draft of
-     * of OpenPGP - or simply very stupid code */
-    if( *line == '\n' || ( len && (*line == '\r' && line[1]=='\n') ) )
-	return 0; /* empty line */
-    len = trim_trailing_ws( line, len );
-    if( !len )
-	return 0; /* WS only same as empty line */
+    len2 = check_trailing_ws( line, len );
+    if( !len2 ) {
+        afx->buffer_pos = len2;  /* (it is not the fine way to do it here) */
+	return 0; /* WS only: same as empty line */
+    }
+    len = len2;
+    line[len2] = 0;
 
     p = strchr( line, ':');
     if( !p || !p[1] ) {

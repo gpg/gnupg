@@ -1,3 +1,7 @@
+2001-03-12  Werner Koch  <wk@gnupg.org>
+
+	* strgutil.c (check_trailing_chars,check_trailing_ws): New.
+
 2001-03-08  Werner Koch  <wk@gnupg.org>
 
 	* argparse.c (default_strusage): Changed year of printed copyright

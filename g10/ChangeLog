@@ -1,8 +1,53 @@
+2001-03-12  Werner Koch  <wk@gnupg.org>
+
+	* armor.c (parse_header_line): Removed double empty line check.
+	(parse_header_line): Replaced trim_trailing_ws with a counting
+	function so that we can adjust for the next read.
+
+	* options.skel: Fixed 3 typos. By Thomas Klausner. Replaced the
+	keyserver example by a better working server. 
+
+	* parse-packet.c (parse_symkeyenc): Return Invalid_Packet on error.
+	(parse_pubkeyenc): Ditto.
+	(parse_onepass_sig): Ditto.
+	(parse_plaintext): Ditto.
+	(parse_encrypted): Ditto.
+	(parse_signature): Return error at other places too.
+	(parse_key): Ditto.
+	* g10.c (main): Set opt.list_packets to another value when invoked
+	with the --list-packets command.
+	* mainproc.c (do_proc_packets): Don's stop processing when running
+	under --list-packets command.
+
+	* signal.c (do_sigaction): Removed.
+	(init_one_signal): New to replace the above.  Needed to support
+	systems without sigactions. Suggested by Dave Dykstra.
+	(got_fatal_signal,init_signals): Use the above here. 
+	(do_block): Use sigset() if sigprocmask() is not available.
+
+	* armor.c (parse_hash_header): Test on TIGER192, which is the
+	correct value as per rfc2440.  By Edwin Woudt.
+
 2001-03-08  Werner Koch  <wk@gnupg.org>
+
+	* misc.c: Include time.h. By James Troup.
 
 	* getkey.c: Re-enabled the unknown user Id and PK caches and
 	increased their sizes.
 
+	* getkey.c (merge_selfsigs_main): Set expire date and continue
+	processing even if we found a revoked key.
+	(merge_selfsigs_subkeys): Ditto.
+	
+	* packet.h: Add an is_revoked flag to the user_id packet.
+	* getkey.c (fixup_uidnode): Set that flag here.
+	(merge_selfsigs_main): Fix so that the latest signature is used to
+	find the self-signature for an UID.
+	* parse-packet.c (parse_user_id): Zero out all fields.
+	* mainproc.c (check_sig_and_print): Print the primary user ID
+	according the the node flag and then all other non-revoked user IDs.
+	(is_uid_revoked): Removed; it is now handled by the key selection code.
+	
 	Changed the year list of all copyright notices.
 	
 2001-03-07  Werner Koch  <wk@gnupg.org>

@@ -9,6 +9,8 @@
 # paternity under the Copyright, Designs and Patents Act 1988.)
 # This file may have to be extensively modified
 
+STRIP=strip --remove-section=.comment --remove-section=.note
+
 build:
 	$(checkdir)
 	./configure --prefix=/usr --with-included-gettext
@@ -34,11 +36,12 @@ binary-arch:	checkroot build # test
 	install -d debian/tmp/DEBIAN/
 	install -m 755 debian/preinst debian/prerm debian/postinst debian/postrm debian/tmp/DEBIAN/
 	$(MAKE) prefix=`pwd`/debian/tmp/usr mandir=`pwd`/debian/tmp/usr/share/man install
-	strip debian/tmp/usr/bin/*
+	$(STRIP) debian/tmp/usr/bin/*
+	chmod 4755 debian/tmp/usr/bin/gpg
 	chmod 644 debian/tmp/usr/lib/gnupg/*
 	sed -e "s#../g10/gpg#gpg#" < tools/lspgpot > debian/tmp/usr/bin/lspgpot
 	chmod 755 debian/tmp/usr/bin/lspgpot
-	strip --strip-unneeded debian/tmp/usr/lib/gnupg/*
+	$(STRIP) --strip-unneeded debian/tmp/usr/lib/gnupg/*
 	# In response to #53714... no idea if it's correct, will check with upstream
 	mv debian/tmp/usr/share/locale/es_ES debian/tmp/usr/share/locale/es
 	sed -e "s#/usr/local/#/usr/#" < debian/tmp/usr/share/man/man1/gpg.1 \
@@ -57,6 +60,8 @@ binary-arch:	checkroot build # test
 	gzip -9v debian/tmp/usr/share/doc/gnupg/*
 	ln -s changelog.g10.gz debian/tmp/usr/share/doc/gnupg/changelog.gz
 	install -m 644 debian/copyright debian/tmp/usr/share/doc/gnupg/
+	install -d debian/tmp/usr/share/lintian/overrides/
+	install -m 644 debian/lintian.override debian/tmp/usr/share/lintian/overrides/gnupg
 	dpkg-shlibdeps g10/gpg
 	dpkg-gencontrol -isp
 	chown -R root.root debian/tmp

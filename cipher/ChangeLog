@@ -1,3 +1,16 @@
+2001-03-12  Werner Koch  <wk@gnupg.org>
+
+	* twofish.c (gnupgext_enum_func): Add some static when comnpiled
+	as a module.
+
+	* tiger.c (tiger_get_info): Return "TIGER192" and not just
+	"TIGER".  By Edwin Woudt.
+
+2001-03-08  Werner Koch  <wk@gnupg.org>
+
+	* random.c: Always include time.h - standard requirement.  Thanks
+	to James Troup.
+
 2001-01-18  Werner Koch  <wk@gnupg.org>
 
 	* rndw32.c: Fixed typo and wrong ifdef for VER_PLATFORM* macro

@@ -576,19 +576,23 @@ static int
 parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
     PKT_symkey_enc *k;
+    int rc = 0;
     int i, version, s2kmode, cipher_algo, hash_algo, seskeylen, minlen;
 
     if( pktlen < 4 ) {
 	log_error("packet(%d) too short\n", pkttype);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     version = iobuf_get_noeof(inp); pktlen--;
     if( version != 4 ) {
 	log_error("packet(%d) with unknown version %d\n", pkttype, version);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     if( pktlen > 200 ) { /* (we encode the seskeylen in a byte) */
 	log_error("packet(%d) too large\n", pkttype);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     cipher_algo = iobuf_get_noeof(inp); pktlen--;
@@ -610,6 +614,7 @@ parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     }
     if( minlen > pktlen ) {
 	log_error("packet with S2K %d too short\n", s2kmode );
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     seskeylen = pktlen - minlen;
@@ -646,24 +651,27 @@ parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 
   leave:
     skip_rest(inp, pktlen);
-    return 0;
+    return rc;
 }
 
 static int
 parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
-    unsigned n;
+    unsigned int n;
+    int rc = 0;
     int i, ndata;
     PKT_pubkey_enc *k;
 
     k = packet->pkt.pubkey_enc = m_alloc_clear(sizeof *packet->pkt.pubkey_enc);
     if( pktlen < 12 ) {
 	log_error("packet(%d) too short\n", pkttype);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     k->version = iobuf_get_noeof(inp); pktlen--;
     if( k->version != 2 && k->version != 3 ) {
 	log_error("packet(%d) with unknown version %d\n", pkttype, k->version);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     k->keyid[0] = read_32(inp); pktlen -= 4;
@@ -695,7 +703,7 @@ parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 
   leave:
     skip_rest(inp, pktlen);
-    return 0;
+    return rc;
 }
 
 
@@ -1088,6 +1096,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	is_v4=1;
     else if( sig->version != 2 && sig->version != 3 ) {
 	log_error("packet(%d) with unknown version %d\n", pkttype, sig->version);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
 
@@ -1223,14 +1232,17 @@ parse_onepass_sig( IOBUF inp, int pkttype, unsigned long pktlen,
 					     PKT_onepass_sig *ops )
 {
     int version;
+    int rc = 0;
 
     if( pktlen < 13 ) {
 	log_error("packet(%d) too short\n", pkttype);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     version = iobuf_get_noeof(inp); pktlen--;
     if( version != 3 ) {
 	log_error("onepass_sig with unknown version %d\n", version);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     ops->sig_class = iobuf_get_noeof(inp); pktlen--;
@@ -1249,7 +1261,7 @@ parse_onepass_sig( IOBUF inp, int pkttype, unsigned long pktlen,
 
   leave:
     skip_rest(inp, pktlen);
-    return 0;
+    return rc;
 }
 
 
@@ -1289,11 +1301,13 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	is_v4=1;
     else if( version != 2 && version != 3 ) {
 	log_error("packet(%d) with unknown version %d\n", pkttype, version);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
 
     if( pktlen < 11 ) {
 	log_error("packet(%d) too short\n", pkttype);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
 
@@ -1572,6 +1586,12 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     packet->pkt.user_id->len = pktlen;
     packet->pkt.user_id->photo = NULL;
     packet->pkt.user_id->photolen = 0;
+    packet->pkt.user_id->is_primary = 0;
+    packet->pkt.user_id->is_revoked = 0;
+    packet->pkt.user_id->created = 0;
+    packet->pkt.user_id->help_key_usage = 0;
+    packet->pkt.user_id->help_key_expire = 0;
+
     p = packet->pkt.user_id->name;
     for( ; pktlen; pktlen--, p++ )
 	*p = iobuf_get_noeof(inp);
@@ -1580,7 +1600,7 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     if( list_mode ) {
 	int n = packet->pkt.user_id->len;
 	printf(":user ID packet: \"");
-	/* fixme: Hey why don't we replace this wioth print_string?? */
+	/* fixme: Hey why don't we replace this with print_string?? */
 	for(p=packet->pkt.user_id->name; n; p++, n-- ) {
 	    if( *p >= ' ' && *p <= 'z' )
 		putchar(*p);
@@ -1663,6 +1683,7 @@ static int
 parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
 					PACKET *pkt, int new_ctb )
 {
+    int rc = 0;
     int mode, namelen;
     PKT_plaintext *pt;
     byte *p;
@@ -1670,6 +1691,7 @@ parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
 
     if( pktlen && pktlen < 6 ) {
 	log_error("packet(%d) too short (%lu)\n", pkttype, (ulong)pktlen);
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     mode = iobuf_get_noeof(inp); if( pktlen ) pktlen--;
@@ -1709,7 +1731,7 @@ parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
     }
 
   leave:
-    return 0;
+    return rc;
 }
 
 
@@ -1738,6 +1760,7 @@ static int
 parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 				       PACKET *pkt, int new_ctb )
 {
+    int rc = 0;
     PKT_encrypted *ed;
     unsigned long orig_pktlen = pktlen;
 
@@ -1757,12 +1780,14 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 	    log_error("encrypted_mdc packet with unknown version %d\n",
 								version);
             /*skip_rest(inp, pktlen); should we really do this? */
+            rc = G10ERR_INVALID_PACKET;
 	    goto leave;
 	}
 	ed->mdc_method = DIGEST_ALGO_SHA1;
     }
     if( orig_pktlen && pktlen < 10 ) { /* actually this is blocksize+2 */
 	log_error("packet(%d) too short\n", pkttype);
+        rc = G10ERR_INVALID_PACKET;
 	skip_rest(inp, pktlen);
 	goto leave;
     }
@@ -1779,7 +1804,7 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
     pktlen = 0;
 
   leave:
-    return 0;
+    return rc;
 }
 
 
@@ -1787,6 +1812,7 @@ static int
 parse_mdc( IOBUF inp, int pkttype, unsigned long pktlen,
 				   PACKET *pkt, int new_ctb )
 {
+    int rc = 0;
     PKT_mdc *mdc;
     byte *p;
 
@@ -1795,6 +1821,7 @@ parse_mdc( IOBUF inp, int pkttype, unsigned long pktlen,
 	printf(":mdc packet: length=%lu\n", pktlen);
     if( !new_ctb || pktlen != 20 ) {
 	log_error("mdc_packet with invalid encoding\n");
+        rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
     p = mdc->hash;
@@ -1802,7 +1829,7 @@ parse_mdc( IOBUF inp, int pkttype, unsigned long pktlen,
 	*p = iobuf_get_noeof(inp);
 
   leave:
-    return 0;
+    return rc;
 }
 
 

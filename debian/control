@@ -1,5 +1,5 @@
 Source: gnupg
-Section: utils
+Section: non-US
 Priority: optional
 Maintainer: James Troup <james@nocrew.org>
 Standards-Version: 3.1.1.1
@@ -9,7 +9,7 @@ Package: gnupg
 Architecture: any
 Depends: ${shlibs:Depends}, makedev (>= 2.3.1-13)
 Suggests: gnupg-doc
-Conflicts: gpg-rsa, gpg-rsaref
+Conflicts: gpg-rsa, gpg-rsaref, suidmanager (<< 0.50)
 Replaces: gpg-rsa, gpg-rsaref
 Provides: gpg-rsa, gpg-rsaref
 Description: GNU privacy guard - a free PGP replacement.

@@ -245,8 +245,8 @@ proc_symkey_enc( CTX c, PACKET *pkt )
     PKT_symkey_enc *enc;
 
     enc = pkt->pkt.symkey_enc;
-    if( enc->seskeylen )
-	log_error( "symkey_enc packet with session keys are not supported!\n");
+    if (enc->seskeylen)
+	log_error ("symkey_enc packet with session keys are not supported!\n");
     else {
 	c->last_was_session_key = 2;
 	c->dek = passphrase_to_dek( NULL, 0, enc->cipher_algo, &enc->s2k, 0 );
@@ -1040,7 +1040,9 @@ do_proc_packets( CTX c, IOBUF a )
 	any_data = 1;
 	if( rc ) {
 	    free_packet(pkt);
-	    if( rc == G10ERR_INVALID_PACKET )
+            /* stop processing hwne an invalid packet has been encountered
+             * but don't do so when we are doing a --list-packet. */
+	    if( rc == G10ERR_INVALID_PACKET && opt.list_packets != 2 )
 		break;
 	    continue;
 	}
@@ -1163,68 +1165,6 @@ do_proc_packets( CTX c, IOBUF a )
 }
 
 
-/* fixme: This code is a duplicate fro keylist.c and should be replaced
- * by flags set in getkey.c.  gpg 1.1 already does this */
-static int
-is_uid_revoked ( KBNODE keyblock, KBNODE uidnode, u32 *mainkid )
-{
-    KBNODE node;
-    PKT_signature *selfsig = NULL; /* the latest valid self signature */
-
-    assert ( uidnode->pkt->pkttype == PKT_USER_ID );
-
-    /* first find out about the latest valid self-signature */
-    for ( node = uidnode->next; node; node = node->next ) {
-	PKT_signature *sig;
-
-	if ( node->pkt->pkttype == PKT_USER_ID
-	     || node->pkt->pkttype == PKT_PHOTO_ID
-	     || node->pkt->pkttype == PKT_PUBLIC_SUBKEY
-	     || node->pkt->pkttype == PKT_SECRET_SUBKEY )
-	    break;
-	if ( node->pkt->pkttype != PKT_SIGNATURE )
-	    continue;
-	sig = node->pkt->pkt.signature;
-	if ( mainkid[0] != sig->keyid[0] || mainkid[1] != sig->keyid[1] )
-	    continue; /* we only care about self-signatures for now */
-
-	if ( (sig->sig_class&~3) == 0x10 ) { /* regular self signature */
-	    if ( !check_key_signature( keyblock, node, NULL ) ) {
-		if ( !selfsig )
-		    selfsig = sig; /* use the first valid sig */
-		else if ( sig->timestamp > selfsig->timestamp
-			  && sig->sig_class >= selfsig->sig_class )
-		    selfsig = sig; /* but this one is newer */
-	    }
-	}
-    }
-
-    /* watch out for a newer revocation */
-    for ( node = uidnode->next; node; node = node->next ) {
-	PKT_signature *sig;
-
-	if ( node->pkt->pkttype == PKT_USER_ID
-	     || node->pkt->pkttype == PKT_PHOTO_ID
-	     || node->pkt->pkttype == PKT_PUBLIC_SUBKEY
-	     || node->pkt->pkttype == PKT_SECRET_SUBKEY )
-	    break;
-	if ( node->pkt->pkttype != PKT_SIGNATURE )
-	    continue;
-	sig = node->pkt->pkt.signature;
-	if ( mainkid[0] != sig->keyid[0] || mainkid[1] != sig->keyid[1] )
-	    continue; /* we only care about self-signatures */
-
-	if ( sig->sig_class == 0x30
-	     && (!selfsig || sig->timestamp >= selfsig->timestamp) ) {
-	    if ( !check_key_signature( keyblock, node, NULL ) )
-		return 1;
-	}
-    }
-    return 0;
-}
-
-
-
 static int
 check_sig_and_print( CTX c, KBNODE node )
 {
@@ -1282,8 +1222,6 @@ check_sig_and_print( CTX c, KBNODE node )
 	KBNODE un, keyblock;
 	char *us;
 	int count=0;
-        u32 mainkid[2];
-        int mainkid_ok = 0;
 
 	keyblock = get_pubkeyblock( sig->keyid );
 
@@ -1291,34 +1229,44 @@ check_sig_and_print( CTX c, KBNODE node )
 	write_status_text( rc? STATUS_BADSIG : STATUS_GOODSIG, us );
 	m_free(us);
 
-	/* fixme: list only user ids which are valid and add information
-	 *	  about the trustworthiness of each user id, sort them.
-	 *	  Integrate this with check_signatures_trust(). */
+        /* find an print the primary user ID */
 	for( un=keyblock; un; un = un->next ) {
-            if ( !mainkid_ok && un->pkt->pkttype == PKT_PUBLIC_KEY ) {
-                keyid_from_pk( un->pkt->pkt.public_key, mainkid );
-                mainkid_ok = 1;
-            }
-	    if( !mainkid_ok || un->pkt->pkttype != PKT_USER_ID )
+	    if( un->pkt->pkttype != PKT_USER_ID )
 		continue;
-            if ( is_uid_revoked (keyblock, un, mainkid ) )
+            if ( un->pkt->pkt.user_id->is_revoked )
                 continue;
-
-	    if( !count++ )
-		log_info(rc? _("BAD signature from \"")
-			   : _("Good signature from \""));
-	    else
-		log_info(    _("                aka \""));
+            if ( !un->pkt->pkt.user_id->is_primary )
+                continue;
+            
+            log_info(rc? _("BAD signature from \"")
+                       : _("Good signature from \""));
 	    print_utf8_string( log_stream(), un->pkt->pkt.user_id->name,
 					     un->pkt->pkt.user_id->len );
 	    fputs("\"\n", log_stream() );
-	    if( rc )
-		break; /* print only one id in this case */
+            count++;
 	}
 	if( !count ) {	/* just in case that we have no userid */
 	    log_info(rc? _("BAD signature from \"")
 		       : _("Good signature from \""));
 	    fputs("[?]\"\n", log_stream() );
+	}
+
+        /* If we have a good signature and already printed 
+         * the primary user ID, print all the other user IDs */
+        if ( count && !rc ) {
+            for( un=keyblock; un; un = un->next ) {
+                if( un->pkt->pkttype != PKT_USER_ID )
+                    continue;
+                if ( un->pkt->pkt.user_id->is_revoked )
+                    continue; 
+                if ( un->pkt->pkt.user_id->is_primary )
+                    continue;
+
+		log_info(    _("                aka \""));
+                print_utf8_string( log_stream(), un->pkt->pkt.user_id->name,
+                                                 un->pkt->pkt.user_id->len );
+                fputs("\"\n", log_stream() );
+            }
 	}
 	release_kbnode( keyblock );
 	if( !rc )

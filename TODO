@@ -8,8 +8,6 @@
 
   * Can we output things like the preferences?      
 
-  * Add Dave's UTS patches
-
   ** Check whether the use of -u and --clearsign created 2 signatures.
      removed dups from the skclist.
 
@@ -106,6 +104,3 @@ Nice to have
     trustdb.
   * Evaluate whether it make sense to replace the namehashs either by
     using the user ID directly or by using pointers into the trustdb.
-
-
-

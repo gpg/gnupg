@@ -1,3 +1,40 @@
+gnupg (1.0.4-3) unstable; urgency=medium
+
+  * debian/rules (binary): make gpg binary suid, closes: #86433.
+  * debian/postinst: don't use suidregister.
+  * debian/postrm: removed (only called suidunregister).
+  * debian/control: conflict with suidmanager << 0.50.
+  * mpi/longlong.h: apply fix for ARM long long artimetic from Philip
+    Blundell <philb@gnu.org>, closes: #87487.
+  * debian/preinst: the old GnuPG debs have moved to people.debian.org.
+  * cipher/random.c: #include <time.h> as well as <sys/time.h>
+  * g10/misc.c: likewise.
+  * debian/rules: define a strip alias which removes the .comment and
+    .note sections.
+  * debian/rules (binary-arch): use it.
+  * debian/lintian.override: new file; override the SUID warning from
+    lintian.
+  * debian/rules (binary-arch): install it.
+
+ -- James Troup <james@nocrew.org>  Sun, 25 Feb 2001 05:24:58 +0000
+
+gnupg (1.0.4-2) stable unstable; urgency=high
+
+  * Apply security fix patch from Werner.
+  * Apply another patch from Werner to fix bogus warning on Rijndael
+    usage.
+  * Change section to 'non-US'.
+
+ -- James Troup <james@nocrew.org>  Mon, 12 Feb 2001 07:47:02 +0000
+
+gnupg (1.0.4-1) stable unstable; urgency=high
+
+  * New upstream version.
+  * Fixes a serious bug which could lead to false signature verification
+    results when more than one signature is fed to gpg.
+
+ -- James Troup <james@nocrew.org>  Tue, 17 Oct 2000 17:26:17 +0100
+
 gnupg (1.0.3b-1) unstable; urgency=low
 
   * New upstream snapshot version.

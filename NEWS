@@ -1,13 +1,4 @@
         
-    * The verification status of self-signatures are now cached. To increase
-      the speed of key list operations for existing keys you can do the
-      following in yout GnuPG homedir (~/.gnupg): 
-        $ cp pubring.gpg pubring.gpg.save
-        $ gpg --export-all >x
-        $ rm pubring.gpg
-        $ gpg --import x
-      Note, that only v4 keys (i.e no old RSA keys) benefit from this caching.
-
     * WARNING: The semantics of --verify have changed to address a problem
       with detached signature detection. --verify now ignores signed material
       given on stdin unless this is requested by using a "-" as the name for
@@ -19,6 +10,20 @@
 
     * Secret keys are no longer imported unless you use the new option
       --allow-secret-key-import.
+
+    * There is now a notation of a primary user ID.  For example this one is 
+      printed with a signature verifaction as the first user ID, revoked user
+      IDs are not printed there anymore.  I general the primary user ID is the
+      one with the latest self-signature.
+
+    * The verification status of self-signatures are now cached. To increase
+      the speed of key list operations for existing keys you can do the
+      following in yout GnuPG homedir (~/.gnupg): 
+        $ cp pubring.gpg pubring.gpg.save
+        $ gpg --export-all >x
+        $ rm pubring.gpg
+        $ gpg --import x
+      Note, that only v4 keys (i.e no old RSA keys) benefit from this caching.
 
     * Support for the gpg-agent from gpg 1.1 and other changes needed by
       gpgme.

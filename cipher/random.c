@@ -32,6 +32,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
+#include <time.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -42,9 +43,6 @@
 #endif
 #ifdef HAVE_GETTIMEOFDAY
   #include <sys/times.h>
-#endif
-#ifdef HAVE_CLOCK_GETTIME
-  #include <time.h>
 #endif
 #ifdef HAVE_GETRUSAGE
   #include <sys/resource.h>

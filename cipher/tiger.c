@@ -904,7 +904,7 @@ tiger_get_info( int algo, size_t *contextsize,
     *(void  (**)(TIGER_CONTEXT *))r_final		 = tiger_final;
     *(byte *(**)(TIGER_CONTEXT *))r_read		 = tiger_read;
 
-    return "TIGER";
+    return "TIGER192";
 }
 
 

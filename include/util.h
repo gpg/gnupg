@@ -172,8 +172,12 @@ STRLIST strlist_last( STRLIST node );
 const char *memistr( const char *buf, size_t buflen, const char *sub );
 char *mem2str( char *, const void *, size_t);
 char *trim_spaces( char *string );
-unsigned trim_trailing_chars( byte *line, unsigned len, const char *trimchars);
-unsigned trim_trailing_ws( byte *line, unsigned len );
+unsigned int trim_trailing_chars( byte *line, unsigned int len,
+                                  const char *trimchars);
+unsigned int trim_trailing_ws( byte *line, unsigned len );
+unsigned int check_trailing_chars( const byte *line, unsigned int len,
+                                   const char *trimchars );
+unsigned int check_trailing_ws( const byte *line, unsigned int len );
 int string_count_chr( const char *string, int c );
 int set_native_charset( const char *newset );
 const char* get_native_charset(void);

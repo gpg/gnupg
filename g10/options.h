@@ -44,7 +44,7 @@ struct {
     int fingerprint; /* list fingerprints */
     int list_sigs;   /* list signatures */
     int no_armor;
-    int list_packets; /* list-packets mode */
+    int list_packets; /* list-packets mode: 1=normal, 2=invoked by command*/
     int def_cipher_algo;
     int force_v3_sigs;
     int force_mdc;

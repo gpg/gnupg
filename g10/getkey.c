@@ -1354,12 +1354,13 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode )
     uid->created = 0; /* not created == invalid */
     if ( !signode ) 
         return; /* no self-signature */
-    if ( IS_UID_REV ( sig ) )
+    if ( IS_UID_REV ( sig ) ) {
+        uid->is_revoked = 1;
         return; /* has been revoked */
+    }
 
     uid->created = sig->timestamp; /* this one is okay */    
  
-        
     /* store the key flags in the helper variable for later processing */
     uid->help_key_usage = 0;
     p = parse_sig_subpkt ( sig->hashed_data, SIGSUBPKT_KEY_FLAGS, &n );
@@ -1434,13 +1435,15 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
                     ; /* signature did not verify */
                 else if ( IS_KEY_REV (sig) ){
                     /* key has been revoked - there is no way to override
-                     * such a revocation, so we can stop now.
-                     * we can't cope with expiration times for revocations
-                     * here because we have to assumethat an attacker can
-                     * generate all kinds of signatures.
+                     * such a revocation, so we theoretically can stop now.
+                     * We should not cope with expiration times for revocations
+                     * here because we have to assume that an attacker can
+                     * generate all kinds of signatures.  However due to the
+                     * fact that the key has been revoked it does not harm
+                     * either and by continuing we gather some more info on 
+                     * that key.
                      */ 
                     *r_revoked = 1;
-                    return;
                 }
                 else if ( IS_KEY_SIG (sig) && sig->timestamp >= sigdate ) {
                     const byte *p;
@@ -1511,8 +1514,9 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
             if ( sig->keyid[0] == kid[0] && sig->keyid[1]==kid[1] ) { 
                 if ( check_key_signature( keyblock, k, NULL ) )
                     ; /* signature did not verify */
-                else if ( IS_UID_SIG (sig) || IS_UID_REV (sig)) {
-                    /* Note: we allow to invalidated cert revocations
+                else if ( (IS_UID_SIG (sig) || IS_UID_REV (sig))
+                          && sig->timestamp >= sigdate ) {
+                    /* Note: we allow to invalidate cert revocations
                      * by a newer signature.  An attacker can't use this
                      * because a key should be revoced with a key revocation.
                      * The reason why we have to allow for that is that at
@@ -1583,10 +1587,9 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     }
     pk->pubkey_usage = key_usage;
 
-
     if ( !key_expire_seen ) {
         /* find the latest valid user ID with a key expiration set 
-         * Note, that this may be a diferent one from the above because
+         * Note, that this may be a different one from the above because
          * some user IDs may have no expiration date set */
         uiddate = 0; 
         for(k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY;
@@ -1603,8 +1606,10 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     }
    
     pk->has_expired = key_expire >= curtime? 0 : key_expire;
-    /* FIXME: we should see how to get rid of the expiretime fields */
-
+    if ( pk->version >= 4 ) 
+        pk->expiredate = key_expire;
+    /* Fixme: we should see how to get rid of the expiretime fields  but
+     * this needs changes at other palces too. */
 
     /* and now find the real primary user ID and delete all others */
     uiddate = uiddate2 = 0;
@@ -1681,12 +1686,10 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
            	if ( check_key_signature( keyblock, k, NULL ) )
                     ; /* signature did not verify */
                 else if ( IS_SUBKEY_REV (sig) ) {
-                    /* key has been revoked - given the fact that it is easy
-                     * to create a new subkey, it does not make sense to
-                     * revive a revoked key.  So we can stop here.
-                     */
                     subpk->is_revoked = 1;
-                    return;
+                    /* although we could stop now, we continue to 
+                     * figure out other information like the old expiration
+                     * time */
                 }
                 else if ( IS_SUBKEY_SIG (sig) && sig->timestamp >= sigdate ) {
                     p = parse_sig_subpkt( sig->hashed_data,
@@ -1735,6 +1738,7 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
     else
         key_expire = 0;
     subpk->has_expired = key_expire >= curtime? 0 : key_expire;
+    subpk->expiredate = key_expire;
 }
 
 

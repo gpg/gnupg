@@ -1,3 +1,7 @@
+2001-03-12  Werner Koch  <wk@gnupg.org>
+
+	* config.guess, config.sub: Replaced with the current GNU CVS ones. 
+
 2001-01-18  Werner Koch  <wk@gnupg.org>
 
 	* autogen.sh: New options --build-w32

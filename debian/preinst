@@ -34,7 +34,7 @@ EOF
 If at any stage you need a pre-0.3.3 gnupg, you can find source and
 binaries for i386, m68k, alpha, powerpc and hurd-i386 at 
 
-   http://james.nocrew.org/gnupg/
+   http://people.debian.org/~troup/gnupg/
 
 Press return to continue
 EOF

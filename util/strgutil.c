@@ -247,7 +247,7 @@ trim_spaces( char *str )
 
 
 
-unsigned
+unsigned int
 trim_trailing_chars( byte *line, unsigned len, const char *trimchars )
 {
     byte *p, *mark;
@@ -276,6 +276,37 @@ unsigned
 trim_trailing_ws( byte *line, unsigned len )
 {
     return trim_trailing_chars( line, len, " \t\r\n" );
+}
+
+unsigned int
+check_trailing_chars( const byte *line, unsigned int len,
+                      const char *trimchars )
+{
+    const byte *p, *mark;
+    unsigned int n;
+
+    for(mark=NULL, p=line, n=0; n < len; n++, p++ ) {
+	if( strchr(trimchars, *p ) ) {
+	    if( !mark )
+		mark = p;
+	}
+	else
+	    mark = NULL;
+    }
+
+    if( mark ) {
+	return mark - line;
+    }
+    return len;
+}
+
+/****************
+ * remove trailing white spaces and return the length of the buffer
+ */
+unsigned int
+check_trailing_ws( const byte *line, unsigned int len )
+{
+    return check_trailing_chars( line, len, " \t\r\n" );
 }
 
 

@@ -178,6 +178,7 @@ typedef struct {
     int help_key_usage;
     u32 help_key_expire;
     int is_primary;
+    int is_revoked;  
     u32 created;          /* according to the self-signature */
     char name[1];
 } PKT_user_id;
