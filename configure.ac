@@ -122,48 +122,80 @@ fi
 
 AC_MSG_CHECKING([whether to enable external program execution])
 AC_ARG_ENABLE(exec,
-    [  --disable-exec          disable external program execution],
+    [  --disable-exec          disable all external program execution],
     use_exec=$enableval, use_exec=yes)
 AC_MSG_RESULT($use_exec)
 if test "$use_exec" = no ; then
-    AC_DEFINE(NO_EXEC,1,[Define to disable external program execution])
+    AC_DEFINE(NO_EXEC,1,[Define to disable all external program execution])
 fi
 
 if test "$use_exec" = yes ; then
-  AC_MSG_CHECKING([for a restricted exec-path])
-  AC_ARG_WITH(exec-path,
-      [  --with-exec-path=PATH        restrict exec-path to PATH],
-      [if test "$withval" = yes ; then
-         withval=no
+  AC_MSG_CHECKING([whether to use a restricted exec-path])
+  AC_ARG_ENABLE(exec-path,
+      [  --enable-exec-path=PATH restrict exec-path to PATH],
+      [if test "$enableval" = yes ; then
+         enableval=no
       else
-         AC_DEFINE_UNQUOTED(USE_EXEC_PATH,"$withval",
-	                    [restrict exec-path to this])
-      fi],withval=no)
-  AC_MSG_RESULT($withval)
+         AC_DEFINE_UNQUOTED(USE_EXEC_PATH,"$enableval",
+	                    [if set, restrict exec-path to this value])
+      fi],enableval=no)
+  AC_MSG_RESULT($enableval)
 
-  AC_MSG_CHECKING([whether LDAP keyserver support is requested])
-  AC_ARG_ENABLE(ldap,
-  [  --disable-ldap          disable LDAP keyserver interface],
-      try_ldap=$enableval, try_ldap=yes)
-  AC_MSG_RESULT($try_ldap)
+  AC_MSG_CHECKING([whether to enable photo ID viewing])
+  AC_ARG_ENABLE(photo-viewers,
+      [  --disable-photo-viewers disable photo ID viewers],
+      [if test "$enableval" = no ; then
+         AC_DEFINE(DISABLE_PHOTO_VIEWER,1,[define to disable photo viewing])
+      fi],enableval=yes)
+  gnupg_cv_enable_photo_viewers=$enableval
+  AC_MSG_RESULT($enableval)
 
-  AC_MSG_CHECKING([whether experimental external hkp keyserver support is requested])
-  AC_ARG_ENABLE(external-hkp,
-  [  --enable-external-hkp   enable experimental external HKP keyserver interface],
-      try_hkp=$enableval, try_hkp=no)
-  AC_MSG_RESULT($try_hkp)
-
-  if test "$try_hkp" = yes ; then
-    GPGKEYS_HKP="gpgkeys_hkp"
-    AC_DEFINE(USE_EXTERNAL_HKP,1,[define to use the experimental external HKP keyserver interface])
+  if test "$gnupg_cv_enable_photo_viewers" = yes ; then
+    AC_MSG_CHECKING([whether to use a fixed photo ID viewer])
+    AC_ARG_WITH(photo-viewer,
+        [  --with-photo-viewer=FIXED_VIEWER  set a fixed photo ID viewer],
+        [if test "$withval" != yes ; then
+           AC_DEFINE_UNQUOTED(FIXED_PHOTO_VIEWER,"$withval",
+  	                    [if set, restrict photo-viewer to this])
+        fi],withval=no)
+    AC_MSG_RESULT($withval)
   fi
 
-  AC_MSG_CHECKING([whether email keyserver support is requested])
-  AC_ARG_ENABLE(mailto,
-  [  --disable-mailto        disable email keyserver interface],
-      try_mailto=$enableval, try_mailto=yes)
-  AC_MSG_RESULT($try_mailto)
-fi
+  AC_MSG_CHECKING([whether to enable external keyserver helpers])
+  AC_ARG_ENABLE(keyserver-helpers,
+      [  --disable-keyserver-helpers  disable all external keyserver support],
+      [if test "$enableval" = no ; then
+         AC_DEFINE(DISABLE_KEYSERVER_HELPERS,1,
+                  [define to disable keyserver helpers])
+      fi],enableval=yes)
+  gnupg_cv_enable_keyserver_helpers=$enableval
+  AC_MSG_RESULT($enableval)
+
+  if test "$gnupg_cv_enable_keyserver_helpers" = yes ; then
+    AC_MSG_CHECKING([whether LDAP keyserver support is requested])
+    AC_ARG_ENABLE(ldap,
+    [  --disable-ldap          disable LDAP keyserver interface],
+        try_ldap=$enableval, try_ldap=yes)
+    AC_MSG_RESULT($try_ldap)
+
+    AC_MSG_CHECKING([whether experimental external hkp keyserver support is requested])
+    AC_ARG_ENABLE(external-hkp,
+    [  --enable-external-hkp   enable experimental external HKP keyserver interface],
+        try_hkp=$enableval, try_hkp=no)
+    AC_MSG_RESULT($try_hkp)
+
+    if test "$try_hkp" = yes ; then
+      GPGKEYS_HKP="gpgkeys_hkp"
+      AC_DEFINE(USE_EXTERNAL_HKP,1,[define to use the experimental external HKP keyserver interface])
+    fi
+
+    AC_MSG_CHECKING([whether email keyserver support is requested])
+    AC_ARG_ENABLE(mailto,
+    [  --disable-mailto        disable email keyserver interface],
+        try_mailto=$enableval, try_mailto=yes)
+    AC_MSG_RESULT($try_mailto)
+    fi
+  fi
 
 AC_MSG_CHECKING([whether included zlib is requested])
 AC_ARG_WITH(included-zlib,

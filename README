@@ -507,6 +507,29 @@
                     Do not use assembler modules.  It is not possible 
                     to use this on some CPU types.
                     
+     --disable-exec
+                    Disable all remote program execution.  This
+		    disables photo ID viewing as well as all keyserver
+		    types aside from HKP.
+
+     --disable-photo-viewers
+                    Disable only photo ID viewing.
+
+     --disable-keyserver-helpers
+                    Disable only keyserver helpers (not including
+		    HKP).
+
+     --enable-exec-path=PATH
+                    Force the exec search path to be set to PATH.
+		    Note that this only really applies to keyserver
+		    helpers as the photo-viewer can include its own
+		    path.
+
+     --with-photo-viewer=FIXED_VIEWER
+                    Force the photo viewer to be FIXED_VIEWER and
+		    disable any ability for the user to change it in
+		    their options file.
+
 
     Installation Problems
     ---------------------

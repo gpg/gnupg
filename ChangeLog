@@ -1,3 +1,12 @@
+2002-07-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* README: 
+
+	* configure.ac: Add --with-photo-viewer to lock the viewer at
+	compile time and --disable-keyserver-helpers and
+	--disable-photo-viewers to allow disabling one without disabling
+	the other.
+
 2002-07-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Allow setting USE_EXEC_PATH to lock the exec-path
