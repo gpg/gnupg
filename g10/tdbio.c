@@ -466,6 +466,11 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    if( db_fd == -1 )
 		log_fatal( _("%s: can't open: %s\n"), db_name, strerror(errno) );
 
+	    if( !lockhandle )
+		lockhandle = create_dotlock( db_name );
+	    if( !lockhandle )
+		log_fatal( _("%s: can't create lock\n"), db_name );
+
 	    memset( &rec, 0, sizeof rec );
 	    rec.r.ver.version = 2;
 	    rec.r.ver.created = make_timestamp();

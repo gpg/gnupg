@@ -21,9 +21,7 @@ Configure options for GNUPG
 		    option "--debug 128" displays a memory statistic after
 		    the program run.
 
---disable-m-guard   Disable the integrated malloc checking code. As a
-		    side-effect, this removes all debugging code and uses
-		    the -O2 flag for all C files.
+--enable-m-guard    Enable the integrated malloc checking code. 
 
 --disable-dynload   If you have problems with dynamic loading, this option
 		    disables all dynamic loading stuff.

@@ -92,7 +92,7 @@ MPI_OPT_FLAGS=""
 if test "$GCC" = yes; then
     CFLAGS="$CFLAGS -Wall"
     dnl Always enable optimazation in MPI
-    if echo "$CFLAGS" | grep "-O" >/dev/null ; then
+    if echo "$CFLAGS" | grep "[-]O" >/dev/null ; then
         :
     else
         MPI_OPT_FLAGS=-O2

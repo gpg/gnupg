@@ -1,3 +1,7 @@
+Sat Feb 13 14:13:04 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* tdbio.c (tdbio_set_dbname): Init lockhandle for a new trustdb
+
 Wed Feb 10 17:15:39 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* g10.c (main): check for development version now in configure

@@ -20,14 +20,12 @@ DATA_FILES = data-500 data-9000 data-32000 data-80000
 
 EXTRA_DIST = defs.inc run-gpg run-gpgm run-gpg.patterns $(TESTS) $(TEST_FILES)
 CLEANFILES = prepared.stamp x y yy z out err  $(DATA_FILES) \
-	     plain-1 plain-2 plain-3 options trustdb.gpg *.lock .\#lk*
-DISTCLEANFILES = pubring.gpg secring.gpg pubring.pkr secring.skr
+	     plain-1 plain-2 plain-3 options trustdb.gpg *.lock .\#lk* \
+	     pubring.gpg secring.gpg pubring.pkr secring.skr
 
 
 
-check: prepared.stamp
-
-testdata: prepared.stamp
+all-local: prepared.stamp
 
 prepared.stamp: ./pubring.gpg ./secring.gpg ./plain-1 ./plain-2 ./plain-3 \
 		./pubring.pkr ./secring.skr $(DATA_FILES)
