@@ -157,12 +157,6 @@ parse_ber_header (unsigned char const **buffer, size_t *size,
       tag = 0;
       do
         {
-          /* Simple check against overflow.  We limit our maximim tag
-             value more than needed but that should not be a problem
-             because I have nver encountered such large value.  We
-             assume at least 32 bit integers. */
-          if (tag > (1 << 24))
-            return gpg_error (GPG_ERR_TOO_LARGE);
           tag <<= 7;
           if (!length)
             return gpg_error (GPG_ERR_EOF);
@@ -190,16 +184,11 @@ parse_ber_header (unsigned char const **buffer, size_t *size,
       unsigned long len = 0;
       int count = c & 0x7f;
 
+      if (count > sizeof (len) || count > sizeof (size_t))
+        return gpg_error (GPG_ERR_BAD_BER);
+
       for (; count; count--)
         {
-          /* Simple check against overflow.  We limit our maximim
-             length more than needed but that should not be a problem
-             because I have never encountered such large value and
-             well they are managed in memory and thus we would run
-             into memory problems anyway.  We assume at least 32 bit
-             integers. */
-          if (len > (1 << 24))
-            return gpg_error (GPG_ERR_TOO_LARGE);
           len <<= 8;
           if (!length)
             return gpg_error (GPG_ERR_EOF);

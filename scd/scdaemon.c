@@ -545,7 +545,7 @@ main (int argc, char **argv )
 
       printf ("reader-port:%lu:\n", GC_OPT_FLAG_NONE );
       printf ("ctapi-driver:%lu:\n", GC_OPT_FLAG_NONE );
-      printf ("pcsc-driver:%lu:\"%s\":\n",
+      printf ("pcsc-driver:%lu:\"%s:\n",
               GC_OPT_FLAG_DEFAULT, DEFAULT_PCSC_DRIVER );
 #ifdef HAVE_LIBUSB
       printf ("disable-ccid:%lu:\n", GC_OPT_FLAG_NONE );

@@ -1,4 +1,11 @@
+2004-03-23  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c (main) <gpgconf_list>: Fixed output for pcsc_driver.
+
 2004-03-17  Werner Koch  <wk@gnupg.org>
+
+	* tlv.c (parse_ber_header): Do not check for tag overflow - it
+	does not make sense.  Simplified the check for length overflow.
 
 	* scdaemon.c (main) <gpgconf>: Fixed default value quoting.
 
