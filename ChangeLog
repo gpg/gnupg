@@ -1,3 +1,12 @@
+2004-02-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Update copyright.
+
+	* README: Update version.
+
+	* NEWS: Note --max-output, --list-config, --min-cert-level, and
+	AIX fix.
+
 2004-01-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Note --enable-key-cache and OpenBSD/i386 and HPPA fixes.

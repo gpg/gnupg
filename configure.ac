@@ -1,6 +1,6 @@
 dnl Configure.ac script for GnuPG
-dnl Copyright (C) 1998, 1999, 2000, 2001, 2002,
-dnl               2003 Free Software Foundation, Inc.
+dnl Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+dnl               2004 Free Software Foundation, Inc.
 dnl
 dnl This file is part of GnuPG.
 dnl
