@@ -165,7 +165,7 @@ i18n_init (void)
 
 
 
-/* Use by gcry for logging */
+/* Used by gcry for logging */
 static void
 my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
 {

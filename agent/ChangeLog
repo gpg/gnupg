@@ -1,3 +1,12 @@
+2002-04-26  Werner Koch  <wk@gnupg.org>
+
+	* cache.c (agent_put_cache): Reinitialize the creation time and
+	the ttl when reusing a slot.
+
+	* call-scd.c (start_scd): Print debug messages only with debug
+	flags set.
+	* query.c (start_pinentry): Ditto.
+
 2002-04-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* agent.h (agent_get_confirmation): Replace paramter prompt with

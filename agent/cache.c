@@ -139,7 +139,7 @@ housekeeping (void)
 
 
 /* Store DATA of length DATALEN in the cache under KEY and mark it
-   with a maximum lifetime of TTL seconds.  If tehre is already data
+   with a maximum lifetime of TTL seconds.  If there is already data
    under this key, it will be replaced.  Using a DATA of NULL deletes
    the entry */
 int
@@ -170,6 +170,8 @@ agent_put_cache (const char *key, const char *data, int ttl)
         }
       if (data)
         {
+          r->created = r->accessed = time (NULL); 
+          r->ttl = ttl;
           r->pw = new_data (data, strlen (data)+1);
           if (!r->pw)
             log_error ("out of core while allocating new cache item\n");

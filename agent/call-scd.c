@@ -136,7 +136,8 @@ start_scd (void)
                  expected to tun as a single-thread (or may be in
                  future using libpth) */
 
-  log_debug ("no running SCdaemon - starting it\n");
+  if (opt.verbose)
+    log_info ("no running SCdaemon - starting it\n");
       
   if (fflush (NULL))
     {
@@ -166,7 +167,8 @@ start_scd (void)
     }
   scd_ctx = ctx;
   
-  log_debug ("connection to SCdaemon established\n");
+  if (DBG_ASSUAN)
+    log_debug ("connection to SCdaemon established\n");
   return 0;
 }
 

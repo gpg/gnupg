@@ -63,8 +63,8 @@ start_pinentry (void)
                  expected to tun as a single-thread (or may be in
                  future using libpth) */
 
-
-  log_debug ("no running PIN Entry - starting it\n");
+  if (opt.verbose)
+    log_info ("no running PIN Entry - starting it\n");
       
   if (fflush (NULL))
     {
@@ -99,8 +99,9 @@ start_pinentry (void)
       return seterr (No_PIN_Entry);
     }
   entry_ctx = ctx;
-  
-  log_debug ("connection to PIN entry established\n");
+
+  if (DBG_ASSUAN)
+    log_debug ("connection to PIN entry established\n");
 
   rc = assuan_transact (entry_ctx, 
                         opt.no_grab? "OPTION no-grab":"OPTION grab",
