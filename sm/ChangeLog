@@ -1,5 +1,7 @@
 2001-12-15  Werner Koch  <wk@gnupg.org>
 
+	* gpgsm.c (main): Renamed the default key database to "keyring.kbx".
+
 	* decrypt.c (gpgsm_decrypt): Write STATUS_DECRYPTION_*.
 	* sign.c (gpgsm_sign): Write a STATUS_SIG_CREATED.
 

@@ -938,7 +938,7 @@ main ( int argc, char **argv)
     set_cmd (&cmd, aListKeys);
   
   if (!nrings && default_keyring)  /* add default keybox */
-    keydb_add_resource ("pubcerts.kbx", 0, 0);
+    keydb_add_resource ("pubring.kbx", 0, 0);
   for (sl = nrings; sl; sl = sl->next)
     keydb_add_resource (sl->d, 0, 0);
   FREE_STRLIST(nrings);
