@@ -2115,8 +2115,8 @@ parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
 
     if( list_mode ) {
 	printf(":literal data packet:\n"
-	       "\tmode %c, created %lu, name=\"",
-		    mode >= ' ' && mode <'z'? mode : '?',
+	       "\tmode %c (%X), created %lu, name=\"",
+	            mode >= ' ' && mode <'z'? mode : '?', mode,
 		    (ulong)pt->timestamp );
 	for(p=pt->name,i=0; i < namelen; p++, i++ ) {
 	    if( *p >= ' ' && *p <= 'z' )

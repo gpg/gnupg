@@ -1,3 +1,12 @@
+2004-06-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Alias --charset as --display-charset to help avoid
+	the continuing confusion and make room for possible changes in
+	devel.
+
+	* parse-packet.c (parse_plaintext): Show the hex value for the
+	literal packet mode since it may not be printable.
+
 2004-05-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* pkclist.c (do_edit_ownertrust): Fix kbnode leak.

@@ -240,7 +240,7 @@ enum cmd_and_opt_values
     oS2KDigest,
     oS2KCipher,
     oSimpleSKChecksum,                          
-    oCharset,
+    oDisplayCharset,
     oNotDashEscaped,
     oEscapeFrom,
     oNoEscapeFrom,
@@ -440,7 +440,8 @@ static ARGPARSE_OPTS opts[] = {
     { oKeyServerOptions, "keyserver-options",2,"@"},
     { oImportOptions, "import-options",2,"@"},
     { oExportOptions, "export-options",2,"@"},
-    { oCharset, "charset"   , 2, N_("|NAME|set terminal charset to NAME") },
+    { oDisplayCharset, "display-charset", 2, N_("|NAME|set terminal charset to NAME") },
+    { oDisplayCharset, "charset", 2, "@" },
     { oOptions, "options"   , 2, N_("read options from file")},
 
     { oDebug, "debug"     ,4|16, "@"},
@@ -1822,7 +1823,7 @@ main( int argc, char **argv )
 	  case oNoSecmemWarn: secmem_set_flags( secmem_get_flags() | 1 ); break;
 	  case oNoPermissionWarn: opt.no_perm_warn=1; break;
 	  case oNoMDCWarn: opt.no_mdc_warn=1; break;
-          case oCharset:
+          case oDisplayCharset:
 	    if( set_native_charset( pargs.r.ret_str ) )
 		log_error(_("%s is not a valid character set\n"),
 						    pargs.r.ret_str);
