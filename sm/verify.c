@@ -34,11 +34,6 @@
 #include "keydb.h"
 #include "i18n.h"
 
-struct reader_cb_parm_s {
-  FILE *fp;
-};
-
-
 /* FIXME: Move this to jnlib */
 static char *
 strtimestamp (time_t atime)
@@ -46,9 +41,9 @@ strtimestamp (time_t atime)
   char *buffer = xmalloc (15);
   
   if (atime < 0) 
-    {
-      strcpy (buffer, "????" "-??" "-??");
-    }
+    strcpy (buffer, "????" "-??" "-??");
+  else if (!atime)
+    strcpy (buffer, "none");
   else
     {
       struct tm *tp;
@@ -61,38 +56,6 @@ strtimestamp (time_t atime)
 }
 
 
-
-
-/* FIXME: We need to write a generic reader callback which should be able
-   to detect and convert base-64 */
-static int
-reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
-{
-  struct reader_cb_parm_s *parm = cb_value;
-  size_t n;
-  int c = 0;
-
-  *nread = 0;
-  if (!buffer)
-    return -1; /* not supported */
-
-  for (n=0; n < count; n++)
-    {
-      c = getc (parm->fp);
-      if (c == EOF)
-        {
-          if ( ferror (parm->fp) )
-            return -1;
-          if (n)
-            break; /* return what we have before an EOF */
-          return -1;
-        }
-      *(byte *)buffer++ = c;
-    }
-
-  *nread = n;
-  return 0;
-}
 
 /* fixme: duplicated from import.c */
 static void
@@ -192,21 +155,19 @@ int
 gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
 {
   int i, rc;
+  Base64Context b64reader = NULL;
   KsbaError err;
-  KsbaReader reader = NULL;
-  KsbaWriter writer = NULL;
+  KsbaReader reader;
   KsbaCMS cms = NULL;
   KsbaStopReason stopreason;
   KsbaCert cert;
   KEYDB_HANDLE kh;
   GCRY_MD_HD data_md = NULL;
-  struct reader_cb_parm_s rparm;
   int signer;
   const char *algoid;
   int algo;
   int is_detached;
-
-  memset (&rparm, 0, sizeof rparm);
+  FILE *fp = NULL;
 
   kh = keydb_new (0);
   if (!kh)
@@ -217,29 +178,18 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
     }
 
 
-  rparm.fp = fdopen ( dup (in_fd), "rb");
-  if (!rparm.fp)
+  fp = fdopen ( dup (in_fd), "rb");
+  if (!fp)
     {
       log_error ("fdopen() failed: %s\n", strerror (errno));
       rc = seterr (IO_Error);
       goto leave;
     }
 
-  /* setup a skaba reader which uses a callback function so that we can 
-     strip off a base64 encoding when necessary */
-  reader = ksba_reader_new ();
-  writer = ksba_writer_new ();
-  if (!reader || !writer)
-    {
-      rc = seterr (Out_Of_Core);
-      goto leave;
-    }
-
-  rc = ksba_reader_set_cb (reader, reader_cb, &rparm );
+  rc = gpgsm_create_reader (&b64reader, ctrl, fp, &reader);
   if (rc)
     {
-      ksba_reader_release (reader);
-      rc = map_ksba_err (rc);
+      log_error ("can't create reader: %s\n", gnupg_strerror (rc));
       goto leave;
     }
 
@@ -250,7 +200,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
       goto leave;
     }
 
-  err = ksba_cms_set_reader_writer (cms, reader, writer);
+  err = ksba_cms_set_reader_writer (cms, reader, NULL);
   if (err)
     {
       log_debug ("ksba_cms_set_reader_writer failed: %s\n",
@@ -454,9 +404,9 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
         char *buf, *fpr, *tstr;
 
         fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
-        tstr = strtimestamp ( 42 /*fixme: get right time */);
+        tstr = strtimestamp (sigtime);
         buf = xmalloc ( strlen(fpr) + strlen (tstr) + 100);
-        sprintf (buf, "%s %s %lu", fpr, tstr, (unsigned long)42 );
+        sprintf (buf, "%s %s %lu", fpr, tstr, (unsigned long)sigtime );
         xfree (tstr);
         xfree (fpr);
         gpgsm_status (ctrl, STATUS_VALIDSIG, buf);
@@ -498,11 +448,11 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
 
  leave:
   ksba_cms_release (cms);
-  ksba_reader_release (reader);
+  gpgsm_destroy_reader (b64reader);
   keydb_release (kh); 
   gcry_md_close (data_md);
-  if (rparm.fp)
-    fclose (rparm.fp);
+  if (fp)
+    fclose (fp);
   return rc;
 }
 

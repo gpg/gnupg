@@ -45,7 +45,7 @@ struct {
 
   int fingerprint;  /* list fingerprints in all key listings */
 
-  int armor;        /* force base64 armoring */
+  int armor;        /* force base64 armoring (see also ctrl.with_base64) */
   int no_armor;     /* don't try to figure out whether data is base64 armored*/
 
   int def_cipher_algo;    /* cipher algorithm to use if nothing else is know */
@@ -89,8 +89,19 @@ struct server_control_s {
   int  status_fd;    /* only for non-server mode */
   struct server_local_s *server_local;
   int with_colons;  /* use column delimited output format */
+
+  int autodetect_encoding; /* try to detect the input encoding */
+  int is_pem;         /* Is in PEM format */
+  int is_base64;      /* is in plain base-64 format */
+
+  int create_base64;  /* Create base64 encoded output */
+  int create_pem;     /* create PEM output */
+ 
 };
 typedef struct server_control_s *CTRL;
+
+/* data structure osed in base64.c */
+typedef struct base64_context_s *Base64Context;
 
 
 /*-- gpgsm.c --*/
@@ -106,6 +117,14 @@ char *gpgsm_get_fingerprint_string (KsbaCert cert, int algo);
 char *gpgsm_get_fingerprint_hexstring (KsbaCert cert, int algo);
 char *gpgsm_get_keygrip (KsbaCert cert, char *array);
 char *gpgsm_get_keygrip_hexstring (KsbaCert cert);
+
+/*-- base64.c --*/
+int  gpgsm_create_reader (Base64Context *ctx,
+                          CTRL ctrl, FILE *fp, KsbaReader *r_reader);
+void gpgsm_destroy_reader (Base64Context ctx);
+int  gpgsm_create_writer (Base64Context *ctx,
+                          CTRL ctrl, FILE *fp, KsbaWriter *r_writer);
+void gpgsm_destroy_writer (Base64Context ctx);
 
 
 /*-- certdump.c --*/

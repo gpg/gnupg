@@ -31,12 +31,14 @@ gpgsm_SOURCES = \
 	server.c \
 	call-agent.c \
 	fingerprint.c \
+	base64.c \
 	certdump.c \
 	certcheck.c \
 	certpath.c \
 	keylist.c \
 	verify.c \
 	sign.c \
+	encrypt.c \
 	import.c 
 
 

@@ -81,6 +81,43 @@ rc_to_assuan_status (int rc)
 }
 
 
+static void
+reset_notify (ASSUAN_CONTEXT ctx)
+{
+}
+
+
+static void
+input_notify (ASSUAN_CONTEXT ctx, const char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+
+  ctrl->autodetect_encoding = 0;
+  ctrl->is_pem = 0;
+  ctrl->is_base64 = 0;
+  if (strstr (line, "--armor"))
+    ctrl->is_pem = 1;  
+  else if (strstr (line, "--base64"))
+    ctrl->is_base64 = 1; 
+  else if (strstr (line, "--binary"))
+    ;
+  else
+    ctrl->autodetect_encoding = 0;
+}
+
+static void
+output_notify (ASSUAN_CONTEXT ctx, const char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+
+  ctrl->create_pem = 0;
+  ctrl->create_base64 = 0;
+  if (strstr (line, "--armor"))
+    ctrl->create_pem = 1;  
+  else if (strstr (line, "--base64"))
+    ctrl->create_base64 = 1; /* just the raw output */
+}
+
 
 
 /*  RECIPIENT <userID>
@@ -103,7 +140,7 @@ cmd_recipient (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
-/* ENCRYPT [armor]
+/* ENCRYPT 
 
   Do the actual encryption process. Takes the plaintext from the INPUT
   command, writes to the ciphertext to the file descriptor set with
@@ -115,16 +152,28 @@ cmd_recipient (ASSUAN_CONTEXT ctx, char *line)
 
   This command should in general not fail, as all necessary checks
   have been done while setting the recipients.  The input and output
-  pipes are closed.
-
-  The optional armor parameter may be used to request base64 encoded
-  output.  */
+  pipes are closed. */
 static int 
 cmd_encrypt (ASSUAN_CONTEXT ctx, char *line)
 {
-  
+  int inp_fd, out_fd;
+  FILE *out_fp;
+  int rc;
 
-  return set_error (Not_Implemented, "fixme");
+  inp_fd = assuan_get_input_fd (ctx);
+  if (inp_fd == -1)
+    return set_error (No_Input, NULL);
+  out_fd = assuan_get_output_fd (ctx);
+  if (out_fd == -1)
+    return set_error (No_Output, NULL);
+
+  out_fp = fdopen ( dup(out_fd), "w");
+  if (!out_fp)
+    return set_error (General_Error, "fdopen() failed");
+  rc = gpgsm_encrypt (assuan_get_pointer (ctx), inp_fd, out_fp);
+  fclose (out_fp);
+
+  return rc_to_assuan_status (rc);
 }
 
 /* DECRYPT
@@ -172,7 +221,7 @@ cmd_verify (ASSUAN_CONTEXT ctx, char *line)
 /* SIGN [--detached]
 
   Sign the data set with the INPUT command and write it to the sink
-  set by OUTPUT.  with "--detached" specified, a detached signature is
+  set by OUTPUT.  With "--detached" specified, a detached signature is
   created (surprise).  */
 static int 
 cmd_sign (ASSUAN_CONTEXT ctx, char *line)
@@ -329,6 +378,10 @@ gpgsm_server (void)
                  assuan_strerror(rc));
       gpgsm_exit (2);
     }
+
+  assuan_register_reset_notify (ctx, reset_notify);
+  assuan_register_input_notify (ctx, input_notify);
+  assuan_register_output_notify (ctx, output_notify);
 
   assuan_set_pointer (ctx, &ctrl);
   ctrl.server_local = xcalloc (1, sizeof *ctrl.server_local);

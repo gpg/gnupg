@@ -1,3 +1,9 @@
+2001-11-27  Werner Koch  <wk@gnupg.org>
+
+	* base64.c: New.  Changed all other functions to use this instead
+	of direct creation of ksba_reader/writer.
+	* gpgsm.c (main): Set ctrl.auto_encoding unless --no-armor is used.
+
 2001-11-26  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.c: New option --agent-program

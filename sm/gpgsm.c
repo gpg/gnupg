@@ -591,6 +591,7 @@ main ( int argc, char **argv)
   memset (&ctrl, 0, sizeof ctrl);
   ctrl.no_server = 1;
   ctrl.status_fd = -1; /* not status output */
+  ctrl.autodetect_encoding = 1;
 
   /* set the default option file */
   if (default_config )
@@ -661,7 +662,10 @@ main ( int argc, char **argv)
         case aVerify: set_cmd (&cmd, aVerify); break;
 
         case oArmor: opt.armor = 1; opt.no_armor=0; break;
-        case oNoArmor: opt.no_armor=1; opt.armor=0; break;
+        case oNoArmor: 
+          ctrl.autodetect_encoding = 0;
+          opt.no_armor=1; opt.armor=0; 
+          break;
         case oOutput: opt.outfile = pargs.r.ret_str; break;
         case oQuiet: opt.quiet = 1; break;
         case oNoTTY: /* fixme:tty_no_terminal(1);*/ break;
