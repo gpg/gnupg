@@ -1,3 +1,17 @@
+2003-04-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* DETAILS: Don't specify which hash is used to make up the
+	namehash since it may change in the future.
+
+	* samplekeys.asc: Updated.
+
+	* gpg.sgml: Document "revuid".  Clarify that --openpgp resets
+	--pgpX.  Some cleanup of --no-xxx options, make sure that all SGML
+	tags are closed, clarify --pgp8 allows SHA-256, and document
+	--no-emit-version.
+
+	* Makefile.am: Allow CVS version to build without faqprog.pl.
+
 2003-01-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* DETAILS: Document trust depth, value, and regexp.
