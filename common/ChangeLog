@@ -4,7 +4,8 @@
 	(got_fatal_signal) [DOSISH]: Don't build.
 	* simple-gettext.c: Include sysutils.h 
 
-	* homedir.c: New.
+	* homedir.c: New. Use CSIDL_APPDATA for W32 as the default home
+	directory.
 	* Makefile.am (libcommon_a_SOURCES): Add it.
 	(EXTRA_DIST): Removed mkerror and mkerrtok.
 
