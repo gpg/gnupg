@@ -1,5 +1,5 @@
 #!/usr/bin/make -f
-# debian/rules file - for GNUPG (0.9.0)
+# debian/rules file - for GNUPG (0.9.1)
 # Based on sample debian/rules file - for GNU Hello (1.3).
 # Copyright 1994,1995 by Ian Jackson.
 # Copyright 1998 James Troup

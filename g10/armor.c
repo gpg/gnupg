@@ -729,7 +729,7 @@ armor_filter( void *opaque, int control,
     int  idx, idx2;
     size_t n=0;
     u32 crc;
-  #if 1
+  #if 0
     static FILE *fp ;
 
     if( !fp ) {
@@ -827,7 +827,7 @@ armor_filter( void *opaque, int control,
 	}
 	else
 	    rc = radix64_read( afx, a, &n, buf, size );
-      #if 1
+      #if 0
 	if( n )
 	    if( fwrite(buf, n, 1, fp ) != 1 )
 		BUG();
