@@ -31,6 +31,9 @@ BEGIN { FS=":"
 	page = 0;
 	now = strftime("%b %d %H:%M %Y");
       }
+END { 
+    if (any) myflush(); 
+}
 $1 == "pub" {
 	      if( any ) myflush();
 	      uidcount = 0;
@@ -84,7 +87,7 @@ function printfpr16( s )
     printf "f16    Fingerprint16 =";
     for(i=0; i < 16; i++ ) {
 	if( i == 8 ) printf " ";
-	printf " %s", substr( s, i*2, 2 );
+	printf " %s", substr( s, i*2+1, 2 );
     }
     printf "\n"
 }
@@ -94,10 +97,13 @@ function printfpr20( s )
     printf "f20    Fingerprint20 =";
     for(i=0; i < 10; i++ ) {
 	if( i == 5 ) printf " ";
-	printf " %s", substr( s, i*4, 4 );
+	printf " %s", substr( s, i*4+1, 4 );
     }
     printf "\n"
 }
 
 ' | tee a.pub | gpg --print-mds
+
+
+
 

@@ -700,6 +700,17 @@ dump_sig_subpkt( int hashed, int type, int critical,
     const char *p=NULL;
     int i;
 
+    /* The CERT has warning out with explains how to use GNUPG to
+     * detect the ARRs - we print our old message here when it is a faked
+     * ARR and add an additional notice */
+    if ( type == SIGSUBPKT_ARR && !hashed ) {
+        printf("\tsubpkt %d len %u (additional recipient request)\n"
+               "WARNING: PGP versions > 5.0 and < 6.5.8 will automagically "
+               "encrypt to this key and thereby reveal the plaintext to "
+               "the owner of this ARR key. Detailed info follows:\n",
+               type, (unsigned)length );
+    }
+    
     printf("\t%s%ssubpkt %d len %u (", /*)*/
 	      critical ? "critical ":"",
 	      hashed ? "hashed ":"", type, (unsigned)length );
@@ -736,9 +747,6 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	if( length >= 4 )
 	    printf("key expires after %s",
 				    strtimevalue( buffer_to_u32(buffer) ) );
-	break;
-      case SIGSUBPKT_ARR:
-	p = "additional recipient request";
 	break;
       case SIGSUBPKT_PREF_SYM:
 	fputs("pref-sym-algos:", stdout );
@@ -809,8 +817,10 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	print_string( stdout, buffer, length, ')' );
 	break;
       case SIGSUBPKT_KEY_FLAGS:
-	p = "key flags";
-	break;
+        fputs ( "key flags:", stdout );
+        for( i=0; i < length; i++ )
+            printf(" %02X", buffer[i] );
+        break;
       case SIGSUBPKT_SIGNERS_UID:
 	p = "signer's user ID";
 	break;
@@ -821,6 +831,16 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	    p = ")";
 	}
 	break;
+      case SIGSUBPKT_ARR:
+        fputs("Big Brother's key (ignored): ", stdout );
+	if( length < 22 )
+	    p = "[too short]";
+	else {
+	    printf("c=%02x a=%d f=", buffer[0], buffer[1] );
+	    for( i=2; i < length; i++ )
+		printf("%02X", buffer[i] );
+	}
+        break;
       case SIGSUBPKT_PRIV_ADD_SIG:
 	p = "signs additional user ID";
 	break;
@@ -846,6 +866,8 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
 	if( n < 4 )
 	    break;
 	return 0;
+      case SIGSUBPKT_KEY_FLAGS:
+          return 0;  
       case SIGSUBPKT_EXPORTABLE:
 	if( !n )
 	    break;
@@ -867,6 +889,10 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_PREF_COMPR:
       case SIGSUBPKT_POLICY:
 	return 0;
+      case SIGSUBPKT_PRIMARY_UID:
+          if ( n != 1 )
+              break;
+          return 0;   
       case SIGSUBPKT_PRIV_ADD_SIG:
 	/* because we use private data, we check the GNUPG marker */
 	if( n < 24 )
@@ -897,6 +923,7 @@ can_handle_critical( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_PREF_SYM:
       case SIGSUBPKT_PREF_HASH:
       case SIGSUBPKT_PREF_COMPR:
+      case SIGSUBPKT_KEY_FLAGS:
 	return 1;
 
       case SIGSUBPKT_POLICY: /* Is it enough to show the policy? */
@@ -1288,7 +1315,8 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	sk->version = version;
 	sk->is_primary = pkttype == PKT_SECRET_KEY;
 	sk->pubkey_algo = algorithm;
-	sk->pubkey_usage = 0; /* not yet used */
+	sk->req_usage = 0; 
+        sk->pubkey_usage = 0; /* will be set by getkey functions */
     }
     else {
 	PKT_public_key *pk = pkt->pkt.public_key;
@@ -1298,7 +1326,9 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	pk->hdrbytes	= hdrlen;
 	pk->version	= version;
 	pk->pubkey_algo = algorithm;
-	pk->pubkey_usage = 0; /* not yet used */
+        pk->req_usage = 0;
+	pk->pubkey_usage = 0; /* will be set bey getkey functions */
+        pk->is_revoked = 0;
 	pk->keyid[0] = 0;
 	pk->keyid[1] = 0;
     }

@@ -389,7 +389,8 @@ utf8_to_native( const char *string, size_t length )
 			  case	 0 : n++; if( p ) *p++ = '0'; break;
 			  default: n += 3;
 				   sprintf( p, "x%02x", *s );
-				   p += 3;
+                                   if ( p )
+                                       p += 3;
 				   break;
 			}
 		    }
@@ -494,5 +495,9 @@ utf8_to_native( const char *string, size_t length )
 	}
     }
 }
+
+
+
+
 
 

@@ -59,7 +59,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 	PKT_secret_key *sk;
 
 	sk = gcry_xcalloc( 1, sizeof *sk );
-	sk->pubkey_usage = use;
+	sk->req_usage = use;
 	if( (rc = get_seckey_byname( sk, NULL, unlock )) ) {
 	    free_secret_key( sk ); sk = NULL;
 	    log_error("no default secret key: %s\n", gpg_errstr(rc) );
@@ -90,7 +90,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 	    PKT_secret_key *sk;
 
 	    sk = gcry_xcalloc( 1, sizeof *sk );
-	    sk->pubkey_usage = use;
+	    sk->req_usage = use;
 	    if( (rc = get_seckey_byname( sk, locusr->d, unlock )) ) {
 		free_secret_key( sk ); sk = NULL;
 		log_error(_("skipped `%s': %s\n"), locusr->d, gpg_errstr(rc) );

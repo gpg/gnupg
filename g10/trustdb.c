@@ -109,6 +109,7 @@ static TN used_tns;
 static int alloced_tns;
 static int max_alloced_tns;
 
+static struct keyid_list *trusted_key_list;
 
 static LOCAL_ID_TABLE new_lid_table(void);
 static int ins_lid_table_item( LOCAL_ID_TABLE tbl, ulong lid, unsigned flag );
@@ -463,6 +464,64 @@ lid_from_keyid_no_sdir( u32 *keyid )
  *************	Initialization	****************
  ***********************************************/
 
+void
+register_trusted_key( const char *string )
+{
+    u32 keyid[2];
+    struct keyid_list *r;
+
+    if( classify_user_id( string, keyid, NULL, NULL, NULL ) != 11 ) {
+        log_error(_("'%s' is not a valid long keyID\n"), string );
+        return;
+    }
+
+    for( r = trusted_key_list; r; r = r->next )
+        if( r->keyid[0] == keyid[0] && r->keyid[1] == keyid[1] )
+            return;
+    r = gcry_xmalloc( sizeof *r );
+    r->keyid[0] = keyid[0];
+    r->keyid[1] = keyid[1];
+    r->next = trusted_key_list;
+    trusted_key_list = r;
+}
+
+
+
+static void
+add_ultimate_key( PKT_public_key *pk, u32 *keyid )
+{
+    int rc;
+
+    /* first make sure that the pubkey is in the trustdb */
+    rc = query_trust_record( pk );
+    if( rc == -1 && opt.dry_run )
+	return;
+    if( rc == -1 ) { /* put it into the trustdb */
+        rc = insert_trust_record_by_pk( pk );
+        if( rc ) {
+            log_error(_("key %08lX: can't put it into the trustdb\n"),
+                      (ulong)keyid[1] );
+            return;
+        }
+    }
+    else if( rc ) {
+        log_error(_("key %08lX: query record failed\n"), (ulong)keyid[1] );
+        return;
+    }
+
+    if( DBG_TRUST )
+        log_debug("key %08lX.%lu: stored into ultikey_table\n",
+                  (ulong)keyid[1], pk->local_id );
+
+    if( ins_lid_table_item( ultikey_table, pk->local_id, 0 ) )
+        log_error(_("key %08lX: already in trusted key table\n"),
+                  (ulong)keyid[1]);
+    else if( opt.verbose > 1 )
+        log_info(_("key %08lX: accepted as trusted key.\n"),
+                 (ulong)keyid[1]);
+
+}
+
 /****************
  * Verify that all our public keys are in the trustdb.
  */
@@ -474,7 +533,27 @@ verify_own_keys(void)
     PKT_secret_key *sk = gcry_xcalloc( 1, sizeof *sk );
     PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
     u32 keyid[2];
+    struct keyid_list *kl;
 
+
+    /* put the trusted keys into the ultikey table */
+    for( kl = trusted_key_list; kl; kl = kl->next ) {
+        keyid[0] = kl->keyid[0];
+        keyid[1] = kl->keyid[1];
+        /* get the public key */
+        memset( pk, 0, sizeof *pk );
+        rc = get_pubkey( pk, keyid );
+        if( rc ) {
+            log_info(_("key %08lX: no public key for trusted key - skipped\n"),
+                                                            (ulong)keyid[1] );
+        }
+        else {
+            add_ultimate_key( pk, keyid );
+            release_public_key_parts( pk );
+        }
+    }
+
+    /* And now add all secret keys to the ultikey table */
     while( !(rc=enum_secret_keys( &enum_context, sk, 0 ) ) ) {
 	int have_pk = 0;
 
@@ -487,6 +566,10 @@ verify_own_keys(void)
 	    log_info(_("NOTE: secret key %08lX is NOT protected.\n"),
 							    (ulong)keyid[1] );
 
+        for( kl = trusted_key_list; kl; kl = kl->next ) {
+            if( kl->keyid[0] == keyid[0] && kl->keyid[1] == keyid[1] )
+                goto skip; /* already in trusted key table */
+        }
 
 	/* see whether we can access the public key of this secret key */
 	memset( pk, 0, sizeof *pk );
@@ -504,33 +587,8 @@ verify_own_keys(void)
 	    goto skip;
 	}
 
-	/* make sure that the pubkey is in the trustdb */
-	rc = query_trust_record( pk );
-	if( rc == -1 && opt.dry_run )
-	    goto skip;
-	if( rc == -1 ) { /* put it into the trustdb */
-	    rc = insert_trust_record_by_pk( pk );
-	    if( rc ) {
-		log_error(_("key %08lX: can't put it into the trustdb\n"),
-							    (ulong)keyid[1] );
-		goto skip;
-	    }
-	}
-	else if( rc ) {
-	    log_error(_("key %08lX: query record failed\n"), (ulong)keyid[1] );
-	    goto skip;
+	add_ultimate_key( pk, keyid );
 
-	}
-
-	if( DBG_TRUST )
-	    log_debug("key %08lX.%lu: stored into ultikey_table\n",
-				    (ulong)keyid[1], pk->local_id );
-	if( ins_lid_table_item( ultikey_table, pk->local_id, 0 ) )
-	    log_error(_("key %08lX: already in trusted key table\n"),
-							(ulong)keyid[1]);
-	else if( opt.verbose > 1 )
-	    log_info(_("key %08lX: accepted as trusted key.\n"),
-							(ulong)keyid[1]);
       skip:
 	release_secret_key_parts( sk );
 	if( have_pk )
@@ -541,11 +599,22 @@ verify_own_keys(void)
     else
 	rc = 0;
 
+    /* release the trusted keyid table */
+    {   struct keyid_list *kl2;
+        for( kl = trusted_key_list; kl; kl = kl2 ) {
+            kl2 = kl->next;
+            gcry_free( kl );
+        }
+        trusted_key_list = NULL;
+    }
+
     enum_secret_keys( &enum_context, NULL, 0 ); /* free context */
     free_secret_key( sk );
     free_public_key( pk );
     return rc;
 }
+
+
 
 
 /****************

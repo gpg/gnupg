@@ -485,6 +485,10 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	if( fname ) {
 	    if( !(filesize = iobuf_get_filelength(inp)) )
 		log_info(_("WARNING: `%s' is an empty file\n"), fname );
+            /* we can't yet encode the length of very large files,
+             * so we switch to partial length encoding in this case */
+            if ( filesize >= IOBUF_FILELENGTH_LIMIT )
+                filesize = 0;
 
 	    /* because the text_filter modifies the length of the
 	     * data, it is not possible to know the used length

@@ -311,16 +311,16 @@ answer_is_yes_no_quit( const char *s )
     char *short_no = _("nN");
     char *short_quit = _("qQ");
 
-    if( !stricmp(s, long_yes ) )
-	return 1;
     if( !stricmp(s, long_no ) )
 	return 0;
+    if( !stricmp(s, long_yes ) )
+	return 1;
     if( !stricmp(s, long_quit ) )
 	return -1;
-    if( strchr( short_yes, *s ) && !s[1] )
-	return 1;
     if( strchr( short_no, *s ) && !s[1] )
 	return 0;
+    if( strchr( short_yes, *s ) && !s[1] )
+	return 1;
     if( strchr( short_quit, *s ) && !s[1] )
 	return -1;
     if( !stricmp(s, "yes" ) )

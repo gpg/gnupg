@@ -63,7 +63,7 @@ get_entropy_count( int fd )
 #endif
 
 /****************
- * Used to open the Linux and xBSD /dev/random devices
+ * Used to open the /dev/random devices (Linux, xBSD, Solaris (if it exists), ...)
  */
 static int
 open_device( const char *name, int minor )
@@ -76,8 +76,9 @@ open_device( const char *name, int minor )
 	g10_log_fatal("can't open %s: %s\n", name, strerror(errno) );
     if( fstat( fd, &sb ) )
 	g10_log_fatal("stat() off %s failed: %s\n", name, strerror(errno) );
-    if( !S_ISCHR(sb.st_mode) )
-	g10_log_fatal("invalid random device!\n" );
+    /* Don't check device type for better portability */
+    /*  if( (!S_ISCHR(sb.st_mode)) && (!S_ISFIFO(sb.st_mode)) )
+	  g10_log_fatal("invalid random device!\n" ); */
     return fd;
 }
 

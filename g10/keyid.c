@@ -166,11 +166,17 @@ keyid_from_sk( PKT_secret_key *sk, u32 *keyid )
     if( !keyid )
 	keyid = dummy_keyid;
 
-    if( sk->version < 4 && is_RSA(sk->pubkey_algo) ) {
+    if( sk->keyid[0] || sk->keyid[1] ) {
+	keyid[0] = sk->keyid[0];
+	keyid[1] = sk->keyid[1];
+    }
+    else if( sk->version < 4 && is_RSA(sk->pubkey_algo) ) {
 	if( pubkey_get_npkey(sk->pubkey_algo) )
 	    v3_keyid( sk->skey[0], keyid ); /* take n */
 	else
 	    keyid[0] = keyid[1] = 0;
+	sk->keyid[0] = keyid[0];
+	sk->keyid[1] = keyid[1];
     }
     else {
 	const byte *dp;
@@ -180,6 +186,8 @@ keyid_from_sk( PKT_secret_key *sk, u32 *keyid )
 	keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
 	keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
 	gcry_md_close(md);
+	sk->keyid[0] = keyid[0];
+	sk->keyid[1] = keyid[1];
     }
 
     return keyid[1];

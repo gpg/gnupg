@@ -244,6 +244,7 @@ static struct RI {
     {	"/usr/ucb/ps", "aux", SC(0.3), NULL, 0, 0, 0, 1       },
     {	"/usr/bin/ps", "aux", SC(0.3), NULL, 0, 0, 0, 1       },
     {	"/bin/ps", "aux", SC(0.3), NULL, 0, 0, 0, 0          },
+    {   "/bin/ps", "-A", SC(0.3), NULL, 0, 0, 0, 0           }, /*QNX*/
     {	"/usr/bin/ipcs", "-a", SC(0.5), NULL, 0, 0, 0, 1      },
     {	"/bin/ipcs", "-a", SC(0.5), NULL, 0, 0, 0, 0         },
     /* Unreliable source, depends on system usage */
@@ -292,6 +293,10 @@ static struct RI {
     /* This is a complex and screwball program.  Some systems have things
      * like rX_dmn, x = integer, for RAID systems, but the statistics are
      * pretty dodgy */
+#ifdef __QNXNTO__                                                             
+    { "/bin/pidin", "-F%A%B%c%d%E%I%J%K%m%M%n%N%p%P%S%s%T", SC(0.3),
+             NULL, 0, 0, 0, 0       },
+#endif     
 #if 0
     /* The following aren't enabled since they're somewhat slow and not very
      * unpredictable, however they give an indication of the sort of sources

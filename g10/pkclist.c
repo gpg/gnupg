@@ -814,13 +814,12 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    any_recipients = 1;
 	else if( (use & GCRY_PK_USAGE_ENCR) && !opt.no_encrypt_to ) {
 	    pk = gcry_xcalloc( 1, sizeof *pk );
-	    pk->pubkey_usage = use;
+	    pk->req_usage = use;
 	    if( (rc = get_pubkey_byname( NULL, pk, rov->d, NULL )) ) {
 		free_public_key( pk ); pk = NULL;
 		log_error(_("%s: skipped: %s\n"), rov->d, gpg_errstr(rc) );
 	    }
 	    else if( !(rc=openpgp_pk_test_algo(pk->pubkey_algo, use )) ) {
-
 		/* Skip the actual key if the key is already present
 		 * in the list */
 		if (key_present_in_pk_list(pk_list, pk) == 0) {
@@ -871,7 +870,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    if( pk )
 		free_public_key( pk );
 	    pk = gcry_xcalloc( 1, sizeof *pk );
-	    pk->pubkey_usage = use;
+	    pk->req_usage = use;
 	    rc = get_pubkey_byname( NULL, pk, answer, NULL );
 	    if( rc )
 		tty_printf(_("No such user ID.\n"));
@@ -937,7 +936,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
     }
     else if( !any_recipients && (def_rec = default_recipient()) ) {
 	pk = gcry_xcalloc( 1, sizeof *pk );
-	pk->pubkey_usage = use;
+	pk->req_usage = use;
 	rc = get_pubkey_byname( NULL, pk, def_rec, NULL );
 	if( rc )
 	    log_error(_("unknown default recipient `%s'\n"), def_rec );
@@ -962,7 +961,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		continue; /* encrypt-to keys are already handled */
 
 	    pk = gcry_xcalloc( 1, sizeof *pk );
-	    pk->pubkey_usage = use;
+	    pk->req_usage = use;
 	    if( (rc = get_pubkey_byname( NULL, pk, remusr->d, NULL )) ) {
 		free_public_key( pk ); pk = NULL;
 		log_error(_("%s: skipped: %s\n"), remusr->d, gpg_errstr(rc) );
@@ -1033,8 +1032,6 @@ static int
 algo_available( int preftype, int algo )
 {
     if( preftype == PREFTYPE_SYM ) {
-	if( algo == GCRY_CIPHER_TWOFISH )
-	    return 0;  /* we don't want to generate Twofish messages for now*/
 	return algo && !openpgp_cipher_test_algo( algo );
     }
     else if( preftype == PREFTYPE_HASH ) {

@@ -67,6 +67,32 @@ AC_DEFUN(GNUPG_CHECK_GNUMAKE,
     fi
   ])
 
+dnl GNUPG_CHECK_FAQPROG
+dnl
+AC_DEFUN(GNUPG_CHECK_FAQPROG,
+  [ AC_MSG_CHECKING(for faqprog.pl)
+    if faqprog.pl -V 2>/dev/null | grep '^faqprog.pl ' >/dev/null 2>&1; then
+        working_faqprog=yes
+        FAQPROG="faqprog.pl"
+    else 
+	working_faqprog=no
+        FAQPROG=": "
+    fi
+    AC_MSG_RESULT($working_faqprog)
+    AC_SUBST(FAQPROG)
+    AM_CONDITIONAL(WORKING_FAQPROG, test "$working_faqprog" = "yes" )
+
+    if test $working_faqprog = no; then
+	AC_MSG_WARN([[
+***
+*** It seems that the faqprog.pl program is not installed.
+*** Unless you do not change the source of the FAQs it is not required.
+*** The working version of this utility should be available at:
+***   ftp://ftp.gnupg.org/pub/gcrypt/contrib/faqprog.pl
+***]])
+    fi
+  ])       
+
 
 
 dnl GNUPG_LINK_FILES( SRC, DEST )
@@ -358,7 +384,7 @@ define(GNUPG_CHECK_MLOCK,
                     #endif
                 ], [
                     int i;
-                    mkdir ("foo", 0);
+                    
                     /* glibc defines this for functions which it implements
                      * to always fail with ENOSYS.  Some functions are actually
                      * named something starting with __ and the normal name

@@ -48,6 +48,11 @@ case "$use_static_rnd" in
       ;;
 esac
 
+AC_ARG_WITH(egd-socket,
+    [  --with-egd-socket=NAME  Use NAME for the EGD socket)],
+            egd_socket_name="$withval", egd_socket_name="" )
+AC_DEFINE_UNQUOTED(EGD_SOCKET_NAME, "$egd_socket_name")
+
 
 
 dnl
@@ -164,6 +169,7 @@ AC_ISC_POSIX
 AC_PROG_INSTALL
 AC_PROG_AWK
 GPH_PROG_DOCBOOK
+GNUPG_CHECK_FAQPROG
 
 
 dnl
@@ -271,19 +277,30 @@ case "${target}" in
     *-openbsd*)
         NAME_OF_DEV_RANDOM="/dev/srandom"
         NAME_OF_DEV_URANDOM="/dev/urandom"
-        DYNLINK_MOD_CFLAGS="-shared -rdynamic -fpic -Wl,-Bshareable -Wl,-x"
+        DYNLINK_MOD_CFLAGS="-shared -rdynamic $CFLAGS_PIC -Wl,-Bshareable -Wl,-x"
         ;;
 
     *-netbsd*)
         NAME_OF_DEV_RANDOM="/dev/random"
         NAME_OF_DEV_URANDOM="/dev/urandom"
-        DYNLINK_MOD_CFLAGS="-shared -rdynamic -fpic -Wl,-Bshareable -Wl,-x"
+        DYNLINK_MOD_CFLAGS="-shared -rdynamic $CFLAGS_PIC -Wl,-Bshareable -Wl,-x"
+        ;;
+
+    *-solaris*)
+        NAME_OF_DEV_RANDOM="/dev/random"
+        NAME_OF_DEV_URANDOM="/dev/random"
+        DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"
         ;;
 
     *)
         NAME_OF_DEV_RANDOM="/dev/random"
         NAME_OF_DEV_URANDOM="/dev/urandom"
-        DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"
+        # -shared is a gcc-ism.  Find pic flags from GNUPG_CHECK_PIC.
+        if test -n "$GCC" ; then
+           DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"                            
+        else
+           DYNLINK_MOD_CFLAGS="$CFLAGS_PIC"
+        fi
         ;;
 esac
 AC_DEFINE_UNQUOTED(NAME_OF_DEV_RANDOM, "$NAME_OF_DEV_RANDOM")
@@ -429,7 +446,7 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(strerror stpcpy strlwr stricmp tcgetattr rand strtoul mmap)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage gethrtime setrlimit clock_gettime)
 AC_CHECK_FUNCS(memicmp atexit raise getpagesize strftime nl_langinfo)
-AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask)
+AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask fopen64 fstat64)
 
 GNUPG_CHECK_MLOCK
 GNUPG_FUNC_MKDIR_TAKES_ONE_ARG
@@ -473,7 +490,7 @@ dnl check whether we have a random device
 dnl
 if test "$try_dev_random" = yes ; then
     AC_CACHE_CHECK(for random device, ac_cv_have_dev_random,
-    [if test -c "$NAME_OF_DEV_RANDOM" && test -c "$NAME_OF_DEV_URANDOM" ; then
+    [if test -r "$NAME_OF_DEV_RANDOM" && test -r "$NAME_OF_DEV_URANDOM" ; then
       ac_cv_have_dev_random=yes; else ac_cv_have_dev_random=no; fi])
     if test "$ac_cv_have_dev_random" = yes; then
         AC_DEFINE(HAVE_DEV_RANDOM)
@@ -740,10 +757,16 @@ cat >gnupg-defs.tmp <<G10EOF
   #define GNUPG_LOCALEDIR "c:/lib/gnupg/locale"
   #define GNUPG_LIBDIR  "c:/lib/gnupg"
   #define GNUPG_DATADIR "c:/lib/gnupg"
+  #define GNUPG_HOMEDIR "c:/gnupg-test"
 #else
   #define GNUPG_LOCALEDIR "${prefix}/${DATADIRNAME}/locale"
   #define GNUPG_LIBDIR  "${libdir}/gnupg"
   #define GNUPG_DATADIR "${datadir}/gnupg"
+  #ifdef __VMS
+    #define GNUPG_HOMEDIR "/SYS\$LOGIN/gnupg" 
+  #else
+    #define GNUPG_HOMEDIR "~/.gnupg-test" 
+  #endif
 #endif
 G10EOF
 if cmp -s gnupg-defs.h gnupg-defs.tmp 2>/dev/null; then

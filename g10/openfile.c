@@ -70,6 +70,11 @@ overwrite_filep( const char *fname )
     if( access( fname, F_OK ) )
 	return 1; /* does not exist */
 
+#ifndef HAVE_DOSISH_SYSTEM
+    if ( !strcmp ( fname, "/dev/null" ) )
+        return 1; /* does not do any harm */
+#endif
+
     /* fixme: add some backup stuff in case of overwrite */
     if( opt.answer_yes )
 	return 1;
@@ -105,6 +110,12 @@ make_outfile_name( const char *iname )
 	buf[n-4] = 0;
 	return buf;
     }
+    else if( n > 5 && !CMP_FILENAME(iname+n-5,".sign") ) {
+	char *buf = gcry_xstrdup( iname );
+	buf[n-5] = 0;
+	return buf;
+    }
+
 
     log_info(_("%s: unknown suffix\n"), iname );
     return NULL;
@@ -241,6 +252,7 @@ open_sigfile( const char *iname )
     if( iname && !(*iname == '-' && !iname[1]) ) {
 	len = strlen(iname);
 	if( len > 4 && ( !strcmp(iname + len - 4, ".sig")
+                        || ( len > 5 && !strcmp(iname + len - 5, ".sign") )
 			|| !strcmp(iname + len - 4, ".asc")) ) {
 	    char *buf;
 	    buf = gcry_xstrdup(iname);
@@ -305,10 +317,24 @@ copy_options_file( const char *destdir )
 void
 try_make_homedir( const char *fname )
 {
+    const char *defhome = GNUPG_HOMEDIR;
+
+    /* Create the directory only if the supplied directory name
+     * is the same as the default one.  This way we avoid to create
+     * arbitrary directories when a non-default homedirectory is used.
+     * To cope with HOME, we do compare only the suffix if we see that
+     * the default homedir does start with a tilde.
+     */
     if( opt.dry_run )
 	return;
-    if( strlen(fname) >= 7
-	&& !strcmp(fname+strlen(fname)-7, "/.gnupg" ) ) {
+
+    if ( ( *defhome == '~'
+           && ( strlen(fname) >= strlen (defhome+1)
+                && !strcmp(fname+strlen(defhome+1)-strlen(defhome+1),
+                           defhome+1 ) ))
+         || ( *defhome != '~'
+              && !compare_filenames( fname, defhome ) )
+        ) {
 	if( mkdir( fname, S_IRUSR|S_IWUSR|S_IXUSR ) )
 	    log_fatal( _("%s: can't create directory: %s\n"),
 					fname,	strerror(errno) );
@@ -320,4 +346,6 @@ try_make_homedir( const char *fname )
 	gpg_exit(1);
     }
 }
+
+
 

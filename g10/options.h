@@ -84,6 +84,7 @@ struct {
     const char *set_policy_url;
     int use_embedded_filename;
     int allow_non_selfsigned_uid;
+    int allow_freeform_uid;
     int no_literal;
     ulong set_filesize;
     int honor_http_proxy;
@@ -92,6 +93,8 @@ struct {
     int command_fd;
     int auto_key_retrieve;
     int use_agent;
+    int merge_only;
+    int try_all_secrets;
 } opt;
 
 

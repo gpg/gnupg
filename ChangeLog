@@ -1,3 +1,20 @@
+Mon Sep 18 16:35:45 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * acinclude.m4 (GNUPG_CHECK_MLOCK):  Removed that silly mkdir().
+
+        * configure.in:  Changes to allow for Solaris random device.
+        By Nils Ellmenreich.
+        (--with-egd-socket): New.
+
+        * configure.in (GNUPG_HOMEDIR): New.
+
+        * configure.in: Check for fstat64 and fopen64
+
+        * acinclude.m4 (GNUPG_CHECK_FAQPROG): New.
+        * configure.in: Test for this.
+
+        * configure.in (DYNLINK_MOD_CFLAGS): Fix by David Champion.
+
 Tue Aug 22 14:31:15 CEST 2000  Werner Koch  <wk@openit.de>
 
         Version 1.1.1

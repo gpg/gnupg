@@ -179,6 +179,7 @@ enum cmd_and_opt_values { aNull = 0,
     oDisableCipherAlgo,
     oDisablePubkeyAlgo,
     oAllowNonSelfsignedUID,
+    oAllowFreeformUID,
     oNoLiteral,
     oSetFilesize,
     oHonorHttpProxy,
@@ -188,7 +189,9 @@ enum cmd_and_opt_values { aNull = 0,
     oNoRandomSeedFile,
     oNoAutoKeyRetrieve,
     oUseAgent,
-    oEmu3DESS2KBug,  /* will be removed in 1.1 */
+    oMergeOnly,
+    oTryAllSecrets,
+    oTrustedKey,
     oEmuMDEncodeBug,
 aTest };
 
@@ -290,6 +293,7 @@ static ARGPARSE_OPTS opts[] = {
     { oCompletesNeeded, "completes-needed", 1, "@"},
     { oMarginalsNeeded, "marginals-needed", 1, "@"},
     { oMaxCertDepth,	"max-cert-depth", 1, "@" },
+    { oTrustedKey, "trusted-key", 2, N_("|KEYID|ulimately trust this key")},
     { oLoadExtension, "load-extension" ,2, N_("|FILE|load extension module FILE")},
     { oRFC1991, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
     { oOpenPGP, "openpgp", 0, N_("set all packet, cipher and digest options to OpenPGP behavior")},
@@ -362,6 +366,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDisableCipherAlgo,  "disable-cipher-algo", 2, "@" },
     { oDisablePubkeyAlgo,  "disable-pubkey-algo", 2, "@" },
     { oAllowNonSelfsignedUID, "allow-non-selfsigned-uid", 0, "@" },
+    { oAllowFreeformUID, "allow-freeform-uid", 0, "@" },
     { oNoLiteral, "no-literal", 0, "@" },
     { oSetFilesize, "set-filesize", 20, "@" },
     { oHonorHttpProxy,"honor-http-proxy", 0, "@" },
@@ -370,7 +375,8 @@ static ARGPARSE_OPTS opts[] = {
     { oIgnoreTimeConflict, "ignore-time-conflict", 0, "@" },
     { oNoRandomSeedFile,  "no-random-seed-file", 0, "@" },
     { oNoAutoKeyRetrieve, "no-auto-key-retrieve", 0, "@" },
-    { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
+    { oMergeOnly,	  "merge-only", 0, "@" },
+    { oTryAllSecrets,  "try-all-secrets", 0, "@" },
     { oEmuMDEncodeBug,	"emulate-md-encode-bug", 0, "@"},
 {0} };
 
@@ -601,6 +607,7 @@ main( int argc, char **argv )
     char **orig_argv;
     const char *fname;
     char *username;
+    int may_coredump;
     STRLIST sl, remusr= NULL, locusr=NULL;
     STRLIST nrings=NULL, sec_nrings=NULL;
     armor_filter_context_t afx;
@@ -642,7 +649,7 @@ main( int argc, char **argv )
     }
 
     gcry_control( GCRYCTL_USE_SECURE_RNDPOOL );
-    disable_core_dumps();
+    may_coredump = disable_core_dumps();
     init_signals();
     create_dotlock(NULL); /* register locking cleanup */
     i18n_init();
@@ -653,8 +660,8 @@ main( int argc, char **argv )
     opt.def_digest_algo = 0;
     opt.def_compress_algo = 2;
     opt.s2k_mode = 3; /* iterated+salted */
-    opt.s2k_digest_algo = GCRY_MD_RMD160;
-    opt.s2k_cipher_algo = GCRY_CIPHER_BLOWFISH;
+    opt.s2k_digest_algo = GCRY_MD_SHA1;
+    opt.s2k_cipher_algo = GCRY_CIPHER_CAST5;
     opt.completes_needed = 1;
     opt.marginals_needed = 3;
     opt.max_cert_depth = 5;
@@ -666,11 +673,7 @@ main( int argc, char **argv )
     opt.homedir = getenv("GNUPGHOME");
   #endif
     if( !opt.homedir || !*opt.homedir ) {
-      #ifdef HAVE_DRIVE_LETTERS
-	opt.homedir = "c:/gnupg-test";
-      #else
-	opt.homedir = "~/.gnupg-test";
-      #endif
+	opt.homedir = GNUPG_HOMEDIR;
     }
 
     /* check whether we have a config file on the commandline */
@@ -801,7 +804,7 @@ main( int argc, char **argv )
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
 	  case oOutput: opt.outfile = pargs.r.ret_str; break;
 	  case oQuiet: opt.quiet = 1; break;
-	  case oNoTTY: opt.quiet = 1; tty_no_terminal(1); break;
+	  case oNoTTY: tty_no_terminal(1); break;
 	  case oDryRun: opt.dry_run = 1; break;
 	  case oInteractive: opt.interactive = 1; break;
 	  case oVerbose:
@@ -894,7 +897,6 @@ main( int argc, char **argv )
 	    opt.s2k_digest_algo = GCRY_MD_SHA1;
 	    opt.s2k_cipher_algo = GCRY_CIPHER_CAST5;
 	    break;
-	  case oEmu3DESS2KBug:	opt.emulate_bugs |= EMUBUG_3DESS2K; break;
 	  case oEmuMDEncodeBug: opt.emulate_bugs |= EMUBUG_MDENCODE; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRunAsShmCP:
@@ -965,6 +967,7 @@ main( int argc, char **argv )
 		}
 		break;
 	  case oAllowNonSelfsignedUID: opt.allow_non_selfsigned_uid = 1; break;
+	  case oAllowFreeformUID: opt.allow_freeform_uid = 1; break;
 	  case oNoLiteral: opt.no_literal = 1; break;
 	  case oSetFilesize: opt.set_filesize = pargs.r.ret_ulong; break;
 	  case oHonorHttpProxy: opt.honor_http_proxy = 1; break;
@@ -973,6 +976,9 @@ main( int argc, char **argv )
 	  case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
 	  case oNoRandomSeedFile: use_random_seed = 0; break;
 	  case oNoAutoKeyRetrieve: opt.auto_key_retrieve = 0; break;
+	  case oMergeOnly: opt.merge_only = 1; break;
+	  case oTryAllSecrets: opt.try_all_secrets = 1; break;
+          case oTrustedKey: register_trusted_key( pargs.r.ret_str ); break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}
@@ -1001,6 +1007,10 @@ main( int argc, char **argv )
 	log_info("used in a production environment or with production keys!\n");
     }
   #endif
+
+    if( may_coredump && !opt.quiet )
+	log_info(_("WARNING: program may create a core file!\n"));
+
     if (opt.no_literal) {
 	log_info(_("NOTE: %s is not for normal use!\n"), "--no-literal");
 	if (opt.textmode)
@@ -1406,9 +1416,13 @@ main( int argc, char **argv )
 
 
       case aPrimegen:
-	{   int mode = argc < 2 ? 0 : atoi(*argv);
+	{ 
+          #if 1
+            log_error( "command is currently not implemented\n");
+          #else
+	   /* FIXME: disabled until we have an API to create primes */
+            int mode = argc < 2 ? 0 : atoi(*argv);
 
-	   #if 0 /* FIXME: disabled until we have an API to create primes */
 	    if( mode == 1 && argc == 2 ) {
 		mpi_print( stdout, generate_public_prime( atoi(argv[1]) ), 1);
 	    }
@@ -1435,9 +1449,9 @@ main( int argc, char **argv )
 		mpi_release(g);
 	    }
 	    else
-	  #endif
 		wrong_args("--gen-prime mode bits [qbits] ");
 	    putchar('\n');
+          #endif
 	}
 	break;
 

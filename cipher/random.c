@@ -604,7 +604,9 @@ fast_random_poll()
       #endif
     #else
     {	struct rusage buf;
-	if( getrusage( RUSAGE_SELF, &buf ) )
+        /* QNX/Neutrino does return ENOSYS - so we just ignore it and
+         * add whatever is in buf */
+        if( getrusage( RUSAGE_SELF, &buf ) && errno != ENOSYS )
 	    BUG();
 	add_randomness( &buf, sizeof buf, 1 );
 	memset( &buf, 0, sizeof buf );

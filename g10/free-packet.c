@@ -139,6 +139,32 @@ copy_public_key( PKT_public_key *d, PKT_public_key *s )
    return copy_public_key_new_namehash( d, s, NULL );
 }
 
+
+/****************
+ * Replace all common parts of a sk by the one from the public key.
+ * This is a hack and a better solution will be to just store the real secret
+ * parts somewhere and don't duplicate all the other stuff.
+ */
+void
+copy_public_parts_to_secret_key( PKT_public_key *pk, PKT_secret_key *sk )
+{
+    sk->expiredate  = pk->expiredate;     
+    sk->pubkey_algo = pk->pubkey_algo;    
+    sk->pubkey_usage= pk->pubkey_usage;
+    sk->created     = pk->created;        
+    sk->req_usage   = pk->req_usage;
+    sk->req_algo    = pk->req_algo;
+    sk->has_expired = pk->has_expired;    
+    sk->is_revoked  = pk->is_revoked;     
+    sk->is_valid    = pk->is_valid;    
+    sk->main_keyid[0]= pk->main_keyid[0];
+    sk->main_keyid[1]= pk->main_keyid[1];
+    sk->keyid[0]    = pk->keyid[0];
+    sk->keyid[1]    = pk->keyid[1];
+}
+
+
+
 PKT_signature *
 copy_signature( PKT_signature *d, PKT_signature *s )
 {
@@ -448,5 +474,9 @@ cmp_user_ids( PKT_user_id *a, PKT_user_id *b )
 	res = memcmp( a->name, b->name, a->len );
     return res;
 }
+
+
+
+
 
 

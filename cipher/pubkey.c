@@ -30,9 +30,7 @@
 #include "cipher.h"
 #include "elgamal.h"
 #include "dsa.h"
-#if 0
 #include "rsa.h"
-#endif
 #include "dynload.h"
 
 /* FIXME: use set_lasterr() */
@@ -196,7 +194,6 @@ setup_pubkey_table(void)
 	BUG();
     i++;
 
-  #if 0
     pubkey_table[i].algo = PUBKEY_ALGO_RSA;
     pubkey_table[i].name = rsa_get_info( pubkey_table[i].algo,
 					 &pubkey_table[i].npkey,
@@ -248,7 +245,6 @@ setup_pubkey_table(void)
     if( !pubkey_table[i].name )
 	BUG();
     i++;
-  #endif
 
     for( ; i < TABLE_SIZE; i++ )
 	pubkey_table[i].name = NULL;
@@ -433,8 +429,6 @@ pubkey_get_npkey( int algo )
 	    if( pubkey_table[i].algo == algo )
 		return pubkey_table[i].npkey;
     } while( load_pubkey_modules() );
-    if( is_RSA(algo) )	  /* special hack, so that we are able to */
-	return 2;	  /* see the RSA keyids */
     return 0;
 }
 
@@ -450,8 +444,6 @@ pubkey_get_nskey( int algo )
 	    if( pubkey_table[i].algo == algo )
 		return pubkey_table[i].nskey;
     } while( load_pubkey_modules() );
-    if( is_RSA(algo) )	  /* special hack, so that we are able to */
-	return 6;	  /* see the RSA keyids */
     return 0;
 }
 
@@ -467,8 +459,6 @@ pubkey_get_nsig( int algo )
 	    if( pubkey_table[i].algo == algo )
 		return pubkey_table[i].nsig;
     } while( load_pubkey_modules() );
-    if( is_RSA(algo) )	  /* special hack, so that we are able to */
-	return 1;	  /* see the RSA keyids */
     return 0;
 }
 
@@ -484,8 +474,6 @@ pubkey_get_nenc( int algo )
 	    if( pubkey_table[i].algo == algo )
 		return pubkey_table[i].nenc;
     } while( load_pubkey_modules() );
-    if( is_RSA(algo) )	  /* special hack, so that we are able to */
-	return 1;	  /* see the RSA keyids */
     return 0;
 }
 
@@ -1509,6 +1497,11 @@ gcry_pk_ctl( int cmd, void *buffer, size_t buflen)
  *	Buffer must be NULL, nbytes  may have the address of a variable
  *	with the required usage of the algorithm. It may be 0 for don't
  *	care or a combination of the GCRY_PK_USAGE_xxx flags;
+ *  GCRYCTL_GET_ALGO_USAGE:
+ *      Return the usage glafs for the give algo.  An invalid alog
+ *      does return 0.  Disabled algos are ignored here becuase we
+ *      only want to know whether the algo is at all capable of
+ *      the usage.
  *
  * On error the value -1 is returned and the error reason may be
  * retrieved by gcry_errno().
@@ -1535,6 +1528,15 @@ gcry_pk_algo_info( int algo, int what, void *buffer, size_t *nbytes)
 	}
 	break;
 
+      case GCRYCTL_GET_ALGO_USAGE: 
+          do {
+              int i;
+              for(i=0; pubkey_table[i].name; i++ )
+                  if( pubkey_table[i].algo == algo ) 
+                      return pubkey_table[i].use;
+          } while( load_pubkey_modules() );
+          return 0;
+         
       case GCRYCTL_GET_ALGO_NPKEY: return pubkey_get_npkey( algo );
       case GCRYCTL_GET_ALGO_NSKEY: return pubkey_get_nskey( algo );
       case GCRYCTL_GET_ALGO_NSIGN: return pubkey_get_nsig( algo );

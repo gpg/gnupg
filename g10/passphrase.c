@@ -640,7 +640,6 @@ hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
 	    else {
 		gcry_md_write( md, s2k->salt, 8 );
 		count -= 8;
-		assert( count >= 0 );
 		gcry_md_write( md, pw, count );
 	    }
 	}

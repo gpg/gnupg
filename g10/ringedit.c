@@ -1114,7 +1114,13 @@ cmp_seckey( PKT_secret_key *req_sk, PKT_secret_key *sk )
 
     n = pubkey_get_nskey( req_sk->pubkey_algo );
     for(i=0; i < n; i++ ) {
-	if( mpi_cmp( req_sk->skey[i], sk->skey[i] ) )
+        /* Note: because v4 protected keys have nothing in the
+         * mpis except for the first one, we skip all NULL MPIs.
+         * This might not be always correct in cases where the both
+         * keys do not match in their secret parts but we can ignore that
+         * because the need for this function is quite ugly. */
+	if( req_sk->skey[1] && sk->skey[i]
+             && mpi_cmp( req_sk->skey[i], sk->skey[i] ) )
 	    return -1;
     }
     return 0;

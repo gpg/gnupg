@@ -100,10 +100,8 @@ do_check( PKT_secret_key *sk )
 	keyid_from_sk( sk, keyid );
 	keyid[2] = keyid[3] = 0;
 	if( !sk->is_primary ) {
-	    PKT_secret_key *sk2 = gcry_xcalloc( 1, sizeof *sk2 );
-	    if( !get_primary_seckey( sk2, keyid ) )
-		keyid_from_sk( sk2, keyid+2 );
-	    free_secret_key( sk2 );
+            keyid[2] = sk->main_keyid[0];
+            keyid[3] = sk->main_keyid[1];
 	}
 	dek = passphrase_to_dek( keyid, sk->pubkey_algo, sk->protect.algo,
 				 &sk->protect.s2k, 0 );
@@ -128,11 +126,14 @@ do_check( PKT_secret_key *sk )
 	    size_t ndata;
 	    unsigned int ndatabits;
 	    byte *p, *data;
+            u16 csumc = 0;
 
 	    i = pubkey_get_npkey(sk->pubkey_algo);
 	    assert( gcry_mpi_get_flag( sk->skey[i], GCRYMPI_FLAG_OPAQUE ) );
 	    p = gcry_mpi_get_opaque( sk->skey[i], &ndatabits );
 	    ndata = (ndatabits+7)/8;
+            if ( ndata > 1 )
+                csumc = p[ndata-2] << 8 | p[ndata-1];
 	    data = gcry_xmalloc_secure( ndata );
 	    gcry_cipher_decrypt( cipher_hd, data, ndata, p, ndata );
 	    mpi_release( sk->skey[i] ); sk->skey[i] = NULL ;
@@ -145,6 +146,10 @@ do_check( PKT_secret_key *sk )
 	    else {
 		csum = checksum( data, ndata-2);
 		sk->csum = data[ndata-2] << 8 | data[ndata-1];
+                if ( sk->csum != csum ) {
+                    /* This is a PGP 7.0.0 workaround */
+                    sk->csum = csumc; /* take the encrypted one */
+                }
 	    }
 	    /* must check it here otherwise the mpi_read_xx would fail
 	     * because the length may have an arbitrary value */
@@ -321,8 +326,6 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 
 	    #warning FIXME: replace set/get buffer
 	    if( sk->version >= 4 ) {
-		/* FIXME: There is a bug in this function for all algorithms
-		 * where the secret MPIs are more than 1 */
 		byte *bufarr[GNUPG_MAX_NSKEY];
 		unsigned narr[GNUPG_MAX_NSKEY];
 		unsigned nbits[GNUPG_MAX_NSKEY];

@@ -1,3 +1,8 @@
+Mon Sep 18 16:35:45 CEST 2000  Werner Koch  <wk@openit.de>
+
+       * ring-a-party: substr starts at offset 1 not 0.  Many thanks to Mike
+        for finding this bug. Flush the last key.
+
 Mon Jul 17 16:35:47 CEST 2000  Werner Koch  <wk@>
 
   * mail-signed-keys: New.

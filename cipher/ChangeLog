@@ -1,3 +1,21 @@
+Mon Sep 18 16:35:45 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * rndlinux.c (open_device): Loose random device checking.
+        By Nils Ellmenreich.
+
+        * random.c (fast_random_poll): Check ENOSYS for getrusage.
+        * rndunix.c:  Add 2 sources for QNX. By Sam Roberts.
+
+        * pubkey.c (gcry_pk_algo_info): Add GCRYCTL_GET_ALGO_USAGE.
+
+        * rsa.c: Changed the comment about the patent.
+        (secret): Speed up by using the CRT.  For a 2k keys this
+        is about 3 times faster.
+        (stronger_key_check): New but unused code to check the secret key.
+        * Makefile.am: Included rsa.[ch].
+        * pubkey.c: Enabled RSA support.
+        (pubkey_get_npkey): Removed RSA workaround.
+
 Mon Jul 31 10:04:47 CEST 2000  Werner Koch  <wk@openit.de>
 
   * pubkey.c: Replaced all gcry_sexp_{car,cdr}_{data,mpi} by the new

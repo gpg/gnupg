@@ -51,7 +51,7 @@ char *make_radix64_string( const byte *data, size_t len );
 
 /*-- misc.c --*/
 void trap_unaligned(void);
-void disable_core_dumps(void);
+int disable_core_dumps(void);
 u16 checksum_u16( unsigned n );
 u16 checksum( byte *p, unsigned n );
 u16 checksum_mpi( MPI a );
@@ -65,6 +65,7 @@ int mpi_print( FILE *fp, MPI a, int mode );
 
 int openpgp_cipher_test_algo( int algo );
 int openpgp_pk_test_algo( int algo, unsigned int usage_flags );
+int openpgp_pk_algo_usage ( int algo );
 int openpgp_md_test_algo( int algo );
 
 int pubkey_get_npkey( int algo );

@@ -106,14 +106,11 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
     PKT_secret_key *sk = NULL;
     int rc;
 
-    if( is_RSA(k->pubkey_algo) ) /* warn about that */
-	write_status(STATUS_RSA_OR_IDEA);
-
     rc = openpgp_pk_test_algo( k->pubkey_algo, 0 );
     if( rc )
 	goto leave;
 
-    if( k->keyid[0] || k->keyid[1] ) {
+    if( (k->keyid[0] || k->keyid[1]) && !opt.try_all_secrets ) {
 	sk = gcry_xcalloc( 1, sizeof *sk );
 	sk->pubkey_algo = k->pubkey_algo; /* we want a pubkey with this algo*/
 	if( !(rc = get_seckey( sk, k->keyid )) )

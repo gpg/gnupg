@@ -68,22 +68,24 @@ trap_unaligned(void)
 #endif
 
 
-void
+
+int
 disable_core_dumps()
 {
- #ifndef HAVE_DOSISH_SYSTEM
+ #ifdef HAVE_DOSISH_SYSTEM
+    return 0;
+ #else
   #ifdef HAVE_SETRLIMIT
     struct rlimit limit;
 
     limit.rlim_cur = 0;
     limit.rlim_max = 0;
     if( !setrlimit( RLIMIT_CORE, &limit ) )
-	return;
-    if( errno != EINVAL )
+	return 0;
+    if( errno != EINVAL && errno != ENOSYS )
 	log_fatal(_("can't disable core dumps: %s\n"), strerror(errno) );
   #endif
-    if( !opt.quiet )
-	log_info(_("WARNING: program may create a core file!\n"));
+    return 1;
  #endif
 }
 
@@ -318,15 +320,6 @@ print_pubkey_algo_note( int algo )
 {
     if( algo >= 100 && algo <= 110 )
 	no_exp_algo();
-    else if( is_RSA( algo ) ) {
-	static int did_note = 0;
-
-	if( !did_note ) {
-	    did_note = 1;
-	    log_info(_("RSA keys are deprecated; please consider "
-		       "creating a new key and use this key in the future\n"));
-	}
-    }
 }
 
 void
@@ -362,7 +355,7 @@ print_digest_algo_note( int algo )
 
 /****************
  * Wrapper around the libgcrypt function with addional checks on
- * openPGP contrainst for the algo ID.
+ * openPGP contraints for the algo ID.
  */
 int
 openpgp_cipher_test_algo( int algo )
@@ -381,6 +374,40 @@ openpgp_pk_test_algo( int algo, unsigned int usage_flags )
 	return GCRYERR_INV_PK_ALGO;
     return gcry_pk_algo_info( algo, GCRYCTL_TEST_ALGO, NULL, &n );
 }
+
+int 
+openpgp_pk_algo_usage ( int algo )
+{
+    int usage = 0; 
+    
+    /* some are hardwired */
+    switch ( algo ) {    
+      case GCRY_PK_RSA:
+          usage = GCRY_PK_USAGE_SIGN | GCRY_PK_USAGE_ENCR;
+          break;
+      case GCRY_PK_RSA_E:
+          usage = GCRY_PK_USAGE_ENCR;
+          break;
+      case GCRY_PK_RSA_S:
+          usage = GCRY_PK_USAGE_SIGN;
+          break;
+      case GCRY_PK_ELG_E:
+          usage = GCRY_PK_USAGE_ENCR;
+          break;
+      case GCRY_PK_DSA:  
+          usage = GCRY_PK_USAGE_SIGN;
+          break;
+      case GCRY_PK_ELG:
+          usage = GCRY_PK_USAGE_SIGN | GCRY_PK_USAGE_ENCR;
+          break;
+      default:
+          usage = gcry_pk_algo_info ( algo, GCRYCTL_GET_ALGO_USAGE,
+                                      NULL, NULL);
+    }
+    return usage;
+
+}
+
 
 
 int

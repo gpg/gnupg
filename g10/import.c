@@ -50,6 +50,7 @@ static struct {
     ulong secret_read;
     ulong secret_imported;
     ulong secret_dups;
+    ulong skipped_new_keys;
 } stats;
 
 
@@ -201,6 +202,9 @@ print_stats()
 {
     if( !opt.quiet ) {
 	log_info(_("Total number processed: %lu\n"), stats.count );
+	if( stats.skipped_new_keys )
+	    log_info(_("      skipped new keys: %lu\n"),
+						stats.skipped_new_keys );
 	if( stats.no_user_id )
 	    log_info(_("          w/o user IDs: %lu\n"), stats.no_user_id );
 	if( stats.imported || stats.imported_rsa ) {
@@ -413,6 +417,13 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	log_error( _("key %08lX: public key not found: %s\n"),
 				(ulong)keyid[1], gpg_errstr(rc));
     }
+    else if ( rc && opt.merge_only ) {
+	if( opt.verbose )
+	    log_info( _("key %08lX: new key - skipped\n"), (ulong)keyid[1] );
+	rc = 0;
+	fast = 1; /* so that we don't get into the trustdb update */
+	stats.skipped_new_keys++;
+    }
     else if( rc ) { /* insert this key */
 	/* get default resource */
 	if( get_keyblock_handle( NULL, 0, &kbpos ) ) {
@@ -583,7 +594,7 @@ import_secret_one( const char *fname, KBNODE keyblock )
 
     /* do we have this key already in one of our secrings ? */
     rc = seckey_available( keyid );
-    if( rc == GPGERR_NO_SECKEY ) { /* simply insert this key */
+    if( rc == GPGERR_NO_SECKEY && !opt.merge_only ) { /* simply insert this key */
 	/* get default resource */
 	if( get_keyblock_handle( NULL, 1, &kbpos ) ) {
 	    log_error("no default secret keyring\n");

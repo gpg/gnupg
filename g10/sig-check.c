@@ -134,9 +134,6 @@ do_signature_check( PKT_signature *sig, GCRY_MD_HD digest,
     PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
     int rc=0;
 
-    if( is_RSA(sig->pubkey_algo) )
-	write_status(STATUS_RSA_OR_IDEA);
-
     *r_expiredate = 0;
     if( get_pubkey( pk, sig->keyid ) )
 	rc = GPGERR_NO_PUBKEY;
@@ -451,10 +448,18 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
     sig = node->pkt->pkt.signature;
     algo = sig->digest_algo;
 
-  #if 0 /* I am not sure whether this is a good thing to do */
-    if( sig->flags.checked )
+  #if 0
+    if( sig->flags.checked ) {
 	log_debug("check_key_signature: already checked: %s\n",
 		      sig->flags.valid? "good":"bad" );
+        if ( sig->flags.valid )
+            return 0; /* shortcut already checked signatures */
+        /* FIXME: We should also do this with bad signatures but here we
+         * have to distinguish between several reasons; e.g. for a missing
+         * public key. the key may now be available.
+         * For now we simply don't shortcut bad signatures
+         */
+    }
   #endif
 
     if( (rc=openpgp_md_test_algo(algo)) )

@@ -136,8 +136,8 @@ keygen_add_std_prefs( PKT_signature *sig, void *opaque )
     keygen_add_key_expire( sig, opaque );
 
     buf[0] = GCRY_CIPHER_TWOFISH;
-    buf[1] = GCRY_CIPHER_BLOWFISH;
-    buf[2] = GCRY_CIPHER_CAST5;
+    buf[1] = GCRY_CIPHER_CAST5;
+    buf[2] = GCRY_CIPHER_BLOWFISH;
     build_sig_subpkt( sig, SIGSUBPKT_PREF_SYM, buf, 3 );
 
     buf[0] = GCRY_MD_RMD160;
@@ -889,7 +889,11 @@ ask_user_id( int mode )
 		aname = cpr_get("keygen.name",_("Real name: "));
 		trim_spaces(aname);
 		cpr_kill_prompt();
-		if( strpbrk( aname, "<([])>" ) )
+
+		if( opt.allow_freeform_uid )
+		    break;
+
+		if( strpbrk( aname, "<>" ) )
 		    tty_printf(_("Invalid character in name\n"));
 		else if( isdigit(*aname) )
 		    tty_printf(_("Name may not start with a digit\n"));

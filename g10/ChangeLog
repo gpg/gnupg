@@ -1,3 +1,81 @@
+Mon Sep 18 16:35:45 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * parse-packet.c (dump_sig_subpkt): Dump key flags.
+        (parse_one_sig_subpkt,can_handle_critical): Add KeyFlags support.
+        * build-packet.c (build_sig_subpkt): Ditto.
+
+        * g10.c: New option --allow-freeform-uid. By Jeroen C. van Gelderen.
+        * keygen.c (ask_user_id): Implemented here.
+
+        * parse-packet.c (dump_sig_subpkt): Print info about the ARR.
+
+        * openfile.c (overwrite_filep): Always return okay if the file is
+        called /dev/null. 
+        (make_outfile_name): Add ".sign" to the list of know extensions.
+        (open_sigfile): Ditto.
+
+        * getkey.c: Large parts rewritten to have a better sub key selection
+        and handle some meta information from signatures more correctly.
+        (get_primary_seckey): Removed.
+        * seckey_cert.c (do_check): Set main keyid from the data in the sk.
+        * free-packet.c (copy_public_parts_to_secret_key): New.
+        * sig-check.c (check_key_signature2): Enabled shortcut for already
+        checked signatures.
+        * keydb.h: New macros IS_xxx_SIG, IS_xxx_REV.
+        * misc.c (openpgp_pk_algo_usage): New.
+        * packet.h: New field req_uage and do not use pubkey_usage anymore
+        to request a specific usage.  Changed at all places.
+        * keyid.c (keyid_from_sk): Cache the keyid in the sk
+
+        * passphrase.c (hash_passphrase): Removed funny assert.  Reported by
+        David Mathog.
+
+        * keyedit.c (keyedit_menu): Allow "debug" on secret keys.
+
+        * keygen.c (keygen_add_std_prefs): Changed order of preferences to
+        twofish, cast5, blowfish.
+
+        * gpg.c: The --trusted-key option is back.
+        * trustdb.c (verify_own_key): Handle this option.
+        (add_ultimate_key): Moved stuff from verify_own_key to this new func.
+        (register_trusted_key): New.
+
+        * openfile.c (try_make_homedir): Changes for non-Posix systems.
+        * gpg.c (main): Take the default homedir from macro.
+
+        * encode.c (encode_simple, encode_crypt): Fix for large files.
+        * sign.c (sign_file): Ditto.
+
+        * gpg.c (main): Don't set --quite along with --no-tty.  By Frank Tobin.
+
+        * misc.c (disable_core_dump): Don't display a warning here but a return
+        a status value and ...
+        * gpg.c (main): ...print warning here. Suggested by Sam Roberts.
+
+        * misc.c (print_pubkey_algo_note): Do not print the RSA notice.
+        * sig-check.c (do_signature_check): Do not emit the RSA status message.
+        * pubkey-enc.c (get_session_key): Ditto.
+
+        * ringedit.c (cmp_seckey): Fix for v4 RSA keys.
+        * seckey-cert.c (do_check): Workaround for PGP 7 bug.
+
+        * pkclist.c (algo_available): Removed hack to disable Twofish.
+
+        * gpg.c (main): Default S2K algorithms are now SHA1 and CAST5 - this
+        should solve a lot of compatibility problems with other OpenPGP
+        apps because those algorithms are SHOULD and not optional.  The old
+        way to force it was by using the --openpgp option whith the drawback 
+        that this would disable a couple of workarounds for PGP.
+
+        * gpg.c: New option --merge-only.  Suggested by Brendan O'Dea.
+        * import.c (import_one): Implemented it here.
+        (import_secret_one): Ditto.
+        (print_stats): and give some stats.
+
+        * gpg.c: New option --try-all-secrets on suggestion from
+        Matthias Urlichs.
+        * pubkey-enc.c (get_session_key): Quite easy to implement here.
+
 Mon Aug 21 17:59:17 CEST 2000  Werner Koch  <wk@openit.de>
 
         * gpg.c: New option --use-agent

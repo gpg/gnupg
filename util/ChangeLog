@@ -1,3 +1,15 @@
+Mon Sep 18 16:35:45 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * strgutil.c (utf8_to_native): Fixed null ptr problem.  By
+        Giampaolo Tomassoni.
+
+        * iobuf.c: Use fopen64 insead of fopen when available.
+        (iobuf_get_filelength): Use fstat64 when available but return
+        2^32-1 if the file is larger than this value.
+
+        * miscutil.c (answer_is_yes_no_quit): Swapped order of yes/no test
+        so that no is returned for an empty input. By David Champion.
+
 Fri Aug 18 14:27:14 CEST 2000  Werner Koch  <wk@openit.de>
 
         * logger.c (log_set_file): Allow to set the file by name.

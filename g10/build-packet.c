@@ -701,6 +701,7 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
       case SIGSUBPKT_NOTATION:
       case SIGSUBPKT_POLICY:
       case SIGSUBPKT_REVOC_REASON:
+      case SIGSUBPKT_KEY_FLAGS:
 	       hashed = 1; break;
       default: hashed = 0; break;
     }
