@@ -20,11 +20,10 @@
 ## Process this file with automake to produce Makefile.in
 
 EXTRA_DIST = mkerrors mkerrtok
-#INCLUDES = 
 
 noinst_LIBRARIES = libcommon.a libsimple-pwquery.a
 
-AM_CPPFLAGS =  $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
+AM_CFLAGS =  $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
 
 libcommon_a_SOURCES = \
 	util.h i18n.h \

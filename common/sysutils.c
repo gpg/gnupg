@@ -117,7 +117,8 @@ get_session_marker( size_t *rlen )
 }
 
 
-#if 0 /* not yet needed */
+#if 0 /* not yet needed - Note that this will require inclusion of
+         cmacros.am in Makefile.am */
 int
 check_permissions(const char *path,int extension,int checkonly)
 {
