@@ -1,5 +1,7 @@
 2001-12-22  David Shaw  <dshaw@jabberwocky.com>
 
+	* exec.c (make_tempdir): avoid compiler warning with const
+
 	* mkdtemp.c (mkdtemp): catch the empty ("") string case in case
 	someone repurposes mkdtemp at some point.
 

@@ -43,7 +43,7 @@ char *mkdtemp(char *template);
 /* Makes a temp directory and filenames */
 static int make_tempdir(struct exec_info *info)
 {
-  const char *tmp=opt.temp_dir;
+  char *tmp=opt.temp_dir;
 
   /* Make up the temp dir and files in case we need them */
   if(tmp==NULL)
