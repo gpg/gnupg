@@ -1,5 +1,7 @@
 2004-04-06  Werner Koch  <wk@gnupg.org>
 
+	Released 1.9.7.
+
 	* configure.ac: Require libgcrypt 1.1.94.
 	Introduce PACKAGE_GT and set it to gnupg2.
 
