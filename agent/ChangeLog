@@ -1,3 +1,8 @@
+2003-07-04  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (handle_connections): Kludge to allow use of Pth 1
+	and 2.
+
 2003-06-30  Werner Koch  <wk@gnupg.org>
 
 	* call-scd.c (learn_status_cb): Store the serialno in PARM.

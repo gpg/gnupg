@@ -1034,7 +1034,11 @@ handle_connections (int listen_fd)
       fd = pth_accept_ev (listen_fd, (struct sockaddr *)&paddr, &plen, ev);
       if (fd == -1)
         {
+#ifdef PTH_STATUS_OCCURRED     /* This is Pth 2 */
           if (pth_event_status (ev) == PTH_STATUS_OCCURRED)
+#else
+          if (pth_event_occurred (ev))
+#endif
             {
               handle_signal (signo);
               continue;

@@ -21,7 +21,6 @@
 
 EXTRA_DIST = mkerrors mkerrtok
 #INCLUDES = 
-BUILT_SOURCES = errors.c 
 
 noinst_LIBRARIES = libcommon.a
 
