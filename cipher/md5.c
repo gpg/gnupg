@@ -100,7 +100,7 @@ transform( MD5_CONTEXT *ctx, byte *data )
     u32 D = ctx->D;
     u32 *cwp = correct_words;
 
-  #ifdef BIG_ENDIAN_HOST
+#ifdef BIG_ENDIAN_HOST
     { int i;
       byte *p2, *p1;
       for(i=0, p1=data, p2=(byte*)correct_words; i < 16; i++, p2 += 4 ) {
@@ -110,9 +110,9 @@ transform( MD5_CONTEXT *ctx, byte *data )
 	p2[0] = *p1++;
       }
     }
-  #else
+#else
     memcpy( correct_words, data, 64 );
-  #endif
+#endif
 
 
 #define OP(a, b, c, d, s, T)					    \
@@ -311,17 +311,17 @@ md5_final( MD5_CONTEXT *hd )
     burn_stack (80+6*sizeof(void*));
 
     p = hd->buf;
-  #ifdef BIG_ENDIAN_HOST
-    #define X(a) do { *p++ = hd-> a      ; *p++ = hd-> a >> 8;      \
+#ifdef BIG_ENDIAN_HOST
+#define X(a) do { *p++ = hd-> a      ; *p++ = hd-> a >> 8;      \
 		      *p++ = hd-> a >> 16; *p++ = hd-> a >> 24; } while(0)
-  #else /* little endian */
-    #define X(a) do { *(u32*)p = hd-> a ; p += 4; } while(0)
-  #endif
+#else /* little endian */
+#define X(a) do { *(u32*)p = hd-> a ; p += 4; } while(0)
+#endif
     X(A);
     X(B);
     X(C);
     X(D);
-  #undef X
+#undef X
 
 }
 
@@ -364,4 +364,3 @@ md5_get_info( int algo, size_t *contextsize,
 
     return "MD5";
 }
-

@@ -141,9 +141,9 @@ working_memcmp( const char *a, const char *b, size_t n )
 /* Some defines/checks to support standalone modules */
 
 #ifndef CIPHER_ALGO_3DES
-  #define CIPHER_ALGO_3DES 2
+#define CIPHER_ALGO_3DES 2
 #elif CIPHER_ALGO_3DES != 2
-  #error CIPHER_ALGO_3DES is defined to a wrong value.
+#error CIPHER_ALGO_3DES is defined to a wrong value.
 #endif
 
 
@@ -1022,4 +1022,3 @@ des_get_info( int algo, size_t *keylen,
     }
     return NULL;
 }
-

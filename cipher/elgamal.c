@@ -356,7 +356,7 @@ do_encrypt(MPI a, MPI b, MPI input, ELG_public_key *pkey )
      */
     mpi_powm( b, pkey->y, k, pkey->p );
     mpi_mulm( b, b, input, pkey->p );
-  #if 0
+#if 0
     if( DBG_CIPHER ) {
 	log_mpidump("elg encrypted y= ", pkey->y);
 	log_mpidump("elg encrypted p= ", pkey->p);
@@ -365,7 +365,7 @@ do_encrypt(MPI a, MPI b, MPI input, ELG_public_key *pkey )
 	log_mpidump("elg encrypted a= ", a);
 	log_mpidump("elg encrypted b= ", b);
     }
-  #endif
+#endif
     mpi_free(k);
 }
 
@@ -381,7 +381,7 @@ decrypt(MPI output, MPI a, MPI b, ELG_secret_key *skey )
     mpi_powm( t1, a, skey->x, skey->p );
     mpi_invm( t1, t1, skey->p );
     mpi_mulm( output, b, t1, skey->p );
-  #if 0
+#if 0
     if( DBG_CIPHER ) {
 	log_mpidump("elg decrypted x= ", skey->x);
 	log_mpidump("elg decrypted p= ", skey->p);
@@ -389,7 +389,7 @@ decrypt(MPI output, MPI a, MPI b, ELG_secret_key *skey )
 	log_mpidump("elg decrypted b= ", b);
 	log_mpidump("elg decrypted M= ", output);
     }
-  #endif
+#endif
     mpi_free(t1);
 }
 
@@ -424,7 +424,7 @@ sign(MPI a, MPI b, MPI input, ELG_secret_key *skey )
     mpi_invm(inv, k, p_1 );
     mpi_mulm(b, t, inv, p_1 );
 
-  #if 0
+#if 0
     if( DBG_CIPHER ) {
 	log_mpidump("elg sign p= ", skey->p);
 	log_mpidump("elg sign g= ", skey->g);
@@ -435,7 +435,7 @@ sign(MPI a, MPI b, MPI input, ELG_secret_key *skey )
 	log_mpidump("elg sign a= ", a);
 	log_mpidump("elg sign b= ", b);
     }
-  #endif
+#endif
     mpi_free(k);
     mpi_free(t);
     mpi_free(inv);
@@ -461,7 +461,7 @@ verify(MPI a, MPI b, MPI input, ELG_public_key *pkey )
     t1 = mpi_alloc( mpi_get_nlimbs(a) );
     t2 = mpi_alloc( mpi_get_nlimbs(a) );
 
-  #if 0
+#if 0
     /* t1 = (y^a mod p) * (a^b mod p) mod p */
     mpi_powm( t1, pkey->y, a, pkey->p );
     mpi_powm( t2, a, b, pkey->p );
@@ -471,7 +471,7 @@ verify(MPI a, MPI b, MPI input, ELG_public_key *pkey )
     mpi_powm( t2, pkey->g, input, pkey->p );
 
     rc = !mpi_cmp( t1, t2 );
-  #elif 0
+#elif 0
     /* t1 = (y^a mod p) * (a^b mod p) mod p */
     base[0] = pkey->y; exp[0] = a;
     base[1] = a;       exp[1] = b;
@@ -482,7 +482,7 @@ verify(MPI a, MPI b, MPI input, ELG_public_key *pkey )
     mpi_powm( t2, pkey->g, input, pkey->p );
 
     rc = !mpi_cmp( t1, t2 );
-  #else
+#else
     /* t1 = g ^ - input * y ^ a * a ^ b  mod p */
     mpi_invm(t2, pkey->g, pkey->p );
     base[0] = t2     ; exp[0] = input;
@@ -492,7 +492,7 @@ verify(MPI a, MPI b, MPI input, ELG_public_key *pkey )
     mpi_mulpowm( t1, base, exp, pkey->p );
     rc = !mpi_cmp_ui( t1, 1 );
 
-  #endif
+#endif
 
     mpi_free(t1);
     mpi_free(t2);
@@ -662,5 +662,3 @@ elg_get_info( int algo, int *npkey, int *nskey, int *nenc, int *nsig,
       default: *use = 0; return NULL;
     }
 }
-
-

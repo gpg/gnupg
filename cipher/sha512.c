@@ -331,14 +331,14 @@ sha512_final(SHA512_CONTEXT *hd)
     burn_stack (768);
 
     p = hd->buf;
-  #ifdef BIG_ENDIAN_HOST
-    #define X(a) do { *(u64*)p = hd->h##a ; p += 8; } while(0)
-  #else /* little endian */
-    #define X(a) do { *p++ = hd->h##a >> 56; *p++ = hd->h##a >> 48;	 \
+#ifdef BIG_ENDIAN_HOST
+#define X(a) do { *(u64*)p = hd->h##a ; p += 8; } while(0)
+#else /* little endian */
+#define X(a) do { *p++ = hd->h##a >> 56; *p++ = hd->h##a >> 48;	 \
                       *p++ = hd->h##a >> 40; *p++ = hd->h##a >> 32;	 \
                       *p++ = hd->h##a >> 24; *p++ = hd->h##a >> 16;	 \
 		      *p++ = hd->h##a >> 8; *p++ = hd->h##a; } while(0)
-  #endif
+#endif
     X(0);
     X(1);
     X(2);
@@ -349,7 +349,7 @@ sha512_final(SHA512_CONTEXT *hd)
        We just ignore them. */
     X(6);
     X(7);
-  #undef X
+#undef X
 }
 
 static byte *

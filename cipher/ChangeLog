@@ -1,3 +1,12 @@
+2003-05-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* bithelp.h, des.c, random.c, rndlinux.c, sha1.c, blowfish.c,
+	elgamal.c, rijndael.c, rndunix.c, sha256.c, cast5.c, idea-stub.c,
+	rmd160.c, rndw32.c, sha512.c, md5.c, rmd160test.c, rsa.c, tiger.c:
+	Edit all preprocessor instructions to remove whitespace before the
+	'#'.  This is not required by C89, but there are some compilers
+	out there that don't like it.
+
 2003-05-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* cipher.c (setup_cipher_table): #ifdef IDEA.

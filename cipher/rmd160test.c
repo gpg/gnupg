@@ -45,13 +45,13 @@ main(int argc, char **argv)
 	usage();
 
     rmdhd = rmd160_open(0);
-  #if 1
+#if 1
     while( (n = fread( buf, 1, 100, stdin )) > 0 )
 	rmd160_write(rmdhd, buf, n);
-  #else
+#else
     for(i=0; i < 1000000; i++ )
 	rmd160_putchar(rmdhd, 'a');
-  #endif
+#endif
     p = rmd160_final(rmdhd);
     for(i=0; i < 20; i++, p++ )
 	printf("%02x", *p );
@@ -60,4 +60,3 @@ main(int argc, char **argv)
     rmd160_close(rmdhd);
     return 0;
 }
-

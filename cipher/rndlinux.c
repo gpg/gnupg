@@ -31,15 +31,15 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifdef HAVE_GETTIMEOFDAY
-  #include <sys/times.h>
+#include <sys/times.h>
 #endif
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #if 0
-    #include <sys/ioctl.h>
-    #include <asm/types.h>
-    #include <linux/random.h>
+#include <sys/ioctl.h>
+#include <asm/types.h>
+#include <linux/random.h>
 #endif
 #include "types.h"
 #include "util.h"
@@ -114,11 +114,11 @@ rndlinux_gather_random( void (*add)(const void*, size_t, int), int requester,
 	fd = fd_urandom;
     }
 
-  #if 0
-  #ifdef HAVE_DEV_RANDOM_IOCTL
+#if 0
+#ifdef HAVE_DEV_RANDOM_IOCTL
     g10_log_info("entropy count of %d is %lu\n", fd, get_entropy_count(fd) );
-  #endif
-  #endif
+#endif
+#endif
     while( length ) {
 	fd_set rfds;
 	struct timeval tv;

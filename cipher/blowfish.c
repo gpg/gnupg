@@ -253,27 +253,27 @@ function_F( BLOWFISH_context *bc, u32 x )
 {
     u16 a, b, c, d;
 
-  #ifdef BIG_ENDIAN_HOST
+#ifdef BIG_ENDIAN_HOST
     a = ((byte*)&x)[0];
     b = ((byte*)&x)[1];
     c = ((byte*)&x)[2];
     d = ((byte*)&x)[3];
-  #else
+#else
     a = ((byte*)&x)[3];
     b = ((byte*)&x)[2];
     c = ((byte*)&x)[1];
     d = ((byte*)&x)[0];
-  #endif
+#endif
 
     return ((bc->s0[a] + bc->s1[b]) ^ bc->s2[c] ) + bc->s3[d];
 }
 #endif
 
 #ifdef BIG_ENDIAN_HOST
-  #define F(x) ((( s0[((byte*)&x)[0]] + s1[((byte*)&x)[1]])	 \
+#define F(x) ((( s0[((byte*)&x)[0]] + s1[((byte*)&x)[1]])	 \
 		   ^ s2[((byte*)&x)[2]]) + s3[((byte*)&x)[3]] )
 #else
-  #define F(x) ((( s0[((byte*)&x)[3]] + s1[((byte*)&x)[2]])	 \
+#define F(x) ((( s0[((byte*)&x)[3]] + s1[((byte*)&x)[2]])	 \
 		   ^ s2[((byte*)&x)[1]]) + s3[((byte*)&x)[0]] )
 #endif
 #define R(l,r,i)  do { l ^= p[i]; r ^= F(l); } while(0)
@@ -293,7 +293,7 @@ burn_stack (int bytes)
 static void
 do_encrypt(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
 {
-  #if BLOWFISH_ROUNDS == 16
+#if BLOWFISH_ROUNDS == 16
     u32 xl, xr, *s0, *s1, *s2, *s3, *p;
 
     xl = *ret_xl;
@@ -327,7 +327,7 @@ do_encrypt(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
     *ret_xl = xr;
     *ret_xr = xl;
 
-  #else
+#else
     u32 xl, xr, temp, *p;
     int i;
 
@@ -351,14 +351,14 @@ do_encrypt(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
 
     *ret_xl = xl;
     *ret_xr = xr;
-  #endif
+#endif
 }
 
 
 static void
 decrypt(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
 {
-  #if BLOWFISH_ROUNDS == 16
+#if BLOWFISH_ROUNDS == 16
     u32 xl, xr, *s0, *s1, *s2, *s3, *p;
 
     xl = *ret_xl;
@@ -392,7 +392,7 @@ decrypt(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
     *ret_xl = xr;
     *ret_xr = xl;
 
-  #else
+#else
     u32 xl, xr, temp, *p;
     int i;
 
@@ -417,7 +417,7 @@ decrypt(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
 
     *ret_xl = xl;
     *ret_xr = xr;
-  #endif
+#endif
 }
 
 #undef F
@@ -534,17 +534,17 @@ do_bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
     }
 
     for(i=j=0; i < BLOWFISH_ROUNDS+2; i++ ) {
-      #ifdef BIG_ENDIAN_HOST
+#ifdef BIG_ENDIAN_HOST
 	((byte*)&data)[0] = key[j];
 	((byte*)&data)[1] = key[(j+1)%keylen];
 	((byte*)&data)[2] = key[(j+2)%keylen];
 	((byte*)&data)[3] = key[(j+3)%keylen];
-      #else
+#else
 	((byte*)&data)[3] = key[j];
 	((byte*)&data)[2] = key[(j+1)%keylen];
 	((byte*)&data)[1] = key[(j+2)%keylen];
 	((byte*)&data)[0] = key[(j+3)%keylen];
-      #endif
+#endif
 	c->p[i] ^= data;
 	j = (j+4) % keylen;
     }
@@ -630,4 +630,3 @@ blowfish_get_info( int algo, size_t *keylen,
 	return "BLOWFISH";
     return NULL;
 }
-

@@ -345,7 +345,7 @@ rol(int n, u32 x)
 	return x;
 }
 #else
-  #define rol(n,x) ( ((x) << (n)) | ((x) >> (32-(n))) )
+#define rol(n,x) ( ((x) << (n)) | ((x) >> (32-(n))) )
 #endif
 
 #define F1(D,m,r)  (  (I = ((m) + (D))), (I=rol((r),I)),   \
@@ -495,7 +495,7 @@ selftest(void)
     if( memcmp( buffer, plain, 8 ) )
 	return "2";
 
-  #if 0 /* full maintenance test */
+#if 0 /* full maintenance test */
     {
 	int i;
 	byte a0[16] = { 0x01,0x23,0x45,0x67,0x12,0x34,0x56,0x78,
@@ -519,7 +519,7 @@ selftest(void)
 	    return "3";
 
     }
-  #endif
+#endif
     return NULL;
 }
 
@@ -528,8 +528,8 @@ static void
 key_schedule( u32 *x, u32 *z, u32 *k )
 {
 
-  #define xi(i)   ((x[(i)/4] >> (8*(3-((i)%4)))) & 0xff)
-  #define zi(i)   ((z[(i)/4] >> (8*(3-((i)%4)))) & 0xff)
+#define xi(i)   ((x[(i)/4] >> (8*(3-((i)%4)))) & 0xff)
+#define zi(i)   ((z[(i)/4] >> (8*(3-((i)%4)))) & 0xff)
 
     z[0] = x[0] ^ s5[xi(13)]^s6[xi(15)]^s7[xi(12)]^s8[xi(14)]^s7[xi( 8)];
     z[1] = x[2] ^ s5[zi( 0)]^s6[zi( 2)]^s7[zi( 1)]^s8[zi( 3)]^s8[xi(10)];
@@ -567,8 +567,8 @@ key_schedule( u32 *x, u32 *z, u32 *k )
     k[14]= s5[xi(12)]^s6[xi(13)]^s7[xi( 3)]^s8[xi( 2)]^s7[xi( 8)];
     k[15]= s5[xi(14)]^s6[xi(15)]^s7[xi( 1)]^s8[xi( 0)]^s8[xi(13)];
 
-  #undef xi
-  #undef zi
+#undef xi
+#undef zi
 }
 
 
@@ -610,8 +610,8 @@ do_cast_setkey( CAST5_context *c, byte *key, unsigned keylen )
     memset(&z,0, sizeof z);
     memset(&k,0, sizeof k);
 
-  #undef xi
-  #undef zi
+#undef xi
+#undef zi
     return 0;
 }
 
@@ -652,4 +652,3 @@ cast5_get_info( int algo, size_t *keylen,
 	return "CAST5";
     return NULL;
 }
-
