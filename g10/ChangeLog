@@ -1,3 +1,15 @@
+2004-09-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgv.c, keydb.c (keydb_add_resource): Factored keyring creation
+	out to ..
+	(maybe_create_keyring): .. new.  Make sure that we do the checks
+	in a locked state.  Problem reported by Stefan Haller.  Try to
+	create the home directory before acquiring a lock for the keyring.
+	From Werner on stable branch.
+
+	* g10.c (main): Blow up if we didn't lose setuid.  From Werner on
+	stable branch.
+
 2004-09-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c, keylist.c, keyserver.c, mainproc.c: Reduce the many
