@@ -1,3 +1,15 @@
+2003-09-18  Werner Koch  <wk@gnupg.org>
+
+	* g10.c: New command --card-edit.
+	* card-util.c (card_status): Use tty_fprintf for all output.
+	(print_sha1_fpr, print_isoname): Ditto.
+	(get_one_name,change_name, change_url, change_login,change_lang)
+	(change_sex): New; taken from keygen.c.
+	* keygen.c (smartcard_get_one_name, smartcard_change_name) 
+	(smartcard_change_url, smartcard_change_login_data) 
+	(smartcard_change_lang, smartcard_change_sex): Removed.
+	(check_smartcard): Removed most menu items.
+
 2003-09-06  Werner Koch  <wk@gnupg.org>
 
 	* misc.c (openpgp_pk_algo_usage): Allow AUTH where SIGN is allowed.

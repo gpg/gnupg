@@ -127,6 +127,7 @@ enum cmd_and_opt_values { aNull = 0,
     aRebuildKeydbCaches,
     aRefreshKeys,
     aCardStatus,
+    aCardEdit,
     aChangePIN,
 
     oTextmode,
@@ -362,6 +363,7 @@ static ARGPARSE_OPTS opts[] = {
     { aImport, "import",      256     , N_("import/merge keys")},
     { aFastImport, "fast-import",  256 , "@"},
     { aCardStatus,  "card-status", 256, N_("print the card status")},
+    { aCardEdit,   "card-edit",  256, N_("change data on a card")},
     { aChangePIN,  "change-pin", 256, N_("change a card's PIN")},
 
     { aListPackets, "list-packets",256,N_("list only the sequence of packets")},
@@ -1425,6 +1427,7 @@ main( int argc, char **argv )
           case aRebuildKeydbCaches: set_cmd( &cmd, aRebuildKeydbCaches); break;
 
           case aCardStatus: set_cmd (&cmd, aCardStatus); break;
+          case aCardEdit: set_cmd (&cmd, aCardEdit); break;
           case aChangePIN: set_cmd (&cmd, aChangePIN); break;
 
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
@@ -2290,6 +2293,7 @@ main( int argc, char **argv )
       case aEnArmor:
       case aFixTrustDB:
       case aCardStatus:
+      case aCardEdit:
       case aChangePIN:
 	break;
       case aExportOwnerTrust: rc = setup_trustdb( 0, trustdb_name ); break;
@@ -2787,6 +2791,19 @@ main( int argc, char **argv )
       if (argc)
         wrong_args ("--card-status");
       card_status (stdout);
+      break;
+
+    case aCardEdit:
+      if (argc)
+        {
+          sl = NULL;
+          for (argc--, argv++ ; argc; argc--, argv++)
+            append_to_strlist (&sl, *argv);
+          card_edit (sl);
+          free_strlist (sl);
+	}
+      else
+        card_edit (NULL);
       break;
 
     case aChangePIN:

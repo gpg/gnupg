@@ -258,7 +258,7 @@ void run_in_pipemode (void);
 /*-- card-util.c --*/
 void change_pin (int no);
 void card_status (FILE *fp);
-
+void card_edit (STRLIST commands);
 
 /*-- signal.c --*/
 void init_signals(void);
