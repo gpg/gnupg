@@ -340,6 +340,26 @@ unhexify_fpr (const char *hexstr, unsigned char *fpr)
   return 1; /* okay */
 }
 
+/* Take the serial number from LINE and return it verbatim in a newly
+   allocated string.  We make sure that only hex characters are
+   returned. */
+static char *
+store_serialno (const char *line)
+{
+  const char *s;
+  char *p;
+
+  for (s=line; hexdigitp (s); s++)
+    ;
+  p = xtrymalloc (s + 1 - line);
+  if (p)
+    {
+      memcpy (p, line, s-line);
+      p[s-line] = 0;
+    }
+  return p;
+}
+
 
 
 #if 0
@@ -442,7 +462,11 @@ learn_status_cb (void *opaque, const char *line)
   while (spacep (line))
     line++;
 
-  if (keywordlen == 9 && !memcmp (keyword, "DISP-NAME", keywordlen))
+  if (keywordlen == 8 && !memcmp (keyword, "SERIALNO", keywordlen))
+    {
+      parm->serialno = store_serialno (line);
+    }
+  else if (keywordlen == 9 && !memcmp (keyword, "DISP-NAME", keywordlen))
     {
       parm->disp_name = unescape_status_string (line);
     }
@@ -619,7 +643,7 @@ membuf_data_cb (void *opaque, const void *buffer, size_t length)
 /* Send a sign command to the scdaemon via gpg-agent's pass thru
    mechanism. */
 int
-agent_scd_pksign (const char *keyid, int hashalgo,
+agent_scd_pksign (const char *serialno, int hashalgo,
                   const unsigned char *indata, size_t indatalen,
                   char **r_buf, size_t *r_buflen)
 {
@@ -649,7 +673,7 @@ agent_scd_pksign (const char *keyid, int hashalgo,
     return rc;
 
   init_membuf (&data, 1024);
-  snprintf (line, DIM(line)-1, "SCD PKSIGN %s", keyid);
+  snprintf (line, DIM(line)-1, "SCD PKSIGN %s", serialno);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (agent_ctx, line, membuf_data_cb, &data,
                         NULL, NULL, NULL, NULL);
@@ -662,25 +686,3 @@ agent_scd_pksign (const char *keyid, int hashalgo,
 
   return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -23,6 +23,7 @@
 
 struct agent_card_info_s {
   int error;         /* private. */
+  char *serialno;    /* malloced hex string. */
   char *disp_name;   /* malloced. */
   char *pubkey_url;  /* malloced. */
   char fpr1valid;

@@ -193,7 +193,7 @@ typedef struct {
  * Note about the pkey/skey elements:  We assume that the secret keys
  * has the same elemts as the public key at the begin of the array, so
  * that npkey < nskey and it is possible to compare the secret and
- * public keys by comparing the first npkey elements of pkey againts skey.
+ * public keys by comparing the first npkey elements of pkey against skey.
  */
 typedef struct {
     u32     timestamp;	    /* key made */

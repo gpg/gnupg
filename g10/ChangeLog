@@ -1,3 +1,23 @@
+2003-07-01  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (gen_card_key): Obviously we should use the creation
+	date received from SCDAEMON, so that the fingerprints will match.
+	* sign.c (do_sign): Pass the serialno to the sign code.
+	* keyid.c (serialno_and_fpr_from_sk): New.
+
+2003-06-30  Werner Koch  <wk@gnupg.org>
+
+	* call-agent.h (agent_card_info_s): Add field serialno.
+	* call-agent.c (store_serialno): New.
+	(learn_status_cb): Store the serial number.
+	* keygen.c (gen_card_key): Store the serial number
+	(check_smartcard): New argument to return the serial number.
+	(generate_keypair): Get the serial number from check_smartcard and
+	store it as a parameter.
+	* parse-packet.c (parse_key): Use the protect.iv field to store the
+	serial number.
+	* build-packet.c (do_secret_key): Write the serial number.
+
 2003-06-27  Werner Koch  <wk@gnupg.org>
 
 	* seckey-cert.c (check_secret_key): Bypass the unprotection for

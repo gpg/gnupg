@@ -61,7 +61,8 @@ enum para_name {
   pSUBKEYEXPIRE, /* in n seconds */
   pPASSPHRASE,
   pPASSPHRASE_DEK,
-  pPASSPHRASE_S2K
+  pPASSPHRASE_S2K,
+  pSERIALNO
 };
 
 struct para_data_s {
@@ -115,8 +116,9 @@ static int mdc_available,ks_modify;
 static void do_generate_keypair( struct para_data_s *para,
 				 struct output_control_s *outctrl, int card);
 static int write_keyblock( iobuf_t out, KBNODE node );
-static int check_smartcard (void);
-static int gen_card_key (int algo, int keyno, KBNODE pub_root, KBNODE sec_root, u32 expireval);
+static int check_smartcard (char **);
+static int gen_card_key (int algo, int keyno, KBNODE pub_root, KBNODE sec_root,
+                         u32 expireval, struct para_data_s *para);
 
 
 
@@ -2078,6 +2080,7 @@ generate_keypair( const char *fname )
   struct para_data_s *para = NULL;
   struct para_data_s *r;
   struct output_control_s outctrl;
+  char *serialno = NULL;
 
   memset (&outctrl, 0, sizeof (outctrl));
 
@@ -2089,13 +2092,24 @@ generate_keypair( const char *fname )
 
   do
     {
-      card = check_smartcard ();
+      xfree (serialno); serialno = NULL;
+      card = check_smartcard (&serialno);
       if (card < 0)
         return;
       if (card > 1)
         log_error (_("can't generate subkey here\n"));
     }
   while (card > 1);
+
+  if (serialno)
+    {
+      r = xcalloc (1, sizeof *r + strlen (serialno) );
+      r->key = pSERIALNO;
+      strcpy( r->u.value, serialno);
+      r->next = para;
+      para = r;
+      xfree (serialno); serialno = NULL;
+    }
 
   if (card)
     {
@@ -2156,7 +2170,7 @@ generate_keypair( const char *fname )
       r->next = para;
       para = r;
     }
-  
+
   expire = ask_expire_interval(0);
   r = xcalloc (1, sizeof *r + 20 );
   r->key = pKEYEXPIRE;
@@ -2322,7 +2336,7 @@ do_generate_keypair (struct para_data_s *para,
   else
     {
       rc = gen_card_key (PUBKEY_ALGO_RSA, 1, pub_root, sec_root,
-                         get_parameter_u32 (para, pKEYEXPIRE));
+                         get_parameter_u32 (para, pKEYEXPIRE), para);
       if (!rc)
         {
           sk = sec_root->next->pkt->pkt.secret_key;
@@ -2725,7 +2739,7 @@ smartcard_change_name (const char *current_name)
                    2 = generate subkey
 */
 static int
-check_smartcard (void)
+check_smartcard (char **r_serialno)
 {
   struct agent_card_info_s info;
   int rc;
@@ -2738,7 +2752,8 @@ check_smartcard (void)
       return 0;
     }
   
-  tty_printf (_("OpenPGP card with serial number %s detected\n"), "xxx");
+  tty_printf (_("OpenPGP card no. %s detected\n"),
+              info.serialno? info.serialno : "[none]");
 
 
   for (;;)
@@ -2790,6 +2805,7 @@ check_smartcard (void)
 
       if (reread)
         {
+          xfree (info.serialno); info.serialno = NULL;
           xfree (info.disp_name); info.disp_name = NULL;
           xfree (info.pubkey_url); info.pubkey_url = NULL;
           rc = agent_learn (&info);
@@ -2803,6 +2819,10 @@ check_smartcard (void)
         }
     }
 
+  if (r_serialno && rc > 0)
+    *r_serialno = info.serialno;
+  else
+    xfree (info.serialno); 
   xfree (info.disp_name); 
   xfree (info.pubkey_url);
 
@@ -2813,9 +2833,10 @@ check_smartcard (void)
 
 static int
 gen_card_key (int algo, int keyno, KBNODE pub_root, KBNODE sec_root,
-              u32 expireval)
+              u32 expireval, struct para_data_s *para)
 {
   int rc;
+  const char *s;
   struct agent_card_genkey_s info;
   PACKET *pkt;
   PKT_secret_key *sk;
@@ -2850,7 +2871,7 @@ gen_card_key (int algo, int keyno, KBNODE pub_root, KBNODE sec_root,
 
   pk = xcalloc (1, sizeof *pk );
   sk = xcalloc (1, sizeof *sk );
-  sk->timestamp = pk->timestamp = make_timestamp();
+  sk->timestamp = pk->timestamp = info.created_at;
   sk->version = pk->version = 4;
   if (expireval)
       sk->expiredate = pk->expiredate = pk->timestamp + expireval;
@@ -2862,6 +2883,13 @@ gen_card_key (int algo, int keyno, KBNODE pub_root, KBNODE sec_root,
   sk->skey[2] = mpi_set_opaque (NULL, xstrdup ("dummydata"), 10);
   sk->is_protected = 1;
   sk->protect.s2k.mode = 1002;
+  s = get_parameter_value (para, pSERIALNO);
+  if (s)
+    {
+      for (sk->protect.ivlen=0; sk->protect.ivlen < 16 && *s && s[1];
+           sk->protect.ivlen++, s += 2)
+        sk->protect.iv[sk->protect.ivlen] = xtoi_2 (s);
+    }
 
   pkt = xcalloc (1,sizeof *pkt);
   pkt->pkttype = keyno == 1 ? PKT_PUBLIC_KEY : PKT_PUBLIC_SUBKEY;

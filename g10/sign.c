@@ -277,13 +277,14 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     { /* FIXME: Note that we do only support RSA for now. */
       char *rbuf;
       size_t rbuflen;
+      char *snbuf;
 
-      /* FIXME: We need to pass the correct keyid or better the
-         fingerprint to the scdaemon. */
-      rc = agent_scd_pksign ("nokeyid", digest_algo,
+      snbuf = serialno_and_fpr_from_sk (sk->protect.iv, sk->protect.ivlen, sk);
+      rc = agent_scd_pksign (snbuf, digest_algo,
                              gcry_md_read (md, digest_algo),
                              gcry_md_get_algo_dlen (digest_algo),
                              &rbuf, &rbuflen);
+      xfree (snbuf);
       if (!rc)
         {
           unsigned int nbytes = rbuflen;

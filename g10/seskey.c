@@ -215,12 +215,14 @@ encode_md_value (int pubkey_algo, gcry_md_hd_t md, int hash_algo,
     }
   else
     {
+      gpg_error_t rc;
       byte *asn;
       size_t asnlen;
       
-      if( gcry_md_algo_info( algo, GCRYCTL_GET_ASNOID, NULL, &asnlen ) )
+      rc = gcry_md_algo_info( algo, GCRYCTL_GET_ASNOID, NULL, &asnlen);
+      if (rc)
         log_fatal("can't get OID of algo %d: %s\n",
-                  algo, gcry_strerror(-1));
+                  algo, gpg_strerror (rc));
       asn = xmalloc (asnlen);
       if( gcry_md_algo_info( algo, GCRYCTL_GET_ASNOID, asn, &asnlen ) )
         BUG();

@@ -1562,6 +1562,7 @@ parse_key( iobuf_t inp, int pkttype, unsigned long pktlen,
     if( pkttype == PKT_SECRET_KEY || pkttype == PKT_SECRET_SUBKEY ) {
 	PKT_secret_key *sk = pkt->pkt.secret_key;
 	byte temp[16];
+        size_t snlen = 0;
 
 	if( !npkey ) {
 	    sk->skey[0] = mpi_set_opaque( NULL,
@@ -1672,7 +1673,6 @@ parse_key( iobuf_t inp, int pkttype, unsigned long pktlen,
 					    (ulong)sk->protect.s2k.count);
 		}
 		else if( sk->protect.s2k.mode == 1002 ) {
-                    size_t snlen;
                     /* Read the serial number. */
                     if (pktlen < 1) {
 			rc = GPG_ERR_INV_PACKET;
@@ -1683,17 +1683,6 @@ parse_key( iobuf_t inp, int pkttype, unsigned long pktlen,
                     if (pktlen < snlen || snlen == -1) {
 			rc = GPG_ERR_INV_PACKET;
 			goto leave;
-                    }
-
-		    if( list_mode ) {
-                      printf("\tserial-number: ");
-                      for (;snlen; snlen--)
-                        printf ("%02X", (unsigned int)iobuf_get_noeof (inp));
-                      putchar ('\n');
-                    }
-                    else {
-                      for (;snlen; snlen--)
-                        iobuf_get_noeof (inp);
                     }
 		}
 	    }
@@ -1725,9 +1714,12 @@ parse_key( iobuf_t inp, int pkttype, unsigned long pktlen,
 	    }
 	    if( sk->protect.s2k.mode == 1001 )
 		sk->protect.ivlen = 0;
-	    else if( sk->protect.s2k.mode == 1002 )
-		sk->protect.ivlen = 0;
+	    else if( sk->protect.s2k.mode == 1002 ) {
+                if (snlen > 16)
+                    log_info ("WARNING: serial number of card truncated\n");
+		sk->protect.ivlen = snlen < 16? snlen : 16;
 
+            }
 	    if( pktlen < sk->protect.ivlen ) {
 		rc = GPG_ERR_INV_PACKET;
 		goto leave;
@@ -1735,7 +1727,8 @@ parse_key( iobuf_t inp, int pkttype, unsigned long pktlen,
 	    for(i=0; i < sk->protect.ivlen && pktlen; i++, pktlen-- )
 		temp[i] = iobuf_get_noeof(inp);
 	    if( list_mode ) {
-		printf(  "\tprotect IV: ");
+		printf( sk->protect.s2k.mode == 1002? "\tserial-number: "
+                                                    : "\tprotect IV: ");
 		for(i=0; i < sk->protect.ivlen; i++ )
 		    printf(" %02x", temp[i] );
 		putchar('\n');
