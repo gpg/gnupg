@@ -148,6 +148,9 @@ keygen_add_std_prefs( PKT_signature *sig, void *opaque )
     buf[1] = 1;
     build_sig_subpkt( sig, SIGSUBPKT_PREF_COMPR, buf, 2 );
 
+    buf[0] = 1; /* supports MDC packets (15 + 16) */
+    build_sig_subpkt( sig, SIGSUBPKT_FEATURES, buf, 1 );
+
     buf[0] = 0x80; /* no modify - It is reasonable that a key holder
 		    * has the possibility to reject signatures from users
 		    * who are known to sign everything without any

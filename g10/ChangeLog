@@ -1,3 +1,11 @@
+2000-10-11  Werner Koch  <wk@gnupg.org>
+
+	* packet.h: Add features sig subpacket definition.
+	* parse-packet.c (dump_sig_subpkt,parse_one_sig_subpkt,
+	can_handle_critical): Implemented it here.
+	* build-packet.c (build_sig_subpkt): and here.
+	* keygen.c (keygen_add_std_prefs): Generate a features packet.
+	
 2000-10-09  Werner Koch  <wk@gnupg.org>
 
 	* keygen.c (do_generate_keypair): Removed the keyblock locking.

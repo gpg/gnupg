@@ -1,5 +1,11 @@
 
-  * options.skel wird mit umaks von root installiert.
+  * Look at FEATURES packet to decide wether to use MDC.  We should
+    rethink the whole preference implementation and drop that ugly hamehash
+    stuff.  Is it possible to that in getkey?  We have to see whether we
+    realy lookit up by user name or whethre there is a double lookup,
+    first by userid and then later by keyid - which is bad.
+
+  * options.skel wird mit umask von root installiert.
 
   * See how we can handle the symlinks in ./gcrypt
 

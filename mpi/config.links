@@ -278,3 +278,14 @@ for fn in $mpi_ln_modules ; do
     done
 done
 
+# Same thing for the file which defines the limb size
+path="$path generic"
+for dir in $path ; do
+     	rm -f $srcdir/mpi/mpi-asm-defs.h
+	if test -f $srcdir/mpi/$dir/mpi-asm-defs.h ; then
+	    mpi_ln_src="$mpi_ln_src mpi/$dir/mpi-asm-defs.h"
+	    mpi_ln_dst="$mpi_ln_dst mpi/mpi-asm-defs.h"
+	    break;
+	fi
+done
+

@@ -1,3 +1,9 @@
+2000-10-11  Werner Koch  <wk@gnupg.org>
+
+	* generic/mpi-asm-defs.h: New.
+	* mips3/mpi-asm-defs.h: New.
+	* config.links: Create a link to one of the above files.
+
 Fri Jul 28 18:19:11 CEST 2000  Werner Koch  <wk@openit.de>
 
   * mpicoder.c (gcry_mpi_scan): Normalize the returned MPI.

@@ -843,7 +843,12 @@ dump_sig_subpkt( int hashed, int type, int critical,
 		printf("%02X", buffer[i] );
 	}
         break;
-      case SIGSUBPKT_PRIV_ADD_SIG:
+      case SIGSUBPKT_FEATURES:
+        fputs ( "features:", stdout );
+        for( i=0; i < length; i++ )
+            printf(" %02X", buffer[i] );
+        break;
+      case SIGSUBPKT_PRIV_ADD_SIG:  /* gnupg private - to be removed */
 	p = "signs additional user ID";
 	break;
       default: p = "?"; break;
@@ -889,6 +894,7 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_PREF_SYM:
       case SIGSUBPKT_PREF_HASH:
       case SIGSUBPKT_PREF_COMPR:
+      case SIGSUBPKT_FEATURES:
       case SIGSUBPKT_POLICY:
 	return 0;
       case SIGSUBPKT_PRIMARY_UID:
@@ -925,6 +931,7 @@ can_handle_critical( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_PREF_SYM:
       case SIGSUBPKT_PREF_HASH:
       case SIGSUBPKT_PREF_COMPR:
+      case SIGSUBPKT_FEATURES:
       case SIGSUBPKT_KEY_FLAGS:
 	return 1;
 
