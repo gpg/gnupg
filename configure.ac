@@ -430,6 +430,49 @@ AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname,
 AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt,
 	[NETLIBS="-lsocket $NETLIBS"]))
 
+dnl Now try for the resolver functions so we can use DNS SRV
+
+AC_ARG_ENABLE(dns-srv,
+   AC_HELP_STRING([--disable-dns-srv],[disable the use of DNS SRV in HKP]),
+   use_dns_srv=$enableval,use_dns_srv=yes)
+
+if test x"$try_hkp" = xyes && test x"$use_dns_srv" = xyes ; then
+  AC_CHECK_FUNC(res_query)
+  # the double underscore thing is a glibc-ism?
+  if test $ac_cv_func_res_query = no ; then 
+     AC_CHECK_FUNC(__res_query)
+     ac_cv_func_res_query=$ac_cv_func___res_query
+  fi
+  if test $ac_cv_func_res_query = no ; then 
+     AC_CHECK_LIB(resolv,res_query)
+     ac_cv_func_res_query=$ac_cv_lib_resolv_res_query
+     srvlib="-lresolv"
+  fi
+  if test $ac_cv_func_res_query = no ; then 
+     AC_CHECK_LIB(resolv,__res_query)
+     ac_cv_func_res_query=$ac_cv_lib_resolv___res_query
+     srvlib="-lresolv"
+  fi
+  if test $ac_cv_func_res_query = no ; then 
+     AC_CHECK_LIB(bind,res_query)
+     ac_cv_func_res_query=$ac_cv_lib_bind_res_query
+     srvlib="-lbind"
+  fi
+  if test $ac_cv_func_res_query = no ; then 
+     AC_CHECK_LIB(bind,__res_query)
+     ac_cv_func_res_query=$ac_cv_lib_bind___res_query
+     srvlib="-lbind"
+  fi
+  # we assume if we can find res_query, we can also use the dn_expand
+  # and dn_skipname functions.
+  if test x"$ac_cv_func_res_query" = xyes ; then
+     AC_DEFINE(USE_DNS_SRV,1,[define to use DNS SRV])
+     SRVLIBS=$srvlib
+  fi
+fi
+
+AC_SUBST(SRVLIBS)
+
 # Try and link a LDAP test program to weed out unusable LDAP
 # libraries.  -lldap [-llber [-lresolv]] is for OpenLDAP.  OpenLDAP in
 # general is terrible with creating weird dependencies.  If all else
