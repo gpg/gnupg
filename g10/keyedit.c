@@ -498,10 +498,46 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 			    tty_printf(_("  Unable to sign.\n"));
 			  }
 		      }
-		    else if(!uidnode->pkt->pkt.user_id->created)
+		    else if(uidnode->pkt->pkt.user_id->is_expired)
 		      {
-			tty_printf(_("WARNING: user ID \"%s\" is not "
-				     "self-signed.\n"),user);
+			tty_printf(_("User ID \"%s\" is expired."),user);
+
+			if(opt.expert)
+			  {
+			    tty_printf("\n");
+			    /* No, so remove the mark and continue */
+			    if(!cpr_get_answer_is_yes("sign_uid.expire_okay",
+						      _("Are you sure you "
+							"still want to sign "
+							"it? (y/N) ")))
+			      uidnode->flag &= ~NODFLG_MARK_A;
+			  }
+			else
+			  {
+			    uidnode->flag &= ~NODFLG_MARK_A;
+			    tty_printf(_("  Unable to sign.\n"));
+			  }
+		      }
+		    else if(!uidnode->pkt->pkt.user_id->created && !selfsig)
+		      {
+			tty_printf(_("User ID \"%s\" is not self-signed."),
+				   user);
+
+			if(opt.expert)
+			  {
+			    tty_printf("\n");
+			    /* No, so remove the mark and continue */
+			    if(!cpr_get_answer_is_yes("sign_uid.nosig_okay",
+						      _("Are you sure you "
+							"still want to sign "
+							"it? (y/N) ")))
+			      uidnode->flag &= ~NODFLG_MARK_A;
+			  }
+			else
+			  {
+			    uidnode->flag &= ~NODFLG_MARK_A;
+			    tty_printf(_("  Unable to sign.\n"));
+			  }
 		      }
 
 		    m_free(user);
@@ -737,8 +773,8 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
 		while(class==0)
 		  {
-		    answer = cpr_get("sign_uid.class",_("Your selection? "));
-
+		    answer = cpr_get("sign_uid.class",_("Your selection? "
+					"(enter '?' for more information): "));
 		    if(answer[0]=='\0')
 		      class=0x10+opt.def_cert_check_level; /* Default */
 		    else if(ascii_strcasecmp(answer,"0")==0)
@@ -1232,7 +1268,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    cmd = cmdLIST;
 	else if( *answer == CONTROL_D )
 	    cmd = cmdQUIT;
-	else if( isdigit( *answer ) ) {
+	else if( digitp(answer ) ) {
 	    cmd = cmdSELUID;
 	    arg_number = atoi(answer);
 	}
@@ -2782,7 +2818,8 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 		 && ( mainkey || sub_pk ) ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
-		&& (	(mainkey && uid && (sig->sig_class&~3) == 0x10)
+		&& ( (mainkey && uid
+		      && uid->created && (sig->sig_class&~3) == 0x10)
 		     || (!mainkey && sig->sig_class == 0x18)  ) ) {
 		/* this is a selfsignature which is to be replaced */
 		PKT_signature *newsig;

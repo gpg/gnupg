@@ -608,7 +608,7 @@ ask_revocation_reason( int key_rev, int cert_rev, int hint )
 	      return NULL; /* cancel */
 	    if( hint && !*answer )
 		n = hint;
-	    else if(!isdigit( *answer ) )
+	    else if(!digitp( answer ) )
  	        n = -1;
 	    else
 		n = atoi(answer);

@@ -168,7 +168,8 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
       opt.keyserver_scheme="hkp";
       opt.keyserver_options.broken_http_proxy=1;
     }
-  else if(ascii_strcasecmp(opt.keyserver_scheme,"x-hkp")==0)
+  else if(ascii_strcasecmp(opt.keyserver_scheme,"x-hkp")==0
+	  || ascii_strcasecmp(opt.keyserver_scheme,"http")==0)
     {
       /* Canonicalize this to "hkp" so it works with both the internal
 	 and external keyserver interface. */
@@ -201,7 +202,7 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
 	  ch=opt.keyserver_port;
 	  while(*ch!='\0')
 	    {
-	      if(!isdigit(*ch))
+	      if(!digitp(ch))
 		return G10ERR_BAD_URI;
 
 	      ch++;
@@ -338,7 +339,7 @@ parse_keyrec(char *keystring)
 
   /* Remove trailing whitespace */
   for(i=strlen(keystring);i>0;i--)
-    if(isspace(keystring[i-1]))
+    if(ascii_isspace(keystring[i-1]))
       keystring[i-1]='\0';
     else
       break;
@@ -976,7 +977,7 @@ keyserver_spawn(int action,STRLIST list,
 
       /* remove trailing whitespace */
       plen=strlen(ptr);
-      while(plen>0 && isspace(ptr[plen-1]))
+      while(plen>0 && ascii_isspace(ptr[plen-1]))
 	plen--;
       plen[ptr]='\0';
 

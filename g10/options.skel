@@ -90,7 +90,7 @@
 # support).
 #
 # Example HKP keyserver:
-#      x-hkp://subkeys.pgp.net
+#      hkp://subkeys.pgp.net
 #
 # Example email keyserver:
 #      mailto:pgp-public-keys@keys.pgp.net
@@ -101,7 +101,7 @@
 #
 # Regular URL syntax applies, and you can set an alternate port
 # through the usual method:
-#      x-hkp://keyserver.example.net:22742
+#      hkp://keyserver.example.net:22742
 #
 # If you have problems connecting to a HKP server through a buggy http
 # proxy, you can use keyserver option broken-http-proxy (see below),
@@ -112,7 +112,7 @@
 # Most servers do synchronize with each other and DNS round-robin may
 # give you a quasi-random server each time.
 
-#keyserver x-hkp://subkeys.pgp.net
+keyserver hkp://subkeys.pgp.net
 #keyserver mailto:pgp-public-keys@keys.nl.pgp.net
 #keyserver ldap://pgp.surfnet.nl:11370
 #keyserver ldap://keyserver.pgp.com

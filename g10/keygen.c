@@ -993,10 +993,10 @@ gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 static int
 check_valid_days( const char *s )
 {
-    if( !isdigit(*s) )
+    if( !digitp(s) )
 	return 0;
     for( s++; *s; s++)
-	if( !isdigit(*s) )
+	if( !digitp(s) )
 	    break;
     if( !*s )
 	return 1;
@@ -1330,7 +1330,7 @@ ask_user_id( int mode )
 
 		if( strpbrk( aname, "<>" ) )
 		    tty_printf(_("Invalid character in name\n"));
-		else if( isdigit(*aname) )
+		else if( digitp(aname) )
 		    tty_printf(_("Name may not start with a digit\n"));
 		else if( strlen(aname) < 5 )
 		    tty_printf(_("Name must be at least 5 characters long\n"));
@@ -1344,7 +1344,7 @@ ask_user_id( int mode )
 		amail = cpr_get("keygen.email",_("Email address: "));
 		trim_spaces(amail);
 		cpr_kill_prompt();
-		if( !*amail )
+		if( !*amail || opt.allow_freeform_uid )
 		    break;   /* no email address is okay */
 		else if( has_invalid_email_chars(amail)
 			 || string_count_chr(amail,'@') != 1
@@ -1397,7 +1397,8 @@ ask_user_id( int mode )
 
 	tty_printf(_("You selected this USER-ID:\n    \"%s\"\n\n"), uid);
 	/* fixme: add a warning if this user-id already exists */
-	if( !*amail && (strchr( aname, '@' ) || strchr( acomment, '@'))) {
+	if( !*amail && !opt.allow_freeform_uid
+	    && (strchr( aname, '@' ) || strchr( acomment, '@'))) {
 	    fail = 1;
 	    tty_printf(_("Please don't put the email address "
 			  "into the real name or the comment\n") );
@@ -1600,7 +1601,7 @@ get_parameter_algo( struct para_data_s *para, enum para_name key )
     struct para_data_s *r = get_parameter( para, key );
     if( !r )
 	return -1;
-    if( isdigit( *r->u.value ) )
+    if( digitp( r->u.value ) )
 	i = atoi( r->u.value );
     else
         i = string_to_pubkey_algo( r->u.value );

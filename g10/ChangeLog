@@ -1,3 +1,73 @@
+2003-07-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (parse_signature): No need to reserve 8 bytes for
+	the unhashed signature cache any longer.
+
+	* misc.c (pct_expando): Add two new expandos - signer's
+	fingerprint (%g), and signer's primary fingerprint (%p).
+
+	* Makefile.am: Include W32LIBS where appropriate.
+
+	* g10.c (main): Add --rfc2440 alias for --openpgp since in a few
+	months, they won't be the same thing.
+
+	* keyserver.c (parse_keyserver_uri): Accept "http" as an alias for
+	"hkp", since it is occasionally written that way.
+	(keyserver_spawn): Use ascii_isspace to avoid locale issues.
+
+	* keygen.c (ask_user_id): Make --allow-freeform-uid apply to the
+	email field as well as the name field, and allow mixing fields
+	when it is set.
+
+	* options.skel: Use subkeys.pgp.net as the default keyserver.
+
+	* trustdb.c (validate_one_keyblock): Certifications on revoked or
+	expired uids do not count in the web of trust.
+
+	* signal.c (init_one_signal, pause_on_sigusr, do_block): Only use
+	sigprocmask() if we have sigset_t, and only use sigaction() if we
+	have struct sigaction.  This is for Forte c89 on Solaris which
+	seems to define only the function call half of the two pairs by
+	default.
+	(pause_on_sigusr): Typo.
+	(do_block): If we can't use sigprocmask() and sigset_t, try to get
+	the number of signals from NSIG as well as MAXSIG, and if we
+	can't, fail with an explanation.
+
+	* signal.c, tdbio.c: Comment out the transaction code.  It was not
+	used in this version, and was causing some build problems on
+	quasi-posix platforms (Solaris and Forte c89).
+
+	* keylist.c (list_keyblock_colon): Don't include validity values
+	when listing secret keys since they can be incorrect and/or
+	misleading.  This is a temporary kludge, and will be handled
+	properly in 1.9/2.0.
+
+	* mainproc.c (check_sig_and_print): Only show the "key available
+	from" preferred keyserver line if the key is not currently
+	present.
+
+	* keyedit.c (sign_uids): Do not sign expired uids without --expert
+	(same behavior as revoked uids).  Do not allow signing a user ID
+	without a self-signature.  --expert overrides.  Add additional
+	prompt to the signature level question.
+	(menu_expire): When changing expiration dates, don't replace
+	selfsigs on revoked uids since this would effectively unrevoke
+	them. There is also no point in replacing expired selfsigs.  This
+	is bug #181
+
+2003-07-10  David Shaw  <dshaw@jabberwocky.com> (from Werner on stable branch)
+
+	* g10.c (add_notation_data): Make sure that only ascii is passed
+	to iscntrl.  Noted by Christian Biere.
+	* getkey.c (classify_user_id2): Replaced isspace by spacep
+	* keygen.c (ask_user_id): Ditto.
+	(get_parameter_algo): Ditto.
+	* keyedit.c (keyedit_menu): Ditto.
+	* tdbdump.c (import_ownertrust): Ditto.  s/isxdigit/hexdigitp/.
+	* revoke.c (ask_revocation_reason): 
+	* keyserver.c (keyserver_spawn): Dito.
+
 2003-06-10  Werner Koch  <wk@gnupg.org>
 
 	* parse-packet.c (parse): Disallow old style partial length for

@@ -161,7 +161,7 @@ show_policy_url(PKT_signature *sig,int indent,int mode)
   mode=1 for log_info + status messages
   mode=2 for status messages only
 */
-
+/* TODO: use this */
 void
 show_keyserver_url(PKT_signature *sig,int indent,int mode)
 {
@@ -838,7 +838,7 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 	pk = NULL;
 	sk = node->pkt->pkt.secret_key;
 	keyid_from_sk( sk, keyid );
-        printf("sec:u:%u:%d:%08lX%08lX:%s:%s:::",
+        printf("sec::%u:%d:%08lX%08lX:%s:%s:::",
 		    nbits_from_sk( sk ),
 		    sk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
@@ -904,13 +904,17 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 	    if( any ) {
 	        int i;
 	        char *str=uid->attrib_data?"uat":"uid";
-                if ( uid->is_revoked )
+		/* If we're listing a secret key, leave out the
+		   validity values for now.  This is handled better in
+		   1.9. */
+		if ( sk )
+        	    printf("%s:::::",str);
+                else if ( uid->is_revoked )
         	    printf("%s:r::::",str);
                 else if ( uid->is_expired )
         	    printf("%s:e::::",str);
-		else if ( opt.no_expensive_trust_checks ) {
+		else if ( opt.no_expensive_trust_checks )
         	    printf("%s:::::",str);
-	        }
                 else {
 		    int uid_validity;
 

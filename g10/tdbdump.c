@@ -153,7 +153,7 @@ import_ownertrust( const char *fname )
 	    break; /* can't continue */
 	}
 	for(p = line; *p && *p != ':' ; p++ )
-	    if( !isxdigit(*p) )
+	    if( !hexdigitp(p) )
 		break;
 	if( *p != ':' ) {
 	    log_error_f(fname, _("error: missing colon\n") );

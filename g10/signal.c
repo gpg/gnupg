@@ -1,5 +1,5 @@
 /* signal.c - signal handling
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -34,7 +34,6 @@
 #include "main.h"
 #include "ttyio.h"
 
-
 static volatile int caught_fatal_sig = 0;
 static volatile int caught_sigusr1 = 0;
 
@@ -42,7 +41,7 @@ static void
 init_one_signal (int sig, RETSIGTYPE (*handler)(int), int check_ign )
 {
 #ifndef HAVE_DOSISH_SYSTEM
-#ifdef HAVE_SIGACTION
+#if defined(HAVE_SIGACTION) && defined(HAVE_STRUCT_SIGACTION)
     struct sigaction oact, nact;
 
     if (check_ign) {
@@ -132,7 +131,7 @@ void
 pause_on_sigusr( int which )
 {
 #ifndef HAVE_DOSISH_SYSTEM
-#ifdef HAVE_SIGPROCMASK
+#if defined(HAVE_SIGPROCMASK) && defined(HAVE_SIGSET_T)
     sigset_t mask, oldmask;
 
     assert( which == 1 );
@@ -150,18 +149,19 @@ pause_on_sigusr( int which )
      while (!caught_sigusr1)
          sigpause(SIGUSR1);
      caught_sigusr1 = 0;
-     sigrelse(SIGUSR1); ????
-#endif /*!HAVE_SIGPROCMASK*/
+     sigrelse(SIGUSR1);
+#endif /*! HAVE_SIGPROCMASK && HAVE_SIGSET_T */
 #endif
 }
 
-
+/* Disabled - see comment in tdbio.c:tdbio_begin_transaction() */
+#if 0
 static void
 do_block( int block )
 {
 #ifndef HAVE_DOSISH_SYSTEM
     static int is_blocked;
-#ifdef HAVE_SIGPROCMASK
+#if defined(HAVE_SIGPROCMASK) && defined(HAVE_SIGSET_T)
     static sigset_t oldmask;
 
     if( block ) {
@@ -179,14 +179,23 @@ do_block( int block )
 	sigprocmask( SIG_SETMASK, &oldmask, NULL );
 	is_blocked = 0;
     }
-#else /*!HAVE_SIGPROCMASK*/
-    static void (*disposition[MAXSIG])();
+#else /*! HAVE_SIGPROCMASK && HAVE_SIGSET_T */
+
+#if defined(NSIG)
+#define SIGSMAX (NSIG)
+#elif defined(MAXSIG)
+#define SIGSMAX (MAXSIG+1)
+#else
+#error "define SIGSMAX to the number of signals on your platform plus one"
+#endif
+
+    static void (*disposition[SIGSMAX])(int);
     int sig;
 
     if( block ) {
 	if( is_blocked )
 	    log_bug("signals are already blocked\n");
-        for (sig=1; sig < MAXSIG; sig++) {
+        for (sig=1; sig < SIGSMAX; sig++) {
             disposition[sig] = sigset (sig, SIG_HOLD);
         }
 	is_blocked = 1;
@@ -194,15 +203,14 @@ do_block( int block )
     else {
 	if( !is_blocked )
 	    log_bug("signals are not blocked\n");
-        for (sig=1; sig < MAXSIG; sig++) {
+        for (sig=1; sig < SIGSMAX; sig++) {
             sigset (sig, disposition[sig]);
         }
 	is_blocked = 0;
     }
-#endif /*!HAVE_SIGPROCMASK*/
+#endif /*! HAVE_SIGPROCMASK && HAVE_SIGSET_T */
 #endif /*HAVE_DOSISH_SYSTEM*/
 }
-
 
 void
 block_all_signals()
@@ -215,3 +223,4 @@ unblock_all_signals()
 {
     do_block(0);
 }
+#endif

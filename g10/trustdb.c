@@ -1572,10 +1572,14 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
 	 signed (but not self-signed) uid does carry trust, of a sort,
 	 even if it is a statement being made by people other than the
 	 key owner "through" the uids on the key owner's key.  I'm
-	 going with the latter. -dshaw */
+	 going with the latter.  However, if the user ID was
+	 explicitly revoked, or passively allowed to expire, that
+	 should stop validity through the user ID until it is
+	 resigned.  -dshaw */
 
-      /* && node->pkt->pkt.user_id->created) */
-      if (node->pkt->pkttype == PKT_USER_ID)
+      if (node->pkt->pkttype == PKT_USER_ID
+	  && !node->pkt->pkt.user_id->is_revoked
+	  && !node->pkt->pkt.user_id->is_expired)
         {
           if (uidnode && issigned)
             {
@@ -1589,12 +1593,11 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
             }
           uidnode = node;
 	  uid=uidnode->pkt->pkt.user_id;
-#if 0
-	  /* If the selfsig is going to expire...  This is disabled as
-	     we do count un-self-signed uids in the web of trust. */
+
+	  /* If the selfsig is going to expire... */
 	  if(uid->expiredate && uid->expiredate<*next_expire)
 	    *next_expire = uid->expiredate;
-#endif
+
           issigned = 0;
 	  get_validity_counts(pk,uid);
           mark_usable_uid_certs (kb, uidnode, main_kid, klist, 

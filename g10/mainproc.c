@@ -1278,6 +1278,28 @@ check_sig_and_print( CTX c, KBNODE node )
 	if( keyserver_import_keyid ( sig->keyid )==0 )
 	    rc = do_check_sig(c, node, NULL, &is_expkey );
     }
+
+    /* If the key still isn't found, try to inform the user where it
+       can be found. */
+
+    if(rc==G10ERR_NO_PUBKEY && opt.verify_options&VERIFY_SHOW_KEYSERVER)
+      {
+	const byte *p;
+	int seq=0;
+	size_t n;
+
+	while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_PREF_KS,&n,&seq,NULL)))
+	  {
+	    /* According to my favorite copy editor, in English
+	       grammar, you say "at" if the key is located on a web
+	       page, but "from" if it is located on a keyserver.  I'm
+	       not going to even try to make two strings here :) */
+	    log_info(_("Key available at: ") );
+	    print_string( log_stream(), p, n, 0 );
+	    putc( '\n', log_stream() );
+	  }
+      }
+
     if( !rc || rc == G10ERR_BAD_SIGN ) {
 	KBNODE un, keyblock;
 	int count=0, statno;
@@ -1411,11 +1433,6 @@ check_sig_and_print( CTX c, KBNODE node )
 	      show_notation(sig,0,1);
 	    else
 	      show_notation(sig,0,2);
-
-	    if(opt.verify_options&VERIFY_SHOW_KEYSERVER)
-	      show_keyserver_url(sig,0,1);
-	    else
-	      show_keyserver_url(sig,0,2);
 	  }
 
 	if( !rc && is_status_enabled() ) {

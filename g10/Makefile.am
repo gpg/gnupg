@@ -106,7 +106,7 @@ gpgv_SOURCES = gpgv.c           \
 #	       ks-db.h \
 #	       $(common_source)
 
-LDADD =  $(needed_libs) @INTLLIBS@ @CAPLIBS@ @ZLIBS@
+LDADD =  $(needed_libs) @INTLLIBS@ @CAPLIBS@ @ZLIBS@ @W32LIBS@
 # gpg gets LIBOBJS to add in mkdtemp if the platform doesn't have it
 gpg_LDADD = @LIBOBJS@ $(LDADD) @DLLIBS@ @EGDLIBS@
 

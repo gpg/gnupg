@@ -570,7 +570,7 @@ classify_user_id( const char *name, KEYDB_SEARCH_DESC *desc )
     memset (desc, 0, sizeof *desc);
 
     /* skip leading spaces.  Fixme: what is with trailing spaces? */
-    for(s = name; *s && isspace(*s); s++ )
+    for(s = name; *s && spacep (s); s++ )
 	;
 
     switch (*s) {
@@ -651,7 +651,7 @@ classify_user_id( const char *name, KEYDB_SEARCH_DESC *desc )
             }
 
 	    /* check if a hexadecimal number is terminated by EOS or blank */
-	    if (hexlength && s[hexlength] && !isspace(s[hexlength])) {
+	    if (hexlength && s[hexlength] && !spacep(s+hexlength)) {
 		if (hexprefix)	    /* a "0x" prefix without correct */
 		    return 0;	    /* termination is an error */
 		else		    /* The first chars looked like */
