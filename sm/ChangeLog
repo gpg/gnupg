@@ -1,3 +1,7 @@
+2002-06-13  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): New option --log-file.
+
 2002-06-12  Werner Koch  <wk@gnupg.org>
 
 	* call-dirmngr.c (lookup_status_cb): New.

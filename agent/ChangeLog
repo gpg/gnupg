@@ -1,3 +1,7 @@
+2002-06-12  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (main): New option --disable-pth.
+
 2002-06-11  Werner Koch  <wk@gnupg.org>
 
 	* protect-tool.c: Add command --show-keygrip

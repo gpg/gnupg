@@ -81,6 +81,7 @@ enum cmd_and_opt_values {
   oDebug,
   oDebugAll,
   oDebugWait,
+  oLogFile,
 
   oEnableSpecialFilenames,
 
@@ -225,6 +226,7 @@ static ARGPARSE_OPTS opts[] = {
     { aExport, "export",      256     , N_("export certificates")},
     { aLearnCard, "learn-card", 256 ,N_("register a smartcard")},
     { aServer, "server",      256, N_("run in server mode")},
+    { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
     
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
@@ -583,6 +585,7 @@ main ( int argc, char **argv)
   int parse_debug = 0;
   int default_config =1;
   int default_keyring = 1;
+  char *logfile = NULL;
   int greeting = 0;
   int nogreeting = 0;
   int debug_wait = 0;
@@ -821,6 +824,8 @@ main ( int argc, char **argv)
           opt.verbose = 0;
           gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
           break;
+
+        case oLogFile: logfile = pargs.r.ret_str; break;
           
         case oBatch: 
           opt.batch = 1;
@@ -982,6 +987,12 @@ main ( int argc, char **argv)
 
   if (may_coredump && !opt.quiet)
     log_info (_("WARNING: program may create a core file!\n"));
+
+  if (logfile)
+    {
+      log_set_file (logfile);
+      log_set_prefix (NULL, 1|2|4);
+    }
 
   if (gnupg_faked_time_p ())
     {

@@ -79,6 +79,7 @@ enum cmd_and_opt_values
   oLCmessages,
   oScdaemonProgram,
   oDefCacheTTL,
+  oDisablePth,
 
 aTest };
 
@@ -100,6 +101,7 @@ static ARGPARSE_OPTS opts[] = {
   { oNoDetach, "no-detach" ,0, N_("do not detach from the console")},
   { oNoGrab, "no-grab"     ,0, N_("do not grab keyboard and mouse")},
   { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
+  { oDisablePth, "disable-pth", 0, N_("do not allow multiple connections")},
 
   { oPinentryProgram, "pinentry-program", 2 , "path to PIN Entry program" },
   { oDisplay,    "display",     2, "set the display" },
@@ -263,6 +265,7 @@ main (int argc, char **argv )
   int csh_style = 0;
   char *logfile = NULL;
   int debug_wait = 0;
+  int disable_pth = 0;
 
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
@@ -282,8 +285,9 @@ main (int argc, char **argv )
 
   assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
 #ifdef USE_GNU_PTH
-  assuan_set_io_func (pth_read, pth_write);
+    assuan_set_io_func (pth_read, pth_write);
 #endif
+
   gcry_set_log_handler (my_gcry_logger, NULL);
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
 
@@ -402,6 +406,7 @@ main (int argc, char **argv )
         case oCsh: csh_style = 1; break;
         case oSh: csh_style = 0; break;
         case oServer: pipe_server = 1; break;
+        case oDisablePth: disable_pth = 1; break;
 
         case oPinentryProgram: opt.pinentry_program = pargs.r.ret_str; break;
         case oDisplay: opt.display = xstrdup (pargs.r.ret_str); break;
@@ -620,34 +625,38 @@ main (int argc, char **argv )
 
 
 #ifdef USE_GNU_PTH
-      if (!pth_init ())
+      if (!disable_pth)
         {
-          log_error ("failed to initialize the Pth library\n");
-          exit (1);
+          if (!pth_init ())
+            {
+              log_error ("failed to initialize the Pth library\n");
+              exit (1);
+            }
+          signal (SIGPIPE, SIG_IGN);
+          handle_connections (fd);
         }
-      signal (SIGPIPE, SIG_IGN);
-      handle_connections (fd);
-#else /*!USE_GNU_PTH*/
-      /* setup signals */
-      {
-        struct sigaction oact, nact;
-        
-        nact.sa_handler = cleanup_sh;
-        sigemptyset (&nact.sa_mask);
-        nact.sa_flags = 0;
-        
-        sigaction (SIGHUP, NULL, &oact);
-        if (oact.sa_handler != SIG_IGN)
-          sigaction (SIGHUP, &nact, NULL);
-        sigaction( SIGTERM, NULL, &oact );
-        if (oact.sa_handler != SIG_IGN)
-          sigaction (SIGTERM, &nact, NULL);
-        nact.sa_handler = SIG_IGN;
-        sigaction (SIGPIPE, &nact, NULL);
-        sigaction (SIGINT, &nact, NULL);
-      }
-      start_command_handler (fd, -1);
+      else
 #endif /*!USE_GNU_PTH*/
+      /* setup signals */
+        {
+          struct sigaction oact, nact;
+          
+          nact.sa_handler = cleanup_sh;
+          sigemptyset (&nact.sa_mask);
+          nact.sa_flags = 0;
+          
+          sigaction (SIGHUP, NULL, &oact);
+          if (oact.sa_handler != SIG_IGN)
+            sigaction (SIGHUP, &nact, NULL);
+          sigaction( SIGTERM, NULL, &oact );
+          if (oact.sa_handler != SIG_IGN)
+            sigaction (SIGTERM, &nact, NULL);
+          nact.sa_handler = SIG_IGN;
+          sigaction (SIGPIPE, &nact, NULL);
+          sigaction (SIGINT, &nact, NULL);
+
+          start_command_handler (fd, -1);
+        }
       close (fd);
     }
   
