@@ -183,6 +183,14 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 	    continue;
 	}
 
+	/* no v3 keys with GNU mode 1001 */
+	if( secret == 2 && node->pkt->pkt.secret_key->version == 3 )
+	{
+	    log_info(_("key %08lX: PGP 2.x style key - skipped\n"),
+		  (ulong)keyid_from_sk( node->pkt->pkt.secret_key, NULL) );
+	    continue;
+	}
+
 	/* and write it */
 	for( kbctx=NULL; (node = walk_kbnode( keyblock, &kbctx, 0 )); ) {
 	    /* don't export any comment packets but those in the

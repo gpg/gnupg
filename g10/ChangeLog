@@ -1,5 +1,8 @@
 2002-02-27  David Shaw  <dshaw@jabberwocky.com>
 
+	* export.c (do_export_stream): Do not include v3 keys in a
+	--export-secret-subkeys export.
+
 	* getkey.c (merge_selfsigs_main): If a key isn't valid (say,
 	because of no self-signature), allow --always-trust to force it
 	valid so it can be trusted.
