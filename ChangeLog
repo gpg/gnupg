@@ -1,3 +1,8 @@
+2002-09-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note that the old IDEA plugin won't work with post-1.1.90
+	gpg.
+
 2002-09-11  Werner Koch  <wk@gnupg.org>
 
 	Released 1.1.92.
