@@ -337,8 +337,8 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 			    break;
 
 			if(*p2=='"' && *(p2+1)=='\0') {
-			  p2[strlen(p2)-1] = 0;
-			  p2++;
+			  p[strlen(p)-1] = 0;
+			  p++;
 			}
 		    }
 		    if( !set_opt_arg(arg, opts[idx].flags, p) )

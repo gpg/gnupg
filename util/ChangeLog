@@ -1,3 +1,8 @@
+2002-07-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* argparse.c (optfile_parse): Fix variable typo - 'p2' should be
+	'p' :)
+
 2002-06-29  Werner Koch  <wk@gnupg.org>
 
 	* argparse.c (optfile_parse): Renamed an auto I to P2 to avoid
