@@ -1219,19 +1219,91 @@ Include designated revoker information that was marked as
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--list-options <parameter>parameters</parameter></term>
+<listitem><para>
+This is a space or comma delimited string that gives options used when
+listing keys and signatures (that is, --list-keys, --list-sigs,
+--list-public-keys, and --list-secret-keys).  Options can be prepended
+with a `no-' to give the opposite meaning.  The options are:
+<variablelist>
+
+<varlistentry>
+<term>show-photos</term>
+<listitem><para>
+Causes --list-keys, --list-sigs, --list-public-keys, and
+--list-secret-keys to display any photo IDs attached to the key.
+Defaults to no.  See also --photo-viewer.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>show-policy-url</term>
+<listitem><para>
+Show policy URLs in the --list-sigs or --check-sigs listings.
+Defaults to no.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>show-notation</term>
+<listitem><para>
+Show signature notations in the --list-sigs or --check-sigs listings.
+Defaults to no.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>show-keyring</term>
+<listitem><para>
+Display the keyring name at the head of key listings to show which
+keyring a given key resides on.  Defaults to no.
+</para></listitem></varlistentry>
+
+</variablelist>
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--verify-options <parameter>parameters</parameter></term>
+<listitem><para>
+This is a space or comma delimited string that gives options used when
+verifying signatures.  Options can be prepended with a `no-' to give
+the opposite meaning.  The options are:
+<variablelist>
+
+<varlistentry>
+<term>show-photos</term>
+<listitem><para>
+Display any photo IDs present on the key that issued the signature.
+Defaults to no.  See also --photo-viewer.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>show-policy-url</term>
+<listitem><para>
+Show policy URLs in the signature being verified.  Defaults to no.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>show-notation</term>
+<listitem><para>
+Show signature notations in the signature being verified.  Defaults to
+no.
+</para></listitem></varlistentry>
+
+</variablelist>
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--show-photos</term>
 <term>--no-show-photos</term>
 <listitem><para>
 Causes --list-keys, --list-sigs, --list-public-keys,
 --list-secret-keys, and verifying a signature to also display the
-photo ID attached to the key, if any.  See also --photo-viewer.
---no-show-photos disables this option.
+photo ID attached to the key, if any.  See also --photo-viewer.  These
+options are deprecated.  Use `--list-options [no-]show-photos' and/or
+`--verify-options [no-]show-photos' instead.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--photo-viewer &ParmString;</term>
 <listitem><para>
-
 This is the command line that should be run to view a photo ID.  "%i"
 will be expanded to a filename containing the photo.  "%I" does the
 same, except the file will not be deleted once the viewer exits.
@@ -1258,10 +1330,9 @@ variable.
 <varlistentry>
 <term>--show-keyring</term>
 <listitem><para>
-Causes --list-keys, --list-public-keys, and --list-secret-keys to
-display the name of the keyring a given key resides on. This is only
-useful when you're listing a specific key or set of keys. It has no
-effect when listing all keys.
+Display the keyring name at the head of key listings to show which
+keyring a given key resides on.  This option is deprecated: use
+`--list-options [no-]show-keyring' instead.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1517,8 +1588,9 @@ making the signature, and "%%" results in a single "%".  %k, %K, and
 <term>--no-show-notation</term>
 <listitem><para>
 Show signature notations in the --list-sigs or --check-sigs listings
-as well as when verifying a signature with a notation in it.
---no-show-notation disables this option.
+as well as when verifying a signature with a notation in it.  These
+options are deprecated.  Use `--list-options [no-]show-notation'
+and/or `--verify-options [no-]show-notation' instead.
 </para></listitem></varlistentry>
 
 
@@ -1541,8 +1613,9 @@ The same %-expandos used for notation data are available here as well.
 <term>--no-show-policy-url</term>
 <listitem><para>
 Show policy URLs in the --list-sigs or --check-sigs listings as well
-as when verifying a signature with a policy URL in it.
---no-show-policy-url disables this option.
+as when verifying a signature with a policy URL in it.  These options
+are deprecated.  Use `--list-options [no-]show-policy-url' and/or
+`--verify-options [no-]show-policy-url' instead.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2295,7 +2368,7 @@ the edit menu.  This allows the user to factor in their own preferred
 algorithms when algorithms are chosen via recipient key preferences.
 The most highly ranked digest algorithm in this list is algo used when
 signing without encryption (e.g. --clearsign or --sign).  The default
-value is "H2" indicating SHA-1.
+value is SHA-1.
 </para></listitem></varlistentry>
 
 <varlistentry>
