@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.1h\n"
-"POT-Creation-Date: 2000-06-28 11:50+0200\n"
+"POT-Creation-Date: 2000-07-12 12:13+0200\n"
 "PO-Revision-Date: 2000-06-28 18:41+02:00\n"
 "Last-Translator: Gaël Quéri <gqueri@mail.dotcom.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -972,7 +972,7 @@ msgstr ""
 
 #. Translators: this shoud fit into 24 bytes to that the fingerprint
 #. * data is properly aligned with the user ID
-#: g10/pkclist.c:53
+#: g10/keyedit.c:1188 g10/pkclist.c:53
 msgid "             Fingerprint:"
 msgstr "               Empreinte:"
 
@@ -985,7 +985,7 @@ msgid "No reason specified"
 msgstr "Aucune raison spécifiée"
 
 #: g10/pkclist.c:118
-msgid "Key is superseeded"
+msgid "Key is superseded"
 msgstr "La clé a été remplacée"
 
 #: g10/pkclist.c:120
@@ -2054,7 +2054,7 @@ msgstr ""
 msgid "Really sign? "
 msgstr "Signer réellement ? "
 
-#: g10/keyedit.c:373 g10/keyedit.c:1869 g10/keyedit.c:1931 g10/sign.c:136
+#: g10/keyedit.c:373 g10/keyedit.c:1870 g10/keyedit.c:1932 g10/sign.c:136
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "la signature a échoué: %s\n"
@@ -2409,79 +2409,104 @@ msgstr "La clé n'a pas changé donc la mise à jour est inutile.\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Commande invalide  (essayez «help»)\n"
 
+#: g10/keyedit.c:1080 g10/keyedit.c:1106
+#, c-format
+msgid "%s%c %4u%c/%08lX  created: %s expires: %s"
+msgstr ""
+
+#: g10/keyedit.c:1089
+#, c-format
+msgid " trust: %c/%c"
+msgstr ""
+
 #: g10/keyedit.c:1093
 msgid "This key has been disabled"
 msgstr "Cette clé a été désactivée"
 
-#: g10/keyedit.c:1364
+#: g10/keyedit.c:1122
+#, fuzzy, c-format
+msgid "rev! subkey has been revoked: %s\n"
+msgstr "clé %08lX: la sous-clé a été révoquée !\n"
+
+#: g10/keyedit.c:1125
+#, fuzzy
+msgid "rev- faked revocation found\n"
+msgstr " nouvelles révocations de clés: %lu\n"
+
+#: g10/keyedit.c:1127
+#, c-format
+msgid "rev? problem checking revocation: %s\n"
+msgstr ""
+
+#: g10/keyedit.c:1365
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Supprimer cette bonne signature ? (o/N/q)"
 
-#: g10/keyedit.c:1368
+#: g10/keyedit.c:1369
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "Supprimer cette signature invalide ? (o/N/q)"
 
-#: g10/keyedit.c:1372
+#: g10/keyedit.c:1373
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "Supprimer cette signature inconnue ? (o/N/q)"
 
-#: g10/keyedit.c:1378
+#: g10/keyedit.c:1379
 msgid "Really delete this self-signature? (y/N)"
 msgstr "Faut-il vraiment supprimer cette auto-signature ? (o/N)"
 
-#: g10/keyedit.c:1392
+#: g10/keyedit.c:1393
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "%d signature supprimée.\n"
 
-#: g10/keyedit.c:1393
+#: g10/keyedit.c:1394
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "%d signatures supprimées\n"
 
-#: g10/keyedit.c:1396
+#: g10/keyedit.c:1397
 msgid "Nothing deleted.\n"
 msgstr "Rien n'a été supprimé.\n"
 
-#: g10/keyedit.c:1465
+#: g10/keyedit.c:1466
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Enlevez les sélections des clés secrètes.\n"
 
-#: g10/keyedit.c:1471
+#: g10/keyedit.c:1472
 msgid "Please select at most one secondary key.\n"
 msgstr "Vous devez sélectionner au plus une clé secondaire.\n"
 
-#: g10/keyedit.c:1475
+#: g10/keyedit.c:1476
 msgid "Changing expiration time for a secondary key.\n"
 msgstr "Changer la date d'expiration d'une clé secondaire.\n"
 
-#: g10/keyedit.c:1477
+#: g10/keyedit.c:1478
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Changer la date d'expiration de la clé principale.\n"
 
-#: g10/keyedit.c:1519
+#: g10/keyedit.c:1520
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Vous ne pouvez pas changer la date d'expiration d'une clé v3\n"
 
-#: g10/keyedit.c:1535
+#: g10/keyedit.c:1536
 msgid "No corresponding signature in secret ring\n"
 msgstr "Pas de signature correspondante dans le porte-clés secret\n"
 
-#: g10/keyedit.c:1596
+#: g10/keyedit.c:1597
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "Pas d'utilisateur avec l'index %d\n"
 
-#: g10/keyedit.c:1642
+#: g10/keyedit.c:1643
 #, c-format
 msgid "No secondary key with index %d\n"
 msgstr "Pas de clé secondaire avec l'index %d\n"
 
-#: g10/keyedit.c:1740
+#: g10/keyedit.c:1741
 msgid "user ID: \""
 msgstr "nom d'utilisateur: «"
 
-#: g10/keyedit.c:1743
+#: g10/keyedit.c:1744
 #, c-format
 msgid ""
 "\"\n"
@@ -2490,34 +2515,34 @@ msgstr ""
 "»\n"
 "signé avec votre clé %08lX à %s\n"
 
-#: g10/keyedit.c:1747
+#: g10/keyedit.c:1748
 msgid "Create a revocation certificate for this signature? (y/N)"
 msgstr "Générer un certificat de révocation pour cette signature ? (o/N)"
 
 #. FIXME: detect duplicates here
-#: g10/keyedit.c:1771
+#: g10/keyedit.c:1772
 msgid "You have signed these user IDs:\n"
 msgstr "Vous avez signé ces noms d'utilisateurs:\n"
 
-#: g10/keyedit.c:1785 g10/keyedit.c:1820
+#: g10/keyedit.c:1786 g10/keyedit.c:1821
 #, c-format
 msgid "   signed by %08lX at %s\n"
 msgstr "   signé par %08lX à %s\n"
 
-#: g10/keyedit.c:1790
+#: g10/keyedit.c:1791
 #, c-format
 msgid "   revoked by %08lX at %s\n"
 msgstr "   révoqué par %08lX à %s\n"
 
-#: g10/keyedit.c:1810
+#: g10/keyedit.c:1811
 msgid "You are about to revoke these signatures:\n"
 msgstr "Vous êtes sur le point de révoquer ces signatures:\n"
 
-#: g10/keyedit.c:1828
+#: g10/keyedit.c:1829
 msgid "Really create the revocation certificates? (y/N)"
 msgstr "Faut-il vraiment générer les certificats de révocation ? (o/N)"
 
-#: g10/keyedit.c:1857
+#: g10/keyedit.c:1858
 msgid "no secret key\n"
 msgstr "pas de clé secrète\n"
 
@@ -2665,7 +2690,7 @@ msgstr ""
 msgid "can't handle public key algorithm %d\n"
 msgstr "impossible de gérer l'algorithme à clé publique %d\n"
 
-#: g10/parse-packet.c:961
+#: g10/parse-packet.c:965
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "un sous-paquet de type %d possède un bit critique\n"
@@ -3679,7 +3704,7 @@ msgid ""
 "  \"Key has been compromised\"\n"
 "      Use this if you have a reason to believe that unauthorized persons\n"
 "      got access to your secret key.\n"
-"  \"Key is superseeded\"\n"
+"  \"Key is superseded\"\n"
 "      Use this if you have replaced this key with a newer one.\n"
 "  \"Key is no longer used\"\n"
 "      Use this if you have retired this key.\n"

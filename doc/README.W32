@@ -1,9 +1,5 @@
-This is a beta release of GnuPG for MS-Windows 95, 98 and WNT.
-The random number generator should now work but has not undergone
-a thorough testing, so we won't say anything about the quality of
-the generated key and suggest that you don't use this version with
-your production secret keys!  It is however okay to verify signatures
-or encrypt files using this version.
+This is a binary version of GnuPG for MS-Windows 95, 98, WNT and W2000.
+
 
 PLEASE READ THE FOLLOWING PARAGRAPH CAREFULLY:
 
@@ -75,7 +71,7 @@ To build it, you need the MingW32/CPD kit, which is available at
   ftp://ftp.openit.de/pub/cpd/windows32api-0.1.2.tar.gz
 
 gcc, binutils and windows32api are stock GNU source which are available
-at every ftp.gnug.org mirror.
+at every GNU mirror.
 
 After you have installed this environment you should be able to do this:
 

@@ -1,3 +1,7 @@
+Wed Jul 12 13:32:06 CEST 2000  Werner Koch  <wk@>
+
+  Version 1.0.2
+
 Fri Jun  9 10:09:52 CEST 2000  Werner Koch  <wk@openit.de>
 
   * configure.in: Add check for termio.h, wait unctiosn and sigaction.

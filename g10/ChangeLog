@@ -1,3 +1,7 @@
+Wed Jul 12 13:32:06 CEST 2000  Werner Koch  <wk@>
+
+  * helptext.c, pkclist.c: s/superseeded/superseded/
+
 Mon Jul 10 16:08:57 CEST 2000  Werner Koch  <wk@>
 
   * parse-packet.c (enum_sig_subpkt): Fixed testing on crtitical bit in case

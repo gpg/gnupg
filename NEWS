@@ -1,4 +1,4 @@
-Noteworthy changes in the current test release
+Noteworthy changes in version 1.0.2 (2000-07-12)
 ----------------------------------------------
 
     * Fixed expiration handling of encryption keys.
@@ -28,7 +28,7 @@ Noteworthy changes in the current test release
       faster decryption.
 
     * New command --export-secret-subkeys which outputs the
-      the _primary_ key with is's secret parts deleted.  This is
+      the _primary_ key with it's secret parts deleted.  This is
       useful for automated decryption/signature creation as it
       allows to keep the real secret primary key offline and
       thereby protecting the key certificates and allowing to
@@ -48,11 +48,12 @@ Noteworthy changes in the current test release
     * Support for the new MDC encryption packets.  To create them either
       --force-mdc must be use or cipher algorithm with a blocksize other
       than 64 bits is to be used.  --openpgp currently disables MDC packets
-      entirely.
+      entirely.  This option should not yet be used.
 
     * New option --no-auto-key-retrieve to disable retrieving of
       a missing public key from a keyerver, when a keyerver has been set.
 
+    * Danish translation
 
 Noteworthy changes in version 1.0.1 (1999-12-16)
 -----------------------------------

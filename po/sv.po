@@ -12,9 +12,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2000-06-28 11:50+0200\n"
-"PO-Revision-Date: 2000-02-16 08:19+01:00\n"
+"Project-Id-Version: gnupg 1.0.1e\n"
+"POT-Creation-Date: 2000-07-12 12:13+0200\n"
+"PO-Revision-Date: 2000-04-23 16:43+02:00\n"
 "Last-Translator: Daniel Resare <daniel@resare.com>\n"
 "Language-Team: Swedish <sv@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -76,7 +76,7 @@ msgstr "okänd algoritm för publik nyckel"
 # jag är inte nöjd med översättningen digest -> kontrollsumma,
 # om du har ett bättre förslag kontakta mig gärna på
 # daniel@resare.com. Andra förslag jag sågat är digest (oöversatt),
-# fingeravtryck, indatakarakteristik, sammandrag och sammanfattning 
+# fingeravtryck, indatakarakteristik, sammandrag och sammanfattning
 #: util/errors.c:58
 msgid "unknown digest algorithm"
 msgstr "okänd algoritm för beräkning av kontrollsumma"
@@ -274,51 +274,51 @@ msgid "can't open `%s': %s\n"
 msgstr "kan inte öppna \"%s\": %s\n"
 
 #: cipher/random.c:315
-#, fuzzy, c-format
+#, c-format
 msgid "can't stat `%s': %s\n"
-msgstr "kan inte öppna \"%s\": %s\n"
+msgstr "kan inte ta status på \"%s\": %s\n"
 
 #: cipher/random.c:320
 #, c-format
 msgid "`%s' is not a regular file - ignored\n"
-msgstr ""
+msgstr "\"%s\" är inte än vanlig fil - ignorerad\n"
 
 #: cipher/random.c:325
 msgid "note: random_seed file is empty\n"
-msgstr ""
+msgstr "notera: filen random_seed är tom\n"
 
 #: cipher/random.c:331
 msgid "warning: invalid size of random_seed file - not used\n"
-msgstr ""
+msgstr "varning: random_seed har en felaktig storlek och används därför inte\n"
 
 #: cipher/random.c:339
-#, fuzzy, c-format
+#, c-format
 msgid "can't read `%s': %s\n"
-msgstr "kan inte öppna \"%s\": %s\n"
+msgstr "kan inte läsa \"%s\": %s\n"
 
 #: cipher/random.c:377
 msgid "note: random_seed file not updated\n"
-msgstr ""
+msgstr "notera: random_seed uppdaterades inte\n"
 
 #: cipher/random.c:397
-#, fuzzy, c-format
+#, c-format
 msgid "can't create `%s': %s\n"
-msgstr "kan inte skapa %s: %s\n"
+msgstr "kan inte skapa \"%s\": %s\n"
 
 #: cipher/random.c:404
-#, fuzzy, c-format
+#, c-format
 msgid "can't write `%s': %s\n"
-msgstr "kan inte öppna \"%s\": %s\n"
+msgstr "kan inte skriva till \"%s\": %s\n"
 
 #: cipher/random.c:407
-#, fuzzy, c-format
+#, c-format
 msgid "can't close `%s': %s\n"
-msgstr "kan inte öppna \"%s\": %s\n"
+msgstr "kan inte stänga \"%s\": %s\n"
 
 #: cipher/random.c:418
 #, c-format
 msgid "too many random bits requested; the limit is %d\n"
-msgstr ""
+msgstr "för många slumpmässiga bitar efterfrågades; maximalt antal är %d\n"
 
 #: cipher/random.c:647
 msgid "WARNING: using insecure random number generator!!\n"
@@ -647,6 +647,8 @@ msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
 msgstr ""
+"@\n"
+"(Se manualsidan för en komplett lista på alla kommandon och flaggor)\n"
 
 #: g10/g10.c:308
 msgid ""
@@ -760,7 +762,7 @@ msgstr "kompressionsalgoritmen måste vara i intervallet %d..%d\n"
 # som det är i princip omöjligt att översätta på på ett bra sätt.
 # Sannolikheten för att användaren drabbas av felmeddelandet
 # är ändå litet. Eventuellt borde meddelandena inte alls
-# översättas för att göra eventuell felsökning lättare 
+# översättas för att göra eventuell felsökning lättare
 # för internationella felsökare
 #: g10/g10.c:1000
 msgid "completes-needed must be greater than 0\n"
@@ -959,7 +961,7 @@ msgstr "fel i avslutande rad\n"
 
 #: g10/armor.c:912
 msgid "For info see http://www.gnupg.org"
-msgstr ""
+msgstr "För information se http://www.gnupg.org/"
 
 #: g10/armor.c:1033
 msgid "no valid OpenPGP data found.\n"
@@ -980,7 +982,7 @@ msgstr ""
 
 #. Translators: this shoud fit into 24 bytes to that the fingerprint
 #. * data is properly aligned with the user ID
-#: g10/pkclist.c:53
+#: g10/keyedit.c:1188 g10/pkclist.c:53
 msgid "             Fingerprint:"
 msgstr "           Fingeravtryck:"
 
@@ -990,33 +992,34 @@ msgstr "Fingeravtryck:"
 
 #: g10/pkclist.c:116
 msgid "No reason specified"
-msgstr ""
+msgstr "Ingen anledning har angivits"
 
+# tveksam översättning. funderar på "ersatt av något bättre" men det
+# känns inte heller bra
 #: g10/pkclist.c:118
-#, fuzzy
-msgid "Key is superseeded"
-msgstr "Nyckeln är skyddad.\n"
+msgid "Key is superseded"
+msgstr "Nyckeln är ersatt"
 
 #: g10/pkclist.c:120
-#, fuzzy
 msgid "Key has been compromised"
-msgstr "Denna nyckel har deaktiverats"
+msgstr "Nyckeln har tappat sin säkerhet"
 
 #: g10/pkclist.c:122
 msgid "Key is no longer used"
-msgstr ""
+msgstr "Nyckeln används inte längre"
 
 #: g10/pkclist.c:124
+#, fuzzy
 msgid "User ID is no longer valid"
-msgstr ""
+msgstr "Användaridentiteten är inte längre giltig"
 
 #: g10/pkclist.c:128
 msgid "Reason for revocation: "
-msgstr ""
+msgstr "Anledning till återkallelsen: "
 
 #: g10/pkclist.c:145
 msgid "Revocation comment: "
-msgstr ""
+msgstr "Återkallelsekommentar: "
 
 # värdena står för s = show me more info,  m = back to menu, q = quit
 # hur skall sådant internationaliseras på ett bra sätt?
@@ -1279,14 +1282,14 @@ msgid "writing key binding signature\n"
 msgstr "skriver signatur knuten till nyckeln\n"
 
 #: g10/keygen.c:261 g10/keygen.c:345 g10/keygen.c:433
-#, fuzzy, c-format
+#, c-format
 msgid "keysize invalid; using %u bits\n"
-msgstr "Den efterfrågade nyckelstorleken är %u bitar\n"
+msgstr "ogiltig nyckelstorlek; använder %u bitar\n"
 
 #: g10/keygen.c:266 g10/keygen.c:350 g10/keygen.c:438
-#, fuzzy, c-format
+#, c-format
 msgid "keysize rounded up to %u bits\n"
-msgstr "avrundade uppåt till %u bitar\n"
+msgstr "nyckelstorleken avrundad uppåt till %u bitar\n"
 
 #: g10/keygen.c:537
 msgid "Please select what kind of key you want:\n"
@@ -1519,16 +1522,15 @@ msgstr ""
 
 #: g10/keygen.c:867
 msgid "Please don't put the email address into the real name or the comment\n"
-msgstr ""
+msgstr "Ange inte epostadressen som namn eller kommentar\n"
 
 #: g10/keygen.c:872
 msgid "NnCcEeOoQq"
 msgstr "NnKkEeOoAa"
 
 #: g10/keygen.c:882
-#, fuzzy
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
-msgstr "Ändra (N)amn, (K)ommentar, (E)post eller (O)k/(A)vsluta? "
+msgstr "Ändra (N)amn, (K)ommentar, (E)post eller (A)vsluta? "
 
 #: g10/keygen.c:883
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
@@ -1536,7 +1538,7 @@ msgstr "Ändra (N)amn, (K)ommentar, (E)post eller (O)k/(A)vsluta? "
 
 #: g10/keygen.c:902
 msgid "Please correct the error first\n"
-msgstr ""
+msgstr "Rätta först felet\n"
 
 # fel kapitalisering i originalet?
 #: g10/keygen.c:940
@@ -1583,14 +1585,14 @@ msgid "Key generation canceled.\n"
 msgstr "Skapandet av nycklar avbröts.\n"
 
 #: g10/keygen.c:1564
-#, fuzzy, c-format
+#, c-format
 msgid "writing public key to `%s'\n"
-msgstr "Skriver publikt certifikat till \"%s\"\n"
+msgstr "skriver publik nyckel till \"%s\"\n"
 
 #: g10/keygen.c:1565
-#, fuzzy, c-format
+#, c-format
 msgid "writing secret key to `%s'\n"
-msgstr "skriver hemligt certifikat till \"%s\"\n"
+msgstr "skriver hemlig nyckel till \"%s\"\n"
 
 #: g10/keygen.c:1661
 msgid "public and secret key created and signed.\n"
@@ -1673,9 +1675,9 @@ msgid "key %08lX: not a rfc2440 key - skipped\n"
 msgstr "nyckeln %08lX följer inte standarden RFC2440 - överhoppad\n"
 
 #: g10/export.c:182
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: not protected - skipped\n"
-msgstr "nyckeln %08lX följer inte standarden RFC2440 - överhoppad\n"
+msgstr "nyckeln %08lX är inte skyddad - överhoppad\n"
 
 #: g10/export.c:232
 msgid "WARNING: nothing exported\n"
@@ -2063,7 +2065,7 @@ msgstr ""
 msgid "Really sign? "
 msgstr "Vill du verkligen signera? "
 
-#: g10/keyedit.c:373 g10/keyedit.c:1869 g10/keyedit.c:1931 g10/sign.c:136
+#: g10/keyedit.c:373 g10/keyedit.c:1870 g10/keyedit.c:1932 g10/sign.c:136
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "signeringen misslyckades: %s\n"
@@ -2073,9 +2075,8 @@ msgid "This key is not protected.\n"
 msgstr "Denna nyckel är inte skyddad.\n"
 
 #: g10/keyedit.c:431
-#, fuzzy
 msgid "Secret parts of primary key are not available.\n"
-msgstr "den hemliga nyckeln är inte tillgänglig"
+msgstr "De hemliga delarna av den primära nyckeln är inte tillgängliga.\n"
 
 #: g10/keyedit.c:435
 msgid "Key is protected.\n"
@@ -2344,7 +2345,7 @@ msgstr "Den hemliga nyckeln behövs för att göra detta.\n"
 
 #: g10/keyedit.c:731
 msgid "Please use the command \"toggle\" first.\n"
-msgstr ""
+msgstr "Använd kommandot \"toggle\" först.\n"
 
 #: g10/keyedit.c:778
 msgid "Really sign all user IDs? "
@@ -2421,80 +2422,105 @@ msgstr "Nyckeln är oförändrad så det behövs ingen uppdatering.\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Ogiltigt kommando (försök med \"help\")\n"
 
+#: g10/keyedit.c:1080 g10/keyedit.c:1106
+#, c-format
+msgid "%s%c %4u%c/%08lX  created: %s expires: %s"
+msgstr ""
+
+#: g10/keyedit.c:1089
+#, c-format
+msgid " trust: %c/%c"
+msgstr ""
+
 #: g10/keyedit.c:1093
 msgid "This key has been disabled"
 msgstr "Denna nyckel har deaktiverats"
 
-#: g10/keyedit.c:1364
+#: g10/keyedit.c:1122
+#, fuzzy, c-format
+msgid "rev! subkey has been revoked: %s\n"
+msgstr "nyckeln %08lX: en undernyckel har återkallats!\n"
+
+#: g10/keyedit.c:1125
+#, fuzzy
+msgid "rev- faked revocation found\n"
+msgstr "     nya återkallelser av nycklar: %lu\n"
+
+#: g10/keyedit.c:1127
+#, c-format
+msgid "rev? problem checking revocation: %s\n"
+msgstr ""
+
+#: g10/keyedit.c:1365
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Vill du radera denna korrekta signatur? (j/N/a)"
 
-#: g10/keyedit.c:1368
+#: g10/keyedit.c:1369
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "Vill du radera denna ogiltiga signatur? (j/N/a)"
 
-#: g10/keyedit.c:1372
+#: g10/keyedit.c:1373
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "Vill du radera denna okända signatur? (j/N/a)"
 
-#: g10/keyedit.c:1378
+#: g10/keyedit.c:1379
 msgid "Really delete this self-signature? (y/N)"
 msgstr "Vill du radera denna självsignatur? (j/N)"
 
 # skulle lika gärna kunna heta 1 signatur va?
-#: g10/keyedit.c:1392
+#: g10/keyedit.c:1393
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "Raderade %d signatur.\n"
 
-#: g10/keyedit.c:1393
+#: g10/keyedit.c:1394
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "Raderade %d signaturer.\n"
 
-#: g10/keyedit.c:1396
+#: g10/keyedit.c:1397
 msgid "Nothing deleted.\n"
 msgstr "Ingenting raderat.\n"
 
-#: g10/keyedit.c:1465
+#: g10/keyedit.c:1466
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Tag bort markeringar från de hemliga nycklarna.\n"
 
-#: g10/keyedit.c:1471
+#: g10/keyedit.c:1472
 msgid "Please select at most one secondary key.\n"
 msgstr "Välj som mest en sekundär nyckel.\n"
 
-#: g10/keyedit.c:1475
+#: g10/keyedit.c:1476
 msgid "Changing expiration time for a secondary key.\n"
 msgstr "Ändrar giltighetstid för en sekundär nyckel.\n"
 
-#: g10/keyedit.c:1477
+#: g10/keyedit.c:1478
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Ändrar giltighetstid för den primära nyckeln.\n"
 
-#: g10/keyedit.c:1519
+#: g10/keyedit.c:1520
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Du kan inte ändra giltighetsdatum för en v3-nyckel\n"
 
-#: g10/keyedit.c:1535
+#: g10/keyedit.c:1536
 msgid "No corresponding signature in secret ring\n"
 msgstr "Det finns ingen motsvarande signatur i den hemliga nyckelringen\n"
 
-#: g10/keyedit.c:1596
+#: g10/keyedit.c:1597
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "Ingen användaridentitet med index %d\n"
 
-#: g10/keyedit.c:1642
+#: g10/keyedit.c:1643
 #, c-format
 msgid "No secondary key with index %d\n"
 msgstr "Ingen sekundär nyckel med index %d\n"
 
-#: g10/keyedit.c:1740
+#: g10/keyedit.c:1741
 msgid "user ID: \""
 msgstr "användaridentitet: \""
 
-#: g10/keyedit.c:1743
+#: g10/keyedit.c:1744
 #, c-format
 msgid ""
 "\"\n"
@@ -2503,42 +2529,42 @@ msgstr ""
 "\"\n"
 "signerad med din nyckel %08lX %s\n"
 
-#: g10/keyedit.c:1747
+#: g10/keyedit.c:1748
 msgid "Create a revocation certificate for this signature? (y/N)"
 msgstr "Vill du skapa ett återkallelsecertifikat för denna signatur? (j/N)"
 
 #. FIXME: detect duplicates here
-#: g10/keyedit.c:1771
+#: g10/keyedit.c:1772
 msgid "You have signed these user IDs:\n"
 msgstr "Du har signerat följande användaridentiteter:\n"
 
-#: g10/keyedit.c:1785 g10/keyedit.c:1820
+#: g10/keyedit.c:1786 g10/keyedit.c:1821
 #, c-format
 msgid "   signed by %08lX at %s\n"
 msgstr "   signerad av %08lX %s\n"
 
-#: g10/keyedit.c:1790
+#: g10/keyedit.c:1791
 #, c-format
 msgid "   revoked by %08lX at %s\n"
 msgstr "   återkallad av %08lX %s\n"
 
-#: g10/keyedit.c:1810
+#: g10/keyedit.c:1811
 msgid "You are about to revoke these signatures:\n"
 msgstr "Du står i begrepp att återkalla dessa signaturer:\n"
 
-#: g10/keyedit.c:1828
+#: g10/keyedit.c:1829
 msgid "Really create the revocation certificates? (y/N)"
 msgstr "Vill du verkligen skapa återkallelsecertifikaten? (j/N)"
 
-#: g10/keyedit.c:1857
+#: g10/keyedit.c:1858
 msgid "no secret key\n"
 msgstr "ingen hemlig nyckel\n"
 
 #. of subkey
 #: g10/keylist.c:318 g10/mainproc.c:742
-#, fuzzy, c-format
+#, c-format
 msgid " [expires: %s]"
-msgstr "Nyckeln går ut vid följande tidpunkt: %s\n"
+msgstr "[går ut: %s]"
 
 #: g10/mainproc.c:213
 #, c-format
@@ -2689,7 +2715,7 @@ msgstr ""
 msgid "can't handle public key algorithm %d\n"
 msgstr "kan inte hantera algoritm %d för publik nyckelhantering\n"
 
-#: g10/parse-packet.c:961
+#: g10/parse-packet.c:965
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "underpaket av typen %d har den bit satt som markerar den som kritisk\n"
@@ -2761,9 +2787,9 @@ msgid "old encoding of the DEK is not supported\n"
 msgstr "gammal kodning av krypteringsnyckeln stöds inte\n"
 
 #: g10/pubkey-enc.c:156
-#, fuzzy, c-format
+#, c-format
 msgid "cipher algorithm %d is unknown or disabled\n"
-msgstr "skyddsalgoritmen %d stöds inte\n"
+msgstr "chifferalgoritmen %d är okänd eller avslagen\n"
 
 #: g10/pubkey-enc.c:195
 #, c-format
@@ -2771,53 +2797,52 @@ msgid "NOTE: cipher algorithm %d not found in preferences\n"
 msgstr "NOTERA: chifferalgoritmen %d finns inte i inställningarna\n"
 
 #: g10/pubkey-enc.c:201
-#, fuzzy, c-format
+#, c-format
 msgid "NOTE: secret key %08lX expired at %s\n"
-msgstr "NOTERA: signaturnyckeln är för gammal, gick ut vid %s\n"
+msgstr "NOTERA: den hemliga nyckeln %08lX gick ut %s\n"
 
 #: g10/hkp.c:62
 #, c-format
 msgid "requesting key %08lX from %s ...\n"
-msgstr ""
+msgstr "fråga efter nyckeln %08lX från %s ...\n"
 
 #: g10/hkp.c:75
-#, fuzzy, c-format
+#, c-format
 msgid "can't get key from keyserver: %s\n"
-msgstr "importera nycklar från en nyckelserver"
+msgstr "kan inte hämta nyckeln från en nyckelserver: %s\n"
 
 #: g10/hkp.c:98 g10/hkp.c:136
 msgid "no keyserver known (use option --keyserver)\n"
-msgstr ""
+msgstr "känner inte till någon nyckelserver (använd flaggan --keyserver)\n"
 
 #: g10/hkp.c:106
-#, fuzzy, c-format
+#, c-format
 msgid "%s: not a valid key ID\n"
-msgstr "%s är ingen giltig teckentabell\n"
+msgstr "%s: ogiltig nyckelidentitet\n"
 
 #: g10/hkp.c:158
-#, fuzzy, c-format
+#, c-format
 msgid "can't connect to `%s': %s\n"
-msgstr "kan inte öppna \"%s\": %s\n"
+msgstr "kan inte ansluta till \"%s\": %s\n"
 
 #: g10/hkp.c:182
-#, fuzzy, c-format
+#, c-format
 msgid "error sending to `%s': %s\n"
-msgstr "fel vid läsning av \"%s\": %s\n"
+msgstr "fel vid sändning till \"%s\": %s\n"
 
 #: g10/hkp.c:194
 #, c-format
 msgid "success sending to `%s' (status=%u)\n"
-msgstr ""
+msgstr "lyckades sända till \"%s\" (status=%u)\n"
 
 #: g10/hkp.c:197
 #, c-format
 msgid "failed sending to `%s': status=%u\n"
-msgstr ""
+msgstr "misslyckades sända till \"%s\": status=%u\n"
 
 #: g10/seckey-cert.c:53
-#, fuzzy
 msgid "secret key parts are not available\n"
-msgstr "den hemliga nyckeln är inte tillgänglig"
+msgstr "de hemliga nyckeldelarna är inte tillgänliga\n"
 
 #: g10/seckey-cert.c:59
 #, c-format
@@ -3139,7 +3164,7 @@ msgstr "Korrekt självsignatur"
 msgid "Invalid self-signature"
 msgstr "Felaktig självsignatur"
 
-# detta verkar mycket märkligt. Någon borde kanske få en förklaring från 
+# detta verkar mycket märkligt. Någon borde kanske få en förklaring från
 # gnupg-utvecklarna?
 #: g10/trustdb.c:1104
 msgid "Valid user ID revocation skipped due to a newer self signature"
@@ -3534,7 +3559,6 @@ msgstr ""
 "som bara krypterar inte är tillgänglig i denna meny"
 
 #: g10/helptext.c:85
-#, fuzzy
 msgid ""
 "Although these keys are defined in RFC2440 they are not suggested\n"
 "because they are not supported by all programs and signatures created\n"
@@ -3542,7 +3566,7 @@ msgid ""
 msgstr ""
 "Trots att dessa nycklar är definierade i RFC2440 är det inte rekommenderat\n"
 "att använda dem eftersom de inte stöds i alla program och signaturer\n"
-"skapade med dem är stora och mycket långsamma att verifiera.\n"
+"skapade med dem är stora och mycket långsamma att verifiera."
 
 #: g10/helptext.c:92
 msgid "Enter the size of the key"
@@ -3689,13 +3713,14 @@ msgstr ""
 "(som anges i hakparenteser) att användas."
 
 #: g10/helptext.c:229
+#, fuzzy
 msgid ""
 "You should specify a reason for the certification.  Depending on the\n"
 "context you have the ability to choose from this list:\n"
 "  \"Key has been compromised\"\n"
 "      Use this if you have a reason to believe that unauthorized persons\n"
 "      got access to your secret key.\n"
-"  \"Key is superseeded\"\n"
+"  \"Key is superseded\"\n"
 "      Use this if you have replaced this key with a newer one.\n"
 "  \"Key is no longer used\"\n"
 "      Use this if you have retired this key.\n"
@@ -3703,6 +3728,20 @@ msgid ""
 "      Use this to state that the user ID should not longer be used;\n"
 "      this is normally used to mark an email address invalid.\n"
 msgstr ""
+"Du borde ange en anledning till certifikationen. Beroende på sammanhanget\n"
+"har du möjligheten att välja från följande lista:\n"
+"  \"Nyckeln har tappat sin säkerhet\"\n"
+"     Använd denna om du har anledning att tro att icke auktoriserade "
+"personer\n"
+"     har fått tillgång till din hemliga nyckel.\n"
+"  \"Nyckeln har ersatts\"\n"
+"     Använd denna om du har ersatt denna nyckel med en nyare.\n"
+"  \"Nyckeln används inte längre\"\n"
+"     Använd denna om du har pensionerat denna nyckel.\n"
+"  \"Användaridentiteten är inte längre giltig\"\n"
+"     Använd denna för att visa att denna användaridentitet inte längre\n"
+"     skall användas. Detta används normalt för att visa att en epostadress\n"
+"     är ogiltig\n"
 
 #: g10/helptext.c:245
 msgid ""
@@ -3710,6 +3749,9 @@ msgid ""
 "revocation certificate.  Please keep this text concise.\n"
 "An empty line ends the text.\n"
 msgstr ""
+"Om du vill kan du ange en text som beskriver varför du utfärdar\n"
+"detta återkallelsecertifikat. Försök att hålla texten kort och koncis.\n"
+"En tom rad avslutar texten.\n"
 
 #: g10/helptext.c:260
 msgid "No help available"
@@ -3719,24 +3761,3 @@ msgstr "Det finns ingen hjälp tillgänglig"
 #, c-format
 msgid "No help available for `%s'"
 msgstr "Det finns ingen hjälp tillgänglig för \"%s\""
-
-#~ msgid "set debugging flags"
-#~ msgstr "sätt debug-flaggor"
-
-#~ msgid "enable full debugging"
-#~ msgstr "aktivera fullt debug-läge"
-
-#~ msgid "do not write comment packets"
-#~ msgstr "skriv inte ut kommentarpaket"
-
-#~ msgid "(default is 1)"
-#~ msgstr "(standardvärdet är 1)"
-
-#~ msgid "(default is 3)"
-#~ msgstr "(standardvärdet är 3)"
-
-#~ msgid "   (%d) ElGamal in a v3 packet\n"
-#~ msgstr "   (%d) ElGamal i ett v3-paket\n"
-
-#~ msgid "Key generation can only be used in interactive mode\n"
-#~ msgstr "Nycklar kan bara genereras i interaktivt läge\n"

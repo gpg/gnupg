@@ -1,3 +1,12 @@
+Wed Jul 12 13:32:06 CEST 2000  Werner Koch  <wk@>
+
+  * da.po: New from the TP server
+  * eo.po: Updated from the TP server
+  * pl.po: Ditto.
+  * sv.po: Ditto.
+
+  Small English spelling correction in all files.
+
 Wed Jul  5 13:28:45 CEST 2000  Werner Koch  <wk@>
 
   * fr.po: Minor changes by Gael

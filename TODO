@@ -1,8 +1,6 @@
 
   * Use DSA keys with the test suite.
 
-  * check that --allow-non-selfsigned does really work
-
   * g10/trustdb.c (make_sig_records): fix the fixme.
 
   * at least an option to prefer DSA keys over RSA when selecting the key to
@@ -18,6 +16,9 @@
 
 Scheduled for 1.1
 -----------------
+  * export by user-IDs does only export the first matching name which leads
+    to a problem in cases where there are 2 keys with identically user-IDs.
+
   * Rework the whole key selection stuff: Compile a list of valid
     candidates for a keyblock first and the select one from it.
     The current code is too ugly (getkey.c).

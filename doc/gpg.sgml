@@ -71,6 +71,12 @@
     <para>
 <command/gpg/ is the main program for the GnuPG system.
     </para>
+    <para>
+This man page does only list the commands and options available.
+For a more verbose documentation get the GNU Privacy Handbook (GPH), which is
+available at http://www.gnupg.org/gph/ .
+You will find a list of HOWTO documents at http://www.gnupg.org/docs.html .
+</para>
 </refsect1>
 
 <refsect1>

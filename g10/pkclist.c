@@ -115,7 +115,7 @@ do_show_revocation_reason( PKT_signature *sig )
 	if( *p == 0 )
 	    text = _("No reason specified");
 	else if( *p == 0x01 )
-	    text = _("Key is superseeded");
+	    text = _("Key is superseded");
 	else if( *p == 0x02 )
 	    text = _("Key has been compromised");
 	else if( *p == 0x03 )

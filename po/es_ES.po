@@ -7,7 +7,7 @@
 # GPG version: 1.0.0
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2000-06-28 11:50+0200\n"
+"POT-Creation-Date: 2000-07-12 12:13+0200\n"
 "PO-Revision-Date: 1999-10-27 06:35+0200\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Date: 1998-11-13 10:49:25+0100\n"
@@ -970,7 +970,7 @@ msgstr ""
 
 #. Translators: this shoud fit into 24 bytes to that the fingerprint
 #. * data is properly aligned with the user ID
-#: g10/pkclist.c:53
+#: g10/keyedit.c:1188 g10/pkclist.c:53
 msgid "             Fingerprint:"
 msgstr "         Huella dactilar:"
 
@@ -984,7 +984,7 @@ msgstr ""
 
 #: g10/pkclist.c:118
 #, fuzzy
-msgid "Key is superseeded"
+msgid "Key is superseded"
 msgstr "La clave está protegida.\n"
 
 #: g10/pkclist.c:120
@@ -2052,7 +2052,7 @@ msgstr ""
 msgid "Really sign? "
 msgstr "¿Firmar de verdad? "
 
-#: g10/keyedit.c:373 g10/keyedit.c:1869 g10/keyedit.c:1931 g10/sign.c:136
+#: g10/keyedit.c:373 g10/keyedit.c:1870 g10/keyedit.c:1932 g10/sign.c:136
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "firma fallida: %s\n"
@@ -2408,79 +2408,104 @@ msgstr "Clave sin cambios, no se necesita actualización.\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Comando no válido (pruebe \"help\")\n"
 
+#: g10/keyedit.c:1080 g10/keyedit.c:1106
+#, c-format
+msgid "%s%c %4u%c/%08lX  created: %s expires: %s"
+msgstr ""
+
+#: g10/keyedit.c:1089
+#, c-format
+msgid " trust: %c/%c"
+msgstr ""
+
 #: g10/keyedit.c:1093
 msgid "This key has been disabled"
 msgstr "Esta clave está deshabilitada"
 
-#: g10/keyedit.c:1364
+#: g10/keyedit.c:1122
+#, fuzzy, c-format
+msgid "rev! subkey has been revoked: %s\n"
+msgstr "clave %08lX: ¡esta subclave ha sido revocada!\n"
+
+#: g10/keyedit.c:1125
+#, fuzzy
+msgid "rev- faked revocation found\n"
+msgstr "        nuevas revocaciones: %lu\n"
+
+#: g10/keyedit.c:1127
+#, c-format
+msgid "rev? problem checking revocation: %s\n"
+msgstr ""
+
+#: g10/keyedit.c:1365
 msgid "Delete this good signature? (y/N/q)"
 msgstr "¿Borrar esta firma correcta? (s/N/q)"
 
-#: g10/keyedit.c:1368
+#: g10/keyedit.c:1369
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "¿Borrar esta firma no válida? (s/N/q)"
 
-#: g10/keyedit.c:1372
+#: g10/keyedit.c:1373
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "¿Borrar esta firma desconocida? (s/N/q)"
 
-#: g10/keyedit.c:1378
+#: g10/keyedit.c:1379
 msgid "Really delete this self-signature? (y/N)"
 msgstr "¿Borrar realmente esta autofirma? (s/N)"
 
-#: g10/keyedit.c:1392
+#: g10/keyedit.c:1393
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "%d firmas borradas.\n"
 
-#: g10/keyedit.c:1393
+#: g10/keyedit.c:1394
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "%d firmas borradas\n"
 
-#: g10/keyedit.c:1396
+#: g10/keyedit.c:1397
 msgid "Nothing deleted.\n"
 msgstr "No se borró nada\n"
 
-#: g10/keyedit.c:1465
+#: g10/keyedit.c:1466
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Por favor, quite la selección de las claves secretas.\n"
 
-#: g10/keyedit.c:1471
+#: g10/keyedit.c:1472
 msgid "Please select at most one secondary key.\n"
 msgstr "Por favor, seleccione como máximo una clave secundaria.\n"
 
-#: g10/keyedit.c:1475
+#: g10/keyedit.c:1476
 msgid "Changing expiration time for a secondary key.\n"
 msgstr "Cambiando caducidad de clave secundaria.\n"
 
-#: g10/keyedit.c:1477
+#: g10/keyedit.c:1478
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Cambiando caducidad de clave primaria.\n"
 
-#: g10/keyedit.c:1519
+#: g10/keyedit.c:1520
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "No puede cambiar la fecha de caducidad de una clave v3\n"
 
-#: g10/keyedit.c:1535
+#: g10/keyedit.c:1536
 msgid "No corresponding signature in secret ring\n"
 msgstr "No hay firma correspondiente en anillo secreto\n"
 
-#: g10/keyedit.c:1596
+#: g10/keyedit.c:1597
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "No hay ningún identificativo de usuario con el índice %d\n"
 
-#: g10/keyedit.c:1642
+#: g10/keyedit.c:1643
 #, c-format
 msgid "No secondary key with index %d\n"
 msgstr "No hay ninguna clave secundaria con el índice %d\n"
 
-#: g10/keyedit.c:1740
+#: g10/keyedit.c:1741
 msgid "user ID: \""
 msgstr "ID de usuario: \""
 
-#: g10/keyedit.c:1743
+#: g10/keyedit.c:1744
 #, c-format
 msgid ""
 "\"\n"
@@ -2489,34 +2514,34 @@ msgstr ""
 "\"\n"
 "firmada con su clave %08lX el %s\n"
 
-#: g10/keyedit.c:1747
+#: g10/keyedit.c:1748
 msgid "Create a revocation certificate for this signature? (y/N)"
 msgstr "¿Crear un certificado de revocación para esta clave (s/N)?"
 
 #. FIXME: detect duplicates here
-#: g10/keyedit.c:1771
+#: g10/keyedit.c:1772
 msgid "You have signed these user IDs:\n"
 msgstr "Ha firmado los siguientes IDs de usuario:\n"
 
-#: g10/keyedit.c:1785 g10/keyedit.c:1820
+#: g10/keyedit.c:1786 g10/keyedit.c:1821
 #, c-format
 msgid "   signed by %08lX at %s\n"
 msgstr "   firmada por %08lX el %s\n"
 
-#: g10/keyedit.c:1790
+#: g10/keyedit.c:1791
 #, c-format
 msgid "   revoked by %08lX at %s\n"
 msgstr "   revocada por %08lX el %s\n"
 
-#: g10/keyedit.c:1810
+#: g10/keyedit.c:1811
 msgid "You are about to revoke these signatures:\n"
 msgstr "Va Vd. a revocar las siguientes firmas:\n"
 
-#: g10/keyedit.c:1828
+#: g10/keyedit.c:1829
 msgid "Really create the revocation certificates? (y/N)"
 msgstr "¿Crear los certificados de revocación realmente? (s/N)"
 
-#: g10/keyedit.c:1857
+#: g10/keyedit.c:1858
 msgid "no secret key\n"
 msgstr "no hay clave secreta\n"
 
@@ -2664,7 +2689,7 @@ msgstr ""
 msgid "can't handle public key algorithm %d\n"
 msgstr "no puedo manejar el algoritmo de clave pública %d\n"
 
-#: g10/parse-packet.c:961
+#: g10/parse-packet.c:965
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "el subpaquete de tipo %d tiene el bit crítico activado\n"
@@ -3650,7 +3675,7 @@ msgid ""
 "  \"Key has been compromised\"\n"
 "      Use this if you have a reason to believe that unauthorized persons\n"
 "      got access to your secret key.\n"
-"  \"Key is superseeded\"\n"
+"  \"Key is superseded\"\n"
 "      Use this if you have replaced this key with a newer one.\n"
 "  \"Key is no longer used\"\n"
 "      Use this if you have retired this key.\n"

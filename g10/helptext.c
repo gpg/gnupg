@@ -231,7 +231,7 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
  "  \"Key has been compromised\"\n"
  "      Use this if you have a reason to believe that unauthorized persons\n"
  "      got access to your secret key.\n"
- "  \"Key is superseeded\"\n"
+ "  \"Key is superseded\"\n"
  "      Use this if you have replaced this key with a newer one.\n"
  "  \"Key is no longer used\"\n"
  "      Use this if you have retired this key.\n"
