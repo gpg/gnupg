@@ -1,3 +1,7 @@
+2003-05-21  Werner Koch  <wk@gnupg.org>
+
+	* fileutil.c (is_file_compressed): Fixed checking for "-" filename.
+
 2003-04-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* srv.c (main): Test against wwwkeys.pgp.net.
