@@ -1,5 +1,7 @@
 2002-01-02  Stefan Bellon  <sbellon@sbellon.de>
 
+	* build-riscos [__riscos__]: Set filetype of Makefile correctly.
+
 	* conf-riscos/include/g10defs.h [__riscos__]: Added GNU GPL
 	header and exec code defines.
 

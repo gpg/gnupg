@@ -7,4 +7,5 @@ copy <obey$dir>.conf-riscos.cipher.c.constructv <obey$dir>.^.cipher.c.constructv
 copy <obey$dir>.conf-riscos.include.h.config <obey$dir>.^.include.h.config ~cf~v
 copy <obey$dir>.conf-riscos.include.h.g10defs <obey$dir>.^.include.h.g10defs ~cf~v
 copy <obey$dir>.conf-riscos.Makefile <obey$dir>.^.Makefile ~cf~v
+settype <obey$dir>.^.Makefile &fe1
 echo Done.
