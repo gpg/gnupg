@@ -31,7 +31,7 @@
 #include "util.h"
 
 #ifdef M_DEBUG
-  #undef mpi_read
+#undef mpi_read
 #endif
 
 #define MAX_EXTERN_MPI_BITS 16384
@@ -92,13 +92,13 @@ mpi_read(IOBUF inp, unsigned *ret_nread, int secure)
 
     nbytes = (nbits+7) / 8;
     nlimbs = (nbytes+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB;
-  #ifdef M_DEBUG
+#ifdef M_DEBUG
     val = secure? mpi_debug_alloc_secure( nlimbs, info )
 		: mpi_debug_alloc( nlimbs, info );
-  #else
+#else
     val = secure? mpi_alloc_secure( nlimbs )
 		: mpi_alloc( nlimbs );
-  #endif
+#endif
     i = BYTES_PER_MPI_LIMB - nbytes % BYTES_PER_MPI_LIMB;
     i %= BYTES_PER_MPI_LIMB;
     val->nbits = nbits;
@@ -314,7 +314,7 @@ mpi_get_keyid( MPI a, u32 *keyid )
     }
     return a->nlimbs? (u32)(a->d[0] & 0xffffffff) : 0;
 #else
-  #error Make this function work with other LIMB sizes
+#error Make this function work with other LIMB sizes
 #endif
 }
 
@@ -402,12 +402,12 @@ mpi_set_buffer( MPI a, const byte *buffer, unsigned nbytes, int sign )
     a->sign = sign;
 
     for(i=0, p = buffer+nbytes-1; p >= buffer+BYTES_PER_MPI_LIMB; ) {
-      #if BYTES_PER_MPI_LIMB == 4
+#if BYTES_PER_MPI_LIMB == 4
 	alimb  = (mpi_limb_t)*p-- ;
 	alimb |= (mpi_limb_t)*p-- <<  8 ;
 	alimb |= (mpi_limb_t)*p-- << 16 ;
 	alimb |= (mpi_limb_t)*p-- << 24 ;
-      #elif BYTES_PER_MPI_LIMB == 8
+#elif BYTES_PER_MPI_LIMB == 8
 	alimb  = (mpi_limb_t)*p--	;
 	alimb |= (mpi_limb_t)*p-- <<  8 ;
 	alimb |= (mpi_limb_t)*p-- << 16 ;
@@ -416,18 +416,18 @@ mpi_set_buffer( MPI a, const byte *buffer, unsigned nbytes, int sign )
 	alimb |= (mpi_limb_t)*p-- << 40 ;
 	alimb |= (mpi_limb_t)*p-- << 48 ;
 	alimb |= (mpi_limb_t)*p-- << 56 ;
-      #else
-	#error please implement for this limb size.
-      #endif
+#else
+#error please implement for this limb size.
+#endif
 	a->d[i++] = alimb;
     }
     if( p >= buffer ) {
-      #if BYTES_PER_MPI_LIMB == 4
+#if BYTES_PER_MPI_LIMB == 4
 	alimb  = *p--	    ;
 	if( p >= buffer ) alimb |= (mpi_limb_t)*p-- <<  8 ;
 	if( p >= buffer ) alimb |= (mpi_limb_t)*p-- << 16 ;
 	if( p >= buffer ) alimb |= (mpi_limb_t)*p-- << 24 ;
-      #elif BYTES_PER_MPI_LIMB == 8
+#elif BYTES_PER_MPI_LIMB == 8
 	alimb  = (mpi_limb_t)*p-- ;
 	if( p >= buffer ) alimb |= (mpi_limb_t)*p-- <<	8 ;
 	if( p >= buffer ) alimb |= (mpi_limb_t)*p-- << 16 ;
@@ -436,12 +436,11 @@ mpi_set_buffer( MPI a, const byte *buffer, unsigned nbytes, int sign )
 	if( p >= buffer ) alimb |= (mpi_limb_t)*p-- << 40 ;
 	if( p >= buffer ) alimb |= (mpi_limb_t)*p-- << 48 ;
 	if( p >= buffer ) alimb |= (mpi_limb_t)*p-- << 56 ;
-      #else
-	#error please implement for this limb size.
-      #endif
+#else
+#error please implement for this limb size.
+#endif
 	a->d[i++] = alimb;
     }
     a->nlimbs = i;
     assert( i == nlimbs );
 }
-

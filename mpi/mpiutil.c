@@ -31,9 +31,9 @@
 
 
 #ifdef M_DEBUG
-  #undef mpi_alloc
-  #undef mpi_alloc_secure
-  #undef mpi_free
+#undef mpi_alloc
+#undef mpi_alloc_secure
+#undef mpi_free
 #endif
 
 /****************
@@ -54,13 +54,13 @@ mpi_alloc( unsigned nlimbs )
 
     if( DBG_MEMORY )
 	log_debug("mpi_alloc(%u)\n", nlimbs*BITS_PER_MPI_LIMB );
-  #ifdef M_DEBUG
+#ifdef M_DEBUG
     a = m_debug_alloc( sizeof *a, info );
     a->d = nlimbs? mpi_debug_alloc_limb_space( nlimbs, 0, info ) : NULL;
-  #else
+#else
     a = m_alloc( sizeof *a );
     a->d = nlimbs? mpi_alloc_limb_space( nlimbs, 0 ) : NULL;
-  #endif
+#endif
     a->alloced = nlimbs;
     a->nlimbs = 0;
     a->sign = 0;
@@ -87,13 +87,13 @@ mpi_alloc_secure( unsigned nlimbs )
 
     if( DBG_MEMORY )
 	log_debug("mpi_alloc_secure(%u)\n", nlimbs*BITS_PER_MPI_LIMB );
-  #ifdef M_DEBUG
+#ifdef M_DEBUG
     a = m_debug_alloc( sizeof *a, info );
     a->d = nlimbs? mpi_debug_alloc_limb_space( nlimbs, 1, info ) : NULL;
-  #else
+#else
     a = m_alloc( sizeof *a );
     a->d = nlimbs? mpi_alloc_limb_space( nlimbs, 1 ) : NULL;
-  #endif
+#endif
     a->alloced = nlimbs;
     a->flags = 1;
     a->nlimbs = 0;
@@ -121,7 +121,7 @@ mpi_alloc_limb_space( unsigned nlimbs, int secure )
 
     if( DBG_MEMORY )
 	log_debug("mpi_alloc_limb_space(%u)\n", (unsigned)len*8 );
-  #if 0
+#if 0
     if( !secure ) {
 	if( nlimbs == 5 && unused_limbs_5 ) {  /* DSA 160 bits */
 	    p = unused_limbs_5;
@@ -139,13 +139,13 @@ mpi_alloc_limb_space( unsigned nlimbs, int secure )
 	    return p;
 	}
     }
-  #endif
+#endif
 
-  #ifdef M_DEBUG
+#ifdef M_DEBUG
     p = secure? m_debug_alloc_secure(len, info):m_debug_alloc( len, info );
-  #else
+#else
     p = secure? m_alloc_secure( len ):m_alloc( len );
-  #endif
+#endif
 
     return p;
 }
@@ -162,7 +162,7 @@ mpi_free_limb_space( mpi_ptr_t a )
     if( DBG_MEMORY )
 	log_debug("mpi_free_limb_space of size %lu\n", (ulong)m_size(a)*8 );
 
-  #if 0
+#if 0
     if( !m_is_secure(a) ) {
 	size_t nlimbs = m_size(a) / 4 ;
 	void *p = a;
@@ -183,8 +183,7 @@ mpi_free_limb_space( mpi_ptr_t a )
 	    return;
 	}
     }
-  #endif
-
+#endif
 
     m_free(a);
 }
@@ -218,17 +217,17 @@ mpi_resize( MPI a, unsigned nlimbs )
      * and rely on a mpi_is_secure function, which would be
      * a wrapper around m_is_secure
      */
-  #ifdef M_DEBUG
+#ifdef M_DEBUG
     if( a->d )
 	a->d = m_debug_realloc(a->d, nlimbs * sizeof(mpi_limb_t), info );
     else
 	a->d = m_debug_alloc_clear( nlimbs * sizeof(mpi_limb_t), info );
-  #else
+#else
     if( a->d )
 	a->d = m_realloc(a->d, nlimbs * sizeof(mpi_limb_t) );
     else
 	a->d = m_alloc_clear( nlimbs * sizeof(mpi_limb_t) );
-  #endif
+#endif
     a->alloced = nlimbs;
 }
 
@@ -255,11 +254,11 @@ mpi_free( MPI a )
     if( a->flags & 4 )
 	m_free( a->d );
     else {
-      #ifdef M_DEBUG
+#ifdef M_DEBUG
 	mpi_debug_free_limb_space(a->d, info);
-      #else
+#else
 	mpi_free_limb_space(a->d);
-      #endif
+#endif
     }
     if( a->flags & ~7 )
 	log_bug("invalid flag value in mpi\n");
@@ -280,18 +279,18 @@ mpi_set_secure( MPI a )
 	assert(!ap);
 	return;
     }
-  #ifdef M_DEBUG
+#ifdef M_DEBUG
     bp = mpi_debug_alloc_limb_space( a->nlimbs, 1, "set_secure" );
-  #else
+#else
     bp = mpi_alloc_limb_space( a->nlimbs, 1 );
-  #endif
+#endif
     MPN_COPY( bp, ap, a->nlimbs );
     a->d = bp;
-  #ifdef M_DEBUG
+#ifdef M_DEBUG
     mpi_debug_free_limb_space(ap, "set_secure");
-  #else
+#else
     mpi_free_limb_space(ap);
-  #endif
+#endif
 }
 
 
@@ -299,21 +298,21 @@ MPI
 mpi_set_opaque( MPI a, void *p, int len )
 {
     if( !a ) {
-      #ifdef M_DEBUG
+#ifdef M_DEBUG
 	a = mpi_debug_alloc(0,"alloc_opaque");
-      #else
+#else
 	a = mpi_alloc(0);
-      #endif
+#endif
     }
 
     if( a->flags & 4 )
 	m_free( a->d );
     else {
-      #ifdef M_DEBUG
+#ifdef M_DEBUG
 	mpi_debug_free_limb_space(a->d, "alloc_opaque");
-      #else
+#else
 	mpi_free_limb_space(a->d);
-      #endif
+#endif
     }
 
     a->d = p;
@@ -357,13 +356,13 @@ mpi_copy( MPI a )
 	b = mpi_set_opaque( NULL, p, a->nbits );
     }
     else if( a ) {
-      #ifdef M_DEBUG
+#ifdef M_DEBUG
 	b = mpi_is_secure(a)? mpi_debug_alloc_secure( a->nlimbs, info )
 			    : mpi_debug_alloc( a->nlimbs, info );
-      #else
+#else
 	b = mpi_is_secure(a)? mpi_alloc_secure( a->nlimbs )
 			    : mpi_alloc( a->nlimbs );
-      #endif
+#endif
 	b->nlimbs = a->nlimbs;
 	b->sign = a->sign;
 	b->flags  = a->flags;
@@ -398,13 +397,13 @@ mpi_alloc_like( MPI a )
 	b = mpi_set_opaque( NULL, p, a->nbits );
     }
     else if( a ) {
-      #ifdef M_DEBUG
+#ifdef M_DEBUG
 	b = mpi_is_secure(a)? mpi_debug_alloc_secure( a->nlimbs, info )
 			    : mpi_debug_alloc( a->nlimbs, info );
-      #else
+#else
 	b = mpi_is_secure(a)? mpi_alloc_secure( a->nlimbs )
 			    : mpi_alloc( a->nlimbs );
-      #endif
+#endif
 	b->nlimbs = 0;
 	b->sign = 0;
 	b->flags = a->flags;
@@ -449,11 +448,11 @@ mpi_set_ui( MPI w, unsigned long u)
 MPI
 mpi_alloc_set_ui( unsigned long u)
 {
-  #ifdef M_DEBUG
+#ifdef M_DEBUG
     MPI w = mpi_debug_alloc(1,"alloc_set_ui");
-  #else
+#else
     MPI w = mpi_alloc(1);
-  #endif
+#endif
     w->d[0] = u;
     w->nlimbs = u? 1:0;
     w->sign = 0;
@@ -468,4 +467,3 @@ mpi_swap( MPI a, MPI b)
 
     tmp = *a; *a = *b; *b = tmp;
 }
-

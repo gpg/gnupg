@@ -30,7 +30,7 @@
 #define G10_MPI_INLINE_H
 
 #ifndef G10_MPI_INLINE_DECL
-  #define G10_MPI_INLINE_DECL  extern __inline__
+#define G10_MPI_INLINE_DECL  extern __inline__
 #endif
 
 G10_MPI_INLINE_DECL  mpi_limb_t
@@ -123,6 +123,5 @@ mpihelp_sub( mpi_ptr_t res_ptr, mpi_ptr_t s1_ptr, mpi_size_t s1_size,
 				      s1_size - s2_size, cy);
     return cy;
 }
-
 
 #endif /*G10_MPI_INLINE_H*/
