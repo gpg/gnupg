@@ -476,7 +476,7 @@ list_node( CTX c, KBNODE node )
 	    }
 	}
 	printf("%c       %08lX %s   ",
-		sigrc, sig->keyid[1], datestr_from_sig(sig));
+		sigrc, (ulong)sig->keyid[1], datestr_from_sig(sig));
 	if( sigrc == '%' )
 	    printf("[%s] ", g10_errstr(rc2) );
 	else if( sigrc == '?' )
@@ -597,7 +597,7 @@ check_sig_and_print( CTX c, KBNODE node )
     else {
 	write_status( STATUS_ERRSIG );
 	log_error("Can't check signature made by %08lX: %s\n",
-		   sig->keyid[1], g10_errstr(rc) );
+		   (ulong)sig->keyid[1], g10_errstr(rc) );
     }
     return rc;
 }

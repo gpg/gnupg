@@ -146,6 +146,9 @@ set_cmd( enum cmd_values *ret_cmd, enum cmd_values new_cmd )
 	cmd = aSignEncr;
     else if( cmd == aKMode && new_cmd == aSym )
 	cmd = aKModeC;
+    else if(	( cmd == aSign	   && new_cmd == aClearsig )
+	     || ( cmd == aClearsig && new_cmd == aSign )  )
+	cmd = aClearsig;
     else {
 	log_error(_("conflicting commands\n"));
 	g10_exit(2);
@@ -294,11 +297,11 @@ main( int argc, char **argv )
 		    break;
 	  case 'z': opt.compress = pargs.r.ret_int; break;
 	  case 'a': opt.armor = 1; opt.no_armor=0; break;
+	  case 'd': break; /* it is default */
 	  case 'c': set_cmd( &cmd , aSym); break;
 	  case 'o': opt.outfile = pargs.r.ret_str; break;
 	  case 'e': set_cmd( &cmd, aEncr); break;
-	  case 'b': detached_sig = 1;
-	       /* fall trough */
+	  case 'b': detached_sig = 1; /* fall trough */
 	  case 's': set_cmd( &cmd, aSign );  break;
 	  case 't': set_cmd( &cmd , aClearsig);  break;
 	  case 'u': /* store the local users */

@@ -311,7 +311,7 @@ define(WK_CHECK_ENDIAN,
 	#include <sys/param.h>], [
 	#if BYTE_ORDER != BIG_ENDIAN
 	 not big endian
-	#endif], wk_cv_c_endian=big, wk_cv_c_endian=big)])
+	#endif], wk_cv_c_endian=big, wk_cv_c_endian=little)])
 	if test "$wk_cv_c_endian" = unknown; then
 	    AC_TRY_RUN([main () {
 	      /* Are we little or big endian?  From Harbison&Steele.  */

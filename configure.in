@@ -6,8 +6,8 @@ dnl (Process this file with autoconf to produce a configure script.)
 AC_INIT(g10/g10.c)
 AC_CONFIG_AUX_DIR(scripts)
 dnl Ooops: automake 1.2d looks for AC_CONFIG_HEADER (and not AM_..)
-dnl	   to decide where config.h is - so we have to add it to
-dnl	   every makefile.am
+dnl	   to decide where config.h is - so we have to add -I.. to
+dnl	   every Makefile.am
 AM_CONFIG_HEADER(config.h)
 
 
@@ -34,9 +34,19 @@ AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(G10_LOCALEDIR, "$G10_LOCALEDIR")
 
 AC_ARG_ENABLE(m-debug,
-[  --enable-m-debug    Enable debugging of memory allocation])
+[  --enable-m-debug	  Enable debugging of memory allocation])
 if test "$enableval" = y || test "$enableval" = yes; then
     AC_DEFINE(M_DEBUG)
+fi
+
+dnl Some systems have a broken zlib. "--disable-zlib" avoids it's usage
+enableval=yes
+AC_ARG_ENABLE(zlib,
+[  --disable-zlib	  Avoid usage of zlib])
+if test "$enableval" = y || test "$enableval" = yes; then
+    g10_use_zlib=yes
+else
+    g10_use_zlib=no
 fi
 CFLAGS="-g -Wall"
 
@@ -159,13 +169,15 @@ AC_MSG_RESULT()
 fi
 AC_SUBST(MPI_EXTRA_ASM_OBJS)
 
-
 dnl Do we have zlib? Must do it here because Solaris failed
 dnl when compiling a conftest (due to the "-lz" from LIBS).
+if test "$g10_use_zlib" = "yes"; then
 AC_CHECK_HEADERS(zlib.h,
 		 [LIBS="$LIBS -lz"],
 		 AC_MSG_WARN([zlib missing - creating without ZLIB support!])
 		)
+fi
+AC_SUBST(HAVE_ZLIB_H)
 
 dnl checking whether we have other cipher source files
 CIPHER_EXTRA_OBJS=""

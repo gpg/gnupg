@@ -234,7 +234,6 @@ compress_filter( void *opaque, int control,
 		 IOBUF a, byte *buf, size_t *ret_len)
 {
     size_t size = *ret_len;
-    compress_filter_context_t *zfx = opaque;
     int c, rc=0;
     size_t n;
 

@@ -57,9 +57,9 @@
 #ifndef HAVE_U32_TYPEDEF
   #undef u32	    /* maybe there is a macro with this name */
   #if SIZEOF_UNSIGNED_INT == 4
-    typedef unsigned long u32;
-  #elif SIZEOF_UNSIGNED_LONG == 4
     typedef unsigned int u32;
+  #elif SIZEOF_UNSIGNED_LONG == 4
+    typedef unsigned long u32;
   #else
     #error no typedef for u32
   #endif

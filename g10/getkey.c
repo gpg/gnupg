@@ -454,12 +454,12 @@ scan_keyring( PKT_public_cert *pkc, u32 *keyid,
     if( !DBG_CACHE )
 	;
     else if( shortkeyid )
-	log_debug("scan_keyring %s for %08lx\n",  filename, keyid[1] );
+	log_debug("scan_keyring %s for %08lx\n",  filename, (ulong)keyid[1] );
     else if( name )
 	log_debug("scan_keyring %s for '%s'\n",  filename, name );
     else if( keyid )
 	log_debug("scan_keyring %s for %08lx %08lx\n",  filename,
-						keyid[0], keyid[1] );
+					     (ulong)keyid[0], (ulong)keyid[1] );
     else
 	log_debug("scan_keyring %s (all)\n",  filename );
 
@@ -740,12 +740,12 @@ get_user_id_string( u32 *keyid )
 	for(r=user_id_db; r; r = r->next )
 	    if( r->keyid[0] == keyid[0] && r->keyid[1] == keyid[1] ) {
 		p = m_alloc( r->len + 10 );
-		sprintf(p, "%08lX %.*s", keyid[1], r->len, r->name );
+		sprintf(p, "%08lX %.*s", (ulong)keyid[1], r->len, r->name );
 		return p;
 	    }
     } while( ++pass < 2 && !get_pubkey( NULL, keyid ) );
     p = m_alloc( 15 );
-    sprintf(p, "%08lX [?]", keyid[1] );
+    sprintf(p, "%08lX [?]", (ulong)keyid[1] );
     return p;
 }
 

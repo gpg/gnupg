@@ -570,7 +570,8 @@ sign_key( const char *username, STRLIST locusr )
 		&& (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
 		if( akeyid[0] == node->pkt->pkt.signature->keyid[0]
 		    && akeyid[1] == node->pkt->pkt.signature->keyid[1] ) {
-		    log_info("Already signed by keyid %08lX\n", akeyid[1] );
+		    log_info("Already signed by keyid %08lX\n",
+							(ulong)akeyid[1] );
 		    skc_rover->mark = 1;
 		}
 	    }
@@ -833,7 +834,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
 
     assert( sigclass >= 0x10 && sigclass <= 0x13 );
     md = md_open( digest_algo, 0 );
-    /* hash the public key certificate */
+    /* hash the public key certificate and the user id */
     hash_public_cert( md, pkc );
     md_write( md, uid->name, uid->len );
     /* and make the signature packet */
@@ -849,6 +850,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
 	md_putc( md, (a >>  8) & 0xff );
 	md_putc( md,  a        & 0xff );
     }
+    md_final(md);
 
     rc = complete_sig( sig, skc, md );
 

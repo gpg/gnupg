@@ -680,6 +680,7 @@ keyring_delete( KBPOS *kbpos )
     }
 
     len = kbpos->length;
+    assert( len < 100000 ); /* there is a bug somewhere */
     /*log_debug("writing a dummy packet of length %lu\n", (ulong)len);*/
 
     if( len < 2 )

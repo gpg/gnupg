@@ -54,22 +54,20 @@ mpi_getbyte( MPI a, unsigned index )
  * Put a value at position INDEX into A. index counts from lsb to msb
  */
 void
-mpi_putbyte( MPI a, unsigned index, int c )
+mpi_putbyte( MPI a, unsigned index, int xc )
 {
     int i, j;
     unsigned n;
     mpi_ptr_t ap;
-    mpi_limb_t limb;
+    mpi_limb_t limb, c;
 
-#if BYTES_PER_MPI_LIMB != 4
-  #error please enhance this function, its ugly - i know.
-#endif
-    c &= 0xff;
+    c = xc & 0xff;
     ap = a->d;
     for(n=0,i=0; i < a->alloced; i++ ) {
 	limb = ap[i];
 	for( j=0; j < BYTES_PER_MPI_LIMB; j++, n++ )
 	    if( n == index ) {
+	      #if BYTES_PER_MPI_LIMB == 4
 		if( j == 0 )
 		    limb = (limb & 0xffffff00) | c;
 		else if( j == 1 )
@@ -78,6 +76,26 @@ mpi_putbyte( MPI a, unsigned index, int c )
 		    limb = (limb & 0xff00ffff) | (c<<16);
 		else
 		    limb = (limb & 0x00ffffff) | (c<<24);
+	      #elif BYTES_PER_MPI_LIMB == 8
+		if( j == 0 )
+		    limb = (limb & 0xffffffffffffff00) | c;
+		else if( j == 1 )
+		    limb = (limb & 0xffffffffffff00ff) | (c<<8);
+		else if( j == 2 )
+		    limb = (limb & 0xffffffffff00ffff) | (c<<16);
+		else if( j == 3 )
+		    limb = (limb & 0xffffffff00ffffff) | (c<<24);
+		else if( j == 4 )
+		    limb = (limb & 0xffffff00ffffffff) | (c<<32);
+		else if( j == 5 )
+		    limb = (limb & 0xffff00ffffffffff) | (c<<40);
+		else if( j == 6 )
+		    limb = (limb & 0xff00ffffffffffff) | (c<<48);
+		else
+		    limb = (limb & 0x00ffffffffffffff) | (c<<56);
+	      #else
+		 #error please enhance this function, its ugly - i know.
+	      #endif
 		if( a->nlimbs <= i )
 		    a->nlimbs = i+1;
 		ap[i] = limb;

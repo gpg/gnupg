@@ -698,7 +698,7 @@ armor_filter( void *opaque, int control,
 	    iobuf_writestr(a, head_strings[afx->what] );
 	    iobuf_writestr(a, "-----\n");
 	    iobuf_writestr(a, "Version: G10 pre-release "  VERSION "\n");
-	    iobuf_writestr(a, "Comment: This is a alpha test version!\n\n");
+	    iobuf_writestr(a, "Comment: This is an alpha test version!\n\n");
 	    afx->status++;
 	    afx->idx = 0;
 	    afx->idx2 = 0;

@@ -371,8 +371,8 @@ dump_record( ulong rnum, TRUSTREC *rec, FILE *fp  )
       case RECTYPE_VER: fprintf(fp, "version\n");
 	break;
       case RECTYPE_DIR:
-	fprintf(fp, "dir keyid=%08lx, key=%lu, ctl=%lu, sig=%lu",
-		    rec->r.dir.keyid[1],
+	fprintf(fp, "dir keyid=%08lX, key=%lu, ctl=%lu, sig=%lu",
+		    (ulong)rec->r.dir.keyid[1],
 		    rec->r.dir.keyrec, rec->r.dir.ctlrec, rec->r.dir.sigrec );
 	if( rec->r.dir.no_sigs == 1 )
 	    fputs(", (none)", fp );
@@ -382,8 +382,8 @@ dump_record( ulong rnum, TRUSTREC *rec, FILE *fp  )
 	    fputs(", (revoked)", fp );
 	putc('\n', fp);
 	break;
-      case RECTYPE_KEY: fprintf(fp, "key keyid=%08lx, own=%lu, ownertrust=%02x\n",
-		   rec->r.key.keyid[1],
+      case RECTYPE_KEY: fprintf(fp, "key keyid=%08lX, own=%lu, ownertrust=%02x\n",
+		   (ulong)rec->r.key.keyid[1],
 		   rec->r.key.owner, rec->r.key.ownertrust );
 	break;
       case RECTYPE_CTL: fprintf(fp, "ctl\n");

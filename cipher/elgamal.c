@@ -142,6 +142,9 @@ elg_generate( ELG_public_key *pk, ELG_secret_key *sk, unsigned nbits )
 
     /* select a random number which has these properties:
      *	 0 < x < p-1
+     * This must be a very good random number because this is the
+     * secret part.  The prime is public and may be shared anyware,
+     * so a random generator level of 1 has been used for the prime
      */
     x = mpi_alloc_secure( nbits/BITS_PER_MPI_LIMB );
     if( DBG_CIPHER )

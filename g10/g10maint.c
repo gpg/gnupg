@@ -179,6 +179,7 @@ main( int argc, char **argv )
     { 526, "no-verbose", 0, "\r"},
     { 531, "list-trustdb",0 , "\r"},
     { 533, "list-trust-path",0, "\r"},
+    { 532, "quick-random", 0, "\r"},
     { 534, "no-comment", 0,   N_("do not write comment packets")},
     { 535, "completes-needed", 1, N_("(default is 1)")},
     { 536, "marginals-needed", 1, N_("(default is 3)")},

@@ -58,6 +58,12 @@ generate_public_prime( unsigned  nbits )
 }
 
 
+/****************
+ * We do not need to use the strongest RNG because we gain no extra
+ * security from it - The prime number is public and we could also
+ * offer the factors for those who are willing to check that it is
+ * indeed a strong prime.
+ */
 MPI
 generate_elg_prime( unsigned pbits, unsigned qbits, MPI g )
 {
@@ -87,7 +93,7 @@ generate_elg_prime( unsigned pbits, unsigned qbits, MPI g )
 		    pbits, qbits, fbits, n  );
 
     prime = mpi_alloc( (pbits + BITS_PER_MPI_LIMB - 1) /  BITS_PER_MPI_LIMB );
-    q = gen_prime( qbits, 0, 2 );
+    q = gen_prime( qbits, 0, 1 );
 
     /* allocate an array to hold the factors + 2 for later usage */
     factors = m_alloc_clear( (n+2) * sizeof *factors );
@@ -112,7 +118,7 @@ generate_elg_prime( unsigned pbits, unsigned qbits, MPI g )
 	    perms = m_alloc_clear( m );
 	    for(i=0; i < n; i++ ) {
 		perms[i] = 1;
-		pool[i] = gen_prime( fbits, 0, 2 );
+		pool[i] = gen_prime( fbits, 0, 1 );
 		factors[i] = pool[i];
 	    }
 	}
@@ -121,7 +127,7 @@ generate_elg_prime( unsigned pbits, unsigned qbits, MPI g )
 	    for(i=j=0; i < m && j < n ; i++ )
 		if( perms[i] ) {
 		    if( !pool[i] )
-			pool[i] = gen_prime( fbits, 0, 2 );
+			pool[i] = gen_prime( fbits, 0, 1 );
 		    factors[j++] = pool[i];
 		}
 	    if( i == n ) {
@@ -142,7 +148,7 @@ generate_elg_prime( unsigned pbits, unsigned qbits, MPI g )
 		count1 = 0;
 		qbits++;
 		fputc('>', stderr);
-		q = gen_prime( qbits, 0, 2 );
+		q = gen_prime( qbits, 0, 1 );
 		goto next_try;
 	    }
 	}
@@ -153,7 +159,7 @@ generate_elg_prime( unsigned pbits, unsigned qbits, MPI g )
 		count2 = 0;
 		qbits--;
 		fputc('<', stderr);
-		q = gen_prime( qbits, 0, 2 );
+		q = gen_prime( qbits, 0, 1 );
 		goto next_try;
 	    }
 	}
@@ -379,8 +385,9 @@ is_prime( MPI n, int steps, int *count )
 	else {
 	    mpi_set_bytes( x, nbits-1, get_random_byte, 0 );
 	    /* work around a bug in mpi_set_bytes */
-	    if( mpi_test_bit( x, nbits-2 ) )
+	    if( mpi_test_bit( x, nbits-2 ) ) {
 		mpi_set_highbit( x, nbits-2 ); /* clear all higher bits */
+	    }
 	    else {
 		mpi_set_highbit( x, nbits-2 );
 		mpi_clear_bit( x, nbits-2 );

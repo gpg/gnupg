@@ -317,7 +317,7 @@ protect_secret_key( PKT_secret_cert *cert, DEK *dek )
 
     if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
 	return protect_elg( cert, dek );
-  #ifdef 0 /* noy yet implemented */
+  #if 0 /* noy yet implemented */
     else if( cert->pubkey_algo == PUBKEY_ALGO_RSA )
 	return protect_rsa( cert, dek );
   #endif

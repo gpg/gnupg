@@ -11,6 +11,8 @@ EXTRA_DIST = config.links
 noinst_LIBRARIES = libmpi.a
 # noinst_HEADERS   =
 
+
+
 libmpi_a_SOURCES = longlong.h	  \
 	      mpi-add.c      \
 	      mpi-bit.c      \
@@ -31,11 +33,16 @@ libmpi_a_SOURCES = longlong.h	  \
 	      mpih-mul.c     \
 	      mpiutil.c
 
-libmpi_a_LIBADD =  mpih-mul1.o	  \
-	      mpih-mul2.o    \
-	      mpih-mul3.o    \
-	      mpih-add1.o    \
-	      mpih-sub1.o    \
-	      mpih-shift.o  @MPI_EXTRA_ASM_OBJS@
+# Note this objects are actually links, the sourcefiles are
+# distributed by special code in dist-hook
+common_asm_objects = mpih-mul1.o    \
+		     mpih-mul2.o    \
+		     mpih-mul3.o    \
+		     mpih-add1.o    \
+		     mpih-sub1.o    \
+		     mpih-shift.o
 
+libmpi_a_LIBADD = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
+
+$(LIBRARIES): $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
 

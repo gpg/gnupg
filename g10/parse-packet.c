@@ -343,7 +343,7 @@ parse_publickey( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     k->pubkey_algo = iobuf_get_noeof(inp); pktlen--;
     if( list_mode )
 	printf(":public key encoded packet: keyid %08lX%08lX\n",
-					k->keyid[0], k->keyid[1]);
+				      (ulong)k->keyid[0], (ulong)k->keyid[1]);
     if( k->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	n = pktlen;
 	k->d.elg.a = mpi_read(inp, &n, 0); pktlen -=n;
@@ -400,8 +400,8 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
     if( list_mode )
 	printf(":signature packet: keyid %08lX%08lX\n"
 	       "\tversion %d, created %lu, md5len %d, sigclass %02x\n",
-		sig->keyid[0], sig->keyid[1],
-		version, sig->timestamp, md5_len, sig->sig_class );
+		(ulong)sig->keyid[0], (ulong)sig->keyid[1],
+		version, (ulong)sig->timestamp, md5_len, sig->sig_class );
     if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	if( pktlen < 5 ) {
 	    log_error("packet(%d) too short\n", pkttype);
@@ -477,7 +477,7 @@ parse_onepass_sig( IOBUF inp, int pkttype, unsigned long pktlen,
     if( list_mode )
 	printf(":onepass_sig packet: keyid %08lX%08lX\n"
 	       "\tversion %d, sigclass %02x, digest %d, pubkey %d, last=%d\n",
-		ops->keyid[0], ops->keyid[1],
+		(ulong)ops->keyid[0], (ulong)ops->keyid[1],
 		version, ops->sig_class,
 		ops->digest_algo, ops->pubkey_algo, ops->last );
 
@@ -832,14 +832,14 @@ parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
 	printf(":literal data packet:\n"
 	       "\tmode %c, created %lu, name=\"",
 		    mode >= ' ' && mode <'z'? mode : '?',
-		    pt->timestamp );
+		    (ulong)pt->timestamp );
 	for(p=pt->name,i=0; i < namelen; p++, i++ ) {
 	    if( *p >= ' ' && *p <= 'z' )
 		putchar(*p);
 	    else
 		printf("\\x%02x", *p );
 	}
-	printf("\",\n\traw data: %lu bytes\n", pt->len );
+	printf("\",\n\traw data: %lu bytes\n", (ulong)pt->len );
     }
 
   leave:

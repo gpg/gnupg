@@ -20,6 +20,7 @@
 
 #include <config.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <assert.h>
 
@@ -326,14 +327,15 @@ mpi_set_buffer( MPI a, const byte *buffer, unsigned nbytes, int sign )
 	alimb |= *p-- << 16 ;
 	alimb |= *p-- << 24 ;
       #elif BYTES_PER_MPI_LIMB == 8
-	alimb  = *p--	    ;
-	alimb |= *p-- <<  8 ;
-	alimb |= *p-- << 16 ;
-	alimb |= *p-- << 24 ;
-	alimb |= *p-- << 32 ;
-	alimb |= *p-- << 40 ;
-	alimb |= *p-- << 48 ;
-	alimb |= *p-- << 56 ;
+	/* cast due to egc's "left shift count >= width of type" warning*/
+	alimb  = (mpi_limb_t)*p--	;
+	alimb |= (mpi_limb_t)*p-- <<  8 ;
+	alimb |= (mpi_limb_t)*p-- << 16 ;
+	alimb |= (mpi_limb_t)*p-- << 24 ;
+	alimb |= (mpi_limb_t)*p-- << 32 ;
+	alimb |= (mpi_limb_t)*p-- << 40 ;
+	alimb |= (mpi_limb_t)*p-- << 48 ;
+	alimb |= (mpi_limb_t)*p-- << 56 ;
       #else
 	#error please implement for this limb size.
       #endif
@@ -346,14 +348,14 @@ mpi_set_buffer( MPI a, const byte *buffer, unsigned nbytes, int sign )
 	if( p >= buffer ) alimb |= *p-- << 16 ;
 	if( p >= buffer ) alimb |= *p-- << 24 ;
       #elif BYTES_PER_MPI_LIMB == 8
-	alimb  = *p--	    ;
-	if( p >= buffer ) alimb |= *p-- <<  8 ;
-	if( p >= buffer ) alimb |= *p-- << 16 ;
-	if( p >= buffer ) alimb |= *p-- << 24 ;
-	if( p >= buffer ) alimb |= *p-- << 32 ;
-	if( p >= buffer ) alimb |= *p-- << 40 ;
-	if( p >= buffer ) alimb |= *p-- << 48 ;
-	if( p >= buffer ) alimb |= *p-- << 56 ;
+	alimb  = (mpi_limb_t)*p-- ;
+	if( p >= buffer ) alimb |= (mpi_limb_t)*p-- <<	8 ;
+	if( p >= buffer ) alimb |= (mpi_limb_t)*p-- << 16 ;
+	if( p >= buffer ) alimb |= (mpi_limb_t)*p-- << 24 ;
+	if( p >= buffer ) alimb |= (mpi_limb_t)*p-- << 32 ;
+	if( p >= buffer ) alimb |= (mpi_limb_t)*p-- << 40 ;
+	if( p >= buffer ) alimb |= (mpi_limb_t)*p-- << 48 ;
+	if( p >= buffer ) alimb |= (mpi_limb_t)*p-- << 56 ;
       #else
 	#error please implement for this limb size.
       #endif

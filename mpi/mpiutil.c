@@ -103,7 +103,7 @@ mpi_alloc_limb_space( unsigned nlimbs, int secure )
     size_t len = nlimbs * sizeof(mpi_limb_t);
 
     if( DBG_MEMORY )
-	log_debug("mpi_alloc_limb_space(%u)\n", len*8 );
+	log_debug("mpi_alloc_limb_space(%u)\n", (unsigned)len*8 );
   #ifdef M_DEBUG
     return secure? m_debug_alloc_secure(len, info):m_debug_alloc( len, info );
   #else

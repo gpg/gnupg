@@ -45,6 +45,7 @@ __clz_tab[] =
 #endif
 
 
+#define A_LIMB_1 ((mpi_limb_t)1)
 
 
 
@@ -88,7 +89,7 @@ mpi_test_bit( MPI a, unsigned n )
     if( limbno >= a->nlimbs )
 	return 0; /* too far left: this is a 0 */
     limb = a->d[limbno];
-    return (limb & (1 << bitno))? 1: 0;
+    return (limb & (A_LIMB_1 << bitno))? 1: 0;
 }
 
 
@@ -108,7 +109,7 @@ mpi_set_bit( MPI a, unsigned n )
 	    mpi_resize(a, limbno+1 );
 	a->nlimbs = limbno+1;
     }
-    a->d[limbno] |= (1<<bitno);
+    a->d[limbno] |= (A_LIMB_1<<bitno);
 }
 
 /****************
@@ -127,9 +128,9 @@ mpi_set_highbit( MPI a, unsigned n )
 	    mpi_resize(a, limbno+1 );
 	a->nlimbs = limbno+1;
     }
-    a->d[limbno] |= (1<<bitno);
+    a->d[limbno] |= (A_LIMB_1<<bitno);
     for( bitno++; bitno < BITS_PER_MPI_LIMB; bitno++ )
-	a->d[limbno] &= ~(1 << bitno);
+	a->d[limbno] &= ~(A_LIMB_1 << bitno);
     a->nlimbs = limbno+1;
 }
 
@@ -146,7 +147,7 @@ mpi_clear_bit( MPI a, unsigned n )
 
     if( limbno >= a->nlimbs )
 	return; /* don't need to clear this bit, it's to far to left */
-    a->d[limbno] &= ~(1 << bitno);
+    a->d[limbno] &= ~(A_LIMB_1 << bitno);
 }
 
 
