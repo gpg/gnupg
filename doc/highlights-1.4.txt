@@ -1,0 +1,202 @@
+GnuPG 1.4 Highlights
+====================
+
+This is a brief overview of the changes between the GnuPG 1.2 series
+and the new GnuPG 1.4 series.  To read the full list of highlights for
+each revision that led up to 1.4, see the NEWS file in the GnuPG
+distribution.  This document is based on the NEWS file, and is thus
+the highlights of the highlights.
+
+When upgrading, note that RFC-2440, the OpenPGP standard, is currently
+being revised.  Most of the revisions in the latest draft (2440bis-12)
+have already been incorporated into GnuPG 1.4.
+
+
+Algorithm Changes
+-----------------
+
+OpenPGP supports many different algorithms for encryption, hashing,
+and compression, and taking into account the OpenPGP revisions, GnuPG
+1.4 supports a slightly different algorithm set than 1.2 did.
+
+The SHA256, SHA384, and SHA512 hashes are now supported for read and
+write.
+
+The BZIP2 compression algorithm is now supported for read and write.
+
+Due to the recent successful attack on the MD5 hash algorithm
+(discussed in <http://www.rsasecurity.com/rsalabs/node.asp?id=2738>,
+among other places), MD5 is deprecated for OpenPGP use.  It is still
+allowed in GnuPG 1.4 for backwards compatibility, but a warning is
+given when it is used.
+
+The TIGER/192 hash is no longer available.  This should not be
+interpreted as a statement as to the quality of TIGER/192 - rather,
+the revised OpenPGP standard removes support for several unused or
+mostly unused hashes, and TIGER/192 was one of them.
+
+Similarly, Elgamal signatures and the Elgamal signing key type have
+been removed from the OpenPGP standard, and thus from GnuPG.  Please
+do not confuse Elgamal signatures with DSA or DSS signatures or with
+Elgamal encryption.  Elgamal signatures were very rarely used and were
+not supported in any product other than GnuPG.  Elgamal encryption was
+and still is part of OpenPGP and GnuPG.
+
+Very old (pre-1.0) versions of GnuPG supported a nonstandard (contrary
+to OpenPGP) Elgamal key type.  While no recent version of GnuPG
+permitted the generation of such keys, GnuPG 1.2 could still use them.
+GnuPG 1.4 no longer allows the use of these keys or the (also
+nonstandard) messages generated using them.
+
+At build time, it is possible to select which algorithms will be built
+into GnuPG.  This can be used to build a smaller program binary for
+embedded uses where space is tight.
+
+
+Keyserver Changes
+-----------------
+
+GnuPG 1.4 does all keyserver operations via plugin or helper
+applications.  This allows the main GnuPG program to be smaller and
+simpler.  People who package GnuPG for various reasons have the
+flexibility to include or leave out support for any keyserver type as
+desired.
+
+Support for fetching keys via HTTP and finger has been added.  This is
+mainly useful for setting a preferred keyserver URL like
+"http://www.jabberwocky.com/key.asc". or "finger:wk@g10code.com".
+
+The LDAP keyserver helper now supports storing, retrieving, and
+searching for keys in both the old NAI "LDAP keyserver" as well as the
+more recent method to store OpenPGP keys in standard LDAP servers.
+This is compatible with the storage schema that PGP uses, so both
+products can interoperate with the same LDAP server.
+
+The LDAP keyserver helper is compatible with the PGP company's new
+"Global Directory" service.
+
+If the LDAP library you use supports LDAP-over-TLS and LDAPS, then
+GnuPG detects this and supports them as well.  Note that using TLS or
+LDAPS does not improve the security of GnuPG itself, but may be useful
+in certain key distribution scenarios.
+
+HTTP Basic authentication is now supported for all HKP and HTTP
+keyserver functions, either through a proxy or via direct access.
+
+The HKP keyserver plugin supports the new machine-readable key
+listing format for those keyservers that provide it.
+
+IPv6 is supported for HKP and HTTP keyserver access.
+
+When using a HKP keyserver with multiple DNS records (such as
+subkeys.pgp.net which has the addresses of multiple servers around the
+world), all DNS address records are tried until one succeeds.  This
+prevents a single down server in the rotation from stopping access.
+
+DNS SRV records are used in HKP keyserver lookups to allow
+administrators to load balance and select keyserver ports
+automatically.
+
+Timeout support has been added to the keyserver plugins.  This allows
+users to set an upper limit on how long to wait for the keyserver
+before giving up.
+
+
+Preferred Keyserver URL
+-----------------------
+
+Preferred keyserver support has been added.  Users may set a preferred
+keyserver via the --edit-key command "keyserver".  If the
+--keyserver-option honor-keyserver-url is set (and it is by default),
+then the preferred keyserver is used when refreshing that key with
+--refresh-keys.
+
+The --sig-keyserver-url option can be used to inform signature
+recipients where the signing key can be downloaded.  When verifying
+the signature, if the signing key is not present, and the keyserver
+options honor-keyserver-url and auto-key-retrieve are set, this URL
+will be used to retrieve the key.
+
+
+Trust Signatures
+----------------
+
+GnuPG 1.4 supports OpenPGP trust signatures, which allow a user to
+specify the trust level and distance from the user along with the
+signature so users can delegate different levels of certification
+ability to other users, possibly restricted by a regular expression on
+the user ID.
+
+
+Trust Models
+------------
+
+GnuPG 1.4 supports several ways of looking at trust:
+
+Classic - The classic PGP trust model, where people sign each others
+	  keys and thus build up an assurance (called "validity") that
+	  the key belongs to the right person.  This was the default
+	  trust model in GnuPG 1.2.
+
+Always - Bypass all trust checks, and make all keys fully valid.
+
+Direct - Users may set key validity directly.
+
+PGP - The PGP 7 and 8 behavior which combines Classic trust with trust
+      signatures overlaid on top.  This is the default trust model in
+      GnuPG 1.4.
+
+
+The OpenPGP Smartcard
+---------------------
+
+GnuPG 1.4 supports the OpenPGP smartcard
+(<http://www.g10code.de/p-card.html>)
+
+Secret keys may be kept fully or partially on the smartcard.  The
+smartcard may be used for primary keys or subkeys.
+
+
+Other Interesting New Features
+------------------------------
+
+For those using Security-Enhanced Linux <http://www.nsa.gov/selinux/>,
+the configure option --enable-selinux-support prevents GnuPG from
+processing its own files (i.e. reading the secret keyring for
+something other than getting a secret key from it).  This simplifies
+writing ACLs for the SELinux kernel.
+
+Readline support is now available at all prompts if the system
+provides a readline library.
+
+GnuPG can now create messages that can be decrypted with either a
+passphrase or a secret key.  These messages may be generated with
+--symmetric --encrypt or --symmetric --sign --encrypt.
+
+--list-options and --verify-options allow the user to customize
+exactly what key listings or signature verifications look like,
+enabling or disabling things such as photo display, preferred
+keyserver URL, calculated validity for each user ID, etc.
+
+The --primary-keyring option designates the keyring that the user
+wants new keys imported into.
+
+The --hidden-recipient (or -R) command encrypts to a user, but hides
+the identity of that user.  This is the same functionality as
+--throw-keyid, but can be used on a per-user basis.
+
+Full algorithm names (e.g. "3DES", "SHA1", "ZIP") can now be used
+interchangeably with the short algorithm names (e.g. "S2", "H2", "Z1")
+anywhere algorithm names are used in GnuPG.
+
+The --keyid-format option selects short (99242560), long
+(DB698D7199242560), 0xshort (0x99242560), or 0xlong
+(0xDB698D7199242560) key ID displays.  This lets users tune the
+display to what they prefer.
+
+While it is not recommended for extended periods, it is possible to
+run both GnuPG 1.2.x and GnuPG 1.4 during the transition.  To aid in
+this, GnuPG 1.4 tries to load a config file suffixed with its version
+before it loads the default config file.  For example, 1.4 will try
+for gpg.conf-1.4 and gpg.conf-1 before falling back to the regular
+gpg.conf file.

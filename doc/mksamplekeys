@@ -1,7 +1,7 @@
 #/bin/sh
 # Generate a samplekeys.asc
 
-keys="5B0358A2 57548DCD 621CC013 99242560 B2D7795E"
+keys="5B0358A2 57548DCD 621CC013 99242560 CA57AD7C B2D7795E"
 
 for i in $keys; do
   gpg --list-keys $i | awk ' { print "  " $0 }'
