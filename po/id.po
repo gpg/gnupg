@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-id\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2004-10-15 11:07+0200\n"
+"POT-Creation-Date: 2004-10-15 15:17+0200\n"
 "PO-Revision-Date: 2004-06-17 16:32+0700\n"
 "Last-Translator: Tedi Heriyanto <tedi_h@gmx.net>\n"
 "Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
@@ -126,89 +126,92 @@ msgstr ""
 "Tidak tersedia cukup byte random. Silakan melakukan aktivitas lain agar\n"
 "memungkinkan SO mengumpulkan lebih banyak entropi! (Perlu %d byte lagi)\n"
 
-#: g10/app-openpgp.c:458
+#: g10/app-openpgp.c:534
 #, fuzzy, c-format
 msgid "failed to store the fingerprint: %s\n"
 msgstr "gagal inisialisasi TrustDB: %s\n"
 
-#: g10/app-openpgp.c:471
+#: g10/app-openpgp.c:547
 #, fuzzy, c-format
 msgid "failed to store the creation date: %s\n"
 msgstr "gagal membuat kembali cache keyring: %s\n"
 
-#: g10/app-openpgp.c:656 g10/app-openpgp.c:745
+#: g10/app-openpgp.c:732 g10/app-openpgp.c:821 g10/app-openpgp.c:1308
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr ""
 
-#: g10/app-openpgp.c:662 g10/app-openpgp.c:751 g10/app-openpgp.c:1236
+#: g10/app-openpgp.c:738 g10/app-openpgp.c:1314
 #, c-format
-msgid "prassphrase (CHV%d) is too short; minimum length is %d\n"
+msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr ""
 
-#: g10/app-openpgp.c:671 g10/app-openpgp.c:685 g10/app-openpgp.c:761
+#: g10/app-openpgp.c:747 g10/app-openpgp.c:761 g10/app-openpgp.c:837
+#: g10/app-openpgp.c:1323 g10/app-openpgp.c:1337
 #, fuzzy, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "Pengiriman keyserver gagal: %s\n"
 
-#: g10/app-openpgp.c:708
+#: g10/app-openpgp.c:784
 msgid "access to admin commands is not configured\n"
 msgstr ""
 
-#: g10/app-openpgp.c:725
+#: g10/app-openpgp.c:801
 msgid "error retrieving CHV status from card\n"
 msgstr ""
 
-#: g10/app-openpgp.c:731
+#: g10/app-openpgp.c:807
 msgid "card is permanently locked!\n"
 msgstr ""
 
-#: g10/app-openpgp.c:738
+#: g10/app-openpgp.c:814
 #, c-format
 msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr ""
 
-#: g10/app-openpgp.c:742
+#: g10/app-openpgp.c:818
 msgid "Admin PIN"
 msgstr ""
 
-#: g10/app-openpgp.c:1245 g10/app-openpgp.c:1259
+#: g10/app-openpgp.c:827
 #, c-format
-msgid "verify CHV%d failed\n"
+msgid "prassphrase (CHV%d) is too short; minimum length is %d\n"
 msgstr ""
 
-#: g10/app-openpgp.c:1504
-msgid "can't access CHV Status Bytes - invalid OpenPGP card?\n"
+#: g10/app-openpgp.c:1301
+#, c-format
+msgid "PIN [sigs done: %lu]"
 msgstr ""
 
-#: g10/app-openpgp.c:1514
-msgid "can't access Extended Capability Flags - invalid OpenPGP card?\n"
-msgstr ""
+#: g10/app-openpgp.c:1582 g10/app-openpgp.c:1592
+#, fuzzy, c-format
+msgid "can't access %s - invalid OpenPGP card?\n"
+msgstr "tidak ditemukan data OpenPGP yang valid.\n"
 
-#: g10/app-openpgp.c:1584
+#: g10/app-openpgp.c:1663
 #, fuzzy, c-format
 msgid "error getting serial number: %s\n"
 msgstr "kesalahan penciptaan passphrase: %s\n"
 
-#: g10/app-openpgp.c:1679
+#: g10/app-openpgp.c:1758
 #, fuzzy, c-format
 msgid "failed to store the key: %s\n"
 msgstr "gagal inisialisasi TrustDB: %s\n"
 
-#: g10/app-openpgp.c:1721
+#: g10/app-openpgp.c:1800
 #, fuzzy
 msgid "reading the key failed\n"
 msgstr "gagal menghapus keyblok: %s\n"
 
-#: g10/app-openpgp.c:1728
+#: g10/app-openpgp.c:1807
 msgid "response does not contain the public key data\n"
 msgstr ""
 
-#: g10/app-openpgp.c:1736
+#: g10/app-openpgp.c:1815
 msgid "response does not contain the RSA modulus\n"
 msgstr ""
 
-#: g10/app-openpgp.c:1747
+#: g10/app-openpgp.c:1826
 msgid "response does not contain the RSA public exponent\n"
 msgstr ""
 
@@ -503,15 +506,15 @@ msgstr "Bagian rahasia kunci primer tidak tersedia.\n"
 msgid "secret key already stored on a card\n"
 msgstr "dilewati: kunci pribadi telah ada\n"
 
-#: g10/card-util.c:1142 g10/keyedit.c:1229 util/miscutil.c:348
+#: g10/card-util.c:1142 g10/keyedit.c:1245 util/miscutil.c:348
 msgid "quit"
 msgstr "q|k|keluar"
 
-#: g10/card-util.c:1142 g10/keyedit.c:1229
+#: g10/card-util.c:1142 g10/keyedit.c:1245
 msgid "quit this menu"
 msgstr "berhenti dari menu ini"
 
-#: g10/card-util.c:1143 g10/keyedit.c:1230
+#: g10/card-util.c:1143 g10/keyedit.c:1246
 msgid "q"
 msgstr "q"
 
@@ -524,15 +527,15 @@ msgstr ""
 msgid "show admin commands"
 msgstr "perintah saling konflik\n"
 
-#: g10/card-util.c:1145 g10/keyedit.c:1232
+#: g10/card-util.c:1145 g10/keyedit.c:1248
 msgid "help"
 msgstr "bantuan"
 
-#: g10/card-util.c:1145 g10/keyedit.c:1232
+#: g10/card-util.c:1145 g10/keyedit.c:1248
 msgid "show this help"
 msgstr "tampilkan bantuan"
 
-#: g10/card-util.c:1147 g10/keyedit.c:1235
+#: g10/card-util.c:1147 g10/keyedit.c:1251
 msgid "list"
 msgstr "tampilkan"
 
@@ -541,11 +544,11 @@ msgstr "tampilkan"
 msgid "list all available data"
 msgstr "Kunci tersedia di:"
 
-#: g10/card-util.c:1148 g10/keyedit.c:1236
+#: g10/card-util.c:1148 g10/keyedit.c:1252
 msgid "l"
 msgstr "l"
 
-#: g10/card-util.c:1149 g10/keyedit.c:1247
+#: g10/card-util.c:1149 g10/keyedit.c:1263
 msgid "debug"
 msgstr "debug"
 
@@ -630,7 +633,7 @@ msgstr "Kesalahan umum"
 msgid "generate new keys"
 msgstr "buat sepasang kunci baru"
 
-#: g10/card-util.c:1162 g10/keyedit.c:1271
+#: g10/card-util.c:1162 g10/keyedit.c:1287
 msgid "passwd"
 msgstr "passwd"
 
@@ -638,11 +641,11 @@ msgstr "passwd"
 msgid "menu to change or unblock the PIN"
 msgstr ""
 
-#: g10/card-util.c:1178 g10/delkey.c:120 g10/keyedit.c:1297
+#: g10/card-util.c:1178 g10/delkey.c:120 g10/keyedit.c:1313
 msgid "can't do that in batchmode\n"
 msgstr "tidak dapat melakukan hal itu dalam mode batch\n"
 
-#: g10/card-util.c:1226 g10/keyedit.c:1377
+#: g10/card-util.c:1226 g10/keyedit.c:1393
 msgid "Command> "
 msgstr "Perintah> "
 
@@ -651,7 +654,7 @@ msgstr "Perintah> "
 msgid "Admin-only command\n"
 msgstr "perintah saling konflik\n"
 
-#: g10/card-util.c:1336 g10/keyedit.c:1844
+#: g10/card-util.c:1336 g10/keyedit.c:1860
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Perintah tidak valid (coba \"help\")\n"
 
@@ -670,11 +673,11 @@ msgstr ""
 msgid "Hit return when ready or enter 'c' to cancel: "
 msgstr ""
 
-#: g10/cardglue.c:634
+#: g10/cardglue.c:638
 msgid "Enter Admin PIN: "
 msgstr ""
 
-#: g10/cardglue.c:634
+#: g10/cardglue.c:638
 msgid "Enter PIN: "
 msgstr ""
 
@@ -688,7 +691,7 @@ msgstr "tidak dapat membuka `%s'\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output tidak berfungsi untuk perintah ini\n"
 
-#: g10/delkey.c:74 g10/export.c:162 g10/keyedit.c:2901 g10/revoke.c:225
+#: g10/delkey.c:74 g10/export.c:162 g10/keyedit.c:2917 g10/revoke.c:225
 #, c-format
 msgid "key `%s' not found: %s\n"
 msgstr "kunci '%s' tidak ditemukan: %s\n"
@@ -1155,7 +1158,7 @@ msgstr ""
 msgid "Pubkey: "
 msgstr "Pubkey: "
 
-#: g10/g10.c:766 g10/keyedit.c:1881
+#: g10/g10.c:766 g10/keyedit.c:1897
 msgid "Cipher: "
 msgstr "Cipher: "
 
@@ -1163,7 +1166,7 @@ msgstr "Cipher: "
 msgid "Hash: "
 msgstr "Hash: "
 
-#: g10/g10.c:778 g10/keyedit.c:1927
+#: g10/g10.c:778 g10/keyedit.c:1943
 msgid "Compression: "
 msgstr "Kompresi: "
 
@@ -1282,7 +1285,7 @@ msgstr "ekstensi cipher \"%s\" tidak dimuat karena permisi tidak aman\n"
 msgid "`%s' is not a valid character set\n"
 msgstr "%s bukanlah set karakter yang valid\n"
 
-#: g10/g10.c:2273 g10/keyedit.c:3417
+#: g10/g10.c:2273 g10/keyedit.c:3433
 #, fuzzy
 msgid "could not parse keyserver URL\n"
 msgstr "tidak dapat memparsing URI keyserver\n"
@@ -2507,12 +2510,12 @@ msgid "User ID \"%s\" is revoked."
 msgstr "User ID \"%s\" dibatalkan."
 
 #: g10/keyedit.c:593 g10/keyedit.c:619 g10/keyedit.c:644 g10/keyedit.c:799
-#: g10/keyedit.c:857 g10/keyedit.c:1466
+#: g10/keyedit.c:857 g10/keyedit.c:1482
 msgid "Are you sure you still want to sign it? (y/N) "
 msgstr "Apakah anda yakin masih ingin menandainya? (y/N) "
 
 #: g10/keyedit.c:605 g10/keyedit.c:631 g10/keyedit.c:656 g10/keyedit.c:805
-#: g10/keyedit.c:1472
+#: g10/keyedit.c:1488
 msgid "  Unable to sign.\n"
 msgstr "..Tidak dapat menandai.\n"
 
@@ -2654,99 +2657,91 @@ msgstr ""
 "Apakah anda yakin untuk menandai kunci ini \n"
 "dengan kunci anda: "
 
-#: g10/keyedit.c:924
-msgid ""
-"\n"
-"This will be a self-signature.\n"
+#: g10/keyedit.c:925
+#, fuzzy
+msgid "This will be a self-signature.\n"
 msgstr ""
 "\n"
 "Ini akan jadi self-signature.\n"
 
-#: g10/keyedit.c:928
-msgid ""
-"\n"
-"WARNING: the signature will not be marked as non-exportable.\n"
+#: g10/keyedit.c:931
+#, fuzzy
+msgid "WARNING: the signature will not be marked as non-exportable.\n"
 msgstr ""
 "\n"
 "Peringatan: Signature akan ditandai sebagai tidak dapat diekspor.\n"
 
-#: g10/keyedit.c:933
-msgid ""
-"\n"
-"WARNING: the signature will not be marked as non-revocable.\n"
+#: g10/keyedit.c:939
+#, fuzzy
+msgid "WARNING: the signature will not be marked as non-revocable.\n"
 msgstr ""
 "\n"
 "Peringatan: Signature akan ditandai sebagai tidak dapat dibatalkan.\n"
 
-#: g10/keyedit.c:940
-msgid ""
-"\n"
-"The signature will be marked as non-exportable.\n"
+#: g10/keyedit.c:949
+#, fuzzy
+msgid "The signature will be marked as non-exportable.\n"
 msgstr ""
 "\n"
 "Signature akan ditandai sebagai tidak dapat diekspor.\n"
 
-#: g10/keyedit.c:944
-msgid ""
-"\n"
-"The signature will be marked as non-revocable.\n"
+#: g10/keyedit.c:956
+#, fuzzy
+msgid "The signature will be marked as non-revocable.\n"
 msgstr ""
 "\n"
 "Signature akan ditandai sebagai tidak dapat dibatalkan.\n"
 
-#: g10/keyedit.c:949
-msgid ""
-"\n"
-"I have not checked this key at all.\n"
+#: g10/keyedit.c:963
+#, fuzzy
+msgid "I have not checked this key at all.\n"
 msgstr ""
 "\n"
 "Saya belum memeriksa kunci ini sama sekali.\n"
 
-#: g10/keyedit.c:953
-msgid ""
-"\n"
-"I have checked this key casually.\n"
+#: g10/keyedit.c:968
+#, fuzzy
+msgid "I have checked this key casually.\n"
 msgstr ""
 "\n"
 "Saya telah memeriksa kunci ini.\n"
 
-#: g10/keyedit.c:957
-msgid ""
-"\n"
-"I have checked this key very carefully.\n"
+#: g10/keyedit.c:973
+#, fuzzy
+msgid "I have checked this key very carefully.\n"
 msgstr ""
 "\n"
 "Saya telah memeriksa kunci ini dengan sangat hati-hati.\n"
 
-#: g10/keyedit.c:967
+#: g10/keyedit.c:983
 #, fuzzy
 msgid "Really sign? (y/N) "
 msgstr "Ditandai? "
 
-#: g10/keyedit.c:1012 g10/keyedit.c:3865 g10/keyedit.c:3956 g10/keyedit.c:4029
+#: g10/keyedit.c:1028 g10/keyedit.c:3881 g10/keyedit.c:3972 g10/keyedit.c:4045
 #: g10/sign.c:369
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "gagal menandai: %s\n"
 
-#: g10/keyedit.c:1068
+#: g10/keyedit.c:1084
 msgid "This key is not protected.\n"
 msgstr "Kunci ini tidak diproteksi.\n"
 
-#: g10/keyedit.c:1072
+#: g10/keyedit.c:1088
 msgid "Secret parts of primary key are not available.\n"
 msgstr "Bagian rahasia kunci primer tidak tersedia.\n"
 
-#: g10/keyedit.c:1076
+#: g10/keyedit.c:1092
 msgid "Key is protected.\n"
 msgstr "Kunci diproteksi.\n"
 
-#: g10/keyedit.c:1096
+#: g10/keyedit.c:1112
 #, c-format
 msgid "Can't edit this key: %s\n"
 msgstr "Tidak dapat mengedit kunci ini: %s\n"
 
-#: g10/keyedit.c:1102
+#: g10/keyedit.c:1118
 msgid ""
 "Enter the new passphrase for this secret key.\n"
 "\n"
@@ -2754,11 +2749,11 @@ msgstr ""
 "Masukkan passphrase baru untuk kunci rahasia ini.\n"
 "\n"
 
-#: g10/keyedit.c:1111 g10/keygen.c:1806
+#: g10/keyedit.c:1127 g10/keygen.c:1806
 msgid "passphrase not correctly repeated; try again"
 msgstr "passphrase tidak diulang dengan benar; coba lagi"
 
-#: g10/keyedit.c:1116
+#: g10/keyedit.c:1132
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "\n"
@@ -2766,550 +2761,550 @@ msgstr ""
 "Anda tidak ingin passphrase - bukan ide yang baik!\n"
 "\n"
 
-#: g10/keyedit.c:1119
+#: g10/keyedit.c:1135
 #, fuzzy
 msgid "Do you really want to do this? (y/N) "
 msgstr "Apakah anda ingin melakukan hal ini? "
 
-#: g10/keyedit.c:1185
+#: g10/keyedit.c:1201
 msgid "moving a key signature to the correct place\n"
 msgstr "memindahkan signature kunci ke tempat yang tepat\n"
 
-#: g10/keyedit.c:1231
+#: g10/keyedit.c:1247
 msgid "save"
 msgstr "simpan"
 
-#: g10/keyedit.c:1231
+#: g10/keyedit.c:1247
 msgid "save and quit"
 msgstr "simpan dan berhenti"
 
-#: g10/keyedit.c:1234
+#: g10/keyedit.c:1250
 msgid "fpr"
 msgstr "fpr"
 
-#: g10/keyedit.c:1234
+#: g10/keyedit.c:1250
 msgid "show fingerprint"
 msgstr "tampilkan fingerprint"
 
-#: g10/keyedit.c:1235
+#: g10/keyedit.c:1251
 msgid "list key and user IDs"
 msgstr "tampilkan kunci dan ID user"
 
-#: g10/keyedit.c:1237
+#: g10/keyedit.c:1253
 msgid "uid"
 msgstr "uid"
 
-#: g10/keyedit.c:1237
+#: g10/keyedit.c:1253
 msgid "select user ID N"
 msgstr "pilih ID user N"
 
-#: g10/keyedit.c:1238
+#: g10/keyedit.c:1254
 msgid "key"
 msgstr "kunci"
 
-#: g10/keyedit.c:1238
+#: g10/keyedit.c:1254
 msgid "select secondary key N"
 msgstr "pilih kunci sekunder N"
 
-#: g10/keyedit.c:1239
+#: g10/keyedit.c:1255
 msgid "check"
 msgstr "periksa"
 
-#: g10/keyedit.c:1239
+#: g10/keyedit.c:1255
 msgid "list signatures"
 msgstr "tampilkan signature"
 
-#: g10/keyedit.c:1240
+#: g10/keyedit.c:1256
 msgid "c"
 msgstr "c"
 
-#: g10/keyedit.c:1241
+#: g10/keyedit.c:1257
 msgid "sign"
 msgstr "tandai"
 
-#: g10/keyedit.c:1241
+#: g10/keyedit.c:1257
 msgid "sign the key"
 msgstr "tandai kunci"
 
-#: g10/keyedit.c:1242
+#: g10/keyedit.c:1258
 msgid "s"
 msgstr "s"
 
-#: g10/keyedit.c:1243
+#: g10/keyedit.c:1259
 #, fuzzy
 msgid "tsign"
 msgstr "tandai"
 
-#: g10/keyedit.c:1243
+#: g10/keyedit.c:1259
 #, fuzzy
 msgid "make a trust signature"
 msgstr "buat detached signature"
 
-#: g10/keyedit.c:1244
+#: g10/keyedit.c:1260
 msgid "lsign"
 msgstr "lsign"
 
-#: g10/keyedit.c:1244
+#: g10/keyedit.c:1260
 msgid "sign the key locally"
 msgstr "tandai kunci secara lokal"
 
-#: g10/keyedit.c:1245
+#: g10/keyedit.c:1261
 msgid "nrsign"
 msgstr "nrsign"
 
-#: g10/keyedit.c:1245
+#: g10/keyedit.c:1261
 msgid "sign the key non-revocably"
 msgstr "tandai kunci sebagai tidak dapat dibatalkan"
 
-#: g10/keyedit.c:1246
+#: g10/keyedit.c:1262
 msgid "nrlsign"
 msgstr "nrlsign"
 
-#: g10/keyedit.c:1246
+#: g10/keyedit.c:1262
 msgid "sign the key locally and non-revocably"
 msgstr "tandai kunci secara lokal dan tidak dapat dibatalkan"
 
-#: g10/keyedit.c:1248
+#: g10/keyedit.c:1264
 msgid "adduid"
 msgstr "adduid"
 
-#: g10/keyedit.c:1248
+#: g10/keyedit.c:1264
 msgid "add a user ID"
 msgstr "tambah sebuah ID user"
 
-#: g10/keyedit.c:1249
+#: g10/keyedit.c:1265
 msgid "addphoto"
 msgstr "addphoto"
 
-#: g10/keyedit.c:1249
+#: g10/keyedit.c:1265
 msgid "add a photo ID"
 msgstr "tambah sebuah photo ID"
 
-#: g10/keyedit.c:1250
+#: g10/keyedit.c:1266
 msgid "deluid"
 msgstr "deluid"
 
-#: g10/keyedit.c:1250
+#: g10/keyedit.c:1266
 msgid "delete user ID"
 msgstr "hapus ID user"
 
-#: g10/keyedit.c:1252
+#: g10/keyedit.c:1268
 msgid "delphoto"
 msgstr "delphoto"
 
-#: g10/keyedit.c:1253
+#: g10/keyedit.c:1269
 msgid "addkey"
 msgstr "addkey"
 
-#: g10/keyedit.c:1253
+#: g10/keyedit.c:1269
 msgid "add a secondary key"
 msgstr "tambah kunci sekunder"
 
-#: g10/keyedit.c:1255
+#: g10/keyedit.c:1271
 #, fuzzy
 msgid "addcardkey"
 msgstr "addkey"
 
-#: g10/keyedit.c:1255
+#: g10/keyedit.c:1271
 msgid "add a key to a smartcard"
 msgstr ""
 
-#: g10/keyedit.c:1256
+#: g10/keyedit.c:1272
 msgid "keytocard"
 msgstr ""
 
-#: g10/keyedit.c:1256
+#: g10/keyedit.c:1272
 msgid "move a key to a smartcard"
 msgstr ""
 
-#: g10/keyedit.c:1258
+#: g10/keyedit.c:1274
 msgid "delkey"
 msgstr "delkey"
 
-#: g10/keyedit.c:1258
+#: g10/keyedit.c:1274
 msgid "delete a secondary key"
 msgstr "hapus kunci sekunder"
 
-#: g10/keyedit.c:1259
+#: g10/keyedit.c:1275
 msgid "addrevoker"
 msgstr "addrevoker"
 
-#: g10/keyedit.c:1259
+#: g10/keyedit.c:1275
 msgid "add a revocation key"
 msgstr "tambah kunci pembatalan"
 
-#: g10/keyedit.c:1260
+#: g10/keyedit.c:1276
 msgid "delsig"
 msgstr "delsig"
 
-#: g10/keyedit.c:1260
+#: g10/keyedit.c:1276
 msgid "delete signatures"
 msgstr "hapus signature"
 
-#: g10/keyedit.c:1261
+#: g10/keyedit.c:1277
 msgid "expire"
 msgstr "expire"
 
-#: g10/keyedit.c:1261
+#: g10/keyedit.c:1277
 msgid "change the expire date"
 msgstr "ubah tanggal kadaluarsa"
 
-#: g10/keyedit.c:1262
+#: g10/keyedit.c:1278
 msgid "primary"
 msgstr "primer"
 
-#: g10/keyedit.c:1262
+#: g10/keyedit.c:1278
 msgid "flag user ID as primary"
 msgstr "tandai ID user sebagai primer"
 
-#: g10/keyedit.c:1263
+#: g10/keyedit.c:1279
 msgid "toggle"
 msgstr "toggle"
 
-#: g10/keyedit.c:1263
+#: g10/keyedit.c:1279
 msgid "toggle between secret and public key listing"
 msgstr "ubah tampilan kunci rahasia dan publik"
 
-#: g10/keyedit.c:1265
+#: g10/keyedit.c:1281
 msgid "t"
 msgstr "t"
 
-#: g10/keyedit.c:1266
+#: g10/keyedit.c:1282
 msgid "pref"
 msgstr "pref"
 
-#: g10/keyedit.c:1266
+#: g10/keyedit.c:1282
 msgid "list preferences (expert)"
 msgstr "tampilkan preferensi (ahli)"
 
-#: g10/keyedit.c:1267
+#: g10/keyedit.c:1283
 msgid "showpref"
 msgstr "showpref"
 
-#: g10/keyedit.c:1267
+#: g10/keyedit.c:1283
 msgid "list preferences (verbose)"
 msgstr "tampilkan preferensi (verbose)"
 
-#: g10/keyedit.c:1268
+#: g10/keyedit.c:1284
 msgid "setpref"
 msgstr "setpref"
 
-#: g10/keyedit.c:1268
+#: g10/keyedit.c:1284
 msgid "set preference list"
 msgstr "set daftar preferensi"
 
-#: g10/keyedit.c:1269
+#: g10/keyedit.c:1285
 msgid "updpref"
 msgstr "updpref"
 
-#: g10/keyedit.c:1269
+#: g10/keyedit.c:1285
 msgid "updated preferences"
 msgstr "perbarui preferensi"
 
-#: g10/keyedit.c:1270
+#: g10/keyedit.c:1286
 #, fuzzy
 msgid "keyserver"
 msgstr "kesalahan keyserver"
 
-#: g10/keyedit.c:1270
+#: g10/keyedit.c:1286
 #, fuzzy
 msgid "set preferred keyserver URL"
 msgstr "tidak dapat memparsing URI keyserver\n"
 
-#: g10/keyedit.c:1271
+#: g10/keyedit.c:1287
 msgid "change the passphrase"
 msgstr "ubah passphrase"
 
-#: g10/keyedit.c:1272
+#: g10/keyedit.c:1288
 msgid "trust"
 msgstr "trust"
 
-#: g10/keyedit.c:1272
+#: g10/keyedit.c:1288
 msgid "change the ownertrust"
 msgstr "ubah ownertrust"
 
-#: g10/keyedit.c:1273
+#: g10/keyedit.c:1289
 msgid "revsig"
 msgstr "revsig"
 
-#: g10/keyedit.c:1273
+#: g10/keyedit.c:1289
 msgid "revoke signatures"
 msgstr "batalkan signature"
 
-#: g10/keyedit.c:1274
+#: g10/keyedit.c:1290
 msgid "revuid"
 msgstr "revuid"
 
-#: g10/keyedit.c:1274
+#: g10/keyedit.c:1290
 msgid "revoke a user ID"
 msgstr "batalkan sebuah ID user"
 
-#: g10/keyedit.c:1275
+#: g10/keyedit.c:1291
 msgid "revkey"
 msgstr "revkey"
 
-#: g10/keyedit.c:1275
+#: g10/keyedit.c:1291
 msgid "revoke a secondary key"
 msgstr "batalkan kunci sekunder"
 
-#: g10/keyedit.c:1276
+#: g10/keyedit.c:1292
 msgid "disable"
 msgstr "disable"
 
-#: g10/keyedit.c:1276
+#: g10/keyedit.c:1292
 msgid "disable a key"
 msgstr "tiadakan kunci"
 
-#: g10/keyedit.c:1277
+#: g10/keyedit.c:1293
 msgid "enable"
 msgstr "enable"
 
-#: g10/keyedit.c:1277
+#: g10/keyedit.c:1293
 msgid "enable a key"
 msgstr "aktifkan kunci"
 
-#: g10/keyedit.c:1278
+#: g10/keyedit.c:1294
 msgid "showphoto"
 msgstr "showphoto"
 
-#: g10/keyedit.c:1278
+#: g10/keyedit.c:1294
 msgid "show photo ID"
 msgstr "tampilkan photo ID"
 
-#: g10/keyedit.c:1328
+#: g10/keyedit.c:1344
 #, c-format
 msgid "error reading secret keyblock `%s': %s\n"
 msgstr "kesalahan membaca keyblock rahasia `%s': %s\n"
 
-#: g10/keyedit.c:1345
+#: g10/keyedit.c:1361
 msgid "Secret key is available.\n"
 msgstr "Kunci rahasia tersedia.\n"
 
-#: g10/keyedit.c:1407
+#: g10/keyedit.c:1423
 msgid "Need the secret key to do this.\n"
 msgstr "Perlu kunci rahasia untuk melakukan hal ini.\n"
 
-#: g10/keyedit.c:1412
+#: g10/keyedit.c:1428
 msgid "Please use the command \"toggle\" first.\n"
 msgstr "Silakan gunakan dulu perintah \"toogle\".\n"
 
-#: g10/keyedit.c:1460
+#: g10/keyedit.c:1476
 msgid "Key is revoked."
 msgstr "Kunci dibatalkan"
 
-#: g10/keyedit.c:1480
+#: g10/keyedit.c:1496
 #, fuzzy
 msgid "Really sign all user IDs? (y/N) "
 msgstr "Tandai ID seluruh user? "
 
-#: g10/keyedit.c:1482
+#: g10/keyedit.c:1498
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Petunjuk: Pilih ID user untuk ditandai\n"
 
-#: g10/keyedit.c:1507
+#: g10/keyedit.c:1523
 #, c-format
 msgid "This command is not allowed while in %s mode.\n"
 msgstr "Perintah ini tidak dibolehkan saat dalam mode %s.\n"
 
-#: g10/keyedit.c:1529 g10/keyedit.c:1549 g10/keyedit.c:1652
+#: g10/keyedit.c:1545 g10/keyedit.c:1565 g10/keyedit.c:1668
 msgid "You must select at least one user ID.\n"
 msgstr "Anda harus memilih minimum satu ID user.\n"
 
-#: g10/keyedit.c:1531
+#: g10/keyedit.c:1547
 msgid "You can't delete the last user ID!\n"
 msgstr "Anda tidak dapat menghapus ID user terakhir!\n"
 
-#: g10/keyedit.c:1533
+#: g10/keyedit.c:1549
 #, fuzzy
 msgid "Really remove all selected user IDs? (y/N) "
 msgstr "Hapus seluruh ID user terpilih? "
 
-#: g10/keyedit.c:1534
+#: g10/keyedit.c:1550
 #, fuzzy
 msgid "Really remove this user ID? (y/N) "
 msgstr "Hapus ID user ini? "
 
-#: g10/keyedit.c:1584
+#: g10/keyedit.c:1600
 #, fuzzy
 msgid "Really move the primary key? (y/N) "
 msgstr "Hapus ID user ini? "
 
-#: g10/keyedit.c:1596
+#: g10/keyedit.c:1612
 #, fuzzy
 msgid "You must select exactly one key.\n"
 msgstr "Anda harus memilih minimum satu kunci.\n"
 
-#: g10/keyedit.c:1616 g10/keyedit.c:1671
+#: g10/keyedit.c:1632 g10/keyedit.c:1687
 msgid "You must select at least one key.\n"
 msgstr "Anda harus memilih minimum satu kunci.\n"
 
-#: g10/keyedit.c:1619
+#: g10/keyedit.c:1635
 #, fuzzy
 msgid "Do you really want to delete the selected keys? (y/N) "
 msgstr "Anda ingin menghapus kunci terpilih ini? "
 
-#: g10/keyedit.c:1620
+#: g10/keyedit.c:1636
 #, fuzzy
 msgid "Do you really want to delete this key? (y/N) "
 msgstr "Anda ingin menghapus kunci ini? "
 
-#: g10/keyedit.c:1655
+#: g10/keyedit.c:1671
 #, fuzzy
 msgid "Really revoke all selected user IDs? (y/N) "
 msgstr "Benar-benar hapus seluruh ID user terpilih? "
 
-#: g10/keyedit.c:1656
+#: g10/keyedit.c:1672
 #, fuzzy
 msgid "Really revoke this user ID? (y/N) "
 msgstr "Benar-benar hapus ID user ini? "
 
-#: g10/keyedit.c:1675
+#: g10/keyedit.c:1691
 #, fuzzy
 msgid "Do you really want to revoke the selected keys? (y/N) "
 msgstr "Anda ingin membatalkan kunci terpilih ini? "
 
-#: g10/keyedit.c:1676
+#: g10/keyedit.c:1692
 #, fuzzy
 msgid "Do you really want to revoke this key? (y/N) "
 msgstr "Anda ingin membatalkan kunci ini? "
 
-#: g10/keyedit.c:1715
+#: g10/keyedit.c:1731
 msgid ""
 "Owner trust may not be set while using an user provided trust database\n"
 msgstr ""
 
-#: g10/keyedit.c:1747
+#: g10/keyedit.c:1763
 #, fuzzy
 msgid "Set preference list to:\n"
 msgstr "set daftar preferensi"
 
-#: g10/keyedit.c:1753
+#: g10/keyedit.c:1769
 #, fuzzy
 msgid "Really update the preferences for the selected user IDs? (y/N) "
 msgstr "Perbarui preferensi untuk user ID terpilih?"
 
-#: g10/keyedit.c:1755
+#: g10/keyedit.c:1771
 #, fuzzy
 msgid "Really update the preferences? (y/N) "
 msgstr "Update preferensi?"
 
-#: g10/keyedit.c:1805
+#: g10/keyedit.c:1821
 #, fuzzy
 msgid "Save changes? (y/N) "
 msgstr "Simpan perubahan? "
 
-#: g10/keyedit.c:1808
+#: g10/keyedit.c:1824
 #, fuzzy
 msgid "Quit without saving? (y/N) "
 msgstr "Berhenti tanpa menyimpan? "
 
-#: g10/keyedit.c:1818
+#: g10/keyedit.c:1834
 #, c-format
 msgid "update failed: %s\n"
 msgstr "gagal memperbarui: %s\n"
 
-#: g10/keyedit.c:1825
+#: g10/keyedit.c:1841
 #, c-format
 msgid "update secret failed: %s\n"
 msgstr "gagal perbarui rahasia: %s\n"
 
-#: g10/keyedit.c:1832
+#: g10/keyedit.c:1848
 msgid "Key not changed so no update needed.\n"
 msgstr "Kunci tidak berubah sehingga tidak perlu pembaharuan.\n"
 
-#: g10/keyedit.c:1904
+#: g10/keyedit.c:1920
 msgid "Digest: "
 msgstr "Digest: "
 
-#: g10/keyedit.c:1956
+#: g10/keyedit.c:1972
 msgid "Features: "
 msgstr "Fitur: "
 
-#: g10/keyedit.c:1967
+#: g10/keyedit.c:1983
 msgid "Keyserver no-modify"
 msgstr ""
 
-#: g10/keyedit.c:1982 g10/keylist.c:229
+#: g10/keyedit.c:1998 g10/keylist.c:229
 msgid "Preferred keyserver: "
 msgstr ""
 
-#: g10/keyedit.c:2223
+#: g10/keyedit.c:2239
 #, c-format
 msgid "This key may be revoked by %s key "
 msgstr "Kunci ini dapat dibatalkan oleh kunci %s"
 
-#: g10/keyedit.c:2227
+#: g10/keyedit.c:2243
 msgid " (sensitive)"
 msgstr " (sensitive)"
 
-#: g10/keyedit.c:2241 g10/keyedit.c:2297 g10/keyedit.c:2418 g10/keyedit.c:2433
+#: g10/keyedit.c:2257 g10/keyedit.c:2313 g10/keyedit.c:2434 g10/keyedit.c:2449
 #: g10/keyserver.c:366
 #, fuzzy, c-format
 msgid "created: %s"
 msgstr "tidak dapat membuat %s: %s\n"
 
-#: g10/keyedit.c:2244 g10/keylist.c:707 g10/keylist.c:807 g10/mainproc.c:929
+#: g10/keyedit.c:2260 g10/keylist.c:707 g10/keylist.c:807 g10/mainproc.c:929
 #, fuzzy, c-format
 msgid "revoked: %s"
 msgstr "[revoked] "
 
-#: g10/keyedit.c:2246 g10/keylist.c:678 g10/keylist.c:813
+#: g10/keyedit.c:2262 g10/keylist.c:678 g10/keylist.c:813
 #, fuzzy, c-format
 msgid "expired: %s"
 msgstr " [berakhir: %s]"
 
-#: g10/keyedit.c:2248 g10/keyedit.c:2299 g10/keyedit.c:2420 g10/keyedit.c:2435
+#: g10/keyedit.c:2264 g10/keyedit.c:2315 g10/keyedit.c:2436 g10/keyedit.c:2451
 #: g10/keylist.c:684 g10/keylist.c:719 g10/keylist.c:819 g10/keylist.c:840
 #: g10/keyserver.c:372 g10/mainproc.c:935
 #, fuzzy, c-format
 msgid "expires: %s"
 msgstr " [berakhir: %s]"
 
-#: g10/keyedit.c:2250
+#: g10/keyedit.c:2266
 #, fuzzy, c-format
 msgid "usage: %s"
 msgstr " trust: %c/%c"
 
-#: g10/keyedit.c:2265
+#: g10/keyedit.c:2281
 #, fuzzy, c-format
 msgid "trust: %s"
 msgstr " trust: %c/%c"
 
-#: g10/keyedit.c:2269
+#: g10/keyedit.c:2285
 #, c-format
 msgid "validity: %s"
 msgstr ""
 
-#: g10/keyedit.c:2276
+#: g10/keyedit.c:2292
 msgid "This key has been disabled"
 msgstr "Kunci ini telah ditiadakan"
 
-#: g10/keyedit.c:2304
+#: g10/keyedit.c:2320
 msgid "card-no: "
 msgstr ""
 
-#: g10/keyedit.c:2339 g10/keyedit.c:2341 g10/keyedit.c:2343
+#: g10/keyedit.c:2355 g10/keyedit.c:2357 g10/keyedit.c:2359
 #, c-format
 msgid "[%8.8s] "
 msgstr ""
 
-#: g10/keyedit.c:2339 g10/keyedit.c:2452 g10/keylist.c:766 g10/keyserver.c:376
+#: g10/keyedit.c:2355 g10/keyedit.c:2468 g10/keylist.c:766 g10/keyserver.c:376
 #: g10/mainproc.c:1575 g10/trustdb.c:1133
 #, fuzzy
 msgid "revoked"
 msgstr "[revoked] "
 
-#: g10/keyedit.c:2341 g10/keyedit.c:2454 g10/keylist.c:768 g10/keyserver.c:380
+#: g10/keyedit.c:2357 g10/keyedit.c:2470 g10/keylist.c:768 g10/keyserver.c:380
 #: g10/mainproc.c:1577 g10/trustdb.c:500
 #, fuzzy
 msgid "expired"
 msgstr "expire"
 
-#: g10/keyedit.c:2380
+#: g10/keyedit.c:2396
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Tidak ada preferensi pada user ID bergaya PGP 2.x.\n"
 
-#: g10/keyedit.c:2388
+#: g10/keyedit.c:2404
 msgid ""
 "Please note that the shown key validity is not necessarily correct\n"
 "unless you restart the program.\n"
@@ -3317,7 +3312,7 @@ msgstr ""
 "Perhatikan bahwa validitas kunci yang ditampilkan belum tentu benar\n"
 "kecuali anda memulai kembali program.\n"
 
-#: g10/keyedit.c:2519
+#: g10/keyedit.c:2535
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
@@ -3325,7 +3320,7 @@ msgstr ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
 
-#: g10/keyedit.c:2579
+#: g10/keyedit.c:2595
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3335,45 +3330,45 @@ msgstr ""
 "dapat menyebabkan beberapa versi\n"
 "          PGP menolak kunci ini.\n"
 
-#: g10/keyedit.c:2584 g10/keyedit.c:2862
+#: g10/keyedit.c:2600 g10/keyedit.c:2878
 msgid "Are you sure you still want to add it? (y/N) "
 msgstr "Anda tetap ingin menambahkannya? (y/n) "
 
-#: g10/keyedit.c:2590
+#: g10/keyedit.c:2606
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Anda tidak boleh menambahkan sebuah photo ID ke kunci bergaya PGP2 \n"
 
-#: g10/keyedit.c:2730
+#: g10/keyedit.c:2746
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Hapus signature baik ini? (y/T/q)"
 
-#: g10/keyedit.c:2740
+#: g10/keyedit.c:2756
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "Hapus signature tidak valid ini? (y/T/q)"
 
-#: g10/keyedit.c:2744
+#: g10/keyedit.c:2760
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "Hapus signature tidak dikenal ini? (y/T/q)"
 
-#: g10/keyedit.c:2750
+#: g10/keyedit.c:2766
 msgid "Really delete this self-signature? (y/N)"
 msgstr "Yakin ingin menghapus self-signature ini? (y/T)"
 
-#: g10/keyedit.c:2764
+#: g10/keyedit.c:2780
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "Menghapus %d signature.\n"
 
-#: g10/keyedit.c:2765
+#: g10/keyedit.c:2781
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "Menghapus %d signature.\n"
 
-#: g10/keyedit.c:2768
+#: g10/keyedit.c:2784
 msgid "Nothing deleted.\n"
 msgstr "Tidak ada yang dihapus.\n"
 
-#: g10/keyedit.c:2857
+#: g10/keyedit.c:2873
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
 "cause\n"
@@ -3383,165 +3378,165 @@ msgstr ""
 "designated dapat\n"
 "............menyebabkan beberapa versi PGP menolak kunci ini.\n"
 
-#: g10/keyedit.c:2868
+#: g10/keyedit.c:2884
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
 msgstr "Anda tidak boleh revoker designated ke kunci bergaya PGP2.x.\n"
 
-#: g10/keyedit.c:2888
+#: g10/keyedit.c:2904
 msgid "Enter the user ID of the designated revoker: "
 msgstr "Masukkan user ID pihak yang ingin dibatalkan: "
 
-#: g10/keyedit.c:2911
+#: g10/keyedit.c:2927
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr ""
 "tidak dapat menunjuk kunci bergaya PGP 2.x sebagai pihak yang dibatalkan\n"
 
-#: g10/keyedit.c:2926
+#: g10/keyedit.c:2942
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr ""
 "anda tidak dapat menunjuk sebuah kunci sebagai pihak yang dibatalkan "
 "sendiri\n"
 
-#: g10/keyedit.c:2948
+#: g10/keyedit.c:2964
 #, fuzzy
 msgid "this key has already been designated as a revoker\n"
 msgstr "PERINGATAN: Kunci ini telah dibatalkan oleh pihak yang berwenang\n"
 
-#: g10/keyedit.c:2967
+#: g10/keyedit.c:2983
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr ""
 "PERINGATAN: menunjuk sebuah kunci sebagai pihak yang dibatalkan tidak dapat "
 "dilakukan\n"
 
-#: g10/keyedit.c:2973
+#: g10/keyedit.c:2989
 #, fuzzy
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr ""
 "Anda yakin ingin menunjuk kunci inin sebagai pihak yang dibatalkan? (y/N):"
 
-#: g10/keyedit.c:3034
+#: g10/keyedit.c:3050
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Silakan hapus pilihan dari kunci rahasia.\n"
 
-#: g10/keyedit.c:3040
+#: g10/keyedit.c:3056
 msgid "Please select at most one secondary key.\n"
 msgstr "Silakan pilih maksimum satu kunci sekunder.\n"
 
-#: g10/keyedit.c:3044
+#: g10/keyedit.c:3060
 msgid "Changing expiration time for a secondary key.\n"
 msgstr "Merubah batas waktu untuk kunci sekunder.\n"
 
-#: g10/keyedit.c:3047
+#: g10/keyedit.c:3063
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Merubah batas waktu untuk kunci primer.\n"
 
-#: g10/keyedit.c:3093
+#: g10/keyedit.c:3109
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Anda tidak dapat merubah batas waktu kunci v3\n"
 
-#: g10/keyedit.c:3109
+#: g10/keyedit.c:3125
 msgid "No corresponding signature in secret ring\n"
 msgstr "Tidak ada signature koresponden di ring rahasia\n"
 
-#: g10/keyedit.c:3189
+#: g10/keyedit.c:3205
 msgid "Please select exactly one user ID.\n"
 msgstr "Anda harus memilih minimum satu ID user.\n"
 
-#: g10/keyedit.c:3228 g10/keyedit.c:3338 g10/keyedit.c:3457
+#: g10/keyedit.c:3244 g10/keyedit.c:3354 g10/keyedit.c:3473
 #, fuzzy, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
 msgstr "melewati self-signature v3 pada user id \"%s\"\n"
 
-#: g10/keyedit.c:3399
+#: g10/keyedit.c:3415
 msgid "Enter your preferred keyserver URL: "
 msgstr ""
 
-#: g10/keyedit.c:3478
+#: g10/keyedit.c:3494
 #, fuzzy
 msgid "Are you sure you want to replace it? (y/N) "
 msgstr "Apakah anda yakin ingin menggunakannya? (y/N) "
 
-#: g10/keyedit.c:3479
+#: g10/keyedit.c:3495
 #, fuzzy
 msgid "Are you sure you want to delete it? (y/N) "
 msgstr "Apakah anda yakin ingin menggunakannya? (y/N) "
 
-#: g10/keyedit.c:3541
+#: g10/keyedit.c:3557
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "Tidak ada ID user dengan index %d\n"
 
-#: g10/keyedit.c:3587
+#: g10/keyedit.c:3603
 #, c-format
 msgid "No secondary key with index %d\n"
 msgstr "Tidak ada kunci sekunder dengan index %d\n"
 
-#: g10/keyedit.c:3704
+#: g10/keyedit.c:3720
 #, fuzzy, c-format
 msgid "user ID: \"%s\"\n"
 msgstr "ID user: "
 
-#: g10/keyedit.c:3707 g10/keyedit.c:3771 g10/keyedit.c:3814
+#: g10/keyedit.c:3723 g10/keyedit.c:3787 g10/keyedit.c:3830
 #, fuzzy, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr "   ditandai oleh %08lX pada %s%s%s\n"
 
-#: g10/keyedit.c:3709 g10/keyedit.c:3773 g10/keyedit.c:3816
+#: g10/keyedit.c:3725 g10/keyedit.c:3789 g10/keyedit.c:3832
 msgid " (non-exportable)"
 msgstr " (tidak dapat diekspor)"
 
-#: g10/keyedit.c:3713
+#: g10/keyedit.c:3729
 #, c-format
 msgid "This signature expired on %s.\n"
 msgstr "Kunci ini akan kadaluarsa pada %s \n"
 
-#: g10/keyedit.c:3717
+#: g10/keyedit.c:3733
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "Anda tetap ingin membatalkannya? (y/n) "
 
-#: g10/keyedit.c:3721
+#: g10/keyedit.c:3737
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Membuat sertifikat pembatalan untuk signature ini? (y/N)"
 
-#: g10/keyedit.c:3748
+#: g10/keyedit.c:3764
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Anda telah menandai ID user ini:\n"
 
-#: g10/keyedit.c:3774
+#: g10/keyedit.c:3790
 #, fuzzy
 msgid " (non-revocable)"
 msgstr " (tidak dapat diekspor)"
 
-#: g10/keyedit.c:3781
+#: g10/keyedit.c:3797
 #, fuzzy, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "   dibatalkan oleh %08lX pada %s\n"
 
-#: g10/keyedit.c:3803
+#: g10/keyedit.c:3819
 msgid "You are about to revoke these signatures:\n"
 msgstr "Anda akan membatalkan signature ini:\n"
 
-#: g10/keyedit.c:3823
+#: g10/keyedit.c:3839
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Ingin membuat sertifikat pembatalan? (y/T)"
 
-#: g10/keyedit.c:3853
+#: g10/keyedit.c:3869
 msgid "no secret key\n"
 msgstr "tidak ada kunci rahasia\n"
 
-#: g10/keyedit.c:3923
+#: g10/keyedit.c:3939
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "User ID \"%s\" telah dibatalkan\n"
 
-#: g10/keyedit.c:3940
+#: g10/keyedit.c:3956
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "PERINGATAN: signature user ID bertanggal %d detik di masa depan\n"
 
-#: g10/keyedit.c:4109
+#: g10/keyedit.c:4125
 #, fuzzy, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Menampilkan photo ID %s berukuran %ld untuk kunci 0x%08lX (uid %d)\n"
@@ -4661,7 +4656,7 @@ msgstr "masalah komunikasi dengan gpg-agent\n"
 msgid "problem with the agent - disabling agent use\n"
 msgstr "masalah dengan agen - tiadakan penggunaan agen\n"
 
-#: g10/passphrase.c:680 g10/passphrase.c:1159
+#: g10/passphrase.c:680 g10/passphrase.c:1156
 #, fuzzy, c-format
 msgid " (main key ID %s)"
 msgstr " (ID kunci utama %08lX)"
@@ -4702,15 +4697,15 @@ msgstr "dibatalkan oleh user\n"
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr "masalah dengan agen: agen mengembalikan 0x%lx\n"
 
-#: g10/passphrase.c:1052 g10/passphrase.c:1210
+#: g10/passphrase.c:1049 g10/passphrase.c:1207
 msgid "can't query password in batchmode\n"
 msgstr "tidak dapat meminta password dalam mode batch\n"
 
-#: g10/passphrase.c:1057 g10/passphrase.c:1215
+#: g10/passphrase.c:1054 g10/passphrase.c:1212
 msgid "Enter passphrase: "
 msgstr "Masukkan passphrase: "
 
-#: g10/passphrase.c:1140
+#: g10/passphrase.c:1137
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
@@ -4720,17 +4715,17 @@ msgstr ""
 "Anda perlu passphrase untuk membuka kunci rahasia untuk\n"
 "pemakai: \""
 
-#: g10/passphrase.c:1146
+#: g10/passphrase.c:1143
 #, fuzzy, c-format
 msgid "%u-bit %s key, ID %s, created %s"
 msgstr "%u-bit kunci %s, ID %08lX, tercipta %s"
 
-#: g10/passphrase.c:1155
+#: g10/passphrase.c:1152
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr ""
 
-#: g10/passphrase.c:1219
+#: g10/passphrase.c:1216
 msgid "Repeat passphrase: "
 msgstr "Ulangi passphrase: "
 
