@@ -80,6 +80,15 @@ enum gpga_protocol_codes {
 			    ((byte*)p)[3] = (byte)((a) 	    );	\
 			} while(0)
 
+#define digitp(p)   (*(p) >= '0' && *(p) <= '9')
+#define hexdigitp(a) (digitp (a)                     \
+                      || (*(a) >= 'A' && *(a) <= 'F')  \
+                      || (*(a) >= 'a' && *(a) <= 'f'))
+#define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
+                     *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
+#define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
+
+
 
 static char *fd_passwd = NULL;
 static char *next_pw = NULL;
@@ -257,6 +266,48 @@ readn ( int fd, void *buf, size_t buflen, size_t *ret_nread )
     return 0;
 }
 
+/* read an entire line */
+static int
+readline (int fd, char *buf, size_t buflen)
+{
+  size_t nleft = buflen;
+  char *p;
+  int nread = 0;
+
+  while (nleft > 0)
+    {
+      int n = read (fd, buf, nleft);
+      if (n < 0)
+        {
+          if (errno == EINTR)
+            continue;
+          return -1; /* read error */
+        }
+      else if (!n)
+        {
+          return -1; /* incomplete line */
+        }
+      p = buf;
+      nleft -= n;
+      buf += n;
+      nread += n;
+      
+      for (; n && *p != '\n'; n--, p++)
+        ;
+      if (n)
+        {
+          break; /* at least one full line available - that's enough.
+                    This function is just a temporary hack until we use
+                    the assuna lib in gpg.  So it is okay to forget
+                    about pending bytes */
+        }
+    }
+
+  return nread; 
+}
+
+
+
 #if !defined (__riscos__)
 /*
  * Open a connection to the agent and send the magic string
@@ -264,7 +315,7 @@ readn ( int fd, void *buf, size_t buflen, size_t *ret_nread )
  */
 
 static int
-agent_open (void)
+agent_open (int *ret_prot)
 {
 #if defined (__MINGW32__) || defined (__CYGWIN32__)
     int fd;
@@ -272,6 +323,7 @@ agent_open (void)
     HANDLE h;
     char pidstr[128];
 
+    *ret_prot = 0;
     if ( !(infostr = read_w32_registry_string(NULL, "Software\\GNU\\GnuPG",
                                               "agentPID")) 
          || *infostr == '0') {
@@ -314,6 +366,7 @@ agent_open (void)
     char *infostr, *p;
     struct sockaddr_un client_addr;
     size_t len;
+    int prot;
 
     infostr = getenv ( "GPG_AGENT_INFO" );
     if ( !infostr ) {
@@ -327,8 +380,20 @@ agent_open (void)
         m_free (infostr );
         return -1;
     }
-    *p = 0;
-
+    *p++ = 0;
+    /* See whether this is the new gpg-agent using the Assuna protocl.
+       This agent identifies itself by have an info string with a
+       version number in the 3rd field. */
+    while (*p && *p != ':')
+      p++;
+    prot = *p? atoi (p+1) : 0;
+    if ( prot < 0 || prot > 1) {
+        log_error (_("gpg-agent protocol version %d is not supported\n"),prot);
+        m_free (infostr );
+        return -1;
+    }
+    *ret_prot = prot;
+       
     if( (fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1 ) {
         log_error ("can't create socket: %s\n", strerror(errno) );
         m_free (infostr );
@@ -350,9 +415,24 @@ agent_open (void)
     }
     m_free (infostr);
 
-    if ( writen ( fd, "GPGA\0\0\0\x01", 8 ) ) {
-        close (fd);
-        fd = -1;
+    if (!prot) {
+        if ( writen ( fd, "GPGA\0\0\0\x01", 8 ) ) {
+          close (fd);
+          fd = -1;
+        }
+    }
+    else { /* assuan based gpg-agent */
+      char line[200];
+      int nread;
+
+      nread = readline (fd, line, DIM(line));
+      if (nread < 3 || !(line[0] == 'O' && line[1] == 'K'
+                         && (line[2] == '\n' || line[2] == ' ')) ) {
+        log_error ( _("communication problem with gpg-agent\n"));
+        close (fd );
+        return -1;
+      }
+        
     }
 #endif
 
@@ -383,142 +463,211 @@ static char *
 agent_get_passphrase ( u32 *keyid, int mode )
 {
 #if defined(__riscos__)
-   return NULL;
+  return NULL;
 #else
-    size_t n;
-    char *atext;
-    char buf[50];
-    int fd = -1;
-    int nread;
-    u32 reply;
-    char *pw = NULL;
-    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
-    byte fpr[MAX_FINGERPRINT_LEN];
+  size_t n;
+  char *atext;
+  char buf[50];
+  int fd = -1;
+  int nread;
+  u32 reply;
+  char *pw = NULL;
+  PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+  byte fpr[MAX_FINGERPRINT_LEN];
+  int prot;
 
 #if MAX_FINGERPRINT_LEN < 20
 #error agent needs a 20 byte fingerprint
 #endif
 
-    memset (fpr, 0, MAX_FINGERPRINT_LEN );
-    if( keyid && get_pubkey( pk, keyid ) )
-        pk = NULL; /* oops: no key for some reason */
-
-    if ( !mode && pk ) { 
-        char *uid;
-        size_t uidlen;
-        const char *algo_name = pubkey_algo_to_string ( pk->pubkey_algo );
-        const char *timestr;
-        char *maink;
-        const char *fmtstr;
-     
-        if ( !algo_name )
-            algo_name = "?";
-   
-        fmtstr = _(" (main key ID %08lX)");
-        maink = m_alloc ( strlen (fmtstr) + 20 );
-        if( keyid[2] && keyid[3] && keyid[0] != keyid[2] 
-            && keyid[1] != keyid[3] )
-            sprintf( maink, fmtstr, (ulong)keyid[3] );
-        else
-            *maink = 0;
-
-        uid = get_user_id( keyid, &uidlen ); 
-        timestr = strtimestamp (pk->timestamp);
-        fmtstr = _("You need a passphrase to unlock the"
-                   " secret key for user:\n"
-                   "\"%.*s\"\n"
-                   "%u-bit %s key, ID %08lX, created %s%s\n" );
-        atext = m_alloc ( 100 + strlen (fmtstr)  
-                               + uidlen + 15 + strlen(algo_name) + 8
-                               + strlen (timestr) + strlen (maink) );
-        sprintf (atext, fmtstr,
-                 uidlen, uid,
-                 nbits_from_pk (pk), algo_name, (ulong)keyid[1], timestr,
-                 maink  );
-        m_free (uid);
-        m_free (maink);
-
-        { 
-            size_t dummy;
-            fingerprint_from_pk( pk, fpr, &dummy );
-        }
-        
+  memset (fpr, 0, MAX_FINGERPRINT_LEN );
+  if( keyid && get_pubkey( pk, keyid ) )
+    pk = NULL; /* oops: no key for some reason */
+  
+  if ( !mode && pk )
+    { 
+      char *uid;
+      size_t uidlen;
+      const char *algo_name = pubkey_algo_to_string ( pk->pubkey_algo );
+      const char *timestr;
+      char *maink;
+      const char *fmtstr;
+      
+      if ( !algo_name )
+        algo_name = "?";
+      
+      fmtstr = _(" (main key ID %08lX)");
+      maink = m_alloc ( strlen (fmtstr) + 20 );
+      if( keyid[2] && keyid[3] && keyid[0] != keyid[2] 
+          && keyid[1] != keyid[3] )
+        sprintf( maink, fmtstr, (ulong)keyid[3] );
+      else
+        *maink = 0;
+      
+      uid = get_user_id( keyid, &uidlen ); 
+      timestr = strtimestamp (pk->timestamp);
+      fmtstr = _("You need a passphrase to unlock the"
+                 " secret key for user:\n"
+                 "\"%.*s\"\n"
+                 "%u-bit %s key, ID %08lX, created %s%s\n" );
+      atext = m_alloc ( 100 + strlen (fmtstr)  
+                        + uidlen + 15 + strlen(algo_name) + 8
+                        + strlen (timestr) + strlen (maink) );
+      sprintf (atext, fmtstr,
+               uidlen, uid,
+               nbits_from_pk (pk), algo_name, (ulong)keyid[1], timestr,
+               maink  );
+      m_free (uid);
+      m_free (maink);
+      
+      { 
+        size_t dummy;
+        fingerprint_from_pk( pk, fpr, &dummy );
+      }
+      
     }
-    else if (mode == 1 ) 
-        atext = m_strdup ( _("Enter passphrase\n") );
-    else 
-        atext = m_strdup ( _("Repeat passphrase\n") );
+  else if (mode == 1 ) 
+    atext = m_strdup ( _("Enter passphrase\n") );
+  else 
+    atext = m_strdup ( _("Repeat passphrase\n") );
                 
-    if ( (fd = agent_open ()) == -1 ) 
-        goto failure;
+  if ( (fd = agent_open (&prot)) == -1 ) 
+    goto failure;
 
-    n = 4 + 20 + strlen (atext);
-    u32tobuf (buf, n );
-    u32tobuf (buf+4, GPGA_PROT_GET_PASSPHRASE );
-    memcpy (buf+8, fpr, 20 );
-    if ( writen ( fd, buf, 28 ) || writen ( fd, atext, strlen (atext) ) ) 
+  if (!prot)
+    { /* old style protocol */
+      n = 4 + 20 + strlen (atext);
+      u32tobuf (buf, n );
+      u32tobuf (buf+4, GPGA_PROT_GET_PASSPHRASE );
+      memcpy (buf+8, fpr, 20 );
+      if ( writen ( fd, buf, 28 ) || writen ( fd, atext, strlen (atext) ) ) 
         goto failure;
-    m_free (atext); atext = NULL;
-	
-    /* get response */
-    if ( readn ( fd, buf, 12, &nread ) ) 
+      m_free (atext); atext = NULL;
+      
+      /* get response */
+      if ( readn ( fd, buf, 12, &nread ) ) 
         goto failure;
-
-    if ( nread < 8 ) {
-        log_error ( "response from agent too short\n" );
-        goto failure;
-    }
-    n = buftou32 ( buf );
-    reply = buftou32 ( buf + 4 );
-    if ( reply == GPGA_PROT_GOT_PASSPHRASE ) {
-        size_t pwlen;
-        size_t nn;
-
-        if ( nread < 12 || n < 8 ) {
-            log_error ( "response from agent too short\n" );
-            goto failure;
+      
+      if ( nread < 8 ) 
+        {
+          log_error ( "response from agent too short\n" );
+          goto failure;
         }
-        pwlen = buftou32 ( buf + 8 );
-        nread -= 12;
-        n -= 8;
-        if ( pwlen > n || n > 1000 ) {
-            log_error (_("passphrase too long\n"));
-            /* or protocol error */
+      n = buftou32 ( buf );
+      reply = buftou32 ( buf + 4 );
+      if ( reply == GPGA_PROT_GOT_PASSPHRASE ) 
+        {
+          size_t pwlen;
+          size_t nn;
+          
+          if ( nread < 12 || n < 8 ) 
+            {
+              log_error ( "response from agent too short\n" );
+              goto failure;
+            }
+          pwlen = buftou32 ( buf + 8 );
+          nread -= 12;
+          n -= 8;
+          if ( pwlen > n || n > 1000 ) 
+            {
+              log_error (_("passphrase too long\n"));
+              /* or protocol error */
+              goto failure;
+            }
+          /* we read the whole block in one chunk to give no hints
+           * on how long the passhrase actually is - this wastes some bytes
+           * but because we already have this padding we should not loosen
+           * this by issuing 2 read calls */
+          pw = m_alloc_secure ( n+1 );
+          if ( readn ( fd, pw, n, &nn ) )
             goto failure;
+          if ( n != nn ) 
+            {
+              log_error (_("invalid response from agent\n"));
+              goto failure;           
+            }
+          pw[pwlen] = 0; /* make a C String */
+          agent_close (fd);
+          free_public_key( pk );
+          return pw;
         }
-        /* we read the whole block in one chunk to give no hints
-         * on how long the passhrase actually is - this wastes some bytes
-         * but because we already have this padding we should not loosen
-         * this by issuing 2 read calls */
-        pw = m_alloc_secure ( n+1 );
-        if ( readn ( fd, pw, n, &nn ) )
-            goto failure;
-        if ( n != nn ) {
-            log_error (_("invalid response from agent\n"));
-            goto failure;           
-        }
-        pw[pwlen] = 0; /* make a C String */
-        agent_close (fd);
-        free_public_key( pk );
-        return pw;
-    }
-    else if ( reply == GPGA_PROT_CANCELED ) {
+      else if ( reply == GPGA_PROT_CANCELED ) 
         log_info ( _("cancelled by user\n") );
-    }
-    else {
+      else 
         log_error ( _("problem with the agent: agent returns 0x%lx\n"),
-                      (ulong)reply );
+                    (ulong)reply );
     }
-        
-        
-  failure:
-    m_free (atext);
-    if ( fd != -1 )
-        agent_close (fd);
-    m_free (pw );
-    free_public_key( pk );
+  else
+    { /* The new Assuan protocol */
+      char *line, *p;
+      int i; 
 
-    return NULL;
+      /* We allocate 2 time the needed space for atext so that there
+         is nenough space for escaping */
+      line = m_alloc (15 + 46 + 3*strlen (atext) + 2);
+      strcpy (line, "GET_PASSPHRASE ");
+      p = line+15;
+      for (i=0; i < 20; i++, p +=2 )
+        sprintf (p, "%02X", fpr[i]);
+      *p++ = ' ';
+      *p++ = 'X'; /* No error prompt */
+      *p++ = ' ';
+      *p++ = 'X'; /* Use the standard prompt */
+      *p++ = ' ';
+      /* copy description */
+      for (i=0; atext[i]; i++)
+        {
+          if (atext[i] < ' ' || atext[i] == '+')
+            {
+              sprintf (p, "%%%02X", atext[i]);
+              p += 3;
+            }
+          else if (atext[i] == ' ')
+            *p++ = '+';
+          else
+            *p++ = atext[i];
+        }
+      *p++ = '\n';
+      i = writen (fd, line, p - line);
+      m_free (line);
+      if (i)
+        goto failure;
+      m_free (atext); atext = NULL;
+      
+      /* get response */
+      pw = m_alloc_secure (500);
+      nread = readline (fd, pw, 499);
+      if (nread < 3)
+        goto failure;
+      
+      if (pw[0] == 'O' && pw[1] == 'K' && pw[2] == ' ') 
+        { /* we got a passphrase - convert it back from hex */
+          size_t pwlen = 0;
+
+          for (i=3; i < nread && hexdigitp (pw+i); i+=2)
+            pw[pwlen++] = xtoi_2 (pw+i);
+          pw[pwlen] = 0; /* make a C String */
+          log_debug ("passphrase=`%s'\n", pw);
+          agent_close (fd);
+          free_public_key( pk );
+          return pw;
+        }
+      else if (nread > 7 && !memcmp (pw, "ERR 111", 7)
+               && (pw[7] == ' ' || pw[7] == '\n') ) 
+        log_info (_("cancelled by user\n") );
+      else 
+        log_error (_("problem with the agent\n"));
+    }
+      
+        
+ failure:
+  m_free (atext);
+  if ( fd != -1 )
+    agent_close (fd);
+  m_free (pw );
+  free_public_key( pk );
+  
+  return NULL;
 #endif /* Posix or W32 */
 }
 
@@ -529,65 +678,96 @@ void
 passphrase_clear_cache ( u32 *keyid, int algo )
 {
 #if defined(__riscos__)
-    return ;
+  return ;
 #else
-    size_t n;
-    char buf[50];
-    int fd = -1;
-    size_t nread;
-    u32 reply;
-    PKT_public_key *pk;
-    byte fpr[MAX_FINGERPRINT_LEN];
-    
+  size_t n;
+  char buf[200];
+  int fd = -1;
+  size_t nread;
+  u32 reply;
+  PKT_public_key *pk;
+  byte fpr[MAX_FINGERPRINT_LEN];
+  int prot;
+  
 #if MAX_FINGERPRINT_LEN < 20
 #error agent needs a 20 byte fingerprint
 #endif
     
-    if (!opt.use_agent)
-        return;
-
-    pk = m_alloc_clear ( sizeof *pk );
-    memset (fpr, 0, MAX_FINGERPRINT_LEN );
-    if( !keyid || get_pubkey( pk, keyid ) ) {
-        log_debug ("oops, no key in passphrase_clear_cache\n");
-        goto failure; /* oops: no key for some reason */
-    }
-    
+  if (!opt.use_agent)
+    return;
+  
+  pk = m_alloc_clear ( sizeof *pk );
+  memset (fpr, 0, MAX_FINGERPRINT_LEN );
+  if( !keyid || get_pubkey( pk, keyid ) )
     {
-        size_t dummy;
-        fingerprint_from_pk( pk, fpr, &dummy );
+      log_debug ("oops, no key in passphrase_clear_cache\n");
+      goto failure; /* oops: no key for some reason */
     }
+  
+  {
+    size_t dummy;
+    fingerprint_from_pk( pk, fpr, &dummy );
+  }
     
-    if ( (fd = agent_open ()) == -1 ) 
+  if ( (fd = agent_open (&prot)) == -1 ) 
+    goto failure;
+
+  if (!prot)
+    {
+      n = 4 + 20;
+      u32tobuf (buf, n );
+      u32tobuf (buf+4, GPGA_PROT_CLEAR_PASSPHRASE );
+      memcpy (buf+8, fpr, 20 );
+      if ( writen ( fd, buf, 28 ) )  
         goto failure;
-    
-    n = 4 + 20;
-    u32tobuf (buf, n );
-    u32tobuf (buf+4, GPGA_PROT_CLEAR_PASSPHRASE );
-    memcpy (buf+8, fpr, 20 );
-    if ( writen ( fd, buf, 28 ) )  
+      
+      /* get response */
+      if ( readn ( fd, buf, 8, &nread ) ) 
         goto failure;
-    
-    /* get response */
-    if ( readn ( fd, buf, 8, &nread ) ) 
-        goto failure;
-    
-    if ( nread < 8 ) {
+      
+      if ( nread < 8 ) {
         log_error ( "response from agent too short\n" );
         goto failure;
+      }
+      
+      reply = buftou32 ( buf + 4 );
+      if ( reply != GPGA_PROT_OKAY && reply != GPGA_PROT_NO_PASSPHRASE )
+        {
+          log_error ( _("problem with the agent: agent returns 0x%lx\n"),
+                      (ulong)reply );
+        }
     }
-    
-    reply = buftou32 ( buf + 4 );
-    if ( reply != GPGA_PROT_OKAY && reply != GPGA_PROT_NO_PASSPHRASE ) {
-        log_error ( _("problem with the agent: agent returns 0x%lx\n"),
-                    (ulong)reply );
+  else 
+    { /* The assuan protocol */
+      char *line, *p;
+      int i; 
+
+      line = m_alloc (17 + 40 + 2);
+      strcpy (line, "CLEAR_PASSPHRASE ");
+      p = line+17;
+      for (i=0; i < 20; i++, p +=2 )
+        sprintf (p, "%02X", fpr[i]);
+      *p++ = '\n';
+      i = writen (fd, line, p - line);
+      m_free (line);
+      if (i)
+        goto failure;
+      
+      /* get response */
+      nread = readline (fd, buf, DIM(buf)-1);
+      if (nread < 3)
+        goto failure;
+      
+      if (buf[0] == 'O' && buf[1] == 'K' && (buf[2] == ' ' || buf[2] == '\n')) 
+        ;
+      else 
+        log_error (_("problem with the agent\n"));
     }
         
-        
-  failure:
-    if ( fd != -1 )
-        agent_close (fd);
-    free_public_key( pk );
+ failure:
+  if (fd != -1)
+    agent_close (fd);
+  free_public_key( pk );
 #endif /* Posix or W32 */
 }
 
