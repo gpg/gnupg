@@ -1,5 +1,10 @@
 2004-10-28  Werner Koch  <wk@g10code.com>
 
+	* Makefile.am (other_libs): New.  Also include LIBICONV.  Noted by
+	Tim Mooney.
+
+2004-10-28  Werner Koch  <wk@g10code.com>
+
 	* apdu.c (open_pcsc_reader): Removed bad free in error handler.
 
 2004-10-27  David Shaw  <dshaw@jabberwocky.com>

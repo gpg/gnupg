@@ -20,14 +20,15 @@
 
 EXTRA_DIST = lspgpot ring-a-party mail-signed-keys convert-from-106
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
-needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
+needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a 
+other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
 
 bin_PROGRAMS    = gpgsplit
 noinst_PROGRAMS = mpicalc bftest clean-sat mk-tdata shmtest
 
-gpgsplit_LDADD  = $(needed_libs) @LIBINTL@ @CAPLIBS@ @ZLIBS@
-mpicalc_LDADD   = $(needed_libs) @LIBINTL@ @CAPLIBS@ @W32LIBS@
-bftest_LDADD    = $(needed_libs) @LIBINTL@ @CAPLIBS@ @W32LIBS@ @DLLIBS@ @NETLIBS@
-shmtest_LDADD   = $(needed_libs) @LIBINTL@ @CAPLIBS@
+gpgsplit_LDADD  = $(needed_libs) $(other_libs) @ZLIBS@
+mpicalc_LDADD   = $(needed_libs) $(other_libs) @W32LIBS@
+bftest_LDADD    = $(needed_libs) $(other_libs) @W32LIBS@ @DLLIBS@ @NETLIBS@
+shmtest_LDADD   = $(needed_libs) $(other_libs)
 
 gpgsplit mpicalc bftest shmtest: $(needed_libs)

@@ -28,6 +28,7 @@ if ! HAVE_DOSISH_SYSTEM
 AM_CFLAGS = -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""
 endif
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
+other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
 
 #noinst_PROGRAMS = gpgd
 bin_PROGRAMS = gpg gpgv
@@ -131,7 +132,7 @@ gpgv_SOURCES = gpgv.c           \
 #	       ks-db.h \
 #	       $(common_source)
 
-LDADD =  $(needed_libs) @LIBINTL@ @CAPLIBS@ @ZLIBS@ @W32LIBS@
+LDADD =  $(needed_libs) $(other_libs) @ZLIBS@ @W32LIBS@
 gpg_LDADD = $(LDADD) @DLLIBS@ @NETLIBS@ @LIBUSB_LIBS@
 
 $(PROGRAMS): $(needed_libs)
