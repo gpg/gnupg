@@ -1,3 +1,7 @@
+2002-08-23  Werner Koch  <wk@gnupg.org>
+
+	* faq.raw: Updated.  New Maintainer is David D. Scribner.
+
 2002-08-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Clarify meaning of keyserver option include-revoked.
