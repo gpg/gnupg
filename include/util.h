@@ -267,9 +267,6 @@ int vasprintf ( char **result, const char *format, va_list args);
 #include <unixlib/features.h>
 void riscos_global_defaults(void);
 #define RISCOS_GLOBAL_STATICS(a) const char *__dynamic_da_name = (a);
-int riscos_get_filetype_from_string(const char *string, int len);
-int riscos_get_filetype(const char *filename);
-void riscos_set_filetype_by_number(const char *filename, int type);
 void riscos_set_filetype(const char *filename, const char *mimetype);
 pid_t riscos_getpid(void);
 int riscos_kill(pid_t pid, int sig);

@@ -1,11 +1,3 @@
-2002-10-28  Stefan Bellon  <sbellon@sbellon.de>
-
-	* build-packet.c (calc_plaintext, do_plaintext): Added filetype
-	handling for RISC OS' file types.
-
-	* plaintext.c (handle_plaintext) [__riscos__]: Added filetype
-        handling for RISC OS' file types.
-
 2002-10-23  Werner Koch  <wk@gnupg.org>
 
 	* pubkey-enc.c (get_it): Fix segv, test for revoked only when PK

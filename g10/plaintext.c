@@ -25,7 +25,7 @@
 #include <errno.h>
 #include <assert.h>
 #ifdef HAVE_DOSISH_SYSTEM
-#  include <fcntl.h> /* for setmode() */
+  #include <fcntl.h> /* for setmode() */
 #endif
 
 #include "util.h"
@@ -55,9 +55,6 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     int rc = 0;
     int c;
     int convert = pt->mode == 't';
-#ifdef __riscos__
-    int filetype = 0xfff;
-#endif
 
     /* create the filename as C string */
     if( nooutput )
@@ -78,29 +75,9 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	    rc = G10ERR_CREATE_FILE;
 	    goto leave;
 	}
-#ifdef __riscos__
-        /* If there's a ,xxx extension in the embedded filename,
-           get filetype from it and use it later on */
-        filetype = riscos_get_filetype_from_string( pt->name, pt->namelen );
-        c = riscos_get_filetype_from_string( fname, strlen(fname) );
-        if( c != 0xfff && filetype == 0xfff)
-            filetype = c;
-#endif
     }
     else {
 	fname = make_printable_string( pt->name, pt->namelen, 0 );
-#ifdef __riscos__
-        /* If there's a ,xxx extension in the embedded filename,
-           get filetype from it and use it later on, remove ,xxx from
-           actual filename */
-        if( fname[strlen(fname) - 4] == ',' ) {
-            filetype = riscos_get_filetype_from_string( pt->name, pt->namelen );
-            fname[strlen(fname) - 4] = 0;
-        }
-        for( c=0; fname[c]; ++c)
-            if( fname[c] == '.' )
-                fname[c] = '/';
-#endif
     }
 
     if( nooutput )
@@ -108,9 +85,9 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     else if( !*fname || (*fname=='-' && !fname[1])) {
 	/* no filename or "-" given; write to stdout */
 	fp = stdout;
-#ifdef HAVE_DOSISH_SYSTEM
+      #ifdef HAVE_DOSISH_SYSTEM
 	setmode ( fileno(fp) , O_BINARY );
-#endif
+      #endif
     }
     else {
 	while( !overwrite_filep (fname) ) {
@@ -136,9 +113,6 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 #endif /* __riscos__ */
 	goto leave;
     }
-#ifdef __riscos__
-    riscos_set_filetype_by_number(fname, filetype);
-#endif
 
     if( !pt->is_partial ) {
         /* we have an actual length (which might be zero). */
@@ -153,10 +127,10 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		}
 		if( mfx->md )
 		    md_putc(mfx->md, c );
-#ifndef HAVE_DOSISH_SYSTEM
+	      #ifndef HAVE_DOSISH_SYSTEM
 		if( c == '\r' )  /* convert to native line ending */
 		    continue;	 /* fixme: this hack might be too simple */
-#endif
+	      #endif
 		if( fp ) {
 		    if( putc( c, fp ) == EOF ) {
 			log_error("Error writing to `%s': %s\n",
@@ -200,10 +174,10 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	    while( (c = iobuf_get(pt->buf)) != -1 ) {
 		if( mfx->md )
 		    md_putc(mfx->md, c );
-#ifndef HAVE_DOSISH_SYSTEM
+	      #ifndef HAVE_DOSISH_SYSTEM
 		if( convert && c == '\r' )
 		    continue; /* fixme: this hack might be too simple */
-#endif
+	      #endif
 		if( fp ) {
 		    if( putc( c, fp ) == EOF ) {
 			log_error("Error writing to `%s': %s\n",
