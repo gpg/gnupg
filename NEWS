@@ -3,7 +3,7 @@ Noteworthy changes in version 1.3.91
 
     * A new configure option --enable-selinux-support disallows
       processing of confidential files used by gpg (e.g. secring.gpg).
-      This help designing ACLs for the SELinux kernel.
+      This helps writing ACLs for the SELinux kernel.
 
 
 Noteworthy changes in version 1.3.90 (2004-10-01)

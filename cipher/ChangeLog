@@ -1,3 +1,8 @@
+2004-10-14  Werner Koch  <wk@g10code.com>
+
+	* rndunix.c (start_gatherer) [ENABLE_SELINUX_HACKS]: Don't allow
+	logging.
+
 2004-10-12  David Shaw  <dshaw@jabberwocky.com>
 
 	* algorithms.h, cast5.c, cipher.c, idea-stub.c, twofish.c,

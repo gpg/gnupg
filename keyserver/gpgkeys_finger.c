@@ -297,7 +297,7 @@ get_key (char *getkey)
   int sock;
   IOBUF fp_read;
   unsigned int maxlen, buflen, gotit=0;
-  unsigned char *line = NULL;
+  byte *line = NULL;
 
   if (strncmp (getkey,"0x",2)==0)
     getkey+=2;

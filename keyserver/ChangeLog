@@ -1,3 +1,8 @@
+2004-10-14  Werner Koch  <wk@g10code.com>
+
+	* gpgkeys_finger.c (get_key): s/unsigned char/byte/ due
+	to a strange typedef for RISC OS.  Noted by Stefan.
+
 2004-10-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c (main), gpgkeys_hkp.c (main), gpgkeys_http.c

@@ -652,6 +652,13 @@ start_gatherer( int pipefd )
     FILE *dbgfp = NULL;
     int dbgall;
 
+#ifdef ENABLE_SELINUX_HACKS
+    /* We don't allow writing to the log file because this might be
+       sued to corrupt a secured file.  Given that this is used as a
+       library by the ../g10/ code, we can't access the check function
+       from ../g10/misc.c.  */
+    dbgall = 0;
+#else
     {
 	const char *s = getenv("GNUPG_RNDUNIX_DBG");
 	if( s ) {
@@ -664,7 +671,7 @@ start_gatherer( int pipefd )
 	}
 	dbgall = !!getenv("GNUPG_RNDUNIX_DBGALL");
     }
-
+#endif
 
     /* Set up the buffer */
     gather_buffer_size = GATHER_BUFSIZE;
