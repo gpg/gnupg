@@ -1423,17 +1423,27 @@ find_basekeyspacedn(void)
 	    {
 	      char **vals;
 	      LDAPMessage *si_res;
-	      err=ldap_search_s(ldap,context[i],LDAP_SCOPE_ONELEVEL,
-				"(cn=pgpServerInfo)",attr,0,&si_res);
-	      if(err!=LDAP_SUCCESS)
+	      char *object;
+
+	      object=malloc(17+strlen(context[i])+1);
+	      if(!object)
+		return -1;
+
+	      strcpy(object,"cn=pgpServerInfo,");
+	      strcat(object,context[i]);
+
+	      err=ldap_search_s(ldap,object,LDAP_SCOPE_BASE,
+				"(objectClass=*)",attr,0,&si_res);
+	      free(object);
+
+	      if(err==LDAP_NO_SUCH_OBJECT)
+		continue;
+	      else if(err!=LDAP_SUCCESS)
 		return err;
 
 	      vals=ldap_get_values(ldap,si_res,"pgpBaseKeySpaceDN");
 	      if(vals)
 		{
-		  /* This is always "OU=ACTIVE,O=PGP KEYSPACE,C=US", but
-		     it might not be in the future. */
-
 		  basekeyspacedn=strdup(vals[0]);
 		  ldap_value_free(vals);
 		}
@@ -1478,6 +1488,9 @@ find_basekeyspacedn(void)
 			"(objectClass=*)",attr,0,&si_res);
       if(err!=LDAP_SUCCESS)
 	return err;
+
+      /* For the LDAP keyserver, this is always "OU=ACTIVE,O=PGP
+	 KEYSPACE,C=US", but it might not be in the future. */
 
       vals=ldap_get_values(ldap,si_res,"baseKeySpaceDN");
       if(vals)
@@ -1908,9 +1921,12 @@ main(int argc,char *argv[])
 	}
     }
 
+#if 0
   /* The LDAP keyserver doesn't require this, but it might be useful
      if someone stores keys on a V2 LDAP server somewhere.  (V3
-     doesn't require a bind). */
+     doesn't require a bind).  Leave this out for now since it is not
+     clear if anyone server we're likely to use really cares, plus
+     there are some servers that don't allow it. */
 
   err=ldap_simple_bind_s(ldap,NULL,NULL);
   if(err!=0)
@@ -1922,6 +1938,7 @@ main(int argc,char *argv[])
     }
   else
     bound=1;
+#endif
 
   switch(action)
     {

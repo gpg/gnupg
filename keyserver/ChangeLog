@@ -1,3 +1,12 @@
+2004-08-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (find_basekeyspacedn): Use LDAP_SCOPE_BASE along
+	with a full DN rather than LDAP_SCOPE_ONELEVEL plus a filter to
+	find the pgpServerInfo object.  Some LDAP setups don't like the
+	search.
+	(main): Stop binding to the server since it seems no server really
+	requires it, and some require it not be there.
+
 2004-07-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c (main): Add "debug" option.  This is only really
