@@ -1,5 +1,8 @@
 2004-05-21  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_http.c (get_key): Cosmetic fix - make sure that URLs
+	with no path use a path of "/".
+
 	* gpgkeys_ldap.c (ldap2epochtime): We can always rely on timegm()
 	being available now, since it's a replacement function.
 

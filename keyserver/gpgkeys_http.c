@@ -66,8 +66,8 @@ get_key(char *getkey)
   fprintf(output,"KEY 0x%s BEGIN\n",getkey);
 
   if(verbose)
-    fprintf(console,"gpgkeys: requesting key 0x%s from http://%s%s%s/%s\n",
-	    getkey,host,port[0]?":":"",port[0]?port:"",path);
+    fprintf(console,"gpgkeys: requesting key 0x%s from http://%s%s%s%s%s\n",
+	    getkey,host,port[0]?":":"",port[0]?port:"",path[0]?"":"/",path);
 
   request=malloc(strlen(scheme)+3+strlen(host)+1+strlen(port)+strlen(path)+99);
   if(!request)
@@ -76,8 +76,8 @@ get_key(char *getkey)
       return KEYSERVER_NO_MEMORY;
     }
 
-  sprintf(request,"%s://%s%s%s%s",scheme,host,
-	  port[0]?":":"",port[0]?port:"",path);
+  sprintf(request,"%s://%s%s%s%s%s",scheme,host,
+	  port[0]?":":"",port[0]?port:"",path[0]?"":"/",path);
 
   if(verbose>2)
     fprintf(console,"gpgkeys: HTTP URL is \"%s\"\n",request);
