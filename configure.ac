@@ -130,17 +130,6 @@ if test "$use_exec" = no ; then
 fi
 
 if test "$use_exec" = yes ; then
-  AC_MSG_CHECKING([whether to use a restricted exec-path])
-  AC_ARG_WITH(exec-path,
-      [  --with-exec-path=PATH   restrict exec-path to PATH],
-      [if test "$withval" = yes ; then
-         withval=no
-      elif test "$withval" != no ; then
-         AC_DEFINE_UNQUOTED(FIXED_EXEC_PATH,"$withval",
-	                    [if set, restrict exec-path to this value])
-      fi],withval=no)
-  AC_MSG_RESULT($withval)
-
   AC_MSG_CHECKING([whether to enable photo ID viewing])
   AC_ARG_ENABLE(photo-viewers,
       [  --disable-photo-viewers disable photo ID viewers],
@@ -197,6 +186,14 @@ if test "$use_exec" = yes ; then
         try_mailto=$enableval, try_mailto=yes)
     AC_MSG_RESULT($try_mailto)
     fi
+
+    AC_MSG_CHECKING([whether to disable keyserver exec-path])
+    AC_ARG_ENABLE(keyserver-path,
+        [  --disable-keyserver-path disable the exec-path option for keyserver helpers],
+        [if test "$enableval" = no ; then
+  	 AC_DEFINE(DISABLE_KEYSERVER_PATH,1,[define to disable exec-path for keyserver helpers])
+        fi],enableval=yes)
+    AC_MSG_RESULT($enableval)
   fi
 
 AC_MSG_CHECKING([whether included zlib is requested])

@@ -1,5 +1,8 @@
 2002-07-30  David Shaw  <dshaw@jabberwocky.com>
 
+	* README, configure.ac: --with-exec-path is now clarified into
+	--disable-keyserver-path
+
 	* NEWS: changes since 1.1.90.
 
 2002-07-24  David Shaw  <dshaw@jabberwocky.com>

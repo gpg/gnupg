@@ -519,11 +519,10 @@
                     Disable only keyserver helpers (not including
 		    HKP).
 
-     --enable-exec-path=PATH
-                    Force the exec search path to be set to PATH.
-		    Note that this only really applies to keyserver
-		    helpers as the photo-viewer can include its own
-		    path.
+     --disable-keyserver-path
+                    Disables the user's ability to use the exec-path
+		    feature to add additional search directories when
+		    executing a keyserver helper.
 
      --with-photo-viewer=FIXED_VIEWER
                     Force the photo viewer to be FIXED_VIEWER and
