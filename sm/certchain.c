@@ -127,7 +127,7 @@ check_cert_policy (KsbaCert cert)
       log_error ("failed to open `%s': %s\n",
                  opt.policy_file, strerror (errno));
       xfree (policies);
-      return GNUPG_Configuration_Error;
+      return GNUPG_No_Policy_Match;
     }
 
   for (;;) 
@@ -326,7 +326,7 @@ gpgsm_validate_path (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
   if (r_exptime)
     *r_exptime = 0;
 
-  if ((opt.debug & 4096))
+  if (opt.no_path_validation)
     {
       log_info ("WARNING: bypassing path validation\n");
       return 0;

@@ -82,6 +82,7 @@ enum cmd_and_opt_values {
   oDebug,
   oDebugAll,
   oDebugWait,
+  oDebugNoPathValidation,
   oLogFile,
 
   oEnableSpecialFilenames,
@@ -302,6 +303,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDebug, "debug"     ,4|16, "@"},
     { oDebugAll, "debug-all" ,0, "@"},
     { oDebugWait, "debug-wait" ,1, "@"},
+    { oDebugNoPathValidation, "debug-no-path-validation" ,1, "@"},
     { oStatusFD, "status-fd" ,1, N_("|FD|write status info to this FD") },
     { aDummy, "no-comment", 0,   "@"},
     { aDummy, "completes-needed", 1, "@"},
@@ -844,6 +846,8 @@ main ( int argc, char **argv)
         case oDebug: opt.debug |= pargs.r.ret_ulong; break;
         case oDebugAll: opt.debug = ~0; break;
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
+        case oDebugNoPathValidation: opt.no_path_validation = 1; break;
+
 
         case oStatusFD: ctrl.status_fd = pargs.r.ret_int; break;
         case oLoggerFD: log_set_fd (pargs.r.ret_int ); break;
