@@ -58,13 +58,57 @@ struct keylist
 RISCOS_GLOBAL_STATICS("LDAP Keyfetcher Heap")
 #endif /* __riscos__ */
 
-/* Returns 0 on success, -1 on failure, and 1 on eof */
-int send_key(void)
+int
+ldap_err_to_gpg_err(int err)
 {
-  int err,gotit=0,keysize=1,ret=-1;
+  int ret;
+
+  switch(err)
+    {
+    case LDAP_ALREADY_EXISTS:
+      ret=KEYSERVER_KEY_EXISTS;
+      break;
+
+    default:
+      ret=KEYSERVER_GENERAL_ERROR;
+      break;
+    }
+
+  return ret;
+}
+
+int
+ldap_to_gpg_err(LDAP *ld)
+{
+#if defined(HAVE_LDAP_GET_OPTION)
+
+  int err;
+
+  if(ldap_get_option(ld,LDAP_OPT_ERROR_NUMBER,&err)==0)
+    return ldap_err_to_gpg_err(err);
+  else
+    return KEYSERVER_GENERAL_ERROR;
+
+#elif defined(HAVE_LDAP_LD_ERRNO)
+
+  return ldap_err_to_gpg_err(ld->ld_errno);
+
+#else
+
+  /* We should never get here since the LDAP library should always
+     have either ldap_get_option or ld_errno, but just in case... */
+  return KEYSERVER_GENERAL_ERROR;
+
+#endif
+}
+
+int
+send_key(int *eof)
+{
+  int err,gotit=0,keysize=1,ret=KEYSERVER_INTERNAL_ERROR;
   char *dn=NULL;
   char line[MAX_LINE];
-  char *key[2]={0,0};
+  char *key[2]={NULL,NULL};
   char keyid[17];
 #ifndef __riscos__
   LDAPMod mod={LDAP_MOD_ADD,pgpkeystr,{key}},*attrs[2]={&mod,NULL};
@@ -84,6 +128,7 @@ int send_key(void)
   if(dn==NULL)
     {
       fprintf(console,"gpgkeys: can't allocate memory for keyserver record\n");
+      ret=KEYSERVER_NO_MEMORY;
       goto fail;
     }
 
@@ -94,6 +139,7 @@ int send_key(void)
   if(key[0]==NULL)
     {
       fprintf(console,"gpgkeys: unable to allocate memory for key\n");
+      ret=KEYSERVER_NO_MEMORY;
       goto fail;
     }
 
@@ -110,8 +156,10 @@ int send_key(void)
 
   if(!gotit)
     {
-      /* i.e. eof before the KEY BEGIN was found */
-      ret=1;
+      /* i.e. eof before the KEY BEGIN was found.  This isn't an
+	 error. */
+      *eof=1;
+      ret=KEYSERVER_OK;
       goto fail;
     }
 
@@ -132,6 +180,7 @@ int send_key(void)
 	if(key[0]==NULL)
 	  {
 	    fprintf(console,"gpgkeys: unable to reallocate for key\n");
+	    ret=KEYSERVER_NO_MEMORY;
 	    goto fail;
 	  }
 
@@ -141,6 +190,8 @@ int send_key(void)
   if(!gotit)
     {
       fprintf(console,"gpgkeys: no KEY %s END found\n",keyid);
+      *eof=1;
+      ret=KEYSERVER_KEY_INCOMPLETE;
       goto fail;
     }
 
@@ -149,10 +200,11 @@ int send_key(void)
     {
       fprintf(console,"gpgkeys: error adding key %s to keyserver: %s\n",
 	      keyid,ldap_err2string(err));
+      ret=ldap_err_to_gpg_err(err);
       goto fail;
     }
 
-  ret=0;
+  ret=KEYSERVER_OK;
 
  fail:
 
@@ -160,18 +212,22 @@ int send_key(void)
   free(dn);
 
   if(ret!=0)
-    fprintf(output,"KEY %s FAILED\n",keyid);
+    fprintf(output,"KEY %s FAILED %d\n",keyid,ret);
+
+  /* Not a fatal error */
+  if(ret==KEYSERVER_KEY_EXISTS)
+    ret=KEYSERVER_OK;
 
   return ret;
 }
 
-/* Returns 0 on success and -1 on failure.  Note that key-not-found is
-   not an error! */
-int get_key(char *getkey)
+/* Note that key-not-found is not a fatal error */
+int
+get_key(char *getkey)
 {
   char **vals;
   LDAPMessage *res,*each;
-  int ret=-1,err,count;
+  int ret=KEYSERVER_INTERNAL_ERROR,err,count;
   struct keylist *dupelist=NULL;
   char search[62];
   char *attrs[]={"replaceme","pgpuserid","pgpkeyid","pgpcertid","pgprevoked",
@@ -193,8 +249,8 @@ int get_key(char *getkey)
       fprintf(console,
 	      "gpgkeys: LDAP keyservers do not support v3 fingerprints\n");
       fprintf(output,"KEY 0x%s BEGIN\n",getkey);
-      fprintf(output,"KEY 0x%s FAILED\n",getkey);
-      return -1;
+      fprintf(output,"KEY 0x%s FAILED %d\n",getkey,KEYSERVER_NOT_SUPPORTED);
+      return KEYSERVER_NOT_SUPPORTED;
     }
 
   if(strlen(getkey)>16)
@@ -243,16 +299,18 @@ int get_key(char *getkey)
 		    LDAP_SCOPE_SUBTREE,search,attrs,0,&res);
   if(err!=0)
     {
+      int errtag=ldap_err_to_gpg_err(err);
+
       fprintf(console,"gpgkeys: LDAP search error: %s\n",ldap_err2string(err));
-      fprintf(output,"KEY 0x%s FAILED\n",getkey);
-      return -1;
+      fprintf(output,"KEY 0x%s FAILED %d\n",getkey,errtag);
+      return errtag;
     }
 
   count=ldap_count_entries(ldap,res);
   if(count<1)
     {
       fprintf(console,"gpgkeys: key %s not found on keyserver\n",getkey);
-      fprintf(output,"KEY 0x%s FAILED\n",getkey);
+      fprintf(output,"KEY 0x%s FAILED %d\n",getkey,KEYSERVER_KEY_NOT_FOUND);
     }
   else
     {
@@ -295,6 +353,7 @@ int get_key(char *getkey)
 		    {
 		      fprintf(console,"gpgkeys: out of memory when deduping "
 			      "key list\n");
+		      ret=KEYSERVER_NO_MEMORY;
 		      goto fail;
 		    }
 
@@ -390,9 +449,11 @@ int get_key(char *getkey)
 	      vals=ldap_get_values(ldap,each,pgpkeystr);
 	      if(vals==NULL)
 		{
+		  int errtag=ldap_to_gpg_err(ldap);
+
 		  fprintf(console,"gpgkeys: unable to retrieve key %s "
 			  "from keyserver\n",getkey);
-		  fprintf(output,"KEY 0x%s FAILED\n",getkey);
+		  fprintf(output,"KEY 0x%s FAILED %d\n",getkey,errtag);
 		}
 	      else
 		{
@@ -406,7 +467,7 @@ int get_key(char *getkey)
 	}
     }
 
-  ret=0;
+  ret=KEYSERVER_OK;
 
  fail:
   ldap_msgfree(res);
@@ -461,7 +522,8 @@ void printquoted(FILE *stream,char *string,char delim)
 
 /* Returns 0 on success and -1 on error.  Note that key-not-found is
    not an error! */
-int search_key(char *searchkey)
+int
+search_key(char *searchkey)
 {
   char **vals;
   LDAPMessage *res,*each;
@@ -494,8 +556,11 @@ int search_key(char *searchkey)
 		    LDAP_SCOPE_SUBTREE,search,attrs,0,&res);
   if(err!=0)
     {
+      int errtag=ldap_err_to_gpg_err(err);
+
+      fprintf(output,"SEARCH %s FAILED %d\n",searchkey,errtag);
       fprintf(console,"gpgkeys: LDAP search error: %s\n",ldap_err2string(err));
-      return -1;
+      return errtag;
     }
 
   count=ldap_count_entries(ldap,res);
@@ -607,7 +672,7 @@ int search_key(char *searchkey)
 
   fprintf(output,"SEARCH %s END\n",searchkey);
 
-  return 0;
+  return KEYSERVER_OK;
 }
 
 int main(int argc,char *argv[])
@@ -910,7 +975,7 @@ int main(int argc,char *argv[])
 
       while(keyptr!=NULL)
 	{
-	  if(get_key(keyptr->str)==-1)
+	  if(get_key(keyptr->str)!=KEYSERVER_OK)
 	    failed++;
 
 	  keyptr=keyptr->next;
@@ -919,15 +984,14 @@ int main(int argc,char *argv[])
 
     case SEND:
       {
-	int ret2;
+	int eof=0;
 
 	do
 	  {
-	    ret2=send_key();
-	    if(ret2==-1)
+	    if(send_key(&eof)!=KEYSERVER_OK)
 	      failed++;
 	  }
-	while(ret2!=1);
+	while(!eof);
       }
       break;
 
@@ -950,7 +1014,10 @@ int main(int argc,char *argv[])
 
 	searchkey=malloc(len+1);
 	if(searchkey==NULL)
-	  goto fail;
+	  {
+	    ret=KEYSERVER_NO_MEMORY;
+	    goto fail;
+	  }
 
 	searchkey[0]='\0';
 
@@ -965,11 +1032,8 @@ int main(int argc,char *argv[])
 	/* Nail that last "*" */
 	searchkey[strlen(searchkey)-1]='\0';
 
-	if(search_key(searchkey)==-1)
-	  {
-	    fprintf(output,"SEARCH %s FAILED\n",searchkey);
-	    failed++;
-	  }
+	if(search_key(searchkey)!=KEYSERVER_OK)
+	  failed++;
 
 	free(searchkey);
       }
