@@ -461,6 +461,7 @@ agent_release_card_info (struct agent_card_info_s *info)
   xfree (info->disp_lang); info->disp_lang = NULL;
   xfree (info->pubkey_url); info->pubkey_url = NULL;
   xfree (info->login_data); info->login_data = NULL;
+  info->cafpr1valid = info->cafpr2valid = info->cafpr3valid = 0;
   info->fpr1valid = info->fpr2valid = info->fpr3valid = 0;
 }
 
@@ -556,6 +557,20 @@ learn_status_cb (void *opaque, const char *line)
         parm->fpr2valid = unhexify_fpr (line, parm->fpr2);
       else if (no == 3)
         parm->fpr3valid = unhexify_fpr (line, parm->fpr3);
+    }
+  else if (keywordlen == 6 && !memcmp (keyword, "CA-FPR", keywordlen))
+    {
+      int no = atoi (line);
+      while (*line && !spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+      if (no == 1)
+        parm->cafpr1valid = unhexify_fpr (line, parm->cafpr1);
+      else if (no == 2)
+        parm->cafpr2valid = unhexify_fpr (line, parm->cafpr2);
+      else if (no == 3)
+        parm->cafpr3valid = unhexify_fpr (line, parm->cafpr3);
     }
   
   return 0;

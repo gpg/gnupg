@@ -1,3 +1,16 @@
+2004-07-01  Werner Koch  <wk@gnupg.org>
+
+	* card-util.c (change_login): Kludge to allow reading data from a
+	file.
+	(card_edit): Pass ARG_STRING to change_login.
+	(card_status): Print CA fingerprints.
+	(change_cafpr): New.
+	(card_edit): New command CAFPR.
+
+	* call-agent.h: Add members for CA fingerprints.
+	* call-agent.c (agent_release_card_info): Invalid them.
+	(learn_status_cb): Store them.
+
 2004-04-30  Werner Koch  <wk@gnupg.org>
 
 	* g10.c (main) <gpgconf>: Use gpg.conf and not /dev/null as
