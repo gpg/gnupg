@@ -63,8 +63,13 @@ common_source =  \
 	      keylist.c 	\
 	      signal.c
 
+card_support_source = \
+              cardglue.c cardclue.h
+
+
 gpg_SOURCES  = g10.c		\
 	      $(common_source)	\
+	      $(card_support_source) \
 	      pkclist.c 	\
 	      skclist.c 	\
 	      pubkey-enc.c	\
@@ -108,7 +113,7 @@ gpgv_SOURCES = gpgv.c           \
 
 LDADD =  $(needed_libs) @INTLLIBS@ @CAPLIBS@ @ZLIBS@ @W32LIBS@
 # gpg gets LIBOBJS to add in mkdtemp if the platform doesn't have it
-gpg_LDADD = @LIBOBJS@ $(LDADD) @DLLIBS@ @NETLIBS@
+gpg_LDADD = @LIBOBJS@ $(LDADD) @DLLIBS@ @NETLIBS@ @LIBUSB_LIBS@
 
 $(PROGRAMS): $(needed_libs)
 

@@ -90,4 +90,13 @@ unsigned secmem_get_flags(void);
 EXTERN_UNLESS_MAIN_MODULE int memory_debug_mode;
 EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 
+/* To prepare a migration to the xmalloc suite of function as used in
+   1.9 we define a couple of macros. */
+#define xmalloc(n)        m_alloc ((n))
+#define xcalloc(n,m)      m_alloc_clear ((n)*(m))
+#define xmalloc_secure(n) m_alloc_secure (n)
+#define xcalloc_secure(n) m_alloc_secure_clear ((n)*(m))
+#define xfree(a)          m_free (a)
+
+
 #endif /*G10_MEMORY_H*/

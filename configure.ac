@@ -103,6 +103,16 @@ if test "$use_m_guard" = yes ; then
     AC_DEFINE(M_GUARD,1,[Define to use the (obsolete) malloc guarding feature])
 fi
 
+AC_MSG_CHECKING([whether OpenPGP card support is requested])
+AC_ARG_ENABLE(card-support,
+    [  --enable-card-support   enable OpenPGP card support],
+    card_support=$enableval, card_support=no)
+AC_MSG_RESULT($card_support)
+if test "$card_support" = yes ; then
+    AC_DEFINE(ENABLE_CARD_SUPPORT,1,
+             [Define to include the OpenPGP card support])
+fi
+
 dnl See if we are disabling any algorithms or features for a smaller
 dnl binary
 
@@ -969,6 +979,23 @@ else
     AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, false)
 fi
 AC_SUBST(ZLIBS)
+
+
+#
+# libusb allows us to use the integrated CCID smartcard reader driver.
+#
+# Note, that we need the CVS (unstable) version. 
+#
+LIBUSB_LIBS=""
+if test "$card_support" = yes; then
+    AC_CHECK_LIB(usb, usb_find_device,
+                 [ LIBUSB_LIBS="$LIBUSB_LIBS -lusb"
+                   AC_DEFINE(HAVE_LIBUSB,1,
+                   [defined if libusb is available])
+                 ])
+fi
+AC_SUBST(LIBUSB_LIBS)
+
 
 
 # Allow users to append something to the version string without

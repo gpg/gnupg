@@ -1,3 +1,8 @@
+2003-09-27  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (LIBUSB_LIBS,HAVE_LIBUSB): Check for Libusb.
+	(--enable-card-support): New.
+
 2003-09-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Drop TIGER/192 support.  Check for UINT64_C to go

@@ -1,3 +1,11 @@
+2003-09-27  Werner Koch  <wk@gnupg.org>
+
+	* sign.c (do_sign) [ENABLE_CARD_SUPPORT]: Divert to card.
+	* cardglue.c, cardglue.h: New.
+	* Makefile.am (gpg_LDADD): Added.
+	(card_support_sources): New.
+
+	
 2003-09-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, g10.c (main), keylist.c (list_keyblock_print): Add

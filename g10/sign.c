@@ -40,6 +40,7 @@
 #include "trustdb.h"
 #include "status.h"
 #include "i18n.h"
+#include "cardglue.h"
 
 
 #ifdef HAVE_DOSISH_SYSTEM
@@ -305,12 +306,38 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     sig->digest_algo = digest_algo;
     sig->digest_start[0] = dp[0];
     sig->digest_start[1] = dp[1];
-    frame = encode_md_value( sk->pubkey_algo, md,
-			     digest_algo, mpi_get_nbits(sk->skey[0]), 0 );
-    if (!frame)
-        return G10ERR_GENERAL;
-    rc = pubkey_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
-    mpi_free(frame);
+#ifdef ENABLE_CARD_SUPPORT
+    if (sk->is_protected && sk->protect.s2k.mode == 1002) 
+      { 
+        char *rbuf;
+        size_t rbuflen;
+        char *snbuf;
+        
+        snbuf = serialno_and_fpr_from_sk (sk->protect.iv, sk->protect.ivlen,sk);
+        rc = G10ERR_GENERAL;
+/*              agent_scd_pksign (snbuf, digest_algo, */
+/*                                gcry_md_read (md, digest_algo), */
+/*                                gcry_md_get_algo_dlen (digest_algo), */
+/*                                &rbuf, &rbuflen); */
+        xfree (snbuf);
+        if (!rc)
+          {
+/*             if (gcry_mpi_scan (&sig->data[0], GCRYMPI_FMT_USG, */
+/*                                rbuf, rbuflen, NULL)) */
+              BUG ();
+          }
+      }
+    else 
+#endif /* ENABLE_CARD_SUPPORT */
+      {
+        frame = encode_md_value( sk->pubkey_algo, md,
+                                 digest_algo, mpi_get_nbits(sk->skey[0]), 0 );
+        if (!frame)
+          return G10ERR_GENERAL;
+        rc = pubkey_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
+        mpi_free(frame);
+      }
+
     if (!rc && !opt.no_sig_create_check) {
         /* check that the signature verification worked and nothing is
          * fooling us e.g. by a bug in the signature create
