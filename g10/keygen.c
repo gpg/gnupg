@@ -1402,69 +1402,74 @@ ask_algo (int addmode, unsigned int *r_usage)
 static unsigned
 ask_keysize( int algo )
 {
-    char *answer;
-    unsigned nbits;
+  unsigned nbits,min,def=2048,max=4096;
 
-    if (algo != PUBKEY_ALGO_DSA && algo != PUBKEY_ALGO_RSA) {
-        tty_printf (_("About to generate a new %s keypair.\n"
-                      "              minimum keysize is  768 bits\n"
-                      "              default keysize is 1024 bits\n"
-                      "    highest suggested keysize is 2048 bits\n"),
-                    pubkey_algo_to_string(algo) );
+  if(opt.expert)
+    min=512;
+  else
+    min=1024;
+
+  switch(algo)
+    {
+    case PUBKEY_ALGO_DSA:
+      if(opt.expert)
+	{
+	  def=1024;
+	  max=1024;
+	}
+      else
+	{
+	  tty_printf(_("DSA keypair will have %u bits.\n"),1024);
+	  return 1024;
+	}
+      break;
+
+    case PUBKEY_ALGO_RSA:
+      min=1024;
+      break;
     }
 
-    for(;;) {
-	answer = cpr_get("keygen.size",
-			  _("What keysize do you want? (1024) "));
-	cpr_kill_prompt();
-	nbits = *answer? atoi(answer): 1024;
-	m_free(answer);
-	if( algo == PUBKEY_ALGO_DSA && (nbits < 512 || nbits > 1024) )
-	    tty_printf(_("DSA only allows keysizes from 512 to 1024\n"));
-	else if( algo == PUBKEY_ALGO_RSA && nbits < 1024 )
-	    tty_printf(_("keysize too small;"
-			 " 1024 is smallest value allowed for RSA.\n"));
-	else if( nbits < 768 )
-	    tty_printf(_("keysize too small;"
-			 " 768 is smallest value allowed.\n"));
-	else if( nbits > 4096 ) {
-	    /* It is ridiculous and an annoyance to use larger key sizes!
-	     * GnuPG can handle much larger sizes; but it takes an eternity
-	     * to create such a key (but less than the time the Sirius
-	     * Computer Corporation needs to process one of the usual
-	     * complaints) and {de,en}cryption although needs some time.
-	     * So, before you complain about this limitation, I suggest that
-	     * you start a discussion with Marvin about this theme and then
-	     * do whatever you want. */
-	    tty_printf(_("keysize too large; %d is largest value allowed.\n"),
-									 4096);
-	}
-	else if( nbits > 2048 && !cpr_enabled() ) {
-	    tty_printf(
-		_("Keysizes larger than 2048 are not suggested because\n"
-		  "computations take REALLY long!\n"));
-	    if( cpr_get_answer_is_yes("keygen.size.huge.okay",_(
-			"Are you sure that you want this keysize? (y/N) ")) )
-	      {
-		tty_printf(_("Okay, but keep in mind that your monitor "
-			     "and keyboard radiation is also very vulnerable "
-			     "to attacks!\n"));
-		break;
-	      }
-	}
-	else
-	    break;
+  tty_printf(_("%s keys may be between %u and %u bits long.\n"),
+	     pubkey_algo_to_string(algo),min,max);
+
+  for(;;)
+    {
+      char *prompt,*answer;
+
+#define PROMPTSTRING _("What keysize do you want? (%u) ")
+
+      prompt=m_alloc(strlen(PROMPTSTRING)+20);
+      sprintf(prompt,PROMPTSTRING,def);
+
+#undef PROMPTSTRING
+
+      answer = cpr_get("keygen.size",prompt);
+      cpr_kill_prompt();
+      nbits = *answer? atoi(answer): def;
+      m_free(prompt);
+      m_free(answer);
+      
+      if(nbits<min || nbits>max)
+	tty_printf(_("%s keysizes must be in the range %u-%u\n"),
+		   pubkey_algo_to_string(algo),min,max);
+      else
+	break;
     }
-    tty_printf(_("Requested keysize is %u bits\n"), nbits );
-    if( algo == PUBKEY_ALGO_DSA && (nbits % 64) ) {
-	nbits = ((nbits + 63) / 64) * 64;
-	tty_printf(_("rounded up to %u bits\n"), nbits );
+
+  tty_printf(_("Requested keysize is %u bits\n"), nbits );
+
+  if( algo == PUBKEY_ALGO_DSA && (nbits % 64) )
+    {
+      nbits = ((nbits + 63) / 64) * 64;
+      tty_printf(_("rounded up to %u bits\n"), nbits );
     }
-    else if( (nbits % 32) ) {
-	nbits = ((nbits + 31) / 32) * 32;
-	tty_printf(_("rounded up to %u bits\n"), nbits );
+  else if( (nbits % 32) )
+    {
+      nbits = ((nbits + 31) / 32) * 32;
+      tty_printf(_("rounded up to %u bits\n"), nbits );
     }
-    return nbits;
+
+  return nbits;
 }
 
 
@@ -2487,7 +2492,7 @@ generate_keypair (const char *fname, const char *card_serialno,
           sprintf( r->u.value, "%d", PUBKEY_ALGO_DSA );
           r->next = para;
           para = r;
-          tty_printf(_("DSA keypair will have 1024 bits.\n"));
+          tty_printf(_("DSA keypair will have %u bits.\n"),1024);
           r = m_alloc_clear( sizeof *r + 20 );
           r->key = pKEYLENGTH;
           strcpy( r->u.value, "1024" );
