@@ -1,3 +1,8 @@
+2002-10-17  Werner Koch  <wk@gnupg.org>
+
+	* config.links (powerpc-apple-darwin6.1): Disable assembler
+	due to non-working modules/as.  Suggested by Gordon Worley.
+
 2002-10-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* longlong.h: Some whitespace changes in HPPA to fix assembler

@@ -1,5 +1,5 @@
 # config.links - helper for ../configure
-# Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -31,6 +31,11 @@ echo '/* created by config.links - do not edit */' >./mpi/asm-syntax.h
 
 if test "$try_asm_modules" = "yes" ; then
 case "${target}" in
+    powerpc-apple-darwin6.1)
+	echo '/* No working assembler modules available */' >>./mpi/asm-syntax.h
+	path=""
+	;;
+
     i[3467]86*-*-freebsd*-elf  | \
     i[3467]86*-*-freebsd[3-9]* | \
     i[3467]86*-*-freebsdelf*   | \
