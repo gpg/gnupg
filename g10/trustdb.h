@@ -46,6 +46,7 @@ void init_trustdb( void );
 void sync_trustdb( void );
 
 int trust_letter( unsigned value );
+const char *trust_string (unsigned int value);
 
 void revalidation_mark (void);
 
@@ -60,9 +61,10 @@ void enum_cert_paths_print( void **context, FILE *fp,
 					   int refresh, ulong selected_lid );
 
 unsigned int get_ownertrust (PKT_public_key *pk);
+unsigned int get_min_ownertrust (PKT_public_key *pk);
 int get_ownertrust_info (PKT_public_key *pk);
 void update_ownertrust (PKT_public_key *pk, unsigned int new_trust );
-int clear_ownertrust (PKT_public_key *pk);
+int clear_ownertrusts (PKT_public_key *pk);
 
 
 /*-- tdbdump.c --*/

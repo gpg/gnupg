@@ -780,7 +780,7 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	if(length!=2)
 	  p="[invalid trust subpacket]";
 	else
-	  printf("trust signature of depth %d, amount %d",buffer[0],buffer[1]);
+	  printf("trust signature of depth %d, value %d",buffer[0],buffer[1]);
 	break;
       case SIGSUBPKT_REGEXP:
 	if(!length)
@@ -1002,6 +1002,8 @@ can_handle_critical( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_PRIMARY_UID:
       case SIGSUBPKT_FEATURES:
       case SIGSUBPKT_POLICY: /* Is it enough to show the policy? */
+      case SIGSUBPKT_TRUST:
+      case SIGSUBPKT_REGEXP:
 	return 1;
 
       default:
@@ -1300,6 +1302,8 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	    sig->trust_depth=p[0];
 	    sig->trust_value=p[1];
 
+	    /* Only look for a regexp if there is also a trust
+	       subpacket. */
 	    sig->trust_regexp=
 	      parse_sig_subpkt(sig->hashed,SIGSUBPKT_REGEXP,&len);
 

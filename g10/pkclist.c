@@ -245,7 +245,18 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
   int changed=0;
   int quit=0;
   int show=0;
+  int min_num;
   int did_help=defer_help;
+  unsigned int minimum=get_min_ownertrust(pk);
+
+  switch(minimum)
+    {
+    default:              min_num=0; break;
+    case TRUST_UNDEFINED: min_num=1; break;
+    case TRUST_NEVER:     min_num=2; break;
+    case TRUST_MARGINAL:  min_num=3; break;
+    case TRUST_FULLY:     min_num=4; break;
+    }
 
   keyid_from_pk (pk, keyid);
   for(;;) {
@@ -299,10 +310,14 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
                      "Please decide how far you trust this user to correctly\n"
                      "verify other users' keys (by looking at passports,\n"
                      "checking fingerprints from different sources...)?\n\n"));
-        tty_printf (_(" %d = Don't know\n"), 1);
-        tty_printf (_(" %d = I do NOT trust\n"), 2);
-        tty_printf (_(" %d = I trust marginally\n"), 3);
-        tty_printf (_(" %d = I trust fully\n"), 4);
+	if(min_num<=1)
+	  tty_printf (_(" %d = I don't know\n"), 1);
+	if(min_num<=2)
+	  tty_printf (_(" %d = I do NOT trust\n"), 2);
+	if(min_num<=3)
+	  tty_printf (_(" %d = I trust marginally\n"), 3);
+	if(min_num<=4)
+	  tty_printf (_(" %d = I trust fully\n"), 4);
         if (mode)
           tty_printf (_(" %d = I trust ultimately\n"), 5);
 #if 0
@@ -317,6 +332,9 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
 	    tty_printf(_(" q = quit\n"));
 	  }
         tty_printf("\n");
+	if(minimum)
+	  tty_printf(_("The minimum trust level for this key is: %s\n\n"),
+		     trust_string(minimum));
         did_help = 1;
       }
     if( strlen(ans) != 8 )
@@ -328,7 +346,7 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
       did_help = 0;
     else if( *p && p[1] )
       ;
-    else if( !p[1] && (*p >= '1' && *p <= (mode?'5':'4')) ) 
+    else if( !p[1] && ((*p >= '0'+min_num) && *p <= (mode?'5':'4')) ) 
       {
         unsigned int trust;
         switch( *p )

@@ -212,6 +212,10 @@ typedef struct {
     PKT_user_id *user_id;   /* if != NULL: found by that uid */
     struct revocation_key *revkey;
     int     numrevkeys;
+    u32     trust_timestamp;
+    byte    trust_depth;
+    byte    trust_value;
+    const byte *trust_regexp;
     MPI     pkey[PUBKEY_MAX_NPKEY];
 } PKT_public_key;
 

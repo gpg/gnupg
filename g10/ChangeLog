@@ -1,5 +1,35 @@
 2002-10-29  David Shaw  <dshaw@jabberwocky.com>
 
+	* packet.h, trustdb.h, trustdb.c (trust_string): New.  Return a
+	string like "fully trusted", "marginally trusted", etc.
+	(get_min_ownertrust): New.  Return minimum ownertrust.
+	(update_min_ownertrust): New.  Set minimum ownertrust.
+	(check_regexp): New.  Check a regular epression against a user ID.
+	(ask_ownertrust): Allow specifying a minimum value.
+	(get_ownertrust_info): Follow the minimum ownertrust when
+	returning a letter.
+	(clear_validity): Remove minimum ownertrust when a key becomes
+	invalid.
+	(release_key_items): Release regexp along with the rest of the
+	info.
+	(validate_one_keyblock, validate_keys): Build a trust sig chain
+	while validating.  Call check_regexp for regexps.  Use the minimum
+	ownertrust if the user does not specify a genuine ownertrust.
+
+	* pkclist.c (do_edit_ownertrust): Only allow user to select a
+	trust level greater than the minimum value.
+
+	* parse-packet.c (can_handle_critical): Can handle critical trust
+	and regexp subpackets.
+
+	* trustdb.h, trustdb.c (clear_ownertrusts), delkey.c
+	(do_delete_key), import.c (import_one): Rename clear_ownertrust to
+	clear_ownertrusts and have it clear the min_ownertrust value as
+	well.
+
+	* keylist.c (list_keyblock_print): Indent uid to match pub and
+	sig.
+
 	* keyedit.c (print_and_check_one_sig, show_key_and_fingerprint,
 	menu_addrevoker), keylist.c (list_keyblock_print,
 	print_fingerprint): Show "T" or the trust depth for trust

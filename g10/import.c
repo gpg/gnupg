@@ -671,7 +671,7 @@ import_one( const char *fname, KBNODE keyblock,
 	       the keyring and trustdb are out of sync.  It can also
 	       be made to happen with the trusted-key command. */
 
-	    clear_ownertrust (pk);
+	    clear_ownertrusts (pk);
 	    revalidation_mark ();
 	  }
         keydb_release (hd);

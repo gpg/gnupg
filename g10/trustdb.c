@@ -24,6 +24,15 @@
 #include <string.h>
 #include <assert.h>
 
+#ifndef DISABLE_REGEX
+#include <sys/types.h>
+#ifdef USE_GNU_REGEX
+#include "_regex.h"
+#else
+#include <regex.h>
+#endif
+#endif /* !DISABLE_REGEX */
+
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
@@ -43,7 +52,10 @@
  */
 struct key_item {
   struct key_item *next;
-  unsigned int ownertrust;
+  unsigned int ownertrust,min_ownertrust;
+  byte trust_depth;
+  byte trust_value;
+  char *trust_regexp;
   u32 kid[2];
 };
 
@@ -97,6 +109,7 @@ release_key_items (struct key_item *k)
   for (; k; k = k2)
     {
       k2 = k->next;
+      m_free (k->trust_regexp);
       m_free (k);
     }
 }
@@ -440,6 +453,23 @@ trust_letter (unsigned int value)
     }
 }
 
+/* The strings here are similar to those in
+   pkclist.c:do_edit_ownertrust() */
+const char *
+trust_string (unsigned int value)
+{
+  switch( (value & TRUST_MASK) ) 
+    {
+    case TRUST_UNKNOWN:   return _("unknown trust");
+    case TRUST_EXPIRED:   return _("expired");
+    case TRUST_UNDEFINED: return _("undefined trust");
+    case TRUST_NEVER:     return _("do NOT trust");
+    case TRUST_MARGINAL:  return _("marginal trust");
+    case TRUST_FULLY:     return _("full trust");
+    case TRUST_ULTIMATE:  return _("ultimate trust");
+    default:              return "err";
+    }
+}
 
 /****************
  * Recreate the WoT but do not ask for new ownertrusts.  Special
@@ -525,7 +555,6 @@ read_trust_record (PKT_public_key *pk, TRUSTREC *rec)
   return 0;
 }
 
-
 /****************
  * Return the assigned ownertrust value for the given public key.
  * The key should be the primary key.
@@ -544,8 +573,26 @@ get_ownertrust ( PKT_public_key *pk)
       tdbio_invalid ();
       return rc; /* actually never reached */
     }
-  
+
   return rec.r.trust.ownertrust;
+}
+
+unsigned int 
+get_min_ownertrust (PKT_public_key *pk)
+{
+  TRUSTREC rec;
+  int rc;
+  
+  rc = read_trust_record (pk, &rec);
+  if (rc == -1)
+    return TRUST_UNKNOWN; /* no record yet */
+  if (rc) 
+    {
+      tdbio_invalid ();
+      return rc; /* actually never reached */
+    }
+
+  return rec.r.trust.min_ownertrust;
 }
 
 /*
@@ -554,10 +601,22 @@ get_ownertrust ( PKT_public_key *pk)
 int
 get_ownertrust_info (PKT_public_key *pk)
 {
-    unsigned int otrust;
+    unsigned int otrust,otrust_min;
     int c;
 
     otrust = get_ownertrust (pk);
+    otrust_min = get_min_ownertrust (pk);
+    if(otrust<otrust_min)
+      {
+	/* If the trust that the user has set is less than the trust
+	   that was calculated from a trust signature chain, use the
+	   higher of the two.  We do this here and not in
+	   get_ownertrust since the underlying ownertrust should not
+	   really be set - just the appearance of the ownertrust. */
+
+	otrust=otrust_min;
+      }
+
     c = trust_letter( (otrust & TRUST_MASK) );
     if( !c )
 	c = '?';
@@ -611,9 +670,64 @@ update_ownertrust (PKT_public_key *pk, unsigned int new_trust )
     }
 }
 
-/* Clear the ownertrust value.  Return true if a changed actually happend. */
+static void
+update_min_ownertrust (u32 *kid, unsigned int new_trust )
+{
+  PKT_public_key *pk;
+  TRUSTREC rec;
+  int rc;
+
+  pk = m_alloc_clear (sizeof *pk);
+  rc = get_pubkey (pk, kid);
+  if (rc)
+    {
+      log_error (_("public key %08lX not found: %s\n"),
+                 (ulong)kid[1], g10_errstr(rc) );
+      return;
+    }
+
+  rc = read_trust_record (pk, &rec);
+  if (!rc)
+    {
+      if (DBG_TRUST)
+        log_debug ("key %08lX: update min_ownertrust from %u to %u\n",
+                   (ulong)kid[1],(unsigned int)rec.r.trust.min_ownertrust,
+		   new_trust );
+      if (rec.r.trust.min_ownertrust != new_trust)
+        {
+          rec.r.trust.min_ownertrust = new_trust;
+          write_record( &rec );
+          revalidation_mark ();
+          do_sync ();
+        }
+    }
+  else if (rc == -1)
+    { /* no record yet - create a new one */
+      size_t dummy;
+
+      if (DBG_TRUST)
+        log_debug ("insert min_ownertrust %u\n", new_trust );
+
+      memset (&rec, 0, sizeof rec);
+      rec.recnum = tdbio_new_recnum ();
+      rec.rectype = RECTYPE_TRUST;
+      fingerprint_from_pk (pk, rec.r.trust.fingerprint, &dummy);
+      rec.r.trust.min_ownertrust = new_trust;
+      write_record (&rec);
+      revalidation_mark ();
+      do_sync ();
+      rc = 0;
+    }
+  else 
+    {
+      tdbio_invalid ();
+    }
+}
+
+/* Clear the ownertrust and min_ownertrust values.  Return true if a
+   change actually happened. */
 int
-clear_ownertrust (PKT_public_key *pk)
+clear_ownertrusts (PKT_public_key *pk)
 {
   TRUSTREC rec;
   int rc;
@@ -622,11 +736,16 @@ clear_ownertrust (PKT_public_key *pk)
   if (!rc)
     {
       if (DBG_TRUST)
-        log_debug ("clearing ownertrust (old value %u)\n",
-                   (unsigned int)rec.r.trust.ownertrust);
-      if (rec.r.trust.ownertrust)
+	{
+	  log_debug ("clearing ownertrust (old value %u)\n",
+		     (unsigned int)rec.r.trust.ownertrust);
+	  log_debug ("clearing min_ownertrust (old value %u)\n",
+		     (unsigned int)rec.r.trust.min_ownertrust);
+	}
+      if (rec.r.trust.ownertrust || rec.r.trust.min_ownertrust)
         {
           rec.r.trust.ownertrust = 0;
+          rec.r.trust.min_ownertrust = 0;
           write_record( &rec );
           revalidation_mark ();
           do_sync ();
@@ -710,8 +829,15 @@ clear_validity (PKT_public_key *pk)
       tdbio_invalid ();
       return 0;
     }
-  if (rc == -1) /* no record yet - no need to clerar it then ;-) */
+  if (rc == -1) /* no record yet - no need to clear it then ;-) */
     return 0;
+
+  /* Clear minimum ownertrust, if any */
+  if(trec.r.trust.min_ownertrust)
+    {
+      trec.r.trust.min_ownertrust=0;
+      write_record(&trec);
+    }
 
   /* reset validity for all user IDs */
   recno = trec.r.trust.validlist;
@@ -730,8 +856,6 @@ clear_validity (PKT_public_key *pk)
   return any;
 }
 
-
-
 /***********************************************
  *********  Query trustdb values  **************
  ***********************************************/
@@ -912,7 +1036,7 @@ enum_cert_paths_print( void **context, FILE *fp,
  ****************************************/
 
 static int
-ask_ownertrust (u32 *kid)
+ask_ownertrust (u32 *kid,int minimum)
 {
   PKT_public_key *pk;
   int rc;
@@ -931,10 +1055,11 @@ ask_ownertrust (u32 *kid)
   if(ot>0)
     ot = get_ownertrust (pk);
   else if(ot==0)
-    ot = TRUST_UNDEFINED;
+    ot = minimum?minimum:TRUST_UNDEFINED;
   else
     ot = -1; /* quit */
   free_public_key( pk );
+
   return ot;
 }
 
@@ -1196,6 +1321,33 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
     }
 }
 
+/* Used by validate_one_keyblock to confirm a regexp within a trust
+   signature.  Returns 1 for match, and 0 for no match or regex
+   error. */
+static int
+check_regexp(const char *exp,const char *string)
+{
+#ifdef DISABLE_REGEXP
+  /* When DISABLE_REGEXP is defined, assume all regexps do not
+     match. */
+  return 0;
+#else
+  int ret;
+  regex_t pat;
+
+  if(regcomp(&pat,exp,REG_ICASE|REG_NOSUB)!=0)
+    return 0;
+
+  ret=regexec(&pat,string,0,NULL,0);
+
+  regfree(&pat);
+
+  if(DBG_TRUST)
+    log_debug("regexp \"%s\" on \"%s\": %s\n",exp,string,ret==0?"YES":"NO");
+
+  return (ret==0);
+#endif
+}
 
 /*
  * Return true if the key is signed by one of the keys in the given
@@ -1243,19 +1395,72 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
       else if (node->pkt->pkttype == PKT_SIGNATURE 
                && (node->flag & (1<<8)) )
         {
+	  /* Note that we are only seeing unrevoked sigs here */
           PKT_signature *sig = node->pkt->pkt.signature;
           
           kr = is_in_klist (klist, sig);
-          if (kr)
+	  /* If the trust_regexp does not match, it's as if the sig
+             did not exist.  This is safe for non-trust sigs as well
+             since we don't accept a regexp on the sig unless it's a
+             trust sig. */
+          if (kr && (kr->trust_regexp==NULL ||
+		     (uidnode && check_regexp(kr->trust_regexp,
+					    uidnode->pkt->pkt.user_id->name))))
             {
-              if (kr->ownertrust == TRUST_ULTIMATE)
+	      if(DBG_TRUST && sig->trust_depth)
+		log_debug("trust sig on %s, sig depth is %d, kr depth is %d\n",
+			  uidnode->pkt->pkt.user_id->name,sig->trust_depth,
+			  kr->trust_depth);
+
+	      /* Are we part of a trust sig chain?  We always favor
+                 the latest trust sig, rather than the greater or
+                 lesser trust sig or value.  I could make a decent
+                 argument for any of these cases, but this seems to be
+                 what PGP does, and I'd like to be compatible. -dms */
+	      if(sig->trust_depth &&
+		 pk->trust_timestamp<=sig->timestamp &&
+		 (sig->trust_depth<=kr->trust_depth ||
+		  kr->ownertrust==TRUST_ULTIMATE))
+		{
+		  /* If we got here, we know that:
+
+		     this is a trust sig.
+
+		     it's a newer trust sig than any previous trust
+		     sig on this key (not uid).
+
+		     it is legal in that it was either generated by an
+		     ultimate key, or a key that was part of a trust
+		     chain, and the depth does not violate the
+		     original trust sig.
+
+		     if there is a regexp attached, it matched
+		     successfully.
+		  */
+
+		  if(DBG_TRUST)
+		    log_debug("replacing trust value %d with %d and "
+			      "depth %d with %d\n",
+			      pk->trust_value,sig->trust_value,
+			      pk->trust_depth,sig->trust_depth);
+
+		  pk->trust_value=sig->trust_value;
+		  pk->trust_depth=sig->trust_depth-1;
+
+		  /* If the trust sig contains a regexp, record it
+		     on the pk for the next round. */
+		  if(sig->trust_regexp)
+		    pk->trust_regexp=sig->trust_regexp;
+		}
+
+	      if (kr->ownertrust == TRUST_ULTIMATE)
                 fully_count = opt.completes_needed;
               else if (kr->ownertrust == TRUST_FULLY)
                 fully_count++;
               else if (kr->ownertrust == TRUST_MARGINAL)
                 marginal_count++;
               issigned = 1;
-            }
+	    }
         }
     }
 
@@ -1494,7 +1699,6 @@ validate_keys (int interactive)
       goto leave;
     }
 
-
   /* mark all UTKs as visited and set validity to ultimate */
   for (k=utk_list; k; k = k->next)
     {
@@ -1532,7 +1736,6 @@ validate_keys (int interactive)
       do_sync ();
     }
 
-
   klist = utk_list;
   kdb = keydb_new (0);
 
@@ -1544,14 +1747,43 @@ validate_keys (int interactive)
       ot_marginal = ot_full = ot_ultimate = 0;
       for (k=klist; k; k = k->next)
         {
+	  int min=0;
+
+	  /* 120 and 60 are as per RFC2440 */
+	  if(k->trust_value>=120)
+	    min=TRUST_FULLY;
+	  else if(k->trust_value>=60)
+	    min=TRUST_MARGINAL;
+
+	  if(min!=k->min_ownertrust)
+	    update_min_ownertrust(k->kid,min);
+
           if (interactive && k->ownertrust == TRUST_UNKNOWN)
-              k->ownertrust = ask_ownertrust (k->kid);
-	  if (k->ownertrust == -1)
 	    {
-	      quit=1;
-	      goto leave;
+	      k->ownertrust = ask_ownertrust (k->kid,min);
+
+	      if (k->ownertrust == -1)
+		{
+		  quit=1;
+		  goto leave;
+		}
 	    }
-	  else if (k->ownertrust == TRUST_UNKNOWN)
+
+	  /* This can happen during transition from an old trustdb
+	     before trust sigs.  It can also happen if a user uses two
+	     different versions of GnuPG. */
+	  if(k->ownertrust<min)
+	    {
+	      if(DBG_TRUST)
+		log_debug("key %08lX: "
+			  "overriding ownertrust \"%s\" with \"%s\"\n",
+			  (ulong)k->kid[1],
+			  trust_string(k->ownertrust),trust_string(min));
+
+	      k->ownertrust=min;
+	    }
+
+	  if (k->ownertrust == TRUST_UNKNOWN)
             ot_unknown++;
           else if (k->ownertrust == TRUST_UNDEFINED)
             ot_undefined++;
@@ -1573,7 +1805,6 @@ validate_keys (int interactive)
           rc = G10ERR_GENERAL;
           goto leave;
         }
-
 
       for (key_count=0, kar=keys; kar->keyblock; kar++, key_count++)
         ;
@@ -1604,6 +1835,16 @@ validate_keys (int interactive)
                   keyid_from_pk (kar->keyblock->pkt->pkt.public_key, k->kid);
                   k->ownertrust = get_ownertrust (kar->keyblock
                                                   ->pkt->pkt.public_key);
+		  k->min_ownertrust = get_min_ownertrust (kar->keyblock
+						        ->pkt->pkt.public_key);
+		  k->trust_depth=
+		    kar->keyblock->pkt->pkt.public_key->trust_depth;
+		  k->trust_value=
+		    kar->keyblock->pkt->pkt.public_key->trust_value;
+		  if(kar->keyblock->pkt->pkt.public_key->trust_regexp)
+		    k->trust_regexp=
+		      m_strdup(kar->keyblock->pkt->
+			       pkt.public_key->trust_regexp);
                   k->next = klist;
                   klist = k;
                   break;
@@ -1638,5 +1879,3 @@ validate_keys (int interactive)
     }
   return rc;
 }
-
-

@@ -495,7 +495,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
                 continue; 
 
 	    if( any ) 
-                printf("uid%*s", 28, "");
+                printf("uid%*s", 29, "");
 
             if ( node->pkt->pkt.user_id->is_revoked )
                 fputs ("[revoked] ", stdout);

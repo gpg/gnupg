@@ -161,7 +161,7 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
            revalidation_mark().  This makes sense - only deleting keys
            that have ownertrust set should trigger this. */
 
-        if (!secret && pk && clear_ownertrust (pk)) {
+        if (!secret && pk && clear_ownertrusts (pk)) {
           if (opt.verbose)
             log_info (_("ownertrust information cleared\n"));
         }
