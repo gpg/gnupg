@@ -1,3 +1,13 @@
+2003-03-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.skel: Add explantion and commented-out
+	"no-mangle-dos-filenames".
+
+	* mainproc.c (proc_encrypted): Make string translatable.
+
+	* keygen.c (keygen_set_std_prefs): Include AES192, and AES256 in
+	default prefs.
+
 2003-03-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyring.c (keyring_rebuild_cache): Lock the keyring while

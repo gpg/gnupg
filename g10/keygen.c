@@ -228,9 +228,9 @@ keygen_set_std_prefs (const char *string,int personal)
       if (opt.def_preference_list)
 	string=opt.def_preference_list;
       else if ( !check_cipher_algo(CIPHER_ALGO_IDEA) )
-        string = "S7 S3 S2 S1 H2 H3 Z2 Z1";
+        string = "S9 S8 S7 S3 S2 S1 H2 H3 Z2 Z1";
       else
-        string = "S7 S3 S2 H2 H3 Z2 Z1";
+        string = "S9 S8 S7 S3 S2 H2 H3 Z2 Z1";
 
       /* If we have it, IDEA goes *after* 3DES so it won't be used
          unless we're encrypting along with a V3 key.  Ideally, we
