@@ -21,7 +21,7 @@
 AUTOMAKE_OPTIONS = no-texinfo.tex
 
 EXTRA_DIST = DETAILS gpg.sgml gpg.1 gpgv.sgml gpgv.1 faq.raw FAQ faq.html \
-             HACKING OpenPGP README.W32 
+             HACKING OpenPGP README.W32 samplekeys.asc
 
 man_MANS = gpg.1 gpgv.1
 
@@ -75,14 +75,3 @@ faq.html : faq.raw
 dist-hook:
 	@if test "`wc -c < gpg.1`" -lt 200; then \
 	    echo 'ERROR: dummy man page'; false; fi
-
-
-
-
-
-
-
-
-
-
-

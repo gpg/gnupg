@@ -10,7 +10,7 @@
 	Add "Preferences" command to unattended key generation
 	instructions.  Also fixed a few typos.
  
-	* samplekeys.asc: new
+	* samplekeys.asc: new (added to EXTRA_DIST in Makefile.am as well)
 
 2002-01-31  Marcus Brinkmann  <marcus@g10code.de>
 
