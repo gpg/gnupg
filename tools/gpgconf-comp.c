@@ -1084,12 +1084,6 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 		    {
 		      char *opt_val = opt_value;
 
-		      if (gc_arg_type[option->arg_type].fallback
-			  == GC_ARG_TYPE_STRING)
-			opt_val++;
-
-		      /* FIXME.  For type none arguments, this is
-			 wrong.  */
 		      option->value = xasprintf ("%s,%s", option->value,
 						 opt_val);
 		      xfree (opt_value);
