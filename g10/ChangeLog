@@ -1,3 +1,7 @@
+2003-11-10  Moritz Schulte  <mo@g10code.com>
+
+	* Makefile.am (INCLUDES): Added: @LIBGCRYPT_CFLAGS@.
+
 2003-10-25  Werner Koch  <wk@gnupg.org>
 
 	* call-agent.c (learn_status_cb, scd_genkey_cb): Fixed faulty use
