@@ -1,586 +1,230 @@
-2003-01-06  David Shaw  <dshaw@jabberwocky.com>
+2002-12-04  Werner Koch  <wk@gnupg.org>
 
-	* DETAILS: Document disabled flag in capabilities field.
+	Released 0.9.4.
 
-2002-12-27  David Shaw  <dshaw@jabberwocky.com>
+2002-12-03  Werner Koch  <wk@gnupg.org>
 
-	* gpg.sgml: Clarify --no-permission-warning to note that the
-	permission warnings are not intended to be the be-all and end-all
-	in security checks.  Add note to --group that when used on the
-	command line, it may be necessary to quote the argument so it is
-	not treated as multiple arguments.  Noted by Stefan Bellon.
+	* configure.ac (GNUPG_PROTECT_TOOL): New option --with-protect-tool. 
 
-2002-12-23  Werner Koch  <wk@gnupg.org>
+2002-11-25  Werner Koch  <wk@gnupg.org>
 
-	* samplekeys.asc: Updated.
+	* configure.ac (NEED_KSBA_VERSION): Does now require 0.4.6.
 
-2002-12-10  David Shaw  <dshaw@jabberwocky.com>
+2002-11-13  Werner Koch  <wk@gnupg.org>
 
-	* gpg.sgml: Clarify include-revoked and include-disabled so they
-	match what the program actually does.  Noted by Dick Gevers.
+	* README: Noted where to find gpg-protect-tool. 
 
-	* gpg.sgml: Document %-expandos for policy URLs and notations.
+2002-11-12  Werner Koch  <wk@gnupg.org>
 
-	* gpg.sgml: Document --pgp8.  Clarify that --pgp6 and --pgp7
-	disable --throw-keyid.
+	* config.sub, config.guess: Updated from ftp.gnu.org/gnu/config
+	to version 2002-11-08.
 
-2002-12-05  Werner Koch  <wk@gnupg.org>
+2002-11-11  Werner Koch  <wk@gnupg.org>
 
-	* gpg.sgml: Document --no-mangle-dos-filenames.
+	Released 0.9.3.
 
-2002-12-01  David Shaw  <dshaw@jabberwocky.com>
+2002-10-31  Neal H. Walfield  <neal@g10code.de>
 
-	* gpg.sgml: Point out that if the user absolutely must, it's
-	better to use --pgpX than forcing an algorithm manually.  Better
-	still not to use anything, of course.
+	* configure.ac: Check for flockfile and funlockfile.  Check for
+	isascii and putc_unlocked replacing them if not found.
 
-2002-11-25  David Shaw  <dshaw@jabberwocky.com>
+2002-10-31  Neal H. Walfield  <neal@g10code.de>
 
-	* gpg.sgml: Document --primary-keyring.  Clarify
-	--s2k-cipher-algo, --s2k-digest-algo,
-	--personal-cipher-preferences, --personal-digest-preferences, and
-	--personal-compress-preferences.
-
-	* gpg.sgml: Document --sig-policy-url, --cert-policy-url,
-	--sig-notation, --cert-notation.  Clarify --show-notation and
-	--show-policy-url that policy URLs and notations can be used in
-	data signatures as well.  Add note about '@' being a required
-	character in notation names.
-
-2002-11-21  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpg.sgml: Add an interoperability section.
-
-2002-11-17  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpg.sgml: Correct defaults for --s2k-mode and --s2k-digest-mode.
-	Noted by Haakon Riiser.
-
-2002-11-14  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpg.sgml: --compress-algo now allows algorithm names.
-
-2002-11-13  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpg.sgml: Document --trust-model.
-
-2002-11-04  David Shaw  <dshaw@jabberwocky.com>
-
-	* KEYSERVER: New.  Documents the --with-colons format for
-	keyserver listings.
-
-	* DETAILS: Clarify meaning of 'u'.  Noted by Timo.
-
-2002-11-03  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpg.sgml: Document "tsign", clarify "setpref", clarify
-	--recipient, document --hidden-recipient, document
-	--hidden-encrypt-to, clarify --no-encrypt-to, clarify
-	--throw-keyid, document --no-throw-keyid.
-
-2002-10-25  Werner Koch  <wk@gnupg.org>
-
-        * README.W32: Add blurb on how to create a ZIP file, changed
-        requirement for mingw32 to 0.3.2.
-
-2002-10-24  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpg.sgml: Document --refresh-keys.
-
-2002-10-19  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpg.sgml: Clarify --force-mdc, and document --disable-mdc.
-
-2002-10-12  Werner Koch  <wk@gnupg.org>
-
-	* DETAILS (KEY_CREATED): Enhanced by fingerprint.
-
-2002-10-03  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpg.sgml: Note that '#' means secret-key-unavailable, and that
-	keyserver schemes are case-insensitive.
-
-2002-09-30  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpg.sgml: Note that --pgp2 disables --textmode when encrypting.
-
-2002-09-20  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpg.sgml: Some minor language cleanup.
+	* configure.ac (PTH_LIBS): If pth is found, add the output of
+	`$PTH_CONFIG --ldflags`, not just `$PTH_CONFIG --libs`.
 
 2002-09-20  Werner Koch  <wk@gnupg.org>
 
-	* DETAILS: s/XORed/ORed/.
+	Released 0.9.2.
 
-2002-09-15  Werner Koch  <wk@gnupg.org>
+2002-09-05  Neal H. Walfield  <neal@g10code.de>
 
-	* gpg.sgml: Add rebuild-keydb-caches.
+	* configure.ac: Check for makeinfo.
 
-2002-09-12  David Shaw  <dshaw@jabberwocky.com>
+2002-09-03  Neal H. Walfield  <neal@g10code.de>
 
-	* DETAILS: Fix batch key generation example.
-
-2002-09-11  Werner Koch  <wk@gnupg.org>
-
-	* Makefile.am (EXTRA_DIST): Include gnupg-32.reg
-
-2002-09-02  Werner Koch  <wk@gnupg.org>
-
-	* gpg.sgml: Updated the charset option.
-
-	* DETAILS: Added status IMPORT_OK.
-
-	* gnupg.7: New mini man page.
-
-2002-08-30  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpg.sgml: Document keyserver-option include-subkeys.  Note that
-	honor-http-proxy is a keyserver-option now.
-
-	* DETAILS: Add "Key not trusted" to INV_RECP status code.
+	* autogen.sh (have_version): New function.  Generalize and
+	simplify logic for finding and determining the versions of GNU
+	programs.  Use it.
 
 2002-08-23  Werner Koch  <wk@gnupg.org>
 
-	* faq.raw: Updated.  New Maintainer is David D. Scribner.
+	Released 0.9.1.
 
-2002-08-22  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpg.sgml: Clarify meaning of keyserver option include-revoked.
+	* acinclude.m4 (AM_PATH_LIBGCRYPT): Updated from Libgcrypt.
+	(AM_PATH_OPENSC): Strip non-digits from the micro version.
 
 2002-08-21  Werner Koch  <wk@gnupg.org>
 
-	* DETAILS: Added IMPORT_PROBLEM.
+	Released 0.9.0.
 
-2002-08-20  David Shaw  <dshaw@jabberwocky.com>
+	* configure.ac: Changed the default homedir to .gnupg.
+	* README-alpha: Removed.
 
-	* DETAILS: Clarify that trust letters 'q' and '-' can be treated
-	identically.
+2002-08-19  Werner Koch  <wk@gnupg.org>
 
-	* gpg.sgml: Document --ignore-mdc-error.
+	* acinclude.m4: Removed -lpcsclite from KSBA_LIBS; copy+paste bug.
 
-2002-08-06  David Shaw  <dshaw@jabberwocky.com>
+2002-08-13  Werner Koch  <wk@gnupg.org>
 
-	* gpg.sgml: Clarify that only long-form options can go in the
-	config file.
+	* acinclude.m4 (AM_PATH_OPENSC, AM_PATH_KSBA): New.
+	* configure.ac: Use them.
 
-2002-08-06  Werner Koch  <wk@gnupg.org>
+2002-08-10  Werner Koch  <wk@gnupg.org>
 
-	* gpg.sgml: Fixed doc regarding the name change of the option
-	file.
+	Released 0.3.10.
+	
+	* configure.ac (NEED_LIBKSBA_VERSION): Require 0.4.4. Add support
+	for gettext.
 
-2002-07-30  David Shaw  <dshaw@jabberwocky.com>
+2002-07-22  Werner Koch  <wk@gnupg.org>
 
-	* gpg.sgml: Clarify --edit/addrevoker (sensitive), and
-	--keyserver-options (--import/export-options may be used as well).
-	Document --import-options and --export-options with their various
-	options.  --show-photos now works during signature verification as
-	well.  Document --exec-path.  Note in --simple-sk-checksum that
-	the passphrase must be changed for this to take effect.  Note that
-	--pgp7 does not disable MDC.  Document --no-mdc-warning.
-
-2002-07-25  Werner Koch  <wk@gnupg.org>
-
-	* gpg.sgml: Document new --delete behaviour.
-
-2002-07-25  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpg.sgml: Clarify the differences between "pref" and "showpref".
-	Note in "setpref" that a list of available algorithms can be
-	printed with "gpg -v --version".  Note in "updpref" that we don't
-	select keys via attribute uids, so preferences there will be
-	ignored.
-
-2002-07-01  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpg.sgml: Clarify "group".
+	* configure.ac: Check for ftello and provide a replacement.
 
 2002-07-01  Werner Koch  <wk@gnupg.org>
 
-	* Makefile.am: Due to problems with VPATH builds we don't try to
-	build the texi vesions of the manual pages anymore automatically.
-
-2002-06-30  Werner Koch  <wk@gnupg.org>
-
-	* README.W32: Adjusted some descriptions.  Fixed the regsitry
-	entry descriptions.
-
-2002-06-21  David Shaw  <dshaw@jabberwocky.com>
-
-	* DETAILS: Document "uat".
-
-	* gpg.sgml: Document
-	--personal-{compress|digest|compress}-preferences, --group, and
-	add comments to --expert.
-
-2002-06-17  Werner Koch  <wk@gnupg.org>
-
-	* gpg.sgml: Grammar fix.
-
-2002-06-03  David Shaw  <dshaw@jabberwocky.com>
-
-	* DETAILS: Details of ATTRIBUTE.
-
-	* gpg.sgml: Document --attribute-fd
-
-2002-06-03  Timo Schulz  <ts@winpt.org>
-
-	* DETAILS: Add ATTRIBUTE.
+        Released 0.3.9.
 	
-2002-05-31  David Shaw  <dshaw@jabberwocky.com>
+	* README: Short note on how to export in pkcs-12 format.
 
-	* gpg.sgml: Add "edit/addrevoker".  Document --desig-revoke.  Note
-	that -z and --compress are the same option.  Note that
-	--digest-algo can no longer violate OpenPGP with a non-160 bit
-	hash with DSA.  Document --cert-digest-algo with suitable warnings
-	not to use it.  Note the default s2k-cipher-algo is now CAST5.
-	Note that --force-v3-sigs overrides --ask-sig-expire.  Revise
-	--expert documentation, as it is now definitely legal to have more
-	than one photo ID on a key.  --preference-list is now
-	--default-preference-list with the new meaning.  Document
-	--personal-preference-list.
+2002-06-29  Werner Koch  <wk@gnupg.org>
 
-	* DETAILS: Document "Revoker" for batch key generation.
+	* configure.ac: Define --with options to set the default location
+	of the agent, scdaemon, pinentry and dirmngr.
 
-2002-05-22  Werner Koch  <wk@gnupg.org>
+2002-06-27  Werner Koch  <wk@gnupg.org>
 
-	* gpg.sgml: sgml syntax fix.
+	* README: Short blurb on how to import a PKCS-12 file.
 
-2002-05-12  Werner Koch  <wk@gnupg.org>
+	* configure.ac (AH_BOTTOM): New to define some constants.
 
-	* gpg.sgml: Fixed URL in the description section.
+2002-06-25  Werner Koch  <wk@gnupg.org>
 
-	* faq.raw: Minor typo fixes noted by kromJx@myrealbox.com.
-
-2002-05-11  Werner Koch  <wk@gnupg.org>
-
-	* gpg.sgml: Typo fix.
-
-2002-05-07  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpg.sgml: Add entries for --sk-comments, --no-sk-comments,
-	--pgp7, and --no-pgp7.  Fix --pgp2 and --pgp6: the proper name is
-	--escape-from-lines and not --escape-from.
-
-2002-04-30  Timo Schulz  <ts@winpt.org>
-
-	* gpg.sgml: Add an entry for --encrypt-files and --decrypt-files.
+	Released 0.3.8.
 	
-2002-04-29  David Shaw  <dshaw@jabberwocky.com>
+	* configure.ac (NEED_LIBGCRYPT_VERSION): Set to 1.1.8.
 
-	* gpg.sgml: Fix minor error in --pgp6 documentation: it does not
-	imply --digest-algo MD5
+2002-06-12  Werner Koch  <wk@gnupg.org>
 
-2002-04-29  Werner Koch  <wk@gnupg.org>
+	* configure.ac (NEED_LIBKSBA_VERSION): We need 0.4.3 now.
 
-	* samplekeys.asc: Added gnupg distribution key 57548DCD.
+2002-06-04  Werner Koch  <wk@gnupg.org>
 
-	* faq.raw: Inserted Douglas Calvert as new maintainer. Acknowledge
-	Nils.  Add entry about trust packet parsing problems.
+	Released 0.3.7.
 
-2002-04-24  David Shaw  <dshaw@jabberwocky.com>
+2002-05-21  Werner Koch  <wk@gnupg.org>
 
-	* gpg.sgml: Add some documentation for
-	--edit/{addphoto|showphoto|nrsign|nrlsign}, and the difference
-	between %t and %T in photo viewer command lines.
+	* configure.ac: We now require libgcrypt 1.1.7 and libksba 0.4.2.
 
-2002-04-23  Stefan Bellon  <sbellon@sbellon.de>
+2002-05-14  Werner Koch  <wk@gnupg.org>
 
-	* gpg.sgml: Moved options from section "COMMANDS" to
-	section "OPTIONS".
+	* doc/: New
+	* configure.ac, Makefile.am:  Added doc/ 
 
-2002-04-20  David Shaw  <dshaw@jabberwocky.com>
+2002-05-03  Werner Koch  <wk@gnupg.org>
 
-	* samplekeys.asc: Added 0x5B0358A2
+	Released 0.3.6.
 
-2002-04-19  David Shaw  <dshaw@jabberwocky.com>
+2002-04-25  Werner Koch  <wk@gnupg.org>
 
-	* gpg.sgml: Add "%t" flag for photo IDs, a note about primary
-	having different meanings for photo and regular IDs, rename
-	--default-check-level to --default-cert-check-level, add
-	--auto-check-trustdb, and --pgp6.
+	* configure.ac: Check for setlocale.
 
-	* DETAILS: Add EXPSIG, EXPKEYSIG, and KEYEXPIRED.  Add notes to
-	SIGEXPIRED (deprecated), and VALIDSIG (added expiration date).
-	Add "Preferences" command to unattended key generation
-	instructions.  Also fixed a few typos.
- 
-	* samplekeys.asc: new (added to EXTRA_DIST in Makefile.am as well)
+2002-04-24  Marcus Brinkmann  <marcus@g10code.de>
 
-2002-01-31  Marcus Brinkmann  <marcus@g10code.de>
+	* configure.ac: Check for locale.h.
 
-	* DETAILS: Fix a spelling error, correct IMPORTED_RES to IMPORT_RES,
-	correct INV_RECP (the second occurence) to NO_RECP.
+2002-04-15  Werner Koch  <wk@gnupg.org>
 
-2002-04-03  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpg.sgml: auto-key-retrieve is a keyserver-option (noted by
-	Roger Sondermann).
+	Released 0.3.5.
 	
-2002-03-27  David Shaw  <dshaw@jabberwocky.com>
+	* NEWS: Started to describe release notes.
+	
+	* configure.ac (NEED_LIBKSBA_VERSION, NEED_LIBGCRYPT_VERSION): Defined
 
-	* gpg.sgml: --pgp2 also means --disable-mdc, --no-ask-sig-expire,
-	and --no-ask-cert-expire.  It does not mean --no-force-v3-sigs
-	(noted by Timo).
+2002-04-01  Werner Koch  <wk@gnupg.org>
 
-2002-03-27  David Shaw  <dshaw@jabberwocky.com>
+	Released 0.3.4.
 
-	* gpg.sgml: Add a few notes about --pgp2 meaning MIT PGP 2.6.2,
-	and keyserver details about HKP and NAI HKP.
+2002-03-18  Werner Koch  <wk@gnupg.org>
 
-2002-03-18  David Shaw  <dshaw@jabberwocky.com>
+	Released 0.3.3.
 
-	* gpg.sgml: Change meaning of --allow-non-selfsigned-uid to match
-	change in code, and add --no-allow-non-selfsigned-uid.
+2002-03-08  Werner Koch  <wk@gnupg.org>
 
-2002-03-13  Werner Koch  <wk@gnupg.org>
-
-	* faq.raw: Due to a lack of time Nils can't serve anymore as a
-	maintainer.  Removed his address and setup a generic address.
+	* README: Add some explanation on how to specify a user ID.
 
 2002-03-06  Werner Koch  <wk@gnupg.org>
 
-	* gpg.sgml: Add an entry for --export-ownertrust.  Suggested by
-	Bernhard Reiter.
+	Released 0.3.2.
 
-2002-01-26  Timo Schulz  <ts@winpt.org>
+2002-03-04  Werner Koch  <wk@gnupg.org>
 
-	* gnupg-w32.reg: New. Registry file for W32 in registry format.
-       
+	Released 0.3.1.
+
+	* README: Explained some options and files.
+
+2002-02-14  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Fixed status messages related to presence of Pth.
+
+2002-02-13  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4 (GNUPG_SYS_SO_PEERCRED): New.
+	* configure.ac: use it.
+
+2002-02-12  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Check for PTH.  Provide replacement fucntions for
+	apsrintf and fopencookie.
+
+	* acinclude.m4 (GNUPG_PTH_VERSION_CHECK): New.
+
+2002-02-07  Werner Koch  <wk@gnupg.org>
+
+	Released 0.3.0.
+
+	* configure.ac: Require libgcrypt 1.1.6.
+
+2002-02-01  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (KSBA_CONFIG): Remove superfluous x in front of
+	variable.
+
 2002-01-26  Werner Koch  <wk@gnupg.org>
 
-	* gpg.sgml: A few words about --gpg-agent-info and GPG_AGENT_INFO.
+	* configure.ac: Add options to disable the build of some programs
+	and print a configure status at the end.
+	* acinclude.m4 (GNUPG_BUILD_PROGRAM): New.
 
-2002-01-25  Timo Schulz  <ts@winpt.org>
+	* scd/ : New.  Added to Makefile and configure.
+	* configure.ac: Check for libopensc
+	* Makefile.am: Build scd only when libopensc is available
 
-	* README.W32: Modify the filename because now the .exe extension
- 	is automatically added to the binary.
+2002-01-23  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (mkdtemp): See whether we have to provide a
+	replacement.
+
+2001-12-18  Werner Koch  <wk@gnupg.org>
+
+	Released 0.0.0.
+
+2001-12-17  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4: Add AM_PATH_LIBGCRYPT macro.
+	* configure.ac: and use it here. Figure out the location of libksba
+
+2001-12-15  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (missing_dir): Bail out if asprintf and fopencookie
+	are not available.
+
+2001-12-04  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (HAVE_JNLIB_LOGGING): always define it.
+
 	
-2002-01-14  Werner Koch  <wk@gnupg.org>
-
-	* gpg.sgml: Talk about PGP 5 and higher.
-
-2002-01-11  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpg.sgml: Added documentation for --{no-}ask-cert-expire,
-	--{no-}ask-sig-expire, and revise --expert (it doesn't switch on
-	the expiration prompt anymore) and --default-check-level (to be
-	clearer as to what makes a good key check before signing).
-
-2002-01-07  Werner Koch  <wk@gnupg.org>
-
-	* DETAILS: Removed the comment that unattended key generation is
-	experimental.  It is now a standard feature.
-
-2001-12-22  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpg.sgml: Fixed a few typos.
-
-	* gpg.sgml: Added documentation for --show-photos,
-	--no-show-photos, --photo-viewer, --nrsign-key,
-	--default-check-level, --search-keys, --keyserver-options,
-	--show-notation, --no-show-notation, --show-policy-url,
-	--no-show-policy-url, --for-your-eyes-only,
-	--no-for-your-eyes-only, --pgp2, --no-pgp2,
-	--no-permission-warning, --expert, --no-expert.
-
-2001-10-31  Werner Koch  <wk@gnupg.org>
-
-	* gpg.sgml: Add a remark on how to get the long key ID.  Suggested
-	by Sebastian Klemke.
-
-2001-10-23  Werner Koch  <wk@gnupg.org>
-
-	* gpg.sgml: Add missing tag.
-
-2001-09-28  Werner Koch  <wk@gnupg.org>
-
-	* gpg.sgml: Add a note on option parsing.
-
-2001-09-24  Werner Koch  <wk@gnupg.org>
-
-	* gpg.sgml: Described --{update,check}-trustdb.
-
-2001-09-03  Werner Koch  <wk@gnupg.org>
-
-	* gpg.sgml, gpgv.sgml: Removed GDBM stuff.
-
-2001-08-29  Werner Koch  <wk@gnupg.org>
-
-	* faq.raw: Described how to delete a secret key w/o a public key
-	and changed the entry on updating the preferences.
-
-2001-08-08  Werner Koch  <wk@gnupg.org>
-
-	* gpg.sgml: Documented --print-mds and marked the --print-md * as
-	deprecated because it does not work in the W32 version.  Suggested
-	by John Kane.
-	(WARNINGS): Typo fix.
-	(--with-colons): Clarified that the output is in UTF-8.
-
-2001-08-01  Werner Koch  <wk@gnupg.org>
-
-	* gpg.sgml: Added --ignore-valid-from
-
-2001-04-20  Werner Koch  <wk@gnupg.org>
-
-	* faq.raw (Maintained-by): Removed note that load-extension is not
-	available under Windoze.
-
-	* gpg.sgml: Add new --charset UTF-8.
-
-2001-04-19  Werner Koch  <wk@gnupg.org>
-
-	* faq.raw: Add a note about dates displayed as ????-??-??.
-
-2001-04-17  Werner Koch  <wk@gnupg.org>
-
-	* Makefile.am (%.texi): Add rules to create .texi from .sgml.
-	However we can't automate this because automake does not like
-	.texi files as BUILT_SOURCES.
-	(%.dvi,%.ps): Removed these rules, because they are not needed
-	and get in the way of automake's dvi target
-
-	* HACKING: Changed CVS description.
-
-2001-04-06  Werner Koch  <wk@gnupg.org>
-
-	* gpg.sgml: Small typo fixes by Florian Weimer.
-
-2001-03-27  Werner Koch  <wk@gnupg.org>
-
-	* gpg.sgml: Add --no-sig-cache and --no-sig-create-check.
-
-2001-03-23  Werner Koch  <wk@gnupg.org>
-
-	* DETAILS: New status UNEXPECTED.
-
-2001-03-13  Werner Koch  <wk@gnupg.org>
-
-	* gpg.sgml: Described --fixed-list-mode.
-
-2001-03-06  Werner Koch  <wk@gnupg.org>
-
-	* gpgv.sgml: Changed some gpg to gpgv. Thanks to John A. Murdie.
-
-2001-03-03  Werner Koch  <wk@gnupg.org>
-
-	* gpg.sgml: Tell something about the 0x12345678! key ID syntax.
-
-2001-01-18  Werner Koch  <wk@gnupg.org>
-
-	* README.W32: Changed building instructions for MinGW32/CPD 0.3 
-
-2001-01-09  Werner Koch  <wk@gnupg.org>
-
-	* DETAILS: Fixed docs for NEED_PASSPHRASE and added USERID_HINT.
-
-2000-11-30  Werner Koch  <wk@gnupg.org>
-
-	* gpg.sgml: Fixed the description of --verify.  Add a short note
-	the warnings sections.
-
-2000-10-19  Werner Koch  <wk@gnupg.org>
-
-	* gpg.sgml: Fixed doc for --allow-non-selfsigned-uid.
-	Add entry for --ignore-crc-error.
-
-2000-10-18  Werner Koch  <wk@gnupg.org>
-
-	* OpenPGP: Dropped the paragraph that RSA is not implemented.
-
-2000-10-14  Werner Koch  <wk@gnupg.org>
-
-	* faq.raw: Add an answer to the problem of multiple signatures.
-
-Wed Oct  4 15:50:18 CEST 2000  Werner Koch  <wk@openit.de>
-
-        * gpgv.sgml: New.
-        * Makefile.am: build it.
-
-Thu Sep 14 14:20:38 CEST 2000  Werner Koch  <wk@openit.de>
-
-        * faq.raw: New.
-        * Makefile.am: Support to build FAQs
-
-Wed Jul 12 13:32:06 CEST 2000  Werner Koch  <wk@>
-
-        * gpg.sgml: Add a note about the availability of the GPH.
-
-2000-07-03 13:59:24  Werner Koch  (wk@habibti.openit.de)
-
-        * DETAILS, FAQ: Typo fixes by Yosiaki IIDA.
-
-2000-05-12 10:57:21  Werner Koch  (wk@habibti.openit.de)
-
-	* gpg.sgml: Documented --no-tty.
-
-2000-03-09 15:01:51  Werner Koch  (wk@habibti.openit.de)
-
-	* DETAILS: Ad a short blurb about unattended key generation.
-
-Wed Feb  9 15:33:44 CET 2000  Werner Koch  <wk@gnupg.de>
-
-	* gpg.sgml: Describe --ignore-time-conflict.
-
-	* gpg.sgml: Fixed a few typos.	Thanks to Holger Trapp.
-
-Wed Jan  5 11:51:17 CET 2000  Werner Koch  <wk@gnupg.de>
-
-	* FAQ: Enhanced answer for the 3des-s2k bug.
-
-Sat Dec  4 12:30:28 CET 1999  Werner Koch  <wk@gnupg.de>
-
-	* gpg.sgml: Add section about the user ID
-
-Mon Nov 22 11:14:53 CET 1999  Werner Koch  <wk@gnupg.de>
-
-	* gph: Removed the directory from the dist becuase it will
-	go into it's own package.
-
-Thu Sep 23 09:52:58 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* README.W32: New.
-
-Mon Sep  6 19:59:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-
-	* Makefile.am (SUBDIRS): New subdir gph for the manual.
-
-Thu Jul 22 20:03:03 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-
-	* gpg.sgml (--always-trust): Added.
-
-Wed Jul 14 19:42:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-
-	* Makefile.am: Create a dummy man page if docbook-to-man is missing.
-
-Wed Jun 16 20:16:21 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-
-	* gpg1.pod: Removed.
-	* gpg.sgml: New. Replaces the pod file
-	* Makefile.am: Add rule to make a man file from sgml
-
-Tue Jun 15 12:21:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-
-	* Makefile.in.in: Use DESTDIR.
-
-Mon May 31 19:41:10 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* gpg.1pod: Enhanced the Bugs section (Michael).
-
-Wed Feb 10 17:15:39 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-
-	* gpg.1pod: Spelling and grammar corrections (John A. Martin)
-	* FAQ: Ditto.
-	* DETAILS: Ditto.
-
-
- Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ Copyright 2001, 2002 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
@@ -589,5 +233,5 @@ Wed Feb 10 17:15:39 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+		
 

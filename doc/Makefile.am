@@ -1,7 +1,8 @@
-# Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
-#
+# Makefile.am - main makefile for NewPG/GnuPG
+#     	Copyright (C) 2001 Free Software Foundation, Inc.
+# 
 # This file is part of GnuPG.
-#
+# 
 # GnuPG is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -16,67 +17,31 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
-## Process this file with automake to create Makefile.in
+## Process this file with automake to produce Makefile.in
 
-AUTOMAKE_OPTIONS = no-texinfo.tex
+EXTRA_DIST = autogen.sh
 
-EXTRA_DIST = DETAILS gpg.sgml gpg.1 gpgv.sgml gpgv.1 faq.raw FAQ faq.html \
-             HACKING OpenPGP README.W32 samplekeys.asc gnupg.7 gnupg-w32.reg
-
-man_MANS = gpg.1 gpgv.1 gnupg.7
-
-info_TEXINFOS = gpg.texi gpgv.texi
-
-# Need this to avoid building of dvis with automake 1.4
-DVIS =
-
-pkgdata_DATA = FAQ faq.html
-
-BUILT_SOURCES = FAQ faq.html 
-# we can't add gpg.texi gpgv.texi here because automake does not like them to
-# be built files. 
-
-CLEANFILES = faq.raw.xref gpg.xml gpgv.xml
-
-
-# We better build the texi versions manually.
-#%.texi : %.xml
-#if HAVE_DOCBOOK_TO_TEXI
-#	 docbook2texi $< | sed 's,--,---,' \
-#	    | $(top_srcdir)/scripts/fix-db-texi $@  >$@
-#else
-#	 : Warning: missing docbook to texinfo tools, cannot make $@
-#	 touch $@
-#endif
-#
-#%.xml : %.sgml
-#if HAVE_DOCBOOK_TO_TEXI
-#	 sgml2xml -x lower $< >$@
-#else
-#	 : Warning: missing docbook to texinfo tools, cannot make $@
-#	 touch $@
-#endif
-#
-
-%.1 : %.sgml
-if HAVE_DOCBOOK_TO_MAN
-	docbook-to-man $<  >$@
+if BUILD_GPGSM
+sm = sm
 else
-	: Warning: missing docbook-to-man, cannot make $@
-	echo ".TH $< 1"   >$@
-	echo "No man page due to missing docbook-to-man" >>$@
+sm =
+endif
+if BUILD_AGENT
+agent = agent
+else
+agent =
+endif
+if BUILD_SCDAEMON
+scd = scd
+else
+scd =
 endif
 
+SUBDIRS = intl jnlib assuan common kbx ${sm} ${agent} ${scd} po doc tests
 
-FAQ : faq.raw
-	$(FAQPROG) -f $<  $@ || $(FAQPROG) -f $< $@
-
-faq.html : faq.raw
-	$(FAQPROG) -h -f $< $@ 2>&1 || $(FAQPROG) -h -f $< $@
 
 dist-hook:
-	@if test "`wc -c < gpg.1`" -lt 200; then \
-	    echo 'ERROR: dummy man page'; false; fi
+	@set -e; echo "$(VERSION)" > $(distdir)/VERSION
 
 
 
