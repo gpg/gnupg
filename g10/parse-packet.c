@@ -678,8 +678,17 @@ parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 	k->s2k.count = iobuf_get(inp); pktlen--;
     }
     k->seskeylen = seskeylen;
-    for(i=0; i < seskeylen && pktlen; i++, pktlen-- )
-	k->seskey[i] = iobuf_get_noeof(inp);
+    if(k->seskeylen)
+      {
+	for(i=0; i < seskeylen && pktlen; i++, pktlen-- )
+	  k->seskey[i] = iobuf_get_noeof(inp);
+
+	/* What we're watching out for here is a session key decryptor
+	   with no salt.  The RFC says that using salt for this is a
+	   MUST. */
+	if(s2kmode!=1 && s2kmode!=3)
+	  log_info(_("WARNING: potentially insecure session key decryption key\n"));
+      }
     assert( !pktlen );
 
     if( list_mode ) {
@@ -690,9 +699,12 @@ parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 	    for(i=0; i < 8; i++ )
 		printf("%02x", k->s2k.salt[i]);
 	    if( s2kmode == 3 )
-		printf(", count %lu\n", (ulong)k->s2k.count );
+		printf(", count %lu", (ulong)k->s2k.count );
 	    printf("\n");
 	}
+	if(seskeylen)
+	  printf("\tsession key decryption key present (%d bytes)\n",
+		 seskeylen-1);
     }
 
   leave:

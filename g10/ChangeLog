@@ -1,3 +1,9 @@
+2003-09-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (parse_symkeyenc): Give a warning if a session
+	key decryption key is seen without salt.  Show in --list-packets
+	if a session key decryption key is present.
+
 2003-09-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Deprecate --no-comment in favor of
