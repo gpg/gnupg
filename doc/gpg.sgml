@@ -785,16 +785,15 @@ Create ASCII armored output.
 Write output to &ParmFile;.
 </para></listitem></varlistentry>
 
+
 <varlistentry>
 <term>--mangle-dos-filenames</term>
 <term>--no-mangle-dos-filenames</term>
 <listitem><para>
-The Windows version of GnuPG replaces the extension of an output
-filename to avoid problems with filenames containing more than one
-dot.  This is not necessary for newer Windows versions and so
---no-mangle-dos-filenames can be used to switch this feature off and
-have GnuPG append the new extension.  This option has no effect on
-non-Windows platforms.
+Older version of Windows cannot handle filenames with more than one
+dot.  --mangle-dos-filenames causes GnuPG to replace (rather than add
+to) the extension of an output filename to avoid this problem.  This
+option is off by default and has no effect on non-Windows platforms.
 </para></listitem></varlistentry>
 
 
@@ -1272,6 +1271,12 @@ than the more common 32 bit (8 digit) IDs.  Defaults to no.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>show-unusable-uids</term>
+<listitem><para>
+Show revoked and expired user IDs in key listings.  Defaults to no.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>show-keyring</term>
 <listitem><para>
 Display the keyring name at the head of key listings to show which
@@ -1568,28 +1573,13 @@ option.
 
 
 <varlistentry>
-<term>--no-comment</term>
-<listitem><para>
-See --no-sk-comments.  This option is deprecated and may be removed
-soon.
-</para></listitem></varlistentry>
-
-
-<varlistentry>
 <term>--comment &ParmString;</term>
+<term>--no-comments</term>
 <listitem><para>
-Use &ParmString; as the comment string in clear text signatures.  The
-default behavior is not to use a comment string.
-</para></listitem></varlistentry>
-
-
-<varlistentry>
-<term>--default-comment</term>
-<listitem><para>
-Force to write the standard comment string in clear
-text signatures.  Use this to overwrite a --comment
-from a config file.  This option is now obsolete because there is no
-default comment string anymore.
+Use &ParmString; as a comment string in clear text signatures and
+ASCII armored messages or keys (see --armor).  The default behavior is
+not to use a comment string.  --comment may be repeated multiple times
+to get multiple comment strings.  --no-comments removes all comments.
 </para></listitem></varlistentry>
 
 
@@ -1650,9 +1640,9 @@ and/or `--verify-options [no-]show-notation' instead.
 <term>--cert-policy-url &ParmString;</term>
 <term>--set-policy-url &ParmString;</term>
 <listitem><para>
-Use &ParmString; as Policy URL for signatures (rfc2440:5.2.3.19).  If
-you prefix it with an exclamation mark, the policy URL packet will be
-flagged as critical.  --sig-policy-url sets a a policy url for data
+Use &ParmString; as a Policy URL for signatures (rfc2440:5.2.3.19).
+If you prefix it with an exclamation mark, the policy URL packet will
+be flagged as critical.  --sig-policy-url sets a a policy url for data
 signatures.  --cert-policy-url sets a policy url for key signatures
 (certifications).  --set-policy-url sets both.
 </para><para>
@@ -1668,6 +1658,17 @@ as when verifying a signature with a policy URL in it.  These options
 are deprecated.  Use `--list-options [no-]show-policy-url' and/or
 `--verify-options [no-]show-policy-url' instead.
 </para></listitem></varlistentry>
+
+
+<varlistentry>
+<term>--sig-keyserver-url &ParmString;</term>
+<listitem><para>
+Use &ParmString; as a preferred keyserver URL for data signatures.  If
+you prefix it with an exclamation mark, the keyserver URL packet will
+be flagged as critical.  </para><para>
+The same %-expandos used for notation data are available here as well.
+</para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--set-filename &ParmString;</term>
