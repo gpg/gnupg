@@ -1,0 +1,29 @@
+
+msgid "passphrase.enter"
+msgstr ""
+"Please enter the passhrase; this is a secret sentence which consists\n"
+"beliebigen Zeichen bestehen kann.  Was Sie eingegeben wird nicht angezeigt.\n"
+"Zur ihrer eigenen Sicherbeit benutzen Sie biite einen Satz, den sie sich\n"
+"gut merken könne, der aber nicht leicht zu raten ist; Zitate und andere\n"
+"bekannte Texte sind eine SCHLECHTE Wahl, da diese mit Sicherheit Online\n"
+"verfügbar sind und durch entsprechende Programme zum Raten der \"Passphrase\"\n"
+"benutzt werden.  Sätze mit persönlicher Bedeutung die auch noch durch\n"
+"falsche Groß-/Kleinschreibung und eingestreute Sonderzeichen verändert werden,\n"
+"sind i.d.R. eine gute Wahl"
+
+msgid "passphrase.repeat"
+msgstr ""
+"Um sicher zugehen, daß Sie sich bei der Eingabe der \"Passphrase\" nicht\n"
+"vertippt haben, geben Sie diese bitte nochmal ein.  Nur wenn beide Eingaben\n"
+"übereinstimmen, wird die \"Passphrase\" akzeptiert."
+
+msgid "keyedit.cmd"
+msgstr "Please enter \"help\"."
+
+
+msgid "edit_ownertrust.value"
+msgstr ""
+"It's up to you to assign a value here; this value will never be exported\n"
+"to any 3rd party.  We need it to implement the web-of-trust; it has nothing\n"
+"to do with the (implicitly created) web-of-certificates."
+
