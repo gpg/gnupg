@@ -1,3 +1,18 @@
+2002-12-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (menu_expire): Don't lose key flags when changing the
+	expiration date of a subkey.  This is not the most optimal
+	solution, but it is minimal change on the stable branch.
+
+	* main.h, keygen.c (do_copy_key_flags): New function to copy key
+	flags, if any, from one sig to another.
+	(do_add_key_expire): New function to add key expiration to a sig.
+	(keygen_copy_flags_add_expire): New version of
+	keygen_add_key_expire that also copies key flags.
+	(keygen_add_key_flags_and_expire): Use do_add_key_expire.
+
+	* import.c (fix_hkp_corruption): Comment.
+
 2002-11-25  Stefan Bellon  <sbellon@sbellon.de>
 
 	* plaintext.c (handle_plaintext) [__riscos__]: If nooutput is set,

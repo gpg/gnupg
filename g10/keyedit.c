@@ -2699,9 +2699,14 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 					     sk, 0x13, 0, 0, 0, 0,
 					     keygen_add_std_prefs, main_pk );
 		else
+		  {
+		    struct flags_expire fe;
+		    fe.pk=sub_pk;
+		    fe.sig=sig;
 		    rc = make_keysig_packet( &newsig, main_pk, NULL, sub_pk,
 					     sk, 0x18, 0, 0, 0, 0,
-					     keygen_add_key_expire, sub_pk );
+					     keygen_copy_flags_add_expire,&fe);
+		  }
 		if( rc ) {
 		    log_error("make_keysig_packet failed: %s\n",
 						    g10_errstr(rc));

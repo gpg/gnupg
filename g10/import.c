@@ -505,6 +505,10 @@ fix_hkp_corruption(KBNODE keyblock)
 	  sknode->next=node;
 	  last->next=NULL;
 
+	  /* Note we aren't checking whether this binding sig is a
+	     selfsig.  This is not necessary here as the subkey and
+	     binding sig will be rejected later if that is the
+	     case. */
 	  if(check_key_signature(keyblock,node,NULL))
 	    {
 	      /* Not a match, so undo the changes. */
