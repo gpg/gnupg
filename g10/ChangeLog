@@ -1,3 +1,9 @@
+2004-03-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (skip_unusable, merge_selfsigs_main,
+	premerge_public_with_secret, lookup, get_user_id_string):
+	--keyid-format conversion.
+
 2004-03-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* trustdb.c (add_utk, verify_own_keys, update_min_ownertrust,

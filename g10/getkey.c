@@ -745,7 +745,7 @@ skip_unusable(void *dummy,u32 *keyid,PKT_user_id *uid)
   keyblock=get_pubkeyblock(keyid);
   if(!keyblock)
     {
-      log_error("error checking usability status of %08lX\n",(ulong)keyid[1]);
+      log_error("error checking usability status of %s\n",keystr(keyid));
       goto leave;
     }
 
@@ -1617,10 +1617,8 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked, u32 *r_revokedate )
     if(!pk->is_valid && opt.allow_non_selfsigned_uid)
       {
 	if(opt.verbose)
-	  log_info(_("Invalid key %08lX made valid by "
-		     "--allow-non-selfsigned-uid\n"),
-		   (ulong)keyid_from_pk(pk,NULL));
-
+	  log_info(_("Invalid key %s made valid by"
+		     " --allow-non-selfsigned-uid\n"),keystr_from_pk(pk));
 	pk->is_valid = 1;
       }
 
@@ -2130,9 +2128,9 @@ premerge_public_with_secret ( KBNODE pubblock, KBNODE secblock )
                 KBNODE next, ll;
 
                 if (opt.verbose)
-                  log_info ( _("no secret subkey "
-                               "for public subkey %08lX - ignoring\n"),  
-                           (ulong)keyid_from_pk (pk,NULL) );
+                  log_info (_("no secret subkey"
+			      " for public subkey %s - ignoring\n"),  
+			    keystr_from_pk (pk));
                 /* we have to remove the subkey in this case */
                 assert ( last );
                 /* find the next subkey */
@@ -2357,12 +2355,14 @@ finish_lookup (GETKEY_CTX ctx)
         
     ctx->found_key = latest_key;
 
-    if (latest_key != keyblock && opt.verbose) {
-        log_info(_("using secondary key %08lX "
-                   "instead of primary key %08lX\n"),
-                 (ulong)keyid_from_pk( latest_key->pkt->pkt.public_key, NULL),
-                 (ulong)keyid_from_pk( keyblock->pkt->pkt.public_key, NULL) );
-    }
+    if (latest_key != keyblock && opt.verbose)
+      {
+	char *tempkeystr=
+	  m_strdup(keystr_from_pk(latest_key->pkt->pkt.public_key));
+        log_info(_("using secondary key %s instead of primary key %s\n"),
+                 tempkeystr, keystr_from_pk(keyblock->pkt->pkt.public_key));
+	m_free(tempkeystr);
+      }
 
     cache_user_id( keyblock );
     
@@ -2403,12 +2403,13 @@ lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode )
 
             keyid_from_sk (k->pkt->pkt.secret_key, aki);
             k = get_pubkeyblock (aki);
-            if( !k ) {
+            if( !k )
+	      {
                 if (!opt.quiet)
-                    log_info(_("key %08lX: secret key without public key "
-                               "- skipped\n"),  (ulong)aki[1] );
+		  log_info(_("key %s: secret key without public key"
+			     " - skipped\n"), keystr(aki));
                 goto skip;
-            }
+	      }
             secblock = ctx->keyblock;
             ctx->keyblock = k;
 
@@ -2566,26 +2567,29 @@ enum_secret_keys( void **context, PKT_secret_key *sk,
 char*
 get_user_id_string( u32 *keyid )
 {
-    user_id_db_t r;
-    char *p;
-    int pass=0;
-    /* try it two times; second pass reads from key resources */
-    do {
-	for(r=user_id_db; r; r = r->next ) {
-            keyid_list_t a;
-            for (a=r->keyids; a; a= a->next ) {
-                if( a->keyid[0] == keyid[0] && a->keyid[1] == keyid[1] ) {
-                    p = m_alloc( r->len + 10 );
-                    sprintf(p, "%08lX %.*s",
-                            (ulong)keyid[1], r->len, r->name );
-                    return p;
-                }
-            }
+  user_id_db_t r;
+  char *p;
+  int pass=0;
+  /* try it two times; second pass reads from key resources */
+  do
+    {
+      for(r=user_id_db; r; r = r->next )
+	{
+	  keyid_list_t a;
+	  for (a=r->keyids; a; a= a->next )
+	    {
+	      if( a->keyid[0] == keyid[0] && a->keyid[1] == keyid[1] )
+		{
+		  p = m_alloc( keystrlen() + 1 + r->len + 1 );
+		  sprintf(p, "%s %.*s", keystr(keyid), r->len, r->name );
+		  return p;
+		}
+	    }
         }
     } while( ++pass < 2 && !get_pubkey( NULL, keyid ) );
-    p = m_alloc( 15 );
-    sprintf(p, "%08lX [?]", (ulong)keyid[1] );
-    return p;
+  p = m_alloc( keystrlen() + 5 );
+  sprintf(p, "%s [?]", keystr(keyid));
+  return p;
 }
 
 
