@@ -1,3 +1,8 @@
+2003-10-10  Werner Koch  <wk@gnupg.org>
+
+	* primegen.c (gen_prime): Bail out if we try to generate a prime
+	with less than 16 bits. 
+	
 2003-10-06  Werner Koch  <wk@gnupg.org>
 
 	* primegen.c (gen_prime): Bail out if NBITS is zero.  This is
