@@ -28,4 +28,5 @@ libexec_SCRIPTS = @GPGKEYS_MAILTO@
 noinst_SCRIPTS = gpgkeys_test
 
 gpgkeys_ldap_LDADD = @LDAPLIBS@ @NETLIBS@ @GETOPT@ @W32LIBS@
-gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ @INTLLIBS@ @CAPLIBS@ @GETOPT@ @W32LIBS@
+gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ @LIBINTL@ \
+                    @CAPLIBS@ @GETOPT@ @W32LIBS@
