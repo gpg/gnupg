@@ -124,6 +124,7 @@ int  gpgsm_create_reader (Base64Context *ctx,
 void gpgsm_destroy_reader (Base64Context ctx);
 int  gpgsm_create_writer (Base64Context *ctx,
                           CTRL ctrl, FILE *fp, KsbaWriter *r_writer);
+int  gpgsm_finish_writer (Base64Context ctx);
 void gpgsm_destroy_writer (Base64Context ctx);
 
 

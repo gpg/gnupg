@@ -242,7 +242,13 @@ gpgsm_encrypt (CTRL ctrl, int data_fd, FILE *out_fp)
     }
   while (stopreason != KSBA_SR_READY);   
 
-  log_info ("signature created\n");
+  rc = gpgsm_finish_writer (b64writer);
+  if (rc) 
+    {
+      log_error ("write failed: %s\n", gnupg_strerror (rc));
+      goto leave;
+    }
+  log_info ("encrypted data created\n");
 
  leave:
   ksba_cms_release (cms);

@@ -828,6 +828,7 @@ main ( int argc, char **argv)
   gcry_control (GCRYCTL_RESUME_SECMEM_WARN);
 
   set_debug ();
+
   /* FIXME: should set filenames of libgcrypt explicitly
    * gpg_opt_homedir = opt.homedir; */
 
@@ -862,6 +863,9 @@ main ( int argc, char **argv)
 #endif
     xfree(p);
   }
+
+  if (opt.armor)
+    ctrl.create_pem = 1;
 
   if (!cmd && opt.fingerprint && !with_fpr)
     set_cmd (&cmd, aListKeys);

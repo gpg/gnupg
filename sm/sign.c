@@ -328,6 +328,12 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
     }
   while (stopreason != KSBA_SR_READY);   
 
+  rc = gpgsm_finish_writer (b64writer);
+  if (rc) 
+    {
+      log_error ("write failed: %s\n", gnupg_strerror (rc));
+      goto leave;
+    }
   log_info ("signature created\n");
 
  leave:

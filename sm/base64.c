@@ -32,6 +32,11 @@
 #include "gpgsm.h"
 #include "i18n.h"
 
+#ifdef HAVE_DOSISH_SYSTEM
+  #define LF "\r\n"
+#else
+  #define LF "\n"
+#endif
 
 /* data used by the reader callbacks */
 struct reader_cb_parm_s {
@@ -57,9 +62,29 @@ struct reader_cb_parm_s {
   } base64;
 };
 
+/* data used by the writer callbacks */
+struct writer_cb_parm_s {
+  FILE *fp;
+  const char *pem_name;
+  
+  int wrote_begin;
+  int did_finish;
 
+  struct {
+    int idx;
+    int quad_count;
+    unsigned char radbuf[4];
+  } base64;
+
+};
+
+
+/* context for this module's functions */
 struct base64_context_s {
-  struct reader_cb_parm_s rparm;
+  union {
+    struct reader_cb_parm_s rparm;
+    struct writer_cb_parm_s wparm;
+  } u;
 };
 
 
@@ -278,6 +303,122 @@ simple_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
 
 
 
+
+static int
+base64_writer_cb (void *cb_value, const void *buffer, size_t count)
+{
+  struct writer_cb_parm_s *parm = cb_value;
+  unsigned char radbuf[4];
+  int i, c, idx, quad_count;
+  const unsigned char *p;
+  FILE *fp = parm->fp;
+
+  if (!count)
+    return 0;
+
+  if (!parm->wrote_begin)
+    {
+      if (parm->pem_name)
+        {
+          fputs ("-----BEGIN ", fp);
+          fputs (parm->pem_name, fp);
+          fputs ("-----\n", fp);
+        }
+      parm->wrote_begin = 1;
+      parm->base64.idx = 0;
+      parm->base64.quad_count = 0;
+    }
+
+  idx = parm->base64.idx;
+  quad_count = parm->base64.quad_count;
+  for (i=0; i < idx; i++)
+    radbuf[i] = parm->base64.radbuf[i];
+
+  for (p=buffer; count; p++, count--)
+    {
+      radbuf[idx++] = *p;
+      if (idx > 2)
+        {
+          idx = 0;
+          c = bintoasc[(*radbuf >> 2) & 077];
+          putc (c, fp);
+          c = bintoasc[(((*radbuf<<4)&060)|((radbuf[1] >> 4)&017))&077];
+          putc (c, fp);
+          c = bintoasc[(((radbuf[1]<<2)&074)|((radbuf[2]>>6)&03))&077];
+          putc (c, fp);
+          c = bintoasc[radbuf[2]&077];
+          putc (c, fp);
+          if (++quad_count >= (64/4)) 
+            {
+              fputs (LF, fp);
+              quad_count = 0;
+            }
+        }
+    }
+  for (i=0; i < idx; i++)
+    parm->base64.radbuf[i] = radbuf[i];
+  parm->base64.idx = idx;
+  parm->base64.quad_count = quad_count;
+
+  return ferror (fp) ? KSBA_Write_Error:0;
+}
+
+static int
+base64_finish_write (struct writer_cb_parm_s *parm)
+{
+  unsigned char radbuf[4];
+  int i, c, idx, quad_count;
+  FILE *fp = parm->fp;
+
+  if (!parm->wrote_begin)
+    return 0; /* nothing written */
+
+  /* flush the base64 encoding */
+  idx = parm->base64.idx;
+  quad_count = parm->base64.quad_count;
+  for (i=0; i < idx; i++)
+    radbuf[i] = parm->base64.radbuf[i];
+
+  if (idx)
+    {
+      c = bintoasc[(*radbuf>>2)&077];
+      putc (c, fp);
+      if (idx == 1)
+        {
+          c = bintoasc[((*radbuf << 4) & 060) & 077];
+          putc (c, fp);
+          putc ('=', fp);
+          putc ('=', fp);
+        }
+      else 
+        { 
+          c = bintoasc[(((*radbuf<<4)&060)|((radbuf[1]>>4)&017))&077];
+          putc (c, fp);
+          c = bintoasc[((radbuf[1] << 2) & 074) & 077];
+          putc (c, fp);
+          putc ('=', fp);
+
+        }
+      if (++quad_count >= (64/4)) 
+        {
+          fputs (LF, fp);
+          quad_count = 0;
+        }
+    }
+
+  if (quad_count)
+    fputs (LF, fp);
+
+  if (parm->pem_name)
+    {
+      fputs ("-----END ", fp);
+      fputs (parm->pem_name, fp);
+      fputs ("-----\n", fp);
+    }
+  return ferror (fp)? GNUPG_Write_Error : 0;
+}
+
+
 
 
 /* Create a reader for the given file descriptor.  Depending on the
@@ -305,25 +446,25 @@ gpgsm_create_reader (Base64Context *ctx,
       return seterr (Out_Of_Core);
     }
 
-  (*ctx)->rparm.fp = fp;
+  (*ctx)->u.rparm.fp = fp;
   if (ctrl->is_pem)
     {
-      (*ctx)->rparm.assume_pem = 1;
-      (*ctx)->rparm.assume_base64 = 1;
-      rc = ksba_reader_set_cb (r, base64_reader_cb, &(*ctx)->rparm);
+      (*ctx)->u.rparm.assume_pem = 1;
+      (*ctx)->u.rparm.assume_base64 = 1;
+      rc = ksba_reader_set_cb (r, base64_reader_cb, &(*ctx)->u.rparm);
     }
   else if (ctrl->is_base64)
     {
-      (*ctx)->rparm.assume_base64 = 1;
-      rc = ksba_reader_set_cb (r, base64_reader_cb, &(*ctx)->rparm);
+      (*ctx)->u.rparm.assume_base64 = 1;
+      rc = ksba_reader_set_cb (r, base64_reader_cb, &(*ctx)->u.rparm);
     }
   else if (ctrl->autodetect_encoding)
     {
-      (*ctx)->rparm.autodetect = 1;
-      rc = ksba_reader_set_cb (r, base64_reader_cb, &(*ctx)->rparm);
+      (*ctx)->u.rparm.autodetect = 1;
+      rc = ksba_reader_set_cb (r, base64_reader_cb, &(*ctx)->u.rparm);
     }
   else
-      rc = ksba_reader_set_cb (r, simple_reader_cb, &(*ctx)->rparm);
+      rc = ksba_reader_set_cb (r, simple_reader_cb, &(*ctx)->u.rparm);
 
   if (rc)
     {
@@ -372,7 +513,9 @@ gpgsm_create_writer (Base64Context *ctx,
 
   if (ctrl->create_pem || ctrl->create_base64)
     {
-      return seterr (Not_Implemented);
+      (*ctx)->u.wparm.fp = fp;
+      (*ctx)->u.wparm.pem_name = "CMS OBJECT"; /* fixme */
+      rc = ksba_writer_set_cb (w, base64_writer_cb, &(*ctx)->u.wparm);
     }
   else
     rc = ksba_writer_set_file (w, fp);
@@ -388,6 +531,22 @@ gpgsm_create_writer (Base64Context *ctx,
   return 0;
 }
 
+
+int
+gpgsm_finish_writer (Base64Context ctx)
+{
+  struct writer_cb_parm_s *parm;
+  
+  if (!ctx)
+    return GNUPG_Invalid_Value;
+  parm = &ctx->u.wparm;
+  if (parm->did_finish)
+    return 0; /* already done */
+  parm->did_finish = 1;
+  if (!parm->fp)
+    return 0; /* callback was not used */
+  return base64_finish_write (parm);
+}
 
 void
 gpgsm_destroy_writer (Base64Context ctx)
