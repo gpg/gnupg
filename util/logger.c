@@ -31,6 +31,7 @@
 static char pidstring[15];
 static char *pgm_name;
 static int errorcount;
+static int strict;
 static FILE *logfp;
 
 /****************
@@ -107,6 +108,13 @@ log_inc_errorcount()
     errorcount++;
 }
 
+int
+log_set_strict(int val)
+{
+  int old=strict;
+  strict=val;
+  return old;
+}
 
 void
 g10_log_print_prefix(const char *text)
@@ -163,6 +171,28 @@ g10_log_info_f( const char *fname, const char *fmt, ... )
     fflush( logfp );
 #endif /* __riscos__ */
 }
+
+void
+g10_log_warning( const char *fmt, ... )
+{
+    va_list arg_ptr ;
+
+    if(strict)
+      {
+	errorcount++;
+	g10_log_print_prefix(_("ERROR: "));
+      }
+    else
+      g10_log_print_prefix(_("WARNING: "));
+
+    va_start( arg_ptr, fmt ) ;
+    vfprintf(logfp,fmt,arg_ptr) ;
+    va_end(arg_ptr);
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
+}
+
 
 void
 g10_log_error( const char *fmt, ... )
