@@ -1565,6 +1565,12 @@ delete_inv_parts( const char *fname, KBNODE keyblock,
 		    || node->pkt->pkt.signature->keyid[1]!=keyid[1])
 		&& !(options&IMPORT_UNUSABLE_SIGS))
 	  {
+	    /* Note that we haven't necessarily checked this sig for
+	       validity.  We strip it anyway since if it was valid, it
+	       would be expired.  If it wasn't valid, it either would
+	       be expired if it was valid, or was altered to the point
+	       that it looked expired (and so doesn't matter terribly
+	       much if it is expired or not). */
 	    if(opt.verbose)
 	      {
 		char *kid=m_strdup(keystr(keyid));

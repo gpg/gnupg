@@ -1,3 +1,9 @@
+2005-01-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Use @LIBUSB@ instead of @LIBUSB_LIBS@
+
+	* import.c (delete_inv_parts): Comments on import-unusable-sigs.
+
 2005-01-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, import.c (parse_import_options, delete_inv_parts):
