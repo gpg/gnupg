@@ -548,17 +548,23 @@ compress_algo_to_string(int algo)
 
   switch(algo)
     {
-    case 0:
+    case COMPRESS_ALGO_NONE:
       s="Uncompressed";
       break;
 
-    case 1:
+    case COMPRESS_ALGO_ZIP:
       s="ZIP";
       break;
 
-    case 2:
+    case COMPRESS_ALGO_ZLIB:
       s="ZLIB";
       break;
+
+#ifdef HAVE_BZIP2
+    case COMPRESS_ALGO_BZIP2:
+      s="BZIP2";
+      break;
+#endif
     }
 
   return s;
@@ -573,12 +579,20 @@ string_to_compress_algo(const char *string)
     return 1;
   else if(ascii_strcasecmp(string,"zlib")==0)
     return 2;
+#ifdef HAVE_BZIP2
+  else if(ascii_strcasecmp(string,"bzip2")==0)
+    return 3;
+#endif
   else if(ascii_strcasecmp(string,"z0")==0)
     return 0;
   else if(ascii_strcasecmp(string,"z1")==0)
     return 1;
   else if(ascii_strcasecmp(string,"z2")==0)
     return 2;
+#ifdef HAVE_BZIP2
+  else if(ascii_strcasecmp(string,"z3")==0)
+    return 3;
+#endif
   else
     return -1;
 }
@@ -586,8 +600,13 @@ string_to_compress_algo(const char *string)
 int
 check_compress_algo(int algo)
 {
+#ifdef HAVE_BZIP2
+  if(algo>=0 && algo<=3)
+    return 0;
+#else
   if(algo>=0 && algo<=2)
     return 0;
+#endif
 
   return G10ERR_COMPR_ALGO;
 }

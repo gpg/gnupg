@@ -1,5 +1,5 @@
 # Copyright (C) 1998, 1999, 2000, 2001, 2002,
-#               2003  Free Software Foundation, Inc.
+#               2003 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -32,10 +32,17 @@ needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 #noinst_PROGRAMS = gpgd
 bin_PROGRAMS = gpg gpgv
 
+if ENABLE_BZIP2_SUPPORT
+bzip2_source = compress-bz2.c
+else
+bzip2_source =
+endif
+
 common_source =  \
 	      global.h          \
 	      build-packet.c	\
 	      compress.c	\
+	      $(bzip2_source)   \
 	      filter.h		\
 	      free-packet.c	\
 	      getkey.c		\
@@ -154,4 +161,3 @@ update-source-from-gnupg-2:
            cp $$dir/g10/$$i $$i; echo $$i; \
 	 done ; \
 	 echo "Please remember to update the ChangeLog accordingly!"
-

@@ -2485,7 +2485,8 @@ main( int argc, char **argv )
 	break;
 
       case aEncrSym:
-	/* This works with PGP 8.  It doesn't work with 2 or 6.  It
+	/* This works with PGP 8 in the sense that it acts just like a
+	   symmetric message.  It doesn't work at all with 2 or 6.  It
 	   might work with 7, but alas, I don't have a copy to test
 	   with right now. */
 	if( argc > 1 )

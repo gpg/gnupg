@@ -30,7 +30,7 @@
    (i.e. uncompressed) rather than 1 (zip). */
 #define DEFAULT_CIPHER_ALGO   CIPHER_ALGO_CAST5
 #define DEFAULT_DIGEST_ALGO   DIGEST_ALGO_SHA1
-#define DEFAULT_COMPRESS_ALGO 1
+#define DEFAULT_COMPRESS_ALGO COMPRESS_ALGO_ZIP
 
 typedef struct {
     int header_okay;
