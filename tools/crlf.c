@@ -25,12 +25,12 @@ main(int argc, char **argv)
 
     lc = -1;
     while( (c=getchar()) != EOF ) {
-      #if 0
+#if 0
 	if( c == '\r' && lc == ' ' )
 	    fprintf(stderr,"SP,CR at %d\n", off );
 	if( c == '\n' && lc == ' ' )
 	    fprintf(stderr,"SP,LF at %d\n", off );
-      #endif
+#endif
 	if( c == '\n' && lc == '\r' )
 	    putchar(c);
 	else if( c == '\n' ) {
@@ -50,4 +50,3 @@ main(int argc, char **argv)
 
     return 0;
 }
-

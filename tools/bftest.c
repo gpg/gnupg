@@ -23,8 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 #ifdef HAVE_DOSISH_SYSTEM
-  #include <io.h>
-  #include <fcntl.h>
+#include <io.h>
+#include <fcntl.h>
 #endif
 
 #include "util.h"
@@ -47,15 +47,15 @@ strusage( int level )
 static void
 i18n_init(void)
 {
-  #ifdef ENABLE_NLS
-    #ifdef HAVE_LC_MESSAGES
-       setlocale( LC_MESSAGES, "" );
-    #else
-       setlocale( LC_ALL, "" );
-    #endif
-    bindtextdomain( PACKAGE, G10_LOCALEDIR );
-    textdomain( PACKAGE );
-  #endif
+#ifdef ENABLE_NLS
+#ifdef HAVE_LC_MESSAGES
+  setlocale( LC_MESSAGES, "" );
+#else
+  setlocale( LC_ALL, "" );
+#endif
+  bindtextdomain( PACKAGE, G10_LOCALEDIR );
+  textdomain( PACKAGE );
+#endif
 }
 
 int
@@ -67,10 +67,10 @@ main(int argc, char **argv)
     int n, size=4096;
     int algo;
 
-  #ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_DOSISH_SYSTEM
     setmode( fileno(stdin), O_BINARY );
     setmode( fileno(stdout), O_BINARY );
-  #endif
+#endif
 
     i18n_init();
     if( argc > 1 && !strcmp(argv[1], "-e") ) {
@@ -109,4 +109,3 @@ main(int argc, char **argv)
     cipher_close(hd);
     return 0;
 }
-
