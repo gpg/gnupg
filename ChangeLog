@@ -1,3 +1,9 @@
+2003-06-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Check for sigset_t and struct sigaction.  This is
+	for Forte c89 on Solaris which seems to define only the function
+	call half of the two pairs by default.
+
 2003-05-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Document --gnupg and the deprecation of --no-openpgp and

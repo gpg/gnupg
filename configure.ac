@@ -604,8 +604,12 @@ AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(atexit raise getpagesize strftime nl_langinfo setlocale)
 AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe stat)
 AC_REPLACE_FUNCS(mkdtemp)
+AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
 
-dnl see if getopt is in libiberty
+# See if getopt is in libiberty.  This is of course not optimal since
+# it might be somewhere other than libiberty, but does cover the
+# mingw32 case.
+
 AC_CHECK_FUNC(getopt,,AC_CHECK_LIB(iberty,getopt,AC_SUBST(GETOPT,"-liberty")))
 
 #
