@@ -156,6 +156,10 @@ int send_key(void)
       goto fail;
     }
 
+  /* Some keyservers require this Content-Type (e.g. CryptoEx). */
+  iobuf_writestr(hd.fp_write,
+                 "Content-Type: application/x-www-form-urlencoded\r\n");
+
   sprintf(request,"Content-Length: %u\r\n",
 	  (unsigned)iobuf_get_temp_length(temp)+9);
   iobuf_writestr(hd.fp_write,request);
