@@ -475,15 +475,16 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 {
     u32 dummy;
     int dum2;
-    return check_key_signature2(root, node, is_selfsig, &dummy, &dum2 );
+    return check_key_signature2(root, node, NULL, is_selfsig, &dummy, &dum2 );
 }
 
+/* If pk is NULL, then it is set from ROOT.  Note that is_selfsig is
+   set from the pk. */
 int
-check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
-				       u32 *r_expiredate, int *r_expired )
+check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *pk,
+		      int *is_selfsig, u32 *r_expiredate, int *r_expired )
 {
     MD_HANDLE md;
-    PKT_public_key *pk;
     PKT_signature *sig;
     int algo;
     int rc;
@@ -495,7 +496,9 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
     assert( node->pkt->pkttype == PKT_SIGNATURE );
     assert( root->pkt->pkttype == PKT_PUBLIC_KEY );
 
-    pk = root->pkt->pkt.public_key;
+    if(pk==NULL)
+      pk = root->pkt->pkt.public_key;
+
     sig = node->pkt->pkt.signature;
     algo = sig->digest_algo;
 
