@@ -82,7 +82,7 @@ parse_keyserver_options(char *options)
 	      hit=1;
 	      break;
 	    }
-	  else if(ascii_memcasecmp("no-",tok,3)==0 &&
+	  else if(ascii_strncasecmp("no-",tok,3)==0 &&
 		  ascii_strcasecmp(&tok[3],keyserver_opts[i].name)==0)
 	    {
 	      *(keyserver_opts[i].flag)=0;
@@ -267,27 +267,27 @@ print_keyinfo(int count,char *keystring,KEYDB_SEARCH_DESC *desc)
   userid=utf8_to_native(tok,strlen(tok),0);
 
   if((tok=strsep(&keystring,":"))==NULL)
-    return -1;
+    goto fail;
 
   flags=atoi(tok);
 
   if((tok=strsep(&keystring,":"))==NULL)
-    return -1;
+    goto fail;
 
   createtime=atoi(tok);
 
   if((tok=strsep(&keystring,":"))==NULL)
-    return -1;
+    goto fail;
 
   expiretime=atoi(tok);
 
   if((tok=strsep(&keystring,":"))==NULL)
-    return -1;
+    goto fail;
 
   modifytime=atoi(tok);
 
   if((keytype=strsep(&keystring,":"))==NULL)
-    return -1;
+    goto fail;
 
   /* The last one */
   if(keystring!=NULL)
@@ -320,6 +320,10 @@ print_keyinfo(int count,char *keystring,KEYDB_SEARCH_DESC *desc)
   printf("\n");
 
   return 0;
+
+ fail:
+  m_free (userid);
+  return -1;
 }
 
 #define KEYSERVER_ARGS_KEEP " -o \"%O\" \"%I\""
@@ -557,7 +561,7 @@ keyserver_spawn(int action,STRLIST list,
       if(*ptr=='\0')
 	break;
 
-      if(ascii_memcasecmp(ptr,"VERSION ",8)==0)
+      if(ascii_strncasecmp(ptr,"VERSION ",8)==0)
 	{
 	  gotversion=1;
 
@@ -568,13 +572,13 @@ keyserver_spawn(int action,STRLIST list,
 	      goto fail;
 	    }
 	}
-      else if(ascii_memcasecmp(ptr,"PROGRAM ",8)==0)
+      else if(ascii_strncasecmp(ptr,"PROGRAM ",8)==0)
 	{
-	  if(ascii_memcasecmp(&ptr[8],VERSION,strlen(VERSION))!=0)
+	  if(ascii_strncasecmp(&ptr[8],VERSION,strlen(VERSION))!=0)
 	    log_info(_("WARNING: keyserver handler from a different "
 		       "version of GnuPG (%s)\n"),&ptr[8]);
 	}
-      else if(ascii_memcasecmp(ptr,"OPTION OUTOFBAND",16)==0)
+      else if(ascii_strncasecmp(ptr,"OPTION OUTOFBAND",16)==0)
 	outofband=1; /* Currently the only OPTION */
     }
 
@@ -695,7 +699,7 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 #ifdef DISABLE_KEYSERVER_HELPERS
   log_error(_("external keyserver calls are not supported in this build\n"));
   return G10ERR_KEYSERVER;
-#endif
+#else
 
   /* It's not the internal HKP code, so try and spawn a handler for it */
 
@@ -733,6 +737,7 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
     }
 
   return 0;
+#endif /* ! DISABLE_KEYSERVER_HELPERS*/
 }
 
 int 

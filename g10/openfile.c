@@ -355,8 +355,8 @@ try_make_homedir( const char *fname )
 	else if( !opt.quiet )
 	    log_info( _("%s: directory created\n"), fname );
 	copy_options_file( fname );
-	log_info(_("you have to start GnuPG again, "
-		   "so it can read the new configuration file\n") );
-	g10_exit(1);
+/*  	log_info(_("you have to start GnuPG again, " */
+/*  		   "so it can read the new configuration file\n") ); */
+/*  	g10_exit(1); */
     }
 }

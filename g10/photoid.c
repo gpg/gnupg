@@ -59,7 +59,8 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
   for(i=4;i<16;i++) /* The reserved bytes */
     header[i]=0;
 
-  uid=m_alloc_clear(sizeof(*uid)+50);
+#define EXTRA_UID_NAME_SPACE 71
+  uid=m_alloc_clear(sizeof(*uid)+71);
 
   printf(_("\nPick an image to use for your photo ID.  "
 	   "The image must be a JPEG file.\n"
@@ -117,7 +118,7 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
       /* Build the packet */
       build_attribute_subpkt(uid,1,photo,len,header,16);
       parse_attribute_subpkts(uid);
-      make_attribute_uidname(uid);
+      make_attribute_uidname(uid, EXTRA_UID_NAME_SPACE);
 
       /* Showing the photo is not safe when noninteractive since the
          "user" may not be able to dismiss a viewer window! */

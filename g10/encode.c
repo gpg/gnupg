@@ -205,6 +205,12 @@ encode_simple( const char *filename, int mode, int compat )
 	    log_error(_("error creating passphrase: %s\n"), g10_errstr(rc) );
 	    return rc;
 	}
+        if (!compat && s2k->mode != 1 && s2k->mode != 3) {
+            compat = 1;
+            log_info (_("can't use a symmetric ESK packet "
+                        "due to the S2K mode\n"));
+        }
+
         if ( !compat ) {            
             seskeylen = cipher_get_keylen( opt.def_cipher_algo ?
                                            opt.def_cipher_algo:

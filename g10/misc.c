@@ -436,7 +436,7 @@ pct_expando(const char *string,struct expando_args *args)
 		if(args->pk)
 		  fingerprint_from_pk(args->pk,array,&len);
 		else
-		  memset(array,0,MAX_FINGERPRINT_LEN);
+		  memset(array,0, (len=MAX_FINGERPRINT_LEN));
 
 		if(idx+(len*2)<maxlen)
 		  {

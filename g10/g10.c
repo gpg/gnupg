@@ -292,7 +292,6 @@ enum cmd_and_opt_values { aNull = 0,
     oPersonalCipherPreferences,
     oPersonalDigestPreferences,
     oPersonalCompressPreferences,
-    oEmu3DESS2KBug,  /* will be removed in 1.1 */
     oEmuMDEncodeBug,
     oDisplay,
     oTTYname,
@@ -581,7 +580,6 @@ static ARGPARSE_OPTS opts[] = {
     { oPersonalCipherPreferences,  "personal-cipher-preferences", 2, "@"},
     { oPersonalDigestPreferences,  "personal-digest-preferences", 2, "@"},
     { oPersonalCompressPreferences,  "personal-compress-preferences", 2, "@"},
-    { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
     { oEmuMDEncodeBug,	"emulate-md-encode-bug", 0, "@"},
     { oDisplay,    "display",     2, "@" },
     { oTTYname,    "ttyname",     2, "@" },
@@ -876,8 +874,8 @@ check_permissions(const char *path,int item)
      to avoid user confusion with an extra options file warning which
      could be rectified if the homedir itself had proper
      permissions. */
-  if(item!=0 && homedir_cache>-1 &&
-     ascii_memcasecmp(opt.homedir,tmppath,strlen(opt.homedir))==0)
+  if(item!=0 && homedir_cache>-1
+     && ascii_strncasecmp(opt.homedir,tmppath,strlen(opt.homedir))==0)
     {
       ret=homedir_cache;
       goto end;
@@ -1435,16 +1433,15 @@ main( int argc, char **argv )
 	  case oPGP7: opt.pgp7 = 1; break;
 	  case oNoPGP7: opt.pgp7 = 0; break;
 	  case oEmuChecksumBug: opt.emulate_bugs |= EMUBUG_GPGCHKSUM; break;
-	  case oEmu3DESS2KBug:	opt.emulate_bugs |= EMUBUG_3DESS2K; break;
 	  case oEmuMDEncodeBug: opt.emulate_bugs |= EMUBUG_MDENCODE; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRunAsShmCP:
 #ifndef __riscos__
-	  #ifndef USE_SHM_COPROCESSING
+# ifndef USE_SHM_COPROCESSING
 	    /* not possible in the option file,
 	     * but we print the warning here anyway */
 	    log_error("shared memory coprocessing is not available\n");
-	  #endif
+# endif
 #else /* __riscos__ */
             not_implemented("run-as-shm-coprocess");
 #endif /* __riscos__ */

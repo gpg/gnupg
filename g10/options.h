@@ -137,9 +137,9 @@ struct {
     unsigned int import_options;
     unsigned int export_options;
     char *def_preference_list;
-    prefitem_t *personal_cipher_prefs,
-               *personal_digest_prefs,
-               *personal_compress_prefs;
+    prefitem_t *personal_cipher_prefs;
+    prefitem_t *personal_digest_prefs;
+    prefitem_t *personal_compress_prefs;
     int no_perm_warn;
     int no_mdc_warn;
     char *temp_dir;
@@ -181,7 +181,6 @@ struct {
 
 
 #define EMUBUG_GPGCHKSUM  1
-#define EMUBUG_3DESS2K	  2
 #define EMUBUG_MDENCODE   4
 
 #define DBG_PACKET_VALUE  1	/* debug packet reading/writing */

@@ -78,7 +78,7 @@ $Id$
 # not define this, the lock will be obtained and released every time
 # it is needed - normally this is not needed.
 
-lock-once
+#lock-once
 
 # GnuPG can send and receive keys to and from a keyserver.  These
 # servers can be HKP, email, or LDAP (if GnuPG is built with LDAP

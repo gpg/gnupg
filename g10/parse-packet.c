@@ -1828,9 +1828,11 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     return 0;
 }
 
+
 void
-make_attribute_uidname(PKT_user_id *uid)
+make_attribute_uidname(PKT_user_id *uid, size_t max_namelen)
 {
+  assert ( max_namelen > 70 );
   if(uid->numattribs<=0)
     sprintf(uid->name,"[bad attribute packet of size %lu]",uid->attrib_len);
   else if(uid->numattribs>1)
@@ -1846,7 +1848,7 @@ make_attribute_uidname(PKT_user_id *uid)
 	  byte type;
 
 	  if(parse_image_header(uid->attribs,&type,&len))
-	    sprintf(uid->name,"[%s image of size %lu]",
+	    sprintf(uid->name,"[%.20s image of size %lu]",
 		    image_type_to_string(type,1),(ulong)len);
 	  else
 	    sprintf(uid->name,"[invalid image]");
@@ -1864,7 +1866,9 @@ parse_attribute( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
     byte *p;
 
-    packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id + 70);
+#define EXTRA_UID_NAME_SPACE 71
+    packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id
+                                  + EXTRA_UID_NAME_SPACE);
 
     setup_user_id(packet);
 
@@ -1879,7 +1883,7 @@ parse_attribute( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
        attribute type (jpeg), but it is correct by the spec. */
     parse_attribute_subpkts(packet->pkt.user_id);
 
-    make_attribute_uidname(packet->pkt.user_id);
+    make_attribute_uidname(packet->pkt.user_id, EXTRA_UID_NAME_SPACE);
 
     if( list_mode ) {
 	printf(":attribute packet: %s\n", packet->pkt.user_id->name );

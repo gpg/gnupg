@@ -399,7 +399,7 @@ const byte *parse_sig_subpkt2 ( PKT_signature *sig,
 int parse_one_sig_subpkt( const byte *buffer, size_t n, int type );
 void parse_revkeys(PKT_signature *sig);
 int parse_attribute_subpkts(PKT_user_id *uid);
-void make_attribute_uidname(PKT_user_id *uid);
+void make_attribute_uidname(PKT_user_id *uid, size_t max_namelen);
 PACKET *create_gpg_control ( ctrlpkttype_t type,
                              const byte *data,
                              size_t datalen );

@@ -1,3 +1,47 @@
+2002-09-10  Werner Koch  <wk@gnupg.org>
+
+	* encode.c (encode_simple): Make sure we don't use an ESK packet
+	when we don't have a salt in the S2K.
+
+	* misc.c (pct_expando) <case f>: Make sure that LEN is initialized.
+
+	* exec.c (exec_finish): Use ticks to denote filenames in messages.
+	(make_tempdir, exec_write): Changed format of messages.
+
+	* keyserver.c (print_keyinfo): Release USERID in on error.
+	(keyserver_work) [!DISABLE_KEYSERVER_HELPERS]: Exclude the unused
+	code.
+
+2002-09-09  Werner Koch  <wk@gnupg.org>
+
+	* parse-packet.c (make_attribute_uidname): Add new ar MAX_NAMELEN
+	for sanity checks.  Changed both callers. Limit the size of an %s.
+
+	* options.skel: Comment lock-once out, so that this file does not
+	change anything when copied to a new home directory.
+	* openfile.c (try_make_homedir): Don't exit after copying the
+	option skeleton.
+
+	* options.h: Don't use a comma when declaring variables over more
+	than one line.
+
+	* mainproc.c (symkey_decrypt_sesskey): Check length of the session
+	key.
+
+	* hkp.c (dehtmlize): Use ascii_tolower to protect against weird
+	locales.  Cast the argument for isspace for the sake of broken
+	HP/UXes.
+	(parse_hkp_index): s/ascii_memcasecmp/ascii_strncasecmp/.
+
+	* g10.c: Removed option --emulate-3des-s2k-bug.
+
+	* passphrase.c (hash_passphrase): Was used here.
+
+	* export.c (parse_export_options)
+	* keyserver.c (parse_keyserver_options)
+	* import.c (parse_import_options)
+	* g10.c (check_permissions): s/ascii_memcasecmp/ascii_strncasecmp/.
+
 2002-09-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (add_group): Use '=' to separate group name from group
@@ -54,7 +98,7 @@
 	compressed packets.
 
 	* build-packet.c (do_mdc): Removed. Was not used.
-	(do_encrypted_mdc): Count the version number and the MDC packet.
+	(do_encrypted_mdc): Count in the version number and the MDC packet.
 
 2002-08-28  David Shaw  <dshaw@jabberwocky.com>
 
@@ -1047,7 +1091,7 @@
 
 2002-05-05  Timo Schulz  <ts@winpt.org>
 
-        * mainproc.c (proc_symkey_enc): Don't ask for a passphrase
+	* mainproc.c (proc_symkey_enc): Don't ask for a passphrase
         in the list only mode.
 	
 2002-05-05  David Shaw  <dshaw@jabberwocky.com>

@@ -276,25 +276,25 @@ dehtmlize(char *line)
 	  break;
 
 	case '&':
-	  if((*(line+1)!='\0' && tolower(*(line+1))=='l') &&
-	     (*(line+2)!='\0' && tolower(*(line+2))=='t') &&
+	  if((*(line+1)!='\0' && ascii_tolower(*(line+1))=='l') &&
+	     (*(line+2)!='\0' && ascii_tolower(*(line+2))=='t') &&
 	     (*(line+3)!='\0' && *(line+3)==';'))
 	    {
 	      parsed[parsedindex++]='<';
 	      line+=4;
 	      break;
 	    }
-	  else if((*(line+1)!='\0' && tolower(*(line+1))=='g') &&
-		  (*(line+2)!='\0' && tolower(*(line+2))=='t') &&
+	  else if((*(line+1)!='\0' && ascii_tolower(*(line+1))=='g') &&
+		  (*(line+2)!='\0' && ascii_tolower(*(line+2))=='t') &&
 		  (*(line+3)!='\0' && *(line+3)==';'))
 	    {
 	      parsed[parsedindex++]='>';
 	      line+=4;
 	      break;
 	    }
-	  else if((*(line+1)!='\0' && tolower(*(line+1))=='a') &&
-		  (*(line+2)!='\0' && tolower(*(line+2))=='m') &&
-		  (*(line+3)!='\0' && tolower(*(line+3))=='p') &&
+	  else if((*(line+1)!='\0' && ascii_tolower(*(line+1))=='a') &&
+		  (*(line+2)!='\0' && ascii_tolower(*(line+2))=='m') &&
+		  (*(line+3)!='\0' && ascii_tolower(*(line+3))=='p') &&
 		  (*(line+4)!='\0' && *(line+4)==';'))
 	    {
 	      parsed[parsedindex++]='&';
@@ -317,7 +317,7 @@ dehtmlize(char *line)
   if(parsedindex>0)
     {
       parsedindex--;
-      while(isspace(parsed[parsedindex]))
+      while(isspace(((unsigned char*)parsed)[parsedindex]))
 	{
 	  parsed[parsedindex]='\0';
 	  parsedindex--;
@@ -355,8 +355,8 @@ parse_hkp_index(IOBUF buffer,char *line)
      response.  This only complains about problems within the key
      section itself.  Headers and footers should not matter. */
   if(open && line[0]!='\0' &&
-     ascii_memcasecmp(line,"pub ",4)!=0 &&
-     ascii_memcasecmp(line,"    ",4)!=0)
+     ascii_strncasecmp(line,"pub ",4)!=0 &&
+     ascii_strncasecmp(line,"    ",4)!=0)
     {
       m_free(key);
       m_free(uid);
@@ -402,7 +402,7 @@ parse_hkp_index(IOBUF buffer,char *line)
 	}
     }
 
-  if(ascii_memcasecmp(line,"pub ",4)==0)
+  if(ascii_strncasecmp(line,"pub ",4)==0)
     {
       char *tok,*temp;
 

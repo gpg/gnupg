@@ -178,7 +178,7 @@ static int make_tempdir(struct exec_info *info)
 #endif
 
   if(mkdtemp(info->tempdir)==NULL)
-    log_error(_("%s: can't create directory: %s\n"),
+    log_error(_("can't create directory `%s': %s\n"),
 	      info->tempdir,strerror(errno));
   else
     {
@@ -262,6 +262,7 @@ static int expand_args(struct exec_info *info,const char *args_in)
 
 	  if(append)
 	    {
+              /* FIXME: Why do we need a loop? -wk */
 	      while(strlen(append)+len>size-1)
 		{
 		  size+=100;
@@ -464,13 +465,13 @@ int exec_write(struct exec_info **info,const char *program,
 #endif /* !EXEC_TEMPFILE_ONLY */
 
   if(DBG_EXTPROG)
-    log_debug("using temp file \"%s\"\n",(*info)->tempfile_in);
+    log_debug("using temp file `%s'\n",(*info)->tempfile_in);
 
   /* It's not fork/exec/pipe, so create a temp file */
   (*info)->tochild=fopen((*info)->tempfile_in,binary?"wb":"w");
   if((*info)->tochild==NULL)
     {
-      log_error(_("%s: can't create: %s\n"),
+      log_error(_("can't create '%s': %s\n"),
 		(*info)->tempfile_in,strerror(errno));
       ret=G10ERR_WRITE_FILE;
       goto fail;
@@ -583,19 +584,19 @@ int exec_finish(struct exec_info *info)
       if(info->tempfile_in)
 	{
 	  if(unlink(info->tempfile_in)==-1)
-	    log_info(_("WARNING: unable to remove tempfile (%s) \"%s\": %s\n"),
+	    log_info(_("WARNING: unable to remove tempfile (%s) `%s': %s\n"),
 		     "in",info->tempfile_in,strerror(errno));
 	}
   
       if(info->tempfile_out)
 	{
 	  if(unlink(info->tempfile_out)==-1)
-	    log_info(_("WARNING: unable to remove tempfile (%s) \"%s\": %s\n"),
+	    log_info(_("WARNING: unable to remove tempfile (%s) `%s': %s\n"),
 		     "out",info->tempfile_out,strerror(errno));
 	}
 
       if(rmdir(info->tempdir)==-1)
-	log_info(_("WARNING: unable to remove temp directory \"%s\": %s\n"),
+	log_info(_("WARNING: unable to remove temp directory `%s': %s\n"),
 		 info->tempdir,strerror(errno));
     }
 
@@ -609,3 +610,4 @@ int exec_finish(struct exec_info *info)
   return ret;
 }
 #endif /* ! NO_EXEC */
+
