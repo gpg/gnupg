@@ -553,7 +553,7 @@ send_request( HTTP_HD hd, const char *proxy )
 
     p = build_rel_path( hd->uri );
 
-    request=m_alloc(strlen(server)*2 + strlen(p) + (auth?strlen(auth):0) + 50);
+    request=m_alloc(strlen(server)*2 + strlen(p) + (auth?strlen(auth):0) + 65);
     if( proxy )
       sprintf( request, "%s http://%s:%hu%s%s HTTP/1.0\r\n%s",
 	       hd->req_type == HTTP_REQ_GET ? "GET" :
@@ -561,11 +561,19 @@ send_request( HTTP_HD hd, const char *proxy )
 	       hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
 	       server, port,  *p == '/'? "":"/", p, auth?auth:"" );
     else
-      sprintf( request, "%s %s%s HTTP/1.0\r\nHost: %s\r\n%s",
-	       hd->req_type == HTTP_REQ_GET ? "GET" :
-	       hd->req_type == HTTP_REQ_HEAD? "HEAD":
-	       hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
-	       *p == '/'? "":"/", p, server, auth?auth:"");
+      {
+	char portstr[15];
+
+	if(port!=80)
+	  sprintf(portstr,":%u",port);
+
+	sprintf( request, "%s %s%s HTTP/1.0\r\nHost: %s%s\r\n%s",
+		 hd->req_type == HTTP_REQ_GET ? "GET" :
+		 hd->req_type == HTTP_REQ_HEAD? "HEAD":
+		 hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
+		 *p == '/'? "":"/", p, server, (port!=80)?portstr:"",
+		 auth?auth:"");
+      }
 
     m_free(p);
 

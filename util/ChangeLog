@@ -1,3 +1,8 @@
+2004-12-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.c (send_request): Include the port if non-80 in the Host:
+	header.  Noted by Jason Harris.
+
 2004-11-03  Timo Schulz  <twoaday@g10code.com>
 	
 	* strgutil.c (w32_strerror): New.
