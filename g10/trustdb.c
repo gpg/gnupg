@@ -1335,7 +1335,7 @@ check_regexp(const char *exp,const char *string)
   int ret;
   regex_t pat;
 
-  if(regcomp(&pat,exp,REG_ICASE|REG_NOSUB)!=0)
+  if(regcomp(&pat,exp,REG_ICASE|REG_NOSUB|REG_EXTENDED)!=0)
     return 0;
 
   ret=regexec(&pat,string,0,NULL,0);

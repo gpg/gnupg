@@ -1,3 +1,7 @@
+2002-10-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.c (check_regexp): Modern regexps require REG_EXTENDED.
+
 2002-10-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* packet.h, trustdb.h, trustdb.c (trust_string): New.  Return a
