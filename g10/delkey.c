@@ -1,6 +1,6 @@
 /* delkey.c - delete keys
- * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2004 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -48,7 +48,7 @@
  * key can't be deleted for that reason.
  */
 static int
-do_delete_key( const char *username, int secret, int *r_sec_avail )
+do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
 {
     int rc = 0;
     KBNODE keyblock = NULL;
@@ -91,25 +91,32 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
 	goto leave;
     }
 
-    if( secret ) {
+    if( secret )
+      {
 	sk = node->pkt->pkt.secret_key;
 	keyid_from_sk( sk, keyid );
-    }
-    else {
+      }
+    else
+      {
+	/* public */
 	pk = node->pkt->pkt.public_key;
 	keyid_from_pk( pk, keyid );
-	rc = seckey_available( keyid );
-	if( !rc && !opt.expert ) {
-            *r_sec_avail = 1;
-            rc = -1;
-            goto leave;
-	}
-	else if( rc != G10ERR_NO_SECKEY ) {
-	    log_error("%s: get secret key: %s\n", username, g10_errstr(rc) );
-	}
-	else
-	    rc = 0;
-    }
+
+	if(!force)
+	  {
+	    rc = seckey_available( keyid );
+	    if( !rc )
+	      {
+		*r_sec_avail = 1;
+		rc = -1;
+		goto leave;
+	      }
+	    else if( rc != G10ERR_NO_SECKEY )
+	      log_error("%s: get secret key: %s\n", username, g10_errstr(rc) );
+	    else
+	      rc = 0;
+	  }
+      }
 
     if( rc )
 	rc = 0;
@@ -180,15 +187,18 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
 int
 delete_keys( STRLIST names, int secret, int allow_both )
 {
-    int rc, avail;
+    int rc, avail, force=(!allow_both && !secret && opt.expert);
+
+    /* Force allows us to delete a public key even if a secret key
+       exists. */
 
     for(;names;names=names->next) {
-       rc = do_delete_key (names->d, secret, &avail );
+       rc = do_delete_key (names->d, secret, force, &avail );
        if ( rc && avail ) { 
 	 if ( allow_both ) {
-	   rc = do_delete_key (names->d, 1, &avail );
+	   rc = do_delete_key (names->d, 1, 0, &avail );
 	   if ( !rc )
-	     rc = do_delete_key (names->d, 0, &avail );
+	     rc = do_delete_key (names->d, 0, 0, &avail );
 	 }
 	 else {
 	   log_error(_(

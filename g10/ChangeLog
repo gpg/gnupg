@@ -1,3 +1,9 @@
+2005-03-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* delkey.c (do_delete_key, delete_keys): Fix problem with --expert
+	preventing --delete-secret-and-public-keys from deleting secret
+	keys.
+
 2005-03-10  Werner Koch  <wk@g10code.com>
 
 	* keyedit.c (keyedit_menu) [W32]: Run the trustdb stale check
