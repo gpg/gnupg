@@ -1,3 +1,9 @@
+2003-08-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* util.h: s/__MINGW32__/_WIN32/ to help building on native Windows
+	compilers.  Requested by Brian Gladman.  From Werner on stable
+	branch.
+
 2003-07-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* types.h: Prefer using uint64_t when creating a 64-bit unsigned
