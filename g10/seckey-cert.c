@@ -1,5 +1,5 @@
 /* seckey-cert.c -  secret key certificate packet handling
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -36,7 +36,7 @@
 
 
 static int
-do_check( PKT_secret_key *sk, const char *tryagain_text )
+do_check( PKT_secret_key *sk, const char *tryagain_text, int *canceled )
 {
     byte *buffer;
     u16 csum=0;
@@ -72,7 +72,11 @@ do_check( PKT_secret_key *sk, const char *tryagain_text )
             keyid[3] = sk->main_keyid[1];
 	}
 	dek = passphrase_to_dek( keyid, sk->pubkey_algo, sk->protect.algo,
-				 &sk->protect.s2k, 0, tryagain_text );
+				 &sk->protect.s2k, 0,
+                                 tryagain_text, canceled);
+        if (!dek && canceled && *canceled)
+	    return G10ERR_GENERAL;
+
 	cipher_hd = cipher_open( sk->protect.algo,
 				 CIPHER_MODE_AUTO_CFB, 1);
 	cipher_setkey( cipher_hd, dek->key, dek->keylen );
@@ -223,12 +227,13 @@ check_secret_key( PKT_secret_key *sk, int n )
 	n = (opt.batch && !opt.use_agent)? 1 : 3; /* use the default value */
 
     for(i=0; i < n && rc == G10ERR_BAD_PASS; i++ ) {
+        int canceled;
         const char *tryagain = NULL;
 	if (i) {
-            tryagain = _("Invalid passphrase; please try again");
-            log_info (_("%s ...\n"), tryagain);
+            tryagain = N_("Invalid passphrase; please try again");
+            log_info (_("%s ...\n"), _(tryagain));
         }
-	rc = do_check( sk, tryagain );
+	rc = do_check( sk, tryagain, &canceled );
 	if( rc == G10ERR_BAD_PASS && is_status_enabled() ) {
 	    u32 kid[2];
 	    char buf[50];
@@ -237,7 +242,7 @@ check_secret_key( PKT_secret_key *sk, int n )
 	    sprintf(buf, "%08lX%08lX", (ulong)kid[0], (ulong)kid[1]);
 	    write_status_text( STATUS_BAD_PASSPHRASE, buf );
 	}
-	if( have_static_passphrase() )
+	if( have_static_passphrase() || canceled )
 	    break;
     }
 

@@ -1,6 +1,20 @@
 2003-04-09  Werner Koch  <wk@gnupg.org>
 
-	* decrypt.c (decrypt_messages): Fixed error handling; the fucntion
+	* passphrase .c (agent_get_passphrase): New arg CANCELED.
+	(passphrase_to_dek): Ditto.  Passed to above.  Changed all
+	callers to pass NULL.
+	* seckey-cert.c (do_check): New arg CANCELED.
+	(check_secret_key): Terminate loop when canceled.
+
+	* keyedit.c (change_passphrase): Pass ERRTEXT untranslated to
+	passphrase_to_dek and translate where appropriate.
+
+	* seckey-cert.c (check_secret_key): Ditto.
+	* keygen.c (ask_passphrase): Ditto.
+	* passphrase.c (agent_get_passphrase): Translate the TRYAGAIN_TEXT.
+	Switch the codeset to utf-8.
+
+	* decrypt.c (decrypt_messages): Fixed error handling; the function
 	used to re-loop with same file after an error.  Reported by Joseph
 	Walton.
 

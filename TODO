@@ -93,8 +93,6 @@
   * cat foo | gpg --sign | gpg --list-packets
     Does not list the signature packet.
 
-  * The description texts passed to the agent should be utf-8 encoded.
-
 Things we won't do
 ------------------
 

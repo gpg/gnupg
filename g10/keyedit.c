@@ -1,5 +1,5 @@
 /* keyedit.c - keyedit stuff
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -783,10 +783,10 @@ change_passphrase( KBNODE keyblock )
 	    s2k->mode = opt.s2k_mode;
 	    s2k->hash_algo = opt.s2k_digest_algo;
 	    dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo,
-                                     s2k, 2, errtext);
+                                     s2k, 2, errtext, NULL);
 	    if( !dek ) {
-		errtext = _("passphrase not correctly repeated; try again");
-		tty_printf ("%s.\n", errtext);
+		errtext = N_("passphrase not correctly repeated; try again");
+		tty_printf ("%s.\n", _(errtext));
 	    }
 	    else if( !dek->keylen ) {
 		rc = 0;

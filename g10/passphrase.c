@@ -1,5 +1,5 @@
 /* passphrase.c -  Get a passphrase
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -35,6 +35,9 @@
 #include <errno.h>
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
+#endif
+#ifdef HAVE_LANGINFO_CODESET
+#include <langinfo.h>
 #endif
 
 #include "util.h"
@@ -590,15 +593,20 @@ agent_close ( int fd )
  * Mode 0:  Allow cached passphrase
  *      1:  No cached passphrase FIXME: Not really implemented
  *      2:  Ditto, but change the text to "repeat entry"
+ *
+ * Note that TRYAGAIN_TEXT must not be translated.  If canceled is not
+ * NULL, the function does set it to 1 if the user canceled the
+ * operation.
  */
 static char *
-agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text )
+agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
+                       int *canceled )
 {
 #if defined(__riscos__)
   return NULL;
 #else
   size_t n;
-  char *atext;
+  char *atext = NULL;
   char buf[50];
   int fd = -1;
   int nread;
@@ -607,6 +615,10 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text )
   PKT_public_key *pk = m_alloc_clear( sizeof *pk );
   byte fpr[MAX_FINGERPRINT_LEN];
   int prot;
+  char *orig_codeset = NULL;
+
+  if (canceled)
+    *canceled = 0;
 
 #if MAX_FINGERPRINT_LEN < 20
 #error agent needs a 20 byte fingerprint
@@ -618,7 +630,32 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text )
       free_public_key( pk );      
       pk = NULL; /* oops: no key for some reason */
     }
-  
+
+
+#ifdef ENABLE_NLS
+  /* The Assuan agent protol requires us to trasnmit utf-8 strings */
+  orig_codeset = bind_textdomain_codeset (PACKAGE, NULL);
+  log_debug ("old codeset: `%s'\n", orig_codeset);
+#ifdef HAVE_LANGINFO_CODESET
+  if (!orig_codeset)
+    {
+      orig_codeset = nl_langinfo (CODESET);
+      log_debug ("assuming `%s'\n", orig_codeset);
+    }
+#endif
+  if (orig_codeset)
+    { /* We only switch when we are able to restore the codeset later. */
+      orig_codeset = m_strdup (orig_codeset);
+      if (!bind_textdomain_codeset (PACKAGE, "utf-8"))
+        orig_codeset = NULL; 
+      log_debug ("switched to: `%s'\n",
+                 bind_textdomain_codeset (PACKAGE, NULL));
+    }
+#endif
+
+  if ( (fd = agent_open (&prot)) == -1 ) 
+    goto failure;
+
   if ( !mode && pk && keyid )
     { 
       char *uid;
@@ -666,9 +703,6 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text )
   else
     atext = m_strdup ( _("Enter passphrase\n") );
                 
-  if ( (fd = agent_open (&prot)) == -1 ) 
-    goto failure;
-
   if (!prot)
     { /* old style protocol */
       n = 4 + 20 + strlen (atext);
@@ -724,6 +758,11 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text )
           pw[pwlen] = 0; /* make a C String */
           agent_close (fd);
           free_public_key( pk );
+#ifdef ENABLE_NLS
+          if (orig_codeset)
+            bind_textdomain_codeset (PACKAGE, orig_codeset);
+#endif
+          m_free (orig_codeset);
           return pw;
         }
       else if ( reply == GPGA_PROT_CANCELED ) 
@@ -740,6 +779,8 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text )
 
       if (!tryagain_text)
         tryagain_text = "X";
+      else
+        tryagain_text = _(tryagain_text);
 
       /* We allocate 2 time the needed space for atext so that there
          is nenough space for escaping */
@@ -805,11 +846,20 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text )
           pw[pwlen] = 0; /* make a C String */
           agent_close (fd);
           free_public_key( pk );
+#ifdef ENABLE_NLS
+          if (orig_codeset)
+            bind_textdomain_codeset (PACKAGE, orig_codeset);
+#endif
+          m_free (orig_codeset);
           return pw;
         }
       else if (nread > 7 && !memcmp (pw, "ERR 111", 7)
                && (pw[7] == ' ' || pw[7] == '\n') ) 
-        log_info (_("cancelled by user\n") );
+        {
+          log_info (_("cancelled by user\n") );
+          if (canceled)
+            *canceled = 1;
+        }
       else 
         {
           log_error (_("problem with the agent - disabling agent use\n"));
@@ -819,11 +869,17 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text )
       
         
  failure:
+#ifdef ENABLE_NLS
+  if (orig_codeset)
+    bind_textdomain_codeset (PACKAGE, orig_codeset);
+  log_debug ("restored to: `%s'\n", bind_textdomain_codeset (PACKAGE, NULL));
+#endif
   m_free (atext);
   if ( fd != -1 )
     agent_close (fd);
   m_free (pw );
   free_public_key( pk );
+  m_free (orig_codeset);
   
   return NULL;
 #endif /* Posix or W32 */
@@ -944,16 +1000,24 @@ passphrase_clear_cache ( u32 *keyid, int algo )
  *	    (only for mode 2)
  *	    a dek->keylen of 0 means: no passphrase entered.
  *	    (only for mode 2)
- * pubkey_algo is only informational.
+ *
+ * pubkey_algo is only informational.  Note that TRYAGAIN_TEXT must
+ * not be translated as this is done within this function (required to
+ * switch to utf-8 when the agent is in use).  If CANCELED is not
+ * NULL, it is set to 1 if the user choosed to cancel the operation,
+ * otherwise it will be set to 0.
  */
 DEK *
 passphrase_to_dek( u32 *keyid, int pubkey_algo,
 		   int cipher_algo, STRING2KEY *s2k, int mode,
-                   const char *tryagain_text)
+                   const char *tryagain_text, int *canceled)
 {
     char *pw = NULL;
     DEK *dek;
     STRING2KEY help_s2k;
+
+    if (canceled)
+      *canceled = 0;
 
     if( !s2k ) {
         /* This is used for the old rfc1991 mode 
@@ -1032,7 +1096,8 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 	next_pw = NULL;
     }
     else if ( opt.use_agent ) {
-	pw = agent_get_passphrase ( keyid, mode == 2? 1: 0, tryagain_text );
+	pw = agent_get_passphrase ( keyid, mode == 2? 1: 0,
+                                    tryagain_text, canceled);
         if (!pw)
           {
             if (!opt.use_agent)
@@ -1040,7 +1105,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
             pw = m_strdup ("");
           }
         if( *pw && mode == 2 ) {
-	    char *pw2 = agent_get_passphrase ( keyid, 2, NULL );
+	    char *pw2 = agent_get_passphrase ( keyid, 2, NULL, canceled);
             if (!pw2)
               {
                 if (!opt.use_agent)
