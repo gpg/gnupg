@@ -116,14 +116,6 @@ AC_ARG_ENABLE(card-support,
               card_support=$enableval, card_support=yes)
 AC_MSG_RESULT($card_support)
 
-AC_MSG_CHECKING([whether readline support is requested])
-AC_ARG_WITH(readline,
-              AC_HELP_STRING([--without-readline],
-                             [do not support fancy command line editing]),
-              [readline_support="$withval"], [readline_support=yes])  
-case "$readline_support" in yes);; no);; *)readline_support=yes;; esac
-AC_MSG_RESULT($readline_support)
-
 AC_MSG_CHECKING([whether the new iconv based code is requested])
 AC_ARG_ENABLE(gnupg-iconv,
               AC_HELP_STRING([--disable-gnupg-iconv],
@@ -1176,14 +1168,8 @@ fi
 AC_SUBST(LIBUSB_LIBS)
 AC_CHECK_FUNCS(usb_get_busses)
 
-#
 # Check for readline support
-#
-if test "$readline_support" = yes ; then
-    AC_CHECK_LIB(readline, add_history)
-    AC_CHECK_HEADERS([readline/readline.h])
-fi
-
+GNUPG_CHECK_READLINE
 
 # Allow users to append something to the version string without
 # flagging it as development version.  The user version parts is

@@ -1,3 +1,8 @@
+2004-12-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Call the new GNUPG_CHECK_READLINE macro for
+	readline stuff.
+
 2004-12-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Add a --with-ldap=DIR so people can add to the
