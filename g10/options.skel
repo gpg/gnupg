@@ -1,0 +1,208 @@
+# These first three lines are not copied to the gpg.conf file in
+# the users home directory.
+# $Id$
+# Options for GnuPG
+# Copyright 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+# 
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+# 
+# This file is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# Unless you specify which option file to use (with the command line
+# option "--options filename"), GnuPG uses the file ~/.gnupg/gpg.conf
+# by default.
+#
+# An options file can contain any long options which are available in
+# GnuPG. If the first non white space character of a line is a '#',
+# this line is ignored.  Empty lines are also ignored.
+#
+# See the man page for a list of options.
+
+# Uncomment the following option to get rid of the copyright notice
+
+#no-greeting
+
+# If you have more than 1 secret key in your keyring, you may want to
+# uncomment the following option and set your preferred keyid.
+
+#default-key 621CC013
+
+# If you do not pass a recipient to gpg, it will ask for one.  Using
+# this option you can encrypt to a default key.  Key validation will
+# not be done in this case.  The second form uses the default key as
+# default recipient.
+
+#default-recipient some-user-id
+#default-recipient-self
+
+# By default GnuPG creates version 3 signatures for data files.  This
+# is not strictly OpenPGP compliant but PGP 6 and most versions of PGP
+# 7 require them.  To disable this behavior, you may use this option
+# or --openpgp.
+
+#no-force-v3-sigs
+
+# Because some mailers change lines starting with "From " to ">From "
+# it is good to handle such lines in a special way when creating
+# cleartext signatures; all other PGP versions do it this way too.
+# To enable full OpenPGP compliance you may want to use this option.
+
+#no-escape-from-lines
+
+# If you do not use the Latin-1 (ISO-8859-1) charset, you should tell
+# GnuPG which is the native character set.  Please check the man page
+# for supported character sets.  This character set is only used for
+# metadata and not for the actual message which does not undergo any
+# translation.  Note that future version of GnuPG will change to UTF-8
+# as default character set.
+
+#charset utf-8
+
+# Group names may be defined like this:
+#   group mynames = paige 0x12345678 joe patti
+#
+# Any time "mynames" is a recipient (-r or --recipient), it will be
+# expanded to the names "paige", "joe", and "patti", and the key ID
+# "0x12345678".  Note there is only one level of expansion - you
+# cannot make an group that points to another group.  Note also that
+# if there are spaces in the recipient name, this will appear as two
+# recipients.  In these cases it is better to use the key ID.
+
+#group mynames = paige 0x12345678 joe patti
+
+# Some old Windows platforms require 8.3 filenames.  If your system
+# can handle long filenames, uncomment this.
+
+#no-mangle-dos-filenames
+
+# Lock the file only once for the lifetime of a process.  If you do
+# not define this, the lock will be obtained and released every time
+# it is needed - normally this is not needed.
+
+#lock-once
+
+# GnuPG can send and receive keys to and from a keyserver.  These
+# servers can be HKP, email, or LDAP (if GnuPG is built with LDAP
+# support).
+#
+# Example HKP keyserver:
+#      x-hkp://pgp.mit.edu
+#
+# Example email keyserver:
+#      mailto:pgp-public-keys@keys.nl.pgp.net
+#
+# Example LDAP keyservers:
+#      ldap://pgp.surfnet.nl:11370
+#      ldap://keyserver.pgp.com
+#
+# Regular URL syntax applies, and you can set an alternate port
+# through the usual method:
+#      x-hkp://keyserver.example.net:22742
+#
+# If you have problems connecting to a HKP server through a buggy http
+# proxy, you can use keyserver option broken-http-proxy (see below),
+# but first you should make sure that you have read the man page
+# regarding proxies (keyserver option honor-http-proxy)
+#
+# Most users just set the name and type of their preferred keyserver.
+# Most servers do synchronize with each other and DNS round-robin may
+# give you a quasi-random server each time.
+
+#keyserver x-hkp://pgp.mit.edu
+#keyserver mailto:pgp-public-keys@keys.nl.pgp.net
+#keyserver ldap://pgp.surfnet.nl:11370
+#keyserver ldap://keyserver.pgp.com
+
+# Common options for keyserver functions:
+#
+# include-disabled = when searching, include keys marked as "disabled"
+#                    on the keyserver (not all keyservers support this).
+#
+# no-include-revoked = when searching, do not include keys marked as
+#                      "revoked" on the keyserver.
+#
+# verbose = show more information as the keys are fetched.
+#           Can be used more than once to increase the amount
+#           of information shown.
+#
+# use-temp-files = use temporary files instead of a pipe to talk to the
+#                  keyserver.  Some platforms (Win32 for one) always
+#                  have this on.
+#
+# keep-temp-files = do not delete temporary files after using them
+#                   (really only useful for debugging)
+#
+# honor-http-proxy = if the keyserver uses HTTP, honor the http_proxy
+#                    environment variable
+#
+# broken-http-proxy = try to work around a buggy HTTP proxy
+#
+# auto-key-retrieve = automatically fetch keys as needed from the keyserver
+#                     when verifying signatures or when importing keys that
+#                     have been revoked by a revocation key that is not
+#                     present on the keyring.
+#
+# no-include-attributes = do not include attribute IDs (aka "photo IDs")
+#                         when sending keys to the keyserver.
+
+#keyserver-options auto-key-retrieve
+
+# Uncomment this line to display photo user IDs in key listings and
+# when a signature from a key with a photo is verified.
+
+#show-photos
+
+# Use this program to display photo user IDs
+#
+# %i is expanded to a temporary file that contains the photo.
+# %I is the same as %i, but the file isn't deleted afterwards by GnuPG.
+# %k is expanded to the key ID of the key.
+# %K is expanded to the long OpenPGP key ID of the key.
+# %t is expanded to the extension of the image (e.g. "jpg").
+# %T is expanded to the MIME type of the image (e.g. "image/jpeg").
+# %f is expanded to the fingerprint of the key.
+# %% is %, of course.
+#
+# If %i or %I are not present, then the photo is supplied to the
+# viewer on standard input.  If your platform supports it, standard
+# input is the best way to do this as it avoids the time and effort in
+# generating and then cleaning up a secure temp file.
+#
+# The default program is "xloadimage -fork -quiet -title 'KeyID 0x%k' stdin"
+# On Mac OS X and Windows, the default is to use your regular JPEG image
+# viewer.
+#
+# Some other viewers:
+# photo-viewer "qiv %i"
+# photo-viewer "ee %i"
+# photo-viewer "display -title 'KeyID 0x%k'"
+#
+# This one saves a copy of the photo ID in your home directory:
+# photo-viewer "cat > ~/photoid-for-key-%k.%t"
+#
+# Use your MIME handler to view photos:
+# photo-viewer "metamail -q -d -b -c %T -s 'KeyID 0x%k' -f GnuPG"
+
+# Passphrase agent
+#
+# We support the old experimental passphrase agent protocol as well as
+# the new Assuan based one (currently available in the "newpg" package
+# at ftp.gnupg.org/gcrypt/alpha/aegypten/).  To make use of the agent,
+# you have to run an agent as daemon and use the option
+#
+# use-agent
+# 
+# which tries to use the agent but will fallback to the regular mode
+# if there is a problem connecting to the agent.  The normal way to
+# locate the agent is by looking at the environment variable
+# GPG_AGENT_INFO which should have been set during gpg-agent startup.
+# In certain situations the use of this variable is not possible, thus
+# the option
+# 
+# --gpg-agent-info=<path>:<pid>:1
+#
+# may be used to override it.
