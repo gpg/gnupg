@@ -378,6 +378,10 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                       log_error ("failed to get cert: %s\n", gnupg_strerror (rc));
                       goto oops;     
                     }
+                  /* Just in case there is a problem with the own
+                     certificate we print this message - should never
+                     happen of course */
+                  gpgsm_cert_use_decrypt_p (cert);
 
                   hexkeygrip = gpgsm_get_keygrip_hexstring (cert);
 

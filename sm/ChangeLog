@@ -1,3 +1,15 @@
+2002-04-11  Werner Koch  <wk@gnupg.org>
+
+	* certlist.c (cert_usable_p): New.
+	(gpgsm_cert_use_sign_p,gpgsm_cert_use_encrypt_p): New.
+	(gpgsm_cert_use_verify_p,gpgsm_cert_use_decrypt_p): New.
+	(gpgsm_add_to_certlist): Check the key usage.
+	* sign.c (gpgsm_sign): Ditto.
+	* verify.c (gpgsm_verify): Print a message wehn an unsuitable
+	certificate was used.
+	* decrypt.c (gpgsm_decrypt): Ditto
+	* keylist.c (print_capabilities): Determine values from the cert.
+
 2002-03-28  Werner Koch  <wk@gnupg.org>
 
 	* keylist.c (list_cert_colon): Fixed listing of crt record; the

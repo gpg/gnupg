@@ -178,6 +178,10 @@ int gpgsm_validate_path (KsbaCert cert);
 int gpgsm_basic_cert_check (KsbaCert cert);
 
 /*-- certlist.c --*/
+int gpgsm_cert_use_sign_p (KsbaCert cert);
+int gpgsm_cert_use_encrypt_p (KsbaCert cert);
+int gpgsm_cert_use_verify_p (KsbaCert cert);
+int gpgsm_cert_use_decrypt_p (KsbaCert cert);
 int gpgsm_add_to_certlist (const char *name, CERTLIST *listaddr);
 void gpgsm_release_certlist (CERTLIST list);
 int gpgsm_find_cert (const char *name, KsbaCert *r_cert);

@@ -370,6 +370,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
           gpgsm_status (ctrl, STATUS_BADSIG, NULL);
           goto next_signer;
         }
+      gpgsm_cert_use_verify_p (cert); /* this displays an info message */
       log_debug ("signature okay - checking certs\n");
       gpgsm_status (ctrl, STATUS_GOODSIG, NULL);
       {

@@ -32,7 +32,7 @@
 
 #include "gpgsm.h"
 #include "keydb.h"
-
+#include "i18n.h"
 
 
 
@@ -56,12 +56,39 @@ print_key_data (KsbaCert cert, FILE *fp)
 static void
 print_capabilities (KsbaCert cert, FILE *fp)
 {
-  putc ('e', fp);
-  putc ('s', fp);
-  putc ('c', fp);
-  putc ('E', fp);
-  putc ('S', fp);
-  putc ('C', fp);
+  KsbaError err;
+  unsigned int use;
+
+  err = ksba_cert_get_key_usage (cert, &use);
+  if (err == KSBA_No_Data)
+    {
+      putc ('e', fp);
+      putc ('s', fp);
+      putc ('c', fp);
+      putc ('E', fp);
+      putc ('S', fp);
+      putc ('C', fp);
+      return;
+    }
+  if (err)
+    { 
+      log_error (_("error getting key usage information: %s\n"),
+                 ksba_strerror (err));
+      return;
+    } 
+
+  if ((use & KSBA_KEYUSAGE_KEY_ENCIPHERMENT))
+    putc ('e', fp);
+  if ((use & KSBA_KEYUSAGE_DIGITAL_SIGNATURE))
+    putc ('s', fp);
+  if ((use & KSBA_KEYUSAGE_KEY_CERT_SIGN))
+    putc ('c', fp);
+  if ((use & KSBA_KEYUSAGE_KEY_ENCIPHERMENT))
+    putc ('E', fp);
+  if ((use & KSBA_KEYUSAGE_DIGITAL_SIGNATURE))
+    putc ('S', fp);
+  if ((use & KSBA_KEYUSAGE_KEY_CERT_SIGN))
+    putc ('C', fp);
 }
 
 

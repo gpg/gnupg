@@ -310,6 +310,10 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
       rc = seterr (General_Error);
       goto leave;
     }
+  rc = gpgsm_cert_use_sign_p (cert);
+  if (rc)
+    goto leave;
+
   err = ksba_cms_add_signer (cms, cert);
   if (err)
     {
