@@ -99,6 +99,7 @@ struct {
     int merge_only;
     int allow_secret_key_import;
     int try_all_secrets;
+    int no_expensive_trust_checks;
 } opt;
 
 

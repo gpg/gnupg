@@ -13,7 +13,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.1e\n"
-"POT-Creation-Date: 2000-12-19 11:58+0100\n"
+"POT-Creation-Date: 2001-01-11 13:11+0100\n"
 "PO-Revision-Date: 2000-04-23 16:43+02:00\n"
 "Last-Translator: Daniel Resare <daniel@resare.com>\n"
 "Language-Team: Swedish <sv@li.org>\n"
@@ -351,7 +351,7 @@ msgstr ""
 "en stund för att ge operativsystemet en chans att samla mer entropi!\n"
 "(Behöver %d fler byte)\n"
 
-#: g10/g10.c:210
+#: g10/g10.c:211
 msgid ""
 "@Commands:\n"
 " "
@@ -359,139 +359,139 @@ msgstr ""
 "@Kommandon:\n"
 " "
 
-#: g10/g10.c:212
+#: g10/g10.c:213
 msgid "|[file]|make a signature"
 msgstr "|[fil]|skapa en signatur"
 
-#: g10/g10.c:213
+#: g10/g10.c:214
 msgid "|[file]|make a clear text signature"
 msgstr "|[fil]|skapa en klartext-signatur"
 
-#: g10/g10.c:214
+#: g10/g10.c:215
 msgid "make a detached signature"
 msgstr "skapa en signatur i en separat fil"
 
-#: g10/g10.c:215
+#: g10/g10.c:216
 msgid "encrypt data"
 msgstr "kryptera data"
 
-#: g10/g10.c:216
+#: g10/g10.c:217
 msgid "encryption only with symmetric cipher"
 msgstr "endast kryptering med symmetriskt chiffer"
 
-#: g10/g10.c:217
+#: g10/g10.c:218
 msgid "store only"
 msgstr "endast lagring"
 
-#: g10/g10.c:218
+#: g10/g10.c:219
 msgid "decrypt data (default)"
 msgstr "dekryptera data (normalläge)"
 
-#: g10/g10.c:219
+#: g10/g10.c:220
 msgid "verify a signature"
 msgstr "verifiera en signatur"
 
-#: g10/g10.c:221
+#: g10/g10.c:222
 msgid "list keys"
 msgstr "räkna upp nycklar"
 
-#: g10/g10.c:223
+#: g10/g10.c:224
 msgid "list keys and signatures"
 msgstr "räkna upp nycklar och signaturer"
 
-#: g10/g10.c:224
+#: g10/g10.c:225
 msgid "check key signatures"
 msgstr "verifiera nyckelsignaturer"
 
-#: g10/g10.c:225
+#: g10/g10.c:226
 msgid "list keys and fingerprints"
 msgstr "räkna upp nycklar och fingeravtryck"
 
-#: g10/g10.c:226
+#: g10/g10.c:227
 msgid "list secret keys"
 msgstr "räkna upp hemliga nycklar"
 
-#: g10/g10.c:227
+#: g10/g10.c:228
 msgid "generate a new key pair"
 msgstr "generera ett nytt nyckelpar"
 
-#: g10/g10.c:228
+#: g10/g10.c:229
 msgid "remove key from the public keyring"
 msgstr "ta bort en nyckel från den publika nyckelringen"
 
-#: g10/g10.c:230
+#: g10/g10.c:231
 msgid "remove key from the secret keyring"
 msgstr "ta bort en nyckel från den hemliga nyckelringen"
 
-#: g10/g10.c:231
+#: g10/g10.c:232
 msgid "sign a key"
 msgstr "signera en nyckel"
 
-#: g10/g10.c:232
+#: g10/g10.c:233
 msgid "sign a key locally"
 msgstr "signera en nyckel lokalt"
 
-#: g10/g10.c:233
+#: g10/g10.c:234
 msgid "sign or edit a key"
 msgstr "signera eller redigera en nyckel"
 
-#: g10/g10.c:234
+#: g10/g10.c:235
 msgid "generate a revocation certificate"
 msgstr "generera ett återkallelesecertifikat"
 
-#: g10/g10.c:235
+#: g10/g10.c:236
 msgid "export keys"
 msgstr "exportera nycklar"
 
-#: g10/g10.c:236
+#: g10/g10.c:237
 msgid "export keys to a key server"
 msgstr "exportera nycklar till en nyckelserver"
 
-#: g10/g10.c:237
+#: g10/g10.c:238
 msgid "import keys from a key server"
 msgstr "importera nycklar från en nyckelserver"
 
-#: g10/g10.c:241
+#: g10/g10.c:242
 msgid "import/merge keys"
 msgstr "importera/slå ihop nycklar"
 
-#: g10/g10.c:243
+#: g10/g10.c:244
 msgid "list only the sequence of packets"
 msgstr "skriv endast ut paketsekvensen"
 
-#: g10/g10.c:245
+#: g10/g10.c:246
 msgid "export the ownertrust values"
 msgstr "exportera de värden som representerar ägartillit"
 
-#: g10/g10.c:247
+#: g10/g10.c:248
 msgid "import ownertrust values"
 msgstr "importera värden som representerar ägartillit"
 
-#: g10/g10.c:249
+#: g10/g10.c:250
 msgid "update the trust database"
 msgstr "uppdatera tillitsdatabasen"
 
-#: g10/g10.c:251
+#: g10/g10.c:252
 msgid "|[NAMES]|check the trust database"
 msgstr "|[NAMN]|kontrollera tillitsdatabasen"
 
-#: g10/g10.c:252
+#: g10/g10.c:253
 msgid "fix a corrupted trust database"
 msgstr "reparera en korrupt tillitsdatabas"
 
-#: g10/g10.c:253
+#: g10/g10.c:254
 msgid "De-Armor a file or stdin"
 msgstr "Skala av en fil eller standard in"
 
-#: g10/g10.c:255
+#: g10/g10.c:256
 msgid "En-Armor a file or stdin"
 msgstr "Skapa ett skal för en fil eller standard in"
 
-#: g10/g10.c:257
+#: g10/g10.c:258
 msgid "|algo [files]|print message digests"
 msgstr "|algo [filer]|skriv ut kontrollsummor"
 
-#: g10/g10.c:261
+#: g10/g10.c:262
 msgid ""
 "@\n"
 "Options:\n"
@@ -501,156 +501,156 @@ msgstr ""
 "Flaggor:\n"
 " "
 
-#: g10/g10.c:263
+#: g10/g10.c:264
 msgid "create ascii armored output"
 msgstr "skapa utdata med ett ascii-skal"
 
-#: g10/g10.c:265
+#: g10/g10.c:266
 msgid "|NAME|encrypt for NAME"
 msgstr "|NAMN|kryptera för NAMN"
 
-#: g10/g10.c:268
+#: g10/g10.c:269
 msgid "|NAME|use NAME as default recipient"
 msgstr "|NAMN|använd NAMN som standardvärdet för mottagare"
 
-#: g10/g10.c:270
+#: g10/g10.c:271
 msgid "use the default key as default recipient"
 msgstr "använd standardnyckeln som standardmottagare"
 
-#: g10/g10.c:274
+#: g10/g10.c:275
 msgid "use this user-id to sign or decrypt"
 msgstr "använd denna användaridentitet för att signera eller dekryptera"
 
-#: g10/g10.c:275
+#: g10/g10.c:276
 msgid "|N|set compress level N (0 disables)"
 msgstr "|N|sätt kompressionsnivån till N (0 för att slå av kompression)"
 
-#: g10/g10.c:277
+#: g10/g10.c:278
 msgid "use canonical text mode"
 msgstr "använd \"ursprunglig text\"-läget"
 
-#: g10/g10.c:278
+#: g10/g10.c:279
 msgid "use as output file"
 msgstr "använd som fil för utdata"
 
-#: g10/g10.c:279
+#: g10/g10.c:280
 msgid "verbose"
 msgstr "utförlig"
 
-#: g10/g10.c:280
+#: g10/g10.c:281
 msgid "be somewhat more quiet"
 msgstr "var något tystare"
 
-#: g10/g10.c:281
+#: g10/g10.c:282
 msgid "don't use the terminal at all"
 msgstr "använd inte terminalen alls"
 
-#: g10/g10.c:282
+#: g10/g10.c:283
 msgid "force v3 signatures"
 msgstr "använd v3-signaturer"
 
-#: g10/g10.c:283
+#: g10/g10.c:284
 msgid "always use a MDC for encryption"
 msgstr "använd alltid en MDC för kryptering"
 
-#: g10/g10.c:284
+#: g10/g10.c:285
 msgid "do not make any changes"
 msgstr "gör inga ändringar"
 
 #. { oInteractive, "interactive", 0, N_("prompt before overwriting") },
-#: g10/g10.c:286
+#: g10/g10.c:287
 msgid "use the gpg-agent"
 msgstr ""
 
-#: g10/g10.c:287
+#: g10/g10.c:288
 msgid "batch mode: never ask"
 msgstr "batch-läge: fråga aldrig"
 
-#: g10/g10.c:288
+#: g10/g10.c:289
 msgid "assume yes on most questions"
 msgstr "anta att svaret är ja på de flesta frågor"
 
-#: g10/g10.c:289
+#: g10/g10.c:290
 msgid "assume no on most questions"
 msgstr "anta att svaret är nej på de flesta frågor"
 
-#: g10/g10.c:290
+#: g10/g10.c:291
 msgid "add this keyring to the list of keyrings"
 msgstr "lägg till denna nyckelring till listan av nyckelringar"
 
-#: g10/g10.c:291
+#: g10/g10.c:292
 msgid "add this secret keyring to the list"
 msgstr "lägg till denna hemliga nyckelring till listan"
 
-#: g10/g10.c:292
+#: g10/g10.c:293
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NAMN|använd NAMN som förvald hemlig nyckel"
 
-#: g10/g10.c:293
+#: g10/g10.c:294
 msgid "|HOST|use this keyserver to lookup keys"
 msgstr "|VÄRD|använd denna nyckelserver för att slå upp nycklar"
 
-#: g10/g10.c:294
+#: g10/g10.c:295
 msgid "|NAME|set terminal charset to NAME"
 msgstr "|NAMN|sätt teckentabellen för terminalen till NAMN"
 
-#: g10/g10.c:295
+#: g10/g10.c:296
 msgid "read options from file"
 msgstr "läs flaggor från fil"
 
-#: g10/g10.c:299
+#: g10/g10.c:300
 msgid "|FD|write status info to this FD"
 msgstr "|FD|skriv statusinformation till denna FD"
 
-#: g10/g10.c:304
+#: g10/g10.c:305
 msgid "|KEYID|ulimately trust this key"
 msgstr ""
 
-#: g10/g10.c:305
+#: g10/g10.c:306
 msgid "|FILE|load extension module FILE"
 msgstr "|FIL|ladda tilläggsmodul FIL"
 
-#: g10/g10.c:306
+#: g10/g10.c:307
 msgid "emulate the mode described in RFC1991"
 msgstr "imitera läget som beskrivs i RFC1991"
 
-#: g10/g10.c:307
+#: g10/g10.c:308
 msgid "set all packet, cipher and digest options to OpenPGP behavior"
 msgstr "ställ om alla flaggor så att gpg följer OpenPGP-standarden"
 
-#: g10/g10.c:308
+#: g10/g10.c:309
 msgid "|N|use passphrase mode N"
 msgstr "|N|använd lösenordsläget N"
 
-#: g10/g10.c:310
+#: g10/g10.c:311
 msgid "|NAME|use message digest algorithm NAME for passphrases"
 msgstr "|NAMN|använd kontrollsummealgoritmen NAMN för lösenordsfraser"
 
-#: g10/g10.c:312
+#: g10/g10.c:313
 msgid "|NAME|use cipher algorithm NAME for passphrases"
 msgstr "|NAMN|använd chifferalgoritmen NAMN för lösenordsfraser"
 
-#: g10/g10.c:313
+#: g10/g10.c:314
 msgid "|NAME|use cipher algorithm NAME"
 msgstr "|NAMN|använd chifferalgoritmen NAMN"
 
-#: g10/g10.c:314
+#: g10/g10.c:315
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NAMN|använd kontrollsummealgoritmen NAMN"
 
-#: g10/g10.c:315
+#: g10/g10.c:316
 msgid "|N|use compress algorithm N"
 msgstr "|N|använd komprimeringsalgoritmen N"
 
-#: g10/g10.c:316
+#: g10/g10.c:317
 msgid "throw keyid field of encrypted packets"
 msgstr "släng bort nyckelidentitetsfältet från krypterade paket"
 
-#: g10/g10.c:317
+#: g10/g10.c:318
 msgid "|NAME=VALUE|use this notation data"
 msgstr "|NAMN=VÄRDE|använd detta sätt för att beskriva data"
 
-#: g10/g10.c:320
+#: g10/g10.c:321
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
@@ -658,7 +658,7 @@ msgstr ""
 "@\n"
 "(Se manualsidan för en komplett lista på alla kommandon och flaggor)\n"
 
-#: g10/g10.c:323
+#: g10/g10.c:324
 msgid ""
 "@\n"
 "Examples:\n"
@@ -678,17 +678,17 @@ msgstr ""
 "--list-keys [namn]          visa nycklar\n"
 "--fingerprint [namn]        visa fingeravtryck\n"
 
-#: g10/g10.c:427
+#: g10/g10.c:429
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 msgstr ""
 "Rapportera gärna fel till <gnupg-bugs@gnu.org>.\n"
 "Rapportera gärna fel eller synpunkter på översättningen till <sv@li.org>.\n"
 
-#: g10/g10.c:431
+#: g10/g10.c:433
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Användning: gpg [flaggor] [filer] (-h för hjälp)"
 
-#: g10/g10.c:434
+#: g10/g10.c:436
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "sign, check, encrypt or decrypt\n"
@@ -698,7 +698,7 @@ msgstr ""
 "signera, kontrollera, kryptera eller dekryptera\n"
 "vilken operation som utförs beror på programmets indata\n"
 
-#: g10/g10.c:441
+#: g10/g10.c:443
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -706,66 +706,66 @@ msgstr ""
 "\n"
 "Stödda algoritmer:\n"
 
-#: g10/g10.c:520
+#: g10/g10.c:522
 msgid "usage: gpg [options] "
 msgstr "användning: gpg [flaggor] "
 
-#: g10/g10.c:573
+#: g10/g10.c:575
 msgid "conflicting commands\n"
 msgstr "motstridiga kommandon\n"
 
-#: g10/g10.c:713
+#: g10/g10.c:725
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTERA: inställningsfilen \"%s\" saknas\n"
 
-#: g10/g10.c:717
+#: g10/g10.c:729
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "inställningsfil \"%s\": %s\n"
 
-#: g10/g10.c:724
+#: g10/g10.c:736
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "läser flaggor från \"%s\"\n"
 
-#: g10/g10.c:925
+#: g10/g10.c:937
 #, c-format
 msgid "%s is not a valid character set\n"
 msgstr "%s är ingen giltig teckentabell\n"
 
-#: g10/g10.c:994
+#: g10/g10.c:1008
 msgid "WARNING: program may create a core file!\n"
 msgstr "VARNING: programmet kan komma att skapa en minnesutskrift!\n"
 
-#: g10/g10.c:998 g10/g10.c:1007
+#: g10/g10.c:1012 g10/g10.c:1021
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTERA: %s är inte för normal användning!\n"
 
-#: g10/g10.c:1000
+#: g10/g10.c:1014
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s är inte tillåten tillsammans med %s!\n"
 
-#: g10/g10.c:1003
+#: g10/g10.c:1017
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "det är ingen poäng att använda %s tillsammans med %s!\n"
 
-#: g10/g10.c:1023 g10/g10.c:1035
+#: g10/g10.c:1037 g10/g10.c:1049
 msgid "selected cipher algorithm is invalid\n"
 msgstr "den valda chifferalgoritmen är ogiltig\n"
 
-#: g10/g10.c:1029 g10/g10.c:1041
+#: g10/g10.c:1043 g10/g10.c:1055
 msgid "selected digest algorithm is invalid\n"
 msgstr "den valda kontrollsummealgoritmen är ogiltig\n"
 
-#: g10/g10.c:1045
+#: g10/g10.c:1059
 msgid "the given policy URL is invalid\n"
 msgstr "angiven URL är ogiltig\n"
 
-#: g10/g10.c:1048
+#: g10/g10.c:1062
 #, c-format
 msgid "compress algorithm must be in range %d..%d\n"
 msgstr "kompressionsalgoritmen måste vara i intervallet %d..%d\n"
@@ -776,127 +776,127 @@ msgstr "kompressionsalgoritmen måste vara i intervallet %d..%d\n"
 # är ändå litet. Eventuellt borde meddelandena inte alls
 # översättas för att göra eventuell felsökning lättare
 # för internationella felsökare
-#: g10/g10.c:1050
+#: g10/g10.c:1064
 msgid "completes-needed must be greater than 0\n"
 msgstr "variabeln \"completes-needed\" måste ha ett värde som är större än 0\n"
 
-#: g10/g10.c:1052
+#: g10/g10.c:1066
 msgid "marginals-needed must be greater than 1\n"
 msgstr "variabeln \"marginals-needed\" måste vara större än 1\n"
 
-#: g10/g10.c:1054
+#: g10/g10.c:1068
 msgid "max-cert-depth must be in range 1 to 255\n"
 msgstr "variabeln \"max-cert-depth\" måste ha ett värde mellan 1 och 255\n"
 
-#: g10/g10.c:1057
+#: g10/g10.c:1071
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "NOTERA: enkelt S2K-läge (0) rekommenderas inte\n"
 
-#: g10/g10.c:1061
+#: g10/g10.c:1075
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "ogiltigt S2K-läge; måste vara 0, 1 eller 3\n"
 
-#: g10/g10.c:1146
+#: g10/g10.c:1160
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "misslyckades med att initialisera tillitsdatabasen: %s\n"
 
-#: g10/g10.c:1152
+#: g10/g10.c:1166
 msgid "--store [filename]"
 msgstr "--store [filnamn]"
 
-#: g10/g10.c:1159
+#: g10/g10.c:1173
 msgid "--symmetric [filename]"
 msgstr "--symmetric [filnamn]"
 
-#: g10/g10.c:1167
+#: g10/g10.c:1181
 msgid "--encrypt [filename]"
 msgstr "--encrypt [filnamn]"
 
-#: g10/g10.c:1180
+#: g10/g10.c:1194
 msgid "--sign [filename]"
 msgstr "--sign [filnamn]"
 
-#: g10/g10.c:1193
+#: g10/g10.c:1207
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [filnamn]"
 
-#: g10/g10.c:1207
+#: g10/g10.c:1221
 msgid "--clearsign [filename]"
 msgstr "--clearsign [filnamn]"
 
-#: g10/g10.c:1224
+#: g10/g10.c:1238
 msgid "--decrypt [filename]"
 msgstr "--decrypt [filnamn]"
 
-#: g10/g10.c:1232
+#: g10/g10.c:1246
 msgid "--sign-key user-id"
 msgstr "--sign-key användaridentitet"
 
-#: g10/g10.c:1240
+#: g10/g10.c:1254
 msgid "--lsign-key user-id"
 msgstr "--lsign-key användaridentitet"
 
-#: g10/g10.c:1248
+#: g10/g10.c:1262
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key användaridentitet [kommandon]"
 
-#: g10/g10.c:1264
+#: g10/g10.c:1278
 msgid "--delete-secret-key user-id"
 msgstr "--delete-secret-key användaridentitet"
 
-#: g10/g10.c:1267
+#: g10/g10.c:1281
 msgid "--delete-key user-id"
 msgstr "--delete-key användaridentitet"
 
 # Filnamn både med och utan fnuttar finns. lite ologiskt. Vill någon
 # fixa en patch?
-#: g10/encode.c:268 g10/g10.c:1304 g10/sign.c:393
+#: g10/encode.c:268 g10/g10.c:1318 g10/sign.c:393
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "kan inte öppna %s: %s\n"
 
-#: g10/g10.c:1319
+#: g10/g10.c:1333
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [användaridentitet] [nyckelring]"
 
-#: g10/g10.c:1385
+#: g10/g10.c:1399
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "misslyckades med att ta bort skalet: %s\n"
 
-#: g10/g10.c:1393
+#: g10/g10.c:1407
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "misslyckades med att skapa skal: %s\n"
 
-#: g10/g10.c:1464
+#: g10/g10.c:1478
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "felaktig hash-algoritm \"%s\"\n"
 
-#: g10/g10.c:1551
+#: g10/g10.c:1565
 msgid "[filename]"
 msgstr "[filnamn]"
 
-#: g10/g10.c:1555
+#: g10/g10.c:1569
 msgid "Go ahead and type your message ...\n"
 msgstr "Skriv ditt meddelande här ...\n"
 
 # se förra kommentaren
-#: g10/decrypt.c:59 g10/g10.c:1558 g10/verify.c:94 g10/verify.c:139
+#: g10/decrypt.c:59 g10/g10.c:1572 g10/verify.c:94 g10/verify.c:139
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "kan inte öppna \"%s\"\n"
 
-#: g10/g10.c:1767
+#: g10/g10.c:1781
 msgid ""
 "the first character of a notation name must be a letter or an underscore\n"
 msgstr ""
 "det första tecknet i ett notationsnamn måste vara en bokstav eller\n"
 "ett understrykningstecken (_)\n"
 
-#: g10/g10.c:1773
+#: g10/g10.c:1787
 msgid ""
 "a notation name must have only letters, digits, dots or underscores and end "
 "with an '='\n"
@@ -904,11 +904,11 @@ msgstr ""
 "ett notationsnamn kan bara innehålla bokstäver, siffror, punkter eller\n"
 "understrykningstecken och sluta med ett likhetstecken\n"
 
-#: g10/g10.c:1779
+#: g10/g10.c:1793
 msgid "dots in a notation name must be surrounded by other characters\n"
 msgstr "punkter i ett notationsnamn måste vara omgivna av andra tecken\n"
 
-#: g10/g10.c:1787
+#: g10/g10.c:1801
 msgid "a notation value must not use any control characters\n"
 msgstr "ett notationsvärde får inte inehålla några kontrolltecken\n"
 
@@ -1596,21 +1596,21 @@ msgstr "DSA-nyckelparet kommer att ha 1024 bitar.\n"
 msgid "Key generation canceled.\n"
 msgstr "Skapandet av nycklar avbröts.\n"
 
-#: g10/keygen.c:1571
+#: g10/keygen.c:1572
 #, c-format
 msgid "writing public key to `%s'\n"
 msgstr "skriver publik nyckel till \"%s\"\n"
 
-#: g10/keygen.c:1572
+#: g10/keygen.c:1573
 #, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "skriver hemlig nyckel till \"%s\"\n"
 
-#: g10/keygen.c:1668
+#: g10/keygen.c:1670
 msgid "public and secret key created and signed.\n"
 msgstr "publik och hemlig nyckel skapad och signerad.\n"
 
-#: g10/keygen.c:1673
+#: g10/keygen.c:1675
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a secondary key for this purpose.\n"
@@ -1619,13 +1619,13 @@ msgstr ""
 "att vilja använda kommandot \"--edit-key\" för att generera en sekundär\n"
 "nyckel för detta syfte.\n"
 
-#: g10/keygen.c:1690 g10/keygen.c:1791
+#: g10/keygen.c:1692 g10/keygen.c:1798
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Nyckelgenereringen misslyckades: %s\n"
 
 # c-format behövs inte i singularis
-#: g10/keygen.c:1734 g10/sig-check.c:315 g10/sign.c:112
+#: g10/keygen.c:1739 g10/sig-check.c:315 g10/sign.c:112
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -1633,7 +1633,7 @@ msgstr ""
 "nyckeln är skapad %lu sekund in i framtiden (problemet är\n"
 "relaterat till tidsresande eller en felställd klocka)\n"
 
-#: g10/keygen.c:1736 g10/sig-check.c:317 g10/sign.c:114
+#: g10/keygen.c:1741 g10/sig-check.c:317 g10/sign.c:114
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -1641,7 +1641,7 @@ msgstr ""
 "nyckeln är skapad %lu sekunder in i framtiden (problemet är\n"
 "relaterat till tidsresande eller en felställd klocka)\n"
 
-#: g10/keygen.c:1769
+#: g10/keygen.c:1774
 msgid "Really create? "
 msgstr "Vill du verkligen skapa? "
 
@@ -2598,7 +2598,7 @@ msgid "revoked"
 msgstr "revkey"
 
 #. of subkey
-#: g10/keylist.c:400 g10/mainproc.c:834
+#: g10/keylist.c:404 g10/mainproc.c:834
 #, c-format
 msgid " [expires: %s]"
 msgstr "[går ut: %s]"
@@ -2759,7 +2759,7 @@ msgstr ""
 msgid "can't connect to `%s': %s\n"
 msgstr "kan inte ansluta till \"%s\": %s\n"
 
-#: g10/passphrase.c:313 g10/passphrase.c:557
+#: g10/passphrase.c:313 g10/passphrase.c:574
 #, c-format
 msgid " (main key ID %08lX)"
 msgstr " (huvudnyckelns identitet %08lX)"
@@ -2802,7 +2802,7 @@ msgstr ""
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr ""
 
-#: g10/passphrase.c:543
+#: g10/passphrase.c:560
 msgid ""
 "\n"
 "You need a passphrase to unlock the secret key for\n"
@@ -2812,20 +2812,20 @@ msgstr ""
 "Du behöver en lösenordsfras för att låsa upp den hemliga nyckeln för\n"
 "användaren: \""
 
-#: g10/passphrase.c:552
+#: g10/passphrase.c:569
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
 msgstr "%u-bits  %s-nyckel, ID %08lX, skapad %s"
 
-#: g10/passphrase.c:590
+#: g10/passphrase.c:607
 msgid "can't query password in batchmode\n"
 msgstr "kan inte fråga efter lösenord i batch-läge\n"
 
-#: g10/passphrase.c:594
+#: g10/passphrase.c:611
 msgid "Enter passphrase: "
 msgstr "Ange lösenordsfras: "
 
-#: g10/passphrase.c:598
+#: g10/passphrase.c:615
 msgid "Repeat passphrase: "
 msgstr "Repetera lösenordsfrasen: "
 
@@ -2956,12 +2956,12 @@ msgstr "den publika nyckeln är %lu sekund nyare än signaturen\n"
 msgid "public key is %lu seconds newer than the signature\n"
 msgstr "den publika nyckeln är %lu sekunder nyare än signaturen\n"
 
-#: g10/sig-check.c:324
-#, c-format
-msgid "NOTE: signature key expired %s\n"
+#: g10/sig-check.c:328
+#, fuzzy, c-format
+msgid "NOTE: signature key %08lX expired %s\n"
 msgstr "NOTERA: signaturnyckeln är för gammal, gick ut vid %s\n"
 
-#: g10/sig-check.c:393
+#: g10/sig-check.c:398
 msgid "assuming bad signature due to an unknown critical bit\n"
 msgstr ""
 "antar att signaturen är felaktig eftersom en okänd kritisk bit är satt\n"

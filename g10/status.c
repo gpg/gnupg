@@ -137,6 +137,7 @@ get_status_string ( int no )
       case STATUS_BEGIN_STREAM   : s = "BEGIN_STREAM"; break;
       case STATUS_END_STREAM     : s = "END_STREAM"; break;
       case STATUS_KEY_CREATED    : s = "KEY_CREATED"; break;
+      case STATUS_USERID_HINT    : s = "USERID_HINT"; break;
       default: s = "?"; break;
     }
     return s;
@@ -194,7 +195,14 @@ write_status_text ( int no, const char *text)
     fputs ( get_status_string (no), statusfp );
     if( text ) {
         putc ( ' ', statusfp );
-        fputs ( text, statusfp );
+        for (; *text; text++) {
+            if (*text == '\n')
+                fputs ( "\\n", statusfp );
+            else if (*text == '\r')
+                fputs ( "\\r", statusfp );
+            else 
+                putc ( *(const byte *)text,  statusfp );
+        }
     }
     putc ('\n',statusfp);
     fflush (statusfp);

@@ -280,7 +280,7 @@ list_keyblock( KBNODE keyblock, int secret )
 	sk = NULL;
 	keyid_from_pk( pk, keyid );
 	if( opt.with_colons ) {
-	    if ( opt.fast_list_mode ) {
+	    if ( opt.fast_list_mode || opt.no_expensive_trust_checks ) {
 		fputs( "pub::", stdout );
 		trustletter = 0;
 	    }
@@ -299,7 +299,8 @@ list_keyblock( KBNODE keyblock, int secret )
 	    if( pk->local_id )
 		printf("%lu", pk->local_id );
 	    putchar(':');
-	    if( pk->local_id && !opt.fast_list_mode )
+	    if( pk->local_id && !opt.fast_list_mode
+                && !opt.no_expensive_trust_checks  )
 		putchar( get_ownertrust_info( pk->local_id ) );
 	    putchar(':');
 	}
@@ -313,7 +314,10 @@ list_keyblock( KBNODE keyblock, int secret )
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	if( node->pkt->pkttype == PKT_USER_ID && !opt.fast_list_mode ) {
 	    if( any ) {
-		if ( opt.with_colons ) {
+		if ( opt.with_colons && opt.no_expensive_trust_checks ) {
+        	    printf("uid:::::::::");
+	        }
+		else if ( opt.with_colons ) {
 		    byte namehash[20];
 
 		    if( pk && !ulti_hack ) {
@@ -371,7 +375,7 @@ list_keyblock( KBNODE keyblock, int secret )
 
 	    keyid_from_pk( pk2, keyid2 );
 	    if( opt.with_colons ) {
-		if ( opt.fast_list_mode ) {
+		if ( opt.fast_list_mode || opt.no_expensive_trust_checks ) {
 		    fputs( "sub::", stdout );
 		}
 		else {
@@ -439,7 +443,7 @@ list_keyblock( KBNODE keyblock, int secret )
 	else if( opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
 	    int sigrc;
-	   char *sigstr;
+            char *sigstr;
 
 	    if( !any ) { /* no user id, (maybe a revocation follows)*/
 		if( sig->sig_class == 0x20 )
@@ -484,7 +488,7 @@ list_keyblock( KBNODE keyblock, int secret )
 		rc = 0;
 		sigrc = ' ';
 	    }
-	   fputs( sigstr, stdout );
+            fputs( sigstr, stdout );
 	    if( opt.with_colons ) {
 		putchar(':');
 		if( sigrc != ' ' )

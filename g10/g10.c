@@ -200,6 +200,7 @@ enum cmd_and_opt_values { aNull = 0,
     oMergeOnly,
     oTryAllSecrets,
     oTrustedKey,
+    oNoExpensiveTrustChecks,
     oEmu3DESS2KBug,  /* will be removed in 1.1 */
     oEmuMDEncodeBug,
 aTest };
@@ -393,6 +394,7 @@ static ARGPARSE_OPTS opts[] = {
     { oAllowSecretKeyImport, "allow-secret-key-import", 0, "@" },
     { oTryAllSecrets,  "try-all-secrets", 0, "@" },
     { oEnableSpecialFilenames, "enable-special-filenames", 0, "@" },
+    { oNoExpensiveTrustChecks, "no-expensive-trust-checks", 0, "@" },
     { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
     { oEmuMDEncodeBug,	"emulate-md-encode-bug", 0, "@"},
 {0} };
@@ -972,6 +974,8 @@ main( int argc, char **argv )
           case oEnableSpecialFilenames:
             iobuf_enable_special_filenames (1);
             break;
+          case oNoExpensiveTrustChecks: opt.no_expensive_trust_checks=1; break;
+
 	  default : pargs.err = configfp? 1:2; break;
 	}
     }

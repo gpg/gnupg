@@ -141,7 +141,7 @@ more arguments in future versions.
     GET_HIDDEN
     GOT_IT
 
-    NEED_PASSPHRASE <long keyid>  <keytype>  <keylength>
+    NEED_PASSPHRASE <long main keyid> <long keyid> <keytype> <keylength>
 	Issued whenever a passphrase is needed.
 	keytype is the numerical value of the public key algorithm
 	or 0 if this is not applicable, keylength is the length
@@ -242,8 +242,11 @@ more arguments in future versions.
 
     NOTATION_NAME <name> 
     NOTATION_DATA <string>
-        name and string are %XX escaped; the data may be spliited
+        name and string are %XX escaped; the data may be splitted
         among several notation_data lines.
+
+    USERID_HINT <long main keyid> <string>
+        Give a hint about the user ID for a certain keyID. 
 
     POLICY_URL <string>
         string is %XX escaped

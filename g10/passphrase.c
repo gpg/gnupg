@@ -521,12 +521,29 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 
     if( !next_pw && is_status_enabled() ) {
 	char buf[50];
+
 	if( keyid ) {
-	    sprintf( buf, "%08lX%08lX", (ulong)keyid[0], (ulong)keyid[1] );
-	    if( keyid[2] && keyid[3] && keyid[0] != keyid[2]
-				     && keyid[1] != keyid[3] )
-		sprintf( buf+strlen(buf), " %08lX%08lX %d 0",
-			   (ulong)keyid[2], (ulong)keyid[3], pubkey_algo );
+            u32 used_kid[2];
+            char *us;
+
+	    if( keyid[2] && keyid[3] ) {
+                used_kid[0] = keyid[2];
+                used_kid[1] = keyid[3];
+            }
+            else {
+                used_kid[0] = keyid[0];
+                used_kid[1] = keyid[1];
+            }
+
+            us = get_long_user_id_string( keyid );
+            write_status_text( STATUS_USERID_HINT, us );
+            m_free(us);
+
+	    sprintf( buf, "%08lX%08lX %08lX%08lX %d 0",
+                     (ulong)keyid[0], (ulong)keyid[1],
+                     (ulong)used_kid[0], (ulong)used_kid[1],
+                     pubkey_algo );
+                     
 	    write_status_text( STATUS_NEED_PASSPHRASE, buf );
 	}
 	else {

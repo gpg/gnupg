@@ -321,8 +321,13 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
     }
 
     if( pk->expiredate && pk->expiredate < cur_time ) {
-	log_info(_("NOTE: signature key expired %s\n"),
-					asctimestamp( pk->expiredate ) );
+        if (opt.verbose) {
+	    u32 tmp_kid[2];
+
+	    keyid_from_pk( pk, tmp_kid );
+            log_info(_("NOTE: signature key %08lX expired %s\n"),
+                     (ulong)tmp_kid[1], asctimestamp( pk->expiredate ) );
+        }
 	write_status(STATUS_SIGEXPIRED);
 	*r_expired = 1;
     }

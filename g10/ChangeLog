@@ -1,7 +1,26 @@
+2001-01-11  Werner Koch  <wk@gnupg.org>
+
+	* sig-check.c (do_check): Print the signature key expire message
+	only in verbose mode and added the keyID.
+
+2001-01-09  Werner Koch  <wk@gnupg.org>
+
+	* status.c, status.h: New status USERID_HINT. 
+	(write_status_text): Replace LF and CR int text by C-escape sequence.
+
+	* passphrase.c (passphrase_to_dek): Fixed the NEED_PASSPHRASE
+	output.  It does now always print 2 keyIDs.  Emit the new
+	USERID_HINT.
+
+2001-01-08  Werner Koch  <wk@gnupg.org>
+
+	* g10.c, options.h: New option --no-expensive-trust-checks.
+	* keylist.c (list_keyblock): Act on this option.
+
 2001-01-04  Werner Koch  <wk@gnupg.org>
 
 	* g10.c (main): Set homedir only in the pre-parsing phase and
-	replaces backslashes in the W32 version.
+	replace backslashes in the W32 version.
 
 2001-01-03  Werner Koch  <wk@gnupg.org>
 
