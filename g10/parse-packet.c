@@ -63,7 +63,8 @@ static int  parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
 static int  parse_comment( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
-static void parse_trust( IOBUF inp, int pkttype, unsigned long pktlen );
+static void parse_trust( IOBUF inp, int pkttype, unsigned long pktlen,
+							   PACKET *packet );
 static int  parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
 					       PACKET *packet, int new_ctb);
 static int  parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen,
@@ -421,8 +422,8 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	rc = parse_comment(inp, pkttype, pktlen, pkt);
 	break;
       case PKT_RING_TRUST:
-	parse_trust(inp, pkttype, pktlen);
-	rc = G10ERR_UNKNOWN_PACKET;
+	parse_trust(inp, pkttype, pktlen, pkt);
+	rc = 0;
 	break;
       case PKT_PLAINTEXT:
 	rc = parse_plaintext(inp, pkttype, pktlen, pkt, new_ctb );
@@ -1517,11 +1518,13 @@ parse_comment( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 
 
 static void
-parse_trust( IOBUF inp, int pkttype, unsigned long pktlen )
+parse_trust( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
 {
     int c;
 
     c = iobuf_get_noeof(inp);
+    pkt->pkt.ring_trust = m_alloc( sizeof *pkt->pkt.ring_trust );
+    pkt->pkt.ring_trust->trustval = c;
     if( list_mode )
 	printf(":trust packet: flag=%02x\n", c );
 }

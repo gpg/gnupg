@@ -1087,6 +1087,14 @@ Print key listings delimited by colons.
 Print key listings delimited by colons and print the public key data.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--with-fingerprint</term>
+<listitem><para>
+Same as the command --fingerprint but changes only the format of the output
+and may be used together with another command.
+</para></listitem></varlistentry>
+
+
 </variablelist>
 </refsect1>
 

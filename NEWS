@@ -8,6 +8,10 @@
     * Changes to support libtool which is needed for the development
       of libgcrypt.
 
+    * New script tools/lspgpot to help transferring assigned
+      trustvalues from PGP to GnuPG.
+
+
 Noteworthy changes in version 0.9.8
 -----------------------------------
 

@@ -105,6 +105,7 @@ enum cmd_and_opt_values { aNull = 0,
 
     oTextmode,
     oFingerprint,
+    oWithFingerprint,
     oAnswerYes,
     oAnswerNo,
     oKeyring,
@@ -319,6 +320,7 @@ static ARGPARSE_OPTS opts[] = {
     { oUseEmbeddedFilename, "use-embedded-filename", 0, "@" },
     { oUtf8Strings, "utf8-strings", 0, "@" },
     { oNoUtf8Strings, "no-utf8-strings", 0, "@" },
+    { oWithFingerprint, "with-fingerprint", 0, "@" },
 {0} };
 
 
@@ -510,6 +512,7 @@ main( int argc, char **argv )
     char *s2k_cipher_string = NULL;
     char *s2k_digest_string = NULL;
     int pwfd = -1;
+    int with_fpr = 0; /* make an option out of --fingerprint */
   #ifdef USE_SHM_COPROCESSING
     ulong requested_shm_size=0;
   #endif
@@ -684,6 +687,8 @@ main( int argc, char **argv )
 	  case oDebugAll: opt.debug = ~0; break;
 	  case oStatusFD: set_status_fd( pargs.r.ret_int ); break;
 	  case oLoggerFD: log_set_logfile( NULL, pargs.r.ret_int ); break;
+	  case oWithFingerprint:
+		with_fpr=1; /*fall thru*/
 	  case oFingerprint: opt.fingerprint++; break;
 	  case oSecretKeyring: append_to_strlist( &sec_nrings, pargs.r.ret_str); break;
 	  case oOptions:
@@ -875,7 +880,7 @@ main( int argc, char **argv )
     if( log_get_errorcount(0) )
 	g10_exit(2);
 
-    if( !cmd && opt.fingerprint )
+    if( !cmd && opt.fingerprint && !with_fpr )
 	set_cmd( &cmd, aListKeys);
 
     if( cmd == aKMode || cmd == aKModeC ) { /* kludge to be compatible to pgp */

@@ -1,3 +1,16 @@
+Thu Jul  8 16:21:27 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* packet.h (PKT_ring_trust): New
+	* parse-packet.c (parse_trust): Store trust value
+	* build-packet (build_packet): Ignore ring trust packets.
+	* mainproc.c (add_ring_trust): New.
+	(list_node): Print "rtv" records.
+	* g10.c: New option --with-fingerprint.
+
+	* trustdb.c (verify_own_keys): Don't insert if we are dry running
+	(check_trust): Ditto.
+
 Wed Jul  7 13:08:40 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

@@ -124,6 +124,17 @@ add_subkey( CTX c, PACKET *pkt )
     return 1;
 }
 
+static int
+add_ring_trust( CTX c, PACKET *pkt )
+{
+    if( !c->list ) {
+	log_error("ring trust w/o key\n" );
+	return 0;
+    }
+    add_kbnode( c->list, new_kbnode( pkt ) );
+    return 1;
+}
+
 
 static int
 add_signature( CTX c, PACKET *pkt )
@@ -570,6 +581,13 @@ list_node( CTX c, KBNODE node )
 	    if( c->local_id )
 		putchar( get_ownertrust_info( c->local_id ) );
 	    putchar(':');
+	    if( node->next && node->next->pkt->pkttype == PKT_RING_TRUST) {
+		putchar('\n'); any=1;
+		if( opt.fingerprint )
+		    print_fingerprint( pk, NULL );
+		printf("rtv:1:%u:\n",
+			    node->next->pkt->pkt.ring_trust->trustval );
+	    }
 	}
 	else
 	    printf("%s  %4u%c/%08lX %s ",
@@ -604,6 +622,11 @@ list_node( CTX c, KBNODE node )
 		    putchar('\n');
 		    if( opt.fingerprint && !any )
 			print_fingerprint( pk, NULL );
+		    if( node->next
+			&& node->next->pkt->pkttype == PKT_RING_TRUST ) {
+			printf("rtv:2:%u:\n",
+				 node->next->pkt->pkt.ring_trust->trustval );
+		    }
 		    any=1;
 		}
 		else if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
@@ -886,6 +909,7 @@ do_proc_packets( CTX c, IOBUF a )
 	      case PKT_PLAINTEXT:   proc_plaintext( c, pkt ); break;
 	      case PKT_COMPRESSED:  proc_compressed( c, pkt ); break;
 	      case PKT_ONEPASS_SIG: newpkt = add_onepass_sig( c, pkt ); break;
+	      case PKT_RING_TRUST:  newpkt = add_ring_trust( c, pkt ); break;
 	      default: newpkt = 0; break;
 	    }
 	}

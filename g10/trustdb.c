@@ -477,6 +477,8 @@ verify_own_keys(void)
 
 	/* make sure that the pubkey is in the trustdb */
 	rc = query_trust_record( pk );
+	if( rc == -1 && opt.dry_run )
+	    goto skip;
 	if( rc == -1 ) { /* put it into the trustdb */
 	    rc = insert_trust_record_by_pk( pk );
 	    if( rc ) {
@@ -2217,6 +2219,8 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel,
 							    g10_errstr(rc));
 	    return rc;
 	}
+	else if( rc == -1 && opt.dry_run )
+	    return G10ERR_GENERAL;
 	else if( rc == -1 ) { /* not found - insert */
 	    rc = insert_trust_record_by_pk( pk );
 	    if( rc ) {

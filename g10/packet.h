@@ -173,6 +173,10 @@ typedef struct {
 } PKT_encrypted;
 
 typedef struct {
+    unsigned int trustval;
+} PKT_ring_trust;
+
+typedef struct {
     u32  len;		  /* length of encrypted data */
     IOBUF buf;		  /* IOBUF reference */
     byte new_ctb;
@@ -198,6 +202,7 @@ struct packet_struct {
 	PKT_user_id	*user_id;	/* PKT_USER_ID */
 	PKT_compressed	*compressed;	/* PKT_COMPRESSED */
 	PKT_encrypted	*encrypted;	/* PKT_ENCRYPTED[_MDC] */
+	PKT_ring_trust	*ring_trust;	/* PKT_RING_TRUST */
 	PKT_plaintext	*plaintext;	/* PKT_PLAINTEXT */
     } pkt;
 };

@@ -336,3 +336,9 @@
      you active characterset matches the one displayed - if not, restrict
      yourself to plain 7 bit ASCII and no mapping has to be done.
 
+  Q: How do I transfer owner trust values from PGP to GnuPG?
+  A: There is a script in the tools directory to help you:
+     After you have imported the PGP keyring you can give this command:
+	$ lspgpot pgpkeyring | gpg --import-ownertrust
+
+
