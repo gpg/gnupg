@@ -22,7 +22,7 @@
 #define G10_TRUSTDB_H
 
 
-
+/* Trust values mus be sorted in ascending order */
 #define TRUST_UNKNOWN	  0  /* not yet calculated */
 #define TRUST_EXPIRED	  1  /* calculation may be invalid */
 #define TRUST_UNDEFINED   2  /* not enough informations for calculation */
@@ -35,7 +35,7 @@
 /*-- trustdb.c --*/
 void list_trustdb(const char *username);
 void list_trust_path( int max_depth, const char *username );
-int init_trustdb( int level );
+int init_trustdb( int level, const char *dbname );
 int check_trust( PKT_public_cert *pkc, unsigned *r_trustlevel );
 int enum_trust_web( void **context, ulong *lid );
 int get_ownertrust( ulong lid, unsigned *r_otrust );

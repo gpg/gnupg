@@ -78,6 +78,8 @@ typedef struct mpi_struct {
   void mpi_resize( MPI a, unsigned nlimbs );
   MPI  mpi_copy( MPI a );
 #endif
+#define mpi_is_secure(a) ((a) && (a)->secure)
+void mpi_set_secure( MPI a );
 void mpi_clear( MPI a );
 void mpi_set( MPI w, MPI u);
 void mpi_set_ui( MPI w, ulong u);

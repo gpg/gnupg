@@ -371,10 +371,16 @@ dump_record( ulong rnum, TRUSTREC *rec, FILE *fp  )
       case RECTYPE_VER: fprintf(fp, "version\n");
 	break;
       case RECTYPE_DIR:
-	fprintf(fp, "dir keyid=%08lx, key=%lu, ctl=%lu, sig=%lu%s\n",
+	fprintf(fp, "dir keyid=%08lx, key=%lu, ctl=%lu, sig=%lu",
 		    rec->r.dir.keyid[1],
-		    rec->r.dir.keyrec, rec->r.dir.ctlrec, rec->r.dir.sigrec,
-		    rec->r.dir.no_sigs?"  (inv sigs)":"");
+		    rec->r.dir.keyrec, rec->r.dir.ctlrec, rec->r.dir.sigrec );
+	if( rec->r.dir.no_sigs == 1 )
+	    fputs(", (none)", fp );
+	else if( rec->r.dir.no_sigs == 2 )
+	    fputs(", (invalid)", fp );
+	else if( rec->r.dir.no_sigs )
+	    fputs(", (revoked)", fp );
+	putc('\n', fp);
 	break;
       case RECTYPE_KEY: fprintf(fp, "key keyid=%08lx, own=%lu, ownertrust=%02x\n",
 		   rec->r.key.keyid[1],
@@ -643,7 +649,7 @@ search_record( PKT_public_cert *pkc, TRUSTREC *rec )
 	    TRUSTREC keyrec;
 
 	    if( read_record( rec->r.dir.keyrec, &keyrec, RECTYPE_KEY ) ) {
-		log_error("%lu: ooops: invalid dir record\n", recnum );
+		log_error("%lu: ooops: invalid key record\n", recnum );
 		break;
 	    }
 	    if( keyrec.r.key.pubkey_algo == pkc->pubkey_algo
@@ -748,6 +754,8 @@ walk_sigrecs( SIGREC_CONTEXT *c, int create )
 	    if( !c->sigrec && create && !r->r.dir.no_sigs ) {
 		rc = build_sigrecs( c->local_id );
 		if( rc ) {
+		    if( rc == G10ERR_BAD_CERT )
+			rc = -1;  /* maybe no selcficnature */
 		    if( rc != -1 )
 			log_info("%lu: error building sigs on the fly: %s\n",
 			       c->local_id, g10_errstr(rc) );
@@ -1088,6 +1096,10 @@ check_sigs( KBNODE keyblock, int *selfsig_okay )
 	    int selfsig;
 	    rc = check_key_signature( keyblock, node, &selfsig );
 	    if( !rc ) {
+		rc = set_signature_packets_local_id( node->pkt->pkt.signature );
+		if( rc )
+		    log_fatal("set_signature_packets_local_id failed: %s\n",
+							      g10_errstr(rc));
 		if( selfsig ) {
 		    node->flag |= 2; /* mark signature valid */
 		    *selfsig_okay = 1;
@@ -1101,9 +1113,10 @@ check_sigs( KBNODE keyblock, int *selfsig_okay )
 		    node->flag |= 4; /* mark as duplicate */
 	    }
 	    if( DBG_TRUST )
-		log_debug("trustdb: sig from %08lX: %s\n",
+		log_debug("trustdb: sig from %08lX(%lu): %s%s\n",
 				(ulong)node->pkt->pkt.signature->keyid[1],
-						    g10_errstr(rc) );
+				node->pkt->pkt.signature->local_id,
+				g10_errstr(rc), (node->flag&4)?"  (dup)":"" );
 	}
     }
     if( dups )
@@ -1128,6 +1141,7 @@ build_sigrecs( ulong pubkeyid )
     int rc=0;
     int i, selfsig;
     ulong rnum, rnum2;
+    ulong first_sigrec = 0;
 
     if( DBG_TRUST )
 	log_debug("trustdb: build_sigrecs for pubkey %lu\n", (ulong)pubkeyid );
@@ -1164,11 +1178,11 @@ build_sigrecs( ulong pubkeyid )
     }
     if( !selfsig ) {
 	log_error("build_sigrecs: self-certificate missing\n" );
-	update_no_sigs( pubkeyid, 1 );
+	update_no_sigs( pubkeyid, 2 );
 	rc = G10ERR_BAD_CERT;
 	goto leave;
     }
-    update_no_sigs( pubkeyid, 0 );
+    update_no_sigs( pubkeyid, 0 ); /* assume we have sigs */
 
     /* valid key signatures are now marked; we can now build the
      * sigrecs */
@@ -1203,6 +1217,8 @@ build_sigrecs( ulong pubkeyid )
 			log_error("build_sigrecs: write_record failed\n" );
 			goto leave;
 		    }
+		    if( !first_sigrec )
+			first_sigrec = rnum2;
 		}
 		rec2 = rec;
 		rnum2 = rnum;
@@ -1226,6 +1242,8 @@ build_sigrecs( ulong pubkeyid )
 		log_error("build_sigrecs: write_record failed\n" );
 		goto leave;
 	    }
+	    if( !first_sigrec )
+		first_sigrec = rnum2;
 	}
 	if( i ) { /* write the pending record */
 	    rec.r.sig.owner = pubkeyid;
@@ -1235,8 +1253,24 @@ build_sigrecs( ulong pubkeyid )
 		log_error("build_sigrecs: write_record failed\n" );
 		goto leave;
 	    }
+	    if( !first_sigrec )
+		first_sigrec = rnum;
 	}
     }
+    if( first_sigrec ) {
+	/* update the dir record */
+	if( (rc =read_record( pubkeyid, &rec, RECTYPE_DIR )) ) {
+	    log_error("update_dir_record: read failed\n");
+	    goto leave;
+	}
+	rec.r.dir.sigrec = first_sigrec;
+	if( (rc=write_record( pubkeyid, &rec )) ) {
+	    log_error("update_dir_record: write failed\n");
+	    goto leave;
+	}
+    }
+    else
+	update_no_sigs( pubkeyid, 1 ); /* no signatures */
 
   leave:
     m_free( finfo );
@@ -1309,7 +1343,7 @@ static int
 propagate_trust( TRUST_SEG_LIST tslist )
 {
     int i, rc;
-    unsigned trust;
+    unsigned trust, tr;
     TRUST_SEG_LIST tsl;
 
     for(tsl = tslist; tsl; tsl = tsl->next ) {
@@ -1325,9 +1359,11 @@ propagate_trust( TRUST_SEG_LIST tslist )
 	    tsl->seg[i].trust = trust;
 	    if( i > 0 ) {
 		/* get the trust of this pubkey */
-		rc = get_ownertrust( tsl->seg[i].lid, &trust );
+		rc = get_ownertrust( tsl->seg[i].lid, &tr );
 		if( rc )
 		    return rc;
+		if( tr < trust )
+		    trust = tr;
 	    }
 	}
     }
@@ -1362,8 +1398,15 @@ do_check( ulong pubkeyid, TRUSTREC *dr, unsigned *trustlevel )
 	if( !rc ) /* and read again */
 	    rc = read_record( pubkeyid, dr, RECTYPE_DIR );
     }
-    if( !rc && !dr->r.dir.sigrec )
-	rc = -1;
+    if( !rc && !dr->r.dir.sigrec ) {
+	/* See wether this is our own key */
+	if( !qry_lid_table_flag( ultikey_table, pubkeyid, NULL ) ) {
+	    *trustlevel = TRUST_ULTIMATE;
+	    return 0;
+	}
+	else
+	    rc = -1;
+    }
     if( rc )
 	return rc;  /* error while looking for sigrec or building sigrecs */
 
@@ -1435,7 +1478,7 @@ do_check( ulong pubkeyid, TRUSTREC *dr, unsigned *trustlevel )
  *	  1: used for initial program startup
  */
 int
-init_trustdb( int level )
+init_trustdb( int level, const char *dbname )
 {
     int rc=0;
 
@@ -1443,7 +1486,8 @@ init_trustdb( int level )
 	ultikey_table = new_lid_table();
 
     if( !level || level==1 ) {
-	char *fname = make_filename("~/.g10", "trustdb.g10", NULL );
+	char *fname = dbname? m_strdup( dbname )
+			    : make_filename("~/.g10", "trustdb.g10", NULL );
 	if( access( fname, R_OK ) ) {
 	    if( errno != ENOENT ) {
 		log_error("can't access %s: %s\n", fname, strerror(errno) );
@@ -1883,7 +1927,7 @@ update_no_sigs( ulong lid, int no_sigs )
 	return G10ERR_TRUSTDB;
     }
 
-    rec.r.dir.no_sigs = !!no_sigs;
+    rec.r.dir.no_sigs = no_sigs;
     if( write_record( lid, &rec ) ) {
 	log_error("update_no_sigs: write failed\n");
 	return G10ERR_TRUSTDB;

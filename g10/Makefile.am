@@ -1,15 +1,14 @@
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES = -I$(top_srcdir)/include
+INCLUDES = -I.. -I$(top_srcdir)/include
 EXTRA_DIST = OPTIONS
+needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
-bin_PROGRAMS = g10
+bin_PROGRAMS = g10 g10maint
 
-g10_SOURCES = g10.c		\
+common_source =  \
 	      build-packet.c	\
 	      compress.c	\
-	      encode.c		\
-	      encr-data.c	\
 	      filter.h		\
 	      free-packet.c	\
 	      getkey.c		\
@@ -18,7 +17,6 @@ g10_SOURCES = g10.c		\
 	      skclist.c 	\
 	      ringedit.c	\
 	      kbnode.c		\
-	      keygen.c		\
 	      main.h		\
 	      mainproc.c	\
 	      armor.c		\
@@ -35,22 +33,29 @@ g10_SOURCES = g10.c		\
 	      packet.h		\
 	      parse-packet.c	\
 	      passphrase.c	\
-	      plaintext.c	\
 	      pubkey-enc.c	\
 	      seckey-cert.c	\
 	      seskey.c		\
-	      sign.c		\
 	      import.c		\
 	      export.c		\
 	      comment.c 	\
 	      status.c		\
 	      status.h		\
+	      sign.c		\
+	      plaintext.c	\
+	      encr-data.c	\
+	      encode.c		\
 	      sig-check.c
 
+g10_SOURCES  = g10.c		\
+	      $(common_source)	\
+	      keygen.c
 
-LDADD = -L ../cipher -L ../mpi -L ../util \
-	-lcipher -lmpi -lutil
 
+g10maint_SOURCES = g10maint.c	\
+	      $(common_source)
 
-$(PROGRAMS): ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
+LDADD = $(needed_libs)
+
+$(PROGRAMS): $(needed_libs)
 

@@ -326,6 +326,14 @@ mpi_set_buffer( MPI a, const byte *buffer, unsigned nbytes, int sign )
 	alimb |= *p-- << 16 ;
 	alimb |= *p-- << 24 ;
       #elif BYTES_PER_MPI_LIMB == 8
+	alimb  = *p--	    ;
+	alimb |= *p-- <<  8 ;
+	alimb |= *p-- << 16 ;
+	alimb |= *p-- << 24 ;
+	alimb |= *p-- << 32 ;
+	alimb |= *p-- << 40 ;
+	alimb |= *p-- << 48 ;
+	alimb |= *p-- << 56 ;
       #else
 	#error please implement for this limb size.
       #endif

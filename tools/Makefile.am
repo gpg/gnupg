@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES = -I$(top_srcdir)/include
+INCLUDES = -I.. -I$(top_srcdir)/include
 
 noinst_PROGRAMS = mpicalc bftest
 

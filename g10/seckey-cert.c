@@ -85,6 +85,9 @@ check_elg( PKT_secret_cert *cert )
 	    blowfish_decode_cfb( blowfish_ctx,
 				 cert->d.elg.protect.blowfish.iv,
 				 cert->d.elg.protect.blowfish.iv, 8 );
+	    mpi_set_secure(cert->d.elg.x );
+	    /*fixme: maybe it is better to set the buger secure with a
+	     * new get_buffer_secure() function */
 	    buffer = mpi_get_buffer( cert->d.elg.x, &nbytes, NULL );
 	    csum = checksum_u16( nbytes*8 );
 	    blowfish_decode_cfb( blowfish_ctx, buffer, buffer, nbytes );
@@ -196,6 +199,7 @@ check_rsa( PKT_secret_cert *cert )
 				 cert->d.rsa.protect.blowfish.iv, 8 );
 	    csum = 0;
 	    #define X(a) do { \
+		mpi_set_secure(cert->d.rsa.rsa_##a); \
 		buffer = mpi_get_buffer( cert->d.rsa.rsa_##a, &nbytes, NULL );\
 		csum += checksum_u16( nbytes*8 );			     \
 		blowfish_decode_cfb( blowfish_ctx, buffer, buffer, nbytes ); \

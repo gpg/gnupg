@@ -1,8 +1,14 @@
-# Makefile.in generated automatically by automake 1.0 from Makefile.am
+# Makefile.in generated automatically by automake 1.2d from Makefile.am
 
-# Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
-# gives unlimited permission to copy, distribute and modify it.
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
 
 
 SHELL = /bin/sh
@@ -32,22 +38,63 @@ pkgincludedir = $(includedir)/@PACKAGE@
 
 top_builddir = ..
 
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 transform = @program_transform_name@
 
-INCLUDES =  -I$(top_srcdir)/include
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+build_alias = @build_alias@
+build_triplet = @build@
+host_alias = @host_alias@
+host_triplet = @host@
+target_alias = @target_alias@
+target_triplet = @target@
+CATALOGS = @CATALOGS@
+CATOBJEXT = @CATOBJEXT@
+CC = @CC@
+CIPHER_EXTRA_DIST = @CIPHER_EXTRA_DIST@
+CIPHER_EXTRA_OBJS = @CIPHER_EXTRA_OBJS@
+CPP = @CPP@
+DATADIRNAME = @DATADIRNAME@
+G10_LOCALEDIR = @G10_LOCALEDIR@
+GENCAT = @GENCAT@
+GMOFILES = @GMOFILES@
+GMSGFMT = @GMSGFMT@
+INSTOBJEXT = @INSTOBJEXT@
+INTLDEPS = @INTLDEPS@
+INTLLIBS = @INTLLIBS@
+INTLOBJS = @INTLOBJS@
+INTLSUB = @INTLSUB@
+MPI_EXTRA_ASM_OBJS = @MPI_EXTRA_ASM_OBJS@
+MSGFMT = @MSGFMT@
+PACKAGE = @PACKAGE@
+POFILES = @POFILES@
+POSUB = @POSUB@
+RANLIB = @RANLIB@
+VERSION = @VERSION@
+
+INCLUDES = -I..  -I$(top_srcdir)/include
 
 SUFFIXES = .S .s
 
 EXTRA_DIST = config.links
 
-noinst_LIBRARIES = mpi
+noinst_LIBRARIES = libmpi.a
 # noinst_HEADERS   =
 
-mpi_SOURCES = longlong.h     \
+libmpi_a_SOURCES = longlong.h	  \
 	      mpi-add.c      \
 	      mpi-bit.c      \
 	      mpi-cmp.c      \
@@ -67,199 +114,205 @@ mpi_SOURCES = longlong.h     \
 	      mpih-mul.c     \
 	      mpiutil.c
 
-mpi_LIBADD =  mpih-mul1.o    \
+libmpi_a_LIBADD =  mpih-mul1.o	  \
 	      mpih-mul2.o    \
 	      mpih-mul3.o    \
 	      mpih-add1.o    \
 	      mpih-sub1.o    \
 	      mpih-shift.o  @MPI_EXTRA_ASM_OBJS@
-mkinstalldirs = $(top_srcdir)/scripts/mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
-LIBRARIES = $(noinst_LIBRARIES)
+CONFIG_CLEAN_FILES = 
+LIBRARIES =  $(noinst_LIBRARIES)
 
-noinst_LIBFILES = libmpi.a
-
-CC = @CC@
-LEX = @LEX@
-YACC = @YACC@
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
-CFLAGS = @CFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-
-COMPILE = $(CC) -c $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
-LINK = $(CC) $(LDFLAGS) -o $@
-mpi_OBJECTS = mpi-add.o mpi-bit.o mpi-cmp.o mpi-div.o mpi-gcd.o \
+libmpi_a_DEPENDENCIES =  mpih-mul1.o mpih-mul2.o mpih-mul3.o mpih-add1.o \
+mpih-sub1.o mpih-shift.o
+libmpi_a_OBJECTS =  mpi-add.o mpi-bit.o mpi-cmp.o mpi-div.o mpi-gcd.o \
 mpi-inv.o mpi-mul.o mpi-pow.o mpi-scan.o mpicoder.o mpih-cmp.o \
 mpih-add.o mpih-sub.o mpih-div.o mpih-mul.o mpiutil.o
-EXTRA_mpi_SOURCES =
-LIBFILES =  libmpi.a
 AR = ar
-RANLIB = @RANLIB@
-DIST_COMMON = Makefile.am Makefile.in
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+LINK = $(CC) $(CFLAGS) $(LDFLAGS) -o $@
+DIST_COMMON =  Makefile.am Makefile.in
 
 
-PACKAGE = @PACKAGE@
-VERSION = @VERSION@
-
-DISTFILES = $(DIST_COMMON) $(SOURCES) $(BUILT_SOURCES) $(HEADERS) \
-	$(TEXINFOS) $(INFOS) $(MANS) $(EXTRA_DIST) $(DATA)
-DEP_DISTFILES = $(DIST_COMMON) $(SOURCES) $(BUILT_SOURCES) $(HEADERS) \
-	$(TEXINFOS) $(INFO_DEPS) $(MANS) $(EXTRA_DIST) $(DATA)
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
-DEP_FILES = $(srcdir)/.deps/mpi-add.P $(srcdir)/.deps/mpi-bit.P \
-$(srcdir)/.deps/mpi-cmp.P $(srcdir)/.deps/mpi-div.P \
-$(srcdir)/.deps/mpi-gcd.P $(srcdir)/.deps/mpi-inv.P \
-$(srcdir)/.deps/mpi-mul.P $(srcdir)/.deps/mpi-pow.P \
-$(srcdir)/.deps/mpi-scan.P $(srcdir)/.deps/mpicoder.P \
-$(srcdir)/.deps/mpih-add.P $(srcdir)/.deps/mpih-cmp.P \
-$(srcdir)/.deps/mpih-div.P $(srcdir)/.deps/mpih-mul.P \
-$(srcdir)/.deps/mpih-sub.P $(srcdir)/.deps/mpiutil.P
-SOURCES = $(mpi_SOURCES)
-OBJECTS = $(mpi_OBJECTS)
+GZIP = --best
+DEP_FILES =  .deps/mpi-add.P .deps/mpi-bit.P .deps/mpi-cmp.P \
+.deps/mpi-div.P .deps/mpi-gcd.P .deps/mpi-inv.P .deps/mpi-mul.P \
+.deps/mpi-pow.P .deps/mpi-scan.P .deps/mpicoder.P .deps/mpih-add.P \
+.deps/mpih-cmp.P .deps/mpih-div.P .deps/mpih-mul.P .deps/mpih-sub.P \
+.deps/mpiutil.P
+SOURCES = $(libmpi_a_SOURCES)
+OBJECTS = $(libmpi_a_OBJECTS)
 
 default: all
 
+.SUFFIXES:
+.SUFFIXES: .S .c .o .s
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu mpi/Makefile
 
-$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in
-	cd $(top_srcdir) && automake $(subdir)/Makefile
+Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status $(BUILT_SOURCES)
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
-Makefile: $(top_builddir)/config.status Makefile.in
-	cd $(top_builddir) && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= ./config.status
 
 mostlyclean-noinstLIBRARIES:
 
 clean-noinstLIBRARIES:
-	rm -f $(noinst_LIBFILES)
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
 
 distclean-noinstLIBRARIES:
 
 maintainer-clean-noinstLIBRARIES:
 
 .c.o:
-	$(COMPILE) $<
+	$(COMPILE) -c $<
+
+.s.o:
+	$(COMPILE) -c $<
+
+.S.o:
+	$(COMPILE) -c $<
 
 mostlyclean-compile:
-	rm -f *.o core
+	-rm -f *.o core
 
 clean-compile:
 
 distclean-compile:
-	rm -f *.tab.c
+	-rm -f *.tab.c
 
 maintainer-clean-compile:
-$(mpi_OBJECTS): ../config.h
 
-libmpi.a: $(mpi_OBJECTS) $(mpi_LIBADD)
-	rm -f libmpi.a
-	$(AR) cru libmpi.a $(mpi_OBJECTS) $(mpi_LIBADD)
+libmpi.a: $(libmpi_a_OBJECTS) $(libmpi_a_DEPENDENCIES)
+	-rm -f libmpi.a
+	$(AR) cru libmpi.a $(libmpi_a_OBJECTS) $(libmpi_a_LIBADD)
 	$(RANLIB) libmpi.a
-
-ID: $(HEADERS) $(SOURCES)
-	here=`pwd` && cd $(srcdir) && mkid -f$$here/ID $(SOURCES) $(HEADERS)
 
 tags: TAGS
 
-TAGS: $(HEADERS) $(SOURCES) $(TAGS_DEPENDENCIES)
-	here=`pwd` && cd $(srcdir) && etags $(ETAGS_ARGS) $(SOURCES) $(HEADERS) -o $$here/TAGS
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $(SOURCES) $(HEADERS) $(LISP)
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	test -z "$(ETAGS_ARGS)$(SOURCES)$(HEADERS)$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $(SOURCES) $(HEADERS) $(LISP) -o $$here/TAGS)
 
 mostlyclean-tags:
 
 clean-tags:
 
 distclean-tags:
-	rm -f TAGS ID
+	-rm -f TAGS ID
 
 maintainer-clean-tags:
 
-subdir = mpi
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
-distdir: $(DEP_DISTFILES)
-	@for file in `cd $(srcdir) && echo $(DISTFILES)`; do \
+
+subdir = mpi
+
+distdir: $(DISTFILES)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(top_distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu mpi/Makefile
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
 	  test -f $(distdir)/$$file \
-	  || ln $(srcdir)/$$file $(distdir)/$$file 2> /dev/null \
-	  || cp -p $(srcdir)/$$file $(distdir)/$$file; \
+	  || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	  || cp -p $$d/$$file $(distdir)/$$file; \
 	done
 
-# This fragment is probably only useful for maintainers.  It relies on
-# GNU make and gcc.  It is only included in the generated Makefile.in
-# if `automake' is not passed the `--include-deps' flag.
+MKDEP = $(CC) -M $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 
-MKDEP = gcc -MM $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
-
--include $(srcdir)/.deps/.P
-$(srcdir)/.deps/.P: $(BUILT_SOURCES)
-	cd $(srcdir) && test -d .deps || mkdir .deps
+DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
+-include .deps/.P
+.deps/.P: $(BUILT_SOURCES)
 	echo > $@
 
 -include $(DEP_FILES)
-$(DEP_FILES): $(srcdir)/.deps/.P
 
-$(srcdir)/.deps/%.P: $(srcdir)/%.c
-	@echo "mkdeps $< > $@"
-	@re=`echo 's,^$(srcdir)//*,,g;s, $(srcdir)//*, ,g' | sed 's,\.,\\\\.,g'`; \
-	  $(MKDEP) $< | sed "$$re" > $@-tmp
-	@if test -n "$o"; then			\
-	  sed 's/\.o:/$$o:/' $@-tmp > $@;	\
-	  rm $@-tmp;				\
-	else					\
-	  mv $@-tmp $@;				\
-	fi
+mostlyclean-depend:
 
-# End of maintainer-only section
+clean-depend:
+
+distclean-depend:
+
+maintainer-clean-depend:
+	-rm -rf .deps
+
+.deps/%.P: %.c
+	@echo "Computing dependencies for $<..."
+	@o='o'; \
+	test -n "$o" && o='$$o'; \
+	$(MKDEP) $< >$@.tmp \
+	  && sed "s,^\(.*\)\.o:,\1.$$o \1.l$$o $@:," < $@.tmp > $@ \
+	  && rm -f $@.tmp
 info:
-
 dvi:
-
 check: all
-
+	$(MAKE)
 installcheck:
-
 install-exec: 
+	@$(NORMAL_INSTALL)
 
 install-data: 
+	@$(NORMAL_INSTALL)
 
 install: install-exec install-data all
 	@:
 
 uninstall: 
 
-all: $(LIBFILES) Makefile
+all: Makefile $(LIBRARIES)
 
 install-strip:
-	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
+	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' INSTALL_SCRIPT='$(INSTALL_PROGRAM)' install
 installdirs:
 
 
 mostlyclean-generic:
-	test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
+	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 
 clean-generic:
-	test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
-	rm -f Makefile $(DISTCLEANFILES)
-	rm -f config.cache config.log $(CONFIG_HEADER) stamp-h
+	-rm -f Makefile $(DISTCLEANFILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 
 maintainer-clean-generic:
-	test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
-	test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
+	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 mostlyclean:  mostlyclean-noinstLIBRARIES mostlyclean-compile \
-		mostlyclean-tags mostlyclean-generic
+		mostlyclean-tags mostlyclean-depend mostlyclean-generic
 
-clean:  clean-noinstLIBRARIES clean-compile clean-tags clean-generic \
-		mostlyclean 
+clean:  clean-noinstLIBRARIES clean-compile clean-tags clean-depend \
+		clean-generic mostlyclean
 
 distclean:  distclean-noinstLIBRARIES distclean-compile distclean-tags \
-		distclean-generic clean 
-	rm -f config.status
+		distclean-depend distclean-generic clean
+	-rm -f config.status
 
 maintainer-clean:  maintainer-clean-noinstLIBRARIES \
 		maintainer-clean-compile maintainer-clean-tags \
-		maintainer-clean-generic distclean 
+		maintainer-clean-depend maintainer-clean-generic \
+		distclean
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
@@ -267,14 +320,13 @@ maintainer-clean:  maintainer-clean-noinstLIBRARIES \
 clean-noinstLIBRARIES maintainer-clean-noinstLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile tags mostlyclean-tags distclean-tags \
-clean-tags maintainer-clean-tags distdir info dvi check installcheck \
-install-exec install-data install uninstall all installdirs \
-mostlyclean-generic distclean-generic clean-generic \
+clean-tags maintainer-clean-tags distdir mostlyclean-depend \
+distclean-depend clean-depend maintainer-clean-depend info dvi \
+installcheck install-exec install-data install uninstall all \
+installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 CFLAGS += -O2
-.SUFFIXES:
-.SUFFIXES: .c .o $(SUFFIXES)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -592,8 +592,11 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    }
 	    else
 		cert->d.elg.is_protected = 0;
-
-	    n = pktlen; cert->d.elg.x = mpi_read(inp, &n, 1 ); pktlen -=n;
+	    /* It does not make sense to read it into secure memory.
+	     * If the user is so careless, not to protect his secret key,
+	     * we can assume, that he operates an open system :=(.
+	     * So we put the key into secure memory when we unprotect him. */
+	    n = pktlen; cert->d.elg.x = mpi_read(inp, &n, 0 ); pktlen -=n;
 
 	    cert->d.elg.csum = read_16(inp); pktlen -= 2;
 	    if( list_mode ) {
@@ -646,11 +649,11 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    }
 	    else
 		cert->d.rsa.is_protected = 0;
-
-	    n = pktlen; cert->d.rsa.rsa_d = mpi_read(inp, &n, 1 ); pktlen -=n;
-	    n = pktlen; cert->d.rsa.rsa_p = mpi_read(inp, &n, 1 ); pktlen -=n;
-	    n = pktlen; cert->d.rsa.rsa_q = mpi_read(inp, &n, 1 ); pktlen -=n;
-	    n = pktlen; cert->d.rsa.rsa_u = mpi_read(inp, &n, 1 ); pktlen -=n;
+	    /* (See comments at the code for elg keys) */
+	    n = pktlen; cert->d.rsa.rsa_d = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    n = pktlen; cert->d.rsa.rsa_p = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    n = pktlen; cert->d.rsa.rsa_q = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    n = pktlen; cert->d.rsa.rsa_u = mpi_read(inp, &n, 0 ); pktlen -=n;
 
 	    cert->d.rsa.csum = read_16(inp); pktlen -= 2;
 	    if( list_mode ) {

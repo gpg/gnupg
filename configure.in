@@ -5,7 +5,10 @@ dnl (Process this file with autoconf to produce a configure script.)
 
 AC_INIT(g10/g10.c)
 AC_CONFIG_AUX_DIR(scripts)
-AC_CONFIG_HEADER(config.h)
+dnl Ooops: automake 1.2d looks for AC_CONFIG_HEADER (and not AM_..)
+dnl	   to decide where config.h is - so we have to add it to
+dnl	   every makefile.am
+AM_CONFIG_HEADER(config.h)
 
 
 if test "x$exec_prefix" = xNONE ; then
@@ -45,6 +48,14 @@ WK_CHECK_CACHE
 dnl Checks for programs.
 
 AC_PROG_MAKE_SET
+AC_ARG_PROGRAM
+
+missing_dir=`cd $ac_aux_dir && pwd`
+AM_MISSING_PROG(ACLOCAL, aclocal, $missing_dir)
+AM_MISSING_PROG(AUTOCONF, autoconf, $missing_dir)
+AM_MISSING_PROG(AUTOMAKE, automake, $missing_dir)
+AM_MISSING_PROG(AUTOHEADER, autoheader, $missing_dir)
+dnl AM_MISSING_PROG(MAKEINFO, makeinfo, $missing_dir)
 
 case "${target}" in
     i386--mingw32)
@@ -64,16 +75,15 @@ AC_PROG_CPP
 esac
 
 
-AC_ARG_PROGRAM
-
 dnl Checks for libraries.
 
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(unistd.h)
 
-ud_GNU_GETTEXT
-WK_LINK_FILES($nls_cv_header_libgt, $nls_cv_header_intl )
+dnl AM_GNU_GETTEXT
+dnl WK_LINK_FILES($nls_cv_header_libgt, $nls_cv_header_intl )
+AC_MSG_WARN([i18n disabled for this release - sorry])
 
 
 dnl Checks for typedefs, structures, and compiler characteristics.

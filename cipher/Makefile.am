@@ -1,12 +1,12 @@
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES = -I$(top_srcdir)/include
+INCLUDES =  -I$(top_srcdir)/include
 EXTRA_DIST = @CIPHER_EXTRA_DIST@
 
-noinst_LIBRARIES = cipher
+noinst_LIBRARIES = libcipher.a
 
 
-cipher_SOURCES = blowfish.c	\
+libcipher_a_SOURCES = blowfish.c     \
 		 blowfish.h	\
 		 elgamal.c	\
 		 elgamal.h	\
@@ -27,6 +27,8 @@ cipher_SOURCES = blowfish.c	\
 		 misc.c 	\
 		 smallprime.c
 
-cipher_LIBADD = @CIPHER_EXTRA_OBJS@
+libcipher_a_LIBADD = @CIPHER_EXTRA_OBJS@
+
+$(LIBRARIES): @CIPHER_EXTRA_OBJS@
 
 

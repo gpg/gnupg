@@ -1,8 +1,14 @@
-# Makefile.in generated automatically by automake 1.0 from Makefile.am
+# Makefile.in generated automatically by automake 1.2d from Makefile.am
 
-# Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
-# gives unlimited permission to copy, distribute and modify it.
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
 
 
 SHELL = /bin/sh
@@ -32,22 +38,62 @@ pkgincludedir = $(includedir)/@PACKAGE@
 
 top_builddir = ..
 
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 transform = @program_transform_name@
 
-INCLUDES = -I$(top_srcdir)/include
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+build_alias = @build_alias@
+build_triplet = @build@
+host_alias = @host_alias@
+host_triplet = @host@
+target_alias = @target_alias@
+target_triplet = @target@
+CATALOGS = @CATALOGS@
+CATOBJEXT = @CATOBJEXT@
+CC = @CC@
+CIPHER_EXTRA_DIST = @CIPHER_EXTRA_DIST@
+CIPHER_EXTRA_OBJS = @CIPHER_EXTRA_OBJS@
+CPP = @CPP@
+DATADIRNAME = @DATADIRNAME@
+G10_LOCALEDIR = @G10_LOCALEDIR@
+GENCAT = @GENCAT@
+GMOFILES = @GMOFILES@
+GMSGFMT = @GMSGFMT@
+INSTOBJEXT = @INSTOBJEXT@
+INTLDEPS = @INTLDEPS@
+INTLLIBS = @INTLLIBS@
+INTLOBJS = @INTLOBJS@
+INTLSUB = @INTLSUB@
+MPI_EXTRA_ASM_OBJS = @MPI_EXTRA_ASM_OBJS@
+MSGFMT = @MSGFMT@
+PACKAGE = @PACKAGE@
+POFILES = @POFILES@
+POSUB = @POSUB@
+RANLIB = @RANLIB@
+VERSION = @VERSION@
+
+INCLUDES = -I.. -I$(top_srcdir)/include
 EXTRA_DIST = OPTIONS
+needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
-bin_PROGRAMS = g10
+bin_PROGRAMS = g10 g10maint
 
-g10_SOURCES = g10.c		\
+common_source =  \
 	      build-packet.c	\
 	      compress.c	\
-	      encode.c		\
-	      encr-data.c	\
 	      filter.h		\
 	      free-packet.c	\
 	      getkey.c		\
@@ -56,7 +102,6 @@ g10_SOURCES = g10.c		\
 	      skclist.c 	\
 	      ringedit.c	\
 	      kbnode.c		\
-	      keygen.c		\
 	      main.h		\
 	      mainproc.c	\
 	      armor.c		\
@@ -73,228 +118,259 @@ g10_SOURCES = g10.c		\
 	      packet.h		\
 	      parse-packet.c	\
 	      passphrase.c	\
-	      plaintext.c	\
 	      pubkey-enc.c	\
 	      seckey-cert.c	\
 	      seskey.c		\
-	      sign.c		\
 	      import.c		\
 	      export.c		\
 	      comment.c 	\
 	      status.c		\
 	      status.h		\
+	      sign.c		\
+	      plaintext.c	\
+	      encr-data.c	\
+	      encode.c		\
 	      sig-check.c
 
-LDADD = -L ../cipher -L ../mpi -L ../util \
-	-lcipher -lmpi -lutil
-mkinstalldirs = $(top_srcdir)/scripts/mkinstalldirs
+g10_SOURCES  = g10.c		\
+	      $(common_source)	\
+	      keygen.c
+
+g10maint_SOURCES = g10maint.c	\
+	      $(common_source)
+
+LDADD = $(needed_libs)
+mkinstalldirs = $(SHELL) $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
-PROGRAMS = $(bin_PROGRAMS)
+CONFIG_CLEAN_FILES = 
+PROGRAMS =  $(bin_PROGRAMS)
 
-
-CC = @CC@
-LEX = @LEX@
-YACC = @YACC@
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
-CFLAGS = @CFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-
-COMPILE = $(CC) -c $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
-LINK = $(CC) $(LDFLAGS) -o $@
-g10_OBJECTS = g10.o build-packet.o compress.o encode.o encr-data.o \
-free-packet.o getkey.o pkclist.o skclist.o ringedit.o kbnode.o keygen.o \
-mainproc.o armor.o mdfilter.o textfilter.o cipher.o elg.o rsa.o \
-openfile.o keyid.o trustdb.o parse-packet.o passphrase.o plaintext.o \
-pubkey-enc.o seckey-cert.o seskey.o sign.o import.o export.o comment.o \
-status.o sig-check.o
-EXTRA_g10_SOURCES =
+g10_OBJECTS =  g10.o build-packet.o compress.o free-packet.o getkey.o \
+pkclist.o skclist.o ringedit.o kbnode.o mainproc.o armor.o mdfilter.o \
+textfilter.o cipher.o elg.o rsa.o openfile.o keyid.o trustdb.o \
+parse-packet.o passphrase.o pubkey-enc.o seckey-cert.o seskey.o \
+import.o export.o comment.o status.o sign.o plaintext.o encr-data.o \
+encode.o sig-check.o keygen.o
 g10_LDADD = $(LDADD)
-DIST_COMMON = Makefile.am Makefile.in
+g10_DEPENDENCIES =  ../cipher/libcipher.a ../mpi/libmpi.a \
+../util/libutil.a
+g10_LDFLAGS = 
+g10maint_OBJECTS =  g10maint.o build-packet.o compress.o free-packet.o \
+getkey.o pkclist.o skclist.o ringedit.o kbnode.o mainproc.o armor.o \
+mdfilter.o textfilter.o cipher.o elg.o rsa.o openfile.o keyid.o \
+trustdb.o parse-packet.o passphrase.o pubkey-enc.o seckey-cert.o \
+seskey.o import.o export.o comment.o status.o sign.o plaintext.o \
+encr-data.o encode.o sig-check.o
+g10maint_LDADD = $(LDADD)
+g10maint_DEPENDENCIES =  ../cipher/libcipher.a ../mpi/libmpi.a \
+../util/libutil.a
+g10maint_LDFLAGS = 
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+LINK = $(CC) $(CFLAGS) $(LDFLAGS) -o $@
+DIST_COMMON =  Makefile.am Makefile.in
 
 
-PACKAGE = @PACKAGE@
-VERSION = @VERSION@
-
-DISTFILES = $(DIST_COMMON) $(SOURCES) $(BUILT_SOURCES) $(HEADERS) \
-	$(TEXINFOS) $(INFOS) $(MANS) $(EXTRA_DIST) $(DATA)
-DEP_DISTFILES = $(DIST_COMMON) $(SOURCES) $(BUILT_SOURCES) $(HEADERS) \
-	$(TEXINFOS) $(INFO_DEPS) $(MANS) $(EXTRA_DIST) $(DATA)
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
-DEP_FILES = $(srcdir)/.deps/armor.P $(srcdir)/.deps/build-packet.P \
-$(srcdir)/.deps/cipher.P $(srcdir)/.deps/comment.P \
-$(srcdir)/.deps/compress.P $(srcdir)/.deps/elg.P \
-$(srcdir)/.deps/encode.P $(srcdir)/.deps/encr-data.P \
-$(srcdir)/.deps/export.P $(srcdir)/.deps/free-packet.P \
-$(srcdir)/.deps/g10.P $(srcdir)/.deps/getkey.P $(srcdir)/.deps/import.P \
-$(srcdir)/.deps/kbnode.P $(srcdir)/.deps/keygen.P \
-$(srcdir)/.deps/keyid.P $(srcdir)/.deps/mainproc.P \
-$(srcdir)/.deps/mdfilter.P $(srcdir)/.deps/openfile.P \
-$(srcdir)/.deps/parse-packet.P $(srcdir)/.deps/passphrase.P \
-$(srcdir)/.deps/pkclist.P $(srcdir)/.deps/plaintext.P \
-$(srcdir)/.deps/pubkey-enc.P $(srcdir)/.deps/ringedit.P \
-$(srcdir)/.deps/rsa.P $(srcdir)/.deps/seckey-cert.P \
-$(srcdir)/.deps/seskey.P $(srcdir)/.deps/sig-check.P \
-$(srcdir)/.deps/sign.P $(srcdir)/.deps/skclist.P \
-$(srcdir)/.deps/status.P $(srcdir)/.deps/textfilter.P \
-$(srcdir)/.deps/trustdb.P
-SOURCES = $(g10_SOURCES)
-OBJECTS = $(g10_OBJECTS)
+GZIP = --best
+DEP_FILES =  .deps/armor.P .deps/build-packet.P .deps/cipher.P \
+.deps/comment.P .deps/compress.P .deps/elg.P .deps/encode.P \
+.deps/encr-data.P .deps/export.P .deps/free-packet.P .deps/g10.P \
+.deps/g10maint.P .deps/getkey.P .deps/import.P .deps/kbnode.P \
+.deps/keygen.P .deps/keyid.P .deps/mainproc.P .deps/mdfilter.P \
+.deps/openfile.P .deps/parse-packet.P .deps/passphrase.P \
+.deps/pkclist.P .deps/plaintext.P .deps/pubkey-enc.P .deps/ringedit.P \
+.deps/rsa.P .deps/seckey-cert.P .deps/seskey.P .deps/sig-check.P \
+.deps/sign.P .deps/skclist.P .deps/status.P .deps/textfilter.P \
+.deps/trustdb.P
+SOURCES = $(g10_SOURCES) $(g10maint_SOURCES)
+OBJECTS = $(g10_OBJECTS) $(g10maint_OBJECTS)
 
 default: all
 
+.SUFFIXES:
+.SUFFIXES: .S .c .o .s
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu g10/Makefile
 
-$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in
-	cd $(top_srcdir) && automake $(subdir)/Makefile
+Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status $(BUILT_SOURCES)
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
-Makefile: $(top_builddir)/config.status Makefile.in
-	cd $(top_builddir) && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= ./config.status
 
 mostlyclean-binPROGRAMS:
 
 clean-binPROGRAMS:
-	rm -f $(bin_PROGRAMS)
+	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
 
 distclean-binPROGRAMS:
 
 maintainer-clean-binPROGRAMS:
 
 install-binPROGRAMS: $(bin_PROGRAMS)
+	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(bindir)
-	list="$(bin_PROGRAMS)"; for p in $$list; do \
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
 	  if test -f $$p; then \
-	    $(INSTALL_PROGRAM) $$p $(bindir)/`echo $$p|sed '$(transform)'`; \
+	    echo "  $(INSTALL_PROGRAM) $$p $(bindir)/`echo $$p|sed '$(transform)'`"; \
+	     $(INSTALL_PROGRAM) $$p $(bindir)/`echo $$p|sed '$(transform)'`; \
 	  else :; fi; \
 	done
 
 uninstall-binPROGRAMS:
-	list="$(bin_PROGRAMS)"; for p in $$list; do \
+	$(NORMAL_UNINSTALL)
+	list='$(bin_PROGRAMS)'; for p in $$list; do \
 	  rm -f $(bindir)/`echo $$p|sed '$(transform)'`; \
 	done
 
 .c.o:
-	$(COMPILE) $<
+	$(COMPILE) -c $<
+
+.s.o:
+	$(COMPILE) -c $<
+
+.S.o:
+	$(COMPILE) -c $<
 
 mostlyclean-compile:
-	rm -f *.o core
+	-rm -f *.o core
 
 clean-compile:
 
 distclean-compile:
-	rm -f *.tab.c
+	-rm -f *.tab.c
 
 maintainer-clean-compile:
-$(g10_OBJECTS): ../config.h
 
 g10: $(g10_OBJECTS) $(g10_DEPENDENCIES)
-	$(LINK) $(g10_OBJECTS) $(g10_LDADD) $(LIBS)
+	@rm -f g10
+	$(LINK) $(g10_LDFLAGS) $(g10_OBJECTS) $(g10_LDADD) $(LIBS)
 
-ID: $(HEADERS) $(SOURCES)
-	here=`pwd` && cd $(srcdir) && mkid -f$$here/ID $(SOURCES) $(HEADERS)
+g10maint: $(g10maint_OBJECTS) $(g10maint_DEPENDENCIES)
+	@rm -f g10maint
+	$(LINK) $(g10maint_LDFLAGS) $(g10maint_OBJECTS) $(g10maint_LDADD) $(LIBS)
 
 tags: TAGS
 
-TAGS: $(HEADERS) $(SOURCES) $(TAGS_DEPENDENCIES)
-	here=`pwd` && cd $(srcdir) && etags $(ETAGS_ARGS) $(SOURCES) $(HEADERS) -o $$here/TAGS
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $(SOURCES) $(HEADERS) $(LISP)
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	test -z "$(ETAGS_ARGS)$(SOURCES)$(HEADERS)$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $(SOURCES) $(HEADERS) $(LISP) -o $$here/TAGS)
 
 mostlyclean-tags:
 
 clean-tags:
 
 distclean-tags:
-	rm -f TAGS ID
+	-rm -f TAGS ID
 
 maintainer-clean-tags:
 
-subdir = g10
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
-distdir: $(DEP_DISTFILES)
-	@for file in `cd $(srcdir) && echo $(DISTFILES)`; do \
+
+subdir = g10
+
+distdir: $(DISTFILES)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(top_distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu g10/Makefile
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
 	  test -f $(distdir)/$$file \
-	  || ln $(srcdir)/$$file $(distdir)/$$file 2> /dev/null \
-	  || cp -p $(srcdir)/$$file $(distdir)/$$file; \
+	  || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	  || cp -p $$d/$$file $(distdir)/$$file; \
 	done
 
-# This fragment is probably only useful for maintainers.  It relies on
-# GNU make and gcc.  It is only included in the generated Makefile.in
-# if `automake' is not passed the `--include-deps' flag.
+MKDEP = $(CC) -M $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 
-MKDEP = gcc -MM $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
-
--include $(srcdir)/.deps/.P
-$(srcdir)/.deps/.P: $(BUILT_SOURCES)
-	cd $(srcdir) && test -d .deps || mkdir .deps
+DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
+-include .deps/.P
+.deps/.P: $(BUILT_SOURCES)
 	echo > $@
 
 -include $(DEP_FILES)
-$(DEP_FILES): $(srcdir)/.deps/.P
 
-$(srcdir)/.deps/%.P: $(srcdir)/%.c
-	@echo "mkdeps $< > $@"
-	@re=`echo 's,^$(srcdir)//*,,g;s, $(srcdir)//*, ,g' | sed 's,\.,\\\\.,g'`; \
-	  $(MKDEP) $< | sed "$$re" > $@-tmp
-	@if test -n "$o"; then			\
-	  sed 's/\.o:/$$o:/' $@-tmp > $@;	\
-	  rm $@-tmp;				\
-	else					\
-	  mv $@-tmp $@;				\
-	fi
+mostlyclean-depend:
 
-# End of maintainer-only section
+clean-depend:
+
+distclean-depend:
+
+maintainer-clean-depend:
+	-rm -rf .deps
+
+.deps/%.P: %.c
+	@echo "Computing dependencies for $<..."
+	@o='o'; \
+	test -n "$o" && o='$$o'; \
+	$(MKDEP) $< >$@.tmp \
+	  && sed "s,^\(.*\)\.o:,\1.$$o \1.l$$o $@:," < $@.tmp > $@ \
+	  && rm -f $@.tmp
 info:
-
 dvi:
-
 check: all
-
+	$(MAKE)
 installcheck:
-
 install-exec: install-binPROGRAMS
+	@$(NORMAL_INSTALL)
 
 install-data: 
+	@$(NORMAL_INSTALL)
 
 install: install-exec install-data all
 	@:
 
 uninstall: uninstall-binPROGRAMS
 
-all: $(PROGRAMS) Makefile
+all: Makefile $(PROGRAMS)
 
 install-strip:
-	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
+	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' INSTALL_SCRIPT='$(INSTALL_PROGRAM)' install
 installdirs:
 	$(mkinstalldirs)  $(bindir)
 
 
 mostlyclean-generic:
-	test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
+	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 
 clean-generic:
-	test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
-	rm -f Makefile $(DISTCLEANFILES)
-	rm -f config.cache config.log $(CONFIG_HEADER) stamp-h
+	-rm -f Makefile $(DISTCLEANFILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 
 maintainer-clean-generic:
-	test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
-	test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
+	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 mostlyclean:  mostlyclean-binPROGRAMS mostlyclean-compile \
-		mostlyclean-tags mostlyclean-generic
+		mostlyclean-tags mostlyclean-depend mostlyclean-generic
 
-clean:  clean-binPROGRAMS clean-compile clean-tags clean-generic \
-		mostlyclean 
+clean:  clean-binPROGRAMS clean-compile clean-tags clean-depend \
+		clean-generic mostlyclean
 
 distclean:  distclean-binPROGRAMS distclean-compile distclean-tags \
-		distclean-generic clean 
-	rm -f config.status
+		distclean-depend distclean-generic clean
+	-rm -f config.status
 
 maintainer-clean:  maintainer-clean-binPROGRAMS maintainer-clean-compile \
-		maintainer-clean-tags maintainer-clean-generic \
-		distclean 
+		maintainer-clean-tags maintainer-clean-depend \
+		maintainer-clean-generic distclean
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
@@ -302,15 +378,14 @@ maintainer-clean:  maintainer-clean-binPROGRAMS maintainer-clean-compile \
 clean-binPROGRAMS maintainer-clean-binPROGRAMS uninstall-binPROGRAMS \
 install-binPROGRAMS mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile tags mostlyclean-tags distclean-tags \
-clean-tags maintainer-clean-tags distdir info dvi check installcheck \
-install-exec install-data install uninstall all installdirs \
-mostlyclean-generic distclean-generic clean-generic \
+clean-tags maintainer-clean-tags distdir mostlyclean-depend \
+distclean-depend clean-depend maintainer-clean-depend info dvi \
+installcheck install-exec install-data install uninstall all \
+installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
-$(PROGRAMS): ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
-.SUFFIXES:
-.SUFFIXES: .c .o
+$(PROGRAMS): $(needed_libs)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

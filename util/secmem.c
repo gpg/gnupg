@@ -59,7 +59,7 @@ static unsigned max_alloced;
 static unsigned cur_alloced;
 static unsigned max_blocks;
 static unsigned cur_blocks;
-
+static int disable_secmem;
 
 static void
 lock_pool( void *p, size_t n )
@@ -94,12 +94,15 @@ init_pool( size_t n)
 {
     poolsize = n;
 
+    if( disable_secmem )
+	log_bug("secure memory is disabled");
+
   #if HAVE_MMAP && defined(MAP_ANONYMOUS)
     poolsize = (poolsize + 4095) & ~4095;
     pool = mmap( 0, poolsize, PROT_READ|PROT_WRITE,
 			      MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
     if( pool == (void*)-1 )
-	log_error("can´t mmap pool of %u bytes: %s - using malloc\n",
+	log_error("can't mmap pool of %u bytes: %s - using malloc\n",
 			    (unsigned)poolsize, strerror(errno));
     else {
 	pool_is_mmapped = 1;
@@ -110,7 +113,7 @@ init_pool( size_t n)
     if( !pool_okay ) {
 	pool = malloc( poolsize );
 	if( !pool )
-	    log_fatal("can´t allocate memory pool of %u bytes\n",
+	    log_fatal("can't allocate memory pool of %u bytes\n",
 						       (unsigned)poolsize);
 	else
 	    pool_okay = 1;
@@ -131,12 +134,16 @@ compress_pool(void)
 void
 secmem_init( size_t n )
 {
-    if( n < DEFAULT_POOLSIZE )
-	n = DEFAULT_POOLSIZE;
-    if( !pool_okay )
-	init_pool(n);
-    else
-	log_error("Oops, secure memory pool already initialized\n");
+    if( !n )
+	disable_secmem=1;
+    else {
+	if( n < DEFAULT_POOLSIZE )
+	    n = DEFAULT_POOLSIZE;
+	if( !pool_okay )
+	    init_pool(n);
+	else
+	    log_error("Oops, secure memory pool already initialized\n");
+    }
 }
 
 
@@ -235,6 +242,8 @@ secmem_term()
 void
 secmem_dump_stats()
 {
+    if( disable_secmem )
+	return;
     fprintf(stderr,
 		"secmem usage: %u/%u bytes in %u/%u blocks of pool %lu/%lu\n",
 		cur_alloced, max_alloced, cur_blocks, max_blocks,

@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS =  @INTLSUB@ @POSUB@ util mpi cipher tools g10
+SUBDIRS =  util mpi cipher tools g10
 EXTRA_DIST = VERSION
 
 
