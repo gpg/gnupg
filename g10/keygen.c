@@ -532,7 +532,7 @@ generate_keypair()
     for(;;) {
 	dek->algo = CIPHER_ALGO_BLOWFISH;
 	s2k->mode = 1;
-	s2k->hash_algo = DIGESTA_ALGO_RMD160;
+	s2k->hash_algo = DIGEST_ALGO_RMD160;
 	rc = make_dek_from_passphrase( dek , 2, s2k );
 	if( rc == -1 ) {
 	    m_free(dek); dek = NULL;

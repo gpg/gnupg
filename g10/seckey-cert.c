@@ -54,12 +54,8 @@ do_check( PKT_secret_cert *cert )
 	  case CIPHER_ALGO_BLOWFISH:
 	  case CIPHER_ALGO_CAST:
 	    keyid_from_skc( cert, keyid );
-	    if( cert->protect.s2k.mode == 1 || cert->protect.s2k.mode == 4 )
-		dek = get_passphrase_hash( keyid, NULL,
-						 cert->protect.s2k.salt );
-	    else
-		dek = get_passphrase_hash( keyid, NULL, NULL );
-
+	    dek = get_passphrase_hash( keyid, cert->protect.algo,
+					      &cert->protect.s2k );
 	    cipher_hd = cipher_open( cert->protect.algo,
 				     CIPHER_MODE_AUTO_CFB, 1);
 	    cipher_setkey( cipher_hd, dek->key, dek->keylen );
@@ -216,11 +212,22 @@ check_secret_key( PKT_secret_cert *cert )
 
     for(i=0; i < 3 && rc == G10ERR_BAD_PASS; i++ ) {
 	if( i )
-	    log_error("Invalid passphrase; please try again ...\n");
+	    log_error("Invalid passphrase; please try again ...\n\n");
 	switch( cert->pubkey_algo ) {
 	  case PUBKEY_ALGO_ELGAMAL:
 	  case PUBKEY_ALGO_DSA:
 	    rc = do_check( cert );
+	    if( rc == G10ERR_BAD_PASS && cert->is_protected
+		&& cert->protect.algo == CIPHER_ALGO_BLOWFISH ) {
+		/* Workaround for a bug in 0.2.16 which still used
+		 * a 160 bit key for BLOWFISH. */
+		log_info("trying workaround for 0.2.16 passphrase bug ...\n");
+		cert->protect.algo = CIPHER_ALGO_BLOWFISH160;
+		rc = do_check( cert );
+		if( rc )
+		    rc = G10ERR_BAD_PASS;
+		cert->protect.algo = CIPHER_ALGO_BLOWFISH;
+	    }
 	    break;
 	  default: rc = G10ERR_PUBKEY_ALGO;
 	}

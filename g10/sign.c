@@ -406,6 +406,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     else {
 	const char *s = digest_algo_to_string(opt.def_digest_algo);
 	assert(s);
+	iobuf_writestr(out, "Hash: " );
 	iobuf_writestr(out, s );
 	iobuf_writestr(out, "\n\n" );
     }

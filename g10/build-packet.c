@@ -68,6 +68,8 @@ build_packet( IOBUF out, PACKET *pkt )
 
     if( DBG_PACKET )
 	log_debug("build_packet() type=%d\n", pkt->pkttype );
+    if( pkt->pkttype == PKT_OLD_COMMENT )
+	pkt->pkttype = PKT_COMMENT;
     assert( pkt->pkt.generic );
     if( pkt->pkttype > 15 ) /* new format */
 	ctb = 0xc0 | (pkt->pkttype & 0x3f);
@@ -109,7 +111,7 @@ build_packet( IOBUF out, PACKET *pkt )
 	break;
       case PKT_RING_TRUST:
       default:
-	log_bug("invalid packet type in build_packet()");
+	log_bug("invalid packet type in build_packet()\n");
 	break;
     }
 

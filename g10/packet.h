@@ -49,7 +49,8 @@ typedef enum {
 	PKT_RING_TRUST	  =12, /* keyring trust packet */
 	PKT_USER_ID	  =13, /* user id packet */
 	PKT_PUBKEY_SUBCERT=14, /* subkey certificate (OpenPGP) */
-	PKT_COMMENT	  =16  /* new comment packet (OpenPGP) */
+	PKT_OLD_COMMENT   =16, /* comment packet from an OpenPGP draft */
+	PKT_COMMENT	  =61  /* new comment packet (private) */
 } pkttype_t;
 
 typedef struct packet_struct PACKET;

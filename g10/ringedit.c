@@ -673,11 +673,13 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
 	  default:
 	    /* skip pakets at the beginning of a keyring, until we find
 	     * a start packet; issue a warning if it is not a comment */
-	    if( !root && pkt->pkttype != PKT_COMMENT )
+	    if( !root && pkt->pkttype != PKT_COMMENT
+		      && pkt->pkttype != PKT_OLD_COMMENT )
 		log_info("keyring_enum: skipped packet of type %d\n",
 			    pkt->pkttype );
 	    if( !root || (skipsigs && ( pkt->pkttype == PKT_SIGNATURE
-				      ||pkt->pkttype == PKT_COMMENT )) ) {
+				      ||pkt->pkttype == PKT_COMMENT
+				      ||pkt->pkttype == PKT_OLD_COMMENT )) ) {
 		init_packet(pkt);
 		break;
 	    }

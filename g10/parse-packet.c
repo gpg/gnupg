@@ -303,6 +303,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
       case PKT_USER_ID:
 	rc = parse_user_id(inp, pkttype, pktlen, pkt );
 	break;
+      case PKT_OLD_COMMENT:
       case PKT_COMMENT:
 	rc = parse_comment(inp, pkttype, pktlen, pkt);
 	break;
@@ -838,10 +839,10 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 
     version = iobuf_get_noeof(inp); pktlen--;
     if( pkttype == PKT_PUBKEY_SUBCERT && version == '#' ) {
-	/* early versions of G10 use old comments packets; luckily all those
-	 * comments are started by a hash */
+	/* early versions of G10 use old PGP comments packets;
+	 * luckily all those comments are started by a hash */
 	if( list_mode ) {
-	    printf(":old comment packet: \"" );
+	    printf(":rfc1991 comment packet: \"" );
 	    for( ; pktlen; pktlen-- ) {
 		int c;
 		c = iobuf_get_noeof(inp);
@@ -1267,7 +1268,8 @@ parse_comment( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 
     if( list_mode ) {
 	int n = packet->pkt.comment->len;
-	printf(":comment packet: \"");
+	printf(":%scomment packet: \"", pkttype == PKT_OLD_COMMENT?
+					 "OpenPGP draft " : "" );
 	for(p=packet->pkt.comment->data; n; p++, n-- ) {
 	    if( *p >= ' ' && *p <= 'z' )
 		putchar(*p);

@@ -1,3 +1,16 @@
+Noteworthy changes in version 0.2.??
+------------------------------------
+
+    * Comment packets are now of private type 61.
+
+    * passphrase code still used a 160 bit blowfish key, add a
+      silly workaround. Please change your passphrase again - sorry.
+
+    * Conventional encryption now uses a type 3 packet to describe the
+      used algorithms.
+
+
+
 Noteworthy changes in version 0.2.16
 ------------------------------------
 

@@ -25,15 +25,16 @@
 #include "util.h"
 #include "ks-proto.h"
 
+#if 0
 /****************
  * Read a protocol line
  */
 static int
 read_line( FILE *fp )
 {
-
+    return -1;
 }
-
+#endif
 
 
 
