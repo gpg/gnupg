@@ -1,3 +1,13 @@
+2004-03-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* packet.h, getkey.c (fixup_uidnode, merge_selfsigs_subkey): Keep
+	track of which self-sig we actually chose.
+
+	* keyedit.c (menu_expire, menu_set_primary_uid,
+	menu_set_preferences): Use it here to avoid updating non-used
+	self-sigs and possibly promoting an old self-sig into
+	consideration again.
+
 2004-03-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (write_keybinding, do_generate_keypair,

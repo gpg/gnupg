@@ -125,6 +125,7 @@ typedef struct {
     struct {
 	unsigned checked:1; /* signature has been checked */
 	unsigned valid:1;   /* signature is good (if checked is set) */
+        unsigned chosen_selfsig:1; /* a selfsig that is the chosen one */
 	unsigned unknown_critical:1;
         unsigned exportable:1;
         unsigned revocable:1;

@@ -2637,7 +2637,9 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
 		&& ( (mainkey && uid
 		      && uid->created && (sig->sig_class&~3) == 0x10)
-		     || (!mainkey && sig->sig_class == 0x18)  ) ) {
+		     || (!mainkey && sig->sig_class == 0x18)  )
+		&& sig->flags.chosen_selfsig )
+	      {
 		/* this is a selfsignature which is to be replaced */
 		PKT_signature *newsig;
 		PACKET *newpkt;
@@ -2777,8 +2779,10 @@ menu_set_primary_uid ( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	else if ( main_pk && uid && node->pkt->pkttype == PKT_SIGNATURE ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
 	    if ( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
-		&& (uid && (sig->sig_class&~3) == 0x10)
-		&& attribute == (uid->attrib_data!=NULL)) {
+		 && (uid && (sig->sig_class&~3) == 0x10)
+		 && attribute == (uid->attrib_data!=NULL)
+		 && sig->flags.chosen_selfsig )
+	      {
 	      if(sig->version < 4) {
 		char *user=utf8_to_native(uid->name,strlen(uid->name),0);
 
@@ -2887,7 +2891,8 @@ menu_set_preferences (KBNODE pub_keyblock, KBNODE sec_keyblock )
                   && node->pkt->pkttype == PKT_SIGNATURE ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
 	    if ( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
-		 && (uid && (sig->sig_class&~3) == 0x10) ) {
+		 && (uid && (sig->sig_class&~3) == 0x10)
+		 && sig->flags.chosen_selfsig ) {
 	      if( sig->version < 4 ) {
 		char *user=utf8_to_native(uid->name,strlen(uid->name),0);
 
