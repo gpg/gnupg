@@ -1,3 +1,18 @@
+2002-05-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Add "edit/addrevoker".  Document --desig-revoke.  Note
+	that -z and --compress are the same option.  Note that
+	--digest-algo can no longer violate OpenPGP with a non-160 bit
+	hash with DSA.  Document --cert-digest-algo with suitable warnings
+	not to use it.  Note the default s2k-cipher-algo is now CAST5.
+	Note that --force-v3-sigs overrides --ask-sig-expire.  Revise
+	--expert documentation, as it is now definitely legal to have more
+	than one photo ID on a key.  --preference-list is now
+	--default-preference-list with the new meaning.  Document
+	--personal-preference-list.
+
+	* DETAILS: Document "Revoker" for batch key generation.
+
 2002-05-22  Werner Koch  <wk@gnupg.org>
 
 	* gpg.sgml: sgml syntax fix.

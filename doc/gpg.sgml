@@ -346,6 +346,10 @@ Add a subkey to this key.</para></listitem></varlistentry>
     <listitem><para>
 Remove a subkey.</para></listitem></varlistentry>
     <varlistentry>
+    <term>addrevoker</term>
+    <listitem><para>
+Add a designated revoker.</para></listitem></varlistentry>
+    <varlistentry>
     <term>revkey</term>
     <listitem><para>
 Revoke a subkey.</para></listitem></varlistentry>
@@ -494,6 +498,13 @@ Generate a revocation certificate for the complete key. To revoke
 a subkey or a signature, use the --edit command.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--desig-revoke</term>
+<listitem><para>
+Generate a designated revocation certificate for a key.  This allows a
+user (with the permission of the keyholder) to revoke someone elses
+key.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--export &OptParmNames;</term>
@@ -788,7 +799,7 @@ Try to be as quiet as possible.
 
 
 <varlistentry>
-<term>-z &ParmN;</term>
+<term>-z &ParmN;, --compress &ParmN;</term>
 <listitem><para>
 Set compression level to &ParmN;. A value of 0 for &ParmN;
 disables compression. Default is to use the default
@@ -1336,25 +1347,32 @@ selected from the preferences stored with the key.
 </para></listitem></varlistentry>
 
 
-
 <varlistentry>
 <term>--digest-algo &ParmName;</term>
 <listitem><para>
-Use  &ParmName; as message digest algorithm. Running the
-program with the command --version yields a list of
-supported algorithms.  Please note that using this
-option may violate the OpenPGP requirement, that a
-160 bit hash is to be used for DSA.
+Use &ParmName; as the message digest algorithm. Running the program
+with the command --version yields a list of supported algorithms.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
+<term>--cert-digest-algo &ParmName;</term>
+<listitem><para>
+Use &ParmName; as the message digest algorithm used when signing a
+key.  Running the program with the command --version yields a list of
+supported algorithms.  Be aware that if you choose an algorithm that
+GnuPG supports but other OpenPGP implementations do not, then some
+users will not be able to use the key signatures you make, or quite
+possibly your entire key.
 </para></listitem></varlistentry>
 
 
 <varlistentry>
 <term>--s2k-cipher-algo &ParmName;</term>
 <listitem><para>
-Use  &ParmName; as the cipher algorithm used to protect secret
-keys.  The default cipher is BLOWFISH.	This cipher is
-also used for conventional encryption if --cipher-algo
-is not given.
+Use &ParmName; as the cipher algorithm used to protect secret keys.
+The default cipher is CAST5.  This cipher is also used for
+conventional encryption if --cipher-algo is not given.
 </para></listitem></varlistentry>
 
 
@@ -1591,23 +1609,22 @@ Resets the --pgp7 option.
 <varlistentry>
 <term>--openpgp</term>
 <listitem><para>
-Reset all packet, cipher and digest options to OpenPGP
-behavior. Use this option to reset all previous
-options like --rfc1991, --force-v3-sigs, --s2k-*,
---cipher-algo, --digest-algo and --compress-algo to
-OpenPGP compliant values.  All PGP workarounds are also
-disabled.
+Reset all packet, cipher and digest options to OpenPGP behavior. Use
+this option to reset all previous options like --rfc1991,
+--force-v3-sigs, --s2k-*, --cipher-algo, --digest-algo and
+--compress-algo to OpenPGP compliant values.  All PGP workarounds are
+also disabled.
 </para></listitem></varlistentry>
 
 
 <varlistentry>
 <term>--force-v3-sigs</term>
 <listitem><para>
-OpenPGP states that an implementation should generate
-v4 signatures but PGP versions 5 and higher do only recognizes
-v4 signatures 
-on key material.  This option forces v3 signatures for
-signatures on data.
+OpenPGP states that an implementation should generate v4 signatures
+but PGP versions 5 and higher only recognize v4 signatures on key
+material.  This option forces v3 signatures for signatures on data.
+Note that this option overrides --ask-sig-expire, as v3 signatures
+cannot have expiration dates.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1633,9 +1650,9 @@ Reset the --force-v4-certs option.
 <varlistentry>
 <term>--force-mdc</term>
 <listitem><para>
-Force the use of encryption with appended manipulation
-code.  This is always used with the newer ciphers (those
-with a blocksize greater than 64 bit).
+Force the use of encryption with appended manipulation code.  This is
+always used with the newer ciphers (those with a blocksize greater
+than 64 bit).
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1899,11 +1916,11 @@ Resets the --ask-cert-expire option.
 <varlistentry>
 <term>--expert</term>
 <listitem><para>
-Allow the user to do certain nonsenical or "silly" things like signing
-an expired or revoked key, or certain potentially incompatible things
-like adding more than one photo ID to a single key.  In general, this
-option is for experts only.  If you don't really understand what it is
-doing, leave this off.
+Allow the user to do certain nonsensical or "silly" things like
+signing an expired or revoked key, or certain potentially incompatible
+things like generating deprecated key types.  In general, this option
+is for experts only.  If you don't fully understand the implications
+of what it allows you to do, leave this off.
 </para></listitem></varlistentry
 
 <varlistentry>
@@ -1955,11 +1972,21 @@ read/write only.  Use this option only if you really know what you are doing.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--preference-list &ParmString</term>
+<term>--personal-preference-list &ParmString</term>
 <listitem><para>
-Set the list of preferences to &ParmString;, this list should be 
-a string similar to the one printed by the command "pref" in the edit
-menu.  
+Set the list of personal preferences to &ParmString;, this list should
+be a string similar to the one printed by the command "pref" in the
+edit menu.  This allows the user to factor in their own preferred
+algorithms when algorithms are chosen via recipient key preferences.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--default-preference-list &ParmString</term>
+<listitem><para>
+Set the list of default preferences to &ParmString;, this list should
+be a string similar to the one printed by the command "pref" in the
+edit menu.  This affects both key generation and "updpref" in the edit
+menu.
 </para></listitem></varlistentry>
 
 

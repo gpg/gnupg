@@ -463,6 +463,13 @@ The format of this file is as follows:
         Set the cipher, hash, and compression preference values for
 	this key.  This expects the same type of string as "setpref"
 	in the --edit menu.
+     Revoker: <algo>:<fpr> [sensitive]
+        Add a designated revoker to the generated key.  Algo is the
+	public key algorithm of the designated revoker (i.e. RSA=1,
+	DSA=17, etc.)  Fpr is the fingerprint of the designated
+	revoker.  The optional "sensitive" flag marks the designated
+	revoker as sensitive information.  Only v4 keys may be
+	designated revokers.
 
 Here is an example:
 $ cat >foo <<EOF
