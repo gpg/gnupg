@@ -136,10 +136,92 @@ if test "$use_m_guard" = yes ; then
     AC_DEFINE(M_GUARD,1,[Define to use the (obsolete) malloc guarding feature])
 fi
 
+dnl See if we are disabling any algorithms or features for a smaller
+dnl binary
+
+use_cast5=yes
+use_blowfish=yes
+use_aes=yes
+use_twofish=yes
+use_tiger192=yes
+use_sha256=yes
+use_sha512=yes
+use_exec=yes
+
+AC_ARG_ENABLE(minimal,
+   AC_HELP_STRING([--enable-minimal],[build the smallest gpg binary possible]),
+   use_cast5=no
+   use_blowfish=no
+   use_aes=no
+   use_twofish=no
+   use_tiger192=no
+   use_sha256=no
+   use_sha512=no
+   use_exec=no)
+
+AC_MSG_CHECKING([whether to enable the CAST5 cipher])
+AC_ARG_ENABLE(cast5,
+   AC_HELP_STRING([--disable-cast5],[disable the CAST5 cipher]),
+   use_cast5=$enableval)
+AC_MSG_RESULT($use_cast5)
+if test x"$use_cast5" = xyes ; then
+   AC_DEFINE(USE_CAST5,1,[Define to include the CAST5 cipher])
+fi
+
+AC_MSG_CHECKING([whether to enable the BLOWFISH cipher])
+AC_ARG_ENABLE(blowfish,
+   AC_HELP_STRING([--disable-blowfish],[disable the BLOWFISH cipher]),
+   use_blowfish=$enableval)
+AC_MSG_RESULT($use_blowfish)
+if test x"$use_blowfish" = xyes ; then
+   AC_DEFINE(USE_BLOWFISH,1,[Define to include the BLOWFISH cipher])
+fi
+
+AC_MSG_CHECKING([whether to enable the AES ciphers])
+AC_ARG_ENABLE(aes,
+   AC_HELP_STRING([--disable-aes],[disable the AES ciphers]),
+   use_aes=$enableval)
+AC_MSG_RESULT($use_aes)
+if test x"$use_aes" = xyes ; then
+   AC_DEFINE(USE_AES,1,[Define to include the AES ciphers])
+fi
+
+AC_MSG_CHECKING([whether to enable the TWOFISH cipher])
+AC_ARG_ENABLE(twofish,
+   AC_HELP_STRING([--disable-twofish],[disable the TWOFISH cipher]),
+   use_twofish=$enableval)
+AC_MSG_RESULT($use_twofish)
+if test x"$use_twofish" = xyes ; then
+   AC_DEFINE(USE_TWOFISH,1,[Define to include the TWOFISH cipher])
+fi
+
+dnl TIGER192 is defined only after we confirm 64-bit support later
+AC_MSG_CHECKING([whether to enable the TIGER/192 digest])
+AC_ARG_ENABLE(tiger192,
+   AC_HELP_STRING([--disable-tiger192],[disable the TIGER/192 digest]),
+   use_tiger192=$enableval)
+AC_MSG_RESULT($use_tiger192)
+
+AC_MSG_CHECKING([whether to enable the SHA-256 digest])
+AC_ARG_ENABLE(sha256,
+   AC_HELP_STRING([--disable-sha256],[disable the SHA-256 digest]),
+   use_sha256=$enableval)
+AC_MSG_RESULT($use_sha256)
+if test x"$use_sha256" = xyes ; then
+   AC_DEFINE(USE_SHA256,1,[Define to include the SHA-256 digest])
+fi
+
+dnl SHA512 is defined only after we confirm 64-bit support later
+AC_MSG_CHECKING([whether to enable the SHA-384 and SHA-512 digests])
+AC_ARG_ENABLE(sha512,
+   AC_HELP_STRING([--disable-sha512],[disable the SHA-384 and SHA-512 digests]),
+   use_sha512=$enableval)
+AC_MSG_RESULT($use_sha512)
+
 AC_MSG_CHECKING([whether to enable external program execution])
 AC_ARG_ENABLE(exec,
-    [  --disable-exec          disable all external program execution],
-    use_exec=$enableval, use_exec=yes)
+    AC_HELP_STRING([--disable-exec],[disable all external program execution]),
+    use_exec=$enableval)
 AC_MSG_RESULT($use_exec)
 if test "$use_exec" = no ; then
     AC_DEFINE(NO_EXEC,1,[Define to disable all external program execution])
@@ -571,17 +653,22 @@ if test "$ac_cv_sizeof_unsigned_int" != "8" \
    && test "$ac_cv_sizeof_uint64_t" != "8"; then
     AC_MSG_WARN([No 64-bit types.  Disabling TIGER/192, SHA-384, and SHA-512])
 else
-  AC_SUBST(TIGER_O,tiger.o)
-  AC_DEFINE(USE_TIGER,1,[Define to include TIGER/192 digest support])
-  AC_SUBST(SHA512_O,sha512.o)
-  AC_DEFINE(USE_SHA512,1,[Define to include SHA-384 and SHA-512 digest support])
-  AC_MSG_CHECKING([whether to enable old-style TIGER/192 digest support])
-  AC_ARG_ENABLE(old-tiger,
-      [  --enable-old-tiger      enable old-style TIGER/192 digest support],
-      old_tiger=$enableval, old_tiger=no)
-  AC_MSG_RESULT($old_tiger)
-  if test "$old_tiger" = yes ; then
-      AC_DEFINE(USE_OLD_TIGER,1,[Define to use the old fake OID for TIGER/192 digest support])
+  if test x"$use_tiger192" = xyes ; then
+     AC_SUBST(TIGER_O,tiger.o)
+     AC_DEFINE(USE_TIGER192,1,[Define to include the TIGER/192 digest])
+
+     AC_MSG_CHECKING([whether to enable old-style TIGER/192 digest support])
+     AC_ARG_ENABLE(old-tiger,
+        [  --enable-old-tiger      enable old-style TIGER/192 digest support],
+        old_tiger=$enableval, old_tiger=no)
+     AC_MSG_RESULT($old_tiger)
+     if test "$old_tiger" = yes ; then
+        AC_DEFINE(USE_OLD_TIGER,1,[Define to use the old fake OID for TIGER/192 digest support])
+     fi
+  fi
+  if test x"$use_sha512" = xyes ; then
+     AC_SUBST(SHA512_O,sha512.o)
+     AC_DEFINE(USE_SHA512,1,[Define to include the SHA-384 and SHA-512 digests])
   fi
 fi
 

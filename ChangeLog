@@ -1,3 +1,10 @@
+2003-02-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Add --disable-xxx options for CAST5, BLOWFISH, AES
+	(all), TWOFISH, TIGER192, SHA256, and SHA384/512.  Add a
+	--enable-minimal that disables all of them as well as
+	--disable-exec.
+
 2003-02-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Do not set GNUPG_LIBEXECDIR in ./configure, so
