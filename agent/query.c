@@ -78,6 +78,17 @@ unlock_pinentry (int rc)
   return rc;
 }
 
+
+/* To make sure we leave no secrets in our image after forking of the
+   pinentry, we use this callback. */
+static void
+atfork_cb (void *opaque, int where)
+{
+  if (!where)
+    gcry_control (GCRYCTL_TERM_SECMEM);
+}
+
+
 /* Fork off the pin entry if this has not already been done.  Note,
    that this function must always be used to aquire the lock for the
    pinentry - we will serialize _all_ pinentry calls.
@@ -139,9 +150,9 @@ start_pinentry (CTRL ctrl)
     }
   no_close_list[i] = -1;
 
-  /* connect to the pinentry and perform initial handshaking */
-  rc = assuan_pipe_connect (&ctx, opt.pinentry_program, (char**)argv,
-                            no_close_list);
+  /* Connect to the pinentry and perform initial handshaking */
+  rc = assuan_pipe_connect2 (&ctx, opt.pinentry_program, (char**)argv,
+                             no_close_list, atfork_cb, NULL);
   if (rc)
     {
       log_error ("can't connect to the PIN entry module: %s\n",

@@ -152,6 +152,16 @@ unlock_scd (int rc)
   return rc;
 }
 
+/* To make sure we leave no secrets in our image after forking of the
+   scdaemon, we use this callback. */
+static void
+atfork_cb (void *opaque, int where)
+{
+  if (!where)
+    gcry_control (GCRYCTL_TERM_SECMEM);
+}
+
+
 /* Fork off the SCdaemon if this has not already been done */
 static int
 start_scd (void)
@@ -206,9 +216,9 @@ start_scd (void)
     }
   no_close_list[i] = -1;
 
-  /* connect to the pinentry and perform initial handshaking */
-  rc = assuan_pipe_connect (&ctx, opt.scdaemon_program, (char**)argv,
-                            no_close_list);
+  /* Connect to the pinentry and perform initial handshaking */
+  rc = assuan_pipe_connect2 (&ctx, opt.scdaemon_program, (char**)argv,
+                             no_close_list, atfork_cb, NULL);
   if (rc)
     {
       log_error ("can't connect to the SCdaemon: %s\n",

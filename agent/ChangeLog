@@ -1,3 +1,10 @@
+2004-01-24  Werner Koch  <wk@gnupg.org>
+
+	* call-scd.c (atfork_cb): New.
+	(start_scd): Make sure secmem gets cleared.
+	* query.c  (atfork_cb): New.
+	(start_pinentry): Make sure secmem gets cleared.
+
 2004-01-16  Werner Koch  <wk@gnupg.org>
 
 	* findkey.c (agent_key_from_file): Now return an error code so
