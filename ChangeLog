@@ -1,3 +1,7 @@
+2003-04-16  Werner Koch  <wk@gnupg.org>
+
+	Released 1.2.2rc2.
+
 2003-04-15  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac (ALL_LINGUAS): Add Slovak translation.
