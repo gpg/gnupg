@@ -1,5 +1,9 @@
 2004-06-16  Werner Koch  <wk@gnupg.org>
 
+	* free-packet.c (copy_secret_key): Get last fix right.
+
+2004-06-16  Werner Koch  <wk@gnupg.org>
+
 	* free-packet.c (copy_secret_key): Fixed memory leak when D is not
 	NULL.
 
