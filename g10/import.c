@@ -196,7 +196,7 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames,
 	    IOBUF inp2 = iobuf_open(fname);
 	    if( !fname )
 	        fname = "[stdin]";
-	    if( !inp )
+	    if( !inp2 )
 	        log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
 	    else {
 	        rc = import( inp2, fname, stats, options );

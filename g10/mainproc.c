@@ -245,7 +245,8 @@ symkey_decrypt_sesskey( DEK *dek, byte *sesskey, size_t slen )
     int n;
 
     if ( slen < 17 || slen > 33 ) {
-        log_error ( _("weird size for an encrypted session key (%d)\n"), slen);
+        log_error ( _("weird size for an encrypted session key (%d)\n"),
+		    (int)slen);
         return;   
     }
     hd = cipher_open( dek->algo, CIPHER_MODE_CFB, 1 );
