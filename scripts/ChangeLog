@@ -1,3 +1,8 @@
+2005-02-16  Werner Koch  <wk@g10code.com>
+
+	* w32installer.nsi: Added page to select the language.
+	* mk-w32-dist: Create the opt.ini using the available languages.
+
 2005-02-03  Werner Koch  <wk@g10code.com>
 
 	* w32installer.nsi: Display README.W32 at the end of the

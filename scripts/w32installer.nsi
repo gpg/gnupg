@@ -17,6 +17,8 @@
 
 ; We use the modern UI.
 !include "MUI.nsh"
+!include "StrFunc.nsh"
+!include "Sections.nsh"
 
 ; -------------
 ; General stuff
@@ -59,11 +61,6 @@ VIAddVersionKey "FileVersion" "${PROD_VERSION}"
 Var MYTMP
 Var STARTMENU_FOLDER
 
-Var DOC_INSTALLED
-!ifdef WITH_WINPT
-Var WINPT_INSTALLED
-!endif
-
 ; ------------------
 ; Interface Settings
 ; ------------------
@@ -101,9 +98,9 @@ Var WINPT_INSTALLED
 
 !insertmacro MUI_PAGE_LICENSE "COPYING.txt"
 
-;;Page custom PageSelectOptions
-
 !insertmacro MUI_PAGE_COMPONENTS
+
+Page custom CustomPageOptions
 
 !insertmacro MUI_PAGE_DIRECTORY
 
@@ -138,15 +135,18 @@ Var WINPT_INSTALLED
 ; Installer Sections
 ; ------------------
 
+${StrStr} # Supportable for Install Sections and Functions
+${StrTok} # Supportable for Install Sections and Functions
+
 
 
 ;InstType "full"
 ;InstType "minimal"
 
 !insertmacro MUI_RESERVEFILE_LANGDLL
-;;!insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
-;;ReserveFile "w32inst-opt.ini" 
 ReserveFile "COPYING.txt"
+ReserveFile "opt.ini" 
+!insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
 
 
 ;----------------------
@@ -211,8 +211,6 @@ Section "WinPT" SecWinPT
 
   WriteRegStr HKCU "Software\GNU\GnuPG" "gpgProgram" "$INSTDIR\gpg.exe"
 
-  StrCpy $WINPT_INSTALLED 1
-
 SectionEnd ; Section WinPT
 !endif
 
@@ -232,8 +230,6 @@ Section "Documentation" SecDoc
 !ifdef WITH_WINPT
   File "NEWS.winpt.txt"
 !endif ; WITH_WINPT
-
-  StrCpy $DOC_INSTALLED 1
 
 SectionEnd ; Section Documentation
 
@@ -279,18 +275,25 @@ Section "-Finish"
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\GnuPG NEWS.lnk" \
                  "$INSTDIR\Doc\NEWS.txt"
 
-  IntCmp $DOC_INSTALLED 1 0 +2 +2
+  SectionGetFlags ${SecDoc} $R0 
+  IntOp $R0 $R0 & ${SF_SELECTED} 
+  IntCmp $R0 ${SF_SELECTED} 0 +2 
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\GnuPG Manual Page.lnk" \
                  "$INSTDIR\Doc\gpg.man"
 
 
 !ifdef WITH_WINPT
-  IntCmp $WINPT_INSTALLED 1 0 no_winpt_menu no_winpt_menu
+  SectionGetFlags ${SecWinPT} $R0 
+  IntOp $R0 $R0 & ${SF_SELECTED} 
+  IntCmp $R0 ${SF_SELECTED} 0 no_winpt_menu 
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\winpt.lnk" \
                  "$INSTDIR\winpt.exe"
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\WinPT README.lnk" \
                  "$INSTDIR\Doc\README.winpt.txt"
-  IntCmp $DOC_INSTALLED 1 0 +2 +2
+
+  SectionGetFlags ${SecDoc} $R0 
+  IntOp $R0 $R0 & ${SF_SELECTED} 
+  IntCmp $R0 ${SF_SELECTED} 0 +2 
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\WinPT NEWS.lnk" \
                  "$INSTDIR\Doc\NEWS.winpt.txt"
 
@@ -303,6 +306,29 @@ Section "-Finish"
 
   !insertmacro MUI_STARTMENU_WRITE_END
 
+
+  ;;-----------------
+  ;; Set the language
+  ;;-----------------
+  SectionGetFlags ${SecNLS} $R0 
+  IntOp $R0 $R0 & ${SF_SELECTED} 
+  IntCmp $R0 ${SF_SELECTED} 0 no_lang_set
+
+  !insertmacro MUI_INSTALLOPTIONS_READ $R0 "opt.ini" "Field 1" "ListItems"
+  DetailPrint "Available languages: $R0"
+  !insertmacro MUI_INSTALLOPTIONS_READ $R1 "opt.ini" "Field 1" "State"
+  DetailPrint "Selected language: $R1"
+
+  ${StrStr} $R2 $R0 $R1 
+  StrCmp $R2 "" +1 +3
+  DetailPrint "No language selected - using default"
+  StrCpy $R2 "en - English"
+  ${StrTok} $R3 $R2 " " "0" "1"
+  DetailPrint "Setting language to: $R3"
+  WriteRegStr HKCU "Software\GNU\GnuPG" "Lang" $R3
+
+ no_lang_set:
+  ;;
 
 SectionEnd ; "-Finish"
 
@@ -392,8 +418,7 @@ Function .onInit
 
   !insertmacro MUI_LANGDLL_DISPLAY
 
-;  !insertmacro MUI_INSTALLOPTIONS_EXTRACT_AS \
-;               "${GNUPG_SRCDIR}/scripts/w32inst-opt.ini" "w32inst-opt.ini"
+  !insertmacro MUI_INSTALLOPTIONS_EXTRACT "opt.ini"
 
 FunctionEnd 
 
@@ -405,17 +430,33 @@ Function un.onInit
 FunctionEnd
 
 
-;;Function PageSelectOptions
-;;
-;;  ; Setup a default for the langage to install.  Take it form the registry 
-;;
-;;  !insertmacro MUI_HEADER_TEXT "Install Options" "Languages"
-;;  !insertmacro MUI_INSTALLOPTIONS_DISPLAY "w32inst-opt.ini"
-;;
-;;  ; Save away the language to install
-;;
-;;FunctionEnd
-;;
+
+Function CustomPageOptions  
+  SectionGetFlags ${SecNLS} $R0 
+  IntOp $R0 $R0 & ${SF_SELECTED} 
+  IntCmp $R0 ${SF_SELECTED} show 
+ 
+  Abort 
+ 
+ show: 
+ 
+  !insertmacro MUI_HEADER_TEXT "$(T_InstallOptions)" "$(T_SelectLanguage)"
+
+  !insertmacro MUI_INSTALLOPTIONS_READ $R0 "opt.ini" "Field 1" "ListItems"
+  ;;DetailPrint "Available languages: $R0"
+  ReadRegStr $R1 HKCU "Software\GNU\GnuPG" "Lang" 
+  ;;DetailPrint "Currently configured language: $R1"
+  ${StrStr} $R2 $R0 "$R1 - " 
+  StrCmp $R2 "" +1 +3
+  DetailPrint "Configured language not avalailbe - using default"
+  StrCpy $R2 "en - English"
+  ${StrTok} $R3 $R2 "|" "0" "1"
+  ;;DetailPrint "Setting selection to: $R3"
+  !insertmacro MUI_INSTALLOPTIONS_WRITE "opt.ini" "Field 1" "State" $R3
+
+  !insertmacro MUI_INSTALLOPTIONS_DISPLAY "opt.ini"
+
+FunctionEnd
 
 
 ; Install iconv.dll if it has not been installed on the system.
@@ -475,6 +516,12 @@ LangString T_About ${LANG_GERMAN} \
    \r\n\r\n$_CLICK \
    \r\n\r\n\r\n\r\n\r\nDies ist GnuPG version ${VERSION}\r\n\
    erstellt am $%BUILDINFO%"
+LangString T_InstallOptions ${LANG_ENGLISH} "Install Options"
+LangString T_InstallOptions ${LANG_GERMAN}  "Installationsoptionen"
+
+LangString T_SelectLanguage ${LANG_ENGLISH} "GnuPG Language Selection"
+LangString T_SelectLanguage ${LANG_German}  "Auswahl der Sprache für GnuPG"
+
 LangString T_ShowReadme ${LANG_ENGLISH} "Show the README file"
 LangString T_ShowReadme ${LANG_GERMAN} "Die README Datei anzeigen"
 

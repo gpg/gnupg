@@ -47,6 +47,49 @@ if ! makensis -version >/dev/null 2>&1 ; then
     topdir=
 fi
 
+
+# A function to return a plain ASCII (or Latin-1) encoded description
+# text for a language identifier.  We need this to display the list of
+# available languages in the installer.  NSIS does not support utf-8
+# so we need to standardize on one character set.  Note that this
+# script itself is written in utf-8 but the resulting file will get
+# converted to Latin-1
+get_langname () {
+    case "$1" in
+        be)    r="Belarusian"; ;;
+        ca)    r="Català"; ;;
+        cs)    r="Cesky"; ;;
+        da)    r="Danish"; ;;
+        de)    r="Deutsch"; ;;
+        el)    r="Greek"; ;;
+        en|en@*)  r="English"; ;;
+        eo)    r="Esperanto"; ;;
+        es)    r="Español"; ;;
+        et)    r="Eesti keel"; ;;
+        fi)    r="Suomi"; ;;
+        fr)    r="Français"; ;;
+        gl)    r="Galician"; ;;
+        hu)    r="Magyar"; ;;
+        id)    r="Indonesian"; ;;
+        it)    r="Italiano"; ;;
+        ja)    r="Japanese"; ;;
+        pl)    r="Polski"; ;;
+        pt)    r="Português"; ;;
+        pt_BR) r="Português (do Brasil)"; ;;
+        ro)    r="Romana"; ;;
+        ru)    r="Russian"; ;;
+        sk)    r="Slovensky"; ;;
+        sv)    r="Svenska"; ;;
+        tr)    r="Türkçe"; ;;
+        zh_CN) r="Chinese (simplified)"; ;;
+        zh_TW) r="Chinese (traditional)"; ;;
+
+        *) r="" ;;
+    esac
+    echo "$r"
+}
+
+
 # Figure out the version
 version=$(sed -n 's/^#[ ]*define[ ][ ]*VERSION[ ][ ]*\"\([0-9.a-z-]*\)\"/\1/p' $bindir/config.h)
 prod_version=$(echo "$version"|awk -F'[^0-9]' '{print $1 "." $2 "." $3 ".1"}')
@@ -89,26 +132,51 @@ for i in gnupg-w32.reg; do
 done
 
 # We must distribute the MO files in UTF-8, the conversion is done by
-# gpg at runtime.
-for i in ${srcdir}/po/*.po; do
+# gpg at runtime.  To include English at the right position in the list we 
+# need a special case.
+langlist=""
+langdesclist=""
+for i in `(ls ${srcdir}/po/*.po; echo ${srcdir}/po/en.po) | sort`; do
    lang=$(basename $i .po)
-   grep -s $lang ${srcdir}/po/LINGUAS >/dev/null || continue
-   [ -f$lang.mo -a $lang.mo -nt $i ] && continue
-
-   fromset=`sed -n '/^"Content-Type:/ s/.*charset=\([a-zA-Z0-9_-]*\).*/\1/p' $i`
-   case "$fromset" in 
-     utf8|utf-8|UTF8|UTF-8) 
-       echo "$lang: keeping $fromset" >&2 
-       msgfmt --output-file=$lang.mo $i
-       ;;
-     *)
-       echo "$lang: converting from $fromset to utf-8" >&2 
-       iconv --silent --from-code=$fromset --to-code=utf-8 < $i | \
-         sed "/^\"Content-Type:/ s/charset=[a-zA-Z0-9_-]*/charset=utf-8/" | \
-         msgfmt --output-file=$lang.mo -
-       ;;
-   esac
+   if [ $lang != "en" ]; then
+       grep -s $lang ${srcdir}/po/LINGUAS >/dev/null || continue
+       [ -f$lang.mo -a $lang.mo -nt $i ] && continue
+    
+       fromset=`sed -n '/^"Content-Type:/ s/.*charset=\([a-zA-Z0-9_-]*\).*/\1/p' $i`
+       case "$fromset" in 
+         utf8|utf-8|UTF8|UTF-8) 
+           echo "$lang: keeping $fromset" >&2 
+           msgfmt --output-file=$lang.mo $i
+           ;;
+         *)
+           echo "$lang: converting from $fromset to utf-8" >&2 
+           iconv --silent --from-code=$fromset --to-code=utf-8 < $i | \
+             sed "/^\"Content-Type:/ s/charset=[a-zA-Z0-9_-]*/charset=utf-8/"|\
+             msgfmt --output-file=$lang.mo -
+           ;;
+       esac
+   fi
+   langlist="$langlist $lang"
+   langname="`get_langname $lang`"
+   [ -n "$langdesclist" ] && langdesclist="${langdesclist}|"
+   langdesclist="${langdesclist}${lang} - ${langname}"
 done
+
+
+# Create the option file for use with the NSIS installer.
+cat <<EOF | iconv --silent --from-code=utf-8 --to-code=latin1 >opt.ini
+[Settings]
+NumFields=1
+
+[Field 1]
+Type=DropList
+Left=0
+Right=130
+Top=20
+Bottom=100
+ListItems="$langdesclist"
+EOF
+
 
 # If we have a topdir, assume the full build environment and 
 # prepare the installer
