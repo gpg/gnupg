@@ -132,9 +132,20 @@ lock_pool( void *p, size_t n )
     /* ick. but at least we get secured memory. about to lock
        entire data segment. */
 #ifdef HAVE_PLOCK
+# ifdef _AIX
+    /* The configure for AIX returns broken mlock but the plock has
+       the strange requirement to somehow set the stack limit first.
+       The problem might turn out in indeterministic program behaviour
+       and hanging processes which can somehow be solved when enough
+       processes are clogging up the memory.  To get this problem out
+       of the way we simply don't try to lock the memory at all.
+       */    
+    err = EPERM;
+# else /* !_AIX */
     err = plock( DATLOCK );
     if( err && errno )
         err = errno;
+# endif /*_AIX*/
 #else /*!HAVE_PLOCK*/
     if( uid ) {
 	errno = EPERM;
