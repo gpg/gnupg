@@ -1521,7 +1521,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
 		  int rc=check_revocation_keys(pk,sig);
 		  if(rc==0)
 		    {
-		      *r_revoked=1;
+		      *r_revoked=2;
 		      /* don't continue checking since we can't be any
 			 more revoked than this */
 		      break;
@@ -1973,7 +1973,7 @@ merge_selfsigs( KBNODE keyblock )
 		if(!main_pk->is_valid)
 		  pk->is_valid = 0;
 		if(revoked)
-		  pk->is_revoked = 1;
+		  pk->is_revoked = revoked;
                 if(main_pk->has_expired)
 		  pk->has_expired = main_pk->has_expired;
             }

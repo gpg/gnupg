@@ -1,3 +1,10 @@
+2004-01-09  David Shaw  <dshaw@localhost.localdomain>
+
+	* packet.h, getkey.c (merge_selfsigs, merge_selfsigs_main),
+	pkclist.c (check_signatures_trust): Indicate who has revoked a key
+	(the owner or a designated revoker).  If a key was revoked by
+	both, prefer the owner.
+
 2004-01-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* sig-check.c: Copyright typo.
