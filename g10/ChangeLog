@@ -1,3 +1,17 @@
+2005-02-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.h, trustdb.c (trustdb_check_or_update): New.  If the
+	trustdb is dirty and --interactive is set, do an --update-trustdb.
+	If not interactive, do a --check_trustdb unless
+	--no-auto-check-trustdb is set.
+
+	* import.c (import_keys_internal): Moved from here.
+
+	* keyserver.c (keyserver_refresh): Call it here after all
+	refreshing has happened so that we don't rebuild after each
+	preferred keyserver set of imports, but do one big rebuild at the
+	end.  This is Debian bug #293816, noted by Kurt Roeckx.
+
 2005-02-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (merge_selfsigs_subkey): Merged away definition from

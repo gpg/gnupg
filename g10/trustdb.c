@@ -624,6 +624,20 @@ trustdb_pending_check(void)
   return pending_check_trustdb;
 }
 
+/* If the trustdb is dirty, and we're interactive, update it.
+   Otherwise, check it unless no-auto-check-trustdb is set. */
+void
+trustdb_check_or_update(void)
+{
+  if(trustdb_pending_check())
+    {
+      if(opt.interactive)
+	update_trustdb();
+      else if(!opt.no_auto_check_trustdb)
+	check_trustdb();
+    }
+}
+
 void
 read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck,
 		   byte *marginals,byte *completes,byte *cert_depth)

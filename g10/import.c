@@ -1,6 +1,6 @@
 /* import.c - import a key into our key storage.
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -193,18 +193,15 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames,
         import_print_stats (stats);
         import_release_stats_handle (stats);
     }
+
     /* If no fast import and the trustdb is dirty (i.e. we added a key
        or userID that had something other than a selfsig, a signature
        that was other than a selfsig, or any revocation), then
        update/check the trustdb if the user specified by setting
        interactive or by not setting no-auto-check-trustdb */
-    if (!(options&IMPORT_FAST) && trustdb_pending_check())
-      {
-	if (opt.interactive)
-	  update_trustdb();
-	else if (!opt.no_auto_check_trustdb)
-	  check_trustdb();
-      }
+
+    if(!(options&IMPORT_FAST))
+      trustdb_check_or_update();
 
     return rc;
 }

@@ -35,6 +35,7 @@
 #include "ttyio.h"
 #include "options.h"
 #include "packet.h"
+#include "trustdb.h"
 #include "keyserver-internal.h"
 #include "util.h"
 
@@ -1628,11 +1629,17 @@ keyserver_refresh(STRLIST users)
 {
   int rc,count,numdesc,fakev3=0;
   KEYDB_SEARCH_DESC *desc;
+  unsigned int options=opt.keyserver_options.import_options;
 
-  /* We switch merge_only on during a refresh, as 'refresh' should
-     never import new keys, even if their keyids match.  Is it worth
-     preserving the old merge_only value here? */
-  opt.import_options|=IMPORT_MERGE_ONLY;
+  /* We switch merge-only on during a refresh, as 'refresh' should
+     never import new keys, even if their keyids match. */
+  opt.keyserver_options.import_options|=IMPORT_MERGE_ONLY;
+
+  /* Similarly, we switch on fast-import, since refresh may make
+     multiple import sets (due to preferred keyserver URLs).  We don't
+     want each set to rebuild the trustdb.  Instead we do it once at
+     the end here. */
+  opt.keyserver_options.import_options|=IMPORT_FAST;
 
   /* If refresh_add_fake_v3_keyids is on and it's a HKP or MAILTO
      scheme, then enable fake v3 keyid generation. */
@@ -1695,6 +1702,13 @@ keyserver_refresh(STRLIST users)
     }
 
   m_free(desc);
+
+  opt.keyserver_options.import_options=options;
+
+  /* If the original options didn't have fast import, and the trustdb
+     is dirty, rebuild. */
+  if(!(opt.keyserver_options.import_options&IMPORT_FAST))
+    trustdb_check_or_update();
 
   return rc;
 }
