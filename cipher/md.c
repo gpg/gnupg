@@ -317,7 +317,7 @@ md_close(MD_HANDLE a)
 
 
 void
-md_write( MD_HANDLE a, byte *inbuf, size_t inlen)
+md_write( MD_HANDLE a, const byte *inbuf, size_t inlen)
 {
     struct md_digest_list_s *r;
 
@@ -329,7 +329,8 @@ md_write( MD_HANDLE a, byte *inbuf, size_t inlen)
     }
     for(r=a->list; r; r = r->next ) {
 	(*r->write)( &r->context.c, a->buffer, a->bufcount );
-	(*r->write)( &r->context.c, inbuf, inlen );
+        /* Fixme: all ->write fnc should take a const byte* */ 
+	(*r->write)( &r->context.c, (byte*)inbuf, inlen );
     }
     a->bufcount = 0;
 }

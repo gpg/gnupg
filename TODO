@@ -78,6 +78,11 @@
   * Check that the way we select cipher and digest algorithms w/o
     preferences is okay and make AES the default.
 
+  * Concatenated encryption messages don't work corectly - only the
+    first one is processes.
+
+  * Add status message for reasons why a key was not selected.
+
 Scheduled for 1.1
 -----------------
   * export by user-IDs does only export the first matching name which leads

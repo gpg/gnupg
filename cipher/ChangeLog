@@ -1,3 +1,11 @@
+2001-08-24  Werner Koch  <wk@gnupg.org>
+
+	* md.c (md_write): Made buf arg const.
+
+2001-08-22  Werner Koch  <wk@gnupg.org>
+
+	* random.c (fast_random_poll): Don't use gethrtime if it is broken.
+
 2001-08-20  Werner Koch  <wk@gnupg.org>
 
 	Applied patches from Stefan Bellon <sbellon@sbellon.de> to support

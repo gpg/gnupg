@@ -116,7 +116,7 @@ void md_enable( MD_HANDLE hd, int algo );
 MD_HANDLE md_copy( MD_HANDLE a );
 void md_reset( MD_HANDLE a );
 void md_close(MD_HANDLE a);
-void md_write( MD_HANDLE a, byte *inbuf, size_t inlen);
+void md_write( MD_HANDLE a, const byte *inbuf, size_t inlen);
 void md_final(MD_HANDLE a);
 byte *md_read( MD_HANDLE a, int algo );
 int md_digest( MD_HANDLE a, int algo, byte *buffer, int buflen );

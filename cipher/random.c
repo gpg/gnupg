@@ -568,8 +568,10 @@ fast_random_poll()
     }
 
     /* fall back to the generic function */
-  #ifdef HAVE_GETHRTIME
+  #if defined(HAVE_GETHRTIME) && !defined(HAVE_BROKEN_GETHRTIME)
     {	hrtime_t tv;
+        /* On some Solaris and HPUX system gethrtime raises an SIGILL, but we 
+         * checked this with configure */
 	tv = gethrtime();
 	add_randomness( &tv, sizeof(tv), 1 );
     }

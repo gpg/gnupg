@@ -485,21 +485,50 @@ if test "$ac_cv_sizeof_unsigned_short" = "0" \
     AC_MSG_WARN([Hmmm, something is wrong with the sizes - using defaults]);
 fi
 
-
-
 dnl Checks for library functions.
+AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(strerror stpcpy strlwr stricmp tcgetattr rand strtoul mmap)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(memicmp atexit raise getpagesize strftime nl_langinfo)
-AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask fseeko)
+AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask)
 
-AC_MSG_CHECKING(for gethrtime)
-AC_TRY_LINK([#include <sys/times.h>],[
-   hrtime_t tv;
-   tv = gethrtime();
-   ],[AC_MSG_RESULT(yes) AC_DEFINE(HAVE_GETHRTIME)], AC_MSG_RESULT(no))
-
+#
+# check for gethrtime and run a testprogram to see whether
+# it is brogen.  It has been reported that some Solris and HP UX systems 
+# raise an SIGILL
+#
+AC_CACHE_CHECK([for gethrtime], 
+               [gnupg_cv_func_gethrtime],
+               [AC_TRY_LINK([#include <sys/times.h>],[
+                   hrtime_t tv;
+                   tv = gethrtime();
+                 ],
+                 [gnupg_cv_func_gethrtime=yes],
+                 [gnupg_cv_func_gethrtime=no])
+               ])
+if test $gnupg_cv_func_gethrtime = yes; then
+     AC_DEFINE([HAVE_GETHRTIME], 1,
+               [Define if you have the `gethrtime(2)' function.])
+     AC_CACHE_CHECK([whether gethrtime is broken], 
+               [gnupg_cv_func_broken_gethrtime],
+               [AC_TRY_RUN([
+                   #include <sys/times.h>
+                   int main () {
+                   hrtime_t tv;
+                   tv = gethrtime(); 
+                 }
+                 ],
+                 [gnupg_cv_func_broken_gethrtime=no],
+                 [gnupg_cv_func_broken_gethrtime=yes],
+                 [gnupg_cv_func_broken_gethrtime=assume-no])
+                ])
+    if test $gnupg_cv_func_broken_gethrtime = yes; then
+      AC_DEFINE([HAVE_BROKEN_GETHRTIME], 1,
+      [Define if `gethrtime(2)' does not work correctly i.e. issues a SIGILL.])
+    fi
+fi
+     
 
 GNUPG_CHECK_MLOCK
 GNUPG_FUNC_MKDIR_TAKES_ONE_ARG
@@ -880,4 +909,5 @@ fi
 if test -n "$show_extraasm"; then
   echo "  Extra cpu specific functions:$show_extraasm"
 fi
+echo
 
