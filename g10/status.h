@@ -100,6 +100,7 @@
 #define STATUS_IMPORT_OK 	68
 #define STATUS_IMPORT_CHECK     69
 #define STATUS_REVKEYSIG        70
+#define STATUS_CARDCTRL         71
 
 /*-- status.c --*/
 void set_status_fd ( int fd );
@@ -123,6 +124,9 @@ char *cpr_get_hidden( const char *keyword, const char *prompt );
 void cpr_kill_prompt(void);
 int  cpr_get_answer_is_yes( const char *keyword, const char *prompt );
 int  cpr_get_answer_yes_no_quit( const char *keyword, const char *prompt );
+int  cpr_get_answer_okay_cancel (const char *keyword,
+                                 const char *prompt,
+                                 int def_answer);
 
 
 #endif /*G10_STATUS_H*/

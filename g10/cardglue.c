@@ -20,7 +20,7 @@
 
 #include <config.h>
 #ifndef ENABLE_CARD_SUPPORT
-#error  no configured for card support.
+#error  not configured for card support.
 #endif
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,6 +36,7 @@
 #include "util.h"
 #include "main.h"
 #include "status.h"
+#include "ttyio.h"
 #include "i18n.h"
 
 #include "cardglue.h"
@@ -250,6 +251,8 @@ open_card (void)
   APP app;
 
   card_close ();
+
+ retry:
   slot = apdu_open_reader (default_reader_port);
   if (slot == -1)
     {
@@ -260,16 +263,42 @@ open_card (void)
   app = xcalloc (1, sizeof *app);
   app->slot = slot;
   rc = app_select_openpgp (app, &app->serialno, &app->serialnolen);
+  if (rc && !opt.batch)
+    {
+      write_status_text (STATUS_CARDCTRL, "1");
+      
+      if ( cpr_get_answer_okay_cancel ("cardctrl.insert_card.okay",
+           _("Please insert the card and hit return or enter 'c' to cancel: "),
+                                       1) )
+        {
+          apdu_close_reader (slot);
+          xfree (app);
+          goto retry;
+        }
+    }
   if (rc)
     {
-      apdu_close_reader (slot);
       log_info ("selecting openpgp failed: %s\n", gpg_strerror (rc));
+      apdu_close_reader (slot);
       xfree (app);
       return NULL;
     }
 
   app->initialized = 1;
   current_app = app;
+  if (is_status_enabled () )
+    {
+      int i;
+      char *p, *buf;
+
+      buf = xmalloc (5 + app->serialnolen * 2 + 1);
+      p = stpcpy (buf, "3 ");
+      for (i=0; i < app->serialnolen; p +=2, i++)
+        sprintf (p, "%02X", app->serialno[i]);
+      write_status_text (STATUS_CARDCTRL, buf);
+      xfree (buf);
+    }
+
   return app;
 }
 
@@ -285,6 +314,56 @@ card_close (void)
       xfree (app);
     }
 }
+
+
+/* Check that the serial number of the current card (as described by
+   APP) matches SERIALNO.  If there is no match and we are not in
+   batch mode, present a prompt to insert the desired card.  The
+   function return 0 is the present card is okay, -1 if the user
+   selected to insert a new card or an error value.  Note that the
+   card context will be closed in all cases except for 0 as return
+   value. */
+static int
+check_card_serialno (APP app, const char *serialno)
+{
+  const char *s;
+  int ask = 0;
+  int n;
+  
+  for (s = serialno, n=0; *s != '/' && hexdigitp (s); s++, n++)
+    ;
+  if (n != 32)
+    {
+      log_error ("invalid serial number in keyring detected\n");
+      return gpg_error (GPG_ERR_INV_ID);
+    }
+  if (app->serialnolen != 16)
+    ask = 1;
+  for (s = serialno, n=0; !ask && n < 16; s += 2, n++)
+    if (app->serialno[n] != xtoi_2 (s))
+      ask = 1;
+  if (ask)
+    {
+      char buf[5+32+1];
+
+      card_close ();
+      tty_printf (_("Please remove the current card and "
+                    "insert the one with the serial number:\n"
+                    "   %.*s\n"), 32, serialno);
+
+      sprintf (buf, "1 %.32s", serialno);
+      write_status_text (STATUS_CARDCTRL, buf);
+
+      if ( cpr_get_answer_okay_cancel ("cardctrl.change_card.okay",
+                          _("Hit return when ready "
+                            "or enter 'c' to cancel: "),
+                                       1) )
+        return -1;
+      return gpg_error (GPG_ERR_INV_ID);
+    }
+  return 0;
+}
+
 
 
 /* Return a new malloced string by unescaping the string S.  Escaping
@@ -626,14 +705,21 @@ agent_scd_pksign (const char *serialno, int hashalgo,
                   unsigned char **r_buf, size_t *r_buflen)
 {
   APP app;
+  int rc;
 
   *r_buf = NULL;
   *r_buflen = 0;
+ retry:
   app = current_app? current_app : open_card ();
   if (!app)
     return gpg_error (GPG_ERR_CARD);
 
   /* Check that the card's serialnumber is as required.*/
+  rc = check_card_serialno (app, serialno);
+  if (rc == -1)
+    goto retry;
+  if (rc)
+    return rc;
 
   return app->fnc.sign (app, serialno, hashalgo,
                         pin_cb, NULL,
@@ -649,12 +735,21 @@ agent_scd_pkdecrypt (const char *serialno,
                      unsigned char **r_buf, size_t *r_buflen)
 {
   APP app;
+  int rc;
 
   *r_buf = NULL;
   *r_buflen = 0;
+ retry:
   app = current_app? current_app : open_card ();
   if (!app)
     return gpg_error (GPG_ERR_CARD);
+
+  /* Check that the card's serialnumber is as required.*/
+  rc = check_card_serialno (app, serialno);
+  if (rc == -1)
+    goto retry;
+  if (rc)
+    return rc;
 
   return app->fnc.decipher (app, serialno, 
                             pin_cb, NULL,

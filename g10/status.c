@@ -150,6 +150,7 @@ get_status_string ( int no )
       case STATUS_EXPKEYSIG      : s = "EXPKEYSIG"; break;
       case STATUS_REVKEYSIG      : s = "REVKEYSIG"; break;
       case STATUS_ATTRIBUTE      : s = "ATTRIBUTE"; break;
+      case STATUS_CARDCTRL       : s = "CARDCTRL"; break;
       default: s = "?"; break;
     }
     return s;
@@ -692,3 +693,47 @@ cpr_get_answer_yes_no_quit( const char *keyword, const char *prompt )
 	}
     }
 }
+
+
+int
+cpr_get_answer_okay_cancel (const char *keyword,
+                            const char *prompt,
+                            int def_answer)
+{
+  int yes;
+  char *answer = NULL;
+  char *p;
+
+  if( opt.command_fd != -1 )
+    answer = do_get_from_fd ( keyword, 0, 0 );
+#ifdef USE_SHM_COPROCESSING
+  else if( opt.shm_coprocess )
+    answer = do_shm_get( keyword, 0, 0 );
+#endif
+
+  if (answer)
+    {
+      yes = answer_is_okay_cancel (answer, def_answer);
+      m_free (answer);
+      return yes;
+    }
+
+  for(;;)
+    {
+      p = tty_get( prompt );
+      trim_spaces(p); /* it is okay to do this here */
+      if (*p == '?' && !p[1])
+        {
+          m_free(p);
+          display_online_help (keyword);
+	}
+      else
+        {
+          tty_kill_prompt();
+          yes = answer_is_okay_cancel (p, def_answer);
+          m_free(p);
+          return yes;
+	}
+    }
+}
+

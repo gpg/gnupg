@@ -175,6 +175,7 @@ char *make_printable_string( const byte *p, size_t n, int delim );
 int answer_is_yes_no_default( const char *s, int def_answer );
 int answer_is_yes( const char *s );
 int answer_is_yes_no_quit( const char *s );
+int answer_is_okay_cancel (const char *s, int def_answer);
 
 /*-- strgutil.c --*/
 void free_strlist( STRLIST sl );

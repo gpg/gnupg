@@ -359,3 +359,38 @@ answer_is_yes_no_quit( const char *s )
 	return -1;
     return 0;
 }
+
+
+/*
+   Return 1 for okay, 0 for for cancel or DEF_ANSWER for default. 
+ */
+int
+answer_is_okay_cancel (const char *s, int def_answer)
+{
+  const char *long_okay = _("okay");
+  const char *long_cancel = _("cancel");
+  const char *short_okay = _("oO");
+  const char *short_cancel = _("cC");
+  
+  /* Note: We have to use the locale dependent strcasecmp */
+  if ( !strcasecmp(s, long_okay ) )
+    return 1;
+  if ( !strcasecmp(s, long_cancel ) )
+    return 0;
+  if ( *s && strchr( short_okay, *s ) && !s[1] )
+    return 1;
+  if ( *s && strchr( short_cancel, *s ) && !s[1] )
+    return 0;
+  /* Always test for the English values (not locale here) */
+  if ( !ascii_strcasecmp(s, "okay" ) )
+    return 1;
+  if ( !ascii_strcasecmp(s, "ok" ) )
+    return 1;
+  if ( !ascii_strcasecmp(s, "cancel" ) )
+    return 0;
+  if ( *s && strchr( "oO", *s ) && !s[1] )
+    return 1;
+  if ( *s && strchr( "cC", *s ) && !s[1] )
+    return 0;
+  return def_answer;
+}
