@@ -57,6 +57,8 @@ you could search in the mailing list archive.
    4.13) How can I used GnuPG in an automated environment?
    4.14) Which email-client can I use with GnuPG?
    4.15) Can't we have a gpg library?
+   4.16) I have successfully generated a revocation certificate, but I don't
+	understand how to send it to the key servers.
 
  5. COMPATIBILITY ISSUES 
    5.1) How can I encrypt a message with GnuPG so that PGP is able to decrypt it?
@@ -443,6 +445,17 @@ messages?
     do the trick. You'll find it at 
     ftp://ftp.guug.de/pub/gcrypt/alpha/gpgme
 
+
+4.16) I have successfully generated a revocation certificate, but I don't
+    understand how to send it to the key servers.
+
+    Most keyservers don't accept a 'bare' revocation certificate. You
+    have to import the certificate into gpg first:
+    gpg --import my-revocation.asc
+    then send the revoked key to the keyservers:
+    gpg --keyserver certserver.pgp.com --send-keys mykeyid
+    (or use a keyserver web interface for this).
+
 5. COMPATIBILITY ISSUES 
 
 
@@ -504,8 +517,9 @@ messages?
 5.5) Why is PGP 5.x not able to verify my messages?
 
     PGP 5.x does not accept V4 signatures for data material but OpenPGP
-    requires generation of V4 signatures for all kind of data.  Use the
-    option "--force-v3-sigs" to generate V3 signatures for data.
+    requests generation of V4 signatures for all kind of data, that's why 
+    GnuPG defaults to them.  Use the option "--force-v3-sigs" to generate 
+    V3 signatures for data.
 
 5.6) How do I transfer owner trust values from PGP to GnuPG?
 

@@ -397,6 +397,21 @@ messages?
     do the trick. You'll find it at 
     [H a href=ftp://ftp.guug.de/pub/gcrypt/alpha/gpgme]ftp://ftp.guug.de/pub/gcrypt/alpha/gpgme[H /a]
 
+
+<Q> I have successfully generated a revocation certificate, but I don't
+    understand how to send it to the key servers.
+
+    Most keyservers don't accept a 'bare' revocation certificate. You
+    have to import the certificate into gpg first:
+    [H pre]
+    gpg --import my-revocation.asc
+    [H /pre]
+    then send the revoked key to the keyservers:
+    [H pre]
+    gpg --keyserver certserver.pgp.com --send-keys mykeyid
+    [H /pre]
+    (or use a keyserver web interface for this).
+
 <S> COMPATIBILITY ISSUES 
 
 <Dcompat>
@@ -460,8 +475,9 @@ messages?
 <Q> Why is PGP 5.x not able to verify my messages?
 
     PGP 5.x does not accept V4 signatures for data material but OpenPGP
-    requires generation of V4 signatures for all kind of data.  Use the
-    option "--force-v3-sigs" to generate V3 signatures for data.
+    requests generation of V4 signatures for all kind of data, that's why 
+    GnuPG defaults to them.  Use the option "--force-v3-sigs" to generate 
+    V3 signatures for data.
 
 <Q> How do I transfer owner trust values from PGP to GnuPG?
 
