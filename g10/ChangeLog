@@ -1,5 +1,12 @@
 2003-11-09  David Shaw  <dshaw@jabberwocky.com>
 
+	* mainproc.c (proc_symkey_enc): Don't show algorithm information
+	when --quiet is set.  Suggested by Duncan Harris.  Also don't fail
+	with BUG() when processing a --symmetric message with a cipher we
+	don't have.
+
+	* g10.c: Alias --personal-xxx-prefs to --personal-xxx-preferences.
+
 	* pkclist.c (build_pk_list): When adding recipients interactively,
 	allow the user to stop at any point.
 
