@@ -1,19 +1,14 @@
 /* cipher.h
- *	Copyright (c) 1997 by Werner Koch (dd9jn)
+ *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * ATTENTION: This code should not be exported from the United States
- * nor should it be used their without a license agreement with PKP.
- * The RSA alorithm is protected by U.S. Patent #4,405,829 which
- * expires on September 20, 2000!
+ * This file is part of GNUPG.
  *
- * This file is part of G10.
- *
- * G10 is free software; you can redistribute it and/or modify
+ * GNUPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * G10 is distributed in the hope that it will be useful,
+ * GNUPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -28,7 +23,6 @@
 #define DBG_CIPHER g10c_debug_mode
 
 #include "mpi.h"
-#include "../cipher/md.h"
 #include "../cipher/random.h"
 
 
@@ -77,11 +71,53 @@ struct cipher_handle_s { char does_not_matter[1]; };
 #define CIPHER_MODE_DUMMY     5  /* used with algo DUMMY for no encryption */
 
 
+#define MD_BUFFER_SIZE 512
+
+typedef struct {
+    byte buffer[MD_BUFFER_SIZE];
+    int  bufcount;
+    int  secure;
+    FILE  *debug;
+    struct md_digest_list_s *list;
+} *MD_HANDLE;
+
+
+#ifndef DEFINES_MD_HANDLE /* not really the handle but the algorithm list */
+struct md_digest_list_s { char does_not_matter[1]; };
+#endif
+
+
+
 int g10c_debug_mode;
 int g10_opt_verbose;
 
 /*-- dynload.c --*/
 void register_cipher_extension( const char *fname );
+
+/*-- md.c --*/
+int string_to_digest_algo( const char *string );
+const char * digest_algo_to_string( int algo );
+int check_digest_algo( int algo );
+MD_HANDLE md_open( int algo, int secure );
+void md_enable( MD_HANDLE hd, int algo );
+MD_HANDLE md_copy( MD_HANDLE a );
+void md_close(MD_HANDLE a);
+void md_write( MD_HANDLE a, byte *inbuf, size_t inlen);
+void md_final(MD_HANDLE a);
+byte *md_read( MD_HANDLE a, int algo );
+int md_get_algo( MD_HANDLE a );
+int md_digest_length( int algo );
+const byte *md_asn_oid( int algo, size_t *asnlen, size_t *mdlen );
+void md_start_debug( MD_HANDLE a, const char *suffix );
+void md_stop_debug( MD_HANDLE a );
+#define md_is_secure(a) ((a)->secure)
+#define md_putc(h,c)					    \
+	    do {					    \
+		if( (h)->bufcount == MD_BUFFER_SIZE )	    \
+		    md_write( (h), NULL, 0 );		    \
+		(h)->buffer[(h)->bufcount++] = (c) & 0xff;  \
+	    } while(0)
+
 
 /*-- cipher.c --*/
 int string_to_cipher_algo( const char *string );

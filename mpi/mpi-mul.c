@@ -123,21 +123,21 @@ mpi_mul( MPI w, MPI u, MPI v)
     if( u->nlimbs < v->nlimbs ) { /* Swap U and V. */
 	usize = v->nlimbs;
 	usign = v->sign;
-	usecure = v->secure;
+	usecure = mpi_is_secure(v);
 	up    = v->d;
 	vsize = u->nlimbs;
 	vsign = u->sign;
-	vsecure = u->secure;
+	vsecure = mpi_is_secure(u);
 	vp    = u->d;
     }
     else {
 	usize = u->nlimbs;
 	usign = u->sign;
-	usecure = u->secure;
+	usecure = mpi_is_secure(u);
 	up    = u->d;
 	vsize = v->nlimbs;
 	vsign = v->sign;
-	vsecure = v->secure;
+	vsecure = mpi_is_secure(v);
 	vp    = v->d;
     }
     sign_product = usign ^ vsign;
@@ -147,7 +147,7 @@ mpi_mul( MPI w, MPI u, MPI v)
     wsize = usize + vsize;
     if( w->alloced < wsize ) {
 	if( wp == up || wp == vp ) {
-	    wp = mpi_alloc_limb_space( wsize, w->secure );
+	    wp = mpi_alloc_limb_space( wsize, mpi_is_secure(w) );
 	    assign_wp = 1;
 	}
 	else {

@@ -20,19 +20,15 @@
 #ifndef G10_MD5_H
 #define G10_MD5_H
 
-#include "types.h"
 
-typedef struct {
-    u32 A,B,C,D;	  /* chaining variables */
-    u32 total[2];
-    u32  buflen;
-    char buffer[128];
-} MD5_CONTEXT;
+const char *
+md5_get_info( int algo, size_t *contextsize,
+	       byte **r_asnoid, int *r_asn_len, int *r_mdlen,
+	       void (**r_init)( void *c ),
+	       void (**r_write)( void *c, byte *buf, size_t nbytes ),
+	       void (**r_final)( void *c ),
+	       byte *(**r_read)( void *c )
+	     );
 
-
-void md5_init( MD5_CONTEXT *ctx );
-void md5_write( MD5_CONTEXT *ctx, const void *buffer, size_t len);
-void md5_final( MD5_CONTEXT *ctx);
-#define md5_read(h) ( (h)->buffer )
 
 #endif /*G10_MD5_H*/

@@ -210,8 +210,15 @@ mpi_print( FILE *fp, MPI a, int mode )
 
     if( a == MPI_NULL )
 	return fprintf(fp, "[MPI_NULL]");
-    if( !mode )
-	n += fprintf(fp, "[%u bits]", mpi_get_nbits(a) );
+    if( !mode ) {
+	unsigned n1, n2;
+	n1 = mpi_get_nbits(a);
+	n2 = mpi_get_nbit_info(a);
+	if( n2 && n2 != n1 )
+	    n += fprintf(fp, "[%u bits (%u)]", n1, n2 );
+	else
+	    n += fprintf(fp, "[%u bits]", n1);
+    }
     else {
 	if( a->sign )
 	    putc('-', fp);
@@ -278,8 +285,8 @@ do_get_buffer( MPI a, unsigned *nbytes, int *sign, int force_secure )
     if( sign )
 	*sign = a->sign;
     *nbytes = a->nlimbs * BYTES_PER_MPI_LIMB;
-    p = buffer = force_secure || a->secure ? m_alloc_secure( *nbytes)
-					   : m_alloc( *nbytes );
+    p = buffer = force_secure || mpi_is_secure(a) ? m_alloc_secure( *nbytes)
+						  : m_alloc( *nbytes );
 
     for(i=a->nlimbs-1; i >= 0; i-- ) {
 	alimb = a->d[i];

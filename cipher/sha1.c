@@ -41,6 +41,12 @@
 #include "sha1.h"
 
 
+typedef struct {
+    u32  h0,h1,h2,h3,h4;
+    u32  nblocks;
+    byte buf[64];
+    int  count;
+} SHA1_CONTEXT;
 
 
 #if defined(__GNUC__) && defined(__i386__)
@@ -216,7 +222,7 @@ transform( SHA1_CONTEXT *hd, byte *data )
 /* Update the message digest with the contents
  * of INBUF with length INLEN.
  */
-void
+static void
 sha1_write( SHA1_CONTEXT *hd, byte *inbuf, size_t inlen)
 {
     if( hd->count == 64 ) { /* flush the buffer */
@@ -253,7 +259,7 @@ sha1_write( SHA1_CONTEXT *hd, byte *inbuf, size_t inlen)
  * Returns: 20 bytes representing the digest.
  */
 
-void
+static void
 sha1_final(SHA1_CONTEXT *hd)
 {
     u32 t, msb, lsb;
@@ -313,4 +319,42 @@ sha1_final(SHA1_CONTEXT *hd)
 
 }
 
+static byte *
+sha1_read( SHA1_CONTEXT *hd )
+{
+    return hd->buf;
+}
+
+/****************
+ * Return some information about the algorithm.  We need algo here to
+ * distinguish different flavors of the algorithm.
+ * Returns: A pointer to string describing the algorithm or NULL if
+ *	    the ALGO is invalid.
+ */
+const char *
+sha1_get_info( int algo, size_t *contextsize,
+	       byte **r_asnoid, int *r_asnlen, int *r_mdlen,
+	       void (**r_init)( void *c ),
+	       void (**r_write)( void *c, byte *buf, size_t nbytes ),
+	       void (**r_final)( void *c ),
+	       byte *(**r_read)( void *c )
+	     )
+{
+    static byte asn[15] = /* Object ID is 1.3.14.3.2.26 */
+		    { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03,
+		      0x02, 0x1a, 0x05, 0x00, 0x04, 0x14 };
+    if( algo != 2 )
+	return NULL;
+
+    *contextsize = sizeof(SHA1_CONTEXT);
+    *r_asnoid = asn;
+    *r_asnlen = DIM(asn);
+    *r_mdlen = 20;
+    *r_init  = (void (*)(void *))sha1_init;
+    *r_write = (void (*)(void *, byte*, size_t))sha1_write;
+    *r_final = (void (*)(void *))sha1_final;
+    *r_read  = (byte *(*)(void *))sha1_read;
+
+    return "SHA1";
+}
 

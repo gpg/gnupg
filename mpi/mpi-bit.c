@@ -60,6 +60,13 @@ mpi_get_nbits( MPI a )
 {
     unsigned n;
 
+    if( mpi_is_protected(a) ) {
+	n = mpi_get_nbit_info(a);
+	if( !n )
+	    n = a->nlimbs * BITS_PER_MPI_LIMB;
+	return n;
+    }
+
     if( a->nlimbs ) {
 	mpi_limb_t alimb = a->d[a->nlimbs-1];
 	if( alimb )

@@ -48,7 +48,8 @@ typedef struct mpi_struct {
     int nlimbs;     /* number of valid limbs */
     int nbits;	    /* the real number of valid bits (info only) */
     int sign;	    /* indicates a negative number */
-    int secure;     /* array must be allocated in secure memory space */
+    unsigned flags; /* bit 0: array must be allocated in secure memory space */
+		    /* bit 1: the mpi is encrypted */
     mpi_limb_t *d;  /* array with the limbs */
 } *MPI;
 
@@ -56,6 +57,7 @@ typedef struct mpi_struct {
 
 #define mpi_get_nlimbs(a)     ((a)->nlimbs)
 #define mpi_get_nbit_info(a)  ((a)->nbits)
+#define mpi_set_nbit_info(a,b) ((a)->nbits = (b))
 #define mpi_is_neg(a)	      ((a)->sign)
 
 /*-- mpiutil.c --*/
@@ -78,7 +80,10 @@ typedef struct mpi_struct {
   void mpi_resize( MPI a, unsigned nlimbs );
   MPI  mpi_copy( MPI a );
 #endif
-#define mpi_is_secure(a) ((a) && (a)->secure)
+#define mpi_is_protected(a) ((a) && ((a)->flags&2))
+#define mpi_set_protect_flag(a) ((a)->flags |= 2)
+#define mpi_clear_protect_flag(a) ((a)->flags &= ~2)
+#define mpi_is_secure(a) ((a) && ((a)->flags&1))
 void mpi_set_secure( MPI a );
 void mpi_clear( MPI a );
 void mpi_set( MPI w, MPI u);

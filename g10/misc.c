@@ -30,7 +30,12 @@
 #include "main.h"
 #include "options.h"
 
-volatile int
+
+const char *g10m_revision_string(int);
+const char *g10c_revision_string(int);
+const char *g10u_revision_string(int);
+
+volatile void
 pull_in_libs(void)
 {
     g10m_revision_string(0);
@@ -140,6 +145,7 @@ checksum_mpi_counted_nbits( MPI a )
 
     buffer = mpi_get_buffer( a, &nbytes, NULL );
     nbits = mpi_get_nbits(a);
+    mpi_set_nbit_info(a,nbits);
     csum = checksum_u16_nobug( nbits );
     csum += checksum( buffer, nbytes );
     m_free( buffer );

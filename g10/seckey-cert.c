@@ -69,14 +69,14 @@ do_check( PKT_secret_cert *cert )
 		i < pubkey_get_nskey(cert->pubkey_algo); i++ ) {
 	    buffer = mpi_get_secure_buffer( cert->skey[i], &nbytes, NULL );
 	    cipher_sync( cipher_hd );
+	    assert( mpi_is_protected(cert->skey[i]) );
 	    cipher_decrypt( cipher_hd, buffer, buffer, nbytes );
 	    mpi_set_buffer( cert->skey[i], buffer, nbytes, 0 );
+	    mpi_clear_protect_flag( cert->skey[i] );
 	    csum += checksum_mpi( cert->skey[i] );
 	    m_free( buffer );
 	}
 	if( opt.emulate_bugs & 1 ) {
-	   log_debug("secret key csum is=%04hx should=%04hx algos=%d/%d\n",
-		     csum, cert->csum, cert->pubkey_algo,cert->protect.algo );
 	   csum = cert->csum;
 	}
 	cipher_close( cipher_hd );
@@ -193,10 +193,11 @@ protect_secret_key( PKT_secret_cert *cert, DEK *dek )
 		    i < pubkey_get_nskey(cert->pubkey_algo); i++ ) {
 		csum += checksum_mpi_counted_nbits( cert->skey[i] );
 		buffer = mpi_get_buffer( cert->skey[i], &nbytes, NULL );
-	   log_debug("protecing i=%d csum=%04hx nbytes=%u\n", i, csum, nbytes );
 		cipher_sync( cipher_hd );
+		assert( !mpi_is_protected(cert->skey[i]) );
 		cipher_encrypt( cipher_hd, buffer, buffer, nbytes );
 		mpi_set_buffer( cert->skey[i], buffer, nbytes, 0 );
+		mpi_set_protect_flag( cert->skey[i] );
 		m_free( buffer );
 	    }
 	    cert->csum = csum;

@@ -35,7 +35,7 @@
 
 
 #define STD_BLOCKSIZE 8
-#define TABLE_SIZE 20
+#define TABLE_SIZE 10
 
 struct cipher_table_s {
     const char *name;
@@ -79,12 +79,8 @@ static void
 setup_cipher_table()
 {
 
-    static int initialized = 0;
     int i;
     size_t blocksize;
-
-    if( initialized )
-	return;
 
     i = 0;
     cipher_table[i].algo = CIPHER_ALGO_BLOWFISH;
@@ -131,7 +127,6 @@ setup_cipher_table()
 
     for( ; i < TABLE_SIZE; i++ )
 	cipher_table[i].name = NULL;
-    initialized = 1;
 }
 
 
@@ -142,6 +137,7 @@ static int
 load_cipher_modules()
 {
     static int done = 0;
+    static int initialized = 0;
     void *context = NULL;
     struct cipher_table_s *ct;
     int ct_idx;
@@ -149,6 +145,12 @@ load_cipher_modules()
     int i;
     const char *name;
     int any = 0;
+
+    if( !initialized ) {
+	setup_cipher_table(); /* load static modules on the first call */
+	initialized = 1;
+	return 1;
+    }
 
     if( done )
 	return 0;
@@ -208,7 +210,6 @@ string_to_cipher_algo( const char *string )
     int i;
     const char *s;
 
-    setup_cipher_table();
     do {
 	for(i=0; (s=cipher_table[i].name); i++ )
 	    if( !stricmp( s, string ) )
@@ -225,7 +226,6 @@ cipher_algo_to_string( int algo )
 {
     int i;
 
-    setup_cipher_table();
     do {
 	for(i=0; cipher_table[i].name; i++ )
 	    if( cipher_table[i].algo == algo )
@@ -242,7 +242,6 @@ check_cipher_algo( int algo )
 {
     int i;
 
-    setup_cipher_table();
     do {
        for(i=0; cipher_table[i].name; i++ )
 	   if( cipher_table[i].algo == algo )
@@ -258,7 +257,6 @@ cipher_get_keylen( int algo )
     int i;
     unsigned len = 0;
 
-    setup_cipher_table();
     do {
 	for(i=0; cipher_table[i].name; i++ ) {
 	    if( cipher_table[i].algo == algo ) {
@@ -284,7 +282,6 @@ cipher_open( int algo, int mode, int secure )
     CIPHER_HANDLE hd;
     int i;
 
-    setup_cipher_table();
     fast_random_poll();
     do {
 	for(i=0; cipher_table[i].name; i++ )

@@ -1004,6 +1004,8 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	     * we can assume, that he operates an open system :=(.
 	     * So we put the key into secure memory when we unprotect it. */
 	    n = pktlen; cert->skey[3] = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    if( cert->is_protected )
+		mpi_set_protect_flag(cert->skey[3]);
 
 	    cert->csum = read_16(inp); pktlen -= 2;
 	    if( list_mode ) {
@@ -1129,6 +1131,8 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	     * we can assume, that he operates an open system :=(.
 	     * So we put the key into secure memory when we unprotect it. */
 	    n = pktlen; cert->skey[4] = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    if( cert->is_protected )
+		mpi_set_protect_flag(cert->skey[4]);
 
 	    cert->csum = read_16(inp); pktlen -= 2;
 	    if( list_mode ) {
@@ -1184,6 +1188,12 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    n = pktlen; cert->skey[3] = mpi_read(inp, &n, 0 ); pktlen -=n;
 	    n = pktlen; cert->skey[4] = mpi_read(inp, &n, 0 ); pktlen -=n;
 	    n = pktlen; cert->skey[5] = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    if( cert->is_protected ) {
+		mpi_set_protect_flag(cert->skey[2]);
+		mpi_set_protect_flag(cert->skey[3]);
+		mpi_set_protect_flag(cert->skey[4]);
+		mpi_set_protect_flag(cert->skey[5]);
+	    }
 
 	    cert->csum = read_16(inp); pktlen -= 2;
 	    if( list_mode ) {

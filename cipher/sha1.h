@@ -20,19 +20,14 @@
 #ifndef G10_SHA1_H
 #define G10_SHA1_H
 
-#include "types.h"
 
-typedef struct {
-    u32  h0,h1,h2,h3,h4;
-    u32  nblocks;
-    byte buf[64];
-    int  count;
-} SHA1_CONTEXT;
-
-
-void sha1_init( SHA1_CONTEXT *c );
-void sha1_write( SHA1_CONTEXT *hd, byte *inbuf, size_t inlen);
-void sha1_final( SHA1_CONTEXT *hd);
-#define sha1_read(h) ( (h)->buf )
+const char *
+sha1_get_info( int algo, size_t *contextsize,
+	       byte **r_asnoid, int *r_asn_len, int *r_mdlen,
+	       void (**r_init)( void *c ),
+	       void (**r_write)( void *c, byte *buf, size_t nbytes ),
+	       void (**r_final)( void *c ),
+	       byte *(**r_read)( void *c )
+	     );
 
 #endif /*G10_SHA1_H*/

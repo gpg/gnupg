@@ -20,6 +20,14 @@
 #ifndef G10_CIPHER_DYNLOAD_H
 #define G10_CIPHER_DYNLOAD_H
 
+int
+enum_gnupgext_digests( void **enum_context,
+	    int *algo,
+	    const char *(**r_get_info)( int, size_t*,byte**, int*, int*,
+				       void (**)(void*),
+				       void (**)(void*,byte*,size_t),
+				       void (**)(void*),byte *(**)(void*)) );
+
 const char *
 enum_gnupgext_ciphers( void **enum_context, int *algo,
 		       size_t *keylen, size_t *blocksize, size_t *contextsize,
@@ -27,6 +35,7 @@ enum_gnupgext_ciphers( void **enum_context, int *algo,
 		       void (**encrypt)( void *c, byte *outbuf, byte *inbuf ),
 		       void (**decrypt)( void *c, byte *outbuf, byte *inbuf )
 		     );
+
 
 const char *
 enum_gnupgext_pubkeys( void **enum_context, int *algo,

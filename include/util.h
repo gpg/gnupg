@@ -1,14 +1,14 @@
 /* util.h
- *	Copyright (c) 1997 by Werner Koch (dd9jn)
+ *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of G10.
+ * This file is part of GNUPG.
  *
- * G10 is free software; you can redistribute it and/or modify
+ * GNUPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * G10 is distributed in the hope that it will be useful,
+ * GNUPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -60,28 +60,38 @@ void log_set_name( const char *name );
 const char *log_get_name(void);
 void log_set_pid( int pid );
 int  log_get_errorcount( int clear );
-void log_hexdump( const char *text, char *buf, size_t len );
-void log_mpidump( const char *text, MPI a );
+void g10_log_hexdump( const char *text, char *buf, size_t len );
+void g10_log_mpidump( const char *text, MPI a );
 
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
-  void log_bug( const char *fmt, ... )
+  void g10_log_bug( const char *fmt, ... )
 			    __attribute__ ((noreturn, format (printf,1,2)));
-  void log_bug0( const char *, int, const char * ) __attribute__ ((noreturn));
-  void log_fatal( const char *fmt, ... )
+  void g10_log_bug0( const char *, int, const char * ) __attribute__ ((noreturn));
+  void g10_log_fatal( const char *fmt, ... )
 			    __attribute__ ((noreturn, format (printf,1,2)));
-  void log_error( const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
-  void log_info( const char *fmt, ... )  __attribute__ ((format (printf,1,2)));
-  void log_debug( const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
-  #define BUG() log_bug0(  __FILE__ , __LINE__, __FUNCTION__ )
+  void g10_log_error( const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
+  void g10_log_info( const char *fmt, ... )  __attribute__ ((format (printf,1,2)));
+  void g10_log_debug( const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
+  #define BUG() g10_log_bug0(  __FILE__ , __LINE__, __FUNCTION__ )
 #else
-  void log_bug( const char *fmt, ... );
-  void log_bug0( const char *, int );
-  void log_fatal( const char *fmt, ... );
-  void log_error( const char *fmt, ... );
-  void log_info( const char *fmt, ... );
-  void log_debug( const char *fmt, ... );
-  #define BUG() log_bug0( __FILE__ , __LINE__ )
+  void g10_log_bug( const char *fmt, ... );
+  void g10_log_bug0( const char *, int );
+  void g10_log_fatal( const char *fmt, ... );
+  void g10_log_error( const char *fmt, ... );
+  void g10_log_info( const char *fmt, ... );
+  void g10_log_debug( const char *fmt, ... );
+  #define BUG() g10_log_bug0( __FILE__ , __LINE__ )
 #endif
+
+#define log_hexdump g10_log_hexdump
+#define log_mpidump g10_log_mpidump
+#define log_bug     g10_log_bug
+#define log_bug0    g10_log_bug0
+#define log_fatal   g10_log_fatal
+#define log_error   g10_log_error
+#define log_info    g10_log_info
+#define log_debug   g10_log_debug
+
 
 
 /*-- errors.c --*/

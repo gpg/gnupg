@@ -38,6 +38,15 @@
 #include "memory.h"
 
 
+typedef struct {
+    u32 A,B,C,D;	  /* chaining variables */
+    u32 total[2];
+    u32  buflen;
+    char buffer[128];
+} MD5_CONTEXT;
+
+
+
 #ifdef BIG_ENDIAN_HOST
   #define SWAP(n) \
     (((n) << 24) | (((n) & 0xff00) << 8) | (((n) >> 8) & 0xff00) | ((n) >> 24))
@@ -49,7 +58,7 @@
    64-byte boundary.  (RFC 1321, 3.1: Step 1)  */
 static const unsigned char fillbuf[64] = { 0x80, 0 /* , 0, 0, ...  */ };
 
-void
+static void
 md5_init( MD5_CONTEXT *ctx )
 {
     ctx->A = 0x67452301;
@@ -237,7 +246,7 @@ transform( MD5_CONTEXT *ctx, const void *buffer, size_t len )
  * account for the presence of each of the characters inBuf[0..inLen-1]
  * in the message whose digest is being computed.
  */
-void
+static void
 md5_write( MD5_CONTEXT *ctx, const void *buffer, size_t len)
 {
     /* When we already have some bits in our internal buffer concatenate
@@ -287,7 +296,7 @@ md5_write( MD5_CONTEXT *ctx, const void *buffer, size_t len)
  * Returns 16 bytes representing the digest.
  */
 
-void
+static void
 md5_final( MD5_CONTEXT *ctx )
 {
     /* Take yet unprocessed bytes into account.  */
@@ -315,6 +324,46 @@ md5_final( MD5_CONTEXT *ctx )
     ((u32 *)ctx->buffer)[1] = SWAP (ctx->B);
     ((u32 *)ctx->buffer)[2] = SWAP (ctx->C);
     ((u32 *)ctx->buffer)[3] = SWAP (ctx->D);
+}
+
+static byte *
+md5_read( MD5_CONTEXT *hd )
+{
+    return hd->buffer;
+}
+
+/****************
+ * Return some information about the algorithm.  We need algo here to
+ * distinguish different flavors of the algorithm.
+ * Returns: A pointer to string describing the algorithm or NULL if
+ *	    the ALGO is invalid.
+ */
+const char *
+md5_get_info( int algo, size_t *contextsize,
+	       byte **r_asnoid, int *r_asnlen, int *r_mdlen,
+	       void (**r_init)( void *c ),
+	       void (**r_write)( void *c, byte *buf, size_t nbytes ),
+	       void (**r_final)( void *c ),
+	       byte *(**r_read)( void *c )
+	     )
+{
+    static byte asn[18] = /* Object ID is 1.2.840.113549.2.5 */
+		    { 0x30, 0x20, 0x30, 0x0c, 0x06, 0x08, 0x2a, 0x86,0x48,
+		      0x86, 0xf7, 0x0d, 0x02, 0x05, 0x05, 0x00, 0x04, 0x10 };
+
+    if( algo != 1 )
+	return NULL;
+
+    *contextsize = sizeof(MD5_CONTEXT);
+    *r_asnoid = asn;
+    *r_asnlen = DIM(asn);
+    *r_mdlen = 16;
+    *r_init  = (void (*)(void *))md5_init;
+    *r_write = (void (*)(void *, byte*, size_t))md5_write;
+    *r_final = (void (*)(void *))md5_final;
+    *r_read  = (byte *(*)(void *))md5_read;
+
+    return "MD5";
 }
 
 

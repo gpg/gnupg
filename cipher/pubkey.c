@@ -33,7 +33,7 @@
 #include "dynload.h"
 
 
-#define TABLE_SIZE 20
+#define TABLE_SIZE 10
 
 struct pubkey_table_s {
     const char *name;
@@ -93,12 +93,7 @@ dummy_get_nbits( int algo, MPI *pkey )
 static void
 setup_pubkey_table()
 {
-
-    static int initialized = 0;
     int i;
-
-    if( initialized )
-	return;
 
     i = 0;
     pubkey_table[i].algo = PUBKEY_ALGO_ELGAMAL;
@@ -155,7 +150,6 @@ setup_pubkey_table()
 
     for( ; i < TABLE_SIZE; i++ )
 	pubkey_table[i].name = NULL;
-    initialized = 1;
 }
 
 
@@ -165,6 +159,7 @@ setup_pubkey_table()
 static int
 load_pubkey_modules()
 {
+    static int initialized = 0;
     static int done = 0;
     void *context = NULL;
     struct pubkey_table_s *ct;
@@ -173,6 +168,12 @@ load_pubkey_modules()
     const char *name;
     int any = 0;
 
+
+    if( !initialized ) {
+	setup_pubkey_table();
+	initialized = 1;
+	return 1;
+    }
     if( done )
 	return 0;
     done = 1;
@@ -237,7 +238,6 @@ string_to_pubkey_algo( const char *string )
     int i;
     const char *s;
 
-    setup_pubkey_table();
     do {
 	for(i=0; (s=pubkey_table[i].name); i++ )
 	    if( !stricmp( s, string ) )
@@ -255,7 +255,6 @@ pubkey_algo_to_string( int algo )
 {
     int i;
 
-    setup_pubkey_table();
     do {
 	for(i=0; pubkey_table[i].name; i++ )
 	    if( pubkey_table[i].algo == algo )
@@ -280,7 +279,6 @@ check_pubkey_algo2( int algo, unsigned usage )
 {
     int i;
 
-    setup_pubkey_table();
     do {
 	for(i=0; pubkey_table[i].name; i++ )
 	    if( pubkey_table[i].algo == algo ) {
@@ -304,7 +302,6 @@ int
 pubkey_get_npkey( int algo )
 {
     int i;
-    setup_pubkey_table();
     do {
 	for(i=0; pubkey_table[i].name; i++ )
 	    if( pubkey_table[i].algo == algo )
@@ -320,7 +317,6 @@ int
 pubkey_get_nskey( int algo )
 {
     int i;
-    setup_pubkey_table();
     do {
 	for(i=0; pubkey_table[i].name; i++ )
 	    if( pubkey_table[i].algo == algo )
@@ -336,7 +332,6 @@ int
 pubkey_get_nsig( int algo )
 {
     int i;
-    setup_pubkey_table();
     do {
 	for(i=0; pubkey_table[i].name; i++ )
 	    if( pubkey_table[i].algo == algo )
@@ -352,7 +347,6 @@ int
 pubkey_get_nenc( int algo )
 {
     int i;
-    setup_pubkey_table();
     do {
 	for(i=0; pubkey_table[i].name; i++ )
 	    if( pubkey_table[i].algo == algo )
@@ -369,7 +363,6 @@ pubkey_nbits( int algo, MPI *pkey )
 {
     int i;
 
-    setup_pubkey_table();
     do {
 	for(i=0; pubkey_table[i].name; i++ )
 	    if( pubkey_table[i].algo == algo )
@@ -384,7 +377,6 @@ pubkey_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors )
 {
     int i;
 
-    setup_pubkey_table();
     do {
 	for(i=0; pubkey_table[i].name; i++ )
 	    if( pubkey_table[i].algo == algo )
@@ -400,7 +392,6 @@ pubkey_check_secret_key( int algo, MPI *skey )
 {
     int i;
 
-    setup_pubkey_table();
     do {
 	for(i=0; pubkey_table[i].name; i++ )
 	    if( pubkey_table[i].algo == algo )
@@ -423,7 +414,6 @@ pubkey_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
 
     /* FIXME: check that data fits into the key (in xxx_encrypt)*/
 
-    setup_pubkey_table();
     if( DBG_CIPHER ) {
 	log_debug("pubkey_encrypt: algo=%d\n", algo );
 	for(i=0; i < pubkey_get_npkey(algo); i++ )
@@ -461,7 +451,6 @@ pubkey_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
 {
     int i, rc;
 
-    setup_pubkey_table();
     *result = NULL; /* so the caller can always do an mpi_free */
     if( DBG_CIPHER ) {
 	log_debug("pubkey_decrypt: algo=%d\n", algo );
@@ -498,7 +487,6 @@ pubkey_sign( int algo, MPI *resarr, MPI data, MPI *skey )
 {
     int i, rc;
 
-    setup_pubkey_table();
     if( DBG_CIPHER ) {
 	log_debug("pubkey_sign: algo=%d\n", algo );
 	for(i=0; i < pubkey_get_nskey(algo); i++ )
@@ -532,7 +520,6 @@ pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey,
 {
     int i, rc;
 
-    setup_pubkey_table();
     do {
 	for(i=0; pubkey_table[i].name; i++ )
 	    if( pubkey_table[i].algo == algo ) {

@@ -60,10 +60,10 @@ mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
     esign = exp->sign;
     msign = mod->sign;
 
-    esec = exp->secure;
-    msec = mod->secure;
-    bsec = base->secure;
-    rsec = res->secure;
+    esec = mpi_is_secure(exp);
+    msec = mpi_is_secure(mod);
+    bsec = mpi_is_secure(base);
+    rsec = mpi_is_secure(res);
 
     rp = res->d;
     ep = exp->d;

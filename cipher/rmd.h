@@ -20,8 +20,8 @@
 #ifndef G10_RMD_H
 #define G10_RMD_H
 
-#include "types.h"
 
+/* we need this here because random.c must have direct access */
 typedef struct {
     u32  h0,h1,h2,h3,h4;
     u32  nblocks;
@@ -29,11 +29,19 @@ typedef struct {
     int  count;
 } RMD160_CONTEXT;
 
-
-void rmd160_init( RMD160_CONTEXT *c );
-void rmd160_write( RMD160_CONTEXT *hd, byte *inbuf, size_t inlen);
-void rmd160_final(RMD160_CONTEXT *hd);
+void rmd160_init( RMD160_CONTEXT *hd );
 void rmd160_mixblock( RMD160_CONTEXT *hd, char *buffer );
-#define rmd160_read(h) ( (h)->buf )
+
+
+
+const char *
+rmd160_get_info( int algo, size_t *contextsize,
+	       byte **r_asnoid, int *r_asn_len, int *r_mdlen,
+	       void (**r_init)( void *c ),
+	       void (**r_write)( void *c, byte *buf, size_t nbytes ),
+	       void (**r_final)( void *c ),
+	       byte *(**r_read)( void *c )
+	     );
+
 
 #endif /*G10_RMD_H*/

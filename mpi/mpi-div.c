@@ -198,7 +198,7 @@ mpi_tdiv_qr( MPI quot, MPI rem, MPI num, MPI den)
 	/* Make sure QP and NP point to different objects.  Otherwise the
 	 * numerator would be gradually overwritten by the quotient limbs.  */
 	if(qp == np) { /* Copy NP object to temporary space.  */
-	    np = marker[markidx++] = mpi_alloc_limb_space(nsize,quot->secure);
+	    np = marker[markidx++] = mpi_alloc_limb_space(nsize,mpi_is_secure(quot));
 	    MPN_COPY(np, qp, nsize);
 	}
     }
@@ -218,7 +218,7 @@ mpi_tdiv_qr( MPI quot, MPI rem, MPI num, MPI den)
 	/* Shift up the denominator setting the most significant bit of
 	 * the most significant word.  Use temporary storage not to clobber
 	 * the original contents of the denominator.  */
-	tp = marker[markidx++] = mpi_alloc_limb_space(dsize,den->secure);
+	tp = marker[markidx++] = mpi_alloc_limb_space(dsize,mpi_is_secure(den));
 	mpihelp_lshift( tp, dp, dsize, normalization_steps );
 	dp = tp;
 
@@ -239,7 +239,7 @@ mpi_tdiv_qr( MPI quot, MPI rem, MPI num, MPI den)
 	if( dp == rp || (quot && (dp == qp))) {
 	    mpi_ptr_t tp;
 
-	    tp = marker[markidx++] = mpi_alloc_limb_space(dsize, den->secure);
+	    tp = marker[markidx++] = mpi_alloc_limb_space(dsize, mpi_is_secure(den));
 	    MPN_COPY( tp, dp, dsize );
 	    dp = tp;
 	}

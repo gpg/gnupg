@@ -27,6 +27,7 @@
 #include "memory.h"
 #include "rmd.h"
 
+
 /*********************************
  * RIPEMD-160 is not patented, see (as of 25.10.97)
  *   http://www.esat.kuleuven.ac.be/~bosselae/ripemd160.html
@@ -411,7 +412,7 @@ transform( RMD160_CONTEXT *hd, byte *data )
 /* Update the message digest with the contents
  * of INBUF with length INLEN.
  */
-void
+static void
 rmd160_write( RMD160_CONTEXT *hd, byte *inbuf, size_t inlen)
 {
     if( hd->count == 64 ) { /* flush the buffer */
@@ -443,7 +444,7 @@ rmd160_write( RMD160_CONTEXT *hd, byte *inbuf, size_t inlen)
 /****************
  * Apply the rmd160 transform function on the buffer which must have
  * a length 64 bytes. Do not use this function together with the
- * other functions, use rmd160_init to initialize intzernal variables.
+ * other functions, use rmd160_init to initialize internal variables.
  * Returns: 16 bytes in buffer with the mixed contentes of buffer.
  */
 void
@@ -464,7 +465,7 @@ rmd160_mixblock( RMD160_CONTEXT *hd, char *buffer )
 /* The routine terminates the computation
  */
 
-void
+static void
 rmd160_final( RMD160_CONTEXT *hd )
 {
     u32 t, msb, lsb;
@@ -523,4 +524,43 @@ rmd160_final( RMD160_CONTEXT *hd )
   #undef X
 }
 
+static byte *
+rmd160_read( RMD160_CONTEXT *hd )
+{
+    return hd->buf;
+}
+
+/****************
+ * Return some information about the algorithm.  We need algo here to
+ * distinguish different flavors of the algorithm.
+ * Returns: A pointer to string describing the algorithm or NULL if
+ *	    the ALGO is invalid.
+ */
+const char *
+rmd160_get_info( int algo, size_t *contextsize,
+	       byte **r_asnoid, int *r_asnlen, int *r_mdlen,
+	       void (**r_init)( void *c ),
+	       void (**r_write)( void *c, byte *buf, size_t nbytes ),
+	       void (**r_final)( void *c ),
+	       byte *(**r_read)( void *c )
+	     )
+{
+    static byte asn[15] = /* Object ID is 1.3.36.3.2.1 */
+	  { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
+	    0x02, 0x01, 0x05, 0x00, 0x04, 0x14 };
+
+    if( algo != 3 )
+	return NULL;
+
+    *contextsize = sizeof(RMD160_CONTEXT);
+    *r_asnoid = asn;
+    *r_asnlen = DIM(asn);
+    *r_mdlen = 20;
+    *r_init  = (void (*)(void *))rmd160_init;
+    *r_write = (void (*)(void *, byte*, size_t))rmd160_write;
+    *r_final = (void (*)(void *))rmd160_final;
+    *r_read  = (byte *(*)(void *))rmd160_read;
+
+    return "RIPEMD160";
+}
 

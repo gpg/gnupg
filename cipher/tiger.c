@@ -625,7 +625,7 @@ print_data( const char *text, u64 a, u64 b, u64 c,
 }
 
 
-void
+static void
 tiger_init( TIGER_CONTEXT *hd )
 {
     hd->a = 0x0123456789abcdefLL;
@@ -758,7 +758,7 @@ transform( TIGER_CONTEXT *hd, byte *data )
 /* Update the message digest with the contents
  * of INBUF with length INLEN.
  */
-void
+static void
 tiger_write( TIGER_CONTEXT *hd, byte *inbuf, size_t inlen)
 {
     if( hd->count == 64 ) { /* flush the buffer */
@@ -792,7 +792,7 @@ tiger_write( TIGER_CONTEXT *hd, byte *inbuf, size_t inlen)
 /* The routine terminates the computation
  */
 
-void
+static void
 tiger_final( TIGER_CONTEXT *hd )
 {
     u32 t, msb, lsb;
@@ -850,4 +850,119 @@ tiger_final( TIGER_CONTEXT *hd )
     X(c);
   #undef X
 }
+
+static byte *
+tiger_read( TIGER_CONTEXT *hd )
+{
+    return hd->buf;
+}
+
+/****************
+ * Return some information about the algorithm.  We need algo here to
+ * distinguish different flavors of the algorithm.
+ * Returns: A pointer to string describing the algorithm or NULL if
+ *	    the ALGO is invalid.
+ */
+static const char *
+tiger_get_info( int algo, size_t *contextsize,
+	       byte **r_asnoid, int *r_asnlen, int *r_mdlen,
+	       void (**r_init)( void *c ),
+	       void (**r_write)( void *c, byte *buf, size_t nbytes ),
+	       void (**r_final)( void *c ),
+	       byte *(**r_read)( void *c )
+	     )
+{
+    /* 40: SEQUENCE {
+     * 12:   SEQUENCE {
+     *	8:     OCTET STRING   :54 49 47 45 52 31 39 32
+     *	0:     NULL
+     *	 :     }
+     * 24:   OCTET STRING
+     *	 :   }
+     *
+     * By replacing the 5th byte (0x04) with 0x16 we would have;
+     *	      8:     IA5String 'TIGER192'
+     */
+    static byte asn[18] =
+		{ 0x30, 0x28, 0x30, 0x0c, 0x04, 0x08, 0x54, 0x49, 0x47,
+		  0x45, 0x52, 0x31, 0x39, 0x32, 0x05, 0x00, 0x04, 0x18 };
+
+    if( algo != 6 )
+	return NULL;
+
+    *contextsize = sizeof(TIGER_CONTEXT);
+    *r_asnoid = asn;
+    *r_asnlen = DIM(asn);
+    *r_mdlen = 24;
+    *r_init  = (void (*)(void *))tiger_init;
+    *r_write = (void (*)(void *, byte*, size_t))tiger_write;
+    *r_final = (void (*)(void *))tiger_final;
+    *r_read  = (byte *(*)(void *))tiger_read;
+
+    return "TIGER";
+}
+
+
+
+const char * const gnupgext_version = "TIGER ($Revision$)";
+
+static struct {
+    int class;
+    int version;
+    int  value;
+    void (*func)(void);
+} func_table[] = {
+    { 10, 1, 0, (void(*)(void))tiger_get_info },
+    { 11, 1, 6 },
+};
+
+
+
+/****************
+ * Enumerate the names of the functions together with informations about
+ * this function. Set sequence to an integer with a initial value of 0 and
+ * do not change it.
+ * If what is 0 all kind of functions are returned.
+ * Return values: class := class of function:
+ *			   10 = message digest algorithm info function
+ *			   11 = integer with available md algorithms
+ *			   20 = cipher algorithm info function
+ *			   21 = integer with available cipher algorithms
+ *			   30 = public key algorithm info function
+ *			   31 = integer with available pubkey algorithms
+ *		  version = interface version of the function/pointer
+ *			    (currently this is 1 for all functions)
+ */
+void *
+gnupgext_enum_func( int what, int *sequence, int *class, int *vers )
+{
+    void *ret;
+    int i = *sequence;
+
+    /*log_info("gnupgext_enum_func in rsa+idea called what=%d i=%d: ", what, i);*/
+    do {
+	if( i >= DIM(func_table) || i < 0 ) {
+	    /*fprintf(stderr, "failed\n");*/
+	    return NULL;
+	}
+	*class = func_table[i].class;
+	*vers  = func_table[i].version;
+	switch( *class ) {
+	  case 11:
+	  case 21:
+	  case 31:
+	    ret = &func_table[i].value;
+	    break;
+	  default:
+	    ret = func_table[i].func;
+	    break;
+	}
+	i++;
+    } while( what && what != *class );
+
+    *sequence = i;
+    /*fprintf(stderr, "success\n");*/
+    return ret;
+}
+
 

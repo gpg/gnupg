@@ -18,6 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#define DEFINES_MD_HANDLE 1
+
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,20 +28,125 @@
 #include "util.h"
 #include "cipher.h"
 #include "errors.h"
+#include "dynload.h"
+#include "md5.h"
+#include "sha1.h"
+#include "rmd.h"
+
+
+/****************
+ * This structure is used for the list of available algorithms
+ * and for the list of algorithms in MD_HANDLE.
+ */
+struct md_digest_list_s {
+    struct md_digest_list_s *next;
+    const char *name;
+    int algo;
+    byte *asnoid;
+    int asnlen;
+    int mdlen;
+    void (*init)( void *c );
+    void (*write)( void *c, byte *buf, size_t nbytes );
+    void (*final)( void *c );
+    byte *(*read)( void *c );
+    size_t contextsize; /* allocate this amount of context */
+    char context[1];
+};
+
+static struct md_digest_list_s *digest_list;
 
 
 
-/* Note: the first string is the one used by ascii armor */
-static struct { const char *name; int algo;} digest_names[] = {
-    { "MD5",           DIGEST_ALGO_MD5    },
-    { "SHA1",          DIGEST_ALGO_SHA1   },
-    { "SHA-1",         DIGEST_ALGO_SHA1   },
-    { "RIPEMD160",     DIGEST_ALGO_RMD160 },
-    { "RMD160",        DIGEST_ALGO_RMD160 },
-    { "RMD-160",       DIGEST_ALGO_RMD160 },
-    { "RIPE-MD-160",   DIGEST_ALGO_RMD160 },
-    {NULL} };
+static struct md_digest_list_s *
+new_list_item( int algo,
+	       const char *(*get_info)( int, size_t*,byte**, int*, int*,
+				       void (**)(void*),
+				       void (**)(void*,byte*,size_t),
+				       void (**)(void*),byte *(**)(void*)) )
+{
+    struct md_digest_list_s *r;
 
+    r = m_alloc_clear( sizeof *r );
+    r->algo = algo,
+    r->name = (*get_info)( algo, &r->contextsize,
+			   &r->asnoid, &r->asnlen, &r->mdlen,
+			   &r->init, &r->write, &r->final, &r->read );
+    if( !r->name ) {
+	m_free(r);
+	r = NULL;
+    }
+    return r;
+}
+
+/****************
+ * Put the static entries into the table.
+ */
+static void
+setup_digest_list()
+{
+    struct md_digest_list_s *r;
+
+    r = new_list_item( DIGEST_ALGO_MD5, md5_get_info );
+    if( r ) { r->next = digest_list; digest_list = r; }
+
+    r = new_list_item( DIGEST_ALGO_RMD160, rmd160_get_info );
+    if( r ) { r->next = digest_list; digest_list = r; }
+
+    r = new_list_item( DIGEST_ALGO_SHA1, sha1_get_info );
+    if( r ) { r->next = digest_list; digest_list = r; }
+}
+
+
+/****************
+ * Try to load all modules and return true if new modules are available
+ */
+static int
+load_digest_modules()
+{
+    static int done = 0;
+    static int initialized = 0;
+    struct md_digest_list_s *r;
+    void *context = NULL;
+    int algo;
+    int any = 0;
+    const char *(*get_info)( int, size_t*,byte**, int*, int*,
+			    void (**)(void*),
+			    void (**)(void*,byte*,size_t),
+			    void (**)(void*),byte *(**)(void*));
+
+    if( !initialized ) {
+	setup_digest_list(); /* load static modules on the first call */
+	initialized = 1;
+	return 1;
+    }
+
+    if( done )
+	return 0;
+    done = 1;
+
+    while( enum_gnupgext_digests( &context, &algo, &get_info ) ) {
+	for(r=digest_list; r; r = r->next )
+	    if( r->algo == algo )
+		break;
+	if( r ) {
+	    log_info("skipping digest %d: already loaded\n", algo );
+	    continue;
+	}
+	r = new_list_item( algo, get_info );
+	if( ! r ) {
+	    log_info("skipping digest %d: no name\n", algo );
+	    continue;
+	}
+	/* put it into the list */
+	if( g10_opt_verbose > 1 )
+	    log_info("loaded digest %d\n", algo);
+	r->next = digest_list;
+	digest_list = r;
+	any = 1;
+    }
+    enum_gnupgext_digests( &context, NULL, NULL );
+    return any;
+}
 
 
 
@@ -49,12 +156,13 @@ static struct { const char *name; int algo;} digest_names[] = {
 int
 string_to_digest_algo( const char *string )
 {
-    int i;
-    const char *s;
+    struct md_digest_list_s *r;
 
-    for(i=0; (s=digest_names[i].name); i++ )
-	if( !stricmp( s, string ) )
-	    return digest_names[i].algo;
+    do {
+	for(r = digest_list; r; r = r->next )
+	    if( !stricmp( r->name, string ) )
+		return r->algo;
+    } while( !r && load_digest_modules() );
     return 0;
 }
 
@@ -65,11 +173,13 @@ string_to_digest_algo( const char *string )
 const char *
 digest_algo_to_string( int algo )
 {
-    int i;
+    struct md_digest_list_s *r;
 
-    for(i=0; digest_names[i].name; i++ )
-	if( digest_names[i].algo == algo )
-	    return digest_names[i].name;
+    do {
+	for(r = digest_list; r; r = r->next )
+	    if( r->algo == algo )
+		return r->name;
+    } while( !r && load_digest_modules() );
     return NULL;
 }
 
@@ -77,19 +187,15 @@ digest_algo_to_string( int algo )
 int
 check_digest_algo( int algo )
 {
-    switch( algo ) {
-      case DIGEST_ALGO_MD5:
-      case DIGEST_ALGO_RMD160:
-      case DIGEST_ALGO_SHA1:
-	return 0;
-      default:
-	return G10ERR_DIGEST_ALGO;
-    }
+    struct md_digest_list_s *r;
+
+    do {
+	for(r = digest_list; r; r = r->next )
+	    if( r->algo == algo )
+		return 0;
+    } while( !r && load_digest_modules() );
+    return G10ERR_DIGEST_ALGO;
 }
-
-
-
-
 
 
 
@@ -102,7 +208,6 @@ MD_HANDLE
 md_open( int algo, int secure )
 {
     MD_HANDLE hd;
-
     hd = secure ? m_alloc_secure_clear( sizeof *hd )
 		: m_alloc_clear( sizeof *hd );
     hd->secure = secure;
@@ -115,23 +220,29 @@ md_open( int algo, int secure )
 void
 md_enable( MD_HANDLE h, int algo )
 {
-    if( algo == DIGEST_ALGO_MD5 ) {
-	if( !h->use_md5 )
-	    md5_init( &h->md5 );
-	h->use_md5 = 1;
+    struct md_digest_list_s *r, *ac;
+
+    for( ac=h->list; ac; ac = ac->next )
+	if( ac->algo == algo )
+	    return ; /* already enabled */
+    /* find the algorithm */
+    do {
+	for(r = digest_list; r; r = r->next )
+	    if( r->algo == algo )
+		break;
+    } while( !r && load_digest_modules() );
+    if( !r ) {
+	log_error("md_enable: algorithm %d not available\n", algo );
+	return;
     }
-    else if( algo == DIGEST_ALGO_RMD160 ) {
-	if( !h->use_rmd160 )
-	    rmd160_init( &h->rmd160 );
-	h->use_rmd160 = 1;
-    }
-    else if( algo == DIGEST_ALGO_SHA1 ) {
-	if( !h->use_sha1 )
-	    sha1_init( &h->sha1 );
-	h->use_sha1 = 1;
-    }
-    else
-	log_bug("md_enable(%d)", algo );
+    /* and allocate a new list entry */
+    ac = h->secure? m_alloc_secure( sizeof *ac + r->contextsize )
+		  : m_alloc( sizeof *ac + r->contextsize );
+    *ac = *r;
+    ac->next = h->list;
+    h->list = ac;
+    /* and init this instance */
+    (*ac->init)( &ac->context );
 }
 
 
@@ -139,10 +250,21 @@ MD_HANDLE
 md_copy( MD_HANDLE a )
 {
     MD_HANDLE b;
+    struct md_digest_list_s *ar, *br;
 
     b = a->secure ? m_alloc_secure( sizeof *b )
 		  : m_alloc( sizeof *b );
     memcpy( b, a, sizeof *a );
+    b->list = NULL;
+    /* and now copy the compelte list of algorithms */
+    /* I know that the copied list is reversed, but that doesn't matter */
+    for( ar=a->list; ar; ar = ar->next ) {
+	br = a->secure ? m_alloc_secure( sizeof *br + ar->contextsize )
+		       : m_alloc( sizeof *br + ar->contextsize );
+	memcpy( br, ar, sizeof(*br) + ar->contextsize );
+	br->next = b->list;
+	b->list = br;
+    }
     return b;
 }
 
@@ -150,10 +272,16 @@ md_copy( MD_HANDLE a )
 void
 md_close(MD_HANDLE a)
 {
+    struct md_digest_list_s *r, *r2;
+
     if( !a )
 	return;
     if( a->debug )
 	md_stop_debug(a);
+    for(r=a->list; r; r = r2 ) {
+	r2 = r->next;
+	m_free(r);
+    }
     m_free(a);
 }
 
@@ -161,23 +289,17 @@ md_close(MD_HANDLE a)
 void
 md_write( MD_HANDLE a, byte *inbuf, size_t inlen)
 {
+    struct md_digest_list_s *r;
+
     if( a->debug ) {
 	if( a->bufcount && fwrite(a->buffer, a->bufcount, 1, a->debug ) != 1 )
 	    BUG();
 	if( inlen && fwrite(inbuf, inlen, 1, a->debug ) != 1 )
 	    BUG();
     }
-    if( a->use_rmd160 ) {
-	rmd160_write( &a->rmd160, a->buffer, a->bufcount );
-	rmd160_write( &a->rmd160, inbuf, inlen	);
-    }
-    if( a->use_sha1 ) {
-	sha1_write( &a->sha1, a->buffer, a->bufcount );
-	sha1_write( &a->sha1, inbuf, inlen  );
-    }
-    if( a->use_md5 ) {
-	md5_write( &a->md5, a->buffer, a->bufcount );
-	md5_write( &a->md5, inbuf, inlen  );
+    for(r=a->list; r; r = r->next ) {
+	(*r->write)( &r->context, a->buffer, a->bufcount );
+	(*r->write)( &r->context, inbuf, inlen );
     }
     a->bufcount = 0;
 }
@@ -187,14 +309,13 @@ md_write( MD_HANDLE a, byte *inbuf, size_t inlen)
 void
 md_final(MD_HANDLE a)
 {
+    struct md_digest_list_s *r;
+
     if( a->bufcount )
 	md_write( a, NULL, 0 );
-    if( a->use_rmd160 )
-	rmd160_final( &a->rmd160 );
-    if( a->use_sha1 )
-	sha1_final( &a->sha1 );
-    if( a->use_md5 )
-	md5_final( &a->md5 );
+
+    for(r=a->list; r; r = r->next )
+	(*r->final)( &r->context );
 }
 
 
@@ -204,34 +325,34 @@ md_final(MD_HANDLE a)
 byte *
 md_read( MD_HANDLE a, int algo )
 {
-    if( !algo ) {
-	if( a->use_rmd160 )
-	    return rmd160_read( &a->rmd160 );
-	if( a->use_sha1 )
-	    return sha1_read( &a->sha1 );
-	if( a->use_md5 )
-	    return md5_read( &a->md5 );
+    struct md_digest_list_s *r;
+
+    if( !algo ) {  /* return the first algorithm */
+	if( (r=a->list) ) {
+	    if( r->next )
+		log_error("warning: more than algorithm in md_read(0)\n");
+	    return (*r->read)( &r->context );
+	}
     }
     else {
-	if( algo == DIGEST_ALGO_RMD160 )
-	    return rmd160_read( &a->rmd160 );
-	if( algo == DIGEST_ALGO_SHA1 )
-	    return sha1_read( &a->sha1 );
-	if( algo == DIGEST_ALGO_MD5 )
-	    return md5_read( &a->md5 );
+	for(r=a->list; r; r = r->next )
+	    if( r->algo == algo )
+		return (*r->read)( &r->context );
     }
     BUG();
+    return NULL;
 }
 
 int
 md_get_algo( MD_HANDLE a )
 {
-    if( a->use_rmd160 )
-	return DIGEST_ALGO_RMD160;
-    if( a->use_sha1 )
-	return DIGEST_ALGO_SHA1;
-    if( a->use_md5 )
-	return DIGEST_ALGO_MD5;
+    struct md_digest_list_s *r;
+
+    if( (r=a->list) ) {
+	if( r->next )
+	    log_error("warning: more than algorithm in md_get_algo()\n");
+	return r->algo;
+    }
     return 0;
 }
 
@@ -241,67 +362,39 @@ md_get_algo( MD_HANDLE a )
 int
 md_digest_length( int algo )
 {
-    switch( algo ) {
-      case DIGEST_ALGO_RMD160:
-      case DIGEST_ALGO_SHA1:
-	return 20;
-      default:
-	return 16;
-    }
+    struct md_digest_list_s *r;
+
+    do {
+	for(r = digest_list; r; r = r->next ) {
+	    if( r->algo == algo )
+		return r->mdlen;
+	}
+    } while( !r && load_digest_modules() );
+    log_error("warning: no length for md algo %d\n", algo);
+    return 0;
 }
 
 
-/* fixme: put the oids in a table and add a mode to enumerate the OIDs
- * to make g10/sig-check.c more portable */
+/* fixme: add a mode to enumerate the OIDs
+ *	  to make g10/sig-check.c more portable */
 const byte *
 md_asn_oid( int algo, size_t *asnlen, size_t *mdlen )
 {
-    size_t alen;
-    byte *p;
+    struct md_digest_list_s *r;
 
-    if( algo == DIGEST_ALGO_MD5 ) {
-	static byte asn[18] = /* Object ID is 1.2.840.113549.2.5 */
-		    { 0x30, 0x20, 0x30, 0x0c, 0x06, 0x08, 0x2a, 0x86,0x48,
-		      0x86, 0xf7, 0x0d, 0x02, 0x05, 0x05, 0x00, 0x04, 0x10 };
-	alen = DIM(asn); p = asn;
-    }
-    else if( algo == DIGEST_ALGO_RMD160 ) {
-	static byte asn[15] = /* Object ID is 1.3.36.3.2.1 */
-	  { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
-	    0x02, 0x01, 0x05, 0x00, 0x04, 0x14 };
-	alen = DIM(asn); p = asn;
-    }
-    else if( algo == DIGEST_ALGO_TIGER ) {
-	/* 40: SEQUENCE {
-	 * 12:	 SEQUENCE {
-	 *  8:	   OCTET STRING   :54 49 47 45 52 31 39 32
-	 *  0:	   NULL
-	 *   :	   }
-	 * 24:	 OCTET STRING
-	 *   :	 }
-	 *
-	 * By replacing the 5th byte (0x04) with 0x16 we would have;
-	 *	  8:	 IA5String 'TIGER192'
-	 */
-	static byte asn[18] =
-		    { 0x30, 0x28, 0x30, 0x0c, 0x04, 0x08, 0x54, 0x49, 0x47,
-		      0x45, 0x52, 0x31, 0x39, 0x32, 0x05, 0x00, 0x04, 0x18 };
-	alen = DIM(asn); p = asn;
-    }
-    else if( algo == DIGEST_ALGO_SHA1 ) {
-	static byte asn[15] = /* Object ID is 1.3.14.3.2.26 */
-		    { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03,
-		      0x02, 0x1a, 0x05, 0x00, 0x04, 0x14 };
-	alen = DIM(asn); p = asn;
-    }
-    else
-	log_bug("md_asn_oid(%d)", algo );
-
-    if( asnlen )
-	*asnlen = alen;
-    if( mdlen )
-	*mdlen = p[alen-1];
-    return p;
+    do {
+	for(r = digest_list; r; r = r->next ) {
+	    if( r->algo == algo ) {
+		if( asnlen )
+		    *asnlen = r->asnlen;
+		if( mdlen )
+		    *mdlen = r->mdlen;
+		return r->asnoid;
+	    }
+	}
+    } while( !r && load_digest_modules() );
+    log_bug("warning: no asn for md algo %d\n", algo);
+    return NULL;
 }
 
 

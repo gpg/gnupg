@@ -70,6 +70,7 @@ pgmname=$(basename $0)
 cat <<EOF  >./options
 no-greeting
 no-secmem-warning
+load-extension ../cipher/tiger.so
 batch
 EOF
 

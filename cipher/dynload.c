@@ -22,7 +22,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <dlfcn.h>
+#ifdef HAVE_DL_DLOPEN
+  #include <dlfcn.h>
+#endif
 #include "util.h"
 #include "cipher.h"
 #include "dynload.h"
@@ -86,6 +88,7 @@ register_cipher_extension( const char *fname )
 static int
 load_extension( EXTLIST el )
 {
+  #ifdef USE_DYNAMIC_LINKING
     char **name;
     void *sym;
     const char *err;
@@ -143,10 +146,67 @@ load_extension( EXTLIST el )
 	el->handle = NULL;
     }
     el->failed = 1;
+  #endif /*USE_DYNAMIC_LINKING*/
     return -1;
 }
 
 
+
+int
+enum_gnupgext_digests( void **enum_context,
+	    int *algo,
+	    const char *(**r_get_info)( int, size_t*,byte**, int*, int*,
+				       void (**)(void*),
+				       void (**)(void*,byte*,size_t),
+				       void (**)(void*),byte *(**)(void*)) )
+{
+    EXTLIST r;
+    ENUMCONTEXT *ctx;
+
+    if( !*enum_context ) { /* init context */
+	ctx = m_alloc_clear( sizeof( *ctx ) );
+	ctx->r = extensions;
+	*enum_context = ctx;
+    }
+    else if( !algo ) { /* release the context */
+	m_free(*enum_context);
+	*enum_context = NULL;
+	return 0;
+    }
+    else
+	ctx = *enum_context;
+
+    for( r = ctx->r; r; r = r->next )  {
+	int class, vers;
+
+	if( r->failed )
+	    continue;
+	if( !r->handle && load_extension(r) )
+	    continue;
+	/* get a digest info function */
+	if( ctx->sym )
+	    goto inner_loop;
+	while( (ctx->sym = (*r->enumfunc)(10, &ctx->seq1, &class, &vers)) ) {
+	    void *sym;
+	    /* must check class because enumfunc may be wrong coded */
+	    if( vers != 1 || class != 10 )
+		continue;
+	  inner_loop:
+	    *r_get_info = ctx->sym;
+	    while( (sym = (*r->enumfunc)(11, &ctx->seq2, &class, &vers)) ) {
+		if( vers != 1 || class != 11 )
+		    continue;
+		*algo = *(int*)sym;
+		ctx->r = r;
+		return 1;
+	    }
+	    ctx->seq2 = 0;
+	}
+	ctx->seq1 = 0;
+    }
+    ctx->r = r;
+    return 0;
+}
 
 const char *
 enum_gnupgext_ciphers( void **enum_context, int *algo,

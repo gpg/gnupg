@@ -74,7 +74,7 @@ print_prefix(const char *text)
 }
 
 void
-log_info( const char *fmt, ... )
+g10_log_info( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
@@ -85,7 +85,7 @@ log_info( const char *fmt, ... )
 }
 
 void
-log_error( const char *fmt, ... )
+g10_log_error( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
@@ -97,7 +97,7 @@ log_error( const char *fmt, ... )
 }
 
 void
-log_fatal( const char *fmt, ... )
+g10_log_fatal( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
@@ -110,7 +110,7 @@ log_fatal( const char *fmt, ... )
 }
 
 void
-log_bug( const char *fmt, ... )
+g10_log_bug( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
@@ -126,20 +126,20 @@ log_bug( const char *fmt, ... )
 
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
 void
-log_bug0( const char *file, int line, const char *func )
+g10_log_bug0( const char *file, int line, const char *func )
 {
     log_bug("Ohhhh jeeee ... (%s:%d:%s)\n", file, line, func );
 }
 #else
 void
-log_bug0( const char *file, int line )
+g10_log_bug0( const char *file, int line )
 {
     log_bug("Ohhhh jeeee ... (%s:%d)\n", file, line);
 }
 #endif
 
 void
-log_debug( const char *fmt, ... )
+g10_log_debug( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
@@ -152,7 +152,7 @@ log_debug( const char *fmt, ... )
 
 
 void
-log_hexdump( const char *text, char *buf, size_t len )
+g10_log_hexdump( const char *text, char *buf, size_t len )
 {
     int i;
 
@@ -164,7 +164,7 @@ log_hexdump( const char *text, char *buf, size_t len )
 
 
 void
-log_mpidump( const char *text, MPI a )
+g10_log_mpidump( const char *text, MPI a )
 {
     print_prefix(text);
     mpi_print(stderr, a, 1 );

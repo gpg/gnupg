@@ -63,7 +63,7 @@ mpi_alloc( unsigned nlimbs )
     a->alloced = nlimbs;
     a->nlimbs = 0;
     a->sign = 0;
-    a->secure = 0;
+    a->flags = 0;
     return a;
 }
 
@@ -93,7 +93,7 @@ mpi_alloc_secure( unsigned nlimbs )
     a->d = nlimbs? mpi_alloc_limb_space( nlimbs, 1 ) : NULL;
   #endif
     a->alloced = nlimbs;
-    a->secure = 1;
+    a->flags |= 1;
     a->nlimbs = 0;
     a->sign = 0;
     return a;
@@ -204,9 +204,9 @@ mpi_set_secure( MPI a )
 {
     mpi_ptr_t ap, bp;
 
-    if( a->secure )
+    if( (a->flags & 1) )
 	return;
-    a->secure = 1;
+    a->flags |= 1;
     ap = a->d;
     if( !a->nlimbs ) {
 	assert(!ap);
@@ -243,15 +243,15 @@ mpi_copy( MPI a )
 
     if( a ) {
       #ifdef M_DEBUG
-	b = a->secure? mpi_debug_alloc_secure( a->nlimbs, info )
-		     : mpi_debug_alloc( a->nlimbs, info );
+	b = mpi_is_secure(a)? mpi_debug_alloc_secure( a->nlimbs, info )
+			    : mpi_debug_alloc( a->nlimbs, info );
       #else
-	b = a->secure? mpi_alloc_secure( a->nlimbs )
-		     : mpi_alloc( a->nlimbs );
+	b = mpi_is_secure(a)? mpi_alloc_secure( a->nlimbs )
+			    : mpi_alloc( a->nlimbs );
       #endif
 	b->nlimbs = a->nlimbs;
 	b->sign = a->sign;
-	b->secure = a->secure;
+	b->flags  = a->flags;
 	b->nbits = a->nbits;
 	for(i=0; i < b->nlimbs; i++ )
 	    b->d[i] = a->d[i];
