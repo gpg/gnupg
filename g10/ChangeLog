@@ -1,3 +1,27 @@
+2001-12-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (can_handle_critical): Can handle critical
+	revocation subpackets now.
+
+	* trustdb.c (mark_usable_uid_certs): Disregard revocations for
+	nonrevocable sigs.  Note that this allows a newer revocable
+	signature to override an older nonrevocable signature.
+
+	* sign.c (make_keysig_packet): add a duration field and change all
+	callers.  This makes make_keysig_packet closer to
+	write_signature_packets and removes some duplicated expiration
+	code.
+
+	* keyedit.c (keyedit_menu, menu_revsig, sign_uids,
+	sign_mk_attrib): Add nrsign command, don't allow revoking a
+	nonrevocable signature,
+
+	* g10.c (main): Add --nrsign option to nonrevocably sign a key
+	from the command line.
+
+	* build-packet.c (build_sig_subpkt_from_sig): Comment to explain
+	the use of CRITICAL.
+
 2001-12-21  Werner Koch  <wk@gnupg.org>
 
 	* g10.c. options.h : New option --show-keyring

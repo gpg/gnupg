@@ -75,15 +75,10 @@ static int enable_disable_key( KBNODE keyblock, int disable );
 #define NODFLG_SELKEY (1<<9)  /* indicate the selected key */
 #define NODFLG_SELSIG (1<<10) /* indicate a selected signature */
 
-
 struct sign_attrib {
-    int non_exportable;
-    u32 duration;
+    int non_exportable,non_revocable;
     struct revocation_reason_info *reason;
 };
-
-
-
 
 /****************
  * Print information about a signature, check it and return true
@@ -241,20 +236,15 @@ sign_mk_attrib( PKT_signature *sig, void *opaque )
     byte buf[8];
 
     if( attrib->non_exportable ) {
+        sig->flags.exportable=0;
 	buf[0] = 0; /* not exportable */
 	build_sig_subpkt( sig, SIGSUBPKT_EXPORTABLE, buf, 1 );
     }
 
-    if(attrib->duration>0) {
-        buf[0]=(attrib->duration >> 24) & 0xff;
-	buf[1]=(attrib->duration >> 16) & 0xff;
-	buf[2]=(attrib->duration >>  8) & 0xff;
-	buf[3]=attrib->duration & 0xff;
-	/* Mark this CRITICAL, so if any implementation doesn't
-           understand sigs that can expire, it'll just disregard this
-           sig altogether. */
-	build_sig_subpkt( sig, SIGSUBPKT_SIG_EXPIRE | SIGSUBPKT_FLAG_CRITICAL,
-			  buf, 4 );
+    if( attrib->non_revocable ) {
+        sig->flags.revocable=0;
+	buf[0] = 0; /* not revocable */
+	build_sig_subpkt( sig, SIGSUBPKT_REVOCABLE, buf, 1 );
     }
 
     if( attrib->reason )
@@ -271,7 +261,8 @@ sign_mk_attrib( PKT_signature *sig, void *opaque )
  * if some user_ids are marked those will be signed.
  */
 static int
-sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
+sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
+	   int local , int nonrevocable )
 {
     int rc = 0;
     int class=0;
@@ -500,6 +491,10 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 	    tty_printf(
 		  _("\nThe signature will be marked as non-exportable.\n"));
 
+	if( nonrevocable )
+	    tty_printf(
+		  _("\nThe signature will be marked as non-revocable.\n"));
+
 	switch(class)
 	  {
 	  case 0x11:
@@ -537,10 +532,10 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 		assert( primary_pk );
 		memset( &attrib, 0, sizeof attrib );
 		attrib.non_exportable = local;
-		attrib.duration = duration;
+		attrib.non_revocable = nonrevocable;
 		node->flag &= ~NODFLG_MARK_A;
 
-                /* we force createion of a v4 signature for local
+                /* we force creation of a v4 signature for local
                  * signatures, otherwise we would not generate the
                  * subpacket with v3 keys and the signature becomes
                  * exportable */
@@ -549,8 +544,8 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 					 NULL,
 					 sk,
                                          class, 0, force_v4?4:0,
-					 timestamp, sign_mk_attrib,
-					 &attrib );
+					 timestamp, duration,
+					 sign_mk_attrib, &attrib );
 		if( rc ) {
 		    log_error(_("signing failed: %s\n"), g10_errstr(rc));
 		    goto leave;
@@ -753,7 +748,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 {
     enum cmdids { cmdNONE = 0,
 	   cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
-           cmdLSIGN, cmdREVSIG, cmdREVKEY, cmdDELSIG, cmdPRIMARY,
+           cmdLSIGN, cmdNRSIGN, cmdREVSIG, cmdREVKEY, cmdDELSIG, cmdPRIMARY,
 	   cmdDEBUG, cmdSAVE, cmdADDUID, cmdDELUID, cmdADDKEY, cmdDELKEY,
 	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE,
            cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF, cmdSETPREF, cmdUPDPREF,
@@ -780,6 +775,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	{ N_("sign")    , cmdSIGN      , 0,1,1, N_("sign the key") },
 	{ N_("s")       , cmdSIGN      , 0,1,1, NULL },
 	{ N_("lsign")   , cmdLSIGN     , 0,1,1, N_("sign the key locally") },
+	{ N_("nrsign")  , cmdNRSIGN    , 0,1,1, N_("sign the key non-revocably") },
 	{ N_("debug")   , cmdDEBUG     , 0,0,0, NULL },
 	{ N_("adduid")  , cmdADDUID    , 1,1,0, N_("add a user ID") },
 	{ N_("deluid")  , cmdDELUID    , 0,1,0, N_("delete user ID") },
@@ -826,7 +822,8 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 
     if( sign_mode ) {
 	commands = NULL;
-	append_to_strlist( &commands, sign_mode == 1? "sign":"lsign" );
+	append_to_strlist( &commands, sign_mode == 1? "sign":
+			   sign_mode == 2?"lsign":"nrsign" );
 	have_commands = 1;
     }
 
@@ -984,6 +981,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 
 	  case cmdSIGN: /* sign (only the public key) */
 	  case cmdLSIGN: /* sign (only the public key) */
+	  case cmdNRSIGN: /* sign (only the public key) */
 	    if( pk->is_revoked )
 	      {
 		tty_printf(_("Key is revoked.\n"));
@@ -1007,7 +1005,8 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		    break;
 		}
 	    }
-	    if( !sign_uids( keyblock, locusr, &modified, cmd == cmdLSIGN )
+	    if( !sign_uids( keyblock, locusr, &modified,
+			    cmd == cmdLSIGN , cmd == cmdNRSIGN )
 		&& sign_mode )
 		goto do_cmd_save;
 	    break;
@@ -1526,7 +1525,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	sec_where = NULL;
     assert(pk && sk );
 
-    rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0, 0, 0,
+    rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0, 0, 0, 0,
 			     keygen_add_std_prefs, pk );
     free_secret_key( sk );
     if( rc ) {
@@ -1821,11 +1820,11 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 		/* create new self signature */
 		if( mainkey )
 		    rc = make_keysig_packet( &newsig, main_pk, uid, NULL,
-					     sk, 0x13, 0, 0, 0,
+					     sk, 0x13, 0, 0, 0, 0,
 					     keygen_add_std_prefs, main_pk );
 		else
 		    rc = make_keysig_packet( &newsig, main_pk, NULL, sub_pk,
-					     sk, 0x18, 0, 0, 0,
+					     sk, 0x18, 0, 0, 0, 0,
 					     keygen_add_key_expire, sub_pk );
 		if( rc ) {
 		    log_error("make_keysig_packet failed: %s\n",
@@ -2225,9 +2224,9 @@ ask_revoke_sig( KBNODE keyblock, KBNODE node )
 		(ulong)sig->keyid[1], datestr_from_sig(sig) );
 
     if( cpr_get_answer_is_yes("ask_revoke_sig.one",
-	 _("Create a revocation certificate for this signature? (y/N)")) ) {
-	node->flag |= NODFLG_MARK_A;
-	unode->flag |= NODFLG_MARK_A;
+       _("Create a revocation certificate for this signature? (y/N)")) ) {
+      node->flag |= NODFLG_MARK_A;
+      unode->flag |= NODFLG_MARK_A;
     }
 }
 
@@ -2263,9 +2262,11 @@ menu_revsig( KBNODE keyblock )
 		&& ((sig = node->pkt->pkt.signature),
                      !seckey_available(sig->keyid)  ) ) {
 	    if( (sig->sig_class&~3) == 0x10 ) {
-		tty_printf(_("   signed by %08lX at %s\n"),
-			    (ulong)sig->keyid[1], datestr_from_sig(sig) );
-		node->flag |= NODFLG_SELSIG;
+		tty_printf(_("   signed by %08lX at %s%s\n"),
+			    (ulong)sig->keyid[1], datestr_from_sig(sig),
+			   sig->flags.revocable?"":" (not revocable)");
+		if(sig->flags.revocable)
+		  node->flag |= NODFLG_SELSIG;
 	    }
 	    else if( sig->sig_class == 0x30 ) {
 		tty_printf(_("   revoked by %08lX at %s\n"),
@@ -2342,7 +2343,7 @@ menu_revsig( KBNODE keyblock )
 				       unode->pkt->pkt.user_id,
 				       NULL,
 				       sk,
-				       0x30, 0, 0, 0,
+				       0x30, 0, 0, 0, 0,
 				       sign_mk_attrib,
 				       &attrib );
 	free_secret_key(sk);
@@ -2405,7 +2406,7 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	    node->flag &= ~NODFLG_SELKEY;
 	    sk = copy_secret_key( NULL, sec_keyblock->pkt->pkt.secret_key );
 	    rc = make_keysig_packet( &sig, mainpk, NULL, subpk, sk,
-                                     0x28, 0, 0, 0,
+                                     0x28, 0, 0, 0, 0,
 				     sign_mk_attrib, &attrib );
 	    free_secret_key(sk);
 	    if( rc ) {

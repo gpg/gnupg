@@ -968,6 +968,7 @@ can_handle_critical( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_SIG_EXPIRE:
       case SIGSUBPKT_KEY_EXPIRE:
       case SIGSUBPKT_EXPORTABLE:
+      case SIGSUBPKT_REVOCABLE:
       case SIGSUBPKT_ISSUER:/* issuer key ID */
       case SIGSUBPKT_PREF_SYM:
       case SIGSUBPKT_PREF_HASH:

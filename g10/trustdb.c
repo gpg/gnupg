@@ -1056,7 +1056,27 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
           if (kid[0] != sig->keyid[0] || kid[1] != sig->keyid[1])
             continue;
           n->flag |= (1<<10); /* mark this node as processed */
-          if (sig->timestamp >= sigdate)
+
+	  /* If the current signode is a nonrevocable signature, and
+             we're checking a revocation, then skip.  Note that this
+             will let more recent signatures replace the nonrevocable
+             signature.  Is that the proper behavior? */
+
+	  if(IS_UID_REV(n->pkt->pkt.signature) &&
+	     IS_UID_SIG(signode->pkt->pkt.signature) &&
+	     !signode->pkt->pkt.signature->flags.revocable)
+	    continue;
+
+	  /* A nonrevocable signature n should always replace a
+             revocation in signode.  If n is newer, then there is no
+             question.  If n is older, then it should still replace
+             signode as the revocation in signode is invalid because n
+             is nonrevocable. */
+
+          if ((sig->timestamp >= sigdate) ||
+	      (IS_UID_REV(signode->pkt->pkt.signature) &&
+	       IS_UID_SIG(n->pkt->pkt.signature) &&
+	       !n->pkt->pkt.signature->flags.revocable))
             {
               signode = n;
               sigdate = sig->timestamp;

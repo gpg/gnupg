@@ -900,6 +900,11 @@ build_sig_subpkt_from_sig( PKT_signature *sig )
 	buf[1] = (u >> 16) & 0xff;
 	buf[2] = (u >>  8) & 0xff;
 	buf[3] = u & 0xff;
+
+	/* Mark this CRITICAL, so if any implementation doesn't
+           understand sigs that can expire, it'll just disregard this
+           sig altogether. */
+
 	build_sig_subpkt( sig, SIGSUBPKT_SIG_EXPIRE | SIGSUBPKT_FLAG_CRITICAL,
 			  buf, 4 );
       }

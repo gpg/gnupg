@@ -1012,7 +1012,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 		    PKT_user_id *uid, PKT_public_key *subpk,
 		    PKT_secret_key *sk,
 		    int sigclass, int digest_algo,
-                    int sigversion, u32 timestamp,
+                    int sigversion, u32 timestamp, u32 duration,
 		    int (*mksubpkt)(PKT_signature *, void *), void *opaque
 		   )
 {
@@ -1075,7 +1075,9 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     if(timestamp)
       sig->timestamp=timestamp;
     else
-      sig->timestamp = make_timestamp();
+      sig->timestamp=make_timestamp();
+    if(duration)
+      sig->expiredate=sig->timestamp+duration;
     sig->sig_class = sigclass;
     if( sig->version >= 4 )
 	build_sig_subpkt_from_sig( sig );

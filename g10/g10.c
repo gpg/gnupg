@@ -78,6 +78,7 @@ enum cmd_and_opt_values { aNull = 0,
     aSignSym,
     aSignKey,
     aLSignKey,
+    aNRSignKey,
     aListPackets,
     aEditKey,
     aDeleteKey,
@@ -278,6 +279,7 @@ static ARGPARSE_OPTS opts[] = {
 				    N_("remove key from the secret keyring")},
     { aSignKey,  "sign-key"   ,256, N_("sign a key")},
     { aLSignKey, "lsign-key"  ,256, N_("sign a key locally")},
+    { aNRSignKey, "nrsign-key"  ,256, N_("sign a key non-revocably")},
     { aEditKey,  "edit-key"   ,256, N_("sign or edit a key")},
     { aGenRevoke, "gen-revoke",256, N_("generate a revocation certificate")},
     { aExport, "export"           , 256, N_("export keys") },
@@ -889,6 +891,7 @@ main( int argc, char **argv )
 	  case aKeygen: set_cmd( &cmd, aKeygen); greeting=1; break;
 	  case aSignKey: set_cmd( &cmd, aSignKey); break;
 	  case aLSignKey: set_cmd( &cmd, aLSignKey); break;
+	  case aNRSignKey: set_cmd( &cmd, aNRSignKey); break;
 	  case aStore: set_cmd( &cmd, aStore); break;
 	  case aEditKey: set_cmd( &cmd, aEditKey); greeting=1; break;
 	  case aClearsign: set_cmd( &cmd, aClearsign); break;
@@ -1579,6 +1582,14 @@ main( int argc, char **argv )
 	keyedit_menu(fname, locusr, NULL, 2 );
 	m_free(username);
 	break;
+
+      case aNRSignKey:
+	if( argc != 1 )
+	    wrong_args(_("--nrsign-key user-id"));
+	username = make_username( fname );
+	keyedit_menu(fname, locusr, NULL, 3 );
+        m_free(username);
+        break;
 
       case aEditKey: /* Edit a key signature */
 	if( !argc )

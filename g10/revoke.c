@@ -193,7 +193,7 @@ gen_revoke( const char *uname )
     iobuf_push_filter( out, armor_filter, &afx );
 
     /* create it */
-    rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x20, 0, 0, 0,
+    rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x20, 0, 0, 0, 0,
 						  revocation_reason_build_cb,
 						  reason );
     if( rc ) {
