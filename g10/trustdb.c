@@ -904,8 +904,6 @@ is_disabled(void *dummy,u32 *keyid)
 
   init_trustdb ();
 
-  /* Note that get_pubkey returns the main key if keyid points to a
-     subkey. That's a good thing here. */
   rc = get_pubkey(pk, keyid);
   if(rc)
     {
