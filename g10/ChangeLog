@@ -1,3 +1,8 @@
+2002-05-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* exec.c: Provide stubs for exec_ functions when NO_EXEC is
+	defined.
+
 2002-05-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* photoid.h, photoid.c (parse_image_header, image_type_to_string):

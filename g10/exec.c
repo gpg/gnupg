@@ -41,6 +41,19 @@
 #include "util.h"
 #include "exec.h"
 
+#ifdef NO_EXEC
+int exec_write(struct exec_info **info,const char *program,
+	       const char *args_in,int writeonly,int binary)
+{
+  log_error(_("no remote program execution supported\n"));
+  return G10ERR_GENERAL;
+}
+
+int exec_read(struct exec_info *info) { return G10ERR_GENERAL; }
+int exec_finish(struct exec_info *info) { return G10ERR_GENERAL; }
+
+#else /* ! NO_EXEC */
+
 #ifndef HAVE_MKDTEMP
 char *mkdtemp(char *template);
 #endif
@@ -494,3 +507,4 @@ int exec_finish(struct exec_info *info)
 
   return ret;
 }
+#endif /* ! NO_EXEC */

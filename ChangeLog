@@ -1,3 +1,10 @@
+2002-05-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Add --disable-exec flag to disable all remote
+	program execution.  --disable-exec implies --disable-ldap and
+	--disable-mailto.  Also look in /usr/lib for sendmail.  If
+	sendmail is not found, do not default - just fail.
+
 2002-04-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Try and link to a sample LDAP program to check if

@@ -117,17 +117,28 @@ if test "$use_m_guard" = yes ; then
     AC_DEFINE(M_GUARD,1,[Define to use the (obsolete) malloc guarding feature])
 fi
 
-AC_MSG_CHECKING([whether the LDAP keyserver interface is requested])
-AC_ARG_ENABLE(ldap,
-[  --disable-ldap          disable LDAP keyserver interface],
-    try_ldap=$enableval, try_ldap=yes)
-AC_MSG_RESULT($try_ldap)
+AC_MSG_CHECKING([whether to enable external program execution])
+AC_ARG_ENABLE(exec,
+    [  --disable-exec          disable external program execution],
+    use_exec=$enableval, use_exec=yes)
+AC_MSG_RESULT($use_exec)
+if test "$use_exec" = no ; then
+    AC_DEFINE(NO_EXEC,1,[Define to disable external program execution])
+fi
 
-AC_MSG_CHECKING([whether the email keyserver interface is requested])
-AC_ARG_ENABLE(mailto,
-[  --disable-mailto        disable email keyserver interface],
-    try_mailto=$enableval, try_mailto=yes)
-AC_MSG_RESULT($try_mailto)
+if test "$use_exec" = yes ; then
+  AC_MSG_CHECKING([whether LDAP keyserver support is requested])
+  AC_ARG_ENABLE(ldap,
+  [  --disable-ldap          disable LDAP keyserver interface],
+      try_ldap=$enableval, try_ldap=yes)
+  AC_MSG_RESULT($try_ldap)
+
+  AC_MSG_CHECKING([whether email keyserver support is requested])
+  AC_ARG_ENABLE(mailto,
+  [  --disable-mailto        disable email keyserver interface],
+      try_mailto=$enableval, try_mailto=yes)
+  AC_MSG_RESULT($try_mailto)
+fi
 
 AC_MSG_CHECKING([whether included zlib is requested])
 AC_ARG_WITH(included-zlib,
@@ -295,8 +306,7 @@ fi
 AC_SUBST(GPGKEYS_LDAP)
 
 if test "$try_mailto" = yes ; then
-  AC_PATH_PROG(SENDMAIL,sendmail,/usr/sbin/sendmail,
-	$PATH:/usr/libexec:/usr/sbin)
+  AC_PATH_PROG(SENDMAIL,sendmail,,$PATH:/usr/sbin:/usr/libexec:/usr/lib)
 
   if test "$ac_cv_path_SENDMAIL" ; then
     GPGKEYS_MAILTO="gpgkeys_mailto"
