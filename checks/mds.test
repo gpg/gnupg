@@ -24,7 +24,7 @@ test_one ":3:"    "9C1185A5C5E9FC54612808977EE8F548B2258D31"
 if have_hash_algo "TIGER192"; then
   test_one ":6:"  "24F0130C63AC933216166E76B1BB925FF373DE2D49584E7A"
 else
-  echo "Hash algorithm TIGER/192 is not installed"
+  echo "Hash algorithm TIGER/192 is not installed (not an error)"
 fi
 # SHA-256
 test_one ":8:"    "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
@@ -32,13 +32,13 @@ test_one ":8:"    "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B
 if have_hash_algo "SHA384"; then
   test_one ":9:"  "38B060A751AC96384CD9327EB1B1E36A21FDB71114BE07434C0CC7BF63F6E1DA274EDEBFE76F65FBD51AD2F14898B95B"
 else
-  echo "Hash algorithm SHA-384 is not installed"
+  echo "Hash algorithm SHA-384 is not installed (not an error)"
 fi
 # SHA-512
 if have_hash_algo "SHA512"; then
   test_one ":10:"  "CF83E1357EEFB8BDF1542850D66D8007D620E4050B5715DC83F4A921D36CE9CE47D0D13C5D85F2B0FF8318D2877EEC2F63B931BD47417A81A538327AF927DA3E"
 else
-  echo "Hash algorithm SHA-512 is not installed"
+  echo "Hash algorithm SHA-512 is not installed (not an error)"
 fi
 
 [ "$failed" != "" ] && error "$failed failed for empty string"
