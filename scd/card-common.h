@@ -48,12 +48,12 @@ struct card_ctx_s {
                  int (pincb)(void*, const char *, char **),
                  void *pincb_arg,
                  const void *indata, size_t indatalen,
-                 void **outdata, size_t *outdatalen );
+                 unsigned char **outdata, size_t *outdatalen );
     int (*decipher) (CARD card, const char *keyidstr,
                      int (pincb)(void*, const char *, char **),
                      void *pincb_arg,
                      const void *indata, size_t indatalen,
-                     void **outdata, size_t *outdatalen);
+                     unsigned char **outdata, size_t *outdatalen);
   } fnc;
   
 };

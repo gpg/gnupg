@@ -140,7 +140,7 @@ iso7816_compute_ds (int slot, const unsigned char *data, size_t datalen,
   if (sw != SW_SUCCESS)
     {
       /* Make sure that pending buffers are released. */
-      xfree (result);
+      xfree (*result);
       *result = NULL;
       *resultlen = 0;
       return -1;  /* FIXME: Map error codes. */
@@ -178,7 +178,7 @@ iso7816_decipher (int slot, const unsigned char *data, size_t datalen,
   if (sw != SW_SUCCESS)
     {
       /* Make sure that pending buffers are released. */
-      xfree (result);
+      xfree (*result);
       *result = NULL;
       *resultlen = 0;
       return -1;  /* FIXME: Map error codes. */
@@ -205,7 +205,7 @@ iso7816_internal_authenticate (int slot,
   if (sw != SW_SUCCESS)
     {
       /* Make sure that pending buffers are released. */
-      xfree (result);
+      xfree (*result);
       *result = NULL;
       *resultlen = 0;
       return -1;  /* FIXME: Map error codes. */

@@ -138,7 +138,7 @@ app_sign (APP app, const char *keyidstr, int hashalgo,
           int (pincb)(void*, const char *, char **),
           void *pincb_arg,
           const void *indata, size_t indatalen,
-          void **outdata, size_t *outdatalen )
+          unsigned char **outdata, size_t *outdatalen )
 {
   int rc;
 
@@ -166,7 +166,7 @@ app_decipher (APP app, const char *keyidstr,
               int (pincb)(void*, const char *, char **),
               void *pincb_arg,
               const void *indata, size_t indatalen,
-              void **outdata, size_t *outdatalen )
+              unsigned char **outdata, size_t *outdatalen )
 {
   int rc;
 

@@ -565,7 +565,7 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
-  void *outdata;
+  unsigned char *outdata;
   size_t outdatalen;
   char *keyidstr;
 
@@ -615,7 +615,7 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
-  void *outdata;
+  unsigned char *outdata;
   size_t outdatalen;
   char *keyidstr;
 

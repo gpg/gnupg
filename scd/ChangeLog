@@ -1,3 +1,15 @@
+2003-07-03  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (do_setattr): Add setting of the URL.
+	(app_select_openpgp): Dump card data only in very verbose mode.
+	(do_decipher): New.
+
+2003-07-02  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (get_sig_counter): New.
+	(do_sign): Print the signature counter and enable the PIN callback.
+	(do_genkey): Implement the PIN callback. 
+
 2003-07-01  Werner Koch  <wk@gnupg.org>
 
 	* app-openpgp.c (store_fpr): Fixed fingerprint calculation.

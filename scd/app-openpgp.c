@@ -176,15 +176,19 @@ get_one_do (int slot, int tag, unsigned char **result, size_t *nbytes)
                              &buffer, &buflen);
       if (!rc)
         {
-          value = find_tlv (buffer, buflen, tag, &valuelen, 0);
-          if (!value)
-            ; /* not found */
-          else if (valuelen > buflen - (value - buffer))
+          const unsigned char *s;
+
+          s = find_tlv (buffer, buflen, tag, &valuelen, 0);
+          if (!s)
+            value = NULL; /* not found */
+          else if (valuelen > buflen - (s - buffer))
             {
               log_error ("warning: constructed DO too short\n");
               value = NULL;
               xfree (buffer); buffer = NULL;
             }
+          else
+            value = buffer + (s - buffer);
         }
     }
 
@@ -436,7 +440,7 @@ do_learn_status (APP app, CTRL ctrl)
       send_status_info (ctrl, "DISP-NAME", value, valuelen, NULL, 0);
       xfree (relptr);
     }
-  relptr = get_one_do (app->slot, 0x5FF0, &value, &valuelen);
+  relptr = get_one_do (app->slot, 0x5F50, &value, &valuelen);
   if (relptr)
     {
       send_status_info (ctrl, "PUBKEY-URL", value, valuelen, NULL, 0);
@@ -479,8 +483,8 @@ do_setattr (APP app, const char *name,
     {
       char *pinvalue;
 
-/*        rc = pincb (pincb_arg, "Please enter the card's admin PIN (CHV3)", */
-/*                    &pinvalue); */
+      rc = pincb (pincb_arg, "Admin PIN (CHV3)",
+                  &pinvalue);
       pinvalue = xstrdup ("12345678");
       rc = 0;
       if (rc)
@@ -515,6 +519,15 @@ do_setattr (APP app, const char *name,
           rc = gpg_error (GPG_ERR_GENERAL);
         }
     }
+  else if (!strcmp (name, "PUBKEY-URL"))
+    {
+      rc = iso7816_put_data (app->slot, 0x5F50, value, valuelen);
+      if (rc)
+        {
+          log_error ("failed to set `Pubkey-URL'\n");
+          rc = gpg_error (GPG_ERR_GENERAL);
+        }
+    }
   else
     rc = gpg_error (GPG_ERR_INV_NAME); 
 
@@ -539,6 +552,7 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
   time_t created_at;
   int keyno = atoi (keynostr);
   int force = (flags & 1);
+  time_t start_at;
 
   if (keyno < 1 || keyno > 3)
     return gpg_error (GPG_ERR_INV_ID);
@@ -571,7 +585,17 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
   else
     log_info ("generating new key\n");
 
-  rc = iso7816_verify (app->slot, 0x83, "12345678", 8);
+  {
+    char *pinvalue;
+    rc = pincb (pincb_arg, "Admin PIN", &pinvalue); 
+    if (rc)
+      {
+        log_error ("error getting PIN: %s\n", gpg_strerror (rc));
+        return rc;
+      }
+    rc = iso7816_verify (app->slot, 0x83, pinvalue, strlen (pinvalue));
+    xfree (pinvalue);
+  }
   if (rc)
     {
       log_error ("verify CHV3 failed: rc=%04X\n", rc);
@@ -580,6 +604,8 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
 
   xfree (buffer); buffer = NULL;
 #if 1
+  log_info ("please wait while key is being generated ...\n");
+  start_at = time (NULL);
   rc = iso7816_generate_keypair 
 #else
 #warning key generation temporary replaced by reading an existing key.
@@ -596,6 +622,8 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
       log_error ("generating key failed\n");
       goto leave;
     }
+  log_info ("key generation completed (%d seconds)\n",
+            (int)(time (NULL) - start_at));
   keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen, 0);
   if (!keydata)
     {
@@ -609,7 +637,7 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
       log_error ("response does not contain the RSA modulus\n");
       goto leave;
     }
-  log_printhex ("RSA n:", m, mlen);
+/*    log_printhex ("RSA n:", m, mlen); */
   send_key_data (ctrl, "n", m, mlen);
 
   e = find_tlv (keydata, keydatalen, 0x0082, &elen, 0);
@@ -618,7 +646,7 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
       log_error ("response does not contain the RSA public exponent\n");
       goto leave;
     }
-  log_printhex ("RSA e:", e, elen);
+/*    log_printhex ("RSA e:", e, elen); */
   send_key_data (ctrl, "e", e, elen);
 
   created_at = gnupg_get_time ();
@@ -638,6 +666,28 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
   return rc;
 }
 
+
+static unsigned long
+get_sig_counter (APP app)
+{
+  void *relptr;
+  unsigned char *value;
+  size_t valuelen;
+  unsigned long ul;
+
+  relptr = get_one_do (app->slot, 0x0093, &value, &valuelen);
+  if (!relptr)
+    return 0;
+  if (valuelen == 3 )
+    ul = (value[0] << 16) | (value[1] << 8) | value[2];
+  else
+    {
+      log_error ("invalid structure of OpenPGP card (DO 0x93)\n");
+      ul = 0;
+    }
+  xfree (relptr);
+  return ul;
+}
 
 static int
 compare_fingerprint (APP app, int keyno, unsigned char *sha1fpr)
@@ -688,7 +738,7 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
          int (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
-         void **outdata, size_t *outdatalen )
+         unsigned char **outdata, size_t *outdatalen )
 {
   static unsigned char sha1_prefix[15] = /* Object ID is 1.3.14.3.2.26 */
   { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03,
@@ -702,6 +752,7 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
   const char *s;
   int n;
   const char *fpr = NULL;
+  unsigned long sigcount;
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -731,7 +782,7 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
   if (memcmp (app->serialno, tmp_sn, 16))
     return gpg_error (GPG_ERR_WRONG_CARD);
 
-  /* If a fingerprint has been speicified check it against the one on
+  /* If a fingerprint has been specified check it against the one on
      the card.  This is allows for a meaningful error message in case
      the key on the card has been replaced but the shadow information
      known to gpg was not updated.  If there is no fingerprint, gpg
@@ -763,14 +814,24 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
     return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
   memcpy (data+15, indata, indatalen);
 
+  sigcount = get_sig_counter (app);
+  log_info ("signatures created so far: %lu\n", sigcount);
 
-  if (!app->did_chv1)
+  /* FIXME: Check whether we are really required to enter the PIN for
+     each signature. There is a DO for this. */
+  if (!app->did_chv1 || 1) 
     {
       char *pinvalue;
 
-/*        rc = pincb (pincb_arg, "signature PIN", &pinvalue); */
-      pinvalue = xstrdup ("123456");
-      rc = 0;
+      {
+        char *prompt;
+        if (asprintf (&prompt, "Signature PIN [sigs done: %lu]", sigcount) < 0)
+          return gpg_error_from_errno (errno);
+        rc = pincb (pincb_arg, prompt, &pinvalue); 
+        free (prompt);
+      }
+/*        pinvalue = xstrdup ("123456"); */
+/*        rc = 0; */
       if (rc)
         {
           log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
@@ -789,9 +850,101 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
     }
 
   rc = iso7816_compute_ds (app->slot, data, 35, outdata, outdatalen);
-
   return rc;
 }
+
+
+static int 
+do_decipher (APP app, const char *keyidstr,
+             int (pincb)(void*, const char *, char **),
+             void *pincb_arg,
+             const void *indata, size_t indatalen,
+             unsigned char **outdata, size_t *outdatalen )
+{
+  int rc;
+  unsigned char tmp_sn[20]; /* actually 16 but we use it also for the fpr. */
+  const char *s;
+  int n;
+  const char *fpr = NULL;
+
+  if (!keyidstr || !*keyidstr || !indatalen)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  /* Check whether an OpenPGP card of any version has been requested. */
+  if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))
+    return gpg_error (GPG_ERR_INV_ID);
+  
+  for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
+    ;
+  if (n != 32)
+    return gpg_error (GPG_ERR_INV_ID);
+  else if (!*s)
+    ; /* no fingerprint given: we allow this for now. */
+  else if (*s == '/')
+    fpr = s + 1; 
+  else
+    return gpg_error (GPG_ERR_INV_ID);
+
+  for (s=keyidstr, n=0; n < 16; s += 2, n++)
+    tmp_sn[n] = xtoi_2 (s);
+
+  if (app->serialnolen != 16)
+    return gpg_error (GPG_ERR_INV_CARD);
+  if (memcmp (app->serialno, tmp_sn, 16))
+    return gpg_error (GPG_ERR_WRONG_CARD);
+
+  /* If a fingerprint has been specified check it against the one on
+     the card.  This is allows for a meaningful error message in case
+     the key on the card has been replaced but the shadow information
+     known to gpg was not updated.  If there is no fingerprint, the
+     decryption will won't produce the right plaintext anyway. */
+  if (fpr)
+    {
+      for (s=fpr, n=0; hexdigitp (s); s++, n++)
+        ;
+      if (n != 40)
+        return gpg_error (GPG_ERR_INV_ID);
+      else if (!*s)
+        ; /* okay */
+      else
+        return gpg_error (GPG_ERR_INV_ID);
+
+      for (s=fpr, n=0; n < 20; s += 2, n++)
+        tmp_sn[n] = xtoi_2 (s);
+      rc = compare_fingerprint (app, 2, tmp_sn);
+      if (rc)
+        return rc;
+    }
+
+  if (!app->did_chv2) 
+    {
+      char *pinvalue;
+
+      rc = pincb (pincb_arg, "Decryption PIN", &pinvalue); 
+/*        pinvalue = xstrdup ("123456"); */
+/*        rc = 0; */
+      if (rc)
+        {
+          log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
+          return rc;
+        }
+
+      rc = iso7816_verify (app->slot, 0x82, pinvalue, strlen (pinvalue));
+      xfree (pinvalue);
+      if (rc)
+        {
+          log_error ("verify CHV2 failed\n");
+          rc = gpg_error (GPG_ERR_GENERAL);
+          return rc;
+        }
+      app->did_chv2 = 1;
+    }
+  
+  rc = iso7816_decipher (app->slot, indata, indatalen, outdata, outdatalen);
+  return rc;
+}
+
+
 
 
 /* Select the OpenPGP application on the card in SLOT.  This function
@@ -827,12 +980,14 @@ app_select_openpgp (APP app, unsigned char **sn, size_t *snlen)
       else
         xfree (buffer);
 
-      dump_all_do (slot);
+      if (opt.verbose > 1)
+        dump_all_do (slot);
 
       app->fnc.learn_status = do_learn_status;
       app->fnc.setattr = do_setattr;
       app->fnc.genkey = do_genkey;
       app->fnc.sign = do_sign;
+      app->fnc.decipher = do_decipher;
    }
 
 leave:

@@ -43,12 +43,12 @@ struct app_ctx_s {
                  int (pincb)(void*, const char *, char **),
                  void *pincb_arg,
                  const void *indata, size_t indatalen,
-                 void **outdata, size_t *outdatalen );
+                 unsigned char **outdata, size_t *outdatalen );
     int (*decipher) (APP app, const char *keyidstr,
                      int (pincb)(void*, const char *, char **),
                      void *pincb_arg,
                      const void *indata, size_t indatalen,
-                     void **outdata, size_t *outdatalen);
+                     unsigned char **outdata, size_t *outdatalen);
     int (*genkey) (APP app, CTRL ctrl,
                    const char *keynostr, unsigned int flags,
                    int (*pincb)(void*, const char *, char **),
@@ -70,12 +70,12 @@ int app_sign (APP app, const char *keyidstr, int hashalgo,
               int (pincb)(void*, const char *, char **),
               void *pincb_arg,
               const void *indata, size_t indatalen,
-              void **outdata, size_t *outdatalen );
+              unsigned char **outdata, size_t *outdatalen );
 int app_decipher (APP app, const char *keyidstr,
                   int (pincb)(void*, const char *, char **),
                   void *pincb_arg,
                   const void *indata, size_t indatalen,
-                  void **outdata, size_t *outdatalen );
+                  unsigned char **outdata, size_t *outdatalen );
 int app_genkey (APP app, CTRL ctrl, const char *keynostr, unsigned int flags,
                 int (*pincb)(void*, const char *, char **),
                 void *pincb_arg);

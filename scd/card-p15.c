@@ -382,7 +382,7 @@ p15_sign (CARD card, const char *keyidstr, int hashalgo,
           int (pincb)(void*, const char *, char **),
           void *pincb_arg,
           const void *indata, size_t indatalen,
-          void **outdata, size_t *outdatalen )
+          unsigned char **outdata, size_t *outdatalen )
 {
   unsigned int cryptflags;
   struct sc_pkcs15_object *keyobj;
@@ -432,7 +432,7 @@ p15_decipher (CARD card, const char *keyidstr,
               int (pincb)(void*, const char *, char **),
               void *pincb_arg,
               const void *indata, size_t indatalen,
-              void **outdata, size_t *outdatalen )
+              unsigned char **outdata, size_t *outdatalen )
 {
   struct sc_pkcs15_object *keyobj;
   int rc;

@@ -140,6 +140,9 @@ main (int argc, char **argv )
   if (log_get_errorcount(0))
     exit(2);
 
+  if (opt.verbose < 2)
+    opt.verbose = 2; /* hack to let select_openpgp print some info. */
+
   if (argc)
     usage (1);
 
