@@ -479,14 +479,17 @@ learn_status_cb (void *opaque, const char *line)
 
   if (keywordlen == 8 && !memcmp (keyword, "SERIALNO", keywordlen))
     {
+      xfree (parm->serialno);
       parm->serialno = store_serialno (line);
     }
   else if (keywordlen == 9 && !memcmp (keyword, "DISP-NAME", keywordlen))
     {
+      xfree (parm->disp_name);
       parm->disp_name = unescape_status_string (line);
     }
   else if (keywordlen == 9 && !memcmp (keyword, "DISP-LANG", keywordlen))
     {
+      xfree (parm->disp_lang);
       parm->disp_lang = unescape_status_string (line);
     }
   else if (keywordlen == 8 && !memcmp (keyword, "DISP-SEX", keywordlen))
@@ -495,10 +498,12 @@ learn_status_cb (void *opaque, const char *line)
     }
   else if (keywordlen == 10 && !memcmp (keyword, "PUBKEY-URL", keywordlen))
     {
+      xfree (parm->pubkey_url);
       parm->pubkey_url = unescape_status_string (line);
     }
   else if (keywordlen == 10 && !memcmp (keyword, "LOGIN-DATA", keywordlen))
     {
+      xfree (parm->login_data);
       parm->login_data = unescape_status_string (line);
     }
   else if (keywordlen == 11 && !memcmp (keyword, "SIG-COUNTER", keywordlen))
@@ -569,6 +574,34 @@ agent_learn (struct agent_card_info_s *info)
   memset (info, 0, sizeof *info);
   rc = assuan_transact (agent_ctx, "LEARN --send",
                         NULL, NULL, NULL, NULL,
+                        learn_status_cb, info);
+  
+  return map_assuan_err (rc);
+}
+
+/* Call the agent to retrieve a data object.  This function returns
+   the data in the same structure as used by the learn command.  It is
+   allowed to update such a structure using this commmand. */
+int
+agent_scd_getattr (const char *name, struct agent_card_info_s *info)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+
+  if (!*name)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  /* We assume that NAME does not need escaping. */
+  if (12 + strlen (name) > DIM(line)-1)
+    return gpg_error (GPG_ERR_TOO_LARGE);
+  stpcpy (stpcpy (line, "SCD GETATTR "), name); 
+
+  rc = start_agent ();
+  if (rc)
+    return rc;
+
+  memset (info, 0, sizeof *info);
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL,
                         learn_status_cb, info);
   
   return map_assuan_err (rc);
@@ -809,12 +842,11 @@ agent_scd_pkdecrypt (const char *serialno,
 
 
 /* Change the PIN of an OpenPGP card or reset the retry counter.
-   CHVNO 1: Change the digital signature PIN
-         2: Change the decryption and authentication PIN
+   CHVNO 1: Change the PIN
+         2: Same as 1
          3: Change the admin PIN
-       101: Set a new digital signature PIN and reset the retry counter
-       102: Set a decryption and authentication PIN
-            and reset the retry counter
+       101: Set a new PIN and reset the retry counter
+       102: Same as 101
  */
 int
 agent_scd_change_pin (int chvno)

@@ -58,6 +58,9 @@ void agent_release_card_info (struct agent_card_info_s *info);
 /* Return card info. */
 int agent_learn (struct agent_card_info_s *info);
 
+/* Update INFO with the attribute NAME. */
+int agent_scd_getattr (const char *name, struct agent_card_info_s *info);
+
 /* Check whether the secret key for the key identified by HEXKEYGRIP
    is available.  Return 0 for yes or an error code. */
 int agent_havekey (const char *hexkeygrip);

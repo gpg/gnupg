@@ -41,6 +41,7 @@
 
 static void list_all(int);
 static void list_one( STRLIST names, int secret);
+static void print_card_serialno (PKT_secret_key *sk);
 
 struct sig_stats
 {
@@ -710,6 +711,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    if( !any ) {
 		if( fpr )
 		    print_fingerprint( pk, sk, 0 );
+                print_card_serialno (sk);
 		if( opt.with_key_data )
 		    print_key_data( pk, keyid );
 		any = 1;
@@ -755,6 +757,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 		putchar('\n');
 		if( fpr )
 		    print_fingerprint( pk, sk, 0 ); /* of the main key */
+                print_card_serialno (sk);
 		any = 1;
 	    }
 
@@ -770,7 +773,10 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	      printf(_(" [expires: %s]"), expirestr_from_sk( sk2 ) );
 	    putchar('\n');
 	    if( fpr > 1 )
+              {
 		print_fingerprint( NULL, sk2, 0 );
+                print_card_serialno (sk);
+              }
 	}
 	else if( opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
@@ -813,6 +819,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 		    putchar('\n');
 		if( fpr )
 		    print_fingerprint( pk, sk, 0 );
+                print_card_serialno (sk);
 		any=1;
 	    }
 
@@ -1396,6 +1403,40 @@ print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode )
         putc ('\n', fp);
     else
         tty_printf ("\n");
+}
+
+
+/* Print the serial number of an OpenPGP card if available. */
+static void
+print_card_serialno (PKT_secret_key *sk)
+{
+  int i;
+
+  if (!sk)
+    return;
+  if (!sk->is_protected || sk->protect.s2k.mode != 1002) 
+    return; /* Not a card. */
+  if (opt.with_colons)
+    return; /* Format not yet defined. */
+
+  fputs (_("      Card serial no. ="), stdout);
+  putchar (' ');
+  if (sk->protect.ivlen == 16
+      && !memcmp (sk->protect.iv, "\xD2\x76\x00\x01\x24\x01", 6) )
+    { /* This is an OpenPGP card. Just print the relevant part. */
+      for (i=8; i < 14; i++)
+        {
+          if (i == 10)
+            putchar (' ');
+          printf ("%02X", sk->protect.iv[i]);
+        }
+    }
+  else
+    { /* Something is wrong: Print all. */
+      for (i=0; i < sk->protect.ivlen; i++)
+        printf ("%02X", sk->protect.iv[i]);
+    }
+  putchar ('\n');
 }
 
 void set_attrib_fd(int fd)

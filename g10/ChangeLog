@@ -1,3 +1,21 @@
+2003-09-30  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (print_card_serialno): New.
+	(list_keyblock_print): Use it here.
+
+	* card-util.c (toggle_forcesig): New.
+	(card_edit): New command "forcesig".
+	
+	* card-util.c (print_name, print_isoname): Use 0 and not LF fro
+	the max_n arg of tty_print_utf8_string2.
+
+	* call-agent.c (agent_scd_getattr): New.
+	(learn_status_cb): Release values before assignment so that it can
+	be used by getattr to update the structure.
+	
+	* card-util.c (change_pin): Simplified.  We now have only a PIN
+	and an Admin PIN.
+
 2003-09-27  Werner Koch  <wk@gnupg.org>
 
 	* sign.c (do_sign): Removed disabled testcode.
