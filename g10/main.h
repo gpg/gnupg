@@ -108,6 +108,7 @@ struct parse_options
   char **value;
 };
 
+char *argsplit(char **stringp);
 char *argsep(char **stringp,char **arg);
 int parse_options(char *str,unsigned int *options,
 		  struct parse_options *opts,int noisy);

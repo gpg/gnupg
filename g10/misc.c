@@ -644,60 +644,83 @@ compliance_failure(void)
   opt.compliance=CO_GNUPG;
 }
 
+/* Break a string into option pieces.  Accepts single word options and
+   key=value argument options. */
 char *
-argsep(char **stringp,char **arg)
+argsplit(char **stringp)
 {
-  char *tok,*next;
+  char *tok,*end;
 
   tok=*stringp;
-  *arg=NULL;
-
   if(tok)
     {
-      next=strpbrk(tok," ,=");
-
-      if(next)
+      end=strpbrk(tok," ,=");
+      if(end)
 	{
 	  int sawequals=0;
+	  char *ptr=end;
 
-	  if(*next=='=')
-	    sawequals=1;
-
-	  *next++='\0';
-	  *stringp=next;
-
-	  /* what we need to do now is scan along starting with *next.
-	     If the next character we see (ignoring spaces) is a =
+	  /* what we need to do now is scan along starting with *end,
+	     If the next character we see (ignoring spaces) is an =
 	     sign, then there is an argument. */
 
-	  while(*next)
+	  while(*ptr)
 	    {
-	      if(*next=='=')
+	      if(*ptr=='=')
 		sawequals=1;
-	      else if(*next!=' ')
+	      else if(*ptr!=' ')
 		break;
-	      next++;
+	      ptr++;
 	    }
 
-	  /* At this point, *next is either an empty string, or the
-	     beginning of the next token (which is an argument if
-	     sawequals is true). */
-
+	  /* There is an argument, so grab that too. */
 	  if(sawequals)
+	    end=strpbrk(ptr," ,");
+
+	  if(end)
 	    {
-	      *arg=next;
-	      next=strpbrk(*arg," ,");
-	      if(next)
-		{
-		  *next++='\0';
-		  *stringp=next;
-		}
-	      else
-		*stringp=NULL;
+	      *end='\0';
+	      *stringp=end+1;
 	    }
+	  else
+	    *stringp=NULL;
 	}
       else
 	*stringp=NULL;
+    }
+
+  return tok;
+}
+
+/* Break an option or key=value option into key and value */
+char *
+argsep(char **stringp,char **arg)
+{
+  char *tok;
+
+  *arg=NULL;
+
+  tok=argsplit(stringp);
+  if(tok)
+    {
+      char *equals;
+      equals=strchr(tok,'=');
+      if(equals)
+	{
+	  char *space;
+
+	  space=strchr(tok,' ');
+	  if(space)
+	    *space='\0';
+	  else
+	    *equals='\0';
+
+	  space=strrchr(equals+1,' ');
+	  if(space)
+	    *arg=space+1;
+	  else
+	    *arg=NULL;
+	}
     }
 
   return tok;

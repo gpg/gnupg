@@ -1,5 +1,8 @@
 2004-04-15  David Shaw  <dshaw@jabberwocky.com>
 
+	* main.h, misc.c (argsplit): Refactor argsep into argsplit and
+	argsep so they can be called separately.
+
 	* options.h, keyserver.c (parse_keyserver_options): Remove
 	duplicate code from parse_keyserver_options by calling the generic
 	parse_options.
