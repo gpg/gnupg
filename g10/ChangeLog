@@ -1,3 +1,13 @@
+Wed Jun 14 12:27:09 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * status.c (init_shm_coprocessing): Changed the sequence of the get,attach
+  to cope with the changes in newer Linux kernels.  This bug has been found
+  by <dmitri@advantrix.com> who also proposed this solution.  Hopefully
+  this does not break gpg on to many systems.
+
+  * cipher.c (write_header): Protect the IV with the MDC too.
+  * encr-data.c (decrypt_data): Likewise.
+
 Fri Jun  9 10:09:52 CEST 2000  Werner Koch  <wk@openit.de>
 
   * g10.c: New options --no-auto-key-retrieve

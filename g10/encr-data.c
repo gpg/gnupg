@@ -119,6 +119,9 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 	goto leave;
     }
 
+    if( dfx.mdc_hash )
+	md_write( dfx.mdc_hash, temp, nprefix+2 );
+
     if( ed->mdc_method )
 	iobuf_push_filter( ed->buf, mdc_decode_filter, &dfx );
     else

@@ -82,6 +82,8 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     cipher_setkey( cfx->cipher_hd, cfx->dek->key, cfx->dek->keylen );
     cipher_setiv( cfx->cipher_hd, NULL, 0 );
 /*  log_hexdump( "prefix", temp, nprefix+2 ); */
+    if( cfx->mdc_hash ) /* hash the "IV" */
+	md_write( cfx->mdc_hash, temp, nprefix+2 );
     cipher_encrypt( cfx->cipher_hd, temp, temp, nprefix+2);
     cipher_sync( cfx->cipher_hd );
     iobuf_write(a, temp, nprefix+2);

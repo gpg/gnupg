@@ -20,7 +20,6 @@
 # 7. Die erste genannte Übersetzung ist die in de.po verwendete
 
 
-
 aka			alias
 algorithm		Verfahren          
 anonymous		ungenannter
@@ -37,17 +36,20 @@ cache   		Lager  *Zwischenspeicher
 can't read		nicht lesbar
 casual  		>zufällig, >gelegentlich >unregelmäßig
 certificate		Zertifikat
+, (Urkunde)
 character set		Zeichensatz
 check (verb)		pr|fen, gepr|ft
 checksum		Prüfsumme
 cipher algorithm	Verschlüsselungsverfahren
 clearsig header		Klartextsignatur-Einleitung
 command			Befehl
+comment			Bemerkung
 compress algorithm      Komprimierverfahren,*Komprimierungsverfahren ?   
 compromised             nicht mehr sicher
 core dump		core-dump-Datei
 , (Speicherauszug?)
 core function    	<wesentliche Funktion
+correct			beseitigen (please correct the error first)
 corrupted		beschädigter
 cover   		>behandeln, <erläutern
 creation    		<Erzeugung
@@ -96,6 +98,7 @@ making signatures       >Unterschreiben <Unterzeichnen, <Leisten von
 malformed   		ungünstig aufgebaute,  *fehlerhaft aufgebaute
 master key  		>Universalschlüssel
 , Generalschlüssel
+match			Treffer
 MDC			Manipulation detection code (Siegel ?)
 merge  (to) 		>zusammenführen, >vermischen ??
 message 		Botschaft
@@ -126,6 +129,7 @@ quit    		*(Programm) verlassen, beenden
 radix64			radix64
 random 			Zufall
 random bytes		Zufallswerte
+reason			Grund (für revocation)
 regular file		normale Datei
 retry			???? (Wiederholung?, Wiederaufnahme?)
 reveal  		auch: <jemandem zeigen, >anderen zeigen 
@@ -164,6 +168,8 @@ user ID 		User-ID
 user IDs		User-IDs
 user interface  	>Benutzer-Schnittstelle
 username    		Username, *<Benutzername,  
+used			benutzt (no loger used)
+valid 			gültig
 validate    		-- authentifizieren (>besser authentisieren ?? So im 
 Wörterbuch der neuen Rechtschreibung)
 validation  		-- >Authentisierung 

@@ -1,4 +1,6 @@
 
+  * check that --allow0non-selfsigned does really work
+
   * g10/trustdb.c (make_sig_records): fix the fixme.
 
   * at least an option to prefer DSA keys over RSA when selecting the key to

@@ -1,11 +1,11 @@
 # GnuPG german translation
-# Copyright (C) 1998 Free Software Foundation, Inc.
-# Walter Koch <koch@hsp.de>, 1998
+# Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+# Walter Koch <koch@hsp.de>, 1998, 1999, 2000
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2000-06-08 23:11+0200\n"
-"PO-Revision-Date: 2000-04-22  21:50+0200\n"
+"POT-Creation-Date: 2000-06-12 01:30+0000\n"
+"PO-Revision-Date: 2000-06-12  12:50+0200\n"
 "Last-Translator: Walter Koch <koch@hsp.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -969,7 +969,7 @@ msgstr ""
 #. * data is properly aligned with the user ID
 #: g10/pkclist.c:53
 msgid "             Fingerprint:"
-msgstr "        Fingerabdruck:"
+msgstr "           Fingerabdruck:"
 
 #: g10/pkclist.c:80
 msgid "Fingerprint:"
@@ -980,7 +980,6 @@ msgid "No reason specified"
 msgstr "Kein Grund angegeben"
 
 #: g10/pkclist.c:118
-#, fuzzy
 msgid "Key is superseeded"
 msgstr "Schlüssel ist überholt"
 
@@ -993,7 +992,6 @@ msgid "Key is no longer used"
 msgstr "Schlüssel wird nicht mehr benutzt"
 
 #: g10/pkclist.c:124
-#, fuzzy
 msgid "User ID is no longer valid"
 msgstr "User-ID ist nicht mehr gültig"
 
@@ -1563,7 +1561,7 @@ msgstr ""
 
 #: g10/keygen.c:1325
 msgid "DSA keypair will have 1024 bits.\n"
-msgstr "Der DSA Schlüssel wird 1024 Bits haben.\n"
+msgstr "Der DSA Schlüssel wird 1024 Bit haben.\n"
 
 #: g10/keygen.c:1368
 msgid "Key generation canceled.\n"
@@ -1694,9 +1692,8 @@ msgstr ""
 "der Zweitschlüssel %08lX wird anstelle des Hauptschlüssels %08lX verwendet\n"
 
 #: g10/getkey.c:2017
-#, fuzzy
 msgid "[User id not found]"
-msgstr "%s: Benutzer nicht gefunden\n"
+msgstr "[User-ID nicht gefunden]"
 
 #: g10/import.c:181
 #, c-format
@@ -2501,7 +2498,7 @@ msgstr "Sie haben folgende User-IDs beglaubigt:\n"
 #: g10/keyedit.c:1785 g10/keyedit.c:1820
 #, c-format
 msgid "   signed by %08lX at %s\n"
-msgstr "   beglaubiigt durch %08lX um %s\n"
+msgstr "   beglaubigt durch %08lX um %s\n"
 
 #: g10/keyedit.c:1790
 #, c-format
@@ -2581,8 +2578,7 @@ msgstr "Ursprünglicher Dateiname='%.*s'\n"
 
 #: g10/mainproc.c:525
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
-msgstr ""
-"Einzelner Widerruf - verwenden Sie \"gpg --import\" um ihn anzuwenden\n"
+msgstr "Einzelner Widerruf - verwenden Sie \"gpg --import\" um ihn anzuwenden\n"
 
 #: g10/mainproc.c:612 g10/mainproc.c:621
 msgid "WARNING: invalid notation data found\n"
@@ -2759,7 +2755,7 @@ msgstr "Hinweis: geheimer Schlüssel %08lX verfällt am %s\n"
 #: g10/hkp.c:62
 #, c-format
 msgid "requesting key %08lX from %s ...\n"
-msgstr "Schlüssels %08lX von %s wird angefordert ...\n"
+msgstr "Schlüssel %08lX von %s wird angefordert ...\n"
 
 #: g10/hkp.c:75
 #, c-format
@@ -3700,7 +3696,6 @@ msgstr ""
 "verwendet."
 
 #: g10/helptext.c:229
-#, fuzzy
 msgid ""
 "You should specify a reason for the certification.  Depending on the\n"
 "context you have the ability to choose from this list:\n"
@@ -3719,16 +3714,14 @@ msgstr ""
 "Zusammenhang können Sie aus dieser Liste auswählen:\n"
 "  \"Schlüssel wurde kompromitiert\"\n"
 "      Falls Sie Grund zu der Annahme haben, daß nicht berechtigte Personen\n"
-"      Zugriff zu Ihrem geheimen Schlüssel hatten, so wählen sie diesen "
-"Punkt\n"
+"      Zugriff zu Ihrem geheimen Schlüssel hatten\n"
 "  \"Schlüssel ist überholt\"\n"
 "      Falls Sie diesen Schlüssel durch einem neuen ersetzt haben.\n"
 "  \"Schlüssel wird nicht mehr benutzt\"\n"
 "      Falls Sie diesen Schlüssel zurückgezogen haben.\n"
 "  \"User-ID ist nicht mehr gültig\"\n"
 "      Um bekanntzugeben, daß die User-ID nicht mehr benutzt werden soll.\n"
-"      Üblicherweise zeigt man so an, daß eine E-Mailadresse nicht mehr "
-"gilt.\n"
+"      So weist man normalerweise auf eine ungültige E-Mailadresse hin.\n"
 
 #: g10/helptext.c:245
 msgid ""

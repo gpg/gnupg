@@ -196,6 +196,10 @@ init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
     if ( shm_id == -1 )
 	log_fatal("can't get %uk of shared memory: %s\n",
 				(unsigned)shm_size/1024, strerror(errno));
+
+  #if !defined(IPC_HAVE_SHM_LOCK) \
+      && defined(HAVE_MLOCK) && !defined(HAVE_BROKEN_MLOCK)
+    /* part of the old code which uses mlock */
     shm_area = shmat( shm_id, 0, 0 );
     if ( shm_area == (char*)-1 )
 	log_fatal("can't attach %uk shared memory: %s\n",
@@ -206,28 +210,16 @@ init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
       #ifdef USE_CAPABILITIES
 	cap_set_proc( cap_from_text("cap_ipc_lock+ep") );
       #endif
-      #ifdef IPC_HAVE_SHM_LOCK
-	if ( shmctl (shm_id, SHM_LOCK, 0) )
-	    log_info("locking shared memory %d failed: %s\n",
-				shm_id, strerror(errno));
-	else
-	    shm_is_locked = 1;
-      #elif defined(HAVE_MLOCK) && !defined(HAVE_BROKEN_MLOCK)
 	/* (need the cast for Solaris with Sun's workshop compilers) */
 	if ( mlock ( (char*)shm_area, shm_size) )
 	    log_info("locking shared memory %d failed: %s\n",
 				shm_id, strerror(errno));
 	else
 	    shm_is_locked = 1;
-      #else
-	log_info("Locking shared memory %d failed: No way to do it\n", shm_id );
-      #endif
       #ifdef USE_CAPABILITIES
 	cap_set_proc( cap_from_text("cap_ipc_lock+p") );
       #endif
     }
-
-
 
   #ifdef IPC_RMID_DEFERRED_RELEASE
     if( shmctl( shm_id, IPC_RMID, 0) )
@@ -245,12 +237,58 @@ init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
 						shm_id, strerror(errno));
     }
 
+  #else /* this is the new code which handles the changes in the SHM semantics
+	 * introduced with Linux 2.4.  The changes is that we now change the
+	 * permissions and then attach to the memory.
+	 */
+
+    if( lock_mem ) {
+      #ifdef USE_CAPABILITIES
+	cap_set_proc( cap_from_text("cap_ipc_lock+ep") );
+      #endif
+      #ifdef IPC_HAVE_SHM_LOCK
+	if ( shmctl (shm_id, SHM_LOCK, 0) )
+	    log_info("locking shared memory %d failed: %s\n",
+				shm_id, strerror(errno));
+	else
+	    shm_is_locked = 1;
+      #else
+	log_info("Locking shared memory %d failed: No way to do it\n", shm_id );
+      #endif
+      #ifdef USE_CAPABILITIES
+	cap_set_proc( cap_from_text("cap_ipc_lock+p") );
+      #endif
+    }
+
+    if( shmctl( shm_id, IPC_STAT, &shmds ) )
+	log_fatal("shmctl IPC_STAT of %d failed: %s\n",
+					    shm_id, strerror(errno));
+    if( shmds.shm_perm.uid != getuid() ) {
+	shmds.shm_perm.uid = getuid();
+	if( shmctl( shm_id, IPC_SET, &shmds ) )
+	    log_fatal("shmctl IPC_SET of %d failed: %s\n",
+						shm_id, strerror(errno));
+    }
+
+    shm_area = shmat( shm_id, 0, 0 );
+    if ( shm_area == (char*)-1 )
+	log_fatal("can't attach %uk shared memory: %s\n",
+				(unsigned)shm_size/1024, strerror(errno));
+    log_debug("mapped %uk shared memory at %p, id=%d\n",
+			    (unsigned)shm_size/1024, shm_area, shm_id );
+
+  #ifdef IPC_RMID_DEFERRED_RELEASE
+    if( shmctl( shm_id, IPC_RMID, 0) )
+	log_fatal("shmctl IPC_RMDID of %d failed: %s\n",
+					    shm_id, strerror(errno));
+  #endif
+
+  #endif
     /* write info; Protocol version, id, size, locked size */
     sprintf( buf, "pv=1 pid=%d shmid=%d sz=%u lz=%u", (int)getpid(),
 	    shm_id, (unsigned)shm_size, shm_is_locked? (unsigned)shm_size:0 );
     write_status_text( STATUS_SHM_INFO, buf );
 }
-
 
 /****************
  * Request a string from client
