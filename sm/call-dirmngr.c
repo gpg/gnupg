@@ -70,7 +70,8 @@ start_dirmngr (void)
       const char *pgmname;
       const char *argv[3];
 
-      log_info (_("no running dirmngr - starting one\n"));
+      if (opt.verbose)
+        log_info (_("no running dirmngr - starting one\n"));
       
       if (fflush (NULL))
         {
@@ -136,7 +137,7 @@ start_dirmngr (void)
     }
   dirmngr_ctx = ctx;
 
-  if (DBG_AGENT)
+  if (DBG_ASSUAN)
     log_debug ("connection to dirmngr established\n");
   return 0;
 }

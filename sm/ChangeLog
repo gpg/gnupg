@@ -1,3 +1,11 @@
+2002-04-26  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.h (DBG_AGENT,DBG_AGENT_VALUE): Replaced by DBG_ASSUAN_*.
+	Changed all users.
+
+	* call-agent.c (start_agent): Be more silent without -v.
+	* call-dirmngr.c (start_dirmngr): Ditto.
+
 2002-04-25  Werner Koch  <wk@gnupg.org>
 
 	* call-agent.c (start_agent): Make copies of old locales and check

@@ -151,7 +151,9 @@ start_agent (void)
     {
       const char *pgmname;
       const char *argv[3];
-      log_info (_("no running gpg-agent - starting one\n"));
+
+      if (opt.verbose)
+        log_info (_("no running gpg-agent - starting one\n"));
 
       if (fflush (NULL))
         {
@@ -217,7 +219,7 @@ start_agent (void)
     }
   agent_ctx = ctx;
 
-  if (DBG_AGENT)
+  if (DBG_ASSUAN)
     log_debug ("connection to agent established\n");
 
   rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL);

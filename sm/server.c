@@ -655,7 +655,7 @@ gpgsm_server (void)
   ctrl.server_local->assuan_ctx = ctx;
   ctrl.server_local->message_fd = -1;
 
-  if (DBG_AGENT)
+  if (DBG_ASSUAN)
     assuan_set_log_stream (ctx, log_get_stream ());
 
   for (;;)

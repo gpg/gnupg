@@ -89,14 +89,14 @@ struct {
 #define DBG_CACHE_VALUE   64	/* debug the caching */
 #define DBG_MEMSTAT_VALUE 128	/* show memory statistics */
 #define DBG_HASHING_VALUE 512	/* debug hashing operations */
-#define DBG_AGENT_VALUE  1024   /* debug communication with the agent */
+#define DBG_ASSUAN_VALUE  1024  /* debug assuan communication */
 
 #define DBG_X509    (opt.debug & DBG_X509_VALUE)
 #define DBG_CRYPTO  (opt.debug & DBG_CRYPTO_VALUE)
 #define DBG_MEMORY  (opt.debug & DBG_MEMORY_VALUE)
 #define DBG_CACHE   (opt.debug & DBG_CACHE_VALUE)
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
-#define DBG_AGENT   (opt.debug & DBG_AGENT_VALUE)
+#define DBG_ASSUAN   (opt.debug & DBG_ASSUAN_VALUE)
 
 struct server_local_s;
 
