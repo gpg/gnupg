@@ -571,7 +571,7 @@ print_one_subpacket(sigsubpkttype_t type,size_t len,int flags,const byte *buf)
   printf("\n");
 }
 
-static void
+void
 print_subpackets_colon(PKT_signature *sig)
 {
   byte *i;
