@@ -84,6 +84,7 @@ enum cmd_and_opt_values { aNull = 0,
     aListSigs,
     aListSecretKeys,
     aExport,
+    aExportAll,
     aExportSecret,
     aCheckKeys,
     aGenRevoke,
@@ -180,7 +181,8 @@ static ARGPARSE_OPTS opts[] = {
     { aEditKey, "edit-key"  ,256, N_("sign or edit a key")},
     { aGenRevoke, "gen-revoke",256, N_("generate a revocation certificate")},
   #endif
-    { aExport, "export"          , 256, N_("export keys") },
+    { aExport, "export"           , 256, N_("export keys") },
+    { aExportAll, "export-all"    , 256, "@" },
     { aExportSecret, "export-secret-keys" , 256, "@" },
     { aImport, "import",      256     , N_("import/merge keys")},
     { aFastImport, "fast-import",  256 , "@"},
@@ -634,6 +636,7 @@ main( int argc, char **argv )
 	  case aImport: set_cmd( &cmd, aImport); break;
 	  case aFastImport: set_cmd( &cmd, aFastImport); break;
 	  case aExport: set_cmd( &cmd, aExport); break;
+	  case aExportAll: set_cmd( &cmd, aExportAll); break;
 	  case aListKeys: set_cmd( &cmd, aListKeys); break;
 	  case aListSigs: set_cmd( &cmd, aListSigs); break;
 	  case aExportSecret: set_cmd( &cmd, aExportSecret); break;
@@ -1084,10 +1087,11 @@ main( int argc, char **argv )
 	break;
 
       case aExport:
+      case aExportAll:
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
 	    add_to_strlist( &sl, *argv );
-	export_pubkeys( sl );
+	export_pubkeys( sl, (cmd == aExport) );
 	free_strlist(sl);
 	break;
 
@@ -1315,17 +1319,6 @@ g10_exit( int rc )
 }
 
 
-void
-do_not_use_RSA()
-{
-    static int did_rsa_note = 0;
-
-    if( !did_rsa_note ) {
-	did_rsa_note = 1;
-	log_info(_("RSA keys are deprecated; please consider "
-		   "creating a new key and use this key in the future\n"));
-    }
-}
 
 
 #ifdef IS_G10MAINT

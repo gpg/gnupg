@@ -59,6 +59,7 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     randomize_buffer( temp, blocksize, 1 );
     temp[blocksize] = temp[blocksize-2];
     temp[blocksize+1] = temp[blocksize-1];
+    print_cipher_algo_note( cfx->dek->algo );
     cfx->cipher_hd = cipher_open( cfx->dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
     cipher_setkey( cfx->cipher_hd, cfx->dek->key, cfx->dek->keylen );
     cipher_setiv( cfx->cipher_hd, NULL );

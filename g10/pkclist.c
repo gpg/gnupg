@@ -302,7 +302,7 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 
       case TRUST_ULTIMATE:
 	if( opt.verbose )
-	    log_info(_("This key belongs to us (we have the secret key)\n"));
+	    log_info(_("This key belongs to us\n"));
 	return 1; /* yes */
 
       default: BUG();

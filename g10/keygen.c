@@ -388,11 +388,13 @@ ask_algo( int *ret_v4, int addmode )
     tty_printf(_("Please select what kind of key you want:\n"));
     if( !addmode )
 	tty_printf(_("   (%d) DSA and ElGamal (default)\n"), 1 );
-    tty_printf(    _("   (%d) ElGamal (sign and encrypt)\n"), 2 );
+    tty_printf(    _("   (%d) DSA (sign only)\n"), 2 );
     if( addmode )
 	tty_printf(    _("   (%d) ElGamal (encrypt only)\n"), 3 );
-    tty_printf(    _("   (%d) DSA (sign only)\n"), 4 );
+    tty_printf(    _("   (%d) ElGamal (sign and encrypt)\n"), 4 );
+  #if 0
     tty_printf(    _("   (%d) ElGamal in a v3 packet\n"), 5 );
+  #endif
 
     *ret_v4 = 1;
     for(;;) {
@@ -404,23 +406,28 @@ ask_algo( int *ret_v4, int addmode )
 	    algo = 0;	/* create both keys */
 	    break;
 	}
-	else if( algo == 2 ) {
-	    algo = PUBKEY_ALGO_ELGAMAL;
-	    break;
+	else if( algo == 4 ) {
+	    if( cpr_get_answer_is_yes("keygen.algo.elg_se",_(
+		"Do you really want to create a sign and encrypt key? "))) {
+		algo = PUBKEY_ALGO_ELGAMAL;
+		break;
+	    }
 	}
 	else if( algo == 3 && addmode ) {
 	    algo = PUBKEY_ALGO_ELGAMAL_E;
 	    break;
 	}
-	else if( algo == 4 ) {
+	else if( algo == 2 ) {
 	    algo = PUBKEY_ALGO_DSA;
 	    break;
 	}
+      #if 0
 	else if( algo == 5 ) {
 	    algo = PUBKEY_ALGO_ELGAMAL_E;
 	    *ret_v4 = 0;
 	    break;
 	}
+      #endif
 	else
 	    tty_printf(_("Invalid selection.\n"));
     }

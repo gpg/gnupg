@@ -145,6 +145,7 @@ int get_seckey_byname( PKT_secret_key *sk, const char *name, int unlock );
 int enum_secret_keys( void **context, PKT_secret_key *sk, int with_subkeys );
 void merge_keys_and_selfsig( KBNODE keyblock );
 char*get_user_id_string( u32 *keyid );
+char*get_long_user_id_string( u32 *keyid );
 char*get_user_id( u32 *keyid, size_t *rn );
 
 /*-- keyid.c --*/

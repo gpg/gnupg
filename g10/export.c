@@ -34,27 +34,28 @@
 #include "main.h"
 #include "i18n.h"
 
-static int do_export( STRLIST users, int secret );
+static int do_export( STRLIST users, int secret, int onlyrfc );
 
 /****************
  * Export the public keys (to standard out or --output).
  * Depending on opt.armor the output is armored.
+ * If onlyrfc is True only RFC24404 compatible keys are exported.
  * If USERS is NULL, the complete ring will be exported.
  */
 int
-export_pubkeys( STRLIST users )
+export_pubkeys( STRLIST users, int onlyrfc )
 {
-    return do_export( users, 0 );
+    return do_export( users, 0, onlyrfc );
 }
 
 int
 export_seckeys( STRLIST users )
 {
-    return do_export( users, 1 );
+    return do_export( users, 1, 0 );
 }
 
 static int
-do_export( STRLIST users, int secret )
+do_export( STRLIST users, int secret, int onlyrfc )
 {
     int rc = 0;
     armor_filter_context_t afx;
@@ -110,7 +111,7 @@ do_export( STRLIST users, int secret )
 	    rc = secret? find_secret_keyblock_byname( &kbpos, sl->d )
 		       : find_keyblock_byname( &kbpos, sl->d );
 	    if( rc ) {
-		log_error("%s: user not found: %s\n", sl->d, g10_errstr(rc) );
+		log_error(_("%s: user not found: %s\n"), sl->d, g10_errstr(rc));
 		rc = 0;
 		continue;
 	    }
@@ -119,8 +120,19 @@ do_export( STRLIST users, int secret )
 	}
 
 	if( rc ) {
-	    log_error("certificate read problem: %s\n", g10_errstr(rc));
+	    log_error(_("certificate read problem: %s\n"), g10_errstr(rc));
 	    goto leave;
+	}
+
+
+	/* do not export keys which are incompatible with rfc2440 */
+	if( onlyrfc && (node = find_kbnode( keyblock, PKT_PUBLIC_KEY )) ) {
+	    PKT_public_key *pk = node->pkt->pkt.public_key;
+	    if( pk->version == 3 && pk->pubkey_algo > 3 ) {
+		log_info(_("key %08lX: not a rfc2440 key - skipped\n"),
+			      (ulong)keyid_from_pk( pk, NULL) );
+		continue;
+	    }
 	}
 
 	/* and write it */

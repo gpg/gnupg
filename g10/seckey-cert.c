@@ -209,6 +209,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	else if( cipher_get_blocksize( sk->protect.algo ) != 8 )
 	    rc = G10ERR_CIPHER_ALGO; /* unsupport protection algorithm */
 	else {
+	    print_cipher_algo_note( sk->protect.algo );
 	    cipher_hd = cipher_open( sk->protect.algo,
 				     CIPHER_MODE_AUTO_CFB, 1 );
 	    if( cipher_setkey( cipher_hd, dek->key, dek->keylen ) )

@@ -1,3 +1,15 @@
+Thu Dec 10 20:15:36 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* dynload.c (load_extension): increased needed verbosity level.
+
+	* random.c (fast_random_poll): Fallback to a default fast random
+	poll function.
+	(read_random_source): Always use the faked entroy gatherer if no
+	gather module is available.
+	* rndlinux.c (fast_poll): Removed.
+	* rndunix.c (fast_poll): Removed.
+
+
 Wed Nov 25 12:33:41 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* rand-*.c: Removed.

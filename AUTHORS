@@ -55,6 +55,11 @@ pt_BR.po
 
 Other notes:
 ============
+This program uses the zlib compression library written by
+Jean-loup Gailly and Mark Adler.
+
+Most of the stuff in mpi has been taken from the GMP library.
+
 The file cipher/rndunix.c is heavily based on Peter Gutmann's
 rndunix.c from cryptlib. - He promised to add the GPL as an alternative
 license to this and some other files.  We don't have a dissclaimer for

@@ -617,38 +617,6 @@ slowPoll(void)
 }
 
 
-static void
-fast_poll( void (*add)(const void*, size_t, int) )
-{
-  #if HAVE_GETHRTIME
-    {	hrtime_t tv;
-	tv = gethrtime();
-	(*add)( &tv, sizeof(tv), 1 );
-    }
-  #elif HAVE_GETTIMEOFDAY
-    {	struct timeval tv;
-	if( gettimeofday( &tv, NULL ) )
-	    BUG();
-	(*add)( &tv.tv_sec, sizeof(tv.tv_sec), 1 );
-	(*add)( &tv.tv_usec, sizeof(tv.tv_usec), 1 );
-    }
-  #else /* use times */
-    {	struct tms buf;
-	times( &buf );
-	(*add)( &buf, sizeof buf, 1 );
-    }
-  #endif
-  #ifdef HAVE_GETRUSAGE
-    {	struct rusage buf;
-	if( getrusage( RUSAGE_SELF, &buf ) )
-	    BUG();
-	(*add)( &buf, sizeof buf, 1 );
-	memset( &buf, 0, sizeof buf );
-    }
-  #endif
-}
-
-
 
 static int
 gather_random( byte *buffer, size_t *r_length, int level )
@@ -698,7 +666,6 @@ static struct {
     void *func;
 } func_table[] = {
     { 40, 1, gather_random },
-    { 41, 1, fast_poll },
 };
 
 /****************

@@ -379,8 +379,8 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	MPI frame;
 
 	pk = pk_list->pk;
-	if( is_RSA(pk->pubkey_algo) )
-	    do_not_use_RSA();
+
+	print_pubkey_algo_note( pk->pubkey_algo );
 	enc = m_alloc_clear( sizeof *enc );
 	enc->pubkey_algo = pk->pubkey_algo;
 	keyid_from_pk( pk, enc->keyid );
@@ -394,8 +394,9 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	else {
 	    if( opt.verbose ) {
 		char *ustr = get_user_id_string( enc->keyid );
-		log_info(_("%s encrypted for: %s\n"),
-		    pubkey_algo_to_string(enc->pubkey_algo), ustr );
+		log_info(_("%s/%s encrypted for: %s\n"),
+		    pubkey_algo_to_string(enc->pubkey_algo),
+		    cipher_algo_to_string(dek->algo), ustr );
 		m_free(ustr);
 	    }
 	    /* and write it */

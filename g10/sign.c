@@ -47,12 +47,12 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     byte *dp;
     int rc;
 
-    if( is_RSA(sk->pubkey_algo) )
-	do_not_use_RSA();
+    print_pubkey_algo_note(sk->pubkey_algo);
 
     if( !digest_algo )
 	digest_algo = md_get_algo(md);
 
+    print_digest_algo_note( digest_algo );
     dp = md_read( md, digest_algo );
     sig->digest_algo = digest_algo;
     sig->digest_start[0] = dp[0];

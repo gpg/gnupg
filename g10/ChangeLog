@@ -1,3 +1,35 @@
+Thu Dec 10 20:15:36 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* ringedit.c (gdbm_store): Fix for inserts
+
+	* g10.c (main): New option --export-all
+	* export.c (export_pubkeys): New arg.
+	(do_export): Now may skip old keys.
+
+	* status.c: Minor patches for Sun's cc
+
+	* keygen.c (ask_algo): Disabled v3 ElGamal choice, rearranged
+	 the numbers.  Add a warning question when a sign+encrypt key
+	 is selected.
+
+	* g10.c (do_not_use_RSA): Removed.
+	* misc.c (print_pubkey_algo_note): New as replacement for the
+	do_not_use_RSA() and chnaged all callers.
+	(print_cipher_algo_note): New.
+	(print_hash_algo_note): New.
+
+	* cipher.c (write_header): Add a call to print_cipher_algo_note.
+	* seckey-cert.c (protect_secret_key): Ditto
+	* sign.c (do_sign): Add a call to print_digest_algo_note.
+
+	* getkey.c (get_long_user_id_string): New.
+	* mainproc.c (check_sig_and_print): Changed the format of the
+	status output.
+
+	* encrypt.c (write_pubkey_enc_from_list): print used symmetric cipher.
+
+	* pkclist.c (do_we_trust): Changed a message.
+
 Wed Dec  9 13:41:06 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* misc.c (trap_unaligned) [ALPHA]: Only if UAC_SIGBUS is defined.

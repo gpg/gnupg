@@ -13,18 +13,16 @@ fi
 LANG=
 LANGUAGE=
 
-
 expect - <<EOF
 #set timeout -1
 set timeout 8
 match_max 100000
 spawn ../g10/gpg --no-batch --quick-random --homedir . --gen-key
-expect { 
+expect {
     -exact "Please select what kind of key you want:\r
    (1) DSA and ElGamal (default)\r
-   (2) ElGamal (sign and encrypt)\r
-   (4) DSA (sign only)\r
-   (5) ElGamal in a v3 packet\r
+   (2) DSA (sign only)\r
+   (4) ElGamal (sign and encrypt)\r
 Your selection? "  { send -- "1\r" }
     timeout { exit 1 } }
 expect {
@@ -51,7 +49,7 @@ expect {
      -exact "1\r
 \r                       \rKey expires at " { }
     timeout { exit 1 } }
-expect { 
+expect {
      -re "(.*)\r
 " {}
     timeout { exit 1 } }
@@ -91,7 +89,7 @@ Enter passphrase: " { sleep 1; send -- "abc\r" }
 expect {
   -ex "\r                  \rRepeat passphrase: " { sleep 1; send -- "abc\r" }
     timeout { exit 1 } }
-expect { 
+expect {
   -ex "\r                   \rWe need to generate a lot of random bytes. It is a good idea to perform\r
 some other action (work in another window, move the mouse, utilize the\r
 network and the disks) during the prime generation; this gives the random\r
@@ -105,3 +103,4 @@ expect {
 exit 1
 EOF
 
+#*-*wedit:notab*-*

@@ -211,11 +211,15 @@ main(int argc, char **argv)
 {
     static ARGPARSE_OPTS opts[] = {
     {0} };
-    ARGPARSE_ARGS pargs = { &argc, &argv, 0 };
+    ARGPARSE_ARGS pargs;
     int i, c;
     int state = 0;
     char strbuf[1000];
     int stridx=0;
+
+    pargs.argc = &argc;
+    pargs.argv = &argv;
+    pargs.flags = 0;
 
     i18n_init();
     while( arg_parse( &pargs, opts) ) {

@@ -45,7 +45,9 @@ extern int g10_errors_seen;
 #else
   void g10_exit(int rc);
 #endif
-void do_not_use_RSA(void);
+void print_pubkey_algo_note( int algo );
+void print_cipher_algo_note( int algo );
+void print_digest_algo_note( int algo );
 
 /*-- misc.c --*/
 void trap_unaligned(void);
@@ -108,7 +110,7 @@ KBNODE make_mpi_comment_node( const char *s, MPI a );
 /*-- import.c --*/
 int import_keys( const char *filename, int fast );
 /*-- export.c --*/
-int export_pubkeys( STRLIST users );
+int export_pubkeys( STRLIST users, int onlyrfc );
 int export_seckeys( STRLIST users );
 
 /* dearmor.c --*/

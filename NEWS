@@ -1,3 +1,12 @@
+
+    * --export does now only exports rfc2440 compatible keys; the
+      old behavious is available with --export-all.
+      Generation of v3 ElGamal (sign and encrypt) keys is not longer
+      supported.
+
+    * Fixed the uncompress bug.
+
+
 Noteworthy changes in version 0.4.5
 -----------------------------------
 

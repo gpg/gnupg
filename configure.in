@@ -55,9 +55,13 @@ else
 fi
 if test "$use_m_guard" = yes ; then
     AC_DEFINE(M_GUARD)
-    CFLAGS="$CFLAGS -g -Wall"
+    CFLAGS="$CFLAGS -g"
 else
-    CFLAGS="$CFLAGS -O2 -Wall"
+    CFLAGS="$CFLAGS -O2"
+fi
+
+if test "$GCC" = yes; then
+    CFLAGS="$CFLAGS -Wall"
 fi
 
 
@@ -87,7 +91,6 @@ AC_PROG_INSTALL
 AM_CYGWIN32
 
 
-
 case "${target}" in
     i386--mingw32)
         # special stuff for Windoze NT
@@ -107,6 +110,13 @@ case "${target}" in
     *)
        ;;
 esac
+
+
+GNUPG_CHECK_PIC
+if test "$NO_PIC" = yes; then
+    try_dynload=no
+fi
+
 
 case "${target}" in
     i386--mingw32)
@@ -131,7 +141,7 @@ case "${target}" in
     *)
         NAME_OF_DEV_RANDOM="/dev/random"
         NAME_OF_DEV_URANDOM="/dev/urandom"
-        DYNLINK_MOD_CFLAGS="-shared  -fPIC -lc"
+        DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC -lc"
         ;;
 esac
 AC_DEFINE_UNQUOTED(NAME_OF_DEV_RANDOM, "$NAME_OF_DEV_RANDOM")
@@ -144,19 +154,20 @@ AM_GNU_GETTEXT
 
 AC_CHECK_LIB(gdbm,gdbm_firstkey)
 
+
 if test "$try_dynload" = yes ; then
 AC_CHECK_LIB(dl,dlopen)
 if test "$ac_cv_lib_dl_dlopen" = "yes"; then
   AC_DEFINE(USE_DYNAMIC_LINKING)
   AC_DEFINE(HAVE_DL_DLOPEN)
-  DYNLINK_LDFLAGS=-rdynamic
+  DYNLINK_LDFLAGS="-Wl,-export-dynamic"
   use_gnupg_extensions=yes
 else
 AC_CHECK_LIB(dld,dld_link)
 if test "$ac_cv_lib_dld_dld_link" = "yes"; then
   AC_DEFINE(USE_DYNAMIC_LINKING)
   AC_DEFINE(HAVE_DLD_DLD_LINK)
-  DYNLINK_LDFLAGS=-rdynamic
+  DYNLINK_LDFLAGS="-Wl,-export-dynamic"
   use_gnupg_extensions=yes
 fi
 fi
@@ -185,14 +196,14 @@ AC_TYPE_SIZE_T
 AC_TYPE_SIGNAL
 AC_DECL_SYS_SIGLIST
 
-WK_CHECK_ENDIAN
+GNUPG_CHECK_ENDIAN
 
 
-WK_CHECK_TYPEDEF(byte, HAVE_BYTE_TYPEDEF)
-WK_CHECK_TYPEDEF(ushort, HAVE_USHORT_TYPEDEF)
-WK_CHECK_TYPEDEF(ulong, HAVE_ULONG_TYPEDEF)
-WK_CHECK_TYPEDEF(u16, HAVE_U16_TYPEDEF)
-WK_CHECK_TYPEDEF(u32, HAVE_U32_TYPEDEF)
+GNUPG_CHECK_TYPEDEF(byte, HAVE_BYTE_TYPEDEF)
+GNUPG_CHECK_TYPEDEF(ushort, HAVE_USHORT_TYPEDEF)
+GNUPG_CHECK_TYPEDEF(ulong, HAVE_ULONG_TYPEDEF)
+GNUPG_CHECK_TYPEDEF(u16, HAVE_U16_TYPEDEF)
+GNUPG_CHECK_TYPEDEF(u32, HAVE_U32_TYPEDEF)
 
 AC_CHECK_SIZEOF(unsigned short, 2)
 AC_CHECK_SIZEOF(unsigned int, 4)
@@ -212,9 +223,9 @@ AC_CHECK_FUNCS(strerror stpcpy strlwr tcgetattr rand strtoul mmap)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage gethrtime setrlimit)
 AC_CHECK_FUNCS(memicmp atexit raise getpagesize strftime)
 
-WK_CHECK_MLOCK
+GNUPG_CHECK_MLOCK
 
-WK_CHECK_IPC
+GNUPG_CHECK_IPC
 if test "$ac_cv_header_sys_shm_h" = "yes"; then
   AC_DEFINE(USE_SHM_COPROCESSING)
 fi
@@ -239,7 +250,7 @@ dnl setup assembler stuff
 AC_MSG_CHECKING(for mpi assembler functions)
 if test -f $srcdir/mpi/config.links ; then
     . $srcdir/mpi/config.links
-    WK_LINK_FILES($mpi_ln_src, $mpi_ln_dst)
+    GNUPG_LINK_FILES($mpi_ln_src, $mpi_ln_dst)
     ac_cv_mpi_extra_asm_modules="$mpi_extra_modules"
     ac_cv_mpi_sflags="$mpi_sflags"
     ac_cv_mpi_config_done="yes"
@@ -250,9 +261,9 @@ else
 fi
 MPI_EXTRA_ASM_OBJS=""
 if test "$ac_cv_mpi_extra_asm_modules" != ""; then
-WK_MSG_PRINT([mpi extra asm functions:])
+GNUPG_MSG_PRINT([mpi extra asm functions:])
 for i in $ac_cv_mpi_extra_asm_modules; do
-    WK_MSG_PRINT([$i])
+    GNUPG_MSG_PRINT([$i])
     MPI_EXTRA_ASM_OBJS="$MPI_EXTRA_ASM_OBJS $i.o"
 done
 AC_MSG_RESULT()
@@ -266,8 +277,8 @@ dnl when compiling a conftest (due to the "-lz" from LIBS).
 if test "$g10_force_zlib" = "yes"; then
     ZLIBS="../zlib/libzlib.a"
     AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, true)
-    WK_LINK_FILES(zlib/zlib.h, zlib.h )
-    WK_LINK_FILES(zlib/zconf.h, zconf.h )
+    GNUPG_LINK_FILES(zlib/zlib.h, zlib.h )
+    GNUPG_LINK_FILES(zlib/zconf.h, zconf.h )
 else
 AC_CHECK_HEADERS(zlib.h)
 if test "$ac_cv_header_zlib_h" = yes ; then
@@ -277,13 +288,13 @@ if test "$ac_cv_header_zlib_h" = yes ; then
 else
     ZLIBS="../zlib/libzlib.a"
     AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, true)
-    WK_LINK_FILES(zlib/zlib.h, zlib.h )
-    WK_LINK_FILES(zlib/zconf.h, zconf.h )
+    GNUPG_LINK_FILES(zlib/zlib.h, zlib.h )
+    GNUPG_LINK_FILES(zlib/zconf.h, zconf.h )
 fi
 fi
 AC_SUBST(ZLIBS)
 
-WK_DO_LINK_FILES
+GNUPG_DO_LINK_FILES
 
 
 AC_OUTPUT([

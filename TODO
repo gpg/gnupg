@@ -11,20 +11,11 @@
       a next pointer ro more records - check wehther the reuse code really
       works. Maybe this is the reason for the "Hmmm public key lost"
 
-    * use zlib 1.1.13 to avoid a bug with 13 bit windows
-      but there are more problems with large files
-
-    * FreeBSD:
-	#define USE_DYNAMIC_LINKING
-	#define HAVE_DL_DLOPEN
-	and the ld option -export-dynamic.
-      Why does autoconf not figure that out?
-
     * clearsig: keep lineendings as they are. Remember that trailings
       blanks are not hashed.
 
     * OpenBSD: dynamic loading with dlopen works on OpenBSD, but:
-	OpenBSD binaries are a.out, so every symbol begins with "_"
+      OpenBSD binaries are a.out, so every symbol begins with "_"
 
     * should we flush the getkey.c caches while doing an import?
 
@@ -39,8 +30,6 @@
     * write a tool to extract selected keys from a file.
 
     * new menu to delete signatures and list signature in menu
-
-    * -rdynamic auf Solaris Problem
 
     * Replace the SIGUSR1 stuff by semaphores to avoid loss of a signal.
 
@@ -65,4 +54,10 @@
     * Add some stuff for DU cc
 
     * Use "user ID", "trustdb", "NOTE" and "WARNING".
+
+    * Replace Blowfish by Twofish
+
+    * Print a warning when a experimental algorithm is used.
+
+    * Remove ElGamal signatures.
 

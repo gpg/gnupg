@@ -72,10 +72,16 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 "does this but other OpenPGP implemenations are not required to understand\n"
 "the signature+encryption flavor.\n"
 "The first (primary) key must always be a key which is capable of signing;\n"
-"this is the reason why the ecrytion only ElGamal key is disabled in this.\n"
-"You should not select the \"ElGamal in a v3 packet\", because that key is\n"
-"not compatible to other OpenPGP implementations."
+"this is the reason why the ecrytion only ElGamal key is disabled in this."
 },
+
+
+{ N_("keygen.algo.elg_se"),
+"Although these keys are defined in RFC2440 they are not suggested\n"
+"because they are not supported by all programs and signatures created\n"
+"with them are quite large and very slow to verify."
+},
+
 
 { N_("keygen.size"),
  "Enter the size of the key"

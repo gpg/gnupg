@@ -187,3 +187,61 @@ buffer_to_u32( const byte *buffer )
     return a;
 }
 
+
+static void
+no_exp_algo(void)
+{
+    static int did_note = 0;
+
+    if( !did_note ) {
+	did_note = 1;
+	log_info(_("Experimental algorithms should not be used!\n"));
+    }
+}
+
+void
+print_pubkey_algo_note( int algo )
+{
+    if( algo >= 100 && algo <= 110 )
+	no_exp_algo();
+    else if( is_RSA( algo ) ) {
+	static int did_note = 0;
+
+	if( !did_note ) {
+	    did_note = 1;
+	    log_info(_("RSA keys are deprecated; please consider "
+		       "creating a new key and use this key in the future\n"));
+	}
+    }
+}
+
+void
+print_cipher_algo_note( int algo )
+{
+    if( algo >= 100 && algo <= 110 )
+	no_exp_algo();
+    else if(	algo == CIPHER_ALGO_3DES
+	     || algo == CIPHER_ALGO_CAST5
+	     || algo == CIPHER_ALGO_BLOWFISH
+	   )
+	;
+    else {
+	static int did_note = 0;
+
+	if( !did_note ) {
+	    did_note = 1;
+	    log_info(_("This cipher algorithm is depreciated; "
+		       "please use a more standard one!\n"));
+	}
+    }
+}
+
+void
+print_digest_algo_note( int algo )
+{
+    if( algo >= 100 && algo <= 110 )
+	no_exp_algo();
+}
+
+
+

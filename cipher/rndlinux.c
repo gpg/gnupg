@@ -27,14 +27,8 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef	HAVE_GETHRTIME
-  #include <sys/times.h>
-#endif
 #ifdef HAVE_GETTIMEOFDAY
   #include <sys/times.h>
-#endif
-#ifdef HAVE_GETRUSAGE
-  #include <sys/resource.h>
 #endif
 #include <string.h>
 #include <unistd.h>
@@ -59,38 +53,6 @@ static void tty_printf(const char *fmt, ... )
     g10_log_info("tty_printf not available (%s)\n", fmt );
 }
 #endif
-
-
-static void
-fast_poll( void (*add)(const void*, size_t, int) )
-{
-  #if HAVE_GETHRTIME
-    {	hrtime_t tv;
-	tv = gethrtime();
-	(*add)( &tv, sizeof(tv), 1 );
-    }
-  #elif HAVE_GETTIMEOFDAY
-    {	struct timeval tv;
-	if( gettimeofday( &tv, NULL ) )
-	    BUG();
-	(*add)( &tv.tv_sec, sizeof(tv.tv_sec), 1 );
-	(*add)( &tv.tv_usec, sizeof(tv.tv_usec), 1 );
-    }
-  #else /* use times */
-    {	struct tms buf;
-	times( &buf );
-	(*add)( &buf, sizeof buf, 1 );
-    }
-  #endif
-  #ifdef HAVE_GETRUSAGE
-    {	struct rusage buf;
-	if( getrusage( RUSAGE_SELF, &buf ) )
-	    BUG();
-	(*add)( &buf, sizeof buf, 1 );
-	memset( &buf, 0, sizeof buf );
-    }
-  #endif
-}
 
 
 
@@ -192,7 +154,6 @@ static struct {
     void *func;
 } func_table[] = {
     { 40, 1, gather_random },
-    { 41, 1, fast_poll },
 };
 
 

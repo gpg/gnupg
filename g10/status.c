@@ -152,7 +152,8 @@ init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
 	else
 	    shm_is_locked = 1;
       #elif defined(HAVE_MLOCK) && !defined(HAVE_BROKEN_MLOCK)
-	if ( mlock (shm_area, shm_size) )
+	/* (need the cast for Solaris with Sun's workshop compilers) */
+	if ( mlock ( (char*)shm_area, shm_size) )
 	    log_info("locking shared memory %d failed: %s\n",
 				shm_id, strerror(errno));
 	else
@@ -307,7 +308,8 @@ cpr_kill_prompt(void)
     if( opt.shm_coprocess )
 	return;
   #endif
-    return tty_kill_prompt();
+    tty_kill_prompt();
+    return;
 }
 
 int

@@ -1414,6 +1414,27 @@ get_user_id_string( u32 *keyid )
 }
 
 char*
+get_long_user_id_string( u32 *keyid )
+{
+    user_id_db_t r;
+    char *p;
+    int pass=0;
+    /* try it two times; second pass reads from key resources */
+    do {
+	for(r=user_id_db; r; r = r->next )
+	    if( r->keyid[0] == keyid[0] && r->keyid[1] == keyid[1] ) {
+		p = m_alloc( r->len + 20 );
+		sprintf(p, "%08lX%08lX %.*s",
+			  (ulong)keyid[0], (ulong)keyid[1], r->len, r->name );
+		return p;
+	    }
+    } while( ++pass < 2 && !get_pubkey( NULL, keyid ) );
+    p = m_alloc( 25 );
+    sprintf(p, "%08lX%08lX [?]", (ulong)keyid[0], (ulong)keyid[1] );
+    return p;
+}
+
+char*
 get_user_id( u32 *keyid, size_t *rn )
 {
     user_id_db_t r;

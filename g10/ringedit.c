@@ -249,7 +249,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 	goto leave;
 
       case rt_RING:
-	iobuf = iobuf_fopen( filename, "rb" );
+	iobuf = iobuf_open( filename );
 	if( !iobuf && !force ) {
 	    rc = G10ERR_OPEN_FILE;
 	    goto leave;
@@ -689,7 +689,7 @@ enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
 	kbpos->rt = resource_table[i].rt;
 	switch( kbpos->rt ) {
 	  case rt_RING:
-	    kbpos->fp = iobuf_fopen( rentry->fname, "rb" );
+	    kbpos->fp = iobuf_open( rentry->fname );
 	    if( !kbpos->fp ) {
 		log_error("can't open '%s'\n", rentry->fname );
 		return G10ERR_OPEN_FILE;
@@ -1083,7 +1083,7 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
     if( !(rentry=check_pos(kbpos)) )
 	return G10ERR_GENERAL;
 
-    a = iobuf_fopen( rentry->fname, "rb" );
+    a = iobuf_open( rentry->fname );
     if( !a ) {
 	log_error("can't open '%s'\n", rentry->fname );
 	return G10ERR_OPEN_FILE;
@@ -1246,7 +1246,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	log_fatal("can't lock '%s'\n", rentry->fname );
 
     /* open the source file */
-    fp = iobuf_fopen( rentry->fname, "rb" );
+    fp = iobuf_open( rentry->fname );
     if( mode == 1 && !fp && errno == ENOENT ) { /* no file yet */
 	KBNODE kbctx, node;
 
@@ -1526,6 +1526,9 @@ do_gdbm_store( KBPOS *kbpos, KBNODE root, int update )
     content.dsize = iobuf_get_temp_length( fp );
     rc = gdbm_store( rentry->dbf, key, content,
 				  update? GDBM_REPLACE : GDBM_INSERT );
+    if( rc == 1 && !update )
+	rc = gdbm_store( rentry->dbf, key, content, GDBM_REPLACE );
+
     if( rc ) {
 	log_error("%s: gdbm_store failed: %s\n", rentry->fname,
 			    rc == 1 ? "already stored"
