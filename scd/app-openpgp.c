@@ -534,6 +534,13 @@ verify_chv2 (APP app,
           return rc;
         }
 
+      if (strlen (pinvalue) < 6)
+        {
+          log_error ("prassphrase (CHV2) is too short; minimum length is 6\n");
+          xfree (pinvalue);
+          return gpg_error (GPG_ERR_BAD_PIN);
+        }
+
       rc = iso7816_verify (app->slot, 0x82, pinvalue, strlen (pinvalue));
       if (rc)
         {
@@ -584,6 +591,13 @@ verify_chv3 (APP app,
         {
           log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
           return rc;
+        }
+
+      if (strlen (pinvalue) < 6)
+        {
+          log_error ("prassphrase (CHV3) is too short; minimum length is 6\n");
+          xfree (pinvalue);
+          return gpg_error (GPG_ERR_BAD_PIN);
         }
 
       rc = iso7816_verify (app->slot, 0x83, pinvalue, strlen (pinvalue));
@@ -1039,6 +1053,13 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
         {
           log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
           return rc;
+        }
+
+      if (strlen (pinvalue) < 6)
+        {
+          log_error ("prassphrase (CHV1) is too short; minimum length is 6\n");
+          xfree (pinvalue);
+          return gpg_error (GPG_ERR_BAD_PIN);
         }
 
       rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));

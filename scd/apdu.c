@@ -1207,7 +1207,7 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
           apdu[apdulen++] = 0xC0;
           apdu[apdulen++] = 0;
           apdu[apdulen++] = 0;
-          apdu[apdulen++] = 64; /* that is 256 bytes for Le */
+          apdu[apdulen++] = len; 
           memset (apdu+apdulen, 0, sizeof (apdu) - apdulen);
           rc = send_apdu (slot, apdu, apdulen, result, &resultlen);
           if (rc || resultlen < 2)
