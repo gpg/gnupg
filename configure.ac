@@ -966,7 +966,7 @@ if test "$have_gpg_error" = "no"; then
 ***  
 *** You need libgpg-error to build this program.
 **  This library is for example available at
-***   ftp://ftp.gnupg.org/pub/gcrypt/alpha/libgpg-error
+***   ftp://ftp.gnupg.org/gcrypt/alpha/libgpg-error
 *** (at least version $NEED_GPG_ERROR_VERSION is required.)
 ***]])
 fi
@@ -976,7 +976,7 @@ if test "$have_libgcrypt" = "no"; then
 ***  
 *** You need libgcrypt to build this program.
 **  This library is for example available at
-***   ftp://ftp.gnupg.org/pub/gcrypt/alpha/libgcrypt/
+***   ftp://ftp.gnupg.org/gcrypt/alpha/libgcrypt/
 *** (at least version $NEED_LIBGCRYPT_VERSION is required.)
 ***]])
 fi
@@ -986,7 +986,7 @@ if test "$have_libassuan" = "no"; then
 ***
 *** You need libassuan to build this program.
 *** This library is for example available at
-***   ftp://ftp.gnupg.org/pub/gcrypt/alpha/libassuan/
+***   ftp://ftp.gnupg.org/gcrypt/alpha/libassuan/
 *** (at least version $NEED_LIBASSUAN_VERSION is required).
 ***]])
 fi
@@ -996,7 +996,7 @@ if test "$have_ksba" = "no"; then
 ***
 *** You need libksba to build this program.
 *** This library is for example available at
-***   ftp://ftp.gnupg.org/pub/gcrypt/alpha/libksba/
+***   ftp://ftp.gnupg.org/gcrypt/alpha/libksba/
 *** (at least version $NEED_KSBA_VERSION is required).
 ***]])
 fi

@@ -1,3 +1,7 @@
+2004-02-20  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Fixed URLs in the notice messages.
+
 2004-02-18  Werner Koch  <wk@gnupg.org>
 
 	* acinclude.m4: Removed macros to detect gpg-error, libgcrypt,
