@@ -22,6 +22,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#ifdef HAVE_LANGINFO_CODESET
+#include <langinfo.h>
+#endif
+
 #include "types.h"
 #include "util.h"
 #include "memory.h"
@@ -361,12 +365,27 @@ string_count_chr( const char *string, int c )
 int
 set_native_charset( const char *newset )
 {
-    if( !ascii_strcasecmp( newset, "iso-8859-1" ) ) {
-	active_charset_name = "iso-8859-1";
+    if (!newset) 
+#ifdef HAVE_LANGINFO_CODESET
+        newset = nl_langinfo (CODESET);
+#else
+        newset = "8859-1";
+#endif
+
+    if (strlen (newset) > 3 && !ascii_memcasecmp (newset, "iso", 3)) {
+        newset += 3;
+        if (*newset == '-' || *newset == '_')
+            newset++;
+    }
+
+    if( !*newset
+        || !ascii_strcasecmp (newset, "8859-1" )
+        || !ascii_strcasecmp (newset, "8859-15" ) ) {
+        active_charset_name = "iso-8859-1";
         no_translation = 0;
 	active_charset = NULL;
     }
-    else if( !ascii_strcasecmp( newset, "iso-8859-2" ) ) {
+    else if( !ascii_strcasecmp( newset, "8859-2" ) ) {
 	active_charset_name = "iso-8859-2";
         no_translation = 0;
 	active_charset = latin2_unicode;

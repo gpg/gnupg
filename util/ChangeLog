@@ -1,3 +1,8 @@
+2002-09-02  Werner Koch  <wk@gnupg.org>
+
+	* strgutil.c (set_native_charset): Allow NULL as argument to use
+	nl_langinfo for selection.  Mapped latin-15 to latin-1.
+
 2002-08-30  Werner Koch  <wk@gnupg.org>
 
 	* iobuf.c (block_filter): Removed the assert, so that one can pass
