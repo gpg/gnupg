@@ -1,3 +1,11 @@
+2002-08-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (parse_hkp_index, dehtmlize): Move HTML
+	functionality into new "dehtmlize" function.  Remove HTML before
+	trying to parse each line from the keyserver.  If the keyserver
+	provides key type information in the listing, use it.  (Copy over
+	from g10/hkp.c).
+
 2002-08-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (get_key, parse_hkp_index): Bring over latest code

@@ -391,6 +391,77 @@ unsigned int scan_isodatestr( const char *string )
   return stamp;
 }
 
+/* Remove anything <between brackets> and de-urlencode in place.  Note
+   that this requires all brackets to be closed on the same line.  It
+   also means that the result is never larger than the input. */
+static void
+dehtmlize(char *line)
+{
+  int parsedindex=0;
+  char *parsed=line;
+
+  while(*line!='\0')
+    {
+      switch(*line)
+	{
+	case '<':
+	  while(*line!='>' && *line!='\0')
+	    line++;
+
+	  if(*line!='\0')
+	    line++;
+	  break;
+
+	case '&':
+	  if((*(line+1)!='\0' && tolower(*(line+1))=='l') &&
+	     (*(line+2)!='\0' && tolower(*(line+2))=='t') &&
+	     (*(line+3)!='\0' && *(line+3)==';'))
+	    {
+	      parsed[parsedindex++]='<';
+	      line+=4;
+	      break;
+	    }
+	  else if((*(line+1)!='\0' && tolower(*(line+1))=='g') &&
+		  (*(line+2)!='\0' && tolower(*(line+2))=='t') &&
+		  (*(line+3)!='\0' && *(line+3)==';'))
+	    {
+	      parsed[parsedindex++]='>';
+	      line+=4;
+	      break;
+	    }
+	  else if((*(line+1)!='\0' && tolower(*(line+1))=='a') &&
+		  (*(line+2)!='\0' && tolower(*(line+2))=='m') &&
+		  (*(line+3)!='\0' && tolower(*(line+3))=='p') &&
+		  (*(line+4)!='\0' && *(line+4)==';'))
+	    {
+	      parsed[parsedindex++]='&';
+	      line+=5;
+	      break;
+	    }
+
+	default:
+	  parsed[parsedindex++]=*line;
+	  line++;
+	  break;
+	}
+    }
+
+  parsed[parsedindex]='\0';
+
+  /* Chop off any trailing whitespace.  Note that the HKP servers have
+     \r\n as line endings, and the NAI HKP servers have just \n. */
+
+  if(parsedindex>0)
+    {
+      parsedindex--;
+      while(isspace(parsed[parsedindex]))
+	{
+	  parsed[parsedindex]='\0';
+	  parsedindex--;
+	}
+    }
+}
+
 /* pub  2048/<a href="/pks/lookup?op=get&search=0x3CB3B415">3CB3B415</a> 1998/04/03 David M. Shaw &lt;<a href="/pks/lookup?op=get&search=0x3CB3B415">dshaw@jabberwocky.com</a>&gt; */
 
 /* Luckily enough, both the HKP server and NAI HKP interface to their
@@ -400,17 +471,21 @@ unsigned int scan_isodatestr( const char *string )
 int parse_hkp_index(char *line,char **buffer)
 {
   static int open=0,revoked=0;
-  static char *key=NULL,*uid=NULL;
+  static char *key=NULL,*uid=NULL,*type=NULL;
   static unsigned int bits,createtime;
   int ret=0;
 
-  /*  printf("Open %d, LINE: %s, uid: %s\n",open,line,uid); */
+  /* printf("Open %d, LINE: %s, uid: %s\n",open,line,uid); */
+
+  dehtmlize(line);
+
+  /* printf("Now open %d, LINE: \"%s\", uid: %s\n",open,line,uid); */
 
   /* Try and catch some bastardization of HKP.  If we don't have
      certain unchanging landmarks, we can't reliably parse the
-     response. */
-
-  if(open && strncasecmp(line,"</pre>",6)!=0 &&
+     response.  This only complains about problems within the key
+     section itself.  Headers and footers should not matter. */
+  if(open && line[0]!='\0' &&
      strncasecmp(line,"pub ",4)!=0 &&
      strncasecmp(line,"    ",4)!=0)
     {
@@ -419,8 +494,6 @@ int parse_hkp_index(char *line,char **buffer)
       fprintf(console,"gpgkeys: this keyserver is not fully HKP compatible\n");
       return -1;
     }
-
-  /* printf("Open %d, LINE: %s\n",open,line); */
 
   /* For multiple UIDs */
   if(open && uid!=NULL)
@@ -456,7 +529,10 @@ int parse_hkp_index(char *line,char **buffer)
 	  append_quoted(*buffer,revoked?"1:":":",0);
 	  sprintf(intstr,"%u",createtime);
 	  append_quoted(*buffer,intstr,':');
-	  append_quoted(*buffer,"::::",0);
+	  append_quoted(*buffer,":::",0);
+	  if(type)
+	    append_quoted(*buffer,type,':');
+	  append_quoted(*buffer,":",0);
 	  sprintf(intstr,"%u",bits);
 	  append_quoted(*buffer,intstr,':');
 	  append_quoted(*buffer,"\n",0);
@@ -486,13 +562,16 @@ int parse_hkp_index(char *line,char **buffer)
       if(tok==NULL)
 	return ret;
 
+      if(tok[strlen(tok)-1]=='R')
+ 	type="RSA";
+      else if(tok[strlen(tok)-1]=='D')
+ 	type="DSA";
+      else
+ 	type=NULL;
+
       bits=atoi(tok);
 
-      tok=strsep(&line,">");
-      if(tok==NULL)
-	return ret;
-
-      tok=strsep(&line,"<");
+      tok=strsep(&line," ");
       if(tok==NULL)
 	{
 	  key=strdup("00000000");
@@ -505,10 +584,6 @@ int parse_hkp_index(char *line,char **buffer)
       if(tok==NULL)
 	return ret;
 
-      tok=strsep(&line," ");
-      if(tok==NULL)
-	return ret;
-  
       /* The date parser wants '-' instead of '/', so... */
       temp=tok;
       while(*temp!='\0')
@@ -524,19 +599,17 @@ int parse_hkp_index(char *line,char **buffer)
 
   if(open)
     {
-      int uidindex=0;
-
       if(line==NULL)
 	{
 	  uid=strdup("Key index corrupted");
 	  return ret;
 	}
 
-      /* All that's left is the user name.  Strip off anything
-	 <between brackets> and de-urlencode it. */
-
       while(*line==' ' && *line!='\0')
 	line++;
+
+      if(*line=='\0')
+	return ret;
 
       if(strncmp(line,"*** KEY REVOKED ***",19)==0)
 	{
@@ -544,57 +617,7 @@ int parse_hkp_index(char *line,char **buffer)
 	  return ret;
 	}
 
-      uid=malloc(strlen(line)+1);
-
-      while(*line!='\0')
-	{
-	  switch(*line)
-	    {
-	    case '<':
-	      while(*line!='>' && *line!='\0')
-		line++;
-
-	      if(*line!='\0')
-		line++;
-	      break;
-
-	    case '&':
-	      if((*(line+1)!='\0' && tolower(*(line+1))=='l') &&
-		 (*(line+2)!='\0' && tolower(*(line+2))=='t') &&
-		 (*(line+3)!='\0' && *(line+3)==';'))
-		{
-		  uid[uidindex++]='<';
-		  line+=4;
-		  break;
-		}
-
-	      if((*(line+1)!='\0' && tolower(*(line+1))=='g') &&
-		 (*(line+2)!='\0' && tolower(*(line+2))=='t') &&
-		 (*(line+3)!='\0' && *(line+3)==';'))
-		{
-		  uid[uidindex++]='>';
-		  line+=4;
-		  break;
-		}
-
-	    default:
-	      uid[uidindex++]=*line;
-	      line++;
-	      break;
-	    }
-	}
-
-      uid[uidindex]='\0';
-
-      /* Chop off the trailing \r, \n, or both. This is fussy as the
-         true HKP servers have \r\n, and the NAI HKP servers have just
-         \n. */
-
-      if(isspace(uid[uidindex-1]))
-	uid[uidindex-1]='\0';
-
-      if(isspace(uid[uidindex-2]))
-	uid[uidindex-2]='\0';
+      uid=strdup(line);
     }
 
   return ret;
