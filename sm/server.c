@@ -867,6 +867,7 @@ get_status_string ( int no )
     case STATUS_ENTER  : s = "ENTER"; break;
     case STATUS_LEAVE  : s = "LEAVE"; break;
     case STATUS_ABORT  : s = "ABORT"; break;
+    case STATUS_NEWSIG : s = "NEWSIG"; break;
     case STATUS_GOODSIG: s = "GOODSIG"; break;
     case STATUS_SIGEXPIRED: s = "SIGEXPIRED"; break;
     case STATUS_KEYREVOKED: s = "KEYREVOKED"; break;

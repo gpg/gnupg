@@ -1,5 +1,6 @@
 2004-04-05  Werner Koch  <wk@gnupg.org>
 
+	* server.c (get_status_string): Add STATUS_NEWSIG.
 	* verify.c (gpgsm_verify): Print STATUS_NEWSIG for each signature.
 
 	* certchain.c (gpgsm_validate_chain) <gpgsm_cert_use_cer_p>: Do
