@@ -34,6 +34,7 @@
 #include "util.h"
 #include "main.h"
 #include "filter.h"
+#include "i18n.h"
 
 
 static int encode_simple( const char *filename, int mode );
@@ -81,7 +82,7 @@ encode_simple( const char *filename, int mode )
 
     /* prepare iobufs */
     if( !(inp = iobuf_open(filename)) ) {
-	log_error("can't open %s: %s\n", filename? filename: "[stdin]",
+	log_error(_("%s: can't open: %s\n"), filename? filename: "[stdin]",
 					strerror(errno) );
 	return G10ERR_OPEN_FILE;
     }
@@ -98,7 +99,7 @@ encode_simple( const char *filename, int mode )
 	    m_free(cfx.dek);
 	    m_free(s2k);
 	    iobuf_close(inp);
-	    log_error("error creating passphrase: %s\n", g10_errstr(rc) );
+	    log_error(_("error creating passphrase: %s\n"), g10_errstr(rc) );
 	    return rc;
 	}
     }
@@ -134,7 +135,7 @@ encode_simple( const char *filename, int mode )
 	pt->namelen = strlen(filename);
 	memcpy(pt->name, filename, pt->namelen );
 	if( !(filesize = iobuf_get_filelength(inp)) )
-	    log_info("warning: '%s' is an empty file\n", filename );
+	    log_info(_("%s: warning: empty file\n"), filename );
     }
     else { /* no filename */
 	pt = m_alloc( sizeof *pt - 1 );
@@ -191,18 +192,18 @@ encode_crypt( const char *filename, STRLIST remusr )
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
 
-    if( (rc=build_pk_list( remusr, &pk_list, 2)) )
+    if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC)) )
 	return rc;
 
     /* prepare iobufs */
     if( !(inp = iobuf_open(filename)) ) {
-	log_error("can't open %s: %s\n", filename? filename: "[stdin]",
+	log_error(_("can't open %s: %s\n"), filename? filename: "[stdin]",
 					strerror(errno) );
 	rc = G10ERR_OPEN_FILE;
 	goto leave;
     }
     else if( opt.verbose )
-	log_info("reading from '%s'\n", filename? filename: "[stdin]");
+	log_info(_("reading from '%s'\n"), filename? filename: "[stdin]");
 
     if( !(out = open_outfile( filename, opt.armor? 1:0 )) ) {
 	rc = G10ERR_CREATE_FILE;  /* or user said: do not overwrite */
@@ -232,7 +233,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	pt->namelen = strlen(filename);
 	memcpy(pt->name, filename, pt->namelen );
 	if( !(filesize = iobuf_get_filelength(inp)) )
-	    log_info("warning: '%s' is an empty file\n", filename );
+	    log_info(_("%s: warning: empty file\n"), filename );
     }
     else { /* no filename */
 	pt = m_alloc( sizeof *pt - 1 );
@@ -242,6 +243,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     pt->timestamp = make_timestamp();
     pt->mode = 'b';
     pt->len = filesize;
+    pt->new_ctb = !pt->len && !opt.rfc1991;
     pt->buf = inp;
     init_packet(&pkt);
     pkt.pkttype = PKT_PLAINTEXT;
@@ -332,6 +334,8 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	MPI frame;
 
 	pk = pk_list->pk;
+	if( is_RSA(pk->pubkey_algo) )
+	    do_not_use_RSA();
 	enc = m_alloc_clear( sizeof *enc );
 	enc->pubkey_algo = pk->pubkey_algo;
 	keyid_from_pk( pk, enc->keyid );
@@ -344,7 +348,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	else {
 	    if( opt.verbose ) {
 		char *ustr = get_user_id_string( enc->keyid );
-		log_info("%s encrypted for: %s\n",
+		log_info(_("%s encrypted for: %s\n"),
 		    pubkey_algo_to_string(enc->pubkey_algo), ustr );
 		m_free(ustr);
 	    }

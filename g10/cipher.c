@@ -46,6 +46,7 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
 
     memset( &ed, 0, sizeof ed );
     ed.len = cfx->datalen;
+    ed.new_ctb = !ed.len && !opt.rfc1991;
     init_packet( &pkt );
     pkt.pkttype = PKT_ENCRYPTED;
     pkt.pkt.encrypted = &ed;
@@ -88,13 +89,7 @@ cipher_filter( void *opaque, int control,
 	    rc = G10ERR_WRITE_FILE;
     }
     else if( control == IOBUFCTRL_FREE ) {
-      #if 0
-	if( cfx->new_partial && cfx->cfx->la_buffer ) {
-
-	}
-      #endif
 	cipher_close(cfx->cipher_hd);
-	m_free(cfx->la_buffer); cfx->la_buffer = NULL;
     }
     else if( control == IOBUFCTRL_DESC ) {
 	*(char**)buf = "cipher_filter";

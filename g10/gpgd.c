@@ -249,6 +249,18 @@ g10_exit( int rc )
     exit(rc );
 }
 
+void
+do_not_use_RSA()
+{
+    static int did_rsa_note = 0;
+
+    if( !did_rsa_note ) {
+	did_rsa_note = 1;
+	log_info("RSA keys are depreciated; please consider "
+		 "creating a new key and use this key in the future\n");
+    }
+}
+
 
 static void
 become_daemon()

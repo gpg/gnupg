@@ -46,6 +46,9 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     byte *dp;
     int rc;
 
+    if( is_RSA(sk->pubkey_algo) )
+	do_not_use_RSA();
+
     if( !digest_algo )
 	digest_algo = md_get_algo(md);
 
@@ -166,12 +169,12 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     if( fname && filenames->next && (!detached || encrypt) )
 	log_bug("multiple files can only be detached signed");
 
-    if( (rc=build_sk_list( locusr, &sk_list, 1, 1 )) )
+    if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
 	goto leave;
     if( !old_style )
 	old_style = only_old_style( sk_list );
     if( encrypt ) {
-	if( (rc=build_pk_list( remusr, &pk_list, 2 )) )
+	if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC )) )
 	    goto leave;
     }
 
@@ -314,6 +317,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	pt->timestamp = make_timestamp();
 	pt->mode = opt.textmode && !outfile ? 't':'b';
 	pt->len = filesize;
+	pt->new_ctb = !pt->len && !opt.rfc1991;
 	pt->buf = inp;
 	pkt.pkttype = PKT_PLAINTEXT;
 	pkt.pkt.plaintext = pt;
@@ -461,12 +465,13 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     SK_LIST sk_list = NULL;
     SK_LIST sk_rover = NULL;
     int old_style = opt.rfc1991;
+    int only_md5 = 0;
 
     memset( &afx, 0, sizeof afx);
     memset( &tfx, 0, sizeof tfx);
     init_packet( &pkt );
 
-    if( (rc=build_sk_list( locusr, &sk_list, 1, 1 )) )
+    if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
 	goto leave;
     if( !old_style )
 	old_style = only_old_style( sk_list );
@@ -493,18 +498,36 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	goto leave;
     }
 
-    /* FIXME: This stuff is not correct if multiple hash algos are used*/
     iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----\n" );
-    if( old_style
-	|| (opt.def_digest_algo?opt.def_digest_algo:DEFAULT_DIGEST_ALGO)
-			      == DIGEST_ALGO_MD5 )
+
+    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
+	PKT_secret_key *sk = sk_rover->sk;
+	if( hash_for(sk->pubkey_algo) == DIGEST_ALGO_MD5 )
+	    only_md5 = 1;
+	else {
+	    only_md5 = 0;
+	    break;
+	}
+    }
+
+    if( old_style || only_md5 )
 	iobuf_writestr(out, "\n" );
     else {
-	const char *s = digest_algo_to_string(opt.def_digest_algo?
-				    opt.def_digest_algo:DEFAULT_DIGEST_ALGO);
-	assert(s);
+	const char *s;
+	int any = 0;
+
 	iobuf_writestr(out, "Hash: " );
-	iobuf_writestr(out, s );
+	for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
+	    PKT_secret_key *sk = sk_rover->sk;
+	    s = digest_algo_to_string( hash_for(sk->pubkey_algo) );
+	    if( s ) {
+		if( any )
+		    iobuf_put(out, ',' );
+		iobuf_writestr(out, s );
+		any = 1;
+	    }
+	}
+	assert(any);
 	iobuf_writestr(out, "\n\n" );
     }
 

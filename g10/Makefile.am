@@ -32,6 +32,8 @@ common_source =  \
 	      keyid.c		\
 	      trustdb.c 	\
 	      trustdb.h 	\
+	      pref.h		\
+	      pref.c		\
 	      packet.h		\
 	      parse-packet.c	\
 	      passphrase.c	\

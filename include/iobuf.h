@@ -48,6 +48,7 @@ struct iobuf_struct {
 	byte *buf;
     } d;
     int filter_eof;
+    int error;
     int (*filter)( void *opaque, int control,
 		   IOBUF chain, byte *buf, size_t *len);
     void *filter_ov;	/* value for opaque */
@@ -81,6 +82,8 @@ int iobuf_pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 		      IOBUF chain, byte *buf, size_t *len), void *ov );
 int iobuf_flush(IOBUF a);
 void iobuf_clear_eof(IOBUF a);
+#define iobuf_set_error(a)    do { (a)->error = 1; } while(0)
+#define iobuf_error(a)	      ((a)->error)
 
 void iobuf_set_limit( IOBUF a, unsigned long nlimit );
 

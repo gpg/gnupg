@@ -39,7 +39,7 @@ free_strlist( STRLIST sl )
 }
 
 
-void
+STRLIST
 add_to_strlist( STRLIST *list, const char *string )
 {
     STRLIST sl;
@@ -48,6 +48,25 @@ add_to_strlist( STRLIST *list, const char *string )
     strcpy(sl->d, string);
     sl->next = *list;
     *list = sl;
+    return sl;
+}
+
+STRLIST
+append_to_strlist( STRLIST *list, const char *string )
+{
+    STRLIST r, sl;
+
+    sl = m_alloc( sizeof *sl + strlen(string));
+    strcpy(sl->d, string);
+    sl->next = NULL;
+    if( !*list )
+	*list = sl;
+    else {
+	for( r = *list; r->next; r = r->next )
+	    ;
+	r->next = sl;
+    }
+    return sl;
 }
 
 

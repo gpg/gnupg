@@ -125,7 +125,7 @@ import_keys( const char *fname )
     }
     if( rc == -1 )
 	rc = 0;
-    else if( rc )
+    else if( rc && rc != G10ERR_INV_KEYRING )
 	log_error("%s: read error: %s\n", fname, g10_errstr(rc));
 
     iobuf_close(inp);

@@ -325,7 +325,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    if( n < buflen || c == '\n' ) {
 		if( n && buf[0] != '\r') { /* maybe a header */
 		    if( strchr( buf, ':') ) { /* yes */
-			int hashes;
+			int hashes=0;
 			if( buf[n-1] == '\r' )
 			    buf[--n] = 0;
 			if( opt.verbose ) {
@@ -822,13 +822,19 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		else if( (c=iobuf_get(a)) == -1 )
 		    break;
 	    } while( ++idx < 4 );
-	    if( c == -1 )
+	    if( c == -1 ) {
 		log_error("premature eof (in CRC)\n");
-	    else if( idx != 4 )
+		rc = G10ERR_INVALID_ARMOR;
+	    }
+	    else if( idx != 4 ) {
 		log_error("malformed CRC\n");
-	    else if( mycrc != afx->crc )
+		rc = G10ERR_INVALID_ARMOR;
+	    }
+	    else if( mycrc != afx->crc ) {
 		log_error("CRC error; %06lx - %06lx\n",
 				    (ulong)afx->crc, (ulong)mycrc);
+		rc = G10ERR_INVALID_ARMOR;
+	    }
 	    else {
 		rc = 0;
 	      #if 0
@@ -843,10 +849,14 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		}
 		if( rc == -1 )
 		    rc = 0;
-		else if( rc == 2 )
+		else if( rc == 2 ) {
 		    log_error("premature eof (in Trailer)\n");
-		else
+		    rc = G10ERR_INVALID_ARMOR;
+		}
+		else {
 		    log_error("error in trailer line\n");
+		    rc = G10ERR_INVALID_ARMOR;
+		}
 	      #endif
 	    }
 	}
@@ -988,7 +998,8 @@ armor_filter( void *opaque, int control,
 	    iobuf_writestr(a, "-----\n");
 	    iobuf_writestr(a, "Version: GNUPG v"  VERSION " ("
 					    PRINTABLE_OS_NAME ")\n");
-	    iobuf_writestr(a, "Comment: This is an alpha version!\n");
+	    iobuf_writestr(a,
+		"Comment: Get GNUPG from ftp://ftp.guug.de/pub/gcrypt/\n");
 	    if( afx->hdrlines )
 		iobuf_writestr(a, afx->hdrlines);
 	    iobuf_put(a, '\n');

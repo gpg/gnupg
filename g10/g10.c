@@ -79,6 +79,7 @@ static ARGPARSE_OPTS opts[] = {
     { 530, "import",      0     , N_("import/merge keys")},
     { 521, "list-packets",0,N_("list only the sequence of packets")},
   #ifdef IS_G10MAINT
+    { 564, "list-ownertrust", 0, "list the ownertrust values"},
     { 546, "dearmor", 0, N_("De-Armor a file or stdin") },
     { 547, "enarmor", 0, N_("En-Armor a file or stdin") },
     { 555, "print-md" , 0, N_("|algo [files]|print message digests")},
@@ -116,12 +117,10 @@ static ARGPARSE_OPTS opts[] = {
     { 561, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
   #ifdef IS_G10
     { 527, "cipher-algo", 2 , N_("|NAME|use cipher algorithm NAME")},
-    { 528, "pubkey-algo", 2 , N_("|NAME|use public key algorithm NAME")},
     { 529, "digest-algo", 2 , N_("|NAME|use message digest algorithm NAME")},
     { 556, "compress-algo", 1 , N_("|N|use compress algorithm N")},
   #else /* some dummies */
     { 527, "cipher-algo", 2 , "@"},
-    { 528, "pubkey-algo", 2 , "@"},
     { 529, "digest-algo", 2 , "@"},
     { 556, "compress-algo", 1 , "@"},
   #endif
@@ -138,6 +137,7 @@ static ARGPARSE_OPTS opts[] = {
   /* hidden options */
   #ifdef IS_G10MAINT
     { 514, "test"      , 0, "@" },
+    { 564, "list-ownertrust",0 , "@"},
     { 531, "list-trustdb",0 , "@"},
     { 533, "list-trust-path",0, "@"},
   #endif
@@ -154,7 +154,6 @@ static ARGPARSE_OPTS opts[] = {
     { 519, "no-armor",   0, "@"},
     { 520, "no-default-keyring", 0, "@" },
     { 522, "no-greeting", 0, "@" },
-    { 541, "no-operation", 0, "@" },      /* used by regression tests */
     { 543, "no-options", 0, "@" }, /* shortcut for --options /dev/null */
     { 544, "homedir", 2, "@" },   /* defaults to "~/.gnupg" */
     { 545, "no-batch", 0, "@" },
@@ -169,18 +168,19 @@ static ARGPARSE_OPTS opts[] = {
 
 {0} };
 
-
+/* (Free numbers: 541) */
 
 
 enum cmd_values { aNull = 0,
     aSym, aStore, aEncr, aKeygen, aSign, aSignEncr,
-    aSignKey, aClearsign, aListPackets, aEditSig, aDeleteKey, aDeleteSecretKey,
+    aSignKey, aClearsign, aListPackets, aEditKey, aDeleteKey, aDeleteSecretKey,
     aKMode, aKModeC, aChangePass, aImport, aVerify, aDecrypt, aListKeys,
     aListSigs, aKeyadd, aListSecretKeys,
     aExport, aExportSecret,
     aCheckKeys, aGenRevoke, aPrimegen, aPrintMD, aPrintMDs,
-    aListTrustDB, aListTrustPath, aDeArmor, aEnArmor, aGenRandom, aTest,
-aNOP };
+    aListTrustDB, aListTrustPath, aListOwnerTrust,
+    aDeArmor, aEnArmor, aGenRandom,
+aTest };
 
 
 static char *build_list( const char *text,
@@ -358,8 +358,6 @@ check_opts(void)
 {
     if( !opt.def_cipher_algo || check_cipher_algo(opt.def_cipher_algo) )
 	log_error(_("selected cipher algorithm is invalid\n"));
-    if( !opt.def_pubkey_algo || check_pubkey_algo(opt.def_pubkey_algo) )
-	log_error(_("selected pubkey algorithm is invalid\n"));
     if( opt.def_digest_algo && check_digest_algo(opt.def_digest_algo) )
 	log_error(_("selected digest algorithm is invalid\n"));
     if( opt.def_compress_algo < 1 || opt.def_compress_algo > 2 )
@@ -414,7 +412,6 @@ main( int argc, char **argv )
     opt.compress = -1; /* defaults to standard compress level */
     /* fixme: set the next two to zero and decide where used */
     opt.def_cipher_algo = DEFAULT_CIPHER_ALGO;
-    opt.def_pubkey_algo = DEFAULT_PUBKEY_ALGO;
     opt.def_digest_algo = 0;
     opt.def_compress_algo = 2;
     opt.completes_needed = 1;
@@ -510,13 +507,10 @@ main( int argc, char **argv )
 	  case 506: set_cmd( &cmd, aSignKey); break;
 	  case 507: set_cmd( &cmd, aStore); break;
 	  case 523: set_passphrase_fd( pargs.r.ret_int ); break;
-	  case 524: set_cmd( &cmd, aEditSig); break;
+	  case 524: set_cmd( &cmd, aEditKey); break;
 	  case 525: set_cmd( &cmd, aChangePass); break;
 	  case 527:
 	    opt.def_cipher_algo = string_to_cipher_algo(pargs.r.ret_str);
-	    break;
-	  case 528:
-	    opt.def_pubkey_algo = string_to_pubkey_algo(pargs.r.ret_str);
 	    break;
 	  case 529:
 	    opt.def_digest_algo = string_to_digest_algo(pargs.r.ret_str);
@@ -527,7 +521,6 @@ main( int argc, char **argv )
 	  case 550: set_cmd( &cmd, aVerify); break;
 	#else
 	  case 527:
-	  case 528:
 	  case 529:
 	    break;
 	#endif /* !IS_G10 */
@@ -543,6 +536,7 @@ main( int argc, char **argv )
 	  case 547: set_cmd( &cmd, aEnArmor); break;
 	  case 548: set_cmd( &cmd, aGenRandom); break;
 	  case 555: set_cmd( &cmd, aPrintMD); break;
+	  case 564: set_cmd( &cmd, aListOwnerTrust); break;
 	#endif /* IS_G10MAINT */
 
 	  case 'o': opt.outfile = pargs.r.ret_str; break;
@@ -581,7 +575,6 @@ main( int argc, char **argv )
 	  case 536: opt.marginals_needed = pargs.r.ret_int; break;
 	  case 537: set_cmd( &cmd, aExport); break;
 	  case 538: trustdb_name = pargs.r.ret_str; break;
-	  case 541: set_cmd( &cmd, aNOP); break;
 	  case 543: break; /* no-options */
 	  case 544: opt.homedir = pargs.r.ret_str; break;
 	  case 545: opt.batch = 0; break;
@@ -692,6 +685,7 @@ main( int argc, char **argv )
 	if( opt.with_colons ) /* need this to list the trust */
 	    rc = init_trustdb(1, trustdb_name );
 	break;
+      case aListOwnerTrust: rc = init_trustdb( 0, trustdb_name ); break;
       case aListTrustDB: rc = init_trustdb( argc? 1:0, trustdb_name ); break;
       default: rc = init_trustdb(1, trustdb_name ); break;
     }
@@ -784,9 +778,9 @@ main( int argc, char **argv )
 	    log_error("%s: sign key failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
 	break;
 
-      case aEditSig: /* Edit a key signature */
+      case aEditKey: /* Edit a key signature */
 	if( argc != 1 )
-	    wrong_args(_("--edit-sig username"));
+	    wrong_args(_("--edit-key username"));
 	/* note: fname is the user id! */
 	if( (rc = edit_keysigs(fname)) )
 	    log_error("%s: edit signature failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
@@ -1003,11 +997,14 @@ main( int argc, char **argv )
 	list_trust_path( atoi(*argv), argv[1] );
 	break;
 
+      case aListOwnerTrust:
+	if( argc )
+	    wrong_args("--list-ownertrust");
+	list_ownertrust();
+	break;
+
      #endif /* IS_G10MAINT */
 
-
-      case aNOP:
-	break;
 
       case aListPackets:
 	opt.list_packets=1;
@@ -1052,6 +1049,20 @@ g10_exit( int rc )
     /*write_status( STATUS_LEAVE );*/
     exit(rc );
 }
+
+
+void
+do_not_use_RSA()
+{
+    static int did_rsa_note = 0;
+
+    if( !did_rsa_note ) {
+	did_rsa_note = 1;
+	log_info(_("RSA keys are depreciated; please consider "
+		   "creating a new key and use this key in the future\n"));
+    }
+}
+
 
 #ifdef IS_G10MAINT
 static void
@@ -1159,41 +1170,6 @@ print_mds( const char *fname, int algo )
 static void
 do_test(int times)
 {
-    MPI base[4];
-    MPI exp[4];
-    MPI t1 = mpi_alloc(50);
-    MPI t2 = mpi_alloc(50);
-    MPI t3 = mpi_alloc(50);
-    MPI tmp= mpi_alloc(50);
-    MPI m =   mpi_alloc(50);
-    MPI res = mpi_alloc(50);
-
-    mpi_fromstr( m, "0x10000000000000000000000000" );
-    base[0] = mpi_alloc_set_ui( 3 );
-    mpi_fromstr( base[0], "0x145984358945989898495ffdd13" );
-    base[1] = mpi_alloc_set_ui( 5 );
-    mpi_fromstr( base[1], "0x000effff9999000000001100001" );
-    base[2] = mpi_alloc_set_ui( 2 );
-    mpi_fromstr( base[2], "0x499eeeaaaaa0444444545466672" );
-    base[3] = NULL;
-    exp[0]  = mpi_alloc_set_ui( 30 );
-    exp[1]  = mpi_alloc_set_ui( 10 );
-    mpi_fromstr( exp[1], "0x3457878888888888aabbbccccc1" );
-    exp[2]  = mpi_alloc_set_ui( 24 );
-    exp[3] = NULL;
-
-    mpi_powm( t1, base[0], exp[0], m );
-    mpi_powm( t2, base[1], exp[1], m );
-    mpi_powm( t3, base[2], exp[2], m );
-    mpi_mulm( tmp, t1, t2, m );
-    mpi_mulm( t1, tmp, t3, m );
-    log_mpidump("X=", t1 );
-
-
-    mpi_mulpowm( res, base, exp, m );
-    log_mpidump("X=", res );
-
-
     m_check(NULL);
 }
 #endif /* IS_G10MAINT */

@@ -167,6 +167,7 @@ mpi_invm( MPI x, MPI a, MPI n )
 
     u = mpi_copy(a);
     v = mpi_copy(n);
+
     for(k=0; !mpi_test_bit(u,0) && !mpi_test_bit(v,0); k++ ) {
 	mpi_rshift(u, u, 1);
 	mpi_rshift(v, v, 1);

@@ -281,7 +281,7 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
     iobuf_put(a, sk->pubkey_algo );
     nskey = pubkey_get_nskey( sk->pubkey_algo );
     npkey = pubkey_get_npkey( sk->pubkey_algo );
-    if( npkey ) {
+    if( !npkey ) {
 	write_fake_data( a, sk->skey[0] );
 	goto leave;
     }

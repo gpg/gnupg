@@ -61,9 +61,6 @@ typedef struct {
 typedef struct {
     DEK *dek;
     u32 datalen;
-    int new_partial;	  /* use Openpgp partial packets header */
-    char *la_buffer;	  /* help buffer for OP partial stuff */
-    size_t la_buflen;	  /* and its used length */
     CIPHER_HANDLE cipher_hd;
     int header;
 } cipher_filter_context_t;

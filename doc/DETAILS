@@ -71,7 +71,7 @@ Record type 1:
      1 byte completes needed
      1 byte max. cert depth
 	    If any of this 3 values are changed, all cache records
-	    muts be invalidated.
+	    must be invalidated.
      9 bytes reserved
 
 
@@ -88,7 +88,9 @@ Record type 2: (directory record)
      1 u32   cache record
      1 u32   sigrecord
      1 byte  No signatures flag  (used to avoid duplicate building).
-     13 byte reserved
+     3 byte  reserved
+     1 u32   preference record
+     6 byte reserved
 
 
 Record type 3:
@@ -124,7 +126,7 @@ Record type 4:	(cache record)
      20 bytes rmd160 hash value over the complete keyblock
 	      This is used to detect any changes of the keyblock with all
 	      CTBs and lengths headers. Calculation is easy if the keyblock
-	      is optained from a keyserved: simply create the hash from all
+	      is optained from a keyserver: simply create the hash from all
 	      received data bytes.
 
      1 byte   number of untrusted signatures.
@@ -162,7 +164,7 @@ Record Type 6 (hash table)
     used directly as hash values.  (They can be considered as strong
     random numbers.)
       What we use is a dynamic multilevel architecture, which combines
-    Hashtables, record lists, and linked lists.
+    hashtables, record lists, and linked lists.
 
     This record is a hashtable of 256 entries; a special property
     is that all these records are stored consecutively to make one
@@ -204,7 +206,6 @@ Record type 7  (hash list)
 	1 u32  recnum
 
     For the current record length of 40, n is 6
-
 
 
 

@@ -1,8 +1,12 @@
 
-    * add writing of partial headers conforming to OpenPGP
-      util/iobuf.c:block_filter
+    * add option --restore-ownertrust
 
     * add options: --default-signature-user, --default-encryption-user
+
+    * Change the formatting of log_xxxx to GNU standards
+      ("name:filename:line: text")
+
+    * add a way to delete subkeys (in edit-keys?)
 
     * make preferences work
 
@@ -15,7 +19,9 @@
 
     * add readline support. Must enhance libreadline - Anyone?
 
-    * Burn the buffers used by fopen(), or use read(2).
+    * Burn the buffers used by fopen(), or use read(2). Does this
+      really make sense?
+
 
     * enable a SIGSEGV handler while using zlib functions
 

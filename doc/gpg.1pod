@@ -5,10 +5,14 @@ gpg - GNU Privacy Guard
 =head1 SYNOPSIS
 
 B<gpg> [--homedir name] [--options file] [options] command [args]
+B<gpgm> [--homedir name] [--options file] [options] command [args]
 
 =head1 DESCRIPTION
 
-This is the main program for the GNUPG system.
+B<gpg> is the main program for the GNUPG system. B<gpgm> is a maintenance
+tool which has some commands B<gpgm> does not have; it is there because
+it does not handle sensitive data ans therefore has no need to allocate
+secure memory.
 
 =head1 COMMANDS
 
@@ -91,6 +95,11 @@ B<--gen-key>
     Generate a new key pair. This command can only be
     used interactive.
 
+B<--add-key> I<name>
+    Add a subkey to an already existing key. This
+    command is similiar to B<--gen-key> but a primary
+    key must already exit.
+
 B<--sign-key> I<name>
     Make a signature on key of user I<name>.
     This looks for the key, displays the key and checks
@@ -130,6 +139,9 @@ B<--export> [I<names>]
 B<--import>
     import/merge keys
 
+B<--list-ownertrust>
+    List the assigned ownertrust values in ascii format for
+    backup purposes [B<gpgm> only].
 
 =head1 OPTIONS
 
@@ -243,11 +255,6 @@ B<--marginals-needed> I<n>
 
 B<--cipher-algo> I<name>
     Use I<name> as cipher algorithm. Running the program
-    with the option B<--verbose> yields a list of supported
-    algorithms.
-
-B<--pubkey-algo> I<name>
-    Use I<name> as puplic key algorithm. Running the program
     with the option B<--verbose> yields a list of supported
     algorithms.
 

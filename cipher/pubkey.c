@@ -282,9 +282,11 @@ check_pubkey_algo2( int algo, unsigned usage )
     do {
 	for(i=0; pubkey_table[i].name; i++ )
 	    if( pubkey_table[i].algo == algo ) {
-		if( (usage & 1) && !(pubkey_table[i].usage & 1) )
+		if( (usage & PUBKEY_USAGE_SIG)
+		    && !(pubkey_table[i].usage & PUBKEY_USAGE_SIG) )
 		    return G10ERR_WR_PUBKEY_ALGO;
-		if( (usage & 2) && !(pubkey_table[i].usage & 2) )
+		if( (usage & PUBKEY_USAGE_ENC)
+		    && !(pubkey_table[i].usage & PUBKEY_USAGE_ENC) )
 		    return G10ERR_WR_PUBKEY_ALGO;
 		return 0; /* okay */
 	    }

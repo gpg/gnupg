@@ -1,3 +1,41 @@
+Mon Jul  6 09:03:49 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* getkey.c (add_keyring): Keyrings are now added to end of the
+	list of keyrings.  The first added keyringwill be created.
+	(add_secret_keyring): Likewise.
+
+	* ringedit.c (add_keyblock_resource): Files are created here.
+
+	* g10.c (aNOP): Removed
+
+	* getkey.c (lookup): Add checking of usage for name lookups
+	* packet.h (pubkey_usage): Add a field which may be used to store
+	usage capabilities.
+	* pkclist.c (build_pk_list): getkey now called with usage arg.
+	* skclist.c (build_sk_list): Ditto.
+
+	* sign.c (clearsign_file): Fixed "Hash:" headers
+
+Sat Jul  4 13:33:31 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* trustdb.c (list_ownertrust): New.
+	* g10.c (aListOwnerTrust): New.
+
+	* g10.c (def_pubkey_algo): Removed.
+
+	* trustdb.c (verify_private_data): Removed and also the call to it.
+	(sign_private_data): Removed.
+
+Fri Jul  3 13:26:10 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c (aEditKey): was aEditSig. Changed usage msg.
+
+	* keyedit.c: Done some i18n stuff.
+
+	* g10.c (do_not_use_RSA): New.
+	* sign.c (do_sign): Add call to above function.
+	* encode.c (write_pubkey_enc_from_list): Ditto.
+
 Thu Jul  2 21:01:25 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* parse-packet.c: Now is able sto store data of unknown

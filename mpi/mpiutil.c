@@ -94,7 +94,7 @@ mpi_alloc_secure( unsigned nlimbs )
     a->d = nlimbs? mpi_alloc_limb_space( nlimbs, 1 ) : NULL;
   #endif
     a->alloced = nlimbs;
-    a->flags |= 1;
+    a->flags = 1;
     a->nlimbs = 0;
     a->sign = 0;
     a->nbits = 0;
@@ -178,6 +178,7 @@ mpi_clear( MPI a )
 {
     a->nlimbs = 0;
     a->nbits = 0;
+    a->flags = 0;
 }
 
 
@@ -197,7 +198,8 @@ mpi_free( MPI a )
   #else
     mpi_free_limb_space(a->d);
   #endif
-
+    if( a->flags & ~3 )
+	log_bug("invalid flag value in mpi\n");
     m_free(a);
 }
 
@@ -231,7 +233,7 @@ mpi_set_secure( MPI a )
 
 
 /****************
- * Note: This copy function shpould not interpret the MPI
+ * Note: This copy function should not interpret the MPI
  *	 but copy it transparently.
  */
 MPI
@@ -278,6 +280,7 @@ mpi_set( MPI w, MPI u)
     MPN_COPY( wp, up, usize );
     w->nlimbs = usize;
     w->nbits = u->nbits;
+    w->flags = u->flags;
     w->sign = usign;
 }
 
@@ -290,6 +293,7 @@ mpi_set_ui( MPI w, unsigned long u)
     w->nlimbs = u? 1:0;
     w->sign = 0;
     w->nbits = 0;
+    w->flags = 0;
 }
 
 

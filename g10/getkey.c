@@ -76,12 +76,15 @@ static int lookup_sk( PKT_secret_key *sk,
 		   int mode,  u32 *keyid, const char *name );
 
 /* note this function may be called before secure memory is
- * available */
+ * available
+ * The first keyring which is added by this function is
+ * created if it does not exist.
+ */
 void
 add_keyring( const char *name )
 {
     STRLIST sl;
-    int rc;
+    int rc, force = !keyrings;
 
     if( *name != '/' ) { /* do tilde expansion etc */
 	char *p ;
@@ -90,22 +93,17 @@ add_keyring( const char *name )
 	    p = make_filename(name, NULL);
 	else
 	    p = make_filename(opt.homedir, name, NULL);
-	sl = m_alloc( sizeof *sl + strlen(p) );
-	strcpy(sl->d, p );
+	sl = append_to_strlist( &keyrings, p );
 	m_free(p);
     }
-    else {
-	sl = m_alloc( sizeof *sl + strlen(name) );
-	strcpy(sl->d, name );
-    }
-    sl->next = keyrings;
-    keyrings = sl;
+    else
+	sl = append_to_strlist( &keyrings, name );
 
     /* fixme: We should remove much out of this module and
      * combine it with the keyblock stuff from ringedit.c
      * For now we will simple add the filename as keyblock resource
      */
-    rc = add_keyblock_resource( sl->d, 0, 0 );
+    rc = add_keyblock_resource( sl->d, force, 0 );
     if( rc )
 	log_error("keyblock resource '%s': %s\n", sl->d, g10_errstr(rc) );
 }
@@ -139,7 +137,7 @@ void
 add_secret_keyring( const char *name )
 {
     STRLIST sl;
-    int rc;
+    int rc, force = !secret_keyrings;
 
     if( *name != '/' ) { /* do tilde expansion etc */
 	char *p ;
@@ -148,22 +146,17 @@ add_secret_keyring( const char *name )
 	    p = make_filename(name, NULL);
 	else
 	    p = make_filename(opt.homedir, name, NULL);
-	sl = m_alloc( sizeof *sl + strlen(p) );
-	strcpy(sl->d, p );
+	sl = append_to_strlist( &secret_keyrings, p );
 	m_free(p);
     }
-    else {
-	sl = m_alloc( sizeof *sl + strlen(name) );
-	strcpy(sl->d, name );
-    }
-    sl->next = secret_keyrings;
-    secret_keyrings = sl;
+    else
+	sl = append_to_strlist( &secret_keyrings, name );
 
     /* fixme: We should remove much out of this module and
      * combine it with the keyblock stuff from ringedit.c
      * For now we will simple add the filename as keyblock resource
      */
-    rc = add_keyblock_resource( sl->d, 0, 1 );
+    rc = add_keyblock_resource( sl->d, force, 1 );
     if( rc )
 	log_error("secret keyblock resource '%s': %s\n", sl->d, g10_errstr(rc));
 }
@@ -648,6 +641,7 @@ add_stuff_from_selfsig( KBNODE keyblock, KBNODE knode )
     }
 }
 
+
 /****************
  * Lookup a key by scanning all keyrings
  *   mode 1 = lookup by NAME (exact)
@@ -696,7 +690,12 @@ lookup( PKT_public_key *pk, int mode,  u32 *keyid,
 			      || kk->pkt->pkttype == PKT_PUBLIC_SUBKEY )
 			    && ( !pk->pubkey_algo
 				 || pk->pubkey_algo
-				    == kk->pkt->pkt.public_key->pubkey_algo))
+				    == kk->pkt->pkt.public_key->pubkey_algo)
+			    && ( !pk->pubkey_usage
+				 || !check_pubkey_algo2(
+				       kk->pkt->pkt.public_key->pubkey_algo,
+							   pk->pubkey_usage ))
+			  )
 			break;
 		    if( kk ) {
 			u32 aki[2];
@@ -711,6 +710,9 @@ lookup( PKT_public_key *pk, int mode,  u32 *keyid,
 	    }
 	}
 	else { /* keyid or fingerprint lookup */
+	    /* No need to compare the usage here, as we already have the
+	     * keyid to use
+	     */
 	    if( DBG_CACHE && (mode== 10 || mode==11) ) {
 		log_debug("lookup keyid=%08lx%08lx req_algo=%d mode=%d\n",
 				(ulong)keyid[0], (ulong)keyid[1],

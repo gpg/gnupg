@@ -1540,18 +1540,13 @@ init_trustdb( int level, const char *dbname )
 	if( !level )
 	    return 0;
 
-	/* we can verify a signature about our local data (secring and trustdb)
-	 * in ~/.gnupg/ here */
-	rc = verify_private_data();
-	if( !rc ) {
-	    /* verify that our own keys are in the trustDB
-	     * or move them to the trustdb. */
-	    rc = verify_own_keys();
+	/* verify that our own keys are in the trustDB
+	 * or move them to the trustdb. */
+	rc = verify_own_keys();
 
-	    /* should we check whether there is no other ultimately trusted
-	     * key in the database? */
+	/* should we check whether there is no other ultimately trusted
+	 * key in the database? */
 
-	}
     }
     else
 	BUG();
@@ -1590,6 +1585,27 @@ list_trustdb( const char *username )
 	putchar('\n');
 	for(recnum=0; !read_record( recnum, &rec, 0); recnum++ )
 	    dump_record( recnum, &rec, stdout );
+    }
+}
+
+/****************
+ * make a list of all owner trust value.
+ */
+void
+list_ownertrust()
+{
+    TRUSTREC rec;
+    ulong recnum;
+    int i;
+    byte *p;
+
+    for(recnum=0; !read_record( recnum, &rec, 0); recnum++ ) {
+	if( rec.rectype == RECTYPE_KEY ) {
+	    p = rec.r.key.fingerprint;
+	    for(i=0; i < rec.r.key.fingerprint_len; i++, p++ )
+		printf("%02X", *p );
+	    printf(":%u:\n", (unsigned)rec.r.key.ownertrust );
+	}
     }
 }
 
@@ -2011,51 +2027,4 @@ update_no_sigs( ulong lid, int no_sigs )
     return 0;
 }
 
-
-int
-verify_private_data()
-{
-    int rc = 0;
-    char *sigfile = make_filename(opt.homedir, "gnupg.sig", NULL );
-
-    if( access( sigfile, R_OK ) ) {
-	if( errno != ENOENT ) {
-	    log_error("can't access %s: %s\n", sigfile, strerror(errno) );
-	    rc = G10ERR_TRUSTDB;
-	    goto leave;
-	}
-	log_info("private data signature missing; creating ...\n");
-	rc = sign_private_data();
-	if( rc ) {
-	    log_error("error creating %s: %s\n", sigfile, g10_errstr(rc) );
-	    goto leave;
-	}
-    }
-
-    /* FIXME: verify this signature */
-
-  leave:
-    m_free(sigfile);
-    return rc;
-}
-
-
-int
-sign_private_data()
-{
-    int rc;
-    char *sigfile = make_filename(opt.homedir, "gnupg.sig", NULL );
-    char *secring = make_filename(opt.homedir, "secring.gpg", NULL );
-    STRLIST list = NULL;
-
-    add_to_strlist( &list, db_name );
-    add_to_strlist( &list, secring );
-
-    rc = sign_file( list, 1, NULL, 0, NULL, sigfile);
-
-    m_free(sigfile);
-    m_free(secring);
-    free_strlist(list);
-    return rc;
-}
 

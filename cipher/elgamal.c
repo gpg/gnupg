@@ -510,8 +510,8 @@ elg_get_nbits( int algo, MPI *pkey )
  *	    the ALGO is invalid.
  * Usage: Bit 0 set : allows signing
  *	      1 set : allows encryption
- * NOTE: This function allows signing also for ELG-E, chich is not
- * okay but a bad hack to allow to work with olf gpg keys. The real check
+ * NOTE: This function allows signing also for ELG-E, which is not
+ * okay but a bad hack to allow to work with old gpg keys. The real check
  * is done in the gnupg ocde depending on the packet version.
  */
 const char *
@@ -524,8 +524,12 @@ elg_get_info( int algo, int *npkey, int *nskey, int *nenc, int *nsig,
     *nsig = 2;
 
     switch( algo ) {
-      case PUBKEY_ALGO_ELGAMAL:   *usage = 2|1; return "ELG";
-      case PUBKEY_ALGO_ELGAMAL_E: *usage = 2|1; return "ELG-E";
+      case PUBKEY_ALGO_ELGAMAL:
+	*usage = PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC;
+	return "ELG";
+      case PUBKEY_ALGO_ELGAMAL_E:
+	*usage = PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC;
+	return "ELG-E";
       default: *usage = 0; return NULL;
     }
 }

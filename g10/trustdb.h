@@ -38,6 +38,7 @@
 /*-- trustdb.c --*/
 void list_trustdb(const char *username);
 void list_trust_path( int max_depth, const char *username );
+void list_ownertrust(void);
 int init_trustdb( int level, const char *dbname );
 int check_trust( PKT_public_key *pk, unsigned *r_trustlevel );
 int query_trust_info( PKT_public_key *pk );
@@ -47,7 +48,5 @@ int keyid_from_trustdb( ulong lid, u32 *keyid );
 int query_trust_record( PKT_public_key *pk );
 int insert_trust_record( PKT_public_key *pk );
 int update_ownertrust( ulong lid, unsigned new_trust );
-int verify_private_data(void);
-int sign_private_data(void);
 
 #endif /*G10_TRUSTDB_H*/

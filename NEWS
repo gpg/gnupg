@@ -1,3 +1,18 @@
+Noteworthy changes in version 0.3.1
+-----------------------------------
+    * Partial headers are now written in the OpenPGP format if
+      a key in a v4 packet is used.
+
+    * Removed some unused options, removed the gnupg.sig stuff.
+
+    * Key lookup by name now returns a key which can be used for
+      the desired action.
+
+    * New options --list-ownertrust (gpgm) to make a backup copy
+      of the ownertrust values you assigned.
+
+    * clear signature headers are now in compliance with OpenPGP.
+
 Noteworthy changes in version 0.3.0
 -----------------------------------
 

@@ -43,6 +43,7 @@ typedef struct {
 #else
   void g10_exit(int rc);
 #endif
+void do_not_use_RSA(void);
 
 /*-- misc.c --*/
 void trap_unaligned(void);

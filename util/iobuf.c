@@ -739,6 +739,11 @@ underflow(IOBUF a)
 	    log_debug("iobuf-%d.%d: filter eof\n", a->no, a->subno );
 	return -1;
     }
+    if( a->error ) {
+	if( DBG_IOBUF )
+	    log_debug("iobuf-%d.%d: error\n", a->no, a->subno );
+	return -1;
+    }
 
     if( a->filter ) {
 	len = a->d.size;
@@ -758,6 +763,8 @@ underflow(IOBUF a)
 	    }
 	    a->filter_eof = 1;
 	}
+	else if( rc )
+	    a->error = 1;
 
 	if( !len )
 	    return -1;
@@ -802,6 +809,8 @@ iobuf_flush(IOBUF a)
 	log_info("iobuf_flush did not write all!\n");
 	rc = G10ERR_WRITE_FILE;
     }
+    else if( rc )
+	a->error = 1;
     a->d.len = 0;
 
     return rc;
@@ -1058,6 +1067,7 @@ iobuf_seek( IOBUF a, ulong newpos )
     a->nbytes = 0;
     a->nlimit = 0;
     a->ntotal = newpos;
+    a->error = 0;
     /* remove filters, but the last */
     while( a->chain )
 	iobuf_pop_filter( a, a->filter, NULL );

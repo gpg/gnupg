@@ -126,7 +126,8 @@ int answer_is_yes( const char *s );
 /*-- strgutil.c --*/
 void free_strlist( STRLIST sl );
 #define FREE_STRLIST(a) do { free_strlist((a)); (a) = NULL ; } while(0)
-void add_to_strlist( STRLIST *list, const char *string );
+STRLIST add_to_strlist( STRLIST *list, const char *string );
+STRLIST append_to_strlist( STRLIST *list, const char *string );
 STRLIST strlist_prev( STRLIST head, STRLIST node );
 STRLIST strlist_last( STRLIST node );
 int memicmp( const char *a, const char *b, size_t n );

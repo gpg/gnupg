@@ -317,9 +317,10 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage )
 	    if( pk )
 		free_public_key( pk );
 	    pk = m_alloc_clear( sizeof *pk );
+	    pk->pubkey_usage = usage;
 	    rc = get_pubkey_byname( pk, answer );
 	    if( rc )
-		tty_printf("No such user ID.\n");
+		tty_printf(_("No such user ID.\n"));
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, usage)) ) {
 		int trustlevel;
 
@@ -350,9 +351,10 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage )
 	for(; remusr; remusr = remusr->next ) {
 
 	    pk = m_alloc_clear( sizeof *pk );
+	    pk->pubkey_usage = usage;
 	    if( (rc = get_pubkey_byname( pk, remusr->d )) ) {
 		free_public_key( pk ); pk = NULL;
-		log_error("skipped '%s': %s\n", remusr->d, g10_errstr(rc) );
+		log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
 	    }
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, usage )) ) {
 		int trustlevel;
@@ -360,7 +362,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage )
 		rc = check_trust( pk, &trustlevel );
 		if( rc ) {
 		    free_public_key( pk ); pk = NULL;
-		    log_error("error checking pk of '%s': %s\n",
+		    log_error(_("%s: error checking key: %s\n"),
 						      remusr->d, g10_errstr(rc) );
 		}
 		else if( do_we_trust_pre( pk, trustlevel ) ) {
@@ -379,14 +381,14 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage )
 	    }
 	    else {
 		free_public_key( pk ); pk = NULL;
-		log_error("skipped '%s': %s\n", remusr->d, g10_errstr(rc) );
+		log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
 	    }
 	}
     }
 
 
     if( !rc && !pk_list ) {
-	log_error("no valid addressees\n");
+	log_error(_("no valid addressees\n"));
 	rc = G10ERR_NO_USER_ID;
     }
 

@@ -117,6 +117,17 @@ add_keyblock_resource( const char *filename, int force, int secret )
     if( !iobuf && !force )
 	return G10ERR_OPEN_FILE;
   #endif
+
+    if( !iobuf ) {
+	iobuf = iobuf_create( filename );
+	if( !iobuf ) {
+	    log_error("%s: can't create: %s\n", filename, strerror(errno));
+	    return G10ERR_OPEN_FILE;
+	}
+	else
+	    log_info("%s: keyring created\n", filename );
+    }
+
     resource_table[i].used = 1;
     resource_table[i].secret = !!secret;
     resource_table[i].fname = m_strdup(filename);
@@ -726,6 +737,8 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	    log_error("%s: can't create: %s\n", rentry->fname, strerror(errno));
 	    return G10ERR_OPEN_FILE;
 	}
+	else
+	    log_info("%s: keyring created\n", rentry->fname );
 
 	kbctx=NULL;
 	while( (node = walk_kbnode( root, &kbctx, 0 )) ) {

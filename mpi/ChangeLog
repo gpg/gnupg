@@ -1,3 +1,9 @@
+Sat Jul  4 10:11:11 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* mpiutil.c (mpi_clear): Reset flags.
+	(mpi_set): Ditto.
+	(mpi_alloc_secure): Set flag to 1 and not ored the 1 in, tsss..
+
 Fri Jun 26 11:19:06 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* mpiutil.c (mpi_alloc): set nbits to 0.

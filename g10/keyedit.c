@@ -75,8 +75,9 @@ sign_it_p( PKT_public_key *pk, PKT_user_id *uid )
     char *answer;
     int yes;
 
-    tty_printf("\nAre you really sure that you want to sign this key:\n\n"
-	       "%4u%c/%08lX %s ",
+    tty_printf("\n");
+    tty_printf(_("Are you really sure that you want to sign this key:\n\n"));
+    tty_printf("pub  %4u%c/%08lX %s ",
 	      nbits_from_pk( pk ),
 	      pubkey_letter( pk->pubkey_algo ),
 	      (ulong)keyid_from_pk( pk, NULL ),
@@ -85,7 +86,7 @@ sign_it_p( PKT_public_key *pk, PKT_user_id *uid )
     tty_printf("\n");
     show_fingerprint(pk);
     tty_printf("\n");
-    answer = tty_get("Sign this key? ");
+    answer = tty_get(_("Sign this key? "));
     tty_kill_prompt();
     yes = answer_is_yes(answer);
     m_free(answer);
@@ -141,11 +142,11 @@ check_all_keysigs( KBNODE keyblock )
 	}
     }
     if( inv_sigs )
-	tty_printf("%d bad signatures\n", inv_sigs );
+	tty_printf(_("%d bad signatures\n"), inv_sigs );
     if( no_key )
-	tty_printf("No public key for %d signatures\n", no_key );
+	tty_printf(_("No public key for %d signatures\n"), no_key );
     if( oth_err )
-	tty_printf("%d signatures not checked due to errors\n", oth_err );
+	tty_printf(_("%d signatures not checked due to errors\n"), oth_err );
     return inv_sigs || no_key || oth_err;
 }
 
@@ -172,7 +173,7 @@ remove_keysigs( KBNODE keyblock, u32 *keyid, int all )
 	    tty_printf("\n \"%08lX %s   ",
 			sig->keyid[1], datestr_from_sig(sig));
 	    if( node->flag & 6 )
-		tty_printf("[User name not available] ");
+		tty_printf(_("[User name not available] "));
 	    else {
 		size_t n;
 		char *p = get_user_id( sig->keyid, &n );
@@ -181,18 +182,19 @@ remove_keysigs( KBNODE keyblock, u32 *keyid, int all )
 	    }
 	    tty_printf("\"\n");
 	    if( node->flag & 1 )
-		tty_printf("This is a BAD signature!\n");
+		tty_printf(_("This is a BAD signature!\n"));
 	    else if( node->flag & 2 )
-		tty_printf("Public key not available.\n");
+		tty_printf(_("Public key not available.\n"));
 	    else if( node->flag & 4 )
-		tty_printf("The signature could not be checked!\n");
+		tty_printf(_("The signature could not be checked!\n"));
 
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
-		tty_printf("Skipped self-signature\n");
+		tty_printf(_("Skipped self-signature\n"));
 		continue; /* do not remove self-signatures */
 	    }
 
-	    answer = tty_get("\nRemove this signature? ");
+	    tty_printf("\n");
+	    answer = tty_get(_("Remove this signature? "));
 	    tty_kill_prompt();
 	    if( answer_is_yes(answer) ) {
 		node->flag |= 128;     /* use bit 7 to mark this node */
@@ -204,7 +206,7 @@ remove_keysigs( KBNODE keyblock, u32 *keyid, int all )
 
     if( !count )
 	return 0; /* nothing to remove */
-    answer = tty_get("Do you really want to remove the selected signatures? ");
+    answer = tty_get(_("Do you really want to remove the selected signatures? "));
     tty_kill_prompt();
     yes = answer_is_yes(answer);
     m_free(answer);
@@ -245,7 +247,7 @@ sign_key( const char *username, STRLIST locusr )
     /* search the userid */
     rc = find_keyblock_byname( &kbpos, username );
     if( rc ) {
-	log_error("user '%s' not found\n", username );
+	log_error(_("%s: user not found\n"), username );
 	goto leave;
     }
 
@@ -272,7 +274,7 @@ sign_key( const char *username, STRLIST locusr )
 
     pk = node->pkt->pkt.public_key;
     keyid_from_pk( pk, pk_keyid );
-    log_info("Checking signatures of this public key certificate:\n");
+    tty_printf(_("Checking signatures of this public key certificate:\n"));
     tty_printf("pub  %4u%c/%08lX %s   ",
 	      nbits_from_pk( pk ),
 	      pubkey_letter( pk->pubkey_algo ),
@@ -289,7 +291,8 @@ sign_key( const char *username, STRLIST locusr )
     if( check_all_keysigs( keyblock ) ) {
 	if( !opt.batch ) {
 	    /* ask whether we really should do anything */
-	    answer = tty_get("To you want to remove some of the invalid sigs? ");
+	    answer = tty_get(
+			_("To you want to remove some of the invalid sigs? "));
 	    tty_kill_prompt();
 	    if( answer_is_yes(answer) )
 		remove_keysigs( keyblock, pk_keyid, 0 );
@@ -309,7 +312,7 @@ sign_key( const char *username, STRLIST locusr )
 		&& (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
 		if( akeyid[0] == node->pkt->pkt.signature->keyid[0]
 		    && akeyid[1] == node->pkt->pkt.signature->keyid[1] ) {
-		    log_info("Already signed by keyid %08lX\n",
+		    log_info(_("Already signed by keyid %08lX\n"),
 							(ulong)akeyid[1] );
 		    sk_rover->mark = 0;
 		}
@@ -321,7 +324,7 @@ sign_key( const char *username, STRLIST locusr )
 	    break;
     }
     if( !sk_rover ) {
-	log_info("Nothing to sign\n");
+	log_info(_("Nothing to sign\n"));
 	goto leave;
     }
 
@@ -390,7 +393,7 @@ edit_keysigs( const char *username )
     /* search the userid */
     rc = find_keyblock_byname( &kbpos, username );
     if( rc ) {
-	log_error("%s: user not found\n", username );
+	log_error(_("%s: user not found\n"), username );
 	goto leave;
     }
 
@@ -411,7 +414,7 @@ edit_keysigs( const char *username )
 
     pk = node->pkt->pkt.public_key;
     keyid_from_pk( pk, pk_keyid );
-    log_info("Checking signatures of this public key certificate:\n");
+    tty_printf(_("Checking signatures of this public key certificate:\n"));
     tty_printf("pub  %4u%c/%08lX %s   ",
 	      nbits_from_pk( pk ),
 	      pubkey_letter( pk->pubkey_algo ),
@@ -459,7 +462,7 @@ delete_key( const char *username, int secret )
     rc = secret? find_secret_keyblock_byname( &kbpos, username )
 	       : find_keyblock_byname( &kbpos, username );
     if( rc ) {
-	log_error("%s: user not found\n", username );
+	log_error(_("%s: user not found\n"), username );
 	goto leave;
     }
 
@@ -622,10 +625,10 @@ change_passphrase( const char *username )
 	rc = G10ERR_PUBKEY_ALGO;
 	break;
       case 0:
-	tty_printf("This key is not protected.\n");
+	tty_printf(_("This key is not protected.\n"));
 	break;
       default:
-	tty_printf("Key is protected.\n");
+	tty_printf(_("Key is protected.\n"));
 	rc = check_secret_key( sk );
 	if( !rc )
 	    passphrase = get_last_passphrase();
@@ -644,7 +647,7 @@ change_passphrase( const char *username )
     }
 
     if( rc )
-	tty_printf("Can't edit this key: %s\n", g10_errstr(rc));
+	tty_printf(_("Can't edit this key: %s\n"), g10_errstr(rc));
     else {
 	DEK *dek = NULL;
 	STRING2KEY *s2k = m_alloc_secure( sizeof *s2k );

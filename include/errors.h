@@ -34,7 +34,7 @@
 #define G10ERR_CIPHER_ALGO    12 /* Unknown cipher algorithm */
 #define G10ERR_KEYRING_OPEN   13
 #define G10ERR_INVALID_PACKET 14
-#define G10ERR_BAD_RING       15
+#define G10ERR_INVALID_ARMOR  15
 #define G10ERR_NO_USER_ID     16
 #define G10ERR_NO_SECKEY      17 /* secret key not available */
 #define G10ERR_WRONG_SECKEY   18 /* wrong seckey used */

@@ -203,7 +203,7 @@ static int
 parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
        int *skip, IOBUF out, int do_skip )
 {
-    int rc, c, ctb, pkttype, lenbytes;
+    int rc=0, c, ctb, pkttype, lenbytes;
     unsigned long pktlen;
     byte hdr[8];
     int hdrlen;
@@ -213,13 +213,16 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
     assert( !pkt->pkt.generic );
     if( retpos )
 	*retpos = iobuf_tell(inp);
-    if( (ctb = iobuf_get(inp)) == -1 )
-	return -1;
+    if( (ctb = iobuf_get(inp)) == -1 ) {
+	rc = -1;
+	goto leave;
+    }
     hdrlen=0;
     hdr[hdrlen++] = ctb;
     if( !(ctb & 0x80) ) {
 	log_error("%s: invalid packet (ctb=%02x)\n", iobuf_where(inp), ctb );
-	return G10ERR_INVALID_PACKET;
+	rc = G10ERR_INVALID_PACKET;
+	goto leave;
     }
     pktlen = 0;
     new_ctb = !!(ctb & 0x40);
@@ -227,7 +230,8 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	pkttype =  ctb & 0x3f;
 	if( (c = iobuf_get(inp)) == -1 ) {
 	    log_error("%s: 1st length byte missing\n", iobuf_where(inp) );
-	    return G10ERR_INVALID_PACKET;
+	    rc = G10ERR_INVALID_PACKET;
+	    goto leave;
 	}
 	hdr[hdrlen++] = c;
 	if( c < 192 )
@@ -236,7 +240,8 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	    pktlen = (c - 192) * 256;
 	    if( (c = iobuf_get(inp)) == -1 ) {
 		log_error("%s: 2nd length byte missing\n", iobuf_where(inp) );
-		return G10ERR_INVALID_PACKET;
+		rc = G10ERR_INVALID_PACKET;
+		goto leave;
 	    }
 	    hdr[hdrlen++] = c;
 	    pktlen += c + 192;
@@ -247,7 +252,8 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	    pktlen |= (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 8;
 	    if( (c = iobuf_get(inp)) == -1 ) {
 		log_error("%s: 4 byte length invalid\n", iobuf_where(inp) );
-		return G10ERR_INVALID_PACKET;
+		rc = G10ERR_INVALID_PACKET;
+		goto leave;
 	    }
 	    pktlen |= (hdr[hdrlen++] = c );
 	}
@@ -277,13 +283,14 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	    rc = G10ERR_WRITE_FILE;
 	else
 	    rc = copy_packet(inp, out, pkttype, pktlen );
-	return rc;
+	goto leave;
     }
 
     if( do_skip || !pkttype || (reqtype && pkttype != reqtype) ) {
 	skip_packet(inp, pkttype, pktlen);
 	*skip = 1;
-	return 0;
+	rc = 0;
+	goto leave;
     }
 
     if( DBG_PACKET )
@@ -341,6 +348,9 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	break;
     }
 
+  leave:
+    if( rc == -1 && iobuf_error(inp) )
+	rc = G10ERR_INV_KEYRING;
     return rc;
 }
 
@@ -925,6 +935,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	sk->hdrbytes = hdrlen;
 	sk->version = version;
 	sk->pubkey_algo = algorithm;
+	sk->pubkey_usage = 0; /* not yet used */
     }
     else {
 	PKT_public_key *pk = pkt->pkt.public_key;
@@ -934,6 +945,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	pk->hdrbytes	= hdrlen;
 	pk->version	= version;
 	pk->pubkey_algo = algorithm;
+	pk->pubkey_usage = 0; /* not yet used */
     }
     nskey = pubkey_get_nskey( algorithm );
     npkey = pubkey_get_npkey( algorithm );

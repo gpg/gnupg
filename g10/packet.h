@@ -109,6 +109,7 @@ typedef struct {
     byte    hdrbytes;	    /* number of header bytes */
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
+    byte    pubkey_usage;   /* for now only used to pass it to getkey() */
     ulong   local_id;	    /* internal use, valid if > 0 */
     MPI     pkey[PUBKEY_MAX_NPKEY];
 } PKT_public_key;
@@ -119,6 +120,7 @@ typedef struct {
     byte    hdrbytes;	    /* number of header bytes */
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
+    byte    pubkey_usage;
     byte is_protected;	/* The secret info is protected and must */
 			/* be decrypted before use, the protected */
 			/* MPIs are simply (void*) pointers to memory */

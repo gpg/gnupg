@@ -405,7 +405,7 @@ dsa_get_info( int algo, int *npkey, int *nskey, int *nenc, int *nsig,
     *nsig = 2;
 
     switch( algo ) {
-      case PUBKEY_ALGO_DSA:   *usage = 1; return "DSA";
+      case PUBKEY_ALGO_DSA:   *usage = PUBKEY_USAGE_SIG; return "DSA";
       default: *usage = 0; return NULL;
     }
 }

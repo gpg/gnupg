@@ -1,3 +1,12 @@
+Mon Jul  6 10:41:55 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* cipher.h (PUBKEY_USAGE_): New.
+
+Mon Jul  6 09:49:51 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* iobuf.h (iobuf_set_error): New.
+	(iobuf_error): New.
+
 Sat Jun 13 17:31:32 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* g10lib.h: New as interface for the g10lib.

@@ -12,7 +12,7 @@ TESTS = version.test mds.test \
 	conventional.test
 
 
-TEST_FILES = pubring.asc secring.asc gnupg.asc plain-1 plain-2 plain-3o.asc \
+TEST_FILES = pubring.asc secring.asc plain-1 plain-2 plain-3o.asc \
 	     plain-1.asc plain-2.asc plain-3.asc plain-1-pgp.asc \
 	     pubring.pkr.asc secring.skr.asc
 
@@ -23,17 +23,14 @@ CLEANFILES = prepared.stamp x y z out err  $(DATA_FILES)
 
 check: prepared.stamp
 
-prepared.stamp: pubring.gpg secring.gpg gnupg.sig plain-3 \
+prepared.stamp: pubring.gpg secring.gpg plain-3 \
 		pubring.pkr secring.skr $(DATA_FILES)
-	@echo "def" | ../g10/gpg --homedir . -v --no-operation; \
 	 echo timestamp >./prepared.stamp
 
 pubring.gpg: pubring.asc
 	../g10/gpgm --yes --dearmor -o pubring.gpg pubring.asc
 secring.gpg: secring.asc
 	../g10/gpgm --yes --dearmor -o secring.gpg secring.asc
-gnupg.sig: gnupg.asc
-	../g10/gpgm --yes --dearmor -o gnupg.sig gnupg.asc
 plain-3: plain-3o.asc
 	../g10/gpgm --yes --dearmor -o plain-3 plain-3o.asc
 pubring.pkr: pubring.pkr.asc
