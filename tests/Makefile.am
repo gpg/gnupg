@@ -20,13 +20,13 @@
 ## Process this file with automake to produce Makefile.in
 
 
-if RUN_PKITS_TESTS
-pkits = pkits
-else
-pkits =
-endif
-
-SUBDIRS = . ${pkits}
+#if RUN_PKITS_TESTS
+#pkits = pkits
+#else
+#pkits =
+#endif
+#
+#SUBDIRS = . ${pkits}
 
 
 GPGSM = ../sm/gpgsm

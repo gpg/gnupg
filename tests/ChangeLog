@@ -1,3 +1,8 @@
+2004-09-30  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (SUBDIRS): Remove pkits until the copyright issues
+	have been cleared.
+
 2004-08-16  Werner Koch  <wk@g10code.de>
 
 	* Makefile.am: Descend into the new pkits directory

@@ -1,3 +1,7 @@
+2004-09-30  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am: Adjusted from gettext 1.14.
+
 2004-09-29  Werner Koch  <wk@g10code.com>
 
 	* minip12.c (parse_bag_encrypted_data): Print error if a bad

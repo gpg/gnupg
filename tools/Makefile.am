@@ -34,6 +34,6 @@ bin_PROGRAMS = gpgconf watchgnupg
 
 gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 
-gpgconf_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a @INTLLIBS@
+gpgconf_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a @LIBINTL@
 
 watchgnupg_SOURCES = watchgnupg.c

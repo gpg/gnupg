@@ -92,6 +92,7 @@ struct reader_table_s {
 
   /* Function pointers intialized to the various backends.  */
   int (*close_reader)(int);
+  int (*shutdown_reader)(int);
   int (*reset_reader)(int);
   int (*get_status_reader)(int, unsigned int *);
   int (*send_apdu_reader)(int,unsigned char *,size_t,
@@ -244,6 +245,7 @@ new_reader_slot (void)
     }
 #endif /*USE_GNU_PTH*/
   reader_table[reader].close_reader = NULL;
+  reader_table[reader].shutdown_reader = NULL;
   reader_table[reader].reset_reader = NULL;
   reader_table[reader].get_status_reader = NULL;
   reader_table[reader].send_apdu_reader = NULL;
@@ -1117,7 +1119,8 @@ open_pcsc_reader (const char *portstr)
     {
       if (!*p && !p[1])
         break;
-      log_info ("detected reader `%s'\n", p);
+      if (*p)
+        log_info ("detected reader `%s'\n", p);
       if (nreader < (strlen (p)+1))
         {
           log_error ("invalid response from pcsc_list_readers\n");
@@ -1202,6 +1205,14 @@ close_ccid_reader (int slot)
   
 
 static int
+shutdown_ccid_reader (int slot)
+{
+  ccid_shutdown_reader (reader_table[slot].ccid.handle);
+  return 0;
+}                       
+  
+
+static int
 reset_ccid_reader (int slot)
 {
   int err;
@@ -1273,7 +1284,7 @@ send_apdu_ccid (int slot, unsigned char *apdu, size_t apdulen,
 
 /* Open the reader and try to read an ATR.  */
 static int
-open_ccid_reader (void)
+open_ccid_reader (const char *portstr)
 {
   int err;
   int slot;
@@ -1284,7 +1295,7 @@ open_ccid_reader (void)
     return -1;
   slotp = reader_table + slot;
 
-  err = ccid_open_reader (&slotp->ccid.handle, 0);
+  err = ccid_open_reader (&slotp->ccid.handle, portstr);
   if (err)
     {
       slotp->used = 0;
@@ -1300,6 +1311,7 @@ open_ccid_reader (void)
     }
 
   reader_table[slot].close_reader = close_ccid_reader;
+  reader_table[slot].shutdown_reader = shutdown_ccid_reader;
   reader_table[slot].reset_reader = reset_ccid_reader;
   reader_table[slot].get_status_reader = get_status_ccid;
   reader_table[slot].send_apdu_reader = send_apdu_ccid;
@@ -1879,12 +1891,21 @@ apdu_open_reader (const char *portstr)
 #ifdef HAVE_LIBUSB
   if (!opt.disable_ccid)
     {
-      int slot;
+      int slot, i;
+      const char *s;
 
-      slot = open_ccid_reader ();
+      slot = open_ccid_reader (portstr);
       if (slot != -1)
         return slot; /* got one */
+
+      /* If a CCID reader specification has been given, the user does
+         not want a fallback to other drivers. */
+      if (portstr)
+        for (s=portstr, i=0; *s; s++)
+          if (*s == ':' && (++i == 3))
+            return -1;
     }
+
 #endif /* HAVE_LIBUSB */
 
 #ifdef HAVE_OPENSC
@@ -2039,6 +2060,19 @@ apdu_close_reader (int slot)
     return SW_HOST_NO_DRIVER;
   if (reader_table[slot].close_reader)
     return reader_table[slot].close_reader (slot);
+  return SW_HOST_NOT_SUPPORTED;
+}
+
+/* Shutdown a reader; that is basically the same as a close but keeps
+   the handle ready for later use. A apdu_reset_header should be used
+   to get it active again. */
+int
+apdu_shutdown_reader (int slot)
+{
+  if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
+    return SW_HOST_NO_DRIVER;
+  if (reader_table[slot].shutdown_reader)
+    return reader_table[slot].shutdown_reader (slot);
   return SW_HOST_NOT_SUPPORTED;
 }
 

@@ -685,7 +685,7 @@ AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME",
                    [A human readable text with the name of the OS])
 
 
-AM_GNU_GETTEXT_VERSION(0.12.1)
+AM_GNU_GETTEXT_VERSION(0.14.1)
 if test "$try_gettext" = yes; then
   AM_GNU_GETTEXT(,[need-ngettext])
 
@@ -1129,9 +1129,10 @@ scd/Makefile
 tools/Makefile
 doc/Makefile
 tests/Makefile
-tests/pkits/Makefile
 ])
 AC_OUTPUT
+
+#tests/pkits/Makefile
 
 
 

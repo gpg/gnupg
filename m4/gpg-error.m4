@@ -4,7 +4,7 @@ dnl AM_PATH_GPG_ERROR([MINIMUM-VERSION,
 dnl                   [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
 dnl Test for libgpg-error and define GPG_ERROR_CFLAGS and GPG_ERROR_LIBS
 dnl
-AC_DEFUN(AM_PATH_GPG_ERROR,
+AC_DEFUN([AM_PATH_GPG_ERROR],
 [ AC_ARG_WITH(gpg-error-prefix,
             AC_HELP_STRING([--with-gpg-error-prefix=PFX],
                            [prefix where GPG Error is installed (optional)]),

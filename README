@@ -19,8 +19,8 @@ BUILD INSTRUCTIONS
 
 GnuPG 1.9 depends on the following packages:
 
-  libgpg-error (ftp://ftp.gnupg.org/gcrypt/alpha/libgpg-error/)
-  libgcrypt    (ftp://ftp.gnupg.org/gcrypt/alpha/libgcrypt/)
+  libgpg-error (ftp://ftp.gnupg.org/gcrypt/libgpg-error/)
+  libgcrypt    (ftp://ftp.gnupg.org/gcrypt/libgcrypt/)
   libassuan    (ftp://ftp.gnupg.org/gcrypt/alpha/libassuan/)
   libksba      (ftp://ftp.gnupg.org/gcrypt/alpha/libksba/)
   
@@ -470,9 +470,9 @@ This requires that the gpg-agent is running.
 HOW TO EXPORT A PRIVATE KEY
 ===========================
 There is also limited support to export a private key in PKCS-12
-format. However the certificate is not stored and there is no MAC applied.
+format. However there is no MAC applied.
 
- gpgsm --call-protect-tool --p12-export  foo.key  >foo.p12
+ gpgsm --export-secret-key-p12 userIDey  >foo.p12
 
 
 SMARTCARD INTRO

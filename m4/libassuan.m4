@@ -14,7 +14,7 @@ dnl AM_PATH_LIBASSUAN([MINIMUM-VERSION,
 dnl                   [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
 dnl Test for libassuan and define LIBASSUAN_CFLAGS and LIBASSUAN_LIBS
 dnl
-AC_DEFUN(AM_PATH_LIBASSUAN,
+AC_DEFUN([AM_PATH_LIBASSUAN],
 [ AC_ARG_WITH(libassuan-prefix,
             AC_HELP_STRING([--with-libassuan-prefix=PFX],
                            [prefix where LIBASSUAN is installed (optional)]),

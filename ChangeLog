@@ -1,3 +1,11 @@
+2004-09-30  Werner Koch  <wk@g10code.com>
+
+	* README: Minor updates.
+
+2004-09-30  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* configure.ac (AM_GNU_GETTEXT_VERSION): Bump to 0.14.1.
+
 2004-08-16  Werner Koch  <wk@g10code.de>
 
 	* configure.ac: Build Makefile for tests/pkits.  New option

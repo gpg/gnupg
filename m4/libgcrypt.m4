@@ -20,7 +20,7 @@ dnl version of libgcrypt is at least 1.2.5 *and* the API number is 1.  Using
 dnl this features allows to prevent build against newer versions of libgcrypt
 dnl with a changed API.
 dnl
-AC_DEFUN(AM_PATH_LIBGCRYPT,
+AC_DEFUN([AM_PATH_LIBGCRYPT],
 [ AC_ARG_WITH(libgcrypt-prefix,
             AC_HELP_STRING([--with-libgcrypt-prefix=PFX],
                            [prefix where LIBGCRYPT is installed (optional)]),

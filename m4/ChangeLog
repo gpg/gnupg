@@ -1,3 +1,25 @@
+2004-09-30  Werner Koch  <wk@g10code.com>
+
+	* gpg-error.m4, libassuan.m4, libgcrypt.m4: Updated.
+
+2004-09-30  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* gettext.m4: Upgrade to gettext-0.14.1.
+	* intmax.m4: New file, from gettext-0.14.1.
+	* lib-ld.m4: Upgrade to gettext-0.14.1.
+	* lib-prefix.m4: Upgrade to gettext-0.14.1.
+	* longdouble.m4: New file, from gettext-0.14.1.
+	* longlong.m4: New file, from gettext-0.14.1.
+	* po.m4: Upgrade to gettext-0.14.1.
+	* printf-posix.m4: New file, from gettext-0.14.1.
+	* signed.m4: New file, from gettext-0.14.1.
+	* size_max.m4: New file, from gettext-0.14.1.
+	* ulonglong.m4: Upgrade to gettext-0.14.1.
+	* wchar_t.m4: New file, from gettext-0.14.1.
+	* wint_t.m4: New file, from gettext-0.14.1.
+	* xsize.m4: New file, from gettext-0.14.1.
+	* Makefile.am (EXTRA_DIST): Add the new files.
+
 2004-03-06  Werner Koch  <wk@gnupg.org>
 
 	* libgcrypt.m4: Updated.
