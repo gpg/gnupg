@@ -1,3 +1,9 @@
+2002-06-27  Werner Koch  <wk@gnupg.org>
+
+	* assuan-pipe-connect.c (assuan_pipe_connect): No special handling
+	for the log_fd and stderr.  Connect stderr to /dev/null if it
+	should not be retained.
+
 2002-06-26  Werner Koch  <wk@gnupg.org>
 
 	* assuan-buffer.c (assuan_write_line): Make sure we never

@@ -28,6 +28,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -169,18 +170,16 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
     {
       int i, n;
       char errbuf[512];
-#ifdef HAVE_JNLIB_LOGGING
-      int log_fd = log_get_fd (); 
-#endif
-      /* close all files which will not be duped but keep stderr
-         and log_stream for now */
+      int *fdp;
+
+      /* Close all files which will not be duped and are not in the
+         fd_child_list. */
       n = sysconf (_SC_OPEN_MAX);
       if (n < 0)
         n = MAX_OPEN_FDS;
       for (i=0; i < n; i++)
         {
-	  int *fdp = fd_child_list;
-
+	  fdp = fd_child_list;
 	  if (fdp)
 	    {
 	      while (*fdp != -1 && *fdp != i)
@@ -188,16 +187,36 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
 	    }
 
           if (!(fdp && *fdp != -1)
-	      && i != fileno (stderr) 
-#ifdef HAVE_JNLIB_LOGGING
-              && i != log_fd
-#endif
               && i != rp[1] && i != wp[0])
             close(i);
         }
       errno = 0;
 
-      /* Dup handles and to stdin/stdout and exec */
+      /* Dup stderr to /dev/null unless it is in the list of FDs to be
+         passed to the child. */
+      fdp = fd_child_list;
+      if (fdp)
+        {
+          for (; *fdp != -1 && *fdp != STDERR_FILENO; fdp++)
+            ;
+        }
+      if (!fdp || *fdp == -1)
+        {
+	  int fd = open ("/dev/null", O_WRONLY);
+	  if (fd == -1)
+	    {
+	      LOGERROR1 ("can't open `/dev/null': %s\n", strerror (errno));
+	      _exit (4);
+            }
+          if (dup2 (fd, STDERR_FILENO) == -1)
+            {
+              LOGERROR1 ("dup2(dev/null, 2) failed: %s\n", strerror (errno));
+              _exit (4);
+            }
+	  close (fd);
+        }
+
+      /* Dup handles and to stdin/stdout and exec. */
       if (rp[1] != STDOUT_FILENO)
         {
           if (dup2 (rp[1], STDOUT_FILENO) == -1)

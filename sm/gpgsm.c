@@ -636,9 +636,7 @@ main ( int argc, char **argv)
   opt.homedir = getenv ("GNUPGHOME");
 #endif
   if (!opt.homedir || !*opt.homedir ) 
-    {
-      opt.homedir = "~/.gnupg-test" /*fixme: GNUPG_HOMEDIR*/;
-    }
+    opt.homedir = GNUPG_DEFAULT_HOMEDIR;
 
   /* first check whether we have a config file on the commandline */
   orig_argc = argc;

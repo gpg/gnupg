@@ -261,13 +261,7 @@ main (int argc, char **argv )
      looking at the uid or ebtter use an explict option for this */
   opt.homedir = getenv("GNUPGHOME");
   if (!opt.homedir || !*opt.homedir)
-    {
-#ifdef HAVE_DRIVE_LETTERS
-      opt.homedir = "c:/gnupg-test";
-#else
-      opt.homedir = "~/.gnupg-test";
-#endif
-    }
+    opt.homedir = GNUPG_DEFAULT_HOMEDIR;
 
   /* check whether we have a config file on the commandline */
   orig_argc = argc;

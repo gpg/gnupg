@@ -1,3 +1,11 @@
+2002-06-27  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): Use GNUPG_DEFAULT_HOMEDIR constant.
+
+	* call-agent.c (start_agent): Create and pass the list of FD to
+	keep in the child to assuan.
+	* call-dirmngr.c (start_dirmngr): Ditto.
+
 2002-06-26  Werner Koch  <wk@gnupg.org>
 
 	* import.c (gpgsm_import): Print an STATUS_IMPORTED.
