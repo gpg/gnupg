@@ -1,3 +1,9 @@
+2004-10-01  Werner Koch  <wk@g10code.com>
+
+	* bftest.c (i18n_init): Always use LC_ALL.
+	* shmtest.c (i18n_init): Ditto.
+	* mpicalc.c (i18n_init): Ditto.
+
 2004-09-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* pgpgroup-to-gpggroup: New perl script to take groups from PGP
