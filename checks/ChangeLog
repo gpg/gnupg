@@ -1,3 +1,8 @@
+2004-02-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* clearsig.test, sigs.test: Properly detect RSA being missing, and
+	use the proper key for doing an RSA test.
+
 2003-12-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* clearsig.test, conventional-mdc.test, conventional.test,

@@ -19,9 +19,9 @@ done
 # and once more to check rfc1991
 # ======================================
 
-if have_cipher_algo "RSA"; then
+if have_pubkey_algo "RSA"; then
   for i in $plain_files plain-large ; do
-      $GPG -u $usrkeyid3 --rfc1991 --digest-algo md5 -sat -o x --yes $i
+      $GPG -u $usrname3 --rfc1991 --digest-algo md5 -sat -o x --yes $i
       $GPG --verify x
   done
 fi

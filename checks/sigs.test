@@ -24,7 +24,7 @@ done
 # TODO: add the new SHAs here once we allow them to be used in new
 # documents.
 
-if have_cipher_algo "RSA"; then
+if have_pubkey_algo "RSA"; then
     # Using the RSA sig key - all hashes
     hash_algo_list="ripemd160 sha1 md5"
     if have_hash_algo "SHA256"; then
@@ -33,7 +33,7 @@ if have_cipher_algo "RSA"; then
 
     for da in $hash_algo_list ; do
 	for i in $plain_files; do
-	    $GPG -u $usrkeyid3 --digest-algo $da -s -o x --yes $i
+	    $GPG -u $usrname3 --digest-algo $da -s -o x --yes $i
 	    $GPG -o y --yes x
 	    cmp $i y || error "$i: mismatch"
   	    # process only the first one
