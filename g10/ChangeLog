@@ -1,3 +1,23 @@
+2002-03-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* revoke.c (gen_revoke): do not prompt for revocation reason for
+	v3 revocations (unless force-v4-certs is on) since they wouldn't
+	be used anyway.
+
+	* keyedit.c (menu_revsig): show the status of the sigs
+	(exportable? revocable?) to the user before prompting for which
+	sig to revoke.  Also, make sure that local signatures get local
+	revocations.
+
+	* keyedit.c (ask_revoke_sig): remind the user which sigs are
+	local.
+
+	* g10.c (main): Add "exec-path" variable to override PATH for
+	execing programs.
+
+	* export.c (do_export_stream): properly check return code from
+	classify_user_id to catch unclassifiable keys.
+
 2002-03-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* parse-packet.c (parse_signature): variable type tweak for RISC

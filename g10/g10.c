@@ -227,6 +227,7 @@ enum cmd_and_opt_values { aNull = 0,
     oKeyServer,
     oKeyServerOptions,
     oTempDir,
+    oExecPath,
     oEncryptTo,
     oNoEncryptTo,
     oLoggerFD,
@@ -345,6 +346,7 @@ static ARGPARSE_OPTS opts[] = {
 				N_("use the default key as default recipient")},
     { oNoDefRecipient, "no-default-recipient", 0, "@" },
     { oTempDir, "temp-directory", 2, "@" },
+    { oExecPath, "exec-path", 2, "@" },
     { oEncryptTo, "encrypt-to", 2, "@" },
     { oNoEncryptTo, "no-encrypt-to", 0, "@" },
     { oUser, "local-user",2, N_("use this user-id to sign or decrypt")},
@@ -1186,13 +1188,26 @@ main( int argc, char **argv )
 #endif /* __riscos__ */
             break;
 	  case oKeyServer:
-	    if(parse_keyserver_uri(pargs.r.ret_str))
+	    if(pargs.r.ret_str==NULL || parse_keyserver_uri(pargs.r.ret_str))
 	      log_error(_("could not parse keyserver URI\n"));
 	    break;
 	  case oKeyServerOptions:
-	    parse_keyserver_options(pargs.r.ret_str);
+	    if(pargs.r.ret_str)
+	      parse_keyserver_options(pargs.r.ret_str);
 	    break;
 	  case oTempDir: opt.temp_dir=pargs.r.ret_str; break;
+	  case oExecPath:
+	    if(pargs.r.ret_str)
+	      {
+		/* Notice that path is never freed.  That is
+                   intentional due to the way putenv() works. */
+		char *path=m_alloc(5+strlen(pargs.r.ret_str)+1);
+		strcpy(path,"PATH=");
+		strcat(path,pargs.r.ret_str);
+		if(putenv(path)!=0)
+		  log_error(_("unable to set exec-path to %s\n"),path);
+	      }
+	    break;
 	  case oNotation: add_notation_data( pargs.r.ret_str ); break;
 	  case oShowNotation: opt.show_notation=1; break;
 	  case oNoShowNotation: opt.show_notation=0; break;

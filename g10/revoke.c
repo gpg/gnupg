@@ -52,6 +52,9 @@ revocation_reason_build_cb( PKT_signature *sig, void *opaque )
     byte *buffer;
     size_t buflen = 1;
 
+    if(!reason)
+      return 0;
+
     if( reason->desc ) {
 	ud = native_to_utf8( reason->desc );
 	buflen += strlen(ud);
@@ -159,11 +162,13 @@ gen_revoke( const char *uname )
 	goto leave;
     }
 
-    /* get the reason for the revocation */
-    reason = ask_revocation_reason( 1, 0, 1 );
-    if( !reason ) { /* user decided to cancel */
+    if(sk->version>=4 || opt.force_v4_certs) {
+      /* get the reason for the revocation */
+      reason = ask_revocation_reason( 1, 0, 1 );
+      if( !reason ) { /* user decided to cancel */
 	rc = 0;
 	goto leave;
+      }
     }
 
     switch( is_secret_key_protected( sk ) ) {
@@ -193,9 +198,9 @@ gen_revoke( const char *uname )
     iobuf_push_filter( out, armor_filter, &afx );
 
     /* create it */
-    rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x20, 0, 0, 0, 0,
-						  revocation_reason_build_cb,
-						  reason );
+    rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x20, 0,
+			     opt.force_v4_certs?4:0, 0, 0,
+			     revocation_reason_build_cb, reason );
     if( rc ) {
 	log_error(_("make_keysig_packet failed: %s\n"), g10_errstr(rc));
 	goto leave;

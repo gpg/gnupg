@@ -135,8 +135,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
         desc = m_alloc ( ndesc * sizeof *desc);
         
         for (ndesc=0, sl=users; sl; sl = sl->next) {
-            classify_user_id (sl->d, desc+ndesc);
-            if (desc->mode) 
+	    if (classify_user_id (sl->d, desc+ndesc))
                 ndesc++;
             else
                 log_error (_("key `%s' not found: %s\n"),

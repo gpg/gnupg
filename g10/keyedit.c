@@ -2328,8 +2328,13 @@ ask_revoke_sig( KBNODE keyblock, KBNODE node )
     tty_printf(_("user ID: \""));
     tty_print_utf8_string( unode->pkt->pkt.user_id->name,
 			   unode->pkt->pkt.user_id->len );
-    tty_printf(_("\"\nsigned with your key %08lX at %s\n"),
-		(ulong)sig->keyid[1], datestr_from_sig(sig) );
+
+    if(sig->flags.exportable)
+      tty_printf(_("\"\nsigned with your key %08lX at %s\n"),
+		 (ulong)sig->keyid[1], datestr_from_sig(sig) );
+    else
+      tty_printf(_("\"\nlocally signed with your key %08lX at %s\n"),
+		 (ulong)sig->keyid[1], datestr_from_sig(sig) );
 
     if( cpr_get_answer_is_yes("ask_revoke_sig.one",
        _("Create a revocation certificate for this signature? (y/N)")) ) {
@@ -2370,9 +2375,10 @@ menu_revsig( KBNODE keyblock )
 		&& ((sig = node->pkt->pkt.signature),
                      !seckey_available(sig->keyid)  ) ) {
 	    if( (sig->sig_class&~3) == 0x10 ) {
-		tty_printf(_("   signed by %08lX at %s%s\n"),
-			    (ulong)sig->keyid[1], datestr_from_sig(sig),
-			   sig->flags.revocable?"":" (not revocable)");
+		tty_printf(_("   signed by %08lX at %s%s%s\n"),
+			   (ulong)sig->keyid[1], datestr_from_sig(sig),
+			   sig->flags.exportable?"":" (non-exportable)",
+			   sig->flags.revocable?"":" (non-revocable)");
 		if(sig->flags.revocable)
 		  node->flag |= NODFLG_SELSIG;
 	    }
@@ -2407,8 +2413,9 @@ menu_revsig( KBNODE keyblock )
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE ) {
 	    sig = node->pkt->pkt.signature;
-	    tty_printf(_("   signed by %08lX at %s\n"),
-			    (ulong)sig->keyid[1], datestr_from_sig(sig) );
+	    tty_printf(_("   signed by %08lX at %s%s\n"),
+ 		       (ulong)sig->keyid[1], datestr_from_sig(sig),
+		       sig->flags.exportable?"":_(" (non-exportable)") );
 	}
     }
     if( !any )
@@ -2440,6 +2447,7 @@ menu_revsig( KBNODE keyblock )
 
 	memset( &attrib, 0, sizeof attrib );
 	attrib.reason = reason;
+	attrib.non_exportable=!node->pkt->pkt.signature->flags.exportable;
 
 	node->flag &= ~NODFLG_MARK_A;
 	sk = m_alloc_secure_clear( sizeof *sk );
