@@ -57,7 +57,6 @@
 #include "random.h"
 #include "rand-internal.h"
 #include "dynload.h"
-#include "cipher.h" /* only used for the rmd160_hash_buffer() prototype */
 
 
 #ifndef RAND_MAX   /* for SunOS */
@@ -100,9 +99,6 @@ static int just_mixed;
 static int did_initial_extra_seeding;
 static char *seed_file_name;
 static int allow_seed_file_update;
-
-static unsigned char failsafe_digest[DIGESTLEN];
-static int failsafe_digest_valid;
 
 static int secure_alloc;
 static int quick_test;
@@ -263,11 +259,6 @@ mix_pool(byte *pool)
     memcpy(hashbuf+DIGESTLEN, pool, BLOCKLEN-DIGESTLEN);
     rmd160_mixblock( &md, hashbuf);
     memcpy(pool, hashbuf, 20 );
-    if (failsafe_digest_valid && (char*)pool == rndpool)
-      {
-        for (i=0; i < 20; i++)
-          pool[i] ^= failsafe_digest[i];
-      }
 
     p = pool;
     for( n=1; n < POOLBLOCKS; n++ ) {
@@ -288,12 +279,7 @@ mix_pool(byte *pool)
 	rmd160_mixblock( &md, hashbuf);
 	memcpy(p, hashbuf, 20 );
     }
-    if ((char*)pool == rndpool)
-      {
-        rmd160_hash_buffer (failsafe_digest, pool, POOLSIZE);
-        failsafe_digest_valid = 1;
-      }
-    burn_stack (384); /* for the rmd160_mixblock(), rmd160_hash_buffer */
+    burn_stack (384); /* for the rmd160_mixblock() */
 }
 
 
