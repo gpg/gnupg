@@ -1,6 +1,8 @@
 
   * add listing of notation data
 
+  * Make sure that we only update the latest self-signatures.
+
   * Check the changes to the gpg random agtherer on all W32 platforms.
 
   * Check that a key signature can be revoked and later be signed again.

@@ -208,6 +208,7 @@ enum cmd_and_opt_values { aNull = 0,
     oNoSigCache,
     oNoSigCreateCheck,
     oPreservePermissions,
+    oPreferenceList,                          
     oEmu3DESS2KBug,  /* will be removed in 1.1 */
     oEmuMDEncodeBug,
 aTest };
@@ -408,6 +409,7 @@ static ARGPARSE_OPTS opts[] = {
     { oNoExpensiveTrustChecks, "no-expensive-trust-checks", 0, "@" },
     { aDeleteSecretAndPublicKey, "delete-secret-and-public-key",256, "@" },
     { oPreservePermissions, "preserve-permissions", 0, "@"},
+    { oPreferenceList,  "preference-list", 2, "@"},
     { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
     { oEmuMDEncodeBug,	"emulate-md-encode-bug", 0, "@"},
 {0} };
@@ -619,6 +621,7 @@ main( int argc, char **argv )
     char *def_digest_string = NULL;
     char *s2k_cipher_string = NULL;
     char *s2k_digest_string = NULL;
+    char *preference_list = NULL;
     int pwfd = -1;
     int with_fpr = 0; /* make an option out of --fingerprint */
   #ifdef USE_SHM_COPROCESSING
@@ -992,7 +995,7 @@ main( int argc, char **argv )
             break;
           case oNoExpensiveTrustChecks: opt.no_expensive_trust_checks=1; break;
           case oPreservePermissions: opt.preserve_permissions=1; break;
-
+          case oPreferenceList: preference_list = pargs.r.ret_str; break;
 	  default : pargs.err = configfp? 1:2; break;
 	}
     }
@@ -1092,6 +1095,8 @@ main( int argc, char **argv )
 	log_error(_("invalid S2K mode; must be 0, 1 or 3\n"));
     }
 
+    if (preference_list && keygen_set_std_prefs (preference_list))
+        log_error(_("invalid preferences\n"));
 
     if( log_get_errorcount(0) )
 	g10_exit(2);

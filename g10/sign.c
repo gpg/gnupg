@@ -925,7 +925,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 
 /****************
  * Create a new signature packet based on an existing one.
- * Only user ID signatureare supportted for now.
+ * Only user ID signaturs are supported for now.
  * TODO: Merge this with make_keysig_packet.
  */
 int
@@ -967,9 +967,9 @@ update_keysig_packet( PKT_signature **ret_sig,
     if ( sig->version >= 4 && mksubpkt)
 	rc = (*mksubpkt)(sig, opaque);
 
-    /* we increasethe timestamp by one second so that a future import
-       of this key will replace the existing one.  We make sure that
-       we don't produce a timestamp in the future */
+    /* we increase the timestamp by one second so that a future import
+       of this key will replace the existing one.  We also make sure that
+       we don't create a timestamp in the future */
     sig->timestamp++; 
     while (sig->timestamp >= make_timestamp())
         sleep (1);

@@ -744,6 +744,9 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
     else if (find_subpkt (sig->hashed, type, NULL, NULL) ) {
         switch (type) {
           case SIGSUBPKT_SIG_CREATED:
+          case SIGSUBPKT_PREF_SYM:
+          case SIGSUBPKT_PREF_HASH:
+          case SIGSUBPKT_PREF_COMPR:
             delete_sig_subpkt (sig->hashed, type);
             break;
           default:

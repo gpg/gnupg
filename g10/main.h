@@ -98,8 +98,11 @@ void keyedit_menu( const char *username, STRLIST locusr, STRLIST cmds,
 /*-- keygen.c --*/
 u32 ask_expiredate(void);
 void generate_keypair( const char *fname );
+int keygen_set_std_prefs (const char *string);
+char *keygen_get_std_prefs (void);
 int keygen_add_key_expire( PKT_signature *sig, void *opaque );
 int keygen_add_std_prefs( PKT_signature *sig, void *opaque );
+int keygen_upd_std_prefs( PKT_signature *sig, void *opaque );
 int generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock );
 
 /*-- openfile.c --*/

@@ -197,6 +197,12 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
  "a second one is available."
 )},
 
+{ "keyedit.updpref.okay", N_(
+ "Change the preferences of all user IDs (or just of the selected ones)\n"
+ "to the current list of preferences.  The timestamp of all affected\n"
+ "self-signatures fill be advanced by one second.\n"
+)},
+
 
 { "passphrase.enter", N_(
  ""

@@ -51,6 +51,7 @@ static int  menu_delsig( KBNODE pub_keyblock );
 static void menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_set_primary_uid( KBNODE pub_keyblock, KBNODE sec_keyblock );
+static int menu_set_preferences( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_select_uid( KBNODE keyblock, int idx );
 static int menu_select_key( KBNODE keyblock, int idx );
 static int count_uids( KBNODE keyblock );
@@ -575,7 +576,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
            cmdLSIGN, cmdREVSIG, cmdREVKEY, cmdDELSIG, cmdPRIMARY,
 	   cmdDEBUG, cmdSAVE, cmdADDUID, cmdDELUID, cmdADDKEY, cmdDELKEY,
 	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE,
-           cmdENABLEKEY, cmdDISABLEKEY,  cmdSHOWPREF,
+           cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF, cmdSETPREF, cmdUPDPREF,
 	   cmdINVCMD, cmdNOP };
     static struct { const char *name;
 		    enum cmdids id;
@@ -612,6 +613,8 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	{ N_("t"     )  , cmdTOGGLE    , 1,0,0, NULL },
 	{ N_("pref")    , cmdPREF      , 0,1,0, N_("list preferences") },
 	{ N_("showpref"), cmdSHOWPREF  , 0,1,0, N_("list preferences") },
+	{ N_("setpref") , cmdSETPREF   , 1,1,0, N_("set preference list") },
+	{ N_("updpref") , cmdUPDPREF   , 1,1,0, N_("updated preferences") },
 	{ N_("passwd")  , cmdPASSWD    , 1,1,0, N_("change the passphrase") },
 	{ N_("trust")   , cmdTRUST     , 0,1,0, N_("change the ownertrust") },
 	{ N_("revsig")  , cmdREVSIG    , 0,1,0, N_("revoke signatures") },
@@ -682,6 +685,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
     cur_keyblock = keyblock;
     for(;;) { /* main loop */
 	int i, arg_number;
+        const char *arg_string = "";
 	char *p;
 
 	tty_printf("\n");
@@ -725,6 +729,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		trim_spaces(answer);
 		trim_spaces(p);
 		arg_number = atoi(p);
+                arg_string = p;
 	    }
 
 	    for(i=0; cmds[i].name; i++ ) {
@@ -950,6 +955,31 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 
 	  case cmdSHOWPREF:
 	    show_key_with_all_names( keyblock, 0, 0, 0, 2 );
+	    break;
+
+          case cmdSETPREF:
+            keygen_set_std_prefs ( !*arg_string? "default" : arg_string );
+            break;
+
+	  case cmdUPDPREF: 
+            {
+                char *p = keygen_get_std_prefs ();
+                tty_printf (("Current preference list: %s\n"), p);
+                m_free (p);
+            }
+            if (cpr_get_answer_is_yes ("keyedit.updpref.okay",
+                                        count_selected_uids (keyblock)?
+                                        _("Really update the preferences"
+                                          " for the selected user IDs? "):
+                                       _("Really update the preferences? "))){
+
+                if ( menu_set_preferences (keyblock, sec_keyblock) ) {
+                    update_trust_record (keyblock, 0, NULL);
+                    merge_keys_and_selfsig (keyblock);
+                    modified = 1;
+                    redisplay = 1;
+                }
+            }
 	    break;
 
 	  case cmdNOP:
@@ -1665,6 +1695,7 @@ change_primary_uid_cb ( PKT_signature *sig, void *opaque )
     return 0;
 }
 
+
 /*
  * Set the primary uid flag for the selected UID.  We will also reset
  * all other primary uid flags.  For this to work with have to update
@@ -1760,6 +1791,82 @@ menu_set_primary_uid ( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	}
     }
 
+    free_secret_key( sk );
+    return modified;
+}
+
+
+/* 
+ * Set preferences to new values for the selected user IDs
+ */
+static int
+menu_set_preferences (KBNODE pub_keyblock, KBNODE sec_keyblock )
+{
+    PKT_secret_key *sk;    /* copy of the main sk */
+    PKT_public_key *main_pk;
+    PKT_user_id *uid;
+    KBNODE node;
+    u32 keyid[2];
+    int selected, select_all;
+    int modified = 0;
+
+    select_all = !count_selected_uids (pub_keyblock);
+
+    node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
+    sk = copy_secret_key( NULL, node->pkt->pkt.secret_key);
+
+    /* Now we can actually change the self signature(s) */
+    main_pk = NULL;
+    uid = NULL;
+    selected = 0;
+    for ( node=pub_keyblock; node; node = node->next ) {
+	if ( node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+            break; /* ready */
+
+	if ( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
+	    main_pk = node->pkt->pkt.public_key;
+	    keyid_from_pk( main_pk, keyid );
+	}
+	else if ( node->pkt->pkttype == PKT_USER_ID ) {
+	    uid = node->pkt->pkt.user_id;
+       	    selected = select_all || (node->flag & NODFLG_SELUID);
+        }
+	else if ( main_pk && uid && selected
+                  && node->pkt->pkttype == PKT_SIGNATURE ) {
+	    PKT_signature *sig = node->pkt->pkt.signature;
+	    if ( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
+		&& (uid && (sig->sig_class&~3) == 0x10)
+                && sig->version >= 4 ) {
+		/* This is a selfsignature which is to be replaced 
+                 * We have to ignore v3 signatures because they are
+                 * not able to carry the preferences */
+		PKT_signature *newsig;
+		PACKET *newpkt;
+                int rc;
+
+                rc = update_keysig_packet (&newsig, sig,
+                                           main_pk, uid, 
+                                           sk,
+                                           keygen_upd_std_prefs,
+                                           NULL );
+                if( rc ) {
+                    log_error ("update_keysig_packet failed: %s\n",
+                               g10_errstr(rc));
+                    free_secret_key( sk );
+                    return 0;
+                }
+                /* replace the packet */
+                newpkt = m_alloc_clear( sizeof *newpkt );
+                newpkt->pkttype = PKT_SIGNATURE;
+                newpkt->pkt.signature = newsig;
+                free_packet( node->pkt );
+                m_free( node->pkt );
+                node->pkt = newpkt;
+                modified = 1;
+            }
+	}
+    }
+    
     free_secret_key( sk );
     return modified;
 }

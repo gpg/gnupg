@@ -327,6 +327,12 @@ primary key is changed.</para></listitem></varlistentry>
     <listitem><para>
 Change the passphrase of the secret key.</para></listitem></varlistentry>
     <varlistentry>
+    <term>primary</term>
+    <listitem><para>
+    Flag the current user id as the primary one, removes the primary user
+    id flag from all other user ids and sets the timestamp of all
+    affected self-signatures one second ahead.</para></listitem></varlistentry>
+    <varlistentry>
     <term>uid &ParmN;</term>
     <listitem><para>
 Toggle selection of user id with index &ParmN;.
@@ -348,6 +354,21 @@ List preferences.</para></listitem></varlistentry>
     <term>showpref</term>
     <listitem><para>
 More verbose preferences listing.</para></listitem></varlistentry>
+    <term>setpref &ParmString;</term>
+    <listitem><para>
+Set the list of user ID preferences to &ParmString;, this should be 
+a string similar to the one printed by "pref".  Using an empty string
+will set the default preference string, using "none" will set the 
+preferences to nil.  Only available algorithms are allowed.  This
+command just initializes an internal list and does not change anything
+unless another command which changes the self-signatures is used.
+</para></listitem></varlistentry>
+    <term>updpref</term>
+    <listitem><para>
+Change the preferences of all user IDs (or just of the selected ones
+to the current list of preferences.  The timestamp of all affected
+self-signatures fill be advanced by one second.
+</para></listitem></varlistentry>
     <varlistentry>
     <term>toggle</term>
     <listitem><para>
@@ -1507,6 +1528,14 @@ Experimental use only.
 <listitem><para>
 Don't change the permissions of a secret keyring back to user
 read/write only.  Use this option only if you really know what you are doing.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--preference-list &ParmString</term>
+<listitem><para>
+Set the list of preferences to &ParmString;, this list should be 
+a string similar to the one printed by the command "pref" in the edit
+menu.  
 </para></listitem></varlistentry>
 
 

@@ -13,7 +13,8 @@
       except for revocation certificates and --enarmor mode.
 
     * The command "primary" in the edit menu can be used to change the
-      primary UID.
+      primary UID, "setpref" and "updpref" can be used to change the
+      preferences.
 
 Noteworthy changes in version 1.0.6 (2001-05-29)
 ------------------------------------------------

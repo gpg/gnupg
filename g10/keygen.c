@@ -35,6 +35,9 @@
 #include "status.h"
 #include "i18n.h"
 
+#define MAX_PREFS 30 
+
+
 enum para_name {
   pKEYTYPE,
   pKEYLENGTH,
@@ -83,6 +86,15 @@ struct output_control_s {
 };
 
 
+static int prefs_initialized = 0;
+static byte sym_prefs[MAX_PREFS];
+static int nsym_prefs;
+static byte hash_prefs[MAX_PREFS];
+static int nhash_prefs;
+static byte zip_prefs[MAX_PREFS];
+static int nzip_prefs;
+
+
 static void do_generate_keypair( struct para_data_s *para,
 				 struct output_control_s *outctrl );
 static int  write_keyblock( IOBUF out, KBNODE node );
@@ -124,6 +136,140 @@ keygen_add_key_expire( PKT_signature *sig, void *opaque )
 }
 
 
+
+static int
+set_one_pref (ulong val, int type, int (*cf)(int), byte *buf, int *nbuf)
+{
+    int i;
+
+    if (!val || val > 127 || cf (val)) {
+        log_info (_("preference %c%lu is not valid\n"), type, val);
+        return -1;
+    }
+    for (i=0; i < *nbuf; i++ ) {
+        if (buf[i] == val) {
+            log_info (_("preference %c%lu duplicated\n"), type, val);
+            return -1;
+        }
+    }
+    if (*nbuf >= MAX_PREFS) {
+        log_info (_("too many `%c' preferences\n"), type);
+        return -1;
+    }
+    buf[(*nbuf)++] = val;
+    return 0;
+}
+
+static int 
+check_zip_algo (int algo)
+{
+    return algo < 0 || algo > 2;
+}
+
+/*
+ * Parse the supplied string and use it to set the standard preferences.
+ * The String is expected to be in a forma like the one printed by "prefs",
+ * something like:  "S10 S3 H3 H2 Z2 Z1".  Use NULL to set the default
+ * preferences.
+ * Returns: 0 = okay
+ */
+int
+keygen_set_std_prefs (const char *string)
+{
+    byte sym[MAX_PREFS], hash[MAX_PREFS], zip[MAX_PREFS];
+    int  nsym=0, nhash=0, nzip=0;
+    ulong val;
+    const char *s, *s2;
+    int rc = 0;
+
+    if (!string || !ascii_strcasecmp (string, "default"))
+        string = "S7 S10 S3 S4 H3 H2 Z2 Z1";
+    else if (!ascii_strcasecmp (string, "none"))
+        string = "";
+
+    for (s=string; *s; s = s2) {
+        if ((*s=='s' || *s == 'S') && isdigit(s[1]) ) {
+            val = strtoul (++s, (char**)&s2, 10);
+            if (set_one_pref (val, 'S', check_cipher_algo, sym, &nsym))
+                rc = -1;
+        }
+        else if ((*s=='h' || *s == 'H') && isdigit(s[1]) ) {
+            val = strtoul (++s, (char**)&s2, 10);
+            if (set_one_pref (val, 'H', check_digest_algo, hash, &nhash))
+                rc = -1;
+        }
+        else if ((*s=='z' || *s == 'Z') && isdigit(s[1]) ) {
+            val = strtoul (++s, (char**)&s2, 10);
+            if (set_one_pref (val, 'Z', check_zip_algo, zip, &nzip))
+                rc = -1;
+        }
+        else if (isspace (*s))
+            s2 = s+1;
+        else {
+            log_info (_("invalid character in string\n"));
+            return -1;
+        }
+    }
+
+    if (!rc) {
+        memcpy (sym_prefs,  sym,  (nsym_prefs=nsym));
+        memcpy (hash_prefs, hash, (nhash_prefs=nhash));
+        memcpy (zip_prefs,  zip,  (nzip_prefs=nzip));
+        prefs_initialized = 1;
+    }
+    return rc;
+}
+
+
+/* 
+ * Return a printable list of preferences.  Caller must free.
+ */
+char *
+keygen_get_std_prefs ()
+{
+    char *buf;
+    int i;
+
+    if (!prefs_initialized)
+        keygen_set_std_prefs (NULL);
+
+    buf = m_alloc ( MAX_PREFS*3*5 + 1);
+    *buf = 0;
+    for (i=0; i < nsym_prefs; i++ )
+        sprintf (buf+strlen(buf), "S%d ", sym_prefs[i]);
+    for (i=0; i < nhash_prefs; i++ )
+        sprintf (buf+strlen(buf), "H%d ", hash_prefs[i]);
+    for (i=0; i < nzip_prefs; i++ )
+        sprintf (buf+strlen(buf), "Z%d ", zip_prefs[i]);
+    
+    if (*buf) /* trim the trailing space */
+        buf[strlen(buf)-1] = 0; 
+    return buf;
+}
+
+
+int
+keygen_upd_std_prefs( PKT_signature *sig, void *opaque )
+{
+    if (!prefs_initialized)
+        keygen_set_std_prefs (NULL);
+
+    if (nsym_prefs) 
+        build_sig_subpkt (sig, SIGSUBPKT_PREF_SYM, sym_prefs, nsym_prefs);
+    else
+        delete_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_SYM);
+    if (nhash_prefs)
+        build_sig_subpkt (sig, SIGSUBPKT_PREF_HASH, hash_prefs, nhash_prefs);
+    else
+        delete_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_HASH);
+    if (nzip_prefs)
+        build_sig_subpkt (sig, SIGSUBPKT_PREF_COMPR, zip_prefs, nzip_prefs);
+    else
+        delete_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_COMPR);
+    return 0;
+}
+
+
 /****************
  * Add preference to the self signature packet.
  * This is only called for packets with version > 3.
@@ -132,22 +278,9 @@ int
 keygen_add_std_prefs( PKT_signature *sig, void *opaque )
 {
     byte buf[8];
-
+    
     keygen_add_key_expire( sig, opaque );
-
-    buf[0] = CIPHER_ALGO_RIJNDAEL;
-    buf[1] = CIPHER_ALGO_TWOFISH;
-    buf[2] = CIPHER_ALGO_CAST5;
-    buf[3] = CIPHER_ALGO_BLOWFISH;
-    build_sig_subpkt( sig, SIGSUBPKT_PREF_SYM, buf, 4 );
-
-    buf[0] = DIGEST_ALGO_RMD160;
-    buf[1] = DIGEST_ALGO_SHA1;
-    build_sig_subpkt( sig, SIGSUBPKT_PREF_HASH, buf, 2 );
-
-    buf[0] = 2;
-    buf[1] = 1;
-    build_sig_subpkt( sig, SIGSUBPKT_PREF_COMPR, buf, 2 );
+    keygen_upd_std_prefs (sig, opaque);
 
     buf[0] = 0x80; /* no modify - It is reasonable that a key holder
 		    * has the possibility to reject signatures from users
