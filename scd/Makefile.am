@@ -27,6 +27,7 @@ LDFLAGS = @LDFLAGS@
 scdaemon_SOURCES = \
 	scdaemon.c scdaemon.h \
 	command.c card.c \
+	card-common.h \
 	card-p15.c card-dinsig.c
 
 
