@@ -684,6 +684,16 @@ main( int argc, char **argv )
       #endif
     }
 
+  #ifdef HAVE_DOSISH_SYSTEM
+    if ( strchr (opt.homedir,'\\') ) {
+        char *d, *buf = m_alloc (strlen (opt.homedir)+1);
+        const char *s = opt.homedir;
+        for (d=buf,s=opt.homedir; *s; s++)
+            *d++ = *s == '\\'? '/': *s;
+        *d = 0;
+        opt.homedir = buf;
+    }
+  #endif
 
   #ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess ) {
@@ -838,7 +848,7 @@ main( int argc, char **argv )
 		    opt.def_recipient_self = 0;
 		    break;
 	  case oNoOptions: break; /* no-options */
-	  case oHomedir: opt.homedir = pargs.r.ret_str; break;
+	  case oHomedir: break;
 	  case oNoBatch: opt.batch = 0; break;
 	  case oWithKeyData: opt.with_key_data=1; /* fall thru */
 	  case oWithColons: opt.with_colons=':'; break;

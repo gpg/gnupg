@@ -226,6 +226,13 @@ more arguments in future versions.
 		   'S' = standard
 		   (only the first character should be checked)
 	    class: 2 hex digits with the signature class
+        
+    KEY_CREATED <type>
+        A key has been created
+            type: 'B' = primary and subkey
+                  'P' = primary
+                  'S' = subkey
+
 
     SESSION_KEY  <algo>:<hexdigits>
 	The session key used to decrypt the message.  This message will

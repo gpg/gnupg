@@ -31,6 +31,9 @@
   #include <dl.h>
   #include <errno.h>
 #endif
+#ifdef __MINGW32__
+  #include <windows.h>
+#endif
 #include "util.h"
 #include "cipher.h"
 #include "dynload.h"

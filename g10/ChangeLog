@@ -1,3 +1,8 @@
+2001-01-04  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): Set homedir only in the pre-parsing phase and
+	replaces backslashes in the W32 version.
+
 2001-01-03  Werner Koch  <wk@gnupg.org>
 
 	* status.c, status.h : New status KEY_CREATED
