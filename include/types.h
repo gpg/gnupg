@@ -101,7 +101,11 @@ typedef unsigned long u32;
  */
 #ifndef HAVE_U64_TYPEDEF
 #undef u64	    /* maybe there is a macro with this name */
-#if SIZEOF_UNSIGNED_INT == 8
+#if SIZEOF_UINT64_T == 8
+typedef uint64_t u64;
+#define U64_C(c) (UINT64_C(c))
+#define HAVE_U64_TYPEDEF
+#elif SIZEOF_UNSIGNED_INT == 8
 typedef unsigned int u64;
 #define U64_C(c) (c ## U)
 #define HAVE_U64_TYPEDEF
@@ -112,10 +116,6 @@ typedef unsigned long u64;
 #elif SIZEOF_UNSIGNED_LONG_LONG == 8
 typedef unsigned long long u64;
 #define U64_C(c) (c ## ULL)
-#define HAVE_U64_TYPEDEF
-#elif SIZEOF_UINT64_T == 8
-typedef uint64_t u64;
-#define U64_C(c) (UINT64_C(c))
 #define HAVE_U64_TYPEDEF
 #endif
 #endif
