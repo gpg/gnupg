@@ -1,3 +1,7 @@
+2002-09-16  Werner Koch  <wk@gnupg.org>
+
+	* w32reg.c (read_w32_registry_string): Fallback to HLM.
+
 2002-09-12  Stefan Bellon  <sbellon@sbellon.de>
 
 	* fileutil.c (make_filename): Removed variable for RISC OS to

@@ -1,5 +1,5 @@
 /* w32reg.c -  MS-Windows Registry access
- *	Copyright (C) 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1999, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -59,7 +59,7 @@ get_root_key(const char *root)
 /****************
  * Return a string from the Win32 Registry or NULL in case of
  * error.  Caller must release the return value.   A NULL for root
- * is an alias fro HKEY_CURRENT_USER
+ * is an alias for HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE in turn.
  * NOTE: The value is allocated with a plain malloc() - use free() and not
  * the usual m_free()!!!
  */
@@ -74,7 +74,13 @@ read_w32_registry_string( const char *root, const char *dir, const char *name )
 	return NULL;
 
     if( RegOpenKeyEx( root_key, dir, 0, KEY_READ, &key_handle ) )
-	return NULL; /* no need for a RegClose, so return direct */
+      {
+        if (root)
+          return NULL; /* no need for a RegClose, so return direct */
+        /* It seems to be common practise to fall back to HLM. */
+        if (RegOpenKeyEx (HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &key_handle) )
+          return NULL; /* still no need for a RegClose, so return direct */
+      }
 
     nbytes = 1;
     if( RegQueryValueEx( key_handle, name, 0, NULL, NULL, &nbytes ) )
