@@ -13,8 +13,8 @@ The most recent version of the FAQ is available from
 [H H1]GNUPG FREQUENTLY ASKED QUESTIONS[H /H1]
 
 
-Version: 1.5.4[H p]
-Last-Modified: Jul 11, 2001[H p]
+Version: 1.5.5[H p]
+Last-Modified: Sep 13, 2001[H p]
 Maintained-by: [$maintainer]
 
 
@@ -140,7 +140,7 @@ you could search in the mailing list archive.
     patent restriction. The patent does not expire before 2007 so don't
     expect official support before then.
 
-    However, there is an unofficial modules to include it even
+    However, there is an unofficial module to include it even
     in earlier version of GnuPG. It's available from [H a href=ftp://ftp.gnupg.org/pub/gcrypt/contrib/] 
     <ftp://ftp.gnupg.org/pub/gcrypt/contrib/>[H /a]. Look for [H pre]idea.c[H /pre]. 
 
@@ -169,7 +169,7 @@ you could search in the mailing list archive.
     real world attacks, you don't get any extra security compared to
     DSA, there might be compatibility problems with certain PGP
     versions. It has only been introduced because at the time it was
-    not clear whether there is was patent on DSA.
+    not clear whether there was a patent on DSA.
 
 <Q> Why does it sometimes take so long to create keys?
 
@@ -351,7 +351,7 @@ messages?
     without this option.  The option will be removed in 1.1, so better
     re-encrypt your message now.
 
-<Q> How can I used GnuPG in an automated environment?
+<Q> How can I use GnuPG in an automated environment?
 
     You should use the option --batch and don't use pass phrases as
     there is usually no way to store it more secure than the secret
@@ -905,7 +905,7 @@ material?
     created.  If you want to update the preferences for existing user
     IDs, select those user IDs (or select none to update all) and
     enter the command "updpref".  Note that the timestamp of the
-    self-signaures is increaded by one second when running this
+    self-signatures is increaded by one second when running this
     command.
 
 
