@@ -79,22 +79,23 @@ trap_unaligned(void)
 #endif
 
 
-void
+int
 disable_core_dumps()
 {
- #ifndef HAVE_DOSISH_SYSTEM
+ #ifdef HAVE_DOSISH_SYSTEM
+    return 0;
+ #else
   #ifdef HAVE_SETRLIMIT
     struct rlimit limit;
 
     limit.rlim_cur = 0;
     limit.rlim_max = 0;
     if( !setrlimit( RLIMIT_CORE, &limit ) )
-	return;
-    if( errno != EINVAL )
+	return 0;
+    if( errno != EINVAL && errno != ENOSYS )
 	log_fatal(_("can't disable core dumps: %s\n"), strerror(errno) );
   #endif
-    if( !opt.quiet )
-	log_info(_("WARNING: program may create a core file!\n"));
+    return 1;
  #endif
 }
 

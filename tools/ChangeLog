@@ -1,3 +1,7 @@
+Thu Sep 14 14:20:38 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * ring-a-party: Flush the last key.
+
 Wed Jul  5 13:28:45 CEST 2000  Werner Koch  <wk@>
 
   * mail-signed-keys: New.

@@ -1,3 +1,17 @@
+Thu Sep 14 14:20:38 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * g10.c (main): Default S2K algorithms are now SHA1 and CAST5 - this
+        should solve a lot of compatibility problems with other OpenPGP
+        apps because those algorithms are SHOULD and not optional.  The old
+        way to force it was by using the --openpgp option whith the drawback 
+        that this would disable a couple of workarounds for PGP.
+
+        * g10.c (main): Don't set --quite along with --no-tty.  By Frank Tobin.
+
+        * misc.c (disable_core_dump): Don't display a warning here but a return
+        a status value and ...
+        * g10.c (main): ...print warnining here. Suggested by Sam Roberts.
+
 Wed Sep 13 18:12:34 CEST 2000  Werner Koch  <wk@openit.de>
 
         * keyedit.c (keyedit_menu): Allow to use "debug" on the secret key.

@@ -1,3 +1,8 @@
+Thu Sep 14 14:20:38 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * random.c (fast_random_poll): Check ENOSYS for getrusage.
+        * rndunix.c:  Add 2 sources for QNX. By Sam Roberts.
+
 Wed Sep 13 18:12:34 CEST 2000  Werner Koch  <wk@openit.de>
 
         * rsa.c (secret): Speed up by using the CRT.  For a 2k keys this

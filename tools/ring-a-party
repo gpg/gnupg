@@ -31,6 +31,9 @@ BEGIN { FS=":"
 	page = 0;
 	now = strftime("%b %d %H:%M %Y");
       }
+END { 
+    if (any) myflush(); 
+}
 $1 == "pub" {
 	      if( any ) myflush();
 	      uidcount = 0;

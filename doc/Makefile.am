@@ -1,8 +1,11 @@
 ## Process this file with automake to create Makefile.in
 
-EXTRA_DIST = DETAILS gpg.sgml gpg.1 FAQ HACKING OpenPGP  README.W32
+EXTRA_DIST = DETAILS gpg.sgml gpg.1 faq.raw \
+             HACKING OpenPGP README.W32
 
 man_MANS = gpg.1
+
+pkgdata_DATA = FAQ faq.html
 
 
 %.1 : %.sgml
@@ -14,6 +17,12 @@ else
 	echo "No man page due to missing docbook-to-man" >>$@
 endif
 
+
+FAQ : faq.raw
+	$(FAQPROG) -f $<  $@ || $(FAQPROG) -f $< $@
+
+faq.html : faq.raw
+	$(FAQPROG) -h -f $< $@ 2>&1 || $(FAQPROG) -h -f $< $@
 
 %.dvi: %.sgml
 	db2dvi $<
@@ -28,4 +37,10 @@ endif
 dist-hook:
 	@if test `wc -c < gpg.1` -lt 200; then \
 	    echo 'ERROR: dummy man page'; false; fi
+
+
+
+
+
+
 

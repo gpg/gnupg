@@ -1,3 +1,10 @@
+Thu Sep 14 14:20:38 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * acinclude.m4 (GNUPG_CHECK_FAQPROG): New.
+        * configure.in: Test for this.
+
+        * configure.in (DYNLINK_MOD_CFLAGS): Fix by David Champion.
+
 Wed Sep  6 17:55:47 CEST 2000  Werner Koch  <wk@openit.de>
 
         * configure.in: Check for fstat64 and fopen64

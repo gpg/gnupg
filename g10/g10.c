@@ -580,6 +580,7 @@ main( int argc, char **argv )
     char **orig_argv;
     const char *fname;
     char *username;
+    int may_coredump;
     STRLIST sl, remusr= NULL, locusr=NULL;
     STRLIST nrings=NULL, sec_nrings=NULL;
     armor_filter_context_t afx;
@@ -613,7 +614,7 @@ main( int argc, char **argv )
      */
     log_set_name("gpg");
     secure_random_alloc(); /* put random number into secure memory */
-    disable_core_dumps();
+    may_coredump = disable_core_dumps();
     init_signals();
     create_dotlock(NULL); /* register locking cleanup */
     i18n_init();
@@ -624,8 +625,8 @@ main( int argc, char **argv )
     opt.def_digest_algo = 0;
     opt.def_compress_algo = 2;
     opt.s2k_mode = 3; /* iterated+salted */
-    opt.s2k_digest_algo = DIGEST_ALGO_RMD160;
-    opt.s2k_cipher_algo = CIPHER_ALGO_BLOWFISH;
+    opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
+    opt.s2k_cipher_algo = CIPHER_ALGO_CAST5;
     opt.completes_needed = 1;
     opt.marginals_needed = 3;
     opt.max_cert_depth = 5;
@@ -767,7 +768,7 @@ main( int argc, char **argv )
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
 	  case oOutput: opt.outfile = pargs.r.ret_str; break;
 	  case oQuiet: opt.quiet = 1; break;
-	  case oNoTTY: opt.quiet = 1; tty_no_terminal(1); break;
+	  case oNoTTY: tty_no_terminal(1); break;
 	  case oDryRun: opt.dry_run = 1; break;
 	  case oInteractive: opt.interactive = 1; break;
 	  case oVerbose: g10_opt_verbose++;
@@ -853,7 +854,7 @@ main( int argc, char **argv )
 	    opt.def_cipher_algo = 0;
 	    opt.def_digest_algo = 0;
 	    opt.def_compress_algo = 1;
-	    opt.s2k_mode = 3; /* iterated+salted */
+            opt.s2k_mode = 3; /* iterated+salted */
 	    opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
 	    opt.s2k_cipher_algo = CIPHER_ALGO_CAST5;
 	    break;
@@ -964,6 +965,11 @@ main( int argc, char **argv )
 	log_info("used in a production environment or with production keys!\n");
     }
   #endif
+
+    if( may_coredump && !opt.quiet )
+	log_info(_("WARNING: program may create a core file!\n"));
+
+
     if (opt.no_literal) {
 	log_info(_("NOTE: %s is not for normal use!\n"), "--no-literal");
 	if (opt.textmode)

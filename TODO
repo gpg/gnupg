@@ -1,10 +1,11 @@
 
-  * Think more whether the setting to ultimately trusted is a good idea.!!
+  * add a way to set expiration time for key signatures.
 
   * add some minor things vor VMS.
 
   * Don't get the ultimately trusted keys from the secring but store
     it permanently in the trustdb.  This way we don't need a secring at all.
+    [ Solved by re-introducing --trusted-key ]
 
   * Use DSA keys with the test suite.
 
@@ -20,6 +21,8 @@
     anyway.
 
   * Replace Valid/Invalid by Known/Unknown?
+
+  * Fix the bug in the mips assembler code
 
 Scheduled for 1.1
 -----------------
@@ -42,6 +45,7 @@ Scheduled for 1.1
   * Skip RO keyrings when importing a key.
 
   * Use the newest encryption key if only the main key has been given.
+    [already in the gpg 1.1 codebase]
 
   * replace the keyserver stuff either by a call to a specialized
     utility and SOCKSify this utility.
@@ -51,6 +55,8 @@ Scheduled for 1.1
 
   * Delay the read of the passphrase-fd after a NEED_PASSPHRASE.  But this
     may break some scripts.
+
+  * Get new assembler stuff from gmgp 3.1
 
 
 Nice to have

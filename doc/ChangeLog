@@ -1,3 +1,8 @@
+Thu Sep 14 14:20:38 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * faq.raw: New.
+        * Makefile.am: Support to build FAQs
+
 Wed Jul 12 13:32:06 CEST 2000  Werner Koch  <wk@>
 
   * gpg.sgml: Add a note about the availability of the GPH.

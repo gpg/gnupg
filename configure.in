@@ -159,7 +159,7 @@ AC_PROG_INSTALL
 AC_PROG_AWK
 AC_CHECK_PROG(DOCBOOK_TO_MAN, docbook-to-man, yes, no)
 AM_CONDITIONAL(HAVE_DOCBOOK_TO_MAN, test "$ac_cv_prog_DOCBOOK_TO_MAN" = yes)
-
+GNUPG_CHECK_FAQPROG
 
 MPI_OPT_FLAGS=""
 
@@ -257,13 +257,13 @@ case "${target}" in
     *-openbsd*)
         NAME_OF_DEV_RANDOM="/dev/srandom"
         NAME_OF_DEV_URANDOM="/dev/urandom"
-        DYNLINK_MOD_CFLAGS="-shared -rdynamic -fpic -Wl,-Bshareable -Wl,-x"
+        DYNLINK_MOD_CFLAGS="-shared -rdynamic $CFLAGS_PIC -Wl,-Bshareable -Wl,-x"
         ;;
 
     *-netbsd*)
         NAME_OF_DEV_RANDOM="/dev/random"
         NAME_OF_DEV_URANDOM="/dev/urandom"
-        DYNLINK_MOD_CFLAGS="-shared -rdynamic -fpic -Wl,-Bshareable -Wl,-x"
+        DYNLINK_MOD_CFLAGS="-shared -rdynamic $CFLAGS_PIC -Wl,-Bshareable -Wl,-x"
         ;;
 
     *-solaris*)
@@ -275,7 +275,12 @@ case "${target}" in
     *)
         NAME_OF_DEV_RANDOM="/dev/random"
         NAME_OF_DEV_URANDOM="/dev/urandom"
-        DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"
+        # -shared is a gcc-ism.  Find pic flags from GNUPG_CHECK_PIC.
+        if test -n "$GCC" ; then
+           DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"                            
+        else
+           DYNLINK_MOD_CFLAGS="$CFLAGS_PIC"
+        fi
         ;;
 esac
 AC_DEFINE_UNQUOTED(NAME_OF_DEV_RANDOM, "$NAME_OF_DEV_RANDOM")

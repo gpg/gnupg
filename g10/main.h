@@ -54,7 +54,7 @@ char *make_radix64_string( const byte *data, size_t len );
 
 /*-- misc.c --*/
 void trap_unaligned(void);
-void disable_core_dumps(void);
+int disable_core_dumps(void);
 u16 checksum_u16( unsigned n );
 u16 checksum( byte *p, unsigned n );
 u16 checksum_mpi( MPI a );
