@@ -42,7 +42,7 @@
 
 /*-- trustdb.c --*/
 void list_trustdb(const char *username);
-void list_trust_path( int max_depth, const char *username );
+void list_trust_path( const char *username );
 void export_ownertrust(void);
 void import_ownertrust(const char *fname);
 void check_trustdb( const char *username );

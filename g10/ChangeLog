@@ -1,3 +1,22 @@
+Wed Nov 18 20:33:50 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* trustdb.c (check_trustdb): Now rechecks all gived userids.
+	(collect_paths): Some fixes.
+	(upd_pref_records): Skips empty items, evaluate all items.
+
+	* parse-packet.c (dump_sig_subpkt): Better listing of prefs.
+	(skip_packet): Now knows about marker packet
+
+	* g10.c: removed cmd "--edit-sig".
+
+	* pubring.asc: Updated.
+
+Sat Nov 14 14:01:29 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c (main): Changed syntax of --list-trust-path
+	* trustdb.c (list_trust_path): Replaced max_depth by
+	opt.max_cert_depth
+
 Fri Nov 13 07:39:58 1998  Werner Koch  <werner.koch@guug.de>
 
 	* trustdb.c (collect_paths): Removed a warning message.

@@ -278,11 +278,13 @@ proc_plaintext( CTX c, PACKET *pkt )
 	md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
 	md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
     }
+  #if 0
     if( c->mfx.md ) {
 	m_check(c->mfx.md);
 	if( c->mfx.md->list )
 	    m_check( c->mfx.md->list );
     }
+  #endif
     rc = handle_plaintext( pt, &c->mfx, c->sigs_only, clearsig );
     if( rc == G10ERR_CREATE_FILE && !c->sigs_only) {
 	/* can't write output but we hash it anyway to

@@ -423,6 +423,20 @@ walk_sigrecs( SIGREC_CONTEXT *c )
  *************	Trust  stuff  ******************
  ***********************************************/
 
+static int
+trust_letter( unsigned value )
+{
+    switch( value ) {
+      case TRUST_UNKNOWN:   return '-';
+      case TRUST_EXPIRED:   return 'e';
+      case TRUST_UNDEFINED: return 'q';
+      case TRUST_NEVER:     return 'n';
+      case TRUST_MARGINAL:  return 'm';
+      case TRUST_FULLY:     return 'f';
+      case TRUST_ULTIMATE:  return 'u';
+      default:		    return  0 ;
+    }
+}
 
 /****************
  * Verify that all our public keys are in the trustDB.
@@ -737,22 +751,23 @@ collect_paths( int depth, int max_depth, int all, TRUSTREC *drec,
 
     if( depth >= max_depth )  /* max cert_depth reached */
 	return TRUST_UNDEFINED;
+
+    stack[depth].lid = drec->r.dir.lid;
+    stack[depth].otrust = drec->r.dir.ownertrust;
+    stack[depth].trust = 0;
     {	int i;
 
 	for(i=0; i < depth; i++ )
 	    if( stack[i].lid == drec->r.dir.lid )
 		return TRUST_UNDEFINED; /* closed (we already visited this lid) */
     }
-
-    stack[depth].lid = drec->r.dir.lid;
-    stack[depth].otrust = drec->r.dir.ownertrust;
-    stack[depth].trust = 0;
     if( !qry_lid_table_flag( ultikey_table, drec->r.dir.lid, NULL ) ) {
 	/* we are at the end of a path */
 	TRUST_SEG_LIST tsl;
 	int i;
 
 	stack[depth].trust = TRUST_ULTIMATE;
+	stack[depth].otrust = TRUST_ULTIMATE;
 	if( trust_seg_head ) {
 	    /* we can now put copy our current stack to the trust_seg_list */
 	    tsl = m_alloc( sizeof *tsl + (depth+1)*sizeof( TRUST_INFO ) );
@@ -837,6 +852,9 @@ collect_paths( int depth, int max_depth, int all, TRUSTREC *drec,
 			return (stack[depth].trust = TRUST_FULLY);
 		    }
 		}
+
+		if( nt > ot )
+		    nt = ot;
 
 		if( nt >= TRUST_FULLY )
 		    fully++;
@@ -1149,39 +1167,50 @@ import_ownertrust( const char *fname )
 static void
 print_path( int pathlen, TRUST_INFO *path )
 {
-    int rc, i;
+    int rc, c, i;
     u32 keyid[2];
+    char *p;
+    size_t n;
 
-    fputs("path:", stdout);
     for( i = 0; i < pathlen; i++ )  {
-	if( i && !(i%4) )
-	    fputs("     ", stdout );
+	printf("%*s", i*2, "" );
 	rc = keyid_from_lid( path[i].lid, keyid );
 	if( rc )
-	    printf(" ????????.%lu:", path[i].lid );
+	    printf("????????.%lu:", path[i].lid );
 	else
-	    printf(" %08lX.%lu:", (ulong)keyid[1], path[i].lid );
-	print_sigflags( stdout, path[i].otrust );
+	    printf("%08lX.%lu:", (ulong)keyid[1], path[i].lid );
+	c = trust_letter(path[i].otrust);
+	if( c )
+	    putchar( c );
+	else
+	    printf( "%02x", path[i].otrust );
+	putchar('/');
+	c = trust_letter(path[i].trust);
+	if( c )
+	    putchar( c );
+	else
+	    printf( "%02x", path[i].trust );
+	putchar(' ');
+	p = get_user_id( keyid, &n );
+	putchar(' ');
+	putchar('\"');
+	print_string( stdout, p, n > 40? 40:n, 0 );
+	putchar('\"');
+	m_free(p);
+	putchar('\n');
     }
-    putchar('\n');
 }
 
 
 
 void
-list_trust_path( int max_depth, const char *username )
+list_trust_path( const char *username )
 {
     int rc;
-    int wipe=0;
     TRUSTREC rec;
     TRUST_INFO *tmppath;
     TRUST_SEG_LIST trust_seg_list, tsl, tsl2;
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
-
-    if( max_depth < 0 ) {
-	wipe = 1;
-	max_depth = -max_depth;
-    }
 
     if( (rc = get_pubkey_byname(NULL, pk, username, NULL )) )
 	log_error(_("user '%s' not found: %s\n"), username, g10_errstr(rc) );
@@ -1201,9 +1230,9 @@ list_trust_path( int max_depth, const char *username )
     free_public_key( pk );
 
     /* collect the paths */
-    tmppath = m_alloc_clear( (max_depth+1)* sizeof *tmppath );
+    tmppath = m_alloc_clear( (opt.max_cert_depth+1)* sizeof *tmppath );
     trust_seg_list = NULL;
-    collect_paths( 0, max_depth, 1, &rec, tmppath, &trust_seg_list );
+    collect_paths( 0, opt.max_cert_depth, 1, &rec, tmppath, &trust_seg_list );
     m_free( tmppath );
     /* and now print them */
     for(tsl = trust_seg_list; tsl; tsl = tsl->next ) {
@@ -1221,7 +1250,9 @@ list_trust_path( int max_depth, const char *username )
 
 /****************
  * Check the complete trustdb or only the entries for the given username.
- * We check the complete database and recalculate all flags.
+ * We check the complete database. If a username is given or the special
+ * username "*" is used, a complete recheck is done.  With no user ID
+ * only the records which are not yet checkd are now checked.
  */
 void
 check_trustdb( const char *username )
@@ -1230,8 +1261,9 @@ check_trustdb( const char *username )
     KBNODE keyblock = NULL;
     KBPOS kbpos;
     int rc;
+    int recheck = username && *username == '*' && !username[1];
 
-    if( username ) {
+    if( username && !recheck ) {
 	rc = find_keyblock_byname( &kbpos, username );
 	if( !rc )
 	    rc = read_keyblock( &kbpos, &keyblock );
@@ -1242,7 +1274,7 @@ check_trustdb( const char *username )
 	else {
 	    int modified;
 
-	    rc = update_trust_record( keyblock, 0, &modified );
+	    rc = update_trust_record( keyblock, 1, &modified );
 	    if( rc == -1 ) { /* not yet in trustdb: insert */
 		rc = insert_trust_record(
 			    find_kbnode( keyblock, PKT_PUBLIC_KEY
@@ -1290,7 +1322,7 @@ check_trustdb( const char *username )
 		    continue;
 		}
 
-		rc = update_trust_record( keyblock, 0, &modified );
+		rc = update_trust_record( keyblock, recheck, &modified );
 		if( rc ) {
 		    log_error(_("lid %lu: update failed: %s\n"),
 						 recnum, g10_errstr(rc) );
@@ -1480,6 +1512,8 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel )
 }
 
 
+
+
 int
 query_trust_info( PKT_public_key *pk )
 {
@@ -1490,16 +1524,9 @@ query_trust_info( PKT_public_key *pk )
 	return '?';
     if( trustlevel & TRUST_FLAG_REVOKED )
 	return 'r';
-    switch( (trustlevel & TRUST_MASK) ) {
-      case TRUST_UNKNOWN:   c = 'o'; break;
-      case TRUST_EXPIRED:   c = 'e'; break;
-      case TRUST_UNDEFINED: c = 'q'; break;
-      case TRUST_NEVER:     c = 'n'; break;
-      case TRUST_MARGINAL:  c = 'm'; break;
-      case TRUST_FULLY:     c = 'f'; break;
-      case TRUST_ULTIMATE:  c = 'u'; break;
-      default: BUG();
-    }
+    c = trust_letter( (trustlevel & TRUST_MASK) );
+    if( !c )
+	c = '?';
     return c;
 }
 
@@ -1553,7 +1580,7 @@ enum_cert_paths( void **context, ulong *lid,
 	TRUST_INFO *tmppath;
 	TRUSTREC rec;
 
-	if( !lid )
+	if( !*lid )
 	    return -1;
 
 	ctx = m_alloc_clear( sizeof *ctx );
@@ -1572,7 +1599,7 @@ enum_cert_paths( void **context, ulong *lid,
     else
 	ctx = *context;
 
-    while( ctx->tsl && ctx->idx >= tsl->pathlen )  {
+    while( ctx->tsl && ctx->idx >= ctx->tsl->pathlen )	{
 	ctx->tsl = ctx->tsl->next;
 	ctx->idx = 0;
     }
@@ -1609,17 +1636,21 @@ get_ownertrust_info( ulong lid )
     int c;
 
     otrust = get_ownertrust( lid );
-    switch( (otrust & TRUST_MASK) ) {
-      case TRUST_NEVER:     c = 'n'; break;
-      case TRUST_MARGINAL:  c = 'm'; break;
-      case TRUST_FULLY:     c = 'f'; break;
-      case TRUST_ULTIMATE:  c = 'u'; break;
-      default:		    c = '-'; break;
-    }
+    c = trust_letter( (otrust & TRUST_MASK) );
+    if( !c )
+	c = '?';
     return c;
 }
 
-
+/*
+ * Return an allocated buffer with the preference values for
+ * the key with LID and the userid which is identified by the
+ * HAMEHASH or the firstone if namehash is NULL.  ret_n receives
+ * the length of the allcoated buffer.	Structure of the buffer is
+ * a repeated sequences of 2 bytes; where the first byte describes the
+ * type of the preference and the second one the value.  The constants
+ * PREFTYPE_xxxx should be used to reference a type.
+ */
 byte *
 get_pref_data( ulong lid, const byte *namehash, size_t *ret_n )
 {
@@ -2353,14 +2384,16 @@ upd_pref_record( TRUSTREC *urec, u32 *keyid, PKT_signature *sig )
     for(k=0; ptable[k].subpkttype; k++ ) {
 	s = parse_sig_subpkt2( sig, ptable[k].subpkttype, &n );
 	if( s ) {
-	    if( n_prefs_sig >= DIM(prefs_sig)-1 ) {
-		log_info("uid %08lX.%lu/%02X%02X: %s\n",
-			  (ulong)keyid[1], lid, uidhash[18], uidhash[19],
-			  _("Too many preferences") );
-		break;
+	    for( ; n; n--, s++ ) {
+		if( n_prefs_sig >= DIM(prefs_sig)-1 ) {
+		    log_info("uid %08lX.%lu/%02X%02X: %s\n",
+			      (ulong)keyid[1], lid, uidhash[18], uidhash[19],
+			      _("Too many preferences") );
+		    break;
+		}
+		prefs_sig[n_prefs_sig++] = ptable[k].preftype;
+		prefs_sig[n_prefs_sig++] = *s;
 	    }
-	    prefs_sig[n_prefs_sig++] = ptable[k].preftype;
-	    prefs_sig[n_prefs_sig++] = *s;
 	}
     }
     for( recno=urec->r.uid.prefrec; recno; recno = prec.r.pref.next ) {
@@ -2372,13 +2405,15 @@ upd_pref_record( TRUSTREC *urec, u32 *keyid, PKT_signature *sig )
 			  _("Too many preference items") );
 		break;
 	    }
-	    prefs_rec[n_prefs_rec++] = prec.r.pref.data[i];
-	    prefs_rec[n_prefs_rec++] = prec.r.pref.data[i+1];
+	    if( prec.r.pref.data[i] ) {
+		prefs_rec[n_prefs_rec++] = prec.r.pref.data[i];
+		prefs_rec[n_prefs_rec++] = prec.r.pref.data[i+1];
+	    }
 	}
     }
     if( n_prefs_sig == n_prefs_rec
 	&& !memcmp( prefs_sig, prefs_rec, n_prefs_sig ) )
-	return;  /* not chnaged */
+	return;  /* not changed */
 
     /* Preferences have changed:  Delete all pref records
      * This is much simpler than checking whether we have to

@@ -268,7 +268,6 @@ static ARGPARSE_OPTS opts[] = {
   #endif
   #ifdef IS_G10
     { oKOption, NULL,	 0, "@"},
-    { aEditKey, "edit-sig"  ,0, "@"}, /* alias for edit-key */
     { oPasswdFD, "passphrase-fd",1, "@" },
     { aSignKey, "sign-key"  ,256, "@" }, /* alias for edit-key */
   #endif
@@ -1217,9 +1216,10 @@ main( int argc, char **argv )
 	break;
 
       case aListTrustPath:
-	if( argc != 2 )
-	    wrong_args("--list-trust-path [-- -]<maxdepth> <username>");
-	list_trust_path( atoi(*argv), argv[1] );
+	if( !argc )
+	    wrong_args("--list-trust-path <usernames>");
+	for( ; argc; argc--, argv++ )
+	    list_trust_path( *argv );
 	break;
 
       case aExportOwnerTrust:

@@ -407,10 +407,14 @@ static void
 skip_packet( IOBUF inp, int pkttype, unsigned long pktlen )
 {
     if( list_mode ) {
-	printf(":unknown packet: type %2d, length %lu\n", pkttype, pktlen );
+	if( pkttype == PKT_MARKER )
+	    fputs(":marker packet:\n", stdout );
+	else
+	    printf(":unknown packet: type %2d, length %lu\n", pkttype, pktlen);
 	if( pkttype ) {
 	    int c, i=0 ;
-	    printf("dump:");
+	    if( pkttype != PKT_MARKER )
+		fputs("dump:", stdout );
 	    if( iobuf_in_block_mode(inp) ) {
 		while( (c=iobuf_get(inp)) != -1 )
 		    dump_hex_line(c, &i);
@@ -611,9 +615,10 @@ parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 
 static void
 dump_sig_subpkt( int hashed, int type, int critical,
-		 const char * buffer, size_t buflen, size_t length )
+		 const byte *buffer, size_t buflen, size_t length )
 {
     const char *p=NULL;
+    int i;
 
     printf("\t%s%ssubpkt %d len %u (", /*)*/
 	      critical ? "critical ":"",
@@ -654,7 +659,9 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	p = "additional recipient request";
 	break;
       case SIGSUBPKT_PREF_SYM:
-	p = "preferred symmetric algorithms";
+	fputs("pref-sym-algos:", stdout );
+	for( i=0; i < length; i++ )
+	    printf(" %d", buffer[i] );
 	break;
       case SIGSUBPKT_REV_KEY:
 	p = "revocation key";
@@ -669,10 +676,14 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	p = "notation data";
 	break;
       case SIGSUBPKT_PREF_HASH:
-	p = "preferred hash algorithms";
+	fputs("pref-hash-algos:", stdout );
+	for( i=0; i < length; i++ )
+	    printf(" %d", buffer[i] );
 	break;
       case SIGSUBPKT_PREF_COMPR:
-	p = "preferred compression algorithms";
+	fputs("pref-zip-algos:", stdout );
+	for( i=0; i < length; i++ )
+	    printf(" %d", buffer[i] );
 	break;
       case SIGSUBPKT_KS_FLAGS:
 	p = "key server preferences";

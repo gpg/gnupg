@@ -1,6 +1,6 @@
 
     * hash calculation for cleartext sigs without a "Hash: xxx" line
-      does it work as specified in the RFC?
+      does it work as specified in the RFC? - Hmmm, I think so
 
     * Check Berkeley BD - it is in glibc -any licensing problems?
 
@@ -11,9 +11,8 @@
     * Update the keyring at ftp.guug.de
 
     * expire date is not shown in --edit-key for subkeys.
-      and prefs are not correctly listed for some keys???? (Brian)
 
-    * support for mpi/powerpc  split is still combined or whatever
+    * check support for mpi/powerpc
 
     * add a note, that gettext 10.35 is needed (for gettext) - and install
       it on tobold.
@@ -30,8 +29,6 @@
       blanks are not hashed.
 
     * Check revocation and expire stuff.
-
-    * check preferences (cipher and compress)
 
     * OpenBSD: dynamic loading with dlopen works on OpenBSD, but:
 	OpenBSD binaries are a.out, so every symbol begins with "_"

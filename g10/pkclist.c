@@ -41,18 +41,23 @@
 
 
 static void
-show_paths( ulong lid )
+show_paths( ulong lid, int only_first )
 {
     void *context = NULL;
     unsigned otrust, validity;
-    int level;
+    int last_level, level;
 
+    last_level = 0;
     while( (level=enum_cert_paths( &context, &lid, &otrust, &validity)) != -1){
 	char *p;
 	int rc;
 	size_t n;
 	u32 keyid[2];
 	PKT_public_key *pk ;
+
+	if( level < last_level && only_first )
+	    break;
+	last_level = level;
 
 	rc = keyid_from_lid( lid, keyid );
 	if( rc ) {
@@ -69,15 +74,17 @@ show_paths( ulong lid )
 	}
 
 	tty_printf("%*s%4u%c/%08lX.%lu %s \"",
-		  level*2,
+		  level*2, "",
 		  nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
 		  (ulong)keyid[1], lid, datestr_from_pk( pk ) );
 	p = get_user_id( keyid, &n );
 	tty_print_string( p, n ),
 	m_free(p);
-	tty_printf("\"\n\n");
+	tty_printf("\"\n");
+	free_public_key( pk );
     }
     enum_cert_paths( &context, NULL, NULL, NULL ); /* release context */
+    tty_printf("\n");
 }
 
 
@@ -160,7 +167,7 @@ edit_ownertrust( ulong lid, int mode )
 	else if( *p == ans[0] || *p == ans[1] ) {
 	    tty_printf(_(
 		"Certificates leading to an ultimately trusted key:\n"));
-	    show_paths( lid );
+	    show_paths( lid, 1	);
 	}
 	else if( mode && (*p == ans[2] || *p == ans[3] || *p == CONTROL_D ) ) {
 	    break ; /* back to the menu */

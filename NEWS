@@ -4,6 +4,16 @@ This is NOT a released version!
     * Add option --charset to support "koi8-r" encoding of user ids.
       (Not yet tested).
 
+    * Preferences should now work again. You should run
+      "gpgm --check-trustdb \*" to rebuild all preferences.
+
+    * Checking of certificates should now work but this needs a lot
+      of testing.  Key validation values are now cached in the
+      trustdb; they should be recalculated as needed, but you may
+      use --check-trustdb or --update-trustdb to do this.
+
+    * Spanish translation by Urko Lusa.
+
 
 
 Noteworthy changes in version 0.4.3

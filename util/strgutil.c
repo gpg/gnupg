@@ -275,13 +275,59 @@ native_to_utf8( const char *string )
 /****************
  * Convert string, which is in UTF8 to native encoding.  Replace
  * illegal encodings by some "\xnn".
- * This code assumes that native is iso-8859-1.
  */
 char *
 utf8_to_native( const char *string )
 {
-    /* FIXME: Not yet done */
-    return m_strdup(string);
+  #if 0
+    const byte *s;
+    size_t n;
+    byte *buffer, *p;
+
+    /* quick check whether we actually have characters with bit 8 set */
+    for( s=string; *s; s++ )
+	if( *s & 0x80 )
+	    break;
+    if( !*s ) /* that is easy */
+	return m_strdup(string);
+
+    /* count the extended utf-8 characters */
+	110x xxxx
+	1110 xxxx
+	1111 0xxx
+    for( n=1, s=string; *s; s++ ) {
+	if( !(*s & 0x80) )
+	    n++;
+	else if( (*s & 0xe0) == 0xc0 )
+	    n += 2;
+	else if( (*s & 0xf0) == 0xe0 )
+	    n += 3;
+	else if( (*s & 0xf8) == 0xf0 )
+	    n += 4;
+	else
+	    n++; /* invalid encoding */
+    }
+
+    buffer = p = m_alloc( n );
+    for( s=string; *s; ) {
+	if( !(*s & 0x80) )
+	    *p++ = *s++;
+	else if( (*s & 0xe0) == 0xc0 ) {
+	    u32 val;
+	    if( (s[1] & 0xc0) != 0x80 )
+		;
+	    val = (*s << 6) | (s[1] & 0x3f);
+	}
+	else if( (*s & 0xf0) == 0xe0 )
+	    n += 3;
+	else if( (*s & 0xf8) == 0xf0 )
+	    n += 4;
+	else
+	    n++; /* invalid encoding */
+    }
+   #endif
+     return m_strdup(string);
+
 }
 
 
