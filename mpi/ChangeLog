@@ -1,3 +1,8 @@
+Thu Dec 16 10:07:58 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* Makefile.am: c/SFLAGS/ASFLAGS/. This has only been used by the
+	powerpc and actually never passed the -Wa,foo to the cc.
+
 Thu Dec  9 10:31:05 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* power/: Add all files from GMP for this CPU.

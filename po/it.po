@@ -4,9 +4,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg-1.0.0\n"
-"POT-Creation-Date: 1999-12-04 14:36+0100\n"
-"PO-Revision-Date: 1999-09-09 15:51+02:00\n"
+"Project-Id-Version: gnupg-1.0.0h\n"
+"POT-Creation-Date: 1999-12-16 09:44+0100\n"
+"PO-Revision-Date: 1999-12-08 15:51+02:00\n"
 "Last-Translator: Marco d'Itri <md@linux.it>\n"
 "Language-Team: Italian <it@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -241,10 +241,10 @@ msgstr "errore di rete"
 msgid "not encrypted"
 msgstr "non cifrato"
 
+# ??? (Md)
 #: util/errors.c:103
-#, fuzzy
 msgid "not processed"
-msgstr "%lu chiavi esaminate\n"
+msgstr "non esaminato"
 
 #: util/logger.c:218
 #, c-format
@@ -356,9 +356,8 @@ msgid "remove key from the public keyring"
 msgstr "rimuove una chiave dal portachiavi pubblico"
 
 #: g10/g10.c:209
-#, fuzzy
 msgid "remove key from the secret keyring"
-msgstr "rimuove una chiave dal portachiavi pubblico"
+msgstr "rimuove una chiave dal portachiavi privato"
 
 #: g10/g10.c:210
 msgid "sign a key"
@@ -1333,6 +1332,8 @@ msgid ""
 "Your system can't display dates beyond 2038.\n"
 "However, it will be correctly handled up to 2106.\n"
 msgstr ""
+"Il tuo sistema non può mostrare date oltre il 2038.\n"
+"Comunque, sarà gestita correttamente fino al 2106.\n"
 
 #: g10/keygen.c:567
 msgid "Is this correct (y/n)? "
@@ -2401,100 +2402,100 @@ msgstr "la chiave pubblica è %08lX\n"
 msgid "public key encrypted data: good DEK\n"
 msgstr "dati cifrati con la chiave pubblica: DEK corretto\n"
 
-#: g10/mainproc.c:275
+#: g10/mainproc.c:277
 #, c-format
 msgid "encrypted with %u-bit %s key, ID %08lX, created %s\n"
 msgstr "cifrato con la chiave %2$s di %1$u bit, ID %3$08lX, creata il %4$s\n"
 
-#: g10/mainproc.c:285
+#: g10/mainproc.c:287
 #, c-format
 msgid "encrypted with %s key, ID %08lX\n"
 msgstr "Cifrato con la chiave %s con ID %08lX\n"
 
-#: g10/mainproc.c:291
+#: g10/mainproc.c:293
 msgid "no secret key for decryption available\n"
 msgstr "nessuna chiave disponibile per decifrare\n"
 
-#: g10/mainproc.c:300
+#: g10/mainproc.c:302
 #, c-format
 msgid "public key decryption failed: %s\n"
 msgstr "decifratura della chiave pubblica fallita: %s\n"
 
-#: g10/mainproc.c:332
+#: g10/mainproc.c:334
 msgid "decryption okay\n"
 msgstr "decifratura corretta\n"
 
-#: g10/mainproc.c:337
+#: g10/mainproc.c:339
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "ATTENZIONE: il messaggio cifrato è stato manipolato!\n"
 
-#: g10/mainproc.c:342
+#: g10/mainproc.c:344
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "decifratura fallita: %s\n"
 
-#: g10/mainproc.c:360
+#: g10/mainproc.c:362
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgstr "NOTA: il mittente ha richiesto \"solo-per-i-tuoi-occhi\"\n"
 
-#: g10/mainproc.c:362
+#: g10/mainproc.c:364
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "nome del file originale='%.*s'\n"
 
-#: g10/mainproc.c:513
+#: g10/mainproc.c:515
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
-msgstr ""
+msgstr "revoca solitaria - usa \"gpg --import\" per applicarla\n"
 
-#: g10/mainproc.c:596 g10/mainproc.c:605
+#: g10/mainproc.c:598 g10/mainproc.c:607
 msgid "WARNING: invalid notation data found\n"
 msgstr "ATTENZIONE: trovati dati di una nota non validi\n"
 
-#: g10/mainproc.c:608
+#: g10/mainproc.c:610
 msgid "Notation: "
 msgstr "Nota: "
 
-#: g10/mainproc.c:615
+#: g10/mainproc.c:617
 msgid "Policy: "
 msgstr "Policy: "
 
-#: g10/mainproc.c:1037
+#: g10/mainproc.c:1039
 msgid "signature verification suppressed\n"
 msgstr "verifica della firma soppressa\n"
 
-#: g10/mainproc.c:1043
+#: g10/mainproc.c:1045
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Firma fatta %.*s usando la chiave %s con ID %08lX\n"
 
 #. just in case that we have no userid
-#: g10/mainproc.c:1069 g10/mainproc.c:1080
+#: g10/mainproc.c:1071 g10/mainproc.c:1082
 msgid "BAD signature from \""
 msgstr "Firma NON corretta da \""
 
-#: g10/mainproc.c:1070 g10/mainproc.c:1081
+#: g10/mainproc.c:1072 g10/mainproc.c:1083
 msgid "Good signature from \""
 msgstr "Firma valida da \""
 
-#: g10/mainproc.c:1072
+#: g10/mainproc.c:1074
 msgid "                aka \""
 msgstr "    anche noto come \""
 
-#: g10/mainproc.c:1128
+#: g10/mainproc.c:1130
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Impossibile controllare la firma: %s\n"
 
-#: g10/mainproc.c:1189
-#, fuzzy, c-format
+#: g10/mainproc.c:1191
+#, c-format
 msgid "standalone signature of class 0x%02x\n"
-msgstr "classe della firma sconosciuta"
+msgstr "firma solitaria di classe 0x%02x\n"
 
-#: g10/mainproc.c:1228
+#: g10/mainproc.c:1230
 msgid "old style (PGP 2.x) signature\n"
 msgstr "firma vecchio stile (PGP 2.x)\n"
 
-#: g10/mainproc.c:1233
+#: g10/mainproc.c:1235
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "individuato un pacchetto radice non valido in proc_tree()\n"
 
@@ -2572,9 +2573,8 @@ msgstr ""
 "i dati non sono stati salvati; usa l'opzione \"--output\" per salvarli\n"
 
 #: g10/plaintext.c:311
-#, fuzzy
 msgid "Detached signature.\n"
-msgstr "Cancellata %d firma.\n"
+msgstr "Firma separata.\n"
 
 #: g10/plaintext.c:315
 msgid "Please enter name of data file: "
@@ -2607,6 +2607,45 @@ msgstr "la vecchia codifica del DEK non è gestita\n"
 msgid "NOTE: cipher algorithm %d not found in preferences\n"
 msgstr ""
 "NOTA: l'algoritmo di cifratura %d non è stato trovato nelle impostazioni\n"
+
+#: g10/hkp.c:62
+#, c-format
+msgid "requesting key %08lX from %s ...\n"
+msgstr ""
+
+#: g10/hkp.c:71
+#, fuzzy, c-format
+msgid "can't get key from keyserver: %s\n"
+msgstr "importa le chiavi da un key server"
+
+#: g10/hkp.c:94 g10/hkp.c:127
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr ""
+
+#: g10/hkp.c:102
+#, fuzzy, c-format
+msgid "%s: not a valid key ID\n"
+msgstr "%s non è un set di caratteri valido\n"
+
+#: g10/hkp.c:149
+#, fuzzy, c-format
+msgid "can't connect to `%s': %s\n"
+msgstr "impossibile aprire `%s': %s\n"
+
+#: g10/hkp.c:173
+#, fuzzy, c-format
+msgid "error sending to `%s': %s\n"
+msgstr "errore leggendo `%s': %s\n"
+
+#: g10/hkp.c:185
+#, c-format
+msgid "success sending to `%s' (status=%u)\n"
+msgstr ""
+
+#: g10/hkp.c:188
+#, c-format
+msgid "failed sending to `%s': status=%u\n"
+msgstr ""
 
 #: g10/seckey-cert.c:55
 #, c-format
@@ -3015,9 +3054,9 @@ msgid "lid %lu: dir record w/o key - skipped\n"
 msgstr "lid %lu: dir record senza chiave - saltato\n"
 
 #: g10/trustdb.c:1794
-#, fuzzy, c-format
+#, c-format
 msgid "\t%lu due to new pubkeys\n"
-msgstr "chiave %08lX: %d nuove subchiavi\n"
+msgstr "\t%lu a causa di nuove chiavi pubbliche\n"
 
 #: g10/trustdb.c:1796
 #, c-format
@@ -3099,11 +3138,14 @@ msgid ""
 "Please remember that the signature file (.sig or .asc)\n"
 "should be the first file given on the command line.\n"
 msgstr ""
+"non è stato possibile verificare la firma.\n"
+"Ricorda che il file con la firma (.sig or .asc) deve\n"
+"essere il primo file indicato sulla riga di comando.\n"
 
 #: g10/verify.c:147
 #, c-format
 msgid "input line %u too long or missing LF\n"
-msgstr ""
+msgstr "linea di input %u troppo lunga o LF mancante\n"
 
 #: g10/ringedit.c:303
 #, c-format
@@ -3199,6 +3241,8 @@ msgstr "%s: directory creata\n"
 #: g10/openfile.c:318
 msgid "you have to start GnuPG again, so it can read the new options file\n"
 msgstr ""
+"è necessario eseguire di nuovo GnuPG in modo che possa leggere il nuovo\n"
+"file delle opzioni\n"
 
 #: g10/encr-data.c:66
 #, c-format

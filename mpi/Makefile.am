@@ -3,7 +3,7 @@
 
 INCLUDES =  -I$(top_srcdir)/include
 CFLAGS = @CFLAGS@ @MPI_OPT_FLAGS@
-SFLAGS = @MPI_SFLAGS@
+ASFLAGS = @MPI_SFLAGS@
 
 EXTRA_DIST = config.links
 DISTCLEANFILES = mpih-add1.S mpih-mul1.S mpih-mul2.S mpih-mul3.S  \

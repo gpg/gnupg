@@ -159,6 +159,13 @@ case "${target}" in
 	path="power"
 	mpi_extra_modules="udiv-w-sdiv"
 	;;
+    powerpc-ibm-aix4.2.* )
+	# I am not sure about this one but a machine identified by
+	# powerpc-ibm-aix4.2.1.0 cannot use the powerpc32 code.
+	mpi_sflags="-Wa,-mpwr"
+	path="power"
+	mpi_extra_modules="udiv-w-sdiv"
+	;;
     ppc601-*-*)
 	mpi_sflags="-Wa,-mppc"
 	path="power powerpc32"

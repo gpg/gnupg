@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.1\n"
-"POT-Creation-Date: 1999-12-04 14:36+0100\n"
+"POT-Creation-Date: 1999-12-16 09:44+0100\n"
 "PO-Revision-Date: 1999-10-06 21:43+0200\n"
 "Last-Translator: Gaël Quéri <gqueri@mail.dotcom.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -2418,100 +2418,100 @@ msgstr "la clé publique est %08lX\n"
 msgid "public key encrypted data: good DEK\n"
 msgstr "données chiffrées avec la clé publique : bonne clé de chiffrement\n"
 
-#: g10/mainproc.c:275
+#: g10/mainproc.c:277
 #, c-format
 msgid "encrypted with %u-bit %s key, ID %08lX, created %s\n"
 msgstr "chiffré avec une clé de %u bits %s, ID %08lX, créée le %s\n"
 
-#: g10/mainproc.c:285
+#: g10/mainproc.c:287
 #, c-format
 msgid "encrypted with %s key, ID %08lX\n"
 msgstr "chiffré avec une clé %s, %08lX\n"
 
-#: g10/mainproc.c:291
+#: g10/mainproc.c:293
 msgid "no secret key for decryption available\n"
 msgstr "aucune clé secrète n'est disponible pour le déchiffrement\n"
 
-#: g10/mainproc.c:300
+#: g10/mainproc.c:302
 #, c-format
 msgid "public key decryption failed: %s\n"
 msgstr "le déchiffrement de la clé publique a échoué : %s\n"
 
-#: g10/mainproc.c:332
+#: g10/mainproc.c:334
 msgid "decryption okay\n"
 msgstr "le déchiffrement a réussi\n"
 
-#: g10/mainproc.c:337
+#: g10/mainproc.c:339
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "ATTENTION: le message chiffré a été manipulé !\n"
 
-#: g10/mainproc.c:342
+#: g10/mainproc.c:344
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "le déchiffrement a échoué : %s\n"
 
-#: g10/mainproc.c:360
+#: g10/mainproc.c:362
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgstr "NOTE : l'expéditeur a demandé « pour vos yeux seulement »\n"
 
-#: g10/mainproc.c:362
+#: g10/mainproc.c:364
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "nom de fichier original : '%.*s'\n"
 
-#: g10/mainproc.c:513
+#: g10/mainproc.c:515
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "révocation autonome - utilisez « gpg --import » pour l'appliquer\n"
 
-#: g10/mainproc.c:596 g10/mainproc.c:605
+#: g10/mainproc.c:598 g10/mainproc.c:607
 msgid "WARNING: invalid notation data found\n"
 msgstr "ATTENTION : des données de notation invalides ont été détectées\n"
 
-#: g10/mainproc.c:608
+#: g10/mainproc.c:610
 msgid "Notation: "
 msgstr "Notation : "
 
-#: g10/mainproc.c:615
+#: g10/mainproc.c:617
 msgid "Policy: "
 msgstr "Politique : "
 
-#: g10/mainproc.c:1037
+#: g10/mainproc.c:1039
 msgid "signature verification suppressed\n"
 msgstr "vérification de signature supprimée\n"
 
-#: g10/mainproc.c:1043
+#: g10/mainproc.c:1045
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Signature faite %.*s avec une clé %s ID %08lX\n"
 
 #. just in case that we have no userid
-#: g10/mainproc.c:1069 g10/mainproc.c:1080
+#: g10/mainproc.c:1071 g10/mainproc.c:1082
 msgid "BAD signature from \""
 msgstr "MAUVAISE signature de \""
 
-#: g10/mainproc.c:1070 g10/mainproc.c:1081
+#: g10/mainproc.c:1072 g10/mainproc.c:1083
 msgid "Good signature from \""
 msgstr "Bonne signature de \""
 
-#: g10/mainproc.c:1072
+#: g10/mainproc.c:1074
 msgid "                aka \""
 msgstr "              alias \""
 
-#: g10/mainproc.c:1128
+#: g10/mainproc.c:1130
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Impossible de vérifier la signature : %s\n"
 
-#: g10/mainproc.c:1189
+#: g10/mainproc.c:1191
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "signature autonome de classe 0x%02x\n"
 
-#: g10/mainproc.c:1228
+#: g10/mainproc.c:1230
 msgid "old style (PGP 2.x) signature\n"
 msgstr "signature d'un ancien style (PGP 2.x)\n"
 
-#: g10/mainproc.c:1233
+#: g10/mainproc.c:1235
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "paquet racine invalide détecté dans proc_tree()\n"
 
@@ -2627,6 +2627,45 @@ msgid "NOTE: cipher algorithm %d not found in preferences\n"
 msgstr ""
 "NOTE : l'algorithme de chiffrement %d n'a pas été trouvé dans les "
 "préférences\n"
+
+#: g10/hkp.c:62
+#, c-format
+msgid "requesting key %08lX from %s ...\n"
+msgstr ""
+
+#: g10/hkp.c:71
+#, fuzzy, c-format
+msgid "can't get key from keyserver: %s\n"
+msgstr "importer les clés d'un serveur de clés"
+
+#: g10/hkp.c:94 g10/hkp.c:127
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr ""
+
+#: g10/hkp.c:102
+#, fuzzy, c-format
+msgid "%s: not a valid key ID\n"
+msgstr "%s n'est pas une table de caractères valide\n"
+
+#: g10/hkp.c:149
+#, fuzzy, c-format
+msgid "can't connect to `%s': %s\n"
+msgstr "impossible d'ouvrir `%s': %s\n"
+
+#: g10/hkp.c:173
+#, fuzzy, c-format
+msgid "error sending to `%s': %s\n"
+msgstr "erreur pendant la lecture de `%s' : %s\n"
+
+#: g10/hkp.c:185
+#, c-format
+msgid "success sending to `%s' (status=%u)\n"
+msgstr ""
+
+#: g10/hkp.c:188
+#, c-format
+msgid "failed sending to `%s': status=%u\n"
+msgstr ""
 
 #: g10/seckey-cert.c:55
 #, c-format

@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Privacy Guard 1.0.0\n"
-"POT-Creation-Date: 1999-12-04 14:36+0100\n"
+"POT-Creation-Date: 1999-12-16 09:44+0100\n"
 "PO-Revision-Date: 1999-09-17 15:21+07:00\n"
 "Last-Translator: Tedi Heriyanto <tedi-h@usa.net>\n"
 "Language-Team: Indonesia <id@li.org>\n"
@@ -2387,100 +2387,100 @@ msgstr "kunci publik adalah %08lX\n"
 msgid "public key encrypted data: good DEK\n"
 msgstr "data terenkripsi dengan kunci publik: baik DEK\n"
 
-#: g10/mainproc.c:275
+#: g10/mainproc.c:277
 #, c-format
 msgid "encrypted with %u-bit %s key, ID %08lX, created %s\n"
 msgstr "dienkripsi dengan %u-bit kunci %s, ID %08lX, diciptakan %s\n"
 
-#: g10/mainproc.c:285
+#: g10/mainproc.c:287
 #, c-format
 msgid "encrypted with %s key, ID %08lX\n"
 msgstr "dienkripsi dengan kunci %s, ID %08lX\n"
 
-#: g10/mainproc.c:291
+#: g10/mainproc.c:293
 msgid "no secret key for decryption available\n"
 msgstr "tidak tersedia kunci rahasia untuk dekripsi\n"
 
-#: g10/mainproc.c:300
+#: g10/mainproc.c:302
 #, c-format
 msgid "public key decryption failed: %s\n"
 msgstr "gagal dekripsi kunci publik: %s\n"
 
-#: g10/mainproc.c:332
+#: g10/mainproc.c:334
 msgid "decryption okay\n"
 msgstr "dekripsi lancar\n"
 
-#: g10/mainproc.c:337
+#: g10/mainproc.c:339
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "PERINGATAN: pesan terenkripsi telah dimanipulasi!\n"
 
-#: g10/mainproc.c:342
+#: g10/mainproc.c:344
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "gagal dekripsi: %s\n"
 
-#: g10/mainproc.c:360
+#: g10/mainproc.c:362
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgstr "CATATAN: pengirim meminta \"for-your-eyes-only\"\n"
 
-#: g10/mainproc.c:362
+#: g10/mainproc.c:364
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "nama file asli='%.*s'\n"
 
-#: g10/mainproc.c:513
+#: g10/mainproc.c:515
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr ""
 
-#: g10/mainproc.c:596 g10/mainproc.c:605
+#: g10/mainproc.c:598 g10/mainproc.c:607
 msgid "WARNING: invalid notation data found\n"
 msgstr "PERINGATAN: ditemukan notasi data tidak valid\n"
 
-#: g10/mainproc.c:608
+#: g10/mainproc.c:610
 msgid "Notation: "
 msgstr "Notasi: "
 
-#: g10/mainproc.c:615
+#: g10/mainproc.c:617
 msgid "Policy: "
 msgstr "Kebijakan: "
 
-#: g10/mainproc.c:1037
+#: g10/mainproc.c:1039
 msgid "signature verification suppressed\n"
 msgstr "verifikasi signature tidak optimal\n"
 
-#: g10/mainproc.c:1043
+#: g10/mainproc.c:1045
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Signature membuat %.*s menggunakan kunci %s ID %08lX\n"
 
 #. just in case that we have no userid
-#: g10/mainproc.c:1069 g10/mainproc.c:1080
+#: g10/mainproc.c:1071 g10/mainproc.c:1082
 msgid "BAD signature from \""
 msgstr "signature BURUK dari \""
 
-#: g10/mainproc.c:1070 g10/mainproc.c:1081
+#: g10/mainproc.c:1072 g10/mainproc.c:1083
 msgid "Good signature from \""
 msgstr "Signature baik dari \""
 
-#: g10/mainproc.c:1072
+#: g10/mainproc.c:1074
 msgid "                aka \""
 msgstr "              alias \""
 
-#: g10/mainproc.c:1128
+#: g10/mainproc.c:1130
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Tidak dapat memeriksa signature: %s\n"
 
-#: g10/mainproc.c:1189
+#: g10/mainproc.c:1191
 #, fuzzy, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "kelas signature tidak dikenal"
 
-#: g10/mainproc.c:1228
+#: g10/mainproc.c:1230
 msgid "old style (PGP 2.x) signature\n"
 msgstr "signature model lama (PGP 2.X)\n"
 
-#: g10/mainproc.c:1233
+#: g10/mainproc.c:1235
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "terdeteksi root paket tidak valid dalam proc_tree()\n"
 
@@ -2591,6 +2591,45 @@ msgstr "enkoding lama DEK tidak didukung\n"
 #, c-format
 msgid "NOTE: cipher algorithm %d not found in preferences\n"
 msgstr "CATATAN: algoritma cipher %d tidak ditemukan dalam preferensi\n"
+
+#: g10/hkp.c:62
+#, c-format
+msgid "requesting key %08lX from %s ...\n"
+msgstr ""
+
+#: g10/hkp.c:71
+#, fuzzy, c-format
+msgid "can't get key from keyserver: %s\n"
+msgstr "impor kunci dari server kunci"
+
+#: g10/hkp.c:94 g10/hkp.c:127
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr ""
+
+#: g10/hkp.c:102
+#, fuzzy, c-format
+msgid "%s: not a valid key ID\n"
+msgstr "%s bukanlah set karakter yang valid\n"
+
+#: g10/hkp.c:149
+#, fuzzy, c-format
+msgid "can't connect to `%s': %s\n"
+msgstr "tidak dapat membuka `%s': %s\n"
+
+#: g10/hkp.c:173
+#, fuzzy, c-format
+msgid "error sending to `%s': %s\n"
+msgstr "kesalahan membaca `%s': %s\n"
+
+#: g10/hkp.c:185
+#, c-format
+msgid "success sending to `%s' (status=%u)\n"
+msgstr ""
+
+#: g10/hkp.c:188
+#, c-format
+msgid "failed sending to `%s': status=%u\n"
+msgstr ""
 
 #: g10/seckey-cert.c:55
 #, c-format

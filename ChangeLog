@@ -1,3 +1,10 @@
+Thu Dec 16 10:07:58 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* VERSION: Set to 1.0.1.
+
+	* configure.in: Removed substitution for doc/gph/Makefile.
+	Do all the gcc warning only in maintainer mode.
+
 Thu Dec  9 10:31:05 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* INSTALL: Add a hint for AIX. By Jos Backus.

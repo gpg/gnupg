@@ -161,9 +161,6 @@ AM_CONDITIONAL(HAVE_DOCBOOK_TO_MAN, test "$ac_cv_prog_DOCBOOK_TO_MAN" = yes)
 
 
 MPI_OPT_FLAGS=""
-if test "$GCC" = yes; then
-    CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
-fi
 
 
 try_gettext=yes
@@ -667,7 +664,11 @@ GNUPG_DO_LINK_FILES
 GNUPG_CHECK_GNUMAKE
 
 if test "$GCC" = yes; then
-    CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
+    if test "$MAINTAINER_MODE" = "yes"; then
+        CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
+    else
+        CFLAGS="$CFLAGS -Wall"
+    fi
 fi
 
 AC_OUTPUT_COMMANDS([
@@ -709,7 +710,6 @@ mpi/Makefile
 cipher/Makefile
 g10/Makefile
 doc/Makefile
-doc/gph/Makefile
 tools/Makefile
 zlib/Makefile
 checks/Makefile

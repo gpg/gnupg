@@ -268,6 +268,8 @@ print_failed_pkenc( struct kidlist_item *list )
 	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 	const char *algstr = pubkey_algo_to_string( list->pubkey_algo );
 
+	if( !algstr )
+	    algstr = "[?]";
 	pk->pubkey_algo = list->pubkey_algo;
 	if( !get_pubkey( pk, list->kid ) ) {
 	    size_t n;

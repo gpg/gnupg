@@ -9,7 +9,7 @@
 # QingLong <qinglong@Bolizm> (couldn't send an email to let you know)
 msgid ""
 msgstr ""
-"POT-Creation-Date: 1999-12-04 14:36+0100\n"
+"POT-Creation-Date: 1999-12-16 09:44+0100\n"
 "Content-Type: text/plain; charset=\n"
 "Date: 1998-01-26 22:08:36+0100\n"
 "From: Gregory Steuck <steuck@iname.com>\n"
@@ -2539,104 +2539,104 @@ msgstr "Открытый ключ не найден"
 msgid "public key encrypted data: good DEK\n"
 msgstr "расшифровка открытым ключом не удалась %s\n"
 
-#: g10/mainproc.c:275
+#: g10/mainproc.c:277
 #, fuzzy, c-format
 msgid "encrypted with %u-bit %s key, ID %08lX, created %s\n"
 msgstr "(%u-бит %s ключ, ID %08lX, создан %s)\n"
 
-#: g10/mainproc.c:285
+#: g10/mainproc.c:287
 #, fuzzy, c-format
 msgid "encrypted with %s key, ID %08lX\n"
 msgstr "Подпись сделана %.*s, используя %s ключ %08lX\n"
 
-#: g10/mainproc.c:291
+#: g10/mainproc.c:293
 #, fuzzy
 msgid "no secret key for decryption available\n"
 msgstr "Секретный ключ не существует"
 
-#: g10/mainproc.c:300
+#: g10/mainproc.c:302
 #, c-format
 msgid "public key decryption failed: %s\n"
 msgstr "расшифровка открытым ключом не удалась %s\n"
 
-#: g10/mainproc.c:332
+#: g10/mainproc.c:334
 #, fuzzy
 msgid "decryption okay\n"
 msgstr "расшифровка не удалась: %s\n"
 
-#: g10/mainproc.c:337
+#: g10/mainproc.c:339
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr ""
 
-#: g10/mainproc.c:342
+#: g10/mainproc.c:344
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "расшифровка не удалась: %s\n"
 
-#: g10/mainproc.c:360
+#: g10/mainproc.c:362
 #, fuzzy
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgstr "замечание: отправитель запросил \"только-для-Ваших-глаз\"\n"
 
-#: g10/mainproc.c:362
+#: g10/mainproc.c:364
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr ""
 
-#: g10/mainproc.c:513
+#: g10/mainproc.c:515
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr ""
 
-#: g10/mainproc.c:596 g10/mainproc.c:605
+#: g10/mainproc.c:598 g10/mainproc.c:607
 #, fuzzy
 msgid "WARNING: invalid notation data found\n"
 msgstr "не найдено допустимых RFC1991 или OpenPGP данных.\n"
 
-#: g10/mainproc.c:608
+#: g10/mainproc.c:610
 msgid "Notation: "
 msgstr ""
 
-#: g10/mainproc.c:615
+#: g10/mainproc.c:617
 msgid "Policy: "
 msgstr ""
 
-#: g10/mainproc.c:1037
+#: g10/mainproc.c:1039
 msgid "signature verification suppressed\n"
 msgstr ""
 
-#: g10/mainproc.c:1043
+#: g10/mainproc.c:1045
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Подпись сделана %.*s, используя %s ключ %08lX\n"
 
 #. just in case that we have no userid
-#: g10/mainproc.c:1069 g10/mainproc.c:1080
+#: g10/mainproc.c:1071 g10/mainproc.c:1082
 msgid "BAD signature from \""
 msgstr "ПЛОХАЯ подпись от \""
 
-#: g10/mainproc.c:1070 g10/mainproc.c:1081
+#: g10/mainproc.c:1072 g10/mainproc.c:1083
 msgid "Good signature from \""
 msgstr "Хорошая подпись от \""
 
-#: g10/mainproc.c:1072
+#: g10/mainproc.c:1074
 msgid "                aka \""
 msgstr ""
 
-#: g10/mainproc.c:1128
+#: g10/mainproc.c:1130
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Невозможно проверить подпись: %s\n"
 
-#: g10/mainproc.c:1189
+#: g10/mainproc.c:1191
 #, fuzzy, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "Подпись неизвестного типа"
 
-#: g10/mainproc.c:1228
+#: g10/mainproc.c:1230
 msgid "old style (PGP 2.x) signature\n"
 msgstr ""
 
-#: g10/mainproc.c:1233
+#: g10/mainproc.c:1235
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr ""
 
@@ -2751,6 +2751,45 @@ msgstr "алгоритм защиты %d не поддерживается\n"
 #, fuzzy, c-format
 msgid "NOTE: cipher algorithm %d not found in preferences\n"
 msgstr "замечание: шифровальный алгоритм %d не найден в предпочтениях\n"
+
+#: g10/hkp.c:62
+#, c-format
+msgid "requesting key %08lX from %s ...\n"
+msgstr ""
+
+#: g10/hkp.c:71
+#, fuzzy, c-format
+msgid "can't get key from keyserver: %s\n"
+msgstr "невозможно записать в связку ключей: %s\n"
+
+#: g10/hkp.c:94 g10/hkp.c:127
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr ""
+
+#: g10/hkp.c:102
+#, fuzzy, c-format
+msgid "%s: not a valid key ID\n"
+msgstr "Недопустимый символ в комментарии.\n"
+
+#: g10/hkp.c:149
+#, fuzzy, c-format
+msgid "can't connect to `%s': %s\n"
+msgstr "невозможно открыть файл `%s': %s\n"
+
+#: g10/hkp.c:173
+#, fuzzy, c-format
+msgid "error sending to `%s': %s\n"
+msgstr "Fehler beim Erzeugen der \"Passphrase\": %s\n"
+
+#: g10/hkp.c:185
+#, c-format
+msgid "success sending to `%s' (status=%u)\n"
+msgstr ""
+
+#: g10/hkp.c:188
+#, c-format
+msgid "failed sending to `%s': status=%u\n"
+msgstr ""
 
 #: g10/seckey-cert.c:55
 #, fuzzy, c-format
@@ -3660,9 +3699,6 @@ msgstr "Помощь для `%s' отсутствует."
 #~ msgid "read error: %s\n"
 #~ msgstr "ошибка чтения: %s\n"
 
-#~ msgid "can't write to keyring: %s\n"
-#~ msgstr "невозможно записать в связку ключей: %s\n"
-
 #~ msgid "writing keyblock\n"
 #~ msgstr "записывается блок ключа\n"
 
@@ -3697,10 +3733,6 @@ msgstr "Помощь для `%s' отсутствует."
 
 #~ msgid "usage: gpgm [options] "
 #~ msgstr "Использование: gpgm [параметры] "
-
-#, fuzzy
-#~ msgid "'%s' is not a valid long keyID\n"
-#~ msgstr "Недопустимый символ в комментарии.\n"
 
 #, fuzzy
 #~ msgid "key %08lX: no public key for trusted key - skipped\n"
