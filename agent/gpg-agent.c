@@ -658,7 +658,7 @@ void
 agent_exit (int rc)
 {
   /*FIXME: update_random_seed_file();*/
-#if 0
+#if 1
   /* at this time a bit annoying */
   if (opt.debug & DBG_MEMSTAT_VALUE)
     {

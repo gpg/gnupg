@@ -51,6 +51,7 @@ enum cmd_and_opt_values
   oNoVerbose = 500,
   oShadow,
   oShowShadowInfo,
+  oShowKeygrip,
 
 aTest };
 
@@ -69,6 +70,7 @@ static ARGPARSE_OPTS opts[] = {
   { oUnprotect, "unprotect", 256, "unprotect a private key"},
   { oShadow,  "shadow", 256, "create a shadow entry for a priblic key"},
   { oShowShadowInfo,  "show-shadow-info", 256, "return the shadow info"},
+  { oShowKeygrip, "show-keygrip", 256, " show the \"keygrip\""},
 
   {0}
 };
@@ -376,6 +378,7 @@ show_file (const char *fname)
   key = read_key (fname);
   if (!key)
     return;
+
   keylen = gcry_sexp_canon_len (key, 0, NULL,NULL);
   assert (keylen);
 
@@ -386,6 +389,37 @@ show_file (const char *fname)
       fwrite (p, strlen (p), 1, stdout);
       xfree (p);
     }
+}
+
+static void
+show_keygrip (const char *fname)
+{
+  unsigned char *key;
+  GcrySexp private;
+  unsigned char grip[20];
+  int i;
+  
+  key = read_key (fname);
+  if (!key)
+    return;
+
+  if (gcry_sexp_new (&private, key, 0, 0))
+    {
+      log_error ("gcry_sexp_new failed\n");
+      return;
+    } 
+  xfree (key);
+
+  if (!gcry_pk_get_keygrip (private, grip))
+    {
+      log_error ("can't calculate keygrip\n");
+      return;
+    }
+  gcry_sexp_release (private);
+
+  for (i=0; i < 20; i++)
+    printf ("%02X", grip[i]);
+  putchar ('\n');
 }
 
 
@@ -426,6 +460,7 @@ main (int argc, char **argv )
         case oUnprotect: cmd = oUnprotect; break;
         case oShadow: cmd = oShadow; break;
         case oShowShadowInfo: cmd = oShowShadowInfo; break;
+        case oShowKeygrip: cmd = oShowKeygrip; break;
 
         case oPassphrase: passphrase = pargs.r.ret_str; break;
 
@@ -446,6 +481,8 @@ main (int argc, char **argv )
     read_and_shadow (*argv);
   else if (cmd == oShowShadowInfo)
     show_shadow_info (*argv);
+  else if (cmd == oShowKeygrip)
+    show_keygrip (*argv);
   else
     show_file (*argv);
 

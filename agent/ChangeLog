@@ -1,3 +1,8 @@
+2002-06-11  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c: Add command --show-keygrip
+	(show_keygrip): New.
+
 2002-05-23  Werner Koch  <wk@gnupg.org>
 
 	* call-scd.c: Seirialized all scdaeom access when using Pth.
