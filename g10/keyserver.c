@@ -74,39 +74,71 @@ struct kopts
 static int keyserver_work(int action,STRLIST list,
 			  KEYDB_SEARCH_DESC *desc,int count);
 
-static void
-strip_leading_space(char **stringp)
-{
-  while(**stringp)
-    {
-      if(ascii_isspace(**stringp))
-	(*stringp)++;
-      else
-	return;
-    }
-}
-
 static char *
-get_arg(char **stringp)
+argsep(char **stringp,char **arg)
 {
-  strip_leading_space(stringp);
+  char *tok,*next;
 
-  if(**stringp=='=')
+  tok=*stringp;
+  *arg=NULL;
+
+  if(tok)
     {
-      (*stringp)++;
-      strip_leading_space(stringp);
-      return strsep(stringp," ,");
+      next=strpbrk(tok," ,=");
+
+      if(next)
+	{
+	  int sawequals=0;
+
+	  if(*next=='=')
+	    sawequals=1;
+
+	  *next++='\0';
+	  *stringp=next;
+
+	  /* what we need to do now is scan along starting with *next.
+	     If the next character we see (ignoring spaces) is a =
+	     sign, then there is an argument. */
+
+	  while(*next)
+	    {
+	      if(*next=='=')
+		sawequals=1;
+	      else if(*next!=' ')
+		break;
+	      next++;
+	    }
+
+	  /* At this point, *next is either an empty string, or the
+	     beginning of the next token (which is an argument if
+	     sawequals is true). */
+
+	  if(sawequals)
+	    {
+	      *arg=next;
+	      next=strpbrk(*arg," ,");
+	      if(next)
+		{
+		  *next++='\0';
+		  *stringp=next;
+		}
+	      else
+		*stringp=NULL;
+	    }
+	}
+      else
+	*stringp=NULL;
     }
 
-  return NULL;
+  return tok;
 }
 
 void 
 parse_keyserver_options(char *options)
 {
-  char *tok;
+  char *tok,*arg;
 
-  while((tok=strsep(&options," ,")))
+  while((tok=argsep(&options,&arg)))
     {
       int i,hit=0;
 
@@ -155,8 +187,7 @@ parse_keyserver_options(char *options)
 	       !parse_export_options(tok,
 				     &opt.keyserver_options.export_options,0))
 	      {
-		char *arg;
-		if(options && (arg=get_arg(&options)))
+		if(arg)
 		  {
 		    char *joined;
 

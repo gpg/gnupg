@@ -1,3 +1,9 @@
+2003-12-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (argsep): New variation on strsep that knows about
+	optional arguments.
+	(parse_keyserver_options): Use it here for optional arguments.
+
 2003-12-28  Stefan Bellon  <sbellon@sbellon.de>
 
 	* plaintext.c (handle_plaintext) [__riscos__]: Don't mangle
