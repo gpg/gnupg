@@ -20,8 +20,8 @@
 
 
 INCLUDES = -I.. -I$(top_srcdir)/include
-AM_CFLAGS = @MPI_OPT_FLAGS@
-ASFLAGS = @MPI_SFLAGS@
+AM_CFLAGS = $(MPI_OPT_FLAGS)
+AM_CCASFLAGS = $(NOEXECSTACK_FLAGS) $(MPI_SFLAGS)
 
 EXTRA_DIST = config.links
 DISTCLEANFILES = mpi-asm-defs.h \
@@ -73,7 +73,7 @@ libmpi_a_LIBADD = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
 # work and add one to cpp .S files
 .S.o:
 	 $(CPP) $(INCLUDES) $(DEFS) $< | grep -v '^#' > _$*.s
-	 $(COMPILE) $(ASFLAGS) -c _$*.s
+	 $(COMPILE) $(AM_CCASFLAGS) -c _$*.s
 	 mv -f _$*.o $*.o
 
 .S.lo:

@@ -1,3 +1,8 @@
+2005-03-11  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (ASFLAGS): Renamed to AM_CCASFLAGS and added the
+	variable for non exectubale stack options.  Adapted users.
+
 2004-12-20  Werner Koch  <wk@g10code.com>
 
 	* mpicoder.c (mpi_read_from_buffer): Don't abort in case of an

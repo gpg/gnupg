@@ -53,6 +53,8 @@ Noteworthy changes in version 1.4.1
     * The "fetch" command of --card-edit now retrieves the key using
       the default keyserver if no URL has been stored on the card.
 
+    * New configure option --enable-noexecstack.
+
 
 Noteworthy changes in version 1.4.0 (2004-12-16)
 ------------------------------------------------

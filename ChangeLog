@@ -1,3 +1,7 @@
+2005-03-11  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: New option --enable-noexecstack. 
+
 2005-02-16  Werner Koch  <wk@g10code.com>
 
 	Released 1.4.1rc2.

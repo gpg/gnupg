@@ -607,6 +607,10 @@
                     This prevents access to certain files and won't
                     allow import or export of secret keys. 
 
+     --enable-noexecstack
+                    Pass option --noexecstack to as.  Works only when
+                    using gcc.
+
      --disable-gnupg-iconv
                     If iconv is available it is used to convert
                     between utf-8 and the system character set.  This

@@ -1,5 +1,7 @@
 2005-03-07  Werner Koch  <wk@g10code.com>
 
+	* gpg.sgml (comment): Add note to keep the comment short.
+
 	* DETAILS: Document new status codes.
 
 2005-02-15  Werner Koch  <wk@g10code.com>

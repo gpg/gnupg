@@ -102,12 +102,25 @@ if test "$use_m_guard" = yes ; then
     AC_DEFINE(M_GUARD,1,[Define to use the (obsolete) malloc guarding feature])
 fi
 
+# We don't have a test to check whetyer as(1) knows about the
+# non executable stackioption.  Thus we provide an option to enable
+# it.
+AC_MSG_CHECKING([whether non excutable stack support is requested])
+AC_ARG_ENABLE(noexecstack,
+              AC_HELP_STRING([--enable-noexecstack],
+                             [enable non executable stack support (gcc only)]),
+              noexecstack_support=$enableval, noexecstack_support=no)
+AC_MSG_RESULT($noexecstack_support)
+
+# SELinux support includes tracking of sensitive files to avoid
+# leaking their contents through processing these files by gpg itself
 AC_MSG_CHECKING([whether SELinux support is requested])
 AC_ARG_ENABLE(selinux-support,
               AC_HELP_STRING([--enable-selinux-support],
                              [enable SELinux support]),
               selinux_support=$enableval, selinux_support=no)
 AC_MSG_RESULT($selinux_support)
+
 
 AC_MSG_CHECKING([whether OpenPGP card support is requested])
 AC_ARG_ENABLE(card-support,
@@ -1234,14 +1247,26 @@ esac
 AC_SUBST(NETLIBS)
 AC_SUBST(W32LIBS)
 
+# Special options used fith gcc.
 if test "$GCC" = yes; then
+    # Note that it is okay to use CFLAGS here because this are just
+    # warning options and the user should have a chance of overriding
+    #them.
     if test "$USE_MAINTAINER_MODE" = "yes"; then
         CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
         CFLAGS="$CFLAGS -Wformat-nonliteral"
     else
         CFLAGS="$CFLAGS -Wall"
     fi
+
+    # Non exec stack hack.  Fixme: Write a test to check whether as
+    # can cope with it and use the enable-noexecstack option only to
+    # disable it in case it is required on sime platforms.
+    if test "$noexecstack_support" = yes; then
+        NOEXECSTACK_FLAGS="-Wa,--noexecstack"
+    fi
 fi
+AC_SUBST(NOEXECSTACK_FLAGS)
 
 
 if test "$print_egd_warning" = yes; then
