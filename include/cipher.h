@@ -123,6 +123,7 @@ void md_final(MD_HANDLE a);
 byte *md_read( MD_HANDLE a, int algo );
 int md_digest( MD_HANDLE a, int algo, byte *buffer, int buflen );
 int md_get_algo( MD_HANDLE a );
+int md_algo_present( MD_HANDLE a, int algo );
 int md_digest_length( int algo );
 const byte *md_asn_oid( int algo, size_t *asnlen, size_t *mdlen );
 void md_start_debug( MD_HANDLE a, const char *suffix );
