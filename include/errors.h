@@ -17,8 +17,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef G10_ERRORS_H
-#define G10_ERRORS_H
+#ifndef GNUPG_INCLUDE_ERRORS_H
+#define GNUPG_INCLUDE_ERRORS_H
+
+#if 0
+#error Remove this file after replacing all error codes with those
+#error from libgpg-error.  The numerical values are identical, though.
+#endif
 
 #define G10ERR_GENERAL	       1
 #define G10ERR_UNKNOWN_PACKET  2
@@ -81,4 +86,4 @@
 char *strerror( int n );
 #endif
 
-#endif /*G10_ERRORS_H*/
+#endif /*GNUPG_INCLUDE_ERRORS_H*/

@@ -44,7 +44,7 @@ have_ksba=no
 have_opensc=no
 have_pth=no
 
-GNUPG_BUILD_PROGRAM(gpg, no)
+GNUPG_BUILD_PROGRAM(gpg, yes)
 GNUPG_BUILD_PROGRAM(gpgsm, yes)
 GNUPG_BUILD_PROGRAM(agent, yes)
 GNUPG_BUILD_PROGRAM(scdaemon, yes)
@@ -363,6 +363,7 @@ if test "$build_scdaemon" = "yes"; then
 fi
 
 
+AM_CONDITIONAL(BUILD_GPG,   test "$build_gpg" = "yes")
 AM_CONDITIONAL(BUILD_GPGSM, test "$build_gpgsm" = "yes")
 AM_CONDITIONAL(BUILD_AGENT, test "$build_agent" = "yes")
 AM_CONDITIONAL(BUILD_SCDAEMON, test "$build_scdaemon" = "yes")
@@ -375,6 +376,7 @@ intl/Makefile
 jnlib/Makefile
 common/Makefile
 kbx/Makefile
+g10/Makefile
 sm/Makefile
 agent/Makefile
 scd/Makefile

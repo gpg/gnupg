@@ -23,6 +23,11 @@ ACLOCAL_AMFLAGS = -I m4
 
 EXTRA_DIST = scripts/config.rpath  autogen.sh
 
+if BUILD_GPG
+gpg = g10
+else
+gpg =
+endif
 if BUILD_GPGSM
 sm = sm
 else
@@ -39,9 +44,10 @@ else
 scd =
 endif
 
-SUBDIRS = m4  intl jnlib common kbx ${sm} ${agent} ${scd} po doc tests
+SUBDIRS = m4  intl jnlib common kbx ${gpg} ${sm} ${agent} ${scd} po doc tests
 
 
 dist-hook:
 	@set -e; echo "$(VERSION)" > $(distdir)/VERSION
+
 

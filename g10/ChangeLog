@@ -1,3 +1,10 @@
+2003-06-04  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Add new files, link gpg with libgpg-error.
+	* g10.c, options.h: New option --agent-program.
+	* call-agent.c: New.
+	* gpg.h, call-agent.h: New.
+
 2003-06-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, g10.c (main), keylist.c (list_keyblock_print): Add

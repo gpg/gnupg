@@ -303,6 +303,7 @@ enum cmd_and_opt_values { aNull = 0,
     oPersonalDigestPreferences,
     oPersonalCompressPreferences,
     oEmuMDEncodeBug,
+    oAgentProgram,
     oDisplay,
     oTTYname,
     oTTYtype,
@@ -610,6 +611,7 @@ static ARGPARSE_OPTS opts[] = {
     { oPersonalDigestPreferences,  "personal-digest-preferences", 2, "@"},
     { oPersonalCompressPreferences,  "personal-compress-preferences", 2, "@"},
     { oEmuMDEncodeBug,	"emulate-md-encode-bug", 0, "@"},
+    { oAgentProgram, "agent-program", 2 , "@" },
     { oDisplay,    "display",     2, "@" },
     { oTTYname,    "ttyname",     2, "@" },
     { oTTYtype,    "ttytype",     2, "@" },
@@ -1876,6 +1878,7 @@ main( int argc, char **argv )
           case oPersonalCompressPreferences:
 	    pers_compress_list=pargs.r.ret_str;
 	    break;
+          case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
           case oDisplay: opt.display = pargs.r.ret_str; break;
           case oTTYname: opt.ttyname = pargs.r.ret_str; break;
           case oTTYtype: opt.ttytype = pargs.r.ret_str; break;

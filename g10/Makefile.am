@@ -24,16 +24,17 @@ EXTRA_DIST = options.skel
 # it seems that we can't use this with automake 1.5
 #OMIT_DEPENDENCIES = zlib.h zconf.h
 libexecdir = @libexecdir@/@PACKAGE@
-if ! HAVE_DOSISH_SYSTEM
-AM_CFLAGS = -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""
-endif
+# FIXME: Windows support currently not enabled
+#if ! HAVE_DOSISH_SYSTEM
+#AM_CFLAGS = -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""
+#endif
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
 #noinst_PROGRAMS = gpgd
 bin_PROGRAMS = gpg gpgv
 
 common_source =  \
-	      global.h          \
+	      global.h gpg.h    \
 	      build-packet.c	\
 	      compress.c	\
 	      filter.h		\
@@ -93,6 +94,7 @@ gpg_SOURCES  = g10.c		\
 	      keyserver.c       \
 	      keyserver-internal.h \
 	      photoid.c photoid.h \
+	      call-agent.c call-agent.h \
 	      exec.c exec.h
 
 gpgv_SOURCES = gpgv.c           \
@@ -107,8 +109,7 @@ gpgv_SOURCES = gpgv.c           \
 #	       $(common_source)
 
 LDADD =  $(needed_libs) @INTLLIBS@ @CAPLIBS@ @ZLIBS@
-# gpg gets LIBOBJS to add in mkdtemp if the platform doesn't have it
-gpg_LDADD = @LIBOBJS@ $(LDADD) @DLLIBS@ @EGDLIBS@
+gpg_LDADD = $(LDADD) @DLLIBS@ @EGDLIBS@ -lgpg-error
 
 $(PROGRAMS): $(needed_libs)
 
