@@ -1300,6 +1300,18 @@ update_keysig_packet( PKT_signature **ret_sig,
     /* create a new signature packet */
     sig = copy_signature (NULL, orig_sig);
 
+    /* We've copied the signature, subpackets and all, but we don't
+       want any old policies or notations coming over: the signature
+       is being remade, so these need to be restated as well.  Note
+       that other subpackets like backsigs come over as well, but we
+       want to keep those.  We don't delete policies or notations from
+       the unhashed area - since we don't put them there, this is a
+       case of not messing about with things that we are not
+       responsible for. */
+
+     delete_sig_subpkt(sig->hashed,SIGSUBPKT_POLICY);
+     delete_sig_subpkt(sig->hashed,SIGSUBPKT_NOTATION);
+ 
     /* We need to create a new timestamp so that new sig expiration
        calculations are done correctly... */
     sig->timestamp=make_timestamp();
