@@ -1051,7 +1051,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		  }
 		else
 		  {
-		    tty_printf("\n");
+		    tty_printf(_("  Unable to sign.\n"));
 		    break;
 		  }
 	      }

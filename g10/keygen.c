@@ -49,6 +49,7 @@ enum para_name {
   pNAMEREAL,
   pNAMEEMAIL,
   pNAMECOMMENT,
+  pPREFERENCES,
   pUSERID,
   pEXPIREDATE,
   pKEYEXPIRE, /* in n seconds */
@@ -253,7 +254,7 @@ keygen_set_std_prefs (const char *string)
         else if (isspace (*s))
             s2 = s+1;
         else {
-            log_info (_("invalid character in string\n"));
+            log_info (_("invalid character in preference string\n"));
             return -1;
         }
     }
@@ -1458,6 +1459,9 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
 	}
     }
 
+    /* Set preferences, if any. */
+    keygen_set_std_prefs(get_parameter_value( para, pPREFERENCES ));
+
     /* make DEK and S2K from the Passphrase */
     r = get_parameter( para, pPASSPHRASE );
     if( r && *r->u.value ) {
@@ -1538,6 +1542,7 @@ read_parameter_file( const char *fname )
 	{ "Name-Comment",   pNAMECOMMENT },
 	{ "Expire-Date",    pEXPIREDATE },
 	{ "Passphrase",     pPASSPHRASE },
+	{ "Preferences",    pPREFERENCES },
 	{ NULL, 0 }
     };
     FILE *fp;

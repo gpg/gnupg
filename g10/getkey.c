@@ -1635,7 +1635,7 @@ merge_selfsigs( KBNODE keyblock )
 	if(k->pkt->pkttype==PKT_PUBLIC_SUBKEY)
 	  k->pkt->pkt.public_key->is_valid=0;
 
-    /* set the preference list of all keys to those of the primary
+    /* set the preference list of all keys to those of the primary real
      * user ID.  Note: we use these preferences when we don't know by
      * which user ID the key has been selected.
      * fixme: we should keep atoms of commonly used preferences or
@@ -1648,6 +1648,7 @@ merge_selfsigs( KBNODE keyblock )
     mdc_feature = 0;
     for (k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY; k = k->next) {
         if (k->pkt->pkttype == PKT_USER_ID
+	    && !k->pkt->pkt.user_id->attrib_data
             && k->pkt->pkt.user_id->is_primary) {
             prefs = k->pkt->pkt.user_id->prefs;
             mdc_feature = k->pkt->pkt.user_id->mdc_feature;

@@ -1236,7 +1236,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_SIG_EXPIRE,NULL);
 	if(p)
 	  sig->expiredate=sig->timestamp+buffer_to_u32(p);
-	if(sig->expiredate>0 && sig->expiredate<make_timestamp())
+	if(sig->expiredate && sig->expiredate<=make_timestamp())
  	    sig->flags.expired=1;
 
 	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_POLICY,NULL);

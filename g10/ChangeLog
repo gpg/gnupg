@@ -1,3 +1,18 @@
+2002-04-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (parse_signature): Minor fix - signatures should
+	expire at their expiration time and not one second later.
+
+	* keygen.c (proc_parameter_file): Allow specifying preferences
+	string (i.e. "s5 s2 z1 z2", etc) in a batchmode key generation
+	file.
+
+	* keyedit.c (keyedit_menu): Print standard error message when
+	signing a revoked key (no new translation).
+
+	* getkey.c (merge_selfsigs): Get the default set of key prefs from
+	the real (not attribute) primary uid.
+
 2002-04-12  David Shaw  <dshaw@jabberwocky.com>
 
 	* pkclist.c (build_pk_list): Fix bug that allowed a key to be
