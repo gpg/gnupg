@@ -1,3 +1,10 @@
+2003-02-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (menu_revuid): Properly handle a nonselfsigned uid on
+	a v4 key (treat as a v4 revocation).
+
+	* import.c (print_import_check): Do not re-utf8 convert user IDs.
+
 2003-01-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* mainproc.c (list_node): Show signature expiration date in

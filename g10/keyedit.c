@@ -3352,8 +3352,8 @@ menu_revuid( KBNODE pub_keyblock, KBNODE sec_keyblock )
      probably be safe to use v4 revocations everywhere. -ds */
 
   for( node = pub_keyblock; node; node = node->next )
-    if(node->pkt->pkttype==PKT_USER_ID &&
-       node->pkt->pkt.user_id->selfsigversion>3)
+    if(pk->version>3 || (node->pkt->pkttype==PKT_USER_ID &&
+			 node->pkt->pkt.user_id->selfsigversion>3))
       {
 	if((reason = ask_revocation_reason( 0, 1, 4 )))
 	  break;
@@ -3413,13 +3413,11 @@ menu_revuid( KBNODE pub_keyblock, KBNODE sec_keyblock )
 		pkt->pkt.signature = sig;
 		insert_kbnode( node, new_kbnode(pkt), 0 );
 
-		if(!update_trust)
-		  {
-		    /* If the trustdb has an entry for this key+uid then the
-		       trustdb needs an update. */
-		    if((get_validity(pk,uid)&TRUST_MASK)>=TRUST_UNDEFINED)
-		      update_trust=1;
-		  }
+		/* If the trustdb has an entry for this key+uid then the
+		   trustdb needs an update. */
+		if(!update_trust
+		   && (get_validity(pk,uid)&TRUST_MASK)>=TRUST_UNDEFINED)
+		  update_trust=1;
 
 		changed = 1;
 		node->pkt->pkt.user_id->is_revoked=1;

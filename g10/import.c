@@ -555,11 +555,10 @@ print_import_ok (PKT_public_key *pk, PKT_secret_key *sk, unsigned int reason)
   write_status_text (STATUS_IMPORT_OK, buf);
 }
 
-
 void
 print_import_check (PKT_public_key * pk, PKT_user_id * id)
 {
-    char * buf, * p;
+    char * buf;
     byte fpr[24];
     u32 keyid[2];
     size_t i, pos = 0, n;
@@ -573,13 +572,10 @@ print_import_check (PKT_public_key * pk, PKT_user_id * id)
         sprintf (buf+pos, "%02X", fpr[i]);
     strcat (buf, " ");
     pos += 1;
-    p = native_to_utf8 (id->name);
-    strcat (buf, p);
+    strcat (buf, id->name);
     write_status_text (STATUS_IMPORT_CHECK, buf);
     m_free (buf);
-    m_free (p);   
 }
-
 
 /****************
  * Try to import one keyblock.	Return an error only in serious cases, but
@@ -632,7 +628,7 @@ import_one( const char *fname, KBNODE keyblock,
     if (opt.interactive) {
         if(is_status_enabled())
 	  print_import_check (pk, uidnode->pkt->pkt.user_id);
-        merge_keys_and_selfsig (keyblock);
+	merge_keys_and_selfsig (keyblock);
         tty_printf ("\n");
         show_basic_key_info (keyblock);
         tty_printf ("\n");
