@@ -357,19 +357,21 @@ static char *
 copy_and_escape (char *buffer, const char *text)
 {
   int i;
+  const unsigned char *s = text;
   char *p = buffer;
+  
 
-  for (i=0; text[i]; i++)
+  for (i=0; s[i]; i++)
     {
-      if (text[i] < ' ' || text[i] == '+')
+      if (s[i] < ' ' || s[i] == '+')
         {
-          sprintf (p, "%%%02X", text[i]);
+          sprintf (p, "%%%02X", s[i]);
           p += 3;
         }
-      else if (text[i] == ' ')
+      else if (s[i] == ' ')
         *p++ = '+';
       else
-        *p++ = text[i];
+        *p++ = s[i];
     }
   return p;
 }
