@@ -354,6 +354,7 @@ List preferences.</para></listitem></varlistentry>
     <term>showpref</term>
     <listitem><para>
 More verbose preferences listing.</para></listitem></varlistentry>
+    <varlistentry>
     <term>setpref &ParmString;</term>
     <listitem><para>
 Set the list of user ID preferences to &ParmString;, this should be 
@@ -363,6 +364,7 @@ preferences to nil.  Only available algorithms are allowed.  This
 command just initializes an internal list and does not change anything
 unless another command which changes the self-signatures is used.
 </para></listitem></varlistentry>
+    <varlistentry>
     <term>updpref</term>
     <listitem><para>
 Change the preferences of all user IDs (or just of the selected ones

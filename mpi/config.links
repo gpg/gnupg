@@ -198,8 +198,8 @@ case "${target}" in
 	path="powerpc32"
 	;;
 
-    powerpc*-*-netbsd*)
-       echo '/* configured NetBSD on powerpc */' >>./mpi/asm-syntax.h
+    powerpc*-*-netbsd* | powerpc*-*-openbsd*)
+       echo '/* configured {Open,Net}BSD on powerpc */' >>./mpi/asm-syntax.h
        echo '#define ELF_SYNTAX'                 >>./mpi/asm-syntax.h
        cat   $srcdir/mpi/powerpc32/syntax.h	 >>./mpi/asm-syntax.h
        mpi_sflags="-Wa,-mppc"

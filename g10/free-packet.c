@@ -77,9 +77,17 @@ release_public_key_parts( PKT_public_key *pk )
 	mpi_free( pk->pkey[i] );
 	pk->pkey[i] = NULL;
     }
+    if (pk->prefs) {
+        m_free (pk->prefs);
+        pk->prefs = NULL;
+    }
     if( pk->namehash ) {
 	m_free(pk->namehash);
 	pk->namehash = NULL;
+    }
+    if (pk->user_id) {
+        free_user_id (pk->user_id);
+        pk->user_id = NULL;
     }
 }
 
@@ -106,24 +114,42 @@ cp_subpktarea (subpktarea_t *s )
     return d;
 }
 
+/*
+ * Return a copy of the preferences 
+ */
+prefitem_t *
+copy_prefs (const prefitem_t *prefs)
+{
+    size_t n;
+    prefitem_t *new;
+
+    if (!prefs)
+        return NULL;
+    
+    for (n=0; prefs[n].type; n++)
+        ;
+    new = m_alloc ( sizeof (*new) * (n+1));
+    for (n=0; prefs[n].type; n++) {
+        new[n].type = prefs[n].type;
+        new[n].value = prefs[n].value;
+    }
+    new[n].type = PREFTYPE_NONE;
+    new[n].value = 0;
+
+    return new;
+}
+
 
 PKT_public_key *
-copy_public_key_new_namehash( PKT_public_key *d, PKT_public_key *s,
-			      const byte *namehash )
+copy_public_key ( PKT_public_key *d, PKT_public_key *s)
 {
     int n, i;
 
     if( !d )
 	d = m_alloc(sizeof *d);
     memcpy( d, s, sizeof *d );
-    if( namehash ) {
-	d->namehash = m_alloc( 20 );
-	memcpy(d->namehash, namehash, 20 );
-    }
-    else if( s->namehash ) {
-	d->namehash = m_alloc( 20 );
-	memcpy(d->namehash, s->namehash, 20 );
-    }
+    d->user_id = scopy_user_id (s->user_id);
+    d->prefs = copy_prefs (s->prefs);
     n = pubkey_get_npkey( s->pubkey_algo );
     if( !n )
 	d->pkey[0] = mpi_copy(s->pkey[0]);
@@ -132,12 +158,6 @@ copy_public_key_new_namehash( PKT_public_key *d, PKT_public_key *s,
 	    d->pkey[i] = mpi_copy( s->pkey[i] );
     }
     return d;
-}
-
-PKT_public_key *
-copy_public_key( PKT_public_key *d, PKT_public_key *s )
-{
-   return copy_public_key_new_namehash( d, s, NULL );
 }
 
 /****************
@@ -183,13 +203,15 @@ copy_signature( PKT_signature *d, PKT_signature *s )
 }
 
 
+/*
+ * shallow copy of the user ID
+ */
 PKT_user_id *
-copy_user_id( PKT_user_id *d, PKT_user_id *s )
+scopy_user_id (PKT_user_id *s)
 {
-    if( !d )
-	d = m_alloc(sizeof *d + s->len - 1 );
-    memcpy( d, s, sizeof *d + s->len - 1 );
-    return d;
+    if (s)
+        s->ref++;
+    return s;
 }
 
 
@@ -240,11 +262,17 @@ free_comment( PKT_comment *rem )
 }
 
 void
-free_user_id( PKT_user_id *uid )
+free_user_id (PKT_user_id *uid)
 {
-    if( uid->photo )
-	m_free( uid->photo );
-    m_free(uid);
+    assert (uid->ref > 0);
+    if (--uid->ref)
+        return;
+
+    if (uid->photo)
+	m_free (uid->photo);
+    if (uid->prefs)
+        m_free (uid->prefs);
+    m_free (uid);
 }
 
 void
@@ -465,6 +493,9 @@ int
 cmp_user_ids( PKT_user_id *a, PKT_user_id *b )
 {
     int res;
+
+    if ( a == b )
+        return 0;
 
     res = a->len - b->len;
     if( !res )

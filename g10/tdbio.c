@@ -1161,7 +1161,7 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 	    if( *p )
 		fprintf(fp, " %c%d", *p == PREFTYPE_SYM    ? 'S' :
 				     *p == PREFTYPE_HASH   ? 'H' :
-				     *p == PREFTYPE_COMPR  ? 'Z' : '?', p[1]);
+				     *p == PREFTYPE_ZIP  ? 'Z' : '?', p[1]);
 	}
 	putc('\n', fp);
 	break;

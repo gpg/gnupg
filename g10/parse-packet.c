@@ -1590,6 +1590,7 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     byte *p;
 
     packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id  + pktlen);
+    packet->pkt.user_id->ref = 1;
     packet->pkt.user_id->len = pktlen;
     packet->pkt.user_id->photo = NULL;
     packet->pkt.user_id->photolen = 0;
@@ -1598,6 +1599,7 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     packet->pkt.user_id->created = 0;
     packet->pkt.user_id->help_key_usage = 0;
     packet->pkt.user_id->help_key_expire = 0;
+    packet->pkt.user_id->prefs = NULL;
 
     p = packet->pkt.user_id->name;
     for( ; pktlen; pktlen--, p++ )
@@ -1630,6 +1632,7 @@ parse_photo_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     byte *p;
 
     packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id  + 30);
+    packet->pkt.user_id->ref = 1;
     sprintf( packet->pkt.user_id->name, "[image of size %lu]", pktlen );
     packet->pkt.user_id->len = strlen(packet->pkt.user_id->name);
     packet->pkt.user_id->is_primary = 0;
@@ -1637,6 +1640,7 @@ parse_photo_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     packet->pkt.user_id->created = 0;
     packet->pkt.user_id->help_key_usage = 0;
     packet->pkt.user_id->help_key_expire = 0;
+    packet->pkt.user_id->prefs = NULL;
 
     packet->pkt.user_id->photo = m_alloc(sizeof *packet->pkt.user_id + pktlen);
     packet->pkt.user_id->photolen = pktlen;

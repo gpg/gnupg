@@ -1036,12 +1036,14 @@ algo_available( int preftype, int algo )
     else if( preftype == PREFTYPE_HASH ) {
 	return algo && !check_digest_algo( algo );
     }
-    else if( preftype == PREFTYPE_COMPR ) {
+    else if( preftype == PREFTYPE_ZIP ) {
 	return !algo || algo == 1 || algo == 2;
     }
     else
 	return 0;
 }
+
+
 
 /****************
  * Return -1 if we could not find an algorithm.
@@ -1051,8 +1053,7 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
 {
     PK_LIST pkr;
     u32 bits[8];
-    byte *pref = NULL;
-    size_t npref;
+    const prefitem_t *prefs;
     int i, j;
     int compr_hack=0;
     int any;
@@ -1065,43 +1066,38 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
 	u32 mask[8];
 
 	memset( mask, 0, 8 * sizeof *mask );
-	if( !pkr->pk->local_id ) { /* try to set the local id */
-	    query_trust_info( pkr->pk, NULL );
-	    if( !pkr->pk->local_id ) {
-		log_debug("select_algo_from_prefs: can't get LID\n");
-		continue;
-	    }
-	}
 	if( preftype == PREFTYPE_SYM )
 	    mask[0] |= (1<<2); /* 3DES is implicitly there */
-	m_free(pref);
-	pref = get_pref_data( pkr->pk->local_id, pkr->pk->namehash, &npref);
+        
+        if (pkr->pk->user_id) /* selected by user ID */
+            prefs = pkr->pk->user_id->prefs;
+        else
+            prefs = pkr->pk->prefs;
+
 	any = 0;
-	if( pref ) {
-	   #if 0
-	    log_hexdump("raw: ", pref, npref );
-	   #endif
-	    for(i=0; i+1 < npref; i+=2 ) {
-		if( pref[i] == preftype ) {
-		    mask[pref[i+1]/32] |= 1 << (pref[i+1]%32);
+	if( prefs ) {
+	    for (i=0; prefs[i].type; i++ ) {
+		if( prefs[i].type == preftype ) {
+		    mask[prefs[i].value/32] |= 1 << (prefs[i].value%32);
 		    any = 1;
 		}
 	    }
 	}
-	if( (!pref || !any) && preftype == PREFTYPE_COMPR ) {
+
+	if( (!prefs || !any) && preftype == PREFTYPE_ZIP ) {
 	    mask[0] |= 3; /* asume no_compression and old pgp */
 	    compr_hack = 1;
 	}
 
       #if 0
-	log_debug("mask=%08lX%08lX%08lX%08lX%08lX%08lX%08lX%08lX\n",
+	log_debug("pref mask=%08lX%08lX%08lX%08lX%08lX%08lX%08lX%08lX\n",
 	       (ulong)mask[7], (ulong)mask[6], (ulong)mask[5], (ulong)mask[4],
 	     (ulong)mask[3], (ulong)mask[2], (ulong)mask[1], (ulong)mask[0]);
       #endif
 	for(i=0; i < 8; i++ )
 	    bits[i] &= mask[i];
       #if 0
-	log_debug("bits=%08lX%08lX%08lX%08lX%08lX%08lX%08lX%08lX\n",
+	log_debug("pref bits=%08lX%08lX%08lX%08lX%08lX%08lX%08lX%08lX\n",
 	       (ulong)bits[7], (ulong)bits[6], (ulong)bits[5], (ulong)bits[4],
 	     (ulong)bits[3], (ulong)bits[2], (ulong)bits[1], (ulong)bits[0]);
       #endif
@@ -1114,20 +1110,20 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
      */
     i = -1;
     any = 0;
-    if( pref ) {
-	for(j=0; j+1 < npref; j+=2 ) {
-	    if( pref[j] == preftype ) {
-		if( (bits[pref[j+1]/32] & (1<<(pref[j+1]%32))) ) {
-		    if( algo_available( preftype, pref[j+1] ) ) {
+    if( prefs ) {
+	for(j=0; prefs[j].type; j++ ) {
+	    if( prefs[j].type == preftype ) {
+                if( (bits[prefs[j].value/32] & (1<<(prefs[j].value%32))) ) {
+		    if( algo_available( preftype, prefs[j].value ) ) {
 			any = 1;
-			i = pref[j+1];
+			i = prefs[j].value;
 			break;
 		    }
 		}
 	    }
 	}
     }
-    if( !pref || !any ) {
+    if( !prefs || !any ) {
 	for(j=0; j < 256; j++ )
 	    if( (bits[j/32] & (1<<(j%32))) ) {
 		if( algo_available( preftype, j ) ) {
@@ -1147,7 +1143,6 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
 	    i = 1;  /* yep; we can use compression algo 1 */
     }
 
-    m_free(pref);
     return i;
 }
 

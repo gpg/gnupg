@@ -1,3 +1,8 @@
+2001-08-09  Werner Koch  <wk@gnupg.org>
+
+	* config.links: Added configuraton for powerpc-openbsd.  By Peter
+	Valchev
+
 2001-07-09  Werner Koch  <wk@gnupg.org>
 
 	* config.links: Changed the way the list of files to be

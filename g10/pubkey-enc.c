@@ -37,6 +37,29 @@
 static int get_it( PKT_pubkey_enc *k,
 		   DEK *dek, PKT_secret_key *sk, u32 *keyid );
 
+
+/* check that the given algo is mentioned in one of the valid user IDs */
+static int
+is_algo_in_prefs ( KBNODE keyblock, preftype_t type, int algo )
+{
+    KBNODE k;
+
+    for (k=keyblock; k; k=k->next) {
+        if (k->pkt->pkttype == PKT_USER_ID) {
+            PKT_user_id *uid = k->pkt->pkt.user_id;
+            prefitem_t *prefs = uid->prefs;
+            
+            if (uid->created && !uid->is_revoked && prefs ) {
+                for (; prefs->type; prefs++ )
+                    if (prefs->type == type && prefs->value == algo)
+                        return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+
 /****************
  * Get the session key from a pubkey enc paket and return
  * it in DEK, which should have been allocated in secure memory.
@@ -175,29 +198,47 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 	log_hexdump("DEK is:", dek->key, dek->keylen );
     /* check that the algo is in the preferences and whether it has expired */
     {
-	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
-	if( (rc = get_pubkey( pk, keyid )) )
-	    log_error("public key problem: %s\n", g10_errstr(rc) );
-	else if( !pk->local_id && query_trust_record(pk) )
-	    log_error("can't check algorithm against preferences\n");
+	PKT_public_key *pk = NULL;
+        KBNODE pkb = get_pubkeyblock (keyid);
+
+	if( !pkb ) {
+            rc = -1;
+	    log_error("oops: public key not found for preference check\n");
+        }
 	else if( dek->algo != CIPHER_ALGO_3DES
-	    && !is_algo_in_prefs( pk->local_id, PREFTYPE_SYM, dek->algo ) ) {
+	    && !is_algo_in_prefs( pkb, PREFTYPE_SYM, dek->algo ) ) {
 	    /* Don't print a note while we are not on verbose mode,
 	     * the cipher is blowfish and the preferences have twofish
 	     * listed */
 	    if( opt.verbose || dek->algo != CIPHER_ALGO_BLOWFISH
-		|| !is_algo_in_prefs( pk->local_id, PREFTYPE_SYM,
-						    CIPHER_ALGO_TWOFISH ) )
+		|| !is_algo_in_prefs( pkb, PREFTYPE_SYM, CIPHER_ALGO_TWOFISH))
 		log_info(_(
 		    "NOTE: cipher algorithm %d not found in preferences\n"),
 								 dek->algo );
 	}
 
+        if (!rc) {
+            KBNODE k;
+            
+            for (k=pkb; k; k = k->next) {
+                if (k->pkt->pkttype == PKT_PUBLIC_KEY 
+                    || k->pkt->pkttype == PKT_PUBLIC_SUBKEY){
+                    u32 aki[2];
+        	    keyid_from_pk(k->pkt->pkt.public_key, aki);
 
-	if( !rc && pk->expiredate && pk->expiredate <= make_timestamp() ) {
-	    log_info(_("NOTE: secret key %08lX expired at %s\n"),
-			   (ulong)keyid[1], asctimestamp( pk->expiredate) );
-	}
+                    if (aki[0]==keyid[0] && aki[1]==keyid[1]) {
+                        pk = k->pkt->pkt.public_key;
+                        break;
+                    }
+                }
+            }
+            if (!pk)
+                BUG ();
+            if ( pk->expiredate && pk->expiredate <= make_timestamp() ) {
+                log_info(_("NOTE: secret key %08lX expired at %s\n"),
+                         (ulong)keyid[1], asctimestamp( pk->expiredate) );
+            }
+        }
 
 	/* FIXME: check wheter the key has been revoked and display
 	 * the revocation reason.  Actually the user should know this himself,
@@ -206,7 +247,7 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 	 * the message.  The user can than watch out for snakes send by
 	 * one of those Eves outside his paradise :-)
 	 */
-	free_public_key( pk );
+	release_kbnode (pkb);
 	rc = 0;
     }
 

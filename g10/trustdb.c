@@ -1378,72 +1378,6 @@ make_sig_records( KBNODE keyblock, KBNODE uidnode,
 
 
 
-/****************
- * Make a preference record (or a list of them) according to the supplied
- * signature.
- * Returns: The record number of the first pref record.
- */
-static ulong
-make_pref_record( PKT_signature *sig, ulong lid )
-{
-    static struct {
-	sigsubpkttype_t subpkttype;
-	int preftype;
-    } ptable[] = {
-	{ SIGSUBPKT_PREF_SYM,	PREFTYPE_SYM	},
-	{ SIGSUBPKT_PREF_HASH,	PREFTYPE_HASH	},
-	{ SIGSUBPKT_PREF_COMPR, PREFTYPE_COMPR	},
-	{ 0, 0 }
-    };
-    TRUSTREC *precs, **p_end, *p=NULL, *p2;
-    ulong precno;
-    int k, idx=0;
-    const byte *s;
-    size_t n;
-
-  #if (ITEMS_PER_PREF_RECORD % 2) != 0
-    #error ITEMS_PER_PREF_RECORD must have an even value
-  #endif
-
-    precs = NULL; p_end = &precs;
-    for(k=0; ptable[k].subpkttype; k++ ) {
-	s = parse_sig_subpkt2( sig, ptable[k].subpkttype, &n );
-	if( !s )
-	    continue;
-	for( ; n; n--, s++ ) {
-	    if( !idx ) {
-		p = m_alloc_clear( sizeof *p );
-		p->rectype = RECTYPE_PREF;
-		p->r.pref.lid = lid;
-	    }
-	    p->r.pref.data[idx++] = ptable[k].preftype;
-	    p->r.pref.data[idx++] = *s;
-	    if( idx >= ITEMS_PER_PREF_RECORD ) {
-		p->recnum = tdbio_new_recnum();
-		*p_end = p;
-		p_end = &p->next;
-		idx = 0;
-	    }
-	}
-    }
-    if( idx ) {
-       p->recnum = tdbio_new_recnum();
-       *p_end = p;
-       p_end = &p->next;
-    }
-
-    precno = precs? precs->recnum : 0;
-    /* write the precs and release the memory */
-    for( p = precs; p ; p = p2 ) {
-	if( p->next )
-	    p->r.pref.next = p->next->recnum;
-	write_record( p );
-	p2 = p->next;
-	m_free( p );
-    }
-    return precno;
-}
-
 
 static ulong
 make_uid_records( KBNODE keyblock, ulong lid, u32 *keyid, u32 *min_expire,
@@ -1480,7 +1414,7 @@ make_uid_records( KBNODE keyblock, ulong lid, u32 *keyid, u32 *min_expire,
 						     lid, &bestsig );
 	if( (u->r.uid.uidflags & UIDF_CHECKED)
 	    && (u->r.uid.uidflags & UIDF_VALID) ) {
-	    u->r.uid.prefrec = bestsig? make_pref_record( bestsig, lid ) : 0;
+	    u->r.uid.prefrec = 0;
 	}
 
 	/* the next test is really bad because we should modify
@@ -1579,6 +1513,8 @@ do_update_trust_record( KBNODE keyblock, TRUSTREC *drec,
     for( recno=drec->r.dir.uidlist; recno; recno = urec.r.uid.next ) {
 	read_record( recno, &urec, RECTYPE_UID );
 	for(r2=urec.r.uid.prefrec ; r2; r2 = prec.r.pref.next ) {
+            /* we don't use preference records any more, but all ones might
+             * still be there */
 	    read_record( r2, &prec, RECTYPE_PREF );
 	    delete_record( r2 );
 	}
@@ -2747,70 +2683,4 @@ enum_cert_paths_print( void **context, FILE *fp,
   #endif
 }
 
-
-/*
- * Return an allocated buffer with the preference values for
- * the key with LID and the userid which is identified by the
- * HAMEHASH or the first one if namehash is NULL.  ret_n receives
- * the length of the allocated buffer.	Structure of the buffer is
- * a repeated sequences of 2 bytes; where the first byte describes the
- * type of the preference and the second one the value.  The constants
- * PREFTYPE_xxxx should be used to reference a type.
- */
-byte *
-get_pref_data( ulong lid, const byte *namehash, size_t *ret_n )
-{
-    TRUSTREC rec;
-    ulong recno;
-
-    init_trustdb();
-    read_record( lid, &rec, RECTYPE_DIR );
-    for( recno=rec.r.dir.uidlist; recno; recno = rec.r.uid.next ) {
-	read_record( recno, &rec, RECTYPE_UID );
-	if( rec.r.uid.prefrec
-	    && ( !namehash || !memcmp(namehash, rec.r.uid.namehash, 20) ))  {
-	    byte *buf;
-	    /* found the correct one or the first one */
-	    read_record( rec.r.uid.prefrec, &rec, RECTYPE_PREF );
-	    if( rec.r.pref.next )
-		log_info(_("WARNING: can't yet handle long pref records\n"));
-	    buf = m_alloc( ITEMS_PER_PREF_RECORD );
-	    memcpy( buf, rec.r.pref.data, ITEMS_PER_PREF_RECORD );
-	    *ret_n = ITEMS_PER_PREF_RECORD;
-	    return buf;
-	}
-    }
-    return NULL;
-}
-
-
-
-/****************
- * Check whether the algorithm is in one of the pref records
- */
-int
-is_algo_in_prefs( ulong lid, int preftype, int algo )
-{
-    TRUSTREC rec;
-    ulong recno;
-    int i;
-    byte *pref;
-
-    init_trustdb();
-    read_record( lid, &rec, RECTYPE_DIR );
-    for( recno=rec.r.dir.uidlist; recno; recno = rec.r.uid.next ) {
-	read_record( recno, &rec, RECTYPE_UID );
-	if( rec.r.uid.prefrec ) {
-	    read_record( rec.r.uid.prefrec, &rec, RECTYPE_PREF );
-	    if( rec.r.pref.next )
-		log_info(_("WARNING: can't yet handle long pref records\n"));
-	    pref = rec.r.pref.data;
-	    for(i=0; i+1 < ITEMS_PER_PREF_RECORD; i+=2 ) {
-		if( pref[i] == preftype && pref[i+1] == algo )
-		    return 1;
-	    }
-	}
-    }
-    return 0;
-}
 

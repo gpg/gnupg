@@ -292,7 +292,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC )) )
 	    goto leave;
 	if( !old_style )
-	    compr_algo = select_algo_from_prefs( pk_list, PREFTYPE_COMPR );
+	    compr_algo = select_algo_from_prefs( pk_list, PREFTYPE_ZIP );
     }
 
     /* prepare iobufs */

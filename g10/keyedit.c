@@ -40,7 +40,7 @@
 #include "status.h"
 #include "i18n.h"
 
-static void show_prefs( KBNODE keyblock, PKT_user_id *uid, int verbose );
+static void show_prefs( PKT_user_id *uid, int verbose );
 static void show_key_with_all_names( KBNODE keyblock,
 	    int only_marked, int with_fpr, int with_subkeys, int with_prefs );
 static void show_key_and_fingerprint( KBNODE keyblock );
@@ -974,7 +974,6 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
                                        _("Really update the preferences? "))){
 
                 if ( menu_set_preferences (keyblock, sec_keyblock) ) {
-                    update_trust_record (keyblock, 0, NULL);
                     merge_keys_and_selfsig (keyblock);
                     modified = 1;
                     redisplay = 1;
@@ -1065,49 +1064,31 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
  * show preferences of a public keyblock.
  */
 static void
-show_prefs( KBNODE keyblock, PKT_user_id *uid, int verbose )
+show_prefs (PKT_user_id *uid, int verbose)
 {
-    KBNODE node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
-    PKT_public_key *pk;
-    byte *p;
+    const prefitem_t *prefs;
     int i;
-    size_t n;
-    byte namehash[20];
 
-    if( !node )
-	return; /* is a secret keyblock */
-    pk = node->pkt->pkt.public_key;
-    if( !pk->local_id ) {
-	log_error("oops: no LID\n");
-	return;
-    }
-
-    if( uid->photo )
-	rmd160_hash_buffer( namehash, uid->photo, uid->photolen );
-    else
-	rmd160_hash_buffer( namehash, uid->name, uid->len );
-
-    p = get_pref_data( pk->local_id, namehash, &n );
-    if( !p )
-	return;
-
+    if( !uid || !uid->prefs )
+	return; 
+    prefs = uid->prefs;
     if (verbose) {
         int any, des_seen=0;
 
         tty_printf ("     Cipher: ");
-        for(i=any=0; i < n; i+=2 ) {
-            if( p[i] == PREFTYPE_SYM ) {
-                const char *s = cipher_algo_to_string (p[i+1]);
+        for(i=any=0; prefs[i].type; i++ ) {
+            if( prefs[i].type == PREFTYPE_SYM ) {
+                const char *s = cipher_algo_to_string (prefs[i].value);
                 
                 if (any)
                     tty_printf (", ");
                 any = 1;
                 /* We don't want to display strings for experimental algos */
-                if (s && p[i+1] < 100 )
+                if (s && prefs[i].value < 100 )
                     tty_printf ("%s", s );
                 else
-                    tty_printf ("[%d]", p[i+1]);
-                if (p[i+1] == CIPHER_ALGO_3DES )
+                    tty_printf ("[%d]", prefs[i].value);
+                if (prefs[i].value == CIPHER_ALGO_3DES )
                     des_seen = 1;
             }    
         }
@@ -1117,34 +1098,32 @@ show_prefs( KBNODE keyblock, PKT_user_id *uid, int verbose )
             tty_printf ("3DES");
         }
         tty_printf ("\n     Hash: ");
-        for(i=any=0; i < n; i+=2 ) {
-            if( p[i] == PREFTYPE_HASH ) {
-                const char *s = digest_algo_to_string (p[i+1]);
+        for(i=any=0; prefs[i].type; i++ ) {
+            if( prefs[i].type == PREFTYPE_HASH ) {
+                const char *s = digest_algo_to_string (prefs[i].value);
                 
                 if (any)
                     tty_printf (", ");
                 any = 1;
                 /* We don't want to display strings for experimental algos */
-                if (s && p[i+1] < 100 )
+                if (s && prefs[i].value < 100 )
                     tty_printf ("%s", s );
                 else
-                    tty_printf ("[%d]", p[i+1]);
+                    tty_printf ("[%d]", prefs[i].value);
             }    
         }
         tty_printf("\n");
     }
     else {
         tty_printf("    ");
-        for(i=0; i < n; i+=2 ) {
-            if( p[i] )
-                tty_printf( " %c%d", p[i] == PREFTYPE_SYM   ? 'S' :
-                                     p[i] == PREFTYPE_HASH  ? 'H' :
-                                     p[i] == PREFTYPE_COMPR ? 'Z':'?', p[i+1]);
+        for(i=0; prefs[i].type; i++ ) {
+            tty_printf( " %c%d", prefs[i].type == PREFTYPE_SYM   ? 'S' :
+                                 prefs[i].type == PREFTYPE_HASH  ? 'H' :
+                                 prefs[i].type == PREFTYPE_ZIP ? 'Z':'?',
+                                 prefs[i].value);
         }
         tty_printf("\n");
     }
-
-    m_free(p);
 }
 
 
@@ -1244,7 +1223,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 		tty_print_utf8_string( uid->name, uid->len );
 		tty_printf("\n");
 		if( with_prefs )
-		    show_prefs( keyblock, uid, with_prefs == 2 );
+		    show_prefs (uid, with_prefs == 2);
 	    }
 	}
     }
@@ -1355,7 +1334,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
     /* insert/append to secret keyblock */
     pkt = m_alloc_clear( sizeof *pkt );
     pkt->pkttype = PKT_USER_ID;
-    pkt->pkt.user_id = copy_user_id(NULL, uid);
+    pkt->pkt.user_id = scopy_user_id(uid);
     node = new_kbnode(pkt);
     if( sec_where )
 	insert_kbnode( sec_where, node, 0 );

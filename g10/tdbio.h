@@ -125,7 +125,7 @@ struct trust_record {
 			    /* or 0 for a global pref record */
 	    ulong next;    /* points to next pref record */
 	    byte  data[ITEMS_PER_PREF_RECORD];
-	} pref;
+	} pref;  /* pref records are not anymore used! */
 	struct {	    /* signature record */
 	    ulong lid;
 	    ulong next;   /* recnno of next record or NULL for last one */

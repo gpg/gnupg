@@ -507,7 +507,7 @@ the DB is always of type 1 and this is the only record of this type.
 
   Record type 5: (pref record)
   --------------
-    Informations about preferences
+    This record type is not anymore used.
 
      1 byte value 5
      1 byte   reserved

@@ -358,15 +358,14 @@ getkey_disable_caches()
 
 
 static void
-pk_from_block ( GETKEY_CTX ctx,
-                PKT_public_key *pk, KBNODE keyblock, const char *namehash )
+pk_from_block ( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE keyblock )
 {
     KBNODE a = ctx->found_key ? ctx->found_key : keyblock;
 
     assert ( a->pkt->pkttype == PKT_PUBLIC_KEY
              ||  a->pkt->pkttype == PKT_PUBLIC_SUBKEY );
      
-    copy_public_key_new_namehash( pk, a->pkt->pkt.public_key, namehash);
+    copy_public_key ( pk, a->pkt->pkt.public_key );
 }
 
 static void
@@ -435,7 +434,7 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
         ctx.req_usage = pk->req_usage;
 	rc = lookup( &ctx, &kb, 0 );
         if ( !rc ) {
-            pk_from_block ( &ctx, pk, kb, NULL );
+            pk_from_block ( &ctx, pk, kb );
         }
 	get_pubkey_end( &ctx );
         release_kbnode ( kb );
@@ -925,7 +924,7 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
         }
 	rc = lookup( ctx, ret_kb, 0 );
         if ( !rc && pk ) {
-            pk_from_block ( ctx, pk, *ret_kb, NULL /* FIXME need to get the namehash*/ );
+            pk_from_block ( ctx, pk, *ret_kb );
         }
     }
 
@@ -972,7 +971,7 @@ get_pubkey_next( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock )
 
     rc = lookup( ctx, ret_keyblock, 0 );
     if ( !rc && pk && ret_keyblock )
-        pk_from_block ( ctx, pk, *ret_keyblock, NULL );
+        pk_from_block ( ctx, pk, *ret_keyblock );
     
     return rc;
 }
@@ -1020,7 +1019,7 @@ get_pubkey_byfprint( PKT_public_key *pk,
 	memcpy( ctx.items[0].fprint, fprint, fprint_len );
 	rc = lookup( &ctx, &kb, 0 );
         if (!rc && pk )
-            pk_from_block ( &ctx, pk, kb, NULL );
+            pk_from_block ( &ctx, pk, kb );
         release_kbnode ( kb );
 	get_pubkey_end( &ctx );
     }
@@ -1399,14 +1398,23 @@ merge_keys_and_selfsig( KBNODE keyblock )
     }
 }
 
-
+/*
+ * Apply information from SIGNODE (which is the valid self-signature
+ * associated with that UID) to the UIDNODE:
+ * - wether the UID has been revoked
+ * - assumed creation date of the UID
+ * - temporary store the keyflags here
+ * - temporary store the key expiration time here
+ * - mark whether the primary user ID flag hat been set.
+ * - store the preferences
+ */
 static void
 fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
 {
     PKT_user_id   *uid = uidnode->pkt->pkt.user_id;
     PKT_signature *sig = signode->pkt->pkt.signature;
-    const byte *p;
-    size_t n;
+    const byte *p, *sym, *hash, *zip;
+    size_t n, nsym, nhash, nzip;
 
     uid->created = 0; /* not created == invalid */
     if ( IS_UID_REV ( sig ) ) {
@@ -1435,7 +1443,7 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
     }
 
     /* Set the primary user ID flag - we will later wipe out some
-     * of them to only have one in out keyblock */
+     * of them to only have one in our keyblock */
     uid->is_primary = 0;
     p = parse_sig_subpkt ( sig->hashed, SIGSUBPKT_PRIMARY_UID, NULL );
     if ( p && *p )
@@ -1445,6 +1453,43 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
      * there should be no security problem with this.
      * For now we only look at the hashed one. 
      */
+
+    /* now build the preferences list.  We try to get the preferences
+     * from the hashed list but if there are no such preferences, we
+     * try to get them from the unhashed list.  There is no risk with
+     * that, because our implementation comes only with strong
+     * algorithms and it woulkd be fruitless for an attacker to insert
+     * an weak algorithm.  */
+    p = parse_sig_subpkt2 ( sig, SIGSUBPKT_PREF_SYM, &n );
+    sym = p; nsym = p?n:0;
+    p = parse_sig_subpkt2 ( sig, SIGSUBPKT_PREF_HASH, &n );
+    hash = p; nhash = p?n:0;
+    p = parse_sig_subpkt2 ( sig, SIGSUBPKT_PREF_COMPR, &n );
+    zip = p; nzip = p?n:0;
+    if (uid->prefs) 
+        m_free (uid->prefs);
+    n = nsym + nhash + nzip;
+    if (!n)
+        uid->prefs = NULL;
+    else {
+        uid->prefs = m_alloc (sizeof (*uid->prefs) * (n+1));
+        n = 0;
+        for (; nsym; nsym--, n++) {
+            uid->prefs[n].type = PREFTYPE_SYM;
+            uid->prefs[n].value = *sym++;
+        }
+        for (; nhash; nhash--, n++) {
+            uid->prefs[n].type = PREFTYPE_HASH;
+            uid->prefs[n].value = *hash++;
+        }
+        for (; nzip; nzip--, n++) {
+            uid->prefs[n].type = PREFTYPE_ZIP;
+            uid->prefs[n].value = *sym++;
+        }
+        uid->prefs[n].type = PREFTYPE_NONE; /* end of list marker */
+        uid->prefs[n].value = 0;
+    }
+
 }
 
 static void
@@ -1800,6 +1845,7 @@ merge_selfsigs( KBNODE keyblock )
     KBNODE k;
     int revoked;
     PKT_public_key *main_pk;
+    prefitem_t *prefs;
 
     if ( keyblock->pkt->pkttype != PKT_PUBLIC_KEY ) {
         if (keyblock->pkt->pkttype == PKT_SECRET_KEY ) {
@@ -1836,6 +1882,33 @@ merge_selfsigs( KBNODE keyblock )
             merge_selfsigs_subkey ( keyblock, k );
         }
     }
+
+    /* set the preference list of all keys to those of the primary
+     * user ID.  Note: we use these preferences when we don't know by
+     * which user ID the key has been selected.
+     * fixme: we should keep atoms of commonly used preferences or
+     * use reference counting to optimize the preference lists storage.
+     * FIXME: it might be better to use the intersection of 
+     * all preferences.
+     */
+    prefs = NULL;
+    for (k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY; k = k->next) {
+        if (k->pkt->pkttype == PKT_USER_ID
+            && k->pkt->pkt.user_id->is_primary) {
+            prefs = k->pkt->pkt.user_id->prefs;
+            break;
+        }
+    }    
+    for(k=keyblock; k; k = k->next ) {
+        if ( k->pkt->pkttype == PKT_PUBLIC_KEY
+             || k->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
+            PKT_public_key *pk = k->pkt->pkt.public_key;
+            if (pk->prefs)
+                m_free (pk->prefs);
+            pk->prefs = copy_prefs (prefs);
+        }
+    }
+
 }
 
 
@@ -1955,9 +2028,8 @@ premerge_public_with_secret ( KBNODE pubblock, KBNODE secblock )
  ************* Find stuff ***********************
  ************************************************/
 
-static int 
-find_by_name( KBNODE keyblock, const char *name,
-	      int mode, byte *namehash )
+static PKT_user_id * 
+find_by_name( KBNODE keyblock, const char *name, int mode )
 {
     KBNODE k;
 
@@ -1965,23 +2037,11 @@ find_by_name( KBNODE keyblock, const char *name,
 	if( k->pkt->pkttype == PKT_USER_ID
 	    && !compare_name( k->pkt->pkt.user_id->name,
 			      k->pkt->pkt.user_id->len, name, mode)) {
-	    /* we found a matching name, look for the key */
-            if( k->pkt->pkt.user_id->photo ) {
-                /* oops: this can never happen */
-                rmd160_hash_buffer( namehash,
-                                    k->pkt->pkt.user_id->photo,
-                                    k->pkt->pkt.user_id->photolen );
-            }
-            else {
-                rmd160_hash_buffer( namehash,
-                                    k->pkt->pkt.user_id->name,
-                                    k->pkt->pkt.user_id->len );
-            }
-            return 1; 
+            return k->pkt->pkt.user_id; 
         }
     }
     
-    return 0;
+    return NULL;
 }
 
 
@@ -2068,7 +2128,7 @@ find_by_fpr( KBNODE keyblock,  const char *name, int mode )
  */
 
 static int
-finish_lookup( GETKEY_CTX ctx,  KBNODE foundk )
+finish_lookup( GETKEY_CTX ctx,  KBNODE foundk, PKT_user_id *foundu )
 {
     KBNODE keyblock = ctx->keyblock;
     KBNODE k;
@@ -2098,6 +2158,10 @@ finish_lookup( GETKEY_CTX ctx,  KBNODE foundk )
     }
     
     if (!req_usage) {
+        PKT_public_key *pk = foundk->pkt->pkt.public_key;
+        if (pk->user_id)
+            free_user_id (pk->user_id);
+        pk->user_id = scopy_user_id (foundu);
         ctx->found_key = foundk;
         cache_user_id( keyblock );
         return 1; /* found */
@@ -2200,6 +2264,13 @@ finish_lookup( GETKEY_CTX ctx,  KBNODE foundk )
         log_debug( "\tusing key %08lX\n",
                 (ulong)keyid_from_pk( latest_key->pkt->pkt.public_key, NULL) );
 
+    if (latest_key) {
+        PKT_public_key *pk = latest_key->pkt->pkt.public_key;
+        if (pk->user_id)
+            free_user_id (pk->user_id);
+        pk->user_id = scopy_user_id (foundu);
+    }    
+        
     ctx->found_key = latest_key;
 
     if (latest_key != keyblock && opt.verbose) {
@@ -2220,8 +2291,6 @@ lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode )
 {
     int rc;
     int oldmode = set_packet_list_mode(0);
-    byte namehash[20];
-    int use_namehash=0;
     KBNODE secblock = NULL; /* helper */
     int no_suitable_key = 0;
 
@@ -2261,12 +2330,12 @@ lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode )
 	    for(n=0; n < ctx->nitems; n++, item++ ) {
                 KBNODE k = NULL;
                 int found = 0;
+                PKT_user_id *found_uid = NULL;
     
 		if( item->mode < 10 ) {
-		    found = find_by_name( ctx->keyblock,
-                                          item->name, item->mode,
-                                          namehash );
-                    use_namehash = found;
+		    found_uid = find_by_name( ctx->keyblock,
+                                              item->name, item->mode );
+                    found = !!found_uid;
                 }
 		else if( item->mode >= 10 && item->mode <= 12 ) {
 		    k = find_by_keyid( ctx->keyblock, 
@@ -2287,7 +2356,7 @@ lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode )
 		if( found ) { 
                     /* this keyblock looks fine - do further investigation */
                     merge_selfsigs ( ctx->keyblock );
-		    if ( finish_lookup( ctx, k ) ) {
+		    if ( finish_lookup( ctx, k, found_uid ) ) {
                         no_suitable_key = 0;
                         if ( secmode ) {
                             merge_public_with_secret ( ctx->keyblock,

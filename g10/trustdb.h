@@ -37,11 +37,6 @@
 #define TRUST_FLAG_DISABLED 128 /* d: key/uid disabled */
 
 
-#define PREFTYPE_SYM	  1
-#define PREFTYPE_HASH	  2
-#define PREFTYPE_COMPR	  3
-
-
 /*-- trustdb.c --*/
 void list_trust_path( const char *username );
 void register_trusted_key( const char *string );
@@ -59,8 +54,6 @@ void enum_cert_paths_print( void **context, FILE *fp,
 					   int refresh, ulong selected_lid );
 unsigned get_ownertrust( ulong lid );
 int get_ownertrust_info( ulong lid );
-byte *get_pref_data( ulong lid, const byte *namehash, size_t *ret_n );
-int is_algo_in_prefs( ulong lid, int preftype, int algo );
 int keyid_from_lid( ulong lid, u32 *keyid );
 ulong lid_from_keyblock( KBNODE keyblock );
 int query_trust_record( PKT_public_key *pk );

@@ -62,6 +62,17 @@ typedef enum {
     CTRLPKT_PLAINTEXT_MARK =3
 } ctrlpkttype_t;
 
+typedef enum {
+    PREFTYPE_NONE = 0,
+    PREFTYPE_SYM = 1,
+    PREFTYPE_HASH = 2,
+    PREFTYPE_ZIP = 3
+} preftype_t;
+
+typedef struct {
+    byte type; 
+    byte value;
+} prefitem_t;
 
 typedef struct {
     int  mode;
@@ -102,6 +113,7 @@ typedef struct {
     byte data[1];
 } subpktarea_t;
 
+
 typedef struct {
     ulong   local_id;	    /* internal use, valid if > 0 */
     struct {
@@ -121,6 +133,21 @@ typedef struct {
     byte digest_start[2];   /* first 2 bytes of the digest */
     MPI  data[PUBKEY_MAX_NSIG];
 } PKT_signature;
+
+
+typedef struct {
+    int ref;              /* reference counter */
+    int  len;		  /* length of the name */
+    char *photo;	  /* if this is not NULL, the packet is a photo ID */
+    int photolen;	  /* and the length of the photo */
+    int help_key_usage;
+    u32 help_key_expire;
+    int is_primary;
+    int is_revoked;  
+    prefitem_t *prefs;    /* list of preferences (may be NULL)*/
+    u32 created;          /* according to the self-signature */
+    char name[1];
+} PKT_user_id;
 
 
 /****************
@@ -144,7 +171,9 @@ typedef struct {
     ulong   local_id;	    /* internal use, valid if > 0 */
     u32     main_keyid[2];  /* keyid of the primary key */
     u32     keyid[2];	    /* calculated by keyid_from_pk() */
+    prefitem_t *prefs;      /* list of preferences (may be NULL) */
     byte    *namehash;	    /* if != NULL: found by this name */
+    PKT_user_id *user_id;   /* if != NULL: found by that uid */
     MPI     pkey[PUBKEY_MAX_NPKEY];
 } PKT_public_key;
 
@@ -182,18 +211,6 @@ typedef struct {
     int  len;		  /* length of data */
     char data[1];
 } PKT_comment;
-
-typedef struct {
-    int  len;		  /* length of the name */
-    char *photo;	  /* if this is not NULL, the packet is a photo ID */
-    int photolen;	  /* and the length of the photo */
-    int help_key_usage;
-    u32 help_key_expire;
-    int is_primary;
-    int is_revoked;  
-    u32 created;          /* according to the self-signature */
-    char name[1];
-} PKT_user_id;
 
 typedef struct {
     u32  len;		  /* reserved */
@@ -365,14 +382,12 @@ void free_secret_key( PKT_secret_key *sk );
 void free_user_id( PKT_user_id *uid );
 void free_comment( PKT_comment *rem );
 void free_packet( PACKET *pkt );
+prefitem_t *copy_prefs (const prefitem_t *prefs);
 PKT_public_key *copy_public_key( PKT_public_key *d, PKT_public_key *s );
-PKT_public_key *copy_public_key_new_namehash( PKT_public_key *d,
-					      PKT_public_key *s,
-					      const byte *namehash );
 void copy_public_parts_to_secret_key( PKT_public_key *pk, PKT_secret_key *sk );
 PKT_secret_key *copy_secret_key( PKT_secret_key *d, PKT_secret_key *s );
 PKT_signature *copy_signature( PKT_signature *d, PKT_signature *s );
-PKT_user_id *copy_user_id( PKT_user_id *d, PKT_user_id *s );
+PKT_user_id *scopy_user_id (PKT_user_id *sd );
 int cmp_public_keys( PKT_public_key *a, PKT_public_key *b );
 int cmp_secret_keys( PKT_secret_key *a, PKT_secret_key *b );
 int cmp_signatures( PKT_signature *a, PKT_signature *b );

@@ -1,3 +1,37 @@
+2001-08-10  Werner Koch  <wk@gnupg.org>
+
+        Revamped the preference handling.
+
+	* packet.h (prefitem_t, preftype_t): New.
+	(PKT_public_key): Added a uid field.
+	(PKT_user_id): Added field to store preferences and a reference
+	counter.
+	* parse-packet.c (parse_user_id,parse_photo_id): Initialize them
+	* free-packet.c (free_user_id): Free them.
+	(copy_user_id): Removed.
+	(scopy_user_id): New. 
+	(cmp_user_ids): Optimized for identical pointers.
+	(release_public_key_parts): Release the uid.
+	(copy_public_key_with_new_namehash): Removed.
+	(copy_prefs): New.
+	* keyedit.c (menu_adduid): Use the new shallow copy user id.
+	(show_prefs): Adjusted implementation.
+	(keyedit_menu): No more need to update the trustdb after changing
+	preferences.
+	* getkey.c (fixup_uidnode): Store preferences.
+	(find_by_name): Return a user id packet and remove namehash stuff.
+	(lookup): Removed the unused namehash stuff.
+	(finish_lookup): Added foundu arg.
+	(pk_from_block): Removed the namehash arg and changed all callers.
+	(merge_selfsigs): Copy prefs to all keys.
+	* trustdb.c (get_pref_data): Removed.
+ 	(is_algo_in_prefs): Removed.
+	(make_pref_record): Deleted and removed all class.
+	* pkclist.c (select_algo_from_prefs): Adjusted for the new
+	preference implementation.
+	* pubkey-enc.c (is_algo_in_prefs): New.
+	(get_it): Use that new function. 
+
 2001-08-09  Werner Koch  <wk@gnupg.org>
 
 	* build-packet.c (build_sig_subpkt): Fixed calculation of

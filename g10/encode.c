@@ -351,7 +351,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 
     /* register the compress filter */
     if( do_compress ) {
-	int compr_algo = select_algo_from_prefs( pk_list, PREFTYPE_COMPR );
+	int compr_algo = select_algo_from_prefs( pk_list, PREFTYPE_ZIP );
 	if( !compr_algo )
 	    ; /* don't use compression */
 	else {
