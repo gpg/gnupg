@@ -73,9 +73,8 @@
     </para>
     <para>
 This man page only lists the commands and options available.
-For a more verbose documentation get the GNU Privacy Handbook (GPH), which is
-available at http://www.gnupg.org/gph/ .
-You will find a list of HOWTO documents at http://www.gnupg.org/docs.html .
+For more verbose documentation get the GNU Privacy Handbook (GPH) or
+one of the other documents at http://www.gnupg.org/docs.html .
 </para>
 <para>
 Please remember that option parsing stops as soon as a non option is
@@ -2127,8 +2126,8 @@ constructed by cutting off the extension (".asc" or ".sig") of
 </varlistentry>
 <varlistentry>
 <term>GPG_AGENT_INFO</term>
-<listitem><para>Used to locate the gpg-agent; only honred when
---use-agent is set.  The value constist of 3 colon delimited fields: 
+<listitem><para>Used to locate the gpg-agent; only honored when
+--use-agent is set.  The value consists of 3 colon delimited fields: 
 The first is the path to the Unix Domain Socket, the second the PID of
 the gpg-agent and the protocol version which should be set to 1.  When
 starting the gpg-agent as described in its documentation, this

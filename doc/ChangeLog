@@ -1,3 +1,13 @@
+2002-05-12  Werner Koch  <wk@gnupg.org>
+
+	* gpg.sgml: Fixed URL in the description section.
+
+	* faq.raw: Minor typo fixes noted by kromJx@myrealbox.com.
+
+2002-05-11  Werner Koch  <wk@gnupg.org>
+
+	* gpg.sgml: Typo fix.
+
 2002-05-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Add entries for --sk-comments, --no-sk-comments,

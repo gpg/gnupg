@@ -269,7 +269,7 @@ you could search in the mailing list archive.
     [H pre] gpg [--options] --sign --encrypt foo.txt [H/pre]
 
 
-<Q> I can't delete an user id because it is already deleted on my public
+<Q> I can't delete a user id because it is already deleted on my public
 keyring?
 
     Because you can only select from the public key ring, there is no
@@ -605,8 +605,7 @@ signing uids - why?
 
 <Q> GnuPG 1.0.4 doesn't create ~/.gnupg ...
 
-    That's a known bug, already fixed in the CVS (and will be in the
-    next release, of course).
+    That's a known bug, already fixed in newer versions.
 
 <Q> An ElGamal signature does not verify anymore since version 1.0.2 ...
 
@@ -864,7 +863,7 @@ in it - why?
 
 <Q> What kind of output is this: "key C26EE891.298, uid 09FB: ...."?
 
-    This is the internal representation of an user id in the trustdb.
+    This is the internal representation of a user id in the trustdb.
     "C26EE891" is the keyid, "298" is the local id (a record number in
     the trustdb) and "09FB" is the last two bytes of a ripe-md-160 hash
     of the user id for this key.
@@ -926,7 +925,7 @@ material?
 
 [H HR]
 
-Copyright (C) 2000 Free Software Foundation, Inc. , 
+Copyright (C) 2000, 2002 Free Software Foundation, Inc. , 
 59 Temple Place - Suite 330, Boston, MA 02111, USA 
 
 Verbatim copying and distribution of this entire article is permitted in
