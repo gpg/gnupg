@@ -162,6 +162,7 @@ int gpgsm_validate_path (KsbaCert cert);
 /*-- cetlist.c --*/
 int gpgsm_add_to_certlist (const char *name, CERTLIST *listaddr);
 void gpgsm_release_certlist (CERTLIST list);
+int gpgsm_find_cert (const char *name, KsbaCert *r_cert);
 
 /*-- keylist.c --*/
 void gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp);

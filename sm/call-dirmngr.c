@@ -35,16 +35,9 @@
 
 static ASSUAN_CONTEXT dirmngr_ctx = NULL;
 
-struct cipher_parm_s {
+struct inq_certificate_parm_s {
   ASSUAN_CONTEXT ctx;
-  const char *ciphertext;
-  size_t ciphertextlen;
-};
-
-struct genkey_parm_s {
-  ASSUAN_CONTEXT ctx;
-  const char *sexp;
-  size_t sexplen;
+  KsbaCert cert;
 };
 
 
@@ -130,16 +123,48 @@ start_dirmngr (void)
 static AssuanError
 inq_certificate (void *opaque, const char *line)
 {
+  struct inq_certificate_parm_s *parm = opaque;
   AssuanError rc;
+  const unsigned char *der;
+  size_t derlen;
 
-  if (strncmp (line, "SENDCERT ", 9) || !line[9])
+  if (!(!strncmp (line, "SENDCERT", 8) && (line[8] == ' ' || !line[8])))
     {
       log_error ("unsupported inquiry `%s'\n", line);
       return ASSUAN_Inquire_Unknown;
     }
+  line += 8;
 
-  /*  rc = assuan_send_data (parm->ctx, parm->sexp, parm->sexplen);*/
-  rc = 0;
+  if (!*line)
+    { /* send the current certificate */
+      der = ksba_cert_get_image (parm->cert, &derlen);
+      if (!der)
+        rc = ASSUAN_Inquire_Error;
+      else
+        rc = assuan_send_data (parm->ctx, der, derlen);
+    }
+  else 
+    { /* send the given certificate */
+      int err;
+      KsbaCert cert;
+
+      err = gpgsm_find_cert (line, &cert);
+      if (err)
+        {
+          log_error ("certificate not found: %s\n", gnupg_strerror (err));
+          rc = ASSUAN_Inquire_Error;
+        }
+      else
+        {
+          der = ksba_cert_get_image (cert, &derlen);
+          if (!der)
+            rc = ASSUAN_Inquire_Error;
+          else
+            rc = assuan_send_data (parm->ctx, der, derlen);
+          ksba_cert_release (cert);
+        }
+    }
+
   return rc; 
 }
 
@@ -158,6 +183,7 @@ gpgsm_dirmngr_isvalid (KsbaCert cert)
   int rc;
   char *certid;
   char line[ASSUAN_LINELENGTH];
+  struct inq_certificate_parm_s parm;
 
   rc = start_dirmngr ();
   if (rc)
@@ -170,13 +196,13 @@ gpgsm_dirmngr_isvalid (KsbaCert cert)
       return seterr (General_Error);
     }
 
+  parm.ctx = dirmngr_ctx;
+  parm.cert = cert;
+
   snprintf (line, DIM(line)-1, "ISVALID %s", certid);
   line[DIM(line)-1] = 0;
   xfree (certid);
 
-  rc = assuan_transact (dirmngr_ctx, line, NULL, NULL, inq_certificate, NULL);
+  rc = assuan_transact (dirmngr_ctx, line, NULL, NULL, inq_certificate, &parm);
   return map_assuan_err (rc);
 }
-
-
-

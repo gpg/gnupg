@@ -1,6 +1,11 @@
+2002-01-14  Werner Koch  <wk@gnupg.org>
+
+	* call-dirmngr.c (inq_certificate): Changed for new interface semantic.
+	* certlist.c (gpgsm_find_cert): New.
+
 2002-01-13  Werner Koch  <wk@gnupg.org>
 
-	* fingerprint.c (gpgsm_get_certid): Print the serialand not the
+	* fingerprint.c (gpgsm_get_certid): Print the serial and not the
 	hash after the dot.
 
 2002-01-11  Werner Koch  <wk@gnupg.org>

@@ -86,3 +86,31 @@ gpgsm_release_certlist (CERTLIST list)
     }
 }
 
+
+/* Like gpgsm_add_to_certlist, but lookonly for one certificate */
+int
+gpgsm_find_cert (const char *name, KsbaCert *r_cert)
+{
+  int rc;
+  KEYDB_SEARCH_DESC desc;
+  KEYDB_HANDLE kh = NULL;
+
+  *r_cert = NULL;
+  /* fixme: check that we identify excactly one cert with the name */
+  rc = keydb_classify_name (name, &desc);
+  if (!rc)
+    {
+      kh = keydb_new (0);
+      if (!kh)
+        rc = GNUPG_Out_Of_Core;
+      else
+        {
+          rc = keydb_search (kh, &desc, 1);
+          if (!rc)
+            rc = keydb_get_cert (kh, r_cert);
+        }
+    }
+  
+  keydb_release (kh);
+  return rc == -1? GNUPG_No_Public_Key: rc;
+}
