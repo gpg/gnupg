@@ -121,22 +121,27 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 
     if( fp || nooutput )
 	;
-    else if( !(fp = fopen(fname,"wb")) ) {
-	log_error(_("error creating `%s': %s\n"), fname, strerror(errno) );
-	rc = G10ERR_CREATE_FILE;
-        if (errno == 106)
-            log_info("Do output file and input file have the same name?\n");
-	goto leave;
-    }
+    else {
+        fp = fopen(fname,"wb");
+        if( !fp ) {
+            log_error(_("error creating `%s': %s\n"), fname, strerror(errno) );
+            rc = G10ERR_CREATE_FILE;
+            if (errno == 106)
+                log_info("Do output file and input file have the same name?\n");
+            goto leave;
+	}
 
-    /* If there's a ,xxx extension in the embedded filename,
-       use that, else check whether the user input (in fname)
-       has a ,xxx appended, then use that in preference */
-    if( (c = riscos_get_filetype_from_string( pt->name, pt->namelen )) != -1 )
-        filetype = c;
-    if( (c = riscos_get_filetype_from_string( fname, strlen(fname) )) != -1 )
-        filetype = c;
-    riscos_set_filetype_by_number(fname, filetype);
+        /* If there's a ,xxx extension in the embedded filename,
+           use that, else check whether the user input (in fname)
+           has a ,xxx appended, then use that in preference */
+        if( (c = riscos_get_filetype_from_string( pt->name,
+                                                  pt->namelen )) != -1 )
+            filetype = c;
+        if( (c = riscos_get_filetype_from_string( fname,
+                                                  strlen(fname) )) != -1 )
+            filetype = c;
+        riscos_set_filetype_by_number(fname, filetype);
+    }
 #endif /* __riscos__ */
 
     if( !pt->is_partial ) {

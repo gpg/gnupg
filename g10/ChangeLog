@@ -1,3 +1,8 @@
+2002-11-25  Stefan Bellon  <sbellon@sbellon.de>
+
+	* plaintext.c (handle_plaintext) [__riscos__]: If nooutput is set,
+	no filetype is needed obviously.
+
 2002-11-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* main.h, misc.c (default_cipher_algo, default_compress_algo):
