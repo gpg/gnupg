@@ -1,3 +1,9 @@
+Wed Jul 19 11:26:43 CEST 2000  Werner Koch  <wk@>
+
+  * keylist.c (is_uid_valid): New.
+  (list_keyblock): Print validity information for all user IDs.  Note, this
+  has to be done at other places too; for now we have only minimal support.
+
 Wed Jul 12 13:32:06 CEST 2000  Werner Koch  <wk@>
 
   * helptext.c, pkclist.c: s/superseeded/superseded/

@@ -1,3 +1,7 @@
+Wed Jul 19 11:26:43 CEST 2000  Werner Koch  <wk@>
+
+  * configure.in (mingw32): Changes to allow for mingw32msvc
+
 Fri Jul 14 10:17:30 CEST 2000  Werner Koch  <wk@>
 
   * acinclude.m4 (GNUPG_CHECK_MLOCK): Fixed syntax error in C code.

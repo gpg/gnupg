@@ -105,6 +105,77 @@ list_all( int secret )
 }
 
 
+/****************
+ * Check whether the user ID at NODE is valid; that is it has a
+ * valid self-signature but no later valid revocation.
+ * Caller has to pass the keyID of the primary in mainkey.
+ * Returns: NULL = valid
+ *	    string with the reason why it is invalid
+ */
+static const char *
+is_uid_valid ( KBNODE keyblock, KBNODE uidnode, u32 *mainkid )
+{
+    KBNODE node;
+    PKT_signature *selfsig = NULL; /* the latest valid self signature */
+
+    assert ( uidnode->pkt->pkttype == PKT_USER_ID
+	     || uidnode->pkt->pkttype == PKT_PHOTO_ID );
+
+    /* first find out about the latest valid self-signature */
+    for ( node = uidnode->next; node; node = node->next ) {
+	PKT_signature *sig;
+
+	if ( node->pkt->pkttype == PKT_USER_ID
+	     || node->pkt->pkttype == PKT_PHOTO_ID
+	     || node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+	     || node->pkt->pkttype == PKT_SECRET_SUBKEY )
+	    break;
+	if ( node->pkt->pkttype != PKT_SIGNATURE )
+	    continue;
+	sig = node->pkt->pkt.signature;
+	if ( mainkid[0] != sig->keyid[0] || mainkid[1] != sig->keyid[1] )
+	    continue; /* we only care about self-signatures for now */
+
+	if ( (sig->sig_class&~3) == 0x10 ) { /* regular self signature */
+	    if ( !check_key_signature( keyblock, node, NULL ) ) {
+		if ( !selfsig )
+		    selfsig = sig; /* use the first valid sig */
+		else if ( sig->timestamp > selfsig->timestamp
+			  && sig->sig_class >= selfsig->sig_class )
+		    selfsig = sig; /* but this one is newer */
+	    }
+	}
+    }
+
+    if ( !selfsig )
+	return _("invalid"); /* no valid self signature */
+
+    /* watch out for a newer revocation */
+    for ( node = uidnode->next; node; node = node->next ) {
+	PKT_signature *sig;
+
+	if ( node->pkt->pkttype == PKT_USER_ID
+	     || node->pkt->pkttype == PKT_PHOTO_ID
+	     || node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+	     || node->pkt->pkttype == PKT_SECRET_SUBKEY )
+	    break;
+	if ( node->pkt->pkttype != PKT_SIGNATURE )
+	    continue;
+	sig = node->pkt->pkt.signature;
+	if ( mainkid[0] != sig->keyid[0] || mainkid[1] != sig->keyid[1] )
+	    continue; /* we only care about self-signatures for now */
+
+	if ( sig->sig_class == 0x30
+	     && sig->timestamp >= selfsig->timestamp ) {
+	    if ( !check_key_signature( keyblock, node, NULL ) )
+		return _("revoked");
+	}
+    }
+
+    return NULL; /* UID is valid */
+}
+
+
 
 static void
 list_one( STRLIST names, int secret )
@@ -257,14 +328,18 @@ list_keyblock( KBNODE keyblock, int secret )
 		    printf("uid%*s", 28, "");
 	    }
 	    if( opt.with_colons ) {
+		/* FIXME: check that uID is valid here too */
 		print_string( stdout,  node->pkt->pkt.user_id->name,
 			      node->pkt->pkt.user_id->len, ':' );
 		putchar(':');
 	    }
-	    else
+	    else {
+		const char *s = is_uid_valid ( keyblock, node, keyid );
+		if ( s )
+		    printf ("[%s] ", s );
 		print_utf8_string( stdout,  node->pkt->pkt.user_id->name,
 				   node->pkt->pkt.user_id->len );
-
+	    }
 	    putchar('\n');
 	    if( !any ) {
 		if( opt.fingerprint )
