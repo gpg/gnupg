@@ -1,5 +1,9 @@
 2004-02-23  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgconf.h (struct): Add member runtime.
+	* gpgconf.c: Add new option oRuntime.
+	(main): Same here.
+
 	* gpgconf-comp.c (hextobyte): New function.
 	(percent_deescape): New function.
 	(get_config_pathname): Percent deescape pathname if taken from

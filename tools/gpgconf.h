@@ -23,12 +23,14 @@
 
 #include "../common/util.h"
 
-/* We keep all global options in the structure OPT. */
-struct {
-  int verbose;         /* Verbosity level. */
-  int quiet;	       /* Be extra quiet.  */
-  int dry_run;         /* Don't change any persistent data. */
-  char *outfile;       /* Name of output file. */
+/* We keep all global options in the structure OPT.  */
+struct
+{
+  int verbose;		/* Verbosity level.  */
+  int quiet;		/* Be extra quiet.  */
+  int dry_run;		/* Don't change any persistent data.  */
+  int runtime;		/* Make changes active at runtime.  */
+  char *outfile;	/* Name of output file.  */
 
   int component;	/* The active component.  */
 } opt;

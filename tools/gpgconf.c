@@ -35,6 +35,7 @@ enum cmd_and_opt_values
     oOutput	= 'o',
     oQuiet      = 'q',
     oVerbose	= 'v',
+    oRuntime    = 'r',
     oComponent  = 'c',
     oNoVerbose	= 500,
     oHomedir,
@@ -61,6 +62,7 @@ static ARGPARSE_OPTS opts[] =
     { oVerbose, "verbose",  0, N_("verbose") },
     { oQuiet, "quiet",      0, N_("quiet") },
     { oDryRun, "dry-run",   0, N_("do not make any changes") },
+    { oRuntime, "runtime",  0, N_("activate changes at runtime, if possible") },
 
     /* hidden options */
     { oNoVerbose, "no-verbose",  0, "@"},
@@ -131,10 +133,10 @@ main (int argc, char **argv)
 
   i18n_init();
 
-  /* Patrse the command line. */
+  /* Parse the command line. */
   pargs.argc  = &argc;
   pargs.argv  = &argv;
-  pargs.flags =  1;  /* do not remove the args */
+  pargs.flags =  1;  /* Do not remove the args.  */
   while (!no_more_options && optfile_parse (NULL, NULL, NULL, &pargs, opts))
     {
       switch (pargs.r_opt)
@@ -142,6 +144,11 @@ main (int argc, char **argv)
         case oOutput:    opt.outfile = pargs.r.ret_str; break;
 	case oQuiet:     opt.quiet = 1; break;
         case oDryRun:    opt.dry_run = 1; break;
+        case oRuntime:
+	  opt.runtime = 1;
+	  /* FIXME */
+	  fputs ("gpgconf: warning: option --runtime not supported yet\n", stderr);
+	  break;
         case oVerbose:   opt.verbose++; break;
         case oNoVerbose: opt.verbose = 0; break;
 
@@ -154,7 +161,7 @@ main (int argc, char **argv)
         default: pargs.err = 2; break;
 	}
     }
-  
+
   if (log_get_errorcount (0))
     exit (2);
   
