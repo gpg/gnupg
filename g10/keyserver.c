@@ -95,8 +95,8 @@ parse_keyserver_options(char *options)
 #ifdef EXEC_TEMPFILE_ONLY
       else if(ascii_strncasecmp(tok,"use-temp-files",14)==0 ||
 	      ascii_strncasecmp(tok,"no-use-temp-files",17)==0)
-	log_info(_("WARNING: keyserver option \"%s\" is not used "
-		   "on this platform\n"),tok);
+	log_info(_("WARNING: keyserver option %s is not used"
+		   " on this platform\n"),tok);
 #else
       else if(ascii_strncasecmp(tok,"use-temp-files",14)==0)
 	opt.keyserver_options.options|=KEYSERVER_USE_TEMP_FILES;
@@ -473,7 +473,12 @@ parse_keyrec(char *keystring)
       if(atoi(tok)<0)
 	work->expiretime=0;
       else
-	work->expiretime=atoi(tok);
+	{
+	  work->expiretime=atoi(tok);
+	  /* Force the 'e' flag on if this key is expired. */
+	  if(work->expiretime<=make_timestamp())
+	    work->flags|=4;
+	}
 
       if((tok=strsep(&keystring,":"))==NULL)
 	return ret;
@@ -496,9 +501,6 @@ parse_keyrec(char *keystring)
 	    work->flags|=4;
 	    break;
 	  }
-
-      if(work->expiretime && work->expiretime<=make_timestamp())
-	work->flags|=4;
     }
   else if(ascii_strcasecmp("uid",record)==0 && work->desc.mode)
     {
@@ -808,7 +810,8 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
   if(ret)
     return ret;
 
-  fprintf(spawn->tochild,"# This is a gpg keyserver communications file\n");
+  fprintf(spawn->tochild,
+	  "# This is a GnuPG %s keyserver communications file\n",VERSION);
   fprintf(spawn->tochild,"VERSION %d\n",KEYSERVER_PROTO_VERSION);
   fprintf(spawn->tochild,"PROGRAM %s\n",VERSION);
   fprintf(spawn->tochild,"SCHEME %s\n",keyserver->scheme);
@@ -1121,8 +1124,8 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
       else if(ascii_strncasecmp(ptr,"PROGRAM ",8)==0)
 	{
 	  if(ascii_strncasecmp(&ptr[8],VERSION,strlen(VERSION))!=0)
-	    log_info(_("WARNING: keyserver handler from a different "
-		       "version of GnuPG (%s)\n"),&ptr[8]);
+	    log_info(_("WARNING: keyserver handler from a different"
+		       " version of GnuPG (%s)\n"),&ptr[8]);
 	}
       else if(ascii_strncasecmp(ptr,"OPTION OUTOFBAND",16)==0)
 	outofband=1; /* Currently the only OPTION */
@@ -1207,13 +1210,13 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
       switch(ret)
 	{
 	case KEYSERVER_SCHEME_NOT_FOUND:
-	  log_error(_("no handler for keyserver scheme \"%s\"\n"),
+	  log_error(_("no handler for keyserver scheme `%s'\n"),
 		    keyserver->scheme);
 	  break;
 
 	case KEYSERVER_NOT_SUPPORTED:
-	  log_error(_("action \"%s\" not supported with keyserver "
-		      "scheme \"%s\"\n"),
+	  log_error(_("action `%s' not supported with keyserver "
+		      "scheme `%s'\n"),
 		    action==GET?"get":action==SEND?"send":
 		    action==SEARCH?"search":"unknown",
 		    keyserver->scheme);
@@ -1380,7 +1383,7 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 	  if(classify_user_id (sl->d, desc+ndesc))
 	    ndesc++;
 	  else
-	    log_error (_("key `%s' not found: %s\n"),
+	    log_error (_("key \"%s\" not found: %s\n"),
 		       sl->d, g10_errstr (G10ERR_INV_USER_ID));
 	}
     }

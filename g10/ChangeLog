@@ -1,3 +1,9 @@
+2004-09-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (parse_keyrec): Force the 'e'xpired flag on as soon
+	as we know the key is definitely expired.  Some translatable
+	string cleanup.
+
 2004-08-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* encode.c, exec.c, g10.c, sign.c: Some translatable string
