@@ -1,5 +1,5 @@
 /* keyserver.h
- * Copyright (C) 2001 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -21,11 +21,19 @@
 #ifndef _KEYSERVER_H_
 #define _KEYSERVER_H_
 
-/* Return codes */
-#define KEYSERVER_OK               0
-#define KEYSERVER_INTERNAL_ERROR   1
-#define KEYSERVER_NOT_SUPPORTED    2
-#define KEYSERVER_VERSION_ERROR    3
+/* These are usable for return codes for the gpgkeys_ process, and
+   also KEY FAILED codes. */
+#define KEYSERVER_OK               0 /* not an error */
+#define KEYSERVER_INTERNAL_ERROR   1 /* gpgkeys_ internal error */
+#define KEYSERVER_NOT_SUPPORTED    2 /* operation not supported */
+#define KEYSERVER_VERSION_ERROR    3 /* VERSION mismatch */
+#define KEYSERVER_GENERAL_ERROR    4 /* keyserver internal error */
+#define KEYSERVER_NO_MEMORY        5 /* out of memory */
+#define KEYSERVER_KEY_NOT_FOUND    6 /* key not found */
+#define KEYSERVER_KEY_EXISTS       7 /* key already exists */
+#define KEYSERVER_KEY_INCOMPLETE   8 /* key incomplete (EOF) */
+
+/* Must be 127 due to shell internal magic. */
 #define KEYSERVER_SCHEME_NOT_FOUND 127
 
 #endif /* !_KEYSERVER_H_ */

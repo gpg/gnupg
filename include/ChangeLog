@@ -1,3 +1,7 @@
+2002-09-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.h: Add some new error codes for better GPA support.
+
 2002-09-10  Werner Koch  <wk@gnupg.org>
 
 	* mpi.h (mpi_is_protected, mpi_set_protect_flag)
