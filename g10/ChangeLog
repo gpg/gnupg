@@ -1,5 +1,9 @@
 2004-10-14  Werner Koch  <wk@g10code.com>
 
+	* export.c (do_export_stream) [ENABLE_SELINUX_HACKS]: Don't allow
+	secret key export.
+	* import.c (import_secret_one) [ENABLE_SELINUX_HACKS]: Likewise 
+
 	* misc.c (is_secured_filename): New.
 	* keydb.c (maybe_create_keyring)
 	* tdbio.c (tdbio_set_dbname)

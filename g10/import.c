@@ -1055,6 +1055,17 @@ import_secret_one( const char *fname, KBNODE keyblock,
 	return 0;
       }
 
+#ifdef ENABLE_SELINUX_HACKS
+    if (1)
+      {
+        /* We don't allow to import secret keys because that may be used
+           to put a secret key into the keyring and the user might later
+           be tricked into signing stuff with that key.  */
+        log_error (_("importing secret keys not allowed\n"));
+        return 0;
+      }
+#endif 
+    
     clear_kbnode_flags( keyblock );
 
     /* do we have this key already in one of our secrings ? */

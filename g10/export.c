@@ -171,6 +171,14 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
            do this we need an extra flag to enable this feature so */
     }
 
+#ifdef ENABLE_SELINUX_HACKS
+    if (secret) {
+        log_error (_("exporting secret keys not allowed\n"));
+        rc = G10ERR_GENERAL;
+        goto leave;
+    }
+#endif
+
     while (!(rc = keydb_search2 (kdbhd, desc, ndesc, &descindex))) {
         int sha1_warned=0,skip_until_subkey=0;
 	u32 sk_keyid[2];
