@@ -1301,6 +1301,18 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
         fixup_uidnode ( uidnode, signode, keytimestamp );
         pk->is_valid = 1;
     }
+
+    /* If the key isn't valid yet, and we have --always-trust set,
+       then force it valid. */
+    if(opt.always_trust && !pk->is_valid)
+      {
+	if(opt.verbose)
+	  log_info(_("Invalid key %08lX made valid by --always-trust\n"),
+		   (ulong)keyid_from_pk(pk,NULL));
+
+	pk->is_valid = 1;
+      }
+
     if ( sigdate > uiddate )
         uiddate = sigdate;
 
