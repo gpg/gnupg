@@ -480,7 +480,7 @@ parse_keyrec(char *keystring)
       iobuf_writestr(work->uidbuf,"\n\t");
       work->lines++;
     }
-  
+
   /* Ignore any records other than "pri" and "uid" for easy future
      growth. */
 
@@ -834,9 +834,8 @@ keyserver_spawn(int action,STRLIST list,
 	    afx.what=1;
 	    iobuf_push_filter(buffer,armor_filter,&afx);
 
-	    /* TODO: Don't use the keyblock hack here - instead,
-	       output each key as a different ascii armored blob with
-	       its own INFO section. */
+	    /* TODO: Remove Comment: lines from keys exported this
+	       way? */
 
 	    if(export_pubkeys_stream(buffer,temp,&block,
 				     opt.keyserver_options.export_options)==-1)
@@ -849,7 +848,9 @@ keyserver_spawn(int action,STRLIST list,
 
 		merge_keys_and_selfsig(block);
 
-		fprintf(spawn->tochild,"INFO %s BEGIN\n",key->d);
+		fprintf(spawn->tochild,"INFO %08lX%08lX BEGIN\n",
+			(ulong)block->pkt->pkt.public_key->keyid[0],
+			(ulong)block->pkt->pkt.public_key->keyid[1]);
 
 		for(node=block;node;node=node->next)
 		  {
@@ -879,9 +880,8 @@ keyserver_spawn(int action,STRLIST list,
 			    fprintf(spawn->tochild,"e");
 
 			  fprintf(spawn->tochild,"\n");
-
-			  break;
 			}
+			break;
 
 		      case PKT_USER_ID:
 			{
@@ -915,10 +915,32 @@ keyserver_spawn(int action,STRLIST list,
 
 			  fprintf(spawn->tochild,"\n");
 			}
+			break;
+
+			/* This bit is really for the benefit of
+			   people who store their keys in LDAP
+			   servers.  It makes it easy to do queries
+			   for things like "all keys signed by
+			   Isabella". */
+		      case PKT_SIGNATURE:
+			{
+			  PKT_signature *sig=node->pkt->pkt.signature;
+
+			  if(!IS_UID_SIG(sig))
+			    continue;
+
+			  fprintf(spawn->tochild,"sig:%08lX%08lX:%X:%u:%u\n",
+				  (ulong)sig->keyid[0],(ulong)sig->keyid[1],
+				  sig->sig_class,sig->timestamp,
+				  sig->expiredate);
+			}
+			break;
 		      }
 		  }
 
-		fprintf(spawn->tochild,"INFO %s END\n",key->d);
+		fprintf(spawn->tochild,"INFO %08lX%08lX END\n",
+			(ulong)block->pkt->pkt.public_key->keyid[0],
+			(ulong)block->pkt->pkt.public_key->keyid[1]);
 
 		fprintf(spawn->tochild,"KEY %s BEGIN\n",key->d);
 		fwrite(iobuf_get_temp_buffer(buffer),

@@ -1,5 +1,10 @@
 2004-02-21  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyserver.c (keyserver_spawn): Use the full 64-bit keyid in the
+	INFO header lines, and include "sig:" records for the benefit of
+	people who store their keys in LDAP servers.  It makes it easy to
+	do queries for things like "all keys signed by Isabella".
+
 	* main.h, misc.c (hextobyte): Removed.  It's in libutil.a now.
 
 2004-02-20  David Shaw  <dshaw@jabberwocky.com>
