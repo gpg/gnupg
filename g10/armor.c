@@ -837,7 +837,8 @@ armor_filter( void *opaque, int control,
 		hashes &= 1|2|4|8;
 		if( !hashes ) {
 		    hashes |= 4;  /* default to MD 5 */
-		    afx->pgp2mode = 1;
+		    if( opt.pgp2_workarounds )
+			afx->pgp2mode = 1;
 		}
 		n=0;
 		do {

@@ -33,6 +33,7 @@
 #include "packet.h"
 #include "options.h"
 #include "main.h"
+#include "status.h"
 
 
 #define MIN_PARTIAL_SIZE 512
@@ -54,7 +55,7 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     if( use_mdc ) {
 	ed.mdc_method = DIGEST_ALGO_SHA1;
 	cfx->mdc_hash = md_open( DIGEST_ALGO_SHA1, 0 );
-	md_start_debug( cfx->mdc_hash, "mdccreat" );
+	/*md_start_debug( cfx->mdc_hash, "mdccreat" );*/
     }
     init_packet( &pkt );
     pkt.pkttype = use_mdc? PKT_ENCRYPTED_MDC : PKT_ENCRYPTED;
@@ -101,6 +102,7 @@ cipher_filter( void *opaque, int control,
     else if( control == IOBUFCTRL_FLUSH ) { /* encrypt */
 	assert(a);
 	if( !cfx->header ) {
+	    write_status( STATUS_BEGIN_ENCRYPTION );
 	    write_header( cfx, a );
 	}
 	if( cfx->mdc_hash )
@@ -121,6 +123,7 @@ cipher_filter( void *opaque, int control,
 	    md_close( cfx->mdc_hash ); cfx->mdc_hash = NULL;
 	}
 	cipher_close(cfx->cipher_hd);
+	write_status( STATUS_END_ENCRYPTION );
     }
     else if( control == IOBUFCTRL_DESC ) {
 	*(char**)buf = "cipher_filter";

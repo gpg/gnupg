@@ -31,6 +31,7 @@
 #include "util.h"
 #include "filter.h"
 #include "i18n.h"
+#include "options.h"
 
 #ifdef HAVE_DOSISH_SYSTEM
   #define LF "\r\n"
@@ -155,6 +156,9 @@ copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
     unsigned n;
     int truncated = 0;
     int pending_lf = 0;
+
+    if( !opt.pgp2_workarounds )
+	pgp2mode = 0;
 
     if( !escape_dash )
 	escape_from = 0;

@@ -120,6 +120,10 @@ write_status_text ( int no, const char *text)
       case STATUS_FILE_START	 : s = "FILE_START\n"; break;
       case STATUS_FILE_DONE	 : s = "FILE_DONE\n"; break;
       case STATUS_FILE_ERROR	 : s = "FILE_ERROR\n"; break;
+      case STATUS_BEGIN_DECRYPTION:s = "BEGIN_DECRYPTION\n"; break;
+      case STATUS_END_DECRYPTION : s = "END_DECRYPTION\n"; break;
+      case STATUS_BEGIN_ENCRYPTION:s = "BEGIN_ENCRYPTION\n"; break;
+      case STATUS_END_ENCRYPTION : s = "END_ENCRYPTION\n"; break;
       default: s = "?\n"; break;
     }
 

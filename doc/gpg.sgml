@@ -1104,7 +1104,8 @@ Reset all packet, cipher and digest options to OpenPGP
 behavior. Use this option to reset all previous
 options like --rfc1991, --force-v3-sigs, --s2k-*,
 --cipher-algo, --digest-algo and --compress-algo to
-OpenPGP compliant values.
+OpenPGP compliant values.  All PGP workarounds are also
+disabled.
 </para></listitem></varlistentry>
 
 
@@ -1230,6 +1231,15 @@ by leaving some parts empty.  Some applications don't need the user ID and
 the trust information given in the listings.  By using this options they
 can get a faster listing.  The excact behaviour of this option may change
 in future versions.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--list-only</term>
+<listitem><para>
+Changes the behaviour of some commands.  This is like --dry-run but
+different in some cases.  The semantic of this command may be extended in
+the future.  Currently it does only skip the actual decryption pass and
+therefore enables a fast listing of the encryption keys.
 </para></listitem></varlistentry>
 
 <varlistentry>

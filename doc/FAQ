@@ -350,12 +350,12 @@
      hash algorithm to use.
 
   Q: How can a get list of key IDs used to encrypt a message?
-  A: gpg --batch --decrypt --status-fd 1 2>/dev/null \
+  A: gpg --batch --decrypt --list-only --status-fd 1 2>/dev/null \
 	      | awk '/^\[GNUPG:\] ENC_TO / { print $3 }'
 
 
   Q: PGP 5.x, 6.x does not like my secret key.
-  A: PGP probaly bails out on some private comment packets used by GnuPG.
+  A: PGP probably bails out on some private comment packets used by GnuPG.
      These packets are fully in compliance with OpenPGP; however PGP is not
      really OpenPGP aware.  A workaround is to eport the secret keys with
      this command:
@@ -364,10 +364,11 @@
 
   Q: I can't decrypt my symmetrical only (-c) encrypted message with
      a new version of GnuPG.
-  A: There used to be a bug in GnuPG < 1.0.1 which happens only if 3DES
-     was used for symmetric only encryption (this has never been the default).
+  A: There used to be a bug in GnuPG < 1.0.1 which happens only if 3DES or
+     Twofish has been used for symmetric only encryption (this has never been
+     the default).
      The bug has been fixed but to enable you to decrypt old messages, you
      should run gpg with the option "--emulate-3des-s2k-bug", decrypt the
      message and encrypt it again without this option.	The option will
-     be removed in 1.1, so better re/encrypt your message now.
+     be removed in 1.1, so better re-encrypt your message now.
 

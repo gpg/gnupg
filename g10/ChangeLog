@@ -1,3 +1,21 @@
+Wed Jan  5 11:51:17 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* g10.c (main): Reset new global flag opt.pgp2_workarounds
+	when --openpgp is used.
+	* mainproc.c (proc_plaintext): Do the PGP2,5 workarounds only
+	when the global falg is set.
+	(proc_tree): Ditto.
+	* textfilter.c (copy_clearsig_text): Ditto.
+	* armor.c (armor_filter): Ditto.
+
+	* g10.c: New option --list-only
+	* mainproc.c (proc_tree): Don't do it if opt.list_only is active.
+	(proc_pubkey_enc): Implement option.
+
+	* status.h, status.c ({BEGIN,END}_{EN,DE}CRYPTION): New.
+	* cipher.c (cipher_filter): New status outputs.
+	* mainproc.c (proc_encrypted): New status outputs.
+
 Fri Dec 31 14:08:15 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* armor.c (armor_filter): Made the "Comment:" header translatable.

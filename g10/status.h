@@ -69,6 +69,11 @@
 #define STATUS_FILE_DONE	39
 #define STATUS_FILE_ERROR	40
 
+#define STATUS_BEGIN_DECRYPTION 41
+#define STATUS_END_DECRYPTION	42
+#define STATUS_BEGIN_ENCRYPTION 43
+#define STATUS_END_ENCRYPTION	44
+
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

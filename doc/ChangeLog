@@ -1,3 +1,7 @@
+Wed Jan  5 11:51:17 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* FAQ: Enhanced answer for the 3des-s2k bug.
+
 Sat Dec  4 12:30:28 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* gpg.sgml: Add section about the user ID

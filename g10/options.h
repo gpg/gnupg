@@ -33,6 +33,7 @@ struct {
     int compress;
     char *outfile;
     int dry_run;
+    int list_only;
     int textmode;
     int batch;	    /* run in batch mode */
     int answer_yes; /* answer yes on most questions */
@@ -63,6 +64,7 @@ struct {
     int compress_sigs;
     int always_trust;
     int rfc1991;
+    int pgp2_workarounds;
     unsigned emulate_bugs; /* bug emulation flags EMUBUG_xxxx */
     int shm_coprocess;
     const char *set_filename;

@@ -225,10 +225,14 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 	|| is_RSA(enc->pubkey_algo)  ) {
 	if ( !c->dek && ((!enc->keyid[0] && !enc->keyid[1])
 			  || !seckey_available( enc->keyid )) ) {
-	    c->dek = m_alloc_secure( sizeof *c->dek );
-	    if( (result = get_session_key( enc, c->dek )) ) {
-		/* error: delete the DEK */
-		m_free(c->dek); c->dek = NULL;
+	    if( opt.list_only )
+		result = -1;
+	    else {
+		c->dek = m_alloc_secure( sizeof *c->dek );
+		if( (result = get_session_key( enc, c->dek )) ) {
+		    /* error: delete the DEK */
+		    m_free(c->dek); c->dek = NULL;
+		}
 	    }
 	}
 	else
@@ -312,10 +316,14 @@ proc_encrypted( CTX c, PACKET *pkt )
 
     print_failed_pkenc( c->failed_pkenc );
 
+    write_status( STATUS_BEGIN_DECRYPTION );
+
     /*log_debug("dat: %sencrypted data\n", c->dek?"":"conventional ");*/
-    if( !c->dek && !c->last_was_session_key ) {
+    if( opt.list_only )
+	result = -1;
+    else if( !c->dek && !c->last_was_session_key ) {
 	/* assume this is old conventional encrypted data
-	 * Actually we should use IDEA and MD5 in this case, but becuase
+	 * Actually we should use IDEA and MD5 in this case, but because
 	 * IDEA is patented we can't do so */
 	c->dek = passphrase_to_dek( NULL, 0,
 		    opt.def_cipher_algo ? opt.def_cipher_algo
@@ -347,6 +355,7 @@ proc_encrypted( CTX c, PACKET *pkt )
     }
     free_packet(pkt);
     c->last_was_session_key = 0;
+    write_status( STATUS_END_DECRYPTION );
 }
 
 
@@ -406,7 +415,7 @@ proc_plaintext( CTX c, PACKET *pkt )
 	md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
 	md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
     }
-    if( only_md5 && !opt.skip_verify ) {
+    if( opt.pgp2_workarounds && only_md5 && !opt.skip_verify ) {
 	/* This is a kludge to work around a bug in pgp2.  It does only
 	 * catch those mails which are armored.  To catch the non-armored
 	 * pgp mails we could see whether there is the signature packet
@@ -1142,7 +1151,7 @@ proc_tree( CTX c, KBNODE node )
     KBNODE n1;
     int rc;
 
-    if( opt.list_packets )
+    if( opt.list_packets || opt.list_only )
 	return;
 
     c->local_id = 0;
@@ -1194,8 +1203,10 @@ proc_tree( CTX c, KBNODE node )
 	    /* detached signature */
 	    free_md_filter_context( &c->mfx );
 	    c->mfx.md = md_open(sig->digest_algo, 0);
-	    if( sig->digest_algo == DIGEST_ALGO_MD5
-		&& is_RSA( sig->pubkey_algo ) ) {
+	    if( !opt.pgp2_workarounds )
+		;
+	    else if( sig->digest_algo == DIGEST_ALGO_MD5
+		     && is_RSA( sig->pubkey_algo ) ) {
 		/* enable a workaround for a pgp2 bug */
 		c->mfx.md2 = md_open( DIGEST_ALGO_MD5, 0 );
 	    }

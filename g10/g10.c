@@ -180,6 +180,7 @@ enum cmd_and_opt_values { aNull = 0,
     oSetFilesize,
     oHonorHttpProxy,
     oFastListMode,
+    oListOnly,
     oEmu3DESS2KBug,  /* will be removed in 1.1 */
 aTest };
 
@@ -350,6 +351,7 @@ static ARGPARSE_OPTS opts[] = {
     { oSetFilesize, "set-filesize", 20, "@" },
     { oHonorHttpProxy,"honor-http-proxy", 0, "@" },
     { oFastListMode,"fast-list-mode", 0, "@" },
+    { oListOnly, "list-only", 0, "@"},
     { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
 {0} };
 
@@ -592,6 +594,7 @@ main( int argc, char **argv )
     opt.completes_needed = 1;
     opt.marginals_needed = 3;
     opt.max_cert_depth = 5;
+    opt.pgp2_workarounds = 1;
   #ifdef __MINGW32__
     opt.homedir = read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" );
   #else
@@ -700,7 +703,9 @@ main( int argc, char **argv )
 
 	  case aDetachedSign: detached_sig = 1; set_cmd( &cmd, aSign ); break;
 	  case aSym: set_cmd( &cmd, aSym); break;
+
 	  case aDecrypt: set_cmd( &cmd, aDecrypt); break;
+
 	  case aEncr: set_cmd( &cmd, aEncr); break;
 	  case aSign: set_cmd( &cmd, aSign );  break;
 	  case aKeygen: set_cmd( &cmd, aKeygen); greeting=1; break;
@@ -804,6 +809,7 @@ main( int argc, char **argv )
 	    break;
 	  case oOpenPGP:
 	    opt.rfc1991 = 0;
+	    opt.pgp2_workarounds = 0;
 	    opt.escape_from = 0;
 	    opt.force_v3_sigs = 0;
 	    opt.compress_keys = 0;	    /* not mandated  but we do it */
@@ -880,6 +886,7 @@ main( int argc, char **argv )
 	  case oSetFilesize: opt.set_filesize = pargs.r.ret_ulong; break;
 	  case oHonorHttpProxy: opt.honor_http_proxy = 1; break;
 	  case oFastListMode: opt.fast_list_mode = 1; break;
+	  case oListOnly: opt.list_only=1; break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}
