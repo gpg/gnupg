@@ -13,7 +13,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.6\n"
-"POT-Creation-Date: 2002-08-03 13:02+0200\n"
+"POT-Creation-Date: 2002-08-04 23:31+0200\n"
 "PO-Revision-Date: 2001-08-23 10:32+02:00\n"
 "Last-Translator: Daniel Resare <daniel@resare.com>\n"
 "Language-Team: Swedish <sv@li.org>\n"
@@ -287,59 +287,59 @@ msgstr "... detta är ett fel i programmet (%s:%d:%s)\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "du har hittat ett fel i programmet ... (%s:%d)\n"
 
-#: cipher/random.c:349 g10/import.c:193 g10/keygen.c:1809
+#: cipher/random.c:352 g10/import.c:193 g10/keygen.c:1809
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "kan inte öppna \"%s\": %s\n"
 
-#: cipher/random.c:353
+#: cipher/random.c:356
 #, c-format
 msgid "can't stat `%s': %s\n"
 msgstr "kan inte ta status på \"%s\": %s\n"
 
-#: cipher/random.c:358
+#: cipher/random.c:361
 #, c-format
 msgid "`%s' is not a regular file - ignored\n"
 msgstr "\"%s\" är inte än vanlig fil - ignorerad\n"
 
-#: cipher/random.c:363
+#: cipher/random.c:366
 msgid "note: random_seed file is empty\n"
 msgstr "notera: filen random_seed är tom\n"
 
-#: cipher/random.c:369
+#: cipher/random.c:372
 #, fuzzy
 msgid "WARNING: invalid size of random_seed file - not used\n"
 msgstr "varning: random_seed har en felaktig storlek och används därför inte\n"
 
-#: cipher/random.c:377
+#: cipher/random.c:380
 #, c-format
 msgid "can't read `%s': %s\n"
 msgstr "kan inte läsa \"%s\": %s\n"
 
-#: cipher/random.c:415
+#: cipher/random.c:418
 msgid "note: random_seed file not updated\n"
 msgstr "notera: random_seed uppdaterades inte\n"
 
-#: cipher/random.c:435
+#: cipher/random.c:438
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "kan inte skapa \"%s\": %s\n"
 
-#: cipher/random.c:442
+#: cipher/random.c:445
 #, c-format
 msgid "can't write `%s': %s\n"
 msgstr "kan inte skriva till \"%s\": %s\n"
 
-#: cipher/random.c:445
+#: cipher/random.c:448
 #, c-format
 msgid "can't close `%s': %s\n"
 msgstr "kan inte stänga \"%s\": %s\n"
 
-#: cipher/random.c:691
+#: cipher/random.c:694
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr "VARNING: använder en osäker slumptalsgenerator!!\n"
 
-#: cipher/random.c:692
+#: cipher/random.c:695
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2002-08-03 13:02+0200\n"
+"POT-Creation-Date: 2002-08-04 23:31+0200\n"
 "PO-Revision-Date: 2000-03-07 22:51+01:00\n"
 "Last-Translator: Birger Langkjer <birger.langkjer@image.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
@@ -278,58 +278,58 @@ msgstr "... dette er en fejl (%s:%d:%s)\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "du fandt en fejl ... (%s:%d)\n"
 
-#: cipher/random.c:349 g10/import.c:193 g10/keygen.c:1809
+#: cipher/random.c:352 g10/import.c:193 g10/keygen.c:1809
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "kan ikke åbne '%s': %s\n"
 
-#: cipher/random.c:353
+#: cipher/random.c:356
 #, fuzzy, c-format
 msgid "can't stat `%s': %s\n"
 msgstr "kan ikke åbne '%s': %s\n"
 
-#: cipher/random.c:358
+#: cipher/random.c:361
 #, c-format
 msgid "`%s' is not a regular file - ignored\n"
 msgstr ""
 
-#: cipher/random.c:363
+#: cipher/random.c:366
 msgid "note: random_seed file is empty\n"
 msgstr ""
 
-#: cipher/random.c:369
+#: cipher/random.c:372
 msgid "WARNING: invalid size of random_seed file - not used\n"
 msgstr ""
 
-#: cipher/random.c:377
+#: cipher/random.c:380
 #, fuzzy, c-format
 msgid "can't read `%s': %s\n"
 msgstr "kan ikke åbne '%s': %s\n"
 
-#: cipher/random.c:415
+#: cipher/random.c:418
 msgid "note: random_seed file not updated\n"
 msgstr ""
 
-#: cipher/random.c:435
+#: cipher/random.c:438
 #, fuzzy, c-format
 msgid "can't create `%s': %s\n"
 msgstr "kan ikke oprette %s: %s\n"
 
-#: cipher/random.c:442
+#: cipher/random.c:445
 #, fuzzy, c-format
 msgid "can't write `%s': %s\n"
 msgstr "kan ikke åbne '%s': %s\n"
 
-#: cipher/random.c:445
+#: cipher/random.c:448
 #, fuzzy, c-format
 msgid "can't close `%s': %s\n"
 msgstr "kan ikke åbne '%s': %s\n"
 
-#: cipher/random.c:691
+#: cipher/random.c:694
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr "ADVARSEL: bruger usikker tilfældig-nummer-generator!!!\n"
 
-#: cipher/random.c:692
+#: cipher/random.c:695
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"
