@@ -57,10 +57,31 @@ static FILE *attrib_fp=NULL;
 void
 public_key_list( STRLIST list )
 {
-    if( !list )
-	list_all(0);
-    else
-	list_one( list, 0 );
+  if(opt.with_colons)
+    {
+      byte trust_model;
+      ulong created,nextcheck;
+
+      read_trust_options(&trust_model,&created,&nextcheck);
+
+      printf("tru:");
+
+      if(nextcheck && nextcheck <= make_timestamp())
+	printf("o");
+      if(trust_model!=0)
+	printf("t");
+
+      /* We don't show marginals, completes, or cert_depth since
+	 they are not accurate in 1.2.x - they are not updated when
+	 the trustdb is rebuilt with different options. */
+
+      printf(":%d:%lu:%lu\n",trust_model,created,nextcheck);
+    }
+
+  if( !list )
+    list_all(0);
+  else
+    list_one( list, 0 );
 }
 
 void

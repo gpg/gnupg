@@ -440,7 +440,6 @@ trust_letter (unsigned int value)
     }
 }
 
-
 /****************
  * Recreate the WoT but do not ask for new ownertrusts.  Special
  * feature: In batch mode and without a forced yes, this is only done
@@ -494,7 +493,24 @@ revalidation_mark (void)
   pending_check_trustdb = 1;
 }
 
-
+void
+read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck)
+{
+  TRUSTREC opts;
+
+  init_trustdb();
+
+  read_record(0,&opts,RECTYPE_VER);
+
+  if(trust_model)
+    *trust_model=opts.r.ver.trust_model;
+  if(created)
+    *created=opts.r.ver.created;
+  if(nextcheck)
+    *nextcheck=opts.r.ver.nextcheck;
+}
+
+
 /***********************************************
  ***********  Ownertrust et al. ****************
  ***********************************************/

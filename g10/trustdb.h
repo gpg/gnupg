@@ -59,6 +59,8 @@ int enum_cert_paths( void **context, ulong *lid,
 void enum_cert_paths_print( void **context, FILE *fp,
 					   int refresh, ulong selected_lid );
 
+void read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck);
+
 unsigned int get_ownertrust (PKT_public_key *pk);
 int get_ownertrust_info (PKT_public_key *pk);
 void update_ownertrust (PKT_public_key *pk, unsigned int new_trust );
