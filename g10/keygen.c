@@ -1998,6 +1998,8 @@ do_generate_keypair( struct para_data_s *para,
 	    if (!opt.batch) {
                 tty_printf(_("public and secret key created and signed.\n") );
                 tty_printf(_("key marked as ultimately trusted.\n") );
+		tty_printf("\n");
+		list_keyblock(pub_root,0,1,NULL);
             }
             
 

@@ -435,12 +435,15 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	      }
 	    else
 	      {
+		char *answer;
+
 		tty_printf(_("This key is due to expire on %s.\n"),
 			   expirestr_from_pk(primary_pk));
-		/* Should this default to yes? -ds */
-		if(cpr_get_answer_is_yes("sign_uid.expire",
-					 _("Do you want your signature to "
-					   "expire at the same time? (y/N) ")))
+
+		answer=cpr_get("sign_uid.expire",
+			       _("Do you want your signature to "
+				 "expire at the same time? (Y/n) "));
+		if(answer_is_yes_no_default(answer,1))
 		  {
 		    /* This fixes the signature timestamp we're going
 		       to make as now.  This is so the expiration date
@@ -451,6 +454,9 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		    duration=primary_pk->expiredate-now;
 		    force_v4=1;
 		  }
+
+		cpr_kill_prompt();
+		m_free(answer);
 	      }
 	  }
 

@@ -1,3 +1,17 @@
+2002-04-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, keygen.c (do_generate_keypair), keylist.c
+	(print_signature_stats, list_all, list_one, list_keyblock,
+	list_keyblock_print, list_keyblock_colon): After generating a new
+	key, show the key information (name, keyid, fingerprint, etc.)
+	Also do not print uncheckable signatures (missing key..) in
+	--check-sigs.  Print statistics (N missing keys, etc.) after
+	--check-sigs.
+
+	* keyedit.c (sign_uids): When signing a key with an expiration
+	date on it, the "Do you want your signature to expire at the same
+	time?" question should default to YES.
+
 2002-04-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* parse-packet.c (parse_plaintext), packet.h, plaintext.c

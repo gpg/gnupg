@@ -39,8 +39,13 @@
 
 static void list_all(int);
 static void list_one( STRLIST names, int secret);
-static void list_keyblock( KBNODE keyblock, int secret );
 
+struct sig_stats
+{
+  int inv_sigs;
+  int no_key;
+  int oth_err;
+};
 
 /****************
  * List the keys
@@ -128,12 +133,32 @@ show_notation(PKT_signature *sig,int indent)
 }
 
 static void
+print_signature_stats(struct sig_stats *s)
+{
+  if( s->inv_sigs == 1 )
+    tty_printf(_("1 bad signature\n") );
+  else if( s->inv_sigs )
+    tty_printf(_("%d bad signatures\n"), s->inv_sigs );
+  if( s->no_key == 1 )
+    tty_printf(_("1 signature not checked due to a missing key\n") );
+  else if( s->no_key )
+    tty_printf(_("%d signatures not checked due to missing keys\n"),s->no_key);
+  if( s->oth_err == 1 )
+    tty_printf(_("1 signature not checked due to an error\n") );
+  else if( s->oth_err )
+    tty_printf(_("%d signatures not checked due to errors\n"), s->oth_err );
+}
+
+static void
 list_all( int secret )
 {
     KEYDB_HANDLE hd;
     KBNODE keyblock = NULL;
     int rc=0;
     const char *lastresname, *resname;
+    struct sig_stats stats;
+
+    memset(&stats,0,sizeof(stats));
 
     hd = keydb_new (secret);
     if (!hd)
@@ -164,12 +189,16 @@ list_all( int secret )
             lastresname = resname;
 	}
         merge_keys_and_selfsig( keyblock );
-	list_keyblock( keyblock, secret );
+	list_keyblock( keyblock, secret, opt.fingerprint,
+		       opt.check_sigs?&stats:NULL);
 	release_kbnode( keyblock ); 
         keyblock = NULL;
     } while (!(rc = keydb_search_next (hd)));
     if( rc && rc != -1 )
 	log_error ("keydb_search_next failed: %s\n", g10_errstr(rc));
+
+    if(opt.check_sigs && !opt.with_colons)
+      print_signature_stats(&stats);
 
   leave:
     release_kbnode (keyblock);
@@ -186,6 +215,9 @@ list_one( STRLIST names, int secret )
     const char *resname;
     char *keyring_str = N_("Keyring");
     int i;
+    struct sig_stats stats;
+
+    memset(&stats,0,sizeof(stats));
 
     /* fixme: using the bynames function has the disadvantage that we
      * don't know wether one of the names given was not found.  OTOH,
@@ -211,7 +243,7 @@ list_one( STRLIST names, int secret )
 		    putchar('-');
 		putchar('\n');
 	    }
-	    list_keyblock( keyblock, 1 );
+	    list_keyblock( keyblock, 1, opt.fingerprint, &stats );
 	    release_kbnode( keyblock );
 	} while( !get_seckey_next( ctx, NULL, &keyblock ) );
 	get_seckey_end( ctx );
@@ -231,11 +263,15 @@ list_one( STRLIST names, int secret )
 		    putchar('-');
 		putchar('\n');
 	    }
-	    list_keyblock( keyblock, 0 );
+	    list_keyblock( keyblock, 0, opt.fingerprint,
+			   opt.check_sigs?&stats:NULL );
 	    release_kbnode( keyblock );
 	} while( !get_pubkey_next( ctx, NULL, &keyblock ) );
 	get_pubkey_end( ctx );
     }
+
+    if(opt.check_sigs && !opt.with_colons)
+      print_signature_stats(&stats);
 }
 
 static void
@@ -300,9 +336,8 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
     putchar(':');
 }
 
-
 static void
-list_keyblock_print ( KBNODE keyblock, int secret )
+list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 {
     int rc = 0;
     KBNODE kbctx;
@@ -311,6 +346,7 @@ list_keyblock_print ( KBNODE keyblock, int secret )
     PKT_secret_key *sk;
     u32 keyid[2];
     int any=0;
+    struct sig_stats *stats=opaque;
 
     /* get the keyid from the keyblock */
     node = find_kbnode( keyblock, secret? PKT_SECRET_KEY : PKT_PUBLIC_KEY );
@@ -356,7 +392,7 @@ list_keyblock_print ( KBNODE keyblock, int secret )
                                node->pkt->pkt.user_id->len );
 	    putchar('\n');
 	    if( !any ) {
-		if( opt.fingerprint )
+		if( fpr )
 		    print_fingerprint( pk, sk, 0 );
 		if( opt.with_key_data )
 		    print_key_data( pk, keyid );
@@ -373,7 +409,7 @@ list_keyblock_print ( KBNODE keyblock, int secret )
 
 	    if( !any ) {
 		putchar('\n');
-		if( opt.fingerprint )
+		if( fpr )
 		    print_fingerprint( pk, sk, 0 ); /* of the main key */
 		any = 1;
 	    }
@@ -387,7 +423,7 @@ list_keyblock_print ( KBNODE keyblock, int secret )
                 printf(_(" [expires: %s]"), expirestr_from_pk( pk2 ) );
             }
             putchar('\n');
-	    if( opt.fingerprint > 1 )
+	    if( fpr > 1 )
 		print_fingerprint( pk2, NULL, 0 );
 	    if( opt.with_key_data )
 		print_key_data( pk2, keyid2 );
@@ -398,7 +434,7 @@ list_keyblock_print ( KBNODE keyblock, int secret )
 
 	    if( !any ) {
 		putchar('\n');
-		if( opt.fingerprint )
+		if( fpr )
 		    print_fingerprint( pk, sk, 0 ); /* of the main key */
 		any = 1;
 	    }
@@ -408,13 +444,29 @@ list_keyblock_print ( KBNODE keyblock, int secret )
 					   pubkey_letter( sk2->pubkey_algo ),
 					   (ulong)keyid2[1],
 					   datestr_from_sk( sk2 ) );
-	    if( opt.fingerprint > 1 )
+	    if( fpr > 1 )
 		print_fingerprint( NULL, sk2, 0 );
 	}
 	else if( opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
 	    int sigrc;
             char *sigstr;
+
+	    if( stats ) {
+	      //		fflush(stdout);
+		rc = check_key_signature( keyblock, node, NULL );
+		switch( rc ) {
+		 case 0:		 sigrc = '!'; break;
+		 case G10ERR_BAD_SIGN:   stats->inv_sigs++; sigrc = '-'; break;
+		 case G10ERR_NO_PUBKEY: 
+		 case G10ERR_UNU_PUBKEY: stats->no_key++; continue;
+		 default:		 stats->oth_err++; sigrc = '%'; break;
+		}
+	    }
+	    else {
+		rc = 0;
+		sigrc = ' ';
+	    }
 
 	    if( !any ) { /* no user id, (maybe a revocation follows)*/
 	      /* Check if the pk is really revoked - there could be a
@@ -429,7 +481,7 @@ list_keyblock_print ( KBNODE keyblock, int secret )
 		    puts("[subkey revoked]");
 		else
 		    putchar('\n');
-		if( opt.fingerprint )
+		if( fpr )
 		    print_fingerprint( pk, sk, 0 );
 		any=1;
 	    }
@@ -447,21 +499,6 @@ list_keyblock_print ( KBNODE keyblock, int secret )
                 printf("sig                             "
 		       "[unexpected signature class 0x%02x]\n",sig->sig_class );
 		continue;
-	    }
-	    if( opt.check_sigs ) {
-		fflush(stdout);
-		rc = check_key_signature( keyblock, node, NULL );
-		switch( rc ) {
-		  case 0:		   sigrc = '!'; break;
-		  case G10ERR_BAD_SIGN:    sigrc = '-'; break;
-		  case G10ERR_NO_PUBKEY: 
-		  case G10ERR_UNU_PUBKEY:  sigrc = '?'; break;
-		  default:		   sigrc = '%'; break;
-		}
-	    }
-	    else {
-		rc = 0;
-		sigrc = ' ';
 	    }
 
             fputs( sigstr, stdout );
@@ -500,7 +537,7 @@ list_keyblock_print ( KBNODE keyblock, int secret )
 
 
 static void
-list_keyblock_colon( KBNODE keyblock, int secret )
+list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 {
     int rc = 0;
     KBNODE kbctx;
@@ -572,7 +609,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
         putchar(':');
         print_capabilities (pk, sk, keyblock);
         putchar('\n');
-        if( opt.fingerprint )
+        if( fpr )
             print_fingerprint( pk, sk, 0 );
         if( opt.with_key_data )
             print_key_data( pk, keyid );
@@ -619,7 +656,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
                 putchar(':');
                 print_capabilities (pk, sk, keyblock);
                 putchar('\n');
-		if( opt.fingerprint )
+		if( fpr )
 		    print_fingerprint( pk, sk, 0 );
 		if( opt.with_key_data )
 		    print_key_data( pk, keyid );
@@ -635,7 +672,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
                 putchar(':');
                 print_capabilities (pk, sk, keyblock);
                 putchar('\n');
-		if( opt.fingerprint )
+		if( fpr )
 		    print_fingerprint( pk, sk, 0 ); /* of the main key */
 		any = 1;
 	    }
@@ -669,7 +706,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
             putchar(':');
             print_capabilities (pk2, NULL, NULL);
             putchar('\n');
-	    if( opt.fingerprint > 1 )
+	    if( fpr > 1 )
 		print_fingerprint( pk2, NULL, 0 );
 	    if( opt.with_key_data )
 		print_key_data( pk2, keyid2 );
@@ -683,7 +720,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
                 putchar(':');
                 print_capabilities (pk, sk, keyblock);
 		putchar('\n');
-		if( opt.fingerprint )
+		if( fpr )
 		    print_fingerprint( pk, sk, 0 ); /* of the main key */
 		any = 1;
 	    }
@@ -698,7 +735,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
                    /* fixme: add LID */ );
             print_capabilities (NULL, sk2, NULL);
             putchar ('\n');
-	    if( opt.fingerprint > 1 )
+	    if( fpr > 1 )
 		print_fingerprint( NULL, sk2, 0 );
 	}
 	else if( opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE ) {
@@ -718,7 +755,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
                 putchar(':');
                 print_capabilities (pk, sk, keyblock);
                 putchar('\n');
-		if( opt.fingerprint )
+		if( fpr )
 		    print_fingerprint( pk, sk, 0 );
 		any=1;
 	    }
@@ -823,14 +860,14 @@ reorder_keyblock (KBNODE keyblock)
     primary2->next = node;
 }
 
-static void
-list_keyblock( KBNODE keyblock, int secret )
+void
+list_keyblock( KBNODE keyblock, int secret, int fpr, void *opaque )
 {
     reorder_keyblock (keyblock);
     if (opt.with_colons)
-        list_keyblock_colon (keyblock, secret );
+        list_keyblock_colon (keyblock, secret, fpr );
     else
-        list_keyblock_print (keyblock, secret );
+        list_keyblock_print (keyblock, secret, fpr, opaque );
 }
 
 /*
