@@ -1,3 +1,23 @@
+2003-04-29  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (ALL_LINUGAS): Removed.
+	* Makefile.am (ACLOCAL_AMFLAGS): New.
+	* configure.ac (AM_GNU_GETTEXT_VERSION): New.  Set to 0.11.5.
+
+2003-04-29  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* Makefile.am (SUBDIRS): Add m4.
+	(ACLOCAL_AMFLAGS): New variable.
+	(EXTRA_DIST): Add scripts/config.rpath.
+	* configure.ac (AC_CONFIG_FILES): Add m4/Makefile.
+
+2003-04-29  Werner Koch  <wk@gnupg.org>
+
+	* assuan/ : Removed.  We now use libassuan.
+	* Makefile.am (SUBDIRS): Removed assuan
+
+	* configure.ac: Check for libassuan.
+
 2003-01-09  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac (GNUPG_PROTECT_TOOL): New option --with-protect-tool. 

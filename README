@@ -2,15 +2,14 @@ GnuPG 1.9 is a temporary protect to work on GnuPG extensions.  It will
 eventually lead to a GnuPG 2.0 release.
 
 jnlib/  utility functions
-assuan/ assuan protocol library
 kbx/    keybox library
 sm/     the gpgsm program
 agent/  the gpg-agent
 scd/    the smartcard daemon
 
-Libksba and Libgcrypt are required to build it.  
+Libassuan, Libksba and Libgcrypt are required to build it.  
 
-Assuan and Keybox are both designed to be source include-able.
+Keybox is designed to be source include-able.
 
 A texinfo manual `gnupg.info' will get installed.  Some commands and
 options given below.

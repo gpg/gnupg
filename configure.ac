@@ -1,5 +1,5 @@
-# configure.ac - for NewPG
-#       Copyright (C) 2001, 2002 Free Software Foundation, Inc,
+# configure.ac - for GnuPG 1.9
+#       Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc,
 # 
 # This file is part of GnuPG.
 # 
@@ -21,14 +21,16 @@
 AC_PREREQ(2.52)
 # Version number: Remember to change it immediately *after* a release.
 #                 Add a "-cvs" prefix for non-released code.
-AC_INIT(newpg, 1.9.0-cvs, gnupg-devel@gnupg.org)
+AC_INIT(gnupg, 1.9.0-cvs, gnupg-devel@gnupg.org)
 NEED_LIBGCRYPT_VERSION=1.1.8
+NEED_LIBASSUAN_VERSION=0.0.1
 NEED_KSBA_VERSION=0.4.6
 NEED_OPENSC_VERSION=0.7.0
-ALL_LINGUAS="de"
 
 PACKAGE=$PACKAGE_NAME
 VERSION=$PACKAGE_VERSION
+
+AM_GNU_GETTEXT_VERSION(0.11.5)
 
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_SRCDIR(sm/gpgsm.c)
@@ -37,6 +39,7 @@ AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
 AM_MAINTAINER_MODE
 
 # Some status variables to give feedback at the end of a configure run
+habe_libassuan=no
 have_ksba=no
 have_opensc=no
 have_pth=no
@@ -215,6 +218,21 @@ AM_PATH_LIBGCRYPT("$NEED_LIBGCRYPT_VERSION",,
 
 
 #
+# libassuan is used for IPC
+#
+AM_PATH_LIBASSUAN("$NEED_LIBASSUAN_VERSION",
+                  have_libasssuan=yes,have_libasssun=no)
+if test "$have_libassuan" = "no"; then
+    AC_MSG_ERROR([[
+***
+*** You need libassuan to build this program..
+*** It should be available at the same place you 
+*** got this software.
+***]])
+fi
+
+
+#
 # libksba is our X.509 support library
 #
 AM_PATH_KSBA("$NEED_KSBA_VERSION",have_ksba=yes,have_ksba=no)
@@ -268,9 +286,7 @@ fi
 AC_SUBST(PTH_CFLAGS)
 AC_SUBST(PTH_LIBS)
 
-
 AM_GNU_GETTEXT
-
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -343,12 +359,11 @@ AM_CONDITIONAL(BUILD_AGENT, test "$build_agent" = "yes")
 AM_CONDITIONAL(BUILD_SCDAEMON, test "$build_scdaemon" = "yes")
 
 
-AC_CONFIG_FILES([
+AC_CONFIG_FILES([ m4/Makefile 
 Makefile
-intl/Makefile
 po/Makefile.in
+intl/Makefile
 jnlib/Makefile
-assuan/Makefile
 common/Makefile
 kbx/Makefile
 sm/Makefile
@@ -361,7 +376,7 @@ AC_OUTPUT
 
 
 echo "
-	NewPG v${VERSION} has been configured as follows:
+	GnuPG v${VERSION} has been configured as follows:
         
         OpenPGP:   $build_gpg
         S/MIME:    $build_gpgsm

@@ -19,7 +19,9 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = autogen.sh
+ACLOCAL_AMFLAGS = -I m4
+
+EXTRA_DIST = scripts/config.rpath  autogen.sh
 
 if BUILD_GPGSM
 sm = sm
@@ -37,11 +39,9 @@ else
 scd =
 endif
 
-SUBDIRS = intl jnlib assuan common kbx ${sm} ${agent} ${scd} po doc tests
+SUBDIRS = m4  intl jnlib common kbx ${sm} ${agent} ${scd} po doc tests
 
 
 dist-hook:
 	@set -e; echo "$(VERSION)" > $(distdir)/VERSION
-
-
 

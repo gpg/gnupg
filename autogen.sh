@@ -150,11 +150,11 @@ fi
 #echo "Running libtoolize...  Ignore non-fatal messages."
 #echo "no" | libtoolize
 
-echo "Running gettextize...  Ignore non-fatal messages."
-echo "no" | gettextize 
+echo "Running autopoint"
+autopoint
 
-echo "Running $aclocal"
-$aclocal
+echo "Running $aclocal -I m4"
+$aclocal -I m4
 echo "Running autoheader..."
 autoheader
 echo "Running $automake --gnu -a"
