@@ -1,3 +1,7 @@
+2004-10-15  Werner Koch  <wk@g10code.com>
+
+	* mk-gpg-texi: Fix up the @setfilename lines.
+
 2004-10-01  Werner Koch  <wk@g10code.com>
 
 	* mk-w32-dist: Updated from stable branch. 
