@@ -665,7 +665,15 @@ import_one( const char *fname, KBNODE keyblock,
 	   log_error (_("error writing keyring `%s': %s\n"),
 		       keydb_get_resource_name (hd), g10_errstr(rc));
 	else
-	   revalidation_mark ();
+	  {
+	    /* This should not be possible since we delete the
+	       ownertrust when a key is deleted, but it can happen if
+	       the keyring and trustdb are out of sync.  It can also
+	       be made to happen with the trusted-key command. */
+
+	    clear_ownertrust (pk);
+	    revalidation_mark ();
+	  }
         keydb_release (hd);
 
 	/* we are ready */
