@@ -681,7 +681,7 @@ int main(int argc,char *argv[])
   console=stderr;
 
   fprintf(console,
-	  "gpgkeys: Warning: this is an *experimental* HKP interface!\n");
+	  "gpgkeys: WARNING: this is an *experimental* HKP interface!\n");
 
   while((arg=getopt(argc,argv,"ho:"))!=-1)
     switch(arg)
