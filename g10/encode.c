@@ -709,16 +709,16 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	keyid_from_pk( pk, enc->keyid );
 	enc->throw_keyid = opt.throw_keyid;
 
-	if(opt.throw_keyid && (opt.pgp2 || opt.pgp6 || opt.pgp7))
+	if(opt.throw_keyid && (opt.pgp2 || opt.pgp6 || opt.pgp7 || opt.pgp8))
 	  {
 	    log_info(_("you may not use %s while in %s mode\n"),
 		     "--throw-keyid",
-		     opt.pgp2?"--pgp2":opt.pgp6?"--pgp6":"--pgp7");
+		     opt.pgp2?"--pgp2":opt.pgp6?"--pgp6":opt.pgp7?"--pgp7":"--pgp8");
 
 	    log_info(_("this message may not be usable by %s\n"),
-		     opt.pgp2?"PGP 2.x":opt.pgp6?"PGP 6.x":"PGP 7.x");
+		     opt.pgp2?"PGP 2.x":opt.pgp6?"PGP 6.x":opt.pgp7?"PGP 7.x":"PGP 8.x");
 
-	    opt.pgp2=opt.pgp6=opt.pgp7=0;
+	    opt.pgp2=opt.pgp6=opt.pgp7=opt.pgp8=0;
 	  }
 
 	/* Okay, what's going on: We have the session key somewhere in

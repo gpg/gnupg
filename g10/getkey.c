@@ -2055,7 +2055,8 @@ finish_lookup (GETKEY_CTX ctx)
     unsigned int req_usage = ( ctx->req_usage & USAGE_MASK );
     /* Request the primary if we're certifying another key, and also
        if signing data while --pgp6 or --pgp7 is on since pgp 6 and 7
-       do not understand signatures made by a signing subkey. */
+       do not understand signatures made by a signing subkey.  PGP 8
+       does. */
     int req_prim = (ctx->req_usage & PUBKEY_USAGE_CERT) ||
       ((opt.pgp6 || opt.pgp7) && (ctx->req_usage & PUBKEY_USAGE_SIG));
     u32 latest_date;
