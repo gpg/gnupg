@@ -2,6 +2,10 @@
 
 	* keygen.c (do_generate_keypair): Print member fname, instead of
 	newfname, again.
+	(do_generate_keypair): Don't try to execute certain pieces of code
+	in case an error occured.
+	(gen_card_key): Don't print out a message, which is already
+	printed by do_generate_keypair().
 
 2004-01-18  Moritz Schulte  <mo@g10code.com>
 
