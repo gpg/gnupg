@@ -1,3 +1,7 @@
+2004-02-24  Werner Koch  <wk@gnupg.org>
+
+	* secmem.c (lock_pool) [_AIX]: Also set errno.
+
 2004-01-13  David Shaw  <dshaw@localhost.localdomain>
 
 	* argparse.c (initialize): Avoid a number of -Wformat-nonliteral

@@ -138,7 +138,8 @@ lock_pool( void *p, size_t n )
        processes are clogging up the memory.  To get this problem out
        of the way we simply don't try to lock the memory at all.
        */    
-    err = EPERM;
+    errno = EPERM;
+    err = errno;
 # else /*!_AIX*/
     err = plock( DATLOCK );
     if( err && errno )
