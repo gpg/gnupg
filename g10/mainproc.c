@@ -257,10 +257,13 @@ proc_symkey_enc( CTX c, PACKET *pkt )
 	    log_info(_("encrypted with unknown algorithm %d\n"), algo );
 
 	c->last_was_session_key = 2;
+	if ( opt.list_only )
+    	    goto leave;
 	c->dek = passphrase_to_dek( NULL, 0, algo, &enc->s2k, 0, NULL );
         if (c->dek)
             c->dek->algo_info_printed = 1;
     }
+leave:
     free_packet(pkt);
 }
 
