@@ -135,6 +135,12 @@ encode_simple( const char *filename, int mode, int compat )
     if( opt.textmode )
 	iobuf_push_filter( inp, text_filter, &tfx );
 
+    /* Due the the fact that we use don't use an IV to encrypt the
+       session key we can't use the new mode with RFC1991 because
+       it has no S2K salt. RFC1991 always uses simple S2K. */
+    if ( opt.rfc1991 && !compat )
+        compat = 1;
+    
     cfx.dek = NULL;
     if( mode ) {
 	s2k = m_alloc_clear( sizeof *s2k );

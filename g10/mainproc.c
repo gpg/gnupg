@@ -242,7 +242,7 @@ symkey_decrypt_sesskey( DEK *dek, byte *sesskey, size_t slen )
 {
     CIPHER_HANDLE hd;
 
-    if ( slen > 33 ) {
+    if ( slen < 17 || slen > 33 ) {
         log_error( "weird size for an encrypted session key (%d)\n", slen );
         return;   
     }
