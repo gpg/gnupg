@@ -212,17 +212,18 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig, int *r_expired )
 
     *r_expired = 0;
     if( pk->version == 4 && pk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
-	log_info(_("this is a PGP generated "
-		  "ElGamal key which is NOT secure for signatures!\n"));
+	log_info(_("key %08lX: this is a PGP generated "
+		   "ElGamal key which is NOT secure for signatures!\n"),
+ 		  (ulong)keyid_from_pk(pk,NULL));
 	return G10ERR_PUBKEY_ALGO;
     }
 
     if( pk->timestamp > sig->timestamp ) {
 	ulong d = pk->timestamp - sig->timestamp;
 	log_info( d==1
-		  ? _("public key is %lu second newer than the signature\n")
-		  : _("public key is %lu seconds newer than the signature\n"),
-		       d );
+	     ? _("public key %08lX is %lu second newer than the signature\n")
+	     : _("public key %08lX is %lu seconds newer than the signature\n"),
+	        (ulong)keyid_from_pk(pk,NULL),d );
 	if( !opt.ignore_time_conflict )
 	    return G10ERR_TIME_CONFLICT; /* pubkey newer than signature */
     }
@@ -230,10 +231,11 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig, int *r_expired )
     cur_time = make_timestamp();
     if( pk->timestamp > cur_time ) {
 	ulong d = pk->timestamp - cur_time;
-	log_info( d==1 ? _("key has been created %lu second "
+	log_info( d==1 ? _("key %08lX has been created %lu second "
 			   "in future (time warp or clock problem)\n")
-		       : _("key has been created %lu seconds "
-			   "in future (time warp or clock problem)\n"), d );
+		       : _("key %08lX has been created %lu seconds "
+			   "in future (time warp or clock problem)\n"),
+		       (ulong)keyid_from_pk(pk,NULL),d );
 	if( !opt.ignore_time_conflict )
 	    return G10ERR_TIME_CONFLICT;
     }
@@ -343,7 +345,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
     }
 
     if( !rc && sig->flags.unknown_critical ) {
-	log_info(_("assuming bad signature due to an unknown critical bit\n"));
+      log_info(_("assuming bad signature from key %08lX due to an unknown critical bit\n"),(ulong)keyid_from_pk(pk,NULL));
 	rc = G10ERR_BAD_SIGN;
     }
 

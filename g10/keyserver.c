@@ -304,18 +304,20 @@ print_keyinfo(int count,char *keystring,KEYDB_SEARCH_DESC *desc)
   if(flags&2)
     printf(" (disabled)");
 
-  if(keytype[0])
-    printf(" %s",keytype);
+  printf("\n\t  ");
 
   if(keysize>0)
-    printf(" %d",keysize);
+    printf("%d bit ",keysize);
 
-  printf("\n\t  created %s,",strtimestamp(createtime));
+  if(keytype[0])
+    printf("%s ",keytype);
+
+  printf("key %s, created %s",certid,strtimestamp(createtime));
 
   if(expiretime>0)
-    printf(" expires %s,",strtimestamp(expiretime));
+    printf(", expires %s",strtimestamp(expiretime));
 
-  printf(" key %s\n",certid);
+  printf("\n");
 
   return 0;
 }
@@ -346,7 +348,6 @@ keyserver_spawn(int action,STRLIST list,
 #else
   set_exec_path(GNUPG_LIBEXECDIR,opt.exec_path_set);
 #endif
-
 
   /* Build the filename for the helper to execute */
   command=m_alloc(strlen("gpgkeys_")+strlen(opt.keyserver_scheme)+1);
