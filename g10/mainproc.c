@@ -292,19 +292,22 @@ proc_symkey_enc( CTX c, PACKET *pkt )
         int algo = enc->cipher_algo;
 	const char *s = cipher_algo_to_string (algo);
 
-	if( s )
+	if(s)
 	  {
-	    if(enc->seskeylen)
-	      log_info(_("%s encrypted session key\n"), s );
-	    else
-	      log_info(_("%s encrypted data\n"), s );
+	    if(!opt.quiet)
+	      {
+		if(enc->seskeylen)
+		  log_info(_("%s encrypted session key\n"), s );
+		else
+		  log_info(_("%s encrypted data\n"), s );
+	      }
 	  }
 	else
-	  log_info(_("encrypted with unknown algorithm %d\n"), algo );
+	  log_error(_("encrypted with unknown algorithm %d\n"), algo );
 
 	c->last_was_session_key = 2;
-	if ( opt.list_only )
-    	    goto leave;
+	if(!s || opt.list_only)
+	  goto leave;
 	c->dek = passphrase_to_dek( NULL, 0, algo, &enc->s2k, 0, NULL, NULL );
 	if(c->dek)
 	  {

@@ -857,41 +857,12 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	    else if(backlog) {
 	      answer=pop_strlist(&backlog);
 	    }
-	    else
-	      {
-		PK_LIST iter;
-
-		tty_printf("\n");
-		tty_printf(_("Current recipients:\n"));
-		for(iter=pk_list;iter;iter=iter->next)
-		  {
-		    u32 keyid[2];
-
-		    keyid_from_pk(iter->pk,keyid);
-		    tty_printf("%4u%c/%08lX %s \"",
-			       nbits_from_pk(iter->pk),
-			       pubkey_letter(iter->pk->pubkey_algo),
-			       (ulong)keyid[1],
-			       datestr_from_pk(iter->pk));
-
-		    if(iter->pk->user_id)
-		      tty_print_utf8_string(iter->pk->user_id->name,
-					    iter->pk->user_id->len);
-		    else
-		      {
-			size_t n;
-			char *p = get_user_id( keyid, &n );
-			tty_print_utf8_string( p, n );
-			m_free(p);
-		      }
-		    tty_printf("\"\n");
-		  }
-
+	    else {
 		answer = cpr_get_utf8("pklist.user_id.enter",
 			 _("\nEnter the user ID.  End with an empty line: "));
 		trim_spaces(answer);
 		cpr_kill_prompt();
-	      }
+	    }
 	    if( !answer || !*answer ) {
 	        m_free(answer);
 		break;
@@ -938,6 +909,26 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 			}
 			else {
 			    PK_LIST r;
+			    u32 keyid[2];
+
+			    keyid_from_pk( pk, keyid);
+			    tty_printf("Added %4u%c/%08lX %s \"",
+				       nbits_from_pk( pk ),
+				       pubkey_letter( pk->pubkey_algo ),
+				       (ulong)keyid[1],
+				       datestr_from_pk( pk ) );
+			    if(pk->user_id)
+			      tty_print_utf8_string(pk->user_id->name,
+						    pk->user_id->len);
+			    else
+			      {
+				size_t n;
+				char *p = get_user_id( keyid, &n );
+				tty_print_utf8_string( p, n );
+				m_free(p);
+			      }
+			    tty_printf("\"\n");
+
 			    r = m_alloc( sizeof *r );
 			    r->pk = pk; pk = NULL;
 			    r->next = pk_list;

@@ -1,3 +1,13 @@
+2003-11-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* mainproc.c (proc_symkey_enc): Don't show algorithm information
+	when --quiet is set.  Suggested by Duncan Harris.  Also don't fail
+	with BUG() when processing a --symmetric message with a cipher we
+	don't have.
+
+	* pkclist.c (build_pk_list): Revert last change.  There are too
+	many side effects for stable.
+
 2003-10-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* pkclist.c (build_pk_list): Show all recipients rather than
