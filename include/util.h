@@ -181,6 +181,7 @@ STRLIST append_to_strlist( STRLIST *list, const char *string );
 STRLIST append_to_strlist2( STRLIST *list, const char *string, int is_utf8 );
 STRLIST strlist_prev( STRLIST head, STRLIST node );
 STRLIST strlist_last( STRLIST node );
+char *pop_strlist( STRLIST *list );
 const char *memistr( const char *buf, size_t buflen, const char *sub );
 const char *ascii_memistr( const char *buf, size_t buflen, const char *sub );
 char *mem2str( char *, const void *, size_t);

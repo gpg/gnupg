@@ -1,3 +1,7 @@
+2002-06-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* util.h: Add pop_strlist() from strgutil.c.
+
 2002-06-07  Stefan Bellon  <sbellon@sbellon.de>
 
 	* util.h [__riscos__]: RISC OS needs strings.h for strcasecmp()
