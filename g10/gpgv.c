@@ -301,8 +301,10 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 }
 
 /* Stub: no decrypting, so no IDEA needed */
-void
-idea_cipher_warn( int show ) {}
+void idea_cipher_warn( int show ) {}
+
+/* Stub to avoid linking to photoid.c */
+void show_photo(const struct user_attribute *attr,PKT_public_key *pk) {}
 
 /* Stubs to void linking to ../cipher/cipher.c */
 int string_to_cipher_algo( const char *string ) { return 0; }
@@ -360,15 +362,3 @@ DOTLOCK create_dotlock( const char *file_to_lock ) { return NULL; }
 int make_dotlock( DOTLOCK h, long timeout ) { return 0;}
 int release_dotlock( DOTLOCK h ) {return 0;}
 void remove_lockfiles(void) {}
-
-
-
-
-
-
-
-
-
-
-
-

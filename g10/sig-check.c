@@ -323,17 +323,17 @@ hash_uid_node( KBNODE unode, MD_HANDLE md, PKT_signature *sig )
     PKT_user_id *uid = unode->pkt->pkt.user_id;
 
     assert( unode->pkt->pkttype == PKT_USER_ID );
-    if( uid->photo ) {
+    if( uid->attrib_data ) {
 	if( sig->version >=4 ) {
 	    byte buf[5];
-	    buf[0] = 0xd1;		   /* packet of type 17 */
-	    buf[1] = uid->photolen >> 24;  /* always use 4 length bytes */
-	    buf[2] = uid->photolen >> 16;
-	    buf[3] = uid->photolen >>  8;
-	    buf[4] = uid->photolen;
+	    buf[0] = 0xd1;		     /* packet of type 17 */
+	    buf[1] = uid->attrib_len >> 24;  /* always use 4 length bytes */
+	    buf[2] = uid->attrib_len >> 16;
+	    buf[3] = uid->attrib_len >>  8;
+	    buf[4] = uid->attrib_len;
 	    md_write( md, buf, 5 );
 	}
-	md_write( md, uid->photo, uid->photolen );
+	md_write( md, uid->attrib_data, uid->attrib_len );
     }
     else {
 	if( sig->version >=4 ) {

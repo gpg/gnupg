@@ -34,20 +34,12 @@
 #include "options.h"
 #include "memory.h"
 #include "keydb.h"
-#include "cipher.h"
 #include "status.h"
+#include "exec.h"
 #include "i18n.h"
 #include "util.h"
 #include "main.h"
 #include "hkp.h"
-
-#ifndef HAVE_MKDTEMP
-char *mkdtemp(char *template);
-#endif
-
-#if !(defined(HAVE_FORK) && defined(HAVE_PIPE))
-#define KEYSERVER_TEMPFILE_ONLY
-#endif
 
 #define KEYSERVER_PROTO_VERSION 0
 
@@ -74,7 +66,7 @@ parse_keyserver_options(char *options)
 	opt.keyserver_options.include_disabled=1;
       else if(strcasecmp(tok,"no-include-disabled")==0)
 	opt.keyserver_options.include_disabled=0;
-#ifdef KEYSERVER_TEMPFILE_ONLY
+#ifdef EXEC_TEMPFILE_ONLY
       else if(strcasecmp(tok,"use-temp-files")==0 ||
 	      strcasecmp(tok,"no-use-temp-files")==0)
 	log_info(_("Warning: keyserver option \"%s\" is not used "
@@ -261,167 +253,75 @@ print_keyinfo(int count,char *keystring,u32 *keyid)
   return 0;
 }
 
+#define KEYSERVER_ARGS_KEEP " -o \"%O\" \"%I\""
+#define KEYSERVER_ARGS_NOKEEP " -o \"%o\" \"%i\""
 
 static int 
-keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
+keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count,int *prog)
 {
-  int ret=KEYSERVER_INTERNAL_ERROR,i,to[2]={-1,-1},from[2]={-1,-1};
-  pid_t child=0;
+  int ret=0,i,gotversion=0;
   STRLIST temp;
   unsigned int maxlen=256,buflen;
-  char *filename=NULL,*tempfile_in=NULL,*tempfile_out=NULL,*searchstr=NULL;
-  char *tempdir=NULL;
+  char *command=NULL,*searchstr=NULL;
   byte *line=NULL;
-  FILE *tochild=NULL;
-  IOBUF fromchild=NULL;
-  int gotversion=0,madedir=0;
+  struct exec_info *spawn;
 
-#ifndef __MINGW32__
-  /* Don't allow to be setuid when we are going to create temporary
-     files or directories - yes, this is a bit paranoid */
-  if (getuid() != geteuid() )
-      BUG ();
+#ifdef EXEC_TEMPFILE_ONLY
+  opt.keyserver_options.use_temp_files=1;
 #endif
-
-  if(opt.keyserver_disable && !opt.no_perm_warn)
-    {
-      log_info(_("keyserver scheme \"%s\" disabled due to unsafe "
-		 "options file permissions\n"),opt.keyserver_scheme);
-
-      return KEYSERVER_SCHEME_NOT_FOUND;
-    }
 
   /* Build the filename for the helper to execute */
 
-  filename=m_alloc(strlen("gpgkeys_")+strlen(opt.keyserver_scheme)+1);
-
-
-  strcpy(filename,"gpgkeys_");
-  strcat(filename,opt.keyserver_scheme);
+  command=m_alloc(strlen("gpgkeys_")+strlen(opt.keyserver_scheme)+1);
+  strcpy(command,"gpgkeys_");
+  strcat(command,opt.keyserver_scheme);
 
   if(opt.keyserver_options.use_temp_files)
     {
-      const char *tmp=get_temp_dir();
-
-      tempdir=m_alloc(strlen(tmp)+1+10+1);
-      sprintf(tempdir,"%s" DIRSEP_S "gpg-XXXXXX",tmp);
-
-      if(mkdtemp(tempdir)==NULL)
+      if(opt.keyserver_options.keep_temp_files)
 	{
-	  log_error(_("%s: can't create temp directory: %s\n"),
-		    tempdir,strerror(errno));
-	  goto fail;
+	  command=m_realloc(command,strlen(command)+
+			    strlen(KEYSERVER_ARGS_KEEP)+1);
+	  strcat(command,KEYSERVER_ARGS_KEEP);
+	}
+      else
+	{
+	  command=m_realloc(command,strlen(command)+
+			    strlen(KEYSERVER_ARGS_NOKEEP)+1);
+	  strcat(command,KEYSERVER_ARGS_NOKEEP);  
 	}
 
-      madedir=1;
-
-      tempfile_in=m_alloc(strlen(tempdir)+1+10+1);
-      sprintf(tempfile_in,"%s" DIRSEP_S "ksrvin" EXTSEP_S "txt",tempdir);
-
-      tempfile_out=m_alloc(strlen(tempdir)+1+11+1);
-      sprintf(tempfile_out,"%s" DIRSEP_S "ksrvout" EXTSEP_S "txt",tempdir);
-
-      tochild=fopen(tempfile_in,"w");
-      if(tochild==NULL)
-	{
-	  log_error(_("%s: can't create: %s\n"),tempfile_in,strerror(errno));
-	  goto fail;
-	}
+      ret=exec_write(&spawn,NULL,command,0,0);
     }
   else
-    {
-      if(pipe(to)==-1)
-	goto fail;
+    ret=exec_write(&spawn,command,NULL,0,0);
 
-      if(pipe(from)==-1)
-	goto fail;
+  if(ret)
+    goto fail;
 
-      if((child=fork())==-1)
-	goto fail;
-
-      if(child==0)
-	{
-	  /* I'm the child */
-
-	  /* implied close of STDERR */
-	  if(dup2(STDOUT_FILENO,STDERR_FILENO)==-1)
-	    _exit(KEYSERVER_INTERNAL_ERROR);
-
-	  close(from[0]);
-	  from[0]=-1;
-
-	  /* implied close of STDOUT */
-	  if(dup2(from[1],STDOUT_FILENO)==-1)
-	    _exit(KEYSERVER_INTERNAL_ERROR);
-
-	  close(to[1]);
-	  to[1]=-1;
-
-	  /* implied close of STDIN */
-	  if(dup2(to[0],STDIN_FILENO)==-1)
-	    _exit(KEYSERVER_INTERNAL_ERROR);
-
-	  execlp(filename,filename,NULL);
-
-	  /* If we get this far the exec failed.  Clean up and return. */
-
-	  if(opt.keyserver_options.verbose>2)
-	    log_error(_("unable to execute %s: %s\n"),
-		      filename,strerror(errno));
-
-	  if(errno==ENOENT)
-	    _exit(KEYSERVER_SCHEME_NOT_FOUND);
-
-	  _exit(KEYSERVER_INTERNAL_ERROR);
-	}
-
-      /* I'm the parent */
-
-      close(to[0]);
-      to[0]=-1;
-
-      tochild=fdopen(to[1],"w");
-      if(tochild==NULL)
-	{
-	  ret=G10ERR_WRITE_FILE;
-	  close(to[1]);
-	  goto fail;
-	}
-
-      close(from[1]);
-      from[1]=-1;
-
-      fromchild=iobuf_fdopen(from[0],"r");
-      if(fromchild==NULL)
-	{
-	  ret=G10ERR_READ_FILE;
-	  goto fail;
-	}
-    }
-
-  fprintf(tochild,"# This is a gpg keyserver communications file\n");
-  fprintf(tochild,"VERSION %d\n",KEYSERVER_PROTO_VERSION);
-  fprintf(tochild,"PROGRAM %s\n",VERSION);
-  fprintf(tochild,"HOST %s\n",opt.keyserver_host);
+  fprintf(spawn->tochild,"# This is a gpg keyserver communications file\n");
+  fprintf(spawn->tochild,"VERSION %d\n",KEYSERVER_PROTO_VERSION);
+  fprintf(spawn->tochild,"PROGRAM %s\n",VERSION);
+  fprintf(spawn->tochild,"HOST %s\n",opt.keyserver_host);
 
   if(atoi(opt.keyserver_port)>0)
-    fprintf(tochild,"PORT %s\n",opt.keyserver_port);
+    fprintf(spawn->tochild,"PORT %s\n",opt.keyserver_port);
 
   /* Write options */
 
-  fprintf(tochild,"OPTION %sinclude-revoked\n",
+  fprintf(spawn->tochild,"OPTION %sinclude-revoked\n",
 	  opt.keyserver_options.include_revoked?"":"no-");
 
-  fprintf(tochild,"OPTION %sinclude-disabled\n",
+  fprintf(spawn->tochild,"OPTION %sinclude-disabled\n",
 	  opt.keyserver_options.include_disabled?"":"no-");
 
   for(i=0;i<opt.keyserver_options.verbose;i++)
-    fprintf(tochild,"OPTION verbose\n");
+    fprintf(spawn->tochild,"OPTION verbose\n");
 
   temp=opt.keyserver_options.other;
 
   for(;temp;temp=temp->next)
-    fprintf(tochild,"OPTION %s\n",temp->d);
+    fprintf(spawn->tochild,"OPTION %s\n",temp->d);
 
   switch(action)
     {
@@ -429,15 +329,15 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
       {
 	int i;
 
-	fprintf(tochild,"COMMAND GET\n\n");
+	fprintf(spawn->tochild,"COMMAND GET\n\n");
 
 	/* Which keys do we want? */
 
 	for(i=0;i<count;i++)
-	  fprintf(tochild,"0x%08lX%08lX\n",
+	  fprintf(spawn->tochild,"0x%08lX%08lX\n",
 		  (ulong)kidlist[i][0],(ulong)kidlist[i][1]);
 
-	fprintf(tochild,"\n");
+	fprintf(spawn->tochild,"\n");
 
 	break;
       }
@@ -447,7 +347,7 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
 	STRLIST key,temp;
 
 	/* Note the extra \n here to send an empty keylist block */
-	fprintf(tochild,"COMMAND SEND\n\n\n");
+	fprintf(spawn->tochild,"COMMAND SEND\n\n\n");
 
 	for(key=list;key!=NULL;key=key->next)
 	  {
@@ -467,10 +367,10 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
 	      {
 		iobuf_flush_temp(buffer);
 
-		fprintf(tochild,"KEY %s BEGIN\n",key->d);
+		fprintf(spawn->tochild,"KEY %s BEGIN\n",key->d);
 		fwrite(iobuf_get_temp_buffer(buffer),
-		       iobuf_get_temp_length(buffer),1,tochild);
-		fprintf(tochild,"KEY %s END\n",key->d);
+		       iobuf_get_temp_length(buffer),1,spawn->tochild);
+		fprintf(spawn->tochild,"KEY %s END\n",key->d);
 
 		iobuf_close(buffer);
 	      }
@@ -485,14 +385,14 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
       {
 	STRLIST key;
 
-	fprintf(tochild,"COMMAND SEARCH\n\n");
+	fprintf(spawn->tochild,"COMMAND SEARCH\n\n");
 
 	/* Which keys do we want?  Remember that the gpgkeys_ program
            is going to lump these together into a search string. */
 
 	for(key=list;key!=NULL;key=key->next)
 	  {
-	    fprintf(tochild,"%s\n",key->d);
+	    fprintf(spawn->tochild,"%s\n",key->d);
 	    if(key!=list)
 	      {
 		searchstr=m_realloc(searchstr,
@@ -508,7 +408,7 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
 	    strcat(searchstr,key->d);
 	  }
 
-	fprintf(tochild,"\n");
+	fprintf(spawn->tochild,"\n");
 
 	break;
       }
@@ -518,52 +418,16 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
       break;
     }
 
-  /* Done sending */
-  fclose(tochild);
-  tochild=NULL;
-  to[1]=-1;
-
-  if(opt.keyserver_options.use_temp_files)
-    {
-      char *command=m_alloc(strlen(filename)+2+
-			    strlen(tempfile_in)+6+
-			    strlen(tempfile_out)+2);
-
-      sprintf(command,"%s -o \"%s\" \"%s\"",filename,tempfile_out,tempfile_in);
-
-      ret=system(command);
-
-      m_free(command);
-
-      ret=WEXITSTATUS(ret);
-
-      if(ret==127)
-	{
-	  log_error(_("unable to exec keyserver program\n"));
-	  goto fail;
-	}
-
-      if(ret==-1)
-	{
-	  log_error(_("internal system error while calling keyserver: %s\n"),
-		    strerror(errno));
-	  goto fail;
-	}
-
-      fromchild=iobuf_open(tempfile_out);
-      if(fromchild==NULL)
-	{
-	  log_error(_("unable to read keyserver response: %s\n"),
-		    strerror(errno));
-	  goto fail;
-	}
-    }
+  /* Done sending, so start reading. */
+  ret=exec_read(spawn);
+  if(ret)
+    goto fail;
 
   /* Now handle the response */
 
   do
     {
-      if(iobuf_read_line(fromchild,&line,&buflen,&maxlen)==0)
+      if(iobuf_read_line(spawn->fromchild,&line,&buflen,&maxlen)==0)
 	{
 	  ret=G10ERR_READ_FILE;
 	  goto fail; /* i.e. EOF */
@@ -612,7 +476,7 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
 	   do this could be to continue parsing this line-by-line and
 	   make a temp iobuf for each key. */
 
-	import_keys_stream(fromchild,
+	import_keys_stream(spawn->fromchild,
 			   opt.keyserver_options.fast_import,stats_handle);
 
 	import_print_stats(stats_handle);
@@ -634,7 +498,7 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
 	/* Look for the COUNT line */
 	do
 	  {
-	    if(iobuf_read_line(fromchild,&line,&buflen,&maxlen)==0)
+	    if(iobuf_read_line(spawn->fromchild,&line,&buflen,&maxlen)==0)
 	      {
 		ret=G10ERR_READ_FILE;
 		goto fail; /* i.e. EOF */
@@ -642,7 +506,7 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
 	  }
 	while(sscanf(line,"COUNT %d\n",&count)!=1);
 
-	keyserver_search_prompt(fromchild,count,searchstr);
+	keyserver_search_prompt(spawn->fromchild,count,searchstr);
 
 	break;
       }
@@ -652,54 +516,9 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
       break;
     }
 
-  iobuf_close(fromchild);
-  fromchild=NULL;
-  ret=0;
+  *prog=exec_finish(spawn);
 
  fail:
-  if(tochild!=NULL)
-    {
-      fclose(tochild);
-      to[1]=-1;
-    }
-
-  if(fromchild!=NULL)
-    {
-      iobuf_close(fromchild);
-      from[0]=-1;
-    }
-
-  if(from[0]>-1)
-    close(from[0]);
-  if(from[1]>-1)
-    close(from[1]);
-
-  if(to[0]>-1)
-    close(to[0]);
-  if(to[1]>-1)
-    close(to[1]);
-
-  if(child>0)
-    {
-      int rc;
-
-      waitpid(child,&rc,0);
-      if(ret==0 && WIFEXITED(rc))
-	ret=WEXITSTATUS(rc);
-    }
-
-  m_free(filename);
-
-  if(madedir && !opt.keyserver_options.keep_temp_files)
-    {
-      unlink(tempfile_in);
-      unlink(tempfile_out);
-      rmdir(tempdir);
-    }
-
-  m_free(tempfile_in);
-  m_free(tempfile_out);
-  m_free(tempdir);
 
   return ret;
 }
@@ -707,11 +526,7 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
 static int 
 keyserver_work(int action,STRLIST list,u32 (*kidlist)[2],int count)
 {
-  int rc=0;
-
-#ifdef KEYSERVER_TEMPFILE_ONLY
-  opt.keyserver_options.use_temp_files=1;
-#endif
+  int rc=0,ret=0;
 
   if(opt.keyserver_scheme==NULL ||
      opt.keyserver_host==NULL ||
@@ -749,10 +564,13 @@ keyserver_work(int action,STRLIST list,u32 (*kidlist)[2],int count)
 
   /* It's not the internal HKP code, so try and spawn a handler for it */
 
-  if((rc=keyserver_spawn(action,list,kidlist,count)))
+  if((rc=keyserver_spawn(action,list,kidlist,count,&ret))==0)
     {
-      switch(rc)
+      switch(ret)
 	{
+	case KEYSERVER_OK:
+	  break;
+
 	case KEYSERVER_SCHEME_NOT_FOUND:
 	  log_error(_("no handler for keyserver scheme \"%s\"\n"),
 		    opt.keyserver_scheme);
@@ -766,6 +584,12 @@ keyserver_work(int action,STRLIST list,u32 (*kidlist)[2],int count)
 
       /* This is not the best error code for this */
       return G10ERR_INVALID_URI;
+    }
+  else
+    {
+      log_error(_("keyserver communications error\n"));
+
+      return rc;
     }
 
   return 0;

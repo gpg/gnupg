@@ -61,7 +61,7 @@ static int  parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 				      byte *hdr, int hdrlen, PACKET *packet );
 static int  parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
-static int  parse_photo_id( IOBUF inp, int pkttype, unsigned long pktlen,
+static int  parse_attribute( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
 static int  parse_comment( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
@@ -438,9 +438,9 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
       case PKT_USER_ID:
 	rc = parse_user_id(inp, pkttype, pktlen, pkt );
 	break;
-      case PKT_PHOTO_ID:
+      case PKT_ATTRIBUTE:
 	pkt->pkttype = pkttype = PKT_USER_ID;  /* we store it in the userID */
-	rc = parse_photo_id(inp, pkttype, pktlen, pkt);
+	rc = parse_attribute(inp, pkttype, pktlen, pkt);
 	break;
       case PKT_OLD_COMMENT:
       case PKT_COMMENT:
@@ -1657,6 +1657,98 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
     return rc;
 }
 
+/* Attribute subpackets have the same format as v4 signature
+   subpackets.  This is not part of OpenPGP, but is done in several
+   versions of PGP nevertheless. */
+int
+parse_attribute_subpkts(PKT_user_id *uid)
+{
+  size_t n;
+  int count=0;
+  struct user_attribute *attribs=NULL;
+  const byte *buffer=uid->attrib_data;
+  int buflen=uid->attrib_len;
+  byte type;
+
+  m_free(uid->attribs);
+
+  while(buflen)
+    {
+      n = *buffer++; buflen--;
+      if( n == 255 ) { /* 4 byte length header */
+	if( buflen < 4 )
+	  goto too_short;
+	n = (buffer[0] << 24) | (buffer[1] << 16)
+	  | (buffer[2] << 8) | buffer[3];
+	buffer += 4;
+	buflen -= 4;
+      }
+      else if( n >= 192 ) { /* 2 byte special encoded length header */
+	if( buflen < 2 )
+	  goto too_short;
+	n = (( n - 192 ) << 8) + *buffer + 192;
+	buffer++;
+	buflen--;
+      }
+      if( buflen < n )
+	goto too_short;
+
+      attribs=m_realloc(attribs,(count+1)*sizeof(struct user_attribute));
+      memset(&attribs[count],0,sizeof(struct user_attribute));
+
+      type=*buffer;
+      buffer++;
+      buflen--;
+      n--;
+
+      /* In order: is it an image, is it large enough to carry the
+         image header, is it version 1, and is it a JPEG? */
+      if(type==1 && n>=16 && buffer[2]==1 && buffer[3]==1)
+	{
+	  /* For historical reasons (i.e. "oops!"), headerlen is
+             little endian. */
+	  u16 headerlen=(buffer[1]<<8) | buffer[0];
+
+	  attribs[count].type=ATTRIB_JPEG;
+
+	  buffer+=headerlen;
+	  buflen-=headerlen;
+	  n-=headerlen;
+	}
+      else
+	attribs[count].type=ATTRIB_UNKNOWN;
+
+      attribs[count].data=buffer;
+      attribs[count].len=n;
+      buffer+=n;
+      buflen-=n;
+      count++;
+    }
+
+  uid->attribs=attribs;
+  uid->numattribs=count;
+  return count;
+
+ too_short:
+  log_error("buffer shorter than attribute subpacket\n");
+  uid->attribs=attribs;
+  uid->numattribs=count;
+  return count;
+}
+
+static void setup_user_id(PACKET *packet)
+{
+  packet->pkt.user_id->ref = 1;
+  packet->pkt.user_id->attribs = NULL;
+  packet->pkt.user_id->attrib_data = NULL;
+  packet->pkt.user_id->attrib_len = 0;
+  packet->pkt.user_id->is_primary = 0;
+  packet->pkt.user_id->is_revoked = 0;
+  packet->pkt.user_id->created = 0;
+  packet->pkt.user_id->help_key_usage = 0;
+  packet->pkt.user_id->help_key_expire = 0;
+  packet->pkt.user_id->prefs = NULL;
+}
 
 static int
 parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
@@ -1664,16 +1756,9 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     byte *p;
 
     packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id  + pktlen);
-    packet->pkt.user_id->ref = 1;
     packet->pkt.user_id->len = pktlen;
-    packet->pkt.user_id->photo = NULL;
-    packet->pkt.user_id->photolen = 0;
-    packet->pkt.user_id->is_primary = 0;
-    packet->pkt.user_id->is_revoked = 0;
-    packet->pkt.user_id->created = 0;
-    packet->pkt.user_id->help_key_usage = 0;
-    packet->pkt.user_id->help_key_expire = 0;
-    packet->pkt.user_id->prefs = NULL;
+
+    setup_user_id(packet);
 
     p = packet->pkt.user_id->name;
     for( ; pktlen; pktlen--, p++ )
@@ -1695,35 +1780,45 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     return 0;
 }
 
+void
+make_attribute_uidname(PKT_user_id *uid)
+{
+  /* List the first attribute as the "user id" */
+  if(uid->attribs)
+    sprintf( uid->name, "[%s of size %lu]",
+	     uid->attribs->type==ATTRIB_JPEG?"image":"unknown attribute",
+	     uid->attribs->len);
+  else
+    sprintf( uid->name, "[bad attribute of size %lu]",
+	     uid->attrib_len );
 
-/****************
- * PGP generates a packet of type 17. We assume this is a photo ID and
- * simply store it here as a comment packet.
- */
+  uid->len = strlen(uid->name);
+}
+
 static int
-parse_photo_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
+parse_attribute( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
     byte *p;
 
-    packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id  + 30);
-    packet->pkt.user_id->ref = 1;
-    sprintf( packet->pkt.user_id->name, "[image of size %lu]", pktlen );
-    packet->pkt.user_id->len = strlen(packet->pkt.user_id->name);
-    packet->pkt.user_id->is_primary = 0;
-    packet->pkt.user_id->is_revoked = 0;
-    packet->pkt.user_id->created = 0;
-    packet->pkt.user_id->help_key_usage = 0;
-    packet->pkt.user_id->help_key_expire = 0;
-    packet->pkt.user_id->prefs = NULL;
+    packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id + 50);
 
-    packet->pkt.user_id->photo = m_alloc(sizeof *packet->pkt.user_id + pktlen);
-    packet->pkt.user_id->photolen = pktlen;
-    p = packet->pkt.user_id->photo;
+    setup_user_id(packet);
+
+    packet->pkt.user_id->attrib_data = m_alloc(pktlen);
+    packet->pkt.user_id->attrib_len = pktlen;
+    p = packet->pkt.user_id->attrib_data;
     for( ; pktlen; pktlen--, p++ )
 	*p = iobuf_get_noeof(inp);
 
+    /* Now parse out the individual attribute subpackets.  This is
+       somewhat pointless since there is only one currently defined
+       attribute type (jpeg), but it is correct by the spec. */
+    parse_attribute_subpkts(packet->pkt.user_id);
+
+    make_attribute_uidname(packet->pkt.user_id);
+
     if( list_mode ) {
-	printf(":photo_id packet: %s\n", packet->pkt.user_id->name );
+	printf(":attribute packet: %s\n", packet->pkt.user_id->name );
     }
     return 0;
 }

@@ -30,6 +30,7 @@
 #include "errors.h"
 #include "keydb.h"
 #include "memory.h"
+#include "photoid.h"
 #include "util.h"
 #include "ttyio.h"
 #include "trustdb.h"
@@ -352,6 +353,10 @@ list_keyblock_print ( KBNODE keyblock, int secret )
 		    print_key_data( pk, keyid );
 		any = 1;
 	    }
+
+	    if(opt.show_photos && node->pkt->pkt.user_id->attribs!=NULL &&
+	       node->pkt->pkt.user_id->attribs->type==ATTRIB_JPEG)
+	      show_photo(node->pkt->pkt.user_id->attribs,pk);
 	}
 	else if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
 	    u32 keyid2[2];
@@ -576,10 +581,10 @@ list_keyblock_colon( KBNODE keyblock, int secret )
 		    byte namehash[20];
 
 		    if( pk && !ulti_hack ) {
-			if( node->pkt->pkt.user_id->photo )
+			if( node->pkt->pkt.user_id->attrib_data )
 			    rmd160_hash_buffer( namehash,
-					    node->pkt->pkt.user_id->photo,
-					    node->pkt->pkt.user_id->photolen);
+					   node->pkt->pkt.user_id->attrib_data,
+					   node->pkt->pkt.user_id->attrib_len);
 			else
 			    rmd160_hash_buffer( namehash,
 					    node->pkt->pkt.user_id->name,

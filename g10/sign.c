@@ -110,14 +110,28 @@ hash_uid (MD_HANDLE md, int sigversion, const PKT_user_id *uid)
 {
     if ( sigversion >= 4 ) {
         byte buf[5];
-        buf[0] = 0xb4;	          /* indicates a userid packet */
-        buf[1] = uid->len >> 24;  /* always use 4 length bytes */
-        buf[2] = uid->len >> 16;
-        buf[3] = uid->len >>  8;
-        buf[4] = uid->len;
+
+	if(uid->attrib_data) {
+	  buf[0] = 0xd1;	           /* indicates an attribute packet */
+	  buf[1] = uid->attrib_len >> 24;  /* always use 4 length bytes */
+	  buf[2] = uid->attrib_len >> 16;
+	  buf[3] = uid->attrib_len >>  8;
+	  buf[4] = uid->attrib_len;
+	}
+	else {
+	  buf[0] = 0xb4;	    /* indicates a userid packet */
+	  buf[1] = uid->len >> 24;  /* always use 4 length bytes */
+	  buf[2] = uid->len >> 16;
+	  buf[3] = uid->len >>  8;
+	  buf[4] = uid->len;
+	}
         md_write( md, buf, 5 );
     }
-    md_write (md, uid->name, uid->len );
+
+    if(uid->attrib_data)
+      md_write (md, uid->attrib_data, uid->attrib_len );
+    else
+      md_write (md, uid->name, uid->len );
 }
 
 

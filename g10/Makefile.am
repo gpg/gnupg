@@ -56,7 +56,7 @@ common_source =  \
 	      plaintext.c	\
 	      sig-check.c	\
 	      keylist.c 	\
-	      signal.c		
+	      signal.c
 
 gpg_SOURCES  = g10.c		\
 	      $(common_source)	\
@@ -88,7 +88,11 @@ gpg_SOURCES  = g10.c		\
 	      pipemode.c        \
 	      helptext.c        \
 	      keyserver.c       \
-	      keyserver-internal.h
+	      keyserver-internal.h \
+	      photoid.c photoid.h \
+	      exec.c exec.h
+
+
 
 gpgv_SOURCES = gpgv.c           \
 	      $(common_source)  \

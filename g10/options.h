@@ -85,6 +85,8 @@ struct {
     const char *set_filename;
     const char *comment_string;
     int throw_keyid;
+    int show_photos;
+    const char *photo_viewer;
     int s2k_mode;
     int s2k_digest_algo;
     int s2k_cipher_algo;
@@ -104,7 +106,7 @@ struct {
       int keep_temp_files:1;
       STRLIST other;
     } keyserver_options;
-    int keyserver_disable;
+    int exec_disable;
     int no_perm_warn;
     char *temp_dir;
     int no_encrypt_to;

@@ -951,8 +951,8 @@ store_validation_status (int depth, KBNODE keyblock)
           
           if (status)
             {
-              if( uid->photo )
-                rmd160_hash_buffer (namehash, uid->photo, uid->photolen);
+              if( uid->attrib_data )
+                rmd160_hash_buffer (namehash,uid->attrib_data,uid->attrib_len);
               else
                 rmd160_hash_buffer (namehash, uid->name, uid->len );
               
@@ -1373,8 +1373,8 @@ validate_keys (int interactive)
               byte namehash[20];
               PKT_user_id *uid = node->pkt->pkt.user_id;
               
-              if( uid->photo )
-                rmd160_hash_buffer (namehash, uid->photo, uid->photolen);
+              if( uid->attrib_data )
+                rmd160_hash_buffer (namehash,uid->attrib_data,uid->attrib_len);
               else
                 rmd160_hash_buffer (namehash, uid->name, uid->len );
               update_validity (pk, namehash, 0, TRUST_ULTIMATE);

@@ -194,6 +194,9 @@ enum cmd_and_opt_values { aNull = 0,
     oComment,
     oDefaultComment,
     oThrowKeyid,
+    oShowPhotos,
+    oNoShowPhotos,
+    oPhotoViewer,
     oForceV3Sigs,
     oNoForceV3Sigs,
     oForceV4Certs,
@@ -381,6 +384,9 @@ static ARGPARSE_OPTS opts[] = {
     { oDigestAlgo, "digest-algo", 2 , N_("|NAME|use message digest algorithm NAME")},
     { oCompressAlgo, "compress-algo", 1 , N_("|N|use compress algorithm N")},
     { oThrowKeyid, "throw-keyid", 0, N_("throw keyid field of encrypted packets")},
+    { oShowPhotos,   "show-photos", 0, N_("Show Photo IDs")},
+    { oNoShowPhotos, "no-show-photos", 0, N_("Don't show Photo IDs")},
+    { oPhotoViewer,  "photo-viewer", 2, N_("Set command line to view Photo IDs")},
     { oNotation,   "notation-data", 2, N_("|NAME=VALUE|use this notation data")},
 
     { 302, NULL, 0, N_(
@@ -827,13 +833,13 @@ main( int argc, char **argv )
 	{
 	  add_to_strlist(&unsafe_files,configname);
 
-	  /* If any options file is unsafe, then disable the keyserver
-	     code.  Since the keyserver code can call an external
-	     program, and the external program to call is set in the
-	     options file, a unsafe options file can lead to an
-	     arbitrary program being run. */
+	  /* If any options file is unsafe, then disable any external
+	     programs for keyserver calls or photo IDs.  Since the
+	     external program to call is set in the options file, a
+	     unsafe options file can lead to an arbitrary program
+	     being run. */
 
-	  opt.keyserver_disable=1;
+	  opt.exec_disable=1;
 	}
 
 	configlineno = 0;
@@ -1069,6 +1075,9 @@ main( int argc, char **argv )
 	  case oComment: opt.comment_string = pargs.r.ret_str; break;
 	  case oDefaultComment: opt.comment_string = NULL; break;
 	  case oThrowKeyid: opt.throw_keyid = 1; break;
+	  case oShowPhotos: opt.show_photos = 1; break;
+	  case oNoShowPhotos: opt.show_photos = 0; break;
+	  case oPhotoViewer: opt.photo_viewer = pargs.r.ret_str; break;
 	  case oForceV3Sigs: opt.force_v3_sigs = 1; break;
 	  case oNoForceV3Sigs: opt.force_v3_sigs = 0; break;
           case oForceV4Certs: opt.force_v4_certs = 1; break;

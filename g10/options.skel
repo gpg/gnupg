@@ -115,7 +115,7 @@ lock-once
 # proxies (honor-http-proxy)
 #
 # Most users just set the name and type of their preferred keyserver.
-# Most servers do syncronize with each other and DNS round-robin may
+# Most servers do synchronize with each other and DNS round-robin may
 # give you a quasi-random server each time.
 
 #keyserver mailto:pgp-public-keys@keys.nl.pgp.net
@@ -151,7 +151,32 @@ lock-once
 
 #auto-key-retrieve
 
-# The environment variable http_proxy is only used when the
-# this option is set.
+# Uncomment this line to display photo user IDs in key listings
+#show-photos
 
-#honor-http-proxy
+# Use this program to display photo user IDs
+#
+# %i is expanded to a temporary file that contains the photo.
+# %I is the same as %i, but the file isn't deleted afterwards by GnuPG.
+# %k is expanded to the key ID of the key.
+# %K is expanded to the long OpenPGP key ID of the key.
+# %f is expanded to the fingerprint of the key.
+# %% is %, of course.
+#
+# If %i or %I are not present, then the photo is supplied to the
+# viewer on standard input.  Standard input is the best way to do
+# this, as it avoids the time and effort in generating and then
+# cleaning up a secure temp file.
+#
+# The default program is "xloadimage -fork -quiet -title 'KeyID 0x%k' stdin"
+#
+# Some other viewers:
+# photo-viewer "xv -name \"KeyID 0x%k\" -"
+# photo-viewer "ee %i"
+# photo-viewer "display -title 'KeyID 0x%k'"
+#
+# This one saves a copy of the photo ID in your home directory:
+# photo-viewer "cat > ~/photoid-for-key-%k.jpg"
+#
+# Use your MIME handler to view photos:
+# photo-viewer "metamail -q -d -b -c image/jpeg -s 'KeyID 0x%k' -f GnuPG"

@@ -81,8 +81,8 @@ build_packet( IOBUF out, PACKET *pkt )
       case PKT_ENCRYPTED_MDC: new_ctb = pkt->pkt.encrypted->new_ctb; break;
       case PKT_COMPRESSED:new_ctb = pkt->pkt.compressed->new_ctb; break;
       case PKT_USER_ID:
-	    if( pkt->pkt.user_id->photo )
-		pkttype = PKT_PHOTO_ID;
+	    if( pkt->pkt.user_id->attrib_data )
+		pkttype = PKT_ATTRIBUTE;
 	    break;
       default: break;
     }
@@ -92,7 +92,7 @@ build_packet( IOBUF out, PACKET *pkt )
     else
 	ctb = 0x80 | ((pkttype & 15)<<2);
     switch( pkttype ) {
-      case PKT_PHOTO_ID:
+      case PKT_ATTRIBUTE:
       case PKT_USER_ID:
 	rc = do_user_id( out, ctb, pkt->pkt.user_id );
 	break;
@@ -159,7 +159,7 @@ calc_packet_length( PACKET *pkt )
 	n = calc_plaintext( pkt->pkt.plaintext );
 	new_ctb = pkt->pkt.plaintext->new_ctb;
 	break;
-      case PKT_PHOTO_ID:
+      case PKT_ATTRIBUTE:
       case PKT_USER_ID:
       case PKT_COMMENT:
       case PKT_PUBLIC_KEY:
@@ -207,9 +207,9 @@ do_comment( IOBUF out, int ctb, PKT_comment *rem )
 static int
 do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 {
-    if( uid->photo ) {
-	write_header(out, ctb, uid->photolen);
-	if( iobuf_write( out, uid->photo, uid->photolen ) )
+    if( uid->attrib_data ) {
+	write_header(out, ctb, uid->attrib_len);
+	if( iobuf_write( out, uid->attrib_data, uid->attrib_len ) )
 	    return G10ERR_WRITE_FILE;
     }
     else {
@@ -910,6 +910,52 @@ build_sig_subpkt_from_sig( PKT_signature *sig )
       }
 }
 
+void
+build_attribute_subpkt(PKT_user_id *uid,byte type,
+		       const void *buf,int buflen,
+		       const void *header,int headerlen)
+{
+  byte *attrib;
+  int index;
+
+  if(1+headerlen+buflen>8383)
+    index=5;
+  else if(1+headerlen+buflen>191)
+    index=2;
+  else
+    index=1;
+
+  /* realloc uid->attrib_data to the right size */
+
+  uid->attrib_data=m_realloc(uid->attrib_data,
+			     uid->attrib_len+index+headerlen+buflen);
+
+  attrib=&uid->attrib_data[uid->attrib_len];
+
+  if(index==5)
+    {
+      attrib[0]=255;
+      attrib[1]=(1+headerlen+buflen) >> 24;
+      attrib[2]=(1+headerlen+buflen) >> 16;
+      attrib[3]=(1+headerlen+buflen) >> 8;
+      attrib[4]=1+headerlen+buflen;
+    }
+  else if(index==2)
+    {
+      attrib[0]=(1+headerlen+buflen-192) / 256 + 192;
+      attrib[1]=(1+headerlen+buflen-192) % 256;
+    }
+  else
+    attrib[0]=1+headerlen+buflen; /* Good luck finding a JPEG this small! */
+
+  attrib[index++]=type;
+
+  /* Tack on our data at the end */
+
+  memcpy(&attrib[index],header,headerlen);
+  memcpy(&attrib[index+headerlen],buf,buflen);
+  uid->attrib_len+=index+headerlen+buflen;
+}
 
 static int
 do_signature( IOBUF out, int ctb, PKT_signature *sig )

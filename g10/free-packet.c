@@ -262,14 +262,25 @@ free_comment( PKT_comment *rem )
 }
 
 void
+free_attributes(PKT_user_id *uid)
+{
+  m_free(uid->attribs);
+  m_free(uid->attrib_data);
+
+  uid->attribs=NULL;
+  uid->attrib_data=NULL;
+  uid->attrib_len=0;
+}
+
+void
 free_user_id (PKT_user_id *uid)
 {
     assert (uid->ref > 0);
     if (--uid->ref)
         return;
 
-    if (uid->photo)
-	m_free (uid->photo);
+    free_attributes(uid);
+
     if (uid->prefs)
         m_free (uid->prefs);
     m_free (uid);

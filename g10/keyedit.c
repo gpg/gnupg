@@ -32,6 +32,7 @@
 #include "iobuf.h"
 #include "keydb.h"
 #include "memory.h"
+#include "photoid.h"
 #include "util.h"
 #include "main.h"
 #include "trustdb.h"
@@ -44,7 +45,7 @@ static void show_prefs( PKT_user_id *uid, int verbose );
 static void show_key_with_all_names( KBNODE keyblock,
 	    int only_marked, int with_fpr, int with_subkeys, int with_prefs );
 static void show_key_and_fingerprint( KBNODE keyblock );
-static int menu_adduid( KBNODE keyblock, KBNODE sec_keyblock );
+static int menu_adduid( KBNODE keyblock, KBNODE sec_keyblock, int photo );
 static void menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int  menu_delsig( KBNODE pub_keyblock );
 static void menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
@@ -61,6 +62,7 @@ static int count_selected_keys( KBNODE keyblock );
 static int menu_revsig( KBNODE keyblock );
 static int menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int enable_disable_key( KBNODE keyblock, int disable );
+static void menu_showphoto( KBNODE keyblock );
 
 #define CONTROL_D ('D' - 'A' + 1)
 
@@ -749,10 +751,10 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
     enum cmdids { cmdNONE = 0,
 	   cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
            cmdLSIGN, cmdNRSIGN, cmdREVSIG, cmdREVKEY, cmdDELSIG, cmdPRIMARY,
-	   cmdDEBUG, cmdSAVE, cmdADDUID, cmdDELUID, cmdADDKEY, cmdDELKEY,
-	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE,
-           cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF, cmdSETPREF, cmdUPDPREF,
-	   cmdINVCMD, cmdNOP };
+	   cmdDEBUG, cmdSAVE, cmdADDUID, cmdADDPHOTO, cmdDELUID, cmdADDKEY,
+	   cmdDELKEY, cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF,
+	   cmdEXPIRE, cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF, cmdSETPREF,
+	   cmdUPDPREF, cmdINVCMD, cmdSHOWPHOTO, cmdNOP };
     static struct { const char *name;
 		    enum cmdids id;
 		    int need_sk;
@@ -778,7 +780,10 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	{ N_("nrsign")  , cmdNRSIGN    , 0,1,1, N_("sign the key non-revocably") },
 	{ N_("debug")   , cmdDEBUG     , 0,0,0, NULL },
 	{ N_("adduid")  , cmdADDUID    , 1,1,0, N_("add a user ID") },
+	{ N_("addphoto"), cmdADDPHOTO  , 1,1,0, N_("add a photo ID") },
 	{ N_("deluid")  , cmdDELUID    , 0,1,0, N_("delete user ID") },
+	/* delphoto is really deluid in disguise */
+	{ N_("delphoto"), cmdDELUID    , 0,1,0, NULL },
 	{ N_("addkey")  , cmdADDKEY    , 1,1,0, N_("add a secondary key") },
 	{ N_("delkey")  , cmdDELKEY    , 0,1,0, N_("delete a secondary key") },
 	{ N_("delsig")  , cmdDELSIG    , 0,1,0, N_("delete signatures") },
@@ -797,6 +802,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	{ N_("revkey")  , cmdREVKEY    , 1,1,0, N_("revoke a secondary key") },
 	{ N_("disable") , cmdDISABLEKEY, 0,1,0, N_("disable a key") },
 	{ N_("enable")  , cmdENABLEKEY , 0,1,0, N_("enable a key") },
+	{ N_("showphoto"),cmdSHOWPHOTO , 0,0,0, N_("show photo ID") },
 
     { NULL, cmdNONE } };
     enum cmdids cmd = 0;
@@ -876,7 +882,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
     toggle = 0;
     cur_keyblock = keyblock;
     for(;;) { /* main loop */
-	int i, arg_number;
+	int i, arg_number, photo;
         const char *arg_string = "";
 	char *p;
 	PKT_public_key *pk=keyblock->pkt->pkt.public_key;
@@ -907,7 +913,8 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    trim_spaces(answer);
 	} while( *answer == '#' );
 
-	arg_number = 0; /* Yes, here is the init which egcc complains about*/
+	arg_number = 0; /* Yes, here is the init which egcc complains about */
+	photo = 0; /* This too */
 	if( !*answer )
 	    cmd = cmdLIST;
 	else if( *answer == CONTROL_D )
@@ -1021,8 +1028,12 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    redisplay = 1;
 	    break;
 
+	  case cmdADDPHOTO:
+	    photo=1;
+	    /* fall through */
+
 	  case cmdADDUID:
-	    if( menu_adduid( keyblock, sec_keyblock ) ) {
+	    if( menu_adduid( keyblock, sec_keyblock, photo ) ) {
 		redisplay = 1;
 		sec_modified = modified = 1;
 		merge_keys_and_selfsig( sec_keyblock );
@@ -1198,6 +1209,10 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		modified = 1;
 	    }
 	    break;
+
+         case cmdSHOWPHOTO:
+           menu_showphoto(keyblock);
+           break;
 
 	  case cmdQUIT:
 	    if( have_commands )
@@ -1492,7 +1507,7 @@ show_key_and_fingerprint( KBNODE keyblock )
  * Return true if there is a new user id
  */
 static int
-menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
+menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock, int photo)
 {
     PKT_user_id *uid;
     PKT_public_key *pk=NULL;
@@ -1502,10 +1517,6 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
     KBNODE node;
     KBNODE pub_where=NULL, sec_where=NULL;
     int rc;
-
-    uid = generate_user_id();
-    if( !uid )
-	return 0;
 
     for( node = pub_keyblock; node; pub_where = node, node = node->next ) {
 	if( node->pkt->pkttype == PKT_PUBLIC_KEY )
@@ -1523,7 +1534,29 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
     }
     if( !node ) /* no subkey */
 	sec_where = NULL;
-    assert(pk && sk );
+    assert(pk && sk);
+
+    if(photo) {
+      /* PGP allows only one photo ID per key? */
+      for( node = pub_keyblock; node; node = node->next )
+	if( node->pkt->pkttype == PKT_USER_ID &&
+	    node->pkt->pkt.user_id->attrib_data!=NULL) {
+	  log_error("You may only have one photo ID on a key.\n");
+	  return 0;
+	}
+
+      if(pk->version==3)
+	{
+	  tty_printf(_("\nWARNING: This is a PGP2-style key\n"));
+	  tty_printf(_("         Adding a photo ID may cause some versions "
+		       "of PGP to not accept this key\n"));
+	}
+
+      uid = generate_photo_id(pk);
+    } else
+      uid = generate_user_id();
+    if( !uid )
+	return 0;
 
     rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0, 0, 0, 0,
 			     keygen_add_std_prefs, pk );
@@ -1855,8 +1888,6 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
     free_secret_key( sk );
     return 1;
 }
-
-
 
 static int
 change_primary_uid_cb ( PKT_signature *sig, void *opaque )
@@ -2452,3 +2483,46 @@ enable_disable_key( KBNODE keyblock, int disable )
     return 0;
 }
 
+
+static void
+menu_showphoto( KBNODE keyblock )
+{
+  KBNODE node;
+  int select_all = !count_selected_uids(keyblock);
+  int count=0;
+  PKT_public_key *pk=NULL;
+  u32 keyid[2];
+
+  /* Look for the public key first.  We have to be really, really,
+     explicit as to which photo this is, and what key it is a UID on
+     since people may want to sign it. */
+
+  for( node = keyblock; node; node = node->next )
+    {
+      if( node->pkt->pkttype == PKT_PUBLIC_KEY )
+       pk = node->pkt->pkt.public_key;
+    }
+
+  for( node = keyblock; node; node = node->next )
+    {
+      if( node->pkt->pkttype == PKT_USER_ID )
+       {
+         PKT_user_id *uid = node->pkt->pkt.user_id;
+         count++;
+
+         if((select_all || (node->flag & NODFLG_SELUID)) &&
+            uid->attribs!=NULL)
+           {
+             /* Can this really ever happen? */
+             if(pk==NULL)
+               keyid[1]=0;
+             else
+               keyid_from_pk(pk, keyid);
+
+             tty_printf("Displaying photo ID of size %ld for key 0x%08lX "
+                        "(uid %d)\n",uid->attribs->len,(ulong)keyid[1],count);
+             show_photo(uid->attribs,pk);
+           }
+       }
+    }
+}

@@ -46,7 +46,7 @@ typedef enum {
 	PKT_USER_ID	  =13, /* user id packet */
 	PKT_PUBLIC_SUBKEY =14, /* public subkey (OpenPGP) */
 	PKT_OLD_COMMENT   =16, /* comment packet from an OpenPGP draft */
-	PKT_PHOTO_ID	  =17, /* PGP's photo ID */
+	PKT_ATTRIBUTE     =17, /* PGP's attribute packet */
 	PKT_ENCRYPTED_MDC =18, /* integrity protected encrypted data */
 	PKT_MDC 	  =19, /* manipulaion detection code packet */
 	PKT_COMMENT	  =61, /* new comment packet (private) */
@@ -140,12 +140,26 @@ typedef struct {
     MPI  data[PUBKEY_MAX_NSIG];
 } PKT_signature;
 
+typedef enum
+{
+  ATTRIB_UNKNOWN,
+  ATTRIB_JPEG
+} attribtype_t;
+
+/* This is the cooked form of attributes */
+struct user_attribute {
+  attribtype_t type;
+  const byte *data;
+  unsigned long len;
+};
 
 typedef struct {
     int ref;              /* reference counter */
-    int  len;		  /* length of the name */
-    char *photo;	  /* if this is not NULL, the packet is a photo ID */
-    int photolen;	  /* and the length of the photo */
+    int len;		  /* length of the name */
+    struct user_attribute *attribs;
+    int numattribs;
+    byte *attrib_data; /* if this is not NULL, the packet is an attribute */
+    unsigned long attrib_len;
     int help_key_usage;
     u32 help_key_expire;
     int is_primary;
@@ -367,6 +381,8 @@ const byte *parse_sig_subpkt ( const subpktarea_t *buffer,
 const byte *parse_sig_subpkt2 ( PKT_signature *sig,
                                 sigsubpkttype_t reqtype,
                                 size_t *ret_n );
+int parse_attribute_subpkts(PKT_user_id *uid);
+void make_attribute_uidname(PKT_user_id *uid);
 PACKET *create_gpg_control ( ctrlpkttype_t type,
                              const byte *data,
                              size_t datalen );
@@ -379,6 +395,9 @@ void build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 			const byte *buffer, size_t buflen );
 void build_sig_subpkt_from_sig( PKT_signature *sig );
 int  delete_sig_subpkt(subpktarea_t *buffer, sigsubpkttype_t type );
+void build_attribute_subpkt(PKT_user_id *uid,byte type,
+			    const void *buf,int buflen,
+			    const void *header,int headerlen);
 
 /*-- free-packet.c --*/
 void free_symkey_enc( PKT_symkey_enc *enc );
@@ -389,6 +408,7 @@ void release_public_key_parts( PKT_public_key *pk );
 void free_public_key( PKT_public_key *key );
 void release_secret_key_parts( PKT_secret_key *sk );
 void free_secret_key( PKT_secret_key *sk );
+void free_attributes(PKT_user_id *uid);
 void free_user_id( PKT_user_id *uid );
 void free_comment( PKT_comment *rem );
 void free_packet( PACKET *pkt );
