@@ -53,7 +53,7 @@ int check_trust( PKT_public_key *pk, unsigned *r_trustlevel );
 int query_trust_info( PKT_public_key *pk );
 int enum_cert_paths( void **context, ulong *lid,
 		     unsigned *ownertrust, unsigned *validity );
-int enum_cert_paths_print( void **context, FILE *fp,
+void enum_cert_paths_print( void **context, FILE *fp,
 					   int refresh, ulong selected_lid );
 unsigned get_ownertrust( ulong lid );
 int get_ownertrust_info( ulong lid );

@@ -1749,7 +1749,7 @@ enum_cert_paths( void **context, ulong *lid,
 /****************
  * Print the current path
  */
-int
+void
 enum_cert_paths_print( void **context, FILE *fp,
 				       int refresh, ulong selected_lid )
 {

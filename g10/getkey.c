@@ -225,7 +225,6 @@ getkey_disable_caches()
   #if MAX_PK_CACHE_ENTRIES
     {
 	pk_cache_entry_t ce, ce2;
-	u32 keyid[2];
 
 	for( ce = pk_cache; ce; ce = ce2 ) {
 	    ce2 = ce->next;

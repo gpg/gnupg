@@ -922,7 +922,7 @@ parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
 	buffer += n; buflen -=n;
     }
     if( reqtype == SIGSUBPKT_TEST_CRITICAL )
-	return buffer; /* as value true to indicate that there is no
+	return buffer; /* as value true to indicate that there is no */
 		       /* critical bit we don't understand */
     return NULL; /* end of packets; not found */
 

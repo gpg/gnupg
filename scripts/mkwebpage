@@ -1,0 +1,47 @@
+#!/bin/sh
+# Make a snapshot of the CVS head revision for the gnupg webpages
+
+set -e
+
+cd $HOME/pub
+
+
+fix_it () {
+    dir=$1
+
+    cat <<EOF >$dir/NEWS
+[ This is a snapshot of the NEWS file from the CVS head revision.
+  You will find the NEWS for the latest revision below the line
+  "Noteworthy changes in version 0.x.y".
+            					     (wk $(date +%Y-%m-%d)) ]
+
+
+EOF
+    cvs -Q checkout -p gnupg/NEWS >>$dir/NEWS
+}
+
+
+
+do_export () {
+    pgm=$1
+    mod=$2
+
+    rm -rf $pgm.new || true
+    rm -rf $pgm.old || true
+    cvs -Q export -r HEAD -d $pgm.new $mod
+    fix_it $pgm.new
+    [ -d $pgm ] && mv $pgm $pgm.old
+    if ! mv $pgm.new $pgm ; then
+	echo "rename failed - restoring" >&2
+	mv $pgm.old $pgm
+	exit 1
+    fi
+    rm -rf $pgm.old || true
+}
+
+
+do_export gnupg-www gnupg-www
+
+
+exit 0
+

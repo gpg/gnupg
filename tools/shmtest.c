@@ -62,7 +62,7 @@ do_get_string( int mode, const char *keyword, byte *area, size_t areasize )
 {
     size_t n, len;
     char *p=NULL;
-    int yes;
+    int yes=0;
 
     n = area[0] << 8 | area[1];
     /* fixme: do some sanity checks here */

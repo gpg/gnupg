@@ -60,10 +60,6 @@ else
     CFLAGS="$CFLAGS -O2"
 fi
 
-if test "$GCC" = yes; then
-    CFLAGS="$CFLAGS -Wall"
-fi
-
 
 AC_MSG_CHECKING([whether included zlib is requested])
 AC_ARG_WITH(included-zlib,
@@ -90,6 +86,10 @@ AC_PROG_RANLIB
 AC_PROG_INSTALL
 AM_CYGWIN32
 
+
+if test "$GCC" = yes; then
+    CFLAGS="$CFLAGS -Wall"
+fi
 
 case "${target}" in
     i386--mingw32)

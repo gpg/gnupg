@@ -377,9 +377,6 @@ read_random_source( int requester, size_t length, int level )
 {
     static int (*fnc)(void (*)(const void*, size_t, int), int,
 						    size_t, int) = NULL;
-    int nbytes;
-    int goodness;
-
     if( !fnc ) {
 	if( !is_initialized )
 	    initialize();

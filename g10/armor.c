@@ -29,6 +29,7 @@
 #include "iobuf.h"
 #include "memory.h"
 #include "util.h"
+#include "iobuf.h"
 #include "filter.h"
 #include "packet.h"
 #include "options.h"
@@ -373,8 +374,6 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 {
     int rc = 0;
     int i;
-    size_t n;
-    unsigned emplines;
     byte *line;
     unsigned len;
     unsigned maxlen;

@@ -6,4 +6,4 @@ gpg: NOTE: secret key 2E5FA4F4 is NOT protected.
 gpg: NOTE: secret key 439F02CA is NOT protected.
 gpg: WARNING: using insecure random number generator
 gpg: NOTE: signature key expired
-gpg: NOTE: this is a development version!
+NOTE: this is a development version!

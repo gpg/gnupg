@@ -96,6 +96,8 @@ int   iobuf_seek( IOBUF a, ulong newpos );
 
 int  iobuf_readbyte(IOBUF a);
 int  iobuf_read(IOBUF a, byte *buf, unsigned buflen );
+unsigned iobuf_read_line( IOBUF a, byte **addr_of_buffer,
+			  unsigned *length_of_buffer, unsigned *max_length );
 int  iobuf_peek(IOBUF a, byte *buf, unsigned buflen );
 int  iobuf_writebyte(IOBUF a, unsigned c);
 int  iobuf_write(IOBUF a, byte *buf, unsigned buflen );

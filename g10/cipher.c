@@ -32,6 +32,7 @@
 #include "filter.h"
 #include "packet.h"
 #include "options.h"
+#include "main.h"
 
 
 #define MIN_PARTIAL_SIZE 512
