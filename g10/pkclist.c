@@ -848,12 +848,20 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	if( rc )
 	    log_error(_("unknown default recipient `%s'\n"), def_rec );
 	else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) {
+	  /* Mark any_recipients here since the default recipient
+             would have been used if it wasn't already there.  It
+             doesn't really matter if we got this key from the default
+             recipient or an encrypt-to. */
+	  any_recipients = 1;
+	  if (key_present_in_pk_list(pk_list, pk) == 0)
+	    log_info(_("skipped: public key already set as default recipient\n"));
+	  else {
 	    PK_LIST r = m_alloc( sizeof *r );
 	    r->pk = pk; pk = NULL;
 	    r->next = pk_list;
 	    r->mark = 0;
 	    pk_list = r;
-	    any_recipients = 1;
+	  }
 	}
 	if( pk ) {
 	    free_public_key( pk );

@@ -58,6 +58,7 @@ static int count_uids( KBNODE keyblock );
 static int count_uids_with_flag( KBNODE keyblock, unsigned flag );
 static int count_keys_with_flag( KBNODE keyblock, unsigned flag );
 static int count_selected_uids( KBNODE keyblock );
+static int real_uids_left( KBNODE keyblock );
 static int count_selected_keys( KBNODE keyblock );
 static int menu_revsig( KBNODE keyblock );
 static int menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
@@ -1104,7 +1105,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 
 		if( !(n1=count_selected_uids(keyblock)) )
 		    tty_printf(_("You must select at least one user ID.\n"));
-		else if( count_uids(keyblock) - n1 < 1 )
+		else if( real_uids_left(keyblock) < 1 )
 		    tty_printf(_("You can't delete the last user ID!\n"));
 		else if( cpr_get_answer_is_yes(
 			    "keyedit.remove.uid.okay",
@@ -2368,6 +2369,21 @@ count_selected_keys( KBNODE keyblock )
     return count_keys_with_flag( keyblock, NODFLG_SELKEY);
 }
 
+/* returns how many real (i.e. not attribute) uids are unmarked */
+static int
+real_uids_left( KBNODE keyblock )
+{
+  KBNODE node;
+  int real=0;
+
+  for(node=keyblock;node;node=node->next)
+    if(node->pkt->pkttype==PKT_USER_ID && !(node->flag&NODFLG_SELUID) &&
+       !node->pkt->pkt.user_id->attrib_data)
+      real++;
+
+  return real;
+}
+
 /*
  * Ask whether the signature should be revoked.  If the user commits this,
  * flag bit MARK_A is set on the signature and the user ID.
@@ -2674,8 +2690,9 @@ menu_showphoto( KBNODE keyblock )
              else
                keyid_from_pk(pk, keyid);
 
-             tty_printf("Displaying photo ID of size %ld for key 0x%08lX "
-                        "(uid %d)\n",uid->attribs->len,(ulong)keyid[1],count);
+             tty_printf(_("Displaying %s photo ID of size %ld "
+			  "for key 0x%08lX (uid %d)\n"),
+			"jpeg",uid->attribs->len,(ulong)keyid[1],count);
              show_photo(uid->attribs,pk);
            }
        }

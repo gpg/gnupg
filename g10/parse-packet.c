@@ -768,10 +768,16 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	    printf("%sexportable", *buffer? "":"not ");
 	break;
       case SIGSUBPKT_TRUST:
-	p = "trust signature";
+	if(length!=2)
+	  p="[invalid trust signature]";
+	else
+	  printf("trust signature of level %d, amount %d",buffer[0],buffer[1]);
 	break;
       case SIGSUBPKT_REGEXP:
-	p = "regular expression";
+	if(!length)
+	  p="[invalid regexp]";
+	else
+	  printf("regular expression: \"%s\"",buffer);
 	break;
       case SIGSUBPKT_REVOCABLE:
 	if( length )

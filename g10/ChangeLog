@@ -1,3 +1,18 @@
+2002-04-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* pkclist.c (build_pk_list): Fix bug that allowed a key to be
+	selected twice in batch mode if one instance was the default
+	recipient and the other was an encrypt-to.  Noted by Stefan
+	Bellon.
+
+	* parse-packet.c (dump_sig_subpkt): Show data in trust and regexp
+	sig subpackets.
+
+	* keyedit.c (keyedit_menu): Use new function real_uids_left to
+	prevent deleting the last real (i.e. non-attribute) uid.  Again,
+	according to the attribute draft. (menu_showphoto): Make another
+	string translatable.
+
 2002-04-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* build-packet.c (build_sig_subpkt): Delete subpackets from both
