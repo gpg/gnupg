@@ -36,10 +36,12 @@ static struct { const char *name; int algo;} pubkey_names[] = {
     { "DSA",           PUBKEY_ALGO_DSA     },
     {NULL} };
 
+/* Note: the first string is the one used by ascii armor */
 static struct { const char *name; int algo;} digest_names[] = {
     { "MD5",           DIGEST_ALGO_MD5    },
     { "SHA1",          DIGEST_ALGO_SHA1   },
     { "SHA-1",         DIGEST_ALGO_SHA1   },
+    { "RIPEMD160",     DIGEST_ALGO_RMD160 },
     { "RMD160",        DIGEST_ALGO_RMD160 },
     { "RMD-160",       DIGEST_ALGO_RMD160 },
     { "RIPE-MD-160",   DIGEST_ALGO_RMD160 },
