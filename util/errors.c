@@ -97,6 +97,7 @@ g10_errstr( int err )
       X(INV_ARG        ,N_("invalid argument"))
       X(BAD_URI        ,N_("bad URI"))
       X(INVALID_URI    ,N_("unsupported URI"))
+      X(NETWORK        ,N_("network error"))
       default: p = buf; sprintf(buf, "g10err=%d", err); break;
     }
   #undef X

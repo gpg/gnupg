@@ -32,8 +32,9 @@ dist-hook:
 	    done ; \
 	done
 	@set -e; \
-	sed -e 's/@pkg_version@/$(VERSION)/g' $(top_srcdir)/scripts/gnupg.spec \
-	    > $(distdir)/scripts/gnupg-$(VERSION).spec
+	sed -e 's/@pkg_version@/$(VERSION)/g' \
+	    $(top_srcdir)/scripts/gnupg.spec.in \
+	    > $(distdir)/scripts/gnupg.spec
 
 
 # maintainer only

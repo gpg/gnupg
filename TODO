@@ -65,5 +65,5 @@ Nice to have
       really make sense?
     * change the fake_data stuff to mpi_set_opaque
     * How about letting something like 'gpg --version -v', list the
-      effective options. Yep.
+      effective options.
 

@@ -1,3 +1,8 @@
+Wed Jan 13 12:49:36 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* INSTALL: Applied new information how to build rpms by Fabio Coatti
+	* Makefile.in (gnupg.spec): Changed the names.
+
 Tue Jan 12 11:17:18 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* config.links (m68k-atari-mint): New

@@ -16,6 +16,11 @@ Provides: gpg openpgp
 BuildRoot: /tmp/rpmbuild_%{name}
 
 %changelog
+
+* Tue Jan 12 1999 Fabio Coatti <cova@felix.unife.it>
+- LINGUAS variable is now unset in configure to ensure that all
+  languages will be built. (Thanks to Luca Olivetti <luca@luca.ddns.org>)
+ 
 * Sat Jan 02 1999 Fabio Coatti <cova@felix.unife.it>
 - Added pl language file.
 - Included g10/pubring.asc in documentation files.
@@ -44,6 +49,9 @@ rm -rf $RPM_BUILD_DIR/%{name}-%{version}
 %setup
 
 %build
+if test -n "$LINGUAS"; then
+ unset LINGUAS
+fi    
 CFLAGS="$RPM_OPT_FLAGS" ./configure --prefix=/usr
 make
 
@@ -62,7 +70,8 @@ ln -s gpg.1 gpgm.1
 %doc %attr (-,root,root) NEWS
 %doc %attr (-,root,root) README
 %doc %attr (-,root,root) THANKS
-%doc %attr (-,root,root) TODO
+%doc %attr (-,root,root) TODO   
+%doc %attr (-,root,root) PROJECTS
 %doc %attr (-,root,root) doc/DETAILS
 %doc %attr (-,root,root) doc/FAQ
 %doc %attr (-,root,root) doc/HACKING

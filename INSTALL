@@ -98,11 +98,20 @@ action should be to create a key pair: "gpg --gen-key".
 
 Creating a RPM package
 ======================
-The file scripts/gnupg-x.x.x.spec is used to build a RPM package:
-    1. As root, copy the spec file into /usr/src/redhat/SPECS
+The file scripts/gnupg.spec is used to build a RPM package (both
+binary and src):
+    1. copy the spec file into /usr/src/redhat/SPECS
     2. copy the tar file into /usr/src/redhat/SOURCES
-    3. type: rpm -ba SPECS/gnupg-x.x.x.spec
+    3. type: rpm -ba SPECS/gnupg.spec
 
+Or use the -t (--tarbuild) option of rpm:
+    1. rpm -ta gnupg-x.x.x.tar.gz
+
+The binary rpm file can now be found in /usr/src/redhat/RPMS, source
+rpm in  /usr/src/redhat/SRPMS
+ 
+Please note that to install gnupg binary rpm you must be root, as
+gnupg needs to be suid root, at least on Linux machines
 
 
 Basic Installation

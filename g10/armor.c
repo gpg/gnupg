@@ -24,6 +24,7 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <ctype.h>
 
 #include "errors.h"
 #include "iobuf.h"
@@ -613,11 +614,42 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
     idx = afx->idx;
     val = afx->radbuf[0];
     for( n=0; n < size; ) {
-	if( (c=iobuf_get(a)) == -1 )
-	    break;
+
+	if( afx->buffer_pos < afx->buffer_len )
+	    c = afx->buffer[afx->buffer_pos++];
+	else { /* read the next line */
+	    unsigned maxlen = MAX_LINELEN;
+	    afx->buffer_pos = 0;
+	    afx->buffer_len = iobuf_read_line( a, &afx->buffer,
+					       &afx->buffer_size, &maxlen );
+	    if( !maxlen )
+		afx->truncated++;
+	    if( !afx->buffer_len )
+		break; /* eof */
+	    continue;
+	}
+
+      again:
 	if( c == '\n' || c == ' ' || c == '\r' || c == '\t' )
 	    continue;
 	else if( c == '=' ) { /* pad character: stop */
+	    /* some mailers leave quoted-printable encoded characters
+	     * so we try to workaround this */
+	    if( afx->buffer_pos+2 < afx->buffer_len ) {
+		int c1, c2, c3;
+		c1 = afx->buffer[afx->buffer_pos];
+		c2 = afx->buffer[afx->buffer_pos+1];
+		c3 = afx->buffer[afx->buffer_pos+2];
+		if( isxdigit(c1) && isxdigit(c2) && strchr( "=\n\r\t ", c3 )) {
+		    /* well it seems to be the case - adjust */
+		    c = isdigit(c1)? (c1 - '0'): (toupper(c1)-'A'+10);
+		    c <<= 4;
+		    c |= isdigit(c2)? (c2 - '0'): (toupper(c2)-'A'+10);
+		    afx->buffer_pos += 2;
+		    goto again;
+		}
+	    }
+
 	    if( idx == 1 )
 		buf[n++] = val;
 	    checkcrc++;
@@ -635,19 +667,32 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	}
 	idx = (idx+1) % 4;
     }
+
     for(i=0; i < n; i++ )
 	crc = (crc << 8) ^ crc_table[((crc >> 16)&0xff) ^ buf[i]];
     crc &= 0x00ffffff;
     afx->crc = crc;
     afx->idx = idx;
     afx->radbuf[0] = val;
+
     if( checkcrc ) {
 	afx->any_data = 1;
 	afx->inp_checked=0;
 	afx->faked = 0;
 	for(;;) { /* skip lf and pad characters */
-	    if( (c=iobuf_get(a)) == -1 )
-		break;
+	    if( afx->buffer_pos < afx->buffer_len )
+		c = afx->buffer[afx->buffer_pos++];
+	    else { /* read the next line */
+		unsigned maxlen = MAX_LINELEN;
+		afx->buffer_pos = 0;
+		afx->buffer_len = iobuf_read_line( a, &afx->buffer,
+						   &afx->buffer_size, &maxlen );
+		if( !maxlen )
+		    afx->truncated++;
+		if( !afx->buffer_len )
+		    break; /* eof */
+		continue;
+	    }
 	    if( c == '\n' || c == ' ' || c == '\r'
 		|| c == '\t' || c == '=' )
 		continue;
@@ -667,8 +712,25 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		  case 2: val |= (c>>2)&15; mycrc |= val << 8;val=(c<<6)&0xc0;break;
 		  case 3: val |= c&0x3f; mycrc |= val; break;
 		}
-		if( (c=iobuf_get(a)) == -1 )
+		for(;;) {
+		    if( afx->buffer_pos < afx->buffer_len )
+			c = afx->buffer[afx->buffer_pos++];
+		    else { /* read the next line */
+			unsigned maxlen = MAX_LINELEN;
+			afx->buffer_pos = 0;
+			afx->buffer_len = iobuf_read_line( a, &afx->buffer,
+							   &afx->buffer_size,
+								&maxlen );
+			if( !maxlen )
+			    afx->truncated++;
+			if( !afx->buffer_len )
+			    break; /* eof */
+			continue;
+		    }
 		    break;
+		}
+		if( !afx->buffer_len )
+		    break; /* eof */
 	    } while( ++idx < 4 );
 	    if( c == -1 ) {
 		log_error(_("premature eof (in CRC)\n"));

@@ -4,6 +4,6 @@ install-sh
 mkinstalldirs
 mkdiff
 missing
-gnupg.spec
+gnupg.spec.in
 autogen.sh
 ChangeLog
