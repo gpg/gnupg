@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef G10_TRUSTDB_H
-#define G10_TRUSTDB_H
+#ifndef GPG_TRUSTDB_H
+#define GPG_TRUSTDB_H
 
 
 /* Trust values must be sorted in ascending order */
@@ -78,4 +78,4 @@ void import_ownertrust(const char *fname);
 /*-- pkclist.c --*/
 int edit_ownertrust( ulong lid, int mode );
 
-#endif /*G10_TRUSTDB_H*/
+#endif /*GPG_TRUSTDB_H*/

@@ -52,7 +52,7 @@ dearmor_file( const char *fname )
     if( !(inp = iobuf_open(fname)) ) {
 	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
 					strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
+	rc = GPGERR_OPEN_FILE;
 	goto leave;
     }
 
@@ -94,7 +94,7 @@ enarmor_file( const char *fname )
     if( !(inp = iobuf_open(fname)) ) {
 	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
 					strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
+	rc = GPGERR_OPEN_FILE;
 	goto leave;
     }
 

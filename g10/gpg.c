@@ -1,5 +1,5 @@
-/* g10.c - The GnuPG utility (main for gpg)
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+/* gpg.c - The GnuPG utility (main for gpg)
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -39,7 +39,7 @@
 #include "ttyio.h"
 #include "i18n.h"
 #include "status.h"
-#include "g10defs.h"
+#include "gnupg-defs.h"
 #include "hkp.h"
 
 
@@ -344,7 +344,7 @@ static ARGPARSE_OPTS opts[] = {
 
 
 
-int g10_errors_seen = 0;
+int gpg_errors_seen = 0;
 
 static int utf8_strings = 0;
 static int maybe_setuid = 1;
@@ -457,7 +457,7 @@ i18n_init(void)
     #else
        setlocale( LC_ALL, "" );
     #endif
-    bindtextdomain( PACKAGE, G10_LOCALEDIR );
+    bindtextdomain( PACKAGE, GNUPG_LOCALEDIR );
     textdomain( PACKAGE );
   #endif
   #endif
@@ -469,7 +469,7 @@ wrong_args( const char *text)
     fputs(_("usage: gpg [options] "),stderr);
     fputs(text,stderr);
     putc('\n',stderr);
-    g10_exit(2);
+    gpg_exit(2);
 }
 
 
@@ -547,7 +547,7 @@ set_cmd( enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd )
 	cmd = aClearsign;
     else {
 	log_error(_("conflicting commands\n"));
-	g10_exit(2);
+	gpg_exit(2);
     }
 
     *ret_cmd = cmd;
@@ -696,7 +696,7 @@ main( int argc, char **argv )
 	    else {
 		log_error(_("option file `%s': %s\n"),
 				    configname, strerror(errno) );
-		g10_exit(2);
+		gpg_exit(2);
 	    }
 	    gcry_free(configname); configname = NULL;
 	}
@@ -933,7 +933,7 @@ main( int argc, char **argv )
     }
     gcry_free( configname ); configname = NULL;
     if( log_get_errorcount(0) )
-	g10_exit(2);
+	gpg_exit(2);
     if( nogreeting )
 	greeting = 0;
 
@@ -969,7 +969,7 @@ main( int argc, char **argv )
 
     set_debug();
     /* FIXME: should set filenames of libgcrypt explicitly
-     * g10_opt_homedir = opt.homedir; */
+     * gpg_opt_homedir = opt.homedir; */
 
     /* must do this after dropping setuid, because string_to...
      * may try to load a module */
@@ -1020,7 +1020,7 @@ main( int argc, char **argv )
 
 
     if( log_get_errorcount(0) )
-	g10_exit(2);
+	gpg_exit(2);
 
     if( !cmd && opt.fingerprint && !with_fpr )
 	set_cmd( &cmd, aListKeys);
@@ -1092,7 +1092,7 @@ main( int argc, char **argv )
       default: rc = setup_trustdb(1, trustdb_name ); break;
     }
     if( rc )
-	log_error(_("failed to initialize the TrustDB: %s\n"), g10_errstr(rc));
+	log_error(_("failed to initialize the TrustDB: %s\n"), gpg_errstr(rc));
 
 
     switch( cmd ) {
@@ -1101,21 +1101,21 @@ main( int argc, char **argv )
 	    wrong_args(_("--store [filename]"));
 	if( (rc = encode_store(fname)) )
 	    log_error_f( print_fname_stdin(fname),
-			"store failed: %s\n", g10_errstr(rc) );
+			"store failed: %s\n", gpg_errstr(rc) );
 	break;
       case aSym: /* encrypt the given file only with the symmetric cipher */
 	if( argc > 1 )
 	    wrong_args(_("--symmetric [filename]"));
 	if( (rc = encode_symmetric(fname)) )
 	    log_error_f(print_fname_stdin(fname),
-			"symmetric encryption failed: %s\n",g10_errstr(rc) );
+			"symmetric encryption failed: %s\n",gpg_errstr(rc) );
 	break;
 
       case aEncr: /* encrypt the given file */
 	if( argc > 1 )
 	    wrong_args(_("--encrypt [filename]"));
 	if( (rc = encode_crypt(fname,remusr)) )
-	    log_error("%s: encryption failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
+	    log_error("%s: encryption failed: %s\n", print_fname_stdin(fname), gpg_errstr(rc) );
 	break;
 
       case aSign: /* sign the given file */
@@ -1133,7 +1133,7 @@ main( int argc, char **argv )
 	    }
 	}
 	if( (rc = sign_file( sl, detached_sig, locusr, 0, NULL, NULL)) )
-	    log_error("signing failed: %s\n", g10_errstr(rc) );
+	    log_error("signing failed: %s\n", gpg_errstr(rc) );
 	free_strlist(sl);
 	break;
 
@@ -1147,7 +1147,7 @@ main( int argc, char **argv )
 	else
 	    sl = NULL;
 	if( (rc = sign_file(sl, detached_sig, locusr, 1, remusr, NULL)) )
-	    log_error("%s: sign+encrypt failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
+	    log_error("%s: sign+encrypt failed: %s\n", print_fname_stdin(fname), gpg_errstr(rc) );
 	free_strlist(sl);
 	break;
 
@@ -1155,19 +1155,19 @@ main( int argc, char **argv )
 	if( argc > 1 )
 	    wrong_args(_("--clearsign [filename]"));
 	if( (rc = clearsign_file(fname, locusr, NULL)) )
-	    log_error("%s: clearsign failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
+	    log_error("%s: clearsign failed: %s\n", print_fname_stdin(fname), gpg_errstr(rc) );
 	break;
 
       case aVerify:
 	if( (rc = verify_signatures( argc, argv ) ))
-	    log_error("verify signatures failed: %s\n", g10_errstr(rc) );
+	    log_error("verify signatures failed: %s\n", gpg_errstr(rc) );
 	break;
 
       case aDecrypt:
 	if( argc > 1 )
 	    wrong_args(_("--decrypt [filename]"));
 	if( (rc = decrypt_message( fname ) ))
-	    log_error("decrypt_message failed: %s\n", g10_errstr(rc) );
+	    log_error("decrypt_message failed: %s\n", gpg_errstr(rc) );
 	break;
 
 
@@ -1211,7 +1211,7 @@ main( int argc, char **argv )
 	    wrong_args(_("--delete-key user-id"));
 	username = make_username( fname );
 	if( (rc = delete_key(username, cmd==aDeleteSecretKey)) )
-	    log_error("%s: delete key failed: %s\n", username, g10_errstr(rc) );
+	    log_error("%s: delete key failed: %s\n", username, gpg_errstr(rc) );
 	gcry_free(username);
 	break;
 
@@ -1258,13 +1258,13 @@ main( int argc, char **argv )
 	if( !argc  ) {
 	    rc = import_keys( NULL, (cmd == aFastImport) );
 	    if( rc )
-		log_error("import failed: %s\n", g10_errstr(rc) );
+		log_error("import failed: %s\n", gpg_errstr(rc) );
 	}
 	for( ; argc; argc--, argv++ ) {
 	    rc = import_keys( *argv, (cmd == aFastImport) );
 	    if( rc )
 		log_error("import from `%s' failed: %s\n",
-						*argv, g10_errstr(rc) );
+						*argv, gpg_errstr(rc) );
 	}
 	break;
 
@@ -1305,7 +1305,7 @@ main( int argc, char **argv )
 	    wrong_args("--dearmor [file]");
 	rc = dearmor_file( argc? *argv: NULL );
 	if( rc )
-	    log_error(_("dearmoring failed: %s\n"), g10_errstr(rc));
+	    log_error(_("dearmoring failed: %s\n"), gpg_errstr(rc));
 	break;
 
       case aEnArmor:
@@ -1313,7 +1313,7 @@ main( int argc, char **argv )
 	    wrong_args("--enarmor [file]");
 	rc = enarmor_file( argc? *argv: NULL );
 	if( rc )
-	    log_error(_("enarmoring failed: %s\n"), g10_errstr(rc));
+	    log_error(_("enarmoring failed: %s\n"), gpg_errstr(rc));
 	break;
 
 
@@ -1486,7 +1486,7 @@ main( int argc, char **argv )
 	    }
 	    rc = proc_packets(NULL, a );
 	    if( rc )
-		log_error("processing message failed: %s\n", g10_errstr(rc) );
+		log_error("processing message failed: %s\n", gpg_errstr(rc) );
 	    iobuf_close(a);
 	}
 	break;
@@ -1495,13 +1495,13 @@ main( int argc, char **argv )
     /* cleanup */
     FREE_STRLIST(remusr);
     FREE_STRLIST(locusr);
-    g10_exit(0);
+    gpg_exit(0);
     return 8; /*NEVER REACHED*/
 }
 
 
 void
-g10_exit( int rc )
+gpg_exit( int rc )
 {
     if( opt.debug & DBG_MEMSTAT_VALUE ) {
 	gcry_control( GCRYCTL_DUMP_MEMORY_STATS );
@@ -1511,7 +1511,7 @@ g10_exit( int rc )
 	gcry_control( GCRYCTL_DUMP_SECMEM_STATS );
     gcry_control( GCRYCTL_TERM_SECMEM );
     rc = rc? rc : log_get_errorcount(0)? 2 :
-			g10_errors_seen? 1 : 0;
+			gpg_errors_seen? 1 : 0;
     /*write_status( STATUS_LEAVE );*/
     exit(rc );
 }

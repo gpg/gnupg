@@ -68,7 +68,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	if( !fname )
 	    fname = ask_outfile_name( pt->name, pt->namelen );
 	if( !fname ) {
-	    rc = G10ERR_CREATE_FILE;
+	    rc = GPGERR_CREATE_FILE;
 	    goto leave;
 	}
     }
@@ -83,7 +83,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	fp = stdout;
     }
     else if( !overwrite_filep( fname ) ) {
-	rc = G10ERR_CREATE_FILE;
+	rc = GPGERR_CREATE_FILE;
 	goto leave;
     }
 
@@ -91,7 +91,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	;
     else if( !(fp = fopen(fname,"wb")) ) {
 	log_error("Error creating `%s': %s\n", fname, strerror(errno) );
-	rc = G10ERR_CREATE_FILE;
+	rc = GPGERR_CREATE_FILE;
 	goto leave;
     }
 
@@ -102,7 +102,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		if( (c = iobuf_get(pt->buf)) == -1 ) {
 		    log_error("Problem reading source (%u bytes remaining)\n",
 			      (unsigned)pt->len);
-		    rc = G10ERR_READ_FILE;
+		    rc = GPGERR_READ_FILE;
 		    goto leave;
 		}
 		if( mfx->md )
@@ -113,7 +113,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		    if( putc( c, fp ) == EOF ) {
 			log_error("Error writing to `%s': %s\n",
 				  fname, strerror(errno) );
-			rc = G10ERR_WRITE_FILE;
+			rc = GPGERR_WRITE_FILE;
 			goto leave;
 		    }
 		}
@@ -127,7 +127,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		if( len == -1 ) {
 		    log_error("Problem reading source (%u bytes remaining)\n",
 			      (unsigned)pt->len);
-		    rc = G10ERR_READ_FILE;
+		    rc = GPGERR_READ_FILE;
 		    gcry_free( buffer );
 		    goto leave;
 		}
@@ -137,7 +137,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		    if( fwrite( buffer, 1, len, fp ) != len ) {
 			log_error("Error writing to `%s': %s\n",
 				  fname, strerror(errno) );
-			rc = G10ERR_WRITE_FILE;
+			rc = GPGERR_WRITE_FILE;
 			gcry_free( buffer );
 			goto leave;
 		    }
@@ -158,7 +158,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		    if( putc( c, fp ) == EOF ) {
 			log_error("Error writing to `%s': %s\n",
 				  fname, strerror(errno) );
-			rc = G10ERR_WRITE_FILE;
+			rc = GPGERR_WRITE_FILE;
 			goto leave;
 		    }
 		}
@@ -185,7 +185,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		    if( fwrite( buffer, 1, len, fp ) != len ) {
 			log_error("Error writing to `%s': %s\n",
 				  fname, strerror(errno) );
-			rc = G10ERR_WRITE_FILE;
+			rc = GPGERR_WRITE_FILE;
 			gcry_free( buffer );
 			goto leave;
 		    }
@@ -203,7 +203,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		if( putc( c, fp ) == EOF ) {
 		    log_error("Error writing to `%s': %s\n",
 						fname, strerror(errno) );
-		    rc = G10ERR_WRITE_FILE;
+		    rc = GPGERR_WRITE_FILE;
 		    goto leave;
 		}
 	    }
@@ -240,7 +240,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     if( fp && fp != stdout && fclose(fp) ) {
 	log_error("Error closing `%s': %s\n", fname, strerror(errno) );
 	fp = NULL;
-	rc = G10ERR_WRITE_FILE;
+	rc = GPGERR_WRITE_FILE;
 	goto leave;
     }
     fp = NULL;
@@ -315,7 +315,7 @@ ask_for_detached_datafile( GCRY_MD_HD md, GCRY_MD_HD md2,
 			   _("Please enter name of data file: "));
 	    cpr_kill_prompt();
 	    if( any && !*answer ) {
-		rc = G10ERR_READ_FILE;
+		rc = GPGERR_READ_FILE;
 		goto leave;
 	    }
 	    fp = iobuf_open(answer);
@@ -325,7 +325,7 @@ ask_for_detached_datafile( GCRY_MD_HD md, GCRY_MD_HD md2,
 	    }
 	    else if( !fp ) {
 		log_error("can't open `%s': %s\n", answer, strerror(errno) );
-		rc = G10ERR_READ_FILE;
+		rc = GPGERR_READ_FILE;
 		goto leave;
 	    }
 	} while( !fp );
@@ -380,7 +380,7 @@ hash_datafiles( GCRY_MD_HD md, GCRY_MD_HD md2, STRLIST files,
 						print_fname_stdin(sl->d));
 	    if( !files )
 		free_strlist(sl);
-	    return G10ERR_OPEN_FILE;
+	    return GPGERR_OPEN_FILE;
 	}
 	do_hash( md, md2, fp, textmode );
 	iobuf_close(fp);

@@ -121,7 +121,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 	rc = enum_keyblocks( secret?5:0, &kbpos, &keyblock );
 	if( rc ) {
 	    if( rc != -1 )
-		log_error("enum_keyblocks(open) failed: %s\n", g10_errstr(rc) );
+		log_error("enum_keyblocks(open) failed: %s\n", gpg_errstr(rc) );
 	    goto leave;
 	}
 	all = 2;
@@ -135,7 +135,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 	    if( rc == -1 )  /* EOF */
 		break;
 	    if( rc ) {
-		log_error("enum_keyblocks(read) failed: %s\n", g10_errstr(rc));
+		log_error("enum_keyblocks(read) failed: %s\n", gpg_errstr(rc));
 		break;
 	    }
 	}
@@ -144,7 +144,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 	    rc = secret? find_secret_keyblock_byname( &kbpos, sl->d )
 		       : find_keyblock_byname( &kbpos, sl->d );
 	    if( rc ) {
-		log_error(_("%s: user not found: %s\n"), sl->d, g10_errstr(rc));
+		log_error(_("%s: user not found: %s\n"), sl->d, gpg_errstr(rc));
 		rc = 0;
 		continue;
 	    }
@@ -153,7 +153,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 	}
 
 	if( rc ) {
-	    log_error(_("certificate read problem: %s\n"), g10_errstr(rc));
+	    log_error(_("certificate read problem: %s\n"), gpg_errstr(rc));
 	    goto leave;
 	}
 
@@ -185,8 +185,8 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 
 	    if( (rc = build_packet( out, node->pkt )) ) {
 		log_error("build_packet(%d) failed: %s\n",
-			    node->pkt->pkttype, g10_errstr(rc) );
-		rc = G10ERR_WRITE_FILE;
+			    node->pkt->pkttype, gpg_errstr(rc) );
+		rc = GPGERR_WRITE_FILE;
 		goto leave;
 	    }
 	}

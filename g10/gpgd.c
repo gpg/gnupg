@@ -138,7 +138,7 @@ set_debug(void)
     if( opt.debug & DBG_MPI_VALUE )
 	mpi_debug_mode = 1;
     if( opt.debug & DBG_CIPHER_VALUE )
-	g10c_debug_mode = 1;
+	gpgc_debug_mode = 1;
     if( opt.debug & DBG_IOBUF_VALUE )
 	iobuf_debug_mode = 1;
 }
@@ -201,7 +201,7 @@ main( int argc, char **argv )
 	    else {
 		log_error("option file `%s': %s\n",
 				    configname, strerror(errno) );
-		g10_exit(1);
+		gpg_exit(1);
 	    }
 	    gcry_free(configname); configname = NULL;
 	}
@@ -235,7 +235,7 @@ main( int argc, char **argv )
     }
     gcry_free( configname ); configname = NULL;
     if( log_get_errorcount(0) )
-	g10_exit(2);
+	gpg_exit(2);
 
     fprintf(stderr, "%s %s; %s\n", strusage(11), strusage(13), strusage(14) );
     fprintf(stderr, "%s\n", strusage(15) );
@@ -245,13 +245,13 @@ main( int argc, char **argv )
 	become_daemon();
 
 
-    g10_exit(0);
+    gpg_exit(0);
     return 8; /*NEVER REACHED*/
 }
 
 
 void
-g10_exit( int rc )
+gpg_exit( int rc )
 {
     secmem_term();
     rc = rc? rc : log_get_errorcount(0)? 2:0;

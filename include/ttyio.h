@@ -17,8 +17,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef G10_TTYIO_H
-#define G10_TTYIO_H
+#ifndef GPG_TTYIO_H
+#define GPG_TTYIO_H
 
 int tty_batchmode( int onoff );
 void tty_printf( const char *fmt, ... );
@@ -31,4 +31,4 @@ int tty_get_answer_is_yes( const char *prompt );
 int tty_no_terminal(int onoff);
 
 
-#endif /*G10_TTYIO_H*/
+#endif /*GPG_TTYIO_H*/

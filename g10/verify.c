@@ -64,7 +64,7 @@ verify_signatures( int nfiles, char **files )
     fp = iobuf_open(sigfile);
     if( !fp ) {
 	log_error(_("can't open `%s'\n"), print_fname_stdin(sigfile));
-	return G10ERR_OPEN_FILE;
+	return GPGERR_OPEN_FILE;
     }
 
     if( !opt.no_armor ) {

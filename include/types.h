@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef G10_TYPES_H
-#define G10_TYPES_H
+#ifndef GPG_TYPES_H
+#define GPG_TYPES_H
 
 
 /* The AC_CHECK_SIZEOF() in configure fails for some machines.
@@ -116,4 +116,4 @@ typedef struct string_list {
 } *STRLIST;
 
 
-#endif /*G10_TYPES_H*/
+#endif /*GPG_TYPES_H*/

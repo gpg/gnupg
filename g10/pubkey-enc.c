@@ -71,7 +71,7 @@ pk_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
 			  NULL ));
     }
     else
-	return G10ERR_PUBKEY_ALGO;
+	return GPGERR_PUBKEY_ALGO;
 
     /* put data into a S-Exp s_data */
     if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
@@ -138,7 +138,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	    sk = gcry_xcalloc( 1, sizeof *sk );
 	    rc=enum_secret_keys( &enum_context, sk, 1);
 	    if( rc ) {
-		rc = G10ERR_NO_SECKEY;
+		rc = GPGERR_NO_SECKEY;
 		break;
 	    }
 	    if( sk->pubkey_algo != k->pubkey_algo )
@@ -204,19 +204,19 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 	log_hexdump("DEK frame:", frame, nframe );
     n=0;
     if( n + 7 > nframe )
-	{ rc = G10ERR_WRONG_SECKEY; goto leave; }
+	{ rc = GPGERR_WRONG_SECKEY; goto leave; }
     if( frame[n] == 1 && frame[nframe-1] == 2 ) {
 	log_info(_("old encoding of the DEK is not supported\n"));
-	rc = G10ERR_CIPHER_ALGO;
+	rc = GPGERR_CIPHER_ALGO;
 	goto leave;
     }
     if( frame[n] != 2 )  /* somethink is wrong */
-	{ rc = G10ERR_WRONG_SECKEY; goto leave; }
+	{ rc = GPGERR_WRONG_SECKEY; goto leave; }
     for(n++; n < nframe && frame[n]; n++ ) /* skip the random bytes */
 	;
     n++; /* and the zero byte */
     if( n + 4 > nframe )
-	{ rc = G10ERR_WRONG_SECKEY; goto leave; }
+	{ rc = GPGERR_WRONG_SECKEY; goto leave; }
 
     dek->keylen = nframe - (n+1) - 2;
     dek->algo = frame[n++];
@@ -228,7 +228,7 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 	goto leave;
     }
     if( dek->keylen != gcry_cipher_get_algo_keylen( dek->algo ) ) {
-	rc = G10ERR_WRONG_SECKEY;
+	rc = GPGERR_WRONG_SECKEY;
 	goto leave;
     }
 
@@ -239,7 +239,7 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
     for( csum2=0, n=0; n < dek->keylen; n++ )
 	csum2 += dek->key[n];
     if( csum != csum2 ) {
-	rc = G10ERR_WRONG_SECKEY;
+	rc = GPGERR_WRONG_SECKEY;
 	goto leave;
     }
     if( (opt.debug & DBG_CIPHER_VALUE)	)
@@ -248,7 +248,7 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
     {
 	PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
 	if( (rc = get_pubkey( pk, keyid )) )
-	    log_error("public key problem: %s\n", g10_errstr(rc) );
+	    log_error("public key problem: %s\n", gpg_errstr(rc) );
 	else if( !pk->local_id && query_trust_record(pk) )
 	    log_error("can't check algorithm against preferences\n");
 	else if( dek->algo != GCRY_CIPHER_3DES

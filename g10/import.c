@@ -116,7 +116,7 @@ import_keys( const char *fname, int fast )
 	fname = "[stdin]";
     if( !inp ) {
 	log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
-	return G10ERR_OPEN_FILE;
+	return GPGERR_OPEN_FILE;
     }
 
     rc = import( inp, fast, fname );
@@ -170,8 +170,8 @@ import( IOBUF inp, int fast, const char* fname )
     }
     if( rc == -1 )
 	rc = 0;
-    else if( rc && rc != G10ERR_INV_KEYRING )
-	log_error( _("error reading `%s': %s\n"), fname, g10_errstr(rc));
+    else if( rc && rc != GPGERR_INV_KEYRING )
+	log_error( _("error reading `%s': %s\n"), fname, gpg_errstr(rc));
 
     if( !opt.quiet ) {
 	log_info(_("Total number processed: %lu\n"), count );
@@ -248,9 +248,9 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
     init_packet(pkt);
     while( (rc=parse_packet(a, pkt)) != -1 ) {
 	if( rc ) {  /* ignore errors */
-	    if( rc != G10ERR_UNKNOWN_PACKET ) {
-		log_error("read_block: read error: %s\n", g10_errstr(rc) );
-		rc = G10ERR_INV_KEYRING;
+	    if( rc != GPGERR_UNKNOWN_PACKET ) {
+		log_error("read_block: read error: %s\n", gpg_errstr(rc) );
+		rc = GPGERR_INV_KEYRING;
 		goto ready;
 	    }
 	    free_packet( pkt );
@@ -272,7 +272,7 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
 	  case PKT_COMPRESSED:
 	    if( pkt->pkt.compressed->algorithm < 1
 		|| pkt->pkt.compressed->algorithm > 2 ) {
-		rc = G10ERR_COMPR_ALGO;
+		rc = GPGERR_COMPR_ALGO;
 		goto ready;
 	    }
 	    {
@@ -324,7 +324,7 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
  * Try to import one keyblock.	Return an error only in serious cases, but
  * never for an invalid keyblock.  It uses log_error to increase the
  * internal errorcount, so that invalid input can be detected by programs
- * which called g10.
+ * which called gpg.
  */
 static int
 import_one( const char *fname, KBNODE keyblock, int fast )
@@ -385,25 +385,25 @@ import_one( const char *fname, KBNODE keyblock, int fast )
     /* do we have this key already in one of our pubrings ? */
     pk_orig = gcry_xcalloc( 1, sizeof *pk_orig );
     rc = get_pubkey( pk_orig, keyid );
-    if( rc && rc != G10ERR_NO_PUBKEY ) {
+    if( rc && rc != GPGERR_NO_PUBKEY ) {
 	log_error( _("key %08lX: public key not found: %s\n"),
-				(ulong)keyid[1], g10_errstr(rc));
+				(ulong)keyid[1], gpg_errstr(rc));
     }
     else if( rc ) { /* insert this key */
 	/* get default resource */
 	if( get_keyblock_handle( NULL, 0, &kbpos ) ) {
 	    log_error(_("no default public keyring\n"));
-	    return G10ERR_GENERAL;
+	    return GPGERR_GENERAL;
 	}
 	if( opt.verbose > 1 )
 	    log_info( _("writing to `%s'\n"),
 				keyblock_resource_name(&kbpos) );
 	if( (rc=lock_keyblock( &kbpos )) )
 	   log_error(_("can't lock keyring `%s': %s\n"),
-		       keyblock_resource_name(&kbpos), g10_errstr(rc) );
+		       keyblock_resource_name(&kbpos), gpg_errstr(rc) );
 	else if( (rc=insert_keyblock( &kbpos, keyblock )) )
 	   log_error( _("error writing keyring `%s': %s\n"),
-		       keyblock_resource_name(&kbpos), g10_errstr(rc) );
+		       keyblock_resource_name(&kbpos), gpg_errstr(rc) );
 	unlock_keyblock( &kbpos );
 	/* we are ready */
 	if( !opt.quiet )
@@ -426,7 +426,7 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	if( cmp_public_keys( pk_orig, pk ) ) {
 	    log_error( _("key %08lX: doesn't match our copy\n"),
 							  (ulong)keyid[1]);
-	    rc = G10ERR_GENERAL;
+	    rc = GPGERR_GENERAL;
 	    goto leave;
 	}
 
@@ -434,13 +434,13 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	rc = find_keyblock_bypk( &kbpos, pk_orig );
 	if( rc ) {
 	    log_error( _("key %08lX: can't locate original keyblock: %s\n"),
-				     (ulong)keyid[1], g10_errstr(rc));
+				     (ulong)keyid[1], gpg_errstr(rc));
 	    goto leave;
 	}
 	rc = read_keyblock( &kbpos, &keyblock_orig );
 	if( rc ) {
 	    log_error( _("key %08lX: can't read original keyblock: %s\n"),
-					    (ulong)keyid[1], g10_errstr(rc));
+					    (ulong)keyid[1], gpg_errstr(rc));
 	    goto leave;
 	}
 
@@ -458,10 +458,10 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	    /* keyblock_orig has been updated; write */
 	    if( (rc=lock_keyblock( &kbpos )) )
 	       log_error( _("can't lock keyring `%s': %s\n"),
-			  keyblock_resource_name(&kbpos), g10_errstr(rc) );
+			  keyblock_resource_name(&kbpos), gpg_errstr(rc) );
 	    else if( (rc=update_keyblock( &kbpos, keyblock_orig )) )
 		log_error( _("error writing keyring `%s': %s\n"),
-			     keyblock_resource_name(&kbpos), g10_errstr(rc) );
+			     keyblock_resource_name(&kbpos), gpg_errstr(rc) );
 	    unlock_keyblock( &kbpos );
 	    /* we are ready */
 	    if( !opt.quiet ) {
@@ -498,12 +498,12 @@ import_one( const char *fname, KBNODE keyblock, int fast )
     if( !rc && !fast ) {
 	rc = query_trust_record( new_key? pk : pk_orig );
 	if( rc && rc != -1 )
-	    log_error("trustdb error: %s\n", g10_errstr(rc) );
+	    log_error("trustdb error: %s\n", gpg_errstr(rc) );
 	else if( rc == -1 ) { /* not found trustdb */
 	    rc = insert_trust_record( new_key? keyblock : keyblock_orig );
 	    if( rc )
 		log_error("key %08lX: trustdb insert failed: %s\n",
-					(ulong)keyid[1], g10_errstr(rc) );
+					(ulong)keyid[1], gpg_errstr(rc) );
 	}
 	else if( mod_key )
 	    rc = update_trust_record( keyblock_orig, 1, NULL );
@@ -559,18 +559,18 @@ import_secret_one( const char *fname, KBNODE keyblock )
 
     /* do we have this key already in one of our secrings ? */
     rc = seckey_available( keyid );
-    if( rc == G10ERR_NO_SECKEY ) { /* simply insert this key */
+    if( rc == GPGERR_NO_SECKEY ) { /* simply insert this key */
 	/* get default resource */
 	if( get_keyblock_handle( NULL, 1, &kbpos ) ) {
 	    log_error("no default secret keyring\n");
-	    return G10ERR_GENERAL;
+	    return GPGERR_GENERAL;
 	}
 	if( (rc=lock_keyblock( &kbpos )) )
 	    log_error( _("can't lock keyring `%s': %s\n"),
-			 keyblock_resource_name(&kbpos), g10_errstr(rc) );
+			 keyblock_resource_name(&kbpos), gpg_errstr(rc) );
 	else if( (rc=insert_keyblock( &kbpos, keyblock )) )
 	    log_error( _("error writing keyring `%s': %s\n"),
-		      keyblock_resource_name(&kbpos), g10_errstr(rc) );
+		      keyblock_resource_name(&kbpos), gpg_errstr(rc) );
 	unlock_keyblock( &kbpos );
 	/* we are ready */
 	if( !opt.quiet )
@@ -584,7 +584,7 @@ import_secret_one( const char *fname, KBNODE keyblock )
     }
     else
 	log_error( _("key %08lX: secret key not found: %s\n"),
-				(ulong)keyid[1], g10_errstr(rc));
+				(ulong)keyid[1], gpg_errstr(rc));
 
     return rc;
 }
@@ -611,7 +611,7 @@ import_revoke_cert( const char *fname, KBNODE node )
 
     pk = gcry_xcalloc( 1, sizeof *pk );
     rc = get_pubkey( pk, keyid );
-    if( rc == G10ERR_NO_PUBKEY ) {
+    if( rc == GPGERR_NO_PUBKEY ) {
 	log_info( _("key %08lX: no public key - "
 		 "can't apply revocation certificate\n"), (ulong)keyid[1]);
 	rc = 0;
@@ -619,7 +619,7 @@ import_revoke_cert( const char *fname, KBNODE node )
     }
     else if( rc ) {
 	log_error( _("key %08lX: public key not found: %s\n"),
-				       (ulong)keyid[1], g10_errstr(rc));
+				       (ulong)keyid[1], gpg_errstr(rc));
 	goto leave;
     }
 
@@ -627,13 +627,13 @@ import_revoke_cert( const char *fname, KBNODE node )
     rc = find_keyblock_bypk( &kbpos, pk );
     if( rc ) {
 	log_error( _("key %08lX: can't locate original keyblock: %s\n"),
-					(ulong)keyid[1], g10_errstr(rc));
+					(ulong)keyid[1], gpg_errstr(rc));
 	goto leave;
     }
     rc = read_keyblock( &kbpos, &keyblock );
     if( rc ) {
 	log_error( _("key %08lX: can't read original keyblock: %s\n"),
-					(ulong)keyid[1], g10_errstr(rc));
+					(ulong)keyid[1], gpg_errstr(rc));
 	goto leave;
     }
 
@@ -644,7 +644,7 @@ import_revoke_cert( const char *fname, KBNODE node )
     rc = check_key_signature( keyblock, node, NULL);
     if( rc ) {
 	log_error( _("key %08lX: invalid revocation certificate"
-		  ": %s - rejected\n"), (ulong)keyid[1], g10_errstr(rc));
+		  ": %s - rejected\n"), (ulong)keyid[1], gpg_errstr(rc));
     }
 
 
@@ -668,10 +668,10 @@ import_revoke_cert( const char *fname, KBNODE node )
     /* and write the keyblock back */
     if( (rc=lock_keyblock( &kbpos )) )
 	log_error( _("can't lock keyring `%s': %s\n"),
-		   keyblock_resource_name(&kbpos), g10_errstr(rc) );
+		   keyblock_resource_name(&kbpos), gpg_errstr(rc) );
     else if( (rc=update_keyblock( &kbpos, keyblock )) )
 	log_error( _("error writing keyring `%s': %s\n"),
-		    keyblock_resource_name(&kbpos), g10_errstr(rc) );
+		    keyblock_resource_name(&kbpos), gpg_errstr(rc) );
     unlock_keyblock( &kbpos );
     /* we are ready */
     if( !opt.quiet )
@@ -714,7 +714,7 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 		}
 		rc = check_key_signature( keyblock, n, NULL);
 		if( rc ) {
-		    log_info( rc == G10ERR_PUBKEY_ALGO ?
+		    log_info( rc == GPGERR_PUBKEY_ALGO ?
 			 _("key %08lX: unsupported public key algorithm\n"):
 			 _("key %08lX: invalid self-signature\n"),
 				     (ulong)keyid[1]);
@@ -738,7 +738,7 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 		else {
 		    rc = check_key_signature( keyblock, n, NULL);
 		    if( rc ) {
-			log_info(  rc == G10ERR_PUBKEY_ALGO ?
+			log_info(  rc == GPGERR_PUBKEY_ALGO ?
 			   _("key %08lX: unsupported public key algorithm\n"):
 			   _("key %08lX: invalid subkey binding\n"),
 					 (ulong)keyid[1]);
@@ -862,7 +862,7 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 		if( rc ) {
 		    log_error( _("key %08lX: invalid revocation "
 			      "certificate: %s - skipped\n"),
-			      (ulong)keyid[1], g10_errstr(rc));
+			      (ulong)keyid[1], gpg_errstr(rc));
 		    delete_kbnode( node );
 		}
 	    }
@@ -1127,7 +1127,7 @@ append_uid( KBNODE keyblock, KBNODE node, int *n_sigs,
     if( !node->next || node->next->pkt->pkttype == PKT_USER_ID ) {
 	log_error( _("key %08lX: our copy has no self-signature\n"),
 						  (ulong)keyid[1]);
-	return G10ERR_GENERAL;
+	return GPGERR_GENERAL;
     }
 
     /* find the position */

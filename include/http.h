@@ -17,8 +17,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef G10_HTTP_H
-#define G10_HTTP_H 1
+#ifndef GPG_HTTP_H
+#define GPG_HTTP_H 1
 
 #include "iobuf.h"
 
@@ -72,4 +72,4 @@ void http_close( HTTP_HD hd );
 
 int http_open_document( HTTP_HD hd, const char *document, unsigned int flags );
 
-#endif /*G10_HTTP_H*/
+#endif /*GPG_HTTP_H*/

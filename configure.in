@@ -8,7 +8,7 @@ dnl Must reset CDPATH so that bash's cd does not print to stdout
 CDPATH=
 
 AC_PREREQ(2.13)
-AC_INIT(g10/g10.c)
+AC_INIT(g10/gpg.c)
 AC_CONFIG_AUX_DIR(scripts)
 AM_CONFIG_HEADER(config.h)
 
@@ -687,25 +687,25 @@ GNUPG_FIX_HDR_VERSION(gcrypt/gcrypt.h, GCRYPT_VERSION)
 
 AC_OUTPUT_COMMANDS([
 chmod +x gcrypt/gcrypt-config
-cat >g10defs.tmp <<G10EOF
+cat >gnupg-defs.tmp <<G10EOF
 /* Generated automatically by configure */
 #ifdef HAVE_DRIVE_LETTERS
-  #define G10_LOCALEDIR "c:/lib/gnupg/locale"
+  #define GNUPG_LOCALEDIR "c:/lib/gnupg/locale"
   #define GNUPG_LIBDIR  "c:/lib/gnupg"
   #define GNUPG_DATADIR "c:/lib/gnupg"
 #else
-  #define G10_LOCALEDIR "${prefix}/${DATADIRNAME}/locale"
+  #define GNUPG_LOCALEDIR "${prefix}/${DATADIRNAME}/locale"
   #define GNUPG_LIBDIR  "${libdir}/gnupg"
   #define GNUPG_DATADIR "${datadir}/gnupg"
 #endif
 G10EOF
-if cmp -s g10defs.h g10defs.tmp 2>/dev/null; then
-    echo "g10defs.h is unchanged"
-    rm -f g10defs.tmp
+if cmp -s gnupg-defs.h gnupg-defs.tmp 2>/dev/null; then
+    echo "gnupg-defs.h is unchanged"
+    rm -f gnupg-defs.tmp
 else
-    rm -f g10defs.h
-    mv g10defs.tmp g10defs.h
-    echo "g10defs.h created"
+    rm -f gnupg-defs.h
+    mv gnupg-defs.tmp gnupg-defs.h
+    echo "gnupg-defs.h created"
 fi
 ],[
 prefix=$prefix

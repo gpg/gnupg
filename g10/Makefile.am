@@ -3,7 +3,7 @@
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 EXTRA_DIST = OPTIONS  pubring.asc  options.skel
 OMIT_DEPENDENCIES = zlib.h zconf.h
-LDFLAGS = @LDFLAGS@ @DYNLINK_LDFLAGS@
+LDFLAGS = -static @LDFLAGS@ @DYNLINK_LDFLAGS@
 needed_libs = ../util/libutil.la ../gcrypt/libgcrypt.la ../jnlib/libjnlib.la
 
 #noinst_PROGRAMS = gpgd
@@ -60,7 +60,7 @@ common_source =  \
 	      signal.c		\
 	      helptext.c
 
-gpg_SOURCES  = g10.c		\
+gpg_SOURCES  = gpg.c		\
 	      $(common_source)	\
 	      verify.c		\
 	      decrypt.c 	\

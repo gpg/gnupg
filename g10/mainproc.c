@@ -160,11 +160,11 @@ add_signature( CTX c, PACKET *pkt )
 
     if( pkt->pkttype == PKT_SIGNATURE && !c->list ) {
 	/* This is the first signature for the following datafile.
-	 * G10 does not write such packets; instead it always uses
+	 * gpg does not write such packets; instead it always uses
 	 * onepass-sig packets.  The drawback of PGP's method
 	 * of prepending the signature to the data is
 	 * that it is not possible to make a signature from data read
-	 * from stdin.	(G10 is able to read PGP stuff anyway.) */
+	 * from stdin.	(gpg is able to read PGP stuff anyway.) */
 	node = new_kbnode( pkt );
 	c->list = node;
 	return 1;
@@ -231,10 +231,10 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 	    }
 	}
 	else
-	    result = G10ERR_NO_SECKEY;
+	    result = GPGERR_NO_SECKEY;
     }
     else
-	result = G10ERR_PUBKEY_ALGO;
+	result = GPGERR_PUBKEY_ALGO;
 
     if( result == -1 )
 	;
@@ -286,7 +286,7 @@ print_failed_pkenc( struct kidlist_item *list )
 	}
 	free_public_key( pk );
 
-	if( list->reason == G10ERR_NO_SECKEY ) {
+	if( list->reason == GPGERR_NO_SECKEY ) {
 	    log_info(_("no secret key for decryption available\n"));
 	    if( is_status_enabled() ) {
 		char buf[20];
@@ -297,7 +297,7 @@ print_failed_pkenc( struct kidlist_item *list )
 	}
 	else
 	    log_error(_("public key decryption failed: %s\n"),
-						g10_errstr(list->reason));
+						gpg_errstr(list->reason));
     }
 }
 
@@ -319,7 +319,7 @@ proc_encrypted( CTX c, PACKET *pkt )
 					: DEFAULT_CIPHER_ALGO, NULL, 0 );
     }
     else if( !c->dek )
-	result = G10ERR_NO_SECKEY;
+	result = GPGERR_NO_SECKEY;
     if( !result )
 	result = decrypt_data( c, pkt->pkt.encrypted, c->dek );
     gcry_free(c->dek); c->dek = NULL;
@@ -332,13 +332,13 @@ proc_encrypted( CTX c, PACKET *pkt )
 	if( pkt->pkt.encrypted->mdc_method )
 	    write_status( STATUS_GOODMDC );
     }
-    else if( result == G10ERR_BAD_SIGN ) {
+    else if( result == GPGERR_BAD_SIGN ) {
 	log_error(_("WARNING: encrypted message has been manipulated!\n"));
 	write_status( STATUS_BADMDC );
     }
     else {
 	write_status( STATUS_DECRYPTION_FAILED );
-	log_error(_("decryption failed: %s\n"), g10_errstr(result));
+	log_error(_("decryption failed: %s\n"), gpg_errstr(result));
 	/* Hmmm: does this work when we have encrypted using a multiple
 	 * ways to specify the session key (symmmetric and PK)*/
     }
@@ -417,13 +417,13 @@ proc_plaintext( CTX c, PACKET *pkt )
     md_start_debug( c->mfx.md, "verify" );
   #endif
     rc = handle_plaintext( pt, &c->mfx, c->sigs_only, clearsig );
-    if( rc == G10ERR_CREATE_FILE && !c->sigs_only) {
+    if( rc == GPGERR_CREATE_FILE && !c->sigs_only) {
 	/* can't write output but we hash it anyway to
 	 * check the signature */
 	rc = handle_plaintext( pt, &c->mfx, 1, clearsig );
     }
     if( rc )
-	log_error( "handle plaintext failed: %s\n", g10_errstr(rc));
+	log_error( "handle plaintext failed: %s\n", gpg_errstr(rc));
     free_packet(pkt);
     c->last_was_session_key = 0;
 }
@@ -456,7 +456,7 @@ proc_compressed( CTX c, PACKET *pkt )
     else
 	rc = handle_compressed( c, zd, NULL, NULL );
     if( rc )
-	log_error("uncompressing failed: %s\n", g10_errstr(rc));
+	log_error("uncompressing failed: %s\n", gpg_errstr(rc));
     free_packet(pkt);
     c->last_was_session_key = 0;
 }
@@ -516,13 +516,13 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig )
 	else {
 	    log_error("invalid root packet for sigclass %02x\n",
 							sig->sig_class);
-	    return G10ERR_SIG_CLASS;
+	    return GPGERR_SIG_CLASS;
 	}
     }
     else
-	return G10ERR_SIG_CLASS;
+	return GPGERR_SIG_CLASS;
     rc = signature_check( sig, md );
-    if( rc == G10ERR_BAD_SIGN && md2 )
+    if( rc == GPGERR_BAD_SIGN && md2 )
 	rc = signature_check( sig, md2 );
     gcry_md_close(md);
     gcry_md_close(md2);
@@ -806,8 +806,8 @@ list_node( CTX c, KBNODE node )
 	    fflush(stdout);
 	    switch( (rc2=do_check_sig( c, node, &is_selfsig )) ) {
 	      case 0:		       sigrc = '!'; break;
-	      case G10ERR_BAD_SIGN:    sigrc = '-'; break;
-	      case G10ERR_NO_PUBKEY:   sigrc = '?'; break;
+	      case GPGERR_BAD_SIGN:    sigrc = '-'; break;
+	      case GPGERR_NO_PUBKEY:   sigrc = '?'; break;
 	      default:		       sigrc = '%'; break;
 	    }
 	}
@@ -837,7 +837,7 @@ list_node( CTX c, KBNODE node )
 	    printf("%c       %08lX %s   ",
 		    sigrc, (ulong)sig->keyid[1], datestr_from_sig(sig));
 	if( sigrc == '%' )
-	    printf("[%s] ", g10_errstr(rc2) );
+	    printf("[%s] ", gpg_errstr(rc2) );
 	else if( sigrc == '?' )
 	    ;
 	else if( is_selfsig ) {
@@ -917,7 +917,7 @@ do_proc_packets( CTX c, IOBUF a )
 	any_data = 1;
 	if( rc ) {
 	    free_packet(pkt);
-	    if( rc == G10ERR_INVALID_PACKET )
+	    if( rc == GPGERR_INVALID_PACKET )
 		break;
 	    continue;
 	}
@@ -941,7 +941,7 @@ do_proc_packets( CTX c, IOBUF a )
 	      case PKT_PUBKEY_ENC:
 	      case PKT_ENCRYPTED:
 	      case PKT_ENCRYPTED_MDC:
-		rc = G10ERR_UNEXPECTED;
+		rc = GPGERR_UNEXPECTED;
 		goto leave;
 	      case PKT_SIGNATURE:   newpkt = add_signature( c, pkt ); break;
 	      case PKT_PLAINTEXT:   proc_plaintext( c, pkt ); break;
@@ -955,7 +955,7 @@ do_proc_packets( CTX c, IOBUF a )
 	      case PKT_PUBLIC_KEY:
 	      case PKT_SECRET_KEY:
 	      case PKT_USER_ID:
-		rc = G10ERR_UNEXPECTED;
+		rc = GPGERR_UNEXPECTED;
 		goto leave;
 	      case PKT_SIGNATURE:   newpkt = add_signature( c, pkt ); break;
 	      case PKT_SYMKEY_ENC:  proc_symkey_enc( c, pkt ); break;
@@ -1005,7 +1005,7 @@ do_proc_packets( CTX c, IOBUF a )
 	else
 	    free_packet(pkt);
     }
-    if( rc == G10ERR_INVALID_PACKET )
+    if( rc == GPGERR_INVALID_PACKET )
 	write_status_text( STATUS_NODATA, "3" );
     if( any_data )
 	rc = 0;
@@ -1041,11 +1041,11 @@ check_sig_and_print( CTX c, KBNODE node )
 						      (ulong)sig->keyid[1] );
 
     rc = do_check_sig(c, node, NULL );
-    if( rc == G10ERR_NO_PUBKEY && opt.keyserver_name ) {
+    if( rc == GPGERR_NO_PUBKEY && opt.keyserver_name ) {
 	if( !hkp_ask_import( sig->keyid ) )
 	    rc = do_check_sig(c, node, NULL );
     }
-    if( !rc || rc == G10ERR_BAD_SIGN ) {
+    if( !rc || rc == GPGERR_BAD_SIGN ) {
 	KBNODE un, keyblock;
 	char *us;
 	int count=0;
@@ -1106,9 +1106,9 @@ check_sig_and_print( CTX c, KBNODE node )
 	if( !rc )
 	    rc = check_signatures_trust( sig );
 	if( rc )
-	    g10_errors_seen = 1;
+	    gpg_errors_seen = 1;
 	if( opt.batch && rc )
-	    g10_exit(1);
+	    gpg_exit(1);
     }
     else {
 	char buf[50];
@@ -1117,11 +1117,11 @@ check_sig_and_print( CTX c, KBNODE node )
 		     sig->pubkey_algo, sig->digest_algo,
 		     sig->sig_class, (ulong)sig->timestamp, rc );
 	write_status_text( STATUS_ERRSIG, buf );
-	if( rc == G10ERR_NO_PUBKEY ) {
+	if( rc == GPGERR_NO_PUBKEY ) {
 	    buf[16] = 0;
 	    write_status_text( STATUS_NO_PUBKEY, buf );
 	}
-	log_error(_("Can't check signature: %s\n"), g10_errstr(rc) );
+	log_error(_("Can't check signature: %s\n"), gpg_errstr(rc) );
     }
     return rc;
 }
@@ -1171,7 +1171,7 @@ proc_tree( CTX c, KBNODE node )
 		rc = ask_for_detached_datafile( c->mfx.md, c->mfx.md2,
 					    iobuf_get_fname(c->iobuf), 0 );
 	    if( rc ) {
-		log_error("can't hash datafile: %s\n", g10_errstr(rc));
+		log_error("can't hash datafile: %s\n", gpg_errstr(rc));
 		return;
 	    }
 	}
@@ -1217,7 +1217,7 @@ proc_tree( CTX c, KBNODE node )
 					 iobuf_get_fname(c->iobuf),
 			       c->mfx.md2? 0 :(sig->sig_class == 0x01) );
 	    if( rc ) {
-		log_error("can't hash datafile: %s\n", g10_errstr(rc));
+		log_error("can't hash datafile: %s\n", gpg_errstr(rc));
 		return;
 	    }
 	}

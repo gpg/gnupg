@@ -158,7 +158,7 @@ read_record( ulong recno, TRUSTREC *rec, int rectype )
     if( !rc )
 	return;
     log_error(_("trust record %lu, req type %d: read failed: %s\n"),
-				    recno, rectype,  g10_errstr(rc) );
+				    recno, rectype,  gpg_errstr(rc) );
     tdbio_invalid();
 }
 
@@ -173,7 +173,7 @@ write_record( TRUSTREC *rec )
     if( !rc )
 	return;
     log_error(_("trust record %lu, type %d: write failed: %s\n"),
-			    rec->recnum, rec->rectype, g10_errstr(rc) );
+			    rec->recnum, rec->rectype, gpg_errstr(rc) );
     tdbio_invalid();
 }
 
@@ -187,7 +187,7 @@ delete_record( ulong recno )
     if( !rc )
 	return;
     log_error(_("trust record %lu: delete failed: %s\n"),
-					      recno, g10_errstr(rc) );
+					      recno, gpg_errstr(rc) );
     tdbio_invalid();
 }
 
@@ -200,8 +200,8 @@ do_sync(void)
     int rc = tdbio_sync();
     if( !rc )
 	return;
-    log_error(_("trustdb: sync failed: %s\n"), g10_errstr(rc) );
-    g10_exit(2);
+    log_error(_("trustdb: sync failed: %s\n"), gpg_errstr(rc) );
+    gpg_exit(2);
 }
 
 
@@ -345,25 +345,25 @@ keyid_from_lid( ulong lid, u32 *keyid )
     rc = tdbio_read_record( lid, &rec, 0 );
     if( rc ) {
 	log_error(_("error reading dir record for LID %lu: %s\n"),
-						    lid, g10_errstr(rc));
-	return G10ERR_TRUSTDB;
+						    lid, gpg_errstr(rc));
+	return GPGERR_TRUSTDB;
     }
     if( rec.rectype == RECTYPE_SDIR )
 	return 0;
     if( rec.rectype != RECTYPE_DIR ) {
 	log_error(_("lid %lu: expected dir record, got type %d\n"),
 						    lid, rec.rectype );
-	return G10ERR_TRUSTDB;
+	return GPGERR_TRUSTDB;
     }
     if( !rec.r.dir.keylist ) {
 	log_error(_("no primary key for LID %lu\n"), lid );
-	return G10ERR_TRUSTDB;
+	return GPGERR_TRUSTDB;
     }
     rc = tdbio_read_record( rec.r.dir.keylist, &rec, RECTYPE_KEY );
     if( rc ) {
 	log_error(_("error reading primary key for LID %lu: %s\n"),
-						    lid, g10_errstr(rc));
-	return G10ERR_TRUSTDB;
+						    lid, gpg_errstr(rc));
+	return GPGERR_TRUSTDB;
     }
     keyid_from_fingerprint( rec.r.key.fingerprint, rec.r.key.fingerprint_len,
 			    keyid );
@@ -401,7 +401,7 @@ get_dir_record( PKT_public_key *pk, TRUSTREC *rec )
     else { /* no local_id: scan the trustdb */
 	if( (rc=tdbio_search_dir_bypk( pk, rec )) && rc != -1 )
 	    log_error(_("get_dir_record: search_record failed: %s\n"),
-							    g10_errstr(rc));
+							    gpg_errstr(rc));
     }
     return rc;
 }
@@ -508,7 +508,7 @@ verify_own_keys(void)
 	    release_public_key_parts( pk );
     }
     if( rc != -1 )
-	log_error(_("enumerate secret keys failed: %s\n"), g10_errstr(rc) );
+	log_error(_("enumerate secret keys failed: %s\n"), gpg_errstr(rc) );
     else
 	rc = 0;
 
@@ -567,7 +567,7 @@ init_trustdb()
     else
 	BUG();
     if( rc )
-	log_fatal("can't init trustdb: %s\n", g10_errstr(rc) );
+	log_fatal("can't init trustdb: %s\n", gpg_errstr(rc) );
 }
 
 
@@ -800,7 +800,7 @@ create_shadow_dir( PKT_signature *sig )
     /* first see whether we already have such a record */
     rc = tdbio_search_sdir( sig->keyid, sig->pubkey_algo, &sdir );
     if( rc && rc != -1 ) {
-	log_error("tdbio_search_sdir failed: %s\n", g10_errstr(rc));
+	log_error("tdbio_search_sdir failed: %s\n", gpg_errstr(rc));
 	tdbio_invalid();
     }
     if( rc == -1 ) { /* not found: create */
@@ -882,7 +882,7 @@ check_keybinding( KBNODE keyblock, KBNODE keynode, u32 *mainkid,
 	    else {
 		log_info(_(
 		  "key %08lX.%lu: Invalid subkey binding: %s\n"),
-		    (ulong)keyid_from_pk(pk,NULL), lid, g10_errstr(rc) );
+		    (ulong)keyid_from_pk(pk,NULL), lid, gpg_errstr(rc) );
 		keyflags |= KEYF_CHECKED;
 		keyflags &= ~KEYF_VALID;
 	    }
@@ -900,7 +900,7 @@ check_keybinding( KBNODE keyblock, KBNODE keynode, u32 *mainkid,
 	    else {
 		log_info(_(
 		  "key %08lX.%lu: Invalid key revocation: %s\n"),
-		  (ulong)keyid_from_pk(pk,NULL), lid, g10_errstr(rc) );
+		  (ulong)keyid_from_pk(pk,NULL), lid, gpg_errstr(rc) );
 	    }
 	    revoke_seen = 1;
 	}
@@ -917,7 +917,7 @@ check_keybinding( KBNODE keyblock, KBNODE keynode, u32 *mainkid,
 	    else {
 		log_info(_(
 		  "key %08lX.%lu: Invalid subkey binding: %s\n"),
-		  (ulong)keyid_from_pk(pk,NULL), lid, g10_errstr(rc) );
+		  (ulong)keyid_from_pk(pk,NULL), lid, gpg_errstr(rc) );
 	    }
 	    revoke_seen = 1;
 	}
@@ -1032,7 +1032,7 @@ check_uidsigs( KBNODE keyblock, KBNODE keynode, u32 *mainkid, ulong lid,
 	    else {
 		log_info( "uid %08lX: %s: %s\n",
 			   (ulong)mainkid[1], _("Invalid self-signature"),
-			   g10_errstr(rc) );
+			   gpg_errstr(rc) );
 		uidflags |= UIDF_CHECKED;
 	    }
 	}
@@ -1070,7 +1070,7 @@ check_uidsigs( KBNODE keyblock, KBNODE keynode, u32 *mainkid, ulong lid,
 	    else {
 		log_info("uid %08lX: %s: %s\n",
 			    (ulong)mainkid[1], _("Invalid user ID revocation"),
-						    g10_errstr(rc) );
+						    gpg_errstr(rc) );
 	    }
 	}
     }
@@ -1120,7 +1120,7 @@ check_sig_record( KBNODE keyblock, KBNODE signode,
 	    else
 		/**mod_up = 1*/;
 	}
-	else if( rc == G10ERR_NO_PUBKEY ) {
+	else if( rc == GPGERR_NO_PUBKEY ) {
 	    /* This may happen if the key is still in the trustdb
 	     * but not available in the keystorage */
 	    sigflag |= SIGF_NOPUBKEY;
@@ -1134,7 +1134,7 @@ check_sig_record( KBNODE keyblock, KBNODE signode,
 						(ulong)sig->keyid[1],
 			revocation? _("Invalid certificate revocation")
 				   : _("Invalid certificate"),
-					    g10_errstr(rc));
+					    gpg_errstr(rc));
 	    sigflag |= SIGF_CHECKED;
 	    if( revocation ) {
 		sigflag |= SIGF_REVOKED;
@@ -1512,7 +1512,7 @@ insert_trust_record( KBNODE keyblock )
      * as the dir record. */
     rc = tdbio_search_sdir( pk->keyid, pk->pubkey_algo, &shadow );
     if( rc && rc != -1 ) {
-	log_error(_("tdbio_search_dir failed: %s\n"), g10_errstr(rc));
+	log_error(_("tdbio_search_dir failed: %s\n"), gpg_errstr(rc));
 	tdbio_invalid();
     }
     memset( &dirrec, 0, sizeof dirrec );
@@ -1564,7 +1564,7 @@ insert_trust_record_by_pk( PKT_public_key *pk )
     rc = get_keyblock_byfprint( &keyblock, fingerprint, fingerlen );
     if( rc ) { /* that should never happen */
 	log_debug( "insert_trust_record_by_pk: keyblock not found: %s\n",
-							  g10_errstr(rc) );
+							  gpg_errstr(rc) );
     }
     else {
 	rc = insert_trust_record( keyblock );
@@ -1593,7 +1593,7 @@ check_trust_record( TRUSTREC *drec )
     rc = get_keyblock_bylid( &keyblock, drec->recnum );
     if( rc ) {
 	log_debug( "check_trust_record %lu: keyblock not found: %s\n",
-					      drec->recnum, g10_errstr(rc) );
+					      drec->recnum, gpg_errstr(rc) );
 	return rc;
     }
 
@@ -1635,12 +1635,12 @@ update_trustdb()
 		rc = insert_trust_record( keyblock );
 		if( rc && !pk->local_id ) {
 		    log_error(_("lid ?: insert failed: %s\n"),
-						     g10_errstr(rc) );
+						     gpg_errstr(rc) );
 		    err_count++;
 		}
 		else if( rc ) {
 		    log_error(_("lid %lu: insert failed: %s\n"),
-				       pk->local_id, g10_errstr(rc) );
+				       pk->local_id, gpg_errstr(rc) );
 		    err_count++;
 		}
 		else {
@@ -1650,7 +1650,7 @@ update_trustdb()
 		}
 	    }
 	    else if( rc ) {
-		log_error(_("error reading dir record: %s\n"), g10_errstr(rc));
+		log_error(_("error reading dir record: %s\n"), gpg_errstr(rc));
 		err_count++;
 	    }
 
@@ -1665,7 +1665,7 @@ update_trustdb()
 	    log_info(_("\t%lu keys inserted\n"), new_count);
     }
     if( rc && rc != -1 )
-	log_error(_("enumerate keyblocks failed: %s\n"), g10_errstr(rc));
+	log_error(_("enumerate keyblocks failed: %s\n"), gpg_errstr(rc));
 
     enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
     release_kbnode( keyblock );
@@ -2056,11 +2056,11 @@ do_check( TRUSTREC *dr, unsigned *validity,
 {
     if( !dr->r.dir.keylist ) {
 	log_error(_("Ooops, no keys\n"));
-	return G10ERR_TRUSTDB;
+	return GPGERR_TRUSTDB;
     }
     if( !dr->r.dir.uidlist ) {
 	log_error(_("Ooops, no user IDs\n"));
-	return G10ERR_TRUSTDB;
+	return GPGERR_TRUSTDB;
     }
 
     if( retflgs )
@@ -2217,16 +2217,16 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel,
     else { /* no local_id: scan the trustdb */
 	if( (rc=tdbio_search_dir_bypk( pk, &rec )) && rc != -1 ) {
 	    log_error(_("check_trust: search dir record failed: %s\n"),
-							    g10_errstr(rc));
+							    gpg_errstr(rc));
 	    return rc;
 	}
 	else if( rc == -1 && opt.dry_run )
-	    return G10ERR_GENERAL;
+	    return GPGERR_GENERAL;
 	else if( rc == -1 ) { /* not found - insert */
 	    rc = insert_trust_record_by_pk( pk );
 	    if( rc ) {
 		log_error(_("key %08lX: insert trust record failed: %s\n"),
-					  (ulong)keyid[1], g10_errstr(rc));
+					  (ulong)keyid[1], gpg_errstr(rc));
 		goto leave;
 	    }
 	    log_info(_("key %08lX.%lu: inserted into trustdb\n"),
@@ -2240,7 +2240,7 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel,
 	log_info(_("key %08lX.%lu: created in future "
 		   "(time warp or clock problem)\n"),
 					  (ulong)keyid[1], pk->local_id );
-	return G10ERR_TIME_CONFLICT;
+	return GPGERR_TIME_CONFLICT;
     }
     if( rec.r.dir.checkat && rec.r.dir.checkat <= cur_time )
 	check_trust_record( &rec );
@@ -2255,7 +2255,7 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel,
 	rc = do_check( &rec, &trustlevel, namehash, add_fnc, retflgs );
 	if( rc ) {
 	    log_error(_("key %08lX.%lu: trust check failed: %s\n"),
-			    (ulong)keyid[1], pk->local_id, g10_errstr(rc));
+			    (ulong)keyid[1], pk->local_id, gpg_errstr(rc));
 	    return rc;
 	}
     }
@@ -2360,16 +2360,16 @@ list_trust_path( const char *username )
 
     init_trustdb();
     if( (rc = get_pubkey_byname(NULL, pk, username, NULL )) )
-	log_error(_("user '%s' not found: %s\n"), username, g10_errstr(rc) );
+	log_error(_("user '%s' not found: %s\n"), username, gpg_errstr(rc) );
     else if( (rc=tdbio_search_dir_bypk( pk, &rec )) && rc != -1 )
 	log_error(_("problem finding '%s' in trustdb: %s\n"),
-					    username, g10_errstr(rc));
+					    username, gpg_errstr(rc));
     else if( rc == -1 ) {
 	log_info(_("user '%s' not in trustdb - inserting\n"), username);
 	rc = insert_trust_record_by_pk( pk );
 	if( rc )
 	    log_error(_("failed to put '%s' into trustdb: %s\n"),
-						    username, g10_errstr(rc));
+						    username, gpg_errstr(rc));
 	else {
 	    assert( pk->local_id );
 	}

@@ -96,7 +96,7 @@ do_compress( compress_filter_context_t *zfx, z_stream *zs, int flush, IOBUF a )
 
 	if( iobuf_write( a, zfx->outbuf, n ) ) {
 	    log_debug("deflate: iobuf_write failed\n");
-	    return G10ERR_WRITE_FILE;
+	    return GPGERR_WRITE_FILE;
 	}
     } while( zs->avail_in || (flush == Z_FINISH && zrc != Z_STREAM_END) );
     return 0;
@@ -264,7 +264,7 @@ handle_compressed( void *procctx, PKT_compressed *cd,
 
     memset( &cfx, 0, sizeof cfx );
     if( cd->algorithm < 1 || cd->algorithm > 2	)
-	return G10ERR_COMPR_ALGO;
+	return GPGERR_COMPR_ALGO;
     cfx.algo = cd->algorithm;
 
     iobuf_push_filter( cd->buf, compress_filter, &cfx );

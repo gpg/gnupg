@@ -17,8 +17,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef G10_CONFIG_H
-#define G10_CONFIG_H
+#ifndef GNUPG_CONFIG_H
+#define GNUPG_CONFIG_H
 
 /* need this, because some autoconf tests rely on this (e.g. stpcpy)
  * and it should be used for new programs
@@ -107,6 +107,6 @@
 
 @BOTTOM@
 
-#include "g10defs.h"
+#include "gnupg-defs.h"
 
-#endif /*G10_CONFIG_H*/
+#endif /*GNUPG_CONFIG_H*/

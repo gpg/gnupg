@@ -61,7 +61,7 @@ pk_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
 			  NULL ));
     }
     else
-	return G10ERR_PUBKEY_ALGO;
+	return GPGERR_PUBKEY_ALGO;
 
     /* put the data into a simple list */
     s_data = gcry_sexp_new_mpi( data );
@@ -136,7 +136,7 @@ encode_simple( const char *filename, int mode )
     if( !(inp = iobuf_open(filename)) ) {
 	log_error(_("%s: can't open: %s\n"), filename? filename: "[stdin]",
 					strerror(errno) );
-	return G10ERR_OPEN_FILE;
+	return GPGERR_OPEN_FILE;
     }
 
     if( opt.textmode )
@@ -152,11 +152,11 @@ encode_simple( const char *filename, int mode )
 		       opt.def_cipher_algo ? opt.def_cipher_algo
 					   : opt.s2k_cipher_algo , s2k, 2 );
 	if( !cfx.dek || !cfx.dek->keylen ) {
-	    rc = G10ERR_PASSPHRASE;
+	    rc = GPGERR_PASSPHRASE;
 	    gcry_free(cfx.dek);
 	    gcry_free(s2k);
 	    iobuf_close(inp);
-	    log_error(_("error creating passphrase: %s\n"), g10_errstr(rc) );
+	    log_error(_("error creating passphrase: %s\n"), gpg_errstr(rc) );
 	    return rc;
 	}
     }
@@ -186,7 +186,7 @@ encode_simple( const char *filename, int mode )
 	pkt.pkttype = PKT_SYMKEY_ENC;
 	pkt.pkt.symkey_enc = enc;
 	if( (rc = build_packet( out, &pkt )) )
-	    log_error("build symkey packet failed: %s\n", g10_errstr(rc) );
+	    log_error("build symkey packet failed: %s\n", gpg_errstr(rc) );
 	gcry_free(enc);
     }
 
@@ -242,7 +242,7 @@ encode_simple( const char *filename, int mode )
     /* do the work */
     if (!opt.no_literal) {
 	if( (rc = build_packet( out, &pkt )) )
-	    log_error("build_packet failed: %s\n", g10_errstr(rc) );
+	    log_error("build_packet failed: %s\n", gpg_errstr(rc) );
     }
     else {
 	/* user requested not to create a literal packet,
@@ -251,8 +251,8 @@ encode_simple( const char *filename, int mode )
 	int  bytes_copied;
 	while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
 	    if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
-		rc = G10ERR_WRITE_FILE;
-		log_error("copying input to output failed: %s\n", g10_errstr(rc) );
+		rc = GPGERR_WRITE_FILE;
+		log_error("copying input to output failed: %s\n", gpg_errstr(rc) );
 		break;
 	    }
 	memset(copy_buffer, 0, 4096); /* burn buffer */
@@ -305,7 +305,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     if( !(inp = iobuf_open(filename)) ) {
 	log_error(_("can't open %s: %s\n"), filename? filename: "[stdin]",
 					strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
+	rc = GPGERR_OPEN_FILE;
 	goto leave;
     }
     else if( opt.verbose )
@@ -398,7 +398,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     /* do the work */
     if (!opt.no_literal) {
 	if( (rc = build_packet( out, &pkt )) )
-	    log_error("build_packet failed: %s\n", g10_errstr(rc) );
+	    log_error("build_packet failed: %s\n", gpg_errstr(rc) );
     }
     else {
 	/* user requested not to create a literal packet, so we copy the plain data */
@@ -406,8 +406,8 @@ encode_crypt( const char *filename, STRLIST remusr )
 	int  bytes_copied;
 	while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
 	    if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
-		rc = G10ERR_WRITE_FILE;
-		log_error("copying input to output failed: %s\n", g10_errstr(rc) );
+		rc = GPGERR_WRITE_FILE;
+		log_error("copying input to output failed: %s\n", gpg_errstr(rc) );
 		break;
 	    }
 	memset(copy_buffer, 0, 4096); /* burn buffer */
@@ -522,7 +522,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	rc = pk_encrypt( pk->pubkey_algo, enc->data, frame, pk->pkey );
 	mpi_release( frame );
 	if( rc )
-	    log_error("pubkey_encrypt failed: %s\n", g10_errstr(rc) );
+	    log_error("pubkey_encrypt failed: %s\n", gpg_errstr(rc) );
 	else {
 	    if( opt.verbose ) {
 		char *ustr = get_user_id_string( enc->keyid );
@@ -537,7 +537,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	    pkt.pkt.pubkey_enc = enc;
 	    rc = build_packet( out, &pkt );
 	    if( rc )
-	       log_error("build_packet(pubkey_enc) failed: %s\n", g10_errstr(rc));
+	       log_error("build_packet(pubkey_enc) failed: %s\n", gpg_errstr(rc));
 	}
 	free_pubkey_enc(enc);
 	if( rc )

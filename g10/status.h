@@ -17,8 +17,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef G10_STATUS_H
-#define G10_STATUS_H
+#ifndef GPG_STATUS_H
+#define GPG_STATUS_H
 
 
 #define STATUS_ENTER	 1
@@ -86,4 +86,4 @@ int  cpr_get_answer_is_yes( const char *keyword, const char *prompt );
 int  cpr_get_answer_yes_no_quit( const char *keyword, const char *prompt );
 
 
-#endif /*G10_STATUS_H*/
+#endif /*GPG_STATUS_H*/

@@ -188,7 +188,7 @@ do_comment( IOBUF out, int ctb, PKT_comment *rem )
     if( !opt.no_comment ) {
 	write_header(out, ctb, rem->len);
 	if( iobuf_write( out, rem->data, rem->len ) )
-	    return G10ERR_WRITE_FILE;
+	    return GPGERR_WRITE_FILE;
     }
     return 0;
 }
@@ -198,7 +198,7 @@ do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 {
     write_header(out, ctb, uid->len);
     if( iobuf_write( out, uid->name, uid->len ) )
-	return G10ERR_WRITE_FILE;
+	return GPGERR_WRITE_FILE;
     return 0;
 }
 
@@ -231,7 +231,7 @@ do_public_key( IOBUF out, int ctb, PKT_public_key *pk )
 
     write_header2(out, ctb, iobuf_get_temp_length(a), pk->hdrbytes, 1 );
     if( iobuf_write_temp( out, a ) )
-	rc = G10ERR_WRITE_FILE;
+	rc = GPGERR_WRITE_FILE;
 
     iobuf_close(a);
     return rc;
@@ -262,7 +262,7 @@ hash_public_key( GCRY_MD_HD md, PKT_public_key *pk )
     pkt.pkttype = PKT_PUBLIC_KEY;
     pkt.pkt.public_key = pk;
     if( (rc = build_packet( a, &pkt )) )
-	log_fatal("build public_key for hashing failed: %s\n", g10_errstr(rc));
+	log_fatal("build public_key for hashing failed: %s\n", gpg_errstr(rc));
 
     if( !(pk->version == 3 && pk->pubkey_algo == 16) ) {
 	/* skip the constructed header but don't do this for our very old
@@ -385,7 +385,7 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
   leave:
     write_header2(out, ctb, iobuf_get_temp_length(a), sk->hdrbytes, 1 );
     if( iobuf_write_temp( out, a ) )
-	rc = G10ERR_WRITE_FILE;
+	rc = GPGERR_WRITE_FILE;
 
     iobuf_close(a);
     return rc;
@@ -416,7 +416,7 @@ do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
 
     write_header(out, ctb, iobuf_get_temp_length(a) );
     if( iobuf_write_temp( out, a ) )
-	rc = G10ERR_WRITE_FILE;
+	rc = GPGERR_WRITE_FILE;
 
     iobuf_close(a);
     return rc;
@@ -450,7 +450,7 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
 
     write_header(out, ctb, iobuf_get_temp_length(a) );
     if( iobuf_write_temp( out, a ) )
-	rc = G10ERR_WRITE_FILE;
+	rc = GPGERR_WRITE_FILE;
 
     iobuf_close(a);
     return rc;
@@ -479,12 +479,12 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
     for(i=0; i < pt->namelen; i++ )
 	iobuf_put(out, pt->name[i] );
     if( write_32(out, pt->timestamp ) )
-	rc = G10ERR_WRITE_FILE;
+	rc = GPGERR_WRITE_FILE;
 
     n = 0;
     while( (nbytes=iobuf_read(pt->buf, buf, 1000)) != -1 ) {
 	if( iobuf_write(out, buf, nbytes) == -1 ) {
-	    rc = G10ERR_WRITE_FILE;
+	    rc = GPGERR_WRITE_FILE;
 	    break;
 	}
 	n += nbytes;
@@ -797,7 +797,7 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
     else
 	write_header(out, ctb, iobuf_get_temp_length(a) );
     if( iobuf_write_temp( out, a ) )
-	rc = G10ERR_WRITE_FILE;
+	rc = GPGERR_WRITE_FILE;
 
     iobuf_close(a);
     return rc;
@@ -820,7 +820,7 @@ do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops )
 
     write_header(out, ctb, iobuf_get_temp_length(a) );
     if( iobuf_write_temp( out, a ) )
-	rc = G10ERR_WRITE_FILE;
+	rc = GPGERR_WRITE_FILE;
 
     iobuf_close(a);
     return rc;

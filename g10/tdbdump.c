@@ -58,7 +58,7 @@ read_record( ulong recno, TRUSTREC *rec, int rectype )
     if( !rc )
 	return;
     log_error(_("trust record %lu, req type %d: read failed: %s\n"),
-				    recno, rectype,  g10_errstr(rc) );
+				    recno, rectype,  gpg_errstr(rc) );
     tdbio_invalid();
 }
 #endif
@@ -72,7 +72,7 @@ write_record( TRUSTREC *rec )
     if( !rc )
 	return;
     log_error(_("trust record %lu, type %d: write failed: %s\n"),
-			    rec->recnum, rec->rectype, g10_errstr(rc) );
+			    rec->recnum, rec->rectype, gpg_errstr(rc) );
     tdbio_invalid();
 }
 
@@ -86,8 +86,8 @@ do_sync(void)
     int rc = tdbio_sync();
     if( !rc )
 	return;
-    log_error(_("trustdb: sync failed: %s\n"), g10_errstr(rc) );
-    g10_exit(2);
+    log_error(_("trustdb: sync failed: %s\n"), gpg_errstr(rc) );
+    gpg_exit(2);
 }
 
 #if 0
@@ -274,7 +274,7 @@ list_records( ulong lid )
     rc = tdbio_read_record( lid, &dr, RECTYPE_DIR );
     if( rc ) {
 	log_error(_("lid %lu: read dir record failed: %s\n"),
-						lid, g10_errstr(rc));
+						lid, gpg_errstr(rc));
 	return rc;
     }
     tdbio_dump_record( &dr, stdout );
@@ -283,7 +283,7 @@ list_records( ulong lid )
 	rc = tdbio_read_record( recno, &rec, 0 );
 	if( rc ) {
 	    log_error(_("lid %lu: read key record failed: %s\n"),
-						lid, g10_errstr(rc));
+						lid, gpg_errstr(rc));
 	    return rc;
 	}
 	tdbio_dump_record( &rec, stdout );
@@ -293,7 +293,7 @@ list_records( ulong lid )
 	rc = tdbio_read_record( recno, &ur, RECTYPE_UID );
 	if( rc ) {
 	    log_error(_("lid %lu: read uid record failed: %s\n"),
-						lid, g10_errstr(rc));
+						lid, gpg_errstr(rc));
 	    return rc;
 	}
 	tdbio_dump_record( &ur, stdout );
@@ -302,7 +302,7 @@ list_records( ulong lid )
 	    rc = tdbio_read_record( recno, &rec, RECTYPE_PREF );
 	    if( rc ) {
 		log_error(_("lid %lu: read pref record failed: %s\n"),
-						    lid, g10_errstr(rc));
+						    lid, gpg_errstr(rc));
 		return rc;
 	    }
 	    tdbio_dump_record( &rec, stdout );
@@ -312,7 +312,7 @@ list_records( ulong lid )
 	    rc = tdbio_read_record( recno, &rec, RECTYPE_SIG );
 	    if( rc ) {
 		log_error(_("lid %lu: read sig record failed: %s\n"),
-						    lid, g10_errstr(rc));
+						    lid, gpg_errstr(rc));
 		return rc;
 	    }
 	    tdbio_dump_record( &rec, stdout );
@@ -343,28 +343,28 @@ list_trustdb( const char *username )
 
 	if( (rc = list_records( lid)) )
 	    log_error(_("user '%s' read problem: %s\n"),
-					    username, g10_errstr(rc));
+					    username, gpg_errstr(rc));
 	else if( (rc = list_sigs( lid )) )
 	    log_error(_("user '%s' list problem: %s\n"),
-					    username, g10_errstr(rc));
+					    username, gpg_errstr(rc));
     }
     else if( username ) {
 	PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
 	int rc;
 
 	if( (rc = get_pubkey_byname( NULL, pk, username, NULL )) )
-	    log_error(_("user '%s' not found: %s\n"), username, g10_errstr(rc) );
+	    log_error(_("user '%s' not found: %s\n"), username, gpg_errstr(rc) );
 	else if( (rc=tdbio_search_dir_bypk( pk, &rec )) && rc != -1 )
 	    log_error(_("problem finding '%s' in trustdb: %s\n"),
-						username, g10_errstr(rc));
+						username, gpg_errstr(rc));
 	else if( rc == -1 )
 	    log_error(_("user '%s' not in trustdb\n"), username);
 	else if( (rc = list_records( pk->local_id)) )
 	    log_error(_("user '%s' read problem: %s\n"),
-						username, g10_errstr(rc));
+						username, gpg_errstr(rc));
 	else if( (rc = list_sigs( pk->local_id )) )
 	    log_error(_("user '%s' list problem: %s\n"),
-						username, g10_errstr(rc));
+						username, gpg_errstr(rc));
 	free_public_key( pk );
     }
     else {
@@ -411,7 +411,7 @@ export_ownertrust()
 		continue;
 	    rc = tdbio_read_record( rec.r.dir.keylist, &rec2, RECTYPE_KEY);
 	    if( rc ) {
-		log_error(_("error reading key record: %s\n"), g10_errstr(rc));
+		log_error(_("error reading key record: %s\n"), gpg_errstr(rc));
 		continue;
 	    }
 	    p = rec2.r.key.fingerprint;
@@ -497,7 +497,7 @@ import_ownertrust( const char *fname )
 	    log_info_f(fname, _("key not in trustdb, searching ring.\n"));
 	    rc = get_pubkey_byfprint( pk, line, fprlen );
 	    if( rc )
-		log_info_f(fname, _("key not in ring: %s\n"), g10_errstr(rc));
+		log_info_f(fname, _("key not in ring: %s\n"), gpg_errstr(rc));
 	    else {
 		rc = query_trust_record( pk );	/* only as assertion */
 		if( rc != -1 )
@@ -507,13 +507,13 @@ import_ownertrust( const char *fname )
 		    if( !rc )
 			goto repeat; /* update the ownertrust */
 		    log_error_f(fname, _("insert trust record failed: %s\n"),
-							   g10_errstr(rc) );
+							   gpg_errstr(rc) );
 		}
 	    }
 	}
 	else /* error */
 	    log_error_f(fname, _("error finding dir record: %s\n"),
-						    g10_errstr(rc));
+						    gpg_errstr(rc));
     }
     if( ferror(fp) )
 	log_error_f(fname, _("read error: %s\n"), strerror(errno) );

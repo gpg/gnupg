@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef G10_KS_PROTO_H
-#define G10_KS_PROTO_H
+#ifndef GPG_KS_PROTO_H
+#define GPG_KS_PROTO_H
 
-#endif /*G10_KS_PROTO_H*/
+#endif /*GPG_KS_PROTO_H*/

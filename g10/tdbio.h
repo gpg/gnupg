@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef G10_TDBIO_H
-#define G10_TDBIO_H
+#ifndef GPG_TDBIO_H
+#define GPG_TDBIO_H
 
 #include "host2net.h"
 
@@ -194,4 +194,4 @@ int tdbio_search_sdir( u32 *keyid, int pubkey_algo, TRUSTREC *rec );
 
 void tdbio_invalid(void);
 
-#endif /*G10_TDBIO_H*/
+#endif /*GPG_TDBIO_H*/

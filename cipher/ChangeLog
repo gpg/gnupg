@@ -1,3 +1,7 @@
+Thu Jan 27 18:00:44 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* pubkey.c (sexp_to_key): Fixed mem leaks in case of errors.
+
 Mon Jan 24 22:24:38 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* pubkey.c (gcry_pk_decrypt): Implemented.

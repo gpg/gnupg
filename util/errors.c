@@ -43,12 +43,12 @@ strerror( int n )
 #endif /* !HAVE_STRERROR */
 
 const char *
-g10_errstr( int err )
+gpg_errstr( int err )
 {
     static char buf[50];
     const char *p;
 
-  #define X(n,s) case G10ERR_##n : p = s; break;
+  #define X(n,s) case GPGERR_##n : p = s; break;
     switch( err ) {
       case -1:		p = "eof"; break;
       case 0:		p = "okay"; break;
@@ -105,7 +105,7 @@ g10_errstr( int err )
 	if( err >= 0 ) /* pass on to libgcrypt */
 	    p = gcry_strerror(err); /* fimxe: how do we handle i18n? */
 	else {
-	    p = buf; sprintf(buf, "g10err=%d", err); break;
+	    p = buf; sprintf(buf, "gpgerr=%d", err); break;
 	}
 	break;
     }

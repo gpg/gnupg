@@ -37,6 +37,8 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
+#include <gcrypt.h>
+
 #include "util.h"
 #include "iobuf.h"
 #include "i18n.h"
@@ -75,7 +77,7 @@ http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
     int rc;
 
     if( flags || !(reqtype == HTTP_REQ_GET || reqtype == HTTP_REQ_POST) )
-	return G10ERR_INV_ARG;
+	return GPGERR_INV_ARG;
 
     /* initialize the handle */
     memset( hd, 0, sizeof *hd );
@@ -90,7 +92,7 @@ http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
 	    hd->fp_write = iobuf_fdopen( hd->sock , "w" );
 	    if( hd->fp_write )
 		return 0;
-	    rc = G10ERR_GENERAL;
+	    rc = GPGERR_GENERAL;
 	}
     }
 
@@ -125,7 +127,7 @@ http_wait_response( HTTP_HD hd, unsigned int *ret_status )
 
     hd->sock = dup( hd->sock );
     if( hd->sock == -1 )
-	return G10ERR_GENERAL;
+	return GPGERR_GENERAL;
     iobuf_close( hd->fp_write );
     hd->fp_write = NULL;
     shutdown( hd->sock, 1 );
@@ -133,7 +135,7 @@ http_wait_response( HTTP_HD hd, unsigned int *ret_status )
 
     hd->fp_read = iobuf_fdopen( hd->sock , "r" );
     if( !hd->fp_read )
-	return G10ERR_GENERAL;
+	return GPGERR_GENERAL;
 
     rc = parse_response( hd );
     if( !rc && ret_status )
@@ -149,7 +151,7 @@ http_open_document( HTTP_HD hd, const char *document, unsigned int flags )
     int rc;
 
     if( flags )
-	return G10ERR_INV_ARG;
+	return GPGERR_INV_ARG;
 
     rc = http_open( hd, HTTP_REQ_GET, document, 0 );
     if( rc )
@@ -225,12 +227,12 @@ do_parse_uri( PARSED_URI uri, int only_local_part )
 
     /* a quick validity check */
     if( strspn( p, VALID_URI_CHARS) != n )
-	return G10ERR_BAD_URI; /* invalid characters found */
+	return GPGERR_BAD_URI; /* invalid characters found */
 
     if( !only_local_part ) {
 	/* find the scheme */
 	if( !(p2 = strchr( p, ':' ) ) || p2 == p )
-	   return G10ERR_BAD_URI; /* No scheme */
+	   return GPGERR_BAD_URI; /* No scheme */
 	*p2++ = 0;
 	strlwr( p );
 	uri->scheme = p;
@@ -239,13 +241,13 @@ do_parse_uri( PARSED_URI uri, int only_local_part )
 	else if( !strcmp( uri->scheme, "x-hkp" ) ) /* same as HTTP */
 	    ;
 	else
-	    return G10ERR_INVALID_URI; /* Unsupported scheme */
+	    return GPGERR_INVALID_URI; /* Unsupported scheme */
 
 	p = p2;
 
 	/* find the hostname */
 	if( *p != '/' )
-	    return G10ERR_INVALID_URI; /* does not start with a slash */
+	    return GPGERR_INVALID_URI; /* does not start with a slash */
 
 	p++;
 	if( *p == '/' ) {  /* there seems to be a hostname */
@@ -262,9 +264,9 @@ do_parse_uri( PARSED_URI uri, int only_local_part )
 	       uri->port = 80;
 	    uri->host = p;
 	    if( (n = remove_escapes( uri->host )) < 0 )
-		return G10ERR_BAD_URI;
+		return GPGERR_BAD_URI;
 	    if( n != strlen( p ) )
-		return G10ERR_BAD_URI; /* hostname with a Nul in it */
+		return GPGERR_BAD_URI; /* hostname with a Nul in it */
 	    p = p2 ? p2 : NULL;
 	}
     } /* end global URI part */
@@ -281,9 +283,9 @@ do_parse_uri( PARSED_URI uri, int only_local_part )
 
     uri->path = p;
     if( (n = remove_escapes( p )) < 0 )
-	return G10ERR_BAD_URI;
+	return GPGERR_BAD_URI;
     if( n != strlen( p ) )
-	return G10ERR_BAD_URI; /* path with a Nul in it */
+	return GPGERR_BAD_URI; /* path with a Nul in it */
     p = p2 ? p2 : NULL;
 
     if( !p || !*p ) /* we don't have a query string */
@@ -297,7 +299,7 @@ do_parse_uri( PARSED_URI uri, int only_local_part )
 	if( (p2 = strchr( p, '&' )) )
 	    *p2++ = 0;
 	if( !(elem = parse_tuple( p )) )
-	    return G10ERR_BAD_URI;
+	    return GPGERR_BAD_URI;
 	*tail = elem;
 	tail = &elem->next;
 
@@ -433,7 +435,7 @@ send_request( HTTP_HD hd )
 
     hd->sock = connect_server( server, port );
     if( hd->sock == -1 )
-	return G10ERR_NETWORK;
+	return GPGERR_NETWORK;
 
     p = build_rel_path( hd->uri );
     request = gcry_xmalloc( strlen(p) + 20 );
@@ -679,7 +681,7 @@ write_server( int sock, const char *data, size_t length )
 		continue;
 	    }
 	    log_info("write failed: %s\n", strerror(errno));
-	    return G10ERR_NETWORK;
+	    return GPGERR_NETWORK;
 	}
 	nleft -=nwritten;
 	data += nwritten;
@@ -716,7 +718,7 @@ main(int argc, char **argv)
 
     rc = parse_uri( &uri, *argv );
     if( rc ) {
-	log_error("`%s': %s\n", *argv, g10_errstr(rc));
+	log_error("`%s': %s\n", *argv, gpg_errstr(rc));
 	release_parsed_uri( uri );
 	return 1;
     }
@@ -741,7 +743,7 @@ main(int argc, char **argv)
 
     rc = http_open_document( &hd, *argv, 0 );
     if( rc ) {
-	log_error("can't get `%s': %s\n", *argv, g10_errstr(rc));
+	log_error("can't get `%s': %s\n", *argv, gpg_errstr(rc));
 	return 1;
     }
     log_info("open_http_document succeeded; status=%u\n", hd.status_code );

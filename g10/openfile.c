@@ -161,7 +161,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
     if( (!iname || (*iname=='-' && !iname[1])) && !opt.outfile ) {
 	if( !(*a = iobuf_create(NULL)) ) {
 	    log_error(_("%s: can't open: %s\n"), "[stdout]", strerror(errno) );
-	    rc = G10ERR_CREATE_FILE;
+	    rc = GPGERR_CREATE_FILE;
 	}
 	else if( opt.verbose )
 	    log_info(_("writing to stdout\n"));
@@ -209,13 +209,13 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 	if( overwrite_filep( name ) ) {
 	    if( !(*a = iobuf_create( name )) ) {
 		log_error(_("%s: can't create: %s\n"), name, strerror(errno) );
-		rc = G10ERR_CREATE_FILE;
+		rc = GPGERR_CREATE_FILE;
 	    }
 	    else if( opt.verbose )
 		log_info(_("writing to `%s'\n"), name );
 	}
 	else
-	    rc = G10ERR_FILE_EXISTS;
+	    rc = GPGERR_FILE_EXISTS;
 	gcry_free(buf);
     }
     return rc;

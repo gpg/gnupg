@@ -97,7 +97,7 @@ get_keyblock_byname( KBNODE *keyblock, KBPOS *kbpos, const char *username )
     /* read the keyblock */
     rc = read_keyblock( kbpos, keyblock );
     if( rc )
-	log_error("%s: keyblock read problem: %s\n", username, g10_errstr(rc));
+	log_error("%s: keyblock read problem: %s\n", username, gpg_errstr(rc));
     else
 	merge_keys_and_selfsig( *keyblock );
 
@@ -123,13 +123,13 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	node->flag &= ~(NODFLG_BADSIG|NODFLG_NOKEY|NODFLG_SIGERR);
 	sigrc = '!';
 	break;
-      case G10ERR_BAD_SIGN:
+      case GPGERR_BAD_SIGN:
 	node->flag = NODFLG_BADSIG;
 	sigrc = '-';
 	if( inv_sigs )
 	    ++*inv_sigs;
 	break;
-      case G10ERR_NO_PUBKEY:
+      case GPGERR_NO_PUBKEY:
 	node->flag = NODFLG_NOKEY;
 	sigrc = '?';
 	if( no_key )
@@ -147,7 +147,7 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 		is_rev? "rev":"sig",
 		sigrc, sig->keyid[1], datestr_from_sig(sig));
 	if( sigrc == '%' )
-	    tty_printf("[%s] ", g10_errstr(rc) );
+	    tty_printf("[%s] ", gpg_errstr(rc) );
 	else if( sigrc == '?' )
 	    ;
 	else if( *is_selfsig ) {
@@ -367,7 +367,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 					       sign_uid_mk_attrib,
 					       &attrib );
 		if( rc ) {
-		    log_error(_("signing failed: %s\n"), g10_errstr(rc));
+		    log_error(_("signing failed: %s\n"), gpg_errstr(rc));
 		    goto leave;
 		}
 		*ret_modified = 1; /* we changed the keyblock */
@@ -417,7 +417,7 @@ change_passphrase( KBNODE keyblock )
 
     switch( is_secret_key_protected( sk ) ) {
       case -1:
-	rc = G10ERR_PUBKEY_ALGO;
+	rc = GPGERR_PUBKEY_ALGO;
 	break;
       case 0:
 	tty_printf(_("This key is not protected.\n"));
@@ -440,7 +440,7 @@ change_passphrase( KBNODE keyblock )
     }
 
     if( rc )
-	tty_printf(_("Can't edit this key: %s\n"), g10_errstr(rc));
+	tty_printf(_("Can't edit this key: %s\n"), gpg_errstr(rc));
     else {
 	DEK *dek = NULL;
 	STRING2KEY *s2k = gcry_xmalloc_secure( sizeof *s2k );
@@ -477,7 +477,7 @@ change_passphrase( KBNODE keyblock )
 		    }
 		}
 		if( rc )
-		    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
+		    log_error("protect_secret_key failed: %s\n", gpg_errstr(rc) );
 		else
 		    changed++;
 		break;
@@ -629,7 +629,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    rc = read_keyblock( &sec_keyblockpos, &sec_keyblock );
 	    if( rc ) {
 		log_error("%s: secret keyblock read problem: %s\n",
-						username, g10_errstr(rc));
+						username, gpg_errstr(rc));
 		goto leave;
 	    }
 	    merge_keys_and_selfsig( sec_keyblock );
@@ -784,7 +784,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		rc = update_trust_record( keyblock, 0, NULL );
 		if( rc ) {
 		    log_error(_("update of trustdb failed: %s\n"),
-				g10_errstr(rc) );
+				gpg_errstr(rc) );
 		    rc = 0;
 		}
 	    }
@@ -943,7 +943,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		if( modified ) {
 		    rc = update_keyblock( &keyblockpos, keyblock );
 		    if( rc ) {
-			log_error(_("update failed: %s\n"), g10_errstr(rc) );
+			log_error(_("update failed: %s\n"), gpg_errstr(rc) );
 			break;
 		    }
 		}
@@ -951,7 +951,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		    rc = update_keyblock( &sec_keyblockpos, sec_keyblock );
 		    if( rc ) {
 			log_error(_("update secret failed: %s\n"),
-							    g10_errstr(rc) );
+							    gpg_errstr(rc) );
 			break;
 		    }
 		}
@@ -966,7 +966,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		rc = update_trust_record( keyblock, 0, NULL );
 	    if( rc )
 		log_error(_("update of trustdb failed: %s\n"),
-			    g10_errstr(rc) );
+			    gpg_errstr(rc) );
 	    goto leave;
 
 	  case cmdINVCMD:
@@ -1092,11 +1092,11 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 	    if( !rc )
 		tty_printf( "rev! subkey has been revoked: %s\n",
 			    datestr_from_sig( sig ) );
-	    else if( rc == G10ERR_BAD_SIGN )
+	    else if( rc == GPGERR_BAD_SIGN )
 		tty_printf( "rev- faked revocation found\n" );
 	    else if( rc )
 		tty_printf( "rev? problem checking revocation: %s\n",
-							 g10_errstr(rc) );
+							 gpg_errstr(rc) );
 	}
     }
     /* the user ids */
@@ -1218,7 +1218,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
 			     keygen_add_std_prefs, pk );
     free_secret_key( sk );
     if( rc ) {
-	log_error("signing failed: %s\n", g10_errstr(rc) );
+	log_error("signing failed: %s\n", gpg_errstr(rc) );
 	free_user_id(uid);
 	return 0;
     }
@@ -1516,7 +1516,7 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 					     keygen_add_key_expire, sub_pk );
 		if( rc ) {
 		    log_error("make_keysig_packet failed: %s\n",
-						    g10_errstr(rc));
+						    gpg_errstr(rc));
 		    free_secret_key( sk );
 		    return 0;
 		}
@@ -1829,7 +1829,7 @@ menu_revsig( KBNODE keyblock )
 				       &attrib );
 	free_secret_key(sk);
 	if( rc ) {
-	    log_error(_("signing failed: %s\n"), g10_errstr(rc));
+	    log_error(_("signing failed: %s\n"), gpg_errstr(rc));
 	    return changed;
 	}
 	changed = 1; /* we changed the keyblock */
@@ -1878,7 +1878,7 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
 				     NULL, NULL );
 	    free_secret_key(sk);
 	    if( rc ) {
-		log_error(_("signing failed: %s\n"), g10_errstr(rc));
+		log_error(_("signing failed: %s\n"), gpg_errstr(rc));
 		return changed;
 	    }
 	    changed = 1; /* we changed the keyblock */

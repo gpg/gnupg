@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef G10_HKP_H
-#define G10_HKP_H 1
+#ifndef GPG_HKP_H
+#define GPG_HKP_H 1
 
 
 int hkp_ask_import( u32 *keyid );
@@ -27,4 +27,4 @@ int hkp_import( STRLIST users );
 int hkp_export( STRLIST users );
 
 
-#endif /*G10_HKP_H*/
+#endif /*GPG_HKP_H*/

@@ -1,3 +1,7 @@
+Thu Jan 27 18:00:44 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* Changed all "g10_"/"GPG_" prefixes to "gpg_"/"GPG_".
+
 Mon Jan 24 13:04:28 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* memory.c: Removed

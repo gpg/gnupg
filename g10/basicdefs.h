@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef G10_BASICDEFS_H
-#define G10_BASICDEFS_H
+#ifndef GPG_BASICDEFS_H
+#define GPG_BASICDEFS_H
 
 #include "types.h"
 
@@ -37,4 +37,4 @@ typedef struct sk_list *SK_LIST;
 
 
 
-#endif /* G10_BASICDEFS_H */
+#endif /* GPG_BASICDEFS_H */

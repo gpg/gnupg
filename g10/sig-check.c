@@ -83,7 +83,7 @@ pk_verify( int algo, MPI hash, MPI *data, MPI *pkey,
 			  NULL ));
     }
     else
-	return G10ERR_PUBKEY_ALGO;
+	return GPGERR_PUBKEY_ALGO;
 
     /* put hash into a S-Exp s_hash */
     s_hash = gcry_sexp_new_mpi( hash );
@@ -145,7 +145,7 @@ do_signature_check( PKT_signature *sig, GCRY_MD_HD digest, u32 *r_expire )
 
     *r_expire = 0;
     if( get_pubkey( pk, sig->keyid ) )
-	rc = G10ERR_NO_PUBKEY;
+	rc = GPGERR_NO_PUBKEY;
     else {
 	*r_expire = pk->expiredate;
 	rc = do_check( pk, sig, digest );
@@ -250,7 +250,7 @@ mdc_kludge_check( PKT_signature *sig, GCRY_MD_HD digest )
     }
     md_final( digest );
 
-    rc = G10ERR_BAD_SIGN;
+    rc = GPGERR_BAD_SIGN;
     {	const byte *s1 = md_read( digest, sig->digest_algo );
 	int s1len = md_digest_length( sig->digest_algo );
 
@@ -279,7 +279,7 @@ mdc_kludge_check( PKT_signature *sig, GCRY_MD_HD digest )
 
     if( !rc && sig->flags.unknown_critical ) {
 	log_info(_("assuming bad MDC due to an unknown critical bit\n"));
-	rc = G10ERR_BAD_SIGN;
+	rc = GPGERR_BAD_SIGN;
     }
     sig->flags.checked = 1;
     sig->flags.valid = !rc;
@@ -326,7 +326,7 @@ cmp_help( void *opaque, MPI result )
     }
     if( old_enc ) {
 	log_error("old encoding scheme is not supported\n");
-	return G10ERR_GENERAL;
+	return GPGERR_GENERAL;
     }
 
     if( (rc=check_digest_algo(sig->digest_algo)) )
@@ -338,25 +338,25 @@ cmp_help( void *opaque, MPI result )
 	if( asn[j] != c )
 	    break;
     if( j != -1 || mpi_getbyte(result, i) )
-	return G10ERR_BAD_PUBKEY;  /* ASN is wrong */
+	return GPGERR_BAD_PUBKEY;  /* ASN is wrong */
     for(i++; (c=mpi_getbyte(result, i)) != -1; i++ )
 	if( c != 0xff  )
 	    break;
     i++;
     if( c != sig->digest_algo || mpi_getbyte(result, i) ) {
 	/* Padding or leading bytes in signature is wrong */
-	return G10ERR_BAD_PUBKEY;
+	return GPGERR_BAD_PUBKEY;
     }
     if( mpi_getbyte(result, mdlen-1) != sig->digest_start[0]
 	|| mpi_getbyte(result, mdlen-2) != sig->digest_start[1] ) {
 	/* Wrong key used to check the signature */
-	return G10ERR_BAD_PUBKEY;
+	return GPGERR_BAD_PUBKEY;
     }
 
     dp = md_read( digest, sig->digest_algo );
     for(i=mdlen-1; i >= 0; i--, dp++ ) {
 	if( mpi_getbyte( result, i ) != *dp )
-	    return G10ERR_BAD_SIGN;
+	    return GPGERR_BAD_SIGN;
     }
     return 0;
   #else
@@ -376,7 +376,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, GCRY_MD_HD digest )
     if( pk->version == 4 && pk->pubkey_algo == GCRY_PK_ELG_E ) {
 	log_info(_("this is a PGP generated "
 		  "ElGamal key which is NOT secure for signatures!\n"));
-	return G10ERR_PUBKEY_ALGO;
+	return GPGERR_PUBKEY_ALGO;
     }
 
     if( pk->timestamp > sig->timestamp ) {
@@ -385,7 +385,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, GCRY_MD_HD digest )
 		  ? _("public key is %lu second newer than the signature\n")
 		  : _("public key is %lu seconds newer than the signature\n"),
 		       d );
-	return G10ERR_TIME_CONFLICT; /* pubkey newer than signature */
+	return GPGERR_TIME_CONFLICT; /* pubkey newer than signature */
     }
 
     cur_time = make_timestamp();
@@ -395,7 +395,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, GCRY_MD_HD digest )
 			   "in future (time warp or clock problem)\n")
 		       : _("key has been created %lu seconds "
 			   "in future (time warp or clock problem)\n"), d );
-	return G10ERR_TIME_CONFLICT;
+	return GPGERR_TIME_CONFLICT;
     }
 
     if( pk->expiredate && pk->expiredate < cur_time ) {
@@ -457,7 +457,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, GCRY_MD_HD digest )
     mpi_release( result );
     if( !rc && sig->flags.unknown_critical ) {
 	log_info(_("assuming bad signature due to an unknown critical bit\n"));
-	rc = G10ERR_BAD_SIGN;
+	rc = GPGERR_BAD_SIGN;
     }
     sig->flags.checked = 1;
     sig->flags.valid = !rc;
@@ -544,7 +544,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 	}
 	else {
 	    log_error("no subkey for subkey revocation packet\n");
-	    rc = G10ERR_SIG_CLASS;
+	    rc = GPGERR_SIG_CLASS;
 	}
     }
     else if( sig->sig_class == 0x18 ) {
@@ -567,7 +567,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 	}
 	else {
 	    log_error("no subkey for key signature packet\n");
-	    rc = G10ERR_SIG_CLASS;
+	    rc = GPGERR_SIG_CLASS;
 	}
     }
     else {
@@ -592,7 +592,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 	}
 	else {
 	    log_error("no user ID for key signature packet\n");
-	    rc = G10ERR_SIG_CLASS;
+	    rc = GPGERR_SIG_CLASS;
 	}
     }
 

@@ -128,7 +128,7 @@ cipher_filter( void *opaque, int control,
 	if( rc )
 	    log_fatal("encrypt failed: %s\n", gcry_strerror(rc) );
 	if( iobuf_write( a, buf, size ) )
-	    rc = G10ERR_WRITE_FILE;
+	    rc = GPGERR_WRITE_FILE;
     }
     else if( control == IOBUFCTRL_FREE ) {
 	if( cfx->mdc_hash ) {
@@ -139,7 +139,7 @@ cipher_filter( void *opaque, int control,
 	    if( rc )
 		log_fatal("encrypt failed: %s\n", gcry_strerror(rc) );
 	    if( iobuf_write( a, hash, hashlen ) )
-		rc = G10ERR_WRITE_FILE;
+		rc = GPGERR_WRITE_FILE;
 	    gcry_md_close( cfx->mdc_hash ); cfx->mdc_hash = NULL;
 	}
 	gcry_cipher_close(cfx->cipher_hd);

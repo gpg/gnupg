@@ -17,8 +17,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef G10_FILTER_H
-#define G10_FILTER_H
+#ifndef GPG_FILTER_H
+#define GPG_FILTER_H
 
 #include <gcrypt.h>
 
@@ -135,4 +135,4 @@ int copy_clearsig_text( IOBUF out, IOBUF inp, GCRY_MD_HD md,
 
 
 
-#endif /*G10_FILTER_H*/
+#endif /*GPG_FILTER_H*/

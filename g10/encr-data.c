@@ -62,7 +62,7 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
     if( gcry_cipher_test_algo( dek->algo ) ) {
 	if( opt.verbose )
 	    log_info(_("encrypted with unknown algorithm %d\n"), dek->algo );
-	rc = G10ERR_CIPHER_ALGO;
+	rc = GPGERR_CIPHER_ALGO;
 	goto leave;
     }
     if( opt.verbose )
@@ -129,7 +129,7 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
     p = temp;
 /* log_hexdump( "prefix", temp, nprefix+2 ); */
     if( p[nprefix-2] != p[nprefix] || p[nprefix-1] != p[nprefix+1] ) {
-	rc = G10ERR_BAD_KEY;
+	rc = GPGERR_BAD_KEY;
 	goto leave;
     }
     if( ed->mdc_method )
@@ -139,12 +139,12 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
     proc_packets( procctx, ed->buf);
     ed->buf = NULL;
     if( ed->mdc_method && dfx.eof_seen == 2 )
-	rc = G10ERR_INVALID_PACKET;
+	rc = GPGERR_INVALID_PACKET;
     else if( ed->mdc_method ) { /* check the mdc */
 	int datalen = gcry_md_get_algo_dlen( ed->mdc_method );
 	if( datalen != 20
 	    || memcmp(gcry_md_read( dfx.mdc_hash, 0 ), dfx.defer, datalen) )
-	    rc = G10ERR_BAD_SIGN;
+	    rc = GPGERR_BAD_SIGN;
 	log_hexdump("MDC calculated:", gcry_md_read( dfx.mdc_hash, 0), datalen);
 	log_hexdump("MDC message   :", dfx.defer, 20);
     }

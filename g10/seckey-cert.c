@@ -75,7 +75,7 @@ pk_check_secret_key( int algo, MPI *skey )
 			  NULL ));
     }
     else
-	return G10ERR_PUBKEY_ALGO;
+	return GPGERR_PUBKEY_ALGO;
 
     rc = gcry_pk_testkey( s_skey );
     gcry_sexp_release( s_skey );
@@ -100,7 +100,7 @@ do_check( PKT_secret_key *sk )
 	if( openpgp_cipher_test_algo( sk->protect.algo ) ) {
 	    log_info(_("protection algorithm %d is not supported\n"),
 			sk->protect.algo );
-	    return G10ERR_CIPHER_ALGO;
+	    return GPGERR_CIPHER_ALGO;
 	}
 	keyid_from_sk( sk, keyid );
 	keyid[2] = keyid[3] = 0;
@@ -196,14 +196,14 @@ do_check( PKT_secret_key *sk )
 	if( csum != sk->csum ) {
 	    copy_secret_key( sk, save_sk );
 	    free_secret_key( save_sk );
-	    return G10ERR_BAD_PASS;
+	    return GPGERR_BAD_PASS;
 	}
 	/* the checksum may fail, so we also check the key itself */
 	res = pk_check_secret_key( sk->pubkey_algo, sk->skey );
 	if( res ) {
 	    copy_secret_key( sk, save_sk );
 	    free_secret_key( save_sk );
-	    return G10ERR_BAD_PASS;
+	    return GPGERR_BAD_PASS;
 	}
 	free_secret_key( save_sk );
 	sk->is_protected = 0;
@@ -216,7 +216,7 @@ do_check( PKT_secret_key *sk )
 	    csum += checksum_mpi( sk->skey[i] );
 	}
 	if( csum != sk->csum )
-	    return G10ERR_CHECKSUM;
+	    return GPGERR_CHECKSUM;
     }
 
     return 0;
@@ -231,17 +231,17 @@ do_check( PKT_secret_key *sk )
 int
 check_secret_key( PKT_secret_key *sk, int n )
 {
-    int rc = G10ERR_BAD_PASS;
+    int rc = GPGERR_BAD_PASS;
     int i;
 
     if( n < 1 )
 	n = opt.batch? 1 : 3; /* use the default value */
 
-    for(i=0; i < n && rc == G10ERR_BAD_PASS; i++ ) {
+    for(i=0; i < n && rc == GPGERR_BAD_PASS; i++ ) {
 	if( i )
 	    log_info(_("Invalid passphrase; please try again ...\n"));
 	rc = do_check( sk );
-	if( rc == G10ERR_BAD_PASS && is_status_enabled() ) {
+	if( rc == GPGERR_BAD_PASS && is_status_enabled() ) {
 	    u32 kid[2];
 	    char buf[50];
 
@@ -289,7 +289,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	GCRY_CIPHER_HD cipher_hd=NULL;
 
 	if( openpgp_cipher_test_algo( sk->protect.algo ) )
-	    rc = G10ERR_CIPHER_ALGO; /* unsupport protection algorithm */
+	    rc = GPGERR_CIPHER_ALGO; /* unsupport protection algorithm */
 	else {
 	    print_cipher_algo_note( sk->protect.algo );
 	    if( !(cipher_hd = gcry_cipher_open( sk->protect.algo,

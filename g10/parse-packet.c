@@ -304,7 +304,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
     if( !(ctb & 0x80) ) {
 	log_error("%s: invalid packet (ctb=%02x) near %lu\n",
 			    iobuf_where(inp), ctb, iobuf_tell(inp) );
-	rc = G10ERR_INVALID_PACKET;
+	rc = GPGERR_INVALID_PACKET;
 	goto leave;
     }
     pktlen = 0;
@@ -313,7 +313,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	pkttype =  ctb & 0x3f;
 	if( (c = iobuf_get(inp)) == -1 ) {
 	    log_error("%s: 1st length byte missing\n", iobuf_where(inp) );
-	    rc = G10ERR_INVALID_PACKET;
+	    rc = GPGERR_INVALID_PACKET;
 	    goto leave;
 	}
 	hdr[hdrlen++] = c;
@@ -323,7 +323,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	    pktlen = (c - 192) * 256;
 	    if( (c = iobuf_get(inp)) == -1 ) {
 		log_error("%s: 2nd length byte missing\n", iobuf_where(inp) );
-		rc = G10ERR_INVALID_PACKET;
+		rc = GPGERR_INVALID_PACKET;
 		goto leave;
 	    }
 	    hdr[hdrlen++] = c;
@@ -335,7 +335,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	    pktlen |= (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 8;
 	    if( (c = iobuf_get(inp)) == -1 ) {
 		log_error("%s: 4 byte length invalid\n", iobuf_where(inp) );
-		rc = G10ERR_INVALID_PACKET;
+		rc = GPGERR_INVALID_PACKET;
 		goto leave;
 	    }
 	    pktlen |= (hdr[hdrlen++] = c );
@@ -363,7 +363,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 
     if( out && pkttype	) {
 	if( iobuf_write( out, hdr, hdrlen ) == -1 )
-	    rc = G10ERR_WRITE_FILE;
+	    rc = GPGERR_WRITE_FILE;
 	else
 	    rc = copy_packet(inp, out, pkttype, pktlen );
 	goto leave;
@@ -387,7 +387,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
       #endif
     }
     pkt->pkttype = pkttype;
-    rc = G10ERR_UNKNOWN_PACKET; /* default error */
+    rc = GPGERR_UNKNOWN_PACKET; /* default error */
     switch( pkttype ) {
       case PKT_PUBLIC_KEY:
       case PKT_PUBLIC_SUBKEY:
@@ -441,7 +441,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 
   leave:
     if( !rc && iobuf_error(inp) )
-	rc = G10ERR_INV_KEYRING;
+	rc = GPGERR_INV_KEYRING;
     return rc;
 }
 
@@ -471,23 +471,23 @@ copy_packet( IOBUF inp, IOBUF out, int pkttype, unsigned long pktlen )
     if( iobuf_in_block_mode(inp) ) {
 	while( (n = iobuf_read( inp, buf, 100 )) != -1 )
 	    if( iobuf_write(out, buf, n ) )
-		return G10ERR_WRITE_FILE; /* write error */
+		return GPGERR_WRITE_FILE; /* write error */
     }
     else if( !pktlen && pkttype == PKT_COMPRESSED ) {
 	log_debug("copy_packet: compressed!\n");
 	/* compressed packet, copy till EOF */
 	while( (n = iobuf_read( inp, buf, 100 )) != -1 )
 	    if( iobuf_write(out, buf, n ) )
-		return G10ERR_WRITE_FILE; /* write error */
+		return GPGERR_WRITE_FILE; /* write error */
     }
     else {
 	for( ; pktlen; pktlen -= n ) {
 	    n = pktlen > 100 ? 100 : pktlen;
 	    n = iobuf_read( inp, buf, n );
 	    if( n == -1 )
-		return G10ERR_READ_FILE;
+		return GPGERR_READ_FILE;
 	    if( iobuf_write(out, buf, n ) )
-		return G10ERR_WRITE_FILE; /* write error */
+		return GPGERR_WRITE_FILE; /* write error */
 	}
     }
     return 0;
@@ -1042,7 +1042,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	n = read_16(inp); pktlen -= 2; /* length of hashed data */
 	if( n > 10000 ) {
 	    log_error("signature packet: hashed data too long\n");
-	    rc = G10ERR_INVALID_PACKET;
+	    rc = GPGERR_INVALID_PACKET;
 	    goto leave;
 	}
 	if( n ) {
@@ -1059,7 +1059,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	n = read_16(inp); pktlen -= 2; /* length of unhashed data */
 	if( n > 10000 ) {
 	    log_error("signature packet: unhashed data too long\n");
-	    rc = G10ERR_INVALID_PACKET;
+	    rc = GPGERR_INVALID_PACKET;
 	    goto leave;
 	}
 	if( n ) {
@@ -1077,7 +1077,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 
     if( pktlen < 5 ) { /* sanity check */
 	log_error("packet(%d) too short\n", pkttype);
-	rc = G10ERR_INVALID_PACKET;
+	rc = GPGERR_INVALID_PACKET;
 	goto leave;
     }
 
@@ -1205,7 +1205,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 
     version = iobuf_get_noeof(inp); pktlen--;
     if( pkttype == PKT_PUBLIC_SUBKEY && version == '#' ) {
-	/* early versions of G10 use old PGP comments packets;
+	/* early versions of gpg use old PGP comments packets;
 	 * luckily all those comments are started by a hash */
 	if( list_mode ) {
 	    printf(":rfc1991 comment packet: \"" );
@@ -1312,7 +1312,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	    sk->protect.s2k.count = 0;
 	    if( sk->protect.algo == 255 ) {
 		if( pktlen < 3 ) {
-		    rc = G10ERR_INVALID_PACKET;
+		    rc = GPGERR_INVALID_PACKET;
 		    goto leave;
 		}
 		sk->protect.algo = iobuf_get_noeof(inp); pktlen--;
@@ -1337,7 +1337,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		    if( list_mode )
 			printf(  "\tunknown S2K %d\n",
 					    sk->protect.s2k.mode );
-		    rc = G10ERR_INVALID_PACKET;
+		    rc = GPGERR_INVALID_PACKET;
 		    goto leave;
 		}
 
@@ -1356,7 +1356,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 
 		if( sk->protect.s2k.mode == 3 ) {
 		    if( pktlen < 1 ) {
-			rc = G10ERR_INVALID_PACKET;
+			rc = GPGERR_INVALID_PACKET;
 			goto leave;
 		    }
 		    sk->protect.s2k.count = iobuf_get(inp);
@@ -1390,7 +1390,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		sk->protect.ivlen = 8;
 	    }
 	    if( pktlen < sk->protect.ivlen ) {
-		rc = G10ERR_INVALID_PACKET;
+		rc = GPGERR_INVALID_PACKET;
 		goto leave;
 	    }
 	    for(i=0; i < sk->protect.ivlen && pktlen; i++, pktlen-- )

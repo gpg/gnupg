@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <gcrypt.h>
 
 #include "memory.h"
 #include "util.h"
@@ -75,7 +76,7 @@ static int underflow(IOBUF a);
  *		    buffer, and should be set to the number of bytes
  *		    which were put into the buffer. The function
  *		    returns 0 to indicate success, -1 on EOF and
- *		    G10ERR_xxxxx for other errors.
+ *		    GPGERR_xxxxx for other errors.
  *
  * IOBUFCTRL_FLUSH: called by iobuf_flush() to write out the collected stuff.
  *		    *RET_LAN is the number of bytes in BUF.
@@ -104,7 +105,7 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	    else if( ferror(fp) && errno != EPIPE  ) {
 		log_error("%s: read error: %s\n",
 			  a->fname, strerror(errno));
-		rc = G10ERR_READ_FILE;
+		rc = GPGERR_READ_FILE;
 	    }
 	    *ret_len = nbytes;
 	}
@@ -115,7 +116,7 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	    nbytes = fwrite( buf, 1, size, fp );
 	    if( ferror(fp) ) {
 		log_error("%s: write error: %s\n", a->fname, strerror(errno));
-		rc = G10ERR_WRITE_FILE;
+		rc = GPGERR_WRITE_FILE;
 	    }
 	}
 	*ret_len = nbytes;
@@ -177,7 +178,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    }
 		    else if( (c = iobuf_get(chain)) == -1 ) {
 			log_error("block_filter: 1st length byte missing\n");
-			rc = G10ERR_READ_FILE;
+			rc = GPGERR_READ_FILE;
 			break;
 		    }
 		    if( c < 192 ) {
@@ -194,7 +195,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 			a->size = (c - 192) * 256;
 			if( (c = iobuf_get(chain)) == -1 ) {
 			    log_error("block_filter: 2nd length byte missing\n");
-			    rc = G10ERR_READ_FILE;
+			    rc = GPGERR_READ_FILE;
 			    break;
 			}
 			a->size += c + 192;
@@ -212,7 +213,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 			a->size |= iobuf_get(chain) << 8;
 			if( (c = iobuf_get(chain)) == -1 ) {
 			    log_error("block_filter: invalid 4 byte length\n");
-			    rc = G10ERR_READ_FILE;
+			    rc = GPGERR_READ_FILE;
 			    break;
 			}
 			a->size |= c;
@@ -229,7 +230,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    a->size |= c;
 		    if( c == -1 ) {
 			log_error("block_filter: error reading length info\n");
-			rc = G10ERR_READ_FILE;
+			rc = GPGERR_READ_FILE;
 		    }
 		    if( !a->size ) {
 			a->eof = 1;
@@ -247,7 +248,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    if( c == -1 ) c = 0;
 		    log_error("block_filter %p: read error (size=%lu,a->size=%lu)\n",
 			      a,  (ulong)size+c, (ulong)a->size+c);
-		    rc = G10ERR_READ_FILE;
+		    rc = GPGERR_READ_FILE;
 		}
 		else {
 		    size -= c;
@@ -289,14 +290,14 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    if( (n=a->buflen) ) { /* write stuff from the buffer */
 			assert( n == OP_MIN_PARTIAL_CHUNK);
 			if( iobuf_write(chain, a->buffer, n ) )
-			    rc = G10ERR_WRITE_FILE;
+			    rc = GPGERR_WRITE_FILE;
 			a->buflen = 0;
 			nbytes -= n;
 		    }
 		    if( (n = nbytes) > blen )
 			n = blen;
 		    if( n && iobuf_write(chain, p, n ) )
-			rc = G10ERR_WRITE_FILE;
+			rc = GPGERR_WRITE_FILE;
 		    p += n;
 		    nbytes -= n;
 		} while( !rc && nbytes >= OP_MIN_PARTIAL_CHUNK );
@@ -334,7 +335,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		if( n > avail )
 		    n = avail;
 		if( iobuf_write(chain, p, n ) )
-		    rc = G10ERR_WRITE_FILE;
+		    rc = GPGERR_WRITE_FILE;
 		a->count += n;
 		p += n;
 		size -= n;
@@ -391,7 +392,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    rc = iobuf_write(chain, a->buffer, len );
 		if( rc ) {
 		    log_error("block_filter: write error: %s\n",strerror(errno));
-		    rc = G10ERR_WRITE_FILE;
+		    rc = GPGERR_WRITE_FILE;
 		}
 		gcry_free( a->buffer ); a->buffer = NULL; a->buflen = 0;
 	    }
@@ -479,13 +480,13 @@ iobuf_close( IOBUF a )
     for( ; a && !rc ; a = a2 ) {
 	a2 = a->chain;
 	if( a->use == 2 && (rc=iobuf_flush(a)) )
-	    log_error("iobuf_flush failed on close: %s\n", g10_errstr(rc));
+	    log_error("iobuf_flush failed on close: %s\n", gpg_errstr(rc));
 
 	if( DBG_IOBUF )
 	    log_debug("iobuf-%d.%d: close `%s'\n", a->no, a->subno, a->desc );
 	if( a->filter && (rc = a->filter(a->filter_ov, IOBUFCTRL_FREE,
 					 a->chain, NULL, &dummy_len)) )
-	    log_error("IOBUFCTRL_FREE failed on close: %s\n", g10_errstr(rc) );
+	    log_error("IOBUFCTRL_FREE failed on close: %s\n", gpg_errstr(rc) );
 	gcry_free(a->real_fname);
 	gcry_free(a->d.buf);
 	gcry_free(a);
@@ -808,7 +809,7 @@ iobuf_push_filter2( IOBUF a,
     /* now we can initialize the new function if we have one */
     if( a->filter && (rc = a->filter(a->filter_ov, IOBUFCTRL_INIT, a->chain,
 		       NULL, &dummy_len)) )
-	log_error("IOBUFCTRL_INIT failed: %s\n", g10_errstr(rc) );
+	log_error("IOBUFCTRL_INIT failed: %s\n", gpg_errstr(rc) );
     return rc;
 }
 
@@ -845,13 +846,13 @@ pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 
     /* flush this stream if it is an output stream */
     if( a->use == 2 && (rc=iobuf_flush(b)) ) {
-	log_error("iobuf_flush failed in pop_filter: %s\n", g10_errstr(rc));
+	log_error("iobuf_flush failed in pop_filter: %s\n", gpg_errstr(rc));
 	return rc;
     }
     /* and tell the filter to free it self */
     if( b->filter && (rc = b->filter(b->filter_ov, IOBUFCTRL_FREE, b->chain,
 		       NULL, &dummy_len)) ) {
-	log_error("IOBUFCTRL_FREE failed: %s\n", g10_errstr(rc) );
+	log_error("IOBUFCTRL_FREE failed: %s\n", gpg_errstr(rc) );
 	return rc;
     }
     if( b->filter_ov && b->filter_ov_owner ) {
@@ -960,7 +961,7 @@ underflow(IOBUF a)
 	    /* and tell the filter to free itself */
 	    if( (rc = a->filter(a->filter_ov, IOBUFCTRL_FREE, a->chain,
 			       NULL, &dummy_len)) )
-		log_error("IOBUFCTRL_FREE failed: %s\n", g10_errstr(rc) );
+		log_error("IOBUFCTRL_FREE failed: %s\n", gpg_errstr(rc) );
 	    if( a->filter_ov && a->filter_ov_owner ) {
 		gcry_free( a->filter_ov );
 		a->filter_ov = NULL;
@@ -1034,7 +1035,7 @@ iobuf_flush(IOBUF a)
     rc = a->filter( a->filter_ov, IOBUFCTRL_FLUSH, a->chain, a->d.buf, &len );
     if( !rc && len != a->d.len ) {
 	log_info("iobuf_flush did not write all!\n");
-	rc = G10ERR_WRITE_FILE;
+	rc = GPGERR_WRITE_FILE;
     }
     else if( rc )
 	a->error = 1;

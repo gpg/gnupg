@@ -68,7 +68,7 @@ delete_key( const char *username, int secret )
     /* read the keyblock */
     rc = read_keyblock( &kbpos, &keyblock );
     if( rc ) {
-	log_error("%s: read problem: %s\n", username, g10_errstr(rc) );
+	log_error("%s: read problem: %s\n", username, gpg_errstr(rc) );
 	goto leave;
     }
 
@@ -76,7 +76,7 @@ delete_key( const char *username, int secret )
     node = find_kbnode( keyblock, secret? PKT_SECRET_KEY:PKT_PUBLIC_KEY );
     if( !node ) {
 	log_error("Oops; key not found anymore!\n");
-	rc = G10ERR_GENERAL;
+	rc = GPGERR_GENERAL;
 	goto leave;
     }
 
@@ -95,8 +95,8 @@ delete_key( const char *username, int secret )
 	    "use option \"--delete-secret-key\" to delete it first.\n"));
 	    rc = -1;
 	}
-	else if( rc != G10ERR_NO_SECKEY )
-	    log_error("%s: get secret key: %s\n", username, g10_errstr(rc) );
+	else if( rc != GPGERR_NO_SECKEY )
+	    log_error("%s: get secret key: %s\n", username, gpg_errstr(rc) );
 	else
 	    rc = 0;
     }
@@ -148,7 +148,7 @@ delete_key( const char *username, int secret )
     if( okay ) {
 	rc = delete_keyblock( &kbpos );
 	if( rc ) {
-	    log_error("delete_keyblock failed: %s\n", g10_errstr(rc) );
+	    log_error("delete_keyblock failed: %s\n", gpg_errstr(rc) );
 	    goto leave;
 	}
     }

@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef G10_IOBUF_H
-#define G10_IOBUF_H
+#ifndef GPG_IOBUF_H
+#define GPG_IOBUF_H
 
 #include "types.h"
 
@@ -144,4 +144,4 @@ int  iobuf_in_block_mode( IOBUF a );
 #define iobuf_get_temp_length(a) ( (a)->d.len )
 #define iobuf_is_temp(a)	 ( (a)->use == 3 )
 
-#endif /*G10_IOBUF_H*/
+#endif /*GPG_IOBUF_H*/

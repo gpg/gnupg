@@ -1,0 +1,14 @@
+Mon Jan 24 13:04:28 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* README: New.
+	* Makefile.am: new.
+	* argparse.c argparse.h logging.c logging.h
+	  mischelp.h stringhelp.c stringhelp.h xmalloc.c
+	  xmalloc.h dotlock.c: Moved from ../util to here.
+	* dotlock.h: New.
+	* libjnlib-config.h: New.
+
+	* logging.c (log_set_file): New.
+	(log_printf): New.
+	(do_logv): Add kludge to insert LFs.
+

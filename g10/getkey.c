@@ -298,7 +298,7 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
 	keyid_list_t kl;
 	for( kl = unknown_keyids; kl; kl = kl->next )
 	    if( kl->keyid[0] == keyid[0] && kl->keyid[1] == keyid[1] )
-		return G10ERR_NO_PUBKEY; /* already checked and not found */
+		return GPGERR_NO_PUBKEY; /* already checked and not found */
     }
   #endif
 
@@ -354,7 +354,7 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
 	unknown_keyids = kl;
     }
   #endif
-    rc = G10ERR_NO_PUBKEY;
+    rc = GPGERR_NO_PUBKEY;
 
   leave:
     if( !rc )
@@ -444,7 +444,7 @@ get_primary_seckey( PKT_secret_key *sk, u32 *keyid )
 /****************
  * Check whether the secret key is available
  * Returns: 0 := key is available
- *	    G10ERR_NO_SECKEY := not availabe
+ *	    GPGERR_NO_SECKEY := not availabe
  */
 int
 seckey_available( u32 *keyid )
@@ -714,7 +714,7 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
 					      NULL );
 	if( !ctx->items[n].mode ) {
 	    gcry_free( ctx );
-	    return G10ERR_INV_USER_ID;
+	    return GPGERR_INV_USER_ID;
 	}
 	if( ctx->items[n].mode == 6 ) {
 	    ctx->items[n].namebuf = prepare_word_match(ctx->items[n].name);
@@ -831,7 +831,7 @@ get_pubkey_byfprint( PKT_public_key *pk, const byte *fprint, size_t fprint_len)
 	get_pubkey_end( &ctx );
     }
     else
-	rc = G10ERR_GENERAL; /* Oops */
+	rc = GPGERR_GENERAL; /* Oops */
     return rc;
 }
 
@@ -857,7 +857,7 @@ get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
 	get_pubkey_end( &ctx );
     }
     else
-	rc = G10ERR_GENERAL; /* Oops */
+	rc = GPGERR_GENERAL; /* Oops */
 
     free_public_key( pk );
     return rc;
@@ -1531,7 +1531,7 @@ finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
     else {
 	if( primary && pk->pubkey_usage
 	    && openpgp_pk_test_algo( k->pkt->pkt.public_key->pubkey_algo,
-		       pk->pubkey_usage ) == G10ERR_WR_PUBKEY_ALGO ) {
+		       pk->pubkey_usage ) == GPGERR_WR_PUBKEY_ALGO ) {
 	    /* if the usage is not correct, try to use a subkey */
 	    KBNODE save_k = k;
 
@@ -1587,7 +1587,7 @@ finish_lookup_sk( KBNODE keyblock, PKT_secret_key *sk, KBNODE k, int primary )
     else {
 	if( primary && sk->pubkey_usage
 	    && openpgp_pk_test_algo( k->pkt->pkt.secret_key->pubkey_algo,
-		       sk->pubkey_usage ) == G10ERR_WR_PUBKEY_ALGO ) {
+		       sk->pubkey_usage ) == GPGERR_WR_PUBKEY_ALGO ) {
 	    /* if the usage is not correct, try to use a subkey */
 	    KBNODE save_k = k;
 
@@ -1679,7 +1679,7 @@ lookup_pk( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock )
       found: ;
     }
     if( rc && rc != -1 )
-	log_error("enum_keyblocks failed: %s\n", g10_errstr(rc));
+	log_error("enum_keyblocks failed: %s\n", gpg_errstr(rc));
 
     if( !rc ) {
 	if( ret_keyblock ) {
@@ -1688,7 +1688,7 @@ lookup_pk( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock )
 	}
     }
     else if( rc == -1 )
-	rc = G10ERR_NO_PUBKEY;
+	rc = GPGERR_NO_PUBKEY;
 
     release_kbnode( ctx->keyblock );
     ctx->keyblock = NULL;
@@ -1706,7 +1706,7 @@ lookup_pk( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock )
 	lkup_stats[ctx->mode].any = 1;
 	if( !rc )
 	    lkup_stats[ctx->mode].okay_count++;
-	else if ( rc == G10ERR_NO_PUBKEY )
+	else if ( rc == GPGERR_NO_PUBKEY )
 	    lkup_stats[ctx->mode].nokey_count++;
 	else
 	    lkup_stats[ctx->mode].error_count++;
@@ -1765,7 +1765,7 @@ lookup_sk( GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_keyblock )
       found: ;
     }
     if( rc && rc != -1 )
-	log_error("enum_keyblocks failed: %s\n", g10_errstr(rc));
+	log_error("enum_keyblocks failed: %s\n", gpg_errstr(rc));
 
     if( !rc ) {
 	if( ret_keyblock ) {
@@ -1774,7 +1774,7 @@ lookup_sk( GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_keyblock )
 	}
     }
     else if( rc == -1 )
-	rc = G10ERR_NO_SECKEY;
+	rc = GPGERR_NO_SECKEY;
 
     release_kbnode( ctx->keyblock );
     ctx->keyblock = NULL;

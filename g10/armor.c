@@ -204,7 +204,7 @@ static void
 invalid_armor(void)
 {
     write_status(STATUS_BADARMOR);
-    g10_exit(1); /* stop here */
+    gpg_exit(1); /* stop here */
 }
 
 
@@ -393,7 +393,7 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 	    if( hdr_line == BEGIN_SIGNED_MSG_IDX ) {
 		if( afx->in_cleartext ) {
 		    log_error(_("nested clear text signatures\n"));
-		    rc = G10ERR_INVALID_ARMOR;
+		    rc = GPGERR_INVALID_ARMOR;
 		}
 		afx->in_cleartext = 1;
 	    }
@@ -423,7 +423,7 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 	i = parse_header_line( afx, line, len );
 	if( i <= 0 ) {
 	    if( i )
-		rc = G10ERR_INVALID_ARMOR;
+		rc = GPGERR_INVALID_ARMOR;
 	    break;
 	}
     }
@@ -710,16 +710,16 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	    } while( ++idx < 4 );
 	    if( c == -1 ) {
 		log_error(_("premature eof (in CRC)\n"));
-		rc = G10ERR_INVALID_ARMOR;
+		rc = GPGERR_INVALID_ARMOR;
 	    }
 	    else if( idx != 4 ) {
 		log_error(_("malformed CRC\n"));
-		rc = G10ERR_INVALID_ARMOR;
+		rc = GPGERR_INVALID_ARMOR;
 	    }
 	    else if( mycrc != afx->crc ) {
 		log_error(_("CRC error; %06lx - %06lx\n"),
 				    (ulong)afx->crc, (ulong)mycrc);
-		rc = G10ERR_INVALID_ARMOR;
+		rc = GPGERR_INVALID_ARMOR;
 	    }
 	    else {
 		rc = 0;
@@ -735,11 +735,11 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		    rc = 0;
 		else if( rc == 2 ) {
 		    log_error(_("premature eof (in Trailer)\n"));
-		    rc = G10ERR_INVALID_ARMOR;
+		    rc = GPGERR_INVALID_ARMOR;
 		}
 		else {
 		    log_error(_("error in trailer line\n"));
-		    rc = G10ERR_INVALID_ARMOR;
+		    rc = GPGERR_INVALID_ARMOR;
 		}
 	      #endif
 	    }

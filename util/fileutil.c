@@ -25,6 +25,7 @@
 #include <string.h>
 #include <assert.h>
 #include <unistd.h>
+#include <gcrypt.h>
 #include "util.h"
 #include "memory.h"
 #include "ttyio.h"

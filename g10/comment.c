@@ -56,7 +56,7 @@ write_comment( IOBUF out, const char *s )
        strcpy(pkt.pkt.comment->data, s);
     }
     if( (rc = build_packet( out, &pkt )) )
-	log_error("build_packet(comment) failed: %s\n", g10_errstr(rc) );
+	log_error("build_packet(comment) failed: %s\n", gpg_errstr(rc) );
     free_packet( &pkt );
     return rc;
 }

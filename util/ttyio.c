@@ -35,6 +35,7 @@
 #endif
 #include <errno.h>
 #include <ctype.h>
+#include <gcrypt.h>
 #include "util.h"
 #include "memory.h"
 #include "ttyio.h"

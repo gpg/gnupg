@@ -27,6 +27,7 @@
 #ifdef HAVE_LANGINFO_H
   #include <langinfo.h>
 #endif
+#include <gcrypt.h>
 #include "types.h"
 #include "util.h"
 #include "i18n.h"

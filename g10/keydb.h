@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef G10_KEYDB_H
-#define G10_KEYDB_H
+#ifndef GPG_KEYDB_H
+#define GPG_KEYDB_H
 
 #ifdef HAVE_LIBGDBM
   #include <gdbm.h>
@@ -214,4 +214,4 @@ int delete_keyblock( KBPOS *kbpos );
 int update_keyblock( KBPOS *kbpos, KBNODE root );
 
 
-#endif /*G10_KEYDB_H*/
+#endif /*GPG_KEYDB_H*/

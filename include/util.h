@@ -17,8 +17,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef G10_UTIL_H
-#define G10_UTIL_H
+#ifndef GPG_UTIL_H
+#define GPG_UTIL_H
 
 #ifdef _GCRYPT_IN_LIBGCRYPT
   #error This header should not be used internally by libgcrypt
@@ -36,60 +36,60 @@
 /*-- logger.c --*/
 void log_set_logfile( const char *name, int fd );
 FILE *log_stream(void);
-void g10_log_print_prefix(const char *text);
+void gpg_log_print_prefix(const char *text);
 void log_set_name( const char *name );
 const char *log_get_name(void);
 void log_set_pid( int pid );
 int  log_get_errorcount( int clear );
-void g10_log_hexdump( const char *text, const char *buf, size_t len );
+void gpg_log_hexdump( const char *text, const char *buf, size_t len );
 
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
-  void g10_log_bug( const char *fmt, ... )
+  void gpg_log_bug( const char *fmt, ... )
 			    __attribute__ ((noreturn, format (printf,1,2)));
-  void g10_log_bug0( const char *, int, const char * ) __attribute__ ((noreturn));
-  void g10_log_fatal( const char *fmt, ... )
+  void gpg_log_bug0( const char *, int, const char * ) __attribute__ ((noreturn));
+  void gpg_log_fatal( const char *fmt, ... )
 			    __attribute__ ((noreturn, format (printf,1,2)));
-  void g10_log_error( const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
-  void g10_log_info( const char *fmt, ... )  __attribute__ ((format (printf,1,2)));
-  void g10_log_debug( const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
-  void g10_log_fatal_f( const char *fname, const char *fmt, ... )
+  void gpg_log_error( const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
+  void gpg_log_info( const char *fmt, ... )  __attribute__ ((format (printf,1,2)));
+  void gpg_log_debug( const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
+  void gpg_log_fatal_f( const char *fname, const char *fmt, ... )
 			    __attribute__ ((noreturn, format (printf,2,3)));
-  void g10_log_error_f( const char *fname, const char *fmt, ... )
+  void gpg_log_error_f( const char *fname, const char *fmt, ... )
 			    __attribute__ ((format (printf,2,3)));
-  void g10_log_info_f( const char *fname, const char *fmt, ... )
+  void gpg_log_info_f( const char *fname, const char *fmt, ... )
 			    __attribute__ ((format (printf,2,3)));
-  void g10_log_debug_f( const char *fname,  const char *fmt, ... )
+  void gpg_log_debug_f( const char *fname,  const char *fmt, ... )
 			    __attribute__ ((format (printf,2,3)));
-  #define BUG() g10_log_bug0(  __FILE__ , __LINE__, __FUNCTION__ )
+  #define BUG() gpg_log_bug0(  __FILE__ , __LINE__, __FUNCTION__ )
 #else
-  void g10_log_bug( const char *fmt, ... );
-  void g10_log_bug0( const char *, int );
-  void g10_log_fatal( const char *fmt, ... );
-  void g10_log_error( const char *fmt, ... );
-  void g10_log_info( const char *fmt, ... );
-  void g10_log_debug( const char *fmt, ... );
-  void g10_log_fatal_f( const char *fname, const char *fmt, ... );
-  void g10_log_error_f( const char *fname, const char *fmt, ... );
-  void g10_log_info_f( const char *fname, const char *fmt, ... );
-  void g10_log_debug_f( const char *fname, const char *fmt, ... );
-  #define BUG() g10_log_bug0( __FILE__ , __LINE__ )
+  void gpg_log_bug( const char *fmt, ... );
+  void gpg_log_bug0( const char *, int );
+  void gpg_log_fatal( const char *fmt, ... );
+  void gpg_log_error( const char *fmt, ... );
+  void gpg_log_info( const char *fmt, ... );
+  void gpg_log_debug( const char *fmt, ... );
+  void gpg_log_fatal_f( const char *fname, const char *fmt, ... );
+  void gpg_log_error_f( const char *fname, const char *fmt, ... );
+  void gpg_log_info_f( const char *fname, const char *fmt, ... );
+  void gpg_log_debug_f( const char *fname, const char *fmt, ... );
+  #define BUG() gpg_log_bug0( __FILE__ , __LINE__ )
 #endif
 
-#define log_hexdump g10_log_hexdump
-#define log_bug     g10_log_bug
-#define log_bug0    g10_log_bug0
-#define log_fatal   g10_log_fatal
-#define log_error   g10_log_error
-#define log_info    g10_log_info
-#define log_debug   g10_log_debug
-#define log_fatal_f g10_log_fatal_f
-#define log_error_f g10_log_error_f
-#define log_info_f  g10_log_info_f
-#define log_debug_f g10_log_debug_f
+#define log_hexdump gpg_log_hexdump
+#define log_bug     gpg_log_bug
+#define log_bug0    gpg_log_bug0
+#define log_fatal   gpg_log_fatal
+#define log_error   gpg_log_error
+#define log_info    gpg_log_info
+#define log_debug   gpg_log_debug
+#define log_fatal_f gpg_log_fatal_f
+#define log_error_f gpg_log_error_f
+#define log_info_f  gpg_log_info_f
+#define log_debug_f gpg_log_debug_f
 
 
 /*-- errors.c --*/
-const char * g10_errstr( int no );
+const char * gpg_errstr( int no );
 
 
 
@@ -145,4 +145,4 @@ int  check_utf8_string( const char *string );
 #define DIM(v) (sizeof(v)/sizeof((v)[0]))
 #define DIMof(type,member)   DIM(((type *)0)->member)
 
-#endif /*G10_UTIL_H*/
+#endif /*GPG_UTIL_H*/

@@ -24,6 +24,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
+#include <gcrypt.h>
 
 #include "util.h"
 #include "i18n.h"
@@ -103,7 +104,7 @@ log_get_errorcount( int clear)
 
 
 void
-g10_log_print_prefix(const char *text)
+gpg_log_print_prefix(const char *text)
 {
     if( !logfp )
 	logfp = stderr;
@@ -125,18 +126,18 @@ print_prefix_f(const char *text, const char *fname)
 }
 
 void
-g10_log_info( const char *fmt, ... )
+gpg_log_info( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    g10_log_print_prefix("");
+    gpg_log_print_prefix("");
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
 }
 
 void
-g10_log_info_f( const char *fname, const char *fmt, ... )
+gpg_log_info_f( const char *fname, const char *fmt, ... )
 {
     va_list arg_ptr ;
 
@@ -147,11 +148,11 @@ g10_log_info_f( const char *fname, const char *fmt, ... )
 }
 
 void
-g10_log_error( const char *fmt, ... )
+gpg_log_error( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    g10_log_print_prefix("");
+    gpg_log_print_prefix("");
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -159,7 +160,7 @@ g10_log_error( const char *fmt, ... )
 }
 
 void
-g10_log_error_f( const char *fname, const char *fmt, ... )
+gpg_log_error_f( const char *fname, const char *fmt, ... )
 {
     va_list arg_ptr ;
 
@@ -171,11 +172,11 @@ g10_log_error_f( const char *fname, const char *fmt, ... )
 }
 
 void
-g10_log_fatal( const char *fmt, ... )
+gpg_log_fatal( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    g10_log_print_prefix("fatal: ");
+    gpg_log_print_prefix("fatal: ");
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -184,7 +185,7 @@ g10_log_fatal( const char *fmt, ... )
 }
 
 void
-g10_log_fatal_f( const char *fname, const char *fmt, ... )
+gpg_log_fatal_f( const char *fname, const char *fmt, ... )
 {
     va_list arg_ptr ;
 
@@ -197,12 +198,12 @@ g10_log_fatal_f( const char *fname, const char *fmt, ... )
 }
 
 void
-g10_log_bug( const char *fmt, ... )
+gpg_log_bug( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
     putc('\n', stderr );
-    g10_log_print_prefix("Ohhhh jeeee: ");
+    gpg_log_print_prefix("Ohhhh jeeee: ");
     va_start( arg_ptr, fmt ) ;
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -213,31 +214,31 @@ g10_log_bug( const char *fmt, ... )
 
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
 void
-g10_log_bug0( const char *file, int line, const char *func )
+gpg_log_bug0( const char *file, int line, const char *func )
 {
     log_bug(_("... this is a bug (%s:%d:%s)\n"), file, line, func );
 }
 #else
 void
-g10_log_bug0( const char *file, int line )
+gpg_log_bug0( const char *file, int line )
 {
     log_bug(_("you found a bug ... (%s:%d)\n"), file, line);
 }
 #endif
 
 void
-g10_log_debug( const char *fmt, ... )
+gpg_log_debug( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    g10_log_print_prefix("DBG: ");
+    gpg_log_print_prefix("DBG: ");
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
 }
 
 void
-g10_log_debug_f( const char *fname, const char *fmt, ... )
+gpg_log_debug_f( const char *fname, const char *fmt, ... )
 {
     va_list arg_ptr ;
 
@@ -250,11 +251,11 @@ g10_log_debug_f( const char *fname, const char *fmt, ... )
 
 
 void
-g10_log_hexdump( const char *text, const char *buf, size_t len )
+gpg_log_hexdump( const char *text, const char *buf, size_t len )
 {
     int i;
 
-    g10_log_print_prefix(text);
+    gpg_log_print_prefix(text);
     for(i=0; i < len; i++ )
 	fprintf(logfp, " %02X", ((const byte*)buf)[i] );
     fputc('\n', logfp);

@@ -58,7 +58,7 @@ gen_revoke( const char *uname )
 
     if( opt.batch ) {
 	log_error(_("sorry, can't do this in batch mode\n"));
-	return G10ERR_GENERAL;
+	return GPGERR_GENERAL;
     }
 
 
@@ -90,7 +90,7 @@ gen_revoke( const char *uname )
     /* read the keyblock */
     rc = read_keyblock( &kbpos, &keyblock );
     if( rc ) {
-	log_error(_("error reading the certificate: %s\n"), g10_errstr(rc) );
+	log_error(_("error reading the certificate: %s\n"), gpg_errstr(rc) );
 	goto leave;
     }
 
@@ -98,7 +98,7 @@ gen_revoke( const char *uname )
     node = find_kbnode( keyblock, PKT_SECRET_KEY );
     if( !node ) { /* maybe better to use log_bug ? */
 	log_error(_("Oops; secret key not found anymore!\n"));
-	rc = G10ERR_GENERAL;
+	rc = GPGERR_GENERAL;
 	goto leave;
     }
 
@@ -120,12 +120,12 @@ gen_revoke( const char *uname )
     pk = gcry_xcalloc( 1, sizeof *pk );
     rc = get_pubkey( pk, sk_keyid );
     if( rc ) {
-	log_error(_("no corresponding public key: %s\n"), g10_errstr(rc) );
+	log_error(_("no corresponding public key: %s\n"), gpg_errstr(rc) );
 	goto leave;
     }
     if( cmp_public_secret_key( pk, sk ) ) {
 	log_error(_("public key does not match secret key!\n") );
-	rc = G10ERR_GENERAL;
+	rc = GPGERR_GENERAL;
 	goto leave;
     }
 
@@ -139,7 +139,7 @@ gen_revoke( const char *uname )
     switch( is_secret_key_protected( sk ) ) {
       case -1:
 	log_error(_("unknown protection algorithm\n"));
-	rc = G10ERR_PUBKEY_ALGO;
+	rc = GPGERR_PUBKEY_ALGO;
 	break;
       case 0:
 	tty_printf(_("NOTE: This key is not protected!\n"));
@@ -165,7 +165,7 @@ gen_revoke( const char *uname )
     /* create it */
     rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x20, 0, NULL, NULL);
     if( rc ) {
-	log_error(_("make_keysig_packet failed: %s\n"), g10_errstr(rc));
+	log_error(_("make_keysig_packet failed: %s\n"), gpg_errstr(rc));
 	goto leave;
     }
     init_packet( &pkt );
@@ -174,7 +174,7 @@ gen_revoke( const char *uname )
 
     rc = build_packet( out, &pkt );
     if( rc ) {
-	log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	log_error(_("build_packet failed: %s\n"), gpg_errstr(rc) );
 	goto leave;
     }
 
@@ -272,7 +272,7 @@ gen_sig_revoke( const char *uname )
 
     if( opt.batch ) {
 	log_error(_("sorry, can't do this in batch mode\n"));
-	return G10ERR_GENERAL;
+	return GPGERR_GENERAL;
     }
 
 
@@ -291,7 +291,7 @@ gen_sig_revoke( const char *uname )
     /* read the keyblock */
     rc = read_keyblock( &kbpos, &keyblock );
     if( rc ) {
-	log_error(_("error reading the certificate: %s\n"), g10_errstr(rc) );
+	log_error(_("error reading the certificate: %s\n"), gpg_errstr(rc) );
 	goto leave;
     }
 
@@ -299,7 +299,7 @@ gen_sig_revoke( const char *uname )
     node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
     if( !node ) {
 	log_error(_("Oops; public key lost!\n"));
-	rc = G10ERR_GENERAL;
+	rc = GPGERR_GENERAL;
 	goto leave;
     }
 
@@ -343,7 +343,7 @@ gen_sig_revoke( const char *uname )
     pkt.pkt.public_key = keyblock->pkt->pkt.public_key;
     rc = build_packet( out, &pkt );
     if( rc ) {
-	log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	log_error(_("build_packet failed: %s\n"), gpg_errstr(rc) );
 	goto leave;
     }
     uidchg = 1;
@@ -362,7 +362,7 @@ gen_sig_revoke( const char *uname )
 	/* create it */
 	rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x30, 0, NULL, NULL);
 	if( rc ) {
-	    log_error(_("make_keysig_packet failed: %s\n"), g10_errstr(rc));
+	    log_error(_("make_keysig_packet failed: %s\n"), gpg_errstr(rc));
 	    goto leave;
 	}
 	init_packet( &pkt );
@@ -371,7 +371,7 @@ gen_sig_revoke( const char *uname )
 
 	rc = build_packet( out, &pkt );
 	if( rc ) {
-	    log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	    log_error(_("build_packet failed: %s\n"), gpg_errstr(rc) );
 	    goto leave;
 	}
     }

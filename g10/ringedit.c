@@ -221,7 +221,7 @@ add_keyblock_resource( const char *url, int force, int secret )
       #ifndef HAVE_DRIVE_LETTERS
 	else if( strchr( resname, ':' ) ) {
 	    log_error("%s: invalid URL\n", url );
-	    rc = G10ERR_GENERAL;
+	    rc = GPGERR_GENERAL;
 	    goto leave;
 	}
       #endif
@@ -243,7 +243,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 	if( !resource_table[i].used )
 	    break;
     if( i == MAX_RESOURCES ) {
-	rc = G10ERR_RESOURCE_LIMIT;
+	rc = GPGERR_RESOURCE_LIMIT;
 	goto leave;
     }
 
@@ -273,13 +273,13 @@ add_keyblock_resource( const char *url, int force, int secret )
     switch( rt ) {
       case rt_UNKNOWN:
 	log_error("%s: unknown resource type\n", url );
-	rc = G10ERR_GENERAL;
+	rc = GPGERR_GENERAL;
 	goto leave;
 
       case rt_RING:
 	iobuf = iobuf_open( filename );
 	if( !iobuf && !force ) {
-	    rc = G10ERR_OPEN_FILE;
+	    rc = GPGERR_OPEN_FILE;
 	    goto leave;
 	}
 
@@ -296,7 +296,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 		    {
 			log_error( _("%s: can't create directory: %s\n"),
 				  filename, strerror(errno));
-			rc = G10ERR_OPEN_FILE;
+			rc = GPGERR_OPEN_FILE;
 			goto leave;
 		    }
 		    else if( !opt.quiet )
@@ -305,7 +305,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 		}
 		else
 		{
-		    rc = G10ERR_OPEN_FILE;
+		    rc = GPGERR_OPEN_FILE;
 		    goto leave;
 		}
 	    }
@@ -316,7 +316,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 	    if( !iobuf ) {
 		log_error(_("%s: can't create keyring: %s\n"),
 					    filename, strerror(errno));
-		rc = G10ERR_OPEN_FILE;
+		rc = GPGERR_OPEN_FILE;
 		goto leave;
 	    }
 	    else {
@@ -325,7 +325,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 		    if( chmod( filename, S_IRUSR | S_IWUSR ) ) {
 			log_error("%s: chmod failed: %s\n",
 						filename, strerror(errno) );
-			rc = G10ERR_WRITE_FILE;
+			rc = GPGERR_WRITE_FILE;
 			goto leave;
 		    }
 		}
@@ -351,7 +351,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 	if( !resource_table[i].dbf ) {
 	    log_error("%s: can't open gdbm file: %s\n",
 			    filename, gdbm_strerror(gdbm_errno));
-	    rc = G10ERR_OPEN_FILE;
+	    rc = GPGERR_OPEN_FILE;
 	    goto leave;
 	}
 	break;
@@ -359,7 +359,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 
       default:
 	log_error("%s: unsupported resource type\n", url );
-	rc = G10ERR_GENERAL;
+	rc = GPGERR_GENERAL;
 	goto leave;
     }
 
@@ -383,7 +383,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 
   leave:
     if( rc )
-	log_error("keyblock resource `%s': %s\n", filename, g10_errstr(rc) );
+	log_error("keyblock resource `%s': %s\n", filename, gpg_errstr(rc) );
     else if( secret )
 	any_secret = 1;
     else
@@ -481,7 +481,7 @@ search( PACKET *pkt, KBPOS *kbpos, int secret )
 	    }
 	    if( rc != -1 ) {
 		log_error("error searching resource %d: %s\n",
-						  i, g10_errstr(rc));
+						  i, gpg_errstr(rc));
 		last_rc = rc;
 	    }
 	}
@@ -585,7 +585,7 @@ find_secret_keyblock_byname( KBPOS *kbpos, const char *username )
  *
  * Returns: 0 if found,
  *	    -1 if not found
- *	    G10ERR_UNSUPPORTED if no resource is able to handle this
+ *	    GPGERR_UNSUPPORTED if no resource is able to handle this
  *	    or another errorcode.
  */
 int
@@ -606,7 +606,7 @@ locate_keyblock_by_fpr( KBPOS *kbpos, const byte *fpr, int fprlen, int secret )
 		break;
 	     #endif
 	      default:
-		rc = G10ERR_UNSUPPORTED;
+		rc = GPGERR_UNSUPPORTED;
 		break;
 	    }
 
@@ -615,15 +615,15 @@ locate_keyblock_by_fpr( KBPOS *kbpos, const byte *fpr, int fprlen, int secret )
 		kbpos->fp = NULL;
 		return 0;
 	    }
-	    else if( rc != -1 && rc != G10ERR_UNSUPPORTED ) {
+	    else if( rc != -1 && rc != GPGERR_UNSUPPORTED ) {
 		log_error("error searching resource %d: %s\n",
-						  i, g10_errstr(rc));
+						  i, gpg_errstr(rc));
 		last_rc = rc;
 	    }
 	}
     }
 
-    return (last_rc == -1 && !any)? G10ERR_UNSUPPORTED : last_rc;
+    return (last_rc == -1 && !any)? GPGERR_UNSUPPORTED : last_rc;
 }
 
 
@@ -634,7 +634,7 @@ locate_keyblock_by_keyid( KBPOS *kbpos, u32 *keyid, int shortkid, int secret )
     int i, rc, any=0, last_rc=-1;
 
     if( shortkid )
-	return G10ERR_UNSUPPORTED;
+	return GPGERR_UNSUPPORTED;
 
     for(i=0, rentry = resource_table; i < MAX_RESOURCES; i++, rentry++ ) {
 	if( rentry->used && !rentry->secret == !secret ) {
@@ -647,7 +647,7 @@ locate_keyblock_by_keyid( KBPOS *kbpos, u32 *keyid, int shortkid, int secret )
 		break;
 	     #endif
 	      default:
-		rc = G10ERR_UNSUPPORTED;
+		rc = GPGERR_UNSUPPORTED;
 		break;
 	    }
 
@@ -656,15 +656,15 @@ locate_keyblock_by_keyid( KBPOS *kbpos, u32 *keyid, int shortkid, int secret )
 		kbpos->fp = NULL;
 		return 0;
 	    }
-	    else if( rc != -1 && rc != G10ERR_UNSUPPORTED ) {
+	    else if( rc != -1 && rc != GPGERR_UNSUPPORTED ) {
 		log_error("error searching resource %d: %s\n",
-						  i, g10_errstr(rc));
+						  i, gpg_errstr(rc));
 		last_rc = rc;
 	    }
 	}
     }
 
-    return (last_rc == -1 && !any)? G10ERR_UNSUPPORTED : last_rc;
+    return (last_rc == -1 && !any)? GPGERR_UNSUPPORTED : last_rc;
 }
 
 
@@ -680,7 +680,7 @@ int
 lock_keyblock( KBPOS *kbpos )
 {
     if( !check_pos(kbpos) )
-	return G10ERR_GENERAL;
+	return GPGERR_GENERAL;
     return 0;
 }
 
@@ -701,7 +701,7 @@ int
 read_keyblock( KBPOS *kbpos, KBNODE *ret_root )
 {
     if( !check_pos(kbpos) )
-	return G10ERR_GENERAL;
+	return GPGERR_GENERAL;
 
     switch( kbpos->rt ) {
       case rt_RING:
@@ -765,7 +765,7 @@ enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
 	    kbpos->fp = iobuf_open( rentry->fname );
 	    if( !kbpos->fp ) {
 		log_error("can't open `%s'\n", rentry->fname );
-		return G10ERR_OPEN_FILE;
+		return GPGERR_OPEN_FILE;
 	    }
 	    break;
 	 #ifdef HAVE_LIBGDBM
@@ -785,7 +785,7 @@ enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
 	    switch( kbpos->rt ) {
 	      case rt_RING:
 		if( !kbpos->fp )
-		    return G10ERR_GENERAL;
+		    return GPGERR_GENERAL;
 		rc = keyring_enum( kbpos, ret_root, mode == 11 );
 		break;
 	     #ifdef HAVE_LIBGDBM
@@ -846,7 +846,7 @@ insert_keyblock( KBPOS *kbpos, KBNODE root )
     int rc;
 
     if( !check_pos(kbpos) )
-	return G10ERR_GENERAL;
+	return GPGERR_GENERAL;
 
     switch( kbpos->rt ) {
       case rt_RING:
@@ -875,7 +875,7 @@ delete_keyblock( KBPOS *kbpos )
     int rc;
 
     if( !check_pos(kbpos) )
-	return G10ERR_GENERAL;
+	return GPGERR_GENERAL;
 
     switch( kbpos->rt ) {
       case rt_RING:
@@ -903,7 +903,7 @@ update_keyblock( KBPOS *kbpos, KBNODE root )
     int rc;
 
     if( !check_pos(kbpos) )
-	return G10ERR_GENERAL;
+	return GPGERR_GENERAL;
 
     switch( kbpos->rt ) {
       case rt_RING:
@@ -1101,13 +1101,13 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
     iobuf = iobuf_open( fname );
     if( !iobuf ) {
 	log_error("%s: can't open keyring file\n", fname);
-	rc = G10ERR_KEYRING_OPEN;
+	rc = GPGERR_KEYRING_OPEN;
 	goto leave;
     }
   #else
     if( iobuf_seek( iobuf, 0 ) ) {
 	log_error("can't rewind keyring file\n");
-	rc = G10ERR_KEYRING_OPEN;
+	rc = GPGERR_KEYRING_OPEN;
 	goto leave;
     }
   #endif
@@ -1159,12 +1159,12 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
     int in_cert = 0;
 
     if( !(rentry=check_pos(kbpos)) )
-	return G10ERR_GENERAL;
+	return GPGERR_GENERAL;
 
     a = iobuf_open( rentry->fname );
     if( !a ) {
 	log_error("can't open `%s'\n", rentry->fname );
-	return G10ERR_OPEN_FILE;
+	return GPGERR_OPEN_FILE;
     }
 
     if( !kbpos->valid )
@@ -1172,7 +1172,7 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
     if( iobuf_seek( a, kbpos->offset ) ) {
 	log_error("can't seek to %lu\n", kbpos->offset);
 	iobuf_close(a);
-	return G10ERR_KEYRING_OPEN;
+	return GPGERR_KEYRING_OPEN;
     }
 
     pkt = gcry_xmalloc( sizeof *pkt );
@@ -1180,9 +1180,9 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
     kbpos->count=0;
     while( (rc=parse_packet(a, pkt)) != -1 ) {
 	if( rc ) {  /* ignore errors */
-	    if( rc != G10ERR_UNKNOWN_PACKET ) {
-		log_error("read_keyblock: read error: %s\n", g10_errstr(rc) );
-		rc = G10ERR_INV_KEYRING;
+	    if( rc != GPGERR_UNKNOWN_PACKET ) {
+		log_error("read_keyblock: read error: %s\n", gpg_errstr(rc) );
+		rc = GPGERR_INV_KEYRING;
 		goto ready;
 	    }
 	    kbpos->count++;
@@ -1239,7 +1239,7 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
     KBNODE root = NULL;
 
     if( !(rentry=check_pos(kbpos)) )
-	return G10ERR_GENERAL;
+	return GPGERR_GENERAL;
 
     if( kbpos->pkt ) {
 	root = new_kbnode( kbpos->pkt );
@@ -1250,9 +1250,9 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
     init_packet(pkt);
     while( (rc=parse_packet(kbpos->fp, pkt)) != -1 ) {
 	if( rc ) {  /* ignore errors */
-	    if( rc != G10ERR_UNKNOWN_PACKET ) {
-		log_error("read_keyblock: read error: %s\n", g10_errstr(rc) );
-		rc = G10ERR_INV_KEYRING;
+	    if( rc != GPGERR_UNKNOWN_PACKET ) {
+		log_error("read_keyblock: read error: %s\n", gpg_errstr(rc) );
+		rc = GPGERR_INV_KEYRING;
 		goto ready;
 	    }
 	    free_packet( pkt );
@@ -1329,7 +1329,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
     char *tmpfname = NULL;
 
     if( !(rentry = check_pos( kbpos )) )
-	return G10ERR_GENERAL;
+	return GPGERR_GENERAL;
     if( kbpos->fp )
 	BUG(); /* not allowed with such a handle */
 
@@ -1348,7 +1348,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	if( !newfp ) {
 	    log_error(_("%s: can't create: %s\n"), rentry->fname, strerror(errno));
 	    unlock_rentry( rentry );
-	    return G10ERR_OPEN_FILE;
+	    return GPGERR_OPEN_FILE;
 	}
 	else if( !opt.quiet )
 	    log_info(_("%s: keyring created\n"), rentry->fname );
@@ -1357,28 +1357,28 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	while( (node = walk_kbnode( root, &kbctx, 0 )) ) {
 	    if( (rc = build_packet( newfp, node->pkt )) ) {
 		log_error("build_packet(%d) failed: %s\n",
-			    node->pkt->pkttype, g10_errstr(rc) );
+			    node->pkt->pkttype, gpg_errstr(rc) );
 		iobuf_cancel(newfp);
 		unlock_rentry( rentry );
-		return G10ERR_WRITE_FILE;
+		return GPGERR_WRITE_FILE;
 	    }
 	}
 	if( iobuf_close(newfp) ) {
 	    log_error("%s: close failed: %s\n", rentry->fname, strerror(errno));
 	    unlock_rentry( rentry );
-	    return G10ERR_CLOSE_FILE;
+	    return GPGERR_CLOSE_FILE;
 	}
 	if( chmod( rentry->fname, S_IRUSR | S_IWUSR ) ) {
 	    log_error("%s: chmod failed: %s\n",
 				    rentry->fname, strerror(errno) );
 	    unlock_rentry( rentry );
-	    return G10ERR_WRITE_FILE;
+	    return GPGERR_WRITE_FILE;
 	}
 	return 0;
     }
     if( !fp ) {
 	log_error("%s: can't open: %s\n", rentry->fname, strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
+	rc = GPGERR_OPEN_FILE;
 	goto leave;
     }
 
@@ -1414,7 +1414,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
     if( !newfp ) {
 	log_error("%s: can't create: %s\n", tmpfname, strerror(errno) );
 	iobuf_close(fp);
-	rc = G10ERR_OPEN_FILE;
+	rc = GPGERR_OPEN_FILE;
 	goto leave;
     }
 
@@ -1423,7 +1423,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	rc = copy_all_packets( fp, newfp );
 	if( rc != -1 ) {
 	    log_error("%s: copy to %s failed: %s\n",
-		      rentry->fname, tmpfname, g10_errstr(rc) );
+		      rentry->fname, tmpfname, gpg_errstr(rc) );
 	    iobuf_close(fp);
 	    iobuf_cancel(newfp);
 	    goto leave;
@@ -1436,7 +1436,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	rc = copy_some_packets( fp, newfp, kbpos->offset );
 	if( rc ) { /* should never get EOF here */
 	    log_error("%s: copy to %s failed: %s\n",
-		      rentry->fname, tmpfname, g10_errstr(rc) );
+		      rentry->fname, tmpfname, gpg_errstr(rc) );
 	    iobuf_close(fp);
 	    iobuf_cancel(newfp);
 	    goto leave;
@@ -1446,7 +1446,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	rc = skip_some_packets( fp, kbpos->count );
 	if( rc ) {
 	    log_error("%s: skipping %u packets failed: %s\n",
-			    rentry->fname, kbpos->count, g10_errstr(rc));
+			    rentry->fname, kbpos->count, gpg_errstr(rc));
 	    iobuf_close(fp);
 	    iobuf_cancel(newfp);
 	    goto leave;
@@ -1461,10 +1461,10 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	while( (node = walk_kbnode( root, &kbctx, 0 )) ) {
 	    if( (rc = build_packet( newfp, node->pkt )) ) {
 		log_error("build_packet(%d) failed: %s\n",
-			    node->pkt->pkttype, g10_errstr(rc) );
+			    node->pkt->pkttype, gpg_errstr(rc) );
 		iobuf_close(fp);
 		iobuf_cancel(newfp);
-		rc = G10ERR_WRITE_FILE;
+		rc = GPGERR_WRITE_FILE;
 		goto leave;
 	    }
 	}
@@ -1476,7 +1476,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	rc = copy_all_packets( fp, newfp );
 	if( rc != -1 ) {
 	    log_error("%s: copy to %s failed: %s\n",
-		      rentry->fname, tmpfname, g10_errstr(rc) );
+		      rentry->fname, tmpfname, gpg_errstr(rc) );
 	    iobuf_close(fp);
 	    iobuf_cancel(newfp);
 	    goto leave;
@@ -1487,12 +1487,12 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
     /* close both files */
     if( iobuf_close(fp) ) {
 	log_error("%s: close failed: %s\n", rentry->fname, strerror(errno) );
-	rc = G10ERR_CLOSE_FILE;
+	rc = GPGERR_CLOSE_FILE;
 	goto leave;
     }
     if( iobuf_close(newfp) ) {
 	log_error("%s: close failed: %s\n", tmpfname, strerror(errno) );
-	rc = G10ERR_CLOSE_FILE;
+	rc = GPGERR_CLOSE_FILE;
 	goto leave;
     }
     /* if the new file is a secring, restrict the permissions */
@@ -1501,7 +1501,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	if( chmod( tmpfname, S_IRUSR | S_IWUSR ) ) {
 	    log_error("%s: chmod failed: %s\n",
 				    tmpfname, strerror(errno) );
-	    rc = G10ERR_WRITE_FILE;
+	    rc = GPGERR_WRITE_FILE;
 	    goto leave;
 	}
     }
@@ -1515,7 +1515,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	if( rename( rentry->fname, bakfname ) ) {
 	    log_error("%s: rename to %s failed: %s\n",
 				    rentry->fname, bakfname, strerror(errno) );
-	    rc = G10ERR_RENAME_FILE;
+	    rc = GPGERR_RENAME_FILE;
 	    goto leave;
 	}
     }
@@ -1525,7 +1525,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
     if( rename( tmpfname, rentry->fname ) ) {
 	log_error("%s: rename to %s failed: %s\n",
 			    tmpfname, rentry->fname,strerror(errno) );
-	rc = G10ERR_RENAME_FILE;
+	rc = GPGERR_RENAME_FILE;
 	if( rentry->secret ) {
 	    log_info(_(
 		"WARNING: 2 files with confidential information exists.\n"));
@@ -1572,7 +1572,7 @@ do_gdbm_store( KBPOS *kbpos, KBNODE root, int update )
     int i, rc;
 
     if( !(rentry = check_pos( kbpos )) )
-	return G10ERR_GENERAL;
+	return GPGERR_GENERAL;
 
     if( opt.dry_run )
 	return 0;
@@ -1594,8 +1594,8 @@ do_gdbm_store( KBPOS *kbpos, KBNODE root, int update )
     while( (node = walk_kbnode( root, &kbctx, 0 )) ) {
 	if( (rc = build_packet( fp, node->pkt )) ) {
 	    log_error("build_packet(%d) failed: %s\n",
-			node->pkt->pkttype, g10_errstr(rc) );
-	    rc = G10ERR_WRITE_FILE;
+			node->pkt->pkttype, gpg_errstr(rc) );
+	    rc = GPGERR_WRITE_FILE;
 	    goto leave;
 	}
     }
@@ -1615,7 +1615,7 @@ do_gdbm_store( KBPOS *kbpos, KBNODE root, int update )
 	log_error("%s: gdbm_store failed: %s\n", rentry->fname,
 			    rc == 1 ? "already stored"
 				    : gdbm_strerror(gdbm_errno) );
-	rc = G10ERR_WRITE_FILE;
+	rc = GPGERR_WRITE_FILE;
 	goto leave;
     }
     /* now store all keyids */
@@ -1705,18 +1705,18 @@ do_gdbm_locate_by_keyid( GDBM_FILE dbf, KBPOS *kbpos, u32 *keyid )
     if( content.dsize < 2 ) {
 	log_error("gdbm_fetch did not return enough data\n" );
 	free( content.dptr ); /* can't use gcry_free() here */
-	return G10ERR_INV_KEYRING;
+	return GPGERR_INV_KEYRING;
     }
     if( *content.dptr != 2 ) {
 	log_error("gdbm_fetch returned unexpected type %d\n",
 		    *(byte*)content.dptr );
 	free( content.dptr ); /* can't use gcry_free() here */
-	return G10ERR_INV_KEYRING;
+	return GPGERR_INV_KEYRING;
     }
     if( content.dsize < 21 ) {
 	log_error("gdbm_fetch did not return a complete fingerprint\n" );
 	free( content.dptr ); /* can't use gcry_free() here */
-	return G10ERR_INV_KEYRING;
+	return GPGERR_INV_KEYRING;
     }
     if( content.dsize > 21 )
 	log_info("gdbm_fetch: WARNING: more than one fingerprint\n" );
@@ -1739,25 +1739,25 @@ do_gdbm_read( KBPOS *kbpos, KBNODE *ret_root )
     datum key, content;
 
     if( !(rentry=check_pos(kbpos)) )
-	return G10ERR_GENERAL;
+	return GPGERR_GENERAL;
 
     key.dptr  = kbpos->keybuf;
     key.dsize = 21;
     content = gdbm_fetch( rentry->dbf, key );
     if( !content.dptr ) {
 	log_error("gdbm_fetch failed: %s\n", gdbm_strerror(gdbm_errno) );
-	return G10ERR_INV_KEYRING;
+	return GPGERR_INV_KEYRING;
     }
     if( content.dsize < 2 ) {
 	log_error("gdbm_fetch did not return enough data\n" );
 	free( content.dptr ); /* can't use gcry_free() here */
-	return G10ERR_INV_KEYRING;
+	return GPGERR_INV_KEYRING;
     }
     if( *content.dptr != 1 ) {
 	log_error("gdbm_fetch returned unexpected type %d\n",
 		    *(byte*)content.dptr );
 	free( content.dptr ); /* can't use gcry_free() here */
-	return G10ERR_INV_KEYRING;
+	return GPGERR_INV_KEYRING;
     }
 
     a = iobuf_temp_with_content( content.dptr+1, content.dsize-1 );
@@ -1768,9 +1768,9 @@ do_gdbm_read( KBPOS *kbpos, KBNODE *ret_root )
     kbpos->count=0;
     while( (rc=parse_packet(a, pkt)) != -1 ) {
 	if( rc ) {  /* ignore errors */
-	    if( rc != G10ERR_UNKNOWN_PACKET ) {
-		log_error("read_keyblock: read error: %s\n", g10_errstr(rc) );
-		rc = G10ERR_INV_KEYRING;
+	    if( rc != GPGERR_UNKNOWN_PACKET ) {
+		log_error("read_keyblock: read error: %s\n", gpg_errstr(rc) );
+		rc = GPGERR_INV_KEYRING;
 		break;
 	    }
 	    kbpos->count++;
@@ -1810,7 +1810,7 @@ do_gdbm_enum( KBPOS *kbpos, KBNODE *ret_root )
     datum key, helpkey;
 
     if( !(rentry=check_pos(kbpos)) )
-	return G10ERR_GENERAL;
+	return GPGERR_GENERAL;
 
     if( !kbpos->offset ) {
 	kbpos->offset = 1;
@@ -1832,7 +1832,7 @@ do_gdbm_enum( KBPOS *kbpos, KBNODE *ret_root )
     if( key.dsize < 21 ) {
 	free( key.dptr ); /* free and not gcry_free() ! */
 	log_error("do_gdm_enum: key is too short\n" );
-	return G10ERR_INV_KEYRING;
+	return GPGERR_INV_KEYRING;
     }
     memcpy( kbpos->keybuf, key.dptr, 21 );
     free( key.dptr ); /* free and not gcry_free() ! */

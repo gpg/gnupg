@@ -69,8 +69,8 @@ hkp_ask_import( u32 *keyid )
     rc = http_open_document( &hd, request, 0 );
     if( rc ) {
 	log_info("can't get key from keyserver: %s\n",
-			rc == G10ERR_NETWORK? strerror(errno)
-					    : g10_errstr(rc) );
+			rc == GPGERR_NETWORK? strerror(errno)
+					    : gpg_errstr(rc) );
     }
     else {
 	rc = import_keys_stream( hd.fp_read , 0 );
@@ -147,8 +147,8 @@ hkp_export( STRLIST users )
     if( rc ) {
 	log_error("can't connect to `%s': %s\n",
 		   opt.keyserver_name,
-			rc == G10ERR_NETWORK? strerror(errno)
-					    : g10_errstr(rc) );
+			rc == GPGERR_NETWORK? strerror(errno)
+					    : gpg_errstr(rc) );
 	iobuf_close(temp);
 	gcry_free( request );
 	return rc;
@@ -170,7 +170,7 @@ hkp_export( STRLIST users )
     rc = http_wait_response( &hd, &status );
     if( rc ) {
 	log_error("error sending to `%s': %s\n",
-		   opt.keyserver_name, g10_errstr(rc) );
+		   opt.keyserver_name, gpg_errstr(rc) );
     }
     else {
       #if 1

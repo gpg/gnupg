@@ -63,7 +63,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 	sk->pubkey_usage = use;
 	if( (rc = get_seckey_byname( sk, NULL, unlock )) ) {
 	    free_secret_key( sk ); sk = NULL;
-	    log_error("no default secret key: %s\n", g10_errstr(rc) );
+	    log_error("no default secret key: %s\n", gpg_errstr(rc) );
 	}
 	else if( !(rc=openpgp_pk_test_algo(sk->pubkey_algo, use)) ) {
 	    SK_LIST r;
@@ -83,7 +83,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 	}
 	else {
 	    free_secret_key( sk ); sk = NULL;
-	    log_error("invalid default secret key: %s\n", g10_errstr(rc) );
+	    log_error("invalid default secret key: %s\n", gpg_errstr(rc) );
 	}
     }
     else {
@@ -94,7 +94,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 	    sk->pubkey_usage = use;
 	    if( (rc = get_seckey_byname( sk, locusr->d, unlock )) ) {
 		free_secret_key( sk ); sk = NULL;
-		log_error(_("skipped `%s': %s\n"), locusr->d, g10_errstr(rc) );
+		log_error(_("skipped `%s': %s\n"), locusr->d, gpg_errstr(rc) );
 	    }
 	    else if( !(rc=openpgp_pk_test_algo(sk->pubkey_algo, use)) ) {
 		SK_LIST r;
@@ -115,7 +115,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 	    }
 	    else {
 		free_secret_key( sk ); sk = NULL;
-		log_error("skipped `%s': %s\n", locusr->d, g10_errstr(rc) );
+		log_error("skipped `%s': %s\n", locusr->d, gpg_errstr(rc) );
 	    }
 	}
     }
@@ -123,7 +123,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 
     if( !rc && !sk_list ) {
 	log_error("no valid signators\n");
-	rc = G10ERR_NO_USER_ID;
+	rc = GPGERR_NO_USER_ID;
     }
 
     if( rc )

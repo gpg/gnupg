@@ -17,8 +17,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef G10_MAIN_H
-#define G10_MAIN_H
+#ifndef GPG_MAIN_H
+#define GPG_MAIN_H
 
 #include <gcrypt.h>
 #include "basicdefs.h"
@@ -34,13 +34,13 @@
 #define is_ELGAMAL(a) ((a)==GCRY_PK_ELG || (a)==GCRY_PK_ELG_E)
 
 
-/*-- g10.c --*/
-extern int g10_errors_seen;
+/*-- gpg.c --*/
+extern int gpg_errors_seen;
 
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
-  void g10_exit(int rc) __attribute__ ((noreturn));
+  void gpg_exit(int rc) __attribute__ ((noreturn));
 #else
-  void g10_exit(int rc);
+  void gpg_exit(int rc);
 #endif
 void print_pubkey_algo_note( int algo );
 void print_cipher_algo_note( int algo );
@@ -165,4 +165,4 @@ void pause_on_sigusr( int which );
 void block_all_signals(void);
 void unblock_all_signals(void);
 
-#endif /*G10_MAIN_H*/
+#endif /*GPG_MAIN_H*/

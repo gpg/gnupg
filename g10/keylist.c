@@ -85,7 +85,7 @@ list_all( int secret )
     rc = enum_keyblocks( secret? 5:0, &kbpos, &keyblock );
     if( rc ) {
 	if( rc != -1 )
-	    log_error("enum_keyblocks(open) failed: %s\n", g10_errstr(rc) );
+	    log_error("enum_keyblocks(open) failed: %s\n", gpg_errstr(rc) );
 	goto leave;
     }
 
@@ -107,7 +107,7 @@ list_all( int secret )
     }
 
     if( rc && rc != -1 )
-	log_error("enum_keyblocks(read) failed: %s\n", g10_errstr(rc));
+	log_error("enum_keyblocks(read) failed: %s\n", gpg_errstr(rc));
 
   leave:
     enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
@@ -126,7 +126,7 @@ list_one( STRLIST names, int secret )
     if( secret ) {
 	rc = get_seckey_bynames( &ctx, NULL, names, &keyblock );
 	if( rc ) {
-	    log_error("error reading key: %s\n",  g10_errstr(rc) );
+	    log_error("error reading key: %s\n",  gpg_errstr(rc) );
 	    get_seckey_end( ctx );
 	    return;
 	}
@@ -140,7 +140,7 @@ list_one( STRLIST names, int secret )
     else {
 	rc = get_pubkey_bynames( &ctx, NULL, names, &keyblock );
 	if( rc ) {
-	    log_error("error reading key: %s\n", g10_errstr(rc) );
+	    log_error("error reading key: %s\n", gpg_errstr(rc) );
 	    get_pubkey_end( ctx );
 	    return;
 	}
@@ -381,8 +381,8 @@ list_keyblock( KBNODE keyblock, int secret )
 		rc = check_key_signature( keyblock, node, NULL );
 		switch( rc ) {
 		  case 0:		   sigrc = '!'; break;
-		  case G10ERR_BAD_SIGN:    sigrc = '-'; break;
-		  case G10ERR_NO_PUBKEY:   sigrc = '?'; break;
+		  case GPGERR_BAD_SIGN:    sigrc = '-'; break;
+		  case GPGERR_NO_PUBKEY:   sigrc = '?'; break;
 		  default:		   sigrc = '%'; break;
 		}
 	    }
@@ -402,7 +402,7 @@ list_keyblock( KBNODE keyblock, int secret )
 		printf("%c       %08lX %s  ",
 		    sigrc, (ulong)sig->keyid[1], datestr_from_sig(sig));
 	    if( sigrc == '%' )
-		printf("[%s] ", g10_errstr(rc) );
+		printf("[%s] ", gpg_errstr(rc) );
 	    else if( sigrc == '?' )
 		;
 	    else {

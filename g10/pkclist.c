@@ -127,7 +127,7 @@ show_paths( ulong lid, int only_first )
 	rc = get_pubkey( pk, keyid );
 	if( rc ) {
 	    log_error("key %08lX: public key not found: %s\n",
-				    (ulong)keyid[1], g10_errstr(rc) );
+				    (ulong)keyid[1], gpg_errstr(rc) );
 	    return;
 	}
 
@@ -188,7 +188,7 @@ do_edit_ownertrust( ulong lid, int mode, unsigned *new_trust, int defer_help )
     rc = get_pubkey( pk, keyid );
     if( rc ) {
 	log_error("key %08lX: public key not found: %s\n",
-				(ulong)keyid[1], g10_errstr(rc) );
+				(ulong)keyid[1], gpg_errstr(rc) );
 	return 0;
     }
 
@@ -374,13 +374,13 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 	rc = insert_trust_record_by_pk( pk );
 	if( rc ) {
 	    log_error("failed to insert it into the trustdb: %s\n",
-						      g10_errstr(rc) );
+						      gpg_errstr(rc) );
 	    return 0; /* no */
 	}
 	rc = check_trust( pk, &trustlevel, NULL, NULL, NULL );
 	if( rc )
 	    log_fatal("trust check after insert failed: %s\n",
-						      g10_errstr(rc) );
+						      gpg_errstr(rc) );
 	if( trustlevel == TRUST_UNKNOWN || trustlevel == TRUST_EXPIRED ) {
 	    log_debug("do_we_trust: oops at %d\n", __LINE__ );
 	    return 0;
@@ -513,13 +513,13 @@ check_signatures_trust( PKT_signature *sig )
     rc = get_pubkey( pk, sig->keyid );
     if( rc ) { /* this should not happen */
 	log_error("Ooops; the key vanished  - can't check the trust\n");
-	rc = G10ERR_NO_PUBKEY;
+	rc = GPGERR_NO_PUBKEY;
 	goto leave;
     }
 
     rc = check_trust( pk, &trustlevel, NULL, NULL, NULL );
     if( rc ) {
-	log_error("check trust failed: %s\n", g10_errstr(rc));
+	log_error("check trust failed: %s\n", gpg_errstr(rc));
 	goto leave;
     }
 
@@ -540,13 +540,13 @@ check_signatures_trust( PKT_signature *sig )
 	rc = insert_trust_record_by_pk( pk );
 	if( rc ) {
 	    log_error("failed to insert it into the trustdb: %s\n",
-						      g10_errstr(rc) );
+						      gpg_errstr(rc) );
 	    goto leave;
 	}
 	rc = check_trust( pk, &trustlevel, NULL, NULL, NULL );
 	if( rc )
 	    log_fatal("trust check after insert failed: %s\n",
-						      g10_errstr(rc) );
+						      gpg_errstr(rc) );
 	if( trustlevel == TRUST_UNKNOWN || trustlevel == TRUST_EXPIRED )
 	    BUG();
 	goto retry;
@@ -581,7 +581,7 @@ check_signatures_trust( PKT_signature *sig )
 	write_status( STATUS_TRUST_NEVER );
 	log_info(_("WARNING: We do NOT trust this key!\n"));
 	log_info(_("         The signature is probably a FORGERY.\n"));
-	rc = G10ERR_BAD_SIGN;
+	rc = GPGERR_BAD_SIGN;
 	break;
 
       case TRUST_MARGINAL:
@@ -692,7 +692,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    pk->pubkey_usage = use;
 	    if( (rc = get_pubkey_byname( NULL, pk, rov->d, NULL )) ) {
 		free_public_key( pk ); pk = NULL;
-		log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
+		log_error(_("%s: skipped: %s\n"), rov->d, gpg_errstr(rc) );
 	    }
 	    else if( !(rc=openpgp_pk_test_algo(pk->pubkey_algo, use )) ) {
 
@@ -714,7 +714,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    }
 	    else {
 		free_public_key( pk ); pk = NULL;
-		log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
+		log_error(_("%s: skipped: %s\n"), rov->d, gpg_errstr(rc) );
 	    }
 	}
     }
@@ -773,7 +773,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		    rc = check_trust( pk, &trustlevel, NULL, NULL, NULL );
 		    if( rc ) {
 			log_error("error checking pk of `%s': %s\n",
-						     answer, g10_errstr(rc) );
+						     answer, gpg_errstr(rc) );
 		    }
 		    else if( (trustlevel & TRUST_FLAG_DISABLED) ) {
 			tty_printf(_("Public key is disabled.\n") );
@@ -839,7 +839,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    pk->pubkey_usage = use;
 	    if( (rc = get_pubkey_byname( NULL, pk, remusr->d, NULL )) ) {
 		free_public_key( pk ); pk = NULL;
-		log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
+		log_error(_("%s: skipped: %s\n"), remusr->d, gpg_errstr(rc) );
 	    }
 	    else if( !(rc=openpgp_pk_test_algo(pk->pubkey_algo, use )) ) {
 		int trustlevel;
@@ -848,7 +848,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		if( rc ) {
 		    free_public_key( pk ); pk = NULL;
 		    log_error(_("%s: error checking key: %s\n"),
-						      remusr->d, g10_errstr(rc) );
+						      remusr->d, gpg_errstr(rc) );
 		}
 		else if( (trustlevel & TRUST_FLAG_DISABLED) ) {
 		    free_public_key(pk); pk = NULL;
@@ -884,14 +884,14 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    }
 	    else {
 		free_public_key( pk ); pk = NULL;
-		log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
+		log_error(_("%s: skipped: %s\n"), remusr->d, gpg_errstr(rc) );
 	    }
 	}
     }
 
     if( !rc && !any_recipients ) {
 	log_error(_("no valid addressees\n"));
-	rc = G10ERR_NO_USER_ID;
+	rc = GPGERR_NO_USER_ID;
     }
 
     if( rc )

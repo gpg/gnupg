@@ -70,7 +70,7 @@ pk_sign( int algo, MPI *data, MPI hash, MPI *skey )
 			  NULL ));
     }
     else
-	return G10ERR_PUBKEY_ALGO;
+	return GPGERR_PUBKEY_ALGO;
 
     /* put hash into a S-Exp s_hash */
     s_hash = gcry_sexp_new_mpi( hash );
@@ -163,7 +163,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 			   "in future (time warp or clock problem)\n")
 		       : _("key has been created %lu seconds "
 			   "in future (time warp or clock problem)\n"), d );
-	return G10ERR_TIME_CONFLICT;
+	return GPGERR_TIME_CONFLICT;
     }
 
 
@@ -182,7 +182,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     rc = pk_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
     mpi_release(frame);
     if( rc )
-	log_error(_("signing failed: %s\n"), g10_errstr(rc) );
+	log_error(_("signing failed: %s\n"), gpg_errstr(rc) );
     else {
 	if( opt.verbose ) {
 	    char *ustr = get_user_id_string( sig->keyid );
@@ -311,14 +311,14 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     else if( !(inp = iobuf_open(fname)) ) {
 	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
 					strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
+	rc = GPGERR_OPEN_FILE;
 	goto leave;
     }
 
     if( outfile ) {
 	if( !(out = iobuf_create( outfile )) ) {
 	    log_error(_("can't create %s: %s\n"), outfile, strerror(errno) );
-	    rc = G10ERR_CREATE_FILE;
+	    rc = GPGERR_CREATE_FILE;
 	    goto leave;
 	}
 	else if( opt.verbose )
@@ -404,7 +404,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    free_packet( &pkt );
 	    if( rc ) {
 		log_error("build onepass_sig packet failed: %s\n",
-							g10_errstr(rc));
+							gpg_errstr(rc));
 		goto leave;
 	    }
 	}
@@ -423,7 +423,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 		if( !(inp = iobuf_open(sl->d)) ) {
 		    log_error(_("can't open %s: %s\n"),
 					    sl->d, strerror(errno) );
-		    rc = G10ERR_OPEN_FILE;
+		    rc = GPGERR_OPEN_FILE;
 		    goto leave;
 		}
 		if( opt.verbose )
@@ -482,7 +482,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    pkt.pkt.plaintext = pt;
 	    /*cfx.datalen = filesize? calc_packet_length( &pkt ) : 0;*/
 	    if( (rc = build_packet( out, &pkt )) )
-		log_error("build_packet(PLAINTEXT) failed: %s\n", g10_errstr(rc) );
+		log_error("build_packet(PLAINTEXT) failed: %s\n", gpg_errstr(rc) );
 	    pt->buf = NULL;
 	}
 	else {
@@ -490,8 +490,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    int  bytes_copied;
 	    while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
 		if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
-		    rc = G10ERR_WRITE_FILE;
-		    log_error("copying input to output failed: %s\n", g10_errstr(rc));
+		    rc = GPGERR_WRITE_FILE;
+		    log_error("copying input to output failed: %s\n", gpg_errstr(rc));
 		    break;
 		}
 	    memset(copy_buffer, 0, 4096); /* burn buffer */
@@ -575,7 +575,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    rc = build_packet( out, &pkt );
 	    free_packet( &pkt );
 	    if( rc )
-		log_error("build signature packet failed: %s\n", g10_errstr(rc) );
+		log_error("build signature packet failed: %s\n", gpg_errstr(rc) );
 	}
 	if( rc )
 	    goto leave;
@@ -624,14 +624,14 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     if( !(inp = iobuf_open(fname)) ) {
 	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
 					strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
+	rc = GPGERR_OPEN_FILE;
 	goto leave;
     }
 
     if( outfile ) {
 	if( !(out = iobuf_create( outfile )) ) {
 	    log_error(_("can't create %s: %s\n"), outfile, strerror(errno) );
-	    rc = G10ERR_CREATE_FILE;
+	    rc = GPGERR_CREATE_FILE;
 	    goto leave;
 	}
 	else if( opt.verbose )
@@ -770,7 +770,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	    rc = build_packet( out, &pkt );
 	    free_packet( &pkt );
 	    if( rc )
-		log_error("build signature packet failed: %s\n", g10_errstr(rc) );
+		log_error("build signature packet failed: %s\n", gpg_errstr(rc) );
 	}
 	if( rc )
 	    goto leave;

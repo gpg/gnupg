@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <gcrypt.h>
 #include "types.h"
 #include "util.h"
 #include "memory.h"
@@ -276,7 +277,7 @@ set_native_charset( const char *newset )
 	active_charset = ibm850_unicode;
     }
     else
-	return G10ERR_GENERAL;
+	return GPGERR_GENERAL;
     return 0;
 }
 

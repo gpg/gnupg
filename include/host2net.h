@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef G10_HOST2NET_H
-#define G10_HOST2NET_H
+#ifndef GPG_HOST2NET_H
+#define GPG_HOST2NET_H
 
 #include "types.h"
 
@@ -40,4 +40,4 @@
 #define u32tobuf( p, a) ulongtobuf( (p), (a) )
 
 
-#endif /*G10_HOST2NET_H*/
+#endif /*GPG_HOST2NET_H*/

@@ -668,11 +668,15 @@ sexp_to_key( GCRY_SEXP sexp, int want_private, MPI **retarray, int *retalgo)
     for(s=elems1; *s; s++, idx++ ) {
 	l2 = gcry_sexp_find_token( list, s, 1 );
 	if( !l2 ) {
+	    for(i=0; i<idx; i++)
+		g10_free( array[i] );
 	    g10_free( array );
 	    return GCRYERR_NO_OBJ; /* required parameter not found */
 	}
 	array[idx] = gcry_sexp_cdr_mpi( l2, GCRYMPI_FMT_USG );
 	if( !array[idx] ) {
+	    for(i=0; i<idx; i++)
+		g10_free( array[i] );
 	    g10_free( array );
 	    return GCRYERR_INV_OBJ; /* required parameter is invalid */
 	}
@@ -680,12 +684,16 @@ sexp_to_key( GCRY_SEXP sexp, int want_private, MPI **retarray, int *retalgo)
     for(s=elems2; *s; s++, idx++ ) {
 	l2 = gcry_sexp_find_token( list, s, 1 );
 	if( !l2 ) {
+	    for(i=0; i<idx; i++)
+		g10_free( array[i] );
 	    g10_free( array );
 	    return GCRYERR_NO_OBJ; /* required parameter not found */
 	}
 	/* FIXME: put the MPI in secure memory when needed */
 	array[idx] = gcry_sexp_cdr_mpi( l2, GCRYMPI_FMT_USG );
 	if( !array[idx] ) {
+	    for(i=0; i<idx; i++)
+		g10_free( array[i] );
 	    g10_free( array );
 	    return GCRYERR_INV_OBJ; /* required parameter is invalid */
 	}
@@ -1100,21 +1108,138 @@ gcry_pk_testkey( GCRY_SEXP s_key )
 /****************
  * Create a public key pair and return it in r_key.
  * How the key is created depends on s_parms:
- * (GNU
- *  (genkey
- *   (algo
- *     (parameter_name_1 ....)
- *	....
- *     (parameter_name_n ....)
- * )))
+ * (genkey
+ *  (algo
+ *    (parameter_name_1 ....)
+ *     ....
+ *    (parameter_name_n ....)
+ * ))
  * The key is returned in a format depending on the
- * algorithm. Both, private and secret key are returned
+ * algorithm. Both, private and secret keys are returned
  * and optionally some additional informatin.
+ * For elgamal we return this structure:
+ * (key-data
+ *  (public-key
+ *    (elg
+ *	(p <mpi>)
+ *	(g <mpi>)
+ *	(y <mpi>)
+ *    )
+ *  )
+ *  (private-key
+ *    (elg
+ *	(p <mpi>)
+ *	(g <mpi>)
+ *	(y <mpi>)
+ *	(x <mpi>)
+ *    )
+ *  )
+ *  (misc-key-info
+ *     (pm1-factors n1 n2 ... nn)
+ *  )
+ * )
  */
 int
 gcry_pk_genkey( GCRY_SEXP *r_key, GCRY_SEXP s_parms )
 {
-    return GCRYERR_NOT_IMPL;
+    GCRY_SEXP list, l2, *s_elems, pub_list, sec_list, misc_list;
+    const char *name;
+    const char *s;
+    size_t n;
+    int rc, i;
+    const char *algo_name;
+    int algo;
+    char sec_elems[20], pub_elems[20];	/* fixme: check bounds */
+    GCRY_MPI skey[10], *factors;
+    unsigned int nbits;
+
+    list = gcry_sexp_find_token( s_parms, "genkey", 0 );
+    if( !list )
+	return GCRYERR_INV_OBJ; /* Does not contain genkey data */
+    list = gcry_sexp_cdr( list );
+    if( !list )
+	return GCRYERR_NO_OBJ; /* no cdr for the genkey */
+    name = gcry_sexp_car_data( list, &n );
+    if( !name )
+	return GCRYERR_INV_OBJ; /* algo string missing */
+    for(i=0; (s=algo_info_table[i].name); i++ ) {
+	if( strlen(s) == n && !memcmp( s, name, n ) )
+	    break;
+    }
+    if( !s )
+	return GCRYERR_INV_PK_ALGO; /* unknown algorithm */
+
+    algo = algo_info_table[i].algo;
+    algo_name = algo_info_table[i].name;
+    strcpy( pub_elems, algo_info_table[i].common_elements );
+    strcat( pub_elems, algo_info_table[i].public_elements );
+    strcpy( sec_elems, algo_info_table[i].common_elements );
+    strcat( sec_elems, algo_info_table[i].secret_elements );
+
+    l2 = gcry_sexp_find_token( list, "nbits", 0 );
+    if( !l2 )
+	return GCRYERR_NO_OBJ; /* no nbits aparemter */
+    name = gcry_sexp_cdr_data( l2, &n );
+    if( !name )
+	return GCRYERR_INV_OBJ; /* nbits without a cdr */
+    {
+	char *p = g10_xmalloc(n+1);
+	memcpy(p, name, n );
+	p[n] = 0;
+	nbits = (unsigned int)strtol( p, NULL, 0 );
+	g10_free( p );
+    }
+
+    rc = pubkey_generate( algo, nbits, skey, &factors );
+    if( rc ) {
+	return rc;
+    }
+
+    /* build the public key list */
+    s_elems = g10_xcalloc( (strlen(pub_elems)+2), sizeof *s_elems );
+    s_elems[0] = SEXP_NEW( algo_name, 0 );
+    for(i=0; pub_elems[i]; i++ ) {
+	char tmp[2];
+	tmp[0] = pub_elems[i];
+	tmp[1] = 0;
+	s_elems[i+1] = gcry_sexp_new_name_mpi( tmp, skey[i] );
+    }
+    pub_list = SEXP_CONS( SEXP_NEW( "public-key", 0 ),
+			  gcry_sexp_alist( s_elems ) );
+    g10_free( s_elems );
+
+    /* build the secret key list */
+    s_elems = g10_xcalloc( (strlen(sec_elems)+2), sizeof *s_elems );
+    s_elems[0] = SEXP_NEW( algo_name, 0 );
+    for(i=0; sec_elems[i]; i++ ) {
+	char tmp[2];
+	tmp[0] = sec_elems[i];
+	tmp[1] = 0;
+	s_elems[i+1] = gcry_sexp_new_name_mpi( tmp, skey[i] );
+    }
+    sec_list = SEXP_CONS( SEXP_NEW( "private-key", 0 ),
+			  gcry_sexp_alist( s_elems ) );
+    g10_free( s_elems );
+
+    /* build the list of factors */
+    for(n=0; factors[n]; n++ )
+	;
+    s_elems = g10_xcalloc( n+2, sizeof *s_elems );
+    s_elems[0] = SEXP_NEW( "pm1-factors", 0 );
+    for(i=0; factors[i]; i++ ) {
+	s_elems[i+1] = gcry_sexp_new_mpi( factors[i] );
+    }
+    misc_list = SEXP_CONS( SEXP_NEW( "misc-key-info", 0 ),
+			  gcry_sexp_alist( s_elems ) );
+    g10_free( s_elems );
+
+    /* and put all together */
+    *r_key = gcry_sexp_vlist( SEXP_NEW( "key-data", 0 ),
+			      pub_list, sec_list, misc_list, NULL );
+    gcry_sexp_release( pub_list );
+    gcry_sexp_release( sec_list );
+    gcry_sexp_release( misc_list );
+    return 0;
 }
 
 /****************

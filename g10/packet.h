@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef G10_PACKET_H
-#define G10_PACKET_H
+#ifndef GPG_PACKET_H
+#define GPG_PACKET_H
 
 #include "types.h"
 #include "iobuf.h"
@@ -360,4 +360,4 @@ int make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 /*-- keygen.c --*/
 PKT_user_id *generate_user_id(void);
 
-#endif /*G10_PACKET_H*/
+#endif /*GPG_PACKET_H*/

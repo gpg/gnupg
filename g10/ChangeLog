@@ -1,3 +1,15 @@
+Thu Jan 27 18:00:44 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* keygen.c (gen_elg): Modified to work with gcry_pk_genkey.
+	(key_from_sexp): New.
+	(factors_from_sexp): New.
+
+	* g10.c : Renamed to ...
+	* gpg.c : ... this
+	* Makefile.am: And fixed it here.
+
+	* Changed all "g10_"/"GPG_" prefixes to "gpg_"/"GPG_".
+
 Mon Jan 24 22:24:38 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* misc.c (mpi_read_opaque): Fixed double counting.
