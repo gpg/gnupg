@@ -296,7 +296,7 @@ string_to_pubkey_algo( const char *string )
 
     do {
 	for(i=0; (s=pubkey_table[i].name); i++ )
-	    if( !stricmp( s, string ) )
+	    if( !ascii_strcasecmp( s, string ) )
 		return pubkey_table[i].algo;
     } while( load_pubkey_modules() );
     return 0;

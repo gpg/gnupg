@@ -513,12 +513,7 @@ i18n_init(void)
     set_gettext_file( PACKAGE );
   #else
   #ifdef ENABLE_NLS
-    #ifdef HAVE_LC_MESSAGES
-       setlocale( LC_TIME, "" );
-       setlocale( LC_MESSAGES, "" );
-    #else
-       setlocale( LC_ALL, "" );
-    #endif
+    setlocale( LC_ALL, "" );
     bindtextdomain( PACKAGE, G10_LOCALEDIR );
     textdomain( PACKAGE );
   #endif

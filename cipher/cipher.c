@@ -258,7 +258,7 @@ string_to_cipher_algo( const char *string )
 
     do {
 	for(i=0; (s=cipher_table[i].name); i++ )
-	    if( !stricmp( s, string ) )
+	    if( !ascii_strcasecmp( s, string ) )
 		return cipher_table[i].algo;
     } while( load_cipher_modules() );
     return 0;

@@ -1273,7 +1273,7 @@ compare_name( const char *uid, size_t uidlen, const char *name, int mode )
 	    return 0; /* found */
     }
     else if( mode == 2 ) { /* case insensitive substring */
-	if( memistr( uid, uidlen, name ) )
+	if( ascii_memistr( uid, uidlen, name ) )
 	    return 0;
     }
     else if( mode >= 3 && mode <= 5 ) { /* look at the email address */
@@ -1287,11 +1287,12 @@ compare_name( const char *uid, size_t uidlen, const char *name, int mode )
 	    if( i < uidlen ) {
 		i = se - s;
 		if( mode == 3 ) { /* exact email address */
-		    if( strlen(name)-2 == i && !memicmp( s, name+1, i) )
+		    if( strlen(name)-2 == i
+                        && !ascii_memcasecmp( s, name+1, i) )
 			return 0;
 		}
 		else if( mode == 4 ) {	/* email substring */
-		    if( memistr( s, i, name ) )
+		    if( ascii_memistr( s, i, name ) )
 			return 0;
 		}
 		else { /* email from end */

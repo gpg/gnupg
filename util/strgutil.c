@@ -65,6 +65,7 @@ static ushort latin2_unicode[128] = {
     0x0159,0x016F,0x00FA,0x0171,0x00FC,0x00FD,0x0163,0x02D9
 };
 
+
 static const char *active_charset_name = "iso-8859-1";
 static ushort *active_charset = NULL;
 static int no_translation = 0;
@@ -184,6 +185,25 @@ memistr( const char *buf, size_t buflen, const char *sub )
 	if( toupper(*t) == toupper(*s) ) {
 	    for( buf=t++, buflen = n--, s++;
 		 n && toupper(*t) == toupper(*s); t++, s++, n-- )
+		;
+	    if( !*s )
+		return buf;
+	    t = buf; n = buflen; s = sub ;
+	}
+
+    return NULL ;
+}
+
+const char *
+ascii_memistr( const char *buf, size_t buflen, const char *sub )
+{
+    const byte *t, *s ;
+    size_t n;
+
+    for( t=buf, n=buflen, s=sub ; n ; t++, n-- )
+	if( ascii_toupper(*t) == ascii_toupper(*s) ) {
+	    for( buf=t++, buflen = n--, s++;
+		 n && ascii_toupper(*t) == ascii_toupper(*s); t++, s++, n-- )
 		;
 	    if( !*s )
 		return buf;
@@ -325,22 +345,23 @@ string_count_chr( const char *string, int c )
 int
 set_native_charset( const char *newset )
 {
-    if( !stricmp( newset, "iso-8859-1" ) ) {
+    if( !ascii_strcasecmp( newset, "iso-8859-1" ) ) {
 	active_charset_name = "iso-8859-1";
         no_translation = 0;
 	active_charset = NULL;
     }
-    else if( !stricmp( newset, "iso-8859-2" ) ) {
+    else if( !ascii_strcasecmp( newset, "iso-8859-2" ) ) {
 	active_charset_name = "iso-8859-2";
         no_translation = 0;
 	active_charset = latin2_unicode;
     }
-    else if( !stricmp( newset, "koi8-r" ) ) {
+    else if( !ascii_strcasecmp( newset, "koi8-r" ) ) {
 	active_charset_name = "koi8-r";
         no_translation = 0;
 	active_charset = koi8_unicode;
     }
-    else if( !stricmp (newset, "utf8" ) || !stricmp(newset, "utf-8") ) {
+    else if( !ascii_strcasecmp (newset, "utf8" )
+             || !ascii_strcasecmp(newset, "utf-8") ) {
 	active_charset_name = "utf-8";
         no_translation = 1;
 	active_charset = NULL;
@@ -582,6 +603,63 @@ utf8_to_native( const char *string, size_t length )
     }
 }
 
+/****************************************************
+ ******** locale insensitive ctype functions ********
+ ****************************************************/
+/* FIXME: replace them by a table lookup and macros */
+int
+ascii_isupper (int c)
+{
+    return c >= 'A' && c <= 'Z';
+}
+
+int
+ascii_islower (int c)
+{
+    return c >= 'a' && c <= 'z';
+}
+
+int 
+ascii_toupper (int c)
+{
+    if (c >= 'a' && c <= 'z')
+        c &= ~0x20;
+    return c;
+}
+
+int 
+ascii_tolower (int c)
+{
+    if (c >= 'A' && c <= 'Z')
+        c |= 0x20;
+    return c;
+}
+
+
+int
+ascii_strcasecmp( const char *a, const char *b )
+{
+    if (a == b)
+        return 0;
+
+    for (; *a && *b; a++, b++) {
+	if (*a != *b && ascii_toupper(*a) != ascii_toupper(*b))
+	    break;
+    }
+    return *a == *b? 0 : (ascii_toupper (*a) - ascii_toupper (*b));
+}
+
+int
+ascii_memcasecmp( const char *a, const char *b, size_t n )
+{
+    if (a == b)
+        return 0;
+    for ( ; n; n--, a++, b++ ) {
+	if( *a != *b  && ascii_toupper (*a) != ascii_toupper (*b) )
+            return *a == *b? 0 : (ascii_toupper (*a) - ascii_toupper (*b));
+    }
+    return 0;
+}
 
 
 /*********************************************

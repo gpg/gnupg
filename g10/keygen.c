@@ -1292,17 +1292,17 @@ read_parameter_file( const char *fname )
 		;
 	    value = p;
 	    trim_trailing_ws( value, strlen(value) );
-	    if( !stricmp( keyword, "%echo" ) )
+	    if( !ascii_strcasecmp( keyword, "%echo" ) )
 		log_info("%s\n", value );
-	    else if( !stricmp( keyword, "%dry-run" ) )
+	    else if( !ascii_strcasecmp( keyword, "%dry-run" ) )
 		outctrl.dryrun = 1;
-	    else if( !stricmp( keyword, "%commit" ) ) {
+	    else if( !ascii_strcasecmp( keyword, "%commit" ) ) {
 		outctrl.lnr = lnr;
 		proc_parameter_file( para, fname, &outctrl );
 		release_parameter_list( para );
 		para = NULL;
 	    }
-	    else if( !stricmp( keyword, "%pubring" ) ) {
+	    else if( !ascii_strcasecmp( keyword, "%pubring" ) ) {
 		if( outctrl.pub.fname && !strcmp( outctrl.pub.fname, value ) )
 		    ; /* still the same file - ignore it */
 		else {
@@ -1311,7 +1311,7 @@ read_parameter_file( const char *fname )
 		    outctrl.use_files = 1;
 		}
 	    }
-	    else if( !stricmp( keyword, "%secring" ) ) {
+	    else if( !ascii_strcasecmp( keyword, "%secring" ) ) {
 		if( outctrl.sec.fname && !strcmp( outctrl.sec.fname, value ) )
 		    ; /* still the same file - ignore it */
 		else {
@@ -1344,7 +1344,7 @@ read_parameter_file( const char *fname )
 	trim_trailing_ws( value, strlen(value) );
 
 	for(i=0; keywords[i].name; i++ ) {
-	    if( !stricmp( keywords[i].name, keyword ) )
+	    if( !ascii_strcasecmp( keywords[i].name, keyword ) )
 		break;
 	}
 	if( !keywords[i].name ) {

@@ -170,6 +170,7 @@ STRLIST append_to_strlist2( STRLIST *list, const char *string, int is_utf8 );
 STRLIST strlist_prev( STRLIST head, STRLIST node );
 STRLIST strlist_last( STRLIST node );
 const char *memistr( const char *buf, size_t buflen, const char *sub );
+const char *ascii_memistr( const char *buf, size_t buflen, const char *sub );
 char *mem2str( char *, const void *, size_t);
 char *trim_spaces( char *string );
 unsigned int trim_trailing_chars( byte *line, unsigned int len,
@@ -184,6 +185,13 @@ const char* get_native_charset(void);
 char *native_to_utf8( const char *string );
 char *utf8_to_native( const char *string, size_t length );
 int  check_utf8_string( const char *string );
+
+int ascii_isupper (int c);
+int ascii_islower (int c);
+int ascii_toupper (int c);
+int ascii_tolower (int c);
+int ascii_strcasecmp( const char *a, const char *b );
+int ascii_memcasecmp( const char *a, const char *b, size_t n );
 
 #ifndef HAVE_MEMICMP
 int memicmp( const char *a, const char *b, size_t n );

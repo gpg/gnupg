@@ -1000,8 +1000,8 @@ do_bm_search( const byte *buf, size_t buflen,
 	int c, c1;
 
 	for( i = --patlen; i < buflen; i += dist[c1] )
-	    for( j=patlen, k=i, c1=c=toupper(buf[k]); c == pat[j];
-					  j--, k--, c=toupper(buf[k]) ) {
+	    for( j=patlen, k=i, c1=c=ascii_toupper(buf[k]); c == pat[j];
+					  j--, k--, c=ascii_toupper(buf[k]) ) {
 		if( !j )
 		    return buf+k;
 	    }

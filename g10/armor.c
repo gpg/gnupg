@@ -649,9 +649,9 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		if( isxdigit(cc1) && isxdigit(cc2)
 				  && strchr( "=\n\r\t ", cc3 )) {
 		    /* well it seems to be the case - adjust */
-		    c = isdigit(cc1)? (cc1 - '0'): (toupper(cc1)-'A'+10);
+		    c = isdigit(cc1)? (cc1 - '0'): (ascii_toupper(cc1)-'A'+10);
 		    c <<= 4;
-		    c |= isdigit(cc2)? (cc2 - '0'): (toupper(cc2)-'A'+10);
+		    c |= isdigit(cc2)? (cc2 - '0'): (ascii_toupper(cc2)-'A'+10);
 		    afx->buffer_pos += 2;
 		    afx->qp_detected = 1;
 		    goto again;

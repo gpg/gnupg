@@ -127,7 +127,7 @@ compare_filenames( const char *a, const char *b )
      * resolve symlinks?
      */
   #ifdef HAVE_DRIVE_LETTERS
-    return stricmp(a,b);
+    return ascii_strcasecmp(a,b);
   #else
     return strcmp(a,b);
   #endif

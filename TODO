@@ -1,4 +1,6 @@
 
+  * replace all isfoo() by ascii_usfoo() ?
+
   * set default charset from nl_langinfo.
 
   * check all mpi_read() for error returns.

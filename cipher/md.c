@@ -152,7 +152,7 @@ string_to_digest_algo( const char *string )
 
     do {
 	for(r = digest_list; r; r = r->next )
-	    if( !stricmp( r->name, string ) )
+	    if( !ascii_strcasecmp( r->name, string ) )
 		return r->algo;
     } while( !r && load_digest_module(-1) );
     return 0;

@@ -721,7 +721,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    }
 
 	    for(i=0; cmds[i].name; i++ ) {
-		if( !stricmp( answer, cmds[i].name ) )
+		if( !ascii_strcasecmp( answer, cmds[i].name ) )
 		    break;
 	    }
 	    if( sign_mode && !cmds[i].signmode )

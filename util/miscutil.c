@@ -289,6 +289,7 @@ answer_is_yes( const char *s )
     const char *long_no = _("no");
     const char *short_no = _("nN");
 
+    /* Note: we have to use the local dependent strcasecmp here */
     if( !stricmp(s, long_yes ) )
 	return 1;
     if( *s && strchr( short_yes, *s ) && !s[1] )
@@ -299,7 +300,7 @@ answer_is_yes( const char *s )
     if( *s && strchr( short_no, *s ) && !s[1] )
 	return 0;
     /* test for the english version (for those who are used to type yes) */
-    if( !stricmp(s, "yes" ) )
+    if( !ascii_strcasecmp(s, "yes" ) )
 	return 1;
     if( *s && strchr( "yY", *s ) && !s[1] )
 	return 1;
@@ -320,6 +321,7 @@ answer_is_yes_no_quit( const char *s )
     const char *short_no = _("nN");
     const char *short_quit = _("qQ");
 
+    /* Note: We have to use the locale dependent strcasecmp */
     if( !stricmp(s, long_no ) )
 	return 0;
     if( !stricmp(s, long_yes ) )
@@ -332,9 +334,10 @@ answer_is_yes_no_quit( const char *s )
 	return 1;
     if( *s && strchr( short_quit, *s ) && !s[1] )
 	return -1;
-    if( !stricmp(s, "yes" ) )
+    /* but not here */
+    if( !ascii_strcasecmp(s, "yes" ) )
 	return 1;
-    if( !stricmp(s, "quit" ) )
+    if( !ascii_strcasecmp(s, "quit" ) )
 	return -1;
     if( *s && strchr( "yY", *s ) && !s[1] )
 	return 1;

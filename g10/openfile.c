@@ -43,7 +43,7 @@
 #endif
 
 #ifdef HAVE_DRIVE_LETTERS
-  #define CMP_FILENAME(a,b) stricmp( (a), (b) )
+  #define CMP_FILENAME(a,b) ascii_strcasecmp( (a), (b) )
 #else
   #define CMP_FILENAME(a,b) strcmp( (a), (b) )
 #endif

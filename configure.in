@@ -256,25 +256,13 @@ AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME")
 
 dnl  Fixme: Are these the best flags for OpenBSD????
 case "${target}" in
-    *-openbsd*)
+    *-openbsd* | *-netbsd*)
         NAME_OF_DEV_RANDOM="/dev/srandom"
         NAME_OF_DEV_URANDOM="/dev/urandom"
         DYNLINK_MOD_CFLAGS="-shared -rdynamic $CFLAGS_PIC -Wl,-Bshareable -Wl,-x"
         ;;
 
-    *-netbsd*)
-        NAME_OF_DEV_RANDOM="/dev/random"
-        NAME_OF_DEV_URANDOM="/dev/urandom"
-        DYNLINK_MOD_CFLAGS="-shared -rdynamic $CFLAGS_PIC -Wl,-Bshareable -Wl,-x"
-        ;;
-
-    *-solaris*)
-        NAME_OF_DEV_RANDOM="/dev/random"
-        NAME_OF_DEV_URANDOM="/dev/random"
-        DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"
-        ;;
-
-    *-irix*)
+    *-solaris* | *-irix* | *-dec-osf* )
         NAME_OF_DEV_RANDOM="/dev/random"
         NAME_OF_DEV_URANDOM="/dev/urandom"
         DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"

@@ -1,3 +1,13 @@
+2001-06-12  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (compare_name): Use ascii_memistr(), ascii_memcasecmp()
+	* keyedit.c (keyedit_menu): Use ascii_strcasecmp().
+	* armor.c (radix64_read): Use ascii_toupper().  
+	* ringedit.c (do_bm_search): Ditto.
+	* keygen.c (read_parameter_file): Ditto.
+	* openfile.c (CMP_FILENAME): Ditto.
+	* g10.c (i18n_init): We can now use just LC_ALL.
+
 2001-05-29  Werner Koch  <wk@gnupg.org>
 
 	* keygen.c (generate_subkeypair): Print a warning if a subkey is

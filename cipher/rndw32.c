@@ -561,7 +561,8 @@ slow_gatherer_windowsNT( void (*add)(const void*, size_t, int), int requester )
 		log_debug ("rndw32#slow_gatherer_nt: check product options\n" );
 	    status = RegQueryValueEx (hKey, "ProductType", 0, NULL,
 				      szValue, &dwSize);
-	    if (status == ERROR_SUCCESS && stricmp (szValue, "WinNT")) {
+	    if (status == ERROR_SUCCESS
+                && ascii_strcasecmp (szValue, "WinNT")) {
 		/* Note: There are (at least) three cases for ProductType:
 		 * WinNT = NT Workstation, ServerNT = NT Server, LanmanNT =
 		 * NT Server acting as a Domain Controller */
