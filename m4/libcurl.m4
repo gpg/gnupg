@@ -32,6 +32,15 @@ AC_DEFUN([GNUPG_CHECK_LIBCURL],
         fi
         if test x"$LIBCURL" = "x" ; then
            LIBCURL=`curl-config --libs`
+
+ 	   # This is so silly, but Apple actually has a bug in their
+	   # curl-config script!
+
+           case "${host}" in
+              powerpc-apple-darwin*)
+                 LIBCURL=`echo $LIBCURL | sed -e 's|-arch i386||g'`
+   	      ;;
+           esac
         fi
         _have_config=yes
      else

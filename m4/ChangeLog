@@ -1,5 +1,7 @@
 2004-12-23  David Shaw  <dshaw@jabberwocky.com>
 
+	* libcurl.m4: OSX has a problem with their curl-config script.
+
 	* readline.m4: Make sure that readline is modern enough to
 	understand rl_catch_signals.
 
