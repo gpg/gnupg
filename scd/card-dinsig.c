@@ -77,7 +77,7 @@
 #include <string.h>
 #include <time.h>
 
-#include <opensc-pkcs15.h>
+#include <opensc/pkcs15.h>
 #include <ksba.h>
 
 #include "scdaemon.h"

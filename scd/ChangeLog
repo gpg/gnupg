@@ -1,3 +1,25 @@
+2002-08-09  Werner Koch  <wk@gnupg.org>
+
+	* card.c (card_get_serial_and_stamp): Use the tokeinfo serial
+	number as a fallback. Add a special prefix for serial numbers.
+
+2002-07-30  Werner Koch  <wk@gnupg.org>
+
+        Changes to cope with OpenSC 0.7.0:
+	
+	* card.c: Removed the check for the packed opensc version.
+	Changed include file names of opensc.
+	(map_sc_err): Adjusted error codes for new opensc version.
+	* card-p15.c: Changed include filename of opensc.
+	* card-dinsig.c: Ditto.
+
+	* card-p15.c (p15_decipher): Add flags argument to OpenSC call.
+	
+2002-07-24  Werner Koch  <wk@gnupg.org>
+
+	* card.c (find_simple_tlv, find_iccsn): New.
+	(card_get_serial_and_stamp): Improved serial number parser.
+
 2002-06-27  Werner Koch  <wk@gnupg.org>
 
 	* scdaemon.c (main): Use GNUPG_DEFAULT_HOMEDIR constant.

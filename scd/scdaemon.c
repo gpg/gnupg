@@ -87,9 +87,9 @@ static ARGPARSE_OPTS opts[] = {
   { oDebug,	"debug"     ,4|16, N_("set debugging flags")},
   { oDebugAll, "debug-all" ,0, N_("enable full debugging")},
   { oDebugWait,"debug-wait",1, "@"},
-  { oDebugSC,  "debug-sc",  1, N_("N|set OpenSC debug level to N")},
+  { oDebugSC,  "debug-sc",  1, N_("|N|set OpenSC debug level to N")},
   { oNoDetach, "no-detach" ,0, N_("do not detach from the console")},
-  { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
+  { oLogFile,  "log-file"   ,2, N_("use a log file for the server")},
 
 
   {0}

@@ -25,12 +25,8 @@
 #include <string.h>
 #include <time.h>
 
-#include <opensc-pkcs15.h>
+#include <opensc/pkcs15.h>
 #include <ksba.h>
-
-#if SC_MAX_SEC_ATTR_SIZE < 36
-# error This is not the patched OpenSC version
-#endif
 
 #include "scdaemon.h"
 #include "card-common.h"
@@ -42,38 +38,12 @@ map_sc_err (int rc)
   switch (rc)
     {
     case 0: rc = 0; break;
-    case SC_ERROR_CMD_TOO_SHORT:         rc = GNUPG_Card_Error; break;
-    case SC_ERROR_CMD_TOO_LONG:          rc = GNUPG_Card_Error; break;
     case SC_ERROR_NOT_SUPPORTED:         rc = GNUPG_Not_Supported; break;
-    case SC_ERROR_TRANSMIT_FAILED:       rc = GNUPG_Card_Error; break;
-    case SC_ERROR_FILE_NOT_FOUND:        rc = GNUPG_Card_Error; break;
-    case SC_ERROR_INVALID_ARGUMENTS:     rc = GNUPG_Card_Error; break;
     case SC_ERROR_PKCS15_APP_NOT_FOUND:  rc = GNUPG_No_PKCS15_App; break;
-    case SC_ERROR_REQUIRED_PARAMETER_NOT_FOUND: rc = GNUPG_Card_Error; break;
     case SC_ERROR_OUT_OF_MEMORY:         rc = GNUPG_Out_Of_Core; break;
-    case SC_ERROR_NO_READERS_FOUND:      rc = GNUPG_Card_Error; break;
-    case SC_ERROR_OBJECT_NOT_VALID:      rc = GNUPG_Card_Error; break;
-    case SC_ERROR_ILLEGAL_RESPONSE:      rc = GNUPG_Card_Error; break;
-    case SC_ERROR_PIN_CODE_INCORRECT:    rc = GNUPG_Card_Error; break;
-    case SC_ERROR_SECURITY_STATUS_NOT_SATISFIED: rc = GNUPG_Card_Error; break;
-    case SC_ERROR_CONNECTING_TO_RES_MGR: rc = GNUPG_Card_Error; break;
-    case SC_ERROR_INVALID_ASN1_OBJECT:   rc = GNUPG_Card_Error; break;
-    case SC_ERROR_BUFFER_TOO_SMALL:      rc = GNUPG_Card_Error; break;
     case SC_ERROR_CARD_NOT_PRESENT:      rc = GNUPG_Card_Not_Present; break;
-    case SC_ERROR_RESOURCE_MANAGER:      rc = GNUPG_Card_Error; break;
     case SC_ERROR_CARD_REMOVED:          rc = GNUPG_Card_Removed; break;
-    case SC_ERROR_INVALID_PIN_LENGTH:    rc = GNUPG_Card_Error; break;
-    case SC_ERROR_UNKNOWN_SMARTCARD:     rc = GNUPG_Card_Error; break;
-    case SC_ERROR_UNKNOWN_REPLY:         rc = GNUPG_Card_Error; break;
-    case SC_ERROR_OBJECT_NOT_FOUND:      rc = GNUPG_Card_Error; break;
-    case SC_ERROR_CARD_RESET:            rc = GNUPG_Card_Reset; break;
-    case SC_ERROR_ASN1_OBJECT_NOT_FOUND: rc = GNUPG_Card_Error; break;
-    case SC_ERROR_ASN1_END_OF_CONTENTS:  rc = GNUPG_Card_Error; break;
-    case SC_ERROR_TOO_MANY_OBJECTS:      rc = GNUPG_Card_Error; break;
     case SC_ERROR_INVALID_CARD:          rc = GNUPG_Invalid_Card; break;
-    case SC_ERROR_WRONG_LENGTH:          rc = GNUPG_Card_Error; break;
-    case SC_ERROR_RECORD_NOT_FOUND:      rc = GNUPG_Card_Error; break;
-    case SC_ERROR_INTERNAL:              rc = GNUPG_Card_Error; break;
     default: rc = GNUPG_Card_Error; break;
     }
   return rc;
@@ -207,6 +177,84 @@ card_close (CARD card)
     }      
 }
 
+/* Locate a simple TLV encoded data object in BUFFER of LENGTH and
+   return a pointer to value as well as its length in NBYTES.  Return
+   NULL if it was not found.  Note, that the function does not check
+   whether the value fits into the provided buffer. */
+static const char *
+find_simple_tlv (const unsigned char *buffer, size_t length,
+                 int tag, size_t *nbytes)
+{
+  const char *s = buffer;
+  size_t n = length;
+  size_t len;
+    
+  for (;;)
+    {
+      buffer = s;
+      if (n < 2)
+        return NULL; /* buffer too short for tag and length. */
+      len = s[1];
+      s += 2; n -= 2;
+      if (len == 255)
+        {
+          if (n < 2)
+            return NULL; /* we expected 2 more bytes with the length. */
+          len = (s[0] << 8) | s[1];
+          s += 2; n -= 2;
+        }
+      if (*buffer == tag)
+        {
+          *nbytes = len;
+          return s;
+        }
+      if (len > n)
+        return NULL; /* buffer too short to skip to the next tag. */
+      s += len; n -= len;
+    }
+}
+
+/* Find the ICC Serial Number within the provided BUFFER of LENGTH
+   (which should contain the GDO file) and return it as a hex encoded
+   string and allocated string in SERIAL.  Return an error code when
+   the ICCSN was not found. */
+static int
+find_iccsn (const unsigned char *buffer, size_t length, char **serial)
+{
+  size_t n;
+  const unsigned char *s;
+  char *p;
+
+  s = find_simple_tlv (buffer, length, 0x5A, &n);
+  if (!s)
+    return GNUPG_Card_Error;
+  length -= s - buffer;
+  if (n > length)
+    {
+      /* Oops, it does not fit into the buffer.  This is an invalid
+         encoding (or the buffer is too short.  However, I have some
+         test cards with such an invalid encoding and therefore I use
+         this ugly workaround to return something I can further
+         experiment with. */
+      if (n == 0x0D && length+1 == n)
+        {
+          log_debug ("enabling BMI testcard workaround\n");
+          n--;
+        }
+      else
+        return GNUPG_Card_Error; /* Bad encoding; does not fit into buffer. */
+    }
+  if (!n)
+    return GNUPG_Card_Error; /* Well, that is too short. */
+
+  *serial = p = xtrymalloc (2*n+1);
+  if (!*serial)
+    return GNUPG_Out_Of_Core;
+  for (; n; n--, p += 2, s++)
+    sprintf (p, "%02X", *s);
+  *p = 0;
+  return 0;
+}
 
 
 /* Retrieve the serial number and the time of the last update of the
@@ -220,12 +268,11 @@ card_close (CARD card)
 int 
 card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
 {
-  char *s;
   int rc;
   struct sc_path path;
   struct sc_file *file;
-  unsigned char buf[12];
-  int i;
+  unsigned char buf[256];
+  int buflen;
 
   if (!card || !serial || !stamp)
     return GNUPG_Invalid_Value;
@@ -274,36 +321,72 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
       sc_file_free (file);
       return GNUPG_Card_Error;
     }
-  if (file->size != 12)
+
+  if (!file->size || file->size >= DIM(buf) )
     { /* FIXME: Use a real parser */
-      log_error ("unsupported size of GDO file\n");
+      log_error ("unsupported size of GDO file (%d)\n", file->size);
       sc_file_free (file);
       return GNUPG_Card_Error;
     }
+  buflen = file->size;
       
-  rc = sc_read_binary (card->scard, 0, buf, DIM (buf), 0);
+  rc = sc_read_binary (card->scard, 0, buf, buflen, 0);
   sc_file_free (file);
   if (rc < 0) 
     {
       log_error ("error reading GDO file: %s\n", sc_strerror (rc));
       return GNUPG_Card_Error;
     }
-  if (rc != file->size)
+  if (rc != buflen)
     {
       log_error ("short read on GDO file\n");
       return GNUPG_Card_Error;
     }
-  if (buf[0] != 0x5a || buf[1] != 10)
-    {
-      log_error ("invalid structure of GDO file\n");
-      return GNUPG_Card_Error;
+
+  rc = find_iccsn (buf, buflen, serial);
+  if (rc == GNUPG_Card_Error)
+    log_error ("invalid structure of GDO file\n");
+  if (!rc && card->p15card && !strcmp (*serial, "D27600000000000000000000"))
+    { /* This is a German card with a silly serial number.  Try to get
+         the serial number from the EF(TokenInfo). We indicate such a
+         serial number by the using the prefix: "FF0100". */
+      const char *efser = card->p15card->serial_number;
+      char *p;
+
+      if (!efser)
+        efser = "";
+        
+      xfree (*serial);
+      *serial = NULL;
+      p = xtrymalloc (strlen (efser) + 7);
+      if (!p)
+          rc = GNUPG_Out_Of_Core;
+      else
+        {
+          strcpy (p, "FF0100");
+          strcpy (p+6, efser);
+          *serial = p;
+        }
     }
-  *serial = s = xtrymalloc (21);
-  if (!*serial)
-    return GNUPG_Out_Of_Core;
-  for (i=0; i < 10; i++, s += 2)
-    sprintf (s, "%02X", buf[2+i]);
-  return 0;
+  else if (!rc && **serial == 'F' && (*serial)[1] == 'F')
+    { /* The serial number starts with our special prefix.  This
+         requires that we put our default prefix "FF0000" in front. */
+      char *p = xtrymalloc (strlen (*serial) + 7);
+      if (!p)
+        {
+          xfree (*serial);
+          *serial = NULL;
+          rc = GNUPG_Out_Of_Core;
+        }
+      else
+        {
+          strcpy (p, "FF0000");
+          strcpy (p+6, *serial);
+          xfree (*serial);
+          *serial = p;
+        }
+    }
+  return rc;
 }
 
 

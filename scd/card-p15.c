@@ -25,7 +25,7 @@
 #include <string.h>
 #include <time.h>
 
-#include <opensc-pkcs15.h>
+#include <opensc/pkcs15.h>
 #include <ksba.h>
 
 #include "scdaemon.h"
@@ -345,6 +345,7 @@ p15_decipher (CARD card, const char *keyidstr,
     return GNUPG_Out_Of_Core;
 
   rc = sc_pkcs15_decipher (card->p15card, keyobj, 
+                           0,
                            indata, indatalen, 
                            outbuf, outbuflen); 
   if (rc < 0)
