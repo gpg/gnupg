@@ -474,7 +474,8 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
         tstr = strtimestamp_r (sigtime);
         buf = xmalloc ( strlen(fpr) + strlen (tstr) + 120);
         sprintf (buf, "%s %s %s %s", fpr, tstr,
-                 sigtime, keyexptime );
+                 *sigtime? sigtime : "0",
+                 *keyexptime? keyexptime : "0" );
         xfree (tstr);
         xfree (fpr);
         gpgsm_status (ctrl, STATUS_VALIDSIG, buf);

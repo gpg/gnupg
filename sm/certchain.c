@@ -517,11 +517,13 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, ksba_isotime_t r_exptime)
             goto leave;
         }
 
-      if (!opt.no_crl_check)
+      if (!opt.no_crl_check || ctrl->use_ocsp)
         {
-          rc = gpgsm_dirmngr_isvalid (subject_cert);
+          rc = gpgsm_dirmngr_isvalid (subject_cert, ctrl->use_ocsp);
           if (rc)
             {
+              /* Fixme: We should change the wording because we may
+                 have used OCSP. */
               switch (gpg_err_code (rc))
                 {
                 case GPG_ERR_CERT_REVOKED:
@@ -677,7 +679,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, ksba_isotime_t r_exptime)
 
   if (opt.no_policy_check)
     log_info ("policies not checked due to --disable-policy-checks option\n");
-  if (opt.no_crl_check)
+  if (opt.no_crl_check && !ctrl->use_ocsp)
     log_info ("CRLs not checked due to --disable-crl-checks option\n");
 
   if (!rc)

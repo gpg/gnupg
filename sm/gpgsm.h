@@ -35,7 +35,7 @@
 
 #define MAX_DIGEST_LEN 24 
 
-/* A large struct name "opt" to keep global flags */
+/* A large struct named "opt" to keep global flags */
 struct {
   unsigned int debug; /* debug flags (DBG_foo_VALUE) */
   int verbose;      /* verbosity level */
@@ -83,6 +83,7 @@ struct {
   int ignore_time_conflict; /* Ignore certain time conflicts */
 
   int no_crl_check;         /* Don't do a CRL check */
+  int enable_ocsp;          /* Default to use OCSP checks. */
 
   char *policy_file;        /* full pathname of policy file */
   int no_policy_check;      /* ignore certificate policies */
@@ -131,6 +132,7 @@ struct server_control_s {
                          along with a signature or the number of
                          certificates up the chain (0 = none, 1 = only
                          signer) */
+  int use_ocsp;       /* Set to true if OCSP should be used. */
 };
 typedef struct server_control_s *CTRL;
 
@@ -261,7 +263,7 @@ int gpgsm_agent_learn (void);
 int gpgsm_agent_passwd (const char *hexkeygrip);
 
 /*-- call-dirmngr.c --*/
-int gpgsm_dirmngr_isvalid (KsbaCert cert);
+int gpgsm_dirmngr_isvalid (ksba_cert_t cert, int use_ocsp);
 int gpgsm_dirmngr_lookup (CTRL ctrl, STRLIST names,
                           void (*cb)(void*, KsbaCert), void *cb_value);
 int gpgsm_dirmngr_run_command (CTRL ctrl, const char *command,

@@ -111,6 +111,9 @@ enum cmd_and_opt_values {
 
   oDisableCRLChecks,
   oEnableCRLChecks,
+  oDisableOCSP,
+  oEnableOCSP,
+
 
   oIncludeCerts,
   oPolicyFile,
@@ -252,6 +255,9 @@ static ARGPARSE_OPTS opts[] = {
 
     { oDisableCRLChecks, "disable-crl-checks", 0, N_("never consult a CRL")},
     { oEnableCRLChecks, "enable-crl-checks", 0, "@"},
+
+    { oDisableOCSP, "disable-ocsp", 0, "@" },
+    { oEnableOCSP,  "enable-ocsp", 0, N_("check validity using OCSP")},
 
     { oIncludeCerts, "include-certs", 1,
                                  N_("|N|number of certificates to include") },
@@ -825,6 +831,13 @@ main ( int argc, char **argv)
           opt.no_crl_check = 0;
           break;
 
+        case oDisableOCSP:
+          opt.enable_ocsp = 0;
+          break;
+        case oEnableOCSP:
+          opt.enable_ocsp = 1;
+          break;
+
         case oIncludeCerts: ctrl.include_certs = pargs.r.ret_int; break;
 
         case oPolicyFile:
@@ -1360,6 +1373,7 @@ void
 gpgsm_init_default_ctrl (struct server_control_s *ctrl)
 {
   ctrl->include_certs = 1;  /* only include the signer's cert */
+  ctrl->use_ocsp = opt.enable_ocsp;
 }
 
 

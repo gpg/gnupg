@@ -288,9 +288,12 @@ inq_certificate (void *opaque, const char *line)
   GPG_ERR_CERTIFICATE_REVOKED
   GPG_ERR_NO_CRL_KNOWN
   GPG_ERR_CRL_TOO_OLD
+
+  With USE_OCSP set to true, the dirmngr is asked to do an OCSP
+  request first.
  */
 int
-gpgsm_dirmngr_isvalid (KsbaCert cert)
+gpgsm_dirmngr_isvalid (ksba_cert_t cert, int use_ocsp)
 {
   int rc;
   char *certid;
@@ -301,22 +304,34 @@ gpgsm_dirmngr_isvalid (KsbaCert cert)
   if (rc)
     return rc;
 
-  certid = gpgsm_get_certid (cert);
-  if (!certid)
+  if (use_ocsp)
     {
-      log_error ("error getting the certificate ID\n");
-      return gpg_error (GPG_ERR_GENERAL);
+      certid = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+    }
+  else
+    {
+      certid = gpgsm_get_certid (cert);
+      if (!certid)
+        {
+          log_error ("error getting the certificate ID\n");
+          return gpg_error (GPG_ERR_GENERAL);
+        }
     }
 
   if (opt.verbose > 1)
     {
       char *fpr = gpgsm_get_fingerprint_string (cert, GCRY_MD_SHA1);
-      log_info ("asking dirmngr about %s\n", fpr);
+      log_info ("asking dirmngr about %s%s\n", fpr,
+                use_ocsp? " (using OCSP)":"");
       xfree (fpr);
     }
 
   parm.ctx = dirmngr_ctx;
   parm.cert = cert;
+
+  /* FIXME: If --disable-crl-checks has been set, we should pass an
+     option to dirmngr, so that no fallback CRL check is done after an
+     ocsp check. */
 
   snprintf (line, DIM(line)-1, "ISVALID %s", certid);
   line[DIM(line)-1] = 0;
