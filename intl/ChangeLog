@@ -1,3 +1,7 @@
+2003-04-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* gettextP.h: Add comment for HP/UX users.  Local fix for GnuPG.
+
 2003-04-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* dcigettext.c (plural_lookup): Name conflict on some platforms
