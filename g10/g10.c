@@ -57,7 +57,7 @@ enum cmd_and_opt_values { aNull = 0,
     aSym	  = 'c',
     aDecrypt	  = 'd',
     aEncr	  = 'e',
-    aEncrFiles,
+    aOldEncrFiles = 'f', /* to be removed */
     oInteractive  = 'i',
     oKOption	  = 'k',
     oDryRun	  = 'n',
@@ -75,6 +75,7 @@ enum cmd_and_opt_values { aNull = 0,
     oCertNotation,
     oShowNotation,
     oNoShowNotation,
+    aEncrFiles,
     aDecryptFiles,                          
     aClearsign,
     aStore,
@@ -306,9 +307,10 @@ static ARGPARSE_OPTS opts[] = {
     { 300, NULL, 0, N_("@Commands:\n ") },
 
     { aSign, "sign",      256, N_("|[file]|make a signature")},
-    { aClearsign, "clearsign", 256, N_("|[file]|make a clear text signature") },
+    { aClearsign, "clearsign", 256, N_("|[file]|make a clear text signature")},
     { aDetachedSign, "detach-sign", 256, N_("make a detached signature")},
     { aEncr, "encrypt",   256, N_("encrypt data")},
+    { aOldEncrFiles, NULL, 256, "@"},
     { aEncrFiles, "encrypt-files", 256, N_("|[files]|encrypt files")},
     { aSym, "symmetric", 256, N_("encryption only with symmetric cipher")},
     { aStore, "store",     256, N_("store only")},
@@ -1279,7 +1281,10 @@ main( int argc, char **argv )
 	  case aDecryptFiles: multifile=1; /* fall through */
 	  case aDecrypt: set_cmd( &cmd, aDecrypt); break;
 
-	  case aEncrFiles: multifile=1; /* fall through */
+	  case aOldEncrFiles:
+	    deprecated_warning(configname,configlineno,
+			       "-f","--encrypt-files",""); /* fall through */
+	  case aEncrFiles: multifile=1; /* fall through again */
 	  case aEncr: set_cmd( &cmd, aEncr); break;
 
 	  case aVerifyFiles: multifile=1; /* fall through */

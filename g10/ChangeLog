@@ -1,3 +1,7 @@
+2003-09-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Deprecate -f in favor of --encrypt-files.
+
 2003-09-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Error out if --multifile is used with the commands
