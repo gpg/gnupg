@@ -353,7 +353,7 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 	    ndays = (u16)((sk->expiredate - sk->timestamp) / 86400L);
 	else
 	    ndays = 0;
-	write_16(a, 0 );
+	write_16(a, ndays);
     }
     iobuf_put(a, sk->pubkey_algo );
     nskey = pubkey_get_nskey( sk->pubkey_algo );

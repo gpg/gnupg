@@ -1,3 +1,9 @@
+2001-04-24  Werner Koch  <wk@gnupg.org>
+
+	* build-packet.c (do_secret_key): Ugly, we wrote a zero
+	instead of the calucalted ndays.  Thanks to M Taylor for complaining
+	about a secret key import problem.
+
 2001-04-23  Werner Koch  <wk@gnupg.org>
 
 	* hkp.c (hkp_ask_import): Allow to specify a port number for the 
