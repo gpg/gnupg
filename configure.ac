@@ -443,7 +443,6 @@ AC_PATH_PROG(PERL,"perl")
 AC_ISC_POSIX
 AC_SYS_LARGEFILE
 AC_PROG_INSTALL
-AC_PROG_LN_S
 AC_PROG_AWK
 AC_CHECK_PROG(DOCBOOK_TO_MAN, docbook-to-man, yes, no)
 AM_CONDITIONAL(HAVE_DOCBOOK_TO_MAN, test "$ac_cv_prog_DOCBOOK_TO_MAN" = yes)
@@ -451,7 +450,6 @@ GNUPG_CHECK_FAQPROG
 GNUPG_CHECK_DOCBOOK_TO_TEXI
 
 MPI_OPT_FLAGS=""
-
 
 try_gettext=yes
 have_dosish_system=no
@@ -594,69 +592,13 @@ fi
 
 AC_SUBST(SRVLIBS)
 
-# Try and link a LDAP test program to weed out unusable LDAP
-# libraries.  -lldap [-llber [-lresolv]] is for older OpenLDAPs.
-# OpenLDAP, circa 1999, was terrible with creating weird dependencies.
-# This seems to have all been resolved, so I'm simplifying this code
-# significantly.  If all else fails, the user can play
-# guess-the-dependency by using something like ./configure
-# LDAPLIBS="-Lfoo -lbar"
+# Check for LDAP
 
 if test "$try_ldap" = yes ; then
-
-  AC_ARG_WITH(ldap,
-     AC_HELP_STRING([--with-ldap=DIR],[look for the LDAP library in DIR]),
-     [
-     if test -d "$withval" ; then
-        CPPFLAGS="${CPPFLAGS} -I$withval/include"
-        LDFLAGS="${LDFLAGS} -L$withval/lib"
-     fi
-     ])
-
-  for MY_LDAPLIBS in ${LDAPLIBS+"$LDAPLIBS"} "-lldap" "-lldap -llber" "-lldap -llber -lresolv" "-lwldap32"; do
-    _ldap_save_libs=$LIBS
-    LIBS="$MY_LDAPLIBS $NETLIBS $LIBS"
-
-    AC_MSG_CHECKING([whether LDAP via \"$MY_LDAPLIBS\" is present and sane])
-    AC_TRY_LINK([
-#ifdef _WIN32
-#include <winsock2.h>
-#include <winldap.h>
-#else
-#include <ldap.h>
-#endif
-],[ldap_open("foobar",1234);],
-                [gnupg_cv_func_ldap_init=yes],[gnupg_cv_func_ldap_init=no])
-    AC_MSG_RESULT([$gnupg_cv_func_ldap_init])
-
-    if test "$gnupg_cv_func_ldap_init" = yes ; then
-       LDAPLIBS=$MY_LDAPLIBS
-       GPGKEYS_LDAP="gpgkeys_ldap$EXEEXT"
-
-       AC_CHECK_FUNCS(ldap_get_option ldap_set_option ldap_start_tls_s)
-
-       if test "$ac_cv_func_ldap_get_option" != yes ; then
-          AC_MSG_CHECKING([whether LDAP supports ld_errno])
-	  AC_TRY_LINK([#include <ldap.h>],[LDAP *ldap; ldap->ld_errno;],
-	     [gnupg_cv_func_ldap_ld_errno=yes],
-	     [gnupg_cv_func_ldap_ld_errno=no])
-          AC_MSG_RESULT([$gnupg_cv_func_ldap_ld_errno])
-
-	  if test "$gnupg_cv_func_ldap_ld_errno" = yes ; then
-	     AC_DEFINE(HAVE_LDAP_LD_ERRNO,1,[Define if the LDAP library supports ld_errno])
-          fi
-       fi
-    fi
-
-    LIBS=$_ldap_save_libs
-
-    if test "$GPGKEYS_LDAP" != "" ; then break; fi
-  done
+   GNUPG_CHECK_LDAP($NETLIBS)
 fi
 
-AC_SUBST(GPGKEYS_LDAP)
-AC_SUBST(LDAPLIBS)
-AM_CONDITIONAL(GPGKEYS_LDAP, test "$GPGKEYS_LDAP" != "")
+# Special hack to test curl
 
 AC_ARG_ENABLE(fake-curl,
    AC_HELP_STRING([--enable-fake-curl],[enable EXPERIMENTAL no-curl HTTP code]),fake_curl=$enableval,fake_curl=no)

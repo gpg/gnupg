@@ -12,9 +12,9 @@ Noteworthy changes in version 1.4.1 (2005-03-15)
       <http://lists.gnupg.org/pipermail/gnupg-users/2005-January/024408.html>.
 
     * New "import-unusable-sigs" and "export-unusable-sigs" tags for
-      --import-options and --export-options.  These are off by
-      default, and cause GnuPG to not import or export key signatures
-      that are not usable (e.g. expired signatures).
+      --import-options and --export-options.  These are off by default,
+      which causes GnuPG to not import or export key signatures that
+      are not usable (e.g. expired signatures).
 
     * New experimental HTTP, HTTPS, FTP, and FTPS keyserver helper
       that uses the cURL library <http://curl.haxx.se> to retrieve
