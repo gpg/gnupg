@@ -1,14 +1,14 @@
 /* ringedit.c -  Function for key ring editing
- *	Copyright (c) 1997 by Werner Koch (dd9jn)
+ *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of G10.
+ * This file is part of GNUPG.
  *
- * G10 is free software; you can redistribute it and/or modify
+ * GNUPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * G10 is distributed in the hope that it will be useful,
+ * GNUPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -888,12 +888,18 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	}
     }
     /* rename and make backup file */
+  #if __MINGW32__
+    remove( bakfname );
+  #endif
     if( rename( rentry->fname, bakfname ) ) {
 	log_error("%s: rename to %s failed: %s\n",
 				rentry->fname, bakfname, strerror(errno) );
 	rc = G10ERR_RENAME_FILE;
 	goto leave;
     }
+  #if __MINGW32__
+    remove( rentry->fname );
+  #endif
     if( rename( tmpfname, rentry->fname ) ) {
 	log_error("%s: rename to %s failed: %s\n",
 			    tmpfname, rentry->fname,strerror(errno) );

@@ -1,14 +1,14 @@
 /* keygen.c - generate a key pair
- *	Copyright (c) 1997 by Werner Koch (dd9jn)
+ *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of G10.
+ * This file is part of GNUPG.
  *
- * G10 is free software; you can redistribute it and/or modify
+ * GNUPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * G10 is distributed in the hope that it will be useful,
+ * GNUPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -136,7 +136,7 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_cert *skc )
 
 static int
 gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	PKT_secret_cert **ret_skc )
+	byte *salt, PKT_secret_cert **ret_skc )
 {
     int rc;
     int i;
@@ -162,15 +162,18 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     skc->d.elg.y = sk.y;
     skc->d.elg.x = sk.x;
     skc->d.elg.is_protected = 0;
-    skc->d.elg.protect_algo = 0;
+    skc->d.elg.protect.algo = 0;
 
     skc->d.elg.csum = checksum_mpi( skc->d.elg.x );
     /* return an unprotected version of the skc */
     *ret_skc = copy_secret_cert( NULL, skc );
 
     if( dek ) {
-	skc->d.elg.protect_algo = CIPHER_ALGO_BLOWFISH;
-	randomize_buffer(skc->d.elg.protect.blowfish.iv, 8, 1);
+	skc->d.elg.protect.algo = CIPHER_ALGO_BLOWFISH;
+	skc->d.elg.protect.s2k	= 1;
+	skc->d.elg.protect.hash = DIGEST_ALGO_RMD160;
+	memcpy(skc->d.elg.protect.salt, salt, 8);
+	randomize_buffer(skc->d.elg.protect.iv, 8, 1);
 	rc = protect_secret_key( skc, dek );
 	if( rc ) {
 	    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
@@ -203,7 +206,7 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 #ifdef ENABLE_RSA_KEYGEN
 static int
 gen_rsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	PKT_secret_cert **ret_skc )
+	byte *salt, PKT_secret_cert **ret_skc )
 {
     int rc;
     PACKET *pkt;
@@ -267,7 +270,7 @@ gen_rsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 
 static int
 gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	PKT_secret_cert **ret_skc )
+	 byte *salt, PKT_secret_cert **ret_skc )
 {
     return G10ERR_GENERAL;
 }
@@ -289,6 +292,7 @@ generate_keypair()
     KBNODE sec_root = NULL;
     PKT_secret_cert *skc = NULL;
     DEK *dek = NULL;
+    byte *salt;
     int rc;
     int algo;
     const char *algo_name;
@@ -499,9 +503,11 @@ generate_keypair()
     tty_printf(_("You need a Passphrase to protect your secret key.\n\n") );
 
     dek = m_alloc_secure( sizeof *dek );
+    salt = (byte*)dek + sizeof *dek;
     for(;;) {
 	dek->algo = CIPHER_ALGO_BLOWFISH;
-	rc = make_dek_from_passphrase( dek , 2 );
+	randomize_buffer(salt, 8, 1);
+	rc = make_dek_from_passphrase( dek , 2, salt );
 	if( rc == -1 ) {
 	    m_free(dek); dek = NULL;
 	    tty_printf(_(
@@ -525,8 +531,8 @@ generate_keypair()
 
 
     /* now check wether we a are allowed to write to the keyrings */
-    pub_fname = make_filename(opt.homedir, "pubring.g10", NULL );
-    sec_fname = make_filename(opt.homedir, "secring.g10", NULL );
+    pub_fname = make_filename(opt.homedir, "pubring.gpg", NULL );
+    sec_fname = make_filename(opt.homedir, "secring.gpg", NULL );
     if( opt.verbose ) {
 	tty_printf(_("writing public certificate to '%s'\n"), pub_fname );
 	tty_printf(_("writing secret certificate to '%s'\n"), sec_fname );
@@ -547,21 +553,21 @@ generate_keypair()
 "number generator a better chance to gain enough entropy.\n") );
 
     if( algo == PUBKEY_ALGO_ELGAMAL )
-	rc = gen_elg(nbits, pub_root, sec_root, dek, &skc );
+	rc = gen_elg(nbits, pub_root, sec_root, dek, salt,  &skc );
   #ifdef ENABLE_RSA_KEYGEN
     else if( algo == PUBKEY_ALGO_RSA )
-	rc = gen_rsa(nbits, pub_root, sec_root, dek, &skc );
+	rc = gen_rsa(nbits, pub_root, sec_root, dek, salt, &skc );
   #endif
     else if( algo == PUBKEY_ALGO_DSA )
-	rc = gen_dsa(nbits, pub_root, sec_root, dek, &skc );
+	rc = gen_dsa(nbits, pub_root, sec_root, dek, salt, &skc );
     else
 	BUG();
     if( !rc ) {
 	add_kbnode( pub_root,
-		make_comment_node("#created by G10 v" VERSION " ("
+		make_comment_node("#created by GNUPG v" VERSION " ("
 					    PRINTABLE_OS_NAME ")"));
 	add_kbnode( sec_root,
-		make_comment_node("#created by G10 v" VERSION " ("
+		make_comment_node("#created by GNUPG v" VERSION " ("
 					    PRINTABLE_OS_NAME ")"));
     }
     if( !rc )

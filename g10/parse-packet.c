@@ -1,14 +1,14 @@
 /* parse-packet.c  - read packets
- *	Copyright (c) 1997 by Werner Koch (dd9jn)
+ *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of G10.
+ * This file is part of GNUPG.
  *
- * G10 is free software; you can redistribute it and/or modify
+ * GNUPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * G10 is distributed in the hope that it will be useful,
+ * GNUPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -591,6 +591,7 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
     unsigned long timestamp;
     unsigned short valid_period;
     int is_v4=0;
+    int rc=0;
 
 
     if( pktlen < 12 ) {
@@ -658,11 +659,79 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    pkt->pkt.secret_cert->d.elg.p = elg_p;
 	    pkt->pkt.secret_cert->d.elg.g = elg_g;
 	    pkt->pkt.secret_cert->d.elg.y = elg_y;
-	    cert->d.elg.protect_algo = iobuf_get_noeof(inp); pktlen--;
-	    if( list_mode )
-		printf(  "\tprotect algo: %d\n", cert->d.elg.protect_algo);
-	    if( cert->d.elg.protect_algo ) {
+	    cert->d.elg.protect.algo = iobuf_get_noeof(inp); pktlen--;
+	    if( cert->d.elg.protect.algo ) {
 		cert->d.elg.is_protected = 1;
+		cert->d.elg.protect.count = 0;
+		if( cert->d.elg.protect.algo == 255 ) {
+		    if( pktlen < 3 ) {
+			rc = G10ERR_INVALID_PACKET;
+			goto leave;
+		    }
+		    cert->d.elg.protect.algo = iobuf_get_noeof(inp); pktlen--;
+		    cert->d.elg.protect.s2k  = iobuf_get_noeof(inp); pktlen--;
+		    cert->d.elg.protect.hash = iobuf_get_noeof(inp); pktlen--;
+		    switch( cert->d.elg.protect.s2k ) {
+		      case 1:
+		      case 3:
+			for(i=0; i < 8 && pktlen; i++, pktlen-- )
+			    temp[i] = iobuf_get_noeof(inp);
+			memcpy(cert->d.elg.protect.salt, temp, 8 );
+			break;
+		    }
+		    switch( cert->d.elg.protect.s2k ) {
+		      case 0: if( list_mode ) printf(  "\tsimple S2K" );
+			break;
+		      case 1: if( list_mode ) printf(  "\tsalted S2K" );
+			break;
+		      case 3: if( list_mode ) printf(  "\titer+salt S2K" );
+			break;
+		      default:
+			if( list_mode )
+			    printf(  "\tunknown S2K %d\n",
+						cert->d.elg.protect.s2k );
+			rc = G10ERR_INVALID_PACKET;
+			goto leave;
+		    }
+
+		    if( list_mode ) {
+			printf(", algo: %d, hash: %d",
+					 cert->d.elg.protect.algo,
+					 cert->d.elg.protect.hash );
+			if( cert->d.elg.protect.s2k == 1
+			    || cert->d.elg.protect.s2k == 3 ) {
+			    printf(", salt: ");
+			    for(i=0; i < 8; i++ )
+				printf("%02x", cert->d.elg.protect.salt[i]);
+			}
+			putchar('\n');
+		    }
+
+		    if( cert->d.elg.protect.s2k == 3 ) {
+			if( !pktlen ) {
+			    rc = G10ERR_INVALID_PACKET;
+			    goto leave;
+			}
+			cert->d.elg.protect.count = iobuf_get_noeof(inp);
+			pktlen--;
+		    }
+
+		}
+		else {
+		    if( list_mode )
+			printf(  "\tprotect algo: %d\n",
+						cert->d.elg.protect.algo);
+		    /* old version, we don't have a S2K, so we fake one */
+		    cert->d.elg.protect.s2k = 0;
+		    /* We need this kludge to cope with old GNUPG versions */
+		    cert->d.elg.protect.hash =
+			 cert->d.elg.protect.algo == CIPHER_ALGO_BLOWFISH?
+				      DIGEST_ALGO_RMD160 : DIGEST_ALGO_MD5;
+		}
+		if( pktlen < 8 ) {
+		    rc = G10ERR_INVALID_PACKET;
+		    goto leave;
+		}
 		for(i=0; i < 8 && pktlen; i++, pktlen-- )
 		    temp[i] = iobuf_get_noeof(inp);
 		if( list_mode ) {
@@ -671,8 +740,7 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 			printf(" %02x", temp[i] );
 		    putchar('\n');
 		}
-		if( cert->d.elg.protect_algo == CIPHER_ALGO_BLOWFISH )
-		    memcpy(cert->d.elg.protect.blowfish.iv, temp, 8 );
+		memcpy(cert->d.elg.protect.iv, temp, 8 );
 	    }
 	    else
 		cert->d.elg.is_protected = 0;
@@ -758,7 +826,7 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 
   leave:
     skip_rest(inp, pktlen);
-    return 0;
+    return rc;
 }
 
 

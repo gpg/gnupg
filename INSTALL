@@ -1,8 +1,8 @@
 
 Please read the Basic Installation section somewhere below.
 
-Configure options for G10
-=========================
+Configure options for GNUPG
+===========================
 
 --with-zlib	    Forces usage of the local zlib sources. Default is
 		    to use the (sahred) library of the system.
@@ -37,11 +37,10 @@ Don't forget to delete "config.cache" and run "./config.status --recheck".
 
 Installation
 ============
-G10 is not installed as suid:root; if you want to use it, do it manually
-(only g10, not g10maint).
+pgp is not installed as suid:root; if you want to do it, do it manually.
 
-You have to create the ~/.g10 directory manually.  Your first action after
-this should be to create a key pair: "g10 --gen-key".
+The ~/.gpg directory will be created if it does not exist.  Your first
+action should be to create a key pair: "gpg --gen-key".
 
 
 

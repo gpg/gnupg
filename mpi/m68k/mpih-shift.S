@@ -186,7 +186,7 @@ PROLOG(mpihelp_rshift)
 	cmpl	R(d5),R(cnt)
 	bne	L(Rnormal)
 	cmpl	R(res_ptr),R(s_ptr)
-	bls	L(Lspecial)		/* jump if res_ptr >= s_ptr */
+	bls	L(Rspecial)		/* jump if res_ptr >= s_ptr */
 #if (defined (__mc68020__) || defined (__NeXT__) || defined(mc68020))
 	lea	MEM_INDX1(res_ptr,s_size,l,4),R(a2)
 #else /* not mc68020 */
@@ -195,7 +195,7 @@ PROLOG(mpihelp_rshift)
 	lea	MEM_INDX(res_ptr,d0,l),R(a2)
 #endif
 	cmpl	R(s_ptr),R(a2)
-	bls	L(Lspecial)		/* jump if s_ptr >= res_ptr + s_size */
+	bls	L(Rspecial)		/* jump if s_ptr >= res_ptr + s_size */
 
 L(Rnormal:)
 	moveql	#32,R(d5)
@@ -242,7 +242,7 @@ L(Rend:)
    permissable if the source and destination don't overlap, since the
    function is documented to work for overlapping source and destination.  */
 
-L(Lspecial:)
+L(Rspecial:)
 #if (defined (__mc68020__) || defined (__NeXT__) || defined(mc68020))
 	lea	MEM_INDX1(s_ptr,s_size,l,4),R(s_ptr)
 	lea	MEM_INDX1(res_ptr,s_size,l,4),R(res_ptr)

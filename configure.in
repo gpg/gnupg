@@ -1,5 +1,5 @@
 dnl
-dnl Configure template for G10
+dnl Configure template for GNUPG
 dnl
 dnl (Process this file with autoconf to produce a configure script.)
 
@@ -20,7 +20,7 @@ fi
 
 
 VERSION=`cat $srcdir/VERSION`
-PACKAGE=g10
+PACKAGE=gnupg
 ALL_LINGUAS="de"
 AC_SUBST(VERSION)
 AC_SUBST(PACKAGE)

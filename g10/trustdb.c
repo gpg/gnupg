@@ -1,14 +1,14 @@
 /* trustdb.c
- *	Copyright (c) 1997 by Werner Koch (dd9jn)
+ *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of G10.
+ * This file is part of GNUPG.
  *
- * G10 is free software; you can redistribute it and/or modify
+ * GNUPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * G10 is distributed in the hope that it will be useful,
+ * GNUPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -329,8 +329,8 @@ create_db( const char *fname )
 	log_fatal("can't create %s: %s\n", fname, strerror(errno) );
     fwrite_8( fp, 1 );
     fwrite_8( fp, 'g' );
-    fwrite_8( fp, '1' );
-    fwrite_8( fp, '0' );
+    fwrite_8( fp, 'p' );
+    fwrite_8( fp, 'g' );
     fwrite_8( fp, 1 );	/* version */
     fwrite_zeros( fp, 3 ); /* reserved */
     fwrite_32( fp, 0 ); /* not locked */
@@ -451,7 +451,8 @@ read_record( ulong recnum, TRUSTREC *rec, int expected )
       case 0:  /* unused record */
 	break;
       case RECTYPE_VER: /* version record */
-	if( memcmp(buf+1, "g10", 3 ) ) {
+	/* g10 was the original name */
+	if( memcmp(buf+1, "gpg", 3 ) && memcmp(buf+1, "g10", 3 ) ) {
 	    log_error("%s: not a trustdb file\n", db_name );
 	    rc = G10ERR_TRUSTDB;
 	}
@@ -1510,7 +1511,7 @@ init_trustdb( int level, const char *dbname )
 
     if( !level || level==1 ) {
 	char *fname = dbname? m_strdup( dbname )
-			    : make_filename(opt.homedir, "trustdb.g10", NULL );
+			    : make_filename(opt.homedir, "trustdb.gpg", NULL );
 	if( access( fname, R_OK ) ) {
 	    if( errno != ENOENT ) {
 		log_error("can't access %s: %s\n", fname, strerror(errno) );
@@ -1522,7 +1523,11 @@ init_trustdb( int level, const char *dbname )
 		assert(p);
 		*p = 0;
 		if( access( fname, F_OK ) ) {
+		  #if __MINGW32__
+		    if( mkdir( fname ) )
+		  #else
 		    if( mkdir( fname, S_IRUSR|S_IWUSR|S_IXUSR ) )
+		  #endif
 			log_fatal("can't create directory '%s': %s\n",
 				    fname, strerror(errno) );
 		}
@@ -1974,7 +1979,7 @@ int
 verify_private_data()
 {
     int rc = 0;
-    char *sigfile = make_filename(opt.homedir, "g10.sig", NULL );
+    char *sigfile = make_filename(opt.homedir, "gnupg.sig", NULL );
 
     if( access( sigfile, R_OK ) ) {
 	if( errno != ENOENT ) {
@@ -2002,8 +2007,8 @@ int
 sign_private_data()
 {
     int rc;
-    char *sigfile = make_filename(opt.homedir, "g10.sig", NULL );
-    char *secring = make_filename(opt.homedir, "secring.g10", NULL );
+    char *sigfile = make_filename(opt.homedir, "gnupg.sig", NULL );
+    char *secring = make_filename(opt.homedir, "secring.gpg", NULL );
     STRLIST list = NULL;
 
     add_to_strlist( &list, db_name );

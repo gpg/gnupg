@@ -1,14 +1,14 @@
 /* build-packet.c - assemble packets and write them
- *	Copyright (c) 1997 by Werner Koch (dd9jn)
+ *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of G10.
+ * This file is part of GNUPG.
  *
- * G10 is free software; you can redistribute it and/or modify
+ * GNUPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * G10 is distributed in the hope that it will be useful,
+ * GNUPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -211,7 +211,7 @@ hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc )
     int rc = 0;
     int c;
     IOBUF a = iobuf_temp();
-  #if 1
+  #if 0
     FILE *fp = fopen("dump.pkc", "a");
     int i=0;
 
@@ -225,7 +225,7 @@ hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc )
     if( (rc = build_packet( a, &pkt )) )
 	log_fatal("build public_cert for hashing failed: %s\n", g10_errstr(rc));
     while( (c=iobuf_get(a)) != -1 ) {
-      #if 1
+      #if 0
 	fprintf( fp," %02x", c );
 	if( (++i == 24) ) {
 	    putc('\n', fp);
@@ -234,7 +234,7 @@ hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc )
       #endif
 	md_putc( md, c );
     }
-  #if 1
+  #if 0
     putc('\n', fp);
     fclose(fp);
   #endif
@@ -260,9 +260,16 @@ do_secret_cert( IOBUF out, int ctb, PKT_secret_cert *skc )
 	mpi_write(a, skc->d.elg.g );
 	mpi_write(a, skc->d.elg.y );
 	if( skc->d.elg.is_protected ) {
-	    assert( skc->d.elg.protect_algo == CIPHER_ALGO_BLOWFISH );
-	    iobuf_put(a, skc->d.elg.protect_algo );
-	    iobuf_write(a, skc->d.elg.protect.blowfish.iv, 8 );
+	    iobuf_put(a, 0xff );
+	    iobuf_put(a, skc->d.elg.protect.algo );
+	    iobuf_put(a, skc->d.elg.protect.s2k );
+	    iobuf_put(a, skc->d.elg.protect.hash );
+	    if( skc->d.elg.protect.s2k == 1
+		|| skc->d.elg.protect.s2k == 3 )
+		iobuf_write(a, skc->d.elg.protect.salt, 8 );
+	    if( skc->d.elg.protect.s2k == 3 )
+		iobuf_put(a, skc->d.elg.protect.count );
+	    iobuf_write(a, skc->d.elg.protect.iv, 8 );
 	}
 	else
 	    iobuf_put(a, 0 );

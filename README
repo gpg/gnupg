@@ -1,6 +1,6 @@
 
-	     G10 - The GNU Encryption and Signing Tool
-	    ------------------------------------------
+		  GNUPG - The GNU Privacy Guard
+		 -------------------------------
 
     THIS IS ALPHA SOFTWARE, EXPECT BUGS AND UNIMPLEMENTED STUFF.
     IT MAY HAPPEN THAT SOME DATA FORMATS OR PROGRAMM OPTIONS
@@ -8,16 +8,16 @@
 
     On a Linux box (version 2.x.x, alpha or x86 CPU) it should
     work reliable. You may create your key on such a machine and
-    use it.  Please verify the tar file; there is a PGP and a G10
+    use it.  Please verify the tar file; there is a PGP and a GNUPG
     signature available. My PGP key is well known and published in
     the "Global Trust Register for 1998", ISBN 0-9532397-0-5.
 
-    I have included my pubring as "g10/pubring.10", which contains
-    the key used to make G10 signatures:
+    I have included my pubring as "g10/pubring.asc", which contains
+    the key used to make GNUPG signatures:
     "pub  1312G/FF3EAA0B 1998-02-09 Werner Koch <wk@isil.d.shuttle.de>"
     "Key fingerprint = 8489 6CD0 1851 0E33 45DA  CD67 036F 11B8 FF3E AA0B"
 
-    You may add it to your G10 pubring and use it in the future to
+    You may add it to your GNUPG pubring and use it in the future to
     verify new releases.  Because you verified the tar file containing
     this file here, you can be sure that the above fingerprint is correct.
 
@@ -27,20 +27,20 @@
 
     See the file COPYING for copyright and warranty information.
 
-    Due to the fact that G10 does not use use any patented algorithm,
+    Due to the fact that GNUPG does not use use any patented algorithm,
     it cannot be compatible to old PGP versions, because those use
     IDEA (which is worldwide patented) and RSA (which is patented in
     the United States until Sep 20, 2000).  I'm sorry about this, but
     this is the world we have created (e.g. by using proprietary software).
 
 
-    Because the OpenPGP standard is still a draft, G10 is not yet
+    Because the OpenPGP standard is still a draft, GNUPG is not yet
     compatible to it (or PGP 5) - but it will.	The data structures
     used are compatible with PGP 2.x, so it can parse an list such files
-    and PGP should be able to parse data created by G10 and complain
+    and PGP should be able to parse data created by GNUPG and complain
     about unsupported algorithms.
 
-    The default algorithms used by G10 are ElGamal for public-key
+    The default algorithms used by GNUPG are ElGamal for public-key
     encryption and signing; Blowfish with a 160 bit key for protecting
     the secret-key components, conventional and session encryption;
     RIPE MD-160 to create message digest.  DSA, SHA-1 and CAST are
@@ -61,19 +61,16 @@
 
     3) "make install"
 
-    4) You end up with a binary "g10" in /usr/local/bin
+    4) You end up with a binary "gpg" in /usr/local/bin
 
-    5) Optional, but suggested: install the program "g10" as suid root.
-
-    6) Create a directory ".g10" under your home directory ("mkdir ~/.g10")
-
+    5) Optional, but suggested: install the program "gpg" as suid root.
 
 
 
     Key Generation
     --------------
 
-	g10 --gen-key
+	gpg --gen-key
 
     This asks some questions and then starts key generation. To create
     good random numbers for prime number generation, it uses a /dev/random
@@ -112,7 +109,7 @@
     You should make a revocation certificate in cases someone gets
     knowledge of your secret key or you forgot your passphrase:
 
-	g10 --gen-revoke your_user_id
+	gpg --gen-revoke your_user_id
 
     Run this command and store it away; output is always ASCII armored,
     so that you can print it and (hopefully never) re-create it if
@@ -121,11 +118,11 @@
 
     You can sign a key with this command:
 
-	g10 --sign-key Donald
+	gpg --sign-key Donald
 
     This let you sign the key of "Donald" with your default userid.
 
-	g10 --sign-key -u Karl -u Joe Donald
+	gpg --sign-key -u Karl -u Joe Donald
 
     This let you sign the key of of "Donald" with the userids of "Karl"
     and "Joe".
@@ -142,16 +139,16 @@
     Sign
     ----
 
-	g10 -s file
+	gpg -s file
 
-    This creates a file file.g10 which is compressed and has a signature
+    This creates a file file.gpg which is compressed and has a signature
     attached.
 
-	g10 -sa file
+	gpg -sa file
 
-    Same as above, but file.g10 is ascii armored.
+    Same as above, but file.gpg is ascii armored.
 
-	g10 -s -o out file
+	gpg -s -o out file
 
     Creates a signature of file, but writes the output to the file "out".
 
@@ -159,12 +156,12 @@
     Encrypt
     -------
 
-	g10 -e -r heine file
+	gpg -e -r heine file
 
     This encrypts files with the public key of "heine" and writes it
-    to "file.g10"
+    to "file.gpg"
 
-	echo "hallo" | g10 -ea -r heine | mail heine
+	echo "hallo" | gpg -ea -r heine | mail heine
 
     Ditto, but encrypts "hallo\n" and mails it as ascii armored message.
 
@@ -172,13 +169,13 @@
     Sign and Encrypt
     ----------------
 
-	g10 -se -r heine file
+	gpg -se -r heine file
 
     This encrypts files with the public key of "heine" and writes it
-    to "file.g10" after signing it with the default user id.
+    to "file.gpg" after signing it with the default user id.
 
 
-	g10 -se -r heine -u Suttner file
+	gpg -se -r heine -u Suttner file
 
     Ditto, but sign the file with the user id "Suttner"
 
@@ -187,17 +184,17 @@
     ------------------
     To export your complete keyring(s) do this:
 
-	g10 --export
+	gpg --export
 
     To export only some user ids do this:
 
-	g10 --export userids
+	gpg --export userids
 
     Use "-a" or "--armor" to create ASCII armored output.
 
     Importing keys is done with the option, you guessed it, "--import":
 
-	g10 --import [filenames]
+	gpg --import [filenames]
 
     New keys are appended to the default keyring and already existing
     keys are merged.  Keys without a self-signature are ignored.
@@ -243,7 +240,7 @@
 	"#34"
 
       This can be used by a MUA to specify an exact key after selecting
-      a key from G10 (by the use of a special option or an extra utility)
+      a key from GNUPG (by the use of a special option or an extra utility)
 
 
     * Or by the usual substring:
@@ -258,19 +255,19 @@
 
     Batch mode
     ----------
-    If you use the option "--batch", G10 runs in non-interactive mode and
+    If you use the option "--batch", GNUPG runs in non-interactive mode and
     never prompts for input data.  This even does not allow to enter
     passphrase; until we have a better solution (something like ssh-agent),
     you can use the option "--passhrase-fd n", which works like PGPs
     PGPPASSFD.
 
-    Batch mode also causes G10 to terminate as soon as a BAD signature is
+    Batch mode also causes GNUPG to terminate as soon as a BAD signature is
     detected.
 
 
     Exit status
     -----------
-    G10 returns with an exit status of 1 if in batch mode and a bad signature
+    GNUPG returns with an exit status of 1 if in batch mode and a bad signature
     has been detected or 2 or higher for all other errors.  You should parse
     stderr to get detailed informations about the errors.
 
@@ -278,26 +275,26 @@
     Esoteric commands
     -----------------
 
-	g10 --list-packets datafile
+	gpg --list-packets datafile
 
     Use this to list the contents of a data file. If the file is encrypted
-    you are asked for the passphrase, so that G10 is able to look at the
+    you are asked for the passphrase, so that GNUPG is able to look at the
     inner structure of a encrypted packet.
 
-	g10maint --quick-random
+	gpgm --quick-random
 
     Do not use the stroing random generator but a faster one.  This can be
     used to generate keys for tests; those are marked as insecure.
 
-	g10maint --list-trustdb
+	gpgm --list-trustdb
 
     List the contents of the trustdb in a human readable format
 
-	g10maint --list-trustdb  <usernames>
+	gpgm --list-trustdb  <usernames>
 
     List the tree of certificates for the given usernames
 
-	g10maint --list-trust-path  depth  username
+	gpgm --list-trust-path	depth  username
 
     List the possible trust paths for the given username, up to the specified
     depth.  If depth is negative, duplicate introducers are not listed,
@@ -306,25 +303,25 @@
      using a negative number). This option may create new entries in the
     trustdb.
 
-	g10maint --print-mds  filenames
+	gpgm --print-mds  filenames
 
     List all available message digest values for the fiven filenames
 
-	g10maint --gen-prime n
+	gpgm --gen-prime n
 
     Generate and print a simple prime number of size n
 
-	g10maint --gen-prime n q
+	gpgm --gen-prime n q
 
     Generate a prime number suitable for ElGamal signatures of size n with
     a q as largest primefactor of n-1.
 
-	g10maint --gen-prime n q 1
+	gpgm --gen-prime n q 1
 
     Ditto, but calculate a generator too.
 
 
-    For more options/commands see the file g10/OPTIONS, or use "g10 --help"
+    For more options/commands see the file g10/OPTIONS, or use "gpg --help"
 
 
     Debug Flags
@@ -354,12 +351,12 @@
     but for now I stick to my own formatting rules.
 
     The primary FTP site is "ftp://ftp.guug.de/pub/gcrypt/"
-    The primary WWW page is "http://www.d.shuttle.de/isil/crypt/g10.html"
+    The primary WWW page is "http://www.d.shuttle.de/isil/crypt/gnupg.html"
 
-    If you like, send your keys to <g10-keys@isil.d.shuttle.de>; use
-    "g10 --export --armor | mail g10-keys@isil.d.shuttle.de" to do this.
+    If you like, send your keys to <gnupg-keys@isil.d.shuttle.de>; use
+    "gnupg --export --armor | mail gnupg-keys@isil.d.shuttle.de" to do this.
 
-    Please direct bug reports to <g10-bugs@isil.d.shuttle.de> or better
+    Please direct bug reports to <gnupg-bugs@isil.d.shuttle.de> or better
     post them to the mailing list <g10@net.lut.ac.uk>.
 
 

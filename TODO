@@ -33,6 +33,4 @@
       them to your key and because the user id which is signed by others has
       also be signed by you, all user-ids are bound together.
 
-    * create directory .g10
-
 

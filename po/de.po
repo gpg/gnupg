@@ -47,11 +47,11 @@ msgstr ""
 
 #: g10/g10.c:72
 msgid ""
-"Syntax: g10 [options] [files]\n"
+"Syntax: gpg [options] [files]\n"
 "sign, check, encrypt or decrypt\n"
 "default operation depends on the input data\n"
 msgstr ""
-"Aufruf: g10 [Optionen] [Dateien]\n"
+"Aufruf: gpg [Optionen] [Dateien]\n"
 "Signieren, prüfen, verschlüsseln, entschlüsseln\n"
 "Die voreingestellte Operation ist abhängig von den Eingabedaten\n"
 

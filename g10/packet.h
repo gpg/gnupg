@@ -1,14 +1,14 @@
 /* packet.h - packet read/write stuff
- *	Copyright (c) 1997 by Werner Koch (dd9jn)
+ *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of G10.
+ * This file is part of GNUPG.
  *
- * G10 is free software; you can redistribute it and/or modify
+ * GNUPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * G10 is distributed in the hope that it will be useful,
+ * GNUPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -127,15 +127,16 @@ typedef struct {
 	MPI x;		    /* secret exponent */
 	u16 csum;	    /* checksum */
 	byte is_protected;  /* The above infos are protected and must */
-			    /* be decrypteded before use */
-	byte protect_algo;  /* cipher used to protect the secret informations*/
-	union { 	    /* information for the protection */
-	  struct {
-	    byte iv[8];     /* initialization vector for CFB mode */
-			    /* when protected, the MPIs above are pointers
+			    /* be decrypteded before use. */
+	struct {
+	    byte algo;	/* cipher used to protect the secret informations*/
+	    byte s2k;
+	    byte hash;
+	    byte salt[8];
+	    byte count;
+	    byte iv[8]; /* initialization vector for CFB mode */
+	} protect;	    /* when protected, the MPIs above are pointers
 			     * to plain storage */
-	  } blowfish;
-	} protect;
       } elg;
       struct {
 	MPI rsa_n;	    /* public modulus */

@@ -1,14 +1,14 @@
 /* seckey-cert.c -  secret key certifucate packet handling
- *	Copyright (c) 1997 by Werner Koch (dd9jn)
+ *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of G10.
+ * This file is part of GNUPG.
  *
- * G10 is free software; you can redistribute it and/or modify
+ * GNUPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * G10 is distributed in the hope that it will be useful,
+ * GNUPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -72,21 +72,27 @@ check_elg( PKT_secret_cert *cert )
 	MPI test_x;
 	BLOWFISH_context *blowfish_ctx=NULL;
 
-	switch( cert->d.elg.protect_algo ) {
+	switch( cert->d.elg.protect.algo ) {
 	  case CIPHER_ALGO_NONE: BUG(); break;
 	  case CIPHER_ALGO_BLOWFISH:
 	    keyid_from_skc( cert, keyid );
-	    dek = get_passphrase_hash( keyid, NULL );
+	    if( cert->d.elg.protect.s2k == 1
+		|| cert->d.elg.protect.s2k == 3 )
+		dek = get_passphrase_hash( keyid, NULL,
+						 cert->d.elg.protect.salt );
+	    else
+		dek = get_passphrase_hash( keyid, NULL, NULL );
+
 	    blowfish_ctx = m_alloc_secure( sizeof *blowfish_ctx );
 	    blowfish_setkey( blowfish_ctx, dek->key, dek->keylen );
 	    m_free(dek); /* pw is in secure memory, so m_free() burns it */
 	    blowfish_setiv( blowfish_ctx, NULL );
-	    memcpy(save_iv, cert->d.elg.protect.blowfish.iv, 8 );
+	    memcpy(save_iv, cert->d.elg.protect.iv, 8 );
 	    blowfish_decode_cfb( blowfish_ctx,
-				 cert->d.elg.protect.blowfish.iv,
-				 cert->d.elg.protect.blowfish.iv, 8 );
+				 cert->d.elg.protect.iv,
+				 cert->d.elg.protect.iv, 8 );
 	    mpi_set_secure(cert->d.elg.x );
-	    /*fixme: maybe it is better to set the buger secure with a
+	    /*fixme: maybe it is better to set the buffer secure with a
 	     * new get_buffer_secure() function */
 	    buffer = mpi_get_buffer( cert->d.elg.x, &nbytes, NULL );
 	    csum = checksum_u16( nbytes*8 );
@@ -99,7 +105,7 @@ check_elg( PKT_secret_cert *cert )
 	    /* now let's see wether we have used the right passphrase */
 	    if( csum != cert->d.elg.csum ) {
 		mpi_free(test_x);
-		memcpy( cert->d.elg.protect.blowfish.iv, save_iv, 8 );
+		memcpy( cert->d.elg.protect.iv, save_iv, 8 );
 		return G10ERR_BAD_PASS;
 	    }
 
@@ -111,7 +117,7 @@ check_elg( PKT_secret_cert *cert )
 	    memset( &skey, 0, sizeof skey );
 	    if( !res ) {
 		mpi_free(test_x);
-		memcpy( cert->d.elg.protect.blowfish.iv, save_iv, 8 );
+		memcpy( cert->d.elg.protect.iv, save_iv, 8 );
 		return G10ERR_BAD_PASS;
 	    }
 	    mpi_set(cert->d.elg.x, test_x);
@@ -144,15 +150,15 @@ protect_elg( PKT_secret_cert *cert, DEK *dek )
     if( !cert->d.elg.is_protected ) { /* add the protection */
 	BLOWFISH_context *blowfish_ctx=NULL;
 
-	switch( cert->d.elg.protect_algo ) {
+	switch( cert->d.elg.protect.algo ) {
 	  case CIPHER_ALGO_NONE: BUG(); break;
 	  case CIPHER_ALGO_BLOWFISH:
 	    blowfish_ctx = m_alloc_secure( sizeof *blowfish_ctx );
 	    blowfish_setkey( blowfish_ctx, dek->key, dek->keylen );
 	    blowfish_setiv( blowfish_ctx, NULL );
 	    blowfish_encode_cfb( blowfish_ctx,
-				 cert->d.elg.protect.blowfish.iv,
-				 cert->d.elg.protect.blowfish.iv, 8 );
+				 cert->d.elg.protect.iv,
+				 cert->d.elg.protect.iv, 8 );
 	    buffer = mpi_get_buffer( cert->d.elg.x, &nbytes, NULL );
 	    blowfish_encode_cfb( blowfish_ctx, buffer, buffer, nbytes );
 	    mpi_set_buffer( cert->d.elg.x, buffer, nbytes, 0 );
@@ -296,7 +302,7 @@ int
 is_secret_key_protected( PKT_secret_cert *cert )
 {
     if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
-	return cert->d.elg.is_protected? cert->d.elg.protect_algo : 0;
+	return cert->d.elg.is_protected? cert->d.elg.protect.algo : 0;
   #ifdef HAVE_RSA_CIPHER
     else if( cert->pubkey_algo == PUBKEY_ALGO_RSA )
 	return cert->d.rsa.is_protected? cert->d.rsa.protect_algo : 0;
@@ -317,10 +323,6 @@ protect_secret_key( PKT_secret_cert *cert, DEK *dek )
 
     if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
 	return protect_elg( cert, dek );
-  #if 0 /* noy yet implemented */
-    else if( cert->pubkey_algo == PUBKEY_ALGO_RSA )
-	return protect_rsa( cert, dek );
-  #endif
     else
 	return G10ERR_PUBKEY_ALGO;
 }

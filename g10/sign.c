@@ -1,14 +1,14 @@
 /* sign.c - sign data
- *	Copyright (c) 1997 by Werner Koch (dd9jn)
+ *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of G10.
+ * This file is part of GNUPG.
  *
- * G10 is free software; you can redistribute it and/or modify
+ * GNUPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * G10 is distributed in the hope that it will be useful,
+ * GNUPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -152,7 +152,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
     if( opt.armor && !outfile  )
 	iobuf_push_filter( out, armor_filter, &afx );
-    write_comment( out, "#created by G10 v" VERSION " ("
+    write_comment( out, "#created by GNUPG v" VERSION " ("
 					    PRINTABLE_OS_NAME ")");
     if( opt.compress && !outfile )
 	iobuf_push_filter( out, compress_filter, &zfx );
@@ -916,13 +916,15 @@ change_passphrase( const char *username )
     if( rc )
 	tty_printf("Can't edit this key: %s\n", g10_errstr(rc));
     else {
-	DEK *dek = m_alloc_secure( sizeof *dek );
+	DEK *dek = m_alloc_secure( sizeof *dek + 8 );
+	byte *salt = (byte*)dek + sizeof( *dek );
 
 	tty_printf( "Enter the new passphrase for this secret key.\n\n" );
 
 	for(;;) {
 	    dek->algo = CIPHER_ALGO_BLOWFISH;
-	    rc = make_dek_from_passphrase( dek , 2 );
+	    randomize_buffer(salt, 8, 1);
+	    rc = make_dek_from_passphrase( dek , 2, salt );
 	    if( rc == -1 ) {
 		rc = 0;
 		tty_printf( "You don't want a passphrase -"
@@ -943,8 +945,11 @@ change_passphrase( const char *username )
 		break;
 	    }
 	    else { /* okay */
-		skc->d.elg.protect_algo = CIPHER_ALGO_BLOWFISH;
-		randomize_buffer(skc->d.elg.protect.blowfish.iv, 8, 1);
+		skc->d.elg.protect.algo = CIPHER_ALGO_BLOWFISH;
+		skc->d.elg.protect.s2k	= 1;
+		skc->d.elg.protect.hash = DIGEST_ALGO_RMD160;
+		memcpy(skc->d.elg.protect.salt, salt, 8);
+		randomize_buffer(skc->d.elg.protect.iv, 8, 1);
 		rc = protect_secret_key( skc, dek );
 		if( rc )
 		    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );

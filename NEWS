@@ -1,3 +1,14 @@
+Noteworthy changes in version 0.2.8
+-----------------------------------
+
+    * Changed the name to GNUPG, the binaries are called gpg and gpgm.
+      You must rename rename the directory "~/.g10" to ~/.gnupg/, rename
+      {pub,sec}ring.g10 to {pub,sec}ring.gpg, trustdb.g10 to trustdb.gpg
+      and g10.sig to gnupg.sig.
+
+    * New or changed passphrases are now salted.
+
+
 Noteworthy changes in version 0.2.7
 -----------------------------------
 

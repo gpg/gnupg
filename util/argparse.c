@@ -1,5 +1,5 @@
 /* [argparse.c wk 17.06.97] Argument Parser for option handling
- *	Copyright (c) 1997 by Werner Koch (dd9jn)
+ *	Copyright (C) 1998 Free Software Foundation, Inc.
  *  This file is part of WkLib.
  *
  *  WkLib is free software; you can redistribute it and/or modify
@@ -670,7 +670,7 @@ default_strusage( int level )
     switch( level ) {
       case 11: p = "foo"; break;
       case 13: p = "0.0"; break;
-      case 14: p = "Copyright (C) 1998 Werner Koch (dd9jn)" ; break;
+      case 14: p = "Copyright (C) 1998 Free Software Foundation, Inc."; break;
       case 15: p =
 "This program comes with ABSOLUTELY NO WARRANTY.\n"
 "This is free software, and you are welcome to redistribute it\n"

@@ -1,14 +1,14 @@
 /* ttyio.c -  tty i/O functions
- *	Copyright (c) 1997 by Werner Koch (dd9jn)
+ *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of G10.
+ * This file is part of GNUPG.
  *
- * G10 is free software; you can redistribute it and/or modify
+ * GNUPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * G10 is distributed in the hope that it will be useful,
+ * GNUPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -27,28 +27,75 @@
 #ifdef HAVE_TCGETATTR
   #include <termios.h>
 #endif
+#ifdef __MINGW32__ /* use the odd Win32 functions */
+  #include <windows.h>
+  #ifdef HAVE_TCGETATTR
+     #error mingw32 and termios
+  #endif
+#endif
 #include <errno.h>
 #include <ctype.h>
 #include "util.h"
 #include "memory.h"
 #include "ttyio.h"
 
+
+#ifdef __MINGW32__ /* use the odd Win32 functions */
+static struct {
+    HANDLE in, out;
+} con;
+#define DEF_INPMODE  (ENABLE_LINE_INPUT|ENABLE_ECHO_INPUT    \
+					|ENABLE_PROCESSED_INPUT )
+#define HID_INPMODE  (ENABLE_LINE_INPUT|ENABLE_PROCESSED_INPUT )
+#define DEF_OUTMODE  (ENABLE_WRAP_AT_EOL_OUTPUT|ENABLE_PROCESSED_OUTPUT)
+
+#else /* yeah, we have a real OS */
 static FILE *ttyfp = NULL;
+#endif
+
+static int initialized;
 static int last_prompt_len;
+
+
+
+
 
 static void
 init_ttyfp()
 {
-    if( ttyfp )
+    if( initialized )
 	return;
 
   #if defined(__MINGW32__)
-    ttyfp = stderr; /* fixme */
+    {
+	SECURITY_ATTRIBUTES sa;
+
+	memset(&sa, 0, sizeof(sa));
+	sa.nLength = sizeof(sa);
+	sa.bInheritHandle = TRUE;
+	con.out = CreateFileA( "CONOUT$", GENERIC_READ|GENERIC_WRITE,
+			       FILE_SHARE_READ|FILE_SHARE_WRITE,
+			       &sa, OPEN_EXISTING, 0, 0 );
+	if( con.out == INVALID_HANDLE_VALUE )
+	    log_fatal("open(CONOUT$) failed: rc=%d", (int)GetLastError() );
+	memset(&sa, 0, sizeof(sa));
+	sa.nLength = sizeof(sa);
+	sa.bInheritHandle = TRUE;
+	con.in = CreateFileA( "CONIN$", GENERIC_READ|GENERIC_WRITE,
+			       FILE_SHARE_READ|FILE_SHARE_WRITE,
+			       &sa, OPEN_EXISTING, 0, 0 );
+	if( con.in == INVALID_HANDLE_VALUE )
+	    log_fatal("open(CONIN$) failed: rc=%d", (int)GetLastError() );
+    }
+    SetConsoleMode(con.in, DEF_INPMODE );
+    SetConsoleMode(con.out, DEF_OUTMODE );
+
   #else
     ttyfp = fopen("/dev/tty", "r+");
-  #endif
     if( !ttyfp )
 	log_fatal("cannot open /dev/tty: %s\n", strerror(errno) );
+  #endif
+    initialized = 1;
 }
 
 
@@ -57,13 +104,50 @@ tty_printf( const char *fmt, ... )
 {
     va_list arg_ptr;
 
-    if( !ttyfp )
+    if( !initialized )
 	init_ttyfp();
 
     va_start( arg_ptr, fmt ) ;
+  #ifdef __MINGW32__
+    { static char *buf;
+      static size_t bufsize;
+	int n;
+	DWORD nwritten;
+
+      #if 0 /* the dox say, that there is a snprintf, but I didn't found
+	     * it, so we use a static buffer for now */
+	do {
+	    if( n == -1 || !buf ) {
+		m_free(buf);
+		bufsize += 200;
+		/* better check the new size; (we use M$ functions) */
+		if( bufsize > 50000 )
+		    log_bug("vsnprintf probably failed\n");
+		buf = m_alloc( bufsize );
+	    }
+	    n = _vsnprintf(buf, bufsize-1, fmt, arg_ptr);
+	} while( n == -1 );
+      #else
+	if( !buf ) {
+	    bufsize += 1000;
+	    buf = m_alloc( bufsize );
+	}
+	n = vsprintf(buf, fmt, arg_ptr);
+	if( n == -1 )
+	    log_bug("vsprintf() failed\n");
+      #endif
+
+	if( !WriteConsoleA( con.out, buf, n, &nwritten, NULL ) )
+	    log_fatal("WriteConsole failed: rc=%d", (int)GetLastError() );
+	if( n != nwritten )
+	    log_fatal("WriteConsole failed: %d != %ld\n", n, nwritten );
+	last_prompt_len += n;
+    }
+  #else
     last_prompt_len += vfprintf(ttyfp,fmt,arg_ptr) ;
-    va_end(arg_ptr);
     fflush(ttyfp);
+  #endif
+    va_end(arg_ptr);
 }
 
 
@@ -73,9 +157,23 @@ tty_printf( const char *fmt, ... )
 void
 tty_print_string( byte *p, size_t n )
 {
-    if( !ttyfp )
+    if( !initialized )
 	init_ttyfp();
 
+  #ifdef __MINGW32__
+    /* not so effective, change it if you want */
+    for( ; n; n--, p++ )
+	if( iscntrl( *p ) ) {
+	    if( *p == '\n' )
+		tty_printf("\\n");
+	    else if( !*p )
+		tty_printf("\\0");
+	    else
+		tty_printf("\\x%02x", *p);
+	}
+	else
+	    tty_printf("%c", *p);
+  #else
     for( ; n; n--, p++ )
 	if( iscntrl( *p ) ) {
 	    putc('\\', ttyfp);
@@ -88,6 +186,7 @@ tty_print_string( byte *p, size_t n )
 	}
 	else
 	    putc(*p, ttyfp);
+  #endif
 }
 
 
@@ -104,7 +203,7 @@ do_get( const char *prompt, int hidden )
     struct termios termsave;
   #endif
 
-    if( !ttyfp )
+    if( !initialized )
 	init_ttyfp();
 
     last_prompt_len = 0;
@@ -112,6 +211,38 @@ do_get( const char *prompt, int hidden )
     buf = m_alloc(n=50);
     i = 0;
 
+  #if __MINGW32__ /* windoze version */
+    if( hidden )
+	SetConsoleMode(con.in, HID_INPMODE );
+
+    for(;;) {
+	DWORD nread;
+
+	if( !ReadConsoleA( con.in, cbuf, 1, &nread, NULL ) )
+	    log_fatal("ReadConsole failed: rc=%d", (int)GetLastError() );
+	if( !nread )
+	    continue;
+	if( *cbuf == '\n' )
+	    break;
+
+	if( !hidden )
+	    last_prompt_len++;
+	c = *cbuf;
+	if( c == '\t' )
+	    c = ' ';
+	else if( iscntrl(c) )
+	    continue;
+	if( !(i < n-1) ) {
+	    n += 50;
+	    buf = m_realloc( buf, n );
+	}
+	buf[i++] = c;
+    }
+
+    if( hidden )
+	SetConsoleMode(con.in, DEF_INPMODE );
+
+  #else /* unix version */
     if( hidden ) {
       #ifdef HAVE_TCGETATTR
 	struct termios term;
@@ -149,6 +280,7 @@ do_get( const char *prompt, int hidden )
 	    log_error("tcsetattr() failed: %s\n", strerror(errno) );
       #endif
     }
+  #endif /* end unix version */
     buf[i] = 0;
     return buf;
 }
@@ -170,17 +302,23 @@ tty_get_hidden( const char *prompt )
 void
 tty_kill_prompt()
 {
-    int i;
 
-    if( !ttyfp )
+    if( !initialized )
 	init_ttyfp();
     if( !last_prompt_len )
 	return;
-    fputc('\r', ttyfp);
-    for(i=0; i < last_prompt_len; i ++ )
-	fputc(' ', ttyfp);
-    fputc('\r', ttyfp);
+  #if __MINGW32__
+    tty_printf("\r%*s\r", last_prompt_len, "");
+  #else
+    {
+	int i;
+	putc('\r', ttyfp);
+	for(i=0; i < last_prompt_len; i ++ )
+	    putc(' ', ttyfp);
+	putc('\r', ttyfp);
+	fflush(ttyfp);
+    }
+  #endif
     last_prompt_len = 0;
-    fflush(ttyfp);
 }
 

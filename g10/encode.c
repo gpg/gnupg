@@ -1,14 +1,14 @@
 /* encode.c - encode data
- *	Copyright (c) 1997 by Werner Koch (dd9jn)
+ *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of G10.
+ * This file is part of GNUPG.
  *
- * G10 is free software; you can redistribute it and/or modify
+ * GNUPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * G10 is distributed in the hope that it will be useful,
+ * GNUPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -89,7 +89,7 @@ encode_simple( const char *filename, int mode )
     if( mode ) {
 	cfx.dek = m_alloc_secure( sizeof *cfx.dek );
 	cfx.dek->algo = opt.def_cipher_algo;
-	if( (rc = make_dek_from_passphrase( cfx.dek , 2 )) ) {
+	if( (rc = make_dek_from_passphrase( cfx.dek , 2, NULL )) ) {
 	    m_free(cfx.dek);
 	    iobuf_close(inp);
 	    log_error("error creating passphrase: %s\n", g10_errstr(rc) );
@@ -106,7 +106,7 @@ encode_simple( const char *filename, int mode )
     if( opt.armor )
 	iobuf_push_filter( out, armor_filter, &afx );
 
-    write_comment( out, "#created by G10 v" VERSION " ("
+    write_comment( out, "#created by GNUPG v" VERSION " ("
 					    PRINTABLE_OS_NAME ")");
 
     if( opt.compress )
@@ -193,7 +193,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     if( opt.armor )
 	iobuf_push_filter( out, armor_filter, &afx );
 
-    write_comment( out, "#created by G10 v" VERSION " ("
+    write_comment( out, "#created by GNUPG v" VERSION " ("
 					    PRINTABLE_OS_NAME ")");
 
     if( opt.compress )

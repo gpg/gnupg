@@ -1,3 +1,24 @@
+Tue Feb 24 15:51:55 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* parse-packet.c (parse_certificate): Support for S2K.
+	* build-packet.c (do_secret_cert): Ditto.
+	* keygen.c (gen_elg): Ditto.
+	* seckey-cert.c (check_elg): Ditto
+	(protect_elg): Ditto.
+	* sign.c (chnage_passphrase): Ditto.
+	* passphrase.c (get_passphrase_hash): Support for a salt and
+	changed all callers.
+	(make_dek_from_passphrase): Ditto.
+
+Tue Feb 24 12:30:56 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* build-packet.c (hash_public_cert): Disabled debug output.
+
+Fri Feb 20 17:22:28 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* trustdb.c (init_trustdb) [MINGW32]: Removed 2nd mkdir arg.
+	(keyring_copy) [MINGW32]: Add a remove prior to the renames.
+
 Wed Feb 18 18:39:02 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* Makefile.am (OMIT_DEPENDENCIES): New.

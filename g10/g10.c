@@ -1,14 +1,14 @@
-/* g10.c - The G10 utility
- *	Copyright (c) 1997 by Werner Koch (dd9jn)
+/* g10.c - The GNUPG utility (main for gpg)
+ *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of G10.
+ * This file is part of GNUPG.
  *
- * G10 is free software; you can redistribute it and/or modify
+ * GNUPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * G10 is distributed in the hope that it will be useful,
+ * GNUPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -110,7 +110,7 @@ static ARGPARSE_OPTS opts[] = {
     { 523, "passphrase-fd",1, "\r" },
     { 541, "no-operation", 0, "\r" },      /* used by regression tests */
     { 543, "no-options", 0, "\r" }, /* shortcut for --options /dev/null */
-    { 544, "homedir", 2, "\r" },   /* defaults to "~/.g10" */
+    { 544, "homedir", 2, "\r" },   /* defaults to "~/.gnupg" */
     { 545, "no-batch", 0, "\r" },
 
 {0} };
@@ -137,18 +137,18 @@ strusage( int level )
   static char *digests, *pubkeys, *ciphers;
     const char *p;
     switch( level ) {
-      case 11: p = "g10"; break;
+      case 11: p = "GNUPG"; break;
       case 13: p = VERSION; break;
       case 17: p = PRINTABLE_OS_NAME; break;
       case 19: p = _(
-"Please report bugs to <g10-bugs@isil.d.shuttle.de>."
+"Please report bugs to <gnupg-bugs@isil.d.shuttle.de>.\n"
 	); break;
       case 1:
       case 40:	p = _(
-"Usage: g10 [options] [files] (-h for help)"
+"Usage: gpg [options] [files] (-h for help)"
 	); break;
       case 41:	p = _(
-"Syntax: g10 [options] [files]\n"
+"Syntax: gpg [options] [files]\n"
 "sign, check, encrypt or decrypt\n"
 "default operation depends on the input data\n"
 	); break;
@@ -223,7 +223,7 @@ i18n_init(void)
 static void
 wrong_args( const char *text)
 {
-    fputs(_("usage: g10 [options] "),stderr);
+    fputs(_("usage: gpg [options] "),stderr);
     fputs(text,stderr);
     putc('\n',stderr);
     g10_exit(2);
@@ -318,7 +318,7 @@ main( int argc, char **argv )
      * secmem_init()  somewhere after the option parsing
      */
 
-    log_set_name("g10");
+    log_set_name("gpg");
     i18n_init();
     opt.compress = -1; /* defaults to standard compress level */
     opt.def_cipher_algo = CIPHER_ALGO_BLOWFISH;
@@ -326,7 +326,7 @@ main( int argc, char **argv )
     opt.def_digest_algo = DIGEST_ALGO_RMD160;
     opt.completes_needed = 1;
     opt.marginals_needed = 3;
-    opt.homedir = "~/.g10";
+    opt.homedir = "~/.gnupg";
 
     /* check wether we have a config file on the commandline */
     orig_argc = argc;
@@ -501,9 +501,9 @@ main( int argc, char **argv )
 	set_packet_list_mode(1);
 
     if( !sec_nrings || default_keyring )  /* add default secret rings */
-	add_secret_keyring("secring.g10");
+	add_secret_keyring("secring.gpg");
     if( !nrings || default_keyring )  /* add default ring */
-	add_keyring("pubring.g10");
+	add_keyring("pubring.gpg");
 
     if( argc ) {
 	fname_print = fname = *argv;

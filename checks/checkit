@@ -44,15 +44,15 @@ cleanup () {
 
 
 run_g10 () {
-    if ! eval ../g10/g10 --homedir . $* ; then
-	echo "(../g10/g10 --homedir . $*) failed" >&2
+    if ! eval ../g10/gpg --homedir . $* ; then
+	echo "(../g10/gpg --homedir . $*) failed" >&2
 	exit 1
     fi
 }
 
 run_g10maint () {
-    if ! eval ../g10/g10maint --homedir . $* ; then
-	echo "(../g10/g10maint --homedir . $*) failed" >&2
+    if ! eval ../g10/gpgm --homedir . $* ; then
+	echo "(../g10/gpgm --homedir . $*) failed" >&2
 	exit 1
     fi
 }
@@ -85,8 +85,9 @@ EOF
 run_g10 --version
 
 info Unpacking some material
-run_g10maint --yes --dearmor -o pubring.g10 pubring.asc
-run_g10maint --yes --dearmor -o secring.g10 secring.asc
+run_g10maint --yes --dearmor -o pubring.gpg pubring.asc
+run_g10maint --yes --dearmor -o secring.gpg secring.asc
+run_g10maint --yes --dearmor -o gnupg.sig gnupg.asc
 run_g10maint --yes --dearmor -o plain-3 plain-3o.asc
 plain_files="$plain_files plain-3"
 # make sure all files are created
@@ -94,7 +95,7 @@ echo "$usrpass1" | run_g10 --no-operation
 
 info Checking decryption
 for i in $plain_files ; do
-run_g10 --passphrase-fd 0 -o y --yes $i.asc
+    echo "$usrpass1" | run_g10 --passphrase-fd 0 -o y --yes $i.asc
     cmp $i y || error "$i: mismatch"
 done
 

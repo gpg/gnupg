@@ -1,3 +1,8 @@
+Tue Feb 24 15:59:12 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* configure.in: Changed the name of the package to GNUPG and
+	chnaged several other names too.
+
 Wed Feb 18 17:36:45 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* Makefile.am (checks): New.

@@ -1,14 +1,14 @@
-/* g10maint.c - The G10 maintenance utility
- *	Copyright (c) 1997 by Werner Koch (dd9jn)
+/* g10maint.c - The GNUPG maintenance utility
+ *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of G10.
+ * This file is part of GNUPG.
  *
- * G10 is free software; you can redistribute it and/or modify
+ * GNUPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * G10 is distributed in the hope that it will be useful,
+ * GNUPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -62,19 +62,19 @@ strusage( int level )
   static char *digests, *pubkeys, *ciphers;
     const char *p;
     switch( level ) {
-      case 11: p = "g10maint"; break;
+      case 11: p = "gpgm (GNUPG)"; break;
       case 13: p = VERSION; break;
       case 17: p = PRINTABLE_OS_NAME; break;
       case 19: p = _(
-"Please report bugs to <g10-bugs@isil.d.shuttle.de>."
+"Please report bugs to <gnupg-bugs@isil.d.shuttle.de>.\n"
 	); break;
       case 1:
       case 40:	p = _(
-"Usage: g10maint [options] [files] (-h for help)"
+"Usage: gpgm [options] [files] (-h for help)"
 	); break;
       case 41:	p = _(
-"Syntax: g10maint [options] [files]\n"
-"G10 maintenance utility\n"
+"Syntax: gpgm [options] [files]\n"
+"GNUPG maintenance utility\n"
 	); break;
 
       case 31: p = "\n"; break;
@@ -146,7 +146,7 @@ i18n_init(void)
 static void
 wrong_args( const char *text)
 {
-    fputs(_("Usage: g10maint [options] "),stderr);
+    fputs(_("Usage: gpgm [options] "),stderr);
     fputs(text,stderr);
     putc('\n',stderr);
     g10_exit(2);
@@ -221,7 +221,7 @@ main( int argc, char **argv )
     { 538, "trustdb-name", 2, "\r" },
     { 540, "no-secmem-warning", 0, "\r" }, /* dummy */
     { 543, "no-options", 0, "\r" }, /* shortcut for --options /dev/null */
-    { 544, "homedir", 2, "\r" },   /* defaults to "~/.g10" */
+    { 544, "homedir", 2, "\r" },   /* defaults to "~/.gpg" */
     { 545, "no-batch", 0, "\r" },
     { 546, "dearmor", 0, N_("De-Armor a file or stdin") },
     { 547, "enarmor", 0, N_("En-Armor a file or stdin") },
@@ -250,7 +250,7 @@ main( int argc, char **argv )
 
     secmem_init( 0 ); /* disable use of secmem */
 
-    log_set_name("g10maint");
+    log_set_name("gpgm");
     i18n_init();
     opt.compress = -1; /* defaults to standard compress level */
     opt.def_cipher_algo = CIPHER_ALGO_BLOWFISH;
@@ -258,7 +258,7 @@ main( int argc, char **argv )
     opt.def_digest_algo = DIGEST_ALGO_RMD160;
     opt.completes_needed = 1;
     opt.marginals_needed = 3;
-    opt.homedir = "~/.g10";
+    opt.homedir = "~/.gnupg";
 
     /* check wether we have a config file on the commandline */
     orig_argc = argc;
@@ -424,12 +424,12 @@ main( int argc, char **argv )
 
     if( cmd != aDeArmor && cmd != aEnArmor ) {
 	if( !sec_nrings || default_keyring ) { /* add default secret rings */
-	    char *p = make_filename(opt.homedir, "secring.g10", NULL );
+	    char *p = make_filename(opt.homedir, "secring.gpg", NULL );
 	    add_secret_keyring(p);
 	    m_free(p);
 	}
 	if( !nrings || default_keyring ) { /* add default ring */
-	    char *p = make_filename(opt.homedir, "pubring.g10", NULL );
+	    char *p = make_filename(opt.homedir, "pubring.gpg", NULL );
 	    add_keyring(p);
 	    m_free(p);
 	}

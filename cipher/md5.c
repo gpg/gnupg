@@ -1,51 +1,25 @@
 /* md5.c - MD5 Message-Digest Algorithm
- *	Copyright (c) 1994 by Werner Koch (dd9jn)
+ *	Copyright (C) 1995, 1996, 1998 Free Software Foundation, Inc.
  *
- *  This is a hacked version from WkLib
+ * according to the definition of MD5 in RFC 1321 from April 1992.
+ * NOTE: This is *not* the same file as the one from glibc.
  *
- *  This file is part of WkLib.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2, or (at your option) any
+ * later version.
  *
- *  WkLib is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  WkLib is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- ***********************************************************************
- ** Copyright (C) 1990, RSA Data Security, Inc. All rights reserved.  **
- **								      **
- ** License to copy and use this software is granted provided that    **
- ** it is identified as the "RSA Data Security, Inc. MD5 Message-     **
- ** Digest Algorithm" in all material mentioning or referencing this  **
- ** software or this function.					      **
- **								      **
- ** License is also granted to make and use derivative works	      **
- ** provided that such works are identified as "derived from the RSA  **
- ** Data Security, Inc. MD5 Message-Digest Algorithm" in all          **
- ** material mentioning or referencing the derived work.	      **
- **								      **
- ** RSA Data Security, Inc. makes no representations concerning       **
- ** either the merchantability of this software or the suitability    **
- ** of this software for any particular purpose.  It is provided "as  **
- ** is" without express or implied warranty of any kind.              **
- **								      **
- ** These notices must be retained in any copies of any part of this  **
- ** documentation and/or software.				      **
- ***********************************************************************
- *
- * History:
- * 16.01.95 wk	now uses generic base-64 support
- * 24.01.95 wk	changed back to original base-64 coding, because
- *		the generic base-64 support was changed to go conform
- *		with RFC1113 !
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
+/* Written by Ulrich Drepper <drepper@gnu.ai.mit.edu>, 1995.  */
+/* modified for GNUPG by <werner.koch@guug.de> */
 
 /* Test values:
  * ""                  D4 1D 8C D9 8F 00 B2 04  E9 80 09 98 EC F8 42 7E
@@ -64,128 +38,245 @@
 #include "memory.h"
 
 
-#if __WATCOMC__ && defined(M_I86)
-  /* 16-Bit Compiler breaks Code in Function Transform() */
-  /* (at least when compiling for windows) */
-  #ifndef __SW_OD
-     #error must be compiled without optimizations
-  #endif
-#endif
-
-
-static void Transform(u32 *buf,u32 *in);
-
-static byte PADDING[64] = {
-  0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
-
-/* F, G, H and I are basic MD5 functions */
-#define F(x, y, z) (((x) & (y)) | ((~x) & (z)))
-#define G(x, y, z) (((x) & (z)) | ((y) & (~z)))
-#define H(x, y, z) ((x) ^ (y) ^ (z))
-#define I(x, y, z) ((y) ^ ((x) | (~z)))
-
-/* ROTATE_LEFT rotates x left n bits */
-#if defined(__GNUC__) && defined(__i386__)
-static inline u32
-ROTATE_LEFT(u32 x, int n)
-{
-	__asm__("roll %%cl,%0"
-		:"=r" (x)
-		:"0" (x),"c" (n));
-	return x;
-}
+#ifdef BIG_ENDIAN_HOST
+  #define SWAP(n) \
+    (((n) << 24) | (((n) & 0xff00) << 8) | (((n) >> 8) & 0xff00) | ((n) >> 24))
 #else
-  #define ROTATE_LEFT(x, n) (((x) << (n)) | ((x) >> (32-(n))))
+  #define SWAP(n) (n)
 #endif
 
-/* FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4 */
-/* Rotation is separate from addition to prevent recomputation */
-#define FF(a, b, c, d, x, s, ac) \
-  {(a) += F ((b), (c), (d)) + (x) + (u32)(ac); \
-   (a) = ROTATE_LEFT ((a), (s)); \
-   (a) += (b); \
-  }
-#define GG(a, b, c, d, x, s, ac) \
-  {(a) += G ((b), (c), (d)) + (x) + (u32)(ac); \
-   (a) = ROTATE_LEFT ((a), (s)); \
-   (a) += (b); \
-  }
-#define HH(a, b, c, d, x, s, ac) \
-  {(a) += H ((b), (c), (d)) + (x) + (u32)(ac); \
-   (a) = ROTATE_LEFT ((a), (s)); \
-   (a) += (b); \
-  }
-#define II(a, b, c, d, x, s, ac) \
-  {(a) += I ((b), (c), (d)) + (x) + (u32)(ac); \
-   (a) = ROTATE_LEFT ((a), (s)); \
-   (a) += (b); \
-  }
-
+/* This array contains the bytes used to pad the buffer to the next
+   64-byte boundary.  (RFC 1321, 3.1: Step 1)  */
+static const unsigned char fillbuf[64] = { 0x80, 0 /* , 0, 0, ...  */ };
 
 void
-md5_init( MD5_CONTEXT *mdContext)
+md5_init( MD5_CONTEXT *ctx )
 {
-    mdContext->i[0] = mdContext->i[1] = (u32)0;
-    /* Load magic initialization constants.
-     */
-    mdContext->buf[0] = (u32)0x67452301L;
-    mdContext->buf[1] = (u32)0xefcdab89L;
-    mdContext->buf[2] = (u32)0x98badcfeL;
-    mdContext->buf[3] = (u32)0x10325476L;
-    mdContext->count = 0;
+    ctx->A = 0x67452301;
+    ctx->B = 0xefcdab89;
+    ctx->C = 0x98badcfe;
+    ctx->D = 0x10325476;
+
+    ctx->total[0] = ctx->total[1] = 0;
+    ctx->buflen = 0;
 }
 
-/* The routine Update updates the message-digest context to
+
+
+
+/* These are the four functions used in the four steps of the MD5 algorithm
+   and defined in the RFC 1321.  The first function is a little bit optimized
+   (as found in Colin Plumbs public domain implementation).  */
+/* #define FF(b, c, d) ((b & c) | (~b & d)) */
+#define FF(b, c, d) (d ^ (b & (c ^ d)))
+#define FG(b, c, d) FF (d, b, c)
+#define FH(b, c, d) (b ^ c ^ d)
+#define FI(b, c, d) (c ^ (b | ~d))
+
+
+/****************
+ * transform n*64 bytes
+ */
+static void
+transform( MD5_CONTEXT *ctx, const void *buffer, size_t len )
+{
+    u32 correct_words[16];
+    const u32 *words = buffer;
+    size_t nwords = len / sizeof(u32);
+    const u32 *endp = words + nwords;
+    u32 A = ctx->A;
+    u32 B = ctx->B;
+    u32 C = ctx->C;
+    u32 D = ctx->D;
+
+    /* First increment the byte count.	RFC 1321 specifies the possible
+       length of the file up to 2^64 bits.  Here we only compute the
+       number of bytes.  Do a double word increment.  */
+    ctx->total[0] += len;
+    if( ctx->total[0] < len )
+	++ctx->total[1];
+
+
+    /* Process all bytes in the buffer with 64 bytes in each round of
+       the loop.  */
+    while(words < endp) {
+	u32 *cwp = correct_words;
+	u32 A_save = A;
+	u32 B_save = B;
+	u32 C_save = C;
+	u32 D_save = D;
+
+      /* First round: using the given function, the context and a constant
+	 the next context is computed.	Because the algorithms processing
+	 unit is a 32-bit word and it is determined to work on words in
+	 little endian byte order we perhaps have to change the byte order
+	 before the computation.  To reduce the work for the next steps
+	 we store the swapped words in the array CORRECT_WORDS.  */
+
+#define OP(a, b, c, d, s, T)						\
+      do								\
+	{								\
+	  a += FF (b, c, d) + (*cwp++ = SWAP (*words)) + T;		\
+	  ++words;							\
+	  CYCLIC (a, s);						\
+	  a += b;							\
+	}								\
+      while (0)
+
+      /* It is unfortunate that C does not provide an operator for
+	 cyclic rotation.  Hope the C compiler is smart enough.  */
+#define CYCLIC(w, s) (w = (w << s) | (w >> (32 - s)))
+
+	/* Before we start, one word to the strange constants.
+	   They are defined in RFC 1321 as
+
+	   T[i] = (int) (4294967296.0 * fabs (sin (i))), i=1..64
+	 */
+
+	/* Round 1.  */
+	OP (A, B, C, D,  7, 0xd76aa478);
+	OP (D, A, B, C, 12, 0xe8c7b756);
+	OP (C, D, A, B, 17, 0x242070db);
+	OP (B, C, D, A, 22, 0xc1bdceee);
+	OP (A, B, C, D,  7, 0xf57c0faf);
+	OP (D, A, B, C, 12, 0x4787c62a);
+	OP (C, D, A, B, 17, 0xa8304613);
+	OP (B, C, D, A, 22, 0xfd469501);
+	OP (A, B, C, D,  7, 0x698098d8);
+	OP (D, A, B, C, 12, 0x8b44f7af);
+	OP (C, D, A, B, 17, 0xffff5bb1);
+	OP (B, C, D, A, 22, 0x895cd7be);
+	OP (A, B, C, D,  7, 0x6b901122);
+	OP (D, A, B, C, 12, 0xfd987193);
+	OP (C, D, A, B, 17, 0xa679438e);
+	OP (B, C, D, A, 22, 0x49b40821);
+
+	/* For the second to fourth round we have the possibly swapped words
+	   in CORRECT_WORDS.  Redefine the macro to take an additional first
+	   argument specifying the function to use.  */
+#undef OP
+#define OP(f, a, b, c, d, k, s, T)  \
+	do								  \
+	  {								  \
+	    a += f (b, c, d) + correct_words[k] + T;			  \
+	    CYCLIC (a, s);						  \
+	    a += b;							  \
+	  }								  \
+	while (0)
+
+	/* Round 2.  */
+	OP (FG, A, B, C, D,  1,  5, 0xf61e2562);
+	OP (FG, D, A, B, C,  6,  9, 0xc040b340);
+	OP (FG, C, D, A, B, 11, 14, 0x265e5a51);
+	OP (FG, B, C, D, A,  0, 20, 0xe9b6c7aa);
+	OP (FG, A, B, C, D,  5,  5, 0xd62f105d);
+	OP (FG, D, A, B, C, 10,  9, 0x02441453);
+	OP (FG, C, D, A, B, 15, 14, 0xd8a1e681);
+	OP (FG, B, C, D, A,  4, 20, 0xe7d3fbc8);
+	OP (FG, A, B, C, D,  9,  5, 0x21e1cde6);
+	OP (FG, D, A, B, C, 14,  9, 0xc33707d6);
+	OP (FG, C, D, A, B,  3, 14, 0xf4d50d87);
+	OP (FG, B, C, D, A,  8, 20, 0x455a14ed);
+	OP (FG, A, B, C, D, 13,  5, 0xa9e3e905);
+	OP (FG, D, A, B, C,  2,  9, 0xfcefa3f8);
+	OP (FG, C, D, A, B,  7, 14, 0x676f02d9);
+	OP (FG, B, C, D, A, 12, 20, 0x8d2a4c8a);
+
+	/* Round 3.  */
+	OP (FH, A, B, C, D,  5,  4, 0xfffa3942);
+	OP (FH, D, A, B, C,  8, 11, 0x8771f681);
+	OP (FH, C, D, A, B, 11, 16, 0x6d9d6122);
+	OP (FH, B, C, D, A, 14, 23, 0xfde5380c);
+	OP (FH, A, B, C, D,  1,  4, 0xa4beea44);
+	OP (FH, D, A, B, C,  4, 11, 0x4bdecfa9);
+	OP (FH, C, D, A, B,  7, 16, 0xf6bb4b60);
+	OP (FH, B, C, D, A, 10, 23, 0xbebfbc70);
+	OP (FH, A, B, C, D, 13,  4, 0x289b7ec6);
+	OP (FH, D, A, B, C,  0, 11, 0xeaa127fa);
+	OP (FH, C, D, A, B,  3, 16, 0xd4ef3085);
+	OP (FH, B, C, D, A,  6, 23, 0x04881d05);
+	OP (FH, A, B, C, D,  9,  4, 0xd9d4d039);
+	OP (FH, D, A, B, C, 12, 11, 0xe6db99e5);
+	OP (FH, C, D, A, B, 15, 16, 0x1fa27cf8);
+	OP (FH, B, C, D, A,  2, 23, 0xc4ac5665);
+
+	/* Round 4.  */
+	OP (FI, A, B, C, D,  0,  6, 0xf4292244);
+	OP (FI, D, A, B, C,  7, 10, 0x432aff97);
+	OP (FI, C, D, A, B, 14, 15, 0xab9423a7);
+	OP (FI, B, C, D, A,  5, 21, 0xfc93a039);
+	OP (FI, A, B, C, D, 12,  6, 0x655b59c3);
+	OP (FI, D, A, B, C,  3, 10, 0x8f0ccc92);
+	OP (FI, C, D, A, B, 10, 15, 0xffeff47d);
+	OP (FI, B, C, D, A,  1, 21, 0x85845dd1);
+	OP (FI, A, B, C, D,  8,  6, 0x6fa87e4f);
+	OP (FI, D, A, B, C, 15, 10, 0xfe2ce6e0);
+	OP (FI, C, D, A, B,  6, 15, 0xa3014314);
+	OP (FI, B, C, D, A, 13, 21, 0x4e0811a1);
+	OP (FI, A, B, C, D,  4,  6, 0xf7537e82);
+	OP (FI, D, A, B, C, 11, 10, 0xbd3af235);
+	OP (FI, C, D, A, B,  2, 15, 0x2ad7d2bb);
+	OP (FI, B, C, D, A,  9, 21, 0xeb86d391);
+	/* Add the starting values of the context.  */
+	A += A_save;
+	B += B_save;
+	C += C_save;
+	D += D_save;
+    }
+
+    /* Put checksum in context given as argument.  */
+    ctx->A = A;
+    ctx->B = B;
+    ctx->C = C;
+    ctx->D = D;
+}
+
+
+
+/* The routine updates the message-digest context to
  * account for the presence of each of the characters inBuf[0..inLen-1]
  * in the message whose digest is being computed.
  */
 void
-md5_write( MD5_CONTEXT *mdContext, byte *inBuf, size_t inLen)
+md5_write( MD5_CONTEXT *ctx, const void *buffer, size_t len)
 {
-    register int i, ii;
-    int mdi;
-    u32 in[16];
+    /* When we already have some bits in our internal buffer concatenate
+       both inputs first.  */
+    if (ctx->buflen != 0)
+      {
+	size_t left_over = ctx->buflen;
+	size_t add = 128 - left_over > len ? len : 128 - left_over;
 
-    if(mdContext->count) { /* flush the buffer */
-	i = mdContext->count;
-	mdContext->count = 0;
-	md5_write( mdContext, mdContext->digest, i);
-    }
-    if( !inBuf )
-	return;
+	memcpy (&ctx->buffer[left_over], buffer, add);
+	ctx->buflen += add;
 
-    /* compute number of bytes mod 64 */
-    mdi = (int)((mdContext->i[0] >> 3) & 0x3F);
+	if (left_over + add > 64)
+	  {
+	    transform(ctx, ctx->buffer, (left_over + add) & ~63);
+	    /* The regions in the following copy operation cannot overlap.  */
+	    memcpy (ctx->buffer, &ctx->buffer[(left_over + add) & ~63],
+		    (left_over + add) & 63);
+	    ctx->buflen = (left_over + add) & 63;
+	  }
 
-    /* update number of bits */
-    if((mdContext->i[0] + ((u32)inLen << 3)) < mdContext->i[0])
-	mdContext->i[1]++;
-    mdContext->i[0] += ((u32)inLen << 3);
-    mdContext->i[1] += ((u32)inLen >> 29);
+	buffer = (const char *) buffer + add;
+	len -= add;
+      }
 
-    while(inLen--) {
-	/* add new character to buffer, increment mdi */
-	mdContext->in[mdi++] = *inBuf++;
+    /* Process available complete blocks.  */
+    if (len > 64)
+      {
+	transform( ctx, buffer, len & ~63);
+	buffer = (const char *) buffer + (len & ~63);
+	len &= 63;
+      }
 
-	/* transform if necessary */
-	if( mdi == 0x40 ) {
-	    for(i = 0, ii = 0; i < 16; i++, ii += 4)
-		in[i] = (((u32)mdContext->in[ii+3]) << 24) |
-			(((u32)mdContext->in[ii+2]) << 16) |
-			(((u32)mdContext->in[ii+1]) << 8) |
-			((u32)mdContext->in[ii]);
-	    Transform(mdContext->buf, in);
-	    mdi = 0;
-	}
-    }
+    /* Move remaining bytes in internal buffer.  */
+    if (len > 0)
+      {
+	memcpy (ctx->buffer, buffer, len);
+	ctx->buflen = len;
+      }
 }
 
 
@@ -197,145 +288,33 @@ md5_write( MD5_CONTEXT *mdContext, byte *inBuf, size_t inLen)
  */
 
 void
-md5_final( MD5_CONTEXT *mdContext )
+md5_final( MD5_CONTEXT *ctx )
 {
-    u32 in[16];
-    int mdi;
-    unsigned int i, ii;
-    unsigned int padLen;
+    /* Take yet unprocessed bytes into account.  */
+    u32 bytes = ctx->buflen;
+    size_t pad;
 
-    if(mdContext->count) /* flush buffer */
-	md5_write(mdContext, NULL, 0 );
-    /* save number of bits */
-    in[14] = mdContext->i[0];
-    in[15] = mdContext->i[1];
+    /* Now count remaining bytes.  */
+    ctx->total[0] += bytes;
+    if( ctx->total[0] < bytes )
+	++ctx->total[1];
 
-    /* compute number of bytes mod 64 */
-    mdi = (int)((mdContext->i[0] >> 3) & 0x3F);
+    pad = bytes >= 56 ? 64 + 56 - bytes : 56 - bytes;
+    memcpy (&ctx->buffer[bytes], fillbuf, pad);
 
-    /* pad out to 56 mod 64 */
-    padLen = (mdi < 56) ? (56 - mdi) : (120 - mdi);
-    md5_write(mdContext, PADDING, padLen);
+    /* Put the 64-bit file length in *bits* at the end of the buffer.  */
+    *(u32 *) &ctx->buffer[bytes + pad] = SWAP (ctx->total[0] << 3);
+    *(u32 *) &ctx->buffer[bytes + pad + 4] = SWAP ((ctx->total[1] << 3) |
+						    (ctx->total[0] >> 29));
 
-    /* append length in bits and transform */
-    for(i = 0, ii = 0; i < 14; i++, ii += 4)
-	in[i] = (((u32)mdContext->in[ii+3]) << 24) |
-		(((u32)mdContext->in[ii+2]) << 16) |
-		(((u32)mdContext->in[ii+1]) << 8) |
-		((u32)mdContext->in[ii]);
-    Transform(mdContext->buf, in);
+    /* Process last bytes.  */
+    transform( ctx, ctx->buffer, bytes + pad + 8);
 
-    /* store buffer in digest */
-    for(i = 0, ii = 0; i < 4; i++, ii += 4) {
-	mdContext->digest[ii]	= (byte)(mdContext->buf[i] & 0xFF);
-	mdContext->digest[ii+1] = (byte)((mdContext->buf[i] >> 8) & 0xFF);
-	mdContext->digest[ii+2] = (byte)((mdContext->buf[i] >> 16) & 0xFF);
-	mdContext->digest[ii+3] = (byte)((mdContext->buf[i] >> 24) & 0xFF);
-    }
-}
-
-
-/* Basic MD5 step. Transforms buf based on in.	Note that if the Mysterious
- * Constants are arranged backwards in little-endian order and decrypted with
- * the DES they produce OCCULT MESSAGES!
- */
-static void
-Transform(register u32 *buf,register u32 *in)
-{
-  register u32 a = buf[0], b = buf[1], c = buf[2], d = buf[3];
-
-  /* Round 1 */
-#define S11 7
-#define S12 12
-#define S13 17
-#define S14 22
-  FF ( a, b, c, d, in[ 0], S11, 0xD76AA478L); /* 1 */
-  FF ( d, a, b, c, in[ 1], S12, 0xE8C7B756L); /* 2 */
-  FF ( c, d, a, b, in[ 2], S13, 0x242070DBL); /* 3 */
-  FF ( b, c, d, a, in[ 3], S14, 0xC1BDCEEEL); /* 4 */
-  FF ( a, b, c, d, in[ 4], S11, 0xF57C0FAFL); /* 5 */
-  FF ( d, a, b, c, in[ 5], S12, 0x4787C62AL); /* 6 */
-  FF ( c, d, a, b, in[ 6], S13, 0xA8304613L); /* 7 */
-  FF ( b, c, d, a, in[ 7], S14, 0xFD469501L); /* 8 */
-  FF ( a, b, c, d, in[ 8], S11, 0x698098D8L); /* 9 */
-  FF ( d, a, b, c, in[ 9], S12, 0x8B44F7AFL); /* 10 */
-  FF ( c, d, a, b, in[10], S13, 0xFFFF5BB1L); /* 11 */
-  FF ( b, c, d, a, in[11], S14, 0x895CD7BEL); /* 12 */
-  FF ( a, b, c, d, in[12], S11, 0x6B901122L); /* 13 */
-  FF ( d, a, b, c, in[13], S12, 0xFD987193L); /* 14 */
-  FF ( c, d, a, b, in[14], S13, 0xA679438EL); /* 15 */
-  FF ( b, c, d, a, in[15], S14, 0x49B40821L); /* 16 */
-
-  /* Round 2 */
-#define S21 5
-#define S22 9
-#define S23 14
-#define S24 20
-  GG ( a, b, c, d, in[ 1], S21, 0xF61E2562L); /* 17 */
-  GG ( d, a, b, c, in[ 6], S22, 0xC040B340L); /* 18 */
-  GG ( c, d, a, b, in[11], S23, 0x265E5A51L); /* 19 */
-  GG ( b, c, d, a, in[ 0], S24, 0xE9B6C7AAL); /* 20 */
-  GG ( a, b, c, d, in[ 5], S21, 0xD62F105DL); /* 21 */
-  GG ( d, a, b, c, in[10], S22, 0x02441453L); /* 22 */
-  GG ( c, d, a, b, in[15], S23, 0xD8A1E681L); /* 23 */
-  GG ( b, c, d, a, in[ 4], S24, 0xE7D3FBC8L); /* 24 */
-  GG ( a, b, c, d, in[ 9], S21, 0x21E1CDE6L); /* 25 */
-  GG ( d, a, b, c, in[14], S22, 0xC33707D6L); /* 26 */
-  GG ( c, d, a, b, in[ 3], S23, 0xF4D50D87L); /* 27 */
-  GG ( b, c, d, a, in[ 8], S24, 0x455A14EDL); /* 28 */
-  GG ( a, b, c, d, in[13], S21, 0xA9E3E905L); /* 29 */
-  GG ( d, a, b, c, in[ 2], S22, 0xFCEFA3F8L); /* 30 */
-  GG ( c, d, a, b, in[ 7], S23, 0x676F02D9L); /* 31 */
-  GG ( b, c, d, a, in[12], S24, 0x8D2A4C8AL); /* 32 */
-
-  /* Round 3 */
-#define S31 4
-#define S32 11
-#define S33 16
-#define S34 23
-  HH ( a, b, c, d, in[ 5], S31, 0xFFFA3942L); /* 33 */
-  HH ( d, a, b, c, in[ 8], S32, 0x8771F681L); /* 34 */
-  HH ( c, d, a, b, in[11], S33, 0x6D9D6122L); /* 35 */
-  HH ( b, c, d, a, in[14], S34, 0xFDE5380CL); /* 36 */
-  HH ( a, b, c, d, in[ 1], S31, 0xA4BEEA44L); /* 37 */
-  HH ( d, a, b, c, in[ 4], S32, 0x4BDECFA9L); /* 38 */
-  HH ( c, d, a, b, in[ 7], S33, 0xF6BB4B60L); /* 39 */
-  HH ( b, c, d, a, in[10], S34, 0xBEBFBC70L); /* 40 */
-  HH ( a, b, c, d, in[13], S31, 0x289B7EC6L); /* 41 */
-  HH ( d, a, b, c, in[ 0], S32, 0xEAA127FAL); /* 42 */
-  HH ( c, d, a, b, in[ 3], S33, 0xD4EF3085L); /* 43 */
-  HH ( b, c, d, a, in[ 6], S34, 0x04881D05L); /* 44 */
-  HH ( a, b, c, d, in[ 9], S31, 0xD9D4D039L); /* 45 */
-  HH ( d, a, b, c, in[12], S32, 0xE6DB99E5L); /* 46 */
-  HH ( c, d, a, b, in[15], S33, 0x1FA27CF8L); /* 47 */
-  HH ( b, c, d, a, in[ 2], S34, 0xC4AC5665L); /* 48 */
-
-  /* Round 4 */
-#define S41 6
-#define S42 10
-#define S43 15
-#define S44 21
-  II ( a, b, c, d, in[ 0], S41, 0xF4292244L); /* 49 */
-  II ( d, a, b, c, in[ 7], S42, 0x432AFF97L); /* 50 */
-  II ( c, d, a, b, in[14], S43, 0xAB9423A7L); /* 51 */
-  II ( b, c, d, a, in[ 5], S44, 0xFC93A039L); /* 52 */
-  II ( a, b, c, d, in[12], S41, 0x655B59C3L); /* 53 */
-  II ( d, a, b, c, in[ 3], S42, 0x8F0CCC92L); /* 54 */
-  II ( c, d, a, b, in[10], S43, 0xFFEFF47DL); /* 55 */
-  II ( b, c, d, a, in[ 1], S44, 0x85845DD1L); /* 56 */
-  II ( a, b, c, d, in[ 8], S41, 0x6FA87E4FL); /* 57 */
-  II ( d, a, b, c, in[15], S42, 0xFE2CE6E0L); /* 58 */
-  II ( c, d, a, b, in[ 6], S43, 0xA3014314L); /* 59 */
-  II ( b, c, d, a, in[13], S44, 0x4E0811A1L); /* 60 */
-  II ( a, b, c, d, in[ 4], S41, 0xF7537E82L); /* 61 */
-  II ( d, a, b, c, in[11], S42, 0xBD3AF235L); /* 62 */
-  II ( c, d, a, b, in[ 2], S43, 0x2AD7D2BBL); /* 63 */
-  II ( b, c, d, a, in[ 9], S44, 0xEB86D391L); /* 64 */
-
-  buf[0] += a;
-  buf[1] += b;
-  buf[2] += c;
-  buf[3] += d;
+    /* Store the result in buffer */
+    ((u32 *)ctx->buffer)[0] = SWAP (ctx->A);
+    ((u32 *)ctx->buffer)[1] = SWAP (ctx->B);
+    ((u32 *)ctx->buffer)[2] = SWAP (ctx->C);
+    ((u32 *)ctx->buffer)[3] = SWAP (ctx->D);
 }
 
 

@@ -1,14 +1,14 @@
 /* passphrase.c -  Get a passphrase
- *	Copyright (c) 1997 by Werner Koch (dd9jn)
+ *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of G10.
+ * This file is part of GNUPG.
  *
- * G10 is free software; you can redistribute it and/or modify
+ * GNUPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * G10 is distributed in the hope that it will be useful,
+ * GNUPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -33,7 +33,7 @@
 
 static int pwfd = -1;
 
-static int hash_passphrase( DEK *dek, char *pw );
+static int hash_passphrase( DEK *dek, char *pw, byte *salt );
 
 void
 set_passphrase_fd( int fd )
@@ -54,7 +54,7 @@ get_passphrase_fd()
  * Returns: m_alloced md5 passphrase hash; caller must free
  */
 DEK *
-get_passphrase_hash( u32 *keyid, char *text )
+get_passphrase_hash( u32 *keyid, char *text, byte *salt )
 {
     char *pw;
     DEK *dek;
@@ -97,8 +97,8 @@ get_passphrase_hash( u32 *keyid, char *text )
 	tty_kill_prompt();
     }
     dek = m_alloc_secure( sizeof *dek );
-    dek->algo = CIPHER_ALGO_BLOWFISH;
-    if( hash_passphrase( dek, pw ) )
+    dek->algo = CIPHER_ALGO_BLOWFISH; /* fixme: allow others ciphers */
+    if( hash_passphrase( dek, pw, salt ) )
 	log_bug("get_passphrase_hash\n");
     m_free(pw); /* is allocated in secure memory, so it will be burned */
     return dek;
@@ -107,11 +107,12 @@ get_passphrase_hash( u32 *keyid, char *text )
 
 /****************
  * This function is used to construct a DEK from a user input.
- * It uses the default CIPHER
+ * It uses the default CIPHER. If salt is != NULL, include these
+ * 8 bytes in the hash.
  * Returns: 0 = okay, -1 No passphrase entered, > 0 error
  */
 int
-make_dek_from_passphrase( DEK *dek, int mode )
+make_dek_from_passphrase( DEK *dek, int mode, byte *salt )
 {
     char *pw, *pw2;
     int rc=0;
@@ -131,14 +132,14 @@ make_dek_from_passphrase( DEK *dek, int mode )
     if( !*pw )
 	rc = -1;
     else
-	rc = hash_passphrase( dek, pw );
+	rc = hash_passphrase( dek, pw, salt );
     m_free(pw);
     return rc;
 }
 
 
 static int
-hash_passphrase( DEK *dek, char *pw )
+hash_passphrase( DEK *dek, char *pw, byte *salt )
 {
     int rc = 0;
 
@@ -147,6 +148,8 @@ hash_passphrase( DEK *dek, char *pw )
 	MD_HANDLE md;
 
 	md = md_open(DIGEST_ALGO_RMD160, 1);
+	if( salt )
+	    md_write( md, salt, 8 );
 	md_write( md, pw, strlen(pw) );
 	md_final( md );
 	dek->keylen = 20;

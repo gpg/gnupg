@@ -5,7 +5,7 @@ EXTRA_DIST = OPTIONS  pubring.asc
 OMIT_DEPENDENCIES = zlib.h zconf.h
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
-bin_PROGRAMS = g10 g10maint
+bin_PROGRAMS = gpg gpgm
 
 common_source =  \
 	      build-packet.c	\
@@ -49,12 +49,12 @@ common_source =  \
 	      revoke.c		\
 	      sig-check.c
 
-g10_SOURCES  = g10.c		\
+gpg_SOURCES  = g10.c		\
 	      $(common_source)	\
 	      keygen.c
 
 
-g10maint_SOURCES = g10maint.c	\
+gpgm_SOURCES = g10maint.c   \
 	      dearmor.c 	\
 	      $(common_source)
 
