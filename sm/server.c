@@ -422,13 +422,11 @@ gpgsm_server (void)
   ctrl.server_local->assuan_ctx = ctx;
   ctrl.server_local->message_fd = -1;
 
-  log_info ("Assuan started\n");
   for (;;)
     {
       rc = assuan_accept (ctx);
       if (rc == -1)
         {
-          log_info ("Assuan terminated\n");
           break;
         }
       else if (rc)

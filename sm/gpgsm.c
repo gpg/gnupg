@@ -950,6 +950,12 @@ main ( int argc, char **argv)
   switch (cmd)
     {
     case aServer:
+#if 0
+      log_debug ("waiting for debugger my pid is %u .....\n",
+                 (unsigned int)getpid());
+      sleep (5);
+      log_debug ("... okay\n");
+#endif
       gpgsm_server ();
       break;
 
