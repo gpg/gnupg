@@ -1,3 +1,17 @@
+2003-05-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (sign_uids): Show keyid of the key making the
+	signature.
+
+	* trustdb.h, trustdb.c (is_disabled), keylist.c
+	(print_capabilities), gpgv.c (is_disabled): is_disabled now takes
+	a pk and not just the keyid.  This is for speed since there is no
+	need to re-fetch a key when we already have that key handy.
+
+	* getkey.c (skip_disabled): New function to get a pk and call
+	is_disabled on it.
+	(key_byname): Use it here.
+
 2003-05-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Show errors for failure in export, send-keys,

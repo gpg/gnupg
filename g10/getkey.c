@@ -733,6 +733,27 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc)
     return classify_user_id2 (name, desc, &dummy);
 }
 
+static int
+skip_disabled(void *dummy,u32 *keyid)
+{
+  int rc,disabled=0;
+  PKT_public_key *pk=m_alloc_clear(sizeof(PKT_public_key));
+
+  rc = get_pubkey(pk, keyid);
+  if(rc)
+    {
+      log_error("error checking disabled status of %08lX: %s\n",
+ 		(ulong)keyid[1],g10_errstr(rc));
+      goto leave;
+    }
+ 
+  disabled=is_disabled(pk);
+
+ leave:
+  free_public_key(pk);
+  return disabled;
+}
+
 /****************
  * Try to get the pubkey by the userid. This function looks for the
  * first pubkey certificate which has the given name in a user_id.
@@ -784,7 +805,7 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
  	   && ctx->items[n].mode!=KEYDB_SEARCH_MODE_FPR16
 	   && ctx->items[n].mode!=KEYDB_SEARCH_MODE_FPR20
 	   && ctx->items[n].mode!=KEYDB_SEARCH_MODE_FPR)
- 	  ctx->items[n].skipfnc=is_disabled;
+ 	  ctx->items[n].skipfnc=skip_disabled;
     }
 
     ctx->kr_handle = keydb_new (secmode);

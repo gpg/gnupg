@@ -243,7 +243,7 @@ check_signatures_trust( PKT_signature *sig )
  */
 
 int
-is_disabled(void *dummy,u32 *keyid)
+is_disabled(PKT_public_key *pk)
 {
   return 0;
 }
