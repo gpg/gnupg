@@ -18,19 +18,16 @@
 
 ## Process this file with automake to produce Makefile.in
 
-#INCLUDES = -I.. -I$(top_srcdir)/include -I$(top_srcdir)/intl
-#EXTRA_DIST = 
-
-#noinst_PROGRAMS = gpgd
 bin_PROGRAMS = gpgsm
 
-gpgsm_SOURCES = gpgsm.c		
+INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
+LDFLAGS = @LDFLAGS@ $(LIBGCRYPT_LIBS)
 
+gpgsm_SOURCES = \
+	gpgsm.c	gpgsm.h \
+	util.h \
+	server.c 
 
-
-#install-data-local:
-#	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
-#	$(INSTALL_DATA) $(srcdir)/options.skel \
-#				$(DESTDIR)$(pkgdatadir)/options.skel
+gpgsm_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a
 
 

@@ -76,8 +76,8 @@ int assuan_register_command (ASSUAN_CONTEXT ctx,
 
 
 /*-- assuan-pipe-server.c --*/
-
-
+int assuan_init_pipe_server (ASSUAN_CONTEXT *r_ctx, int filedes[2]);
+void assuan_deinit_pipe_server (ASSUAN_CONTEXT ctx);
 
 
 /*-- assuan-util.c --*/
@@ -85,6 +85,8 @@ void assuan_set_malloc_hooks ( void *(*new_alloc_func)(size_t n),
                                void *(*new_realloc_func)(void *p, size_t n),
                                void (*new_free_func)(void*) );
 
+/*-- assuan-errors.c (built) --*/
+const char *assuan_strerror (AssuanError err);
 
 
 #ifdef __cplusplus

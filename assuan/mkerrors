@@ -1,0 +1,71 @@
+#!/bin/sh
+# mkerrors - Extract error strings from assuan.h
+#            and create C source for assuan_strerror
+#	Copyright (C) 2001 Free Software Foundation, Inc.
+#
+# This file is part of GnuPG.
+#
+# GnuPG is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# GnuPG is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+
+cat <<EOF
+/* Generated automatically by mkerrors */
+/* Do not edit! */
+
+#include <stdio.h>
+#include "assuan.h"
+
+/**
+ * assuan_strerror:
+ * @err:  Error code 
+ * 
+ * This function returns a textual representaion of the given
+ * errorcode. If this is an unknown value, a string with the value
+ * is returned (Beware: it is hold in a static buffer).
+ * 
+ * Return value: String with the error description.
+ **/
+const char *
+assuan_strerror (AssuanError err)
+{
+  const char *s;
+  static char buf[25];
+
+  switch (err)
+    {
+EOF
+
+awk '
+/ASSUAN_No_Error/    { okay=1 }
+!okay              {next}
+/}/                { exit 0 }
+/ASSUAN_[A-Za-z_]*/ { print_code($1) }
+
+
+function print_code( s )
+{
+printf "    case %s: s=\"", s ;
+gsub(/_/, " ", s );
+printf "%s\"; break;\n", substr(s,8);
+}
+'
+
+cat <<EOF
+    default:  sprintf (buf, "ec=%d", err ); s=buf; break;
+    }
+
+  return s;
+}
+
+EOF

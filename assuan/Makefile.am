@@ -20,6 +20,7 @@
 ## Process this file with automake to produce Makefile.in
 
 INCLUDES = -I.. -I$(top_srcdir)/include
+BUILT_SOURCES = assuan-errors.c
 
 noinst_LIBRARIES = libassuan.a
 
@@ -29,7 +30,11 @@ libassuan_a_SOURCES = \
 	assuan.h \
 	assuan-defs.h \
 	assuan-util.c \
+	assuan-errors.c \
 	assuan-buffer.c \
 	assuan-handler.c \
 	assuan-pipe-server.c 
 
+
+assuan-errors.c : assuan.h
+	$(srcdir)/mkerrors < $(srcdir)/assuan.h > assuan-errors.c
