@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *
+ * $Id$
  */
 
 #ifndef GNUPG_SCD_APP_COMMON_H
@@ -95,6 +97,7 @@ size_t app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff);
 /*-- app.c --*/
 app_t select_application (ctrl_t ctrl, int slot, const char *name);
 void release_application (app_t app);
+int app_munge_serialno (app_t app);
 int app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp);
 int app_write_learn_status (app_t app, ctrl_t ctrl);
 int app_readcert (app_t app, const char *certid,
@@ -143,7 +146,6 @@ int app_openpgp_cardinfo (app_t app,
                           unsigned char **fpr1,
                           unsigned char **fpr2,
                           unsigned char **fpr3);
-#endif /* GNUPG_MAJOR_VERSION != 1 */
 int app_openpgp_storekey (app_t app, int keyno,
                           unsigned char *template, size_t template_len,
                           time_t created_at,
@@ -154,16 +156,18 @@ int app_openpgp_storekey (app_t app, int keyno,
 int app_openpgp_readkey (app_t app, int keyno,
                          unsigned char **m, size_t *mlen,
                          unsigned char **e, size_t *elen);
-#if GNUPG_MAJOR_VERSION == 1
-#else
 /*-- app-nks.c --*/
 int app_select_nks (app_t app);
 
 /*-- app-dinsig.c --*/
 int app_select_dinsig (app_t app);
 
+/*-- app-p15.c --*/
+int app_select_p15 (app_t app);
 
-#endif /* GNUPG_MAJOR_VERSION != 1 */
+
+#endif
+
 
 
 #endif /*GNUPG_SCD_APP_COMMON_H*/

@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *
+ * $Id$
  */
 
 #include <config.h>
@@ -103,6 +105,17 @@ map_sw (int sw)
   return gpg_error (ec);
 }
 
+/* Map a status word from the APDU layer to a gpg-error code.  */
+gpg_error_t
+iso7816_map_sw (int sw)
+{
+  /* All APDU functions should return 0x9000 on success but for
+     historical reasons of the implementation some return 0 to
+     indicate success.  We allow for that here. */
+  return sw? map_sw (sw) : 0;
+}
+
+
 /* This function is specialized version of the SELECT FILE command.
    SLOT is the card and reader as created for example by
    apdu_open_reader (), AID is a buffer of size AIDLEN holding the
@@ -113,15 +126,8 @@ map_sw (int sw)
 gpg_error_t
 iso7816_select_application (int slot, const char *aid, size_t aidlen)
 {
-  static char const openpgp_aid[] = { 0xD2, 0x76, 0x00, 0x01, 0x24, 0x01 };
   int sw;
-  int p1 = 0x0C; /* No FCI to be returned. */
-  
-  if (aidlen == sizeof openpgp_aid
-      && !memcmp (aid, openpgp_aid, sizeof openpgp_aid))
-    p1 = 0; /* The current openpgp cards don't allow 0x0c. */
-
-  sw = apdu_send_simple (slot, 0x00, CMD_SELECT_FILE, 4, p1, aidlen, aid);
+  sw = apdu_send_simple (slot, 0x00, CMD_SELECT_FILE, 4, 0, aidlen, aid);
   return map_sw (sw);
 }
 

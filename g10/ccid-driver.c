@@ -1307,6 +1307,8 @@ ccid_get_atr (ccid_driver_t handle,
   /* Note that we ignore the error code on purpose. */
   bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_Parameters, seqno);
 
+  handle->t1_ns = 0;
+  handle->t1_nr = 0;
 
   /* Send an S-Block with our maximun IFSD to the CCID.  */
   if (!handle->auto_ifsd)
