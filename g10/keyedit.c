@@ -2694,20 +2694,12 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 		if( !sn )
 		    log_info(_("No corresponding signature in secret ring\n"));
 
-		/* create new self signature */
 		if( mainkey )
-		    rc = make_keysig_packet( &newsig, main_pk, uid, NULL,
-					     sk, 0x13, 0, 0, 0, 0,
-					     keygen_add_std_prefs, main_pk );
+		  rc = update_keysig_packet(&newsig, sig, main_pk, uid, NULL,
+					    sk, keygen_add_key_expire, main_pk);
 		else
-		  {
-		    struct flags_expire fe;
-		    fe.pk=sub_pk;
-		    fe.sig=sig;
-		    rc = make_keysig_packet( &newsig, main_pk, NULL, sub_pk,
-					     sk, 0x18, 0, 0, 0, 0,
-					     keygen_copy_flags_add_expire,&fe);
-		  }
+		  rc = update_keysig_packet(&newsig, sig, main_pk, NULL, sub_pk,
+					    sk, keygen_add_key_expire, sub_pk );
 		if( rc ) {
 		    log_error("make_keysig_packet failed: %s\n",
 						    g10_errstr(rc));
@@ -2852,7 +2844,7 @@ menu_set_primary_uid ( KBNODE pub_keyblock, KBNODE sec_keyblock )
 
                 if (action) {
                     int rc = update_keysig_packet (&newsig, sig,
-                                               main_pk, uid, 
+					       main_pk, uid, NULL,
                                                sk,
                                                change_primary_uid_cb,
                                                action > 0? "x":NULL );
@@ -2937,7 +2929,7 @@ menu_set_preferences (KBNODE pub_keyblock, KBNODE sec_keyblock )
                 int rc;
 
                 rc = update_keysig_packet (&newsig, sig,
-                                           main_pk, uid, 
+                                           main_pk, uid, NULL,
                                            sk,
                                            keygen_upd_std_prefs,
                                            NULL );

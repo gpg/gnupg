@@ -1264,6 +1264,7 @@ update_keysig_packet( PKT_signature **ret_sig,
                       PKT_signature *orig_sig,
                       PKT_public_key *pk,
                       PKT_user_id *uid, 
+                      PKT_public_key *subpk,
                       PKT_secret_key *sk,
                       int (*mksubpkt)(PKT_signature *, void *),
                       void *opaque
@@ -1273,31 +1274,51 @@ update_keysig_packet( PKT_signature **ret_sig,
     int rc=0;
     MD_HANDLE md;
 
-    if (!orig_sig || !pk || !uid || !sk)
-        return G10ERR_GENERAL;
-    if (orig_sig->sig_class < 0x10 || orig_sig->sig_class > 0x13 )
-        return G10ERR_GENERAL;
+    if ((!orig_sig || !pk || !sk)
+	|| (orig_sig->sig_class >= 0x10 && orig_sig->sig_class <= 0x13 && !uid)
+	|| (orig_sig->sig_class == 0x18 && !subpk))
+      return G10ERR_GENERAL;
 
     md = md_open( orig_sig->digest_algo, 0 );
 
     /* hash the public key certificate and the user id */
     hash_public_key( md, pk );
-    hash_uid (md, orig_sig->version, uid);
+
+    if( orig_sig->sig_class == 0x18 )
+      hash_public_key( md, subpk );
+    else
+      hash_uid (md, orig_sig->version, uid);
 
     /* create a new signature packet */
     sig = copy_signature (NULL, orig_sig);
-    if ( sig->version >= 4 && mksubpkt)
-	rc = (*mksubpkt)(sig, opaque);
 
-    /* we increase the timestamp by one second so that a future import
-       of this key will replace the existing one.  We also make sure that
-       we don't create a timestamp in the future */
-    sig->timestamp++; 
-    while (sig->timestamp >= make_timestamp())
-        sleep (1);
-    /* put the updated timestamp back into the data */
+    /* We need to create a new timestamp so that new sig expiration
+       calculations are done correctly... */
+    sig->timestamp=make_timestamp();
+
+    /* ... but we won't make a timestamp earlier than the existing
+       one. */
+    while(sig->timestamp<=orig_sig->timestamp)
+      {
+	sleep(1);
+	sig->timestamp=make_timestamp();
+      }
+
+    /* Note that already expired sigs will remain expired (with a
+       duration of 0) since build-packet.c:build_sig_subpkt_from_sig
+       detects this case. */
+
     if( sig->version >= 4 )
+      {
+	/* Put the updated timestamp into the sig.  Note that this
+	   will automagically lower any sig expiration dates to
+	   correctly correspond to the differences in the timestamps
+	   (i.e. the duration will shrink). */
 	build_sig_subpkt_from_sig( sig );
+
+	if (mksubpkt)
+	  rc = (*mksubpkt)(sig, opaque);
+      }
 
     if (!rc) {
         hash_sigversion_to_magic (md, sig);

@@ -143,56 +143,37 @@ do_add_key_flags (PKT_signature *sig, unsigned int use)
     build_sig_subpkt (sig, SIGSUBPKT_KEY_FLAGS, buf, 1);
 }
 
-static void
-do_copy_key_flags (PKT_signature *sig, PKT_signature *oldsig)
-{
-  const byte *f;
-  size_t n;
- 
-  /* Note that this will make any key flags in the unhashed area
-     disappear.  This may be good or bad, depending on your point of
-     view. */
-  f=parse_sig_subpkt(oldsig->hashed,SIGSUBPKT_KEY_FLAGS,&n);
-  if(f)
-    build_sig_subpkt(sig,SIGSUBPKT_KEY_FLAGS,f,n);
-}
-
-static void
-do_add_key_expire( PKT_signature *sig, PKT_public_key *pk )
-{
-  if( pk->expiredate )
-    {
-      byte buf[4];
-      u32 u;
-
-      u = pk->expiredate > pk->timestamp? pk->expiredate - pk->timestamp
-	: pk->timestamp;
-      buf[0] = (u >> 24) & 0xff;
-      buf[1] = (u >> 16) & 0xff;
-      buf[2] = (u >>  8) & 0xff;
-      buf[3] = u & 0xff;
-      build_sig_subpkt( sig, SIGSUBPKT_KEY_EXPIRE, buf, 4 );
-    }
-}
 
 int
-keygen_copy_flags_add_expire( PKT_signature *sig, void *opaque )
+keygen_add_key_expire( PKT_signature *sig, void *opaque )
 {
-  struct flags_expire *fe=opaque;
-  do_add_key_expire(sig,fe->pk);
-  do_copy_key_flags(sig,fe->sig);
+    PKT_public_key *pk = opaque;
+    byte buf[8];
+    u32  u;
 
-  return 0;
+    if( pk->expiredate ) {
+        if(pk->expiredate > pk->timestamp)
+	  u= pk->expiredate - pk->timestamp;
+	else
+	  u= 0;
+
+	buf[0] = (u >> 24) & 0xff;
+	buf[1] = (u >> 16) & 0xff;
+	buf[2] = (u >>	8) & 0xff;
+	buf[3] = u & 0xff;
+	build_sig_subpkt( sig, SIGSUBPKT_KEY_EXPIRE, buf, 4 );
+    }
+
+    return 0;
 }
 
 static int
 keygen_add_key_flags_and_expire (PKT_signature *sig, void *opaque)
 {
-  struct opaque_data_usage_and_pk *oduap = opaque;
+    struct opaque_data_usage_and_pk *oduap = opaque;
 
-  do_add_key_flags (sig, oduap->usage);
-  do_add_key_expire(sig,oduap->pk);
-  return 0;
+    do_add_key_flags (sig, oduap->usage);
+    return keygen_add_key_expire (sig, oduap->pk);
 }
 
 static int
@@ -511,7 +492,7 @@ keygen_add_std_prefs( PKT_signature *sig, void *opaque )
     byte buf[8];
 
     do_add_key_flags (sig, pk->pubkey_usage);
-    do_add_key_expire (sig, pk);
+    keygen_add_key_expire( sig, opaque );
     keygen_upd_std_prefs (sig, opaque);
 
     buf[0] = 0x80; /* no modify - It is reasonable that a key holder

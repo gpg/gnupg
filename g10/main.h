@@ -130,12 +130,7 @@ u32 ask_expiredate(void);
 void generate_keypair( const char *fname );
 int keygen_set_std_prefs (const char *string,int personal);
 PKT_user_id *keygen_get_std_prefs (void);
-struct flags_expire
-{
-  PKT_public_key *pk;
-  PKT_signature *sig;
-};
-int keygen_copy_flags_add_expire( PKT_signature *sig, void *opaque );
+int keygen_add_key_expire( PKT_signature *sig, void *opaque );
 int keygen_add_std_prefs( PKT_signature *sig, void *opaque );
 int keygen_upd_std_prefs( PKT_signature *sig, void *opaque );
 int keygen_add_revkey(PKT_signature *sig, void *opaque);
