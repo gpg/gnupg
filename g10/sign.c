@@ -506,7 +506,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
                            g10_errstr(rc));
                 break;
             }
-        memset(copy_buffer, 0, 4096); /* burn buffer */
+        wipememory(copy_buffer,4096); /* burn buffer */
     }
     /* fixme: it seems that we never freed pt/pkt */
     

@@ -98,7 +98,7 @@ encode_sesskey( DEK *dek, DEK **ret_dek, byte *enckey )
     cipher_close( hd );
 
     memcpy( enckey, buf, c->keylen + 1 );
-    memset( buf, 0, sizeof buf ); /* burn key */
+    wipememory( buf, sizeof buf ); /* burn key */
     *ret_dek = c;
 }
 
@@ -350,7 +350,7 @@ encode_simple( const char *filename, int mode, int compat )
 		log_error("copying input to output failed: %s\n", g10_errstr(rc) );
 		break;
 	    }
-	memset(copy_buffer, 0, 4096); /* burn buffer */
+	wipememory(copy_buffer, 4096); /* burn buffer */
     }
 
     /* finish the stuff */
@@ -589,7 +589,7 @@ encode_crypt( const char *filename, STRLIST remusr )
                           g10_errstr(rc) );
 		break;
 	    }
-	memset(copy_buffer, 0, 4096); /* burn buffer */
+	wipememory(copy_buffer, 4096); /* burn buffer */
     }
 
     /* finish the stuff */
