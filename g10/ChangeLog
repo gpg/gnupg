@@ -1,3 +1,12 @@
+2004-03-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (merge_selfsigs_subkey): Do not mark subkeys valid if
+	we do not support their pk algorithm.  This allows for early
+	(during get_*) rejection of a subkey, and selection of another.
+
+	* passphrase.c (passphrase_to_dek): Give a little more information
+	when we have room to do so.
+	
 2004-03-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* revoke.c (export_minimal_pk), export.c (do_export_stream),

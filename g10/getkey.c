@@ -1895,11 +1895,10 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
         }
     }
 
-    if ( !signode ) {
-        return;  /* no valid key binding */
-    }
+    /* no valid key binding */
+    if ( !signode )
+      return;
 
-    subpk->is_valid = 1;
     sig = signode->pkt->pkt.signature;
         
     p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_FLAGS, &n );
@@ -1929,6 +1928,12 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
         key_expire = 0;
     subpk->has_expired = key_expire >= curtime? 0 : key_expire;
     subpk->expiredate = key_expire;
+
+    /* algo doesn't exist */
+    if(check_pubkey_algo(subpk->pubkey_algo))
+      return;
+
+    subpk->is_valid = 1;
 }
 
 

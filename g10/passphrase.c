@@ -1134,7 +1134,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 		if(keystrlen()>10)
 		  {
 		    tty_printf("\n");
-		    tty_printf(_("        (main key ID %s)"),
+		    tty_printf(_("         (subkey on main key ID %s)"),
 			       keystr(&keyid[2]) );
 		  }
 		else
