@@ -137,9 +137,17 @@ import_ownertrust( const char *fname )
 	is_stdin = 1;
     }
     else if( !(fp = fopen( fname, "r" )) ) {
-	log_error_f(fname, _("can't open file: %s\n"), strerror(errno) );
+	log_error ( _("can't open `%s': %s\n"), fname, strerror(errno) );
 	return;
     }
+
+    if (is_secured_file (fileno (fp)))
+      {
+        fclose (fp);
+        errno = EPERM;
+	log_error (_("can't open `%s': %s\n"), fname, strerror(errno) );
+	return;
+      }
 
     while( fgets( line, DIM(line)-1, fp ) ) {
 	TRUSTREC rec;
@@ -148,7 +156,7 @@ import_ownertrust( const char *fname )
 	    continue;
 	n = strlen(line);
 	if( line[n-1] != '\n' ) {
-	    log_error_f(fname, _("line too long\n") );
+	    log_error (_("error in `%s': %s\n"), fname, _("line too long") );
 	    /* ... or last line does not have a LF */
 	    break; /* can't continue */
 	}
@@ -156,16 +164,18 @@ import_ownertrust( const char *fname )
 	    if( !hexdigitp(p) )
 		break;
 	if( *p != ':' ) {
-	    log_error_f(fname, _("error: missing colon\n") );
+	    log_error (_("error in `%s': %s\n"), fname, _("colon missing") );
 	    continue;
 	}
 	fprlen = p - line;
 	if( fprlen != 32 && fprlen != 40 ) {
-	    log_error_f(fname, _("error: invalid fingerprint\n") );
+	    log_error (_("error in `%s': %s\n"),
+                       fname, _("invalid fingerprint") );
 	    continue;
 	}
 	if( sscanf(p, ":%u:", &otrust ) != 1 ) {
-	    log_error_f(fname, _("error: no ownertrust value\n") );
+	    log_error (_("error in `%s': %s\n"),
+                       fname, _("ownertrust value missing"));
 	    continue;
 	}
 	if( !otrust )
@@ -201,11 +211,11 @@ import_ownertrust( const char *fname )
             any = 1;
 	}
 	else /* error */
-	    log_error_f(fname, _("error finding trust record: %s\n"),
-						    g10_errstr(rc));
+	    log_error (_("error finding trust record in `%s': %s\n"),
+                       fname, g10_errstr(rc));
     }
     if( ferror(fp) )
-	log_error_f(fname, _("read error: %s\n"), strerror(errno) );
+	log_error ( _("read error in `%s': %s\n"), fname, strerror(errno) );
     if( !is_stdin )
 	fclose(fp);
     

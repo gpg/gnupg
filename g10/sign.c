@@ -750,8 +750,15 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     if( multifile )  /* have list of filenames */
 	inp = NULL; /* we do it later */
     else {
-        if( !(inp = iobuf_open(fname)) ) {
-	    log_error("can't open %s: %s\n", fname? fname: "[stdin]",
+      inp = iobuf_open(fname);
+      if (inp && is_secured_file (iobuf_get_fd (inp)))
+        {
+          iobuf_close (inp);
+          inp = NULL;
+          errno = EPERM;
+        }
+      if( !inp ) {
+	    log_error(_("can't open `%s': %s\n"), fname? fname: "[stdin]",
 		      strerror(errno) );
 	    rc = G10ERR_OPEN_FILE;
 	    goto leave;
@@ -888,7 +895,14 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    /* must walk reverse trough this list */
 	    for( sl = strlist_last(filenames); sl;
 			sl = strlist_prev( filenames, sl ) ) {
-		if( !(inp = iobuf_open(sl->d)) ) {
+                inp = iobuf_open(sl->d);
+                if (inp && is_secured_file (iobuf_get_fd (inp)))
+                  {
+                    iobuf_close (inp);
+                    inp = NULL;
+                    errno = EPERM;
+                  }
+		if( !inp ) {
 		    log_error(_("can't open file `%s': %s\n"),
 					    sl->d, strerror(errno) );
 		    rc = G10ERR_OPEN_FILE;
@@ -989,8 +1003,15 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
       }
 
     /* prepare iobufs */
-    if( !(inp = iobuf_open(fname)) ) {
-	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
+    inp = iobuf_open(fname);
+    if (inp && is_secured_file (iobuf_get_fd (inp)))
+      {
+        iobuf_close (inp);
+        inp = NULL;
+        errno = EPERM;
+      }
+    if( !inp ) {
+	log_error(_("can't open `%s': %s\n"), fname? fname: "[stdin]",
 					strerror(errno) );
 	rc = G10ERR_OPEN_FILE;
 	goto leave;
@@ -1122,9 +1143,15 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
 
     /* prepare iobufs */
     inp = iobuf_open(fname);
+    if (inp && is_secured_file (iobuf_get_fd (inp)))
+      {
+        iobuf_close (inp);
+        inp = NULL;
+        errno = EPERM;
+      }
     if( !inp ) {
-	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
-					strerror(errno) );
+	log_error(_("can't open `%s': %s\n"), 
+                  fname? fname: "[stdin]", strerror(errno) );
 	rc = G10ERR_OPEN_FILE;
 	goto leave;
     }

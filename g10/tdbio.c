@@ -593,6 +593,7 @@ open_db()
   }
   if ( db_fd == -1 )
     log_fatal( _("%s: can't open: %s\n"), db_name, strerror(errno) );
+  register_secured_file (db_name);
 
   /* check whether we need to do a version migration */
   do

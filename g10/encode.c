@@ -170,9 +170,16 @@ encode_simple( const char *filename, int mode, int use_seskey )
     init_packet(&pkt);
     
     /* prepare iobufs */
-    if( !(inp = iobuf_open(filename)) ) {
-	log_error(_("%s: can't open: %s\n"), filename? filename: "[stdin]",
-					strerror(errno) );
+    inp = iobuf_open(filename);
+    if (inp && is_secured_file (iobuf_get_fd (inp)))
+      {
+        iobuf_close (inp);
+        inp = NULL;
+        errno = EPERM;
+      }
+    if( !inp ) {
+	log_error(_("can't open `%s': %s\n"), filename? filename: "[stdin]",
+                  strerror(errno) );
 	return G10ERR_OPEN_FILE;
     }
 
@@ -298,7 +305,7 @@ encode_simple( const char *filename, int mode, int use_seskey )
         off_t tmpsize;
 
 	if ( !(tmpsize = iobuf_get_filelength(inp)) )
-          log_info(_("%s: WARNING: empty file\n"), filename );
+          log_info(_("WARNING: `%s' is an empty file\n"), filename );
         /* We can't encode the length of very large files because
            OpenPGP uses only 32 bit for file sizes.  So if the the
            size of a file is larger than 2^32 minus some bytes for
@@ -470,8 +477,15 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
     }
 
     /* prepare iobufs */
-    if( !(inp = iobuf_open(filename)) ) {
-	log_error(_("can't open %s: %s\n"), filename? filename: "[stdin]",
+    inp = iobuf_open(filename);
+    if (inp && is_secured_file (iobuf_get_fd (inp)))
+      {
+        iobuf_close (inp);
+        inp = NULL;
+        errno = EPERM;
+      }
+    if( !inp ) {
+	log_error(_("can't open `%s': %s\n"), filename? filename: "[stdin]",
 					strerror(errno) );
 	rc = G10ERR_OPEN_FILE;
 	goto leave;
@@ -587,7 +601,7 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
         off_t tmpsize;
 
 	if ( !(tmpsize = iobuf_get_filelength(inp)) )
-          log_info(_("%s: WARNING: empty file\n"), filename );
+          log_info(_("WARNING: `%s' is an empty file\n"), filename );
         /* We can't encode the length of very large files because
            OpenPGP uses only 32 bit for file sizes.  So if the the
            size of a file is larger than 2^32 minus some bytes for
@@ -861,7 +875,7 @@ encode_crypt_files(int nfiles, char **files, STRLIST remusr)
           line[strlen(line)-1] = '\0';
           print_file_status(STATUS_FILE_START, line, 2);
           if ( (rc = encode_crypt(line, remusr, 0)) )
-            log_error("%s: encryption failed: %s\n",
+            log_error("encryption of `%s' failed: %s\n",
                       print_fname_stdin(line), g10_errstr(rc) );
           write_status( STATUS_FILE_DONE );
         }
@@ -872,7 +886,7 @@ encode_crypt_files(int nfiles, char **files, STRLIST remusr)
         {
           print_file_status(STATUS_FILE_START, *files, 2);
           if ( (rc = encode_crypt(*files, remusr, 0)) )
-            log_error("%s: encryption failed: %s\n",
+            log_error("encryption of `%s' failed: %s\n",
                       print_fname_stdin(*files), g10_errstr(rc) );
           write_status( STATUS_FILE_DONE );
           files++;

@@ -446,6 +446,12 @@ ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
 		goto leave;
 	    }
 	    fp = iobuf_open(answer);
+            if (fp && is_secured_file (iobuf_get_fd (fp)))
+              {
+                iobuf_close (fp);
+                fp = NULL;
+                errno = EPERM;
+              }
 	    if( !fp && errno == ENOENT ) {
 		tty_printf("No such file, try again or hit enter to quit.\n");
 		any++;
@@ -501,6 +507,12 @@ hash_datafiles( MD_HANDLE md, MD_HANDLE md2, STRLIST files,
 
     for (sl=files; sl; sl = sl->next ) {
 	fp = iobuf_open( sl->d );
+        if (fp && is_secured_file (iobuf_get_fd (fp)))
+          {
+            iobuf_close (fp);
+            fp = NULL;
+            errno = EPERM;
+          }
 	if( !fp ) {
 	    log_error(_("can't open signed data `%s'\n"),
 						print_fname_stdin(sl->d));

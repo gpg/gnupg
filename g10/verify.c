@@ -91,6 +91,12 @@ verify_signatures( int nfiles, char **files )
 
     /* open the signature file */
     fp = iobuf_open(sigfile);
+    if (fp && is_secured_file (iobuf_get_fd (fp)))
+      {
+        iobuf_close (fp);
+        fp = NULL;
+        errno = EPERM;
+      }
     if( !fp ) {
 	log_error(_("can't open `%s'\n"), print_fname_stdin(sigfile));
 	return G10ERR_OPEN_FILE;
@@ -137,6 +143,12 @@ verify_one_file( const char *name )
 
     print_file_status( STATUS_FILE_START, name, 1 );
     fp = iobuf_open(name);
+    if (fp && is_secured_file (iobuf_get_fd (fp)))
+      {
+        iobuf_close (fp);
+        fp = NULL;
+        errno = EPERM;
+      }
     if( !fp ) {
 	print_file_status( STATUS_FILE_ERROR, name, 1 );
 	log_error(_("can't open `%s'\n"), print_fname_stdin(name));

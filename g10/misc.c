@@ -34,12 +34,30 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #endif
+#ifdef ENABLE_SELINUX_HACKS
+#include <sys/stat.h>
+#endif
 #include "util.h"
 #include "main.h"
 #include "photoid.h"
 #include "options.h"
 #include "i18n.h"
 #include "cardglue.h"
+
+
+#ifdef ENABLE_SELINUX_HACKS
+/* A object and a global variable to keep track of files marked as
+   secured. */
+struct secured_file_item 
+{
+  struct secured_file_item *next;
+  ino_t ino;
+  dev_t dev;
+};
+static struct secured_file_item *secured_files;
+#endif /*ENABLE_SELINUX_HACKS*/
+
+
 
 #if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
 static int
@@ -84,6 +102,100 @@ disable_core_dumps()
 #endif
     return 1;
 #endif
+}
+
+
+/* For the sake of SELinux we want to restrict access through gpg to
+   certain files we keep under our own control.  This function
+   registers such a file and is_secured_file may then be used to
+   check whether a file has ben registered as secured. */
+void
+register_secured_file (const char *fname)
+{
+#ifdef ENABLE_SELINUX_HACKS
+  struct stat buf;
+  struct secured_file_item *sf;
+
+  /* Note that we stop immediatley if something goes wrong here. */
+  if (stat (fname, &buf))
+    log_fatal (_("fstat of `%s' failed in %s: %s\n"), fname, 
+               "register_secured_file", strerror (errno));
+/*   log_debug ("registering `%s' i=%lu.%lu\n", fname, */
+/*              (unsigned long)buf.st_dev, (unsigned long)buf.st_ino); */
+  for (sf=secured_files; sf; sf = sf->next)
+    {
+      if (sf->ino == buf.st_ino && sf->dev == buf.st_dev)
+        return; /* Already registered.  */
+    }
+
+  sf = xmalloc (sizeof *sf);
+  sf->ino = buf.st_ino;
+  sf->dev = buf.st_dev;
+  sf->next = secured_files;
+  secured_files = sf;
+#endif /*ENABLE_SELINUX_HACKS*/
+}
+
+/* Remove a file registerd as secure. */
+void
+unregister_secured_file (const char *fname)
+{
+#ifdef ENABLE_SELINUX_HACKS
+  struct stat buf;
+  struct secured_file_item *sf, *sfprev;
+
+  if (stat (fname, &buf))
+    {
+      log_error (_("fstat of `%s' failed in %s: %s\n"), fname,
+                 "unregister_secured_file", strerror (errno));
+      return;
+    }
+/*   log_debug ("unregistering `%s' i=%lu.%lu\n", fname,  */
+/*              (unsigned long)buf.st_dev, (unsigned long)buf.st_ino); */
+  for (sfprev=NULL,sf=secured_files; sf; sfprev=sf, sf = sf->next)
+    {
+      if (sf->ino == buf.st_ino && sf->dev == buf.st_dev)
+        {
+          if (sfprev)
+            sfprev->next = sf->next;
+          else
+            secured_files = sf->next;
+          xfree (sf);
+          return;
+        }
+    }
+#endif /*ENABLE_SELINUX_HACKS*/
+}
+
+/* Return true if FD is corresponds to a secured file.  Using -1 for
+   FS is allowed and will return false. */ 
+int 
+is_secured_file (int fd)
+{
+#ifdef ENABLE_SELINUX_HACKS
+  struct stat buf;
+  struct secured_file_item *sf;
+
+  if (fd == -1)
+    return 0; /* No file descriptor so it can't be secured either.  */
+
+  /* Note that we print out a error here and claim that a file is
+     secure if something went wrong. */
+  if (fstat (fd, &buf))
+    {
+      log_error (_("fstat(%d) failed in %s: %s\n"), fd, 
+                 "is_secured_file", strerror (errno));
+      return 1;
+    }
+/*   log_debug ("is_secured_file (%d) i=%lu.%lu\n", fd, */
+/*              (unsigned long)buf.st_dev, (unsigned long)buf.st_ino); */
+  for (sf=secured_files; sf; sf = sf->next)
+    {
+      if (sf->ino == buf.st_ino && sf->dev == buf.st_dev)
+        return 1; /* Yes.  */
+    }
+#endif /*ENABLE_SELINUX_HACKS*/
+  return 0; /* No. */
 }
 
 

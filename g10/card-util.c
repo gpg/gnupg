@@ -577,17 +577,24 @@ change_login (const char *args)
       for (args++; spacep (args); args++)
         ;
       fp = fopen (args, "rb");
+      if (fp && is_secured_file (fileno (fp)))
+        {
+          fclose (fp);
+          fp = NULL;
+          errno = EPERM;
+        }
       if (!fp)
         {
-          tty_printf ("can't open `%s': %s\n", args, strerror (errno));
+          tty_printf (_("can't open `%s': %s\n"), args, strerror (errno));
           return -1;
         }
+          
       data = xmalloc (254);
       n = fread (data, 1, 254, fp);
       fclose (fp);
       if (n < 0)
         {
-          tty_printf ("error reading `%s': %s\n", args, strerror (errno));
+          tty_printf (_("error reading `%s': %s\n"), args, strerror (errno));
           xfree (data);
           return -1;
         }

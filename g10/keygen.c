@@ -2215,6 +2215,12 @@ read_parameter_file( const char *fname )
       fname = "-";
 
     fp = iobuf_open (fname);
+    if (fp && is_secured_file (iobuf_get_fd (fp)))
+      {
+        iobuf_close (fp);
+        fp = NULL;
+        errno = EPERM;
+      }
     if (!fp) {
       log_error (_("can't open `%s': %s\n"), fname, strerror(errno) );
       return;

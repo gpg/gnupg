@@ -165,6 +165,12 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames,
 	    IOBUF inp2 = iobuf_open(fname);
 	    if( !fname )
 	        fname = "[stdin]";
+            if (inp2 && is_secured_file (iobuf_get_fd (inp2)))
+              {
+                iobuf_close (inp2);
+                inp2 = NULL;
+                errno = EPERM;
+              }
 	    if( !inp2 )
 	        log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
 	    else {

@@ -690,6 +690,14 @@ static ARGPARSE_OPTS opts[] = {
     {0,NULL,0,NULL}
 };
 
+
+#ifdef ENABLE_SELINUX_HACKS
+#define ALWAYS_ADD_KEYRINGS 1
+#else
+#define ALWAYS_ADD_KEYRINGS 0
+#endif
+
+
 int g10_errors_seen = 0;
 
 static int utf8_strings = 0;
@@ -1778,6 +1786,12 @@ main( int argc, char **argv )
 
 	configlineno = 0;
 	configfp = fopen( configname, "r" );
+        if (configfp && is_secured_file (fileno (configfp)))
+          {
+            fclose (configfp);
+            configfp = NULL;
+            errno = EPERM;
+          }
 	if( !configfp ) {
 	    if( default_config ) {
 		if( parse_debug )
@@ -2827,6 +2841,8 @@ main( int argc, char **argv )
     if( use_random_seed ) {
 	char *p = make_filename(opt.homedir, "random_seed", NULL );
 	set_random_seed_file(p);
+        if (!access (p, F_OK))
+          register_secured_file (p);
 	m_free(p);
     }
 
@@ -2859,12 +2875,18 @@ main( int argc, char **argv )
     /* Add the keyrings, but not for some special commands and not in
        case of "-kvv userid keyring".  Also avoid adding the secret
        keyring for a couple of commands to avoid unneeded access in
-       case the secrings are stored on a floppy */
-    if( cmd != aDeArmor && cmd != aEnArmor
-	&& !(cmd == aKMode && argc == 2 ) ) 
+       case the secrings are stored on a floppy.
+       
+       We always need to add the keyrings if we are running under
+       SELinux, thi is so that the rings are added to the list of
+       secured files. */
+    if( ALWAYS_ADD_KEYRINGS 
+        || (cmd != aDeArmor && cmd != aEnArmor
+            && !(cmd == aKMode && argc == 2 )) ) 
       {
-        if (cmd != aCheckKeys && cmd != aListSigs && cmd != aListKeys
-            && cmd != aVerify && cmd != aSym)
+        if (ALWAYS_ADD_KEYRINGS
+            || (cmd != aCheckKeys && cmd != aListSigs && cmd != aListKeys
+                && cmd != aVerify && cmd != aSym))
           {
             if (!sec_nrings || default_keyring) /* add default secret rings */
               keydb_add_resource ("secring" EXTSEP_S "gpg", 0, 1);
@@ -2923,15 +2945,15 @@ main( int argc, char **argv )
 	if( argc > 1 )
 	    wrong_args(_("--store [filename]"));
 	if( (rc = encode_store(fname)) )
-	    log_error_f( print_fname_stdin(fname),
-			"store failed: %s\n", g10_errstr(rc) );
+	    log_error ("storing `%s' failed: %s\n",
+                       print_fname_stdin(fname),g10_errstr(rc) );
 	break;
       case aSym: /* encrypt the given file only with the symmetric cipher */
 	if( argc > 1 )
 	    wrong_args(_("--symmetric [filename]"));
 	if( (rc = encode_symmetric(fname)) )
-	    log_error_f(print_fname_stdin(fname),
-			"symmetric encryption failed: %s\n",g10_errstr(rc) );
+            log_error (_("symmetric encryption of `%s' failed: %s\n"),
+                        print_fname_stdin(fname),g10_errstr(rc) );
 	break;
 
       case aEncr: /* encrypt the given file */
@@ -3505,7 +3527,14 @@ main( int argc, char **argv )
 		&& isatty( fileno(stdout) ) && isatty( fileno(stderr) ) )
 	    log_info(_("Go ahead and type your message ...\n"));
 
-	if( !(a = iobuf_open(fname)) )
+	a = iobuf_open(fname);
+        if (a && is_secured_file (iobuf_get_fd (a)))
+          {
+            iobuf_close (a);
+            a = NULL;
+            errno = EPERM;
+          }
+	if( !a )
 	    log_error(_("can't open `%s'\n"), print_fname_stdin(fname));
 	else {
 
@@ -3678,6 +3707,12 @@ print_mds( const char *fname, int algo )
     }
     else {
 	fp = fopen( fname, "rb" );
+        if (fp && is_secured_file (fileno (fp)))
+          {
+            fclose (fp);
+            fp = NULL;
+            errno = EPERM;
+          }
     }
     if( !fp ) {
 	log_error("%s: %s\n", fname?fname:"[stdin]", strerror(errno) );

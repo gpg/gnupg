@@ -278,6 +278,12 @@ open_sigfile( const char *iname, progress_filter_context_t *pfx )
 	    buf = m_strdup(iname);
 	    buf[len-(buf[len-1]=='n'?5:4)] = 0 ;
 	    a = iobuf_open( buf );
+            if (a && is_secured_file (iobuf_get_fd (a)))
+              {
+                iobuf_close (a);
+                a = NULL;
+                errno = EPERM;
+              }
 	    if( a && opt.verbose )
 		log_info(_("assuming signed data in `%s'\n"), buf );
 	    if (a && pfx)
@@ -309,6 +315,12 @@ copy_options_file( const char *destdir )
     fname = m_alloc( strlen(datadir) + strlen(destdir) + 15 );
     strcpy(stpcpy(fname, datadir), DIRSEP_S "options" SKELEXT );
     src = fopen( fname, "r" );
+    if (src && is_secured_file (fileno (src)))
+      {
+        fclose (src);
+        src = NULL;
+        errno = EPERM;
+      }
     if( !src ) {
 	log_error(_("%s: can't open: %s\n"), fname, strerror(errno) );
 	m_free(fname);

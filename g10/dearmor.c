@@ -33,7 +33,7 @@
 #include "packet.h"
 #include "options.h"
 #include "main.h"
-
+#include "i18n.h"
 
 /****************
  * Take an armor file and write it out without armor
@@ -49,8 +49,15 @@ dearmor_file( const char *fname )
     memset( &afx, 0, sizeof afx);
 
     /* prepare iobufs */
-    if( !(inp = iobuf_open(fname)) ) {
-	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
+    inp = iobuf_open(fname);
+    if (inp && is_secured_file (iobuf_get_fd (inp)))
+      {
+        iobuf_close (inp);
+        inp = NULL;
+        errno = EPERM;
+      }
+    if (!inp) {
+	log_error(_("can't open `%s': %s\n"), fname? fname: "[stdin]",
 					strerror(errno) );
 	rc = G10ERR_OPEN_FILE;
 	goto leave;
@@ -91,9 +98,16 @@ enarmor_file( const char *fname )
     memset( &afx, 0, sizeof afx);
 
     /* prepare iobufs */
-    if( !(inp = iobuf_open(fname)) ) {
-	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
-					strerror(errno) );
+    inp = iobuf_open(fname);
+    if (inp && is_secured_file (iobuf_get_fd (inp)))
+      {
+        iobuf_close (inp);
+        inp = NULL;
+        errno = EPERM;
+      }
+    if (!inp) {
+	log_error(_("can't open `%s': %s\n"), fname? fname: "[stdin]",
+                  strerror(errno) );
 	rc = G10ERR_OPEN_FILE;
 	goto leave;
     }

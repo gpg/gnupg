@@ -478,6 +478,12 @@ int exec_write(struct exec_info **info,const char *program,
 
   /* It's not fork/exec/pipe, so create a temp file */
   (*info)->tochild=fopen((*info)->tempfile_in,binary?"wb":"w");
+  if((*info)->tochild && is_secured_file (fileno ((*info)->tochild)))
+    {
+      fclose ((*info)->tochild);
+      (*info)->tochild = NULL;
+      errno = EPERM;
+    }
   if((*info)->tochild==NULL)
     {
       log_error(_("can't create file `%s': %s\n"),
@@ -545,6 +551,13 @@ int exec_read(struct exec_info *info)
       if(!info->writeonly)
 	{
 	  info->fromchild=iobuf_open(info->tempfile_out);
+          if (info->fromchild
+              && is_secured_file (iobuf_get_fd (info->fromchild)))
+            {
+              iobuf_close (info->fromchild);
+              info->fromchild = NULL;
+              errno = EPERM;
+            }
 	  if(info->fromchild==NULL)
 	    {
 	      log_error(_("unable to read external program response: %s\n"),

@@ -14,13 +14,41 @@
 
 2004-10-13  Werner Koch  <wk@g10code.com>
 
+	* tdbdump.c (import_ownertrust): Removed all log_error_f and
+	reworded the messages.
+
+	* dermor.c: Include i18n.h.  Made 2 strings translatable.
+	
+	* misc.c (register_secured_file, is_secured_file)
+	(unregister_secured_file): New.
+	* keyring.c (do_copy, rename_tmp_file): Implement the SELinux hacks.
+	(keyring_register_filename): Ditto.
+	* tdbio.c (open_db): Ditto.
+	* openfile.c (copy_options_file, open_sigfile): Ditto.
+	* verify.c (verify_signatures, verify_one_file): Ditto.
+	* photoid.c (generate_photo_id): Ditto.
+	* keygen.c (read_parameter_file): Ditto.
+	* import.c (import_keys_internal): Ditto.
+	* decrypt.c (decrypt_message, decrypt_messages): Ditto.
+	* dearmor.c (dearmor_file, enarmor_file): Ditto.
+	* g10.c (main, print_mds): Ditto.
+	* exec.c (exec_write, exec_read): Ditto. 
+	* card-util.c (change_login): Ditto.
+	* encode.c (encode_simple, encode_crypt): Ditto.
+
 	* openfile.c (overwrite_filep, make_outfile_name, open_outfile) 
 	(open_sigfile): Use iobuf_is_pipe_filename to check for pipes so
 	that special filesnames are taken into account. This is bug 327.
+
 	* tdbdump.c (import_ownertrust): Ditto.
+
 	* sign.c (write_plaintext_packet): Ditto.
+	(sign_file, clearsign_file, sign_symencrypt_file): 
+
 	* progress.c (handle_progress): Ditto.
 	* plaintext.c (handle_plaintext): Ditto.
+	(ask_for_detached_datafile, hash_datafiles): 
+
 	* encode.c (encode_simple, encode_crypt): Ditto. 
 
 2004-10-12  Werner Koch  <wk@g10code.com>

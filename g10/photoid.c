@@ -83,9 +83,15 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
 	goto scram;
 
       file=iobuf_open(filename);
+      if (file && is_secured_file (iobuf_get_fd (file)))
+        {
+          iobuf_close (file);
+          file = NULL;
+          errno = EPERM;
+        }
       if(!file)
 	{
-	  log_error(_("Unable to open JPEG file `%s': %s\n"),
+	  log_error(_("unable to open JPEG file `%s': %s\n"),
 		    filename,strerror(errno));
 	  continue;
 	}

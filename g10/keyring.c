@@ -213,6 +213,9 @@ keyring_register_filename (const char *fname, int secret, void **ptr)
 	  }
       }
 
+    if (secret)
+      register_secured_file (fname);
+
     kr = m_alloc (sizeof *kr + strlen (fname));
     strcpy (kr->fname, fname);
     kr->secret = !!secret;
@@ -1226,10 +1229,13 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
   remove( fname );
 #endif
+  if (secret)
+    unregister_secured_file (fname);
   if (rename (tmpfname, fname) )
     {
-      log_error ("renaming `%s' to `%s' failed: %s\n",
+      log_error (_("renaming `%s' to `%s' failed: %s\n"),
                  tmpfname, fname, strerror(errno) );
+      register_secured_file (fname);
       rc = G10ERR_RENAME_FILE;
       if (secret)
         {
@@ -1505,12 +1511,15 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	goto leave;
     }
 
-    /* create the new file */
+    /* Create the new file.  */
     rc = create_tmp_file (fname, &bakfname, &tmpfname, &newfp);
     if (rc) {
 	iobuf_close(fp);
 	goto leave;
     }
+    if (secret)
+      register_secured_file (tmpfname);
+
     if( mode == 1 ) { /* insert */
 	/* copy everything to the new file */
 	rc = copy_all_packets (fp, newfp);
@@ -1518,6 +1527,8 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	    log_error("%s: copy to `%s' failed: %s\n",
 		      fname, tmpfname, g10_errstr(rc) );
 	    iobuf_close(fp);
+            if (secret)
+              unregister_secured_file (tmpfname);
 	    iobuf_cancel(newfp);
 	    goto leave;
 	}
@@ -1531,6 +1542,8 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	    log_error ("%s: copy to `%s' failed: %s\n",
                        fname, tmpfname, g10_errstr(rc) );
 	    iobuf_close(fp);
+            if (secret)
+              unregister_secured_file (tmpfname);
 	    iobuf_cancel(newfp);
 	    goto leave;
 	}
@@ -1541,6 +1554,8 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	    log_error("%s: skipping %u packets failed: %s\n",
 			    fname, n_packets, g10_errstr(rc));
 	    iobuf_close(fp);
+            if (secret)
+              unregister_secured_file (tmpfname);
 	    iobuf_cancel(newfp);
 	    goto leave;
 	}
@@ -1550,6 +1565,8 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
         rc = write_keyblock (newfp, root);
         if (rc) {
           iobuf_close(fp);
+          if (secret)
+            unregister_secured_file (tmpfname);
           iobuf_cancel(newfp);
           goto leave;
         }
@@ -1562,6 +1579,8 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	    log_error("%s: copy to `%s' failed: %s\n",
 		      fname, tmpfname, g10_errstr(rc) );
 	    iobuf_close(fp);
+            if (secret)
+              unregister_secured_file (tmpfname);
 	    iobuf_cancel(newfp);
 	    goto leave;
 	}

@@ -71,7 +71,7 @@ static void unlock_all (KEYDB_HANDLE hd);
 
 
 /* Handle the creation of a keyring if it does not yet exist.  Take
-   into acount that other processes might have the keyring alread
+   into acount that other processes might have the keyring already
    locked.  This lock check does not work if the directory itself is
    not yet available. */
 static int
