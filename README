@@ -1,7 +1,9 @@
+-----BEGIN PGP SIGNED MESSAGE-----
 
-		  GNUPG - The GNU Privacy Guard
-		 -------------------------------
-			  Version 0.3
+
+                  GNUPG - The GNU Privacy Guard
+                 -------------------------------
+                          Version 0.3
 
 
     As you can see from the version number, the program may have some
@@ -11,17 +13,26 @@
     On a Linux box (version 2.x.x, alpha or x86 CPU) it should
     work reliably.  You may create your key on such a machine and
     use it.  Please verify the tar file; there is a PGP and a GNUPG
-    signature available. My PGP key is well known and published in
+    signature available. My PGP 2 key is well known and published in
     the "Global Trust Register for 1998", ISBN 0-9532397-0-5.
 
     I have included my pubring as "g10/pubring.asc", which contains
     the key used to make GNUPG signatures:
+    "pub  1024D/57548DCD 1998-07-07 Werner Koch (gnupg sig) <dd9jn@gnu.org>"
+    "Key fingerprint = 6BD9 050F D8FC 941B 4341  2DCC 68B7 AB89 5754 8DCD"
+
+    Old version of gnupg are signed with this key:
     "pub  1312G/FF3EAA0B 1998-02-09 Werner Koch <wk@isil.d.shuttle.de>"
     "Key fingerprint = 8489 6CD0 1851 0E33 45DA  CD67 036F 11B8 FF3E AA0B"
 
+    My standard key is now:
+    "pub  1024D/621CC013 1998-07-07 Werner Koch <werner.koch@guug.de>"
+    "Key fingerprint = ECAF 7590 EB34 43B5 C7CF  3ACB 6C7E E1B8 621C C013"
+
     You may add it to your GNUPG pubring and use it in the future to
-    verify new releases.  Because you verified the tar file containing
-    this file here, you can be sure that the above fingerprint is correct.
+    verify new releases.  Because you verified this README file and
+    _checked_that_it_is_really_my PGP2 key 0C9857A5, you can be sure
+    that the above fingerprints are correct.
 
     Please subscribe to g10@net.lut.ac.uk by sending a mail with
     the word "subscribe" in the body to "g10-request@net.lut.ac.uk".
@@ -40,7 +51,7 @@
     is still available, but due to the larger size of such signatures it
     is depreciated (Please note that the GNUPG implementation of ElGamal
     signatures is *not* insecure).  Symmetric algorithms are: Blowfish
-    and CAST5,	Digest algorithms are MD5, RIPEMD160, SHA1 and TIGER/192.
+    and CAST5,  Digest algorithms are MD5, RIPEMD160, SHA1 and TIGER/192.
 
 
 
@@ -49,7 +60,7 @@
 
     See the file INSTALL.  Here is a quick summary:
 
-    1)	"./configure"
+    1)  "./configure"
 
     2) "make"
 
@@ -64,7 +75,7 @@
     Key Generation
     --------------
 
-	gpg --gen-key
+        gpg --gen-key
 
     This asks some questions and then starts key generation. To create
     good random numbers for prime number generation, it uses a /dev/random
@@ -77,7 +88,7 @@
     You should make a revocation certificate in case someone gets
     knowledge of your secret key or you forgot your passphrase:
 
-	gpg --gen-revoke your_user_id
+        gpg --gen-revoke your_user_id
 
     Run this command and store it away; output is always ASCII armored,
     so that you can print it and (hopefully never) re-create it if
@@ -86,18 +97,18 @@
     If you decided to create a DSA key, you should add an ElGamal
     for encryption:
 
-	gpg --add-key user_id_of_your_key
+        gpg --add-key user_id_of_your_key
 
     and follow the displayed instructions (select "ElGamal using v4 packets").
 
 
     You can sign a key with this command:
 
-	gpg --sign-key Donald
+        gpg --sign-key Donald
 
     This let you sign the key of "Donald" with your default userid.
 
-	gpg --sign-key -u Karl -u Joe Donald
+        gpg --sign-key -u Karl -u Joe Donald
 
     This let you sign the key of of "Donald" with the userids of "Karl"
     and "Joe".
@@ -106,7 +117,7 @@
     whether you want to sign this key.
 
     You may remove a signature at any time using the option "--edit-sig",
-    which asks for the sigs to remove.	Self-signatures are not removable.
+    which asks for the sigs to remove.  Self-signatures are not removable.
 
 
 
@@ -114,16 +125,16 @@
     Sign
     ----
 
-	gpg -s file
+        gpg -s file
 
     This creates a file file.gpg which is compressed and has a signature
     attached.
 
-	gpg -sa file
+        gpg -sa file
 
     Same as above, but file.gpg is ascii armored.
 
-	gpg -s -o out file
+        gpg -s -o out file
 
     Creates a signature of file, but writes the output to the file "out".
 
@@ -131,12 +142,12 @@
     Encrypt
     -------
 
-	gpg -e -r heine file
+        gpg -e -r heine file
 
     This encrypts files with the public key of "heine" and writes it
     to "file.gpg"
 
-	echo "hallo" | gpg -ea -r heine | mail heine
+        echo "hallo" | gpg -ea -r heine | mail heine
 
     Ditto, but encrypts "hallo\n" and mails it as ascii armored message.
 
@@ -144,13 +155,13 @@
     Sign and Encrypt
     ----------------
 
-	gpg -se -r heine file
+        gpg -se -r heine file
 
     This encrypts files with the public key of "heine" and writes it
     to "file.gpg" after signing it with the default user id.
 
 
-	gpg -se -r heine -u Suttner file
+        gpg -se -r heine -u Suttner file
 
     Ditto, but sign the file with the user id "Suttner"
 
@@ -159,17 +170,17 @@
     ------------------
     To export your complete keyring(s) do this:
 
-	gpg --export
+        gpg --export
 
     To export only some user ids do this:
 
-	gpg --export userids
+        gpg --export userids
 
     Use "-a" or "--armor" to create ASCII armored output.
 
     Importing keys is done with the option, you guessed it, "--import":
 
-	gpg --import [filenames]
+        gpg --import [filenames]
 
     New keys are appended to the default keyring and already existing
     keys are merged.  Keys without a self-signature are ignored.
@@ -181,40 +192,40 @@
 
     * Only by the short keyid (prepend a zero if it begins with A..F):
 
-	"234567C4"
-	"0F34E556E"
-	"01347A56A"
-	"0xAB123456
+        "234567C4"
+        "0F34E556E"
+        "01347A56A"
+        "0xAB123456
 
     * By a complete keyid:
 
-	"234AABBCC34567C4"
-	"0F323456784E56EAB"
-	"01AB3FED1347A5612"
-	"0x234AABBCC34567C4"
+        "234AABBCC34567C4"
+        "0F323456784E56EAB"
+        "01AB3FED1347A5612"
+        "0x234AABBCC34567C4"
 
     * By a fingerprint:
 
-	"1234343434343434C434343434343434"
-	"123434343434343C3434343434343734349A3434"
-	"0E12343434343434343434EAB3484343434343434"
+        "1234343434343434C434343434343434"
+        "123434343434343C3434343434343734349A3434"
+        "0E12343434343434343434EAB3484343434343434"
 
       The first one is MD5 the others are ripemd160 or sha1.
 
     * By an exact string (not yet implemented):
 
-	"=Heinrich Heine <heinrichh@uni-duesseldorf.de>"
+        "=Heinrich Heine <heinrichh@uni-duesseldorf.de>"
 
     * By an email address:
 
-	"<heinrichh@uni-duesseldorf.de>"
+        "<heinrichh@uni-duesseldorf.de>"
 
       This can be used by a keyserver instead of a substring to
       find this key faster.
 
     * By the Local ID (from the trustdb):
 
-	"#34"
+        "#34"
 
       This can be used by a MUA to specify an exact key after selecting
       a key from GNUPG (by the use of a special option or an extra utility)
@@ -222,8 +233,8 @@
 
     * Or by the usual substring:
 
-	"Heine"
-	"*Heine"
+        "Heine"
+        "*Heine"
 
       The '*' indicates substring search explicitly.
 
@@ -253,21 +264,21 @@
     Esoteric commands
     -----------------
 
-	gpg --list-packets datafile
+        gpg --list-packets datafile
 
     Use this to list the contents of a data file. If the file is encrypted
     you are asked for the passphrase, so that GNUPG is able to look at the
     inner structure of a encrypted packet.
 
-	gpgm --list-trustdb
+        gpgm --list-trustdb
 
     List the contents of the trustdb in a human readable format
 
-	gpgm --list-trustdb  <usernames>
+        gpgm --list-trustdb  <usernames>
 
     List the tree of certificates for the given usernames
 
-	gpgm --list-trust-path	depth  username
+        gpgm --list-trust-path  depth  username
 
     List the possible trust paths for the given username, up to the specified
     depth.  If depth is negative, duplicate introducers are not listed,
@@ -276,20 +287,20 @@
      using a negative number). This option may create new entries in the
     trustdb.
 
-	gpgm --print-mds  filenames
+        gpgm --print-mds  filenames
 
     List all available message digest values for the fiven filenames
 
-	gpgm --gen-prime n
+        gpgm --gen-prime n
 
     Generate and print a simple prime number of size n
 
-	gpgm --gen-prime n q
+        gpgm --gen-prime n q
 
     Generate a prime number suitable for ElGamal signatures of size n with
     a q as largest prime factor of n-1.
 
-	gpgm --gen-prime n q 1
+        gpgm --gen-prime n q 1
 
     Ditto, but calculate a generator too.
 
@@ -303,17 +314,17 @@
     can be used multiple times, all values are ORed; n maybe prefixed with
     0x to use hex-values.
 
-	 value	used for
-	 -----	----------------------------------------------
-	  1	packet reading/writing
-	  2	MPI details
-	  4	ciphers and primes (may reveal sensitive data)
-	  8	iobuf filter functions
-	  16	iobuf stuff
-	  32	memory allocation stuff
-	  64	caching
-	  128	show memory statistics at exit
-	  256	trust verification stuff
+         value  used for
+         -----  ----------------------------------------------
+          1     packet reading/writing
+          2     MPI details
+          4     ciphers and primes (may reveal sensitive data)
+          8     iobuf filter functions
+          16    iobuf stuff
+          32    memory allocation stuff
+          64    caching
+          128   show memory statistics at exit
+          256   trust verification stuff
 
 
     Other Notes
@@ -332,3 +343,13 @@
     please subscribe before posting).
 
 
+
+-----BEGIN PGP SIGNATURE-----
+Version: 2.6.3ia
+Charset: noconv
+
+iQB1AwUBNaIyMR0Z9MEMmFelAQGGFgMAm0RkKqH6DwIl3cu4ETQROprnwbl0sc21
+05CQCsATs/0oQ8R2GhH1vXyHQnGw4Abg8IHqe+fADUA8cpf1ijfPzgeq+qhp7rqs
+EenOw3xe8RrsrvovkCy91AtYl8zyVdC8
+=IgnL
+-----END PGP SIGNATURE-----
