@@ -2029,7 +2029,8 @@ gc_component_change_options (int component, FILE *in)
     {
       /* Go on if we have already seen this backend, or if there is
 	 nothing to do.  */
-      if (src_pathname[option->backend] || !(option->new_flags || option->new_value))
+      if (src_pathname[option->backend]
+	  || !(option->new_flags || option->new_value))
 	{
 	  option++;
 	  continue;
@@ -2037,14 +2038,14 @@ gc_component_change_options (int component, FILE *in)
 
       if (gc_backend[option->backend].program)
 	err = change_options_program (component, option->backend,
-				      &src_pathname[component],
-				      &dest_pathname[component],
-				      &orig_pathname[component]);
+				      &src_pathname[option->backend],
+				      &dest_pathname[option->backend],
+				      &orig_pathname[option->backend]);
       else
 	err = change_options_file (component, option->backend,
-				   &src_pathname[component],
-				   &dest_pathname[component],
-				   &orig_pathname[component]);
+				   &src_pathname[option->backend],
+				   &dest_pathname[option->backend],
+				   &orig_pathname[option->backend]);
 	
       if (err)
 	break;
