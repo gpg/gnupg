@@ -1879,17 +1879,33 @@ main( int argc, char **argv )
 
 	    while( endless || count ) {
 		byte *p;
-		size_t n = !endless && count < 100? count : 100;
+                /* Wee need a multiple of 3, so that in case of
+                   armored output we get a correct string.  No
+                   linefolding is done, as it is best to levae this to
+                   other tools */
+		size_t n = !endless && count < 99? count : 99;
 
 		p = get_random_bits( n*8, level, 0);
 	      #ifdef HAVE_DOSISH_SYSTEM
 		setmode ( fileno(stdout), O_BINARY );
 	      #endif
-		fwrite( p, n, 1, stdout );
+                if (opt.armor) {
+                    char *tmp = make_radix64_string (p, n);
+                    fputs (tmp, stdout);
+                    m_free (tmp);
+                    if (n%3 == 1)
+                      putchar ('=');
+                    if (n%3)
+                      putchar ('=');
+                } else {
+                    fwrite( p, n, 1, stdout );
+                }
 		m_free(p);
 		if( !endless )
 		    count -= n;
 	    }
+            if (opt.armor)
+                putchar ('\n');
 	}
 	break;
 
