@@ -237,7 +237,7 @@ if test "$use_exec" = yes ; then
 AC_MSG_CHECKING([whether included zlib is requested])
 AC_ARG_WITH(included-zlib,
     [  --with-included-zlib    use the zlib code included here],
-[g10_force_zlib=yes], [g10_force_zlib=no] )
+[g10_force_zlib="$withval"], [g10_force_zlib=no] )
 AC_MSG_RESULT($g10_force_zlib)
 
 dnl
