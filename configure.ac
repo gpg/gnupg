@@ -552,7 +552,7 @@ AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
 AC_FUNC_FORK
 AC_CHECK_FUNCS(strerror stpcpy strsep strlwr tcgetattr strtoul mmap)
-AC_CHECK_FUNCS(strcasecmp strncasecmp)
+AC_CHECK_FUNCS(strcasecmp strncasecmp ctermid)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(atexit raise getpagesize strftime nl_langinfo setlocale)
 AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe stat)
