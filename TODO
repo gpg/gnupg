@@ -36,7 +36,7 @@ might want to have an agent context for each service request
 ** Write a keybox header and check for that magic value.
 ** Check that all error code mapping is done.
 ** Remove the inter-module dependencies between gpgsm and keybox
-
+** Add an source_of_key field
 
 * agent/command.c
 ** Make sure that secure memory is used where appropriate

@@ -7,7 +7,8 @@ sm/     the gpgsm program
 agent/  the gpg-agent
 scd/    the smartcard daemon
 
-Libassuan, Libksba and Libgcrypt are required to build it.  
+You need the libgpg-error package.  Libassuan, Libksba and Libgcrypt
+are also required to build it.
 
 Keybox is designed to be source include-able.
 
