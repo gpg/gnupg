@@ -1,3 +1,8 @@
+2003-06-08  Werner Koch  <wk@gnupg.org>
+
+	* import.c (import_keys): Invalidate the cache so that the file
+	descriptor gets closed.  Fixes bug reported by Juan F. Codagnone.
+
 2003-06-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (sign_uids): Do not sign expired uids without --expert

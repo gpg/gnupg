@@ -163,6 +163,8 @@ import_keys( char **fnames, int nnames, int fast,
 	else {
 	    int rc = import( inp, fast, fname, stats, options );
 	    iobuf_close(inp);
+            /* must invalidate that ugly cache to actually close it */
+            iobuf_ioctl (NULL, 2, 0, (char*)fname);
 	    if( rc )
 		log_error("import from `%s' failed: %s\n", fname,
 							   g10_errstr(rc) );
