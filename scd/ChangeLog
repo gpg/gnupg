@@ -1,3 +1,8 @@
+2004-01-29  Werner Koch  <wk@gnupg.org>
+
+	* command.c (reset_notify): Release the application context and
+	close the reader.
+
 2004-01-28  Werner Koch  <wk@gnupg.org>
 
 	* iso7816.c (iso7816_manage_security_env): New.

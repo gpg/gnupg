@@ -73,9 +73,10 @@ reset_notify (ASSUAN_CONTEXT ctx)
     }
   if (ctrl->app_ctx)
     {
-      /* FIXME: close the application. */
-      xfree (ctrl->app_ctx);
+      int slot = ctrl->app_ctx->slot;
+      release_application (ctrl->app_ctx);
       ctrl->app_ctx = NULL;
+      apdu_close_reader (slot);
     }
 }
 
