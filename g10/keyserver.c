@@ -32,16 +32,25 @@
 #include "i18n.h"
 #include "iobuf.h"
 #include "memory.h"
+#include "ttyio.h"
 #include "options.h"
 #include "packet.h"
 #include "keyserver-internal.h"
 #include "util.h"
 
-#define KEYSERVER_PROTO_VERSION 0
-
 #define GET    0
 #define SEND   1
 #define SEARCH 2
+
+struct keyrec
+{
+  KEYDB_SEARCH_DESC desc;
+  time_t createtime,expiretime;
+  int size,flags;
+  byte type;
+  IOBUF uidbuf;
+  int lines;
+};
 
 struct kopts
 {
@@ -60,6 +69,9 @@ struct kopts
   {"auto-key-retrieve",0,&opt.keyserver_options.auto_key_retrieve},
   {NULL}
 };
+
+static int keyserver_work(int action,STRLIST list,
+			  KEYDB_SEARCH_DESC *desc,int count);
 
 void 
 parse_keyserver_options(char *options)
@@ -218,119 +230,412 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
   return 0;
 }
 
-/* Unquote only the delimiter character and backslashes (\x5C) */
-static void 
-printunquoted(char *string,char delim)
+static void
+print_keyrec(int number,struct keyrec *keyrec)
 {
-  char *ch=string;
+  int i;
 
-  while(*ch)
+  iobuf_writebyte(keyrec->uidbuf,0);
+  iobuf_flush_temp(keyrec->uidbuf);
+  printf("(%d)\t%s  ",number,iobuf_get_temp_buffer(keyrec->uidbuf));
+
+  if(keyrec->size>0)
+    printf("%d bit ",keyrec->size);
+
+  if(keyrec->type)
     {
-      if(*ch=='\\')
-	{
-	  int c;
+      const char *str=pubkey_algo_to_string(keyrec->type);
 
-	  sscanf(ch,"\\x%02x",&c);
-	  if(c==delim)
-	    {
-	      printf("%c",c);
-	      ch+=3;
-	    }
-	  else if(c=='\\')
-	    {
-	      fputc('\\',stdout);
-	      ch+=3;
-	    }
-	  else
-	    fputc(*ch,stdout);
-	}
+      if(str)
+	printf("%s ",str);
       else
-	fputc(*ch,stdout);
-
-      ch++;
+	printf("unknown ");
     }
-}
 
-static int 
-print_keyinfo(int count,char *keystring,KEYDB_SEARCH_DESC *desc)
-{
-  char *certid,*userid,*keytype,*tok;
-  int flags,keysize=0;
-  time_t createtime=0,expiretime=0,modifytime=0;
+  switch(keyrec->desc.mode)
+    {
+    case KEYDB_SEARCH_MODE_SHORT_KID:
+      printf("key %08lX",(ulong)keyrec->desc.u.kid[1]);
+      break;
 
-  if((certid=strsep(&keystring,":"))==NULL)
-    return -1;
+    case KEYDB_SEARCH_MODE_LONG_KID:
+      printf("key %08lX%08lX",(ulong)keyrec->desc.u.kid[0],
+	     (ulong)keyrec->desc.u.kid[1]);
+      break;
 
-  classify_user_id (certid, desc);
-  if(desc->mode!=KEYDB_SEARCH_MODE_SHORT_KID &&
-     desc->mode!=KEYDB_SEARCH_MODE_LONG_KID &&
-     desc->mode!=KEYDB_SEARCH_MODE_FPR16 &&
-     desc->mode!=KEYDB_SEARCH_MODE_FPR20)
-    return -1;
+    case KEYDB_SEARCH_MODE_FPR16:
+      printf("key ");
+      for(i=0;i<16;i++)
+	printf("%02X",(unsigned char)keyrec->desc.u.fpr[i]);
+      break;
 
-  if((tok=strsep(&keystring,":"))==NULL)
-    return -1;
+    case KEYDB_SEARCH_MODE_FPR20:
+      printf("key ");
+      for(i=0;i<20;i++)
+	printf("%02X",(unsigned char)keyrec->desc.u.fpr[i]);
+      break;
 
-  userid=utf8_to_native(tok,strlen(tok),0);
+    default:
+      BUG();
+      break;
+    }
 
-  if((tok=strsep(&keystring,":"))==NULL)
-    goto fail;
+  if(keyrec->createtime>0)
+    printf(", created %s",strtimestamp(keyrec->createtime));
 
-  flags=atoi(tok);
+  if(keyrec->expiretime>0)
+    printf(", expires %s",strtimestamp(keyrec->expiretime));
 
-  if((tok=strsep(&keystring,":"))==NULL)
-    goto fail;
-
-  createtime=atoi(tok);
-
-  if((tok=strsep(&keystring,":"))==NULL)
-    goto fail;
-
-  expiretime=atoi(tok);
-
-  if((tok=strsep(&keystring,":"))==NULL)
-    goto fail;
-
-  modifytime=atoi(tok);
-
-  if((keytype=strsep(&keystring,":"))==NULL)
-    goto fail;
-
-  /* The last one */
-  if(keystring!=NULL)
-    keysize=atoi(keystring);
-
-  printf("(%d)\t",count);
-
-  /* No need to check for control characters, as utf8_to_native does
-     this for us. */
-  printunquoted(userid,':');
-
-  if(flags&1)
-    printf(" (revoked)");
-  if(flags&2)
-    printf(" (disabled)");
-
-  printf("\n\t  ");
-
-  if(keysize>0)
-    printf("%d bit ",keysize);
-
-  if(keytype[0])
-    printf("%s ",keytype);
-
-  printf("key %s, created %s",certid,strtimestamp(createtime));
-
-  if(expiretime>0)
-    printf(", expires %s",strtimestamp(expiretime));
+  if(keyrec->flags&1)
+    printf(" (%s)",("revoked"));
+  if(keyrec->flags&2)
+    printf(" (%s)",("disabled"));
+  if(keyrec->flags&4)
+    printf(" (%s)",("expired"));
 
   printf("\n");
+}
+
+/* Returns a keyrec (which must be freed) once a key is complete, and
+   NULL otherwise.  Call with a NULL keystring once key parsing is
+   complete to return any unfinished keys. */
+static struct keyrec *
+parse_keyrec(char *keystring)
+{
+  static struct keyrec *work=NULL;
+  struct keyrec *ret=NULL;
+  char *record,*tok;
+  int i;
+
+  if(keystring==NULL)
+    {
+      if(work==NULL)
+	return NULL;
+      else if(work->desc.mode==KEYDB_SEARCH_MODE_NONE)
+	{
+	  m_free(work);
+	  return NULL;
+	}
+      else
+	{
+	  ret=work;
+	  work=NULL;
+	  return ret;
+	}
+    }
+
+  if(work==NULL)
+    {
+      work=m_alloc_clear(sizeof(struct keyrec));
+      work->uidbuf=iobuf_temp();
+    }
+
+  /* Remove trailing whitespace */
+  for(i=strlen(keystring);i>0;i--)
+    if(isspace(keystring[i-1]))
+      keystring[i-1]='\0';
+    else
+      break;
+
+  if((record=strsep(&keystring,":"))==NULL)
+    return ret;
+
+  if(ascii_strcasecmp("pub",record)==0)
+    {
+      if(work->desc.mode)
+	{
+	  ret=work;
+	  work=m_alloc_clear(sizeof(struct keyrec));
+	  work->uidbuf=iobuf_temp();
+	}
+
+      if((tok=strsep(&keystring,":"))==NULL)
+	return ret;
+
+      classify_user_id(tok,&work->desc);
+      if(work->desc.mode!=KEYDB_SEARCH_MODE_SHORT_KID
+	 && work->desc.mode!=KEYDB_SEARCH_MODE_LONG_KID
+	 && work->desc.mode!=KEYDB_SEARCH_MODE_FPR16
+	 && work->desc.mode!=KEYDB_SEARCH_MODE_FPR20)
+	{
+	  work->desc.mode=KEYDB_SEARCH_MODE_NONE;
+	  return ret;
+	}
+
+      /* Note all items after this are optional.  This allows us to
+         have a pub line as simple as pub:keyid and nothing else. */
+
+      work->lines++;
+
+      if((tok=strsep(&keystring,":"))==NULL)
+	return ret;
+
+      work->type=atoi(tok);
+
+      if((tok=strsep(&keystring,":"))==NULL)
+	return ret;
+
+      work->size=atoi(tok);
+
+      if((tok=strsep(&keystring,":"))==NULL)
+	return ret;
+
+      work->createtime=atoi(tok);
+
+      if((tok=strsep(&keystring,":"))==NULL)
+	return ret;
+
+      work->expiretime=atoi(tok);
+
+      if((tok=strsep(&keystring,":"))==NULL)
+	return ret;
+
+      while(*tok)
+	switch(*tok++)
+	  {
+	  case 'r':
+	  case 'R':
+	    work->flags|=1;
+	    break;
+	    
+	  case 'd':
+	  case 'D':
+	    work->flags|=2;
+	    break;
+
+	  case 'e':
+	  case 'E':
+	    work->flags|=4;
+	    break;
+	  }
+
+      if(work->expiretime && work->expiretime<=make_timestamp())
+	work->flags|=4;
+    }
+  else if(ascii_strcasecmp("uid",record)==0 && work->desc.mode)
+    {
+      char *userid,*tok,*decoded;
+      int i=0;
+
+      if((tok=strsep(&keystring,":"))==NULL)
+	return ret;
+
+      if(strlen(tok)==0)
+	return ret;
+
+      userid=tok;
+
+      /* By definition, de-%-encoding is always smaller than the
+         original string so we can decode in place. */
+
+      while(*tok)
+	if(tok[0]=='%' && tok[1] && tok[2])
+	  {
+	    if((userid[i]=hextobyte(&tok[1]))==-1)
+	      userid[i]='?';
+
+	    i++;
+	    tok+=3;
+	  }
+	else
+	  userid[i++]=*tok++;
+
+      /* We don't care about the other info provided in the uid: line
+         since no keyserver supports marking userids with timestamps
+         or revoked/expired/disabled yet. */
+
+      /* No need to check for control characters, as utf8_to_native
+	 does this for us. */
+
+      decoded=utf8_to_native(userid,i,0);
+      iobuf_writestr(work->uidbuf,decoded);
+      m_free(decoded);
+      iobuf_writestr(work->uidbuf,"\n\t");
+      work->lines++;
+    }
+  
+  /* Ignore any records other than "pri" and "uid" for easy future
+     growth. */
+
+  return ret;
+}
+
+/* TODO: do this as a list sent to keyserver_work rather than calling
+   it once for each key to get the correct counts after the import
+   (cosmetics, really) and to better take advantage of the keyservers
+   that can do multiple fetches in one go (LDAP). */
+static int
+show_prompt(KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
+{
+  char *answer;
+
+  if(count)
+    {
+      static int from=1;
+      tty_printf("Keys %d-%d of %d for \"%s\".  ",from,numdesc,count,search);
+      from=numdesc+1;
+    }
+
+  answer=cpr_get_no_help("keysearch.prompt",
+			 _("Enter number(s), N)ext, or Q)uit > "));
+  /* control-d */
+  if(answer[0]=='\x04')
+    {
+      printf("Q\n");
+      answer[0]='q';
+    }
+
+  if(answer[0]=='q' || answer[0]=='Q')
+    {
+      m_free(answer);
+      return 1;
+    }
+  else if(atoi(answer)>=1 && atoi(answer)<=numdesc)
+    {
+      char *split=answer,*num;
+
+      while((num=strsep(&split," ,"))!=NULL)
+	if(atoi(num)>=1 && atoi(num)<=numdesc)
+	  keyserver_work(GET,NULL,&desc[atoi(num)-1],1);
+
+      m_free(answer);
+      return 1;
+    }
 
   return 0;
+}
 
- fail:
-  m_free (userid);
-  return -1;
+/* Count and searchstr are just for cosmetics.  If the count is too
+   small, it will grow safely.  If negative it disables the "Key x-y
+   of z" messages. */
+static void
+keyserver_search_prompt(IOBUF buffer,const char *searchstr)
+{
+  int i=0,validcount=0,started=0,count=1;
+  unsigned int maxlen,buflen;
+  KEYDB_SEARCH_DESC *desc;
+  byte *line=NULL;
+  /* TODO: Something other than 23?  That's 24-1 (the prompt). */
+  int maxlines=23,numlines=0;
+
+  desc=m_alloc(count*sizeof(KEYDB_SEARCH_DESC));
+
+  for(;;)
+    {
+      struct keyrec *keyrec;
+      int rl;
+
+      maxlen=1024;
+      rl=iobuf_read_line(buffer,&line,&buflen,&maxlen);
+
+      /* Look for an info: line.  The only current info: values
+	 defined are the version and key count. */
+      if(!started && rl>0 && ascii_strncasecmp("info:",line,5)==0)
+	{
+	  char *tok,*str=&line[5];
+
+	  if((tok=strsep(&str,":"))!=NULL)
+	    {
+	      int version;
+
+	      if(sscanf(tok,"%d",&version)!=1)
+		version=1;
+
+	      if(version!=1)
+		{
+		  log_error(_("invalid keyserver protocol "
+			      "(us %d!=handler %d)\n"),1,version);
+		  break;
+		}
+	    }
+
+	  if((tok=strsep(&str,":"))!=NULL && sscanf(tok,"%d",&count)==1)
+	    {
+	      if(count==0)
+		goto notfound;
+	      else if(count<0)
+		count=10;
+	      else
+		validcount=1;
+
+	      desc=m_realloc(desc,count*sizeof(KEYDB_SEARCH_DESC));
+	    }
+
+	  started=1;
+	  continue;
+	}
+
+      if(rl==0)
+	{
+	  keyrec=parse_keyrec(NULL);
+
+	  if(keyrec==NULL)
+	    {
+	      if(i==0)
+		{
+		  count=0;
+		  break;
+		}
+
+	      if(i!=count)
+		validcount=0;
+
+	      for(;;)
+		{
+		  if(show_prompt(desc,i,validcount?count:0,searchstr))
+		    break;
+		  validcount=0;
+		}
+
+	      break;
+	    }
+	}
+      else
+	keyrec=parse_keyrec(line);
+
+      if(i==count)
+	{
+	  /* keyserver helper sent more keys than they claimed in the
+	     info: line. */
+	  count+=10;
+	  desc=m_realloc(desc,count*sizeof(KEYDB_SEARCH_DESC));
+	  validcount=0;
+	}
+
+      if(keyrec)
+	{
+	  desc[i]=keyrec->desc;
+
+	  if(numlines+keyrec->lines>maxlines)
+	    {
+	      if(show_prompt(desc,i,validcount?count:0,searchstr))
+		break;
+	      else
+		numlines=0;
+	    }
+
+	  print_keyrec(i+1,keyrec);
+	  numlines+=keyrec->lines;
+	  iobuf_close(keyrec->uidbuf);
+	  m_free(keyrec);
+
+	  started=1;
+	  i++;
+	}
+    }
+
+  m_free(desc);
+  m_free(line);
+
+ notfound:
+  if(count==0)
+    {
+      if(searchstr)
+	log_info(_("key \"%s\" not found on keyserver\n"),searchstr);
+      else
+	log_info(_("key not found on keyserver\n"));
+      return;
+    }
 }
 
 #define KEYSERVER_ARGS_KEEP " -o \"%O\" \"%I\""
@@ -549,8 +854,8 @@ keyserver_spawn(int action,STRLIST list,
 
   for(;;)
     {
-      char *ptr;
       int plen;
+      char *ptr;
 
       maxlen=1024;
       if(iobuf_read_line(spawn->fromchild,&line,&buflen,&maxlen)==0)
@@ -628,19 +933,7 @@ keyserver_spawn(int action,STRLIST list,
 
       case SEARCH:
 	{
-	  /* Look for the COUNT line */
-	  do
-	    {
-	      maxlen=1024;
-	      if(iobuf_read_line(spawn->fromchild,&line,&buflen,&maxlen)==0)
-		{
-		  ret=G10ERR_READ_FILE;
-		  goto fail; /* i.e. EOF */
-		}
-	    }
-	  while(sscanf(line,"COUNT %d\n",&i)!=1);
-
-	  keyserver_search_prompt(spawn->fromchild,i,searchstr);
+	  keyserver_search_prompt(spawn->fromchild,searchstr);
 
 	  break;
 	}
@@ -693,6 +986,12 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 		    action==GET?"get":action==SEND?"send":
 		    action==SEARCH?"search":"unknown",
 		    opt.keyserver_scheme);
+	  break;
+
+	case KEYSERVER_VERSION_ERROR:
+	  log_error(_("gpgkeys_%s does not support handler version %d\n"),
+		    opt.keyserver_scheme,KEYSERVER_PROTO_VERSION);
+	  break;
 
 	case KEYSERVER_INTERNAL_ERROR:
 	default:
@@ -962,115 +1261,4 @@ keyserver_search(STRLIST tokens)
     return keyserver_work(SEARCH,tokens,NULL,0);
   else
     return 0;
-}
-
-/* Count and searchstr are just for cosmetics.  If the count is too
-   small, it will grow safely.  If negative it disables the "Key x-y
-   of z" messages. */
-
-/* TODO: do this as a list sent to keyserver_work rather than calling
-   it once for each key to get the correct counts after the import
-   (cosmetics, really) and to better take advantage of the keyservers
-   that can do multiple fetches in one go (LDAP). */
-void
-keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
-{
-  int i=0,validcount=1;
-  unsigned int maxlen,buflen;
-  KEYDB_SEARCH_DESC *desc;
-  byte *line=NULL;
-  char *answer;
-
-  if(count==0)
-    goto notfound;
-
-  if(count<0)
-    {
-      validcount=0;
-      count=10;
-    }
-
-  desc=m_alloc(count*sizeof(KEYDB_SEARCH_DESC));
-
-  /* Read each line and show it to the user */
-
-  for(;;)
-    {
-      int rl;
-
-      if(validcount && i%10==0)
-	{
-	  printf("Keys %d-%d of %d",i+1,(i+10<count)?i+10:count,count);
-	  if(searchstr)
-	    printf(" for \"%s\"",searchstr);
-	  printf("\n");
-	}
-
-      maxlen=1024;
-      rl=iobuf_read_line(buffer,&line,&buflen,&maxlen);
-      if(rl>0)
-	{
-	  if(print_keyinfo(i+1,line,&desc[i])==0)
-	    {
-	      i++;
-
-	      if(i==count)
-		{
-		  count+=10;
-		  desc=m_realloc(desc,count*sizeof(KEYDB_SEARCH_DESC));
-		  validcount=0;
-		}
-	    }
-	  else
-	    continue;
-	}
-
-      if(rl==0 && i==0)
-	{
-	  count=0;
-	  break;
-	}
-
-      if(i%10==0 || rl==0)
-	{
-	  answer=cpr_get_no_help("keysearch.prompt",
-				 _("Enter number(s), N)ext, or Q)uit > "));
-	  /* control-d */
-	  if(answer[0]=='\x04')
-	    {
-	      printf("Q\n");
-	      answer[0]='q';
-	    }
-
-	  if(answer[0]=='q' || answer[0]=='Q')
-	    {
-	      m_free(answer);
-	      break;
-	    }
-	  else if(atoi(answer)>=1 && atoi(answer)<=i)
-	    {
-	      char *split=answer,*num;
-
-	      while((num=strsep(&split," ,"))!=NULL)
-		if(atoi(num)>=1 && atoi(num)<=i)
-		  keyserver_work(GET,NULL,&desc[atoi(num)-1],1);
-
-	      m_free(answer);
-	      break;
-	    }
-	}
-    }
-
-  m_free(desc);
-  m_free(line);
-
- notfound:
-  if(count==0)
-    {
-      if(searchstr)
-	log_info(_("key \"%s\" not found on keyserver\n"),searchstr);
-      else
-	log_info(_("key not found on keyserver\n"));
-      return;
-    }
 }

@@ -1,3 +1,14 @@
+2002-10-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver-internal.h, keyserver.c (print_keyrec, parse_keyrec,
+	show_prompt, keyserver_search_prompt, keyserver_spawn): Go to
+	version 1 of the keyserver protocol.  This is a better design,
+	similar to --with-colons, that allows for keys with multiple user
+	IDs rather than using multiple keys.  It also matches the machine
+	readable pksd format.  Also use a prettier --search-keys listing
+	format that can fill different size windows (currently set at 24
+	lines).
+
 2002-10-12  Werner Koch  <wk@gnupg.org>
 
 	* keygen.c (print_status_key_created): New.

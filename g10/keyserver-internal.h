@@ -17,6 +17,5 @@ int keyserver_import_fprint(const byte *fprint,size_t fprint_len);
 int keyserver_import_keyid(u32 *keyid);
 int keyserver_refresh(STRLIST users);
 int keyserver_search(STRLIST tokens);
-void keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr);
 
 #endif /* !_KEYSERVER_INTERNAL_H_ */
