@@ -132,7 +132,7 @@ if test "$personal" = "yes" ; then
 	done
 
 	if test "$MATCHED" = "none" ; then
-		echo "Warning: Can't find your personal .muttrc." >&2
+		echo "WARNING: Can't find your personal .muttrc." >&2
 	else
 		include_file $MATCHED
 	fi
@@ -153,7 +153,7 @@ if test "$global" = "yes" ; then
 	done
 
 	if test "$MATCHED" = "none" ; then
-		echo "Warning: Can't find global Muttrc." >&2
+		echo "WARNING: Can't find global Muttrc." >&2
 	else
 		include_file $MATCHED
 	fi
@@ -168,7 +168,7 @@ while : ; do
 	if test "$input" = "e" ; then
 		${VISUAL-vi} $SCRATCH/mutt-bug.txt
 		if cmp $SCRATCH/mutt-bug.txt ${TEMPLATE} > /dev/null ; then
-			echo "Warning: Bug report was not modified!"
+			echo "WARNING: Bug report was not modified!"
 		fi
 	fi
 
