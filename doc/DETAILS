@@ -182,13 +182,14 @@ more arguments in future versions.
             0 - not further specified               1       
   
 
-    TRUST_UNDEFINED
-    TRUST_NEVER
+    TRUST_UNDEFINED <error token>
+    TRUST_NEVER  <error token>
     TRUST_MARGINAL
     TRUST_FULLY
     TRUST_ULTIMATE
 	For good signatures one of these status lines are emitted
-	to indicate how trustworthy the signature is.  No arguments yet.
+	to indicate how trustworthy the signature is.  The error token
+        values are currently only emiited by gpgsm.
 
     SIGEXPIRED
 	This is deprecated in favor of KEYEXPIRED.
@@ -351,6 +352,11 @@ more arguments in future versions.
     TRUNCATED <maxno>
         The output was truncated to MAXNO items.  This status code is issued
         for certain external requests
+
+    ERROR <error location> <error code> 
+        This is a generic error status message, it might be followed
+        by error location specific data. <error token> and
+        <error_location> should not contain a space.
 
     ATTRIBUTE <fpr> <octets> <type> <index> <count>
 	      <timestamp> <expiredate> <flags>

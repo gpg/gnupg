@@ -2088,9 +2088,9 @@ in front.
 
     <para>
 Note that you can append an exclamation mark to key IDs or
-fingerprints.  This flag which tells GnuPG to use exactly
-that primary or secondary key and don't try to figure out which 
-secondary or primary key to use.
+fingerprints.  This flag tells GnuPG to use exactly the given primary
+or secondary key and not to try to figure out which secondary or
+primary key to use.
     </para>
 
 </refsect1>
