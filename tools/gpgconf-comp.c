@@ -763,6 +763,9 @@ static gc_option_t gc_options_dirmngr[] =
    { "ocsp-responder", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
      "dirmngr", "|URL|use OCSP responder URL",
      GC_ARG_TYPE_STRING, GC_BACKEND_DIRMNGR },
+   { "ocsp-signer", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+     "dirmngr", "|FPR|OCSP response signed by FPR",
+     GC_ARG_TYPE_STRING, GC_BACKEND_DIRMNGR },
 
 
    GC_OPTION_NULL
