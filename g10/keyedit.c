@@ -275,7 +275,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
     int select_all = !count_selected_uids(keyblock);
     int upd_trust = 0, force_v4=0;
 
-    if(local || opt.set_policy_url || opt.notation_data)
+    if(local || opt.cert_policy_url || opt.notation_data)
       force_v4=1;
 
     /* build a list of all signators.

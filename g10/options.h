@@ -116,7 +116,8 @@ struct {
     int interactive;
     STRLIST notation_data;
     int show_notation;
-    const char *set_policy_url;
+    const char *sig_policy_url;
+    const char *cert_policy_url;
     int show_policy_url;
     int use_embedded_filename;
     int allow_non_selfsigned_uid;

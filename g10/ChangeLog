@@ -1,3 +1,11 @@
+2002-02-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), keyedit.c (sign_uids), sign.c
+	(mk_notation_and_policy): Split "--set-policy-url" into
+	"--cert-policy-url" and "--sig-policy-url" so the user can set
+	different policies for key and data signing.  For backwards
+	compatibility, "--set-policy-url" sets both, as before.
+
 2002-01-30  Werner Koch  <wk@gnupg.org>
 
 	* g10.c (main): --gen-random --armor does now output a base64

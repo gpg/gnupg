@@ -58,7 +58,7 @@
 static void
 mk_notation_and_policy( PKT_signature *sig )
 {
-    const char *string, *s;
+    const char *string, *s=NULL;
     byte *buf;
     unsigned n1, n2;
 
@@ -92,7 +92,22 @@ mk_notation_and_policy( PKT_signature *sig )
     }
 
     /* set policy URL */
-    if( (s=opt.set_policy_url) ) {
+    if( (sig->sig_class==0 || sig->sig_class==1) && opt.sig_policy_url )
+      {
+	if(sig->version<4)
+	  log_info("can't put a policy URL into v3 signatures\n");
+	else
+	  s=opt.sig_policy_url;
+      }
+    else if( !(sig->sig_class==0 || sig->sig_class==1) && opt.cert_policy_url )
+      {
+	if(sig->version<4)
+	  log_info("can't put a policy URL into v3 key signatures\n");
+	else
+	  s=opt.cert_policy_url;
+      }
+
+    if( s ) {
 	if( *s == '!' )
 	    build_sig_subpkt( sig, SIGSUBPKT_POLICY | SIGSUBPKT_FLAG_CRITICAL,
 			      s+1, strlen(s+1) );

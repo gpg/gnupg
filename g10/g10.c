@@ -195,6 +195,8 @@ enum cmd_and_opt_values { aNull = 0,
     oForYourEyesOnly,
     oNoForYourEyesOnly,
     oSetPolicyURL,
+    oSigPolicyURL,
+    oCertPolicyURL,
     oShowPolicyURL,
     oNoShowPolicyURL,
     oUseEmbeddedFilename,
@@ -460,6 +462,8 @@ static ARGPARSE_OPTS opts[] = {
     { oForYourEyesOnly, "for-your-eyes-only", 0, "@" },
     { oNoForYourEyesOnly, "no-for-your-eyes-only", 0, "@" },
     { oSetPolicyURL, "set-policy-url", 2, "@" },
+    { oSigPolicyURL, "sig-policy-url", 2, "@" },
+    { oCertPolicyURL, "cert-policy-url", 2, "@" },
     { oShowPolicyURL, "show-policy-url", 0, "@" },
     { oNoShowPolicyURL, "no-show-policy-url", 0, "@" },
     { oShowNotation, "show-notation", 0, "@" },
@@ -1088,7 +1092,9 @@ main( int argc, char **argv )
 	  case oSetFilename: opt.set_filename = pargs.r.ret_str; break;
 	  case oForYourEyesOnly: eyes_only = 1; break;
 	  case oNoForYourEyesOnly: eyes_only = 0; break;
-	  case oSetPolicyURL: opt.set_policy_url = pargs.r.ret_str; break;
+	  case oSetPolicyURL: opt.sig_policy_url = opt.cert_policy_url = pargs.r.ret_str; break;
+	  case oSigPolicyURL: opt.sig_policy_url = pargs.r.ret_str; break;
+	  case oCertPolicyURL: opt.cert_policy_url = pargs.r.ret_str; break;
           case oShowPolicyURL: opt.show_policy_url=1; break;
     	  case oNoShowPolicyURL: opt.show_policy_url=0; break;
 	  case oUseEmbeddedFilename: opt.use_embedded_filename = 1; break;
@@ -1408,9 +1414,13 @@ main( int argc, char **argv )
 	if( check_digest_algo(opt.s2k_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
     }
-    if( opt.set_policy_url ) {
-	if( check_policy_url( opt.set_policy_url ) )
-	    log_error(_("the given policy URL is invalid\n"));
+    if( opt.sig_policy_url ) {
+	if( check_policy_url( opt.sig_policy_url ) )
+	    log_error(_("the given signature policy URL is invalid\n"));
+    }
+    if( opt.cert_policy_url ) {
+	if( check_policy_url( opt.cert_policy_url ) )
+	    log_error(_("the given certification policy URL is invalid\n"));
     }
     if( opt.def_compress_algo < 0 || opt.def_compress_algo > 2 )
 	log_error(_("compress algorithm must be in range %d..%d\n"), 0, 2);
