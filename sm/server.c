@@ -243,14 +243,14 @@ cmd_recipient (ASSUAN_CONTEXT ctx, char *line)
   if (rc)
     gpgsm_status2 (ctrl, STATUS_INV_RECP,
                    rc == -1? "1":
-                   rc == GNUPG_Ambiguous_Name?      "2 ":
-                   rc == GNUPG_Wrong_Key_Usage?     "3 ":
-                   rc == GNUPG_Certificate_Revoked? "4 ":
-                   rc == GNUPG_Certificate_Expired? "5 ":
-                   rc == GNUPG_No_CRL_Known?        "6 ":
-                   rc == GNUPG_CRL_Too_Old?         "8 ":
-                   rc == GNUPG_No_Policy_Match?     "8 ":
-                   "0 ",
+                   rc == GNUPG_Ambiguous_Name?      "2":
+                   rc == GNUPG_Wrong_Key_Usage?     "3":
+                   rc == GNUPG_Certificate_Revoked? "4":
+                   rc == GNUPG_Certificate_Expired? "5":
+                   rc == GNUPG_No_CRL_Known?        "6":
+                   rc == GNUPG_CRL_Too_Old?         "7":
+                   rc == GNUPG_No_Policy_Match?     "8":
+                   "0",
                    line, NULL);
 
   return map_to_assuan_status (rc);
@@ -873,7 +873,12 @@ gpgsm_status2 (CTRL ctrl, int no, ...)
       n = 0;
       while ( (text = va_arg (arg_ptr, const char *)) )
         {
-          for ( ; *text && n < DIM (buf)-1; n++)
+          if (n)
+            {
+              *p++ = ' ';
+              n++;
+            }
+          for ( ; *text && n < DIM (buf)-2; n++)
             *p++ = *text++;
         }
       *p = 0;

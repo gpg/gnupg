@@ -41,7 +41,7 @@ print_imported_status (CTRL ctrl, KsbaCert cert)
   char *fpr;
  
   fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
-  gpgsm_status2 (ctrl, STATUS_IMPORTED, fpr, " [X.509]", NULL);
+  gpgsm_status2 (ctrl, STATUS_IMPORTED, fpr, "[X.509]", NULL);
   xfree (fpr);
 }
 

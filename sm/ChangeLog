@@ -1,3 +1,11 @@
+2002-07-03  Werner Koch  <wk@gnupg.org>
+
+	* server.c (gpgsm_status2): Insert a blank between all optional
+	arguments when using assuan.
+	* server.c (cmd_recipient): No more need for extra blank in constants.
+	* import.c (print_imported_status): Ditto.
+	* gpgsm.c (main): Ditto.
+
 2002-07-02  Werner Koch  <wk@gnupg.org>
 
 	* verify.c (gpgsm_verify): Extend the STATUS_BADSIG line with
