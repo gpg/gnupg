@@ -142,7 +142,7 @@ load_libiconv (void)
         }
       if (!handle || !iconv_close)
         {
-          log_error (_("error loading `%s': %s\n"),
+          log_info (_("error loading `%s': %s\n"),
                      "iconv.dll",  dlerror ());
           iconv_open = NULL;
           iconv = NULL;
