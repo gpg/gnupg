@@ -368,15 +368,15 @@ check_permissions(const char *path,int extension,int checkonly)
       goto end;
     }
 
+  isdir=S_ISDIR(statbuf.st_mode);
+
   /* We may have to revisit this if we start piping keyrings to gpg
      over a named pipe or keyserver character device :) */
-  if(!S_ISREG(statbuf.st_mode))
+  if(!isdir && !S_ISREG(statbuf.st_mode))
     {
       ret=0;
       goto end;
     }
-
-  isdir=S_ISDIR(statbuf.st_mode);
 
   /* Per-user files must be owned by the user.  Extensions must be
      owned by the user or root. */

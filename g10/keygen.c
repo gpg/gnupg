@@ -505,9 +505,6 @@ keygen_add_revkey(PKT_signature *sig, void *opaque)
 
   build_sig_subpkt(sig,SIGSUBPKT_REV_KEY,buf,2+MAX_FINGERPRINT_LEN);
 
-  sig->revkey=m_realloc(sig->revkey,
-			sizeof(struct revocation_key *)*(sig->numrevkeys+1));
-
   /* All sigs with revocation keys set are nonrevocable */
   sig->flags.revocable=0;
   buf[0] = 0;

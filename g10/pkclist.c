@@ -691,7 +691,7 @@ default_recipient(void)
 }
 
 static int
-expand_id(const char *id,STRLIST *into)
+expand_id(const char *id,STRLIST *into,unsigned int flags)
 {
   struct groupitem *groups;
   int count=0;
@@ -707,7 +707,7 @@ expand_id(const char *id,STRLIST *into)
 	  for(each=groups->values;each;each=each->next)
 	    {
 	      sl=add_to_strlist(into,each->d);
-	      sl->flags=each->flags;
+	      sl->flags=flags;
 	      count++;
 	    }
 
@@ -726,7 +726,7 @@ expand_group(STRLIST input)
   STRLIST sl,output=NULL,rover;
 
   for(rover=input;rover;rover=rover->next)
-    if(expand_id(rover->d,&output)==0)
+    if(expand_id(rover->d,&output,rover->flags)==0)
       {
 	/* Didn't find any groups, so use the existing string */
 	sl=add_to_strlist(&output,rover->d);
@@ -821,7 +821,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	        m_free(answer);
 		break;
 	    }
-	    if(expand_id(answer,&backlog))
+	    if(expand_id(answer,&backlog,0))
 	      continue;
 	    if( pk )
 		free_public_key( pk );

@@ -50,7 +50,8 @@ is_algo_in_prefs ( KBNODE keyblock, preftype_t type, int algo )
             PKT_user_id *uid = k->pkt->pkt.user_id;
             prefitem_t *prefs = uid->prefs;
             
-            if (uid->created && !uid->is_revoked && prefs ) {
+            if (uid->created && prefs &&
+		!uid->is_revoked && !uid->is_expired ) {
                 for (; prefs->type; prefs++ )
                     if (prefs->type == type && prefs->value == algo)
                         return 1;
@@ -62,7 +63,7 @@ is_algo_in_prefs ( KBNODE keyblock, preftype_t type, int algo )
 
 
 /****************
- * Get the session key from a pubkey enc paket and return
+ * Get the session key from a pubkey enc packet and return
  * it in DEK, which should have been allocated in secure memory.
  */
 int

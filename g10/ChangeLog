@@ -1,3 +1,17 @@
+2002-06-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (keygen_add_revkey): Remove unused code.
+
+	* misc.c (check_permissions): Check directory permissions
+	properly - they are not special files.
+
+	* pkclist.c (expand_id, expand_group, build_pk_list): When
+	expanding groups before building a pk list, inherit flags from the
+	original pre-expanded string.
+
+	* pubkey-enc.c (is_algo_in_prefs): Don't use prefs from expired
+	uids.
+
 2002-06-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* free-packet.c (copy_signature): Properly copy a signature that
