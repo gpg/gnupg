@@ -125,6 +125,19 @@ app_write_learn_status (APP app, CTRL ctrl)
 }
 
 
+/* Perform a GETATTR operation.  */
+int 
+app_getattr (APP app, CTRL ctrl, const char *name)
+{
+  if (!app || !name || !*name)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (!app->initialized)
+    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if (!app->fnc.getattr)
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+  return app->fnc.getattr (app, ctrl, name);
+}
+
 /* Perform a SETATTR operation.  */
 int 
 app_setattr (APP app, const char *name,

@@ -31,10 +31,12 @@ struct app_ctx_s {
   size_t serialnolen;      /* Length in octets of serialnumber. */
   unsigned int card_version;
   int did_chv1;
+  int force_chv1;   /* True if the card does not cache CHV1. */
   int did_chv2;
   int did_chv3;
   struct {
     int (*learn_status) (APP app, CTRL ctrl);
+    int (*getattr) (APP app, CTRL ctrl, const char *name);
     int (*setattr) (APP app, const char *name,
                     int (*pincb)(void*, const char *, char **),
                     void *pincb_arg,
@@ -73,6 +75,7 @@ void app_set_default_reader_port (const char *portstr);
 APP select_application (void);
 int app_get_serial_and_stamp (APP app, char **serial, time_t *stamp);
 int app_write_learn_status (APP app, CTRL ctrl);
+int app_getattr (APP app, CTRL ctrl, const char *name);
 int app_setattr (APP app, const char *name,
                  int (*pincb)(void*, const char *, char **),
                  void *pincb_arg,

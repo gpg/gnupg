@@ -702,6 +702,41 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
+/* GETATTR <name>
+
+   This command is used to retrieve data from a smartcard.  The
+   allowed names depend on the currently selected smartcard
+   application.  NAME must be percent and '+' escaped.  The value is
+   returned through status message, see the LESRN command for details.
+
+   However, the current implementation assumes that Name is not escaped;
+   this works as long as noone uses arbitrary escaping. 
+ 
+*/
+static int
+cmd_getattr (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+  int rc;
+  char *keyword;
+
+  if ((rc = open_card (ctrl)))
+    return rc;
+
+  keyword = line;
+  for (; *line && !spacep (line); line++)
+    ;
+  if (*line)
+      *line++ = 0;
+
+  /* (We ignore any garbage for now.) */
+
+  rc = app_getattr (ctrl->app_ctx, ctrl, keyword);
+
+  return map_to_assuan_status (rc);
+}
+
+
 /* SETATTR <name> <value> 
 
    This command is used to store data on a a smartcard.  The allowed
@@ -908,6 +943,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "PKDECRYPT",    cmd_pkdecrypt },
     { "INPUT",        NULL }, 
     { "OUTPUT",       NULL }, 
+    { "GETATTR",      cmd_getattr },
     { "SETATTR",      cmd_setattr },
     { "GENKEY",       cmd_genkey },
     { "RANDOM",       cmd_random },

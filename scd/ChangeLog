@@ -1,3 +1,19 @@
+2003-09-30  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_getattr): New command GETATTR.
+	* app.c (app_setattr): New.
+	(do_getattr): New.
+	(do_learn_status): Reimplemented in terms of do_getattr.
+
+	* app-openpgp.c (do_change_pin): Make sure CVH1 and CHV2 are
+	always synced.
+	(verify_chv2, verify_chv3): New. Factored out common code.
+	(do_setattr, do_sign, do_auth, do_decipher): Change the names of
+	the prompts to match that we have only 2 different PINs.
+	(app_select_openpgp): Check whether the card enforced CHV1.
+	(convert_sig_counter_value): New. Factor out code from
+	get_sig_counter.
+
 2003-09-28  Werner Koch  <wk@gnupg.org>
 
 	* app-openpgp.c (dump_all_do): Use gpg_err_code and not gpg_error.

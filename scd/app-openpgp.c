@@ -61,6 +61,8 @@ static struct {
 };
 
 
+static unsigned long convert_sig_counter_value (const unsigned char *value,
+                                                size_t valuelen);
 static unsigned long get_sig_counter (APP app);
 
 
@@ -390,80 +392,165 @@ send_key_data (CTRL ctrl, const char *name,
   xfree (buf);
 }
 
+/* Implement the GETATTR command.  This is similar to the LEARN
+   command but returns just one value via the status interface. */
+static int 
+do_getattr (APP app, CTRL ctrl, const char *name)
+{
+  static struct {
+    const char *name;
+    int tag;
+    int special;
+  } table[] = {
+    { "DISP-NAME",    0x005B },
+    { "LOGIN-DATA",   0x005E },
+    { "DISP-LANG",    0x5F2D },
+    { "DISP-SEX",     0x5F35 },
+    { "PUBKEY-URL",   0x5F50 },
+    { "KEY-FPR",      0x00C5, 3 },
+    { "CA-FPR",       0x00C6, 3 },
+    { "CHV-STATUS",   0x00C4, 1 },
+    { "SIG-COUNTER",  0x0093, 2 },
+    { NULL, 0 }
+  };
+  int idx, i;
+  void *relptr;
+  unsigned char *value;
+  size_t valuelen;
+
+  for (idx=0; table[idx].name && strcmp (table[idx].name, name); idx++)
+    ;
+  if (!table[idx].name)
+    return gpg_error (GPG_ERR_INV_NAME); 
+  
+  relptr = get_one_do (app->slot, table[idx].tag, &value, &valuelen);
+  if (relptr)
+    {
+      if (table[idx].special == 1)
+        {
+          char numbuf[7*23];
+          
+          for (i=0,*numbuf=0; i < valuelen && i < 7; i++)
+            sprintf (numbuf+strlen (numbuf), " %d", value[i]); 
+          send_status_info (ctrl, table[idx].name,
+                            numbuf, strlen (numbuf), NULL, 0);
+        }
+      else if (table[idx].special == 2)
+        {
+          char numbuf[50];
+
+          sprintf (numbuf, "%lu", convert_sig_counter_value (value, valuelen));
+          send_status_info (ctrl, table[idx].name,
+                            numbuf, strlen (numbuf), NULL, 0);
+        }
+      else if (table[idx].special == 3)
+        {
+          if (valuelen >= 60)
+            for (i=0; i < 3; i++)
+              send_fpr_if_not_null (ctrl, "KEY-FPR", i+1, value+i*20);
+        }
+      else
+        send_status_info (ctrl, table[idx].name, value, valuelen, NULL, 0);
+
+      xfree (relptr);
+    }
+  return 0;
+}
 
 
 static int
 do_learn_status (APP app, CTRL ctrl)
 {
-  void *relptr;
-  unsigned char *value;
-  size_t valuelen;
-  int i;
+  do_getattr (app, ctrl, "DISP-NAME");
+  do_getattr (app, ctrl, "DISP-LANG");
+  do_getattr (app, ctrl, "DISP-SEX");
+  do_getattr (app, ctrl, "PUBKEY-URL");
+  do_getattr (app, ctrl, "LOGIN-DATA");
+  do_getattr (app, ctrl, "KEY-FPR");
+  do_getattr (app, ctrl, "CA-FPR");
+  do_getattr (app, ctrl, "CHV-STATUS");
+  do_getattr (app, ctrl, "SIG-COUNTER");
 
-  relptr = get_one_do (app->slot, 0x005B, &value, &valuelen);
-  if (relptr)
-    {
-      send_status_info (ctrl, "DISP-NAME", value, valuelen, NULL, 0);
-      xfree (relptr);
-    }
-  relptr = get_one_do (app->slot, 0x5F2D, &value, &valuelen);
-  if (relptr)
-    {
-      send_status_info (ctrl, "DISP-LANG", value, valuelen, NULL, 0);
-      xfree (relptr);
-    }
-  relptr = get_one_do (app->slot, 0x5F35, &value, &valuelen);
-  if (relptr)
-    {
-      send_status_info (ctrl, "DISP-SEX", value, valuelen, NULL, 0);
-      xfree (relptr);
-    }
-  relptr = get_one_do (app->slot, 0x5F50, &value, &valuelen);
-  if (relptr)
-    {
-      send_status_info (ctrl, "PUBKEY-URL", value, valuelen, NULL, 0);
-      xfree (relptr);
-    }
-  relptr = get_one_do (app->slot, 0x005E, &value, &valuelen);
-  if (relptr)
-    {
-      send_status_info (ctrl, "LOGIN-DATA", value, valuelen, NULL, 0);
-      xfree (relptr);
-    }
-
-  relptr = get_one_do (app->slot, 0x00C5, &value, &valuelen);
-  if (relptr && valuelen >= 60)
-    {
-      for (i=0; i < 3; i++)
-        send_fpr_if_not_null (ctrl, "KEY-FPR", i+1, value+i*20);
-    }
-  xfree (relptr);
-  relptr = get_one_do (app->slot, 0x00C6, &value, &valuelen);
-  if (relptr && valuelen >= 60)
-    {
-      for (i=0; i < 3; i++)
-        send_fpr_if_not_null (ctrl, "CA-FPR", i+1, value+i*20);
-    }
-  xfree (relptr);
-  relptr = get_one_do (app->slot, 0x00C4, &value, &valuelen);
-  if (relptr)
-    {
-      char numbuf[7*23];
-
-      for (i=0,*numbuf=0; i < valuelen && i < 7; i++)
-        sprintf (numbuf+strlen (numbuf), " %d", value[i]); 
-      send_status_info (ctrl, "CHV-STATUS", numbuf, strlen (numbuf), NULL, 0);
-      xfree (relptr);
-    }
-
-  {
-    unsigned long ul = get_sig_counter (app);
-    char numbuf[23];
-
-    sprintf (numbuf, "%lu", ul);
-    send_status_info (ctrl, "SIG-COUNTER", numbuf, strlen (numbuf), NULL, 0);
-  }
   return 0;
+}
+
+
+/* Verify CHV2 if required.  Depending on the configuration of the
+   card CHV1 will also be verified. */
+static int
+verify_chv2 (APP app,
+             int (*pincb)(void*, const char *, char **),
+             void *pincb_arg)
+{
+  int rc = 0;
+
+  if (!app->did_chv2) 
+    {
+      char *pinvalue;
+
+      rc = pincb (pincb_arg, "PIN", &pinvalue); 
+      if (rc)
+        {
+          log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
+          return rc;
+        }
+
+      rc = iso7816_verify (app->slot, 0x82, pinvalue, strlen (pinvalue));
+      if (rc)
+        {
+          log_error ("verify CHV2 failed: %s\n", gpg_strerror (rc));
+          xfree (pinvalue);
+          return rc;
+        }
+      app->did_chv2 = 1;
+
+      if (!app->did_chv1 && !app->force_chv1)
+        {
+          rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
+          if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)
+            rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
+          if (rc)
+            {
+              log_error ("verify CHV1 failed: %s\n", gpg_strerror (rc));
+              xfree (pinvalue);
+              return rc;
+            }
+          app->did_chv1 = 1;
+        }
+      xfree (pinvalue);
+    }
+  return rc;
+}
+
+/* Verify CHV3 if required. */
+static int
+verify_chv3 (APP app,
+             int (*pincb)(void*, const char *, char **),
+             void *pincb_arg)
+{
+  int rc = 0;
+
+  if (!app->did_chv3) 
+    {
+      char *pinvalue;
+
+      rc = pincb (pincb_arg, "Admin PIN", &pinvalue); 
+      if (rc)
+        {
+          log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
+          return rc;
+        }
+
+      rc = iso7816_verify (app->slot, 0x83, pinvalue, strlen (pinvalue));
+      xfree (pinvalue);
+      if (rc)
+        {
+          log_error ("verify CHV3 failed: %s\n", gpg_strerror (rc));
+          return rc;
+        }
+      app->did_chv3 = 1;
+    }
+  return rc;
 }
 
 
@@ -499,40 +586,17 @@ do_setattr (APP app, const char *name,
   if (!table[idx].name)
     return gpg_error (GPG_ERR_INV_NAME); 
 
-  if (!app->did_chv3)
-    {
-      char *pinvalue;
-
-      rc = pincb (pincb_arg, "Admin PIN (CHV3)",
-                  &pinvalue);
-/*        pinvalue = xstrdup ("12345678"); */
-/*        rc = 0; */
-      if (rc)
-        {
-          log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
-          return rc;
-        }
-
-      rc = iso7816_verify (app->slot, 0x83, pinvalue, strlen (pinvalue));
-      xfree (pinvalue);
-      if (rc)
-        {
-          log_error ("verify CHV3 failed: %s\n", gpg_strerror (rc));
-          rc = gpg_error (GPG_ERR_GENERAL);
-          return rc;
-        }
-      app->did_chv3 = 1;
-    }
+  rc = verify_chv3 (app, pincb, pincb_arg);
+  if (rc)
+    return rc;
 
   rc = iso7816_put_data (app->slot, table[idx].tag, value, valuelen);
   if (rc)
     log_error ("failed to set `%s': %s\n", table[idx].name, gpg_strerror (rc));
-  /* FIXME: If this fails we should *once* try again after
-     doing a verify command, so that in case of a problem with
-     tracking the verify operation we have a fallback. */
 
   return rc;
 }
+
 
 /* Handle the PASSWD command. */
 static int 
@@ -551,51 +615,25 @@ do_change_pin (APP app, CTRL ctrl,  const char *chvnostr, int reset_mode,
     }
   else if (reset_mode || chvno == 3)
     {
-      rc = pincb (pincb_arg, "Admin PIN", &pinvalue); 
+      /* we always require that the PIN is entered. */
+      app->did_chv3 = 0;
+      rc = verify_chv3 (app, pincb, pincb_arg);
       if (rc)
-        {
-          log_error ("error getting PIN: %s\n", gpg_strerror (rc));
-          goto leave;
-        }
-      rc = iso7816_verify (app->slot, 0x83, pinvalue, strlen (pinvalue));
-      xfree (pinvalue);
-      if (rc)
-        {
-          log_error ("verify CHV3 failed: rc=%s\n", gpg_strerror (rc));
-          goto leave;
-        }
+        goto leave;
     }
-  else if (chvno == 1)
+  else if (chvno == 1 || chvno == 2)
     {
-      rc = pincb (pincb_arg, "Signature PIN", &pinvalue); 
+      /* CHV1 and CVH2 should always have the same value, thus we
+         enforce it here.  */
+      int save_force = app->force_chv1;
+
+      app->force_chv1 = 0;
+      app->did_chv1 = 0;
+      app->did_chv2 = 0;
+      rc = verify_chv2 (app, pincb, pincb_arg);
+      app->force_chv1 = save_force;
       if (rc)
-        {
-          log_error ("error getting PIN: %s\n", gpg_strerror (rc));
-          goto leave;
-        }
-      rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
-      xfree (pinvalue);
-      if (rc)
-        {
-          log_error ("verify CHV1 failed: rc=%s\n", gpg_strerror (rc));
-          goto leave;
-        }
-    }
-  else if (chvno == 2)
-    {
-      rc = pincb (pincb_arg, "Decryption PIN", &pinvalue); 
-      if (rc)
-        {
-          log_error ("error getting PIN: %s\n", gpg_strerror (rc));
-          goto leave;
-        }
-      rc = iso7816_verify (app->slot, 0x82, pinvalue, strlen (pinvalue));
-      xfree (pinvalue);
-      if (rc)
-        {
-          log_error ("verify CHV2 failed: rc=%s\n", gpg_strerror (rc));
-          goto leave;
-        }
+        goto leave;
     }
   else
     {
@@ -603,10 +641,12 @@ do_change_pin (APP app, CTRL ctrl,  const char *chvnostr, int reset_mode,
       goto leave;
     }
 
-  
-  rc = pincb (pincb_arg, chvno == 1? "New Signature PIN" :
-                         chvno == 2? "New Decryption PIN" :
-                         chvno == 3? "New Admin PIN" : "?", &pinvalue); 
+  if (chvno == 3)
+    app->did_chv3 = 0;
+  else
+    app->did_chv1 = app->did_chv2 = 0;
+
+  rc = pincb (pincb_arg, chvno == 3? "New Admin PIN" : "New PIN", &pinvalue); 
   if (rc)
     {
       log_error ("error getting new PIN: %s\n", gpg_strerror (rc));
@@ -614,12 +654,27 @@ do_change_pin (APP app, CTRL ctrl,  const char *chvnostr, int reset_mode,
     }
 
   if (reset_mode)
-    rc = iso7816_reset_retry_counter (app->slot, 0x80 + chvno,
-                                      pinvalue, strlen (pinvalue));
-  else
-    rc = iso7816_change_reference_data (app->slot, 0x80 + chvno,
-                                        NULL, 0,
+    {
+      rc = iso7816_reset_retry_counter (app->slot, 0x81,
                                         pinvalue, strlen (pinvalue));
+      if (!rc)
+        rc = iso7816_reset_retry_counter (app->slot, 0x82,
+                                          pinvalue, strlen (pinvalue));
+    }
+  else
+    {
+      if (chvno == 1 || chvno == 2)
+        {
+          rc = iso7816_change_reference_data (app->slot, 0x81, NULL, 0,
+                                              pinvalue, strlen (pinvalue));
+          if (!rc)
+            rc = iso7816_change_reference_data (app->slot, 0x82, NULL, 0,
+                                                pinvalue, strlen (pinvalue));
+        }
+      else
+        rc = iso7816_change_reference_data (app->slot, 0x80 + chvno, NULL, 0,
+                                            pinvalue, strlen (pinvalue));
+    }
   xfree (pinvalue);
 
 
@@ -679,22 +734,10 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
   else
     log_info ("generating new key\n");
 
-  {
-    char *pinvalue;
-    rc = pincb (pincb_arg, "Admin PIN", &pinvalue); 
-    if (rc)
-      {
-        log_error ("error getting PIN: %s\n", gpg_strerror (rc));
-        return rc;
-      }
-    rc = iso7816_verify (app->slot, 0x83, pinvalue, strlen (pinvalue));
-    xfree (pinvalue);
-  }
+
+  rc = verify_chv3 (app, pincb, pincb_arg);
   if (rc)
-    {
-      log_error ("verify CHV3 failed: rc=%s\n", gpg_strerror (rc));
-      goto leave;
-    }
+    goto leave;
 
   xfree (buffer); buffer = NULL;
 #if 1
@@ -765,6 +808,21 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
 
 
 static unsigned long
+convert_sig_counter_value (const unsigned char *value, size_t valuelen)
+{
+  unsigned long ul;
+
+  if (valuelen == 3 )
+    ul = (value[0] << 16) | (value[1] << 8) | value[2];
+  else
+    {
+      log_error ("invalid structure of OpenPGP card (DO 0x93)\n");
+      ul = 0;
+    }
+  return ul;
+}
+
+static unsigned long
 get_sig_counter (APP app)
 {
   void *relptr;
@@ -775,13 +833,7 @@ get_sig_counter (APP app)
   relptr = get_one_do (app->slot, 0x0093, &value, &valuelen);
   if (!relptr)
     return 0;
-  if (valuelen == 3 )
-    ul = (value[0] << 16) | (value[1] << 8) | value[2];
-  else
-    {
-      log_error ("invalid structure of OpenPGP card (DO 0x93)\n");
-      ul = 0;
-    }
+  ul = convert_sig_counter_value (value, valuelen);
   xfree (relptr);
   return ul;
 }
@@ -914,21 +966,17 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
   sigcount = get_sig_counter (app);
   log_info ("signatures created so far: %lu\n", sigcount);
 
-  /* FIXME: Check whether we are really required to enter the PIN for
-     each signature. There is a DO for this. */
-  if (!app->did_chv1 || 1) 
+  if (!app->did_chv1 || app->force_chv1 ) 
     {
       char *pinvalue;
 
       {
         char *prompt;
-        if (asprintf (&prompt, "Signature PIN [sigs done: %lu]", sigcount) < 0)
+        if (asprintf (&prompt, "PIN [sigs done: %lu]", sigcount) < 0)
           return gpg_error_from_errno (errno);
         rc = pincb (pincb_arg, prompt, &pinvalue); 
         free (prompt);
       }
-/*        pinvalue = xstrdup ("123456"); */
-/*        rc = 0; */
       if (rc)
         {
           log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
@@ -936,14 +984,28 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
         }
 
       rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
-      xfree (pinvalue);
       if (rc)
         {
           log_error ("verify CHV1 failed\n");
-          rc = gpg_error (GPG_ERR_GENERAL);
+          xfree (pinvalue);
           return rc;
         }
       app->did_chv1 = 1;
+      if (!app->did_chv2)
+        {
+          /* We should also verify CHV2. */
+          rc = iso7816_verify (app->slot, 0x82, pinvalue, strlen (pinvalue));
+          if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)
+            rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
+          if (rc)
+            {
+              log_error ("verify CHV2 failed\n");
+              xfree (pinvalue);
+              return rc;
+            }
+          app->did_chv2 = 1;
+        }
+      xfree (pinvalue);
     }
 
   rc = iso7816_compute_ds (app->slot, data, 35, outdata, outdatalen);
@@ -1024,30 +1086,10 @@ do_auth (APP app, const char *keyidstr,
         return rc;
     }
 
-  if (!app->did_chv2) 
-    {
-      char *pinvalue;
-
-      rc = pincb (pincb_arg, "Authentication/Decryption PIN", &pinvalue); 
-      if (rc)
-        {
-          log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
-          return rc;
-        }
-
-      rc = iso7816_verify (app->slot, 0x82, pinvalue, strlen (pinvalue));
-      xfree (pinvalue);
-      if (rc)
-        {
-          log_error ("verify CHV2 failed\n");
-          rc = gpg_error (GPG_ERR_GENERAL);
-          return rc;
-        }
-      app->did_chv2 = 1;
-    }
-
-  rc = iso7816_internal_authenticate (app->slot, indata, indatalen,
-                                      outdata, outdatalen);
+  rc = verify_chv2 (app, pincb, pincb_arg);
+  if (!rc)
+    rc = iso7816_internal_authenticate (app->slot, indata, indatalen,
+                                        outdata, outdatalen);
   return rc;
 }
 
@@ -1114,31 +1156,9 @@ do_decipher (APP app, const char *keyidstr,
         return rc;
     }
 
-  if (!app->did_chv2) 
-    {
-      char *pinvalue;
-
-      rc = pincb (pincb_arg, "Decryption PIN", &pinvalue); 
-/*        pinvalue = xstrdup ("123456"); */
-/*        rc = 0; */
-      if (rc)
-        {
-          log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
-          return rc;
-        }
-
-      rc = iso7816_verify (app->slot, 0x82, pinvalue, strlen (pinvalue));
-      xfree (pinvalue);
-      if (rc)
-        {
-          log_error ("verify CHV2 failed\n");
-          rc = gpg_error (GPG_ERR_GENERAL);
-          return rc;
-        }
-      app->did_chv2 = 1;
-    }
-  
-  rc = iso7816_decipher (app->slot, indata, indatalen, outdata, outdatalen);
+  rc = verify_chv2 (app, pincb, pincb_arg);
+  if (!rc)
+    rc = iso7816_decipher (app->slot, indata, indatalen, outdata, outdatalen);
   return rc;
 }
 
@@ -1155,10 +1175,15 @@ app_select_openpgp (APP app, unsigned char **sn, size_t *snlen)
   int rc;
   unsigned char *buffer;
   size_t buflen;
+  void *relptr;
   
   rc = iso7816_select_application (slot, aid, sizeof aid);
   if (!rc)
     {
+      app->did_chv1 = 0;
+      app->did_chv2 = 0;
+      app->did_chv3 = 0;
+
       rc = iso7816_get_data (slot, 0x004F, &buffer, &buflen);
       if (rc)
         goto leave;
@@ -1178,10 +1203,20 @@ app_select_openpgp (APP app, unsigned char **sn, size_t *snlen)
       else
         xfree (buffer);
 
+      relptr = get_one_do (app->slot, 0x00C4, &buffer, &buflen);
+      if (!relptr)
+        {
+          log_error ("can't access CHV Status Bytes - invalid OpenPGP card?\n");
+          goto leave;
+        }
+      app->force_chv1 = (buflen && *buffer == 0);
+      xfree (relptr);
+        
       if (opt.verbose > 1)
         dump_all_do (slot);
 
       app->fnc.learn_status = do_learn_status;
+      app->fnc.getattr = do_getattr;
       app->fnc.setattr = do_setattr;
       app->fnc.genkey = do_genkey;
       app->fnc.sign = do_sign;
@@ -1306,22 +1341,10 @@ app_openpgp_storekey (APP app, int keyno,
     return gpg_error (GPG_ERR_INV_ID);
   keyno--;
 
-  {
-    char *pinvalue;
-    rc = pincb (pincb_arg, "Admin PIN", &pinvalue); 
-    if (rc)
-      {
-        log_error ("error getting PIN: %s\n", gpg_strerror (rc));
-        return rc;
-      }
-    rc = iso7816_verify (app->slot, 0x83, pinvalue, strlen (pinvalue));
-    xfree (pinvalue);
-  }
+  rc = verify_chv3 (app, pincb, pincb_arg);
   if (rc)
-    {
-      log_error ("verify CHV3 failed: rc=%s\n", gpg_strerror (rc));
-      goto leave;
-    }
+    goto leave;
+
 
   rc = iso7816_put_data (app->slot,
                          (app->card_version > 0x0007? 0xE0 : 0xE9) + keyno,
