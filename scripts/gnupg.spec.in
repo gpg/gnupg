@@ -18,8 +18,8 @@ Group: Applications/Cryptography
 Group(cs): Aplikace/©ifrování
 Group(fr): Applications/Cryptographie
 Group(it): Applicazioni/Crittografia
-Source: ftp://ftp.gnupg.org/pub/gcrypt/%{name}-%{version}.tar.gz
-URL: http://www.gnupg.org
+Source: ftp://ftp.gnupg.org/gcrypt/gnupg/%{name}-%{version}.tar.gz
+URL: http://www.gnupg.org/
 Provides: gpg openpgp
 BuildRoot: /tmp/rpmbuild_%{name}
 
