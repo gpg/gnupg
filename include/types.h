@@ -46,8 +46,9 @@
   #ifndef __riscos__
     typedef unsigned char byte;
   #else 
-    /* Norcroft treats char  == unsigned char
-                   but char* != unsigned char*  */
+    /* Norcroft treats char  = unsigned char  as legal assignment
+                   but char* = unsigned char* as illegal assignment
+       and the same applies to the signed variants as well  */
     typedef char byte;
   #endif 
   #define HAVE_BYTE_TYPEDEF
