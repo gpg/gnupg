@@ -1097,7 +1097,7 @@ iobuf_fdopen( int fd, const char *mode )
     file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
 	log_debug("iobuf-%d.%d: fdopen `%s'\n", a->no, a->subno, fcx->fname );
-
+    iobuf_ioctl (a,3,1,NULL); /* disable fd caching */
     return a;
 }
 
@@ -1121,11 +1121,10 @@ iobuf_sockopen ( int fd, const char *mode )
     sock_filter( scx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
 	log_debug("iobuf-%d.%d: sockopen `%s'\n", a->no, a->subno, scx->fname);
+    iobuf_ioctl (a,3,1,NULL); /* disable fd caching */ 
 #else
     a = iobuf_fdopen (fd, mode);
 #endif
-    if (a)
-        iobuf_ioctl (a,3,1,NULL); /* disable fd caching */ 
     return a;
 }
 

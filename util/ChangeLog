@@ -1,3 +1,8 @@
+2002-01-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* iobuf.c (iobuf_fdopen, iobuf_sockopen): Do not cache fdopened
+	fds on close.
+
 2002-01-08  Werner Koch  <wk@gnupg.org>
 
 	* secmem.c (print_warn): Print a pointer to the FAQ.
