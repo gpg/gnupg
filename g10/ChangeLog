@@ -1,3 +1,9 @@
+2002-03-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (chk_self_sigs): any valid self-sig should mark a user
+	ID or subkey as valid - otherwise, an attacker could DoS the user
+	by inventing a bogus invalid self-signature.
+
 2002-03-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): make a few more strings translatable.

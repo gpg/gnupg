@@ -815,16 +815,18 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 					    (ulong)keyid[1]);
 		    return -1;	/* the complete keyblock is invalid */
 		}
-		rc = check_key_signature( keyblock, n, NULL);
-		if( rc ) {
-		    log_info( rc == G10ERR_PUBKEY_ALGO ?
-			 _("key %08lX: unsupported public key algorithm\n"):
-			 _("key %08lX: invalid self-signature\n"),
-				     (ulong)keyid[1]);
 
-		    unode->flag |= 2; /* mark as invalid */
+		/* If it hasn't been marked valid yet, keep trying */
+		if(!(unode->flag&1)) {
+		  rc = check_key_signature( keyblock, n, NULL);
+		  if( rc )
+		    log_info( rc == G10ERR_PUBKEY_ALGO ?
+			   _("key %08lX: unsupported public key algorithm\n"):
+			   _("key %08lX: invalid self-signature\n"),
+			      (ulong)keyid[1]);
+		  else
+		    unode->flag |= 1; /* mark that signature checked */
 		}
-		unode->flag |= 1; /* mark that signature checked */
 	    }
 	    else if( sig->sig_class == 0x18 ) {
 		KBNODE knode = find_prev_kbnode( keyblock,
@@ -839,16 +841,17 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 		    n->flag |= 4; /* delete this */
 		}
 		else {
+		  /* If it hasn't been marked valid yet, keep trying */
+		  if(!(knode->flag&1)) {
 		    rc = check_key_signature( keyblock, n, NULL);
-		    if( rc ) {
+		    if( rc )
 			log_info(  rc == G10ERR_PUBKEY_ALGO ?
 			   _("key %08lX: unsupported public key algorithm\n"):
 			   _("key %08lX: invalid subkey binding\n"),
 					 (ulong)keyid[1]);
-
-			knode->flag |= 2; /* mark as invalid */
-		    }
-		    knode->flag |= 1; /* mark that signature checked */
+		    else
+		      knode->flag |= 1; /* mark that signature checked */
+		  }
 		}
 	    }
 	}
