@@ -18,7 +18,9 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 -->
 
-<!DOCTYPE reference PUBLIC "-//OASIS//DTD DocBook V3.1//EN" [
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V3.1//EN" [
+<!--entity genindex system "gcryptref.toc-idx"-->
+<!entity packageversion system "version.sgml">
 <!entity libgcrypt "Libgcrypt">
 <!entity sexp	   "S-Exp">
 <!entity cipherref system "gcryptref-cipher.sgml">
@@ -26,6 +28,33 @@
 <!entity pubkeyref system "gcryptref-pubkey.sgml">
 <!entity miscref   system "gcryptref-misc.sgml">
 ]>
+
+<book>
+<bookinfo>
+<title>The &libgcrypt; Reference Manual</title>
+<subtitle>Version &packageversion;</subtitle>
+<date>
+2000-03-13
+</date>
+<copyright>
+<year>2000</year>
+<holder>Free Software Foundation, Inc.</holder>
+</copyright>
+<abstract>
+<para>
+Please direct questions, bug reports, or suggestions concerning
+this manual to the mailing list <email>gnupg-doc@gnupg.org</email>.
+</para>
+
+<para>
+This manual may be redistributed under the terms of the
+<ulink url="http://www.gnu.org/copyleft/gpl.html"><phrase>GNU
+General Public License</phrase></ulink>.
+</para>
+</abstract>
+</bookinfo>
+
+
 
 
 <reference>
@@ -37,7 +66,7 @@
 <!-- Hash Functions -->
 &digestref;
 
-<!-- ublic Key Functions -->
+<!-- Public Key Functions -->
 &pubkeyref;
 
 <!-- Miscellaneous Functions  -->

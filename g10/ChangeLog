@@ -1,3 +1,11 @@
+Mon Mar 13 19:22:46 CET 2000  Werner Koch  <wk@openit.de>
+
+	* build-paket.c (do_user_id): Save offset where name has been stored.
+
+	* ringedit.c : Add new access method KBXF
+
+	* kbxfile.c: New.
+
 Mon Feb 21 22:43:01 CET 2000  Werner Koch  <wk@>
 
 	* kbx.h: New.

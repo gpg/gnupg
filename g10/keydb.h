@@ -57,7 +57,8 @@ struct kbnode_struct {
 enum resource_type {
     rt_UNKNOWN = 0,
     rt_RING = 1,
-    rt_GDBM = 2
+    rt_GDBM = 2,
+    rt_KBXF = 3
 };
 
 

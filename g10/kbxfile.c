@@ -1,4 +1,4 @@
-/* kbx.h  -  The GnuPG Keybox
+/* kbxfile.c - KBX file handling
  *	Copyright (C) 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -18,15 +18,28 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef GPG_KBX_H
-#define GPG_KBX_H 1
+/****************
+ * We will change the whole system to use only KBX.  This file here
+ * will implements the methods needed to operate on plain KBXfiles.
+ * Most stuff from getkey and ringedit will be replaced by stuff here.
+ * To make things even mor easier we will only allow one updateable kbxfile
+ * and optionally some read-only files.
+ */
 
-#include "keydb.h"
+#include <config.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <assert.h>
+#include <gcrypt.h>
 
-typedef struct kbxblob *KBXBLOB;
-
-int  kbx_create_blob ( KBXBLOB *retkbx, KBNODE keyblock );
-void kbx_release_blob ( KBXBLOB blob );
+#include "kbx.h"
 
 
-#endif /*GPG_KBX_H*/
+int
+kbxfile_search_by_fpr( void )
+{
+    return -1;
+}
+

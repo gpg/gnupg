@@ -4,7 +4,9 @@ INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 EXTRA_DIST = OPTIONS  pubring.asc  options.skel
 OMIT_DEPENDENCIES = zlib.h zconf.h
 LDFLAGS = -static @LDFLAGS@ @DYNLINK_LDFLAGS@
-needed_libs = ../util/libutil.la ../gcrypt/libgcrypt.la ../jnlib/libjnlib.la
+# we need to add libutil.la a second time because we have to resolve
+# gpg_log_ in some libjnlib modules. - very ugly - should be removed soon.
+needed_libs = ../util/libutil.la ../gcrypt/libgcrypt.la ../jnlib/libjnlib.la ../util/libutil.la
 
 #noinst_PROGRAMS = gpgd
 bin_PROGRAMS = gpg
@@ -22,6 +24,9 @@ common_source =  \
 	      skclist.c 	\
 	      ringedit.c	\
 	      kbnode.c		\
+	      kbx.h		\
+	      kbxblob.c 	\
+	      kbxfile.c 	\
 	      main.h		\
 	      mainproc.c	\
 	      armor.c		\

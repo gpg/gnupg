@@ -663,4 +663,116 @@ if test $gnupg_cv_mkdir_takes_one_arg = yes ; then
 fi
 ])
 
+
+dnl GPH_PROG_DOCBOOK()
+dnl Check whether we have the needed Docbook environment
+dnl and issue a warning if this is not the case.
+dnl
+dnl This test defines these variables for substitution:
+dnl    DB2HTML - command used to convert Docbook to HTML
+dnl    DB2TEX  - command used to convert Docbook to TeX
+dnl    DB2MAN  - command used to convert Docbook to man pages
+dnl    JADE    - command to invoke jade
+dnl    JADETEX - command to invoke jadetex
+dnl    DSL_FOR_HTML - the stylesheet used to for the Docbook->HTML conversion
+dnl The following make conditionals are defined
+dnl    HAVE_DB2MAN  - defined when db2man is available
+dnl    HAVE_DB2TEX  - defined when db2tex is available
+dnl    HAVE_DB2HTML - defined when db2html is available
+dnl    HAVE_DOCBOOK - defined when the entire Docbook environment is present
+dnl    HAVE_JADE    - defined when jade is installed
+dnl    HAVE_JADETEX - defined when jadetex is installed
+dnl
+dnl (wk 2000-02-17)
+dnl
+AC_DEFUN(GPH_PROG_DOCBOOK,
+  [  AC_REQUIRE([AC_CONFIG_AUX_DIR_DEFAULT])dnl
+     all=yes
+     AC_PATH_PROG(DB2MAN, docbook-to-man, no)
+     test "$DB2MAN" = no && all=no
+     AM_CONDITIONAL(HAVE_DB2MAN, test "$DB2MAN" != no )
+
+     AC_PATH_PROG(JADE, jade, no)
+     test "$JADE" = no && all=no
+     AM_CONDITIONAL(HAVE_JADE, test "$JADE" != no )
+
+     AC_PATH_PROG(JADETEX, jadetex, no)
+     test "$JADETEX" = no && all=no
+     AM_CONDITIONAL(HAVE_JADETEX, test "$JADETEX" != no )
+
+     stylesheet_dirs='
+/usr/local/lib/dsssl/stylesheets/docbook
+/usr/local/share/dsssl/stylesheets/docbook
+/usr/local/lib/sgml/stylesheet/dsssl/docbook/nwalsh
+/usr/local/share/sgml/stylesheet/dsssl/docbook/nwalsh
+/usr/lib/dsssl/stylesheets/docbook
+/usr/share/dsssl/stylesheets/docbook
+/usr/lib/sgml/stylesheet/dsssl/docbook/nwalsh
+/usr/share/sgml/stylesheet/dsssl/docbook/nwalsh
+'
+
+    AC_MSG_CHECKING(for TeX stylesheet)
+    dsl=none
+    for d in ${stylesheet_dirs}; do
+        file=${d}/print/docbook.dsl
+        if test -f $file; then
+            dsl=$file
+            break
+        fi
+    done
+    AC_MSG_RESULT([$dsl])
+    okay=no
+    if test $dsl = none ; then
+       DB2TEX="$missing_dir/missing db2tex"
+       all=no
+    else
+       DB2TEX="$JADE -t tex -i tex -d $dsl"
+       okay=yes
+    fi
+    AC_SUBST(DB2TEX)
+    AM_CONDITIONAL(HAVE_DB2TEX, test $okay = yes )
+
+    if ( $ac_aux_dir/db2html.in --version) < /dev/null > /dev/null 2>&1; then
+        :
+    else
+        AC_ERROR([needed $ac_aux_dir/db2html.in not found])
+    fi
+
+    AC_MSG_CHECKING(for HTML stylesheet)
+    DSL_FOR_HTML="none"
+    for d in ${stylesheet_dirs}; do
+        file=${d}/html/docbook.dsl
+        if test -f $file; then
+            DSL_FOR_HTML=$file
+            break
+        fi
+    done
+    AC_MSG_RESULT([$DSL_FOR_HTML])
+    okay=no
+    if test $DSL_FOR_HTML = none ; then
+       DB2HTML="$missing_dir/missing db2html"
+       all=no
+    else
+       DB2HTML="`cd $ac_aux_dir && pwd`/db2html --copyfiles"
+       okay=yes
+    fi
+    AC_SUBST(DB2HTML)
+    AC_SUBST(DSL_FOR_HTML)
+    AM_CONDITIONAL(HAVE_DB2HTML, test $okay = yes )
+
+    AM_CONDITIONAL(HAVE_DOCBOOK, test "$all" != yes )
+    if test $all = no ; then
+        AC_MSG_WARN([[
+***
+*** It seems that the Docbook environment is not installed as required.
+*** We will try to build everything,  but if you either touch some files
+*** or use a bogus make tool, you may run into problems.
+*** Docbook is normally only needed to build the documentation.
+***]])
+    fi
+  ])
+
+
+
+
 dnl *-*wedit:notab*-*  Please keep this as the last line.

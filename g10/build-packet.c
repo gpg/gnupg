@@ -196,6 +196,7 @@ static int
 do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 {
     write_header(out, ctb, uid->len);
+    uid->stored_at = iobuf_tell( out ); /* what a hack */
     if( iobuf_write( out, uid->name, uid->len ) )
 	return GPGERR_WRITE_FILE;
     return 0;

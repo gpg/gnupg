@@ -60,6 +60,7 @@
 #include "options.h"
 #include "main.h"
 #include "i18n.h"
+#include "kbx.h"
 
 
 #ifdef MKDIR_TAKES_ONE_ARG
@@ -95,6 +96,12 @@ static int keyring_search( PACKET *pkt, KBPOS *kbpos, IOBUF iobuf,
 static int keyring_read( KBPOS *kbpos, KBNODE *ret_root );
 static int keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs );
 static int keyring_copy( KBPOS *kbpos, int mode, KBNODE root );
+
+static int do_kbxf_search( PACKET *pkt, KBPOS *kbpos, IOBUF iobuf,
+						const char *fname );
+static int do_kbxf_read( KBPOS *kbpos, KBNODE *ret_root );
+static int do_kbxf_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs );
+static int do_kbxf_copy( KBPOS *kbpos, int mode, KBNODE root );
 
 #ifdef HAVE_LIBGDBM
 static int do_gdbm_store( KBPOS *kbpos, KBNODE root, int update );
@@ -206,12 +213,17 @@ add_keyblock_resource( const char *url, int force, int secret )
 
     /* Do we have an URL?
      *	gnupg-gdbm:filename  := this is a GDBM resource
+     *	gnupg-kbxf:filename  := this is a KBX file resource
      *	gnupg-ring:filename  := this is a plain keyring
      *	filename := See what is is, but create as plain keyring.
      */
     if( strlen( resname ) > 11 ) {
 	if( !strncmp( resname, "gnupg-ring:", 11 ) ) {
 	    rt = rt_RING;
+	    resname += 11;
+	}
+	else if( !strncmp( resname, "gnupg-kbxf:", 11 ) ) {
+	    rt = rt_KBXF;
 	    resname += 11;
 	}
 	else if( !strncmp( resname, "gnupg-gdbm:", 11 ) ) {
@@ -259,8 +271,17 @@ add_keyblock_resource( const char *url, int force, int secret )
 		    rt = rt_GDBM;
 		else if( magic == 0xce9a5713 )
 		    log_error("%s: endianess does not match\n", url );
-		else
+		else {
+		    char buf[8];
+
 		    rt = rt_RING;
+		    if( fread( buf, 8, 1, fp) == 1 ) {
+			if( !memcmp( buf+4, "KBXf", 4 )
+			    && buf[0] == 1 && buf[1] == 1 ) {
+			    rt = rt_KBXF;
+			}
+		    }
+		}
 	    }
 	    else /* maybe empty: assume ring */
 		rt = rt_RING;
@@ -277,6 +298,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 	goto leave;
 
       case rt_RING:
+      case rt_KBXF:
 	iobuf = iobuf_open( filename );
 	if( !iobuf && !force ) {
 	    rc = GPGERR_OPEN_FILE;
@@ -340,6 +362,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 	/* must close it again */
       #endif
 	break;
+
 
     #ifdef HAVE_LIBGDBM
       case rt_GDBM:
@@ -456,6 +479,10 @@ search( PACKET *pkt, KBPOS *kbpos, int secret )
 	    switch( resource_table[i].rt ) {
 	      case rt_RING:
 		rc = keyring_search( pkt, kbpos, resource_table[i].iobuf,
+						 resource_table[i].fname );
+		break;
+	      case rt_KBXF:
+		rc = do_kbxf_search( pkt, kbpos, resource_table[i].iobuf,
 						 resource_table[i].fname );
 		break;
 	     #ifdef HAVE_LIBGDBM
@@ -706,6 +733,8 @@ read_keyblock( KBPOS *kbpos, KBNODE *ret_root )
     switch( kbpos->rt ) {
       case rt_RING:
 	return keyring_read( kbpos, ret_root );
+      case rt_KBXF:
+	return do_kbxf_read( kbpos, ret_root );
      #ifdef HAVE_LIBGDBM
       case rt_GDBM:
 	return do_gdbm_read( kbpos, ret_root );
@@ -762,6 +791,7 @@ enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
 	kbpos->valid = 0;
 	switch( kbpos->rt ) {
 	  case rt_RING:
+	  case rt_KBXF:
 	    kbpos->fp = iobuf_open( rentry->fname );
 	    if( !kbpos->fp ) {
 		log_error("can't open `%s'\n", rentry->fname );
@@ -788,6 +818,11 @@ enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
 		    return GPGERR_GENERAL;
 		rc = keyring_enum( kbpos, ret_root, mode == 11 );
 		break;
+	      case rt_KBXF:
+		if( !kbpos->fp )
+		    return GPGERR_GENERAL;
+		rc = do_kbxf_enum( kbpos, ret_root, mode == 11 );
+		break;
 	     #ifdef HAVE_LIBGDBM
 	      case rt_GDBM:
 		rc = do_gdbm_enum( kbpos, ret_root );
@@ -812,6 +847,7 @@ enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
     else {
 	switch( kbpos->rt ) {
 	  case rt_RING:
+	  case rt_KBXF:
 	    if( kbpos->fp ) {
 		iobuf_close( kbpos->fp );
 		kbpos->fp = NULL;
@@ -852,6 +888,9 @@ insert_keyblock( KBPOS *kbpos, KBNODE root )
       case rt_RING:
 	rc = keyring_copy( kbpos, 1, root );
 	break;
+      case rt_KBXF:
+	rc = do_kbxf_copy( kbpos, 1, root );
+	break;
      #ifdef HAVE_LIBGDBM
       case rt_GDBM:
 	rc = do_gdbm_store( kbpos, root, 0 );
@@ -881,6 +920,9 @@ delete_keyblock( KBPOS *kbpos )
       case rt_RING:
 	rc = keyring_copy( kbpos, 2, NULL );
 	break;
+      case rt_KBXF:
+	rc = do_kbxf_copy( kbpos, 2, NULL );
+	break;
      #ifdef HAVE_LIBGDBM
       case rt_GDBM:
 	log_debug("deleting gdbm keyblock is not yet implemented\n");
@@ -908,6 +950,9 @@ update_keyblock( KBPOS *kbpos, KBNODE root )
     switch( kbpos->rt ) {
       case rt_RING:
 	rc = keyring_copy( kbpos, 3, root );
+	break;
+      case rt_KBXF:
+	rc = do_kbxf_copy( kbpos, 3, root );
 	break;
      #ifdef HAVE_LIBGDBM
       case rt_GDBM:
@@ -1542,6 +1587,478 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
     gcry_free(tmpfname);
     return rc;
 }
+
+
+/****************************************************************
+ ********** Functions which operate on KBX files ****************
+ ****************************************************************/
+
+/****************
+ * search a KBX file return 0 if found, -1 if not found or an errorcode.
+ */
+static int
+do_kbxf_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
+{
+    int rc;
+    PACKET pkt;
+    int save_mode;
+    ulong offset;
+    int pkttype = req->pkttype;
+    PKT_public_key *req_pk = req->pkt.public_key;
+    PKT_secret_key *req_sk = req->pkt.secret_key;
+
+    init_packet(&pkt);
+    save_mode = set_packet_list_mode(0);
+    kbpos->rt = rt_RING;
+    kbpos->valid = 0;
+
+  #if HAVE_DOSISH_SYSTEM || 1
+    assert(!iobuf);
+    iobuf = iobuf_open( fname );
+    if( !iobuf ) {
+	log_error("%s: can't open keyring file\n", fname);
+	rc = GPGERR_KEYRING_OPEN;
+	goto leave;
+    }
+  #else
+    if( iobuf_seek( iobuf, 0 ) ) {
+	log_error("can't rewind keyring file\n");
+	rc = GPGERR_KEYRING_OPEN;
+	goto leave;
+    }
+  #endif
+
+    while( !(rc=search_packet(iobuf, &pkt, pkttype, &offset)) ) {
+	if( pkt.pkttype == PKT_SECRET_KEY ) {
+	    PKT_secret_key *sk = pkt.pkt.secret_key;
+
+	    if(   req_sk->timestamp == sk->timestamp
+	       && req_sk->pubkey_algo == sk->pubkey_algo
+	       && !cmp_seckey( req_sk, sk) )
+		break; /* found */
+	}
+	else if( pkt.pkttype == PKT_PUBLIC_KEY ) {
+	    PKT_public_key *pk = pkt.pkt.public_key;
+
+	    if(   req_pk->timestamp == pk->timestamp
+	       && req_pk->pubkey_algo == pk->pubkey_algo
+	       && !cmp_pubkey( req_pk, pk ) )
+		break; /* found */
+	}
+	else
+	    BUG();
+	free_packet(&pkt);
+    }
+    if( !rc ) {
+	kbpos->offset = offset;
+	kbpos->valid = 1;
+    }
+
+  leave:
+    free_packet(&pkt);
+    set_packet_list_mode(save_mode);
+  #if HAVE_DOSISH_SYSTEM || 1
+    iobuf_close(iobuf);
+  #endif
+    return rc;
+}
+
+
+static int
+do_kbxf_read( KBPOS *kbpos, KBNODE *ret_root )
+{
+    PACKET *pkt;
+    int rc;
+    RESTBL *rentry;
+    KBNODE root = NULL;
+    IOBUF a;
+    int in_cert = 0;
+
+    if( !(rentry=check_pos(kbpos)) )
+	return GPGERR_GENERAL;
+
+    a = iobuf_open( rentry->fname );
+    if( !a ) {
+	log_error("can't open `%s'\n", rentry->fname );
+	return GPGERR_OPEN_FILE;
+    }
+
+    if( !kbpos->valid )
+	log_debug("kbpos not valid in keyring_read, want %d\n", (int)kbpos->offset );
+    if( iobuf_seek( a, kbpos->offset ) ) {
+	log_error("can't seek to %lu\n", kbpos->offset);
+	iobuf_close(a);
+	return GPGERR_KEYRING_OPEN;
+    }
+
+    pkt = gcry_xmalloc( sizeof *pkt );
+    init_packet(pkt);
+    kbpos->count=0;
+    while( (rc=parse_packet(a, pkt)) != -1 ) {
+	if( rc ) {  /* ignore errors */
+	    if( rc != GPGERR_UNKNOWN_PACKET ) {
+		log_error("read_keyblock: read error: %s\n", gpg_errstr(rc) );
+		rc = GPGERR_INV_KEYRING;
+		goto ready;
+	    }
+	    kbpos->count++;
+	    free_packet( pkt );
+	    init_packet( pkt );
+	    continue;
+	}
+	/* make a linked list of all packets */
+	switch( pkt->pkttype ) {
+	  case PKT_COMPRESSED:
+	    log_error("skipped compressed packet in keyring\n" );
+	    free_packet(pkt);
+	    init_packet(pkt);
+	    break;
+
+	  case PKT_PUBLIC_KEY:
+	  case PKT_SECRET_KEY:
+	    if( in_cert )
+		goto ready;
+	    in_cert = 1;
+	  default:
+	    kbpos->count++;
+	    if( !root )
+		root = new_kbnode( pkt );
+	    else
+		add_kbnode( root, new_kbnode( pkt ) );
+	    pkt = gcry_xmalloc( sizeof *pkt );
+	    init_packet(pkt);
+	    break;
+	}
+    }
+  ready:
+    kbpos->valid = 0;
+    if( rc == -1 && root )
+	rc = 0;
+
+    if( rc )
+	release_kbnode( root );
+    else
+	*ret_root = root;
+    free_packet( pkt );
+    gcry_free( pkt );
+    iobuf_close(a);
+    return rc;
+}
+
+
+static int
+do_kbxf_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
+{
+    PACKET *pkt;
+    int rc;
+    RESTBL *rentry;
+    KBNODE root = NULL;
+
+    if( !(rentry=check_pos(kbpos)) )
+	return GPGERR_GENERAL;
+
+    if( kbpos->pkt ) {
+	root = new_kbnode( kbpos->pkt );
+	kbpos->pkt = NULL;
+    }
+
+    pkt = gcry_xmalloc( sizeof *pkt );
+    init_packet(pkt);
+    while( (rc=parse_packet(kbpos->fp, pkt)) != -1 ) {
+	if( rc ) {  /* ignore errors */
+	    if( rc != GPGERR_UNKNOWN_PACKET ) {
+		log_error("read_keyblock: read error: %s\n", gpg_errstr(rc) );
+		rc = GPGERR_INV_KEYRING;
+		goto ready;
+	    }
+	    free_packet( pkt );
+	    init_packet( pkt );
+	    continue;
+	}
+	/* make a linked list of all packets */
+	switch( pkt->pkttype ) {
+	  case PKT_COMPRESSED:
+	    log_error("skipped compressed packet in keyring\n" );
+	    free_packet(pkt);
+	    init_packet(pkt);
+	    break;
+
+	  case PKT_PUBLIC_KEY:
+	  case PKT_SECRET_KEY:
+	    if( root ) { /* store this packet */
+		kbpos->pkt = pkt;
+		pkt = NULL;
+		goto ready;
+	    }
+	    root = new_kbnode( pkt );
+	    pkt = gcry_xmalloc( sizeof *pkt );
+	    init_packet(pkt);
+	    break;
+
+	  default:
+	    /* skip pakets at the beginning of a keyring, until we find
+	     * a start packet; issue a warning if it is not a comment */
+	    if( !root && pkt->pkttype != PKT_COMMENT
+		      && pkt->pkttype != PKT_OLD_COMMENT ) {
+		break;
+	    }
+	    if( !root || (skipsigs && ( pkt->pkttype == PKT_SIGNATURE
+				      ||pkt->pkttype == PKT_COMMENT
+				      ||pkt->pkttype == PKT_OLD_COMMENT )) ) {
+		init_packet(pkt);
+		break;
+	    }
+	    add_kbnode( root, new_kbnode( pkt ) );
+	    pkt = gcry_xmalloc( sizeof *pkt );
+	    init_packet(pkt);
+	    break;
+	}
+    }
+  ready:
+    if( rc == -1 && root )
+	rc = 0;
+
+    if( rc )
+	release_kbnode( root );
+    else
+	*ret_root = root;
+    free_packet( pkt );
+    gcry_free( pkt );
+
+    return rc;
+}
+
+
+/****************
+ * Perform insert/delete/update operation.
+ * mode 1 = insert
+ *	2 = delete
+ *	3 = update
+ */
+static int
+do_kbxf_copy( KBPOS *kbpos, int mode, KBNODE root )
+{
+    RESTBL *rentry;
+    IOBUF fp, newfp;
+    int rc=0;
+    char *bakfname = NULL;
+    char *tmpfname = NULL;
+
+    if( !(rentry = check_pos( kbpos )) )
+	return GPGERR_GENERAL;
+    if( kbpos->fp )
+	BUG(); /* not allowed with such a handle */
+
+    if( opt.dry_run )
+	return 0;
+
+    lock_rentry( rentry );
+
+    /* open the source file */
+    fp = iobuf_open( rentry->fname );
+    if( mode == 1 && !fp && errno == ENOENT ) { /* no file yet */
+	KBNODE kbctx, node;
+
+	/* insert: create a new file */
+	newfp = iobuf_create( rentry->fname );
+	if( !newfp ) {
+	    log_error(_("%s: can't create: %s\n"), rentry->fname, strerror(errno));
+	    unlock_rentry( rentry );
+	    return GPGERR_OPEN_FILE;
+	}
+	else if( !opt.quiet )
+	    log_info(_("%s: keyring created\n"), rentry->fname );
+
+	kbctx=NULL;
+	while( (node = walk_kbnode( root, &kbctx, 0 )) ) {
+	    if( (rc = build_packet( newfp, node->pkt )) ) {
+		log_error("build_packet(%d) failed: %s\n",
+			    node->pkt->pkttype, gpg_errstr(rc) );
+		iobuf_cancel(newfp);
+		unlock_rentry( rentry );
+		return GPGERR_WRITE_FILE;
+	    }
+	}
+	if( iobuf_close(newfp) ) {
+	    log_error("%s: close failed: %s\n", rentry->fname, strerror(errno));
+	    unlock_rentry( rentry );
+	    return GPGERR_CLOSE_FILE;
+	}
+	if( chmod( rentry->fname, S_IRUSR | S_IWUSR ) ) {
+	    log_error("%s: chmod failed: %s\n",
+				    rentry->fname, strerror(errno) );
+	    unlock_rentry( rentry );
+	    return GPGERR_WRITE_FILE;
+	}
+	return 0;
+    }
+    if( !fp ) {
+	log_error("%s: can't open: %s\n", rentry->fname, strerror(errno) );
+	rc = GPGERR_OPEN_FILE;
+	goto leave;
+    }
+
+    /* create the new file */
+  #ifdef USE_ONLY_8DOT3
+    /* Here is another Windoze bug?:
+     * you cant rename("pubring.gpg.tmp", "pubring.gpg");
+     * but	rename("pubring.gpg.tmp", "pubring.aaa");
+     * works.  So we replace .gpg by .bak or .tmp
+     */
+    if( strlen(rentry->fname) > 4
+	&& !strcmp(rentry->fname+strlen(rentry->fname)-4, ".gpg") ) {
+	bakfname = gcry_xmalloc( strlen( rentry->fname ) + 1 );
+	strcpy(bakfname,rentry->fname);
+	strcpy(bakfname+strlen(rentry->fname)-4, ".bak");
+	tmpfname = gcry_xmalloc( strlen( rentry->fname ) + 1 );
+	strcpy(tmpfname,rentry->fname);
+	strcpy(tmpfname+strlen(rentry->fname)-4, ".tmp");
+    }
+    else { /* file does not end with gpg; hmmm */
+	bakfname = gcry_xmalloc( strlen( rentry->fname ) + 5 );
+	strcpy(stpcpy(bakfname,rentry->fname),".bak");
+	tmpfname = gcry_xmalloc( strlen( rentry->fname ) + 5 );
+	strcpy(stpcpy(tmpfname,rentry->fname),".tmp");
+    }
+  #else
+    bakfname = gcry_xmalloc( strlen( rentry->fname ) + 2 );
+    strcpy(stpcpy(bakfname,rentry->fname),"~");
+    tmpfname = gcry_xmalloc( strlen( rentry->fname ) + 5 );
+    strcpy(stpcpy(tmpfname,rentry->fname),".tmp");
+  #endif
+    newfp = iobuf_create( tmpfname );
+    if( !newfp ) {
+	log_error("%s: can't create: %s\n", tmpfname, strerror(errno) );
+	iobuf_close(fp);
+	rc = GPGERR_OPEN_FILE;
+	goto leave;
+    }
+
+    if( mode == 1 ) { /* insert */
+	/* copy everything to the new file */
+	rc = copy_all_packets( fp, newfp );
+	if( rc != -1 ) {
+	    log_error("%s: copy to %s failed: %s\n",
+		      rentry->fname, tmpfname, gpg_errstr(rc) );
+	    iobuf_close(fp);
+	    iobuf_cancel(newfp);
+	    goto leave;
+	}
+	rc = 0;
+    }
+
+    if( mode == 2 || mode == 3 ) { /* delete or update */
+	/* copy first part to the new file */
+	rc = copy_some_packets( fp, newfp, kbpos->offset );
+	if( rc ) { /* should never get EOF here */
+	    log_error("%s: copy to %s failed: %s\n",
+		      rentry->fname, tmpfname, gpg_errstr(rc) );
+	    iobuf_close(fp);
+	    iobuf_cancel(newfp);
+	    goto leave;
+	}
+	/* skip this keyblock */
+	assert( kbpos->count );
+	rc = skip_some_packets( fp, kbpos->count );
+	if( rc ) {
+	    log_error("%s: skipping %u packets failed: %s\n",
+			    rentry->fname, kbpos->count, gpg_errstr(rc));
+	    iobuf_close(fp);
+	    iobuf_cancel(newfp);
+	    goto leave;
+	}
+    }
+
+    if( mode == 1 || mode == 3 ) { /* insert or update */
+	KBNODE kbctx, node;
+
+	/* append the new data */
+	kbctx=NULL;
+	while( (node = walk_kbnode( root, &kbctx, 0 )) ) {
+	    if( (rc = build_packet( newfp, node->pkt )) ) {
+		log_error("build_packet(%d) failed: %s\n",
+			    node->pkt->pkttype, gpg_errstr(rc) );
+		iobuf_close(fp);
+		iobuf_cancel(newfp);
+		rc = GPGERR_WRITE_FILE;
+		goto leave;
+	    }
+	}
+	kbpos->valid = 0;
+    }
+
+    if( mode == 2 || mode == 3 ) { /* delete or update */
+	/* copy the rest */
+	rc = copy_all_packets( fp, newfp );
+	if( rc != -1 ) {
+	    log_error("%s: copy to %s failed: %s\n",
+		      rentry->fname, tmpfname, gpg_errstr(rc) );
+	    iobuf_close(fp);
+	    iobuf_cancel(newfp);
+	    goto leave;
+	}
+	rc = 0;
+    }
+
+    /* close both files */
+    if( iobuf_close(fp) ) {
+	log_error("%s: close failed: %s\n", rentry->fname, strerror(errno) );
+	rc = GPGERR_CLOSE_FILE;
+	goto leave;
+    }
+    if( iobuf_close(newfp) ) {
+	log_error("%s: close failed: %s\n", tmpfname, strerror(errno) );
+	rc = GPGERR_CLOSE_FILE;
+	goto leave;
+    }
+    /* if the new file is a secring, restrict the permissions */
+  #ifndef HAVE_DOSISH_SYSTEM
+    if( rentry->secret ) {
+	if( chmod( tmpfname, S_IRUSR | S_IWUSR ) ) {
+	    log_error("%s: chmod failed: %s\n",
+				    tmpfname, strerror(errno) );
+	    rc = GPGERR_WRITE_FILE;
+	    goto leave;
+	}
+    }
+  #endif
+
+    /* rename and make backup file */
+    if( !rentry->secret ) {  /* but not for secret keyrings */
+      #ifdef HAVE_DOSISH_SYSTEM
+	remove( bakfname );
+      #endif
+	if( rename( rentry->fname, bakfname ) ) {
+	    log_error("%s: rename to %s failed: %s\n",
+				    rentry->fname, bakfname, strerror(errno) );
+	    rc = GPGERR_RENAME_FILE;
+	    goto leave;
+	}
+    }
+  #ifdef HAVE_DOSISH_SYSTEM
+    remove( rentry->fname );
+  #endif
+    if( rename( tmpfname, rentry->fname ) ) {
+	log_error("%s: rename to %s failed: %s\n",
+			    tmpfname, rentry->fname,strerror(errno) );
+	rc = GPGERR_RENAME_FILE;
+	if( rentry->secret ) {
+	    log_info(_(
+		"WARNING: 2 files with confidential information exists.\n"));
+	    log_info(_("%s is the unchanged one\n"), rentry->fname );
+	    log_info(_("%s is the new one\n"), tmpfname );
+	    log_info(_("Please fix this possible security flaw\n"));
+	}
+	goto leave;
+    }
+
+  leave:
+    unlock_rentry( rentry );
+    gcry_free(bakfname);
+    gcry_free(tmpfname);
+    return rc;
+}
+
 
 
 #ifdef HAVE_LIBGDBM

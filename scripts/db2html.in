@@ -1,0 +1,151 @@
+#!/bin/sh
+# db2html.in - Docbook to HTML rendering (wk 2000-02-15)
+#
+#	Copyright (C) 2000 Free Software Foundation
+#
+# This is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+
+nosplit=no
+copyfiles=no
+stylesheet=@DSL_FOR_HTML@
+JADE=@JADE@
+
+usage () {
+    echo 'usage: db2html [--nosplit] [--copyfiles] filename' >&2
+    exit 1
+}
+
+
+while test "`echo $1 | head -c1`" = "-"; do
+    case $1 in
+      --version)
+	cat <<EOF
+db2html 0.5
+Copyright (C) 2000 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+stylesteet: $stylesheet
+EOF
+	exit 0
+	;;
+      --help|-h|-help)
+	usage
+	;;
+      --nosplit)
+	nosplit=yes
+	;;
+      --copyfiles)
+	copyfiles=yes
+	;;
+      --)
+	shift
+	break
+	;;
+      *)
+	echo "invalid option $1" >&2
+	exit 1
+	;;
+    esac
+    shift
+done
+
+if test $# = 1; then
+   input="$1"
+else
+   usage
+fi
+
+# grep the document type
+doctype=`grep -i '\<doctype' $input|awk 'NR==1 {print $2}'| tr '[A-Z]' '[a-z]'`
+if test -z $doctype; then
+    doctype=book
+    echo "no DOCTYPE found - assuming '$doctype'" >&2
+else
+    echo "DOCTYPE is '$doctype'" >&2
+fi
+
+output="`basename $input| sed 's/\.sgml$//'`.html"
+
+
+if test $nosplit = yes; then
+    echo "running jade on '$input' ..." >&2
+    $JADE -d $stylesheet -t sgml -i html -V nochunks $input > $output
+    echo "$output created"
+    exit 0
+fi
+
+if test -d html ; then
+    :
+else
+    if mkdir html; then
+	echo "'html' directory created" >&2
+    else
+	echo "failed to create 'html' directory" >&2
+	exit 1
+    fi
+fi
+
+outputdir="html/`basename $input| sed 's/\.sgml$//'`"
+
+if test -d $outputdir ; then
+    :
+else
+    if mkdir $outputdir; then
+	echo "'$outputdir' created" >&2
+    else
+	echo "failed to create '$outputdir'" >&2
+	exit 1
+    fi
+fi
+echo "creating html pages in '$outputdir' ..." >&2
+if test "$input" = "`basename $input`"; then
+    inp="../../$input"
+else
+    inp="$input"
+fi
+echo "running jade on '$inp' ..." >&2
+(cd $outputdir && $JADE -t sgml -i html -d $stylesheet $inp )
+echo "html version in '$outputdir' created" >&2
+
+# break out all filerefs and copy them to the outputdirectory
+# fixme: handling of path components is wrong
+if test $copyfiles = yes; then
+    echo "looking for filerefs ..." >&2
+    for file in `nsgmls -i html $input \
+		    | awk '/^AFILEREF[ \t]+CDATA/ {print $3}'`; do
+	d=$outputdir/`basename $file`
+	if cat $file > $outputdir/`basename $file` ; then
+	    echo "  $file -> $d" >&2
+	fi
+    done
+fi
+
+mainfile=`ls $outputdir/${doctype}* | head -1`
+
+cat > $output <<EOF
+<html><title>$output</title>
+<body>
+
+<a href="$mainfile">$mainfile</a>
+
+</body>
+</html>
+EOF
+
+echo "$output created with link to '$mainfile'" >&2
+
+exit 0
+

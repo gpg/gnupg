@@ -162,6 +162,8 @@ typedef struct {
 } PKT_comment;
 
 typedef struct {
+    ulong stored_at;	  /* the stream offset where it was stored
+			   * by build-packet */
     int  len;		  /* length of the name */
     char name[1];
 } PKT_user_id;

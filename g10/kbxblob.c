@@ -16,27 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- *
- ***********************************************
- * adler_cksum() is based on the zlib code with these conditions:
- *
- *	Copyright (C) 1995-1998 Mark Adler
- *
- * This software is provided 'as-is', without any express or implied
- * warranty.  In no event will the authors be held liable for any damages
- * arising from the use of this software.
- *
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- *
- * 1. The origin of this software must not be misrepresented; you must not
- *    claim that you wrote the original software. If you use this software
- *    in a product, an acknowledgment in the product documentation would be
- *    appreciated but is not required.
- * 2. Altered source versions must be plainly marked as such, and must not be
- *    misrepresented as being the original software.
- * 3. This notice may not be removed or altered from any source distribution.
  */
 
 
@@ -51,9 +30,11 @@ the beginning of the Blob.
 The first record of a plain KBX file has a special format:
 
  u32  length of the first record
- u32  magic 'KBXf'
+ byte Blob type (1)
  byte version number (1)
- b[3] reserved
+ byte reserved
+ byte reserved
+ u32  magic 'KBXf'
  byte marginals  used for validity calculation of this file
  byte completes  ditto.
  byte cert_depth ditto.
@@ -61,8 +42,8 @@ The first record of a plain KBX file has a special format:
 The standard KBX Blob looks like this:
 
  u32  length of this blob (including these 4 bytes)
- byte version number (1)
- byte reserved
+ byte Blob type (2)
+ byte version number of this blob type (1)
  u16  Blob flags
 	bit 0 = contains secret key material
 
@@ -98,6 +79,8 @@ The standard KBX Blob looks like this:
  u8	all_validity
  u16	reserved
  u32	recheck_after
+ u32	Newest timestamp in the keyblock (useful for KS syncronsiation?)
+ u32	Blob created at
  u32	size of reserved space (not including this field)
       reserved space
 
@@ -107,7 +90,7 @@ The standard KBX Blob looks like this:
 
     maybe we put a sigture here later.
 
- u32	adler checksum
+ b16	MD5 checksum  (useful for KS syncronsiation)
  *
  */
 
@@ -120,6 +103,8 @@ The standard KBX Blob looks like this:
 #include <assert.h>
 #include <gcrypt.h>
 
+#include "iobuf.h"
+#include "util.h"
 #include "kbx.h"
 
 /* special values of the signature status */
@@ -135,22 +120,21 @@ The standard KBX Blob looks like this:
 struct kbxblob_key {
     char   fpr[20];
     u32    off_kid;
-    ulong  off_kid_addr; /* where it is stored in the datablock */
+    ulong  off_kid_addr;
     u16    flags;
 };
 struct kbxblob_uid {
-    u32    off;
-    ulong  off_addr; /* where it is stored in the datablock */
+    ulong  off_addr;
     u32    len;
     u16    flags;
-    byte   validity
+    byte   validity;
 };
 
 struct keyid_list {
     struct keyid_list *next;
     int seqno;
-    char kid[8];
-}
+    byte kid[8];
+};
 
 struct kbxblob {
     int nkeys;
@@ -161,49 +145,10 @@ struct kbxblob {
     u32  *sigs;
 
     struct keyid_list *temp_kids;
-} *KBXBLOB;
+    IOBUF buf;	/* the KBX is stored here */
+};
 
 
-static u32
-adler_cksum ( const byte *buf, size_t len )
-{
-    unsigned long s1 = 1;
-    unsigned long s2 = 0;
-
-  #define X_BASE 65521L /* largest prime smaller than 65536 */
-  #define X_NMAX 5552	/* largest n such that			 */
-			    /* 255n(n+1)/2 + (n+1)(BASE-1) <= 2^32-1 */
-  #define X_DO1(buf,i)	{s1 += buf[i]; s2 += s1;}
-  #define X_DO2(buf,i)	X_DO1(buf,i); X_DO1(buf,i+1);
-  #define X_DO4(buf,i)	X_DO2(buf,i); X_DO2(buf,i+2);
-  #define X_DO8(buf,i)	X_DO4(buf,i); X_DO4(buf,i+4);
-  #define X_DO16(buf)	X_DO8(buf,0); X_DO8(buf,8);
-    while ( len  ) {
-	int k = len < NMAX ? len : NMAX;
-	len -= k;
-	while ( k >= 16 ) {
-	    DO16(buf);
-	    buf += 16;
-	    k -= 16;
-	}
-	if ( k ) {
-	      do {
-		s1 += *buf++;
-		s2 += s1;
-	    } while ( --k );
-	}
-	s1 %= BASE;
-	s2 %= BASE;
-    }
-  #undef X_BASE
-  #undef X_NMAX
-  #undef X_DO1
-  #undef X_DO2
-  #undef X_DO4
-  #undef X_DO8
-  #undef X_DO16
-    return ( s2 << 16 ) | s1;
-}
 
 
 /* Note: this functions are only used for temportay iobufs and therefore
@@ -211,14 +156,14 @@ adler_cksum ( const byte *buf, size_t len )
 static void
 put8 ( IOBUF out, byte a )
 {
-    iobuf_put ( out, a )
+    iobuf_put ( out, a );
 }
 
 static void
 put16 ( IOBUF out, u16 a )
 {
     iobuf_put ( out, a>>8 );
-    iobuf_put ( out, a )
+    iobuf_put ( out, a );
 }
 
 static void
@@ -227,7 +172,7 @@ put32 ( IOBUF out, u32 a )
     iobuf_put (out, a>> 24);
     iobuf_put (out, a>> 16);
     iobuf_put (out, a>> 8);
-    iobuf_put (out, a) )
+    iobuf_put (out, a );
 }
 
 static void
@@ -245,7 +190,7 @@ static void
 put32at ( IOBUF out, u32 a, size_t pos )
 {
     size_t n;
-    byte *p,
+    byte *p;
 
     iobuf_flush_temp ( out );
     p = iobuf_get_temp_buffer( out );
@@ -269,37 +214,44 @@ temp_store_kid ( KBXBLOB blob, PKT_public_key *pk )
     struct keyid_list *k, *r;
 
     k = gcry_xmalloc ( sizeof *k );
-    k->kid = pk->keyid;
+    k->kid[0] = pk->keyid[0] >> 24 ;
+    k->kid[1] = pk->keyid[0] >> 16 ;
+    k->kid[2] = pk->keyid[0] >>  8 ;
+    k->kid[3] = pk->keyid[0]	   ;
+    k->kid[4] = pk->keyid[0] >> 24 ;
+    k->kid[5] = pk->keyid[0] >> 16 ;
+    k->kid[6] = pk->keyid[0] >>  8 ;
+    k->kid[7] = pk->keyid[0]	   ;
     k->seqno = 0;
     k->next = blob->temp_kids;
     blob->temp_kids = k;
     for ( r=k; r; r = r->next ) {
-	k->seqno++
+	k->seqno++;
     }
 
     return k->seqno;
 }
 
 static void
-put_stored_kid( IOBUF a, KBXBLOB blob, int seqno )
+put_stored_kid( KBXBLOB blob, int seqno )
 {
     struct keyid_list *r;
 
     for ( r = blob->temp_kids; r; r = r->next ) {
 	if( r->seqno == seqno ) {
-	    putn ( a, r->kid, 8 );
+	    putn ( blob->buf, r->kid, 8 );
 	    return;
 	}
     }
     BUG();
 }
 
-static int
+static void
 release_kid_list ( struct keyid_list *kl )
 {
     struct keyid_list *r, *r2;
 
-    for ( r = blob->temp_kids; r; r = r2 ) {
+    for ( r = kl; r; r = r2 ) {
 	r2 = r->next;
 	gcry_free( r );
     }
@@ -310,19 +262,18 @@ static int
 create_key_part( KBXBLOB blob, KBNODE keyblock )
 {
     KBNODE node;
-    byte fpr[MAX_FINGERPRINT_LEN];
     size_t fprlen;
     int n;
 
     for ( n=0, node = keyblock; node; node = node->next ) {
-	if ( node->pkt->pkttype == PKT_PUBLIC_KEY:
+	if ( node->pkt->pkttype == PKT_PUBLIC_KEY
 	     || node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
 	    PKT_public_key *pk = node->pkt->pkt.public_key;
 
 	    fingerprint_from_pk( pk, blob->keys[n].fpr, &fprlen );
 	    if ( fprlen != 20 ) { /*v3 fpr - shift right and fill with zeroes*/
 		assert( fprlen == 16 );
-		memmove( blob->keys[n]+4, blob->keys[n].fpr, 16);
+		memmove( blob->keys[n].fpr+4, blob->keys[n].fpr, 16);
 		memset( blob->keys[n].fpr, 0, 4 );
 		blob->keys[n].off_kid = temp_store_kid( blob, pk );
 	    }
@@ -351,7 +302,6 @@ create_uid_part( KBXBLOB blob, KBNODE keyblock )
 	if ( node->pkt->pkttype == PKT_USER_ID ) {
 	    PKT_user_id *u = node->pkt->pkt.user_id;
 
-	    blob->uids[n].off	= 0;  /* must calculate this later */
 	    blob->uids[n].len	= u->len;
 	    blob->uids[n].flags = 0;
 	    blob->uids[n].validity = 0;
@@ -382,13 +332,14 @@ create_sig_part( KBXBLOB blob, KBNODE keyblock )
 
 
 static int
-create_blob_header( IOBUF a, KBXBLOB blob )
+create_blob_header( KBXBLOB blob )
 {
+    IOBUF a = blob->buf;
     int i;
 
     put32 ( a, 0 ); /* blob length, needs fixup */
-    put8 ( a, 1 );  /* version number */
-    put8 ( a, 0 );  /* reserved */
+    put8 ( a, 2 );  /* blob type */
+    put8 ( a, 1 );  /* blob type version */
     put16 ( a, 0 ); /* blob flags */
 
     put32 ( a, 0 ); /* offset to the keyblock, needs fixup */
@@ -398,7 +349,7 @@ create_blob_header( IOBUF a, KBXBLOB blob )
     put16 ( a, 20 + 8 + 2 + 2 );  /* size of key info */
     for ( i=0; i < blob->nkeys; i++ ) {
 	putn ( a, blob->keys[i].fpr, 20 );
-	blob->keys[i].off_kid_addr = iobuf_tell ( out );
+	blob->keys[i].off_kid_addr = iobuf_tell ( a );
 	put32 ( a, 0 ); /* offset to keyid, fixed up later */
 	put16 ( a, blob->keys[i].flags );
 	put16 ( a, 0 ); /* reserved */
@@ -407,7 +358,7 @@ create_blob_header( IOBUF a, KBXBLOB blob )
     put16 ( a, blob->nuids );
     put16 ( a, 4 + 4 + 2 + 1 + 1 );  /* size of uid info */
     for ( i=0; i < blob->nuids; i++ ) {
-	blob->uids[i].off_addr = iobuf_tell ( out );
+	blob->uids[i].off_addr = iobuf_tell ( a );
 	put32 ( a, 0 ); /* offset to userid, fixed up later */
 	put32 ( a, blob->uids[i].len );
 	put16 ( a, blob->uids[i].flags );
@@ -425,16 +376,18 @@ create_blob_header( IOBUF a, KBXBLOB blob )
     put8 ( a, 0 );  /* validity of all user IDs */
     put16 ( a, 0 );  /* reserved */
     put32 ( a, 0 );  /* time of next recheck */
+    put32 ( a, 0 );  /* newest timestamp (none) */
+    put32 ( a, make_timestamp() );  /* creation time */
     put32 ( a, 0 );  /* size of reserved space */
-	/* reserved space (which is currently 0) */
+	/* reserved space (which is currently of size 0) */
 
     /* We need to store the keyids for all v3 keys because those key IDs are
      * not part of the fingerprint.  While we are doing that, we fixup all
      * the keyID offsets */
     for ( i=0; i < blob->nkeys; i++ ) {
 	if ( blob->keys[i].off_kid ) { /* this is a v3 one */
-	    put32at ( a, iobuf_tell(), blob->keys[i].off_kid_addr );
-	    put_stored_kid ( a, blob, blob->keys[i].off_kid );
+	    put32at ( a, iobuf_tell(a), blob->keys[i].off_kid_addr );
+	    put_stored_kid ( blob, blob->keys[i].off_kid );
 	}
 	else { /* the better v4 key IDs - just store an offset 8 bytes back */
 	    put32at ( a, blob->keys[i].off_kid_addr-8,
@@ -447,38 +400,60 @@ create_blob_header( IOBUF a, KBXBLOB blob )
 }
 
 static int
-create_blob_keyblock( IOBUF a, KBXBLOB blob, KBNODE keyblock )
+create_blob_keyblock( KBXBLOB blob, KBNODE keyblock )
 {
+    IOBUF a = blob->buf;
     KBNODE node;
     int rc;
+    int nsig;
 
-    for ( node = keyblock; node; node = node->next ) {
-	/* we must get some offset into thge keyblock and do some
-	 * fixups */
-	rc = build_packet ( fp, node->pkt );
+    for ( nsig = 0, node = keyblock; node; node = node->next ) {
+	rc = build_packet ( a, node->pkt );
 	if ( rc ) {
-	    log_error("build_packet(%d) for kbxblob failed: %s\n",
+	    gpg_log_error("build_packet(%d) for kbxblob failed: %s\n",
 			node->pkt->pkttype, gpg_errstr(rc) );
 	    return GPGERR_WRITE_FILE;
 	}
+	if ( node->pkt->pkttype == PKT_USER_ID ) {
+	    PKT_user_id *u = node->pkt->pkt.user_id;
+	    /* build_packet has set the offset of the name into u ;
+	     * now we can do the fixup */
+	    put32at ( a, u->stored_at, blob->uids[nsig].off_addr );
+	    nsig++;
+	}
     }
+    assert( nsig == blob->nsigs );
     return 0;
 }
 
 static int
-create_blob_trailer( IOBUF a, KBXBLOB blob )
+create_blob_trailer( KBXBLOB blob )
 {
+    IOBUF a = blob->buf;
     return 0;
 }
 
 static int
-create_blob_finish( IOBUF a, KBXBLOB blob )
+create_blob_finish( KBXBLOB blob )
 {
+    IOBUF a = blob->buf;
+    byte *p;
+    size_t n;
 
+    /* write a placeholder for the checksum */
+    put32( a, 0 ); put32( a, 0 ); put32( a, 0 ); put32( a, 0 );
+    /* get the memory area */
+    iobuf_flush_temp ( a );
+    p = iobuf_get_temp_buffer ( a );
+    n = iobuf_get_temp_length ( a );
+    assert( n >= 20 );
 
     /* fixup the length */
-    /* optionally we could sign the whole stuff at this point */
-    /* write the checksum */
+    put32at ( a, 0, n );
+
+    /* calculate and store the MD5 checksum */
+    gcry_md_hash_buffer( GCRY_MD_MD5, p + n - 16, p, n - 16 );
+
     return 0;
 }
 
@@ -488,9 +463,7 @@ kbx_create_blob ( KBXBLOB *retkbx, KBNODE keyblock )
 {
     int rc = 0;
     KBNODE node;
-    struct kbxblob *blob;
-    int nkey, nuid, nsig;
-    IOBUF a = NULL;
+    KBXBLOB blob;
 
     *retkbx = NULL;
     blob = gcry_calloc (1, sizeof *blob );
@@ -507,56 +480,63 @@ kbx_create_blob ( KBXBLOB *retkbx, KBNODE keyblock )
 	  case PKT_PUBLIC_SUBKEY:
 	  case PKT_SECRET_SUBKEY: blob->nkeys++; break;
 	  case PKT_USER_ID:  blob->nuids++; break;
-	  case PKT_SIGNATURE: blob->nsigs++, break;
+	  case PKT_SIGNATURE: blob->nsigs++; break;
+	  default: break;
 	}
     }
-    blob->nkeys = gcry_calloc ( blob->nkeys, sizeof ( blob->keys ) );
-    blob->nuids = gcry_calloc ( blob->nuids, sizeof ( blob->uids ) );
-    blob->nsigs = gcry_calloc ( blob->nsigs, sizeof ( blob->sigs ) );
-    if ( !blob->nkeys || !blob->nuids || !blob->nsigs ) {
+    blob->keys = gcry_calloc ( blob->nkeys, sizeof ( blob->keys ) );
+    blob->uids = gcry_calloc ( blob->nuids, sizeof ( blob->uids ) );
+    blob->sigs = gcry_calloc ( blob->nsigs, sizeof ( blob->sigs ) );
+    if ( !blob->keys || !blob->uids || !blob->sigs ) {
 	rc = GCRYERR_NO_MEM;
 	goto leave;
     }
 
-    rc = create_key_part ( blob, keyblock ),
+    rc = create_key_part ( blob, keyblock );
     if( rc )
 	goto leave;
-    rc = create_uid_part ( blob, keyblock ),
+    rc = create_uid_part ( blob, keyblock );
     if( rc )
 	goto leave;
-    rc = create_sig_part ( blob, keyblock ),
-    if( rc )
-	goto leave;
-
-    a = iobuf_temp();
-    rc = create_blob_header ( a, blob );
-    if( rc )
-	goto leave;
-    rc = create_blob_keyblock ( a, blob, keyblock );
-    if( rc )
-	goto leave;
-    rc = create_blob_trailer ( a, blob );
-    if( rc )
-	goto leave;
-    rc = create_blob_finish ( a, blob );
+    rc = create_sig_part ( blob, keyblock );
     if( rc )
 	goto leave;
 
-    /* now we take the iobuf and copy it to the output */
+    blob->buf = iobuf_temp();
+    rc = create_blob_header ( blob );
+    if( rc )
+	goto leave;
+    rc = create_blob_keyblock ( blob, keyblock );
+    if( rc )
+	goto leave;
+    rc = create_blob_trailer ( blob );
+    if( rc )
+	goto leave;
+    rc = create_blob_finish ( blob );
+    if( rc )
+	goto leave;
 
     *retkbx = blob;
 
-  failure:
-    if( a )
-	iobuf_cancel( a );
+  leave:
     release_kid_list( blob->temp_kids );
+    blob->temp_kids = NULL;
     if ( rc ) {
-	gcry_free( blob->nkeys );
-	gcry_free( blob->nuids );
-	gcry_free( blob->nsigs );
-	gcry_free( blob );
+	kbx_release_blob ( blob );
     }
     return rc;
 }
 
+void
+kbx_release_blob ( KBXBLOB blob )
+{
+    if( !blob )
+	return;
+    if( blob->buf )
+	iobuf_cancel( blob->buf );
+    gcry_free( blob->keys );
+    gcry_free( blob->uids );
+    gcry_free( blob->sigs );
+    gcry_free( blob );
+}
 

@@ -1,33 +1,40 @@
 ## Process this file with automake to create Makefile.in
 
-EXTRA_DIST = DETAILS gpg.sgml gpg.1 FAQ HACKING OpenPGP
+EXTRA_DIST = DETAILS gpg.sgml gpg.1 FAQ HACKING OpenPGP \
+	     version.sgml.in
 
 man_MANS = gpg.1
 
+pkgdata_DATA = gcryptref.html gcryptref.ps
 
-gcryptref.dvi : gcryptref.sgml
+BUILT_SOURCES = version.sgml gcryptref.html gcryptref.ps
 
-gcryptref.texi : gcryptref.sgml
-gcryptref.xml  : gcryptref.sgml
-
-
-%.ps: %.dvi
-	dvips -o $@ $<
+CLEANFILES = gcryptref.aux gcryptref.log gcryptref.tex gcryptref.dvi
 
 
-if MAINTAINER_MODE
+gcryptref.sgml : version.sgml
 
+
+if HAVE_DB2MAN
 %.1 : %.sgml
-	docbook-to-man $<  >$@
-
-%.texi : %.xml
-	docbook2texi $< >$@
-
-%.xml  : %.sgml
-	sgml2xml -x lower $< >$@
-
+	$(DB2MAN) $<  >$@
 endif
 
+if HAVE_DB2TEX
+%.ps : %.dvi
+	dvips -o $@ $<
+
+%.tex : %.sgml
+	$(DB2TEX) -V generate-book-toc $< > $@
+
+%.dvi : %.tex
+	$(JADETEX) $<
+endif
+
+if HAVE_DB2HTML
+%.html : %.sgml
+	$(DB2HTML) --nosplit $<
+endif
 
 
 

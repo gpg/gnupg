@@ -596,15 +596,22 @@ gcry_md_get( GCRY_MD_HD hd, int algo, byte *buffer, int buflen )
  * Shortcut function to hash a buffer with a given algo. The only supported
  * algorithm is RIPE-MD. The supplied digest buffer must be large enough
  * to store the resulting hash.  No error is returned, the function will
- * abort on an invalite algo.  DISABLED_ALGOS are ignored here.
+ * abort on an invalid algo.  DISABLED_ALGOS are ignored here.
  */
 void
 gcry_md_hash_buffer( int algo, char *digest, const char *buffer, size_t length)
 {
     if( algo == GCRY_MD_RMD160 )
 	rmd160_hash_buffer( digest, buffer, length );
-    else
-	BUG();
+    else { /* for the others we do not have a fast function, so
+	    * we use the normal functions to do it */
+	GCRY_MD_HD h = md_open( algo, 0 );
+	if( !h )
+	    BUG(); /* algo not available */
+	md_write( h, (byte*)buffer, length );
+	md_final( h );
+	memcpy( digest, md_read( h, algo ), md_digest_length( algo ) );
+    }
 }
 
 static int

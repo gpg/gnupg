@@ -164,8 +164,7 @@ AC_PROG_CPP
 AC_ISC_POSIX
 AC_PROG_INSTALL
 AC_PROG_AWK
-AC_CHECK_PROG(DOCBOOK_TO_MAN, docbook-to-man, yes, no)
-AM_CONDITIONAL(HAVE_DOCBOOK_TO_MAN, test "$ac_cv_prog_DOCBOOK_TO_MAN" = yes)
+GPH_PROG_DOCBOOK
 
 
 dnl
@@ -687,6 +686,7 @@ GNUPG_FIX_HDR_VERSION(gcrypt/gcrypt.h, GCRYPT_VERSION)
 
 
 AC_OUTPUT_COMMANDS([
+chmod +x scripts/db2html
 chmod +x gcrypt/gcrypt-config
 cat >gnupg-defs.tmp <<G10EOF
 /* Generated automatically by configure */
@@ -719,6 +719,7 @@ DATADIRNAME=$DATADIRNAME
 
 AC_OUTPUT([
 Makefile
+scripts/db2html
 intl/Makefile
 po/Makefile.in
 jnlib/Makefile
@@ -727,7 +728,7 @@ mpi/Makefile
 cipher/Makefile
 g10/Makefile
 doc/Makefile
-doc/gph/Makefile
+doc/version.sgml
 tools/Makefile
 zlib/Makefile
 checks/Makefile

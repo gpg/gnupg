@@ -1,3 +1,7 @@
+Mon Mar 13 19:22:46 CET 2000  Werner Koch  <wk@openit.de>
+
+	* md.c (gcry_md_hash_buffer): Add support for the other algorithms.
+
 Mon Jan 31 16:37:34 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* genprime.c (generate_elg_prime): Fixed returned factors which never

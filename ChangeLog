@@ -1,3 +1,7 @@
+Mon Mar 13 19:22:46 CET 2000  Werner Koch  <wk@openit.de>
+
+	* configure.in: Now uses the Docbook M$s from GPH.
+
 Mon Jan 31 17:46:35 CET 2000  Werner Koch  <wk@>
 
 	* Makefile.am: Re-added tools. By Rémi.
