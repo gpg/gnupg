@@ -13,8 +13,8 @@ The most recent version of the FAQ is available from
 [H H1]GNUPG FREQUENTLY ASKED QUESTIONS[H /H1]
 
 
-Version: 0.36[H p]
-Last-Modified: Dec 19, 2000[H p]
+Version: 0.37[H p]
+Last-Modified: Jan 25, 2001[H p]
 Maintained-by: [$maintainer]
 
 
@@ -81,6 +81,10 @@ you could search in the mailing list archive.
     documentation. In addition, search the list archive - maybe your
     question has already been discussed. This way you help people focus
     on topics that have not yet been resolved.
+
+    [H LI] The GnuPG source distribution contains a subdirectory 
+    [H PRE]./doc[H /PRE] where some additional documentation is located
+    (mainly interesting for hackers, not the casual user).
     [H /UL]
 
 <Q> Where do I get GnuPG?
@@ -514,8 +518,8 @@ it?
     no-secmem-warning [H /pre] in your ~/.gnupg/options file (this
     disables the warning).
 
-    On systems without memory locking (e.g., Windows), older GnuPG
-    versions (<=1.0.4) issue the warning
+    On some systems (e.g., Windows) GnuPG does not lock memory pages
+    and older GnuPG versions (<=1.0.4) issue the warning
     [H pre]
     gpg: Please note that you don't have secure memory
     [H /pre]

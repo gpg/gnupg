@@ -2,8 +2,8 @@
 GNUPG FREQUENTLY ASKED QUESTIONS
 
 
-Version: 0.36
-Last-Modified: Dec 19, 2000
+Version: 0.37
+Last-Modified: Jan 25, 2001
 Maintained-by: Nils Ellmenreich <nils 'at' gnupg.org>
 
 
@@ -139,6 +139,10 @@ you could search in the mailing list archive.
     documentation. In addition, search the list archive - maybe your
     question has already been discussed. This way you help people focus
     on topics that have not yet been resolved.
+
+     The GnuPG source distribution contains a subdirectory 
+    ./doc where some additional documentation is located
+    (mainly interesting for hackers, not the casual user).
 
 2.2) Where do I get GnuPG?
 
@@ -548,8 +552,8 @@ it?
     no-secmem-warning  in your ~/.gnupg/options file (this
     disables the warning).
 
-    On systems without memory locking (e.g., Windows), older GnuPG
-    versions (<=1.0.4) issue the warning
+    On some systems (e.g., Windows) GnuPG does not lock memory pages
+    and older GnuPG versions (<=1.0.4) issue the warning
     gpg: Please note that you don't have secure memory
     This warning can't be switched off by the above option because it
     was thought to be a too serious issue. However, it confused users
