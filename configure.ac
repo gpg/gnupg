@@ -213,7 +213,7 @@ if test "$use_exec" = yes ; then
     AC_MSG_RESULT($try_hkp)
 
     if test "$try_hkp" = yes ; then
-      GPGKEYS_HKP="gpgkeys_hkp"
+      GPGKEYS_HKP="gpgkeys_hkp$EXEEXT"
       AC_DEFINE(USE_EXTERNAL_HKP,1,[define to use the experimental external HKP keyserver interface])
     fi
 
@@ -397,7 +397,7 @@ if test "$try_ldap" = yes ; then
 
     if test "$gnupg_cv_func_ldap_init" = yes || \
   	test "$gnupg_cv_func_ldaplber_init" = yes ; then
-       GPGKEYS_LDAP="gpgkeys_ldap"
+       GPGKEYS_LDAP="gpgkeys_ldap$EXEEXT"
        LDAPLIBS=$MY_LDAPLIBS
     fi
 
@@ -438,7 +438,7 @@ case "${target}" in
         PRINTABLE_OS_NAME="MingW32"
         ;;
     *-*-cygwin*)
-        PRINTABLE_OS_NAME="Cygwin32"
+        PRINTABLE_OS_NAME="Cygwin"
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
         PRINTABLE_OS_NAME="OS/2"
