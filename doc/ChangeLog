@@ -1,3 +1,8 @@
+2002-03-13  Werner Koch  <wk@gnupg.org>
+
+	* faq.raw: Due to a lack of time Nils can't serve anymore as a
+	maintainer.  Removed his address and setup a generic address.
+
 2002-03-06  Werner Koch  <wk@gnupg.org>
 
 	* gpg.sgml: Add an entry for --export-ownertrust.  Suggested by

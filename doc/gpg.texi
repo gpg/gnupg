@@ -416,6 +416,12 @@ For use with cron jobs, this command can be used together with ---batch
 in which case the check is only done when it is due. To force a run
 even in batch mode add the option ---yes.
 
+@item ---export-ownertrust @code{file}
+Store the ownertrust values into
+@code{file} (or stdin if not given). This is useful for backup
+purposes as these values are the only ones which can't be re-created
+from a corrupted trust DB.
+
 @item ---import-ownertrust @code{files}
 Update the trustdb with the ownertrust values stored
 in @code{files} (or stdin if not given); existing
