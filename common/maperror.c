@@ -27,10 +27,10 @@
 #include <unistd.h>
 
 #include <ksba.h>
+#include <assuan.h>
 
 #include "util.h"
 #include "errors.h"
-#include "../assuan/assuan.h"
 
 /* Note: we might want to wrap this in a macro to get our hands on
    the line and file where the error occured */

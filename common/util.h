@@ -1,5 +1,5 @@
 /* util.h - Utility functions for Gnupg
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -75,19 +75,6 @@ int vasprintf (char **result, const char *format, va_list *args);
 int asprintf (char **result, const char *format, ...);
 #endif
 
-#if !HAVE_FOPENCOOKIE
-typedef struct
-{
-  ssize_t (*read)(void*,char*,size_t);
-  ssize_t (*write)(void*,const char*,size_t);
-  int (*seek)(void*,off_t*,int);
-  int (*close)(void*);
-} _IO_cookie_io_functions_t;
-typedef _IO_cookie_io_functions_t cookie_io_functions_t;
-FILE *fopencookie (void *cookie, const char *opentype,
-                   cookie_io_functions_t funclist);
-#endif /*!HAVE_FOPENCOOKIE*/
-
 
 
 /*-- some macros to replace ctype ones and avoid locale problems --*/
@@ -107,11 +94,3 @@ FILE *fopencookie (void *cookie, const char *opentype,
 
 
 #endif /*GNUPG_COMMON_UTIL_H*/
-
-
-
-
-
-
-
-

@@ -1,3 +1,11 @@
+2003-04-29  Werner Koch  <wk@gnupg.org>
+
+	* util.h (fopencokokie): Removed prototype and struct.
+
+	* fopencookie.c: Removed.
+
+	* maperror.c: Use system assuan.h
+
 2002-10-31  Neal H. Walfield  <neal@g10code.de>
 
 	* isascii.c: New file.
