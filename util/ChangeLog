@@ -1,3 +1,8 @@
+2004-03-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* iobuf.c (block_filter): Properly handle a partial body stream
+	that ends with a 5-byte length that happens to be zero.
+
 2004-02-24  Werner Koch  <wk@gnupg.org>
 
 	* secmem.c (lock_pool) [_AIX]: Also set errno.
