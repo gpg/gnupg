@@ -19,14 +19,17 @@
 ## Process this file with automake to produce Makefile.in
 
 INCLUDES = -I$(top_srcdir)/include
-EXTRA_PROGRAMS = gpgkeys_ldap
+EXTRA_PROGRAMS = gpgkeys_ldap gpgkeys_hkp
 EXTRA_SCRIPTS = gpgkeys_mailto
 
 # We don't need the libs the regular GPG binaries do
 LIBS=
 
 bin_PROGRAMS = @GPGKEYS_LDAP@
-bin_SCRIPTS = @GPGKEYS_MAILTO@
+bin_SCRIPTS = @GPGKEYS_MAILTO@ @GPGKEYS_HKP@
 noinst_SCRIPTS = gpgkeys_test
+
+# don't distribute hkp for now
+nodist_gpgkeys_hkp_SOURCES = gpgkeys_hkp.c
 
 gpgkeys_ldap_LDADD = -lldap -llber -lresolv
