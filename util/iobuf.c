@@ -208,6 +208,10 @@ direct_open (const char *fname, const char *mode)
     else {
         oflag = O_RDONLY;
     }
+#ifdef O_BINARY
+    if (strchr (mode, 'b'))
+      oflag |= O_BINARY;
+#endif
 #ifndef __riscos__
     return open (fname, oflag, cflag );
 #else

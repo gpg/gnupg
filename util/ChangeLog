@@ -1,3 +1,17 @@
+2002-11-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* w32reg.c (read_w32_registry_string): Fixed expanding of the
+	environment buffer; didn't worked at all.  Reported by Thijmen
+	Klok.  From Werner on stable branch.
+
+	* secmem.c (secmem_free, secmem_term): Use wipememory2() instead
+	of memset() to overwrite secure memory
+
+	* iobuf.c (direct_open): Handle mode 'b' if O_BINARY is available.
+	From Werner on stable branch.
+
+	* fileutil.c: Comment from stable branch.
+
 2002-10-31  Stefan Bellon  <sbellon@sbellon.de>
 
 	* riscos.c (riscos_load_module, riscos_check_regexp): New.
