@@ -8,7 +8,7 @@ Noteworthy changes in version 1.4.1
       <http://lists.gnupg.org/pipermail/gnupg-users/2005-January/024408.html>
 
     * New "import-unusable-sigs" and "export-unusable-sigs" tags for
-      --import-options and --export-options.  These are on by
+      --import-options and --export-options.  These are off by
       default, and cause GnuPG to not import or export key signatures
       that are not usable (e.g. expired signatures).
 
