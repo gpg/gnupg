@@ -196,7 +196,7 @@ more arguments in future versions.
 	will probably be a BAD_PASSPHRASE.  However, if the application
 	is a wrapper around the key edit menu functionality it might not
 	make sense to stop parsing but simply ignoring the following
-	PAD_PASSPHRASE.
+	BAD_PASSPHRASE.
 
     BAD_PASSPHRASE <long keyid>
 	The supplied passphrase was wrong or not given.  In the latter case
@@ -224,7 +224,7 @@ more arguments in future versions.
     IMPORTED   <long keyid>  <username>
 	The keyid and name of the signature just imported
 
-    IMPORTED_RES <count> <no_user_id> <imported> <imported_rsa> <unchanged>
+    IMPORT_RES <count> <no_user_id> <imported> <imported_rsa> <unchanged>
 	<n_uids> <n_subk> <n_sigs> <n_revoc> <sec_read> <sec_imported> <sec_dups>
 	Final statistics on import process (this is one long line)
 
