@@ -1,3 +1,8 @@
+2003-09-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* types.h: Non-POSIX environments may have uint64_t but not
+	UINT64_C.
+
 2003-07-30  Werner Koch  <wk@gnupg.org>
 
 	* util.h: Replaced some __MINGW32__ by _WIN32.

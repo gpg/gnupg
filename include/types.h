@@ -101,7 +101,7 @@ typedef unsigned long u32;
  */
 #ifndef HAVE_U64_TYPEDEF
 #undef u64	    /* maybe there is a macro with this name */
-#if SIZEOF_UINT64_T == 8
+#if SIZEOF_UINT64_T == 8 && defined(UINT64_C)
 typedef uint64_t u64;
 #define U64_C(c) (UINT64_C(c))
 #define HAVE_U64_TYPEDEF
