@@ -1,5 +1,5 @@
 /* assuan.c - Definitions for the Assuna protocol
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -160,10 +160,15 @@ void assuan_deinit_server (ASSUAN_CONTEXT ctx);
 int assuan_init_socket_server (ASSUAN_CONTEXT *r_ctx, int listen_fd);
 
 
-/*-- assuan-connect.c --*/
+/*-- assuan-pipe-connect.c --*/
 AssuanError assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name,
                                  char *const argv[], int *fd_child_list);
-void assuan_pipe_disconnect (ASSUAN_CONTEXT ctx);
+/*-- assuan-socket-connect.c --*/
+AssuanError assuan_socket_connect (ASSUAN_CONTEXT *ctx, const char *name,
+                                   pid_t server_pid);
+
+/*-- assuan-connect.c --*/
+void assuan_disconnect (ASSUAN_CONTEXT ctx);
 pid_t assuan_get_pid (ASSUAN_CONTEXT ctx);
 
 /*-- assuan-client.c --*/

@@ -1,3 +1,20 @@
+2002-01-21  Werner Koch  <wk@gnupg.org>
+
+	* assuan-connect.c: Move all except assuan_get_pid to...
+	* assuan-pipe-connect.c: this.
+	(assuan_pipe_disconnect): Removed.
+	(do_finish, do_deinit): New 
+	(assuan_pipe_connect): and set them into the context.
+	* assuan-socket-connect.c: New.
+	
+	* assuan-util.c (_assuan_log_sanitized_string): New.
+
+	* assuan-pipe-server.c (assuan_init_pipe_server): Factored most
+	code out to ...
+	(_assuan_new_context): new func.
+	(_assuan_release_context): New
+	* assuan-connect.c (assuan_pipe_connect): Use the new functions.
+
 2002-01-20  Werner Koch  <wk@gnupg.org>
 
 	* assuan.h: Added Invalid Option error code.

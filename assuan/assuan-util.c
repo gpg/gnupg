@@ -25,6 +25,10 @@
 
 #include "assuan-defs.h"
 
+#ifdef HAVE_JNLIB_LOGGING
+#include "../jnlib/logging.h"
+#endif
+
 
 static void *(*alloc_func)(size_t n) = malloc;
 static void *(*realloc_func)(void *p, size_t n) = realloc;
@@ -150,3 +154,43 @@ _assuan_log_print_buffer (FILE *fp, const void *buffer, size_t length)
       putc (']', fp);
     }
 }
+
+
+/* print a user supplied string after filtering out potential bad
+   characters*/
+void
+_assuan_log_sanitized_string (const char *string)
+{
+  const unsigned char *s = string;
+#ifdef HAVE_JNLIB_LOGGING
+  FILE *fp = log_get_stream ();
+#else
+  FILE *fp = stderr;
+#endif
+
+  for (; *s; s++)
+    {
+      if (*s < 0x20 || (*s >= 0x7f && *s <= 0xa0))
+        {
+          putc ('\\', fp);
+          if (*s == '\n')
+            putc ('n', fp);
+          else if (*s == '\r')
+            putc ('r', fp);
+          else if (*s == '\f')
+            putc ('f', fp);
+          else if (*s == '\v')
+            putc ('v', fp);
+          else if (*s == '\b')
+            putc ('b', fp);
+          else if (!*s)
+            putc ('0', fp);
+          else
+            fprintf (fp, "x%02x", *s );
+	}
+      else
+        putc (*s, fp);
+    }
+}
+
+
