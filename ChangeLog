@@ -1,3 +1,7 @@
+2003-04-08  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (EXTRA_DIST): Add autogen.sh wrapper.
+
 2003-04-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Use much more accurate method to determine whether
