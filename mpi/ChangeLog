@@ -1,3 +1,8 @@
+2003-04-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* config.links: Re-disable assembler on Darwin.  Darwin 6.5 broke
+	it again.
+
 2003-04-15  Werner Koch  <wk@gnupg.org>
 
 	* longlong.h (umul_ppmm): Support SH3 and SH4.  Thanks to
