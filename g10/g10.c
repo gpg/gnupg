@@ -1757,9 +1757,9 @@ main( int argc, char **argv )
 		  {"show-photos",LIST_SHOW_PHOTOS},
 		  {"show-policy-url",LIST_SHOW_POLICY},
 		  {"show-notation",LIST_SHOW_NOTATION},
-		  {"show-keyring",LIST_SHOW_KEYRING},
 		  {"show-validity",LIST_SHOW_VALIDITY},
 		  {"show-long-keyid",LIST_SHOW_LONG_KEYID},
+		  {"show-keyring",LIST_SHOW_KEYRING},
 		  {NULL,0}
 		};
 
@@ -1781,6 +1781,8 @@ main( int argc, char **argv )
 		  {"show-policy-url",VERIFY_SHOW_POLICY},
 		  {"show-notation",VERIFY_SHOW_NOTATION},
 		  {"show-preferred-keyserver",VERIFY_SHOW_KEYSERVER},
+		  {"show-validity",VERIFY_SHOW_VALIDITY},
+		  {"show-long-keyid",VERIFY_SHOW_LONG_KEYID},
 		  {NULL,0}
 		};
 

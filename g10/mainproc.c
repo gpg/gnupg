@@ -1270,8 +1270,16 @@ check_sig_and_print( CTX c, KBNODE node )
 
     tstr = asctimestamp(sig->timestamp);
     astr = pubkey_algo_to_string( sig->pubkey_algo );
-    log_info(_("Signature made %.*s using %s key ID %08lX\n"),
-	    (int)strlen(tstr), tstr, astr? astr: "?", (ulong)sig->keyid[1] );
+    if(opt.verify_options&VERIFY_SHOW_LONG_KEYID)
+      {
+	log_info(_("Signature made %.*s\n"),(int)strlen(tstr), tstr);
+	log_info(_("               using %s key %08lX%08lX\n"),
+		 astr? astr: "?",(ulong)sig->keyid[0],(ulong)sig->keyid[1] );
+      }
+    else
+      log_info(_("Signature made %.*s using %s key ID %08lX\n"),
+	       (int)strlen(tstr), tstr, astr? astr: "?",
+	       (ulong)sig->keyid[1] );
 
     rc = do_check_sig(c, node, NULL, &is_expkey );
     if( rc == G10ERR_NO_PUBKEY && opt.keyserver_scheme && opt.keyserver_options.auto_key_retrieve) {
@@ -1304,6 +1312,7 @@ check_sig_and_print( CTX c, KBNODE node )
 	KBNODE un, keyblock;
 	int count=0, statno;
         char keyid_str[50];
+	PKT_public_key *pk=NULL;
 
 	if(rc)
 	  statno=STATUS_BADSIG;
@@ -1321,6 +1330,11 @@ check_sig_and_print( CTX c, KBNODE node )
 
         /* find and print the primary user ID */
 	for( un=keyblock; un; un = un->next ) {
+	    if(un->pkt->pkttype==PKT_PUBLIC_KEY)
+	      {
+	        pk=un->pkt->pkt.public_key;
+		continue;
+	      }
 	    if( un->pkt->pkttype != PKT_USER_ID )
 		continue;
 	    if ( !un->pkt->pkt.user_id->created )
@@ -1334,7 +1348,9 @@ check_sig_and_print( CTX c, KBNODE node )
 	    /* We want the textual user ID here */
 	    if ( un->pkt->pkt.user_id->attrib_data )
 	        continue;
-            
+
+	    assert(pk);
+
             keyid_str[17] = 0; /* cut off the "[uncertain]" part */
             write_status_text_and_buffer (statno, keyid_str,
                                           un->pkt->pkt.user_id->name,
@@ -1346,7 +1362,12 @@ check_sig_and_print( CTX c, KBNODE node )
 		       : _("Good signature from \""));
 	    print_utf8_string( log_stream(), un->pkt->pkt.user_id->name,
 					     un->pkt->pkt.user_id->len );
-	    fputs("\"\n", log_stream() );
+	    if(opt.verify_options&VERIFY_SHOW_VALIDITY)
+	      fprintf(log_stream(),"\" [%s]\n",
+		      trust_value_to_string(get_validity(pk,
+						       un->pkt->pkt.user_id)));
+	    else
+	      fputs("\"\n", log_stream() );
             count++;
 	}
 	if( !count ) {	/* just in case that we have no valid textual
@@ -1390,10 +1411,7 @@ check_sig_and_print( CTX c, KBNODE node )
         /* If we have a good signature and already printed 
          * the primary user ID, print all the other user IDs */
         if ( count && !rc ) {
-	    PKT_public_key *pk=NULL;
             for( un=keyblock; un; un = un->next ) {
-	        if(un->pkt->pkttype==PKT_PUBLIC_KEY)
-  		    pk=un->pkt->pkt.public_key;
                 if( un->pkt->pkttype != PKT_USER_ID )
                     continue;
                 if ( un->pkt->pkt.user_id->is_revoked )
@@ -1417,7 +1435,14 @@ check_sig_and_print( CTX c, KBNODE node )
 		log_info(    _("                aka \""));
                 print_utf8_string( log_stream(), un->pkt->pkt.user_id->name,
                                                  un->pkt->pkt.user_id->len );
-                fputs("\"\n", log_stream() );
+
+		if(opt.verify_options&VERIFY_SHOW_VALIDITY)
+		  fprintf(log_stream(),"\" [%s]\n",
+			  trust_value_to_string(get_validity(pk,
+							     un->pkt->
+							     pkt.user_id)));
+		else
+		  fputs("\"\n", log_stream() );
             }
 	}
 	release_kbnode( keyblock );
@@ -1437,15 +1462,15 @@ check_sig_and_print( CTX c, KBNODE node )
 
 	if( !rc && is_status_enabled() ) {
 	    /* print a status response with the fingerprint */
-	    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+	    PKT_public_key *vpk = m_alloc_clear( sizeof *vpk );
 
-	    if( !get_pubkey( pk, sig->keyid ) ) {
+	    if( !get_pubkey( vpk, sig->keyid ) ) {
 		byte array[MAX_FINGERPRINT_LEN], *p;
 		char buf[MAX_FINGERPRINT_LEN*4+90], *bufp;
 		size_t i, n;
 
                 bufp = buf;
-		fingerprint_from_pk( pk, array, &n );
+		fingerprint_from_pk( vpk, array, &n );
 		p = array;
 		for(i=0; i < n ; i++, p++, bufp += 2)
                     sprintf(bufp, "%02X", *p );
@@ -1459,27 +1484,27 @@ check_sig_and_print( CTX c, KBNODE node )
 			sig->version,sig->pubkey_algo,sig->digest_algo,
 			sig->sig_class);
                 bufp = bufp + strlen (bufp);
-                if (!pk->is_primary) {
+                if (!vpk->is_primary) {
                    u32 akid[2];
  
-                   akid[0] = pk->main_keyid[0];
-                   akid[1] = pk->main_keyid[1];
-                   free_public_key (pk);
-                   pk = m_alloc_clear( sizeof *pk );
-                   if (get_pubkey (pk, akid)) {
+                   akid[0] = vpk->main_keyid[0];
+                   akid[1] = vpk->main_keyid[1];
+                   free_public_key (vpk);
+                   vpk = m_alloc_clear( sizeof *vpk );
+                   if (get_pubkey (vpk, akid)) {
                      /* impossible error, we simply return a zeroed out fpr */
                      n = MAX_FINGERPRINT_LEN < 20? MAX_FINGERPRINT_LEN : 20;
                      memset (array, 0, n);
                    }
                    else
-                     fingerprint_from_pk( pk, array, &n );
+                     fingerprint_from_pk( vpk, array, &n );
                 }
 		p = array;
 		for(i=0; i < n ; i++, p++, bufp += 2)
                     sprintf(bufp, "%02X", *p );
 		write_status_text( STATUS_VALIDSIG, buf );
 	    }
-	    free_public_key( pk );
+	    free_public_key( vpk );
 	}
 
 	if( !rc )

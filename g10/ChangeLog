@@ -1,5 +1,10 @@
 2003-07-19  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, g10.c (main), mainproc.c (check_sig_and_print): Add
+	verify-options "show-validity" and "show-long-keyid" to show
+	trustdb validity and long keyids during (file) signature
+	verification.
+
 	* packet.h, main.h, sig-check.c (signature_check2,
 	check_key_signature2, do_check): If ret_pk is set, fill in the pk
 	used to verify the signature.  Change all callers in getkey.c,
