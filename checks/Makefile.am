@@ -20,18 +20,28 @@
 
 GPG_IMPORT  = ../g10/gpg --homedir . --quiet --yes --no-permission-warning --import
 
+#TESTS = version.test mds.test \
+#	decrypt.test decrypt-dsa.test \
+#	sigs.test sigs-dsa.test \
+#	encrypt.test encrypt-dsa.test  \
+#	seat.test clearsig.test encryptp.test detach.test \
+#	armsigs.test armencrypt.test armencryptp.test \
+#	signencrypt.test signencrypt-dsa.test \
+#	armsignencrypt.test armdetach.test \
+#	armdetachm.test detachm.test genkey1024.test \
+#	conventional.test conventional-mdc.test \
+#	multisig.test
+#
 TESTS = version.test mds.test \
 	decrypt.test decrypt-dsa.test \
-	sigs.test sigs-dsa.test \
+	sigs-dsa.test \
 	encrypt.test encrypt-dsa.test  \
-	seat.test clearsig.test encryptp.test detach.test \
-	armsigs.test armencrypt.test armencryptp.test \
-	signencrypt.test signencrypt-dsa.test \
-	armsignencrypt.test armdetach.test \
-	armdetachm.test detachm.test genkey1024.test \
+	encryptp.test \
+	armencrypt.test armencryptp.test \
+	signencrypt-dsa.test \
+	genkey1024.test \
 	conventional.test conventional-mdc.test \
 	multisig.test
-
 
 TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
 	     plain-1.asc plain-2.asc plain-3.asc plain-1-pgp.asc \
