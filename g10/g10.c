@@ -85,6 +85,7 @@ enum cmd_and_opt_values { aNull = 0,
     aListSigs,
     aListSecretKeys,
     aSendKeys,
+    aRecvKeys,
     aExport,
     aExportAll,
     aExportSecret,
@@ -189,6 +190,7 @@ static ARGPARSE_OPTS opts[] = {
   #endif
     { aExport, "export"           , 256, N_("export keys") },
     { aSendKeys, "send-keys"     , 256, N_("export keys to a key server") },
+    { aRecvKeys, "recv-keys"     , 256, N_("import keys from a key server") },
     { aExportAll, "export-all"    , 256, "@" },
     { aExportSecret, "export-secret-keys" , 256, "@" },
     { aImport, "import",      256     , N_("import/merge keys")},
@@ -649,6 +651,7 @@ main( int argc, char **argv )
 	  case aImport: set_cmd( &cmd, aImport); break;
 	  case aFastImport: set_cmd( &cmd, aFastImport); break;
 	  case aSendKeys: set_cmd( &cmd, aSendKeys); break;
+	  case aRecvKeys: set_cmd( &cmd, aRecvKeys); break;
 	  case aExport: set_cmd( &cmd, aExport); break;
 	  case aExportAll: set_cmd( &cmd, aExportAll); break;
 	  case aListKeys: set_cmd( &cmd, aListKeys); break;
@@ -1108,11 +1111,14 @@ main( int argc, char **argv )
       case aExport:
       case aExportAll:
       case aSendKeys:
+      case aRecvKeys:
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
 	    add_to_strlist( &sl, *argv );
 	if( cmd == aSendKeys )
 	    hkp_export( sl );
+	else if( cmd == aRecvKeys )
+	    hkp_import( sl );
 	else
 	    export_pubkeys( sl, (cmd == aExport) );
 	free_strlist(sl);

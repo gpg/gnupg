@@ -1,4 +1,24 @@
 
+
+EGD
+====
+Oh, and on embedding egd into the gpg package: I think if you just unpack it
+into, say, util/egd/* then you can put something like this into configure.in:
+
+AC_CHECK_PROG(perl_present, perl, true, false)
+if $perl_present; then
+ AC_PATH_PROG(PERL, perl)
+ (cd util/egd; $PERL Makefile.PL FULLPERL=$PERL INSTALLBIN=$sbindir)
+fi
+AM_CONDITIONAL(WITH_EGD, $perl_present)
+
+and add util/egd to the top-level Makefile directory list inside a WITH_EGD
+conditional.
+
+
+
+====
+
 	/* we still have these if a signed signed more than one
 	 * user ID.  I don't think that is makes sense to sign
 	 * more than one user ID; an exception might be a user ID

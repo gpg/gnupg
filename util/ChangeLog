@@ -1,3 +1,7 @@
+Sat Mar 20 11:44:21 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* http.c: Swapped to includes.
+
 Tue Mar  2 16:44:57 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* strgutil.c (get_native_charset): New.

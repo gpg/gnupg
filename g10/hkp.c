@@ -64,7 +64,9 @@ hkp_ask_import( u32 *keyid )
 			opt.keyserver_name, (ulong)keyid[1] );
     rc = http_open_document( &hd, request, 0 );
     if( rc ) {
-	log_info("can't get key from keyserver: %s\n", g10_errstr(rc) );
+	log_info("can't get key from keyserver: %s\n",
+			rc == G10ERR_NETWORK? strerror(errno)
+					    : g10_errstr(rc) );
     }
     else {
 	rc = import_keys_stream( hd.fp_read , 0 );
@@ -73,6 +75,28 @@ hkp_ask_import( u32 *keyid )
 
     m_free( request );
     return rc;
+}
+
+
+
+int
+hkp_import( STRLIST users )
+{
+    if( !opt.keyserver_name ) {
+	log_error("no keyserver known (use option --keyserver)\n");
+	return -1;
+    }
+
+    for( ; users; users = users->next ) {
+	u32 kid[2];
+	int type = classify_user_id( users->d, kid, NULL, NULL, NULL );
+	if( type != 10 && type != 11 ) {
+	    log_info("%s: not a valid key ID\n", users->d );
+	    continue;
+	}
+	hkp_ask_import( kid );
+    }
+    return 0;
 }
 
 
@@ -110,7 +134,9 @@ hkp_export( STRLIST users )
     rc = http_open( &hd, HTTP_REQ_POST, request , 0 );
     if( rc ) {
 	log_error("can't connect to `%s': %s\n",
-		   opt.keyserver_name, g10_errstr(rc) );
+		   opt.keyserver_name,
+			rc == G10ERR_NETWORK? strerror(errno)
+					    : g10_errstr(rc) );
 	iobuf_close(temp);
 	m_free( request );
 	return rc;

@@ -48,14 +48,6 @@ static int open_device( const char *name, int minor );
 static int gather_random( void (*add)(const void*, size_t, int), int requester,
 					  size_t length, int level );
 
-#ifdef IS_MODULE
-static void tty_printf(const char *fmt, ... )
-{
-    g10_log_info("tty_printf not available (%s)\n", fmt );
-}
-#endif
-
-
 
 /****************
  * Used to open the Linux and xBSD /dev/random devices
@@ -110,15 +102,24 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 	tv.tv_usec = 0;
 	if( !(rc=select(fd+1, &rfds, NULL, NULL, &tv)) ) {
 	    if( !warn )
-		tty_printf( _(
-"\n"
+	      #ifdef IS_MODULE
+		fprintf(stderr,
+	      #else
+		tty_printf(
+	      #endif
+_("\n"
 "Not enough random bytes available.  Please do some other work to give\n"
 "the OS a chance to collect more entropy! (Need %d more bytes)\n"), length );
 	    warn = 1;
 	    continue;
 	}
 	else if( rc == -1 ) {
-	    tty_printf("select() error: %s\n", strerror(errno));
+	  #ifdef IS_MODULE
+	    fprintf(stderr,
+	  #else
+	    tty_printf(
+	  #endif
+		       "select() error: %s\n", strerror(errno));
 	    continue;
 	}
 

@@ -1,3 +1,9 @@
+Sat Mar 20 11:44:21 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* rndlinux.c (tty_printf) [IS_MODULE]: Removed.
+
+	* rndegd.c (gather_random): Some fixes.
+
 Wed Mar 17 13:09:03 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* rndegd.c (do_read): New.

@@ -209,6 +209,11 @@ B<--import>, B<--fast-import>
     the trustdb; this can be done at any time with the
     command B<--update-trustdb>.
 
+B<--recv-keys> I<key_IDs>
+    Import the keys with the given key IDs from a HKP
+    keyserver. Option B<--keyserver> must be used to
+    give the name of this keyserver.
+
 B<--export-ownertrust>
     List the assigned ownertrust values in ASCII format
     for backup purposes [B<gpgm> only].

@@ -6,6 +6,8 @@
 
     * --list-trust-path now has an optional --with-colons format.
 
+    * New command --recv-keys to import keys from an keyserver.
+
 
 Noteworthy changes in version 0.9.4
 -----------------------------------

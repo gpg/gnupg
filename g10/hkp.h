@@ -23,6 +23,7 @@
 
 
 int hkp_ask_import( u32 *keyid );
+int hkp_import( STRLIST users );
 int hkp_export( STRLIST users );
 
 

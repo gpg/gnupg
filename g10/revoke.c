@@ -62,6 +62,19 @@ gen_revoke( const char *uname )
     }
 
 
+    /* FIXME: ask for the reason of revocation
+       0x00 - No reason specified (key revocations or cert revocations)
+    Does not make sense!
+
+       0x01 - Key is superceded (key revocations)
+       0x02 - Key material has been compromised (key revocations)
+       0x03 - Key is no longer used (key revocations)
+       0x20 - User id information is no longer valid (cert revocations)
+
+       Following the revocation code is a string of octets which gives
+      information about the reason for revocation in human-readable form
+     */
+
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
     init_packet( &pkt );

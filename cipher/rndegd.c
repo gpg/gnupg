@@ -82,6 +82,7 @@ do_read( int fd, void *buf, size_t nbytes )
 }
 
 
+
 /* fixme: level 1 is not yet handled */
 static int
 gather_random( void (*add)(const void*, size_t, int), int requester,
@@ -138,14 +139,15 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 	do_restart = 1;
 	goto restart;
     }
-    if( !n ) {
-	g10_log_error("bad EGD reply: too short\n");
-	do_restart = 1;
-	goto restart;
-    }
-    if( n > 1 ) {
-	n--;
-	(*add)( buffer+1, n, requester );
+    n = buffer[0];
+    if( n ) {
+	n = do_read( fd, buffer, n );
+	if( n == -1 ) {
+	    g10_log_error("read error on EGD: %s\n", strerror(errno));
+	    do_restart = 1;
+	    goto restart;
+	}
+	(*add)( buffer, n, requester );
 	length -= n;
     }
 
@@ -169,11 +171,6 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 	n = do_read( fd, buffer, nbytes );
 	if( n == -1 ) {
 	    g10_log_error("read error on EGD: %s\n", strerror(errno));
-	    do_restart = 1;
-	    goto restart;
-	}
-	if( n != nbytes  ) {
-	    g10_log_error("bad EGD reply: too short %d/%d\n", nbytes, n );
 	    do_restart = 1;
 	    goto restart;
 	}
