@@ -21,18 +21,19 @@ EXTRA_DIST = Manifest watchgnupg.c \
              rfc822parse.c rfc822parse.h gpgparsemail.c \
 	     addgnupghome
 
-localedir = $(datadir)/locale
-INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
+AM_CPPFLAGS =  -I$(top_srcdir)/intl -I$(top_srcdir)/common
+include $(top_srcdir)/am/cmacros.am
 
 # Note, that we require GPG_ERROR_CFLAGS only because some share header files
 # require that file.  It is not actually used in gpgconf.
-AM_CFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/intl @GPG_ERROR_CFLAGS@
+AM_CFLAGS = @GPG_ERROR_CFLAGS@
 
 sbin_SCRIPTS = addgnupghome
 
-bin_PROGRAMS = gpgconf
+bin_PROGRAMS = gpgconf watchgnupg
 
 gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 
 gpgconf_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a @INTLLIBS@
 
+watchgnupg_SOURCES = watchgnupg.c

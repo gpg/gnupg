@@ -1,3 +1,10 @@
+2004-02-12  Werner Koch  <wk@gnupg.org>
+
+	* watchgnupg.c (main): Implement option "--".
+	(print_version): New.
+
+	* Makefile.am: Include cmacros.am for common flags.
+
 2004-02-03  Werner Koch  <wk@gnupg.org>
 
 	* addgnupghome: Try to use getent, so that it also works for NIS

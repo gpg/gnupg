@@ -1,5 +1,5 @@
 /* watchgnupg.c - Socket server for GnuPG logs
- *	Copyright (C) 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -18,6 +18,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -33,8 +36,16 @@
 
 #define PGM "watchgnupg"
 
+/* Allow for a standalone build. */
+#ifdef VERSION
+#define MYVERSION_LINE PGM " (GnuPG) " VERSION
+#define BUGREPORT_LINE "\nReport bugs to <bug-gnupg@gnu.org>.\n"
+#else
+#define MYVERSION_LINE PGM 
+#define BUGREPORT_LINE ""
+#endif
+
 static int verbose;
-static int debug;
 
 
 static void
@@ -169,6 +180,29 @@ print_line (client_t c, const char *line)
 }
 
 
+static void
+print_version (int with_help)
+{
+  fputs (MYVERSION_LINE "\n"
+         "Copyright (C) 2004 Free Software Foundation, Inc.\n"
+         "This program comes with ABSOLUTELY NO WARRANTY.\n"
+         "This is free software, and you are welcome to redistribute it\n"
+         "under certain conditions. See the file COPYING for details.\n",
+         stdout);
+        
+  if (with_help)
+    fputs ("\n"
+          "Usage: " PGM " [OPTIONS] SOCKETNAME\n"
+          "Open the local socket SOCKETNAME and display log messages\n"
+          "\n"
+          "  --force     delete an already existing socket file\n"
+          "  --verbose   enable extra informational output\n"
+          "  --version   print version of the program and exit\n"
+          "  --help      display this help and exit\n"
+          BUGREPORT_LINE, stdout );
+  
+  exit (0);
+}
 
 int 
 main (int argc, char **argv)
@@ -189,22 +223,18 @@ main (int argc, char **argv)
   while (argc && last_argc != argc )
     {
       last_argc = argc;
-      if (!strcmp (*argv, "--help"))
+      if (!strcmp (*argv, "--"))
         {
-          puts (
-                "usage: " PGM " [options] socketname\n"
-                "\n"
-                "       Options are --verbose, --debug and --force");
-          exit (0);
+          argc--; argv++;
+          break;
         }
-      if (!strcmp (*argv, "--verbose"))
+      else if (!strcmp (*argv, "--version"))
+        print_version (0);
+      else if (!strcmp (*argv, "--help"))
+        print_version (1);
+      else if (!strcmp (*argv, "--verbose"))
         {
           verbose = 1;
-          argc--; argv++;
-        }
-      else if (!strcmp (*argv, "--debug"))
-        {
-          verbose = debug = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--force"))
@@ -216,7 +246,8 @@ main (int argc, char **argv)
  
   if (argc != 1)
     {
-      die ("usage: " PGM " socketname\n");
+      fprintf (stderr, "usage: " PGM " socketname\n");
+      exit (1);
     }
 
 
