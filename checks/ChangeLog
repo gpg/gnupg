@@ -1,3 +1,8 @@
+2003-09-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* mds.test, sigs.test: Remove TIGER/192 and make SHA-256 optional
+	(since it might not be compiled in).
+
 2003-07-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Add --no-permission-warning to avoid spurious

@@ -13,8 +13,8 @@ done
 # documents.
 
 hash_algo_list="ripemd160 sha1 md5"
-if have_hash_algo "TIGER192"; then
-  hash_algo_list="$hash_algo_list tiger192"
+if have_hash_algo "SHA256"; then
+  hash_algo_list="$hash_algo_list sha256"
 fi
 
 for da in $hash_algo_list ; do
