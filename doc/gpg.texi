@@ -1,5 +1,5 @@
 \input texinfo
-@setfilename untitled.info
+@setfilename gpg.info
 @documentencoding us-ascii
 @direntry
 * gpg: .                        encryption and signing tool
@@ -313,8 +313,8 @@ are not already included in the preference list.
 @item setpref @code{string}
 Set the list of user ID preferences to @code{string}, this should be a
 string similar to the one printed by "pref". Using an empty string
-will set the default preference string, using "none" will set the
-preferences to nil. Use "gpg --version" to get a list of available
+will set the default preference string, using "none" will remove the
+preferences. Use "gpg --version" to get a list of available
 algorithms. This command just initializes an internal list and does
 not change anything unless another command (such as "updpref") which
 changes the self-signatures is used.
@@ -332,7 +332,8 @@ Set a preferred keyserver for the specified user ID(s). This allows
 other users to know where you prefer they get your key from. See
 --keyserver-option honor-keyserver-url. Note that some versions of
 PGP interpret the presence of a keyserver URL as an instruction to
-enable PGP/MIME mail encoding.
+enable PGP/MIME mail encoding. Setting a value of "none" removes a
+existing preferred keyserver.
 
 @item toggle
 Toggle between public and secret key listing.
@@ -467,7 +468,7 @@ Option --keyserver must be used to give the name of this keyserver.
 
 @item --update-trustdb
 Do trust database maintenance. This command iterates over all keys
-and builds the Web-of-Trust. This is an interactive command because it
+and builds the Web of Trust. This is an interactive command because it
 may have to ask for the "ownertrust" values for keys. The user has to
 give an estimation of how far she trusts the owner of the displayed
 key to correctly certify (sign) other keys. GnuPG only asks for the
@@ -477,7 +478,7 @@ ownertrust value if it has not yet been assigned to a key. Using the
 @item --check-trustdb
 Do trust database maintenance without user interaction. From time to
 time the trust database must be updated so that expired keys or
-signatures and the resulting changes in the Web-of-Trust can be
+signatures and the resulting changes in the Web of Trust can be
 tracked. Normally, GnuPG will calculate when this is required and do
 it automatically unless --no-auto-check-trustdb is set. This command
 can be used to force a trust database check at any time. The
@@ -742,11 +743,15 @@ Set what trust model GnuPG should follow. The models are:
 @table @asis
 
 @item pgp
-This is the web-of-trust combined with trust signatures as used in PGP
+This is the Web of Trust combined with trust signatures as used in PGP
 5.x and later. This is the default trust model.
 
 @item classic
-This is the standard web-of-trust as used in PGP 2.x and earlier.
+This is the standard Web of Trust as used in PGP 2.x and earlier.
+
+@item direct
+Key validity is set directly by the user and not calculated via the
+Web of Trust.
 
 @item always
 Skip key validation and assume that used keys are always fully
@@ -829,6 +834,14 @@ protocol by reading the temporary files.
 @item verbose
 Tell the keyserver helper program to be more verbose. This option can
 be repeated multiple times to increase the verbosity level.
+
+@item timeout
+Tell the keyserver helper program how long (in seconds) to try and
+perform a keyserver action before giving up. Note that performing
+multiple actions at the same time uses this timeout value per action.
+For example, when retrieving multiple keys via --recv-keys, the
+timeout applies separately to each key retrieval, and not to the
+--recv-keys command as a whole. Defaults to 30 seconds.
 
 @item http-proxy
 For keyserver schemes that use HTTP (such as HKP), try to access the
@@ -1330,7 +1343,7 @@ interaction, this performance penalty does not matter in most settings.
 
 @item --auto-check-trustdb
 @itemx --no-auto-check-trustdb
-If GnuPG feels that its information about the Web-of-Trust has to be
+If GnuPG feels that its information about the Web of Trust has to be
 updated, it automatically runs the --check-trustdb command internally.
 This may be a time consuming process. --no-auto-check-trustdb
 disables this option.

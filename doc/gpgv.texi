@@ -1,5 +1,5 @@
 \input texinfo
-@setfilename untitled.info
+@setfilename gpgv.info
 @documentencoding us-ascii
 @direntry
 * gpgv: .                       signature verification tool
