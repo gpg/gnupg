@@ -1,3 +1,21 @@
+2004-08-07  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (ssh_key_to_sexp_buffer): New argument: comment;
+	integrate into S-Exp.
+	(ssh_identity_register): New argument: comment; pass to
+	ssh_key_to_sexp_buffer().
+	(ssh_handler_add_identity): Pass comment to
+	ssh_identity_register().
+	(ssh_identity_register): Allocate description dynamically, insert
+	comment; new variable: description_length; removed variable: i.
+	(data_sign): Do not calculate key grip for integration in
+	description; removed variable: i.
+
+	* findkey.c (modify_description): New function.
+	(agent_key_from_file): New variables: comment, comment_sexp,
+	comment_length, desc_text_modified; extract comment from S-Exp,
+	pass modified version to unprotect().
+	
 2004-07-30  Moritz Schulte  <moritz@g10code.com>
 
 	* command-ssh.c: Updated Libgpg-stream (more support for secure

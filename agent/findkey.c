@@ -136,6 +136,109 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
 }
 
 
+/* Modify a Key description, replacing certain special format
+   characters.  */
+static int
+modify_description (const char *description,
+		    const char *comment, size_t comment_length,
+		    char **description_modified)
+{
+  size_t description_length = strlen (description);
+  size_t description_new_length = description_length;
+  gpg_error_t err = GPG_ERR_NO_ERROR;
+  char *description_new = NULL;
+  unsigned int i = 0, j = 0;
+  unsigned int special = 0;
+
+  /* Calculate length.  */
+  for (i = 0; i < description_length; i++)
+    {
+      if (description[i] == '%')
+	special = 1;
+      else
+	{
+	  if (special)
+	    {
+	      description_new_length -= 2;
+	      switch (description[i])
+		{
+		case 'c':
+		  /* Comment.  */
+		  description_new_length += comment_length;
+		  break;
+		  
+		case 'g':
+		  /* Key grip.  */
+		  description_new_length += 40;
+		  break;
+		  
+		case '%':
+		  description_new_length += 1;
+		  break;
+		}
+	      special = 0;
+	    }
+	}
+    }
+
+  /* Allocate.  */
+  description_new = malloc (description_new_length + 1);
+  if (! description_new)
+    {
+      err = gpg_error_from_errno (errno);
+      goto out;
+    }
+
+  /* Fill.  */
+  for (i = j = 0; i < description_length; i++)
+    {
+      if (description[i] == '%')
+	special = 1;
+      else
+	{
+	  if (special)
+	    {
+	      switch (description[i])
+		{
+		case 'c':
+		  /* Comment.  */
+		  if (comment)
+		    {
+		      strncpy (description_new + j, comment, comment_length);
+		      j += comment_length;
+		    }
+		  break;
+		  
+		case 'g':
+		  /* Key grip.  */
+		  /* FIXME */
+		  break;
+		  
+		case '%':
+		  description_new[j] = '%';
+		  j++;
+		  break;
+		}
+	      special = 0;
+	    }
+	  else
+	    {
+	      description_new[j] = description[i];
+	      j++;
+	    }
+	}
+    }
+  description_new[j] = 0;
+
+ out:
+
+  *description_modified = description_new;
+
+  return err;
+}
+
+  
+
 /* Unprotect the canconical encoded S-expression key in KEYBUF.  GRIP
    should be the hex encoded keygrip of that key to be used with the
    caching mechanism. DESC_TEXT may be set to override the default
@@ -220,6 +323,10 @@ agent_key_from_file (CTRL ctrl, const char *desc_text,
   gcry_sexp_t s_skey;
   char hexgrip[40+4+1];
   int got_shadow_info = 0;
+  const char *comment = NULL;
+  gcry_sexp_t comment_sexp = NULL;
+  char *desc_text_modified = NULL;
+  size_t comment_length = 0;
   
   *result = NULL;
   if (shadow_info)
@@ -264,12 +371,26 @@ agent_key_from_file (CTRL ctrl, const char *desc_text,
   xfree (fname);
   fclose (fp);
   xfree (buf);
+
   if (rc)
     {
       log_error ("failed to build S-Exp (off=%u): %s\n",
                  (unsigned int)erroff, gpg_strerror (rc));
       return rc;
     }
+
+  comment_sexp = gcry_sexp_find_token (s_skey, "comment", 0);
+  if (comment_sexp)
+    {
+      comment = gcry_sexp_nth_data (comment_sexp, 1, &comment_length);
+      if (! comment)
+	{
+	  rc = GPG_ERR_INV_SEXP;
+	  gcry_sexp_release (s_skey);
+	  return rc;
+	}
+    }
+
   len = gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, NULL, 0);
   assert (len);
   buf = xtrymalloc (len);
@@ -288,10 +409,18 @@ agent_key_from_file (CTRL ctrl, const char *desc_text,
     case PRIVATE_KEY_CLEAR:
       break; /* no unprotection needed */
     case PRIVATE_KEY_PROTECTED:
-      rc = unprotect (ctrl, desc_text, &buf, grip, ignore_cache);
+      rc = modify_description (desc_text,
+			       comment, comment_length, &desc_text_modified);
       if (rc)
-        log_error ("failed to unprotect the secret key: %s\n",
-                   gpg_strerror (rc));
+	log_error ("failed to modify description: %s\n", gpg_strerror (rc));
+      else
+	{
+	  rc = unprotect (ctrl, desc_text_modified, &buf, grip, ignore_cache);
+	  xfree (desc_text_modified);
+	  if (rc)
+	    log_error ("failed to unprotect the secret key: %s\n",
+		       gpg_strerror (rc));
+	}
       break;
     case PRIVATE_KEY_SHADOWED:
       if (shadow_info)

@@ -985,15 +985,8 @@ data_sign (CTRL ctrl, unsigned char **sig, size_t *sig_n)
   size_t sig_blob_n = 0;
   size_t bytes_read = 0;
   char description[] =
-    "Please provide the passphrase for key "
-    "`0123456789012345678901234567890123456789':";
-  char key_grip[41];
-  unsigned int i = 0;
+    "Please provide the passphrase for key `%c':";
 
-  for (i = 0; i < 20; i++)
-    sprintf (&key_grip[i * 2], "%02X", (unsigned char) ctrl->keygrip[i]);
-  strncpy (strchr (description, '0'), key_grip, 40);
-	   
   err = agent_pksign_do (ctrl, description, &signature_sexp, 0);
   if (err)
     goto out;
@@ -1174,7 +1167,8 @@ ssh_handler_sign_request (ctrl_t ctrl,
 }
 
 static gpg_err_code_t
-ssh_key_to_sexp_buffer (ssh_key_secret_t *key, const char *passphrase,
+ssh_key_to_sexp_buffer (ssh_key_secret_t *key,
+			const char *comment, const char *passphrase,
 			unsigned char **buffer, size_t *buffer_n)
 {
   gpg_err_code_t err = GPG_ERR_NO_ERROR;
@@ -1190,13 +1184,15 @@ ssh_key_to_sexp_buffer (ssh_key_secret_t *key, const char *passphrase,
 			 "  (d %m)"
 			 "  (p %m)"
 			 "  (q %m)"
-			 "  (u %m)))",
+			 "  (u %m))"
+			 " (comment %s))",
 			 key->material.rsa.n,
 			 key->material.rsa.e,
 			 key->material.rsa.d,
 			 key->material.rsa.p,
 			 key->material.rsa.q,
-			 key->material.rsa.u);
+			 key->material.rsa.u,
+			 comment ? comment : "");
   if (err)
     goto out;
 
@@ -1256,18 +1252,15 @@ get_passphrase (char *description, size_t passphrase_n, char *passphrase)
 }
 
 static gpg_err_code_t
-ssh_identity_register (ssh_key_secret_t *key, int ttl)
+ssh_identity_register (ssh_key_secret_t *key, const char *comment, int ttl)
 {
   gpg_err_code_t err = GPG_ERR_NO_ERROR;
   unsigned char key_grip_raw[21] = { 0 };
   unsigned char *buffer = NULL;
   unsigned int buffer_n = 0;
   char passphrase[100] = { 0 };
-  char description[] =
-    "Please provide the passphrase, which should  "
-    "be used for protecting the received secret key "
-    "`0123456789012345678901234567890123456789':";
-  unsigned int i = 0;
+  size_t description_length = 0;
+  char *description = NULL;
   char key_grip[41];
   int ret = 0;
 
@@ -1282,16 +1275,25 @@ ssh_identity_register (ssh_key_secret_t *key, int ttl)
   if (! ret)
     goto out;
 
-  for (i = 0; i < 20; i++)
-    sprintf (&key_grip[i * 2], "%02X", key_grip_raw[i]);
-  strncpy (strchr (description, '0'), key_grip, 40);
+  description_length = 95 + (comment ? strlen (comment) : 0);
+  description = malloc (description_length);
+  if (! description)
+    {
+      err = gpg_err_code_from_errno (errno);
+      goto out;
+    }
+  else
+    sprintf (description,
+	     "Please provide the passphrase, which should be used "
+	     "for protecting the received secret key `%s':",
+	     comment ? comment : "");
 
-  err = get_passphrase (description,
-			sizeof (passphrase), passphrase);
+  err = get_passphrase (description, sizeof (passphrase), passphrase);
+  free (description);
   if (err)
     goto out;
 
-  err = ssh_key_to_sexp_buffer (key, passphrase, &buffer, &buffer_n);
+  err = ssh_key_to_sexp_buffer (key, comment, passphrase, &buffer, &buffer_n);
   if (err)
     goto out;
 
@@ -1391,7 +1393,7 @@ ssh_handler_add_identity (ctrl_t ctrl,
 
   /* FIXME: are constraints used correctly?  */
 
-  err = ssh_identity_register (&key, death);
+  err = ssh_identity_register (&key, comment, death);
   if (err)
     goto out;
 
