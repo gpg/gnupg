@@ -405,10 +405,11 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    c = 0;
 	    for(n=0; n < buflen && (c=iobuf_get(a)) != -1 && c != '\n'; )
 		buf[n++] = c;
-	    if( n < buflen || c == '\n' ) {
-		buf[n] = 0;
+	    if( c != -1 ) {
 		if( n > 15 && !memcmp(buf, "-----", 5 ) )
 		    state = fhdrNullClearsig;
+		else if( c != '\n' )
+		    state = fhdrREADClearsigNext;
 		else
 		    state = fhdrCHECKDashEscaped3;
 	    }
@@ -693,6 +694,7 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 
       case fhdrNullClearsig:
       case fhdrCLEARSIG: /* start fake package mode (for clear signatures) */
+      case fhdrREADClearsigNext:
       case fhdrCLEARSIGSimple:
       case fhdrCLEARSIGSimpleNext:
 	afx->helplen = n;

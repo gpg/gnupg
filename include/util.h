@@ -46,6 +46,7 @@ typedef struct {
 	 int stopped;
 	 const char *last;
 	 void *aliases;
+	 const void *cur_alias;
      } internal;	    /* DO NOT CHANGE */
 } ARGPARSE_ARGS;
 

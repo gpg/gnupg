@@ -15,7 +15,6 @@ for i in `find . -name Changes -print`; do
 	echo "$date  $name  $addr" >$dir/ChangeLog.new
 	echo >>$dir/ChangeLog.new
 	cat $dir/Changes   >>$dir/ChangeLog.new
-	echo >>$dir/ChangeLog.new
 	[ -f $dir/ChangeLog ] && cat $dir/ChangeLog >>$dir/ChangeLog.new
 	echo -n > $dir/Changes
 	[ -f $dir/ChangeLog ] && rm $dir/ChangeLog

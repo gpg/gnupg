@@ -1,3 +1,7 @@
+Fri Nov 27 15:30:24 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* clearsig.test: Some more test cases.
+
 Sun Oct 25 18:19:35 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* mds.test: Check whether TIGER is available.

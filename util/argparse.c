@@ -148,6 +148,7 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
 	arg->internal.inarg = 0;
 	arg->internal.stopped = 0;
 	arg->internal.aliases = NULL;
+	arg->internal.cur_alias = NULL;
 	arg->err = 0;
 	arg->flags |= 1<<15; /* mark initialized */
 	if( *arg->argc < 0 )
@@ -401,7 +402,6 @@ find_long_option( ARGPARSE_ARGS *arg,
 {
     int i;
     size_t n;
-    ALIAS_DEF a;
 
     /* Would be better if we can do a binary search, but it is not
        possible to reorder our option table because we would mess
@@ -412,12 +412,19 @@ find_long_option( ARGPARSE_ARGS *arg,
     for(i=0; opts[i].short_opt; i++ )
 	if( opts[i].long_opt && !strcmp( opts[i].long_opt, keyword) )
 	    return i;
-   #if 0
-    /* see whether it is an alias */
-    for( a= argds->internal.aliases; a; a = a->next )
-	if( !strcmp( a->name, keyword) )
-	    return what_do_we_return_here;
-   #endif
+  #if 0
+    {
+	ALIAS_DEF a;
+	/* see whether it is an alias */
+	for( a = args->internal.aliases; a; a = a->next ) {
+	    if( !strcmp( a->name, keyword) ) {
+		/* fixme: must parse the alias here */
+		args->internal.cur_alias = a;
+		return -3; /* alias available */
+	    }
+	}
+    }
+  #endif
     /* not found, see whether it is an abbreviation */
     /* aliases may not be abbreviated */
     n = strlen( keyword );
