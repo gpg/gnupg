@@ -880,7 +880,8 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	char *answer=NULL;
 	STRLIST backlog=NULL;
 
-	any_recipients = 1;
+	if(pk_list)
+	  any_recipients = 1;
 	def_rec = default_recipient();
 	have_def_rec = !!def_rec;
 	if( !have_def_rec )

@@ -1,10 +1,13 @@
 2003-11-27  David Shaw  <dshaw@jabberwocky.com>
 
+	* pkclist.c (build_pk_list): Do not allow an empty PK list in
+	interactive mode.
+
 	* keygen.c (ask_algo): Remove ability to generate Elgamal
 	sign+encrypt keys.
 
-	* getkey.c (merge_selfsigs_main, merge_selfsigs_subkey): Disallow
-	use of sign+encrypt Elgamal keys.
+	* getkey.c (merge_selfsigs_main, merge_selfsigs_subkey,
+	get_seckey_byname2): Disallow use of sign+encrypt Elgamal keys.
 
 2003-11-20  David Shaw  <dshaw@jabberwocky.com>
 

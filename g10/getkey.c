@@ -1055,7 +1055,11 @@ get_seckey_byname2( GETKEY_CTX *retctx,
 	ctx.items[0].mode = KEYDB_SEARCH_MODE_FIRST;
 	rc = lookup( &ctx, &kb, 1 );
         if (!rc && sk )
-            sk_from_block ( &ctx, sk, kb );
+	  {
+	    sk_from_block ( &ctx, sk, kb );
+	    if(sk->pubkey_algo==PUBKEY_ALGO_ELGAMAL)
+	      rc=G10ERR_UNU_SECKEY;
+	  }
         release_kbnode ( kb );
 	get_seckey_end( &ctx );
     }
