@@ -1,6 +1,10 @@
+2002-03-03  Werner Koch  <wk@gnupg.org>
+
+	Release 1.0.6d snapshot.
+
 2002-01-04  David Shaw  <dshaw@jabberwocky.com>
 
-	* NEWS about symmetric messages and fixed file sizes.
+	* NEWS: about symmetric messages and fixed file sizes.
 
 2001-12-22  Werner Koch  <wk@gnupg.org>
 
