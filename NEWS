@@ -1,6 +1,13 @@
 Noteworthy changes in version 1.2.4 (unreleased)
 ------------------------------------------------
 
+    * Added read-only support for BZIP2 compression.  This should be
+      considered experimental, and is only available if the libbzip2
+      library <http://sources.redhat.com/bzip2/> is installed.
+
+    * Added the ability to handle messages that can be decrypted with
+      either a passphrase or a secret key.
+
 
 Noteworthy changes in version 1.2.3 (2003-08-21)
 ------------------------------------------------
