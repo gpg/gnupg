@@ -191,11 +191,9 @@ int
 get_key(char *getkey)
 {
   int rc,gotit=0;
-  unsigned int maxlen=1024,buflen=0;
   char search[29];
   char *request;
   struct http_context hd;
-  byte *line=NULL;
 
   /* Build the search string.  HKP only uses the short key IDs. */
 
@@ -255,8 +253,13 @@ get_key(char *getkey)
     }
   else
     {
+      unsigned int maxlen=1024,buflen;
+      byte *line=NULL;
+
       while(iobuf_read_line(hd.fp_read,&line,&buflen,&maxlen))
 	{
+	  maxlen=1024;
+
 	  if(gotit)
 	    {
 	      fprintf(output,line);
@@ -278,9 +281,10 @@ get_key(char *getkey)
 	  fprintf(console,"gpgkeys: key %s not found on keyserver\n",getkey);
 	  fprintf(output,"KEY 0x%s FAILED\n",getkey);
 	}
+
+      m_free(line);
     }
 
-  m_free(line);
   free(request);
 
   return 0;
@@ -534,12 +538,14 @@ void
 handle_old_hkp_index(IOBUF input)
 {
   int ret,rc,count=0;
-  unsigned int maxlen=1024,buflen=0;
+  unsigned int buflen;
   byte *line=NULL;
   IOBUF buffer=iobuf_temp();
 
   do
     {
+      unsigned int maxlen=1024;
+
       /* This is a judgement call.  Is it better to slurp up all the
 	 results before prompting the user?  On the one hand, it
 	 probably makes the keyserver happier to not be blocked on
@@ -630,7 +636,7 @@ search_key(char *searchkey)
     }
   else
     {
-      unsigned int maxlen=1024,buflen=0;
+      unsigned int maxlen=1024,buflen;
       byte *line=NULL;
 
       /* Is it a pksd that knows how to handle machine-readable
@@ -643,6 +649,7 @@ search_key(char *searchkey)
 	do
 	  {
 	    fprintf(output,"%s",line);
+	    maxlen=1024;
 	    rc=iobuf_read_line(hd.fp_read,&line,&buflen,&maxlen);
 	  }
 	while(rc!=0);

@@ -1,3 +1,8 @@
+2002-09-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (get_key, handle_old_hkp_index, search_key):
+	Properly handle line truncation.
+
 2002-09-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_mailto.in: Add quasi-RFC-2368 mailto:email@addr?from=
