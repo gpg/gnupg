@@ -1,6 +1,6 @@
-dnl Configure.ac script for GnuPG
-dnl Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
-dnl               2004 Free Software Foundation, Inc.
+dnl configure.ac script for GnuPG
+dnl Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+dnl               2005 Free Software Foundation, Inc.
 dnl
 dnl This file is part of GnuPG.
 dnl
@@ -1179,20 +1179,8 @@ fi
 AM_CONDITIONAL(ENABLE_BZIP2_SUPPORT,test x"$have_bz2" = "xyes")
 AC_SUBST(ZLIBS)
 
-
-#
 # libusb allows us to use the integrated CCID smartcard reader driver.
-#
-LIBUSB_LIBS=""
-if test "$card_support" = yes; then
-    AC_CHECK_LIB(usb, usb_bulk_write,
-                 [ LIBUSB_LIBS="$LIBUSB_LIBS -lusb"
-                   AC_DEFINE(HAVE_LIBUSB,1,
-                   [defined if libusb is available])
-                 ])
-fi
-AC_SUBST(LIBUSB_LIBS)
-AC_CHECK_FUNCS(usb_get_busses)
+GNUPG_CHECK_LIBUSB
 
 # Check for readline support
 GNUPG_CHECK_READLINE

@@ -1,3 +1,7 @@
+2005-01-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Use new GNUPG_CHECK_LIBUSB macro.
+
 2004-12-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Better implementation for the SRV check.  We don't
