@@ -74,6 +74,8 @@ enum {
   GNUPG_Certificate_Revoked = 45,
   GNUPG_No_CRL_Known = 46,
   GNUPG_CRL_Too_Old = 47,
+  GNUPG_Line_Too_Long = 48,
+  GNUPG_Not_Trusted = 49,
 };
 
 /* Status codes - fixme: should go into another file */

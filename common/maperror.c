@@ -144,6 +144,9 @@ map_assuan_err (int err)
     case ASSUAN_No_CRL_For_Cert: err = GNUPG_No_CRL_Known; break;       
     case ASSUAN_CRL_Too_Old:     err = GNUPG_CRL_Too_Old; break;        
 
+    case ASSUAN_Not_Trusted:     err = GNUPG_Not_Trusted; break;
+
+
     default:
       err = err < 100? GNUPG_Assuan_Server_Fault : GNUPG_Assuan_Error;
       break;
@@ -170,6 +173,7 @@ map_to_assuan_status (int rc)
     case GNUPG_No_Secret_Key:     rc = ASSUAN_No_Secret_Key; break;
     case GNUPG_Invalid_Data:      rc = ASSUAN_Invalid_Data; break;
     case GNUPG_Invalid_Name:      rc = ASSUAN_Invalid_Name; break;
+    case GNUPG_Not_Trusted:       rc = ASSUAN_Not_Trusted; break;
 
     case GNUPG_Bad_PIN:
     case GNUPG_Bad_Passphrase:

@@ -85,6 +85,7 @@ typedef enum {
   ASSUAN_Cert_Revoked = 301,
   ASSUAN_No_CRL_For_Cert = 302,
   ASSUAN_CRL_Too_Old = 303,
+  ASSUAN_Not_Trusted = 304,
 
 } AssuanError;
 

@@ -1,3 +1,7 @@
+2002-01-15  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c: Add mapping for Not_Trusted. 
+
 2002-01-11  Werner Koch  <wk@gnupg.org>
 
 	* maperror.c (map_assuan_err): Codes for CRL
