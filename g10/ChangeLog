@@ -1,5 +1,11 @@
 2002-08-07  David Shaw  <dshaw@jabberwocky.com>
 
+	* sig-check.c (signature_check2): Sanity check that the md has a
+	context for the hash that the sig is expecting.  This can happen
+	if a onepass sig header does not match the actual sig, and also if
+	the clearsign "Hash:" header is missing or does not match the
+	actual sig.
+
 	* keyedit.c (menu_revsig): Properly show a uid is revoked without
 	restarting gpg.  This is Debian bug 124219, though their supplied
 	patch will not do the right thing.

@@ -63,7 +63,17 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest,
     int rc=0;
 
     *r_expiredate = 0;
-    if( get_pubkey( pk, sig->keyid ) )
+
+    /* Sanity check that the md has a context for the hash that the
+       sig is expecting.  This can happen if a onepass sig header does
+       not match the actual sig, and also if the clearsign "Hash:"
+       header is missing or does not match the actual sig. */
+
+    if(!md_algo_present(digest,sig->digest_algo)) {
+        log_info(_("WARNING: signature digest conflict in message\n"));
+	rc=G10ERR_BAD_SIGN;
+    }
+    else if( get_pubkey( pk, sig->keyid ) )
 	rc = G10ERR_NO_PUBKEY;
     else if(!pk->is_valid &&
 	    (pk->main_keyid[0]!=pk->keyid[0] ||
