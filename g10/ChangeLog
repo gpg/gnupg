@@ -1,3 +1,8 @@
+2003-08-25  Timo Schulz  <twoaday@freakmail.de>
+
+	* pkglue.c (mpi_from_sexp): New. Used to factor out
+	some common code.
+	
 2003-08-18  Timo Schulz  <twoaday@freakmail.de>
 
 	* encode.c (encode_sesskey): Checked the code and removed

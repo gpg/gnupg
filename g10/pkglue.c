@@ -30,6 +30,20 @@
 #include "pkglue.h"
 
 
+static gcry_mpi_t
+mpi_from_sexp (gcry_sexp_t sexp, const char * item)
+{
+  gcry_sexp_t list;
+  gcry_mpi_t data;
+  
+  list = gcry_sexp_find_token (sexp, item, 0);
+  assert (list);
+  data = gcry_sexp_nth_mpi (list, 1, 0);
+  assert (data);
+  gcry_sexp_release (list);
+  return data;
+}
+
 
 /****************
  * Emulate our old PK interface here - sometime in the future we might
@@ -38,7 +52,7 @@
 int
 pk_sign (int algo, gcry_mpi_t * data, gcry_mpi_t hash, gcry_mpi_t * skey)
 {
-  gcry_sexp_t s_sig, s_hash, s_skey, list;
+  gcry_sexp_t s_sig, s_hash, s_skey;
   int rc;
 
   /* make a sexp from skey */
@@ -78,28 +92,12 @@ pk_sign (int algo, gcry_mpi_t * data, gcry_mpi_t hash, gcry_mpi_t * skey)
   if (rc)
     ;
   else if (algo == GCRY_PK_RSA)
-    {
-      list = gcry_sexp_find_token (s_sig, "s", 0);
-      assert (list);
-      data[0] = gcry_sexp_nth_mpi (list, 1, 0);
-      assert (data[0]);
-      gcry_sexp_release (list);
-    }
+    data[0] = mpi_from_sexp (s_sig, "s");
   else
     {
-      list = gcry_sexp_find_token (s_sig, "r", 0);
-      assert (list);
-      data[0] = gcry_sexp_nth_mpi (list, 1, 0);
-      assert (data[0]);
-      gcry_sexp_release (list);
-
-      list = gcry_sexp_find_token (s_sig, "s", 0);
-      assert (list);
-      data[1] = gcry_sexp_nth_mpi (list, 1, 0);
-      assert (data[1]);
-      gcry_sexp_release (list);
+      data[0] = mpi_from_sexp (s_sig, "r");
+      data[1] = mpi_from_sexp (s_sig, "s");
     }
-
 
   gcry_sexp_release (s_sig);
   return rc;
@@ -226,20 +224,9 @@ pk_encrypt (int algo, gcry_mpi_t * resarr, gcry_mpi_t data, gcry_mpi_t * pkey)
     ;
   else
     { /* add better error handling or make gnupg use S-Exp directly */
-      gcry_sexp_t list = gcry_sexp_find_token (s_ciph, "a", 0);
-      assert (list);
-      resarr[0] = gcry_sexp_nth_mpi (list, 1, 0);
-      assert (resarr[0]);
-      gcry_sexp_release (list);
-
+      resarr[0] = mpi_from_sexp (s_ciph, "a");
       if (algo != GCRY_PK_RSA)
-        {
-          list = gcry_sexp_find_token (s_ciph, "b", 0);
-          assert (list);
-          resarr[1] = gcry_sexp_nth_mpi (list, 1, 0);
-          assert (resarr[1]);
-          gcry_sexp_release (list);
-        }
+        resarr[1] = mpi_from_sexp (s_ciph, "b");
     }
 
   gcry_sexp_release (s_ciph);
