@@ -249,7 +249,7 @@ open_card (void)
   int rc;
   APP app;
 
-  current_app = NULL;/* FIXME: Release it first.*/
+  card_close ();
   slot = apdu_open_reader (default_reader_port);
   if (slot == -1)
     {
@@ -262,7 +262,7 @@ open_card (void)
   rc = app_select_openpgp (app, &app->serialno, &app->serialnolen);
   if (rc)
     {
-/*        apdu_close_reader (slot); */
+      apdu_close_reader (slot);
       log_info ("selecting openpgp failed: %s\n", gpg_strerror (rc));
       xfree (app);
       return NULL;
@@ -273,6 +273,18 @@ open_card (void)
   return app;
 }
 
+void
+card_close (void)
+{
+  if (current_app)
+    {
+      APP app = current_app;
+      current_app = NULL;
+
+      apdu_close_reader (app->slot);
+      xfree (app);
+    }
+}
 
 
 /* Return a new malloced string by unescaping the string S.  Escaping

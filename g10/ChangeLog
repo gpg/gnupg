@@ -1,3 +1,12 @@
+2003-10-10  Werner Koch  <wk@gnupg.org>
+
+	* cardglue.c (card_close): New.
+	* ccid-driver.c (ccid_close_reader): New.
+	* apdu.c (close_ccid_reader, close_ct_reader, close_csc_reader)
+	(close_osc_reader, apdu_close_reader): New.  Not all are properly
+	implemented yet.
+	* g10.c (g10_exit): Use close_card.
+
 2003-10-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Give a deprecated option warning for

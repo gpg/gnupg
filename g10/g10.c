@@ -2980,6 +2980,9 @@ main( int argc, char **argv )
 void
 g10_exit( int rc )
 {
+#ifdef ENABLE_CARD_SUPPORT
+    card_close ();
+#endif
     update_random_seed_file();
     if( opt.debug & DBG_MEMSTAT_VALUE ) {
 	m_print_stats("on exit");

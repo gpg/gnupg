@@ -347,6 +347,14 @@ open_ct_reader (int port)
   return reader;
 }
 
+static int
+close_ct_reader (int slot)
+{
+  /* FIXME: Implement. */
+  reader_table[slot].used = 0;
+  return 0;
+}
+
 
 /* Actually send the APDU of length APDULEN to SLOT and return a
    maximum of *BUFLEN data in BUFFER, the actual retruned size will be
@@ -570,6 +578,17 @@ pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
   return err? -1:0; /* FIXME: Return appropriate error code. */
 }
 
+static int
+close_pcsc_reader (int slot)
+{
+  /* FIXME: Implement. */
+  reader_table[slot].used = 0;
+  return 0;
+}
+
+
+
+
 
 #ifdef HAVE_LIBUSB
 /* 
@@ -608,6 +627,15 @@ open_ccid_reader (void)
   dump_reader_status (slot); 
   return slot;
 }
+
+static int
+close_ccid_reader (int slot)
+{
+  ccid_close_reader (reader_table[slot].ccid.handle);
+  reader_table[slot].used = 0;
+  return 0;
+}                       
+  
 
 
 /* Actually send the APDU of length APDULEN to SLOT and return a
@@ -736,6 +764,16 @@ open_osc_reader (int portno)
   dump_reader_status (slot); 
   return slot;
 }
+
+
+static int
+close_osc_reader (int slot)
+{
+  /* FIXME: Implement. */
+  reader_table[slot].used = 0;
+  return 0;
+}
+
 
 
 /* Actually send the APDU of length APDULEN to SLOT and return a
@@ -937,6 +975,26 @@ apdu_open_reader (const char *portstr)
     }
   
   return open_pcsc_reader (portstr);
+}
+
+
+int
+apdu_close_reader (int slot)
+{
+  if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
+    return SW_HOST_NO_DRIVER;
+  if (reader_table[slot].is_ctapi)
+    return close_ct_reader (slot);
+#ifdef HAVE_LIBUSB
+  else if (reader_table[slot].is_ccid)
+    return close_ccid_reader (slot);
+#endif
+#ifdef HAVE_OPENSC
+  else if (reader_table[slot].is_osc)
+    return close_osc_reader (slot);
+#endif
+  else
+    return close_pcsc_reader (slot);
 }
 
 

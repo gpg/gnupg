@@ -122,6 +122,8 @@ void log_printhex (const char *text, const void *buffer, size_t length);
 #define GCRY_MD_SHA1 DIGEST_ALGO_SHA1
 #define GCRY_MD_RMD160 DIGEST_ALGO_RMD160
 
+void card_close (void);
+
 
 /* Release the card info structure. */
 void agent_release_card_info (struct agent_card_info_s *info);
