@@ -1,4 +1,11 @@
+2004-02-13  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c (main): New options --no-fail-on-exist, --homedir.
+	(store_private_key): Use them here.
+
 2004-02-12  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c (read_file, main): Allow reading from stdin.
 
 	* Makefile.am: Include cmacros.am for common flags.
 	(libexec_PROGRAMS): Put gpg-protect-tool there.

@@ -54,6 +54,8 @@ enum cmd_and_opt_values
   oP12Export,
   oStore,
   oForce,
+  oNoFailOnExist,
+  oHomedir,
 
 aTest };
 
@@ -68,9 +70,11 @@ struct rsa_secret_key_s
   };
 
 
+static char *opt_homedir;
 static int opt_armor;
 static int opt_store;
 static int opt_force;
+static int opt_no_fail_on_exist;
 static const char *passphrase;
 
 static const char *get_passphrase (void);
@@ -95,6 +99,8 @@ static ARGPARSE_OPTS opts[] = {
   { oP12Export, "p12-export", 256, "export a private key PKCS-12 encoded"},
   { oStore,     "store", 0, "store the created key in the appropriate place"},
   { oForce,     "force", 0, "force overwriting"},
+  { oNoFailOnExist, "no-fail-on-exist", 0, "@" },
+  { oHomedir, "homedir", 2, "@" }, 
   {0}
 };
 
@@ -231,34 +237,67 @@ static char *
 read_file (const char *fname, size_t *r_length)
 {
   FILE *fp;
-  struct stat st;
   char *buf;
   size_t buflen;
   
-  fp = fopen (fname, "rb");
-  if (!fp)
+  if (!strcmp (fname, "-"))
     {
-      log_error ("can't open `%s': %s\n", fname, strerror (errno));
-      return NULL;
-    }
-  
-  if (fstat (fileno(fp), &st))
-    {
-      log_error ("can't stat `%s': %s\n", fname, strerror (errno));
-      fclose (fp);
-      return NULL;
-    }
+      size_t nread, bufsize = 0;
 
-  buflen = st.st_size;
-  buf = xmalloc (buflen+1);
-  if (fread (buf, buflen, 1, fp) != 1)
-    {
-      log_error ("error reading `%s': %s\n", fname, strerror (errno));
-      fclose (fp);
-      xfree (buf);
-      return NULL;
+      fp = stdin;
+      buf = NULL;
+      buflen = 0;
+#define NCHUNK 8192
+      do 
+        {
+          bufsize += NCHUNK;
+          if (!buf)
+            buf = xmalloc (bufsize);
+          else
+            buf = xrealloc (buf, bufsize);
+
+          nread = fread (buf+buflen, 1, NCHUNK, fp);
+          if (nread < NCHUNK && ferror (fp))
+            {
+              log_error ("error reading `[stdin]': %s\n", strerror (errno));
+              xfree (buf);
+              return NULL;
+            }
+          buflen += nread;
+        }
+      while (nread == NCHUNK);
+#undef NCHUNK
+
     }
-  fclose (fp);
+  else
+    {
+      struct stat st;
+
+      fp = fopen (fname, "rb");
+      if (!fp)
+        {
+          log_error ("can't open `%s': %s\n", fname, strerror (errno));
+          return NULL;
+        }
+  
+      if (fstat (fileno(fp), &st))
+        {
+          log_error ("can't stat `%s': %s\n", fname, strerror (errno));
+          fclose (fp);
+          return NULL;
+        }
+      
+      buflen = st.st_size;
+      buf = xmalloc (buflen+1);
+      if (fread (buf, buflen, 1, fp) != 1)
+        {
+          log_error ("error reading `%s': %s\n", fname, strerror (errno));
+          fclose (fp);
+          xfree (buf);
+          return NULL;
+        }
+      fclose (fp);
+    }
 
   *r_length = buflen;
   return buf;
@@ -821,12 +860,14 @@ export_p12_file (const char *fname)
   xfree (key);
 }
 
+
 
 int
 main (int argc, char **argv )
 {
   ARGPARSE_ARGS pargs;
   int cmd = 0;
+  const char *fname;
 
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
@@ -843,15 +884,26 @@ main (int argc, char **argv )
   
   gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
 
+#ifdef __MINGW32__
+  opt_homedir = read_w32_registry_string ( NULL,
+                                           "Software\\GNU\\GnuPG", "HomeDir" );
+#else
+  opt_homedir = getenv ("GNUPGHOME");
+#endif
+  if (!opt_homedir || !*opt_homedir)
+    opt_homedir = GNUPG_DEFAULT_HOMEDIR;
+
+
   pargs.argc = &argc;
   pargs.argv = &argv;
-  pargs.flags=  1;  /* do not remove the args */
+  pargs.flags=  1;  /* (do not remove the args) */
   while (arg_parse (&pargs, opts) )
     {
       switch (pargs.r_opt)
         {
         case oVerbose: opt.verbose++; break;
         case oArmor:   opt_armor=1; break;
+        case oHomedir: opt_homedir = pargs.r.ret_str; break;
 
         case oProtect: cmd = oProtect; break;
         case oUnprotect: cmd = oUnprotect; break;
@@ -864,6 +916,7 @@ main (int argc, char **argv )
         case oPassphrase: passphrase = pargs.r.ret_str; break;
         case oStore: opt_store = 1; break;
         case oForce: opt_force = 1; break;
+        case oNoFailOnExist: opt_no_fail_on_exist = 1; break;
 
         default : pargs.err = 2; break;
 	}
@@ -871,25 +924,28 @@ main (int argc, char **argv )
   if (log_get_errorcount(0))
     exit(2);
 
-  if (argc != 1)
+  fname = "-";
+  if (argc == 1)
+    fname = *argv;
+  else if (argc > 1)
     usage (1);
 
   if (cmd == oProtect)
-    read_and_protect (*argv);
+    read_and_protect (fname);
   else if (cmd == oUnprotect)
-    read_and_unprotect (*argv);
+    read_and_unprotect (fname);
   else if (cmd == oShadow)
-    read_and_shadow (*argv);
+    read_and_shadow (fname);
   else if (cmd == oShowShadowInfo)
-    show_shadow_info (*argv);
+    show_shadow_info (fname);
   else if (cmd == oShowKeygrip)
-    show_keygrip (*argv);
+    show_keygrip (fname);
   else if (cmd == oP12Import)
-    import_p12_file (*argv);
+    import_p12_file (fname);
   else if (cmd == oP12Export)
-    export_p12_file (*argv);
+    export_p12_file (fname);
   else
-    show_file (*argv);
+    show_file (fname);
 
   agent_exit (0);
   return 8; /*NOTREACHED*/
@@ -937,7 +993,6 @@ store_private_key (const unsigned char *grip,
                    const void *buffer, size_t length, int force)
 {
   int i;
-  const char *homedir;
   char *fname;
   FILE *fp;
   char hexgrip[40+4+1];
@@ -946,20 +1001,19 @@ store_private_key (const unsigned char *grip,
     sprintf (hexgrip+2*i, "%02X", grip[i]);
   strcpy (hexgrip+40, ".key");
 
-  homedir = getenv("GNUPGHOME");
-  if (!homedir || !*homedir)
-    homedir = GNUPG_DEFAULT_HOMEDIR;
-
-  fname = make_filename (homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
+  fname = make_filename (opt_homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
   if (force)
     fp = fopen (fname, "wb");
   else
     {
       if (!access (fname, F_OK))
       {
-        log_error ("secret key file `%s' already exists\n", fname);
+        if (opt_no_fail_on_exist)
+          log_info ("secret key file `%s' already exists\n", fname);
+        else
+          log_error ("secret key file `%s' already exists\n", fname);
         xfree (fname);
-        return -1;
+        return opt_no_fail_on_exist? 0 : -1;
       }
       fp = fopen (fname, "wbx");  /* FIXME: the x is a GNU extension - let
                                      configure check whether this actually

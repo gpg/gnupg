@@ -27,13 +27,6 @@
 #include <assert.h>
 #include <gcrypt.h>
 
-#ifdef __GCC__
-#warning Remove this kludge and set the libgcrypt required version higher.
-#endif
-#ifndef GCRY_CIPHER_RFC2268_40
-#define GCRY_CIPHER_RFC2268_40 307
-#endif
-
 #ifdef TEST
 #include <sys/stat.h>
 #include <unistd.h>
