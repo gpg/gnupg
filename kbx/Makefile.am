@@ -27,13 +27,14 @@ noinst_LIBRARIES = libkeybox.a
 bin_PROGRAMS = kbxutil
 
 common_sources = \
-	keybox.h \
-	keybox-defs.h \
+	keybox.h keybox-defs.h keybox-search-desc.h \
 	keybox-util.c \
 	keybox-errors.c \
 	keybox-init.c \
 	keybox-blob.c \
 	keybox-file.c \
+	keybox-search.c \
+	keybox-update.c \
 	keybox-dump.c 
 
 
@@ -41,7 +42,8 @@ libkeybox_a_SOURCES = $(common_sources)
 
 kbxutil_SOURCES = kbxutil.c $(common_sources)
 kbxutil_LDADD   = ../jnlib/libjnlib.a  \
-                  ../../libgcrypt/src/.libs/libgcrypt.so.1
+		  ../../libksba/src/.libs/libksba.a \
+                  ../../libgcrypt/src/.libs/libgcrypt.so.1 
 
 keybox-errors.c : keybox.h mkerrors
 	$(srcdir)/mkerrors < $(srcdir)/keybox.h > keybox-errors.c

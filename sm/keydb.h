@@ -21,53 +21,43 @@
 #ifndef GNUPG_KEYDB_H
 #define GNUPG_KEYDB_H
 
+#include <ksba.h>
+
+#include "../kbx/keybox-search-desc.h"
+
 typedef struct keydb_handle *KEYDB_HANDLE;
 
-typedef enum {
-    KEYDB_SEARCH_MODE_NONE,
-    KEYDB_SEARCH_MODE_EXACT,
-    KEYDB_SEARCH_MODE_SUBSTR,
-    KEYDB_SEARCH_MODE_MAIL,
-    KEYDB_SEARCH_MODE_MAILSUB,
-    KEYDB_SEARCH_MODE_MAILEND,
-    KEYDB_SEARCH_MODE_WORDS,
-    KEYDB_SEARCH_MODE_SHORT_KID,
-    KEYDB_SEARCH_MODE_LONG_KID,
-    KEYDB_SEARCH_MODE_FPR16,
-    KEYDB_SEARCH_MODE_FPR20,
-    KEYDB_SEARCH_MODE_FPR,
-    KEYDB_SEARCH_MODE_FIRST,
-    KEYDB_SEARCH_MODE_NEXT
-} KeydbSearchMode;
-
-struct keydb_search_desc {
-    KeydbSearchMode mode;
-    int (*skipfnc)(void *,u32*);
-    void *skipfncvalue;
-    union {
-        const char *name;
-        char fpr[MAX_FINGERPRINT_LEN];
-        u32  kid[2];
-    } u;
-};
 
 /*-- keydb.c --*/
 int keydb_add_resource (const char *url, int force, int secret);
 KEYDB_HANDLE keydb_new (int secret);
 void keydb_release (KEYDB_HANDLE hd);
 const char *keydb_get_resource_name (KEYDB_HANDLE hd);
+
+#if 0 /* pgp stuff */
 int keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb);
 int keydb_update_keyblock (KEYDB_HANDLE hd, KBNODE kb);
 int keydb_insert_keyblock (KEYDB_HANDLE hd, KBNODE kb);
-int keydb_delete_keyblock (KEYDB_HANDLE hd);
+#endif
+
+int keydb_get_cert (KEYDB_HANDLE hd, KsbaCert *r_cert);
+int keydb_insert_cert (KEYDB_HANDLE hd, KsbaCert cert);
+int keydb_update_cert (KEYDB_HANDLE hd, KsbaCert cert);
+
+int keydb_delete (KEYDB_HANDLE hd);
+
 int keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved);
 void keydb_rebuild_caches (void);
+
 int keydb_search_reset (KEYDB_HANDLE hd);
 int keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc);
 int keydb_search_first (KEYDB_HANDLE hd);
 int keydb_search_next (KEYDB_HANDLE hd);
 int keydb_search_kid (KEYDB_HANDLE hd, u32 *kid);
 int keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr);
+int keydb_search_issuer (KEYDB_HANDLE hd, const char *issuer);
+int keydb_search_issuer_sn (KEYDB_HANDLE hd,
+                            const char *issuer, const unsigned char *serial);
 
 
 #endif /*GNUPG_KEYDB_H*/

@@ -21,6 +21,7 @@
 #ifndef GPGSM_H
 #define GPGSM_H
 
+#include <ksba.h>
 #include "util.h"
 
 /* Error numbers */
@@ -31,10 +32,15 @@ enum {
   GPGSM_Out_Of_Core = 2,
   GPGSM_Invalid_Value = 3,
   GPGSM_IO_Error = 4,
-
+  GPGSM_Resource_Limit = 5,
+  GPGSM_Internal_Error = 6,
+  GPGSM_Bad_Certificate = 7,
+  GPGSM_Bad_Certificate_Path = 8,
+  GPGSM_Missing_Certificate = 9,
 
 };
 
+#define MAX_DIGEST_LEN 24 
 
 /* A large struct name "opt" to keep global flags */
 struct {
@@ -77,14 +83,14 @@ struct {
 
 #define DBG_X509_VALUE    1	/* debug x.509 data reading/writing */
 #define DBG_MPI_VALUE	  2	/* debug mpi details */
-#define DBG_CIPHER_VALUE  4	/* debug cipher handling */
+#define DBG_CRYPTO_VALUE  4	/* debug low level crypto */
 #define DBG_MEMORY_VALUE  32	/* debug memory allocation stuff */
 #define DBG_CACHE_VALUE   64	/* debug the caching */
 #define DBG_MEMSTAT_VALUE 128	/* show memory statistics */
 #define DBG_HASHING_VALUE 512	/* debug hashing operations */
 
 #define DBG_X509    (opt.debug & DBG_X509_VALUE)
-#define DBG_CIPHER  (opt.debug & DBG_CIPHER_VALUE)
+#define DBG_CRYPTO  (opt.debug & DBG_CRYPTO_VALUE)
 #define DBG_MEMORY  (opt.debug & DBG_MEMORY_VALUE)
 #define DBG_CACHE   (opt.debug & DBG_CACHE_VALUE)
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
@@ -95,8 +101,31 @@ void gpgsm_exit (int rc);
 /*-- server.c --*/
 void gpgsm_server (void);
 
+/*-- fingerprint --*/
+char *gpgsm_get_fingerprint (KsbaCert cert, int algo, char *array, int *r_len);
+char *gpgsm_get_fingerprint_string (KsbaCert cert, int algo);
+
+/*-- certdump.c --*/
+void gpgsm_dump_cert (KsbaCert cert);
+
+/*-- certcheck.c --*/
+int gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert);
+
+
+/*-- certpath.c --*/
+int gpgsm_validate_path (KsbaCert cert);
+
+
+
 
 /*-- import.c --*/
 int gpgsm_import (int in_fd);
+
+
+
+
+/*-- errors.c (built) --*/
+const char *gpgsm_strerror (int err);
+
 
 #endif /*GPGSM_H*/

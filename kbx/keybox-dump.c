@@ -46,6 +46,35 @@ get16 (const byte *buffer)
   return a;
 }
 
+void
+print_string (FILE *fp, const byte *p, size_t n, int delim)
+{
+  for ( ; n; n--, p++ )
+    {
+      if (*p < 0x20 || (*p >= 0x7f && *p < 0xa0) || *p == delim)
+        {
+          putc('\\', fp);
+          if( *p == '\n' )
+            putc('n', fp);
+          else if( *p == '\r' )
+            putc('r', fp);
+          else if( *p == '\f' )
+            putc('f', fp);
+          else if( *p == '\v' )
+            putc('v', fp);
+          else if( *p == '\b' )
+            putc('b', fp);
+          else if( !*p )
+            putc('0', fp);
+          else
+            fprintf(fp, "x%02x", *p );
+	}
+      else
+        putc(*p, fp);
+    }
+}
+
+
 static int
 dump_header_blob (const byte *buffer, size_t length, FILE *fp)
 {
@@ -67,6 +96,7 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
   ulong nuids, uidinfolen;
   ulong nsigs, siginfolen;
   ulong rawdata_off, rawdata_len;
+  ulong nserial;
   const byte *p;
 
   buffer = _keybox_get_blob_image (blob, &length);
@@ -128,19 +158,33 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
       int i;
       ulong kidoff, kflags;
     
-      fprintf (fp, "Key-%lu-Fpr: ", n );
+      fprintf (fp, "Key-Fpr[%lu]: ", n );
       for (i=0; i < 20; i++ )
         fprintf (fp, "%02X", p[i]);
       kidoff = get32 (p + 20);
-      fprintf (fp, "\nKey-%lu-Kid-Off: %lu\n", n, kidoff );
-      fprintf (fp, "Key-%lu-Kid: ", n );
+      fprintf (fp, "\nKey-Kid-Off[%lu]: %lu\n", n, kidoff );
+      fprintf (fp, "Key-Kid[%lu]: ", n );
       /* fixme: check bounds */
       for (i=0; i < 8; i++ )
         fprintf (fp, "%02X", buffer[kidoff+i] );
       kflags = get16 (p + 24 );
-      fprintf( fp, "\nKey-%lu-Flags: %04lX\n", n, kflags);
+      fprintf( fp, "\nKey-Flags[%lu]: %04lX\n", n, kflags);
     }
   
+  /* serial number */
+  fputs ("Serial-No: ", fp);
+  nserial = get16 (p);
+  p += 2;
+  if (!nserial)
+    fputs ("none", fp);
+  else
+    {
+      for (; nserial; nserial--, p++)
+        fprintf (fp, "%02X", *p);
+    }
+  putc ('\n', fp);
+
+  /* user IDs */
   nuids = get16 (p);
   fprintf (fp, "Uid-Count: %lu\n", nuids );
   uidinfolen = get16  (p + 2);
@@ -153,14 +197,42 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
       
       uidoff = get32( p );
       uidlen = get32( p+4 );
-      fprintf (fp, "Uid-%lu-Off: %lu\n", n, uidoff );
-      fprintf (fp, "Uid-%lu-Len: %lu\n", n, uidlen );
-      fprintf (fp, "Uid-%lu: \"", n );
-      /*print_string (fp, buffer+uidoff, uidlen, '\"');*/
+      if (type == BLOBTYPE_X509 && !n)
+        {
+          fprintf (fp, "Issuer-Off: %lu\n", uidoff );
+          fprintf (fp, "Issuer-Len: %lu\n", uidlen );
+          fprintf (fp, "Issuer: \"");
+        }
+      else if (type == BLOBTYPE_X509 && n == 1)
+        {
+          fprintf (fp, "Subject-Off: %lu\n", uidoff );
+          fprintf (fp, "Subject-Len: %lu\n", uidlen );
+          fprintf (fp, "Subject: \"");
+        }
+      else
+        {
+          fprintf (fp, "Uid-Off[%lu]: %lu\n", n, uidoff );
+          fprintf (fp, "Uid-Len[%lu]: %lu\n", n, uidlen );
+          fprintf (fp, "Uid[%lu]: \"", n );
+        }
+      print_string (fp, buffer+uidoff, uidlen, '\"');
       fputs ("\"\n", fp);
       uflags = get16 (p + 8);
-      fprintf (fp, "Uid-%lu-Flags: %04lX\n", n, uflags );
-      fprintf (fp, "Uid-%lu-Validity: %d\n", n, p[10] );
+      if (type == BLOBTYPE_X509 && !n)
+        {
+          fprintf (fp, "Issuer-Flags: %04lX\n", uflags );
+          fprintf (fp, "Issuer-Validity: %d\n", p[10] );
+        }
+      else if (type == BLOBTYPE_X509 && n == 1)
+        {
+          fprintf (fp, "Subject-Flags: %04lX\n", uflags );
+          fprintf (fp, "Subject-Validity: %d\n", p[10] );
+        }
+      else
+        {
+          fprintf (fp, "Uid-Flags[%lu]: %04lX\n", n, uflags );
+          fprintf (fp, "Uid-Validity[%lu]: %d\n", n, p[10] );
+        }
     }
   
   nsigs = get16 (p);
@@ -174,7 +246,7 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
       ulong sflags;
     
       sflags = get32 (p);
-      fprintf (fp, "Sig-%lu-Expire: ", n );
+      fprintf (fp, "Sig-Expire[%lu]: ", n );
       if (!sflags)
         fputs ("[not checked]", fp);
       else if (sflags == 1 )

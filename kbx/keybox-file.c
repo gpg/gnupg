@@ -25,7 +25,7 @@
 
 #include "keybox-defs.h"
 
-
+/* Read a block at the current postion ant return it in r_blocb.  r_blob may be NULL sto simply skip the current block */
 int
 _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp)
 {
@@ -58,56 +58,28 @@ _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp)
   image[0] = c1; image[1] = c2; image[2] = c3; image[3] = c4;
   if (fread (image+4, imagelen-4, 1, fp) != 1)
     {
+      xfree (image);
       return KEYBOX_Read_Error;
     }
   
-  rc = _keybox_new_blob (r_blob, image, imagelen);
-  if (rc)
-      xfree (image);
+  rc = r_blob? _keybox_new_blob (r_blob, image, imagelen) : 0;
+  if (rc || !r_blob)
+        xfree (image);
   return rc;
 }
 
 
-
-
-
-void
-export_as_kbxfile(void)
+/* Write the block to the current file position */
+int
+_keybox_write_blob (KEYBOXBLOB blob, FILE *fp)
 {
-#if 0
-    KBPOS kbpos;
-    KBNODE keyblock = NULL;
-    int rc=0;
+  const char *image;
+  size_t length;
 
-    rc = enum_keyblocks_begin( &kbpos, 0 );
-    if( rc ) {
-	if( rc != -1 )
-	    log_error("enum_keyblocks(open) failed: %s\n", gpg_errstr(rc) );
-	goto leave;
+  image = _keybox_get_blob_image (blob, &length);
+  if (fwrite (image, length, 1, fp) != 1)
+    {
+      return KEYBOX_Write_Error;
     }
-
-    while( !(rc = enum_keyblocks_next( kbpos, 1, &keyblock )) ) {
-	KBXBLOB blob;
-	const char *p;
-	size_t n;
-
-	merge_keys_and_selfsig( keyblock );
-	rc = kbx_create_blob ( &blob, keyblock );
-	if( rc ) {
-	    log_error("kbx_create_blob failed: %s\n", gpg_errstr(rc) );
-	    goto leave;
-	}
-	p = kbx_get_blob_image ( blob, &n );
-	fwrite( p, n, 1, stdout );
-	kbx_release_blob ( blob );
-    }
-
-    if( rc && rc != -1 )
-	log_error("enum_keyblocks(read) failed: %s\n", gpg_errstr(rc));
-
-  leave:
-    enum_keyblocks_end( kbpos );
-    release_kbnode( keyblock );
-#endif
+  return 0;
 }
-

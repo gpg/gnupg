@@ -234,8 +234,9 @@ main( int argc, char **argv )
   /*create_dotlock(NULL); register locking cleanup */
   i18n_init();
 
-  /* We need to use the gcry malloc function becuase jnlib does use them */
+  /* We need to use the gcry malloc function because jnlib does use them */
   keybox_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
+  ksba_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free );
 
 
   pargs.argc = &argc;

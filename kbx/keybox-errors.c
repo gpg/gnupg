@@ -32,6 +32,12 @@ keybox_strerror (KeyboxError err)
     case KEYBOX_File_Error: s="file error"; break;
     case KEYBOX_Blob_Too_Short: s="blob too short"; break;
     case KEYBOX_Blob_Too_Large: s="blob too large"; break;
+    case KEYBOX_Invalid_Handle: s="invalid handle"; break;
+    case KEYBOX_File_Create_Error: s="file create error"; break;
+    case KEYBOX_File_Open_Error: s="file open error"; break;
+    case KEYBOX_File_Close_Error: s="file close error"; break;
+    case KEYBOX_Nothing_Found: s="nothing found"; break;
+    case KEYBOX_Wrong_Blob_Type: s="wrong blob type"; break;
     default:  sprintf (buf, "ec=%d", err ); s=buf; break;
     }
 

@@ -23,6 +23,10 @@
 
 #include <gcrypt.h> /* we need this for the memory function protos */
 
+/* to pass the fucntion to libksba we need to cast it */
+#define HASH_FNC ((void (*)(void *, const byte*,size_t))gcry_md_write)
+
+
 #include "../jnlib/logging.h"
 #include "../jnlib/argparse.h"
 #include "../jnlib/stringhelp.h"
@@ -46,5 +50,9 @@
 
 /*-- misc.c --*/
 int map_ksba_err (int err);
+int map_gcry_err (int err);
+int map_kbx_err (int err);
 
 #endif /*UTIL_H*/
+
+

@@ -28,10 +28,15 @@ BUILT_SOURCES = errors.c
 gpgsm_SOURCES = \
 	gpgsm.c	gpgsm.h \
 	util.h misc.c errors.c \
+	keydb.c keydb.h \
 	server.c \
+	fingerprint.c \
+	certdump.c \
+	certcheck.c \
+	certpath.c \
 	import.c 
 
-gpgsm_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a \
+gpgsm_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a ../kbx/libkeybox.a \
               ../../libksba/src/.libs/libksba.a \
               ../../libgcrypt/src/.libs/libgcrypt.so.1
 

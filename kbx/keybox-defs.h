@@ -41,6 +41,8 @@ enum {
 };
 
 
+typedef struct keyboxblob *KEYBOXBLOB;
+
 
 typedef struct keybox_name *KB_NAME;
 typedef struct keybox_name const * CONST_KB_NAME;
@@ -56,16 +58,13 @@ struct keybox_name {
 
 
 struct keybox_handle {
-  CONST_KB_NAME resource;
+  CONST_KB_NAME kb;
   int secret;             /* this is for a secret keybox */
+  FILE *fp;
+  int eof;
+  int error;
   struct {
-    CONST_KB_NAME kb;
-    /*IOBUF iobuf;*/
-    int eof;
-    int error;
-  } current;
-  struct {
-    CONST_KB_NAME kb; 
+    KEYBOXBLOB blob;
     off_t offset;
     size_t pk_no;
     size_t uid_no;
@@ -78,17 +77,32 @@ struct keybox_handle {
 };
 
 
-typedef struct keyboxblob *KEYBOXBLOB;
-
+/* Don't know whether this is needed: */
+/*  static struct { */
+/*    const char *homedir; */
+/*    int dry_run; */
+/*    int quiet; */
+/*    int verbose; */
+/*    int preserve_permissions; */
+/*  } keybox_opt; */
 
 
 /*-- keybox-blob.c --*/
+#ifdef KEYBOX_WITH_OPENPGP
+  /* fixme */
+#endif /*KEYBOX_WITH_OPENPGP*/
+#ifdef KEYBOX_WITH_X509
+int _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
+                              unsigned char *sha1_digest);
+#endif /*KEYBOX_WITH_X509*/
+
 int  _keybox_new_blob (KEYBOXBLOB *r_blob, char *image, size_t imagelen);
 void _keybox_release_blob (KEYBOXBLOB blob);
 const char *_keybox_get_blob_image (KEYBOXBLOB blob, size_t *n);
 
 /*-- keybox-file.c --*/
 int _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp);
+int _keybox_write_blob (KEYBOXBLOB blob, FILE *fp);
 
 /*-- keybox-dump.c --*/
 int _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp);

@@ -29,7 +29,9 @@
 #include <gcrypt.h>
 #include "gpgsm.h"
 #include "../assuan/assuan.h" /* malloc hooks */
+#include "../kbx/keybox.h" /* malloc hooks */
 #include "i18n.h"
+#include "keydb.h"
 
 enum cmd_and_opt_values {
   aNull = 0,
@@ -441,7 +443,7 @@ set_debug(void)
 {
   if (opt.debug & DBG_MPI_VALUE)
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 2);
-  if (opt.debug & DBG_CIPHER_VALUE )
+  if (opt.debug & DBG_CRYPTO_VALUE )
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
 }
 
@@ -562,8 +564,9 @@ main ( int argc, char **argv)
      Now we are now working under our real uid 
   */
 
+  ksba_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free );
   assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
-  /*  ksba_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free );*/
+  keybox_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
 
   if (default_config )
     configname = make_filename (opt.homedir, "gpgsm.conf", NULL);
@@ -831,12 +834,10 @@ main ( int argc, char **argv)
   if (!cmd && opt.fingerprint && !with_fpr)
     set_cmd (&cmd, aListKeys);
   
-#if 0 /* fixme */
-  if (!nrings && default_keyring)  /* add default ring */
-    add_keyblock_resource ("pubcerts.gpg", 0, 0);
+  if (!nrings && default_keyring)  /* add default keybox */
+    keydb_add_resource ("pubcerts.kbx", 0, 0);
   for (sl = nrings; sl; sl = sl->next)
-    add_keyblock_resource( sl->d, 0, 0 );
-#endif
+    keydb_add_resource (sl->d, 0, 0);
   FREE_STRLIST(nrings);
   
   fname = argc? *argv : NULL;
