@@ -1,5 +1,0 @@
-Extra test data where it is not clear whether we may distribute them.  This
-we only keep them in the CVS.
-
-dod-test9.p12    A file from the DoD X.509 tests suite, September 2001.
-                 Passphrase is "password".
