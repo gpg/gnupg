@@ -229,7 +229,7 @@ static ARGPARSE_OPTS opts[] = {
     { oAssumeArmor,  "assume-armor", 0, N_("assume input is in PEM format")},
     { oAssumeBase64, "assume-base64", 0,
                                       N_("assume input is in base-64 format")},
-    { oAssumeBase64, "assume-binary", 0,
+    { oAssumeBinary, "assume-binary", 0,
                                       N_("assume input is in binary format")},
 
     { oRecipient, "recipient", 2, N_("|NAME|encrypt for NAME")},

@@ -74,6 +74,9 @@ typedef enum {
   ASSUAN_Inquire_Error = 121,
   ASSUAN_Invalid_Option = 122,
   ASSUAN_Invalid_Index = 123,
+  ASSUAN_Unexpected_Status = 124,
+  ASSUAN_Unexpected_Data = 125,
+  ASSUAN_Invalid_Status = 126,
 
   ASSUAN_Not_Confirmed = 128,
 
