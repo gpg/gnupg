@@ -34,6 +34,9 @@
 
 #include <error.h>
 
+/* For asctimestamp(), gnupg_get_time ().  */
+#include "util.h"
+
 #include "gpgconf.h"
 
 
@@ -42,6 +45,8 @@
    Backend: File backend must be able to write out changes !!!
    Components: Add more components and their options.
    Robustness: Do more validation.  Call programs to do validation for us.
+   Don't use popen, as this will not tell us if the program had a
+   non-zero exit code.
 */
 
 
@@ -493,7 +498,7 @@ percent_escape (const char *src)
     {
       char *new_esc_str = realloc (esc_str, new_len);
       if (!new_esc_str)
-	error (1, 1, "Can not escape string");
+	error (1, errno, "can not escape string");
       esc_str = new_esc_str;
       esc_str_len = new_len;
     }
@@ -591,9 +596,7 @@ gc_component_list_options (int component, FILE *out)
 	      if (arg_tail)
 		{
 		  int arg_len = arg_tail - &desc[1];
-		  arg_name = malloc (arg_len + 1);
-		  if (!arg_name)
-		    error (1, 1, "Can not build argument name");
+		  arg_name = xmalloc (arg_len + 1);
 		  memcpy (arg_name, &desc[1], arg_len);
 		  arg_name[arg_len] = '\0';
 		  desc = arg_tail + 1;
@@ -660,7 +663,7 @@ gc_component_list_options (int component, FILE *out)
       /* The argument name field.  */
       fprintf (out, ":%s", arg_name ? percent_escape (arg_name) : "");
       if (arg_name)
-	free (arg_name);
+	xfree (arg_name);
 
       /* The default value field.  */
       fprintf (out, ":%s", option->default_value ? option->default_value : "");
@@ -706,7 +709,7 @@ get_config_pathname (gc_component_t component, gc_backend_t backend)
   assert (option);
 
   if (!option->default_value)
-    error (1, 0, "Option %s, needed by backend %s, was not initialized",
+    error (1, 0, "option %s, needed by backend %s, was not initialized",
 	   gc_backend[backend].option_config_filename,
 	   gc_backend[backend].name);
   if (*option->value)
@@ -715,7 +718,7 @@ get_config_pathname (gc_component_t component, gc_backend_t backend)
     pathname = option->default_value;
 
   if (*pathname != '/')
-    error (1, 0, "Option %s, needed by backend %s, is not absolute",
+    error (1, 0, "option %s, needed by backend %s, is not absolute",
 	   gc_backend[backend].option_config_filename,
 	   gc_backend[backend].name);
 
@@ -736,11 +739,11 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 
   asprintf (&cmd_line, "%s --gpgconf-list", gc_backend[backend].program);
   if (!cmd_line)
-    error (1, 1, "Can not construct command line");
+    error (1, errno, "can not construct command line");
 
   output = popen (cmd_line, "r");
   if (!output)
-    error (1, 1, "Could not gather active options from %s", cmd_line);
+    error (1, errno, "could not gather active options from %s", cmd_line);
 
   while ((length = getline (&line, &line_len, output)) > 0)
     {
@@ -784,18 +787,18 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
       if (option)
 	{
 	  if (option->default_value)
-	    error (1, 1, "Option %s returned twice from %s",
+	    error (1, errno, "option %s returned twice from %s",
 		   line, cmd_line);
 	  option->default_value = strdup (default_value);
 	  option->value = strdup (value);
 	  if (!option->default_value || !option->value)
-	    error (1, 1, "Could not store options");
+	    error (1, errno, "could not store options");
 	}
     }
   if (ferror (output))
-    error (1, 1, "Error reading from %s", cmd_line);
+    error (1, errno, "error reading from %s", cmd_line);
   if (fclose (output) && ferror (output))
-    error (1, 1, "Error closing %s", cmd_line);
+    error (1, errno, "error closing %s", cmd_line);
   free (cmd_line);
 }
 
@@ -821,11 +824,11 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
 
   list_file = fopen (list_pathname, "r");
   if (ferror (list_file))
-    error (1, 1, "Can not open list file %s", list_pathname);
+    error (1, errno, "can not open list file %s", list_pathname);
 
   list = strdup ("\"");
   if (!list)
-    error (1, 1, "Can not allocate initial list string");
+    error (1, errno, "can not allocate initial list string");
 
   while ((length = getline (&line, &line_len, list_file)) > 0)
     {
@@ -858,10 +861,10 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
 	  list = new_list;
 	}
       if (!list)
-	error (1, 1, "Can not construct list");
+	error (1, errno, "can not construct list");
     }
   if (ferror (list_file))
-    error (1, 1, "Can not read list file %s", list_pathname);
+    error (1, errno, "can not read list file %s", list_pathname);
   list_option->default_value = "";
   list_option->value = list;
 }
@@ -909,7 +912,7 @@ static void
 option_check_validity (gc_option_t *option, const char *new_value)
 {
   if (option->new_value)
-    error (1, 0, "Option %s already changed", option->name);
+    error (1, 0, "option %s already changed", option->name);
 
   if (!*new_value)
     return;
@@ -943,8 +946,9 @@ change_options_program (gc_component_t component, gc_backend_t backend,
   /* True if we are within the marker in the config file.  */
   int in_marker = 0;
   gc_option_t *option;
-#define LINE_LEN 4096
-  char line[LINE_LEN];
+  char *line;
+  size_t line_len;
+  ssize_t length;
   int res;
   int fd;
   FILE *src_file = NULL;
@@ -1000,21 +1004,11 @@ change_options_program (gc_component_t component, gc_backend_t backend,
       if (!dest_file)
 	goto change_one_err;
 
-      while (fgets (line, LINE_LEN, dest_file))
+      while ((length = getline (&line, &line_len, dest_file)) > 0)
 	{
-	  int length;
 	  int disable = 0;
 	  char *start;
 	  char *end;
-
-	  line[LINE_LEN - 1] = '\0';
-	  length = strlen (line);
-	  if (length == LINE_LEN - 1)
-	    {
-	      /* FIXME */
-	      errno = ENAMETOOLONG;
-	      goto change_one_err;
-	    }
 
 	  if (!strncmp (marker, line, sizeof (marker) - 1))
 	    {
@@ -1048,7 +1042,8 @@ change_options_program (gc_component_t component, gc_backend_t backend,
 	      if (!in_marker)
 		{
 		  fprintf (src_file,
-			   "# GPGConf disabled this option here at FIXME\n");
+			   "# GPGConf disabled this option here at %s\n",
+			   asctimestamp (gnupg_get_time ()));
 		  if (ferror (src_file))
 		    goto change_one_err;
 		  fprintf (src_file, "# %s", line);
@@ -1103,11 +1098,7 @@ change_options_program (gc_component_t component, gc_backend_t backend,
       option++;
     }
   {
-    time_t cur_time = time (NULL);
-    
-    /* asctime() returns a string that ends with a newline
-       character!  */
-    fprintf (src_file, "%s %s", marker, asctime (localtime (&cur_time)));
+    fprintf (src_file, "%s %s\n", marker, asctimestamp (gnupg_get_time ()));
     if (ferror (src_file))
       goto change_one_err;
   }
@@ -1126,18 +1117,8 @@ change_options_program (gc_component_t component, gc_backend_t backend,
     }
   if (dest_file)
     {
-      while (fgets (line, LINE_LEN, dest_file))
+      while ((length = getline (&line, &line_len, dest_file)) > 0)
 	{
-	  int length;
-
-	  line[LINE_LEN - 1] = '\0';
-	  length = strlen (line);
-	  if (length == LINE_LEN - 1)
-	    {
-	      /* FIXME */
-	      errno = ENAMETOOLONG;
-	      goto change_one_err;
-	    }
 	  fprintf (src_file, "%s", line);
 	  if (ferror (src_file))
 	    goto change_one_err;
@@ -1222,7 +1203,7 @@ gc_component_change_options (int component, FILE *in)
 
       option = find_option (component, line, GC_BACKEND_ANY);
       if (!option)
-	error (1, 0, "Unknown option %s", line);
+	error (1, 0, "unknown option %s", line);
 
       option_check_validity (option, value);
       option->new_value = strdup (value);
@@ -1291,7 +1272,7 @@ gc_component_change_options (int component, FILE *in)
   if (err)
     {
       int i;
-      int res = errno;
+      int saved_errno = errno;
 
       /* An error occured.  */
       for (i = 0; i < GC_COMPONENT_NR; i++)
@@ -1315,7 +1296,6 @@ gc_component_change_options (int component, FILE *in)
 		unlink (dest_pathname[i]);
 	    }
 	}
-      errno = res;
-      error (1, 1, "Could not commit changes");
+      error (1, saved_errno, "could not commit changes");
     }
 }
