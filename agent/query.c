@@ -41,6 +41,14 @@
 #define MAX_OPEN_FDS 20
 #endif
 
+
+/* Because access to the pinentry must be serialized (it is and shall
+   be a global mutual dialog) we should better timeout further
+   requests after some time.  2 minutes seem to be a reasonable
+   time. */
+#define LOCK_TIMEOUT  (1*60)
+
+
 static ASSUAN_CONTEXT entry_ctx = NULL;
 #ifdef USE_GNU_PTH
 static pth_mutex_t entry_lock = PTH_MUTEX_INIT;
@@ -104,11 +112,23 @@ start_pinentry (CTRL ctrl)
   int i;
 
 #ifdef USE_GNU_PTH
-  if (!pth_mutex_acquire (&entry_lock, 0, NULL))
+ {
+   pth_event_t evt;
+
+   evt = pth_event (PTH_EVENT_TIME, pth_timeout (LOCK_TIMEOUT, 0));
+   if (!pth_mutex_acquire (&entry_lock, 0, evt))
     {
-      log_error ("failed to acquire the entry lock\n");
-      return gpg_error (GPG_ERR_INTERNAL);
+      if (pth_event_occurred (evt))
+        rc = gpg_error (GPG_ERR_TIMEOUT);
+      else
+        rc = gpg_error (GPG_ERR_INTERNAL);
+      pth_event_free (evt, PTH_FREE_THIS);
+      log_error (_("failed to acquire the pinentry lock: %s\n"),
+                 gpg_strerror (rc));
+      return rc;
     }
+   pth_event_free (evt, PTH_FREE_THIS);
+ }
 #endif
 
   if (entry_ctx)
