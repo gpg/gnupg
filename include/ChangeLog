@@ -1,3 +1,7 @@
+2002-10-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.h: Add new error code KEYSERVER_UNREACHABLE.
+
 2002-10-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* util.h: Add new log_warning logger command which can be switched
