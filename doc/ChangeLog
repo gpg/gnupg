@@ -1,5 +1,7 @@
 2004-09-30  Marcus Brinkmann  <marcus@g10code.de>
 
+	* tools.texi (Changing options): Add documentation for gpgconf.
+
 	* contrib.texi (Contributors): Add two missing periods.
 
 2004-09-29  Werner Koch  <wk@g10code.com>
