@@ -184,47 +184,55 @@ print_fname_stdin( const char *s )
     return s;
 }
 
-/**
+/****************
  * Check if the file is compressed.
  **/
 int
-is_file_compressed(const char *s, int *r_status)
+is_file_compressed( const char *s, int *ret_rc )
 {
     IOBUF a;
-    int i, rc = 0;
     byte buf[4];
+    int i, rc = 0;
 
-    const byte sigs[4][4] = {
-    {0x42, 0x5a, 0x68, 0x39}, /* bzip2 */
-    {0x1f, 0x8b, 0x08, 0x08}, /* gzip */
-    {0x50, 0x4b, 0x03, 0x04} /* (pk)zip */
+    struct magic_compress_s {
+        size_t len;
+        byte magic[4];
+    } magic[] = {
+        { 3, { 0x42, 0x5a, 0x68, 0x00 } }, /* bzip2 */
+        { 3, { 0x1f, 0x8b, 0x08, 0x00 } }, /* gzip */
+        { 4, { 0x50, 0x4b, 0x03, 0x04 } }, /* (pk)zip */
     };
     
-    if (!s || *s == '-' || !r_status)
+    if ( !s || *s == '-' || !ret_rc )
         return 0; /* We can't check stdin or no file was given */
-    
-    if ( (a = iobuf_open(s)) == NULL ) {
-        *r_status = G10ERR_OPEN_FILE;
+
+    a = iobuf_open( s );
+    if ( a == NULL ) {
+        *ret_rc = G10ERR_OPEN_FILE;
         return 0;
     }
-    
-    if (iobuf_get_filelength(a) < 4) {        
-        *r_status = 0;
+
+    if ( iobuf_get_filelength( a ) < 4 ) {
+        *ret_rc = 0;
         goto leave;
     }
-            
-    iobuf_read(a, buf, 4);
-    
-    for (i=0; i<DIM(sigs); i++) {
-        if (!memcmp(buf, sigs[i], 4)) {
-            *r_status = 0;
+
+    if ( iobuf_read( a, buf, 4 ) == -1 ) {
+        *ret_rc = G10ERR_READ_FILE;
+        goto leave;
+    }
+
+    for ( i = 0; i < DIM( magic ); i++ ) {
+        if ( !memcmp( buf, magic[i].magic, magic[i].len ) ) {
+            *ret_rc = 0;
             rc = 1;
             break;
-        }            
+        }
     }
 
 leave:    
-    iobuf_close(a);
+    iobuf_close( a );
     return rc;
 }
+
 

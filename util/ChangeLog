@@ -1,3 +1,8 @@
+2002-06-05  Timo Schulz  <ts@winpt.org>
+
+	* fileutil.c (is_file_compressed): Corrected the magic values
+	for bzip2 and gzip. Noted by David.
+	
 2002-05-22  Werner Koch  <wk@gnupg.org>
 
 	* fileutil.c (compare_filenames): Replaced stricmp by strcasecmp.
