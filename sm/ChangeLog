@@ -1,3 +1,7 @@
+2003-07-31  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (gpgsm_LDADD): Added INTLLIBS.
+
 2003-07-29  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.c (main): Add secmem features and set the random seed file.

@@ -46,15 +46,17 @@ gpg_agent_SOURCES = \
 
 
 gpg_agent_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
-                $(LIBGCRYPT_LIBS) $(PTH_LIBS) $(LIBASSUAN_LIBS) -lgpg-error
+                $(LIBGCRYPT_LIBS) $(PTH_LIBS) $(LIBASSUAN_LIBS) \
+	         -lgpg-error @INTLLIBS@
 
 gpg_protect_tool_SOURCES = \
 	protect-tool.c \
 	protect.c \
+	simple-pwquery.c simple-pwquery.h \
 	minip12.c minip12.h 
 
 gpg_protect_tool_LDADD = ../jnlib/libjnlib.a \
         ../common/libcommon.a ../common/libsimple-pwquery.a \
-	 $(LIBGCRYPT_LIBS) -lgpg-error
+	 $(LIBGCRYPT_LIBS) -lgpg-error @INTLLIBS@
 
 

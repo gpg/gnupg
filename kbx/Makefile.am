@@ -23,7 +23,8 @@ localedir = $(datadir)/locale
 INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
 
 EXTRA_DIST = mkerrors
-AM_CPPFLAGS =   $(KSBA_CFLAGS) $(LIBGCRYPT_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/intl \
+	       $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
 
 noinst_LIBRARIES = libkeybox.a
 bin_PROGRAMS = kbxutil
@@ -42,7 +43,10 @@ common_sources = \
 libkeybox_a_SOURCES = $(common_sources)
 
 kbxutil_SOURCES = kbxutil.c $(common_sources)
-kbxutil_LDADD   = ../jnlib/libjnlib.a  $(KSBA_LIBS) $(LIBGCRYPT_LIBS) -lgpg-error
+kbxutil_LDADD   = ../jnlib/libjnlib.a  $(KSBA_LIBS) $(LIBGCRYPT_LIBS) \
+                  -lgpg-error @INTLLIBS@ 
+
+
 
 
 

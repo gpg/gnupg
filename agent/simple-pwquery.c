@@ -1,4 +1,4 @@
-/* simple-pwquery.c - A simple password query cleint for gpg-agent
+/* simple-pwquery.c - A simple password query client for gpg-agent
  *	Copyright (C) 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.

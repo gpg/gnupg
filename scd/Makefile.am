@@ -37,7 +37,8 @@ scdaemon_SOURCES = \
 	app-openpgp.c
 
 scdaemon_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
-	  $(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) -lgpg-error -ldl
+	  $(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
+	 -lgpg-error @INTLLIBS@ -ldl
 
 sc_investigate_SOURCES = \
 	sc-investigate.c scdaemon.h \
@@ -49,7 +50,7 @@ sc_investigate_SOURCES = \
 
 sc_investigate_LDADD = \
 	../jnlib/libjnlib.a ../common/libcommon.a \
-	$(LIBGCRYPT_LIBS) -lgpg-error -ldl
+	$(LIBGCRYPT_LIBS) @INTLLIBS@ -lgpg-error -ldl
 
 
 sc_copykeys_SOURCES = \
@@ -63,7 +64,7 @@ sc_copykeys_SOURCES = \
 sc_copykeys_LDADD = \
 	../jnlib/libjnlib.a ../common/libcommon.a \
 	../common/libsimple-pwquery.a \
-	$(LIBGCRYPT_LIBS) -lgpg-error -ldl
+	$(LIBGCRYPT_LIBS) -lgpg-error @INTLLIBS@ -ldl
 
 
 
