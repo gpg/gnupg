@@ -784,12 +784,14 @@ keyserver_typemap(const char *type)
 {
   if(strcmp(type,"ldaps")==0)
     return "ldap";
-#ifdef HAVE_LIBCURL
+#ifdef FTP_VIA_LIBCURL
   else if(strcmp(type,"ftp")==0)
     return "curl";
+#endif
+#ifdef HTTP_VIA_LIBCURL
   else if(strcmp(type,"http")==0)
     return "curl";
-#endif /* HAVE_LIBCURL */
+#endif
   else
     return type;
 }
