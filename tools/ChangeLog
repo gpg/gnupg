@@ -1,3 +1,10 @@
+2002-01-02  Stefan Bellon  <sbellon@sbellon.de>
+
+	* gpgsplit.c [__riscos__]: Added RISC OS specific file name
+	code.
+
+	* gpgsplit.c (write_part): Introduced two explicit casts.
+
 2001-12-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgsplit.c (pkttype_to_string): PKT_PHOTO_ID -> PKT_ATTRIBUTE
