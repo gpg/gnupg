@@ -53,6 +53,15 @@ struct {
   int dry_run;         /* Don't change any persistent data */
   int batch;           /* Batch mode */
   const char *homedir; /* Configuration directory name */
+
+  /* Environment setting gathred at program start. */
+  const char *startup_display;
+  const char *startup_ttyname;
+  const char *startup_ttytype;
+  const char *startup_lc_ctype;
+  const char *startup_lc_messages;
+
+
   const char *pinentry_program; /* Filename of the program to start as
                                    pinentry.  */
   const char *scdaemon_program; /* Filename of the program to handle
@@ -150,6 +159,9 @@ gpg_error_t agent_key_from_file (ctrl_t ctrl,
                                  const unsigned char *grip,
                                  unsigned char **shadow_info,
                                  int ignore_cache, gcry_sexp_t *result);
+gpg_error_t agent_public_key_from_file (ctrl_t ctrl, 
+                                        const unsigned char *grip,
+                                        gcry_sexp_t *result);
 int agent_key_available (const unsigned char *grip);
 
 /*-- query.c --*/

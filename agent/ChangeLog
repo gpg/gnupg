@@ -1,3 +1,33 @@
+2005-02-23  Werner Koch  <wk@g10code.com>
+
+	* command-ssh.c (get_passphrase): Removed.
+	(ssh_identity_register): Partly rewritten.
+	(open_control_file, search_control_file, add_control_entry): New.
+	(ssh_handler_request_identities): Return only files listed in our
+	control file.
+
+	* findkey.c (unprotect): Check for allocation error.
+
+	* agent.h (opt): Add fields to record the startup terminal
+	settings.
+	* gpg-agent.c (main): Record them and do not force keep display
+	with --enable-ssh-support.
+	* command-ssh.c (start_command_handler_ssh): Use them here.
+
+	* gpg-agent.c: Renamed option --ssh-support to
+	--enable-ssh-support.
+
+	* command.c (cmd_readkey): New.
+	(register_commands): Register new command "READKEY".
+
+	* command-ssh.c (ssh_request_process): Improved logging.
+
+	* findkey.c (agent_write_private_key): Always use plain open.
+	Don't depend on an umask for permissions.
+	(agent_key_from_file): Factored file reading code out to ..
+	(read_key_file): .. new function.
+	(agent_public_key_from_file): New.
+
 2005-02-22  Werner Koch  <wk@g10code.com>
 
 	* command-ssh.c (stream_read_string): Removed call to abort on
@@ -1092,21 +1122,21 @@
 
 Mon Aug 21 17:59:17 CEST 2000  Werner Koch  <wk@openit.de>
 
-        * gpg-agent.c (passphrase_dialog): Cleanup the window and added the
+	* gpg-agent.c (passphrase_dialog): Cleanup the window and added the
         user supplied text to the window.
         (main): Fixed segv in gtk_init when used without a command to start.
 
-        * gpg-agent.c: --flush option.
+	* gpg-agent.c: --flush option.
         (req_flush): New.
         (req_clear_passphrase): Implemented.
 
 Fri Aug 18 14:27:14 CEST 2000  Werner Koch  <wk@openit.de>
 
-        * gpg-agent.c: New.
-        * Makefile.am: New.
+	* gpg-agent.c: New.
+	* Makefile.am: New.
 
 
- Copyright 2001, 2002 Free Software Foundation, Inc.
+ Copyright 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

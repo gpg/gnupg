@@ -23,13 +23,14 @@
 
 #include <config.h>
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
-#include <stdio.h>
+#include <assert.h>
 
 #include "agent.h"
 
@@ -63,7 +64,22 @@
 #define SSH_DSA_SIGNATURE_ELEMS    2
 #define SPEC_FLAG_USE_PKCS1V2 (1 << 0)
 
-
+
+/* The blurb we put into the header of a newly created control file.  */
+static const char sshcontrolblurb[] =
+"# List of allowed ssh keys.  Only keys present in this file are used\n"
+"# in the SSH protocol.  The ssh-add tool may add new entries to this\n"
+"# file to enable them; you may also add them manually.  Comment\n"
+"# lines, like this one, as well as empty lines are ignored.  Lines do\n"
+"# have a certain length limit but this is not serious limitation as\n" 
+"# the format of the entries is fixed and checked by gpg-agent. A\n"
+"# non-comment line starts with optional white spaces, followed by the\n"
+"# keygrip of the key given as 40 hex digits, optionally followed by a\n"
+"# the caching TTL in seconds and another optional field for arbitrary\n"
+"# flags.   Prepend the keygrip with an '!' mark to disable it.\n"
+"\n";
+
+
 
 /* Macros.  */
 
@@ -624,6 +640,155 @@ file_to_buffer (const char *filename, unsigned char **buffer, size_t *buffer_n)
 
   return err;
 }
+
+
+
+
+/* Open the ssh control file and create it if not available. With
+   APPEND passed as true the file will be opened in append mode,
+   otherwise in read only mode.  On success a file pointer is stored
+   at the address of R_FP. */
+static gpg_error_t
+open_control_file (FILE **r_fp, int append)
+{
+  gpg_error_t err;
+  char *fname;
+  FILE *fp;
+
+  /* Note: As soon as we start to use non blocking functions here
+     (i.e. where Pth might switch threads) we need to employ a
+     mutex.  */
+  *r_fp = NULL;
+  fname = make_filename (opt.homedir, "sshcontrol.txt", NULL);
+  fp = fopen (fname, append? "a+":"r");
+  if (!fp && errno == ENOENT)
+    {
+      /* Fixme: "x" is a GNU extension.  We might want to use the es_
+         functions here.  */
+      fp = fopen (fname, "wx");  
+      if (!fp)
+        {
+          err = gpg_error (gpg_err_code_from_errno (errno));
+          log_error (_("can't create `%s': %s\n"), fname, gpg_strerror (err));
+          xfree (fname);
+          return err;
+        }
+      fputs (sshcontrolblurb, fp);
+      fclose (fp);
+      fp = fopen (fname, append? "a+":"r");
+    }
+
+  if (!fp)
+    {
+      err = gpg_error (gpg_err_code_from_errno (errno));
+      log_error (_("can't open `%s': %s\n"), fname, gpg_strerror (err));
+      xfree (fname);
+      return err;
+    }
+  
+  *r_fp = fp;  
+
+  return 0;
+}
+
+
+/* Search the file at stream FP from the beginning until a matching
+   HEXGRIP is found; return success in this case and store true at
+   DISABLED if the found key has been disabled.  */
+static gpg_error_t
+search_control_file (FILE *fp, const char *hexgrip, int *disabled)
+{
+  int c, i;
+  char *p, line[256];
+  
+  assert (strlen (hexgrip) == 40 );
+
+  rewind (fp);
+  *disabled = 0;
+ next_line:
+  do
+    {
+      if (!fgets (line, DIM(line)-1, fp) )
+        {
+          if (feof (fp))
+            return gpg_error (GPG_ERR_EOF);
+          return gpg_error (gpg_err_code_from_errno (errno));
+        }
+      
+      if (!*line || line[strlen(line)-1] != '\n')
+        {
+          /* Eat until end of line */
+          while ( (c=getc (fp)) != EOF && c != '\n')
+            ;
+          return gpg_error (*line? GPG_ERR_LINE_TOO_LONG
+                                 : GPG_ERR_INCOMPLETE_LINE);
+        }
+      
+      /* Allow for empty lines and spaces */
+      for (p=line; spacep (p); p++)
+        ;
+    }
+  while (!*p || *p == '\n' || *p == '#');
+  
+  *disabled = 0;
+  if (*p == '!')
+    {
+      *disabled = 1;
+      for (p++; spacep (p); p++)
+        ;
+    }
+
+  for (i=0; hexdigitp (p) && i < 40; p++, i++)
+    if (hexgrip[i] != (*p >= 'a'? (*p & 0xdf): *p))
+      goto next_line;
+  if (i != 40 || !(spacep (p) || *p == '\n'))
+    {
+      log_error ("invalid formatted line in ssh control file\n");
+      return gpg_error (GPG_ERR_BAD_DATA);
+    }
+
+  /* Fixme: Get TTL and flags.  */
+
+  return 0; /* Okay:  found it.  */
+}
+
+
+
+/* Add an entry to the control file to mark the key with the keygrip
+   HEXGRIP as usable for SSH; i.e. it will be returned when ssh asks
+   for it.  This function is in general used to add a key received
+   through the ssh-add function.  We can assume that the user wants to
+   allow ssh using this key. */
+static gpg_error_t
+add_control_entry (ctrl_t ctrl, const char *hexgrip, int ttl)
+{
+  gpg_error_t err;
+  FILE *fp;
+  int disabled;
+
+  err = open_control_file (&fp, 1);
+  if (err)
+    return err;
+
+  err = search_control_file (fp, hexgrip, &disabled);
+  if (err && gpg_err_code(err) == GPG_ERR_EOF)
+    {
+      struct tm *tp;
+      time_t atime = time (NULL);
+
+      /* Not yet in the file - add it. Becuase the file has been
+         opened in append mode, we simply need to write to it.  */
+      tp = localtime (&atime);
+      fprintf (fp, "# Key added on %04d-%02d-%02d %02d:%02d:%02d\n%s %d\n",
+               1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+               tp->tm_hour, tp->tm_min, tp->tm_sec,
+               hexgrip, ttl);
+               
+    }
+  fclose (fp);
+  return 0;
+}
+
 
 
 
@@ -1377,6 +1542,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
   gpg_error_t err;
   gpg_error_t ret_err;
   int ret;
+  FILE *ctrl_fp = NULL;
 
   /* Prepare buffer stream.  */
 
@@ -1427,6 +1593,19 @@ ssh_handler_request_identities (ctrl_t ctrl,
 
   /* FIXME: make sure that buffer gets deallocated properly.  */
 
+  /* Fixme: We should better iterate over the control file and check
+     whether the key file is there.  This is better in resepct to
+     performance if tehre are a lot of key sin our key storage. */
+
+  err = open_control_file (&ctrl_fp, 0);
+  if (err)
+    goto out;
+
+#warning Really need to fix this fixme.
+  /*
+ FIXME:  First check whether a key is currently available in the card reader - this should be allowed even without being listed in sshcontrol.txt.
+  */
+
   while (1)
     {
       dir_entry = readdir (dir);
@@ -1435,6 +1614,19 @@ ssh_handler_request_identities (ctrl_t ctrl,
 	  if ((strlen (dir_entry->d_name) == 44)
 	      && (! strncmp (dir_entry->d_name + 40, ".key", 4)))
 	    {
+              char hexgrip[41];
+              int disabled;
+
+              /* We do only want to return keys listed in our control
+                 file. */
+              strncpy (hexgrip, dir_entry->d_name, 40);
+              hexgrip[40] = 0;
+              if ( strlen (hexgrip) != 40 )
+                continue;
+              if (search_control_file (ctrl_fp, hexgrip, &disabled)
+                  || disabled)
+                continue;
+
 	      strncpy (key_path + key_directory_n + 1, dir_entry->d_name, 40);
 
 	      /* Read file content.  */
@@ -1521,6 +1713,9 @@ ssh_handler_request_identities (ctrl_t ctrl,
     es_fclose (key_blobs);
   if (dir)
     closedir (dir);
+
+  if (ctrl_fp)
+    fclose (ctrl_fp);
 
   free (key_directory);
   xfree (key_path);
@@ -1802,43 +1997,6 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
   return ret_err;
 }
 
-static gpg_error_t
-get_passphrase (ctrl_t ctrl,
-		const char *description, size_t passphrase_n, char *passphrase)
-{
-  struct pin_entry_info_s *pi;
-  gpg_error_t err;
-
-  err = 0;
-  pi = gcry_calloc_secure (1, sizeof (*pi) + passphrase_n + 1);
-  if (! pi)
-    {
-      err = gpg_error (GPG_ERR_ENOMEM);
-      goto out;
-    }
-
-  pi->min_digits = 0;		/* We want a real passphrase.  */
-  pi->max_digits = 8;
-  pi->max_tries = 1;
-  pi->failed_tries = 0;
-  pi->check_cb = NULL;
-  pi->check_cb_arg = NULL;
-  pi->cb_errtext = NULL;
-  pi->max_length = 100;
-
-  err = agent_askpin (ctrl, description, NULL, pi);
-  if (err)
-    goto out;
-
-  memcpy (passphrase, pi->pin, passphrase_n);
-  passphrase[passphrase_n] = 0;
-
- out:
-
-  xfree (pi);
-  
-  return err;
-}
 
 static gpg_error_t
 ssh_key_extract_comment (gcry_sexp_t key, char **comment)
@@ -1929,75 +2087,99 @@ ssh_key_to_buffer (gcry_sexp_t key, const char *passphrase,
   return err;
 }
 
+
+
+/* Store the ssh KEY into our local key storage and protect him after
+   asking for a passphrase.  Cache that passphrase.  TTL is the
+   maximum caching time for that key.  If the key already exists in
+   our key storage, don't do anything.  When entering a new key also
+   add an entry to the sshcontrol file.  */
 static gpg_error_t
 ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
 {
-  unsigned char key_grip_raw[21];
-  unsigned char *buffer;
-  unsigned int buffer_n;
-  char passphrase[100];
-  char *description;
-  char key_grip[41];
-  char *comment;
   gpg_error_t err;
+  unsigned char key_grip_raw[21];
+  char key_grip[41];
+  unsigned char *buffer = NULL;
+  unsigned int buffer_n;
+  char *description = NULL;
+  char *comment = NULL;
   unsigned int i;
-  int ret;
-
-  description = NULL;
-  comment = NULL;
-  buffer = NULL;
+  struct pin_entry_info_s *pi = NULL;
 
   err = ssh_key_grip (key, key_grip_raw);
   if (err)
     goto out;
 
-  key_grip_raw[sizeof (key_grip_raw) - 1] = 0;
-  ret = agent_key_available (key_grip_raw);
-  if (! ret)
-    goto out;
+  key_grip_raw[sizeof (key_grip_raw) - 1] = 0; /* FIXME:  Why?? */
 
+  /* Check whether the key is alread in our key storage.  Don't do
+     anything then.  */
+  if ( !agent_key_available (key_grip_raw) )
+    goto out; /* Yes, key is available.  */
+
+  
   err = ssh_key_extract_comment (key, &comment);
   if (err)
     goto out;
 
-  ret = asprintf (&description,
-		  "Please provide the passphrase, which should be used "
-		  "for protecting the received secret key `%s':",
-		  comment ? comment : "");
-  if (ret < 0)
+  if ( asprintf (&description,
+                 _("Please enter a passphrase to protect%%0A"
+                   "the received secret key%%0A"
+                   "   %s%%0A"
+                   "within gpg-agent's key storage"),
+                 comment ? comment : "?") < 0)
     {
-      err = gpg_err_code_from_errno (errno);
+      err = gpg_error_from_errno (errno);
       goto out;
     }
 
-  err = get_passphrase (ctrl, description, sizeof (passphrase), passphrase);
+
+  pi = gcry_calloc_secure (1, sizeof (*pi) + 100 + 1);
+  if (!pi)
+    {
+      err = gpg_error_from_errno (errno);
+      goto out;
+    }
+  pi->max_length = 100;
+  pi->max_tries = 1;
+  err = agent_askpin (ctrl, description, NULL, pi);
   if (err)
     goto out;
 
-  err = ssh_key_to_buffer (key, passphrase, &buffer, &buffer_n);
+  err = ssh_key_to_buffer (key, pi->pin, &buffer, &buffer_n);
   if (err)
     goto out;
 
+  /* Store this key to our key storage.  */
   err = agent_write_private_key (key_grip_raw, buffer, buffer_n, 0);
   if (err)
     goto out;
 
+  /* Cache this passphrase. */
   for (i = 0; i < 20; i++)
     sprintf (key_grip + 2 * i, "%02X", key_grip_raw[i]);
 
-  err = agent_put_cache (key_grip, passphrase, ttl);
+  err = agent_put_cache (key_grip, pi->pin, ttl);
   if (err)
     goto out;
 
- out:
+  /* And add an entry to the sshcontrol file.  */
+  err = add_control_entry (ctrl, key_grip, ttl);
 
+
+ out:
+  if (pi && pi->max_length)
+    wipememory (pi->pin, pi->max_length);
+  xfree (pi);
   xfree (buffer);
   xfree (comment);
-  free (description);
-  /* FIXME: verify xfree vs free.  */
+  free (description); /* (asprintf allocated, thus regular free.)  */
 
   return err;
 }
+
+
 
 static gpg_error_t
 ssh_identity_drop (gcry_sexp_t key)
@@ -2234,12 +2416,9 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
   if (err)
     goto out;
 
-  if (opt.verbose) /* FIXME: using log_debug is not good with
-                      verbose. log_debug should only be used in
-                      debugging mode or in sitattions which are
-                      unexpected. */
-    log_debug ("received request of length: %u\n",
-	       request_data_size);
+  if (opt.verbose > 1)
+    log_info ("received ssh request of length %u\n",
+              (unsigned int)request_data_size);
 
   request = es_mopen (NULL, 0, 0, 1, realloc_secure, gcry_free, "r+");
   if (! request)
@@ -2277,17 +2456,28 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
       break;
   if (i == DIM (request_specs))
     {
-      log_debug ("request %u is not supported\n",
-		 request_type);
+      log_info ("ssh request %u is not supported\n", request_type);
       send_err = 1;
       goto out;
     }
 
   if (opt.verbose)
-    log_debug ("executing request handler: %s (%u)\n",
+    log_info ("ssh request handler for %s (%u) started\n",
 	       request_specs[i].identifier, request_specs[i].type);
 
   err = (*request_specs[i].handler) (ctrl, request, response);
+
+  if (opt.verbose)
+    {
+      if (err)
+        log_info ("ssh request handler for %s (%u) failed: %s\n",
+                  request_specs[i].identifier, request_specs[i].type,
+                  gpg_strerror (err));
+      else
+        log_info ("ssh request handler for %s (%u) ready\n",
+                  request_specs[i].identifier, request_specs[i].type);
+    }
+
   if (err)
     {
       send_err = 1;
@@ -2295,6 +2485,10 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
     }
 
   response_size = es_ftell (response);
+  if (opt.verbose > 1)
+    log_info ("sending ssh response of length %u\n",
+              (unsigned int)response_size);
+
   err = es_fseek (response, 0, SEEK_SET);
   if (err)
     {
@@ -2325,6 +2519,8 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
 
   if (send_err)
     {
+      if (opt.verbose > 1)
+        log_info ("sending ssh error response\n");
       err = stream_write_uint32 (stream_sock, 1);
       if (err)
 	goto leave;
@@ -2341,7 +2537,7 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
     es_fclose (response);
   xfree (request_data);		/* FIXME?  */
 
-  return !! err;
+  return !!err;
 }
 
 void
@@ -2358,6 +2554,21 @@ start_command_handler_ssh (int sock_client)
   memset (&ctrl, 0, sizeof (ctrl));
   agent_init_default_ctrl (&ctrl);
   ctrl.connection_fd = sock_client;
+
+  /* Because the ssh protocol does not send us information about the
+     the current TTY setting, we resort here to use those from startup
+     or those explictly set.  */
+  if (!ctrl.display && opt.startup_display)
+    ctrl.display = strdup (opt.startup_display);
+  if (!ctrl.ttyname && opt.startup_ttyname)
+    ctrl.ttyname = strdup (opt.startup_ttyname);
+  if (!ctrl.ttytype && opt.startup_ttytype)
+    ctrl.ttytype = strdup (opt.startup_ttytype);
+  if (!ctrl.lc_ctype && opt.startup_lc_ctype)
+    ctrl.lc_ctype = strdup (opt.startup_lc_ctype);
+  if (!ctrl.lc_messages && opt.startup_lc_messages)
+    ctrl.lc_messages = strdup (opt.startup_lc_messages);
+
 
   /* Create stream from socket.  */
   stream_sock = es_fdopen (sock_client, "r+");

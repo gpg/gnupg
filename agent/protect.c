@@ -117,7 +117,7 @@ calculate_mic (const unsigned char *plainkey, unsigned char *sha1hash)
 
 /* Encrypt the parameter block starting at PROTBEGIN with length
    PROTLEN using the utf8 encoded key PASSPHRASE and return the entire
-   encrypted block in RESULT or ereturn with an error code.  SHA1HASH
+   encrypted block in RESULT or return with an error code.  SHA1HASH
    is the 20 byte SHA-1 hash required for the integrity code.
 
    The parameter block is expected to be an incomplete S-Expression of

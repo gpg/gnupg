@@ -1,5 +1,5 @@
 /* gpg-agent.c  -  The GnuPG Agent
- *	Copyright (C) 2000, 2001, 2002, 2003,
+ *	Copyright (C) 2000, 2001, 2002, 2003, 2004,
  *                    2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -147,7 +147,7 @@ static ARGPARSE_OPTS opts[] = {
                              N_("allow clients to mark keys as \"trusted\"")},
   { oAllowPresetPassphrase, "allow-preset-passphrase", 0,
                              N_("allow presetting passphrase")},
-  { oSSHSupport, "ssh-support", 0, N_("enable secure ssh-agent emulation") },
+  { oSSHSupport, "enable-ssh-support", 0, N_("enable ssh-agent emulation") },
   {0}
 };
 
@@ -458,7 +458,6 @@ main (int argc, char **argv )
   int standard_socket = 0;
   gpg_error_t err;
 
-
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
   /* Please note that we may running SUID(ROOT), so be very CAREFUL
@@ -513,6 +512,23 @@ main (int argc, char **argv )
 
   opt.homedir = default_homedir ();
 
+  /* Record the some original Denvironment settings. */
+  opt.startup_display = getenv ("DISPLAY");
+  if (opt.startup_display)
+    opt.startup_display = xstrdup (opt.startup_display);
+  opt.startup_ttyname = ttyname (0);
+  if (opt.startup_ttyname)
+    opt.startup_ttyname = xstrdup (opt.startup_ttyname);
+  opt.startup_ttytype = getenv ("TERM");
+  if (opt.startup_ttytype)
+    opt.startup_ttytype = xstrdup (opt.startup_ttytype);
+  /* Fixme: Neen to use the locale fucntion here.  */
+  opt.startup_lc_ctype = getenv ("LC_CTYPE");
+  if (opt.startup_lc_ctype) 
+    opt.startup_lc_ctype = xstrdup (opt.startup_lc_ctype);
+  opt.startup_lc_messages = getenv ("LC_MESSAGES");
+  if (opt.startup_lc_messages)
+    opt.startup_lc_messages = xstrdup (opt.startup_lc_messages);
 
   /* Check whether we have a config file on the commandline */
   orig_argc = argc;
@@ -624,11 +640,7 @@ main (int argc, char **argv )
         case oKeepTTY: opt.keep_tty = 1; break;
         case oKeepDISPLAY: opt.keep_display = 1; break;
 
-	case oSSHSupport:
-	  opt.ssh_support = 1;
-	  opt.keep_tty  = 1;
-	  opt.keep_display = 1;
-	  break;
+	case oSSHSupport:  opt.ssh_support = 1; break;
 
         default : pargs.err = configfp? 1:2; break;
 	}
@@ -784,7 +796,7 @@ main (int argc, char **argv )
 
       /* Remove the DISPLAY variable so that a pinentry does not
          default to a specific display.  There is still a default
-         display when gpg-agent weas started using --display or a
+         display when gpg-agent was started using --display or a
          client requested this using an OPTION command. */
 #ifndef HAVE_W32_SYSTEM
       if (!opt.keep_display)

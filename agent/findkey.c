@@ -39,7 +39,9 @@ struct try_unprotect_arg_s {
 };
 
 
-
+/* Write an S-expression formatted key to our key storage.  With FORCE
+   pased as true an existsing key with the given GRIP will get
+   overwritten.  */
 int
 agent_write_private_key (const unsigned char *grip,
                          const void *buffer, size_t length, int force)
@@ -48,51 +50,44 @@ agent_write_private_key (const unsigned char *grip,
   char *fname;
   FILE *fp;
   char hexgrip[40+4+1];
+  int fd;
   
   for (i=0; i < 20; i++)
     sprintf (hexgrip+2*i, "%02X", grip[i]);
   strcpy (hexgrip+40, ".key");
 
   fname = make_filename (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
-  if (force)
-    fp = fopen (fname, "wb");
-  else
+
+  if (!force && !access (fname, F_OK))
     {
-      int fd;
+      log_error ("secret key file `%s' already exists\n", fname);
+      xfree (fname);
+      return gpg_error (GPG_ERR_GENERAL);
+    }
 
-      if (!access (fname, F_OK))
-      {
-        log_error ("secret key file `%s' already exists\n", fname);
-        xfree (fname);
-        return gpg_error (GPG_ERR_GENERAL);
-      }
-
-      /* We would like to create FNAME but only if it does not already
-	 exist.  We cannot make this guarantee just using POSIX (GNU
-	 provides the "x" opentype for fopen, however, this is not
-	 portable).  Thus, we use the more flexible open function and
-	 then use fdopen to obtain a stream.
-
-	 The mode parameter to open is what fopen uses.  It will be
-	 combined with the process' umask automatically.  */
-      fd = open (fname, O_CREAT | O_EXCL | O_RDWR,
-		 S_IRUSR | S_IWUSR 
+  /* In FORCE mode we would like to create FNAME but only if it does
+     not already exist.  We cannot make this guarantee just using
+     POSIX (GNU provides the "x" opentype for fopen, however, this is
+     not portable).  Thus, we use the more flexible open function and
+     then use fdopen to obtain a stream. */
+  fd = open (fname, force? (O_CREAT | O_TRUNC | O_WRONLY)
+                         : (O_CREAT | O_EXCL | O_WRONLY),
+             S_IRUSR | S_IWUSR 
 #ifndef HAVE_W32_SYSTEM
-                 | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
+                 | S_IRGRP 
 #endif
                  );
-      if (fd < 0)
-	fp = 0;
-      else
-	{
-	  fp = fdopen (fd, "wb");
-	  if (!fp)
-            { 
-              int save_e = errno;
-              close (fd);
-              errno = save_e;
-            }
-	}
+  if (fd < 0)
+    fp = NULL;
+  else
+    {
+      fp = fdopen (fd, "wb");
+      if (!fp)
+        { 
+          int save_e = errno;
+          close (fd);
+          errno = save_e;
+        }
     }
 
   if (!fp) 
@@ -263,6 +258,8 @@ unprotect (CTRL ctrl, const char *desc_text,
     }
   
   pi = gcry_calloc_secure (1, sizeof (*pi) + 100);
+  if (!pi)
+    return gpg_error_from_errno (errno);
   pi->max_length = 100;
   pi->min_digits = 0;  /* we want a real passphrase */
   pi->max_digits = 8;
@@ -285,32 +282,22 @@ unprotect (CTRL ctrl, const char *desc_text,
 }
 
 
-
-/* Return the secret key as an S-Exp in RESULT after locating it using
-   the grip.  Returns NULL in RESULT if the operation should be
-   diverted to a token; SHADOW_INFO will point then to an allocated
-   S-Expression with the shadow_info part from the file.  With
-   IGNORE_CACHE passed as true the passphrase is not taken from the
-   cache.  DESC_TEXT may be set to present a custom description for the
-   pinentry. */
-gpg_error_t
-agent_key_from_file (CTRL ctrl, const char *desc_text,
-                     const unsigned char *grip, unsigned char **shadow_info,
-                     int ignore_cache, gcry_sexp_t *result)
+/* Read the key identified by GRIP from the private key directory and
+   return it as an gcrypt S-expression object in RESULT.  On failure
+   returns an error code and stores NULL at RESULT. */
+static gpg_error_t
+read_key_file (const unsigned char *grip, gcry_sexp_t *result)
 {
   int i, rc;
   char *fname;
   FILE *fp;
   struct stat st;
   unsigned char *buf;
-  size_t len, buflen, erroff;
+  size_t buflen, erroff;
   gcry_sexp_t s_skey;
   char hexgrip[40+4+1];
-  int got_shadow_info = 0;
   
   *result = NULL;
-  if (shadow_info)
-      *shadow_info = NULL;
 
   for (i=0; i < 20; i++)
     sprintf (hexgrip+2*i, "%02X", grip[i]);
@@ -336,8 +323,8 @@ agent_key_from_file (CTRL ctrl, const char *desc_text,
     }
 
   buflen = st.st_size;
-  buf = xmalloc (buflen+1);
-  if (fread (buf, buflen, 1, fp) != 1)
+  buf = xtrymalloc (buflen+1);
+  if (!buf || fread (buf, buflen, 1, fp) != 1)
     {
       rc = gpg_error_from_errno (errno);
       log_error ("error reading `%s': %s\n", fname, strerror (errno));
@@ -347,6 +334,7 @@ agent_key_from_file (CTRL ctrl, const char *desc_text,
       return rc;
     }
 
+  /* Convert the file into a gcrypt S-expression object.  */
   rc = gcry_sexp_sscan (&s_skey, &erroff, buf, buflen);
   xfree (fname);
   fclose (fp);
@@ -357,18 +345,52 @@ agent_key_from_file (CTRL ctrl, const char *desc_text,
                  (unsigned int)erroff, gpg_strerror (rc));
       return rc;
     }
+  *result = s_skey;
+  return 0;
+}
+
+
+/* Return the secret key as an S-Exp in RESULT after locating it using
+   the grip.  Returns NULL in RESULT if the operation should be
+   diverted to a token; SHADOW_INFO will point then to an allocated
+   S-Expression with the shadow_info part from the file.  With
+   IGNORE_CACHE passed as true the passphrase is not taken from the
+   cache.  DESC_TEXT may be set to present a custom description for the
+   pinentry. */
+gpg_error_t
+agent_key_from_file (ctrl_t ctrl, const char *desc_text,
+                     const unsigned char *grip, unsigned char **shadow_info,
+                     int ignore_cache, gcry_sexp_t *result)
+{
+  int rc;
+  unsigned char *buf;
+  size_t len, buflen, erroff;
+  gcry_sexp_t s_skey;
+  int got_shadow_info = 0;
+  
+  *result = NULL;
+  if (shadow_info)
+      *shadow_info = NULL;
+
+  rc = read_key_file (grip, &s_skey);
+  if (rc)
+    return rc;
+
+  /* For use with the protection functions we also need the key as an
+     canonical encoded S-expression in abuffer.  Create this buffer
+     now.  */
   len = gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, NULL, 0);
   assert (len);
   buf = xtrymalloc (len);
   if (!buf)
     {
-      rc = out_of_core ();
+      rc = gpg_error_from_errno (errno);
       gcry_sexp_release (s_skey);
       return rc;
     }
   len = gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, buf, len);
   assert (len);
-  gcry_sexp_release (s_skey);
+
 
   switch (agent_private_key_type (buf))
     {
@@ -381,7 +403,7 @@ agent_key_from_file (CTRL ctrl, const char *desc_text,
 	char *desc_text_final;
 	const char *comment = NULL;
 
-        /* Note, that we will take the comment as a C styring for
+        /* Note, that we will take the comment as a C string for
            display purposes; i.e. all stuff beyond a Nul character is
            ignored.  */
 	comment_sexp = gcry_sexp_find_token (s_skey, "comment", 0);
@@ -460,6 +482,8 @@ agent_key_from_file (CTRL ctrl, const char *desc_text,
       rc = gpg_error (GPG_ERR_BAD_SECKEY);
       break;
     }
+  gcry_sexp_release (s_skey);
+  s_skey = NULL;
   if (rc || got_shadow_info)
     {
       xfree (buf);
@@ -480,6 +504,200 @@ agent_key_from_file (CTRL ctrl, const char *desc_text,
   *result = s_skey;
   return 0;
 }
+
+
+
+/* Return the public key for the keygrip GRIP.  The result is stored
+   at RESULT.  This function extracts the public key from the private
+   key database.  On failure an error code is returned and NULL stored
+   at RESULT. */
+gpg_error_t
+agent_public_key_from_file (ctrl_t ctrl, 
+                            const unsigned char *grip,
+                            gcry_sexp_t *result)
+{
+  int i, idx, rc;
+  gcry_sexp_t s_skey;
+  const char *algoname;
+  gcry_sexp_t uri_sexp, comment_sexp;
+  const char *uri, *comment;
+  size_t uri_length, comment_length;
+  char *format, *p;
+  void *args[4+2+2+1]; /* Size is max. # of elements + 2 for uri + 2
+                           for comment + end-of-list.  */
+  int argidx;
+  gcry_sexp_t list, l2;
+  const char *name;
+  const char *s;
+  size_t n;
+  const char *elems;
+  gcry_mpi_t *array;
+
+  *result = NULL;
+
+  rc = read_key_file (grip, &s_skey);
+  if (rc)
+    return rc;
+
+  list = gcry_sexp_find_token (s_skey, "shadowed-private-key", 0 );
+  if (!list)
+    list = gcry_sexp_find_token (s_skey, "protected-private-key", 0 );
+  if (!list)
+    list = gcry_sexp_find_token (s_skey, "private-key", 0 );
+  if (!list)
+    {
+      log_error ("invalid private key format\n");
+      gcry_sexp_release (s_skey);
+      return gpg_error (GPG_ERR_BAD_SECKEY);
+    }
+
+  l2 = gcry_sexp_cadr (list);
+  gcry_sexp_release (list);
+  list = l2;
+  name = gcry_sexp_nth_data (list, 0, &n);
+  if (n==3 && !memcmp (name, "rsa", 3))
+    {
+      algoname = "rsa";
+      elems = "ne";
+    }
+  else if (n==3 && !memcmp (name, "dsa", 3))
+    {
+      algoname = "dsa";
+      elems = "pqgy";
+    }
+  else if (n==3 && !memcmp (name, "elg", 3))
+    {
+      algoname = "elg";
+      elems = "pgy";
+    }
+  else
+    {
+      log_error ("unknown private key algorithm\n");
+      gcry_sexp_release (list);
+      gcry_sexp_release (s_skey);
+      return gpg_error (GPG_ERR_BAD_SECKEY);
+    }
+
+  /* Allocate an array for the parameters and copy them out of the
+     secret key.   FIXME: We should have a generic copy function. */
+  array = xtrycalloc (strlen(elems) + 1, sizeof *array);
+  if (!array)
+    {
+      rc = gpg_error_from_errno (errno);
+      gcry_sexp_release (list);
+      gcry_sexp_release (s_skey);
+      return rc;
+    }
+
+  for (idx=0, s=elems; *s; s++, idx++ ) 
+    {
+      l2 = gcry_sexp_find_token (list, s, 1);
+      if (!l2)
+        {
+          /* Required parameter not found.  */
+          for (i=0; i<idx; i++)
+            gcry_mpi_release (array[i]);
+          xfree (array);
+          gcry_sexp_release (list);
+          gcry_sexp_release (s_skey);
+          return gpg_error (GPG_ERR_BAD_SECKEY);
+	}
+      array[idx] = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_USG);
+      gcry_sexp_release (l2);
+      if (!array[idx])
+        {
+          /* Required parameter is invalid. */
+          for (i=0; i<idx; i++)
+            gcry_mpi_release (array[i]);
+          xfree (array);
+          gcry_sexp_release (list);
+          gcry_sexp_release (s_skey);
+          return gpg_error (GPG_ERR_BAD_SECKEY);
+	}
+    }
+  gcry_sexp_release (list);
+  list = NULL;
+
+  uri = NULL;
+  uri_length = 0;
+  uri_sexp = gcry_sexp_find_token (s_skey, "uri", 0);
+  if (uri_sexp)
+    uri = gcry_sexp_nth_data (uri_sexp, 1, &uri_length);
+
+  comment = NULL;
+  comment_length = 0;
+  comment_sexp = gcry_sexp_find_token (s_skey, "comment", 0);
+  if (comment_sexp)
+    comment = gcry_sexp_nth_data (comment_sexp, 1, &comment_length);
+
+  gcry_sexp_release (s_skey);
+  s_skey = NULL;
+
+
+  /* FIXME: The following thing is pretty ugly code; we should
+     investigate how to make it cleaner. Probably code to handle
+     canonical S-expressions in a memory buffer is better suioted for
+     such a task.  After all that is what we do in protect.c.  Neeed
+     to find common patterns and write a straightformward API to use
+     them.  */
+  assert (sizeof (size_t) <= sizeof (void*));
+
+  format = xtrymalloc (15+7*strlen (elems)+10+15+1+1);
+  if (!format)
+    {
+      rc = gpg_error_from_errno (errno);
+      for (i=0; array[i]; i++)
+        gcry_mpi_release (array[i]);
+      xfree (array);
+      gcry_sexp_release (uri_sexp);
+      gcry_sexp_release (comment_sexp);
+      return rc;
+    }
+
+  argidx = 0;
+  p = stpcpy (stpcpy (format, "(public-key("), algoname);
+  for (idx=0, s=elems; *s; s++, idx++ ) 
+    {
+      *p++ = '(';
+      *p++ = *s;
+      p = stpcpy (p, " %m)");
+      assert (argidx < DIM (args));
+      args[argidx++] = array[idx];
+    }
+  *p++ = ')';
+  if (uri)
+    {
+      p = stpcpy (p, "(uri %b)");
+      assert (argidx+1 < DIM (args));
+      args[argidx++] = (void *)uri_length;
+      args[argidx++] = (void *)uri;
+    }
+  if (comment)
+    {
+      p = stpcpy (p, "(comment %b)");
+      assert (argidx+1 < DIM (args));
+      args[argidx++] = (void *)comment_length;
+      args[argidx++] = (void*)comment;
+    }
+  *p++ = ')';
+  *p = 0;
+  assert (argidx < DIM (args));
+  args[argidx] = NULL;
+    
+  rc = gcry_sexp_build_array (&list, NULL, format, args);
+  xfree (format);
+  for (i=0; array[i]; i++)
+    gcry_mpi_release (array[i]);
+  xfree (array);
+  gcry_sexp_release (uri_sexp);
+  gcry_sexp_release (comment_sexp);
+
+  if (!rc)
+    *result = list;
+  return rc;
+}
+
+
 
 /* Return the secret key as an S-Exp after locating it using the grip.
    Returns NULL if key is not available. 0 = key is available */

@@ -31,7 +31,11 @@ Libgcrypt.  Here is an example of an unprotected file:
   (u #304559a..[some bytes not shown]..9b#)
  )
  (uri http://foo.bar x-foo:whatever_you_want)
+ (comment whatever)
 )
+
+"comment" and "uri" are optional.  "comment" is currently used to keep
+track of ssh key comments.
 
 Actually this form should not be used for regular purposes and only
 accepted by gpg-agent with the configuration option:
@@ -62,6 +66,7 @@ A protected key is like this:
     (protected mode (parms) encrypted_octet_string)
    )
    (uri http://foo.bar x-foo:whatever_you_want)
+   (comment whatever)
 )  
 
 
@@ -134,6 +139,7 @@ to keys stored on a token:
     (shadowed protocol (info))
    )
    (uri http://foo.bar x-foo:whatever_you_want)
+   (comment whatever)
 )  
 
 The currently used protocol is "ti-v1" (token info version 1).  The

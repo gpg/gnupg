@@ -86,7 +86,7 @@ initialize_module_query (void)
 /* Unlock the pinentry so that another thread can start one and
    disconnect that pinentry - we do this after the unlock so that a
    stalled pinentry does not block other threads.  Fixme: We should
-   have a timeout in Assuan for the disconnetc operation. */
+   have a timeout in Assuan for the disconnect operation. */
 static int 
 unlock_pinentry (int rc)
 {

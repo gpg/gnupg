@@ -1,5 +1,5 @@
 /* command.c - gpg-agent command handler
- * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -22,12 +22,14 @@
    some buffering in secure mempory to protect session keys etc. */
 
 #include <config.h>
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include <assuan.h>
 
@@ -504,6 +506,55 @@ cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
+
+
+/* READKEY <hexstring_with_keygrip>
+  
+   Return the public key for the given keygrip.  */
+static int
+cmd_readkey (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  int rc;
+  unsigned char grip[20];
+  gcry_sexp_t s_pkey = NULL;
+
+  rc = parse_keygrip (ctx, line, grip);
+  if (rc)
+    return rc; /* Return immediately as this is already an Assuan error code.*/
+
+  rc = agent_public_key_from_file (ctrl, grip, &s_pkey);
+  if (!rc)
+    {
+      size_t len;
+      unsigned char *buf;
+
+      len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
+      assert (len);
+      buf = xtrymalloc (len);
+      if (!buf)
+        rc = gpg_error_from_errno (errno);
+      else
+        {
+          len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, buf, len);
+          assert (len);
+          rc = assuan_send_data (ctx, buf, len);
+          rc = map_assuan_err (rc);
+          xfree (buf);
+        }
+      gcry_sexp_release (s_pkey);
+    }
+
+  if (rc)
+    log_error ("command readkey failed: %s\n", gpg_strerror (rc));
+  return map_to_assuan_status (rc);
+}
+
+
+
+
+
+
 /* GET_PASSPHRASE <cache_id> [<error_message> <prompt> <description>]
 
    This function is usually used to ask for a passphrase to be used
@@ -894,6 +945,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "PKSIGN",         cmd_pksign },
     { "PKDECRYPT",      cmd_pkdecrypt },
     { "GENKEY",         cmd_genkey },
+    { "READKEY",        cmd_readkey },
     { "GET_PASSPHRASE", cmd_get_passphrase },
     { "PRESET_PASSPHRASE", cmd_preset_passphrase },
     { "CLEAR_PASSPHRASE", cmd_clear_passphrase },
