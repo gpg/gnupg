@@ -1994,6 +1994,7 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
     if(subpk->backsig==0)
       {
 	int seq=0;
+	size_t n;
 
 	while((p=enum_sig_subpkt(sig->hashed,
 				 SIGSUBPKT_SIGNATURE,&n,&seq,NULL)))
