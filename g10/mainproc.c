@@ -1,6 +1,6 @@
 /* mainproc.c - handle packets
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -330,6 +330,8 @@ proc_symkey_enc( CTX c, PACKET *pkt )
 
 	    if(c->dek)
 	      {
+		c->dek->symmetric=1;
+
 		/* FIXME: This doesn't work perfectly if a symmetric
 		   key comes before a public key in the message - if
 		   the user doesn't know the passphrase, then there is

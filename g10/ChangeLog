@@ -1,3 +1,12 @@
+2005-02-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* encr-data.c (decrypt_data): Use it here to turn off the "quick
+	check" bytes for PK decryptions.  This is in regards to the Mister
+	and Zuccherato attack on OpenPGP CFB mode.
+
+	* mainproc.c (proc_symkey_enc): Set a flag to indicate that a
+	particular session key came from a passphrase and not a PK.
+
 2005-02-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* trustdb.h, trustdb.c (trustdb_check_or_update): New.  If the

@@ -1,6 +1,6 @@
 /* cipher.h
- * Copyright (C) 1998, 1999, 2000, 2001, 2003,
- *               2004 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -70,12 +70,14 @@
 #define is_ELGAMAL(a) ((a)==PUBKEY_ALGO_ELGAMAL_E)
 #define is_DSA(a)     ((a)==PUBKEY_ALGO_DSA)
 
-typedef struct {
-    int algo;
-    int keylen;
-    int algo_info_printed;
-    int use_mdc;
-    byte key[32]; /* this is the largest used keylen (256 bit) */
+typedef struct
+{
+  int algo;
+  int keylen;
+  int algo_info_printed;
+  int use_mdc;
+  int symmetric;
+  byte key[32]; /* this is the largest used keylen (256 bit) */
 } DEK;
 
 struct cipher_handle_s;
