@@ -27,10 +27,8 @@ libexec_PROGRAMS = @GPGKEYS_LDAP@ @GPGKEYS_HKP@
 libexec_SCRIPTS = @GPGKEYS_MAILTO@
 noinst_SCRIPTS = gpgkeys_test
 
-gpgkeys_ldap_LDADD = ../util/libutil.a @LDAPLIBS@ @NETLIBS@ @LIBINTL@ \
-                    @CAPLIBS@ @GETOPT@ @W32LIBS@
-gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ @LIBINTL@ \
-                    @CAPLIBS@ @GETOPT@ @W32LIBS@
+gpgkeys_ldap_LDADD = ../util/libutil.a @LDAPLIBS@ @NETLIBS@ @LIBINTL@ @CAPLIBS@ @GETOPT@ @W32LIBS@
+gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ @LIBINTL@ @CAPLIBS@ @GETOPT@ @W32LIBS@
 
 install-exec-hook:
 if GPGKEYS_LDAP
