@@ -761,8 +761,8 @@ do_create( int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root,
 
     tty_printf(_(
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
-"some other action (work in another window, move the mouse, utilize the\n"
-"network and the disks) during the prime generation; this gives the random\n"
+"some other action (type on the keyboard, move the mouse, utilize the\n"
+"the disks) during the prime generation; this gives the random\n"
 "number generator a better chance to gain enough entropy.\n") );
 
     if( algo == PUBKEY_ALGO_ELGAMAL || algo == PUBKEY_ALGO_ELGAMAL_E )

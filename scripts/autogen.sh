@@ -7,6 +7,7 @@ DIE=no
 autoconf_vers=2.13
 automake_vers=1.4
 aclocal_vers=1.4
+libtool_vers=1.2
 
 if (autoconf --version) < /dev/null > /dev/null 2>&1 ; then
     if (autoconf --version | awk 'NR==1 { if( $3 >= '$autoconf_vers') \
@@ -60,6 +61,22 @@ if (gettext --version </dev/null 2>/dev/null | awk 'NR==1 { split($4,A,"\."); \
     echo '           (version 0.10.35 or newer is required; get'
     echo '            ftp://alpha.gnu.org/gnu/gettext-0.10.35.tar.gz'
     echo '            or install the latest Debian package)'
+    DIE="yes"
+fi
+
+
+if (libtool --version) < /dev/null > /dev/null 2>&1 ; then
+    if (libtool --version | awk 'NR==1 { if( $4 >= '$libtool_vers') \
+			       exit 1; exit 0; }');
+    then
+       echo "**Error**: "\`libtool\'" is too old."
+       echo '           (version ' $libtool_vers ' or newer is required)'
+       DIE="yes"
+    fi
+else
+    echo
+    echo "**Error**: You must have "\`autoconf\'" installed to compile $PGM."
+    echo '           (version ' $autoconf_vers ' or newer is required)'
     DIE="yes"
 fi
 

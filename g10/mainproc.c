@@ -180,6 +180,8 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
     /*printf("enc: encrypted by a pubkey with keyid %08lX\n", enc->keyid[1] );*/
     /* Hmmm: why do I have this algo check here - anyway there is
      * function to check it. */
+    if( opt.verbose )
+	log_info(_("public key is %08lX\n"), (ulong)enc->keyid[1] );
     if( is_ELGAMAL(enc->pubkey_algo)
 	|| enc->pubkey_algo == PUBKEY_ALGO_DSA
 	|| is_RSA(enc->pubkey_algo)  ) {

@@ -44,8 +44,8 @@ and after about half a day in the rsync snapshots.
     Buserror on IRIX 6.4: Crash while doing a keygen. I think while creating
     the prime.	Other buserrors are reported when doing a "gpg README"
     on sparc-solaris2.6.
-    --> I hope I've fixed this: Please, can someone check this.
-	I can't reproduce it on the alpha I have access to.
+    --> Solaris fixed.
+    --> IRIX bug still there
 
 [ **] #12 1999-03-10
     gpg --list-secret-keys --with-colon SEGVs
