@@ -244,6 +244,9 @@ openpgp_pk_test_algo( int algo, unsigned int usage_flags )
 {
   size_t value = usage_flags;
 
+  if (algo == GCRY_PK_ELG_E)
+    algo = GCRY_PK_ELG;
+#warning need to handle the usage here?
   if (algo < 0 || algo > 110)
     return GPG_ERR_PUBKEY_ALGO;
   return gcry_pk_algo_info (algo, GCRYCTL_TEST_ALGO, NULL, &value);
@@ -292,6 +295,18 @@ int
 openpgp_md_map_name (const char *string)
 {
   int i = gcry_md_map_name (string);
+
+  if (!i && (string[0]=='H' || string[0]=='h'))
+    { /* Didn't find it, so try the Hx format */
+      long val;
+      char *endptr;
+
+      string++;
+      
+      val=strtol(string,&endptr,10);
+      if (*string!='\0' && *endptr=='\0' && !openpgp_md_test_algo(val))
+        i = val;
+    }
   return i < 0 || i > 110? 0 : i;
 }
 
@@ -299,6 +314,18 @@ int
 openpgp_cipher_map_name (const char *string)
 {
   int i = gcry_cipher_map_name (string);
+
+  if (!i && (string[0]=='S' || string[0]=='s'))
+    { /* Didn't find it, so try the Sx format */
+      long val;
+      char *endptr;
+
+      string++;
+      
+      val=strtol(string,&endptr,10);
+      if (*string!='\0' && *endptr=='\0' && !openpgp_cipher_test_algo(val))
+        i = val;
+    }
   return i < 0 || i > 110? 0 : i;
 }
 
@@ -703,32 +730,52 @@ parse_options(char *str,unsigned int *options,struct parse_options *opts)
 int
 pubkey_get_npkey( int algo )
 {
-    int n = gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NPKEY, NULL, 0 );
-    return n > 0? n : 0;
+  size_t n;
+
+  if (algo == GCRY_PK_ELG_E)
+    algo = GCRY_PK_ELG;
+  if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NPKEY, NULL, &n))
+    n = 0;
+  return n;
 }
 
 /* Temporary helper. */
 int
 pubkey_get_nskey( int algo )
 {
-    int n = gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NSKEY, NULL, 0 );
-    return n > 0? n : 0;
+  size_t n;
+
+  if (algo == GCRY_PK_ELG_E)
+    algo = GCRY_PK_ELG;
+  if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NSKEY, NULL, &n ))
+    n = 0;
+  return n;
 }
 
 /* Temporary helper. */
 int
 pubkey_get_nsig( int algo )
 {
-    int n = gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NSIGN, NULL, 0 );
-    return n > 0? n : 0;
+  size_t n;
+
+  if (algo == GCRY_PK_ELG_E)
+    algo = GCRY_PK_ELG;
+  if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NSIGN, NULL, &n))
+    n = 0;
+  return n;
 }
 
 /* Temporary helper. */
 int
 pubkey_get_nenc( int algo )
 {
-    int n = gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NENCR, NULL, 0 );
-    return n > 0? n : 0;
+  size_t n;
+  
+  if (algo == GCRY_PK_ELG_E)
+    algo = GCRY_PK_ELG;
+  if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NENCR, NULL, &n ))
+    n = 0;
+  return n;
 }
 
 
@@ -788,7 +835,7 @@ mpi_write( iobuf_t out, gcry_mpi_t a )
 }
 
 /****************
- * Writye a MPI to out, but in this case it is an opaque one,
+ * Writyeg a MPI to out, but in this case it is an opaque one,
  * s used vor v3 protected keys.
  */
 int

@@ -125,7 +125,7 @@ new_offset_hash_table (void)
 {
   struct off_item **tbl;
 
-  tbl = xcalloc (1,2048 * sizeof *tbl);
+  tbl = xcalloc (2048, sizeof *tbl);
   return tbl;
 }
 
@@ -387,7 +387,7 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
     save_mode = set_packet_list_mode(0);
     while ((rc=parse_packet (a, pkt)) != -1) {
         hd->found.n_packets++;
-        if (rc == GPG_ERR_UNKNOWN_PACKET) {
+        if (gpg_err_code (rc) == GPG_ERR_UNKNOWN_PACKET) {
 	    free_packet (pkt);
 	    init_packet (pkt);
 	    continue;
@@ -478,7 +478,7 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
     /* Make sure that future search operations fail immediately when
      * we know that we are working on a invalid keyring 
      */
-    if (rc == GPG_ERR_INV_KEYRING)
+    if (gpg_err_code (rc) == GPG_ERR_INV_KEYRING)
         hd->current.error = rc;
 
     return rc;

@@ -428,7 +428,7 @@ print_pkenc_list( struct kidlist_item *list, int failed )
 	}
 	free_public_key( pk );
 
-	if( list->reason == GPG_ERR_NO_SECKEY ) {
+	if( gpg_err_code (list->reason) == GPG_ERR_NO_SECKEY ) {
 	    if( is_status_enabled() ) {
 		char buf[20];
 		sprintf(buf,"%08lX%08lX", (ulong)list->kid[0],
@@ -1189,7 +1189,7 @@ do_proc_packets( CTX c, iobuf_t a )
             break;
         }
     }
-    if( rc == GPG_ERR_INV_PACKET )
+    if( gpg_err_code (rc) == GPG_ERR_INV_PACKET )
 	write_status_text( STATUS_NODATA, "3" );
     if( any_data )
 	rc = 0;
@@ -1280,7 +1280,8 @@ check_sig_and_print( CTX c, KBNODE node )
 	    (int)strlen(tstr), tstr, astr? astr: "?", (ulong)sig->keyid[1] );
 
     rc = do_check_sig(c, node, NULL, &is_expkey );
-    if( rc == GPG_ERR_NO_PUBKEY && opt.keyserver_scheme && opt.keyserver_options.auto_key_retrieve) {
+    if( gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
+        && opt.keyserver_scheme && opt.keyserver_options.auto_key_retrieve) {
 	if( keyserver_import_keyid ( sig->keyid )==0 )
 	    rc = do_check_sig(c, node, NULL, &is_expkey );
     }
@@ -1482,14 +1483,14 @@ check_sig_and_print( CTX c, KBNODE node )
 	if( opt.batch && rc )
 	    g10_exit(1);
     }
-    else {
+    else { 
 	char buf[50];
 	sprintf(buf, "%08lX%08lX %d %d %02x %lu %d",
 		     (ulong)sig->keyid[0], (ulong)sig->keyid[1],
 		     sig->pubkey_algo, sig->digest_algo,
 		     sig->sig_class, (ulong)sig->timestamp, rc );
 	write_status_text( STATUS_ERRSIG, buf );
-	if( rc == GPG_ERR_NO_PUBKEY ) {
+	if( gpg_err_code (rc) == GPG_ERR_NO_PUBKEY ) {
 	    buf[16] = 0;
 	    write_status_text( STATUS_NO_PUBKEY, buf );
 	}

@@ -906,7 +906,8 @@ import_secret_one( const char *fname, KBNODE keyblock,
 
     /* do we have this key already in one of our secrings ? */
     rc = seckey_available( keyid );
-    if( rc == GPG_ERR_NO_SECKEY && !opt.merge_only ) { /* simply insert this key */
+    if( gpg_err_code (rc) == GPG_ERR_NO_SECKEY && !opt.merge_only ) { 
+        /* simply insert this key */
         KEYDB_HANDLE hd = keydb_new (1);
 
 	/* get default resource */
@@ -977,7 +978,7 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
 
     pk = xcalloc (1, sizeof *pk );
     rc = get_pubkey( pk, keyid );
-    if( rc == GPG_ERR_NO_PUBKEY ) {
+    if( gpg_err_code (rc) == GPG_ERR_NO_PUBKEY ) {
 	log_info( _("key %08lX: no public key - "
 		 "can't apply revocation certificate\n"), (ulong)keyid[1]);
 	rc = 0;
@@ -1126,7 +1127,7 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 		    {
 		      char *p=utf8_to_native(unode->pkt->pkt.user_id->name,
 				      strlen(unode->pkt->pkt.user_id->name),0);
-		      log_info( rc == GPG_ERR_PUBKEY_ALGO ?
+		      log_info( gpg_err_code (rc) == GPG_ERR_PUBKEY_ALGO ?
 				_("key %08lX: unsupported public key "
 				  "algorithm on user id \"%s\"\n"):
 				_("key %08lX: invalid self-signature "
@@ -1151,7 +1152,7 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 		else {
 		  rc = check_key_signature( keyblock, n, NULL);
 		  if( rc ) {
-		    log_info(  rc == GPG_ERR_PUBKEY_ALGO ?
+		    log_info(  gpg_err_code (rc) == GPG_ERR_PUBKEY_ALGO ?
 			    _("key %08lX: unsupported public key algorithm\n"):
 		            _("key %08lX: invalid subkey binding\n"),
 		            (ulong)keyid[1]);
@@ -1192,7 +1193,7 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 		else {
 		  rc = check_key_signature( keyblock, n, NULL);
 		  if( rc ) {
-		    log_info(  rc == GPG_ERR_PUBKEY_ALGO ?
+		    log_info(  gpg_err_code (rc) == GPG_ERR_PUBKEY_ALGO ?
 			    _("key %08lX: unsupported public key algorithm\n"):
 		            _("key %08lX: invalid subkey revocation\n"),
 			       (ulong)keyid[1]);

@@ -54,15 +54,15 @@ static gcry_md_hd_t
 do_fingerprint_md( PKT_public_key *pk )
 {
     gcry_md_hd_t md;
-    unsigned n;
-    unsigned nb[PUBKEY_MAX_NPKEY];
-    unsigned nn[PUBKEY_MAX_NPKEY];
+    unsigned int n;
+    unsigned int nn[PUBKEY_MAX_NPKEY];
     byte *pp[PUBKEY_MAX_NPKEY];
     int i;
     int npkey = pubkey_get_npkey( pk->pubkey_algo );
 
     gcry_md_open (&md, pk->version < 4 ? DIGEST_ALGO_RMD160
                                        : DIGEST_ALGO_SHA1, 0);
+    gcry_md_start_debug (md,"keyid");
     n = pk->version < 4 ? 8 : 6;
     for(i=0; i < npkey; i++ ) {
 	size_t nbytes;
@@ -74,7 +74,7 @@ do_fingerprint_md( PKT_public_key *pk )
 	if (gcry_mpi_print ( GCRYMPI_FMT_PGP, pp[i], &nbytes, pk->pkey[i] ))
           BUG ();
 	nn[i] = nbytes;
-	n += 2 + nn[i];
+	n += nn[i];
     }
 
     gcry_md_putc ( md, 0x99 );     /* ctb */
@@ -103,8 +103,6 @@ do_fingerprint_md( PKT_public_key *pk )
     }
     gcry_md_putc ( md, pk->pubkey_algo );
     for(i=0; i < npkey; i++ ) {
-	gcry_md_putc ( md, nb[i]>>8);
-	gcry_md_putc ( md, nb[i] );
 	gcry_md_write( md, pp[i], nn[i] );
 	xfree (pp[i]);
     }

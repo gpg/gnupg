@@ -1,3 +1,23 @@
+2003-06-23  Werner Koch  <wk@gnupg.org>
+
+	* keyid.c (do_fingerprint_md): Made it work again.
+
+2003-06-19  Werner Koch  <wk@gnupg.org>
+
+	Fixed all "==" comparisons against error code constants to use
+	gpg_err_code().
+
+	* import.c (import_secret_one): 
+	(import_revoke_cert): 
+	(chk_self_sigs): 
+
+	* misc.c (openpgp_md_map_name): Check also for the Hx format.
+	(openpgp_cipher_map_name): Check also for the Sx format.
+	(pubkey_get_npkey): Adjusted for changed gcrypt API.
+	(pubkey_get_nskey): Ditto.
+	(pubkey_get_nsig): Ditto.
+	(pubkey_get_nenc): Ditto.
+
 2003-06-18  Werner Koch  <wk@gnupg.org>
 
         Finished the bulk of changes for gnupg 1.9.  This included
