@@ -236,6 +236,8 @@ check_signatures_trust( PKT_signature *sig )
     return 0;
 }
 
+void
+read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck) {};
 
 /* Stub: 
  * We don't have the trustdb , so we have to provide some stub functions

@@ -6,6 +6,8 @@
 	* keylist.c (public_key_list): Use it here for the new "tru"
 	record.
 
+	* gpgv.c (read_trust_options): Stub.
+
 	* sig-check.c (signature_check, signature_check2,
 	check_key_signature, check_key_signature2): Allow passing NULLs
 	for unused parameters in the x2 form of each function to avoid the
