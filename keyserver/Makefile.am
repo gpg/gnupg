@@ -21,7 +21,7 @@
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 EXTRA_PROGRAMS = gpgkeys_ldap gpgkeys_hkp
 EXTRA_SCRIPTS = gpgkeys_mailto
-libexecdir = @GNUPG_LIBEXECDIR@
+libexecdir = @libexecdir@/@PACKAGE@
 
 # We don't need the libs the regular GPG binaries do
 LIBS=
