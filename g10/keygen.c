@@ -371,7 +371,7 @@ check_valid_days( const char *s )
 
 
 /****************
- * Returns o to create both a DSA and a ElGamal key.
+ * Returns: 0 to create both a DSA and a ElGamal key.
  */
 static int
 ask_algo( int *ret_v4, int addmode )
@@ -756,7 +756,7 @@ generate_keypair()
 
     algo = ask_algo( &v4, 0 );
     if( !algo ) {
-	algo = PUBKEY_ALGO_ELGAMAL;
+	algo = PUBKEY_ALGO_ELGAMAL_E;
 	both = 1;
 	tty_printf(_("DSA keypair will have 1024 bits.\n"));
     }

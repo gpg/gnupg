@@ -381,6 +381,17 @@ import_one( const char *fname, KBNODE keyblock )
 	else
 	    log_info_f(fname, _("key %08lX: not changed\n"), (ulong)keyid[1] );
     }
+    if( !rc ) {
+	rc = query_trust_record( pk_orig );
+	if( rc && rc != -1 )
+	    log_error("trustdb error: %s\n", g10_errstr(rc) );
+	else if( rc == -1 ) {
+	    rc = insert_trust_record( pk_orig );
+	    if( rc )
+		log_error("key %08lX: trustdb insert failed: %s\n",
+					(ulong)keyid[1], g10_errstr(rc) );
+	}
+    }
 
   leave:
     release_kbnode( keyblock_orig );

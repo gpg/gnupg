@@ -147,11 +147,11 @@ create_db( const char *fname )
     fp =fopen( fname, "w" );
     if( !fp )
 	log_fatal_f( fname, _("can't create %s: %s\n"), strerror(errno) );
-    fwrite_8( fp, 2 );
+    fwrite_8( fp, 1 );	/* record type */
     fwrite_8( fp, 'g' );
     fwrite_8( fp, 'p' );
     fwrite_8( fp, 'g' );
-    fwrite_8( fp, 1 );	/* version */
+    fwrite_8( fp, 2 );	/* version */
     fwrite_zeros( fp, 3 ); /* reserved */
     fwrite_32( fp, 0 ); /* not locked */
     fwrite_32( fp, make_timestamp() ); /* created */
@@ -183,11 +183,12 @@ open_db()
 
 
 void
-tdbio_dump_record( ulong rnum, TRUSTREC *rec, FILE *fp	)
+tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 {
     int i, any;
+    ulong rnum = rec->recnum;
 
-    fprintf(fp, "rec %5lu, type=", rnum );
+    fprintf(fp, "rec %5lu, ", rnum );
 
     switch( rec->rectype ) {
       case 0: fprintf(fp, "free\n");
@@ -201,30 +202,36 @@ tdbio_dump_record( ulong rnum, TRUSTREC *rec, FILE *fp	)
 		    rec->r.dir.uidlist,
 		    rec->r.dir.cacherec,
 		    rec->r.dir.ownertrust );
-	if( rec->r.dir.sigflag == 1 )
-	    fputs(", (none)", fp );
-	else if( rec->r.dir.sigflag == 2 )
-	    fputs(", (invalid)", fp );
-	else if( rec->r.dir.sigflag == 3 )
-	    fputs(", (revoked)", fp );
-	else if( rec->r.dir.sigflag )
-	    fputs(", (??)", fp );
+	if( rec->r.dir.dirflags & DIRF_ERROR )
+	    fputs(", error", fp );
+	if( rec->r.dir.dirflags & DIRF_CHECKED )
+	    fputs(", checked", fp );
+	if( rec->r.dir.dirflags & DIRF_REVOKED )
+	    fputs(", revoked", fp );
+	if( rec->r.dir.dirflags & DIRF_MISKEY )
+	    fputs(", miskey", fp );
 	putc('\n', fp);
 	break;
       case RECTYPE_KEY:
-	fprintf(fp, "key %lu, next=%lu, algo=%d, flen=%d\n",
+	fprintf(fp, "key %lu, next=%lu, algo=%d, flen=%d",
 		   rec->r.key.lid,
 		   rec->r.key.next,
 		   rec->r.key.pubkey_algo,
 		   rec->r.key.fingerprint_len );
+	if( rec->r.key.keyflags & KEYF_REVOKED )
+	    fputs(", revoked", fp );
+	putc('\n', fp);
 	break;
       case RECTYPE_UID:
-	fprintf(fp, "uid %lu, next=%lu, pref=%lu, sig=%lu, hash=%02X%02X\n",
+	fprintf(fp, "uid %lu, next=%lu, pref=%lu, sig=%lu, hash=%02X%02X",
 		    rec->r.uid.lid,
 		    rec->r.uid.next,
 		    rec->r.uid.prefrec,
 		    rec->r.uid.siglist,
 		    rec->r.uid.namehash[18], rec->r.uid.namehash[19]);
+	if( rec->r.uid.uidflags & UIDF_REVOKED )
+	    fputs(", revoked", fp );
+	putc('\n', fp);
 	break;
       case RECTYPE_PREF:
 	fprintf(fp, "pref %lu, next=%lu\n",
@@ -253,11 +260,11 @@ tdbio_dump_record( ulong rnum, TRUSTREC *rec, FILE *fp	)
       case RECTYPE_HTBL:
 	fprintf(fp, "htbl\n");
 	break;
-      case RECTYPE_HTBL:
+      case RECTYPE_HLST:
 	fprintf(fp, "hlst\n");
 	break;
       default:
-	fprintf(fp, "%d (unknown)\n", rec->rectype );
+	fprintf(fp, "unknown type %d\n", rec->rectype );
 	break;
     }
 }
@@ -330,7 +337,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	rec->r.dir.uidlist  = buftoulong(p); p += 4;
 	rec->r.dir.cacherec = buftoulong(p); p += 4;
 	rec->r.dir.ownertrust = *p++;
-	rec->r.dir.sigflag    = *p++;
+	rec->r.dir.dirflags   = *p++;
 	if( rec->r.dir.lid != recnum ) {
 	    log_error_f( db_name, "dir LID != recnum (%lu,%lu)\n",
 					 rec->r.dir.lid, (ulong)recnum );
@@ -340,7 +347,8 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
       case RECTYPE_KEY:   /* public key record */
 	rec->r.key.lid	    = buftoulong(p); p += 4;
 	rec->r.key.next     = buftoulong(p); p += 4;
-	p += 8;
+	p += 7;
+	rec->r.key.keyflags = *p++;
 	rec->r.key.pubkey_algo = *p++;
 	rec->r.key.fingerprint_len = *p++;
 	if( rec->r.key.fingerprint_len < 1 || rec->r.key.fingerprint_len > 20 )
@@ -352,7 +360,8 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	rec->r.uid.next     = buftoulong(p); p += 4;
 	rec->r.uid.prefrec  = buftoulong(p); p += 4;
 	rec->r.uid.siglist  = buftoulong(p); p += 4;
-	p += 2;
+	rec->r.uid.uidflags = *p++;
+	p ++;
 	memcpy( rec->r.uid.namehash, p, 20);
 	break;
       case RECTYPE_PREF:  /* preference record */
@@ -413,14 +422,15 @@ tdbio_write_record( TRUSTREC *rec )
 	ulongtobuf(p, rec->r.dir.uidlist); p += 4;
 	ulongtobuf(p, rec->r.dir.cacherec); p += 4;
 	*p++ = rec->r.dir.ownertrust;
-	*p++ = rec->r.dir.sigflag;
+	*p++ = rec->r.dir.dirflags;
 	assert( rec->r.dir.lid == recnum );
 	break;
 
       case RECTYPE_KEY:
 	ulongtobuf(p, rec->r.key.lid); p += 4;
 	ulongtobuf(p, rec->r.key.next); p += 4;
-	p += 8;
+	p += 7;
+	*p++ = rec->r.key.keyflags;
 	*p++ = rec->r.key.pubkey_algo;
 	*p++ = rec->r.key.fingerprint_len;
 	memcpy( p, rec->r.key.fingerprint, 20); p += 20;
@@ -431,7 +441,8 @@ tdbio_write_record( TRUSTREC *rec )
 	ulongtobuf(p, rec->r.uid.next); p += 4;
 	ulongtobuf(p, rec->r.uid.prefrec); p += 4;
 	ulongtobuf(p, rec->r.uid.siglist); p += 4;
-	p += 2;
+	*p++ = rec->r.uid.uidflags;
+	p++;
 	memcpy( p, rec->r.uid.namehash, 20 ); p += 20;
 	break;
 
@@ -472,6 +483,15 @@ tdbio_write_record( TRUSTREC *rec )
     return rc;
 }
 
+int
+tdbio_delete_record( ulong recnum )
+{
+    TRUSTREC rec;
+
+    rec.recnum = recnum;
+    rec.rectype = 0;
+    return tdbio_write_record( &rec );
+}
 
 /****************
  * create a new record and return its record number
@@ -495,7 +515,8 @@ tdbio_new_recnum()
      * returns another recnum */
     memset( &rec, 0, sizeof rec );
     rec.rectype = 0; /* free record */
-    rc = tdbio_write_record(recnum, &rec );
+    rec.recnum = recnum;
+    rc = tdbio_write_record( &rec );
     if( rc )
 	log_fatal_f(db_name,_("failed to append a record: %s\n"),
 					    g10_errstr(rc));
@@ -530,10 +551,10 @@ tdbio_search_dir_record( PKT_public_key *pk, TRUSTREC *rec )
 	if( rec->r.key.pubkey_algo == pk->pubkey_algo
 	    && !memcmp(rec->r.key.fingerprint, fingerprint, fingerlen) ) {
 	    /* found: read the dir record for this key */
-	    rc = tdbio_read_record( rec->r.key.lid, rec, RECTYPE_DIR);
+	    recnum = rec->r.key.lid;
+	    rc = tdbio_read_record( recnum, rec, RECTYPE_DIR);
 	    if( rc )
 		break;
-
 	    if( pk->local_id && pk->local_id != recnum )
 		log_error_f(db_name,
 			   "found record, but LID from memory does "
@@ -549,22 +570,13 @@ tdbio_search_dir_record( PKT_public_key *pk, TRUSTREC *rec )
 }
 
 
+/****************
+ * Delete the Userid UIDLID from DIRLID
+ */
 int
-tdbio_update_sigflag( ulong lid, int sigflag )
+tdbio_delete_uidrec( ulong dirlid, ulong uidlid )
 {
-    TRUSTREC rec;
-
-    if( tdbio_read_record( lid, &rec, RECTYPE_DIR ) ) {
-	log_error("update_sigflag: read failed\n");
-	return G10ERR_TRUSTDB;
-    }
-
-    rec.r.dir.sigflag = sigflag;
-    if( tdbio_write_record( lid, &rec ) ) {
-	log_error("update_sigflag: write failed\n");
-	return G10ERR_TRUSTDB;
-    }
-
-    return 0;
+    return G10ERR_GENERAL; /* not implemented */
 }
+
 

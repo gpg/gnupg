@@ -464,6 +464,20 @@ get_pubkey_byname( PKT_public_key *pk, const char *name )
 }
 
 
+/****************
+ * Search for a key with the given fingerprint.
+ */
+int
+get_pubkey_byfprint( PKT_public_key *pk, const byte *fprint, size_t fprint_len)
+{
+    int rc;
+
+    if( fprint_len == 20 || fprint_len == 16 )
+	rc = lookup( pk, fprint_len, NULL, fprint, NULL );
+    else
+	rc = G10ERR_GENERAL; /* Oops */
+    return rc;
+}
 
 /****************
  * Search for a key with the given fingerprint and return the

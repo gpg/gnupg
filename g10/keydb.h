@@ -112,6 +112,8 @@ void add_secret_keyring( const char *name );
 int get_pubkey( PKT_public_key *pk, u32 *keyid );
 int get_pubkey_byname( PKT_public_key *pk, const char *name );
 int get_seckey( PKT_secret_key *sk, u32 *keyid );
+int get_pubkey_byfprint( PKT_public_key *pk, const byte *fprint,
+						 size_t fprint_len );
 int get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
 						 size_t fprint_len );
 int seckey_available( u32 *keyid );
@@ -125,12 +127,13 @@ int pubkey_letter( int algo );
 u32 keyid_from_sk( PKT_secret_key *sk, u32 *keyid );
 u32 keyid_from_pk( PKT_public_key *pk, u32 *keyid );
 u32 keyid_from_sig( PKT_signature *sig, u32 *keyid );
+u32 keyid_from_fingerprint( const byte *fprint, size_t fprint_len, u32 *keyid );
 unsigned nbits_from_pk( PKT_public_key *pk );
 unsigned nbits_from_sk( PKT_secret_key *sk );
 const char *datestr_from_pk( PKT_public_key *pk );
 const char *datestr_from_sk( PKT_secret_key *sk );
 const char *datestr_from_sig( PKT_signature *sig );
-byte *fingerprint_from_sk( PKT_secret_key *sk, byte *buf; size_t *ret_len );
+byte *fingerprint_from_sk( PKT_secret_key *sk, byte *buf, size_t *ret_len );
 byte *fingerprint_from_pk( PKT_public_key *pk, byte *buf, size_t *ret_len );
 
 /*-- kbnode.c --*/

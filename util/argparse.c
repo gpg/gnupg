@@ -83,11 +83,12 @@
  *		 4 = takes ulong argument
  *     Bit 3 : argument is optional (r_type will the be set to 0)
  *     Bit 4 : allow 0x etc. prefixed values.
+ *     Bit 7 : this is an command and not an option
  *  If can stop the option processing by setting opts to NULL, the function will
  *  then return 0.
  * @Return Value
  *   Returns the args.r_opt or 0 if ready
- *   r_opt may be -2 to indicate an unknown option.
+ *   r_opt may be -2/-7 to indicate an unknown option/command.
  * @See Also
  *   ArgExpand
  * @Notes
@@ -157,6 +158,8 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
 		s = "%s:%u: keyword too long\n";
 	    else if( arg->r_opt == -3 )
 		s = "%s:%u: missing argument\n";
+	    else if( arg->r_opt == -7 )
+		s = "%s:%u: invalid command\n";
 	    else
 		s = "%s:%u: invalid option\n";
 	    log_error(s, filename, *lineno );
@@ -164,6 +167,8 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
 	else {
 	    if( arg->r_opt == -3 )
 		s = "Missing argument for option \"%.50s\"\n";
+	    else if( arg->r_opt == -7 )
+		s = "Invalid command \"%.50s\"\n";
 	    else
 		s = "Invalid option \"%.50s\"\n";
 	    log_error(s, arg->internal.last? arg->internal.last:"[??]" );
@@ -220,8 +225,8 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		arg->r_opt = opts[index].short_opt;
 		if( inverse )
 		    arg->r_opt = -arg->r_opt;
-		if( !opts[index].short_opt )
-		    arg->r_opt = -2;	       /* unknown option */
+		if( !opts[index].short_opt )	 /* unknown command/option */
+		    arg->r_opt = (opts[index].flags & 256)? -7:-2;
 		else if( (opts[index].flags & 8) ) /* no argument */
 		    arg->r_opt = -3;	       /* error */
 		else			       /* no or optiona argument */
@@ -279,7 +284,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 	    index = i;
 	    arg->r_opt = opts[index].short_opt;
 	    if( !opts[index].short_opt ) {
-		arg->r_opt = -2;   /* unknown option */
+		arg->r_opt = (opts[index].flags & 256)? -7:-2;
 		state = -1;	   /* skip rest of line and leave */
 	    }
 	    else
@@ -390,7 +395,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 
 	arg->r_opt = opts[i].short_opt;
 	if( !opts[i].short_opt ) {
-	    arg->r_opt = -2; /* unknown option */
+	    arg->r_opt = (opts[i].flags & 256)? -7:-2;
 	    arg->r.ret_str = s+2;
 	}
 	else if( (opts[i].flags & 7) ) {
@@ -438,12 +443,12 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 		    break;
 	}
 
-	if( !opts[i].short_opt && *s == 'h' )
+	if( !opts[i].short_opt && ( *s == 'h' || *s == '?' ) )
 	    show_help(opts, arg->flags);
 
 	arg->r_opt = opts[i].short_opt;
 	if( !opts[i].short_opt ) {
-	    arg->r_opt = -2; /* unknown option */
+	    arg->r_opt = (opts[i].flags & 256)? -7:-2;
 	    arg->internal.inarg++; /* point to the next arg */
 	    arg->r.ret_str = s;
 	}

@@ -1,3 +1,11 @@
+Tue Jul 21 10:35:48 1998  Werner Koch  (wk@(none))
+
+	* argparse.c: New option flag to distinguish options and commands.
+
+Sat Jul 18 19:49:30 1998  Werner Koch  (wk@(none))
+
+	* argparse.c (arg_parse): Added -? as alias for -h
+
 Thu Jul  9 14:47:20 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* secmem.c (secmem_init): Drops setuid if called with 0.

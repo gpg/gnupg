@@ -49,7 +49,7 @@ query_ownertrust( ulong lid )
     PKT_public_key *pk ;
     int changed=0;
 
-    rc = keyid_from_trustdb( lid, keyid );
+    rc = keyid_from_lid( lid, keyid );
     if( rc ) {
 	log_error("ooops: can't get keyid for lid %lu\n", lid);
 	return 0;

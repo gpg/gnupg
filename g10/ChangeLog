@@ -1,3 +1,19 @@
+Tue Jul 21 14:37:09 1998  Werner Koch  (wk@(none))
+
+	* import.c (import_one): Now creates a trustdb record.
+
+	* g10.c (main): New command --check-trustdb
+
+Mon Jul 20 11:15:07 1998  Werner Koch  (wk@(none))
+
+	* genkey.c (generate_keypair): Default key is now DSA with
+	encryption only ElGamal subkey.
+
+Thu Jul 16 10:58:33 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* keyid.c (keyid_from_fingerprint): New.
+	* getkey.c (get_pubkey_byfprint): New.
+
 Tue Jul 14 18:09:51 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* keyid.c (fingerprint_from_pk): Add argument and changed all callers.

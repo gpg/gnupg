@@ -40,11 +40,23 @@
 #define RECTYPE_HLST 11
 
 
+
+#define DIRF_CHECKED  1 /* everything has been checked, the other bits are
+			   valid */
+#define DIRF_MISKEY   2 /* some keys are missing, so they could not be checked*/
+#define DIRF_ERROR    4 /* severe errors: the key is not valid for some reasons
+			   but we mark it to avoid duplicate checks */
+#define DIRF_REVOKED  8 /* the complete key has been revoked */
+
+#define KEYF_REVOKED DIRF_REVOKED   /* this key has been revoked
+				       (only useful on subkeys)*/
+#define UIDF_REVOKED DIRF_REVOKED   /* this user id has been revoked */
+
+
 struct trust_record {
     int  rectype;
     struct trust_record *next;	/* help pointer to build lists in memory */
     struct trust_record *help_pref;
-    struct trust_record *help_sig;
     int  mark;
     ulong recnum;
     union {
@@ -64,11 +76,12 @@ struct trust_record {
 	    ulong uidlist;  /* list of uid records */
 	    ulong cacherec; /* the cache record */
 	    byte ownertrust;
-	    byte sigflag;
+	    byte dirflags;
 	} dir;
 	struct {	    /* primary public key record */
 	    ulong lid;
 	    ulong next;    /* next key */
+	    byte keyflags;
 	    byte pubkey_algo;
 	    byte fingerprint_len;
 	    byte fingerprint[20];
@@ -78,6 +91,7 @@ struct trust_record {
 	    ulong next;    /* points to next user id record */
 	    ulong prefrec;   /* recno of preference record */
 	    ulong siglist;   /* list of valid signatures (w/o self-sig)*/
+	    byte uidflags;
 	    byte namehash[20]; /* ripemd hash of the username */
 	} uid;
 	struct {	    /* preference reord */
@@ -90,7 +104,7 @@ struct trust_record {
 	    ulong next;   /* recnno of next record or NULL for last one */
 	    struct {
 		ulong lid;	 /* of pubkey record of signator (0=unused) */
-		byte flag;	 /* reserved */
+		byte flag;	 /* SIGRF_xxxxx */
 	    } sig[SIGS_PER_RECORD];
 	} sig;
 	struct {	    /* cache record */
@@ -113,14 +127,15 @@ struct trust_record {
 typedef struct trust_record TRUSTREC;
 
 typedef struct {
-    ulong     local_id;    /* localid of the pubkey */
+    ulong     lid;	   /* localid */
     ulong     sigrec;
-    ulong     sig_id;	   /* returned signature id */
+    ulong     sig_lid;	   /* returned signatures LID */
     unsigned  sig_flag;    /* returned signature record flag */
     struct {		   /* internal data */
 	int init_done;
 	int eof;
 	TRUSTREC rec;
+	ulong nextuid;
 	int index;
     } ctl;
 } SIGREC_CONTEXT;
@@ -129,12 +144,13 @@ typedef struct {
 /*-- tdbio.c --*/
 int tdbio_set_dbname( const char *new_dbname, int create );
 const char *tdbio_get_dbname(void);
-void tdbio_dump_record( ulong rnum, TRUSTREC *rec, FILE *fp );
+void tdbio_dump_record( TRUSTREC *rec, FILE *fp );
 int tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected );
 int tdbio_write_record( TRUSTREC *rec );
+int tdbio_delete_record( ulong recnum );
 ulong tdbio_new_recnum(void);
 int tdbio_search_dir_record( PKT_public_key *pk, TRUSTREC *rec );
-int tdbio_update_sigflag( ulong lid, int sigflag );
+int tdbio_delete_uidrec( ulong dirlid, ulong uidlid );
 
 
 #define buftoulong( p )  ((*(byte*)(p) << 24) | (*((byte*)(p)+1)<< 16) | \

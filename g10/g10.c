@@ -52,43 +52,44 @@ static ARGPARSE_OPTS opts[] = {
     { 300, NULL, 0, N_("@Commands:\n ") },
 
   #ifdef IS_G10
-    { 's', "sign",      0, N_("|[file]|make a signature")},
-    { 539, "clearsign", 0, N_("|[file]|make a clear text signature") },
-    { 'b', "detach-sign", 0, N_("make a detached signature")},
-    { 'e', "encrypt",   0, N_("encrypt data")},
-    { 'c', "symmetric", 0, N_("encryption only with symmetric cipher")},
-    { 507, "store",     0, N_("store only")},
-    { 'd', "decrypt",   0, N_("decrypt data (default)")},
-    { 550, "verify"   , 0, N_("verify a signature")},
+    { 's', "sign",      256, N_("|[file]|make a signature")},
+    { 539, "clearsign", 256, N_("|[file]|make a clear text signature") },
+    { 'b', "detach-sign", 256, N_("make a detached signature")},
+    { 'e', "encrypt",   256, N_("encrypt data")},
+    { 'c', "symmetric", 256, N_("encryption only with symmetric cipher")},
+    { 507, "store",     256, N_("store only")},
+    { 'd', "decrypt",   256, N_("decrypt data (default)")},
+    { 550, "verify"   , 256, N_("verify a signature")},
   #endif
-    { 551, "list-keys", 0, N_("list keys")},
-    { 552, "list-sigs", 0, N_("list keys and signatures")},
-    { 508, "check-sigs",0, N_("check key signatures")},
-    { 515, "fingerprint", 0, N_("list keys and fingerprints")},
-    { 558, "list-secret-keys", 0, N_("list secret keys")},
+    { 551, "list-keys", 256, N_("list keys")},
+    { 552, "list-sigs", 256, N_("list keys and signatures")},
+    { 508, "check-sigs",256, N_("check key signatures")},
+    { 515, "fingerprint", 256, N_("list keys and fingerprints")},
+    { 558, "list-secret-keys", 256, N_("list secret keys")},
   #ifdef IS_G10
-    { 503, "gen-key",   0, N_("generate a new key pair")},
-    { 554, "add-key",   0, N_("add a subkey to a key pair")},
-    { 506, "sign-key"  ,0, N_("make a signature on a key in the keyring")},
-    { 505, "delete-key",0, N_("remove key from the public keyring")},
-    { 524, "edit-key"  ,0, N_("edit a key signature")},
-    { 525, "change-passphrase", 0, N_("change the passphrase of your secret keyring")},
-    { 542, "gen-revoke",0, N_("generate a revocation certificate")},
+    { 503, "gen-key",   256, N_("generate a new key pair")},
+    { 554, "add-key",   256, N_("add a subkey to a key pair")},
+    { 506, "sign-key"  ,256, N_("make a signature on a key in the keyring")},
+    { 505, "delete-key",256, N_("remove key from the public keyring")},
+    { 524, "edit-key"  ,256, N_("edit a key signature")},
+    { 525, "change-passphrase", 256, N_("change the passphrase of your secret keyring")},
+    { 542, "gen-revoke",256, N_("generate a revocation certificate")},
   #endif
-    { 537, "export"          , 0, N_("export keys") },
-    { 563, "export-secret-keys" , 0, "@" },
+    { 537, "export"          , 256, N_("export keys") },
+    { 563, "export-secret-keys" , 256, "@" },
     { 565, "do-not-export-rsa", 0, "@" },
-    { 530, "import",      0     , N_("import/merge keys")},
-    { 521, "list-packets",0,N_("list only the sequence of packets")},
+    { 530, "import",      256     , N_("import/merge keys")},
+    { 521, "list-packets",256,N_("list only the sequence of packets")},
   #ifdef IS_G10MAINT
-    { 564, "list-ownertrust", 0, "list the ownertrust values"},
-    { 546, "dearmor", 0, N_("De-Armor a file or stdin") },
-    { 547, "enarmor", 0, N_("En-Armor a file or stdin") },
-    { 555, "print-md" , 0, N_("|algo [files]|print message digests")},
-    { 516, "print-mds" , 0, N_("print all message digests")},
+    { 564, "list-ownertrust", 256, N_("list the ownertrust values")},
+    { 567, "check-trustdb",0 , N_("|[NAMES]|check the trust database")},
+    { 546, "dearmor", 256, N_("De-Armor a file or stdin") },
+    { 547, "enarmor", 256, N_("En-Armor a file or stdin") },
+    { 555, "print-md" , 256, N_("|algo [files]|print message digests")},
+    { 516, "print-mds" , 256, N_("print all message digests")},
     #ifdef MAINTAINER_OPTIONS
-    { 513, "gen-prime" , 0, "@" },
-    { 548, "gen-random" , 0, "@" },
+    { 513, "gen-prime" , 256, "@" },
+    { 548, "gen-random" , 256, "@" },
     #endif
   #endif
 
@@ -143,6 +144,7 @@ static ARGPARSE_OPTS opts[] = {
   #ifdef IS_G10MAINT
     { 514, "test"      , 0, "@" },
     { 564, "list-ownertrust",0 , "@"},
+    { 567, "check-trustdb",0 , "@"},
     { 531, "list-trustdb",0 , "@"},
     { 533, "list-trust-path",0, "@"},
   #endif
@@ -182,7 +184,7 @@ enum cmd_values { aNull = 0,
     aListSigs, aKeyadd, aListSecretKeys,
     aExport, aExportSecret,
     aCheckKeys, aGenRevoke, aPrimegen, aPrintMD, aPrintMDs,
-    aListTrustDB, aListTrustPath, aListOwnerTrust,
+    aCheckTrustDB, aListTrustDB, aListTrustPath, aListOwnerTrust,
     aDeArmor, aEnArmor, aGenRandom,
 aTest };
 
@@ -195,7 +197,6 @@ static void set_cmd( enum cmd_values *ret_cmd,
 #ifdef IS_G10MAINT
 static void print_hex( byte *p, size_t n );
 static void print_mds( const char *fname, int algo );
-static void do_test(int);
 #endif
 
 const char *
@@ -541,6 +542,7 @@ main( int argc, char **argv )
 	  #endif
 	  case 516: set_cmd( &cmd, aPrintMDs); break;
 	  case 531: set_cmd( &cmd, aListTrustDB); break;
+	  case 567: set_cmd( &cmd, aCheckTrustDB); break;
 	  case 533: set_cmd( &cmd, aListTrustPath); break;
 	  case 540: break; /* dummy */
 	  case 546: set_cmd( &cmd, aDeArmor); break;
@@ -1029,6 +1031,15 @@ main( int argc, char **argv )
 	else {
 	    for( ; argc; argc--, argv++ )
 		list_trustdb( *argv );
+	}
+	break;
+
+      case aCheckTrustDB:
+	if( !argc )
+	    check_trustdb(NULL);
+	else {
+	    for( ; argc; argc--, argv++ )
+		check_trustdb( *argv );
 	}
 	break;
 

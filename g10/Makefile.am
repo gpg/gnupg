@@ -6,7 +6,7 @@ OMIT_DEPENDENCIES = zlib.h zconf.h
 LDFLAGS = @LDFLAGS@ @DYNLINK_LDFLAGS@
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
-noinst_PROGRAMS = gpgd
+#noinst_PROGRAMS = gpgd
 bin_PROGRAMS = gpg gpgm
 
 common_source =  \
@@ -67,10 +67,10 @@ gpg_SOURCES  = g10.c		\
 gpgm_SOURCES = dearmor.c     \
 	      $(common_source)
 
-gpgd_SOURCES = gpgd.c \
-	      ks-proto.h \
-	      ks-proto.c \
-	      $(common_source)
+#gpgd_SOURCES = gpgd.c \
+#	       ks-proto.h \
+#	       ks-proto.c \
+#	       $(common_source)
 
 
 LDADD = @INTLLIBS@ $(needed_libs) @ZLIBS@

@@ -36,6 +36,14 @@ list-secret-keys
 export-secret-keys
 # export secret keys (which may be usefuil in some cases)
 
+check-trustdb
+
+
+
+
+
+
+
 #-----------------------------------------------
 #--- options
 #-----------------------------------------------

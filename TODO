@@ -33,12 +33,6 @@
     * add checking of armor trailers
     * remove all "Fixmes"
 
-    * bug: g10/trustdb.c#build_sigrecs called to often by do_list_path
-      and remove the bad kludge. Maybe we should put all sigs into the trustdb
-      and mark them as valid/invalid/nopubkey, and how do we check, that
-      we have a self-signature -> put this stuff into a kind of directory
-      record, as it does not belong to the pubkey record?
-
     * add an option to create a new user id.
 
     * add an option to re-create a public key from a secret key. Think about

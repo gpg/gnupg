@@ -100,7 +100,8 @@ Record type 3:	(key record)
      1 byte  reserved
      1 u32   LID
      1 u32   next   - next key record
-     8 bytes reserved
+     7 bytes reserved
+     1 byte  keyflags
      1 byte  pubkey algorithm
      1 byte  length of the fingerprint (in bytes)
      20 bytes fingerprint of the public key
@@ -118,7 +119,8 @@ Record type 4: (uid record)
      1 u32  next   next userid
      1 u32  pointer to preference record
      1 u32  siglist  list of valid signatures
-     2 byte reserved
+     1 byte uidflags
+     1 byte reserved
      20 bytes ripemd160 hash of the username.
 
 
