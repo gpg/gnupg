@@ -1,3 +1,12 @@
+2004-09-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* DETAILS: Document the 'spk' signature subpacket record.  Add
+	more detail on "tru" records.
+
+	* gpg.sgml: Note that PGP scales photo IDs to fit in the dialog
+	box.  Document show-sig-subpackets.  Document the '%c' signature
+	counter expando.
+
 2004-09-15  Werner Koch  <wk@g10code.com>
 
 	* gpg.sgml: Document "--debug-ccid-driver".

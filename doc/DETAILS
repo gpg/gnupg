@@ -37,6 +37,7 @@ record.
             grp = reserved for gpgsm
             rvk = revocation key
             tru = trust database information
+            spk = signature subpacket
 
  2. Field:  A letter describing the calculated trust. This is a single
 	    letter, but be prepared that additional information may follow
@@ -141,19 +142,37 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 
 The "tru" trust database records have the fields:
 
- 1: Reason for staleness of trust.  If this field is empty, then the
+ 2: Reason for staleness of trust.  If this field is empty, then the
     trustdb is not stale.  This field may have multiple flags in it:
 
     o: Trustdb is old
     t: Trustdb was built with a different trust model than the one we
        are using now.
 
- 2: Trust model.  This is always zero (i.e. "Classic") in this version
-    of GnuPG.
- 3: Date trustdb was created in seconds since 1/1/1970.
- 4: Date trustdb will expire in seconds since 1/1/1970.
+ 3: Trust model:
+    0: Classic trust model, as used in PGP 2.x.
+    1: PGP trust model, as used in PGP 6 and later.  This is the same
+       as the classic trust model, except for the addition of trust
+       signatures.
 
- 
+    GnuPG before version 1.4 used the classic trust model by default.
+    GnuPG 1.4 and later uses the PGP trust model by default.
+
+ 4: Date trustdb was created in seconds since 1/1/1970.
+ 5: Date trustdb will expire in seconds since 1/1/1970.
+
+The "spk" signature subpacket records have the fields:
+
+ 2: Subpacket number as per RFC-2440 and later.
+ 3: Flags.  Currently the only two bits assigned are 1, to indicate
+    that the subpacket came from the hashed part of the signature, and
+    2, to indicate the subpacket was marked critical.
+ 4: Length of the subpacket.  Note that this is the length of the
+    subpacket, and not the length of field 5 below.  Due to the need
+    for %-encoding, the length of field 5 may be up to 3x this value.
+ 5: The subpacket data.  Printable ASCII is shown as ASCII, but other
+    values are rendered as %XX where XX is the hex value for the byte.
+
 
 Format of the "--status-fd" output
 ==================================

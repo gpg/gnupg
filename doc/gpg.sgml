@@ -389,7 +389,9 @@ Create an alternate user id.</para></listitem></varlistentry>
     <listitem><para>
 Create a photographic user id.  This will prompt for a JPEG file that
 will be embedded into the user ID.  Note that a very large JPEG will
-make for a very large key.
+make for a very large key.  Also note that some programs will display
+your JPEG unchanged (GnuPG), and some programs will scale it to fit in
+a dialog box (PGP).
 </para></listitem></varlistentry>
     <varlistentry>
     <term>deluid</term>
@@ -1407,6 +1409,16 @@ Show signature expiration dates (if any) during --list-sigs or
 --check-sigs listings.  Defaults to no.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>show-sig-subpackets</term>
+<listitem><para>
+Include signature subpackets in the key listing.  This option can take
+an optional argument list of the subpackets to list.  If no argument
+is passed, list all subpackets.  Defaults to no.  This option is only
+meaningful when using --with-colons along with --list-sigs or
+--check-sigs.
+</para></listitem></varlistentry>
+
 </variablelist>
 </para></listitem></varlistentry>
 
@@ -1745,8 +1757,10 @@ key being signed, "%s" into the key ID of the key making the
 signature, "%S" into the long key ID of the key making the signature,
 "%g" into the fingerprint of the key making the signature (which might
 be a subkey), "%p" into the fingerprint of the primary key of the key
-making the signature, and "%%" results in a single "%".  %k, %K, and
-%f are only meaningful when making a key signature (certification).
+making the signature, "%c" into the signature count from the OpenPGP
+smartcard, and "%%" results in a single "%".  %k, %K, and %f are only
+meaningful when making a key signature (certification), and %c is only
+meaningful when using the OpenPGP smartcard.
 </para>
 
 </listitem></varlistentry>
