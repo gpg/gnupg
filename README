@@ -354,7 +354,7 @@ There is some limited support to import a private key from a PKCS-12
 file.  Note, that this does only import the private key and not any
 certificates available in that file. 
 
- gpg-protect-tool --p12-import --store  foo.p12
+ gpgsm --call-protect-tool --p12-import --store  foo.p12
 
 This require that the gpg-agent is running, alternative you may give
 the passphrase on the commandline using the option "-P <passphrase>" -
@@ -367,6 +367,6 @@ How to export a private key
 There is also limited support to export a private key in PKCS-12
 format. However the certificate is not stored and there is no MAC applied.
 
- gpg-protect-tool --p12-export  foo.key  >foo.p12
+ gpgsm --call-protect-tool --p12-export  foo.key  >foo.p12
 
 

@@ -1,11 +1,23 @@
 Noteworthy changes in version 1.9.0 (unreleased)
 ------------------------------------------------
 
-  * Merged stuff from the newpg branch and started this new
-    development branch.
+ * New gpgsm commands --call-dirmngr and --call-protect-tool.
+
+ * Changing a passphrase is now possible using "gpgsm --passwd"
+
+ * The content-type attribute is now recognized and created.
+
+ * The agent does now reread certain options on receiving a HUP.
+
+ * The pinentry is now forked for each request so that clients with
+   different environments are supported.  When running in daemon mode
+   and --keep-display is not used the DISPLAY variable is ignored.
+
+ * Merged stuff from the newpg branch and started this new
+   development branch.
 
 
- Copyright 2002 Free Software Foundation, Inc.
+ Copyright 2002, 2003 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

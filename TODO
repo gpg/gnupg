@@ -40,7 +40,6 @@ might want to have an agent context for each service request
 
 * agent/command.c
 ** Make sure that secure memory is used where appropriate
-** Implement option passing per connection (DISPLAY and TTY)
 
 * agent/pkdecrypt.c, agent/pksign.c
 ** Don't use stdio to return results.
@@ -55,7 +54,5 @@ might want to have an agent context for each service request
 
 * sm/export.c
 ** Return an error code or a status info per user ID.
-
-
 
 

@@ -1,3 +1,18 @@
+2003-01-09  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (GNUPG_PROTECT_TOOL): New option --with-protect-tool. 
+	(NEED_KSBA_VERSION): Does now require 0.4.6.
+
+	* README: Noted where to find gpg-protect-tool. 
+
+2002-10-31  Neal H. Walfield  <neal@g10code.de>
+
+	* configure.ac: Check for flockfile and funlockfile.  Check for
+	isascii and putc_unlocked replacing them if not found.
+
+	* configure.ac (PTH_LIBS): If pth is found, add the output of
+	`$PTH_CONFIG --ldflags`, not just `$PTH_CONFIG --libs`.
+
 2002-10-19  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac: Bumped version number to 1.9.0-cvs.

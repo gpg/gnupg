@@ -1,4 +1,4 @@
-# configure.ac - for GnuPG
+# configure.ac - for NewPG
 #       Copyright (C) 2001, 2002 Free Software Foundation, Inc,
 # 
 # This file is part of GnuPG.
@@ -21,9 +21,9 @@
 AC_PREREQ(2.52)
 # Version number: Remember to change it immediately *after* a release.
 #                 Add a "-cvs" prefix for non-released code.
-AC_INIT(newpg, 1.9.0-cvs, gpa-dev@gnupg.org)
+AC_INIT(newpg, 1.9.0-cvs, gnupg-devel@gnupg.org)
 NEED_LIBGCRYPT_VERSION=1.1.8
-NEED_KSBA_VERSION=0.4.4
+NEED_KSBA_VERSION=0.4.6
 NEED_OPENSC_VERSION=0.7.0
 ALL_LINGUAS="de"
 
@@ -138,6 +138,11 @@ eval my_default_bindir=${exec_prefix}
 test "x${my_default_bindir}" = xNONE && my_default_bindir=${ac_default_prefix}
 my_default_bindir=${my_default_bindir}/bin
 
+# Same goes for the pkglibdir which is used to call the gpg-protect-tool.
+eval my_default_pkglibdir=${exec_prefix}
+test "x${my_default_pkglibdir}" = xNONE && my_default_pkglibdir=${ac_default_prefix}
+my_default_pkglibdir=${my_default_pkglibdir}/lib/${PACKAGE_NAME}
+
 AC_ARG_WITH(agent-pgm,
     [  --with-agent-pgm=PATH  Use PATH as the default for the gpg-agent)],
           gnupg_agent_pgm="$withval",
@@ -168,6 +173,15 @@ if test -z "$gnupg_dirmngr_pgm"; then
 fi
 AC_DEFINE_UNQUOTED(GNUPG_DEFAULT_DIRMNGR, "$gnupg_dirmngr_pgm",
                    [Default location of the dirmngr program])
+
+AC_ARG_WITH(protect-tool,
+    [  --with-protect-tool=PATH  Use PATH as the protect-tool)],
+          gnupg_protect_tool="$withval", gnupg_protect_tool="" )
+if test -z "$gnupg_protect_tool"; then
+  gnupg_protect_tool=${my_default_pkglibdir}/gpg-protect-tool
+fi
+AC_DEFINE_UNQUOTED(GNUPG_PROTECT_TOOL, "$gnupg_protect_tool",
+                   [Name of the protect tool program])
 
 
 #
@@ -245,7 +259,8 @@ else
   GNUPG_PTH_VERSION_CHECK(1.3.7)
   if test $have_pth = yes; then      
      PTH_CFLAGS=`$PTH_CONFIG --cflags`
-     PTH_LIBS=`$PTH_CONFIG --libs`
+     PTH_LIBS=`$PTH_CONFIG --ldflags`
+     PTH_LIBS="$PTH_LIBS `$PTH_CONFIG --libs`"
      AC_DEFINE(USE_GNU_PTH, 1,
               [Defined if the GNU Portable Thread Library should be used])
   fi
@@ -279,14 +294,17 @@ GNUPG_SYS_SO_PEERCRED
 # These are needed by libjnlib - fixme: we should have a macros for them
 AC_CHECK_FUNCS(memicmp stpcpy strlwr strtoul memmove stricmp strtol)
 AC_CHECK_FUNCS(getrusage setrlimit stat setlocale)
+AC_CHECK_FUNCS(flockfile funlockfile)
 
 AC_CHECK_FUNCS(sigaction sigprocmask)
 
 AC_REPLACE_FUNCS(vasprintf)
 AC_REPLACE_FUNCS(fopencookie)
-# FIXME: Print a warning when that fopencookie is not available.
+# FIXME: Print a warning when fopencookie is not available.
 AC_REPLACE_FUNCS(mkdtemp)
 AC_REPLACE_FUNCS(fseeko ftello)
+AC_REPLACE_FUNCS(isascii)
+AC_REPLACE_FUNCS(putc_unlocked)
 
 # We use jnlib, so tell other modules about it
 AC_DEFINE(HAVE_JNLIB_LOGGING, 1,
@@ -350,6 +368,7 @@ echo "
         Agent:     $build_agent $build_agent_threaded
         Smartcard: $build_scdaemon $build_scdaemon_threaded  
 
+        Protect tool:     $gnupg_protect_tool
         Default agent:    $gnupg_agent_pgm
         Default pinentry: $gnupg_pinentry_pgm
         Default scdaemon: $gnupg_scdaemon_pgm
