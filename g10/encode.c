@@ -300,8 +300,8 @@ encode_simple( const char *filename, int mode, int use_seskey )
        either partial length or fixed length with the new style
        messages. */
 
-    if ( !iobuf_is_pipe_filename (filename) && filename && *filename 
-         && !opt.textmode ) {
+    if ( !iobuf_is_pipe_filename (filename) && *filename && !opt.textmode )
+      {
         off_t tmpsize;
 
 	if ( !(tmpsize = iobuf_get_filelength(inp)) )
@@ -314,9 +314,9 @@ encode_simple( const char *filename, int mode, int use_seskey )
           filesize = tmpsize;
         else
           filesize = 0;
-    }
+      }
     else
-	filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
+      filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
 
     if (!opt.no_literal) {
 	pt->timestamp = make_timestamp();
@@ -596,8 +596,8 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
 	}
     }
 
-    if (!iobuf_is_pipe_filename (filename) && *filename 
-        && !opt.textmode ) {
+    if (!iobuf_is_pipe_filename (filename) && *filename && !opt.textmode )
+      {
         off_t tmpsize;
 
 	if ( !(tmpsize = iobuf_get_filelength(inp)) )
@@ -610,9 +610,9 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
           filesize = tmpsize;
         else
           filesize = 0;
-    }
+      }
     else
-	filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
+      filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
 
     if (!opt.no_literal) {
 	pt->timestamp = make_timestamp();

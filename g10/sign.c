@@ -543,11 +543,12 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
     }
 
     /* try to calculate the length of the data */
-    if ( !iobuf_is_pipe_filename (fname) && fname && *fname ) {
+    if ( !iobuf_is_pipe_filename (fname) && *fname )
+      {
         off_t tmpsize;
        
         if( !(tmpsize = iobuf_get_filelength(inp)) )
-            log_info (_("WARNING: `%s' is an empty file\n"), fname);
+	  log_info (_("WARNING: `%s' is an empty file\n"), fname);
 
         /* We can't encode the length of very large files because
            OpenPGP uses only 32 bit for file sizes.  So if the size of
@@ -563,11 +564,10 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
          * without a double read of the file - to avoid that
          * we simple use partial length packets. */
         if ( ptmode == 't' )
-            filesize = 0;
-    }
-    else {
-        filesize = opt.set_filesize? opt.set_filesize : 0; /* stdin */
-    }
+	  filesize = 0;
+      }
+    else
+      filesize = opt.set_filesize? opt.set_filesize : 0; /* stdin */
 
     if (!opt.no_literal) {
         PACKET pkt;
