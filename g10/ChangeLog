@@ -1,3 +1,13 @@
+2003-11-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* seskey.c (do_encode_md): Comment about earlier (pre-PGP 2.3)
+	encodings.
+
+	* misc.c (compress_algo_to_string): Translate "Uncompressed".
+	Requested by Tommi Vainikainen.
+	(string_to_compress_algo): Include multi-string for
+	"uncompressed|none".
+
 2003-11-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, g10.c (main), compress-bz2.c (init_uncompress): Add

@@ -549,7 +549,7 @@ compress_algo_to_string(int algo)
   switch(algo)
     {
     case COMPRESS_ALGO_NONE:
-      s="Uncompressed";
+      s=_("Uncompressed");
       break;
 
     case COMPRESS_ALGO_ZIP:
@@ -573,7 +573,10 @@ compress_algo_to_string(int algo)
 int
 string_to_compress_algo(const char *string)
 {
-  if(ascii_strcasecmp(string,"uncompressed")==0)
+  /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
+  if(match_multistr(_("uncompressed|none"),string))
+    return 0;
+  else if(ascii_strcasecmp(string,"uncompressed")==0)
     return 0;
   else if(ascii_strcasecmp(string,"none")==0)
     return 0;
