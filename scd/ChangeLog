@@ -1,3 +1,7 @@
+2003-12-16  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c (main): Set the prefixes for assuan logging.
+
 2003-11-17  Werner Koch  <wk@gnupg.org>
 
 	* scdaemon.c, scdaemon.h: New options --allow-admin and --deny-admin.

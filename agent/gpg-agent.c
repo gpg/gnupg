@@ -355,6 +355,8 @@ main (int argc, char **argv )
     }
 
   assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
+  assuan_set_assuan_log_stream (log_get_stream ());
+  assuan_set_assuan_log_prefix (log_get_prefix (NULL));
 
   gcry_set_log_handler (my_gcry_logger, NULL);
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
