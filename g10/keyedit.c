@@ -133,7 +133,7 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	break;
     }
     if( sigrc != '?' || print_without_key ) {
-        tty_printf("%s%c%c %c%c%c%c%c%c %08lX %s   ",
+        tty_printf("%s%c%c %c%c%c%c%c%c %08lX %s",
 		   is_rev? "rev":"sig",sigrc,
 		   (sig->sig_class-0x10>0 &&
 		    sig->sig_class-0x10<4)?'0'+sig->sig_class-0x10:' ',
@@ -145,6 +145,9 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 		   (sig->trust_depth>9)?'T':
 		   (sig->trust_depth>0)?'0'+sig->trust_depth:' ',
 		   (ulong)sig->keyid[1], datestr_from_sig(sig));
+	if(opt.list_options&LIST_SHOW_SIG_EXPIRE)
+	  tty_printf(" %s",expirestr_from_sig(sig));
+	tty_printf("  ");
 	if( sigrc == '%' )
 	    tty_printf("[%s] ", g10_errstr(rc) );
 	else if( sigrc == '?' )

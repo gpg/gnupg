@@ -1,3 +1,9 @@
+2003-08-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), keylist.c (list_keyblock_print),
+	keyedit.c (print_and_check_one_sig): New "show-sig-expire"
+	list-option to show signature expiration dates (if any).
+
 2003-07-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, g10.c (main, add_keyserver_url): Add

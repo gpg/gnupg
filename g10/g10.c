@@ -1764,6 +1764,7 @@ main( int argc, char **argv )
 		  {"show-keyring",LIST_SHOW_KEYRING},
 		  {"show-validity",LIST_SHOW_VALIDITY},
 		  {"show-long-keyid",LIST_SHOW_LONG_KEYID},
+		  {"show-sig-expire",LIST_SHOW_SIG_EXPIRE},
 		  {NULL,0}
 		};
 

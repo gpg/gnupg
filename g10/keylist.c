@@ -823,7 +823,10 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	      printf("%08lX%08lX",(ulong)sig->keyid[0],(ulong)sig->keyid[1]);
 	    else
 	      printf("%08lX",(ulong)sig->keyid[1]);
-	    printf(" %s   ", datestr_from_sig(sig));
+	    printf(" %s", datestr_from_sig(sig));
+	    if(opt.list_options&LIST_SHOW_SIG_EXPIRE)
+	      printf(" %s", expirestr_from_sig(sig));
+	    printf("  ");
 	    if( sigrc == '%' )
 		printf("[%s] ", g10_errstr(rc) );
 	    else if( sigrc == '?' )

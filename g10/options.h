@@ -234,6 +234,7 @@ struct {
 #define LIST_SHOW_KEYRING     8
 #define LIST_SHOW_VALIDITY   16
 #define LIST_SHOW_LONG_KEYID 32
+#define LIST_SHOW_SIG_EXPIRE 64
 
 #define VERIFY_SHOW_PHOTOS      1
 #define VERIFY_SHOW_POLICY      2
