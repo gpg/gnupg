@@ -171,7 +171,6 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
                     unsigned *new_trust, int defer_help )
 {
   char *p;
-  size_t n;
   u32 keyid[2];
   int changed=0;
   int quit=0;
@@ -204,11 +203,9 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
 	    tty_printf("%4u%c/%s %s\n",nbits_from_pk( pk ),
 		       pubkey_letter( pk->pubkey_algo ),
                        keystr(keyid), datestr_from_pk( pk ) );
-	    tty_printf(_("          \""));
-            p = get_user_id( keyid, &n );
-            tty_print_utf8_string( p, n );
+	    p=get_user_id_native(keyid);
+	    tty_printf(_("          \"%s\"\n"),p);
 	    m_free(p);
-            tty_printf("\"\n");
 
             keyblock = get_pubkeyblock (keyid);
             if (!keyblock)
@@ -231,10 +228,10 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
 		  show_photos(un->pkt->pkt.user_id->attribs,
 			      un->pkt->pkt.user_id->numattribs,pk,NULL);
 
-		tty_printf(_("      aka \""));
-                tty_print_utf8_string (un->pkt->pkt.user_id->name,
-                                       un->pkt->pkt.user_id->len );
-                tty_printf("\"\n");
+		p=utf8_to_native(un->pkt->pkt.user_id->name,
+				 un->pkt->pkt.user_id->len,0);
+
+		tty_printf(_("      aka \"%s\"\n"),p);
 	      }
         
             print_fingerprint (pk, NULL, 2);
@@ -785,10 +782,10 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 		    u32 keyid[2];
 
 		    keyid_from_pk(iter->pk,keyid);
-		    tty_printf("%4u%c/%08lX %s \"",
+		    tty_printf("%4u%c/%s %s \"",
 			       nbits_from_pk(iter->pk),
 			       pubkey_letter(iter->pk->pubkey_algo),
-			       (ulong)keyid[1],
+			       keystr(keyid),
 			       datestr_from_pk(iter->pk));
 
 		    if(iter->pk->user_id)

@@ -1,3 +1,10 @@
+2004-10-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* pkclist.c (build_pk_list): Keystrify.
+
+	* mainproc.c (check_sig_and_print), pkclist.c
+	(do_edit_ownertrust): Improve translatability of user ID prompts.
+
 2004-10-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* helptext.c, pkclist.c (do_we_trust): It is not possible to get

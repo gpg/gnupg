@@ -1442,6 +1442,7 @@ check_sig_and_print( CTX c, KBNODE node )
 
         /* find and print the primary user ID */
 	for( un=keyblock; un; un = un->next ) {
+	    char *p;
 	    int valid;
 	    if(un->pkt->pkttype==PKT_PUBLIC_KEY)
 	      {
@@ -1475,19 +1476,28 @@ check_sig_and_print( CTX c, KBNODE node )
                                           un->pkt->pkt.user_id->len, 
                                           -1 );
 
-            log_info(rc? _("BAD signature from \"")
-                       : sig->flags.expired ? _("Expired signature from \"")
-		       : _("Good signature from \""));
-	    print_utf8_string( log_stream(), un->pkt->pkt.user_id->name,
-					     un->pkt->pkt.user_id->len );
-	    if(opt.verify_options&VERIFY_SHOW_VALIDITY)
-	      fprintf(log_stream(),"\" [%s]\n",trust_value_to_string(valid));
+	    p=utf8_to_native(un->pkt->pkt.user_id->name,
+			     un->pkt->pkt.user_id->len,0);
+
+	    if(rc)
+	      log_info(_("BAD signature from \"%s\""),p);
+	    else if(sig->flags.expired)
+	      log_info(_("Expired signature from \"%s\""),p);
 	    else
-	      fputs("\"\n", log_stream() );
+	      log_info(_("Good signature from \"%s\""),p);
+
+	    m_free(p);
+
+	    if(opt.verify_options&VERIFY_SHOW_VALIDITY)
+	      fprintf(log_stream()," [%s]\n",trust_value_to_string(valid));
+	    else
+	      fputs("\n", log_stream() );
             count++;
 	}
 	if( !count ) {	/* just in case that we have no valid textual
                            userid */
+	    char *p;
+
 	    /* Try for an invalid textual userid */
             for( un=keyblock; un; un = un->next ) {
                 if( un->pkt->pkttype == PKT_USER_ID &&
@@ -1511,22 +1521,30 @@ check_sig_and_print( CTX c, KBNODE node )
                                           un? un->pkt->pkt.user_id->len:3, 
                                           -1 );
 
-            log_info(rc? _("BAD signature from \"")
-                       : sig->flags.expired ? _("Expired signature from \"")
-		       : _("Good signature from \""));
-            if (opt.trust_model!=TM_ALWAYS && un) {
-                fputs(_("[uncertain]"), log_stream() );
+	    if(un)
+	      p=utf8_to_native(un->pkt->pkt.user_id->name,
+                               un->pkt->pkt.user_id->len,0);
+	    else
+	      p=m_strdup("[?]");
+
+	    if(rc)
+	      log_info(_("BAD signature from \"%s\""),p);
+	    else if(sig->flags.expired)
+	      log_info(_("Expired signature from \"%s\""),p);
+	    else
+	      log_info(_("Good signature from \"%s\""),p);
+            if (opt.trust_model!=TM_ALWAYS && un)
+	      {
                 putc(' ', log_stream() );
-            }
-            print_utf8_string( log_stream(),
-                               un? un->pkt->pkt.user_id->name:"[?]",
-                               un? un->pkt->pkt.user_id->len:3 );
-	    fputs("\"\n", log_stream() );
+                fputs(_("[uncertain]"), log_stream() );
+	      }
+	    fputs("\n", log_stream() );
 	}
 
         /* If we have a good signature and already printed 
          * the primary user ID, print all the other user IDs */
         if ( count && !rc ) {
+	    char *p;
             for( un=keyblock; un; un = un->next ) {
                 if( un->pkt->pkttype != PKT_USER_ID )
                     continue;
@@ -1548,9 +1566,10 @@ check_sig_and_print( CTX c, KBNODE node )
 				  un->pkt->pkt.user_id->numattribs,pk,NULL);
 		  }
 
-		log_info(    _("                aka \""));
-                print_utf8_string( log_stream(), un->pkt->pkt.user_id->name,
-                                                 un->pkt->pkt.user_id->len );
+		p=utf8_to_native(un->pkt->pkt.user_id->name,
+				 un->pkt->pkt.user_id->len,0);
+		log_info(_("                aka \"%s\""),p);
+		m_free(p);
 
 		if(opt.verify_options&VERIFY_SHOW_VALIDITY)
 		  {
@@ -1563,10 +1582,10 @@ check_sig_and_print( CTX c, KBNODE node )
 		      valid=trust_value_to_string(get_validity(pk,
 							       un->pkt->
 							       pkt.user_id));
-		    fprintf(log_stream(),"\" [%s]\n",valid);
+		    fprintf(log_stream()," [%s]\n",valid);
 		  }
 		else
-		  fputs("\"\n", log_stream() );
+		  fputs("\n", log_stream() );
             }
 	}
 	release_kbnode( keyblock );
