@@ -72,65 +72,6 @@ struct kopts
 static int keyserver_work(int action,STRLIST list,
 			  KEYDB_SEARCH_DESC *desc,int count);
 
-static char *
-argsep(char **stringp,char **arg)
-{
-  char *tok,*next;
-
-  tok=*stringp;
-  *arg=NULL;
-
-  if(tok)
-    {
-      next=strpbrk(tok," ,=");
-
-      if(next)
-	{
-	  int sawequals=0;
-
-	  if(*next=='=')
-	    sawequals=1;
-
-	  *next++='\0';
-	  *stringp=next;
-
-	  /* what we need to do now is scan along starting with *next.
-	     If the next character we see (ignoring spaces) is a =
-	     sign, then there is an argument. */
-
-	  while(*next)
-	    {
-	      if(*next=='=')
-		sawequals=1;
-	      else if(*next!=' ')
-		break;
-	      next++;
-	    }
-
-	  /* At this point, *next is either an empty string, or the
-	     beginning of the next token (which is an argument if
-	     sawequals is true). */
-
-	  if(sawequals)
-	    {
-	      *arg=next;
-	      next=strpbrk(*arg," ,");
-	      if(next)
-		{
-		  *next++='\0';
-		  *stringp=next;
-		}
-	      else
-		*stringp=NULL;
-	    }
-	}
-      else
-	*stringp=NULL;
-    }
-
-  return tok;
-}
-
 void 
 parse_keyserver_options(char *options)
 {

@@ -45,11 +45,11 @@ parse_export_options(char *str,unsigned int *options,int noisy)
 {
   struct parse_options export_opts[]=
     {
-      {"include-non-rfc",EXPORT_INCLUDE_NON_RFC},
-      {"include-local-sigs",EXPORT_INCLUDE_LOCAL_SIGS},
-      {"include-attributes",EXPORT_INCLUDE_ATTRIBUTES},
-      {"include-sensitive-revkeys",EXPORT_INCLUDE_SENSITIVE_REVKEYS},
-      {NULL,0}
+      {"include-non-rfc",EXPORT_INCLUDE_NON_RFC,NULL},
+      {"include-local-sigs",EXPORT_INCLUDE_LOCAL_SIGS,NULL},
+      {"include-attributes",EXPORT_INCLUDE_ATTRIBUTES,NULL},
+      {"include-sensitive-revkeys",EXPORT_INCLUDE_SENSITIVE_REVKEYS,NULL},
+      {NULL,0,NULL}
       /* add tags for include revoked and disabled? */
     };
 

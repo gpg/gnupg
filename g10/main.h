@@ -106,8 +106,10 @@ struct parse_options
 {
   char *name;
   unsigned int bit;
+  char **value;
 };
 
+char *argsep(char **stringp,char **arg);
 int parse_options(char *str,unsigned int *options,
 		  struct parse_options *opts,int noisy);
 

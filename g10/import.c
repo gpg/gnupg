@@ -88,13 +88,13 @@ parse_import_options(char *str,unsigned int *options,int noisy)
 {
   struct parse_options import_opts[]=
     {
-      {"allow-local-sigs",IMPORT_ALLOW_LOCAL_SIGS},
-      {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG},
-      {"repair-pks-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG},
-      {"fast-import",IMPORT_FAST_IMPORT},
-      {"convert-sk-to-pk",IMPORT_SK2PK},
-      {"merge-only",IMPORT_MERGE_ONLY},
-      {NULL,0}
+      {"allow-local-sigs",IMPORT_ALLOW_LOCAL_SIGS,NULL},
+      {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL},
+      {"repair-pks-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL},
+      {"fast-import",IMPORT_FAST_IMPORT,NULL},
+      {"convert-sk-to-pk",IMPORT_SK2PK,NULL},
+      {"merge-only",IMPORT_MERGE_ONLY,NULL},
+      {NULL,0,NULL}
     };
 
   return parse_options(str,options,import_opts,noisy);
@@ -619,7 +619,7 @@ check_prefs(KBNODE keyblock)
 	  size_t fprlen=0;
 	  byte fpr[MAX_FINGERPRINT_LEN],*p;
 	  char username[(MAX_FINGERPRINT_LEN*2)+1];
-	  int i;
+	  unsigned int i;
 
 	  p=fingerprint_from_pk(keyblock->pkt->pkt.public_key,fpr,&fprlen);
 	  for(i=0;i<fprlen;i++,p++)

@@ -669,13 +669,72 @@ compliance_failure(void)
   opt.compliance=CO_GNUPG;
 }
 
+char *
+argsep(char **stringp,char **arg)
+{
+  char *tok,*next;
+
+  tok=*stringp;
+  *arg=NULL;
+
+  if(tok)
+    {
+      next=strpbrk(tok," ,=");
+
+      if(next)
+	{
+	  int sawequals=0;
+
+	  if(*next=='=')
+	    sawequals=1;
+
+	  *next++='\0';
+	  *stringp=next;
+
+	  /* what we need to do now is scan along starting with *next.
+	     If the next character we see (ignoring spaces) is a =
+	     sign, then there is an argument. */
+
+	  while(*next)
+	    {
+	      if(*next=='=')
+		sawequals=1;
+	      else if(*next!=' ')
+		break;
+	      next++;
+	    }
+
+	  /* At this point, *next is either an empty string, or the
+	     beginning of the next token (which is an argument if
+	     sawequals is true). */
+
+	  if(sawequals)
+	    {
+	      *arg=next;
+	      next=strpbrk(*arg," ,");
+	      if(next)
+		{
+		  *next++='\0';
+		  *stringp=next;
+		}
+	      else
+		*stringp=NULL;
+	    }
+	}
+      else
+	*stringp=NULL;
+    }
+
+  return tok;
+}
+
 int
 parse_options(char *str,unsigned int *options,
 	      struct parse_options *opts,int noisy)
 {
-  char *tok;
+  char *tok,*arg;
 
-  while((tok=strsep(&str," ,")))
+  while((tok=argsep(&str,&arg)))
     {
       int i,rev=0;
       char *otok=tok;
@@ -715,6 +774,8 @@ parse_options(char *str,unsigned int *options,
 		*options&=~opts[i].bit;
 	      else
 		*options|=opts[i].bit;
+	      if(opts[i].value)
+		*opts[i].value=arg?m_strdup(arg):NULL;
 	      break;
 	    }
 	}

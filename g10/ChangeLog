@@ -1,5 +1,11 @@
 2004-02-13  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyserver.c (argsep): Move to misc.c.
+
+	* main.h, misc.c (parse_options), export.c (parse_export_options),
+	import.c (parse_import_options), g10.c (main): Use it here to
+	allow for options with optional arguments.  Change all callers.
+
 	* import.c (check_prefs): Some language fixes.
 	(sec_to_pub_keyblock, import_secret_one): Without knowing the
 	number of MPIs there are, we cannot try and sk-to-pk-ize a key.

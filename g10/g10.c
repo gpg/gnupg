@@ -2096,17 +2096,17 @@ main( int argc, char **argv )
 	    {
 	      struct parse_options lopts[]=
 		{
-		  {"show-photos",LIST_SHOW_PHOTOS},
-		  {"show-policy-urls",LIST_SHOW_POLICY_URLS},
-		  {"show-notations",LIST_SHOW_NOTATIONS},
-		  {"show-keyserver-urls",LIST_SHOW_KEYSERVER_URLS},
-		  {"show-validity",LIST_SHOW_VALIDITY},
-		  {"show-long-keyids",LIST_SHOW_LONG_KEYIDS},
-		  {"show-unusable-uids",LIST_SHOW_UNUSABLE_UIDS},
-		  {"show-unusable-subkeys",LIST_SHOW_UNUSABLE_SUBKEYS},
-		  {"show-keyring",LIST_SHOW_KEYRING},
-		  {"show-sig-expire",LIST_SHOW_SIG_EXPIRE},
-		  {NULL,0}
+		  {"show-photos",LIST_SHOW_PHOTOS,NULL},
+		  {"show-policy-urls",LIST_SHOW_POLICY_URLS,NULL},
+		  {"show-notations",LIST_SHOW_NOTATIONS,NULL},
+		  {"show-keyserver-urls",LIST_SHOW_KEYSERVER_URLS,NULL},
+		  {"show-validity",LIST_SHOW_VALIDITY,NULL},
+		  {"show-long-keyids",LIST_SHOW_LONG_KEYIDS,NULL},
+		  {"show-unusable-uids",LIST_SHOW_UNUSABLE_UIDS,NULL},
+		  {"show-unusable-subkeys",LIST_SHOW_UNUSABLE_SUBKEYS,NULL},
+		  {"show-keyring",LIST_SHOW_KEYRING,NULL},
+		  {"show-sig-expire",LIST_SHOW_SIG_EXPIRE,NULL},
+		  {NULL,0,NULL}
 		};
 
 	      if(!parse_options(pargs.r.ret_str,&opt.list_options,lopts,1))
@@ -2123,14 +2123,14 @@ main( int argc, char **argv )
 	    {
 	      struct parse_options vopts[]=
 		{
-		  {"show-photos",VERIFY_SHOW_PHOTOS},
-		  {"show-policy-urls",VERIFY_SHOW_POLICY_URLS},
-		  {"show-notations",VERIFY_SHOW_NOTATIONS},
-		  {"show-keyserver-urls",VERIFY_SHOW_KEYSERVER_URLS},
-		  {"show-validity",VERIFY_SHOW_VALIDITY},
-		  {"show-long-keyids",VERIFY_SHOW_LONG_KEYIDS},
-		  {"show-unusable-uids",VERIFY_SHOW_UNUSABLE_UIDS},
-		  {NULL,0}
+		  {"show-photos",VERIFY_SHOW_PHOTOS,NULL},
+		  {"show-policy-urls",VERIFY_SHOW_POLICY_URLS,NULL},
+		  {"show-notations",VERIFY_SHOW_NOTATIONS,NULL},
+		  {"show-keyserver-urls",VERIFY_SHOW_KEYSERVER_URLS,NULL},
+		  {"show-validity",VERIFY_SHOW_VALIDITY,NULL},
+		  {"show-long-keyids",VERIFY_SHOW_LONG_KEYIDS,NULL},
+		  {"show-unusable-uids",VERIFY_SHOW_UNUSABLE_UIDS,NULL},
+		  {NULL,0,NULL}
 		};
 
 	      if(!parse_options(pargs.r.ret_str,&opt.verify_options,vopts,1))
