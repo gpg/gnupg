@@ -1,3 +1,8 @@
+Sun Dec 13 14:10:56 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* pcklist.c (select_algo_from_prefs): Preferences should
+	now work (lost the != ? )
+
 Thu Dec 10 20:15:36 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* ringedit.c (gdbm_store): Fix for inserts

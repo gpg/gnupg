@@ -595,12 +595,14 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
 	if( !pkr->pk->local_id )
 	    BUG(); /* if this occurs, we can use get_ownertrust to set it */
 	if( preftype == PREFTYPE_SYM )
-	    bits[0] = (1<<2); /* 3DES is implicitly there */
+	    mask[0] |= (1<<2); /* 3DES is implicitly there */
 	m_free(pref);
 	pref = get_pref_data( pkr->pk->local_id, pkr->pk->namehash, &npref);
 	any = 0;
 	if( pref ) {
-	    /*log_hexdump("raw: ", pref, npref );*/
+	   #if 0
+	    log_hexdump("raw: ", pref, npref );
+	   #endif
 	    for(i=0; i+1 < npref; i+=2 ) {
 		if( pref[i] == preftype ) {
 		    mask[pref[i+1]/32] |= 1 << (pref[i+1]%32);
@@ -613,14 +615,18 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
 	    compr_hack = 1;
 	}
 
-	/*log_debug("mask=%08lX%08lX%08lX%08lX%08lX%08lX%08lX%08lX\n",
+      #if 0
+	log_debug("mask=%08lX%08lX%08lX%08lX%08lX%08lX%08lX%08lX\n",
 	       (ulong)mask[7], (ulong)mask[6], (ulong)mask[5], (ulong)mask[4],
-	     (ulong)mask[3], (ulong)mask[2], (ulong)mask[1], (ulong)mask[0]);*/
+	     (ulong)mask[3], (ulong)mask[2], (ulong)mask[1], (ulong)mask[0]);
+      #endif
 	for(i=0; i < 8; i++ )
 	    bits[i] &= mask[i];
-	/*log_debug("bits=%08lX%08lX%08lX%08lX%08lX%08lX%08lX%08lX\n",
+      #if 0
+	log_debug("bits=%08lX%08lX%08lX%08lX%08lX%08lX%08lX%08lX\n",
 	       (ulong)bits[7], (ulong)bits[6], (ulong)bits[5], (ulong)bits[4],
-	     (ulong)bits[3], (ulong)bits[2], (ulong)bits[1], (ulong)bits[0]);*/
+	     (ulong)bits[3], (ulong)bits[2], (ulong)bits[1], (ulong)bits[0]);
+      #endif
     }
     /* usable algorithms are now in bits
      * We now use the last key from pk_list to select
@@ -635,6 +641,7 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
 	    if( pref[j] == preftype ) {
 		any = 1;
 		if( (bits[pref[j+1]/32] & (1<<(pref[j+1]%32))) ) {
+		    /* fixme: check whether this algoritm is available */
 		    i = pref[j+1];
 		    break;
 		}
@@ -644,11 +651,14 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
     if( !pref || !any ) {
 	for(j=0; j < 256; j++ )
 	    if( (bits[j/32] & (1<<(j%32))) ) {
+		/* fixme: check whether this algoritm is available */
 		i = j;
 		break;
 	    }
     }
-    /*log_debug("prefs of type %d: selected %d\n", preftype, i );*/
+  #if 0
+    log_debug("prefs of type %d: selected %d\n", preftype, i );
+  #endif
     if( compr_hack && !i ) {
 	/* selected no compression, but we should check whether
 	 * algorithm 1 is also available (the ordering is not relevant
