@@ -1,10 +1,13 @@
+2003-07-03  Werner Koch  <wk@gnupg.org>
+
+	* cipher.h (DBG_CIPHER,g10c_debug_mode): Removed.
+
 2003-06-11  Werner Koch  <wk@gnupg.org>
 
 	* cipher.h: Include gcrypt.h and mapped cipher algo names to
 	gcrypt ones.  Removed twofish_old and skipjack.  Removed all
 	handle definitions and other raerely used stuff.  This file will
 	eventually be entirely removed.
-	
 
 2003-06-10  Werner Koch  <wk@gnupg.org>
 

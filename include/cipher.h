@@ -20,8 +20,6 @@
 #ifndef G10_CIPHER_H
 #define G10_CIPHER_H
 
-#define DBG_CIPHER g10c_debug_mode
-
 #include <gcrypt.h>
 
 #define CIPHER_ALGO_NONE	 GCRY_CIPHER_NONE
@@ -83,7 +81,6 @@ typedef struct {
 #define EXTERN_UNLESS_MAIN_MODULE 
 #endif
 #endif
-EXTERN_UNLESS_MAIN_MODULE int g10c_debug_mode;
 EXTERN_UNLESS_MAIN_MODULE int g10_opt_verbose;
 EXTERN_UNLESS_MAIN_MODULE const char *g10_opt_homedir;
 
