@@ -32,13 +32,7 @@
 # found is after version 7.7.2, the first version that included the
 # curl-config script.  Note that it is very important for people
 # packaging binary versions of libcurl to include this script!
-# Without curl-config, we can only make educated guesses as to what
-# protocols are available.  Specifically, we assume that all of HTTP,
-# FTP, GOPHER, FILE, TELNET, LDAP, and DICT exist, and (if SSL exists)
-# HTTPS is present.  All of these protocols existed when libcurl was
-# first created in version 7, so this is a safe assumption.  If the
-# version is 7.11.0 or later, FTPS is assumed to be present as well.
-# FTPS existed before then, but was not yet fully standards compliant.
+# Without curl-config, we can only guess what protocols are available.
 
 AC_DEFUN([LIBCURL_CHECK_CONFIG],
 [
