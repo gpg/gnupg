@@ -119,6 +119,7 @@ use_aes=yes
 use_twofish=yes
 use_sha256=yes
 use_sha512=yes
+use_bzip2=yes
 use_exec=yes
 
 AC_ARG_ENABLE(minimal,
@@ -130,6 +131,7 @@ AC_ARG_ENABLE(minimal,
    use_twofish=no
    use_sha256=no
    use_sha512=no
+   use_bzip2=no
    use_exec=no)
 
 AC_MSG_CHECKING([whether to enable the IDEA cipher])
@@ -210,6 +212,13 @@ AC_ARG_ENABLE(sha512,
    AC_HELP_STRING([--disable-sha512],[disable the SHA-384 and SHA-512 digests]),
    use_sha512=$enableval)
 AC_MSG_RESULT($use_sha512)
+
+dnl BZLIB is defined only after we confirm the library is available later
+AC_MSG_CHECKING([whether to enable the BZIP2 compression algorithm])
+AC_ARG_ENABLE(bzip2,
+   AC_HELP_STRING([--disable-bzip2],[disable the BZIP2 compression algorithm]),
+   use_bzip2=$enableval)
+AC_MSG_RESULT($use_bzip2)
 
 AC_MSG_CHECKING([whether to enable external program execution])
 AC_ARG_ENABLE(exec,
@@ -996,6 +1005,34 @@ if test "$use_local_zlib" = yes ; then
 else
     AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, false)
 fi
+
+if test "$use_bzip2" = yes ; then
+  _cppflags="${CPPFLAGS}"
+  _ldflags="${LDFLAGS}"
+  AC_ARG_WITH(bzip2,
+     AC_HELP_STRING([--with-bzip2=DIR],[look for bzip2 in DIR]),
+      [
+      if test -d "$withval" ; then
+        CPPFLAGS="${CPPFLAGS} -I$withval/include"
+        LDFLAGS="${LDFLAGS} -L$withval/lib"
+      fi
+      ],withval="")
+
+  if test "$withval" != no ; then
+     AC_CHECK_HEADER(bzlib.h,
+        AC_CHECK_LIB(bz2,BZ2_bzCompressInit,
+  	  [
+	  have_bz2=yes
+	  ZLIBS="$ZLIBS -lbz2"
+	  AC_DEFINE(HAVE_BZIP2,1,
+		  [Defined if the bz2 compression library is available])
+	  ],
+	  CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}),
+	  CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags})
+  fi
+fi
+
+AM_CONDITIONAL(ENABLE_BZIP2_SUPPORT,test x"$have_bz2" = "xyes")
 AC_SUBST(ZLIBS)
 
 
