@@ -84,7 +84,13 @@ enum {
   GNUPG_Unknown_Sexp = 55,
   GNUPG_Unsupported_Protection = 56,
   GNUPG_Corrupted_Protection = 57,
-  GNUPG_Ambiguous_Name = 58
+  GNUPG_Ambiguous_Name = 58,
+  GNUPG_Card_Error = 59,
+  GNUPG_Card_Reset = 60,
+  GNUPG_Card_Removed = 61,
+  GNUPG_Invalid_Card = 62,
+  GNUPG_Card_Not_Present = 63,
+  GNUPG_No_PKCS15_App = 64,
 };
 
 /* Status codes - fixme: should go into another file */

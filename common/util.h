@@ -55,8 +55,30 @@ int map_kbx_err (int err);
 int map_assuan_err (int err);
 int map_to_assuan_status (int rc);
 
+/*-- replacement functions from funcname.c --*/
+#if !HAVE_VASPRINTF
+#include <stdarg.h>
+int vasprintf (char **result, const char *format, va_list *args);
+int asprintf (char **result, const char *format, ...);
+#endif
 
-/* some macros to replace ctype ones and avoid locale problems */
+#if !HAVE_FOPENCOOKIE
+typedef struct
+{
+  ssize_t (*read)(void*,char*,size_t);
+  ssize_t (*write)(void*,const char*,size_t);
+  int (*seek)(void*,off_t*,int);
+  int (*close)(coid*);
+} _IO_cookie_io_functions_t;
+typedef _IO_cookie_io_functions_t cookie_io_functions_t;
+FILE *fopencookie (void *cookie, const char *opentype,
+                   cookie_io_functions_t funclist);
+#endif /*!HAVE_FOPENCOOKIE*/
+
+
+
+
+/*-- some macros to replace ctype ones and avoid locale problems --*/
 #define spacep(p)   (*(p) == ' ' || *(p) == '\t')
 #define digitp(p)   (*(p) >= '0' && *(p) <= '9')
 #define hexdigitp(a) (digitp (a)                     \

@@ -31,7 +31,8 @@ libcommon_a_SOURCES = \
 	util.h i18n.h \
 	errors.c errors.h \
 	maperror.c \
-	sysutils.c sysutils.h
+	sysutils.c sysutils.h \
+	no-pth.c
 
 libcommon_a_LIBADD = @LIBOBJS@
 
