@@ -1,3 +1,9 @@
+2004-12-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ftp.c (main, get_key): Use auth data as passed by gpg.
+	Use CURLOPT_FILE instead of CURLOPT_WRITEDATA (same option, but
+	backwards compatible).
+
 2004-12-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ftp.c: New.

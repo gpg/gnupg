@@ -37,15 +37,16 @@ extern int optind;
 #define GET         0
 #define MAX_LINE   80
 #define MAX_PATH 1023
+#define MAX_AUTH  127
 #define MAX_HOST   79
 #define MAX_PORT    9
-#define MAX_URL (3+3+MAX_HOST+1+1+MAX_PORT+1+1+MAX_PATH+1+50)
+#define MAX_URL (3+3+MAX_AUTH+1+MAX_HOST+1+1+MAX_PORT+1+1+MAX_PATH+1+50)
 
 #define STRINGIFY(x) #x
 #define MKSTRING(x) STRINGIFY(x)
 
 static int verbose=0;
-static char host[MAX_HOST+1]={'\0'},port[MAX_PORT+1]={'\0'},path[MAX_PATH+1]={'\0'};
+static char auth[MAX_AUTH+1],host[MAX_HOST+1]={'\0'},port[MAX_PORT+1]={'\0'},path[MAX_PATH+1]={'\0'};
 static FILE *input=NULL,*output=NULL,*console=NULL;
 static CURL *curl;
 static char request[MAX_URL]={'\0'};
@@ -61,12 +62,12 @@ get_key(char *getkey)
 
   fprintf(output,"KEY 0x%s BEGIN\n",getkey);
 
-  sprintf(request,"ftp://%s%s%s%s%s",host,port[0]?":":"",
-	  port[0]?port:"",path[0]?"":"/",path);
+  sprintf(request,"ftp://%s%s%s%s%s%s%s",auth[0]?auth:"",auth[0]?"@":"",
+	  host,port[0]?":":"",port[0]?port:"",path[0]?"":"/",path);
 
   curl_easy_setopt(curl,CURLOPT_URL,request);
   curl_easy_setopt(curl,CURLOPT_WRITEFUNCTION,fwrite);
-  curl_easy_setopt(curl,CURLOPT_WRITEDATA,output);
+  curl_easy_setopt(curl,CURLOPT_FILE,output);
   curl_easy_setopt(curl,CURLOPT_ERRORBUFFER,errorbuffer);
 
   if(verbose>2)
@@ -132,7 +133,7 @@ main(int argc,char *argv[])
 	return KEYSERVER_OK;
 
       case 'o':
-	output=fopen(optarg,"w");
+	output=fopen(optarg,"wb");
 	if(output==NULL)
 	  {
 	    fprintf(console,"gpgkeys: Cannot open output file `%s': %s\n",
@@ -182,6 +183,12 @@ main(int argc,char *argv[])
 	  if(strcasecmp(commandstr,"get")==0)
 	    action=GET;
 
+	  continue;
+	}
+
+      if(sscanf(line,"AUTH %" MKSTRING(MAX_AUTH) "s\n",auth)==1)
+	{
+	  host[MAX_AUTH]='\0';
 	  continue;
 	}
 
