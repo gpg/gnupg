@@ -38,20 +38,27 @@
 #include "../cipher/elgamal.h"
 
 
-#define CIPHER_ALGO_NONE      0
-#define CIPHER_ALGO_IDEA      1     /* used only for documentation */
-#define CIPHER_ALGO_BLOWFISH 42
-#define CIPHER_ALGO_GOST     43
+#define CIPHER_ALGO_NONE	 0
+#define CIPHER_ALGO_IDEA	 1
+#define CIPHER_ALGO_3DES	 2
+#define CIPHER_ALGO_CAST	 3
+#define CIPHER_ALGO_BLOWFISH128  4  /* blowfish 128 bit key */
+#define CIPHER_ALGO_ROT_N	 5
+#define CIPHER_ALGO_SAFER_SK128  6
+#define CIPHER_ALGO_DES_SK	 7
+#define CIPHER_ALGO_BLOWFISH	42  /* blowfish 160 bit key (not in OpenPGP)*/
+#define CIPHER_ALGO_GOST	43  /* (Not in OpenPGP) */
 
 #define PUBKEY_ALGO_RSA       1
-#define PUBKEY_ALGO_ELGAMAL  42
+#define PUBKEY_ALGO_RSA_E     2     /* RSA encrypt only */
+#define PUBKEY_ALGO_RSA_S     3     /* RSA sign only */
+#define PUBKEY_ALGO_ELGAMAL  16
+#define PUBKEY_ALGO_DSA      17
 
 #define DIGEST_ALGO_MD5       1
-#define DIGEST_ALGO_RMD160   42
+#define DIGEST_ALGO_SHA1      2
+#define DIGEST_ALGO_RMD160    3
 
-#define DEFAULT_CIPHER_ALGO  CIPHER_ALGO_BLOWFISH
-#define DEFAULT_PUBKEY_ALGO  PUBKEY_ALGO_RSA
-#define DEFAULT_DIGEST_ALGO  DIGEST_ALGO_RMD160
 
 typedef struct {
     int algo;
@@ -78,12 +85,8 @@ byte get_random_byte( int level );
 extern ushort small_prime_numbers[];
 
 /*-- primegen.c --*/
-MPI generate_random_prime( unsigned nbits );
-
-/*-- seskey.c --*/
-void make_session_key( DEK *dek );
-MPI encode_session_key( DEK *dek, unsigned nbits );
-MPI encode_rmd160_value( byte *md, unsigned len, unsigned nbits );
+MPI generate_secret_prime( unsigned nbits );
+MPI generate_public_prime( unsigned nbits );
 
 
 #endif /*G10_CIPHER_H*/

@@ -23,23 +23,27 @@
 #include "mpi.h"
 
 typedef struct {
-    MPI e;	    /* exponent */
-    MPI n;	    /* modulus */
+    MPI p;	    /* prime */
+    MPI g;	    /* group generator */
+    MPI y;	    /* g^x mod p */
 } ELG_public_key;
 
 
 typedef struct {
-    MPI e;	    /* public exponent */
-    MPI n;	    /* public modulus */
-    MPI p;	    /* prime  p. */
-    MPI q;	    /* prime  q. */
-    MPI d;	    /* exponent */
-    MPI u;	    /* inverse of p mod q. */
+    MPI p;	    /* prime */
+    MPI g;	    /* group generator */
+    MPI y;	    /* g^x mod p */
+    MPI x;	    /* secret exponent */
 } ELG_secret_key;
 
 
-void elg_public(MPI output, MPI input, ELG_public_key *skey );
-void elg_secret(MPI output, MPI input, ELG_secret_key *skey );
-
+void elg_free_public_key( ELG_public_key *pk );
+void elg_free_secret_key( ELG_secret_key *sk );
+void elg_generate( ELG_public_key *pk, ELG_secret_key *sk, unsigned nbits );
+int  elg_check_secret_key( ELG_secret_key *sk );
+void elg_encipher(MPI a, MPI b, MPI input, ELG_public_key *pkey );
+void elg_decipher(MPI output, MPI a, MPI b, ELG_secret_key *skey );
+void elg_sign(MPI a, MPI b, MPI input, ELG_secret_key *skey);
+int  elg_verify(MPI a, MPI b, MPI input, ELG_public_key *pkey);
 
 #endif /*G10_ELGAMAL_H*/

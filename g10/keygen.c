@@ -31,6 +31,13 @@
 #include "ttyio.h"
 #include "options.h"
 
+#if 0
+  #define TEST_ALGO  1
+  #define TEST_NBITS 256
+  #define TEST_UID   "Karl Test"
+#endif
+
+
 static int
 answer_is_yes( const char *s )
 {
@@ -62,6 +69,7 @@ write_uid( IOBUF out, const char *s )
 }
 
 
+#ifdef HAVE_RSA_CIPHER
 static int
 gen_rsa(unsigned nbits, IOBUF pub_io, IOBUF sec_io)
 {
@@ -114,6 +122,61 @@ gen_rsa(unsigned nbits, IOBUF pub_io, IOBUF sec_io)
     free_packet(&pkt2);
     return rc;
 }
+#endif /*HAVE_RSA_CIPHER*/
+
+static int
+gen_elg(unsigned nbits, IOBUF pub_io, IOBUF sec_io)
+{
+    int rc;
+    PACKET pkt1, pkt2;
+    PKT_seckey_cert *skc;
+    PKT_pubkey_cert *pkc;
+    ELG_public_key pk;
+    ELG_secret_key sk;
+
+    elg_generate( &pk, &sk, nbits );
+
+    skc = m_alloc( sizeof *skc );
+    pkc = m_alloc( sizeof *pkc );
+    skc->timestamp = pkc->timestamp = make_timestamp();
+    skc->valid_days = pkc->valid_days = 0; /* fixme: make it configurable*/
+    skc->pubkey_algo = pkc->pubkey_algo = PUBKEY_ALGO_ELGAMAL;
+		       memset(&pkc->mfx, 0, sizeof pkc->mfx);
+		       pkc->d.elg.p = pk.p;
+		       pkc->d.elg.g = pk.g;
+		       pkc->d.elg.y = pk.y;
+    skc->d.elg.p = sk.p;
+    skc->d.elg.g = sk.g;
+    skc->d.elg.y = sk.y;
+    skc->d.elg.x = sk.x;
+
+    skc->d.elg.calc_csum = 0;
+    skc->d.elg.is_protected = 0; /* FIXME!!! */
+    skc->d.elg.protect_algo = 0; /* should be blowfish */
+    /*memcpy(skc->d.elg.protect.blowfish.iv,"12345678", 8);*/
+
+    init_packet(&pkt1);
+    pkt1.pkttype = PKT_PUBKEY_CERT;
+    pkt1.pkt.pubkey_cert = pkc;
+    init_packet(&pkt2);
+    pkt2.pkttype = PKT_SECKEY_CERT;
+    pkt2.pkt.seckey_cert = skc;
+
+    if( (rc = build_packet( pub_io, &pkt1 )) ) {
+	log_error("build pubkey_cert packet failed: %s\n", g10_errstr(rc) );
+	goto leave;
+    }
+    if( (rc = build_packet( sec_io, &pkt2 )) ) {
+	log_error("build seckey_cert packet failed: %s\n", g10_errstr(rc) );
+	goto leave;
+    }
+
+  leave:
+    free_packet(&pkt1);
+    free_packet(&pkt2);
+    return rc;
+}
+
 
 
 /****************
@@ -130,19 +193,62 @@ generate_keypair()
     IOBUF pub_io = NULL;
     IOBUF sec_io = NULL;
     int rc;
+    int algo;
+    const char *algo_name;
 
+  #ifndef TEST_ALGO
     if( opt.batch || opt.answer_yes || opt.answer_no )
 	log_fatal("Key generation can only be used in interactive mode\n");
 
-    tty_printf("About to generate a new keypair:\n"
+    tty_printf("Please select the algorithm to use:\n"
+	       "   (1) ElGamal is the suggested one.\n"
+	   #ifdef HAVE_RSA_CIPHER
+	       "   (2) RSA cannot be used inthe U.S.\n"
+	   #endif
+	       );
+  #endif
+
+    for(;;) {
+      #ifdef TEST_ALGO
+	algo = TEST_ALGO;
+      #else
+	answer = tty_get("Your selection? (1,2) ");
+	tty_kill_prompt();
+	algo = *answer? atoi(answer): 1;
+	m_free(answer);
+      #endif
+	if( algo == 1 ) {
+	    algo = PUBKEY_ALGO_ELGAMAL;
+	    algo_name = "ElGamal";
+	    break;
+	}
+      #ifdef HAVE_RSA_CIPHER
+	else if( algo == 2 ) {
+	    algo = PUBKEY_ALGO_RSA;
+	    algo_name = "RSA";
+	    break;
+	}
+      #endif
+    }
+
+
+
+    tty_printf("About to generate a new %s keypair.\n"
+	  #ifndef TEST_NBITS
 	       "              minimum keysize is  768 bits\n"
 	       "              default keysize is 1024 bits\n"
-	       "    highest suggested keysize is 2048 bits\n" );
+	       "    highest suggested keysize is 2048 bits\n"
+	  #endif
+							     , algo_name );
     for(;;) {
-	answer = tty_get("What keysize do you want? (256) ");
+      #ifdef TEST_NBITS
+	nbits = TEST_NBITS;
+      #else
+	answer = tty_get("What keysize do you want? (1024) ");
 	tty_kill_prompt();
-	nbits = *answer? atoi(answer): 256;
+	nbits = *answer? atoi(answer): 1024;
 	m_free(answer);
+      #endif
 	if( nbits < 128 ) /* FIXME: change this to 768 */
 	    tty_printf("keysize too small; please select a larger one\n");
 	else if( nbits > 2048 ) {
@@ -167,6 +273,11 @@ generate_keypair()
 	nbits = ((nbits + 31) / 32) * 32;
 	tty_printf("rounded up to %u bits\n", nbits );
     }
+
+  #ifdef TEST_UID
+    uid = m_alloc(strlen(TEST_UID)+1);
+    strcpy(uid, TEST_UID);
+  #else
     tty_printf( "\nYou need a User-ID to identify your key; please use your name and your\n"
 		"email address in this suggested format:\n"
 		"    \"Heinrich Heine <heinrichh@uni-duesseldorf.de>\n" );
@@ -189,6 +300,7 @@ generate_keypair()
 	    m_free(answer);
 	}
     }
+  #endif
     /* now check wether we a are allowed to write the keyrings */
     if( !(rc=overwrite_filep( pub_fname )) ) {
 	if( !(pub_io = iobuf_create( pub_fname )) )
@@ -226,7 +338,14 @@ generate_keypair()
     write_comment( pub_io, "#public key created by G10 pre-release " VERSION );
     write_comment( sec_io, "#secret key created by G10 pre-release " VERSION );
 
-    gen_rsa(nbits, pub_io, sec_io);
+    if( algo == PUBKEY_ALGO_ELGAMAL )
+	gen_elg(nbits, pub_io, sec_io);
+  #ifdef HAVE_RSA_CIPHER
+    else if( algo == PUBKEY_ALGO_RSA )
+	gen_rsa(nbits, pub_io, sec_io);
+  #endif
+    else
+	log_bug(NULL);
     write_uid(pub_io, uid );
     write_uid(sec_io, uid );
     m_free(uid);

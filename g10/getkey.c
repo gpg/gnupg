@@ -85,8 +85,9 @@ cache_pubkey_cert( PKT_pubkey_cert *pkc )
     pkc_cache_entry_t ce;
     u32 keyid[2];
 
-    if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	mpi_get_keyid( pkc->d.rsa.rsa_n, keyid );
+    if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL
+	|| pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
+	keyid_from_pkc( pkc, keyid );
     }
     else
 	return; /* don't know how to get the keyid */
@@ -252,13 +253,11 @@ get_pubkey_by_name( PKT_pubkey_cert *pkc, const char *name )
  * Get a secret key and store it into skey
  */
 int
-get_seckey( RSA_secret_key *skey, u32 *keyid )
+get_seckey( PKT_seckey_cert *skc, u32 *keyid )
 {
     int rc=0;
-    PKT_seckey_cert skc;
 
-    memset( &skc, 0, sizeof skc );
-    if( !(rc=scan_secret_keyring( &skc, keyid, NULL, "../keys/secring.g10" ) ) )
+    if( !(rc=scan_secret_keyring( skc, keyid, NULL, "../keys/secring.g10" ) ) )
 	goto found;
     /* fixme: look at other places */
     goto leave;
@@ -267,22 +266,10 @@ get_seckey( RSA_secret_key *skey, u32 *keyid )
     /* get the secret key (this may prompt for a passprase to
      * unlock the secret key
      */
-    if( (rc = check_secret_key( &skc )) )
+    if( (rc = check_secret_key( skc )) )
 	goto leave;
-    if( skc.pubkey_algo != PUBKEY_ALGO_RSA ) {
-	rc = G10ERR_PUBKEY_ALGO; /* unsupport algorithm */
-	goto leave;
-    }
-    /* copy the stuff to SKEY. skey is then the owner */
-    skey->e = skc.d.rsa.rsa_e;
-    skey->n = skc.d.rsa.rsa_n;
-    skey->p = skc.d.rsa.rsa_p;
-    skey->q = skc.d.rsa.rsa_q;
-    skey->d = skc.d.rsa.rsa_d;
-    skey->u = skc.d.rsa.rsa_u;
 
   leave:
-    memset( &skc, 0, sizeof skc );
     return rc;
 }
 
@@ -357,8 +344,9 @@ scan_keyring( PKT_pubkey_cert *pkc, u32 *keyid,
 	}
 	else if( keyid && pkt.pkttype == PKT_PUBKEY_CERT ) {
 	    switch( pkt.pkt.pubkey_cert->pubkey_algo ) {
+	      case PUBKEY_ALGO_ELGAMAL:
 	      case PUBKEY_ALGO_RSA:
-		mpi_get_keyid( pkt.pkt.pubkey_cert->d.rsa.rsa_n , akeyid );
+		keyid_from_pkc( pkt.pkt.pubkey_cert, akeyid );
 		if( akeyid[0] == keyid[0] && akeyid[1] == keyid[1] ) {
 		    copy_pubkey_cert( pkc, pkt.pkt.pubkey_cert );
 		    found++;
@@ -406,8 +394,9 @@ scan_keyring( PKT_pubkey_cert *pkc, u32 *keyid,
 		log_error("Ooops: no pubkey for userid '%.*s'\n",
 			    pkt.pkt.user_id->len, pkt.pkt.user_id->name);
 	    else {
-		if( last_pk->pubkey_algo == PUBKEY_ALGO_RSA ) {
-		     mpi_get_keyid( last_pk->d.rsa.rsa_n , akeyid );
+		if( last_pk->pubkey_algo == PUBKEY_ALGO_ELGAMAL
+		    || last_pk->pubkey_algo == PUBKEY_ALGO_RSA ) {
+		     keyid_from_pkc( last_pk, akeyid );
 		     cache_user_id( pkt.pkt.user_id, akeyid );
 		}
 		cache_pubkey_cert( last_pk );
@@ -462,8 +451,9 @@ scan_secret_keyring( PKT_seckey_cert *skc, u32 *keyid,
 	}
 	else if( keyid && pkt.pkttype == PKT_SECKEY_CERT ) {
 	    switch( pkt.pkt.seckey_cert->pubkey_algo ) {
+	      case PUBKEY_ALGO_ELGAMAL:
 	      case PUBKEY_ALGO_RSA:
-		mpi_get_keyid( pkt.pkt.seckey_cert->d.rsa.rsa_n , akeyid );
+		keyid_from_skc( pkt.pkt.seckey_cert, akeyid );
 		if( akeyid[0] == keyid[0] && akeyid[1] == keyid[1] ) {
 		    copy_seckey_cert( skc, pkt.pkt.seckey_cert );
 		    found++;
@@ -510,9 +500,10 @@ scan_secret_keyring( PKT_seckey_cert *skc, u32 *keyid,
 		log_error("Ooops: no seckey for userid '%.*s'\n",
 			    pkt.pkt.user_id->len, pkt.pkt.user_id->name);
 	    else {
-		if( last_pk->pubkey_algo == PUBKEY_ALGO_RSA ) {
-		     mpi_get_keyid( last_pk->d.rsa.rsa_n , akeyid );
-		     cache_user_id( pkt.pkt.user_id, akeyid );
+		if( last_pk->pubkey_algo == PUBKEY_ALGO_ELGAMAL
+		   || last_pk->pubkey_algo == PUBKEY_ALGO_RSA ) {
+		    keyid_from_skc( last_pk, akeyid );
+		    cache_user_id( pkt.pkt.user_id, akeyid );
 		}
 	    }
 	}

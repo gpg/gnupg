@@ -176,3 +176,10 @@ mpi_mul( MPI w, MPI u, MPI v)
 }
 
 
+void
+mpi_mulm( MPI w, MPI u, MPI v, MPI m)
+{
+    mpi_mul(w, u, v);
+    mpi_fdiv_r( w, w, m );
+}
+

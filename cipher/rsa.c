@@ -95,8 +95,8 @@ rsa_generate( RSA_public_key *pk, RSA_secret_key *sk, unsigned nbits )
     MPI f;
 
     /* select two (very secret) primes */
-    p = generate_random_prime( nbits / 2 );
-    q = generate_random_prime( nbits / 2 );
+    p = generate_secret_prime( nbits / 2 );
+    q = generate_secret_prime( nbits / 2 );
     if( mpi_cmp( p, q ) > 0 ) /* p shall be smaller than q (for calc of u)*/
 	mpi_swap(p,q);
     /* calculate Euler totient: phi = (p-1)(q-1) */
@@ -120,10 +120,10 @@ rsa_generate( RSA_public_key *pk, RSA_secret_key *sk, unsigned nbits )
 	mpi_add_ui( e, e, 2);
     /* calculate the secret key d = e^1 mod phi */
     d = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
-    mpi_inv_mod(d, e, f );
+    mpi_invm(d, e, f );
     /* calculate the inverse of p and q (used for chinese remainder theorem)*/
     u = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
-    mpi_inv_mod(u, p, q );
+    mpi_invm(u, p, q );
 
     if( DBG_CIPHER ) {
 	log_mpidump("  p= ", p );

@@ -110,9 +110,13 @@ log_bug( const char *fmt, ... )
     va_list arg_ptr ;
 
     fprintf(stderr, "\nInternal Error%s: ", pidstring  ) ;
-    va_start( arg_ptr, fmt ) ;
-    vfprintf(stderr,fmt,arg_ptr) ;
-    va_end(arg_ptr);
+    if( fmt ) {
+	va_start( arg_ptr, fmt ) ;
+	vfprintf(stderr,fmt,arg_ptr) ;
+	va_end(arg_ptr);
+    }
+    else
+	fputs("Ohhh jeeee ...\n", stderr);
     fflush(stderr);
     abort();
 }

@@ -30,7 +30,7 @@
  *		1 = (a*x) mod n
  */
 void
-mpi_inv_mod( MPI x, MPI a, MPI n )
+mpi_invm( MPI x, MPI a, MPI n )
 {
   #if 0
     MPI u, v, u1, u2, u3, v1, v2, v3, q, t1, t2, t3;

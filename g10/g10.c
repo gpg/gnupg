@@ -220,7 +220,7 @@ main( int argc, char **argv )
       case aPrimegen:
 	if( argc )
 	    usage(1);
-	mpi_print( stdout, generate_random_prime( pargs.r.ret_int ), 1);
+	mpi_print( stdout, generate_public_prime( pargs.r.ret_int ), 1);
 	putchar('\n');
 	break;
 

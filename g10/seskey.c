@@ -26,6 +26,7 @@
 #include "util.h"
 #include "cipher.h"
 #include "mpi.h"
+#include "main.h"
 
 
 
@@ -73,7 +74,7 @@ encode_session_key( DEK *dek, unsigned nbits )
      *	   0  2  RND(n bytes)  0  A  DEK(k bytes)  CSUM(2 bytes)
      *
      * RND are non-zero random bytes.
-     * A   is the cipher algorithm ( 42 for Blowfish )
+     * A   is the cipher algorithm
      * DEK is the encryption key (session key) length k depends on the
      *	   cipher algorithm (20 is used with blowfish).
      * CSUM is the 16 bit checksum over the DEK
@@ -106,7 +107,7 @@ encode_session_key( DEK *dek, unsigned nbits )
 MPI
 encode_rmd160_value( byte *md, unsigned len, unsigned nbits )
 {
-    static byte asn[18] = /* stored reverse FIXME: need other values*/
+    static byte asn[18] = /* FIXME: need other values*/
 	  { 0x30, 0x20, 0x30, 0x0c, 0x06, 0x08, 0x2a, 0x86,0x48,
 	    0x86, 0xf7, 0x0d, 0x02, 0x05, 0x05, 0x00, 0x04, 0x10 };
     int nframe = (nbits+7) / 8;
@@ -119,7 +120,7 @@ encode_rmd160_value( byte *md, unsigned len, unsigned nbits )
 
     /* We encode the MD in this way:
      *
-     *	   0  42 PAD(n bytes)	0  ASN(18 bytes)  MD(20 bytes)
+     *	   0  A PAD(n bytes)   0  ASN(18 bytes)  MD(20 bytes)
      *
      * PAD consists of FF bytes.
      */
@@ -133,6 +134,46 @@ encode_rmd160_value( byte *md, unsigned len, unsigned nbits )
     while( n < nframe-2 )
 	mpi_putbyte(frame, n++, 0xff );
     mpi_putbyte(frame, n++, DIGEST_ALGO_RMD160 );
+    mpi_putbyte(frame, n++, 0 );
+    assert( n == nframe );
+    return frame;
+}
+
+
+/****************
+ * Encode a md5 message digest of LEN bytes into NBITS.
+ * returns: A mpi with the session key (caller must free)
+ */
+MPI
+encode_md5_value( byte *md, unsigned len, unsigned nbits )
+{
+    static byte asn[18] =
+	  { 0x30, 0x20, 0x30, 0x0c, 0x06, 0x08, 0x2a, 0x86,0x48,
+	    0x86, 0xf7, 0x0d, 0x02, 0x05, 0x05, 0x00, 0x04, 0x10 };
+    int nframe = (nbits+7) / 8;
+    byte *p;
+    MPI frame;
+    int i,n,c;
+
+    if( (nbits % BITS_PER_MPI_LIMB) || nframe < 38 || len != 16 )
+	log_bug("can't encode a %d bit MD into a %d bits frame\n",len*8, nbits);
+
+    /* We encode the MD in this way:
+     *
+     *	   0  A PAD(n bytes)   0  ASN(18 bytes)  MD(16 bytes)
+     *
+     * PAD consists of FF bytes.
+     */
+    frame = mpi_alloc_secure( nframe / BYTES_PER_MPI_LIMB );
+    n = 0;
+    for(i=16-1; i >= 0; i--, n++ )
+	mpi_putbyte(frame, n, md[i] );
+    for( i=18-1; i >= 0; i--, n++ )
+	mpi_putbyte(frame, n, asn[i] );
+    mpi_putbyte(frame, n++, 0 );
+    while( n < nframe-2 )
+	mpi_putbyte(frame, n++, 0xff );
+    mpi_putbyte(frame, n++, DIGEST_ALGO_MD5 );
     mpi_putbyte(frame, n++, 0 );
     assert( n == nframe );
     return frame;

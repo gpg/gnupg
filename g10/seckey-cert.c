@@ -30,6 +30,9 @@
 #include "keydb.h"
 #include "cipher.h"
 
+#if  BLOWFISH_BLOCKSIZE != 8
+  #error unsupportted blocksize
+#endif
 
 static u16
 checksum( byte *p )
@@ -44,11 +47,9 @@ checksum( byte *p )
 }
 
 
-/****************
- * Check the secret key certificate
- */
-int
-check_secret_key( PKT_seckey_cert *cert )
+
+static int
+check_elg( PKT_seckey_cert *cert )
 {
     byte iv[8];
     byte *mpibuf;
@@ -56,13 +57,73 @@ check_secret_key( PKT_seckey_cert *cert )
     MPI temp_mpi;
     int res;
     u32 keyid[2];
+    ELG_secret_key skey;
 
-#if  BLOWFISH_BLOCKSIZE != 8
-  #error unsupportted blocksize
-#endif
+    if( cert->d.elg.is_protected ) { /* remove the protection */
+	DEK *dek = NULL;
+	BLOWFISH_context *blowfish_ctx=NULL;
 
-    if( cert->pubkey_algo != PUBKEY_ALGO_RSA )
-	return G10ERR_PUBKEY_ALGO; /* unsupport algorithm */
+	switch( cert->d.elg.protect_algo ) {
+	  case CIPHER_ALGO_NONE: log_bug(NULL); break;
+	  case CIPHER_ALGO_BLOWFISH:
+	    keyid_from_skc( cert, keyid );
+	    dek = get_passphrase_hash( keyid, NULL );
+	    m_free(dek); /* pw is in secure memory, so m_free() burns it */
+	    memset( iv, 0, BLOWFISH_BLOCKSIZE );
+	    blowfish_ctx = m_alloc_secure( sizeof *blowfish_ctx );
+	    blowfish_setiv( blowfish_ctx, iv );
+	    blowfish_decode_cfb( blowfish_ctx,
+				 cert->d.elg.protect.blowfish.iv,
+				 cert->d.elg.protect.blowfish.iv, 8 );
+	    cert->d.elg.calc_csum = 0;
+	    mpibuf = (byte*)cert->d.elg.x;
+	    n = ((mpibuf[0] << 8) | mpibuf[1])-2;
+	    blowfish_decode_cfb( blowfish_ctx, mpibuf+4, mpibuf+4, n );
+	    cert->d.elg.calc_csum += checksum( mpibuf );
+	    cert->d.elg.x = mpi_decode_buffer( mpibuf );
+	    m_free( mpibuf );
+	    m_free( blowfish_ctx );
+	    cert->d.elg.is_protected = 0;
+	    /* now let's see wether we have used the right passphrase */
+	    if( cert->d.elg.calc_csum != cert->d.elg.csum )
+		return G10ERR_BAD_PASS;
+
+	    skey.p = cert->d.elg.p;
+	    skey.g = cert->d.elg.g;
+	    skey.y = cert->d.elg.y;
+	    skey.x = cert->d.elg.x;
+	    res = elg_check_secret_key( &skey );
+	    memset( &skey, 0, sizeof skey );
+	    if( !res )
+		return G10ERR_BAD_PASS;
+	    break;
+
+	  default:
+	    return G10ERR_CIPHER_ALGO; /* unsupport protection algorithm */
+	}
+    }
+    /* must check the checksum here, because we didn't do it when
+     * parsing an unprotected certificate */
+    if( cert->d.elg.calc_csum != cert->d.elg.csum ) {
+	log_error("checksum in secret key certificate is wrong\n");
+	log_debug("stored csum=%04hx calculated csum=%04hx\n",
+		   cert->d.elg.csum, cert->d.elg.calc_csum );
+	return G10ERR_CHECKSUM;
+    }
+    return 0;
+}
+
+
+#ifdef HAVE_RSA_CIPHER
+static int
+check_rsa( PKT_seckey_cert *cert )
+{
+    byte iv[8];
+    byte *mpibuf;
+    u16 n;
+    MPI temp_mpi;
+    int res;
+    u32 keyid[2];
 
     if( cert->d.rsa.is_protected ) { /* remove the protection */
 	DEK *dek = NULL;
@@ -73,7 +134,7 @@ check_secret_key( PKT_seckey_cert *cert )
 	    log_bug("unprotect seckey_cert is flagged protected\n");
 	    break;
 	  case CIPHER_ALGO_BLOWFISH:
-	    mpi_get_keyid( cert->d.rsa.rsa_n , keyid );
+	    keyid_from_skc( cert, keyid );
 	    dek = get_passphrase_hash( keyid, NULL );
 
 	    m_free(dek); /* pw is in secure memory, so m_free() burns it */
@@ -133,5 +194,24 @@ check_secret_key( PKT_seckey_cert *cert )
     }
     return 0;
 }
+#endif /*HAVE_RSA_CIPHER*/
 
+
+
+
+/****************
+ * Check the secret key certificate
+ */
+int
+check_secret_key( PKT_seckey_cert *cert )
+{
+    if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
+	return check_elg( cert );
+  #ifdef HAVE_RSA_CIPHER
+    else if( cert->pubkey_algo == PUBKEY_ALGO_RSA )
+	return check_rsa( cert );
+  #endif
+    else
+	return G10ERR_PUBKEY_ALGO;
+}
 

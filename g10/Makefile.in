@@ -59,6 +59,7 @@ g10_SOURCES = g10.c		\
 	      cipher.c		\
 	      options.h 	\
 	      openfile.c	\
+	      keyid.c		\
 	      packet.h		\
 	      parse-packet.c	\
 	      passphrase.c	\
@@ -90,7 +91,7 @@ COMPILE = $(CC) -c $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 LINK = $(CC) $(LDFLAGS) -o $@
 g10_OBJECTS = g10.o build-packet.o compress.o encode.o encr-data.o \
 free-packet.o getkey.o keygen.o mainproc.o armor.o mdfilter.o cipher.o \
-openfile.o parse-packet.o passphrase.o plaintext.o pubkey-enc.o \
+openfile.o keyid.o parse-packet.o passphrase.o plaintext.o pubkey-enc.o \
 seckey-cert.o seskey.o sign.o comment.o sig-check.o
 EXTRA_g10_SOURCES =
 g10_LDADD = $(LDADD)
@@ -111,12 +112,12 @@ $(srcdir)/.deps/cipher.P $(srcdir)/.deps/comment.P \
 $(srcdir)/.deps/compress.P $(srcdir)/.deps/encode.P \
 $(srcdir)/.deps/encr-data.P $(srcdir)/.deps/free-packet.P \
 $(srcdir)/.deps/g10.P $(srcdir)/.deps/getkey.P $(srcdir)/.deps/keygen.P \
-$(srcdir)/.deps/mainproc.P $(srcdir)/.deps/mdfilter.P \
-$(srcdir)/.deps/openfile.P $(srcdir)/.deps/parse-packet.P \
-$(srcdir)/.deps/passphrase.P $(srcdir)/.deps/plaintext.P \
-$(srcdir)/.deps/pubkey-enc.P $(srcdir)/.deps/seckey-cert.P \
-$(srcdir)/.deps/seskey.P $(srcdir)/.deps/sig-check.P \
-$(srcdir)/.deps/sign.P
+$(srcdir)/.deps/keyid.P $(srcdir)/.deps/mainproc.P \
+$(srcdir)/.deps/mdfilter.P $(srcdir)/.deps/openfile.P \
+$(srcdir)/.deps/parse-packet.P $(srcdir)/.deps/passphrase.P \
+$(srcdir)/.deps/plaintext.P $(srcdir)/.deps/pubkey-enc.P \
+$(srcdir)/.deps/seckey-cert.P $(srcdir)/.deps/seskey.P \
+$(srcdir)/.deps/sig-check.P $(srcdir)/.deps/sign.P
 SOURCES = $(g10_SOURCES)
 OBJECTS = $(g10_OBJECTS)
 

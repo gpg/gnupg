@@ -35,22 +35,39 @@
 void
 free_pubkey_enc( PKT_pubkey_enc *enc )
 {
-    mpi_free( enc->d.rsa.rsa_integer );
+    if( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	mpi_free( enc->d.elg.a );
+	mpi_free( enc->d.elg.b );
+    }
+    else if( enc->pubkey_algo == PUBKEY_ALGO_RSA )
+	mpi_free( enc->d.rsa.rsa_integer );
     m_free(enc);
 }
 
 void
 free_seckey_enc( PKT_signature *enc )
 {
-    mpi_free( enc->d.rsa.rsa_integer );
+    if( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	mpi_free( enc->d.elg.a );
+	mpi_free( enc->d.elg.b );
+    }
+    else if( enc->pubkey_algo == PUBKEY_ALGO_RSA )
+	mpi_free( enc->d.rsa.rsa_integer );
     m_free(enc);
 }
 
 void
 free_pubkey_cert( PKT_pubkey_cert *cert )
 {
-    mpi_free( cert->d.rsa.rsa_n );
-    mpi_free( cert->d.rsa.rsa_e );
+    if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	mpi_free( cert->d.elg.p );
+	mpi_free( cert->d.elg.g );
+	mpi_free( cert->d.elg.y );
+    }
+    else if( cert->pubkey_algo == PUBKEY_ALGO_RSA ) {
+	mpi_free( cert->d.rsa.rsa_n );
+	mpi_free( cert->d.rsa.rsa_e );
+    }
     md5_close( cert->mfx.md5 );
     rmd160_close( cert->mfx.rmd160 );
     m_free(cert);
@@ -62,8 +79,15 @@ copy_pubkey_cert( PKT_pubkey_cert *d, PKT_pubkey_cert *s )
     if( !d )
 	d = m_alloc(sizeof *d);
     memcpy( d, s, sizeof *d );
-    d->d.rsa.rsa_n = mpi_copy( s->d.rsa.rsa_n );
-    d->d.rsa.rsa_e = mpi_copy( s->d.rsa.rsa_e );
+    if( s->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	d->d.elg.p = mpi_copy( s->d.elg.p );
+	d->d.elg.g = mpi_copy( s->d.elg.g );
+	d->d.elg.y = mpi_copy( s->d.elg.y );
+    }
+    else if( s->pubkey_algo == PUBKEY_ALGO_RSA ) {
+	d->d.rsa.rsa_n = mpi_copy( s->d.rsa.rsa_n );
+	d->d.rsa.rsa_e = mpi_copy( s->d.rsa.rsa_e );
+    }
     d->mfx.md5 = NULL;
     d->mfx.rmd160 =NULL;
     return d;
@@ -72,19 +96,30 @@ copy_pubkey_cert( PKT_pubkey_cert *d, PKT_pubkey_cert *s )
 void
 free_seckey_cert( PKT_seckey_cert *cert )
 {
-    mpi_free( cert->d.rsa.rsa_n );
-    mpi_free( cert->d.rsa.rsa_e );
-    if( cert->d.rsa.is_protected ) {
-	m_free( cert->d.rsa.rsa_d );
-	m_free( cert->d.rsa.rsa_p );
-	m_free( cert->d.rsa.rsa_q );
-	m_free( cert->d.rsa.rsa_u );
+    if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	mpi_free( cert->d.elg.p );
+	mpi_free( cert->d.elg.g );
+	mpi_free( cert->d.elg.y );
+	if( cert->d.rsa.is_protected )
+	    m_free( cert->d.elg.x );
+	else
+	    mpi_free( cert->d.elg.x );
     }
-    else {
-	mpi_free( cert->d.rsa.rsa_d );
-	mpi_free( cert->d.rsa.rsa_p );
-	mpi_free( cert->d.rsa.rsa_q );
-	mpi_free( cert->d.rsa.rsa_u );
+    else if( cert->pubkey_algo == PUBKEY_ALGO_RSA ) {
+	mpi_free( cert->d.rsa.rsa_n );
+	mpi_free( cert->d.rsa.rsa_e );
+	if( cert->d.rsa.is_protected ) {
+	    m_free( cert->d.rsa.rsa_d );
+	    m_free( cert->d.rsa.rsa_p );
+	    m_free( cert->d.rsa.rsa_q );
+	    m_free( cert->d.rsa.rsa_u );
+	}
+	else {
+	    mpi_free( cert->d.rsa.rsa_d );
+	    mpi_free( cert->d.rsa.rsa_p );
+	    mpi_free( cert->d.rsa.rsa_q );
+	    mpi_free( cert->d.rsa.rsa_u );
+	}
     }
     m_free(cert);
 }
@@ -95,12 +130,20 @@ copy_seckey_cert( PKT_seckey_cert *d, PKT_seckey_cert *s )
     if( !d )
 	d = m_alloc(sizeof *d);
     memcpy( d, s, sizeof *d );
-    d->d.rsa.rsa_n = mpi_copy( s->d.rsa.rsa_n );
-    d->d.rsa.rsa_e = mpi_copy( s->d.rsa.rsa_e );
-    d->d.rsa.rsa_d = mpi_copy( s->d.rsa.rsa_d );
-    d->d.rsa.rsa_p = mpi_copy( s->d.rsa.rsa_p );
-    d->d.rsa.rsa_q = mpi_copy( s->d.rsa.rsa_q );
-    d->d.rsa.rsa_u = mpi_copy( s->d.rsa.rsa_u );
+    if( s->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	d->d.elg.p = mpi_copy( s->d.elg.p );
+	d->d.elg.g = mpi_copy( s->d.elg.g );
+	d->d.elg.y = mpi_copy( s->d.elg.y );
+	d->d.elg.x = mpi_copy( s->d.elg.x );
+    }
+    else if( s->pubkey_algo == PUBKEY_ALGO_RSA ) {
+	d->d.rsa.rsa_n = mpi_copy( s->d.rsa.rsa_n );
+	d->d.rsa.rsa_e = mpi_copy( s->d.rsa.rsa_e );
+	d->d.rsa.rsa_d = mpi_copy( s->d.rsa.rsa_d );
+	d->d.rsa.rsa_p = mpi_copy( s->d.rsa.rsa_p );
+	d->d.rsa.rsa_q = mpi_copy( s->d.rsa.rsa_q );
+	d->d.rsa.rsa_u = mpi_copy( s->d.rsa.rsa_u );
+    }
     return d;
 }
 

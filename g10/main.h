@@ -21,6 +21,11 @@
 #define G10_MAIN_H
 #include "types.h"
 #include "iobuf.h"
+#include "cipher.h"
+
+#define DEFAULT_CIPHER_ALGO  CIPHER_ALGO_BLOWFISH
+#define DEFAULT_PUBKEY_ALGO  PUBKEY_ALGO_ELGAMAL
+#define DEFAULT_DIGEST_ALGO  DIGEST_ALGO_RMD160
 
 /*-- encode.c --*/
 int encode_symmetric( const char *filename );
@@ -36,5 +41,12 @@ void generate_keypair(void);
 /*-- openfile.c --*/
 int overwrite_filep( const char *fname );
 IOBUF open_outfile( const char *fname );
+
+/*-- seskey.c --*/
+void make_session_key( DEK *dek );
+MPI encode_session_key( DEK *dek, unsigned nbits );
+MPI encode_rmd160_value( byte *md, unsigned len, unsigned nbits );
+MPI encode_md5_value( byte *md, unsigned len, unsigned nbits );
+
 
 #endif /*G10_MAIN_H*/

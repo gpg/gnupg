@@ -148,6 +148,7 @@ parse_packet( IOBUF inp, PACKET *pkt )
 	rc = parse_certificate(inp, pkttype, pktlen, hdr, hdrlen, pkt );
 	break;
       case PKT_SECKEY_CERT:
+      case PKT_SECKEY_SUBCERT:
 	pkt->pkt.seckey_cert = m_alloc_clear(sizeof *pkt->pkt.seckey_cert );
 	rc = parse_certificate(inp, pkttype, pktlen, hdr, hdrlen, pkt );
 	break;
@@ -230,7 +231,19 @@ parse_publickey( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     if( list_mode )
 	printf(":public key packet: keyid %08lX%08lX\n",
 					k->keyid[0], k->keyid[1]);
-    if( k->pubkey_algo == PUBKEY_ALGO_RSA ) {
+    if( k->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	n = pktlen;
+	k->d.elg.a = mpi_decode(inp, &n ); pktlen -=n;
+	k->d.elg.b = mpi_decode(inp, &n ); pktlen -=n;
+	if( list_mode ) {
+	    printf("\telg a: ");
+	    mpi_print(stdout, k->d.elg.a, mpi_print_mode );
+	    printf("\n\telg b: ");
+	    mpi_print(stdout, k->d.elg.b, mpi_print_mode );
+	    putchar('\n');
+	}
+    }
+    else if( k->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	n = pktlen;
 	k->d.rsa.rsa_integer = mpi_decode(inp, &n ); pktlen -=n;
 	if( list_mode ) {
@@ -276,7 +289,29 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	       "\tversion %d, created %lu, md5len %d, sigclass %02x\n",
 		sig->keyid[0], sig->keyid[1],
 		version, sig->timestamp, md5_len, sig->sig_class );
-    if( sig->pubkey_algo == PUBKEY_ALGO_RSA ) {
+    if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	if( pktlen < 5 ) {
+	    log_error("packet(%d) too short\n", pkttype);
+	    goto leave;
+	}
+	sig->d.elg.digest_algo = iobuf_get_noeof(inp); pktlen--;
+	sig->d.elg.digest_start[0] = iobuf_get_noeof(inp); pktlen--;
+	sig->d.elg.digest_start[1] = iobuf_get_noeof(inp); pktlen--;
+	n = pktlen;
+	sig->d.elg.a = mpi_decode(inp, &n ); pktlen -=n;
+	sig->d.elg.b = mpi_decode(inp, &n ); pktlen -=n;
+	if( list_mode ) {
+	    printf("\tdigest algo %d, begin of digest %02x %02x\n",
+		    sig->d.elg.digest_algo,
+		    sig->d.elg.digest_start[0], sig->d.elg.digest_start[1] );
+	    printf("\telg a: ");
+	    mpi_print(stdout, sig->d.elg.a, mpi_print_mode );
+	    printf("\n\telg b: ");
+	    mpi_print(stdout, sig->d.elg.a, mpi_print_mode );
+	    putchar('\n');
+	}
+    }
+    else if( sig->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	if( pktlen < 5 ) {
 	    log_error("packet(%d) too short\n", pkttype);
 	    goto leave;
@@ -315,7 +350,7 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
     unsigned n;
     unsigned long timestamp;
     unsigned short valid_period;
-    MPI rsa_pub_mod, rsa_pub_exp;
+    int is_v4=0;
 
     if( pkttype == PKT_PUBKEY_CERT ) {
 	pkt->pkt.pubkey_cert->mfx.md5 = md5_open(0);
@@ -331,13 +366,18 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	goto leave;
     }
     version = iobuf_get_noeof(inp); pktlen--;
-    if( version != 2 && version != 3 ) {
+    if( version == 4 )
+	is_v4=1;
+    else if( version != 2 && version != 3 ) {
 	log_error("packet(%d) with unknown version %d\n", pkttype, version);
 	goto leave;
     }
 
     timestamp = read_32(inp); pktlen -= 4;
-    valid_period = read_16(inp); pktlen -= 2;
+    if( is_v4 )
+	valid_period = 0;
+    else
+	valid_period = read_16(inp); pktlen -= 2;
     algorithm = iobuf_get_noeof(inp); pktlen--;
     if( list_mode )
 	printf(":%s key certification packet:\n"
@@ -355,7 +395,76 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	pkt->pkt.pubkey_cert->pubkey_algo = algorithm;
     }
 
-    if( algorithm == PUBKEY_ALGO_RSA ) {
+    if( algorithm == PUBKEY_ALGO_ELGAMAL ) {
+	MPI elg_p, elg_g, elg_y;
+	n = pktlen; elg_p = mpi_decode(inp, &n ); pktlen -=n;
+	n = pktlen; elg_g = mpi_decode(inp, &n ); pktlen -=n;
+	n = pktlen; elg_y = mpi_decode(inp, &n ); pktlen -=n;
+	if( list_mode ) {
+	    printf(  "\telg p:  ");
+	    mpi_print(stdout, elg_p, mpi_print_mode  );
+	    printf("\n\telg g: ");
+	    mpi_print(stdout, elg_g, mpi_print_mode  );
+	    printf("\n\telg y: ");
+	    mpi_print(stdout, elg_y, mpi_print_mode  );
+	    putchar('\n');
+	}
+	if( pkttype == PKT_PUBKEY_CERT ) {
+	    pkt->pkt.pubkey_cert->d.elg.p = elg_p;
+	    pkt->pkt.pubkey_cert->d.elg.g = elg_g;
+	    pkt->pkt.pubkey_cert->d.elg.y = elg_y;
+	}
+	else {
+	    PKT_seckey_cert *cert = pkt->pkt.seckey_cert;
+	    byte temp[8];
+	    byte *mpibuf;
+
+	    pkt->pkt.seckey_cert->d.elg.p = elg_p;
+	    pkt->pkt.seckey_cert->d.elg.g = elg_g;
+	    pkt->pkt.seckey_cert->d.elg.y = elg_y;
+	    cert->d.elg.protect_algo = iobuf_get_noeof(inp); pktlen--;
+	    if( list_mode )
+		printf(  "\tprotect algo: %d\n", cert->d.elg.protect_algo);
+	    if( cert->d.elg.protect_algo ) {
+		cert->d.elg.is_protected = 1;
+		for(i=0; i < 8 && pktlen; i++, pktlen-- )
+		    temp[i] = iobuf_get_noeof(inp);
+		if( list_mode ) {
+		    printf(  "\tprotect IV: ");
+		    for(i=0; i < 8; i++ )
+			printf(" %02x", temp[i] );
+		    putchar('\n');
+		}
+		if( cert->d.elg.protect_algo == CIPHER_ALGO_BLOWFISH )
+		    memcpy(cert->d.elg.protect.blowfish.iv, temp, 8 );
+	    }
+	    else
+		cert->d.elg.is_protected = 0;
+
+	    n = pktlen; mpibuf = mpi_read(inp, &n ); pktlen -=n; assert(n>=2);
+	    cert->d.elg.x = (MPI)mpibuf;
+
+	    cert->d.elg.csum = read_16(inp); pktlen -= 2;
+	    cert->d.elg.calc_csum = 0;
+	    if( list_mode ) {
+		printf("\t[secret value x is not shown]\n"
+		       "\tchecksum: %04hx\n", cert->d.elg.csum);
+	    }
+	    if( !cert->d.elg.is_protected ) { /* convert buffer to MPIs */
+		mpibuf = (byte*)cert->d.elg.x;
+		cert->d.elg.calc_csum += checksum( mpibuf );
+		cert->d.elg.x = mpi_decode_buffer( mpibuf );
+		m_free( mpibuf );
+		log_mpidump("elg p=", cert->d.elg.p );
+		log_mpidump("elg g=", cert->d.elg.g );
+		log_mpidump("elg y=", cert->d.elg.y );
+		log_mpidump("elg x=", cert->d.elg.x );
+	    }
+	}
+    }
+    else if( algorithm == PUBKEY_ALGO_RSA ) {
+	MPI rsa_pub_mod, rsa_pub_exp;
+
 	n = pktlen; rsa_pub_mod = mpi_decode(inp, &n ); pktlen -=n;
 	n = pktlen; rsa_pub_exp = mpi_decode(inp, &n ); pktlen -=n;
 	if( list_mode ) {

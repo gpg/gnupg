@@ -163,7 +163,12 @@ do_pubkey_cert( IOBUF out, int ctb, PKT_pubkey_cert *pkc )
     write_32(a, pkc->timestamp );
     write_16(a, pkc->valid_days );
     iobuf_put(a, pkc->pubkey_algo );
-    if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
+    if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	mpi_encode(a, pkc->d.elg.p );
+	mpi_encode(a, pkc->d.elg.g );
+	mpi_encode(a, pkc->d.elg.y );
+    }
+    else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	mpi_encode(a, pkc->d.rsa.rsa_n );
 	mpi_encode(a, pkc->d.rsa.rsa_e );
     }
@@ -191,7 +196,26 @@ do_seckey_cert( IOBUF out, int ctb, PKT_seckey_cert *skc )
     write_32(a, skc->timestamp );
     write_16(a, skc->valid_days );
     iobuf_put(a, skc->pubkey_algo );
-    if( skc->pubkey_algo == PUBKEY_ALGO_RSA ) {
+    if( skc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	mpi_encode(a, skc->d.elg.p );
+	mpi_encode(a, skc->d.elg.g );
+	mpi_encode(a, skc->d.elg.y );
+	iobuf_put(a, skc->d.elg.protect_algo );
+	skc->d.elg.calc_csum = 0;
+	if( skc->d.elg.protect_algo ) {
+	    assert( skc->d.elg.is_protected == 1 );
+	    assert( skc->d.elg.protect_algo == CIPHER_ALGO_BLOWFISH );
+	    iobuf_write(a, skc->d.elg.protect.blowfish.iv, 8 );
+	    mpi_write_csum(a, (byte*)skc->d.elg.x, &skc->d.elg.calc_csum );
+	}
+	else {	/* not protected */
+	    assert( !skc->d.elg.is_protected );
+	    mpi_encode_csum(a, skc->d.elg.x, &skc->d.elg.calc_csum );
+	}
+
+	write_16(a, skc->d.elg.calc_csum );
+    }
+    else if( skc->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	mpi_encode(a, skc->d.rsa.rsa_n );
 	mpi_encode(a, skc->d.rsa.rsa_e );
 	iobuf_put(a, skc->d.rsa.protect_algo );
@@ -240,7 +264,11 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
     write_32(a, enc->keyid[0] );
     write_32(a, enc->keyid[1] );
     iobuf_put(a,enc->pubkey_algo );
-    if( enc->pubkey_algo == PUBKEY_ALGO_RSA ) {
+    if( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	mpi_encode(a, enc->d.elg.a );
+	mpi_encode(a, enc->d.elg.b );
+    }
+    else if( enc->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	mpi_encode(a, enc->d.rsa.rsa_integer );
     }
     else {
@@ -342,7 +370,14 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
     write_32(a, sig->keyid[0] );
     write_32(a, sig->keyid[1] );
     iobuf_put(a, sig->pubkey_algo );
-    if( sig->pubkey_algo == PUBKEY_ALGO_RSA ) {
+    if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	iobuf_put(a, sig->d.elg.digest_algo );
+	iobuf_put(a, sig->d.elg.digest_start[0] );
+	iobuf_put(a, sig->d.elg.digest_start[1] );
+	mpi_encode(a, sig->d.elg.a );
+	mpi_encode(a, sig->d.elg.b );
+    }
+    else if( sig->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	iobuf_put(a, sig->d.rsa.digest_algo );
 	iobuf_put(a, sig->d.rsa.digest_start[0] );
 	iobuf_put(a, sig->d.rsa.digest_start[1] );

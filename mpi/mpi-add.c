@@ -222,3 +222,17 @@ mpi_sub(MPI w, MPI u, MPI v)
 }
 
 
+void
+mpi_addm( MPI w, MPI u, MPI v, MPI m)
+{
+    mpi_add(w, u, v);
+    mpi_fdiv_r( w, w, m );
+}
+
+void
+mpi_subm( MPI w, MPI u, MPI v, MPI m)
+{
+    mpi_sub(w, u, v);
+    mpi_fdiv_r( w, w, m );
+}
+

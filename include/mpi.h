@@ -51,6 +51,7 @@ typedef struct mpi_struct {
 #define MPI_NULL NULL
 
 #define mpi_get_nlimbs(a) ((a)->nlimbs)
+#define mpi_is_neg(a)	  ((a)->sign)
 
 /*-- mpiutil.c --*/
 
@@ -101,13 +102,16 @@ u32 mpi_get_keyid( MPI a, u32 *keyid );
 /*-- mpi-add.c --*/
 void mpi_add_ui(MPI w, MPI u, ulong v );
 void mpi_add(MPI w, MPI u, MPI v);
+void mpi_addm(MPI w, MPI u, MPI v, MPI m);
 void mpi_sub_ui(MPI w, MPI u, ulong v );
 void mpi_sub( MPI w, MPI u, MPI v);
+void mpi_subm( MPI w, MPI u, MPI v, MPI m);
 
 /*-- mpi-mul.c --*/
 void mpi_mul_ui(MPI w, MPI u, ulong v );
 void mpi_mul_2exp( MPI w, MPI u, ulong cnt);
 void mpi_mul( MPI w, MPI u, MPI v);
+void mpi_mulm( MPI w, MPI u, MPI v, MPI m);
 
 /*-- mpi-div.c --*/
 ulong mpi_fdiv_r_ui( MPI rem, MPI dividend, ulong divisor );
@@ -142,7 +146,7 @@ void mpi_set_bytes( MPI a, unsigned nbits, byte (*fnc)(int), int opaque );
 void mpi_rshift( MPI x, MPI a, unsigned n );
 
 /*-- mpi-inv.c --*/
-void mpi_inv_mod( MPI x, MPI u, MPI v );
+void mpi_invm( MPI x, MPI u, MPI v );
 
 
 #endif /*G10_MPI_H*/

@@ -39,24 +39,50 @@ int
 get_session_key( PKT_pubkey_enc *k, DEK *dek )
 {
     int i, j, c, rc = 0;
-    RSA_secret_key  *skey = m_alloc_secure( sizeof *skey );
     MPI dek_frame = mpi_alloc_secure(40);
     u16 csum, csum2;
+    PKT_seckey_cert *skc = m_alloc_clear( sizeof *skc );
 
-    if( k->pubkey_algo != PUBKEY_ALGO_RSA ) {
+    skc->pubkey_algo = k->pubkey_algo;	 /* we want a pubkey with this algo*/
+    if( (rc = get_seckey( skc, k->keyid )) )
+	goto leave;
+
+    if( k->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	ELG_secret_key skey;
+
+	if( DBG_CIPHER ) {
+	    log_mpidump("Encr DEK a:", k->d.elg.a );
+	    log_mpidump("     DEK b:", k->d.elg.b );
+	}
+	skey.p = skc->d.elg.p;
+	skey.g = skc->d.elg.g;
+	skey.y = skc->d.elg.y;
+	skey.x = skc->d.elg.x;
+	elg_decipher( dek_frame, k->d.elg.a, k->d.elg.b, &skey );
+	memset( &skey, 0, sizeof skey );
+    }
+    else if( k->pubkey_algo == PUBKEY_ALGO_RSA ) {
+	RSA_secret_key skey;
+
+	if( DBG_CIPHER )
+	    log_mpidump("Encr DEK frame:", k->d.rsa.rsa_integer );
+
+	skey.e = skc->d.rsa.rsa_e;
+	skey.n = skc->d.rsa.rsa_n;
+	skey.p = skc->d.rsa.rsa_p;
+	skey.q = skc->d.rsa.rsa_q;
+	skey.d = skc->d.rsa.rsa_d;
+	skey.u = skc->d.rsa.rsa_u;
+	rsa_secret( dek_frame, k->d.rsa.rsa_integer, &skey );
+	memset( &skey, 0, sizeof skey );
+    }
+    else {
 	rc = G10ERR_PUBKEY_ALGO; /* unsupported algorithm */
 	goto leave;
     }
+    free_seckey_cert( skc ); skc = NULL;
 
-    /* get the secret key for the given public key
-     * and decode the rsa_integer
-     */
-    if( (rc = get_seckey( skey, k->keyid )) )
-	goto leave;
 
-    if( DBG_CIPHER )
-	log_mpidump("Encr DEK frame:", k->d.rsa.rsa_integer );
-    rsa_secret( dek_frame, k->d.rsa.rsa_integer, skey );
     /* Now get the DEK (data encryption key) from the dek_frame
      *
      * Old versions encode the DEK in in this format (msb is left):
@@ -87,7 +113,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
     }
     if( c != 2 )  /* somethink is wrong */
 	{ rc = G10ERR_WRONG_SECKEY; goto leave; }
-    /* look for the zeor byte */
+    /* look for the zero byte */
     for(i--; i > 4 ; i-- )
 	if( !mpi_getbyte(dek_frame,i) )
 	    break;
@@ -95,10 +121,10 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	{ rc = G10ERR_WRONG_SECKEY; goto leave; }
     /* next byte indicates the used cipher */
     switch( mpi_getbyte(dek_frame, --i ) ) {
-      case 1:
+      case CIPHER_ALGO_IDEA:
 	rc = G10ERR_NI_CIPHER;
 	goto leave;
-      case 42:
+      case CIPHER_ALGO_BLOWFISH:
 	if( i != 22 ) /* length of blowfish is 20 (+2 bytes checksum) */
 	    { rc = G10ERR_WRONG_SECKEY; goto leave; }
 	dek->algo = CIPHER_ALGO_BLOWFISH;
@@ -122,7 +148,8 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 
   leave:
     mpi_free(dek_frame);
-    m_free(skey);
+    if( skc )
+	free_seckey_cert( skc );
     return rc;
 }
 

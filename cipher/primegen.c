@@ -29,13 +29,26 @@
 
 static int no_of_small_prime_numbers;
 static int rabin_miller( MPI n );
+static MPI gen_prime( unsigned	nbits, int mode );
 
 
 /****************
  * Generate a prime number (stored in secure memory)
  */
 MPI
-generate_random_prime( unsigned  nbits )
+generate_secret_prime( unsigned  nbits )
+{
+    return gen_prime( nbits, 1 );
+}
+
+MPI
+generate_public_prime( unsigned  nbits )
+{
+    return gen_prime( nbits, 0 );
+}
+
+static MPI
+gen_prime( unsigned  nbits, int secret )
 {
 
     unsigned  nlimbs;
@@ -61,7 +74,7 @@ generate_random_prime( unsigned  nbits )
     val_3  = mpi_alloc( nlimbs );
     mpi_set_ui(val_3, 3);
     result = mpi_alloc( nlimbs );
-    prime  = mpi_alloc_secure( nlimbs );
+    prime  = secret? mpi_alloc_secure( nlimbs ): mpi_alloc( nlimbs );
     count1 = count2 = 0;
     /* enter (endless) loop */
     for(;;) {

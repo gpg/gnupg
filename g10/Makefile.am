@@ -21,6 +21,7 @@ g10_SOURCES = g10.c		\
 	      cipher.c		\
 	      options.h 	\
 	      openfile.c	\
+	      keyid.c		\
 	      packet.h		\
 	      parse-packet.c	\
 	      passphrase.c	\

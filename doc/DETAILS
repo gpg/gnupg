@@ -1,0 +1,7 @@
+
+
+    * For packet version 3 we calculate the keyids this way:
+	RSA	:= low 64 bits of n
+	ELGAMAL := low 64 bits of y
+
+

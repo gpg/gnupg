@@ -30,6 +30,7 @@
 #include "cipher.h"
 #include "keydb.h"
 #include "filter.h"
+#include "main.h"
 
 static int opt_list=1;	/* and list the data packets to stdout */
 
@@ -122,8 +123,9 @@ proc_packets( IOBUF a )
 		     puts("      (orphaned)");
 	    }
 	    if( pkt->pkc_parent ) {
-		if( pkt->pkc_parent->pubkey_algo == PUBKEY_ALGO_RSA ) {
-		    mpi_get_keyid( pkt->pkc_parent->d.rsa.rsa_n, keyid );
+		if( pkt->pkc_parent->pubkey_algo == PUBKEY_ALGO_ELGAMAL
+		    || pkt->pkc_parent->pubkey_algo == PUBKEY_ALGO_RSA ) {
+		    keyid_from_pkc( pkt->pkc_parent, keyid );
 		    cache_user_id( pkt->pkt.user_id, keyid );
 		}
 	    }
@@ -157,6 +159,30 @@ proc_packets( IOBUF a )
 	    else if( !opt.check_sigs && sig->sig_class != 0x00 ) {
 		result = -1;
 		printstr(lvl0, "sig: from %s\n", ustr );
+	    }
+	    else if(sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+		md_handle.algo = sig->d.elg.digest_algo;
+		if( sig->d.elg.digest_algo == DIGEST_ALGO_RMD160 ) {
+		    if( sig->sig_class == 0x00 )
+			md_handle.u.rmd = rmd160_copy( mfx.rmd160 );
+		    else {
+			md_handle.u.rmd = rmd160_copy(pkt->pkc_parent->mfx.rmd160);
+			rmd160_write(md_handle.u.rmd, pkt->user_parent->name,
+						      pkt->user_parent->len);
+		    }
+		    result = signature_check( sig, md_handle );
+		    rmd160_close(md_handle.u.rmd);
+		}
+		else if( sig->d.elg.digest_algo == DIGEST_ALGO_MD5
+			 && sig->sig_class != 0x00 ) {
+		    md_handle.u.md5 = md5_copy(pkt->pkc_parent->mfx.md5);
+		    md5_write(md_handle.u.md5, pkt->user_parent->name,
+					       pkt->user_parent->len);
+		    result = signature_check( sig, md_handle );
+		    md5_close(md_handle.u.md5);
+		}
+		else
+		    result = G10ERR_DIGEST_ALGO;
 	    }
 	    else if(sig->pubkey_algo == PUBKEY_ALGO_RSA ) {
 		md_handle.algo = sig->d.rsa.digest_algo;
@@ -204,7 +230,8 @@ proc_packets( IOBUF a )
 	    enc = pkt->pkt.pubkey_enc;
 	    printf("enc: encrypted by a pubkey with keyid %08lX\n",
 							enc->keyid[1] );
-	    if( enc->pubkey_algo == PUBKEY_ALGO_RSA ) {
+	    if( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL
+		|| enc->pubkey_algo == PUBKEY_ALGO_RSA	) {
 		m_free(dek ); /* paranoid: delete a pending DEK */
 		dek = m_alloc_secure( sizeof *dek );
 		if( (result = get_session_key( enc, dek )) ) {

@@ -159,7 +159,7 @@ do_inv(void)
 	fputs("stack underflow\n", stderr);
 	return;
     }
-    mpi_inv_mod( a, stack[stackidx-2], stack[stackidx-1] );
+    mpi_invm( a, stack[stackidx-2], stack[stackidx-1] );
     mpi_set(stack[stackidx-2],a);
     mpi_free(a);
     stackidx--;

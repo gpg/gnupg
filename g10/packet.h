@@ -28,16 +28,22 @@
 #include "filter.h"
 
 
-#define PKT_PUBKEY_ENC	 1  /* public key encrypted packet */
-#define PKT_SIGNATURE	 2  /* secret key encrypted packet */
-#define PKT_SECKEY_CERT  5  /* secret key certificate */
-#define PKT_PUBKEY_CERT  6  /* public key certificate */
-#define PKT_COMPR_DATA	 8  /* compressed data packet */
-#define PKT_ENCR_DATA	 9  /* conventional encrypted data */
-#define PKT_PLAINTEXT	11  /* plaintext data with filename and mode */
-#define PKT_RING_TRUST	12  /* keyring trust packet */
-#define PKT_USER_ID	13  /* user id packet */
-#define PKT_COMMENT	14  /* comment packet */
+#define PKT_PUBKEY_ENC	    1  /* public key encrypted packet */
+#define PKT_SIGNATURE	    2  /* secret key encrypted packet */
+#define PKT_SESSION_KEY     3  /* session key packet (OpenPGP)*/
+#define PKT_ONEPASS_SIG     4  /* one pass sig packet (OpenPGP)*/
+#define PKT_SECKEY_CERT     5  /* secret key certificate */
+#define PKT_PUBKEY_CERT     6  /* public key certificate */
+#define PKT_SECKEY_SUBCERT  7  /* secret subkey certificate (OpenPGP) */
+#define PKT_COMPR_DATA	    8  /* compressed data packet */
+#define PKT_ENCR_DATA	    9  /* conventional encrypted data */
+#define PKT_MARKER	   10  /* marker packet (OpenPGP) */
+#define PKT_PLAINTEXT	   11  /* plaintext data with filename and mode */
+#define PKT_RING_TRUST	   12  /* keyring trust packet */
+#define PKT_USER_ID	   13  /* user id packet */
+#define PKT_COMMENT	   14  /* comment packet */
+#define PKT_PUBKEY_SUBCERT 14  /* subkey certificate (OpenPGP) */
+#define PKT_NEW_COMMENT    16  /* new comment packet (OpenPGP) */
 
 typedef struct packet_struct PACKET;
 
@@ -48,6 +54,9 @@ typedef struct {
       struct {
 	MPI  rsa_integer;   /* integer containing the DEK */
       } rsa;
+      struct {
+	MPI  a, b;	    /* integers with the enciphered DEK */
+      } elg;
     } d;
 } PKT_pubkey_enc;
 
@@ -60,10 +69,15 @@ typedef struct {
 			    /* (PUBKEY_ALGO_xxx) */
     union {
       struct {
-	byte digest_algo;   /* algorithm used for digest (DIGEST_ALGO_xxxx) */
+	byte digest_algo;     /* algorithm used for digest (DIGEST_ALGO_xxxx) */
 	byte digest_start[2]; /* first 2 byte of the digest */
-	MPI  rsa_integer;   /* the encrypted digest */
+	MPI  rsa_integer;     /* the encrypted digest */
       } rsa;
+      struct {
+	byte digest_algo;     /* algorithm used for digest (DIGEST_ALGO_xxxx) */
+	byte digest_start[2]; /* first 2 byte of the digest */
+	MPI  a, b;	      /* integers with the digest */
+      } elg;
     } d;
 } PKT_signature;
 
@@ -78,6 +92,11 @@ typedef struct {
 	MPI rsa_n;	    /* public modulus */
 	MPI rsa_e;	    /* public exponent */
       } rsa;
+      struct {
+	MPI p;		    /* prime */
+	MPI g;		    /* group generator */
+	MPI y;		    /* g^x mod p */
+      } elg;
     } d;
 } PKT_pubkey_cert;
 
@@ -106,6 +125,24 @@ typedef struct {
 	  } blowfish;
 	} protect;
       } rsa;
+      struct {
+	MPI p;		    /* prime */
+	MPI g;		    /* group generator */
+	MPI y;		    /* g^x mod p */
+	MPI x;		    /* secret exponent */
+	u16 csum;	    /* checksum */
+	u16 calc_csum;	    /* and a place to store the calculated csum */
+	byte is_protected;  /* The above infos are protected and must */
+			    /* be deciphered before use */
+	byte protect_algo;  /* cipher used to protect the secret informations*/
+	union { 	    /* information for the protection */
+	  struct {
+	    byte iv[8];     /* initialization vector for CFB mode */
+			    /* when protected, the MPIs above are pointers
+			     * to plain storage */
+	  } blowfish;
+	} protect;
+      } elg;
     } d;
 } PKT_seckey_cert;
 

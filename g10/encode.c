@@ -226,10 +226,35 @@ encode_crypt( const char *filename, STRLIST remusr )
 	/* build the pubkey packet */
 	enc = m_alloc_clear( sizeof *enc );
 	enc->pubkey_algo = pkc->pubkey_algo;
-	if( enc->pubkey_algo == PUBKEY_ALGO_RSA ) {
+	if( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	    ELG_public_key pkey;
+	    MPI frame;
+
+	    enc->d.elg.a = mpi_alloc( mpi_get_nlimbs(pkc->d.elg.p) );
+	    enc->d.elg.b = mpi_alloc( mpi_get_nlimbs(pkc->d.elg.p) );
+	    keyid_from_pkc( pkc, enc->keyid );
+	    frame = encode_session_key( cfx.dek, mpi_get_nbits(pkc->d.elg.p) );
+	    pkey.p = pkc->d.elg.p;
+	    pkey.g = pkc->d.elg.g;
+	    pkey.y = pkc->d.elg.y;
+	    if( DBG_CIPHER )
+		log_mpidump("Plain DEK frame: ", frame);
+	    elg_encipher( enc->d.elg.a, enc->d.elg.b, frame, &pkey);
+	    mpi_free( frame );
+	    if( DBG_CIPHER ) {
+		log_mpidump("Encry DEK a: ", enc->d.elg.a );
+		log_mpidump("      DEK b: ", enc->d.elg.b );
+	    }
+	    if( opt.verbose ) {
+		ustr = get_user_id_string( enc->keyid );
+		log_info("ElGamal enciphered for: %s\n", ustr );
+		m_free(ustr);
+	    }
+	}
+	else if( enc->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	    RSA_public_key pkey;
 
-	    mpi_get_keyid( pkc->d.rsa.rsa_n, enc->keyid );
+	    keyid_from_pkc( pkc, enc->keyid );
 	    enc->d.rsa.rsa_integer = encode_session_key( cfx.dek,
 					mpi_get_nbits(pkc->d.rsa.rsa_n) );
 	    pkey.n = pkc->d.rsa.rsa_n;
