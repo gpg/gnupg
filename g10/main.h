@@ -72,14 +72,13 @@ int clearsign_file( const char *fname, STRLIST locusr, const char *outfile );
 int check_key_signature( KBNODE root, KBNODE node, int *is_selfsig );
 
 /*-- keyedit.c --*/
-int sign_key( const char *username, STRLIST locusr );
-int edit_keysigs( const char *username );
 int delete_key( const char *username, int secure );
-int change_passphrase( const char *username );
+void keyedit_menu( const char *username, STRLIST locusr );
 
 /*-- keygen.c --*/
 void generate_keypair(void);
-void generate_subkeypair(const char *userid);
+int keygen_add_std_prefs( PKT_signature *sig, void *opaque );
+int generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock );
 
 /*-- openfile.c --*/
 int overwrite_filep( const char *fname );

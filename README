@@ -135,6 +135,9 @@
 
     Creates a signature of file, but writes the output to the file "out".
 
+    If you use the option "--rfc1991", gnupg tries to me more compatible
+    to RFC1991 (pgp 2.x).
+
 
     Encrypt
     -------

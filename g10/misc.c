@@ -98,7 +98,7 @@ checksum_u16( unsigned n )
     u16 a;
 
     a  = (n >> 8) & 0xff;
-    if( opt.emulate_bugs & 1 ) {
+    if( opt.emulate_bugs & EMUBUG_GPGCHKSUM ) {
        a |= n & 0xff;
        log_debug("csum_u16 emulated for n=%u\n", n);
     }
@@ -142,7 +142,7 @@ checksum_mpi( MPI a )
      * this stored value if it is still available.
      */
 
-    if( opt.emulate_bugs & 1 )
+    if( opt.emulate_bugs & EMUBUG_GPGCHKSUM )
 	nbits = 0;
     else
 	nbits = mpi_get_nbit_info(a);

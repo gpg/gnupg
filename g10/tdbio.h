@@ -60,15 +60,12 @@ struct trust_record {
     int  mark;
     ulong recnum;
     union {
-	struct {	    /* version record: */
-	    byte version;   /* should be 1 */
-	    ulong locked;    /* pid of process which holds a lock */
+	struct {	     /* version record: */
+	    byte version;    /* should be 2 */
 	    ulong created;   /* timestamp of trustdb creation  */
 	    ulong modified;  /* timestamp of last modification */
 	    ulong validated; /* timestamp of last validation   */
-	    byte marginals_needed;
-	    byte completes_needed;
-	    byte max_cert_depth;
+	    ulong keyhashtbl;
 	} ver;
 	struct {	    /* directory record */
 	    ulong lid;
@@ -117,10 +114,7 @@ struct trust_record {
 	} htbl;
 	struct {
 	    ulong next;
-	    struct {
-		byte hash;
-		ulong rnum;
-	    } item[ITEMS_PER_HLST_RECORD];
+	    ulong rnum[ITEMS_PER_HLST_RECORD]; /* of a key record */
 	} hlst;
     } r;
 };

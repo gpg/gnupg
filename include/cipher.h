@@ -35,6 +35,7 @@
 #define CIPHER_ALGO_DES_SK	 6
 #define CIPHER_ALGO_BLOWFISH160 42  /* blowfish 160 bit key (not in OpenPGP)*/
 #define CIPHER_ALGO_SKIPJACK   101  /* experimental: skipjack */
+#define CIPHER_ALGO_TWOFISH    102  /* experimental: twofish 128 bit */
 #define CIPHER_ALGO_DUMMY      110  /* no encryption at all */
 
 #define PUBKEY_ALGO_RSA        1
@@ -130,6 +131,7 @@ int string_to_cipher_algo( const char *string );
 const char * cipher_algo_to_string( int algo );
 int check_cipher_algo( int algo );
 unsigned cipher_get_keylen( int algo );
+unsigned cipher_get_blocksize( int algo );
 CIPHER_HANDLE cipher_open( int algo, int mode, int secure );
 void cipher_close( CIPHER_HANDLE c );
 void cipher_setkey( CIPHER_HANDLE c, byte *key, unsigned keylen );

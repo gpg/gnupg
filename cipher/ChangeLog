@@ -1,3 +1,10 @@
+Mon Jul 27 10:30:22 1998  Werner Koch  (wk@(none))
+
+	* cipher.c : Support for other blocksizes
+	(cipher_get_blocksize): New.
+	* twofish.c: New.
+	* Makefile.am: Add twofish module.
+
 Mon Jul 13 21:30:52 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* random.c (read_pool): Simple alloc if secure_alloc is not set.

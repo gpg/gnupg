@@ -48,7 +48,6 @@ common_source =  \
 	      status.c		\
 	      status.h		\
 	      sign.c		\
-	      keyedit.c 	\
 	      plaintext.c	\
 	      encr-data.c	\
 	      encode.c		\
@@ -61,6 +60,7 @@ gpg_SOURCES  = g10.c		\
 	      $(common_source)	\
 	      verify.c		\
 	      decrypt.c 	\
+	      keyedit.c 	\
 	      keygen.c
 
 

@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <ctype.h>
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -101,6 +102,9 @@ static LOCAL_ID_INFO *ultikey_table;
 static ulong last_trust_web_key;
 static TRUST_SEG_LIST last_trust_web_tslist;
 
+
+#define HEXTOBIN(a) ( (a) >= '0' && (a) <= '9' ? ((a)-'0') : \
+		      (a) >= 'A' && (a) <= 'F' ? ((a)-'A'+10) : ((a)-'a'+10))
 
 /**********************************************
  ************* list helpers *******************
@@ -945,6 +949,7 @@ update_sigs( TRUSTREC *dir )
 	    }
 	    else {
 		/* fixme: handle other sig classes here */
+		/* FIXME: Revocations!!! */
 	    }
 	}
     }
@@ -1243,7 +1248,16 @@ list_trustdb( const char *username )
 {
     TRUSTREC rec;
 
-    if( username ) {
+    if( username && *username == '#' ) {
+	int rc;
+	ulong lid = atoi(username+1);
+
+	if( (rc = list_records( lid)) )
+	    log_error("user '%s' read problem: %s\n", username, g10_errstr(rc));
+	else if( (rc = list_sigs( lid )) )
+	    log_error("user '%s' list problem: %s\n", username, g10_errstr(rc));
+    }
+    else if( username ) {
 	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 	int rc;
 
@@ -1274,10 +1288,10 @@ list_trustdb( const char *username )
 }
 
 /****************
- * make a list of all defined owner trust value.
+ * Print a list of all defined owner trust value.
  */
 void
-list_ownertrust()
+export_ownertrust()
 {
     TRUSTREC rec;
     TRUSTREC rec2;
@@ -1306,6 +1320,67 @@ list_ownertrust()
 	}
     }
 }
+
+
+void
+import_ownertrust( const char *fname )
+{
+    FILE *fp;
+    int is_stdin=0;
+    char line[256];
+    char *p;
+    size_t n, fprlen;
+    unsigned otrust;
+
+    if( !fname || (*fname == '-' && !fname[1]) ) {
+	fp = stdin;
+	fname = "[stdin]";
+	is_stdin = 1;
+    }
+    else if( !(fp = fopen( fname, "r" )) ) {
+	log_error_f(fname, _("can't open file: %s\n"), strerror(errno) );
+	return;
+    }
+
+    while( fgets( line, DIM(line)-1, fp ) ) {
+	if( !*line || *line == '#' )
+	    continue;
+	n = strlen(line);
+	if( line[n-1] != '\n' ) {
+	    log_error_f(fname, "line to long\n" );
+	    break; /* can't continue */
+	}
+	for(p = line; *p && *p != ':' ; p++ )
+	    if( !isxdigit(*p) )
+		break;
+	if( *p != ':' ) {
+	    log_error_f(fname, "error: missing colon\n" );
+	    continue;
+	}
+	fprlen = p - line;
+	if( fprlen != 32 && fprlen != 40 ) {
+	    log_error_f(fname, "error: invalid fingerprint\n" );
+	    continue;
+	}
+	if( sscanf(p, ":%u:", &otrust ) != 1 ) {
+	    log_error_f(fname, "error: no otrust value\n" );
+	    continue;
+	}
+	if( !otrust )
+	    continue; /* no otrust defined - no need to update or insert */
+	/* convert the ascii fingerprint to binary */
+	for(p=line, fprlen=0; *p != ':'; p += 2 )
+	    line[fprlen++] = HEXTOBIN(p[0]) * 16 + HEXTOBIN(p[1]);
+	line[fprlen] = 0;
+
+	log_hexdump("found: ", line, fprlen );
+    }
+    if( ferror(fp) )
+	log_error_f(fname, _("read error: %s\n"), strerror(errno) );
+    if( !is_stdin )
+	fclose(fp);
+}
+
 
 void
 list_trust_path( int max_depth, const char *username )
@@ -1405,7 +1480,17 @@ check_trustdb( const char *username )
     TRUSTREC rec;
     int rc;
 
-    if( username ) {
+    if( username && *username == '#' ) {
+	int rc;
+	ulong lid = atoi(username+1);
+
+	if( (rc = update_sigs_by_lid( lid )) )
+	    log_error("lid %lu: check failed: %s\n",
+					lid, g10_errstr(rc));
+	else
+	    log_info("lid %lu: checked: %s\n", lid, g10_errstr(rc));
+    }
+    else if( username ) {
 	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 
 	if( (rc = get_pubkey_byname( pk, username )) )
@@ -1724,7 +1809,7 @@ insert_trust_record( PKT_public_key *orig_pk )
 		    BUG();  /* more than one primary key */
 		keyid_from_pk( pk, keyid );
 	    }
-	    fingerprint = fingerprint_from_pk( orig_pk, NULL, &fingerlen );
+	    fingerprint = fingerprint_from_pk( pk, NULL, &fingerlen );
 	    rec = m_alloc_clear( sizeof *rec );
 	    rec->rectype = RECTYPE_KEY;
 	    rec->r.key.pubkey_algo = pk->pubkey_algo;

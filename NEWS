@@ -1,11 +1,36 @@
 Noteworthy changes in version 0.3.3
 -----------------------------------
+    * The format of the trust database has changed; you must delete
+      the old one, so gnupg can create a new one.
+      IMPORTANT: Use version 0.3.[12] to save your assigned ownertrusts
+      ("gpgm --list-ownertrust >saved-trust"); then build this new version
+      and restore the ownertrust with this new version
+      ("gpgm --import-ownertrust saved-trust").
+
+    * The command --edit-key now provides a commandline driven menu
+      which can be used vor vaious tasks.  --sign-key is only an
+      an alias to --edit-key and maybe removed in future: use the
+      command "sign" of this new menu - you can select which user ids
+      you want to sign.
+
+    * Alternate user ids can now be created an signed.
+
     * Removed options --gen-prime and --gen-random.
+
+    * Removed option --add-key; use --edit-key instead.
+
+    * Removed option --change-passphrase; use --edit-key instead.
 
     * Signatures are now checked even if the output file could not
       be created. Command "--verify" tries to find the detached data.
 
     * gpg now disables core dumps.
+
+    * We have added the Twofish as an experimental cipher algorithm.
+      Many thanks to Matthew Skala for doing this work.
+      Twofish is the AES submission from Schneier et al.; see
+      "www.counterpane.com/twofish.html" for more information.
+
 
 
 Noteworthy changes in version 0.3.2

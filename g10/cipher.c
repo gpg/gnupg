@@ -42,7 +42,8 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
 {
     PACKET pkt;
     PKT_encrypted ed;
-    byte temp[10];
+    byte temp[18];
+    unsigned blocksize;
 
     memset( &ed, 0, sizeof ed );
     ed.len = cfx->datalen;
@@ -52,15 +53,18 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     pkt.pkt.encrypted = &ed;
     if( build_packet( a, &pkt ))
 	log_bug("build_packet(ENCR_DATA) failed\n");
-    randomize_buffer( temp, 8, 1 );
-    temp[8] = temp[6];
-    temp[9] = temp[7];
+    blocksize = cipher_get_blocksize( cfx->dek->algo );
+    if( blocksize < 8 || blocksize > 16 )
+	log_fatal("unsupported blocksize %u\n", blocksize );
+    randomize_buffer( temp, blocksize, 1 );
+    temp[blocksize] = temp[blocksize-2];
+    temp[blocksize+1] = temp[blocksize-1];
     cfx->cipher_hd = cipher_open( cfx->dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
     cipher_setkey( cfx->cipher_hd, cfx->dek->key, cfx->dek->keylen );
     cipher_setiv( cfx->cipher_hd, NULL );
-    cipher_encrypt( cfx->cipher_hd, temp, temp, 10);
+    cipher_encrypt( cfx->cipher_hd, temp, temp, blocksize+2);
     cipher_sync( cfx->cipher_hd );
-    iobuf_write(a, temp, 10);
+    iobuf_write(a, temp, blocksize+2);
     cfx->header=1;
 }
 

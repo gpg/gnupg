@@ -74,8 +74,8 @@ add_key_expire( PKT_signature *sig, void *opaque )
  * Add preference to the self signature packet.
  * This is only called for packets with version > 3.
  */
-static int
-add_prefs( PKT_signature *sig, void *opaque )
+int
+keygen_add_std_prefs( PKT_signature *sig, void *opaque )
 {
     byte buf[8];
 
@@ -134,7 +134,7 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
 
     /* and make the signature */
     rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0,
-			     add_prefs, sk );
+			     keygen_add_std_prefs, sk );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
 	return rc;
@@ -444,25 +444,18 @@ ask_keysize( int algo )
 	else if( nbits > 2048 ) {
 	    tty_printf(_("Keysizes larger than 2048 are not suggested because "
 			 "computations take REALLY long!\n"));
-	    answer = tty_get(_("Are you sure that you want this keysize? "));
-	    tty_kill_prompt();
-	    if( answer_is_yes(answer) ) {
-		m_free(answer);
+	    if( tty_get_answer_is_yes(_(
+			"Are you sure that you want this keysize? ")) ) {
 		tty_printf(_("Okay, but keep in mind that your monitor "
 			     "and keyboard radiation is also very vulnerable "
 			     "to attacks!\n"));
 		break;
 	    }
-	    m_free(answer);
 	}
 	else if( nbits > 1536 ) {
-	    answer = tty_get(_("Do you really need such a large keysize? "));
-	    tty_kill_prompt();
-	    if( answer_is_yes(answer) ) {
-		m_free(answer);
+	    if( tty_get_answer_is_yes(_(
+		    "Do you really need such a large keysize? ")) )
 		break;
-	    }
-	    m_free(answer);
 	}
 	else
 	    break;
@@ -524,10 +517,7 @@ ask_valid_days()
 		       add_days_to_timestamp( make_timestamp(), valid_days )));
 	}
 
-	m_free(answer);
-	answer = tty_get(_("Is this correct (y/n)? "));
-	tty_kill_prompt();
-	if( answer_is_yes(answer) )
+	if( tty_get_answer_is_yes(_("Is this correct (y/n)? ")) )
 	    break;
     }
     m_free(answer);
@@ -549,12 +539,13 @@ has_invalid_email_chars( const char *s )
 
 
 static char *
-ask_user_id()
+ask_user_id( int mode )
 {
     char *answer;
     char *aname, *acomment, *amail, *uid;
 
-    tty_printf( _("\n"
+    if( !mode )
+	tty_printf( _("\n"
 "You need a User-ID to identify your key; the software constructs the user id\n"
 "from Real Name, Comment and Email Address in this form:\n"
 "    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n\n") );
@@ -630,26 +621,35 @@ ask_user_id()
 	tty_printf(_("You selected this USER-ID:\n    \"%s\"\n\n"), uid);
 	/* fixme: add a warning if this user-id already exists */
 	for(;;) {
-	    answer = tty_get(_("Edit (N)ame, (C)omment, (E)mail or (O)kay? "));
+	    char *ansstr = N_("NnCcEeOoQq");
+	    answer = tty_get(_(
+		"Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "));
 	    tty_kill_prompt();
 	    if( strlen(answer) > 1 )
 		;
-	    else if( *answer == 'N' || *answer == 'n' ) {
+	    else if( *answer == ansstr[0] || *answer == ansstr[1] ) {
 		m_free(aname); aname = NULL;
 		break;
 	    }
-	    else if( *answer == 'C' || *answer == 'c' ) {
+	    else if( *answer == ansstr[2] || *answer == ansstr[3] ) {
 		m_free(acomment); acomment = NULL;
 		break;
 	    }
-	    else if( *answer == 'E' || *answer == 'e' ) {
+	    else if( *answer == ansstr[4] || *answer == ansstr[5] ) {
 		m_free(amail); amail = NULL;
 		break;
 	    }
-	    else if( *answer == 'O' || *answer == 'o' ) {
+	    else if( *answer == ansstr[6] || *answer == ansstr[7] ) {
 		m_free(aname); aname = NULL;
 		m_free(acomment); acomment = NULL;
 		m_free(amail); amail = NULL;
+		break;
+	    }
+	    else if( *answer == ansstr[8] || *answer == ansstr[9] ) {
+		m_free(aname); aname = NULL;
+		m_free(acomment); acomment = NULL;
+		m_free(amail); amail = NULL;
+		m_free(uid); uid = NULL;
 		break;
 	    }
 	    m_free(answer);
@@ -685,7 +685,7 @@ ask_passphrase( STRING2KEY **ret_s2k )
 	    tty_printf(_(
 	    "You don't want a passphrase - this is probably a *bad* idea!\n"
 	    "I will do it anyway.  You can change your passphrase at any time,\n"
-	    "using this program with the option \"--change-passphrase\".\n\n"));
+	    "using this program with the option \"--edit-key\".\n\n"));
 	    break;
 	}
 	else
@@ -729,6 +729,27 @@ do_create( int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root,
 
 
 /****************
+ * Generate a new user id packet, or return NULL if cancelled
+ */
+PKT_user_id *
+generate_user_id()
+{
+    PKT_user_id *uid;
+    char *p;
+    size_t n;
+
+    p = ask_user_id( 1 );
+    if( !p )
+	return NULL;
+    n = strlen(p);
+    uid = m_alloc( sizeof *uid + n - 1 );
+    uid->len = n;
+    strcpy(uid->name, p);
+    return uid;
+}
+
+
+/****************
  * Generate a keypair
  */
 void
@@ -762,7 +783,11 @@ generate_keypair()
     }
     nbits = ask_keysize( algo );
     ndays = ask_valid_days();
-    uid = ask_user_id();
+    uid = ask_user_id(0);
+    if( !uid ) {
+	log_error(_("Key generation cancelled.\n"));
+	return;
+    }
     dek = ask_passphrase( &s2k );
 
 
@@ -879,88 +904,29 @@ generate_keypair()
 
 /****************
  * add a new subkey to an existing key.
+ * Returns true if a new key has been generated and put into the keyblocks.
  */
-void
-generate_subkeypair( const char *username )
+int
+generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 {
-    int rc=0;
-    KBPOS pub_kbpos, sec_kbpos;
-    KBNODE pub_keyblock = NULL;
-    KBNODE sec_keyblock = NULL;
+    int okay=0, rc=0;
     KBNODE node;
     PKT_secret_key *sk = NULL; /* this is the primary sk */
-    u32 keyid[2];
     int v4, algo, ndays;
     unsigned nbits;
     char *passphrase = NULL;
     DEK *dek = NULL;
     STRING2KEY *s2k = NULL;
 
-    if( opt.batch || opt.answer_yes || opt.answer_no ) {
-	log_error(_("Key generation can only be used in interactive mode\n"));
-	return;
-    }
-
-    /* search the userid */
-    rc = find_secret_keyblock_byname( &sec_kbpos, username );
-    if( rc ) {
-	log_error("user '%s' not found\n", username );
-	goto leave;
-    }
-    rc = read_keyblock( &sec_kbpos, &sec_keyblock );
-    if( rc ) {
-	log_error("error reading the secret key: %s\n", g10_errstr(rc) );
-	goto leave;
-    }
-    /* and the public key */
-    rc = find_keyblock_byname( &pub_kbpos, username );
-    if( rc ) {
-	log_error("user '%s' not found in public ring\n", username );
-	goto leave;
-    }
-    rc = read_keyblock( &pub_kbpos, &pub_keyblock );
-    if( rc ) {
-	log_error("error reading the public key: %s\n", g10_errstr(rc) );
-	goto leave;
-    }
-
-    /* break out the primary key */
+    /* break out the primary secret key */
     node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
     if( !node ) {
 	log_error("Oops; secret key not found anymore!\n");
-	rc = G10ERR_GENERAL;
 	goto leave;
     }
 
     /* make a copy of the sk to keep the protected one in the keyblock */
     sk = copy_secret_key( NULL, node->pkt->pkt.secret_key );
-    keyid_from_sk( sk, keyid );
-    /* display primary and all secondary keys */
-    tty_printf("sec  %4u%c/%08lX %s   ",
-	      nbits_from_sk( sk ),
-	      pubkey_letter( sk->pubkey_algo ),
-	      keyid[1], datestr_from_sk(sk) );
-    {
-	size_t n;
-	char *p = get_user_id( keyid, &n );
-	tty_print_string( p, n );
-	m_free(p);
-	tty_printf("\n");
-    }
-    for(node=sec_keyblock; node; node = node->next ) {
-	if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
-	    PKT_secret_key *subsk = node->pkt->pkt.secret_key;
-	    keyid_from_sk( subsk, keyid );
-	    tty_printf("sub  %4u%c/%08lX %s\n",
-		      nbits_from_sk( subsk ),
-		      pubkey_letter( subsk->pubkey_algo ),
-		      keyid[1], datestr_from_sk(subsk) );
-	}
-    }
-    tty_printf("\n");
-
-
-
     /* unprotect to get the passphrase */
     switch( is_secret_key_protected( sk ) ) {
       case -1:
@@ -984,6 +950,8 @@ generate_subkeypair( const char *username )
     assert(algo);
     nbits = ask_keysize( algo );
     ndays = ask_valid_days();
+    if( !tty_get_answer_is_yes( _("Really create? ") ) )
+	goto leave;
 
     if( passphrase ) {
 	s2k = m_alloc_secure( sizeof *s2k );
@@ -999,31 +967,18 @@ generate_subkeypair( const char *username )
 	rc = write_keybinding(pub_keyblock, pub_keyblock, sk);
     if( !rc )
 	rc = write_keybinding(sec_keyblock, pub_keyblock, sk);
-    /* write back */
-    if( !rc ) {
-	rc = update_keyblock( &pub_kbpos, pub_keyblock );
-	if( rc )
-	    log_error("update_public_keyblock failed\n" );
-    }
-    if( !rc ) {
-	rc = update_keyblock( &sec_kbpos, sec_keyblock );
-	if( rc )
-	    log_error("update_secret_keyblock failed\n" );
-    }
     if( !rc )
-	tty_printf(_("public and secret subkey created.\n") );
-
+	okay = 1;
 
   leave:
     if( rc )
-	tty_printf(_("Key generation failed: %s\n"), g10_errstr(rc) );
+	log_error(_("Key generation failed: %s\n"), g10_errstr(rc) );
     m_free( passphrase );
     m_free( dek );
     m_free( s2k );
     if( sk ) /* release the copy of the (now unprotected) secret key */
 	free_secret_key(sk);
-    release_kbnode( sec_keyblock );
-    release_kbnode( pub_keyblock );
     set_next_passphrase( NULL );
+    return okay;
 }
 

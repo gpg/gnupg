@@ -1,3 +1,26 @@
+Wed Jul 29 12:53:03 1998  Werner Koch  (wk@(none))
+
+	* free-packet.c (copy_signature): New.
+
+	* keygen.c (generate_subkeypair): rewritten
+	* g10.c (aKeyadd): Removed option --add-key
+
+Mon Jul 27 10:37:28 1998  Werner Koch  (wk@(none))
+
+	* seckey-cert.c (do_check): Additional check on cipher blocksize.
+	(protect_secret_key): Ditto.
+	* encr-data.c: Support for other blocksizes.
+	* cipher.c (write_header): Ditto.
+
+Fri Jul 24 16:47:59 1998  Werner Koch  (wk@(none))
+
+	* kbnode.c (insert_kbnode): Changed semantics and all callers.
+	* keyedit.c : More or less a complete rewrite
+
+Wed Jul 22 17:10:04 1998  Werner Koch  (wk@(none))
+
+	* build-packet.c (write_sign_packet_header): New.
+
 Tue Jul 21 14:37:09 1998  Werner Koch  (wk@(none))
 
 	* import.c (import_one): Now creates a trustdb record.

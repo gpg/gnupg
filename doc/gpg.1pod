@@ -5,6 +5,7 @@ gpg - GNU Privacy Guard
 =head1 SYNOPSIS
 
 B<gpg> [--homedir name] [--options file] [options] command [args]
+
 B<gpgm> [--homedir name] [--options file] [options] command [args]
 
 =head1 DESCRIPTION
@@ -98,35 +99,52 @@ B<--gen-key>
     Generate a new key pair. This command can only be
     used interactive.
 
-B<--add-key> I<name>
-    Add a subkey to an already existing key. This
-    command is similiar to B<--gen-key> but a primary
-    key must already exit.
 
-B<--sign-key> I<name>
-    Make a signature on key of user I<name>.
-    This looks for the key, displays the key and checks
-    all existing signatures of this key. If the key is
-    not yet signed by the default user (or the users given
-    with B<-u>), the program displays the information of
-    the key again, together with its fingerprint and
-    asks whether it should be signed. This question
-    is repeated for all users specified with B<-u>.
-    The key is then signed and the keyring which
-    contains the key is updated.
-
+B<--edit-key> I<name>
+    Present a menu which enables you to do all key
+    related tasks:
+    B<sign>
+      Make a signature on key of user I<name>.
+      If the key is not yet signed by the default
+      user (or the users given with B<-u>), the
+      program displays the information of the key
+      again, together with its fingerprint and
+      asks whether it should be signed. This
+      question is repeated for all users specified
+      with B<-u>.
+    B<adduid>
+      Create an alternate user id.
+    B<deluid>
+      Delete an user id.
+    B<addkey>
+       Add a subkey to this key.
+    B<delkey>
+       Remove a subkey.
+    B<passwd>
+       Change the passphrase of the secret key.
+    B<check>
+       Check signatures
+    B<uid> I<n>
+       Toggle selection of user id with index I<n>.
+       Use 0 to deselect all.
+    B<key> I<n>
+       Toggle selection of subkey with index I<n>.
+       Use 0 to deselect all.
+    B<check>
+       Check all selected user ids.
+    B<toggle>
+       Toggle between public and secret key listing.
+    B<save>
+       Save all changes to the key rings and quit.
+    B<quit>
+       Quit the program without updating the
+       key rings.
 
 B<--delete-key>
     Remove key from the public keyring
 
 B<--delete-secret-key>
     Remove key from the secret and public keyring
-
-B<--edit-key>
-    Edit/remove a key signature.
-
-B<--change-passphrase>
-    Change the passphrase of your secret keyring
 
 B<--gen-revoke>
     Generate a revocation certificate.
@@ -142,9 +160,14 @@ B<--export> [I<names>]
 B<--import>
     import/merge keys
 
-B<--list-ownertrust>
+B<--export-ownertrust>
     List the assigned ownertrust values in ascii format for
     backup purposes [B<gpgm> only].
+
+B<--import-ownertrust> [I<filename>]
+    Update the trustdb with the ownertrust values stored in
+    I<filename> (or stdin if not given); existing values will be
+    overwritten. [B<gpgm> only].
 
 =head1 OPTIONS
 

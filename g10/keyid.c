@@ -296,6 +296,37 @@ datestr_from_sig( PKT_signature *sig )
 }
 
 
+const char *
+expirestr_from_pk( PKT_public_key *pk )
+{
+    static char buffer[11+5];
+    struct tm *tp;
+    time_t atime;
+
+    if( !pk->valid_days )
+	return "never     ";
+    atime = add_days_to_timestamp( pk->timestamp, pk->valid_days );
+    tp = gmtime( &atime );
+    sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
+    return buffer;
+}
+
+const char *
+expirestr_from_sk( PKT_secret_key *sk )
+{
+    static char buffer[11+5];
+    struct tm *tp;
+    time_t atime;
+
+    if( !sk->valid_days )
+	return "never     ";
+    atime = add_days_to_timestamp( sk->timestamp, sk->valid_days );
+    tp = gmtime( &atime );
+    sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
+    return buffer;
+}
+
+
 /**************** .
  * Return a byte array with the fingerprint for the given PK/SK
  * The length of the array is returned in ret_len. Caller must free

@@ -133,6 +133,8 @@ unsigned nbits_from_sk( PKT_secret_key *sk );
 const char *datestr_from_pk( PKT_public_key *pk );
 const char *datestr_from_sk( PKT_secret_key *sk );
 const char *datestr_from_sig( PKT_signature *sig );
+const char *expirestr_from_pk( PKT_public_key *pk );
+const char *expirestr_from_sk( PKT_secret_key *sk );
 byte *fingerprint_from_sk( PKT_secret_key *sk, byte *buf, size_t *ret_len );
 byte *fingerprint_from_pk( PKT_public_key *pk, byte *buf, size_t *ret_len );
 
@@ -149,6 +151,7 @@ KBNODE find_kbnode( KBNODE node, int pkttype );
 KBNODE walk_kbnode( KBNODE root, KBNODE *context, int all );
 void clear_kbnode_flags( KBNODE n );
 int  commit_kbnode( KBNODE *root );
+void dump_kbnode( KBNODE node );
 
 /*-- ringedit.c --*/
 int add_keyblock_resource( const char *filename, int force, int secret );

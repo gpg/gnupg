@@ -55,7 +55,7 @@ void
 free_seckey_enc( PKT_signature *sig )
 {
     int n, i;
-    n = pubkey_get_nenc( sig->pubkey_algo );
+    n = pubkey_get_nsig( sig->pubkey_algo );
     if( !n ) {
 	m_free(sig->data[0]);
 	sig->data[0] = NULL;
@@ -107,6 +107,20 @@ cp_fake_data( MPI a )
     return d;
 }
 
+static void *
+cp_data_block( byte *s )
+{
+    byte *d;
+    u16 len;
+
+    if( !s )
+	return NULL;
+    len = (s[0] << 8) | s[1];
+    d = m_alloc( len+2 );
+    memcpy(d, s, len+2);
+    return d;
+}
+
 
 PKT_public_key *
 copy_public_key( PKT_public_key *d, PKT_public_key *s )
@@ -125,6 +139,39 @@ copy_public_key( PKT_public_key *d, PKT_public_key *s )
     }
     return d;
 }
+
+
+PKT_signature *
+copy_signature( PKT_signature *d, PKT_signature *s )
+{
+    int n, i;
+
+    if( !d )
+	d = m_alloc(sizeof *d);
+    memcpy( d, s, sizeof *d );
+    n = pubkey_get_nsig( s->pubkey_algo );
+    if( !n )
+	d->data[0] = cp_fake_data(s->data[0]);
+    else {
+	for(i=0; i < n; i++ )
+	    d->data[i] = mpi_copy( s->data[i] );
+    }
+    d->hashed_data = cp_data_block(s->hashed_data);
+    d->unhashed_data = cp_data_block(s->unhashed_data);
+    return d;
+}
+
+
+PKT_user_id *
+copy_user_id( PKT_user_id *d, PKT_user_id *s )
+{
+    if( !d )
+	d = m_alloc(sizeof *d + s->len - 1 );
+    memcpy( d, s, sizeof *d + s->len - 1 );
+    return d;
+}
+
+
 
 void
 release_secret_key_parts( PKT_secret_key *sk )

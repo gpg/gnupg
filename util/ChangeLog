@@ -1,3 +1,7 @@
+Wed Jul 29 14:53:34 1998  Werner Koch  (wk@(none))
+
+	* ttyio.c (tty_get_answer_is_yes): New.
+
 Tue Jul 21 10:35:48 1998  Werner Koch  (wk@(none))
 
 	* argparse.c: New option flag to distinguish options and commands.

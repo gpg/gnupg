@@ -53,6 +53,8 @@ do_check( PKT_secret_key *sk )
 	    BUG();
 	if( check_cipher_algo( sk->protect.algo ) )
 	    return G10ERR_CIPHER_ALGO; /* unsupported protection algorithm */
+	if( cipher_get_blocksize( sk->protect.algo ) != 8 )
+	    return G10ERR_CIPHER_ALGO; /* unsupported protection algorithm */
 	keyid_from_sk( sk, keyid );
 	dek = passphrase_to_dek( keyid, sk->protect.algo,
 				 &sk->protect.s2k, 0 );
@@ -76,7 +78,7 @@ do_check( PKT_secret_key *sk )
 	    csum += checksum_mpi( sk->skey[i] );
 	    m_free( buffer );
 	}
-	if( opt.emulate_bugs & 1 ) {
+	if( opt.emulate_bugs & EMUBUG_GPGCHKSUM ) {
 	   csum = sk->csum;
 	}
 	cipher_close( cipher_hd );
@@ -179,6 +181,8 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	CIPHER_HANDLE cipher_hd=NULL;
 
 	if( check_cipher_algo( sk->protect.algo ) )
+	    rc = G10ERR_CIPHER_ALGO; /* unsupport protection algorithm */
+	else if( cipher_get_blocksize( sk->protect.algo ) != 8 )
 	    rc = G10ERR_CIPHER_ALGO; /* unsupport protection algorithm */
 	else {
 	    cipher_hd = cipher_open( sk->protect.algo,

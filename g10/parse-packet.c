@@ -349,7 +349,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
     }
 
   leave:
-    if( rc == -1 && iobuf_error(inp) )
+    if( !rc && iobuf_error(inp) )
 	rc = G10ERR_INV_KEYRING;
     return rc;
 }
@@ -434,7 +434,8 @@ skip_rest( IOBUF inp, unsigned long pktlen )
     }
     else {
 	for( ; pktlen; pktlen-- )
-	    iobuf_get(inp);
+	    if( iobuf_get(inp) == -1 )
+		break;
     }
 }
 
@@ -1048,6 +1049,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		rc = G10ERR_INVALID_PACKET;
 		goto leave;
 	    }
+	    /* fixme: Add support for other blocksizes */
 	    for(i=0; i < 8 && pktlen; i++, pktlen-- )
 		temp[i] = iobuf_get_noeof(inp);
 	    if( list_mode ) {

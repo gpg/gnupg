@@ -61,10 +61,10 @@ chdir () {
 
 
 set -e
-pgmname=$(basename $0)
+pgmname=`basename $0`
 #trap cleanup SIGHUP SIGINT SIGQUIT
 
-[ -z $srcdir ] && fatal "not called from make"
+[ -z "$srcdir" ] && fatal "not called from make"
 
 cat <<EOF  >./options
 no-greeting

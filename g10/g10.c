@@ -68,11 +68,8 @@ static ARGPARSE_OPTS opts[] = {
     { 558, "list-secret-keys", 256, N_("list secret keys")},
   #ifdef IS_G10
     { 503, "gen-key",   256, N_("generate a new key pair")},
-    { 554, "add-key",   256, N_("add a subkey to a key pair")},
-    { 506, "sign-key"  ,256, N_("make a signature on a key in the keyring")},
     { 505, "delete-key",256, N_("remove key from the public keyring")},
-    { 524, "edit-key"  ,256, N_("edit a key signature")},
-    { 525, "change-passphrase", 256, N_("change the passphrase of your secret keyring")},
+    { 524, "edit-key"  ,256, N_("sign or edit a key")},
     { 542, "gen-revoke",256, N_("generate a revocation certificate")},
   #endif
     { 537, "export"          , 256, N_("export keys") },
@@ -81,7 +78,8 @@ static ARGPARSE_OPTS opts[] = {
     { 530, "import",      256     , N_("import/merge keys")},
     { 521, "list-packets",256,N_("list only the sequence of packets")},
   #ifdef IS_G10MAINT
-    { 564, "list-ownertrust", 256, N_("list the ownertrust values")},
+    { 564, "export-ownertrust", 256, N_("export the ownertrust values")},
+    { 525, "import-ownertrust", 256 , N_("import ownertrust values")},
     { 567, "check-trustdb",0 , N_("|[NAMES]|check the trust database")},
     { 546, "dearmor", 256, N_("De-Armor a file or stdin") },
     { 547, "enarmor", 256, N_("En-Armor a file or stdin") },
@@ -153,6 +151,7 @@ static ARGPARSE_OPTS opts[] = {
     { 504, "delete-secret-key",0, "@" },
     { 524, "edit-sig"  ,0, "@"}, /* alias for edit-key */
     { 523, "passphrase-fd",1, "@" },
+    { 506, "sign-key"  ,256, "@" }, /* alias for edit-key */
   #endif
     { 532, "quick-random", 0, "@"},
     { 526, "no-verbose", 0, "@"},
@@ -173,18 +172,18 @@ static ARGPARSE_OPTS opts[] = {
     { 566, "compress-sigs",0, "@"},
     { 559, "always-trust", 0, "@"},
     { 562, "emulate-checksum-bug", 0, "@"},
-
+   /*554 is unused */
 {0} };
 
 
 enum cmd_values { aNull = 0,
     aSym, aStore, aEncr, aKeygen, aSign, aSignEncr,
     aSignKey, aClearsign, aListPackets, aEditKey, aDeleteKey, aDeleteSecretKey,
-    aKMode, aKModeC, aChangePass, aImport, aVerify, aDecrypt, aListKeys,
-    aListSigs, aKeyadd, aListSecretKeys,
-    aExport, aExportSecret,
+    aKMode, aKModeC,  aImport, aVerify, aDecrypt, aListKeys,
+    aListSigs, aListSecretKeys, aExport, aExportSecret,
     aCheckKeys, aGenRevoke, aPrimegen, aPrintMD, aPrintMDs,
-    aCheckTrustDB, aListTrustDB, aListTrustPath, aListOwnerTrust,
+    aCheckTrustDB, aListTrustDB, aListTrustPath,
+    aExportOwnerTrust, aImportOwnerTrust,
     aDeArmor, aEnArmor, aGenRandom,
 aTest };
 
@@ -521,7 +520,6 @@ main( int argc, char **argv )
 	  case 507: set_cmd( &cmd, aStore); break;
 	  case 523: set_passphrase_fd( pargs.r.ret_int ); break;
 	  case 524: set_cmd( &cmd, aEditKey); break;
-	  case 525: set_cmd( &cmd, aChangePass); break;
 	  case 527: def_cipher_string = m_strdup(pargs.r.ret_str); break;
 	  case 529: def_digest_string = m_strdup(pargs.r.ret_str); break;
 	  case 539: set_cmd( &cmd, aClearsign); break;
@@ -548,7 +546,8 @@ main( int argc, char **argv )
 	  case 546: set_cmd( &cmd, aDeArmor); break;
 	  case 547: set_cmd( &cmd, aEnArmor); break;
 	  case 555: set_cmd( &cmd, aPrintMD); break;
-	  case 564: set_cmd( &cmd, aListOwnerTrust); break;
+	  case 564: set_cmd( &cmd, aExportOwnerTrust); break;
+	  case 525: set_cmd( &cmd, aImportOwnerTrust); break;
 	#endif /* IS_G10MAINT */
 
 	  case 'o': opt.outfile = pargs.r.ret_str; break;
@@ -564,7 +563,7 @@ main( int argc, char **argv )
 	  case 510: opt.debug |= pargs.r.ret_ulong; break;
 	  case 511: opt.debug = ~0; break;
 	  case 512: set_status_fd( pargs.r.ret_int ); break;
-	  case 515: opt.fingerprint = 1; break;
+	  case 515: opt.fingerprint++; break;
 	  case 517: append_to_strlist( &sec_nrings, pargs.r.ret_str); break;
 	  case 518:
 	    /* config files may not be nested (silently ignore them) */
@@ -595,17 +594,17 @@ main( int argc, char **argv )
 	  case 551: set_cmd( &cmd, aListKeys); break;
 	  case 552: set_cmd( &cmd, aListSigs); break;
 	  case 553: opt.skip_verify=1; break;
-	  case 554: set_cmd( &cmd, aKeyadd); break;
 	  case 556: opt.def_compress_algo = pargs.r.ret_int; break;
 	  case 557: opt.compress_keys = 1; break;
 	  case 558: set_cmd( &cmd, aListSecretKeys); break;
 	  case 559: opt.always_trust = 1; break;
 	  case 560: register_cipher_extension(pargs.r.ret_str); break;
-	  case 561: opt.rfc1991 = 1; break;
-	  case 562: opt.emulate_bugs |= 1; break;
+	  case 561: opt.rfc1991 = 1; opt.no_comment = 1; break;
+	  case 562: opt.emulate_bugs |= EMUBUG_GPGCHKSUM; break;
 	  case 563: set_cmd( &cmd, aExportSecret); break;
 	  case 565: opt.do_not_export_rsa = 1; break;
 	  case 566: opt.compress_sigs = 1; break;
+	  case 554:
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -722,7 +721,7 @@ main( int argc, char **argv )
 	if( opt.with_colons ) /* need this to list the trust */
 	    rc = init_trustdb(1, trustdb_name );
 	break;
-      case aListOwnerTrust: rc = init_trustdb( 0, trustdb_name ); break;
+      case aExportOwnerTrust: rc = init_trustdb( 0, trustdb_name ); break;
       case aListTrustDB: rc = init_trustdb( argc? 1:0, trustdb_name ); break;
       default: rc = init_trustdb(1, trustdb_name ); break;
     }
@@ -808,19 +807,10 @@ main( int argc, char **argv )
 
 
       case aSignKey: /* sign the key given as argument */
-	if( argc != 1 )
-	    wrong_args(_("--sign-key username"));
-	/* note: fname is the user id! */
-	if( (rc = sign_key(fname, locusr)) )
-	    log_error("%s: sign key failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
-	break;
-
       case aEditKey: /* Edit a key signature */
 	if( argc != 1 )
 	    wrong_args(_("--edit-key username"));
-	/* note: fname is the user id! */
-	if( (rc = edit_keysigs(fname)) )
-	    log_error("%s: edit signature failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
+	keyedit_menu(fname, locusr );
 	break;
 
       case aDeleteSecretKey:
@@ -834,14 +824,6 @@ main( int argc, char **argv )
 	    log_error("%s: delete key failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
 	break;
 
-      case aChangePass: /* Change the passphrase */
-	if( argc > 1 ) /* no arg: use default, 1 arg use this one */
-	    wrong_args(_("--change-passphrase [username]"));
-	/* note: fname is the user id! */
-	if( (rc = change_passphrase(fname)) )
-	    log_error("%s: change passphrase failed: %s\n", print_fname_stdin(fname),
-						       g10_errstr(rc) );
-	break;
       #endif /* IS_G10 */
 
       case aCheckKeys:
@@ -879,11 +861,6 @@ main( int argc, char **argv )
 	if( argc )
 	    wrong_args("--gen-key");
 	generate_keypair();
-	break;
-      case aKeyadd: /* add a subkey (interactive) */
-	if( argc != 1 )
-	    wrong_args("--add-key userid");
-	generate_subkeypair(*argv);
 	break;
     #endif
 
@@ -1049,10 +1026,16 @@ main( int argc, char **argv )
 	list_trust_path( atoi(*argv), argv[1] );
 	break;
 
-      case aListOwnerTrust:
+      case aExportOwnerTrust:
 	if( argc )
-	    wrong_args("--list-ownertrust");
-	list_ownertrust();
+	    wrong_args("--export-ownertrust");
+	export_ownertrust();
+	break;
+
+      case aImportOwnerTrust:
+	if( argc > 1 )
+	    wrong_args("--import-ownertrust [file]");
+	import_ownertrust( argc? *argv:NULL );
 	break;
 
      #endif /* IS_G10MAINT */

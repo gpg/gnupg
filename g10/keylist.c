@@ -202,6 +202,8 @@ list_one( const char *name, int secret )
 		any = 1;
 	    }
 
+
+
 	    keyid_from_pk( pk2, keyid2 );
 	    if( opt.with_colons ) {
 		printf("sub:%c:%u:%d:%08lX%08lX:%s:%u:",
@@ -224,6 +226,8 @@ list_one( const char *name, int secret )
 					   pubkey_letter( pk2->pubkey_algo ),
 					   (ulong)keyid2[1],
 					   datestr_from_pk( pk2 ) );
+	    if( opt.fingerprint > 1 )
+		fingerprint( pk2, NULL );
 	}
 	else if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
 	    u32 keyid2[2];
@@ -251,6 +255,9 @@ list_one( const char *name, int secret )
 					   pubkey_letter( sk2->pubkey_algo ),
 					   (ulong)keyid2[1],
 					   datestr_from_sk( sk2 ) );
+	    if( opt.fingerprint > 1 )
+		fingerprint( NULL, sk2 );
+
 	}
 	else if( opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;

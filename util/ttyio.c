@@ -328,3 +328,15 @@ tty_kill_prompt()
     last_prompt_len = 0;
 }
 
+
+int
+tty_get_answer_is_yes( const char *prompt )
+{
+    int yes;
+    char *p = tty_get( prompt );
+    tty_kill_prompt();
+    yes = answer_is_yes(p);
+    m_free(p);
+    return yes;
+}
+

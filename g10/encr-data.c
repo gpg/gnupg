@@ -49,7 +49,8 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
     decode_filter_ctx_t dfx;
     byte *p;
     int rc, c, i;
-    byte temp[16];
+    byte temp[32];
+    unsigned blocksize;
 
     if( opt.verbose ) {
 	const char *s = cipher_algo_to_string( dek->algo );
@@ -60,7 +61,10 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
     }
     if( (rc=check_cipher_algo(dek->algo)) )
 	return rc;
-    if( ed->len && ed->len < 10 )
+    blocksize = cipher_get_blocksize(dek->algo);
+    if( !blocksize || blocksize > 16 )
+	log_fatal("unsupported blocksize %u\n", blocksize );
+    if( ed->len && ed->len < (blocksize+2) )
 	log_bug("Nanu\n");   /* oops: found a bug */
 
     dfx.cipher_hd = cipher_open( dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
@@ -70,20 +74,20 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
     if( ed->len ) {
 	iobuf_set_limit( ed->buf, ed->len );
 
-	for(i=0; i < 10 && ed->len; i++, ed->len-- )
+	for(i=0; i < (blocksize+2) && ed->len; i++, ed->len-- )
 	    temp[i] = iobuf_get(ed->buf);
     }
     else {
-	for(i=0; i < 10; i++ )
+	for(i=0; i < (blocksize+2); i++ )
 	    if( (c=iobuf_get(ed->buf)) == -1 )
 		break;
 	    else
 		temp[i] = c;
     }
-    cipher_decrypt( dfx.cipher_hd, temp, temp, 10);
+    cipher_decrypt( dfx.cipher_hd, temp, temp, blocksize+2);
     cipher_sync( dfx.cipher_hd );
     p = temp;
-    if( p[6] != p[8] || p[7] != p[9] ) {
+    if( p[blocksize-2] != p[blocksize] || p[blocksize-1] != p[blocksize+1] ) {
 	cipher_close(dfx.cipher_hd);
 	return G10ERR_BAD_KEY;
     }

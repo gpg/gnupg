@@ -34,12 +34,13 @@
 #include "dynload.h"
 
 
-#define STD_BLOCKSIZE 8
+#define MAX_BLOCKSIZE 16
 #define TABLE_SIZE 10
 
 struct cipher_table_s {
     const char *name;
     int algo;
+    size_t blocksize;
     size_t keylen;
     size_t contextsize; /* allocate this amount of context */
     void (*setkey)( void *c, byte *key, unsigned keylen );
@@ -53,8 +54,9 @@ static struct cipher_table_s cipher_table[TABLE_SIZE];
 struct cipher_handle_s {
     int  algo;
     int  mode;
-    byte iv[STD_BLOCKSIZE];	/* (this should be ulong aligned) */
-    byte lastiv[STD_BLOCKSIZE];
+    size_t blocksize;
+    byte iv[MAX_BLOCKSIZE];	/* (this should be ulong aligned) */
+    byte lastiv[MAX_BLOCKSIZE];
     int  unused;  /* in IV */
     void (*setkey)( void *c, byte *key, unsigned keylen );
     void (*encrypt)( void *c, byte *outbuf, byte *inbuf );
@@ -80,44 +82,44 @@ setup_cipher_table()
 {
 
     int i;
-    size_t blocksize;
 
     i = 0;
     cipher_table[i].algo = CIPHER_ALGO_BLOWFISH;
     cipher_table[i].name = blowfish_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
-					 &blocksize,
+					 &cipher_table[i].blocksize,
 					 &cipher_table[i].contextsize,
 					 &cipher_table[i].setkey,
 					 &cipher_table[i].encrypt,
 					 &cipher_table[i].decrypt     );
-    if( !cipher_table[i].name || blocksize != STD_BLOCKSIZE )
+    if( !cipher_table[i].name )
 	BUG();
     i++;
     cipher_table[i].algo = CIPHER_ALGO_CAST5;
     cipher_table[i].name = cast5_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
-					 &blocksize,
+					 &cipher_table[i].blocksize,
 					 &cipher_table[i].contextsize,
 					 &cipher_table[i].setkey,
 					 &cipher_table[i].encrypt,
 					 &cipher_table[i].decrypt     );
-    if( !cipher_table[i].name || blocksize != STD_BLOCKSIZE )
+    if( !cipher_table[i].name )
 	BUG();
     i++;
     cipher_table[i].algo = CIPHER_ALGO_BLOWFISH160;
     cipher_table[i].name = blowfish_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
-					 &blocksize,
+					 &cipher_table[i].blocksize,
 					 &cipher_table[i].contextsize,
 					 &cipher_table[i].setkey,
 					 &cipher_table[i].encrypt,
 					 &cipher_table[i].decrypt     );
-    if( !cipher_table[i].name || blocksize != STD_BLOCKSIZE )
+    if( !cipher_table[i].name )
 	BUG();
     i++;
     cipher_table[i].algo = CIPHER_ALGO_DUMMY;
     cipher_table[i].name = "DUMMY";
+    cipher_table[i].blocksize = 8;
     cipher_table[i].keylen = 128;
     cipher_table[i].contextsize = 0;
     cipher_table[i].setkey = dummy_setkey;
@@ -141,7 +143,6 @@ load_cipher_modules()
     void *context = NULL;
     struct cipher_table_s *ct;
     int ct_idx;
-    size_t blocksize;
     int i;
     const char *name;
     int any = 0;
@@ -164,9 +165,9 @@ load_cipher_modules()
 	BUG(); /* table already full */
     /* now load all extensions */
     while( (name = enum_gnupgext_ciphers( &context, &ct->algo,
-				&ct->keylen, &blocksize, &ct->contextsize,
+				&ct->keylen, &ct->blocksize, &ct->contextsize,
 				&ct->setkey, &ct->encrypt, &ct->decrypt)) ) {
-	if( blocksize != STD_BLOCKSIZE ) {
+	if( ct->blocksize != 8 && ct->blocksize != 16 ) {
 	    log_info("skipping cipher %d: unsupported blocksize\n", ct->algo);
 	    continue;
 	}
@@ -271,6 +272,26 @@ cipher_get_keylen( int algo )
     return 0;
 }
 
+unsigned
+cipher_get_blocksize( int algo )
+{
+    int i;
+    unsigned len = 0;
+
+    do {
+	for(i=0; cipher_table[i].name; i++ ) {
+	    if( cipher_table[i].algo == algo ) {
+		len = cipher_table[i].blocksize;
+		if( !len )
+		    log_bug("cipher %d w/o blocksize\n", algo );
+		return len;
+	    }
+	}
+    } while( load_cipher_modules() );
+    log_bug("cipher %d not found\n", algo );
+    return 0;
+}
+
 
 /****************
  * Open a cipher handle for use with algorithm ALGO, in mode MODE
@@ -299,6 +320,7 @@ cipher_open( int algo, int mode, int secure )
 					+ cipher_table[i].contextsize )
 		: m_alloc_clear( sizeof *hd + cipher_table[i].contextsize );
     hd->algo = algo;
+    hd->blocksize = cipher_table[i].blocksize;
     hd->setkey	= cipher_table[i].setkey;
     hd->encrypt = cipher_table[i].encrypt;
     hd->decrypt = cipher_table[i].decrypt;
@@ -336,9 +358,9 @@ void
 cipher_setiv( CIPHER_HANDLE c, const byte *iv )
 {
     if( iv )
-	memcpy( c->iv, iv, STD_BLOCKSIZE );
+	memcpy( c->iv, iv, c->blocksize );
     else
-	memset( c->iv, 0, STD_BLOCKSIZE );
+	memset( c->iv, 0, c->blocksize );
     c->unused = 0;
 }
 
@@ -351,8 +373,8 @@ do_ecb_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nblocks )
 
     for(n=0; n < nblocks; n++ ) {
 	(*c->encrypt)( &c->context, outbuf, inbuf );
-	inbuf  += STD_BLOCKSIZE;;
-	outbuf += STD_BLOCKSIZE;
+	inbuf  += c->blocksize;
+	outbuf += c->blocksize;
     }
 }
 
@@ -363,8 +385,8 @@ do_ecb_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nblocks )
 
     for(n=0; n < nblocks; n++ ) {
 	(*c->decrypt)( &c->context, outbuf, inbuf );
-	inbuf  += STD_BLOCKSIZE;;
-	outbuf += STD_BLOCKSIZE;
+	inbuf  += c->blocksize;
+	outbuf += c->blocksize;
     }
 }
 
@@ -373,11 +395,12 @@ static void
 do_cfb_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
 {
     byte *ivp;
+    size_t blocksize = c->blocksize;
 
     if( nbytes <= c->unused ) {
 	/* short enough to be encoded by the remaining XOR mask */
 	/* XOR the input with the IV and store input into IV */
-	for(ivp=c->iv+STD_BLOCKSIZE - c->unused; nbytes; nbytes--, c->unused-- )
+	for(ivp=c->iv+c->blocksize - c->unused; nbytes; nbytes--, c->unused-- )
 	    *outbuf++ = (*ivp++ ^= *inbuf++);
 	return;
     }
@@ -385,26 +408,26 @@ do_cfb_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
     if( c->unused ) {
 	/* XOR the input with the IV and store input into IV */
 	nbytes -= c->unused;
-	for(ivp=c->iv+STD_BLOCKSIZE - c->unused; c->unused; c->unused-- )
+	for(ivp=c->iv+blocksize - c->unused; c->unused; c->unused-- )
 	    *outbuf++ = (*ivp++ ^= *inbuf++);
     }
 
     /* now we can process complete blocks */
-    while( nbytes >= STD_BLOCKSIZE ) {
+    while( nbytes >= blocksize ) {
 	int i;
 	/* encrypt the IV (and save the current one) */
-	memcpy( c->lastiv, c->iv, STD_BLOCKSIZE );
+	memcpy( c->lastiv, c->iv, blocksize );
 	(*c->encrypt)( &c->context, c->iv, c->iv );
 	/* XOR the input with the IV and store input into IV */
-	for(ivp=c->iv,i=0; i < STD_BLOCKSIZE; i++ )
+	for(ivp=c->iv,i=0; i < blocksize; i++ )
 	    *outbuf++ = (*ivp++ ^= *inbuf++);
-	nbytes -= STD_BLOCKSIZE;
+	nbytes -= blocksize;
     }
     if( nbytes ) { /* process the remaining bytes */
 	/* encrypt the IV (and save the current one) */
-	memcpy( c->lastiv, c->iv, STD_BLOCKSIZE );
+	memcpy( c->lastiv, c->iv, blocksize );
 	(*c->encrypt)( &c->context, c->iv, c->iv );
-	c->unused = STD_BLOCKSIZE;
+	c->unused = blocksize;
 	/* and apply the xor */
 	c->unused -= nbytes;
 	for(ivp=c->iv; nbytes; nbytes-- )
@@ -417,11 +440,12 @@ do_cfb_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
 {
     byte *ivp;
     ulong temp;
+    size_t blocksize = c->blocksize;
 
     if( nbytes <= c->unused ) {
 	/* short enough to be encoded by the remaining XOR mask */
 	/* XOR the input with the IV and store input into IV */
-	for(ivp=c->iv+STD_BLOCKSIZE - c->unused; nbytes; nbytes--,c->unused--){
+	for(ivp=c->iv+blocksize - c->unused; nbytes; nbytes--,c->unused--){
 	    temp = *inbuf++;
 	    *outbuf++ = *ivp ^ temp;
 	    *ivp++ = temp;
@@ -432,7 +456,7 @@ do_cfb_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
     if( c->unused ) {
 	/* XOR the input with the IV and store input into IV */
 	nbytes -= c->unused;
-	for(ivp=c->iv+STD_BLOCKSIZE - c->unused; c->unused; c->unused-- ) {
+	for(ivp=c->iv+blocksize - c->unused; c->unused; c->unused-- ) {
 	    temp = *inbuf++;
 	    *outbuf++ = *ivp ^ temp;
 	    *ivp++ = temp;
@@ -440,70 +464,24 @@ do_cfb_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
     }
 
     /* now we can process complete blocks */
-  #ifdef BIG_ENDIAN_HOST
-    /* This does only make sense for big endian hosts, due to ... ivp = temp*/
-    if( !((ulong)inbuf % SIZEOF_UNSIGNED_LONG) ) {
-	while( nbytes >= STD_BLOCKSIZE ) {
-	    /* encrypt the IV (and save the current one) */
-	    memcpy( c->lastiv, c->iv, STD_BLOCKSIZE );
-	    (*c->encrypt)( &c->context, c->iv, c->iv );
-	    ivp = c->iv;
-	    /* XOR the input with the IV and store input into IV */
-	  #if SIZEOF_UNSIGNED_LONG == STD_BLOCKSIZE
-	    temp = *(ulong*)inbuf;
-	    *(ulong*)outbuf = *(ulong*)c->iv ^ temp;
-	    *(ulong*)ivp    = temp;
-	  #elif (2*SIZEOF_UNSIGNED_LONG) == STD_BLOCKSIZE
-	    temp = ((ulong*)inbuf)[0];
-	    ((ulong*)outbuf)[0] = ((ulong*)c->iv)[0] ^ temp;
-	    ((ulong*)ivp)[0] = temp;
-	    temp = ((ulong*)inbuf)[1];
-	    ((ulong*)outbuf)[1] = ((ulong*)c->iv)[1] ^ temp;
-	    ((ulong*)ivp)[1] = temp;
-	  #elif (4*SIZEOF_UNSIGNED_LONG) == STD_BLOCKSIZE
-	    temp = ((ulong*)inbuf)[0];
-	    ((ulong*)outbuf)[0] = ((ulong*)c->iv)[0] ^ temp;
-	    ((ulong*)ivp)[0] = temp;
-	    temp = ((ulong*)inbuf)[1];
-	    ((ulong*)outbuf)[1] = ((ulong*)c->iv)[1] ^ temp;
-	    ((ulong*)ivp)[1] = temp;
-	    temp = ((ulong*)inbuf)[2];
-	    ((ulong*)outbuf)[2] = ((ulong*)c->iv)[2] ^ temp;
-	    ((ulong*)ivp)[2] = temp;
-	    temp = ((ulong*)inbuf)[3];
-	    ((ulong*)outbuf)[3] = ((ulong*)c->iv)[3] ^ temp;
-	    ((ulong*)ivp)[3] = temp;
-	  #else
-	    #error Please disable the align test.
-	  #endif
-	    nbytes -= STD_BLOCKSIZE;
-	    inbuf  += STD_BLOCKSIZE;
-	    outbuf += STD_BLOCKSIZE;
+    while( nbytes >= blocksize ) {
+	int i;
+	/* encrypt the IV (and save the current one) */
+	memcpy( c->lastiv, c->iv, blocksize );
+	(*c->encrypt)( &c->context, c->iv, c->iv );
+	/* XOR the input with the IV and store input into IV */
+	for(ivp=c->iv,i=0; i < blocksize; i++ ) {
+	    temp = *inbuf++;
+	    *outbuf++ = *ivp ^ temp;
+	    *ivp++ = temp;
 	}
+	nbytes -= blocksize;
     }
-    else { /* non aligned version */
-  #endif /* BIG_ENDIAN_HOST */
-	while( nbytes >= STD_BLOCKSIZE ) {
-	    int i;
-	    /* encrypt the IV (and save the current one) */
-	    memcpy( c->lastiv, c->iv, STD_BLOCKSIZE );
-	    (*c->encrypt)( &c->context, c->iv, c->iv );
-	    /* XOR the input with the IV and store input into IV */
-	    for(ivp=c->iv,i=0; i < STD_BLOCKSIZE; i++ ) {
-		temp = *inbuf++;
-		*outbuf++ = *ivp ^ temp;
-		*ivp++ = temp;
-	    }
-	    nbytes -= STD_BLOCKSIZE;
-	}
-   #ifdef BIG_ENDIAN_HOST
-    }
-   #endif
     if( nbytes ) { /* process the remaining bytes */
 	/* encrypt the IV (and save the current one) */
-	memcpy( c->lastiv, c->iv, STD_BLOCKSIZE );
+	memcpy( c->lastiv, c->iv, blocksize );
 	(*c->encrypt)( &c->context, c->iv, c->iv );
-	c->unused = STD_BLOCKSIZE;
+	c->unused = blocksize;
 	/* and apply the xor */
 	c->unused -= nbytes;
 	for(ivp=c->iv; nbytes; nbytes-- ) {
@@ -576,8 +554,8 @@ void
 cipher_sync( CIPHER_HANDLE c )
 {
     if( c->mode == CIPHER_MODE_PHILS_CFB && c->unused ) {
-	memmove(c->iv + c->unused, c->iv, STD_BLOCKSIZE - c->unused );
-	memcpy(c->iv, c->lastiv + STD_BLOCKSIZE - c->unused, c->unused);
+	memmove(c->iv + c->unused, c->iv, c->blocksize - c->unused );
+	memcpy(c->iv, c->lastiv + c->blocksize - c->unused, c->unused);
 	c->unused = 0;
     }
 }

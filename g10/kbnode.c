@@ -94,7 +94,8 @@ add_kbnode( KBNODE root, KBNODE node )
 }
 
 /****************
- * Insert NODE into the list after root but before a packet with type PKTTYPE
+ * Insert NODE into the list after root but before a packet which is not of
+ * type PKTTYPE
  * (only if PKTTYPE != 0)
  */
 void
@@ -108,7 +109,7 @@ insert_kbnode( KBNODE root, KBNODE node, int pkttype )
 	KBNODE n1;
 
 	for(n1=root; n1->next;	n1 = n1->next)
-	    if( pkttype == n1->next->pkt->pkttype ) {
+	    if( pkttype != n1->next->pkt->pkttype ) {
 		node->next = n1->next;
 		n1->next = node;
 		return;

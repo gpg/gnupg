@@ -939,7 +939,6 @@ gnupgext_enum_func( int what, int *sequence, int *class, int *vers )
     void *ret;
     int i = *sequence;
 
-    /*log_info("gnupgext_enum_func in rsa+idea called what=%d i=%d: ", what, i);*/
     do {
 	if( i >= DIM(func_table) || i < 0 ) {
 	    /*fprintf(stderr, "failed\n");*/

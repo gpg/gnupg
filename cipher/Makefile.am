@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-gnupg_extensions = tiger
+gnupg_extensions = tiger twofish
 
 INCLUDES =  -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
 
@@ -42,9 +42,13 @@ libcipher_a_SOURCES = cipher.c	\
 		 smallprime.c
 
 EXTRA_tiger_SOURCES = tiger.c
+EXTRA_twofish_SOURCES = twofish.c
 
 tiger: tiger.c
-	$(COMPILE) -shared -fPIC -o tiger tiger.c
+	$(COMPILE) -shared  -fPIC -o tiger tiger.c
+
+twofish: twofish.c
+	$(COMPILE) -shared  -fPIC -o twofish twofish.c
 
 install-exec-hook:
 	@list='$(pkglib_PROGRAMS)'; for p in $$list; do \

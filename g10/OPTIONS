@@ -57,3 +57,9 @@ compress-sigs
 # Normally, compressing of signatures does not make sense; so this
 # is disabled for detached signatures unless this option is used.
 
+
+emulate-pgp-sign-bug
+# PGP 2.x can only cope with 2 byte length headers of the
+# signature packets, this option forces.
+
+

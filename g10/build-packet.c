@@ -51,6 +51,7 @@ static int calc_header_length( u32 len );
 static int write_16(IOBUF inp, u16 a);
 static int write_32(IOBUF inp, u32 a);
 static int write_header( IOBUF out, int ctb, u32 len );
+static int write_sign_packet_header( IOBUF out, int ctb, u32 len );
 static int write_header2( IOBUF out, int ctb, u32 len, int hdrlen, int blkmode );
 static int write_new_header( IOBUF out, int ctb, u32 len, int hdrlen );
 static int write_version( IOBUF out, int ctb );
@@ -669,7 +670,10 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
     for(i=0; i < n; i++ )
 	mpi_write(a, sig->data[i] );
 
-    write_header(out, ctb, iobuf_get_temp_length(a) );
+    if( is_RSA(sig->pubkey_algo) && sig->version < 4 )
+	write_sign_packet_header(out, ctb, iobuf_get_temp_length(a) );
+    else
+	write_header(out, ctb, iobuf_get_temp_length(a) );
     if( iobuf_write_temp( out, a ) )
 	rc = G10ERR_WRITE_FILE;
 
@@ -745,6 +749,18 @@ static int
 write_header( IOBUF out, int ctb, u32 len )
 {
     return write_header2( out, ctb, len, 0, 1 );
+}
+
+
+static int
+write_sign_packet_header( IOBUF out, int ctb, u32 len )
+{
+    /* work around a bug in the pgp read function for signature packets,
+     * which are not correctly coded and silently assume at some
+     * point 2 byte length headers.*/
+    iobuf_put(out, 0x89 );
+    iobuf_put(out, len >> 8 );
+    return iobuf_put(out, len ) == -1 ? -1:0;
 }
 
 /****************

@@ -50,9 +50,11 @@ struct {
     int compress_sigs;
     int always_trust;
     int rfc1991;
-    unsigned emulate_bugs; /* bug emulation flags */
+    unsigned emulate_bugs; /* bug emulation flags EMUBUG_xxxx */
 } opt;
 
+
+#define EMUBUG_GPGCHKSUM  1
 
 #define DBG_PACKET_VALUE  1	/* debug packet reading/writing */
 #define DBG_MPI_VALUE	  2	/* debug mpi details */

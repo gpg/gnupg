@@ -204,7 +204,7 @@ secmem_malloc( size_t size )
 	}
     /* allocate a new block */
     if( (poollen + size <= poolsize) ) {
-	mb = pool + poollen;
+	mb = (void*)((char*)pool + poollen);
 	poollen += size;
 	mb->size = size;
     }
@@ -240,7 +240,7 @@ secmem_realloc( void *p, size_t newsize )
 	return p; /* it is easier not to shrink the memory */
     a = secmem_malloc( newsize );
     memcpy(a, p, size);
-    memset(a+size, 0, newsize-size);
+    memset((char*)a+size, 0, newsize-size);
     secmem_free(p);
     return a;
 }
@@ -271,7 +271,7 @@ secmem_free( void *a )
 int
 m_is_secure( const void *p )
 {
-    return p >= pool && p < (pool+poolsize);
+    return p >= pool && p < ((char*)pool+poolsize);
 }
 
 void

@@ -25,6 +25,7 @@ void tty_print_string( byte *p, size_t n );
 char *tty_get( const char *prompt );
 char *tty_get_hidden( const char *prompt );
 void tty_kill_prompt(void);
+int tty_get_answer_is_yes( const char *prompt );
 
 
 #endif /*G10_TTYIO_H*/

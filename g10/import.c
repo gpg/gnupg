@@ -851,7 +851,7 @@ merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
 	 * We add a clone to the original keyblock, because this
 	 * one is released first */
 	n2 = clone_kbnode(n);
-	insert_kbnode( dst, n2, PKT_USER_ID );
+	insert_kbnode( dst, n2, PKT_SIGNATURE );
 	n2->flag |= 1;
 	n->flag |= 1;
 	++*n_sigs;

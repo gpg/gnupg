@@ -120,6 +120,7 @@ mpi_invm( MPI x, MPI a, MPI n )
 	    mpi_rshift(t2, t2, 1);
 	    mpi_rshift(t3, t3, 1);
 	  Y4:
+	    ;
 	} while( !mpi_test_bit( t3, 0 ) ); /* while t3 is even */
 
 	if( !t3->sign ) {
@@ -216,6 +217,7 @@ mpi_invm( MPI x, MPI a, MPI n )
 		mpi_rshift(t3, t3, 1);
 	    }
 	  Y4:
+	    ;
 	} while( !mpi_test_bit( t3, 0 ) ); /* while t3 is even */
 
 	if( !t3->sign ) {

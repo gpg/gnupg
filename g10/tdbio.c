@@ -45,46 +45,8 @@ static char *db_name;
 static int  db_fd = -1;
 
 
-
-static void create_db( const char *fname );
 static void open_db(void);
 
-/**************************************************
- ************** read and write helpers ************
- **************************************************/
-
-static void
-fwrite_8(FILE *fp, byte a)
-{
-    if( putc( a & 0xff, fp ) == EOF )
-	log_fatal("error writing byte to trustdb: %s\n", strerror(errno) );
-}
-
-
-static void
-fwrite_32( FILE*fp, ulong a)
-{
-    putc( (a>>24) & 0xff, fp );
-    putc( (a>>16) & 0xff, fp );
-    putc( (a>> 8) & 0xff, fp );
-    if( putc( a & 0xff, fp ) == EOF )
-	log_fatal("error writing ulong to trustdb: %s\n", strerror(errno) );
-}
-
-static void
-fwrite_zeros( FILE *fp, size_t n)
-{
-    while( n-- )
-	if( putc( 0, fp ) == EOF )
-	    log_fatal("error writing zeros to trustdb: %s\n", strerror(errno) );
-}
-
-
-
-
-/**************************************************
- ************** read and write stuff **************
- **************************************************/
 
 int
 tdbio_set_dbname( const char *new_dbname, int create )
@@ -101,7 +63,11 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    return G10ERR_TRUSTDB;
 	}
 	if( create ) {
+	    FILE *fp;
+	    TRUSTREC rec;
+	    int rc;
 	    char *p = strrchr( fname, '/' );
+
 	    assert(p);
 	    *p = 0;
 	    if( access( fname, F_OK ) ) {
@@ -119,7 +85,30 @@ tdbio_set_dbname( const char *new_dbname, int create )
 		    log_fatal_f(fname, _("directory does not exist!\n") );
 	    }
 	    *p = '/';
-	    create_db( fname );
+
+	    fp =fopen( fname, "w" );
+	    if( !fp )
+		log_fatal_f( fname, _("can't create: %s\n"), strerror(errno) );
+	    fclose(fp);
+	    m_free(db_name);
+	    db_name = fname;
+	    db_fd = open( db_name, O_RDWR );
+	    if( db_fd == -1 )
+		log_fatal_f( db_name, _("can't open: %s\n"), strerror(errno) );
+
+	    memset( &rec, 0, sizeof rec );
+	    rec.r.ver.version = 2;
+	    rec.r.ver.created = make_timestamp();
+	    rec.rectype = RECTYPE_VER;
+	    rec.recnum = 0;
+	    rc = tdbio_write_record( &rec );
+	    if( rc )
+		log_fatal_f( fname, _("failed to create version record: %s"),
+							       g10_errstr(rc));
+	    /* and read again to check that we are okay */
+	    if( tdbio_read_record( 0, &rec, RECTYPE_VER ) )
+		log_fatal_f( db_name, "invalid trust-db created\n" );
+	    return 0;
 	}
     }
     m_free(db_name);
@@ -132,37 +121,6 @@ const char *
 tdbio_get_dbname()
 {
     return db_name;
-}
-
-
-
-/****************
- * Create a new trustdb
- */
-static void
-create_db( const char *fname )
-{
-    FILE *fp;
-
-    fp =fopen( fname, "w" );
-    if( !fp )
-	log_fatal_f( fname, _("can't create %s: %s\n"), strerror(errno) );
-    fwrite_8( fp, 1 );	/* record type */
-    fwrite_8( fp, 'g' );
-    fwrite_8( fp, 'p' );
-    fwrite_8( fp, 'g' );
-    fwrite_8( fp, 2 );	/* version */
-    fwrite_zeros( fp, 3 ); /* reserved */
-    fwrite_32( fp, 0 ); /* not locked */
-    fwrite_32( fp, make_timestamp() ); /* created */
-    fwrite_32( fp, 0 ); /* not yet modified */
-    fwrite_32( fp, 0 ); /* not yet validated*/
-    fwrite_32( fp, 0 ); /* reserved */
-    fwrite_8( fp, 3 );	/* marginals needed */
-    fwrite_8( fp, 1 );	/* completes needed */
-    fwrite_8( fp, 4 );	/* max_cet_depth */
-    fwrite_zeros( fp, 9 ); /* filler */
-    fclose(fp);
 }
 
 
@@ -182,10 +140,221 @@ open_db()
 }
 
 
+/****************
+ * Return the record number of the keyhash tbl or create a new one.
+ */
+static ulong
+get_keyhashrec()
+{
+    static ulong keyhashtbl; /* record number of the key hashtable */
+    TRUSTREC vr;
+    int rc;
+
+    if( keyhashtbl )
+	return keyhashtbl;
+
+    rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
+    if( rc )
+	log_fatal_f( db_name, _("error reading version record: %s\n"),
+							g10_errstr(rc) );
+    if( vr.r.ver.keyhashtbl )
+	keyhashtbl = vr.r.ver.keyhashtbl;
+    else {
+	TRUSTREC rec;
+	off_t offset;
+	ulong recnum;
+	int i, n;
+
+	offset = lseek( db_fd, 0, SEEK_END );
+	if( offset == -1 )
+	    log_fatal("trustdb: lseek to end failed: %s\n", strerror(errno) );
+	recnum = offset / TRUST_RECORD_LEN;
+	assert(recnum); /* this is will never be the first record */
+
+	keyhashtbl = recnum;
+	/* Now write the records */
+	n = (256+ITEMS_PER_HTBL_RECORD-1) / ITEMS_PER_HTBL_RECORD;
+	for(i=0; i < n; i++, recnum++ ) {
+	     memset( &rec, 0, sizeof rec );
+	     rec.rectype = RECTYPE_HTBL; /* free record */
+	     rec.recnum = recnum;
+	     rc = tdbio_write_record( &rec );
+	     if( rc )
+		 log_fatal_f(db_name,_("failed to create hashtable: %s\n"),
+						     g10_errstr(rc));
+	}
+	/* update the version record */
+	vr.r.ver.keyhashtbl = keyhashtbl;
+	rc = tdbio_write_record( &vr );
+	if( rc )
+	    log_fatal_f( db_name, _("error updating version record: %s\n"),
+							     g10_errstr(rc));
+    }
+    return keyhashtbl;
+}
+
+
+/****************
+ * Update the key hashtbl or create the table if it does not exist
+ */
+static int
+update_keyhashtbl( TRUSTREC *kr )
+{
+    TRUSTREC lastrec, rec;
+    ulong hashrec, item;
+    int msb;
+    int level=0;
+    int rc, i;
+
+    hashrec = get_keyhashrec();
+  next_level:
+    msb = kr->r.key.fingerprint[level];
+    hashrec += msb / ITEMS_PER_HTBL_RECORD;
+    rc = tdbio_read_record( hashrec, &rec, RECTYPE_HTBL );
+    if( rc ) {
+	log_error( db_name, "update_keyhashtbl read failed: %s\n",
+							g10_errstr(rc) );
+	return rc;
+    }
+
+    item = rec.r.htbl.item[msb % ITEMS_PER_HTBL_RECORD];
+    if( !item ) { /* insert new one */
+	rec.r.htbl.item[msb % ITEMS_PER_HTBL_RECORD] = kr->recnum;
+	rc = tdbio_write_record( &rec );
+	if( rc ) {
+	    log_error( db_name, "update_keyhashtbl write htbl failed: %s\n",
+							    g10_errstr(rc) );
+	    return rc;
+	}
+    }
+    else if( item != kr->recnum ) {  /* must do an update */
+	lastrec = rec;
+	rc = tdbio_read_record( item, &rec, 0 );
+	if( rc ) {
+	    log_error( db_name, "update_keyhashtbl read item failed: %s\n",
+							    g10_errstr(rc) );
+	    return rc;
+	}
+	if( rec.rectype == RECTYPE_HTBL ) {
+	    hashrec = item;
+	    level++;
+	    if( level >= kr->r.key.fingerprint_len ) {
+		log_error( db_name, "keyhashtbl has invalid indirections\n");
+		return G10ERR_TRUSTDB;
+	    }
+	    goto next_level;
+	}
+	else if( rec.rectype == RECTYPE_HLST ) { /* extend list */
+	    /* see whether the key is already in this list */
+	    for(;;) {
+		for(i=0; i < ITEMS_PER_HLST_RECORD; i++ ) {
+		    if( rec.r.hlst.rnum[i] == kr->recnum ) {
+			log_debug("HTBL: no update needed for keyrec %lu\n",
+				    kr->recnum );
+			return 0;
+		    }
+		}
+		if( rec.r.hlst.next ) {
+		    rc = tdbio_read_record( rec.r.hlst.next,
+							&rec, RECTYPE_HLST);
+		    if( rc ) {
+			log_error( db_name,
+				   "scan keyhashtbl read hlst failed: %s\n",
+							     g10_errstr(rc) );
+			return rc;
+		    }
+		}
+		else
+		    break; /* not there */
+	    }
+	    /* find the next free entry and put it in */
+	    for(;;) {
+		for(i=0; i < ITEMS_PER_HLST_RECORD; i++ ) {
+		    if( !rec.r.hlst.rnum[i] ) {
+			rec.r.hlst.rnum[i] = kr->recnum;
+			rc = tdbio_write_record( &rec );
+			if( rc )
+			    log_error( db_name,
+				   "update_keyhashtbl write hlst failed: %s\n",
+							      g10_errstr(rc) );
+			return rc; /* ready */
+		    }
+		}
+		if( rec.r.hlst.next ) {
+		    rc = tdbio_read_record( rec.r.hlst.next,
+						      &rec, RECTYPE_HLST );
+		    if( rc ) {
+			log_error( db_name,
+				   "update_keyhashtbl read hlst failed: %s\n",
+							     g10_errstr(rc) );
+			return rc;
+		    }
+		}
+		else { /* add a new list record */
+		    rec.r.hlst.next = item = tdbio_new_recnum();
+		    rc = tdbio_write_record( &rec );
+		    if( rc ) {
+			log_error( db_name,
+			       "update_keyhashtbl write hlst failed: %s\n",
+							  g10_errstr(rc) );
+			return rc;
+		    }
+		    memset( &rec, 0, sizeof rec );
+		    rec.rectype = RECTYPE_HLST;
+		    rec.recnum = item;
+		    rec.r.hlst.rnum[0] = kr->recnum;
+		    if( rc )
+			log_error( db_name,
+			       "update_keyhashtbl write ext hlst failed: %s\n",
+							  g10_errstr(rc) );
+		    return rc; /* ready */
+		}
+	    }
+	}
+	else if( rec.rectype == RECTYPE_KEY ) { /* insert a list record */
+	    if( rec.recnum == kr->recnum ) {
+		log_debug("HTBL: no update needed for keyrec %lu\n",
+							 kr->recnum );
+		return 0;
+	    }
+	    item = rec.recnum; /* save number of key record */
+	    memset( &rec, 0, sizeof rec );
+	    rec.rectype = RECTYPE_HLST;
+	    rec.recnum = tdbio_new_recnum();
+	    rec.r.hlst.rnum[0] = item;	     /* old keyrecord */
+	    rec.r.hlst.rnum[1] = kr->recnum; /* and new one */
+	    rc = tdbio_write_record( &rec );
+	    if( rc ) {
+		log_error( db_name,
+		       "update_keyhashtbl write new hlst failed: %s\n",
+						  g10_errstr(rc) );
+		return rc;
+	    }
+	    /* update the hashtable record */
+	    lastrec.r.htbl.item[msb % ITEMS_PER_HTBL_RECORD] = rec.recnum;
+	    rc = tdbio_write_record( &lastrec );
+	    if( rc )
+		log_error( db_name,
+		       "update_keyhashtbl update htbl failed: %s\n",
+						  g10_errstr(rc) );
+	    return rc; /* ready */
+	}
+	else {
+	    log_error( db_name, "keyhashtbl %lu points to an invalid record\n",
+								    item);
+	    return G10ERR_TRUSTDB;
+	}
+    }
+
+    return 0;
+}
+
+
+
 void
 tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 {
-    int i, any;
+    int i;
     ulong rnum = rec->recnum;
 
     fprintf(fp, "rec %5lu, ", rnum );
@@ -193,7 +362,8 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
     switch( rec->rectype ) {
       case 0: fprintf(fp, "free\n");
 	break;
-      case RECTYPE_VER: fprintf(fp, "version\n");
+      case RECTYPE_VER: fprintf(fp, "version, keyhashtbl=%lu\n",
+	    rec->r.ver.keyhashtbl );
 	break;
       case RECTYPE_DIR:
 	fprintf(fp, "dir %lu, keys=%lu, uids=%lu, cach=%lu, ot=%02x",
@@ -213,11 +383,12 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 	putc('\n', fp);
 	break;
       case RECTYPE_KEY:
-	fprintf(fp, "key %lu, next=%lu, algo=%d, flen=%d",
+	fprintf(fp, "key %lu, next=%lu, algo=%d, ",
 		   rec->r.key.lid,
 		   rec->r.key.next,
-		   rec->r.key.pubkey_algo,
-		   rec->r.key.fingerprint_len );
+		   rec->r.key.pubkey_algo );
+	for(i=0; i < rec->r.key.fingerprint_len; i++ )
+	    fprintf(fp, "%02X", rec->r.key.fingerprint[i] );
 	if( rec->r.key.keyflags & KEYF_REVOKED )
 	    fputs(", revoked", fp );
 	putc('\n', fp);
@@ -239,29 +410,29 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 		    rec->r.uid.next);
 	break;
       case RECTYPE_SIG:
-	fprintf(fp, "sig %lu, next=%lu\n",
+	fprintf(fp, "sig %lu, next=%lu,",
 			 rec->r.sig.lid, rec->r.sig.next );
-	for(i=any=0; i < SIGS_PER_RECORD; i++ ) {
-	    if( rec->r.sig.sig[i].lid ) {
-		if( !any ) {
-		    putc('\t', fp);
-		    any++;
-		}
-		fprintf(fp, "  %lu:%02x", rec->r.sig.sig[i].lid,
+	for(i=0; i < SIGS_PER_RECORD; i++ ) {
+	    if( rec->r.sig.sig[i].lid )
+		fprintf(fp, " %lu:%02x", rec->r.sig.sig[i].lid,
 					  rec->r.sig.sig[i].flag );
-	    }
 	}
-	if( any )
-	    putc('\n', fp);
+	putc('\n', fp);
 	break;
       case RECTYPE_CACH:
 	fprintf(fp, "cach\n");
 	break;
       case RECTYPE_HTBL:
-	fprintf(fp, "htbl\n");
+	fprintf(fp, "htbl,");
+	for(i=0; i < ITEMS_PER_HTBL_RECORD; i++ )
+	    fprintf(fp, " %lu", rec->r.htbl.item[i] );
+	putc('\n', fp);
 	break;
       case RECTYPE_HLST:
-	fprintf(fp, "hlst\n");
+	fprintf(fp, "hlst, next=%lu,", rec->r.hlst.next );
+	for(i=0; i < ITEMS_PER_HLST_RECORD; i++ )
+	    fprintf(fp, " %lu", rec->r.hlst.rnum[i] );
+	putc('\n', fp);
 	break;
       default:
 	fprintf(fp, "unknown type %d\n", rec->rectype );
@@ -302,30 +473,29 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 		    recnum, expected, rec->rectype );
 	return G10ERR_TRUSTDB;
     }
-    p++;
+    p++;    /* skip reserved byte */
     switch( rec->rectype ) {
-      case 0:  /* unused record */
+      case 0:  /* unused (free) record */
 	break;
       case RECTYPE_VER: /* version record */
 	if( memcmp(buf+1, "gpg", 3 ) ) {
 	    log_error_f( db_name, _("not a trustdb file\n") );
 	    rc = G10ERR_TRUSTDB;
 	}
-	p += 2; /* skip magic */
+	p += 2; /* skip "pgp" */
 	rec->r.ver.version  = *p++;
-	rec->r.ver.locked   = buftoulong(p); p += 4;
+	p += 3; /* reserved bytes */
+	p += 4; /* lock flags */
 	rec->r.ver.created  = buftoulong(p); p += 4;
 	rec->r.ver.modified = buftoulong(p); p += 4;
 	rec->r.ver.validated= buftoulong(p); p += 4;
-	rec->r.ver.marginals_needed = *p++;
-	rec->r.ver.completes_needed = *p++;
-	rec->r.ver.max_cert_depth = *p++;
+	rec->r.ver.keyhashtbl=buftoulong(p); p += 4;
 	if( recnum ) {
 	    log_error_f( db_name, "version record with recnum %lu\n",
 							     (ulong)recnum );
 	    rc = G10ERR_TRUSTDB;
 	}
-	if( rec->r.ver.version != 2 ) {
+	else if( rec->r.ver.version != 2 ) {
 	    log_error_f( db_name, "invalid file version %d\n",
 							rec->r.ver.version );
 	    rc = G10ERR_TRUSTDB;
@@ -381,6 +551,17 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	memcpy(rec->r.cache.blockhash, p, 20); p += 20;
 	rec->r.cache.trustlevel = *p++;
 	break;
+      case RECTYPE_HTBL:
+	for(i=0; i < ITEMS_PER_HTBL_RECORD; i++ ) {
+	    rec->r.htbl.item[i] = buftoulong(p); p += 4;
+	}
+	break;
+      case RECTYPE_HLST:
+	rec->r.hlst.next = buftoulong(p); p += 4;
+	for(i=0; i < ITEMS_PER_HLST_RECORD; i++ ) {
+	    rec->r.hlst.rnum[i] = buftoulong(p); p += 4;
+	}
+	break;
       default:
 	log_error_f( db_name, "invalid record type %d at recnum %lu\n",
 					      rec->rectype, (ulong)recnum );
@@ -412,8 +593,16 @@ tdbio_write_record( TRUSTREC *rec )
     switch( rec->rectype ) {
       case 0:  /* unused record */
 	break;
-      case 1: /* version record */
-	BUG();
+      case RECTYPE_VER: /* version record */
+	if( recnum )
+	    BUG();
+	memcpy(p-1, "gpg", 3 ); p += 2;
+	*p++ = rec->r.ver.version;
+	p += 7; /* skip reserved bytes and lock flags */
+	ulongtobuf(p, rec->r.ver.created); p += 4;
+	ulongtobuf(p, rec->r.ver.modified); p += 4;
+	ulongtobuf(p, rec->r.ver.validated); p += 4;
+	ulongtobuf(p, rec->r.ver.keyhashtbl); p += 4;
 	break;
 
       case RECTYPE_DIR:   /*directory record */
@@ -466,6 +655,19 @@ tdbio_write_record( TRUSTREC *rec )
 	*p++ = rec->r.cache.trustlevel;
 	break;
 
+      case RECTYPE_HTBL:
+	for(i=0; i < ITEMS_PER_HTBL_RECORD; i++ ) {
+	    ulongtobuf( p, rec->r.htbl.item[i]); p += 4;
+	}
+	break;
+
+      case RECTYPE_HLST:
+	ulongtobuf( p, rec->r.hlst.next); p += 4;
+	for(i=0; i < ITEMS_PER_HLST_RECORD; i++ ) {
+	    ulongtobuf( p, rec->r.hlst.rnum[i]); p += 4;
+	}
+	break;
+
       default:
 	BUG();
     }
@@ -479,6 +681,8 @@ tdbio_write_record( TRUSTREC *rec )
 	log_error(_("trustdb: write failed (n=%d): %s\n"), n, strerror(errno) );
 	return G10ERR_WRITE_FILE;
     }
+    else if( rec->rectype == RECTYPE_KEY )
+	rc = update_keyhashtbl( rec );
 
     return rc;
 }
@@ -528,9 +732,6 @@ tdbio_new_recnum()
 /****************
  * Search the trustdb for a key which matches PK and return the dir record
  * The local_id of PK is set to the correct value
- *
- * Note: To increase performance, we could use a index search here.
- *	 tdbio_write_record shoudl create this index automagically
  */
 int
 tdbio_search_dir_record( PKT_public_key *pk, TRUSTREC *rec )
@@ -540,32 +741,111 @@ tdbio_search_dir_record( PKT_public_key *pk, TRUSTREC *rec )
     byte *fingerprint;
     size_t fingerlen;
     int rc;
+    ulong hashrec, item;
+    int msb;
+    int level=0;
 
     keyid_from_pk( pk, keyid );
     fingerprint = fingerprint_from_pk( pk, NULL, &fingerlen );
     assert( fingerlen == 20 || fingerlen == 16 );
 
-    for(recnum=1; !(rc=tdbio_read_record( recnum, rec, 0)); recnum++ ) {
-	if( rec->rectype != RECTYPE_KEY )
-	    continue;
-	if( rec->r.key.pubkey_algo == pk->pubkey_algo
-	    && !memcmp(rec->r.key.fingerprint, fingerprint, fingerlen) ) {
-	    /* found: read the dir record for this key */
-	    recnum = rec->r.key.lid;
-	    rc = tdbio_read_record( recnum, rec, RECTYPE_DIR);
-	    if( rc )
-		break;
-	    if( pk->local_id && pk->local_id != recnum )
-		log_error_f(db_name,
-			   "found record, but LID from memory does "
-			   "not match recnum (%lu,%lu)\n",
-						pk->local_id, recnum );
-	    pk->local_id = recnum;
-	    return 0;
-	}
+    /* locate the key using the hash table */
+    hashrec = get_keyhashrec();
+  next_level:
+    msb = fingerprint[level];
+    hashrec += msb / ITEMS_PER_HTBL_RECORD;
+    rc = tdbio_read_record( hashrec, rec, RECTYPE_HTBL );
+    if( rc ) {
+	log_error( db_name, "scan keyhashtbl failed: %s\n", g10_errstr(rc) );
+	return rc;
     }
-    if( rc != -1 )
-	log_error_f( db_name, _("search_db failed: %s\n"), g10_errstr(rc) );
+
+    item = rec->r.htbl.item[msb % ITEMS_PER_HTBL_RECORD];
+    if( !item )
+	return -1; /* not found */
+
+    rc = tdbio_read_record( item, rec, 0 );
+    if( rc ) {
+	log_error( db_name, "keyhashtbl read failed: %s\n", g10_errstr(rc) );
+	return rc;
+    }
+    if( rec->rectype == RECTYPE_HTBL ) {
+	hashrec = item;
+	level++;
+	if( level >= fingerlen ) {
+	    log_error( db_name, "keyhashtbl has invalid indirections\n");
+	    return G10ERR_TRUSTDB;
+	}
+	goto next_level;
+    }
+    else if( rec->rectype == RECTYPE_HLST ) {
+	for(;;) {
+	    int i;
+
+	    for(i=0; i < ITEMS_PER_HLST_RECORD; i++ ) {
+		if( rec->r.hlst.rnum[i] ) {
+		    TRUSTREC tmp;
+
+		    rc = tdbio_read_record( rec->r.hlst.rnum[i],
+					     &tmp, RECTYPE_KEY );
+		    if( rc ) {
+			log_error( db_name,
+				   "scan keyhashtbl read key failed: %s\n",
+							     g10_errstr(rc) );
+			return rc;
+		    }
+		    if( tmp.r.key.pubkey_algo == pk->pubkey_algo
+			&& tmp.r.key.fingerprint_len == fingerlen
+			&& !memcmp(tmp.r.key.fingerprint,
+					    fingerprint, fingerlen) ) {
+			*rec = tmp;
+			goto found;
+		    }
+		}
+	    }
+	    if( rec->r.hlst.next ) {
+		rc = tdbio_read_record( rec->r.hlst.next, rec, RECTYPE_HLST );
+		if( rc ) {
+		    log_error( db_name,
+			       "scan keyhashtbl read hlst failed: %s\n",
+							 g10_errstr(rc) );
+		    return rc;
+		}
+	    }
+	    else
+		return -1; /* not found */
+	}
+      found:
+	;
+    }
+    else if( rec->rectype == RECTYPE_KEY ) {
+	/* must check that it is the requested key */
+	if( rec->r.key.pubkey_algo != pk->pubkey_algo
+	    || rec->r.key.fingerprint_len != fingerlen
+	    || memcmp(rec->r.key.fingerprint, fingerprint, fingerlen) )
+	    return -1; /* no: not found */
+    }
+    else {
+	log_error( db_name, "keyhashtbl %lu points to an invalid record\n",
+								item);
+	return G10ERR_TRUSTDB;
+    }
+
+    recnum = rec->r.key.lid;
+
+    if( pk->local_id && pk->local_id != recnum )
+	log_error_f(db_name,
+		   "found record, but LID from memory does "
+		   "not match recnum (%lu,%lu)\n",
+					pk->local_id, recnum );
+    pk->local_id = recnum;
+
+    /* Now read the dir record */
+    rc = tdbio_read_record( recnum, rec, RECTYPE_DIR);
+    if( rc )
+	log_error_f(db_name, "can't read dirrec %lu: %s\n",
+						recnum, g10_errstr(rc) );
+
     return rc;
 }
 

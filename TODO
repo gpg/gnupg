@@ -2,6 +2,16 @@
       can also hold the localid and extend the localid to hold information
       of the subkey number because two subkeys may have the same keyid.
 
+    * Fix Oscaris problems with the trustdb.
+
+    * add test cases for invalid data (scrambled armor or other random data)
+
+    * fix the expire stuff for v4 packets.
+
+    * check whether it is valid to pack the signature stuff (onepass, data,
+      sig) into a compressed packet - or should we only compress the data?
+      what does pgp 5 do, what does OpenPGP say=
+
     * invalid packets (Marco)
 
     * add some sanity checks to read_keyblock, so that we are sure that
@@ -9,9 +19,7 @@
 
     * what about the CR,LF in cleartext singatures?
 
-    * add option --restore-ownertrust
-
-    * always put key signatures before the first subkey.
+    * add option --import-ownertrust
 
     * add a way to delete subkeys (in edit-keys?)
 
@@ -32,8 +40,6 @@
     * Change the buffering to a mbuf like scheme? Need it for PSST anyway.
     * add checking of armor trailers
     * remove all "Fixmes"
-
-    * add an option to create a new user id.
 
     * add an option to re-create a public key from a secret key. Think about
       a backup system of only the secret part of the secret key.

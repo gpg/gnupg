@@ -400,11 +400,6 @@ msgstr "--clearsign [Dateiname]"
 msgid "--decrypt [filename]"
 msgstr "--decrypt [Dateiname]"
 
-#. sign the key given as argument
-#: g10/g10.c:802
-msgid "--sign-key username"
-msgstr "--sign-key Benutzername"
-
 #: g10/g10.c:810
 msgid "--edit-key username"
 msgstr "--edit-key Benutzername"
@@ -416,12 +411,6 @@ msgstr "--delete-secret-key Benutzername"
 #: g10/g10.c:821
 msgid "--delete-key username"
 msgstr "--delete-key Benutzername"
-
-#. Change the passphrase
-#. no arg: use default, 1 arg use this one
-#: g10/g10.c:829
-msgid "--change-passphrase [username]"
-msgstr "--change-passphrase [Benutzername]"
 
 #. prepare iobufs
 #: g10/encode.c:200 g10/g10.c:853 g10/keylist.c:79
@@ -810,12 +799,12 @@ msgstr "\"passphrase\" nicht richtig wiederholt; noch einmal.\n"
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
-"using this program with the option \"--change-passphrase\".\n"
+"using this program with the option \"--edit-key\".\n"
 "\n"
 msgstr ""
 "Sie m\366chten keine \"passphrase\" - Dies ist eine *schlechte* Idee!\n"
 "Es ist trotzdem m\366glich.  Sie k\366nnen Ihre \"phassphrase\" jederzeit\n"
-"\344ndern, indem sie dieses Programm mit dem Kommando \"--change-passphrase\"\n"
+"\344ndern, indem sie dieses Programm mit dem Kommando \"--edit-key\"\n"
 "aufrufen.\n"
 "\n"
 

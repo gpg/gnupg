@@ -49,7 +49,7 @@ g10m_release( MPI a )
 void
 g10m_resize( MPI a, unsigned nbits )
 {
-    return mpi_resize( a, (nbits+BITS_PER_MPI_LIMB-1) / BITS_PER_MPI_LIMB );
+    mpi_resize( a, (nbits+BITS_PER_MPI_LIMB-1) / BITS_PER_MPI_LIMB );
 }
 
 MPI  g10m_copy( MPI a ) 	   { return mpi_copy( a );   }
