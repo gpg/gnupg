@@ -1,3 +1,7 @@
+2004-06-22  Werner Koch  <wk@g10code.com>
+
+	* glossary.texi: New.
+
 2004-06-18  Werner Koch  <wk@gnupg.org>
 
 	* debugging.texi: New.

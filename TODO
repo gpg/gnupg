@@ -1,5 +1,13 @@
                                                               -*- outline -*-
 
+* Keylisting
+Add the keygrip to the dump output
+Explain how to setup a root CA key as trusted
+Look for new system-wide certificates
+Explain how trustlist.txt might be managed.
+
+
+
 * src/base64
 ** Make parsing more robust
 Currently we don't cope with overlong lines in the best way.

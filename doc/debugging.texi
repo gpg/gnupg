@@ -17,7 +17,7 @@ solve the problem at hand.
 
 @menu
 * Debugging Tools::       Description of some useful tools
-
+* Common Problems::       Commonly seen problems.
 @end menu
 
 
@@ -79,4 +79,17 @@ in a standard way and directly available from @command{gpgsm}.
 
 
 
+
+@node Common Problems
+@section Commonly Seen Problems
+
+
+@itemize @bullet
+@item Error code @samp{Not supported} from Dirmngr
+
+  Most likely the option @option{enable-ocsp} is active for gpgsm
+  but Dirmngr's OCSP feature has not been enabled using
+  @option{allow-ocsp} in @file{dirmngr.conf}.
+
+@end itemize
 

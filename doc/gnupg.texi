@@ -134,6 +134,7 @@ Miscellaneous
 
 Indices
 
+* Glossary::            Short descrition of used terms.
 * Option Index::        Index to command line options.
 * Index::	        Index of concepts and symbol names.
 @end menu
@@ -154,6 +155,8 @@ Indices
 @c ---------------------------------------------------------------------
 @c Indexes
 @c ---------------------------------------------------------------------
+
+@include glossary.texi
 
 @node Option Index
 @unnumbered Option Index
