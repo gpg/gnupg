@@ -136,6 +136,8 @@ AssuanError assuan_set_hello_line (ASSUAN_CONTEXT ctx, const char *line);
 AssuanError assuan_accept (ASSUAN_CONTEXT ctx);
 int assuan_get_input_fd (ASSUAN_CONTEXT ctx);
 int assuan_get_output_fd (ASSUAN_CONTEXT ctx);
+AssuanError assuan_close_input_fd (ASSUAN_CONTEXT ctx);
+AssuanError assuan_close_output_fd (ASSUAN_CONTEXT ctx);
 
 
 /*-- assuan-pipe-server.c --*/

@@ -54,6 +54,8 @@ std_handler_bye (ASSUAN_CONTEXT ctx, char *line)
 {
   if (ctx->bye_notify_fnc)
     ctx->bye_notify_fnc (ctx);
+  assuan_close_input_fd (ctx);
+  assuan_close_output_fd (ctx);
   return -1; /* pretty simple :-) */
 }
   
@@ -68,6 +70,8 @@ std_handler_reset (ASSUAN_CONTEXT ctx, char *line)
 {
   if (ctx->reset_notify_fnc)
     ctx->reset_notify_fnc (ctx);
+  assuan_close_input_fd (ctx);
+  assuan_close_output_fd (ctx);
   return 0;
 }
   

@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "assuan-defs.h"
 
@@ -105,4 +106,29 @@ assuan_get_output_fd (ASSUAN_CONTEXT ctx)
   return ctx? ctx->output_fd : -1;
 }
 
+
+/* Close the fd descriptor set by the command INPUT FD=n.  We handle
+   this fd inside assuan so that we can do some initial checks */
+AssuanError
+assuan_close_input_fd (ASSUAN_CONTEXT ctx)
+{
+  if (!ctx || ctx->input_fd == -1)
+    return ASSUAN_Invalid_Value;
+  close (ctx->input_fd);
+  ctx->input_fd = -1;
+  return 0;
+}
+
+/* Close the fd descriptor set by the command OUTPUT FD=n.  We handle
+   this fd inside assuan so that we can do some initial checks */
+AssuanError
+assuan_close_output_fd (ASSUAN_CONTEXT ctx)
+{
+  if (!ctx || ctx->output_fd == -1)
+    return ASSUAN_Invalid_Value;
+
+  close (ctx->output_fd);
+  ctx->output_fd = -1;
+  return 0;
+}
 
