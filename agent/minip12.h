@@ -26,5 +26,7 @@
 GcryMPI *p12_parse (const unsigned char *buffer, size_t length,
                     const char *pw);
 
+unsigned char *p12_build (GcryMPI *kparms, const char *pw, size_t *r_length);
+
 
 #endif /*MINIP12_H*/

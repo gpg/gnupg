@@ -56,6 +56,7 @@ enum cmd_and_opt_values
   oShowKeygrip,
 
   oP12Import,
+  oP12Export,
   oStore,
   oForce,
 
@@ -96,6 +97,7 @@ static ARGPARSE_OPTS opts[] = {
   { oShowKeygrip, "show-keygrip", 256, "show the \"keygrip\""},
 
   { oP12Import, "p12-import", 256, "import a PKCS-12 encoded private key"},
+  { oP12Export, "p12-export", 256, "export a private key PKCS-12 encoded"},
   { oStore,     "store", 0, "store the created key in the appropriate place"},
   { oForce,     "force", 0, "force overwriting"},
   {0}
@@ -684,6 +686,125 @@ import_p12_file (const char *fname)
   xfree (result);
 }
 
+
+
+static GcryMPI *
+sexp_to_kparms (GCRY_SEXP sexp)
+{
+  GcrySexp list, l2;
+  const char *name;
+  const char *s;
+  size_t n;
+  int i, idx;
+  const char *elems;
+  GcryMPI *array;
+
+  list = gcry_sexp_find_token (sexp, "private-key", 0 );
+  if(!list)
+    return NULL; 
+  l2 = gcry_sexp_cadr (list);
+  gcry_sexp_release (list);
+  list = l2;
+  name = gcry_sexp_nth_data (list, 0, &n);
+  if(!name || n != 3 || memcmp (name, "rsa", 3))
+    {
+      gcry_sexp_release (list);
+      return NULL;
+    }
+
+  /* Paramter names used with RSA. */
+  elems = "nedpqu";
+  array = xcalloc (strlen(elems) + 1, sizeof *array);
+  for (idx=0, s=elems; *s; s++, idx++ ) 
+    {
+      l2 = gcry_sexp_find_token (list, s, 1);
+      if (!l2)
+        {
+          for (i=0; i<idx; i++)
+            gcry_mpi_release (array[i]);
+          xfree (array);
+          gcry_sexp_release (list);
+          return NULL; /* required parameter not found */
+	}
+      array[idx] = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_USG);
+      gcry_sexp_release (l2);
+      if (!array[idx])
+        {
+          for (i=0; i<idx; i++)
+            gcry_mpi_release (array[i]);
+          xfree (array);
+          gcry_sexp_release (list);
+          return NULL; /* required parameter is invalid */
+	}
+    }
+  
+  gcry_sexp_release (list);
+  return array;
+}
+
+
+
+
+static void
+export_p12_file (const char *fname)
+{
+  GcryMPI kparms[9], *kp;
+  unsigned char *key;
+  size_t keylen;
+  GcrySexp private;
+  struct rsa_secret_key_s sk;
+  int i;
+  
+  key = read_key (fname);
+  if (!key)
+    return;
+
+  if (gcry_sexp_new (&private, key, 0, 0))
+    {
+      log_error ("gcry_sexp_new failed\n");
+      return;
+    } 
+  xfree (key);
+
+  kp = sexp_to_kparms (private);
+  gcry_sexp_release (private);
+  if (!kp)
+    {
+      log_error ("error converting key parameters\n");
+      return;
+    } 
+  sk.n = kp[0];
+  sk.e = kp[1];
+  sk.d = kp[2];
+  sk.p = kp[3];
+  sk.q = kp[4];
+  sk.u = kp[5];
+  xfree (kp);
+
+ 
+  kparms[0] = sk.n;
+  kparms[1] = sk.e;
+  kparms[2] = sk.d;
+  kparms[3] = sk.q;
+  kparms[4] = sk.p;
+  kparms[5] = gcry_mpi_snew (0);  /* compute d mod (p-1) */
+  gcry_mpi_sub_ui (kparms[5], kparms[3], 1);
+  gcry_mpi_mod (kparms[5], sk.d, kparms[5]);   
+  kparms[6] = gcry_mpi_snew (0);  /* compute d mod (q-1) */
+  gcry_mpi_sub_ui (kparms[6], kparms[4], 1);
+  gcry_mpi_mod (kparms[6], sk.d, kparms[6]);   
+  kparms[7] = sk.u;
+  kparms[8] = NULL;
+
+  key = p12_build (kparms, get_passphrase (), &keylen);
+  for (i=0; i < 8; i++)
+    gcry_mpi_release (kparms[i]);
+  if (!key)
+    return;
+  
+  fwrite (key, keylen, 1, stdout);
+  xfree (key);
+}
 
 
 int
@@ -723,6 +844,7 @@ main (int argc, char **argv )
         case oShowShadowInfo: cmd = oShowShadowInfo; break;
         case oShowKeygrip: cmd = oShowKeygrip; break;
         case oP12Import: cmd = oP12Import; break;
+        case oP12Export: cmd = oP12Export; break;
 
         case oPassphrase: passphrase = pargs.r.ret_str; break;
         case oStore: opt_store = 1; break;
@@ -749,6 +871,8 @@ main (int argc, char **argv )
     show_keygrip (*argv);
   else if (cmd == oP12Import)
     import_p12_file (*argv);
+  else if (cmd == oP12Export)
+    export_p12_file (*argv);
   else
     show_file (*argv);
 

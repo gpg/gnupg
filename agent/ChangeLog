@@ -1,4 +1,14 @@
+2002-06-28  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c (export_p12_file): New.
+	(main): New command --p12-export.
+	* minip12.c (create_final,p12_build,compute_tag_length): New.
+	(store_tag_length): New.
+
 2002-06-27  Werner Koch  <wk@gnupg.org>
+
+	* minip12.c (crypt_block): Renamed from decrypt_block, add arg to
+	allow encryption.
 
 	* Makefile.am (pkglib_PROGRAMS): Put protect-tool there.
 
