@@ -21,7 +21,10 @@ EXTRA_DIST = Manifest watchgnupg.c
 
 localedir = $(datadir)/locale
 INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
-AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/intl 
+
+# Note, that we require GPG_ERROR_CFLAGS only because some share header files
+# require that file.  It is not actually used in gpgconf.
+AM_CFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/intl @GPG_ERROR_CFLAGS@
 
 bin_PROGRAMS = gpgconf
 
