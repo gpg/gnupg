@@ -1,3 +1,10 @@
+2002-11-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document "tsign", clarify "setpref", clarify
+	--recipient, document --hidden-recipient, document
+	--hidden-encrypt-to, clarify --no-encrypt-to, clarify
+	--throw-keyid, document --no-throw-keyid.
+
 2002-10-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Document --refresh-keys.
