@@ -588,10 +588,15 @@ main ( int argc, char **argv)
   log_set_prefix ("gpgsm", 1);
   /* check that the libraries are suitable.  Do it here because the
      option parse may need services of the library */
-  if (!gcry_check_version ( "1.1.4" ) )
+  if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
     {
       log_fatal( _("libgcrypt is too old (need %s, have %s)\n"),
-                 VERSION, gcry_check_version (NULL) );
+                 NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
+    }
+  if (!ksba_check_version (NEED_LIBKSBA_VERSION) )
+    {
+      log_fatal( _("libksba is too old (need %s, have %s)\n"),
+                 NEED_LIBKSBA_VERSION, ksba_check_version (NULL) );
     }
 
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);

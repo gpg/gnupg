@@ -1,5 +1,7 @@
 2002-04-15  Werner Koch  <wk@gnupg.org>
 
+	* gpgsm.c (main): Check ksba version.
+
 	* certpath.c (find_up): New to use the authorithKeyIdentifier.
 	Use it in all other functions to locate the signing cert..
 
