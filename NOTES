@@ -1,8 +1,6 @@
 Checking ElGamal signatures is really slow and the reason for the long 
 running time on parts o my keyring.  Because somekeys are also checked at startup, this is even worser.  I should invalidate my self signature with algo 16 or 20.
 
-Further problem:  It seems that the caching does only work in part.
-
 
 SCO UnixWare/7.1.0  reported by Allan Clark <allanc@sco.com> for 0.9.8
 

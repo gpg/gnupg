@@ -1218,39 +1218,6 @@ iobuf_openrw( const char *fname )
 }
 
 
-
-/****************
- * You can overwrite the normal iobuf behaviour by using this function.
- * If used the iobuf is a simple wrapper around stdio.
- * NULL if an error occures and sets errno
- */
-IOBUF
-iobuf_fopen( const char *fname, const char *mode )
-{
-    IOBUF a;
-    FILE *fp;
-    int print_only = 0;
-
-    if( !fname || (*fname=='-' && !fname[1])  ) {
-	fp = stdin;
-      #ifdef HAVE_DOSISH_SYSTEM /* We can't use USE_SETMODE here */
-	setmode ( fileno(fp) , O_BINARY );
-      #endif
-	fname = "[stdin]";
-	print_only = 1;
-    }
-    else if( !(fp = fopen(fname, mode) ) )
-	return NULL;
-    a = iobuf_alloc(1, 8192 );
-    a->directfp = fp;
-    a->real_fname = m_strdup( fname );
-
-    if( DBG_IOBUF )
-	log_debug("iobuf_fopen -> %p\n", a->directfp );
-
-    return a;
-}
-
 int
 iobuf_ioctl ( IOBUF a, int cmd, int intval, void *ptrval )
 {

@@ -1,3 +1,7 @@
+2001-04-13  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.h: Removed iobuf_fopen.
+
 2001-03-01  Werner Koch  <wk@gnupg.org>
 
 	* errors.h (G10ERR_UNU_SECKEY,G10ERR_UNU_PUBKEY): New

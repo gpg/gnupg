@@ -1,3 +1,13 @@
+2001-04-14  Werner Koch  <wk@gnupg.org>
+
+	* strgutil.c (utf8_to_native): Fixed a segv.  Thanks to Keith Clayton.
+
+2001-04-13  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.c (iobuf_fopen): Removed because it is not used and
+	furthermore mode is ignored for an fname of "-".  Suggested by
+	Florian Weimer.
+
 2001-04-02  Werner Koch  <wk@gnupg.org>
 
 	* iobuf.c (translate_file_handle): New. Use this function

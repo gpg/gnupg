@@ -453,11 +453,13 @@ utf8_to_native( const char *string, size_t length )
 			  case '\v': n++; if( p ) *p++ = 'v'; break;
 			  case '\b': n++; if( p ) *p++ = 'b'; break;
 			  case	 0 : n++; if( p ) *p++ = '0'; break;
-			  default: n += 3;
-				   sprintf( p, "x%02x", *s );
-                                   if ( p )
-                                       p += 3;
-				   break;
+			  default:
+                            n += 3;
+                            if ( p ) {
+                                sprintf( p, "x%02x", *s );
+                                p += 3;
+                            }
+                            break;
 			}
 		    }
 		    else {

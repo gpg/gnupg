@@ -1,3 +1,14 @@
+2001-04-17  Werner Koch  <wk@gnupg.org>
+
+	* rndunix.c: Add a signal.h header to avoid warnings on SOlaris 7
+	and 8.
+
+2001-04-16  Werner Koch  <wk@gnupg.org>
+
+	* dynload.c [__MINGW32__]: Applied patch from Timo Schulz to make
+	it work under W32.  This patches is based on the one from
+	Disastry@saiknes.lv
+
 2001-04-06  Werner Koch  <wk@gnupg.org>
 
 	* rijndael.c, des.c, blowfish.c, twofish.c, cast5.c (burn_stack):

@@ -1108,9 +1108,9 @@ will still get disabled.
 <varlistentry>
 <term>--no-sig-cache</term>
 <listitem><para>
-Does not not cache the verification status of key signatures.
-Caching gives a much better performance in key listings, however if
-you suspect that your public keyring is not saved against write
+Do not cache the verification status of key signatures.
+Caching gives a much better performance in key listings.  However, if
+you suspect that your public keyring is not save against write
 modifications, you can use this option to disable the caching.  It
 probably does not make sense to disable it because all kind of damage
 can be done if someone else has write access to your public keyring.
@@ -1122,9 +1122,9 @@ can be done if someone else has write access to your public keyring.
 GnuPG normally verifies each signature right after creation to protect
 against bugs and hardware malfunctions which could leak out bits from
 the secret key.  This extra verification needs some time (about 115%
-fro DSA keys), and so this option can be used to disable it.
+for DSA keys), and so this option can be used to disable it.
 However, due to the fact that the signature creation needs manual
-interaction, this performance penalty does not matter in most setting.
+interaction, this performance penalty does not matter in most settings.
 </para></listitem></varlistentry>
 
 <varlistentry>

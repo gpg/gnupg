@@ -546,7 +546,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	    md_close(md);
 	}
 	else {
-	    log_error("no subkey for subkey revocation packet\n");
+	    log_info ("no subkey for subkey revocation packet\n");
 	    rc = G10ERR_SIG_CLASS;
 	}
     }
@@ -569,7 +569,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	    md_close(md);
 	}
 	else {
-	    log_error("no subkey for key signature packet\n");
+	    log_info ("no subkey for key signature packet\n");
 	    rc = G10ERR_SIG_CLASS;
 	}
     }
@@ -602,7 +602,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	    md_close(md);
 	}
 	else {
-	    log_error("no user ID for key signature packet of class %02x\n",
+	    log_info ("no user ID for key signature packet of class %02x\n",
                       sig->sig_class );
 	    rc = G10ERR_SIG_CLASS;
 	}

@@ -88,6 +88,22 @@ dnl ***]])
 dnl     fi
    ])       
 
+dnl GNUPG_CHECK_DOCBOOK_TO_TEXI
+dnl
+AC_DEFUN(GNUPG_CHECK_DOCBOOK_TO_TEXI,
+  [
+    AC_CHECK_PROG(DOCBOOK_TO_TEXI, docbook2texi, yes, no)
+    AC_MSG_CHECKING(for sgml to texi tools)
+    working_sgmltotexi=no
+    if test "$ac_cv_prog_DOCBOOK_TO_MAN" = yes; then
+      if sgml2xml -v /dev/null 2>&1 | grep 'SP version' >/dev/null 2>&1 ; then
+            working_sgmltotexi=yes
+      fi
+    fi
+    AC_MSG_RESULT($working_sgmltotexi)
+    AM_CONDITIONAL(HAVE_DOCBOOK_TO_TEXI, test "$working_sgmltotexi" = "yes" )
+   ])       
+
 
 dnl GNUPG_LINK_FILES( SRC, DEST )
 dnl same as AC_LINK_FILES, but collect the files to link in

@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Privacy Guard 1.0.1\n"
-"POT-Creation-Date: 2001-04-06 10:29+0200\n"
+"POT-Creation-Date: 2001-04-17 11:40+0200\n"
 "PO-Revision-Date: 2000-02-06 18:04+07:00\n"
 "Last-Translator: Tedi Heriyanto <tedi-h@usa.net>\n"
 "Language-Team: Indonesia <id@li.org>\n"
@@ -1679,17 +1679,17 @@ msgstr "terlalu banyak masukan dalam pk cache - ditiadakan\n"
 msgid "too many entries in unk cache - disabled\n"
 msgstr "terlalu banyak masukan di unk cache - ditiadakan\n"
 
-#: g10/getkey.c:2169
+#: g10/getkey.c:2203
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "menggunakan kunci sekunder %08lX selain kunci primer %08lX\n"
 
-#: g10/getkey.c:2211 g10/trustdb.c:577
+#: g10/getkey.c:2245 g10/trustdb.c:577
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "kunci %08lX: kunci rahasia tanpa kunci publik - dilewati\n"
 
-#: g10/getkey.c:2499
+#: g10/getkey.c:2532
 #, fuzzy
 msgid "[User id not found]"
 msgstr "%s: user tidak ditemukan\n"

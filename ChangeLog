@@ -1,3 +1,12 @@
+2001-04-17  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4 (GNUPG_CHECK_DOCBOOK_TO_TEXI): New.
+	* configure.in: Use it here.
+	
+	* configure.in (ALL_LINGUAS): Add Estonian translation by Toomas Soome.
+	(use_m_debug): Removed --enable-m-debug because it does not work
+	anymore.
+
 2001-04-06  Werner Koch  <wk@gnupg.org>
 
 	* configure.in (ALL_LINGUAS): Add Turkish translation.  Thanks

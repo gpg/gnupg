@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.0.0h\n"
-"POT-Creation-Date: 2001-04-06 10:29+0200\n"
+"POT-Creation-Date: 2001-04-17 11:40+0200\n"
 "PO-Revision-Date: 1999-12-08 15:51+02:00\n"
 "Last-Translator: Marco d'Itri <md@linux.it>\n"
 "Language-Team: Italian <it@li.org>\n"
@@ -1693,17 +1693,17 @@ msgstr "troppe voci nella pk cache - disabilitata\n"
 msgid "too many entries in unk cache - disabled\n"
 msgstr "troppe voci nella unk cache - disabilitata\n"
 
-#: g10/getkey.c:2169
+#: g10/getkey.c:2203
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "uso la chiave secondaria %08lX invece della chiave primaria %08lX\n"
 
-#: g10/getkey.c:2211 g10/trustdb.c:577
+#: g10/getkey.c:2245 g10/trustdb.c:577
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "chiave %08lX: chiave segreta senza chiave pubblica - saltata\n"
 
-#: g10/getkey.c:2499
+#: g10/getkey.c:2532
 #, fuzzy
 msgid "[User id not found]"
 msgstr "%s: utente non trovato\n"

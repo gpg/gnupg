@@ -1,3 +1,17 @@
+2001-04-14  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (fixup_uidnode): Removed check for !sig which is
+	pointless here.  Thanks to Jan Niehusmann.
+
+2001-04-10  Werner Koch  <wk@gnupg.org>
+
+	* sig-check.c (check_key_signature2): Use log_info instead of
+	log_error so that messed up keys do not let gpg return an error.
+	Suggested by Christian Kurz.
+
+	* getkey.c (merge_selfsigs_main): Do a fixup_uidnode only if we
+	have both, uid and sig.  Thanks to M Taylor.
+
 2001-04-05  Werner Koch  <wk@gnupg.org>
 
 	* armor.c (unarmor_pump_new,unarmor_pump_release): New.

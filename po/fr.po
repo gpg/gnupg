@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.1h\n"
-"POT-Creation-Date: 2001-04-06 10:29+0200\n"
+"POT-Creation-Date: 2001-04-17 11:40+0200\n"
 "PO-Revision-Date: 2000-06-28 18:41+02:00\n"
 "Last-Translator: Gaël Quéri <gqueri@mail.dotcom.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -1712,19 +1712,19 @@ msgstr "trop d'entrées dans le cache pk - désactivé\n"
 msgid "too many entries in unk cache - disabled\n"
 msgstr "trop d'entrées dans le cache unk - désactivé\n"
 
-#: g10/getkey.c:2169
+#: g10/getkey.c:2203
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr ""
 "utilisation de la clé secondaire %08lX à la place de la clé\n"
 "principale %08lX\n"
 
-#: g10/getkey.c:2211 g10/trustdb.c:577
+#: g10/getkey.c:2245 g10/trustdb.c:577
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "clé %08lX: clé secrète sans clé publique - non prise en compte\n"
 
-#: g10/getkey.c:2499
+#: g10/getkey.c:2532
 msgid "[User id not found]"
 msgstr "[Nom utilisateur introuvable]"
 

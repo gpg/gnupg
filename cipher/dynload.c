@@ -71,20 +71,52 @@ dlsym(void *handle, char *name)
 #endif /*HAVE_DL_SHL_LOAD*/
 
 #ifdef __MINGW32__
-#warning Needs some more work. Based on Disastry@saiknes.lv patch.
+#define HAVE_DL_DLOPEN
+#define USE_DYNAMIC_LINKING
 
-#define dlopen(PATHNAME,MODE) ((void *)LoadLibrary(PATHNAME))
-#define dlclose(HANDLE) FreeLibrary(HANDLE)
-char *dlerror(void)
+static int last_error = 0;
+    
+void*
+dlopen(const char *pathname, int mode)
 {
-    static char dlerrstr[10];
-    int err=GetLastError();
-    if (!err)
-      return NULL;
-    sprintf(dlerrstr, "%u", err);
-    return dlerrstr;
+	void *h = LoadLibrary( pathname );
+	if (!h) {
+	log_error( "LoadLibrary failed ec=%d\n", (int)GetLastError() );
+	last_error = 1;
+	return NULL;
+	}
+	return h;
 }
-#define dlsym(HANDLE,NAME) GetProcAddress(HANDLE,NAME)
+
+int
+dlclose( void *handle )
+{
+	last_error = 0;
+	return	FreeLibrary( handle );
+}
+
+char*
+dlerror(void)
+{
+	static char dlerrstr[10];
+	if (last_error) {
+	sprintf(dlerrstr, "%d", (int)GetLastError() );
+	return dlerrstr;
+	}
+	return NULL;
+}
+
+void*
+dlsym( void *handle, const char *name )
+{
+	void *h = GetProcAddress( handle, name );
+	if (!h) {
+	log_error( "GetProcAddress failed ec=%d\n", (int)GetLastError() );
+	last_error = 1;
+	return NULL;
+	}
+	return h;
+}
 #endif /*__MINGW32__*/
 
 
@@ -241,9 +273,11 @@ load_extension( EXTLIST el )
     int rc;
   #endif
 
+  #ifndef __MINGW32__
     /* make sure we are not setuid */
     if( getuid() != geteuid() )
 	log_bug("trying to load an extension while still setuid\n");
+  #endif
 
     /* now that we are not setuid anymore, we can safely load modules */
   #ifdef HAVE_DL_DLOPEN

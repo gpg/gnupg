@@ -1,3 +1,7 @@
+2001-04-17  Werner Koch  <wk@gnupg.org>
+
+	Updated copyright notices.
+
 2001-03-24  Werner Koch  <wk@gnupg.org>
 
 	* mpi-mul.c (mpi_mul): Make sure that secret temporary results are

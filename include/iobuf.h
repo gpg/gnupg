@@ -80,7 +80,6 @@ IOBUF iobuf_temp_with_content( const char *buffer, size_t length );
 IOBUF iobuf_open( const char *fname );
 IOBUF iobuf_fdopen( int fd, const char *mode );
 IOBUF iobuf_sockopen( int fd, const char *mode );
-IOBUF iobuf_fopen( const char *fname, const char *mode );
 IOBUF iobuf_create( const char *fname );
 IOBUF iobuf_append( const char *fname );
 IOBUF iobuf_openrw( const char *fname );

@@ -13,7 +13,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.1e\n"
-"POT-Creation-Date: 2001-04-06 10:29+0200\n"
+"POT-Creation-Date: 2001-04-17 11:40+0200\n"
 "PO-Revision-Date: 2000-04-23 16:43+02:00\n"
 "Last-Translator: Daniel Resare <daniel@resare.com>\n"
 "Language-Team: Swedish <sv@li.org>\n"
@@ -1723,17 +1723,17 @@ msgstr "för många poster i pk-cachen - inaktiverad\n"
 msgid "too many entries in unk cache - disabled\n"
 msgstr "för många poster i unk-cachen - inaktiverad\n"
 
-#: g10/getkey.c:2169
+#: g10/getkey.c:2203
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "använder sekundära nyckeln %08lX istället för primärnyckeln %08lX\n"
 
-#: g10/getkey.c:2211 g10/trustdb.c:577
+#: g10/getkey.c:2245 g10/trustdb.c:577
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "nyckel %08lX: hemlig nyckel utan publik nyckel - hoppade över\n"
 
-#: g10/getkey.c:2499
+#: g10/getkey.c:2532
 #, fuzzy
 msgid "[User id not found]"
 msgstr "%s: hittade inte användaren\n"

@@ -80,6 +80,7 @@
 #endif				/* _AIX || __QNX__ */
 #ifndef __QNX__
 #include <sys/shm.h>
+#include <signal.h>
 #include <sys/signal.h>
 #endif				/* __QNX__ */
 #include <sys/stat.h>

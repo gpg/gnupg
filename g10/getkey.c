@@ -530,13 +530,16 @@ get_seckey( PKT_secret_key *sk, u32 *keyid )
 
 
 /****************
- * Check whether the secret key is available
+ * Check whether the secret key is available.  This is just a fast
+ * check and does not tell us whether the secret key is valid.  It
+ * merely tells other whether there is some secret key.
  * Returns: 0 := key is available
- *	    G10ERR_NO_SECKEY := not availabe
+ * G10ERR_NO_SECKEY := not availabe
  */
 int
 seckey_available( u32 *keyid )
 {
+#if 0
     int rc;
     struct getkey_ctx_s ctx;
     KBNODE kb = NULL;
@@ -552,6 +555,39 @@ seckey_available( u32 *keyid )
     get_seckey_end( &ctx );
     release_kbnode ( kb );
     return rc;
+#endif
+    int rc;
+    int found = 0;
+    int oldmode = set_packet_list_mode (0);
+    KBNODE keyblock = NULL; 
+    KBPOS  kbpos;
+
+    rc = enum_keyblocks ( 5, &kbpos, NULL );
+    if ( !rc ) {
+	while ( !(rc = enum_keyblocks (1, &kbpos, &keyblock)) ) {
+            KBNODE k;
+
+            for (k=keyblock; k; k = k->next ) {
+                if ( k->pkt->pkttype == PKT_SECRET_KEY
+                     || k->pkt->pkttype == PKT_SECRET_SUBKEY ) {
+                    u32 aki[2];
+                    keyid_from_sk (k->pkt->pkt.secret_key, aki );
+                    if( aki[1] == keyid[1] && aki[0] == keyid[0] ) {
+                        found = 1;
+                        goto leave;
+                    }
+                }
+            }
+            release_kbnode (keyblock); keyblock = NULL;
+	}
+    }
+    if( rc && rc != -1 )
+	log_error ("enum_keyblocks failed: %s\n", g10_errstr(rc));
+ leave:
+    release_kbnode (keyblock); 
+    enum_keyblocks ( 2, &kbpos, NULL );
+    set_packet_list_mode (oldmode);
+    return found? 0 : G10ERR_NO_SECKEY;
 }
 
 
@@ -1368,8 +1404,6 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode )
     size_t n;
 
     uid->created = 0; /* not created == invalid */
-    if ( !signode ) 
-        return; /* no self-signature */
     if ( IS_UID_REV ( sig ) ) {
         uid->is_revoked = 1;
         return; /* has been revoked */
@@ -1517,7 +1551,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     for(k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY; k = k->next ) {
 	if ( k->pkt->pkttype == PKT_USER_ID
              || k->pkt->pkttype == PKT_PHOTO_ID ) {
-            if ( uidnode ) 
+            if ( uidnode && signode ) 
                 fixup_uidnode ( uidnode, signode );
             uidnode = k;
             signode = NULL;
@@ -2318,7 +2352,6 @@ lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode )
     ctx->count++;
     return rc;
 }
-
 
 
 

@@ -18,17 +18,42 @@
 
 ## Process this file with automake to create Makefile.in
 
+AUTOMAKE_OPTIONS = no-texinfo.tex
+
 EXTRA_DIST = DETAILS gpg.sgml gpg.1 gpgv.sgml gpgv.1 faq.raw FAQ faq.html \
              HACKING OpenPGP README.W32 
 
 man_MANS = gpg.1 gpgv.1
 
+info_TEXINFOS = gpg.texi gpgv.texi
+
+# Need this to avoid building of dvis with automake 1.4
+DVIS =
+
 pkgdata_DATA = FAQ faq.html
 
-BUILT_SOURCES = FAQ faq.html
+BUILT_SOURCES = FAQ faq.html 
+# we can't add gpg.texi gpgv.texi here because automake does not like them to
+# be built files. 
 
-CLEANFILES = faq.raw.xref
+CLEANFILES = faq.raw.xref gpg.xml gpgv.xml
 
+
+%.texi : %.xml
+if HAVE_DOCBOOK_TO_TEXI
+	docbook2texi $< | sed 's,--,---,' >$@
+else
+	: Warning: missing docbook to texinfo tools, cannot make $@
+	touch $@
+endif
+
+%.xml : %.sgml
+if HAVE_DOCBOOK_TO_TEXI
+	sgml2xml -x lower $< >$@
+else
+	: Warning: missing docbook to texinfo tools, cannot make $@
+	touch $@
+endif
 
 
 %.1 : %.sgml
@@ -46,16 +71,6 @@ FAQ : faq.raw
 
 faq.html : faq.raw
 	$(FAQPROG) -h -f $< $@ 2>&1 || $(FAQPROG) -h -f $< $@
-
-%.dvi: %.sgml
-	db2dvi $<
-
-%.ps: %.dvi
-	dvips -o $@ $<
-
-%/%.html: %.sgml
-	-db2html $<
-
 
 dist-hook:
 	@if test `wc -c < gpg.1` -lt 200; then \

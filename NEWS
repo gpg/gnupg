@@ -138,7 +138,7 @@ Noteworthy changes in version 1.0.2 (2000-07-12)
       entirely.  This option should not yet be used.
 
     * New option --no-auto-key-retrieve to disable retrieving of
-      a missing public key from a keyerver, when a keyerver has been set.
+      a missing public key from a keyserver, when a keyserver has been set.
 
     * Danish translation
 

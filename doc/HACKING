@@ -10,12 +10,13 @@ CVS Access
 ==========
 Anonymous read-only CVS access is available:
 
-  cvs -z6 -d :pserver:anonymous@cvs.guug.de:/home/koch/cvs login
+  cvs -z3 -d :pserver:anoncvs@cvs.gnupg.org:/cvs/gnupg login
 
-use the password "anonymous".  To check out the the complete
+use the password "anoncvs".  To check out the the complete
 archive use:
 
-  cvs -z6 -d :pserver:anonymous@cvs.guug.de:/home/koch/cvs checkout gnupg
+  cvs -z3 -d :pserver:anoncvs@cvs.gnupg.org:/cvs/gnupg \
+        checkout -R STABLE-BRANCH-1-0 gnupg
 
 This service is provided to help you in hunting bugs and not to deliver
 stable snapshots; it may happen that it even does not compile, so please
@@ -117,46 +118,48 @@ Detailed Roadmap
 g10/g10.c	Main module with option parsing and all the stuff you have
 		to do on startup.  Also has the exout handler and some
 		helper functions.
-g10/sign.c
+g10/sign.c      Create signature and optionally encrypt
 
 g10/parse-packet.c
 g10/build-packet.c
 g10/free-packet.c
 		Parsing and creating of OpenPGP message packets.
 
-g10/getkey.c
-g10/pkclist.c
-g10/skclist.c
-g10/ringedit.c
+g10/getkey.c    Key selection code
+g10/pkclist.c   Build a list of public keys
+g10/skclist.c   Build a list of secret keys
+g10/ringedit.c  Keyring I/O
 g10/keydb.h
 
 g10/keyid.c	Helper functions to get the keyid, fingerprint etc.
 
 
-g10/trustdb.c
+g10/trustdb.c    
 g10/trustdb.h
 g10/tdbdump.c
+               Management of the trustdb.gpg
 
-g10/compress.c
-g10/filter.h
-g10/delkey.c
-g10/kbnode.c
-g10/main.h
-g10/mainproc.c
-g10/armor.c
-g10/mdfilter.c
-g10/textfilter.c
-g10/cipher.c
-g10/misc.c
-g10/options.h
-g10/openfile.c
-g10/tdbio.c
+g10/compress.c Filter to handle compression
+g10/filter.h   Declarations for all filter functions
+g10/delkey.c   Delete a key
+g10/kbnode.c   Helper for the KBNODE linked list
+g10/main.h     Prototypes and some constants
+g10/mainproc.c Message processing
+g10/armor.c    Ascii armor filter 
+g10/mdfilter.c Filter to calculate hashs
+g10/textfilter.c Filter to handle CR/LF and trailing white space
+g10/cipher.c   En-/Decryption filter
+g10/misc.c     Utlity functions
+g10/options.h  Structure with all the command line options
+               and related constants
+g10/openfile.c Create/Open Files
+g10/tdbio.c    I/O handling for the trustdb.gpg
 g10/tdbio.h
-g10/hkp.h
+g10/hkp.h      Keyserver access
 g10/hkp.c
-g10/packet.h
-g10/passphrase.c
-g10/pubkey-enc.c
+g10/packet.h   Defintion of OpenPGP structures.
+g10/passphrase.c  Passphrase handling code
+g10/pubkey-enc.c  
 g10/seckey-cert.c
 g10/seskey.c
 g10/import.c

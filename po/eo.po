@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.1e\n"
-"POT-Creation-Date: 2001-04-06 10:29+0200\n"
+"POT-Creation-Date: 2001-04-17 11:40+0200\n"
 "PO-Revision-Date: 2000-08-16 23:19+01:00\n"
 "Last-Translator: Edmund GRIMLEY EVANS <edmundo@rano.org>\n"
 "Language-Team: Esperanto <eo@li.org>\n"
@@ -1683,17 +1683,17 @@ msgstr "tro da registroj en pk-staplo - malþaltas\n"
 msgid "too many entries in unk cache - disabled\n"
 msgstr "tro da registroj en unk-staplo - malþaltas\n"
 
-#: g10/getkey.c:2169
+#: g10/getkey.c:2203
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "uzas flankan þlosilon %08lX anstataý la æefa þlosilo %08lX\n"
 
-#: g10/getkey.c:2211 g10/trustdb.c:577
+#: g10/getkey.c:2245 g10/trustdb.c:577
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "þlosilo %08lX: sekreta þlosilo sen publika þlosilo - ignorita\n"
 
-#: g10/getkey.c:2499
+#: g10/getkey.c:2532
 msgid "[User id not found]"
 msgstr "[Uzantidentigilo ne trovita]"
 

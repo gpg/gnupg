@@ -4,8 +4,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.0.4\n"
-"POT-Creation-Date: 2001-04-06 10:29+0200\n"
-"PO-Revision-Date: 2001-02-20 21:20+0200\n"
+"POT-Creation-Date: 2001-04-17 11:40+0200\n"
+"PO-Revision-Date: 2001-04-16 14:20+0200\n"
 "Last-Translator: Walter Koch <koch@hsp.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -249,14 +249,12 @@ msgstr "nicht bearbeitet"
 
 #. the key cannot be used for a specific usage
 #: util/errors.c:105
-#, fuzzy
 msgid "unusable public key"
-msgstr "Falscher öffentlicher Schüssel"
+msgstr "unbrauchbarer öffentlicher Schüssel"
 
 #: util/errors.c:106
-#, fuzzy
 msgid "unusable secret key"
-msgstr "Falscher geheimer Schlüssel"
+msgstr "unbrauchbarer geheimer Schlüssel"
 
 #: util/logger.c:224
 #, c-format
@@ -1352,6 +1350,7 @@ msgstr ""
 #: g10/keygen.c:580
 msgid "The use of this algorithm is deprecated - create anyway? "
 msgstr ""
+"Von der Benutzung dieses Verfahrens ist abzuraten - Trotzdem erzeugen? "
 
 #: g10/keygen.c:594
 msgid "Invalid selection.\n"
@@ -1713,20 +1712,20 @@ msgstr "zu viele Einträge im pk-Lager - abgeschaltet\n"
 msgid "too many entries in unk cache - disabled\n"
 msgstr "zu viele Einträge im unk-Lager - abgeschaltet\n"
 
-#: g10/getkey.c:2169
+#: g10/getkey.c:2203
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr ""
 "der Zweitschlüssel %08lX wird anstelle des Hauptschlüssels %08lX verwendet\n"
 
-#: g10/getkey.c:2211 g10/trustdb.c:577
+#: g10/getkey.c:2245 g10/trustdb.c:577
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr ""
 "Schlüssel %08lX: geheimer Schlüssel, aber ohne öffentlichen Schlüssel - "
 "übersprungen\n"
 
-#: g10/getkey.c:2499
+#: g10/getkey.c:2532
 msgid "[User id not found]"
 msgstr "[User-ID nicht gefunden]"
 
@@ -2671,9 +2670,8 @@ msgstr "Unterschriften-Überprüfung unterdrückt\n"
 
 #. plaintext before signatures but no one-pass packets
 #: g10/mainproc.c:1235 g10/mainproc.c:1245
-#, fuzzy
 msgid "can't handle these multiple signatures\n"
-msgstr "keine abgetrennte Unterschrift\n"
+msgstr "diese Mehrfachunterschriften können nicht behandelt werden\n"
 
 # Scripte scannen lt. dl1bke auf "ID (0-9A-F)+" deswegen muß "ID" rein :-(
 #: g10/mainproc.c:1256
@@ -2963,9 +2961,9 @@ msgstr ""
 "Vermutlich eine FALSCHE Unterschrift, wegen unbekanntem \"critical bit\"\n"
 
 #: g10/sign.c:152
-#, fuzzy, c-format
+#, c-format
 msgid "checking created signature failed: %s\n"
-msgstr "Unterschrift kann nicht geprüft werden: %s\n"
+msgstr "Prüfung der erstellten Unterschrift ist fehlgeschlagen: %s\n"
 
 #: g10/sign.c:161
 #, c-format
@@ -3466,9 +3464,9 @@ msgstr ""
 "echten Zufallsgenerator verwendbar\n"
 
 #: g10/skclist.c:138
-#, fuzzy, c-format
+#, c-format
 msgid "skipped `%s': duplicated\n"
-msgstr "übersprungen '%s': %s\n"
+msgstr "übersprungen '%s': doppelt\n"
 
 #: g10/skclist.c:145 g10/skclist.c:153
 #, c-format
@@ -3476,9 +3474,8 @@ msgid "skipped `%s': %s\n"
 msgstr "übersprungen '%s': %s\n"
 
 #: g10/skclist.c:149
-#, fuzzy
 msgid "skipped: secret key already present\n"
-msgstr "%s: übersprungen: öffentlicher Schlüssel bereits vorhanden\n"
+msgstr "%s: übersprungen: geheimer Schlüssel bereits vorhanden\n"
 
 #: g10/skclist.c:160
 #, c-format

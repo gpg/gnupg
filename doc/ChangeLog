@@ -1,3 +1,17 @@
+2001-04-17  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (%.texi): Add rules to create .texi from .sgml.
+	However we can't automate this because automake does not like
+	.texi files as BUILT_SOURCES.
+	(%.dvi,%.ps): Removed these rules, because they are not needed
+	and get in the way of automake's dvi target
+
+	* HACKING: Changed CVS description.
+
+2001-04-06  Werner Koch  <wk@gnupg.org>
+
+	* gpg.sgml: Small typo fixes by Florian Weimer.
+
 2001-03-27  Werner Koch  <wk@gnupg.org>
 
 	* gpg.sgml: Add --no-sig-cache and --no-sig-create-check.
