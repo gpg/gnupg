@@ -54,8 +54,10 @@ hkp_ask_import( u32 *keyid )
     log_info("requesting key %08lX from %s ...\n", (ulong)keyid[1],
 						   opt.keyserver_name );
     request = m_alloc( strlen( opt.keyserver_name ) + 100 );
-    sprintf( request, "x-hkp://%s:11371/pks/lookup?op=get&search=0x%08lX%08lX",
-			opt.keyserver_name, (ulong)keyid[0], (ulong)keyid[1] );
+    /* hkp does not accept the long keyid - we should really write a
+     * nicer one */
+    sprintf( request, "x-hkp://%s:11371/pks/lookup?op=get&search=0x%08lX",
+			opt.keyserver_name, (ulong)keyid[1] );
     rc = open_http_document( &hd, request, 0 );
     if( rc ) {
 	log_info("can't get key from keyserver: %s\n", g10_errstr(rc) );

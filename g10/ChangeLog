@@ -1,3 +1,7 @@
+Sat Jan 16 12:03:27 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* hkp.c (hkp_ask_import): Use only the short keyid
+
 Sat Jan 16 09:27:30 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* import.c (import_key_stream): New
