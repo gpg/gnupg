@@ -1,6 +1,10 @@
 Noteworthy changes in version 1.9.7
 ------------------------------------------------
 
+ * Instrumented the modules for gpgconf.
+
+ * Added support for DINSIG card applications.
+
 
 Noteworthy changes in version 1.9.6 (2004-03-06)
 ------------------------------------------------
