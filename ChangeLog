@@ -1,3 +1,7 @@
+2000-11-14  Werner Koch  <wk@gnupg.org>
+
+	Version 1.1.2 released.
+
 2000-11-13  Werner Koch  <wk@gnupg.org>
 
 	* acinclude.m4 (GNUPG_FIX_HDR_VERSION): VPATH build fix.

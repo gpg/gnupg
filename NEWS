@@ -1,7 +1,7 @@
-Noteworthy changes in the current CVS HEAD
-------------------------------------------
+Noteworthy changes in version 1.1.2
+-----------------------------------
 
-    THIS IS A DEVELOPMENT VERSION; see README-alpha
+  -->  THIS IS A DEVELOPMENT VERSION; see README and README-alpha <--
 
     * Add Rijndael (AES) support.
 

@@ -11,7 +11,7 @@
 		  stable release will be 1.2
 
 This version has been released due to the included libgcrypt which is 
-used by GNUTLS. 
+used by GNUTLS and might be of use for other software too.
 
 GPG itself does not work and will not be installed.
 
