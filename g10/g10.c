@@ -854,7 +854,14 @@ main( int argc, char **argv )
 	  case oKOption: set_cmd( &cmd, aKMode ); break;
 
 	  case oBatch: opt.batch = 1; nogreeting = 1; break;
-          case oUseAgent: opt.use_agent = 1; break;
+          case oUseAgent:
+#ifndef __riscos__
+            opt.use_agent = 1;
+#else /* __riscos__ */
+            opt.use_agent = 0;
+            not_implemented("use-agent");
+#endif /* __riscos__ */
+            break;
 	  case oAnswerYes: opt.answer_yes = 1; break;
 	  case oAnswerNo: opt.answer_no = 1; break;
 	  case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
@@ -1026,11 +1033,12 @@ main( int argc, char **argv )
 	  case oEscapeFrom: opt.escape_from = 1; break;
 	  case oLockOnce: opt.lock_once = 1; break;
 	  case oLockNever: disable_dotlock(); break;
-	  case oLockMultiple: 
-            opt.lock_once = 0;
-#ifdef __riscos__
+	  case oLockMultiple:
+#ifndef __riscos__
+	    opt.lock_once = 0;
+#else /* __riscos__ */
             not_implemented("lock-multiple");
-#endif 
+#endif /* __riscos__ */
             break;
 
 	  case oKeyServer: opt.keyserver_name = pargs.r.ret_str; break;
@@ -1173,13 +1181,6 @@ main( int argc, char **argv )
 
     if (preference_list && keygen_set_std_prefs (preference_list))
         log_error(_("invalid preferences\n"));
-
-#ifdef __riscos__
-    if (opt.use_agent) {
-        opt.use_agent = 0;
-        not_implemented ("use-agent");
-    }
-#endif 
 
     if( log_get_errorcount(0) )
 	g10_exit(2);
