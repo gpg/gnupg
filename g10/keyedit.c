@@ -921,40 +921,56 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
 	if(selfsig)
 	  {
-	    tty_printf(_("\nThis will be a self-signature.\n"));
+            tty_printf("\n");
+	    tty_printf(_("This will be a self-signature.\n"));
 
 	    if( local )
-	      tty_printf(
-			 _("\nWARNING: the signature will not be marked "
+              {
+                tty_printf("\n");
+                tty_printf(
+			 _("WARNING: the signature will not be marked "
 			   "as non-exportable.\n"));
+              }
 
 	    if( nonrevocable )
-	      tty_printf(
-			 _("\nWARNING: the signature will not be marked "
+              {
+                tty_printf("\n");
+                tty_printf(
+			 _("WARNING: the signature will not be marked "
 			   "as non-revocable.\n"));
+              }
 	  }
 	else
 	  {
 	    if( local )
-	      tty_printf(
-		     _("\nThe signature will be marked as non-exportable.\n"));
+              {
+                tty_printf("\n");
+                tty_printf(
+		     _("The signature will be marked as non-exportable.\n"));
+              }
 
 	    if( nonrevocable )
-	      tty_printf(
-		      _("\nThe signature will be marked as non-revocable.\n"));
+              {
+                tty_printf("\n");
+                tty_printf(
+		      _("The signature will be marked as non-revocable.\n"));
+              }
 
 	    switch(class)
 	      {
 	      case 0x11:
-		tty_printf(_("\nI have not checked this key at all.\n"));
+                tty_printf("\n");
+		tty_printf(_("I have not checked this key at all.\n"));
 		break;
 
 	      case 0x12:
-		tty_printf(_("\nI have checked this key casually.\n"));
+                tty_printf("\n");
+		tty_printf(_("I have checked this key casually.\n"));
 		break;
 
 	      case 0x13:
-		tty_printf(_("\nI have checked this key very carefully.\n"));
+                tty_printf("\n");
+		tty_printf(_("I have checked this key very carefully.\n"));
 		break;
 	      }
 	  }

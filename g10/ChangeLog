@@ -1,5 +1,15 @@
 2004-10-15  Werner Koch  <wk@g10code.com>
 
+	* status.h (STATUS_NEED_PASSPHRASE_PIN): New.
+	* status.c (get_status_string): Added.
+	* passphrase.c (ask_passphrase): Moved status printing to ..
+	* cardglue.c (pin_cb): .. here and issue new status message.
+
+	* keyedit.c (sign_uids): Don't include the leading LF in the
+	translatable string but print them separately.
+
+	* apdu.c (apdu_open_remote_reader) [_WIN32]: We don't have ENOSYS.
+
 	* app-openpgp.c (parse_login_data): New. 
 	(app_select_openpgp): Call it.
 	(do_setattr): Reparse it after change.

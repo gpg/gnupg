@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *
+ * $Id$
  */
 
 #include <config.h>
@@ -2047,9 +2049,11 @@ apdu_open_remote_reader (const char *portstr,
                             writefnc, writefnc_value,
                             closefnc, closefnc_value);
 #else
-  #ifndef _WIN32
+#ifdef _WIN32 
+  errno = ENOENT;
+#else
   errno = ENOSYS;
-  #endif
+#endif
   return -1;
 #endif
 }

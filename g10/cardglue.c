@@ -628,6 +628,10 @@ pin_cb (void *opaque, const char *info, char **retstr)
   *retstr = NULL;
   log_debug ("asking for PIN '%s'\n", info);
 
+  if (is_status_enabled())
+    write_status_text (STATUS_NEED_PASSPHRASE_PIN,
+                       isadmin? "OPENPGP 3" : "OPENPGP 1");
+
   value = ask_passphrase (info, 
                           isadmin? "passphrase.adminpin.ask"
                                  : "passphrase.pin.ask", 

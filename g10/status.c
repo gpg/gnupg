@@ -114,6 +114,7 @@ get_status_string ( int no )
       case STATUS_NO_PUBKEY	 : s = "NO_PUBKEY"; break;
       case STATUS_NO_SECKEY	 : s = "NO_SECKEY"; break;
       case STATUS_NEED_PASSPHRASE_SYM: s = "NEED_PASSPHRASE_SYM"; break;
+      case STATUS_NEED_PASSPHRASE_PIN: s = "NEED_PASSPHRASE_PIN"; break;
       case STATUS_DECRYPTION_FAILED: s = "DECRYPTION_FAILED"; break;
       case STATUS_DECRYPTION_OKAY: s = "DECRYPTION_OKAY"; break;
       case STATUS_MISSING_PASSPHRASE: s = "MISSING_PASSPHRASE"; break;

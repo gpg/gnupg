@@ -1025,9 +1025,6 @@ ask_passphrase (const char *description,
   if (canceled)
     *canceled = 0;
 
-  if (is_status_enabled())
-    write_status_text( STATUS_NEED_PASSPHRASE_SYM, "0 0 0");
-
   if (!opt.batch && description)
     tty_printf ("\n%s\n",description);
                

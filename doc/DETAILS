@@ -330,6 +330,9 @@ more arguments in future versions.
     NEED_PASSPHRASE_SYM <cipher_algo> <s2k_mode> <s2k_hash>
 	Issued whenever a passphrase for symmetric encryption is needed.
 
+    NEED_PASSPHRASE_PIN <card_type> <chvno>
+        Issued whenever a PIN is requested to unlock a card.
+
     MISSING_PASSPHRASE
 	No passphrase was supplied.  An application which encounters this
 	message may want to stop parsing immediately because the next message
@@ -535,7 +538,7 @@ more arguments in future versions.
 		0x02 = this attribute packet is revoked
 		0x04 = this attribute packet is expired
 
-    STATUSCTRL <what> [<serialno>]
+    CARDCTRL <what> [<serialno>]
         This is used to control smartcard operations.
         Defined values for WHAT are:
            1 = Request insertion of a card.  Serialnumber may be given
