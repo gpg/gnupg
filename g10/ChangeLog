@@ -1,3 +1,12 @@
+2003-08-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (add_keyserver_url), keyedit.c (keyedit_menu), sign.c
+	(mk_notation_policy_etc): Clarify a few strings.  It's a
+	"preferred keyserver URL".
+
+	* g10.c (main): Use "keyserver-url" instead of
+	"preferred-keyserver" for the sake of short and simple commands.
+
 2003-08-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* main.h, keygen.c (keygen_add_keyserver_url): Signature callback
@@ -9,7 +18,8 @@
 	* build-packet.c (build_sig_subpkt): Set preferred keyserver flag
 	while building a preferred keyserver subpacket.
 
-	* keylist.c (show_policy_url): Policy URLs might be UTF8.
+	* keylist.c (show_policy_url, show_keyserver_url): URLs might be
+	UTF8.
 
 	* keyedit.c (menu_addrevoker): Fix leaking a few bytes.
 

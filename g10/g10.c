@@ -556,7 +556,7 @@ static ARGPARSE_OPTS opts[] = {
     { oCertPolicyURL, "cert-policy-url", 2, "@" },
     { oShowPolicyURL, "show-policy-url", 0, "@" },
     { oNoShowPolicyURL, "no-show-policy-url", 0, "@" },
-    { oSigKeyserverURL, "sig-preferred-keyserver", 2, "@" },
+    { oSigKeyserverURL, "sig-keyserver-url", 2, "@" },
     { oShowNotation, "show-notation", 0, "@" },
     { oNoShowNotation, "no-show-notation", 0, "@" },
     { oComment, "comment", 2, "@" },
@@ -1761,7 +1761,7 @@ main( int argc, char **argv )
 		  {"show-photos",LIST_SHOW_PHOTOS},
 		  {"show-policy-url",LIST_SHOW_POLICY},
 		  {"show-notation",LIST_SHOW_NOTATION},
-		  {"show-preferred-keyserver",LIST_SHOW_KEYSERVER},
+		  {"show-keyserver-url",LIST_SHOW_KEYSERVER},
 		  {"show-validity",LIST_SHOW_VALIDITY},
 		  {"show-long-keyid",LIST_SHOW_LONG_KEYID},
 		  {"show-keyring",LIST_SHOW_KEYRING},
@@ -1786,7 +1786,7 @@ main( int argc, char **argv )
 		  {"show-photos",VERIFY_SHOW_PHOTOS},
 		  {"show-policy-url",VERIFY_SHOW_POLICY},
 		  {"show-notation",VERIFY_SHOW_NOTATION},
-		  {"show-preferred-keyserver",VERIFY_SHOW_KEYSERVER},
+		  {"show-keyserver-url",VERIFY_SHOW_KEYSERVER},
 		  {"show-validity",VERIFY_SHOW_VALIDITY},
 		  {"show-long-keyid",VERIFY_SHOW_LONG_KEYID},
 		  {NULL,0}
@@ -3171,8 +3171,8 @@ add_keyserver_url( const char *string, int which )
       if(which)
 	BUG();
       else
-	log_error(_("the given signature preferred keyserver "
-		    "URL is invalid\n"));
+	log_error(_("the given signature preferred"
+		    " keyserver URL is invalid\n"));
     }
 
   if(which)

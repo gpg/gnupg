@@ -183,8 +183,8 @@ mk_notation_policy_etc( PKT_signature *sig,
 	s=pct_expando(string,&args);
 	if(!s)
 	  {
-	    log_error(_("WARNING: unable to %%-expand preferred keyserver url "
-			"(too large).  Using unexpanded.\n"));
+	    log_error(_("WARNING: unable to %%-expand preferred keyserver URL"
+			" (too large).  Using unexpanded.\n"));
 	    s=m_strdup(string);
 	  }
 
