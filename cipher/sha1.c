@@ -39,6 +39,7 @@
 #include "util.h"
 #include "memory.h"
 #include "dynload.h"
+#include "bithelp.h"
 
 
 typedef struct {
@@ -47,20 +48,6 @@ typedef struct {
     byte buf[64];
     int  count;
 } SHA1_CONTEXT;
-
-
-#if defined(__GNUC__) && defined(__i386__)
-static inline u32
-rol(int n, u32 x)
-{
-	__asm__("roll %%cl,%0"
-		:"=r" (x)
-		:"0" (x),"c" (n));
-	return x;
-}
-#else
-  #define rol(n,x)  ( ((x) << (n)) | ((x) >> (32-(n))) )
-#endif
 
 
 
@@ -123,11 +110,11 @@ transform( SHA1_CONTEXT *hd, byte *data )
 		    ^ x[(i-8)&0x0f] ^ x[(i-3)&0x0f] \
 	       , (x[i&0x0f] = (tm << 1) | (tm >> 31)) )
 
-#define R(a,b,c,d,e,f,k,m)  do { e += rol( 5, a )     \
+#define R(a,b,c,d,e,f,k,m)  do { e += rol( a, 5 )     \
 				      + f( b, c, d )  \
 				      + k	      \
 				      + m;	      \
-				 b = rol( 30, b );    \
+				 b = rol( b, 30 );    \
 			       } while(0)
     R( a, b, c, d, e, F1, K1, x[ 0] );
     R( e, a, b, c, d, F1, K1, x[ 1] );

@@ -370,6 +370,16 @@ m_is_secure( const void *p )
     return p >= pool && p < (void*)((char*)pool+poolsize);
 }
 
+
+
+/****************
+ * Warning:  This code might be called by an interrupt handler
+ *	     and frankly, thre should really be such a handler,
+ *	     to make sure that the memory is wiped out.
+ *	     We hope that the OS wipes out mlocked memory after
+ *	     receiving a SIGKILL - it really should do so, otherwise
+ *	     there is no chance to get the secure memory cleaned.
+ */
 void
 secmem_term()
 {

@@ -232,7 +232,7 @@
   abbreviated -o) is an option that takes a filename. The option's argument
   must follow immediately after the option itself, otherwise gpg doesn't know
   which option the argument is supposed to go with. As an option, --output and
-  its filename must come before the command. The --remote-user (-r) option takes
+  its filename must come before the command. The --recipient (-r) option takes
   a name or keyid to encrypt the message to, which must come right after the -r
   argument.  The --encrypt (or -e) command comes after all the options followed
   by the file you wish to encrypt. So use
@@ -241,22 +241,22 @@
 
   If you write the options out in full, it is easier to read
 
-   gpg --remote-user alice --output secret.txt --encrypt test.txt
+   gpg --recipient alice --output secret.txt --encrypt test.txt
 
   If you're saving it in a file called ".txt" then you'd probably expect to see
   ASCII-armored text in there, so you need to add the --armor (-a) option,
   which doesn't take any arguments.
 
-   gpg --armor --remote-user alice --output secret.txt --encrypt test.txt
+   gpg --armor --recipient alice --output secret.txt --encrypt test.txt
 
   If you imagine square brackets around the optional parts, it becomes a bit
   clearer:
 
-   gpg [--armor] [--remote-user alice] [--output secret.txt] --encrypt test.txt
+   gpg [--armor] [--recipient alice] [--output secret.txt] --encrypt test.txt
 
   The optional parts can be rearranged any way you want.
 
-   gpg --output secret.txt --remote-user alice --armor --encrypt test.txt
+   gpg --output secret.txt --recipient alice --armor --encrypt test.txt
 
   If your filename begins with a hyphen (e.g. "-a.txt"), gnupg assumes this is
   an option and may complain.  To avoid this you have either to use
@@ -282,8 +282,7 @@
      other keys.  "validity", or calculated trust, is a value which
      says how much GnuPG thinks a key is valid (that it really belongs
      to the one who claims to be the owner of the key).
-     For more see the chapter "The Web of Trust" in the
-     Manual [gpg: Oops: Internal error: manual not found - sorry]
+     For more see the chapter "The Web of Trust" in the Manual
 
   Q: How do I interpret some of the informational outputs?
   A: While checking the validity of a key, GnuPG sometimes prints
@@ -340,5 +339,6 @@
   A: There is a script in the tools directory to help you:
      After you have imported the PGP keyring you can give this command:
 	$ lspgpot pgpkeyring | gpg --import-ownertrust
-
+     where pgpkeyring is the original keyring and not the GnuPG one you
+     might have created in the first step.
 

@@ -37,6 +37,8 @@
 #include "memory.h"
 #include "dynload.h"
 
+#include "bithelp.h"
+
 
 typedef struct {
     u32 A,B,C,D;	  /* chaining variables */
@@ -104,14 +106,10 @@ transform( MD5_CONTEXT *ctx, byte *data )
   do								    \
     {								    \
       a += FF (b, c, d) + (*cwp++) + T; 	    \
-      CYCLIC (a, s);						    \
+      a = rol(a, s);						    \
       a += b;							    \
     }								    \
   while (0)
-
-  /* It is unfortunate that C does not provide an operator for
-     cyclic rotation.  Hope the C compiler is smart enough.  */
-#define CYCLIC(w, s) (w = (w << s) | (w >> (32 - s)))
 
     /* Before we start, one word about the strange constants.
        They are defined in RFC 1321 as
@@ -142,7 +140,7 @@ transform( MD5_CONTEXT *ctx, byte *data )
     do								      \
       { 							      \
 	a += f (b, c, d) + correct_words[k] + T;		      \
-	CYCLIC (a, s);						      \
+	a = rol(a, s);						      \
 	a += b; 						      \
       } 							      \
     while (0)

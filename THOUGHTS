@@ -1,4 +1,11 @@
+How often have we to do a key lookup by mailaddress?.
+can this be accomplished by an external program?
 
+
+
+What about using S-Exp to describe the interface to the ciphers instead
+of simply iterating over them. This way we can easy register a name which
+can be used as the "hintstr" for --load-extension.
 
 EGD
 ====
@@ -48,8 +55,8 @@ From: Matthew Skala <mskala@ansuz.sooke.bc.ca>
 
 
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+==============================
+[ "-->" indicates a comment by me (wk) ]
 
 Hi Werner..
 
@@ -83,11 +90,16 @@ extension mechanisms in GPG should be enough to try various ways later on.
 
 1) pass an argument string to loadable extension modules (maybe
     gpg --load-extension foofish=arg1,arg2,arg3 ?)
+    --> could also be achived by S-Exps
+
 2) allow multiple instances of the same extension module (presumably with
    different arguments)
+   --> set an alias name when loading them
 3) allow extension modules to use stdin/stdout/stderr as normal (probably
    already in there), for giving feedback to the user, or possibly asking them
    for a password of some sort
+   --> there should really be some kind of callback mechanism.
+
 4) have an extension to provide secret keys:
 
    It looks like most of the hooks for this are already in place, it just
@@ -97,6 +109,9 @@ extension mechanisms in GPG should be enough to try various ways later on.
    an argument. When the keyblock resource is asked to enumerate its keys, it
    runs the external program (first with a "0" argument, then a "1", and so on
    until the program reports that no more keys are available). The external
+--> better use a cookie:  This way we are also stateless but have a more
+   general interface.
+
    program returns one (possibly armored) secret key block each time. The
    program might have some kind of special protocol to talk to the storage
    device.  One thing that comes to mind is to simply include a random number
@@ -108,6 +123,8 @@ extension mechanisms in GPG should be enough to try various ways later on.
    much processing power and IO is available on the device. But the same
    extension module should be able to handle as complex a scheme as one could
    wish.
+   --> authenticate the session on startup, using DH and the mentioned
+       cookie/screen/keyboard authentication.
 
    The current keyblock-resource interface would work fine, although it
    might be more convenient if a resource could be asked for a key by id
@@ -118,10 +135,13 @@ extension mechanisms in GPG should be enough to try various ways later on.
    to fetch by id (which would require it to fall back to the other keyblock
    resources if it failed), the user's device might be asked to release the
    key even though some other secret key was the one needed.
+   --> Right.
 
 
 5) have an extension to perform a secret-key operation without the actual
    secret key material
+   --> Define a clear interface to do this and in the first step write
+       a daemon which does exactly this.
 
  basically something to indicate that any decrypt or sign operations that
  occur for a specific keyid should call the extension module instead. The
@@ -221,12 +241,17 @@ DJGPP
 Don't use symlinks but try to do the preprocessing in the config-links script.
 DJPGG has problems to distinguish betwen .s and .S becaus the FAT filesystem
 is not case sensitive (Mark Elbrecht).
-
+Well, it runs only on one architecture and therefor it might be possible
+to add a special case for it, completely bypassing the symlink autselection
+trick.
 
 Special procmail addresses
 ==========================
   * foo+bar@example.net:  Try to match the address without the "+bar".
     Should be done by the MUA, but maybe we can do this.
+    --> Yep.  Another reason to utilize a directory service or something
+	else for keylookup.
+
 
 
 Suggested things which I will not do:

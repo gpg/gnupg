@@ -47,6 +47,7 @@ and after about half a day in the rsync snapshots.
 [  *] #23 1999-09-03 <todd.brooks@yale.edu> 0.9.11
     Only the first signature of a cleartext sig seems to be verified.
     Can't fix it in 1.0 because the code is semi-frozen.
+    HMMM: Can't reprodude the bug here - it just works.  Check wehther
 
 [  *] #24 1999-09-05 <marcus@yoyo.cc.monash.edu.au> 0.9.11
     Does not link libc and libz expect when removing all "-lc -lz" except

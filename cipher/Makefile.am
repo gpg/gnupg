@@ -39,6 +39,7 @@ libcipher_la_SOURCES = cipher.c  \
 		 md.c		\
 		 dynload.c	\
 		 dynload.h	\
+		 bithelp.h	\
 		 des.c		\
 		 des.h		\
 		 twofish.c	\

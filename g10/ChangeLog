@@ -1,3 +1,10 @@
+Mon Sep 13 10:51:29 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* signal.c (got_fatal_signal): Print message using write(2) and
+	only for development versions.
+
+
 Mon Sep  6 19:59:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* tdbio.c (tdbio_set_dbname): Use mkdir macro

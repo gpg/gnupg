@@ -1,3 +1,9 @@
+Mon Sep 13 10:51:29 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* bithelp.h: New.
+	* rmd160.h, sha1.h, md5.h: Use the rol macro from bithelp.h
+
 Tue Sep  7 16:23:36 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

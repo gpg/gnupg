@@ -29,6 +29,8 @@
 #include "cipher.h" /* only used for the rmd160_hash_buffer() prototype */
 #include "dynload.h"
 
+#include "bithelp.h"
+
 /*********************************
  * RIPEMD-160 is not patented, see (as of 25.10.97)
  *   http://www.esat.kuleuven.ac.be/~bosselae/ripemd160.html
@@ -153,19 +155,6 @@ rmd160_init( RMD160_CONTEXT *hd )
 }
 
 
-#if defined(__GNUC__) && defined(__i386__)
-static inline u32
-rol(int n, u32 x)
-{
-	__asm__("roll %%cl,%0"
-		:"=r" (x)
-		:"0" (x),"c" (n));
-	return x;
-}
-#else
-  #define rol(n,x) ( ((x) << (n)) | ((x) >> (32-(n))) )
-#endif
-
 
 /****************
  * Transform the message X which consists of 16 32-bit-words
@@ -218,8 +207,8 @@ transform( RMD160_CONTEXT *hd, byte *data )
 #define F3(x,y,z)   ( ((x) & (z)) | ((y) & ~(z)) )
 #define F4(x,y,z)   ( (x) ^ ((y) | ~(z)) )
 #define R(a,b,c,d,e,f,k,r,s) do { t = a + f(b,c,d) + k + x[r]; \
-				  a = rol(s,t) + e;	       \
-				  c = rol(10,c);	       \
+				  a = rol(t,s) + e;	       \
+				  c = rol(c,10);	       \
 				} while(0)
 
     /* left lane */

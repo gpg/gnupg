@@ -1,5 +1,5 @@
 /* signal.c - signal handling
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -39,28 +39,34 @@ static volatile int caught_fatal_sig = 0;
 static volatile int caught_sigusr1 = 0;
 
 static const char *
-signal_name( int signum )
+get_signal_name( int signum )
 {
   #if defined(SYS_SIGLIST_DECLARED) && defined(NSIG)
     return (signum >= 0 && signum < NSIG) ? sys_siglist[signum] : "?";
   #else
-    static char buf[20];
-    sprintf(buf, "signal %d", signum );
-    return buf;
+    return "some signal";
   #endif
 }
+
 
 static RETSIGTYPE
 got_fatal_signal( int sig )
 {
+    const char *s;
+
     if( caught_fatal_sig )
 	raise( sig );
     caught_fatal_sig = 1;
 
-    fprintf( stderr, "\n%s: %s caught ... exiting\n",
-	      log_get_name(), signal_name(sig) );
     secmem_term();
-    exit( 8 );
+  #ifdef IS_DEVELOPMENT_VERSION
+    write(2, "\n", 1 );
+    s = log_get_name(); if( s ) write(2, s, strlen(s) );
+    write(2, ": ", 2 );
+    s = get_signal_name(sig); write(2, s, strlen(s) );
+    write(2, " caught ... exiting\n", 21 );
+  #endif
+    exit(8); /* Hmmm, for some reasons rais2e does not work */
 }
 
 
