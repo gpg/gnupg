@@ -1,3 +1,9 @@
+2002-07-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_mailto.in: Use new OPAQUE tag for non net-path URIs.
+	Fail more elegantly if there is no email address to send to.  Show
+	the GnuPG version in the message body.
+
 2002-07-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c (get_key), gpgkeys_hkp.c (get_key): Display

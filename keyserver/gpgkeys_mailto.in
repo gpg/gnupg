@@ -47,9 +47,14 @@ while(<STDIN>)
 	$command=$1;
     }
 
-    if(/^HOST (\S+)/)
+    if(/^OPAQUE (\S+)/)
     {
-	$host=$1;
+	$address=$1;
+    }
+
+    if(/^PROGRAM (\S+)/)
+    {
+	$program=$1;
     }
 
     if(/^OPTION (\w+)/)
@@ -63,6 +68,14 @@ while(<STDIN>)
 	    $verbose--;
 	}
     }
+}
+
+$program="(unknown)" if(!defined($program));
+
+if(!defined($address))
+{
+    print STDERR "gpgkeys: no address provided\n";
+    exit(1);
 }
 
 while(<STDIN>)
@@ -92,7 +105,7 @@ if($command=~/get/i || $command=~/search/i)
     {
 	open(MAIL,"|$sendmail") || die "ERROR: Can't open $sendmail\n";
 	print MAIL "From: $name <$login>\n";
-	print MAIL "To: $host\n";
+	print MAIL "To: $address\n";
 	if($command=~/get/i)
 	{
 	    # mail keyservers don't like long-form keyids
@@ -113,7 +126,7 @@ if($command=~/get/i || $command=~/search/i)
 	{
 	    print MAIL "Subject: GET $key\n\n";
 	}
-	print MAIL "GnuPG keyserver request\n";
+	print MAIL "GnuPG $program email keyserver request\n";
 	close(MAIL);
 
 	# Tell GnuPG not to expect a key
@@ -121,7 +134,7 @@ if($command=~/get/i || $command=~/search/i)
 
 	if($verbose)
 	{
-	    print STDERR "gpgkeys: key $key requested from $host\n";
+	    print STDERR "gpgkeys: key $key requested from $address\n";
 	}
     }
 }
@@ -132,7 +145,7 @@ if($command=~/send/i)
     {
 	open(MAIL,"|$sendmail") || die "ERROR: Can't open $sendmail\n";
 	print MAIL "From: $name <$login>\n";
-	print MAIL "To: $host\n";
+	print MAIL "To: $address\n";
 	print MAIL "Subject: ADD\n\n";
 
 	while(<STDIN>)
@@ -158,7 +171,7 @@ if($command=~/send/i)
 
 	if($verbose)
 	{
-	    print STDERR "gpgkeys: key $key sent to $host\n";
+	    print STDERR "gpgkeys: key $key sent to $address\n";
 	}
     }
 }
