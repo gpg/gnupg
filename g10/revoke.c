@@ -229,9 +229,20 @@ gen_desig_revoke( const char *uname )
 	    }
 
 	    /* Include the direct key signature that contains this
-               revocation key.  We're allowed to include sensitive
-               revocation keys along with a revocation, and this may
-               be the only time the recipient has seen it. */
+	       revocation key.  We're allowed to include sensitive
+	       revocation keys along with a revocation, and this may
+	       be the only time the recipient has seen it.  Note that
+	       this means that if we have multiple different sensitive
+	       revocation keys in a given direct key signature, we're
+	       going to include them all here.  This is annoying, but
+	       the good outweighs the bad, since without including
+	       this a sensitive revoker can't really do their job.
+	       People should not include multiple sensitive revocation
+	       keys in one signature: 2440 says "Note that it may be
+	       appropriate to isolate this subpacket within a separate
+	       signature so that it is not combined with other
+	       subpackets that need to be exported." -dms */
+
 	    while(!revsig)
 	      {
 		KBNODE signode;

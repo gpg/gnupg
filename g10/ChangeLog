@@ -1,3 +1,11 @@
+2002-07-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* revoke.c (gen_desig_revoke): Lots more comments about including
+	sensitive revkeys along with the revocation sig itself.
+
+	* keyserver.c (parse_keyserver_options): Simpler implementation
+	that can skip one pass over the options.
+
 2002-07-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (keyedit_menu, menu_addrevoker): Allow specifying

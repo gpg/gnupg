@@ -66,25 +66,27 @@ struct kopts
 void 
 parse_keyserver_options(char *options)
 {
-  char *tok="";
+  char *tok;
 
-  do
+  while((tok=strsep(&options," ,")))
     {
-      struct kopts *kopts=keyserver_opts;
       int i,hit=0;
 
-      for(i=0,kopts=keyserver_opts;kopts[i].name;i++)
+      if(tok[0]=='\0')
+	continue;
+
+      for(i=0;keyserver_opts[i].name;i++)
 	{
-	  if(ascii_strcasecmp(tok,kopts[i].name)==0)
+	  if(ascii_strcasecmp(tok,keyserver_opts[i].name)==0)
 	    {
-	      *(kopts[i].flag)=1;
+	      *(keyserver_opts[i].flag)=1;
 	      hit=1;
 	      break;
 	    }
-	  else if(ascii_memcasecmp("no-",tok,3)==0 && strlen(tok)>3 &&
-		  ascii_strcasecmp(&tok[3],kopts[i].name)==0)
+	  else if(ascii_memcasecmp("no-",tok,3)==0 &&
+		  ascii_strcasecmp(&tok[3],keyserver_opts[i].name)==0)
 	    {
-	      *(kopts[i].flag)=0;
+	      *(keyserver_opts[i].flag)=0;
 	      hit=1;
 	      break;
 	    }
@@ -111,10 +113,7 @@ parse_keyserver_options(char *options)
 	  else if(strlen(tok)>0)
 	    add_to_strlist(&opt.keyserver_options.other,tok);
 	}
-
-      tok=strsep(&options," ,");
     }
-    while(tok!=NULL);
 }
 
 int 
