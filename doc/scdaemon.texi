@@ -88,11 +88,34 @@ Outputs additional information while running.
 You can increase the verbosity by giving several
 verbose commands to @sc{gpgsm}, such as @samp{-vv}.
 
+@item --debug-level @var{level}
+@opindex debug-level
+Select the debug level for investigating problems. @var{level} may be
+one of:
+
+   @table @code
+   @item none
+   no debugging at all.
+   @item basic  
+   some basic debug messages
+   @item advanced
+   more verbose debug messages
+   @item expert
+   even more detailed messages
+   @item guru
+   all of the debug messages you can get
+   @end table
+
+How these messages are mapped to the actual debugging flags is not
+specified and may change with newer releaes of this program. They are
+however carefully selected to best aid in debugging.
+
 @item --debug @var{flags}
 @opindex debug
 This option is only useful for debugging and the behaviour may change at
 any time without notice.  FLAGS are bit encoded and may be given in
 usual C-Syntax. The currently defined bits are:
+
    @table @code
    @item 0  (1)
    X.509 or OpenPGP protocol related data
