@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.4\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-08-09 21:19+0200\n"
+"POT-Creation-Date: 2004-08-13 18:54+0200\n"
 "PO-Revision-Date: 2003-12-04 11:39+0100\n"
 "Last-Translator: Jacobo Tarrio <jtarrio@trasno.net>\n"
 "Language-Team: Galician <gpul-traduccion@ceu.fi.udc.es>\n"
@@ -4985,17 +4985,17 @@ msgstr "Non hai axuda dispoñible"
 msgid "No help available for `%s'"
 msgstr "Non hai axuda dispoñible para `%s'"
 
-#: g10/keydb.c:185
+#: g10/keydb.c:156
 #, c-format
 msgid "error creating keyring `%s': %s\n"
 msgstr "erro ao crea-lo chaveiro `%s': %s\n"
 
-#: g10/keydb.c:192
+#: g10/keydb.c:163
 #, c-format
 msgid "keyring `%s' created\n"
 msgstr "chaveiro `%s' creado\n"
 
-#: g10/keydb.c:582
+#: g10/keydb.c:639
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "fallo ao reconstruí-la caché de chaveiros: %s\n"

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.6d\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-08-09 21:19+0200\n"
+"POT-Creation-Date: 2004-08-13 18:54+0200\n"
 "PO-Revision-Date: 2002-04-14 14:33+0100\n"
 "Last-Translator: Edmund GRIMLEY EVANS <edmundo@rano.org>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
@@ -4968,17 +4968,17 @@ msgstr "Nenia helpo disponata"
 msgid "No help available for `%s'"
 msgstr "Nenia helpo disponata por '%s'"
 
-#: g10/keydb.c:185
+#: g10/keydb.c:156
 #, c-format
 msgid "error creating keyring `%s': %s\n"
 msgstr "eraro dum kreado de þlosilaro '%s': %s\n"
 
-#: g10/keydb.c:192
+#: g10/keydb.c:163
 #, c-format
 msgid "keyring `%s' created\n"
 msgstr "þlosilaro '%s' kreita\n"
 
-#: g10/keydb.c:582
+#: g10/keydb.c:639
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "malsukcesis rekonstrui þlosilaran staplon: %s\n"

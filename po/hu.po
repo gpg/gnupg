@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.5\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-08-09 21:19+0200\n"
+"POT-Creation-Date: 2004-08-13 18:54+0200\n"
 "PO-Revision-Date: 2004-06-19 21:53+0200\n"
 "Last-Translator: Nagy Ferenc László <nfl@nfllab.com>\n"
 "Language-Team: Hungarian <translation-team-hu@lists.sourceforge.net>\n"
@@ -4958,17 +4958,17 @@ msgstr "Nem áll rendelkezésre segítség."
 msgid "No help available for `%s'"
 msgstr "Nem áll rendelkezésre segítség \"%s\" témához."
 
-#: g10/keydb.c:185
+#: g10/keydb.c:156
 #, c-format
 msgid "error creating keyring `%s': %s\n"
 msgstr "Hiba a(z) \"%s\" kulcskarika létrehozásakor: %s\n"
 
-#: g10/keydb.c:192
+#: g10/keydb.c:163
 #, c-format
 msgid "keyring `%s' created\n"
 msgstr "\"%s\" kulcskarikát létrehoztam.\n"
 
-#: g10/keydb.c:582
+#: g10/keydb.c:639
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "Nem tudtam újraépíteni a kulcskarika cache-ét: %s\n"

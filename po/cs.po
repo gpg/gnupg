@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.2.3\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-08-09 21:19+0200\n"
+"POT-Creation-Date: 2004-08-13 18:54+0200\n"
 "PO-Revision-Date: 2003-12-07 16:20+0200\n"
 "Last-Translator: Roman Pavlik <rp@tns.cz>\n"
 "Language-Team: Czech <translations.cs@gnupg.cz>\n"
@@ -4980,17 +4980,17 @@ msgstr "Pomoc není k dispozici"
 msgid "No help available for `%s'"
 msgstr "Pomoc není dostupná pro '%s'"
 
-#: g10/keydb.c:185
+#: g10/keydb.c:156
 #, c-format
 msgid "error creating keyring `%s': %s\n"
 msgstr "chyba pøi vytváøení souboru klíèù (keyring)`%s': %s\n"
 
-#: g10/keydb.c:192
+#: g10/keydb.c:163
 #, c-format
 msgid "keyring `%s' created\n"
 msgstr "soubor klíèù (keyring) `%s' vytvoøen\n"
 
-#: g10/keydb.c:582
+#: g10/keydb.c:639
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "selhalo obnovení vyrovnávací pamìti klíèù: %s\n"

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-08-09 21:19+0200\n"
+"POT-Creation-Date: 2004-08-13 18:54+0200\n"
 "PO-Revision-Date: 2003-10-30 16:35+0200\n"
 "Last-Translator: Ales Nyakhaychyk <nab@mail.by>\n"
 "Language-Team: Belarusian <i18n@mova.org>\n"
@@ -4659,17 +4659,17 @@ msgstr "Даведка адсутнічае"
 msgid "No help available for `%s'"
 msgstr "Для \"%s\" даведка адсутнічае"
 
-#: g10/keydb.c:185
+#: g10/keydb.c:156
 #, c-format
 msgid "error creating keyring `%s': %s\n"
 msgstr ""
 
-#: g10/keydb.c:192
+#: g10/keydb.c:163
 #, c-format
 msgid "keyring `%s' created\n"
 msgstr ""
 
-#: g10/keydb.c:582
+#: g10/keydb.c:639
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr ""

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-08-09 21:19+0200\n"
+"POT-Creation-Date: 2004-08-13 18:54+0200\n"
 "PO-Revision-Date: 2003-12-03 16:11+0100\n"
 "Last-Translator: Birger Langkjer <birger.langkjer@image.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
@@ -4768,17 +4768,17 @@ msgstr "Ingen hjælp tilgængelig"
 msgid "No help available for `%s'"
 msgstr "Ingen hjælp tilgængelig for `%s'"
 
-#: g10/keydb.c:185
+#: g10/keydb.c:156
 #, fuzzy, c-format
 msgid "error creating keyring `%s': %s\n"
 msgstr "fejl ved skrivning af nøglering `%s': %s\n"
 
-#: g10/keydb.c:192
+#: g10/keydb.c:163
 #, c-format
 msgid "keyring `%s' created\n"
 msgstr ""
 
-#: g10/keydb.c:582
+#: g10/keydb.c:639
 #, fuzzy, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "ingen standard offentlig nøglering\n"

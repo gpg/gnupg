@@ -21,7 +21,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-08-09 21:19+0200\n"
+"POT-Creation-Date: 2004-08-13 18:54+0200\n"
 "PO-Revision-Date: 2003-12-03 16:11+0100\n"
 "Last-Translator: Per Tunedal <info@clipanish.com>\n"
 "Language-Team: Swedish <sv@li.org>\n"
@@ -5073,17 +5073,17 @@ msgstr "Det finns ingen hjälp tillgänglig"
 msgid "No help available for `%s'"
 msgstr "Det finns ingen hjälp tillgänglig för \"%s\""
 
-#: g10/keydb.c:185
+#: g10/keydb.c:156
 #, c-format
 msgid "error creating keyring `%s': %s\n"
 msgstr "fel vid skapande av nyckelringen \"%s\": %s\n"
 
-#: g10/keydb.c:192
+#: g10/keydb.c:163
 #, c-format
 msgid "keyring `%s' created\n"
 msgstr "%s: nyckelring skapad\n"
 
-#: g10/keydb.c:582
+#: g10/keydb.c:639
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "misslyckades med att återskapa nyckelringscache: %s\n"
