@@ -1,3 +1,8 @@
+2002-10-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Use a new option (--enable-new-tiger) to enable
+	TIGER with the correct OID.
+
 2002-09-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* THANKS: Remove duplicate.
