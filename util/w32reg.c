@@ -19,7 +19,8 @@
  */
 
 #include <config.h>
-#ifdef __MINGW32__  /* This module is only used in this environment */
+#if defined (__MINGW32__) || defined (__CYGWIN32__)
+ /* This module is only used in this environment */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -124,4 +125,4 @@ write_w32_registry_string(const char *root, const char *dir,
     return 0;
 }
 
-#endif /* __MINGW32__ */
+#endif /* __MINGW32__ || __CYGWIN32__ */

@@ -27,8 +27,8 @@
 
 #include <config.h>
 #ifdef USE_SIMPLE_GETTEXT
-#ifndef __MINGW32__
-  #error This file can only be used with MinGW32
+#if defined (__MINGW32__) || defined (__CYGWIN32__)
+  #error This file can only be used with MingW32 or Cygwin32
 #endif
 
 #include <stdio.h>
