@@ -730,6 +730,8 @@ for rndmod in $random_modules "" ; do
     rndegd)
          AC_DEFINE(USE_RNDEGD,1, 
                   [Defined if the EGD based RNG should be used.])
+         EGDLIBS=$NETLIBS
+         AC_SUBST(EGDLIBS)
          ;;
     rndw32)
          AC_DEFINE(USE_RNDW32,1, 
