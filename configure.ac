@@ -854,7 +854,9 @@ cat >g10defs.tmp <<G10EOF
     #define GNUPG_HOMEDIR "~/.gnupg" 
   #endif
 #endif
-/* those are here to be redefined by handcrafted g10defs.h */
+/* those are here to be redefined by handcrafted g10defs.h.
+   Please note that the string version must not contain more
+   than one character because the using code assumes strlen()==1 */
 #define DIRSEP_C '/'
 #define EXTSEP_C '.'
 #define DIRSEP_S "/"

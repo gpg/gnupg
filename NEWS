@@ -1,3 +1,9 @@
+    * Secret keys are now stored and exported in a new format which
+      uses SHA-1 for integrity checks.  This format renders the
+      Rosa/Klima attack useless.  Other OpenPGP implementations might
+      not yet support this, so the option --simple-sk-checksum creates
+      the old vulnearbel format.
+
     * The default cipher algorithm for encryption is now CAST5,
       default default hash algorithm is SHA-1.  This will give us
       better interoperability with other OpenPGP implementations.

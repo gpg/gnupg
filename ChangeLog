@@ -1,3 +1,8 @@
+2002-04-12  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Add a warning note to the definition of the
+	EXTSEP macros.
+
 2002-04-09  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac (ALL_LINGUAS): Added Czech, Galician and Greek
