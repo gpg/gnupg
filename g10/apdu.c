@@ -298,6 +298,7 @@ ct_activate_card (int reader)
         {
           log_error ("ct_activate_card(%d): activation failed: %s\n",
                      reader, ct_error_string (rc));
+          log_printhex ("buffer:", buf, buflen);
           return -1;
         }
 
@@ -933,7 +934,7 @@ apdu_open_reader (const char *portstr)
           CT_close = dlsym (handle, "CT_close");
           if (!CT_init || !CT_data || !CT_close)
             {
-              log_error ("apdu_open_reader: invalid ctAPI driver\n");
+              log_error ("apdu_open_reader: invalid CT-API driver\n");
               dlclose (handle);
               return -1;
             }
@@ -959,9 +960,21 @@ apdu_open_reader (const char *portstr)
       pcsc_establish_context = dlsym (handle, "SCardEstablishContext");
       pcsc_release_context   = dlsym (handle, "SCardReleaseContext");
       pcsc_list_readers      = dlsym (handle, "SCardListReaders");
+#ifdef _WIN32
+      if (!pcsc_list_readers)
+        pcsc_list_readers    = dlsym (handle, "SCardListReadersA");
+#endif
       pcsc_connect           = dlsym (handle, "SCardConnect");
+#ifdef _WIN32
+      if (!pcsc_connect)
+        pcsc_connect         = dlsym (handle, "SCardConnectA");
+#endif
       pcsc_disconnect        = dlsym (handle, "SCardDisconnect");
       pcsc_status            = dlsym (handle, "SCardStatus");
+#ifdef _WIN32
+      if (pcsc_status)
+        pcsc_status          = dlsym (handle, "SCardStatusA");
+#endif
       pcsc_begin_transaction = dlsym (handle, "SCardBeginTransaction");
       pcsc_end_transaction   = dlsym (handle, "SCardEndTransaction");
       pcsc_transmit          = dlsym (handle, "SCardTransmit");
@@ -976,9 +989,22 @@ apdu_open_reader (const char *portstr)
           || !pcsc_begin_transaction
           || !pcsc_end_transaction
           || !pcsc_transmit         
-          || !pcsc_set_timeout)
+          /* || !pcsc_set_timeout */)
         {
-          log_error ("apdu_open_reader: invalid PC/SC driver\n");
+          /* Note that set_timeout is currently not used and also not
+             available under Windows. */
+          log_error ("apdu_open_reader: invalid PC/SC driver "
+                     "(%d%d%d%d%d%d%d%d%d%d)\n",
+                     !!pcsc_establish_context,
+                     !!pcsc_release_context,  
+                     !!pcsc_list_readers,     
+                     !!pcsc_connect,          
+                     !!pcsc_disconnect,
+                     !!pcsc_status,
+                     !!pcsc_begin_transaction,
+                     !!pcsc_end_transaction,
+                     !!pcsc_transmit,         
+                     !!pcsc_set_timeout );
           dlclose (handle);
           return -1;
         }
