@@ -1,3 +1,7 @@
+2004-08-17  Marcus Brinkmann  <marcus@g10code.de>
+
+	* import.c: Fix typo in last change.
+
 2004-08-17  Werner Koch  <wk@g10code.de>
 
 	* import.c (check_and_store): Do a full validation if

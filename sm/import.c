@@ -183,7 +183,7 @@ check_and_store (CTRL ctrl, struct stats_s *stats, ksba_cert_t cert, int depth)
   rc = gpgsm_basic_cert_check (cert);
   if (!rc && ctrl->with_validation)
     rc = gpgsm_validate_chain (ctrl, cert, NULL, 0, NULL, 0);
-  if (!rc || (!ctrl->with-validation
+  if (!rc || (!ctrl->with_validation
               && gpg_err_code (rc) == GPG_ERR_MISSING_CERT) )
     {
       int existed;
