@@ -22,6 +22,7 @@
 EXTRA_DIST = mkerrors
 INCLUDES = -I.. -I$(top_srcdir)/include
 BUILT_SOURCES = assuan-errors.c
+MOSTLYCLEANFILES = assuan-errors.c
 
 noinst_LIBRARIES = libassuan.a
 
