@@ -1,5 +1,7 @@
 2002-09-11  Werner Koch  <wk@gnupg.org>
 
+	Released 1.1.92.
+
 	* configure.ac (random_modules): The default random module for
 	system lacking a /dev/random is now auto selected at runtime.
 

@@ -33,14 +33,24 @@ Hi!
 Please find attached the latest version of the PO file for your GnuPG
 translation ($file).  I would appreciate if you can fix any remaining
 fuzzy or untranslated entries.  If you need access to the code
-please use http://cvs.gnupg.org or get the latest snapshot from
-ftp://ftp.gnupg.org/gcrypt/devel/.
+please use http://cvs.gnupg.org or get the latest snapshot at
+ftp://ftp.gnupg.org/gcrypt/alpha/gnupg/gnupg-1.1.92.tar.gz
+
+IMHO it is important to have a basic understanding of GnuPG's
+functionality to do a correct translation.  A false translation might
+need to security problems.  This is the reason why I prefer to contact
+you directly and not to work only with the TP Robot.
 
 Output of msgfmt is:
 $(msgfmt --check --statistics $file 2>&1 | head)
 
 If you are not able to continue the translation work, I suggest to
 pass this message on to another translator and drop me a short note.
+
+For packaging the Windows binary I like to know the default charset
+used for your language under Windows.  If this is not the one you use
+in the Content-type header of your translation, I'd appreciate if you
+can drop me note.
 
 Thanks,
 
