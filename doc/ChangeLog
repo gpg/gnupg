@@ -1,3 +1,11 @@
+2003-04-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document --no-textmode and --no-use-agent.  Clarify
+	the interoperability section.
+
+	* DETAILS (VALIDSIG): Add version, pk algo, digest algo, sig
+	class, and a reserved field for flags in a future version.
+
 2003-04-22  Werner Koch  <wk@gnupg.org>
 
 	* gnupg-w32.reg: Use HLM for the program and make sure the entries

@@ -865,13 +865,13 @@ compression level of zlib (normally 6).
 
 <varlistentry>
 <term>-t, --textmode</term>
+<term>--no-textmode</term>
 <listitem><para>
-Use canonical text mode.  If -t (but not
---textmode) is used together with armoring
-and signing, this enables clearsigned messages.
-This kludge is needed for PGP compatibility;
-normally you would use --sign or --clearsign
-to selected the type of the signature.
+Use canonical text mode.  --no-textmode disables this option.  If -t
+(but not --textmode) is used together with armoring and signing, this
+enables clearsigned messages.  This kludge is needed for PGP
+compatibility; normally you would use --sign or --clearsign to
+selected the type of the signature.
 </para></listitem></varlistentry>
 
 
@@ -1709,10 +1709,12 @@ distribution for details on how to use it.
 
 <varlistentry>
 <term>--use-agent</term>
+<term>--no-use-agent</term>
 <listitem><para>
 Try to use the GnuPG-Agent. Please note that this agent is still under
 development.  With this option, GnuPG first tries to connect to the
-agent before it asks for a passphrase.
+agent before it asks for a passphrase.  --no-use-agent disables this
+option.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2482,17 +2484,19 @@ cannot be read by the intended recipient.
 For example, as of this writing, no version of official PGP supports
 the BLOWFISH cipher algorithm.  If you use it, no PGP user will be
 able to decrypt your message.  The same thing applies to the ZLIB
-compression algorithm.  By default, GnuPG will do the right thing and
-create messages that are usable by any OpenPGP program.  Only override
-this safe default if you know what you are doing.
+compression algorithm.  By default, GnuPG uses the OpenPGP preferences
+system that will always do the right thing and create messages that
+are usable by all recipients, regardless of which OpenPGP program they
+use.  Only override this safe default if you know what you are doing.
 </para>
 
 <para>
-If you absolutely must override the safe default, you are far better
-off using the --pgp2, --pgp6, or --pgp7 options.  These options are
-safe as they do not force any particular algorithms in violation of
-OpenPGP, but rather reduce the available algorithms to a "PGP-safe"
-list.
+If you absolutely must override the safe default, or if the
+preferences on a given key are invalid for some reason, you are far
+better off using the --pgp2, --pgp6, --pgp7, or --pgp8 options.  These
+options are safe as they do not force any particular algorithms in
+violation of OpenPGP, but rather reduce the available algorithms to a
+"PGP-safe" list.
 </para>
 
 </refsect1>
