@@ -78,7 +78,7 @@ case "$use_static_rnd" in
 esac
 
 AC_ARG_WITH(egd-socket,
-    [  --with-egd-socket=NAME  Use NAME for the EGD socket)],
+    [  --with-egd-socket=NAME  use NAME for the EGD socket],
             egd_socket_name="$withval", egd_socket_name="" )
 AC_DEFINE_UNQUOTED(EGD_SOCKET_NAME, "$egd_socket_name",
                    [Define if you don't want the default EGD socket name.
@@ -393,15 +393,27 @@ fi
 AC_SUBST(GPGKEYS_LDAP)
 AC_SUBST(LDAPLIBS)
 
+dnl This isn't necessarily sendmail itself, but anything that gives a
+dnl sendmail-ish interface to the outside world.  That includes qmail,
+dnl postfix, etc.  Basically, anything that can handle "sendmail -t".
+
 if test "$try_mailto" = yes ; then
-  AC_PATH_PROG(SENDMAIL,sendmail,,$PATH:/usr/sbin:/usr/libexec:/usr/lib)
+  AC_ARG_WITH(mailprog,[  --with-mailprog=NAME    use "NAME -t" for mail transport],,with_mailprog=yes)
 
-  if test "$ac_cv_path_SENDMAIL" ; then
-    GPGKEYS_MAILTO="gpgkeys_mailto"
+  if test "$with_mailprog" = yes ; then
+    AC_PATH_PROG(SENDMAIL,sendmail,,$PATH:/usr/sbin:/usr/libexec:/usr/lib)
+    if test "$ac_cv_path_SENDMAIL" ; then
+      GPGKEYS_MAILTO="gpgkeys_mailto"
     fi
+  elif test "$with_mailprog" != no ; then
+    AC_MSG_CHECKING([for a mail transport program])
+    AC_SUBST(SENDMAIL,$with_mailprog)
+    AC_MSG_RESULT($with_mailprog)
+    GPGKEYS_MAILTO="gpgkeys_mailto"
   fi
-AC_SUBST(GPGKEYS_MAILTO)
+fi
 
+AC_SUBST(GPGKEYS_MAILTO)
 AC_SUBST(GPGKEYS_HKP)
 
 case "${target}" in

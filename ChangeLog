@@ -1,3 +1,9 @@
+2002-07-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Add --with-mailprog to override the use of
+	sendmail with another MTA.  We can use anything that follows the
+	"$MAILPROG -t" convention.
+
 2002-07-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: --enable-exec-path should be a 'with'.  Fix 'no'
