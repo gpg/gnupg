@@ -1,5 +1,8 @@
 2004-11-24  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, export.c (parse_export_options, do_export_stream):
+	Add "export-minimal" option to disregard any sigs except selfsigs.
+
 	* trustdb.c (uid_trust_string_fixed): Use a string that can be
 	atoi-ed, but also has a comment for the translator.
 

@@ -241,7 +241,9 @@ struct {
 #define PGP7    (opt.compliance==CO_PGP7)
 #define PGP8    (opt.compliance==CO_PGP8)
 
-/* Various option flags */
+/* Various option flags.  Note that there should be no common string
+   names between the IMPORT_ and EXPORT_ flags as they can be mixed in
+   the keyserver-options option. */
 
 #define IMPORT_ALLOW_LOCAL_SIGS          (1<<0)
 #define IMPORT_REPAIR_PKS_SUBKEY_BUG     (1<<1)
@@ -252,6 +254,7 @@ struct {
 #define EXPORT_INCLUDE_LOCAL_SIGS        (1<<0)
 #define EXPORT_INCLUDE_ATTRIBUTES        (1<<1)
 #define EXPORT_INCLUDE_SENSITIVE_REVKEYS (1<<2)
+#define EXPORT_MINIMAL                   (1<<3)
 
 #define LIST_SHOW_PHOTOS                 (1<<0)
 #define LIST_SHOW_POLICY_URLS            (1<<1)

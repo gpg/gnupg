@@ -48,6 +48,7 @@ parse_export_options(char *str,unsigned int *options,int noisy)
       {"include-local-sigs",EXPORT_INCLUDE_LOCAL_SIGS,NULL},
       {"include-attributes",EXPORT_INCLUDE_ATTRIBUTES,NULL},
       {"include-sensitive-revkeys",EXPORT_INCLUDE_SENSITIVE_REVKEYS,NULL},
+      {"export-minimal",EXPORT_MINIMAL,NULL},
       {NULL,0,NULL}
       /* add tags for include revoked and disabled? */
     };
@@ -140,6 +141,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
     KEYDB_SEARCH_DESC *desc = NULL;
     KEYDB_HANDLE kdbhd;
     STRLIST sl;
+    u32 pk_keyid[2];
 
     *any = 0;
     init_packet( &pkt );
@@ -193,8 +195,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 	    goto leave;
 	}
 
-	node=find_kbnode( keyblock, PKT_SECRET_KEY );
-	if(node)
+	if((node=find_kbnode(keyblock,PKT_SECRET_KEY)))
 	  {
 	    PKT_secret_key *sk=node->pkt->pkt.secret_key;
 
@@ -216,6 +217,9 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 		continue;
 	      }
 	  }
+	else if((options&EXPORT_MINIMAL)
+		&& (node=find_kbnode(keyblock,PKT_PUBLIC_KEY)))
+	  keyid_from_pk(node->pkt->pkt.public_key,pk_keyid);
 
 	/* and write it */
 	for( kbctx=NULL; (node = walk_kbnode( keyblock, &kbctx, 0 )); ) {
@@ -301,28 +305,40 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 		  continue;
 	      }
 
-	    if( node->pkt->pkttype == PKT_SIGNATURE ) {
-	      /* do not export packets which are marked as not exportable */
-	      if( !(options&EXPORT_INCLUDE_LOCAL_SIGS) &&
-		  !node->pkt->pkt.signature->flags.exportable )
-		continue; /* not exportable */
-
-	      /* Do not export packets with a "sensitive" revocation
-                 key unless the user wants us to.  Note that we do
-                 export these when issuing the actual revocation (see
-                 revoke.c). */
-	      if( !(options&EXPORT_INCLUDE_SENSITIVE_REVKEYS) &&
-		  node->pkt->pkt.signature->revkey ) {
-		int i;
-
-		for(i=0;i<node->pkt->pkt.signature->numrevkeys;i++)
-		  if(node->pkt->pkt.signature->revkey[i]->class & 0x40)
-		    break;
-
-		if(i<node->pkt->pkt.signature->numrevkeys)
+	    if( node->pkt->pkttype == PKT_SIGNATURE )
+	      {
+		/* If we have minimal-export turned on, do not include
+		   any signature that isn't a selfsig.  Note that this
+		   only applies to uid sigs (0x10, 0x11, 0x12, and
+		   0x13).  A designated revocation is not stripped. */
+		if((options&EXPORT_MINIMAL)
+		   && IS_UID_SIG(node->pkt->pkt.signature)
+		   && (node->pkt->pkt.signature->keyid[0]!=pk_keyid[0]
+		       || node->pkt->pkt.signature->keyid[1]!=pk_keyid[1]))
 		  continue;
+
+		/* do not export packets which are marked as not exportable */
+		if(!(options&EXPORT_INCLUDE_LOCAL_SIGS)
+		   && !node->pkt->pkt.signature->flags.exportable)
+		  continue; /* not exportable */
+
+		/* Do not export packets with a "sensitive" revocation
+		   key unless the user wants us to.  Note that we do
+		   export these when issuing the actual revocation
+		   (see revoke.c). */
+		if(!(options&EXPORT_INCLUDE_SENSITIVE_REVKEYS)
+		   && node->pkt->pkt.signature->revkey)
+		  {
+		    int i;
+
+		    for(i=0;i<node->pkt->pkt.signature->numrevkeys;i++)
+		      if(node->pkt->pkt.signature->revkey[i]->class & 0x40)
+			break;
+
+		    if(i<node->pkt->pkt.signature->numrevkeys)
+		      continue;
+		  }
 	      }
-	    }
 
 	    /* Don't export attribs? */
 	    if( !(options&EXPORT_INCLUDE_ATTRIBUTES) &&
