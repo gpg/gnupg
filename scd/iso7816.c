@@ -85,6 +85,12 @@ map_sw (int sw)
     case SW_HOST_NOT_SUPPORTED: ec = GPG_ERR_NOT_SUPPORTED; break;
     case SW_HOST_LOCKING_FAILED: ec = GPG_ERR_BUG; break;
     case SW_HOST_BUSY:           ec = GPG_ERR_EBUSY; break;
+    case SW_HOST_NO_CARD:        ec = GPG_ERR_CARD_NOT_PRESENT; break;
+    case SW_HOST_CARD_INACTIVE:  ec = GPG_ERR_CARD_RESET; break;
+    case SW_HOST_CARD_IO_ERROR:  ec = GPG_ERR_EIO; break;
+    case SW_HOST_GENERAL_ERROR:  ec = GPG_ERR_GENERAL; break;
+    case SW_HOST_NO_READER:      ec = GPG_ERR_ENODEV; break;
+
     default:
       if ((sw & 0x010000))
         ec = GPG_ERR_GENERAL; /* Should not happen. */

@@ -33,6 +33,12 @@
 # include <opensc/opensc.h>
 #endif
 
+/* If requested include the definitions for the remote APDU protocol
+   code. */
+#ifdef USE_G10CODE_RAPDU
+#include "rapdu.h"
+#endif /*USE_G10CODE_RAPDU*/
+
 #if defined(GNUPG_SCD_MAIN_HEADER)
 #include GNUPG_SCD_MAIN_HEADER
 #elif GNUPG_MAJOR_VERSION == 1
@@ -59,8 +65,6 @@
 
 
 #define MAX_READER 4 /* Number of readers we support concurrently. */
-#define CARD_CONNECT_TIMEOUT 1 /* Number of seconds to wait for
-                                  insertion of the card (1 = don't wait). */
 
 
 #ifdef _WIN32
@@ -81,11 +85,18 @@
 struct reader_table_s {
   int used;            /* True if slot is used. */
   unsigned short port; /* Port number:  0 = unused, 1 - dev/tty */
-  int is_ccid;         /* Uses the internal CCID driver. */
+
+  /* Function pointers intialized to the various backends.  */
+  int (*close_reader)(int);
+  int (*reset_reader)(int);
+  int (*get_status_reader)(int, unsigned int *);
+  int (*send_apdu_reader)(int,unsigned char *,size_t,
+                          unsigned char *, size_t *);
+  void (*dump_status_reader)(int);
+
   struct {
     ccid_driver_t handle;
   } ccid;
-  int is_ctapi;        /* This is a ctAPI driver. */
   struct {
     unsigned long context;
     unsigned long card;
@@ -97,15 +108,21 @@ struct reader_table_s {
 #endif /*NEED_PCSC_WRAPPER*/
   } pcsc;
 #ifdef HAVE_OPENSC
-  int is_osc;          /* We are using the OpenSC driver layer. */
   struct {
     struct sc_context *ctx;
     struct sc_card *scard;
   } osc;
 #endif /*HAVE_OPENSC*/
+#ifdef USE_G10CODE_RAPDU
+  struct {
+    rapdu_t handle;
+  } rapdu;
+#endif /*USE_G10CODE_RAPDU*/
   int status;
   unsigned char atr[33];
-  size_t atrlen;
+  size_t atrlen;           /* A zero length indicates that the ATR has
+                              not yet been read; i.e. the card is not
+                              ready for use. */
   unsigned int change_counter;
 #ifdef USE_GNU_PTH
   int lock_initialized;
@@ -222,12 +239,13 @@ new_reader_slot (void)
       reader_table[reader].lock_initialized = 1;
     }
 #endif /*USE_GNU_PTH*/
+  reader_table[reader].close_reader = NULL;
+  reader_table[reader].reset_reader = NULL;
+  reader_table[reader].get_status_reader = NULL;
+  reader_table[reader].send_apdu_reader = NULL;
+  reader_table[reader].dump_status_reader = NULL;
+
   reader_table[reader].used = 1;
-  reader_table[reader].is_ccid = 0;
-  reader_table[reader].is_ctapi = 0;
-#ifdef HAVE_OPENSC
-  reader_table[reader].is_osc = 0;
-#endif
 #ifdef NEED_PCSC_WRAPPER
   reader_table[reader].pcsc.req_fd = -1;
   reader_table[reader].pcsc.rsp_fd = -1;
@@ -238,34 +256,72 @@ new_reader_slot (void)
 
 
 static void
-dump_reader_status (int reader)
+dump_reader_status (int slot)
 {
-  if (reader_table[reader].is_ccid)
-    log_info ("reader slot %d: using ccid driver\n", reader);
-  else if (reader_table[reader].is_ctapi)
-    {
-      log_info ("reader slot %d: %s\n", reader,
-                reader_table[reader].status == 1? "Processor ICC present" :
-                reader_table[reader].status == 0? "Memory ICC present" :
-                "ICC not present" );
-    }
-  else
-    {
-      log_info ("reader slot %d: active protocol:", reader);
-      if ((reader_table[reader].pcsc.protocol & PCSC_PROTOCOL_T0))
-        log_printf (" T0");
-      else if ((reader_table[reader].pcsc.protocol & PCSC_PROTOCOL_T1))
-        log_printf (" T1");
-      else if ((reader_table[reader].pcsc.protocol & PCSC_PROTOCOL_RAW))
-        log_printf (" raw");
-      log_printf ("\n");
-    }
+  if (!opt.verbose)
+    return;
 
-  if (reader_table[reader].status != -1)
+  if (reader_table[slot].dump_status_reader)
+    reader_table[slot].dump_status_reader (slot);
+
+  if (reader_table[slot].status != -1
+      && reader_table[slot].atrlen)
     {
-      log_info ("reader %d: ATR=", reader);
-      log_printhex ("", reader_table[reader].atr,
-                    reader_table[reader].atrlen);
+      log_info ("slot %d: ATR=", slot);
+      log_printhex ("", reader_table[slot].atr, reader_table[slot].atrlen);
+    }
+}
+
+
+
+static const char *
+host_sw_string (long err)
+{
+  switch (err)
+    {
+    case 0: return "okay";
+    case SW_HOST_OUT_OF_CORE: return "out of core";
+    case SW_HOST_INV_VALUE: return "invalid value";
+    case SW_HOST_NO_DRIVER: return "no driver";
+    case SW_HOST_NOT_SUPPORTED: return "not supported";
+    case SW_HOST_LOCKING_FAILED: return "locking failed";
+    case SW_HOST_BUSY: return "busy";
+    case SW_HOST_NO_CARD: return "no card";
+    case SW_HOST_CARD_INACTIVE: return "card inactive";
+    case SW_HOST_CARD_IO_ERROR: return "card I/O error";
+    case SW_HOST_GENERAL_ERROR: return "general error";
+    case SW_HOST_NO_READER: return "no reader";
+    default: return "unknown host status error";
+    }
+}
+
+
+const char *
+apdu_strerror (int rc)
+{
+  switch (rc)
+    {
+    case SW_EOF_REACHED    : return "eof reached";
+    case SW_EEPROM_FAILURE : return "eeprom failure";
+    case SW_WRONG_LENGTH   : return "wrong length";
+    case SW_CHV_WRONG      : return "CHV wrong";
+    case SW_CHV_BLOCKED    : return "CHV blocked";
+    case SW_USE_CONDITIONS : return "use conditions not satisfied";
+    case SW_BAD_PARAMETER  : return "bad parameter";
+    case SW_NOT_SUPPORTED  : return "not supported";
+    case SW_FILE_NOT_FOUND : return "file not found";
+    case SW_RECORD_NOT_FOUND:return "record not found";
+    case SW_REF_NOT_FOUND  : return "reference not found";
+    case SW_BAD_P0_P1      : return "bad P0 or P1";
+    case SW_INS_NOT_SUP    : return "instruction not supported";
+    case SW_CLA_NOT_SUP    : return "class not supported";
+    case SW_SUCCESS        : return "success";
+    default:
+      if ((rc & ~0x00ff) == SW_MORE_DATA)
+        return "more data available";
+      if ( (rc & 0x10000) )
+        return host_sw_string (rc);
+      return "unknown status error";
     }
 }
 
@@ -290,79 +346,134 @@ ct_error_string (long err)
     }
 }
 
-/* Wait for the card in READER and activate it.  Return -1 on error or
-   0 on success. */
-static int
-ct_activate_card (int reader)
+
+static void
+ct_dump_reader_status (int slot)
 {
-  int rc, count;
-
-  for (count = 0; count < CARD_CONNECT_TIMEOUT; count++)
-    {
-      unsigned char dad[1], sad[1], cmd[11], buf[256];
-      unsigned short buflen;
-
-      if (count)
-        ; /* FIXME: we should use a more reliable timer than sleep. */
-
-      /* Check whether card has been inserted. */
-      dad[0] = 1;     /* Destination address: CT. */    
-      sad[0] = 2;     /* Source address: Host. */
-
-      cmd[0] = 0x20;  /* Class byte. */
-      cmd[1] = 0x13;  /* Request status. */
-      cmd[2] = 0x00;  /* From kernel. */
-      cmd[3] = 0x80;  /* Return card's DO. */
-      cmd[4] = 0x00;
-
-      buflen = DIM(buf);
-
-      rc = CT_data (reader, dad, sad, 5, cmd, &buflen, buf);
-      if (rc || buflen < 2 || buf[buflen-2] != 0x90)
-        {
-          log_error ("ct_activate_card: can't get status of reader %d: %s\n",
-                     reader, ct_error_string (rc));
-          return -1;
-        }
-
-      /* Connected, now activate the card. */           
-      dad[0] = 1;    /* Destination address: CT. */    
-      sad[0] = 2;    /* Source address: Host. */
-
-      cmd[0] = 0x20;  /* Class byte. */
-      cmd[1] = 0x12;  /* Request ICC. */
-      cmd[2] = 0x01;  /* From first interface. */
-      cmd[3] = 0x01;  /* Return card's ATR. */
-      cmd[4] = 0x00;
-
-      buflen = DIM(buf);
-
-      rc = CT_data (reader, dad, sad, 5, cmd, &buflen, buf);
-      if (rc || buflen < 2 || buf[buflen-2] != 0x90)
-        {
-          log_error ("ct_activate_card(%d): activation failed: %s\n",
-                     reader, ct_error_string (rc));
-          if (!rc)
-            log_printhex ("  received data:", buf, buflen);
-          return -1;
-        }
-
-      /* Store the type and the ATR. */
-      if (buflen - 2 > DIM (reader_table[0].atr))
-        {
-          log_error ("ct_activate_card(%d): ATR too long\n", reader);
-          return -1;
-        }
-
-      reader_table[reader].status = buf[buflen - 1];
-      memcpy (reader_table[reader].atr, buf, buflen - 2);
-      reader_table[reader].atrlen = buflen - 2;
-      return 0;
-    }
- 
-  log_info ("ct_activate_card(%d): timeout waiting for card\n", reader);
-  return -1;
+  log_info ("reader slot %d: %s\n", slot,
+            reader_table[slot].status == 1? "Processor ICC present" :
+            reader_table[slot].status == 0? "Memory ICC present" :
+            "ICC not present" );
 }
+
+
+/* Wait for the card in SLOT and activate it.  Return a status word
+   error or 0 on success. */
+static int
+ct_activate_card (int slot)
+{
+  int rc;
+  unsigned char dad[1], sad[1], cmd[11], buf[256];
+  unsigned short buflen;
+  
+  /* Check whether card has been inserted. */
+  dad[0] = 1;     /* Destination address: CT. */    
+  sad[0] = 2;     /* Source address: Host. */
+
+  cmd[0] = 0x20;  /* Class byte. */
+  cmd[1] = 0x13;  /* Request status. */
+  cmd[2] = 0x00;  /* From kernel. */
+  cmd[3] = 0x80;  /* Return card's DO. */
+  cmd[4] = 0x00;
+
+  buflen = DIM(buf);
+
+  rc = CT_data (slot, dad, sad, 5, cmd, &buflen, buf);
+  if (rc || buflen < 2 || buf[buflen-2] != 0x90)
+    {
+      log_error ("ct_activate_card: can't get status of reader %d: %s\n",
+                 slot, ct_error_string (rc));
+      return SW_HOST_CARD_IO_ERROR;
+    }
+
+  /* Connected, now activate the card. */           
+  dad[0] = 1;    /* Destination address: CT. */    
+  sad[0] = 2;    /* Source address: Host. */
+
+  cmd[0] = 0x20;  /* Class byte. */
+  cmd[1] = 0x12;  /* Request ICC. */
+  cmd[2] = 0x01;  /* From first interface. */
+  cmd[3] = 0x01;  /* Return card's ATR. */
+  cmd[4] = 0x00;
+
+  buflen = DIM(buf);
+
+  rc = CT_data (slot, dad, sad, 5, cmd, &buflen, buf);
+  if (rc || buflen < 2 || buf[buflen-2] != 0x90)
+    {
+      log_error ("ct_activate_card(%d): activation failed: %s\n",
+                 slot, ct_error_string (rc));
+      if (!rc)
+        log_printhex ("  received data:", buf, buflen);
+      return SW_HOST_CARD_IO_ERROR;
+    }
+
+  /* Store the type and the ATR. */
+  if (buflen - 2 > DIM (reader_table[0].atr))
+    {
+      log_error ("ct_activate_card(%d): ATR too long\n", slot);
+      return SW_HOST_CARD_IO_ERROR;
+    }
+
+  reader_table[slot].status = buf[buflen - 1];
+  memcpy (reader_table[slot].atr, buf, buflen - 2);
+  reader_table[slot].atrlen = buflen - 2;
+  return 0;
+}
+
+
+static int
+close_ct_reader (int slot)
+{
+  CT_close (slot);
+  reader_table[slot].used = 0;
+  return 0;
+}
+
+static int
+reset_ct_reader (int slot)
+{
+  /* FIXME: Check is this is sufficient do do a reset. */
+  return ct_activate_card (slot);
+}
+
+
+static int
+ct_get_status (int slot, unsigned int *status)
+{
+  *status = 1|2|4;  /* FIXME */
+  return 0;
+
+  return SW_HOST_NOT_SUPPORTED;
+}
+
+/* Actually send the APDU of length APDULEN to SLOT and return a
+   maximum of *BUFLEN data in BUFFER, the actual retruned size will be
+   set to BUFLEN.  Returns: CT API error code. */
+static int
+ct_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
+              unsigned char *buffer, size_t *buflen)
+{
+  int rc;
+  unsigned char dad[1], sad[1];
+  unsigned short ctbuflen;
+  
+  /* If we don't have an ATR, we need to reset the reader first. */
+  if (!reader_table[slot].atrlen
+      && (rc = reset_ct_reader (slot)))
+    return rc;
+
+  dad[0] = 0;     /* Destination address: Card. */    
+  sad[0] = 2;     /* Source address: Host. */
+  ctbuflen = *buflen;
+  if (DBG_CARD_IO)
+    log_printhex ("  CT_data:", apdu, apdulen);
+  rc = CT_data (slot, dad, sad, apdulen, apdu, &ctbuflen, buffer);
+  *buflen = ctbuflen;
+
+  return rc? SW_HOST_CARD_IO_ERROR: 0;
+}
+
 
 
 /* Open a reader and return an internal handle for it.  PORT is a
@@ -392,63 +503,23 @@ open_ct_reader (int port)
       return -1;
     }
 
+  /* Only try to activate the card. */
   rc = ct_activate_card (reader);
   if (rc)
     {
-      reader_table[reader].used = 0;
-      return -1;
+      reader_table[reader].atrlen = 0;
+      rc = 0;
     }
 
-  reader_table[reader].is_ctapi = 1;
+  reader_table[reader].close_reader = close_ct_reader;
+  reader_table[reader].reset_reader = reset_ct_reader;
+  reader_table[reader].get_status_reader = ct_get_status;
+  reader_table[reader].send_apdu_reader = ct_send_apdu;
+  reader_table[reader].dump_status_reader = ct_dump_reader_status;
+
   dump_reader_status (reader);
   return reader;
 }
-
-static int
-close_ct_reader (int slot)
-{
-  CT_close (slot);
-  reader_table[slot].used = 0;
-  return 0;
-}
-
-static int
-reset_ct_reader (int slot)
-{
-  return SW_HOST_NOT_SUPPORTED;
-}
-
-
-static int
-ct_get_status (int slot, unsigned int *status)
-{
-  return SW_HOST_NOT_SUPPORTED;
-}
-
-/* Actually send the APDU of length APDULEN to SLOT and return a
-   maximum of *BUFLEN data in BUFFER, the actual retruned size will be
-   set to BUFLEN.  Returns: CT API error code. */
-static int
-ct_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
-              unsigned char *buffer, size_t *buflen)
-{
-  int rc;
-  unsigned char dad[1], sad[1];
-  unsigned short ctbuflen;
-  
-  dad[0] = 0;     /* Destination address: Card. */    
-  sad[0] = 2;     /* Source address: Host. */
-  ctbuflen = *buflen;
-  if (DBG_CARD_IO)
-    log_printhex ("  CT_data:", apdu, apdulen);
-  rc = CT_data (slot, dad, sad, apdulen, apdu, &ctbuflen, buffer);
-  *buflen = ctbuflen;
-
-  /* FIXME: map the errorcodes to GNUPG ones, so that they can be
-     shared between CTAPI and PCSC. */
-  return rc;
-}
-
 
 
 #ifdef NEED_PCSC_WRAPPER
@@ -567,6 +638,252 @@ pcsc_error_string (long err)
 /* 
        PC/SC Interface
  */
+
+static void
+dump_pcsc_reader_status (int slot)
+{
+  log_info ("reader slot %d: active protocol:", slot);
+  if ((reader_table[slot].pcsc.protocol & PCSC_PROTOCOL_T0))
+    log_printf (" T0");
+  else if ((reader_table[slot].pcsc.protocol & PCSC_PROTOCOL_T1))
+    log_printf (" T1");
+  else if ((reader_table[slot].pcsc.protocol & PCSC_PROTOCOL_RAW))
+    log_printf (" raw");
+  log_printf ("\n");
+}
+
+
+
+static int
+pcsc_get_status (int slot, unsigned int *status)
+{
+  *status = 1|2|4;  /* FIXME!!!! */
+  return 0;
+}
+
+static int
+reset_pcsc_reader (int slot)
+{
+  return SW_HOST_NOT_SUPPORTED;
+}
+
+
+/* Actually send the APDU of length APDULEN to SLOT and return a
+   maximum of *BUFLEN data in BUFFER, the actual returned size will be
+   set to BUFLEN.  Returns: CT API error code. */
+static int
+pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
+                unsigned char *buffer, size_t *buflen)
+{
+#ifdef NEED_PCSC_WRAPPER
+  long err;
+  reader_table_t slotp;
+  size_t len, full_len;
+  int i, n;
+  unsigned char msgbuf[9];
+
+  if (!reader_table[slot].atrlen
+      && (err = reset_pcsc_reader (slot)))
+    return err;
+
+  if (DBG_CARD_IO)
+    log_printhex ("  PCSC_data:", apdu, apdulen);
+
+  slotp = reader_table + slot;
+
+  if (slotp->pcsc.req_fd == -1 
+      || slotp->pcsc.rsp_fd == -1 
+      || slotp->pcsc.pid == (pid_t)(-1) )
+    {
+      log_error ("pcsc_send_apdu: pcsc-wrapper not running\n");
+      return SW_HOST_CARD_IO_ERROR;
+    }
+
+  msgbuf[0] = 0x03; /* TRANSMIT command. */
+  len = apdulen;
+  msgbuf[1] = (len >> 24);
+  msgbuf[2] = (len >> 16);
+  msgbuf[3] = (len >>  8);
+  msgbuf[4] = (len      );
+  if ( writen (slotp->pcsc.req_fd, msgbuf, 5)
+       || writen (slotp->pcsc.req_fd, apdu, len))
+    {
+      log_error ("error sending PC/SC TRANSMIT request: %s\n",
+                 strerror (errno));
+      goto command_failed;
+    }
+
+  /* Read the response. */
+  if ((i=readn (slotp->pcsc.rsp_fd, msgbuf, 9, &len)) || len != 9)
+    {
+      log_error ("error receiving PC/SC TRANSMIT response: %s\n",
+                 i? strerror (errno) : "premature EOF");
+      goto command_failed;
+    }
+  len = (msgbuf[1] << 24) | (msgbuf[2] << 16) | (msgbuf[3] << 8 ) | msgbuf[4];
+  if (msgbuf[0] != 0x81 || len < 4)
+    {
+      log_error ("invalid response header from PC/SC received\n");
+      goto command_failed;
+    }
+  len -= 4; /* Already read the error code. */
+  err = (msgbuf[5] << 24) | (msgbuf[6] << 16) | (msgbuf[7] << 8 ) | msgbuf[8];
+  if (err)
+    {
+      log_error ("pcsc_transmit failed: %s (0x%lx)\n",
+                 pcsc_error_string (err), err);
+      return SW_HOST_CARD_IO_ERROR;
+    }
+
+   full_len = len;
+   
+   n = *buflen < len ? *buflen : len;
+   if ((i=readn (slotp->pcsc.rsp_fd, buffer, n, &len)) || len != n)
+     {
+       log_error ("error receiving PC/SC TRANSMIT response: %s\n",
+                  i? strerror (errno) : "premature EOF");
+       goto command_failed;
+     }
+   *buflen = n;
+
+   full_len -= len;
+   if (full_len)
+     {
+       log_error ("pcsc_send_apdu: provided buffer too short - truncated\n");
+       err = SW_HOST_INV_VALUE;
+     }
+   /* We need to read any rest of the response, to keep the
+      protocol runnng. */
+   while (full_len)
+     {
+       unsigned char dummybuf[128];
+
+       n = full_len < DIM (dummybuf) ? full_len : DIM (dummybuf);
+       if ((i=readn (slotp->pcsc.rsp_fd, dummybuf, n, &len)) || len != n)
+         {
+           log_error ("error receiving PC/SC TRANSMIT response: %s\n",
+                      i? strerror (errno) : "premature EOF");
+           goto command_failed;
+         }
+       full_len -= n;
+     }
+
+   return err;
+
+ command_failed:
+  close (slotp->pcsc.req_fd);
+  close (slotp->pcsc.rsp_fd);
+  slotp->pcsc.req_fd = -1;
+  slotp->pcsc.rsp_fd = -1;
+  kill (slotp->pcsc.pid, SIGTERM);
+  slotp->pcsc.pid = (pid_t)(-1);
+  slotp->used = 0;
+  return -1;
+
+#else /*!NEED_PCSC_WRAPPER*/
+
+  long err;
+  struct pcsc_io_request_s send_pci;
+  unsigned long recv_len;
+  
+  if (!reader_table[slot].atrlen
+      && (err = reset_pcsc_reader (slot)))
+    return err;
+
+  if (DBG_CARD_IO)
+    log_printhex ("  PCSC_data:", apdu, apdulen);
+
+  if ((reader_table[slot].pcsc.protocol & PCSC_PROTOCOL_T1))
+      send_pci.protocol = PCSC_PROTOCOL_T1;
+  else
+      send_pci.protocol = PCSC_PROTOCOL_T0;
+  send_pci.pci_len = sizeof send_pci;
+  recv_len = *buflen;
+  err = pcsc_transmit (reader_table[slot].pcsc.card,
+                       &send_pci, apdu, apdulen,
+                       NULL, buffer, &recv_len);
+  *buflen = recv_len;
+  if (err)
+    log_error ("pcsc_transmit failed: %s (0x%lx)\n",
+               pcsc_error_string (err), err);
+  
+  return err? SW_HOST_CARD_IO_ERROR:0; 
+#endif /*!NEED_PCSC_WRAPPER*/
+}
+
+
+static int
+close_pcsc_reader (int slot)
+{
+#ifdef NEED_PCSC_WRAPPER
+  long err;
+  reader_table_t slotp;
+  size_t len;
+  int i;
+  unsigned char msgbuf[9];
+
+  slotp = reader_table + slot;
+
+  if (slotp->pcsc.req_fd == -1 
+      || slotp->pcsc.rsp_fd == -1 
+      || slotp->pcsc.pid == (pid_t)(-1) )
+    {
+      log_error ("close_pcsc_reader: pcsc-wrapper not running\n");
+      return 0;
+    }
+
+  msgbuf[0] = 0x02; /* CLOSE command. */
+  len = 0;
+  msgbuf[1] = (len >> 24);
+  msgbuf[2] = (len >> 16);
+  msgbuf[3] = (len >>  8);
+  msgbuf[4] = (len      );
+  if ( writen (slotp->pcsc.req_fd, msgbuf, 5) )
+    {
+      log_error ("error sending PC/SC CLOSE request: %s\n",
+                 strerror (errno));
+      goto command_failed;
+    }
+
+  /* Read the response. */
+  if ((i=readn (slotp->pcsc.rsp_fd, msgbuf, 9, &len)) || len != 9)
+    {
+      log_error ("error receiving PC/SC CLOSE response: %s\n",
+                 i? strerror (errno) : "premature EOF");
+      goto command_failed;
+    }
+  len = (msgbuf[1] << 24) | (msgbuf[2] << 16) | (msgbuf[3] << 8 ) | msgbuf[4];
+  if (msgbuf[0] != 0x81 || len < 4)
+    {
+      log_error ("invalid response header from PC/SC received\n");
+      goto command_failed;
+    }
+  len -= 4; /* Already read the error code. */
+  err = (msgbuf[5] << 24) | (msgbuf[6] << 16) | (msgbuf[7] << 8 ) | msgbuf[8];
+  if (err)
+    log_error ("pcsc_close failed: %s (0x%lx)\n",
+               pcsc_error_string (err), err);
+  
+  /* We will the wrapper in any case - errors are merely
+     informational. */
+  
+ command_failed:
+  close (slotp->pcsc.req_fd);
+  close (slotp->pcsc.rsp_fd);
+  slotp->pcsc.req_fd = -1;
+  slotp->pcsc.rsp_fd = -1;
+  kill (slotp->pcsc.pid, SIGTERM);
+  slotp->pcsc.pid = (pid_t)(-1);
+  slotp->used = 0;
+  return 0;
+
+#else /*!NEED_PCSC_WRAPPER*/
+
+  pcsc_release_context (reader_table[slot].pcsc.context);
+  reader_table[slot].used = 0;
+  return 0;
+#endif /*!NEED_PCSC_WRAPPER*/
+}
 
 static int
 open_pcsc_reader (const char *portstr)
@@ -724,6 +1041,12 @@ open_pcsc_reader (const char *portstr)
     }
   slotp->atrlen = len;
 
+  reader_table[slot].close_reader = close_pcsc_reader;
+  reader_table[slot].reset_reader = reset_pcsc_reader;
+  reader_table[slot].get_status_reader = pcsc_get_status;
+  reader_table[slot].send_apdu_reader = pcsc_send_apdu;
+  reader_table[slot].dump_status_reader = dump_pcsc_reader_status;
+
   dump_reader_status (slot); 
   return slot;
 
@@ -834,6 +1157,13 @@ open_pcsc_reader (const char *portstr)
   if (atrlen >= DIM (reader_table[0].atr))
     log_bug ("ATR returned by pcsc_status is too large\n");
   reader_table[slot].atrlen = atrlen;
+
+  reader_table[slot].close_reader = close_pcsc_reader;
+  reader_table[slot].reset_reader = reset_pcsc_reader;
+  reader_table[slot].get_status_reader = pcsc_get_status;
+  reader_table[slot].send_apdu_reader = pcsc_send_apdu;
+  reader_table[slot].dump_status_reader = dump_pcsc_reader_status;
+
 /*   log_debug ("state    from pcsc_status: 0x%lx\n", card_state); */
 /*   log_debug ("protocol from pcsc_status: 0x%lx\n", card_protocol); */
 
@@ -843,229 +1173,6 @@ open_pcsc_reader (const char *portstr)
 }
 
 
-static int
-pcsc_get_status (int slot, unsigned int *status)
-{
-  return SW_HOST_NOT_SUPPORTED;
-}
-
-/* Actually send the APDU of length APDULEN to SLOT and return a
-   maximum of *BUFLEN data in BUFFER, the actual returned size will be
-   set to BUFLEN.  Returns: CT API error code. */
-static int
-pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
-                unsigned char *buffer, size_t *buflen)
-{
-#ifdef NEED_PCSC_WRAPPER
-  long err;
-  reader_table_t slotp;
-  size_t len, full_len;
-  int i, n;
-  unsigned char msgbuf[9];
-
-  if (DBG_CARD_IO)
-    log_printhex ("  PCSC_data:", apdu, apdulen);
-
-  slotp = reader_table + slot;
-
-  if (slotp->pcsc.req_fd == -1 
-      || slotp->pcsc.rsp_fd == -1 
-      || slotp->pcsc.pid == (pid_t)(-1) )
-    {
-      log_error ("pcsc_send_apdu: pcsc-wrapper not running\n");
-      return -1;
-    }
-
-  msgbuf[0] = 0x03; /* TRANSMIT command. */
-  len = apdulen;
-  msgbuf[1] = (len >> 24);
-  msgbuf[2] = (len >> 16);
-  msgbuf[3] = (len >>  8);
-  msgbuf[4] = (len      );
-  if ( writen (slotp->pcsc.req_fd, msgbuf, 5)
-       || writen (slotp->pcsc.req_fd, apdu, len))
-    {
-      log_error ("error sending PC/SC TRANSMIT request: %s\n",
-                 strerror (errno));
-      goto command_failed;
-    }
-
-  /* Read the response. */
-  if ((i=readn (slotp->pcsc.rsp_fd, msgbuf, 9, &len)) || len != 9)
-    {
-      log_error ("error receiving PC/SC TRANSMIT response: %s\n",
-                 i? strerror (errno) : "premature EOF");
-      goto command_failed;
-    }
-  len = (msgbuf[1] << 24) | (msgbuf[2] << 16) | (msgbuf[3] << 8 ) | msgbuf[4];
-  if (msgbuf[0] != 0x81 || len < 4)
-    {
-      log_error ("invalid response header from PC/SC received\n");
-      goto command_failed;
-    }
-  len -= 4; /* Already read the error code. */
-  err = (msgbuf[5] << 24) | (msgbuf[6] << 16) | (msgbuf[7] << 8 ) | msgbuf[8];
-  if (err)
-    {
-      log_error ("pcsc_transmit failed: %s (0x%lx)\n",
-                 pcsc_error_string (err), err);
-      return -1;
-    }
-
-   full_len = len;
-   
-   n = *buflen < len ? *buflen : len;
-   if ((i=readn (slotp->pcsc.rsp_fd, buffer, n, &len)) || len != n)
-     {
-       log_error ("error receiving PC/SC TRANSMIT response: %s\n",
-                  i? strerror (errno) : "premature EOF");
-       goto command_failed;
-     }
-   *buflen = n;
-
-   full_len -= len;
-   if (full_len)
-     {
-       log_error ("pcsc_send_apdu: provided buffer too short - truncated\n");
-       err = -1; 
-     }
-   /* We need to read any rest of the response, to keep the
-      protocol runnng. */
-   while (full_len)
-     {
-       unsigned char dummybuf[128];
-
-       n = full_len < DIM (dummybuf) ? full_len : DIM (dummybuf);
-       if ((i=readn (slotp->pcsc.rsp_fd, dummybuf, n, &len)) || len != n)
-         {
-           log_error ("error receiving PC/SC TRANSMIT response: %s\n",
-                      i? strerror (errno) : "premature EOF");
-           goto command_failed;
-         }
-       full_len -= n;
-     }
-
-   return err;
-
- command_failed:
-  close (slotp->pcsc.req_fd);
-  close (slotp->pcsc.rsp_fd);
-  slotp->pcsc.req_fd = -1;
-  slotp->pcsc.rsp_fd = -1;
-  kill (slotp->pcsc.pid, SIGTERM);
-  slotp->pcsc.pid = (pid_t)(-1);
-  slotp->used = 0;
-  return -1;
-
-#else /*!NEED_PCSC_WRAPPER*/
-
-  long err;
-  struct pcsc_io_request_s send_pci;
-  unsigned long recv_len;
-  
-  if (DBG_CARD_IO)
-    log_printhex ("  PCSC_data:", apdu, apdulen);
-
-  if ((reader_table[slot].pcsc.protocol & PCSC_PROTOCOL_T1))
-      send_pci.protocol = PCSC_PROTOCOL_T1;
-  else
-      send_pci.protocol = PCSC_PROTOCOL_T0;
-  send_pci.pci_len = sizeof send_pci;
-  recv_len = *buflen;
-  err = pcsc_transmit (reader_table[slot].pcsc.card,
-                       &send_pci, apdu, apdulen,
-                       NULL, buffer, &recv_len);
-  *buflen = recv_len;
-  if (err)
-    log_error ("pcsc_transmit failed: %s (0x%lx)\n",
-               pcsc_error_string (err), err);
-  
-  return err? -1:0; /* FIXME: Return appropriate error code. */
-#endif /*!NEED_PCSC_WRAPPER*/
-}
-
-
-static int
-close_pcsc_reader (int slot)
-{
-#ifdef NEED_PCSC_WRAPPER
-  long err;
-  reader_table_t slotp;
-  size_t len;
-  int i;
-  unsigned char msgbuf[9];
-
-  slotp = reader_table + slot;
-
-  if (slotp->pcsc.req_fd == -1 
-      || slotp->pcsc.rsp_fd == -1 
-      || slotp->pcsc.pid == (pid_t)(-1) )
-    {
-      log_error ("close_pcsc_reader: pcsc-wrapper not running\n");
-      return 0;
-    }
-
-  msgbuf[0] = 0x02; /* CLOSE command. */
-  len = 0;
-  msgbuf[1] = (len >> 24);
-  msgbuf[2] = (len >> 16);
-  msgbuf[3] = (len >>  8);
-  msgbuf[4] = (len      );
-  if ( writen (slotp->pcsc.req_fd, msgbuf, 5) )
-    {
-      log_error ("error sending PC/SC CLOSE request: %s\n",
-                 strerror (errno));
-      goto command_failed;
-    }
-
-  /* Read the response. */
-  if ((i=readn (slotp->pcsc.rsp_fd, msgbuf, 9, &len)) || len != 9)
-    {
-      log_error ("error receiving PC/SC CLOSE response: %s\n",
-                 i? strerror (errno) : "premature EOF");
-      goto command_failed;
-    }
-  len = (msgbuf[1] << 24) | (msgbuf[2] << 16) | (msgbuf[3] << 8 ) | msgbuf[4];
-  if (msgbuf[0] != 0x81 || len < 4)
-    {
-      log_error ("invalid response header from PC/SC received\n");
-      goto command_failed;
-    }
-  len -= 4; /* Already read the error code. */
-  err = (msgbuf[5] << 24) | (msgbuf[6] << 16) | (msgbuf[7] << 8 ) | msgbuf[8];
-  if (err)
-    log_error ("pcsc_close failed: %s (0x%lx)\n",
-               pcsc_error_string (err), err);
-  
-  /* We will the wrapper in any case - errors are merely
-     informational. */
-  
- command_failed:
-  close (slotp->pcsc.req_fd);
-  close (slotp->pcsc.rsp_fd);
-  slotp->pcsc.req_fd = -1;
-  slotp->pcsc.rsp_fd = -1;
-  kill (slotp->pcsc.pid, SIGTERM);
-  slotp->pcsc.pid = (pid_t)(-1);
-  slotp->used = 0;
-  return 0;
-
-#else /*!NEED_PCSC_WRAPPER*/
-
-  pcsc_release_context (reader_table[slot].pcsc.context);
-  reader_table[slot].used = 0;
-  return 0;
-#endif /*!NEED_PCSC_WRAPPER*/
-}
-
-static int
-reset_pcsc_reader (int slot)
-{
-  return SW_HOST_NOT_SUPPORTED;
-}
-
-
-
 
 
 #ifdef HAVE_LIBUSB
@@ -1073,46 +1180,11 @@ reset_pcsc_reader (int slot)
      Internal CCID driver interface.
  */
 
-static const char *
-get_ccid_error_string (long err)
+
+static void
+dump_ccid_reader_status (int slot)
 {
-  if (!err)
-    return "okay";
-  else
-    return "unknown CCID error";
-}
-
-static int
-open_ccid_reader (void)
-{
-  int err;
-  int slot;
-  reader_table_t slotp;
-
-  slot = new_reader_slot ();
-  if (slot == -1)
-    return -1;
-  slotp = reader_table + slot;
-
-  err = ccid_open_reader (&slotp->ccid.handle, 0);
-  if (err)
-    {
-      slotp->used = 0;
-      return -1;
-    }
-
-  err = ccid_get_atr (slotp->ccid.handle,
-                      slotp->atr, sizeof slotp->atr, &slotp->atrlen);
-  if (err)
-    {
-      slotp->used = 0;
-      return -1;
-    }
-
-  slotp->is_ccid = 1;
-
-  dump_reader_status (slot); 
-  return slot;
+  log_info ("reader slot %d: using ccid driver\n", slot);
 }
 
 static int
@@ -1134,7 +1206,7 @@ reset_ccid_reader (int slot)
 
   err = ccid_get_atr (slotp->ccid.handle, atr, sizeof atr, &atrlen);
   if (err)
-    return -1;
+    return err;
   /* If the reset was successful, update the ATR. */
   assert (sizeof slotp->atr >= sizeof atr);
   slotp->atrlen = atrlen;
@@ -1175,6 +1247,11 @@ send_apdu_ccid (int slot, unsigned char *apdu, size_t apdulen,
   long err;
   size_t maxbuflen;
 
+  /* If we don't have an ATR, we need to reset the reader first. */
+  if (!reader_table[slot].atrlen
+      && (err = reset_ccid_reader (slot)))
+    return err;
+
   if (DBG_CARD_IO)
     log_printhex ("  APDU_data:", apdu, apdulen);
 
@@ -1186,8 +1263,48 @@ send_apdu_ccid (int slot, unsigned char *apdu, size_t apdulen,
     log_error ("ccid_transceive failed: (0x%lx)\n",
                err);
   
-  return err? -1:0; /* FIXME: Return appropriate error code. */
+  return err; 
 }
+
+/* Open the reader and try to read an ATR.  */
+static int
+open_ccid_reader (void)
+{
+  int err;
+  int slot;
+  reader_table_t slotp;
+
+  slot = new_reader_slot ();
+  if (slot == -1)
+    return -1;
+  slotp = reader_table + slot;
+
+  err = ccid_open_reader (&slotp->ccid.handle, 0);
+  if (err)
+    {
+      slotp->used = 0;
+      return -1;
+    }
+
+  err = ccid_get_atr (slotp->ccid.handle,
+                      slotp->atr, sizeof slotp->atr, &slotp->atrlen);
+  if (err)
+    {
+      slotp->atrlen = 0;
+      err = 0;
+    }
+
+  reader_table[slot].close_reader = close_ccid_reader;
+  reader_table[slot].reset_reader = reset_ccid_reader;
+  reader_table[slot].get_status_reader = get_status_ccid;
+  reader_table[slot].send_apdu_reader = send_apdu_ccid;
+  reader_table[slot].dump_status_reader = dump_ccid_reader_status;
+
+  dump_reader_status (slot); 
+  return slot;
+}
+
+
 
 #endif /* HAVE_LIBUSB */
 
@@ -1201,6 +1318,117 @@ send_apdu_ccid (int slot, unsigned char *apdu, size_t apdulen,
      because we can't mix OpenSC and native (i.e. ctAPI or PC/SC)
      access to a card for resource conflict reasons.
  */
+
+
+static int
+close_osc_reader (int slot)
+{
+  /* FIXME: Implement. */
+  reader_table[slot].used = 0;
+  return 0;
+}
+
+static int
+reset_osc_reader (int slot)
+{
+  return SW_HOST_NOT_SUPPORTED;
+}
+
+
+static int
+osc_get_status (int slot, unsigned int *status)
+{
+  return SW_HOST_NOT_SUPPORTED;
+}
+
+
+/* Actually send the APDU of length APDULEN to SLOT and return a
+   maximum of *BUFLEN data in BUFFER, the actual returned size will be
+   set to BUFLEN.  Returns: OpenSC error code. */
+static int
+osc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
+                unsigned char *buffer, size_t *buflen)
+{
+  long err;
+  struct sc_apdu a;
+  unsigned char data[SC_MAX_APDU_BUFFER_SIZE];
+  unsigned char result[SC_MAX_APDU_BUFFER_SIZE];
+
+  if (DBG_CARD_IO)
+    log_printhex ("  APDU_data:", apdu, apdulen);
+
+  if (apdulen < 4)
+    {
+      log_error ("osc_send_apdu: APDU is too short\n");
+      return SW_HOST_INV_VALUE;
+    }
+
+  memset(&a, 0, sizeof a);
+  a.cla = *apdu++;
+  a.ins = *apdu++;
+  a.p1 = *apdu++;
+  a.p2 = *apdu++;
+  apdulen -= 4;
+
+  if (!apdulen)
+    a.cse = SC_APDU_CASE_1;
+  else if (apdulen == 1) 
+    {
+      a.le = *apdu? *apdu : 256;
+      apdu++; apdulen--;
+      a.cse = SC_APDU_CASE_2_SHORT;
+    }
+  else
+    {
+      a.lc = *apdu++; apdulen--;
+      if (apdulen < a.lc)
+        {
+          log_error ("osc_send_apdu: APDU shorter than specified in Lc\n");
+          return SW_HOST_INV_VALUE;
+
+        }
+      memcpy(data, apdu, a.lc);
+      apdu += a.lc; apdulen -= a.lc;
+
+      a.data = data;
+      a.datalen = a.lc;
+      
+      if (!apdulen)
+        a.cse = SC_APDU_CASE_3_SHORT;
+      else
+        {
+          a.le = *apdu? *apdu : 256;
+          apdu++; apdulen--;
+          if (apdulen)
+            {
+              log_error ("osc_send_apdu: APDU larger than specified\n");
+              return SW_HOST_INV_VALUE;
+            }
+          a.cse = SC_APDU_CASE_4_SHORT;
+        }
+    }
+
+  a.resp = result;
+  a.resplen = DIM(result);
+
+  err = sc_transmit_apdu (reader_table[slot].osc.scard, &a);
+  if (err)
+    {
+      log_error ("sc_apdu_transmit failed: %s\n", sc_strerror (err));
+      return SW_HOST_CARD_IO_ERROR;
+    }
+
+  if (*buflen < 2 || a.resplen > *buflen - 2)
+    {
+      log_error ("osc_send_apdu: provided buffer too short to store result\n");
+      return SW_HOST_INV_VALUE;
+    }
+  memcpy (buffer, a.resp, a.resplen);
+  buffer[a.resplen] = a.sw1;
+  buffer[a.resplen+1] = a.sw2;
+  *buflen = a.resplen + 2;
+  return 0;
+}
 
 static int
 open_osc_reader (int portno)
@@ -1286,30 +1514,119 @@ open_osc_reader (int portno)
   slotp->atrlen = slotp->osc.scard->atr_len;
   memcpy (slotp->atr, slotp->osc.scard->atr, slotp->atrlen);
 
-  slotp->is_osc = 1;
+  reader_table[slot].close_reader = close_osc_reader;
+  reader_table[slot].reset_reader = reset_osc_reader;
+  reader_table[slot].get_status_reader = osc_get_status;
+  reader_table[slot].send_apdu_reader = osc_send_apdu;
+  reader_table[slot].dump_status_reader = NULL;
 
   dump_reader_status (slot); 
   return slot;
 }
 
+#endif /* HAVE_OPENSC */
+
+
+
+#ifdef USE_G10CODE_RAPDU
+/* 
+     The Remote APDU Interface.
+
+     This uses the Remote APDU protocol to contact a reader.
+
+     The port number is actually an index into the list of ports as
+     returned via the protocol.
+ */
+
 
 static int
-close_osc_reader (int slot)
+rapdu_status_to_sw (int status)
 {
-  /* FIXME: Implement. */
+  int rc;
+
+  switch (status)
+    {
+    case RAPDU_STATUS_SUCCESS:  rc = 0; break;
+
+    case RAPDU_STATUS_INVCMD:  
+    case RAPDU_STATUS_INVPROT:  
+    case RAPDU_STATUS_INVSEQ:  
+    case RAPDU_STATUS_INVCOOKIE:
+    case RAPDU_STATUS_INVREADER:  rc = SW_HOST_INV_VALUE;  break;
+
+    case RAPDU_STATUS_TIMEOUT:  rc = SW_HOST_CARD_IO_ERROR; break;
+    case RAPDU_STATUS_CARDIO:   rc = SW_HOST_CARD_IO_ERROR; break;
+    case RAPDU_STATUS_NOCARD:   rc = SW_HOST_NO_CARD; break;
+    case RAPDU_STATUS_CARDCHG:  rc = SW_HOST_NO_CARD; break;
+    case RAPDU_STATUS_BUSY:     rc = SW_HOST_BUSY; break;
+    case RAPDU_STATUS_NEEDRESET: rc = SW_HOST_CARD_INACTIVE; break;
+
+    default: rc = SW_HOST_GENERAL_ERROR; break;
+    }
+
+  return rc;
+}
+
+
+
+static int
+close_rapdu_reader (int slot)
+{
+  rapdu_release (reader_table[slot].rapdu.handle);
   reader_table[slot].used = 0;
   return 0;
 }
 
+
 static int
-reset_osc_reader (int slot)
+reset_rapdu_reader (int slot)
 {
-  return SW_HOST_NOT_SUPPORTED;
+  int err;
+  reader_table_t slotp;
+  rapdu_msg_t msg = NULL;
+
+  slotp = reader_table + slot;
+
+  err = rapdu_send_cmd (slotp->rapdu.handle, RAPDU_CMD_RESET);
+  if (err)
+    {
+      log_error ("sending rapdu command RESET failed: %s\n",
+                err < 0 ? strerror (errno): rapdu_strerror (err));
+      rapdu_msg_release (msg);
+      return rapdu_status_to_sw (err);
+    }
+  err = rapdu_read_msg (slotp->rapdu.handle, &msg);
+  if (err)
+    {
+      log_error ("receiving rapdu message failed: %s\n",
+                err < 0 ? strerror (errno): rapdu_strerror (err));
+      rapdu_msg_release (msg);
+      return rapdu_status_to_sw (err);
+    }
+  if (msg->cmd != RAPDU_STATUS_SUCCESS || !msg->datalen)
+    {
+      int sw = rapdu_status_to_sw (msg->cmd);
+      log_error ("rapdu command RESET failed: %s\n",
+                 rapdu_strerror (msg->cmd));
+      rapdu_msg_release (msg);
+      return sw;
+    }
+  if (msg->datalen >= DIM (slotp->atr))
+    {
+      log_error ("ATR returned by the RAPDU layer is too large\n");
+      rapdu_msg_release (msg);
+      return SW_HOST_INV_VALUE; 
+    }
+  slotp->atrlen = msg->datalen;
+  memcpy (slotp->atr, msg->data, msg->datalen);
+
+  rapdu_msg_release (msg);
+  return 0;
 }
 
 
 static int
-osc_get_status (int slot, unsigned int *status)
+my_rapdu_get_status (int slot, unsigned int *status)
 {
   return SW_HOST_NOT_SUPPORTED;
 }
@@ -1319,91 +1636,151 @@ osc_get_status (int slot, unsigned int *status)
    maximum of *BUFLEN data in BUFFER, the actual returned size will be
    set to BUFLEN.  Returns: OpenSC error code. */
 static int
-osc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
-                unsigned char *buffer, size_t *buflen)
+my_rapdu_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
+                    unsigned char *buffer, size_t *buflen)
 {
-  long err;
-  struct sc_apdu a;
-  unsigned char data[SC_MAX_APDU_BUFFER_SIZE];
-  unsigned char result[SC_MAX_APDU_BUFFER_SIZE];
+  int err;
+  reader_table_t slotp;
+  rapdu_msg_t msg = NULL;
+  size_t maxlen = *buflen;
 
+  slotp = reader_table + slot;
+
+  *buflen = 0;
   if (DBG_CARD_IO)
     log_printhex ("  APDU_data:", apdu, apdulen);
 
   if (apdulen < 4)
     {
-      log_error ("osc_send_apdu: APDU is too short\n");
-      return SC_ERROR_CMD_TOO_SHORT;
+      log_error ("rapdu_send_apdu: APDU is too short\n");
+      return SW_HOST_INV_VALUE;
     }
 
-  memset(&a, 0, sizeof a);
-  a.cla = *apdu++;
-  a.ins = *apdu++;
-  a.p1 = *apdu++;
-  a.p2 = *apdu++;
-  apdulen -= 4;
-
-  if (!apdulen)
-    a.cse = SC_APDU_CASE_1;
-  else if (apdulen == 1) 
-    {
-      a.le = *apdu? *apdu : 256;
-      apdu++; apdulen--;
-      a.cse = SC_APDU_CASE_2_SHORT;
-    }
-  else
-    {
-      a.lc = *apdu++; apdulen--;
-      if (apdulen < a.lc)
-        {
-          log_error ("osc_send_apdu: APDU shorter than specified in Lc\n");
-          return SC_ERROR_CMD_TOO_SHORT;
-
-        }
-      memcpy(data, apdu, a.lc);
-      apdu += a.lc; apdulen -= a.lc;
-
-      a.data = data;
-      a.datalen = a.lc;
-      
-      if (!apdulen)
-        a.cse = SC_APDU_CASE_3_SHORT;
-      else
-        {
-          a.le = *apdu? *apdu : 256;
-          apdu++; apdulen--;
-          if (apdulen)
-            {
-              log_error ("osc_send_apdu: APDU larger than specified\n");
-              return SC_ERROR_CMD_TOO_LONG;
-            }
-          a.cse = SC_APDU_CASE_4_SHORT;
-        }
-    }
-
-  a.resp = result;
-  a.resplen = DIM(result);
-
-  err = sc_transmit_apdu (reader_table[slot].osc.scard, &a);
+  err = rapdu_send_apdu (slotp->rapdu.handle, apdu, apdulen);
   if (err)
     {
-      log_error ("sc_apdu_transmit failed: %s\n", sc_strerror (err));
-      return err;
+      log_error ("sending rapdu command APDU failed: %s\n",
+                err < 0 ? strerror (errno): rapdu_strerror (err));
+      rapdu_msg_release (msg);
+      return rapdu_status_to_sw (err);
+    }
+  err = rapdu_read_msg (slotp->rapdu.handle, &msg);
+  if (err)
+    {
+      log_error ("receiving rapdu message failed: %s\n",
+                err < 0 ? strerror (errno): rapdu_strerror (err));
+      rapdu_msg_release (msg);
+      return rapdu_status_to_sw (err);
+    }
+  if (msg->cmd != RAPDU_STATUS_SUCCESS || !msg->datalen)
+    {
+      int sw = rapdu_status_to_sw (msg->cmd);
+      log_error ("rapdu command APDU failed: %s\n",
+                 rapdu_strerror (msg->cmd));
+      rapdu_msg_release (msg);
+      return sw;
+    }
+  
+  if (msg->datalen > maxlen)
+    {
+      log_error ("rapdu response apdu too large\n");
+      rapdu_msg_release (msg);
+      return SW_HOST_INV_VALUE; 
     }
 
-  if (*buflen < 2 || a.resplen > *buflen - 2)
-    {
-      log_error ("osc_send_apdu: provided buffer too short to store result\n");
-      return SC_ERROR_BUFFER_TOO_SMALL;
-    }
-  memcpy (buffer, a.resp, a.resplen);
-  buffer[a.resplen] = a.sw1;
-  buffer[a.resplen+1] = a.sw2;
-  *buflen = a.resplen + 2;
+  *buflen = msg->datalen;
+  memcpy (buffer, msg->data, msg->datalen);
+
+  rapdu_msg_release (msg);
   return 0;
 }
 
-#endif /* HAVE_OPENSC */
+static int
+open_rapdu_reader (int portno,
+                   const unsigned char *cookie, size_t length,
+                   int (*readfnc) (void *opaque,
+                                   void *buffer, size_t size),
+                   void *readfnc_value,
+                   int (*writefnc) (void *opaque,
+                                    const void *buffer, size_t size),
+                   void *writefnc_value,
+                   void (*closefnc) (void *opaque),
+                   void *closefnc_value)
+{
+  int err;
+  int slot;
+  reader_table_t slotp;
+  rapdu_msg_t msg = NULL;
+
+  slot = new_reader_slot ();
+  if (slot == -1)
+    return -1;
+  slotp = reader_table + slot;
+
+  slotp->rapdu.handle = rapdu_new ();
+  if (!slotp->rapdu.handle)
+    {
+      slotp->used = 0;
+      return -1;
+    }
+
+
+  rapdu_set_iofunc (slotp->rapdu.handle,
+                    readfnc, readfnc_value,
+                    writefnc, writefnc_value,
+                    closefnc, closefnc_value);
+  rapdu_set_cookie (slotp->rapdu.handle, cookie, length);
+
+  /* First try to get the current ATR, but if the card is inactive
+     issue a reset instead.  */
+  err = rapdu_send_cmd (slotp->rapdu.handle, RAPDU_CMD_GET_ATR);
+  if (err == RAPDU_STATUS_NEEDRESET)
+    err = rapdu_send_cmd (slotp->rapdu.handle, RAPDU_CMD_RESET);
+  if (err)
+    {
+      log_info ("sending rapdu command GET_ATR/RESET failed: %s\n",
+                err < 0 ? strerror (errno): rapdu_strerror (err));
+      goto failure;
+    }
+  err = rapdu_read_msg (slotp->rapdu.handle, &msg);
+  if (err)
+    {
+      log_info ("receiving rapdu message failed: %s\n",
+                err < 0 ? strerror (errno): rapdu_strerror (err));
+      goto failure;
+    }
+  if (msg->cmd != RAPDU_STATUS_SUCCESS || !msg->datalen)
+    {
+      log_info ("rapdu command GET ATR failed: %s\n",
+                 rapdu_strerror (msg->cmd));
+      goto failure;
+    }
+  if (msg->datalen >= DIM (slotp->atr))
+    {
+      log_error ("ATR returned by the RAPDU layer is too large\n");
+      goto failure;
+    }
+  slotp->atrlen = msg->datalen;
+  memcpy (slotp->atr, msg->data, msg->datalen);
+
+  reader_table[slot].close_reader = close_rapdu_reader;
+  reader_table[slot].reset_reader = reset_rapdu_reader;
+  reader_table[slot].get_status_reader = my_rapdu_get_status;
+  reader_table[slot].send_apdu_reader = my_rapdu_send_apdu;
+  reader_table[slot].dump_status_reader = NULL;
+
+  dump_reader_status (slot); 
+  rapdu_msg_release (msg);
+  return slot;
+
+ failure:      
+  rapdu_msg_release (msg);
+  rapdu_release (slotp->rapdu.handle);
+  slotp->used = 0;
+  return -1;
+}
+
+#endif /*USE_G10CODE_RAPDU*/
 
 
 
@@ -1583,23 +1960,46 @@ apdu_open_reader (const char *portstr)
 }
 
 
+/* Open an remote reader and return an internal slot number or -1 on
+   error. This function is an alternative to apdu_open_reader and used
+   with remote readers only.  Note that the supplied CLOSEFNC will
+   only be called once and the slot will not be valid afther this.
+
+   If PORTSTR is NULL we default to the first availabe port.
+*/  
+int
+apdu_open_remote_reader (const char *portstr,
+                         const unsigned char *cookie, size_t length,
+                         int (*readfnc) (void *opaque,
+                                         void *buffer, size_t size),
+                         void *readfnc_value,
+                         int (*writefnc) (void *opaque,
+                                          const void *buffer, size_t size),
+                         void *writefnc_value,
+                         void (*closefnc) (void *opaque),
+                         void *closefnc_value)
+{
+#ifdef USE_G10CODE_RAPDU
+  return open_rapdu_reader (portstr? atoi (portstr) : 0,
+                            cookie, length,
+                            readfnc, readfnc_value,
+                            writefnc, writefnc_value,
+                            closefnc, closefnc_value);
+#else
+  errno = ENOSYS;
+  return -1;
+#endif
+}
+
+
 int
 apdu_close_reader (int slot)
 {
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
     return SW_HOST_NO_DRIVER;
-  if (reader_table[slot].is_ctapi)
-    return close_ct_reader (slot);
-#ifdef HAVE_LIBUSB
-  else if (reader_table[slot].is_ccid)
-    return close_ccid_reader (slot);
-#endif
-#ifdef HAVE_OPENSC
-  else if (reader_table[slot].is_osc)
-    return close_osc_reader (slot);
-#endif
-  else
-    return close_pcsc_reader (slot);
+  if (reader_table[slot].close_reader)
+    return reader_table[slot].close_reader (slot);
+  return SW_HOST_NOT_SUPPORTED;
 }
 
 /* Enumerate all readers and return information on whether this reader
@@ -1626,23 +2026,52 @@ apdu_reset (int slot)
   if ((sw = lock_slot (slot)))
     return sw;
 
-  if (reader_table[slot].is_ctapi)
-    sw = reset_ct_reader (slot);
-#ifdef HAVE_LIBUSB
-  else if (reader_table[slot].is_ccid)
-    sw = reset_ccid_reader (slot);
-#endif
-#ifdef HAVE_OPENSC
-  else if (reader_table[slot].is_osc)
-    sw = reset_osc_reader (slot);
-#endif
-  else
-    sw = reset_pcsc_reader (slot);
+  if (reader_table[slot].reset_reader)
+    sw = reader_table[slot].reset_reader (slot);
 
   unlock_slot (slot);
   return sw;
 }
 
+
+/* Activate a card if it has not yet been done.  This is a kind of
+   reset-if-required.  It is useful to test for presence of a card
+   before issuing a bunch of apdu commands.  It does not wait on a
+   locked card. */
+int
+apdu_activate (int slot)
+{
+  int sw;
+  unsigned int s;
+
+  if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
+    return SW_HOST_NO_DRIVER;
+  
+  if ((sw = trylock_slot (slot)))
+    return sw;
+
+  if (reader_table[slot].get_status_reader)
+    sw = reader_table[slot].get_status_reader (slot, &s);
+
+  if (!sw)
+    {
+      if (!(s & 2))  /* Card not present.  */
+        sw = SW_HOST_NO_CARD;
+      else if ( ((s & 2) && !(s & 4))
+                || !reader_table[slot].atrlen )
+        {
+          /* We don't have an ATR or a card is present though inactive:
+             do a reset now. */
+          if (reader_table[slot].reset_reader)
+            sw = reader_table[slot].reset_reader (slot);
+        }
+    }
+  
+  unlock_slot (slot);
+  return sw;
+}
+
+  
 
 unsigned char *
 apdu_get_atr (int slot, size_t *atrlen)
@@ -1660,29 +2089,9 @@ apdu_get_atr (int slot, size_t *atrlen)
   return buf;
 }
 
-  
+
     
-static const char *
-error_string (int slot, long rc)
-{
-  if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
-    return "[invalid slot]";
-  if (reader_table[slot].is_ctapi)
-    return ct_error_string (rc);
-#ifdef HAVE_LIBUSB
-  else if (reader_table[slot].is_ccid)
-    return get_ccid_error_string (rc);
-#endif
-#ifdef HAVE_OPENSC
-  else if (reader_table[slot].is_osc)
-    return sc_strerror (rc);
-#endif
-  else
-    return pcsc_error_string (rc);
-}
-
-
-/* Retrieve the status for SLOT. The function does obnly wait fot the
+/* Retrieve the status for SLOT. The function does only wait for the
    card to become available if HANG is set to true. On success the
    bits in STATUS will be set to
 
@@ -1691,7 +2100,7 @@ error_string (int slot, long rc)
      bit 2 = card active
      bit 3 = card access locked [not yet implemented]
 
-   For must application, tetsing bit 0 is sufficient.
+   For must application, testing bit 0 is sufficient.
 
    CHANGED will receive the value of the counter tracking the number
    of card insertions.  This value may be used to detect a card
@@ -1710,18 +2119,8 @@ apdu_get_status (int slot, int hang,
   if ((sw = hang? lock_slot (slot) : trylock_slot (slot)))
     return sw;
 
-  if (reader_table[slot].is_ctapi)
-    sw = ct_get_status (slot, &s);
-#ifdef HAVE_LIBUSB
-  else if (reader_table[slot].is_ccid)
-    sw = get_status_ccid (slot, &s);
-#endif
-#ifdef HAVE_OPENSC
-  else if (reader_table[slot].is_osc)
-    sw = osc_get_status (slot, &s);
-#endif
-  else
-    sw = pcsc_get_status (slot, &s);
+  if (reader_table[slot].get_status_reader)
+    sw = reader_table[slot].get_status_reader (slot, &s);
 
   unlock_slot (slot);
 
@@ -1744,18 +2143,13 @@ send_apdu (int slot, unsigned char *apdu, size_t apdulen,
 {
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
     return SW_HOST_NO_DRIVER;
-  if (reader_table[slot].is_ctapi)
-    return ct_send_apdu (slot, apdu, apdulen, buffer, buflen);
-#ifdef HAVE_LIBUSB
-  else if (reader_table[slot].is_ccid)
-    return send_apdu_ccid (slot, apdu, apdulen, buffer, buflen);
-#endif
-#ifdef HAVE_OPENSC
-  else if (reader_table[slot].is_osc)
-    return osc_send_apdu (slot, apdu, apdulen, buffer, buflen);
-#endif
+
+  if (reader_table[slot].send_apdu_reader)
+    return reader_table[slot].send_apdu_reader (slot,
+                                                apdu, apdulen,
+                                                buffer, buflen);
   else
-    return pcsc_send_apdu (slot, apdu, apdulen, buffer, buflen);
+    return SW_HOST_NOT_SUPPORTED;
 }
 
 /* Send an APDU to the card in SLOT.  The APDU is created from all
@@ -1819,9 +2213,9 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
   if (rc || resultlen < 2)
     {
       log_error ("apdu_send_simple(%d) failed: %s\n",
-                 slot, error_string (slot, rc));
+                 slot, apdu_strerror (rc));
       unlock_slot (slot);
-      return SW_HOST_INCOMPLETE_CARD_RESPONSE;
+      return rc? rc : SW_HOST_INCOMPLETE_CARD_RESPONSE;
     }
   sw = (result[resultlen-2] << 8) | result[resultlen-1];
   /* store away the returned data but strip the statusword. */
@@ -1886,9 +2280,9 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
           if (rc || resultlen < 2)
             {
               log_error ("apdu_send_simple(%d) for get response failed: %s\n",
-                         slot, error_string (slot, rc));
+                         slot, apdu_strerror (rc));
               unlock_slot (slot);
-              return SW_HOST_INCOMPLETE_CARD_RESPONSE;
+              return rc? rc : SW_HOST_INCOMPLETE_CARD_RESPONSE;
             }
           sw = (result[resultlen-2] << 8) | result[resultlen-1];
           resultlen -= 2;
@@ -1977,5 +2371,180 @@ apdu_send_simple (int slot, int class, int ins, int p0, int p1,
 }
 
 
+/* This is a more generic version of the apdu sending routine.  It
+   takes an already formatted APDU in APDUDATA or length APDUDATALEN
+   and returns the with the APDU including the status word.  With
+   HANDLE_MORE set to true this function will handle the MORE DATA
+   status and return all APDUs concatenated with one status word at
+   the end.  The function does not return a regular status word but 0
+   on success.  If the slot is locked, the fucntion returns
+   immediately.*/
+int 
+apdu_send_direct (int slot, const unsigned char *apdudata, size_t apdudatalen,
+                  int handle_more,
+                  unsigned char **retbuf, size_t *retbuflen)
+{
+#define RESULTLEN 256
+  unsigned char apdu[5+256+1];
+  size_t apdulen;
+  unsigned char result[RESULTLEN+10]; /* 10 extra in case of bugs in
+                                         the driver. */
+  size_t resultlen;
+  int sw;
+  long rc; /* we need a long here due to PC/SC. */
+  int class;
+
+  if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
+    return SW_HOST_NO_DRIVER;
+
+  if ((sw = trylock_slot (slot)))
+    return sw;
+
+  /* We simply trucntate a too long APDU.  */
+  if (apdudatalen > sizeof apdu)
+    apdudatalen = sizeof apdu;
+  apdulen = apdudatalen;
+  memcpy (apdu, apdudata, apdudatalen);
+  class = apdulen? *apdu : 0;
+
+
+  rc = send_apdu (slot, apdu, apdulen, result, &resultlen);
+  if (rc || resultlen < 2)
+    {
+      log_error ("apdu_send_direct(%d) failed: %s\n",
+                 slot, apdu_strerror (rc));
+      unlock_slot (slot);
+      return rc? rc : SW_HOST_INCOMPLETE_CARD_RESPONSE;
+    }
+  sw = (result[resultlen-2] << 8) | result[resultlen-1];
+  /* Store away the returned data but strip the statusword. */
+  resultlen -= 2;
+  if (DBG_CARD_IO)
+    {
+      log_debug (" response: sw=%04X  datalen=%d\n", sw, resultlen);
+      if ( !retbuf && (sw == SW_SUCCESS || (sw & 0xff00) == SW_MORE_DATA))
+        log_printhex ("     dump: ", result, resultlen);
+    }
+
+  if (handle_more && (sw & 0xff00) == SW_MORE_DATA)
+    {
+      unsigned char *p = NULL, *tmp;
+      size_t bufsize = 4096;
+
+      /* It is likely that we need to return much more data, so we
+         start off with a large buffer. */
+      if (retbuf)
+        {
+          *retbuf = p = xtrymalloc (bufsize + 2);
+          if (!*retbuf)
+            {
+              unlock_slot (slot);
+              return SW_HOST_OUT_OF_CORE;
+            }
+          assert (resultlen < bufsize);
+          memcpy (p, result, resultlen);
+          p += resultlen;
+        }
+
+      do
+        {
+          int len = (sw & 0x00ff);
+          
+          if (DBG_CARD_IO)
+            log_debug ("apdu_send_direct(%d): %d more bytes available\n",
+                       slot, len);
+          apdulen = 0;
+          apdu[apdulen++] = class;
+          apdu[apdulen++] = 0xC0;
+          apdu[apdulen++] = 0;
+          apdu[apdulen++] = 0;
+          apdu[apdulen++] = len; 
+          memset (apdu+apdulen, 0, sizeof (apdu) - apdulen);
+          resultlen = RESULTLEN;
+          rc = send_apdu (slot, apdu, apdulen, result, &resultlen);
+          if (rc || resultlen < 2)
+            {
+              log_error ("apdu_send_direct(%d) for get response failed: %s\n",
+                         slot, apdu_strerror (rc));
+              unlock_slot (slot);
+              return rc ? rc : SW_HOST_INCOMPLETE_CARD_RESPONSE;
+            }
+          sw = (result[resultlen-2] << 8) | result[resultlen-1];
+          resultlen -= 2;
+          if (DBG_CARD_IO)
+            {
+              log_debug ("     more: sw=%04X  datalen=%d\n", sw, resultlen);
+              if (!retbuf && (sw==SW_SUCCESS || (sw&0xff00)==SW_MORE_DATA))
+                log_printhex ("     dump: ", result, resultlen);
+            }
+
+          if ((sw & 0xff00) == SW_MORE_DATA
+              || sw == SW_SUCCESS
+              || sw == SW_EOF_REACHED )
+            {
+              if (retbuf && resultlen)
+                {
+                  if (p - *retbuf + resultlen > bufsize)
+                    {
+                      bufsize += resultlen > 4096? resultlen: 4096;
+                      tmp = xtryrealloc (*retbuf, bufsize + 2);
+                      if (!tmp)
+                        {
+                          unlock_slot (slot);
+                          return SW_HOST_OUT_OF_CORE;
+                        }
+                      p = tmp + (p - *retbuf);
+                      *retbuf = tmp;
+                    }
+                  memcpy (p, result, resultlen);
+                  p += resultlen;
+                }
+            }
+          else
+            log_info ("apdu_send_sdirect(%d) "
+                      "got unexpected status %04X from get response\n",
+                      slot, sw);
+        }
+      while ((sw & 0xff00) == SW_MORE_DATA);
+      
+      if (retbuf)
+        {
+          *retbuflen = p - *retbuf;
+          tmp = xtryrealloc (*retbuf, *retbuflen + 2);
+          if (tmp)
+            *retbuf = tmp;
+        }
+    }
+  else
+    {
+      if (retbuf)
+        {
+          *retbuf = xtrymalloc ((resultlen? resultlen : 1)+2);
+          if (!*retbuf)
+            {
+              unlock_slot (slot);
+              return SW_HOST_OUT_OF_CORE;
+            }
+          *retbuflen = resultlen;
+          memcpy (*retbuf, result, resultlen);
+        }
+    }
+
+  unlock_slot (slot);
+
+  /* Append the status word - we reseved the two extra bytes while
+     allocating the buffer. */
+  if (retbuf)
+    {
+      (*retbuf)[(*retbuflen)++] = (sw >> 8);
+      (*retbuf)[(*retbuflen)++] = sw;
+    }
+
+  if (DBG_CARD_IO && retbuf)
+    log_printhex ("      dump: ", *retbuf, *retbuflen);
+ 
+  return 0;
+#undef RESULTLEN
+}
 
 

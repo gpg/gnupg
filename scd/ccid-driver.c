@@ -442,11 +442,11 @@ read_device_info (ccid_driver_t handle, struct usb_device *dev)
             }
         }
     }
-  return -1; /* No suitable device found. */
+  return CCID_DRIVER_ERR_NO_READER; /* No suitable device found. */
 }
 
 
-/* Open the reader with the internal number READERNO and return a a
+/* Open the reader with the internal number READERNO and return a 
    pointer to be used as handle in HANDLE.  Returns 0 on success. */
 int 
 ccid_open_reader (ccid_driver_t *handle, int readerno)
@@ -469,7 +469,7 @@ ccid_open_reader (ccid_driver_t *handle, int readerno)
   if (rc)
     {
       DEBUGOUT_1 ("usb_create_match failed: %d\n", rc);
-      return -1;
+      return CCID_DRIVER_ERR_NO_READER;
     }
 
   while (usb_find_device(match, dev, &dev) >= 0) 
@@ -482,7 +482,7 @@ ccid_open_reader (ccid_driver_t *handle, int readerno)
           if (!*handle)
             {
               DEBUGOUT ("out of memory\n");
-              rc = -1;
+              rc = CCID_DRIVER_ERR_OUT_OF_CORE;
               free (*handle);
               *handle = NULL;
               goto leave;
@@ -503,6 +503,7 @@ ccid_open_reader (ccid_driver_t *handle, int readerno)
               DEBUGOUT_1 ("usb_open failed: %d\n", rc);
               free (*handle);
               *handle = NULL;
+              rc = CCID_DRIVER_ERR_CARD_IO_ERROR;
               goto leave;
             }
 
@@ -515,6 +516,7 @@ ccid_open_reader (ccid_driver_t *handle, int readerno)
               DEBUGOUT_1 ("usb_claim_interface failed: %d\n", rc);
               free (*handle);
               *handle = NULL;
+              rc = CCID_DRIVER_ERR_CARD_IO_ERROR;
               goto leave;
             }
 
@@ -605,7 +607,7 @@ bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen)
     DEBUGOUT_1 ("usb_bulk_write error: %s\n", strerror (errno));
   else
     DEBUGOUT_1 ("usb_bulk_write failed: %d\n", rc);
-  return -1;
+  return CCID_DRIVER_ERR_CARD_IO_ERROR;
 }
 
 
@@ -631,7 +633,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
   if (rc < 0)
     {
       DEBUGOUT_1 ("usb_bulk_read error: %s\n", strerror (errno));
-      return -1;
+      return CCID_DRIVER_ERR_CARD_IO_ERROR;
     }
 
   *nread = msglen = rc;
@@ -639,23 +641,23 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
   if (msglen < 10)
     {
       DEBUGOUT_1 ("bulk-in msg too short (%u)\n", (unsigned int)msglen);
-      return -1;
+      return CCID_DRIVER_ERR_INV_VALUE;
     }
   if (buffer[0] != expected_type)
     {
       DEBUGOUT_1 ("unexpected bulk-in msg type (%02x)\n", buffer[0]);
-      return -1;
+      return CCID_DRIVER_ERR_INV_VALUE;
     }
   if (buffer[5] != 0)    
     {
       DEBUGOUT_1 ("unexpected bulk-in slot (%d)\n", buffer[5]);
-      return -1;
+      return CCID_DRIVER_ERR_INV_VALUE;
     }
   if (buffer[6] != seqno)    
     {
       DEBUGOUT_2 ("bulk-in seqno does not match (%d/%d)\n",
                   seqno, buffer[6]);
-      return -1;
+      return CCID_DRIVER_ERR_INV_VALUE;
     }
 
   if ( !(buffer[7] & 0x03) && (buffer[7] & 0xC0) == 0x80)
@@ -672,6 +674,13 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
     DEBUGOUT_CONT_1 (" %02X", buffer[i]);
   DEBUGOUT_LF ();
 
+  switch ((buffer[7] & 0x03))
+    {
+    case 0: /* no error */ break;
+    case 1: return CCID_DRIVER_ERR_CARD_INACTIVE;
+    case 2: return CCID_DRIVER_ERR_NO_CARD;
+    case 3: /* RFU */ break;
+    }
   return 0;
 }
 
@@ -695,7 +704,7 @@ ccid_poll (ccid_driver_t handle)
   if (rc < 0)
     {
       DEBUGOUT_1 ("usb_intr_read error: %s\n", strerror (errno));
-      return -1;
+      return CCID_DRIVER_ERR_CARD_IO_ERROR;
     }
 
   msglen = rc;
@@ -704,7 +713,7 @@ ccid_poll (ccid_driver_t handle)
   if (msglen < 1)
     {
       DEBUGOUT ("intr-in msg too short\n");
-      return -1;
+      return CCID_DRIVER_ERR_INV_VALUE;
     }
 
   if (msg[0] == RDR_to_PC_NotifySlotChange)
@@ -731,7 +740,8 @@ ccid_poll (ccid_driver_t handle)
 }
 
 
-
+/* Note that this fucntion won't return the error codes NO_CARD or
+   CARD_INACTIVE */
 int 
 ccid_slot_status (ccid_driver_t handle, int *statusbits)
 {
@@ -752,7 +762,8 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits)
   if (rc)
     return rc;
   rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_SlotStatus, seqno);
-  if (rc)
+  if (rc && rc != CCID_DRIVER_ERR_NO_CARD
+      && rc != CCID_DRIVER_ERR_CARD_INACTIVE)
     return rc;
   *statusbits = (msg[7] & 3);
 
@@ -1018,7 +1029,7 @@ ccid_transceive (ccid_driver_t handle,
 
           /* Construct an I-Block. */
           if (apdulen > 254)
-            return -1; /* Invalid length. */
+            return CCID_DRIVER_ERR_INV_VALUE; /* Invalid length. */
 
           tpdu = msg+10;
           /* NAD: DAD=1, SAD=0 */
@@ -1082,7 +1093,7 @@ ccid_transceive (ccid_driver_t handle,
       if (tpdulen < 4) 
         {
           DEBUGOUT ("cannot yet handle short blocks!\n");
-          return -1; 
+          return CCID_DRIVER_ERR_NOT_SUPPORTED; 
         }
 
 #ifdef DEBUG_T1
@@ -1132,7 +1143,7 @@ ccid_transceive (ccid_driver_t handle,
                   DEBUGOUT_2 ("provided buffer too short for received data "
                               "(%u/%u)\n",
                               (unsigned int)n, (unsigned int)maxresplen);
-                  return -1;
+                  return CCID_DRIVER_ERR_INV_VALUE;
                 }
               
               memcpy (resp, p, n); 
@@ -1163,7 +1174,7 @@ ccid_transceive (ccid_driver_t handle,
               if (++retries > 3)
                 {
                   DEBUGOUT ("3 failed retries\n");
-                  return -1;
+                  return CCID_DRIVER_ERR_CARD_IO_ERROR;
                 }
               msg = send_buffer;
               tpdulen = last_tpdulen;
@@ -1171,7 +1182,7 @@ ccid_transceive (ccid_driver_t handle,
           else if (sending && !!(tpdu[1] & 0x40) == handle->t1_ns)
             { /* Reponse does not match our sequence number. */
               DEBUGOUT ("R-block with wrong seqno received on more bit\n");
-              return -1;
+              return CCID_DRIVER_ERR_CARD_IO_ERROR;
             }
           else if (sending)
             { /* Send next chunk. */
@@ -1183,7 +1194,7 @@ ccid_transceive (ccid_driver_t handle,
           else
             {
               DEBUGOUT ("unexpected ACK R-block received\n");
-              return -1;
+              return CCID_DRIVER_ERR_CARD_IO_ERROR;
             }
         }
       else 
@@ -1210,7 +1221,7 @@ ccid_transceive (ccid_driver_t handle,
               DEBUGOUT_1 ("T1 waittime extension of bwi=%d\n", bwi);
             }
           else
-            return -1;
+            return CCID_DRIVER_ERR_CARD_IO_ERROR;
         }
     } /* end T=1 protocol loop. */
 

@@ -53,19 +53,38 @@ enum {
   SW_HOST_NO_DRIVER     = 0x10004,
   SW_HOST_NOT_SUPPORTED = 0x10005,
   SW_HOST_LOCKING_FAILED= 0x10006,
-  SW_HOST_BUSY          = 0x10007
+  SW_HOST_BUSY          = 0x10007,
+  SW_HOST_NO_CARD       = 0x10008,
+  SW_HOST_CARD_INACTIVE = 0x10009,
+  SW_HOST_CARD_IO_ERROR = 0x1000a,
+  SW_HOST_GENERAL_ERROR = 0x1000b,
+  SW_HOST_NO_READER     = 0x1000c
 };
 
 
 
 /* Note , that apdu_open_reader returns no status word but -1 on error. */
 int apdu_open_reader (const char *portstr);
+int apdu_open_remote_reader (const char *portstr,
+                             const unsigned char *cookie, size_t length,
+                             int (*readfnc) (void *opaque,
+                                             void *buffer, size_t size),
+                             void *readfnc_value,
+                             int (*writefnc) (void *opaque,
+                                              const void *buffer, size_t size),
+                             void *writefnc_value,
+                             void (*closefnc) (void *opaque),
+                             void *closefnc_value);
 int apdu_close_reader (int slot);
 int apdu_enum_reader (int slot, int *used);
 unsigned char *apdu_get_atr (int slot, size_t *atrlen);
 
+const char *apdu_strerror (int rc);
 
-/* The apdu send functions do return status words. */
+
+/* These apdu functions do return status words. */
+
+int apdu_activate (int slot);
 int apdu_reset (int slot);
 int apdu_get_status (int slot, int hang,
                      unsigned int *status, unsigned int *changed);
@@ -77,6 +96,10 @@ int apdu_send (int slot, int class, int ins, int p0, int p1,
 int apdu_send_le (int slot, int class, int ins, int p0, int p1,
                   int lc, const char *data, int le,
                   unsigned char **retbuf, size_t *retbuflen);
+int apdu_send_direct (int slot,
+                      const unsigned char *apdudata, size_t apdudatalen,
+                      int handle_more,
+                      unsigned char **retbuf, size_t *retbuflen);
 
 
 #endif /*APDU_H*/

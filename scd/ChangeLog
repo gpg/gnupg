@@ -1,3 +1,46 @@
+2004-07-16  Werner Koch  <wk@gnupg.org>
+
+	* apdu.c (reader_table_s):  Add function pointers for the backends.
+	(apdu_close_reader, apdu_get_status, apdu_activate) 
+	(send_apdu): Make use of them.
+	(new_reader_slot): Intialize them to NULL.
+	(dump_ccid_reader_status, ct_dump_reader_status): New.
+	(dump_pcsc_reader_status): New.
+	(open_ct_reader, open_pcsc_reader, open_ccid_reader) 
+	(open_osc_reader, open_rapdu_reader): Intialize function pointers.
+	(ct_activate_card, ct_send_apdu, pcsc_send_apdu, osc_send_apdu) 
+	(error_string): Removed.  Replaced by apdu_strerror.
+	(get_ccid_error_string): Removed.
+	(ct_activate_card): Remove the unused loop.
+	(reset_ct_reader): Implemented.
+	(ct_send_apdu): Activate the card if not yet done.
+	(pcsc_send_apdu): Ditto.
+
+2004-07-15  Werner Koch  <wk@gnupg.org>
+
+	* ccid-driver.h: Add error codes.
+	* ccid-driver.c: Implement more or less proper error codes all
+	over the place.
+
+	* apdu.c (apdu_send_direct): New.
+	(get_ccid_error_string): Add some error code mappings.
+	(send_apdu): Pass error codes along for drivers already supporting
+	them.
+	(host_sw_string): New.
+	(get_ccid_error_string): Use above.
+	(send_apdu_ccid): Reset the reader if it has not yet been done.
+	(open_ccid_reader): Don't care if the ATR can't be read.
+	(apdu_activate_card): New.
+	(apdu_strerror): New.
+	(dump_reader_status): Only enable it with opt.VERBOSE.
+	* iso7816.c (map_sw): Add mappings for the new error codes.
+
+2004-07-02  Werner Koch  <wk@gnupg.org>
+
+	* apdu.c (open_ct_reader, open_pcsc_reader, open_ccid_reader)
+	(reset_ccid_reader, open_osc_reader): Call dump_reader_status only
+	in verbose mode.
+
 2004-07-01  Werner Koch  <wk@gnupg.org>
 
 	* sc-investigate.c: Initialize Pth which is now required.
