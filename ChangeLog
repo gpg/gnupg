@@ -1,3 +1,8 @@
+2005-01-17  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Make --without-included-zlib work as
+	expected. Reported by Norihiko Murase.
+
 2005-01-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Use new GNUPG_CHECK_LIBUSB macro.
