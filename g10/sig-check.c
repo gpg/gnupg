@@ -80,11 +80,29 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest, u32 *r_expiredate,
     else if(!pk->is_valid && !pk->is_primary)
         rc=G10ERR_BAD_PUBKEY; /* you cannot have a good sig from an
 				 invalid subkey */
-    else {
+    else
+      {
         if(r_expiredate)
 	  *r_expiredate = pk->expiredate;
+
 	rc = do_check( pk, sig, digest, r_expired, r_revoked, ret_pk );
-    }
+
+	/* Check the backsig.  This is a 0x19 signature from the
+	   subkey on the primary key.  The idea here is that it should
+	   not be possible for someone to "steal" subkeys and claim
+	   them as their own.  The attacker couldn't actually use the
+	   subkey, but they could try and claim ownership of any
+	   signaures issued by it. */
+	if(rc==0 && !pk->is_primary && pk->backsig<2)
+	  {
+	    if(pk->backsig==0)
+	      log_info(_("WARNING: signing subkey %s is not"
+			 " cross-certified\n"),keystr_from_pk(pk));
+	    else
+	      log_info(_("WARNING: signing subkey %s has an invalid"
+			 " cross-certification\n"),keystr_from_pk(pk));
+	  }
+      }
 
     free_public_key( pk );
 
@@ -386,6 +404,38 @@ check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
 
   return rc;
 } 
+
+/* Backsigs (0x19) have the same format as binding sigs (0x18), but
+   this function is simpler than check_key_signature in a few ways.
+   For example, there is no support for expiring backsigs since it is
+   questionable what such a thing actually means.  Note also that the
+   sig cache check here, unlike other sig caches in GnuPG, is not
+   persistent. */
+int
+check_backsig(PKT_public_key *main_pk,PKT_public_key *sub_pk,
+	      PKT_signature *backsig)
+{
+  MD_HANDLE md;
+  int rc;
+
+  if(!opt.no_sig_cache && backsig->flags.checked)
+    {
+      if((rc=check_digest_algo(backsig->digest_algo)))
+	return rc;
+
+      return backsig->flags.valid? 0 : G10ERR_BAD_SIGN;
+    }
+
+  md=md_open(backsig->digest_algo,0);
+  hash_public_key(md,main_pk);
+  hash_public_key(md,sub_pk);
+  rc=do_check(sub_pk,backsig,md,NULL,NULL,NULL);
+  cache_sig_result(backsig,rc);
+  md_close(md);
+
+  return rc;
+}
+
 
 /****************
  * check the signature pointed to by NODE. This is a key signature.

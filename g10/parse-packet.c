@@ -56,8 +56,6 @@ static int  parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen,
 							     PACKET *packet );
 static int  parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen,
 							     PACKET *packet );
-static int  parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
-							 PKT_signature *sig );
 static int  parse_onepass_sig( IOBUF inp, int pkttype, unsigned long pktlen,
 							PKT_onepass_sig *ops );
 static int  parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
@@ -1223,7 +1221,7 @@ void parse_revkeys(PKT_signature *sig)
     }
 }
 
-static int
+int
 parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 					  PKT_signature *sig )
 {

@@ -212,6 +212,7 @@ typedef struct {
 			       without the key to check it */
     int     is_valid;       /* key (especially subkey) is valid */
     int     dont_cache;     /* do not cache this */
+    byte    backsig;        /* 0=none, 1=bad, 2=good */
     u32     main_keyid[2];  /* keyid of the primary key */
     u32     keyid[2];	    /* calculated by keyid_from_pk() */
     byte    is_primary;
@@ -364,6 +365,7 @@ typedef enum {
     SIGSUBPKT_SIGNERS_UID  =28, /* signer's user id */
     SIGSUBPKT_REVOC_REASON =29, /* reason for revocation */
     SIGSUBPKT_FEATURES     =30, /* feature flags */
+
     SIGSUBPKT_SIGNATURE    =32, /* embedded signature */
 
     SIGSUBPKT_FLAG_CRITICAL=128
@@ -409,6 +411,8 @@ int copy_some_packets( IOBUF inp, IOBUF out, off_t stopoff );
 int skip_some_packets( IOBUF inp, unsigned n );
 #endif
 
+int parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
+		     PKT_signature *sig );
 const byte *enum_sig_subpkt ( const subpktarea_t *subpkts,
                               sigsubpkttype_t reqtype,
                               size_t *ret_n, int *start, int *critical );

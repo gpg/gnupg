@@ -1,3 +1,19 @@
+2004-04-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (make_backsig): If DO_BACKSIGS is not defined, do not
+	create backsigs.
+
+	* getkey.c (merge_selfsigs_subkey): Find 0x19 backsigs on subkey
+	selfsigs and verify they are valid.  If DO_BACKSIGS is not
+	defined, fake this as always valid.
+
+	* packet.h, parse-packet.c (parse_signature): Make parse_signature
+	non-static so we can parse 0x19s in self-sigs.
+
+	* main.h, sig-check.c (check_backsig): Check a 0x19 signature.
+	(signature_check2): Give a backsig warning if there is no or a bad
+	0x19 with signatures from a subkey.
+
 2004-04-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* parse-packet.c (dump_sig_subpkt, parse_one_sig_subpkt,
