@@ -1,5 +1,9 @@
 2004-03-15  David Shaw  <dshaw@jabberwocky.com>
 
+	* trustdb.c (add_utk, verify_own_keys, update_min_ownertrust,
+	get_validity, ask_ownertrust, validate_keys): --keyid-format
+	conversion.
+
 	* import.c (check_prefs_warning, check_prefs): --keyid-format
 	conversion and a little better text.
 	(import_one, import_secret_one, import_revoke_cert, chk_self_sigs,

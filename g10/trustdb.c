@@ -254,7 +254,7 @@ add_utk (u32 *kid)
   k->next = utk_list;
   utk_list = k;
   if( opt.verbose > 1 )
-    log_info(_("key %08lX: accepted as trusted key\n"), (ulong)kid[1]);
+    log_info(_("key %s: accepted as trusted key\n"), keystr(kid));
   return 1;
 }
 
@@ -292,8 +292,8 @@ verify_own_keys(void)
             fprlen = (!fpr[16] && !fpr[17] && !fpr[18] && !fpr[19])? 16:20;
             keyid_from_fingerprint (fpr, fprlen, kid);
             if (!add_utk (kid))
-                log_info(_("key %08lX occurs more than once in the trustdb\n"),
-                            (ulong)kid[1]);
+	      log_info(_("key %s occurs more than once in the trustdb\n"),
+		       keystr(kid));
         }
     }
 
@@ -306,21 +306,20 @@ verify_own_keys(void)
 
           memset (&pk, 0, sizeof pk);
           rc = get_pubkey (&pk, k->kid);
-          if (rc) {
-            log_info(_("key %08lX: no public key for trusted key - skipped\n"),
-                     (ulong)k->kid[1] );
-          }
-          else {
-            update_ownertrust (&pk,
-                               ((get_ownertrust (&pk) & ~TRUST_MASK)
-                                | TRUST_ULTIMATE ));
-            release_public_key_parts (&pk);
-          }
-          log_info (_("key %08lX marked as ultimately trusted\n"),
-                    (ulong)k->kid[1]);
+          if (rc)
+	    log_info(_("key %s: no public key for trusted key - skipped\n"),
+		     keystr(k->kid));
+          else
+	    {
+	      update_ownertrust (&pk,
+				 ((get_ownertrust (&pk) & ~TRUST_MASK)
+				  | TRUST_ULTIMATE ));
+	      release_public_key_parts (&pk);
+	    }
+
+          log_info (_("key %s marked as ultimately trusted\n"),keystr(k->kid));
         }
     }
-
 
   /* release the helper table table */
   release_key_items (user_utk_list);
@@ -790,8 +789,7 @@ update_min_ownertrust (u32 *kid, unsigned int new_trust )
   rc = get_pubkey (pk, kid);
   if (rc)
     {
-      log_error (_("public key %08lX not found: %s\n"),
-                 (ulong)kid[1], g10_errstr(rc) );
+      log_error(_("public key %s not found: %s\n"),keystr(kid),g10_errstr(rc));
       return;
     }
 
@@ -799,8 +797,8 @@ update_min_ownertrust (u32 *kid, unsigned int new_trust )
   if (!rc)
     {
       if (DBG_TRUST)
-        log_debug ("key %08lX: update min_ownertrust from %u to %u\n",
-                   (ulong)kid[1],(unsigned int)rec.r.trust.min_ownertrust,
+        log_debug ("key %s: update min_ownertrust from %u to %u\n",
+                   keystr(kid),(unsigned int)rec.r.trust.min_ownertrust,
 		   new_trust );
       if (rec.r.trust.min_ownertrust != new_trust)
         {
@@ -1024,8 +1022,10 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
       rc = get_pubkey (main_pk, pk->main_keyid);
       if (rc)
         {
-          log_error ("error getting main key %08lX of subkey %08lX: %s\n",
-                     (ulong)pk->main_keyid[1], (ulong)kid[1], g10_errstr(rc));
+	  char *tempkeystr=m_strdup(keystr(pk->main_keyid));
+          log_error ("error getting main key %s of subkey %s: %s\n",
+                     tempkeystr, keystr(kid), g10_errstr(rc));
+	  m_free(tempkeystr);
           validity = TRUST_UNKNOWN; 
           goto leave;
 	}
@@ -1218,16 +1218,15 @@ ask_ownertrust (u32 *kid,int minimum)
   rc = get_pubkey (pk, kid);
   if (rc)
     {
-      log_error (_("public key %08lX not found: %s\n"),
-                 (ulong)kid[1], g10_errstr(rc) );
+      log_error (_("public key %s not found: %s\n"),
+                 keystr(kid), g10_errstr(rc) );
       return TRUST_UNKNOWN;
     }
  
   if(opt.force_ownertrust)
     {
-      log_info("force trust for key %08lX%08lX to %s\n",
-	       (ulong)kid[0],(ulong)kid[1],
-	       trust_value_to_string(opt.force_ownertrust));
+      log_info("force trust for key %s to %s\n",
+	       keystr(kid),trust_value_to_string(opt.force_ownertrust));
       update_ownertrust(pk,opt.force_ownertrust);
       ot=opt.force_ownertrust;
     }
@@ -1923,7 +1922,7 @@ validate_keys (int interactive)
       if (!keyblock)
         {
           log_error (_("public key of ultimately"
-                       " trusted key %08lX not found\n"), (ulong)k->kid[1]);
+                       " trusted key %s not found\n"), keystr(k->kid));
           continue;
         }
       mark_keyblock_seen (used, keyblock);
@@ -1986,9 +1985,9 @@ validate_keys (int interactive)
 	  if(k->ownertrust<min)
 	    {
 	      if(DBG_TRUST)
-		log_debug("key %08lX: "
-			  "overriding ownertrust \"%s\" with \"%s\"\n",
-			  (ulong)k->kid[1],
+		log_debug("key %s:"
+			  " overriding ownertrust \"%s\" with \"%s\"\n",
+			  keystr(k->kid),
 			  trust_value_to_string(k->ownertrust),
 			  trust_value_to_string(min));
 
