@@ -34,8 +34,8 @@ libutil_a_LIBADD = @REGEX_O@
 
 http-test:  http.c
 	gcc -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
-	    -DTEST -o http-test http.c libutil.a @INTLLIBS@ @SRVLIBS@ @CAPLIBS@
+	    -DTEST -o http-test http.c libutil.a @LIBINTL@ @SRVLIBS@ @CAPLIBS@
 
 srv-test:  srv.c
 	gcc -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
-	    -DTEST -o srv-test srv.c libutil.a @INTLLIBS@ @SRVLIBS@ @CAPLIBS@
+	    -DTEST -o srv-test srv.c libutil.a @LIBINTL@ @SRVLIBS@ @CAPLIBS@
