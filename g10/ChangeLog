@@ -1,5 +1,8 @@
 2004-12-22  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, keyserver.c (parse_keyserver_uri): Properly parse
+	auth data from URLs and pass to keyserver helpers.
+
 	* keyserver.c (keyserver_typemap): New.  Map certain keyserver
 	types to a common type (e.g. ldaps -> ldap).  If we are building
 	with curl, map both http and ftp to curl.

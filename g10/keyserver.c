@@ -218,6 +218,23 @@ parse_keyserver_uri(const char *uri,int require_scheme,
       if(!assume_hkp)
 	uri+=2;
 
+      /* Do we have userinfo auth data present? */
+      for(idx=uri,count=0;*idx && *idx!='@' && *idx!='/';idx++)
+	count++;
+
+      /* We found a @ before the slash, so that means everything
+	 before the @ is auth data. */
+      if(*idx=='@')
+	{
+	  if(count==0)
+	    goto fail;
+
+	  keyserver->auth=m_alloc(count+1);
+	  strncpy(keyserver->auth,uri,count);
+	  keyserver->auth[count]='\0';
+	  uri+=count+1;
+	}
+
       for(idx=uri,count=0;*idx && *idx!=':' && *idx!='/';idx++)
 	count++;
 
@@ -846,6 +863,9 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
     fprintf(spawn->tochild,"OPAQUE %s\n",keyserver->opaque);
   else
     {
+      if(keyserver->auth)
+	fprintf(spawn->tochild,"AUTH %s\n",keyserver->auth);
+
       if(keyserver->host)
 	fprintf(spawn->tochild,"HOST %s\n",keyserver->host);
 

@@ -129,6 +129,7 @@ struct
   {
     char *uri;
     char *scheme;
+    char *auth;
     char *host;
     char *port;
     char *path;
