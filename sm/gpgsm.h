@@ -43,6 +43,78 @@ enum {
   GPGSM_Conflict = 13,
 };
 
+/* Status codes (shared with gpg) */
+enum {
+  STATUS_ENTER,
+  STATUS_LEAVE,
+  STATUS_ABORT,
+  STATUS_GOODSIG,
+  STATUS_BADSIG,
+  STATUS_ERRSIG,
+  STATUS_BADARMOR,
+  STATUS_RSA_OR_IDEA,
+  STATUS_SIGEXPIRED,
+  STATUS_KEYREVOKED,
+  STATUS_TRUST_UNDEFINED,
+  STATUS_TRUST_NEVER,
+  STATUS_TRUST_MARGINAL,
+  STATUS_TRUST_FULLY,
+  STATUS_TRUST_ULTIMATE,
+  
+  STATUS_SHM_INFO,
+  STATUS_SHM_GET,
+  STATUS_SHM_GET_BOOL,
+  STATUS_SHM_GET_HIDDEN,
+  
+  STATUS_NEED_PASSPHRASE,
+  STATUS_VALIDSIG,
+  STATUS_SIG_ID,
+  STATUS_ENC_TO,
+  STATUS_NODATA,
+  STATUS_BAD_PASSPHRASE,
+  STATUS_NO_PUBKEY,
+  STATUS_NO_SECKEY,
+  STATUS_NEED_PASSPHRASE_SYM,
+  STATUS_DECRYPTION_FAILED,
+  STATUS_DECRYPTION_OKAY,
+  STATUS_MISSING_PASSPHRASE,
+  STATUS_GOOD_PASSPHRASE,
+  STATUS_GOODMDC,
+  STATUS_BADMDC,
+  STATUS_ERRMDC,
+  STATUS_IMPORTED,
+  STATUS_IMPORT_RES,
+  STATUS_FILE_START,
+  STATUS_FILE_DONE,
+  STATUS_FILE_ERROR,
+  
+  STATUS_BEGIN_DECRYPTION,
+  STATUS_END_DECRYPTION,
+  STATUS_BEGIN_ENCRYPTION,
+  STATUS_END_ENCRYPTION,
+  
+  STATUS_DELETE_PROBLEM,
+  STATUS_GET_BOOL,
+  STATUS_GET_LINE,
+  STATUS_GET_HIDDEN,
+  STATUS_GOT_IT,
+  STATUS_PROGRESS,
+  STATUS_SIG_CREATED,
+  STATUS_SESSION_KEY,
+  STATUS_NOTATION_NAME,
+  STATUS_NOTATION_DATA,
+  STATUS_POLICY_URL,
+  STATUS_BEGIN_STREAM,
+  STATUS_END_STREAM,
+  STATUS_KEY_CREATED,
+  STATUS_USERID_HIN,
+  STATUS_UNEXPECTED,
+  STATUS_INV_RECP,
+  STATUS_NO_RECP,
+  STATUS_ALREADY_SIGNED,
+};
+
+
 #define MAX_DIGEST_LEN 24 
 
 /* A large struct name "opt" to keep global flags */
@@ -98,15 +170,27 @@ struct {
 #define DBG_CACHE   (opt.debug & DBG_CACHE_VALUE)
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
 
+struct server_local_s;
+
+struct server_control_s {
+  int no_server;     /* we are not running under server control */
+  int  status_fd;    /* only for non-server mode */
+  struct server_local_s *server_local;
+};
+typedef struct server_control_s *CTRL;
+
+
 /*-- gpgsm.c --*/
 void gpgsm_exit (int rc);
 
 /*-- server.c --*/
 void gpgsm_server (void);
+void gpgsm_status (CTRL ctrl, int no, const char *text);
 
 /*-- fingerprint --*/
 char *gpgsm_get_fingerprint (KsbaCert cert, int algo, char *array, int *r_len);
 char *gpgsm_get_fingerprint_string (KsbaCert cert, int algo);
+char *gpgsm_get_fingerprint_hexstring (KsbaCert cert, int algo);
 
 /*-- certdump.c --*/
 void gpgsm_dump_cert (const char *text, KsbaCert cert);
@@ -124,10 +208,10 @@ int gpgsm_validate_path (KsbaCert cert);
 
 
 /*-- import.c --*/
-int gpgsm_import (int in_fd);
+int gpgsm_import (CTRL ctrl, int in_fd);
 
 /*-- verify.c --*/
-int gpgsm_verify (int in_fd, int data_fd);
+int gpgsm_verify (CTRL ctrl, int in_fd, int data_fd);
 
 
 

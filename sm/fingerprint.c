@@ -102,3 +102,26 @@ gpgsm_get_fingerprint_string (KsbaCert cert, int algo)
   return buf;
 }
 
+/* Return an allocated buffer with the formatted fungerprint as one
+   large hexnumber */
+char *
+gpgsm_get_fingerprint_hexstring (KsbaCert cert, int algo)
+{
+  unsigned char digest[MAX_DIGEST_LEN];
+  char *buf;
+  int len, i;
+
+  if (!algo)
+    algo = GCRY_MD_SHA1;
+
+  len = gcry_md_get_algo_dlen (algo);
+  assert (len <= MAX_DIGEST_LEN );
+  gpgsm_get_fingerprint (cert, algo, digest, NULL);
+  buf = xmalloc (len*3+1);
+  *buf = 0;
+  for (i=0; i < len; i++ )
+    sprintf (buf+strlen(buf), "%02X", digest[i]);
+  return buf;
+}
+
+

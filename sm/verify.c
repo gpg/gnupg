@@ -38,6 +38,31 @@ struct reader_cb_parm_s {
   FILE *fp;
 };
 
+
+/* FIXME: Move this to jnlib */
+char *
+strtimestamp (time_t atime)
+{
+  char *buffer = xmalloc (15);
+  
+  if (atime < 0) 
+    {
+      strcpy (buffer, "????" "-??" "-??");
+    }
+  else
+    {
+      struct tm *tp;
+      
+      tp = gmtime( &atime );
+      sprintf (buffer, "%04d-%02d-%02d",
+               1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday);
+    }
+  return buffer;
+}
+
+
+
+
 /* FIXME: We need to write a generic reader callback which should be able
    to detect and convert base-64 */
 static int
@@ -142,7 +167,7 @@ hash_data (int fd, GCRY_MD_HD md)
 /* Perform a verify operation.  To verify detached signatures, data_fd
    must be different than -1 */
 int
-gpgsm_verify (int in_fd, int data_fd)
+gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
 {
   int i, rc;
   KsbaError err;
@@ -289,6 +314,7 @@ gpgsm_verify (int in_fd, int data_fd)
       unsigned char *serial;
       char *msgdigest = NULL;
       size_t msgdigestlen;
+      time_t sigcreated;
 
       err = ksba_cms_get_issuer_serial (cms, signer, &issuer, &serial);
       if (err)
@@ -346,6 +372,7 @@ gpgsm_verify (int in_fd, int data_fd)
             {
               log_error ("message digest attribute does not "
                          "match calculated one\n");
+              gpgsm_status (ctrl, STATUS_BADSIG, NULL);
               goto next_signer; 
             }
             
@@ -355,7 +382,7 @@ gpgsm_verify (int in_fd, int data_fd)
               log_error ("md_open failed: %s\n", gcry_strerror (-1));
               goto next_signer;
             }
-          ksba_cms_set_hash_function (cms, gcry_md_write, md);
+          ksba_cms_set_hash_function (cms, HASH_FNC, md);
           rc = ksba_cms_hash_signed_attrs (cms, signer);
           if (rc)
             {
@@ -375,16 +402,37 @@ gpgsm_verify (int in_fd, int data_fd)
       if (rc)
         {
           log_error ("invalid signature: %s\n", gpgsm_strerror (rc));
+          gpgsm_status (ctrl, STATUS_BADSIG, NULL);
           goto next_signer;
         }
       log_debug ("signature okay - checking certs\n");
+      gpgsm_status (ctrl, STATUS_GOODSIG, NULL);
+      {
+        char *buf, *fpr, *tstr;
+
+        fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+        tstr = strtimestamp ( 42 /*fixme: get right time */);
+        buf = xmalloc ( strlen(fpr) + strlen (tstr) + 100);
+        sprintf (buf, "%s %s %lu", fpr, tstr, (unsigned long)42 );
+        xfree (tstr);
+        xfree (fpr);
+        gpgsm_status (ctrl, STATUS_VALIDSIG, buf);
+        xfree (buf);
+      }
+
       rc = gpgsm_validate_path (cert);
       if (rc)
         {
           log_error ("invalid certification path: %s\n", gpgsm_strerror (rc));
+          if (rc == GPGSM_Bad_Certificate_Path
+              || rc == GPGSM_Bad_Certificate)
+            gpgsm_status (ctrl, STATUS_TRUST_NEVER, NULL);
+          else
+            gpgsm_status (ctrl, STATUS_TRUST_UNDEFINED, NULL);
           goto next_signer;
         }
       log_info ("signature is good\n");
+      gpgsm_status (ctrl, STATUS_TRUST_FULLY, NULL);
           
 
     next_signer:

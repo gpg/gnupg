@@ -319,6 +319,7 @@ static char *build_list (const char *text,
 static void set_cmd (enum cmd_and_opt_values *ret_cmd,
                      enum cmd_and_opt_values new_cmd );
 
+static int check_special_filename (const char *fname);
 static int open_read (const char *filename);
 
 
@@ -512,6 +513,7 @@ main ( int argc, char **argv)
   char *def_cipher_string = NULL;
   char *def_digest_string = NULL;
   enum cmd_and_opt_values cmd = 0;
+  struct server_control_s ctrl;
 
   /* FIXME: trap_unaligned ();*/
   set_strusage (my_strusage);
@@ -583,6 +585,12 @@ main ( int argc, char **argv)
   assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
   keybox_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
 
+  /* Setup a default control structure */
+  memset (&ctrl, 0, sizeof ctrl);
+  ctrl.no_server = 1;
+  ctrl.status_fd = -1; /* not status output */
+
+  /* set the default option file */
   if (default_config )
     configname = make_filename (opt.homedir, "gpgsm.conf", NULL);
   
@@ -680,7 +688,7 @@ main ( int argc, char **argv)
         case oDebug: opt.debug |= pargs.r.ret_ulong; break;
         case oDebugAll: opt.debug = ~0; break;
 
-        case oStatusFD: /* fixme: set_status_fd (pargs.r.ret_int );*/ break;
+        case oStatusFD: ctrl.status_fd = pargs.r.ret_int; break;
         case oLoggerFD: /* fixme: log_set_logfile (NULL, pargs.r.ret_int );*/ break;
         case oWithFingerprint:
           with_fpr=1; /*fall thru*/
@@ -930,11 +938,11 @@ main ( int argc, char **argv)
 
     case aVerify:
       if (!argc)
-        gpgsm_verify (0, -1); /* normal signature from stdin */
+        gpgsm_verify (&ctrl, 0, -1); /* normal signature from stdin */
       else if (argc == 1)
-        gpgsm_verify (open_read (*argv), -1); /* normal signature */
+        gpgsm_verify (&ctrl, open_read (*argv), -1); /* normal signature */
       else if (argc == 2) /* detached signature (sig, detached) */
-        gpgsm_verify (open_read (*argv), open_read (argv[1])); 
+        gpgsm_verify (&ctrl, open_read (*argv), open_read (argv[1])); 
       else
         wrong_args (_("--verify [signature [detached_data]]"));
       break;
@@ -992,8 +1000,13 @@ main ( int argc, char **argv)
       break;
 
     case aImport:
-/*        import_keys (argc? argv:NULL, argc); */
-      gpgsm_import (0);
+      if (!argc)
+        gpgsm_import (&ctrl, 0);
+      else
+        {
+          for (; argc; argc--, argv++)
+            gpgsm_import (&ctrl, open_read (*argv));
+        }
       break;
       
     case aExport:

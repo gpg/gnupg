@@ -265,7 +265,7 @@ store_cert (KsbaCert cert)
 
 
 int
-gpgsm_import (int in_fd)
+gpgsm_import (CTRL ctrl, int in_fd)
 {
   int rc;
   KsbaReader reader = NULL;
