@@ -534,6 +534,8 @@ build_attrs(LDAPMod ***modlist,char *line)
 	else
 	  userid[i++]=*tok++;
 
+      userid[i]='\0';
+
       /* We don't care about the other info provided in the uid: line
 	 since the LDAP schema doesn't need it. */
 
