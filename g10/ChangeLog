@@ -1,3 +1,10 @@
+2004-06-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* mainproc.c (proc_symkey_enc), seckey-cert.c (do_check): Check
+	the S2K hash algorithm before we try to generate a passphrase
+	using it.  This prevents hitting BUG() when generating a
+	passphrase using a hash that we don't have.
+
 2004-06-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (sign_uids): Properly handle remaking a self-sig on

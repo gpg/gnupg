@@ -65,6 +65,12 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int *canceled )
               }
 	    return G10ERR_CIPHER_ALGO;
 	}
+	if(check_digest_algo(sk->protect.s2k.hash_algo))
+	  {
+	    log_info(_("protection digest %d is not supported\n"),
+		     sk->protect.s2k.hash_algo);
+	    return G10ERR_DIGEST_ALGO;
+	  }
 	keyid_from_sk( sk, keyid );
 	keyid[2] = keyid[3] = 0;
 	if( !sk->is_primary ) {
