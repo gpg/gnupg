@@ -3,24 +3,25 @@ Authors of GNU Privacy Guard (gnupg).
 Werner Koch.  Designed and implemented gnupg.
 
 
-GNUPG	Matthew Skala		    1998-08-10
-Disclaims changes (Twofish code).
-mskala@ansuz.sooke.bc.ca
+GNUPG	Matthew Skala	  Canada    1998-08-10
+<mskala@ansuz.sooke.bc.ca> disclaims changes.
+Wrote cipher/twofish.c
 
 GNUPG	Natural Resources Canada    1998-08-11
 Disclaims changes by Matthew Skala.
 
 GNUPG	Michael Roth	Germany     1998-09-17
-Assigns changes (wrote cipher/des.c).
-mroth@nessie.de
+<mroth@nessie.de> assigns changes.
+Wrote cipher/des.c.
 
-GNUPG	Niklas Hernaeus 1998-09-18
-Disclaims changes (Weak key patches).
-nh@df.lth.se
+GNUPG	Niklas Hernaeus Sweden?     1998-09-18
+<nh@df.lth.se> disclaims changes.
+Weak key patches.
 
 
 TRANSLATIONS	Marco d'Itri        1997-02-22
-Disclaim
+Disclaims
+it.po
 
 TRANSLATIONS	Gaël Quéri	    ??????????
 fr.po
@@ -30,4 +31,8 @@ de.po
 
 TRANSLATIONS	Gregory Steuck	    ??????????
 ru.po
+
+TRANSLATIONS	Urko Lusa	    ??????????
+es_ES.po
+
 

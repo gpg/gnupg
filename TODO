@@ -1,9 +1,14 @@
 
+    * hash calculation for cleartext sigs without a "Hash: xxx" line
+      does it work as specified in the RFC?
+
+    * Check Berkeley BD - it is in glibc -any licensing problems?
+
     * I noticed, that we sometimes have only 3 items in atrustrecord, but
       a next pointer ro more records - check wehther the reuse code really
       works. Maybe this is the reason for the "Hmmm puiblic key lost"
 
-    * Update the keyring at ftp.ggug.de
+    * Update the keyring at ftp.guug.de
 
     * expire date is not shown in --edit-key for subkeys.
       and prefs are not correctly listed for some keys???? (Brian)
