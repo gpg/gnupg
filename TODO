@@ -60,8 +60,6 @@
     an even log so that other software can display a key history or
     alike with GnuPG results.  This should be connected to the keyrings.
 
-  * Show whether a signature is exportable or not.  In --edit-key and
-    in --with-colon listing?
 
 Scheduled for 1.1
 -----------------
