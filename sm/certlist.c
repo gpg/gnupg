@@ -40,7 +40,7 @@ static const char oid_kp_clientAuth[]     = "1.3.6.1.5.5.7.3.2";
 static const char oid_kp_codeSigning[]    = "1.3.6.1.5.5.7.3.3";
 static const char oid_kp_emailProtection[]= "1.3.6.1.5.5.7.3.4";
 static const char oid_kp_timeStamping[]   = "1.3.6.1.5.5.7.3.8";
-static const char oid_kp_ocspSigning[]    = "1.3.6.1.5.6.7.3.9";
+static const char oid_kp_ocspSigning[]    = "1.3.6.1.5.5.7.3.9";
 
 /* Return 0 if the cert is usable for encryption.  A MODE of 0 checks
    for signing a MODE of 1 checks for encryption, a MODE of 2 checks
