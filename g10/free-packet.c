@@ -89,6 +89,21 @@ free_seckey_cert( PKT_seckey_cert *cert )
     m_free(cert);
 }
 
+PKT_seckey_cert *
+copy_seckey_cert( PKT_seckey_cert *d, PKT_seckey_cert *s )
+{
+    if( !d )
+	d = m_alloc(sizeof *d);
+    memcpy( d, s, sizeof *d );
+    d->d.rsa.rsa_n = mpi_copy( s->d.rsa.rsa_n );
+    d->d.rsa.rsa_e = mpi_copy( s->d.rsa.rsa_e );
+    d->d.rsa.rsa_d = mpi_copy( s->d.rsa.rsa_d );
+    d->d.rsa.rsa_p = mpi_copy( s->d.rsa.rsa_p );
+    d->d.rsa.rsa_q = mpi_copy( s->d.rsa.rsa_q );
+    d->d.rsa.rsa_u = mpi_copy( s->d.rsa.rsa_u );
+    return d;
+}
+
 void
 free_comment( PKT_comment *rem )
 {

@@ -68,9 +68,8 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
      *	   0  2  RND(n bytes)  0  A  DEK(k bytes)  CSUM(2 bytes)
      *
      * RND are non-zero randow bytes.
-     * A   is the cipher algorithm ( 1 for IDEA, 42 for blowfish  )
+     * A   is the cipher algorithm
      * DEK is the encryption key (session key) with length k
-     *	   (16 for idea, 42 for blowfish)
      * CSUM
      */
     if( DBG_CIPHER )

@@ -33,14 +33,13 @@
 #ifdef HAVE_RSA_CIPHER
   #include "../cipher/rsa.h"
 #endif
-#include "../cipher/idea.h"
 #include "../cipher/blowfish.h"
 #include "../cipher/gost.h"
 #include "../cipher/elgamal.h"
 
 
 #define CIPHER_ALGO_NONE      0
-#define CIPHER_ALGO_IDEA      1
+#define CIPHER_ALGO_IDEA      1     /* used only for documentation */
 #define CIPHER_ALGO_BLOWFISH 42
 #define CIPHER_ALGO_GOST     43
 
@@ -84,6 +83,7 @@ MPI generate_random_prime( unsigned nbits );
 /*-- seskey.c --*/
 void make_session_key( DEK *dek );
 MPI encode_session_key( DEK *dek, unsigned nbits );
+MPI encode_rmd160_value( byte *md, unsigned len, unsigned nbits );
 
 
 #endif /*G10_CIPHER_H*/

@@ -157,7 +157,6 @@ parse_packet( IOBUF inp, PACKET *pkt )
       case PKT_SIGNATURE:
 	pkt->pkt.signature = m_alloc_clear(sizeof *pkt->pkt.signature );
 	rc = parse_signature(inp, pkttype, pktlen, pkt->pkt.signature );
-	m_check(pkt->pkt.signature);
 	break;
       case PKT_USER_ID:
 	rc = parse_user_id(inp, pkttype, pktlen, pkt );
@@ -266,14 +265,12 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	log_error("packet(%d) with unknown version %d\n", pkttype, version);
 	goto leave;
     }
-    m_check(sig);
     md5_len = iobuf_get_noeof(inp); pktlen--;
     sig->sig_class = iobuf_get_noeof(inp); pktlen--;
     sig->timestamp = read_32(inp); pktlen -= 4;
     sig->keyid[0] = read_32(inp); pktlen -= 4;
     sig->keyid[1] = read_32(inp); pktlen -= 4;
     sig->pubkey_algo = iobuf_get_noeof(inp); pktlen--;
-    m_check(sig);
     if( list_mode )
 	printf(":signature packet: keyid %08lX%08lX\n"
 	       "\tversion %d, created %lu, md5len %d, sigclass %02x\n",
@@ -284,11 +281,9 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	    log_error("packet(%d) too short\n", pkttype);
 	    goto leave;
 	}
-    m_check(sig);
 	sig->d.rsa.digest_algo = iobuf_get_noeof(inp); pktlen--;
 	sig->d.rsa.digest_start[0] = iobuf_get_noeof(inp); pktlen--;
 	sig->d.rsa.digest_start[1] = iobuf_get_noeof(inp); pktlen--;
-    m_check(sig);
 	n = pktlen;
 	sig->d.rsa.rsa_integer = mpi_decode(inp, &n ); pktlen -=n;
 	if( list_mode ) {
@@ -302,7 +297,6 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
     }
     else if( list_mode )
 	printf("\tunknown algorithm %d\n", sig->pubkey_algo );
-    m_check(sig);
 
 
   leave:
@@ -395,9 +389,7 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 			printf(" %02x", temp[i] );
 		    putchar('\n');
 		}
-		if( cert->d.rsa.protect_algo == CIPHER_ALGO_IDEA )
-		    memcpy(cert->d.rsa.protect.idea.iv, temp, 8 );
-		else if( cert->d.rsa.protect_algo == CIPHER_ALGO_BLOWFISH )
+		if( cert->d.rsa.protect_algo == CIPHER_ALGO_BLOWFISH )
 		    memcpy(cert->d.rsa.protect.blowfish.iv, temp, 8 );
 	    }
 	    else

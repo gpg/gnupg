@@ -77,6 +77,8 @@ set_debug(void)
 	mpi_debug_mode = 1;
     if( opt.debug & DBG_CIPHER_VALUE )
 	cipher_debug_mode = 1;
+    if( opt.debug & DBG_IOBUF_VALUE )
+	iobuf_debug_mode = 1;
 }
 
 
@@ -116,10 +118,10 @@ main( int argc, char **argv )
     ARGPARSE_ARGS pargs = { &argc, &argv, 0 };
     IOBUF a;
     int rc;
-    enum { aNull, aSym, aStore, aEncr, aPrimegen, aKeygen,
+    enum { aNull, aSym, aStore, aEncr, aPrimegen, aKeygen, aSign, aSignEncr,
     } action = aNull;
     const char *fname, *fname_print;
-    STRLIST sl, remusr= NULL;
+    STRLIST sl, remusr= NULL, locusr=NULL;
     int nrings=0;
     armor_filter_context_t afx;
 
@@ -131,13 +133,26 @@ main( int argc, char **argv )
 	    opt.compress = pargs.r.ret_int;
 	    break;
 	  case 'a': opt.armor = 1; break;
+	  case 'b': opt.batch = 1; break;
 	  case 'c': action = aSym; break;
-	  case 'e': action = aEncr; break;
 	  case 'o': opt.outfile = pargs.r.ret_str;
 		    if( opt.outfile[0] == '-' && !opt.outfile[1] )
 			opt.outfile_is_stdout = 1;
 		    break;
-	  case 'b': opt.batch = 1; break;
+	  case 'e': action = action == aSign? aSignEncr : aEncr; break;
+	  case 's': action = action == aEncr? aSignEncr : aSign;  break;
+	  case 'l': /* store the local users */
+	    sl = m_alloc( sizeof *sl + strlen(pargs.r.ret_str));
+	    strcpy(sl->d, pargs.r.ret_str);
+	    sl->next = locusr;
+	    locusr = sl;
+	    break;
+	  case 'r': /* store the remote users */
+	    sl = m_alloc( sizeof *sl + strlen(pargs.r.ret_str));
+	    strcpy(sl->d, pargs.r.ret_str);
+	    sl->next = remusr;
+	    remusr = sl;
+	    break;
 	  case 501: opt.answer_yes = 1; break;
 	  case 502: opt.answer_no = 1; break;
 	  case 507: action = aStore; break;
@@ -146,12 +161,6 @@ main( int argc, char **argv )
 	  case 510: opt.debug |= pargs.r.ret_ulong; break;
 	  case 511: opt.debug = ~0; break;
 	  case 512: opt.cache_all = 1; break;
-	  case 'r': /* store the remote users */
-	    sl = m_alloc( sizeof *sl + strlen(pargs.r.ret_str));
-	    strcpy(sl->d, pargs.r.ret_str);
-	    sl->next = remusr;
-	    remusr = sl;
-	    break;
 	  case 513: action = aPrimegen; break;
 	  case 514: action = aKeygen; break;
 	  default : pargs.err = 2; break;
@@ -187,16 +196,25 @@ main( int argc, char **argv )
 	if( argc > 1 )
 	    usage(1);
 	if( (rc = encode_symmetric(fname)) )
-	    log_error("encode_symmetric('%s'): %s\n",
-				    fname_print, g10_errstr(rc) );
+	    log_error("encode_symmetric('%s'): %s\n", fname_print, g10_errstr(rc) );
 	break;
 
       case aEncr: /* encrypt the given file */
 	if( argc > 1 )
 	    usage(1);
 	if( (rc = encode_crypt(fname,remusr)) )
-	    log_error("encode_crypt('%s'): %s\n",
-				    fname_print, g10_errstr(rc) );
+	    log_error("encode_crypt('%s'): %s\n", fname_print, g10_errstr(rc) );
+	break;
+
+      case aSign: /* sign the given file */
+	if( argc > 1 )
+	    usage(1);
+	if( (rc = sign_file(fname, 0, locusr)) )
+	    log_error("sign_file('%s'): %s\n", fname_print, g10_errstr(rc) );
+	break;
+
+      case aSignEncr: /* sign and encrypt the given file */
+	usage(1);  /* FIXME */
 	break;
 
       case aPrimegen:
@@ -227,6 +245,7 @@ main( int argc, char **argv )
 
     /* cleanup */
     FREE_STRLIST(remusr);
+    FREE_STRLIST(locusr);
     return 0;
 }
 

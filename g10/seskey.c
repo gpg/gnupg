@@ -1,4 +1,4 @@
-/* seskey.c -  make sesssion keys
+/* seskey.c -  make sesssion keys etc.
  *	Copyright (c) 1997 by Werner Koch (dd9jn)
  *
  * This file is part of G10.
@@ -94,6 +94,45 @@ encode_session_key( DEK *dek, unsigned nbits )
 	mpi_putbyte(frame, n++, c );
     }
     mpi_putbyte(frame, n++, 2 );
+    mpi_putbyte(frame, n++, 0 );
+    assert( n == nframe );
+    return frame;
+}
+
+/****************
+ * Encode a ripemd160 message digest of LEN bytes into NBITS.
+ * returns: A mpi with the session key (caller must free)
+ */
+MPI
+encode_rmd160_value( byte *md, unsigned len, unsigned nbits )
+{
+    static byte asn[18] = /* stored reverse FIXME: need other values*/
+	  { 0x30, 0x20, 0x30, 0x0c, 0x06, 0x08, 0x2a, 0x86,0x48,
+	    0x86, 0xf7, 0x0d, 0x02, 0x05, 0x05, 0x00, 0x04, 0x10 };
+    int nframe = (nbits+7) / 8;
+    byte *p;
+    MPI frame;
+    int i,n,c;
+
+    if( (nbits % BITS_PER_MPI_LIMB) || nframe < 42 || len != 20 )
+	log_bug("can't encode a %d bit MD into a %d bits frame\n",len*8, nbits);
+
+    /* We encode the MD in this way:
+     *
+     *	   0  42 PAD(n bytes)	0  ASN(18 bytes)  MD(20 bytes)
+     *
+     * PAD consists of FF bytes.
+     */
+    frame = mpi_alloc_secure( nframe / BYTES_PER_MPI_LIMB );
+    n = 0;
+    for(i=20-1; i >= 0; i--, n++ )
+	mpi_putbyte(frame, n, md[i] );
+    for( i=18-1; i >= 0; i--, n++ )
+	mpi_putbyte(frame, n, asn[i] );
+    mpi_putbyte(frame, n++, 0 );
+    while( n < nframe-2 )
+	mpi_putbyte(frame, n++, 0xff );
+    mpi_putbyte(frame, n++, DIGEST_ALGO_RMD160 );
     mpi_putbyte(frame, n++, 0 );
     assert( n == nframe );
     return frame;

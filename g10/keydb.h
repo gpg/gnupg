@@ -36,6 +36,7 @@ void cache_user_id( PKT_user_id *uid, u32 *keyid );
 int get_pubkey( PKT_pubkey_cert *pkc, u32 *keyid );
 int get_pubkey_by_name( PKT_pubkey_cert *pkc, const char *name );
 int get_seckey( RSA_secret_key *skey, u32 *keyid );
+int get_seckey_by_name( PKT_seckey_cert *skc, const char *name );
 char*get_user_id_string( u32 *keyid );
 
 

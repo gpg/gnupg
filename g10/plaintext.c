@@ -28,13 +28,17 @@
 #include "options.h"
 #include "packet.h"
 #include "ttyio.h"
+#include "filter.h"
 
 
 /****************
- * Handle a plaintext packet
+ * Handle a plaintext packet.  If MFX is not NULL, update the MDs
+ * Note: we should use the filter stuff here, but we have to add some
+ *	 easy mimic to set a read limit, so we calculate only the
+ *	 bytes from the plaintext.
  */
 int
-handle_plaintext( PKT_plaintext *pt )
+handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx )
 {
     char *fname;
     FILE *fp = NULL;
@@ -78,6 +82,10 @@ handle_plaintext( PKT_plaintext *pt )
 		rc = G10ERR_READ_FILE;
 		goto leave;
 	    }
+	    if( mfx->rmd160 )
+		rmd160_putchar(mfx->rmd160, c );
+	    if( mfx->md5 )
+		md5_putchar(mfx->md5, c );
 	    if( putc( c, fp ) == EOF ) {
 		log_error("Error writing to '%s': %s\n", fname, strerror(errno) );
 		rc = G10ERR_WRITE_FILE;
@@ -87,6 +95,10 @@ handle_plaintext( PKT_plaintext *pt )
     }
     else {
 	while( (c = iobuf_get(pt->buf)) != -1 ) {
+	    if( mfx->rmd160 )
+		rmd160_putchar(mfx->rmd160, c );
+	    if( mfx->md5 )
+		md5_putchar(mfx->md5, c );
 	    if( putc( c, fp ) == EOF ) {
 		log_error("Error writing to '%s': %s\n",
 					    fname, strerror(errno) );

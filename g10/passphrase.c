@@ -100,17 +100,7 @@ hash_passphrase( DEK *dek, char *pw )
     int rc = 0;
 
     dek->keylen = 0;
-    if( dek->algo == CIPHER_ALGO_IDEA ) {
-	MD5HANDLE md5;
-
-	md5 = md5_open(1);
-	md5_write( md5, pw, strlen(pw) );
-	md5_final( md5 );
-	dek->keylen = 16;
-	memcpy( dek->key, md5_read(md5), dek->keylen );
-	md5_close(md5);
-    }
-    else if( dek->algo == CIPHER_ALGO_BLOWFISH ) {
+    if( dek->algo == CIPHER_ALGO_BLOWFISH ) {
 	RMDHANDLE rmd;
 
 	rmd = rmd160_open(1);

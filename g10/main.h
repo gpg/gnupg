@@ -20,16 +20,21 @@
 #ifndef G10_MAIN_H
 #define G10_MAIN_H
 #include "types.h"
+#include "iobuf.h"
 
 /*-- encode.c --*/
 int encode_symmetric( const char *filename );
 int encode_store( const char *filename );
 int encode_crypt( const char *filename, STRLIST remusr );
 
+/*-- sign.c --*/
+int sign_file( const char *filename, int detached, STRLIST locusr );
+
 /*-- keygen.c --*/
 void generate_keypair(void);
 
-/*-- overwrite.c --*/
+/*-- openfile.c --*/
 int overwrite_filep( const char *fname );
+IOBUF open_outfile( const char *fname );
 
 #endif /*G10_MAIN_H*/

@@ -124,6 +124,7 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
 	       IOBUF a, size_t *ret_len )
 {
     int zrc;
+    int rc=0;
     size_t n;
     byte *p;
     int c;
@@ -147,7 +148,9 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
 	if( DBG_FILTER )
 	    log_debug("inflate returned: avail_in=%u, avail_out=%u, zrc=%d\n",
 		   (unsigned)zs->avail_in, (unsigned)zs->avail_out, zrc);
-	if( zrc != Z_OK && zrc != Z_STREAM_END ) {
+	if( zrc == Z_STREAM_END )
+	    rc = -1; /* eof */
+	else if( zrc != Z_OK ) {
 	    if( zs->msg )
 		log_fatal("zlib inflate problem: %s\n", zs->msg );
 	    else
@@ -157,7 +160,7 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
     *ret_len = zfx->outbufsize - zs->avail_out;
     if( DBG_FILTER )
 	log_debug("do_uncompress: returning %u bytes\n", (unsigned)*ret_len );
-    return 0;
+    return rc;
 }
 
 

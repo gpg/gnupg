@@ -115,28 +115,27 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 	      { 0x10, 0x04, 0x00, 0x05, 0x05, 0x02, 0x0d, 0xf7, 0x86,
 		0x48, 0x86, 0x2a, 0x08, 0x06, 0x0c, 0x30, 0x20, 0x30 };
 
-	for(i=20,j=0; j < 18 && (c=mpi_getbyte(result, i)) != -1; i++, j++ )
+	for(i=20,j=0; (c=mpi_getbyte(result, i)) != -1 && j < 18; i++, j++ )
 	    if( asn[j] != c )
 		break;
-	if( j != 18 ) { /* ASN is wrong */
+	if( j != 18 || c ) { /* ASN is wrong */
 	    rc = G10ERR_BAD_PUBKEY;
 	    goto leave;
 	}
-	if( !c ) {
-	    for(; (c=mpi_getbyte(result, i)) != -1; i++ )
-		if( c != 0xff  )
-		    break;
-	    if( c != 42 || mpi_getbyte(result, i) ) {
-		/* Padding or leading bytes in signature is wrong */
-		rc = G10ERR_BAD_PUBKEY;
-		goto leave;
-	    }
-	    if( mpi_getbyte(result, 19) != sig->d.rsa.digest_start[0]
-		|| mpi_getbyte(result, 18) != sig->d.rsa.digest_start[1] ) {
-		/* Wrong key used to check the signature */
-		rc = G10ERR_BAD_PUBKEY;
-		goto leave;
-	    }
+	for(i++; (c=mpi_getbyte(result, i)) != -1; i++ )
+	    if( c != 0xff  )
+		break;
+	i++;
+	if( c != DIGEST_ALGO_RMD160 || mpi_getbyte(result, i) ) {
+	    /* Padding or leading bytes in signature is wrong */
+	    rc = G10ERR_BAD_PUBKEY;
+	    goto leave;
+	}
+	if( mpi_getbyte(result, 19) != sig->d.rsa.digest_start[0]
+	    || mpi_getbyte(result, 18) != sig->d.rsa.digest_start[1] ) {
+	    /* Wrong key used to check the signature */
+	    rc = G10ERR_BAD_PUBKEY;
+	    goto leave;
 	}
 
 	/* complete the digest */
@@ -162,25 +161,24 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 	for(i=16,j=0; j < 18 && (c=mpi_getbyte(result, i)) != -1; i++, j++ )
 	    if( asn[j] != c )
 		break;
-	if( j != 18 ) { /* ASN is wrong */
+	if( j != 18 || c ) { /* ASN is wrong */
 	    rc = G10ERR_BAD_PUBKEY;
 	    goto leave;
 	}
-	if( !c ) {
-	    for(; (c=mpi_getbyte(result, i)) != -1; i++ )
-		if( c != 0xff  )
-		    break;
-	    if( c != 1 || mpi_getbyte(result, i) ) {
-		/* Padding or leading bytes in signature is wrong */
-		rc = G10ERR_BAD_PUBKEY;
-		goto leave;
-	    }
-	    if( mpi_getbyte(result, 15) != sig->d.rsa.digest_start[0]
-		|| mpi_getbyte(result, 14) != sig->d.rsa.digest_start[1] ) {
-		/* Wrong key used to check the signature */
-		rc = G10ERR_BAD_PUBKEY;
-		goto leave;
-	    }
+	for(i++; (c=mpi_getbyte(result, i)) != -1; i++ )
+	    if( c != 0xff  )
+		break;
+	i++;
+	if( c != DIGEST_ALGO_MD5 || mpi_getbyte(result, i) ) {
+	    /* Padding or leading bytes in signature is wrong */
+	    rc = G10ERR_BAD_PUBKEY;
+	    goto leave;
+	}
+	if( mpi_getbyte(result, 15) != sig->d.rsa.digest_start[0]
+	    || mpi_getbyte(result, 14) != sig->d.rsa.digest_start[1] ) {
+	    /* Wrong key used to check the signature */
+	    rc = G10ERR_BAD_PUBKEY;
+	    goto leave;
 	}
 
 	/* complete the digest */

@@ -248,6 +248,10 @@ mpi_free( MPI a )
 }
 
 
+/****************
+ * Note: This copy function shpould not interpret the MPI
+ *	 but copy it transparently.
+ */
 MPI
 #ifdef M_DEBUG
 mpi_debug_copy( MPI a, const char *info )

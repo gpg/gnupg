@@ -5,14 +5,12 @@
     * add a way to difference between errors and eof in the underflow/flush
       function of iobuf.
     * filter all output read from the input when displaying it to the user.
-    * remove idea.
     * keyring editing
     * improve the prime number generator
     * remove some debugging stuff (e.g. the listing mode in mainproc)
     * add trust stuff
     * make ttyio.c work (hide passwords etc..)
-    * add signal handling
-    * add writing of signatures and checking of detached signatures.
+    * add detached signatures
     * add option file handling.
     * use correct ASN values for DEK encoding
     * add checking of armor trailers
@@ -20,11 +18,12 @@
     * add real secure memory
     * look for a way to reuse RSA signatures
     * add ElGamal and make it the default one.
-    * find a way to remove the arnor filter after it
+    * find a way to remove the armor filter after it
       has detected, that the data is not armored.
     * Use the Chines Remainder Theorem to speed up RSA calculations.
     * remove all "Fixmes"
     * add credits for the MPI lib.
     * speed up the RIPE-MD-160
+    * add signal handling
     * enable a SIGSEGV handler while using zlib functions
 

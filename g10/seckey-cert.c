@@ -50,7 +50,6 @@ checksum( byte *p )
 int
 check_secret_key( PKT_seckey_cert *cert )
 {
-    IDEA_context idea_ctx;  /* FIXME: allocate this in secure space ! */
     byte iv[8];
     byte *mpibuf;
     u16 n;
@@ -58,7 +57,7 @@ check_secret_key( PKT_seckey_cert *cert )
     int res;
     u32 keyid[2];
 
-#if IDEA_BLOCKSIZE != 8 || BLOWFISH_BLOCKSIZE != 8
+#if  BLOWFISH_BLOCKSIZE != 8
   #error unsupportted blocksize
 #endif
 
@@ -73,37 +72,23 @@ check_secret_key( PKT_seckey_cert *cert )
 	  case CIPHER_ALGO_NONE:
 	    log_bug("unprotect seckey_cert is flagged protected\n");
 	    break;
-	  case CIPHER_ALGO_IDEA:
 	  case CIPHER_ALGO_BLOWFISH:
 	    mpi_get_keyid( cert->d.rsa.rsa_n , keyid );
 	    dek = get_passphrase_hash( keyid, NULL );
 
-	  /*  idea_setkey( &idea_ctx, dpw );*/
 	    m_free(dek); /* pw is in secure memory, so m_free() burns it */
 	    memset( iv, 0, BLOWFISH_BLOCKSIZE );
-	    if( cert->d.rsa.protect_algo == CIPHER_ALGO_IDEA ) {
-		idea_setiv( &idea_ctx, iv );
-		/* fixme: is it save to leave the IV unencrypted in the
-		 * certificate or should we move it to secure storage? */
-		idea_decode_cfb( &idea_ctx, cert->d.rsa.protect.idea.iv,
-					    cert->d.rsa.protect.idea.iv, 8 );
-	    }
-	    else {
-		blowfish_ctx = m_alloc_secure( sizeof *blowfish_ctx );
-		blowfish_setiv( blowfish_ctx, iv );
-		blowfish_decode_cfb( blowfish_ctx,
-				     cert->d.rsa.protect.blowfish.iv,
-				     cert->d.rsa.protect.blowfish.iv, 8 );
-	    }
+	    blowfish_ctx = m_alloc_secure( sizeof *blowfish_ctx );
+	    blowfish_setiv( blowfish_ctx, iv );
+	    blowfish_decode_cfb( blowfish_ctx,
+				 cert->d.rsa.protect.blowfish.iv,
+				 cert->d.rsa.protect.blowfish.iv, 8 );
 	    cert->d.rsa.calc_csum = 0;
 	  #define X(a) do {						\
 		    mpibuf = (byte*)cert->d.rsa.rsa_##a;		\
 		    n = ((mpibuf[0] << 8) | mpibuf[1])-2;		\
-		    if( blowfish_ctx )					\
-			blowfish_decode_cfb( blowfish_ctx,		\
-					     mpibuf+4, mpibuf+4, n );	\
-		    else						 \
-			idea_decode_cfb( &idea_ctx, mpibuf+4, mpibuf+4, n );\
+		    blowfish_decode_cfb( blowfish_ctx,			\
+					 mpibuf+4, mpibuf+4, n );	\
 		    cert->d.rsa.calc_csum += checksum( mpibuf );	\
 		    cert->d.rsa.rsa_##a = mpi_decode_buffer( mpibuf );	\
 		    m_free( mpibuf );					\
@@ -120,12 +105,7 @@ check_secret_key( PKT_seckey_cert *cert )
 			      mpi_print(stdout, cert->d.rsa.rsa_##a, 1 ); \
 			      putchar('\n');                              \
 			    } while(0)
-	    X(n);
-	    X(e);
-	    X(d);
-	    X(p);
-	    X(q);
-	    X(u);
+	    X(n); X(e); X(d); X(p); X(q); X(u);
 	    #undef X
 	  #endif
 	    /* now let's see wether we have used the right passphrase */

@@ -61,7 +61,8 @@ static int pkc_cache_entries;	/* number of entries in pkc cache */
 
 static int scan_keyring( PKT_pubkey_cert *pkc, u32 *keyid,
 			 const char *name, const char *filename );
-static int scan_secret_keyring( PACKET *pkt, u32 *keyid, const char *filename);
+static int scan_secret_keyring( PKT_seckey_cert *skc, u32 *keyid,
+				const char *name, const char *filename);
 
 
 void
@@ -254,10 +255,10 @@ int
 get_seckey( RSA_secret_key *skey, u32 *keyid )
 {
     int rc=0;
-    PACKET pkt;
+    PKT_seckey_cert skc;
 
-    init_packet( &pkt );
-    if( !(rc=scan_secret_keyring( &pkt, keyid, "../keys/secring.g10" ) ) )
+    memset( &skc, 0, sizeof skc );
+    if( !(rc=scan_secret_keyring( &skc, keyid, NULL, "../keys/secring.g10" ) ) )
 	goto found;
     /* fixme: look at other places */
     goto leave;
@@ -266,30 +267,46 @@ get_seckey( RSA_secret_key *skey, u32 *keyid )
     /* get the secret key (this may prompt for a passprase to
      * unlock the secret key
      */
-    if( (rc = check_secret_key( pkt.pkt.seckey_cert )) )
+    if( (rc = check_secret_key( &skc )) )
 	goto leave;
-    if( pkt.pkt.seckey_cert->pubkey_algo != PUBKEY_ALGO_RSA ) {
+    if( skc.pubkey_algo != PUBKEY_ALGO_RSA ) {
 	rc = G10ERR_PUBKEY_ALGO; /* unsupport algorithm */
 	goto leave;
     }
     /* copy the stuff to SKEY. skey is then the owner */
-    skey->e = pkt.pkt.seckey_cert->d.rsa.rsa_e;
-    skey->n = pkt.pkt.seckey_cert->d.rsa.rsa_n;
-    skey->p = pkt.pkt.seckey_cert->d.rsa.rsa_p;
-    skey->q = pkt.pkt.seckey_cert->d.rsa.rsa_q;
-    skey->d = pkt.pkt.seckey_cert->d.rsa.rsa_d;
-    skey->u = pkt.pkt.seckey_cert->d.rsa.rsa_u;
-    /* set all these to NULL, so that free_packet will not destroy
-     * these integers. */
-    pkt.pkt.seckey_cert->d.rsa.rsa_e = NULL;
-    pkt.pkt.seckey_cert->d.rsa.rsa_n = NULL;
-    pkt.pkt.seckey_cert->d.rsa.rsa_p = NULL;
-    pkt.pkt.seckey_cert->d.rsa.rsa_q = NULL;
-    pkt.pkt.seckey_cert->d.rsa.rsa_d = NULL;
-    pkt.pkt.seckey_cert->d.rsa.rsa_u = NULL;
+    skey->e = skc.d.rsa.rsa_e;
+    skey->n = skc.d.rsa.rsa_n;
+    skey->p = skc.d.rsa.rsa_p;
+    skey->q = skc.d.rsa.rsa_q;
+    skey->d = skc.d.rsa.rsa_d;
+    skey->u = skc.d.rsa.rsa_u;
 
   leave:
-    free_packet(&pkt);
+    memset( &skc, 0, sizeof skc );
+    return rc;
+}
+
+/****************
+ * Get a secret key by name and store it into skc
+ */
+int
+get_seckey_by_name( PKT_seckey_cert *skc, const char *name )
+{
+    int rc=0;
+
+    if( !(rc=scan_secret_keyring( skc, NULL, name, "../keys/secring.g10" ) ) )
+	goto found;
+    /* fixme: look at other places */
+    goto leave;
+
+  found:
+    /* get the secret key (this may prompt for a passprase to
+     * unlock the secret key
+     */
+    if( (rc = check_secret_key( skc )) )
+	goto leave;
+
+  leave:
     return rc;
 }
 
@@ -416,11 +433,18 @@ scan_keyring( PKT_pubkey_cert *pkc, u32 *keyid,
  * PKT returns the secret key certificate.
  */
 static int
-scan_secret_keyring( PACKET *pkt, u32 *keyid, const char *filename )
+scan_secret_keyring( PKT_seckey_cert *skc, u32 *keyid,
+		     const char *name, const char *filename )
 {
+    int rc=0;
+    int found = 0;
     IOBUF a;
-    int save_mode, rc;
+    PACKET pkt;
+    int save_mode;
     u32 akeyid[2];
+    PKT_seckey_cert *last_pk = NULL;
+
+    assert( !keyid || !name );
 
     if( !(a = iobuf_open( filename ) ) ) {
 	log_debug("scan_secret_keyring: can't open '%s'\n", filename );
@@ -428,26 +452,82 @@ scan_secret_keyring( PACKET *pkt, u32 *keyid, const char *filename )
     }
 
     save_mode = set_packet_list_mode(0);
-    init_packet(pkt);
-    while( (rc=parse_packet(a, pkt)) != -1 ) {
+    init_packet(&pkt);
+    while( (rc=parse_packet(a, &pkt)) != -1 ) {
 	if( rc )
-	    ;
-	else if( pkt->pkttype == PKT_SECKEY_CERT ) {
-	    mpi_get_keyid( pkt->pkt.seckey_cert->d.rsa.rsa_n , akeyid );
-	    if( akeyid[0] == keyid[0] && akeyid[1] == keyid[1] ) {
-		iobuf_close(a);
-		set_packet_list_mode(save_mode);
-		return 0; /* got it */
+	    ; /* e.g. unknown packet */
+	else if( keyid && found && pkt.pkttype == PKT_SECKEY_CERT ) {
+	    log_error("Hmmm, seckey without an user id in '%s'\n", filename);
+	    goto leave;
+	}
+	else if( keyid && pkt.pkttype == PKT_SECKEY_CERT ) {
+	    switch( pkt.pkt.seckey_cert->pubkey_algo ) {
+	      case PUBKEY_ALGO_RSA:
+		mpi_get_keyid( pkt.pkt.seckey_cert->d.rsa.rsa_n , akeyid );
+		if( akeyid[0] == keyid[0] && akeyid[1] == keyid[1] ) {
+		    copy_seckey_cert( skc, pkt.pkt.seckey_cert );
+		    found++;
+		}
+		break;
+	      default:
+		log_error("cannot handle pubkey algo %d\n",
+				     pkt.pkt.seckey_cert->pubkey_algo);
 	    }
 	}
-	free_packet(pkt);
+	else if( keyid && found && pkt.pkttype == PKT_USER_ID ) {
+	    goto leave;
+	}
+	else if( name && pkt.pkttype == PKT_SECKEY_CERT ) {
+	    if( last_pk )
+		free_seckey_cert(last_pk);
+	    last_pk = pkt.pkt.seckey_cert;
+	    pkt.pkt.seckey_cert = NULL;
+	}
+	else if( name && pkt.pkttype == PKT_USER_ID ) {
+	    if( memistr( pkt.pkt.user_id->name, pkt.pkt.user_id->len, name )) {
+		if( !last_pk )
+		    log_error("Ooops: no seckey for userid '%.*s'\n",
+				pkt.pkt.user_id->len, pkt.pkt.user_id->name);
+		else if( skc->pubkey_algo &&
+			 skc->pubkey_algo != last_pk->pubkey_algo )
+		    log_info("skipping id '%.*s': want algo %d, found %d\n",
+				pkt.pkt.user_id->len, pkt.pkt.user_id->name,
+				skc->pubkey_algo, last_pk->pubkey_algo );
+		else {
+		    copy_seckey_cert( skc, last_pk );
+		    goto leave;
+		}
+	    }
+	}
+	else if( !keyid && !name && pkt.pkttype == PKT_SECKEY_CERT ) {
+	    if( last_pk )
+		free_seckey_cert(last_pk);
+	    last_pk = pkt.pkt.seckey_cert;
+	    pkt.pkt.seckey_cert = NULL;
+	}
+	else if( !keyid && !name && pkt.pkttype == PKT_USER_ID ) {
+	    if( !last_pk )
+		log_error("Ooops: no seckey for userid '%.*s'\n",
+			    pkt.pkt.user_id->len, pkt.pkt.user_id->name);
+	    else {
+		if( last_pk->pubkey_algo == PUBKEY_ALGO_RSA ) {
+		     mpi_get_keyid( last_pk->d.rsa.rsa_n , akeyid );
+		     cache_user_id( pkt.pkt.user_id, akeyid );
+		}
+	    }
+	}
+	free_packet(&pkt);
     }
+    rc = G10ERR_NO_SECKEY;
 
+  leave:
+    if( last_pk )
+	free_seckey_cert(last_pk);
+    free_packet(&pkt);
     iobuf_close(a);
     set_packet_list_mode(save_mode);
-    return G10ERR_NO_SECKEY;
+    return rc;
 }
-
 
 
 /****************

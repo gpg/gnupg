@@ -45,7 +45,7 @@ md_filter( void *opaque, int control,
     int i, c, rc=0;
 
     if( control == IOBUFCTRL_UNDERFLOW ) {
-	if( size > mfx->maxbuf_size )
+	if( mfx->maxbuf_size && size > mfx->maxbuf_size )
 	    size = mfx->maxbuf_size;
 	for(i=0; i < size; i++ ) {
 	    if( (c = iobuf_get(a)) == -1 )
@@ -66,5 +66,18 @@ md_filter( void *opaque, int control,
     else if( control == IOBUFCTRL_DESC )
 	*(char**)buf = "md_filter";
     return rc;
+}
+
+
+void
+free_md_filter_context( md_filter_context_t *mfx )
+{
+    if( mfx->md5 )
+	md5_close(mfx->md5);
+    mfx->md5 = NULL;
+    if( mfx->rmd160 )
+	rmd160_close(mfx->rmd160);
+    mfx->rmd160 = NULL;
+    mfx->maxbuf_size = 0;
 }
 

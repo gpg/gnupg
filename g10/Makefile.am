@@ -20,7 +20,7 @@ g10_SOURCES = g10.c		\
 	      mdfilter.c	\
 	      cipher.c		\
 	      options.h 	\
-	      overwrite.c	\
+	      openfile.c	\
 	      packet.h		\
 	      parse-packet.c	\
 	      passphrase.c	\
@@ -28,6 +28,8 @@ g10_SOURCES = g10.c		\
 	      pubkey-enc.c	\
 	      seckey-cert.c	\
 	      seskey.c		\
+	      sign.c		\
+	      comment.c 	\
 	      sig-check.c
 
 

@@ -1,4 +1,4 @@
-/* encode.c - encode/sign data
+/* encode.c - encode data
  *	Copyright (c) 1997 by Werner Koch (dd9jn)
  *
  * This file is part of G10.
@@ -39,7 +39,6 @@
 
 
 static int encode_simple( const char *filename, int mode );
-static IOBUF open_outfile( const char *iname );
 
 
 /****************
@@ -60,22 +59,6 @@ int
 encode_store( const char *filename )
 {
     return encode_simple( filename, 0 );
-}
-
-static void
-write_comment( IOBUF out, const char *s )
-{
-    PACKET pkt;
-    size_t n = strlen(s);
-    int rc;
-
-    pkt.pkttype = PKT_COMMENT;
-    pkt.pkt.comment = m_alloc( sizeof *pkt.pkt.comment + n - 1 );
-    pkt.pkt.comment->len = n;
-    strcpy(pkt.pkt.comment->data, s);
-    if( (rc = build_packet( out, &pkt )) )
-	log_error("build_packet(comment) failed: %s\n", g10_errstr(rc) );
-    free_packet( &pkt );
 }
 
 
@@ -334,45 +317,5 @@ encode_crypt( const char *filename, STRLIST remusr )
     return rc;
 }
 
-
-/****************
- * Make an output filename for the inputfile INAME.
- * Returns an
- */
-static IOBUF
-open_outfile( const char *iname )
-{
-    IOBUF a = NULL;
-    int rc;
-
-    if( (!iname && !opt.outfile) || opt.outfile_is_stdout ) {
-	if( !(a = iobuf_create(NULL)) )
-	    log_error("can't open [stdout]: %s\n", strerror(errno) );
-	else if( opt.verbose )
-	    log_info("writing to stdout\n");
-    }
-    else {
-	char *buf=NULL;
-	const char *name;
-
-	if( opt.outfile )
-	    name = opt.outfile;
-	else {
-	    buf = m_alloc(strlen(iname)+4+1);
-	    strcpy(stpcpy(buf,iname), ".g10");
-	    name = buf;
-	}
-	if( !(rc=overwrite_filep( name )) ) {
-	    if( !(a = iobuf_create( name )) )
-		log_error("can't create %s: %s\n", name, strerror(errno) );
-	    else if( opt.verbose )
-		log_info("writing to '%s'\n", name );
-	}
-	else if( rc != -1 )
-	    log_error("oops: overwrite_filep(%s): %s\n", name, g10_errstr(rc) );
-	m_free(buf);
-    }
-    return a;
-}
 
 

@@ -103,9 +103,6 @@ typedef struct {
 	    byte iv[8];     /* initialization vector for CFB mode */
 			    /* when protected, the MPIs above are pointers
 			     * to plain storage */
-	  } idea;
-	  struct {
-	    byte iv[8];
 	  } blowfish;
 	} protect;
       } rsa;
@@ -190,6 +187,7 @@ void free_user_id( PKT_user_id *uid );
 void free_comment( PKT_comment *rem );
 void free_packet( PACKET *pkt );
 PKT_pubkey_cert *copy_pubkey_cert( PKT_pubkey_cert *d, PKT_pubkey_cert *s );
+PKT_seckey_cert *copy_seckey_cert( PKT_seckey_cert *d, PKT_seckey_cert *s );
 
 
 /*-- sig-check.c --*/
@@ -209,6 +207,10 @@ int decrypt_data( PKT_encr_data *ed, DEK *dek );
 int encrypt_data( PKT_encr_data *ed, DEK *dek );
 
 /*-- plaintext.c --*/
-int handle_plaintext( PKT_plaintext *pt );
+int handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx );
+
+/*-- comment.c --*/
+int write_comment( IOBUF out, const char *s );
+
 
 #endif /*G10_PACKET_H*/

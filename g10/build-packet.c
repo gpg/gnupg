@@ -43,6 +43,7 @@ static u32 calc_plaintext( PKT_plaintext *pt );
 static int do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt );
 static int do_encr_data( IOBUF out, int ctb, PKT_encr_data *ed );
 static int do_compressed( IOBUF out, int ctb, PKT_compressed *cd );
+static int do_signature( IOBUF out, int ctb, PKT_signature *sig );
 
 static int calc_header_length( u32 len );
 static int write_16(IOBUF inp, u16 a);
@@ -92,6 +93,8 @@ build_packet( IOBUF out, PACKET *pkt )
 	rc = do_compressed( out, ctb, pkt->pkt.compressed );
 	break;
       case PKT_SIGNATURE:
+	rc = do_signature( out, ctb, pkt->pkt.signature );
+	break;
       case PKT_RING_TRUST:
       default:
 	log_bug("invalid packet type in build_packet()");
@@ -255,6 +258,9 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
 }
 
 
+
+
+
 static u32
 calc_plaintext( PKT_plaintext *pt )
 {
@@ -323,6 +329,38 @@ do_compressed( IOBUF out, int ctb, PKT_compressed *cd )
 }
 
 
+static int
+do_signature( IOBUF out, int ctb, PKT_signature *sig )
+{
+    int rc = 0;
+    IOBUF a = iobuf_temp();
+
+    write_version( a, ctb );
+    iobuf_put(a, 5 ); /* constant */
+    iobuf_put(a, sig->sig_class );
+    write_32(a, sig->timestamp );
+    write_32(a, sig->keyid[0] );
+    write_32(a, sig->keyid[1] );
+    iobuf_put(a, sig->pubkey_algo );
+    if( sig->pubkey_algo == PUBKEY_ALGO_RSA ) {
+	iobuf_put(a, sig->d.rsa.digest_algo );
+	iobuf_put(a, sig->d.rsa.digest_start[0] );
+	iobuf_put(a, sig->d.rsa.digest_start[1] );
+	mpi_encode(a, sig->d.rsa.rsa_integer );
+    }
+    else {
+	rc = G10ERR_PUBKEY_ALGO;
+	goto leave;
+    }
+
+    write_header(out, ctb, iobuf_get_temp_length(a) );
+    if( iobuf_write_temp( out, a ) )
+	rc = G10ERR_WRITE_FILE;
+
+  leave:
+    iobuf_close(a);
+    return rc;
+}
 
 
 static int
