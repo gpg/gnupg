@@ -132,6 +132,12 @@ case "${target}" in
 	path="sparc32v8 sparc32"
 	mpi_extra_modules="udiv"
         ;;
+    sparc64-*-netbsd)
+       # There are no sparc64 assembler modules that work, so
+       # just use generic C functions
+       echo '/* configured for sparc64-*netbsd */' >>./mpi/asm-syntax.h
+       path=""
+       ;;
     sparc9*-*-*     | \
     sparc64*-*-*    | \
     ultrasparc*-*-* )
