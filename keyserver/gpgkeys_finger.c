@@ -132,7 +132,7 @@ connect_server (const char *server, unsigned short port)
         }
       if (hp->h_length != 4)
         {
-          fprintf (console, "gpgkeys: illegal address length for`%s'\n",
+          fprintf (console, "gpgkeys: illegal address length for `%s'\n",
                    server);
           return -1;
         }
