@@ -199,6 +199,10 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 	    log_info( _("public key encrypted data: good DEK\n") );
     }
     else {
+	/* fixme: defer this message until we have parsed all packets of
+	 * this type - do this by building a list of keys with their stati
+	 * and store it with the conetxt.  do_proc_packets can then use
+	 * this list to display some information */
 	log_error(_("public key decryption failed: %s\n"), g10_errstr(result));
     }
     free_packet(pkt);

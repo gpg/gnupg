@@ -367,7 +367,9 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 static int
 do_we_trust_pre( PKT_public_key *pk, int trustlevel )
 {
-    int rc = do_we_trust( pk, trustlevel );
+    int rc;
+
+    rc = do_we_trust( pk, trustlevel );
 
     if( (trustlevel & TRUST_FLAG_REVOKED) && !rc )
 	return 0;
@@ -650,6 +652,23 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 }
 
 
+
+static int
+algo_available( int preftype, int algo )
+{
+    if( preftype == PREFTYPE_SYM ) {
+	return algo && !check_cipher_algo( algo );
+    }
+    else if( preftype == PREFTYPE_HASH ) {
+	return algo && !check_digest_algo( algo );
+    }
+    else if( preftype == PREFTYPE_COMPR ) {
+	return !algo || algo == 1 || algo == 2;
+    }
+    else
+	return 0;
+}
+
 /****************
  * Return -1 if we could not find an algorithm.
  */
@@ -726,9 +745,10 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
 	    if( pref[j] == preftype ) {
 		any = 1;
 		if( (bits[pref[j+1]/32] & (1<<(pref[j+1]%32))) ) {
-		    /* fixme: check whether this algoritm is available */
-		    i = pref[j+1];
-		    break;
+		    if( algo_available( preftype, pref[j+1] ) ) {
+			i = pref[j+1];
+			break;
+		    }
 		}
 	    }
 	}
@@ -736,9 +756,10 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
     if( !pref || !any ) {
 	for(j=0; j < 256; j++ )
 	    if( (bits[j/32] & (1<<(j%32))) ) {
-		/* fixme: check whether this algoritm is available */
-		i = j;
-		break;
+		if( algo_available( preftype, j ) ) {
+		    i = j;
+		    break;
+		}
 	    }
     }
   #if 0

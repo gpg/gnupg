@@ -270,6 +270,7 @@ md5_write( MD5_CONTEXT *ctx, const void *buffer, size_t len)
 
 	buffer = (const char *) buffer + add;
 	len -= add;
+	/* FIXME: misalignment occurs ... tsssss */
       }
 
     /* Process available complete blocks.  */

@@ -1,3 +1,17 @@
+Thu Feb 25 18:47:39 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* pkclist.c (algo_available): New.
+	(select_algo_from_prefs): Check whether algo is available.
+
+	* ringedit.c (keyring_copy): Take care of opt.dry_run.
+	(do_gdbm_store): Ditto.
+	* openfile.c (open_outfile). Ditto.
+	(copy_options_file): Ditto.
+	* trustdb.c (update_trustdb): Ditto.
+	(clear_trust_checked_flag): Ditto.
+	(update_trust_record): Ditto.
+	(insert_trust_record): Ditto.
+
 Wed Feb 24 11:07:27 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* keylist.c (secret_key_list): Now really list the secret key.

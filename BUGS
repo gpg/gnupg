@@ -64,6 +64,7 @@ an "info standards" to find out why a disclaimer is needed for GNU.)
     tries to find public keys specified with the -r option. I don't like
     this.
 
-
+[ **] #9 1999-02-25
+    Misalignment in md5.c#md5_write.
 
 

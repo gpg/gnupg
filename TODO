@@ -17,9 +17,18 @@
   * Use capabilities if available.  glibc2 does not support it yet?
     What about 2.2 or should we use the system calls directly?
 
-  * wehndecryptiong multiple key: print a warning only if no usable pubkey
+  * when decryptiong multiple key: print a warning only if no usable pubkey
     encrypte package was found.  Extension: display a list of all recipients.
 
+  * in pkclist.c : display info about the key before saying that
+    we have (no) trust info.
+
+  * for new key: the last keyring specified is used.  Order is: default
+    keyrings, keyrings from options, keyrings from the command line.
+
+  * display a kind of message-id from a signature (the timestamp may not
+    be suffiecient but DSA signatures are always different).  This can
+    be used to prevent replay attacks.	(something is mentioned in rfc2440).
 
 
 Nice to have

@@ -2,6 +2,7 @@
     * New configure option --enable-static-rnd=[egd|linux|unix|none]
       to select a random gathering module for static linking.
 
+
 Noteworthy changes in version 0.9.3
 -----------------------------------
 

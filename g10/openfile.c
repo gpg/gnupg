@@ -93,7 +93,9 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 	char *buf=NULL;
 	const char *name;
 
-	if( opt.outfile )
+	if( opt.dry_run )
+	    name = "/dev/null";
+	else if( opt.outfile )
 	    name = opt.outfile;
 	else {
 	  #ifdef USE_ONLY_8DOT3
@@ -161,6 +163,9 @@ copy_options_file( const char *destdir )
     FILE *src, *dst;
     int linefeeds=0;
     int c;
+
+    if( opt.dry_run )
+	return;
 
     fname = m_alloc( strlen(datadir) + strlen(destdir) + 15 );
     strcpy(stpcpy(fname, datadir), "/options" SKELEXT );

@@ -1506,8 +1506,10 @@ list_trust_path( const char *username )
     int rc;
     ulong lid;
     TRUSTREC rec;
+  #if 0
     TRUST_INFO *tmppath;
     TRUST_SEG_LIST trust_seg_list, tsl, tsl2;
+  #endif
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 
     INIT_TRUSTDB();
@@ -1687,6 +1689,9 @@ update_trustdb( )
     KBNODE keyblock = NULL;
     KBPOS kbpos;
     int rc;
+
+    if( opt.dry_run )
+	return;
 
     INIT_TRUSTDB();
     rc = enum_keyblocks( 0, &kbpos, &keyblock );
@@ -2120,6 +2125,9 @@ clear_trust_checked_flag( PKT_public_key *pk )
 {
     TRUSTREC rec;
     int rc;
+
+    if( opt.dry_run )
+	return 0;
 
     INIT_TRUSTDB();
     rc = get_dir_record( pk, &rec );
@@ -3108,6 +3116,9 @@ update_trust_record( KBNODE keyblock, int recheck, int *modified )
     RECNO_LIST recno_list = NULL; /* list of verified records */
     /* fixme: replace recno_list by a lookup on node->recno */
 
+    if( opt.dry_run )
+	return 0;
+
     INIT_TRUSTDB();
     if( modified )
 	*modified = 0;
@@ -3236,6 +3247,10 @@ insert_trust_record( PKT_public_key *pk )
     size_t fingerlen;
     int rc = 0;
     ulong hintlist = 0;
+
+
+    if( opt.dry_run )
+	return 0;
 
     INIT_TRUSTDB();
 

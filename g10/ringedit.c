@@ -1297,6 +1297,9 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
     if( kbpos->fp )
 	BUG(); /* not allowed with such a handle */
 
+    if( opt.dry_run )
+	return 0;
+
     lock_rentry( rentry );
 
     /* open the source file */
@@ -1534,6 +1537,9 @@ do_gdbm_store( KBPOS *kbpos, KBNODE root, int update )
 
     if( !(rentry = check_pos( kbpos )) )
 	return G10ERR_GENERAL;
+
+    if( opt.dry_run )
+	return 0;
 
     /* construct the fingerprint which is used as the primary key */
     node = find_kbnode( root, PKT_PUBLIC_KEY );

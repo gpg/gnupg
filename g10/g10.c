@@ -232,7 +232,7 @@ static ARGPARSE_OPTS opts[] = {
     { oVerbose, "verbose",   0, N_("verbose") },
     { oQuiet,	"quiet",   0, N_("be somewhat more quiet") },
     { oForceV3Sigs, "force-v3-sigs", 0, N_("force v3 signatures") },
- /* { oDryRun, "dry-run",   0, N_("do not make any changes") }, */
+    { oDryRun, "dry-run",   0, N_("do not make any changes") },
     { oBatch, "batch",     0, N_("batch mode: never ask")},
     { oAnswerYes, "yes",       0, N_("assume yes on most questions")},
     { oAnswerNo,  "no",        0, N_("assume no on most questions")},
@@ -695,6 +695,7 @@ main( int argc, char **argv )
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
 	  case oOutput: opt.outfile = pargs.r.ret_str; break;
 	  case oQuiet: opt.quiet = 1; break;
+	  case oDryRun: opt.dry_run = 1; break;
 	  case oVerbose: g10_opt_verbose++;
 		    opt.verbose++; opt.list_sigs=1; break;
 	  case oKOption: set_cmd( &cmd, aKMode ); break;
