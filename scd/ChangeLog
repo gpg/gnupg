@@ -1,3 +1,8 @@
+2003-07-28  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (do_setattr): Change implementation.  Allow all
+	useful DOs.
+
 2003-07-27  Werner Koch  <wk@gnupg.org>
 
 	Adjusted for gcry_mpi_print and gcry_mpi_scan API change.

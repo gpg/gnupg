@@ -1071,10 +1071,7 @@ main ( int argc, char **argv)
   /* set the random seed file */
   if (use_random_seed) {
     char *p = make_filename (opt.homedir, "random_seed", NULL);
-#if 0
-#warning set_random_seed_file not yet available in Libgcrypt
-    set_random_seed_file(p);
-#endif
+    gcry_control (GCRYCTL_SET_RANDOM_SEED_FILE, p);
     xfree(p);
   }
 
@@ -1342,12 +1339,7 @@ emergency_cleanup (void)
 void
 gpgsm_exit (int rc)
 {
-  #if 0
-#warning no update_random_seed_file
-  update_random_seed_file();
-  #endif
-#if 0
-  /* at this time a bit annoying */
+  gcry_control (GCRYCTL_UPDATE_RANDOM_SEED_FILE);update_random_seed_file();
   if (opt.debug & DBG_MEMSTAT_VALUE)
     {
       gcry_control( GCRYCTL_DUMP_MEMORY_STATS );
@@ -1355,7 +1347,6 @@ gpgsm_exit (int rc)
     }
   if (opt.debug)
     gcry_control (GCRYCTL_DUMP_SECMEM_STATS );
-#endif
   emergency_cleanup ();
   rc = rc? rc : log_get_errorcount(0)? 2 : gpgsm_errors_seen? 1 : 0;
   exit (rc);

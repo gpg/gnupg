@@ -32,8 +32,8 @@
 #define HAVE_CTAPI 1
 
 #define MAX_READER 4 /* Number of readers we support concurrently. */
-#define CARD_CONNECT_TIMEOUT 30 /* Number of seconds to wait for
-                                   insertion of the card. */
+#define CARD_CONNECT_TIMEOUT 1 /* Number of seconds to wait for
+                                  insertion of the card (1 = don't wait). */
 
 
 
@@ -149,6 +149,9 @@ ct_activate_card (int reader)
       unsigned char dad[1], sad[1], cmd[11], buf[256];
       unsigned short buflen;
 
+      if (count)
+        sleep (1); /* FIXME: we should use a more reliable timer. */
+
       /* Check whether card has been inserted. */
       dad[0] = 1;     /* Destination address: CT. */    
       sad[0] = 2;     /* Source address: Host. */
@@ -203,7 +206,6 @@ ct_activate_card (int reader)
           return 0;
         }
 
-      sleep (1); /* FIXME: we should use a more reliable timer. */
     }
  
   log_info ("ct_activate_card(%d): timeout waiting for card\n", reader);

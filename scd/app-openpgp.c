@@ -541,10 +541,28 @@ do_setattr (APP app, const char *name,
             const unsigned char *value, size_t valuelen)
 {
   gpg_error_t rc;
+  int idx;
+  static struct {
+    const char *name;
+    int tag;
+  } table[] = {
+    { "DISP-NAME",    0x005B },
+    { "LOGIN-DATA",   0x005E },
+    { "DISP-LANG",    0x5F2D },
+    { "DISP-SEX",     0x5F35 },
+    { "PUBKEY-URL",   0x5F50 },
+    { "CHV-STATUS-1", 0x00C4 },
+    { "CA-FPR-1",     0x00CA },
+    { "CA-FPR-2",     0x00CB },
+    { "CA-FPR-3",     0x00CC },
+    { NULL, 0 }
+  };
 
-  log_debug ("app_openpgp#setattr `%s' value of length %u\n",
-             name, (unsigned int)valuelen); /* fixme: name should be
-                                               sanitized. */
+
+  for (idx=0; table[idx].name && strcmp (table[idx].name, name); idx++)
+    ;
+  if (!table[idx].name)
+    return gpg_error (GPG_ERR_INV_NAME); 
 
   if (!app->did_chv3)
     {
@@ -552,8 +570,8 @@ do_setattr (APP app, const char *name,
 
       rc = pincb (pincb_arg, "Admin PIN (CHV3)",
                   &pinvalue);
-      pinvalue = xstrdup ("12345678");
-      rc = 0;
+/*        pinvalue = xstrdup ("12345678"); */
+/*        rc = 0; */
       if (rc)
         {
           log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
@@ -571,32 +589,12 @@ do_setattr (APP app, const char *name,
       app->did_chv3 = 1;
     }
 
-  log_debug ("setting `%s' to `%.*s'\n", name, (int)valuelen, value);
-  if (!strcmp (name, "DISP-NAME"))
-    {
-      rc = iso7816_put_data (app->slot, 0x005B, value, valuelen);
-      if (rc)
-        {
-          /* FIXME: If this fails we should *once* try again after
-          doing a verify command, so that in case of a problem with
-          tracking the verify operation we have a fallback. */
-          /* FIXME: change this when iso7816 returns correct error
-          codes. */
-          log_error ("failed to set `Name'\n");
-          rc = gpg_error (GPG_ERR_GENERAL);
-        }
-    }
-  else if (!strcmp (name, "PUBKEY-URL"))
-    {
-      rc = iso7816_put_data (app->slot, 0x5F50, value, valuelen);
-      if (rc)
-        {
-          log_error ("failed to set `Pubkey-URL'\n");
-          rc = gpg_error (GPG_ERR_GENERAL);
-        }
-    }
-  else
-    rc = gpg_error (GPG_ERR_INV_NAME); 
+  rc = iso7816_put_data (app->slot, table[idx].tag, value, valuelen);
+  if (rc)
+    log_error ("failed to set `%s': %s\n", table[idx].name, gpg_strerror (rc));
+  /* FIXME: If this fails we should *once* try again after
+     doing a verify command, so that in case of a problem with
+     tracking the verify operation we have a fallback. */
 
   return rc;
 }

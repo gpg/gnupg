@@ -1,3 +1,8 @@
+2003-07-29  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): Add secmem features and set the random seed file.
+	(gpgsm_exit): Update the random seed file and enable debug output.
+
 2003-07-27  Werner Koch  <wk@gnupg.org>
 
 	Adjusted for gcry_mpi_print and gcry_mpi_scan API change.
