@@ -2002,7 +2002,11 @@ Suppress the warning about "using insecure memory".
 <varlistentry>
 <term>--no-permission-warning</term>
 <listitem><para>
-Suppress the warning about unsafe file permissions.
+Suppress the warning about unsafe file permissions.  Note that the
+file permission checks that GnuPG does are not intended to be
+authoritative, rather they simply warn about certain common permission
+problems.  Do not assume that the lack of a warning means that your
+system is secure.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2212,11 +2216,14 @@ Experimental use only.
 Sets up a named group, which is similar to aliases in email programs.
 Any time the group name is a receipient (-r or --recipient), it will
 be expanded to the values specified.
-
+</para><para>
 The values are &ParmKeyIDs; or fingerprints, but any key description
 is accepted.  Note that a value with spaces in it will be treated as
 two different values.  Note also there is only one level of expansion
-- you cannot make an group that points to another group.
+- you cannot make an group that points to another group.  When used
+from the command line, it may be necessary to quote the argument to
+this option to prevent the shell from treating it as multiple
+arguments.
 </para></listitem></varlistentry>
 
 <varlistentry>
