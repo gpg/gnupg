@@ -56,6 +56,9 @@ enum {
   GNUPG_Invalid_Data = 27,
   GNUPG_Assuan_Server_Fault = 28,
   GNUPG_Assuan_Error = 29, /* catch all assuan error */
+  GNUPG_Invalid_Session_Key = 30,
+  GNUPG_Invalid_Sexp = 31,
+  GNUPG_Unsupported_Algorithm = 32,
 };
 
 /* Status codes - fixme: should go into another file */

@@ -42,6 +42,8 @@ map_ksba_err (int err)
     case -1:
     case 0:
       break;
+
+    case KSBA_Unsupported_Algorithm: err = GNUPG_Unsupported_Algorithm; break;
       
     default:
       err = seterr (General_Error);
