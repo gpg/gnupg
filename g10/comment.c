@@ -79,9 +79,6 @@ make_mpi_comment_node( const char *s, MPI a )
 
     nb1 = mpi_get_nbits( a );
     p = buf = mpi_get_buffer( a, &n1, NULL );
-    for( ; !*p && n1; p++, n1-- )  /* skip leading null bytes */
-	;
-
     pkt = m_alloc_clear( sizeof *pkt );
     pkt->pkttype = PKT_COMMENT;
     pkt->pkt.comment = m_alloc( sizeof *pkt->pkt.comment + n + 2 + n1 );

@@ -1,9 +1,13 @@
 Noteworthy changes in version 0.2.15
 ------------------------------------
 
+    * Fixed a bug with the old checksum calculation for secret keys.
+      If you run the program without --batch, a warning does inform
+      you if your secret key needs to be converted; simply use
+      --change-passphrase to recalculate the checksum. Please do this
+      soon, as the compatible mode will be removed sometime in the future.
+
     * CAST5 works (using the PGP's special CFB mode).
-
-
 
 
 Noteworthy changes in version 0.2.14

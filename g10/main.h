@@ -21,6 +21,7 @@
 #define G10_MAIN_H
 #include "types.h"
 #include "iobuf.h"
+#include "mpi.h"
 #include "cipher.h"
 #include "keydb.h"
 
@@ -38,6 +39,11 @@ typedef struct {
 #else
   void g10_exit(int rc);
 #endif
+
+/*-- misc.c --*/
+u16 checksum_u16( unsigned n );
+u16 checksum( byte *p, unsigned n );
+u16 checksum_mpi( MPI a );
 
 /*-- encode.c --*/
 int encode_symmetric( const char *filename );

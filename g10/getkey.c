@@ -554,6 +554,7 @@ lookup( PKT_public_cert *pkc, int mode,  u32 *keyid, const char *name )
     int rc;
     KBNODE keyblock = NULL;
     KBPOS kbpos;
+    int oldmode = set_packet_list_mode(0);
 
     rc = enum_keyblocks( 0, &kbpos, &keyblock );
     if( rc ) {
@@ -655,6 +656,7 @@ lookup( PKT_public_cert *pkc, int mode,  u32 *keyid, const char *name )
   leave:
     enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
     release_kbnode( keyblock );
+    set_packet_list_mode(oldmode);
     return rc;
 }
 
@@ -667,11 +669,12 @@ lookup_skc( PKT_secret_cert *skc, int mode,  u32 *keyid, const char *name )
     int rc;
     KBNODE keyblock = NULL;
     KBPOS kbpos;
+    int oldmode = set_packet_list_mode(0);
 
     rc = enum_keyblocks( 5 /* open secret */, &kbpos, &keyblock );
     if( rc ) {
 	if( rc == -1 )
-	    rc = G10ERR_NO_PUBKEY;
+	    rc = G10ERR_NO_SECKEY;
 	else if( rc )
 	    log_error("enum_keyblocks(open secret) failed: %s\n", g10_errstr(rc) );
 	goto leave;
@@ -761,13 +764,14 @@ lookup_skc( PKT_secret_cert *skc, int mode,  u32 *keyid, const char *name )
 	keyblock = NULL;
     }
     if( rc == -1 )
-	rc = G10ERR_NO_PUBKEY;
+	rc = G10ERR_NO_SECKEY;
     else if( rc )
 	log_error("enum_keyblocks(read) failed: %s\n", g10_errstr(rc));
 
   leave:
     enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
     release_kbnode( keyblock );
+    set_packet_list_mode(oldmode);
     return rc;
 }
 

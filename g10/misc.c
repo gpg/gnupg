@@ -1,4 +1,4 @@
-/* cast5.h
+/* misc.c -  miscellaneous functions
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
@@ -17,21 +17,47 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef G10_CAST5_H
-#define G10_CAST5_H
 
-#include "types.h"
-
-#define CAST5_BLOCKSIZE 8
-
-typedef struct {
-    u32  Km[16];
-    byte Kr[16];
-} CAST5_context;
-
-void cast5_setkey( CAST5_context *c, byte *key, unsigned keylen );
-void cast5_encrypt_block( CAST5_context *bc, byte *outbuf, byte *inbuf );
-void cast5_decrypt_block( CAST5_context *bc, byte *outbuf, byte *inbuf );
+#include <config.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "util.h"
+#include "main.h"
 
 
-#endif /*G10_CAST5_H*/
+u16
+checksum_u16( unsigned n )
+{
+    u16 a;
+
+    a  = (n >> 8) & 0xff;
+    a |= n & 0xff;
+    return a;
+}
+
+u16
+checksum( byte *p, unsigned n )
+{
+    u16 a;
+
+    for(a=0; n; n-- )
+	a += *p++;
+    return a;
+}
+
+u16
+checksum_mpi( MPI a )
+{
+    u16 csum;
+    byte *buffer;
+    unsigned nbytes;
+
+    buffer = mpi_get_buffer( a, &nbytes, NULL );
+    csum = checksum_u16( mpi_get_nbits(a) );
+    csum += checksum( buffer, nbytes );
+    m_free( buffer );
+    return csum;
+}
+
+

@@ -3,7 +3,6 @@
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
 EXTRA_DIST = OPTIONS  pubring.asc
 OMIT_DEPENDENCIES = zlib.h zconf.h
-BUILT_SOURCES = g10maint.c
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
 bin_PROGRAMS = gpg gpgm gpgd
@@ -28,6 +27,7 @@ common_source =  \
 	      elg.c		\
 	      dsa.c		\
 	      rsa.c		\
+	      misc.c		\
 	      options.h 	\
 	      openfile.c	\
 	      keyid.c		\
@@ -60,8 +60,7 @@ gpg_SOURCES  = g10.c		\
 	      keygen.c
 
 
-gpgm_SOURCES = g10maint.c   \
-	      dearmor.c     \
+gpgm_SOURCES = dearmor.c     \
 	      $(common_source)
 
 gpgd_SOURCES = gpgd.c \
@@ -70,8 +69,11 @@ gpgd_SOURCES = gpgd.c \
 
 LDADD = @INTLLIBS@ $(needed_libs) @ZLIBS@
 
-g10maint.c : g10.c
-	    $(CPP) $(CFLAGS) $(DEFS) $(INCLUDES) -DIS_G10MAINT $< > $@ || rm $@
+gpgm_LDADD = g10maint.o $(LDADD)
+
+g10maint.o: g10.c
+	$(COMPILE) -DIS_G10MAINT  -o g10maint.o -c g10.c
+
 
 $(PROGRAMS): $(needed_libs)
 

@@ -37,7 +37,6 @@
 #include "util.h"
 #include "types.h"
 #include "blowfish.h"
-#include "random.h"
 
 /* precomputed S boxes */
 static const u32 ks0[256] = {
@@ -392,8 +391,8 @@ decrypt(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
 #undef F
 #undef R
 
-static void
-encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
+void
+blowfish_encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 {
     u32 d1, d2;
 
@@ -429,8 +428,8 @@ encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 }
 
 
-static void
-decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
+void
+blowfish_decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 {
     u32 d1, d2;
 
@@ -477,18 +476,18 @@ selftest()
     byte cipher3[] = { 0xE1, 0x13, 0xF4, 0x10, 0x2C, 0xFC, 0xCE, 0x43 };
 
     blowfish_setkey( &c, "abcdefghijklmnopqrstuvwxyz", 26 );
-    encrypt_block( &c, buffer, plain );
+    blowfish_encrypt_block( &c, buffer, plain );
     if( memcmp( buffer, "\x32\x4E\xD0\xFE\xF4\x13\xA2\x03", 8 ) )
 	log_error("wrong blowfish encryption\n");
-    decrypt_block( &c, buffer, buffer );
+    blowfish_decrypt_block( &c, buffer, buffer );
     if( memcmp( buffer, plain, 8 ) )
 	log_bug("blowfish failed\n");
 
     blowfish_setkey( &c, key3, 8 );
-    encrypt_block( &c, buffer, plain3 );
+    blowfish_encrypt_block( &c, buffer, plain3 );
     if( memcmp( buffer, cipher3, 8 ) )
 	log_error("wrong blowfish encryption (3)\n");
-    decrypt_block( &c, buffer, buffer );
+    blowfish_decrypt_block( &c, buffer, buffer );
     if( memcmp( buffer, plain3, 8 ) )
 	log_bug("blowfish failed (3)\n");
 }
@@ -506,8 +505,6 @@ blowfish_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
 	initialized = 1;
 	selftest();
     }
-
-    fast_random_poll();
 
     for(i=0; i < BLOWFISH_ROUNDS+2; i++ )
 	c->p[i] = ps[i];
@@ -560,189 +557,6 @@ blowfish_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
 	c->s3[i]   = datal;
 	c->s3[i+1] = datar;
     }
-}
-
-
-void
-blowfish_setiv( BLOWFISH_context *c, byte *iv )
-{
-    if( iv )
-	memcpy( c->iv, iv, BLOWFISH_BLOCKSIZE );
-    else
-	memset( c->iv, 0, BLOWFISH_BLOCKSIZE );
-    c->count = 0;
-    encrypt_block( c, c->eniv, c->iv );
-}
-
-
-void
-blowfish_encode( BLOWFISH_context *c, byte *outbuf, byte *inbuf,
-						    unsigned nblocks )
-{
-    unsigned n;
-
-    for(n=0; n < nblocks; n++ ) {
-	encrypt_block( c, outbuf, inbuf );
-	inbuf  += BLOWFISH_BLOCKSIZE;;
-	outbuf += BLOWFISH_BLOCKSIZE;
-    }
-}
-
-void
-blowfish_decode( BLOWFISH_context *c, byte *outbuf, byte *inbuf,
-						    unsigned nblocks )
-{
-    unsigned n;
-
-    for(n=0; n < nblocks; n++ ) {
-	decrypt_block( c, outbuf, inbuf );
-	inbuf  += BLOWFISH_BLOCKSIZE;;
-	outbuf += BLOWFISH_BLOCKSIZE;
-    }
-}
-
-
-
-/****************
- * FIXME: Make use of bigger chunks
- * (out may overlap with a or b)
- */
-static void
-xorblock( byte *out, byte *a, byte *b, unsigned count )
-{
-    for( ; count ; count--, a++, b++ )
-	*out++ = *a ^ *b ;
-}
-
-
-
-/****************
- * Encode buffer in CFB mode. nbytes can be an arbitrary value.
- */
-void
-blowfish_encode_cfb( BLOWFISH_context *c, byte *outbuf,
-					  byte *inbuf, unsigned nbytes)
-{
-    unsigned n;
-    int is_aligned;
-
-    if( c->count ) {  /* must make a full block first */
-	assert( c->count < BLOWFISH_BLOCKSIZE );
-	n = BLOWFISH_BLOCKSIZE - c->count;
-	if( n > nbytes )
-	    n = nbytes;
-	xorblock( outbuf, c->eniv+c->count, inbuf, n);
-	memcpy( c->iv+c->count, outbuf, n);
-	c->count += n;
-	nbytes -= n;
-	inbuf += n;
-	outbuf += n;
-	assert( c->count <= BLOWFISH_BLOCKSIZE);
-	if( c->count == BLOWFISH_BLOCKSIZE ) {
-	    encrypt_block( c, c->eniv, c->iv );
-	    c->count = 0;
-	}
-	else
-	    return;
-    }
-    assert(!c->count);
-    is_aligned = !((ulong)inbuf % SIZEOF_UNSIGNED_LONG);
-    while( nbytes >= BLOWFISH_BLOCKSIZE ) {
-	if( is_aligned ) {
-	  #if SIZEOF_UNSIGNED_LONG == BLOWFISH_BLOCKSIZE
-	    *(ulong*)outbuf = *(ulong*)c->eniv ^ *(ulong*)inbuf;
-	  #elif (2*SIZEOF_UNSIGNED_LONG) == BLOWFISH_BLOCKSIZE
-	    ((ulong*)outbuf)[0] = ((ulong*)c->eniv)[0] ^ ((ulong*)inbuf)[0];
-	    ((ulong*)outbuf)[1] = ((ulong*)c->eniv)[1] ^ ((ulong*)inbuf)[1];
-	  #elif (4*SIZEOF_UNSIGNED_LONG) == BLOWFISH_BLOCKSIZE
-	    ((ulong*)outbuf)[0] = ((ulong*)c->eniv)[0] ^ ((ulong*)inbuf)[0];
-	    ((ulong*)outbuf)[1] = ((ulong*)c->eniv)[1] ^ ((ulong*)inbuf)[1];
-	    ((ulong*)outbuf)[2] = ((ulong*)c->eniv)[2] ^ ((ulong*)inbuf)[2];
-	    ((ulong*)outbuf)[3] = ((ulong*)c->eniv)[3] ^ ((ulong*)inbuf)[3];
-	  #else
-	    #error Please remove this info line.
-	    xorblock( outbuf, c->eniv, inbuf, BLOWFISH_BLOCKSIZE);
-	  #endif
-	}
-	else  /* not aligned */
-	    xorblock( outbuf, c->eniv, inbuf, BLOWFISH_BLOCKSIZE);
-	memcpy( c->iv, outbuf, BLOWFISH_BLOCKSIZE);
-	encrypt_block( c, c->eniv, c->iv );
-	nbytes -= BLOWFISH_BLOCKSIZE;
-	inbuf += BLOWFISH_BLOCKSIZE;
-	outbuf += BLOWFISH_BLOCKSIZE;
-    }
-
-    if( nbytes ) {
-	xorblock( outbuf, c->eniv, inbuf, nbytes );
-	memcpy( c->iv, outbuf, nbytes );
-	c->count = nbytes;
-    }
-
-}
-
-
-void
-blowfish_decode_cfb( BLOWFISH_context *c, byte *outbuf,
-					  byte *inbuf, unsigned nbytes)
-{
-    unsigned n;
-    int is_aligned;
-
-    if( c->count ) {  /* must make a full block first */
-	assert( c->count < BLOWFISH_BLOCKSIZE );
-	n = BLOWFISH_BLOCKSIZE - c->count;
-	if( n > nbytes )
-	    n = nbytes;
-	memcpy( c->iv+c->count, inbuf, n);
-	xorblock( outbuf, c->eniv+c->count, inbuf, n);
-	c->count += n;
-	nbytes -= n;
-	inbuf += n;
-	outbuf += n;
-	assert( c->count <= BLOWFISH_BLOCKSIZE);
-	if( c->count == BLOWFISH_BLOCKSIZE ) {
-	    encrypt_block( c, c->eniv, c->iv );
-	    c->count = 0;
-	}
-	else
-	    return;
-    }
-
-    assert(!c->count);
-    is_aligned = !((ulong)inbuf % SIZEOF_UNSIGNED_LONG);
-    while( nbytes >= BLOWFISH_BLOCKSIZE ) {
-	memcpy( c->iv, inbuf, BLOWFISH_BLOCKSIZE);
-	if( is_aligned ) {
-	  #if SIZEOF_UNSIGNED_LONG == BLOWFISH_BLOCKSIZE
-	    *(ulong*)outbuf = *(ulong*)c->eniv ^ *(ulong*)inbuf;
-	  #elif (2*SIZEOF_UNSIGNED_LONG) == BLOWFISH_BLOCKSIZE
-	    ((ulong*)outbuf)[0] = ((ulong*)c->eniv)[0] ^ ((ulong*)inbuf)[0];
-	    ((ulong*)outbuf)[1] = ((ulong*)c->eniv)[1] ^ ((ulong*)inbuf)[1];
-	  #elif (4*SIZEOF_UNSIGNED_LONG) == BLOWFISH_BLOCKSIZE
-	    ((ulong*)outbuf)[0] = ((ulong*)c->eniv)[0] ^ ((ulong*)inbuf)[0];
-	    ((ulong*)outbuf)[1] = ((ulong*)c->eniv)[1] ^ ((ulong*)inbuf)[1];
-	    ((ulong*)outbuf)[2] = ((ulong*)c->eniv)[2] ^ ((ulong*)inbuf)[2];
-	    ((ulong*)outbuf)[3] = ((ulong*)c->eniv)[3] ^ ((ulong*)inbuf)[3];
-	  #else
-	    #error Please remove this info line.
-	    xorblock( outbuf, c->eniv, inbuf, BLOWFISH_BLOCKSIZE);
-	  #endif
-	}
-	else  /* not aligned */
-	    xorblock( outbuf, c->eniv, inbuf, BLOWFISH_BLOCKSIZE);
-	encrypt_block( c, c->eniv, c->iv );
-	nbytes -= BLOWFISH_BLOCKSIZE;
-	inbuf += BLOWFISH_BLOCKSIZE;
-	outbuf += BLOWFISH_BLOCKSIZE;
-    }
-
-    if( nbytes ) {
-	memcpy( c->iv, inbuf, nbytes );
-	xorblock( outbuf, c->eniv, inbuf, nbytes );
-	c->count = nbytes;
-    }
-
 }
 
 

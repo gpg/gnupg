@@ -100,6 +100,8 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
      *
      *	   0  2  RND(n bytes)  0  A  DEK(k bytes)  CSUM(2 bytes)
      *
+     * (mpi_get_buffer already removed the leading zero).
+     *
      * RND are non-zero randow bytes.
      * A   is the cipher algorithm
      * DEK is the encryption key (session key) with length k
@@ -107,8 +109,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
      */
     if( DBG_CIPHER )
 	log_hexdump("DEK frame:", frame, nframe );
-    for(n=0; n < nframe && !frame[n]; n++ ) /* skip leading zeroes */
-	;
+    n=0;
     if( n + 7 > nframe )
 	{ rc = G10ERR_WRONG_SECKEY; goto leave; }
     if( frame[n] == 1 && frame[nframe-1] == 2 ) {

@@ -96,19 +96,16 @@ INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
 needed_libs = ../cipher/libcipher.a  ../util/libutil.a \
 	      ../mpi/libmpi.a ../util/libutil.a
 
-noinst_PROGRAMS = mpicalc bftest cast5test clean-sat
+noinst_PROGRAMS = mpicalc bftest clean-sat
 
 mpicalc_SOURCES = mpicalc.c
 
 bftest_SOURCES = bftest.c
 
-cast5test_SOURCES = cast5test.c
-
 clean_sat_SOURCES  = clean-sat.c
 
 mpicalc_LDADD = @INTLLIBS@  $(needed_libs)
 bftest_LDADD = @INTLLIBS@  $(needed_libs)
-cast5test_LDADD = @INTLLIBS@  $(needed_libs)
 mkinstalldirs = $(SHELL) $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -127,10 +124,6 @@ bftest_OBJECTS =  bftest.o
 bftest_DEPENDENCIES =  ../cipher/libcipher.a ../util/libutil.a \
 ../mpi/libmpi.a ../util/libutil.a
 bftest_LDFLAGS = 
-cast5test_OBJECTS =  cast5test.o
-cast5test_DEPENDENCIES =  ../cipher/libcipher.a ../util/libutil.a \
-../mpi/libmpi.a ../util/libutil.a
-cast5test_LDFLAGS = 
 clean_sat_OBJECTS =  clean-sat.o
 clean_sat_LDADD = $(LDADD)
 clean_sat_DEPENDENCIES = 
@@ -145,10 +138,9 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP = --best
-DEP_FILES =  .deps/bftest.P .deps/cast5test.P .deps/clean-sat.P \
-.deps/mpicalc.P
-SOURCES = $(mpicalc_SOURCES) $(bftest_SOURCES) $(cast5test_SOURCES) $(clean_sat_SOURCES)
-OBJECTS = $(mpicalc_OBJECTS) $(bftest_OBJECTS) $(cast5test_OBJECTS) $(clean_sat_OBJECTS)
+DEP_FILES =  .deps/bftest.P .deps/clean-sat.P .deps/mpicalc.P
+SOURCES = $(mpicalc_SOURCES) $(bftest_SOURCES) $(clean_sat_SOURCES)
+OBJECTS = $(mpicalc_OBJECTS) $(bftest_OBJECTS) $(clean_sat_OBJECTS)
 
 default: all
 
@@ -194,10 +186,6 @@ mpicalc: $(mpicalc_OBJECTS) $(mpicalc_DEPENDENCIES)
 bftest: $(bftest_OBJECTS) $(bftest_DEPENDENCIES)
 	@rm -f bftest
 	$(LINK) $(bftest_LDFLAGS) $(bftest_OBJECTS) $(bftest_LDADD) $(LIBS)
-
-cast5test: $(cast5test_OBJECTS) $(cast5test_DEPENDENCIES)
-	@rm -f cast5test
-	$(LINK) $(cast5test_LDFLAGS) $(cast5test_OBJECTS) $(cast5test_LDADD) $(LIBS)
 
 clean-sat: $(clean_sat_OBJECTS) $(clean_sat_DEPENDENCIES)
 	@rm -f clean-sat
@@ -333,7 +321,7 @@ installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
-mpicalc bftest cast5test: $(needed_libs)
+mpicalc bftest: $(needed_libs)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

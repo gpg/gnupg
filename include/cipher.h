@@ -32,8 +32,6 @@
 #ifdef HAVE_RSA_CIPHER
   #include "../cipher/rsa.h"
 #endif
-#include "../cipher/blowfish.h"
-#include "../cipher/cast5.h"
 #include "../cipher/elgamal.h"
 #include "../cipher/dsa.h"
 #include "../cipher/random.h"
@@ -66,21 +64,40 @@ typedef struct {
     byte key[20]; /* this is the largest used keylen */
 } DEK;
 
+typedef struct cipher_handle_s *CIPHER_HANDLE;
+
+#ifndef DEFINES_CIPHER_HANDLE
+struct cipher_handle_s { char does_not_matter[1]; };
+#endif
+
+#define CIPHER_MODE_ECB       1
+#define CIPHER_MODE_CFB       2
+#define CIPHER_MODE_PHILS_CFB 3
+#define CIPHER_MODE_AUTO_CFB  4
+
 
 int cipher_debug_mode;
 
+/*-- cipher.c --*/
+int string_to_cipher_algo( const char *string );
+const char * cipher_algo_to_string( int algo );
+int check_cipher_algo( int algo );
+CIPHER_HANDLE cipher_open( int algo, int mode, int secure );
+void cipher_close( CIPHER_HANDLE c );
+void cipher_setkey( CIPHER_HANDLE c, byte *key, unsigned keylen );
+void cipher_setiv( CIPHER_HANDLE c, const byte *iv );
+void cipher_encrypt( CIPHER_HANDLE c, byte *out, byte *in, unsigned nbytes );
+void cipher_decrypt( CIPHER_HANDLE c, byte *out, byte *in, unsigned nbytes );
+void cipher_sync( CIPHER_HANDLE c );
+
 
 /*-- misc.c --*/
-int string_to_cipher_algo( const char *string );
 int string_to_pubkey_algo( const char *string );
 int string_to_digest_algo( const char *string );
-const char * cipher_algo_to_string( int algo );
 const char * pubkey_algo_to_string( int algo );
 const char * digest_algo_to_string( int algo );
-int check_cipher_algo( int algo );
 int check_pubkey_algo( int algo );
 int check_digest_algo( int algo );
-
 
 /*-- smallprime.c --*/
 extern ushort small_prime_numbers[];

@@ -43,7 +43,6 @@
 #include "util.h"
 #include "types.h"
 #include "cast5.h"
-#include "random.h"
 
 static const u32 s1[256] = {
 0x30fb40d4, 0x9fa0ff0b, 0x6beccd2f, 0x3f258c7a, 0x1e213f2f, 0x9c004dd3, 0x6003e540, 0xcf9fc949,
@@ -339,8 +338,8 @@ rol(int n, u32 x)
 #define F3(D,m,r)  (  (I = ((m) - (D))), (I=rol((r),I)),   \
     (((s1[I >> 24] + s2[(I>>16)&0xff]) ^ s3[(I>>8)&0xff]) - s4[I&0xff]) )
 
-static void
-encrypt_block( CAST5_context *c, byte *outbuf, byte *inbuf )
+void
+cast5_encrypt_block( CAST5_context *c, byte *outbuf, byte *inbuf )
 {
     u32 l, r, t;
     u32 I;   /* used by the Fx macros */
@@ -393,8 +392,8 @@ encrypt_block( CAST5_context *c, byte *outbuf, byte *inbuf )
     outbuf[7] =  l	  & 0xff;
 }
 
-static void
-decrypt_block(	CAST5_context *c, byte *outbuf, byte *inbuf )
+void
+cast5_decrypt_block(  CAST5_context *c, byte *outbuf, byte *inbuf )
 {
     u32 l, r, t;
     u32 I;
@@ -447,10 +446,10 @@ selftest()
     byte buffer[8];
 
     cast5_setkey( &c, key, 16 );
-    encrypt_block( &c, buffer, plain );
+    cast5_encrypt_block( &c, buffer, plain );
     if( memcmp( buffer, cipher, 8 ) )
 	log_error("wrong cast5-128 encryption\n");
-    decrypt_block( &c, buffer, buffer );
+    cast5_decrypt_block( &c, buffer, buffer );
     if( memcmp( buffer, plain, 8 ) )
 	log_bug("cast5-128 failed\n");
 
@@ -468,11 +467,11 @@ selftest()
 
 	for(i=0; i < 1000000; i++ ) {
 	    cast5_setkey( &c, b0, 16 );
-	    encrypt_block( &c, a0, a0 );
-	    encrypt_block( &c, a0+8, a0+8 );
+	    cast5_encrypt_block( &c, a0, a0 );
+	    cast5_encrypt_block( &c, a0+8, a0+8 );
 	    cast5_setkey( &c, a0, 16 );
-	    encrypt_block( &c, b0, b0 );
-	    encrypt_block( &c, b0+8, b0+8 );
+	    cast5_encrypt_block( &c, b0, b0 );
+	    cast5_encrypt_block( &c, b0+8, b0+8 );
 	}
 	if( memcmp( a0, a1, 16 ) || memcmp( b0, b1, 16 ) )
 	    log_bug("cast5-128 maintenance test failed\n");
@@ -543,7 +542,6 @@ cast5_setkey( CAST5_context *c, byte *key, unsigned keylen )
 	initialized = 1;
 	selftest();
     }
-    fast_random_poll();
 
     assert(keylen==16);
     x[0] = key[0]  << 24 | key[1]  << 16 | key[2]  << 8 | key[3];
@@ -564,201 +562,6 @@ cast5_setkey( CAST5_context *c, byte *key, unsigned keylen )
 
   #undef xi
   #undef zi
-}
-
-
-void
-cast5_setiv( CAST5_context *c, byte *iv )
-{
-    if( iv )
-	memcpy( c->iv, iv, CAST5_BLOCKSIZE );
-    else
-	memset( c->iv, 0, CAST5_BLOCKSIZE );
-    c->count = 0;
-    encrypt_block( c, c->eniv, c->iv );
-}
-
-
-void
-cast5_encode( CAST5_context *c, byte *outbuf, byte *inbuf,
-						    unsigned nblocks )
-{
-    unsigned n;
-
-    for(n=0; n < nblocks; n++ ) {
-	encrypt_block( c, outbuf, inbuf );
-	inbuf  += CAST5_BLOCKSIZE;;
-	outbuf += CAST5_BLOCKSIZE;
-    }
-}
-
-void
-cast5_decode( CAST5_context *c, byte *outbuf, byte *inbuf,
-						    unsigned nblocks )
-{
-    unsigned n;
-
-    for(n=0; n < nblocks; n++ ) {
-	decrypt_block( c, outbuf, inbuf );
-	inbuf  += CAST5_BLOCKSIZE;;
-	outbuf += CAST5_BLOCKSIZE;
-    }
-}
-
-
-
-/****************
- * FIXME: Make use of bigger chunks
- * (out may overlap with a or b)
- */
-static void
-xorblock( byte *out, byte *a, byte *b, unsigned count )
-{
-    for( ; count ; count--, a++, b++ )
-	*out++ = *a ^ *b ;
-}
-
-
-
-/****************
- * Encode buffer in CFB mode. nbytes can be an arbitrary value.
- */
-void
-cast5_encode_cfb( CAST5_context *c, byte *outbuf,
-				       byte *inbuf, unsigned nbytes)
-{
-    unsigned n;
-    int is_aligned;
-
-    if( c->count ) {  /* must make a full block first */
-	assert( c->count < CAST5_BLOCKSIZE );
-	n = CAST5_BLOCKSIZE - c->count;
-	if( n > nbytes )
-	    n = nbytes;
-	xorblock( outbuf, c->eniv+c->count, inbuf, n);
-	memcpy( c->iv+c->count, outbuf, n);
-	c->count += n;
-	nbytes -= n;
-	inbuf += n;
-	outbuf += n;
-	assert( c->count <= CAST5_BLOCKSIZE);
-	if( c->count == CAST5_BLOCKSIZE ) {
-	    encrypt_block( c, c->eniv, c->iv );
-	    c->count = 0;
-	}
-	else
-	    return;
-    }
-    assert(!c->count);
-    is_aligned = !((ulong)inbuf % SIZEOF_UNSIGNED_LONG);
-    while( nbytes >= CAST5_BLOCKSIZE ) {
-	if( is_aligned ) {
-	  #if SIZEOF_UNSIGNED_LONG == CAST5_BLOCKSIZE
-	    *(ulong*)outbuf = *(ulong*)c->eniv ^ *(ulong*)inbuf;
-	  #elif (2*SIZEOF_UNSIGNED_LONG) == CAST5_BLOCKSIZE
-	    ((ulong*)outbuf)[0] = ((ulong*)c->eniv)[0] ^ ((ulong*)inbuf)[0];
-	    ((ulong*)outbuf)[1] = ((ulong*)c->eniv)[1] ^ ((ulong*)inbuf)[1];
-	  #elif (4*SIZEOF_UNSIGNED_LONG) == CAST5_BLOCKSIZE
-	    ((ulong*)outbuf)[0] = ((ulong*)c->eniv)[0] ^ ((ulong*)inbuf)[0];
-	    ((ulong*)outbuf)[1] = ((ulong*)c->eniv)[1] ^ ((ulong*)inbuf)[1];
-	    ((ulong*)outbuf)[2] = ((ulong*)c->eniv)[2] ^ ((ulong*)inbuf)[2];
-	    ((ulong*)outbuf)[3] = ((ulong*)c->eniv)[3] ^ ((ulong*)inbuf)[3];
-	  #else
-	    #error Please remove this info line.
-	    xorblock( outbuf, c->eniv, inbuf, CAST5_BLOCKSIZE);
-	  #endif
-	}
-	else  /* not aligned */
-	    xorblock( outbuf, c->eniv, inbuf, CAST5_BLOCKSIZE);
-	memcpy( c->iv, outbuf, CAST5_BLOCKSIZE);
-	encrypt_block( c, c->eniv, c->iv );
-	nbytes -= CAST5_BLOCKSIZE;
-	inbuf += CAST5_BLOCKSIZE;
-	outbuf += CAST5_BLOCKSIZE;
-    }
-
-    if( nbytes ) {
-	xorblock( outbuf, c->eniv, inbuf, nbytes );
-	memcpy( c->iv, outbuf, nbytes );
-	c->count = nbytes;
-    }
-
-}
-
-
-void
-cast5_decode_cfb( CAST5_context *c, byte *outbuf,
-				    byte *inbuf, unsigned nbytes)
-{
-    unsigned n;
-    int is_aligned;
-
-    if( c->count ) {  /* must make a full block first */
-	assert( c->count < CAST5_BLOCKSIZE );
-	n = CAST5_BLOCKSIZE - c->count;
-	if( n > nbytes )
-	    n = nbytes;
-	memcpy( c->iv+c->count, inbuf, n);
-	xorblock( outbuf, c->eniv+c->count, inbuf, n);
-	c->count += n;
-	nbytes -= n;
-	inbuf += n;
-	outbuf += n;
-	assert( c->count <= CAST5_BLOCKSIZE);
-	if( c->count == CAST5_BLOCKSIZE ) {
-	    encrypt_block( c, c->eniv, c->iv );
-	    c->count = 0;
-	}
-	else
-	    return;
-    }
-
-    assert(!c->count);
-    is_aligned = !((ulong)inbuf % SIZEOF_UNSIGNED_LONG);
-    while( nbytes >= CAST5_BLOCKSIZE ) {
-	memcpy( c->iv, inbuf, CAST5_BLOCKSIZE);
-	if( is_aligned ) {
-	  #if SIZEOF_UNSIGNED_LONG == CAST5_BLOCKSIZE
-	    *(ulong*)outbuf = *(ulong*)c->eniv ^ *(ulong*)inbuf;
-	  #elif (2*SIZEOF_UNSIGNED_LONG) == CAST5_BLOCKSIZE
-	    ((ulong*)outbuf)[0] = ((ulong*)c->eniv)[0] ^ ((ulong*)inbuf)[0];
-	    ((ulong*)outbuf)[1] = ((ulong*)c->eniv)[1] ^ ((ulong*)inbuf)[1];
-	  #elif (4*SIZEOF_UNSIGNED_LONG) == CAST5_BLOCKSIZE
-	    ((ulong*)outbuf)[0] = ((ulong*)c->eniv)[0] ^ ((ulong*)inbuf)[0];
-	    ((ulong*)outbuf)[1] = ((ulong*)c->eniv)[1] ^ ((ulong*)inbuf)[1];
-	    ((ulong*)outbuf)[2] = ((ulong*)c->eniv)[2] ^ ((ulong*)inbuf)[2];
-	    ((ulong*)outbuf)[3] = ((ulong*)c->eniv)[3] ^ ((ulong*)inbuf)[3];
-	  #else
-	    #error Please remove this info line.
-	    xorblock( outbuf, c->eniv, inbuf, CAST5_BLOCKSIZE);
-	  #endif
-	}
-	else  /* not aligned */
-	    xorblock( outbuf, c->eniv, inbuf, CAST5_BLOCKSIZE);
-	encrypt_block( c, c->eniv, c->iv );
-	nbytes -= CAST5_BLOCKSIZE;
-	inbuf += CAST5_BLOCKSIZE;
-	outbuf += CAST5_BLOCKSIZE;
-    }
-
-    if( nbytes ) {
-	memcpy( c->iv, inbuf, nbytes );
-	xorblock( outbuf, c->eniv, inbuf, nbytes );
-	c->count = nbytes;
-    }
-
-}
-
-
-
-void
-cast5_sync_cfb( CAST5_context *c )
-{
-    if( c->count ) {
-	memmove(c->iv + c->count, c->iv, CAST5_BLOCKSIZE - c->count );
-	memcpy(c->iv, c->eniv + CAST5_BLOCKSIZE - c->count, c->count);
-	c->count = 0;
-    }
 }
 
 

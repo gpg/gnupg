@@ -40,42 +40,6 @@
 #endif
 
 
-static u16
-checksum_u16( unsigned n )
-{
-    u16 a;
-
-    a  = (n >> 8) & 0xff;
-    a |= n & 0xff;
-    return a;
-}
-
-static u16
-checksum( byte *p, unsigned n )
-{
-    u16 a;
-
-    for(a=0; n; n-- )
-	a += *p++;
-    return a;
-}
-
-static u16
-checksum_mpi( MPI a )
-{
-    u16 csum;
-    byte *buffer;
-    unsigned nbytes;
-
-    buffer = mpi_get_buffer( a, &nbytes, NULL );
-    csum = checksum_u16( nbytes*8 );
-    csum += checksum( buffer, nbytes );
-    m_free( buffer );
-    return csum;
-}
-
-
-
 static void
 write_uid( KBNODE root, const char *s )
 {

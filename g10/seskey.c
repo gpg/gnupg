@@ -78,6 +78,9 @@ encode_session_key( DEK *dek, unsigned nbits )
      *
      *	   0  2  RND(n bytes)  0  A  DEK(k bytes)  CSUM(2 bytes)
      *
+     * (But how can we store the leading 0 - the external representaion
+     *	of MPIs don't allow leading zeroes =:-)
+     *
      * RND are non-zero random bytes.
      * A   is the cipher algorithm
      * DEK is the encryption key (session key) length k depends on the

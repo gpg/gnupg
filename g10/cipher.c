@@ -67,42 +67,21 @@ cipher_filter( void *opaque, int control,
 	    randomize_buffer( temp, 8, 1 );
 	    temp[8] = temp[6];
 	    temp[9] = temp[7];
-	    if( cfx->dek->algo == CIPHER_ALGO_BLOWFISH
-	       || cfx->dek->algo == CIPHER_ALGO_BLOWFISH128 ) {
-		cfx->bf_ctx = m_alloc_secure( sizeof *cfx->bf_ctx );
-		blowfish_setkey( cfx->bf_ctx, cfx->dek->key, cfx->dek->keylen );
-		blowfish_setiv( cfx->bf_ctx, NULL );
-		blowfish_encode_cfb( cfx->bf_ctx, temp, temp, 10);
-	    }
-	    else if( cfx->dek->algo == CIPHER_ALGO_CAST  ) {
-		cfx->cast5_ctx = m_alloc_secure( sizeof *cfx->cast5_ctx );
-		cast5_setkey( cfx->cast5_ctx, cfx->dek->key, cfx->dek->keylen );
-		cast5_setiv( cfx->cast5_ctx, NULL );
-		cast5_encode_cfb( cfx->cast5_ctx, temp, temp, 10);
-		cast5_sync_cfb( cfx->cast5_ctx );
-	    }
-	    else
-		log_bug("no cipher algo %d\n", cfx->dek->algo);
-
+	    cfx->cipher_hd = cipher_open( cfx->dek->algo,
+					  CIPHER_MODE_AUTO_CFB, 1 );
+	    cipher_setkey( cfx->cipher_hd, cfx->dek->key, cfx->dek->keylen );
+	    cipher_setiv( cfx->cipher_hd, NULL );
+	    cipher_encrypt( cfx->cipher_hd, temp, temp, 10);
+	    cipher_sync( cfx->cipher_hd );
 	    iobuf_write(a, temp, 10);
 	    cfx->header=1;
 	}
-
-	if( cfx->dek->algo == CIPHER_ALGO_BLOWFISH
-	    || cfx->dek->algo == CIPHER_ALGO_BLOWFISH128 )
-	    blowfish_encode_cfb( cfx->bf_ctx, buf, buf, size);
-	else if( cfx->dek->algo == CIPHER_ALGO_CAST  )
-	    cast5_encode_cfb( cfx->cast5_ctx, buf, buf, size);
-
+	cipher_encrypt( cfx->cipher_hd, buf, buf, size);
 	if( iobuf_write( a, buf, size ) )
 	    rc = G10ERR_WRITE_FILE;
     }
     else if( control == IOBUFCTRL_FREE ) {
-	if( cfx->dek->algo == CIPHER_ALGO_BLOWFISH
-	    || cfx->dek->algo == CIPHER_ALGO_BLOWFISH128 )
-	    m_free(cfx->bf_ctx);
-	else if( cfx->dek->algo == CIPHER_ALGO_CAST  )
-	    m_free(cfx->cast5_ctx);
+	cipher_close(cfx->cipher_hd);
     }
     else if( control == IOBUFCTRL_DESC ) {
 	*(char**)buf = "cipher_filter";

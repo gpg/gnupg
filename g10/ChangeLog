@@ -1,3 +1,18 @@
+Tue Apr  7 19:28:07 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* cipher.c, encr-data.c, seckey-cert.c: Now uses cipher_xxxx
+	functions instead of blowfish_xxx or cast_xxx
+
+Tue Apr  7 11:04:02 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* Makefile.am (g10maint.o): Changed the way it is created.
+
+Mon Apr  6 11:17:08 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* misc.c: New.
+	* keygen.c (checksum,checksum_u16,checksum_mpi): Moved to misc.c
+	* seckey-cert.c: Kludge for wrong ELG checksum implementation.
+
 Sat Apr  4 20:07:01 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* cipher.c (cipher_filter): Support for CAST5

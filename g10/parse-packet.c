@@ -61,19 +61,6 @@ static int  parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
 static int  parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
-#if 0
-static u16
-checksum( byte *p )
-{
-    u16 n, a;
-
-    n = *p++ << 8;
-    n |= *p++;
-    for(a=0; n; n-- )
-	a += *p++;
-    return a;
-}
-#endif
 
 static unsigned short
 read_16(IOBUF inp)
@@ -944,6 +931,9 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 
 	    cert->csum = read_16(inp); pktlen -= 2;
 	    if( list_mode ) {
+	    printf("\telg x: ");
+	    mpi_print(stdout, cert->d.elg.x, mpi_print_mode  );
+	    putchar('\n');
 		printf("\t[secret value x is not shown]\n"
 		       "\tchecksum: %04hx\n", cert->csum);
 	    }

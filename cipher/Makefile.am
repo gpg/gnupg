@@ -6,7 +6,8 @@ EXTRA_DIST = @CIPHER_EXTRA_DIST@
 noinst_LIBRARIES = libcipher.a
 
 
-libcipher_a_SOURCES = blowfish.c     \
+libcipher_a_SOURCES = cipher.c	\
+		 blowfish.c	\
 		 blowfish.h	\
 		 cast5.c	\
 		 cast5.h	\

@@ -34,7 +34,7 @@
 static void
 my_usage(void)
 {
-    fprintf(stderr, "usage: bftest [-e][-d] key\n");
+    fprintf(stderr, "usage: bftest [-e][-d] algo key\n");
     exit(1);
 }
 
@@ -62,10 +62,10 @@ int
 main(int argc, char **argv)
 {
     int encode=0;
-    BLOWFISH_context ctx;
+    CIPHER_HANDLE hd;
     char buf[100];
-    char iv[BLOWFISH_BLOCKSIZE];
     int n, size=8;
+    int algo;
 
   #ifdef __MINGW32__
     setmode( fileno(stdin), O_BINARY );
@@ -89,22 +89,24 @@ main(int argc, char **argv)
 	argc--; argv++;
 	size = 10;
     }
-    if( argc != 2 )
+    if( argc != 3 )
 	my_usage();
     argc--; argv++;
+    algo = string_to_cipher_algo( *argv );
+    argc--; argv++;
 
-    blowfish_setkey( &ctx, *argv, strlen(*argv) );
-    memset(iv,0, BLOWFISH_BLOCKSIZE);
-    blowfish_setiv( &ctx, iv );
+    hd = cipher_open( algo, CIPHER_MODE_CFB, 0 );
+    cipher_setkey( hd, *argv, strlen(*argv) );
+    cipher_setiv( hd, NULL );
     while( (n = fread( buf, 1, size, stdin )) > 0 ) {
 	if( encode )
-	    blowfish_encode_cfb( &ctx, buf, buf, n );
+	    cipher_encrypt( hd, buf, buf, n );
 	else
-	    blowfish_decode_cfb( &ctx, buf, buf, n );
+	    cipher_decrypt( hd, buf, buf, n );
 	if( fwrite( buf, 1, n, stdout) != n )
 	    log_fatal("write error\n");
     }
-
+    cipher_close(hd);
     return 0;
 }
 

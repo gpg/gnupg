@@ -27,17 +27,6 @@
 #include "cipher.h"
 
 
-static struct { const char *name; int algo;} cipher_names[] = {
-    { "IDEA",        CIPHER_ALGO_IDEA        },
-    { "3DES",        CIPHER_ALGO_3DES        },
-    { "CAST",        CIPHER_ALGO_CAST        },
-    { "BLOWFISH128", CIPHER_ALGO_BLOWFISH128 },
-    { "ROT_N",       CIPHER_ALGO_ROT_N       },
-    { "SAFER_SK128", CIPHER_ALGO_SAFER_SK128 },
-    { "DES_SK",      CIPHER_ALGO_DES_SK      },
-    { "BLOWFISH",    CIPHER_ALGO_BLOWFISH    },
-    {NULL} };
-
 static struct { const char *name; int algo;} pubkey_names[] = {
     { "RSA",           PUBKEY_ALGO_RSA     },
     { "RSA-E",         PUBKEY_ALGO_RSA_E   },
@@ -57,35 +46,7 @@ static struct { const char *name; int algo;} digest_names[] = {
     {NULL} };
 
 
-/****************
- * Map a string to the cipher algo
- */
-int
-string_to_cipher_algo( const char *string )
-{
-    int i;
-    const char *s;
 
-    for(i=0; (s=cipher_names[i].name); i++ )
-	if( !stricmp( s, string ) )
-	    return cipher_names[i].algo;
-    return 0;
-}
-
-
-/****************
- * Map a cipher algo to a string
- */
-const char *
-cipher_algo_to_string( int algo )
-{
-    int i;
-
-    for(i=0; cipher_names[i].name; i++ )
-	if( cipher_names[i].algo == algo )
-	    return cipher_names[i].name;
-    return NULL;
-}
 
 
 /****************
@@ -153,21 +114,6 @@ digest_algo_to_string( int algo )
 
 
 
-/****************
- * Return 0 if the cipher algo is available
- */
-int
-check_cipher_algo( int algo )
-{
-    switch( algo ) {
-      case CIPHER_ALGO_BLOWFISH128:
-      case CIPHER_ALGO_BLOWFISH:
-      case CIPHER_ALGO_CAST:
-	return 0;
-      default:
-	return G10ERR_CIPHER_ALGO;
-    }
-}
 
 
 int

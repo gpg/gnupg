@@ -1,0 +1,5 @@
+Tue Apr  7 19:50:41 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* bftest.c: Now supports all availabe ciphers.
+
+

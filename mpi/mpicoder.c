@@ -54,8 +54,6 @@ mpi_write( IOBUF out, MPI a )
     iobuf_put(out, (nbits) );
 
     p = buf = mpi_get_buffer( a, &n, NULL );
-    for( ; !*p && n; p++, n-- )
-	;
     rc = iobuf_write( out, p, n );
     m_free(buf);
     return rc;
@@ -302,6 +300,13 @@ mpi_get_buffer( MPI a, unsigned *nbytes, int *sign )
 	#error please implement for this limb size.
       #endif
     }
+
+    /* this is sub-optimal but we need to do the shift oepration because
+     * the caller has to free the returned buffer */
+    for(p=buffer; !*p && *nbytes; p++, --*nbytes )
+	;
+    if( p != buffer )
+	memmove(buffer,p, *nbytes);
     return buffer;
 }
 

@@ -64,16 +64,10 @@ v3_elg_fingerprint_md( PKT_public_cert *pkc )
 
     nb1 = mpi_get_nbits(pkc->d.elg.p);
     p1 = buf1 = mpi_get_buffer( pkc->d.elg.p, &n1, NULL );
-    for( ; !*p1 && n1; p1++, n1-- )  /* skip leading null bytes */
-	;
     nb2 = mpi_get_nbits(pkc->d.elg.g);
     p2 = buf2 = mpi_get_buffer( pkc->d.elg.g, &n2, NULL );
-    for( ; !*p2 && n2; p2++, n2-- )  /* skip leading null bytes */
-	;
     nb3 = mpi_get_nbits(pkc->d.elg.y);
     p3 = buf3 = mpi_get_buffer( pkc->d.elg.y, &n3, NULL );
-    for( ; !*p3 && n3; p3++, n3-- )  /* skip leading null bytes */
-	;
 
     /* calculate length of packet (1+4+2+1+2+n1+2+n2+2+n3) */
     n = 14 + n1 + n2 + n3;
@@ -117,16 +111,10 @@ elg_fingerprint_md( PKT_public_cert *pkc )
 
     nb1 = mpi_get_nbits(pkc->d.elg.p);
     p1 = buf1 = mpi_get_buffer( pkc->d.elg.p, &n1, NULL );
-    for( ; !*p1 && n1; p1++, n1-- )  /* skip leading null bytes */
-	;
     nb3 = mpi_get_nbits(pkc->d.elg.g);
     p3 = buf3 = mpi_get_buffer( pkc->d.elg.g, &n3, NULL );
-    for( ; !*p3 && n3; p3++, n3-- )
-	;
     nb4 = mpi_get_nbits(pkc->d.elg.y);
     p4 = buf4 = mpi_get_buffer( pkc->d.elg.y, &n4, NULL );
-    for( ; !*p4 && n4; p4++, n4-- )
-	;
 
     /* calculate length of packet */
     n = 12 + n1 + n3 +n4 ;
@@ -167,20 +155,12 @@ dsa_fingerprint_md( PKT_public_cert *pkc )
 
     nb1 = mpi_get_nbits(pkc->d.dsa.p);
     p1 = buf1 = mpi_get_buffer( pkc->d.dsa.p, &n1, NULL );
-    for( ; !*p1 && n1; p1++, n1-- )  /* skip leading null bytes */
-	;
     nb2 = mpi_get_nbits(pkc->d.dsa.q);
     p2 = buf2 = mpi_get_buffer( pkc->d.dsa.q, &n2, NULL );
-    for( ; !*p2 && n2; p2++, n2-- )
-	;
     nb3 = mpi_get_nbits(pkc->d.dsa.g);
     p3 = buf3 = mpi_get_buffer( pkc->d.dsa.g, &n3, NULL );
-    for( ; !*p3 && n3; p3++, n3-- )
-	;
     nb4 = mpi_get_nbits(pkc->d.dsa.y);
     p4 = buf4 = mpi_get_buffer( pkc->d.dsa.y, &n4, NULL );
-    for( ; !*p4 && n4; p4++, n4-- )
-	;
 
     /* calculate length of packet */
     n = 14 + n1 + n2 + n3 +n4 ;
@@ -510,13 +490,9 @@ fingerprint_from_pkc( PKT_public_cert *pkc, size_t *ret_len )
 
 	md = md_open( DIGEST_ALGO_MD5, 0);
 	p = buf = mpi_get_buffer( pkc->d.rsa.rsa_n, &n, NULL );
-	for( ; !*p && n; p++, n-- )
-	    ;
 	md_write( md, p, n );
 	m_free(buf);
 	p = buf = mpi_get_buffer( pkc->d.rsa.rsa_e, &n, NULL );
-	for( ; !*p && n; p++, n-- )
-	    ;
 	md_write( md, p, n );
 	m_free(buf);
 	md_final(md);

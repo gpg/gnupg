@@ -95,7 +95,6 @@ l = @l@
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
 EXTRA_DIST = OPTIONS  pubring.asc
 OMIT_DEPENDENCIES = zlib.h zconf.h
-BUILT_SOURCES = g10maint.c
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
 bin_PROGRAMS = gpg gpgm gpgd
@@ -120,6 +119,7 @@ common_source =  \
 	      elg.c		\
 	      dsa.c		\
 	      rsa.c		\
+	      misc.c		\
 	      options.h 	\
 	      openfile.c	\
 	      keyid.c		\
@@ -151,14 +151,15 @@ gpg_SOURCES  = g10.c		\
 	      decrypt.c 	\
 	      keygen.c
 
-gpgm_SOURCES = g10maint.c   \
-	      dearmor.c     \
+gpgm_SOURCES = dearmor.c     \
 	      $(common_source)
 
 gpgd_SOURCES = gpgd.c \
 	      $(common_source)
 
 LDADD = @INTLLIBS@ $(needed_libs) @ZLIBS@
+
+gpgm_LDADD = g10maint.o $(LDADD)
 mkinstalldirs = $(SHELL) $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -171,32 +172,31 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 gpg_OBJECTS =  g10.o build-packet.o compress.o free-packet.o getkey.o \
 pkclist.o skclist.o ringedit.o kbnode.o mainproc.o armor.o mdfilter.o \
-textfilter.o cipher.o elg.o dsa.o rsa.o openfile.o keyid.o trustdb.o \
-parse-packet.o passphrase.o pubkey-enc.o seckey-cert.o seskey.o \
-import.o export.o comment.o status.o sign.o plaintext.o encr-data.o \
-encode.o revoke.o keylist.o sig-check.o signal.o verify.o decrypt.o \
-keygen.o
+textfilter.o cipher.o elg.o dsa.o rsa.o misc.o openfile.o keyid.o \
+trustdb.o parse-packet.o passphrase.o pubkey-enc.o seckey-cert.o \
+seskey.o import.o export.o comment.o status.o sign.o plaintext.o \
+encr-data.o encode.o revoke.o keylist.o sig-check.o signal.o verify.o \
+decrypt.o keygen.o
 gpg_LDADD = $(LDADD)
 gpg_DEPENDENCIES =  ../cipher/libcipher.a ../mpi/libmpi.a \
 ../util/libutil.a
 gpg_LDFLAGS = 
-gpgm_OBJECTS =  g10maint.o dearmor.o build-packet.o compress.o \
-free-packet.o getkey.o pkclist.o skclist.o ringedit.o kbnode.o \
-mainproc.o armor.o mdfilter.o textfilter.o cipher.o elg.o dsa.o rsa.o \
-openfile.o keyid.o trustdb.o parse-packet.o passphrase.o pubkey-enc.o \
+gpgm_OBJECTS =  dearmor.o build-packet.o compress.o free-packet.o \
+getkey.o pkclist.o skclist.o ringedit.o kbnode.o mainproc.o armor.o \
+mdfilter.o textfilter.o cipher.o elg.o dsa.o rsa.o misc.o openfile.o \
+keyid.o trustdb.o parse-packet.o passphrase.o pubkey-enc.o \
 seckey-cert.o seskey.o import.o export.o comment.o status.o sign.o \
 plaintext.o encr-data.o encode.o revoke.o keylist.o sig-check.o \
 signal.o
-gpgm_LDADD = $(LDADD)
-gpgm_DEPENDENCIES =  ../cipher/libcipher.a ../mpi/libmpi.a \
+gpgm_DEPENDENCIES =  g10maint.o ../cipher/libcipher.a ../mpi/libmpi.a \
 ../util/libutil.a
 gpgm_LDFLAGS = 
 gpgd_OBJECTS =  gpgd.o build-packet.o compress.o free-packet.o getkey.o \
 pkclist.o skclist.o ringedit.o kbnode.o mainproc.o armor.o mdfilter.o \
-textfilter.o cipher.o elg.o dsa.o rsa.o openfile.o keyid.o trustdb.o \
-parse-packet.o passphrase.o pubkey-enc.o seckey-cert.o seskey.o \
-import.o export.o comment.o status.o sign.o plaintext.o encr-data.o \
-encode.o revoke.o keylist.o sig-check.o signal.o
+textfilter.o cipher.o elg.o dsa.o rsa.o misc.o openfile.o keyid.o \
+trustdb.o parse-packet.o passphrase.o pubkey-enc.o seckey-cert.o \
+seskey.o import.o export.o comment.o status.o sign.o plaintext.o \
+encr-data.o encode.o revoke.o keylist.o sig-check.o signal.o
 gpgd_LDADD = $(LDADD)
 gpgd_DEPENDENCIES =  ../cipher/libcipher.a ../mpi/libmpi.a \
 ../util/libutil.a
@@ -214,15 +214,14 @@ GZIP = --best
 DEP_FILES =  .deps/armor.P .deps/build-packet.P .deps/cipher.P \
 .deps/comment.P .deps/compress.P .deps/dearmor.P .deps/decrypt.P \
 .deps/dsa.P .deps/elg.P .deps/encode.P .deps/encr-data.P .deps/export.P \
-.deps/free-packet.P .deps/g10.P .deps/g10maint .deps/g10maint.P \
-.deps/getkey.P .deps/gpgd.P .deps/import.P .deps/kbnode.P \
-.deps/keygen.P .deps/keyid.P .deps/keylist.P .deps/mainproc.P \
-.deps/mdfilter.P .deps/openfile.P .deps/parse-packet.P \
-.deps/passphrase.P .deps/pkclist.P .deps/plaintext.P .deps/pubkey-enc.P \
-.deps/revoke.P .deps/ringedit.P .deps/rsa.P .deps/seckey-cert.P \
-.deps/seskey.P .deps/sig-check.P .deps/sign.P .deps/signal.P \
-.deps/skclist.P .deps/status.P .deps/textfilter.P .deps/trustdb.P \
-.deps/verify.P
+.deps/free-packet.P .deps/g10.P .deps/getkey.P .deps/gpgd.P \
+.deps/import.P .deps/kbnode.P .deps/keygen.P .deps/keyid.P \
+.deps/keylist.P .deps/mainproc.P .deps/mdfilter.P .deps/misc.P \
+.deps/openfile.P .deps/parse-packet.P .deps/passphrase.P \
+.deps/pkclist.P .deps/plaintext.P .deps/pubkey-enc.P .deps/revoke.P \
+.deps/ringedit.P .deps/rsa.P .deps/seckey-cert.P .deps/seskey.P \
+.deps/sig-check.P .deps/sign.P .deps/signal.P .deps/skclist.P \
+.deps/status.P .deps/textfilter.P .deps/trustdb.P .deps/verify.P
 SOURCES = $(gpg_SOURCES) $(gpgm_SOURCES) $(gpgd_SOURCES)
 OBJECTS = $(gpg_OBJECTS) $(gpgm_OBJECTS) $(gpgd_OBJECTS)
 
@@ -421,8 +420,8 @@ installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
-g10maint.c : g10.c
-	    $(CPP) $(CFLAGS) $(DEFS) $(INCLUDES) -DIS_G10MAINT $< > $@ || rm $@
+g10maint.o: g10.c
+	$(COMPILE) -DIS_G10MAINT  -o g10maint.o -c g10.c
 
 $(PROGRAMS): $(needed_libs)
 

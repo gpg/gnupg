@@ -31,21 +31,10 @@ typedef struct {
     u32 s2[256];
     u32 s3[256];
     u32 p[BLOWFISH_ROUNDS+2];
-    byte iv[BLOWFISH_BLOCKSIZE];
-    byte eniv[BLOWFISH_BLOCKSIZE];
-    int  count;
 } BLOWFISH_context;
 
 void blowfish_setkey( BLOWFISH_context *c, byte *key, unsigned keylen );
-void blowfish_setiv( BLOWFISH_context *c, byte *iv );
-void blowfish_encode( BLOWFISH_context *c, byte *outbuf, byte *inbuf,
-						    unsigned nblocks );
-void blowfish_decode( BLOWFISH_context *c, byte *outbuf, byte *inbuf,
-						    unsigned nblocks );
-void blowfish_encode_cfb( BLOWFISH_context *c, byte *outbuf,
-					 byte *inbuf, unsigned nbytes);
-void blowfish_decode_cfb( BLOWFISH_context *c, byte *outbuf,
-					 byte *inbuf, unsigned nbytes);
-
+void blowfish_encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf );
+void blowfish_decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf );
 
 #endif /*G10_BLOWFISH_H*/
