@@ -1,3 +1,7 @@
+2004-02-24  Werner Koch  <wk@gnupg.org>
+
+	* secmem.c (lock_pool) [_AIX]: Also set errno.
+
 2004-02-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* miscutil.c (hextobyte): Moved here from g10/misc.c so I can use
