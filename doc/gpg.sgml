@@ -2478,6 +2478,30 @@ command line or using <literal>-</literal> to specify stdin.
 </para>
 </refsect1>
 
+<refsect1>
+    <title>INTEROPERABILITY WITH OTHER OPENPGP PROGRAMS</title>
+<para>
+GnuPG tries to be a very flexible implementation of the OpenPGP
+standard.  In particular, GnuPG implements many of the "optional"
+parts of the standard, such as the RIPEMD/160 hash, and the ZLIB
+compression algorithms.  It is important to be aware that not all
+OpenPGP programs implement these optional algorithms and that by
+forcing their use via the --cipher-algo, --digest-algo,
+--cert-digest-algo, or --compress-algo options in GnuPG, it is
+possible to create a perfectly valid OpenPGP message, but one that
+cannot be read by the intended recipient.
+</para>
+
+<para>
+For example, as of this writing, no version of official PGP supports
+the BLOWFISH cipher algorithm.  If you use it, no PGP user will be
+able to decrypt your message.  The same thing applies to the ZLIB
+compression algorithm.  By default, GnuPG will do the right thing and
+create messages that are usable by any OpenPGP program.  Only override
+this safe default if you know what you are doing.
+</para>
+</refsect1>
+
 
 <refsect1>
     <title>BUGS</title>
@@ -2492,4 +2516,3 @@ as locked memory is allocated.
 </refsect1>
 
 </refentry>
-
