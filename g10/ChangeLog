@@ -1,3 +1,9 @@
+2003-04-09  Werner Koch  <wk@gnupg.org>
+
+	* decrypt.c (decrypt_messages): Fixed error handling; the fucntion
+	used to re-loop with same file after an error.  Reported by Joseph
+	Walton.
+
 2003-04-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* hkp.c (dehtmlize): Fix bug #121 (memory corruption on some

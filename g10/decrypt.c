@@ -1,5 +1,5 @@
 /* decrypt.c - verify signed data
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -99,12 +99,12 @@ decrypt_messages(int nfiles, char **files)
       print_file_status(STATUS_FILE_START, *files, 3);      
       output = make_outfile_name(*files);
       if (!output)
-        continue;
+        goto next_file;
       fp = iobuf_open(*files);
       if (!fp)
         {
           log_error(_("can't open `%s'\n"), print_fname_stdin(*files));
-          continue;
+          goto next_file;
         }
       if (!opt.no_armor)
         {
@@ -122,17 +122,12 @@ decrypt_messages(int nfiles, char **files)
       p = get_last_passphrase();
       set_next_passphrase(p);
       m_free (p);
-      files++;
-      m_free(output);
+     
+    next_file:
+      /* Note that we emit file_done even after an error. */
       write_status( STATUS_FILE_DONE );
+      m_free(output);
+      files++;
     }
   set_next_passphrase(NULL);  
 }
-
-
-
-
-
-
-
-
