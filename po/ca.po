@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.1.92\n"
 "POT-Creation-Date: 2002-09-20 19:09+0200\n"
-"PO-Revision-Date: 2002-09-12 21:39+0200\n"
+"PO-Revision-Date: 2002-09-20 21:12+0200\n"
 "Last-Translator: Jordi Mallach <jordi@sindominio.net>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
 "MIME-Version: 1.0\n"
@@ -2501,9 +2501,8 @@ msgid "   (0) I will not answer.%s\n"
 msgstr "   (0) No vaig a contestar.%s\n"
 
 #: g10/keyedit.c:565 g10/keyedit.c:567 g10/keyedit.c:569 g10/keyedit.c:571
-#, fuzzy
 msgid " (default)"
-msgstr "desxifra dades (predeterminat)"
+msgstr " (predeterminat)"
 
 #: g10/keyedit.c:566
 #, c-format
@@ -3142,19 +3141,18 @@ msgid "Nothing deleted.\n"
 msgstr "No s'hi ha eliminat res.\n"
 
 #: g10/keyedit.c:2275
-#, fuzzy
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
 "cause\n"
 "         some versions of PGP to reject this key.\n"
 msgstr ""
-"AVÍS: Aquesta és una clau d'estil PGP2. Afegir una photo ID pot fer que "
-"algunes versions de PGP rebutjen aquesta clau.\n"
+"AVÍS: Aquesta és una clau d'estil PGP 2.x. Afegir un revocador dessignat "
+"pot\n"
+"fer que algunes versions de PGP rebutjen aquesta clau.\n"
 
 #: g10/keyedit.c:2286
-#, fuzzy
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
-msgstr "No podeu afegir una photo ID a una clau d'estil PGP2.\n"
+msgstr "No podeu afegir un revocador dessignat a una clau d'estil PGP 2.x.\n"
 
 #: g10/keyedit.c:2309
 msgid "Enter the user ID of the designated revoker: "
@@ -3838,9 +3836,10 @@ msgstr ""
 "desconegut\n"
 
 #: g10/sig-check.c:549
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: no subkey for subkey revocation packet\n"
-msgstr "clau %08lX: no hi ha una subclau per a la clau de revocació\n"
+msgstr ""
+"clau %08lX: no hi ha una subclau per al paquet de la subclau de revocació\n"
 
 #: g10/sign.c:103
 #, c-format
