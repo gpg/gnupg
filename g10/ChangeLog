@@ -1,3 +1,8 @@
+2004-12-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (ask_algo): Add a choose-your-own-capabilities option
+	for DSA.
+
 2004-12-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (ask_keysize): Change strings to always use %u instead

@@ -1349,13 +1349,15 @@ ask_algo (int addmode, unsigned int *r_usage)
     if( !addmode )
 	tty_printf(_("   (%d) DSA and Elgamal (default)\n"), 1 );
     tty_printf(    _("   (%d) DSA (sign only)\n"), 2 );
-    if( addmode )
-	tty_printf(    _("   (%d) Elgamal (encrypt only)\n"), 3 );
-    tty_printf(    _("   (%d) RSA (sign only)\n"), 4 );
-    if (addmode)
-        tty_printf(    _("   (%d) RSA (encrypt only)\n"), 5 );
     if (opt.expert)
-      tty_printf(    _("   (%d) RSA (set your own capabilities)\n"), 6 );
+      tty_printf(  _("   (%d) DSA (set your own capabilities)\n"), 3 );
+    if( addmode )
+	tty_printf(_("   (%d) Elgamal (encrypt only)\n"), 4 );
+    tty_printf(    _("   (%d) RSA (sign only)\n"), 5 );
+    if (addmode)
+        tty_printf(_("   (%d) RSA (encrypt only)\n"), 6 );
+    if (opt.expert)
+      tty_printf(  _("   (%d) RSA (set your own capabilities)\n"), 7 );
 
     for(;;) {
 	answer = cpr_get("keygen.algo",_("Your selection? "));
@@ -1366,24 +1368,29 @@ ask_algo (int addmode, unsigned int *r_usage)
 	    algo = 0;	/* create both keys */
 	    break;
 	}
-	else if( algo == 6 && opt.expert ) {
+	else if( algo == 7 && opt.expert ) {
 	    algo = PUBKEY_ALGO_RSA;
 	    *r_usage=ask_key_flags(algo);
 	    break;
 	}
-	else if( algo == 5 && addmode ) {
+	else if( algo == 6 && addmode ) {
 	    algo = PUBKEY_ALGO_RSA;
             *r_usage = PUBKEY_USAGE_ENC;
 	    break;
 	}
-	else if( algo == 4 ) {
+	else if( algo == 5 ) {
 	    algo = PUBKEY_ALGO_RSA;
             *r_usage = PUBKEY_USAGE_SIG;
 	    break;
 	}
-	else if( algo == 3 && addmode ) {
+	else if( algo == 4 && addmode ) {
 	    algo = PUBKEY_ALGO_ELGAMAL_E;
             *r_usage = PUBKEY_USAGE_ENC;
+	    break;
+	}
+	else if( algo == 3 && opt.expert ) {
+	    algo = PUBKEY_ALGO_DSA;
+	    *r_usage=ask_key_flags(algo);
 	    break;
 	}
 	else if( algo == 2 ) {
