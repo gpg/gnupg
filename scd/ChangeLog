@@ -1,3 +1,9 @@
+2004-10-14  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (parse_login_data): New. 
+	(app_select_openpgp): Call it.
+	(do_setattr): Reparse it after change.
+
 2004-10-06  Werner Koch  <wk@g10code.de>
 
 	* ccid-driver.c (ccid_open_reader): Store the vendor ID.
