@@ -1,3 +1,7 @@
+2002-01-23  Werner Koch  <wk@gnupg.org>
+
+	* assuan-socket-connect.c (LOGERRORX): and removed typo.
+
 2002-01-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* assuan-socket-connect.c (LOGERRORX): Reverse arguments to fputs.
