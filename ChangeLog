@@ -1,3 +1,9 @@
+2004-12-18  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (AH_BOTTOM): Define EXEEXT_S.
+
+	* autogen.sh: Updated --build-w32 feature.
+
 2004-12-15  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (SUBDIRS) [W32]: Do not build in tests/.

@@ -1,3 +1,10 @@
+2004-12-18  Werner Koch  <wk@g10code.com>
+
+	* w32-pth.c (pth_init): Reverse return values.  Use TRUE and FALSE
+	constants.
+	(pth_kill, pth_mutex_acquire, pth_attr_set, pth_join, pth_cancel):
+	Ditto.
+
 2004-12-15  Werner Koch  <wk@g10code.com>
 
 	* logging.c [W32]: Don't include unavailable headers.

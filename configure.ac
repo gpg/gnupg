@@ -255,11 +255,13 @@ AH_BOTTOM([
 #define EXTSEP_C '.'
 #define DIRSEP_S "\\"
 #define EXTSEP_S "."
+#define EXEEXT_S ".exe"
 #else
 #define DIRSEP_C '/'
 #define EXTSEP_C '.'
 #define DIRSEP_S "/"
 #define EXTSEP_S "."
+#define EXEEXT_S ""
 #endif
 
 /* This is the same as VERSION, but should be overridden if the
@@ -283,20 +285,20 @@ AH_BOTTOM([
 
 /* Setup the hardwired names of modules. */
 #ifndef GNUPG_DEFAULT_AGENT
-#define GNUPG_DEFAULT_AGENT    ( GNUPG_BINDIR DIRSEP_S "gpg-agent" )
+#define GNUPG_DEFAULT_AGENT    ( GNUPG_BINDIR DIRSEP_S "gpg-agent" EXEEXT_S )
 #endif
 #ifndef GNUPG_DEFAULT_PINENTRY
-#define GNUPG_DEFAULT_PINENTRY ( GNUPG_BINDIR DIRSEP_S "pinentry" )
+#define GNUPG_DEFAULT_PINENTRY ( GNUPG_BINDIR DIRSEP_S "pinentry" EXEEXT_S )
 #endif
 #ifndef GNUPG_DEFAULT_SCDAEMON
-#define GNUPG_DEFAULT_SCDAEMON ( GNUPG_BINDIR DIRSEP_S "scdaemon" )
+#define GNUPG_DEFAULT_SCDAEMON ( GNUPG_BINDIR DIRSEP_S "scdaemon" EXEEXT_S )
 #endif
 #ifndef GNUPG_DEFAULT_DIRMNGR
-#define GNUPG_DEFAULT_DIRMNGR  ( GNUPG_BINDIR DIRSEP_S "dirmngr" )
+#define GNUPG_DEFAULT_DIRMNGR  ( GNUPG_BINDIR DIRSEP_S "dirmngr" EXEEXT_S )
 #endif
 #ifndef GNUPG_DEFAULT_PROTECT_TOOL
 #define GNUPG_DEFAULT_PROTECT_TOOL \
-                    ( GNUPG_LIBEXECDIR DIRSEP_S "gpg-protect-tool" )
+                    ( GNUPG_LIBEXECDIR DIRSEP_S "gpg-protect-tool" EXEEXT_S )
 #endif
 
 

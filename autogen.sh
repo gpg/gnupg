@@ -40,64 +40,66 @@ MSGMERGE=${GETTEXT_PREFIX}${MSGMERGE:-msgmerge}${GETTEXT_SUFFIX}
 
 DIE=no
 
-if [ "$1" = "--build-w32" ]; then
+# ***** W32 build script *******
+# Used to cross-compile for Windows.
+if test "$1" = "--build-w32"; then
+    tmp=`dirname $0`
+    tsdir=`cd "$tmp"; pwd`
     shift
-    target=i386--mingw32
-    if [ ! -f ./config.guess ]; then
-        echo "./config.guess not found" >&2
+    if [ ! -f $tsdir/scripts/config.guess ]; then
+        echo "$tsdir/scripts/config.guess not found" >&2
         exit 1
     fi
-    host=`./config.guess`
-        
-    if ! mingw32 --version >/dev/null; then
-        echo "We need at least version 0.3 of MingW32/CPD" >&2
-        exit 1
-    fi
+    build=`$tsdir/scripts/config.guess`
 
-    if [ -f config.h ]; then
-        if grep HAVE_DOSISH_SYSTEM config.h | grep undef >/dev/null; then
+    [ -z "$w32root" ] && w32root="$HOME/w32root"
+    echo "Using $w32root as standard install directory" >&2
+    
+    # See whether we have the Debian cross compiler package or the
+    # old mingw32/cpd system
+    if i586-mingw32msvc-gcc --version >/dev/null 2>&1 ; then
+        host=i586-mingw32msvc
+        crossbindir=/usr/$host/bin
+    else
+       host=i386--mingw32
+       if ! mingw32 --version >/dev/null; then
+          echo "We need at least version 0.3 of MingW32/CPD" >&2
+          exit 1
+       fi
+       crossbindir=`mingw32 --install-dir`/bin
+       # Old autoconf version required us to setup the environment
+       # with the proper tool names.
+       CC=`mingw32 --get-path gcc`
+       CPP=`mingw32 --get-path cpp`
+       AR=`mingw32 --get-path ar`
+       RANLIB=`mingw32 --get-path ranlib`
+       export CC CPP AR RANLIB 
+    fi
+   
+    if [ -f "$tsdir/config.log" ]; then
+        if ! head $tsdir/config.log | grep "$host" >/dev/null; then
             echo "Pease run a 'make distclean' first" >&2
             exit 1
         fi
     fi
 
-    crossinstalldir=`mingw32 --install-dir`
-    crossbindir=`mingw32 --get-bindir 2>/dev/null` \
-               || crossbindir="$crossinstalldir/bin"
-    crossdatadir=`mingw32 --get-datadir 2>/dev/null` \
-               || crossdatadir="$crossinstalldir/share"
-    crosslibdir=`mingw32 --get-libdir 2>/dev/null` \
-               || crosslibdir="$crossinstalldir/i386--mingw32/lib"
-    crossincdir=`mingw32 --get-includedir 2>/dev/null` \
-               || crossincdir="$crossinstalldir/i386--mingw32/include"
-    CC=`mingw32 --get-path gcc`
-    CPP=`mingw32 --get-path cpp`
-    AR=`mingw32 --get-path ar`
-    RANLIB=`mingw32 --get-path ranlib`
-    export CC CPP AR RANLIB 
-
-    disable_foo_tests=""
-    if [ -n "$lib_config_files" ]; then
-        for i in $lib_config_files; do
-            j=`echo $i | tr '[a-z-]' '[A-Z_]'`
-            eval "$j=${crossbindir}/$i"
-            export $j
-            disable_foo_tests="$disable_foo_tests --disable-`echo $i| \
-                           sed 's,-config$,,'`-test"
-            if [ ! -f "${crossbindir}/$i" ]; then                   
-                echo "$i not installed for MingW32" >&2
-                DIE=yes
-            fi
-        done
-    fi
-    [ $DIE = yes ] && exit 1
-
-    ./configure --host=${host} --target=${target}  ${disable_foo_tests} \
-                --bindir=${crossbindir} --libdir=${crosslibdir} \
-                --datadir=${crossdatadir} --includedir=${crossincdir} \
-                --enable-maintainer-mode $*
-    exit $?
+    ./configure --enable-maintainer-mode --prefix=${w32root}  \
+             --host=i586-mingw32msvc --build=${build} \
+             --with-gpg-error-prefix=${w32root} \
+	     --with-ksba-prefix=${w32root} \
+	     --with-libgcrypt-prefix=${w32root} \
+	     --with-libassuan-prefix=${w32root} \
+	     --with-zlib=${w32root} \
+             --with-pth-prefix=${w32root}
+    rc=$?
+    # Ugly hack to overcome a gettext problem.  Someone should look into
+    # gettext to figure out why the po directory is not ignored as it used
+    # to be.
+    [ $rc = 0 ] && touch $tsdir/po/all
+    exit $rc
 fi
+# ***** end W32 build script *******
+
 
 
 

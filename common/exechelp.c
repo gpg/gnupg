@@ -231,7 +231,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   cr_flags = (CREATE_DEFAULT_ERROR_MODE
               | GetPriorityClass (GetCurrentProcess ())
               | CREATE_SUSPENDED); 
-  log_debug ("CreateProcess, path=`%s' cmdline=`%s'", pgmname, cmdline);
+  log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline);
   if (!CreateProcess (pgmname,       /* Program to start.  */
                       cmdline,       /* Command line arguments.  */
                       &sec_attr,     /* Process security attributes.  */

@@ -179,9 +179,7 @@ static void create_directories (void);
 static void handle_connections (int listen_fd);
 
 /* Pth wrapper function definitions. */
-#ifndef HAVE_W32_SYSTEM
 GCRY_THREAD_OPTION_PTH_IMPL;
-#endif
 
 #endif /*USE_GNU_PTH*/
 static void check_for_running_agent (void);
@@ -439,16 +437,12 @@ main (int argc, char **argv )
   /* Libgcrypt requires us to register the threading model first.
      Note that this will also do the pth_init. */
 #ifdef USE_GNU_PTH
-# ifdef HAVE_W32_SYSTEM
-  pth_init ();
-# else /*!HAVE_W32_SYSTEM*/
   err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
   if (err)
     {
       log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
                  gpg_strerror (err));
     }
-# endif/*!HAVE_W32_SYSTEM*/
 #endif /*USE_GNU_PTH*/
 
   /* Check that the libraries are suitable.  Do it here because

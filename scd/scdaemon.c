@@ -158,10 +158,8 @@ static char socket_name[128];
 
 #ifndef HAVE_OPENSC
 #ifdef USE_GNU_PTH
-#ifndef HAVE_W32_SYSTEM
 /* Pth wrapper function definitions. */
 GCRY_THREAD_OPTION_PTH_IMPL;
-#endif
 
 static void *ticker_thread (void *arg);
 #endif /*USE_GNU_PTH*/
@@ -353,16 +351,12 @@ main (int argc, char **argv )
      Note that this will also do the pth_init. */
 #ifndef HAVE_OPENSC
 #ifdef USE_GNU_PTH
-# ifdef HAVE_W32_SYSTEM
-  pth_init ();
-# else /*!HAVE_W32_SYSTEM*/
   err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
   if (err)
     {
       log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
                  gpg_strerror (err));
     }
-# endif /*!HAVE_W32_SYSTEM*/
 #endif /*USE_GNU_PTH*/
 #endif /*!HAVE_OPENSC*/
 

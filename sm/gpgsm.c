@@ -740,6 +740,7 @@ main ( int argc, char **argv)
     }
 
 #ifdef HAVE_W32_SYSTEM
+  /* For W32 we need pth.  */
   pth_init ();
 #endif
 
