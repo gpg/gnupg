@@ -504,7 +504,7 @@ agent_open (int *ret_prot)
     else
       {
         infostr = getenv ( "GPG_AGENT_INFO" );
-        if ( !infostr ) {
+        if ( !infostr || !*infostr ) {
           log_error (_("gpg-agent is not available in this session\n"));
           opt.use_agent = 0;
           return -1;

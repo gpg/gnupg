@@ -1,3 +1,8 @@
+2004-02-17  Werner Koch  <wk@gnupg.org>
+
+	* call-agent.c (start_agent): Ignore an empty GPG_AGENT_INFO.
+	* passphrase.c (agent_open): Ditto.
+
 2004-02-12  Werner Koch  <wk@gnupg.org>
 
 	* gpgv.c: Removed g10defs.h.

@@ -82,7 +82,7 @@ start_agent (void)
                  the access to the agent. */
 
   infostr = force_pipe_server? NULL : getenv ("GPG_AGENT_INFO");
-  if (!infostr)
+  if (!infostr || !*infostr)
     {
       const char *pgmname;
       const char *argv[3];
