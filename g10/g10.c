@@ -2576,7 +2576,16 @@ print_hex( byte *p, size_t n )
 {
     int i;
 
-    if( n == 20 ) {
+    if( n == 16 ) {
+        for(i=0; i < n ; i++, p++ ) {
+	  if( i )
+		putchar(' ');
+	    if( i && !(i%8) )
+		putchar(' ');
+	    printf("%02X", *p );
+	}
+    }
+    else if( n == 20 ) {
 	for(i=0; i < n ; i++, i++, p += 2 ) {
 	    if( i )
 		putchar(' ');
@@ -2585,22 +2594,13 @@ print_hex( byte *p, size_t n )
 	    printf("%02X%02X", *p, p[1] );
 	}
     }
-    else if( n == 24 ) {
+    else {
 	for(i=0; i < n ; i += 4, p += 4 ) {
 	    if( i )
 		putchar(' ');
-	    if( i == 12 )
+	    if( i == 12 && n <= 24 )
 		putchar(' ');
 	    printf("%02X%02X%02X%02X", *p, p[1], p[2], p[3] );
-	}
-    }
-    else {
-	for(i=0; i < n ; i++, p++ ) {
-	    if( i )
-		putchar(' ');
-	    if( i && !(i%8) )
-		putchar(' ');
-	    printf("%02X", *p );
 	}
     }
 }
@@ -2665,6 +2665,9 @@ print_mds( const char *fname, int algo )
 	md_enable( md, DIGEST_ALGO_RMD160 );
 	if( !check_digest_algo(DIGEST_ALGO_TIGER) )
 	    md_enable( md, DIGEST_ALGO_TIGER );
+	md_enable( md, DIGEST_ALGO_SHA256 );
+	md_enable( md, DIGEST_ALGO_SHA384 );
+	md_enable( md, DIGEST_ALGO_SHA512 );
     }
 
     while( (n=fread( buf, 1, DIM(buf), fp )) )
@@ -2682,6 +2685,9 @@ print_mds( const char *fname, int algo )
                 print_hashline( md, DIGEST_ALGO_RMD160, fname );
                 if( !check_digest_algo(DIGEST_ALGO_TIGER) ) 
                     print_hashline( md, DIGEST_ALGO_TIGER, fname );
+                print_hashline( md, DIGEST_ALGO_SHA256, fname );
+                print_hashline( md, DIGEST_ALGO_SHA384, fname );
+                print_hashline( md, DIGEST_ALGO_SHA512, fname );
             }
         }
         else {
@@ -2700,7 +2706,13 @@ print_mds( const char *fname, int algo )
                 if( !check_digest_algo(DIGEST_ALGO_TIGER) ) {
                     printf("\n%s TIGER = ", fname?pname:""  );
                     print_hex(md_read(md, DIGEST_ALGO_TIGER), 24 );
-                }
+		}
+                printf("\n%sSHA256 = ", fname?pname:""  );
+                print_hex(md_read(md, DIGEST_ALGO_SHA256), 32 );
+                printf("\n%sSHA384 = ", fname?pname:""  );
+                print_hex(md_read(md, DIGEST_ALGO_SHA384), 48 );
+                printf("\n%sSHA512 = ", fname?pname:""  );
+                print_hex(md_read(md, DIGEST_ALGO_SHA512), 64 );
             }
             putchar('\n');
         }

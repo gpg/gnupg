@@ -252,6 +252,12 @@ parse_hash_header( const char *line )
 	    found |= 8;
 	else if( !strncmp( s, "TIGER", s2-s ) ) /* used by old versions */
 	    found |= 8;
+	else if( !strncmp( s, "SHA256", s2-s ) )
+	    found |= 16;
+	else if( !strncmp( s, "SHA384", s2-s ) )
+	    found |= 32;
+	else if( !strncmp( s, "SHA512", s2-s ) )
+	    found |= 64;
 	else
 	    return 0;
 	for(; *s2 && (*s2==' ' || *s2 == '\t'); s2++ )
@@ -869,7 +875,7 @@ armor_filter( void *opaque, int control,
 		/* the buffer is at least 15+n*15 bytes long, so it
 		 * is easy to construct the packets */
 
-		hashes &= 1|2|4|8;
+		hashes &= 1|2|4|8|16|32|64;
 		if( !hashes ) {
 		    hashes |= 4;  /* default to MD 5 */
 		    /* This is non-ideal since PGP 5-8 have the same
@@ -885,14 +891,20 @@ armor_filter( void *opaque, int control,
                 memcpy(buf+n, sesmark, sesmarklen ); n+= sesmarklen;
                 buf[n++] = CTRLPKT_CLEARSIGN_START; 
                 buf[n++] = afx->not_dash_escaped? 0:1; /* sigclass */
-                if( hashes & 1 ) 
+                if( hashes & 1 )
                     buf[n++] = DIGEST_ALGO_RMD160;
-                if( hashes & 2 ) 
+                if( hashes & 2 )
                     buf[n++] = DIGEST_ALGO_SHA1;
-                if( hashes & 4 ) 
+                if( hashes & 4 )
                     buf[n++] = DIGEST_ALGO_MD5;
-                if( hashes & 8 ) 
+                if( hashes & 8 )
                     buf[n++] = DIGEST_ALGO_TIGER;
+                if( hashes & 16 )
+                    buf[n++] = DIGEST_ALGO_SHA256;
+                if( hashes & 32 )
+                    buf[n++] = DIGEST_ALGO_SHA384;
+                if( hashes & 64 )
+                    buf[n++] = DIGEST_ALGO_SHA512;
                 buf[1] = n - 2;
 
 		/* followed by a plaintext packet */
