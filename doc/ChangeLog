@@ -1,3 +1,7 @@
+2002-01-26  Timo Schulz  <ts@winpt.org>
+
+	* gnupg-w32.reg: New. Registry file for W32 in registry format.
+       
 2002-01-26  Werner Koch  <wk@gnupg.org>
 
 	* gpg.sgml: A few words about --gpg-agent-info and GPG_AGENT_INFO.
