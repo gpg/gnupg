@@ -1,3 +1,18 @@
+2002-09-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (menu_addrevoker): The direct key signature for
+	revocation keys must be at least v4 to carry the revocation key
+	subpacket.  Add a PGP 2.x warning for revocation keys.
+
+2002-09-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (check_permissions): Rearrange strings to make translating
+	easier (don't incorporate string parts).
+
+	* keyedit.c (sign_uids): Make strings translatable.
+
+	* sig-check.c (check_key_signature2): Make string translatable.
+
 2002-09-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (check_revocation_keys): Move....

@@ -546,7 +546,8 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	}
 	else {
             if (!opt.quiet)
-                log_info ("key %08lX: no subkey for subkey revocation packet\n",
+                log_info (_("key %08lX: no subkey for subkey "
+			    "revocation packet\n"),
                           (ulong)keyid_from_pk (pk, NULL));
 	    rc = G10ERR_SIG_CLASS;
 	}
