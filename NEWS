@@ -5,8 +5,9 @@ Noteworthy changes in version 1.3.3 (unreleased)
 
     * Support for the TIGER/192 hash has been dropped.  This should
       not be interpreted as a statement as to the strength of
-      TIGER/192: the upcoming revision to the OpenPGP standard removes
-      support for several unused (or mostly unused) hashes.
+      TIGER/192 - rather, the upcoming revision to the OpenPGP
+      standard removes support for several unused (or mostly unused)
+      hashes.
 
     * Revoked or expired user IDs are now skipped when selecting keys
       for encryption.  Specifying a key by the key ID overrides this
@@ -16,6 +17,8 @@ Noteworthy changes in version 1.3.3 (unreleased)
       are upgrading from a 1.2.x version of GnuPG, and are running a
       very old version of Windows that has the 8.3 filename limit, you
       may need to change this.
+
+    * Multiple "Comment:" lines in armored output are now allowed.
 
     * New --list-options option.  This option takes a list of
       arguments that allows the user to customize exactly what key
@@ -32,6 +35,9 @@ Noteworthy changes in version 1.3.3 (unreleased)
       notation display, long or short keyIDs, calculated validity for
       each user ID, etc.  See the manual for the complete list of
       verify-options.
+
+    * New --sig-keyserver-url to embed a "where to get my key"
+      subpacket into a signature.
 
     * The options --show-photos, --show-policy-url, --show-notation,
       and --show-keyring are all deprecated in favor of those
@@ -50,8 +56,8 @@ Noteworthy changes in version 1.3.3 (unreleased)
 
     * To simplify running both the stable (1.2.x) and development
       (1.3.x) versions of GnuPG, the development version will try to
-      load the options file gpg.conf-VERSION before falling back to
-      the regular gpg.conf file.
+      load the options file gpg.conf-VERSION (e.g. gpg.conf-1.3.3 for
+      this release) before falling back to the regular gpg.conf file.
 
     * Two new %-expandos for use in notation and policy URLs.  "%g"
       expands to the fingerprint of the key making the signature
