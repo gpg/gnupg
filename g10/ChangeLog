@@ -1,3 +1,8 @@
+2002-11-09  Werner Koch  <wk@gnupg.org>
+
+	* passphrase.c (agent_send_all_options): Use tty_get_ttyname to
+	get the default ttyname.
+
 2002-11-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyring.h, keyring.c (keyring_register_filename): Return the
