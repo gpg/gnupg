@@ -1,5 +1,5 @@
 /* keyserver.c - generic keyserver code
- * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -966,6 +966,13 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 
 	    memset(&afx,0,sizeof(afx));
 	    afx.what=1;
+	    /* Tell the armor filter to use Unix-style \n line
+	       endings, since we're going to fprintf this to a file
+	       that (on Win32) is open in text mode.  The win32 stdio
+	       will transform the \n to \r\n and we'll end up with the
+	       proper line endings on win32.  This is a no-op on
+	       Unix. */
+	    afx.eol[0]='\n';
 	    iobuf_push_filter(buffer,armor_filter,&afx);
 
 	    /* TODO: Remove Comment: lines from keys exported this

@@ -1,5 +1,6 @@
 /* filter.h
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -48,6 +49,10 @@ typedef struct {
     int truncated;	    /* number of truncated lines */
     int qp_detected;
     int pgp2mode;
+    byte eol[3];            /* The end of line characters as a
+			       zero-terminated string.  Defaults
+			       (eol[0]=='\0') to whatever the local
+			       platform uses. */
 
     byte *buffer;	    /* malloced buffer */
     unsigned buffer_size;   /* and size of this buffer */

@@ -1,3 +1,14 @@
+2005-01-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* filter.h, armor.c (armor_filter): Use the eol string from the
+	armor filter context instead of hardcoding '\n' or '\r\n'.  If no
+	eol string is provided, default to '\n' or '\r\n' as appropriate.
+	(is_armor_header): Trim tabs in armor header lines as well.
+
+	* keyserver.c (keyserver_spawn): Use it here to force '\n' line
+	endings since the keyserver output file gets a LF->CRLF expansion
+	on win32.
+
 2005-01-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Typo.

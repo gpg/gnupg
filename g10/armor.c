@@ -1,6 +1,6 @@
 /* armor.c - Armor flter
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -37,12 +37,6 @@
 #include "main.h"
 #include "status.h"
 #include "i18n.h"
-
-#ifdef HAVE_DOSISH_SYSTEM
-#define LF "\r\n"
-#else
-#define LF "\n"
-#endif
 
 #define MAX_LINELEN 20000
 
@@ -117,7 +111,6 @@ static char *tail_strings[] = {
     "END PGP SECRET KEY BLOCK",
     NULL
 };
-
 
 
 static void
@@ -306,7 +299,7 @@ is_armor_header( byte *line, unsigned len )
 	  p++;
       }
     else
-      while(*p==' ' || *p=='\r' || *p=='\n')
+      while(*p==' ' || *p=='\r' || *p=='\n' || *p=='\t')
 	p++;
 
     if( *p )
@@ -984,10 +977,14 @@ armor_filter( void *opaque, int control,
 		log_bug("afx->what=%d", afx->what);
 	    iobuf_writestr(a, "-----");
 	    iobuf_writestr(a, head_strings[afx->what] );
-	    iobuf_writestr(a, "-----" LF );
+	    iobuf_writestr(a, "-----" );
+	    iobuf_writestr(a,afx->eol);
 	    if( !opt.no_version )
+	      {
 		iobuf_writestr(a, "Version: GnuPG v"  VERSION " ("
-					      PRINTABLE_OS_NAME ")" LF );
+			       PRINTABLE_OS_NAME ")" );
+		iobuf_writestr(a,afx->eol);
+	      }
 
 	    /* write the comment strings */
 	    for(s=comment->d;comment;comment=comment->next,s=comment->d)
@@ -1004,7 +1001,8 @@ armor_filter( void *opaque, int control,
 		    else
 		      iobuf_put(a, *s );
 		  }
-		iobuf_writestr(a, LF );
+
+		iobuf_writestr(a,afx->eol);
 	      }
 
 	    if ( afx->hdrlines ) {
@@ -1016,7 +1014,8 @@ armor_filter( void *opaque, int control,
                     iobuf_put(a, *s );
                 }
             }
-	    iobuf_writestr(a, LF );
+
+	    iobuf_writestr(a,afx->eol);
 	    afx->status++;
 	    afx->idx = 0;
 	    afx->idx2 = 0;
@@ -1045,10 +1044,11 @@ armor_filter( void *opaque, int control,
 		iobuf_put(a, c);
 		c = bintoasc[radbuf[2]&077];
 		iobuf_put(a, c);
-		if( ++idx2 >= (64/4) ) { /* pgp doesn't like 72 here */
-		    iobuf_writestr(a, LF );
+		if( ++idx2 >= (64/4) )
+		  { /* pgp doesn't like 72 here */
+		    iobuf_writestr(a,afx->eol);
 		    idx2=0;
-		}
+		  }
 	    }
 	}
 	for(i=0; i < idx; i++ )
@@ -1057,10 +1057,23 @@ armor_filter( void *opaque, int control,
 	afx->idx2 = idx2;
 	afx->crc  = crc;
     }
-    else if( control == IOBUFCTRL_INIT ) {
+    else if( control == IOBUFCTRL_INIT )
+      {
 	if( !is_initialized )
-	    initialize();
-    }
+	  initialize();
+
+	/* Figure out what we're using for line endings if the caller
+	   didn't specify. */
+	if(afx->eol[0]==0)
+	  {
+#ifdef HAVE_DOSISH_SYSTEM
+	    afx->eol[0]='\r';
+	    afx->eol[1]='\n';
+#else
+	    afx->eol[0]='\n';
+#endif
+	  }
+      }
     else if( control == IOBUFCTRL_CANCEL ) {
 	afx->cancel = 1;
     }
@@ -1089,14 +1102,15 @@ armor_filter( void *opaque, int control,
 		    iobuf_put(a, c);
 		    iobuf_put(a, '=');
 		}
-		if( ++idx2 >= (64/4) ) { /* pgp doesn't like 72 here */
-		    iobuf_writestr(a, LF );
+		if( ++idx2 >= (64/4) )
+		  { /* pgp doesn't like 72 here */
+		    iobuf_writestr(a,afx->eol);
 		    idx2=0;
-		}
+		  }
 	    }
 	    /* may need a linefeed */
 	    if( idx2 )
-		iobuf_writestr(a, LF );
+	      iobuf_writestr(a,afx->eol);
 	    /* write the CRC */
 	    iobuf_put(a, '=');
 	    radbuf[0] = crc >>16;
@@ -1110,13 +1124,14 @@ armor_filter( void *opaque, int control,
 	    iobuf_put(a, c);
 	    c = bintoasc[radbuf[2]&077];
 	    iobuf_put(a, c);
-	    iobuf_writestr(a, LF );
+	    iobuf_writestr(a,afx->eol);
 	    /* and the the trailer */
 	    if( afx->what >= DIM(tail_strings) )
 		log_bug("afx->what=%d", afx->what);
 	    iobuf_writestr(a, "-----");
 	    iobuf_writestr(a, tail_strings[afx->what] );
-	    iobuf_writestr(a, "-----" LF );
+	    iobuf_writestr(a, "-----" );
+	    iobuf_writestr(a,afx->eol);
 	}
 	else if( !afx->any_data && !afx->inp_bypass ) {
 	    log_error(_("no valid OpenPGP data found.\n"));
