@@ -157,6 +157,16 @@ else
     fi
 fi
 
+AC_MSG_CHECKING([whether to enable read-only SHA-384 and SHA-512 digest support])
+AC_ARG_ENABLE(sha512,
+    [  --enable-sha512         enable read-only SHA-384 and SHA-512 digest support],
+    use_sha512=$enableval, use_sha512=no)
+AC_MSG_RESULT($use_sha512)
+if test "$use_sha512" = yes ; then
+    AC_SUBST(SHA512_O,sha512.o)
+    AC_DEFINE(USE_SHA512,1,[Define to include read-only SHA-384 and SHA-512 digest support])
+fi
+
 AC_MSG_CHECKING([whether to enable external program execution])
 AC_ARG_ENABLE(exec,
     [  --disable-exec          disable all external program execution],

@@ -1,3 +1,8 @@
+2003-02-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Add --enable-sha512 switch to add SHA384/512
+	support.
+
 2003-02-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Do not set GNUPG_LIBEXECDIR in ./configure, so
