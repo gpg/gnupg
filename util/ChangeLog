@@ -1,3 +1,7 @@
+2002-09-16  Werner Koch  <wk@gnupg.org>
+
+	* w32reg.c (read_w32_registry_string): Fallback to HLM.
+
 2002-09-11  Werner Koch  <wk@gnupg.org>
 
 	* simple-gettext.c: Disable charset mappings.  We do it now when
