@@ -472,7 +472,7 @@ handle_bzip2(int algo,FILE *fpin,FILE *fpout)
 	{
 	  n = bzs.avail_in;
 	  if (!n)
-	    bzs.next_in = (Bytef *) inbuf;
+	    bzs.next_in = inbuf;
 	  count = inbufsize - n;
 	  for (nread=0;
 	       nread < count && (c=getc (fpin)) != EOF;
@@ -487,7 +487,7 @@ handle_bzip2(int algo,FILE *fpin,FILE *fpout)
 	    }
 	  bzs.avail_in = n;
 	}
-      bzs.next_out = (Bytef *) outbuf;
+      bzs.next_out = outbuf;
       bzs.avail_out = outbufsize;
                     
       if (!zinit_done) 

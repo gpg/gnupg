@@ -1,3 +1,11 @@
+2004-01-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* convert-from-106, lspgpot: Check for gpg binary before
+	proceeding.  Don't hardcode the path to gpg.
+
+	* gpgsplit.c (handle_bzip2): Remove two cut and paste typecast
+	errors.  Noted by Stefan Bellon.
+
 2003-12-28  Stefan Bellon  <sbellon@sbellon.de>
 
 	* gpgsplit.c [__riscos__]: Removal of unnecessary #ifdef
