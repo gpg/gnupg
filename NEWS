@@ -1,6 +1,10 @@
 Noteworthy changes in version 1.9.1 (unreleased)
 ------------------------------------------------
 
+ * Support for OpenSC is back. scdaemon support a --disable-opensc to
+   disable OpenSC use at runtime, so that PC/SC or ct-API can still be
+   used directly.
+
 
 Noteworthy changes in version 1.9.0 (2003-08-05)
 ------------------------------------------------

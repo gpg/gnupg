@@ -1,3 +1,9 @@
+2003-08-06  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Check for libgpg-error.  Print infos about missing
+	libraries more nicely.
+	* acinclude.m4 (AM_PATH_GPG_ERROR): Added.
+
 2003-08-05  Werner Koch  <wk@gnupg.org>
 
 	Released 1.9.0.

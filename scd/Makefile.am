@@ -50,7 +50,7 @@ sc_investigate_SOURCES = \
 
 sc_investigate_LDADD = \
 	../jnlib/libjnlib.a ../common/libcommon.a \
-	$(LIBGCRYPT_LIBS) @INTLLIBS@ -lgpg-error -ldl
+	$(OPENSC_LIBS) $(LIBGCRYPT_LIBS) @INTLLIBS@ -lgpg-error -ldl
 
 
 sc_copykeys_SOURCES = \
@@ -64,7 +64,7 @@ sc_copykeys_SOURCES = \
 sc_copykeys_LDADD = \
 	../jnlib/libjnlib.a ../common/libcommon.a \
 	../common/libsimple-pwquery.a \
-	$(LIBGCRYPT_LIBS) -lgpg-error @INTLLIBS@ -ldl
+	$(OPENSC_LIBS) $(LIBGCRYPT_LIBS) -lgpg-error @INTLLIBS@ -ldl
 
 
 

@@ -1,9 +1,24 @@
+2003-08-18  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Add OPENSC_LIBS to all programs. 
+
+	* scdaemon.c, scdaemon.h: New option --disable-opensc.
+	* card.c (card_open): Implement it.
+	* apdu.c (open_osc_reader, osc_send_apdu): New.
+	(apdu_open_reader) [HAVE_OPENSC]: Use the opensc driver if not
+	disabled.
+	(error_string) [HAVE_OPENSC]: Use sc_strerror.
+	(send_apdu) [HAVE_OPENSC]: Call osc_apdu_send.
+
+	* card-p15.c (p15_enum_keypairs, p15_prepare_key): Adjusted for
+	libgpg-error.
+
 2003-08-14  Timo Schulz  <twoaday@freakmail.de>
 
 	* apdu.c (ct_activate_card): Change the code a little to avoid
 	problems with other readers.
 	* Always use 'dynload.h' instead of 'dlfcn.h'.
-	
+
 2003-08-05  Werner Koch  <wk@gnupg.org>
 
 	* app-openpgp.c (dump_all_do): Don't analyze constructed DOs after

@@ -24,6 +24,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#ifdef HAVE_OPENSC
+# include <opensc/opensc.h>
+#endif
 
 #include "scdaemon.h"
 #include "apdu.h"
@@ -34,9 +37,9 @@
                                   insertion of the card (1 = don't wait). */
 
 
-
-/* A global table to keep track of active readers. */
-static struct {
+/* A structure to collect information pertaining to one reader
+   slot. */
+struct reader_table_s {
   int used;            /* True if slot is used. */
   unsigned short port; /* Port number:  0 = unused, 1 - dev/tty */
   int is_ctapi;        /* This is a ctAPI driver. */
@@ -45,10 +48,21 @@ static struct {
     unsigned long card;
     unsigned long protocol;
   } pcsc;
+#ifdef HAVE_OPENSC
+  int is_osc;          /* We are using the OpenSC driver layer. */
+  struct {
+    struct sc_context *ctx;
+    struct sc_card *scard;
+  } osc;
+#endif /*HAVE_OPENSC*/
   int status;
   unsigned char atr[33];
   size_t atrlen;
-} reader_table[MAX_READER];                          
+};
+typedef struct reader_table_s *reader_table_t;
+
+/* A global table to keep track of active readers. */
+static struct reader_table_s reader_table[MAX_READER];
 
 
 /* ct API function pointer. */
@@ -142,6 +156,7 @@ new_reader_slot (void)
     }
   reader_table[reader].used = 1;
   reader_table[reader].is_ctapi = 0;
+  reader_table[reader].is_osc = 0;
   return reader;
 }
 
@@ -513,7 +528,7 @@ pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
   unsigned long recv_len;
   
   if (DBG_CARD_IO)
-    log_printhex ("  CT_data:", apdu, apdulen);
+    log_printhex ("  PCSC_data:", apdu, apdulen);
 
   if ((reader_table[slot].pcsc.protocol & PCSC_PROTOCOL_T1))
       send_pci.protocol = PCSC_PROTOCOL_T1;
@@ -529,10 +544,199 @@ pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
     log_error ("pcsc_transmit failed: %s (0x%lx)\n",
                pcsc_error_string (err), err);
   
-  return err? -1:0;
+  return err? -1:0; /* FIXME: Return appropriate error code. */
 }
 
 
+#ifdef HAVE_OPENSC
+/* 
+     OpenSC Interface.
+
+     This uses the OpenSC primitives to send APDUs.  We need this
+     because we can't mix OpenSC and native (i.e. ctAPI or PC/SC)
+     access to a card for resource conflict reasons.
+ */
+
+static int
+open_osc_reader (int portno)
+{
+  int err;
+  int slot;
+  reader_table_t slotp;
+
+  slot = new_reader_slot ();
+  if (slot == -1)
+    return -1;
+  slotp = reader_table + slot;
+
+  err = sc_establish_context (&slotp->osc.ctx, "scdaemon");
+  if (err)
+    {
+      log_error ("failed to establish SC context: %s\n", sc_strerror (err));
+      slotp->used = 0;
+      return -1;
+    }
+  if (portno < 0 || portno >= slotp->osc.ctx->reader_count)
+    {
+      log_error ("no card reader available\n");
+      sc_release_context (slotp->osc.ctx);
+      slotp->used = 0;
+      return -1;
+    }
+
+  /* Redirect to our logging facility. */
+  slotp->osc.ctx->error_file = log_get_stream ();
+  slotp->osc.ctx->debug = opt.debug_sc;
+  slotp->osc.ctx->debug_file = log_get_stream ();
+
+  if (sc_detect_card_presence (slotp->osc.ctx->reader[portno], 0) != 1)
+    {
+      log_error ("no card present\n");
+      sc_release_context (slotp->osc.ctx);
+      slotp->used = 0;
+      return -1;
+    }
+  
+  /* We want the standard ISO driver. */
+  /*FIXME: OpenSC does not like "iso7816", so we use EMV for now. */
+  err = sc_set_card_driver(slotp->osc.ctx, "emv");
+  if (err)
+    {
+      log_error ("failed to select the iso7816 driver: %s\n",
+                 sc_strerror (err));
+      sc_release_context (slotp->osc.ctx);
+      slotp->used = 0;
+      return -1;
+    }
+
+  /* Now connect the card and hope that OpenSC won't try to be too
+     smart. */
+  err = sc_connect_card (slotp->osc.ctx->reader[portno], 0,
+                         &slotp->osc.scard);
+  if (err)
+    {
+      log_error ("failed to connect card in reader %d: %s\n",
+                 portno, sc_strerror (err));
+      sc_release_context (slotp->osc.ctx);
+      slotp->used = 0;
+      return -1;
+    }
+  if (opt.verbose)
+    log_info ("connected to card in opensc reader %d using driver `%s'\n",
+              portno, slotp->osc.scard->driver->name);
+
+  err = sc_lock (slotp->osc.scard);
+  if (err)
+    {
+      log_error ("can't lock card in reader %d: %s\n",
+                 portno, sc_strerror (err));
+      sc_disconnect_card (slotp->osc.scard, 0);
+      sc_release_context (slotp->osc.ctx);
+      slotp->used = 0;
+      return -1;
+    }
+
+  if (slotp->osc.scard->atr_len >= DIM (slotp->atr))
+    log_bug ("ATR returned by opensc is too large\n");
+  slotp->atrlen = slotp->osc.scard->atr_len;
+  memcpy (slotp->atr, slotp->osc.scard->atr, slotp->atrlen);
+
+  slotp->is_osc = 1;
+
+  dump_reader_status (slot); 
+  return slot;
+}
+
+
+/* Actually send the APDU of length APDULEN to SLOT and return a
+   maximum of *BUFLEN data in BUFFER, the actual returned size will be
+   set to BUFLEN.  Returns: OpenSC error code. */
+static int
+osc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
+                unsigned char *buffer, size_t *buflen)
+{
+  long err;
+  struct sc_apdu a;
+  unsigned char data[SC_MAX_APDU_BUFFER_SIZE];
+  unsigned char result[SC_MAX_APDU_BUFFER_SIZE];
+
+  if (DBG_CARD_IO)
+    log_printhex ("  APDU_data:", apdu, apdulen);
+
+  if (apdulen < 4)
+    {
+      log_error ("osc_send_apdu: APDU is too short\n");
+      return SC_ERROR_CMD_TOO_SHORT;
+    }
+
+  memset(&a, 0, sizeof a);
+  a.cla = *apdu++;
+  a.ins = *apdu++;
+  a.p1 = *apdu++;
+  a.p2 = *apdu++;
+  apdulen -= 4;
+
+  if (!apdulen)
+    a.cse = SC_APDU_CASE_1;
+  else if (apdulen == 1) 
+    {
+      a.le = *apdu? *apdu : 256;
+      apdu++; apdulen--;
+      a.cse = SC_APDU_CASE_2_SHORT;
+    }
+  else
+    {
+      a.lc = *apdu++; apdulen--;
+      if (apdulen < a.lc)
+        {
+          log_error ("osc_send_apdu: APDU shorter than specified in Lc\n");
+          return SC_ERROR_CMD_TOO_SHORT;
+
+        }
+      memcpy(data, apdu, a.lc);
+      apdu += a.lc; apdulen -= a.lc;
+
+      a.data = data;
+      a.datalen = a.lc;
+      
+      if (!apdulen)
+        a.cse = SC_APDU_CASE_3_SHORT;
+      else
+        {
+          a.le = *apdu? *apdu : 256;
+          apdu++; apdulen--;
+          if (apdulen)
+            {
+              log_error ("osc_send_apdu: APDU larger than specified\n");
+              return SC_ERROR_CMD_TOO_LONG;
+            }
+          a.cse = SC_APDU_CASE_4_SHORT;
+        }
+    }
+
+  a.resp = result;
+  a.resplen = DIM(result);
+
+  err = sc_transmit_apdu (reader_table[slot].osc.scard, &a);
+  if (err)
+    {
+      log_error ("sc_apdu_transmit failed: %s\n", sc_strerror (err));
+      return err;
+    }
+
+  if (*buflen < 2 || a.resplen > *buflen - 2)
+    {
+      log_error ("osc_send_apdu: provided buffer too short to store result\n");
+      return SC_ERROR_BUFFER_TOO_SMALL;
+    }
+  memcpy (buffer, a.resp, a.resplen);
+  buffer[a.resplen] = a.sw1;
+  buffer[a.resplen+1] = a.sw2;
+  *buflen = a.resplen + 2;
+  return 0;
+}
+
+#endif /* HAVE_OPENSC */
 
 
 
@@ -542,11 +746,22 @@ pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
 
 /* Open the reader and return an internal slot number or -1 on
    error. If PORTSTR is NULL we default to a suitable port (for ctAPI:
-   the first USB reader.  For PCSC/ the first listed reader. */
+   the first USB reader.  For PC/SC the first listed reader).  IF
+   OpenSC support is cmpiled in, we first try to use OpenSC. */
 int
 apdu_open_reader (const char *portstr)
 {
   static int pcsc_api_loaded, ct_api_loaded;
+
+#ifdef HAVE_OPENSC
+  if (!opt.disable_opensc)
+    {
+      int port = portstr? atoi (portstr) : 0;
+
+      return open_osc_reader (port);
+    }
+#endif /* HAVE_OPENSC */  
+
 
   if (opt.ctapi_driver && *opt.ctapi_driver)
     {
@@ -648,6 +863,10 @@ error_string (int slot, long rc)
     return "[invalid slot]";
   if (reader_table[slot].is_ctapi)
     return ct_error_string (rc);
+#ifdef HAVE_OPENSC
+  else if (reader_table[slot].is_osc)
+    return sc_strerror (rc);
+#endif
   else
     return pcsc_error_string (rc);
 }
@@ -662,6 +881,10 @@ send_apdu (int slot, unsigned char *apdu, size_t apdulen,
     return SW_HOST_NO_DRIVER;
   if (reader_table[slot].is_ctapi)
     return ct_send_apdu (slot, apdu, apdulen, buffer, buflen);
+#ifdef HAVE_OPENSC
+  else if (reader_table[slot].is_osc)
+    return osc_send_apdu (slot, apdu, apdulen, buffer, buflen);
+#endif
   else
     return pcsc_send_apdu (slot, apdu, apdulen, buffer, buflen);
 }

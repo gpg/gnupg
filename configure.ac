@@ -27,8 +27,9 @@ AC_INIT(gnupg, 1.9.1-cvs, gnupg-devel@gnupg.org)
 # feel that the default check for a development version is not
 # sufficient.
 development_version=yes
+NEED_GPG_ERROR_VERSION=0.2
 NEED_LIBGCRYPT_VERSION=1.1.42
-NEED_LIBASSUAN_VERSION=0.0.1
+NEED_LIBASSUAN_VERSION=0.6.0
 NEED_KSBA_VERSION=0.4.6
 NEED_OPENSC_VERSION=0.7.0
 
@@ -47,7 +48,9 @@ AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
 AC_GNU_SOURCE
 
 # Some status variables to give feedback at the end of a configure run
-habe_libassuan=no
+have_gpg_error=no
+have_libgcrypt=no 
+have_libassuan=no
 have_ksba=no
 have_opensc=no
 have_pth=no
@@ -347,58 +350,31 @@ AM_CONDITIONAL(HAVE_DOSISH_SYSTEM, test "$have_dosish_system" = yes)
 #
 
 #
+# libgpg-error is a library with error codes shared between GnuPG
+# related projects.
+#
+AM_PATH_GPG_ERROR("$NEED_GPG_ERROR_VERSION"
+                  have_gpg_error=yes,have_gpg_error=no)
+
+
+#
 # Libgcrypt is our generic crypto library
 #
-#AC_PATH_PROG(LIBGCRYPT_CONFIG, libgcrypt-config)
-#if test -n "$LIBGCRYPT_CONFIG"; then
-#	LIBGCRYPT_CFLAGS=`$LIBGCRYPT_CONFIG --cflags`
-#	LIBGCRYPT_LIBS=`$LIBGCRYPT_CONFIG --libs`
-#else
-#    AC_MSG_ERROR([[
-#***
-#*** You need libgcrypt to build this program.
-#*** It should be available at the same place you 
-#*** got this software.
-#***]])
-#fi
-#AC_SUBST(LIBGCRYPT_CFLAGS)
-#AC_SUBST(LIBGCRYPT_LIBS)
-AM_PATH_LIBGCRYPT("$NEED_LIBGCRYPT_VERSION",,
- 	AC_MSG_ERROR([[
-***  
-*** libgcrypt was not found. You may want to get it from
-*** ftp://ftp.gnupg.org/pub/gcrypt/alpha/libgcrypt/
-***
-]]))
+AM_PATH_LIBGCRYPT("$NEED_LIBGCRYPT_VERSION",
+        have_libgcrypt=yes,have_libgcrypt=no)
 
 
 #
 # libassuan is used for IPC
 #
 AM_PATH_LIBASSUAN("$NEED_LIBASSUAN_VERSION",
-                  have_libasssuan=yes,have_libasssun=no)
-if test "$have_libassuan" = "no"; then
-    AC_MSG_ERROR([[
-***
-*** You need libassuan to build this program..
-*** It should be available at the same place you 
-*** got this software.
-***]])
-fi
+                  have_libassuan=yes,have_libassuan=no)
 
 
 #
 # libksba is our X.509 support library
 #
 AM_PATH_KSBA("$NEED_KSBA_VERSION",have_ksba=yes,have_ksba=no)
-if test "$have_ksba" = "no"; then
-    AC_MSG_ERROR([[
-***
-*** You need libksba to build this program..
-*** It should be available at the same place you 
-*** got this software.
-***]])
-fi
 
 
 #
@@ -909,6 +885,64 @@ AC_SUBST(NETLIBS)
 # We use jnlib, so tell other modules about it
 AC_DEFINE(HAVE_JNLIB_LOGGING, 1,
         [Defined if jnlib style logging fucntions are available])
+
+
+
+
+#
+# Print errors here so that they are visible all
+# together and the user can acquire them all together.
+#
+die=no
+if test "$have_gpg_error" = "no"; then
+   die=yes
+   AC_MSG_NOTICE([[
+***  
+*** You need libgpg-error to build this program.
+**  This library is for example available at
+***   ftp://ftp.gnupg.org/pub/gcrypt/alpha/libgpg-error
+*** (at least version $NEED_GPG_ERROR_VERSION is required.)
+***]])
+fi
+if test "$have_libgcrypt" = "no"; then
+   die=yes
+   AC_MSG_NOTICE([[
+***  
+*** You need libgcrypt to build this program.
+**  This library is for example available at
+***   ftp://ftp.gnupg.org/pub/gcrypt/alpha/libgcrypt/
+*** (at least version $NEED_LIBGCRYPT_VERSION is required.)
+***]])
+fi
+if test "$have_libassuan" = "no"; then
+   die=yes
+   AC_MSG_NOTICE([[
+***
+*** You need libassuan to build this program.
+*** This library is for example available at
+***   ftp://ftp.gnupg.org/pub/gcrypt/alpha/libassuan/
+*** (at least version $NEED_LIBASSUAN_VERSION is required).
+***]])
+fi
+if test "$have_ksba" = "no"; then
+   die=yes
+    AC_MSG_NOTICE([[
+***
+*** You need libksba to build this program.
+*** This library is for example available at
+***   ftp://ftp.gnupg.org/pub/gcrypt/alpha/aegypten/
+*** (at least version $NEED_KSBA_VERSION is required).
+***]])
+fi
+
+if test "$die" = "yes"; then
+    AC_MSG_ERROR([[
+***
+*** Required libraries not found. Please consult the above messages
+*** and install them before running configure again.
+***]])
+fi
+
 
 #
 # Decide what to build
