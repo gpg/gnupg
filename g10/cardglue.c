@@ -827,3 +827,22 @@ agent_scd_checkpin (const char *serialnobuf)
   return app->fnc.check_pin (app, serialnobuf, pin_cb, NULL);
 }
 
+
+/* Wrapper to call the store key helper function of app-openpgp.c.  */
+int 
+agent_openpgp_storekey (int keyno,
+                        unsigned char *template, size_t template_len,
+                        time_t created_at,
+                        const unsigned char *m, size_t mlen,
+                        const unsigned char *e, size_t elen)
+{
+  APP app;
+
+  app = current_app? current_app : open_card ();
+  if (!app)
+    return gpg_error (GPG_ERR_CARD);
+
+  return app_openpgp_storekey (app, keyno, template, template_len,
+                               created_at, m, mlen, e, elen,
+                               pin_cb, NULL);
+}

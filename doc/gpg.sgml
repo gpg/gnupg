@@ -415,6 +415,17 @@ Add a subkey to this key.</para></listitem></varlistentry>
 Generate a key on a card and add it 
 to this key.</para></listitem></varlistentry>
     <varlistentry>
+    <term>keytocard</term>
+    <listitem><para>
+Transfer the selected secret key (or the primary key if no key has
+been selected) to a smartcard.  The secret key in the keyring will be
+replaced by a stub if the key could be stored successfully on the card
+and you use the save command later.  Only certain key types may be
+transferred to the card.  A sub menu allows you to select on what card
+to store the key.  Note that it is not possible to get that key back
+from the card - if the card gets broken your secret key will be lost
+unless you have a backup somewhere.</para></listitem></varlistentry>
+    <varlistentry>
     <term>delkey</term>
     <listitem><para>
 Remove a subkey.</para></listitem></varlistentry>

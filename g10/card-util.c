@@ -43,6 +43,39 @@
 
 #define CONTROL_D ('D' - 'A' + 1)
 
+#if GNUPG_MAJOR_VERSION == 1
+#define GET_NBITS(a)  mpi_get_nbits (a)
+#else
+#define GET_NBITS(a)  gcry_mpi_get_nbits (a)
+#endif
+
+  
+static int
+copy_mpi (MPI a, unsigned char *buffer, size_t len, size_t *ncopied)
+{
+  int rc;
+#if GNUPG_MAJOR_VERSION == 1
+  unsigned char *tmp;
+  unsigned int n;
+
+  tmp = mpi_get_secure_buffer (a, &n, NULL);
+  if (n > len)
+    rc = G10ERR_GENERAL;
+  else
+    {
+      rc = 0;
+      memcpy (buffer, tmp, n);
+      *ncopied = n;
+    }
+  xfree (tmp);
+#else /* GNUPG_MAJOR_VERSION != 1 */
+  rc = gcry_mpi_print (GCRYMPI_FMT_USG, buffer, len, ncopied, a);
+#endif /* GNUPG_MAJOR_VERSION != 1 */
+  if (rc)
+    log_error ("mpi_copy failed: %s\n", gpg_strerror (rc));
+  return rc;
+}
+
 
 /* Change the PIN of a an OpenPGP card.  This is an interactive
    function. */
@@ -749,26 +782,125 @@ toggle_forcesig (void)
 }
 
 
+/* Helper for the key generation/edit functions.  */
+static int
+get_info_for_key_operation (struct agent_card_info_s *info)
+{
+  int rc;
+
+  memset (info, 0, sizeof *info);
+  rc = agent_scd_getattr ("SERIALNO", info);
+  if (rc || !info->serialno || strncmp (info->serialno, "D27600012401", 12) 
+      || strlen (info->serialno) != 32 )
+    {
+      log_error (_("key operation not possible: %s\n"),
+                 rc ? gpg_strerror (rc) : _("not an OpenPGP card"));
+      return rc? rc: -1;
+    }
+  rc = agent_scd_getattr ("KEY-FPR", info);
+  if (!rc)
+    rc = agent_scd_getattr ("CHV-STATUS", info);
+  if (!rc)
+    rc = agent_scd_getattr ("DISP-NAME", info);
+  if (rc)
+    log_error (_("error getting current key info: %s\n"), gpg_strerror (rc));
+  return rc;
+}
+
+
+/* Helper for the key generation/edit functions.  */
+static int
+check_pin_for_key_operation (struct agent_card_info_s *info, int *forced_chv1)
+{     
+  int rc = 0;
+
+  *forced_chv1 = !info->chv1_cached;
+  if (*forced_chv1)
+    { /* Switch of the forced mode so that during key generation we
+         don't get bothered with PIN queries for each
+         self-signature. */
+      rc = agent_scd_setattr ("CHV-STATUS-1", "\x01", 1);
+      if (rc)
+        {
+          log_error ("error clearing forced signature PIN flag: %s\n",
+                     gpg_strerror (rc));
+          *forced_chv1 = 0;
+        }
+    }
+
+  if (!rc)
+    {
+      /* Check the PIN now, so that we won't get asked later for each
+         binding signature. */
+      rc = agent_scd_checkpin (info->serialno);
+      if (rc)
+        log_error ("error checking the PIN: %s\n", gpg_strerror (rc));
+    }
+  return rc;
+}
+
+/* Helper for the key generation/edit functions.  */
+static void 
+restore_forced_chv1 (int *forced_chv1)
+{
+  int rc;
+
+  if (*forced_chv1)
+    { /* Switch back to forced state. */
+      rc = agent_scd_setattr ("CHV-STATUS-1", "", 1);
+      if (rc)
+        {
+          log_error ("error setting forced signature PIN flag: %s\n",
+                     gpg_strerror (rc));
+        }
+    }
+}
+
+/* Helper for the key generation/edit functions.  */
+static void
+show_card_key_info (struct agent_card_info_s *info)
+{
+  tty_fprintf (NULL, "Signature key ....:");
+  print_sha1_fpr (NULL, info->fpr1valid? info->fpr1:NULL);
+  tty_fprintf (NULL, "Encryption key....:");
+  print_sha1_fpr (NULL, info->fpr2valid? info->fpr2:NULL);
+  tty_fprintf (NULL, "Authentication key:");
+  print_sha1_fpr (NULL, info->fpr3valid? info->fpr3:NULL);
+  tty_printf ("\n");
+}
+
+
+/* Helper for the key generation/edit functions.  */
+static int
+replace_existing_key_p (struct agent_card_info_s *info, int keyno)
+{
+  assert (keyno >= 0 && keyno <= 3);
+
+  if ((keyno == 1 && info->fpr1valid)
+      || (keyno == 2 && info->fpr2valid)
+      || (keyno == 3 && info->fpr3valid))
+    {
+      tty_printf ("\n");
+      log_info ("WARNING: such a key has already been stored on the card!\n");
+      tty_printf ("\n");
+      if ( !cpr_get_answer_is_yes( "cardedit.genkeys.replace_key",
+                                  _("Replace existing key? ")))
+        return -1;
+    }
+  return 0;
+}
+
+
+
 static void
 generate_card_keys (const char *serialno)
 {
   struct agent_card_info_s info;
-  int rc;
   int forced_chv1;
 
-  memset (&info, 0, sizeof info);
-  rc = agent_scd_getattr ("KEY-FPR", &info);
-  if (!rc)
-    rc = agent_scd_getattr ("SERIALNO", &info);
-  if (!rc)
-    rc = agent_scd_getattr ("CHV-STATUS", &info);
-  if (!rc)
-    rc = agent_scd_getattr ("DISP-NAME", &info);
-  if (rc)
-    {
-      log_error ("error getting current key info: %s\n", gpg_strerror (rc));
-      return;
-    }
+  if (get_info_for_key_operation (&info))
+    return;
+
   if ( (info.fpr1valid && !fpr_is_zero (info.fpr1))
        || (info.fpr2valid && !fpr_is_zero (info.fpr2))
        || (info.fpr3valid && !fpr_is_zero (info.fpr3)))
@@ -793,39 +925,14 @@ generate_card_keys (const char *serialno)
       tty_printf ("\n");
     }
 
-  forced_chv1 = !info.chv1_cached;
-  if (forced_chv1)
-    { /* Switch of the forced mode so that during key generation we
-         don't get bothered with PIN queries for each
-         self-signature. */
-      rc = agent_scd_setattr ("CHV-STATUS-1", "\x01", 1);
-      if (rc)
-        {
-          log_error ("error clearing forced signature PIN flag: %s\n",
-                     gpg_strerror (rc));
-          return;
-        }
-    }
+  if (check_pin_for_key_operation (&info, &forced_chv1))
+    goto leave;
+  
+  generate_keypair (NULL, info.serialno);
 
-  /* Check the PIN now, so that we won't get asked later for each
-     binding signature. */
-  rc = agent_scd_checkpin (serialno);
-  if (rc)
-    log_error ("error checking the PIN: %s\n", gpg_strerror (rc));
-  else
-    generate_keypair (NULL, info.serialno);
-
+ leave:
   agent_release_card_info (&info);
-  if (forced_chv1)
-    { /* Switch back to forced state. */
-      rc = agent_scd_setattr ("CHV-STATUS-1", "", 1);
-      if (rc)
-        {
-          log_error ("error setting forced signature PIN flag: %s\n",
-                     gpg_strerror (rc));
-          return;
-        }
-    }
+  restore_forced_chv1 (&forced_chv1);
 }
 
 
@@ -837,34 +944,12 @@ card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)
   struct agent_card_info_s info;
   int okay = 0;
   int forced_chv1 = 0;
-  int rc;
   int keyno;
 
-  memset (&info, 0, sizeof info);
-  rc = agent_scd_getattr ("SERIALNO", &info);
-  if (rc || !info.serialno || strncmp (info.serialno, "D27600012401", 12) 
-      || strlen (info.serialno) != 32 )
-    {
-      log_error (_("cannot generate key: %s\n"),
-                 rc ? gpg_strerror (rc) : _("not an OpenPGP card"));
-      goto leave;
-    }
-  rc = agent_scd_getattr ("KEY-FPR", &info);
-  if (!rc)
-    rc = agent_scd_getattr ("CHV-STATUS", &info);
-  if (rc)
-    {
-      log_error ("error getting current key info: %s\n", gpg_strerror (rc));
-      goto leave;
-    }
-  
-  tty_fprintf (NULL, "Signature key ....:");
-  print_sha1_fpr (NULL, info.fpr1valid? info.fpr1:NULL);
-  tty_fprintf (NULL, "Encryption key....:");
-  print_sha1_fpr (NULL, info.fpr2valid? info.fpr2:NULL);
-  tty_fprintf (NULL, "Authentication key:");
-  print_sha1_fpr (NULL, info.fpr3valid? info.fpr3:NULL);
-  tty_printf ("\n");
+  if (get_info_for_key_operation (&info))
+    return 0;
+
+  show_card_key_info (&info);
 
   tty_printf (_("Please select the type of key to generate:\n"));
 
@@ -889,54 +974,239 @@ card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)
       tty_printf(_("Invalid selection.\n"));
     }
 
-  if ((keyno == 1 && info.fpr1valid)
-      || (keyno == 2 && info.fpr2valid)
-      || (keyno == 3 && info.fpr3valid))
-    {
-      tty_printf ("\n");
-      log_info ("WARNING: such a key has already been stored on the card!\n");
-      tty_printf ("\n");
-      if ( !cpr_get_answer_is_yes( "cardedit.genkeys.replace_key",
-                                  _("Replace existing key? ")))
-        goto leave;
-    }
+  if (replace_existing_key_p (&info, keyno))
+    goto leave;
 
-  forced_chv1 = !info.chv1_cached;
-  if (forced_chv1)
-    { /* Switch of the forced mode so that during key generation we
-         don't get bothered with PIN queries for each
-         self-signature. */
-      rc = agent_scd_setattr ("CHV-STATUS-1", "\x01", 1);
-      if (rc)
-        {
-          log_error ("error clearing forced signature PIN flag: %s\n",
-                     gpg_strerror (rc));
-          forced_chv1 = 0;
-          goto leave;
-        }
-    }
+  if (check_pin_for_key_operation (&info, &forced_chv1))
+    goto leave;
 
-  /* Check the PIN now, so that we won't get asked later for each
-     binding signature. */
-  rc = agent_scd_checkpin (info.serialno);
-  if (rc)
-    log_error ("error checking the PIN: %s\n", gpg_strerror (rc));
-  else
-    okay = generate_card_subkeypair (pub_keyblock, sec_keyblock,
-                                     keyno, info.serialno);
+  okay = generate_card_subkeypair (pub_keyblock, sec_keyblock,
+                                   keyno, info.serialno);
 
  leave:
   agent_release_card_info (&info);
-  if (forced_chv1)
-    { /* Switch back to forced state. */
-      rc = agent_scd_setattr ("CHV-STATUS-1", "", 1);
-      if (rc)
-        {
-          log_error ("error setting forced signature PIN flag: %s\n",
-                     gpg_strerror (rc));
-          return okay;
-        }
+  restore_forced_chv1 (&forced_chv1);
+  return okay;
+}
+
+
+/* Store the subkey at NODE into the smartcard and modify NODE to
+   carry the serrialno stuff instead of the actual secret key
+   parameters. */
+int 
+card_store_subkey (KBNODE node, int use)
+{
+  struct agent_card_info_s info;
+  int okay = 0;
+  int rc;
+  int keyno, i;
+  PKT_secret_key *copied_sk = NULL;
+  PKT_secret_key *sk;
+  size_t n;
+  MPI rsa_n, rsa_e, rsa_p, rsa_q;
+  unsigned int nbits;
+  unsigned char *template = NULL;
+  unsigned char *tp;
+  unsigned char m[128], e[4];
+  size_t mlen, elen;
+  const char *s;
+  int allow_keyno[3];
+
+  assert (node->pkt->pkttype == PKT_SECRET_KEY
+          || node->pkt->pkttype == PKT_SECRET_SUBKEY);
+  sk = node->pkt->pkt.secret_key;
+
+  if (get_info_for_key_operation (&info))
+    return 0;
+
+  show_card_key_info (&info);
+
+  if (!is_RSA (sk->pubkey_algo) || nbits_from_sk (sk) != 1024 )
+    {
+      tty_printf ("You may only store a 1024 bit RSA key on the card\n");
+      tty_printf ("\n");
+      goto leave;
     }
+
+  allow_keyno[0] = (!use || (use & (PUBKEY_USAGE_SIG)));
+  allow_keyno[1] = (!use || (use & (PUBKEY_USAGE_ENC)));
+  allow_keyno[2] = (!use || (use & (PUBKEY_USAGE_SIG|PUBKEY_USAGE_AUTH)));
+
+  tty_printf (_("Please select where to store the key:\n"));
+
+  if (allow_keyno[0])
+    tty_printf (_("   (1) Signature key\n"));
+  if (allow_keyno[1])
+    tty_printf (_("   (2) Encryption key\n"));
+  if (allow_keyno[2])
+    tty_printf (_("   (3) Authentication key\n"));
+
+  for (;;) 
+    {
+      char *answer = cpr_get ("cardedit.genkeys.storekeytype",
+                              _("Your selection? "));
+      cpr_kill_prompt();
+      if (*answer == CONTROL_D || !*answer)
+        {
+          xfree (answer);
+          goto leave;
+        }
+      keyno = *answer? atoi(answer): 0;
+      xfree(answer);
+      if (keyno >= 1 && keyno <= 3 && allow_keyno[keyno-1])
+        break; /* Okay. */
+      tty_printf(_("Invalid selection.\n"));
+    }
+
+  if (replace_existing_key_p (&info, keyno))
+    goto leave;
+
+  /* Unprotect key.  */
+  switch (is_secret_key_protected (sk) )
+    {
+    case 0: /* Not protected. */
+      break;
+    case -1:
+      log_error (_("unknown key protection algorithm\n"));
+      goto leave;
+    default:
+      if (sk->protect.s2k.mode == 1001)
+        {
+          log_error (_("secret parts of key are not available\n"));
+          goto leave;
+	}
+      if (sk->protect.s2k.mode == 1002)
+        {
+          log_error (_("secret key already stored on a card\n"));
+          goto leave;
+	}
+      /* We better copy the key before we unprotect it.  */
+      copied_sk = sk = copy_secret_key (NULL, sk);
+      rc = check_secret_key (sk, 0);
+      if (rc)
+        goto leave;
+    }
+
+  /* Some basic checks on the key parameters. */
+  rsa_n = sk->skey[0];
+  rsa_e = sk->skey[1];
+  rsa_p = sk->skey[3];
+  rsa_q = sk->skey[4];
+
+  nbits = GET_NBITS (rsa_n);
+  if (nbits != 1024)
+    {
+      log_error (_("length of RSA modulus is not %d\n"), 1024);
+      goto leave;
+    }
+  nbits = GET_NBITS (rsa_e);
+  if (nbits < 2 || nbits > 32)
+    {
+      log_error (_("public exponent too large (more than 32 bits)\n"));
+      goto leave;
+    }
+  nbits = GET_NBITS (rsa_p);
+  if (nbits != 512)
+    {
+      log_error (_("length of an RSA prime is not %d\n"), 512);
+      goto leave;
+    }
+  nbits = GET_NBITS (rsa_q);
+  if (nbits != 512)
+    {
+      log_error (_("length of an RSA prime is not %d\n"), 512);
+      goto leave;
+    }
+
+  
+  /* We need the modulus later to calculate the fingerprint. */
+  rc = copy_mpi (rsa_n, m, 128, &n);
+  if (rc)
+    goto leave;
+  assert (n == 128);
+  mlen = 128;
+
+  /* Build the private key template as described in section 4.3.3.6 of
+     the OpenPGP card specs:
+         0xC0   <length> public exponent
+         0xC1   <length> prime p 
+         0xC2   <length> prime q 
+  */
+  template = tp = xmalloc_secure (1+2 + 1+1+4 + 1+1+(512/8) + 1+1+(512/8));
+  *tp++ = 0xC0;
+  *tp++ = 4;
+  rc = copy_mpi (rsa_e, tp, 4, &n);
+  if (rc)
+    goto leave;
+  assert (n <= 4);
+  memcpy (e, tp, n);  /* Save a copy of the exponent for later use.  */
+  elen = n;
+  if (n != 4)
+    {
+      memmove (tp+4-n, tp, 4-n);
+      memset (tp, 0, 4-n);
+    }                 
+  tp += 4;
+
+  *tp++ = 0xC1;
+  *tp++ = 64;
+  rc = copy_mpi (rsa_p, tp, 64, &n);
+  if (rc)
+    goto leave;
+  assert (n == 64);
+  tp += 64;
+
+  *tp++ = 0xC2;
+  *tp++ = 64;
+  rc = copy_mpi (rsa_q, tp, 64, &n);
+  if (rc)
+    goto leave;
+  assert (n == 64);
+  tp += 64;
+  assert (tp - template == 138);
+
+  rc = agent_openpgp_storekey (keyno,
+                               template, tp - template,
+                               sk->timestamp,
+                               m, mlen,
+                               e, elen);
+
+  if (rc)
+    goto leave;
+  xfree (template);
+  template = NULL;
+
+  /* Get back to the maybe protected original secret key.  */
+  if (copied_sk)
+    {
+      free_secret_key (copied_sk);
+      copied_sk = NULL; 
+    }
+  sk = node->pkt->pkt.secret_key;
+
+  /* Get rid of the secret key parameters and store the serial numer. */
+  n = pubkey_get_nskey (sk->pubkey_algo);
+  for (i=pubkey_get_npkey (sk->pubkey_algo); i < n; i++)
+    {
+      mpi_free (sk->skey[i]);
+      sk->skey[i] = NULL;
+    }
+  i = pubkey_get_npkey (sk->pubkey_algo);
+  sk->skey[i] = mpi_set_opaque (NULL, xstrdup ("dummydata"), 10);
+  sk->is_protected = 1;
+  sk->protect.s2k.mode = 1002;
+  s = info.serialno;
+  for (sk->protect.ivlen=0; sk->protect.ivlen < 16 && *s && s[1];
+       sk->protect.ivlen++, s += 2)
+    sk->protect.iv[sk->protect.ivlen] = xtoi_2 (s);
+
+  okay = 1;
+
+ leave:
+  if (copied_sk)
+    free_secret_key (copied_sk);
+  xfree (template);
+  agent_release_card_info (&info);
   return okay;
 }
 

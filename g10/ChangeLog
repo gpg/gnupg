@@ -1,3 +1,30 @@
+2004-09-23  Werner Koch  <wk@g10code.com>
+
+	* apdu.c (open_pcsc_reader): Do not print empty reader string.
+
+	* keygen.c (ask_algo): Allow creation of AUTH keys.
+
+	* keyid.c (usagestr_from_pk): New.
+
+	* app-openpgp.c (app_openpgp_storekey): Call flush_cache.
+
+	* keyedit.c (keyedit_menu): New command "keytocard"
+	(keyedit_menu): Bad hack for the not_with_sk element.
+	(show_key_with_all_names): Print the usage.
+	(find_pk_from_sknode): New.
+
+	* card-util.c (card_store_subkey): New.
+	(copy_mpi): New.
+	* cardglue.c (agent_openpgp_storekey): New.
+
+2004-09-22  Werner Koch  <wk@g10code.com>
+
+	* card-util.c (card_generate_subkey, generate_card_keys): Factored
+	common code out to ...
+	(get_info_for_key_operation, check_pin_for_key_operation)
+	(restore_forced_chv1, replace_existing_key_p)
+	(show_card_key_info): ... new functions.
+
 2004-09-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* mainproc.c (check_sig_and_print), keyedit.c (show_prefs,

@@ -95,6 +95,34 @@ struct sign_attrib {
 };
 
 
+/* Given a node SEC_NODE with a secret key or subkey, locate the
+   corresponding public key from pub_keyblock. */
+static PKT_public_key *
+find_pk_from_sknode (KBNODE pub_keyblock, KBNODE sec_node)
+{
+  KBNODE node = pub_keyblock;
+  PKT_secret_key *sk;
+  PKT_public_key *pk;
+  
+  if (sec_node->pkt->pkttype == PKT_SECRET_KEY
+      && node->pkt->pkttype == PKT_PUBLIC_KEY)
+    return node->pkt->pkt.public_key;
+  if (sec_node->pkt->pkttype != PKT_SECRET_SUBKEY)
+    return NULL;
+  sk = sec_node->pkt->pkt.secret_key;
+  for (; node; node = node->next)
+    if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+      {
+        pk = node->pkt->pkt.public_key;
+        if (pk->keyid[0] == sk->keyid[0] && pk->keyid[1] == sk->keyid[1])
+          return pk;
+      }
+      
+  return NULL;
+}
+
+
+
 /* TODO: Fix duplicated code between here and the check-sigs/list-sigs
    code in keylist.c. */
 static int
@@ -1191,14 +1219,14 @@ keyedit_menu( const char *username, STRLIST locusr,
 	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE,
 	   cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF, cmdSETPREF, cmdUPDPREF,
  	   cmdPREFKS, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST, cmdCHKTRUST,
-           cmdADDCARDKEY,
-	   cmdNOP };
+           cmdADDCARDKEY, cmdKEYTOCARD,
+   cmdNOP };
     static struct { const char *name;
 		    enum cmdids id;
 		    int need_sk;
-		    int not_with_sk;
+                    int not_with_sk;  /* but 2 == must use SK */
 		    const char *desc;
-		  } cmds[] = {
+		  } cmds[] = { 
 	{ N_("quit")    , cmdQUIT      , 0,0, N_("quit this menu") },
 	{ N_("q")       , cmdQUIT      , 0,0, NULL   },
 	{ N_("save")    , cmdSAVE      , 0,0, N_("save and quit") },
@@ -1226,7 +1254,8 @@ keyedit_menu( const char *username, STRLIST locusr,
 	{ N_("addkey")  , cmdADDKEY    , 1,1, N_("add a secondary key") },
 #ifdef ENABLE_CARD_SUPPORT
 	{ N_("addcardkey"), cmdADDCARDKEY , 1,1, N_("add a key to a smartcard") },
-#endif /* ENABLE_CARD_SUPPORT */
+	{ N_("keytocard"), cmdKEYTOCARD , 1,2, N_("move a key to a smartcard")},
+#endif /*ENABLE_CARD_SUPPORT*/
 	{ N_("delkey")  , cmdDELKEY    , 0,1, N_("delete a secondary key") },
 	{ N_("addrevoker"),cmdADDREVOKER,1,1, N_("add a revocation key") },
 	{ N_("delsig")  , cmdDELSIG    , 0,1, N_("delete signatures") },
@@ -1256,6 +1285,7 @@ keyedit_menu( const char *username, STRLIST locusr,
     KBNODE sec_keyblock = NULL;
     KEYDB_HANDLE sec_kdbhd = NULL;
     KBNODE cur_keyblock;
+    KBNODE node;
     char *answer = NULL;
     int redisplay = 1;
     int modified = 0;
@@ -1379,7 +1409,8 @@ keyedit_menu( const char *username, STRLIST locusr,
 		tty_printf(_("Need the secret key to do this.\n"));
 		cmd = cmdNOP;
 	    }
-	    else if( cmds[i].not_with_sk && sec_keyblock && toggle ) {
+	    else if(  (cmds[i].not_with_sk == 1 && sec_keyblock && toggle)
+                    ||(cmds[i].not_with_sk == 2 && sec_keyblock && !toggle)) {
 		tty_printf(_("Please use the command \"toggle\" first.\n"));
 		cmd = cmdNOP;
 	    }
@@ -1543,6 +1574,38 @@ keyedit_menu( const char *username, STRLIST locusr,
 		merge_keys_and_selfsig( keyblock );
 	    }
 	    break;
+
+        case cmdKEYTOCARD:
+          node = NULL;
+          switch ( count_selected_keys (sec_keyblock) )
+            {
+            case 0:
+              if (cpr_get_answer_is_yes("keyedit.keytocard.use_primary",
+                                        _("Really move the primary key? ")))
+                node = sec_keyblock;
+              break;
+            case 1:
+              for (node = sec_keyblock; node; node = node->next )
+                {
+                  if (node->pkt->pkttype == PKT_SECRET_SUBKEY 
+                      && node->flag & NODFLG_SELKEY)
+                    break;
+                }
+              break;
+            default:
+              tty_printf(_("You must select exactly one key.\n"));
+              break;
+            }
+          if (node)
+            {
+              PKT_public_key *xxpk = find_pk_from_sknode (keyblock, node);
+              if (card_store_subkey (node, xxpk?xxpk->pubkey_usage:0))
+                {
+                  redisplay = 1;
+                  sec_modified = 1;
+                }
+            }
+          break;
 #endif /* ENABLE_CARD_SUPPORT */
 
 	  case cmdDELKEY: {
@@ -2176,6 +2239,8 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	      tty_printf(_("expired: %s"),expirestr_from_pk(pk));
 	    else
 	      tty_printf(_("expires: %s"),expirestr_from_pk(pk));
+	    tty_printf("  ");
+            tty_printf(_("usage: %s"),usagestr_from_pk(pk));
 	    tty_printf("\n");
 
 	    if( node->pkt->pkttype == PKT_PUBLIC_KEY )

@@ -535,6 +535,35 @@ revokestr_from_pk( PKT_public_key *pk )
     return mk_datestr (buffer, atime);
 }
 
+
+const char *
+usagestr_from_pk( PKT_public_key *pk )
+{
+  static char buffer[10];
+  int i = 0;
+  unsigned int use = pk->pubkey_usage;
+    
+  if ( use & PUBKEY_USAGE_SIG )
+    {
+      if (pk->is_primary)
+        buffer[i++] = 'C';
+      buffer[i++] = 'S';
+    }
+
+  if ( use & PUBKEY_USAGE_ENC )
+    buffer[i++] = 'E';
+
+  if ( (use & PUBKEY_USAGE_AUTH) )
+    buffer[i++] = 'A';
+
+  while (i < 4)
+    buffer[i++] = ' ';
+
+  buffer[i] = 0;
+  return buffer;
+}
+
+
 const char *
 colon_strtime (u32 t)
 {

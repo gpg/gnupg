@@ -143,6 +143,7 @@ int app_openpgp_cardinfo (app_t app,
                           unsigned char **fpr1,
                           unsigned char **fpr2,
                           unsigned char **fpr3);
+#endif /* GNUPG_MAJOR_VERSION != 1 */
 int app_openpgp_storekey (app_t app, int keyno,
                           unsigned char *template, size_t template_len,
                           time_t created_at,
@@ -153,6 +154,8 @@ int app_openpgp_storekey (app_t app, int keyno,
 int app_openpgp_readkey (app_t app, int keyno,
                          unsigned char **m, size_t *mlen,
                          unsigned char **e, size_t *elen);
+#if GNUPG_MAJOR_VERSION == 1
+#else
 /*-- app-nks.c --*/
 int app_select_nks (app_t app);
 
@@ -160,8 +163,7 @@ int app_select_nks (app_t app);
 int app_select_dinsig (app_t app);
 
 
-#endif
-
+#endif /* GNUPG_MAJOR_VERSION != 1 */
 
 
 #endif /*GNUPG_SCD_APP_COMMON_H*/

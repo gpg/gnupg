@@ -10,8 +10,8 @@ Noteworthy changes in version 1.3.7
       for smartcards. 
 
     * New command "addcardkey" in the key edit menu to add subkeys to
-      a smartcard.  The serial number of the card is show in secret
-      key listings.
+      a smartcard. New command "keytocard" to transfer a key to a smartcard.
+      The serial number of the card is show in secret key listings.
 
     * -K may now be used as an alias for --list-secret-keys.      
 

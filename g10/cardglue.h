@@ -183,6 +183,12 @@ int agent_scd_change_pin (int chvno);
 /* Send a CHECKPIN command. */
 int agent_scd_checkpin (const char *serialnobuf);
 
+/* Call the store key utility command. */
+int agent_openpgp_storekey (int keyno,
+                            unsigned char *template, size_t template_len,
+                            time_t created_at,
+                            const unsigned char *m, size_t mlen,
+                            const unsigned char *e, size_t elen);
 
 #endif /*ENABLE_CARD_SUPPORT*/
 #endif /*GNUPG_G10_CARDGLUE_H*/

@@ -432,7 +432,6 @@ store_fpr (int slot, int keynumber, u32 timestamp,
   *p++ = nbits;
   memcpy (p, e, elen); p += elen;
     
-  log_printhex ("fprbuf:", buffer, n+3);
   gcry_md_hash_buffer (GCRY_MD_SHA1, fpr, buffer, n+3);
 
   xfree (buffer);
@@ -1551,6 +1550,7 @@ app_openpgp_storekey (APP app, int keyno,
   if (rc)
     goto leave;
 
+  flush_cache (app);
 
   rc = iso7816_put_data (app->slot,
                          (app->card_version > 0x0007? 0xE0 : 0xE9) + keyno,

@@ -1,3 +1,7 @@
+2004-09-23  Werner Koch  <wk@g10code.com>
+
+	* gpg.sgml: Document "addcardkey" and "keytocard".
+
 2004-09-20  Werner Koch  <wk@g10code.com>
 
 	* gpg.sgml: Document -K.

@@ -1177,6 +1177,14 @@ ask_algo (int addmode, unsigned int *r_usage)
         tty_printf(    _("   (%d) RSA (encrypt only)\n"), 5 );
     if (opt.expert)
       tty_printf(    _("   (%d) RSA (sign and encrypt)\n"), 6 );
+    if (opt.expert && addmode)
+      tty_printf(    _("   (%d) RSA (auth only)\n"), 7 );
+    if (opt.expert)
+      tty_printf(    _("   (%d) RSA (sign and auth)\n"), 8 );
+    if (opt.expert && addmode)
+      tty_printf(    _("   (%d) RSA (encrypt and auth)\n"), 9 );
+    if (opt.expert)
+      tty_printf(    _("  (%d) RSA (sign, encrypt and auth)\n"), 10 );
 
     for(;;) {
 	answer = cpr_get("keygen.algo",_("Your selection? "));
@@ -1185,6 +1193,26 @@ ask_algo (int addmode, unsigned int *r_usage)
 	m_free(answer);
 	if( algo == 1 && !addmode ) {
 	    algo = 0;	/* create both keys */
+	    break;
+	}
+	else if( algo == 10 && opt.expert ) {
+	    algo = PUBKEY_ALGO_RSA;
+	    *r_usage = PUBKEY_USAGE_ENC | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
+	    break;
+	}
+	else if( algo == 9 && opt.expert && addmode) {
+	    algo = PUBKEY_ALGO_RSA;
+	    *r_usage = PUBKEY_USAGE_ENC | PUBKEY_USAGE_AUTH;
+	    break;
+	}
+	else if( algo == 8 && opt.expert ) {
+	    algo = PUBKEY_ALGO_RSA;
+	    *r_usage = PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
+	    break;
+	}
+	else if( algo == 7 && opt.expert && addmode) {
+	    algo = PUBKEY_ALGO_RSA;
+	    *r_usage = PUBKEY_USAGE_AUTH;
 	    break;
 	}
 	else if( algo == 6 && opt.expert ) {

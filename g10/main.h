@@ -262,6 +262,7 @@ void change_pin (int no);
 void card_status (FILE *fp, char *serialno, size_t serialnobuflen);
 void card_edit (STRLIST commands);
 int  card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock);
+int  card_store_subkey (KBNODE node, int use);
 #endif
 
 #endif /*G10_MAIN_H*/

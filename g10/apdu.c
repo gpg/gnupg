@@ -1119,7 +1119,8 @@ open_pcsc_reader (const char *portstr)
     {
       if (!*p && !p[1])
         break;
-      log_info ("detected reader `%s'\n", p);
+      if (*p)
+        log_info ("detected reader `%s'\n", p);
       if (nreader < (strlen (p)+1))
         {
           log_error ("invalid response from pcsc_list_readers\n");
