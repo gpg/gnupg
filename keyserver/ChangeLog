@@ -1,3 +1,10 @@
+2003-05-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c, gpgkeys_ldap.c: Include extern references for
+	optarg and optind since there is no guarantee that any header file
+	will include them.  Standards?  We don't need no stinkin'
+	standards!
+
 2003-05-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c, gpgkeys_ldap.c: #include <getopt.h> if it is

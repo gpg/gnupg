@@ -33,6 +33,9 @@
 #include "http.h"
 #include "keyserver.h"
 
+extern char *optarg;
+extern int optind;
+
 #define GET    0
 #define SEND   1
 #define SEARCH 2
