@@ -46,6 +46,14 @@ is_algo_in_prefs ( KBNODE keyblock, preftype_t type, int algo )
     KBNODE k;
 
     for (k=keyblock; k; k=k->next) {
+      /* Fake IDEA preference for v3 keys with v3 selfsigs */
+        if (k->pkt->pkttype == PKT_PUBLIC_KEY &&
+	    k->pkt->pkt.public_key->version < 4 &&
+	    k->pkt->pkt.public_key->selfsigversion < 4 &&
+	    type==PREFTYPE_SYM &&
+	    algo==CIPHER_ALGO_IDEA)
+	  return 1;
+
         if (k->pkt->pkttype == PKT_USER_ID) {
             PKT_user_id *uid = k->pkt->pkt.user_id;
             prefitem_t *prefs = uid->prefs;

@@ -814,7 +814,7 @@ ask_keysize( int algo )
     char *answer;
     unsigned nbits;
 
-    if (algo != PUBKEY_ALGO_DSA) {
+    if (algo != PUBKEY_ALGO_DSA && algo != PUBKEY_ALGO_RSA) {
         tty_printf (_("About to generate a new %s keypair.\n"
                       "              minimum keysize is  768 bits\n"
                       "              default keysize is 1024 bits\n"
@@ -830,11 +830,12 @@ ask_keysize( int algo )
 	m_free(answer);
 	if( algo == PUBKEY_ALGO_DSA && (nbits < 512 || nbits > 1024) )
 	    tty_printf(_("DSA only allows keysizes from 512 to 1024\n"));
-	else if( nbits < 768 )
-	    tty_printf(_("keysize too small; 768 is smallest value allowed.\n"));
 	else if( algo == PUBKEY_ALGO_RSA && nbits < 1024 )
 	    tty_printf(_("keysize too small;"
 			 " 1024 is smallest value allowed for RSA.\n"));
+	else if( nbits < 768 )
+	    tty_printf(_("keysize too small;"
+			 " 768 is smallest value allowed.\n"));
 	else if( nbits > 4096 ) {
 	    /* It is ridiculous and an annoyance to use larger key sizes!
 	     * GnuPG can handle much larger sizes; but it takes an eternity

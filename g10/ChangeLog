@@ -1,3 +1,12 @@
+2002-01-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (ask_keysize): Cosmetic: don't present a RSA signing
+	key as a "keypair" which can be 768 bits long (as RSA minimum is
+	1024).
+
+	* pubkey-enc.c (is_algo_in_prefs): Allow IDEA as a fake preference
+	for v3 keys with v3 selfsigs.
+
 2002-01-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* packet.h, getkey.c (merge_selfsigs_main), pkclist.c
