@@ -12,18 +12,18 @@ The most recent version of the FAQ is available from
 [$hVERSION=1.2.1]
 
 [H body bgcolor=#ffffff text=#000000 link=#1f00ff alink=#ff0000 vlink=#9900dd]
-[H H1]GnuPG Frequently Asked Questions[H /H1]
+[H h1]GnuPG Frequently Asked Questions[H /h1]
 
 
 [H p]
-Version: 1.6.0[H br]
-Last-Modified: Dec 1, 2002[H br]
+Version: 1.6.1[H br]
+Last-Modified: Dec 28, 2002[H br]
 Maintained-by: [$maintainer]
 [H /p]
 
 
 This is the GnuPG FAQ. The latest HTML version is available
-[H a href=[$hGPGHTTP]/faq.html]here[H/a].
+[H a href=[$hGPGHTTP]/documentation/faqs.html]here[H/a].
 
 The index is generated automatically, so there may be errors. Not all
 questions may be in the section they belong to. Suggestions about how
@@ -37,9 +37,9 @@ Please, don't send message like "This should be a FAQ - what's the
 answer?". If it hasn't been asked before, it isn't a FAQ. In that case
 you could search in the mailing list archive.
 
-[H HR]
+[H hr]
 <C>
-[H HR]
+[H hr]
 
 
 <S> GENERAL
@@ -50,7 +50,7 @@ you could search in the mailing list archive.
     is GNU's tool for secure communication and data storage. It can be
     used to encrypt data and to create digital signatures. It includes
     an advanced key management facility and is compliant with the
-    proposed OpenPGP Internet standard as described in [H a href=http://www.gnupg.org/rfc2440.html]RFC 2440[H/a].
+    proposed OpenPGP Internet standard as described in [H a href=http://www.rfc-editor.org/]RFC 2440[H/a].
     As such, it is aimed to be compatible with PGP from NAI, Inc.
 
 <Q> Is GnuPG compatible with PGP?
@@ -78,14 +78,11 @@ you could search in the mailing list archive.
     converted to a back slash (`\'), and a tilde (`~') represents a
     user's "home" directory (reference question <Rhomedir> for an example).
 
-    Also, the indicator used to inform the shell that a continuation
-    of the command will follow on the next line (the `\' character
-    seen at the end of some command strings in this FAQ, and represents
-    a "\<newline>" pair) should be noted. If your shell or command
-    interpreter does not support this convention, the command should be
-    typed in its  entirety as a single entry after removing the trailing
-    backslash and continuing with the second line before pressing Enter
-    or the return key.
+    Some command-lines presented in this FAQ are too long to properly
+    display in some browsers for the web page version of this file, and
+    have been split into two or more lines. For these commands please
+    remember to enter the entire command-string on one line or the
+    command will error, or at minimum not give the desired results. 
 
     Please keep in mind that this FAQ contains information that may not
     apply to your particular version, as new features and bug fixes are
@@ -104,45 +101,45 @@ you could search in the mailing list archive.
 
     On-line resources:
 
-    [H UL] 
-    [H LI]The documentation page is located at [H a href=[$hGPGHTTP]/docs.html]<[$hGPGHTTP]/docs.html>[H/a].
+    [H ul] 
+    [H li]The documentation page is located at [H a href=[$hGPGHTTP]/documentation/]<[$hGPGHTTP]/documentation/>[H/a].
     Also, have a look at the HOWTOs and the GNU Privacy Handbook (GPH,
     available in English, Spanish and Russian). The latter provides a
-    detailed user's guide to GnuPG. You'll also find a document about
-    how to convert from PGP 2.x to GnuPG.
+    detailed user's guide to GnuPG. You'll also find a document about how
+    to convert from PGP 2.x to GnuPG.
 
-    [H LI]At [H a href=http://lists.gnupg.org]<http://lists.gnupg.org>[H/a] you'll find an online archive of the
-    GnuPG mailing lists. Most interesting should be gnupg-users for all
-    user-related issues and gnupg-devel if you want to get in touch with
-    the developers.
+    [H li]At [H a href=[$hGPGHTTP]/documentation/mailing-lists.html]<[$hGPGHTTP]/documentation/mailing-lists.html>[H/a] you'll find
+    an online archive of the GnuPG mailing lists. Most interesting should
+    be gnupg-users for all user-related issues and gnupg-devel if you want
+    to get in touch with the developers.
 
     In addition, searchable archives can be found on MARC, e.g.: [H br]
     gnupg-users: [H a href=http://marc.theaimsgroup.com/?l=gnupg-users&r=1&w=2]<http://marc.theaimsgroup.com/?l=gnupg-users&r=1&w=2>[H/a][H br]
     gnupg-devel: [H a href=http://marc.theaimsgroup.com/?l=gnupg-devel&r=1&w=2]<http://marc.theaimsgroup.com/?l=gnupg-devel&r=1&w=2>[H/a][H br]
 
-    [H B]PLEASE:[H/B]
-    Before posting to a list, read this FAQ and the available
-    documentation. In addition, search the list archive - maybe your
-    question has already been discussed. This way you help people focus
-    on topics that have not yet been resolved.
+    [H b]PLEASE:[H /b]
+    Before posting to a list, read this FAQ and the available documentation.
+    In addition, search the list archive - maybe your question has already
+    been discussed. This way you help people focus on topics that have not
+    yet been resolved.
 
-    [H LI]The GnuPG source distribution contains a subdirectory:
+    [H li]The GnuPG source distribution contains a subdirectory:
 
-    [H PRE]
+    [H samp]
        ./doc
-    [H /PRE]
+    [H /samp]
 
     where some additional documentation is located (mainly interesting
     for hackers, not the casual user).
-    [H /UL]
+    [H /ul]
 
 <Q> Where do I get GnuPG?
 
     You can download the GNU Privacy Guard from its primary FTP server
     [H a href=[$hGPGFTP]/gcrypt/]<[$hGPGFTP]/gcrypt/>[H /a] or from one of the mirrors:
 
-    [H a href=[$hGPGHTTP]/mirrors.html]
-       <[$hGPGHTTP]/mirrors.html>
+    [H a href=[$hGPGHTTP]/download/mirrors.html]
+       <[$hGPGHTTP]/download/mirrors.html>
     [H /a]
 
     The current stable version is [$hVERSION]. Please upgrade to this version as
@@ -158,8 +155,8 @@ you could search in the mailing list archive.
     Windows NT/2000) and Macintosh OS/X. A list of OSes reported to be OK
     is presented at:
 
-    [H a href=[$hGPGHTTP]/backend.html#supsys]
-       <[$hGPGHTTP]/backend.html#supsys>
+    [H a href=[$hGPGHTTP]/download/supported_systems.html]
+       <[$hGPGHTTP]/download/supported_systems.html>
     [H /a]
 
 <Q> Which random data gatherer should I use?
@@ -171,9 +168,9 @@ you could search in the mailing list archive.
     systems. Also Solaris users with the SUNWski package installed have
     a /dev/random. In these cases, use the configure option:
 
-    [H pre]
+    [H samp]
        --enable-static-rnd=linux
-    [H/pre]
+    [H /samp]
 
     In addition, there's also the kernel random device by Andi Maier
     [H a href= http://www.cosy.sbg.ac.at/~andi/]<http://www.cosy.sbg.ac.at/~andi/>[H /a], but it's still beta. Use at your
@@ -181,12 +178,12 @@ you could search in the mailing list archive.
 
     On other systems, the Entropy Gathering Daemon (EGD) is a good choice.
     It is a perl-daemon that monitors system activity and hashes it into
-    random data. See the download page [H a href=[$hGPGHTTP]/download.html]<[$hGPGHTTP]/download.html>[H /a]
+    random data. See the download page [H a href=[$hGPGHTTP]/download/]<[$hGPGHTTP]/download/>[H /a]
     to obtain EGD. Use:
 
-    [H pre]
+    [H samp]
        --enable-static-rnd=egd
-    [H/pre]
+    [H /samp]
 
     here.
 
@@ -208,22 +205,22 @@ you could search in the mailing list archive.
     [H a href=ftp://ftp.gnupg.dk/pub/contrib-dk/]<ftp://ftp.gnupg.dk/pub/contrib-dk/>[H /a]. Look for:
 
     [H pre]
-       idea.c.gz          (c module)
-       idea.c.gz.sig      (signature file)
+       idea.c.gz        (c module)
+       idea.c.gz.sig    (signature file)
     [H /pre]
 
     [H pre]
-       ideadll.zip        (c module and win32 dll)
-       ideadll.zip.sig    (signature file)
+       ideadll.zip      (c module and win32 dll)
+       ideadll.zip.sig  (signature file)
     [H /pre]
 
     Compilation directives are in the headers of these files. You will
     then need to add the following line to your ~/.gnupg/gpg.conf or
     ~/.gnupg/options file:
 
-    [H pre]
+    [H samp]
        load-extension idea
-    [H /pre]
+    [H /samp]
 
 
 <S> USAGE
@@ -236,9 +233,9 @@ you could search in the mailing list archive.
     have greater sizes, but you should then check the fingerprint of
     this key:
 
-    [H pre]
-       gpg --fingerprint <user ID>
-    [H /pre]
+    [H samp]
+       $ gpg --fingerprint <user ID>
+    [H /samp]
 
     As for the key algorithms, you should stick with the default (i.e.,
     DSA signature and ElGamal encryption). An ElGamal signing key has
@@ -285,15 +282,15 @@ you could search in the mailing list archive.
 
     If you do a 'gpg --help', you will get two separate lists. The first
     is a list of commands. The second is a list of options. Whenever you
-    run GPG, you [H B]must[H /B] pick exactly one command (with one exception,
-    see below). You [H B]may[H /B] pick one or more options. The command should,
+    run GPG, you [H b]must[H /b] pick exactly one command (with one exception,
+    see below). You [H b]may[H /b] pick one or more options. The command should,
     just by convention, come at the end of the argument list, after all
     the options. If the command takes a file (all the basic ones do),
     the filename comes at the very end. So the basic way to run gpg is:
 
-    [H pre]
-       gpg [--option something] [--option2] [--option3 something] --command file
-    [H/pre]
+    [H samp]
+       $ gpg [--option something] [--option2] [--option3 something] --command file
+    [H /samp]
 
     Some options take arguments. For example, the --output option (which
     can be abbreviated as -o) is an option that takes a filename. The
@@ -306,37 +303,37 @@ you could search in the mailing list archive.
     followed by the file you wish to encrypt. Therefore in this example
     the command-line issued would be:
 
-    [H pre]
-       gpg -r alice -o secret.txt -e test.txt
-    [H/pre]
+    [H samp]
+       $ gpg -r alice -o secret.txt -e test.txt
+    [H /samp]
 
     If you write the options out in full, it is easier to read:
 
-    [H pre]
-       gpg --recipient alice --output secret.txt --encrypt test.txt
-    [H/pre]
+    [H samp]
+       $ gpg --recipient alice --output secret.txt --encrypt test.txt
+    [H /samp]
 
     If you're encrypting to a file with the extension ".txt", then you'd
     probably expect to see ASCII-armored text in the file (not binary),
     so you need to add the --armor (-a) option, which doesn't take any
     arguments:
 
-    [H pre]
-       gpg --armor --recipient alice --output secret.txt --encrypt test.txt
-    [H/pre]
+    [H samp]
+       $ gpg --armor --recipient alice --output secret.txt --encrypt test.txt
+    [H /samp]
 
     If you imagine square brackets around the optional parts, it becomes
     a bit clearer:
 
-    [H pre]
-       gpg [--armor] [--recipient alice] [--output secret.txt] --encrypt test.txt
-    [H/pre]
+    [H samp]
+       $ gpg [--armor] [--recipient alice] [--output secret.txt] --encrypt test.txt
+    [H /samp]
 
     The optional parts can be rearranged any way you want:
 
-    [H pre]
-       gpg --output secret.txt --recipient alice --armor --encrypt test.txt
-    [H/pre]
+    [H samp]
+       $ gpg --output secret.txt --recipient alice --armor --encrypt test.txt
+    [H /samp]
 
     If your filename begins with a hyphen (e.g. "-a.txt"), GnuPG assumes
     this is an option and may complain. To avoid this you have to either
@@ -346,9 +343,9 @@ you could search in the mailing list archive.
     [H B]The exception to using only one command:[H /B] signing and encrypting
     at the same time. For this you can combine both commands, such as in:
 
-    [H pre]
-       gpg [--options] --sign --encrypt foo.txt
-    [H/pre]
+    [H samp]
+       $ gpg [--options] --sign --encrypt foo.txt
+    [H /samp]
 
 <Q> I can't delete a user ID on my secret keyring because it has
     already been deleted on my public keyring. What can I do?
@@ -423,12 +420,12 @@ you could search in the mailing list archive.
     the one displayed - if not, restrict yourself to plain 7 bit ASCII
     and no mapping has to be done.
 
-<Q> How can a get list of key IDs used to encrypt a message?
+<Q> How can I get list of key IDs used to encrypt a message?
 
-    [H pre]
-       gpg --batch --decrypt --list-only --status-fd 1 2>/dev/null | \
+    [H samp]
+       $ gpg --batch --decrypt --list-only --status-fd 1 2>/dev/null |
          awk '/^\[GNUPG:\] ENC_TO / { print $3 }'
-    [H /pre]
+    [H /samp]
 
 <Q> I can't decrypt my symmetrical-only (-c) encrypted messages with
     a new version of GnuPG.
@@ -450,31 +447,31 @@ you could search in the mailing list archive.
     automated environment is:
 
     On a secure machine:
-    [H OL]
-    [H LI] If you want to do automatic signing, create a signing subkey
+    [H ol]
+    [H li] If you want to do automatic signing, create a signing subkey
            for your key (use the interactive key editing menu by issueing
            the command 'gpg --edit-key keyID', enter "addkey" and select
            the DSA key type).
-    [H LI] Make sure that you use a passphrase (needed by the current
+    [H li] Make sure that you use a passphrase (needed by the current
            implementation).
-    [H LI] gpg --export-secret-subkeys --no-comment foo >secring.auto
-    [H LI] Copy secring.auto and the public keyring to a test directory.
-    [H LI] Change to this directory.
-    [H LI] gpg --homedir . --edit foo and use "passwd" to remove the
+    [H li] gpg --export-secret-subkeys --no-comment foo >secring.auto
+    [H li] Copy secring.auto and the public keyring to a test directory.
+    [H li] Change to this directory.
+    [H li] gpg --homedir . --edit foo and use "passwd" to remove the
            passphrase from the subkeys. You may also want to remove all
            unused subkeys.
-    [H LI] Copy secring.auto to a floppy and carry it to the target box.
-    [H /OL]
+    [H li] Copy secring.auto to a floppy and carry it to the target box.
+    [H /ol]
 
     On the target machine:
-    [H OL]
-    [H LI] Install secring.auto as the secret keyring.
-    [H LI] Now you can start your new service. It's also a good idea to
+    [H ol]
+    [H li] Install secring.auto as the secret keyring.
+    [H li] Now you can start your new service. It's also a good idea to
            install an intrusion detection system so that you hopefully
            get a notice of an successful intrusion, so that you in turn
            can revoke all the subkeys installed on that machine and
            install new subkeys.
-    [H /OL]
+    [H /ol]
 
 <Q> Which email-client can I use with GnuPG?
 
@@ -491,30 +488,30 @@ you could search in the mailing list archive.
     The following list is not exhaustive:
 
     [H pre]
-       MUA            OpenPGP  ASCII    How? (N,P,T)
-       ---------------------------------------------------------------
-       Calypso           N       Y       P (Unixmail)
-       Elm               N       Y       T (mailpgp,morepgp)
-       Elm ME+           N       Y       N
-       Emacs/Gnus        Y       Y       T (Mailcrypt,gpg.el)
-       Emacs/Mew         Y       Y       N
-       Emacs/VM          N       Y       T (Mailcrypt)
-       Evolution         Y       Y       N
-       Exmh              Y       Y       N
-       GNUMail.app       Y       Y       P (PGPBundle)
-       GPGMail           Y       Y       N
-       KMail (<=1.4.x)   N       Y       N
-       KMail (1.5.x)     Y(P)    Y(N)    P/N
-       Mozilla           Y       Y       P (Enigmail)
-       Mulberry          Y       Y       P
-       Mutt              Y       Y       N
-       Sylpheed          Y       Y       N
-       Sylpheed-claws    Y       Y       N
-       TkRat             Y       Y       N
-       XEmacs/Gnus       Y       Y       T (Mailcrypt)
-       XEmacs/Mew        Y       Y       N
-       XEmacs/VM         N       Y       T (Mailcrypt)
-       XFmail            Y       Y       N
+       MUA            OpenPGP ASCII   How? (N,P,T)
+       -------------------------------------------------------------
+       Calypso           N      Y      P (Unixmail)
+       Elm               N      Y      T (mailpgp,morepgp)
+       Elm ME+           N      Y      N
+       Emacs/Gnus        Y      Y      T (Mailcrypt,gpg.el)
+       Emacs/Mew         Y      Y      N
+       Emacs/VM          N      Y      T (Mailcrypt)
+       Evolution         Y      Y      N
+       Exmh              Y      Y      N
+       GNUMail.app       Y      Y      P (PGPBundle)
+       GPGMail           Y      Y      N
+       KMail (<=1.4.x)   N      Y      N
+       KMail (1.5.x)     Y(P)   Y(N)   P/N
+       Mozilla           Y      Y      P (Enigmail)
+       Mulberry          Y      Y      P
+       Mutt              Y      Y      N
+       Sylpheed          Y      Y      N
+       Sylpheed-claws    Y      Y      N
+       TkRat             Y      Y      N
+       XEmacs/Gnus       Y      Y      T (Mailcrypt)
+       XEmacs/Mew        Y      Y      N
+       XEmacs/VM         N      Y      T (Mailcrypt)
+       XFmail            Y      Y      N
 
        N - Native, P - Plug-in, T - External Tool
     [H /pre]
@@ -524,22 +521,22 @@ you could search in the mailing list archive.
     for interoperability reasons for your convenience.
 
     [H pre]
-       MUA            OpenPGP  ASCII    How? (N,P,T)
-       ---------------------------------------------------------------
-       Apple Mail        Y       Y       P (GPGMail)
-       Becky2            Y       Y       P (BkGnuPG)
-       Eudora            Y       Y       P (EuroraGPG)
-       Eudora Pro        Y       Y       P (EudoraGPG)
-       Lotus Notes       N       Y       P
-       Netscape 4.x      N       Y       P
-       Netscape 7.x      Y       Y       P (Enigmail)
-       Novell Groupwise  N       Y       P
-       Outlook           N       Y       P (G-Data)
-       Outlook Express   N       Y       P (GPGOE)
-       Pegasus           N       Y       P (QDPGP,PM-PGP)
-       Pine              N       Y       T (pgpenvelope,(gpg|pgp)4pine)
-       Postme            N       Y       P (GPGPPL)
-       The Bat!          N       Y       P (Ritlabs)
+       MUA            OpenPGP ASCII   How? (N,P,T)
+       -------------------------------------------------------------
+       Apple Mail        Y      Y      P (GPGMail)
+       Becky2            Y      Y      P (BkGnuPG)
+       Eudora            Y      Y      P (EuroraGPG)
+       Eudora Pro        Y      Y      P (EudoraGPG)
+       Lotus Notes       N      Y      P
+       Netscape 4.x      N      Y      P
+       Netscape 7.x      Y      Y      P (Enigmail)
+       Novell Groupwise  N      Y      P
+       Outlook           N      Y      P (G-Data)
+       Outlook Express   N      Y      P (GPGOE)
+       Pegasus           N      Y      P (QDPGP,PM-PGP)
+       Pine              N      Y      T (pgpenvelope,(gpg|pgp)4pine)
+       Postme            N      Y      P (GPGPPL)
+       The Bat!          N      Y      P (Ritlabs)
     [H /pre]
 
     Good overviews of OpenPGP-support can be found at:[H br]
@@ -566,15 +563,15 @@ you could search in the mailing list archive.
     Most keyservers don't accept a 'bare' revocation certificate. You
     have to import the certificate into gpg first:
 
-    [H pre]
-       gpg --import my-revocation.asc
-    [H /pre]
+    [H samp]
+       $ gpg --import my-revocation.asc
+    [H /samp]
 
     then send the revoked key to the keyservers:
 
-    [H pre]
-       gpg --keyserver certserver.pgp.com --send-keys mykeyid
-    [H /pre]
+    [H samp]
+       $ gpg --keyserver certserver.pgp.com --send-keys mykeyid
+    [H /samp]
 
     (or use a keyserver web interface for this).
 
@@ -586,11 +583,11 @@ you could search in the mailing list archive.
     and others. GnuPG will always create and use these files. On unices,
     the homedir is usually ~/.gnupg; on Windows "C:\gnupg\".
 
-    If you want to put your keyrings somewhere else, use:
+    If you want to put your keyrings somewhere else, use the option:
 
-    [H pre]
+    [H samp]
        --homedir /my/path/
-    [H /pre]
+    [H /samp]
 
     to make GnuPG create all its files in that directory. Your keyring
     will be "/my/path/pubring.gpg". This way you can store your secrets
@@ -612,9 +609,9 @@ you could search in the mailing list archive.
     Once their key has been imported, and the package and accompanying
     signature files have been downloaded, use:
 
-    [H pre]
+    [H samp]
        $ gpg --verify sigfile signed-file
-    [H /pre]
+    [H /samp]
 
     If the signature file has the same base name as the package file,
     the package can also be verified by specifying just the signature
@@ -623,9 +620,9 @@ you could search in the mailing list archive.
     package named foobar.tar.gz against its detached binary signature
     file, use:
 
-    [H pre]
+    [H samp]
        $ gpg --verify foobar.tar.gz.sig
-    [H /pre]
+    [H /samp]
 
 <Q> How do I export a keyring with only selected signatures?
 
@@ -633,9 +630,9 @@ you could search in the mailing list archive.
     selected from a master keyring (for a club, user group, or company
     department for example), simply specify the keys you want to export:
 
-    [H pre]
+    [H samp]
        $ gpg --armor --export key1 key2 key3 key4 > keys1-4.asc
-    [H /pre]
+    [H /samp]
 
 <Dgpgsplit>
 <Q> I still have my secret key, but lost my public key. What can I do?
@@ -648,9 +645,9 @@ you could search in the mailing list archive.
     (it's actually a new option for gpgsplit) and is available with GnuPG
     versions 1.2.1 or later (or can be found in CVS). It works like this:
 
-    [H pre]
+    [H samp]
        $ gpgsplit --no-split --secret-to-public secret.gpg >publickey.gpg
-    [H /pre]
+    [H /samp]
 
     One should first try to export the secret key and convert just this
     one. Using the entire secret keyring should work too. After this has
@@ -675,34 +672,34 @@ you could search in the mailing list archive.
 
     It depends on the PGP version.
 
-    [H UL]
-    [H LI]PGP 2.x[H br]
+    [H ul]
+    [H li]PGP 2.x[H br]
     You can't do that because PGP 2.x normally uses IDEA which is not
     supported by GnuPG as it is patented (see <Ridea>), but if you have a
     modified version of PGP you can try this:
 
-    [H pre]
-       gpg --rfc1991 --cipher-algo 3des ...
-    [H/pre]
+    [H samp]
+       $ gpg --rfc1991 --cipher-algo 3des ...
+    [H /samp]
 
     Please don't pipe the data to encrypt to gpg but provide it using a
     filename; otherwise, PGP 2 will not be able to handle it.
 
     As for conventional encryption, you can't do this for PGP 2.
 
-    [H LI]PGP 5.x and higher[H br]
+    [H li]PGP 5.x and higher[H br]
     You need to provide two additional options:
 
-    [H pre]
+    [H samp]
        --compress-algo 1 --cipher-algo cast5
-    [H/pre]
+    [H /samp]
 
     You may also use "3des" instead of "cast5", and "blowfish" does not
     work with all versions of PGP 5. You may also want to put:
 
-    [H pre]
+    [H samp]
        compress-algo 1
-    [H/pre]
+    [H /samp]
 
     into your ~/.gnupg/options file - this does not affect normal GnuPG
     operation.
@@ -745,9 +742,9 @@ you could search in the mailing list archive.
     There is a script in the tools directory to help you. After you have
     imported the PGP keyring you can give this command:
 
-    [H pre]
+    [H samp]
        $ lspgpot pgpkeyring | gpg --import-ownertrust
-    [H /pre]
+    [H /samp]
 
     where pgpkeyring is the original keyring and not the GnuPG keyring
     you might have created in the first step.
@@ -759,9 +756,9 @@ you could search in the mailing list archive.
     PGP is not really OpenPGP aware. A workaround is to export the
     secret keys with this command:
 
-    [H pre]
-       $ gpg --export-secret-keys --no-comment -a your-key-id
-    [H /pre]
+    [H samp]
+       $ gpg --export-secret-keys --no-comment -a your-KeyID
+    [H /samp]
 
     Another possibility is this: by default, GnuPG encrypts your secret
     key using the Blowfish symmetric algorithm. Older PGPs will only
@@ -769,10 +766,10 @@ you could search in the mailing list archive.
     following method you can re-encrypt your secret gpg key with a
     different algo:
 
-    [H pre]
-       $ gpg --s2k-cipher-algo=CAST5 --s2k-digest-algo=SHA1 \
-             --compress-algo=1  --edit-key <username>
-    [H /pre]
+    [H samp]
+       $ gpg --s2k-cipher-algo=CAST5 --s2k-digest-algo=SHA1
+         --compress-algo=1  --edit-key <username>
+    [H /samp]
 
     Then use passwd to change the password (just change it to the same
     thing, but it will encrypt the key with CAST5 this time).
@@ -781,10 +778,10 @@ you could search in the mailing list archive.
 
     For PGP 6.x the following options work to export a key:
 
-    [H pre]
-       $ gpg --s2k-cipher-algo 3des --compress-algo 1 --rfc1991 \
-             --export-secret-keys <key-ID>
-    [H /pre]
+    [H samp]
+       $ gpg --s2k-cipher-algo 3des --compress-algo 1 --rfc1991
+         --export-secret-keys <KeyID>
+    [H /samp]
 
 <Doptions>
 <Q> GnuPG no longer installs a ~/.gnupg/options file. Is it missing?
@@ -817,25 +814,25 @@ you could search in the mailing list archive.
     values, as this will override them in case you have something else set
     in your options file.
 
-    [H pre]
-       $ gpg --s2k-cipher-algo cast5 --s2k-digest-algo sha1 --s2k-mode 3 \
-             --simple-sk-checksum --edit KeyID
-    [H /pre]
+    [H samp]
+       $ gpg --s2k-cipher-algo cast5 --s2k-digest-algo sha1 --s2k-mode 3
+         --simple-sk-checksum --edit KeyID
+    [H /samp]
 
     Turn off some features. Set the list of preferred ciphers, hashes,
     and compression algorithms to things that PGP can handle. (Yes, I
     know this is an odd list of ciphers, but this is what PGP itself uses,
     minus IDEA).
 
-    [H pre]
+    [H samp]
        > setpref S9 S8 S7 S3 S2 S10 H2 H3 Z1 Z0
-    [H /pre]
+    [H /samp]
 
     Now put the list of preferences onto the key.
 
-    [H pre]
+    [H samp]
        > updpref
-    [H /pre]
+    [H /samp]
 
     Finally we must decrypt and re-encrypt the key, making sure that we
     encrypt with a cipher that PGP likes. We set this up in the --edit
@@ -843,22 +840,22 @@ you could search in the mailing list archive.
     take effect. You can use the same passphrase if you like, or take
     this opportunity to actually change it.
 
-    [H pre]
+    [H samp]
        > passwd
-    [H /pre]
+    [H /samp]
 
     Save our work.
 
-    [H pre]
+    [H samp]
        > save
-    [H /pre]
+    [H /samp]
 
     Now we can do the usual export:
 
-    [H pre]
+    [H samp]
        $ gpg --export KeyID > mypublickey.pgp
        $ gpg --export-secret-key KeyID > mysecretkey.pgp
-    [H /pre]
+    [H /samp]
 
     Thanks to David Shaw for this information!
 
@@ -876,15 +873,15 @@ you could search in the mailing list archive.
 
     To setuid(root) permissions on the gpg binary you can either use:
 
-    [H pre]
-       chmod u+s /path/to/gpg
-    [H /pre]
+    [H samp]
+       $ chmod u+s /path/to/gpg
+    [H /samp]
 
     or
 
-    [H pre]
-       chmod 4755 /path/to/gpg
-    [H /pre]
+    [H samp]
+       $ chmod 4755 /path/to/gpg
+    [H /samp]
 
     Some refrain from using setuid(root) unless absolutely required for
     security reasons. Please check with your system administrator if you
@@ -893,25 +890,26 @@ you could search in the mailing list archive.
     On UnixWare 2.x and 7.x you should install GnuPG with the 'plock'
     privilege to get the same effect:
 
-    [H pre]
-       filepriv -f plock /path/to/gpg
-    [H /pre]
+    [H samp]
+       $ filepriv -f plock /path/to/gpg
+    [H /samp]
 
     If you can't or don't want to install GnuPG setuid(root), you can
     use the option "--no-secmem-warning" or put:
 
-    [H pre]
+    [H samp]
        no-secmem-warning
-    [H /pre]
+    [H /samp]
 
-    in your ~/.gnupg/options file (this disables the warning).
+    in your ~/.gnupg/options or ~/.gnupg/gpg.conf file (this disables
+    the warning).
 
     On some systems (e.g., Windows) GnuPG does not lock memory pages
     and older GnuPG versions (<=1.0.4) issue the warning:
 
-    [H pre]
+    [H samp]
        gpg: Please note that you don't have secure memory
-    [H /pre]
+    [H /samp]
 
     This warning can't be switched off by the above option because it
     was thought to be too serious an issue. However, it confused users
@@ -999,9 +997,9 @@ you could search in the mailing list archive.
     GnuPG installation in a recent state anyway. As a workaround, you can
     force gpg to use a previous default cipher algo by putting:
 
-    [H pre]
+    [H samp]
        cipher-algo cast5
-    [H /pre]
+    [H /samp]
 
     into your options file.
 
@@ -1051,11 +1049,11 @@ you could search in the mailing list archive.
 
     This will be fixed after GnuPG has been upgraded to autoconf-2.50.
     Until then, find the line setting CDPATH in the configure script
-    and place a:
+    and place an:
 
-    [H pre]
+    [H samp]
        unset CDPATH
-    [H /pre]
+    [H /samp]
 
     statement below it.
 
@@ -1064,9 +1062,7 @@ you could search in the mailing list archive.
     There is a small bug in 1.0.6 which didn't parse trust packets
     correctly. You may want to apply this patch if you can't upgrade:
 
-    [H pre]
-       http://www.gnupg.org/developer/gpg-woody-fix.txt
-    [H /pre]
+    [H a href=http://www.gnupg.org/developer/gpg-woody-fix.txt]<http://www.gnupg.org/developer/gpg-woody-fix.txt>[H /a]
 
 <Q> I upgraded to GnuPG version 1.0.7 and now it takes longer to load my
     keyrings. What can I do?
@@ -1083,9 +1079,9 @@ you could search in the mailing list archive.
 
     To generate a secret/public keypair, run:
 
-    [H pre]
-       gpg --gen-key
-    [H/pre]
+    [H samp]
+       $ gpg --gen-key
+    [H /samp]
 
     and choose the default values.
 
@@ -1132,16 +1128,16 @@ you could search in the mailing list archive.
     person it says it comes from. You should be very sure that is really
     that person: You should verify the key fingerprint with:
 
-    [H pre]
-       gpg --fingerprint user-id
-    [H/pre]
+    [H samp]
+       $ gpg --fingerprint KeyID
+    [H /samp]
 
     over the phone (if you really know the voice of the other person), at
     a key signing party (which are often held at computer conferences),
     or at a meeting of your local GNU/Linux User Group.
 
-    Hmm, what else. You may use the option "-o filename" to force output
-    to this filename (use "-" to force output to stdout). "-r" just lets
+    Hmm, what else. You may use the option '-o filename' to force output
+    to this filename (use '-' to force output to stdout). '-r' just lets
     you specify the recipient (which public key you encrypt with) on the
     command line instead of typing it interactively.
 
@@ -1175,9 +1171,9 @@ you could search in the mailing list archive.
     You can see the validity (calculated trust value) using this
     command.
 
-    [H pre]
-       gpg --list-keys --with-colons
-    [H/pre] 
+    [H samp]
+       $ gpg --list-keys --with-colons
+    [H /samp] 
 
     If the first field is "pub" or "uid", the second field shows you the
     trust:
@@ -1193,15 +1189,15 @@ you could search in the mailing list archive.
            for keys for which the secret key is also available.
        r = The key has been revoked
        d = The key has been disabled
-    [H/pre]
+    [H /pre]
 
     The value in the "pub" record is the best one of all "uid" records.
     You can get a list of the assigned trust values (how much you trust
     the owner to correctly sign another person's key) with:
 
-    [H pre]
-       gpg --list-ownertrust
-    [H/pre]
+    [H samp]
+       $ gpg --list-ownertrust
+    [H /samp]
 
     The first field is the fingerprint of the primary key, the second
     field is the assigned value:
@@ -1213,7 +1209,7 @@ you could search in the mailing list archive.
            keys.
        f = Assume that the key holder really knows how to sign keys.
        u = No need to trust ourself because we have the secret key.
-    [H/pre]
+    [H /pre]
 
     Keep these values confidential because they express your opinions
     about others. PGP stores this information with the keyring thus it
@@ -1234,24 +1230,24 @@ you could search in the mailing list archive.
     information which is prefixed with information about the checked
     item.
 
-    [H pre]
+    [H samp]
        "key 12345678.3456"
-    [H/pre]
+    [H /samp]
 
     This is about the key with key ID 12345678 and the internal number
     3456, which is the record number of the so called directory record
     in the trustdb.
 
-    [H pre]
+    [H samp]
        "uid 12345678.3456/ACDE"
-    [H/pre]
+    [H /samp]
 
     This is about the user ID for the same key. To identify the user ID
     the last two bytes of a ripe-md-160 over the user ID ring is printed.
 
-    [H pre]
+    [H samp]
        "sig 12345678.3456/ACDE/9A8B7C6D"
-    [H/pre]
+    [H /samp]
 
     This is about the signature with key ID 9A8B7C6D for the above key
     and user ID, if it is a signature which is direct on a key, the user
@@ -1290,14 +1286,14 @@ you could search in the mailing list archive.
 <S> ACKNOWLEDGEMENTS
 
     Many thanks to Nils Ellmenreich for maintaining this FAQ file for
-    a long time, Werner Koch for the original FAQ file, and to all
-    posters to gnupg-users and gnupg-devel. They all provided most
-    of the answers.
+    such a long time, Werner Koch for the original FAQ file, and to all
+    posters to gnupg-users and gnupg-devel. They all provided most of
+    the answers.
 
     Also thanks to Casper Dik for providing us with a script to generate
     this FAQ (he uses it for the excellent Solaris2 FAQ).
 
-[H HR]
+[H hr]
 
 Copyright (C) 2000-2002 Free Software Foundation, Inc.,
 59 Temple Place - Suite 330, Boston, MA 02111, USA
