@@ -1,3 +1,11 @@
+2003-05-21  Werner Koch  <wk@gnupg.org>
+
+	* sign.c (write_plaintext_packet)
+	* progress.c (handle_progress)
+	* encode.c (encode_simple,encode_crypt): Make sure that a filename
+	of "-" is considered to be stdin so that iobuf_get_filelength
+	won't get called.  This fixes bug 156 reported by Gregery Barton.
+
 2003-05-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* keylist.c (list_keyblock_print): Don't dump attribs for

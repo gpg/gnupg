@@ -294,7 +294,8 @@ encode_simple( const char *filename, int mode, int compat )
        either partial length or fixed length with the new style
        messages. */
 
-    if( filename && !opt.textmode ) {
+    if (filename && *filename && !(*filename == '-' && !filename[1])
+        && !opt.textmode ) {
         off_t tmpsize;
 
 	if ( !(tmpsize = iobuf_get_filelength(inp)) )
@@ -525,7 +526,8 @@ encode_crypt( const char *filename, STRLIST remusr )
 	}
     }
 
-    if( filename && !opt.textmode ) {
+    if (filename && *filename && !(*filename == '-' && !filename[1])
+        && !opt.textmode ) {
         off_t tmpsize;
 
 	if ( !(tmpsize = iobuf_get_filelength(inp)) )
