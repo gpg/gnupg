@@ -80,7 +80,9 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 	dfx.mdc_hash = md_open( ed->mdc_method, 0 );
 	/*md_start_debug(dfx.mdc_hash, "checkmdc");*/
     }
-    dfx.cipher_hd = cipher_open( dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
+    dfx.cipher_hd = cipher_open( dek->algo,
+				 ed->mdc_method? CIPHER_MODE_CFB
+					       : CIPHER_MODE_AUTO_CFB, 1 );
 /* log_hexdump( "thekey", dek->key, dek->keylen );*/
     rc = cipher_setkey( dfx.cipher_hd, dek->key, dek->keylen );
     if( rc == G10ERR_WEAK_KEY )

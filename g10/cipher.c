@@ -75,7 +75,9 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     temp[nprefix] = temp[nprefix-2];
     temp[nprefix+1] = temp[nprefix-1];
     print_cipher_algo_note( cfx->dek->algo );
-    cfx->cipher_hd = cipher_open( cfx->dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
+    cfx->cipher_hd = cipher_open( cfx->dek->algo,
+				  use_mdc? CIPHER_MODE_CFB
+					 : CIPHER_MODE_AUTO_CFB, 1 );
 /*   log_hexdump( "thekey", cfx->dek->key, cfx->dek->keylen );*/
     cipher_setkey( cfx->cipher_hd, cfx->dek->key, cfx->dek->keylen );
     cipher_setiv( cfx->cipher_hd, NULL, 0 );
