@@ -1,3 +1,12 @@
+2002-09-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_spawn): Properly handle line truncation.
+	Don't leak memory (~10-20 bytes) on searches.
+	(keyserver_search_prompt): Cleanup.
+
+	* keylist.c (list_keyblock_colon): Show 1F direct key signatures
+	in --with-colons listing.
+
 2002-09-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (menu_addrevoker): The direct key signature for

@@ -334,7 +334,7 @@ keyserver_spawn(int action,STRLIST list,
 {
   int ret=0,i,gotversion=0,outofband=0;
   STRLIST temp;
-  unsigned int maxlen=256,buflen;
+  unsigned int maxlen,buflen;
   char *command=NULL,*searchstr=NULL;
   byte *line=NULL;
   struct kopts *kopts;
@@ -544,6 +544,7 @@ keyserver_spawn(int action,STRLIST list,
       char *ptr;
       int plen;
 
+      maxlen=1024;
       if(iobuf_read_line(spawn->fromchild,&line,&buflen,&maxlen)==0)
 	{
 	  ret=G10ERR_READ_FILE;
@@ -582,8 +583,6 @@ keyserver_spawn(int action,STRLIST list,
 	outofband=1; /* Currently the only OPTION */
     }
 
-  m_free(line);
-
   if(!gotversion)
     {
       log_error(_("keyserver did not send VERSION\n"));
@@ -599,12 +598,12 @@ keyserver_spawn(int action,STRLIST list,
 
 	  stats_handle=import_new_stats_handle();
 
-	  /* Slurp up all the key data.  In the future, it might be nice
-	     to look for KEY foo OUTOFBAND and FAILED indicators.  It's
-	     harmless to ignore them, but ignoring them does make gpg
-	     complain about "no valid OpenPGP data found".  One way to
-	     do this could be to continue parsing this line-by-line and
-	     make a temp iobuf for each key. */
+	  /* Slurp up all the key data.  In the future, it might be
+	     nice to look for KEY foo OUTOFBAND and FAILED indicators.
+	     It's harmless to ignore them, but ignoring them does make
+	     gpg complain about "no valid OpenPGP data found".  One
+	     way to do this could be to continue parsing this
+	     line-by-line and make a temp iobuf for each key. */
 
 	  import_keys_stream(spawn->fromchild,0,stats_handle,
 			     opt.keyserver_options.import_options);
@@ -621,12 +620,10 @@ keyserver_spawn(int action,STRLIST list,
 
       case SEARCH:
 	{
-	  line=NULL;
-	  buflen = 0;
-	  maxlen = 80;
 	  /* Look for the COUNT line */
 	  do
 	    {
+	      maxlen=1024;
 	      if(iobuf_read_line(spawn->fromchild,&line,&buflen,&maxlen)==0)
 		{
 		  ret=G10ERR_READ_FILE;
@@ -646,6 +643,8 @@ keyserver_spawn(int action,STRLIST list,
       }
 
  fail:
+  m_free(line);
+
   *prog=exec_finish(spawn);
 
   return ret;
@@ -969,7 +968,7 @@ void
 keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
 {
   int i=0,validcount=1;
-  unsigned int maxlen=256,buflen=0;
+  unsigned int maxlen,buflen;
   KEYDB_SEARCH_DESC *desc;
   byte *line=NULL;
   char *answer;
