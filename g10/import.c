@@ -85,13 +85,7 @@ static int merge_keysigs( KBNODE dst, KBNODE src, int *n_sigs,
 int
 parse_import_options(char *str,unsigned int *options)
 {
-  char *tok;
-  int hit=0;
-  struct
-  {
-    char *name;
-    unsigned int bit;
-  } import_opts[]=
+  struct parse_options import_opts[]=
     {
       {"allow-local-sigs",IMPORT_ALLOW_LOCAL_SIGS},
       {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG},
@@ -101,34 +95,7 @@ parse_import_options(char *str,unsigned int *options)
       {NULL,0}
     };
 
-  while((tok=strsep(&str," ,")))
-    {
-      int i,rev=0;
-
-      if(ascii_strncasecmp("no-",tok,3)==0)
-	{
-	  rev=1;
-	  tok+=3;
-	}
-
-      for(i=0;import_opts[i].name;i++)
-	{
-	  if(ascii_strcasecmp(import_opts[i].name,tok)==0)
-	    {
-	      if(rev)
-		*options&=~import_opts[i].bit;
-	      else
-		*options|=import_opts[i].bit;
-	      hit=1;
-	      break;
-	    }
-	}
-
-      if(!hit && !import_opts[i].name)
-	return 0;
-    }
-
-  return hit;
+  return parse_options(str,options,import_opts);
 }
 
 void *

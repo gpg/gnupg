@@ -95,8 +95,16 @@ int string_to_compress_algo(const char *string);
 int check_compress_algo(int algo);
 int default_cipher_algo(void);
 int default_compress_algo(void);
-void compliance_failure(void);
 const char *compliance_option_string(void);
+void compliance_failure(void);
+
+struct parse_options
+{
+  char *name;
+  unsigned int bit;
+};
+
+int parse_options(char *str,unsigned int *options,struct parse_options *opts);
 
 /*-- helptext.c --*/
 void display_online_help( const char *keyword );

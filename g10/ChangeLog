@@ -1,3 +1,13 @@
+2003-05-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, misc.c (parse_options): New general option line
+	parser. Fix the bug in the old version that did not handle report
+	syntax errors after a valid entry.
+
+	* import.c (parse_import_options), export.c
+	(parse_export_options): Call it here instead of duplicating the
+	code.
+
 2003-05-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* keylist.c (list_one): Don't show the keyring filename when in
