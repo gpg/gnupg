@@ -736,17 +736,125 @@ gc_component_find (const char *name)
 }
 
 
+/* List the option OPTION.  */
+static void
+list_one_option (const gc_option_t *option, FILE *out)
+{
+  const char *desc = NULL;
+  char *arg_name = NULL;
+
+  if (option->desc)
+    {
+      desc = my_dgettext (option->desc_domain, option->desc);
+
+      if (*desc == '|')
+	{
+	  const char *arg_tail = strchr (&desc[1], '|');
+
+	  if (arg_tail)
+	    {
+	      int arg_len = arg_tail - &desc[1];
+	      arg_name = xmalloc (arg_len + 1);
+	      memcpy (arg_name, &desc[1], arg_len);
+	      arg_name[arg_len] = '\0';
+	      desc = arg_tail + 1;
+	    }
+	}
+    }
+
+
+  /* YOU MUST NOT REORDER THE FIELDS IN THIS OUTPUT, AS THEIR ORDER IS
+     PART OF THE EXTERNAL INTERFACE.  YOU MUST NOT REMOVE ANY
+     FIELDS.  */
+
+  /* The name field.  */
+  fprintf (out, "%s", option->name);
+
+  /* The flags field.  */
+  fprintf (out, ":%lu", option->flags);
+  if (opt.verbose)
+    {
+      putc (' ', out);
+	  
+      if (!option->flags)
+	fprintf (out, "none");
+      else
+	{
+	  unsigned long flags = option->flags;
+	  unsigned long flag = 0;
+	  unsigned long first = 1;
+
+	  while (flags)
+	    {
+	      if (flags & 1)
+		{
+		  if (first)
+		    first = 0;
+		  else
+		    putc (',', out);
+		  fprintf (out, "%s", gc_flag[flag].name);
+		}
+	      flags >>= 1;
+	      flag++;
+	    }
+	}
+    }
+
+  /* The level field.  */
+  fprintf (out, ":%u", option->level);
+  if (opt.verbose)
+    fprintf (out, " %s", gc_level[option->level].name);
+
+  /* The description field.  */
+  fprintf (out, ":%s", desc ? percent_escape (desc) : "");
+  
+  /* The type field.  */
+  fprintf (out, ":%u", option->arg_type);
+  if (opt.verbose)
+    fprintf (out, " %s", gc_arg_type[option->arg_type].name);
+
+  /* The alternate type field.  */
+  fprintf (out, ":%u", gc_arg_type[option->arg_type].fallback);
+  if (opt.verbose)
+    fprintf (out, " %s",
+	     gc_arg_type[gc_arg_type[option->arg_type].fallback].name);
+
+  /* The argument name field.  */
+  fprintf (out, ":%s", arg_name ? percent_escape (arg_name) : "");
+  if (arg_name)
+    xfree (arg_name);
+
+  /* The default value field.  */
+  fprintf (out, ":%s", option->default_value ? option->default_value : "");
+
+  /* The default argument field.  */
+  fprintf (out, ":%s", option->default_arg ? option->default_arg : "");
+
+  /* The value field.  */
+  if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_NONE
+      && (option->flags & GC_OPT_FLAG_LIST)
+      && option->value)
+    /* The special format "1,1,1,1,...,1" is converted to a number
+       here.  */
+    fprintf (out, ":%u", (strlen (option->value) + 1) / 2);
+  else
+    fprintf (out, ":%s", option->value ? option->value : "");
+
+  /* ADD NEW FIELDS HERE.  */
+
+  putc ('\n', out);
+}
+
+
 /* List all options of the component COMPONENT.  */
 void
 gc_component_list_options (int component, FILE *out)
 {  
   const gc_option_t *option = gc_component[component].options;
+  const gc_option_t *group_option = NULL;
 
   while (option->name)
     {
-      const char *desc = NULL;
-      char *arg_name = NULL;
-
       /* Do not output unknown or internal options.  */
       if (!(option->flags & GC_OPT_FLAG_GROUP)
 	  && (!option->active || option->level == GC_LEVEL_INTERNAL))
@@ -755,105 +863,19 @@ gc_component_list_options (int component, FILE *out)
 	  continue;
 	}
 
-      if (option->desc)
-	{
-	  desc = my_dgettext (option->desc_domain, option->desc);
-
-	  if (*desc == '|')
-	    {
-	      const char *arg_tail = strchr (&desc[1], '|');
-
-	      if (arg_tail)
-		{
-		  int arg_len = arg_tail - &desc[1];
-		  arg_name = xmalloc (arg_len + 1);
-		  memcpy (arg_name, &desc[1], arg_len);
-		  arg_name[arg_len] = '\0';
-		  desc = arg_tail + 1;
-		}
-	    }
-	}
-
-      /* YOU MUST NOT REORDER THE FIELDS IN THIS OUTPUT, AS THEIR
-	 ORDER IS PART OF THE EXTERNAL INTERFACE.  YOU MUST NOT REMOVE
-	 ANY FIELDS.  */
-
-      /* The name field.  */
-      fprintf (out, "%s", option->name);
-
-      /* The flags field.  */
-      fprintf (out, ":%lu", option->flags);
-      if (opt.verbose)
-	{
-	  putc (' ', out);
-	  
-	  if (!option->flags)
-	    fprintf (out, "none");
-	  else
-	    {
-	      unsigned long flags = option->flags;
-	      unsigned long flag = 0;
-	      unsigned long first = 1;
-
-	      while (flags)
-		{
-		  if (flags & 1)
-		    {
-		      if (first)
-			first = 0;
-		      else
-			putc (',', out);
-		      fprintf (out, "%s", gc_flag[flag].name);
-		    }
-		  flags >>= 1;
-		  flag++;
-		}
-	    }
-	}
-
-      /* The level field.  */
-      fprintf (out, ":%u", option->level);
-      if (opt.verbose)
-	fprintf (out, " %s", gc_level[option->level].name);
-
-      /* The description field.  */
-      fprintf (out, ":%s", desc ? percent_escape (desc) : "");
-
-      /* The type field.  */
-      fprintf (out, ":%u", option->arg_type);
-      if (opt.verbose)
-	fprintf (out, " %s", gc_arg_type[option->arg_type].name);
-
-      /* The alternate type field.  */
-      fprintf (out, ":%u", gc_arg_type[option->arg_type].fallback);
-      if (opt.verbose)
-	fprintf (out, " %s",
-		 gc_arg_type[gc_arg_type[option->arg_type].fallback].name);
-
-      /* The argument name field.  */
-      fprintf (out, ":%s", arg_name ? percent_escape (arg_name) : "");
-      if (arg_name)
-	xfree (arg_name);
-
-      /* The default value field.  */
-      fprintf (out, ":%s", option->default_value ? option->default_value : "");
-
-      /* The default argument field.  */
-      fprintf (out, ":%s", option->default_arg ? option->default_arg : "");
-
-      /* The value field.  */
-      if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_NONE
-	  && (option->flags & GC_OPT_FLAG_LIST)
-	  && option->value)
-	/* The special format "1,1,1,1,...,1" is converted to a number
-	   here.  */
-	fprintf (out, ":%u", (strlen (option->value) + 1) / 2);
+      if (option->flags & GC_OPT_FLAG_GROUP)
+	group_option = option;
       else
-	fprintf (out, ":%s", option->value ? option->value : "");
+	{
+	  if (group_option)
+	    {
+	      list_one_option (group_option, out);
+	      group_option = NULL;
+	    }
 
-      /* ADD NEW FIELDS HERE.  */
+	  list_one_option (option, out);
+	}
 
-      putc ('\n', out);
       option++;
     }
 }
