@@ -1,5 +1,8 @@
 2002-07-02  Werner Koch  <wk@gnupg.org>
 
+	* verify.c (gpgsm_verify): Extend the STATUS_BADSIG line with
+	the fingerprint.
+
 	* certpath.c (check_cert_policy): Don't use log_error to print a
 	warning.
 

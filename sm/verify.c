@@ -351,9 +351,13 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
                || gcry_md_get_algo_dlen (algo) != msgdigestlen
                || !s || memcmp (s, msgdigest, msgdigestlen) )
             {
+              char *fpr;
+
               log_error ("invalid signature: message digest attribute "
                          "does not match calculated one\n");
-              gpgsm_status (ctrl, STATUS_BADSIG, NULL);
+              fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+              gpgsm_status (ctrl, STATUS_BADSIG, fpr);
+              xfree (fpr);
               goto next_signer; 
             }
             
@@ -385,8 +389,12 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
 
       if (rc)
         {
+          char *fpr;
+
           log_error ("invalid signature: %s\n", gnupg_strerror (rc));
-          gpgsm_status (ctrl, STATUS_BADSIG, NULL);
+          fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+          gpgsm_status (ctrl, STATUS_BADSIG, fpr);
+          xfree (fpr);
           goto next_signer;
         }
       rc = gpgsm_cert_use_verify_p (cert); /*(this displays an info message)*/
