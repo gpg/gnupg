@@ -196,7 +196,7 @@ enum cmd_and_opt_values
     oCompressAlgo,
     oCompressLevel,
     oBZ2CompressLevel,
-    oBZ2CompressLowmem,
+    oBZ2DecompressLowmem,
     oPasswdFD,
 #ifdef __riscos__
     oPasswdFile,
@@ -428,7 +428,7 @@ static ARGPARSE_OPTS opts[] = {
     { oCompress, NULL, 1, N_("|N|set compress level N (0 disables)") },
     { oCompressLevel, "compress-level", 1, "@" },
     { oBZ2CompressLevel, "bzip2-compress-level", 1, "@" },
-    { oBZ2CompressLowmem, "bzip2-compress-lowmem", 0, "@" },
+    { oBZ2DecompressLowmem, "bzip2-decompress-lowmem", 0, "@" },
     { oTextmodeShort, NULL,   0, "@"},
     { oTextmode, "textmode",  0, N_("use canonical text mode")},
     { oNoTextmode, "no-textmode",  0, "@"},
@@ -511,8 +511,8 @@ static ARGPARSE_OPTS opts[] = {
     { oDigestAlgo, "digest-algo", 2, "@"},
     { oCertDigestAlgo, "cert-digest-algo", 2 , "@" },
     { oCompressAlgo,"compress-algo", 2, "@"},
-    { oThrowKeyid, "throw-keyid", 0, "@"},
-    { oNoThrowKeyid, "no-throw-keyid", 0, "@" },
+    { oThrowKeyid, "throw-keyids", 0, "@"},
+    { oNoThrowKeyid, "no-throw-keyids", 0, "@" },
     { oShowPhotos,   "show-photos", 0, "@" },
     { oNoShowPhotos, "no-show-photos", 0, "@" },
     { oPhotoViewer,  "photo-viewer", 2, "@" },
@@ -2008,7 +2008,7 @@ main( int argc, char **argv )
 	    break;
 	  case oCompressLevel: opt.compress_level = pargs.r.ret_int; break;
 	  case oBZ2CompressLevel: opt.bz2_compress_level = pargs.r.ret_int; break;
-	  case oBZ2CompressLowmem: opt.bz2_compress_lowmem=1; break;
+	  case oBZ2DecompressLowmem: opt.bz2_decompress_lowmem=1; break;
 	  case oPasswdFD:
             pwfd = iobuf_translate_file_handle (pargs.r.ret_int, 0);
             opt.use_agent = 0;

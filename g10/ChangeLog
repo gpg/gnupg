@@ -1,3 +1,9 @@
+2004-03-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), compress-bz2.c (init_uncompress):
+	Rename --bzip2-compress-lowmem to --bzip2-decompress-lowmem since
+	it applies to decompression, not compression.
+
 2004-03-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (sign_uids, show_key_and_fingerprint, ask_revoke_sig,

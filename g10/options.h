@@ -73,7 +73,7 @@ struct
   int compress_algo;
   int compress_level;
   int bz2_compress_level;
-  int bz2_compress_lowmem;
+  int bz2_decompress_lowmem;
   const char *def_secret_key;
   char *def_recipient;
   int def_recipient_self;
