@@ -94,11 +94,32 @@ ones given on the command line.
 List all keys from the secret keyrings, or just the
 ones given on the command line.
 
+@item ---show-photos
+Causes ---list-keys, --list-sigs, --list-public-keys, and
+---list-secret-keys to also display the photo ID attached to a key, if
+any.
+See also ---photo-viewer.
+
+@item ---no-show-photos
+Resets the ---show-photos flag.
+
+@item ---photo-viewer @code{string}
+This is the command line that should be run to view a photo ID. "%i"
+will be expanded to a filename containing the photo. "%I" does the
+same, except the file will not be deleted once the viewer exits.
+Other flags are "%k" for the key ID, "%K" for the long key ID, "%f"
+for the key fingerprint, and "%%" for an actual percent sign. If
+neither %i or %I are present, then the photo will be supplied to the
+viewer on standard input.
+
+The default viewer is "xloadimage -fork -quiet -title 'KeyID 0x%k'
+stdin"
+
 @item ---show-keyring
 Causes ---list-keys, --list-public-keys, and --list-secret-keys to
 display the name of the keyring a given key resides on. This is only
 useful when you're listing a specific key or set of keys. It has no
-effect when listig all keys.
+effect when listing all keys.
 
 @item ---list-sigs @code{names}
 Same as ---list-keys, but the signatures are listed too.
@@ -266,12 +287,34 @@ Ultimately trusted.
 @end table
 
 @item ---sign-key @code{name}
-Sign a public key with your secret key. This is a shortcut version
-of the subcommand "sign" from ---edit.
+Signs a public key with your secret key. This is a shortcut version of
+the subcommand "sign" from ---edit.
 
 @item ---lsign-key @code{name}
-Sign a public key with your secret key but mark it as non-exportable.
-This is a shortcut version of the subcommand "lsign" from ---edit.
+Signs a public key with your secret key but marks it as
+non-exportable. This is a shortcut version of the subcommand "lsign"
+from ---edit.
+
+@item ---nrsign-key @code{name}
+Signs a public key with your secret key but marks it as non-revocable.
+This is a shortcut version of the subcommand "nrsign" from ---edit.
+
+@item ---default-check-level @code{n}
+The default to use for the check level when signing a key.
+
+0 means you make no particular claim as to how carefully you verified
+the key. 1 means you believe the key is owned by the person who
+claims to own it but you could not, or did not verify the key at all.
+This is useful for a "persona" verification, where you sign the key of
+a pseudonymous user. 2 means you did casual verification of the key.
+For example, this could mean that you verified that the key
+fingerprint and checked the user ID on the key against a photo ID. 3
+means you did extensive verification of the key. For example, this
+could mean that you verified the key fingerprint and checked the user
+ID on the key against a photo ID, and also verified the email address
+on the key belongs to the key owner.
+
+This option defaults to 0.
 
 @item ---trusted-key @code{long key ID}
 Assume that the specified key (which must be given
@@ -332,18 +375,17 @@ Most notable here is the ---merge-only option which does not insert new keys
 but does only the merging of new signatures, user-IDs and subkeys.
 
 @item ---recv-keys @code{key IDs}
-Import the keys with the given key IDs from a HKP
-keyserver. Option ---keyserver must be used to
-give the name of this keyserver.
+Import the keys with the given key IDs from a keyserver. Option
+---keyserver must be used to give the name of this keyserver.
 
-@item ---recv-keys @code{key IDs}
-Import the keys with the given key IDs from a HKP
-keyserver. Option ---keyserver must be used to
-give the name of this keyserver.
+@item ---search-keys @code{names}
+Search the keyserver for the given names. Multiple names given here
+will be joined together to create the search string for the keyserver.
+Option ---keyserver must be used to give the name of this keyserver.
 
 @item ---update-trustdb
 Do trust DB maintenance. This command goes over all keys and builds
-the Web-of-Trust. This is an intercative command because it may has to
+the Web-of-Trust. This is an interactive command because it may has to
 ask for the "ownertrust" values of keys. The user has to give an
 estimation in how far she trusts the owner of the displayed key to
 correctly certify (sign) other keys. It does only ask for that value
@@ -503,27 +545,68 @@ with signature checks when there is no evidence that the user ID
 is bound to the key.
 
 @item ---keyserver @code{name}
-Use @code{name} to lookup keys which are not yet in
-your keyring. This is only done while verifying
-messages with signatures. The option is also
-required for the command ---send-keys to
-specify the keyserver to where the keys should
-be send. All keyservers synchronize with each
-other - so there is no need to send keys to more
-than one server. Using the command
-"host -l pgp.net | grep wwwkeys" gives you a
-list of keyservers. Because there is load
-balancing using round-robin DNS you may notice
-that you get different key servers.
+Use @code{name} as your keyserver. This is the server that ---recv-keys,
+---send-keys, and --search-keys will communicate with to receive keys
+from, send keys to, and search for keys on. The format of the
+@code{name} is a URI: `scheme:[//]keyservername[:port]' The scheme is
+the type of keyserver: "hkp" for the Horowitz (or compatible)
+keyservers, "ldap" for the NAI LDAP keyserver, or "mailto" for the
+Horowitz email keyserver. Note that your particular installation of
+GnuPG may have other keyserver types available as well.
+
+Most keyservers synchronize with each other, so there is generally no
+need to send keys to more than one server. Using the command "host -l
+pgp.net | grep wwwkeys" gives you a list of HKP keyservers. When
+using one of the wwwkeys servers, due to load balancing using
+round-robin DNS you may notice that you get a different key server
+each time.
+
+@item ---keyserver-options @code{parameters}
+This is a space or comma delimited string that gives options for the
+keyserver. Options can be prepended with a `no-' to give the opposite
+meaning. While not all options are available for all keyserver
+schemes, some common options are:
+
+@table @asis
+@item include-revoked
+When receiving or searching for a key, include keys that are marked on
+the keyserver as revoked.
+
+@item include-disabled
+When receiving or searching for a key, include keys that are marked on
+the keyserver as disabled.
+
+@item use-temp-files
+On most Unix-like platforms, GnuPG communicates with the keyserver
+helper program via pipes, which is the most efficient method. This
+option forces GnuPG to use temporary files to communicate. On some
+platforms (such as Win32 and RISC OS), this option is always enabled.
+
+@item keep-temp-files
+If using `use-temp-files', do not delete the temp files after using
+them. This option is useful to learn the keyserver communication
+protocol by reading the temporary files.
+
+@item verbose
+Tell the keyserver helper program to be more verbose. This option can
+be repeated multiple times to increase the verbosity level.
+
+@item honor-http-proxy
+For keyserver schemes that use HTTP (such as HKP), try to access the
+keyserver over the proxy set with the environment variable
+"http_proxy".
+
+@end table
+
+@item ---auto-key-retrieve
+This option enables the automatic retrieving of keys from a keyserver
+when verifying signatures made by keys that are not on the local
+keyring.
 
 @item ---no-auto-key-retrieve
 This option disables the automatic retrieving of keys from a keyserver
-while verifying signatures. This option allows you to keep a keyserver in
-the options file for the ---send-keys and --recv-keys commands.
-
-@item ---honor-http-proxy
-Try to access the keyserver over the proxy set with the variable
-"http_proxy".
+while verifying signatures. This may be of use if ---auto-key-retrieve
+is enabled from an options file.
 
 @item ---keyring @code{file}
 Add @code{file} to the list of keyrings.
@@ -638,14 +721,38 @@ so you should check that your ---charset is set correctly.
 If you prefix @code{name} with an exclamation mark, the notation
 data will be flagged as critical (rfc2440:5.2.3.15).
 
+@item ---show-notation
+Show key signature notations in the ---list-sigs or --check-sigs
+listings.
+
+@item ---no-show-notation
+Do not show key signature notations in the ---list-sigs or --check-sigs
+listings.
+
 @item ---set-policy-url @code{string}
 Use @code{string} as Policy URL for signatures (rfc2440:5.2.3.19).
 If you prefix it with an exclamation mark, the policy URL
 packet will be flagged as critical.
 
+@item ---show-policy-url
+Show any policy URLs set in the ---list-sigs or --check-sigs listings.
+
+@item ---no-show-policy-url
+Do not show any policy URLs set in the ---list-sigs or --check-sigs
+listings.
+
 @item ---set-filename @code{string}
 Use @code{string} as the name of file which is stored in
 messages.
+
+@item ---for-your-eyes-only
+Set the `for your eyes only' flag in the message. This causes GnuPG
+to refuse to save the file unless the ---output option is given, and
+PGP to use the "secure viewer" with a Tempest-resistant font to
+display the message. This option overrides ---set-filename.
+
+@item ---no-for-your-eyes-only
+Resets the ---for-your-eyes-only flag.
 
 @item ---use-embedded-filename
 Try to create a file with a name as embedded in the data.
@@ -696,14 +803,13 @@ Unless ---rfc1991 is used, this mode is also used
 for conventional encryption.
 
 @item ---compress-algo @code{n}
-Use compress algorithm @code{n}. Default is 2 which is
-RFC1950 compression. You may use 1 to use the old zlib 
-version (RFC1951) which is used by PGP. The default algorithm may
-give better results because the window size is not limited
-to 8K. If this is not used the OpenPGP behavior is used,
-i.e. the compression algorithm is selected from the
-preferences; note, that this can't be done if you do
-not encrypt the data.
+Use compression algorithm @code{n}. Default is 2 which is RFC1950
+compression. You may use 1 to use the old zlib version (RFC1951) which
+is used by PGP. 0 disables compression. The default algorithm may give
+better results because the window size is not limited to 8K. If this
+is not used the OpenPGP behavior is used, i.e. the compression
+algorithm is selected from the preferences; note, that this can't be
+done if you do not encrypt the data.
 
 @item ---disable-cipher-algo @code{name}
 Never allow the use of @code{name} as cipher algorithm.
@@ -780,6 +886,18 @@ agent before it asks for a passphrase.
 @item ---rfc1991
 Try to be more RFC1991 (PGP 2.x) compliant.
 
+@item ---pgp2
+Set up all options to be as PGP 2.x compliant as possible, and warn if
+an action is taken (e.g. encrypting to a non-RSA key) that will create
+a message that PGP 2.x will not be able to handle.
+
+This option implies `---rfc1991 --no-openpgp --no-force-v4-certs
+---no-comment --escape-from --no-force-v3-sigs --cipher-algo IDEA
+---digest-algo MD5 --compress-algo 1'
+
+@item ---no-pgp2
+Resets the ---pgp2 option.
+
 @item ---openpgp
 Reset all packet, cipher and digest options to OpenPGP
 behavior. Use this option to reset all previous
@@ -798,10 +916,10 @@ signatures on data.
 Reset the ---force-v3-sigs option.
 
 @item ---force-v4-certs
-Always use v4 key signatures even on v3 keys. This option does also
-change the default hash algorithm for v3 RSA keys from MD5 to SHA-1.
+Always use v4 key signatures even on v3 keys. This option also
+changes the default hash algorithm for v3 RSA keys from MD5 to SHA-1.
 
-@item ---no-force-v3-certs
+@item ---no-force-v4-certs
 Reset the ---force-v4-certs option.
 
 @item ---force-mdc
@@ -814,7 +932,7 @@ This option might not be implemented yet.
 Allow the import of keys with user IDs which are not self-signed, but
 have at least one signature.
 This only allows the import - key validation will fail and you
-have to check the validity of the key my other means. This hack is
+have to check the validity of the key by other means. This hack is
 needed for some German keys generated with pgp 2.6.3in. You should really
 avoid using it, because OpenPGP has better mechanics to do separate signing
 and encryption keys.
@@ -876,6 +994,9 @@ enter batch mode.
 
 @item ---no-secmem-warning
 Suppress the warning about "using insecure memory".
+
+@item ---no-permission-warning
+Suppress the warning about unsafe file permissions.
 
 @item ---no-armor
 Assume the input data is not in ASCII armored format.
@@ -944,6 +1065,15 @@ string is the same as the one printed by ---show-session-key. This option
 is normally not used but comes handy in case someone forces you to reveal the
 content of an encrypted message; using this option you can do this without
 handing out the secret key.
+
+@item ---expert
+Enable certain options, such as prompting for a signature expiration
+date, that are not frequently used by regular users. Also permits the
+user to do certain "silly" things like signing an expired or revoked
+key.
+
+@item ---no-expert
+Resets the ---expert option.
 
 @item ---merge-only
 Don't insert new keys into the keyrings while doing an import.
