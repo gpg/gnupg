@@ -1250,6 +1250,10 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 		    keyserver->scheme,KEYSERVER_PROTO_VERSION);
 	  break;
 
+	case KEYSERVER_TIMEOUT:
+	  log_error(_("keyserver timed out\n"));
+	  break;
+
 	case KEYSERVER_INTERNAL_ERROR:
 	default:
 	  log_error(_("keyserver internal error\n"));
