@@ -1,3 +1,16 @@
+2002-11-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (set_one_pref, keygen_set_std_prefs): Allow using the
+	full algorithm name (CAST5, SHA1) rather than the short form (S3,
+	H2).
+
+	* main.h, keygen.c (keygen_get_std_prefs), keyedit.c
+	(keyedit_menu): Return and use a fake uid packet rather than a
+	string since we already have a nice parser/printer in
+	keyedit.c:show_prefs.
+
+	* main.h, misc.c (string_to_compress_algo): New.
+
 2002-11-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Add --no-throw-keyid.

@@ -1347,9 +1347,10 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 
 	  case cmdUPDPREF: 
             {
-                p = keygen_get_std_prefs ();
-                tty_printf (("Current preference list: %s\n"), p);
-                m_free (p);
+	      PKT_user_id *temp=keygen_get_std_prefs();
+	      tty_printf(_("Current preference list:\n"));
+	      show_prefs(temp,1);
+	      m_free(temp);
             }
             if (cpr_get_answer_is_yes ("keyedit.updpref.okay",
                                         count_selected_uids (keyblock)?

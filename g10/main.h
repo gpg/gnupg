@@ -84,6 +84,7 @@ int hextobyte( const char *s );
 void deprecated_warning(const char *configname,unsigned int configlineno,
 			const char *option,const char *repl1,const char *repl2);
 const char *compress_algo_to_string(int algo);
+int string_to_compress_algo(const char *string);
 int check_compress_algo(int algo);
 
 /*-- helptext.c --*/
@@ -124,7 +125,7 @@ u32 ask_expire_interval(int object);
 u32 ask_expiredate(void);
 void generate_keypair( const char *fname );
 int keygen_set_std_prefs (const char *string,int personal);
-char *keygen_get_std_prefs (void);
+PKT_user_id *keygen_get_std_prefs (void);
 int keygen_add_key_expire( PKT_signature *sig, void *opaque );
 int keygen_add_std_prefs( PKT_signature *sig, void *opaque );
 int keygen_upd_std_prefs( PKT_signature *sig, void *opaque );

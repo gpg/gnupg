@@ -539,6 +539,25 @@ compress_algo_to_string(int algo)
 }
 
 int
+string_to_compress_algo(const char *string)
+{
+  if(ascii_strcasecmp(string,"uncompressed")==0)
+    return 0;
+  else if(ascii_strcasecmp(string,"zip")==0)
+    return 1;
+  else if(ascii_strcasecmp(string,"zlib")==0)
+    return 2;
+  else if(ascii_strcasecmp(string,"z0")==0)
+    return 0;
+  else if(ascii_strcasecmp(string,"z1")==0)
+    return 1;
+  else if(ascii_strcasecmp(string,"z2")==0)
+    return 2;
+  else
+    return -1;
+}
+
+int
 check_compress_algo(int algo)
 {
   if(algo>=0 && algo<=2)

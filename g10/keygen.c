@@ -174,46 +174,49 @@ keygen_add_key_flags_and_expire (PKT_signature *sig, void *opaque)
 }
 
 static int
-set_one_pref (ulong val, int type, int (*cf)(int), byte *buf, int *nbuf)
+set_one_pref (int val, int type, const char *item, byte *buf, int *nbuf)
 {
     int i;
 
-    if (cf (val)) {
-        log_info (_("preference %c%lu is not valid\n"), type, val);
-	if(type=='S' && val==CIPHER_ALGO_IDEA)
-	  idea_cipher_warn(1);
-        return -1;
-    }
-    for (i=0; i < *nbuf; i++ ) {
-        if (buf[i] == val) {
-            log_info (_("preference %c%lu duplicated\n"), type, val);
-            return -1;
+    for (i=0; i < *nbuf; i++ )
+      if (buf[i] == val)
+	{
+	  log_info (_("preference `%s' duplicated\n"), item);
+	  return -1;
         }
-    }
-    if (*nbuf >= MAX_PREFS) {
-        log_info (_("too many `%c' preferences\n"), type);
+
+    if (*nbuf >= MAX_PREFS)
+      {
+	if(type==1)
+	  log_info(_("too many cipher preferences\n"));
+	else if(type==2)
+	  log_info(_("too many digest preferences\n"));
+	else if(type==3)
+	  log_info(_("too many compression preferences\n"));
+	else
+	  BUG();
+
         return -1;
-    }
+      }
+
     buf[(*nbuf)++] = val;
     return 0;
 }
 
-
 /*
- * Parse the supplied string and use it to set the standard preferences.
- * The String is expected to be in a forma like the one printed by "prefs",
- * something like:  "S10 S3 H3 H2 Z2 Z1".  Use NULL to set the default
- * preferences.
- * Returns: 0 = okay
+ * Parse the supplied string and use it to set the standard
+ * preferences.  The string may be in a form like the one printed by
+ * "pref" (something like: "S10 S3 H3 H2 Z2 Z1") or the actual
+ * cipher/hash/compress names.  Use NULL to set the default
+ * preferences.  Returns: 0 = okay
  */
 int
 keygen_set_std_prefs (const char *string,int personal)
 {
     byte sym[MAX_PREFS], hash[MAX_PREFS], zip[MAX_PREFS];
     int  nsym=0, nhash=0, nzip=0, mdc=1; /* mdc defaults on */
-    ulong val;
-    const char *s, *s2;
-    int rc = 0;
+    char *tok,*prefstring;
+    int val,rc = 0;
 
     if (!string || !ascii_strcasecmp (string, "default")) {
       if (opt.def_preference_list)
@@ -234,39 +237,39 @@ keygen_set_std_prefs (const char *string,int personal)
     else if (!ascii_strcasecmp (string, "none"))
         string = "";
 
-    for (s=string; *s; s = s2) {
-        if ((*s=='s' || *s == 'S') && isdigit(s[1]) ) {
-            val = strtoul (++s, (char**)&s2, 10);
-            if (set_one_pref (val, 'S', check_cipher_algo, sym, &nsym))
-                rc = -1;
-        }
-        else if ((*s=='h' || *s == 'H') && isdigit(s[1]) ) {
-            val = strtoul (++s, (char**)&s2, 10);
-            if (set_one_pref (val, 'H', check_digest_algo, hash, &nhash))
-                rc = -1;
-        }
-        else if ((*s=='z' || *s == 'Z') && isdigit(s[1]) ) {
-            val = strtoul (++s, (char**)&s2, 10);
-            if (set_one_pref (val, 'Z', check_compress_algo, zip, &nzip))
-                rc = -1;
-        }
-	else if (ascii_strcasecmp(s,"mdc")==0) {
-	  mdc=1;
-	  s2=s+3;
-	}
-	else if (ascii_strcasecmp(s,"no-mdc")==0) {
-	  mdc=0;
-	  s2=s+6;
-	}
-        else if (isspace (*s))
-            s2 = s+1;
-        else {
-            log_info (_("invalid character in preference string\n"));
-            return -1;
-        }
-    }
+    prefstring=m_strdup(string); /* need a writable string! */
 
-    if (!rc)
+    while((tok=strsep(&prefstring," ,")))
+      {
+	if((val=string_to_cipher_algo(tok)))
+	  {
+	    if(set_one_pref(val,1,tok,sym,&nsym))
+	      rc=-1;
+	  }
+        else if((val=string_to_digest_algo(tok)))
+	  {
+	    if(set_one_pref(val,2,tok,hash,&nhash))
+	      rc=-1;
+	  }
+        else if((val=string_to_compress_algo(tok))>-1)
+	  {
+	    if(set_one_pref(val,3,tok,zip,&nzip))
+	      rc=-1;
+	  }
+	else if (ascii_strcasecmp(tok,"mdc")==0)
+	  mdc=1;
+	else if (ascii_strcasecmp(tok,"no-mdc")==0)
+	  mdc=0;
+        else
+	  {
+	    log_info (_("invalid item `%s' in preference string\n"),tok);
+	    rc=-1;
+	  }
+      }
+
+    m_free(prefstring);
+
+    if(!rc)
       {
 	if(personal)
 	  {
@@ -353,36 +356,44 @@ keygen_set_std_prefs (const char *string,int personal)
     return rc;
 }
 
-
-/* 
- * Return a printable list of preferences.  Caller must free.
- */
-char *
-keygen_get_std_prefs ()
+/* Return a fake user ID containing the preferences.  Caller must
+   free. */
+PKT_user_id *keygen_get_std_prefs(void)
 {
-    char *buf;
-    int i;
+  int i,j=0;
+  PKT_user_id *uid=m_alloc_clear(sizeof(PKT_user_id));
 
-    if (!prefs_initialized)
-        keygen_set_std_prefs (NULL,0);
+  if(!prefs_initialized)
+    keygen_set_std_prefs(NULL,0);
 
-    buf = m_alloc ( MAX_PREFS*3*5 + 5 + 1);
-    *buf = 0;
-    for (i=0; i < nsym_prefs; i++ )
-        sprintf (buf+strlen(buf), "S%d ", sym_prefs[i]);
-    for (i=0; i < nhash_prefs; i++ )
-        sprintf (buf+strlen(buf), "H%d ", hash_prefs[i]);
-    for (i=0; i < nzip_prefs; i++ )
-        sprintf (buf+strlen(buf), "Z%d ", zip_prefs[i]);
+  uid->prefs=m_alloc((sizeof(prefitem_t *)*
+		      (nsym_prefs+nhash_prefs+nzip_prefs+1)));
 
-    if(mdc_available)
-      sprintf(buf+strlen(buf),"[mdc]");
-    else if (*buf) /* trim the trailing space */
-      buf[strlen(buf)-1] = 0;
+  for(i=0;i<nsym_prefs;i++,j++)
+    {
+      uid->prefs[j].type=PREFTYPE_SYM;
+      uid->prefs[j].value=sym_prefs[i];
+    }
 
-    return buf;
+  for(i=0;i<nhash_prefs;i++,j++)
+    {
+      uid->prefs[j].type=PREFTYPE_HASH;
+      uid->prefs[j].value=hash_prefs[i];
+    }
+
+  for(i=0;i<nzip_prefs;i++,j++)
+    {
+      uid->prefs[j].type=PREFTYPE_ZIP;
+      uid->prefs[j].value=zip_prefs[i];
+    }
+
+  uid->prefs[j].type=PREFTYPE_NONE;
+  uid->prefs[j].value=0;
+
+  uid->mdc_feature=mdc_available;
+
+  return uid;
 }
-
 
 static void
 add_feature_mdc (PKT_signature *sig,int enabled)
