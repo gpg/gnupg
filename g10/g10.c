@@ -1537,6 +1537,7 @@ main( int argc, char **argv )
 	  case oCompress: opt.compress = pargs.r.ret_int; break;
 	  case oPasswdFD:
             pwfd = iobuf_translate_file_handle (pargs.r.ret_int, 0);
+            opt.use_agent = 0;
             break;
 #ifdef __riscos__
 	  case oPasswdFile:

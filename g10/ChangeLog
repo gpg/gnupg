@@ -1,3 +1,8 @@
+2003-07-30  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): Disable use-agent if passphrase-fd is given
+	later. Suggested by Kurt Garloff.
+
 2003-07-28  Werner Koch  <wk@gnupg.org>
 
 	* parse-packet.c (parse_key): Allow to parse the gnu-divert-to-s2k
