@@ -282,16 +282,19 @@ gpgsm_create_cms_signature (ksba_cert_t cert, gcry_md_hd_t md, int mdalgo,
                             char **r_sigval)
 {
   int rc;
-  char *grip;
+  char *grip, *desc;
   size_t siglen;
 
   grip = gpgsm_get_keygrip_hexstring (cert);
   if (!grip)
     return gpg_error (GPG_ERR_BAD_CERT);
 
-  rc = gpgsm_agent_pksign (grip, gcry_md_read(md, mdalgo), 
+  desc = gpgsm_format_keydesc (cert);
+
+  rc = gpgsm_agent_pksign (grip, desc, gcry_md_read(md, mdalgo), 
                            gcry_md_get_algo_dlen (mdalgo), mdalgo,
                            r_sigval, &siglen);
+  xfree (desc);
   xfree (grip);
   return rc;
 }

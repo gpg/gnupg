@@ -1,5 +1,5 @@
 /* certdump.c - Dump a certificate for debugging
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -93,6 +93,41 @@ gpgsm_dump_serial (ksba_const_sexp_t p)
         }
     }
 }
+
+
+char *
+gpgsm_format_serial (ksba_const_sexp_t p)
+{
+  unsigned long n;
+  char *endp;
+  char *buffer;
+  int i;
+
+  if (!p)
+    return NULL;
+
+  if (*p != '(')
+    BUG (); /* Not a valid S-expression. */
+
+  p++;
+  n = strtoul (p, &endp, 10);
+  p = endp;
+  if (*p!=':')
+    BUG (); /* Not a valid S-expression. */
+  p++;
+
+  buffer = xtrymalloc (n*2+1);
+  if (buffer)
+    {
+      for (i=0; n; n--, p++, i+=2)
+        sprintf (buffer+i, "%02X", *(unsigned char *)p);
+      buffer[i] = 0;
+    }
+  return buffer;
+}
+
+
+
 
 void
 gpgsm_print_time (FILE *fp, ksba_isotime_t t)
@@ -479,3 +514,149 @@ gpgsm_print_name (FILE *fp, const char *name)
 
 
 
+/* A cookie structure used for the memory stream. */
+struct format_name_cookie 
+{
+  char *buffer;         /* Malloced buffer with the data to deliver. */
+  size_t size;          /* Allocated size of this buffer. */
+  size_t len;           /* strlen (buffer). */
+  int error;            /* system error code if any. */
+};
+
+/* The writer function for the memory stream. */
+static int 
+format_name_writer (void *cookie, const char *buffer, size_t size)
+{
+  struct format_name_cookie *c = cookie;
+  char *p;
+
+  if (c->buffer)
+    p = xtryrealloc (c->buffer, c->size + size + 1);
+  else
+    p = xtrymalloc (size + 1);
+  if (!p)
+    {
+      c->error = errno;
+      xfree (c->buffer);
+      errno = c->error;
+      return -1;
+    }
+  c->buffer = p;
+  memcpy (p + c->len, buffer, size);
+  c->len += size;
+  p[c->len] = 0; /* Terminate string. */ 
+
+  return size;
+}
+
+/* Format NAME which is expected to be in rfc2253 format into a better
+   human readable format. Caller must free the returned string.  NULL
+   is returned in case of an error. */
+char *
+gpgsm_format_name (const char *name)
+{
+#if defined (HAVE_FOPENCOOKIE)||  defined (HAVE_FUNOPEN)
+  FILE *fp;
+  struct format_name_cookie cookie;
+
+  memset (&cookie, 0, sizeof cookie);
+
+#ifdef HAVE_FOPENCOOKIE
+  {
+    cookie_io_functions_t io = { NULL };
+    io.write = format_name_writer;
+    
+    fp = fopencookie (&cookie, "w", io);
+  }
+#else /*!HAVE_FOPENCOOKIE*/
+  {
+    fp = funopen (&cookie, NULL, format_name_writer, NULL, NULL);
+  }
+#endif /*!HAVE_FOPENCOOKIE*/
+  if (!fp)
+    {
+      int save_errno = errno;
+      log_error ("error creating memory stream: %s\n", strerror (errno));
+      errno = save_errno;
+      return NULL;
+    }
+  gpgsm_print_name (fp, name);
+  fclose (fp);
+  if (cookie.error || !cookie.buffer)
+    {
+      xfree (cookie.buffer);
+      errno = cookie.error;
+      return NULL;
+    }
+  return cookie.buffer;
+#else /* No fun - use the name verbatim. */
+  return xtrystrdup (name);
+#endif /* No fun. */
+}
+
+
+/* Create a key description for the CERT, this may be passed to the
+   pinentry.  The caller must free the returned string. NULL may be
+   returned on error. */
+char *
+gpgsm_format_keydesc (ksba_cert_t cert)
+{
+  char *name, *subject, *buffer, *p;
+  const char *s;
+  ksba_isotime_t t;
+  char created[20];
+  char *sn;
+  ksba_sexp_t sexp;
+
+  name = ksba_cert_get_subject (cert, 0);
+  subject = name? gpgsm_format_name (name) : NULL;
+  ksba_free (name); name = NULL;
+
+  sexp = ksba_cert_get_serial (cert);
+  sn = sexp? gpgsm_format_serial (sexp) : NULL;
+  ksba_free (sexp);
+
+  ksba_cert_get_validity (cert, 0, t);
+  if (t && *t)
+    sprintf (created, "%.4s-%.2s-%.2s", t, t+4, t+6);
+  else
+    *created = 0;
+
+  if ( asprintf (&name,
+                 _("Please enter the passphrase to unlock the"
+                   " secret key for:\n"
+                   "\"%s\"\n"
+                   "S/N %s, ID %08lX, created %s" ),
+                 subject? subject:"?",
+                 sn? sn: "?",
+                 gpgsm_get_short_fingerprint (cert),
+                 created) < 0)
+    {
+      int save_errno = errno;
+      xfree (subject);
+      xfree (sn);
+      errno = save_errno;
+      return NULL;
+    }
+  
+  xfree (subject);
+  xfree (sn);
+
+  buffer = p = xtrymalloc (strlen (name) * 3 + 1);
+  for (s=name; *s; s++)
+    {
+      if (*s < ' ' || *s == '+')
+        {
+          sprintf (p, "%%%02X", *(unsigned char *)s);
+          p += 3;
+        }
+      else if (*s == ' ')
+        *p++ = '+';
+      else
+        *p++ = *s;
+    }
+  *p = 0;
+  free (name); 
+
+  return buffer;
+}

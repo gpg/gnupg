@@ -54,14 +54,15 @@ struct decrypt_filter_parm_s {
 /* Decrypt the session key and fill in the parm structure.  The
    algo and the IV is expected to be already in PARM. */
 static int 
-prepare_decryption (const char *hexkeygrip, ksba_const_sexp_t enc_val,
+prepare_decryption (const char *hexkeygrip, const char *desc,
+                    ksba_const_sexp_t enc_val,
                     struct decrypt_filter_parm_s *parm)
 {
   char *seskey = NULL;
   size_t n, seskeylen;
   int rc;
 
-  rc = gpgsm_agent_pkdecrypt (hexkeygrip, enc_val,
+  rc = gpgsm_agent_pkdecrypt (hexkeygrip, desc, enc_val,
                               &seskey, &seskeylen);
   if (rc)
     {
@@ -356,6 +357,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
               ksba_sexp_t serial;
               ksba_sexp_t enc_val;
               char *hexkeygrip = NULL;
+              char *desc = NULL;
 
               rc = ksba_cms_get_issuer_serial (cms, recp, &issuer, &serial);
               if (rc == -1 && recp)
@@ -402,6 +404,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                     }
 
                   hexkeygrip = gpgsm_get_keygrip_hexstring (cert);
+                  desc = gpgsm_format_keydesc (cert);
 
                 oops:
                   xfree (issuer);
@@ -416,12 +419,12 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                            recp);
               else
                 {
-                  rc = prepare_decryption (hexkeygrip, enc_val, &dfparm);
+                  rc = prepare_decryption (hexkeygrip, desc, enc_val, &dfparm);
                   xfree (enc_val);
                   if (rc)
                     {
-                      log_debug ("decrypting session key failed: %s\n",
-                                 gpg_strerror (rc));
+                      log_info ("decrypting session key failed: %s\n",
+                                gpg_strerror (rc));
                     }
                   else
                     { /* setup the bulk decrypter */
@@ -431,6 +434,8 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                                               &dfparm);
                     }
                 }
+              xfree (hexkeygrip);
+              xfree (desc);
             }
           if (!any_key)
             {

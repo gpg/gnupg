@@ -1,5 +1,15 @@
 2004-02-13  Werner Koch  <wk@gnupg.org>
 
+	* certcheck.c (gpgsm_create_cms_signature): Format a description
+	for use by the pinentry.
+	* decrypt.c (gpgsm_decrypt): Ditto. Free HEXKEYGRIP.
+	* certdump.c (format_name_cookie, format_name_writer) 
+	(gpgsm_format_name): New.
+	(gpgsm_format_serial): New.
+	(gpgsm_format_keydesc): New.
+	* call-agent.c (gpgsm_agent_pksign): New arg DESC.
+	(gpgsm_agent_pkdecrypt): Ditto.
+
 	* encrypt.c (init_dek): Check for too weak algorithms.
 
 	* import.c (parse_p12, popen_protect_tool): New.

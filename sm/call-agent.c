@@ -301,7 +301,7 @@ membuf_data_cb (void *opaque, const void *buffer, size_t length)
 /* Call the agent to do a sign operation using the key identified by
    the hex string KEYGRIP. */
 int
-gpgsm_agent_pksign (const char *keygrip,
+gpgsm_agent_pksign (const char *keygrip, const char *desc,
                     unsigned char *digest, size_t digestlen, int digestalgo,
                     char **r_buf, size_t *r_buflen )
 {
@@ -327,6 +327,16 @@ gpgsm_agent_pksign (const char *keygrip,
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return map_assuan_err (rc);
+
+  if (desc)
+    {
+      snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
+      line[DIM(line)-1] = 0;
+      rc = assuan_transact (agent_ctx, line,
+                            NULL, NULL, NULL, NULL, NULL, NULL);
+      if (rc)
+        return map_assuan_err (rc);
+    }
 
   sprintf (line, "SETHASH %d ", digestalgo);
   p = line + strlen (line);
@@ -376,7 +386,7 @@ inq_ciphertext_cb (void *opaque, const char *keyword)
 /* Call the agent to do a decrypt operation using the key identified by
    the hex string KEYGRIP. */
 int
-gpgsm_agent_pkdecrypt (const char *keygrip,
+gpgsm_agent_pkdecrypt (const char *keygrip, const char *desc,
                        ksba_const_sexp_t ciphertext, 
                        char **r_buf, size_t *r_buflen )
 {
@@ -410,6 +420,16 @@ gpgsm_agent_pkdecrypt (const char *keygrip,
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return map_assuan_err (rc);
+
+  if (desc)
+    {
+      snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
+      line[DIM(line)-1] = 0;
+      rc = assuan_transact (agent_ctx, line,
+                            NULL, NULL, NULL, NULL, NULL, NULL);
+      if (rc)
+        return map_assuan_err (rc);
+    }
 
   init_membuf (&data, 1024);
   cipher_parm.ctx = agent_ctx;

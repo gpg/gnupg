@@ -197,6 +197,10 @@ void gpgsm_dump_serial (ksba_const_sexp_t p);
 void gpgsm_dump_time (ksba_isotime_t t);
 void gpgsm_dump_string (const char *string);
 
+char *gpgsm_format_serial (ksba_const_sexp_t p);
+char *gpgsm_format_name (const char *name);
+
+char *gpgsm_format_keydesc (ksba_cert_t cert);
 
 
 /*-- certcheck.c --*/
@@ -260,12 +264,12 @@ int gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp);
 int gpgsm_genkey (ctrl_t ctrl, int in_fd, FILE *out_fp);
 
 /*-- call-agent.c --*/
-int gpgsm_agent_pksign (const char *keygrip,
+int gpgsm_agent_pksign (const char *keygrip, const char *desc,
                         unsigned char *digest,
                         size_t digestlen,
                         int digestalgo,
                         char **r_buf, size_t *r_buflen);
-int gpgsm_agent_pkdecrypt (const char *keygrip,
+int gpgsm_agent_pkdecrypt (const char *keygrip, const char *desc,
                            ksba_const_sexp_t ciphertext, 
                            char **r_buf, size_t *r_buflen);
 int gpgsm_agent_genkey (ksba_const_sexp_t keyparms, ksba_sexp_t *r_pubkey);

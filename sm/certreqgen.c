@@ -614,7 +614,7 @@ create_request (struct para_data_s *para, ksba_const_sexp_t public,
           for (n=0; n < 20; n++)
             sprintf (hexgrip+n*2, "%02X", grip[n]);
 
-          rc = gpgsm_agent_pksign (hexgrip,
+          rc = gpgsm_agent_pksign (hexgrip, NULL,
                                    gcry_md_read(md, GCRY_MD_SHA1), 
                                    gcry_md_get_algo_dlen (GCRY_MD_SHA1),
                                    GCRY_MD_SHA1,
