@@ -141,7 +141,7 @@ gpgsm_get_keygrip (KsbaCert cert, char *array)
     return NULL; /* oops */
 
   if (DBG_X509)
-    log_debug ("get_keygrip, public key: %s\n", p);
+    log_debug ("get_keygrip for public key: %s\n", p);
   rc = gcry_sexp_sscan ( &s_pkey, NULL, p, strlen(p));
   if (rc)
     {
@@ -161,6 +161,8 @@ gpgsm_get_keygrip (KsbaCert cert, char *array)
 
   gcry_md_hash_buffer (GCRY_MD_SHA1, array, buf, len);
   xfree (buf);
+  if (DBG_X509)
+    log_printhex ("keygrip=", array, 20);
 
   return array;
 }

@@ -64,7 +64,10 @@ hash_data (int fd, GCRY_MD_HD md)
 static KsbaCert
 get_default_signer (void)
 {
-  const char key[] = "1.2.840.113549.1.9.1=#7472757374407765622E6465#,CN=WEB.DE TrustCenter,OU=TrustCenter,O=WEB.DE AG,L=D-76227 Karlsruhe,C=DE";
+  //  const char key[] = "1.2.840.113549.1.9.1=#7472757374407765622E6465#,CN=WEB.DE TrustCenter,OU=TrustCenter,O=WEB.DE AG,L=D-76227 Karlsruhe,C=DE";
+  const char key[] =
+    "CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=#44FC7373656C646F7266#,C=DE";
+
   KsbaCert cert = NULL;
   KEYDB_HANDLE kh = NULL;
   int rc;
@@ -248,7 +251,7 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
           goto leave;
         }
     }
-
+#if 0
   err = ksba_cms_set_signing_time (cms, signer, 0 /*now*/);
   if (err)
     {
@@ -257,7 +260,7 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
       rc = map_ksba_err (err);
       goto leave;
     }
-
+#endif
   do 
     {
       err = ksba_cms_build (cms, &stopreason);

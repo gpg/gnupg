@@ -146,7 +146,6 @@ int gpgsm_validate_path (KsbaCert cert);
 /*-- keylist.c --*/
 void gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp);
 
-
 /*-- import.c --*/
 int gpgsm_import (CTRL ctrl, int in_fd);
 
@@ -156,6 +155,11 @@ int gpgsm_verify (CTRL ctrl, int in_fd, int data_fd);
 /*-- sign.c --*/
 int gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp);
 
+/*-- encrypt.c --*/
+int gpgsm_encrypt (CTRL ctrl, int in_fd, FILE *out_fp);
+
+/*-- decrypt.c --*/
+int gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp);
 
 /*-- call-agent.c --*/
 int gpgsm_agent_pksign (const char *keygrip,

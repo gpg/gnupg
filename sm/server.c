@@ -59,6 +59,7 @@ rc_to_assuan_status (int rc)
     case GNUPG_Agent_Error:       rc = ASSUAN_Agent_Error; break;
     case GNUPG_No_Public_Key:     rc = ASSUAN_No_Public_Key; break;
     case GNUPG_No_Secret_Key:     rc = ASSUAN_No_Secret_Key; break;
+    case GNUPG_Invalid_Data:      rc = ASSUAN_Invalid_Data; break;
 
     case GNUPG_Read_Error: 
     case GNUPG_Write_Error:

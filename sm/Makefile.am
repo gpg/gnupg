@@ -39,6 +39,7 @@ gpgsm_SOURCES = \
 	verify.c \
 	sign.c \
 	encrypt.c \
+	decrypt.c \
 	import.c 
 
 

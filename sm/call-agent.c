@@ -46,21 +46,13 @@
 #define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
 
 
-static pid_t agent_pid = -1;
-/* fixme: replace this code by calling assuna functions */
-static int inbound_fd = -1;
-static int outbound_fd = -1;
-static struct {
-  int eof;
-  char line[LINELENGTH];
-  int linelen;  /* w/o CR, LF - might not be the same as
-                   strlen(line) due to embedded nuls. However a nul
-                   is always written at this pos */
-  struct {
-    char line[LINELENGTH];
-    int linelen ;
-  } attic;
-} inbound;
+static ASSUAN_CONTEXT agent_ctx = NULL;
+
+struct cipher_parm_s {
+  ASSUAN_CONTEXT ctx;
+  const char *ciphertext;
+  size_t ciphertextlen;
+};
 
 
 struct membuf {
@@ -133,162 +125,6 @@ get_membuf (struct membuf *mb, size_t *len)
 
 
 
-static int
-writen (int fd, const void *buf, size_t nbytes)
-{
-  size_t nleft = nbytes;
-  int nwritten;
-
-  while (nleft > 0)
-    {
-      nwritten = write (fd, buf, nleft);
-      if (nwritten < 0)
-        {
-          if (errno == EINTR)
-            nwritten = 0;
-          else 
-            {
-              log_error ("write() failed: %s\n", strerror (errno));
-              return seterr (Write_Error);
-            }
-        }
-      nleft -= nwritten;
-      buf = (const char*)buf + nwritten;
-    }
-  
-  return 0;
-}
-
-
-
-/* read an entire line */
-static int
-readline (int fd, char *buf, size_t buflen, int *r_nread, int *eof)
-{
-  size_t nleft = buflen;
-  int n;
-  char *p;
-
-  *eof = 0;
-  *r_nread = 0;
-  while (nleft > 0)
-    {
-      do 
-        n = read (fd, buf, nleft);
-      while (n < 0 && errno == EINTR);
-      if (n < 0)
-        {
-          log_error ("read() error: %s\n", strerror (errno) );
-          return seterr (Read_Error);
-        }
-        
-      if (!n)
-        {
-          *eof = 1;
-          break; /* allow incomplete lines */
-        }
-      p = buf;
-      nleft -= n;
-      buf += n;
-      *r_nread += n;
-      
-      for (; n && *p != '\n'; n--, p++)
-        ;
-      if (n)
-        break; /* at least one full line available - that's enough for now */
-    }
-  
-  return 0;
-}
-
-
-static int
-read_from_agent (int *okay)
-{
-  char *line = inbound.line;
-  int n, nread;
-  int rc;
-
-  *okay = 0;
- restart:  
-  if (inbound.eof)
-    return -1;
-
-  if (inbound.attic.linelen)
-    {
-      memcpy (line, inbound.attic.line, inbound.attic.linelen);
-      nread = inbound.attic.linelen;
-      inbound.attic.linelen = 0;
-      for (n=0; n < nread && line[n] != '\n'; n++)
-        ;
-      if (n < nread)
-        rc = 0; /* found another line in the attic */
-      else
-        { /* read the rest */
-          n = nread;
-          assert (n < LINELENGTH);
-          rc = readline (inbound_fd, line + n, LINELENGTH - n,
-                         &nread, &inbound.eof);
-        }
-    }
-  else
-    rc = readline (inbound_fd, line, LINELENGTH,
-                   &nread, &inbound.eof);
-  if (rc)
-    return seterr(Read_Error);
-  if (!nread)
-    {
-      assert (inbound.eof);
-      return -1; /* eof */ 
-    }
-
-  for (n=0; n < nread; n++)
-    {
-      if (line[n] == '\n')
-        {
-          if (n+1 < nread)
-            {
-              n++;
-              /* we have to copy the rest because the handlers are
-                 allowed to modify the passed buffer */
-              memcpy (inbound.attic.line, line+n, nread-n);
-              inbound.attic.linelen = nread-n;
-              n--;
-            }
-          if (n && line[n-1] == '\r')
-            n--;
-          line[n] = 0;
-          inbound.linelen = n;
-          if (n && *line == '#')
-            goto restart;
-
-          rc = 0;
-          if (n >= 1
-              && line[0] == 'D' && line[1] == ' ')
-            *okay = 2; /* data line */
-          else if (n >= 2
-              && line[0] == 'O' && line[1] == 'K'
-              && (line[2] == '\0' || line[2] == ' '))
-            *okay = 1;
-          else if (n >= 3
-                   && line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
-                   && (line[3] == '\0' || line[3] == ' '))
-            *okay = 0;
-          else
-            rc = seterr (Invalid_Response);
-          return rc;
-        }
-    }
-
-  *line = 0;
-  inbound.linelen = 0;
-  return inbound.eof? seterr (Incomplete_Line):seterr (Invalid_Response);
-}
-
-
-
-
-
 /* Try to connect to the agent via socket or fork it off and work by
    pipes.  Handle the server's initial greeting */
 static int
@@ -296,16 +132,18 @@ start_agent (void)
 {
   int rc;
   char *infostr, *p;
-  int okay;
 
-  if (agent_pid != -1)
-    return 0;
+  if (agent_ctx)
+    return 0; /* fixme: We need a context for each thread or serialize
+                 the access to the agent (which is suitable given that
+                 the agent is not MT */
 
   infostr = getenv ("GPG_AGENT_INFO");
   if (!infostr)
     {
-      pid_t pid;
-      int inpipe[2], outpipe[2];
+      const char *pgmname;
+      ASSUAN_CONTEXT ctx;
+      const char *argv[3];
 
       log_info (_("no running gpg-agent - starting one\n"));
       
@@ -315,86 +153,25 @@ start_agent (void)
           return seterr (Write_Error);
         }
 
-      if (pipe (inpipe))
+      if (!opt.agent_program || !*opt.agent_program)
+        opt.agent_program = "../agent/gpg-agent";
+      if ( !(pgmname = strrchr (opt.agent_program, '/')))
+        pgmname = opt.agent_program;
+      else
+        pgmname++;
+
+      argv[0] = pgmname;
+      argv[1] = "--server";
+      argv[2] = NULL;
+
+      /* connect to the agent and perform initial handshaking */
+      rc = assuan_pipe_connect (&ctx, opt.agent_program, (char**)argv);
+      if (rc)
         {
-          log_error ("error creating pipe: %s\n", strerror (errno));
-          return seterr (General_Error);
+          log_error ("can't connect to the agent: %s\n", assuan_strerror (rc));
+          return seterr (No_Agent);
         }
-      if (pipe (outpipe))
-        {
-          log_error ("error creating pipe: %s\n", strerror (errno));
-          close (inpipe[0]);
-          close (inpipe[1]);
-          return seterr (General_Error);
-        }
-
-      pid = fork ();
-      if (pid == -1) 
-        return seterr (General_Error);
-
-      if (!pid)
-        { /* child */
-          int i, n;
-          char errbuf[512];
-          int log_fd = log_get_fd ();
-          const char *pgmname;
-
-          /* close all files which will not be duped but keep stderr
-             and log_stream for now */
-          n = sysconf (_SC_OPEN_MAX);
-          if (n < 0)
-              n = MAX_OPEN_FDS;
-          for (i=0; i < n; i++)
-            {
-              if (i != fileno (stderr) && i != log_fd
-                  && i != inpipe[1] && i != outpipe[0])
-                close(i);
-            }
-          errno = 0;
-
-          if (inpipe[1] != 1)
-            {
-              if (dup2 (inpipe[1], 1) == -1)
-                {
-                  log_error ("dup2 failed in child: %s\n", strerror (errno));
-                  _exit (4);
-                }
-              close (inpipe[1]);
-            }
-          if (outpipe[0] != 0)
-            {
-              if (dup2 (outpipe[0], 0) == -1)
-                {
-                  log_error ("dup2 failed in child: %s\n", strerror (errno));
-                  _exit (4);
-                }
-              close (outpipe[0]);
-            }
-
-          /* and start it */
-          if (!opt.agent_program || !*opt.agent_program)
-            opt.agent_program = "../agent/gpg-agent";
-          if ( !(pgmname = strrchr (opt.agent_program, '/')))
-            pgmname = opt.agent_program;
-          else
-            pgmname++;
-          execl (opt.agent_program, pgmname, "--server", NULL); 
-          /* oops - tell the parent about it */
-          snprintf (errbuf, DIM(errbuf)-1, "ERR %d can't exec `%s': %.50s\n",
-                    ASSUAN_Problem_Starting_Server, opt.agent_program,
-                    strerror (errno));
-          errbuf[DIM(errbuf)-1] = 0;
-          writen (1, errbuf, strlen (errbuf));
-          _exit (4);
-        } /* end child */
-
-      agent_pid = pid;
-    
-      inbound_fd = inpipe[0];
-      close (inpipe[1]);
-
-      close (outpipe[0]);
-      outbound_fd = outpipe[1];
+      agent_ctx = ctx;
     }
   else
     {
@@ -411,89 +188,26 @@ start_agent (void)
       return seterr (Not_Implemented);
     }
 
-  inbound.eof = 0;
-  inbound.linelen = 0;
-  inbound.attic.linelen = 0;
+  log_debug ("connection to agent established\n");
 
-  /* The server is available - read the greeting */
-  rc = read_from_agent (&okay);
-  if (rc)
-    {
-      log_error ("can't connect to the agent: %s\n", gnupg_strerror (rc));
-    }
-  else if (!okay)
-    {
-      log_error ("can't connect to the agent: %s\n", inbound.line);
-      rc = seterr (No_Agent);
-    }
- else
-   log_debug ("connection to agent established\n");
+  log_debug ("waiting for debugger .....\n");
+  getchar ();
+  log_debug ("okay\n");
+
 
   return 0;
 }
 
 
-static int
-request_reply (const char *line, struct membuf *membuf)
+static AssuanError
+membuf_data_cb (void *opaque, const void *buffer, size_t length)
 {
-  int rc, okay;
+  struct membuf *data = opaque;
 
-  if (DBG_AGENT)
-    log_debug ("agent-request=`%.*s'", (int)(*line? strlen(line)-1:0), line);
-  rc = writen (outbound_fd, line, strlen (line));
-  if (rc)
-    return rc;
- again:
-  rc = read_from_agent (&okay);
-  if (rc)
-      log_error ("error reading from agent: %s\n", gnupg_strerror (rc));
-  else if (!okay)
-    {
-      log_error ("got error from agent: %s\n", inbound.line);
-      rc = seterr (Agent_Error);
-    }
-  else if (okay == 2 && !membuf)
-    {
-      log_error ("got unexpected data line\n");
-      rc = seterr (Agent_Error);
-    }
-  else
-    {
-      if (DBG_AGENT)
-        log_debug ("agent-reply=`%s'", inbound.line);
-    }
-
-  if (!rc && okay == 2 && inbound.linelen >= 2)
-    { /* handle data line */
-      unsigned char *buf = inbound.line;
-      size_t len = inbound.linelen;
-      unsigned char *p;
-
-      buf += 2;
-      len -= 2;
-
-      p = buf;
-      while (len)
-        {
-          for (;len && *p != '%'; len--, p++)
-            ;
-          put_membuf (membuf, buf, p-buf);
-          if (len>2)
-            { /* handle escaping */
-              unsigned char tmp[1];
-              p++;
-              *tmp = xtoi_2 (p);
-              p += 2;
-              len -= 3;
-              put_membuf (membuf, tmp, 1);
-            }
-          buf = p;
-        }
-      goto again;
-    }
-  return rc;
+  put_membuf (data, buffer, length);
+  return 0;
 }
-
+  
 
 
 
@@ -517,48 +231,97 @@ gpgsm_agent_pksign (const char *keygrip,
   if (digestlen*2 + 50 > DIM(line))
     return seterr (General_Error);
 
-  rc = request_reply ("RESET\n", NULL);
+  rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL);
   if (rc)
-    return rc;
+    return map_assuan_err (rc);
 
-  snprintf (line, DIM(line)-1, "SIGKEY %s\n", keygrip);
+  snprintf (line, DIM(line)-1, "SIGKEY %s", keygrip);
   line[DIM(line)-1] = 0;
-  rc = request_reply (line, NULL);
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL);
   if (rc)
-    return rc;
+    return map_assuan_err (rc);
 
   sprintf (line, "SETHASH %d ", digestalgo);
   p = line + strlen (line);
   for (i=0; i < digestlen ; i++, p += 2 )
     sprintf (p, "%02X", digest[i]);
-  strcpy (p, "\n");
-  rc = request_reply (line, NULL);
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL);
   if (rc)
-    return rc;
+    return map_assuan_err (rc);
 
   init_membuf (&data, 1024);
-  rc = request_reply ("PKSIGN\n", &data);
+  rc = assuan_transact (agent_ctx, "PKSIGN",
+                        membuf_data_cb, &data, NULL, NULL);
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return rc;
+      return map_assuan_err (rc);
     }
   *r_buf = get_membuf (&data, r_buflen);
-/*    if (DBG_AGENT && *r_buf) */
-/*      {  */
-/*        FILE *fp; */
-/*        char fname[100]; */
-      
-/*        memcpy (fname, keygrip, 40); */
-/*        strcpy (fname+40, "_pksign-dump.tmp"); */
-/*        fp = fopen (fname, "wb"); */
-/*        fwrite (*r_buf, *r_buflen, 1, fp); */
-/*        fclose (fp); */
-/*    } */
-
   return *r_buf? 0 : GNUPG_Out_Of_Core;
 }
 
 
 
+
+/* Handle a CIPHERTEXT inquiry.  Note, we only send the data,
+   assuan_transact talkes care of flushing and writing the end */
+static AssuanError
+inq_ciphertext_cb (void *opaque, const char *keyword)
+{
+  struct cipher_parm_s *parm = opaque; 
+  AssuanError rc;
+
+  rc = assuan_send_data (parm->ctx, parm->ciphertext, parm->ciphertextlen);
+  return rc; 
+}
+
+
+/* Call the agent to do a decrypt operation using the key identified by
+   the hex string KEYGRIP. */
+int
+gpgsm_agent_pkdecrypt (const char *keygrip,
+                       const char *ciphertext, size_t ciphertextlen,
+                       char **r_buf, size_t *r_buflen )
+{
+  int rc;
+  char line[LINELENGTH];
+  struct membuf data;
+  struct cipher_parm_s cipher_parm;
+  size_t len;
+
+  if (!keygrip || strlen(keygrip) != 40 || !ciphertext || !r_buf || !r_buflen)
+    return GNUPG_Invalid_Value;
+  *r_buf = NULL;
+
+  rc = start_agent ();
+  if (rc)
+    return rc;
+
+  rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL);
+  if (rc)
+    return map_assuan_err (rc);
+
+  assert ( DIM(line) >= 50 );
+  snprintf (line, DIM(line)-1, "SETKEY %s", keygrip);
+  line[DIM(line)-1] = 0;
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL);
+  if (rc)
+    return map_assuan_err (rc);
+
+  init_membuf (&data, 1024);
+  cipher_parm.ctx = agent_ctx;
+  cipher_parm.ciphertext = ciphertext;
+  cipher_parm.ciphertextlen = ciphertextlen;
+  rc = assuan_transact (agent_ctx, "PKDECRYPT",
+                        membuf_data_cb, &data,
+                        inq_ciphertext_cb, &cipher_parm);
+  if (rc)
+    {
+      xfree (get_membuf (&data, &len));
+      return map_assuan_err (rc);
+    }
+  *r_buf = get_membuf (&data, r_buflen);
+  return *r_buf? 0 : GNUPG_Out_Of_Core;
+}
 

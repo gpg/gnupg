@@ -523,7 +523,7 @@ main ( int argc, char **argv)
   /* Please note that we may running SUID(ROOT), so be very CAREFUL
      when adding any stuff between here and the call to secmem_init()
      somewhere after the option parsing */
-  /* FIXME: log_set_name ("gpgsm");*/
+  log_set_prefix ("gpgsm", 1);
   /* check that the libraries are suitable.  Do it here because the
      option parse may need services of the library */
   if (!gcry_check_version ( "1.1.4" ) )
@@ -885,14 +885,13 @@ main ( int argc, char **argv)
       break;
 
     case aEncr: /* encrypt the given file */
-#if 0
-      if (argc > 1)
-        wrong_args(_("--encrypt [filename]"));
-      if ((rc = encode_crypt(fname,remusr)) )
-        log_error ("%s: encryption failed: %s\n",
-                   print_fname_stdin(fname), gpg_errstr(rc) );
+      if (!argc)
+        gpgsm_encrypt (&ctrl, 0, stdout); /* from stdin */
+      else if (argc == 1)
+        gpgsm_encrypt (&ctrl, open_read (*argv), stdout); /* from file */
+      else
+        wrong_args (_("--encrypt [datafile]"));
       break;
-#endif
 
     case aSign: /* sign the given file */
       /* FIXME: we can only do detached sigs for now and we don't
@@ -974,10 +973,12 @@ main ( int argc, char **argv)
       break;
 
     case aDecrypt:
-/*        if (argc > 1) */
-/*          wrong_args (_("--decrypt [filename]")); */
-/*        if ((rc = decrypt_message( fname ) )) */
-/*          log_error ("decrypt_message failed: %s\n", gpg_errstr(rc) ); */
+      if (!argc)
+        gpgsm_decrypt (&ctrl, 0, stdout); /* from stdin */
+      else if (argc == 1)
+        gpgsm_decrypt (&ctrl, open_read (*argv), stdout); /* from file */
+      else
+        wrong_args (_("--decrypt [filename]"));
       break;
 
     case aDeleteKey:
