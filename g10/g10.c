@@ -123,6 +123,10 @@ enum cmd_and_opt_values { aNull = 0,
     oTextmode,
     oExpert,
     oNoExpert,
+    oAskSigExpire,
+    oNoAskSigExpire,
+    oAskCertExpire,
+    oNoAskCertExpire,
     oFingerprint,
     oWithFingerprint,
     oAnswerYes,
@@ -336,6 +340,10 @@ static ARGPARSE_OPTS opts[] = {
     { oTextmode, "textmode",  0, N_("use canonical text mode")},
     { oExpert, "expert",   0, "@"},
     { oNoExpert, "no-expert",   0, "@"},
+    { oAskSigExpire, "ask-sig-expire",   0, "@"},
+    { oNoAskSigExpire, "no-ask-sig-expire",   0, "@"},
+    { oAskCertExpire, "ask-cert-expire",   0, "@"},
+    { oNoAskCertExpire, "no-ask-cert-expire",   0, "@"},
     { oOutput, "output",    2, N_("use as output file")},
     { oVerbose, "verbose",   0, N_("verbose") },
     { oQuiet,	"quiet",   0, N_("be somewhat more quiet") },
@@ -747,7 +755,7 @@ main( int argc, char **argv )
     /* note: if you change these lines, look at oOpenPGP */
     opt.def_cipher_algo = 0;
     opt.def_digest_algo = 0;
-    opt.def_compress_algo = 2;
+    opt.def_compress_algo = 1;
     opt.s2k_mode = 3; /* iterated+salted */
     opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
     opt.s2k_cipher_algo = CIPHER_ALGO_CAST5;
@@ -1100,6 +1108,10 @@ main( int argc, char **argv )
 	  case oTextmode: opt.textmode=1;  break;
 	  case oExpert: opt.expert = 1; break;
 	  case oNoExpert: opt.expert = 0; break;
+	  case oAskSigExpire: opt.ask_sig_expire = 1; break;
+	  case oNoAskSigExpire: opt.ask_sig_expire = 0; break;
+	  case oAskCertExpire: opt.ask_cert_expire = 1; break;
+	  case oNoAskCertExpire: opt.ask_cert_expire = 0; break;
 	  case oUser: /* store the local users */
 	    add_to_strlist2( &locusr, pargs.r.ret_str, utf8_strings );
 	    break;

@@ -397,7 +397,11 @@ encode_crypt( const char *filename, STRLIST remusr )
 	    ; /* don't use compression */
 	else {
 	    if( compr_algo == 1 )
-		zfx.algo = 1; /* default is 2 */
+		zfx.algo = 1;
+	    if( compr_algo == 2 )
+		zfx.algo = 2;
+	    /* Any other compr_algo will fall back to
+               opt.def_compress_algo in the compress_filter. */
 	    iobuf_push_filter( out, compress_filter, &zfx );
 	}
     }

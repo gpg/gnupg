@@ -928,7 +928,7 @@ build_attribute_subpkt(PKT_user_id *uid,byte type,
   /* realloc uid->attrib_data to the right size */
 
   uid->attrib_data=m_realloc(uid->attrib_data,
-			     uid->attrib_len+idx+headerlen+buflen);
+			     uid->attrib_len+idx+1+headerlen+buflen);
 
   attrib=&uid->attrib_data[uid->attrib_len];
 

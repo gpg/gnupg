@@ -1442,8 +1442,6 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
     subpk->is_valid = 0;
     subpk->main_keyid[0] = mainpk->main_keyid[0];
     subpk->main_keyid[1] = mainpk->main_keyid[1];
-    if ( subpk->version < 4 )
-        return; /* there are no v3 subkeys */
 
     /* find the latest key binding self-signature. */
     signode = NULL;

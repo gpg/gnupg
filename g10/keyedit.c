@@ -435,7 +435,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
 	/* Only ask for duration if we haven't already set it to match
            the expiration of the pk */
-	if(opt.expert && !duration)
+	if(opt.ask_cert_expire && !duration)
 	  duration=ask_expire_interval(1);
 
 	if(duration)
@@ -1029,10 +1029,11 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    break;
 
 	  case cmdADDPHOTO:
-            if (opt.rfc2440)
+            if (opt.rfc2440 || opt.rfc1991 || opt.pgp2)
               {
                 tty_printf(
-                   _("This command is not allowed while in OpenPGP mode.\n"));
+                   _("This command is not allowed while in %s mode.\n"),
+		   opt.rfc2440?"OpenPGP":opt.pgp2?"PGP2":"RFC-1991");
                 break;
               }
 	    photo=1;
@@ -1543,19 +1544,63 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock, int photo)
     assert(pk && sk);
 
     if(photo) {
-      /* PGP allows only one photo ID per key? */
+      int hasphoto=0;
+
+      /* PGP allows only one photo ID per key?  This is a good
+         question.  While there is no way to add more than one photo
+         ID using PGP, nevertheless PGP (7) still works properly with
+         more than one photo ID (presenting them in a nice little
+         scrolling window, no less).  GnuPG can work with any number
+         of photos. -dms */
       for( node = pub_keyblock; node; node = node->next )
 	if( node->pkt->pkttype == PKT_USER_ID &&
-	    node->pkt->pkt.user_id->attrib_data!=NULL) {
-	  log_error("You may only have one photo ID on a key.\n");
-	  return 0;
+	    node->pkt->pkt.user_id->attrib_data!=NULL)
+	  {
+	    hasphoto=1;
+
+	    if(opt.expert)
+	      {
+		tty_printf(_("WARNING: This key already has a photo ID.\n"
+			     "         Adding another photo ID may confuse "
+			     "some versions of PGP.\n"));
+		if(!cpr_get_answer_is_yes("keyedit.multi_photo.okay",
+					  _("Are you sure you still want "
+					    "to add it? (y/n) ")))
+		  return 0;
+		else
+		  break;
+	      }
+	    else
+	      {
+		tty_printf(_("You may only have one photo ID on a key.\n"));
+		return 0;
+	      }
 	}
 
-      if(pk->version==3)
+      /* Here's another one - PGP6/7 does not allow adding a photo ID
+         to a v3 key.  Still, if one is present, it will work.  Of
+         course, it does mean that PGP2 will not be able to use that
+         key anymore.  Don't bother to ask this if the key already has
+         a photo - any damage has already been done at that point. */
+      if(pk->version==3 && !hasphoto)
 	{
-	  tty_printf(_("\nWARNING: This is a PGP2-style key\n"));
-	  tty_printf(_("         Adding a photo ID may cause some versions "
-		       "of PGP to not accept this key\n"));
+	  if(opt.expert)
+	    {
+	      tty_printf(_("WARNING: This is a PGP2-style key.  "
+			   "Adding a photo ID may cause some versions\n"
+			   "         of PGP to reject this key.\n"));
+
+	      if(!cpr_get_answer_is_yes("keyedit.v3_photo.okay",
+					_("Are you sure you still want "
+					  "to add it? (y/n) ")))
+		return 0;
+	    }
+	  else
+	    {
+	      tty_printf(_("You may not add a photo ID to "
+			   "a PGP2-style key.\n"));
+	      return 0;
+	    }
 	}
 
       uid = generate_photo_id(pk);

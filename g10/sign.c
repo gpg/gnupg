@@ -564,7 +564,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     if( fname && filenames->next && (!detached || encryptflag) )
 	log_bug("multiple files can only be detached signed");
 
-    if(opt.expert && !opt.pgp2 && !opt.batch &&
+    if(opt.ask_sig_expire && !opt.pgp2 && !opt.batch &&
        !opt.force_v3_sigs && !old_style)
       duration=ask_expire_interval(1);
 
@@ -742,7 +742,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     memset( &afx, 0, sizeof afx);
     init_packet( &pkt );
 
-    if(opt.expert && !opt.pgp2 && !opt.batch &&
+    if(opt.ask_sig_expire && !opt.pgp2 && !opt.batch &&
        !opt.force_v3_sigs && !old_style)
       duration=ask_expire_interval(1);
 
@@ -886,7 +886,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     memset( &cfx, 0, sizeof cfx);
     init_packet( &pkt );
 
-    if(opt.expert && !opt.batch && !opt.force_v3_sigs && !old_style)
+    if(opt.ask_sig_expire && !opt.batch && !opt.force_v3_sigs && !old_style)
       duration=ask_expire_interval(1);
 
     rc = build_sk_list (locusr, &sk_list, 1, PUBKEY_USAGE_SIG);

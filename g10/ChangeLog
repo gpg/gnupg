@@ -1,3 +1,29 @@
+2002-01-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (menu_adduid): Require --expert before adding a photo
+	ID to a v3 key, and before adding a second photo ID to any key.
+
+	* keyedit.c (keyedit_menu): Don't allow adding photo IDs in
+	rfc1991 or pgp2 mode.
+
+	* getkey.c (merge_selfsigs_subkey): Permit v3 subkeys.  Believe it
+	or not, this is allowed by rfc 2440, and both PGP 6 and PGP 7 work
+	fine with them.
+
+	* g10.c, options.h, keyedit.c, sign.c: Move the "ask for
+	expiration" switch off of --expert, which was getting quite
+	overloaded, and onto ask-sig-expire and ask-cert-expire.  Both
+	default to off.
+
+	* g10.c (main): Change the default compression algo to 1, to be
+	more OpenPGP compliant (PGP also uses this, so it'll help with
+	interoperability problems as well).
+
+	* encode.c (encode_crypt): Handle compression algo 2, since the
+	default is now 1.
+
+	* build-packet.c (build_attribute_subpkt): Fix off-by-one error.
+
 2002-01-05  Werner Koch  <wk@gnupg.org>
 
 	* g10.c (main): Do not register the secret keyrings for certain

@@ -45,6 +45,8 @@ struct {
     int list_only;
     int textmode;
     int expert;
+    int ask_sig_expire;
+    int ask_cert_expire;
     int batch;	    /* run in batch mode */
     int answer_yes; /* answer yes on most questions */
     int answer_no;  /* answer no on most questions */
