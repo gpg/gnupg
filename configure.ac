@@ -135,6 +135,15 @@ if test "$use_m_guard" = yes ; then
     AC_DEFINE(M_GUARD,1,[Define to use the (obsolete) malloc guarding feature])
 fi
 
+AC_MSG_CHECKING([whether to enable old-style TIGER digest support])
+AC_ARG_ENABLE(old-tiger,
+    [  --enable-old-tiger      enable old-style TIGER digest support],
+    old_tiger=$enableval, old_tiger=no)
+AC_MSG_RESULT($old_tiger)
+if test "$old_tiger" = yes ; then
+    AC_DEFINE(USE_OLD_TIGER,1,[Define to use the old fake OID for TIGER digest support])
+fi
+
 AC_MSG_CHECKING([whether to enable external program execution])
 AC_ARG_ENABLE(exec,
     [  --disable-exec          disable all external program execution],
