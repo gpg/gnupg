@@ -140,6 +140,14 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
       uri=opt.keyserver_scheme;
       opt.keyserver_scheme="hkp";
     }
+  else
+    {
+      /* Force to lowercase */
+      char *i;
+
+      for(i=opt.keyserver_scheme;*i!='\0';i++)
+	*i=ascii_tolower(*i);
+    }
 
   if(ascii_strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0)
     {

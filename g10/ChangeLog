@@ -1,3 +1,8 @@
+2002-09-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (parse_keyserver_uri): Force the keyserver URI
+	scheme to lowercase to be case-insensitive.
+
 2002-09-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* sig-check.c (check_key_signature2): Properly handle a
