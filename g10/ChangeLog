@@ -1,3 +1,8 @@
+2003-09-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* armor.c (parse_hash_header, armor_filter), g10.c (print_hex,
+	print_mds), pkclist.c (algo_available): Drop TIGER/192 support.
+
 2003-09-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (show_key_with_all_names): Fix assertion failure when

@@ -248,16 +248,12 @@ parse_hash_header( const char *line )
 	    found |= 2;
 	else if( !strncmp( s, "MD5", s2-s ) )
 	    found |= 4;
-	else if( !strncmp( s, "TIGER192", s2-s ) )
-	    found |= 8;
-	else if( !strncmp( s, "TIGER", s2-s ) ) /* used by old versions */
-	    found |= 8;
 	else if( !strncmp( s, "SHA256", s2-s ) )
-	    found |= 16;
+	    found |= 8;
 	else if( !strncmp( s, "SHA384", s2-s ) )
-	    found |= 32;
+	    found |= 16;
 	else if( !strncmp( s, "SHA512", s2-s ) )
-	    found |= 64;
+	    found |= 32;
 	else
 	    return 0;
 	for(; *s2 && (*s2==' ' || *s2 == '\t'); s2++ )
@@ -898,12 +894,10 @@ armor_filter( void *opaque, int control,
                 if( hashes & 4 )
                     buf[n++] = DIGEST_ALGO_MD5;
                 if( hashes & 8 )
-                    buf[n++] = DIGEST_ALGO_TIGER;
-                if( hashes & 16 )
                     buf[n++] = DIGEST_ALGO_SHA256;
-                if( hashes & 32 )
+                if( hashes & 16 )
                     buf[n++] = DIGEST_ALGO_SHA384;
-                if( hashes & 64 )
+                if( hashes & 32 )
                     buf[n++] = DIGEST_ALGO_SHA512;
                 buf[1] = n - 2;
 

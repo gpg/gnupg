@@ -2867,8 +2867,6 @@ print_hex( MD_HANDLE md, int algo, const char *fname )
 
   if(algo==DIGEST_ALGO_RMD160)
     indent+=printf("RMD160 = ");
-  else if(algo==DIGEST_ALGO_TIGER)
-    indent+=printf(" TIGER = ");
   else if(algo>0)
     indent+=printf("%6s = ",digest_algo_to_string(algo));
   else
@@ -2985,9 +2983,6 @@ print_mds( const char *fname, int algo )
 	md_enable( md, DIGEST_ALGO_MD5 );
 	md_enable( md, DIGEST_ALGO_SHA1 );
 	md_enable( md, DIGEST_ALGO_RMD160 );
-#ifdef USE_TIGER192
-	md_enable( md, DIGEST_ALGO_TIGER );
-#endif
 #ifdef USE_SHA256
 	md_enable( md, DIGEST_ALGO_SHA256 );
 #endif
@@ -3010,9 +3005,6 @@ print_mds( const char *fname, int algo )
                 print_hashline( md, DIGEST_ALGO_MD5, fname );
                 print_hashline( md, DIGEST_ALGO_SHA1, fname );
                 print_hashline( md, DIGEST_ALGO_RMD160, fname );
-#ifdef USE_TIGER192
-		print_hashline( md, DIGEST_ALGO_TIGER, fname );
-#endif
 #ifdef USE_SHA256
                 print_hashline( md, DIGEST_ALGO_SHA256, fname );
 #endif
@@ -3029,9 +3021,6 @@ print_mds( const char *fname, int algo )
                 print_hex( md, DIGEST_ALGO_MD5, fname );
                 print_hex( md, DIGEST_ALGO_SHA1, fname );
                 print_hex( md, DIGEST_ALGO_RMD160, fname );
-#ifdef USE_TIGER192
-		print_hex( md, DIGEST_ALGO_TIGER, fname );
-#endif
 #ifdef USE_SHA256
                 print_hex( md, DIGEST_ALGO_SHA256, fname );
 #endif
