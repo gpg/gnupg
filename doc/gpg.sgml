@@ -595,6 +595,15 @@ Import the keys with the given key IDs from a keyserver. Option
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--refresh-keys &ParmKeyIDs;</term>
+<listitem><para>
+Request updates from a keyserver for keys that already exist on the
+local keyring.  This is useful for updating a key with the latest
+signatures, user IDs, etc.  Option --keyserver must be used to give
+the name of this keyserver.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--search-keys &OptParmNames;</term>
 <listitem><para>
 Search the keyserver for the given names.  Multiple names given here
