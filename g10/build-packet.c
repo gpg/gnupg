@@ -1,5 +1,5 @@
 /* build-packet.c - assemble packets and write them
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998-2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -538,6 +538,12 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
     u32 n;
     byte buf[1000]; /* this buffer has the plaintext! */
     int nbytes;
+
+    /* Truncate namelen to the maximum 255 characters.  This does mean
+       that a function that calls build_packet with an illegal literal
+       packet will get it back legalized. */
+    if(pt->namelen>255)
+      pt->namelen=255;
 
     write_header(out, ctb, calc_plaintext( pt ) );
     iobuf_put(out, pt->mode );

@@ -24,6 +24,7 @@
 #include "iobuf.h"
 #include "filter.h"
 #include "status.h"
+#include "util.h"
 #include "options.h"
 
 /****************
@@ -82,7 +83,7 @@ progress_filter (void *opaque, int control,
 }
 
 void
-handle_progress (progress_filter_context_t *pfx, IOBUF inp, char *name)
+handle_progress (progress_filter_context_t *pfx, IOBUF inp, const char *name)
 {
   off_t filesize = 0;
 

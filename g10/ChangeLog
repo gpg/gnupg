@@ -1,3 +1,17 @@
+2003-04-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (sign_uids): Allow replacing expired signatures.
+	Allow duplicate signatures with --expert.
+
+	* pkclist.c (check_signatures_trust): Don't display a null
+	fingerprint when checking a signature with --always-trust enabled.
+
+	* filter.h (progress_filter_context_t), progress.c
+	(handle_progress): Fix compiler warnings.  Make "what" constant.
+
+	* build-packet.c (do_plaintext): Do not create invalid literal
+	packets with >255-byte names.
+
 2003-04-15  Werner Koch  <wk@gnupg.org>
 
 	* g10.c, options.h: New option --enable-progress-filter.
