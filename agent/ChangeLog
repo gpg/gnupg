@@ -1,3 +1,7 @@
+2004-06-20  Moritz Schulte  <moritz@g10code.com>
+
+	* gpg-agent.c: Include <sys/stat.h> (build fix for BSD).
+
 2004-05-11  Werner Koch  <wk@gnupg.org>
 
 	* gpg-agent.c (handle_signal): Reload the trustlist on SIGHUP.
