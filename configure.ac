@@ -133,6 +133,9 @@ fi
 # Note that TIGER, SHA-384, and SHA-512 may not actually be included
 # if there is no 64-bit integer support.
 
+dnl alias
+AC_ARG_ENABLE(old-tiger,,use_tiger=$enableval)
+
 AC_MSG_CHECKING([whether to enable nonstandard TIGER/192 digest support])
 AC_ARG_ENABLE(tiger,
     [  --enable-tiger          enable nonstandard TIGER/192 digest support],
@@ -897,20 +900,20 @@ AC_CONFIG_COMMANDS(g10defs.h,[[
 cat >g10defs.tmp <<G10EOF
 /* Generated automatically by configure */
 #ifdef HAVE_DRIVE_LETTERS
-  #define G10_LOCALEDIR     "c:\\\\lib\\\\gnupg\\\\locale"
-  #define GNUPG_LIBDIR      "c:\\\\lib\\\\gnupg"
-  #define GNUPG_LIBEXECDIR  "c:\\\\lib\\\\gnupg"
-  #define GNUPG_DATADIR     "c:\\\\lib\\\\gnupg"
-  #define GNUPG_HOMEDIR     "c:\\\\gnupg"
+#define G10_LOCALEDIR     "c:\\\\lib\\\\gnupg\\\\locale"
+#define GNUPG_LIBDIR      "c:\\\\lib\\\\gnupg"
+#define GNUPG_LIBEXECDIR  "c:\\\\lib\\\\gnupg"
+#define GNUPG_DATADIR     "c:\\\\lib\\\\gnupg"
+#define GNUPG_HOMEDIR     "c:\\\\gnupg"
 #else
-  #define G10_LOCALEDIR     "${datadir}/locale"
-  #define GNUPG_LIBDIR      "${libdir}/gnupg"
-  #define GNUPG_DATADIR     "${datadir}/gnupg"
-  #ifdef __VMS
-    #define GNUPG_HOMEDIR "/SYS\$LOGIN/gnupg" 
-  #else
-    #define GNUPG_HOMEDIR "~/.gnupg" 
-  #endif
+#define G10_LOCALEDIR     "${datadir}/locale"
+#define GNUPG_LIBDIR      "${libdir}/gnupg"
+#define GNUPG_DATADIR     "${datadir}/gnupg"
+#ifdef __VMS
+#define GNUPG_HOMEDIR "/SYS\$LOGIN/gnupg" 
+#else
+#define GNUPG_HOMEDIR "~/.gnupg" 
+#endif
 #endif
 /* those are here to be redefined by handcrafted g10defs.h.
    Please note that the string version must not contain more
