@@ -1,6 +1,10 @@
 2004-02-26  Marcus Brinkmann  <marcus@g10code.de>
 
-	* README.gpgconf (NAME): Add info about optional arg and arg type 0.
+	* README.gpgconf: Fix description of arguments.
+	* gpgconf-comp.c (option_check_validity): Rewritten to properly
+	support optional arguments in lists.
+	
+	* README.gpgconf: Add info about optional arg and arg type 0.
 	* gpgconf-comp.c (gc_component_change_options): Parse list of
 	arg type 0 options.
 	(option_check_validity): Add new argument NEW_VALUE_NR.  Perform

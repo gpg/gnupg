@@ -1223,6 +1223,8 @@ static void
 option_check_validity (gc_option_t *option, unsigned long flags,
 		       char *new_value, unsigned long *new_value_nr)
 {
+  char *arg;
+
   if (option->new_flags || option->new_value)
     gc_error (1, 0, "option %s already changed", option->name);
 
@@ -1231,101 +1233,89 @@ option_check_validity (gc_option_t *option, unsigned long flags,
       if (*new_value)
 	gc_error (1, 0, "argument %s provided for deleted option %s",
 		  new_value, option->name);
+
+      return;
     }
-  else
+
+  /* GC_ARG_TYPE_NONE options have special list treatment.  */
+  if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_NONE)
     {
-      /* This is even correct for GC_ARG_TYPE_NONE options, for which
-	 GC_OPT_FLAG_ARG_OPT is never set.  */
-      if (!(option->flags & GC_OPT_FLAG_ARG_OPT) && (*new_value == '\0'))
-	gc_error (1, 0, "no argument for option %s", option->name);
+      char *tail;
 
-      if (*new_value)
+      errno = 0;
+      *new_value_nr = strtoul (new_value, &tail, 0);
+
+      if (errno)
+	gc_error (1, errno, "invalid argument for option %s",
+		  option->name);
+      if (*tail)
+	gc_error (1, 0, "garbage after argument for option %s",
+		      option->name);
+
+      if (!(option->flags & GC_OPT_FLAG_LIST))
 	{
-	  if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_NONE)
-	    {
-	      char *tail;
-
-	      errno = 0;
-	      *new_value_nr = strtoul (new_value, &tail, 0);
-
-	      if (errno)
-		gc_error (1, errno, "invalid argument for option %s",
-			  option->name);
-	      if (*tail)
-		gc_error (1, 0, "garbage after argument for option %s",
-			  option->name);
-
-	      if (!(option->flags & GC_OPT_FLAG_LIST))
-		{
-		  if (*new_value_nr != 1)
-		    gc_error (1, 0, "argument for non-list option %s of type 0 "
-			      "(none) must be 1", option->name);
-		}
-	      else
-		{
-		  if (*new_value_nr == 0)
-		    gc_error (1, 0, "argument for option %s of type 0 (none) "
-			      "must be positive", option->name);
-		}
-	    }
-	  else if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_STRING)
-	    {
-	      if (*new_value != '"')
-		gc_error (1, 0, "string argument for option %s must begin "
-			  "with a quote (\") character", option->name);
-	    }
-	  else if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_INT32)
-	    {
-	      char *tail = new_value;
-
-	      while (*tail)
-		{
-		  errno = 0;
-		  (void) strtol (new_value, &tail, 0);
-
-		  if (errno)
-		    gc_error (1, errno, "invalid argument for option %s",
-			      option->name);
-		  if (*tail == ',')
-		    {
-		      if (!(option->flags & GC_OPT_FLAG_LIST))
-			gc_error (1, 0, "list found for non-list option %s",
-				  option->name);
-		      tail++;
-		    }
-		  else if (*tail)
-		    gc_error (1, 0, "garbage after argument for option %s",
-			      option->name);
-		}
-	    }
-	  else if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_UINT32)
-	    {
-	      char *tail = new_value;
-
-	      while (*tail)
-		{
-		  errno = 0;
-		  (void) strtoul (new_value, &tail, 0);
-
-		  if (errno)
-		    gc_error (1, errno, "invalid argument for option %s",
-			      option->name);
-		  if (*tail == ',')
-		    {
-		      if (!(option->flags & GC_OPT_FLAG_LIST))
-			gc_error (1, 0, "list found for non-list option %s",
-				  option->name);
-		      tail++;
-		    }
-		  else if (*tail)
-		    gc_error (1, 0, "garbage after argument for option %s",
-			      option->name);
-		}
-	    }
-	  else
-	    assert (!"Unexpected argument type");
+	  if (*new_value_nr != 1)
+	    gc_error (1, 0, "argument for non-list option %s of type 0 "
+		      "(none) must be 1", option->name);
 	}
+      else
+	{
+	  if (*new_value_nr == 0)
+	    gc_error (1, 0, "argument for option %s of type 0 (none) "
+		      "must be positive", option->name);
+	}
+
+      return;
     }
+
+  arg = new_value;
+  do
+    {
+      if (*arg == '\0' || *arg == ',')
+	{
+	  if (!(option->flags & GC_OPT_FLAG_ARG_OPT))
+	    gc_error (1, 0, "argument required for option %s", option->name);
+
+	  if (*arg == ',' && !(option->flags & GC_OPT_FLAG_LIST))
+	    gc_error (1, 0, "list found for non-list option %s", option->name);
+	}
+      else if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_STRING)
+	{
+	  if (*arg != '"')
+	    gc_error (1, 0, "string argument for option %s must begin "
+		      "with a quote (\") character", option->name);
+	}
+      else if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_INT32)
+	{
+	  errno = 0;
+	  (void) strtol (arg, &arg, 0);
+
+	  if (errno)
+	    gc_error (1, errno, "invalid argument for option %s",
+		      option->name);
+
+	  if (*arg != '\0' && *arg != ',')
+	    gc_error (1, 0, "garbage after argument for option %s",
+		      option->name);
+	}
+      else if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_INT32)
+	{
+	  errno = 0;
+	  (void) strtoul (arg, &arg, 0);
+
+	  if (errno)
+	    gc_error (1, errno, "invalid argument for option %s",
+		      option->name);
+
+	  if (*arg != '\0' && *arg != ',')
+	    gc_error (1, 0, "garbage after argument for option %s",
+		      option->name);
+	}
+      arg = strchr (arg, ',');
+      if (arg)
+	arg++;
+    }
+  while (arg && *arg);
 }
 
 
@@ -1377,6 +1367,7 @@ change_options_program (gc_component_t component, gc_backend_t backend,
       xfree (orig_filename);
       orig_filename = NULL;
     }
+
   /* We now initialize the return strings, so the caller can do the
      cleanup for us.  */
   *src_filenamep = src_filename;
