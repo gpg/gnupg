@@ -2431,6 +2431,18 @@ gc_component_change_options (int component, FILE *in)
 	  (*gc_backend[backend].runtime_change) ();
       }
 
+  /* Move the per-process backup file into its place.  */
+  for (backend = 0; backend < GC_BACKEND_NR; backend++)  
+    if (orig_pathname[backend])
+      {
+	char *backup_pathname;
+
+	assert (dest_pathname[backend]);
+
+	backup_pathname = xasprintf ("%s.gpgconf.bak", dest_pathname[backend]);
+	rename (orig_pathname[backend], backup_pathname);
+      }
+
   if (line)
     free (line);
 }

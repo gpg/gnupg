@@ -1,3 +1,8 @@
+2004-05-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgconf-comp.c (gc_component_change_options): Move the
+	per-process backup file into a standard location.
+
 2004-05-03  Werner Koch  <wk@gnupg.org>
 
 	* gpgconf-comp.c: Add --allow-mark-trusted for the gpg-agent.
