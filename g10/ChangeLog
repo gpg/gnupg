@@ -1,3 +1,9 @@
+2002-11-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main), keydb.c (keydb_add_resource,
+	keydb_locate_writable): Rename --default-keyring as
+	--primary-keyring.  Stefan wins the naming contest.
+
 2002-11-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (add_notation_data): Disallow notation names that do not

@@ -55,7 +55,7 @@ struct resource_item {
 
 static struct resource_item all_resources[MAX_KEYDB_RESOURCES];
 static int used_resources;
-static void *default_keyring=NULL;
+static void *primary_keyring=NULL;
 
 struct keydb_handle {
   int locked;
@@ -200,7 +200,7 @@ keydb_add_resource (const char *url, int flags, int secret)
 	    else 
 	      {
 		if(flags&2)
-		  default_keyring=token;
+		  primary_keyring=token;
 		all_resources[used_resources].type = rt;
 		all_resources[used_resources].u.kr = NULL; /* Not used here */
 		all_resources[used_resources].token = token;
@@ -211,10 +211,10 @@ keydb_add_resource (const char *url, int flags, int secret)
 	else
 	  {
 	    /* This keyring was already registered, so ignore it.
-	       However, we can still mark it as default even if it was
+	       However, we can still mark it as primary even if it was
 	       already registered. */
 	    if(flags&2)
-	      default_keyring=token;
+	      primary_keyring=token;
 	  }
 	break;
 
@@ -550,12 +550,12 @@ keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
   if (rc)
     return rc;
 
-  /* If we have a default set, try that one first */
-  if(default_keyring)
+  /* If we have a primary set, try that one first */
+  if(primary_keyring)
     {
       for ( ; hd->current >= 0 && hd->current < hd->used; hd->current++)
 	{
-	  if(hd->active[hd->current].token==default_keyring)
+	  if(hd->active[hd->current].token==primary_keyring)
 	    {
 	      if(keyring_is_writable (hd->active[hd->current].token))
 		return 0;
