@@ -50,7 +50,7 @@ typedef struct {
     int encrypt_only; /* process only encrytion messages */
     STRLIST signed_data;
     DEK *dek;
-    int last_was_pubkey_enc;
+    int last_was_session_key;
     KBNODE list;   /* the current list of packets */
     int have_data;
     IOBUF iobuf;    /* used to get the filename etc. */
@@ -146,12 +146,47 @@ add_signature( CTX c, PACKET *pkt )
 
 
 static void
+proc_symkey_enc( CTX c, PACKET *pkt )
+{
+   /* FIXME:   NOT READY */
+   #if 0
+    PKT_symkey_enc *enc;
+    int result = 0;
+
+    c->last_was_session_key = 1;
+    enc = pkt->pkt.symkey_enc;
+    if( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL
+	|| enc->pubkey_algo == PUBKEY_ALGO_DSA
+	|| enc->pubkey_algo == PUBKEY_ALGO_RSA	) {
+	m_free(c->dek ); /* paranoid: delete a pending DEK */
+	c->dek = m_alloc_secure( sizeof *c->dek );
+	if( (result = get_session_key( enc, c->dek )) ) {
+	    /* error: delete the DEK */
+	    m_free(c->dek); c->dek = NULL;
+	}
+    }
+    else
+	result = G10ERR_PUBKEY_ALGO;
+
+    if( result == -1 )
+	;
+    else if( !result ) {
+	if( opt.verbose > 1 )
+	    log_info( "pubkey_enc packet: Good DEK\n" );
+    }
+    else
+	log_error( "pubkey_enc packet: %s\n", g10_errstr(result));
+    free_packet(pkt);
+  #endif
+}
+
+static void
 proc_pubkey_enc( CTX c, PACKET *pkt )
 {
     PKT_pubkey_enc *enc;
     int result = 0;
 
-    c->last_was_pubkey_enc = 1;
+    c->last_was_session_key = 1;
     enc = pkt->pkt.pubkey_enc;
     /*printf("enc: encrypted by a pubkey with keyid %08lX\n", enc->keyid[1] );*/
     if( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL
@@ -179,15 +214,14 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 }
 
 
-
 static void
 proc_encrypted( CTX c, PACKET *pkt )
 {
     int result = 0;
 
     /*printf("dat: %sencrypted data\n", c->dek?"":"conventional ");*/
-    if( !c->dek && !c->last_was_pubkey_enc ) {
-	/* assume this is conventional encrypted data */
+    if( !c->dek && !c->last_was_session_key ) {
+	/* assume this is old conventional encrypted data */
 	c->dek = m_alloc_secure( sizeof *c->dek );
 	c->dek->algo = opt.def_cipher_algo;
 	result = make_dek_from_passphrase( c->dek, 0, NULL );
@@ -207,7 +241,7 @@ proc_encrypted( CTX c, PACKET *pkt )
 	log_error("encryption failed: %s\n", g10_errstr(result));
     }
     free_packet(pkt);
-    c->last_was_pubkey_enc = 0;
+    c->last_was_session_key = 0;
 }
 
 
@@ -232,7 +266,7 @@ proc_plaintext( CTX c, PACKET *pkt )
     if( rc )
 	log_error( "handle plaintext failed: %s\n", g10_errstr(rc));
     free_packet(pkt);
-    c->last_was_pubkey_enc = 0;
+    c->last_was_session_key = 0;
 }
 
 
@@ -264,7 +298,7 @@ proc_compressed( CTX c, PACKET *pkt )
     if( rc )
 	log_error("uncompressing failed: %s\n", g10_errstr(rc));
     free_packet(pkt);
-    c->last_was_pubkey_enc = 0;
+    c->last_was_session_key = 0;
 }
 
 
@@ -606,6 +640,7 @@ do_proc_packets( CTX c, IOBUF a )
 	      case PKT_PUBLIC_CERT:
 	      case PKT_SECRET_CERT:
 	      case PKT_USER_ID:
+	      case PKT_SYMKEY_ENC:
 	      case PKT_PUBKEY_ENC:
 	      case PKT_ENCRYPTED:
 		rc = G10ERR_UNEXPECTED;
@@ -625,6 +660,7 @@ do_proc_packets( CTX c, IOBUF a )
 		rc = G10ERR_UNEXPECTED;
 		goto leave;
 	      case PKT_SIGNATURE:   newpkt = add_signature( c, pkt ); break;
+	      case PKT_SYMKEY_ENC:  proc_symkey_enc( c, pkt ); break;
 	      case PKT_PUBKEY_ENC:  proc_pubkey_enc( c, pkt ); break;
 	      case PKT_ENCRYPTED:   proc_encrypted( c, pkt ); break;
 	      case PKT_PLAINTEXT:   proc_plaintext( c, pkt ); break;
@@ -648,6 +684,7 @@ do_proc_packets( CTX c, IOBUF a )
 	      case PKT_USER_ID:     newpkt = add_user_id( c, pkt ); break;
 	      case PKT_SIGNATURE:   newpkt = add_signature( c, pkt ); break;
 	      case PKT_PUBKEY_ENC:  proc_pubkey_enc( c, pkt ); break;
+	      case PKT_SYMKEY_ENC:  proc_symkey_enc( c, pkt ); break;
 	      case PKT_ENCRYPTED:   proc_encrypted( c, pkt ); break;
 	      case PKT_PLAINTEXT:   proc_plaintext( c, pkt ); break;
 	      case PKT_COMPRESSED:  proc_compressed( c, pkt ); break;

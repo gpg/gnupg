@@ -33,7 +33,7 @@
 
 static int pwfd = -1;
 
-static int hash_passphrase( DEK *dek, char *pw, byte *salt );
+static void hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k );
 
 void
 set_passphrase_fd( int fd )
@@ -107,12 +107,11 @@ get_passphrase_hash( u32 *keyid, char *text, byte *salt )
 
 /****************
  * This function is used to construct a DEK from a user input.
- * It uses the default CIPHER. If salt is != NULL, include these
- * 8 bytes in the hash.
+ * It uses the default CIPHER.
  * Returns: 0 = okay, -1 No passphrase entered, > 0 error
  */
 int
-make_dek_from_passphrase( DEK *dek, int mode, byte *salt )
+make_dek_from_passphrase( DEK *dek, int mode, STRING2KEY *s2k )
 {
     char *pw, *pw2;
     int rc=0;
@@ -132,45 +131,36 @@ make_dek_from_passphrase( DEK *dek, int mode, byte *salt )
     if( !*pw )
 	rc = -1;
     else
-	rc = hash_passphrase( dek, pw, salt );
+	hash_passphrase( dek, pw, s2k, mode==2 );
     m_free(pw);
     return rc;
 }
 
 
-static int
-hash_passphrase( DEK *dek, char *pw, byte *salt )
+/****************
+ * Hash a passphrase using the supplied s2k. If create is true, create
+ * a new salt or whatelse must be filled into the s2k for a new key.
+ * always needs: dek->algo, s2k->mode, s2k->hash_algo.
+ */
+static void
+hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
 {
+    MD_HANDLE md;
     int rc = 0;
 
+    assert( s2k->hash_algo );
     dek->keylen = 0;
-    if( dek->algo == CIPHER_ALGO_BLOWFISH ) {
-	MD_HANDLE md;
-
-	md = md_open(DIGEST_ALGO_RMD160, 1);
-	if( salt )
-	    md_write( md, salt, 8 );
-	md_write( md, pw, strlen(pw) );
-	md_final( md );
-	dek->keylen = 20;
-	memcpy( dek->key, md_read(md,0), dek->keylen );
-	md_close(md);
+    md = md_open( s2k->hash_algo, 1);
+    if( s2k->mode == 1 || s2k->mode == 4 ) {
+	if( create )
+	    randomize_buffer(&s2k->salt, 8, 1);
+	md_write( md, s2k->salt, 8 );
     }
-    else if( dek->algo == CIPHER_ALGO_CAST ) {
-	MD_HANDLE md;
-
-	md = md_open(DIGEST_ALGO_SHA1, 1);
-	if( salt )
-	    md_write( md, salt, 8 );
-	md_write( md, pw, strlen(pw) );
-	md_final( md );
-	/* use only the low 128 bits */
-	dek->keylen = 16;
-	memcpy( dek->key, md_read(md,0), dek->keylen );
-	md_close(md);
-    }
-    else
-	rc = G10ERR_UNSUPPORTED;
-    return rc;
+    md_write( md, pw, strlen(pw) );
+    md_final( md );
+    dek->keylen = cipher_get_keylen( dek->algo );
+    assert(dek->keylen > 0 && dek->keylen < DIM(dek->key) );
+    memcpy( dek->key, md_read(md,0), dek->keylen );
+    md_close(md);
 }
 

@@ -624,15 +624,16 @@ change_passphrase( const char *username )
     if( rc )
 	tty_printf("Can't edit this key: %s\n", g10_errstr(rc));
     else {
-	DEK *dek = m_alloc_secure( sizeof *dek + 8 );
-	byte *salt = (byte*)dek + sizeof( *dek );
+	DEK *dek = m_alloc_secure( sizeof *dek );
+	STRING2KEY *s2k = m_alloc_secure( sizeof *s2k );
 
 	tty_printf( "Enter the new passphrase for this secret key.\n\n" );
 
 	for(;;) {
 	    dek->algo = CIPHER_ALGO_BLOWFISH;
-	    randomize_buffer(salt, 8, 1);
-	    rc = make_dek_from_passphrase( dek , 2, salt );
+	    s2k->mode = 1;
+	    s2k->hash_algo = DIGEST_ALGO_RMD160;
+	    rc = make_dek_from_passphrase( dek , 2, s2k );
 	    if( rc == -1 ) {
 		rc = 0;
 		tty_printf( "You don't want a passphrase -"
@@ -653,11 +654,8 @@ change_passphrase( const char *username )
 		break;
 	    }
 	    else { /* okay */
-		skc->protect.algo = CIPHER_ALGO_BLOWFISH;
-		skc->protect.s2k  = 1;
-		skc->protect.hash = DIGEST_ALGO_RMD160;
-		memcpy(skc->protect.salt, salt, 8);
-		randomize_buffer(skc->protect.iv, 8, 1);
+		skc->protect.algo = dek->algo;
+		skc->protect.s2k = *s2k;
 		rc = protect_secret_key( skc, dek );
 		if( rc )
 		    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
@@ -666,6 +664,7 @@ change_passphrase( const char *username )
 		break;
 	    }
 	}
+	m_free(s2k);
 	m_free(dek);
     }
 

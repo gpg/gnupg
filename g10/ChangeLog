@@ -1,3 +1,14 @@
+Fri May  1 12:44:39 1998  Werner Koch,mobil,,,	(wk@tobold)
+
+	* packet.h (count): Chnaged s2k count from byte to u32.
+	* seckey-cert.c (do_check): Changed s2k algo 3 to 4, changed
+	reading of count.
+	* build-packet.c (do_secret_cert): ditto.
+	* parse-packet.c (parse_certificate): ditto.
+
+	* parse-packet.c (parse_symkeyenc): New.
+	* build-packet.c (do_symkey_enc): New.
+
 Thu Apr 30 16:33:34 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* sign.c (clearsign_file): Fixed "Hash: " armor line.

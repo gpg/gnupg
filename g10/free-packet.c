@@ -31,6 +31,11 @@
 #include "cipher.h"
 #include "memory.h"
 
+void
+free_symkey_enc( PKT_symkey_enc *enc )
+{
+    m_free(enc);
+}
 
 void
 free_pubkey_enc( PKT_pubkey_enc *enc )
@@ -276,6 +281,9 @@ free_packet( PACKET *pkt )
 	break;
       case PKT_PUBKEY_ENC:
 	free_pubkey_enc( pkt->pkt.pubkey_enc );
+	break;
+      case PKT_SYMKEY_ENC:
+	free_symkey_enc( pkt->pkt.symkey_enc );
 	break;
       case PKT_PUBLIC_CERT:
 	free_public_cert( pkt->pkt.public_cert );

@@ -95,7 +95,7 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_cert *skc )
 
 static int
 gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	byte *salt, PKT_secret_cert **ret_skc, u16 valid_days )
+	STRING2KEY *s2k, PKT_secret_cert **ret_skc, u16 valid_days )
 {
     int rc;
     int i;
@@ -128,11 +128,8 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     *ret_skc = copy_secret_cert( NULL, skc );
 
     if( dek ) {
-	skc->protect.algo = CIPHER_ALGO_BLOWFISH;
-	skc->protect.s2k  = 1;
-	skc->protect.hash = DIGEST_ALGO_RMD160;
-	memcpy(skc->protect.salt, salt, 8);
-	randomize_buffer(skc->protect.iv, 8, 1);
+	skc->protect.algo = dek->algo;
+	skc->protect.s2k = *s2k;
 	rc = protect_secret_key( skc, dek );
 	if( rc ) {
 	    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
@@ -148,7 +145,7 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     add_kbnode(pub_root, new_kbnode( pkt ));
 
     /* don't know whether it makes sense to have the factors, so for now
-     * we store them in the secret keyring (but they are secret) */
+     * we store them in the secret keyring (but they are not secret) */
     pkt = m_alloc_clear(sizeof *pkt);
     pkt->pkttype = PKT_SECRET_CERT;
     pkt->pkt.secret_cert = skc;
@@ -165,7 +162,7 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 #ifdef ENABLE_RSA_KEYGEN
 static int
 gen_rsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	byte *salt, PKT_secret_cert **ret_skc, u16 valid_days )
+	STRING2KEY *s2k, PKT_secret_cert **ret_skc, u16 valid_days )
 {
     int rc;
     PACKET *pkt;
@@ -229,7 +226,7 @@ gen_rsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 
 static int
 gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	 byte *salt, PKT_secret_cert **ret_skc, u16 valid_days )
+	 STRING2KEY *s2k, PKT_secret_cert **ret_skc, u16 valid_days )
 {
     return G10ERR_GENERAL;
 }
@@ -279,7 +276,7 @@ generate_keypair()
     KBNODE sec_root = NULL;
     PKT_secret_cert *skc = NULL;
     DEK *dek = NULL;
-    byte *salt;
+    STRING2KEY *s2k;
     int rc;
     int algo;
     const char *algo_name;
@@ -530,14 +527,16 @@ generate_keypair()
 
     tty_printf(_("You need a Passphrase to protect your secret key.\n\n") );
 
-    dek = m_alloc_secure( sizeof *dek + 8 );
-    salt = (byte*)dek + sizeof *dek;
+    dek = m_alloc_secure( sizeof *dek );
+    s2k = m_alloc_secure( sizeof *s2k );
     for(;;) {
 	dek->algo = CIPHER_ALGO_BLOWFISH;
-	randomize_buffer(salt, 8, 1);
-	rc = make_dek_from_passphrase( dek , 2, salt );
+	s2k->mode = 1;
+	s2k->hash_algo = DIGESTA_ALGO_RMD160;
+	rc = make_dek_from_passphrase( dek , 2, s2k );
 	if( rc == -1 ) {
 	    m_free(dek); dek = NULL;
+	    m_free(s2k); s2k = NULL;
 	    tty_printf(_(
 	    "You don't want a passphrase - this is probably a *bad* idea!\n"
 	    "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -549,6 +548,7 @@ generate_keypair()
 	}
 	else if( rc ) {
 	    m_free(dek); dek = NULL;
+	    m_free(s2k); s2k = NULL;
 	    m_free(uid);
 	    log_error("Error getting the passphrase: %s\n", g10_errstr(rc) );
 	    return;
@@ -581,13 +581,13 @@ generate_keypair()
 "number generator a better chance to gain enough entropy.\n") );
 
     if( algo == PUBKEY_ALGO_ELGAMAL )
-	rc = gen_elg(nbits, pub_root, sec_root, dek, salt,  &skc, valid_days );
+	rc = gen_elg(nbits, pub_root, sec_root, dek, s2k,  &skc, valid_days );
   #ifdef ENABLE_RSA_KEYGEN
     else if( algo == PUBKEY_ALGO_RSA )
-	rc = gen_rsa(nbits, pub_root, sec_root, dek, salt, &skc, valid_days  );
+	rc = gen_rsa(nbits, pub_root, sec_root, dek, s2k, &skc, valid_days  );
   #endif
     else if( algo == PUBKEY_ALGO_DSA )
-	rc = gen_dsa(nbits, pub_root, sec_root, dek, salt, &skc, valid_days  );
+	rc = gen_dsa(nbits, pub_root, sec_root, dek, s2k, &skc, valid_days  );
     else
 	BUG();
     if( !rc ) {
@@ -667,6 +667,7 @@ generate_keypair()
 	free_secret_cert(skc);
     m_free(uid);
     m_free(dek);
+    m_free(s2k);
     m_free(pub_fname);
     m_free(sec_fname);
 }

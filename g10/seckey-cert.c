@@ -54,9 +54,9 @@ do_check( PKT_secret_cert *cert )
 	  case CIPHER_ALGO_BLOWFISH:
 	  case CIPHER_ALGO_CAST:
 	    keyid_from_skc( cert, keyid );
-	    if( cert->protect.s2k == 1 || cert->protect.s2k == 3 )
+	    if( cert->protect.s2k.mode == 1 || cert->protect.s2k.mode == 4 )
 		dek = get_passphrase_hash( keyid, NULL,
-						 cert->protect.salt );
+						 cert->protect.s2k.salt );
 	    else
 		dek = get_passphrase_hash( keyid, NULL, NULL );
 

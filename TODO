@@ -49,3 +49,5 @@
 
     * add multi-user-id-sigs handling to import.c
 
+    * add tag 3 packet support to "-c"
+

@@ -37,7 +37,7 @@ typedef enum {
 	PKT_NONE	   =0,
 	PKT_PUBKEY_ENC	   =1, /* public key encrypted packet */
 	PKT_SIGNATURE	   =2, /* secret key encrypted packet */
-	PKT_SESSION_KEY    =3, /* session key packet (OpenPGP)*/
+	PKT_SYMKEY_ENC	   =3, /* session key packet (OpenPGP)*/
 	PKT_ONEPASS_SIG    =4, /* one pass sig packet (OpenPGP)*/
 	PKT_SECRET_CERT    =5, /* secret key certificate */
 	PKT_PUBLIC_CERT    =6, /* public key certificate */
@@ -53,6 +53,21 @@ typedef enum {
 } pkttype_t;
 
 typedef struct packet_struct PACKET;
+
+typedef struct {
+    byte mode;
+    byte hash_algo;
+    byte salt[8];
+    u32  count;
+} STRING2KEY;
+
+typedef struct {
+    byte version;
+    byte cipher_algo;	 /* cipher algorithm used */
+    STRING2KEY s2k;
+    byte seskeylen;   /* keylength in byte or 0 for no seskey */
+    byte seskey[1];
+} PKT_symkey_enc;
 
 typedef struct {
     u32     keyid[2];	    /* 64 bit keyid */
@@ -130,10 +145,7 @@ typedef struct {
 			/* and should never be passed to a mpi_xxx() */
     struct {
 	byte algo;  /* cipher used to protect the secret information*/
-	byte s2k;
-	byte hash;
-	byte salt[8];
-	byte count;
+	STRING2KEY s2k;
 	byte iv[8]; /* initialization vector for CFB mode */
     } protect;
     union {
@@ -180,6 +192,7 @@ struct packet_struct {
     pkttype_t pkttype;
     union {
 	void *generic;
+	PKT_symkey_enc	*symkey_enc;	/* PKT_SYMKEY_ENC */
 	PKT_pubkey_enc	*pubkey_enc;	/* PKT_PUBKEY_ENC */
 	PKT_onepass_sig *onepass_sig;	/* PKT_ONEPASS_SIG */
 	PKT_signature	*signature;	/* PKT_SIGNATURE */
@@ -217,6 +230,7 @@ u32 calc_packet_length( PACKET *pkt );
 void hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc );
 
 /*-- free-packet.c --*/
+void free_symkey_enc( PKT_symkey_enc *enc );
 void free_pubkey_enc( PKT_pubkey_enc *enc );
 void free_seckey_enc( PKT_signature *enc );
 int  digest_algo_from_sig( PKT_signature *sig );

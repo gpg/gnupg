@@ -38,6 +38,7 @@ static int do_comment( IOBUF out, int ctb, PKT_comment *rem );
 static int do_user_id( IOBUF out, int ctb, PKT_user_id *uid );
 static int do_public_cert( IOBUF out, int ctb, PKT_public_cert *pk );
 static int do_secret_cert( IOBUF out, int ctb, PKT_secret_cert *pk );
+static int do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc );
 static int do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc );
 static u32 calc_plaintext( PKT_plaintext *pt );
 static int do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt );
@@ -85,6 +86,9 @@ build_packet( IOBUF out, PACKET *pkt )
       case PKT_SECRET_CERT:
 	rc = do_secret_cert( out, ctb, pkt->pkt.secret_cert );
 	break;
+      case PKT_SYMKEY_ENC:
+	rc = do_symkey_enc( out, ctb, pkt->pkt.symkey_enc );
+	break;
       case PKT_PUBKEY_ENC:
 	rc = do_pubkey_enc( out, ctb, pkt->pkt.pubkey_enc );
 	break;
@@ -129,6 +133,7 @@ calc_packet_length( PACKET *pkt )
       case PKT_COMMENT:
       case PKT_PUBLIC_CERT:
       case PKT_SECRET_CERT:
+      case PKT_SYMKEY_ENC:
       case PKT_PUBKEY_ENC:
       case PKT_ENCRYPTED:
       case PKT_SIGNATURE:
@@ -270,13 +275,13 @@ do_secret_cert( IOBUF out, int ctb, PKT_secret_cert *skc )
 	if( skc->is_protected ) {
 	    iobuf_put(a, 0xff );
 	    iobuf_put(a, skc->protect.algo );
-	    iobuf_put(a, skc->protect.s2k );
-	    iobuf_put(a, skc->protect.hash );
-	    if( skc->protect.s2k == 1
-		|| skc->protect.s2k == 3 )
-		iobuf_write(a, skc->protect.salt, 8 );
-	    if( skc->protect.s2k == 3 )
-		iobuf_put(a, skc->protect.count );
+	    iobuf_put(a, skc->protect.s2k.mode );
+	    iobuf_put(a, skc->protect.s2k.hash_algo );
+	    if( skc->protect.s2k.mode == 1
+		|| skc->protect.s2k.mode == 4 )
+		iobuf_write(a, skc->protect.s2k.salt, 8 );
+	    if( skc->protect.s2k.mode == 4 )
+		write_32(a, skc->protect.s2k.count );
 	    iobuf_write(a, skc->protect.iv, 8 );
 	}
 	else
@@ -315,6 +320,37 @@ do_secret_cert( IOBUF out, int ctb, PKT_secret_cert *skc )
 }
 
 static int
+do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
+{
+    int rc = 0;
+    IOBUF a = iobuf_temp();
+
+    assert( enc->version == 4 );
+    switch( enc->s2k.mode ) {
+      case 0: case 1: case 4: break;
+      default: log_bug("do_symkey_enc: s2k=%d\n", enc->s2k.mode );
+    }
+    iobuf_put( a, enc->version );
+    iobuf_put( a, enc->cipher_algo );
+    iobuf_put( a, enc->s2k.mode );
+    iobuf_put( a, enc->s2k.hash_algo );
+    if( enc->s2k.mode == 1 || enc->s2k.mode == 4 ) {
+	iobuf_write(a, enc->s2k.salt, 8 );
+	if( enc->s2k.mode == 4 )
+	    write_32(a, enc->s2k.count);
+    }
+    if( enc->seskeylen )
+	iobuf_write(a, enc->seskey, enc->seskeylen );
+
+    write_header(out, ctb, iobuf_get_temp_length(a) );
+    if( iobuf_write_temp( out, a ) )
+	rc = G10ERR_WRITE_FILE;
+
+    iobuf_close(a);
+    return rc;
+}
+
+static int
 do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
 {
     int rc = 0;
@@ -344,7 +380,6 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
     iobuf_close(a);
     return rc;
 }
-
 
 
 
