@@ -296,7 +296,7 @@ parse_preferred_keyserver(PKT_signature *sig)
 
       memcpy(dupe,p,plen);
       dupe[plen]='\0';
-      spec=parse_keyserver_uri(dupe,0,NULL,0);
+      spec=parse_keyserver_uri(dupe,1,NULL,0);
       m_free(dupe);
     }
 

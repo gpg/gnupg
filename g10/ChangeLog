@@ -1,3 +1,8 @@
+2004-12-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (parse_preferred_keyserver): Force preferred
+	keyserver subpackets to have a URI scheme specified.
+
 2004-12-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, g10.c (main), textfilter.c (standard): Use --rfc2440
