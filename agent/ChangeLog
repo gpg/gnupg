@@ -1,6 +1,10 @@
 2005-01-26  Moritz Schulte  <moritz@g10code.com>
 
+	* command-ssh.c (ssh_handler_sign_request): Confirm to agent
+	protocol in case of failure.
+
 	* command-ssh.c: New file.
+
 	* Makefile.am (gpg_agent_SOURCES): New source file: command-ssh.c.
 
 	* findkey.c (modify_description): New function.

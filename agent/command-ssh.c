@@ -1706,14 +1706,14 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
   if (! bad)
     {
       /* Done.  */
-      es_write_byte (response, SSH_RESPONSE_SIGN_RESPONSE);
-      if (! es_ferror (response))
+      if (! err)
 	{
-	  if (! err)
+	  es_write_byte (response, SSH_RESPONSE_SIGN_RESPONSE);
+	  if (! es_ferror (response))
 	    es_write_string (response, sig, sig_n);
-	  else
-	    es_write_byte (response, SSH_RESPONSE_FAILURE);
 	}
+      else
+	es_write_byte (response, SSH_RESPONSE_FAILURE);
     }
   
   gcry_sexp_release (key);
