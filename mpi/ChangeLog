@@ -1,3 +1,8 @@
+2004-01-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* hppa1.1/udiv-qrnnd.S: Alignment fix from Lamont Jones for
+	Debian.
+
 2004-01-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* config.links: OpenBSD 3.4 is now ELF, so use the proper
