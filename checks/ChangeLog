@@ -1,3 +1,9 @@
+2003-12-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* defs.inc, pubring.asc, secring.asc, plain-1.asc, plain-2.asc,
+	plain-3.asc: Remove the old v3 Elgamal keys and replace with
+	RSA+Elgamal and RSA s+e.
+
 2003-06-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Add --no-permission-warning to avoid spurious
