@@ -353,7 +353,7 @@ agent_get_passphrase (char **retpass, const char *desc, const char *prompt,
    confirmed it, GNUPG_Not_Confirmed for what the text says or an
    other error. */
 int 
-agent_get_confirmation (const char *desc, const char *prompt)
+agent_get_confirmation (const char *desc, const char *ok, const char *cancel)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
@@ -371,9 +371,17 @@ agent_get_confirmation (const char *desc, const char *prompt)
   if (rc)
     return map_assuan_err (rc);
 
-  if (prompt)
+  if (ok)
     {
-      snprintf (line, DIM(line)-1, "SETPROMPT %s", prompt);
+      snprintf (line, DIM(line)-1, "SETOK %s", ok);
+      line[DIM(line)-1] = 0;
+      rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+      if (rc)
+        return map_assuan_err (rc);
+    }
+  if (cancel)
+    {
+      snprintf (line, DIM(line)-1, "SETCANCEL %s", cancel);
       line[DIM(line)-1] = 0;
       rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)

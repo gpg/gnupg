@@ -119,7 +119,7 @@ ask_for_card (const unsigned char *shadow_info, char **r_kid)
             }
           else
             {
-              rc = agent_get_confirmation (desc, NULL);
+              rc = agent_get_confirmation (desc, NULL, NULL);
               free (desc);
             }
         }

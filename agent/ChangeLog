@@ -1,3 +1,12 @@
+2002-04-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* agent.h (agent_get_confirmation): Replace paramter prompt with
+	two parameters ok and cancel.
+	* query.c (agent_get_confirmation): Likewise.  Implement this.
+	* trustlist.c (agent_marktrusted): Fix invocation of
+	agent_get_confirmation.
+	* divert-scd.c (ask_for_card): Likewise.
+
 2002-04-24  Marcus Brinkmann  <marcus@g10code.de>
 
 	* agent.h (struct opt): Add members display, ttyname, ttytype,

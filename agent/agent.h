@@ -119,7 +119,8 @@ int agent_askpin (const char *desc_text, const char *err_text,
 int agent_get_passphrase (char **retpass,
                           const char *desc, const char *prompt,
                           const char *errtext);
-int agent_get_confirmation (const char *desc, const char *prompt);
+int agent_get_confirmation (const char *desc, const char *ok,
+			    const char *cancel);
 
 /*-- cache.c --*/
 int agent_put_cache (const char *key, const char *data, int ttl);
