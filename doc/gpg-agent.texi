@@ -255,6 +255,12 @@ control this behaviour but this command line option takes precedence.
 Set the time a cache entry is valid to @var{n} seconds.  The default are
 600 seconds.
 
+@item --max-cache-ttl @var{n}
+@opindex max-cache-ttl
+Set the maximum time a cache entry is valid to @var{n} seconds.  After
+this time a cache entry will get expired even if it has been accessed
+recently.  The default are 2 hours (7200 seconds).
+
 @item --pinentry-program @var{filename}
 @opindex pinentry-program
 Use program @var{filename} as the PIN entry.  The default is installation
