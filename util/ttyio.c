@@ -269,7 +269,7 @@ tty_print_utf8_string2( byte *p, size_t n, size_t max_n )
 void
 tty_print_utf8_string( byte *p, size_t n )
 {
-    tty_print_utf8_string( p, n, n )
+    tty_print_utf8_string2( p, n, n );
 }
 
 
