@@ -1,3 +1,19 @@
+2002-12-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* tdbio.c (tdbio_read_record, tdbio_write_record): Compact the
+	RECTYPE_TRUST records a bit.
+
+	* g10.c (main): Comment out --list-trust-path until it can be
+	implemented.
+
+	* import.c (import_one): Warn when importing an Elgamal primary
+	that this may take some time (to verify self-sigs).
+	(chk_self_sigs): Try and cache all self-sigs so the keyblock is
+	written to the keyring with a good rich cache.
+
+	* keygen.c (ask_algo): Make the Elgamal sign+encrypt warning
+	stronger, and remove the RSA sign+encrypt warning.
+
 2002-12-06  Stefan Bellon  <sbellon@sbellon.de>
 
 	* options.h: Fixed typo (mangle_dos_names instead of

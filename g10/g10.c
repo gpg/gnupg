@@ -498,7 +498,8 @@ static ARGPARSE_OPTS opts[] = {
     { aExportOwnerTrust, "list-ownertrust",0 , "@"},  /* alias */
     { aPrintMDs, "print-mds" , 256, "@"}, /* old */
     { aListTrustDB, "list-trustdb",0 , "@"},
-    { aListTrustPath, "list-trust-path",0, "@"},
+    /* Not yet used */
+    /* { aListTrustPath, "list-trust-path",0, "@"}, */
     { aPipeMode,  "pipemode", 0, "@" },
     { oKOption, NULL,	 0, "@"},
     { oPasswdFD, "passphrase-fd",1, "@" },
