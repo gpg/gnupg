@@ -3,18 +3,19 @@
 BUILT_SOURCES = version.sgml gcryptref.html gcryptref.ps
 
 
-EXTRA_DIST = DETAILS gpg.sgml gpg.1 FAQ HACKING OpenPGP \
-	     version.sgml.in $(BUILT_SOURCES)
+#EXTRA_DIST = DETAILS gpg.sgml gpg.1 FAQ HACKING OpenPGP \
+#	     version.sgml.in $(BUILT_SOURCES)
+EXTRA_DIST = DETAILS HACKING OpenPGP FAQ
 
-man_MANS = gpg.1
+#man_MANS = gpg.1
 
-pkgdata_DATA = gcryptref.html gcryptref.ps
+### pkgdata_DATA = gcryptref.html gcryptref.ps
 
 
 CLEANFILES = gcryptref.aux gcryptref.log gcryptref.tex gcryptref.dvi
 
 
-gcryptref.sgml : version.sgml
+# gcryptref.sgml : version.sgml
 
 
 if HAVE_DB2MAN
@@ -37,6 +38,8 @@ if HAVE_DB2HTML
 %.html : %.sgml
 	$(DB2HTML) --nosplit $<
 endif
+
+
 
 
 

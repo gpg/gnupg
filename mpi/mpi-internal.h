@@ -30,6 +30,24 @@
 #ifndef G10_MPI_INTERNAL_H
 #define G10_MPI_INTERNAL_H
 
+#include "mpi-asm-defs.h"
+#if BYTES_PER_MPI_LIMB == SIZEOF_UNSIGNED_INT
+  typedef unsigned int mpi_limb_t;
+  typedef   signed int mpi_limb_signed_t;
+#elif BYTES_PER_MPI_LIMB == SIZEOF_UNSIGNED_LONG
+  typedef unsigned long int mpi_limb_t;
+  typedef   signed long int mpi_limb_signed_t;
+#elif BYTES_PER_MPI_LIMB == SIZEOF_UNSIGNED_LONG_LONG
+  typedef unsigned long long int mpi_limb_t;
+  typedef   signed long long int mpi_limb_signed_t;
+#elif BYTES_PER_MPI_LIMB == SIZEOF_UNSIGNED_SHORT
+  typedef unsigned short int mpi_limb_t;
+  typedef   signed short int mpi_limb_signed_t;
+#else
+  #error BYTES_PER_MPI_LIMB does not match any C type
+#endif
+#define BITS_PER_MPI_LIMB    (8*BYTES_PER_MPI_LIMB)
+#define DID_MPI_LIMB_TYPEDEF 1
 #include "mpi.h"
 
 /* If KARATSUBA_THRESHOLD is not already defined, define it to a

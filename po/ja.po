@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2000-10-10 12:43+0200\n"
+"POT-Creation-Date: 2000-11-13 21:38+0100\n"
 "PO-Revision-Date: 2000-02-16 20:10+09:00\n"
 "Last-Translator: IIDA Yosiaki <iida@secom.ne.jp>\n"
 "Language-Team: Japanese <ja@li.org>\n"
@@ -241,7 +241,7 @@ msgstr "... バグです (%s:%d:%s)\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "バグを見つけたようです ... (%s:%d)\n"
 
-#: cipher/random.c:321 g10/import.c:128 g10/keygen.c:1349
+#: cipher/random.c:321 g10/import.c:128 g10/keygen.c:1353
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "`%s' が開けません: %s\n"
@@ -1246,66 +1246,66 @@ msgstr "%s: スキップ: 公開鍵を無視しました\n"
 msgid "no valid addressees\n"
 msgstr "有効なアドレスがありません\n"
 
-#: g10/keygen.c:175
+#: g10/keygen.c:179
 msgid "writing self signature\n"
 msgstr "自己署名を書き込みます\n"
 
-#: g10/keygen.c:213
+#: g10/keygen.c:217
 msgid "writing key binding signature\n"
 msgstr "署名に対応する鍵を書き込みます\n"
 
-#: g10/keygen.c:307 g10/keygen.c:417 g10/keygen.c:527
+#: g10/keygen.c:311 g10/keygen.c:421 g10/keygen.c:531
 #, fuzzy, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "要求された鍵サイズは %u ビット\n"
 
-#: g10/keygen.c:312 g10/keygen.c:422 g10/keygen.c:532
+#: g10/keygen.c:316 g10/keygen.c:426 g10/keygen.c:536
 #, fuzzy, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "%u ビットに丸めます\n"
 
-#: g10/keygen.c:631
+#: g10/keygen.c:635
 msgid "Please select what kind of key you want:\n"
 msgstr "鍵の種類を選択して下さい:\n"
 
-#: g10/keygen.c:633
+#: g10/keygen.c:637
 #, c-format
 msgid "   (%d) DSA and ElGamal (default)\n"
 msgstr "   (%d) DSA と ElGamal (デフォルト)\n"
 
-#: g10/keygen.c:634
+#: g10/keygen.c:638
 #, c-format
 msgid "   (%d) DSA (sign only)\n"
 msgstr "   (%d) DSA (署名のみ)\n"
 
-#: g10/keygen.c:636
+#: g10/keygen.c:640
 #, c-format
 msgid "   (%d) ElGamal (encrypt only)\n"
 msgstr "   (%d) ElGamal (暗号化のみ)\n"
 
-#: g10/keygen.c:637
+#: g10/keygen.c:641
 #, c-format
 msgid "   (%d) ElGamal (sign and encrypt)\n"
 msgstr "   (%d) ElGamal (署名と暗号化)\n"
 
-#: g10/keygen.c:639
+#: g10/keygen.c:643
 #, fuzzy, c-format
 msgid "   (%d) RSA (sign and encrypt)\n"
 msgstr "   (%d) ElGamal (署名と暗号化)\n"
 
-#: g10/keygen.c:643
+#: g10/keygen.c:647
 msgid "Your selection? "
 msgstr "どれを選びますか? "
 
-#: g10/keygen.c:654 g10/keygen.c:662
+#: g10/keygen.c:658 g10/keygen.c:666
 msgid "Do you really want to create a sign and encrypt key? "
 msgstr "本当に署名と暗号用の鍵を作りますか? "
 
-#: g10/keygen.c:676
+#: g10/keygen.c:680
 msgid "Invalid selection.\n"
 msgstr "無効な選択です。\n"
 
-#: g10/keygen.c:688
+#: g10/keygen.c:692
 #, c-format
 msgid ""
 "About to generate a new %s keypair.\n"
@@ -1318,19 +1318,19 @@ msgstr ""
 "          デフォルトの鍵サイズは 1024 ビット\n"
 "                最大の鍵サイズは 2048 ビット\n"
 
-#: g10/keygen.c:695
+#: g10/keygen.c:699
 msgid "What keysize do you want? (1024) "
 msgstr "どの鍵サイズを選択しますか? (1024) "
 
-#: g10/keygen.c:700
+#: g10/keygen.c:704
 msgid "DSA only allows keysizes from 512 to 1024\n"
 msgstr "DSA の鍵サイズは 512 から 1024 までです\n"
 
-#: g10/keygen.c:702
+#: g10/keygen.c:706
 msgid "keysize too small; 768 is smallest value allowed.\n"
 msgstr "鍵サイズが小さすぎます; 768 が最小です。\n"
 
-#: g10/keygen.c:704
+#: g10/keygen.c:708
 #, fuzzy
 msgid "keysize too small; 1024 is smallest value allowed for RSA.\n"
 msgstr "鍵サイズが小さすぎます; 768 が最小です。\n"
@@ -1343,12 +1343,12 @@ msgstr "鍵サイズが小さすぎます; 768 が最小です。\n"
 #. * So, before you complain about this limitation, I suggest that
 #. * you start a discussion with Marvin about this theme and then
 #. * do whatever you want.
-#: g10/keygen.c:715
+#: g10/keygen.c:719
 #, c-format
 msgid "keysize too large; %d is largest value allowed.\n"
 msgstr "鍵サイズが大きすぎます; %d が最大です。\n"
 
-#: g10/keygen.c:720
+#: g10/keygen.c:724
 msgid ""
 "Keysizes larger than 2048 are not suggested because\n"
 "computations take REALLY long!\n"
@@ -1356,11 +1356,11 @@ msgstr ""
 "2048 以上の鍵サイズは、計算時間が 非常に 長くなるので\n"
 "推奨しません!\n"
 
-#: g10/keygen.c:723
+#: g10/keygen.c:727
 msgid "Are you sure that you want this keysize? "
 msgstr "この鍵サイズで本当に良いですか? "
 
-#: g10/keygen.c:724
+#: g10/keygen.c:728
 msgid ""
 "Okay, but keep in mind that your monitor and keyboard radiation is also very "
 "vulnerable to attacks!\n"
@@ -1368,21 +1368,21 @@ msgstr ""
 "わかりました。しかし、あなたのモニターやキーボード入力は、攻撃に対して "
 "すきだらけであることを心に留めておいて下さい!\n"
 
-#: g10/keygen.c:732
+#: g10/keygen.c:736
 msgid "Do you really need such a large keysize? "
 msgstr "あなたは本当にこのような長い鍵が必要ですか? "
 
-#: g10/keygen.c:738
+#: g10/keygen.c:742
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "要求された鍵サイズは %u ビット\n"
 
-#: g10/keygen.c:741 g10/keygen.c:745
+#: g10/keygen.c:745 g10/keygen.c:749
 #, c-format
 msgid "rounded up to %u bits\n"
 msgstr "%u ビットに丸めます\n"
 
-#: g10/keygen.c:793
+#: g10/keygen.c:797
 msgid ""
 "Please specify how long the key should be valid.\n"
 "         0 = key does not expire\n"
@@ -1398,25 +1398,25 @@ msgstr ""
 "      <n>m = 有効期限 n 月\n"
 "      <n>y = 有効期限 n 年\n"
 
-#: g10/keygen.c:808
+#: g10/keygen.c:812
 msgid "Key is valid for? (0) "
 msgstr "鍵の有効性は? (0)"
 
-#: g10/keygen.c:813
+#: g10/keygen.c:817
 msgid "invalid value\n"
 msgstr "無効な値\n"
 
-#: g10/keygen.c:818
+#: g10/keygen.c:822
 msgid "Key does not expire at all\n"
 msgstr "鍵は無期限です\n"
 
 #. print the date when the key expires
-#: g10/keygen.c:824
+#: g10/keygen.c:828
 #, c-format
 msgid "Key expires at %s\n"
 msgstr "鍵は %s にて期限切れになります\n"
 
-#: g10/keygen.c:827
+#: g10/keygen.c:831
 msgid ""
 "Your system can't display dates beyond 2038.\n"
 "However, it will be correctly handled up to 2106.\n"
@@ -1424,11 +1424,11 @@ msgstr ""
 "このシステムでは、2038年以降の日付を表示できませんが、\n"
 "2106年までなら正しく処理できます。\n"
 
-#: g10/keygen.c:832
+#: g10/keygen.c:836
 msgid "Is this correct (y/n)? "
 msgstr "これで良いですか (y/n)? "
 
-#: g10/keygen.c:875
+#: g10/keygen.c:879
 msgid ""
 "\n"
 "You need a User-ID to identify your key; the software constructs the user "
@@ -1444,44 +1444,44 @@ msgstr ""
 "    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n"
 "\n"
 
-#: g10/keygen.c:887
+#: g10/keygen.c:891
 msgid "Real name: "
 msgstr "本名: "
 
-#: g10/keygen.c:895
+#: g10/keygen.c:899
 msgid "Invalid character in name\n"
 msgstr "名前に無効な文字があります\n"
 
-#: g10/keygen.c:897
+#: g10/keygen.c:901
 msgid "Name may not start with a digit\n"
 msgstr "名前は数字で始まってはいけません\n"
 
-#: g10/keygen.c:899
+#: g10/keygen.c:903
 msgid "Name must be at least 5 characters long\n"
 msgstr "名前は 5 文字以上でなければなりません\n"
 
-#: g10/keygen.c:907
+#: g10/keygen.c:911
 msgid "Email address: "
 msgstr "電子メールアドレス: "
 
-#: g10/keygen.c:918
+#: g10/keygen.c:922
 msgid "Not a valid email address\n"
 msgstr "有効な電子メールアドレスではありません\n"
 
-#: g10/keygen.c:926
+#: g10/keygen.c:930
 msgid "Comment: "
 msgstr "注釈: "
 
-#: g10/keygen.c:932
+#: g10/keygen.c:936
 msgid "Invalid character in comment\n"
 msgstr "注釈に無効な文字があります\n"
 
-#: g10/keygen.c:957
+#: g10/keygen.c:961
 #, c-format
 msgid "You are using the `%s' character set.\n"
 msgstr "あなたは文字コード `%s' を使っています。\n"
 
-#: g10/keygen.c:963
+#: g10/keygen.c:967
 #, c-format
 msgid ""
 "You selected this USER-ID:\n"
@@ -1492,28 +1492,28 @@ msgstr ""
 "    \"%s\"\n"
 "\n"
 
-#: g10/keygen.c:967
+#: g10/keygen.c:971
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr ""
 
-#: g10/keygen.c:972
+#: g10/keygen.c:976
 msgid "NnCcEeOoQq"
 msgstr "NnCcEeOoQq"
 
-#: g10/keygen.c:982
+#: g10/keygen.c:986
 #, fuzzy
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgstr "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 
-#: g10/keygen.c:983
+#: g10/keygen.c:987
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 
-#: g10/keygen.c:1002
+#: g10/keygen.c:1006
 msgid "Please correct the error first\n"
 msgstr ""
 
-#: g10/keygen.c:1040
+#: g10/keygen.c:1044
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
@@ -1521,11 +1521,11 @@ msgstr ""
 "秘密鍵を保護するためにパスフレーズが必要です。\n"
 "\n"
 
-#: g10/keyedit.c:463 g10/keygen.c:1048
+#: g10/keyedit.c:463 g10/keygen.c:1052
 msgid "passphrase not correctly repeated; try again.\n"
 msgstr "パスフレーズが異なります。もう一度設定して下さい。\n"
 
-#: g10/keygen.c:1054
+#: g10/keygen.c:1058
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -1537,7 +1537,7 @@ msgstr ""
 "オプションによって、いつでも変更できます。\n"
 "\n"
 
-#: g10/keygen.c:1075
+#: g10/keygen.c:1079
 msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
@@ -1548,29 +1548,29 @@ msgstr ""
 "ディスクにアクセスするなどの他の行動を同時に行うと、乱数生成装置にて\n"
 "乱雑さの大きな良い乱数を生成しやすくなりますので、お勧めします。\n"
 
-#: g10/keygen.c:1524
+#: g10/keygen.c:1528
 msgid "DSA keypair will have 1024 bits.\n"
 msgstr "DSA 鍵ペアは 1024 ビットになります\n"
 
-#: g10/keygen.c:1567
+#: g10/keygen.c:1571
 msgid "Key generation canceled.\n"
 msgstr "鍵の生成が中止されました。\n"
 
-#: g10/keygen.c:1664
+#: g10/keygen.c:1668
 #, fuzzy, c-format
 msgid "writing public key to `%s'\n"
 msgstr "`%s' への公開証明書を書き込みます\n"
 
-#: g10/keygen.c:1665
+#: g10/keygen.c:1669
 #, fuzzy, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "`%s' への秘密証明書を書き込みます\n"
 
-#: g10/keygen.c:1757
+#: g10/keygen.c:1761
 msgid "public and secret key created and signed.\n"
 msgstr "公開鍵と秘密鍵が作成され、署名されました。\n"
 
-#: g10/keygen.c:1762
+#: g10/keygen.c:1766
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a secondary key for this purpose.\n"
@@ -1578,24 +1578,24 @@ msgstr ""
 "この鍵は暗号化には使用できないことに注意してください。暗号化を行うには、\n"
 "\"--edit-key\" コマンドを用いて副鍵を作成してください。\n"
 
-#: g10/keygen.c:1775 g10/keygen.c:1876
+#: g10/keygen.c:1779 g10/keygen.c:1880
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "鍵の作成に失敗: %s\n"
 
-#: g10/keygen.c:1819 g10/sig-check.c:297 g10/sign.c:169
+#: g10/keygen.c:1823 g10/sig-check.c:297 g10/sign.c:169
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr "鍵は %lu 秒未来に作成されました (時間旅行か時計のくるいでしょう)\n"
 
-#: g10/keygen.c:1821 g10/sig-check.c:299 g10/sign.c:171
+#: g10/keygen.c:1825 g10/sig-check.c:299 g10/sign.c:171
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
 msgstr "鍵は %lu 秒未来に作成されました (時間旅行か時計のくるいでしょう)\n"
 
-#: g10/keygen.c:1854
+#: g10/keygen.c:1858
 msgid "Really create? "
 msgstr "本当に作成しますか? "
 
@@ -2638,7 +2638,7 @@ msgstr "この暗号アルゴリズムは反対されています。一般的な方法を用いて下さい!\n"
 msgid "can't handle public key algorithm %d\n"
 msgstr "公開鍵のアルゴリズム %d は使用できません\n"
 
-#: g10/parse-packet.c:992
+#: g10/parse-packet.c:999
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "subpacket of type %d has critical bit set\n"

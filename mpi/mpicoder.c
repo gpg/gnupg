@@ -24,9 +24,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "mpi.h"
 #include "mpi-internal.h"
-#include "memory.h"
 #include "g10lib.h"
 
 #define MAX_EXTERN_MPI_BITS 16384

@@ -121,10 +121,10 @@ static void
 test_keys( ELG_secret_key *sk, unsigned nbits )
 {
     ELG_public_key pk;
-    MPI test = mpi_alloc( 0 );
-    MPI out1_a = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
-    MPI out1_b = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
-    MPI out2 = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
+    MPI test = gcry_mpi_new ( 0 );
+    MPI out1_a = gcry_mpi_new ( nbits );
+    MPI out1_b = gcry_mpi_new ( nbits );
+    MPI out2 = gcry_mpi_new ( nbits );
 
     pk.p = sk->p;
     pk.g = sk->g;
@@ -141,10 +141,10 @@ test_keys( ELG_secret_key *sk, unsigned nbits )
     if( !verify( out1_a, out1_b, test, &pk ) )
 	log_fatal("ElGamal operation: sign, verify failed\n");
 
-    mpi_free( test );
-    mpi_free( out1_a );
-    mpi_free( out1_b );
-    mpi_free( out2 );
+    gcry_mpi_release ( test );
+    gcry_mpi_release ( out1_a );
+    gcry_mpi_release ( out1_b );
+    gcry_mpi_release ( out2 );
 }
 
 
@@ -241,8 +241,8 @@ generate(  ELG_secret_key *sk, unsigned int nbits, MPI **ret_factors )
     unsigned int xbits;
     byte *rndbuf;
 
-    p_min1 = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
-    temp   = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
+    p_min1 = gcry_mpi_new ( nbits );
+    temp   = gcry_mpi_new( nbits );
     qbits = wiener_map( nbits );
     if( qbits & 1 ) /* better have a even one */
 	qbits++;
@@ -265,7 +265,7 @@ generate(  ELG_secret_key *sk, unsigned int nbits, MPI **ret_factors )
     xbits = qbits * 3 / 2;
     if( xbits >= nbits )
 	BUG();
-    x = mpi_alloc_secure( xbits/BITS_PER_MPI_LIMB );
+    x = gcry_mpi_snew ( xbits );
     if( DBG_CIPHER )
 	log_debug("choosing a random x of size %u", xbits );
     rndbuf = NULL;
@@ -294,7 +294,7 @@ generate(  ELG_secret_key *sk, unsigned int nbits, MPI **ret_factors )
     } while( !( mpi_cmp_ui( x, 0 )>0 && mpi_cmp( x, p_min1 )<0 ) );
     g10_free(rndbuf);
 
-    y = mpi_alloc(nbits/BITS_PER_MPI_LIMB);
+    y = gcry_mpi_new (nbits);
     gcry_mpi_powm( y, g, x, p );
 
     if( DBG_CIPHER ) {
@@ -314,8 +314,8 @@ generate(  ELG_secret_key *sk, unsigned int nbits, MPI **ret_factors )
     /* now we can test our keys (this should never fail!) */
     test_keys( sk, nbits - 64 );
 
-    mpi_free( p_min1 );
-    mpi_free( temp   );
+    gcry_mpi_release ( p_min1 );
+    gcry_mpi_release ( temp   );
 }
 
 

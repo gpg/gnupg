@@ -25,7 +25,6 @@
 #include <assert.h>
 
 #include "g10lib.h"
-#include "mpi.h"
 #include "mpi-internal.h"
 #include "memory.h"
 

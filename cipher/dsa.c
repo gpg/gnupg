@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
 #include "g10lib.h"
 #include "mpi.h"
 #include "cipher.h"
@@ -136,9 +137,9 @@ static void
 test_keys( DSA_secret_key *sk, unsigned qbits )
 {
     DSA_public_key pk;
-    MPI test = mpi_alloc( qbits / BITS_PER_MPI_LIMB );
-    MPI out1_a = mpi_alloc( qbits / BITS_PER_MPI_LIMB );
-    MPI out1_b = mpi_alloc( qbits / BITS_PER_MPI_LIMB );
+    MPI test = gcry_mpi_new ( qbits  );
+    MPI out1_a = gcry_mpi_new ( qbits );
+    MPI out1_b = gcry_mpi_new ( qbits );
 
     pk.p = sk->p;
     pk.q = sk->q;
@@ -150,9 +151,9 @@ test_keys( DSA_secret_key *sk, unsigned qbits )
     if( !verify( out1_a, out1_b, test, &pk ) )
 	log_fatal("DSA:: sign, verify failed\n");
 
-    mpi_free( test );
-    mpi_free( out1_a );
-    mpi_free( out1_b );
+    gcry_mpi_release ( test );
+    gcry_mpi_release ( out1_a );
+    gcry_mpi_release ( out1_b );
 }
 
 

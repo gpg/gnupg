@@ -19,7 +19,7 @@ AC_CANONICAL_SYSTEM
 #    AGE, set REVISION to 0.
 # 3. Interfaces removed (BAD, breaks upward compatibility): Increment
 #    CURRENT, set AGE and REVISION to 0.
-AM_INIT_AUTOMAKE(gnupg,1.1.1a)
+AM_INIT_AUTOMAKE(gnupg,1.1.1b)
 LIBGCRYPT_LT_CURRENT=1
 LIBGCRYPT_LT_AGE=0
 LIBGCRYPT_LT_REVISION=0
@@ -710,7 +710,7 @@ AC_SUBST(ZLIBS)
 
 
 # Allow users to append something to the version string without
-# flagging it as development version.  The user version parts is
+# flagging it as development version.  The user version part is
 # considered everything after a dash.
 changequote(,)dnl
 tmp_pat='[a-zA-Z]'
@@ -719,9 +719,9 @@ if echo "$VERSION" | sed 's/-.*//' | grep "$tmp_pat" >/dev/null ; then
     AC_DEFINE(IS_DEVELOPMENT_VERSION)
 fi
 
-dnl Temp workarounds:
+dnl Temp workarounds 
 GNUPG_LINK_FILES(gcrypt/gcrypt.h, gcrypt.h )
-GNUPG_LINK_FILES(include/types.h, gcrypt/types.h )
+GNUPG_LINK_FILES(include/types.h, types.h )
 
 AM_CONDITIONAL(CROSS_COMPILING, test x$cross_compiling = xyes)
 
@@ -739,7 +739,7 @@ fi
 
 dnl
 dnl Make the version number in gcrypt/gcrypt.h the same as the one here.
-dnl (this is easier than to have a .in file just for one substitution)
+dnl (this is easier than to have a *.in file just for one substitution)
 dnl
 GNUPG_FIX_HDR_VERSION(gcrypt/gcrypt.h, GCRYPT_VERSION)
 

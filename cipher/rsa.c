@@ -61,9 +61,9 @@ static void
 test_keys( RSA_secret_key *sk, unsigned nbits )
 {
     RSA_public_key pk;
-    MPI test = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
-    MPI out1 = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
-    MPI out2 = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
+    MPI test = gcry_mpi_new ( nbits );
+    MPI out1 = gcry_mpi_new ( nbits );
+    MPI out2 = gcry_mpi_new ( nbits );
 
     pk.n = sk->n;
     pk.e = sk->e;
@@ -77,9 +77,9 @@ test_keys( RSA_secret_key *sk, unsigned nbits )
     public( out2, out1, &pk );
     if( mpi_cmp( test, out2 ) )
 	log_fatal("RSA operation: secret, public failed\n");
-    mpi_free( test );
-    mpi_free( out1 );
-    mpi_free( out2 );
+    gcry_mpi_release ( test );
+    gcry_mpi_release ( out1 );
+    gcry_mpi_release ( out2 );
 }
 
 /****************
@@ -107,27 +107,27 @@ generate( RSA_secret_key *sk, unsigned nbits )
     /* calculate Euler totient: phi = (p-1)(q-1) */
     t1 = mpi_alloc_secure( mpi_get_nlimbs(p) );
     t2 = mpi_alloc_secure( mpi_get_nlimbs(p) );
-    phi = mpi_alloc_secure( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
-    g	= mpi_alloc_secure( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB  );
-    f	= mpi_alloc_secure( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB  );
+    phi = gcry_mpi_snew ( nbits );
+    g	= gcry_mpi_snew ( nbits );
+    f	= gcry_mpi_snew ( nbits );
     mpi_sub_ui( t1, p, 1 );
     mpi_sub_ui( t2, q, 1 );
     mpi_mul( phi, t1, t2 );
     mpi_gcd(g, t1, t2);
     mpi_fdiv_q(f, phi, g);
     /* multiply them to make the private key */
-    n = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
+    n = gcry_mpi_new ( nbits );
     mpi_mul( n, p, q );
     /* find a public exponent  */
-    e = mpi_alloc( (6+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
+    e = gcry_mpi_new ( 6 );
     mpi_set_ui( e, 17); /* start with 17 */
     while( !mpi_gcd(t1, e, phi) ) /* (while gcd is not 1) */
 	mpi_add_ui( e, e, 2);
     /* calculate the secret key d = e^1 mod phi */
-    d = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
+    d = gcry_mpi_snew ( nbits );
     mpi_invm(d, e, f );
     /* calculate the inverse of p and q (used for chinese remainder theorem)*/
-    u = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
+    u = gcry_mpi_snew ( nbits );
     mpi_invm(u, p, q );
 
     if( DBG_CIPHER ) {
@@ -142,11 +142,11 @@ generate( RSA_secret_key *sk, unsigned nbits )
 	log_mpidump("  u= ", u );
     }
 
-    mpi_free(t1);
-    mpi_free(t2);
-    mpi_free(phi);
-    mpi_free(f);
-    mpi_free(g);
+    gcry_mpi_release (t1);
+    gcry_mpi_release (t2);
+    gcry_mpi_release (phi);
+    gcry_mpi_release (f);
+    gcry_mpi_release (g);
 
     sk->n = n;
     sk->e = e;
@@ -416,11 +416,11 @@ rsa_verify( int algo, MPI hash, MPI *data, MPI *pkey,
 	return GCRYERR_INV_PK_ALGO;
     pk.n = pkey[0];
     pk.e = pkey[1];
-    result = mpi_alloc( (160+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB);
+    result = gcry_mpi_new ( 160 );
     public( result, data[0], &pk );
     /*rc = (*cmp)( opaquev, result );*/
     rc = mpi_cmp( result, hash )? GCRYERR_BAD_SIGNATURE:0;
-    mpi_free(result);
+    gcry_mpi_release (result);
 
     return rc;
 }

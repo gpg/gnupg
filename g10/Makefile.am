@@ -10,7 +10,8 @@ needed_libs = ../util/libutil.la ../gcrypt/libgcrypt.la \
 	      ../jnlib/libjnlib.la ../util/libutil.la
 
 #noinst_PROGRAMS = gpgd
-bin_PROGRAMS = gpg kbxutil
+#bin_PROGRAMS = gpg kbxutil
+noinst_PROGRAMS = gpg kbxutil
 
 common_source =  \
 	      build-packet.c	\

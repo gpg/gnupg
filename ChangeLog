@@ -1,3 +1,7 @@
+2000-11-13  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4 (GNUPG_FIX_HDR_VERSION): VPATH build fix.
+
 2000-10-10  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am (dist-hook): Create the version file.

@@ -1,3 +1,17 @@
+2000-11-14  Werner Koch  <wk@gnupg.org>
+
+	* dsa.c (test_keys): Replaced mpi_alloc by gcry_mpi_new and
+	mpi_free by gcry_mpi_release.
+	* elgamal.c (test_keys,generate): Ditto, also for mpi_alloc_secure.
+	* rsa.c (test_keys,generate,rsa_verify): Ditto.
+	* primegen.c (generate_elg_prime): Ditto.
+	(gen_prime): Ditto and removed nlimbs.
+
+	* rsa.c (generate): Allocate 2 more vars in secure memory.
+
+	* Makefile.am (OMIT_DEPENDENCIES): Hack to work around dependency
+	problems.
+
 2000-10-09  Werner Koch  <wk@gnupg.org>
 
 	* arcfour.c, arcfour.h: New.

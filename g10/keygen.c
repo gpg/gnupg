@@ -135,10 +135,11 @@ keygen_add_std_prefs( PKT_signature *sig, void *opaque )
 
     keygen_add_key_expire( sig, opaque );
 
-    buf[0] = GCRY_CIPHER_TWOFISH;
-    buf[1] = GCRY_CIPHER_CAST5;
-    buf[2] = GCRY_CIPHER_BLOWFISH;
-    build_sig_subpkt( sig, SIGSUBPKT_PREF_SYM, buf, 3 );
+    buf[0] = GCRY_CIPHER_RIJNDAEL;
+    buf[1] = GCRY_CIPHER_TWOFISH;
+    buf[2] = GCRY_CIPHER_CAST5;
+    buf[3] = GCRY_CIPHER_BLOWFISH;
+    build_sig_subpkt( sig, SIGSUBPKT_PREF_SYM, buf, 4 );
 
     buf[0] = GCRY_MD_RMD160;
     buf[1] = GCRY_MD_SHA1;

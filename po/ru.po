@@ -9,7 +9,7 @@
 # QingLong <qinglong@Bolizm> (couldn't send an email to let you know)
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2000-10-10 12:43+0200\n"
+"POT-Creation-Date: 2000-11-13 21:38+0100\n"
 "Content-Type: text/plain; charset=\n"
 "Date: 1998-01-26 22:08:36+0100\n"
 "From: Gregory Steuck <steuck@iname.com>\n"
@@ -293,7 +293,7 @@ msgstr "Ой-йо ... ошибка в программе (%s:%d:%s)\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "Вы нашли ошибку в программе ... (%s:%d)\n"
 
-#: cipher/random.c:321 g10/import.c:128 g10/keygen.c:1349
+#: cipher/random.c:321 g10/import.c:128 g10/keygen.c:1353
 #, fuzzy, c-format
 msgid "can't open `%s': %s\n"
 msgstr "невозможно открыть файл `%s': %s\n"
@@ -1337,67 +1337,67 @@ msgstr ""
 msgid "no valid addressees\n"
 msgstr "нет допустимых адресов\n"
 
-#: g10/keygen.c:175
+#: g10/keygen.c:179
 msgid "writing self signature\n"
 msgstr "пишется само-подпись\n"
 
-#: g10/keygen.c:213
+#: g10/keygen.c:217
 msgid "writing key binding signature\n"
 msgstr "пишется \"key-binding\" подпись\n"
 
-#: g10/keygen.c:307 g10/keygen.c:417 g10/keygen.c:527
+#: g10/keygen.c:311 g10/keygen.c:421 g10/keygen.c:531
 #, fuzzy, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "Запрошенный ключ имеет длину %u бит\n"
 
-#: g10/keygen.c:312 g10/keygen.c:422 g10/keygen.c:532
+#: g10/keygen.c:316 g10/keygen.c:426 g10/keygen.c:536
 #, fuzzy, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "округлено до %u бит\n"
 
-#: g10/keygen.c:631
+#: g10/keygen.c:635
 msgid "Please select what kind of key you want:\n"
 msgstr "Выберите желаемый тип ключа:\n"
 
-#: g10/keygen.c:633
+#: g10/keygen.c:637
 #, c-format
 msgid "   (%d) DSA and ElGamal (default)\n"
 msgstr "   (%d) DSA и ElGamal (по умолчанию)\n"
 
-#: g10/keygen.c:634
+#: g10/keygen.c:638
 #, c-format
 msgid "   (%d) DSA (sign only)\n"
 msgstr "   (%d) DSA (только подпись)\n"
 
-#: g10/keygen.c:636
+#: g10/keygen.c:640
 #, c-format
 msgid "   (%d) ElGamal (encrypt only)\n"
 msgstr "   (%d) ElGamal (только шифрование)\n"
 
-#: g10/keygen.c:637
+#: g10/keygen.c:641
 #, c-format
 msgid "   (%d) ElGamal (sign and encrypt)\n"
 msgstr "   (%d) ElGamal (подпись и шифрование)\n"
 
-#: g10/keygen.c:639
+#: g10/keygen.c:643
 #, fuzzy, c-format
 msgid "   (%d) RSA (sign and encrypt)\n"
 msgstr "   (%d) ElGamal (подпись и шифрование)\n"
 
-#: g10/keygen.c:643
+#: g10/keygen.c:647
 msgid "Your selection? "
 msgstr "Ваш выбор? "
 
-#: g10/keygen.c:654 g10/keygen.c:662
+#: g10/keygen.c:658 g10/keygen.c:666
 #, fuzzy
 msgid "Do you really want to create a sign and encrypt key? "
 msgstr "Вы действительно хотите удалить выбранные ключи? "
 
-#: g10/keygen.c:676
+#: g10/keygen.c:680
 msgid "Invalid selection.\n"
 msgstr "Недопустимый выбор.\n"
 
-#: g10/keygen.c:688
+#: g10/keygen.c:692
 #, c-format
 msgid ""
 "About to generate a new %s keypair.\n"
@@ -1410,19 +1410,19 @@ msgstr ""
 "               длина ключа по умолчанию: 1024 бита\n"
 " максимальная рекомендуемая длина ключа: 2048 бит\n"
 
-#: g10/keygen.c:695
+#: g10/keygen.c:699
 msgid "What keysize do you want? (1024) "
 msgstr "Какого размера ключ вы желаете? (1024)"
 
-#: g10/keygen.c:700
+#: g10/keygen.c:704
 msgid "DSA only allows keysizes from 512 to 1024\n"
 msgstr "Допустимый размер DSA ключей - от 512 до 1024 бит\n"
 
-#: g10/keygen.c:702
+#: g10/keygen.c:706
 msgid "keysize too small; 768 is smallest value allowed.\n"
 msgstr "слишком маленькая длина ключа, наименьшее значение - 768.\n"
 
-#: g10/keygen.c:704
+#: g10/keygen.c:708
 #, fuzzy
 msgid "keysize too small; 1024 is smallest value allowed for RSA.\n"
 msgstr "слишком маленькая длина ключа, наименьшее значение - 768.\n"
@@ -1435,12 +1435,12 @@ msgstr "слишком маленькая длина ключа, наименьшее значение - 768.\n"
 #. * So, before you complain about this limitation, I suggest that
 #. * you start a discussion with Marvin about this theme and then
 #. * do whatever you want.
-#: g10/keygen.c:715
+#: g10/keygen.c:719
 #, fuzzy, c-format
 msgid "keysize too large; %d is largest value allowed.\n"
 msgstr "слишком маленькая длина ключа, наименьшее значение - 768.\n"
 
-#: g10/keygen.c:720
+#: g10/keygen.c:724
 #, fuzzy
 msgid ""
 "Keysizes larger than 2048 are not suggested because\n"
@@ -1449,11 +1449,11 @@ msgstr ""
 "Ключи длиной больше 2048 не рекомендуются, потому что вычислениязанимают "
 "ОЧЕНЬ много времени!\n"
 
-#: g10/keygen.c:723
+#: g10/keygen.c:727
 msgid "Are you sure that you want this keysize? "
 msgstr "Вы действительно хотите ключ такой длины? "
 
-#: g10/keygen.c:724
+#: g10/keygen.c:728
 msgid ""
 "Okay, but keep in mind that your monitor and keyboard radiation is also very "
 "vulnerable to attacks!\n"
@@ -1461,21 +1461,21 @@ msgstr ""
 "Ок, только не забывайте, что излучение ваших клавиатуры и монитора тоже\n"
 "делают вас уязвимым для атак.\n"
 
-#: g10/keygen.c:732
+#: g10/keygen.c:736
 msgid "Do you really need such a large keysize? "
 msgstr "Вам действительно нужен такой длинный ключ? "
 
-#: g10/keygen.c:738
+#: g10/keygen.c:742
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Запрошенный ключ имеет длину %u бит\n"
 
-#: g10/keygen.c:741 g10/keygen.c:745
+#: g10/keygen.c:745 g10/keygen.c:749
 #, c-format
 msgid "rounded up to %u bits\n"
 msgstr "округлено до %u бит\n"
 
-#: g10/keygen.c:793
+#: g10/keygen.c:797
 msgid ""
 "Please specify how long the key should be valid.\n"
 "         0 = key does not expire\n"
@@ -1491,35 +1491,35 @@ msgstr ""
 "      <n>m = срок действия ключа n месяцев\n"
 "      <n>y = срок действия ключа n лет\n"
 
-#: g10/keygen.c:808
+#: g10/keygen.c:812
 msgid "Key is valid for? (0) "
 msgstr "Ключ действителен в течение? (0) "
 
-#: g10/keygen.c:813
+#: g10/keygen.c:817
 msgid "invalid value\n"
 msgstr "недопустимое значение.\n"
 
-#: g10/keygen.c:818
+#: g10/keygen.c:822
 msgid "Key does not expire at all\n"
 msgstr "Бессрочный ключ.\n"
 
 #. print the date when the key expires
-#: g10/keygen.c:824
+#: g10/keygen.c:828
 #, c-format
 msgid "Key expires at %s\n"
 msgstr "Ключ действует до %s\n"
 
-#: g10/keygen.c:827
+#: g10/keygen.c:831
 msgid ""
 "Your system can't display dates beyond 2038.\n"
 "However, it will be correctly handled up to 2106.\n"
 msgstr ""
 
-#: g10/keygen.c:832
+#: g10/keygen.c:836
 msgid "Is this correct (y/n)? "
 msgstr "Это верно? (y/n) "
 
-#: g10/keygen.c:875
+#: g10/keygen.c:879
 msgid ""
 "\n"
 "You need a User-ID to identify your key; the software constructs the user "
@@ -1535,44 +1535,44 @@ msgstr ""
 "    \"Vasya Pupkin (KRUTOI) <vasya@mega-cool.ru>\"\n"
 "\n"
 
-#: g10/keygen.c:887
+#: g10/keygen.c:891
 msgid "Real name: "
 msgstr "Ваше имя (\"Имя Фамилия\"): "
 
-#: g10/keygen.c:895
+#: g10/keygen.c:899
 msgid "Invalid character in name\n"
 msgstr "Недопустимый символ в имени\n"
 
-#: g10/keygen.c:897
+#: g10/keygen.c:901
 msgid "Name may not start with a digit\n"
 msgstr "Полное имя не может начинаться с цифры.\n"
 
-#: g10/keygen.c:899
+#: g10/keygen.c:903
 msgid "Name must be at least 5 characters long\n"
 msgstr "Полное имя должно состоять не менее чем из 5ти символов.\n"
 
-#: g10/keygen.c:907
+#: g10/keygen.c:911
 msgid "Email address: "
 msgstr "E-Mail: "
 
-#: g10/keygen.c:918
+#: g10/keygen.c:922
 msgid "Not a valid email address\n"
 msgstr "Недопустимый E-Mail\n"
 
-#: g10/keygen.c:926
+#: g10/keygen.c:930
 msgid "Comment: "
 msgstr "Комментарий: "
 
-#: g10/keygen.c:932
+#: g10/keygen.c:936
 msgid "Invalid character in comment\n"
 msgstr "Недопустимый символ в комментарии.\n"
 
-#: g10/keygen.c:957
+#: g10/keygen.c:961
 #, c-format
 msgid "You are using the `%s' character set.\n"
 msgstr ""
 
-#: g10/keygen.c:963
+#: g10/keygen.c:967
 #, c-format
 msgid ""
 "You selected this USER-ID:\n"
@@ -1583,29 +1583,29 @@ msgstr ""
 "    \"%s\"\n"
 "\n"
 
-#: g10/keygen.c:967
+#: g10/keygen.c:971
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr ""
 
-#: g10/keygen.c:972
+#: g10/keygen.c:976
 msgid "NnCcEeOoQq"
 msgstr ""
 
-#: g10/keygen.c:982
+#: g10/keygen.c:986
 #, fuzzy
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgstr "Изменить: N=Имя, C=Комментарий, E=E-Mail, O=Okay/Q=Выход? "
 
-#: g10/keygen.c:983
+#: g10/keygen.c:987
 #, fuzzy
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "Изменить: N=Имя, C=Комментарий, E=E-Mail, O=Okay/Q=Выход? "
 
-#: g10/keygen.c:1002
+#: g10/keygen.c:1006
 msgid "Please correct the error first\n"
 msgstr ""
 
-#: g10/keygen.c:1040
+#: g10/keygen.c:1044
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
@@ -1613,11 +1613,11 @@ msgstr ""
 "Для защиты вашего ключа нужна ключевая фраза.\n"
 "\n"
 
-#: g10/keyedit.c:463 g10/keygen.c:1048
+#: g10/keyedit.c:463 g10/keygen.c:1052
 msgid "passphrase not correctly repeated; try again.\n"
 msgstr "ключевая фраза не была воспроизведена, попробуйте снова.\n"
 
-#: g10/keygen.c:1054
+#: g10/keygen.c:1058
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -1629,7 +1629,7 @@ msgstr ""
 "время, запустив эту программу с параметром \"--edit-key\".\n"
 "\n"
 
-#: g10/keygen.c:1075
+#: g10/keygen.c:1079
 #, fuzzy
 msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
@@ -1642,30 +1642,30 @@ msgstr ""
 "нагрузить сетевую или дисковую подсистему). Это даст генератору случайных\n"
 "чисел возможность набрать достаточно энтропии.\n"
 
-#: g10/keygen.c:1524
+#: g10/keygen.c:1528
 msgid "DSA keypair will have 1024 bits.\n"
 msgstr "Ключевая пара DSA будет иметь длину 1024 бита.\n"
 
-#: g10/keygen.c:1567
+#: g10/keygen.c:1571
 #, fuzzy
 msgid "Key generation canceled.\n"
 msgstr "Генерация ключа отменена: %s\n"
 
-#: g10/keygen.c:1664
+#: g10/keygen.c:1668
 #, fuzzy, c-format
 msgid "writing public key to `%s'\n"
 msgstr "открытый сертификат записывается в `%s'\n"
 
-#: g10/keygen.c:1665
+#: g10/keygen.c:1669
 #, fuzzy, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "секретный сертификат записывается в `%s'\n"
 
-#: g10/keygen.c:1757
+#: g10/keygen.c:1761
 msgid "public and secret key created and signed.\n"
 msgstr "открытый и секретный ключи созданы и подписаны.\n"
 
-#: g10/keygen.c:1762
+#: g10/keygen.c:1766
 #, fuzzy
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
@@ -1676,12 +1676,12 @@ msgstr ""
 "дополнительного\n"
 "ключа для шифрования.\n"
 
-#: g10/keygen.c:1775 g10/keygen.c:1876
+#: g10/keygen.c:1779 g10/keygen.c:1880
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Генерация ключа не удалась: %s\n"
 
-#: g10/keygen.c:1819 g10/sig-check.c:297 g10/sign.c:169
+#: g10/keygen.c:1823 g10/sig-check.c:297 g10/sign.c:169
 #, fuzzy, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -1689,7 +1689,7 @@ msgstr ""
 "открытый ключ сгенерирован в будущем (искривление времени или неправильно "
 "установлены часы)\n"
 
-#: g10/keygen.c:1821 g10/sig-check.c:299 g10/sign.c:171
+#: g10/keygen.c:1825 g10/sig-check.c:299 g10/sign.c:171
 #, fuzzy, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -1697,7 +1697,7 @@ msgstr ""
 "открытый ключ сгенерирован в будущем (искривление времени или неправильно "
 "установлены часы)\n"
 
-#: g10/keygen.c:1854
+#: g10/keygen.c:1858
 #, fuzzy
 msgid "Really create? "
 msgstr "Действительно создать? "
@@ -2797,7 +2797,7 @@ msgstr ""
 msgid "can't handle public key algorithm %d\n"
 msgstr "невозможно заблокировать связку открытых ключей: %s\n"
 
-#: g10/parse-packet.c:992
+#: g10/parse-packet.c:999
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr ""

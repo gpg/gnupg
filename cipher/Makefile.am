@@ -1,9 +1,12 @@
 # Process this file with automake to produce Makefile.in
 
 
-INCLUDES = -I$(top_srcdir)/gcrypt
+INCLUDES = -I$(top_srcdir)/gcrypt -I$(top_srcdir)/mpi
 
 noinst_LTLIBRARIES = libcipher.la
+
+OMIT_DEPENDENCIES = types.h gcrypt.h
+
 
 # The configure script greps the module names from the EXTRA_PROGRAMS line
 EXTRA_PROGRAMS = rndlinux rndunix rndegd rndw32 sha1 rmd160 md5 tiger
