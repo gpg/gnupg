@@ -1,3 +1,20 @@
+2003-06-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.skel: Use new hkp://subkeys.pgp.net as sample keyserver
+	since they at least handle subkeys correctly.
+
+	* options.h, g10.c (main), main.h, keylist.c (show_keyserver_url),
+	mainproc.c (check_sig_and_print), parse-packet.c (dump_sig_subpkt,
+	parse_one_sig_subpkt, can_handle_critical): Add read-only support
+	for preferred keyserver subpackets.  They're basically policy URLs
+	with a different name.  Add a verify-option
+	"show-preferred-keyserver" to turn them on and off (on by default,
+	as per stable branch).
+
+	* g10.c (main): Add "--set-notation" as alias to "--notation-data"
+	this is to make things consistent with --set-policy-url meaning
+	both sigs and certs.
+
 2003-06-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, g10.c (main), keylist.c (list_keyblock_print): Add

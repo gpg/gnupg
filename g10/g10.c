@@ -71,7 +71,7 @@ enum cmd_and_opt_values { aNull = 0,
     oUser	  = 'u',
     oVerbose	  = 'v',
     oCompress	  = 'z',
-    oNotation	  = 'N',
+    oSetNotation  = 'N',
     oBatch	  = 500,
     oSigNotation,
     oCertNotation,
@@ -485,9 +485,10 @@ static ARGPARSE_OPTS opts[] = {
     { oShowPhotos,   "show-photos", 0, "@" },
     { oNoShowPhotos, "no-show-photos", 0, "@" },
     { oPhotoViewer,  "photo-viewer", 2, "@" },
-    { oNotation,   "notation-data", 2, "@" },
-    { oSigNotation,   "sig-notation", 2, "@" },
-    { oCertNotation,  "cert-notation", 2, "@" },
+    { oSetNotation,  "set-notation", 2, "@" },
+    { oSetNotation,  "notation-data", 2, "@" }, /* Alias */
+    { oSigNotation,  "sig-notation", 2, "@" },
+    { oCertNotation, "cert-notation", 2, "@" },
 
     { 302, NULL, 0, N_(
   "@\n(See the man page for a complete listing of all commands and options)\n"
@@ -1176,7 +1177,8 @@ main( int argc, char **argv )
     opt.keyserver_options.include_subkeys=1;
     opt.keyserver_options.include_revoked=1;
     opt.keyserver_options.try_dns_srv=1;
-    opt.verify_options=VERIFY_SHOW_POLICY|VERIFY_SHOW_NOTATION;
+    opt.verify_options=
+      VERIFY_SHOW_POLICY|VERIFY_SHOW_NOTATION|VERIFY_SHOW_KEYSERVER;
     opt.trust_model=TM_AUTO;
     opt.mangle_dos_filenames = 1;
 
@@ -1775,6 +1777,7 @@ main( int argc, char **argv )
 		  {"show-photos",VERIFY_SHOW_PHOTOS},
 		  {"show-policy-url",VERIFY_SHOW_POLICY},
 		  {"show-notation",VERIFY_SHOW_NOTATION},
+		  {"show-preferred-keyserver",VERIFY_SHOW_KEYSERVER},
 		  {NULL,0}
 		};
 
@@ -1795,7 +1798,7 @@ main( int argc, char **argv )
 	    else
 	      opt.exec_path_set=1;
 	    break;
-	  case oNotation:
+	  case oSetNotation:
 	    add_notation_data( pargs.r.ret_str, 0 );
 	    add_notation_data( pargs.r.ret_str, 1 );
 	    break;

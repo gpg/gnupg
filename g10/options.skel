@@ -90,10 +90,10 @@
 # support).
 #
 # Example HKP keyserver:
-#      x-hkp://pgp.mit.edu
+#      x-hkp://subkeys.pgp.net
 #
 # Example email keyserver:
-#      mailto:pgp-public-keys@keys.nl.pgp.net
+#      mailto:pgp-public-keys@keys.pgp.net
 #
 # Example LDAP keyservers:
 #      ldap://pgp.surfnet.nl:11370
@@ -112,7 +112,7 @@
 # Most servers do synchronize with each other and DNS round-robin may
 # give you a quasi-random server each time.
 
-#keyserver x-hkp://pgp.mit.edu
+#keyserver x-hkp://subkeys.pgp.net
 #keyserver mailto:pgp-public-keys@keys.nl.pgp.net
 #keyserver ldap://pgp.surfnet.nl:11370
 #keyserver ldap://keyserver.pgp.com

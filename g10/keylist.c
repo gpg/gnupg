@@ -163,6 +163,47 @@ show_policy_url(PKT_signature *sig,int indent,int mode)
 */
 
 void
+show_keyserver_url(PKT_signature *sig,int indent,int mode)
+{
+  const byte *p;
+  size_t len;
+  int seq=0,crit;
+  FILE *fp=mode?log_stream():stdout;
+
+  while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_PREF_KS,&len,&seq,&crit)))
+    {
+      if(mode!=2)
+	{
+	  int i;
+	  char *str;
+
+	  for(i=0;i<indent;i++)
+	    putchar(' ');
+
+	  /* This isn't UTF8 as it is a URL(?) */
+	  if(crit)
+	    str=_("Critical preferred keyserver: ");
+	  else
+	    str=_("Preferred keyserver: ");
+	  if(mode)
+	    log_info("%s",str);
+	  else
+	    printf("%s",str);
+	  print_string(fp,p,len,0);
+	  fprintf(fp,"\n");
+	}
+
+      /* TODO: put in a status-fd tag for preferred keyservers */
+    }
+}
+
+/*
+  mode=0 for stdout.
+  mode=1 for log_info + status messages
+  mode=2 for status messages only
+*/
+
+void
 show_notation(PKT_signature *sig,int indent,int mode)
 {
   const byte *p;

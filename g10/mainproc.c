@@ -1411,6 +1411,11 @@ check_sig_and_print( CTX c, KBNODE node )
 	      show_notation(sig,0,1);
 	    else
 	      show_notation(sig,0,2);
+
+	    if(opt.verify_options&VERIFY_SHOW_KEYSERVER)
+	      show_keyserver_url(sig,0,1);
+	    else
+	      show_keyserver_url(sig,0,2);
 	  }
 
 	if( !rc && is_status_enabled() ) {
