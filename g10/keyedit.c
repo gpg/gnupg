@@ -43,7 +43,7 @@
 #include "i18n.h"
 #include "keyserver-internal.h"
 
-static void show_prefs( PKT_user_id *uid, int verbose );
+static void show_prefs( PKT_user_id *uid, PKT_signature *selfsig, int verbose);
 static void show_key_with_all_names( KBNODE keyblock, int only_marked,
 	    int with_revoker, int with_fpr, int with_subkeys, int with_prefs );
 static void show_key_and_fingerprint( KBNODE keyblock );
@@ -1667,7 +1667,7 @@ keyedit_menu( const char *username, STRLIST locusr,
             {
 	      PKT_user_id *temp=keygen_get_std_prefs();
 	      tty_printf(_("Set preference list to:\n"));
-	      show_prefs(temp,1);
+	      show_prefs(temp,NULL,1);
 	      m_free(temp);
             }
             if (cpr_get_answer_is_yes ("keyedit.updpref.okay",
@@ -1778,7 +1778,7 @@ keyedit_menu( const char *username, STRLIST locusr,
  * show preferences of a public keyblock.
  */
 static void
-show_prefs (PKT_user_id *uid, int verbose)
+show_prefs (PKT_user_id *uid, PKT_signature *selfsig, int verbose)
 {
     const prefitem_t fake={0,0};
     const prefitem_t *prefs;
@@ -1796,6 +1796,9 @@ show_prefs (PKT_user_id *uid, int verbose)
 
     if (verbose) {
         int any, des_seen=0, sha1_seen=0, uncomp_seen=0;
+	const byte *pref_ks;
+	size_t pref_ks_len;
+
         tty_printf ("     ");
 	tty_printf (_("Cipher: "));
         for(i=any=0; prefs[i].type; i++ ) {
@@ -1887,6 +1890,14 @@ show_prefs (PKT_user_id *uid, int verbose)
 	      }
 	  }
 	tty_printf("\n");
+
+	pref_ks=parse_sig_subpkt(selfsig->hashed,
+				 SIGSUBPKT_PREF_KS,&pref_ks_len);
+	if(pref_ks && pref_ks_len)
+	  {
+	    tty_printf ("     ");
+	    tty_printf("Preferred keyserver: %.*s\n",pref_ks_len,pref_ks);
+	  }
     }
     else {
         tty_printf("    ");
@@ -2257,7 +2268,24 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 		if( with_prefs )
 		  {
 		    if(pk_version>3 || uid->selfsigversion>3)
-		      show_prefs (uid, with_prefs == 2);
+		      {
+			PKT_signature *selfsig=NULL;
+			KBNODE signode;
+
+			for(signode=node->next;
+			    signode && signode->pkt->pkttype==PKT_SIGNATURE;
+			    signode=signode->next)
+			  {
+			    if(signode->pkt->pkt.signature->
+			       flags.chosen_selfsig)
+			      {
+				selfsig=signode->pkt->pkt.signature;
+				break;
+			      }
+			  }
+
+			show_prefs (uid, selfsig, with_prefs == 2);
+		      }
 		    else
 		      tty_printf(_("There are no preferences on a "
 				   "PGP 2.x-style user ID.\n"));
@@ -2270,7 +2298,6 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
         tty_printf (_("Please note that the shown key validity "
                       "is not necessarily correct\n"
                       "unless you restart the program.\n")); 
-
 }
 
 

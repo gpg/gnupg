@@ -1,5 +1,8 @@
 2004-09-16  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (show_key_with_all_names, show_prefs): Show preferred
+	keyserver(s) in "showpref" output.
+
 	* keygen.c (keygen_add_keyserver_url), keyedit.c
 	(menu_set_keyserver_url): Allow setting a keyserver URL of "none"
 	to remove an existing keyserver URL.
