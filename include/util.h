@@ -21,7 +21,7 @@
 #define G10_UTIL_H
 
 #if defined (__MINGW32__) || defined (__CYGWIN32__)
-# include <stdarg.h>
+#include <stdarg.h>
 #endif
 
 #include "types.h"
@@ -93,9 +93,9 @@ void g10_log_hexdump( const char *text, const char *buf, size_t len );
   void g10_log_debug_f( const char *fname,  const char *fmt, ... )
 			    __attribute__ ((format (printf,2,3)));
 #ifndef __riscos__
-  #define BUG() g10_log_bug0(  __FILE__ , __LINE__, __FUNCTION__ )
+#define BUG() g10_log_bug0(  __FILE__ , __LINE__, __FUNCTION__ )
 #else
-  #define BUG() g10_log_bug0(  __FILE__ , __LINE__, __func__ )
+#define BUG() g10_log_bug0(  __FILE__ , __LINE__, __func__ )
 #endif
 #else
   void g10_log_bug( const char *fmt, ... );
@@ -109,7 +109,7 @@ void g10_log_hexdump( const char *text, const char *buf, size_t len );
   void g10_log_error_f( const char *fname, const char *fmt, ... );
   void g10_log_info_f( const char *fname, const char *fmt, ... );
   void g10_log_debug_f( const char *fname, const char *fmt, ... );
-  #define BUG() g10_log_bug0( __FILE__ , __LINE__ )
+#define BUG() g10_log_bug0( __FILE__ , __LINE__ )
 #endif
 
 #define log_hexdump g10_log_hexdump
@@ -227,10 +227,10 @@ int strcasecmp( const char *, const char *b);
 int strncasecmp (const char *, const char *b, size_t n);
 #endif
 #ifndef HAVE_STRTOUL
-  #define strtoul(a,b,c)  ((unsigned long)strtol((a),(b),(c)))
+#define strtoul(a,b,c)  ((unsigned long)strtol((a),(b),(c)))
 #endif
 #ifndef HAVE_MEMMOVE
-  #define memmove(d, s, n) bcopy((s), (d), (n))
+#define memmove(d, s, n) bcopy((s), (d), (n))
 #endif
 
 #if defined (__MINGW32__)
@@ -246,16 +246,16 @@ int vasprintf ( char **result, const char *format, va_list args);
 
 /**** other missing stuff ****/
 #ifndef HAVE_ATEXIT  /* For SunOS */
-  #define atexit(a)    (on_exit((a),0))
+#define atexit(a)    (on_exit((a),0))
 #endif
 
 #ifndef HAVE_RAISE
-  #define raise(a) kill(getpid(), (a))
+#define raise(a) kill(getpid(), (a))
 #endif
 
 /******** some macros ************/
 #ifndef STR
-  #define STR(v) #v
+#define STR(v) #v
 #endif
 #define STR2(v) STR(v)
 #define DIM(v) (sizeof(v)/sizeof((v)[0]))
@@ -295,11 +295,10 @@ void riscos_dump_fdlist(void);
 void riscos_list_openfiles(void);
 #endif
 #ifndef __RISCOS__C__
-  #define getpid riscos_getpid
-  #define kill(a,b) riscos_kill((a),(b))
-  #define access(a,b) riscos_access((a),(b))
+#define getpid riscos_getpid
+#define kill(a,b) riscos_kill((a),(b))
+#define access(a,b) riscos_access((a),(b))
 #endif /* !__RISCOS__C__ */
 #endif /* __riscos__ */
 
 #endif /*G10_UTIL_H*/
-
