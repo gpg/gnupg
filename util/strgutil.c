@@ -1,5 +1,6 @@
 /* strgutil.c -  string utilities
- * Copyright (C) 1994, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1994, 1998, 1999, 2000, 2001,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -825,7 +826,7 @@ strlwr(char *s)
 {
     char *p;
     for(p=s; *p; p++ )
-	*p = tolower(*p);
+	*p = tolower(*(unsigned char *)p);
     return s;
 }
 #endif
@@ -835,7 +836,8 @@ int
 strcasecmp( const char *a, const char *b )
 {
     for( ; *a && *b; a++, b++ ) {
-	if( *a != *b && toupper(*a) != toupper(*b) )
+	if( *a != *b
+            && toupper(*(const byte *)a) != toupper(*(const byte *)b) )
 	    break;
     }
     return *(const byte*)a - *(const byte*)b;
@@ -847,7 +849,8 @@ int
 strncasecmp( const char *a, const char *b, size_t n )
 {
     for( ; n && *a && *b; a++, b++, n--) {
-	if( *a != *b && toupper(*a) != toupper(*b) )
+	if( *a != *b
+            && toupper(*(const byte *)a) != toupper(*(const byte *)b) )
 	    break;
     }
     if (!n)

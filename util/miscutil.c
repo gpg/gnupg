@@ -1,5 +1,5 @@
 /* miscutil.c -  miscellaneous utilities
- *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -56,11 +56,11 @@ scan_isodatestr( const char *string )
     if( strlen(string) != 10 || string[4] != '-' || string[7] != '-' )
 	return 0;
     for( i=0; i < 4; i++ )
-	if( !isdigit(string[i]) )
+	if( !digitp(string+i) )
 	    return 0;
-    if( !isdigit(string[5]) || !isdigit(string[6]) )
+    if( !digitp(string+5) || !digitp(string+6) )
 	return 0;
-    if( !isdigit(string[8]) || !isdigit(string[9]) )
+    if( !digitp(string+8) || !digitp(string+9) )
 	return 0;
     year = atoi(string);
     month = atoi(string+5);

@@ -1,3 +1,12 @@
+2003-07-10  David Shaw  <dshaw@jabberwocky.com> (from Werner on stable branch)
+
+	* iobuf.c (check_special_filename): Replaced is isdigit by digitp
+	to avoid passing negative values and potential locale problems.
+	Problem noted by Christian Biere.
+	* strgutil.c (strlwr,strcasecmp,strncasecmp): Make sure we don't
+	pass a negative value.
+	* miscutil.c (scan_isodatestr): Ditto.
+
 2003-05-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* srv.h, srv.c: Include windows.h with MINGW32.
