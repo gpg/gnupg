@@ -654,13 +654,18 @@ int main(int argc,char *argv[])
   fprintf(console,
 	  "gpgkeys: WARNING: this is an *experimental* HKP interface!\n");
 
-  while((arg=getopt(argc,argv,"ho:"))!=-1)
+  while((arg=getopt(argc,argv,"hVo:"))!=-1)
     switch(arg)
       {
       default:
       case 'h':
 	fprintf(console,"-h\thelp\n");
+	fprintf(console,"-V\tversion\n");
 	fprintf(console,"-o\toutput to this file\n");
+	return KEYSERVER_OK;
+
+      case 'V':
+	fprintf(stdout,"0\n%s\n",VERSION);
 	return KEYSERVER_OK;
 
       case 'o':
