@@ -1,5 +1,5 @@
 /* verify.c - verify signed data
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -101,7 +101,7 @@ verify_signatures( int nfiles, char **files )
 	iobuf_push_filter( fp, armor_filter, &afx );
 
     sl = NULL;
-    for(i=1 ; i < nfiles; i++ )
+    for(i=nfiles-1 ; i > 0 ; i-- )
 	add_to_strlist( &sl, files[i] );
     rc = proc_signature_packets( NULL, fp, sl, sigfile );
     free_strlist(sl);

@@ -39,9 +39,7 @@
 #include "photoid.h"
 #include "i18n.h"
 
-
 #define CONTROL_D ('D' - 'A' + 1)
-
 
 /****************
  * Show the revocation reason as it is stored with the given signature
@@ -202,43 +200,46 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
           {
             KBNODE keyblock, un;
 
-            tty_printf(_("No trust value assigned to:\n"
-                         "%4u%c/%08lX %s \""),
-                       nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
-                       (ulong)keyid[1], datestr_from_pk( pk ) );
+            tty_printf(_("No trust value assigned to:\n"));
+	    tty_printf("%4u%c/%s %s\n",nbits_from_pk( pk ),
+		       pubkey_letter( pk->pubkey_algo ),
+                       keystr(keyid), datestr_from_pk( pk ) );
+	    tty_printf(_("          \""));
             p = get_user_id( keyid, &n );
-            tty_print_utf8_string( p, n ),
-              m_free(p);
+            tty_print_utf8_string( p, n );
+	    m_free(p);
             tty_printf("\"\n");
 
             keyblock = get_pubkeyblock (keyid);
             if (!keyblock)
                 BUG ();
-            for (un=keyblock; un; un = un->next) {
+            for (un=keyblock; un; un = un->next)
+	      {
                 if (un->pkt->pkttype != PKT_USER_ID )
-                    continue;
+		  continue;
                 if (un->pkt->pkt.user_id->is_revoked )
-                    continue;
+		  continue;
                 if (un->pkt->pkt.user_id->is_expired )
-                    continue;
+		  continue;
 		/* Only skip textual primaries */
-                if (un->pkt->pkt.user_id->is_primary &&
-		    !un->pkt->pkt.user_id->attrib_data )
-		    continue;
+                if (un->pkt->pkt.user_id->is_primary
+		    && !un->pkt->pkt.user_id->attrib_data )
+		  continue;
                 
 		if((opt.verify_options&VERIFY_SHOW_PHOTOS)
 		   && un->pkt->pkt.user_id->attrib_data)
-                    show_photos(un->pkt->pkt.user_id->attribs,
-                                un->pkt->pkt.user_id->numattribs,pk,NULL);
-                
-		tty_printf ("      %s", _("                aka \""));
+		  show_photos(un->pkt->pkt.user_id->attribs,
+			      un->pkt->pkt.user_id->numattribs,pk,NULL);
+
+		tty_printf(_("      aka \""));
                 tty_print_utf8_string (un->pkt->pkt.user_id->name,
                                        un->pkt->pkt.user_id->len );
                 tty_printf("\"\n");
-            }
+	      }
         
             print_fingerprint (pk, NULL, 2);
             tty_printf("\n");
+	    release_kbnode (keyblock);
           }
 	/* This string also used in keyedit.c:sign_uids */
         tty_printf (_(
