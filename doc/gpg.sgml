@@ -643,6 +643,15 @@ even in batch mode add the option --yes.
 
 
 <varlistentry>
+<term>--export-ownertrust &OptParmFile;</term>
+<listitem><para>
+Store the ownertrust values into
+&ParmFile; (or stdin if not given).  This is useful for backup
+purposes as these values are the only ones which can't be re-created
+from a corrupted trust DB.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--import-ownertrust &OptParmFiles;</term>
 <listitem><para>
 Update the trustdb with the ownertrust values stored
