@@ -1,15 +1,15 @@
 
-  * Check if an object (a message, detached sign, public key, or whatever)
-    is signed by definite user, i.e. define user
-    (userid, or any other unique identification) on command line.
-    --> NO: Use a script and --status-fd
+    * Check if an object (a message, detached sign, public key, or whatever)
+      is signed by definite user, i.e. define user
+      (userid, or any other unique identification) on command line.
+      --> NO: Use a script and --status-fd
 
     * Change the internal represention of keyid into a struct which
       can also hold the localid and extend the localid to hold information
       of the subkey number because two subkeys may have the same keyid.
 
     * signature verification is done duplicated on import: in import.c and
-      tehn in trustdb.c too.  Maybe we can use a flag to skip the actual
+      then in trustdb.c too.  Maybe we can use a flag to skip the actual
       verification process (this should work if we use the same keyblock,
       but I'm not sure how to accomplish that).  Another way is to allow
       the import of bogus data and let trustdb mark these keys as invalid;
@@ -17,20 +17,31 @@
       keyserver by sending him a lot of bogus signatures which he has
       to check - Needs further investigation.
 
-  * abstraction of the MPI
+    * Add a way to override the current cipher/md implementations
+      by others (using extensions)
 
-  * Add a way to override the current cipher/md implementations
-    by others (using extensions)
+    * Not GnuPG replated:  What about option completion in bash?
+      Can "--dump-options" be used for this or should we place the
+      options in a special ELF segment?
 
-  * Not GnuPG replated:  What about option completion in bash?
-    Can "--dump-options" be used for this or should we place the
-    options in a special ELF segment?
-
-  * Split key support (n-out-of-m)
+    * Split key support (n-out-of-m)
 
     * Check Berkeley DB - it is in glibc - any licensing problems?
 
     * add an option to re-create a public key from a secret key; we
       can do this in trustdb.c:verify_own_keys.
       (special tool?)
+
+    * rewrite --list-packets or put it into another tool.
+
+    * We need a maintainence pass over the trustdb which flags
+      signatures as expired if the key used to make the signature has
+      expired.	Maybe it is a good idea to store the exiration time
+      in the key record of the trustdb.
+    * write a tool to extract selected keys from a file.
+
+    * Change the buffering to a mbuf like scheme? Need it for PSST anyway;
+      see Michael's proposal.
+
+    * Work on the library
 

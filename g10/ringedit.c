@@ -1,14 +1,14 @@
 /* ringedit.c -  Function for key ring editing
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of GNUPG.
+ * This file is part of GnuPG.
  *
- * GNUPG is free software; you can redistribute it and/or modify
+ * GnuPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GNUPG is distributed in the hope that it will be useful,
+ * GnuPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -298,7 +298,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 	    else
 		log_info(_("%s: keyring created\n"), filename );
 	}
-      #ifdef __MINGW32__
+      #if __MINGW32__ || 1
 	/* must close it again */
 	iobuf_close( iobuf );
 	iobuf = NULL;
@@ -687,6 +687,7 @@ enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
 	kbpos->resno = i;
 	rentry = check_pos( kbpos );
 	kbpos->rt = resource_table[i].rt;
+	kbpos->valid = 0;
 	switch( kbpos->rt ) {
 	  case rt_RING:
 	    kbpos->fp = iobuf_open( rentry->fname );
@@ -860,7 +861,7 @@ update_keyblock( KBPOS *kbpos, KBNODE root )
  * A string "GnuPG user db", a \n.
  * user ids of one key, delimited by \t,
  * a # or ^ followed by a 20 byte fingerprint, followed by an \n
- * The literal characters =, \n, \t, #, ^ must be replaced by a equal sign
+ * The literal characters %, \n, \t, #, ^ must be replaced by a percent sign
  * and their hex value.
  *
  * (We use Boyer/Moore pattern matching)
@@ -1019,8 +1020,9 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
     init_packet(&pkt);
     save_mode = set_packet_list_mode(0);
     kbpos->rt = rt_RING;
+    kbpos->valid = 0;
 
-  #if __MINGW32__
+  #if __MINGW32__  || 1
     assert(!iobuf);
     iobuf = iobuf_open( fname );
     if( !iobuf ) {
@@ -1057,13 +1059,15 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
 	    BUG();
 	free_packet(&pkt);
     }
-    if( !rc )
+    if( !rc ) {
 	kbpos->offset = offset;
+	kbpos->valid = 1;
+    }
 
   leave:
     free_packet(&pkt);
     set_packet_list_mode(save_mode);
-  #if __MINGW32__
+  #if __MINGW32__ || 1
     iobuf_close(iobuf);
   #endif
     return rc;
@@ -1089,6 +1093,8 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
 	return G10ERR_OPEN_FILE;
     }
 
+    if( !kbpos->valid )
+	log_debug("kbpos not valid in keyring_read, want %d\n", (int)kbpos->offset );
     if( iobuf_seek( a, kbpos->offset ) ) {
 	log_error("can't seek to %lu\n", kbpos->offset);
 	iobuf_close(a);
@@ -1112,6 +1118,12 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
 	}
 	/* make a linked list of all packets */
 	switch( pkt->pkttype ) {
+	  case PKT_COMPRESSED:
+	    log_error("skipped compressed packet in keyring\n" );
+	    free_packet(pkt);
+	    init_packet(pkt);
+	    break;
+
 	  case PKT_PUBLIC_KEY:
 	  case PKT_SECRET_KEY:
 	    if( in_cert )
@@ -1129,6 +1141,7 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
 	}
     }
   ready:
+    kbpos->valid = 0;
     if( rc == -1 && root )
 	rc = 0;
 
@@ -1174,6 +1187,12 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
 	}
 	/* make a linked list of all packets */
 	switch( pkt->pkttype ) {
+	  case PKT_COMPRESSED:
+	    log_error("skipped compressed packet in keyring\n" );
+	    free_packet(pkt);
+	    init_packet(pkt);
+	    break;
+
 	  case PKT_PUBLIC_KEY:
 	  case PKT_SECRET_KEY:
 	    if( root ) { /* store this packet */
@@ -1387,6 +1406,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 		goto leave;
 	    }
 	}
+	kbpos->valid = 0;
     }
 
     if( mode == 2 || mode == 3 ) { /* delete or update */

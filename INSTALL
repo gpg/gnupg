@@ -54,9 +54,6 @@ Don't forget to delete "config.cache" and run "./config.status --recheck".
 
 The Random Device
 =================
-The current version of GNUPG needs the support of a random device.
-If there is no such device, it uses a very simple RNG, which does
-not generate strong random numbers.
 Random devices are available in Linux, FreeBSD and OpenBSD.
 The device files may not exist on your system, please check this
 and create them if needed.
@@ -74,6 +71,18 @@ The FreeBSD files [from the 970202 snapshot]:
 You can create them with:
     mknod /dev/random  c 2 3
     mknod /dev/urandom c 2 4
+
+Unices without a random devices must use another entropy collector
+which is called rndunix and available as an extension module. You
+should put this in your ~/.gnupg/options file:
+===8<====================
+load-extension rndunix
+===>8====================
+This collector works by running a lot of tools which yields more or
+less unpredictable output and fedds this as entropy into the random
+generator - It should work reliable but you should check whether
+it produces good output for your kinf of Unix.	There are some debug
+options to help you (see cipher/rndunix.c).
 
 
 

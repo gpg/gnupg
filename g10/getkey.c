@@ -1,14 +1,14 @@
 /* getkey.c -  Get a key from the database
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of GNUPG.
+ * This file is part of GnuPG.
  *
- * GNUPG is free software; you can redistribute it and/or modify
+ * GnuPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GNUPG is distributed in the hope that it will be useful,
+ * GnuPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -160,7 +160,7 @@ cache_public_key( PKT_public_key *pk )
     if( pk_cache_entries >= MAX_PK_CACHE_ENTRIES ) {
 	/* fixme: use another algorithm to free some cache slots */
 	pk_cache_disabled=1;
-	if( opt.verbose )
+	if( opt.verbose > 1 )
 	    log_info(_("too many entries in pk cache - disabled\n"));
 	return;
     }
@@ -207,6 +207,38 @@ cache_user_id( PKT_user_id *uid, u32 *keyid )
     uid_cache_entries++;
 }
 
+
+void
+getkey_disable_caches()
+{
+  #if MAX_UNK_CACHE_ENTRIES
+    {
+	keyid_list_t kl, kl2;
+	for( kl = unknown_keyids; kl; kl = kl2 ) {
+	    kl2 = kl->next;
+	    m_free(kl);
+	}
+	unknown_keyids = NULL;
+	unk_cache_disabled = 1;
+    }
+  #endif
+  #if MAX_PK_CACHE_ENTRIES
+    {
+	pk_cache_entry_t ce, ce2;
+	u32 keyid[2];
+
+	for( ce = pk_cache; ce; ce = ce2 ) {
+	    ce2 = ce->next;
+	    free_public_key( ce->pk );
+	    m_free( ce );
+	}
+	pk_cache_disabled=1;
+	pk_cache_entries = 0;
+	pk_cache = NULL;
+    }
+  #endif
+    /* fixme: disable user id cache ? */
+}
 
 
 /****************
@@ -259,7 +291,7 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
 	;
     else if( ++unk_cache_entries > MAX_UNK_CACHE_ENTRIES ) {
 	unk_cache_disabled = 1;
-	if( opt.verbose )
+	if( opt.verbose > 1 )
 	    log_info(_("too many entries in unk cache - disabled\n"));
     }
     else {

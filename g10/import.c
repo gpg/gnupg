@@ -130,6 +130,9 @@ import_keys( const char *fname, int fast )
 	return G10ERR_OPEN_FILE;
     }
 
+
+    getkey_disable_caches();
+
     if( !opt.no_armor ) /* armored reading is not disabled */
 	iobuf_push_filter( inp, armor_filter, &afx );
 

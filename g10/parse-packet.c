@@ -1,14 +1,14 @@
 /* parse-packet.c  - read packets
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of GNUPG.
+ * This file is part of GnuPG.
  *
- * GNUPG is free software; you can redistribute it and/or modify
+ * GnuPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GNUPG is distributed in the hope that it will be useful,
+ * GnuPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -39,7 +39,11 @@ static int mpi_print_mode = 0;
 static int list_mode = 0;
 
 static int  parse( IOBUF inp, PACKET *pkt, int reqtype,
-		   ulong *retpos, int *skip, IOBUF out, int do_skip );
+		   ulong *retpos, int *skip, IOBUF out, int do_skip
+	    #ifdef DEBUG_PARSE_PACKET
+		   ,const char *dbg_w, const char *dbg_f, int dbg_l
+	    #endif
+		 );
 static int  copy_packet( IOBUF inp, IOBUF out, int pkttype,
 					       unsigned long pktlen );
 static void skip_packet( IOBUF inp, int pkttype, unsigned long pktlen );
@@ -119,6 +123,18 @@ unknown_pubkey_warning( int algo )
  * Note: The function may return an error and a partly valid packet;
  * caller must free this packet.
  */
+#ifdef DEBUG_PARSE_PACKET
+int
+dbg_parse_packet( IOBUF inp, PACKET *pkt, const char *dbg_f, int dbg_l )
+{
+    int skip, rc;
+
+    do {
+	rc = parse( inp, pkt, 0, NULL, &skip, NULL, 0, "parse", dbg_f, dbg_l );
+    } while( skip );
+    return rc;
+}
+#else
 int
 parse_packet( IOBUF inp, PACKET *pkt )
 {
@@ -129,10 +145,24 @@ parse_packet( IOBUF inp, PACKET *pkt )
     } while( skip );
     return rc;
 }
+#endif
 
 /****************
  * Like parse packet, but only return packets of the given type.
  */
+#ifdef DEBUG_PARSE_PACKET
+int
+dbg_search_packet( IOBUF inp, PACKET *pkt, int pkttype, ulong *retpos,
+		   const char *dbg_f, int dbg_l )
+{
+    int skip, rc;
+
+    do {
+	rc = parse( inp, pkt, pkttype, retpos, &skip, NULL, 0, "search", dbg_f, dbg_l );
+    } while( skip );
+    return rc;
+}
+#else
 int
 search_packet( IOBUF inp, PACKET *pkt, int pkttype, ulong *retpos )
 {
@@ -143,10 +173,24 @@ search_packet( IOBUF inp, PACKET *pkt, int pkttype, ulong *retpos )
     } while( skip );
     return rc;
 }
+#endif
 
 /****************
  * Copy all packets from INP to OUT, thereby removing unused spaces.
  */
+#ifdef DEBUG_PARSE_PACKET
+int
+dbg_copy_all_packets( IOBUF inp, IOBUF out,
+		   const char *dbg_f, int dbg_l )
+{
+    PACKET pkt;
+    int skip, rc=0;
+    do {
+	init_packet(&pkt);
+    } while( !(rc = parse( inp, &pkt, 0, NULL, &skip, out, 0, "copy", dbg_f, dbg_l )));
+    return rc;
+}
+#else
 int
 copy_all_packets( IOBUF inp, IOBUF out )
 {
@@ -157,11 +201,28 @@ copy_all_packets( IOBUF inp, IOBUF out )
     } while( !(rc = parse( inp, &pkt, 0, NULL, &skip, out, 0 )));
     return rc;
 }
+#endif
 
 /****************
  * Copy some packets from INP to OUT, thereby removing unused spaces.
  * Stop at offset STOPoff (i.e. don't copy packets at this or later offsets)
  */
+#ifdef DEBUG_PARSE_PACKET
+int
+dbg_copy_some_packets( IOBUF inp, IOBUF out, ulong stopoff,
+		   const char *dbg_f, int dbg_l )
+{
+    PACKET pkt;
+    int skip, rc=0;
+    do {
+	if( iobuf_tell(inp) >= stopoff )
+	    return 0;
+	init_packet(&pkt);
+    } while( !(rc = parse( inp, &pkt, 0, NULL, &skip, out, 0,
+				     "some", dbg_f, dbg_l )) );
+    return rc;
+}
+#else
 int
 copy_some_packets( IOBUF inp, IOBUF out, ulong stopoff )
 {
@@ -174,10 +235,26 @@ copy_some_packets( IOBUF inp, IOBUF out, ulong stopoff )
     } while( !(rc = parse( inp, &pkt, 0, NULL, &skip, out, 0 )) );
     return rc;
 }
+#endif
 
 /****************
  * Skip over N packets
  */
+#ifdef DEBUG_PARSE_PACKET
+int
+dbg_skip_some_packets( IOBUF inp, unsigned n,
+		   const char *dbg_f, int dbg_l )
+{
+    int skip, rc=0;
+    PACKET pkt;
+
+    for( ;n && !rc; n--) {
+	init_packet(&pkt);
+	rc = parse( inp, &pkt, 0, NULL, &skip, NULL, 1, "skip", dbg_f, dbg_l );
+    }
+    return rc;
+}
+#else
 int
 skip_some_packets( IOBUF inp, unsigned n )
 {
@@ -190,7 +267,7 @@ skip_some_packets( IOBUF inp, unsigned n )
     }
     return rc;
 }
-
+#endif
 
 
 /****************
@@ -202,7 +279,11 @@ skip_some_packets( IOBUF inp, unsigned n )
  */
 static int
 parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
-       int *skip, IOBUF out, int do_skip )
+       int *skip, IOBUF out, int do_skip
+#ifdef DEBUG_PARSE_PACKET
+       ,const char *dbg_w, const char *dbg_f, int dbg_l
+#endif
+     )
 {
     int rc=0, c, ctb, pkttype, lenbytes;
     unsigned long pktlen;
@@ -214,6 +295,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
     assert( !pkt->pkt.generic );
     if( retpos )
 	*retpos = iobuf_tell(inp);
+
     if( (ctb = iobuf_get(inp)) == -1 ) {
 	rc = -1;
 	goto leave;
@@ -221,7 +303,8 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
     hdrlen=0;
     hdr[hdrlen++] = ctb;
     if( !(ctb & 0x80) ) {
-	log_error("%s: invalid packet (ctb=%02x)\n", iobuf_where(inp), ctb );
+	log_error("%s: invalid packet (ctb=%02x) near %lu\n",
+			    iobuf_where(inp), ctb, iobuf_tell(inp) );
 	rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
@@ -294,9 +377,16 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	goto leave;
     }
 
-    if( DBG_PACKET )
+    if( DBG_PACKET ) {
+      #ifdef DEBUG_PARSE_PACKET
+	log_debug("parse_packet(iob=%d): type=%d length=%lu%s (%s.%s.%d)\n",
+		   iobuf_id(inp), pkttype, pktlen, new_ctb?" (new_ctb)":"",
+		    dbg_w, dbg_f, dbg_l );
+      #else
 	log_debug("parse_packet(iob=%d): type=%d length=%lu%s\n",
 		   iobuf_id(inp), pkttype, pktlen, new_ctb?" (new_ctb)":"" );
+      #endif
+    }
     pkt->pkttype = pkttype;
     rc = G10ERR_UNKNOWN_PACKET; /* default error */
     switch( pkttype ) {
@@ -384,6 +474,7 @@ copy_packet( IOBUF inp, IOBUF out, int pkttype, unsigned long pktlen )
 		return G10ERR_WRITE_FILE; /* write error */
     }
     else if( !pktlen && pkttype == PKT_COMPRESSED ) {
+	log_debug("copy_packet: compressed!\n");
 	/* compressed packet, copy till EOF */
 	while( (n = iobuf_read( inp, buf, 100 )) != -1 )
 	    if( iobuf_write(out, buf, n ) )

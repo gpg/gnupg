@@ -1,14 +1,14 @@
 /* trustdb.h - Trust database
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of GNUPG.
+ * This file is part of GnuPG.
  *
- * GNUPG is free software; you can redistribute it and/or modify
+ * GnuPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GNUPG is distributed in the hope that it will be useful,
+ * GnuPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -53,7 +53,8 @@ int check_trust( PKT_public_key *pk, unsigned *r_trustlevel );
 int query_trust_info( PKT_public_key *pk );
 int enum_cert_paths( void **context, ulong *lid,
 		     unsigned *ownertrust, unsigned *validity );
-int enum_cert_paths_print( void **context, FILE *fp, ulong selected_lid );
+int enum_cert_paths_print( void **context, FILE *fp,
+					   int refresh, ulong selected_lid );
 unsigned get_ownertrust( ulong lid );
 int get_ownertrust_info( ulong lid );
 byte *get_pref_data( ulong lid, const byte *namehash, size_t *ret_n );

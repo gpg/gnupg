@@ -1,3 +1,7 @@
+Wed Dec 23 13:18:14 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* README: Replaced the command overview with a short intro.
+
 Sat Dec 12 18:40:32 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* configure.in: Add check for dlopen in libc (Greg Troxel)

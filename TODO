@@ -1,49 +1,48 @@
+Bugs
+----
+    * clearsig: keep lineendings as they are. Remember that trailings
+      blanks are not hashed.  Funny: pgp263in works fine even with
+      a source file with CR,LF but GnuPG and pgp263in has problems
+      if the clearsign has been created by pgp263ia.
+      Needs more investigation - anyone?
 
+Important
+----------
     * Check revocation and expire stuff.  PLEASE: THIS MUST BE TESTED!
-
-    * Escape "From "
 
     * Check calculation of key validity. PLEASE: IT IS IMPORTED THAT
       THIS GET TESTED.
 
-    * preferences of hash algorithms are not yet used.
+    * It has been reported that lockfiles are not removed in all cases.
+      cleanup is done with atexit() and all signals trigger exit() -
+      anything wrong with this?
 
     * I noticed, that we sometimes have only 3 items in a trustrecord, but
       a next pointer ro more records - check wehther the reuse code really
       works. Maybe this is the reason for the "Hmmm public key lost"
 
-    * clearsig: keep lineendings as they are. Remember that trailings
-      blanks are not hashed.
+Needed
+------
+    * remove more "Fixmes"
 
-    * should we flush the getkey.c caches while doing an import?
+    * Replace Blowfish by Twofish and add the new encrypted packet typ
+      which has a MACing option (append SHA1 hash to the plaintext and
+      encrypt this all) - We need an identifier for Twofish to put this
+      one into the cipher preferences.
 
-    * We need a maintainence pass over the trustdb which flags
-      signatures as expired if the key used to make the signature has
-      expired.	Maybe it is a good idea to store the exiration time
-      in the key record of the trustdb.
-
-    * write a tool to extract selected keys from a file.
-
+Nice to have
+------------
+    * preferences of hash algorithms are not yet used.
     * new menu to delete signatures and list signature in menu
-
     * Replace the SIGUSR1 stuff by semaphores to avoid loss of a signal.
       or use POSIX.4 realtime signals.
-
     * add test cases for invalid data (scrambled armor or other random data)
-
-    * rewrite --list-packets or put it into another tool.
-
+    * add checking of armor trailers
     * Burn the buffers used by fopen(), or use read(2). Does this
       really make sense?
-
-    * Change the buffering to a mbuf like scheme? Need it for PSST anyway;
-      see Michael's proposal.
-    * add checking of armor trailers
-    * remove all "Fixmes" ;-)
-
     * change the fake_data stuff to mpi_set_opaque
 
-    * Replace Blowfish by Twofish
-
-    * Work on the library
+Minor Bugs
+----------
+    * md_start_debug used to crash at pgm termination.
 

@@ -1,3 +1,5 @@
+Noteworthy changes in version 0.x.x
+-----------------------------------
 
     * --export does now only exports rfc2440 compatible keys; the
       old behavious is available with --export-all.
@@ -13,8 +15,8 @@
 
     * New option --escape-from-lines to "dash-escape" "From " lines to
       prevent mailers to change them to ">From ".  This is not enabled by
-      default because it is not in compliace with rfc2440. but you should
-      turn it on.
+      default because it is not in compliance with rfc2440 - however, you
+      should turn it on.
 
 Noteworthy changes in version 0.4.5
 -----------------------------------

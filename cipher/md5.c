@@ -19,7 +19,7 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 /* Written by Ulrich Drepper <drepper@gnu.ai.mit.edu>, 1995.  */
-/* modified for GNUPG by <werner.koch@guug.de> */
+/* modified for GnuPG by <werner.koch@guug.de> */
 
 /* Test values:
  * ""                  D4 1D 8C D9 8F 00 B2 04  E9 80 09 98 EC F8 42 7E

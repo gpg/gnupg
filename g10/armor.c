@@ -1179,7 +1179,7 @@ armor_filter( void *opaque, int control,
 	    iobuf_writestr(a, "-----\n");
 	}
 	else if( !afx->any_data && !afx->inp_bypass )
-	    log_error(_("no valid RFC1991 or OpenPGP data found.\n"));
+	    log_error(_("no valid OpenPGP data found.\n"));
     }
     else if( control == IOBUFCTRL_DESC )
 	*(char**)buf = "armor_filter";

@@ -55,6 +55,44 @@ RFCs
 
 
 
+Debug Flags
+-----------
+Use the option "--debug n" to output debug information. This option
+can be used multiple times, all values are ORed; n maybe prefixed with
+0x to use hex-values.
+
+     value  used for
+     -----  ----------------------------------------------
+      1     packet reading/writing
+      2     MPI details
+      4     ciphers and primes (may reveal sensitive data)
+      8     iobuf filter functions
+      16    iobuf stuff
+      32    memory allocation stuff
+      64    caching
+      128   show memory statistics at exit
+      256   trust verification stuff
+
+
+
+
+Directory Layout
+----------------
+  ./		Readme, configure
+  ./scripts	Scripts needed by configure and others
+  ./doc 	Documentaion
+  ./util	General purpose utility function
+  ./mpi 	Multi precision integer library
+  ./cipher	Cryptographic functions
+  ./g10 	GnuPG application
+  ./tools	Some helper and demo programs
+  ./keybox	The keybox library
+  ./gcrypt	Stuff needed to build libgcrypt
+
+
+
+
+
 Memory allocation
 -----------------
 Use only the functions:

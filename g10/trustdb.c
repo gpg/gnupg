@@ -1,14 +1,14 @@
 /* trustdb.c
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of GNUPG.
+ * This file is part of GnuPG.
  *
- * GNUPG is free software; you can redistribute it and/or modify
+ * GnuPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GNUPG is distributed in the hope that it will be useful,
+ * GnuPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -1750,7 +1750,8 @@ enum_cert_paths( void **context, ulong *lid,
  * Print the current path
  */
 int
-enum_cert_paths_print( void **context, FILE *fp, ulong selected_lid )
+enum_cert_paths_print( void **context, FILE *fp,
+				       int refresh, ulong selected_lid )
 {
     struct enum_cert_paths_ctx *ctx;
     TRUST_SEG_LIST tsl;
@@ -1760,11 +1761,32 @@ enum_cert_paths_print( void **context, FILE *fp, ulong selected_lid )
     ctx = *context;
     if( !ctx->tsl )
 	return;
+    tsl = ctx->tsl;
 
     if( !fp )
 	fp = stderr;
 
-    print_path( ctx->tsl->pathlen, ctx->tsl->path, fp, selected_lid );
+    if( refresh ) { /* update the ownertrust and if possible the validity */
+	int i;
+	int match = tdbio_db_matches_options();
+
+	for( i = 0; i < tsl->pathlen; i++ )  {
+	    TRUSTREC rec;
+
+	    read_record( tsl->path[i].lid, &rec, RECTYPE_DIR );
+	    tsl->path[i].otrust = rec.r.dir.ownertrust;
+	    /* update validity only if we have it in the cache
+	     * calculation is too time consuming */
+	    if( match && (rec.r.dir.dirflags & DIRF_VALVALID)
+		      && rec.r.dir.validity ) {
+		tsl->path[i].trust = rec.r.dir.validity;
+		if( rec.r.dir.dirflags & DIRF_REVOKED )
+		    tsl->path[i].trust = TRUST_FLAG_REVOKED;
+	    }
+	}
+    }
+
+    print_path( tsl->pathlen, tsl->path, fp, selected_lid );
 }
 
 

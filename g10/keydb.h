@@ -1,14 +1,14 @@
 /* keydb.h - Key database
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of GNUPG.
+ * This file is part of GnuPG.
  *
- * GNUPG is free software; you can redistribute it and/or modify
+ * GnuPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GNUPG is distributed in the hope that it will be useful,
+ * GnuPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -77,6 +77,7 @@ struct keyblock_pos_struct {
     byte keybuf[21];
   #endif
     PACKET *pkt;     /* ditto */
+    int valid;
 };
 typedef struct keyblock_pos_struct KBPOS;
 
@@ -130,6 +131,7 @@ char *get_last_passphrase(void);
 /*-- getkey.c --*/
 int classify_user_id( const char *name, u32 *keyid, byte *fprint,
 		      const char **retstr, size_t *retlen );
+void getkey_disable_caches(void);
 int get_pubkey( PKT_public_key *pk, u32 *keyid );
 int get_pubkey_byname( GETKEY_CTX *rx, PKT_public_key *pk,
 		       const char *name, KBNODE *ret_keyblock );

@@ -1,14 +1,14 @@
 /* pkclist.c
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of GNUPG.
+ * This file is part of GnuPG.
  *
- * GNUPG is free software; you can redistribute it and/or modify
+ * GnuPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GNUPG is distributed in the hope that it will be useful,
+ * GnuPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -205,6 +205,8 @@ edit_ownertrust( ulong lid, int mode )
 
 /****************
  * Try to add some more owner trusts (interactive)
+ * This function presents all the signator in a certificate
+ * chain who have no trust value assigned.
  * Returns: -1 if no ownertrust were added.
  */
 static int
@@ -232,10 +234,18 @@ _("Could not find a valid trust path to the key.  Let's see whether we\n"
 	if( lid == pk->local_id )
 	    continue;
 	any=1;
-	if( otrust == TRUST_UNDEFINED || otrust == TRUST_EXPIRED ||
-	    otrust == TRUST_UNKNOWN ) {
+	if( changed ) {
+	    /* because enum_cert_paths() makes a snapshop of the
+	     * trust paths, the otrust and validity are not anymore
+	     * valid after changing an entry - we have to reread
+	     * those values from then on
+	     */
+	    otrust = get_ownertrust( lid );
+	}
+	if( otrust == TRUST_UNDEFINED ) {
 	    any_undefined=1;
-	    enum_cert_paths_print( &context, NULL, lid );
+	    enum_cert_paths_print( &context, NULL, changed, lid );
+	    tty_printf("\n");
 	    rc = edit_ownertrust( lid, 0 );
 	    if( rc == -1 ) {
 		*quit = 1;
