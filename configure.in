@@ -19,6 +19,7 @@ AC_ARG_ENABLE(m-debug,
 [  --enable-m-debug    Enable debugging of memory allocation])
 if test "$enableval" = y || test "$enableval" = yes; then
     AC_DEFINE(M_DEBUG)
+    CFLAGS=-g
 fi
 
 dnl some additional macros
@@ -141,9 +142,9 @@ WK_CHECK_TYPEDEF(ulong, HAVE_ULONG_TYPEDEF)
 WK_CHECK_TYPEDEF(u16, HAVE_U16_TYPEDEF)
 WK_CHECK_TYPEDEF(u32, HAVE_U32_TYPEDEF)
 
-AC_CHECK_SIZEOF(unsigned short, 16)
-AC_CHECK_SIZEOF(unsigned int, 32)
-AC_CHECK_SIZEOF(unsigned long, 32)
+AC_CHECK_SIZEOF(unsigned short, 2)
+AC_CHECK_SIZEOF(unsigned int, 4)
+AC_CHECK_SIZEOF(unsigned long, 4)
 
 
 

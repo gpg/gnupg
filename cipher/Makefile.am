@@ -21,9 +21,9 @@ cipher_SOURCES = blowfish.c	\
 		 sha1.c 	\
 		 dsa.h		\
 		 dsa.c		\
+		 rsa.c		\
+		 rsa.h		\
 		 md.c		\
 		 smallprime.c
-
-cipher_LIBADD = rsa.o
 
 

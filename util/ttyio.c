@@ -41,7 +41,11 @@ init_ttyfp()
     if( ttyfp )
 	return;
 
+  #if defined(__MINGW32__)
+    ttyfp = stderr; /* fixme */
+  #else
     ttyfp = fopen("/dev/tty", "r+");
+  #endif
     if( !ttyfp )
 	log_fatal("cannot open /dev/tty: %s\n", strerror(errno) );
 }
