@@ -1,3 +1,8 @@
+2002-05-22  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): Add missing LF in a info printout and made it
+	translatable.  Noted by Michael Tokarev.
+
 2002-05-21  Werner Koch  <wk@gnupg.org>
 
 	* g10.c (main): Removed the undef of USE_SHM_COPROCESSING which

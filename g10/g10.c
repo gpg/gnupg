@@ -1654,8 +1654,8 @@ main( int argc, char **argv )
       case aSignSym: 
       case aClearsign: 
         if (!opt.quiet && any_explicit_recipient)
-          log_info ("WARNING: recipients (-r) given "
-                    "without using public key encryption");
+          log_info (_("WARNING: recipients (-r) given "
+                      "without using public key encryption\n"));
 	break;
       default:
         break;
