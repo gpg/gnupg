@@ -1,3 +1,9 @@
+2002-06-26  Werner Koch  <wk@gnupg.org>
+
+	* import.c (gpgsm_import): Print an STATUS_IMPORTED.
+
+	* gpgsm.c: --debug-no-path-validation does not take an argument.
+
 2002-06-25  Werner Koch  <wk@gnupg.org>
 
 	* certdump.c (print_dn_part): Always print a leading slash,

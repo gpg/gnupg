@@ -106,6 +106,10 @@ gpgsm_import (CTRL ctrl, int in_fd)
             {
               if (!keydb_store_cert (cert, 0))
                 {
+                  char *fpr;
+                  fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+                  gpgsm_status2 (ctrl, STATUS_IMPORTED, fpr, " [X.509]", NULL);
+                  xfree (fpr);
                   if (opt.verbose)
                     log_info ("certificate imported\n");
                 }
@@ -141,6 +145,10 @@ gpgsm_import (CTRL ctrl, int in_fd)
         {
           if (!keydb_store_cert (cert, 0))
             {
+              char *fpr;
+              fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+              gpgsm_status2 (ctrl, STATUS_IMPORTED, fpr, " [X.509]", NULL);
+              xfree (fpr);
               if (opt.verbose)
                 log_info ("certificate imported\n");
             }
@@ -156,7 +164,6 @@ gpgsm_import (CTRL ctrl, int in_fd)
       rc = GNUPG_No_Data;
     }
    
-
  leave:
   ksba_cms_release (cms);
   ksba_cert_release (cert);

@@ -302,7 +302,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDebug, "debug"     ,4|16, "@"},
     { oDebugAll, "debug-all" ,0, "@"},
     { oDebugWait, "debug-wait" ,1, "@"},
-    { oDebugNoPathValidation, "debug-no-path-validation" ,1, "@"},
+    { oDebugNoPathValidation, "debug-no-path-validation" ,0, "@"},
     { oStatusFD, "status-fd" ,1, N_("|FD|write status info to this FD") },
     { aDummy, "no-comment", 0,   "@"},
     { aDummy, "completes-needed", 1, "@"},
