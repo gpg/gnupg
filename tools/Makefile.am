@@ -4,8 +4,8 @@ EXTRA_DIST = lspgpot mail-signed-keys ring-a-party
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 # we need to add libutil.la a second time because we have to resolve
 # gpg_log_ in some libjnlib modules. - very ugly - should be removed soon.
-needed_libs = ../util/libutil.la ../gcrypt/libgcrypt.la \
-	      ../jnlib/libjnlib.la ../util/libutil.la @INTLLIBS@
+needed_libs = ../util/libutil.a -lgcrypt \
+	      ../jnlib/libjnlib.a ../util/libutil.a @INTLLIBS@
 
 
 noinst_PROGRAMS = mpicalc bftest clean-sat mk-tdata shmtest

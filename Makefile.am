@@ -1,16 +1,5 @@
 ## Process this file with automake to produce Makefile.in
 
-#if COMPILE_LIBGCRYPT
-#gcrypt = gcrypt
-#my_clean_gcrypt =
-#else
-#gcrypt =
-#my_clean_gcrypt = gcrypt/Makefile
-#endif
-
-gcrypt = gcrypt
-my_clean_gcrypt =
-
 if CROSS_COMPILING
 checks =
 else
@@ -23,13 +12,13 @@ else
 agent = 
 endif
 
-SUBDIRS = intl zlib jnlib util mpi cipher ${gcrypt} g10 po tools \
+SUBDIRS = intl zlib jnlib util g10 po tools \
           ${agent} doc ${checks}
 EXTRA_DIST = README-alpha PROJECTS BUGS
 # gettext never gets it right, so we take here care of deleting the
 # symlink.  my_clean_gcrypt is just a kludge until we can include
 # libgcrypt.
-DISTCLEANFILES = gnupg-defs.h intl/libintl.h ${my_clean_gcrypt}
+DISTCLEANFILES = gnupg-defs.h intl/libintl.h 
 
 
 # Add all the files listed in "distfiles" files to the distribution,
@@ -51,20 +40,4 @@ dist-hook:
 	echo "$(VERSION)" > $(distdir)/VERSION
 
 
-if MAINTAINER_MODE
-# This is only useful within my local environment (wk)
-cvs-get:
-	rsync -Cavuzb  --exclude scratch --exclude .deps \
-		      wkoch@sigtrap.guug.de:work/gnupg .
-
-cvs-put:
-	rsync -Cavuzb --exclude .deps --exclude scratch \
-		      . wkoch@sigtrap.guug.de:work/gnupg
-
-cvs-sync: cvs-get cvs-put
-
-endif
-
-
-.PHONY: cvs-get cvs-put cvs-sync
 

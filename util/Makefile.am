@@ -3,10 +3,9 @@
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 EXTRA_DIST = README
 
-noinst_LTLIBRARIES = libutil.la
+noinst_LIBRARIES = libutil.a
 
-libutil_la_LDFLAGS =
-libutil_la_SOURCES = logger.c fileutil.c miscutil.c strgutil.c	\
+libutil_a_SOURCES = logger.c fileutil.c miscutil.c strgutil.c	\
 		     ttyio.c  errors.c iobuf.c \
 		     http.c simple-gettext.c w32reg.c
 

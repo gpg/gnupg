@@ -12,91 +12,15 @@ AC_INIT(g10/gpg.c)
 AC_CONFIG_AUX_DIR(scripts)
 AM_CONFIG_HEADER(config.h)
 AC_CANONICAL_SYSTEM
-#############################################
-# Version numbers (Rember to change them just before a release)
-# 1. No interfaces changed, only implementations (good): Increment REVISION.
-# 2. Interfaces added, none removed (good): Increment CURRENT, increment
-#    AGE, set REVISION to 0.
-# 3. Interfaces removed (BAD, breaks upward compatibility): Increment
-#    CURRENT, set AGE and REVISION to 0.
-AM_INIT_AUTOMAKE(gnupg,1.1.2)
-LIBGCRYPT_LT_CURRENT=1
-LIBGCRYPT_LT_AGE=0
-LIBGCRYPT_LT_REVISION=0
-##############################################
-
-AC_SUBST(LIBGCRYPT_LT_CURRENT)
-AC_SUBST(LIBGCRYPT_LT_AGE)
-AC_SUBST(LIBGCRYPT_LT_REVISION)
-
-
+AM_INIT_AUTOMAKE(gnupg,1.1.2a)
 
 ALL_LINGUAS="da de eo es_ES fr id it ja nl pl pt_BR pt_PT ru sv"
-static_modules="sha1 md5 rmd160"
-static_random_module=""
 
 AC_PROG_AWK
-
-MODULES_IN_CIPHER=`$AWK '/^EXTRA_PROGRAMS/ { for(i=3;i<=NF;i++) print $i}' \
-                                              $srcdir/cipher/Makefile.am`
-
-dnl
-dnl  Check for random module options
-dnl
-dnl  Fixme: get the list of available modules from MODULES_IN_CIPHER
-dnl         and check against this list
-
-AC_MSG_CHECKING([which static random module to use])
-AC_ARG_ENABLE(static-rnd,
-    [  --enable-static-rnd=[egd|unix|linux|none]  ],
-[use_static_rnd=$enableval], [use_static_rnd=default] )
-
-if test "$use_static_rnd" = no; then
-    use_static_rnd=default
-fi
-
-case "$use_static_rnd" in
-    egd | linux | unix | none | default )
-      AC_MSG_RESULT($use_static_rnd)
-      ;;
-    * )
-      AC_MSG_RESULT(invalid argument)
-      AC_MSG_ERROR(there is no random module rnd$use_static_rnd)
-      ;;
-esac
-
-AC_ARG_WITH(egd-socket,
-    [  --with-egd-socket=NAME  Use NAME for the EGD socket)],
-            egd_socket_name="$withval", egd_socket_name="" )
-AC_DEFINE_UNQUOTED(EGD_SOCKET_NAME, "$egd_socket_name")
-
-
-
-dnl
-dnl See whether the user wants to disable checking for /dev/random
-
-AC_MSG_CHECKING([whether use of /dev/random is requested])
-AC_ARG_ENABLE(dev-random,
-[  --disable-dev-random    disable the use of dev random],
-    try_dev_random=$enableval, try_dev_random=yes)
-AC_MSG_RESULT($try_dev_random)
-
 
 dnl
 dnl  Check other options
 dnl
-
-AC_MSG_CHECKING([whether use of extensions is requested])
-AC_ARG_ENABLE(dynload,
-[  --disable-dynload       disable use of extensions],
-    try_dynload=$enableval, try_dynload=yes)
-AC_MSG_RESULT($try_dynload)
-
-AC_MSG_CHECKING([whether assembler modules are requested])
-AC_ARG_ENABLE(asm,
-[  --disable-asm           do not use assembler modules],
-     try_asm_modules=$enableval, try_asm_modules=yes)
-AC_MSG_RESULT($try_asm_modules)
 
 AC_MSG_CHECKING([whether memory debugging is requested])
 AC_ARG_ENABLE(m-debug,
@@ -123,17 +47,6 @@ AC_ARG_WITH(included-zlib,
     [  --with-included-zlib    use the zlib code included here],
 [g10_force_zlib=yes], [g10_force_zlib=no] )
 AC_MSG_RESULT($g10_force_zlib)
-
-dnl
-dnl Check wether we want to compile libgcrypt
-dnl
-AC_MSG_CHECKING([whether compilation of libgcrypt is requested])
-AC_ARG_ENABLE(libgcrypt,
-    [  --enable-libgcrypt      compile the libgcrypt [default=yes]],
-[compile_libgcrypt="$enableval"],[compile_libgcrypt=no])
-AC_MSG_RESULT($compile_libgcrypt)
-AM_CONDITIONAL(COMPILE_LIBGCRYPT, test x$compile_libgcrypt = xyes)
-
 
 dnl
 dnl Check whether we want to use Linux capabilities
@@ -189,17 +102,6 @@ GPH_PROG_DOCBOOK
 GNUPG_CHECK_FAQPROG
 
 
-dnl
-dnl Build shared libraries only when compilation of libgcrypt
-dnl has been requested
-dnl
-AM_DISABLE_STATIC
-AM_PROG_LIBTOOL
-
-
-MPI_OPT_FLAGS=""
-
-
 try_gettext=yes
 case "${target}" in
     *-*-mingw32*)
@@ -251,7 +153,6 @@ case "${target}" in
        ;;
 esac
 
-AC_SUBST(MPI_OPT_FLAGS)
 GNUPG_SYS_SYMBOL_UNDERSCORE
 GNUPG_CHECK_PIC
 GNUPG_CHECK_EXPORTDYNAMIC
@@ -318,7 +219,6 @@ case "${target}" in
 esac
 AC_DEFINE_UNQUOTED(NAME_OF_DEV_RANDOM, "$NAME_OF_DEV_RANDOM")
 AC_DEFINE_UNQUOTED(NAME_OF_DEV_URANDOM, "$NAME_OF_DEV_URANDOM")
-AC_SUBST(MPI_OPT_FLAGS)
 
 
 dnl Checks for libraries.
@@ -650,42 +550,10 @@ echo '}' >>cipher/construct.c
 
 
 
-
 dnl
-dnl Figure how to link the cipher modules
-dnl
-AC_SUBST(STATIC_CIPHER_OBJS)
-AC_SUBST(DYNAMIC_CIPHER_MODS)
-
-
-dnl setup assembler stuff
-AC_MSG_CHECKING(for mpi assembler functions)
-if test -f $srcdir/mpi/config.links ; then
-    . $srcdir/mpi/config.links
-    GNUPG_LINK_FILES($mpi_ln_src, $mpi_ln_dst)
-    ac_cv_mpi_extra_asm_modules="$mpi_extra_modules"
-    ac_cv_mpi_sflags="$mpi_sflags"
-    ac_cv_mpi_config_done="yes"
-    AC_MSG_RESULT(done)
-else
-    AC_MSG_RESULT(failed)
-    AC_MSG_ERROR([mpi/config.links missing!])
-fi
-MPI_EXTRA_ASM_OBJS=""
-if test "$ac_cv_mpi_extra_asm_modules" != ""; then
-GNUPG_MSG_PRINT([mpi extra asm functions:])
-for i in $ac_cv_mpi_extra_asm_modules; do
-    GNUPG_MSG_PRINT([$i])
-    MPI_EXTRA_ASM_OBJS="$MPI_EXTRA_ASM_OBJS $i.lo"
-done
-AC_MSG_RESULT()
-fi
-AC_SUBST(MPI_EXTRA_ASM_OBJS)
-MPI_SFLAGS="$ac_cv_mpi_sflags"
-AC_SUBST(MPI_SFLAGS)
-
 dnl Do we have zlib? Must do it here because Solaris failed
 dnl when compiling a conftest (due to the "-lz" from LIBS).
+dnl
 use_local_zlib=yes
 if test "$g10_force_zlib" = "yes"; then
   :
@@ -720,7 +588,6 @@ if echo "$VERSION" | sed 's/-.*//' | grep "$tmp_pat" >/dev/null ; then
 fi
 
 dnl Temp workarounds 
-GNUPG_LINK_FILES(gcrypt/gcrypt.h, gcrypt.h )
 GNUPG_LINK_FILES(include/types.h, types.h )
 
 AM_CONDITIONAL(CROSS_COMPILING, test x$cross_compiling = xyes)
@@ -737,20 +604,9 @@ if test "$GCC" = yes; then
     fi
 fi
 
-dnl
-dnl Make the version number in gcrypt/gcrypt.h the same as the one here.
-dnl (this is easier than to have a *.in file just for one substitution)
-dnl
-GNUPG_FIX_HDR_VERSION(gcrypt/gcrypt.h, GCRYPT_VERSION)
-
-GCRYPT_LIBS="-L${libdir} -lgcrypt"
-GCRYPT_CFLAGS=""
-AC_SUBST(GCRYPT_LIBS)
-AC_SUBST(GCRYPT_CFLAGS)
 
 AC_OUTPUT_COMMANDS([
 chmod +x scripts/db2html
-chmod +x gcrypt/gcrypt-config
 cat >gnupg-defs.tmp <<G10EOF
 /* Generated automatically by configure */
 #ifdef HAVE_DRIVE_LETTERS
@@ -793,8 +649,6 @@ intl/Makefile
 po/Makefile.in
 jnlib/Makefile
 util/Makefile
-mpi/Makefile
-cipher/Makefile
 g10/Makefile
 agent/Makefile
 doc/Makefile
@@ -802,8 +656,5 @@ doc/version.sgml
 tools/Makefile
 zlib/Makefile
 checks/Makefile
-gcrypt/Makefile
-gcrypt/gcrypt-config
 ])
 
-dnl *-*wedit:notab*-*  Please keep this as the last line.

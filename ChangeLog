@@ -1,3 +1,8 @@
+2000-12-19  Werner Koch  <wk@gnupg.org>
+
+	Removed the stuff which is now in libgcrypt.  These are
+	mainly the directories mpi/, cipher/ and gcrypt/.
+
 2000-11-14  Werner Koch  <wk@gnupg.org>
 
 	Version 1.1.2 released.

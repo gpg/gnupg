@@ -5,11 +5,10 @@ EXTRA_DIST = README xmalloc.c xmalloc.h logging.c logging.h
 
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 
-noinst_LTLIBRARIES = libjnlib.la
+noinst_LIBRARIES = libjnlib.a
 
 
-libjnlib_la_LDFLAGS =
-libjnlib_la_SOURCES = libjnlib-config.h 	  \
+libjnlib_a_SOURCES = libjnlib-config.h 	  \
 		      argparse.c argparse.h	\
 		      stringhelp.c stringhelp.h \
 		      dotlock.c dotlock.h \
