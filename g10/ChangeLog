@@ -1,3 +1,8 @@
+2003-01-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.skel: Comment out the first three lines in case someone
+	manually copies the skel file to their homedir.
+
 2003-01-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* sign.c (clearsign_file): Only use pgp2mode with v3 keys and MD5.
