@@ -1,3 +1,22 @@
+2003-02-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* keydb.h, getkey.c (classify_user_id, classify_user_id2): Make
+	'exact' a per-desc item.  Merge into one function since
+	'force_exact' is no longer needed.
+	(key_byname): Use new classify_user_id function, and new exact
+	flag in KEYDB_SEARCH_DESC.
+
+	* keyring.h, keyring.c (keyring_search): Return an optional index
+	to show which KEYDB_SEARCH_DESC was the matching one.
+
+	* keydb.h, keydb.c (keydb_search): Rename to keydb_search2, and
+	pass the optional index to keyring_search.  Add a macro version of
+	keydb_search that calls this new function.
+
+	* export.c (do_export_stream): If the keyid! syntax is used,
+	export only that specified key.  If the key in question is a
+	subkey, export the primary plus that subkey only.
+
 2003-02-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* exec.c (set_exec_path): Add debugging line.

@@ -164,7 +164,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
     PACKET pkt;
     KBNODE keyblock = NULL;
     KBNODE kbctx, node;
-    int ndesc;
+    size_t ndesc, descindex;
     KEYDB_SEARCH_DESC *desc = NULL;
     KEYDB_HANDLE kdbhd;
     STRLIST sl;
@@ -199,9 +199,8 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
            do this we need an extra flag to enable this feature so */
     }
 
-
-    while (!(rc = keydb_search (kdbhd, desc, ndesc))) {
-        int sha1_warned=0;
+    while (!(rc = keydb_search2 (kdbhd, desc, ndesc, &descindex))) {
+        int sha1_warned=0,skip_until_subkey=0;
 	u32 sk_keyid[2];
 
 	if (!users) 
@@ -251,13 +250,87 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 
 	/* and write it */
 	for( kbctx=NULL; (node = walk_kbnode( keyblock, &kbctx, 0 )); ) {
+	    if( skip_until_subkey )
+	      {
+		if(node->pkt->pkttype==PKT_PUBLIC_SUBKEY
+		   || node->pkt->pkttype==PKT_SECRET_SUBKEY)
+		  skip_until_subkey=0;
+		else
+		  continue;
+	      }
+
 	    /* don't export any comment packets but those in the
 	     * secret keyring */
 	    if( !secret && node->pkt->pkttype == PKT_COMMENT )
 		continue;
+
             /* make sure that ring_trust packets never get exported */
             if (node->pkt->pkttype == PKT_RING_TRUST)
               continue;
+
+	    /* If exact is set, then we only export what was requested
+	       (plus the primary key, if the user didn't specifically
+	       request it) */
+	    if(desc[descindex].exact
+	       && (node->pkt->pkttype==PKT_PUBLIC_SUBKEY
+		   || node->pkt->pkttype==PKT_SECRET_SUBKEY))
+	      {
+		u32 kid[2];
+		byte fpr[MAX_FINGERPRINT_LEN];
+		size_t fprlen;
+
+		switch(desc[descindex].mode)
+		  {
+		  case KEYDB_SEARCH_MODE_SHORT_KID:
+		  case KEYDB_SEARCH_MODE_LONG_KID:
+		    if(node->pkt->pkttype==PKT_PUBLIC_SUBKEY)
+		      keyid_from_pk(node->pkt->pkt.public_key,kid);
+		    else
+		      keyid_from_sk(node->pkt->pkt.secret_key,kid);
+		    break;
+
+		  case KEYDB_SEARCH_MODE_FPR16:
+		  case KEYDB_SEARCH_MODE_FPR20:
+		  case KEYDB_SEARCH_MODE_FPR:
+		    if(node->pkt->pkttype==PKT_PUBLIC_SUBKEY)
+		      fingerprint_from_pk(node->pkt->pkt.public_key,
+					  fpr,&fprlen);
+		    else
+		      fingerprint_from_sk(node->pkt->pkt.secret_key,
+					  fpr,&fprlen);
+		    break;
+
+		  default:
+		    break;
+		  }
+
+		switch(desc[descindex].mode)
+		  {
+		  case KEYDB_SEARCH_MODE_SHORT_KID:
+		    if (desc[descindex].u.kid[1] != kid[1])
+		      skip_until_subkey=1;
+		    break;
+		  case KEYDB_SEARCH_MODE_LONG_KID:
+		    if (desc[descindex].u.kid[0] != kid[0]
+			|| desc[descindex].u.kid[1] != kid[1])
+		      skip_until_subkey=1;
+		    break;
+		  case KEYDB_SEARCH_MODE_FPR16:
+		    if (memcmp (desc[descindex].u.fpr, fpr, 16))
+		      skip_until_subkey=1;
+		    break;
+		  case KEYDB_SEARCH_MODE_FPR20:
+		  case KEYDB_SEARCH_MODE_FPR:
+		    if (memcmp (desc[descindex].u.fpr, fpr, 20))
+		      skip_until_subkey=1;
+		    break;
+		  default:
+		    break;
+		  }
+
+		if(skip_until_subkey)
+		  continue;
+	      }
 
 	    if( node->pkt->pkttype == PKT_SIGNATURE ) {
 	      /* do not export packets which are marked as not exportable */

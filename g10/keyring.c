@@ -852,7 +852,8 @@ compare_name (int mode, const char *name, const char *uid, size_t uidlen)
  * for a keyblock which contains one of the keys described in the DESC array.
  */
 int 
-keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
+keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
+		size_t ndesc, size_t *descindex)
 {
   int rc;
   PACKET pkt;
@@ -1074,7 +1075,11 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
 	}
       free_packet (&pkt);
       continue;
-    found:  
+    found:
+      /* Record which desc we matched on.  Note this value is only
+	 meaningful if this function returns with no errors. */
+      if(descindex)
+	*descindex=n;
       for (n=any_skip?0:ndesc; n < ndesc; n++) 
         {
           if (desc[n].skipfnc
@@ -1321,7 +1326,7 @@ keyring_rebuild_cache (void *token)
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_FIRST;
 
-  while ( !(rc = keyring_search (hd, &desc, 1)) )
+  while ( !(rc = keyring_search (hd, &desc, 1, NULL)) )
     {
       desc.mode = KEYDB_SEARCH_MODE_NEXT;
       resname = keyring_get_resource_name (hd);

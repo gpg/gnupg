@@ -653,7 +653,8 @@ keydb_search_reset (KEYDB_HANDLE hd)
  * for a keyblock which contains one of the keys described in the DESC array.
  */
 int 
-keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
+keydb_search2 (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
+	       size_t ndesc, size_t *descindex)
 {
     int rc = -1;
 
@@ -666,7 +667,8 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
             BUG(); /* we should never see it here */
             break;
           case KEYDB_RESOURCE_TYPE_KEYRING:
-            rc = keyring_search (hd->active[hd->current].u.kr, desc, ndesc);
+            rc = keyring_search (hd->active[hd->current].u.kr, desc,
+				 ndesc, descindex);
             break;
         }
         if (rc == -1) /* EOF -> switch to next resource */
@@ -677,7 +679,6 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
 
     return rc; 
 }
-
 
 int
 keydb_search_first (KEYDB_HANDLE hd)

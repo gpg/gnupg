@@ -552,20 +552,22 @@ seckey_available( u32 *keyid )
  *   is not case sensitive.
  */
 
-static int
-classify_user_id2( const char *name, 
-                   KEYDB_SEARCH_DESC *desc,
-                   int *force_exact )
+int
+classify_user_id( const char *name, KEYDB_SEARCH_DESC *desc )
 {
     const char *s;
     int hexprefix = 0;
     int hexlength;
     int mode = 0;   
-    
+    KEYDB_SEARCH_DESC dummy_desc;
+
+    if (!desc)
+        desc = &dummy_desc;
+
     /* clear the structure so that the mode field is set to zero unless
      * we set it to the correct value right at the end of this function */
     memset (desc, 0, sizeof *desc);
-    *force_exact = 0;
+
     /* skip leading spaces.  Fixme: what is with trailing spaces? */
     for(s = name; *s && isspace(*s); s++ )
 	;
@@ -643,7 +645,7 @@ classify_user_id2( const char *name,
 
 	    hexlength = strspn(s, "0123456789abcdefABCDEF");
             if (hexlength >= 8 && s[hexlength] =='!') {
-                *force_exact = 1;
+		desc->exact = 1;
                 hexlength++; /* just for the following check */
             }
 
@@ -655,7 +657,7 @@ classify_user_id2( const char *name,
 		    hexlength = 0;  /* a hex number, but really were not. */
 	    }
 
-            if (*force_exact)
+            if (desc->exact)
                 hexlength--;
 
 	    if (hexlength == 8
@@ -711,7 +713,7 @@ classify_user_id2( const char *name,
 		if (hexprefix)	/* This was a hex number with a prefix */
 		    return 0;	/* and a wrong length */
 
-                *force_exact = 0;
+		desc->exact = 0;
                 desc->u.name = s;
 		mode = KEYDB_SEARCH_MODE_SUBSTR;   /* default mode */
 	    }
@@ -721,16 +723,6 @@ classify_user_id2( const char *name,
     return mode;
 }
 
-int
-classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc)
-{
-    int dummy;
-    KEYDB_SEARCH_DESC dummy_desc;
-
-    if (!desc)
-        desc = &dummy_desc;
-    return classify_user_id2 (name, desc, &dummy);
-}
 
 /****************
  * Try to get the pubkey by the userid. This function looks for the
@@ -752,7 +744,6 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
     STRLIST r;
     GETKEY_CTX ctx;
     KBNODE help_kb = NULL;
-    int exact;
     
     if( retctx ) {/* reset the returned context in case of error */
         assert (!ret_kdbhd);  /* not allowed because the handle is
@@ -769,9 +760,9 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
     ctx->nitems = n;
 
     for(n=0, r=namelist; r; r = r->next, n++ ) {
-	classify_user_id2 (r->d, &ctx->items[n], &exact);
+	classify_user_id (r->d, &ctx->items[n]);
         
-        if (exact)
+        if (ctx->items[n].exact)
             ctx->exact = 1;
         if (!ctx->items[n].mode) {
 	    m_free (ctx);
