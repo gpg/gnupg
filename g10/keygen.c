@@ -2820,7 +2820,7 @@ do_generate_keypair( struct para_data_s *para,
                                get_parameter_uint (para, pKEYUSAGE));
     }
 
-    if( get_parameter( para, pSUBKEYTYPE ) )
+    if( !rc && get_parameter( para, pSUBKEYTYPE ) )
       {
         if (!card)
           {
@@ -2859,7 +2859,7 @@ do_generate_keypair( struct para_data_s *para,
         did_sub = 1;
       }
 
-    if (card && get_parameter (para, pAUTHKEYTYPE))
+    if (!rc && card && get_parameter (para, pAUTHKEYTYPE))
       {
         rc = gen_card_key (PUBKEY_ALGO_RSA, 3, 0, pub_root, sec_root,
                            get_parameter_u32 (para, pKEYEXPIRE), para);

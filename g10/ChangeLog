@@ -1,9 +1,13 @@
 2005-01-25  Werner Koch  <wk@g10code.com>
 
+	* keygen.c (do_generate_keypair): Don't continue after an error;
+	fixed at two places. Why at all didn't I used a goto to cleanup,
+	tsss?
+
 	* app-openpgp.c (get_cached_data): New arg GET_IMMEDIATE to bypass
 	the cache.  Changed all callers.
 	(get_one_do): Bypass the cache if the value would have been read
-	directly for v1.1 cards.It makes things a bit slower but obnly for
+	directly for v1.1 cards.  It makes things a bit slower but only for
 	1.0 cards and there are not that many cards out in the wild.  This
 	is required to fix a caching bug when generating new keys; as a
 	side effect of the retrieval of the the C4 DO from the 6E DO the
