@@ -41,6 +41,10 @@ make_session_key( DEK *dek )
 	dek->keylen = 20;
 	randomize_buffer( dek->key, dek->keylen, 1 );
 	break;
+      case CIPHER_ALGO_BLOWFISH128:
+	dek->keylen = 16;
+	randomize_buffer( dek->key, dek->keylen, 1 );
+	break;
 
       default: log_bug("invalid algo %d in make_session_key()\n");
     }

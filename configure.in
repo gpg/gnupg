@@ -155,7 +155,7 @@ AC_CHECK_SIZEOF(unsigned long, 4)
 
 dnl Checks for library functions.
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS(strerror strtol strtoul stpcpy tcgetattr)
+AC_CHECK_FUNCS(strerror stpcpy strlwr tcgetattr)
 
 dnl check wether we have a random device
 AC_CACHE_CHECK(for random device, ac_cv_have_dev_random,

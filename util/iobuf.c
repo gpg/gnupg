@@ -350,7 +350,7 @@ iobuf_create( const char *fname )
     file_filter_ctx_t *fcx;
     size_t len;
 
-    if( !fname ) {
+    if( !fname || (*fname=='-' && !fname[1]) ) {
 	fp = stdout;
 	fname = "[stdout]";
     }

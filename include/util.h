@@ -92,9 +92,15 @@ int answer_is_yes( const char *s );
 void free_strlist( STRLIST sl );
 #define FREE_STRLIST(a) do { free_strlist((a)); (a) = NULL ; } while(0)
 char *memistr( char *buf, size_t buflen, const char *sub );
+char *trim_spaces( char *string );
+int string_count_chr( const char *string, int c );
+
 #define stricmp(a,b) strcasecmp((a),(b))
 #ifndef HAVE_STPCPY
 char *stpcpy(char *a,const char *b);
+#endif
+#ifndef HAVE_STRLWR
+char *strlwr(char *a);
 #endif
 
 

@@ -169,6 +169,10 @@ main( int argc, char **argv )
     { 523, "passphrase-fd",1, "\r" },
     { 524, "edit-sig"  ,0, "edit a key signature" },
     { 525, "change-passphrase", 0, "change the passphrase of your secret keyring"},
+    { 526, "no-verbose", 0, "\r"},
+    { 527, "cipher-algo", 2 , "select default cipher algorithm" },
+    { 528, "pubkey-algo", 2 , "select default puplic key algorithm" },
+    { 529, "digest-algo", 2 , "select default message digest algorithm" },
 
     {0} };
     ARGPARSE_ARGS pargs;
@@ -194,6 +198,9 @@ main( int argc, char **argv )
 
 
     opt.compress = -1; /* defaults to standard compress level */
+    opt.def_cipher_algo = CIPHER_ALGO_BLOWFISH;
+    opt.def_pubkey_algo = PUBKEY_ALGO_ELGAMAL;
+    opt.def_digest_algo = DIGEST_ALGO_RMD160;
 
     /* check wether we have a config file on the commandline */
     orig_argc = argc;
@@ -298,6 +305,19 @@ main( int argc, char **argv )
 	  case 523: set_passphrase_fd( pargs.r.ret_int ); break;
 	  case 524: set_cmd( &cmd, aEditSig); break;
 	  case 525: set_cmd( &cmd, aChangePass); break;
+	  case 526: opt.verbose = 0; opt.list_sigs=0; break;
+	  case 527:
+	    opt.def_cipher_algo = string_to_cipher_algo(pargs.r.ret_str);
+	    break;
+	  case 528:
+	    opt.def_pubkey_algo = string_to_pubkey_algo(pargs.r.ret_str);
+	    break;
+	  case 529:
+	    opt.def_digest_algo = string_to_digest_algo(pargs.r.ret_str);
+	    break;
+
+
+	    break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -308,6 +328,18 @@ main( int argc, char **argv )
 	goto next_pass;
     }
     m_free( configname ); configname = NULL;
+    if( !opt.def_cipher_algo || check_cipher_algo(opt.def_cipher_algo) ) {
+	log_error("selected cipher algorithm is invalid\n");
+	errors++;
+    }
+    if( !opt.def_pubkey_algo || check_pubkey_algo(opt.def_pubkey_algo) ) {
+	log_error("selected pubkey algorithm is invalid\n");
+	errors++;
+    }
+    if( !opt.def_digest_algo || check_digest_algo(opt.def_digest_algo) ) {
+	log_error("selected digest algorithm is invalid\n");
+	errors++;
+    }
     if( errors )
 	exit(2);
 
@@ -351,6 +383,13 @@ main( int argc, char **argv )
     else {
 	fname_print = "[stdin]";
 	fname = NULL;
+	if( get_passphrase_fd() == 0 ) {
+	    /* reading data and passphrase form stdin:
+	     * we assume the first line is the passphrase, so
+	     * we read it now
+	     */
+	    /* FIXME: doit */
+	}
     }
 
     switch( cmd ) {

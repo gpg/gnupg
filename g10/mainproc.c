@@ -232,7 +232,7 @@ proc_encrypted( CTX c, PACKET *pkt )
     if( !c->dek && !c->last_was_pubkey_enc ) {
 	/* assume this is conventional encrypted data */
 	c->dek = m_alloc_secure( sizeof *c->dek );
-	c->dek->algo = DEFAULT_CIPHER_ALGO;
+	c->dek->algo = opt.def_cipher_algo;
 	result = make_dek_from_passphrase( c->dek, 0 );
     }
     else if( !c->dek )

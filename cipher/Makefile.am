@@ -23,6 +23,7 @@ cipher_SOURCES = blowfish.c	\
 		 dsa.h		\
 		 dsa.c		\
 		 md.c		\
+		 misc.c 	\
 		 smallprime.c
 
 cipher_LIBADD = @CIPHER_EXTRA_OBJS@

@@ -88,7 +88,13 @@ int cipher_debug_mode;
   #define is_valid_pubkey_algo(a) ( (a) == PUBKEY_ALGO_ELGAMAL	)
 #endif
 
-
+/*-- misc.c --*/
+int string_to_cipher_algo( const char *string );
+int string_to_pubkey_algo( const char *string );
+int string_to_digest_algo( const char *string );
+int check_cipher_algo( int algo );
+int check_pubkey_algo( int algo );
+int check_digest_algo( int algo );
 
 /*-- md.c --*/
 int md_okay( int algo );

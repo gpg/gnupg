@@ -165,6 +165,9 @@ no-default-keyring
 no-greeting
 # suppress the initial copyright etc. messages but do not enter batch mode.
 
+no-verbose
+# set verbose level to 0
+
 options filename
 #  Ignored in option files.
 

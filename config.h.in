@@ -78,11 +78,8 @@
 /* Define if you have the strerror function.  */
 #undef HAVE_STRERROR
 
-/* Define if you have the strtol function.  */
-#undef HAVE_STRTOL
-
-/* Define if you have the strtoul function.  */
-#undef HAVE_STRTOUL
+/* Define if you have the strlwr function.  */
+#undef HAVE_STRLWR
 
 /* Define if you have the tcgetattr function.  */
 #undef HAVE_TCGETATTR

@@ -26,17 +26,11 @@
 #include "cipher.h"
 #include "errors.h"
 
+
 int
 md_okay( int algo )
 {
-    switch( algo ) {
-      case DIGEST_ALGO_MD5:
-      case DIGEST_ALGO_RMD160:
-      case DIGEST_ALGO_SHA1:
-	return 0;
-      default:
-	return G10ERR_DIGEST_ALGO;
-    }
+    return check_digest_algo( algo );
 }
 
 

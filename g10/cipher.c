@@ -67,7 +67,8 @@ cipher_filter( void *opaque, int control,
 	    randomize_buffer( temp, 8, 1 );
 	    temp[8] = temp[6];
 	    temp[9] = temp[7];
-	    if( cfx->dek->algo == CIPHER_ALGO_BLOWFISH ) {
+	    if( cfx->dek->algo == CIPHER_ALGO_BLOWFISH
+	       || cfx->dek->algo == CIPHER_ALGO_BLOWFISH128 ) {
 		cfx->bf_ctx = m_alloc_secure( sizeof *cfx->bf_ctx );
 		blowfish_setkey( cfx->bf_ctx, cfx->dek->key, cfx->dek->keylen );
 		blowfish_setiv( cfx->bf_ctx, NULL );
@@ -80,13 +81,15 @@ cipher_filter( void *opaque, int control,
 	    cfx->header=1;
 	}
 
-	if( cfx->dek->algo == CIPHER_ALGO_BLOWFISH )
+	if( cfx->dek->algo == CIPHER_ALGO_BLOWFISH
+	    || cfx->dek->algo == CIPHER_ALGO_BLOWFISH128 )
 	    blowfish_encode_cfb( cfx->bf_ctx, buf, buf, size);
 	if( iobuf_write( a, buf, size ) )
 	    rc = G10ERR_WRITE_FILE;
     }
     else if( control == IOBUFCTRL_FREE ) {
-	if( cfx->dek->algo == CIPHER_ALGO_BLOWFISH )
+	if( cfx->dek->algo == CIPHER_ALGO_BLOWFISH
+	    || cfx->dek->algo == CIPHER_ALGO_BLOWFISH128 )
 	    m_free(cfx->bf_ctx);
     }
     else if( control == IOBUFCTRL_DESC ) {

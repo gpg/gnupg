@@ -51,7 +51,8 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
     byte temp[16];
 
 
-    if( dek->algo != CIPHER_ALGO_BLOWFISH )
+    if( dek->algo != CIPHER_ALGO_BLOWFISH
+	&& dek->algo != CIPHER_ALGO_BLOWFISH128 )
 	return G10ERR_CIPHER_ALGO;
     if( ed->len && ed->len < 10 )
 	log_bug("Nanu\n");   /* oops: found a bug */

@@ -46,6 +46,77 @@ pubkey_letter( int algo )
     }
 }
 
+/* this is special code for V3 which uses ElGamal and
+ * calculates a fingerprint like V4, but with rmd160
+ * and a version byte of 3. Returns an rmd160 handle, caller must
+ * do rmd160_final()
+ */
+
+static RMDHANDLE
+v3_elg_fingerprint_md( PKT_public_cert *pkc )
+{
+    RMDHANDLE md;
+    byte *buf1, *buf2, *buf3;
+    byte *p1, *p2, *p3;
+    unsigned n1, n2, n3;
+    unsigned n;
+
+    p1 = buf1 = mpi_get_buffer( pkc->d.elg.p, &n1, NULL );
+    for( ; !*p1 && n1; p1++, n1-- )  /* skip leading null bytes */
+	;
+    p2 = buf2 = mpi_get_buffer( pkc->d.elg.g, &n2, NULL );
+    for( ; !*p2 && n2; p2++, n2-- )  /* skip leading null bytes */
+	;
+    p3 = buf3 = mpi_get_buffer( pkc->d.elg.y, &n3, NULL );
+    for( ; !*p3 && n3; p3++, n3-- )  /* skip leading null bytes */
+	;
+
+    /* calculate length of packet (1+4+2+1+2+n1+2+n2+2+n3) */
+    n = 14 + n1 + n2 + n3;
+    md = rmd160_open(0);
+
+    rmd160_putchar( md, 0x99 );     /* ctb */
+    rmd160_putchar( md, n >> 8 );   /* 2 byte length header */
+    rmd160_putchar( md, n );
+    rmd160_putchar( md, 3 );	    /* version */
+    {	u32 a = pkc->timestamp;
+	rmd160_putchar( md, a >> 24 );
+	rmd160_putchar( md, a >> 16 );
+	rmd160_putchar( md, a >>  8 );
+	rmd160_putchar( md, a	    );
+    }
+    {	u16 a = pkc->valid_days;
+	rmd160_putchar( md, a >> 8 );
+	rmd160_putchar( md, a	   );
+    }
+    rmd160_putchar( md, pkc->pubkey_algo );
+    rmd160_putchar( md, n1>>8); rmd160_putchar( md, n1 ); rmd160_write( md, p1, n1 );
+    rmd160_putchar( md, n2>>8); rmd160_putchar( md, n2 ); rmd160_write( md, p2, n2 );
+    rmd160_putchar( md, n3>>8); rmd160_putchar( md, n3 ); rmd160_write( md, p3, n3 );
+    m_free(buf1);
+    m_free(buf2);
+    m_free(buf3);
+
+    return md;
+}
+
+
+static RMDHANDLE
+v3_elg_fingerprint_md_skc( PKT_secret_cert *skc )
+{
+    PKT_public_cert pkc;
+    byte *p;
+
+    pkc.pubkey_algo = skc->pubkey_algo;
+    pkc.timestamp = skc->timestamp;
+    pkc.valid_days = skc->valid_days;
+    pkc.pubkey_algo = skc->pubkey_algo;
+    pkc.d.elg.p = skc->d.elg.p;
+    pkc.d.elg.g = skc->d.elg.g;
+    pkc.d.elg.y = skc->d.elg.y;
+    return v3_elg_fingerprint_md( &pkc );
+}
+
 
 /****************
  * Get the keyid from the secret key certificate and put it into keyid
@@ -61,7 +132,14 @@ keyid_from_skc( PKT_secret_cert *skc, u32 *keyid )
 	keyid = dummy_keyid;
 
     if( skc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
-	lowbits = mpi_get_keyid( skc->d.elg.y, keyid );
+	const byte *dp;
+	RMDHANDLE md;
+	md = v3_elg_fingerprint_md_skc(skc);
+	dp = rmd160_final( md );
+	keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
+	keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
+	lowbits = keyid[1];
+	rmd160_close(md);
     }
     else if( skc->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	lowbits = mpi_get_keyid( skc->d.rsa.rsa_n, keyid );
@@ -87,7 +165,14 @@ keyid_from_pkc( PKT_public_cert *pkc, u32 *keyid )
 	keyid = dummy_keyid;
 
     if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
-	lowbits = mpi_get_keyid( pkc->d.elg.y, keyid );
+	const byte *dp;
+	RMDHANDLE md;
+	md = v3_elg_fingerprint_md(pkc);
+	dp = rmd160_final( md );
+	keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
+	keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
+	lowbits = keyid[1];
+	rmd160_close(md);
     }
     else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	lowbits = mpi_get_keyid( pkc->d.rsa.rsa_n, keyid );
@@ -213,47 +298,21 @@ fingerprint_from_skc( PKT_secret_cert *skc, size_t *ret_len )
     return p;
 }
 
+
+
+
 byte *
 fingerprint_from_pkc( PKT_public_cert *pkc, size_t *ret_len )
 {
     byte *p, *buf, *array;
+    const char *dp;
     size_t len;
     unsigned n;
 
     if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	RMDHANDLE md;
-	const char *dp;
-
-	md = rmd160_open(0);
-
-	{   u32 a = pkc->timestamp;
-	    rmd160_putchar( md, a >> 24 );
-	    rmd160_putchar( md, a >> 16 );
-	    rmd160_putchar( md, a >>  8 );
-	    rmd160_putchar( md, a	);
-	}
-	{   u16 a = pkc->valid_days;
-	    rmd160_putchar( md, a >> 8 );
-	    rmd160_putchar( md, a      );
-	}
-	rmd160_putchar( md, pkc->pubkey_algo );
-	p = buf = mpi_get_buffer( pkc->d.elg.p, &n, NULL );
-	for( ; !*p && n; p++, n-- )
-	    ;
-	rmd160_putchar( md, n>>8); rmd160_putchar( md, n ); rmd160_write( md, p, n );
-	m_free(buf);
-	p = buf = mpi_get_buffer( pkc->d.elg.g, &n, NULL );
-	for( ; !*p && n; p++, n-- )
-	    ;
-	rmd160_putchar( md, n>>8); rmd160_putchar( md, n ); rmd160_write( md, p, n );
-	m_free(buf);
-	p = buf = mpi_get_buffer( pkc->d.elg.y, &n, NULL );
-	for( ; !*p && n; p++, n-- )
-	    ;
-	rmd160_putchar( md, n>>8); rmd160_putchar( md, n ); rmd160_write( md, p, n );
-	m_free(buf);
-
-	dp = rmd160_final(md);
+	md = v3_elg_fingerprint_md(pkc);
+	dp = rmd160_final( md );
 	array = m_alloc( 20 );
 	len = 20;
 	memcpy(array, dp, 20 );

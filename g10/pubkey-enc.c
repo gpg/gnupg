@@ -131,6 +131,11 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	    { rc = G10ERR_WRONG_SECKEY; goto leave; }
 	dek->algo = CIPHER_ALGO_BLOWFISH;
 	break;
+      case CIPHER_ALGO_BLOWFISH128:
+	if( i != 18 ) /* length of blowfish-128 is 16 (+2 bytes checksum) */
+	    { rc = G10ERR_WRONG_SECKEY; goto leave; }
+	dek->algo = CIPHER_ALGO_BLOWFISH128;
+	break;
       default:
 	rc = G10ERR_CIPHER_ALGO;
 	goto leave;

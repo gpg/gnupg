@@ -62,6 +62,43 @@ memistr( char *buf, size_t buflen, const char *sub )
 }
 
 
+/****************
+ * remove leading and trailing white spaces
+ */
+char *
+trim_spaces( char *str )
+{
+    char *string, *p, *mark;
+
+    string = str;
+    /* find first non space character */
+    for( p=string; *p && isspace( *(byte*)p ) ; p++ )
+	;
+    /* move characters */
+    for( (mark = NULL); (*string = *p); string++, p++ )
+	if( isspace( *(byte*)p ) ) {
+	    if( !mark )
+		mark = string ;
+	}
+	else
+	    mark = NULL ;
+    if( mark )
+	*mark = '\0' ;  /* remove trailing spaces */
+
+    return str ;
+}
+
+
+int
+string_count_chr( const char *string, int c )
+{
+    int count;
+    for(count=0; *string; string++ )
+	if( *string == c )
+	    count++;
+    return count;
+}
+
 /*********************************************
  ********** missing string functions *********
  *********************************************/
@@ -75,6 +112,17 @@ stpcpy(char *a,const char *b)
     *a = 0;
 
     return (char*)a;
+}
+#endif
+
+#ifndef HAVE_STRLWR
+char *
+strlwr(char *s)
+{
+    char *p;
+    for(p=s; *p; p++ )
+	*p = tolower(*p);
+    return s;
 }
 #endif
 

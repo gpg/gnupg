@@ -24,10 +24,6 @@
 #include "cipher.h"
 #include "keydb.h"
 
-#define DEFAULT_CIPHER_ALGO  CIPHER_ALGO_BLOWFISH
-#define DEFAULT_PUBKEY_ALGO  PUBKEY_ALGO_ELGAMAL
-#define DEFAULT_DIGEST_ALGO  DIGEST_ALGO_RMD160
-
 
 typedef struct {
     int header_okay;

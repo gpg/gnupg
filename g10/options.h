@@ -36,9 +36,9 @@ struct {
     int list_sigs;   /* list signatures */
     int no_armor;
     int list_packets; /* list-packets mode */
-    int reserved6;
-    int reserved7;
-    int reserved8;
+    int def_cipher_algo;
+    int def_pubkey_algo;
+    int def_digest_algo;
     int reserved9;
     int reserved10;
     int reserved11;

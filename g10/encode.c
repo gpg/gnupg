@@ -88,7 +88,7 @@ encode_simple( const char *filename, int mode )
     cfx.dek = NULL;
     if( mode ) {
 	cfx.dek = m_alloc_secure( sizeof *cfx.dek );
-	cfx.dek->algo = DEFAULT_CIPHER_ALGO;
+	cfx.dek->algo = opt.def_cipher_algo;
 	if( (rc = make_dek_from_passphrase( cfx.dek , 2 )) ) {
 	    m_free(cfx.dek);
 	    iobuf_close(inp);
@@ -199,7 +199,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 
     /* create a session key */
     cfx.dek = m_alloc_secure( sizeof *cfx.dek );
-    cfx.dek->algo = DEFAULT_CIPHER_ALGO;
+    cfx.dek->algo = opt.def_cipher_algo;
     make_session_key( cfx.dek );
     if( DBG_CIPHER )
 	log_hexdump("DEK is: ", cfx.dek->key, cfx.dek->keylen );
@@ -269,7 +269,7 @@ encrypt_filter( void *opaque, int control,
     else if( control == IOBUFCTRL_FLUSH ) { /* encrypt */
 	if( !efx->header_okay ) {
 	    efx->cfx.dek = m_alloc_secure( sizeof *efx->cfx.dek );
-	    efx->cfx.dek->algo = DEFAULT_CIPHER_ALGO;
+	    efx->cfx.dek->algo = opt.def_cipher_algo;
 	    make_session_key( efx->cfx.dek );
 	    if( DBG_CIPHER )
 		log_hexdump("DEK is: ",

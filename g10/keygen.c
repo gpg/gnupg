@@ -305,6 +305,7 @@ generate_keypair()
     int rc;
     int algo;
     const char *algo_name;
+    char *aname, *acomment, *amail;
 
   #ifndef TEST_ALGO
     if( opt.batch || opt.answer_yes || opt.answer_no )
@@ -404,27 +405,102 @@ generate_keypair()
     uid = m_alloc(strlen(TEST_UID)+1);
     strcpy(uid, TEST_UID);
   #else
-    tty_printf( "\nYou need a User-ID to identify your key; please use your name and your\n"
-		"email address in this suggested format:\n"
-		"    \"Heinrich Heine <heinrichh@uni-duesseldorf.de>\n" );
+    tty_printf( "\n"
+"You need a User-ID to identify your key; the software constructs the user id\n"
+"from Real Name, Comment and Email Address in this form:\n"
+"    \"Heinrich Heine (Der Dichter) <heinrichh@uni-duesseldorf.de>\"\n" );
     uid = NULL;
+    aname=acomment=amail=NULL;
     for(;;) {
+	char *p;
+
+	if( !aname ) {
+	    for(;;) {
+		m_free(aname);
+		aname = tty_get("Real name: ");
+		trim_spaces(aname);
+		tty_kill_prompt();
+		if( strpbrk( aname, "<([])>" ) )
+		    tty_printf("Invalid character in name\n");
+		else if( strlen(aname) < 5 )
+		    tty_printf("Name must be at least 5 characters long\n");
+		else
+		    break;
+	    }
+	}
+	if( !amail ) {
+	    for(;;) {
+		m_free(amail);
+		amail = tty_get("Email address: ");
+		trim_spaces(amail);
+		strlwr(amail);
+		tty_kill_prompt();
+		if( !*amail )
+		    break;   /* no email address is okay */
+		else if( strcspn( amail, "abcdefghijklmnopqrstuvwxyz_-.@" )
+			 || string_count_chr(amail,'@') != 1
+			 || *amail == '@'
+			 || amail[strlen(amail)-1] == '@'
+			 || amail[strlen(amail)-1] == '.'
+			 || strstr(amail, "..") )
+		    tty_printf("Not a valid email address\n");
+		else
+		    break;
+	    }
+	}
+	if( !acomment ) {
+	    for(;;) {
+		m_free(acomment);
+		acomment = tty_get("Comment: ");
+		trim_spaces(acomment);
+		tty_kill_prompt();
+		if( !*acomment )
+		    break;   /* no comment is okay */
+		else if( strpbrk( acomment, "()" ) )
+		    tty_printf("Invalid character in comment\n");
+		else
+		    break;
+	    }
+	}
+
 	m_free(uid);
-	tty_printf("\n");
-	uid = tty_get("Your User-ID: ");
-	tty_kill_prompt();
-	if( strlen(uid) < 5 )
-	    tty_printf("Please enter a string of at least 5 characters\n");
-	else  {
-	    tty_printf("You selected this USER-ID:\n    \"%s\"\n\n", uid);
-	    answer = tty_get("Is this correct? ");
+	uid = p = m_alloc(strlen(aname)+strlen(amail)+strlen(acomment)+10);
+	p = stpcpy(p, aname );
+	if( *acomment )
+	    p = stpcpy(stpcpy(stpcpy(p," ("), acomment),")");
+	if( *amail )
+	    p = stpcpy(stpcpy(stpcpy(p," <"), amail),">");
+
+	tty_printf("You selected this USER-ID:\n    \"%s\"\n\n", uid);
+	for(;;) {
+	    answer = tty_get("Edit (N)ame, (C)omment, (E)mail or (O)kay? ");
 	    tty_kill_prompt();
-	    if( answer_is_yes(answer) ) {
-		m_free(answer);
+	    if( strlen(answer) > 1 )
+		;
+	    else if( *answer == 'N' || *answer == 'n' ) {
+		m_free(aname); aname = NULL;
+		break;
+	    }
+	    else if( *answer == 'C' || *answer == 'c' ) {
+		m_free(acomment); acomment = NULL;
+		break;
+	    }
+	    else if( *answer == 'E' || *answer == 'e' ) {
+		m_free(amail); amail = NULL;
+		break;
+	    }
+	    else if( *answer == 'O' || *answer == 'o' ) {
+		m_free(aname); aname = NULL;
+		m_free(acomment); acomment = NULL;
+		m_free(amail); amail = NULL;
 		break;
 	    }
 	    m_free(answer);
 	}
+	m_free(answer);
+	if( !amail && !acomment && !amail )
+	    break;
+	m_free(uid); uid = NULL;
     }
   #endif
 
