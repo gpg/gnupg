@@ -202,7 +202,7 @@ do_we_trust( PKT_public_cert *pkc, int trustlevel )
 	return do_we_trust( pkc, trustlevel );
 
       case TRUST_EXPIRED:
-	log_info("trust has expired: NOT yet implemented\n");
+	log_info("key has expired\n");
 	return 0; /* no */
 
       case TRUST_UNDEFINED:
@@ -215,11 +215,11 @@ do_we_trust( PKT_public_cert *pkc, int trustlevel )
 		if( rc )
 		    log_fatal("trust check after add_ownertrust failed: %s\n",
 							      g10_errstr(rc) );
-		/* FIXME: this is recursive; we better should unroll it */
+		/* fixme: this is recursive; we better should unroll it */
 		return do_we_trust( pkc, trustlevel );
 	    }
 	}
-	return 0; /* no FIXME: add "Proceed anyway?" */
+	return 0;
 
       case TRUST_NEVER:
 	log_info("We do NOT trust this key\n");

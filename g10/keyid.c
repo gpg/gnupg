@@ -115,16 +115,16 @@ elg_fingerprint_md( PKT_public_cert *pkc )
     unsigned nb1, nb3, nb4;
     unsigned n;
 
-    nb1 = mpi_get_nbits(pkc->d.dsa.p);
-    p1 = buf1 = mpi_get_buffer( pkc->d.dsa.p, &n1, NULL );
+    nb1 = mpi_get_nbits(pkc->d.elg.p);
+    p1 = buf1 = mpi_get_buffer( pkc->d.elg.p, &n1, NULL );
     for( ; !*p1 && n1; p1++, n1-- )  /* skip leading null bytes */
 	;
-    nb3 = mpi_get_nbits(pkc->d.dsa.g);
-    p3 = buf3 = mpi_get_buffer( pkc->d.dsa.g, &n3, NULL );
+    nb3 = mpi_get_nbits(pkc->d.elg.g);
+    p3 = buf3 = mpi_get_buffer( pkc->d.elg.g, &n3, NULL );
     for( ; !*p3 && n3; p3++, n3-- )
 	;
-    nb4 = mpi_get_nbits(pkc->d.dsa.y);
-    p4 = buf4 = mpi_get_buffer( pkc->d.dsa.y, &n4, NULL );
+    nb4 = mpi_get_nbits(pkc->d.elg.y);
+    p4 = buf4 = mpi_get_buffer( pkc->d.elg.y, &n4, NULL );
     for( ; !*p4 && n4; p4++, n4-- )
 	;
 

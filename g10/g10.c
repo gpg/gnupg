@@ -635,8 +635,10 @@ main( int argc, char **argv )
 	    /* reading data and passphrase form stdin:
 	     * we assume the first line is the passphrase, so
 	     * we better should read it now.
+	     *
+	     * We should do it here, but for now it is not needed.
+	     * Anyway, this password scheme is not quite good
 	     */
-	    /* FIXME: doit */
 	}
     }
 

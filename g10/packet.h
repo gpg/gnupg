@@ -130,24 +130,24 @@ typedef struct {
     byte    hdrbytes;	    /* number of header bytes */
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
+    byte is_protected;	/* The secret infos are protected and must */
+			/* be decrypteded before use, the protected */
+			/* MPIs are simply (void*) pointers to memory */
+			/* and should never be passed to a mpi_xxx() */
+    struct {
+	byte algo;  /* cipher used to protect the secret informations*/
+	byte s2k;
+	byte hash;
+	byte salt[8];
+	byte count;
+	byte iv[8]; /* initialization vector for CFB mode */
+    } protect;
     union {
       struct {
 	MPI p;		    /* prime */
 	MPI g;		    /* group generator */
 	MPI y;		    /* g^x mod p */
 	MPI x;		    /* secret exponent */
-	u16 csum;	    /* checksum */
-	byte is_protected;  /* The above infos are protected and must */
-			    /* be decrypteded before use. */
-	struct {
-	    byte algo;	/* cipher used to protect the secret informations*/
-	    byte s2k;
-	    byte hash;
-	    byte salt[8];
-	    byte count;
-	    byte iv[8]; /* initialization vector for CFB mode */
-	} protect;	    /* when protected, the MPIs above are pointers
-			     * to plain storage */
       } elg;
       struct {
 	MPI p;		    /* prime */
@@ -155,18 +155,6 @@ typedef struct {
 	MPI g;		    /* group generator */
 	MPI y;		    /* g^x mod p */
 	MPI x;		    /* secret exponent */
-	u16 csum;	    /* checksum */
-	byte is_protected;  /* The above infos are protected and must */
-			    /* be decrypteded before use. */
-	struct {
-	    byte algo;	/* cipher used to protect the secret informations*/
-	    byte s2k;
-	    byte hash;
-	    byte salt[8];
-	    byte count;
-	    byte iv[8]; /* initialization vector for CFB mode */
-	} protect;	    /* when protected, the MPIs above are pointers
-			     * to plain storage */
       } dsa;
       struct {
 	MPI rsa_n;	    /* public modulus */
@@ -175,19 +163,9 @@ typedef struct {
 	MPI rsa_p;	    /* secret first prime number */
 	MPI rsa_q;	    /* secret second prime number */
 	MPI rsa_u;	    /* secret multiplicative inverse */
-	u16 csum;	    /* checksum */
-	byte is_protected;  /* The above infos are protected and must */
-			    /* be decrypteded before use */
-	byte protect_algo;  /* cipher used to protect the secret informations*/
-	union { 	    /* information for the protection */
-	  struct {
-	    byte iv[8];     /* initialization vector for CFB mode */
-			    /* when protected, the MPIs above are pointers
-			     * to plain storage */
-	  } blowfish;
-	} protect;
       } rsa;
     } d;
+    u16 csum;		/* checksum */
 } PKT_secret_cert;
 
 

@@ -48,7 +48,7 @@ cipher_filter( void *opaque, int control,
     int rc=0;
 
     if( control == IOBUFCTRL_UNDERFLOW ) { /* decrypt */
-	rc = -1; /* FIXME:*/
+	rc = -1; /* not yet used */
     }
     else if( control == IOBUFCTRL_FLUSH ) { /* encrypt */
 	assert(a);

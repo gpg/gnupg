@@ -38,6 +38,7 @@
 #include "options.h"
 #include "packet.h"
 #include "main.h"
+#include "i18n.h"
 
 
 #define TRUST_RECORD_LEN 40
@@ -1708,6 +1709,7 @@ check_trust( PKT_public_cert *pkc, unsigned *r_trustlevel )
     TRUSTREC rec;
     unsigned trustlevel = TRUST_UNKNOWN;
     int rc=0;
+    int cur_time;
 
     if( DBG_TRUST )
 	log_info("check_trust() called.\n");
@@ -1736,16 +1738,25 @@ check_trust( PKT_public_cert *pkc, unsigned *r_trustlevel )
 				    pkc->local_id );
 	}
     }
-    if( pkc->timestamp > make_timestamp() ) {
+    cur_time = make_timestamp();
+    if( pkc->timestamp > cur_time ) {
 	log_info("public key created in future (time warp or clock problem)\n");
 	return G10ERR_TIME_CONFLICT;
     }
 
-
-    rc = do_check( pkc->local_id, &rec, &trustlevel );
-    if( rc ) {
-	log_error("check_trust: do_check failed: %s\n", g10_errstr(rc));
-	return rc;
+    if( pkc->valid_days && add_days_to_timestamp(pkc->timestamp,
+						pkc->valid_days) < cur_time ) {
+	log_info(_("key expiration date is %s\n"), strtimestamp(
+				    add_days_to_timestamp(pkc->timestamp,
+							  pkc->valid_days)));
+	 trustlevel = TRUST_EXPIRED;
+    }
+    else {
+	rc = do_check( pkc->local_id, &rec, &trustlevel );
+	if( rc ) {
+	    log_error("check_trust: do_check failed: %s\n", g10_errstr(rc));
+	    return rc;
+	}
     }
 
 

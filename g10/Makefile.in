@@ -92,7 +92,7 @@ VERSION = @VERSION@
 ZLIBS = @ZLIBS@
 l = @l@
 
-INCLUDES = -I$(top_srcdir)/include
+INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
 EXTRA_DIST = OPTIONS  pubring.asc
 OMIT_DEPENDENCIES = zlib.h zconf.h
 BUILT_SOURCES = g10maint.c
@@ -404,7 +404,7 @@ maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 g10maint.c : g10.c
-	    $(CPP) $(DEFS) $(INCLUDES) -DIS_G10MAINT  $<  > $@ || rm $@
+	    $(CPP) $(CFLAGS) $(DEFS) $(INCLUDES) -DIS_G10MAINT $< > $@ || rm $@
 
 $(PROGRAMS): $(needed_libs)
 

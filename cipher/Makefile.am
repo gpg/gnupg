@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES =  -I$(top_srcdir)/include
+INCLUDES =  -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
 EXTRA_DIST = @CIPHER_EXTRA_DIST@
 
 noinst_LIBRARIES = libcipher.a

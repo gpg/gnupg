@@ -580,7 +580,7 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
  *
  * o compare the signatures: If we already have this signature, check
  *   that they compare okay; if not, issue a warning and ask the user.
- *   FIXME: add the check, that we don` have duplicate signatures and the
+ *   FIXME: add the check, that we don't have duplicate signatures and the
  *   warning in cases that the old/new signatures don't match.
  * o Simply add the signature.	Can't verify here because we may not have
  *   the signatures public key yet; verification is done when putting it

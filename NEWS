@@ -1,3 +1,19 @@
+Noteworthy changes in version 0.2.14
+------------------------------------
+
+    * Changed the internal handling of keyrings.
+
+    * Add support to list PGP 5 keyrings with supkeys
+
+    * Timestamps of signatures are now verified.
+
+    * A expiration time can now be specified during key generation.
+
+    * Some speedups for Blowfish and SHA-1, rewrote SHA-1 transform.
+      Reduced the amount of random bytes needed for key generation in
+      some cases.
+
+
 Noteworthy changes in version 0.2.13
 ------------------------------------
 

@@ -674,6 +674,7 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
 		rc = G10ERR_INV_KEYRING;
 		goto ready;
 	    }
+		log_info("read_keyblock: read error: %s\n", g10_errstr(rc) );
 	    kbpos->count++;
 	    free_packet( pkt );
 	    init_packet( pkt );

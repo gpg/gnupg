@@ -52,7 +52,6 @@ static int  parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 				      byte *hdr, int hdrlen, PACKET *packet );
 static int  parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
-static void parse_subkey( IOBUF inp, int pkttype, unsigned long pktlen );
 static int  parse_comment( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
 static void parse_trust( IOBUF inp, int pkttype, unsigned long pktlen );
@@ -289,6 +288,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
     rc = G10ERR_UNKNOWN_PACKET; /* default error */
     switch( pkttype ) {
       case PKT_PUBLIC_CERT:
+      case PKT_PUBKEY_SUBCERT:
 	pkt->pkt.public_cert = m_alloc_clear(sizeof *pkt->pkt.public_cert );
 	rc = parse_certificate(inp, pkttype, pktlen, hdr, hdrlen, pkt );
 	break;
@@ -310,9 +310,6 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	break;
       case PKT_USER_ID:
 	rc = parse_user_id(inp, pkttype, pktlen, pkt );
-	break;
-      case PKT_PUBKEY_SUBCERT:
-	parse_subkey(inp, pkttype, pktlen);
 	break;
       case PKT_COMMENT:
 	rc = parse_comment(inp, pkttype, pktlen, pkt);
@@ -767,16 +764,34 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
     int is_v4=0;
     int rc=0;
 
-
-    if( pktlen < 12 ) {
-	log_error("packet(%d) too short\n", pkttype);
-	goto leave;
-    }
     version = iobuf_get_noeof(inp); pktlen--;
-    if( version == 4 )
+    if( pkttype == PKT_PUBKEY_SUBCERT && version == '#' ) {
+	/* early versions of G10 use old comments packets; luckily all those
+	 * comments are started by a hash */
+	if( list_mode ) {
+	    printf(":old comment packet: \"" );
+	    for( ; pktlen; pktlen-- ) {
+		int c;
+		c = iobuf_get_noeof(inp);
+		if( c >= ' ' && c <= 'z' )
+		    putchar(c);
+		else
+		    printf("\\x%02x", c );
+	    }
+	    printf("\"\n");
+	}
+	skip_rest(inp, pktlen);
+	return 0;
+    }
+    else if( version == 4 )
 	is_v4=1;
     else if( version != 2 && version != 3 ) {
 	log_error("packet(%d) with unknown version %d\n", pkttype, version);
+	goto leave;
+    }
+
+    if( pktlen < 11 ) {
+	log_error("packet(%d) too short\n", pkttype);
 	goto leave;
     }
 
@@ -795,7 +810,7 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 		pkttype == PKT_PUBKEY_SUBCERT? "public sub" :
 		pkttype == PKT_SECKEY_SUBCERT? "secret sub" : "??",
 		version, timestamp, valid_period );
-    if( pkttype == PKT_SECRET_CERT )  {
+    if( pkttype == PKT_SECRET_CERT || pkttype == PKT_SECKEY_SUBCERT )  {
 	pkt->pkt.secret_cert->timestamp = timestamp;
 	pkt->pkt.secret_cert->valid_days = valid_period;
 	pkt->pkt.secret_cert->hdrbytes = hdrlen;
@@ -824,7 +839,7 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    mpi_print(stdout, elg_y, mpi_print_mode  );
 	    putchar('\n');
 	}
-	if( pkttype == PKT_PUBLIC_CERT ) {
+	if( pkttype == PKT_PUBLIC_CERT || pkttype == PKT_PUBKEY_SUBCERT ) {
 	    pkt->pkt.public_cert->d.elg.p = elg_p;
 	    pkt->pkt.public_cert->d.elg.g = elg_g;
 	    pkt->pkt.public_cert->d.elg.y = elg_y;
@@ -836,27 +851,27 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    pkt->pkt.secret_cert->d.elg.p = elg_p;
 	    pkt->pkt.secret_cert->d.elg.g = elg_g;
 	    pkt->pkt.secret_cert->d.elg.y = elg_y;
-	    cert->d.elg.protect.algo = iobuf_get_noeof(inp); pktlen--;
-	    if( cert->d.elg.protect.algo ) {
-		cert->d.elg.is_protected = 1;
-		cert->d.elg.protect.count = 0;
-		if( cert->d.elg.protect.algo == 255 ) {
+	    cert->protect.algo = iobuf_get_noeof(inp); pktlen--;
+	    if( cert->protect.algo ) {
+		cert->is_protected = 1;
+		cert->protect.count = 0;
+		if( cert->protect.algo == 255 ) {
 		    if( pktlen < 3 ) {
 			rc = G10ERR_INVALID_PACKET;
 			goto leave;
 		    }
-		    cert->d.elg.protect.algo = iobuf_get_noeof(inp); pktlen--;
-		    cert->d.elg.protect.s2k  = iobuf_get_noeof(inp); pktlen--;
-		    cert->d.elg.protect.hash = iobuf_get_noeof(inp); pktlen--;
-		    switch( cert->d.elg.protect.s2k ) {
+		    cert->protect.algo = iobuf_get_noeof(inp); pktlen--;
+		    cert->protect.s2k  = iobuf_get_noeof(inp); pktlen--;
+		    cert->protect.hash = iobuf_get_noeof(inp); pktlen--;
+		    switch( cert->protect.s2k ) {
 		      case 1:
 		      case 3:
 			for(i=0; i < 8 && pktlen; i++, pktlen-- )
 			    temp[i] = iobuf_get_noeof(inp);
-			memcpy(cert->d.elg.protect.salt, temp, 8 );
+			memcpy(cert->protect.salt, temp, 8 );
 			break;
 		    }
-		    switch( cert->d.elg.protect.s2k ) {
+		    switch( cert->protect.s2k ) {
 		      case 0: if( list_mode ) printf(  "\tsimple S2K" );
 			break;
 		      case 1: if( list_mode ) printf(  "\tsalted S2K" );
@@ -866,30 +881,30 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 		      default:
 			if( list_mode )
 			    printf(  "\tunknown S2K %d\n",
-						cert->d.elg.protect.s2k );
+						cert->protect.s2k );
 			rc = G10ERR_INVALID_PACKET;
 			goto leave;
 		    }
 
 		    if( list_mode ) {
 			printf(", algo: %d, hash: %d",
-					 cert->d.elg.protect.algo,
-					 cert->d.elg.protect.hash );
-			if( cert->d.elg.protect.s2k == 1
-			    || cert->d.elg.protect.s2k == 3 ) {
+					 cert->protect.algo,
+					 cert->protect.hash );
+			if( cert->protect.s2k == 1
+			    || cert->protect.s2k == 3 ) {
 			    printf(", salt: ");
 			    for(i=0; i < 8; i++ )
-				printf("%02x", cert->d.elg.protect.salt[i]);
+				printf("%02x", cert->protect.salt[i]);
 			}
 			putchar('\n');
 		    }
 
-		    if( cert->d.elg.protect.s2k == 3 ) {
+		    if( cert->protect.s2k == 3 ) {
 			if( !pktlen ) {
 			    rc = G10ERR_INVALID_PACKET;
 			    goto leave;
 			}
-			cert->d.elg.protect.count = iobuf_get_noeof(inp);
+			cert->protect.count = iobuf_get_noeof(inp);
 			pktlen--;
 		    }
 
@@ -897,12 +912,12 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 		else {
 		    if( list_mode )
 			printf(  "\tprotect algo: %d\n",
-						cert->d.elg.protect.algo);
+						cert->protect.algo);
 		    /* old version, we don't have a S2K, so we fake one */
-		    cert->d.elg.protect.s2k = 0;
+		    cert->protect.s2k = 0;
 		    /* We need this kludge to cope with old GNUPG versions */
-		    cert->d.elg.protect.hash =
-			 cert->d.elg.protect.algo == CIPHER_ALGO_BLOWFISH?
+		    cert->protect.hash =
+			 cert->protect.algo == CIPHER_ALGO_BLOWFISH?
 				      DIGEST_ALGO_RMD160 : DIGEST_ALGO_MD5;
 		}
 		if( pktlen < 8 ) {
@@ -917,20 +932,20 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 			printf(" %02x", temp[i] );
 		    putchar('\n');
 		}
-		memcpy(cert->d.elg.protect.iv, temp, 8 );
+		memcpy(cert->protect.iv, temp, 8 );
 	    }
 	    else
-		cert->d.elg.is_protected = 0;
+		cert->is_protected = 0;
 	    /* It does not make sense to read it into secure memory.
 	     * If the user is so careless, not to protect his secret key,
 	     * we can assume, that he operates an open system :=(.
 	     * So we put the key into secure memory when we unprotect him. */
 	    n = pktlen; cert->d.elg.x = mpi_read(inp, &n, 0 ); pktlen -=n;
 
-	    cert->d.elg.csum = read_16(inp); pktlen -= 2;
+	    cert->csum = read_16(inp); pktlen -= 2;
 	    if( list_mode ) {
 		printf("\t[secret value x is not shown]\n"
-		       "\tchecksum: %04hx\n", cert->d.elg.csum);
+		       "\tchecksum: %04hx\n", cert->csum);
 	    }
 	  /*log_mpidump("elg p=", cert->d.elg.p );
 	    log_mpidump("elg g=", cert->d.elg.g );
@@ -955,7 +970,7 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    mpi_print(stdout, dsa_y, mpi_print_mode  );
 	    putchar('\n');
 	}
-	if( pkttype == PKT_PUBLIC_CERT ) {
+	if( pkttype == PKT_PUBLIC_CERT || pkttype == PKT_PUBKEY_SUBCERT ) {
 	    pkt->pkt.public_cert->d.dsa.p = dsa_p;
 	    pkt->pkt.public_cert->d.dsa.q = dsa_q;
 	    pkt->pkt.public_cert->d.dsa.g = dsa_g;
@@ -969,27 +984,27 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    pkt->pkt.secret_cert->d.dsa.q = dsa_q;
 	    pkt->pkt.secret_cert->d.dsa.g = dsa_g;
 	    pkt->pkt.secret_cert->d.dsa.y = dsa_y;
-	    cert->d.dsa.protect.algo = iobuf_get_noeof(inp); pktlen--;
-	    if( cert->d.dsa.protect.algo ) {
-		cert->d.dsa.is_protected = 1;
-		cert->d.dsa.protect.count = 0;
-		if( cert->d.dsa.protect.algo == 255 ) {
+	    cert->protect.algo = iobuf_get_noeof(inp); pktlen--;
+	    if( cert->protect.algo ) {
+		cert->is_protected = 1;
+		cert->protect.count = 0;
+		if( cert->protect.algo == 255 ) {
 		    if( pktlen < 3 ) {
 			rc = G10ERR_INVALID_PACKET;
 			goto leave;
 		    }
-		    cert->d.dsa.protect.algo = iobuf_get_noeof(inp); pktlen--;
-		    cert->d.dsa.protect.s2k  = iobuf_get_noeof(inp); pktlen--;
-		    cert->d.dsa.protect.hash = iobuf_get_noeof(inp); pktlen--;
-		    switch( cert->d.dsa.protect.s2k ) {
+		    cert->protect.algo = iobuf_get_noeof(inp); pktlen--;
+		    cert->protect.s2k  = iobuf_get_noeof(inp); pktlen--;
+		    cert->protect.hash = iobuf_get_noeof(inp); pktlen--;
+		    switch( cert->protect.s2k ) {
 		      case 1:
 		      case 3:
 			for(i=0; i < 8 && pktlen; i++, pktlen-- )
 			    temp[i] = iobuf_get_noeof(inp);
-			memcpy(cert->d.dsa.protect.salt, temp, 8 );
+			memcpy(cert->protect.salt, temp, 8 );
 			break;
 		    }
-		    switch( cert->d.dsa.protect.s2k ) {
+		    switch( cert->protect.s2k ) {
 		      case 0: if( list_mode ) printf(  "\tsimple S2K" );
 			break;
 		      case 1: if( list_mode ) printf(  "\tsalted S2K" );
@@ -998,42 +1013,39 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 			break;
 		      default:
 			if( list_mode )
-			    printf(  "\tunknown S2K %d\n",
-						cert->d.dsa.protect.s2k );
+			    printf(  "\tunknown S2K %d\n", cert->protect.s2k );
 			rc = G10ERR_INVALID_PACKET;
 			goto leave;
 		    }
 
 		    if( list_mode ) {
 			printf(", algo: %d, hash: %d",
-					 cert->d.dsa.protect.algo,
-					 cert->d.dsa.protect.hash );
-			if( cert->d.dsa.protect.s2k == 1
-			    || cert->d.dsa.protect.s2k == 3 ) {
+					 cert->protect.algo,
+					 cert->protect.hash );
+			if( cert->protect.s2k == 1 || cert->protect.s2k == 3 ){
 			    printf(", salt: ");
 			    for(i=0; i < 8; i++ )
-				printf("%02x", cert->d.dsa.protect.salt[i]);
+				printf("%02x", cert->protect.salt[i]);
 			}
 			putchar('\n');
 		    }
 
-		    if( cert->d.dsa.protect.s2k == 3 ) {
+		    if( cert->protect.s2k == 3 ) {
 			if( !pktlen ) {
 			    rc = G10ERR_INVALID_PACKET;
 			    goto leave;
 			}
-			cert->d.dsa.protect.count = iobuf_get_noeof(inp);
+			cert->protect.count = iobuf_get_noeof(inp);
 			pktlen--;
 		    }
 
 		}
 		else {
 		    if( list_mode )
-			printf(  "\tprotect algo: %d\n",
-						cert->d.dsa.protect.algo);
+			printf(  "\tprotect algo: %d\n", cert->protect.algo);
 		    /* old version, we don't have a S2K, so we fake one */
-		    cert->d.dsa.protect.s2k = 0;
-		    cert->d.dsa.protect.hash = DIGEST_ALGO_MD5;
+		    cert->protect.s2k = 0;
+		    cert->protect.hash = DIGEST_ALGO_MD5;
 		}
 		if( pktlen < 8 ) {
 		    rc = G10ERR_INVALID_PACKET;
@@ -1047,20 +1059,20 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 			printf(" %02x", temp[i] );
 		    putchar('\n');
 		}
-		memcpy(cert->d.dsa.protect.iv, temp, 8 );
+		memcpy(cert->protect.iv, temp, 8 );
 	    }
 	    else
-		cert->d.dsa.is_protected = 0;
+		cert->is_protected = 0;
 	    /* It does not make sense to read it into secure memory.
 	     * If the user is so careless, not to protect his secret key,
 	     * we can assume, that he operates an open system :=(.
 	     * So we put the key into secure memory when we unprotect him. */
 	    n = pktlen; cert->d.dsa.x = mpi_read(inp, &n, 0 ); pktlen -=n;
 
-	    cert->d.dsa.csum = read_16(inp); pktlen -= 2;
+	    cert->csum = read_16(inp); pktlen -= 2;
 	    if( list_mode ) {
 		printf("\t[secret value x is not shown]\n"
-		       "\tchecksum: %04hx\n", cert->d.dsa.csum);
+		       "\tchecksum: %04hx\n", cert->csum);
 	    }
 	  /*log_mpidump("dsa p=", cert->d.dsa.p );
 	    log_mpidump("dsa q=", cert->d.dsa.q );
@@ -1081,7 +1093,7 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    mpi_print(stdout, rsa_pub_exp, mpi_print_mode  );
 	    putchar('\n');
 	}
-	if( pkttype == PKT_PUBLIC_CERT ) {
+	if( pkttype == PKT_PUBLIC_CERT || pkttype == PKT_PUBKEY_SUBCERT ) {
 	    pkt->pkt.public_cert->d.rsa.rsa_n = rsa_pub_mod;
 	    pkt->pkt.public_cert->d.rsa.rsa_e = rsa_pub_exp;
 	}
@@ -1091,11 +1103,11 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 
 	    pkt->pkt.secret_cert->d.rsa.rsa_n = rsa_pub_mod;
 	    pkt->pkt.secret_cert->d.rsa.rsa_e = rsa_pub_exp;
-	    cert->d.rsa.protect_algo = iobuf_get_noeof(inp); pktlen--;
+	    cert->protect.algo = iobuf_get_noeof(inp); pktlen--;
 	    if( list_mode )
-		printf(  "\tprotect algo: %d\n", cert->d.rsa.protect_algo);
-	    if( cert->d.rsa.protect_algo ) {
-		cert->d.rsa.is_protected = 1;
+		printf(  "\tprotect algo: %d\n", cert->protect.algo);
+	    if( cert->protect.algo ) {
+		cert->is_protected = 1;
 		for(i=0; i < 8 && pktlen; i++, pktlen-- )
 		    temp[i] = iobuf_get_noeof(inp);
 		if( list_mode ) {
@@ -1104,21 +1116,21 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 			printf(" %02x", temp[i] );
 		    putchar('\n');
 		}
-		if( cert->d.rsa.protect_algo == CIPHER_ALGO_BLOWFISH )
-		    memcpy(cert->d.rsa.protect.blowfish.iv, temp, 8 );
+		if( cert->protect.algo == CIPHER_ALGO_BLOWFISH )
+		    memcpy(cert->protect.iv, temp, 8 );
 	    }
 	    else
-		cert->d.rsa.is_protected = 0;
+		cert->is_protected = 0;
 	    /* (See comments at the code for elg keys) */
 	    n = pktlen; cert->d.rsa.rsa_d = mpi_read(inp, &n, 0 ); pktlen -=n;
 	    n = pktlen; cert->d.rsa.rsa_p = mpi_read(inp, &n, 0 ); pktlen -=n;
 	    n = pktlen; cert->d.rsa.rsa_q = mpi_read(inp, &n, 0 ); pktlen -=n;
 	    n = pktlen; cert->d.rsa.rsa_u = mpi_read(inp, &n, 0 ); pktlen -=n;
 
-	    cert->d.rsa.csum = read_16(inp); pktlen -= 2;
+	    cert->csum = read_16(inp); pktlen -= 2;
 	    if( list_mode ) {
 		printf("\t[secret values d,p,q,u are not shown]\n"
-		       "\tchecksum: %04hx\n", cert->d.rsa.csum);
+		       "\tchecksum: %04hx\n", cert->csum);
 	    }
 	 /* log_mpidump("rsa n=", cert->d.rsa.rsa_n );
 	    log_mpidump("rsa e=", cert->d.rsa.rsa_e );
@@ -1161,37 +1173,6 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 	printf("\"\n");
     }
     return 0;
-}
-
-
-static void
-parse_subkey( IOBUF inp, int pkttype, unsigned long pktlen )
-{
-    int version;
-
-    version = iobuf_get_noeof(inp); pktlen--;
-    if( pkttype == PKT_PUBKEY_SUBCERT && version == '#' ) {
-	/* early versions of G10 use old comments packets; luckily all those
-	 * comments are started by a hash */
-	if( list_mode ) {
-	    printf(":old comment packet: \"" );
-	    for( ; pktlen; pktlen-- ) {
-		int c;
-		c = iobuf_get_noeof(inp);
-		if( c >= ' ' && c <= 'z' )
-		    putchar(c);
-		else
-		    printf("\\x%02x", c );
-	    }
-	    printf("\"\n");
-	}
-	skip_rest(inp, pktlen);
-	return;
-    }
-
-    if( list_mode )
-	printf(":public subkey packet: \"" );
-    skip_rest(inp, pktlen);
 }
 
 

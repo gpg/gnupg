@@ -93,28 +93,23 @@ add_onepass_sig( CTX c, PACKET *pkt )
 }
 
 
-static int
-add_public_cert( CTX c, PACKET *pkt )
-{
-    release_list( c );
-    c->list = new_kbnode( pkt );
-    return 1;
-}
-
-static int
-add_secret_cert( CTX c, PACKET *pkt )
-{
-    release_list( c );
-    c->list = new_kbnode( pkt );
-    return 1;
-}
-
 
 static int
 add_user_id( CTX c, PACKET *pkt )
 {
     if( !c->list ) {
 	log_error("orphaned user id\n" );
+	return 0;
+    }
+    add_kbnode( c->list, new_kbnode( pkt ) );
+    return 1;
+}
+
+static int
+add_subkey( CTX c, PACKET *pkt )
+{
+    if( !c->list ) {
+	log_error("subkey w/o mainkey\n" );
 	return 0;
     }
     add_kbnode( c->list, new_kbnode( pkt ) );
@@ -309,30 +304,11 @@ do_check_sig( CTX c, KBNODE node )
 	    md = md_open( 0, 0 ); /* signature_check() will enable the md*/
     }
     else if( (sig->sig_class&~3) == 0x10
+	     || sig->sig_class == 0x18
 	     || sig->sig_class == 0x20
 	     || sig->sig_class == 0x30	) { /* classes 0x10..0x13,0x20,0x30 */
-	if( c->list->pkt->pkttype == PKT_PUBLIC_CERT ) {
-	  #if 0
-	    KBNODE n1;
-
-	    if( sig->sig_class == 0x20 ) {
-		md = md_open( algo, 0 );
-		hash_public_cert( md, c->list->pkt->pkt.public_cert );
-	    }
-	    else if( (n1=find_prev_kbnode( c->list, node, PKT_USER_ID )) ) {
-		md = md_open( algo, 0 );
-		hash_public_cert( md, c->list->pkt->pkt.public_cert );
-		if( sig->sig_class != 0x20 )
-		    md_write( md, n1->pkt->pkt.user_id->name,
-				  n1->pkt->pkt.user_id->len);
-	    }
-	    else {
-		log_error("invalid parent packet for sigclass %02x\n",
-							sig->sig_class);
-		return G10ERR_SIG_CLASS;
-	    }
-	  #endif
-
+	if( c->list->pkt->pkttype == PKT_PUBLIC_CERT
+	    || c->list->pkt->pkttype == PKT_PUBKEY_SUBCERT ) {
 	    return check_key_signature( c->list, node, NULL );
 	}
 	else {
@@ -374,7 +350,7 @@ print_fingerprint( PKT_public_cert *pkc, PKT_secret_cert *skc )
     p = array = skc? fingerprint_from_skc( skc, &n )
 		   : fingerprint_from_pkc( pkc, &n );
     if( opt.with_colons ) {
-	printf("fpr::::::::");
+	printf("fpr:::::::::");
 	for(i=0; i < n ; i++, p++ )
 	    printf("%02X", *p );
 	putchar(':');
@@ -409,26 +385,32 @@ static void
 list_node( CTX c, KBNODE node )
 {
     int any=0;
+    int mainkey;
 
     if( !node )
 	;
-    else if( node->pkt->pkttype == PKT_PUBLIC_CERT ) {
+    else if( (mainkey = (node->pkt->pkttype == PKT_PUBLIC_CERT) )
+	     || node->pkt->pkttype == PKT_PUBKEY_SUBCERT ) {
 	PKT_public_cert *pkc = node->pkt->pkt.public_cert;
 
 	if( opt.with_colons ) {
 	    u32 keyid[2];
 	    keyid_from_pkc( pkc, keyid );
-	    printf("pub::%u:%d:%08lX%08lX:%s:::",
+	    printf("%s::%u:%d:%08lX%08lX:%s:%u:::",
+		    mainkey? "pub":"sub",
 		    /* fixme: add trust value here */
 		    nbits_from_pkc( pkc ),
 		    pkc->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
-		    datestr_from_pkc( pkc )
+		    datestr_from_pkc( pkc ),
+		    (unsigned)pkc->valid_days
 		    /* fixme: add LID and ownertrust here */
 					    );
 	}
 	else
-	    printf("pub  %4u%c/%08lX %s ", nbits_from_pkc( pkc ),
+	    printf("%s  %4u%c/%08lX %s ",
+				      mainkey? "pub":"sub",
+				      nbits_from_pkc( pkc ),
 				      pubkey_letter( pkc->pubkey_algo ),
 				      (ulong)keyid_from_pkc( pkc, NULL ),
 				      datestr_from_pkc( pkc )	  );
@@ -449,7 +431,7 @@ list_node( CTX c, KBNODE node )
 
 		if( any ) {
 		    if( opt.with_colons )
-			printf("uid::::::::");
+			printf("uid:::::::::");
 		    else
 			printf( "uid%*s", 28, "" );
 		}
@@ -467,17 +449,29 @@ list_node( CTX c, KBNODE node )
 		}
 		any=2;
 	    }
+	    else if( mainkey && node->pkt->pkttype == PKT_PUBKEY_SUBCERT ) {
+		if( !any ) {
+		    putchar('\n');
+		    any = 1;
+		}
+		list_node(c,  node );
+	    }
 	}
-	if( any != 2 )
+	if( any != 2 && mainkey )
 	    printf("ERROR: no user id!\n");
+	else if( any != 2 )
+	    putchar('\n');
     }
-    else if( node->pkt->pkttype == PKT_SECRET_CERT ) {
+    else if( (mainkey = (node->pkt->pkttype == PKT_SECRET_CERT) )
+	     || node->pkt->pkttype == PKT_SECKEY_SUBCERT ) {
 	PKT_secret_cert *skc = node->pkt->pkt.secret_cert;
 
-	printf("sec  %4u%c/%08lX %s ", nbits_from_skc( skc ),
+	printf("%s  %4u%c/%08lX %s ",
+				      mainkey? "sec":"ssb",
+				       nbits_from_skc( skc ),
 				      pubkey_letter( skc->pubkey_algo ),
 				      (ulong)keyid_from_skc( skc, NULL ),
-				      datestr_from_skc( skc )	  );
+				      datestr_from_skc( skc )	);
 	/* and now list all userids */
 	while( (node = find_next_kbnode(node, PKT_USER_ID)) ) {
 	    print_userid( node->pkt );
@@ -486,8 +480,10 @@ list_node( CTX c, KBNODE node )
 		print_fingerprint( NULL, skc );
 	    any=1;
 	}
-	if( !any )
+	if( !any && mainkey )
 	    printf("ERROR: no user id!\n");
+	else if( !any )
+	    putchar('\n');
     }
     else if( node->pkt->pkttype == PKT_SIGNATURE  ) {
 	PKT_signature *sig = node->pkt->pkt.signature;
@@ -516,7 +512,7 @@ list_node( CTX c, KBNODE node )
 	    putchar(':');
 	    if( sigrc != ' ' )
 		putchar(sigrc);
-	    printf(":::%08lX%08lX:%s:::", (ulong)sig->keyid[0],
+	    printf(":::%08lX%08lX:%s::::", (ulong)sig->keyid[0],
 		       (ulong)sig->keyid[1], datestr_from_sig(sig));
 	}
 	else
@@ -638,8 +634,16 @@ do_proc_packets( CTX c, IOBUF a )
 	}
 	else {
 	    switch( pkt->pkttype ) {
-	      case PKT_PUBLIC_CERT: newpkt = add_public_cert( c, pkt ); break;
-	      case PKT_SECRET_CERT: newpkt = add_secret_cert( c, pkt ); break;
+	      case PKT_PUBLIC_CERT:
+	      case PKT_SECRET_CERT:
+		release_list( c );
+		c->list = new_kbnode( pkt );
+		newpkt = 1;
+		break;
+	      case PKT_PUBKEY_SUBCERT:
+	      case PKT_SECKEY_SUBCERT:
+		newpkt = add_subkey( c, pkt );
+		break;
 	      case PKT_USER_ID:     newpkt = add_user_id( c, pkt ); break;
 	      case PKT_SIGNATURE:   newpkt = add_signature( c, pkt ); break;
 	      case PKT_PUBKEY_ENC:  proc_pubkey_enc( c, pkt ); break;
@@ -730,7 +734,8 @@ proc_tree( CTX c, KBNODE node )
     if( opt.list_packets )
 	return;
 
-    if( node->pkt->pkttype == PKT_PUBLIC_CERT )
+    if( node->pkt->pkttype == PKT_PUBLIC_CERT
+	|| node->pkt->pkttype == PKT_PUBKEY_SUBCERT )
 	list_node( c, node );
     else if( node->pkt->pkttype == PKT_SECRET_CERT )
 	list_node( c, node );

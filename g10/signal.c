@@ -35,7 +35,7 @@
 #include "ttyio.h"
 
 
-
+#if 0
 static RETSIGTYPE
 print_and_exit( int sig )
 {
@@ -53,7 +53,7 @@ print_and_exit( int sig )
     secmem_term();
     exit(2); /* not correct but .. */
 }
-
+#endif
 
 void
 init_signals()

@@ -67,19 +67,18 @@ check_elg( PKT_secret_cert *cert )
     ELG_secret_key skey;
     char save_iv[8];
 
-    if( cert->d.elg.is_protected ) { /* remove the protection */
+    if( cert->is_protected ) { /* remove the protection */
 	DEK *dek = NULL;
 	MPI test_x;
 	BLOWFISH_context *blowfish_ctx=NULL;
 
-	switch( cert->d.elg.protect.algo ) {
+	switch( cert->protect.algo ) {
 	  case CIPHER_ALGO_NONE: BUG(); break;
 	  case CIPHER_ALGO_BLOWFISH:
 	    keyid_from_skc( cert, keyid );
-	    if( cert->d.elg.protect.s2k == 1
-		|| cert->d.elg.protect.s2k == 3 )
+	    if( cert->protect.s2k == 1 || cert->protect.s2k == 3 )
 		dek = get_passphrase_hash( keyid, NULL,
-						 cert->d.elg.protect.salt );
+						 cert->protect.salt );
 	    else
 		dek = get_passphrase_hash( keyid, NULL, NULL );
 
@@ -87,10 +86,9 @@ check_elg( PKT_secret_cert *cert )
 	    blowfish_setkey( blowfish_ctx, dek->key, dek->keylen );
 	    m_free(dek); /* pw is in secure memory, so m_free() burns it */
 	    blowfish_setiv( blowfish_ctx, NULL );
-	    memcpy(save_iv, cert->d.elg.protect.iv, 8 );
-	    blowfish_decode_cfb( blowfish_ctx,
-				 cert->d.elg.protect.iv,
-				 cert->d.elg.protect.iv, 8 );
+	    memcpy(save_iv, cert->protect.iv, 8 );
+	    blowfish_decode_cfb( blowfish_ctx, cert->protect.iv,
+					       cert->protect.iv, 8 );
 	    mpi_set_secure(cert->d.elg.x );
 	    /*fixme: maybe it is better to set the buffer secure with a
 	     * new get_buffer_secure() function */
@@ -103,9 +101,9 @@ check_elg( PKT_secret_cert *cert )
 	    m_free( buffer );
 	    m_free( blowfish_ctx );
 	    /* now let's see wether we have used the right passphrase */
-	    if( csum != cert->d.elg.csum ) {
+	    if( csum != cert->csum ) {
 		mpi_free(test_x);
-		memcpy( cert->d.elg.protect.iv, save_iv, 8 );
+		memcpy( cert->protect.iv, save_iv, 8 );
 		return G10ERR_BAD_PASS;
 	    }
 
@@ -117,16 +115,16 @@ check_elg( PKT_secret_cert *cert )
 	    memset( &skey, 0, sizeof skey );
 	    if( !res ) {
 		mpi_free(test_x);
-		memcpy( cert->d.elg.protect.iv, save_iv, 8 );
+		memcpy( cert->protect.iv, save_iv, 8 );
 		return G10ERR_BAD_PASS;
 	    }
 	    mpi_set(cert->d.elg.x, test_x);
 	    mpi_free(test_x);
-	    cert->d.elg.is_protected = 0;
+	    cert->is_protected = 0;
 	    break;
 
 	  default:
-	    return G10ERR_CIPHER_ALGO; /* unsupport protection algorithm */
+	    return G10ERR_CIPHER_ALGO; /* unsupported protection algorithm */
 	}
     }
     else { /* not protected */
@@ -134,46 +132,13 @@ check_elg( PKT_secret_cert *cert )
 	csum = checksum_u16( nbytes*8 );
 	csum += checksum( buffer, nbytes );
 	m_free( buffer );
-	if( csum != cert->d.elg.csum )
+	if( csum != cert->csum )
 	    return G10ERR_CHECKSUM;
     }
 
     return 0;
 }
 
-
-static int
-protect_elg( PKT_secret_cert *cert, DEK *dek )
-{
-    byte *buffer;
-    unsigned nbytes;
-
-    if( !cert->d.elg.is_protected ) { /* add the protection */
-	BLOWFISH_context *blowfish_ctx=NULL;
-
-	switch( cert->d.elg.protect.algo ) {
-	  case CIPHER_ALGO_NONE: BUG(); break;
-	  case CIPHER_ALGO_BLOWFISH:
-	    blowfish_ctx = m_alloc_secure( sizeof *blowfish_ctx );
-	    blowfish_setkey( blowfish_ctx, dek->key, dek->keylen );
-	    blowfish_setiv( blowfish_ctx, NULL );
-	    blowfish_encode_cfb( blowfish_ctx,
-				 cert->d.elg.protect.iv,
-				 cert->d.elg.protect.iv, 8 );
-	    buffer = mpi_get_buffer( cert->d.elg.x, &nbytes, NULL );
-	    blowfish_encode_cfb( blowfish_ctx, buffer, buffer, nbytes );
-	    mpi_set_buffer( cert->d.elg.x, buffer, nbytes, 0 );
-	    m_free( buffer );
-	    m_free( blowfish_ctx );
-	    cert->d.elg.is_protected = 1;
-	    break;
-
-	  default:
-	    return G10ERR_CIPHER_ALGO; /* unsupport protection algorithm */
-	}
-    }
-    return 0;
-}
 
 static int
 check_dsa( PKT_secret_cert *cert )
@@ -186,19 +151,18 @@ check_dsa( PKT_secret_cert *cert )
     DSA_secret_key skey;
     char save_iv[8];
 
-    if( cert->d.dsa.is_protected ) { /* remove the protection */
+    if( cert->is_protected ) { /* remove the protection */
 	DEK *dek = NULL;
 	MPI test_x;
 	BLOWFISH_context *blowfish_ctx=NULL;
 
-	switch( cert->d.dsa.protect.algo ) {
+	switch( cert->protect.algo ) {
 	  case CIPHER_ALGO_NONE: BUG(); break;
 	  case CIPHER_ALGO_BLOWFISH:
 	    keyid_from_skc( cert, keyid );
-	    if( cert->d.dsa.protect.s2k == 1
-		|| cert->d.dsa.protect.s2k == 3 )
+	    if( cert->protect.s2k == 1 || cert->protect.s2k == 3 )
 		dek = get_passphrase_hash( keyid, NULL,
-						 cert->d.dsa.protect.salt );
+						 cert->protect.salt );
 	    else
 		dek = get_passphrase_hash( keyid, NULL, NULL );
 
@@ -206,10 +170,10 @@ check_dsa( PKT_secret_cert *cert )
 	    blowfish_setkey( blowfish_ctx, dek->key, dek->keylen );
 	    m_free(dek); /* pw is in secure memory, so m_free() burns it */
 	    blowfish_setiv( blowfish_ctx, NULL );
-	    memcpy(save_iv, cert->d.dsa.protect.iv, 8 );
+	    memcpy(save_iv, cert->protect.iv, 8 );
 	    blowfish_decode_cfb( blowfish_ctx,
-				 cert->d.dsa.protect.iv,
-				 cert->d.dsa.protect.iv, 8 );
+				 cert->protect.iv,
+				 cert->protect.iv, 8 );
 	    mpi_set_secure(cert->d.dsa.x );
 	    /*fixme: maybe it is better to set the buffer secure with a
 	     * new get_buffer_secure() function */
@@ -222,9 +186,9 @@ check_dsa( PKT_secret_cert *cert )
 	    m_free( buffer );
 	    m_free( blowfish_ctx );
 	    /* now let's see wether we have used the right passphrase */
-	    if( csum != cert->d.dsa.csum ) {
+	    if( csum != cert->csum ) {
 		mpi_free(test_x);
-		memcpy( cert->d.dsa.protect.iv, save_iv, 8 );
+		memcpy( cert->protect.iv, save_iv, 8 );
 		return G10ERR_BAD_PASS;
 	    }
 
@@ -237,12 +201,12 @@ check_dsa( PKT_secret_cert *cert )
 	    memset( &skey, 0, sizeof skey );
 	    if( !res ) {
 		mpi_free(test_x);
-		memcpy( cert->d.dsa.protect.iv, save_iv, 8 );
+		memcpy( cert->protect.iv, save_iv, 8 );
 		return G10ERR_BAD_PASS;
 	    }
 	    mpi_set(cert->d.dsa.x, test_x);
 	    mpi_free(test_x);
-	    cert->d.dsa.is_protected = 0;
+	    cert->is_protected = 0;
 	    break;
 
 	  default:
@@ -254,46 +218,13 @@ check_dsa( PKT_secret_cert *cert )
 	csum = checksum_u16( nbytes*8 );
 	csum += checksum( buffer, nbytes );
 	m_free( buffer );
-	if( csum != cert->d.dsa.csum )
+	if( csum != cert->csum )
 	    return G10ERR_CHECKSUM;
     }
 
     return 0;
 }
 
-
-static int
-protect_dsa( PKT_secret_cert *cert, DEK *dek )
-{
-    byte *buffer;
-    unsigned nbytes;
-
-    if( !cert->d.dsa.is_protected ) { /* add the protection */
-	BLOWFISH_context *blowfish_ctx=NULL;
-
-	switch( cert->d.dsa.protect.algo ) {
-	  case CIPHER_ALGO_NONE: BUG(); break;
-	  case CIPHER_ALGO_BLOWFISH:
-	    blowfish_ctx = m_alloc_secure( sizeof *blowfish_ctx );
-	    blowfish_setkey( blowfish_ctx, dek->key, dek->keylen );
-	    blowfish_setiv( blowfish_ctx, NULL );
-	    blowfish_encode_cfb( blowfish_ctx,
-				 cert->d.dsa.protect.iv,
-				 cert->d.dsa.protect.iv, 8 );
-	    buffer = mpi_get_buffer( cert->d.dsa.x, &nbytes, NULL );
-	    blowfish_encode_cfb( blowfish_ctx, buffer, buffer, nbytes );
-	    mpi_set_buffer( cert->d.dsa.x, buffer, nbytes, 0 );
-	    m_free( buffer );
-	    m_free( blowfish_ctx );
-	    cert->d.dsa.is_protected = 1;
-	    break;
-
-	  default:
-	    return G10ERR_CIPHER_ALGO; /* unsupport protection algorithm */
-	}
-    }
-    return 0;
-}
 
 
 #ifdef HAVE_RSA_CIPHER
@@ -307,11 +238,11 @@ check_rsa( PKT_secret_cert *cert )
     u32 keyid[2];
     RSA_secret_key skey;
 
-    if( cert->d.rsa.is_protected ) { /* remove the protection */
+    if( cert->is_protected ) { /* remove the protection */
 	DEK *dek = NULL;
 	BLOWFISH_context *blowfish_ctx=NULL;
 
-	switch( cert->d.rsa.protect_algo ) {
+	switch( cert->protect.algo ) {
 	    /* FIXME: use test variables to check for the correct key */
 	  case CIPHER_ALGO_NONE: BUG(); break;
 	  case CIPHER_ALGO_BLOWFISH:
@@ -321,9 +252,8 @@ check_rsa( PKT_secret_cert *cert )
 	    blowfish_setkey( blowfish_ctx, dek->key, dek->keylen );
 	    m_free(dek); /* pw is in secure memory, so m_free() burns it */
 	    blowfish_setiv( blowfish_ctx, NULL );
-	    blowfish_decode_cfb( blowfish_ctx,
-				 cert->d.rsa.protect.blowfish.iv,
-				 cert->d.rsa.protect.blowfish.iv, 8 );
+	    blowfish_decode_cfb( blowfish_ctx, cert->protect.iv,
+					       cert->protect.iv, 8 );
 	    csum = 0;
 	    #define X(a) do { \
 		mpi_set_secure(cert->d.rsa.rsa_##a); \
@@ -339,10 +269,10 @@ check_rsa( PKT_secret_cert *cert )
 	    X(q);
 	    X(u);
 	    #undef X
-	    cert->d.rsa.is_protected = 0;
+	    cert->is_protected = 0;
 	    m_free( blowfish_ctx );
 	    /* now let's see wether we have used the right passphrase */
-	    if( csum != cert->d.rsa.csum )
+	    if( csum != cert->csum )
 		return G10ERR_BAD_PASS;
 
 	    skey.d = cert->d.rsa.rsa_d;
@@ -377,7 +307,7 @@ check_rsa( PKT_secret_cert *cert )
 	csum += checksum_u16( nbytes*8 );
 	csum += checksum( buffer, nbytes );
 	m_free( buffer );
-	if( csum != cert->d.rsa.csum )
+	if( csum != cert->csum )
 	    return G10ERR_CHECKSUM;
     }
 
@@ -424,16 +354,35 @@ check_secret_key( PKT_secret_cert *cert )
 int
 is_secret_key_protected( PKT_secret_cert *cert )
 {
-    if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
-	return cert->d.elg.is_protected? cert->d.elg.protect.algo : 0;
-    else if( cert->pubkey_algo == PUBKEY_ALGO_DSA )
-	return cert->d.dsa.is_protected? cert->d.dsa.protect.algo : 0;
-  #ifdef HAVE_RSA_CIPHER
-    else if( cert->pubkey_algo == PUBKEY_ALGO_RSA )
-	return cert->d.rsa.is_protected? cert->d.rsa.protect_algo : 0;
-  #endif
-    else
-	return -1; /* unsupported */
+    return cert->is_protected? cert->protect.algo : 0;
+}
+
+
+static int
+do_protect( void (*fnc)(void *, byte *, byte *, unsigned),
+	    void *fncctx, PKT_secret_cert *cert )
+{
+    byte *buffer;
+    unsigned nbytes;
+
+    switch( cert->pubkey_algo ) {
+      case PUBKEY_ALGO_ELGAMAL:
+	buffer = mpi_get_buffer( cert->d.elg.x, &nbytes, NULL );
+	(*fnc)( fncctx, buffer, buffer, nbytes );
+	mpi_set_buffer( cert->d.elg.x, buffer, nbytes, 0 );
+	m_free( buffer );
+	break;
+
+      case PUBKEY_ALGO_DSA:
+	buffer = mpi_get_buffer( cert->d.dsa.x, &nbytes, NULL );
+	(*fnc)( fncctx, buffer, buffer, nbytes );
+	mpi_set_buffer( cert->d.dsa.x, buffer, nbytes, 0 );
+	m_free( buffer );
+	break;
+
+      default: return G10ERR_PUBKEY_ALGO;
+    }
+    return 0;
 }
 
 
@@ -443,14 +392,33 @@ is_secret_key_protected( PKT_secret_cert *cert )
 int
 protect_secret_key( PKT_secret_cert *cert, DEK *dek )
 {
+    int rc=0;
+
     if( !dek )
 	return 0;
 
-    if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
-	return protect_elg( cert, dek );
-    else if( cert->pubkey_algo == PUBKEY_ALGO_DSA )
-	return protect_dsa( cert, dek );
-    else
-	return G10ERR_PUBKEY_ALGO;
+    if( !cert->is_protected ) { /* okay, apply the protection */
+	BLOWFISH_context *blowfish_ctx=NULL;
+
+	switch( cert->protect.algo ) {
+	  case CIPHER_ALGO_NONE: BUG(); break;
+	  case CIPHER_ALGO_BLOWFISH:
+	    blowfish_ctx = m_alloc_secure( sizeof *blowfish_ctx );
+	    blowfish_setkey( blowfish_ctx, dek->key, dek->keylen );
+	    blowfish_setiv( blowfish_ctx, NULL );
+	    blowfish_encode_cfb( blowfish_ctx, cert->protect.iv,
+					       cert->protect.iv, 8 );
+	    if( !do_protect( (void (*)(void*,byte*,byte*,unsigned))
+			     &blowfish_encode_cfb, blowfish_ctx, cert ) )
+		cert->is_protected = 1;
+	    m_free( blowfish_ctx );
+	    break;
+
+	  default:
+	    rc = G10ERR_CIPHER_ALGO; /* unsupport protection algorithm */
+	    break;
+	}
+    }
+    return rc;
 }
 

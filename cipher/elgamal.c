@@ -126,6 +126,7 @@ elg_generate( ELG_public_key *pk, ELG_secret_key *sk,
     MPI y;
     MPI temp;
     unsigned qbits;
+    byte *rndbuf;
 
     p_min1 = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
     temp   = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
@@ -145,22 +146,33 @@ elg_generate( ELG_public_key *pk, ELG_secret_key *sk,
     /* select a random number which has these properties:
      *	 0 < x < p-1
      * This must be a very good random number because this is the
-     * secret part.  The prime is public and may be shared anyware,
-     * so a random generator level of 1 has been used for the prime
+     * secret part.  The prime is public and may be shared anyway,
+     * so a random generator level of 1 is used for the prime.
      */
     x = mpi_alloc_secure( nbits/BITS_PER_MPI_LIMB );
     if( DBG_CIPHER )
 	log_debug("choosing a random x ");
+    rndbuf = NULL;
     do {
-	byte *rndbuf;
 	if( DBG_CIPHER )
 	    fputc('.', stderr);
-	rndbuf = get_random_bits( nbits, 2, 1 );
+	if( rndbuf ) { /* change only some of the higher bits */
+	    if( nbits < 16 ) {/* should never happen ... */
+		m_free(rndbuf);
+		rndbuf = get_random_bits( nbits, 2, 1 );
+	    }
+	    else {
+		char *r = get_random_bits( 16, 2, 1 );
+		memcpy(rndbuf, r, 16 );
+		m_free(r);
+	    }
+	}
+	else
+	    rndbuf = get_random_bits( nbits, 2, 1 );
 	mpi_set_buffer( x, rndbuf, (nbits+7)/8, 0 );
-	m_free(rndbuf);
 	mpi_clear_highbit( x, nbits+1 );
-	log_mpidump("  x: ", x );
     } while( !( mpi_cmp_ui( x, 0 )>0 && mpi_cmp( x, p_min1 )<0 ) );
+    m_free(rndbuf);
 
     y = mpi_alloc(nbits/BITS_PER_MPI_LIMB);
     mpi_powm( y, g, x, p );

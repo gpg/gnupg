@@ -92,7 +92,7 @@ VERSION = @VERSION@
 ZLIBS = @ZLIBS@
 l = @l@
 
-INCLUDES =  -I$(top_srcdir)/include
+INCLUDES =  -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
 EXTRA_DIST = @CIPHER_EXTRA_DIST@
 
 noinst_LIBRARIES = libcipher.a

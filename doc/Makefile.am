@@ -11,3 +11,23 @@ man_MANS = gpg.1
 		     >$@,$$$$ && mv -f $@,$$$$ $@\
 		    || rm -f $@,$$$$
 
+
+
+%.txt : %.sgml
+	 sgml2txt -c latin $*
+
+%.html : %.sgml
+	 sgml2html -l deutsch -c latin $*
+
+%.dvi : %.sgml
+	-rm $*.sgml.tmp
+	mv $*.sgml $*.sgml.tmp
+	sed -e '/<!entity/  s/"IGNORE">/"INCLUDE">/' $*.sgml.tmp >$*.sgml
+	sgml2latex -b -l deutsch -c latin $* ; mv $*.sgml.tmp $*.sgml
+
+%.ps : %.sgml
+	-rm $*.sgml.tmp
+	mv $*.sgml $*.sgml.tmp
+	sed -e '/<!entity/  s/"IGNORE">/"INCLUDE">/' $*.sgml.tmp >$*.sgml
+	sgml2latex -b -l deutsch -c latin -o ps $* ; mv $*.sgml.tmp $*.sgml
+

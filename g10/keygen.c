@@ -34,11 +34,6 @@
 #include "keydb.h"
 #include "i18n.h"
 
-#if 0
-  #define TEST_ALGO  1
-  #define TEST_NBITS 256
-  #define TEST_UID   "Karl Test"
-#endif
 
 #if defined(HAVE_RSA_CIPHER) && 0
   #define ENABLE_RSA_KEYGEN 1
@@ -136,7 +131,7 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_cert *skc )
 
 static int
 gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	byte *salt, PKT_secret_cert **ret_skc )
+	byte *salt, PKT_secret_cert **ret_skc, u16 valid_days )
 {
     int rc;
     int i;
@@ -152,7 +147,7 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     skc = m_alloc_clear( sizeof *skc );
     pkc = m_alloc_clear( sizeof *pkc );
     skc->timestamp = pkc->timestamp = make_timestamp();
-    skc->valid_days = pkc->valid_days = 0; /* fixme: make it configurable*/
+    skc->valid_days = pkc->valid_days = valid_days;
     skc->pubkey_algo = pkc->pubkey_algo = PUBKEY_ALGO_ELGAMAL;
 		       pkc->d.elg.p = pk.p;
 		       pkc->d.elg.g = pk.g;
@@ -161,19 +156,19 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     skc->d.elg.g = sk.g;
     skc->d.elg.y = sk.y;
     skc->d.elg.x = sk.x;
-    skc->d.elg.is_protected = 0;
-    skc->d.elg.protect.algo = 0;
+    skc->is_protected = 0;
+    skc->protect.algo = 0;
 
-    skc->d.elg.csum = checksum_mpi( skc->d.elg.x );
+    skc->csum = checksum_mpi( skc->d.elg.x );
     /* return an unprotected version of the skc */
     *ret_skc = copy_secret_cert( NULL, skc );
 
     if( dek ) {
-	skc->d.elg.protect.algo = CIPHER_ALGO_BLOWFISH;
-	skc->d.elg.protect.s2k	= 1;
-	skc->d.elg.protect.hash = DIGEST_ALGO_RMD160;
-	memcpy(skc->d.elg.protect.salt, salt, 8);
-	randomize_buffer(skc->d.elg.protect.iv, 8, 1);
+	skc->protect.algo = CIPHER_ALGO_BLOWFISH;
+	skc->protect.s2k  = 1;
+	skc->protect.hash = DIGEST_ALGO_RMD160;
+	memcpy(skc->protect.salt, salt, 8);
+	randomize_buffer(skc->protect.iv, 8, 1);
 	rc = protect_secret_key( skc, dek );
 	if( rc ) {
 	    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
@@ -206,7 +201,7 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 #ifdef ENABLE_RSA_KEYGEN
 static int
 gen_rsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	byte *salt, PKT_secret_cert **ret_skc )
+	byte *salt, PKT_secret_cert **ret_skc, u16 valid_days )
 {
     int rc;
     PACKET *pkt;
@@ -220,7 +215,7 @@ gen_rsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     skc = m_alloc_clear( sizeof *skc );
     pkc = m_alloc_clear( sizeof *pkc );
     skc->timestamp = pkc->timestamp = make_timestamp();
-    skc->valid_days = pkc->valid_days = 0; /* fixme: make it configurable*/
+    skc->valid_days = pkc->valid_days = valid_days;
     skc->pubkey_algo = pkc->pubkey_algo = PUBKEY_ALGO_RSA;
 		       memset(&pkc->mfx, 0, sizeof pkc->mfx);
 		       pkc->d.rsa.rsa_n = pk.n;
@@ -270,11 +265,39 @@ gen_rsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 
 static int
 gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	 byte *salt, PKT_secret_cert **ret_skc )
+	 byte *salt, PKT_secret_cert **ret_skc, u16 valid_days )
 {
     return G10ERR_GENERAL;
 }
 
+
+
+/****************
+ * check valid days:
+ * return 0 on error or the multiplier
+ */
+static int
+check_valid_days( const char *s )
+{
+    if( !isdigit(*s) )
+	return 0;
+    for( s++; *s; s++)
+	if( !isdigit(*s) )
+	    break;
+    if( !*s )
+	return 1;
+    if( s[1] )
+	return 0; /* e.g. "2323wc" */
+    if( *s == 'd' || *s == 'D' )
+	return 1;
+    if( *s == 'w' || *s == 'W' )
+	return 7;
+    if( *s == 'm' || *s == 'M' )
+	return 30;
+    if( *s == 'y' || *s == 'Y' )
+	return 365;
+    return 0;
+}
 
 
 /****************
@@ -297,8 +320,8 @@ generate_keypair()
     int algo;
     const char *algo_name;
     char *aname, *acomment, *amail;
+    int valid_days=0;
 
-#ifndef TEST_ALGO
     if( opt.batch || opt.answer_yes || opt.answer_no ) {
 	log_error(_("Key generation can only be used in interactive mode\n"));
 	return;
@@ -310,21 +333,16 @@ generate_keypair()
   #ifdef ENABLE_RSA_KEYGEN
     tty_printf(_("   (3) RSA cannot be used in the U.S.\n"));
   #endif
-#endif
 
     for(;;) {
-      #ifdef TEST_ALGO
-	algo = TEST_ALGO;
+      #ifdef ENABLE_RSA_KEYGEN
+	answer = tty_get(_("Your selection? (1,2,3) "));
       #else
-	#ifdef ENABLE_RSA_KEYGEN
-	  answer = tty_get(_("Your selection? (1,2,3) "));
-       #else
-	  answer = tty_get(_("Your selection? (1,2) "));
-       #endif
+	answer = tty_get(_("Your selection? (1,2) "));
+      #endif
 	tty_kill_prompt();
 	algo = *answer? atoi(answer): 1;
 	m_free(answer);
-      #endif
 	if( algo == 1 ) {
 	    algo = PUBKEY_ALGO_ELGAMAL;
 	    algo_name = "ElGamal";
@@ -333,7 +351,7 @@ generate_keypair()
 	else if( algo == 2 ) {
 	    algo = PUBKEY_ALGO_DSA;
 	    algo_name = "DSA";
-	    tty_printf(_("Sorry; DSA is not yet supported.\n"));
+	    tty_printf(_("Sorry; DSA key generation is not yet supported.\n"));
 	}
       #ifdef ENABLE_RSA_KEYGEN
 	else if( algo == 3 ) {
@@ -351,14 +369,10 @@ generate_keypair()
 		 "              default keysize is 1024 bits\n"
 		 "    highest suggested keysize is 2048 bits\n"), algo_name );
     for(;;) {
-      #ifdef TEST_NBITS
-	nbits = TEST_NBITS;
-      #else
 	answer = tty_get(_("What keysize do you want? (1024) "));
 	tty_kill_prompt();
 	nbits = *answer? atoi(answer): 1024;
 	m_free(answer);
-      #endif
 	if( algo == PUBKEY_ALGO_DSA && (nbits < 512 || nbits > 1024) )
 	    tty_printf(_("DSA does only allow keysizes from 512 to 1024\n"));
 	else if( nbits < 768 )
@@ -377,6 +391,15 @@ generate_keypair()
 	    }
 	    m_free(answer);
 	}
+	else if( nbits > 1536 ) {
+	    answer = tty_get(_("Do you really need such a large keysize? "));
+	    tty_kill_prompt();
+	    if( answer_is_yes(answer) ) {
+		m_free(answer);
+		break;
+	    }
+	    m_free(answer);
+	}
 	else
 	    break;
     }
@@ -390,14 +413,53 @@ generate_keypair()
 	tty_printf(_("rounded up to %u bits\n"), nbits );
     }
 
-  #ifdef TEST_UID
-    uid = m_alloc(strlen(TEST_UID)+1);
-    strcpy(uid, TEST_UID);
-  #else
+    tty_printf(_("Please specify how long the key should be valid.\n"
+		 "         0 = key does not expire\n"
+		 "      <n>  = key expires in n days\n"
+		 "      <n>w = key expires in n weeks\n"
+		 "      <n>m = key expires in n months\n"
+		 "      <n>y = key expires in n years\n"));
+    answer = NULL;
+    for(;;) {
+	int mult;
+
+	m_free(answer);
+	answer = tty_get(_("Key is valid for? (0) "));
+	tty_kill_prompt();
+	trim_spaces(answer);
+	if( !*answer )
+	    valid_days = 0;
+	else if( (mult=check_valid_days(answer)) ) {
+	    valid_days = atoi(answer) * mult;
+	    if( valid_days < 0 || valid_days > 32767 )
+		valid_days = 0;
+	}
+	else {
+	    tty_printf(_("invalid value\n"));
+	    continue;
+	}
+
+	if( !valid_days )
+	    tty_printf(_("Key does not expire at all\n"));
+	else {
+	    tty_printf(_("Key expires at %s\n"), strtimestamp(
+		       add_days_to_timestamp( make_timestamp(), valid_days )));
+	}
+
+	m_free(answer);
+	answer = tty_get(_("Is this correct (y/n)? "));
+	tty_kill_prompt();
+	if( answer_is_yes(answer) )
+	    break;
+    }
+    m_free(answer);
+
+
+
     tty_printf( _("\n"
 "You need a User-ID to identify your key; the software constructs the user id\n"
 "from Real Name, Comment and Email Address in this form:\n"
-"    \"Heinrich Heine (Der Dichter) <heinrichh@uni-duesseldorf.de>\"\n\n") );
+"    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n\n") );
     uid = NULL;
     aname=acomment=amail=NULL;
     for(;;) {
@@ -469,6 +531,7 @@ generate_keypair()
 
 
 	tty_printf(_("You selected this USER-ID:\n    \"%s\"\n\n"), uid);
+	/* fixme: add a warning if this the user-id already exists */
 	for(;;) {
 	    answer = tty_get(_("Edit (N)ame, (C)omment, (E)mail or (O)kay? "));
 	    tty_kill_prompt();
@@ -499,7 +562,6 @@ generate_keypair()
 	    break;
 	m_free(uid); uid = NULL;
     }
-  #endif
 
 
     tty_printf(_("You need a Passphrase to protect your secret key.\n\n") );
@@ -555,13 +617,13 @@ generate_keypair()
 "number generator a better chance to gain enough entropy.\n") );
 
     if( algo == PUBKEY_ALGO_ELGAMAL )
-	rc = gen_elg(nbits, pub_root, sec_root, dek, salt,  &skc );
+	rc = gen_elg(nbits, pub_root, sec_root, dek, salt,  &skc, valid_days );
   #ifdef ENABLE_RSA_KEYGEN
     else if( algo == PUBKEY_ALGO_RSA )
-	rc = gen_rsa(nbits, pub_root, sec_root, dek, salt, &skc );
+	rc = gen_rsa(nbits, pub_root, sec_root, dek, salt, &skc, valid_days  );
   #endif
     else if( algo == PUBKEY_ALGO_DSA )
-	rc = gen_dsa(nbits, pub_root, sec_root, dek, salt, &skc );
+	rc = gen_dsa(nbits, pub_root, sec_root, dek, salt, &skc, valid_days  );
     else
 	BUG();
     if( !rc ) {
@@ -588,7 +650,6 @@ generate_keypair()
 	int rc2 = -1;
 
 	/* we can now write the certificates */
-	/* FIXME: should we check wether the user-id already exists? */
 
 	if( get_keyblock_handle( pub_fname, 0, &pub_kbpos ) ) {
 	    if( add_keyblock_resource( pub_fname, 1, 0 ) ) {

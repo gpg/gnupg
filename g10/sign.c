@@ -57,7 +57,8 @@ complete_sig( PKT_signature *sig, PKT_secret_cert *skc, MD_HANDLE md )
     else
 	BUG();
 
-    /* fixme: should we check wether the signature is okay? */
+    /* fixme: should we check wether the signature is okay?
+     * maybe by using an option */
 
     return rc;
 }
@@ -1072,12 +1073,11 @@ change_passphrase( const char *username )
 		break;
 	    }
 	    else { /* okay */
-		/* FIXME: what about dsa */
-		skc->d.elg.protect.algo = CIPHER_ALGO_BLOWFISH;
-		skc->d.elg.protect.s2k	= 1;
-		skc->d.elg.protect.hash = DIGEST_ALGO_RMD160;
-		memcpy(skc->d.elg.protect.salt, salt, 8);
-		randomize_buffer(skc->d.elg.protect.iv, 8, 1);
+		skc->protect.algo = CIPHER_ALGO_BLOWFISH;
+		skc->protect.s2k  = 1;
+		skc->protect.hash = DIGEST_ALGO_RMD160;
+		memcpy(skc->protect.salt, salt, 8);
+		randomize_buffer(skc->protect.iv, 8, 1);
 		rc = protect_secret_key( skc, dek );
 		if( rc )
 		    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );

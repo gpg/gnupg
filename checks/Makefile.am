@@ -8,7 +8,8 @@ TESTS = version.test decrypt.test clearsig.test armsigs.test \
 
 
 TEST_FILES = pubring.asc secring.asc gnupg.asc plain-1 plain-2 plain-3o.asc \
-	     plain-1.asc plain-2.asc plain-3.asc
+	     plain-1.asc plain-2.asc plain-3.asc \
+	     pubring.pkr.asc secring.skr.asc
 
 DATA_FILES = data-500 data-9000 data-32000 data-80000
 

@@ -89,7 +89,7 @@ gen_revoke( const char *uname )
 	goto leave;
     }
 
-    /* FIXME: should make a function out of this stuff,
+    /* fixme: should make a function out of this stuff,
      * it's used all over the source */
     skc = node->pkt->pkt.secret_cert;
     keyid_from_skc( skc, skc_keyid );

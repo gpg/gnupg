@@ -99,9 +99,6 @@ dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(unistd.h)
 
-G10_LOCALEDIR="$g10_prefix/$DATADIRNAME/locale"
-AC_SUBST(G10_LOCALEDIR)
-AC_DEFINE_UNQUOTED(G10_LOCALEDIR, "$G10_LOCALEDIR")
 
 
 dnl Checks for typedefs, structures, and compiler characteristics.
@@ -210,6 +207,9 @@ AC_SUBST(CIPHER_EXTRA_OBJS)
 AC_SUBST(CIPHER_EXTRA_DIST)
 
 AM_GNU_GETTEXT
+G10_LOCALEDIR="$g10_prefix/$DATADIRNAME/locale"
+AC_SUBST(G10_LOCALEDIR)
+AC_DEFINE_UNQUOTED(G10_LOCALEDIR, "$G10_LOCALEDIR")
 WK_LINK_FILES($nls_cv_header_libgt, $nls_cv_header_intl )
 
 WK_DO_LINK_FILES

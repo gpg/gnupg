@@ -1,3 +1,24 @@
+Thu Apr  2 10:38:16 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* keygen.c (generate_keypair): Add valid_days stuff.
+	* trustdb.c (check_trust): Add check for valid_days.
+
+Wed Apr  1 16:15:58 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* keygen.c (generate_keypair): Addional question whether the
+	selected large keysize is really needed.
+
+Wed Apr  1 15:56:33 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* seckey-cert.c (protect_secret_key): merged protect_xxx to here.
+
+Wed Apr  1 10:34:46 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* Makefile.am (g10maint.c): Changed creation rule, so that it works
+	on FreeBSD (missing CFLAGS).
+
+	* parse-packet.c (parse_subkey): Removed.
+
 Thu Mar 19 15:22:36 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* ringedit.c (keyring_enum): Fixed problem with reading too

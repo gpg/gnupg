@@ -1,3 +1,7 @@
+Wed Apr  1 16:38:27 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* elgamla.c (elg_generate): Faster generation of x in some cases.
+
 Thu Mar 19 13:54:48 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* blowfish.c (blowfish_decode_cfb): changed XOR operation

@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES = -I$(top_srcdir)/include
+INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
 EXTRA_DIST = OPTIONS  pubring.asc
 OMIT_DEPENDENCIES = zlib.h zconf.h
 BUILT_SOURCES = g10maint.c
@@ -67,7 +67,7 @@ gpgm_SOURCES = g10maint.c   \
 LDADD = @INTLLIBS@ $(needed_libs) @ZLIBS@
 
 g10maint.c : g10.c
-	    $(CPP) $(DEFS) $(INCLUDES) -DIS_G10MAINT  $<  > $@ || rm $@
+	    $(CPP) $(CFLAGS) $(DEFS) $(INCLUDES) -DIS_G10MAINT $< > $@ || rm $@
 
 $(PROGRAMS): $(needed_libs)
 

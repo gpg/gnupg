@@ -32,6 +32,24 @@ make_timestamp()
     return time(NULL);
 }
 
+u32
+add_days_to_timestamp( u32 stamp, u16 days )
+{
+    return stamp + days*86400L;
+}
+
+const char *
+strtimestamp( u32 stamp )
+{
+    static char buffer[11+5];
+    struct tm *tp;
+    time_t atime = stamp;
+
+    tp = gmtime( &atime );
+    sprintf(buffer,"%04d-%02d-%02d",
+		    1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
+    return buffer;
+}
 
 /****************
  * Print a string to FP, but filter all control characters out.

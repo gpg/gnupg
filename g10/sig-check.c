@@ -251,7 +251,6 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 int
 check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 {
-    KBNODE unode;
     MD_HANDLE md;
     PKT_public_cert *pkc;
     PKT_signature *sig;
@@ -283,8 +282,23 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 	rc = do_check( pkc, sig, md );
 	md_close(md);
     }
+    else if( sig->sig_class == 0x18 ) {
+	KBNODE snode = find_prev_kbnode( root, node, PKT_PUBKEY_SUBCERT );
+
+	if( snode ) {
+	    md = md_open( algo, 0 );
+	    hash_public_cert( md, pkc );
+	    hash_public_cert( md, snode->pkt->pkt.public_cert );
+	    rc = do_check( pkc, sig, md );
+	    md_close(md);
+	}
+	else {
+	    log_error("no subkey for key signature packet\n");
+	    rc = G10ERR_SIG_CLASS;
+	}
+    }
     else {
-	unode = find_prev_kbnode( root, node, PKT_USER_ID );
+	KBNODE unode = find_prev_kbnode( root, node, PKT_USER_ID );
 
 	if( unode ) {
 	    PKT_user_id *uid = unode->pkt->pkt.user_id;

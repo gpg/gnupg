@@ -92,7 +92,7 @@ VERSION = @VERSION@
 ZLIBS = @ZLIBS@
 l = @l@
 
-INCLUDES = -I$(top_srcdir)/include
+INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
 needed_libs = ../cipher/libcipher.a  ../util/libutil.a ../mpi/libmpi.a ../util/libutil.a
 
 noinst_PROGRAMS = mpicalc bftest clean-sat

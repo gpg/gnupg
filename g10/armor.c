@@ -653,8 +653,6 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
     fhdr_state_t state = afx->parse_state;
     unsigned emplines = afx->empty;
 
-    size = 100; /* FIXME: only used for testing (remove it)  */
-
     len = 2;	/* reserve 2 bytes for the length header */
     size -= 3;	/* and 1 for empline handling and 2 for the term header */
     while( !rc && len < size ) {

@@ -81,8 +81,6 @@ add_keyring( const char *name )
     STRLIST sl;
     int rc;
 
-    /* FIXME: check wether this one is available etc */
-    /* maybe we should do this later */
     if( *name != '/' ) { /* do tilde expansion etc */
 	char *p ;
 
@@ -101,7 +99,7 @@ add_keyring( const char *name )
     sl->next = keyrings;
     keyrings = sl;
 
-    /* FIXME: We should remove much out of this module and
+    /* fixme: We should remove much out of this module and
      * combine it with the keyblock stuff from ringedit.c
      * For now we will simple add the filename as keyblock resource
      */
@@ -131,8 +129,6 @@ add_secret_keyring( const char *name )
     STRLIST sl;
     int rc;
 
-    /* FIXME: check wether this one is available etc */
-    /* my be we should do this later */
     if( *name != '/' ) { /* do tilde expansion etc */
 	char *p ;
 
@@ -151,7 +147,7 @@ add_secret_keyring( const char *name )
     sl->next = secret_keyrings;
     secret_keyrings = sl;
 
-    /* FIXME: We should remove much out of this mpdule and
+    /* fixme: We should remove much out of this mpdule and
      * combine it with the keyblock stuff from ringedit.c
      * For now we will simple add the filename as keyblock resource
      */

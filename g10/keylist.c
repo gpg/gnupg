@@ -111,19 +111,20 @@ list_one( const char *name )
     /* get the keyid from the keyblock */
     node = find_kbnode( keyblock, PKT_PUBLIC_CERT );
     if( !node ) {
-	log_error("Oops; public key not found anymore!\n");
+	log_error("Oops; public key lost!\n");
 	goto leave;
     }
 
     pkc = node->pkt->pkt.public_cert;
     keyid_from_pkc( pkc, keyid );
     if( opt.with_colons )
-	printf("pub::%u:%d:%08lX%08lX:%s:::",
+	printf("pub::%u:%d:%08lX%08lX:%s:%u:::",
 		/* fixme: add trust value here */
 		nbits_from_pkc( pkc ),
 		pkc->pubkey_algo,
 		(ulong)keyid[0],(ulong)keyid[1],
-		datestr_from_pkc( pkc )
+		datestr_from_pkc( pkc ),
+		(unsigned)pkc->valid_days
 		/* fixme: add LID and ownertrust here */
 					);
     else
@@ -136,7 +137,7 @@ list_one( const char *name )
 	if( node->pkt->pkttype == PKT_USER_ID ) {
 	    if( any ) {
 		if( opt.with_colons )
-		    printf("uid::::::::");
+		    printf("uid:::::::::");
 		else
 		    printf("uid%*s", 28, "");
 	    }
@@ -150,6 +151,34 @@ list_one( const char *name )
 		    fingerprint( pkc );
 		any = 1;
 	    }
+	}
+	else if( node->pkt->pkttype == PKT_PUBKEY_SUBCERT ) {
+	    u32 keyid2[2];
+	    PKT_public_cert *pkc2 = node->pkt->pkt.public_cert;
+
+	    if( !any ) {
+		putchar('\n');
+		if( opt.fingerprint )
+		    fingerprint( pkc ); /* of the main key */
+		any = 1;
+	    }
+
+	    keyid_from_pkc( pkc2, keyid2 );
+	    if( opt.with_colons )
+		printf("sub::%u:%d:%08lX%08lX:%s:%u:::\n",
+			/* fixme: add trust value here */
+			nbits_from_pkc( pkc2 ),
+			pkc2->pubkey_algo,
+			(ulong)keyid2[0],(ulong)keyid2[1],
+			datestr_from_pkc( pkc2 ),
+			(unsigned)pkc2->valid_days
+			/* fixme: add LID and ownertrust here */
+						);
+	    else
+		printf("sub  %4u%c/%08lX %s\n", nbits_from_pkc( pkc2 ),
+					   pubkey_letter( pkc2->pubkey_algo ),
+					   (ulong)keyid2[1],
+					   datestr_from_pkc( pkc2 ) );
 	}
 	else if( opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
@@ -169,11 +198,13 @@ list_one( const char *name )
 		fputs("rev", stdout);
 	    else if( (sig->sig_class&~3) == 0x10 )
 		fputs("sig", stdout);
+	    else if( sig->sig_class == 0x18 )
+		fputs("sig", stdout);
 	    else {
 		if( opt.with_colons )
-		    printf("sig:::::::::%02x:\n",sig->sig_class );
+		    printf("sig::::::::::%02x:\n",sig->sig_class );
 		else
-		    printf("sig                              "
+		    printf("sig                             "
 		       "[unexpected signature class 0x%02x]\n",sig->sig_class );
 		continue;
 	    }
@@ -195,7 +226,7 @@ list_one( const char *name )
 		putchar(':');
 		if( sigrc != ' ' )
 		    putchar(sigrc);
-		printf(":::%08lX%08lX:%s:::", (ulong)sig->keyid[0],
+		printf(":::%08lX%08lX:%s::::", (ulong)sig->keyid[0],
 			   (ulong)sig->keyid[1], datestr_from_sig(sig));
 	    }
 	    else
@@ -235,7 +266,7 @@ fingerprint( PKT_public_cert *pkc )
 
     p = array = fingerprint_from_pkc( pkc, &n );
     if( opt.with_colons ) {
-	printf("fpr::::::::");
+	printf("fpr:::::::::");
 	for(i=0; i < n ; i++, p++ )
 	    printf("%02X", *p );
 	putchar(':');

@@ -2,7 +2,7 @@
     * improve iobuf by reading more than one byte at once,
       this shoud espceially done for the buffer in the chain.
       Change the buffering to a mbuf like scheme? Need it for PSST anyway.
-    * add a way to difference between errors and eof in the underflow/flush
+    * add a way to distinguish between errors and eof in the underflow/flush
       function of iobuf.
     * add checking of armor trailers
     * remove all "Fixmes"
@@ -38,7 +38,14 @@
 
     * remove key management stuff from sign.c.
 
-    * add fingerprint/keyid hashing. We need a new filed in PKC to
+    * add fingerprint/keyid hashing. We need a new field in PKC to
       flag that we may have a cached signature for this (and use the address
       of PKC to lookup the hash).
+
+    * change the misleading usage of public key certificate to public key data
+      or something like this.
+
+    * seckey_cert.c: merge all the check funtions into one.
+
+    * fix the problems with "\v" in gettext
 

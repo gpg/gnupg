@@ -45,6 +45,16 @@ msgstr ""
 "BENUTZEN SIE DIE DURCH DIESES PROGRAMM ERZEUGTEN DATEN NICHT!\n"
 "\n"
 
+
+#: g10/g10.c:214
+msgid ""
+"Syntax: gpgm [options] [files]\n"
+"GNUPG maintenance utility\n"
+msgstr ""
+"Syntax: gpgm [options] [files]\n"
+"GNUPG Wartungs Hilfsmittel\n"
+
+
 #: g10/g10.c:72
 msgid ""
 "Syntax: gpg [options] [files]\n"
@@ -55,17 +65,43 @@ msgstr ""
 "Signieren, prüfen, verschlüsseln, entschlüsseln\n"
 "Die voreingestellte Operation ist abhängig von den Eingabedaten\n"
 
+
 #: g10/g10.c:77
 msgid "Please report bugs to <gnupg-bugs@isil.d.shuttle.de>.\n"
 msgstr "Berichte über Wanzen bitte an <gnupg-bugs@isil.d.shuttle.de>.\n"
 
-#: g10/g10.c:116
-msgid "Usage: g10 [options] "
-msgstr "Aufruf: g10 [Opeionen] "
+#: g10/g10.c:207
+msgid "Usage: gpgm [options] [files] (-h for help)"
+msgstr "Aufruf: gpgm [Optionen] [Dateien] (-h für Hilfe)"
+
+#: g10/g10.c:209
+msgid "Usage: gpg [options] [files] (-h for help)"
+msgstr "Aufruf: gpg [Optionen] [Dateien] (-h für Hilfe)"
+
 
 #: g10/g10.c:152
 msgid "conflicting commands\n"
 msgstr "Widersprechende Kommandos\n"
+
+
+#: g10/g10.c:57
+msgid ""
+"\\vCommands:\n"
+" "
+msgstr ""
+"\\vKommandos:\n"
+" "
+
+#: g10/g10.c:92
+msgid ""
+"\\v\n"
+"Options:\n"
+" "
+msgstr ""
+"\\v\n"
+"Optionen:\n"
+" "
+
 
 #: g10/g10.c:164
 msgid "create ascii armored output"
@@ -80,7 +116,7 @@ msgid "set compress level (0 disables)"
 msgstr "Kompressionspegel sethen (aussschalten mit 0)"
 
 #: g10/g10.c:167
-msgid "don't make any changes"
+msgid "do not make any changes"
 msgstr "Keine wirklichen Änderungen durchführen"
 
 #: g10/g10.c:168
@@ -107,25 +143,25 @@ msgstr "\"Nein\" als Standard Antwort annehmen"
 msgid "generate a new key pair"
 msgstr "Ein neues Schlüsselpaar erzeugen"
 
-#: g10/g10.c:174
-msgid "add key to the public keyring"
-msgstr ""
+#: g10/g10.c:76
+msgid "remove key from the public keyring"
+msgstr "Schlüssel entfernen"
 
-#: g10/g10.c:175
-msgid "remove key from public keyring"
-msgstr "Key entfernen"
+#: g10/g10.c:79
+msgid "generate a revocation certificate"
+msgstr "Ein \"Revocation\" Zertifikat erzeugen"
 
 #: g10/g10.c:176
 msgid "make a signature on a key in the keyring"
-msgstr "key signieren"
+msgstr "Schlüssel signieren"
 
 #: g10/g10.c:177
 msgid "store only"
-msgstr ""
+msgstr "nur speichern"
 
 #: g10/g10.c:178
 msgid "check signatures on a key in the keyring"
-msgstr "  "
+msgstr "Schlüssel Signaturen prüfen"
 
 #: g10/g10.c:179
 msgid "add this keyring to the list of keyrings"
@@ -133,149 +169,264 @@ msgstr ""
 
 #: g10/g10.c:180
 msgid "make a signature"
-msgstr ""
+msgstr "Eine Signatur erzeugen"
+
+#: g10/g10.c:61
+msgid "make a clear text signature"
+msgstr "Eine Klartext Signatur erzeugen"
 
 #: g10/g10.c:181
 msgid "use canonical text mode"
-msgstr ""
+msgstr "Text Modus benutzen"
 
 #: g10/g10.c:182
 msgid "make a detached signature"
-msgstr ""
+msgstr "Eine abgetrennte Signatur erzeugen"
 
 #: g10/g10.c:183
 msgid "encrypt data"
-msgstr ""
+msgstr "Daten verschlüsseln"
+
+#: g10/g10.c:64
+msgid "encryption only with symmetric cipher"
+msgstr "Daten nur symmetrisch verschlüsseln"
 
 #: g10/g10.c:184
 msgid "decrypt data (default)"
-msgstr ""
+msgstr "Daten enschlüsseln"
+
+
+#: g10/g10.c:67
+msgid "verify a signature"
+msgstr "Signatur prüfen"
 
 #: g10/g10.c:185
 msgid "use this user-id to sign or decrypt"
-msgstr ""
+msgstr "Mit dieser User-ID signieren"
 
 #: g10/g10.c:186
 msgid "use this user-id for encryption"
-msgstr ""
+msgstr "Verschlüsseln für diese User-ID"
 
 #: g10/g10.c:187
 msgid "list keys"
-msgstr ""
+msgstr "Liste der Schlüssel"
+
+
+#: g10/g10.c:70
+msgid "list keys and signatures"
+msgstr "Liste der Schlüssel und deren Signaturen"
+
+#: g10/g10.c:71
+msgid "check key signatures"
+msgstr "Signaturen der Schlüssel prüfen"
+
+#: g10/g10.c:72
+msgid "list keys and fingerprints"
+msgstr "Liste der Schlüssel und deren \"Fingerprints\""
 
 #: g10/g10.c:188
 msgid "set debugging flags"
-msgstr ""
+msgstr "Debug-Flags einschalten"
 
 #: g10/g10.c:189
 msgid "enable full debugging"
-msgstr ""
-
-#: g10/g10.c:193
-msgid "show the fingerprints"
-msgstr ""
+msgstr "Alle Debug-Flags einschalten"
 
 #: g10/g10.c:194
 msgid "print all message digests"
-msgstr ""
+msgstr "Message-Digests für die Eingabedaten ausgeben"
 
 #: g10/g10.c:195
 msgid "add this secret keyring to the list"
-msgstr ""
+msgstr "Den geheimen Schlüsselring mitbenutzen"
 
 #: g10/g10.c:196
 msgid "read options from file"
-msgstr ""
+msgstr "Optionen aus der Datei lesen"
 
 #: g10/g10.c:199
 msgid "list only the sequence of packets"
-msgstr ""
+msgstr "Lediglich die Struktur der Daten Packete anzeigen"
 
 #: g10/g10.c:202
 msgid "edit a key signature"
-msgstr ""
+msgstr "Editieren de Schlüssel Signaturen"
 
 #: g10/g10.c:203
 msgid "change the passphrase of your secret keyring"
-msgstr ""
+msgstr "Die \"Passphrase\" des geheimen Schlüssels ändern"
 
 #: g10/g10.c:205
 msgid "select default cipher algorithm"
-msgstr ""
+msgstr "Den Cipher Algorithmus auswählen"
 
 #: g10/g10.c:206
 msgid "select default puplic key algorithm"
-msgstr ""
+msgstr "Den Public-Key Algorithmus auswählen"
 
 #: g10/g10.c:207
 msgid "select default message digest algorithm"
-msgstr ""
+msgstr "Den Message-Digest Algorithmus auswählen"
 
-#: g10/g10.c:208
-msgid "put public keys into the trustdb"
-msgstr ""
 
 #: g10/g10.c:212
 msgid "do not write comment packets"
-msgstr ""
+msgstr "Keine Kommentarpackete schreiben"
 
 #: g10/g10.c:213
 msgid "(default is 1)"
-msgstr ""
+msgstr "(voreingestellt ist 1)"
 
 #: g10/g10.c:214
 msgid "(default is 3)"
-msgstr ""
+msgstr "(voreingestellt ist 3)"
 
-#: g10/g10.c:215
-msgid "export all or the given keys"
-msgstr ""
+#: g10/g10.c:81
+msgid "export keys"
+msgstr "Schlüssel exportieren"
+
+#: g10/g10.c:82
+msgid "import/merge keys"
+msgstr "Schlüssel importieren/kombinieren"
+
+#: g10/g10.c:85
+msgid "De-Armor a file or stdin"
+msgstr "\"De-Armor\" einer Datei oder stdin"
+
+#: g10/g10.c:86
+msgid "En-Armor a file or stdin"
+msgstr "\"En-Armor\" einer Datei oder stdin"
+
 
 #: g10/g10.c:282
 msgid "note: no default option file '%s'\n"
-msgstr ""
+msgstr "Notiz: Keine voreingestellte Optionen Datei '%s' vorhanden\n"
 
 #: g10/g10.c:285
 msgid "option file '%s': %s\n"
-msgstr ""
+msgstr "Opionen Datei '%s': %s\n"
 
 #: g10/g10.c:290
 msgid "reading options from '%s'\n"
-msgstr ""
+msgstr "Optionen werden von '%s' gelesen\n"
 
 #: g10/g10.c:382
 msgid "selected cipher algorithm is invalid\n"
-msgstr ""
+msgstr "Der ausgewählte Cipher Algorithmus ist ungültig\n"
 
 #: g10/g10.c:386
 msgid "selected pubkey algorithm is invalid\n"
-msgstr ""
+msgstr "Der ausgewählte Public-Key Algorithmus ist ungültig\n"
 
 #: g10/g10.c:390
 msgid "selected digest algorithm is invalid\n"
-msgstr ""
+msgstr "Der ausgewählte Message-Digest Algorithmus ist ungültig\n"
 
 #: g10/g10.c:394
 msgid "completes-needed must be greater than 0\n"
-msgstr ""
+msgstr "completes-needed müßen größer als 0 sein\n"
 
 #: g10/g10.c:398
 msgid "marginals-needed must be greater than 1\n"
-msgstr ""
+msgstr "marginals-needed müßen größer als 1 sein\n"
 
 #: g10/g10.c:462
 msgid "failed to initialize the TrustDB: %s\n"
-msgstr ""
+msgstr "Die Trust-DB kann nicht initialisiert werden: %s\n"
 
 #: g10/g10.c:554 g10/g10.c:571 g10/g10.c:660
 msgid "can't open '%s'\n"
+msgstr "Datei '%s' kann nicht geöffnet werden\n"
+
+
+#: g10/g10.c:113
+msgid "write status info to this fd"
+msgstr "Status Informationen auf diesen FD schreiben"
+
+#: g10/g10.c:124
+msgid ""
+"\\v\n"
+"Examples:\n"
+"\n"
+" -se -r Bob [file]          sign and encrypt for user Bob\n"
+" -sat [file]                make a clear text signature\n"
+" -sb  [file]                make a detached signature\n"
+" -k   [userid]              show keys\n"
+" -kc  [userid]              show fingerprint\n"
 msgstr ""
+"\\v\n"
+"Beispiele:\n"
+"\n"
+" -se -r Bob [file]          Signieren und verschlüsseln für Benutzer Bob\n"
+" -sat [file]                Eine Klartext Signatur erzeugen\n"
+" -sb  [file]                Eine abgetrennte Signatur erzeugen\n"
+" -k   [userid]              Die Schllüssel anzeigen\n"
+" -kc  [userid]              Die \"Fingerprints\" anzeigen\n"
+
+
+
+#: g10/g10.c:666
+msgid "--store [filename]"
+msgstr "--store [Dateiname]"
+
+#. encrypt the given file only with the symmetric cipher
+#: g10/g10.c:674
+msgid "--symmetric [filename]"
+msgstr "--symmetric [Dateiname]"
+
+#: g10/g10.c:682
+msgid "--encrypt [filename]"
+msgstr "--encrypt [Dateiname]"
+
+#: g10/g10.c:695
+msgid "--sign [filename]"
+msgstr "--sign [Dateiname]"
+
+#: g10/g10.c:708
+msgid "--sign --encrypt [filename]"
+msgstr "--sign --encrypt [Dateiname]"
+
+#. make a clearsig
+#: g10/g10.c:722
+msgid "--clearsign [filename]"
+msgstr "--clearsign [Dateiname]"
+
+#: g10/g10.c:734
+msgid "--decrypt [filename]"
+msgstr "--decrypt [Dateiname]"
+
+#: g10/g10.c:742
+msgid "--sign-key username"
+msgstr "--sign-key Benutzername"
+
+#: g10/g10.c:750
+msgid "--edit-sig username"
+msgstr "--edit-sig Benutzername"
+
+#: g10/g10.c:758
+msgid "--delete-secret-key username"
+msgstr "--delete-secret-key Benutzername"
+
+#: g10/g10.c:761
+msgid "--delete-key username"
+msgstr "--delete-key Benutzername"
+
+#. no arg: use default, 1 arg use this one
+#: g10/g10.c:769
+msgid "--change-passphrase [username]"
+msgstr "--change-passphrase [Benutzername]"
+
+
+
 
 #: g10/pkclist.c:65
 msgid ""
 "No ownertrust defined for %lu:\n"
 "%4u%c/%08lX %s \""
 msgstr ""
+"Es ist kein \"Ownertrust\" für %lu definiert:\n"
+"%4u%c/%08lX %s \""
 
 #: g10/pkclist.c:72
 msgid ""
@@ -318,7 +469,7 @@ msgstr ""
 
 #: g10/pkclist.c:108
 msgid "You will see a list of signators etc. here\n"
-msgstr ""
+msgstr "Sie sollten hier eigentlich eine Liste der Signierer sehen.\n"
 
 #: g10/pkclist.c:132
 msgid ""
@@ -332,11 +483,11 @@ msgstr ""
 
 #: g10/keygen.c:109
 msgid "writing self signature\n"
-msgstr ""
+msgstr "Die Selbst-Signatur wird geschrieben\n"
 
 #: g10/keygen.c:299
 msgid "Key generation can only be used in interactive mode\n"
-msgstr ""
+msgstr "Die Schlüsselerzeugung kann nur im interaktiven Modus benutzt werden\n"
 
 #: g10/keygen.c:301
 msgid ""
@@ -344,22 +495,25 @@ msgid ""
 "   (1) ElGamal is the suggested one.\n"
 "   (2) DSA can only be used for signatures.\n"
 msgstr ""
+"Bitte wählen Sie den zu benutzenden Algorithmus aus:\n"
+"   (1) ElGamal wird empfohlen.\n"
+"   (2) DSA kann nur für Signaturen verwendet werden.\n"
 
 #: g10/keygen.c:305
 msgid "   (3) RSA cannot be used in the U.S.\n"
-msgstr ""
+msgstr "   (3) RSA darf in den USA nicht benutzt werden\n"
 
 #: g10/keygen.c:314
 msgid "Your selection? (1,2,3) "
-msgstr ""
+msgstr "Ihre Auswahl? (1,2,3) "
 
 #: g10/keygen.c:316
 msgid "Your selection? (1,2) "
-msgstr ""
+msgstr "Ihre Auswahl? (1,2) "
 
 #: g10/keygen.c:330
 msgid "Sorry; DSA is not yet supported.\n"
-msgstr ""
+msgstr "Pardon; DSA wird noch nicht unterstützt.\n"
 
 #: g10/keygen.c:343
 msgid ""
@@ -402,25 +556,25 @@ msgstr "Gut, aber bitte denken Sie auch daran, daß Monitor und Tastatur "
 
 #: g10/keygen.c:377
 msgid "Requested keysize is %u bits\n"
-msgstr ""
+msgstr "Die verlangte Schlüssellänge ist %u Bits\n"
 
 #: g10/keygen.c:380 g10/keygen.c:384
 msgid "rounded up to %u bits\n"
-msgstr ""
+msgstr "aufgerundet auf %u Bits\n"
 
 #: g10/keygen.c:391
 msgid ""
 "\n"
 "You need a User-ID to identify your key; the software constructs the user id\n"
 "from Real Name, Comment and Email Address in this form:\n"
-"    \"Heinrich Heine (Der Dichter) <heinrichh@uni-duesseldorf.de>\"\n"
+"    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n"
 "\n"
 msgstr ""
 "\n"
 "Sie benötigen einen User-ID um Ihren Schlüssel eindeutig zu machen; das\n"
 "Programm baut diese User-ID aus Ihrem echten Namen, einem Kommentar und\n"
 "Ihrer Email Adresse in dieser Form auf:\n"
-"    \"Heinrich Heine (Der Dichter) <heinrichh@uni-duesseldorf.de>\"\n"
+"    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n"
 "\n"
 
 
@@ -500,11 +654,11 @@ msgstr "\"passphrase\" nicht richtig wiederholt; noch einmal.\n"
 
 #: g10/keygen.c:531
 msgid "writing public certificate to '%s'\n"
-msgstr ""
+msgstr "schreiben des öffentlichen Schlüssels nach '%s'\n"
 
 #: g10/keygen.c:532
 msgid "writing secret certificate to '%s'\n"
-msgstr ""
+msgstr "schreiben des geheimen Schlüssels nach '%s'\n"
 
 #: g10/keygen.c:544
 msgid ""
@@ -523,4 +677,9 @@ msgstr "Öffentlichen und geheimen Schlüssel erzeugt und signiert.\n"
 
 #: g10/keygen.c:622
 msgid "Key generation failed: %s\n"
-msgstr ""
+msgstr "Schlüssel-Erzeugung fehlgeschlagen: %s\n"
+
+
+
+
+
