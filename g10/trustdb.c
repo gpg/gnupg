@@ -471,6 +471,18 @@ trust_string (unsigned int value)
     }
 }
 
+static const char *
+trust_model_string(void)
+{
+  switch(opt.trust_model)
+    {
+    case TM_OPENPGP: return "OpenPGP";
+    case TM_CLASSIC: return "classic";
+    case TM_ALWAYS:  return "always";
+    default:         return "unknown";
+    }
+}
+
 /****************
  * Recreate the WoT but do not ask for new ownertrusts.  Special
  * feature: In batch mode and without a forced yes, this is only done
@@ -479,27 +491,33 @@ trust_string (unsigned int value)
 void
 check_trustdb ()
 {
-  init_trustdb();
-  if (opt.batch && !opt.answer_yes)
+  if(opt.trust_model==TM_OPENPGP || opt.trust_model==TM_CLASSIC)
     {
-      ulong scheduled;
+      init_trustdb();
+      if (opt.batch && !opt.answer_yes)
+	{
+	  ulong scheduled;
 
-      scheduled = tdbio_read_nextcheck ();
-      if (!scheduled)
-        {
-          log_info (_("no need for a trustdb check\n"));
-          return;
-        }
+	  scheduled = tdbio_read_nextcheck ();
+	  if (!scheduled)
+	    {
+	      log_info (_("no need for a trustdb check\n"));
+	      return;
+	    }
 
-      if (scheduled > make_timestamp ())
-        {
-          log_info (_("next trustdb check due at %s\n"),
-                    strtimestamp (scheduled));
-          return;
-        }
+	  if (scheduled > make_timestamp ())
+	    {
+	      log_info (_("next trustdb check due at %s\n"),
+			strtimestamp (scheduled));
+	      return;
+	    }
+	}
+
+      validate_keys (0);
     }
-
-  validate_keys (0);
+  else
+    log_info (_("no need for a trustdb check with \"%s\" trust model\n"),
+	      trust_model_string());
 }
 
 
@@ -509,8 +527,14 @@ check_trustdb ()
 void
 update_trustdb()
 {
-  init_trustdb();
-  validate_keys (1);
+  if(opt.trust_model==TM_OPENPGP || opt.trust_model==TM_CLASSIC)
+    {
+      init_trustdb();
+      validate_keys (1);
+    }
+  else
+    log_info (_("no need for a trustdb update with \"%s\" trust model\n"),
+	      trust_model_string());
 }
 
 void
@@ -875,7 +899,7 @@ get_validity (PKT_public_key *pk, const byte *namehash)
   unsigned int validity;
   u32 kid[2];
   PKT_public_key *main_pk;
-  
+
   init_trustdb ();
   if (!did_nextcheck)
     {
@@ -1405,11 +1429,11 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
              did not exist.  This is safe for non-trust sigs as well
              since we don't accept a regexp on the sig unless it's a
              trust sig. */
-          if (kr && (kr->trust_regexp==NULL || opt.trust_model==TM_CLASSIC ||
+          if (kr && (kr->trust_regexp==NULL || opt.trust_model!=TM_OPENPGP ||
 		     (uidnode && check_regexp(kr->trust_regexp,
 					    uidnode->pkt->pkt.user_id->name))))
             {
-	      if(DBG_TRUST && opt.trust_model!=TM_CLASSIC && sig->trust_depth)
+	      if(DBG_TRUST && opt.trust_model==TM_OPENPGP && sig->trust_depth)
 		log_debug("trust sig on %s, sig depth is %d, kr depth is %d\n",
 			  uidnode->pkt->pkt.user_id->name,sig->trust_depth,
 			  kr->trust_depth);
@@ -1419,7 +1443,7 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
                  lesser trust sig or value.  I could make a decent
                  argument for any of these cases, but this seems to be
                  what PGP does, and I'd like to be compatible. -dms */
-	      if(opt.trust_model!=TM_CLASSIC && sig->trust_depth
+	      if(opt.trust_model==TM_OPENPGP && sig->trust_depth
 		 && pk->trust_timestamp<=sig->timestamp
 		 && (sig->trust_depth<=kr->trust_depth
 		     || kr->ownertrust==TRUST_ULTIMATE))
