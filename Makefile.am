@@ -44,7 +44,7 @@ dist-hook:
 	@set -e; \
 	sed -e 's/@pkg_version@/$(VERSION)/g' \
 	    $(top_srcdir)/scripts/gnupg.spec.in \
-	    > $(distdir)/scripts/gnupg.spec
+	    > $(distdir)/gnupg.spec
 	echo "$(VERSION)" > $(distdir)/VERSION
 
 
