@@ -1,4 +1,10 @@
+2002-03-13  Werner Koch  <wk@gnupg.org>
+
+	* decrypt.c (gpgsm_decrypt): Allow multiple recipients.
+
 2002-03-12  Werner Koch  <wk@gnupg.org>
+
+	* certpath.c (check_cert_policy): Print the policy list.
 
 	* verify.c (gpgsm_verify): Detect certs-only message.
 

@@ -312,6 +312,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
         {
           int algo, mode;
           const char *algoid;
+          int any_key = 0;
           
           algoid = ksba_cms_get_content_oid (cms, 2/* encryption algo*/);
           algo = gcry_cipher_map_name (algoid);
@@ -339,7 +340,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
               goto leave;
             }
           
-          for (recp=0; recp < 1; recp++)
+          for (recp=0; !any_key; recp++)
             {
               char *issuer;
               KsbaSexp serial;
@@ -347,6 +348,8 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
               char *hexkeygrip = NULL;
 
               err = ksba_cms_get_issuer_serial (cms, recp, &issuer, &serial);
+              if (err == -1 && recp)
+                break; /* no more recipients */
               if (err)
                 log_error ("recp %d - error getting info: %s\n",
                            recp, ksba_strerror (err));
@@ -364,7 +367,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                   rc = keydb_search_issuer_sn (kh, issuer, serial);
                   if (rc)
                     {
-                      log_debug ("failed to find the certificate: %s\n",
+                      log_error ("failed to find the certificate: %s\n",
                                  gnupg_strerror(rc));
                       goto oops;
                     }
@@ -372,8 +375,9 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                   rc = keydb_get_cert (kh, &cert);
                   if (rc)
                     {
-                      log_debug ("failed to get cert: %s\n", gnupg_strerror (rc));
-                      goto oops;                    }
+                      log_error ("failed to get cert: %s\n", gnupg_strerror (rc));
+                      goto oops;     
+                    }
 
                   hexkeygrip = gpgsm_get_keygrip_hexstring (cert);
 
@@ -383,30 +387,33 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                   ksba_cert_release (cert);
                 }
 
-              enc_val = ksba_cms_get_enc_val (cms, recp);
-              if (!enc_val)
+              if (!hexkeygrip)
+                ;
+              else if (!(enc_val = ksba_cms_get_enc_val (cms, recp)))
                 log_error ("recp %d - error getting encrypted session key\n",
                            recp);
               else
                 {
-                  rc = prepare_decryption (hexkeygrip, enc_val,
-                                           &dfparm);
+                  rc = prepare_decryption (hexkeygrip, enc_val, &dfparm);
                   xfree (enc_val);
                   if (rc)
                     {
-                      /* fixme: as soon as we support multiple recipients, we 
-                         should just set a flag and try the next recipient */
-                      log_error ("decrypting session key failed: %s\n",
+                      log_debug ("decrypting session key failed: %s\n",
                                  gnupg_strerror (rc));
-                      goto leave;
                     }
                   else
                     { /* setup the bulk decrypter */
+                      any_key = 1;
                       ksba_writer_set_filter (writer,
                                               decrypt_filter,
                                               &dfparm);
                     }
                 }
+            }
+          if (!any_key)
+            {
+              rc = GNUPG_No_Secret_Key;
+              goto leave;
             }
         }
       else if (stopreason == KSBA_SR_END_DATA)

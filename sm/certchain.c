@@ -100,9 +100,12 @@ check_cert_policy (KsbaCert cert)
     return map_ksba_err (err);
 
   /* STRING is a line delimited list of certifiate policies as stored
-     in the certificate.  The line itself is colon delimted where the
+     in the certificate.  The line itself is colon delimited where the
      first field is the OID of the policy and the second field either
      N or C for normal or critical extension */
+
+  if (opt.verbose > 1)
+    log_info ("certificate's policy list: %s\n", policies);
 
   /* The check is very minimal but won't give false positives */
   any_critical = !!strstr (policies, ":C");
