@@ -1,5 +1,9 @@
 2002-06-12  Werner Koch  <wk@gnupg.org>
 
+	* call-dirmngr.c (lookup_status_cb): New.
+	(gpgsm_dirmngr_lookup): Use the status CB.  Add new arg CTRL and
+	changed caller to pass it.
+
 	* gpgsm.c (open_fwrite): New.
 	(main): Allow --output for --verify.
 

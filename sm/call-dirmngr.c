@@ -51,6 +51,7 @@ struct inq_certificate_parm_s {
 };
 
 struct lookup_parm_s {
+  CTRL ctrl;
   ASSUAN_CONTEXT ctx;
   void (*cb)(void *, KsbaCert);
   void *cb_value;
@@ -415,12 +416,27 @@ pattern_from_strlist (STRLIST names)
   return pattern;
 }
 
+static AssuanError
+lookup_status_cb (void *opaque, const char *line)
+{
+  struct lookup_parm_s *parm = opaque;
+  int i;
+
+  if (!strncmp (line, "TRUNCATED", 9) && (line[9]==' ' || !line[9]))
+    {
+      for (line +=9; *line == ' '; line++)
+        ;
+      gpgsm_status (parm->ctrl, STATUS_TRUNCATED, line);
+    }
+  return 0;
+}
+
 
 /* Run the Directroy Managers lookup command using the apptern
    compiled from the strings given in NAMES.  The caller must provide
    the callback CB which will be passed cert by cert. */
 int 
-gpgsm_dirmngr_lookup (STRLIST names,
+gpgsm_dirmngr_lookup (CTRL ctrl, STRLIST names,
                       void (*cb)(void*, KsbaCert), void *cb_value)
 { 
   int rc;
@@ -428,8 +444,6 @@ gpgsm_dirmngr_lookup (STRLIST names,
   char line[ASSUAN_LINELENGTH];
   struct lookup_parm_s parm;
   size_t len;
-
-  /* FIXME: Set an status handler so that we can get the TRUNCATED code */
 
   rc = start_dirmngr ();
   if (rc)
@@ -442,6 +456,7 @@ gpgsm_dirmngr_lookup (STRLIST names,
   line[DIM(line)-1] = 0;
   xfree (pattern);
 
+  parm.ctrl = ctrl;
   parm.ctx = dirmngr_ctx;
   parm.cb = cb;
   parm.cb_value = cb_value;
@@ -449,9 +464,11 @@ gpgsm_dirmngr_lookup (STRLIST names,
   init_membuf (&parm.data, 4096);
 
   rc = assuan_transact (dirmngr_ctx, line, lookup_cb, &parm,
-                        NULL, NULL, NULL, NULL);
+                        NULL, NULL, lookup_status_cb, &parm);
   xfree (get_membuf (&parm.data, &len));
   if (rc)
     return map_assuan_err (rc);
   return parm.error;
 }
+
+

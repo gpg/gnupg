@@ -586,7 +586,7 @@ list_external_keys (CTRL ctrl, STRLIST names, FILE *fp)
   parm.with_colons = ctrl->with_colons;
   parm.with_chain = ctrl->with_chain;
 
-  rc = gpgsm_dirmngr_lookup (names, list_external_cb, &parm);
+  rc = gpgsm_dirmngr_lookup (ctrl, names, list_external_cb, &parm);
   if (rc)
     log_error ("listing external keys failed: %s\n", gnupg_strerror (rc));
 }

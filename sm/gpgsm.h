@@ -240,7 +240,7 @@ int gpgsm_agent_learn (void);
 
 /*-- call-dirmngr.c --*/
 int gpgsm_dirmngr_isvalid (KsbaCert cert);
-int gpgsm_dirmngr_lookup (STRLIST names,
+int gpgsm_dirmngr_lookup (CTRL ctrl, STRLIST names,
                           void (*cb)(void*, KsbaCert), void *cb_value);
 
 
