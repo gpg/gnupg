@@ -1,6 +1,9 @@
 Noteworthy changes in version 1.9.5
 ------------------------------------------------
 
+ * gpg-protect-tool gets now installed into libexec as it ought to be.
+   Cleaned up the build system to better comply with the coding
+   standards.
 
 Noteworthy changes in version 1.9.4 (2004-01-30)
 ------------------------------------------------

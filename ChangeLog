@@ -1,3 +1,16 @@
+2004-02-12  Werner Koch  <wk@gnupg.org>
+
+	* am/cmacros.am: New.
+
+2004-02-11  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Removed the need for g10defs.h.  Reworked the
+	--with-foo-pgm stuff.
+
+	* autogen.sh (check_version): Removed bashism and simplified.
+	* acinclude.m4 (AM_PATH_OPENSC): Kludge to avoid error output for
+	a bad opensc-config.
+
 2004-01-30  Werner Koch  <wk@gnupg.org>
 
 	Released 1.9.4.

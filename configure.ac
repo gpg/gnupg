@@ -74,63 +74,58 @@ AC_DEFINE_UNQUOTED(NEED_KSBA_VERSION, "$NEED_KSBA_VERSION",
 
 
 
-
-# I know that it is in general not a good idea to evaluate bindir in
-# the configuration but we want to hard code the defaults into some of
-# the programs and doing this during a make install is not a good
-# idea.  We also have the problem that 2 of the programs are included
-# in the package but the others are distributed in other packages.
-eval my_default_bindir=${exec_prefix}
-test "x${my_default_bindir}" = xNONE && my_default_bindir=${ac_default_prefix}
-my_default_bindir=${my_default_bindir}/bin
-
-# Same goes for the pkglibdir which is used to call the gpg-protect-tool.
-eval my_default_pkglibdir=${exec_prefix}
-test "x${my_default_pkglibdir}" = xNONE && my_default_pkglibdir=${ac_default_prefix}
-my_default_pkglibdir=${my_default_pkglibdir}/lib/${PACKAGE_NAME}
-
+# The default is to use the modules from this package and the few
+# other packages in a standard place; i.e where this package gets
+# installed.  With these options it is possible to override these
+# ${prefix} depended values with fixed paths, which can't be replaced
+# at make time.  See also am/cmacros.am and the defaults in AH_BOTTOM.
 AC_ARG_WITH(agent-pgm,
-    [  --with-agent-pgm=PATH  Use PATH as the default for the gpg-agent)],
-          gnupg_agent_pgm="$withval",
-          gnupg_agent_pgm="${my_default_bindir}/gpg-agent" )
-AC_DEFINE_UNQUOTED(GNUPG_DEFAULT_AGENT, "$gnupg_agent_pgm",
-                   [Default location of the gpg-agent program])
+    [  --with-agent-pgm=PATH  Use PATH as the default for the agent)],
+          GNUPG_AGENT_PGM="$withval", GNUPG_AGENT_PGM="" )
+AC_SUBST(GNUPG_AGENT_PGM)
+AM_CONDITIONAL(GNUPG_AGENT_PGM, test -n "$GNUPG_AGENT_PGM")
+show_gnupg_agent_pgm="(default)"
+test -n "$GNUPG_AGENT_PGM" && show_gnupg_agent_pgm="$GNUPG_AGENT_PGM"
+
 AC_ARG_WITH(pinentry-pgm,
     [  --with-pinentry-pgm=PATH  Use PATH as the default for the pinentry)],
-          gnupg_pinentry_pgm="$withval", gnupg_pinentry_pgm="" )
-if test -z "$gnupg_pinentry_pgm"; then
-  gnupg_pinentry_pgm=${my_default_bindir}/pinentry
-fi
-AC_DEFINE_UNQUOTED(GNUPG_DEFAULT_PINENTRY, "$gnupg_pinentry_pgm",
-                   [Default location of the pinentry program])
+          GNUPG_PINENTRY_PGM="$withval", GNUPG_PINENTRY_PGM="" )
+AC_SUBST(GNUPG_PINENTRY_PGM)
+AM_CONDITIONAL(GNUPG_PINENTRY_PGM, test -n "$GNUPG_PINENTRY_PGM")
+show_gnupg_pinentry_pgm="(default)"
+test -n "$GNUPG_PINENTRY_PGM" && show_gnupg_pinentry_pgm="$GNUPG_PINENTRY_PGM"
+
+
 AC_ARG_WITH(scdaemon-pgm,
     [  --with-scdaemon-pgm=PATH  Use PATH as the default for the scdaemon)],
-          gnupg_scdaemon_pgm="$withval", gnupg_scdaemon_pgm="" )
-if test -z "$gnupg_scdaemon_pgm"; then
-  gnupg_scdaemon_pgm=${my_default_bindir}/scdaemon
-fi
-AC_DEFINE_UNQUOTED(GNUPG_DEFAULT_SCDAEMON, "$gnupg_scdaemon_pgm",
-                   [Default location of the scdaemon program])
+          GNUPG_SCDAEMON_PGM="$withval", GNUPG_SCDAEMON_PGM="" )
+AC_SUBST(GNUPG_SCDAEMON_PGM)
+AM_CONDITIONAL(GNUPG_SCDAEMON_PGM, test -n "$GNUPG_SCDAEMON_PGM")
+show_gnupg_scdaemon_pgm="(default)"
+test -n "$GNUPG_SCDAEMON_PGM" && show_gnupg_scdaemon_pgm="$GNUPG_SCDAEMON_PGM"
+
+
 AC_ARG_WITH(dirmngr-pgm,
     [  --with-dirmngr-pgm=PATH  Use PATH as the default for the dirmngr)],
-          gnupg_dirmngr_pgm="$withval", gnupg_dirmngr_pgm="" )
-if test -z "$gnupg_dirmngr_pgm"; then
-  gnupg_dirmngr_pgm=${my_default_bindir}/dirmngr
-fi
-AC_DEFINE_UNQUOTED(GNUPG_DEFAULT_DIRMNGR, "$gnupg_dirmngr_pgm",
-                   [Default location of the dirmngr program])
+          GNUPG_DIRMNGR_PGM="$withval", GNUPG_DIRMNGR_PGM="" )
+AC_SUBST(GNUPG_DIRMNGR_PGM)
+AM_CONDITIONAL(GNUPG_DIRMNGR_PGM, test -n "$GNUPG_DIRMNGR_PGM")
+show_gnupg_dirmngr_pgm="(default)"
+test -n "$GNUPG_DIRMNGR_PGM" && show_gnupg_dirmngr_pgm="$GNUPG_DIRMNGR_PGM"
 
-AC_ARG_WITH(protect-tool,
-    [  --with-protect-tool=PATH  Use PATH as the protect-tool)],
-          gnupg_protect_tool="$withval", gnupg_protect_tool="" )
-if test -z "$gnupg_protect_tool"; then
-  gnupg_protect_tool=${my_default_pkglibdir}/gpg-protect-tool
-fi
-AC_DEFINE_UNQUOTED(GNUPG_PROTECT_TOOL, "$gnupg_protect_tool",
-                   [Name of the protect tool program])
-
+AC_ARG_WITH(protect-tool-pgm,
+    [  --with-protect-tool-pgm=PATH  Use PATH as the default for the protect-tool)],
+          GNUPG_PROTECT_TOOL_PGM="$withval", GNUPG_PROTECT_TOOL_PGM="" )
+AC_SUBST(GNUPG_PROTECT_TOOL_PGM)
+AM_CONDITIONAL(GNUPG_PROTECT_TOOL_PGM, test -n "$GNUPG_PROTECT_TOOL_PGM")
+show_gnupg_protect_tool_pgm="(default)"
+test -n "$GNUPG_PROTECT_TOOL_PGM" \
+      && show_gnupg_protect_tool_pgm="$GNUPG_PROTECT_TOOL_PGM"
 
 
+
+# Configure option to allow ot disallow execution of external
+# programs, like a photo viewer.
 AC_MSG_CHECKING([whether to enable external program execution])
 AC_ARG_ENABLE(exec,
     AC_HELP_STRING([--disable-exec],[disable all external program execution]),
@@ -226,14 +221,12 @@ AH_BOTTOM([
 /* Some global constants. */
 #ifdef HAVE_DRIVE_LETTERS
 #define GNUPG_DEFAULT_HOMEDIR "c:/gnupg"
+#elif defined(__VMS)
+#define GNUPG_DEFAULT_HOMEDIR "/SYS\$LOGIN/gnupg" 
 #else
 #define GNUPG_DEFAULT_HOMEDIR "~/.gnupg"
 #endif 
 #define GNUPG_PRIVATE_KEYS_DIR "private-keys-v1.d"
-
-#if !(defined(HAVE_FORK) && defined(HAVE_PIPE) && defined(HAVE_WAITPID))
-#define EXEC_TEMPFILE_ONLY
-#endif
 
 /* Tell libgcrypt not to use its own libgpg-error implementation. */
 #define USE_LIBGPG_ERROR 1
@@ -243,7 +236,59 @@ AH_BOTTOM([
    we use 2 here even for GnuPG 1.9.x. */
 #define GNUPG_MAJOR_VERSION 2
 
-#include "g10defs.h"
+/* Now to separate file name parts.
+   Please note that the string version must not contain more
+   than one character because the code assumes strlen()==1 */
+#ifdef HAVE_DOSISH_SYSTEM
+#define DIRSEP_C '\\'
+#define EXTSEP_C '.'
+#define DIRSEP_S "\\"
+#define EXTSEP_S "."
+#else
+#define DIRSEP_C '/'
+#define EXTSEP_C '.'
+#define DIRSEP_S "/"
+#define EXTSEP_S "."
+#endif
+
+/* This is the same as VERSION, but should be overridden if the
+   platform cannot handle things like dots '.' in filenames. */
+#define SAFE_VERSION VERSION
+
+/* For some systems (DOS currently), we hardcode the path here.  For
+   POSIX systems the values are constructed by the Makefiles, so that
+   the values may be overridden by the make invocations; this is to
+   comply with the GNU coding standards. */
+#ifdef HAVE_DRIVE_LETTERS
+#define GNUPG_BINDIR      "c:\\gnupg"
+#define GNUPG_LIBEXECDIR  "c:\\lib\\gnupg"
+#define GNUPG_LIBDIR      "c:\\lib\\gnupg"
+#define GNUPG_DATADIR     "c:\\lib\\gnupg"
+#endif
+
+/* Setup the hardwired names of modules. */
+#ifndef GNUPG_DEFAULT_AGENT
+#define GNUPG_DEFAULT_AGENT    ( GNUPG_BINDIR DIRSEP_S "gpg-agent" )
+#endif
+#ifndef GNUPG_DEFAULT_PINENTRY
+#define GNUPG_DEFAULT_PINENTRY ( GNUPG_BINDIR DIRSEP_S "pinentry" )
+#endif
+#ifndef GNUPG_DEFAULT_SCDAEMON
+#define GNUPG_DEFAULT_SCDAEMON ( GNUPG_BINDIR DIRSEP_S "scdaemon" )
+#endif
+#ifndef GNUPG_DEFAULT_DIRMNGR
+#define GNUPG_DEFAULT_DIRMNGR  ( GNUPG_BINDIR DIRSEP_S "dirmngr" )
+#endif
+#ifndef GNUPG_DEFAULT_PROTECT_TOOL
+#define GNUPG_DEFAULT_PROTECT_TOOL \
+                    ( GNUPG_LIBEXECDIR DIRSEP_S "gpg-protect-tool" )
+#endif
+
+
+/* Derive some other constants. */
+#if !(defined(HAVE_FORK) && defined(HAVE_PIPE) && defined(HAVE_WAITPID))
+#define EXEC_TEMPFILE_ONLY
+#endif
 
 ])
 
@@ -405,7 +450,6 @@ if test $have_opensc = yes; then
   AC_DEFINE(HAVE_OPENSC,1,
             [defined if the OpenSC library is available])
 fi
-
 
 #
 # Check whether the (highly desirable) GNU Pth library is available
@@ -1004,64 +1048,6 @@ AM_CONDITIONAL(BUILD_AGENT, test "$build_agent" = "yes")
 AM_CONDITIONAL(BUILD_SCDAEMON, test "$build_scdaemon" = "yes")
 
 
-AC_CONFIG_COMMANDS(g10defs.h,[[
-cat >g10defs.tmp <<G10EOF
-/* Generated automatically by configure */
-/* FIXME: Shouldn't we replace GNUPG_HOMEDIR by GNUPG_DEFAULT_HOMEDIR
-   and we propably can get rid of g10defs.h */
-#ifdef HAVE_DRIVE_LETTERS
-/*#define G10_LOCALEDIR     "c:\\\\lib\\\\gnupg\\\\locale"*/
-#define GNUPG_LIBDIR      "c:\\\\lib\\\\gnupg"
-#define GNUPG_LIBEXECDIR  "c:\\\\lib\\\\gnupg"
-#define GNUPG_DATADIR     "c:\\\\lib\\\\gnupg"
-#define GNUPG_HOMEDIR     "c:\\\\gnupg"
-#else
-/*#define G10_LOCALEDIR     "${datadir}/locale"*/
-#define GNUPG_LIBDIR      "${libdir}/gnupg"
-#define GNUPG_DATADIR     "${datadir}/gnupg"
-#ifdef __VMS
-#define GNUPG_HOMEDIR "/SYS\$LOGIN/gnupg" 
-#else
-#define GNUPG_HOMEDIR "~/.gnupg" 
-#endif
-#endif
-/* those are here to be redefined by handcrafted g10defs.h.
-   Please note that the string version must not contain more
-   than one character because the using code assumes strlen()==1 */
-#ifdef HAVE_DOSISH_SYSTEM
-#define DIRSEP_C '\\\\'
-#define EXTSEP_C '.'
-#define DIRSEP_S "\\\\"
-#define EXTSEP_S "."
-#else
-#define DIRSEP_C '/'
-#define EXTSEP_C '.'
-#define DIRSEP_S "/"
-#define EXTSEP_S "."
-#endif
-/* This is the same as VERSION, but should be overridden if the
-   platform cannot handle things like dots '.' in filenames. */
-#define SAFE_VERSION VERSION
-G10EOF
-## Do we really need the following?  It defines BYTES_PER-MPI_LIMB
-## cat mpi/mpi-asm-defs.h >>g10defs.tmp 
-if cmp -s g10defs.h g10defs.tmp 2>/dev/null; then
-    echo "g10defs.h is unchanged"
-    rm -f g10defs.tmp
-else
-    rm -f g10defs.h
-    mv g10defs.tmp g10defs.h
-    echo "g10defs.h created"
-fi
-]],[[
-prefix=$prefix
-exec_prefix=$exec_prefix
-libdir=$libdir
-libexecdir=$libexecdir
-datadir=$datadir
-DATADIRNAME=$DATADIRNAME
-]])
-
 AC_CONFIG_FILES([ m4/Makefile 
 Makefile
 po/Makefile.in
@@ -1080,6 +1066,8 @@ tests/Makefile
 AC_OUTPUT
 
 
+
+
 echo "
         GnuPG v${VERSION} has been configured as follows:
         
@@ -1090,10 +1078,10 @@ echo "
         Agent:     $build_agent $build_agent_threaded
         Smartcard: $build_scdaemon $build_scdaemon_extra
 
-        Protect tool:     $gnupg_protect_tool
-        Default agent:    $gnupg_agent_pgm
-        Default pinentry: $gnupg_pinentry_pgm
-        Default scdaemon: $gnupg_scdaemon_pgm
-        Default dirmngr:  $gnupg_dirmngr_pgm
+        Protect tool:     $show_gnupg_protect_tool_pgm
+        Default agent:    $show_gnupg_agent_pgm
+        Default pinentry: $show_gnupg_pinentry_pgm
+        Default scdaemon: $show_gnupg_scdaemon_pgm
+        Default dirmngr:  $show_gnupg_dirmngr_pgm
 "
 

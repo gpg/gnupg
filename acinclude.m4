@@ -596,7 +596,7 @@ AC_DEFUN(AM_PATH_OPENSC,
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
     req_micro=`echo $min_opensc_version | \
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
-    opensc_config_version=`$OPENSC_CONFIG $opensc_config_args --version`
+    opensc_config_version=`$OPENSC_CONFIG $opensc_config_args --version 2>/dev/null || echo 0.0.0`
     major=`echo $opensc_config_version | \
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
     minor=`echo $opensc_config_version | \
