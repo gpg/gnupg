@@ -1,3 +1,19 @@
+2004-07-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Alias --charset as --display-charset to help avoid
+	the continuing confusion and make room for possible changes in
+	devel.
+
+	* parse-packet.c (parse_plaintext): Show the hex value for the
+	literal packet mode since it may not be printable.
+
+	* keygen.c (make_backsig): Make sure that the backsig was built
+	successfully before we try and use it.
+
+	* status.h, status.c (get_status_string), plaintext.c
+	(handle_plaintext): New status tags PLAINTEXT and
+	PLAINTEXT_LENGTH.
+
 2004-06-16  Werner Koch  <wk@gnupg.org>
 
 	* free-packet.c (copy_secret_key): Get last fix right.
