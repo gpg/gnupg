@@ -37,7 +37,7 @@
 
 2004-04-16  Werner Koch  <wk@gnupg.org>
 
-	* gpg-agent.c (main): Tell the logging code taht we are runnign
+	* gpg-agent.c (main): Tell the logging code that we are running
 	detached.
 
 2004-04-06  Werner Koch  <wk@gnupg.org>
