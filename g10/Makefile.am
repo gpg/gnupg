@@ -31,10 +31,17 @@ needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 #noinst_PROGRAMS = gpgd
 bin_PROGRAMS = gpg gpgv
 
+if ENABLE_BZIP2_SUPPORT
+bzip2_source = compress-bz2.c
+else
+bzip2_source =
+endif
+
 common_source =  \
 	      global.h          \
 	      build-packet.c	\
 	      compress.c	\
+	      $(bzip2_source)   \
 	      filter.h		\
 	      free-packet.c	\
 	      getkey.c		\

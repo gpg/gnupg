@@ -112,7 +112,7 @@ do_export( STRLIST users, int secret, unsigned int options )
 	iobuf_push_filter( out, armor_filter, &afx );
     }
     if( opt.compress_keys && opt.compress )
-	iobuf_push_filter( out, compress_filter, &zfx );
+      push_compress_filter(out,&zfx,opt.def_compress_algo);
     rc = do_export_stream( out, users, secret, options, &any );
 
     if( rc || !any )

@@ -333,10 +333,7 @@ encode_simple( const char *filename, int mode, int use_seskey )
       {
         if (cfx.dek && cfx.dek->use_mdc)
           zfx.new_ctb = 1;
-	zfx.algo=opt.def_compress_algo;
-	if(zfx.algo==-1)
-	  zfx.algo=DEFAULT_COMPRESS_ALGO;
-	iobuf_push_filter( out, compress_filter, &zfx );
+	push_compress_filter(out,&zfx,opt.def_compress_algo);
       }
 
     /* do the work */
@@ -578,8 +575,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	  {
             if (cfx.dek && cfx.dek->use_mdc)
               zfx.new_ctb = 1;
-	    zfx.algo = compr_algo;
-	    iobuf_push_filter( out, compress_filter, &zfx );
+	    push_compress_filter(out,&zfx,compr_algo);
 	  }
     }
 

@@ -1920,6 +1920,11 @@ main( int argc, char **argv )
 	if( check_digest_algo(opt.s2k_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
     }
+#ifdef HAVE_BZIP2
+    if(opt.def_compress_algo==3)
+      log_info(_("compress algorithm `%s' is read-only in this release\n"),
+	       "BZIP2");
+#endif
     if( opt.def_compress_algo < -1 || opt.def_compress_algo > 2 )
 	log_error(_("compress algorithm must be in range %d..%d\n"), 0, 2);
     if( opt.completes_needed < 1 )

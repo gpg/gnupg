@@ -351,17 +351,17 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
 	/* make a linked list of all packets */
 	switch( pkt->pkttype ) {
 	  case PKT_COMPRESSED:
-	    if( pkt->pkt.compressed->algorithm < 1
-		|| pkt->pkt.compressed->algorithm > 2 ) {
+	    if(check_compress_algo(pkt->pkt.compressed->algorithm))
+	      {
 		rc = G10ERR_COMPR_ALGO;
 		goto ready;
-	    }
-	    {
+	      }
+	    else
+	      {
 		compress_filter_context_t *cfx = m_alloc_clear( sizeof *cfx );
-		cfx->algo = pkt->pkt.compressed->algorithm;
 		pkt->pkt.compressed->buf = NULL;
-		iobuf_push_filter2( a, compress_filter, cfx, 1 );
-	    }
+		push_compress_filter2(a,cfx,pkt->pkt.compressed->algorithm,1);
+	      }
 	    free_packet( pkt );
 	    init_packet(pkt);
 	    break;

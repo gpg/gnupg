@@ -1,3 +1,30 @@
+2003-10-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* misc.c (compress_algo_to_string, check_compress_algo): Add
+	bzip2.
+
+	* g10.c (main): Add read-only warning.
+
+	* compress.c (compress_filter): Make static to help force the use
+	of push_compress_filter.  Remove default algorithm setting since
+	that is done in push_compress_filter now.
+
+	* main.h: Use named algorithm.
+
+	* filter.h, compress.c (push_compress_filter,
+	push_compress_filter2): New.  Figure out which is the appropriate
+	compression filter to use, and push it into place.
+
+	* compress.c (handle_compressed), encode.c (encode_simple,
+	encode_crypt), sign.c (sign_file, sign_symencrypt_file), import.c
+	(read_block), export.c (do_export): Use push_compress_filter
+	instead of pushing the compression filter ourselves.
+
+	* compress-bz2.c: New.  Bzlib versions of the compression filter
+	routines.
+
+	* Makefile.am: Include compress-bz2.c if bz2lib is available.
+
 2003-10-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* mainproc.c (proc_symkey_enc, proc_encrypted): Keep a count of

@@ -773,10 +773,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
 	/* algo 0 means no compression */
 	if( compr_algo )
-	  {
-	    zfx.algo = compr_algo;
-	    iobuf_push_filter( out, compress_filter, &zfx );
-	  }
+	  push_compress_filter(out,&zfx,compr_algo);
       }
 
     /* Write the one-pass signature packets if needed */
@@ -1096,19 +1093,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
 
     /* Push the Zip filter */
     if (opt.compress)
-      {
-	int compr_algo=opt.def_compress_algo;
-
-	/* Default */
-        if(compr_algo==-1)
-	  compr_algo=DEFAULT_COMPRESS_ALGO;
-
-	if (compr_algo)
-	  {
-	    zfx.algo = compr_algo;
-	    iobuf_push_filter( out, compress_filter, &zfx );
-	  }
-      }
+      push_compress_filter(out,&zfx,opt.def_compress_algo);
 
     /* Write the one-pass signature packets */
     /*(current filters: zip - encrypt - armor)*/

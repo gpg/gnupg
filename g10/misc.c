@@ -546,17 +546,23 @@ compress_algo_to_string(int algo)
 
   switch(algo)
     {
-    case 0:
+    case COMPRESS_ALGO_NONE:
       s="Uncompressed";
       break;
 
-    case 1:
+    case COMPRESS_ALGO_ZIP:
       s="ZIP";
       break;
 
-    case 2:
+    case COMPRESS_ALGO_ZLIB:
       s="ZLIB";
       break;
+
+#ifdef HAVE_BZIP2
+    case COMPRESS_ALGO_BZIP2:
+      s="BZIP2";
+      break;
+#endif
     }
 
   return s;
@@ -565,8 +571,13 @@ compress_algo_to_string(int algo)
 int
 check_compress_algo(int algo)
 {
+#ifdef HAVE_BZIP2
+  if(algo>=0 && algo<=3)
+    return 0;
+#else
   if(algo>=0 && algo<=2)
     return 0;
+#endif
 
   return G10ERR_COMPR_ALGO;
 }

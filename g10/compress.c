@@ -1,5 +1,6 @@
 /* compress.c - compress filter
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -18,6 +19,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+/* Note that the code in compress-bz2.c is nearly identical to the
+   code here, so if you fix a bug here, look there to see if the
+   matching bug needs to be fixed.  I tried to have one set of
+   functions that could do ZIP, ZLIB, and BZIP2, but it became
+   dangerously unreadable with #ifdefs and if(algo) -dshaw */
+
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,6 +41,8 @@
 #include "main.h"
 #include "options.h"
 
+int compress_filter_bz2( void *opaque, int control,
+			 IOBUF a, byte *buf, size_t *ret_len);
 
 static void
 init_compress( compress_filter_context_t *zfx, z_stream *zs )
@@ -199,7 +208,7 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
     return rc;
 }
 
-int
+static int
 compress_filter( void *opaque, int control,
 		 IOBUF a, byte *buf, size_t *ret_len)
 {
@@ -228,10 +237,8 @@ compress_filter( void *opaque, int control,
 	if( !zfx->status ) {
 	    PACKET pkt;
 	    PKT_compressed cd;
-
-	    if( !zfx->algo )
-	        zfx->algo = DEFAULT_COMPRESS_ALGO;
-	    if( zfx->algo != 1 && zfx->algo != 2 )
+	    if(zfx->algo != COMPRESS_ALGO_ZIP
+	       && zfx->algo != COMPRESS_ALGO_ZLIB)
 	      BUG();
 	    memset( &cd, 0, sizeof cd );
 	    cd.len = 0;
@@ -299,12 +306,12 @@ handle_compressed( void *procctx, PKT_compressed *cd,
     compress_filter_context_t *cfx;
     int rc;
 
-    if( cd->algorithm < 1 || cd->algorithm > 2	)
-	return G10ERR_COMPR_ALGO;
+    if(check_compress_algo(cd->algorithm))
+      return G10ERR_COMPR_ALGO;
     cfx = m_alloc_clear (sizeof *cfx);
-    cfx->algo = cd->algorithm;
     cfx->release = release_context;
-    iobuf_push_filter( cd->buf, compress_filter, cfx );
+    cfx->algo = cd->algorithm;
+    push_compress_filter(cd->buf,cfx,cd->algorithm);
     if( callback )
 	rc = callback(cd->buf, passthru );
     else
@@ -313,3 +320,35 @@ handle_compressed( void *procctx, PKT_compressed *cd,
     return rc;
 }
 
+void
+push_compress_filter(IOBUF out,compress_filter_context_t *zfx,int algo)
+{
+  push_compress_filter2(out,zfx,algo,0);
+}
+
+void
+push_compress_filter2(IOBUF out,compress_filter_context_t *zfx,
+		      int algo,int rel)
+{
+  if(algo>0)
+    zfx->algo=algo;
+  else
+    zfx->algo=DEFAULT_COMPRESS_ALGO;
+
+  switch(zfx->algo)
+    {
+    case COMPRESS_ALGO_ZIP:
+    case COMPRESS_ALGO_ZLIB:
+      iobuf_push_filter2(out,compress_filter,zfx,rel);
+      break;
+
+#ifdef HAVE_BZIP2
+    case COMPRESS_ALGO_BZIP2:
+      iobuf_push_filter2(out,compress_filter_bz2,zfx,rel);
+      break;
+#endif
+
+    default:
+      BUG();
+    }
+}

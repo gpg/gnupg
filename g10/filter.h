@@ -132,8 +132,9 @@ void        unarmor_pump_release (UnarmorPump x);
 int         unarmor_pump (UnarmorPump x, int c);
 
 /*-- compress.c --*/
-int compress_filter( void *opaque, int control,
-		     IOBUF chain, byte *buf, size_t *ret_len);
+void push_compress_filter(IOBUF out,compress_filter_context_t *zfx,int algo);
+void push_compress_filter2(IOBUF out,compress_filter_context_t *zfx,
+			   int algo,int rel);
 
 /*-- cipher.c --*/
 int cipher_filter( void *opaque, int control,
