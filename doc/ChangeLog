@@ -1,3 +1,8 @@
+2002-07-01  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Due to problems with VPATH builds we don't try to
+	build the texi vesions of the manual pages anymore automatically.
+
 2002-06-30  Werner Koch  <wk@gnupg.org>
 
 	* README.W32: Adjusted some descriptions.  Fixed the regsitry

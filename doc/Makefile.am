@@ -39,22 +39,24 @@ BUILT_SOURCES = FAQ faq.html
 CLEANFILES = faq.raw.xref gpg.xml gpgv.xml
 
 
-%.texi : %.xml
-if HAVE_DOCBOOK_TO_TEXI
-	docbook2texi $< | sed 's,--,---,' >$@
-else
-	: Warning: missing docbook to texinfo tools, cannot make $@
-	touch $@
-endif
-
-%.xml : %.sgml
-if HAVE_DOCBOOK_TO_TEXI
-	sgml2xml -x lower $< >$@
-else
-	: Warning: missing docbook to texinfo tools, cannot make $@
-	touch $@
-endif
-
+# We better build the texi versions manually.
+#%.texi : %.xml
+#if HAVE_DOCBOOK_TO_TEXI
+#	 docbook2texi $< | sed 's,--,---,' \
+#	    | $(top_srcdir)/scripts/fix-db-texi $@  >$@
+#else
+#	 : Warning: missing docbook to texinfo tools, cannot make $@
+#	 touch $@
+#endif
+#
+#%.xml : %.sgml
+#if HAVE_DOCBOOK_TO_TEXI
+#	 sgml2xml -x lower $< >$@
+#else
+#	 : Warning: missing docbook to texinfo tools, cannot make $@
+#	 touch $@
+#endif
+#
 
 %.1 : %.sgml
 if HAVE_DOCBOOK_TO_MAN
@@ -75,3 +77,6 @@ faq.html : faq.raw
 dist-hook:
 	@if test "`wc -c < gpg.1`" -lt 200; then \
 	    echo 'ERROR: dummy man page'; false; fi
+
+
+

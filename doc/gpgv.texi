@@ -7,6 +7,10 @@
 @c patches, etc. to Steve Cheng <steve@ggi-project.org>.
 
 @setfilename gpgv.info
+@dircategory GnuPG
+@direntry
+* gpgv: (gpgv).                       GnuPG signature verification tool.
+@end direntry
 
 @node top
 @top gpgv
