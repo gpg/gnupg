@@ -452,7 +452,7 @@ trust_letter (unsigned int value)
     case TRUST_MARGINAL:  return 'm';
     case TRUST_FULLY:     return 'f';
     case TRUST_ULTIMATE:  return 'u';
-    default:              return 0;
+    default:              return '?';
     }
 }
 
@@ -463,13 +463,13 @@ trust_string (unsigned int value)
 {
   switch( (value & TRUST_MASK) ) 
     {
-    case TRUST_UNKNOWN:   return _("unknown trust");
+    case TRUST_UNKNOWN:   return _("unknown");
     case TRUST_EXPIRED:   return _("expired");
-    case TRUST_UNDEFINED: return _("undefined trust");
-    case TRUST_NEVER:     return _("do NOT trust");
-    case TRUST_MARGINAL:  return _("marginal trust");
-    case TRUST_FULLY:     return _("full trust");
-    case TRUST_ULTIMATE:  return _("ultimate trust");
+    case TRUST_UNDEFINED: return _("undefined");
+    case TRUST_NEVER:     return _("never");
+    case TRUST_MARGINAL:  return _("marginal");
+    case TRUST_FULLY:     return _("full");
+    case TRUST_ULTIMATE:  return _("ultimate");
     default:              return "err";
     }
 }
@@ -629,31 +629,48 @@ get_min_ownertrust (PKT_public_key *pk)
 }
 
 /*
- * Same as get_ownertrust but return a trust letter instead of an value.
+ * Same as get_ownertrust but this takes the minimum ownertrust value
+ * into into account, and will bump up the value as needed.
+ */
+static int
+get_ownertrust_with_min (PKT_public_key *pk)
+{
+  unsigned int otrust,otrust_min;
+
+  otrust = get_ownertrust (pk);
+  otrust_min = get_min_ownertrust (pk);
+  if(otrust<otrust_min)
+    {
+      /* If the trust that the user has set is less than the trust
+	 that was calculated from a trust signature chain, use the
+	 higher of the two.  We do this here and not in
+	 get_ownertrust since the underlying ownertrust should not
+	 really be set - just the appearance of the ownertrust. */
+
+      otrust=otrust_min;
+    }
+
+  return otrust;
+}
+
+/*
+ * Same as get_ownertrust but return a trust letter instead of an
+ * value.  This takes the minimum ownertrust value into account.
  */
 int
 get_ownertrust_info (PKT_public_key *pk)
 {
-    unsigned int otrust,otrust_min;
-    int c;
+  return trust_letter(get_ownertrust_with_min(pk));
+}
 
-    otrust = get_ownertrust (pk);
-    otrust_min = get_min_ownertrust (pk);
-    if(otrust<otrust_min)
-      {
-	/* If the trust that the user has set is less than the trust
-	   that was calculated from a trust signature chain, use the
-	   higher of the two.  We do this here and not in
-	   get_ownertrust since the underlying ownertrust should not
-	   really be set - just the appearance of the ownertrust. */
-
-	otrust=otrust_min;
-      }
-
-    c = trust_letter( otrust );
-    if( !c )
-	c = '?';
-    return c;
+/*
+ * Same as get_ownertrust but return a trust string instead of an
+ * value.  This takes the minimum ownertrust value into account.
+ */
+const char *
+get_ownertrust_string (PKT_public_key *pk)
+{
+  return trust_string(get_ownertrust_with_min(pk));
 }
 
 /*
@@ -1055,15 +1072,22 @@ int
 get_validity_info (PKT_public_key *pk, PKT_user_id *uid)
 {
     int trustlevel;
-    int c;
 
     trustlevel = get_validity (pk, uid);
     if( trustlevel & TRUST_FLAG_REVOKED )
 	return 'r';
-    c = trust_letter ( trustlevel );
-    if( !c )
-	c = '?';
-    return c;
+    return trust_letter ( trustlevel );
+}
+
+const char *
+get_validity_string (PKT_public_key *pk, PKT_user_id *uid)
+{
+  int trustlevel;
+
+  trustlevel = get_validity (pk, uid);
+  if( trustlevel & TRUST_FLAG_REVOKED )
+    return _("revoked");
+  return trust_string(trustlevel);
 }
 
 static void

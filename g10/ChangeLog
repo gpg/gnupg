@@ -1,3 +1,19 @@
+2003-01-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.c (get_validity_info, get_ownertrust_info,
+	trust_letter): Simplify by returning a ? for error directly.
+
+	* keyedit.c (show_key_with_all_names): Use get_validity_string and
+	get_ownertrust_string to show full word versions of trust
+	(i.e. "full" instead of 'f').
+
+	* trustdb.h, trustdb.c (get_ownertrust_string,
+	get_validity_string): Same as get_ownertrust_info, and
+	get_validity_info, except returns a full string.
+
+	* trustdb.c (get_ownertrust_with_min): New.  Same as
+	'get_ownertrust' but takes the min_ownertrust value into account.
+
 2003-01-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* armor.c (armor_filter): Comment about PGP's end of line tab

@@ -1897,15 +1897,15 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	if( node->pkt->pkttype == PKT_PUBLIC_KEY
 	    || (with_subkeys && node->pkt->pkttype == PKT_PUBLIC_SUBKEY) ) {
 	    PKT_public_key *pk = node->pkt->pkt.public_key;
-	    int otrust=0, trust=0;
+	    const char *otrust="err",*trust="err";
 
 	    if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
 		/* do it here, so that debug messages don't clutter the
 		 * output */
                 static int did_warn = 0;
 
-                trust = get_validity_info (pk, NULL);
-		otrust = get_ownertrust_info (pk);
+                trust = get_validity_string (pk, NULL);
+		otrust = get_ownertrust_string (pk);
 
                 /* Show a warning once */
                 if (!did_warn
@@ -1947,20 +1947,28 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 			  (ulong)keyid_from_pk(pk,NULL),
 			  datestr_from_pk(pk),
 			  expirestr_from_pk(pk) );
-	    if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
-		tty_printf(_(" trust: %c/%c"), otrust, trust );
-		if( node->pkt->pkttype == PKT_PUBLIC_KEY
-		    && (get_ownertrust (pk)&TRUST_FLAG_DISABLED)) {
-		    tty_printf("\n*** ");
-		    tty_printf(_("This key has been disabled"));
-		}
-
-		if( with_fpr  ) {
-		    tty_printf("\n");
-		    print_fingerprint ( pk, NULL, 2 );
-		}
-	    }
 	    tty_printf("\n");
+
+	    if( node->pkt->pkttype == PKT_PUBLIC_KEY )
+	      {
+		tty_printf("                     ");
+		tty_printf(_("trust: %-13s"), otrust);
+		tty_printf(_("validity: %s"), trust );
+		tty_printf("\n");
+		if( node->pkt->pkttype == PKT_PUBLIC_KEY
+		    && (get_ownertrust (pk)&TRUST_FLAG_DISABLED))
+		  {
+		    tty_printf("*** ");
+		    tty_printf(_("This key has been disabled"));
+		    tty_printf("\n");
+		  }
+	      }
+
+	    if( node->pkt->pkttype == PKT_PUBLIC_KEY && with_fpr )
+	      {
+		print_fingerprint ( pk, NULL, 2 );
+		tty_printf("\n");
+	      }
 	}
 	else if( node->pkt->pkttype == PKT_SECRET_KEY
 	    || (with_subkeys && node->pkt->pkttype == PKT_SECRET_SUBKEY) ) {

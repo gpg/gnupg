@@ -52,11 +52,12 @@ void revalidation_mark (void);
 int trustdb_pending_check(void);
 
 int is_disabled(void *dummy,u32 *keyid);
+
 unsigned int get_validity (PKT_public_key *pk, PKT_user_id *uid);
 int get_validity_info (PKT_public_key *pk, PKT_user_id *uid);
+const char *get_validity_string (PKT_public_key *pk, PKT_user_id *uid);
 
 void list_trust_path( const char *username );
-
 int enum_cert_paths( void **context, ulong *lid,
 		     unsigned *ownertrust, unsigned *validity );
 void enum_cert_paths_print( void **context, FILE *fp,
@@ -65,9 +66,10 @@ void enum_cert_paths_print( void **context, FILE *fp,
 unsigned int get_ownertrust (PKT_public_key *pk);
 unsigned int get_min_ownertrust (PKT_public_key *pk);
 int get_ownertrust_info (PKT_public_key *pk);
+const char *get_ownertrust_string (PKT_public_key *pk);
+
 void update_ownertrust (PKT_public_key *pk, unsigned int new_trust );
 int clear_ownertrusts (PKT_public_key *pk);
-
 
 /*-- tdbdump.c --*/
 void list_trustdb(const char *username);
