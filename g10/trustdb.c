@@ -509,6 +509,7 @@ uid_trust_string_fixed(PKT_public_key *key,PKT_user_id *uid)
     switch(get_validity(key,uid)&TRUST_MASK)
       {
       case TRUST_UNKNOWN:   return _("[ unknown]");
+      case TRUST_EXPIRED:   return _("[ expired]");
       case TRUST_UNDEFINED: return _("[  undef ]");
       case TRUST_MARGINAL:  return _("[marginal]");
       case TRUST_FULLY:     return _("[  full  ]");

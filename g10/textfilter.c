@@ -61,6 +61,7 @@ len_without_trailing_chars( byte *line, unsigned len, const char *trimchars )
     return mark? (mark - line) : len;
 }
 
+
 static int
 standard( text_filter_context_t *tfx, IOBUF a,
 	  byte *buf, size_t size, size_t *ret_len)
@@ -104,7 +105,7 @@ standard( text_filter_context_t *tfx, IOBUF a,
 	   behavior (ignoring 2440 itself), so this actually makes us
 	   compatible with PGP textmode detached signatures for the
 	   first time. */
-	if(opt.strict_2440_line_endings)
+	if(RFC2440)
 	  tfx->buffer_len=trim_trailing_chars(tfx->buffer,tfx->buffer_len,
 					      " \t\r\n");
 	else
@@ -119,8 +120,6 @@ standard( text_filter_context_t *tfx, IOBUF a,
     *ret_len = len;
     return rc;
 }
-
-
 
 
 /****************

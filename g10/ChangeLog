@@ -1,3 +1,11 @@
+2004-12-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), textfilter.c (standard): Use --rfc2440
+	or --openpgp directly to determine the end of line hashing rule.
+
+	* trustdb.c (uid_trust_string_fixed): Show uids as expired if the
+	key is expired.
+
 2004-12-10  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (send_fprtime_if_not_null): New.
