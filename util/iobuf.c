@@ -665,6 +665,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 			    break;
 			}
 			a->size |= c;
+			a->partial = 2;
 		    }
 		    else { /* next partial body length */
 			a->size = 1 << (c & 0x1f);

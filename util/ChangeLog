@@ -1,3 +1,8 @@
+2003-12-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* iobuf.c (block_filter): Properly handle a partial body stream
+	that ends with a 5-byte length.
+
 2003-12-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.c (send_request): Add a Host: header for virtual hosts.
