@@ -706,6 +706,10 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
     critical = (type & SIGSUBPKT_FLAG_CRITICAL);
     type &= ~SIGSUBPKT_FLAG_CRITICAL;
 
+    /* Sanity check buffer sizes */
+    if(parse_one_sig_subpkt(buffer,buflen,type)<0)
+      BUG();
+
     switch(type)
       {
       case SIGSUBPKT_NOTATION:
@@ -718,6 +722,36 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
 	/* we don't allow multiple subpackets */
 	delete_sig_subpkt(sig->hashed,type);
 	delete_sig_subpkt(sig->unhashed,type);
+	break;
+      }
+
+    /* Any special magic that needs to be done for this type so the
+       packet doesn't need to be reparsed? */
+    switch(type)
+      {
+      case SIGSUBPKT_NOTATION:
+	sig->flags.notation=1;
+	break;
+
+      case SIGSUBPKT_POLICY:
+	sig->flags.policy_url=1;
+	break;
+
+      case SIGSUBPKT_EXPORTABLE:
+	if(buffer[0])
+	  sig->flags.exportable=1;
+	else
+	  sig->flags.exportable=0;
+	break;
+
+      case SIGSUBPKT_REVOCABLE:
+	if(buffer[0])
+	  sig->flags.revocable=1;
+	else
+	  sig->flags.revocable=0;
+	break;
+
+      default:
 	break;
       }
 

@@ -242,13 +242,11 @@ sign_mk_attrib( PKT_signature *sig, void *opaque )
     byte buf[8];
 
     if( attrib->non_exportable ) {
-        sig->flags.exportable=0;
 	buf[0] = 0; /* not exportable */
 	build_sig_subpkt( sig, SIGSUBPKT_EXPORTABLE, buf, 1 );
     }
 
     if( attrib->non_revocable ) {
-        sig->flags.revocable=0;
 	buf[0] = 0; /* not revocable */
 	build_sig_subpkt( sig, SIGSUBPKT_REVOCABLE, buf, 1 );
     }

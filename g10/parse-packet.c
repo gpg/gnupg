@@ -904,7 +904,7 @@ dump_sig_subpkt( int hashed, int type, int critical,
  *	    -2 unsupported type
  *	    -3 subpacket too short
  */
-static int
+int
 parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
 {
     switch( type ) {

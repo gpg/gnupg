@@ -1,3 +1,14 @@
+2002-05-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* build-packet.c (build_sig_subpkt): Handle setting sig flags for
+	certain subpacket types (notation, policy url, exportable,
+	revocable).  keyedit.c (sign_mk_attrib): Flags no longer need to
+	be set here.
+
+	* packet.h, parse-packet.c (parse_one_sig_subpkt), build-packet.c
+	(build_sig_subpkt): Call parse_one_sig_subpkt to sanity check
+	buffer lengths before building a sig subpacket.
+
 2002-05-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* sign.c (mk_notation_and_policy): Include secret key to enable %s
