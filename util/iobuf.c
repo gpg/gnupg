@@ -120,6 +120,7 @@ typedef struct {
 static int special_names_enabled;
 
 static int underflow(IOBUF a);
+static int translate_file_handle ( int fd, int for_write );
 
 #ifndef FILE_FILTER_USES_STDIO
 
@@ -1033,7 +1034,7 @@ iobuf_open( const char *fname )
 	print_only = 1;
     }
     else if ( (fd = check_special_filename ( fname )) != -1 )
-        return iobuf_fdopen ( iobuf_translate_file_handle (fd,0), "rb" );
+        return iobuf_fdopen ( translate_file_handle (fd,0), "rb" );
     else if( (fp = my_fopen_ro(fname, "rb")) == INVALID_FP )
 	return NULL;
     a = iobuf_alloc(1, 8192 );
@@ -1135,7 +1136,7 @@ iobuf_create( const char *fname )
 	print_only = 1;
     }
     else if ( (fd = check_special_filename ( fname )) != -1 )
-        return iobuf_fdopen ( iobuf_translate_file_handle (fd, 1), "wb" );
+        return iobuf_fdopen ( translate_file_handle (fd, 1), "wb" );
     else if( (fp = my_fopen(fname, "wb")) == INVALID_FP )
 	return NULL;
     a = iobuf_alloc(2, 8192 );
@@ -2118,12 +2119,11 @@ iobuf_read_line( IOBUF a, byte **addr_of_buffer,
     return nbytes;
 }
 
-
+/* This is the non iobuf specific function */
 int
 iobuf_translate_file_handle ( int fd, int for_write )
 {
   #ifdef __MINGW32__
-   #ifdef FILE_FILTER_USES_STDIO  
     {
         int x;
             
@@ -2139,6 +2139,16 @@ iobuf_translate_file_handle ( int fd, int for_write )
             fd = x;
         }
     }
+  #endif
+    return fd;
+}
+
+static int
+translate_file_handle ( int fd, int for_write )
+{
+  #ifdef __MINGW32__
+   #ifdef FILE_FILTER_USES_STDIO  
+    fd = iobuf_translate_file_handle (fd, for_write);
    #else
     {
         int x;

@@ -1,3 +1,11 @@
+2001-04-02  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.c (translate_file_handle): New. Use this function
+	everywhere in this file.
+	(iobuf_translate_file_handle): Always use the osfhandle stuff here
+	because callers don't know the implementation details of iobuf and
+	they expect that the handles are translated. 
+
 2001-03-29  Werner Koch  <wk@gnupg.org>
 
 	* miscutil.c (answer_is_yes): An empty string does now return no.
