@@ -9,6 +9,10 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+# Please note that this script is now maintained outside of GNUPG.
+# To get the most up to date version use
+# cvs -d :pserver:anoncvs@cvs.gnupg.org:/cvs/wk checkout misc-scripts/mkdiff
+
 if [ $# != 1 ] ; then
     echo "usage: mkdiff package-name" >&2
     exit 1
