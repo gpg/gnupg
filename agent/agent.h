@@ -48,7 +48,8 @@ struct {
   int running_detached; /* we are running detached from the tty. */
 
   int ignore_cache_for_signing;
-
+  int keep_tty;  /* don't switch the TTY (for pinentry) on request */
+  int keep_display;  /* don't switch the DISPLAY (for pinentry) on request */
 } opt;
 
 
@@ -126,6 +127,7 @@ int agent_get_confirmation (const char *desc, const char *ok,
 			    const char *cancel);
 
 /*-- cache.c --*/
+void agent_flush_cache (void);
 int agent_put_cache (const char *key, const char *data, int ttl);
 const char *agent_get_cache (const char *key, void **cache_id);
 void agent_unlock_cache_entry (void **cache_id);

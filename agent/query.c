@@ -113,7 +113,7 @@ start_pinentry (void)
 
   /* FIXME: We must do this thread specific */
   argv[0] = pgmname;
-  if (opt.display)
+  if (opt.display && !opt.keep_display)
     {
       argv[1] = "--display";
       argv[2] = opt.display;
@@ -150,7 +150,7 @@ start_pinentry (void)
                         NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return unlock_pinentry (map_assuan_err (rc));
-  if (opt.ttyname)
+  if (opt.ttyname && !opt.keep_tty)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION ttyname=%s", opt.ttyname) < 0 )
@@ -161,7 +161,7 @@ start_pinentry (void)
       if (rc)
 	return unlock_pinentry (map_assuan_err (rc));
     }
-  if (opt.ttytype)
+  if (opt.ttytype && !opt.keep_tty)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION ttytype=%s", opt.ttytype) < 0 )

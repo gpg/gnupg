@@ -80,6 +80,8 @@ enum cmd_and_opt_values
   oDisablePth,
 
   oIgnoreCacheForSigning,
+  oKeepTTY,
+  oKeepDISPLAY,
 
 aTest };
 
@@ -116,7 +118,9 @@ static ARGPARSE_OPTS opts[] = {
                                  "|N|expire cached PINs after N seconds"},
   { oIgnoreCacheForSigning, "ignore-cache-for-signing", 0,
                                  "do not use the PIN cache when signing"},
-
+  { oKeepTTY, "keep-tty", 0,  N_("ignore requests to change the TTY")},
+  { oKeepDISPLAY, "keep-display",
+                          0, N_("ignore requests to change the X display")},
   {0}
 };
 
@@ -413,6 +417,8 @@ main (int argc, char **argv )
         case oDefCacheTTL: opt.def_cache_ttl = pargs.r.ret_ulong; break;
 
         case oIgnoreCacheForSigning: opt.ignore_cache_for_signing = 1; break;
+        case oKeepTTY: opt.keep_tty = 1; break;
+        case oKeepDISPLAY: opt.keep_display = 1; break;
 
         default : pargs.err = configfp? 1:2; break;
 	}
@@ -780,7 +786,9 @@ handle_signal (int signo)
   switch (signo)
     {
     case SIGHUP:
-      log_info ("SIGHUP received - re-reading configuration\n");
+      log_info ("SIGHUP received - "
+                "re-reading configuration and flushing cache\n");
+      agent_flush_cache ();
       reread_configuration ();
       break;
       
