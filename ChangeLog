@@ -1,3 +1,8 @@
+2001-12-22  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (AH_BOTTOM): Moved EXEC_TEMPFILE_ONLY to here.
+	* acconfig.h:  Removed, it should no longer be used.
+
 2001-12-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* Add an acconfig.h to define EXEC_TEMPFILE_ONLY on platforms that

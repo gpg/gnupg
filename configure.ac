@@ -153,6 +153,10 @@ AH_TOP([
 ])
 
 AH_BOTTOM([
+#if !(defined(HAVE_FORK) && defined(HAVE_PIPE) && defined(HAVE_WAITPID))
+#define EXEC_TEMPFILE_ONLY
+#endif
+
 #include "g10defs.h"
 ])
 
