@@ -11,7 +11,7 @@ Noteworthy changes in the current CVS branch STABLE-BRANCH-1-0
       to help the British folks to somewhat minimize the danger
       of this Orwellian RIP bill.
 
-    * New option --merge-only
+    * New options --merge-only and --try-all-secrets
 
 
 Noteworthy changes in version 1.0.2 (2000-07-12)

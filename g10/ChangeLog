@@ -1,3 +1,8 @@
+Tue Aug  1 20:06:23 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * g10.c: New opttion --try-all-secrets on suggestion from Matthias Urlichs.
+  * pubkey-enc.c (get_session_key): Quite easy to implement here.
+
 Thu Jul 27 17:33:04 CEST 2000  Werner Koch  <wk@openit.de>
 
   * g10.c: New option --merge-only.  Suggested by Brendan O'Dea.

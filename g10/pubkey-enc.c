@@ -54,7 +54,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
     if( rc )
 	goto leave;
 
-    if( k->keyid[0] || k->keyid[1] ) {
+    if( (k->keyid[0] || k->keyid[1]) && !opt.try_all_secrets ) {
 	sk = m_alloc_clear( sizeof *sk );
 	sk->pubkey_algo = k->pubkey_algo; /* we want a pubkey with this algo*/
 	if( !(rc = get_seckey( sk, k->keyid )) )

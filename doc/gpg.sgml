@@ -1372,6 +1372,15 @@ handing out the secret key.
 Don't insert new keys into the keyrings while doing an import.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--try-all-secrets</term>
+<listitem><para>
+Don't look at the key ID as stored in the message but try all secret keys in
+turn to find the right decryption key.	This option forces the behaviour as
+used by anonymous recipients (created by using --throw-keyid) and might come
+handy in case where an encrypted message contains a bogus key ID.
+</para></listitem></varlistentry>
+
 
 </variablelist>
 </refsect1>

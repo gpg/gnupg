@@ -30,6 +30,9 @@ Matthew Skala <mskala@ansuz.sooke.bc.ca>  Disclaimer
 Niklas Hernaeus <nh@df.lth.se> Disclaimer
     (weak key patches)
 
+Nils Ellmenreich  <nils@infosun.fmi.uni-passau.de> Assignment
+    (configure.in, cipher/rndlinux.c)
+
 Pedro Morais <morais@poli.org> Translations [pt_BR]
 
 Rémi Guyomarch	<rguyom@mail.dotcom.fr> Assignment
