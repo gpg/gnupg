@@ -1,3 +1,9 @@
+2004-12-06  Werner Koch  <wk@g10code.com>
+
+	* iobuf.c (fd_cache_strcmp): New. Use whenever we compare
+	filenames for the fd_cache. This is needed because the backslash
+	is an alias for a slash under W32. Reported by Tobias Winkler.
+
 2004-12-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.c (send_request): Include the port if non-80 in the Host:

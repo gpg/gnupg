@@ -130,7 +130,27 @@ static int special_names_enabled;
 static int underflow(IOBUF a);
 static int translate_file_handle ( int fd, int for_write );
 
+
+
 #ifndef FILE_FILTER_USES_STDIO
+
+/* This is a replacement for strcmp.  Under W32 it does not
+   distinguish between backslash and slash.  */
+static int
+fd_cache_strcmp (const char *a, const char *b)
+{
+#ifdef HAVE_DOSISH_SYSTEM
+  for (; *a && *b; a++, b++)
+    {
+      if (*a != *b && !((*a == '/' && *b == '\\') 
+                        || (*a == '\\' && *b == '/')) )
+        break;
+    }
+  return *(const unsigned *)a - *(const unsigned *)b;
+#else
+  return strcmp (a, b);
+#endif
+}
 
 /*
  * Invalidate (i.e. close) a cached iobuf
@@ -145,7 +165,7 @@ fd_cache_invalidate (const char *fname)
         log_debug ("fd_cache_invalidate (%s)\n", fname);
 
     for (cc=close_cache; cc; cc = cc->next ) {
-        if ( cc->fp != INVALID_FP && !strcmp (cc->fname, fname) ) {
+        if ( cc->fp != INVALID_FP && !fd_cache_strcmp (cc->fname, fname) ) {
             if( DBG_IOBUF )
                 log_debug ("                did (%s)\n", cc->fname);
 #ifdef HAVE_DOSISH_SYSTEM
@@ -253,7 +273,7 @@ fd_cache_close (const char *fname, FILEP_OR_FD fp)
     }
     /* try to reuse a slot */
     for (cc=close_cache; cc; cc = cc->next ) {
-        if ( cc->fp == INVALID_FP && !strcmp (cc->fname, fname) ) {
+        if ( cc->fp == INVALID_FP && !fd_cache_strcmp (cc->fname, fname) ) {
             cc->fp = fp;
             if( DBG_IOBUF )
                 log_debug ("fd_cache_close (%s) used existing slot\n", fname);
@@ -280,7 +300,7 @@ fd_cache_open (const char *fname, const char *mode)
 
     assert (fname);
     for (cc=close_cache; cc; cc = cc->next ) {
-        if ( cc->fp != INVALID_FP && !strcmp (cc->fname, fname) ) {
+        if ( cc->fp != INVALID_FP && !fd_cache_strcmp (cc->fname, fname) ) {
             FILEP_OR_FD fp = cc->fp;
             cc->fp = INVALID_FP;
             if( DBG_IOBUF )
