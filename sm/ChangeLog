@@ -1,3 +1,10 @@
+2004-04-28  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c: New command --keydb-clear-some-cert-flags.
+	* keydb.c (keydb_clear_some_cert_flags): New.
+	(keydb_update_keyblock, keydb_set_flags): Change error code
+	CONFLICT to NOT_LOCKED.
+
 2004-04-26  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.c (main) <gpgconf>: Do not use /dev/null as default config

@@ -161,6 +161,15 @@ List certificates matching @var{pattern} using an external server.
 This utilizes the @code{dirmngr} service.  It uses a format useful
 mainly for debugging.
 
+@item --keydb-clear-some-cert-flags
+@opindex keydb-clear-some-cert-flags
+This is a debugging aid to reset certain flags in the key database
+which are used to cache certain certificate stati.  It is especially
+useful if a bad CRL or a weird running OCSP reponder did accidently
+revoke certificate.  There is no security issue with this command
+because gpgsm always make sure that the validity of a certificate is
+checked right before it is used.
+
 @item --delete-keys @var{pattern}
 @opindex delete-keys
 Delete the keys matching @var{pattern}.

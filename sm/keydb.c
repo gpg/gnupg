@@ -526,7 +526,7 @@ keydb_update_keyblock (KEYDB_HANDLE hd, KBNODE kb)
 	return 0;
 
     if (!hd->locked)
-      return gpg_error (GPG_ERR_CONFLICT);
+      return gpg_error (GPG_ERR_NOT_LOCKED);
 
     switch (hd->active[hd->found].type) {
       case KEYDB_RESOURCE_TYPE_NONE:
@@ -660,7 +660,7 @@ keydb_set_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int value)
     return gpg_error (GPG_ERR_NOTHING_FOUND);
   
   if (!hd->locked)
-    return gpg_error (GPG_ERR_CONFLICT);
+    return gpg_error (GPG_ERR_NOT_LOCKED);
 
   switch (hd->active[hd->found].type) 
     {
@@ -1374,7 +1374,7 @@ keydb_store_cert (ksba_cert_t cert, int ephemeral, int *existed)
 
 
 /* This is basically keydb_set_flags but it implements a complete
-   transaction by locating teh certificate in the DB and updating the
+   transaction by locating the certificate in the DB and updating the
    flags. */
 gpg_error_t
 keydb_set_cert_flags (ksba_cert_t cert, int which, int idx, unsigned int value)
@@ -1434,4 +1434,99 @@ keydb_set_cert_flags (ksba_cert_t cert, int which, int idx, unsigned int value)
   keydb_release (kh);               
   return 0;
 }
+
+
+/* Reset all the certificate flags we have stored with the certificates
+   for performance reasons. */
+void
+keydb_clear_some_cert_flags (ctrl_t ctrl, STRLIST names)
+{
+  gpg_error_t err;
+  KEYDB_HANDLE hd = NULL;
+  KEYDB_SEARCH_DESC *desc = NULL;
+  int ndesc;
+  STRLIST sl;
+  int rc=0;
+  unsigned int old_value, value;
+  
+  hd = keydb_new (0);
+  if (!hd)
+    {
+      log_error ("keydb_new failed\n");
+      goto leave;
+    }
+
+  if (!names)
+    ndesc = 1;
+  else
+    {
+      for (sl=names, ndesc=0; sl; sl = sl->next, ndesc++) 
+        ;
+    }
+
+  desc = xtrycalloc (ndesc, sizeof *desc);
+  if (!ndesc)
+    {
+      log_error ("allocating memory failed: %s\n",
+                 gpg_strerror (OUT_OF_CORE (errno)));
+      goto leave;
+    }
+
+  if (!names)
+    desc[0].mode = KEYDB_SEARCH_MODE_FIRST;
+  else 
+    {
+      for (ndesc=0, sl=names; sl; sl = sl->next) 
+        {
+          rc = keydb_classify_name (sl->d, desc+ndesc);
+          if (rc)
+            {
+              log_error ("key `%s' not found: %s\n",
+                         sl->d, gpg_strerror (rc));
+              rc = 0;
+            }
+          else
+            ndesc++;
+        }
+    }
+
+  err = keydb_lock (hd);
+  if (err)
+    {
+      log_error (_("error locking keybox: %s\n"), gpg_strerror (err));
+      goto leave;
+    }
+
+  while (!(rc = keydb_search (hd, desc, ndesc)))
+    {
+      if (!names) 
+        desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
+
+      err = keydb_get_flags (hd, KEYBOX_FLAG_VALIDITY, 0, &old_value);
+      if (err)
+        {
+          log_error (_("error getting stored flags: %s\n"),
+                     gpg_strerror (err));
+          goto leave;
+        }
+ 
+      value = (old_value & ~VALIDITY_REVOKED);
+      if (value != old_value)
+        {
+          err = keydb_set_flags (hd, KEYBOX_FLAG_VALIDITY, 0, value);
+          if (err)
+            {
+              log_error (_("error storing flags: %s\n"), gpg_strerror (err));
+              goto leave;
+            }
+        }
+    }
+  if (rc && rc != -1)
+    log_error ("keydb_search failed: %s\n", gpg_strerror (rc));
+  
+ leave:
+  xfree (desc);
+  keydb_release (hd);
+}
+
 

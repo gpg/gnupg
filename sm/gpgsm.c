@@ -85,6 +85,7 @@ enum cmd_and_opt_values {
   aDumpKeys,
   aDumpSecretKeys,
   aDumpExternalKeys,
+  aKeydbClearSomeCertFlags,
 
   oOptions,
   oDebug,
@@ -252,6 +253,7 @@ static ARGPARSE_OPTS opts[] = {
     { aDumpKeys, "dump-keys", 256, "@"},
     { aDumpExternalKeys, "dump-external-keys", 256, "@"},
     { aDumpSecretKeys, "dump-secret-keys", 256, "@"},
+    { aKeydbClearSomeCertFlags, "keydb-clear-some-cert-flags", 256, "@"},
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
 
@@ -894,6 +896,7 @@ main ( int argc, char **argv)
         case aListSigs: 
         case aLearnCard: 
         case aPasswd: 
+        case aKeydbClearSomeCertFlags:
           do_not_setup_keys = 1;
           set_cmd (&cmd, pargs.r_opt);
           break;
@@ -1530,6 +1533,14 @@ main ( int argc, char **argv)
           ksba_cert_release (cert);
         }
       break;
+
+    case aKeydbClearSomeCertFlags:
+      for (sl=NULL; argc; argc--, argv++)
+        add_to_strlist (&sl, *argv);
+      keydb_clear_some_cert_flags (&ctrl, sl);
+      free_strlist(sl);
+      break;
+
 
     default:
         log_error ("invalid command (there is no implicit command)\n");
