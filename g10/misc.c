@@ -39,23 +39,6 @@
 #include "options.h"
 #include "i18n.h"
 
-
-const char *g10m_revision_string(int);
-const char *g10c_revision_string(int);
-const char *g10u_revision_string(int);
-
-#ifdef __GNUC__
-volatile
-#endif
-	 void
-pull_in_libs(void)
-{
-    g10m_revision_string(0);
-    g10c_revision_string(0);
-    g10u_revision_string(0);
-}
-
-
 #if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
 static int
 setsysinfo(unsigned long op, void *buffer, unsigned long size,

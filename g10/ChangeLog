@@ -1,3 +1,27 @@
+2003-12-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* misc.c (pull_in_libs): Dead code.  Removed.
+
+	* sig-check.c (check_revocation_keys): Comments.
+
+	* getkey.c (merge_selfsigs_main): Don't bother to check designated
+	revoker sigs if the key is already revoked.
+
+	* packet.h, getkey.c (merge_selfsigs_main): New "maybe_revoked"
+	flag on PKs.  It is set when there is a revocation signature from
+	a valid revocation key, but the revocation key is not present to
+	verify the signature.
+
+	* pkclist.c (check_signatures_trust): Use it here to give a
+	warning when showing key trust.
+
+	* compress-bz2.c: Include stdio.h.  Solaris 9 has a very old bzip2
+	library and we can at least guarantee that it won't fail because
+	of the lack of stdio.h.
+
+	* tdbio.c: Fixed format string bugs related to the use of DB_NAME.
+	Reported by Florian Weimer.
+
 2003-12-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, g10.c (main), keyserver.c (keyserver_opts,

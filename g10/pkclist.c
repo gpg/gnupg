@@ -615,6 +615,10 @@ check_signatures_trust( PKT_signature *sig )
       goto leave;
     }
 
+  if(pk->maybe_revoked && !pk->is_revoked)
+    log_info(_("WARNING: this key might be revoked (revocation key"
+	       " not present)\n"));
+
   trustlevel = get_validity (pk, NULL);
 
   if ( (trustlevel & TRUST_FLAG_REVOKED) ) 

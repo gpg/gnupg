@@ -206,6 +206,8 @@ typedef struct {
     byte    req_algo;       /* Ditto */
     u32     has_expired;    /* set to the expiration date if expired */ 
     int     is_revoked;     /* key has been revoked */
+    int     maybe_revoked;  /* a designated revocation is present, but
+			       without the key to check it */
     int     is_valid;       /* key (especially subkey) is valid */
     int     dont_cache;     /* do not cache this */
     ulong   local_id;	    /* internal use, valid if > 0 */
