@@ -1,3 +1,8 @@
+2003-11-20  Werner Koch  <wk@gnupg.org>
+
+	* sexp-parse.h (snext): Don't use atoi_1 and digitp macros, so
+	that this file is useful by other applications too.
+
 2003-10-27  Werner Koch  <wk@gnupg.org>
 
 	* command.c (cmd_get_confirmation): New command.
