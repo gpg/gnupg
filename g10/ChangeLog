@@ -1,3 +1,11 @@
+2004-09-27  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c: Made all strings translatable.
+	(verify_chv3) [GNUPG_MAJOR_VERSION]: Make opt.allow_admin
+	available for use in gnupg 2. 
+	(verify_chv3): Reimplemented countdown showing to use only
+	functions from this module. 
+
 2004-09-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* main.h, g10.c (main), card-util.c (change_pin): If "admin" has

@@ -205,7 +205,9 @@ flush_cache_item (app_t app, int tag)
         xfree (c);
 
         for (c=app->app_local->cache; c ; c = c->next)
-          assert (c->tag != tag); /* Oops: duplicated entry. */
+          {
+            assert (c->tag != tag); /* Oops: duplicated entry. */
+          }
         return;
       }
 
@@ -438,7 +440,7 @@ store_fpr (int slot, int keynumber, u32 timestamp,
   rc = iso7816_put_data (slot, (card_version > 0x0007? 0xC7 : 0xC6)
                                + keynumber, fpr, 20);
   if (rc)
-    log_error ("failed to store the fingerprint: %s\n",gpg_strerror (rc));
+    log_error (_("failed to store the fingerprint: %s\n"),gpg_strerror (rc));
 
   return rc;
 }
@@ -621,13 +623,14 @@ verify_chv2 (app_t app,
       rc = pincb (pincb_arg, "PIN", &pinvalue); 
       if (rc)
         {
-          log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
+          log_info (_("PIN callback returned error: %s\n"), gpg_strerror (rc));
           return rc;
         }
 
       if (strlen (pinvalue) < 6)
         {
-          log_error ("prassphrase (CHV2) is too short; minimum length is 6\n");
+          log_error (_("prassphrase (CHV%d) is too short;"
+                       " minimum length is %d\n"), 2, 6);
           xfree (pinvalue);
           return gpg_error (GPG_ERR_BAD_PIN);
         }
@@ -635,7 +638,7 @@ verify_chv2 (app_t app,
       rc = iso7816_verify (app->slot, 0x82, pinvalue, strlen (pinvalue));
       if (rc)
         {
-          log_error ("verify CHV2 failed: %s\n", gpg_strerror (rc));
+          log_error (_("verify CHV%d failed: %s\n"), 2, gpg_strerror (rc));
           xfree (pinvalue);
           flush_cache_after_error (app);
           return rc;
@@ -649,7 +652,7 @@ verify_chv2 (app_t app,
             rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
           if (rc)
             {
-              log_error ("verify CHV1 failed: %s\n", gpg_strerror (rc));
+              log_error (_("verify CHV%d failed: %s\n"), 1, gpg_strerror (rc));
               xfree (pinvalue);
               flush_cache_after_error (app);
               return rc;
@@ -667,40 +670,52 @@ verify_chv3 (APP app,
              int (*pincb)(void*, const char *, char **),
              void *pincb_arg)
 {
-  int rc=0;
+  int rc = 0;
 
+#if GNUPG_MAJOR_VERSION != 1
+  if (!opt.allow_admin)
+    {
+      log_info (_("access to admin commands is not configured\n");
+      return gpg_error (GPG_ERR_EACCES);
+    }
+#endif
+      
   if (!app->did_chv3) 
     {
-      struct agent_card_info_s info;
       char *pinvalue;
+      void *relptr;
+      unsigned char *value;
+      size_t valuelen;
 
-      memset(&info,0,sizeof(info));
-      rc=agent_scd_getattr("CHV-STATUS",&info);
-      if(rc)
-	log_error("error retrieving CHV status from card: %s\n",
-		  gpg_strerror(rc));
-      else
-	{
-	  if(info.chvretry[2]==0)
-	    {
-	      log_info("card is locked!\n");
-	      return gpg_error (GPG_ERR_BAD_PIN);
-	    }
-	  else
-	    log_info("%d Admin PIN attempts remaining before card"
-		     " is permanently locked\n",info.chvretry[2]);
-	}
+      relptr = get_one_do (app, 0x00C4, &value, &valuelen);
+      if (!relptr || valuelen < 7)
+        {
+          log_error (_("error retrieving CHV status from card\n"));
+          xfree (relptr);
+          return gpg_error (GPG_ERR_CARD);
+        }
+      if (value[6] == 0)
+        {
+          log_info (_("card is permanently locked!\n"));
+          xfree (relptr);
+          return gpg_error (GPG_ERR_BAD_PIN);
+        }
 
-      rc = pincb (pincb_arg, "Admin PIN", &pinvalue); 
+      log_info(_("%d Admin PIN attempts remaining before card"
+                 " is permanently locked\n"), value[6]);
+      xfree (relptr);
+
+      rc = pincb (pincb_arg, _("Admin PIN"), &pinvalue); 
       if (rc)
         {
-          log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
+          log_info (_("PIN callback returned error: %s\n"), gpg_strerror (rc));
           return rc;
         }
 
       if (strlen (pinvalue) < 6)
         {
-          log_error ("passphrase (CHV3) is too short; minimum length is 6\n");
+          log_error (_("prassphrase (CHV%d) is too short;"
+                       " minimum length is %d\n"), 3, 6);
           xfree (pinvalue);
           return gpg_error (GPG_ERR_BAD_PIN);
         }
@@ -709,7 +724,7 @@ verify_chv3 (APP app,
       xfree (pinvalue);
       if (rc)
         {
-          log_error ("verify CHV3 failed: %s\n", gpg_strerror (rc));
+          log_error (_("verify CHV%d failed: %s\n"), 3, gpg_strerror (rc));
           flush_cache_after_error (app);
           return rc;
         }
@@ -1177,7 +1192,8 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
 
       if (strlen (pinvalue) < 6)
         {
-          log_error ("prassphrase (CHV1) is too short; minimum length is 6\n");
+          log_error (_("prassphrase (CHV%d) is too short;"
+                       " minimum length is %d\n"), 1, 6);
           xfree (pinvalue);
           return gpg_error (GPG_ERR_BAD_PIN);
         }
@@ -1185,7 +1201,7 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
       rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
       if (rc)
         {
-          log_error ("verify CHV1 failed\n");
+          log_error (_("verify CHV%d failed\n"), 1);
           xfree (pinvalue);
           flush_cache_after_error (app);
           return rc;
@@ -1199,7 +1215,7 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
             rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
           if (rc)
             {
-              log_error ("verify CHV2 failed\n");
+              log_error (_("verify CHV%d failed\n"), 2);
               xfree (pinvalue);
               flush_cache_after_error (app);
               return rc;
@@ -1422,7 +1438,7 @@ app_select_openpgp (APP app)
         goto leave;
       if (opt.verbose)
         {
-          log_info ("got AID: ");
+          log_info ("AID: ");
           log_printhex ("", buffer, buflen);
         }
 
@@ -1444,7 +1460,8 @@ app_select_openpgp (APP app)
       relptr = get_one_do (app, 0x00C4, &buffer, &buflen);
       if (!relptr)
         {
-          log_error ("can't access CHV Status Bytes - invalid OpenPGP card?\n");
+          log_error (_("can't access CHV Status Bytes "
+                       "- invalid OpenPGP card?\n"));
           goto leave;
         }
       app->force_chv1 = (buflen && *buffer == 0);
@@ -1453,8 +1470,8 @@ app_select_openpgp (APP app)
       relptr = get_one_do (app, 0x00C0, &buffer, &buflen);
       if (!relptr)
         {
-          log_error ("can't access Extended Capability Flags - "
-                     "invalid OpenPGP card?\n");
+          log_error (_("can't access Extended Capability Flags - "
+                       "invalid OpenPGP card?\n"));
           goto leave;
         }
       if (buflen)
@@ -1523,7 +1540,8 @@ app_openpgp_cardinfo (APP app,
       rc = app_get_serial_and_stamp (app, serialno, &dummy);
       if (rc)
         {
-          log_error ("error getting serial number: %s\n", gpg_strerror (rc));
+          log_error (_("error getting serial number: %s\n"),
+                     gpg_strerror (rc));
           return rc;
         }
     }
@@ -1617,7 +1635,7 @@ app_openpgp_storekey (APP app, int keyno,
                          template, template_len);
   if (rc)
     {
-      log_error ("failed to store the key: rc=%s\n", gpg_strerror (rc));
+      log_error (_("failed to store the key: %s\n"), gpg_strerror (rc));
       rc = gpg_error (GPG_ERR_CARD);
       goto leave;
     }
@@ -1659,14 +1677,14 @@ app_openpgp_readkey (APP app, int keyno, unsigned char **m, size_t *mlen,
   if (rc)
     {
       rc = gpg_error (GPG_ERR_CARD);
-      log_error ("reading key failed\n");
+      log_error (_("reading the key failed\n"));
       goto leave;
     }
 
   keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen);
   if (!keydata)
     {
-      log_error ("response does not contain the public key data\n");
+      log_error (_("response does not contain the public key data\n"));
       rc = gpg_error (GPG_ERR_CARD);
       goto leave;
     }
@@ -1674,7 +1692,7 @@ app_openpgp_readkey (APP app, int keyno, unsigned char **m, size_t *mlen,
   a = find_tlv (keydata, keydatalen, 0x0081, &alen);
   if (!a)
     {
-      log_error ("response does not contain the RSA modulus\n");
+      log_error (_("response does not contain the RSA modulus\n"));
       rc = gpg_error (GPG_ERR_CARD);
       goto leave;
     }
@@ -1685,7 +1703,7 @@ app_openpgp_readkey (APP app, int keyno, unsigned char **m, size_t *mlen,
   a = find_tlv (keydata, keydatalen, 0x0082, &alen);
   if (!a)
     {
-      log_error ("response does not contain the RSA public exponent\n");
+      log_error (_("response does not contain the RSA public exponent\n"));
       rc = gpg_error (GPG_ERR_CARD);
       goto leave;
     }
