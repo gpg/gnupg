@@ -229,7 +229,7 @@ int strncasecmp (const char *, const char *b, size_t n);
   #define memmove(d, s, n) bcopy((s), (d), (n))
 #endif
 
-#if defined (__MINGW32__) || defined (__CYGWIN32__)
+#if defined (__MINGW32__)
 /*-- w32reg.c --*/
 char *read_w32_registry_string( const char *root,
 				const char *dir, const char *name );
