@@ -49,6 +49,9 @@
 #ifdef HAVE_GETRUSAGE
   #include <sys/resource.h>
 #endif
+#ifdef __MINGW32__
+  #include <process.h>
+#endif
 #include "util.h"
 #include "rmd.h"
 #include "ttyio.h"

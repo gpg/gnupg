@@ -76,11 +76,15 @@ this is the same source as for the Unix version.
 
 To build it, you need the MingW32/CPD kit, which is available at
 
-  ftp://ftp.openit.de/pub/cpd/mingw32-cpd-0.1.tar.gz
+  ftp://ftp.openit.de/pub/cpd/mingw32-cpd-0.2.4.tar.gz
+  ftp://ftp.openit.de/pub/cpd/gcc-core-2.95.2.tar.gz
+  ftp://ftp.openit.de/pub/cpd/binutils-2.9.1.tar.gz
+  ftp://ftp.openit.de/pub/cpd/windows32api-0.1.2.tar.gz
 
-I will probably upload a new version, as the current is known to have some
-problems.  After you have installed this environment, you should be
-able to do this:
+gcc, binutils and windows32api are stock GNU source which are available
+at every ftp.gnug.org mirror.
+
+After you have installed this environment you should be able to do this:
 
  $ ./configure --target=i386--mingw32
  $ make

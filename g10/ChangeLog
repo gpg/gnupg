@@ -1,3 +1,8 @@
+Tue Mar 28 14:26:58 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* trustdb.c (verify_own_keys): Do not print warning about unprotected
+	key when in quiet mode.
+
 Wed Mar 22 13:50:24 CET 2000  Werner Koch  <wk@openit.de>
 
 	* mainproc.c (print_userid): Do UTF8 conversion before printing.

@@ -1,3 +1,7 @@
+Tue Mar 28 14:26:58 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* random.c [MINGW32]: Include process.h for getpid.
+
 Thu Mar  2 15:37:46 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* random.c (fast_random_poll): Add clock_gettime() as fallback for
