@@ -888,6 +888,80 @@ send_key_keyserver(int *eof)
   return ret;
 }
 
+static void
+build_info(const char *certid,LDAPMessage *each)
+{
+  char **vals;
+
+  fprintf(output,"INFO %s BEGIN\n",certid);
+
+  fprintf(output,"pub:%s:",certid);
+
+  vals=ldap_get_values(ldap,each,"pgpkeytype");
+  if(vals!=NULL)
+    {
+      if(strcmp(vals[0],"RSA")==0)
+	fprintf(output,"1");
+      else if(strcmp(vals[0],"DSS/DH")==0)
+	fprintf(output,"17");
+      ldap_value_free(vals);
+    }
+
+  fprintf(output,":");
+
+  vals=ldap_get_values(ldap,each,"pgpkeysize");
+  if(vals!=NULL)
+    {
+      if(atoi(vals[0])>0)
+	fprintf(output,"%d",atoi(vals[0]));
+      ldap_value_free(vals);
+    }
+
+  fprintf(output,":");
+
+  vals=ldap_get_values(ldap,each,"pgpkeycreatetime");
+  if(vals!=NULL)
+    {
+      if(strlen(vals[0])==15)
+	fprintf(output,"%u",(unsigned int)ldap2epochtime(vals[0]));
+      ldap_value_free(vals);
+    }
+
+  fprintf(output,":");
+
+  vals=ldap_get_values(ldap,each,"pgpkeyexpiretime");
+  if(vals!=NULL)
+    {
+      if(strlen(vals[0])==15)
+	fprintf(output,"%u",(unsigned int)ldap2epochtime(vals[0]));
+      ldap_value_free(vals);
+    }
+
+  fprintf(output,":");
+
+  vals=ldap_get_values(ldap,each,"pgprevoked");
+  if(vals!=NULL)
+    {
+      if(atoi(vals[0])==1)
+	fprintf(output,"r");
+      ldap_value_free(vals);
+    }
+
+  fprintf(output,"\n");
+
+  vals=ldap_get_values(ldap,each,"pgpuserid");
+  if(vals!=NULL)
+    {
+      int i;
+
+      for(i=0;vals[i];i++)
+	fprintf(output,"uid:%s\n",vals[i]);
+      ldap_value_free(vals);
+    }
+
+  fprintf(output,"INFO %s END\n",certid);
+}
+
 /* Note that key-not-found is not a fatal error */
 static int
 get_key(char *getkey)
@@ -952,8 +1026,6 @@ get_key(char *getkey)
       sprintf(search,"(pgpkeyid=%.8s)",getkey);
     }
 
-  fprintf(output,"KEY 0x%s BEGIN\n",getkey);
-
   if(verbose>2)
     fprintf(console,"gpgkeys: LDAP fetch for: %s\n",search);
 
@@ -971,6 +1043,7 @@ get_key(char *getkey)
       int errtag=ldap_err_to_gpg_err(err);
 
       fprintf(console,"gpgkeys: LDAP search error: %s\n",ldap_err2string(err));
+      fprintf(output,"KEY 0x%s BEGIN\n",getkey);
       fprintf(output,"KEY 0x%s FAILED %d\n",getkey,errtag);
       return errtag;
     }
@@ -979,6 +1052,7 @@ get_key(char *getkey)
   if(count<1)
     {
       fprintf(console,"gpgkeys: key %s not found on keyserver\n",getkey);
+      fprintf(output,"KEY 0x%s BEGIN\n",getkey);
       fprintf(output,"KEY 0x%s FAILED %d\n",getkey,KEYSERVER_KEY_NOT_FOUND);
     }
   else
@@ -1016,79 +1090,9 @@ get_key(char *getkey)
 		      goto fail;
 		    }
 
-		  if(verbose)
-		    {
-		      vals=ldap_get_values(ldap,each,"pgpuserid");
-		      if(vals!=NULL)
-			{
-			  /* This is wrong, as the user ID is UTF8.  A
-			     better way to handle this would be to send it
-			     over to gpg and display it on that side of
-			     the pipe. */
-			  fprintf(console,"\nUser ID:\t%s\n",vals[0]);
-			  ldap_value_free(vals);
-			}
+		  build_info(certid[0],each);
 
-		      vals=ldap_get_values(ldap,each,"pgprevoked");
-		      if(vals!=NULL)
-			{
-			  if(atoi(vals[0])==1)
-			    fprintf(console,"\t\t** KEY REVOKED **\n");
-			  ldap_value_free(vals);
-			}
-
-		      vals=ldap_get_values(ldap,each,"pgpdisabled");
-		      if(vals!=NULL)
-			{
-			  if(atoi(vals[0])==1)
-			    fprintf(console,"\t\t** KEY DISABLED **\n");
-			  ldap_value_free(vals);
-			}
-
-		      vals=ldap_get_values(ldap,each,"pgpkeyid");
-		      if(vals!=NULL)
-			{
-			  fprintf(console,"Short key ID:\t%s\n",vals[0]);
-			  ldap_value_free(vals);
-			}
-
-		      fprintf(console,"Long key ID:\t%s\n",certid[0]);
-
-		      /* YYYYMMDDHHmmssZ */
-
-		      vals=ldap_get_values(ldap,each,"pgpkeycreatetime");
-		      if(vals!=NULL)
-			{
-			  if(strlen(vals[0])==15)
-			    fprintf(console,"Key created:\t%.2s/%.2s/%.4s\n",
-				    &vals[0][4],&vals[0][6],vals[0]);
-			  ldap_value_free(vals);
-			}
-
-		      vals=ldap_get_values(ldap,each,"modifytimestamp");
-		      if(vals!=NULL)
-			{
-			  if(strlen(vals[0])==15)
-			    fprintf(console,"Key modified:\t%.2s/%.2s/%.4s\n",
-				    &vals[0][4],&vals[0][6],vals[0]);
-			  ldap_value_free(vals);
-			}
-
-		      vals=ldap_get_values(ldap,each,"pgpkeysize");
-		      if(vals!=NULL)
-			{
-			  if(atoi(vals[0])>0)
-			    fprintf(console,"Key size:\t%d\n",atoi(vals[0]));
-			  ldap_value_free(vals);
-			}
-
-		      vals=ldap_get_values(ldap,each,"pgpkeytype");
-		      if(vals!=NULL)
-			{
-			  fprintf(console,"Key type:\t%s\n",vals[0]);
-			  ldap_value_free(vals);
-			}
-		    }
+		  fprintf(output,"KEY 0x%s BEGIN\n",getkey);
 
 		  vals=ldap_get_values(ldap,each,pgpkeystr);
 		  if(vals==NULL)
