@@ -1,5 +1,5 @@
 /* gpgconf-comp.c - Configuration utility for GnuPG.
-   Copyright (C) 2004 g10 Code GmbH
+   Copyright (C) 2004 Free Software Foundation, Inc.
 
    This file is part of GnuPG.
  
