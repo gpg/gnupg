@@ -25,8 +25,9 @@ Noteworthy changes in version 1.2.5 (2004-07-26)
     * New --gpgconf-list command for internal use by the gpgconf
       utility from gnupg 1.9.x.
 
-    * Some performance improvements with large keyrings.  See
-      --enable-key-cache=SIZE in the README file for details.
+    * Some performance improvements with large keyrings.  See the
+      build time option --enable-key-cache=SIZE in the README file for
+      details.
 
     * Some portability fixes for the OpenBSD/i386, HPPA, and AIX
       platforms.
