@@ -232,8 +232,15 @@ epoch2ldaptime(time_t stamp)
   return strdup(buf);
 }
 
+/* Passing a NULL for value effectively deletes that attribute.  This
+   doesn't mean "delete" in the sense of removing something from the
+   modlist, but "delete" in the LDAP sense of adding a modlist item
+   that specifies LDAP_MOD_REPLACE and a null attribute for the given
+   attribute.  LDAP_MOD_DELETE doesn't work here as we don't know if
+   the attribute in question exists or not. */
+
 static int
-make_one_attr(LDAPMod ***modlist,char *attr,const char *value)
+make_one_attr(LDAPMod ***modlist,int unique,char *attr,const char *value)
 {
   LDAPMod **m;
   int nummods=0;
@@ -241,14 +248,24 @@ make_one_attr(LDAPMod ***modlist,char *attr,const char *value)
   /* Search modlist for the attribute we're playing with. */
   for(m=*modlist;*m;m++)
     {
-      if(strcmp((*m)->mod_type,attr)==0)
+      if(strcasecmp((*m)->mod_type,attr)==0)
 	{
 	  char **ptr=(*m)->mod_values;
 	  int numvalues=0;
 
+	  /* We have this attribute already, so when the REPLACE
+	     happens, the server attributes will be replaced
+	     anyway. */
+	  if(!value)
+	    return 1;
+
 	  if(ptr)
-	    while(*ptr++)
-	      numvalues++;
+	    for(ptr=(*m)->mod_values;*ptr;ptr++)
+	      {
+		if(unique && strcmp(*ptr,value)==0)
+		  return 1;
+		numvalues++;
+	      }
 
 	  ptr=realloc((*m)->mod_values,sizeof(char *)*(numvalues+2));
 	  if(!ptr)
@@ -281,56 +298,32 @@ make_one_attr(LDAPMod ***modlist,char *attr,const char *value)
 	return 0;
       grow[nummods]->mod_op=LDAP_MOD_REPLACE;
       grow[nummods]->mod_type=attr;
-      grow[nummods]->mod_values=malloc(sizeof(char *)*2);
-      if(!grow[nummods]->mod_values)
+      if(value)
 	{
-	  grow[nummods]=NULL;
-	  return 0;
-	}
+	  grow[nummods]->mod_values=malloc(sizeof(char *)*2);
+	  if(!grow[nummods]->mod_values)
+	    {
+	      grow[nummods]=NULL;
+	      return 0;
+	    }
 
-      /* Is this the right thing?  Can a UTF8-encoded user ID have
-	 embedded nulls? */
-      grow[nummods]->mod_values[0]=strdup(value);
-      if(!grow[nummods]->mod_values[0])
-	{
-	  free(grow[nummods]->mod_values);
-	  grow[nummods]=NULL;
-	  return 0;
-	}
+	  /* Is this the right thing?  Can a UTF8-encoded user ID have
+	     embedded nulls? */
+	  grow[nummods]->mod_values[0]=strdup(value);
+	  if(!grow[nummods]->mod_values[0])
+	    {
+	      free(grow[nummods]->mod_values);
+	      grow[nummods]=NULL;
+	      return 0;
+	    }
 
-      grow[nummods]->mod_values[1]=NULL;
+	  grow[nummods]->mod_values[1]=NULL;
+	}
+      else
+	grow[nummods]->mod_values=NULL;
+
       grow[nummods+1]=NULL;
     }
-
-  return 1;
-}
-
-/* This doesn't mean "delete" in the sense of removing something from
-   the modlist, but "delete" in the LDAP sense of adding a modlist
-   item that specifies LDAP_MOD_REPLACE and a null attribute for the
-   given attribute.  LDAP_MOD_DELETE doesn't work here as we don't
-   know if the attribute in question exists or not. */
-static int
-delete_one_attr(LDAPMod ***modlist,char *attr)
-{
-  LDAPMod **grow;
-  int nummods=0;
-
-  for(grow=*modlist;*grow;grow++)
-    nummods++;
-
-  grow=realloc(*modlist,sizeof(LDAPMod *)*(nummods+2));
-  if(!grow)
-    return 0;
-
-  *modlist=grow;
-  grow[nummods]=malloc(sizeof(LDAPMod));
-  if(!grow[nummods])
-    return 0;
-  grow[nummods]->mod_op=LDAP_MOD_REPLACE;
-  grow[nummods]->mod_type=attr;
-  grow[nummods]->mod_values=NULL;
-  grow[nummods+1]=NULL;
 
   return 1;
 }
@@ -362,8 +355,8 @@ build_attrs(LDAPMod ***modlist,char *line)
 
       if(strlen(tok)==16)
 	{
-	  make_one_attr(modlist,"pgpCertID",tok);
-	  make_one_attr(modlist,"pgpKeyID",&tok[8]);
+	  make_one_attr(modlist,0,"pgpCertID",tok);
+	  make_one_attr(modlist,0,"pgpKeyID",&tok[8]);
 	}
       else
 	return;
@@ -375,11 +368,11 @@ build_attrs(LDAPMod ***modlist,char *line)
       switch(atoi(tok))
 	{
 	case 1:
-	  make_one_attr(modlist,"pgpKeyType","RSA");
+	  make_one_attr(modlist,0,"pgpKeyType","RSA");
 	  break;
 
 	case 17:
-	  make_one_attr(modlist,"pgpKeyType","DSS/DH");
+	  make_one_attr(modlist,0,"pgpKeyType","DSS/DH");
 	  break;
 	}
 
@@ -397,7 +390,7 @@ build_attrs(LDAPMod ***modlist,char *line)
 	  if(val<99999 && val>0)
 	    {
 	      sprintf(padded,"%05u",atoi(tok));
-	      make_one_attr(modlist,"pgpKeySize",padded);
+	      make_one_attr(modlist,0,"pgpKeySize",padded);
 	    }
 	}
 
@@ -410,7 +403,7 @@ build_attrs(LDAPMod ***modlist,char *line)
 	  char *stamp=epoch2ldaptime(atoi(tok));
 	  if(stamp)
 	    {
-	      make_one_attr(modlist,"pgpKeyCreateTime",tok);
+	      make_one_attr(modlist,0,"pgpKeyCreateTime",stamp);
 	      free(stamp);
 	    }
 	}
@@ -424,7 +417,7 @@ build_attrs(LDAPMod ***modlist,char *line)
 	  char *stamp=epoch2ldaptime(atoi(tok));
 	  if(stamp)
 	    {
-	      make_one_attr(modlist,"pgpKeyExpireTime",tok);
+	      make_one_attr(modlist,0,"pgpKeyExpireTime",stamp);
 	      free(stamp);
 	    }
 	}
@@ -454,8 +447,8 @@ build_attrs(LDAPMod ***modlist,char *line)
 	"(&(pgpUserID=*isabella*)(pgpDisabled=0))"
       */
 
-      make_one_attr(modlist,"pgpDisabled",disabled?"1":"0");
-      make_one_attr(modlist,"pgpRevoked",revoked?"1":"0");
+      make_one_attr(modlist,0,"pgpDisabled",disabled?"1":"0");
+      make_one_attr(modlist,0,"pgpRevoked",revoked?"1":"0");
     }
   else if(ascii_strcasecmp("uid",record)==0)
     {
@@ -490,7 +483,17 @@ build_attrs(LDAPMod ***modlist,char *line)
       /* We don't care about the other info provided in the uid: line
 	 since the LDAP schema doesn't need it. */
 
-      make_one_attr(modlist,"pgpUserID",userid);
+      make_one_attr(modlist,0,"pgpUserID",userid);
+    }
+  else if(ascii_strcasecmp("sig",record)==0)
+    {
+      char *tok;
+
+      if((tok=strsep(&line,":"))==NULL)
+	return;
+
+      if(strlen(tok)==16)
+	make_one_attr(modlist,1,"pgpSignerID",tok);
     }
 }
 
@@ -503,10 +506,7 @@ free_mod_values(LDAPMod *mod)
     return;
 
   for(ptr=mod->mod_values;*ptr;ptr++)
-    {
-      //      printf("freeing %s with %s as item\n",mod->mod_type,*ptr);
-      free(*ptr);
-    }
+    free(*ptr);
 
   free(mod->mod_values);
 }
@@ -531,16 +531,16 @@ send_key(int *eof)
 
   /* Going on the assumption that modify operations are more frequent
      than adds, I'm setting up the modify operations here first. */
-  delete_one_attr(&modlist,"pgpDisabled");
-  delete_one_attr(&modlist,"pgpKeyID");
-  delete_one_attr(&modlist,"pgpKeyType");
-  delete_one_attr(&modlist,"pgpUserID");
-  delete_one_attr(&modlist,"pgpKeyCreateTime");
-  delete_one_attr(&modlist,"pgpSignerID");
-  delete_one_attr(&modlist,"pgpRevoked");
-  delete_one_attr(&modlist,"pgpSubKeyID");
-  delete_one_attr(&modlist,"pgpKeySize");
-  delete_one_attr(&modlist,"pgpKeyExpireTime");
+  make_one_attr(&modlist,0,"pgpDisabled",NULL);
+  make_one_attr(&modlist,0,"pgpKeyID",NULL);
+  make_one_attr(&modlist,0,"pgpKeyType",NULL);
+  make_one_attr(&modlist,0,"pgpUserID",NULL);
+  make_one_attr(&modlist,0,"pgpKeyCreateTime",NULL);
+  make_one_attr(&modlist,0,"pgpSignerID",NULL);
+  make_one_attr(&modlist,0,"pgpRevoked",NULL);
+  make_one_attr(&modlist,0,"pgpSubKeyID",NULL);
+  make_one_attr(&modlist,0,"pgpKeySize",NULL);
+  make_one_attr(&modlist,0,"pgpKeyExpireTime",NULL);
 
   /* Assemble the INFO stuff into LDAP attributes */
 
@@ -562,7 +562,6 @@ send_key(int *eof)
 
   if(strlen(keyid)!=16)
     {
-      printf("bad\n");
       *eof=1;
       ret=KEYSERVER_KEY_INCOMPLETE;
       goto fail;
@@ -597,10 +596,7 @@ send_key(int *eof)
 	break;
       }
     else
-      {
-	build_attrs(&modlist,line);
-	//	printf("line %s\n",line);
-      }
+      build_attrs(&modlist,line);
 
   if(!end)
     {
@@ -663,8 +659,8 @@ send_key(int *eof)
       goto fail;
     }
 
-  make_one_attr(&modlist,"objectClass","pgpKeyInfo");
-  make_one_attr(&modlist,"pgpKey",key);
+  make_one_attr(&modlist,0,"objectClass","pgpKeyInfo");
+  make_one_attr(&modlist,0,"pgpKey",key);
 
   /* If it's not there, we just turn around and send an add command
      for the same key.  Otherwise, the modify brings the server copy

@@ -1,3 +1,11 @@
+2004-02-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (delete_one_attr): Removed.
+	(make_one_attr): Delete functionality added.  Optional deduping
+	functionality added (currently only used for pgpSignerID).
+	(build_attrs): Translate sig entries into pgpSignerID.  Properly
+	build the timestamp for pgpKeyCreateTime and pgpKeyExpireTime.
+
 2004-02-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c (delete_one_attr): New function to replace
