@@ -204,6 +204,8 @@ enum cmd_and_opt_values { aNull = 0,
     oTrustedKey,
     oNoExpensiveTrustChecks,
     oFixedListMode,
+    oNoSigCache,
+    oNoSigCreateCheck,
     oEmu3DESS2KBug,  /* will be removed in 1.1 */
     oEmuMDEncodeBug,
 aTest };
@@ -394,6 +396,8 @@ static ARGPARSE_OPTS opts[] = {
     { oOverrideSessionKey, "override-session-key", 2, "@" },
     { oNoRandomSeedFile,  "no-random-seed-file", 0, "@" },
     { oNoAutoKeyRetrieve, "no-auto-key-retrieve", 0, "@" },
+    { oNoSigCache,         "no-sig-cache", 0, "@" },
+    { oNoSigCreateCheck,   "no-sig-create-check", 0, "@" },
     { oMergeOnly,	  "merge-only", 0, "@" },
     { oAllowSecretKeyImport, "allow-secret-key-import", 0, "@" },
     { oTryAllSecrets,  "try-all-secrets", 0, "@" },
@@ -961,6 +965,8 @@ main( int argc, char **argv )
 	  case oDisablePubkeyAlgo:
 		disable_pubkey_algo( string_to_pubkey_algo(pargs.r.ret_str) );
 		break;
+          case oNoSigCache: opt.no_sig_cache = 1; break;
+          case oNoSigCreateCheck: opt.no_sig_create_check = 1; break;
 	  case oAllowNonSelfsignedUID: opt.allow_non_selfsigned_uid = 1; break;
 	  case oAllowFreeformUID: opt.allow_freeform_uid = 1; break;
 	  case oNoLiteral: opt.no_literal = 1; break;

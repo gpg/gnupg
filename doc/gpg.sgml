@@ -1106,6 +1106,28 @@ will still get disabled.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--no-sig-cache</term>
+<listitem><para>
+Does not not cache the verification status of key signatures.
+Caching gives a much better performance in key listings, however if
+you suspect that your public keyring is not saved against write
+modifications, you can use this option to disable the caching.  It
+probably does not make sense to disable it because all kind of damange
+can be done if someone else has write access to your public keyring.
+</para></listitem></varlistentry>
+<varlistentry>
+
+<term>--no-sig-create-check</term>
+<listitem><para>
+GnuPG normally verifies each signature right after creation to protect
+against bugs and hardware mal functions which could leak out bits from
+the secret key.  This extra verification needs some time (about 115%
+fro DSA keys), and so this option can be used to disable it.
+However, due to the fact that the signature creation needs manual
+interaction, this performance penality does not matter in most setting.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--throw-keyid</term>
 <listitem><para>
 Do not put the keyid into encrypted packets.  This option

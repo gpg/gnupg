@@ -1,5 +1,15 @@
 2001-03-27  Werner Koch  <wk@gnupg.org>
 
+	* packet.h: Add a missing typedef to an enum.  Thanks to Stefan Bellon.
+
+	* g10.c: New option --no-sig-create-check.
+	* sign.c (do_sign): Implement it here.
+	* g10.c: New option --no-sig-cache.
+	* sig-check.c (check_key_signature2): Implement it here.
+	(cache_selfsig_result): and here.
+
+	* keylist.c (list_keyblock): Removed debugging stuff.
+
 	* getkey.c (cache_public_key): Made global.
 	* keygen.c (write_selfsig, write_keybinding): Cache the new key.
 

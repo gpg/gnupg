@@ -273,6 +273,9 @@ check_secret_key( DSA_secret_key *sk )
 
 /****************
  * Make a DSA signature from HASH and put it into r and s.
+ *
+ * Without generating the k this function runs in 
+ * about 26ms on a 300 Mhz Mobile Pentium
  */
 
 static void
@@ -307,6 +310,9 @@ sign(MPI r, MPI s, MPI hash, DSA_secret_key *skey )
 
 /****************
  * Returns true if the signature composed from R and S is valid.
+ *
+ * Without the checks this function runs in 
+ * about 31ms on a 300 Mhz Mobile Pentium
  */
 static int
 verify(MPI r, MPI s, MPI hash, DSA_public_key *pkey )

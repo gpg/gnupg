@@ -442,6 +442,9 @@ cache_selfsig_result ( PKT_signature *sig, int result )
 {
     byte buf[6];
 
+    if ( opt.no_sig_cache )
+        return;
+
     buf[0] = 'G';
     buf[1] = 'P';
     buf[2] = 'G';
@@ -503,7 +506,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
   #endif
 
     /* Check whether we have cached the result of a previous signature check.*/
-    {
+    if ( !opt.no_sig_cache ) {
         const byte *p;
         size_t len;
 

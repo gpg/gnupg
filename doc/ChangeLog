@@ -1,3 +1,7 @@
+2001-03-27  Werner Koch  <wk@gnupg.org>
+
+	* gpg.sgml: Add --no-sig-cache and --no-sig-create-check.
+
 2001-03-23  Werner Koch  <wk@gnupg.org>
 
 	* DETAILS: New status UNEXPECTED.

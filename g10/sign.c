@@ -132,7 +132,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 			     digest_algo, mpi_get_nbits(sk->skey[0]), 0 );
     rc = pubkey_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
     mpi_free(frame);
-    if (!rc) {
+    if (!rc && !opt.no_sig_create_check) {
         /* check that the signature verification worked and nothing is
          * fooling us e.g. by a bug in the signature create
          * code or by deliberately introduced faults. */

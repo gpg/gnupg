@@ -101,6 +101,8 @@ struct {
     int allow_secret_key_import;
     int try_all_secrets;
     int no_expensive_trust_checks;
+    int no_sig_cache;
+    int no_sig_create_check;
 } opt;
 
 

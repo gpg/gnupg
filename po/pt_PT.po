@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
-"POT-Creation-Date: 2001-03-27 13:16+0200\n"
+"POT-Creation-Date: 2001-03-27 16:54+0200\n"
 "PO-Revision-Date: 1999-09-09 20:28+0000\n"
 "Last-Translator: Pedro Morais <morais@poli.org>\n"
 "Language-Team: pt\n"
@@ -350,7 +350,7 @@ msgstr ""
 "Não há bytes aleatórios suficientes. Por favor, faça outro trabalho para\n"
 "que o sistema possa recolher mais entropia! (São necessários mais %d bytes)\n"
 
-#: g10/g10.c:214
+#: g10/g10.c:216
 msgid ""
 "@Commands:\n"
 " "
@@ -358,140 +358,140 @@ msgstr ""
 "@Comandos:\n"
 " "
 
-#: g10/g10.c:216
+#: g10/g10.c:218
 msgid "|[file]|make a signature"
 msgstr "|[ficheiro]|fazer uma assinatura"
 
-#: g10/g10.c:217
+#: g10/g10.c:219
 msgid "|[file]|make a clear text signature"
 msgstr "|[ficheiro]|fazer uma assinatura em texto puro"
 
-#: g10/g10.c:218
+#: g10/g10.c:220
 msgid "make a detached signature"
 msgstr "fazer uma assinatura separada"
 
-#: g10/g10.c:219
+#: g10/g10.c:221
 msgid "encrypt data"
 msgstr "encriptar dados"
 
-#: g10/g10.c:220
+#: g10/g10.c:222
 msgid "encryption only with symmetric cipher"
 msgstr "encriptar apenas com cifra simétrica"
 
-#: g10/g10.c:221
+#: g10/g10.c:223
 msgid "store only"
 msgstr "apenas armazenar"
 
-#: g10/g10.c:222
+#: g10/g10.c:224
 msgid "decrypt data (default)"
 msgstr "desencriptar dados (acção por omissão)"
 
-#: g10/g10.c:223
+#: g10/g10.c:225
 msgid "verify a signature"
 msgstr "verificar uma assinatura"
 
-#: g10/g10.c:225
+#: g10/g10.c:227
 msgid "list keys"
 msgstr "listar as chaves"
 
-#: g10/g10.c:227
+#: g10/g10.c:229
 msgid "list keys and signatures"
 msgstr "listar as chaves e as assinaturas"
 
-#: g10/g10.c:228
+#: g10/g10.c:230
 msgid "check key signatures"
 msgstr "verificar as assinaturas das chaves"
 
-#: g10/g10.c:229
+#: g10/g10.c:231
 msgid "list keys and fingerprints"
 msgstr "listar as chaves e as impressões digitais"
 
-#: g10/g10.c:230
+#: g10/g10.c:232
 msgid "list secret keys"
 msgstr "listar as chaves secretas"
 
-#: g10/g10.c:231
+#: g10/g10.c:233
 msgid "generate a new key pair"
 msgstr "gerar um novo par de chaves"
 
-#: g10/g10.c:232
+#: g10/g10.c:234
 msgid "remove key from the public keyring"
 msgstr "remover a chave do porta-chaves público"
 
-#: g10/g10.c:234
+#: g10/g10.c:236
 msgid "remove key from the secret keyring"
 msgstr "remover a chave do porta-chaves secreto"
 
-#: g10/g10.c:235
+#: g10/g10.c:237
 msgid "sign a key"
 msgstr "assinar uma chave"
 
-#: g10/g10.c:236
+#: g10/g10.c:238
 msgid "sign a key locally"
 msgstr "assinar uma chave localmente"
 
-#: g10/g10.c:237
+#: g10/g10.c:239
 msgid "sign or edit a key"
 msgstr "assinar ou editar uma chave"
 
-#: g10/g10.c:238
+#: g10/g10.c:240
 msgid "generate a revocation certificate"
 msgstr "gerar um certificado de revogação"
 
-#: g10/g10.c:239
+#: g10/g10.c:241
 msgid "export keys"
 msgstr "exportar chaves"
 
-#: g10/g10.c:240
+#: g10/g10.c:242
 msgid "export keys to a key server"
 msgstr "exportar chaves para um servidor"
 
-#: g10/g10.c:241
+#: g10/g10.c:243
 msgid "import keys from a key server"
 msgstr "importar chaves de um servidor"
 
-#: g10/g10.c:245
+#: g10/g10.c:247
 msgid "import/merge keys"
 msgstr "importar/fundir chaves"
 
-#: g10/g10.c:247
+#: g10/g10.c:249
 msgid "list only the sequence of packets"
 msgstr "listar apenas as sequências de pacotes"
 
 # ownertrust ???
-#: g10/g10.c:249
+#: g10/g10.c:251
 msgid "export the ownertrust values"
 msgstr "exportar os valores de confiança"
 
-#: g10/g10.c:251
+#: g10/g10.c:253
 msgid "import ownertrust values"
 msgstr "importar os valores de confiança"
 
-#: g10/g10.c:253
+#: g10/g10.c:255
 msgid "update the trust database"
 msgstr "actualizar a base de dados de confiança"
 
-#: g10/g10.c:255
+#: g10/g10.c:257
 msgid "|[NAMES]|check the trust database"
 msgstr "|[NOMES]|verificar a base de dados de confiança"
 
-#: g10/g10.c:256
+#: g10/g10.c:258
 msgid "fix a corrupted trust database"
 msgstr "consertar uma base de dados de confiança"
 
-#: g10/g10.c:257
+#: g10/g10.c:259
 msgid "De-Armor a file or stdin"
 msgstr "retirar armadura de um ficheiro ou do \"stdin\""
 
-#: g10/g10.c:259
+#: g10/g10.c:261
 msgid "En-Armor a file or stdin"
 msgstr "criar armadura para um ficheiro ou \"stdin\""
 
-#: g10/g10.c:261
+#: g10/g10.c:263
 msgid "|algo [files]|print message digests"
 msgstr "|algo [ficheiros]|imprimir \"digests\" de mensagens"
 
-#: g10/g10.c:265
+#: g10/g10.c:267
 msgid ""
 "@\n"
 "Options:\n"
@@ -501,179 +501,179 @@ msgstr ""
 "Opções:\n"
 " "
 
-#: g10/g10.c:267
+#: g10/g10.c:269
 msgid "create ascii armored output"
 msgstr "criar saída com armadura ascii"
 
-#: g10/g10.c:269
+#: g10/g10.c:271
 msgid "|NAME|encrypt for NAME"
 msgstr "|NOME|encriptar para NOME"
 
-#: g10/g10.c:272
+#: g10/g10.c:274
 msgid "|NAME|use NAME as default recipient"
 msgstr "|NOME|usar NOME como destinatário padrão"
 
-#: g10/g10.c:274
+#: g10/g10.c:276
 msgid "use the default key as default recipient"
 msgstr "usar a chave padrão como destinatário padrão"
 
-#: g10/g10.c:278
+#: g10/g10.c:280
 msgid "use this user-id to sign or decrypt"
 msgstr ""
 "usar este identificador de utilizador para\n"
 "assinar ou desencriptar"
 
-#: g10/g10.c:279
+#: g10/g10.c:281
 msgid "|N|set compress level N (0 disables)"
 msgstr ""
 "|N|estabelecer nível de compressão N\n"
 "(0 desactiva)"
 
-#: g10/g10.c:281
+#: g10/g10.c:283
 msgid "use canonical text mode"
 msgstr "usar modo de texto canônico"
 
-#: g10/g10.c:282
+#: g10/g10.c:284
 msgid "use as output file"
 msgstr "usar como ficheiro de saída"
 
-#: g10/g10.c:283
+#: g10/g10.c:285
 msgid "verbose"
 msgstr "detalhado"
 
-#: g10/g10.c:284
+#: g10/g10.c:286
 msgid "be somewhat more quiet"
 msgstr "ser mais silencioso"
 
-#: g10/g10.c:285
+#: g10/g10.c:287
 msgid "don't use the terminal at all"
 msgstr "nunca usar o terminal"
 
-#: g10/g10.c:286
+#: g10/g10.c:288
 msgid "force v3 signatures"
 msgstr "forçar assinaturas v3"
 
-#: g10/g10.c:287
+#: g10/g10.c:289
 msgid "always use a MDC for encryption"
 msgstr "sempre usar um MDC para encriptar"
 
-#: g10/g10.c:288
+#: g10/g10.c:290
 msgid "do not make any changes"
 msgstr "não fazer alterações"
 
 #. { oInteractive, "interactive", 0, N_("prompt before overwriting") },
-#: g10/g10.c:290
+#: g10/g10.c:292
 msgid "use the gpg-agent"
 msgstr ""
 
-#: g10/g10.c:291
+#: g10/g10.c:293
 msgid "batch mode: never ask"
 msgstr "modo não-interactivo: nunca perguntar"
 
-#: g10/g10.c:292
+#: g10/g10.c:294
 msgid "assume yes on most questions"
 msgstr "assumir sim para a maioria das perguntas"
 
-#: g10/g10.c:293
+#: g10/g10.c:295
 msgid "assume no on most questions"
 msgstr "assumir não para a maioria das perguntas"
 
-#: g10/g10.c:294
+#: g10/g10.c:296
 msgid "add this keyring to the list of keyrings"
 msgstr ""
 "adicionar este porta-chaves\n"
 "à lista de porta-chaves"
 
-#: g10/g10.c:295
+#: g10/g10.c:297
 msgid "add this secret keyring to the list"
 msgstr "adicionar este porta-chaves secreto à lista"
 
-#: g10/g10.c:296
+#: g10/g10.c:298
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NOME|usar NOME como chave secreta por omissão"
 
-#: g10/g10.c:297
+#: g10/g10.c:299
 msgid "|HOST|use this keyserver to lookup keys"
 msgstr "|ENDEREÇO|usar este servidor para buscar chaves"
 
-#: g10/g10.c:298
+#: g10/g10.c:300
 msgid "|NAME|set terminal charset to NAME"
 msgstr ""
 "|NOME|definir mapa de caracteres do terminal como\n"
 "NOME"
 
-#: g10/g10.c:299
+#: g10/g10.c:301
 msgid "read options from file"
 msgstr "ler opções do ficheiro"
 
-#: g10/g10.c:303
+#: g10/g10.c:305
 msgid "|FD|write status info to this FD"
 msgstr ""
 "|DF|escrever informações de estado para o\n"
 "descritor de ficheiro DF"
 
-#: g10/g10.c:308
+#: g10/g10.c:310
 msgid "|KEYID|ulimately trust this key"
 msgstr ""
 
-#: g10/g10.c:309
+#: g10/g10.c:311
 msgid "|FILE|load extension module FILE"
 msgstr "|FICHEIRO|carregar módulo de extensão FICHEIRO"
 
-#: g10/g10.c:310
+#: g10/g10.c:312
 msgid "emulate the mode described in RFC1991"
 msgstr "emular o modo descrito no RFC1991"
 
-#: g10/g10.c:311
+#: g10/g10.c:313
 msgid "set all packet, cipher and digest options to OpenPGP behavior"
 msgstr ""
 "configurar todas as opções de pacote,\n"
 "criptografia e \"digest\" para comportamento\n"
 "OpenPGP"
 
-#: g10/g10.c:312
+#: g10/g10.c:314
 msgid "|N|use passphrase mode N"
 msgstr "|N|usar mode de frase secreta N"
 
-#: g10/g10.c:314
+#: g10/g10.c:316
 msgid "|NAME|use message digest algorithm NAME for passphrases"
 msgstr ""
 "|NOME|usar algoritmo de \"digest\" de mensagens NOME\n"
 "para frases secretas"
 
-#: g10/g10.c:316
+#: g10/g10.c:318
 msgid "|NAME|use cipher algorithm NAME for passphrases"
 msgstr ""
 "|NOME|usar algoritmo de criptografia NOME para\n"
 "frases secretas"
 
-#: g10/g10.c:317
+#: g10/g10.c:319
 msgid "|NAME|use cipher algorithm NAME"
 msgstr "|NOME|usar algoritmo de criptografia NOME"
 
-#: g10/g10.c:318
+#: g10/g10.c:320
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NOME|usar algoritmo de \"digest\" de mensagens NOME"
 
-#: g10/g10.c:319
+#: g10/g10.c:321
 msgid "|N|use compress algorithm N"
 msgstr "|N|usar algoritmo de compressão N"
 
-#: g10/g10.c:320
+#: g10/g10.c:322
 msgid "throw keyid field of encrypted packets"
 msgstr "eliminar campo keyid dos pacotes encriptados"
 
-#: g10/g10.c:321
+#: g10/g10.c:323
 msgid "|NAME=VALUE|use this notation data"
 msgstr "|NOME=VALOR|usar estes dados de notação"
 
-#: g10/g10.c:324
+#: g10/g10.c:326
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
 msgstr ""
 
-#: g10/g10.c:327
+#: g10/g10.c:329
 msgid ""
 "@\n"
 "Examples:\n"
@@ -693,15 +693,15 @@ msgstr ""
 " --list-keys [nomes]        mostrar chaves\n"
 " --fingerprint [nomes]      mostrar impressões digitais\n"
 
-#: g10/g10.c:434
+#: g10/g10.c:438
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 msgstr "Por favor comunique bugs para <gnupg-bugs@gnu.org>.\n"
 
-#: g10/g10.c:438
+#: g10/g10.c:442
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Uso: gpg [opções] [ficheiros] (-h para ajuda)"
 
-#: g10/g10.c:441
+#: g10/g10.c:445
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "sign, check, encrypt or decrypt\n"
@@ -711,7 +711,7 @@ msgstr ""
 "assina, verifica, encripta ou desencripta\n"
 "a operação por omissão depende dos dados de entrada\n"
 
-#: g10/g10.c:448
+#: g10/g10.c:452
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -719,194 +719,194 @@ msgstr ""
 "\n"
 "Algoritmos suportados:\n"
 
-#: g10/g10.c:527
+#: g10/g10.c:531
 msgid "usage: gpg [options] "
 msgstr "uso: gpg [opções] "
 
-#: g10/g10.c:580
+#: g10/g10.c:584
 msgid "conflicting commands\n"
 msgstr "comandos em conflito\n"
 
-#: g10/g10.c:730
+#: g10/g10.c:734
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTA: ficheiro de opções por omissão `%s' inexistente\n"
 
-#: g10/g10.c:734
+#: g10/g10.c:738
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "ficheiro de opções `%s': %s\n"
 
-#: g10/g10.c:741
+#: g10/g10.c:745
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "a ler opções de `%s'\n"
 
-#: g10/g10.c:946
+#: g10/g10.c:950
 #, c-format
 msgid "%s is not a valid character set\n"
 msgstr "%s não é um conjunto de caracteres válido\n"
 
-#: g10/g10.c:1018
+#: g10/g10.c:1024
 msgid "WARNING: program may create a core file!\n"
 msgstr "AVISO: O programa pode criar um ficheiro core!\n"
 
-#: g10/g10.c:1022 g10/g10.c:1031
+#: g10/g10.c:1028 g10/g10.c:1037
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTA: %s não é para uso normal!\n"
 
-#: g10/g10.c:1024
+#: g10/g10.c:1030
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s não é permitido com %s!\n"
 
-#: g10/g10.c:1027
+#: g10/g10.c:1033
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s não faz sentido com %s!\n"
 
-#: g10/g10.c:1047 g10/g10.c:1059
+#: g10/g10.c:1053 g10/g10.c:1065
 msgid "selected cipher algorithm is invalid\n"
 msgstr "o algoritmo de cifragem selecionado não é válido\n"
 
-#: g10/g10.c:1053 g10/g10.c:1065
+#: g10/g10.c:1059 g10/g10.c:1071
 msgid "selected digest algorithm is invalid\n"
 msgstr "o algoritmo de \"digest\" selecionado não é válido\n"
 
-#: g10/g10.c:1069
+#: g10/g10.c:1075
 msgid "the given policy URL is invalid\n"
 msgstr "a URL de política dada é inválida\n"
 
-#: g10/g10.c:1072
+#: g10/g10.c:1078
 #, c-format
 msgid "compress algorithm must be in range %d..%d\n"
 msgstr "o algoritmo de compressão deve estar na faixa %d..%d\n"
 
-#: g10/g10.c:1074
+#: g10/g10.c:1080
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed deve ser maior que 0\n"
 
-#: g10/g10.c:1076
+#: g10/g10.c:1082
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed deve ser maior que 1\n"
 
-#: g10/g10.c:1078
+#: g10/g10.c:1084
 msgid "max-cert-depth must be in range 1 to 255\n"
 msgstr "max-cert-depth deve estar na entre 1 e 255\n"
 
-#: g10/g10.c:1081
+#: g10/g10.c:1087
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "NOTA: o modo S2K simples (0) não é recomendável\n"
 
-#: g10/g10.c:1085
+#: g10/g10.c:1091
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "modo S2K inválido: deve ser 0, 1 ou 3\n"
 
-#: g10/g10.c:1170
+#: g10/g10.c:1176
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "falha ao inicializar a base de dados de confiança: %s\n"
 
-#: g10/g10.c:1176
+#: g10/g10.c:1182
 msgid "--store [filename]"
 msgstr "--store [nome_do_ficheiro]"
 
-#: g10/g10.c:1183
+#: g10/g10.c:1189
 msgid "--symmetric [filename]"
 msgstr "--symmetric [nome_do_ficheiro]"
 
-#: g10/g10.c:1191
+#: g10/g10.c:1197
 msgid "--encrypt [filename]"
 msgstr "--encrypt [nome_do_ficheiro]"
 
-#: g10/g10.c:1204
+#: g10/g10.c:1210
 msgid "--sign [filename]"
 msgstr "--sign [nome_do_ficheiro]"
 
-#: g10/g10.c:1217
+#: g10/g10.c:1223
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [nome_do_ficheiro]"
 
-#: g10/g10.c:1231
+#: g10/g10.c:1237
 msgid "--clearsign [filename]"
 msgstr "--clearsign [nome_do_ficheiro]"
 
-#: g10/g10.c:1248
+#: g10/g10.c:1254
 msgid "--decrypt [filename]"
 msgstr "--decrypt [nome_do_ficheiro]"
 
-#: g10/g10.c:1256
+#: g10/g10.c:1262
 msgid "--sign-key user-id"
 msgstr "--sign-key id-utilizador"
 
-#: g10/g10.c:1264
+#: g10/g10.c:1270
 msgid "--lsign-key user-id"
 msgstr "--lsign-key id-utilizador"
 
-#: g10/g10.c:1272
+#: g10/g10.c:1278
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key id-utilizador [comandos]"
 
-#: g10/g10.c:1288
+#: g10/g10.c:1294
 msgid "--delete-secret-key user-id"
 msgstr "--delete-secret-key id-utilizador"
 
-#: g10/g10.c:1291
+#: g10/g10.c:1297
 msgid "--delete-key user-id"
 msgstr "--delete-key id-utilizador"
 
-#: g10/g10.c:1299
+#: g10/g10.c:1305
 #, fuzzy
 msgid "--delete-secret-and-public-key user-id"
 msgstr "--delete-secret-key id-utilizador"
 
-#: g10/encode.c:268 g10/g10.c:1336 g10/sign.c:410
+#: g10/encode.c:268 g10/g10.c:1342 g10/sign.c:410
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "impossível abrir %s: %s\n"
 
-#: g10/g10.c:1351
+#: g10/g10.c:1357
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [id-utilizador] [porta-chaves]"
 
-#: g10/g10.c:1417
+#: g10/g10.c:1423
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "retirada de armadura falhou: %s\n"
 
-#: g10/g10.c:1425
+#: g10/g10.c:1431
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "criação de armadura falhou: %s\n"
 
 # "hash" poderia ser "espalhamento", mas não fica claro
-#: g10/g10.c:1496
+#: g10/g10.c:1502
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "algoritmo de hash inválido `%s'\n"
 
-#: g10/g10.c:1583
+#: g10/g10.c:1589
 msgid "[filename]"
 msgstr "[nome_do_ficheiro]"
 
-#: g10/g10.c:1587
+#: g10/g10.c:1593
 msgid "Go ahead and type your message ...\n"
 msgstr "Digite a sua mensagem ...\n"
 
-#: g10/decrypt.c:59 g10/g10.c:1590 g10/verify.c:94 g10/verify.c:139
+#: g10/decrypt.c:59 g10/g10.c:1596 g10/verify.c:94 g10/verify.c:139
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "impossível abrir `%s'\n"
 
-#: g10/g10.c:1799
+#: g10/g10.c:1805
 msgid ""
 "the first character of a notation name must be a letter or an underscore\n"
 msgstr ""
 "o primeiro caracter de um nome de notação deve ser uma letra ou um "
 "sublinhado\n"
 
-#: g10/g10.c:1805
+#: g10/g10.c:1811
 msgid ""
 "a notation name must have only letters, digits, dots or underscores and end "
 "with an '='\n"
@@ -914,12 +914,12 @@ msgstr ""
 "um nome de notação deve ter apenas letras, dígitos, pontos ou sublinhados e "
 "terminar com '='\n"
 
-#: g10/g10.c:1811
+#: g10/g10.c:1817
 msgid "dots in a notation name must be surrounded by other characters\n"
 msgstr ""
 "pontos num nome de notação devem estar cercados por outros caracteres\n"
 
-#: g10/g10.c:1819
+#: g10/g10.c:1825
 msgid "a notation value must not use any control characters\n"
 msgstr "um valor de notação não deve usar caracteres de controle\n"
 
