@@ -568,12 +568,20 @@ if test "$ac_cv_sizeof_unsigned_short" = "0" \
 fi
 
 if test "$use_tiger" = yes || test "$use_new_tiger" = yes || test "$use_sha512" = yes ; then
-   AC_CHECK_SIZEOF(uint64_t)
+   # Ensure that we have UINT64_C before we bother to check for uint64_t
+   AC_CACHE_CHECK([for UINT64_C],[gnupg_cv_uint64_c_works],
+      AC_COMPILE_IFELSE(AC_LANG_PROGRAM([#include <inttypes.h>
+uint64_t foo=UINT64_C(42);]),gnupg_cv_uint64_c_works=yes,gnupg_cv_uint64_c_works=no))
+
+   if test "$gnupg_cv_uint64_c_works" = "yes" ; then
+      AC_CHECK_SIZEOF(uint64_t)
+   fi
+
    # Do we have any 64-bit data types at all?
    if test "$ac_cv_sizeof_unsigned_int" != "8" \
       && test "$ac_cv_sizeof_unsigned_long" != "8" \
       && test "$ac_cv_sizeof_unsigned_long_long" != "8" \
-      && test "$ac_cv_sizeof_uint64_t" != "8"; then
+      && test x"$ac_cv_sizeof_uint64_t" != "x8"; then
      AC_MSG_WARN([No 64-bit types.  Disabling TIGER/192, SHA-384, and SHA-512])
    else
       if test "$use_tiger" = yes ; then
