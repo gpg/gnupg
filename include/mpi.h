@@ -68,7 +68,7 @@ EXTERN_UNLESS_MAIN_MODULE int mpi_debug_mode;
 struct gcry_mpi {
     int alloced;    /* array size (# of allocated limbs) */
     int nlimbs;     /* number of valid limbs */
-    int nbits;	    /* the real number of valid bits (info only) */
+    unsigned int nbits; /* the real number of valid bits (info only) */
     int sign;	    /* indicates a negative number */
     unsigned flags; /* bit 0: array must be allocated in secure memory space */
 		    /* bit 1: not used */
@@ -107,8 +107,8 @@ void mpi_resize( MPI a, unsigned nlimbs );
 MPI  mpi_copy( MPI a );
 #endif
 #define mpi_is_opaque(a) ((a) && ((a)->flags&4))
-MPI mpi_set_opaque( MPI a, void *p, int len );
-void *mpi_get_opaque( MPI a, int *len );
+MPI mpi_set_opaque( MPI a, void *p, unsigned int len );
+void *mpi_get_opaque( MPI a, unsigned int *len );
 #define mpi_is_secure(a) ((a) && ((a)->flags&1))
 void mpi_set_secure( MPI a );
 void mpi_clear( MPI a );

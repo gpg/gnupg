@@ -1,5 +1,8 @@
 2003-12-17  David Shaw  <dshaw@localhost.localdomain>
 
+	* mpi.h (gcry_mpi, mpi_get_opaque, mpi_set_opaque): Make nbits and
+	the length of an opaque MPI unsigned.
+
 	* cipher.h (pubkey_verify): Remove old unused code.
 
 2003-12-03  David Shaw  <dshaw@jabberwocky.com>
