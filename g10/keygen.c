@@ -414,6 +414,87 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     return 0;
 }
 
+#if 0
+static int
+gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
+	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval )
+{
+    int rc;
+    PACKET *pkt;
+    PKT_secret_key *sk;
+    PKT_public_key *pk;
+    MPI skey[4];
+    MPI *factors;
+
+    assert( is_RSA(algo) );
+
+    if( nbits < 1024 ) {
+	nbits = 1024;
+	log_info(_("keysize invalid; using %u bits\n"), nbits );
+    }
+
+    if( (nbits % 32) ) {
+	nbits = ((nbits + 31) / 32) * 32;
+	log_info(_("keysize rounded up to %u bits\n"), nbits );
+    }
+
+    rc = pubkey_generate( algo, nbits, skey, &factors );
+    if( rc ) {
+	log_error("pubkey_generate failed: %s\n", g10_errstr(rc) );
+	return rc;
+    }
+
+    sk = m_alloc_clear( sizeof *sk );
+    pk = m_alloc_clear( sizeof *pk );
+    sk->timestamp = pk->timestamp = make_timestamp();
+    sk->version = pk->version = 4;
+    if( expireval ) {
+	sk->expiredate = pk->expiredate = sk->timestamp + expireval;
+    }
+    sk->pubkey_algo = pk->pubkey_algo = algo;
+		       pk->pkey[0] = mpi_copy( skey[0] );
+		       pk->pkey[1] = mpi_copy( skey[1] );
+    sk->skey[0] = skey[0];
+    sk->skey[1] = skey[1];
+    sk->skey[2] = skey[2];
+    sk->skey[3] = skey[3];
+    sk->skey[4] = skey[4];
+    sk->skey[5] = skey[5];
+    sk->is_protected = 0;
+    sk->protect.algo = 0;
+
+    sk->csum  = checksum_mpi_counted_nbits( sk->skey[2] );
+    sk->csum += checksum_mpi_counted_nbits( sk->skey[3] );
+    sk->csum += checksum_mpi_counted_nbits( sk->skey[4] );
+    sk->csum += checksum_mpi_counted_nbits( sk->skey[5] );
+    if( ret_sk ) /* not a subkey: return an unprotected version of the sk */
+	*ret_sk = copy_secret_key( NULL, sk );
+
+    if( dek ) {
+	sk->protect.algo = dek->algo;
+	sk->protect.s2k = *s2k;
+	rc = protect_secret_key( sk, dek );
+	if( rc ) {
+	    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
+	    free_public_key(pk);
+	    free_secret_key(sk);
+	    return rc;
+	}
+    }
+
+    pkt = m_alloc_clear(sizeof *pkt);
+    pkt->pkttype = ret_sk ? PKT_PUBLIC_KEY : PKT_PUBLIC_SUBKEY;
+    pkt->pkt.public_key = pk;
+    add_kbnode(pub_root, new_kbnode( pkt ));
+
+    pkt = m_alloc_clear(sizeof *pkt);
+    pkt->pkttype = ret_sk ? PKT_SECRET_KEY : PKT_SECRET_SUBKEY;
+    pkt->pkt.secret_key = sk;
+    add_kbnode(sec_root, new_kbnode( pkt ));
+
+    return 0;
+}
+#endif
 
 
 /****************
@@ -460,6 +541,9 @@ ask_algo( int addmode )
     if( addmode )
 	tty_printf(    _("   (%d) ElGamal (encrypt only)\n"), 3 );
     tty_printf(    _("   (%d) ElGamal (sign and encrypt)\n"), 4 );
+  #if 0
+    tty_printf(    _("   (%d) RSA (sign and encrypt)\n"), 5 );
+  #endif
 
     for(;;) {
 	answer = cpr_get("keygen.algo",_("Your selection? "));
@@ -470,6 +554,15 @@ ask_algo( int addmode )
 	    algo = 0;	/* create both keys */
 	    break;
 	}
+      #if 0
+	else if( algo == 5 ) {
+	    if( cpr_get_answer_is_yes("keygen.algo.rsa_se",_(
+		"Do you really want to create a sign and encrypt key? "))) {
+		algo = PUBKEY_ALGO_RSA;
+		break;
+	    }
+	}
+      #endif
 	else if( algo == 4 ) {
 	    if( cpr_get_answer_is_yes("keygen.algo.elg_se",_(
 		"Do you really want to create a sign and encrypt key? "))) {
@@ -513,6 +606,9 @@ ask_keysize( int algo )
 	    tty_printf(_("DSA only allows keysizes from 512 to 1024\n"));
 	else if( nbits < 768 )
 	    tty_printf(_("keysize too small; 768 is smallest value allowed.\n"));
+	else if( algo == PUBKEY_ALGO_RSA && nbits < 1024 )
+	    tty_printf(_("keysize too small;"
+			 " 1024 is smallest value allowed for RSA.\n"));
 	else if( nbits > 4096 ) {
 	    /* It is ridiculous and an annoyance to use larger key sizes!
 	     * GnuPG can handle much larger sizes; but it takes an eternity
@@ -537,7 +633,7 @@ ask_keysize( int algo )
 		break;
 	    }
 	}
-	else if( nbits > 1536 && !cpr_enabled() ) {
+	else if( nbits > 1536 && !cpr_enabled() && algo != PUBKEY_ALGO_RSA ) {
 	    if( cpr_get_answer_is_yes("keygen.size.large.okay",_(
 		    "Do you really need such a large keysize? ")) )
 		break;
@@ -882,10 +978,13 @@ do_create( int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root,
 "generator a better chance to gain enough entropy.\n") );
 
     if( algo == PUBKEY_ALGO_ELGAMAL || algo == PUBKEY_ALGO_ELGAMAL_E )
-	rc = gen_elg(algo, nbits, pub_root, sec_root, dek, s2k,
-			   sk, expiredate );
+	rc = gen_elg(algo, nbits, pub_root, sec_root, dek, s2k, sk, expiredate);
     else if( algo == PUBKEY_ALGO_DSA )
 	rc = gen_dsa(nbits, pub_root, sec_root, dek, s2k, sk, expiredate);
+  #if 0
+    else if( algo == PUBKEY_ALGO_RSA )
+	rc = gen_rsa(algo, nbits, pub_root, sec_root, dek, s2k, sk, expiredate);
+  #endif
     else
 	BUG();
 

@@ -1,3 +1,23 @@
+Wed Jun 28 11:54:44 CEST 2000  Werner Koch  <wk@>
+
+  * armor.c (armor_filter): Set sigclass to 0 in case of non-dash-escaped
+  clearsig.  This makes this mode work again.
+
+  * mainproc.c (proc_tree): Fixed handling of one-pass-sig packets in textmode.
+  Disabled the ugly workaround for PGP 5 - let's see whether thi breaks less
+  cases. Found by Ted Cabeen.
+
+  * options.h (DBG_HASHING): New.  All commented md_start_debug are now
+  controlled by this debug option.
+
+  * sign.c (print_status_sig_created): New and called from 2 places.
+
+  * keygen.c (gen_rsa): New, but commented.
+  (ask_algo): Commented support for RSA.
+
+  * seckey-cert.c (protect_secret_key): Started to fix the code for v4 RSA
+  keys - it is not solved yet. However, we have time until, Sep 20th ;)
+
 Wed Jun 14 12:27:09 CEST 2000  Werner Koch  <wk@openit.de>
 
   * status.c (init_shm_coprocessing): Changed the sequence of the get,attach
@@ -267,7 +287,7 @@ Wed Jan  5 11:51:17 CET 2000  Werner Koch  <wk@gnupg.de>
 	* g10.c (main): Reset new global flag opt.pgp2_workarounds
 	when --openpgp is used.
 	* mainproc.c (proc_plaintext): Do the PGP2,5 workarounds only
-	when the global falg is set.
+	when the global flag is set.
 	(proc_tree): Ditto.
 	* textfilter.c (copy_clearsig_text): Ditto.
 	* armor.c (armor_filter): Ditto.

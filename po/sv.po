@@ -13,7 +13,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2000-06-08 23:11+0200\n"
+"POT-Creation-Date: 2000-06-27 12:16+0200\n"
 "PO-Revision-Date: 2000-02-16 08:19+01:00\n"
 "Last-Translator: Daniel Resare <daniel@resare.com>\n"
 "Language-Team: Swedish <sv@li.org>\n"
@@ -837,7 +837,7 @@ msgstr "--delete-key användaridentitet"
 
 # Filnamn både med och utan fnuttar finns. lite ologiskt. Vill någon
 # fixa en patch?
-#: g10/encode.c:260 g10/g10.c:1254 g10/sign.c:373
+#: g10/encode.c:260 g10/g10.c:1254 g10/sign.c:393
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "kan inte öppna %s: %s\n"
@@ -1601,7 +1601,7 @@ msgid "Key generation failed: %s\n"
 msgstr "Nyckelgenereringen misslyckades: %s\n"
 
 # c-format behövs inte i singularis
-#: g10/keygen.c:1628 g10/sig-check.c:318 g10/sign.c:111
+#: g10/keygen.c:1628 g10/sig-check.c:318 g10/sign.c:112
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -1609,7 +1609,7 @@ msgstr ""
 "nyckeln är skapad %lu sekund in i framtiden (problemet är\n"
 "relaterat till tidsresande eller en felställd klocka)\n"
 
-#: g10/keygen.c:1630 g10/sig-check.c:320 g10/sign.c:113
+#: g10/keygen.c:1630 g10/sig-check.c:320 g10/sign.c:114
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -1794,7 +1794,7 @@ msgstr "nyckel %08lX: hittade ingen publik nyckel: %s\n"
 msgid "no default public keyring\n"
 msgstr "ingen förvald publik nyckel\n"
 
-#: g10/import.c:423 g10/openfile.c:220 g10/sign.c:275 g10/sign.c:587
+#: g10/import.c:423 g10/openfile.c:220 g10/sign.c:295 g10/sign.c:611
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "skriver till \"%s\"\n"
@@ -2053,7 +2053,7 @@ msgstr ""
 msgid "Really sign? "
 msgstr "Vill du verkligen signera? "
 
-#: g10/keyedit.c:373 g10/keyedit.c:1869 g10/keyedit.c:1931 g10/sign.c:135
+#: g10/keyedit.c:373 g10/keyedit.c:1869 g10/keyedit.c:1931 g10/sign.c:136
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "signeringen misslyckades: %s\n"
@@ -2525,7 +2525,7 @@ msgid "no secret key\n"
 msgstr "ingen hemlig nyckel\n"
 
 #. of subkey
-#: g10/keylist.c:318 g10/mainproc.c:741
+#: g10/keylist.c:318 g10/mainproc.c:742
 #, fuzzy, c-format
 msgid " [expires: %s]"
 msgstr "Nyckeln går ut vid följande tidpunkt: %s\n"
@@ -2587,62 +2587,62 @@ msgstr "NOTERA: avsändaren efterfrågade \"endast-för-dina-ögon\"\n"
 msgid "original file name='%.*s'\n"
 msgstr "ursprungligt filnamn=\"%.*s\"\n"
 
-#: g10/mainproc.c:525
+#: g10/mainproc.c:526
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr ""
 "fristående återkallelsecertifikat - använd \"gpg --import\" för\n"
 "att applicera\n"
 
-#: g10/mainproc.c:612 g10/mainproc.c:621
+#: g10/mainproc.c:613 g10/mainproc.c:622
 msgid "WARNING: invalid notation data found\n"
 msgstr "VARNING: ogiltig notationsdata hittades\n"
 
-#: g10/mainproc.c:624
+#: g10/mainproc.c:625
 msgid "Notation: "
 msgstr "Notation: "
 
 # finns det någon bra svensk översättning av policy?
-#: g10/mainproc.c:631
+#: g10/mainproc.c:632
 msgid "Policy: "
 msgstr "Policy: "
 
-#: g10/mainproc.c:1061
+#: g10/mainproc.c:1062
 msgid "signature verification suppressed\n"
 msgstr "signaturen verifierades inte\n"
 
-#: g10/mainproc.c:1067
+#: g10/mainproc.c:1068
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Signerades %.*s med hjälp av %s-nyckeln med ID %08lX\n"
 
 #. just in case that we have no userid
-#: g10/mainproc.c:1093 g10/mainproc.c:1104
+#: g10/mainproc.c:1094 g10/mainproc.c:1105
 msgid "BAD signature from \""
 msgstr "FELAKTIG signatur från \""
 
-#: g10/mainproc.c:1094 g10/mainproc.c:1105
+#: g10/mainproc.c:1095 g10/mainproc.c:1106
 msgid "Good signature from \""
 msgstr "Korrekt signatur från \""
 
-#: g10/mainproc.c:1096
+#: g10/mainproc.c:1097
 msgid "                aka \""
 msgstr "      även känd som \""
 
-#: g10/mainproc.c:1152
+#: g10/mainproc.c:1153
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Kan inte verifiera signaturen: %s\n"
 
-#: g10/mainproc.c:1213
+#: g10/mainproc.c:1217
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "fristående signatur av klassen 0x%02x\n"
 
-#: g10/mainproc.c:1254
+#: g10/mainproc.c:1263
 msgid "old style (PGP 2.x) signature\n"
 msgstr "signatur av den gamla (PGP 2.x) typen\n"
 
-#: g10/mainproc.c:1259
+#: g10/mainproc.c:1268
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "felaktigt rotpaket hittades i proc_tree()\n"
 
@@ -2854,21 +2854,21 @@ msgid "assuming bad signature due to an unknown critical bit\n"
 msgstr ""
 "antar att signaturen är felaktig eftersom en okänd kritisk bit är satt\n"
 
-#: g10/sign.c:139
+#: g10/sign.c:140
 #, c-format
 msgid "%s signature from: %s\n"
 msgstr "%s-signatur från: %s\n"
 
-#: g10/sign.c:270 g10/sign.c:582
+#: g10/sign.c:290 g10/sign.c:606
 #, c-format
 msgid "can't create %s: %s\n"
 msgstr "kan inte skapa %s: %s\n"
 
-#: g10/sign.c:368
+#: g10/sign.c:388
 msgid "signing:"
 msgstr "signerar:"
 
-#: g10/sign.c:411
+#: g10/sign.c:431
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "VARNING: \"%s\" är en tom fil\n"
@@ -3421,7 +3421,7 @@ msgstr "%s krypterad data\n"
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "krypterad med en okänd algoritm %d\n"
 
-#: g10/encr-data.c:89
+#: g10/encr-data.c:90
 msgid ""
 "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr ""

@@ -623,7 +623,7 @@ elg_verify( int algo, MPI hash, MPI *data, MPI *pkey,
 
 
 
-unsigned
+unsigned int
 elg_get_nbits( int algo, MPI *pkey )
 {
     if( !is_ELGAMAL(algo) )

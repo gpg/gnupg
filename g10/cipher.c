@@ -63,7 +63,8 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     if( use_mdc ) {
 	ed.mdc_method = DIGEST_ALGO_SHA1;
 	cfx->mdc_hash = md_open( DIGEST_ALGO_SHA1, 0 );
-	/*md_start_debug( cfx->mdc_hash, "creatmdc" );*/
+	if ( DBG_HASHING )
+	    md_start_debug( cfx->mdc_hash, "creatmdc" );
     }
     init_packet( &pkt );
     pkt.pkttype = use_mdc? PKT_ENCRYPTED_MDC : PKT_ENCRYPTED;

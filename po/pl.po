@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.0.0\n"
-"POT-Creation-Date: 2000-06-08 23:11+0200\n"
+"POT-Creation-Date: 2000-06-27 12:16+0200\n"
 "PO-Revision-Date: 1999-10-02 21:35+02:00\n"
 "Last-Translator: Janusz A. Urbanowicz <alex@bofh.net.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -828,7 +828,7 @@ msgstr "--delete-secret-key nazwa u¿ytkownika"
 msgid "--delete-key user-id"
 msgstr "--delete-key nazwa u¿ytkownika"
 
-#: g10/encode.c:260 g10/g10.c:1254 g10/sign.c:373
+#: g10/encode.c:260 g10/g10.c:1254 g10/sign.c:393
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "nie mo¿na otworzyæ %s: %s\n"
@@ -1592,7 +1592,7 @@ msgstr ""
 msgid "Key generation failed: %s\n"
 msgstr "Generacja klucza nie powiod³a siê: %s\n"
 
-#: g10/keygen.c:1628 g10/sig-check.c:318 g10/sign.c:111
+#: g10/keygen.c:1628 g10/sig-check.c:318 g10/sign.c:112
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -1600,7 +1600,7 @@ msgstr ""
 "klucz zosta³ stworzony %lu sekund w przysz³o¶ci (zaburzenia\n"
 "czasoprzestrzeni, lub ¼le ustawiony zegar systemowy)\n"
 
-#: g10/keygen.c:1630 g10/sig-check.c:320 g10/sign.c:113
+#: g10/keygen.c:1630 g10/sig-check.c:320 g10/sign.c:114
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -1785,7 +1785,7 @@ msgstr "klucz %08lX: brak klucza publicznego: %s\n"
 msgid "no default public keyring\n"
 msgstr "brak domy¶lnego zbioru kluczy publicznych\n"
 
-#: g10/import.c:423 g10/openfile.c:220 g10/sign.c:275 g10/sign.c:587
+#: g10/import.c:423 g10/openfile.c:220 g10/sign.c:295 g10/sign.c:611
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "zapis do '%s'\n"
@@ -2049,7 +2049,7 @@ msgstr ""
 msgid "Really sign? "
 msgstr "Na pewno podpisaæ? "
 
-#: g10/keyedit.c:373 g10/keyedit.c:1869 g10/keyedit.c:1931 g10/sign.c:135
+#: g10/keyedit.c:373 g10/keyedit.c:1869 g10/keyedit.c:1931 g10/sign.c:136
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "z³o¿enie podpisu nie powiod³o siê: %s\n"
@@ -2519,7 +2519,7 @@ msgid "no secret key\n"
 msgstr "brak klucza prywatnego\n"
 
 #. of subkey
-#: g10/keylist.c:318 g10/mainproc.c:741
+#: g10/keylist.c:318 g10/mainproc.c:742
 #, fuzzy, c-format
 msgid " [expires: %s]"
 msgstr "Data wa¿no¶ci klucza: %s\n"
@@ -2574,27 +2574,27 @@ msgstr "UWAGA: nadawca zaznaczy³ ¿e wiadomo¶æ nie powinna byæ zapisywana\n"
 msgid "original file name='%.*s'\n"
 msgstr "pierwotna nazwa pliku='%.*s'\n"
 
-#: g10/mainproc.c:525
+#: g10/mainproc.c:526
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr ""
 
-#: g10/mainproc.c:612 g10/mainproc.c:621
+#: g10/mainproc.c:613 g10/mainproc.c:622
 msgid "WARNING: invalid notation data found\n"
 msgstr "OSTRZE¯ENIE: niepoprawne dane w adnotacji\n"
 
-#: g10/mainproc.c:624
+#: g10/mainproc.c:625
 msgid "Notation: "
 msgstr "Adnotacja:"
 
-#: g10/mainproc.c:631
+#: g10/mainproc.c:632
 msgid "Policy: "
 msgstr "Regulamin:"
 
-#: g10/mainproc.c:1061
+#: g10/mainproc.c:1062
 msgid "signature verification suppressed\n"
 msgstr "wymuszono pominiêcie sprawdzenia podpisu\n"
 
-#: g10/mainproc.c:1067
+#: g10/mainproc.c:1068
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr ""
@@ -2602,33 +2602,33 @@ msgstr ""
 "z u¿yciem klucza o identyfikatorze %08lX\n"
 
 #. just in case that we have no userid
-#: g10/mainproc.c:1093 g10/mainproc.c:1104
+#: g10/mainproc.c:1094 g10/mainproc.c:1105
 msgid "BAD signature from \""
 msgstr "NIEPOPRAWNY podpis z³o¿ony przez \""
 
-#: g10/mainproc.c:1094 g10/mainproc.c:1105
+#: g10/mainproc.c:1095 g10/mainproc.c:1106
 msgid "Good signature from \""
 msgstr "Poprawny podpis z³o¿ony przez \""
 
-#: g10/mainproc.c:1096
+#: g10/mainproc.c:1097
 msgid "                aka \""
 msgstr "                        alias \""
 
-#: g10/mainproc.c:1152
+#: g10/mainproc.c:1153
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Nie mo¿na sprawdziæ podpisu: %s\n"
 
-#: g10/mainproc.c:1213
+#: g10/mainproc.c:1217
 #, fuzzy, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "nieznana klasa podpisu"
 
-#: g10/mainproc.c:1254
+#: g10/mainproc.c:1263
 msgid "old style (PGP 2.x) signature\n"
 msgstr "podpis starego typu (PGP 2.x)\n"
 
-#: g10/mainproc.c:1259
+#: g10/mainproc.c:1268
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "wykryto niepoprawny pakiet pierwotny w proc_tree()\n"
 
@@ -2846,21 +2846,21 @@ msgid "assuming bad signature due to an unknown critical bit\n"
 msgstr ""
 "przyjêto niewa¿no¶æ podpisu z powonu ustawienia nieznanego bitu krytycznego\n"
 
-#: g10/sign.c:139
+#: g10/sign.c:140
 #, c-format
 msgid "%s signature from: %s\n"
 msgstr "%s podpis z³o¿ony przez: %s\n"
 
-#: g10/sign.c:270 g10/sign.c:582
+#: g10/sign.c:290 g10/sign.c:606
 #, c-format
 msgid "can't create %s: %s\n"
 msgstr "nie mo¿na stworzyæ %s: %s\n"
 
-#: g10/sign.c:368
+#: g10/sign.c:388
 msgid "signing:"
 msgstr "podpis:"
 
-#: g10/sign.c:411
+#: g10/sign.c:431
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "OSTRZE¯ENIE: plik '%s' jest pusty\n"
@@ -3403,7 +3403,7 @@ msgstr "%s zaszyfrowane dane\n"
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "zaszyfrowane nieznanym algorytmem %d\n"
 
-#: g10/encr-data.c:89
+#: g10/encr-data.c:90
 msgid ""
 "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr ""

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2000-06-08 23:11+0200\n"
+"POT-Creation-Date: 2000-06-27 12:16+0200\n"
 "PO-Revision-Date: 2000-02-16 20:10+09:00\n"
 "Last-Translator: IIDA Yosiaki <iida@secom.ne.jp>\n"
 "Language-Team: Japanese <ja@li.org>\n"
@@ -814,7 +814,7 @@ msgstr "--delete-secret-key user-id"
 msgid "--delete-key user-id"
 msgstr "--delete-key user-id"
 
-#: g10/encode.c:260 g10/g10.c:1254 g10/sign.c:373
+#: g10/encode.c:260 g10/g10.c:1254 g10/sign.c:393
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "%s が開けません: %s\n"
@@ -1560,13 +1560,13 @@ msgstr ""
 msgid "Key generation failed: %s\n"
 msgstr "鍵の作成に失敗: %s\n"
 
-#: g10/keygen.c:1628 g10/sig-check.c:318 g10/sign.c:111
+#: g10/keygen.c:1628 g10/sig-check.c:318 g10/sign.c:112
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr "鍵は %lu 秒未来に作成されました (時間旅行か時計のくるいでしょう)\n"
 
-#: g10/keygen.c:1630 g10/sig-check.c:320 g10/sign.c:113
+#: g10/keygen.c:1630 g10/sig-check.c:320 g10/sign.c:114
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -1749,7 +1749,7 @@ msgstr "鍵 %08lX: 公開鍵が見つかりません: %s\n"
 msgid "no default public keyring\n"
 msgstr "デフォルトの公開鍵リングがありません\n"
 
-#: g10/import.c:423 g10/openfile.c:220 g10/sign.c:275 g10/sign.c:587
+#: g10/import.c:423 g10/openfile.c:220 g10/sign.c:295 g10/sign.c:611
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "`%s' への書き出し\n"
@@ -2003,7 +2003,7 @@ msgstr ""
 msgid "Really sign? "
 msgstr "本当に署名しますか? "
 
-#: g10/keyedit.c:373 g10/keyedit.c:1869 g10/keyedit.c:1931 g10/sign.c:135
+#: g10/keyedit.c:373 g10/keyedit.c:1869 g10/keyedit.c:1931 g10/sign.c:136
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "署名に失敗しました: %s\n"
@@ -2472,7 +2472,7 @@ msgid "no secret key\n"
 msgstr "秘密鍵がありません\n"
 
 #. of subkey
-#: g10/keylist.c:318 g10/mainproc.c:741
+#: g10/keylist.c:318 g10/mainproc.c:742
 #, fuzzy, c-format
 msgid " [expires: %s]"
 msgstr "鍵は %s にて期限切れになります\n"
@@ -2527,59 +2527,59 @@ msgstr "注意: 送信者は「読み終えたら削除する」ように求めています\n"
 msgid "original file name='%.*s'\n"
 msgstr "元のファイル名='%.*s'\n"
 
-#: g10/mainproc.c:525
+#: g10/mainproc.c:526
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "独立破棄。「gpg --import」を使って適用してください\n"
 
-#: g10/mainproc.c:612 g10/mainproc.c:621
+#: g10/mainproc.c:613 g10/mainproc.c:622
 msgid "WARNING: invalid notation data found\n"
 msgstr "警告: 無効な注釈データがあります\n"
 
-#: g10/mainproc.c:624
+#: g10/mainproc.c:625
 msgid "Notation: "
 msgstr "注釈: "
 
-#: g10/mainproc.c:631
+#: g10/mainproc.c:632
 msgid "Policy: "
 msgstr "ポリシー: "
 
-#: g10/mainproc.c:1061
+#: g10/mainproc.c:1062
 msgid "signature verification suppressed\n"
 msgstr "署名の検証ができません\n"
 
-#: g10/mainproc.c:1067
+#: g10/mainproc.c:1068
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "%.*s の %s 鍵 ID %08lX による署名\n"
 
 #. just in case that we have no userid
-#: g10/mainproc.c:1093 g10/mainproc.c:1104
+#: g10/mainproc.c:1094 g10/mainproc.c:1105
 msgid "BAD signature from \""
 msgstr "不正な署名: \""
 
-#: g10/mainproc.c:1094 g10/mainproc.c:1105
+#: g10/mainproc.c:1095 g10/mainproc.c:1106
 msgid "Good signature from \""
 msgstr "正しい署名: \""
 
-#: g10/mainproc.c:1096
+#: g10/mainproc.c:1097
 msgid "                aka \""
 msgstr "                別名 \""
 
-#: g10/mainproc.c:1152
+#: g10/mainproc.c:1153
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "署名の検証ができません: %s\n"
 
-#: g10/mainproc.c:1213
+#: g10/mainproc.c:1217
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "クラス0x%02xの独立署名\n"
 
-#: g10/mainproc.c:1254
+#: g10/mainproc.c:1263
 msgid "old style (PGP 2.x) signature\n"
 msgstr "古い形式 (PGP 2.x) による署名\n"
 
-#: g10/mainproc.c:1259
+#: g10/mainproc.c:1268
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "proc_tree() の中に無効なパケットが検出されました\n"
 
@@ -2789,21 +2789,21 @@ msgstr "注意: 署名の鍵は期限切れです %s\n"
 msgid "assuming bad signature due to an unknown critical bit\n"
 msgstr "不明なクリティカルビットがあったので、署名は不正だと見なします\n"
 
-#: g10/sign.c:139
+#: g10/sign.c:140
 #, c-format
 msgid "%s signature from: %s\n"
 msgstr "%s 署名。署名者: %s\n"
 
-#: g10/sign.c:270 g10/sign.c:582
+#: g10/sign.c:290 g10/sign.c:606
 #, c-format
 msgid "can't create %s: %s\n"
 msgstr "%s が作成できません: %s\n"
 
-#: g10/sign.c:368
+#: g10/sign.c:388
 msgid "signing:"
 msgstr "署名:"
 
-#: g10/sign.c:411
+#: g10/sign.c:431
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "警告: `%s' は空のファイルです\n"
@@ -3346,7 +3346,7 @@ msgstr "%s 暗号化されたデータ\n"
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "不明なアルゴリズムによる暗号 %d\n"
 
-#: g10/encr-data.c:89
+#: g10/encr-data.c:90
 msgid ""
 "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr "警告: メッセージは対称暗号法の弱い鍵により暗号化されています。\n"

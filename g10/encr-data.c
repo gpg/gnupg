@@ -78,7 +78,8 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 
     if( ed->mdc_method ) {
 	dfx.mdc_hash = md_open( ed->mdc_method, 0 );
-	/*md_start_debug(dfx.mdc_hash, "checkmdc");*/
+	if ( DBG_HASHING )
+	    md_start_debug(dfx.mdc_hash, "checkmdc");
     }
     dfx.cipher_hd = cipher_open( dek->algo,
 				 ed->mdc_method? CIPHER_MODE_CFB

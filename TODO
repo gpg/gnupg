@@ -1,5 +1,7 @@
 
-  * check that --allow0non-selfsigned does really work
+  * Use DSA keys with the test suite.
+
+  * check that --allow-non-selfsigned does really work
 
   * g10/trustdb.c (make_sig_records): fix the fixme.
 
@@ -25,8 +27,6 @@ Scheduled for 1.1
 
   * Speed up calculation of key validation.
 
-  * Allow a replacement for the progress functions in ./cipher
-
   * print a warning when a revoked/expired _secret_ key is used.
 
   * --disable-asm should still assemble _udiv_qrnnd when needed
@@ -47,7 +47,6 @@ Scheduled for 1.1
 
 Nice to have
 ------------
-  * Official test vectors for 3DES-EDE3
   * use DEL and ^H for erasing the previous character (util/ttyio.c).
     or better readline.
   * Print a warning if the directory mode is wrong.

@@ -217,6 +217,15 @@ more arguments in future versions.
 	the toatal amount is not known. 100/100 may be used to detect the
 	end of operation.
 
+    SIG_CREATED <type> <pubkey algo> <hash algo> <class> <timestamp> <key fpr>
+	A signature has been created using these parameters.
+	    type:  'D' = detached
+		   'C' = cleartext
+		   'S' = standard
+		   (only the first character should be checked)
+	    class: 2 hex digits with the signature class
+
+
 
 Key generation
 ==============

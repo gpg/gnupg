@@ -36,6 +36,7 @@
 #include "filter.h"
 #include "ttyio.h"
 #include "trustdb.h"
+#include "status.h"
 #include "i18n.h"
 
 
@@ -189,6 +190,25 @@ only_old_style( SK_LIST sk_list )
     return old_style;
 }
 
+
+static void
+print_status_sig_created ( PKT_secret_key *sk, PKT_signature *sig, int what )
+{
+    byte array[MAX_FINGERPRINT_LEN], *p;
+    char buf[100+MAX_FINGERPRINT_LEN*2];
+    size_t i, n;
+
+    sprintf(buf, "%c %d %d %02x %lu ",
+	    what, sig->pubkey_algo, sig->digest_algo, sig->sig_class,
+	    (ulong)sig->timestamp );
+
+    fingerprint_from_sk( sk, array, &n );
+    p = buf + strlen(buf);
+    for(i=0; i < n ; i++ )
+	sprintf(p+2*i, "%02X", array[i] );
+
+    write_status_text( STATUS_SIG_CREATED, buf );
+}
 
 
 /****************
@@ -522,12 +542,16 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    pkt.pkttype = PKT_SIGNATURE;
 	    pkt.pkt.signature = sig;
 	    rc = build_packet( out, &pkt );
+	    if( !rc && is_status_enabled() ) {
+		print_status_sig_created ( sk, sig, detached ? 'D':'S');
+	    }
 	    free_packet( &pkt );
 	    if( rc )
 		log_error("build signature packet failed: %s\n", g10_errstr(rc) );
 	}
 	if( rc )
 	    goto leave;
+
     }
 
 
@@ -639,7 +663,8 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	PKT_secret_key *sk = sk_rover->sk;
 	md_enable(textmd, hash_for(sk->pubkey_algo));
     }
-    /*md_start_debug( textmd, "sign" );*/
+    if ( DBG_HASHING )
+	md_start_debug( textmd, "clearsign" );
     copy_clearsig_text( out, inp, textmd,
 			!opt.not_dash_escaped, opt.escape_from, old_style );
     /* fixme: check for read errors */
@@ -718,6 +743,9 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	    pkt.pkttype = PKT_SIGNATURE;
 	    pkt.pkt.signature = sig;
 	    rc = build_packet( out, &pkt );
+	    if( !rc && is_status_enabled() ) {
+		print_status_sig_created ( sk, sig, 'C');
+	    }
 	    free_packet( &pkt );
 	    if( rc )
 		log_error("build signature packet failed: %s\n", g10_errstr(rc) );

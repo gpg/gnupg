@@ -237,10 +237,11 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	    randomize_buffer(sk->protect.iv, sk->protect.ivlen, 1);
 	    cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen );
 	    if( sk->version >= 4 ) {
-	      #define NMPIS (PUBKEY_MAX_NSKEY - PUBKEY_MAX_NPKEY)
-		byte *bufarr[NMPIS];
-		unsigned narr[NMPIS];
-		unsigned nbits[NMPIS];
+		/* FIXME: There is a bug in this function for all algorithms
+		 * where the secret MPIs are more than 1 */
+		byte *bufarr[PUBKEY_MAX_NSKEY];
+		unsigned narr[PUBKEY_MAX_NSKEY];
+		unsigned nbits[PUBKEY_MAX_NSKEY];
 		int ndata=0;
 		byte *p, *data;
 
@@ -251,13 +252,13 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		    nbits[j]  = mpi_get_nbits( sk->skey[i] );
 		    ndata += narr[j] + 2;
 		}
-		for( ; j < NMPIS; j++ )
+		for( ; j < PUBKEY_MAX_NSKEY; j++ )
 		    bufarr[j] = NULL;
 		ndata += 2; /* for checksum */
 
 		data = m_alloc_secure( ndata );
 		p = data;
-		for(j=0; j < NMPIS && bufarr[j]; j++ ) {
+		for(j=0; j < PUBKEY_MAX_NSKEY && bufarr[j]; j++ ) {
 		    p[0] = nbits[j] >> 8 ;
 		    p[1] = nbits[j];
 		    p += 2;
@@ -265,7 +266,6 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		    p += narr[j];
 		    m_free(bufarr[j]);
 		}
-	      #undef NMPIS
 		csum = checksum( data, ndata-2);
 		sk->csum = csum;
 		*p++ =	csum >> 8;

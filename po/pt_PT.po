@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
-"POT-Creation-Date: 2000-06-08 23:11+0200\n"
+"POT-Creation-Date: 2000-06-27 12:16+0200\n"
 "PO-Revision-Date: 1999-09-09 20:28+0000\n"
 "Last-Translator: Pedro Morais <morais@poli.org>\n"
 "Language-Team: pt\n"
@@ -833,7 +833,7 @@ msgstr "--delete-secret-key id-utilizador"
 msgid "--delete-key user-id"
 msgstr "--delete-key id-utilizador"
 
-#: g10/encode.c:260 g10/g10.c:1254 g10/sign.c:373
+#: g10/encode.c:260 g10/g10.c:1254 g10/sign.c:393
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "impossível abrir %s: %s\n"
@@ -1593,7 +1593,7 @@ msgstr ""
 msgid "Key generation failed: %s\n"
 msgstr "A geração de chaves falhou: %s\n"
 
-#: g10/keygen.c:1628 g10/sig-check.c:318 g10/sign.c:111
+#: g10/keygen.c:1628 g10/sig-check.c:318 g10/sign.c:112
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -1601,7 +1601,7 @@ msgstr ""
 "a chave foi criada %lu segundo no futuro\n"
 "(viagem no tempo ou problema no relógio)\n"
 
-#: g10/keygen.c:1630 g10/sig-check.c:320 g10/sign.c:113
+#: g10/keygen.c:1630 g10/sig-check.c:320 g10/sign.c:114
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -1786,7 +1786,7 @@ msgstr "chave %08lX: chave pública não encontrada: %s\n"
 msgid "no default public keyring\n"
 msgstr "sem porta-chaves público padrão\n"
 
-#: g10/import.c:423 g10/openfile.c:220 g10/sign.c:275 g10/sign.c:587
+#: g10/import.c:423 g10/openfile.c:220 g10/sign.c:295 g10/sign.c:611
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "a escrever para `%s'\n"
@@ -2044,7 +2044,7 @@ msgstr ""
 msgid "Really sign? "
 msgstr "Realmente assinar? "
 
-#: g10/keyedit.c:373 g10/keyedit.c:1869 g10/keyedit.c:1931 g10/sign.c:135
+#: g10/keyedit.c:373 g10/keyedit.c:1869 g10/keyedit.c:1931 g10/sign.c:136
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "assinatura falhou: %s\n"
@@ -2514,7 +2514,7 @@ msgid "no secret key\n"
 msgstr "nenhuma chave secreta\n"
 
 #. of subkey
-#: g10/keylist.c:318 g10/mainproc.c:741
+#: g10/keylist.c:318 g10/mainproc.c:742
 #, fuzzy, c-format
 msgid " [expires: %s]"
 msgstr "A chave expira em %s\n"
@@ -2569,59 +2569,59 @@ msgstr "NOTA: o remetente solicitou \"apenas-para-seus-olhos\"\n"
 msgid "original file name='%.*s'\n"
 msgstr "nome do ficheiro original='%.*s'\n"
 
-#: g10/mainproc.c:525
+#: g10/mainproc.c:526
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "revocação solitária - utilize \"gpg --import\" para aplicar\n"
 
-#: g10/mainproc.c:612 g10/mainproc.c:621
+#: g10/mainproc.c:613 g10/mainproc.c:622
 msgid "WARNING: invalid notation data found\n"
 msgstr "AVISO: dados de notação inválidos encontrados\n"
 
-#: g10/mainproc.c:624
+#: g10/mainproc.c:625
 msgid "Notation: "
 msgstr "Notação: "
 
-#: g10/mainproc.c:631
+#: g10/mainproc.c:632
 msgid "Policy: "
 msgstr "Política: "
 
-#: g10/mainproc.c:1061
+#: g10/mainproc.c:1062
 msgid "signature verification suppressed\n"
 msgstr "verificação de assinatura suprimida\n"
 
-#: g10/mainproc.c:1067
+#: g10/mainproc.c:1068
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Assinatura feita em %.*s usando %s, ID da chave %08lX\n"
 
 #. just in case that we have no userid
-#: g10/mainproc.c:1093 g10/mainproc.c:1104
+#: g10/mainproc.c:1094 g10/mainproc.c:1105
 msgid "BAD signature from \""
 msgstr "Assinatura INCORRECTA de \""
 
-#: g10/mainproc.c:1094 g10/mainproc.c:1105
+#: g10/mainproc.c:1095 g10/mainproc.c:1106
 msgid "Good signature from \""
 msgstr "Assinatura correta de \""
 
-#: g10/mainproc.c:1096
+#: g10/mainproc.c:1097
 msgid "                aka \""
 msgstr "                   ou \""
 
-#: g10/mainproc.c:1152
+#: g10/mainproc.c:1153
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Impossível verificar assinatura: %s\n"
 
-#: g10/mainproc.c:1213
+#: g10/mainproc.c:1217
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "assinatura de classe 0x%02x\n"
 
-#: g10/mainproc.c:1254
+#: g10/mainproc.c:1263
 msgid "old style (PGP 2.x) signature\n"
 msgstr "formato de assinatura antigo (PGP2.x)\n"
 
-#: g10/mainproc.c:1259
+#: g10/mainproc.c:1268
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "pacote raiz inválido detectado em proc_tree()\n"
 
@@ -2830,21 +2830,21 @@ msgstr "NOTA: chave de assinatura expirou %s\n"
 msgid "assuming bad signature due to an unknown critical bit\n"
 msgstr "assumindo assinatura incorrecta devido a um bit crítico desconhecido\n"
 
-#: g10/sign.c:139
+#: g10/sign.c:140
 #, c-format
 msgid "%s signature from: %s\n"
 msgstr "assinatura %s de: %s\n"
 
-#: g10/sign.c:270 g10/sign.c:582
+#: g10/sign.c:290 g10/sign.c:606
 #, c-format
 msgid "can't create %s: %s\n"
 msgstr "impossível criar %s: %s\n"
 
-#: g10/sign.c:368
+#: g10/sign.c:388
 msgid "signing:"
 msgstr "a assinar:"
 
-#: g10/sign.c:411
+#: g10/sign.c:431
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "AVISO: `%s' é um ficheiro vazio\n"
@@ -3389,7 +3389,7 @@ msgstr "dados encriptados com %s\n"
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "encriptado com algoritmo desconhecido %d\n"
 
-#: g10/encr-data.c:89
+#: g10/encr-data.c:90
 msgid ""
 "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr ""

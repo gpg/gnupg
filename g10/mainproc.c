@@ -424,10 +424,11 @@ proc_plaintext( CTX c, PACKET *pkt )
 	 */
 	c->mfx.md2 = md_open( DIGEST_ALGO_MD5, 0);
     }
-  #if 0
-    #warning md_start_debug is enabled
-    md_start_debug( c->mfx.md, "verify" );
-  #endif
+    if ( DBG_HASHING ) {
+	md_start_debug( c->mfx.md, "verify" );
+	if ( c->mfx.md2  )
+	    md_start_debug( c->mfx.md2, "verify2" );
+    }
     rc = handle_plaintext( pt, &c->mfx, c->sigs_only, clearsig );
     if( rc == G10ERR_CREATE_FILE && !c->sigs_only) {
 	/* can't write output but we hash it anyway to
@@ -1190,13 +1191,16 @@ proc_tree( CTX c, KBNODE node )
 		md_enable( c->mfx.md, n1->pkt->pkt.signature->digest_algo);
 	    }
 	    /* ask for file and hash it */
-	    if( c->sigs_only )
+	    if( c->sigs_only ) {
 		rc = hash_datafiles( c->mfx.md, NULL,
 				     c->signed_data, c->sigfilename,
 			n1? (n1->pkt->pkt.onepass_sig->sig_class == 0x01):0 );
-	    else
+	    }
+	    else {
 		rc = ask_for_detached_datafile( c->mfx.md, c->mfx.md2,
-					    iobuf_get_fname(c->iobuf), 0 );
+						iobuf_get_fname(c->iobuf),
+			n1? (n1->pkt->pkt.onepass_sig->sig_class == 0x01):0 );
+	    }
 	    if( rc ) {
 		log_error("can't hash datafile: %s\n", g10_errstr(rc));
 		return;
@@ -1230,6 +1234,7 @@ proc_tree( CTX c, KBNODE node )
 		 * signature has been created in textmode */
 		c->mfx.md2 = md_open( sig->digest_algo, 0 );
 	    }
+	  #if 0 /* workaround disabled */
 	    /* Here we have another hack to work around a pgp 2 bug
 	     * It works by not using the textmode for detached signatures;
 	     * this will let the first signature check (on md) fail
@@ -1237,14 +1242,18 @@ proc_tree( CTX c, KBNODE node )
 	     * then produce the "correct" hash.  This is very, very ugly
 	     * hack but it may help in some cases (and break others)
 	     */
-	    if( c->sigs_only )
+		    /*	c->mfx.md2? 0 :(sig->sig_class == 0x01) */
+	  #endif
+	    if( c->sigs_only ) {
 		rc = hash_datafiles( c->mfx.md, c->mfx.md2,
 				     c->signed_data, c->sigfilename,
-				     c->mfx.md2? 0 :(sig->sig_class == 0x01) );
-	    else
+				     (sig->sig_class == 0x01) );
+	    }
+	    else {
 		rc = ask_for_detached_datafile( c->mfx.md, c->mfx.md2,
-					 iobuf_get_fname(c->iobuf),
-			       c->mfx.md2? 0 :(sig->sig_class == 0x01) );
+						iobuf_get_fname(c->iobuf),
+						(sig->sig_class == 0x01) );
+	    }
 	    if( rc ) {
 		log_error("can't hash datafile: %s\n", g10_errstr(rc));
 		return;

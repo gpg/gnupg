@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2000-06-12 01:30+0000\n"
+"POT-Creation-Date: 2000-06-27 12:16+0200\n"
 "PO-Revision-Date: 2000-06-12  12:50+0200\n"
 "Last-Translator: Walter Koch <koch@hsp.de>\n"
 "Language-Team: German <de@li.org>\n"
@@ -825,7 +825,7 @@ msgstr "--delete-secret-key User-ID"
 msgid "--delete-key user-id"
 msgstr "--delete-key User-ID"
 
-#: g10/encode.c:260 g10/g10.c:1254 g10/sign.c:373
+#: g10/encode.c:260 g10/g10.c:1254 g10/sign.c:393
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "'%s' kann nicht geöffnet werden: %s\n"
@@ -1595,7 +1595,7 @@ msgstr ""
 msgid "Key generation failed: %s\n"
 msgstr "Schlüsselerzeugung fehlgeschlagen: %s\n"
 
-#: g10/keygen.c:1628 g10/sig-check.c:318 g10/sign.c:111
+#: g10/keygen.c:1628 g10/sig-check.c:318 g10/sign.c:112
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -1603,7 +1603,7 @@ msgstr ""
 "Der Schlüssel wurde %lu Sekunde in der Zukunft erzeugt (Zeitreise oder Uhren "
 "stimmen nicht überein)\n"
 
-#: g10/keygen.c:1630 g10/sig-check.c:320 g10/sign.c:113
+#: g10/keygen.c:1630 g10/sig-check.c:320 g10/sign.c:114
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -1788,7 +1788,7 @@ msgstr "Schlüssel %08lX: Öffentlicher Schlüssel nicht gefunden: %s\n"
 msgid "no default public keyring\n"
 msgstr "Kein voreingestellter öffentlicher Schlüsselbund\n"
 
-#: g10/import.c:423 g10/openfile.c:220 g10/sign.c:275 g10/sign.c:587
+#: g10/import.c:423 g10/openfile.c:220 g10/sign.c:295 g10/sign.c:611
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "Schreiben nach '%s'\n"
@@ -2050,7 +2050,7 @@ msgstr ""
 msgid "Really sign? "
 msgstr "Wirklich unterschreiben? "
 
-#: g10/keyedit.c:373 g10/keyedit.c:1869 g10/keyedit.c:1931 g10/sign.c:135
+#: g10/keyedit.c:373 g10/keyedit.c:1869 g10/keyedit.c:1931 g10/sign.c:136
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "Beglaubigung fehlgeschlagen: %s\n"
@@ -2518,7 +2518,7 @@ msgid "no secret key\n"
 msgstr "Kein geheimer Schlüssel\n"
 
 #. of subkey
-#: g10/keylist.c:318 g10/mainproc.c:741
+#: g10/keylist.c:318 g10/mainproc.c:742
 #, c-format
 msgid " [expires: %s]"
 msgstr " [verfällt: %s]"
@@ -2576,60 +2576,61 @@ msgstr ""
 msgid "original file name='%.*s'\n"
 msgstr "Ursprünglicher Dateiname='%.*s'\n"
 
-#: g10/mainproc.c:525
+#: g10/mainproc.c:526
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
-msgstr "Einzelner Widerruf - verwenden Sie \"gpg --import\" um ihn anzuwenden\n"
+msgstr ""
+"Einzelner Widerruf - verwenden Sie \"gpg --import\" um ihn anzuwenden\n"
 
-#: g10/mainproc.c:612 g10/mainproc.c:621
+#: g10/mainproc.c:613 g10/mainproc.c:622
 msgid "WARNING: invalid notation data found\n"
 msgstr "WARNUNG: Ungültige \"Notation\"-Daten gefunden\n"
 
-#: g10/mainproc.c:624
+#: g10/mainproc.c:625
 msgid "Notation: "
 msgstr "\"Notation\": "
 
-#: g10/mainproc.c:631
+#: g10/mainproc.c:632
 msgid "Policy: "
 msgstr "Richtlinie: "
 
-#: g10/mainproc.c:1061
+#: g10/mainproc.c:1062
 msgid "signature verification suppressed\n"
 msgstr "Unterschriften-Überprüfung unterdrückt\n"
 
 # Scripte scannen lt. dl1bke auf "ID (0-9A-F)+" deswegen muß "ID" rein :-(
-#: g10/mainproc.c:1067
+#: g10/mainproc.c:1068
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Unterschrift vom %.*s, %s Schlüssel ID %08lX\n"
 
 #. just in case that we have no userid
-#: g10/mainproc.c:1093 g10/mainproc.c:1104
+#: g10/mainproc.c:1094 g10/mainproc.c:1105
 msgid "BAD signature from \""
 msgstr "FALSCHE Unterschrift von \""
 
-#: g10/mainproc.c:1094 g10/mainproc.c:1105
+#: g10/mainproc.c:1095 g10/mainproc.c:1106
 msgid "Good signature from \""
 msgstr "Korrekte Unterschrift von \""
 
-#: g10/mainproc.c:1096
+#: g10/mainproc.c:1097
 msgid "                aka \""
 msgstr "                    alias \""
 
-#: g10/mainproc.c:1152
+#: g10/mainproc.c:1153
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Unterschrift kann nicht geprüft werden: %s\n"
 
-#: g10/mainproc.c:1213
+#: g10/mainproc.c:1217
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "Einzelne Unterschrift der Klasse 0x%02x\n"
 
-#: g10/mainproc.c:1254
+#: g10/mainproc.c:1263
 msgid "old style (PGP 2.x) signature\n"
 msgstr "Unterschrift nach alter (PGP 2.x) Art\n"
 
-#: g10/mainproc.c:1259
+#: g10/mainproc.c:1268
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "ungültiges root-Paket in proc_tree() entdeckt\n"
 
@@ -2845,21 +2846,21 @@ msgid "assuming bad signature due to an unknown critical bit\n"
 msgstr ""
 "Vermutlich eine FALSCHE Unterschrift, wegen unbekanntem \"critical bit\"\n"
 
-#: g10/sign.c:139
+#: g10/sign.c:140
 #, c-format
 msgid "%s signature from: %s\n"
 msgstr "%s Unterschrift von: %s\n"
 
-#: g10/sign.c:270 g10/sign.c:582
+#: g10/sign.c:290 g10/sign.c:606
 #, c-format
 msgid "can't create %s: %s\n"
 msgstr "%s kann nicht erzeugt werden: %s\n"
 
-#: g10/sign.c:368
+#: g10/sign.c:388
 msgid "signing:"
 msgstr "unterschreibe:"
 
-#: g10/sign.c:411
+#: g10/sign.c:431
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "WARNUNG: '%s' ist eine leere Datei.\n"
@@ -3410,7 +3411,7 @@ msgstr "%s verschlüsselte Daten\n"
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "Mit unbekanntem Verfahren verschlüsselt %d\n"
 
-#: g10/encr-data.c:89
+#: g10/encr-data.c:90
 msgid ""
 "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr ""

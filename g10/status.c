@@ -150,6 +150,7 @@ write_status_text ( int no, const char *text)
       case STATUS_END_ENCRYPTION : s = "END_ENCRYPTION\n"; break;
       case STATUS_DELETE_PROBLEM : s = "DELETE_PROBLEM\n"; break;
       case STATUS_PROGRESS	 : s = "PROGRESS\n"; break;
+      case STATUS_SIG_CREATED	 : s = "SIG_CREATED\n"; break;
       default: s = "?\n"; break;
     }
 

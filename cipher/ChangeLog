@@ -1,3 +1,8 @@
+Wed Jun 28 11:54:44 CEST 2000  Werner Koch  <wk@>
+
+  * rsa.c, rsa.h: New based on the old module version (only in CVS for now).
+  * pubkey.c (setup_pubkey_table): Added commented support for RSA.
+
 Fri Jun  9 10:09:52 CEST 2000  Werner Koch  <wk@openit.de>
 
   * rndunix.c (waitpid): New. For UTS 2.1.  All by Dave Dykstra.

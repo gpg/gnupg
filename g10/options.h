@@ -108,12 +108,14 @@ struct {
 #define DBG_CACHE_VALUE   64	/* debug the cacheing */
 #define DBG_MEMSTAT_VALUE 128	/* show memory statistics */
 #define DBG_TRUST_VALUE   256	/* debug the trustdb */
+#define DBG_HASHING_VALUE 512	/* debug hashing operations */
 
 
 #define DBG_PACKET (opt.debug & DBG_PACKET_VALUE)
 #define DBG_FILTER (opt.debug & DBG_FILTER_VALUE)
 #define DBG_CACHE  (opt.debug & DBG_CACHE_VALUE)
 #define DBG_TRUST  (opt.debug & DBG_TRUST_VALUE)
+#define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
 
 
 #endif /*G10_OPTIONS_H*/

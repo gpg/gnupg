@@ -847,7 +847,7 @@ armor_filter( void *opaque, int control,
 		    buf[n++] = 0x90; /* old format, type 4, 1 length byte */
 		    buf[n++] = 13;   /* length */
 		    buf[n++] = 3;    /* version */
-		    buf[n++] = 0x01; /* sigclass 0x01 (canonical text mode)*/
+		    buf[n++] = afx->not_dash_escaped? 0:1; /* sigclass */
 		    if( hashes & 1 ) {
 			hashes &= ~1;
 			buf[n++] = DIGEST_ALGO_RMD160;
