@@ -1,5 +1,7 @@
 2002-05-29  Werner Koch  <wk@gnupg.org>
 
+	* encode.c (encode_simple): Intialize PKT when --no-literal is used.
+
 	* keyedit.c (show_key_with_all_names_colon): Renamed the record
 	for revocation keys to "rvk".
 

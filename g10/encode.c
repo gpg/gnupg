@@ -203,7 +203,11 @@ encode_simple( const char *filename, int mode )
 	cfx.datalen = filesize && !do_compress ? calc_packet_length( &pkt ) : 0;
     }
     else
-	cfx.datalen = filesize && !do_compress ? filesize : 0;
+      {
+        cfx.datalen = filesize && !do_compress ? filesize : 0;
+        pkt.pkttype = 0;
+        pkt.pkt.generic = NULL;
+      }
 
     /* register the cipher filter */
     if( mode )
