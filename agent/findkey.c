@@ -179,18 +179,20 @@ modify_description (const char *in, const char *comment, char **result)
               switch (in[i])
                 {
                 case '%':
-                  out_len++;
                   if (out)
                     *out++ = '%';
+                  else
+                    out_len++;
                   break;
 
                 case 'c': /* Comment.  */
-                  out_len += comment_length;
-                  if (out && comment_length)
+                  if (out)
                     {
                       memcpy (out, comment, comment_length);
                       out += comment_length;
                     }
+                  else
+                    out_len += comment_length;
                   break;
 
                 default: /* Invalid special sequences are ignored.  */
@@ -199,9 +201,10 @@ modify_description (const char *in, const char *comment, char **result)
             }
           else
             {
-              out_len++;
               if (out)
                 *out++ = in[i];
+              else
+                out_len++;
             }
         }
       
