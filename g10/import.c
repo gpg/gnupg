@@ -560,8 +560,8 @@ import_one( const char *fname, KBNODE keyblock,
     uidnode = find_next_kbnode( keyblock, PKT_USER_ID );
 
     if(pk->pubkey_algo==PUBKEY_ALGO_ELGAMAL)
-      log_info(_("NOTE: Elgamal primary key detected - "
-		 "this may take some time to import\n"));
+      log_info(_("key %08lX: Elgamal primary key -"
+		 " this may take some time to import\n"),(ulong)keyid[1]);
 
     if( opt.verbose && !opt.interactive ) {
 	log_info( "pub  %4u%c/%08lX %s   ",

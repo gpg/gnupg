@@ -1,3 +1,11 @@
+2003-10-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (import_one): Show the keyid when giving the Elgamal
+	slow import warning.
+
+	* g10.c (main): Older versions used --comment "" to indicate no
+	comment.  Don't add an empty comment.
+
 2003-10-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (show_key_with_all_names): Ownertrust is only
