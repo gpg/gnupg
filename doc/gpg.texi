@@ -352,11 +352,11 @@ must be specified by fingerprint.
 Same as ---delete-key, but if a secret key exists, it will be removed 
 first. In batch mode the key must be specified by fingerprint.
 
-@item ---gen-revoke
+@item ---gen-revoke @code{name}
 Generate a revocation certificate for the complete key. To revoke
 a subkey or a signature, use the ---edit command.
 
-@item ---desig-revoke
+@item ---desig-revoke @code{name}
 Generate a designated revocation certificate for a key. This allows a
 user (with the permission of the keyholder) to revoke someone else's
 key.
@@ -506,9 +506,9 @@ have GnuPG append the new extension. This option has no effect on
 non-Windows platforms.
 
 @item -u, ---local-user @code{name}
-Use @code{name} as the user ID to sign.
-This option is silently ignored for the list commands,
-so that it can be used in an options file.
+Use @code{name} as the user ID to sign with. This option is silently
+ignored for the list commands, so that it can be used in an options
+file.
 
 @item ---default-key @code{name}
 Use @code{name} as default user ID for signatures. If this
@@ -643,22 +643,20 @@ ID is bound to the key.
 Identical to `---trust-model always'. This option is deprecated.
 
 @item ---keyserver @code{name}
-Use @code{name} as your keyserver. This is the server that ---recv-keys,
----send-keys, and --search-keys will communicate with to receive keys
-from, send keys to, and search for keys on. The format of the
-@code{name} is a URI: `scheme:[//]keyservername[:port]' The scheme is
-the type of keyserver: "hkp" for the HTTP (or compatible) keyservers,
-"ldap" for the NAI LDAP keyserver, or "mailto" for the Graff email
-keyserver. Note that your particular installation of GnuPG may have
-other keyserver types available as well. Keyserver schemes are
-case-insensitive.
+Use @code{name} as your keyserver. This is the server that
+---recv-keys, --send-keys, and --search-keys will communicate with to
+receive keys from, send keys to, and search for keys on. The format
+of the @code{name} is a URI: `scheme:[//]keyservername[:port]' The
+scheme is the type of keyserver: "hkp" for the HTTP (or compatible)
+keyservers, "ldap" for the NAI LDAP keyserver, or "mailto" for the
+Graff email keyserver. Note that your particular installation of
+GnuPG may have other keyserver types available as well. Keyserver
+schemes are case-insensitive.
 
 Most keyservers synchronize with each other, so there is generally no
-need to send keys to more than one server. Using the command "host -l
-pgp.net | grep wwwkeys" gives you a list of HKP keyservers. When
-using one of the wwwkeys servers, due to load balancing using
-round-robin DNS you may notice that you get a different key server
-each time.
+need to send keys to more than one server. The keyserver
+"hkp://subkeys.pgp.net" uses round robin DNS to give a different
+keyserver each time you use it.
 
 @item ---keyserver-options @code{parameters}
 This is a space or comma delimited string that gives options for the
@@ -936,7 +934,7 @@ must contain a '@@' character. This is to help prevent pollution of
 the IETF reserved notation namespace. The ---expert flag overrides the
 '@@' check. @code{value} may be any printable string; it will be
 encoded in UTF8, so you should check that your ---charset is set
-correctly. If you prefix @code{name} with an exclamation mark, the
+correctly. If you prefix @code{name} with an exclamation mark (!), the
 notation data will be flagged as critical (rfc2440:5.2.3.15).
 ---sig-notation sets a notation for data signatures. --cert-notation
 sets a notation for key signatures (certifications). ---set-notation
@@ -962,8 +960,8 @@ as well as when verifying a signature with a notation in it.
 @itemx ---cert-policy-url @code{string}
 @itemx ---set-policy-url @code{string}
 Use @code{string} as Policy URL for signatures (rfc2440:5.2.3.19). If
-you prefix it with an exclamation mark, the policy URL packet will be
-flagged as critical. ---sig-policy-url sets a a policy url for data
+you prefix it with an exclamation mark (!), the policy URL packet will
+be flagged as critical. ---sig-policy-url sets a a policy url for data
 signatures. ---cert-policy-url sets a policy url for key signatures
 (certifications). ---set-policy-url sets both.
 
@@ -1529,7 +1527,7 @@ in front.
 
 @end table
 
-Note that you can append an exclamation mark to key IDs or
+Note that you can append an exclamation mark (!) to key IDs or
 fingerprints. This flag tells GnuPG to use exactly the given primary
 or secondary key and not to try to figure out which secondary or
 primary key to use.
@@ -1557,12 +1555,13 @@ show fingerprint
 
 @item gpg ---verify @code{pgpfile}
 @itemx gpg ---verify @code{sigfile} @code{files}
-Verify the signature of the file but do not output the data. The second form
-is used for detached signatures, where @code{sigfile} is the detached
-signature (either ASCII armored of binary) and @code{files} are the signed
-data; if this is not given the name of the file holding the signed data is
-constructed by cutting off the extension (".asc" or ".sig") of
-@code{sigfile} or by asking the user for the filename.
+Verify the signature of the file but do not output the data. The
+second form is used for detached signatures, where @code{sigfile}
+is the detached signature (either ASCII armored or binary) and
+@code{files} are the signed data; if this is not given, the name of
+the file holding the signed data is constructed by cutting off the
+extension (".asc" or ".sig") of @code{sigfile} or by asking the
+user for the filename.
 
 @end table
 
