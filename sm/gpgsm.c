@@ -1257,6 +1257,7 @@ main ( int argc, char **argv)
 
     default:
         log_error ("invalid command\n");
+#if 0
 	if (argc > 1)
           wrong_args(_("[filename]"));
 	/* Issue some output for the unix newbie */
@@ -1264,7 +1265,6 @@ main ( int argc, char **argv)
             && isatty (fileno(stdout) ) && isatty (fileno(stderr) ) )
           log_info (_("Go ahead and type your message ...\n"));
         
-#if 0
 	if ( !(a = iobuf_open(fname)) )
           log_error (_("can't open `%s'\n"), print_fname_stdin(fname));
 	else

@@ -1,3 +1,8 @@
+2002-05-31  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): Don't print the "go ahead" message for an
+	invalid command.
+
 2002-05-23  Werner Koch  <wk@gnupg.org>
 
 	* import.c (gpgsm_import): Add error messages.
