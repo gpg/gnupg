@@ -1,3 +1,7 @@
+2003-09-28  Timo Schulz  <twoaday@freakmail.de>
+
+	* strgutil.c [WIN32] (asprintf): New.
+	
 2003-09-28  Werner Koch  <wk@gnupg.org>
 
 	* ttyio.c (tty_fprintf): New.

@@ -868,7 +868,7 @@ strncasecmp( const char *a, const char *b, size_t n )
  * FIXME: Write a new CRT for W32.
  */
 int
-vasprintf ( char **result, const char *format, va_list args)
+vasprintf (char **result, const char *format, va_list args)
 {
   const char *p = format;
   /* Add one to make sure that it is never zero, which might cause malloc
@@ -952,6 +952,18 @@ vasprintf ( char **result, const char *format, va_list args)
     return vsprintf (*result, format, args);
   else
     return 0;
+}
+
+int
+asprintf (char **buf, const char *fmt, ...)
+{
+  int status;
+  va_list ap;
+
+  va_start (ap, fmt);
+  status = vasprintf (buf, fmt, ap);
+  va_end (ap);
+  return status;  
 }
 
 #endif /*_WIN32*/
