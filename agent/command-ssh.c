@@ -19,6 +19,8 @@
  * 02111-1307, USA
  */
 
+/* Only v2 of the ssh-agent protocol is implemented.  */
+
 #include <config.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -65,13 +67,15 @@
 /* A "byte".  */
 typedef unsigned char byte_t;
 
-typedef int (*ssh_request_handler_t) (ctrl_t ctrl,
-				      estream_t request, estream_t response);
+typedef gpg_error_t (*ssh_request_handler_t) (ctrl_t ctrl,
+					      estream_t request,
+					      estream_t response);
 
 typedef struct ssh_request_spec
 {
   byte_t type;
   ssh_request_handler_t handler;
+  const char *identifier;
 } ssh_request_spec_t;
 
 typedef gpg_error_t (*ssh_key_modifier_t) (const char *elems, gcry_mpi_t *mpis);
@@ -105,7 +109,7 @@ realloc_secure (void *a, size_t n)
     p = gcry_realloc (a, n);
   else
     p = gcry_malloc_secure (n);
-  
+
   return p;
 }
 
@@ -1283,7 +1287,7 @@ make_cstring (const char *data, size_t data_n)
 
 /* Request handler.  */
 
-static int
+static gpg_error_t
 ssh_handler_request_identities (ctrl_t ctrl, estream_t request, estream_t response)
 {
   const char *key_type;
@@ -1300,11 +1304,8 @@ ssh_handler_request_identities (ctrl_t ctrl, estream_t request, estream_t respon
   gcry_sexp_t key_public;
   DIR *dir;
   gpg_error_t err;
+  gpg_error_t ret_err;
   int ret;
-  int bad;
-
-  if (DBG_COMMAND)
-    log_debug ("[ssh-agent] request identities\n");
 
   /* Prepare buffer stream.  */
 
@@ -1316,7 +1317,6 @@ ssh_handler_request_identities (ctrl_t ctrl, estream_t request, estream_t respon
   key_counter = 0;
   buffer = NULL;
   dir = NULL;
-  bad = 0;
   err = 0;
 
   key_blobs = es_mopen (NULL, 0, 0, 1, NULL, NULL, "r+");
@@ -1426,11 +1426,25 @@ ssh_handler_request_identities (ctrl_t ctrl, estream_t request, estream_t respon
   gcry_sexp_release (key_secret);
   gcry_sexp_release (key_public);
 
-  es_write_byte (response, SSH_RESPONSE_IDENTITIES_ANSWER);
-  if (! es_ferror (response))
-    es_write_uint32 (response, err ? 0 : key_counter);
-  if (! (err || es_ferror (response)))
-    es_copy (response, key_blobs);
+  if (! err)
+    {
+      ret_err = es_write_byte (response, SSH_RESPONSE_IDENTITIES_ANSWER);
+      if (ret_err)
+	goto leave;
+      ret_err = es_write_uint32 (response, key_counter);
+      if (ret_err)
+	goto leave;
+      ret_err = es_copy (response, key_blobs);
+      if (ret_err)
+	goto leave;
+    }
+  else
+    {
+      ret_err = es_write_byte (response, SSH_RESPONSE_FAILURE);
+      goto leave;
+    };
+
+ leave:
 
   if (key_blobs)
     es_fclose (key_blobs);
@@ -1442,7 +1456,7 @@ ssh_handler_request_identities (ctrl_t ctrl, estream_t request, estream_t respon
   xfree (buffer);
   xfree ((void *) key_type);		/* FIXME? */
 
-  return bad;
+  return ret_err;
 }
 
 static gpg_error_t
@@ -1609,7 +1623,7 @@ data_sign (CTRL ctrl, ssh_signature_encoder_t sig_encoder,
   return err;
 }
 
-static int
+static gpg_error_t
 ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
 {
   gcry_sexp_t key;
@@ -1626,48 +1640,32 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
   uint32_t flags;
   const void *p;
   gpg_error_t err;
-  int bad;
+  gpg_error_t ret_err;
 
   key_blob = NULL;
   data = NULL;
   sig = NULL;
   key = NULL;
-  bad = 0;
-
-  if (DBG_COMMAND)
-    log_debug ("[ssh-agent] sign request\n");
 
   /* Receive key.  */
   
   err = es_read_string (request, 0, &key_blob, &key_blob_size);
   if (err)
-    {
-      bad = 1;
-      goto out;
-    }
+    goto out;
 
   err = ssh_read_key_public_from_blob (key_blob, key_blob_size, &key, &spec);
   if (err)
-    {
-      bad = 1;
-      goto out;
-    }
+    goto out;
 
   /* Receive data to sign.  */
   err = es_read_string (request, 0, &data, &data_size);
   if (err)
-    {
-      bad = 1;
-      goto out;
-    }
+    goto out;
 
   /* FIXME?  */
   err = es_read_uint32 (request, &flags);
   if (err)
-    {
-      bad = 1;
-      goto out;
-    }
+    goto out;
 
   /* Hash data.  */
   hash_n = gcry_md_get_algo_dlen (GCRY_MD_SHA1);
@@ -1701,25 +1699,32 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
   
  out:
 
-  if (! bad)
+  /* Done.  */
+
+  if (! err)
     {
-      /* Done.  */
-      if (! err)
-	{
-	  es_write_byte (response, SSH_RESPONSE_SIGN_RESPONSE);
-	  if (! es_ferror (response))
-	    es_write_string (response, sig, sig_n);
-	}
-      else
-	es_write_byte (response, SSH_RESPONSE_FAILURE);
+      ret_err = es_write_byte (response, SSH_RESPONSE_SIGN_RESPONSE);
+      if (ret_err)
+	goto leave;
+      ret_err = es_write_string (response, sig, sig_n);
+      if (ret_err)
+	goto leave;
+    }
+  else
+    {
+      ret_err = es_write_byte (response, SSH_RESPONSE_FAILURE);
+      if (ret_err)
+	goto leave;
     }
   
+ leave:
+
   gcry_sexp_release (key);
   xfree (key_blob);
   xfree (data);
   xfree (sig);
 
-  return bad;
+  return ret_err;
 }
 
 static gpg_error_t
@@ -1864,9 +1869,6 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   unsigned int i;
   int ret;
 
-  if (DBG_COMMAND)
-    log_debug ("[ssh-agent] registering identity\n");
-
   description = NULL;
   comment = NULL;
   buffer = NULL;
@@ -1941,39 +1943,29 @@ ssh_identity_drop (gcry_sexp_t key)
   /* FIXME: What to do here - forgetting the passphrase or deleting
      the key from key cache?  */
 
-  if (DBG_COMMAND)
-    log_debug ("[ssh-agent] dropping identity `%s'\n", key_grip);
-
  out:
 
   return err;
 }
 
-static int
+static gpg_error_t
 ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
 {
+  gpg_error_t ret_err;
   gpg_error_t err;
   gcry_sexp_t key;
   byte_t b;
   int confirm;
   int ttl;
-  int bad;
   
-  if (DBG_COMMAND)
-    log_debug ("[ssh-agent] add identity\n");
-
   confirm = 0;
   key = NULL;
   ttl = 0;
-  bad = 0;
 
   /* FIXME?  */
   err = ssh_receive_key (request, &key, 1, 1, NULL);
   if (err)
-    {
-      bad = 1;
-      goto out;
-    }
+    goto out;
 
   while (1)
     {
@@ -2018,43 +2010,33 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
 
   gcry_sexp_release (key);
 
-  if (! bad)
-    es_write_byte (response, err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
+  ret_err = es_write_byte (response,
+			   err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
 
-  return bad;
+  return ret_err;
 }
 
-static int
+static gpg_error_t
 ssh_handler_remove_identity (ctrl_t ctrl, estream_t request, estream_t response)
 {
   unsigned char *key_blob;
   uint32_t key_blob_size;
   gcry_sexp_t key;
+  gpg_error_t ret_err;
   gpg_error_t err;
-  int bad;
 
   /* Receive key.  */
 
-  if (DBG_COMMAND)
-    log_debug ("[ssh-agent] remove identity\n");
-
   key_blob = NULL;
   key = NULL;
-  bad = 0;
   
   err = es_read_string (request, 0, &key_blob, &key_blob_size);
   if (err)
-    {
-      bad = 1;
-      goto out;
-    }
+    goto out;
 
   err = ssh_read_key_public_from_blob (key_blob, key_blob_size, &key, NULL);
   if (err)
-    {
-      bad = 1;
-      goto out;
-    }
+    goto out;
   
   err = ssh_identity_drop (key);
 
@@ -2063,19 +2045,16 @@ ssh_handler_remove_identity (ctrl_t ctrl, estream_t request, estream_t response)
   xfree (key_blob);
   gcry_sexp_release (key);
 
-  if (! bad)
-    es_write_byte (response, err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
+  ret_err = es_write_byte (response,
+			   err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
 
-  return bad;
+  return ret_err;
 }
 
 static gpg_error_t
 ssh_identities_remove_all (void)
 {
   gpg_error_t err;
-
-  if (DBG_COMMAND)
-    log_debug ("[ssh-agent] remove all identities\n");
 
   err = 0;
 
@@ -2085,15 +2064,17 @@ ssh_identities_remove_all (void)
   return err;
 }
 
-static int
+static gpg_error_t
 ssh_handler_remove_all_identities (ctrl_t ctrl, estream_t request, estream_t response)
 {
+  gpg_error_t ret_err;
   gpg_error_t err;
   
   err = ssh_identities_remove_all ();
-  es_write_byte (response, err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
+  ret_err = es_write_byte (response,
+			   err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
 
-  return 0;
+  return ret_err;
 }
 
 static gpg_error_t
@@ -2101,9 +2082,8 @@ ssh_lock (void)
 {
   gpg_error_t err;
 
-  if (DBG_COMMAND)
-    log_debug ("[ssh-agent] lock\n");
-
+  /* FIXME */
+  log_error ("[gpg-agent/ssh] lock command is not implemented\n");
   err = 0;
 
   return err;
@@ -2114,34 +2094,36 @@ ssh_unlock (void)
 {
   gpg_error_t err;
 
-  if (DBG_COMMAND)
-    log_debug ("[ssh-agent] unlock\n");
-
+  log_error ("[gpg-agent/ssh] unlock command is not implemented\n");
   err = 0;
 
   return err;
 }
 
-static int
+static gpg_error_t
 ssh_handler_lock (ctrl_t ctrl, estream_t request, estream_t response)
 {
+  gpg_error_t ret_err;
   gpg_error_t err;
   
   err = ssh_lock ();
-  es_write_byte (response, err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
+  ret_err = es_write_byte (response,
+			   err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
 
-  return 0;
+  return ret_err;
 }
 
-static int
+static gpg_error_t
 ssh_handler_unlock (ctrl_t ctrl, estream_t request, estream_t response)
 {
+  gpg_error_t ret_err;
   gpg_error_t err;
   
-  err =  ssh_unlock ();
-  es_write_byte (response, err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
+  err = ssh_unlock ();
+  ret_err = es_write_byte (response,
+			   err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
 
-  return 0;
+  return ret_err;
 }
 
 
@@ -2149,181 +2131,206 @@ ssh_handler_unlock (ctrl_t ctrl, estream_t request, estream_t response)
 /* Associating request types with the corresponding request
    handlers.  */
 
+#define REQUEST_SPEC_DEFINE(id, name) \
+  { SSH_REQUEST_##id, ssh_handler_##name, #name }
+
 static ssh_request_spec_t request_specs[] =
   {
-    { SSH_REQUEST_REQUEST_IDENTITIES,    ssh_handler_request_identities },
-    { SSH_REQUEST_SIGN_REQUEST,          ssh_handler_sign_request },
-    { SSH_REQUEST_ADD_IDENTITY,          ssh_handler_add_identity },
-    { SSH_REQUEST_ADD_ID_CONSTRAINED,    ssh_handler_add_identity },
-    { SSH_REQUEST_REMOVE_IDENTITY,       ssh_handler_remove_identity },
-    { SSH_REQUEST_REMOVE_ALL_IDENTITIES, ssh_handler_remove_all_identities },
-    { SSH_REQUEST_LOCK,                  ssh_handler_lock },
-    { SSH_REQUEST_UNLOCK,                ssh_handler_unlock },
+    REQUEST_SPEC_DEFINE (REQUEST_IDENTITIES,    request_identities),
+    REQUEST_SPEC_DEFINE (SIGN_REQUEST,          sign_request),
+    REQUEST_SPEC_DEFINE (ADD_IDENTITY,          add_identity),
+    REQUEST_SPEC_DEFINE (ADD_ID_CONSTRAINED,    add_identity),
+    REQUEST_SPEC_DEFINE (REMOVE_IDENTITY,       remove_identity),
+    REQUEST_SPEC_DEFINE (REMOVE_ALL_IDENTITIES, remove_all_identities),
+    REQUEST_SPEC_DEFINE (LOCK,                  lock),
+    REQUEST_SPEC_DEFINE (UNLOCK,                unlock)
   };
 
 
 
-static gpg_error_t
-ssh_request_process (ctrl_t ctrl, estream_t request, estream_t response)
+static int
+ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
 {
+  estream_t response;
+  estream_t request;
   byte_t request_type;
   gpg_error_t err;
   unsigned int i;
-  int bad;
+  int send_err;
+  int ret;
+  unsigned char *request_data;
+  uint32_t request_data_size;
+  uint32_t response_size;
 
-  err = es_read_byte (request, &request_type);
+  request_data = NULL;
+  response = NULL;
+  request = NULL;
+  send_err = 0;
+
+  /* Create memory streams for request/response data.  The entire
+     request will be stored in secure memory, since it might contain
+     secret key material.  The response does not have to be stored in
+     secure memory, since we never give out secret keys.  */
+      
+  /* Retrieve request.  */
+  err = es_read_string (stream_sock, 1, &request_data, &request_data_size);
   if (err)
     goto out;
 
-  if (DBG_COMMAND)
-    log_debug ("[ssh-agent] request: %u\n", request_type);
+  if (opt.verbose)
+    log_debug ("[gpg-agent/ssh] Received request of length: %u\n",
+	       request_data_size);
+
+  request = es_mopen (NULL, 0, 0, 1, realloc_secure, gcry_free, "r+");
+  if (! request)
+    {
+      err = gpg_error_from_errno (errno);
+      goto out;
+    }
+  ret = es_setvbuf (request, NULL, _IONBF, 0);
+  if (ret)
+    {
+      err = gpg_error_from_errno (errno);
+      goto out;
+    }
+  err = es_write_data (request, request_data, request_data_size);
+  if (err)
+    goto out;
+  es_rewind (request);
+
+  response = es_mopen (NULL, 0, 0, 1, NULL, NULL, "r+");
+  if (! response)
+    {
+      err = gpg_error_from_errno (errno);
+      goto out;
+    }
+
+  err = es_read_byte (request, &request_type);
+  if (err)
+    {
+      send_err = 1;
+      goto out;
+    }
 
   for (i = 0; i < DIM (request_specs); i++)
     if (request_specs[i].type == request_type)
       break;
   if (i == DIM (request_specs))
     {
-      err = es_write_byte (response, SSH_RESPONSE_FAILURE);
+      log_debug ("[gpg-agent/ssh] request %u is not supported\n",
+		 request_type);
+      send_err = 1;
       goto out;
     }
 
-  
-  bad = (*request_specs[i].handler) (ctrl, request, response);
-  if (bad)
-    err = GPG_ERR_PROTOCOL_VIOLATION;
+  if (opt.verbose)
+    log_debug ("[gpg-agent/ssh] Executing request handler: %s (%u)\n",
+	       request_specs[i].identifier, request_specs[i].type);
+
+  err = (*request_specs[i].handler) (ctrl, request, response);
+  if (err)
+    {
+      send_err = 1;
+      goto out;
+    }
+
+  response_size = es_ftell (response);
+  err = es_fseek (response, 0, SEEK_SET);
+  if (err)
+    {
+      send_err = 1;
+      goto out;
+    }
+
+  err = es_write_uint32 (stream_sock, response_size);
+  if (err)
+    {
+      send_err = 1;
+      goto out;
+    }
+
+  err = es_copy (stream_sock, response);
+  if (err)
+    goto out;
+
+  err = es_fflush (stream_sock);
+  if (err)
+    goto out;
 
  out:
 
-  return err;
+  if (err && es_feof (stream_sock))
+    log_error ("[gpg-agent/ssh] Error occured while processing request: %s\n",
+	       gpg_strerror (err));
+
+  if (send_err)
+    {
+      err = es_write_uint32 (stream_sock, 1);
+      if (err)
+	goto leave;
+      err = es_write_byte (stream_sock, SSH_RESPONSE_FAILURE);
+      if (err)
+	goto leave;
+    }
+
+ leave:
+
+  if (request)
+    es_fclose (request);
+  if (response)
+    es_fclose (response);
+  xfree (request_data);		/* FIXME?  */
+
+  return !! err;
 }
 
 void
 start_command_handler_ssh (int sock_client)
 {
   struct server_control_s ctrl;
-  gpg_error_t err;
-  estream_t stream_response;
-  estream_t stream_request;
   estream_t stream_sock;
-  unsigned char *request;
-  uint32_t request_size;
-  size_t size;
+  gpg_error_t err;
+  int bad;
   int ret;
 
   /* Setup control structure.  */
-
-  if (DBG_COMMAND)
-    log_debug ("[ssh-agent] Starting command handler\n");
 
   memset (&ctrl, 0, sizeof (ctrl));
   agent_init_default_ctrl (&ctrl);
   ctrl.connection_fd = sock_client;
 
-  stream_response = NULL;
-  stream_request = NULL;
-  stream_sock = NULL;
-  request = NULL;
-
+  /* Create stream from socket.  */
   stream_sock = es_fdopen (sock_client, "r+");
   if (! stream_sock)
     {
       err = gpg_error_from_errno (errno);
+      log_error ("[gpg-agent/ssh] Failed to create stream from socket: %s\n",
+		 gpg_strerror (err));
       goto out;
     }
+  /* We have to disable the estream buffering, because the estream
+     core doesn't know about secure memory.  */
   ret = es_setvbuf (stream_sock, NULL, _IONBF, 0);
   if (ret)
     {
       err = gpg_error_from_errno (errno);
+      log_error ("[gpg-agent/ssh] Failed to disable buffering "
+		 "on socket stream: %s\n", gpg_strerror (err));
       goto out;
     }
 
   while (1)
     {
-      /* Create memory streams for request/response data.  The entire
-	 request will be stored in secure memory, since it might
-	 contain secret key material.  The response does not have to
-	 be stored in secure memory, since we never give out secret
-	 keys.  FIXME: wrong place.  */
-      
-      /* Retrieve request.  */
-      err = es_read_string (stream_sock, 1, &request, &request_size);
-      if (err)
-	break;
-
-      if (DBG_COMMAND)
-	log_debug ("[ssh-agent] Received request of length: %u\n",
-		   request_size);
-
-      stream_request = es_mopen (NULL, 0, 0, 1,
-				 realloc_secure, gcry_free, "r+");
-      if (! stream_request)
-	{
-	  err = gpg_error_from_errno (errno);
-	  break;
-	}
-      ret = es_setvbuf (stream_request, NULL, _IONBF, 0);
-      if (ret)
-	{
-	  err = gpg_error_from_errno (errno);
-	  break;
-	}
-      err = es_write_data (stream_request, request, request_size);
-      if (err)
-	break;
-      es_rewind (stream_request);
-
-      stream_response = es_mopen (NULL, 0, 0, 1, NULL, NULL, "r+");
-      if (! stream_response)
-	{
-	  err = gpg_error_from_errno (errno);
-	  break;
-	}
-
       /* Process request.  */
-      err = ssh_request_process (&ctrl, stream_request, stream_response);
-      if (err)
+      bad = ssh_request_process (&ctrl, stream_sock);
+      if (bad)
 	break;
- 
-      /* Figure out size of response data.  */
-      size = es_ftell (stream_response);
-      err = es_fseek (stream_response, 0, SEEK_SET);
-      if (err)
-	break;
-
-      /* Write response data to socket stream.  */
-      err = es_write_uint32 (stream_sock, size);
-      if (err)
-	break;
-      err = es_copy (stream_sock, stream_response);
-      if (err)
-	break;
-      
-      err = es_fflush (stream_sock);
-      if (err)
-	break;
-
-      es_fclose (stream_request);
-      stream_request = NULL;
-      es_fclose (stream_response);
-      stream_response = NULL;
-      xfree (request);
-      request = NULL;
     };
 
  out:
 
-  /* FIXME: logging.  */
-
   if (stream_sock)
     es_fclose (stream_sock);
-  if (stream_request)
-    es_fclose (stream_request);
-  if (stream_response)
-    es_fclose (stream_response);
-  xfree (request);		/* FIXME?  */
-
-  if (DBG_COMMAND)
-    log_debug ("[ssh-agent] Leaving ssh command handler: %s\n", gpg_strerror (err));
 
   free (ctrl.display);
   free (ctrl.ttyname);

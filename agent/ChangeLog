@@ -1,3 +1,22 @@
+2005-01-29  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (ssh_handler_request_identities)
+	(ssh_handler_sign_request, ssh_handler_add_identity)
+	(ssh_handler_remove_identity, ssh_handler_remove_all_identities)
+	(ssh_handler_lock, ssh_handler_unlock): Changed to return an error
+	code instead of a boolean.
+	(ssh_request_process): Changed to return a boolean instead of an
+	error; adjust caller.
+	(ssh_request_handle_t): Adjusted type.
+	(ssh_request_spec): New member: identifier.
+	(REQUEST_SPEC_DEFINE): New macro; use it for initialization of
+	request_specs[].
+	(ssh_request_process): In debugging mode, log identifier of
+	handler to execute.
+	(start_command_handler_ssh): Moved most of the stream handling
+	code ...
+	(ssh_request_process): ... here.
+
 2005-01-28  Moritz Schulte  <moritz@g10code.com>
 
 	* command-ssh.c (ssh_handler_add_identity): Pass ctrl to
