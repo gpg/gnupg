@@ -1,3 +1,12 @@
+2001-10-31  Werner Koch  <wk@gnupg.org>
+
+	* gpg.sgml: Add a remark on how to get the long key ID.  Suggested
+	by Sebastian Klemke.
+
+2001-10-23  Werner Koch  <wk@gnupg.org>
+
+	* gpg.sgml: Add missing tag.
+
 2001-09-28  Werner Koch  <wk@gnupg.org>
 
 	* gpg.sgml: Add a note on option parsing.

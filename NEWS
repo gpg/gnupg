@@ -51,6 +51,8 @@
 
     * A subkey is never used to sign keys.
 
+    * Read only keyrings are now handled as expected.
+
 
 Noteworthy changes in version 1.0.6 (2001-05-29)
 ------------------------------------------------

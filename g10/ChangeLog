@@ -1,3 +1,31 @@
+2001-11-08  Werner Koch  <wk@gnupg.org>
+
+	* pkclist.c (do_edit_ownertrust): Allow to skip over keys, the non
+	working "show info" is now assigned to "i" 
+	* trustdb.c (ask_ownertrust, validate_keys): Implement a real quit
+	here.  Both are by David Shaw.
+	
+	* trustdb.c (validate_keys): Make sure next_exipire is initialized.
+
+	* sign.c (make_keysig_packet): Use SHA-1 with v4 RSA keys.
+
+	* g10.c, options.h : New option --[no-]froce-v4-certs.
+	* sign.c (make_keysig_packet): Create v4 sigs on v4 keys even with
+	a v3 key.  Use new option.  By David Shaw
+
+	* revoke.c (ask_revocation_reason): Allow to select "no reason".
+	By David Shaw.
+
+	* keyid.c (fingerprint_from_sk): Calculation of an v3 fpr was
+	plain wrong - nearly the same code in fingerprint_from_pk is correct.
+
+	* build-packet.c (do_secret_key): Added a few comments to the code.
+
+2001-11-07  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): Print a warning when -r is used w/o encryption.
+	Suggested by Pascal Scheffers.
+
 2001-10-23  Werner Koch  <wk@gnupg.org>
 
 	* keyedit.c (keyedit_menu): Changed helptext for showpref

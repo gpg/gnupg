@@ -982,15 +982,31 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 	    || sigclass == 0x20 || sigclass == 0x18
 	    || sigclass == 0x30 || sigclass == 0x28 );
 
+    if (opt.force_v4_certs)
+        sigversion = 4;
+
     if (sigversion < sk->version)
         sigversion = sk->version;
 
+    /* If you are making a signature on a v4 key using your v3 key, it
+       doesn't make sense to generate a v3 sig.  After all, no v3-only
+       PGP implementation could understand the v4 key in the first
+       place. */
+    if (sigversion < pk->version)
+        sigversion = pk->version;
+
     if( !digest_algo ) {
 	switch( sk->pubkey_algo ) {
-	  case PUBKEY_ALGO_DSA: digest_algo = DIGEST_ALGO_SHA1; break;
+	  case PUBKEY_ALGO_DSA:
+            digest_algo = DIGEST_ALGO_SHA1; 
+            break;
 	  case PUBKEY_ALGO_RSA_S:
-	  case PUBKEY_ALGO_RSA: digest_algo = DIGEST_ALGO_MD5; break;
-	  default:		digest_algo = DIGEST_ALGO_RMD160; break;
+	  case PUBKEY_ALGO_RSA:
+            digest_algo = sk->version < 4? DIGEST_ALGO_MD5 : DIGEST_ALGO_SHA1;
+            break;
+	  default:
+            digest_algo = DIGEST_ALGO_RMD160;
+            break;
 	}
     }
     md = md_open( digest_algo, 0 );

@@ -41,7 +41,7 @@ mpicalc_LDADD =  $(needed_libs)
 bftest_LDADD =	$(needed_libs)
 
 shmtest_LDADD =  $(needed_libs)
-gpgsplit_LDADD =  $(needed_libs)
+gpgsplit_LDADD = @ZLIBS@ $(needed_libs)
 
 mpicalc bftest shmtest gpgsplit: $(needed_libs)
 

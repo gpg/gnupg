@@ -1,4 +1,4 @@
-dnl macros to configure g10
+dnl macros to configure gnupg
 dnl Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 dnl
 dnl This file is part of GnuPG.
@@ -43,7 +43,7 @@ AC_DEFUN(GNUPG_CHECK_TYPEDEF,
     fi
   ])
 
-
+w
 dnl GNUPG_CHECK_GNUMAKE
 dnl
 AC_DEFUN(GNUPG_CHECK_GNUMAKE,

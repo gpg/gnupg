@@ -115,11 +115,13 @@
     verification status of the message to the output (i.e. write something to
     the --output file and not only to stderr.
 
+  * The user is asked for a revocation reasons even if this one can't
+    be used with v3 keys.
+
+  * keyflags don't distinguish between {certify,signature}-only.
 
 Things we won't do
 ------------------
 
   * New option --file-remove path-to-wipe-program ? 
-
-
 

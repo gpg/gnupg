@@ -791,6 +791,13 @@ signatures on data.
 @item ---no-force-v3-sigs
 Reset the ---force-v3-sigs option.
 
+@item ---force-v4-certs
+Always use v4 key signatures even on v3 version keys. This make the
+signature unusable for PGP 2.
+
+@item ---no-force-v3-certs
+Reset the ---force-v4-certs option.
+
 @item ---force-mdc
 Force the use of encryption with appended manipulation
 code. This is always used with the newer ciphers (those
@@ -881,7 +888,7 @@ Print key listings delimited by colons. Note, that the output will be
 encoded in UTF-8 regardless of any ---charset setting.
 
 @item ---with-key-data
-Print key listings delimited by colons and print the public key data.
+Print key listings delimited by colons (like ---with-colons) and print the public key data.
 
 @item ---with-fingerprint
 Same as the command ---fingerprint but changes only the format of the output
@@ -979,7 +986,8 @@ Here the key ID is given in the usual short form.
 @itemx 0F323456784E56EAB
 @itemx 01AB3FED1347A5612
 @itemx 0x234AABBCC34567C4
-Here the key ID is given in the long form as used by OpenPGP.
+Here the key ID is given in the long form as used by OpenPGP
+(you can get the long key ID using the option ---with-colons).
 
 @item 1234343434343434C434343434343434
 @itemx 123434343434343C3434343434343734349A3434

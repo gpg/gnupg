@@ -81,6 +81,7 @@ You will find a list of HOWTO documents at http://www.gnupg.org/docs.html .
 Please remember that option parsing stops as soon as a non option is
 encountered, you can explicitly stop option parsing by using the
 special option "--".
+</para>
 </refsect1>
 
 <refsect1>
@@ -1299,6 +1300,19 @@ signatures on data.
 Reset the --force-v3-sigs option.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--force-v4-certs</term>
+<listitem><para>
+Always use v4 key signatures even on v3 version keys.  This make the
+signature unusable for PGP 2.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-force-v3-certs</term>
+<listitem><para>
+Reset the --force-v4-certs option.
+</para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--force-mdc</term>
@@ -1453,7 +1467,7 @@ encoded in UTF-8 regardless of any --charset setting.
 <varlistentry>
 <term>--with-key-data</term>
 <listitem><para>
-Print key listings delimited by colons and print the public key data.
+Print key listings delimited by colons (like --with-colons) and print the public key data.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1617,7 +1631,8 @@ Here the key ID is given in the usual short form.
 <term>01AB3FED1347A5612</term>
 <term>0x234AABBCC34567C4</term>
 <listitem><para>
-Here the key ID is given in the long form as used by OpenPGP.
+Here the key ID is given in the long form as used by OpenPGP
+(you can get the long key ID using the option --with-colons).
 </para></listitem>
 </varlistentry>
 

@@ -180,6 +180,8 @@ enum cmd_and_opt_values { aNull = 0,
     oThrowKeyid,
     oForceV3Sigs,
     oNoForceV3Sigs,
+    oForceV4Certs,
+    oNoForceV4Certs,
     oForceMDC,
     oS2KMode,
     oS2KDigest,
@@ -311,6 +313,8 @@ static ARGPARSE_OPTS opts[] = {
     { oNoTTY, "no-tty", 0, N_("don't use the terminal at all") },
     { oForceV3Sigs, "force-v3-sigs", 0, N_("force v3 signatures") },
     { oNoForceV3Sigs, "no-force-v3-sigs", 0, N_("do not force v3 signatures") },
+    { oForceV4Certs, "force-v4-certs", 0, N_("force v4 key signatures") },
+    { oNoForceV4Certs, "no-force-v4-certs", 0, N_("do not force v4 key signatures") },
     { oForceMDC, "force-mdc", 0, N_("always use a MDC for encryption") },
     { oDryRun, "dry-run",   0, N_("do not make any changes") },
   /*{ oInteractive, "interactive", 0, N_("prompt before overwriting") }, */
@@ -668,6 +672,7 @@ main( int argc, char **argv )
     char *preference_list = NULL;
     int pwfd = -1;
     int with_fpr = 0; /* make an option out of --fingerprint */
+    int any_explicit_recipient = 0;
   #ifdef USE_SHM_COPROCESSING
     ulong requested_shm_size=0;
   #endif
@@ -956,6 +961,7 @@ main( int argc, char **argv )
 	  case oRFC1991:
 	    opt.rfc1991 = 1;
 	    opt.rfc2440 = 0;
+	    opt.force_v4_certs = 0;
 	    opt.no_comment = 1;
 	    opt.escape_from = 1;
 	    break;
@@ -998,6 +1004,8 @@ main( int argc, char **argv )
 	  case oThrowKeyid: opt.throw_keyid = 1; break;
 	  case oForceV3Sigs: opt.force_v3_sigs = 1; break;
 	  case oNoForceV3Sigs: opt.force_v3_sigs = 0; break;
+          case oForceV4Certs: opt.force_v4_certs = 1; break;
+          case oNoForceV4Certs: opt.force_v4_certs = 0; break;
 	  case oForceMDC: opt.force_mdc = 1; break;
 	  case oS2KMode:   opt.s2k_mode = pargs.r.ret_int; break;
 	  case oS2KDigest: s2k_digest_string = m_strdup(pargs.r.ret_str); break;
@@ -1010,6 +1018,7 @@ main( int argc, char **argv )
 	    break;
 	  case oRecipient: /* store the recipient */
 	    add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
+            any_explicit_recipient = 1;
 	    break;
 	  case oTextmodeShort: opt.textmode = 2; break;
 	  case oTextmode: opt.textmode=1;  break;
@@ -1278,6 +1287,20 @@ main( int argc, char **argv )
     if( rc )
 	log_error(_("failed to initialize the TrustDB: %s\n"), g10_errstr(rc));
 
+
+    switch (cmd) {
+      case aStore: 
+      case aSym:  
+      case aSign: 
+      case aSignSym: 
+      case aClearsign: 
+        if (!opt.quiet && any_explicit_recipient)
+          log_info ("WARNING: recipients (-r) given "
+                    "without using public key encryption");
+	break;
+      default:
+        break;
+    }
 
     switch( cmd ) {
       case aStore: /* only store the file */

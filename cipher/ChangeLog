@@ -1,3 +1,9 @@
+2001-11-08  Werner Koch  <wk@gnupg.org>
+
+	* primegen.c (gen_prime): Set 2 high order bits for secret primes.
+	* rsa.c (generate): Loop until we find the exact modulus size.
+	Changed the exponent to 41.
+
 2001-10-22  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am: Need to use $(EXEEXT) where approriate.

@@ -340,13 +340,16 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 {
     int rc = 0;
     int i, nskey, npkey;
-    IOBUF a = iobuf_temp();
+    IOBUF a = iobuf_temp(); /* build in a self-enlarging buffer */
 
+    /* Write the version number - if none is specified, use 3 */
     if( !sk->version )
 	iobuf_put( a, 3 );
     else
 	iobuf_put( a, sk->version );
     write_32(a, sk->timestamp );
+
+    /* v3  needs the expiration time */
     if( sk->version < 4 ) {
 	u16 ndays;
 	if( sk->expiredate )
@@ -355,28 +358,46 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 	    ndays = 0;
 	write_16(a, ndays);
     }
+
     iobuf_put(a, sk->pubkey_algo );
+
+    /* get number of secret and public parameters.  They are held in
+       one array first the public ones, then the secret ones */
     nskey = pubkey_get_nskey( sk->pubkey_algo );
     npkey = pubkey_get_npkey( sk->pubkey_algo );
+
+    /* If we don't have any public parameters - which is the case if
+       we don't know the algorithm used - the parameters are stored as
+       one blob in a faked (opaque) MPI */
     if( !npkey ) {
 	write_fake_data( a, sk->skey[0] );
 	goto leave;
     }
     assert( npkey < nskey );
 
+    /* Writing the public parameters is easy */
     for(i=0; i < npkey; i++ )
 	mpi_write(a, sk->skey[i] );
+
+    /* build the header for protected (encrypted) secret parameters */
     if( sk->is_protected ) {
 	if( is_RSA(sk->pubkey_algo) && sk->version < 4
 				    && !sk->protect.s2k.mode ) {
+            /* the simple rfc1991 (v3) way */
 	    iobuf_put(a, sk->protect.algo );
 	    iobuf_write(a, sk->protect.iv, sk->protect.ivlen );
 	}
 	else {
+          /* OpenPGP protection according to rfc2440 */
 	    iobuf_put(a, 0xff );
 	    iobuf_put(a, sk->protect.algo );
 	    if( sk->protect.s2k.mode >= 1000 ) {
-		iobuf_put(a, 101 );
+                /* These modes are not possible in OpenPGP, we use them
+                   to implement our extesnsions, 101 can ve views as a
+                   private/experimental extension (this is not
+                   specified in rfc2440 but the same scheme is used
+                   for all other algorithm identifiers) */
+		iobuf_put(a, 101 ); 
 		iobuf_put(a, sk->protect.s2k.hash_algo );
 		iobuf_write(a, "GNU", 3 );
 		iobuf_put(a, sk->protect.s2k.mode - 1000 );
@@ -389,33 +410,41 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 		|| sk->protect.s2k.mode == 3 )
 		iobuf_write(a, sk->protect.s2k.salt, 8 );
 	    if( sk->protect.s2k.mode == 3 )
-		iobuf_put(a, sk->protect.s2k.count );
+		iobuf_put(a, sk->protect.s2k.count ); 
+
+            /* For out special mode 1001 we do not need an IV */
 	    if( sk->protect.s2k.mode != 1001 )
 		iobuf_write(a, sk->protect.iv, sk->protect.ivlen );
 	}
     }
     else
 	iobuf_put(a, 0 );
+
     if( sk->protect.s2k.mode == 1001 )
-	;
+        ; /* GnuPG extension - don't write a secret key at all */ 
     else if( sk->is_protected && sk->version >= 4 ) {
+        /* The secret key is protected - write it out as it is */
 	byte *p;
 	assert( mpi_is_opaque( sk->skey[npkey] ) );
 	p = mpi_get_opaque( sk->skey[npkey], &i );
 	iobuf_write(a, p, i );
     }
     else {
+        /* v3 way - same code for protected and non- protected key */
 	for(   ; i < nskey; i++ )
 	    mpi_write(a, sk->skey[i] );
 	write_16(a, sk->csum );
     }
 
   leave:
+    /* Build the header of the packet - which we must do after writing all
+       the other stuff, so that we know the length of the packet */
     write_header2(out, ctb, iobuf_get_temp_length(a), sk->hdrbytes, 1 );
+    /* And finally write it out the real stream */
     if( iobuf_write_temp( out, a ) )
 	rc = G10ERR_WRITE_FILE;
 
-    iobuf_close(a);
+    iobuf_close(a); /* close the remporary buffer */
     return rc;
 }
 

@@ -57,6 +57,7 @@ struct {
     int list_packets; /* list-packets mode: 1=normal, 2=invoked by command*/
     int def_cipher_algo;
     int force_v3_sigs;
+    int force_v4_certs;
     int force_mdc;
     int def_digest_algo;
     int def_compress_algo;

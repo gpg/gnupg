@@ -457,10 +457,10 @@ fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
 
 	md = md_open( DIGEST_ALGO_MD5, 0);
 	if( pubkey_get_npkey( sk->pubkey_algo ) > 1 ) {
-	    p = buf = mpi_get_buffer( sk->skey[1], &n, NULL );
+	    p = buf = mpi_get_buffer( sk->skey[0], &n, NULL );
 	    md_write( md, p, n );
 	    m_free(buf);
-	    p = buf = mpi_get_buffer( sk->skey[0], &n, NULL );
+	    p = buf = mpi_get_buffer( sk->skey[1], &n, NULL );
 	    md_write( md, p, n );
 	    m_free(buf);
 	}

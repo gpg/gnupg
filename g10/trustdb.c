@@ -846,12 +846,12 @@ enum_cert_paths_print( void **context, FILE *fp,
  *********** NEW NEW NEW ****************
  ****************************************/
 
-static unsigned int
+static int
 ask_ownertrust (u32 *kid)
 {
   PKT_public_key *pk;
   int rc;
-  unsigned int ot;
+  int ot;
 
   pk = m_alloc_clear (sizeof *pk);
   rc = get_pubkey (pk, kid);
@@ -862,10 +862,13 @@ ask_ownertrust (u32 *kid)
       return TRUST_UNKNOWN;
     }
  
-  if (edit_ownertrust (pk, 0))
+  ot=edit_ownertrust(pk,0);
+  if(ot>0)
     ot = get_ownertrust (pk);
-  else
+  else if(ot==0)
     ot = TRUST_UNDEFINED;
+  else
+    ot = -1; /* quit */
   free_public_key( pk );
   return ot;
 }
@@ -1303,6 +1306,7 @@ static int
 validate_keys (int interactive)
 {
   int rc = 0;
+  int quit=0;
   struct key_item *klist = NULL;
   struct key_item *k;
   struct key_array *keys = NULL;
@@ -1315,6 +1319,7 @@ validate_keys (int interactive)
   KeyHashTable visited;
   u32 next_expire;
 
+  next_expire = 0xffffffff; /* set next expire to the year 2106 */
   visited = new_key_hash_table ();
   /* Fixme: Instead of always building a UTK list, we could just build it
    * here when needed */
@@ -1324,7 +1329,6 @@ validate_keys (int interactive)
       goto leave;
     }
 
-  next_expire = 0xffffffff; /* set next expire to the year 2106 */
 
   /* mark all UTKs as visited and set validity to ultimate */
   for (k=utk_list; k; k = k->next)
@@ -1377,7 +1381,12 @@ validate_keys (int interactive)
         {
           if (interactive && k->ownertrust == TRUST_UNKNOWN)
               k->ownertrust = ask_ownertrust (k->kid);
-          if (k->ownertrust == TRUST_UNKNOWN)
+	  if (k->ownertrust == -1)
+	    {
+	      quit=1;
+	      goto leave;
+	    }
+	  else if (k->ownertrust == TRUST_UNKNOWN)
             ot_unknown++;
           else if (k->ownertrust == TRUST_UNDEFINED)
             ot_undefined++;
@@ -1448,7 +1457,7 @@ validate_keys (int interactive)
   release_key_array (keys);
   release_key_items (klist);
   release_key_hash_table (visited);
-  if (!rc) /* mark trustDB as checked */
+  if (!rc && !quit) /* mark trustDB as checked */
     {
       if (next_expire == 0xffffffff)
         tdbio_write_nextcheck (0); 

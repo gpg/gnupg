@@ -240,9 +240,10 @@ gen_revoke( const char *uname )
 struct revocation_reason_info *
 ask_revocation_reason( int key_rev, int cert_rev, int hint )
 {
-    int code;
+    int code=-1;
     char *description = NULL;
     struct revocation_reason_info *reason;
+    const char *text_0 = _("No reason specified");
     const char *text_1 = _("Key has been compromised");
     const char *text_2 = _("Key is superseded");
     const char *text_3 = _("Key is no longer used");
@@ -254,6 +255,7 @@ ask_revocation_reason( int key_rev, int cert_rev, int hint )
 	description = NULL;
 
 	tty_printf(_("Please select the reason for the revocation:\n"));
+	tty_printf(    "  0 = %s\n", text_0 );
 	if( key_rev )
 	    tty_printf("  1 = %s\n", text_1 );
 	if( key_rev )
@@ -262,29 +264,31 @@ ask_revocation_reason( int key_rev, int cert_rev, int hint )
 	    tty_printf("  3 = %s\n", text_3 );
 	if( cert_rev )
 	    tty_printf("  4 = %s\n", text_4 );
-	tty_printf(    "  0 = %s\n", _("Cancel") );
+	tty_printf(    "  Q = %s\n", _("Cancel") );
 	if( hint )
 	    tty_printf(_("(Probably you want to select %d here)\n"), hint );
 
-	for(code = 0; !code;) {
+	while(code==-1) {
 	    int n;
 	    char *answer = cpr_get("ask_revocation_reason.code",
 						_("Your decision? "));
 	    trim_spaces( answer );
 	    cpr_kill_prompt();
-	    if( *answer == 'q' || *answer == 'Q' )
-		n = 0;
-	    else if( !isdigit( *answer ) )
-		n = -1;
-	    else if( hint && !*answer )
+	    if( *answer == 'q' || *answer == 'Q')
+	      return NULL; /* cancel */
+	    if( hint && !*answer )
 		n = hint;
+	    else if(!isdigit( *answer ) )
+ 	        n = -1;
 	    else
 		n = atoi(answer);
 	    m_free(answer);
-	    if( !n )
-		return NULL; /* cancel */
+	    if( n == 0 ) {
+	        code = 0x00; /* no particular reason */
+		code_text = text_0;
+	    }
 	    else if( key_rev && n == 1 ) {
-		code = 0x02; /* key has  been compromised */
+		code = 0x02; /* key has been compromised */
 		code_text = text_1;
 	    }
 	    else if( key_rev && n == 2 ) {

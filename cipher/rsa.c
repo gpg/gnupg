@@ -102,11 +102,27 @@ generate( RSA_secret_key *sk, unsigned nbits )
     MPI g;
     MPI f;
 
-    /* select two (very secret) primes */
-    p = generate_secret_prime( nbits / 2 );
-    q = generate_secret_prime( nbits / 2 );
-    if( mpi_cmp( p, q ) > 0 ) /* p shall be smaller than q (for calc of u)*/
-	mpi_swap(p,q);
+    /* make sure that nbits is even so that we generate p, q of equal size */
+    if ( (nbits&1) )
+      nbits++; 
+
+    n = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
+
+    p = q = NULL;
+    do {
+      /* select two (very secret) primes */
+      if (p)
+        mpi_free (p);
+      if (q)
+        mpi_free (q);
+      p = generate_secret_prime( nbits / 2 );
+      q = generate_secret_prime( nbits / 2 );
+      if( mpi_cmp( p, q ) > 0 ) /* p shall be smaller than q (for calc of u)*/
+        mpi_swap(p,q);
+      /* calculate the modulus */
+      mpi_mul( n, p, q );
+    } while ( mpi_get_nbits(n) != nbits );
+
     /* calculate Euler totient: phi = (p-1)(q-1) */
     t1 = mpi_alloc_secure( mpi_get_nlimbs(p) );
     t2 = mpi_alloc_secure( mpi_get_nlimbs(p) );
@@ -118,14 +134,27 @@ generate( RSA_secret_key *sk, unsigned nbits )
     mpi_mul( phi, t1, t2 );
     mpi_gcd(g, t1, t2);
     mpi_fdiv_q(f, phi, g);
-    /* multiply them to make the private key */
-    n = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
-    mpi_mul( n, p, q );
-    /* find a public exponent  */
-    e = mpi_alloc( (6+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
-    mpi_set_ui( e, 17); /* start with 17 */
-    while( !mpi_gcd(t1, e, phi) ) /* (while gcd is not 1) */
-	mpi_add_ui( e, e, 2);
+
+    /* find an public exponent.
+       We use 41 as this is quite fast and more secure than the
+       commonly used 17.  Benchmarking the RSA verify function
+       with a 1024 bit key yields (2001-11-08): 
+         e=17    0.54 ms
+         e=41    0.75 ms
+         e=257   0.95 ms
+         e=65537 1.80 ms
+     */
+    e = mpi_alloc( (32+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
+    mpi_set_ui( e, 41); 
+    if( !mpi_gcd(t1, e, phi) ) {
+      mpi_set_ui( e, 257); 
+      if( !mpi_gcd(t1, e, phi) ) {
+        mpi_set_ui( e, 65537); 
+        while( !mpi_gcd(t1, e, phi) ) /* (while gcd is not 1) */
+          mpi_add_ui( e, e, 2);
+      }
+    }
+
     /* calculate the secret key d = e^1 mod phi */
     d = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
     mpi_invm(d, e, f );
@@ -134,7 +163,7 @@ generate( RSA_secret_key *sk, unsigned nbits )
     mpi_invm(u, p, q );
 
     if( DBG_CIPHER ) {
-	log_mpidump("  p= ", p );
+        log_mpidump("  p= ", p );
 	log_mpidump("  q= ", q );
 	log_mpidump("phi= ", phi );
 	log_mpidump("  g= ", g );

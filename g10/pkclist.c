@@ -241,7 +241,7 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
   keyid_from_pk (pk, keyid);
   for(;;) {
     /* a string with valid answers */
-    const char *ans = _("sSmMqQ");
+    const char *ans = _("iImMqQsS");
 
     if( !did_help ) 
       {
@@ -268,15 +268,18 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
         tty_printf (_(" %d = I trust fully\n"), 4);
         if (mode)
           tty_printf (_(" %d = I trust ultimately\n"), 5);
-        tty_printf (_(" s = please show me more information\n") );
+        tty_printf (_(" i = please show me more information\n") );
         if( mode )
           tty_printf(_(" m = back to the main menu\n"));
         else
-          tty_printf(_(" q = quit\n"));
+	  {
+	    tty_printf(_(" s = skip this key\n"));
+	    tty_printf(_(" q = quit\n"));
+	  }
         tty_printf("\n");
         did_help = 1;
       }
-    if( strlen(ans) != 6 )
+    if( strlen(ans) != 8 )
       BUG();
     p = cpr_get("edit_ownertrust.value",_("Your decision? "));
     trim_spaces(p);
@@ -319,6 +322,10 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
       {
         break ; /* back to the menu */
       }
+    else if( !mode && (*p == ans[6] || *p == ans[7] ) )
+      {
+	break; /* skip */
+      }
     else if( !mode && (*p == ans[4] || *p == ans[5] ) )
       {
         quit = 1;
@@ -346,7 +353,7 @@ edit_ownertrust (PKT_public_key *pk, int mode )
       switch ( do_edit_ownertrust (pk, mode, &trust, no_help ) )
         {
         case -1: /* quit */
-          return 0;
+          return -1;
         case -2: /* show info */
           show_paths(pk, 1);
           no_help = 1;
@@ -355,7 +362,7 @@ edit_ownertrust (PKT_public_key *pk, int mode )
           trust &= ~TRUST_FLAG_DISABLED;
           trust |= get_ownertrust (pk) & TRUST_FLAG_DISABLED;
           update_ownertrust (pk, trust );
-          return 0;
+          return 1;
         default:
           return 0;
         }
