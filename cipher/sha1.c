@@ -398,7 +398,11 @@ gnupgext_enum_func( int what, int *sequence, int *class, int *vers )
 	    ret = &func_table[i].value;
 	    break;
 	  default:
+#ifndef __riscos__
 	    ret = func_table[i].func;
+#else /* __riscos__ */
+	    ret = (void *) func_table[i].func;
+#endif /* __riscos__ */
 	    break;
 	}
 	i++;

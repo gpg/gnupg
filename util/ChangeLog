@@ -1,3 +1,18 @@
+2001-08-20  Werner Koch  <wk@gnupg.org>
+
+	Applied patches from Stefan Bellon <sbellon@sbellon.de> to support
+	the RISCOS.  Nearly all of these patches are identified by the
+	__riscos__ macro.
+	* secmem.c [__riscos__]: Disabled secure memory stuff.
+	* dotlock.c, ttyio.c [__riscos__]: Adapted for RISCOS
+	* fileutil.c, iobuf.c: Adapted for RISCOS;  mainly replaced
+	hardcoded path separators with EXTSEP_S like macros. 
+	* http.c (send_request): Use macros for the env-var name.
+	* logger.c [__riscos__]: Do an fflush at the end of each log
+	function. 
+ 	* memory.c [__riscos__]: Minor patches
+	* riscos.c (set_filetype): New.
+
 2001-07-03  Werner Koch  <wk@gnupg.org>
 
 	* strgutil.c (utf8_to_native): Fixed printing of invalid utf-8

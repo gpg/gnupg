@@ -418,7 +418,7 @@ add_ownertrust_cb( ulong lid )
  * Returns: -1 if no ownertrust were added.
  */
 static int
-add_ownertrust( PKT_public_key *pk, int *quit, unsigned *trustlevel )
+add_ownertrust( PKT_public_key *pk, int *quit, int *trustlevel )
 {
     int rc;
     unsigned flags = 0;

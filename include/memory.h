@@ -25,7 +25,11 @@
 #ifndef STR
   #define STR(v) #v
 #endif
-#define M_DBGINFO(a)	    __FUNCTION__ "["__FILE__ ":"  STR(a) "]"
+#ifndef __riscos__
+  #define M_DBGINFO(a)	    __FUNCTION__ "["__FILE__ ":"  STR(a) "]"
+#else /* __riscos__ */
+  #define M_DBGINFO(a)	     "["__FILE__ ":"  STR(a) "]"
+#endif /* __riscos__ */
 #define m_alloc(n)		m_debug_alloc((n), M_DBGINFO( __LINE__ ) )
 #define m_alloc_clear(n)	m_debug_alloc_clear((n), M_DBGINFO(__LINE__) )
 #define m_alloc_secure(n)	m_debug_alloc((n), M_DBGINFO(__LINE__) )
@@ -76,9 +80,16 @@ unsigned secmem_get_flags(void);
 
 #define DBG_MEMORY    memory_debug_mode
 #define DBG_MEMSTAT   memory_stat_debug_mode
-int memory_debug_mode;
-int memory_stat_debug_mode;
 
+#ifndef EXTERN_UNLESS_MAIN_MODULE
+ #if defined (__riscos__) && !defined (INCLUDED_BY_MAIN_MODULE)
+  #define EXTERN_UNLESS_MAIN_MODULE extern
+ #else
+  #define EXTERN_UNLESS_MAIN_MODULE 
+ #endif
+#endif
+EXTERN_UNLESS_MAIN_MODULE int memory_debug_mode;
+EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 
 
 #endif /*G10_MEMORY_H*/

@@ -766,6 +766,11 @@ cat >g10defs.tmp <<G10EOF
     #define GNUPG_HOMEDIR "~/.gnupg" 
   #endif
 #endif
+/* those are here to be redefined by handcrafted g10defs.h */
+#define DIRSEP_C '/'
+#define EXTSEP_C '.'
+#define DIRSEP_S "/"
+#define EXTSEP_S "."
 G10EOF
 cat mpi/mpi-asm-defs.h >>g10defs.tmp 
 if cmp -s g10defs.h g10defs.tmp 2>/dev/null; then

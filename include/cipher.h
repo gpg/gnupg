@@ -91,10 +91,17 @@ struct gcry_md_context {
 
 typedef struct gcry_md_context *MD_HANDLE;
 
+#ifndef EXTERN_UNLESS_MAIN_MODULE
+ #if defined (__riscos__) && !defined (INCLUDED_BY_MAIN_MODULE)
+  #define EXTERN_UNLESS_MAIN_MODULE extern
+ #else
+  #define EXTERN_UNLESS_MAIN_MODULE 
+ #endif
+#endif
+EXTERN_UNLESS_MAIN_MODULE int g10c_debug_mode;
+EXTERN_UNLESS_MAIN_MODULE int g10_opt_verbose;
+EXTERN_UNLESS_MAIN_MODULE const char *g10_opt_homedir;
 
-int g10c_debug_mode;
-int g10_opt_verbose;
-const char *g10_opt_homedir;
 
 /*-- dynload.c --*/
 void register_cipher_extension( const char *mainpgm, const char *fname );

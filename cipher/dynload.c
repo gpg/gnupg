@@ -178,10 +178,10 @@ register_cipher_extension( const char *mainpgm, const char *fname )
     if( !mainpgm_path && mainpgm && *mainpgm )
 	mainpgm_path = m_strdup(mainpgm);
   #endif
-    if( *fname != '/' ) { /* do tilde expansion etc */
+    if( *fname != DIRSEP_C ) { /* do tilde expansion etc */
 	char *tmp;
 
-	if( strchr(fname, '/') )
+	if( strchr(fname, DIRSEP_C) )
 	    tmp = make_filename(fname, NULL);
 	else
 	    tmp = make_filename(GNUPG_LIBDIR, fname, NULL);
@@ -392,7 +392,13 @@ load_extension( EXTLIST el )
     return -1;
 }
 
-
+#ifdef __riscos__
+typedef
+const char *(*DIGESTS_CAST)(int, size_t*,byte**, int*, int*,
+                            void (**)(void*),
+                            void (**)(void*,byte*,size_t),
+                            void (**)(void*),byte *(**)(void*));
+#endif /* __riscos__ */
 
 int
 enum_gnupgext_digests( void **enum_context,
@@ -435,7 +441,11 @@ enum_gnupgext_digests( void **enum_context,
 	    if( vers != 1 || class != 10 )
 		continue;
 	  inner_loop:
+#ifndef __riscos__
 	    *r_get_info = ctx->sym;
+#else /* __riscos__ */
+	    *r_get_info = (DIGESTS_CAST) ctx->sym;
+#endif /* __riscos__ */
 	    while( (sym = (*r->enumfunc)(11, &ctx->seq2, &class, &vers)) ) {
 		if( vers != 1 || class != 11 )
 		    continue;
@@ -450,6 +460,14 @@ enum_gnupgext_digests( void **enum_context,
     ctx->r = r;
     return 0;
 }
+
+#ifdef __riscos__
+typedef
+const char *(*CIPHERS_CAST)(int, size_t*, size_t*, size_t*,
+                            int  (**)( void *, byte *, unsigned),
+                            void (**)( void *, byte *, byte *),
+                            void (**)( void *, byte *, byte *));
+#endif /* __riscos__ */
 
 const char *
 enum_gnupgext_ciphers( void **enum_context, int *algo,
@@ -495,7 +513,11 @@ enum_gnupgext_ciphers( void **enum_context, int *algo,
 	    if( vers != 1 || class != 20 )
 		continue;
 	  inner_loop:
+#ifndef __riscos__
 	    finfo = ctx->sym;
+#else /* __riscos__ */
+	    finfo = (CIPHERS_CAST) ctx->sym;
+#endif /* __riscos__ */
 	    while( (sym = (*r->enumfunc)(21, &ctx->seq2, &class, &vers)) ) {
 		const char *algname;
 		if( vers != 1 || class != 21 )
@@ -515,6 +537,19 @@ enum_gnupgext_ciphers( void **enum_context, int *algo,
     ctx->r = r;
     return NULL;
 }
+
+#ifdef __riscos__
+typedef
+const char *(*PUBKEYS_CAST)(int, int *, int *, int *, int *, int *,
+                            int (**)(int, unsigned, MPI *, MPI **),
+                            int (**)(int, MPI *),
+                            int (**)(int, MPI *, MPI , MPI *),
+                            int (**)(int, MPI *, MPI *, MPI *),
+                            int (**)(int, MPI *, MPI , MPI *),
+                            int (**)(int, MPI , MPI *, MPI *,
+	                             int (*)(void*,MPI), void *),
+                            unsigned (**)( int , MPI *));
+#endif /* __riscos__ */
 
 const char *
 enum_gnupgext_pubkeys( void **enum_context, int *algo,
@@ -568,7 +603,11 @@ enum_gnupgext_pubkeys( void **enum_context, int *algo,
 	    if( vers != 1 || class != 30 )
 		continue;
 	  inner_loop:
+#ifndef __riscos__
 	    finfo = ctx->sym;
+#else /* __riscos__ */
+	    finfo = (PUBKEYS_CAST) ctx->sym;
+#endif /* __riscos__ */
 	    while( (sym = (*r->enumfunc)(31, &ctx->seq2, &class, &vers)) ) {
 		const char *algname;
 		if( vers != 1 || class != 31 )

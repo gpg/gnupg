@@ -43,7 +43,13 @@
 
 #ifndef HAVE_BYTE_TYPEDEF
   #undef byte	    /* maybe there is a macro with this name */
-  typedef unsigned char byte;
+  #ifndef __riscos__
+    typedef unsigned char byte;
+  #else 
+    /* FIXME it seems that char is unsigned by default and we workaround 
+     * signed/unsigned mismacthes here. */
+    typedef char byte;
+  #endif 
   #define HAVE_BYTE_TYPEDEF
 #endif
 

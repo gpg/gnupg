@@ -298,7 +298,7 @@ gen_prime( unsigned  nbits, int secret, int randomlevel )
     MPI prime, ptest, pminus1, val_2, val_3, result;
     int i;
     unsigned x, step;
-    unsigned count1, count2;
+    int count1, count2;
     int *mods;
 
     if( 0 && DBG_CIPHER )

@@ -68,7 +68,8 @@ int  log_get_errorcount( int clear );
 void log_inc_errorcount(void);
 void g10_log_hexdump( const char *text, const char *buf, size_t len );
 
-#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
+#if !defined (__riscos__) \
+    && (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 ))
   void g10_log_bug( const char *fmt, ... )
 			    __attribute__ ((noreturn, format (printf,1,2)));
   void g10_log_bug0( const char *, int, const char * ) __attribute__ ((noreturn));
@@ -240,4 +241,23 @@ int vasprintf ( char **result, const char *format, va_list args);
 #define DIM(v) (sizeof(v)/sizeof((v)[0]))
 #define DIMof(type,member)   DIM(((type *)0)->member)
 
+/******* RISC OS stuff ***********/
+#ifdef __riscos__
+FILE *riscos_fopen(const char *filename, const char *mode);
+int riscos_open(const char *filename, int oflag, ...);
+int riscos_fstat(int fildes, struct stat *buf);
+int fdopenfile(const char *filename, const int allow_write);
+void close_fds(void);
+int renamefile(const char *old, const char *new);
+char *gstrans(const char *old);
+void not_implemented(const char *feature);
+void set_filetype(const char *filename, const int type);
+#ifndef __RISCOS__C__
+  #define fopen riscos_fopen
+  #define open riscos_open
+  #define fstat riscos_fstat
+#endif /* !__RISCOS__C__ */
+#endif /* __riscos__ */
+
 #endif /*G10_UTIL_H*/
+

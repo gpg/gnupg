@@ -42,7 +42,7 @@ static void
 init_one_signal (int sig, RETSIGTYPE (*handler)(int), int check_ign )
 {
  #ifndef HAVE_DOSISH_SYSTEM
-  #if HAVE_SIGACTION
+  #ifdef HAVE_SIGACTION
     struct sigaction oact, nact;
 
     if (check_ign) {
@@ -99,6 +99,9 @@ got_fatal_signal( int sig )
     /* reset action to default action and raise signal again */
     init_one_signal (sig, SIG_DFL, 0);
     remove_lockfiles ();
+#ifdef __riscos__
+    close_fds ();
+#endif /* __riscos__ */
     raise( sig );
 }
 

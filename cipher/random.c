@@ -568,19 +568,19 @@ fast_random_poll()
     }
 
     /* fall back to the generic function */
-  #if HAVE_GETHRTIME
+  #ifdef HAVE_GETHRTIME
     {	hrtime_t tv;
 	tv = gethrtime();
 	add_randomness( &tv, sizeof(tv), 1 );
     }
-  #elif HAVE_GETTIMEOFDAY
+  #elif defined (HAVE_GETTIMEOFDAY)
     {	struct timeval tv;
 	if( gettimeofday( &tv, NULL ) )
 	    BUG();
 	add_randomness( &tv.tv_sec, sizeof(tv.tv_sec), 1 );
 	add_randomness( &tv.tv_usec, sizeof(tv.tv_usec), 1 );
     }
-  #elif HAVE_CLOCK_GETTIME
+  #elif defined (HAVE_CLOCK_GETTIME)
     {	struct timespec tv;
 	if( clock_gettime( CLOCK_REALTIME, &tv ) == -1 )
 	    BUG();

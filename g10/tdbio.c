@@ -417,7 +417,8 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	initialized = 1;
     }
     fname = new_dbname? m_strdup( new_dbname )
-		      : make_filename(opt.homedir, "trustdb.gpg", NULL );
+		      : make_filename(opt.homedir,
+		                      "trustdb" EXTSEP_S "gpg", NULL );
 
     if( access( fname, R_OK ) ) {
 	if( errno != ENOENT ) {
@@ -429,7 +430,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    FILE *fp;
 	    TRUSTREC rec;
 	    int rc;
-	    char *p = strrchr( fname, '/' );
+	    char *p = strrchr( fname, DIRSEP_C );
 
 	    assert(p);
 	    *p = 0;
@@ -437,14 +438,22 @@ tdbio_set_dbname( const char *new_dbname, int create )
 		try_make_homedir( fname );
 		log_fatal( _("%s: directory does not exist!\n"), fname );
 	    }
-	    *p = '/';
+	    *p = DIRSEP_C;
 
+	    m_free(db_name);
+	    db_name = fname;
+#ifdef __riscos__
+	    if( !lockhandle )
+		lockhandle = create_dotlock( db_name );
+	    if( !lockhandle )
+		log_fatal( _("%s: can't create lock\n"), db_name );
+            if( make_dotlock( lockhandle, -1 ) )
+                log_fatal( _("%s: can't make lock\n"), db_name );
+#endif /* __riscos__ */
 	    fp =fopen( fname, "wb" );
 	    if( !fp )
 		log_fatal( _("%s: can't create: %s\n"), fname, strerror(errno) );
 	    fclose(fp);
-	    m_free(db_name);
-	    db_name = fname;
 	  #ifdef HAVE_DOSISH_SYSTEM
 	    db_fd = open( db_name, O_RDWR | O_BINARY );
 	  #else
@@ -453,10 +462,12 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    if( db_fd == -1 )
 		log_fatal( _("%s: can't open: %s\n"), db_name, strerror(errno) );
 
+#ifndef __riscos__
 	    if( !lockhandle )
 		lockhandle = create_dotlock( db_name );
 	    if( !lockhandle )
 		log_fatal( _("%s: can't create lock\n"), db_name );
+#endif /* !__riscos__ */
 
 	    memset( &rec, 0, sizeof rec );
 	    rec.r.ver.version = 2;
@@ -506,6 +517,10 @@ open_db()
 	lockhandle = create_dotlock( db_name );
     if( !lockhandle )
 	log_fatal( _("%s: can't create lock\n"), db_name );
+#ifdef __riscos__
+    if( make_dotlock( lockhandle, -1 ) )
+        log_fatal( _("%s: can't make lock\n"), db_name );
+#endif /* __riscos__ */
   #ifdef HAVE_DOSISH_SYSTEM
     db_fd = open( db_name, O_RDWR | O_BINARY );
   #else

@@ -401,7 +401,11 @@ gnupgext_enum_func( int what, int *sequence, int *class, int *vers )
 	*vers  = func_table[i].version;
 	switch( *class ) {
 	  case 11: case 21: case 31: ret = &func_table[i].value; break;
+#ifndef __riscos__
 	  default:		     ret = func_table[i].func; break;
+#else /* __riscos__ */
+	  default:		     ret = (void *) func_table[i].func; break;
+#endif /* __riscos__ */
 	}
 	i++;
     } while( what && what != *class );

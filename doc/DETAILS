@@ -366,11 +366,10 @@ The format of this file is as follows:
 	This is a required parameter.
      Key-Length: <length-in-bits>
 	Length of the key in bits.  Default is 1024.
-
      Key-Usage: <usage-list>
         Space or comma delimited list of key usage, allowed values are
-        "encrypt" and "sign".  This is used to generate the key flags
-        and must match the algorithm.
+        "encrypt" and "sign".  This is used to generate the key flags.
+        Please make sure that the algorithm is capable of this usage.
      Subkey-Type: <algo-number>|<algo-string>
 	This generates a secondary key.  Currently only one subkey
 	can be handled.

@@ -24,7 +24,16 @@
 
 #undef ENABLE_COMMENT_PACKETS  /* don't create comment packets */
 
+#ifndef EXTERN_UNLESS_MAIN_MODULE
+/* Norcraft can't cope with common symbols */
+ #if defined (__riscos__) && !defined (INCLUDED_BY_MAIN_MODULE)
+  #define EXTERN_UNLESS_MAIN_MODULE extern
+ #else
+  #define EXTERN_UNLESS_MAIN_MODULE 
+ #endif
+#endif
 
+EXTERN_UNLESS_MAIN_MODULE
 struct {
     int verbose;
     int quiet;

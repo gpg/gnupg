@@ -45,6 +45,14 @@
 
 #include "http.h"
 
+#ifdef __riscos__
+  #define HTTP_PROXY_ENV           "GnuPG$HttpProxy"
+  #define HTTP_PROXY_ENV_PRINTABLE "<GnuPG$HttpProxy>"
+#else
+  #define HTTP_PROXY_ENV           "http_proxy"
+  #define HTTP_PROXY_ENV_PRINTABLE "$http_proxy"
+#endif
+
 #ifdef __MINGW32__
 #define sock_close(a)  closesocket(a)
 #else
@@ -475,12 +483,13 @@ send_request( HTTP_HD hd )
     port   = hd->uri->port?  hd->uri->port : 80;
 
     if( (hd->flags & HTTP_FLAG_TRY_PROXY)
-	&& (http_proxy = getenv( "http_proxy" )) ) {
+	&& (http_proxy = getenv( HTTP_PROXY_ENV )) ) {
 	PARSED_URI uri;
 
 	rc = parse_uri( &uri, http_proxy );
 	if (rc) {
-	    log_error("invalid $http_proxy: %s\n", g10_errstr(rc));
+	    log_error("invalid " HTTP_PROXY_ENV_PRINTABLE ": %s\n",
+                      g10_errstr(rc));
 	    release_parsed_uri( uri );
 	    return G10ERR_NETWORK;
 	}

@@ -562,6 +562,11 @@ burn_stack (int bytes)
 /* Perform the key setup.  Note that this works only with 128- and 256-bit
  * keys, despite the API that looks like it might support other sizes. */
 
+#ifdef __riscos__
+/* need to switch off CSE optimisation for Norcroft C (Acorn/Pace) */
+#pragma no_optimise_cse
+#endif /* __riscos__ */
+
 static int
 do_twofish_setkey (TWOFISH_context *ctx, const byte *key, unsigned int keylen)
 {
@@ -697,6 +702,10 @@ do_twofish_setkey (TWOFISH_context *ctx, const byte *key, unsigned int keylen)
     return 0;
 }
 
+#ifdef __riscos__
+#pragma optimise_cse
+#endif /* __riscos__ */
+
 static int
 twofish_setkey (TWOFISH_context *ctx, const byte *key, unsigned int keylen)
 {
@@ -767,6 +776,11 @@ twofish_setkey (TWOFISH_context *ctx, const byte *key, unsigned int keylen)
 
 /* Encrypt one block.  in and out may be the same. */
 
+#ifdef __riscos__
+/* need to switch off CSE optimisation for Norcroft C (Acorn/Pace) */
+#pragma no_optimise_cse
+#endif /* __riscos__ */
+
 static void
 do_twofish_encrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
 {
@@ -799,6 +813,10 @@ do_twofish_encrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
    OUTUNPACK (3, b, 7);
 }
 
+#ifdef __riscos__
+#pragma optimise_cse
+#endif /* __riscos__ */
+
 static void
 twofish_encrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
 {
@@ -807,6 +825,11 @@ twofish_encrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
 }
 
 /* Decrypt one block.  in and out may be the same. */
+
+#ifdef __riscos__
+/* need to switch off CSE optimisation for Norcroft C (Acorn/Pace) - bug */
+#pragma no_optimise_cse
+#endif /* __riscos__ */
 
 static void
 do_twofish_decrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
@@ -839,6 +862,10 @@ do_twofish_decrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
    OUTUNPACK (2, c, 2);
    OUTUNPACK (3, d, 3);
 }
+
+#ifdef __riscos__
+#pragma optimise_cse
+#endif /* __riscos__ */
 
 static void
 twofish_decrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
@@ -1093,7 +1120,11 @@ gnupgext_enum_func ( int what, int *sequence, int *class, int *vers )
 	    ret = &func_table[i].value;
 	    break;
 	  default:
+#ifndef __riscos__
 	    ret = func_table[i].func;
+#else /* __riscos__ */
+	    ret = (void *) func_table[i].func;
+#endif /* __riscos__ */
 	    break;
 	}
 	i++;

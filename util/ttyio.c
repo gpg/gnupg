@@ -26,6 +26,11 @@
 #include <unistd.h>
 #ifdef HAVE_TCGETATTR
   #include <termios.h>
+  #ifdef __riscos__
+    #include <kernel.h>
+    #include <sys/swis.h>
+    #undef HAVE_TCGETATTR
+  #endif /* __riscos__ */
 #else
   #ifdef HAVE_TERMIO_H
     /* simulate termios with termio */
@@ -75,9 +80,15 @@ static int batchmode;
 static int no_terminal;
 
 #ifdef HAVE_TCGETATTR
-static struct termios termsave;
-static int restore_termios;
+ #ifdef __riscos__
+   struct termios termsave;
+   int restore_termios;
+ #else
+    static struct termios termsave;
+    static int restore_termios;
+ #endif
 #endif
+
 
 #ifdef HAVE_TCGETATTR
 static void
@@ -273,7 +284,12 @@ static char *
 do_get( const char *prompt, int hidden )
 {
     char *buf;
+  #ifndef __riscos__
     byte cbuf[1];
+  #else 
+    int carry;
+    _kernel_swi_regs r;
+  #endif 
     int c, n, i;
 
     if( batchmode ) {
@@ -328,6 +344,50 @@ do_get( const char *prompt, int hidden )
     if( hidden )
 	SetConsoleMode(con.in, DEF_INPMODE );
 
+  #elif defined(__riscos__)
+    do {
+        if (_kernel_swi_c(OS_ReadC, &r, &r, &carry))
+            log_fatal("OS_ReadC failed: Couldn't read from keyboard!\n");
+        c = r.r[0];
+        if (carry != 0)
+            log_fatal("OS_ReadC failed: Return Code = %i!\n", c);
+        if (c == 0xa || c == 0xd) { /* Return || Enter */
+            c = (int) '\n';
+        } else if (c == 0x8 || c == 0x7f) { /* Backspace || Delete */
+            if (i>0) {
+                i--;
+                if (!hidden) {
+                    last_prompt_len--;
+                    fputc(8, ttyfp);
+                    fputc(32, ttyfp);
+                    fputc(8, ttyfp);
+                    fflush(ttyfp);
+                }
+            } else {
+                fputc(7, ttyfp);
+                fflush(ttyfp);
+            }
+            continue;
+        } else if (c == (int) '\t') { /* Tab */
+            c = ' ';
+        } else if (c > 0xa0) {
+            ; /* we don't allow 0xa0, as this is a protected blank which may
+               * confuse the user */
+        } else if (iscntrl(c)) {
+            continue;
+        }
+        if(!(i < n-1)) {
+            n += 50;
+            buf = m_realloc(buf, n);
+        }
+        buf[i++] = c;
+        if (!hidden) {
+	    last_prompt_len++;
+            fputc(c, ttyfp);
+            fflush(ttyfp);
+        }
+    } while (c != '\n');
+    i = (i>0) ? i-1 : 0;
   #else /* unix version */
     if( hidden ) {
       #ifdef HAVE_TCGETATTR

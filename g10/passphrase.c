@@ -25,7 +25,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
-#ifndef HAVE_DOSISH_SYSTEM
+#if !defined(HAVE_DOSISH_SYSTEM) && !defined(__riscos__)
 #include <sys/socket.h>
 #include <sys/un.h>
 #endif
@@ -64,7 +64,7 @@ enum gpga_protocol_codes {
     GPGA_PROT_BAD_PASSPHRASE = 0x20005,
     GPGA_PROT_INVALID_DATA   = 0x20006,
     GPGA_PROT_NOT_IMPLEMENTED= 0x20007,
-    GPGA_PROT_UI_PROBLEM     = 0x20008,
+    GPGA_PROT_UI_PROBLEM     = 0x20008
 };
 
 
@@ -153,7 +153,7 @@ read_passphrase_from_fd( int fd )
     fd_passwd = pw;
 }
 
-#ifndef HAVE_DOSISH_SYSTEM
+#if !defined(HAVE_DOSISH_SYSTEM) && !defined(__riscos__)
 static int
 writen ( int fd, const void *buf, size_t nbytes )
 {
@@ -265,7 +265,7 @@ agent_close ( int fd )
 {
     close (fd);
 }
-#endif /* !HAVE_DOSISH_SYSTEM */
+#endif /* !HAVE_DOSISH_SYSTEM && !__riscos__ */
 
 
 /*
@@ -277,7 +277,7 @@ agent_close ( int fd )
 static char *
 agent_get_passphrase ( u32 *keyid, int mode )
 {
-  #ifdef HAVE_DOSISH_SYSTEM
+  #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
     return NULL;
   #else
   
@@ -427,7 +427,7 @@ agent_get_passphrase ( u32 *keyid, int mode )
 void
 passphrase_clear_cache ( u32 *keyid, int algo )
 {
-  #ifdef HAVE_DOSISH_SYSTEM
+  #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
     return ;
   #else
     size_t n;

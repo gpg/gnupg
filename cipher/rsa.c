@@ -87,7 +87,7 @@ test_keys( RSA_secret_key *sk, unsigned nbits )
 
 /****************
  * Generate a key pair with a key of size NBITS
- * Returns: 2 structures filles with all needed values
+ * Returns: 2 structures filled with all needed values
  */
 static void
 generate( RSA_secret_key *sk, unsigned nbits )

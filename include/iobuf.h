@@ -71,7 +71,14 @@ struct iobuf_struct {
     } unget;
 };
 
-int iobuf_debug_mode;
+#ifndef EXTERN_UNLESS_MAIN_MODULE
+ #if defined (__riscos__) && !defined (INCLUDED_BY_MAIN_MODULE)
+  #define EXTERN_UNLESS_MAIN_MODULE extern
+ #else
+  #define EXTERN_UNLESS_MAIN_MODULE 
+ #endif
+#endif
+EXTERN_UNLESS_MAIN_MODULE int iobuf_debug_mode;
 
 void  iobuf_enable_special_filenames ( int yes );
 IOBUF iobuf_alloc(int use, size_t bufsize);

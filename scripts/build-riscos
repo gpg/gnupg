@@ -1,0 +1,3 @@
+Please add here the stuff to build the riscos version.  The script
+should copy the files ffrom the conf-riscos tree over the main tree.
+It would be nice to make sure that it can only be used under riscos.

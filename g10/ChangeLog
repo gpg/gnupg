@@ -1,3 +1,23 @@
+2001-08-20  Werner Koch  <wk@gnupg.org>
+
+	Applied patches from Stefan Bellon <sbellon@sbellon.de> to support
+	the RISCOS.  Nearly all of these patches are identified by the
+	__riscos__ macro.
+	* compress.c: Added a couple of casts.
+	* g10.c [__riscos__]: Some patches and new options foo-file similar
+	to all foo-fd options.
+	* gpgv.c, openfile.c, ringedit.c, tdbio.c: Minor fixes.  Mainly
+	replaced hardcoded path	separators with EXTSEP_S like macros.  
+	* passprase.c [__riscos__]: Disabled agent stuff
+	* trustdb.c (check_trust): Changed r_trustlevel to signed int to
+	avoid mismatch problems in pkclist.c
+	* pkclist.c (add_ownertrust): Ditto.
+	* plaintext.c (handle_plaintext) [__riscos__]: RPint a note when
+	file can't be created.
+	* options.h [__riscos__]: Use an extern unless included from the
+	main module.
+	* signal.c (got_fatal_signal) [__riscos__]: Close all files.
+	
 2001-08-14  Werner Koch  <wk@gnupg.org>
 
 	* keygen.c (ask_algo): New arg r_usage.  Allow for RSA keys.

@@ -34,7 +34,11 @@
 #endif
 
 #ifdef ENABLE_NLS
+#ifndef __riscos__
   #include <libintl.h>
+#else
+  #include "libgettext.h"
+#endif /* __riscos__ */
   #define _(a) gettext (a)
   #ifdef gettext_noop
     #define N_(a) gettext_noop (a)

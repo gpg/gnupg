@@ -28,8 +28,11 @@
 #ifdef HAVE_DOSISH_SYSTEM
   #include <fcntl.h> /* for setmode() */
 #endif
+#ifdef __riscos__
+#include <unixlib/local.h>
+#endif /* __riscos__ */
 
-
+#define INCLUDED_BY_MAIN_MODULE 1
 #include "packet.h"
 #include "iobuf.h"
 #include "memory.h"
@@ -136,6 +139,9 @@ main( int argc, char **argv )
     STRLIST sl;
     STRLIST nrings=NULL;
     unsigned configlineno;
+  #ifdef __riscos__
+    __riscosify_control = __RISCOSIFY_NO_PROCESS;
+  #endif /* __riscos__ */
 
     log_set_name("gpgv");
     init_signals();
@@ -183,7 +189,7 @@ main( int argc, char **argv )
 	set_packet_list_mode(1);
 
     if( !nrings )  /* no keyring given: use default one */
-        add_keyblock_resource("trustedkeys.gpg", 0, 0);
+        add_keyblock_resource("trustedkeys" EXTSEP_S "gpg", 0, 0);
     for(sl = nrings; sl; sl = sl->next )
         add_keyblock_resource( sl->d, 0, 0 );
     

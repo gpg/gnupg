@@ -168,6 +168,11 @@ lock_pool( void *p, size_t n )
     /* It does not make sense to print such a warning, given the fact that 
      * this whole Windows !@#$% and their user base are inherently insecure
      */
+  #elif defined (__riscos__)
+    /* no virtual memory on RISC OS, so no pages are swapped to disc,
+     * besides we don't have mmap, so we don't use it! ;-)
+     * But don't complain, as explained above.
+     */
   #else
     log_info("Please note that you don't have secure memory on this system\n");
   #endif
@@ -267,6 +272,7 @@ void
 secmem_init( size_t n )
 {
     if( !n ) {
+#ifndef __riscos__
       #ifdef USE_CAPABILITIES
 	/* drop all capabilities */
 	cap_set_proc( cap_from_text("all-eip") );
@@ -281,6 +287,7 @@ secmem_init( size_t n )
 		log_fatal("failed to drop setuid\n" );
 	}
       #endif
+#endif /* !__riscos__ */
     }
     else {
 	if( n < DEFAULT_POOLSIZE )

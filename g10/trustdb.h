@@ -45,7 +45,7 @@ void update_trustdb( void );
 int setup_trustdb( int level, const char *dbname );
 void init_trustdb( void );
 void sync_trustdb( void );
-int check_trust( PKT_public_key *pk, unsigned *r_trustlevel,
+int check_trust( PKT_public_key *pk, int *r_trustlevel,
 		 const byte* nh, int (*add_fnc)(ulong), unsigned *retflgs );
 int query_trust_info( PKT_public_key *pk, const byte *nh );
 int enum_cert_paths( void **context, ulong *lid,

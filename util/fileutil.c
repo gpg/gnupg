@@ -25,6 +25,10 @@
 #include <string.h>
 #include <assert.h>
 #include <unistd.h>
+#ifdef __riscos__
+#include <kernel.h>
+#include <sys/swis.h>
+#endif /* __riscos__ */
 #include "util.h"
 #include "memory.h"
 #include "ttyio.h"
@@ -39,7 +43,7 @@ make_basename(const char *filepath)
 {
     char *p;
 
-    if ( !(p=strrchr(filepath, '/')) )
+    if ( !(p=strrchr(filepath, DIRSEP_C)) )
       #ifdef HAVE_DRIVE_LETTERS
 	if ( !(p=strrchr(filepath, '\\')) )
 	    if ( !(p=strrchr(filepath, ':')) )
@@ -66,13 +70,13 @@ make_dirname(const char *filepath)
     int  dirname_length;
     char *p;
 
-    if ( !(p=strrchr(filepath, '/')) )
+    if ( !(p=strrchr(filepath, DIRSEP_C)) )
       #ifdef HAVE_DRIVE_LETTERS
 	if ( !(p=strrchr(filepath, '\\')) )
 	    if ( !(p=strrchr(filepath, ':')) )
       #endif
 	      {
-		return m_strdup(".");
+		return m_strdup(EXTSEP_S);
 	      }
 
     dirname_length = p-filepath;
@@ -103,20 +107,30 @@ make_filename( const char *first_part, ... )
 	n += strlen(s) + 1;
     va_end(arg_ptr);
 
+#ifndef __riscos__
     home = NULL;
-    if( *first_part == '~' && first_part[1] == '/'
+    if( *first_part == '~' && first_part[1] == DIRSEP_C
 			   && (home = getenv("HOME")) && *home )
 	n += strlen(home);
-
     name = m_alloc(n);
     p = home ? stpcpy(stpcpy(name,home), first_part+1)
 	     : stpcpy(name, first_part);
+#else /* __riscos__ */
+    name = m_alloc(n);
+    p = stpcpy(name, first_part);
+#endif /* __riscos__ */
     va_start( arg_ptr, first_part ) ;
     while( (s=va_arg(arg_ptr, const char *)) )
-	p = stpcpy(stpcpy(p,"/"), s);
+	p = stpcpy(stpcpy(p, DIRSEP_S), s);
     va_end(arg_ptr);
 
+#ifndef __riscos__
     return name;
+#else /* __riscos__ */
+    p = gstrans(name);
+    m_free(name);
+    return p;
+#endif /* __riscos__ */
 }
 
 
@@ -126,11 +140,26 @@ compare_filenames( const char *a, const char *b )
     /* ? check whether this is an absolute filename and
      * resolve symlinks?
      */
+#ifndef __riscos__
   #ifdef HAVE_DRIVE_LETTERS
     return ascii_strcasecmp(a,b);
   #else
     return strcmp(a,b);
   #endif
+#else /* __riscos__ */
+    int c = 0;
+    char *abuf, *bbuf;
+
+    abuf = gstrans(a);
+    bbuf = gstrans(b);
+
+    c = stricmp(abuf, bbuf);
+
+    m_free(abuf);
+    m_free(bbuf);
+
+    return c;
+#endif /* __riscos__ */
 }
 
 

@@ -2301,11 +2301,11 @@ query_trust_record( PKT_public_key *pk )
  *	     is not necessary to check this if we use a local pubring. Hmmmm.
  */
 int
-check_trust( PKT_public_key *pk, unsigned *r_trustlevel,
+check_trust( PKT_public_key *pk, int *r_trustlevel,
 	     const byte *namehash, int (*add_fnc)(ulong), unsigned *retflgs )
 {
     TRUSTREC rec;
-    unsigned trustlevel = TRUST_UNKNOWN;
+    unsigned int trustlevel = TRUST_UNKNOWN;
     int rc=0;
     u32 cur_time;
     u32 keyid[2];

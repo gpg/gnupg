@@ -21,6 +21,9 @@
 
     * RSA key generation.
 
+    * Merged Stefan's patches for RISCOS in.  See comments in
+      scripts/build-riscos. 
+
 
 Noteworthy changes in version 1.0.6 (2001-05-29)
 ------------------------------------------------

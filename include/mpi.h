@@ -53,9 +53,17 @@
 #endif
 #define BITS_PER_MPI_LIMB    (8*BYTES_PER_MPI_LIMB)
 
+#ifndef EXTERN_UNLESS_MAIN_MODULE
+ #if defined (__riscos__) && !defined (INCLUDED_BY_MAIN_MODULE)
+  #define EXTERN_UNLESS_MAIN_MODULE extern
+ #else
+  #define EXTERN_UNLESS_MAIN_MODULE 
+ #endif
+#endif
 
 #define DBG_MPI     mpi_debug_mode
-int mpi_debug_mode;
+EXTERN_UNLESS_MAIN_MODULE int mpi_debug_mode;
+
 
 struct gcry_mpi {
     int alloced;    /* array size (# of allocated limbs) */

@@ -1,5 +1,5 @@
-/* rand-internal.h - header to glue the random functions
- *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+/* construct.c  -  RISC OS constructors for cipher algorithms
+ *	Copyright (C) 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -17,15 +17,22 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef G10_RAND_INTERNAL_H
-#define G10_RAND_INTERNAL_H
 
-void rndlinux_constructor(void);
-void rndunix_constructor(void);
-void rndw32_constructor(void);
-void rndos2_constructor(void);
-void rndatari_constructor(void);
-void rndmvs_constructor(void);
 void rndriscos_constructor(void);
+void sha1_constructor(void);
+void rmd160_constructor(void);
+void md5_constructor(void);
 
-#endif /*G10_RAND_INTERNAL_H*/
+void
+cipher_modules_constructor(void)
+{
+    static int done = 0;
+    if( done )
+        return;
+    done = 1;
+
+   rndriscos_constructor();
+   sha1_constructor();
+   rmd160_constructor();
+   md5_constructor();
+}

@@ -73,8 +73,13 @@
   #define FNAME(a)  m_debug_ ##a
   #define FNAMEPRT  , const char *info
   #define FNAMEARG  , info
-  #define store_len(p,n,m) do { add_entry(p,n,m, \
+  #ifndef __riscos__
+    #define store_len(p,n,m) do { add_entry(p,n,m, \
 					info, __FUNCTION__);  } while(0)
+  #else
+    #define store_len(p,n,m) do { add_entry(p,n,m, \
+	          info, "[" __FILE__ ":" STR(__LINE__) "]" );  } while(0)
+  #endif
 #else
   #define FNAME(a)  m_ ##a
   #define FNAMEPRT
@@ -321,9 +326,15 @@ check_allmem( const char *info )
     unsigned n;
     struct memtbl_entry *e;
 
-    for( e = memtbl, n = 0; n < memtbl_len; n++, e++ )
-	if( e->inuse )
+    for( e = memtbl, n = 0; n < memtbl_len; n++, e++ ) {
+	if( e->inuse ) {
+          #ifndef __riscos__
 	    check_mem(e->user_p-4-EXTRA_ALIGN, info);
+          #else 
+	    check_mem((const byte *) e->user_p-4-EXTRA_ALIGN, info);
+          #endif
+        }
+    }
 }
 
 #endif /* M_DEBUG */
@@ -373,7 +384,7 @@ m_print_stats( const char *prefix )
 void
 m_dump_table( const char *prefix )
 {
-  #if M_DEBUG
+  #ifdef M_DEBUG
     fprintf(stderr,"Memory-Table-Dump: %s\n", prefix);
     dump_table();
   #endif
@@ -507,7 +518,7 @@ FNAME(free)( void *a FNAMEPRT )
 	return;
   #ifdef M_DEBUG
     free_entry(p-EXTRA_ALIGN-4, info);
-  #elif  M_GUARD
+  #elif defined M_GUARD
     m_check(p);
     if( m_is_secure(a) )
 	secmem_free(p-EXTRA_ALIGN-4);

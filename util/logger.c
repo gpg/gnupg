@@ -117,6 +117,9 @@ g10_log_print_prefix(const char *text)
 	fprintf(logfp, "%s%s: %s", pgm_name, pidstring, text );
     else
 	fprintf(logfp, "?%s: %s", pidstring, text );
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
 }
 
 static void
@@ -128,6 +131,9 @@ print_prefix_f(const char *text, const char *fname)
 	fprintf(logfp, "%s%s:%s: %s", pgm_name, pidstring, fname, text );
     else
 	fprintf(logfp, "?%s:%s: %s", pidstring, fname, text );
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
 }
 
 void
@@ -139,6 +145,9 @@ g10_log_info( const char *fmt, ... )
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
 }
 
 void
@@ -150,6 +159,9 @@ g10_log_info_f( const char *fname, const char *fmt, ... )
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
 }
 
 void
@@ -162,6 +174,9 @@ g10_log_error( const char *fmt, ... )
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
     errorcount++;
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
 }
 
 void
@@ -174,6 +189,9 @@ g10_log_error_f( const char *fname, const char *fmt, ... )
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
     errorcount++;
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
 }
 
 void
@@ -186,6 +204,9 @@ g10_log_fatal( const char *fmt, ... )
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
     secmem_dump_stats();
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
     exit(2);
 }
 
@@ -199,6 +220,9 @@ g10_log_fatal_f( const char *fname, const char *fmt, ... )
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
     secmem_dump_stats();
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
     exit(2);
 }
 
@@ -217,7 +241,8 @@ g10_log_bug( const char *fmt, ... )
     abort();
 }
 
-#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
+#if !defined (__riscos__) \
+    && ( __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 ))
 void
 g10_log_bug0( const char *file, int line, const char *func )
 {
@@ -240,6 +265,9 @@ g10_log_debug( const char *fmt, ... )
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
 }
 
 void
@@ -251,6 +279,9 @@ g10_log_debug_f( const char *fname, const char *fmt, ... )
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
 }
 
 
@@ -264,6 +295,9 @@ g10_log_hexdump( const char *text, const char *buf, size_t len )
     for(i=0; i < len; i++ )
 	fprintf(logfp, " %02X", ((const byte*)buf)[i] );
     fputc('\n', logfp);
+#ifdef __riscos__
+    fflush( logfp );
+#endif /* __riscos__ */
 }
 
 

@@ -105,8 +105,12 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     if( fp || nooutput )
 	;
     else if( !(fp = fopen(fname,"wb")) ) {
-	log_error("Error creating `%s': %s\n", fname, strerror(errno) );
+	log_error(_("error creating `%s': %s\n"), fname, strerror(errno) );
 	rc = G10ERR_CREATE_FILE;
+#ifdef __riscos__
+        if (errno == 106)
+            log_info("perhaps the output file has the same name as the input file?\n");
+#endif /* __riscos__ */
 	goto leave;
     }
 

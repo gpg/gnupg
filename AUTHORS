@@ -45,6 +45,7 @@ Rémi Guyomarch	<rguyom@mail.dotcom.fr> Assignment
      g10/free-packet.c, g10/mdfilter.c, g10/plaintext.c, util/iobuf.c)
 
 Stefan Bellon   <sbellon@sbellon.de> Assignment
+   (All patches to support RISCOS)
 
 Tedi Heriyanto	<tedi_h@gmx.net> Translations [id]
 

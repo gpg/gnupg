@@ -28,8 +28,11 @@
 #ifdef HAVE_DOSISH_SYSTEM
   #include <fcntl.h> /* for setmode() */
 #endif
+#ifdef __riscos__
+#include <unixlib/local.h>
+#endif /* __riscos__ */
 
-
+#define INCLUDED_BY_MAIN_MODULE 1
 #include "packet.h"
 #include "iobuf.h"
 #include "memory.h"
@@ -125,6 +128,9 @@ enum cmd_and_opt_values { aNull = 0,
     oDebug,
     oDebugAll,
     oStatusFD,
+#ifdef __riscos__
+    oStatusFile,
+#endif /* __riscos__ */
     oNoComment,
     oNoVersion,
     oEmitVersion,
@@ -138,7 +144,13 @@ enum cmd_and_opt_values { aNull = 0,
     oDigestAlgo,
     oCompressAlgo,
     oPasswdFD,
+#ifdef __riscos__
+    oPasswdFile,
+#endif /* __riscos__ */
     oCommandFD,
+#ifdef __riscos__
+    oCommandFile,
+#endif /* __riscos__ */
     oQuickRandom,
     oNoVerbose,
     oTrustDBName,
@@ -179,6 +191,9 @@ enum cmd_and_opt_values { aNull = 0,
     oEncryptTo,
     oNoEncryptTo,
     oLoggerFD,
+#ifdef __riscos__
+    oLoggerFile,
+#endif /* __riscos__ */
     oUtf8Strings,
     oNoUtf8Strings,
     oDisableCipherAlgo,
@@ -306,6 +321,9 @@ static ARGPARSE_OPTS opts[] = {
     { oDebug, "debug"     ,4|16, "@"},
     { oDebugAll, "debug-all" ,0, "@"},
     { oStatusFD, "status-fd" ,1, N_("|FD|write status info to this FD") },
+#ifdef __riscos__
+    { oStatusFile, "status-file" ,2, N_("|[file]|write status info to file") },
+#endif /* __riscos__ */
     { oNoComment, "no-comment", 0,   "@"},
     { oCompletesNeeded, "completes-needed", 1, "@"},
     { oMarginalsNeeded, "marginals-needed", 1, "@"},
@@ -344,7 +362,13 @@ static ARGPARSE_OPTS opts[] = {
     { aPipeMode,  "pipemode", 0, "@" },
     { oKOption, NULL,	 0, "@"},
     { oPasswdFD, "passphrase-fd",1, "@" },
+#ifdef __riscos__
+    { oPasswdFile, "passphrase-file",2, "@" },
+#endif /* __riscos__ */
     { oCommandFD, "command-fd",1, "@" },
+#ifdef __riscos__
+    { oCommandFile, "command-file",2, "@" },
+#endif /* __riscos__ */
     { oQuickRandom, "quick-random", 0, "@"},
     { oNoVerbose, "no-verbose", 0, "@"},
     { oTrustDBName, "trustdb-name", 2, "@" },
@@ -379,6 +403,9 @@ static ARGPARSE_OPTS opts[] = {
     { oLockMultiple, "lock-multiple", 0, "@" },
     { oLockNever, "lock-never", 0, "@" },
     { oLoggerFD, "logger-fd",1, "@" },
+#ifdef __riscos__
+    { oLoggerFile, "logger-file",2, "@" },
+#endif /* __riscos__ */
     { oUseEmbeddedFilename, "use-embedded-filename", 0, "@" },
     { oUtf8Strings, "utf8-strings", 0, "@" },
     { oNoUtf8Strings, "no-utf8-strings", 0, "@" },
@@ -454,7 +481,11 @@ strusage( int level )
 	break;
 
       case 31: p = "\nHome: "; break;
+#ifndef __riscos__
       case 32: p = opt.homedir; break;
+#else /* __riscos__ */
+      case 32: p = make_filename(opt.homedir, NULL); break;
+#endif /* __riscos__ */
       case 33: p = _("\nSupported algorithms:\n"); break;
       case 34:
 	if( !ciphers )
@@ -627,6 +658,11 @@ main( int argc, char **argv )
   #ifdef USE_SHM_COPROCESSING
     ulong requested_shm_size=0;
   #endif
+  #ifdef __riscos__
+    /* set global RISC OS specific properties */
+    __riscosify_control = __RISCOSIFY_NO_PROCESS;
+    opt.lock_once = 1;
+  #endif /* __riscos__ */
 
     trap_unaligned();
     secmem_set_flags( secmem_get_flags() | 2 ); /* suspend warnings */
@@ -822,10 +858,21 @@ main( int argc, char **argv )
 	  case oStatusFD:
             set_status_fd( iobuf_translate_file_handle (pargs.r.ret_int, 1) );
             break;
+#ifdef __riscos__
+	  case oStatusFile:
+            set_status_fd( iobuf_translate_file_handle ( fdopenfile (pargs.r.ret_str, 1), 1) );
+            break;
+#endif /* __riscos__ */
 	  case oLoggerFD:
             log_set_logfile( NULL,
                              iobuf_translate_file_handle (pargs.r.ret_int, 1) );
             break;
+#ifdef __riscos__
+	  case oLoggerFile:
+            log_set_logfile( NULL,
+                             iobuf_translate_file_handle ( fdopenfile (pargs.r.ret_str, 1), 1) );
+            break;
+#endif /* __riscos__ */
 	  case oWithFingerprint:
 		with_fpr=1; /*fall thru*/
 	  case oFingerprint: opt.fingerprint++; break;
@@ -876,8 +923,12 @@ main( int argc, char **argv )
 	  case aListSecretKeys: set_cmd( &cmd, aListSecretKeys); break;
 	  case oAlwaysTrust: opt.always_trust = 1; break;
 	  case oLoadExtension:
+#ifndef __riscos__
 	    register_cipher_extension(orig_argc? *orig_argv:NULL,
 				      pargs.r.ret_str);
+#else /* __riscos__ */
+            not_implemented("load-extension");
+#endif /* __riscos__ */
 	    break;
 	  case oRFC1991:
 	    opt.rfc1991 = 1;
@@ -906,11 +957,15 @@ main( int argc, char **argv )
 	  case oEmuMDEncodeBug: opt.emulate_bugs |= EMUBUG_MDENCODE; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRunAsShmCP:
+#ifndef __riscos__
 	  #ifndef USE_SHM_COPROCESSING
 	    /* not possible in the option file,
 	     * but we print the warning here anyway */
 	    log_error("shared memory coprocessing is not available\n");
 	  #endif
+#else /* __riscos__ */
+            not_implemented("run-as-shm-coprocess");
+#endif /* __riscos__ */
 	    break;
 	  case oSetFilename: opt.set_filename = pargs.r.ret_str; break;
 	  case oSetPolicyURL: opt.set_policy_url = pargs.r.ret_str; break;
@@ -941,9 +996,19 @@ main( int argc, char **argv )
 	  case oPasswdFD:
             pwfd = iobuf_translate_file_handle (pargs.r.ret_int, 0);
             break;
+#ifdef __riscos__
+	  case oPasswdFile:
+            pwfd = iobuf_translate_file_handle ( fdopenfile (pargs.r.ret_str, 0), 0);
+            break;
+#endif /* __riscos__ */
 	  case oCommandFD:
             opt.command_fd = iobuf_translate_file_handle (pargs.r.ret_int, 0);
             break;
+#ifdef __riscos__
+	  case oCommandFile:
+            opt.command_fd = iobuf_translate_file_handle ( fdopenfile (pargs.r.ret_str, 0), 0);
+            break;
+#endif /* __riscos__ */
 	  case oCipherAlgo: def_cipher_string = m_strdup(pargs.r.ret_str); break;
 	  case oDigestAlgo: def_digest_string = m_strdup(pargs.r.ret_str); break;
 	  case oNoSecmemWarn: secmem_set_flags( secmem_get_flags() | 1 ); break;
@@ -956,7 +1021,13 @@ main( int argc, char **argv )
 	  case oEscapeFrom: opt.escape_from = 1; break;
 	  case oLockOnce: opt.lock_once = 1; break;
 	  case oLockNever: disable_dotlock(); break;
-	  case oLockMultiple: opt.lock_once = 0; break;
+	  case oLockMultiple: 
+            opt.lock_once = 0;
+#ifdef __riscos__
+            not_implemented("lock-multiple");
+#endif 
+            break;
+
 	  case oKeyServer: opt.keyserver_name = pargs.r.ret_str; break;
 	  case oNotation: add_notation_data( pargs.r.ret_str ); break;
 	  case oUtf8Strings: utf8_strings = 1; break;
@@ -1098,6 +1169,13 @@ main( int argc, char **argv )
     if (preference_list && keygen_set_std_prefs (preference_list))
         log_error(_("invalid preferences\n"));
 
+#ifdef __riscos__
+    if (opt.use_agent) {
+        opt.use_agent = 0;
+        not_implemented ("use-agent");
+    }
+#endif 
+
     if( log_get_errorcount(0) )
 	g10_exit(2);
 
@@ -1141,11 +1219,11 @@ main( int argc, char **argv )
 	&& !(cmd == aKMode && argc == 2 ) ) {
 
 	if( !sec_nrings || default_keyring )  /* add default secret rings */
-	    add_keyblock_resource("secring.gpg", 0, 1);
+	    add_keyblock_resource("secring" EXTSEP_S "gpg", 0, 1);
 	for(sl = sec_nrings; sl; sl = sl->next )
 	    add_keyblock_resource( sl->d, 0, 1 );
 	if( !nrings || default_keyring )  /* add default ring */
-	    add_keyblock_resource("pubring.gpg", 0, 0);
+	    add_keyblock_resource("pubring" EXTSEP_S "gpg", 0, 0);
 	for(sl = nrings; sl; sl = sl->next )
 	    add_keyblock_resource( sl->d, 0, 0 );
     }

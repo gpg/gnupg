@@ -39,10 +39,10 @@
 #ifdef USE_ONLY_8DOT3
   #define SKELEXT ".skl"
 #else
-  #define SKELEXT ".skel"
+  #define SKELEXT EXTSEP_S "skel"
 #endif
 
-#ifdef HAVE_DRIVE_LETTERS
+#if defined (HAVE_DRIVE_LETTERS) || defined (__riscos__)
   #define CMP_FILENAME(a,b) ascii_strcasecmp( (a), (b) )
 #else
   #define CMP_FILENAME(a,b) strcmp( (a), (b) )
@@ -102,15 +102,15 @@ make_outfile_name( const char *iname )
 	return m_strdup("-");
 
     n = strlen(iname);
-    if( n > 4 && (    !CMP_FILENAME(iname+n-4,".gpg")
-		   || !CMP_FILENAME(iname+n-4,".pgp")
-		   || !CMP_FILENAME(iname+n-4,".sig")
-		   || !CMP_FILENAME(iname+n-4,".asc") ) ) {
+    if( n > 4 && (    !CMP_FILENAME(iname+n-4, EXTSEP_S "gpg")
+		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "pgp")
+		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "sig")
+		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "asc") ) ) {
 	char *buf = m_strdup( iname );
 	buf[n-4] = 0;
 	return buf;
     }
-    else if( n > 5 && !CMP_FILENAME(iname+n-5,".sign") ) {
+    else if( n > 5 && !CMP_FILENAME(iname+n-5, EXTSEP_S "sign") ) {
 	char *buf = m_strdup( iname );
 	buf[n-5] = 0;
 	return buf;
@@ -217,8 +217,8 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 		strcat( buf, newsfx );
 	  #else
 	    buf = m_alloc(strlen(iname)+4+1);
-	    strcpy(stpcpy(buf,iname), mode==1 ? ".asc" :
-				      mode==2 ? ".sig" : ".gpg");
+	    strcpy(stpcpy(buf,iname), mode==1 ? EXTSEP_S "asc" :
+				      mode==2 ? EXTSEP_S "sig" : EXTSEP_S "gpg");
 	  #endif
 	    name = buf;
 	}
@@ -262,9 +262,9 @@ open_sigfile( const char *iname )
 
     if( iname && !(*iname == '-' && !iname[1]) ) {
 	len = strlen(iname);
-	if( len > 4 && ( !strcmp(iname + len - 4, ".sig")
-                        || ( len > 5 && !strcmp(iname + len - 5, ".sign") )
-                        || !strcmp(iname + len - 4, ".asc")) ) {
+	if( len > 4 && ( !strcmp(iname + len - 4, EXTSEP_S "sig")
+                        || ( len > 5 && !strcmp(iname + len - 5, EXTSEP_S "sign") )
+                        || !strcmp(iname + len - 4, EXTSEP_S "asc")) ) {
 	    char *buf;
 	    buf = m_strdup(iname);
 	    buf[len-(buf[len-1]=='n'?5:4)] = 0 ;
@@ -294,14 +294,14 @@ copy_options_file( const char *destdir )
 	return;
 
     fname = m_alloc( strlen(datadir) + strlen(destdir) + 15 );
-    strcpy(stpcpy(fname, datadir), "/options" SKELEXT );
+    strcpy(stpcpy(fname, datadir), DIRSEP_S "options" SKELEXT );
     src = fopen( fname, "r" );
     if( !src ) {
 	log_error(_("%s: can't open: %s\n"), fname, strerror(errno) );
 	m_free(fname);
 	return;
     }
-    strcpy(stpcpy(fname, destdir), "/options" );
+    strcpy(stpcpy(fname, destdir), DIRSEP_S "options" );
     dst = fopen( fname, "w" );
     if( !dst ) {
 	log_error(_("%s: can't create: %s\n"), fname, strerror(errno) );

@@ -214,17 +214,17 @@ add_keyblock_resource( const char *url, int force, int secret )
 	    rt = rt_GDBM;
 	    resname += 11;
 	}
-      #ifndef HAVE_DRIVE_LETTERS
+      #if !defined(HAVE_DRIVE_LETTERS) && !defined(__riscos__)
 	else if( strchr( resname, ':' ) ) {
 	    log_error("%s: invalid URL\n", url );
 	    rc = G10ERR_GENERAL;
 	    goto leave;
 	}
-      #endif
+      #endif /* !HAVE_DRIVE_LETTERS && !__riscos__ */
     }
 
-    if( *resname != '/' ) { /* do tilde expansion etc */
-	if( strchr(resname, '/') )
+    if( *resname != DIRSEP_C ) { /* do tilde expansion etc */
+	if( strchr(resname, DIRSEP_C) )
 	    filename = make_filename(resname, NULL);
 	else
 	    filename = make_filename(opt.homedir, resname, NULL);
@@ -282,7 +282,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 	if( !iobuf ) {
 	    char *last_slash_in_filename;
 
-	    last_slash_in_filename = strrchr(filename, '/');
+	    last_slash_in_filename = strrchr(filename, DIRSEP_C);
 	    *last_slash_in_filename = 0;
 
 	    if( access(filename, F_OK) ) {
@@ -292,11 +292,11 @@ add_keyblock_resource( const char *url, int force, int secret )
 		 */
 		try_make_homedir( filename );
 		rc = G10ERR_OPEN_FILE;
-        	*last_slash_in_filename = '/';
+        	*last_slash_in_filename = DIRSEP_C;
 		goto leave;
 	    }
 
-	    *last_slash_in_filename = '/';
+	    *last_slash_in_filename = DIRSEP_C;
 
 	    iobuf = iobuf_create( filename );
 	    if( !iobuf ) {
@@ -447,8 +447,8 @@ get_writable_keyblock_file( int secret )
 	}
     }
     /* Assume the home dir is always writable */
-    return  make_filename(opt.homedir, secret? "secring.gpg"
-					     : "pubring.gpg", NULL );
+    return  make_filename(opt.homedir, secret? "secring" EXTSEP_S "gpg"
+					     : "pubring" EXTSEP_S "gpg", NULL );
 }
 
 
@@ -1413,25 +1413,25 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
      * works.  So we replace .gpg by .bak or .tmp
      */
     if( strlen(rentry->fname) > 4
-	&& !strcmp(rentry->fname+strlen(rentry->fname)-4, ".gpg") ) {
+	&& !strcmp(rentry->fname+strlen(rentry->fname)-4, EXTSEP_S "gpg") ) {
 	bakfname = m_alloc( strlen( rentry->fname ) + 1 );
 	strcpy(bakfname,rentry->fname);
-	strcpy(bakfname+strlen(rentry->fname)-4, ".bak");
+	strcpy(bakfname+strlen(rentry->fname)-4, EXTSEP_S "bak");
 	tmpfname = m_alloc( strlen( rentry->fname ) + 1 );
 	strcpy(tmpfname,rentry->fname);
-	strcpy(tmpfname+strlen(rentry->fname)-4, ".tmp");
+	strcpy(tmpfname+strlen(rentry->fname)-4, EXTSEP_S "tmp");
     }
     else { /* file does not end with gpg; hmmm */
 	bakfname = m_alloc( strlen( rentry->fname ) + 5 );
-	strcpy(stpcpy(bakfname,rentry->fname),".bak");
+	strcpy(stpcpy(bakfname,rentry->fname), EXTSEP_S "bak");
 	tmpfname = m_alloc( strlen( rentry->fname ) + 5 );
-	strcpy(stpcpy(tmpfname,rentry->fname),".tmp");
+	strcpy(stpcpy(tmpfname,rentry->fname), EXTSEP_S "tmp");
     }
   #else
     bakfname = m_alloc( strlen( rentry->fname ) + 2 );
     strcpy(stpcpy(bakfname,rentry->fname),"~");
     tmpfname = m_alloc( strlen( rentry->fname ) + 5 );
-    strcpy(stpcpy(tmpfname,rentry->fname),".tmp");
+    strcpy(stpcpy(tmpfname,rentry->fname), EXTSEP_S "tmp");
   #endif
     newfp = iobuf_create( tmpfname );
     if( !newfp ) {
@@ -1534,7 +1534,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
     if( !rentry->secret ) {  /* but not for secret keyrings */
         iobuf_ioctl (NULL, 2, 0, bakfname );
         iobuf_ioctl (NULL, 2, 0, rentry->fname );
-      #ifdef HAVE_DOSISH_SYSTEM
+      #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
 	remove( bakfname );
       #endif
 	if( rename( rentry->fname, bakfname ) ) {
@@ -1546,7 +1546,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
     }
     iobuf_ioctl (NULL, 2, 0, tmpfname );
     iobuf_ioctl (NULL, 2, 0, rentry->fname );
-  #ifdef HAVE_DOSISH_SYSTEM
+  #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
     remove( rentry->fname );
   #endif
     if( rename( tmpfname, rentry->fname ) ) {

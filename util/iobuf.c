@@ -32,6 +32,10 @@
 #ifdef HAVE_DOSISH_SYSTEM
  #include <windows.h>
 #endif
+#ifdef __riscos__
+#include <kernel.h>
+#include <sys/swis.h>
+#endif /* __riscos__ */
 
 #include "memory.h"
 #include "util.h"
@@ -921,14 +925,14 @@ iobuf_cancel( IOBUF a )
     const char *s;
     IOBUF a2;
     int rc;
-  #ifdef HAVE_DOSISH_SYSTEM
+  #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
     char *remove_name = NULL;
   #endif
 
     if( a && a->use == 2 ) {
 	s = iobuf_get_real_fname(a);
 	if( s && *s ) {
-	  #ifdef HAVE_DOSISH_SYSTEM
+	  #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
 	    remove_name = m_strdup ( s );
 	  #else
 	    remove(s);
@@ -945,7 +949,7 @@ iobuf_cancel( IOBUF a )
     }
 
     rc = iobuf_close(a);
-  #ifdef HAVE_DOSISH_SYSTEM
+  #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
     if ( remove_name ) {
 	/* Argg, MSDOS does not allow to remove open files.  So
 	 * we have to do it here */
