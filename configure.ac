@@ -488,7 +488,7 @@ AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe)
 
 #
 # check for gethrtime and run a testprogram to see whether
-# it is brogen.  It has been reported that some Solris and HP UX systems 
+# it is broken.  It has been reported that some Solaris and HP UX systems 
 # raise an SIGILL
 #
 AC_CACHE_CHECK([for gethrtime], 

@@ -1,4 +1,8 @@
 
+  * Update the manual pages (David's new features)
+
+  * update GPH
+
   * pause scrolling help in --edit-key and elsewhere.
 
   * getkey does not return revoked/expired keys - therefore it is not
@@ -74,11 +78,6 @@
   * --passphrase-fd  can't work with -cs: document this or find a way
     to work around.
 
-  * export by user-IDs does only export the first matching name which leads
-    to a problem in cases where there are 2 keys with identically
-    user-IDs. 
-    --> Check whether this is still true - yes it is.
-    
   * With option -i prompt before adding a key to the keyring and show some
     info what we are about to add.
 
