@@ -1267,6 +1267,7 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
     const byte *p, *sym, *hash, *zip;
     size_t n, nsym, nhash, nzip;
 
+    sig->flags.chosen_selfsig = 1; /* we chose this one */
     uid->created = 0; /* not created == invalid */
     if ( IS_UID_REV ( sig ) ) {
         uid->is_revoked = 1;
@@ -1898,6 +1899,7 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
       return;
 
     sig = signode->pkt->pkt.signature;
+    sig->flags.chosen_selfsig=1; /* so we know which selfsig we chose later */
         
     p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_FLAGS, &n );
     if ( p && n ) {
