@@ -1,3 +1,11 @@
+2004-02-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* README: Update copyright.
+
+	* NEWS: Note --max-output, --list-config, --min-cert-level, AIX
+	fix, new http-proxy keyserver-option, new LDAP server code, TLS,
+	LDAPS, and --show-session-key with --symmetric.
+
 2004-02-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Check for timegm().  Replacement functions for

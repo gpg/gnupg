@@ -3,8 +3,8 @@
 		   -------------------------------
 			    Version 1.3.5
 
-	     Copyright 1998, 1999, 2000, 2001, 2002, 2003
-		    Free Software Foundation, Inc.
+	    Copyright 1998, 1999, 2000, 2001, 2002, 2003,
+		 2004 Free Software Foundation, Inc.
 
     This file is free software; as a special exception the author
     gives unlimited permission to copy and/or distribute it, with or
@@ -37,7 +37,7 @@
     more information on this subject, including what to do if you are
     legally entitled to use IDEA.
 
-    The default public key algorithms are DSA and ElGamal, but RSA is
+    The default public key algorithms are DSA and Elgamal, but RSA is
     also supported.  Symmetric algorithms available are AES (with 128,
     192, and 256 bit keys), 3DES, Blowfish, CAST5 and Twofish.  Digest
     algorithms available are MD5, RIPEMD/160, SHA-1, SHA-256, SHA-384,
