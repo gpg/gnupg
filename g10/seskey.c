@@ -1,5 +1,5 @@
 /* seskey.c -  make sesssion keys etc.
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -117,11 +117,14 @@ encode_session_key( DEK *dek, unsigned nbits )
 		k++;
 	if( !k )
 	    break; /* okay: no zero bytes */
-	k += k/128; /* better get some more */
+	k += (k/128) + 3; /* better get some more */
 	pp = get_random_bits( k*8, 1, 1);
-	for(j=0; j < i && k ; j++ )
-	    if( !p[j] )
-		p[j] = pp[--k];
+	for (j=0; j < i && k; ) {
+          if ( !p[j] )
+            p[j] = pp[--k];
+          if (p[j])
+            j++;
+        }
 	m_free(pp);
     }
     memcpy( frame+n, p, i );
