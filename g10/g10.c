@@ -1186,8 +1186,7 @@ main( int argc, char **argv )
       VERIFY_SHOW_POLICY|VERIFY_SHOW_NOTATION|VERIFY_SHOW_KEYSERVER;
     opt.trust_model=TM_AUTO;
     opt.mangle_dos_filenames = 1;
-
-#if defined (__MINGW32__)
+#if defined (_WIN32)
     set_homedir ( read_w32_registry_string( NULL,
                                     "Software\\GNU\\GnuPG", "HomeDir" ));
 #else
@@ -1530,7 +1529,7 @@ main( int argc, char **argv )
 	    break;
 	  case oLoadExtension:
 #ifndef __riscos__
-#if defined(USE_DYNAMIC_LINKING) || defined(__MINGW32__)
+#if defined(USE_DYNAMIC_LINKING) || defined(_WIN32)
 	    if(check_permissions(pargs.r.ret_str,2))
 	      log_info(_("cipher extension \"%s\" not loaded due to "
 			 "unsafe permissions\n"),pargs.r.ret_str);
@@ -1665,6 +1664,7 @@ main( int argc, char **argv )
 	  case oCompress: opt.compress = pargs.r.ret_int; break;
 	  case oPasswdFD:
             pwfd = iobuf_translate_file_handle (pargs.r.ret_int, 0);
+            opt.use_agent = 0;
             break;
 #ifdef __riscos__
 	  case oPasswdFile:
