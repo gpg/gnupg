@@ -254,6 +254,77 @@ write_quoted(IOBUF a, const char *buf, char delim)
   return 0;
 }
 
+/* Remove anything <between brackets> and de-urlencode in place.  Note
+   that this requires all brackets to be closed on the same line.  It
+   also means that the result is never larger than the input. */
+static void
+dehtmlize(char *line)
+{
+  int parsedindex=0;
+  char *parsed=line;
+
+  while(*line!='\0')
+    {
+      switch(*line)
+	{
+	case '<':
+	  while(*line!='>' && *line!='\0')
+	    line++;
+
+	  if(*line!='\0')
+	    line++;
+	  break;
+
+	case '&':
+	  if((*(line+1)!='\0' && tolower(*(line+1))=='l') &&
+	     (*(line+2)!='\0' && tolower(*(line+2))=='t') &&
+	     (*(line+3)!='\0' && *(line+3)==';'))
+	    {
+	      parsed[parsedindex++]='<';
+	      line+=4;
+	      break;
+	    }
+	  else if((*(line+1)!='\0' && tolower(*(line+1))=='g') &&
+		  (*(line+2)!='\0' && tolower(*(line+2))=='t') &&
+		  (*(line+3)!='\0' && *(line+3)==';'))
+	    {
+	      parsed[parsedindex++]='>';
+	      line+=4;
+	      break;
+	    }
+	  else if((*(line+1)!='\0' && tolower(*(line+1))=='a') &&
+		  (*(line+2)!='\0' && tolower(*(line+2))=='m') &&
+		  (*(line+3)!='\0' && tolower(*(line+3))=='p') &&
+		  (*(line+4)!='\0' && *(line+4)==';'))
+	    {
+	      parsed[parsedindex++]='&';
+	      line+=5;
+	      break;
+	    }
+
+	default:
+	  parsed[parsedindex++]=*line;
+	  line++;
+	  break;
+	}
+    }
+
+  parsed[parsedindex]='\0';
+
+  /* Chop off any trailing whitespace.  Note that the HKP servers have
+     \r\n as line endings, and the NAI HKP servers have just \n. */
+
+  if(parsedindex>0)
+    {
+      parsedindex--;
+      while(isspace(parsed[parsedindex]))
+	{
+	  parsed[parsedindex]='\0';
+	  parsedindex--;
+	}
+    }
+}
+
 /* pub  2048/<a href="/pks/lookup?op=get&search=0x3CB3B415">3CB3B415</a> 1998/04/03 David M. Shaw &lt;<a href="/pks/lookup?op=get&search=0x3CB3B415">dshaw@jabberwocky.com</a>&gt; */
 
 /* Luckily enough, both the HKP server and NAI HKP interface to their
@@ -264,7 +335,7 @@ static int
 parse_hkp_index(IOBUF buffer,char *line)
 {
   static int open=0,revoked=0;
-  static char *key=NULL;
+  static char *key=NULL,*type=NULL;
 #ifdef __riscos__
   static char *uid=NULL;
 #else
@@ -273,12 +344,17 @@ parse_hkp_index(IOBUF buffer,char *line)
   static u32 bits,createtime;
   int ret=0;
 
-  /* printf("Open %d, LINE: %s, uid: %s\n",open,line,uid); */
+  /*  printf("Open %d, LINE: \"%s\", uid: %s\n",open,line,uid); */
+
+  dehtmlize(line);
+
+  /*  printf("Now open %d, LINE: \"%s\", uid: %s\n",open,line,uid); */
 
   /* Try and catch some bastardization of HKP.  If we don't have
      certain unchanging landmarks, we can't reliably parse the
-     response. */
-  if(open && ascii_memcasecmp(line,"</pre>",6)!=0 &&
+     response.  This only complains about problems within the key
+     section itself.  Headers and footers should not matter. */
+  if(open && line[0]!='\0' &&
      ascii_memcasecmp(line,"pub ",4)!=0 &&
      ascii_memcasecmp(line,"    ",4)!=0)
     {
@@ -305,7 +381,10 @@ parse_hkp_index(IOBUF buffer,char *line)
 	  iobuf_writestr(buffer,revoked?"1:":":");
 	  sprintf(intstr,"%u",createtime);
 	  write_quoted(buffer,intstr,':');
-	  iobuf_writestr(buffer,"::::");
+	  iobuf_writestr(buffer,":::");
+	  if(type)
+	    write_quoted(buffer,type,':');
+	  iobuf_writestr(buffer,":");
 	  sprintf(intstr,"%u",bits);
 	  write_quoted(buffer,intstr,':');
 	  iobuf_writestr(buffer,"\n");
@@ -335,21 +414,20 @@ parse_hkp_index(IOBUF buffer,char *line)
       if(tok==NULL)
 	return ret;
 
+      if(tok[strlen(tok)-1]=='R')
+	type="RSA";
+      else if(tok[strlen(tok)-1]=='D')
+	type="DSA";
+      else
+	type=NULL;
+
       bits=atoi(tok);
-
-      tok=strsep(&line,">");
-      if(tok==NULL)
-	return ret;
-
-      tok=strsep(&line,"<");
-      if(tok==NULL)
-	return ret;
-
-      key=m_strdup(tok);
 
       tok=strsep(&line," ");
       if(tok==NULL)
 	return ret;
+
+      key=m_strdup(tok);
 
       tok=strsep(&line," ");
       if(tok==NULL)
@@ -370,19 +448,17 @@ parse_hkp_index(IOBUF buffer,char *line)
 
   if(open)
     {
-      int uidindex=0;
-
       if(line==NULL)
 	{
 	  uid=m_strdup("Key index corrupted");
 	  return ret;
 	}
 
-      /* All that's left is the user name.  Strip off anything
-	 <between brackets> and de-urlencode it. */
-
       while(*line==' ' && *line!='\0')
 	line++;
+
+      if(*line=='\0')
+	return ret;
 
       if(strncmp(line,"*** KEY REVOKED ***",19)==0)
 	{
@@ -390,65 +466,7 @@ parse_hkp_index(IOBUF buffer,char *line)
 	  return ret;
 	}
 
-      uid=m_alloc(strlen(line)+1);
-
-      while(*line!='\0')
-	{
-	  switch(*line)
-	    {
-	    case '<':
-	      while(*line!='>' && *line!='\0')
-		line++;
-
-	      if(*line!='\0')
-		line++;
-	      break;
-
-	    case '&':
-	      if((*(line+1)!='\0' && tolower(*(line+1))=='l') &&
-		 (*(line+2)!='\0' && tolower(*(line+2))=='t') &&
-		 (*(line+3)!='\0' && *(line+3)==';'))
-		{
-		  uid[uidindex++]='<';
-		  line+=4;
-		  break;
-		}
-	      else if((*(line+1)!='\0' && tolower(*(line+1))=='g') &&
-		 (*(line+2)!='\0' && tolower(*(line+2))=='t') &&
-		 (*(line+3)!='\0' && *(line+3)==';'))
-		{
-		  uid[uidindex++]='>';
-		  line+=4;
-		  break;
-		}
-	      else if((*(line+1)!='\0' && tolower(*(line+1))=='a') &&
-		 (*(line+2)!='\0' && tolower(*(line+2))=='m') &&
-		 (*(line+3)!='\0' && tolower(*(line+3))=='p') &&
-		 (*(line+4)!='\0' && *(line+4)==';'))
-		{
-		  uid[uidindex++]='&';
-		  line+=5;
-		  break;
-		}
-
-	    default:
-	      uid[uidindex++]=*line;
-	      line++;
-	      break;
-	    }
-	}
-
-      uid[uidindex]='\0';
-
-      /* Chop off the trailing \r, \n, or both. This is fussy as the
-         true HKP servers have \r\n, and the NAI HKP servers have just
-         \n. */
-
-      if(isspace(uid[uidindex-1]))
-	uid[uidindex-1]='\0';
-
-      if(isspace(uid[uidindex-2]))
-	uid[uidindex-2]='\0';
+      uid=m_strdup(line);
     }
 
   return ret;
