@@ -99,8 +99,8 @@ tty_get_ttyname (void)
       got_name = 1;
     }
 #endif
-  /* Assume the staandrd tty on memory error or when tehre is no
-     certmid. */
+  /* Assume the standard tty on memory error or when there is no
+     ctermid. */
   return name? name : "/dev/tty";
 }
 

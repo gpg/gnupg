@@ -1,5 +1,7 @@
 2003-07-30  Werner Koch  <wk@gnupg.org>
 
+	* ttyio.c: Typo fixes.
+
 	* dotlock.c [_WIN32]: Don't include sys/time.h 
 	* http.c, iobuf.c, simple-gettext.c: s/__MINGW32__/_WIN32/.
 	* strgutil.c, ttyio.c, w32reg.c: Ditto.
