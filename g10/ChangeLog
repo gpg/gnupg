@@ -1,3 +1,10 @@
+2004-06-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (sign_uids): Properly handle remaking a self-sig on
+	revoked or expired user IDs.  Also, once we've established that a
+	given uid cannot or will not be signed, don't continue to ask
+	about each sig.
+
 2004-06-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* status.h, status.c (get_status_string), plaintext.c

@@ -361,7 +361,9 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		      {
 			tty_printf(_("User ID \"%s\" is revoked."),user);
 
-			if(opt.expert)
+			if(selfsig)
+			  tty_printf("\n");
+			else if(opt.expert)
 			  {
 			    tty_printf("\n");
 			    /* No, so remove the mark and continue */
@@ -369,11 +371,15 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 						      _("Are you sure you "
 							"still want to sign "
 							"it? (y/N) ")))
-			      uidnode->flag &= ~NODFLG_MARK_A;
+			      {
+				uidnode->flag &= ~NODFLG_MARK_A;
+				uidnode=NULL;
+			      }
 			  }
 			else
 			  {
 			    uidnode->flag &= ~NODFLG_MARK_A;
+			    uidnode=NULL;
 			    tty_printf(_("  Unable to sign.\n"));
 			  }
 		      }
@@ -381,7 +387,9 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		      {
 			tty_printf(_("User ID \"%s\" is expired."),user);
 
-			if(opt.expert)
+			if(selfsig)
+			  tty_printf("\n");
+			else if(opt.expert)
 			  {
 			    tty_printf("\n");
 			    /* No, so remove the mark and continue */
@@ -389,11 +397,15 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 						      _("Are you sure you "
 							"still want to sign "
 							"it? (y/N) ")))
-			      uidnode->flag &= ~NODFLG_MARK_A;
+			      {
+				uidnode->flag &= ~NODFLG_MARK_A;
+				uidnode=NULL;
+			      }
 			  }
 			else
 			  {
 			    uidnode->flag &= ~NODFLG_MARK_A;
+			    uidnode=NULL;
 			    tty_printf(_("  Unable to sign.\n"));
 			  }
 		      }
@@ -410,11 +422,15 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 						      _("Are you sure you "
 							"still want to sign "
 							"it? (y/N) ")))
-			      uidnode->flag &= ~NODFLG_MARK_A;
+			      {
+				uidnode->flag &= ~NODFLG_MARK_A;
+				uidnode=NULL;
+			      }
 			  }
 			else
 			  {
 			    uidnode->flag &= ~NODFLG_MARK_A;
+			    uidnode=NULL;
 			    tty_printf(_("  Unable to sign.\n"));
 			  }
 		      }
