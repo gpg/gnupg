@@ -1,3 +1,12 @@
+Tue Mar  7 18:45:31 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* mpih-mul.c (mpihelp_mul_karatsuba_case): It seems that the
+	untested part works fine.  Removed the debugging message.
+
+	* longlong.h (umul_ppmm): Fixes for ARM-4. By Sean MacLennan.
+
+	* config.links: Add support for NetBSD.
+
 Thu Jan 13 19:31:58 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* mpi-internal.h (karatsuba_ctx): New.

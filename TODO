@@ -10,6 +10,8 @@
     use.  Depending on creatin time would be nice too.	I thing this is
     already done for the subkeys.
 
+  * write a M4 for the unsigned long long type.
+
 Scheduled for 1.1
 -----------------
   * With option -i prompt before adding a key to the keyring and show some
@@ -65,5 +67,4 @@ Nice to have
     trustdb.
   * Evaluate whether it make sense to replace the namehashs either by
     using the user ID directly or by using pointers into the trustdb.
-  * --gen-prime may trigger a log_bug; should be a log_fatal.
 

@@ -1,3 +1,8 @@
+Tue Mar  7 18:45:31 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* acinclude.m4 (GNUPG_CHECK_RDYNAMIC): Add NetBSD. By Thomas Klausner.
+	* configure.in (DYNLINK_MOD_CFLAGS): Set different for NetBSD.
+
 Thu Mar  2 15:37:46 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* configure.in: Add check for clock_gettime

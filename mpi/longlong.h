@@ -199,6 +199,8 @@ extern UDItype __udiv_qrnnd ();
 	     "rI" ((USItype)(bh)),                                      \
 	     "r" ((USItype)(al)),                                       \
 	     "rI" ((USItype)(bl)))
+#ifdef __ARM_ARCH_3__
+/* SAM This does not work on arm4 */
 #define umul_ppmm(xh, xl, a, b) \
   __asm__ ("%@ Inlined umul_ppmm
 	mov	%|r0, %2, lsr #16
@@ -218,6 +220,18 @@ extern UDItype __udiv_qrnnd ();
 	   : "r" ((USItype)(a)),                                        \
 	     "r" ((USItype)(b))                                         \
 	   : "r0", "r1", "r2")
+#elif __ARM_ARCH_4__
+#define umul_ppmm(xh, xl, a, b) \
+  __asm__ ("%@ Inlined umul_ppmm
+	umull	%r1, %r0, %r2, %r3" \
+		   : "=&r" ((USItype)(xh)), \
+		     "=r" ((USItype)(xl)) \
+		   : "r" ((USItype)(a)), \
+		     "r" ((USItype)(b)) \
+		   : "r0", "r1")
+#else
+#error Untested architecture
+#endif
 #define UMUL_TIME 20
 #define UDIV_TIME 100
 #endif /* __arm__ */

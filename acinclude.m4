@@ -226,7 +226,7 @@ define(GNUPG_CHECK_RDYNAMIC,
             CFLAGS_RDYNAMIC="-Wl,-E"
             ;;
 
-          openbsd* | freebsd2* | osf4* | irix* )
+          openbsd* | freebsd2* | osf4* | irix* | netbsd* )
             CFLAGS_RDYNAMIC=""
             ;;
 

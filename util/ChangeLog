@@ -1,3 +1,7 @@
+Tue Mar  7 18:45:31 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* secmem.c (lock_pool): No more warning for QNX. By Sam Roberts.
+
 2000-03-02 15:51:04  Werner Koch  (wk@habibti.gnupg.de)
 
 	* ttyio.c (tty_print_utf8_string): Oops.

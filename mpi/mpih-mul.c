@@ -415,8 +415,6 @@ mpihelp_mul_karatsuba_case( mpi_ptr_t prodp,
     }
 
     if( usize ) {
-       #warning  Must test this CODE!!!
-	g10_log_debug("this code path is not yet tested\n");
 	if( usize < KARATSUBA_THRESHOLD ) {
 	    mpihelp_mul( ctx->tspace, vp, vsize, up, usize );
 	}

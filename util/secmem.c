@@ -145,6 +145,12 @@ lock_pool( void *p, size_t n )
 	show_warning = 1;
     }
 
+  #elif defined ( __QNX__ )
+    /* QNX does not page at all, so the whole secure memory stuff does
+     * not make much sense.  However it is still of use because it
+     * wipes out the memory on a free().
+     * Therefore it is sufficient to suppress the warning
+     */
   #else
     log_info("Please note that you don't have secure memory on this system\n");
   #endif
