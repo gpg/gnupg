@@ -95,6 +95,13 @@ public_key_list( STRLIST list )
       printf("\n");
     }
 
+  /* We need to do the stale check right here because it might need to
+     update the keyring while we already have the keyring open.  This
+     is very bad for W32 because of a sharing violation. For real OSes
+     it might lead to false results if we are later listing a keyring
+     which is associated with the inode of a deleted file.  */
+  check_trustdb_stale ();
+
   if( !list )
     list_all(0);
   else
@@ -104,6 +111,8 @@ public_key_list( STRLIST list )
 void
 secret_key_list( STRLIST list )
 {
+    check_trustdb_stale ();
+
     if( !list )
 	list_all(1);
     else  /* List by user id */
