@@ -1,6 +1,6 @@
 /* g10.c - The GnuPG utility (main for gpg)
- * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -89,6 +89,7 @@ enum cmd_and_opt_values
     aLSignKey,
     aNRSignKey,
     aNRLSignKey,
+    aListConfig,
     aListPackets,
     aEditKey,
     aDeleteKeys,
@@ -351,9 +352,10 @@ static ARGPARSE_OPTS opts[] = {
     { aExportAll, "export-all"    , 256, "@" },
     { aExportSecret, "export-secret-keys" , 256, "@" },
     { aExportSecretSub, "export-secret-subkeys" , 256, "@" },
-    { aImport, "import",      256     , N_("import/merge keys")},
-    { aFastImport, "fast-import",  256 , "@"},
-    { aListPackets, "list-packets",256,N_("list only the sequence of packets")},
+    { aImport, "import", 256, N_("import/merge keys")},
+    { aFastImport, "fast-import",  256, "@"},
+    { aListConfig, "list-config", 256, "@"},
+    { aListPackets,"list-packets",256,N_("list only the sequence of packets")},
     { aExportOwnerTrust,
 	      "export-ownertrust", 256, N_("export the ownertrust values")},
     { aImportOwnerTrust,
@@ -380,14 +382,14 @@ static ARGPARSE_OPTS opts[] = {
     { oDefRecipient, "default-recipient" ,2,
 				  N_("|NAME|use NAME as default recipient")},
     { oDefRecipientSelf, "default-recipient-self" ,0,
-				N_("use the default key as default recipient")},
+			       N_("use the default key as default recipient")},
     { oNoDefRecipient, "no-default-recipient", 0, "@" },
     { oTempDir, "temp-directory", 2, "@" },
     { oExecPath, "exec-path", 2, "@" },
     { oEncryptTo, "encrypt-to", 2, "@" },
     { oNoEncryptTo, "no-encrypt-to", 0, "@" },
     { oUser, "local-user",2, N_("use this user-id to sign or decrypt")},
-    { oCompress, "compress-level", 1, N_("|N|set compress level N (0 disables)") },
+    { oCompress,"compress-level",1,N_("|N|set compress level N (0 disables)")},
     { oTextmodeShort, NULL,   0, "@"},
     { oTextmode, "textmode",  0, N_("use canonical text mode")},
     { oNoTextmode, "no-textmode",  0, "@"},
@@ -854,7 +856,8 @@ set_cmd( enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd )
 }
 
 
-static void add_group(char *string)
+static void
+add_group(char *string)
 {
   char *name,*value;
   struct groupitem *item;
@@ -890,11 +893,11 @@ static void add_group(char *string)
    0) The homedir.  It must be x00, a directory, and owned by the
    user.
 
-   1) The options file.  Okay unless it or its containing directory is
-   group or other writable or not owned by us.  disable exec in this
-   case.
+   1) The options/gpg.conf file.  Okay unless it or its containing
+   directory is group or other writable or not owned by us.  Disable
+   exec in this case.
 
-   2) Extensions.  Same as #2.
+   2) Extensions.  Same as #1.
 
    Returns true if the item is unsafe. */
 static int
@@ -1059,6 +1062,41 @@ check_permissions(const char *path,int item)
 
   return 0;
 }
+
+
+/* In the future, we can do all sorts of interesting configuration
+   output here.  For now, just give ugr, for User GRoups as the
+   Enigmail folks need it. */
+static void
+list_config(const char *items)
+{
+  struct groupitem *iter;
+
+  if(!opt.with_colons)
+    return;
+ 
+  if(!items || (items && ascii_strcasecmp(items,"ugr")==0))
+    {
+      for(iter=opt.grouplist;iter;iter=iter->next)
+	{
+	  STRLIST sl;
+
+	  printf("cfg:ugr:");
+	  print_string(stdout,iter->name,strlen(iter->name),':');
+	  printf(":");
+
+	  for(sl=iter->values;sl;sl=sl->next)
+	    {
+	      print_string2(stdout,sl->d,strlen(sl->d),':',';');
+	      if(sl->next)
+		printf(";");
+	    }
+
+	  printf("\n");
+	}
+    }
+}
+
 
 int
 main( int argc, char **argv )
@@ -1276,6 +1314,7 @@ main( int argc, char **argv )
 	switch( pargs.r_opt )
 	  {
 	  case aCheckKeys: set_cmd( &cmd, aCheckKeys); break;
+	  case aListConfig: set_cmd( &cmd, aListConfig); break;
 	  case aListPackets: set_cmd( &cmd, aListPackets); break;
 	  case aImport: set_cmd( &cmd, aImport); break;
 	  case aFastImport: set_cmd( &cmd, aFastImport); break;
@@ -1292,8 +1331,10 @@ main( int argc, char **argv )
 	  case aListSigs: set_cmd( &cmd, aListSigs); break;
 	  case aExportSecret: set_cmd( &cmd, aExportSecret); break;
 	  case aExportSecretSub: set_cmd( &cmd, aExportSecretSub); break;
-	  case aDeleteSecretKeys: set_cmd( &cmd, aDeleteSecretKeys);
-							greeting=1; break;
+	  case aDeleteSecretKeys:
+	    set_cmd( &cmd, aDeleteSecretKeys);
+	    greeting=1;
+	    break;
 	  case aDeleteSecretAndPublicKeys:
             set_cmd( &cmd, aDeleteSecretAndPublicKeys);
             greeting=1; 
@@ -2163,7 +2204,8 @@ main( int argc, char **argv )
 	log_error(_("failed to initialize the TrustDB: %s\n"), g10_errstr(rc));
 
 
-    switch (cmd) {
+    switch (cmd)
+      {
       case aStore: 
       case aSym:  
       case aSign: 
@@ -2175,9 +2217,10 @@ main( int argc, char **argv )
 	break;
       default:
         break;
-    }
+      }
 
-    switch( cmd ) {
+    switch( cmd )
+      {
       case aStore: /* only store the file */
 	if( argc > 1 )
 	    wrong_args(_("--store [filename]"));
@@ -2666,6 +2709,12 @@ main( int argc, char **argv )
         keydb_rebuild_caches ();
         break;
 
+      case aListConfig:
+	if(argc>1)
+	  wrong_args("--list-config [items]");
+	list_config(argc?*argv:NULL);
+	break;
+
       case aListPackets:
 	opt.list_packets=2;
       default:
@@ -2696,7 +2745,7 @@ main( int argc, char **argv )
 	    iobuf_close(a);
 	}
 	break;
-    }
+      }
 
     /* cleanup */
     FREE_STRLIST(remusr);
