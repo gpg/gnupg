@@ -103,6 +103,12 @@ mpi_alloc_secure( unsigned nlimbs )
 }
 
 
+#if 0
+static void *unused_limbs_5;
+static void *unused_limbs_32;
+static void *unused_limbs_64;
+#endif
+
 mpi_ptr_t
 #ifdef M_DEBUG
 mpi_debug_alloc_limb_space( unsigned nlimbs, int secure, const char *info )
@@ -111,14 +117,37 @@ mpi_alloc_limb_space( unsigned nlimbs, int secure )
 #endif
 {
     size_t len = nlimbs * sizeof(mpi_limb_t);
+    mpi_ptr_t p;
 
     if( DBG_MEMORY )
 	log_debug("mpi_alloc_limb_space(%u)\n", (unsigned)len*8 );
-  #ifdef M_DEBUG
-    return secure? m_debug_alloc_secure(len, info):m_debug_alloc( len, info );
-  #else
-    return secure? m_alloc_secure( len ):m_alloc( len );
+  #if 0
+    if( !secure ) {
+	if( nlimbs == 5 && unused_limbs_5 ) {  /* DSA 160 bits */
+	    p = unused_limbs_5;
+	    unused_limbs_5 = *p;
+	    return p;
+	}
+	else if( nlimbs == 32 && unused_limbs_32 ) {  /* DSA 1024 bits */
+	    p = unused_limbs_32;
+	    unused_limbs_32 = *p;
+	    return p;
+	}
+	else if( nlimbs == 64 && unused_limbs_64 ) {  /* DSA 2*1024 bits */
+	    p = unused_limbs_64;
+	    unused_limbs_64 = *p;
+	    return p;
+	}
+    }
   #endif
+
+  #ifdef M_DEBUG
+    p = secure? m_debug_alloc_secure(len, info):m_debug_alloc( len, info );
+  #else
+    p = secure? m_alloc_secure( len ):m_alloc( len );
+  #endif
+
+    return p;
 }
 
 void
@@ -132,6 +161,31 @@ mpi_free_limb_space( mpi_ptr_t a )
 	return;
     if( DBG_MEMORY )
 	log_debug("mpi_free_limb_space of size %lu\n", (ulong)m_size(a)*8 );
+
+  #if 0
+    if( !m_is_secure(a) ) {
+	size_t nlimbs = m_size(a) / 4 ;
+	void *p = a;
+
+	if( nlimbs == 5 ) {  /* DSA 160 bits */
+	    *a = unused_limbs_5;
+	    unused_limbs_5 = a;
+	    return;
+	}
+	else if( nlimbs == 32 ) {  /* DSA 1024 bits */
+	    *a = unused_limbs_32;
+	    unused_limbs_32 = a;
+	    return;
+	}
+	else if( nlimbs == 64 ) {  /* DSA 2*1024 bits */
+	    *a = unused_limbs_64;
+	    unused_limbs_64 = a;
+	    return;
+	}
+    }
+  #endif
+
+
     m_free(a);
 }
 

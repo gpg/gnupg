@@ -58,7 +58,6 @@ typedef struct {
 
 
 static int underflow(IOBUF a);
-static const char *get_real_fname( IOBUF a );
 
 /****************
  * Read data from a file into buf which has an allocated length of *LEN.
@@ -449,6 +448,7 @@ iobuf_alloc(int use, size_t bufsize)
     a->no = ++number;
     a->subno = 0;
     a->opaque = NULL;
+    a->real_fname = NULL;
     return a;
 }
 
@@ -462,6 +462,7 @@ iobuf_close( IOBUF a )
 
     if( a && a->directfp ) {
 	fclose( a->directfp );
+	m_free( a->real_fname );
 	if( DBG_IOBUF )
 	    log_debug("iobuf_close -> %p\n", a->directfp );
 	return 0;
@@ -477,6 +478,7 @@ iobuf_close( IOBUF a )
 	if( a->filter && (rc = a->filter(a->filter_ov, IOBUFCTRL_FREE,
 					 a->chain, NULL, &dummy_len)) )
 	    log_error("IOBUFCTRL_FREE failed on close: %s\n", g10_errstr(rc) );
+	m_free(a->real_fname);
 	m_free(a->d.buf);
 	m_free(a);
     }
@@ -489,7 +491,7 @@ iobuf_cancel( IOBUF a )
     const char *s;
 
     if( a && a->use == 2 ) {
-	s = get_real_fname(a);
+	s = iobuf_get_real_fname(a);
 	if( s && *s )
 	    remove(s);	/* remove the file. Fixme: this will fail for MSDOZE*/
     }			/* because the file is still open */
@@ -550,6 +552,8 @@ iobuf_open( const char *fname )
     fcx->fp = fp;
     fcx->print_only_name = print_only;
     strcpy(fcx->fname, fname );
+    if( !print_only )
+	a->real_fname = m_strdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
@@ -614,6 +618,8 @@ iobuf_create( const char *fname )
     fcx->fp = fp;
     fcx->print_only_name = print_only;
     strcpy(fcx->fname, fname );
+    if( !print_only )
+	a->real_fname = m_strdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
@@ -644,6 +650,7 @@ iobuf_append( const char *fname )
     fcx = m_alloc( sizeof *fcx + strlen(fname) );
     fcx->fp = fp;
     strcpy(fcx->fname, fname );
+    a->real_fname = m_strdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
@@ -670,6 +677,7 @@ iobuf_openrw( const char *fname )
     fcx = m_alloc( sizeof *fcx + strlen(fname) );
     fcx->fp = fp;
     strcpy(fcx->fname, fname );
+    a->real_fname = m_strdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
@@ -703,6 +711,7 @@ iobuf_fopen( const char *fname, const char *mode )
 	return NULL;
     a = iobuf_alloc(1, 8192 );
     a->directfp = fp;
+    a->real_fname = m_strdup( fname );
 
     if( DBG_IOBUF )
 	log_debug("iobuf_fopen -> %p\n", a->directfp );
@@ -745,6 +754,10 @@ iobuf_push_filter2( IOBUF a,
      */
     b = m_alloc(sizeof *b);
     memcpy(b, a, sizeof *b );
+    /* fixme: it is stupid to keep a copy of the name at every level
+     * but we need the name somewhere because the name known by file_filter
+     * may have been released when we need the name of the file */
+    b->real_fname = a->real_fname? m_strdup(a->real_fname):NULL;
     /* remove the filter stuff from the new stream */
     a->filter = NULL;
     a->filter_ov = NULL;
@@ -811,6 +824,7 @@ pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 	b = a->chain;
 	assert(b);
 	m_free(a->d.buf);
+	m_free(a->real_fname);
 	memcpy(a,b, sizeof *a);
 	m_free(b);
 	return 0;
@@ -847,6 +861,7 @@ pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 	 */
 	b = a->chain;
 	m_free(a->d.buf);
+	m_free(a->real_fname);
 	memcpy(a,b, sizeof *a);
 	m_free(b);
 	if( DBG_IOBUF )
@@ -884,6 +899,7 @@ underflow(IOBUF a)
 		log_debug("iobuf-%d.%d: pop `%s' in underflow\n",
 					a->no, a->subno, a->desc );
 	    m_free(a->d.buf);
+	    m_free(a->real_fname);
 	    memcpy(a, b, sizeof *a);
 	    m_free(b);
 	    print_chain(a);
@@ -952,6 +968,7 @@ underflow(IOBUF a)
 					       a->no, a->subno, a->desc );
 		print_chain(a);
 		m_free(a->d.buf);
+		m_free(a->real_fname);
 		memcpy(a,b, sizeof *a);
 		m_free(b);
 		print_chain(a);
@@ -1075,18 +1092,22 @@ iobuf_read(IOBUF a, byte *buf, unsigned buflen )
     do {
 	if( n < buflen && a->d.start < a->d.len ) {
 	    unsigned size = a->d.len - a->d.start;
-	    if( size > buflen - n ) size = buflen - n;
-	    if( buf ) memcpy( buf, a->d.buf + a->d.start, size );
+	    if( size > buflen - n )
+		size = buflen - n;
+	    if( buf )
+		memcpy( buf, a->d.buf + a->d.start, size );
 	    n += size;
 	    a->d.start += size;
-	    if( buf ) buf += size;
+	    if( buf )
+		buf += size;
 	}
 	if( n < buflen ) {
 	    if( (c=underflow(a)) == -1 ) {
 		a->nbytes += n;
 		return n? n : -1/*EOF*/;
 	    }
-	    if( buf ) *buf++ = c;
+	    if( buf )
+		*buf++ = c;
 	    n++;
 	}
     } while( n < buflen );
@@ -1251,6 +1272,7 @@ iobuf_get_filelength( IOBUF a )
 	return 0;
     }
 
+    /* Hmmm: file_filter may have already been removed */
     for( ; a; a = a->chain )
 	if( !a->chain && a->filter == file_filter ) {
 	    file_filter_ctx_t *b = a->filter_ov;
@@ -1331,9 +1353,13 @@ iobuf_seek( IOBUF a, ulong newpos )
 /****************
  * Retrieve the real filename
  */
-static const char *
-get_real_fname( IOBUF a )
+const char *
+iobuf_get_real_fname( IOBUF a )
 {
+    if( a->real_fname )
+	return a->real_fname;
+
+    /* the old solution */
     for( ; a; a = a->chain )
 	if( !a->chain && a->filter == file_filter ) {
 	    file_filter_ctx_t *b = a->filter_ov;

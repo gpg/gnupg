@@ -56,6 +56,7 @@ struct iobuf_struct {
 		   IOBUF chain, byte *buf, size_t *len);
     void *filter_ov;	/* value for opaque */
     int filter_ov_owner;
+    char *real_fname;
     IOBUF chain;	/* next iobuf used for i/o if any (passed to filter) */
     int no, subno;
     const char *desc;
@@ -114,6 +115,7 @@ size_t iobuf_temp_to_buffer( IOBUF a, byte *buffer, size_t buflen );
 void iobuf_unget_and_close_temp( IOBUF a, IOBUF temp );
 
 u32 iobuf_get_filelength( IOBUF a );
+const char *iobuf_get_real_fname( IOBUF a );
 const char *iobuf_get_fname( IOBUF a );
 
 void iobuf_set_block_mode( IOBUF a, size_t n );

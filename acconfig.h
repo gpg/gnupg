@@ -70,6 +70,9 @@
 /* and the real names of the random devices */
 #undef NAME_OF_DEV_RANDOM
 #undef NAME_OF_DEV_URANDOM
+/* Linux has an ioctl */
+#undef HAVE_DEV_RANDOM_IOCTL
+
 
 #undef USE_DYNAMIC_LINKING
 #undef HAVE_DL_DLOPEN

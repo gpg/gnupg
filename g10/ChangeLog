@@ -1,3 +1,10 @@
+Tue Jun  1 16:01:46 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* openfile.c (make_outfile_name): New.
+	* plaintext.c (handle_plaintext): Outputfile is now the inputfile
+	without the suffix.
+	* g10.c: New option --use-embedded-filename
+
 Mon May 31 19:41:10 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* g10.c (main): Fix for SHM init (Michael).

@@ -1,26 +1,44 @@
 <!doctype book PUBLIC "-//Davenport//DTD DocBook V3.0//EN" [
+<!entity gnupg	    "GnuPG">
+<!entity wwwgnu     "http://www.gnu.org">
+<!entity wwwgnupg   "http://www.gnupg.org">
 ]>
 <book>
   <bookinfo>
-    <title>The GNU Privacy Guard</title>
+    <title>The GNU Privacy Guard Manual</title>
+    <titleabbrev>GnuPG-Man</titleabbrev>
+    <edition>v0.0.0</edition>
     <authorgroup>
-      <author> <firstname>Werner</firstname> <surname>Koch</surname>
-	<affiliation><address><email>wk@gnupg.org</email></address>
-	</affiliation>
+      <!-- Replace with your name and delete mine -->
+      <author>
+	<firstname>Joe</firstname>
+	<othername>D.</othername>
+	<surname>Foo</surname>
+	<authorblurb>
+	    <para><email>joe@somewhere</email></para>
+	</authorblurb>
+      </author>
+      <author>
+	  <firstname>Werner</firstname>
+	  <surname>Koch</surname>
+	  <authorblurb>
+	      <para><email>wk@gnupg.org</email></para>
+	  </authorblurb>
       </author>
     </authorgroup>
-    <!-- <version>last modified: <date></version> -->
-    <copyright><year>1998</year><year>1998</year>
+    <!-- note, it is possible to give more than 1 year -->
+    <copyright><year>1999</year>
 	       <holder>Free Software Foundation, Inc.</holder>
     </copyright>
+    <!-- We have to check, whether this is the right wording -->
     <legalnotice>
-      <para>This documentation is free software; you can redistribute
+      <para>This manual is free software; you can redistribute
 	it and/or modify it under the terms of the GNU General Public
 	License as published by the Free Software Foundation; either
 	version 2 of the License, or (at your option) any later
 	version.</para>
 
-      <para>This program is distributed in the hope that it will be
+      <para>This manual is distributed in the hope that it will be
 	useful, but WITHOUT ANY WARRANTY; without even the implied
 	warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 	PURPOSE.  See the GNU General Public License for more
@@ -32,61 +50,52 @@
 	MA 02111-1307 USA</para>
 
       <para>For more details see the file COPYING in the source
-	distribution of GNUPG.</para>
+	distribution of &gnupg;.</para>
     </legalnotice>
   </bookinfo>
 
+  <!-- Insert the table of contents -->
   <toc></toc>
 
+<!--*******************************************
+    *********  the first chapter  *************
+    *******************************************-->
   <chapter id="intro">
     <title>Introduction</title>
     <sect1 id="feedback">
       <title>Feedback</title>
+      <!-- Hope we can remove this ;-) -->
       <para>Well, I'm German and I find it hard to express myself in
 	English. So if you find some phrases and/or words that I used
 	in a wrong way (and you will find them :-) ), please send me a
 	mail, to let me correct this. Please send me notes about
-	typos, too.</para>
+	typos, too.
     </sect1>
 
 
     <sect1 id="whatis">
-	<title>What is GNUPG</title>
-      <para>GNUPG is a free data encryption and signing tool.
+	<title>What is &gnupg;</title>
+      <para><ulink url="&wwwgnupg;">&gnupg;</> is a tool for digital
+	encryption and signing;
+	it is part of the <ulink url="&wwwgnu;">GNU Project</>.
 
-	<screen>
-	    <prompt/$/ <userinput>gpg --version</>
+      <para>It has these features:
+      <itemizedlist>
+	<listitem>
+	  <para>Exciting feature 1
+	</listitem>
+	<listitem>
+	  <para>Exciting feature 2
+	</listitem>
+      </itemizedlist>
 
-	</screen>
+      <para>How to find out the version of &gnupg;
+      <screen>
+	<prompt/$/ <userinput>gpg --version</>
+      </screen>
 
     </sect1>
 
   </chapter>
-
-<reference>
-   <title>Manual Pages</title>
-     <partintro>
-       <para>These are some short man(1) pages</para>
-     </partintro>
-   <refentry>
-     <refmeta>
-       <refentrytitle>gpg</refentrytitle>
-       <manvolnum>1</manvolnum>
-       <refmiscinfo class="tools">GNU Tools</refmiscinfo></refmiscinfo>
-     </refmeta>
-
-     <refsynopsisdiv>
-     <synopsis>
-     <command>gpg</command>
-     <optional><parameter>options</parameter></optional>
-     <replaceable class="parameter">file name</replaceable>
-     </synopsis>
-     <refpurpose>is the GNU tool for signing and encryption</>
-     <refsect1>
-     <title>Description</title>
-     <para> </para>
-     </refsect1>
-   </refentry>
-</reference>
 
 </book>

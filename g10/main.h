@@ -96,6 +96,7 @@ int generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock );
 
 /*-- openfile.c --*/
 int overwrite_filep( const char *fname );
+char *make_outfile_name( const char *iname );
 int   open_outfile( const char *iname, int mode, IOBUF *a );
 IOBUF open_sigfile( const char *iname );
 void copy_options_file( const char *destdir );

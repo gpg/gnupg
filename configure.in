@@ -330,18 +330,38 @@ if test "$ac_cv_header_sys_shm_h" = "yes"; then
   AC_DEFINE(USE_SHM_COPROCESSING)
 fi
 
+dnl
 dnl check whether we have a random device
+dnl
 if test "$try_dev_random" = yes ; then
-AC_CACHE_CHECK(for random device, ac_cv_have_dev_random,
-[if test -c "$NAME_OF_DEV_RANDOM" && test -c "$NAME_OF_DEV_URANDOM" ; then
-  ac_cv_have_dev_random=yes; else ac_cv_have_dev_random=no; fi])
-if test "$ac_cv_have_dev_random" = yes; then
-    AC_DEFINE(HAVE_DEV_RANDOM)
-fi
+    AC_CACHE_CHECK(for random device, ac_cv_have_dev_random,
+    [if test -c "$NAME_OF_DEV_RANDOM" && test -c "$NAME_OF_DEV_URANDOM" ; then
+      ac_cv_have_dev_random=yes; else ac_cv_have_dev_random=no; fi])
+    if test "$ac_cv_have_dev_random" = yes; then
+        AC_DEFINE(HAVE_DEV_RANDOM)
+    fi
 else
     AC_MSG_CHECKING(for random device)
     ac_cv_have_dev_random=no
     AC_MSG_RESULT(has been disabled)
+fi
+
+dnl
+dnl and whether this device supports ioctl
+dnl (Note, that we should do a real test here)
+dnl
+if test "$ac_cv_have_dev_random" = yes ; then
+    AC_CHECK_HEADERS(linux/random.h)
+    AC_CACHE_CHECK(for random device ioctl, ac_cv_have_dev_random_ioctl,
+      [ if test "$ac_cv_header_linux_random_h" = yes ; then
+          ac_cv_have_dev_random_ioctl=yes;
+        else
+          ac_cv_have_dev_random_ioctl=no;
+        fi
+      ])
+    if test "$ac_cv_have_dev_random_ioctl" = yes; then
+        AC_DEFINE(HAVE_DEV_RANDOM_IOCTL)
+    fi
 fi
 
 

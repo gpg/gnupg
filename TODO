@@ -37,7 +37,6 @@ Nice to have
   * replace the keyserver stuff either by a call to a specialized
     utility and SOCKSify this utility.
   * Do a real fix for bug #7 or document that it is a PGP 5 error.
-  * clearsig: Keep lineendings while writing the output of a clearsig
   * preferences of hash algorithms are not yet used.
   * new menu to delete signatures and list signature in menu
   * Replace the SIGUSR1 stuff by semaphores to avoid loss of a signal.
@@ -52,8 +51,6 @@ Nice to have
   * the pubkey encrypt functions should do some sanity checks.
   * dynload: implement the hint stuff.
   * "gpg filename.tar.gz.asc" sollte wie mit --verify funktionieren (-sab).
-  * Den Dateinamen aus der message nicht benutzen, sondern nur
-    das gpg/asc strippen.
   * for messages created with "-t", it might make sense to append the
     verification status of the message to the output (i.e. write something to
     the --output file and not only to stderr.

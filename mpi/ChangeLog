@@ -1,3 +1,7 @@
+Tue Jun  1 16:01:46 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* config.links (i[56]86*-*-freebsdelf*): New.
+
 Sun May 23 14:20:22 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* config.links (sysdep.h): Not any more conditionally created.

@@ -1,8 +1,12 @@
 
     * New option -N to insert notations and a --set-policy-url.
 
-    * New subcommand "delsig" in th edit menu.
+    * New subcommand "delsig" in the edit menu.
 
+    * The name of the output file is not anymore the one which is
+      embedded in the processed message, but the used filename with
+      the extension stripped.  To revert to the old behaviour you can
+      use the option --use-embedded-filename.
 
 Noteworthy changes in version 0.9.7
 -----------------------------------

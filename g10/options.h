@@ -76,6 +76,7 @@ struct {
     int interactive;
     STRLIST notation_data;
     const char *set_policy_url;
+    int use_embedded_filename;
 } opt;
 
 

@@ -71,6 +71,36 @@ overwrite_filep( const char *fname )
 
 
 /****************
+ * Strip know extensions from iname and return a newly allocated
+ * filename.  Return NULL if we can't do that.
+ */
+char *
+make_outfile_name( const char *iname )
+{
+    size_t n;
+
+    if( (!iname || (*iname=='-' && !iname[1]) ))
+	return m_strdup("-");
+
+  #ifdef HAVE_DRIVE_LETTERS
+    #warning add case insensitive compare
+  #endif
+    n = strlen(iname);
+    if( n > 4 && (    !strcmp(iname+n-4,".gpg")
+		   || !strcmp(iname+n-4,".sig")
+		   || !strcmp(iname+n-4,".asc") ) ) {
+	char *buf = m_strdup( iname );
+	buf[n-4] = 0;
+	return buf;
+    }
+
+    log_error(_("%s: unknown suffix\n"), iname );
+    return NULL;
+}
+
+
+
+/****************
  * Make an output filename for the inputfile INAME.
  * Returns an IOBUF and an errorcode
  * Mode 0 = use ".gpg"
@@ -108,6 +138,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 				      mode==2 ? ".sig" : ".gpg");
 	    name = buf;
 	}
+
 	if( overwrite_filep( name ) ) {
 	    if( !(*a = iobuf_create( name )) ) {
 		log_error(_("%s: can't create: %s\n"), name, strerror(errno) );
@@ -122,6 +153,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
     }
     return rc;
 }
+
 
 
 /****************

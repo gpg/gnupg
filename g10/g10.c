@@ -144,6 +144,7 @@ enum cmd_and_opt_values { aNull = 0,
     oRunAsShmCP,
     oSetFilename,
     oSetPolicyURL,
+    oUseEmbeddedFilename,
     oComment,
     oThrowKeyid,
     oForceV3Sigs,
@@ -301,6 +302,7 @@ static ARGPARSE_OPTS opts[] = {
     { oEscapeFrom, "escape-from-lines", 0, "@" },
     { oLockOnce, "lock-once", 0, "@" },
     { oLoggerFD, "logger-fd",1, "@" },
+    { oUseEmbeddedFilename, "use-embedded-filename", 0, "@" },
 {0} };
 
 
@@ -718,6 +720,7 @@ main( int argc, char **argv )
 	    break;
 	  case oSetFilename: opt.set_filename = pargs.r.ret_str; break;
 	  case oSetPolicyURL: opt.set_policy_url = pargs.r.ret_str; break;
+	  case oUseEmbeddedFilename: opt.use_embedded_filename = 1; break;
 	  case oComment: opt.comment_string = pargs.r.ret_str; break;
 	  case oThrowKeyid: opt.throw_keyid = 1; break;
 	  case oForceV3Sigs: opt.force_v3_sigs = 1; break;

@@ -33,6 +33,13 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#if 0
+  #ifdef HAVE_LINUX_RANDOM_H
+    #include <sys/ioctl.h>
+    #include <asm/types.h>
+    #include <linux/random.h>
+  #endif
+#endif
 #include "types.h"
 #include "util.h"
 #include "ttyio.h"
@@ -48,6 +55,19 @@ static int open_device( const char *name, int minor );
 static int gather_random( void (*add)(const void*, size_t, int), int requester,
 					  size_t length, int level );
 
+#if 0
+#ifdef HAVE_DEV_RANDOM_IOCTL
+static ulong
+get_entropy_count( int fd )
+{
+    ulong count;
+
+    if( ioctl( fd, RNDGETENTCNT, &count ) == -1 )
+	g10_log_fatal("ioctl(RNDGETENTCNT) failed: %s\n", strerror(errno) );
+    return count;
+}
+#endif
+#endif
 
 /****************
  * Used to open the Linux and xBSD /dev/random devices
@@ -91,6 +111,11 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 	fd = fd_urandom;
     }
 
+  #if 0
+  #ifdef HAVE_DEV_RANDOM_IOCTL
+    g10_log_info("entropy count of %d is %lu\n", fd, get_entropy_count(fd) );
+  #endif
+  #endif
     while( length ) {
 	fd_set rfds;
 	struct timeval tv;

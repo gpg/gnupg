@@ -63,6 +63,13 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	log_info(_("data not saved; use option \"--output\" to save it\n"));
 	nooutput = 1;
     }
+    else if( !opt.use_embedded_filename ) {
+	fname = make_outfile_name( iobuf_get_real_fname(pt->buf) );
+	if( !fname ) {
+	    rc = G10ERR_CREATE_FILE;
+	    goto leave;
+	}
+    }
     else {
 	fname = m_alloc( pt->namelen +1 );
 	memcpy( fname, pt->name, pt->namelen );
@@ -90,7 +97,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 
     if( pt->len ) {
 	assert( !clearsig );
-	if( convert ) { // text mode
+	if( convert ) { /* text mode */
 	    for( ; pt->len; pt->len-- ) {
 		if( (c = iobuf_get(pt->buf)) == -1 ) {
 		    log_error("Problem reading source (%u bytes remaining)\n",
@@ -112,7 +119,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		}
 	    }
 	}
-	else { // binary mode
+	else { /* binary mode */
 	    byte *buffer = m_alloc( 32768 );
 	    while( pt->len ) {
 		int len = pt->len > 32768 ? 32768 : pt->len;
@@ -141,7 +148,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	}
     }
     else if( !clearsig ) {
-	if( convert ) { // text mode
+	if( convert ) { /* text mode */
 	    while( (c = iobuf_get(pt->buf)) != -1 ) {
 		if( mfx->md )
 		    md_putc(mfx->md, c );
@@ -157,7 +164,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		}
 	    }
 	}
-	else { // binary mode
+	else { /* binary mode */
 	    byte *buffer = m_alloc( 32768 );
 	    for( ;; ) {
 		int len = iobuf_read( pt->buf, buffer, 32768 );
