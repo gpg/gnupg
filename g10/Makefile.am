@@ -31,8 +31,7 @@ AM_CFLAGS = -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""
 endif
 needed_libs = ../common/libcommon.a ../jnlib/libjnlib.a
 
-#noinst_PROGRAMS = gpgd
-bin_PROGRAMS = gpg gpgv
+bin_PROGRAMS = gpg2 gpgv2
 
 common_source =  \
 	      global.h gpg.h    \
@@ -65,7 +64,7 @@ common_source =  \
 	      keylist.c 	\
 	      pkglue.c pkglue.h 
 
-gpg_SOURCES  = g10.c		\
+gpg2_SOURCES  = g10.c		\
 	      $(common_source)	\
 	      pkclist.c 	\
 	      skclist.c 	\
@@ -99,7 +98,7 @@ gpg_SOURCES  = g10.c		\
 	      card-util.c \
 	      exec.c exec.h
 
-gpgv_SOURCES = gpgv.c           \
+gpgv2_SOURCES = gpgv.c           \
 	      $(common_source)  \
 	      verify.c          
 
@@ -111,8 +110,8 @@ gpgv_SOURCES = gpgv.c           \
 #	       $(common_source)
 
 LDADD =  $(needed_libs) @INTLLIBS@ @CAPLIBS@ @ZLIBS@ 
-gpg_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) -lassuan -lgpg-error
-gpgv_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) -lassuan -lgpg-error
+gpg2_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) -lassuan -lgpg-error
+gpgv2_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) -lassuan -lgpg-error
 
 $(PROGRAMS): $(needed_libs)
 
@@ -120,8 +119,4 @@ install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_DATA) $(srcdir)/options.skel \
 				$(DESTDIR)$(pkgdatadir)/options.skel
-	@set -e;\
-	 if test -f $(DESTDIR)$(bindir)/gpgm ; then \
-	   echo "removing obsolete gpgm binary" ;   \
-	   rm $(DESTDIR)$(bindir)/gpgm ;	    \
-	 fi
+

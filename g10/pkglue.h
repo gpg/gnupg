@@ -29,6 +29,7 @@ int pk_encrypt (int algo, gcry_mpi_t *resarr, gcry_mpi_t data,
                 gcry_mpi_t *pkey);
 int pk_decrypt (int algo, gcry_mpi_t *result, gcry_mpi_t *data,
                 gcry_mpi_t *skey);
+int pk_check_secret_key (int algo, gcry_mpi_t *skey);
 
 
 #endif /*GNUPG_G10_PKGLUE_H*/

@@ -43,7 +43,7 @@
 
 #include "i18n.h"
 #include "sysutils.h"
-
+#include "app-common.h"
 
 
 enum cmd_and_opt_values 
@@ -69,6 +69,7 @@ enum cmd_and_opt_values
   oDaemon,
   oBatch,
   oReaderPort,
+  octapiDriver,
 
 aTest };
 
@@ -91,8 +92,8 @@ static ARGPARSE_OPTS opts[] = {
   { oDebugSC,  "debug-sc",  1, N_("|N|set OpenSC debug level to N")},
   { oNoDetach, "no-detach" ,0, N_("do not detach from the console")},
   { oLogFile,  "log-file"   ,2, N_("use a log file for the server")},
-  { oReaderPort, "reader-port", 1, N_("|N|connect to reader at port N")},
-
+  { oReaderPort, "reader-port", 2, N_("|N|connect to reader at port N")},
+  { octapiDriver, "ctapi-driver", 2, N_("NAME|use NAME as ctAPI driver")},
   {0}
 };
 
@@ -230,7 +231,6 @@ main (int argc, char **argv )
   int csh_style = 0;
   char *logfile = NULL;
   int debug_wait = 0;
-  int reader_port = 32768; /* First USB reader. */
 
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
@@ -299,6 +299,7 @@ main (int argc, char **argv )
 
   if (default_config)
     configname = make_filename (opt.homedir, "scdaemon.conf", NULL );
+
   
   argc = orig_argc;
   argv = orig_argv;
@@ -365,7 +366,8 @@ main (int argc, char **argv )
         case oServer: pipe_server = 1; break;
         case oDaemon: is_daemon = 1; break;
 
-        case oReaderPort: reader_port = pargs.r.ret_int; break;
+        case oReaderPort: app_set_default_reader_port (pargs.r.ret_str); break;
+        case octapiDriver: opt.ctapi_driver = pargs.r.ret_str; break;
 
         default : pargs.err = configfp? 1:2; break;
 	}

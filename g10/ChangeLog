@@ -1,3 +1,23 @@
+2003-08-05  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (install-data-local): Dropped check for the ancient
+	gpgm tool.
+	(bin_PROGRAMS): Renamed gpg to gpg2 and gpgv to gpgv2.  This is so
+	that it won't conflict with the current stable version of gpg.
+
+	* pkglue.c (pk_check_secret_key): New.
+	* seckey-cert.c (do_check): Reenable this test here again.
+
+	* g10.c (main): Add command -K as an alias for
+	--list-secret-keys. Command "-k" is now an alias to --list-keys.
+	Remove special treatment of -kv and -kvv.
+	(set_cmd): Ditto.
+	(main): Strip a "-cvs" suffix when testing for a version specific
+	config file.
+
+	* status.h, status.c, g10.c [USE_SHM_COPROCESSING]: Removed.  This
+	is not any longer available.
+
 2003-07-29  Werner Koch  <wk@gnupg.org>
 
 	* g10.c (main): Add secmem features and set the random seed file.

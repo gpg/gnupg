@@ -69,6 +69,7 @@ struct app_ctx_s {
 };
 
 /*-- app.c --*/
+void app_set_default_reader_port (const char *portstr);
 APP select_application (void);
 int app_get_serial_and_stamp (APP app, char **serial, time_t *stamp);
 int app_write_learn_status (APP app, CTRL ctrl);

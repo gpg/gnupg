@@ -53,6 +53,7 @@ struct {
   int dry_run;      /* don't change any persistent data */
   int batch;        /* batch mode */
   const char *homedir; /* configuration directory name */
+  const char *ctapi_driver; /* Library to access the ctAPI. */
 } opt;
 
 

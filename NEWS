@@ -1,6 +1,16 @@
 Noteworthy changes in version 1.9.0 (unreleased)
 ------------------------------------------------
 
+ * gpg has been renamed to gpg2 and gpgv to gpgv2.  This is a
+   temporary solution to allow co-existing with stable gpg versions.
+
+ * The default config file is ~/.gnupg/gpg.conf-1.9.0 if it exists.
+
+ * Removed the -k, -kv and -kvv commands.  -k is now an alias to
+   --list-keys.  New command -K as alias for --list-secret-keys.
+
+ * Removed --run-as-shm-coprocess feature.
+
  * gpg does now also use libgcrypt, libgpg-error is required.
 
  * New gpgsm commands --call-dirmngr and --call-protect-tool.

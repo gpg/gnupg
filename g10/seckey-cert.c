@@ -215,14 +215,13 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 	    return gpg_error (GPG_ERR_BAD_PASSPHRASE);
 	}
 	/* the checksum may fail, so we also check the key itself */
-#warning fixme - we need to reenable this
-/*  	res = pubkey_check_secret_key( sk->pubkey_algo, sk->skey ); */
-/*  	if( res ) { */
-/*  	    copy_secret_key( sk, save_sk ); */
-/*              passphrase_clear_cache ( keyid, sk->pubkey_algo ); */
-/*  	    free_secret_key( save_sk ); */
-/*  	    return gpg_error (GPG_ERR_BAD_PASSPHRASE); */
-/*  	} */
+ 	res = pk_check_secret_key (sk->pubkey_algo, sk->skey);
+ 	if (res) {
+            copy_secret_key( sk, save_sk );
+            passphrase_clear_cache ( keyid, sk->pubkey_algo );
+            free_secret_key( save_sk );
+ 	    return gpg_error (GPG_ERR_BAD_PASSPHRASE);
+ 	}
 	free_secret_key( save_sk );
 	sk->is_protected = 0;
     }

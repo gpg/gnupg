@@ -29,8 +29,6 @@
 #include "scdaemon.h"
 #include "apdu.h"
 
-#define HAVE_CTAPI 1
-
 #define MAX_READER 4 /* Number of readers we support concurrently. */
 #define CARD_CONNECT_TIMEOUT 1 /* Number of seconds to wait for
                                   insertion of the card (1 = don't wait). */
@@ -40,7 +38,13 @@
 /* A global table to keep track of active readers. */
 static struct {
   int used;            /* True if slot is used. */
-  unsigned short port; /* port number0 = unused, 1 - dev/tty */
+  unsigned short port; /* Port number:  0 = unused, 1 - dev/tty */
+  int is_ctapi;        /* This is a ctAPI driver. */
+  struct {
+    unsigned long context;
+    unsigned long card;
+    unsigned long protocol;
+  } pcsc;
   int status;
   unsigned char atr[33];
   size_t atrlen;
@@ -55,6 +59,61 @@ static char (*CT_data) (unsigned short ctn, unsigned char *dad,
                         unsigned char *rsp);
 static char (*CT_close) (unsigned short ctn);
 
+/* PC/SC constants and function pointer. */
+#define PCSC_SCOPE_USER      0 
+#define PCSC_SCOPE_TERMINAL  1 
+#define PCSC_SCOPE_SYSTEM    2 
+#define PCSC_SCOPE_GLOBAL    3 
+
+#define PCSC_PROTOCOL_T0     1 
+#define PCSC_PROTOCOL_T1     2 
+#define PCSC_PROTOCOL_RAW    4 
+
+#define PCSC_SHARE_EXCLUSIVE 1
+#define PCSC_SHARE_SHARED    2
+#define PCSC_SHARE_DIRECT    3
+
+#define PCSC_LEAVE_CARD      0
+#define PCSC_RESET_CARD      1
+#define PCSC_UNPOWER_CARD    2
+#define PCSC_EJECT_CARD      3
+
+struct pcsc_io_request_s {
+  unsigned long protocol; 
+  unsigned long pci_len;
+};
+
+typedef struct pcsc_io_request_s *pcsc_io_request_t;
+
+long (*pcsc_establish_context) (unsigned long scope,
+                                const void *reserved1,
+                                const void *reserved2,
+                                unsigned long *r_context);
+long (*pcsc_release_context) (unsigned long context);
+long (*pcsc_list_readers) (unsigned long context, const char *groups,
+                        char *readers, unsigned long *readerslen);
+long (*pcsc_connect) (unsigned long context,
+                      const char *reader,
+                      unsigned long share_mode,
+                      unsigned long preferred_protocols,
+                      unsigned long *r_card,
+                      unsigned long *r_active_protocol);
+long (*pcsc_disconnect) (unsigned long card, unsigned long disposition);
+long (*pcsc_status) (unsigned long card,
+                     char *reader, unsigned long *readerlen,
+                     unsigned long *r_state, unsigned long *r_protocol,
+                     unsigned char *atr, unsigned long *atrlen);
+long (*pcsc_begin_transaction) (unsigned long card);
+long (*pcsc_end_transaction) (unsigned long card);
+long (*pcsc_transmit) (unsigned long card,
+                       const pcsc_io_request_t send_pci,
+                       const unsigned char *send_buffer,
+                       unsigned long send_len,
+                       pcsc_io_request_t recv_pci,
+                       unsigned char *recv_buffer,
+                       unsigned long *recv_len);
+long (*pcsc_set_timeout) (unsigned long context, unsigned long timeout);
+
 
 
 
@@ -64,28 +123,16 @@ static char (*CT_close) (unsigned short ctn);
  */
  
 
-/* Find an unused reader slot for PORT and put it into the reader
+/* Find an unused reader slot for PORTSTR and put it into the reader
    table.  Return -1 on error or the index into the reader table. */
 static int 
-new_reader_slot (int port)    
+new_reader_slot (void)    
 {
   int i, reader = -1;
 
-  if (port < 0 || port > 0xffff)
-    {
-      log_error ("new_reader_slot: invalid port %d requested\n", port);
-      return -1;
-    }
-
   for (i=0; i < MAX_READER; i++)
     {
-      if (reader_table[i].used && reader_table[i].port == port)
-        {
-          log_error ("new_reader_slot: requested port %d already in use\n",
-                     reader);
-          return -1; 
-        }
-      else if (!reader_table[i].used && reader == -1)
+      if (!reader_table[i].used && reader == -1)
         reader = i;
     }
   if (reader == -1)
@@ -94,7 +141,7 @@ new_reader_slot (int port)
       return -1;
     }
   reader_table[reader].used = 1;
-  reader_table[reader].port = port;
+  reader_table[reader].is_ctapi = 0;
   return reader;
 }
 
@@ -102,11 +149,25 @@ new_reader_slot (int port)
 static void
 dump_reader_status (int reader)
 {
-  log_info ("reader %d: %s\n", reader,
-            reader_table[reader].status == 1? "Processor ICC present" :
-            reader_table[reader].status == 0? "Memory ICC present" :
-                                              "ICC not present" );
- 
+  if (reader_table[reader].is_ctapi)
+    {
+      log_info ("reader slot %d: %s\n", reader,
+                reader_table[reader].status == 1? "Processor ICC present" :
+                reader_table[reader].status == 0? "Memory ICC present" :
+                "ICC not present" );
+    }
+  else
+    {
+      log_info ("reader slot %d: active protocol:", reader);
+      if ((reader_table[reader].pcsc.protocol & PCSC_PROTOCOL_T0))
+        log_printf (" T0");
+      else if ((reader_table[reader].pcsc.protocol & PCSC_PROTOCOL_T1))
+        log_printf (" T1");
+      else if ((reader_table[reader].pcsc.protocol & PCSC_PROTOCOL_RAW))
+        log_printf (" raw");
+      log_printf ("\n");
+    }
+
   if (reader_table[reader].status != -1)
     {
       log_info ("reader %d: ATR=", reader);
@@ -117,13 +178,12 @@ dump_reader_status (int reader)
 
 
 
-#ifdef HAVE_CTAPI
 /* 
        ct API Interface 
  */
 
 static const char *
-ct_error_string (int err)
+ct_error_string (long err)
 {
   switch (err)
     {
@@ -150,7 +210,7 @@ ct_activate_card (int reader)
       unsigned short buflen;
 
       if (count)
-        sleep (1); /* FIXME: we should use a more reliable timer. */
+        ; /* FIXME: we should use a more reliable timer than sleep. */
 
       /* Check whether card has been inserted. */
       dad[0] = 1;     /* Destination address: CT. */    
@@ -221,9 +281,15 @@ open_ct_reader (int port)
 {
   int rc, reader;
 
-  reader = new_reader_slot (port);
+  if (port < 0 || port > 0xffff)
+    {
+      log_error ("open_ct_reader: invalid port %d requested\n", port);
+      return -1;
+    }
+  reader = new_reader_slot ();
   if (reader == -1)
     return reader;
+  reader_table[reader].port = port;
 
   rc = CT_init (reader, (unsigned short)port);
   if (rc)
@@ -241,6 +307,7 @@ open_ct_reader (int port)
       return -1;
     }
 
+  reader_table[reader].is_ctapi = 1;
   dump_reader_status (reader);
   return reader;
 }
@@ -271,16 +338,205 @@ ct_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
 }
 
 
-#endif /*HAVE_CTAPI*/
-
 
-#ifdef HAVE_PCSC
+static const char *
+pcsc_error_string (long err)
+{
+  const char *s;
+
+  if (!err)
+    return "okay";
+  if ((err & 0x80100000) != 0x80100000)
+    return "invalid PC/SC error code";
+  err &= 0xffff;
+  switch (err)
+    {
+    case 0x0002: s = "cancelled"; break;
+    case 0x000e: s = "can't dispose"; break;
+    case 0x0008: s = "insufficient buffer"; break;   
+    case 0x0015: s = "invalid ATR"; break;
+    case 0x0003: s = "invalid handle"; break;
+    case 0x0004: s = "invalid parameter"; break; 
+    case 0x0005: s = "invalid target"; break;
+    case 0x0011: s = "invalid value"; break; 
+    case 0x0006: s = "no memory"; break;  
+    case 0x0013: s = "comm error"; break;      
+    case 0x0001: s = "internal error"; break;     
+    case 0x0014: s = "unknown error"; break; 
+    case 0x0007: s = "waited too long"; break;  
+    case 0x0009: s = "unknown reader"; break;
+    case 0x000a: s = "timeout"; break; 
+    case 0x000b: s = "sharing violation"; break;       
+    case 0x000c: s = "no smartcard"; break;
+    case 0x000d: s = "unknown card"; break;   
+    case 0x000f: s = "proto mismatch"; break;          
+    case 0x0010: s = "not ready"; break;               
+    case 0x0012: s = "system cancelled"; break;        
+    case 0x0016: s = "not transacted"; break;
+    case 0x0017: s = "reader unavailable"; break; 
+    case 0x0065: s = "unsupported card"; break;        
+    case 0x0066: s = "unresponsive card"; break;       
+    case 0x0067: s = "unpowered card"; break;          
+    case 0x0068: s = "reset card"; break;              
+    case 0x0069: s = "removed card"; break;            
+    case 0x006a: s = "inserted card"; break;           
+    case 0x001f: s = "unsupported feature"; break;     
+    case 0x0019: s = "PCI too small"; break;           
+    case 0x001a: s = "reader unsupported"; break;      
+    case 0x001b: s = "duplicate reader"; break;        
+    case 0x001c: s = "card unsupported"; break;        
+    case 0x001d: s = "no service"; break;              
+    case 0x001e: s = "service stopped"; break;      
+    default:     s = "unknown PC/SC error code"; break;
+    }
+  return s;
+}
+
 /* 
        PC/SC Interface
  */
 
+static int
+open_pcsc_reader (const char *portstr)
+{
+  long err;
+  int slot;
+  char *list = NULL;
+  unsigned long nreader, listlen, atrlen;
+  char *p;
+  unsigned long card_state, card_protocol;
 
-#endif /*HAVE_PCSC*/
+  slot = new_reader_slot ();
+  if (slot == -1)
+    return -1;
+
+  err = pcsc_establish_context (PCSC_SCOPE_SYSTEM, NULL, NULL,
+                                &reader_table[slot].pcsc.context);
+  if (err)
+    {
+      log_error ("pcsc_establish_context failed: %s (0x%lx)\n",
+                 pcsc_error_string (err), err);
+      reader_table[slot].used = 0;
+      return -1;
+    }
+  
+  err = pcsc_list_readers (reader_table[slot].pcsc.context,
+                           NULL, NULL, &nreader);
+  if (!err)
+    {
+      list = xtrymalloc (nreader+1); /* Better add 1 for safety reasons. */
+      if (!list)
+        {
+          log_error ("error allocating memory for reader list\n");
+          pcsc_release_context (reader_table[slot].pcsc.context);
+          reader_table[slot].used = 0;
+          return -1;
+        }
+      err = pcsc_list_readers (reader_table[slot].pcsc.context,
+                               NULL, list, &nreader);
+    }
+  if (err)
+    {
+      log_error ("pcsc_list_readers failed: %s (0x%lx)\n",
+                 pcsc_error_string (err), err);
+      pcsc_release_context (reader_table[slot].pcsc.context);
+      reader_table[slot].used = 0;
+      xfree (list);
+      return -1;
+    }
+
+  listlen = nreader;
+  p = list;
+  while (nreader)
+    {
+      if (!*p && !p[1])
+        break;
+      log_info ("detected reader `%s'\n", p);
+      if (nreader < (strlen (p)+1))
+        {
+          log_error ("invalid response from pcsc_list_readers\n");
+          break;
+        }
+      nreader -= strlen (p)+1;
+      p += strlen (p) + 1;
+    }
+
+  err = pcsc_connect (reader_table[slot].pcsc.context,
+                      portstr? portstr : list,
+                      PCSC_SHARE_EXCLUSIVE,
+                      PCSC_PROTOCOL_T0|PCSC_PROTOCOL_T1,
+                      &reader_table[slot].pcsc.card,
+                      &reader_table[slot].pcsc.protocol);
+  if (err)
+    {
+      log_error ("pcsc_connect failed: %s (0x%lx)\n",
+                  pcsc_error_string (err), err);
+      pcsc_release_context (reader_table[slot].pcsc.context);
+      reader_table[slot].used = 0;
+      xfree (list);
+      return -1;
+    }      
+  
+  atrlen = 32;
+  /* (We need to pass a dummy buffer.  We use LIST because it ought to
+     be large enough.) */
+  err = pcsc_status (reader_table[slot].pcsc.card,
+                     list, &listlen,
+                     &card_state, &card_protocol,
+                     reader_table[slot].atr, &atrlen);
+  xfree (list);
+  if (err)
+    {
+      log_error ("pcsc_status failed: %s (0x%lx)\n",
+                  pcsc_error_string (err), err);
+      pcsc_release_context (reader_table[slot].pcsc.context);
+      reader_table[slot].used = 0;
+      return -1;
+    }
+  if (atrlen >= DIM (reader_table[0].atr))
+    log_bug ("ATR returned by pcsc_status is too large\n");
+  reader_table[slot].atrlen = atrlen;
+/*   log_debug ("state    from pcsc_status: 0x%lx\n", card_state); */
+/*   log_debug ("protocol from pcsc_status: 0x%lx\n", card_protocol); */
+
+  dump_reader_status (slot); 
+  return slot;
+}
+
+
+/* Actually send the APDU of length APDULEN to SLOT and return a
+   maximum of *BUFLEN data in BUFFER, the actual returned size will be
+   set to BUFLEN.  Returns: CT API error code. */
+static int
+pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
+                unsigned char *buffer, size_t *buflen)
+{
+  long err;
+  struct pcsc_io_request_s send_pci;
+  unsigned long recv_len;
+  
+  if (DBG_CARD_IO)
+    log_printhex ("  CT_data:", apdu, apdulen);
+
+  if ((reader_table[slot].pcsc.protocol & PCSC_PROTOCOL_T1))
+      send_pci.protocol = PCSC_PROTOCOL_T1;
+  else
+      send_pci.protocol = PCSC_PROTOCOL_T0;
+  send_pci.pci_len = sizeof send_pci;
+  recv_len = *buflen;
+  err = pcsc_transmit (reader_table[slot].pcsc.card,
+                       &send_pci, apdu, apdulen,
+                       NULL, buffer, &recv_len);
+  *buflen = recv_len;
+  if (err)
+    log_error ("pcsc_transmit failed: %s (0x%lx)\n",
+               pcsc_error_string (err), err);
+  
+  return err? -1:0;
+}
+
+
+
 
 
 /* 
@@ -288,35 +544,86 @@ ct_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
  */
 
 /* Open the reader and return an internal slot number or -1 on
-   error. */
+   error. If PORTSTR is NULL we default to a suitable port (for ctAPI:
+   the first USB reader.  For PCSC/ the first listed reader. */
 int
-apdu_open_reader (int port)
+apdu_open_reader (const char *portstr)
 {
-  static int ct_api_loaded;
+  static int pcsc_api_loaded, ct_api_loaded;
 
-  if (!ct_api_loaded)
+  if (opt.ctapi_driver && *opt.ctapi_driver)
+    {
+      int port = portstr? atoi (portstr) : 32768;
+
+      if (!ct_api_loaded)
+        {
+          void *handle;
+          
+          handle = dlopen (opt.ctapi_driver, RTLD_LAZY);
+          if (!handle)
+            {
+              log_error ("apdu_open_reader: failed to open driver: %s",
+                         dlerror ());
+              return -1;
+            }
+          CT_init = dlsym (handle, "CT_init");
+          CT_data = dlsym (handle, "CT_data");
+          CT_close = dlsym (handle, "CT_close");
+          if (!CT_init || !CT_data || !CT_close)
+            {
+              log_error ("apdu_open_reader: invalid ctAPI driver\n");
+              dlclose (handle);
+              return -1;
+            }
+          ct_api_loaded = 1;
+        }
+      return open_ct_reader (port);
+    }
+
+  
+  /* No ctAPI configured, so lets try the PC/SC API */
+  if (!pcsc_api_loaded)
     {
       void *handle;
 
-      handle = dlopen ("libtowitoko.so", RTLD_LAZY);
+      handle = dlopen ("libpcsclite.so", RTLD_LAZY);
       if (!handle)
         {
           log_error ("apdu_open_reader: failed to open driver: %s",
                      dlerror ());
           return -1;
         }
-      CT_init = dlsym (handle, "CT_init");
-      CT_data = dlsym (handle, "CT_data");
-      CT_close = dlsym (handle, "CT_close");
-      if (!CT_init || !CT_data || !CT_close)
+
+      pcsc_establish_context = dlsym (handle, "SCardEstablishContext");
+      pcsc_release_context   = dlsym (handle, "SCardReleaseContext");
+      pcsc_list_readers      = dlsym (handle, "SCardListReaders");
+      pcsc_connect           = dlsym (handle, "SCardConnect");
+      pcsc_disconnect        = dlsym (handle, "SCardDisconnect");
+      pcsc_status            = dlsym (handle, "SCardStatus");
+      pcsc_begin_transaction = dlsym (handle, "SCardBeginTransaction");
+      pcsc_end_transaction   = dlsym (handle, "SCardEndTransaction");
+      pcsc_transmit          = dlsym (handle, "SCardTransmit");
+      pcsc_set_timeout       = dlsym (handle, "SCardSetTimeout");
+
+      if (!pcsc_establish_context
+          || !pcsc_release_context  
+          || !pcsc_list_readers     
+          || !pcsc_connect          
+          || !pcsc_disconnect
+          || !pcsc_status
+          || !pcsc_begin_transaction
+          || !pcsc_end_transaction
+          || !pcsc_transmit         
+          || !pcsc_set_timeout)
         {
-          log_error ("apdu_open_reader: invalid driver\n");
+          log_error ("apdu_open_reader: invalid PC/SC driver\n");
           dlclose (handle);
           return -1;
         }
-      ct_api_loaded = 1;
+      pcsc_api_loaded = 1;
     }
-  return open_ct_reader (port);
+  
+  return open_pcsc_reader (portstr);
 }
 
 
@@ -338,15 +645,14 @@ apdu_get_atr (int slot, size_t *atrlen)
   
     
 static const char *
-error_string (int slot, int rc)
+error_string (int slot, long rc)
 {
-#ifdef HAVE_CTAPI
-  return ct_error_string (rc);
-#elif defined(HAVE_PCSC)
-  return "?";
-#else
-  return "?";
-#endif
+  if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
+    return "[invalid slot]";
+  if (reader_table[slot].is_ctapi)
+    return ct_error_string (rc);
+  else
+    return pcsc_error_string (rc);
 }
 
 
@@ -355,13 +661,12 @@ static int
 send_apdu (int slot, unsigned char *apdu, size_t apdulen,
            unsigned char *buffer, size_t *buflen)
 {
-#ifdef HAVE_CTAPI
-  return ct_send_apdu (slot, apdu, apdulen, buffer, buflen);
-#elif defined(HAVE_PCSC)
-  return SW_HOST_NO_DRIVER;
-#else
-  return SW_HOST_NO_DRIVER;
-#endif
+  if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
+    return SW_HOST_NO_DRIVER;
+  if (reader_table[slot].is_ctapi)
+    return ct_send_apdu (slot, apdu, apdulen, buffer, buflen);
+  else
+    return pcsc_send_apdu (slot, apdu, apdulen, buffer, buflen);
 }
 
 /* Send an APDU to the card in SLOT.  The APDU is created from all
@@ -382,7 +687,8 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
   size_t resultlen = 256;
   unsigned char apdu[5+256+1];
   size_t apdulen;
-  int rc, sw;
+  int sw;
+  long rc; /* we need a long here due to PC/SC. */
 
   if (DBG_CARD_IO)
     log_debug ("send apdu: c=%02X i=%02X p0=%02X p1=%02X lc=%d le=%d\n",

@@ -214,71 +214,6 @@ get_one_do (int slot, int tag, unsigned char **result, size_t *nbytes)
   return NULL;
 }
 
-#if 0 /* not used */
-static void
-dump_one_do (int slot, int tag)
-{
-  int rc, i;
-  unsigned char *buffer;
-  size_t buflen;
-  const char *desc;
-  int binary;
-  const unsigned char *value;
-  size_t valuelen;
-
-  for (i=0; data_objects[i].tag && data_objects[i].tag != tag; i++)
-    ;
-  desc = data_objects[i].tag? data_objects[i].desc : "?";
-  binary = data_objects[i].tag? data_objects[i].binary : 1;
-
-  value = NULL;
-  rc = -1;
-  if (data_objects[i].tag && data_objects[i].get_from)
-    {
-      rc = iso7816_get_data (slot, data_objects[i].get_from,
-                             &buffer, &buflen);
-      if (!rc)
-        {
-          value = find_tlv (buffer, buflen, tag, &valuelen, 0);
-          if (!value)
-            ; /* not found */
-          else if (valuelen > buflen - (value - buffer))
-            {
-              log_error ("warning: constructed DO too short\n");
-              value = NULL;
-              xfree (buffer); buffer = NULL;
-            }
-        }
-    }
-
-  if (!value) /* Not in a constructed DO, try simple. */
-    {
-      rc = iso7816_get_data (slot, tag, &buffer, &buflen);
-      if (!rc)
-        {
-          value = buffer;
-          valuelen = buflen;
-        }
-    }
-  if (rc == 0x6a88)
-    log_info ("DO `%s' not available\n", desc);
-  else if (rc) 
-    log_info ("DO `%s' not available (rc=%04X)\n", desc, rc);
-  else
-    {
-      if (binary)
-        {
-          log_info ("DO `%s': ", desc);
-          log_printhex ("", value, valuelen);
-        }
-      else
-        log_info ("DO `%s': `%.*s'\n",
-                  desc, (int)valuelen, value); /* FIXME: sanitize */
-      xfree (buffer);
-    }
-}
-#endif /*not used*/
-
 
 static void
 dump_all_do (int slot)
@@ -293,11 +228,11 @@ dump_all_do (int slot)
         continue;
 
       rc = iso7816_get_data (slot, data_objects[i].tag, &buffer, &buflen);
-      if (rc == 0x6a88)
+      if (gpg_error (rc) == GPG_ERR_NO_OBJ)
         ;
       else if (rc) 
-        log_info ("DO `%s' not available (rc=%04X)\n",
-                  data_objects[i].desc, rc);
+        log_info ("DO `%s' not available: %s\n",
+                  data_objects[i].desc, gpg_strerror (rc));
       else
         {
           if (data_objects[i].binary)
@@ -309,34 +244,34 @@ dump_all_do (int slot)
             log_info ("DO `%s': `%.*s'\n",
                       data_objects[i].desc,
                       (int)buflen, buffer); /* FIXME: sanitize */
-        }
 
-      if (data_objects[i].constructed)
-        {
-          for (j=0; data_objects[j].tag; j++)
+          if (data_objects[i].constructed)
             {
-              const unsigned char *value;
-              size_t valuelen;
-
-              if (j==i || data_objects[i].tag != data_objects[j].get_from)
-                continue;
-              value = find_tlv (buffer, buflen,
-                                data_objects[j].tag, &valuelen, 0);
-              if (!value)
-                ; /* not found */
-              else if (valuelen > buflen - (value - buffer))
-                log_error ("warning: constructed DO too short\n");
-              else
+              for (j=0; data_objects[j].tag; j++)
                 {
-                  if (data_objects[j].binary)
-                    {
-                      log_info ("DO `%s': ", data_objects[j].desc);
-                      log_printhex ("", value, valuelen);
-                    }
+                  const unsigned char *value;
+                  size_t valuelen;
+                  
+                  if (j==i || data_objects[i].tag != data_objects[j].get_from)
+                    continue;
+                  value = find_tlv (buffer, buflen,
+                                    data_objects[j].tag, &valuelen, 0);
+                  if (!value)
+                    ; /* not found */
+                  else if (valuelen > buflen - (value - buffer))
+                    log_error ("warning: constructed DO too short\n");
                   else
-                    log_info ("DO `%s': `%.*s'\n",
-                              data_objects[j].desc,
-                              (int)valuelen, value); /* FIXME: sanitize */
+                    {
+                      if (data_objects[j].binary)
+                        {
+                          log_info ("DO `%s': ", data_objects[j].desc);
+                          log_printhex ("", value, valuelen);
+                        }
+                      else
+                        log_info ("DO `%s': `%.*s'\n",
+                                  data_objects[j].desc,
+                                  (int)valuelen, value); /* FIXME: sanitize */
+                    }
                 }
             }
         }
@@ -410,7 +345,7 @@ store_fpr (int slot, int keynumber, u32 timestamp,
   rc = iso7816_put_data (slot, (card_version > 0x0007? 0xC7 : 0xC6)
                                + keynumber, fpr, 20);
   if (rc)
-    log_error ("failed to store the fingerprint: rc=%04X\n", rc);
+    log_error ("failed to store the fingerprint: %s\n",gpg_strerror (rc));
 
   return rc;
 }
@@ -582,7 +517,7 @@ do_setattr (APP app, const char *name,
       xfree (pinvalue);
       if (rc)
         {
-          log_error ("verify CHV3 failed\n");
+          log_error ("verify CHV3 failed: %s\n", gpg_strerror (rc));
           rc = gpg_error (GPG_ERR_GENERAL);
           return rc;
         }
@@ -626,7 +561,7 @@ do_change_pin (APP app, CTRL ctrl,  const char *chvnostr, int reset_mode,
       xfree (pinvalue);
       if (rc)
         {
-          log_error ("verify CHV3 failed: rc=%04X\n", rc);
+          log_error ("verify CHV3 failed: rc=%s\n", gpg_strerror (rc));
           goto leave;
         }
     }
@@ -642,7 +577,7 @@ do_change_pin (APP app, CTRL ctrl,  const char *chvnostr, int reset_mode,
       xfree (pinvalue);
       if (rc)
         {
-          log_error ("verify CHV1 failed: rc=%04X\n", rc);
+          log_error ("verify CHV1 failed: rc=%s\n", gpg_strerror (rc));
           goto leave;
         }
     }
@@ -658,7 +593,7 @@ do_change_pin (APP app, CTRL ctrl,  const char *chvnostr, int reset_mode,
       xfree (pinvalue);
       if (rc)
         {
-          log_error ("verify CHV2 failed: rc=%04X\n", rc);
+          log_error ("verify CHV2 failed: rc=%s\n", gpg_strerror (rc));
           goto leave;
         }
     }
@@ -757,7 +692,7 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
   }
   if (rc)
     {
-      log_error ("verify CHV3 failed: rc=%04X\n", rc);
+      log_error ("verify CHV3 failed: rc=%s\n", gpg_strerror (rc));
       goto leave;
     }
 
@@ -1224,8 +1159,6 @@ app_select_openpgp (APP app, unsigned char **sn, size_t *snlen)
   rc = iso7816_select_application (slot, aid, sizeof aid);
   if (!rc)
     {
-      /* fixme: get the full AID and check that the version is okay
-         with us. */
       rc = iso7816_get_data (slot, 0x004F, &buffer, &buflen);
       if (rc)
         goto leave;
@@ -1386,7 +1319,7 @@ app_openpgp_storekey (APP app, int keyno,
   }
   if (rc)
     {
-      log_error ("verify CHV3 failed: rc=%04X\n", rc);
+      log_error ("verify CHV3 failed: rc=%s\n", gpg_strerror (rc));
       goto leave;
     }
 
@@ -1395,7 +1328,7 @@ app_openpgp_storekey (APP app, int keyno,
                          template, template_len);
   if (rc)
     {
-      log_error ("failed to store the key: rc=%04X\n", rc);
+      log_error ("failed to store the key: rc=%s\n", gpg_strerror (rc));
       rc = gpg_error (GPG_ERR_CARD);
       goto leave;
     }

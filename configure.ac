@@ -224,7 +224,7 @@ AH_BOTTOM([
 #ifdef HAVE_DRIVE_LETTERS
 #define GNUPG_DEFAULT_HOMEDIR "c:/gnupg"
 #else
-#define GNUPG_DEFAULT_HOMEDIR "~/.gnupg2"
+#define GNUPG_DEFAULT_HOMEDIR "~/.gnupg"
 #endif 
 #define GNUPG_PRIVATE_KEYS_DIR "private-keys-v1.d"
 
@@ -966,7 +966,7 @@ cat >g10defs.tmp <<G10EOF
 #ifdef __VMS
 #define GNUPG_HOMEDIR "/SYS\$LOGIN/gnupg" 
 #else
-#define GNUPG_HOMEDIR "~/.gnupg2" 
+#define GNUPG_HOMEDIR "~/.gnupg" 
 #endif
 #endif
 /* those are here to be redefined by handcrafted g10defs.h.

@@ -55,5 +55,8 @@ might want to have an agent context for each service request
 * sm/export.c
 ** Return an error code or a status info per user ID.
 
+* scd/apdu.c
+** We need close_reader functionality
+
 * ALL
 ** Return IMPORT_OK status.

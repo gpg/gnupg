@@ -1,3 +1,25 @@
+2003-08-05  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (dump_all_do): Don't analyze constructed DOs after
+	an error.
+
+2003-08-04  Werner Koch  <wk@gnupg.org>
+
+	* app.c (app_set_default_reader_port): New.
+	(select_application): Use it here.
+	* scdaemon.c (main): and here.
+	* sc-copykeys.c: --reader-port does now take a string.
+	* sc-investigate.c, scdaemon.c: Ditto.
+	* apdu.c (apdu_open_reader): Ditto.  Load pcsclite if no ctapi
+	driver is configured.  Always include code for ctapi.
+	(new_reader_slot): Don't test for already used ports and remove
+	port arg.
+	(open_pcsc_reader, pcsc_send_apdu, pcsc_error_string): New.
+	(apdu_send_le): Changed RC to long to cope with PC/SC.
+
+	* scdaemon.c, scdaemon.h: New option --ctapi-driver.
+	* sc-investigate.c, sc-copykeys.c: Ditto.
+	
 2003-07-31  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am (scdaemon_LDADD): Added INTLLIBS.

@@ -30,17 +30,26 @@
 #include "apdu.h"
 #include "iso7816.h"
 
+static char *default_reader_port;
+
+void
+app_set_default_reader_port (const char *portstr)
+{
+  xfree (default_reader_port);
+  default_reader_port = portstr? xstrdup (portstr): NULL;
+}
+
+
 /* The select the best fitting application and return a context.
    Returns NULL if no application was found or no card is present. */
 APP
 select_application (void)
 {
-  int reader_port = 32768; /* First USB reader. */
   int slot;
   int rc;
   APP app;
 
-  slot = apdu_open_reader (reader_port);
+  slot = apdu_open_reader (default_reader_port);
   if (slot == -1)
     {
       log_error ("card reader not available\n");

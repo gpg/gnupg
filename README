@@ -34,6 +34,21 @@ gpgsm:
     prepended before each block.
 
 
+gpg2:
+-----
+
+--card-status
+
+   Show information pertaining smartcards implementing the OpenPGP
+   application.
+
+--change-pin
+
+   Offers a menu to change the PIN of OpenPGP smartcards and to reset
+   the retry counters.
+
+
+
 OPTIONS
 =======
 
@@ -139,6 +154,22 @@ gpg-agent:
   lockups in case of bugs.
 
                      
+scdaemon:
+--------
+
+--ctapi-driver <libraryname>
+
+  The default for Scdaemon is to use the PC/SC API currently provided
+  by libpcsclite.so.  As an alternative the ctAPI can be used by
+  specify this option with the appropriate driver name
+  (e.g. libtowitoko.so).
+
+--reader-port <portname>
+
+  This specifies the port of the chipcard reader.  For PC/SC this is
+  currently ignored and the first PC/SC reader is used.  For the
+  ctAPI, a number must be specified (the default is 32768 for the
+  first USB port).
 
 
 
@@ -174,10 +205,15 @@ gpg.conf
         Options for gpg.  Note that old versions of gpg use the
         filename `options' instead of `gpg.conf'.
 
+gpg.conf-1.9.x
+
+        Options for gpg; tried before gpg.conf
+
+
 policies.txt
 
         A list of allowed CA policies.  This file should give the
-        object identifiers of the policies line by line.  emptry lines
+        object identifiers of the policies line by line.  Empty lines
         and lines startung with a hash mark are ignored.
 
         ++++++++++

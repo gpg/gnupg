@@ -142,6 +142,10 @@ be used to specify the port of the card terminal.  A value of 0 refers
 to the first serial device; add 32768 to access USB devices.  The
 default is 32768 (first USB device).
 
+@item --ctapi-driver @var{library}
+Use @var{library} to access the smartcard reader.  The current default
+is @code{libtowitoko.so}.
+
 @end table
 
 All the long options may also be given in the configuration file after

@@ -39,6 +39,7 @@
 enum cmd_and_opt_values 
 { oVerbose	  = 'v',
   oReaderPort     = 500,
+  octapiDriver,
   oDebug,
   oDebugAll,
 
@@ -52,7 +53,8 @@ static ARGPARSE_OPTS opts[] = {
   { 301, NULL, 0, "@Options:\n " },
 
   { oVerbose, "verbose",   0, "verbose" },
-  { oReaderPort, "reader-port", 1, "|N|connect to reader at port N"},
+  { oReaderPort, "reader-port", 2, "|N|connect to reader at port N"},
+  { octapiDriver, "ctapi-driver", 2, "NAME|use NAME as ctAPI driver"},
   { oDebug,	"debug"     ,4|16, "set debugging flags"},
   { oDebugAll, "debug-all" ,0, "enable full debugging"},
   { oGenRandom, "gen-random", 4, "|N|generate N bytes of random"},
@@ -108,7 +110,7 @@ main (int argc, char **argv )
 {
   ARGPARSE_ARGS pargs;
   int slot, rc;
-  int reader_port = 32768; /* First USB reader. */
+  const char *reader_port = NULL;
   struct app_ctx_s appbuf;
   unsigned long gen_random = 0;
 
@@ -139,6 +141,8 @@ main (int argc, char **argv )
         case oVerbose: opt.verbose++; break;
         case oDebug: opt.debug |= pargs.r.ret_ulong; break;
         case oDebugAll: opt.debug = ~0; break;
+        case oReaderPort: reader_port = pargs.r.ret_str; break;
+        case octapiDriver: opt.ctapi_driver = pargs.r.ret_str; break;
         case oGenRandom: gen_random = pargs.r.ret_ulong; break;
         default : pargs.err = 2; break;
 	}

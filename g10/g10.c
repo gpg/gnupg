@@ -61,7 +61,8 @@ enum cmd_and_opt_values { aNull = 0,
     aEncr	  = 'e',
     aEncrFiles,
     oInteractive  = 'i',
-    oKOption	  = 'k',
+    aListKeys	  = 'k',
+    aListSecretKeys = 'K',
     oDryRun	  = 'n',
     oOutput	  = 'o',
     oQuiet	  = 'q',
@@ -93,15 +94,11 @@ enum cmd_and_opt_values { aNull = 0,
     aDeleteKeys,
     aDeleteSecretKeys,
     aDeleteSecretAndPublicKeys,
-    aKMode,
-    aKModeC,
     aImport,
     aFastImport,
     aVerify,
     aVerifyFiles,
-    aListKeys,
     aListSigs,
-    aListSecretKeys,
     aSendKeys,
     aRecvKeys,
     aSearchKeys,
@@ -213,7 +210,6 @@ enum cmd_and_opt_values { aNull = 0,
     oTrustModel,
     oForceOwnertrust,
     oEmuChecksumBug,
-    oRunAsShmCP,
     oSetFilename,
     oForYourEyesOnly,
     oNoForYourEyesOnly,
@@ -514,7 +510,6 @@ static ARGPARSE_OPTS opts[] = {
     /* Not yet used */
     /* { aListTrustPath, "list-trust-path",0, "@"}, */
     { aPipeMode,  "pipemode", 0, "@" },
-    { oKOption, NULL,	 0, "@"},
     { oPasswdFD, "passphrase-fd",1, "@" },
 #ifdef __riscos__
     { oPasswdFile, "passphrase-file",2, "@" },
@@ -549,7 +544,6 @@ static ARGPARSE_OPTS opts[] = {
     { oTrustModel, "trust-model", 2, "@"},
     { oForceOwnertrust, "force-ownertrust", 2, "@"},
     { oEmuChecksumBug, "emulate-checksum-bug", 0, "@"},
-    { oRunAsShmCP, "run-as-shm-coprocess", 4, "@" },
     { oSetFilename, "set-filename", 2, "@" },
     { oForYourEyesOnly, "for-your-eyes-only", 0, "@" },
     { oNoForYourEyesOnly, "no-for-your-eyes-only", 0, "@" },
@@ -879,8 +873,6 @@ set_cmd( enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd )
 	cmd = aSignSym;
     else if( cmd == aSym && new_cmd == aSign )
 	cmd = aSignSym;
-    else if( cmd == aKMode && new_cmd == aSym )
-	cmd = aKModeC;
     else if(	( cmd == aSign	   && new_cmd == aClearsign )
 	     || ( cmd == aClearsign && new_cmd == aSign )  )
 	cmd = aClearsign;
@@ -1167,9 +1159,6 @@ main( int argc, char **argv )
     int pwfd = -1;
     int with_fpr = 0; /* make an option out of --fingerprint */
     int any_explicit_recipient = 0;
-#ifdef USE_SHM_COPROCESSING
-    ulong requested_shm_size=0;
-#endif
 
 #ifdef __riscos__
     riscos_global_defaults();
@@ -1276,19 +1265,6 @@ main( int argc, char **argv )
 	    opt.strict=0;
 	    log_set_strict(0);
 	  }
-#ifdef USE_SHM_COPROCESSING
-	else if( pargs.r_opt == oRunAsShmCP ) {
-	    /* does not make sense in a options file, we do it here,
-	     * so that we are the able to drop setuid as soon as possible */
-	    opt.shm_coprocess = 1;
-	    requested_shm_size = pargs.r.ret_ulong;
-	}
-	else if ( pargs.r_opt == oStatusFD ) {
-	    /* this is needed to ensure that the status-fd filedescriptor is
-	     * initialized when init_shm_coprocessing() is called */
-	    set_status_fd( iobuf_translate_file_handle (pargs.r.ret_int, 1) );
-	}
-#endif
     }
 
 #ifdef HAVE_DOSISH_SYSTEM
@@ -1301,11 +1277,7 @@ main( int argc, char **argv )
         set_homedir (buf);
     }
 #endif
-#ifdef USE_SHM_COPROCESSING
-    if( opt.shm_coprocess ) {
-	init_shm_coprocessing(requested_shm_size, 1 );
-    }
-#endif
+
     /* Initialize the secure memory. */
     gcry_control (GCRYCTL_INIT_SECMEM, 32768, 0);
     maybe_setuid = 0;
@@ -1318,9 +1290,14 @@ main( int argc, char **argv )
 
     if( default_config )
       {
-       /* Try for a version specific config file first */
+       /* Try for a version specific config file first but strip our
+          usual cvs suffix.  That suffix indicates that it is not yet
+          the given version but we already want this config file.  */
 	configname = make_filename(opt.homedir,
 				   "gpg" EXTSEP_S "conf-" SAFE_VERSION, NULL );
+        if (!strcmp (configname + strlen (configname) - 4, "-cvs"))
+          configname[strlen (configname)-4] = 0;
+
 	if(access(configname,R_OK))
 	  {
 	    xfree (configname);
@@ -1458,7 +1435,6 @@ main( int argc, char **argv )
 	  case oInteractive: opt.interactive = 1; break;
 	  case oVerbose: g10_opt_verbose++;
 		    opt.verbose++; opt.list_sigs=1; break;
-	  case oKOption: set_cmd( &cmd, aKMode ); break;
 
 	  case oBatch: opt.batch = 1; nogreeting = 1; break;
           case oUseAgent:
@@ -1631,17 +1607,6 @@ main( int argc, char **argv )
 	  case oGnuPG: opt.compliance = CO_GNUPG; break;
 	  case oEmuMDEncodeBug: opt.emulate_bugs |= EMUBUG_MDENCODE; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
-	  case oRunAsShmCP:
-#ifndef __riscos__
-# ifndef USE_SHM_COPROCESSING
-	    /* not possible in the option file,
-	     * but we print the warning here anyway */
-	    log_error("shared memory coprocessing is not available\n");
-# endif
-#else /* __riscos__ */
-            riscos_not_implemented("run-as-shm-coprocess");
-#endif /* __riscos__ */
-	    break;
 	  case oSetFilename: opt.set_filename = pargs.r.ret_str; break;
 	  case oForYourEyesOnly: eyes_only = 1; break;
 	  case oNoForYourEyesOnly: eyes_only = 0; break;
@@ -2276,21 +2241,6 @@ main( int argc, char **argv )
 	set_cmd( &cmd, aListKeys);
     }
 
-    if( cmd == aKMode || cmd == aKModeC ) { /* kludge to be compatible to pgp */
-	if( cmd == aKModeC ) {
-	    opt.fingerprint = 1;
-	    cmd = aKMode;
-	}
-	opt.list_sigs = 0;
-	if( opt.verbose > 2 )
-	    opt.check_sigs++;
-	if( opt.verbose > 1 )
-	    opt.list_sigs++;
-
-	opt.verbose = opt.verbose > 1;
-	g10_opt_verbose = opt.verbose;
-    }
-
     /* Compression algorithm 0 means no compression at all */
     if( opt.def_compress_algo == 0)
         opt.compress = 0;
@@ -2302,12 +2252,11 @@ main( int argc, char **argv )
     if( opt.verbose > 1 )
 	set_packet_list_mode(1);
 
-    /* Add the keyrings, but not for some special commands and not in
-       case of "-kvv userid keyring".  Also avoid adding the secret
-       keyring for a couple of commands to avoid unneeded access in
-       case the secrings are stored on a floppy */
-    if( cmd != aDeArmor && cmd != aEnArmor
-	&& !(cmd == aKMode && argc == 2 ) ) 
+    /* Add the keyrings, but not for some special commands.  Also
+       avoid adding the secret keyring for a couple of commands to
+       avoid unneeded access in case the secrings are stored on a
+       floppy */
+    if( cmd != aDeArmor && cmd != aEnArmor )
       {
         if (cmd != aCheckKeys && cmd != aListSigs && cmd != aListKeys
             && cmd != aVerify && cmd != aVerifyFiles
@@ -2542,34 +2491,6 @@ main( int argc, char **argv )
 	    add_to_strlist2( &sl, *argv, utf8_strings );
 	secret_key_list( sl );
 	free_strlist(sl);
-	break;
-
-      case aKMode: /* list keyring -- NOTE: This will be removed soon */
-	if( argc < 2 ) { /* -kv [userid] */
-	    sl = NULL;
-	    if (argc && **argv)
-		add_to_strlist2( &sl, *argv, utf8_strings );
-	    public_key_list( sl );
-	    free_strlist(sl);
-	}
-	else if( argc == 2 ) { /* -kv userid keyring */
-	    if( access( argv[1], R_OK ) ) {
-		log_error(_("can't open %s: %s\n"),
-			       print_fname_stdin(argv[1]), strerror(errno));
-	    }
-	    else {
-		/* add keyring (default keyrings are not registered in this
-		 * special case */
-		keydb_add_resource( argv[1], 0, 0 );
-		sl = NULL;
-		if (**argv)
-		    add_to_strlist2( &sl, *argv, utf8_strings );
-		public_key_list( sl );
-		free_strlist(sl);
-	    }
-	}
-	else
-	    wrong_args(_("-k[v][v][v][c] [user-id] [keyring]") );
 	break;
 
       case aKeygen: /* generate a key */

@@ -47,12 +47,13 @@ enum {
                                      between errnos on a failed malloc. */
   SW_HOST_INV_VALUE   = 0x10002,
   SW_HOST_INCOMPLETE_CARD_RESPONSE = 0x10003,
+  SW_HOST_NO_DRIVER   = 0x10004
 };
 
 
 
 /* Note , that apdu_open_reader returns no status word but -1 on error. */
-int apdu_open_reader (int port);
+int apdu_open_reader (const char *portstr);
 unsigned char *apdu_get_atr (int slot, size_t *atrlen);
 
 
