@@ -1,3 +1,7 @@
+2001-03-13  Werner Koch  <wk@gnupg.org>
+
+	* configure.in: Add copyright notice and -lwsock32.
+
 2001-03-12  Werner Koch  <wk@gnupg.org>
 
 	* INSTALL: Add a note to VPATH builds. 

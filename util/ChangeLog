@@ -1,3 +1,14 @@
+2001-03-13  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.c (iobuf_sockopen): New.
+	(sock_filter) [__MINGW32__]: New.
+	(iobuf_ioctl): New.
+	(file_filter): Implemented keep_open mode.
+	* http.c (http_open, http_wait_response): Replaced iobuf_fdopen by
+	iobuf_sockopen and use an iobuf_ioctl to avoid the dup().
+	(deinit_sockets, init_sockets) [__MINGW32__]: New.
+	(connect_server, write_server): Add code to work with W32 sockets.
+
 2001-03-12  Werner Koch  <wk@gnupg.org>
 
 	* strgutil.c (check_trailing_chars,check_trailing_ws): New.

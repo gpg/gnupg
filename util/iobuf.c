@@ -53,6 +53,7 @@
  #define FILEP_OR_FD_FOR_STDOUT  (stdout)
  typedef struct {
      FILE *fp;	   /* open file handle */
+     int keep_open;
      int  print_only_name; /* flags indicating that fname is not a real file*/
      char fname[1]; /* name of the file */
  } file_filter_ctx_t ;
@@ -74,6 +75,7 @@
  #endif
  typedef struct {
      FILEP_OR_FD  fp;	   /* open file handle */
+     int keep_open;
      int eof_seen;
      int  print_only_name; /* flags indicating that fname is not a real file*/
      char fname[1]; /* name of the file */
@@ -88,6 +90,15 @@
  static CLOSE_CACHE close_cache;
 #endif
 
+#ifdef __MINGW32__
+typedef struct {
+    int sock;
+    int keep_open;
+    int eof_seen;
+    int  print_only_name; /* flags indicating that fname is not a real file*/
+    char fname[1]; /* name of the file */
+} sock_filter_ctx_t ;
+#endif /*__MINGW32__*/
 
 /* The first partial length header block must be of size 512
  * to make it easier (and efficienter) we use a min. block size of 512
@@ -216,6 +227,7 @@ fd_cache_close (const char *fname, FILEP_OR_FD fp)
     for (cc=close_cache; cc; cc = cc->next ) {
         if ( cc->fp == INVALID_FP && !strcmp (cc->fname, fname) ) {
             cc->fp = fp;
+            return;
         }
     }
     /* add a new one */
@@ -333,6 +345,7 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	*ret_len = nbytes;
     }
     else if( control == IOBUFCTRL_INIT ) {
+        a->keep_open = 0;
     }
     else if( control == IOBUFCTRL_DESC ) {
 	*(char**)buf = "file_filter";
@@ -341,7 +354,8 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	if( f != stdin && f != stdout ) {
 	    if( DBG_IOBUF )
 		log_debug("%s: close fd %d\n", a->fname, fileno(f) );
-	    fclose(f);
+            if (!a->keep_open)
+                fclose(f);
 	}
 	f = NULL;
 	m_free(a); /* we can free our context now */
@@ -443,6 +457,7 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
     }
     else if ( control == IOBUFCTRL_INIT ) {
         a->eof_seen = 0;
+        a->keep_open = 0;
     }
     else if ( control == IOBUFCTRL_DESC ) {
 	*(char**)buf = "file_filter(fd)";
@@ -452,13 +467,15 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
         if ( f != FILEP_OR_FD_FOR_STDIN && f != FILEP_OR_FD_FOR_STDOUT ) {
 	    if( DBG_IOBUF )
 		log_debug("%s: close handle %p\n", a->fname, f );
-            fd_cache_close (a->fname, f);
+            if (!a->keep_open)
+                fd_cache_close (a->fname, f);
         }
       #else
 	if ( (int)f != 0 && (int)f != 1 ) {
 	    if( DBG_IOBUF )
 		log_debug("%s: close fd %d\n", a->fname, f );
-            fd_cache_close (a->fname, f);
+            if (!a->keep_open)
+                fd_cache_close (a->fname, f);
 	}
 	f = INVALID_FP;
       #endif
@@ -468,6 +485,78 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
     return rc;
 }
 
+#ifdef __MINGW32__
+/* Becuase sockets are an special object under Lose32 we have to
+ * use a special filter */
+static int
+sock_filter (void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
+{
+    sock_filter_ctx_t *a = opaque;
+    size_t size = *ret_len;
+    size_t nbytes = 0;
+    int rc = 0;
+
+    if( control == IOBUFCTRL_UNDERFLOW ) {
+	assert( size ); /* need a buffer */
+	if ( a->eof_seen) {
+	    rc = -1;		
+	    *ret_len = 0;	
+	}
+	else {
+            int nread;
+
+            nread = recv ( a->sock, buf, size, 0 );
+            if ( nread == SOCKET_ERROR ) {
+                int ec = (int)WSAGetLastError ();
+                log_error("socket read error: ec=%d\n", ec);
+                rc = G10ERR_READ_FILE;
+            }
+            else if ( !nread ) {
+                a->eof_seen = 1;
+                rc = -1;
+            }
+            else {
+                nbytes = nread;
+            }
+	    *ret_len = nbytes;
+	}
+    }
+    else if( control == IOBUFCTRL_FLUSH ) {
+	if( size ) {
+            byte *p = buf;
+            int n;
+
+            nbytes = size;
+            do {
+                n = send (a->sock, p, nbytes, 0);
+                if ( n == SOCKET_ERROR ) {
+                    int ec = (int)WSAGetLastError ();
+                    log_error("socket write error: ec=%d\n", ec);
+                    rc = G10ERR_WRITE_FILE;
+                    break;
+                }
+                p += n;
+                nbytes -= n;
+            } while ( nbytes );
+            nbytes = p - buf;
+	}
+	*ret_len = nbytes;
+    }
+    else if ( control == IOBUFCTRL_INIT ) {
+        a->eof_seen = 0;
+        a->keep_open = 0;
+    }
+    else if ( control == IOBUFCTRL_DESC ) {
+	*(char**)buf = "sock_filter";
+    }
+    else if ( control == IOBUFCTRL_FREE ) {
+        if (!a->keep_open)
+            closesocket (a->sock);
+	m_free (a); /* we can free our context now */
+    }
+    return rc;
+}
+#endif /*__MINGW32__*/
 
 /****************
  * This is used to implement the block write mode.
@@ -790,9 +879,8 @@ iobuf_alloc(int use, size_t bufsize)
     return a;
 }
 
-
 int
-iobuf_close( IOBUF a )
+iobuf_close ( IOBUF a )
 {
     IOBUF a2;
     size_t dummy_len=0;
@@ -996,6 +1084,32 @@ iobuf_fdopen( int fd, const char *mode )
     return a;
 }
 
+
+IOBUF
+iobuf_sockopen ( int fd, const char *mode )
+{
+#ifdef __MINGW32__
+    IOBUF a;
+    sock_filter_ctx_t *scx;
+    size_t len;
+
+    a = iobuf_alloc( strchr( mode, 'w')? 2:1, 8192 );
+    scx = m_alloc( sizeof *scx + 25 );
+    scx->sock = fd;
+    scx->print_only_name = 1;
+    sprintf(scx->fname, "[sock %d]", fd );
+    a->filter = sock_filter;
+    a->filter_ov = scx;
+    sock_filter( scx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
+    sock_filter( scx, IOBUFCTRL_INIT, NULL, NULL, &len );
+    if( DBG_IOBUF )
+	log_debug("iobuf-%d.%d: sockopen `%s'\n", a->no, a->subno, scx->fname);
+    return a;
+#else
+    return iobuf_fdopen (fd, mode);
+#endif
+}
+
 /****************
  * create an iobuf for writing to a file; the file will be created.
  */
@@ -1133,6 +1247,35 @@ iobuf_fopen( const char *fname, const char *mode )
     return a;
 }
 
+int
+iobuf_ioctl ( IOBUF a, int cmd, int intval, void *ptrval )
+{
+    if ( cmd == 1 ) {  /* keep system filepointer/descriptor open */
+        for( ; a; a = a->chain )
+            if( !a->chain && a->filter == file_filter ) {
+                file_filter_ctx_t *b = a->filter_ov;
+                b->keep_open = intval;
+                return 0;
+            }
+          #ifdef __MINGW32__
+            else if( !a->chain && a->filter == sock_filter ) {
+                sock_filter_ctx_t *b = a->filter_ov;
+                b->keep_open = intval;
+                return 0;
+            }
+          #endif
+    }
+    else if ( cmd == 2 ) {  /* invalidate cache */
+        if ( !a && !intval && ptrval ) {
+          #ifndef FILE_FILTER_USES_STDIO
+            fd_cache_invalidate (ptrval);
+          #endif
+            return 0;
+        }
+    }
+
+    return -1;
+}
 
 
 /****************

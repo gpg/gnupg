@@ -1529,6 +1529,8 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 
     /* rename and make backup file */
     if( !rentry->secret ) {  /* but not for secret keyrings */
+        iobuf_ioctl (NULL, 2, 0, bakfname );
+        iobuf_ioctl (NULL, 2, 0, rentry->fname );
       #ifdef HAVE_DOSISH_SYSTEM
 	remove( bakfname );
       #endif
@@ -1539,6 +1541,8 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	    goto leave;
 	}
     }
+    iobuf_ioctl (NULL, 2, 0, tmpfname );
+    iobuf_ioctl (NULL, 2, 0, rentry->fname );
   #ifdef HAVE_DOSISH_SYSTEM
     remove( rentry->fname );
   #endif

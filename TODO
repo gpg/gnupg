@@ -8,11 +8,6 @@
 
   * Can we output things like the preferences?      
 
-  ** Check whether the use of -u and --clearsign created 2 signatures.
-     removed dups from the skclist.
-
-  * Replace mkinstalldir etc. with nnewer copies.
-
   * We need another special packet at the end of a clearsign message to mark
     it's end and allow for multiple signature for one message.
 
@@ -23,22 +18,19 @@
   * If there is no secure memory, allocate more memory for the secure
     memory block or do it in all cases.
 
-  * List all UserID with GOODSIG?
-
   * add a way to set expiration time for key signatures.
 
   * add some minor things vor VMS.
 
   * Don't get the ultimately trusted keys from the secring but store
     it permanently in the trustdb.  This way we don't need a secring at all.
-    [ Solved by re-introducing --trusted-key ]
+    [ currently solved by re-introducing --trusted-key ]  Eventually we
+    will have commands --{add,remove}-trusted-key which keeps them in
+    special trustdb records.
 
   * Use DSA keys with the test suite.
 
   * g10/trustdb.c (make_sig_records): fix the fixme.
-
-  * No TCP support yet for W32? arggg - should go into a separate program
-    anyway.
 
   * Replace Valid/Invalid by Known/Unknown?
 

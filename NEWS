@@ -32,6 +32,9 @@
 
     * New option --ignore-crc-error
 
+    * Keyserver support for the W32 version.
+
+
 Noteworthy changes in version 1.0.4 (2000-10-17)
 ------------------------------------------------
 

@@ -26,22 +26,30 @@
 #include <ctype.h>
 #include <errno.h>
 
-#ifndef HAVE_DOSISH_SYSTEM
-
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <time.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
+#ifdef __MINGW32__
+ #include <windows.h>
+#else
+ #include <unistd.h>
+ #include <sys/types.h>
+ #include <sys/socket.h>
+ #include <sys/time.h>
+ #include <time.h>
+ #include <netinet/in.h>
+ #include <arpa/inet.h>
+ #include <netdb.h>
+#endif
 
 #include "util.h"
 #include "iobuf.h"
 #include "i18n.h"
 
 #include "http.h"
+
+#ifdef __MINGW32__
+#define sock_close(a)  closesocket(a)
+#else
+#define sock_close(a)  close(a)
+#endif
 
 #define MAX_LINELEN 20000  /* max. length of a HTTP line */
 #define VALID_URI_CHARS "abcdefghijklmnopqrstuvwxyz"   \
@@ -67,6 +75,38 @@ static int parse_response( HTTP_HD hd );
 static int connect_server( const char *server, ushort port );
 static int write_server( int sock, const char *data, size_t length );
 
+#ifdef __MINGW32__
+static void
+deinit_sockets (void)
+{
+    WSACleanup();
+}
+
+static void
+init_sockets (void)
+{
+    static int initialized;
+    static WSADATA wsdata;
+
+    if (initialized)
+        return;
+
+    if( WSAStartup( 0x0101, &wsdata ) ) {
+        log_error ("error initializing socket library: ec=%d\n", 
+                    (int)WSAGetLastError () );
+        return;
+    }
+    if( wsdata.wVersion < 0x0001 ) {
+        log_error ("socket library version is %x.%x - but 1.1 needed\n",
+                   LOBYTE(wsdata.wVersion), HIBYTE(wsdata.wVersion));
+        WSACleanup();
+        return;
+    }
+    atexit ( deinit_sockets );
+    initialized = 1;
+}
+#endif /*__MINGW32__*/
+
 
 int
 http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
@@ -88,7 +128,7 @@ http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
     if( !rc ) {
 	rc = send_request( hd );
 	if( !rc ) {
-	    hd->fp_write = iobuf_fdopen( hd->sock , "w" );
+	    hd->fp_write = iobuf_sockopen( hd->sock , "w" );
 	    if( hd->fp_write )
 		return 0;
 	    rc = G10ERR_GENERAL;
@@ -96,7 +136,7 @@ http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
     }
 
     if( !hd->fp_read && !hd->fp_write && hd->sock != -1 )
-	close( hd->sock );
+	sock_close( hd->sock );
     iobuf_close( hd->fp_read );
     iobuf_close( hd->fp_write);
     release_parsed_uri( hd->uri );
@@ -124,15 +164,18 @@ http_wait_response( HTTP_HD hd, unsigned int *ret_status )
     http_start_data( hd ); /* make sure that we are in the data */
     iobuf_flush( hd->fp_write );
 
-    hd->sock = dup( hd->sock );
+  #if 0
+    hd->sock = dup( hd->sock ); 
     if( hd->sock == -1 )
 	return G10ERR_GENERAL;
-    iobuf_close( hd->fp_write );
+  #endif
+    iobuf_ioctl (hd->fp_write, 1, 1, NULL); /* keep the socket open */
+    iobuf_close (hd->fp_write);
     hd->fp_write = NULL;
     shutdown( hd->sock, 1 );
     hd->in_data = 0;
 
-    hd->fp_read = iobuf_fdopen( hd->sock , "r" );
+    hd->fp_read = iobuf_sockopen( hd->sock , "r" );
     if( !hd->fp_read )
 	return G10ERR_GENERAL;
 
@@ -169,7 +212,7 @@ http_close( HTTP_HD hd )
     if( !hd || !hd->initialized )
 	return;
     if( !hd->fp_read && !hd->fp_write && hd->sock != -1 )
-	close( hd->sock );
+	sock_close( hd->sock );
     iobuf_close( hd->fp_read );
     iobuf_close( hd->fp_write );
     release_parsed_uri( hd->uri );
@@ -606,13 +649,13 @@ start_server()
 
     if( bind( fd, (struct sockaddr *)&mya, sizeof(mya)) ) {
 	log_error("bind to port 11371 failed: %s\n", strerror(errno) );
-	close( fd );
+	sock_close( fd );
 	return -1;
     }
 
     if( listen( fd, 5 ) ) {
 	log_error("listen failed: %s\n", strerror(errno) );
-	close( fd );
+	sock_close( fd );
 	return -1;
     }
 
@@ -645,7 +688,7 @@ start_server()
 	    fclose(fp);
 	    exit(0);
 	}
-	close( client );
+	sock_close( client );
     }
 
 
@@ -658,9 +701,51 @@ start_server()
 static int
 connect_server( const char *server, ushort port )
 {
+    int sd;
+#ifdef __MINGW32__
+    struct hostent *hp;
+    struct sockaddr_in ad;
+    unsigned long l;
+    
+    init_sockets ();
+
+    memset (&ad, 0, sizeof(ad));
+    ad.sin_family = AF_INET;
+    ad.sin_port = htons(port);
+
+    if( (l = inet_addr (server)) != SOCKET_ERROR ) {
+        memcpy (&ad.sin_addr, &l, sizeof(l));
+    }
+    else if( (hp = gethostbyname (server)) ) {
+        if( hp->h_addrtype != AF_INET ) {
+            log_error ("%s: unknown address family\n", server);
+            return -1;
+        }
+        if ( hp->h_length != 4 ) {
+            log_error ("%s: illegal address length\n", server);
+            return -1;
+        }
+        memcpy (&ad.sin_addr, hp->h_addr, hp->h_length);
+    }
+    else {
+        log_error ("%s: host not found: ec=%d\n",
+                   server, (int)WSAGetLastError ());
+        return -1;
+    }
+
+    if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
+        log_error ("error creating socket: ex=%d\n", 
+                   (int)WSAGetLastError ());
+        return -1;
+    }
+
+    if( connect (sd, (struct sockaddr *)&ad, sizeof (ad) ) ) {
+        sock_close (sd);
+        return -1;
+    }
+#else
     struct sockaddr_in addr;
     struct hostent *host;
-    int sd;
 
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
@@ -675,10 +760,10 @@ connect_server( const char *server, ushort port )
 	return -1;
 
     if( connect( sd, (struct sockaddr *)&addr, sizeof addr) == -1 ) {
-	close(sd);
+	sock_close(sd);
 	return -1;
     }
-
+#endif
     return sd;
 }
 
@@ -686,11 +771,19 @@ connect_server( const char *server, ushort port )
 static int
 write_server( int sock, const char *data, size_t length )
 {
-    int nleft, nwritten;
+    int nleft;
 
     nleft = length;
     while( nleft > 0 ) {
-	nwritten = write( sock, data, nleft );
+      #ifdef __MINGW32__  
+        unsigned long nwritten;
+
+        if ( !WriteFile ( sock, data, nleft, &nwritten, NULL)) {
+	    log_info ("write failed: ec=%d\n", (int)GetLastError ());
+	    return G10ERR_NETWORK;
+        }
+      #else
+	int nwritten = write( sock, data, nleft );
 	if( nwritten == -1 ) {
 	    if( errno == EINTR )
 		continue;
@@ -705,14 +798,13 @@ write_server( int sock, const char *data, size_t length )
 	    log_info("write failed: %s\n", strerror(errno));
 	    return G10ERR_NETWORK;
 	}
+      #endif
 	nleft -=nwritten;
 	data += nwritten;
     }
 
     return 0;
 }
-
-#endif /* HAVE_DOSISH_SYSTEM */
 
 /**** Test code ****/
 #ifdef TEST

@@ -1,3 +1,15 @@
+2001-03-13  Werner Koch  <wk@gnupg.org>
+
+	* ringedit.c (keyring_copy): flush the new iobuf chaces before
+	rename or remove operations.  This is mainly needed for W32.
+
+	* hkp.c [HAVE_DOSISH_SYSTEM]: Removed the disabled code because we
+	have now W32 socket support in ../util/http.c
+
+	* skclist.c (key_present_in_sk_list): New.
+	(is_duplicated_entry): New.
+	(build_sk_list): Check for duplicates and do that before unlocking.
+
 2001-03-12  Werner Koch  <wk@gnupg.org>
 
 	* armor.c (parse_header_line): Removed double empty line check.

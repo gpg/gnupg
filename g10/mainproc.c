@@ -143,7 +143,8 @@ add_gpg_control( CTX c, PACKET *pkt )
     }   
     else if ( pkt->pkt.gpg_control->control == 2 ) {
         /* Pipemode control packet */
-#warning We have to do some sanity checks all over the place 
+#warning the --pipemode does not yet work 
+        /* FIXME: We have to do more sanity checks all over the place */
         if ( pkt->pkt.gpg_control->datalen < 2 ) 
             log_fatal ("invalid pipemode control packet length\n");
         if (pkt->pkt.gpg_control->data[0] == 1) {

@@ -60,6 +60,27 @@ is_insecure( PKT_secret_key *sk )
 }
 
 
+static int
+key_present_in_sk_list(SK_LIST sk_list, PKT_secret_key *sk)
+{
+    for (; sk_list; sk_list = sk_list->next) {
+	if ( !cmp_secret_keys(sk_list->sk, sk) )
+	    return 0;
+    }
+    return -1;
+}
+
+static int
+is_duplicated_entry (STRLIST list, STRLIST item)
+{
+    for(; list && list != item; list = list->next) {
+        if ( !strcmp (list->d, item->d) )
+            return 1;
+    }
+    return 0;
+}
+
+
 int
 build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 							unsigned use )
@@ -78,6 +99,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 	}
 	else if( !(rc=check_pubkey_algo2(sk->pubkey_algo, use)) ) {
 	    SK_LIST r;
+
 	    if( sk->version == 4 && (use & PUBKEY_USAGE_SIG)
 		&& sk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
 		log_info("this is a PGP generated "
@@ -103,17 +125,36 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 	}
     }
     else {
+        STRLIST locusr_orig = locusr;
 	for(; locusr; locusr = locusr->next ) {
 	    PKT_secret_key *sk;
-
+            
+            rc = 0;
+            /* Do an early check agains duplicated entries.  However this
+             * won't catch all duplicates because the user IDs may be
+             * specified in different ways.
+             */
+            if ( is_duplicated_entry ( locusr_orig, locusr ) ) {
+		log_error(_("skipped `%s': duplicated\n"), locusr->d );
+                continue;
+            }
 	    sk = m_alloc_clear( sizeof *sk );
 	    sk->req_usage = use;
-	    if( (rc = get_seckey_byname( sk, locusr->d, unlock )) ) {
+	    if( (rc = get_seckey_byname( sk, locusr->d, 0 )) ) {
 		free_secret_key( sk ); sk = NULL;
 		log_error(_("skipped `%s': %s\n"), locusr->d, g10_errstr(rc) );
 	    }
+            else if ( key_present_in_sk_list(sk_list, sk) == 0) {
+                free_secret_key(sk); sk = NULL;
+                log_debug(_("skipped: secret key already present\n"));
+            }
+            else if ( unlock && (rc = check_secret_key( sk, 0 )) ) {
+		free_secret_key( sk ); sk = NULL;
+		log_error(_("skipped `%s': %s\n"), locusr->d, g10_errstr(rc) );
+            }
 	    else if( !(rc=check_pubkey_algo2(sk->pubkey_algo, use)) ) {
 		SK_LIST r;
+
 		if( sk->version == 4 && (use & PUBKEY_USAGE_SIG)
 		    && sk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
 		    log_info(_("skipped `%s': this is a PGP generated "
