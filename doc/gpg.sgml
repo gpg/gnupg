@@ -58,11 +58,11 @@
 </refnamediv>
 <refsynopsisdiv>
   <synopsis>
-<command>gpg</>
+<command>gpg</command>
  <optional>--homedir <parameter/name/</optional>
  <optional>--options <parameter/file/</optional>
  <optional><parameter/options/</optional>
- <parameter>command</>
+ <parameter>command</parameter>
  <optional><parameter/args/</optional>
   </synopsis>
 </refsynopsisdiv>
@@ -1724,7 +1724,7 @@ option.
 <term>--gpg-agent-info</term>
 <listitem><para>
 Override the value of the environment variable
-<literal>GPG_AGENT_INFO</>.  This is only used when --use-agent has been given
+<literal>GPG_AGENT_INFO</literal>.  This is only used when --use-agent has been given
 </para></listitem></varlistentry>
 
 
@@ -2133,7 +2133,7 @@ handy in case where an encrypted message contains a bogus key ID.
 <term>--enable-special-filenames</term>
 <listitem><para>
 This options enables a mode in which filenames of the form
-<filename>-&#38;n</>, where n is a non-negative decimal number,
+<filename>-&#38;n</filename>, where n is a non-negative decimal number,
 refer to the file descriptor n and not to a file with that name.
 </para></listitem></varlistentry>
 

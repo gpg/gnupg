@@ -1,3 +1,7 @@
+2003-05-01  Werner Koch  <wk@gnupg.org>
+
+	* faq.raw: List years of copyright notice separately.
+
 2003-04-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Some general language tweaks.  Note default algo for
