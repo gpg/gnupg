@@ -1645,6 +1645,13 @@ be given in C syntax (e.g. 0x0042).
  Set all useful debugging flags.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--debug-ccid-driver</term>
+<listitem><para>
+Enable debug output from the included CCID driver for smartcards.
+Note that this option is only available on some system.
+</para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--enable-progress-filter</term>
