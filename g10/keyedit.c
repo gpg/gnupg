@@ -973,7 +973,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
     }
 
     /* get the public key */
-    rc = get_pubkey_byname (NULL, username, &keyblock, &kdbhd);
+    rc = get_pubkey_byname (NULL, username, &keyblock, &kdbhd, 1);
     if( rc )
 	goto leave;
     if( fix_keyblock( keyblock ) )
@@ -2343,7 +2343,7 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
       if(answer[0]=='\0' || answer[0]=='\004')
 	goto fail;
 
-      rc=get_pubkey_byname(revoker_pk,answer,NULL,NULL);
+      rc=get_pubkey_byname(revoker_pk,answer,NULL,NULL,1);
 
       if(rc)
 	{

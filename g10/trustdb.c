@@ -736,6 +736,44 @@ clear_validity (PKT_public_key *pk)
  *********  Query trustdb values  **************
  ***********************************************/
 
+/* Return true if key is disabled */
+int
+is_disabled(void *dummy,u32 *keyid)
+{
+  int rc;
+  TRUSTREC trec;
+  int disabled=0; /* default to not disabled */
+  PKT_public_key *pk=m_alloc_clear(sizeof(PKT_public_key));
+
+  init_trustdb ();
+
+  /* Note that get_pubkey returns the main key if keyid points to a
+     subkey. That's a good thing here. */
+  rc = get_pubkey(pk, keyid);
+  if(rc)
+    {
+      log_error("error checking disabled status of %08lX: %s\n",
+ 		(ulong)keyid[1],g10_errstr(rc));
+      goto leave;
+    }
+ 
+  rc = read_trust_record (pk, &trec);
+  if (rc && rc != -1)
+    {
+      tdbio_invalid ();
+      goto leave;
+    }
+  if (rc == -1) /* no record found, so assume not disabled */
+    goto leave;
+ 
+  if(trec.r.trust.ownertrust & TRUST_FLAG_DISABLED)
+    disabled=1;
+ 
+ leave:
+  free_public_key(pk);
+  return disabled;
+}
+
 /*
  * Return the validity information for PK.  If the namehash is not
  * NULL, the validity of the corresponsing user ID is returned,

@@ -193,7 +193,8 @@ int get_pubkey( PKT_public_key *pk, u32 *keyid );
 int get_pubkey_fast ( PKT_public_key *pk, u32 *keyid );
 KBNODE get_pubkeyblock( u32 *keyid );
 int get_pubkey_byname( PKT_public_key *pk,  const char *name,
-                       KBNODE *ret_keyblock, KEYDB_HANDLE *ret_kdbhd);
+                       KBNODE *ret_keyblock, KEYDB_HANDLE *ret_kdbhd,
+		       int include_disabled );
 int get_pubkey_bynames( GETKEY_CTX *rx, PKT_public_key *pk,
 			STRLIST names, KBNODE *ret_keyblock );
 int get_pubkey_next( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock );

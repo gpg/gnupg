@@ -1,3 +1,22 @@
+2002-12-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* keydb.h, getkey.c (key_byname): Flag to enable or disable
+	including disabled keys.  Keys specified via keyid (i.e. 0x...)
+	are always included.
+
+	* getkey.c (get_pubkey_byname, get_seckey_byname2,
+	get_seckey_bynames), keyedit.c (keyedit_menu, menu_addrevoker):
+	Include disabled keys in these functions.
+
+	* pkclist.c (build_pk_list): Do not include disabled keys for -r
+	or the key prompt.  Do include disabled keys for the default key
+	and --encrypt-to.
+
+	* trustdb.h, trustdb.c (is_disabled): New skipfnc for skipping
+	disabled keys.
+
+	* gpgv.c (is_disabled): Stub.
+
 2002-12-12  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.skel: Include the required '=' sign in the sample

@@ -795,7 +795,8 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	else if( (use & PUBKEY_USAGE_ENC) && !opt.no_encrypt_to ) {
 	    pk = m_alloc_clear( sizeof *pk );
 	    pk->req_usage = use;
-	    if( (rc = get_pubkey_byname( pk, rov->d, NULL, NULL )) ) {
+	    /* We can encrypt-to a disabled key */
+	    if( (rc = get_pubkey_byname( pk, rov->d, NULL, NULL, 1 )) ) {
 		free_public_key( pk ); pk = NULL;
 		log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
                 write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
@@ -865,7 +866,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 		free_public_key( pk );
 	    pk = m_alloc_clear( sizeof *pk );
 	    pk->req_usage = use;
-	    rc = get_pubkey_byname( pk, answer, NULL, NULL );
+	    rc = get_pubkey_byname( pk, answer, NULL, NULL, 0 );
 	    if( rc )
 		tty_printf(_("No such user ID.\n"));
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) {
@@ -938,7 +939,8 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
     else if( !any_recipients && (def_rec = default_recipient()) ) {
 	pk = m_alloc_clear( sizeof *pk );
 	pk->req_usage = use;
-	rc = get_pubkey_byname( pk, def_rec, NULL, NULL );
+	/* The default recipient may be disabled */
+	rc = get_pubkey_byname( pk, def_rec, NULL, NULL, 1 );
 	if( rc )
 	    log_error(_("unknown default recipient `%s'\n"), def_rec );
 	else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) {
@@ -971,7 +973,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 
 	    pk = m_alloc_clear( sizeof *pk );
 	    pk->req_usage = use;
-	    if( (rc = get_pubkey_byname( pk, remusr->d, NULL, NULL )) ) {
+	    if( (rc = get_pubkey_byname( pk, remusr->d, NULL, NULL, 0 )) ) {
 		free_public_key( pk ); pk = NULL;
 		log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
                 write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
