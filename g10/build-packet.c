@@ -410,8 +410,9 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 	    if( sk->protect.s2k.mode == 3 )
 		iobuf_put(a, sk->protect.s2k.count ); 
 
-            /* For out special mode 1001 we do not need an IV */
-	    if( sk->protect.s2k.mode != 1001 )
+            /* For out special modes 1001, 1002 we do not need an IV */
+	    if( sk->protect.s2k.mode != 1001 
+              && sk->protect.s2k.mode != 1002 )
 		iobuf_write(a, sk->protect.iv, sk->protect.ivlen );
 	}
     }
@@ -420,6 +421,14 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 
     if( sk->protect.s2k.mode == 1001 )
         ; /* GnuPG extension - don't write a secret key at all */ 
+    else if( sk->protect.s2k.mode == 1002 )
+      {  /* GnuPG extension - divert to OpenPGP smartcard. */ 
+	iobuf_put(a, sk->protect.ivlen ); /* length of the serial
+                                             number or 0 for no serial
+                                             number. */
+        /* The serial number gets stored in the IV field. */
+        iobuf_write(a, sk->protect.iv, sk->protect.ivlen);
+      }
     else if( sk->is_protected && sk->version >= 4 ) {
         /* The secret key is protected - write it out as it is */
 	byte *p;

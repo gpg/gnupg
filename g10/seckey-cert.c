@@ -225,6 +225,9 @@ check_secret_key( PKT_secret_key *sk, int n )
     int rc = G10ERR_BAD_PASS;
     int i,mode;
 
+    if (sk && sk->is_protected && sk->protect.s2k.mode == 1002)
+      return 0; /* Let the card support stuff handle this. */
+
     if(n<0)
       {
 	n=abs(n);
@@ -265,11 +268,14 @@ check_secret_key( PKT_secret_key *sk, int n )
 /****************
  * check whether the secret key is protected.
  * Returns: 0 not protected, -1 on error or the protection algorithm
+ *                           -2 indicates a card stub.
  */
 int
 is_secret_key_protected( PKT_secret_key *sk )
 {
-    return sk->is_protected? sk->protect.algo : 0;
+    return sk->is_protected?
+               sk->protect.s2k.mode == 1002? -2
+                                           : sk->protect.algo : 0;
 }
 
 

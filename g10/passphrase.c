@@ -1004,22 +1004,57 @@ passphrase_clear_cache ( u32 *keyid, int algo )
 
 
 /****************
- * Get a passphrase for the secret key with KEYID, display TEXT
- * if the user needs to enter the passphrase.
- * mode 0 = standard, 1 = same but don't show key info,
- *      2 = create new passphrase
- * Returns: a DEK with a session key; caller must free
- *	    or NULL if the passphrase was not correctly repeated.
- *	    (only for mode 2)
- *	    a dek->keylen of 0 means: no passphrase entered.
- *	    (only for mode 2)
- *
- * pubkey_algo is only informational.  Note that TRYAGAIN_TEXT must
- * not be translated as this is done within this function (required to
- * switch to utf-8 when the agent is in use).  If CANCELED is not
- * NULL, it is set to 1 if the user choosed to cancel the operation,
- * otherwise it will be set to 0.
+ * Ask for a passphrase and return that string.
  */
+char *
+ask_passphrase (const char *description, const char *prompt, int *canceled)
+{
+  char *pw = NULL;
+  
+  if (canceled)
+    *canceled = 0;
+
+  if (is_status_enabled())
+    write_status_text( STATUS_NEED_PASSPHRASE_SYM, "0 0 0");
+
+  if (!opt.batch && description)
+    tty_printf ("\n%s\n",description);
+               
+ agent_died:
+  if ( opt.use_agent ) 
+    {
+      pw = agent_get_passphrase (NULL, 0,  description, canceled );
+      if (!pw)
+        {
+          if (!opt.use_agent)
+            goto agent_died;
+          pw = NULL;
+        }
+    }
+  else if (fd_passwd) 
+    {
+      pw = m_alloc_secure (strlen(fd_passwd)+1);
+      strcpy (pw, fd_passwd);
+    }
+  else if (opt.batch)
+    {
+      log_error(_("can't query password in batchmode\n"));
+      pw = NULL;
+    }
+  else {
+    pw = cpr_get_hidden("passphrase.ask",
+                        prompt?prompt : _("Enter passphrase: ") );
+    tty_kill_prompt();
+  }
+
+  if (!pw || !*pw)
+    write_status( STATUS_MISSING_PASSPHRASE );
+
+  return pw;
+}
+
+
+
 DEK *
 passphrase_to_dek( u32 *keyid, int pubkey_algo,
 		   int cipher_algo, STRING2KEY *s2k, int mode,

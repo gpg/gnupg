@@ -1,3 +1,20 @@
+2003-09-29  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (do_add_key_flags, parse_parameter_usage): Add support
+	the proposed AUTH key flag.
+	* getkey.c (fixup_uidnode, merge_selfsigs_main) 
+	(merge_selfsigs_subkey, premerge_public_with_secret): Ditto.
+	* keylist.c (print_capabilities): Ditto.
+
+	* parse-packet.c (parse_key): Allow to parse the divert-to-card
+	S2K mode.
+	* build-packet.c (do_secret_key): Handle divert-to-card S2K
+	* seckey-cert.c (is_secret_key_protected): Ditto.
+	(check_secret_key): Ditto.
+
+	* keygen.c (do_ask_passphrase): Renamed from ask_passphrase.
+	* passphrase.c (ask_passphrase): New.
+
 2003-09-28  Werner Koch  <wk@gnupg.org>
 
 	* g10.c (main): New commands --card-edit, --card-status and

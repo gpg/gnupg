@@ -53,7 +53,7 @@ struct ctrl_ctx_s {
 
 
 static char *default_reader_port;
-
+static APP current_app;
 
 
 
@@ -246,6 +246,7 @@ open_card (void)
   int rc;
   APP app;
 
+  current_app = NULL;/* FIXME: Release it first.*/
   slot = apdu_open_reader (default_reader_port);
   if (slot == -1)
     {
@@ -265,6 +266,7 @@ open_card (void)
     }
 
   app->initialized = 1;
+  current_app = app;
   return app;
 }
 
@@ -443,7 +445,7 @@ agent_learn (struct agent_card_info_s *info)
   time_t stamp;
   char *serial;
   
-  app = open_card ();
+  app = current_app? current_app : open_card ();
   if (!app)
     return gpg_error (GPG_ERR_CARD);
 
@@ -462,13 +464,39 @@ agent_learn (struct agent_card_info_s *info)
   return rc;
 }
 
+static int 
+pin_cb (void *opaque, const char *info, char **retstr)
+{
+  char *value;
+  int canceled;
+
+  *retstr = NULL;
+  log_debug ("asking for PIN '%s'\n", info);
+
+  value = ask_passphrase (info, "Enter PIN: ", &canceled);
+  if (!value && canceled)
+    return -1;
+  else if (!value)
+    return G10ERR_GENERAL;
+
+  *retstr = value;
+  return 0;
+}
+
+
+
 /* Send a SETATTR command to the SCdaemon. */
 int 
 agent_scd_setattr (const char *name,
                    const unsigned char *value, size_t valuelen)
 {
+  APP app;
 
-  return gpg_error (GPG_ERR_CARD);
+  app = current_app? current_app : open_card ();
+  if (!app)
+    return gpg_error (GPG_ERR_CARD);
+
+  return app->fnc.setattr (app, name, pin_cb, NULL, value, valuelen);
 }
 
 /* Send a GENKEY command to the SCdaemon. */
@@ -481,12 +509,24 @@ agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force)
 
 /* Send a PKSIGN command to the SCdaemon. */
 int 
-agent_scd_pksign (const char *keyid, int hashalgo,
+agent_scd_pksign (const char *serialno, int hashalgo,
                   const unsigned char *indata, size_t indatalen,
                   char **r_buf, size_t *r_buflen)
 {
+  APP app;
 
-  return gpg_error (GPG_ERR_CARD);
+  *r_buf = NULL;
+  *r_buflen = 0;
+  app = current_app? current_app : open_card ();
+  if (!app)
+    return gpg_error (GPG_ERR_CARD);
+
+  /* Check that the card's serialnumber is as required.*/
+
+  return app->fnc.sign (app, serialno, hashalgo,
+                        pin_cb, NULL,
+                        indata, indatalen,
+                        r_buf, r_buflen);
 }
 
 

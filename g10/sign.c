@@ -313,18 +313,19 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
         size_t rbuflen;
         char *snbuf;
         
-        snbuf = serialno_and_fpr_from_sk (sk->protect.iv, sk->protect.ivlen,sk);
-        rc = G10ERR_GENERAL;
-/*              agent_scd_pksign (snbuf, digest_algo, */
-/*                                gcry_md_read (md, digest_algo), */
-/*                                gcry_md_get_algo_dlen (digest_algo), */
-/*                                &rbuf, &rbuflen); */
+        snbuf = serialno_and_fpr_from_sk (sk->protect.iv,
+                                          sk->protect.ivlen, sk);
+        rc = agent_scd_pksign (snbuf, digest_algo,
+                               md_read (md, digest_algo),
+                               md_digest_length (digest_algo),
+                               &rbuf, &rbuflen);
         xfree (snbuf);
         if (!rc)
           {
-/*             if (gcry_mpi_scan (&sig->data[0], GCRYMPI_FMT_USG, */
-/*                                rbuf, rbuflen, NULL)) */
-              BUG ();
+            sig->data[0] = mpi_alloc ( (rbuflen+BYTES_PER_MPI_LIMB-1)
+                                       / BYTES_PER_MPI_LIMB );
+            mpi_set_buffer (sig->data[0], rbuf, rbuflen, 0);
+            xfree (rbuf);
           }
       }
     else 

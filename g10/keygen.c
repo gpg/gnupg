@@ -145,6 +145,8 @@ do_add_key_flags (PKT_signature *sig, unsigned int use)
       }
     if (use & PUBKEY_USAGE_ENC)
         buf[0] |= 0x04 | 0x08;
+    if (use & PUBKEY_USAGE_AUTH)
+        buf[0] |= 0x20;
     build_sig_subpkt (sig, SIGSUBPKT_KEY_FLAGS, buf, 1);
 }
 
@@ -1486,7 +1488,7 @@ ask_user_id( int mode )
 
 
 static DEK *
-ask_passphrase( STRING2KEY **ret_s2k )
+do_ask_passphrase( STRING2KEY **ret_s2k )
 {
     DEK *dek = NULL;
     STRING2KEY *s2k;
@@ -1651,6 +1653,8 @@ parse_parameter_usage (const char *fname,
             use |= PUBKEY_USAGE_SIG;
         else if ( !ascii_strcasecmp (p, "encrypt") )
             use |= PUBKEY_USAGE_ENC;
+        else if ( !ascii_strcasecmp (p, "auth") )
+            use |= PUBKEY_USAGE_AUTH;
         else {
             log_error("%s:%d: invalid usage list\n", fname, r->lnr );
             return -1; /* error */
@@ -2168,7 +2172,7 @@ generate_keypair( const char *fname )
     r->next = para;
     para = r;
 
-    dek = ask_passphrase( &s2k );
+    dek = do_ask_passphrase( &s2k );
     if( dek ) {
 	r = m_alloc_clear( sizeof *r );
 	r->key = pPASSPHRASE_DEK;

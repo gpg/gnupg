@@ -1279,6 +1279,8 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
             uid->help_key_usage |= PUBKEY_USAGE_ENC;
         /* Note: we do not set the CERT flag here because it can be assumed
          * that thre is no real policy to set it. */
+        if ( (*p & 0x20) )    
+            uid->help_key_usage |= PUBKEY_USAGE_AUTH;
     }
 
     /* ditto or the key expiration */
@@ -1490,6 +1492,8 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
                 key_usage |= PUBKEY_USAGE_SIG;
             if ( (*p & 12) )    
                 key_usage |= PUBKEY_USAGE_ENC;
+            if ( (*p & 0x20) )    
+                key_usage |= PUBKEY_USAGE_AUTH;
         }
 
 	p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
@@ -1878,6 +1882,8 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
             key_usage |= PUBKEY_USAGE_SIG;
         if ( (*p & 12) )    
             key_usage |= PUBKEY_USAGE_ENC;
+        if ( (*p & 0x20) )    
+            key_usage |= PUBKEY_USAGE_AUTH;
     }
     if ( !key_usage ) { /* no key flags at all: get it from the algo */
         key_usage = openpgp_pk_algo_usage ( subpk->pubkey_algo );
@@ -2075,7 +2081,8 @@ premerge_public_with_secret ( KBNODE pubblock, KBNODE secblock )
                             /* The secret parts are not available so
                                we can't use that key for signing etc.
                                Fix the pubkey usage */
-                            pk->pubkey_usage &= ~PUBKEY_USAGE_SIG;
+                            pk->pubkey_usage &= ~(PUBKEY_USAGE_SIG
+                                                  |PUBKEY_USAGE_AUTH);
                         }
                         /* transfer flag bits 0 and 1 to the pubblock */
                         pub->flag |= (sec->flag &3);

@@ -475,11 +475,14 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
 	  if( pk? pk->is_primary : sk->is_primary )
 	    putchar ('c');
 	}
+
+      if ( (use & PUBKEY_USAGE_AUTH) )
+        putchar ('a');
     }
 
     if ( keyblock ) { /* figure out the usable capabilities */
         KBNODE k;
-        int enc=0, sign=0, cert=0, disabled=0;
+        int enc=0, sign=0, cert=0, auth=0, disabled=0;
 
         for (k=keyblock; k; k = k->next ) {
             if ( k->pkt->pkttype == PKT_PUBLIC_KEY 
@@ -498,6 +501,8 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
 			if(pk->is_primary)
 			  cert = 1;
 		      }
+                    if ( (pk->pubkey_usage & PUBKEY_USAGE_AUTH) )
+                      auth = 1;
                 }
             }
             else if ( k->pkt->pkttype == PKT_SECRET_KEY 
@@ -513,6 +518,8 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
 			if(sk->is_primary)
 			  cert = 1;
 		      }
+                    if ( (sk->pubkey_usage & PUBKEY_USAGE_AUTH) )
+                        auth = 1;
                 }
             }
         }
@@ -522,6 +529,8 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
             putchar ('S');
         if (cert)
             putchar ('C');
+        if (auth)
+            putchar ('A');
         if (disabled)
             putchar ('D');
     }

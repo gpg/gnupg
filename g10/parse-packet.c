@@ -1590,6 +1590,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
     if( pkttype == PKT_SECRET_KEY || pkttype == PKT_SECRET_SUBKEY ) {
 	PKT_secret_key *sk = pkt->pkt.secret_key;
 	byte temp[16];
+        size_t snlen = 0;
 
 	if( !npkey ) {
 	    sk->skey[0] = mpi_set_opaque( NULL,
@@ -1662,6 +1663,8 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		    break;
 		  case 1001: if( list_mode ) printf(  "\tgnu-dummy S2K" );
 		    break;
+		  case 1002: if (list_mode) printf("\tgnu-divert-to-card S2K");
+		    break;
 		  default:
 		    if( list_mode )
 			printf(  "\tunknown %sS2K %d\n",
@@ -1697,6 +1700,19 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 			printf("\tprotect count: %lu\n",
 					    (ulong)sk->protect.s2k.count);
 		}
+		else if( sk->protect.s2k.mode == 1002 ) {
+                    /* Read the serial number. */
+                    if (pktlen < 1) {
+                      rc = G10ERR_INVALID_PACKET;
+			goto leave;
+		    }
+		    snlen = iobuf_get (inp);
+		    pktlen--;
+                    if (pktlen < snlen || snlen == -1) {
+			rc = G10ERR_INVALID_PACKET;
+			goto leave;
+                    }
+		}
 	    }
 	    /* Note that a sk->protect.algo > 110 is illegal, but I'm
 	       not erroring on it here as otherwise there would be no
@@ -1726,6 +1742,8 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	    }
 	    if( sk->protect.s2k.mode == 1001 )
 		sk->protect.ivlen = 0;
+	    else if( sk->protect.s2k.mode == 1002 )
+		sk->protect.ivlen = snlen < 16? snlen : 16;
 
 	    if( pktlen < sk->protect.ivlen ) {
 		rc = G10ERR_INVALID_PACKET;
@@ -1734,7 +1752,8 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	    for(i=0; i < sk->protect.ivlen && pktlen; i++, pktlen-- )
 		temp[i] = iobuf_get_noeof(inp);
 	    if( list_mode ) {
-		printf(  "\tprotect IV: ");
+		printf( sk->protect.s2k.mode == 1002? "\tserial-number: "
+                                                    : "\tprotect IV: ");
 		for(i=0; i < sk->protect.ivlen; i++ )
 		    printf(" %02x", temp[i] );
 		putchar('\n');
@@ -1747,7 +1766,8 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	 * If the user is so careless, not to protect his secret key,
 	 * we can assume, that he operates an open system :=(.
 	 * So we put the key into secure memory when we unprotect it. */
-	if( sk->protect.s2k.mode == 1001 ) {
+	if( sk->protect.s2k.mode == 1001 
+            || sk->protect.s2k.mode == 1002 ) {
 	    /* better set some dummy stuff here */
 	    sk->skey[npkey] = mpi_set_opaque(NULL, m_strdup("dummydata"), 10);
 	    pktlen = 0;
