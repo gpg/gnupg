@@ -63,7 +63,14 @@
 #define SSH_DSA_SIGNATURE_ELEMS    2
 #define SPEC_FLAG_USE_PKCS1V2 (1 << 0)
 
+
 
+/* Macros.  */
+
+/* Return a new uint32 with b0 being the most significant byte and b3
+   being the least significant byte.  */
+#define uint32_construct(b0, b1, b2, b3) \
+  ((b0 << 24) | (b1 << 16) | (b2 << 8) | b3)
 
 
 
@@ -283,18 +290,7 @@ stream_read_uint32 (estream_t stream, u32 *uint32)
 	{
 	  u32 n;
 
-          /* FIXME: For what is the cast good for? The proper way of
-             wrinting it - assuming an unsigned buffer - is:
-
-             n = (buffer[0]<< 24)|(buffer[0]<< 16)|(buffer[0]<<8)|(buffer[0]);
-            
-             -wk
-          */
-	  n = (0
-	       | ((u32) (buffer[0] << 24))
-	       | ((u32) (buffer[1] << 16))
-	       | ((u32) (buffer[2] <<  8))
-	       | ((u32) (buffer[3] <<  0)));
+	  n = uint32_construct (buffer[0], buffer[1], buffer[2], buffer[3]);
 	  *uint32 = n;
 	  err = 0;
 	}
@@ -311,11 +307,10 @@ stream_write_uint32 (estream_t stream, u32 uint32)
   gpg_error_t err;
   int ret;
 
-  /* Fixme:  The 0xFF mask is superfluous.  */
-  buffer[0] = (uint32 >> 24) & 0xFF;
-  buffer[1] = (uint32 >> 16) & 0xFF;
-  buffer[2] = (uint32 >>  8) & 0xFF;
-  buffer[3] = (uint32 >>  0) & 0xFF;
+  buffer[0] = uint32 >> 24;
+  buffer[1] = uint32 >> 16;
+  buffer[2] = uint32 >>  8;
+  buffer[3] = uint32 >>  0;
 
   ret = es_write (stream, buffer, sizeof (buffer), NULL);
   if (ret)

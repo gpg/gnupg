@@ -1168,7 +1168,7 @@ create_server_socket (int is_standard_name, const char *name)
       agent_exit (2);
     }
 
-
+  serv_addr = malloc (sizeof (*serv_addr)); /* FIXME. */
   memset (serv_addr, 0, sizeof *serv_addr);
   serv_addr->sun_family = AF_UNIX;
   assert (strlen (name) + 1 < sizeof (serv_addr->sun_path));

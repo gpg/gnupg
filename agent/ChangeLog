@@ -32,6 +32,8 @@
 	changed code to use asprintf for description.
 	(stream_write_uint32): Do not filter out the last byte of shift
 	expression.
+	(uint32_construct): New macro ...
+	(stream_read_uint32): ... use it; removed unnecessary cast.
 
 2005-02-03  Werner Koch  <wk@g10code.com>
 
