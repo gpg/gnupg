@@ -237,6 +237,7 @@ enum cmd_and_opt_values { aNull = 0,
     oLockNever,
     oKeyServer,
     oKeyServerOptions,
+    oExportOptions,
     oTempDir,
     oExecPath,
     oEncryptTo,
@@ -409,6 +410,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDefaultKey, "default-key" ,2, N_("|NAME|use NAME as default secret key")},
     { oKeyServer, "keyserver",2, N_("|HOST|use this keyserver to lookup keys")},
     { oKeyServerOptions, "keyserver-options",2,"@"},
+    { oExportOptions, "export-options",2,"@"},
     { oCharset, "charset"   , 2, N_("|NAME|set terminal charset to NAME") },
     { oOptions, "options"   , 2, N_("read options from file")},
 
@@ -902,6 +904,8 @@ main( int argc, char **argv )
     opt.pgp2_workarounds = 1;
     opt.force_v3_sigs = 1;
     opt.escape_from = 1;
+    opt.export_options=EXPORT_DEFAULT;
+    opt.keyserver_options.export_options=EXPORT_DEFAULT;
     opt.keyserver_options.include_subkeys=1;
     opt.keyserver_options.include_attributes=1;
 #if defined (__MINGW32__) || defined (__CYGWIN32__)
@@ -1330,6 +1334,16 @@ main( int argc, char **argv )
 	    break;
 	  case oKeyServerOptions:
 	    parse_keyserver_options(pargs.r.ret_str);
+	    break;
+	  case oExportOptions:
+	    if(!parse_export_options(pargs.r.ret_str,&opt.export_options))
+	      {
+		if(configname)
+		  log_error(_("%s:%d: invalid export options\n"),
+			    configname,configlineno);
+		else
+		  log_error(_("invalid export options\n"));
+	      }
 	    break;
 	  case oTempDir: opt.temp_dir=pargs.r.ret_str; break;
 	  case oExecPath:
@@ -2009,7 +2023,7 @@ main( int argc, char **argv )
 	else if( cmd == aRecvKeys )
 	    keyserver_import( sl );
 	else
-	    export_pubkeys( sl, (cmd == aExport)?EXPORT_FLAG_ONLYRFC:0 );
+	    export_pubkeys( sl, opt.export_options );
 	free_strlist(sl);
 	break;
 

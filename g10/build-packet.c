@@ -763,8 +763,10 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
 	nlen = 1; /* just a 1 byte length header */
 
     switch( type ) {
-      case SIGSUBPKT_ISSUER:
       case SIGSUBPKT_PRIV_VERIFY_CACHE: /*(obsolete)*/
+	BUG();
+	break;
+      case SIGSUBPKT_ISSUER:
         hashed = 0;
         break;
       default: 

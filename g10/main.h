@@ -159,10 +159,15 @@ void import_print_stats (void *hd);
 int collapse_uids( KBNODE *keyblock );
 
 /*-- export.c --*/
-#define EXPORT_FLAG_ONLYRFC     1
-#define EXPORT_FLAG_SKIPATTRIBS 2
-int export_pubkeys( STRLIST users, int flags );
-int export_pubkeys_stream( IOBUF out, STRLIST users, int flags );
+#define EXPORT_INCLUDE_NON_RFC    1
+#define EXPORT_INCLUDE_LOCAL_SIGS 2
+#define EXPORT_INCLUDE_ATTRIBUTES 4
+#define EXPORT_INCLUDE_SENSITIVE_REVKEYS 8
+#define EXPORT_DEFAULT (1|4)
+
+int parse_export_options(char *str,unsigned int *options);
+int export_pubkeys( STRLIST users, unsigned int options );
+int export_pubkeys_stream( IOBUF out, STRLIST users, unsigned int options );
 int export_seckeys( STRLIST users );
 int export_secsubkeys( STRLIST users );
 

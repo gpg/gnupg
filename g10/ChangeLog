@@ -1,5 +1,18 @@
 2002-07-22  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, main.h, export.c (parse_export_options,
+	do_export_stream), g10.c (main): add new --export-options option.
+	Current flags are "include-non-rfc", "include-local-sigs",
+	"include-attributes", and "include-sensitive-revkeys".
+
+	* options.h, hkp.c (hkp_export), keyserver.c
+	(parse_keyserver_options, keyserver_spawn): try passing unknown
+	keyserver options to export options, and if successful, use them
+	when doing a keyserver --send-key.
+
+	* build-packet.c (build_sig_subpkt): We do not generate
+	SIGSUBPKT_PRIV_VERIFY_CACHE anymore.
+
 	* revoke.c (gen_desig_revoke): Lots more comments about including
 	sensitive revkeys along with the revocation sig itself.
 

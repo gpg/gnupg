@@ -34,21 +34,65 @@
 #include "main.h"
 #include "i18n.h"
 
-static int do_export( STRLIST users, int secret, int flags );
+static int do_export( STRLIST users, int secret, unsigned int options );
 static int do_export_stream( IOBUF out, STRLIST users,
-			     int secret, int flags, int *any );
+			     int secret, unsigned int options, int *any );
+
+int
+parse_export_options(char *str,unsigned int *options)
+{
+  char *tok;
+  int hit=0;
+  struct
+  {
+    char *name;
+    unsigned int bit;
+  } export_opts[]=
+    {
+      {"include-non-rfc",EXPORT_INCLUDE_NON_RFC},
+      {"include-local-sigs",EXPORT_INCLUDE_LOCAL_SIGS},
+      {"include-attributes",EXPORT_INCLUDE_ATTRIBUTES},
+      {"include-sensitive-revkeys",EXPORT_INCLUDE_SENSITIVE_REVKEYS},
+      {NULL,0}
+      /* add tags for include revoked and disabled? */
+    };
+
+  while((tok=strsep(&str," ,")))
+    {
+      int i,rev=0;
+
+      if(ascii_memcasecmp("no-",tok,3)==0)
+	rev=1;
+
+      for(i=0;export_opts[i].name;i++)
+	{
+	  if(ascii_strcasecmp(export_opts[i].name,tok)==0)
+	    {
+	      if(rev)
+		*options&=~export_opts[i].bit;
+	      else
+		*options|=export_opts[i].bit;
+	      hit=1;
+	      break;
+	    }
+	}
+
+      if(!hit && !export_opts[i].name)
+	return 0;
+    }
+
+  return hit;
+}
 
 /****************
  * Export the public keys (to standard out or --output).
  * Depending on opt.armor the output is armored.
- * flags has two bits: EXPORT_FLAG_ONLYRFC, so that only RFC2440
- * compatible keys are exported, and EXPORT_FLAG_SKIPATTRIBS to not
- * export attribute packets (photo IDs).
+ * options are defined in main.h.
  * If USERS is NULL, the complete ring will be exported.  */
 int
-export_pubkeys( STRLIST users, int flags )
+export_pubkeys( STRLIST users, unsigned int options )
 {
-    return do_export( users, 0, flags );
+    return do_export( users, 0, options );
 }
 
 /****************
@@ -56,11 +100,11 @@ export_pubkeys( STRLIST users, int flags )
  * been exported
  */
 int
-export_pubkeys_stream( IOBUF out, STRLIST users, int flags )
+export_pubkeys_stream( IOBUF out, STRLIST users, unsigned int options )
 {
     int any, rc;
 
-    rc = do_export_stream( out, users, 0, flags, &any );
+    rc = do_export_stream( out, users, 0, options, &any );
     if( !rc && !any )
 	rc = -1;
     return rc;
@@ -79,7 +123,7 @@ export_secsubkeys( STRLIST users )
 }
 
 static int
-do_export( STRLIST users, int secret, int flags )
+do_export( STRLIST users, int secret, unsigned int options )
 {
     IOBUF out = NULL;
     int any, rc;
@@ -99,7 +143,7 @@ do_export( STRLIST users, int secret, int flags )
     }
     if( opt.compress_keys && opt.compress )
 	iobuf_push_filter( out, compress_filter, &zfx );
-    rc = do_export_stream( out, users, secret, flags, &any );
+    rc = do_export_stream( out, users, secret, options, &any );
 
     if( rc || !any )
 	iobuf_cancel(out);
@@ -110,7 +154,8 @@ do_export( STRLIST users, int secret, int flags )
 
 
 static int
-do_export_stream( IOBUF out, STRLIST users, int secret, int flags, int *any )
+do_export_stream( IOBUF out, STRLIST users, int secret,
+		  unsigned int options, int *any )
 {
     int rc = 0;
     PACKET pkt;
@@ -167,7 +212,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int flags, int *any )
 	}
 
 	/* do not export keys which are incompatible with rfc2440 */
-	if( (flags&EXPORT_FLAG_ONLYRFC) &&
+	if( !(options&EXPORT_INCLUDE_NON_RFC) &&
 	    (node = find_kbnode( keyblock, PKT_PUBLIC_KEY )) ) {
 	    PKT_public_key *pk = node->pkt->pkt.public_key;
 	    if( pk->version == 3 && pk->pubkey_algo > 3 ) {
@@ -213,14 +258,16 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int flags, int *any )
 
 	    if( node->pkt->pkttype == PKT_SIGNATURE ) {
 	      /* do not export packets which are marked as not exportable */
-	      if( !node->pkt->pkt.signature->flags.exportable )
+	      if( !(options&EXPORT_INCLUDE_LOCAL_SIGS) &&
+		  !node->pkt->pkt.signature->flags.exportable )
 		continue; /* not exportable */
 
 	      /* do not export packets with a "sensitive" revocation
                  key.  This will need revisiting when we start
                  supporting creating revocation keys and not just
                  reading them. */
-	      if( node->pkt->pkt.signature->revkey ) {
+	      if( !(options&EXPORT_INCLUDE_SENSITIVE_REVKEYS) &&
+		  node->pkt->pkt.signature->revkey ) {
 		int i;
 
 		for(i=0;i<node->pkt->pkt.signature->numrevkeys;i++)
@@ -234,7 +281,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int flags, int *any )
 	    }
 
 	    /* Don't export attribs? */
-	    if( (flags&EXPORT_FLAG_SKIPATTRIBS) &&
+	    if( !(options&EXPORT_INCLUDE_ATTRIBUTES) &&
 		node->pkt->pkttype == PKT_USER_ID &&
 		node->pkt->pkt.user_id->attrib_data ) {
 	      /* Skip until we get to something that is not an attrib

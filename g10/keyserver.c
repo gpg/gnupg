@@ -110,7 +110,8 @@ parse_keyserver_options(char *options)
 	  else if(ascii_strcasecmp(tok,"no-use-temp-files")==0)
 	    opt.keyserver_options.use_temp_files=0;
 #endif
-	  else if(strlen(tok)>0)
+	  else if(!parse_export_options(tok,
+					&opt.keyserver_options.export_options))
 	    add_to_strlist(&opt.keyserver_options.other,tok);
 	}
     }
@@ -451,10 +452,6 @@ keyserver_spawn(int action,STRLIST list,
 	  {
 	    armor_filter_context_t afx;
 	    IOBUF buffer=iobuf_temp();
-	    int attribs=EXPORT_FLAG_ONLYRFC;
-
-	    if(!opt.keyserver_options.include_attributes)
-	      attribs|=EXPORT_FLAG_SKIPATTRIBS;
 
 	    temp=NULL;
 	    add_to_strlist(&temp,key->d);
@@ -463,7 +460,8 @@ keyserver_spawn(int action,STRLIST list,
 	    afx.what=1;
 	    iobuf_push_filter(buffer,armor_filter,&afx);
 
-	    if(export_pubkeys_stream(buffer,temp,attribs)==-1)
+	    if(export_pubkeys_stream(buffer,temp,
+				     opt.keyserver_options.export_options)==-1)
 	      iobuf_close(buffer);
 	    else
 	      {
