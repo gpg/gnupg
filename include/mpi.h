@@ -71,7 +71,7 @@ struct gcry_mpi {
     int nbits;	    /* the real number of valid bits (info only) */
     int sign;	    /* indicates a negative number */
     unsigned flags; /* bit 0: array must be allocated in secure memory space */
-		    /* bit 1: the mpi is encrypted */
+		    /* bit 1: not used */
 		    /* bit 2: the limb is a pointer to some m_alloced data */
     mpi_limb_t *d;  /* array with the limbs */
 };
@@ -81,8 +81,6 @@ typedef struct gcry_mpi *MPI;
 #define MPI_NULL NULL
 
 #define mpi_get_nlimbs(a)     ((a)->nlimbs)
-#define mpi_get_nbit_info(a)  ((a)->nbits)
-#define mpi_set_nbit_info(a,b) ((a)->nbits = (b))
 #define mpi_is_neg(a)	      ((a)->sign)
 
 /*-- mpiutil.c --*/
@@ -111,9 +109,6 @@ typedef struct gcry_mpi *MPI;
 #define mpi_is_opaque(a) ((a) && ((a)->flags&4))
 MPI mpi_set_opaque( MPI a, void *p, int len );
 void *mpi_get_opaque( MPI a, int *len );
-#define mpi_is_protected(a) ((a) && ((a)->flags&2))
-#define mpi_set_protect_flag(a) ((a)->flags |= 2)
-#define mpi_clear_protect_flag(a) ((a)->flags &= ~2)
 #define mpi_is_secure(a) ((a) && ((a)->flags&1))
 void mpi_set_secure( MPI a );
 void mpi_clear( MPI a );

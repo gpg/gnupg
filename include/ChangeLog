@@ -1,3 +1,9 @@
+2002-09-10  Werner Koch  <wk@gnupg.org>
+
+	* mpi.h (mpi_is_protected, mpi_set_protect_flag)
+	(mpi_clear_protect_flag): Removed.
+	(mpi_get_nbit_info, mpi_set_nbit_info): Removed.
+
 2002-08-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* cipher.h: Add AES aliases for RIJNDAEL algo numbers.

@@ -255,29 +255,26 @@ mpi_print( FILE *fp, MPI a, int mode )
     if( a == MPI_NULL )
 	return fprintf(fp, "[MPI_NULL]");
     if( !mode ) {
-	unsigned n1, n2;
+	unsigned int n1;
+
 	n1 = mpi_get_nbits(a);
-	n2 = mpi_get_nbit_info(a);
-	if( n2 && n2 != n1 )
-	    n += fprintf(fp, "[%u bits (%u)]", n1, n2 );
-	else
-	    n += fprintf(fp, "[%u bits]", n1);
+        n += fprintf(fp, "[%u bits]", n1);
     }
     else {
 	if( a->sign )
 	    putc('-', fp);
-       #if BYTES_PER_MPI_LIMB == 2
-	  #define X "4"
-       #elif BYTES_PER_MPI_LIMB == 4
-	  #define X "8"
-       #elif BYTES_PER_MPI_LIMB == 8
-	  #define X "16"
-       #else
-	  #error please define the format here
-       #endif
+#if BYTES_PER_MPI_LIMB == 2
+#define X "4"
+#elif BYTES_PER_MPI_LIMB == 4
+#define X "8"
+#elif BYTES_PER_MPI_LIMB == 8
+#define X "16"
+#else
+#error please define the format here
+#endif
 	for(i=a->nlimbs; i > 0 ; i-- ) {
 	    n += fprintf(fp, i!=a->nlimbs? "%0" X "lX":"%lX", (ulong)a->d[i-1]);
-       #undef X
+#undef X
 	}
 	if( !a->nlimbs )
 	    putc('0', fp );
@@ -344,12 +341,12 @@ do_get_buffer( MPI a, unsigned *nbytes, int *sign, int force_secure )
 
     for(i=a->nlimbs-1; i >= 0; i-- ) {
 	alimb = a->d[i];
-      #if BYTES_PER_MPI_LIMB == 4
+#if BYTES_PER_MPI_LIMB == 4
 	*p++ = alimb >> 24;
 	*p++ = alimb >> 16;
 	*p++ = alimb >>  8;
 	*p++ = alimb	  ;
-      #elif BYTES_PER_MPI_LIMB == 8
+#elif BYTES_PER_MPI_LIMB == 8
 	*p++ = alimb >> 56;
 	*p++ = alimb >> 48;
 	*p++ = alimb >> 40;
@@ -358,20 +355,18 @@ do_get_buffer( MPI a, unsigned *nbytes, int *sign, int force_secure )
 	*p++ = alimb >> 16;
 	*p++ = alimb >>  8;
 	*p++ = alimb	  ;
-      #else
-	#error please implement for this limb size.
-      #endif
+#else
+#error please implement for this limb size.
+#endif
     }
 
-    if (!mpi_is_protected (a))
-      {
-        /* this is sub-optimal but we need to do the shift operation
-         * because the caller has to free the returned buffer */
-        for(p=buffer; !*p && *nbytes; p++, --*nbytes )
-          ;
-        if( p != buffer )
-          memmove(buffer,p, *nbytes);
-      }
+    /* this is sub-optimal but we need to do the shift operation
+     * because the caller has to free the returned buffer */
+    for(p=buffer; !*p && *nbytes; p++, --*nbytes )
+      ;
+    if( p != buffer )
+      memmove(buffer,p, *nbytes);
+
     return buffer;
 }
 

@@ -1,3 +1,11 @@
+2002-09-10  Werner Koch  <wk@gnupg.org>
+
+	* mpi-bit.c (mpi_normalize): Replaced the check for protected by
+	is_opaque.
+	(mpi_get_nbits): Removed the special case for protected MPIs.
+	* mpicoder.c (do_get_buffer): Likewise.
+	(mpi_print): Removed the nbit_info printing.
+
 2002-09-03  Werner Koch  <wk@gnupg.org>
 
 	* mpicoder.c (mpi_set_buffer): Cast all left operands of a shift
