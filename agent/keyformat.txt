@@ -1,0 +1,138 @@
+keyformat.txt (wk 2001-12-18)
+-----------------------------
+
+
+Some notes on the format of the secret keys used with gpg-agent.
+
+
+The secret[1] keys are store one per file in a directory below
+the .gnupg homedirectory.  This directory is named
+
+   private-keys-v1.d
+
+and should have permissions 700.
+
+The secret keys are stored in files with a name matching the
+hexadecimal representation of the keygrip[2].  The content of the file
+is an S-Expression like tyhe ones used with Libgcrypt.  Here is the
+example of an unprotected file:
+
+(private-key
+ (rsa
+  (n #00e0ce9..[some bytes not shown]..51#)
+  (e #010001#)
+  (d #046129F..[some bytes not shown]..81#)
+  (p #00e861b..[some bytes not shown]..f1#)
+  (q #00f7a7c..[some bytes not shown]..61#)
+  (u #304559a..[some bytes not shown]..9b#)
+ )
+)
+
+Actually this form should not be used for regular purposes and only
+accepted by gpg-agent with the configuration option:
+--allow-non-canonical-key-format.  
+
+The regular way to represent the keys is in canonical representation
+with the additional requirement of an extra object around it[3]:
+
+(oid.1.3.6.1.4.1.11591.2.2.2
+ (keyinfo human_readable_information_to_decribe_this_key)
+ (private-key
+   (rsa
+    (n #00e0ce9..[some bytes not shown]..51#)
+    (e #010001#)
+    (d #046129F..[some bytes not shown]..81#)
+    (p #00e861b..[some bytes not shown]..f1#)
+    (q #00f7a7c..[some bytes not shown]..61#)
+    (u #304559a..[some bytes not shown]..9b#)
+   )
+ )  
+)
+
+
+This describes an unprotected key; a protected key is like this:
+
+(oid.1.3.6.1.4.1.11591.2.2.3
+ (keyinfo human_readable_information_to_decribe_this_key)
+ (private-key
+   (rsa
+    (n #00e0ce9..[some bytes not shown]..51#)
+    (e #010001#)
+    (oid.1.3.6.1.4.1.11591.2.1.1.1 (parms) encrypted_octet_string)
+   )
+ )  
+)
+
+In this scheme the encrypted_octet_string is encrypted according to
+the scheme identifier by the OID,  most protection algorithms need
+some parameters, which are given in a list before the
+encrypted_octet_string.  The result of the decryption process is a
+list of the secret key parameters.
+
+Defined protection methods are:
+
+1.3.6.1.4.1.gnu(11591).aegypten(2)
+.algorithms(1).keyprotection(1).s2k3-sha1-aes-cbc(1)
+
+This uses AES in CBS mode for encryption, SHA-1 fro integrity
+protecion and the String to Key algorithm 3 from OpenPGP (rfc2440).
+
+Example:
+
+(oid.1.3.6.1.4.1.11591.2.1.1.1 
+  ((salt iterations) iv)
+  encrypted_octet_string
+)
+
+The encrypted_octet string should yield this S-Exp (in canonical
+representation) after decryption:
+
+(sha1_hash
+ (d #046129F..[some bytes not shown]..81#)
+ (p #00e861b..[some bytes not shown]..f1#)
+ (q #00f7a7c..[some bytes not shown]..61#)
+ (u #304559a..[some bytes not shown]..9b#)
+)
+
+The first element is the SHA-1 hash calculated on the concatenation of the
+public key and secret key parameter lists: i.e one has to hash the
+concatenatiohn of these 6 canonical encoded lists for RSA, including
+the parenthesis.
+
+ (n #00e0ce9..[some bytes not shown]..51#)
+ (e #010001#)
+ (d #046129F..[some bytes not shown]..81#)
+ (p #00e861b..[some bytes not shown]..f1#)
+ (q #00f7a7c..[some bytes not shown]..61#)
+ (u #304559a..[some bytes not shown]..9b#)
+
+
+After decryption the hash must be recalculated and compared against
+the stored one - If they don't match the integrity of the key is not
+given.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Notes:
+
+[1] I usually use the terms private and secret key exchangeable but prefer the
+term secret key because it can be visually be better distinguished
+from the term public key.
+
+[2] The keygrip is a unique identifier for a key pair, it is
+independent of any protocol, so that the same key can be ised with
+different protocols.  PKCS-15 calls this a subjectKeyHash; it can be
+calculate using Libgcrypt's gcry_pk_get_keygrip().
+
+[3] Even when canonical representation is required we will show the
+S-expression here in a more readable representation.
