@@ -274,7 +274,7 @@ tty_print_utf8_string2( byte *p, size_t n, size_t max_n )
     }
     if( i < n ) {
 	buf = utf8_to_native( p, n, 0 );
-	if( strlen( buf ) > max_n ) {
+	if( max_n && (strlen( buf ) > max_n )) {
 	    buf[max_n] = 0;
 	}
 	/*(utf8 conversion already does the control character quoting)*/
@@ -282,7 +282,7 @@ tty_print_utf8_string2( byte *p, size_t n, size_t max_n )
 	m_free( buf );
     }
     else {
-	if( n > max_n ) {
+	if( max_n && (n > max_n) ) {
 	    n = max_n;
 	}
 	tty_print_string( p, n );
@@ -292,7 +292,7 @@ tty_print_utf8_string2( byte *p, size_t n, size_t max_n )
 void
 tty_print_utf8_string( byte *p, size_t n )
 {
-    tty_print_utf8_string2( p, n, n );
+    tty_print_utf8_string2( p, n, 0 );
 }
 
 

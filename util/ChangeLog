@@ -1,3 +1,10 @@
+2003-02-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* ttyio.c (tty_print_utf8_string, tty_print_utf8_string2): Use 0
+	to indicate a string with no maximum size.  This prevents early
+	truncation of strings that contain control chars which are
+	expanded into \xXX form.
+
 2002-12-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* iobuf.c (iobuf_flush): Only print debug info if debugging is on.
