@@ -690,42 +690,48 @@ default_recipient(void)
     return p;
 }
 
+static int
+expand_id(const char *id,STRLIST *into)
+{
+  struct groupitem *groups;
+  int count=0;
+
+  for(groups=opt.grouplist;groups;groups=groups->next)
+    {
+      /* need strcasecmp() here, as this should be localized */
+      if(strcasecmp(groups->name,id)==0)
+	{
+	  STRLIST each,sl;
+
+	  /* this maintains the current utf8-ness */
+	  for(each=groups->values;each;each=each->next)
+	    {
+	      sl=add_to_strlist(into,each->d);
+	      sl->flags=each->flags;
+	      count++;
+	    }
+
+	  break;
+	}
+    }
+
+  return count;
+}
+
 /* For simplicity, and to avoid potential loops, we only expand once -
    you can't make an alias that points to an alias. */
 static STRLIST
-expand_groups(STRLIST input)
+expand_group(STRLIST input)
 {
   STRLIST sl,output=NULL,rover;
-  struct groupitem *groups;
 
   for(rover=input;rover;rover=rover->next)
-    {
-      for(groups=opt.grouplist;groups;groups=groups->next)
-	{
-	  /* need strcasecmp() here, as this should be localized */
-	  if(strcasecmp(groups->name,rover->d)==0)
-	    {
-	      STRLIST each;
-
-	      /* maintain current utf8-ness */
-	      for(each=groups->values;each;each=each->next)
-		{
-		  sl=add_to_strlist(&output,each->d);
-		  /* maintain the flags from the original */
-		  sl->flags=each->flags;
-		}
-
-	      break;
-	    }
-	}
-
-      /* Didn't find any groups, so use the existing string */
-      if(!groups)
-	{
-	  sl=add_to_strlist(&output,rover->d);
-	  sl->flags=rover->flags;
-	}
-    }
+    if(expand_id(rover->d,&output)==0)
+      {
+	/* Didn't find any groups, so use the existing string */
+	sl=add_to_strlist(&output,rover->d);
+	sl->flags=rover->flags;
+      }
 
   return output;
 }
@@ -741,7 +747,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
     char *def_rec = NULL;
 
     if(opt.grouplist)
-      remusr=expand_groups(rcpts);
+      remusr=expand_group(rcpts);
     else
       remusr=rcpts;
 
@@ -788,6 +794,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
     if( !any_recipients && !opt.batch ) { /* ask */
 	int have_def_rec;
 	char *answer=NULL;
+	STRLIST backlog=NULL;
 
 	def_rec = default_recipient();
 	have_def_rec = !!def_rec;
@@ -801,6 +808,9 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 		answer = def_rec;
 		def_rec = NULL;
 	    }
+	    else if(backlog) {
+	      answer=pop_strlist(&backlog);
+	    }
 	    else {
 		answer = cpr_get_utf8("pklist.user_id.enter",
 			 _("\nEnter the user ID.  End with an empty line: "));
@@ -811,6 +821,8 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	        m_free(answer);
 		break;
 	    }
+	    if(expand_id(answer,&backlog))
+	      continue;
 	    if( pk )
 		free_public_key( pk );
 	    pk = m_alloc_clear( sizeof *pk );

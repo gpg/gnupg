@@ -1,5 +1,10 @@
 2002-06-14  David Shaw  <dshaw@jabberwocky.com>
 
+	* pkclist.c (expand_id, expand_group, build_pk_list): Groups now
+	work properly when used in the "Enter the user ID" prompt.
+
+2002-06-14  David Shaw  <dshaw@jabberwocky.com>
+
 	* keyedit.c (show_key_with_all_names): Display warning if a user
 	tries to show prefs on a v3 key with a v3 selfsig.
 
