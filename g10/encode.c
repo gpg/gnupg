@@ -78,34 +78,37 @@ encode_store( const char *filename )
 }
 
 static void
-encode_sesskey( DEK *dek, DEK **ret_dek, byte *enckey )
+encode_sesskey (DEK * dek, DEK ** ret_dek, byte * enckey)
 {
-#warning This functions needs a review.
-    CIPHER_HANDLE hd;
-    DEK *c;
-    byte buf[33];
+  CIPHER_HANDLE hd;
+  DEK * c;
+  byte buf[33];
 
-    assert ( dek->keylen < 32 );
+  assert (dek->keylen < 32);
     
-    c = xcalloc (1, sizeof *c );
-    c->keylen = dek->keylen;
-    c->algo = dek->algo;
-    make_session_key( c );
-    /*log_hexdump( "thekey", c->key, c->keylen );*/
+  c = xcalloc (1, sizeof *c);
+  c->keylen = dek->keylen;
+  c->algo = dek->algo;
+  make_session_key (c);
+  /*log_hexdump ("thekey", c->key, c->keylen);*/
 
-    buf[0] = c->algo;
-    memcpy( buf + 1, c->key, c->keylen );
+  /* the encrypted session key is prefixed with a one-octet algorithm id */
+  buf[0] = c->algo;
+  memcpy (buf + 1, c->key, c->keylen);
     
+  /* due to the fact that we use only checked values, consider each
+     failure as fatal. */
+  if (gcry_cipher_open (&hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1))
+    BUG();
+  if (gcry_cipher_setkey (hd, dek->key, dek->keylen))
+    BUG();
+  gcry_cipher_setiv (hd, NULL, 0);
+  gcry_cipher_encrypt (hd, buf, c->keylen + 1, NULL, 0);
+  gcry_cipher_close (hd);
 
-    gcry_cipher_open (&hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1 );
-    gcry_cipher_setkey( hd, dek->key, dek->keylen );
-    gcry_cipher_setiv( hd, NULL, 0 );
-    gcry_cipher_encrypt( hd, buf, c->keylen + 1, NULL, 0 );
-    gcry_cipher_close( hd );
-
-    memcpy( enckey, buf, c->keylen + 1 );
-    wipememory( buf, sizeof buf ); /* burn key */
-    *ret_dek = c;
+  memcpy (enckey, buf, c->keylen + 1);
+  wipememory (buf, sizeof buf); /* burn key */
+  *ret_dek = c;
 }
 
 /* We try very hard to use a MDC */

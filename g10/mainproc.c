@@ -239,37 +239,42 @@ add_signature( CTX c, PACKET *pkt )
 }
 
 static void
-symkey_decrypt_sesskey( DEK *dek, byte *sesskey, size_t slen )
+symkey_decrypt_sesskey (DEK * dek, byte *sesskey, size_t slen)
 {
-    CIPHER_HANDLE hd;
-    int n;
+  CIPHER_HANDLE hd;
+  int n;
 
-    if ( slen < 17 || slen > 33 ) {
-        log_error ( _("weird size for an encrypted session key (%d)\n"),
-		    (int)slen);
-        return;   
+  if (slen < 17 || slen > 33)
+    {
+      log_error ( _("weird size for an encrypted session key (%d)\n"),
+                  (int)slen);
+      return;
     }
-    gcry_cipher_open ( &hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1 );
-    gcry_cipher_setkey( hd, dek->key, dek->keylen );
-    gcry_cipher_setiv( hd, NULL, 0 );
-    gcry_cipher_decrypt( hd, sesskey, slen, NULL, 0);
-    gcry_cipher_close( hd );
-    /* check first byte (the cipher algo) */
-    if ( sesskey[0] > 10 ) {
-        log_error ( _("invalid symkey algorithm detected (%d)\n"),
-                    sesskey[0] );
-        return;
+  /* we checked the DEK values before, so consider all errors as fatal */
+  if (gcry_cipher_open (&hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1))
+      BUG();
+  if (gcry_cipher_setkey (hd, dek->key, dek->keylen))
+      BUG();
+  gcry_cipher_setiv (hd, NULL, 0);
+  gcry_cipher_decrypt (hd, sesskey, slen, NULL, 0);
+  gcry_cipher_close (hd);
+  /* check first byte (the cipher algo) */
+  if (openpgp_cipher_test_algo (sesskey[0]))
+    {
+      log_error (_("invalid symkey algorithm detected (%d)\n"),
+                  sesskey[0]);
+      return;
     }
-    n = gcry_cipher_get_algo_keylen (sesskey[0]);
-    if (n > DIM(dek->key))
-         BUG ();
-    /* now we replace the dek components with the real session key
-       to decrypt the contents of the sequencing packet. */
-    dek->keylen = gcry_cipher_get_algo_keylen (sesskey[0]);
-    dek->algo = sesskey[0];
-    memcpy (dek->key, sesskey + 1, dek->keylen);
-    /*log_hexdump( "thekey", dek->key, dek->keylen );*/
-}   
+  n = gcry_cipher_get_algo_keylen (sesskey[0]);
+  if (n > DIM(dek->key))
+    BUG ();
+  /* now we replace the dek components with the real session key
+     to decrypt the contents of the sequencing packet. */
+  dek->keylen = n;
+  dek->algo = sesskey[0];
+  memcpy (dek->key, sesskey + 1, dek->keylen);
+  /*log_hexdump ("thekey", dek->key, dek->keylen);*/
+}
 
 static void
 proc_symkey_enc( CTX c, PACKET *pkt )
