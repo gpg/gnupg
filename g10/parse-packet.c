@@ -739,9 +739,6 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	    printf("key expires after %s",
 				    strtimevalue( buffer_to_u32(buffer) ) );
 	break;
-      case SIGSUBPKT_ARR:
-	p = "additional recipient request";
-	break;
       case SIGSUBPKT_PREF_SYM:
 	fputs("pref-sym-algos:", stdout );
 	for( i=0; i < length; i++ )
@@ -817,12 +814,22 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	p = "signer's user ID";
 	break;
       case SIGSUBPKT_REVOC_REASON:
-	if( length ) {
+        if( length ) {
 	    printf("revocation reason 0x%02x (", *buffer );
 	    print_string( stdout, buffer+1, length-1, ')' );
 	    p = ")";
 	}
 	break;
+      case SIGSUBPKT_ARR:
+        fputs("Big Brother's key (ignored): ", stdout );
+	if( length < 22 )
+	    p = "[too short]";
+	else {
+	    printf("c=%02x a=%d f=", buffer[0], buffer[1] );
+	    for( i=2; i < length; i++ )
+		printf("%02X", buffer[i] );
+	}
+        break;
       case SIGSUBPKT_PRIV_ADD_SIG:
 	p = "signs additional user ID";
 	break;

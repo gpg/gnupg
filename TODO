@@ -1,8 +1,6 @@
 
   * configure option to set EGD entropy socket name
    
-  * handle --output /dev/null
-
   * Don't get the ultimately trusted keys from the secring but store
     it permanently in the trustdb.  This way we don't need a secring at all.
 
@@ -80,4 +78,6 @@ Nice to have
     trustdb.
   * Evaluate whether it make sense to replace the namehashs either by
     using the user ID directly or by using pointers into the trustdb.
+
+
 

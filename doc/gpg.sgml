@@ -1060,8 +1060,8 @@ for conventional encryption.
 <term>--compress-algo &ParmN;</term>
 <listitem><para>
 Use compress algorithm	&ParmN;. Default is 2 which is
-RFC1950 compression. You may use 1 to use the old zlib
-version which is used by PGP. The default algorithm may
+RFC1950 compression. You may use 1 to use the old zlib 
+version (RFC1951) which is used by PGP. The default algorithm may
 give better results because the window size is not limited
 to 8K. If this is not used the OpenPGP behavior is used,
 i.e. the compression algorithm is selected from the

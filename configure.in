@@ -49,6 +49,10 @@ case "$use_static_rnd" in
       ;;
 esac
 
+AC_ARG_WITH(egd-socket,
+    [  --with-egd-socket=NAME  Use NAME for the EGD socket)],
+            egd_socket_name="$withval", egd_socket_name="" )
+AC_DEFINE_UNQUOTED(EGD_SOCKET_NAME, "$egd_socket_name")
 
 
 dnl
@@ -262,6 +266,12 @@ case "${target}" in
         DYNLINK_MOD_CFLAGS="-shared -rdynamic -fpic -Wl,-Bshareable -Wl,-x"
         ;;
 
+    *-solaris*)
+        NAME_OF_DEV_RANDOM="/dev/random"
+        NAME_OF_DEV_URANDOM="/dev/random"
+        DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"
+        ;;
+
     *)
         NAME_OF_DEV_RANDOM="/dev/random"
         NAME_OF_DEV_URANDOM="/dev/urandom"
@@ -442,7 +452,7 @@ dnl check whether we have a random device
 dnl
 if test "$try_dev_random" = yes ; then
     AC_CACHE_CHECK(for random device, ac_cv_have_dev_random,
-    [if test -c "$NAME_OF_DEV_RANDOM" && test -c "$NAME_OF_DEV_URANDOM" ; then
+    [if test -r "$NAME_OF_DEV_RANDOM" && test -r "$NAME_OF_DEV_URANDOM" ; then
       ac_cv_have_dev_random=yes; else ac_cv_have_dev_random=no; fi])
     if test "$ac_cv_have_dev_random" = yes; then
         AC_DEFINE(HAVE_DEV_RANDOM)

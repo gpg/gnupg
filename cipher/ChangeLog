@@ -1,3 +1,10 @@
+Fri Aug 25 16:05:38 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * rndlinux.c (open_device): Loose random device checking.
+        By Nils Ellmenreich.
+
+        * rndegd.c (gather_random): Name of socket is nom configurable.
+
 Wed Jun 28 11:54:44 CEST 2000  Werner Koch  <wk@>
 
   * rsa.c, rsa.h: New based on the old module version (only in CVS for now).

@@ -70,6 +70,11 @@ overwrite_filep( const char *fname )
     if( access( fname, F_OK ) )
 	return 1; /* does not exist */
 
+#ifndef HAVE_DOSISH_SYSTEM
+    if ( !strcmp ( fname, "/dev/null" ) )
+        return 1; /* does not do any harm */
+#endif
+
     /* fixme: add some backup stuff in case of overwrite */
     if( opt.answer_yes )
 	return 1;
@@ -103,6 +108,11 @@ make_outfile_name( const char *iname )
 		   || !CMP_FILENAME(iname+n-4,".asc") ) ) {
 	char *buf = m_strdup( iname );
 	buf[n-4] = 0;
+	return buf;
+    }
+    else if( n > 5 && !CMP_FILENAME(iname+n-5,".sign") ) {
+	char *buf = m_strdup( iname );
+	buf[n-5] = 0;
 	return buf;
     }
 
@@ -241,7 +251,8 @@ open_sigfile( const char *iname )
     if( iname && !(*iname == '-' && !iname[1]) ) {
 	len = strlen(iname);
 	if( len > 4 && ( !strcmp(iname + len - 4, ".sig")
-			|| !strcmp(iname + len - 4, ".asc")) ) {
+                        || ( len > 5 && !strcmp(iname + len - 5, ".sign") )
+                        || !strcmp(iname + len - 4, ".asc")) ) {
 	    char *buf;
 	    buf = m_strdup(iname);
 	    buf[len-4] = 0 ;
@@ -320,4 +331,7 @@ try_make_homedir( const char *fname )
 	g10_exit(1);
     }
 }
+
+
+
 

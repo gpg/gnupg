@@ -18,6 +18,15 @@ Configure options for GNUPG
 		      none - Do not linkl any module in but rely on
 			     a dynmically loaded modules.
 
+--with-egd-socket=<name>  This is only used when EGD is used as random
+                     gatherer. GnuPG uses by default "~/.gnupg/entropy"
+                     as the socket to connect EGD.  Using this option the
+                     socket name can be changed.  You may use any filename
+                     here with 2 exceptions:  a filename starting with
+                     "~/" uses the socket in the homedirectory of the user
+                     and one starting with a "=" uses a socket in the
+                     GnuPG homedirectory which is bye default "~/.gnupg".
+   
 --with-included-zlib Forces usage of the local zlib sources. Default is
 		     to use the (shared) library of the system.
 

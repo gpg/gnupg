@@ -72,6 +72,9 @@
 /* Linux has an ioctl */
 #undef HAVE_DEV_RANDOM_IOCTL
 
+/* see cipher/rndegd.c */
+#undef EGD_SOCKET_NAME
+
 
 #undef USE_DYNAMIC_LINKING
 #undef HAVE_DL_DLOPEN

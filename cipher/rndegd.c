@@ -114,13 +114,28 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 	}
     }
     if( fd == -1 ) {
-	char *name = make_filename( g10_opt_homedir, "entropy", NULL );
+        const char *bname = NULL;
+	char *name;
 	struct sockaddr_un addr;
 	int addr_len;
+      
+      #ifdef EGD_SOCKET_NAME
+        bname = EGD_SOCKET_NAME;
+      #endif
+        if ( !bname || !*bname )
+            bname = "entropy";
+
+        if ( *bname == '=' && bname[1] )
+            name = make_filename( g10_opt_homedir, bname+1 , NULL );
+        else
+            name = make_filename( bname , NULL );
+
+        if ( strlen(name)+1 >= sizeof addr.sun_path ) 
+            g10_log_fatal ("EGD socketname is too long\n");
 
 	memset( &addr, 0, sizeof addr );
 	addr.sun_family = AF_UNIX;
-	strcpy( addr.sun_path, name );	  /* fixme: check that it is long enough */
+	strcpy( addr.sun_path, name );	  
 	addr_len = offsetof( struct sockaddr_un, sun_path )
 		   + strlen( addr.sun_path );
 
