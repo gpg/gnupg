@@ -250,7 +250,7 @@ Section /o "Source" SecSource
   File "libiconv-${LIBICONV_VERSION}.tar"
 
 !ifdef WITH_WINPT
-  File "winpt-$(WINPT_VERSION}.tar"
+  File "winpt-${WINPT_VERSION}.tar"
 !endif ; WITH_WINPT
 
 SectionEnd ; Section Source
@@ -399,7 +399,7 @@ Section "Uninstall"
 
   Delete "$INSTDIR\Src\gnupg-${VERSION}.tar"
   Delete "$INSTDIR\Src\libiconv-${LIBICONV_VERSION}.tar"
-  Delete "$INSTDIR\Src\winpt-$(WINPT_VERSION}.tar"
+  Delete "$INSTDIR\Src\winpt-${WINPT_VERSION}.tar"
   Delete "$INSTDIR\Src\*.diff"
 
   Delete "$INSTDIR\uninst-gnupg.exe"

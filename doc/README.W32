@@ -23,7 +23,7 @@ Below the Installation directory, you will find directories named
 "Doc", "gnupg.nls" and "Src".  The latter will be used for distributed
 patched, if any, and to store the source file if they have been
 included in this package.  The source files usually require further
-unpacking using a the TAR utility.
+unpacking using the TAR utility.
 
 
 Internationalization support:

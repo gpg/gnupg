@@ -286,11 +286,11 @@ if [ -n "$topdir" ]; then
 
   # Now run the installer
   echo "invoking installer as:"
-  echo makensis  -nocd -DVERSION="${version}" \
+  echo makensis -v0  -nocd -DVERSION="${version}" \
            -DPROD_VERSION="${prod_version}" \
            -DGNUPG_SRCDIR="${srcdir}" ${winpt_defs} ${src_defs} \
            ${patches_defs} ${srcdir}/scripts/w32installer.nsi
-  BUILDINFO=$buildinfo makensis  -nocd -DVERSION="${version}" \
+  BUILDINFO=$buildinfo makensis -v0 -nocd -DVERSION="${version}" \
            -DPROD_VERSION="${prod_version}" \
            -DGNUPG_SRCDIR="${srcdir}" ${winpt_defs} ${src_defs} \
            ${patches_defs} ${srcdir}/scripts/w32installer.nsi

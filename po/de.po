@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: gnupg-1.4.1\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
 "POT-Creation-Date: 2005-03-15 16:35+0100\n"
-"PO-Revision-Date: 2005-03-15 16:41+0100\n"
+"PO-Revision-Date: 2005-03-30 10:45+0200\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -177,7 +177,7 @@ msgstr "|A|Admin-PIN"
 
 #: g10/app-openpgp.c:1018
 msgid "|AN|New Admin PIN"
-msgstr "AN|Neue Admin-PIN"
+msgstr "|AN|Neue Admin-PIN"
 
 #: g10/app-openpgp.c:1018
 msgid "|N|New PIN"
