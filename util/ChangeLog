@@ -1,3 +1,12 @@
+2003-06-07  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.c (check_special_filename): Replaced is isdigit by digitp
+	to avoid passing negative values and potential locale problems.
+	Problem noted by Christian Biere.
+	* strgutil.c (strlwr,strcasecmp,strncasecmp): Make sure we don't
+	pass a negative value.
+	* miscutil.c (scan_isodatestr): Ditto.
+
 2003-05-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* argparse.c, dotlock.c, fileutil.c, iobuf.c, miscutil.c,
@@ -1034,7 +1043,7 @@ Fri Feb 13 15:14:13 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 
 
- Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ Copyright 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
@@ -1043,5 +1052,3 @@ Fri Feb 13 15:14:13 1998  Werner Koch  (wk@isil.d.shuttle.de)
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-

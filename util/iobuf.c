@@ -1032,7 +1032,7 @@ check_special_filename ( const char *fname )
         int i;
 
         fname += 2;
-        for (i=0; isdigit (fname[i]); i++ )
+        for (i=0; digitp (fname+i); i++ )
             ;
         if ( !fname[i] ) 
             return atoi (fname);

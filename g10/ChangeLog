@@ -1,3 +1,16 @@
+2003-06-07  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (add_notation_data): Make sure that only ascii is passed
+	to iscntrl.  Noted by Christian Biere.
+	* getkey.c (classify_user_id2): Replaced isspace by spacep
+	* keygen.c (keygen_set_std_prefs): Likewise. Also for isdigit.
+	(ask_user_id): Ditto.
+	(get_parameter_algo): Ditto.
+	* keyedit.c (keyedit_menu): Ditto.
+	* tdbdump.c (import_ownertrust): Ditto.  s/isxdigit/hexdigitp/.
+	* revoke.c (ask_revocation_reason): 
+	* keyserver.c (keyserver_spawn): Dito.
+
 2003-06-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.skel: Use new hkp://subkeys.pgp.net as sample keyserver

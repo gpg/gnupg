@@ -189,7 +189,7 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
 	  ch=opt.keyserver_port;
 	  while(*ch!='\0')
 	    {
-	      if(!isdigit(*ch))
+	      if(!digitp(ch))
 		return G10ERR_BAD_URI;
 
 	      ch++;
@@ -569,7 +569,7 @@ keyserver_spawn(int action,STRLIST list,
 
       /* remove trailing whitespace */
       plen=strlen(ptr);
-      while(plen>0 && isspace(ptr[plen-1]))
+      while(plen>0 && spacep(ptr+plen-1))
 	plen--;
       plen[ptr]='\0';
 

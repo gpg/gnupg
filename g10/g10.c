@@ -2876,13 +2876,13 @@ add_notation_data( const char *string, int which )
     /* we only support printable text - therefore we enforce the use
      * of only printable characters (an empty value is valid) */
     for( s++; *s ; s++ ) {
-	if( iscntrl(*s) ) {
+	if ((*s & 0x80))
+          highbit = 1;
+	else if (iscntrl(*s)) {
 	    log_error(_("a notation value must not use "
 			"any control characters\n") );
 	    return;
 	}
-	else if( *s & 0x80 )
-	    highbit = 1;
     }
 
     if( highbit )   /* must use UTF8 encoding */

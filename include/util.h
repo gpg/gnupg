@@ -260,6 +260,13 @@ int vasprintf ( char **result, const char *format, va_list args);
 #define wipememory2(_ptr,_set,_len) do { volatile char *_vptr=(volatile char *)(_ptr); size_t _vlen=(_len); while(_vlen) { *_vptr=(_set); _vptr++; _vlen--; } } while(0)
 #define wipememory(_ptr,_len) wipememory2(_ptr,0,_len)
 
+/*-- macros to replace ctype ones and avoid locale problems --*/
+#define spacep(p)   (*(p) == ' ' || *(p) == '\t')
+#define digitp(p)   (*(p) >= '0' && *(p) <= '9')
+#define hexdigitp(a) (digitp (a)                     \
+                      || (*(a) >= 'A' && *(a) <= 'F')  \
+                      || (*(a) >= 'a' && *(a) <= 'f'))
+
 /******* RISC OS stuff ***********/
 #ifdef __riscos__
 /* needed for strcasecmp() */

@@ -244,17 +244,17 @@ keygen_set_std_prefs (const char *string,int personal)
         string = "";
 
     for (s=string; *s; s = s2) {
-        if ((*s=='s' || *s == 'S') && isdigit(s[1]) ) {
+        if ((*s=='s' || *s == 'S') && digitp (s+1) ) {
             val = strtoul (++s, (char**)&s2, 10);
             if (set_one_pref (val, 'S', check_cipher_algo, sym, &nsym))
                 rc = -1;
         }
-        else if ((*s=='h' || *s == 'H') && isdigit(s[1]) ) {
+        else if ((*s=='h' || *s == 'H') && digitp (s+1) ) {
             val = strtoul (++s, (char**)&s2, 10);
             if (set_one_pref (val, 'H', check_digest_algo, hash, &nhash))
                 rc = -1;
         }
-        else if ((*s=='z' || *s == 'Z') && isdigit(s[1]) ) {
+        else if ((*s=='z' || *s == 'Z') && digitp (s+1) ) {
             val = strtoul (++s, (char**)&s2, 10);
             if (set_one_pref (val, 'Z', check_compress_algo, zip, &nzip))
                 rc = -1;
@@ -267,7 +267,7 @@ keygen_set_std_prefs (const char *string,int personal)
 	  mdc=0;
 	  s2=s+6;
 	}
-        else if (isspace (*s))
+        else if (spacep (s))
             s2 = s+1;
         else {
             log_info (_("invalid character in preference string\n"));
@@ -915,10 +915,10 @@ gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 static int
 check_valid_days( const char *s )
 {
-    if( !isdigit(*s) )
+    if( !digitp(s) )
 	return 0;
     for( s++; *s; s++)
-	if( !isdigit(*s) )
+	if( !digitp(s) )
 	    break;
     if( !*s )
 	return 1;
@@ -1252,7 +1252,7 @@ ask_user_id( int mode )
 
 		if( strpbrk( aname, "<>" ) )
 		    tty_printf(_("Invalid character in name\n"));
-		else if( isdigit(*aname) )
+		else if( digitp(aname) )
 		    tty_printf(_("Name may not start with a digit\n"));
 		else if( strlen(aname) < 5 )
 		    tty_printf(_("Name must be at least 5 characters long\n"));
@@ -1522,7 +1522,7 @@ get_parameter_algo( struct para_data_s *para, enum para_name key )
     struct para_data_s *r = get_parameter( para, key );
     if( !r )
 	return -1;
-    if( isdigit( *r->u.value ) )
+    if( digitp( r->u.value ) )
 	i = atoi( r->u.value );
     else
         i = string_to_pubkey_algo( r->u.value );

@@ -1100,7 +1100,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    cmd = cmdLIST;
 	else if( *answer == CONTROL_D )
 	    cmd = cmdQUIT;
-	else if( isdigit( *answer ) ) {
+	else if( digitp(answer ) ) {
 	    cmd = cmdSELUID;
 	    arg_number = atoi(answer);
 	}
