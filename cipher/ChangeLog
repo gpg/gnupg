@@ -1,3 +1,8 @@
+2002-10-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* tiger.c (tiger_get_info): Select the OID to use for TIGER at
+	compile time.
+
 2002-09-26  Werner Koch  <wk@gnupg.org>
 
 	* tiger.c (tiger_get_info): Use a regular OID.  Note that this
