@@ -1,3 +1,8 @@
+2002-09-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (check permissions): Back out previous change - some
+	translations already done for 1.2.
+
 2002-09-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (check_permissions): Rearrange strings to make translating
