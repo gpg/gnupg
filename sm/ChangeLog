@@ -2,6 +2,9 @@
 
 	* import.c (check_and_store): Do not update the stats for hidden
 	imports of issuer certs.
+	(popen_protect_tool): Request statusmessages from the protect-tool.
+	(parse_p12): Detect status messages. Add new arg STATS and update them.
+	(print_imported_summary): Include secret key stats.
 
 2004-04-28  Werner Koch  <wk@gnupg.org>
 

@@ -1,5 +1,9 @@
 2004-04-30  Werner Koch  <wk@gnupg.org>
 
+	* protect-tool.c: New option --enable-status-msg.
+	(store_private_key): Print status messages for imported keys.
+	(read_and_unprotect): Ditto for bad passphrase.
+
 	* gpg-agent.c (parse_rereadable_options): New arg REREAD.  Allow
 	changing oLogFile.
 	(current_logfile): New.

@@ -58,6 +58,7 @@ enum cmd_and_opt_values
   oNoFailOnExist,
   oHomedir,
   oPrompt,
+  oStatusMsg, 
 
 aTest };
 
@@ -80,6 +81,7 @@ static int opt_no_fail_on_exist;
 static int opt_have_cert;
 static const char *opt_passphrase;
 static char *opt_prompt;
+static int opt_status_msg;
 
 static char *get_passphrase (int promptno);
 static void release_passphrase (char *pw);
@@ -108,6 +110,7 @@ static ARGPARSE_OPTS opts[] = {
   { oNoFailOnExist, "no-fail-on-exist", 0, "@" },
   { oHomedir, "homedir", 2, "@" }, 
   { oPrompt,  "prompt", 2, "|ESCSTRING|use ESCSTRING as prompt in pinentry"}, 
+  { oStatusMsg, "enable-status-msg", 0, "@"},
   {0}
 };
 
@@ -384,6 +387,8 @@ read_and_unprotect (const char *fname)
   xfree (key);
   if (rc)
     {
+      if (opt_status_msg)
+        log_info ("[PROTECT-TOOL:] bad-passphrase\n");
       log_error ("unprotecting the key failed: %s\n", gpg_strerror (rc));
       return;
     }
@@ -1076,6 +1081,7 @@ main (int argc, char **argv )
         case oNoFailOnExist: opt_no_fail_on_exist = 1; break;
         case oHaveCert: opt_have_cert = 1; break;
         case oPrompt: opt_prompt = pargs.r.ret_str; break;
+        case oStatusMsg: opt_status_msg = 1; break;
           
         default : pargs.err = 2; break;
 	}
@@ -1185,6 +1191,8 @@ store_private_key (const unsigned char *grip,
     {
       if (!access (fname, F_OK))
       {
+        if (opt_status_msg)
+          log_info ("[PROTECT-TOOL:] secretkey-exists\n");
         if (opt_no_fail_on_exist)
           log_info ("secret key file `%s' already exists\n", fname);
         else
@@ -1220,6 +1228,9 @@ store_private_key (const unsigned char *grip,
       return -1;
     }
   log_info ("secret key stored as `%s'\n", fname);
+
+  if (opt_status_msg)
+    log_info ("[PROTECT-TOOL:] secretkey-stored\n");
 
   xfree (fname);
   return 0;

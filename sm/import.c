@@ -49,10 +49,14 @@ struct stats_s {
   unsigned long imported;
   unsigned long unchanged;
   unsigned long not_imported;
-};
+  unsigned long secret_read;
+  unsigned long secret_imported;
+  unsigned long secret_dups;
+ };
 
 
-static gpg_error_t parse_p12 (ksba_reader_t reader, FILE **retfp);
+static gpg_error_t parse_p12 (ksba_reader_t reader, FILE **retfp,
+                              struct stats_s *stats);
 
 
 
@@ -119,16 +123,32 @@ print_imported_summary (CTRL ctrl, struct stats_s *stats)
 	}
       if (stats->unchanged)
         log_info (_("             unchanged: %lu\n"), stats->unchanged);
+      if (stats->secret_read)
+        log_info (_("      secret keys read: %lu\n"), stats->secret_read );
+      if (stats->secret_imported)
+        log_info (_("  secret keys imported: %lu\n"), stats->secret_imported );
+      if (stats->secret_dups)
+        log_info (_(" secret keys unchanged: %lu\n"), stats->secret_dups );
       if (stats->not_imported)
         log_info (_("          not imported: %lu\n"), stats->not_imported);
     }
 
-  sprintf (buf, "%lu 0 %lu 0 %lu 0 0 0 0 0 0 0 0 %lu",
-           stats->count,
-           stats->imported,
-           stats->unchanged,
-           stats->not_imported
-           );
+  sprintf(buf, "%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
+          stats->count,
+          0l /*stats->no_user_id*/,
+          stats->imported,
+          0l /*stats->imported_rsa*/,
+          stats->unchanged,
+          0l /*stats->n_uids*/,
+          0l /*stats->n_subk*/,
+          0l /*stats->n_sigs*/,
+          0l /*stats->n_revoc*/,
+          stats->secret_read,
+          stats->secret_imported,
+          stats->secret_dups,
+          0l /*stats->skipped_new_keys*/,
+          stats->not_imported
+          );
   gpgsm_status (ctrl, STATUS_IMPORT_RES, buf);
 }
 
@@ -315,7 +335,7 @@ import_one (CTRL ctrl, struct stats_s *stats, int in_fd)
           Base64Context b64p12rdr;
           ksba_reader_t p12rdr;
           
-          rc = parse_p12 (reader, &certfp);
+          rc = parse_p12 (reader, &certfp, stats);
           if (!rc)
             {
               any = 1;
@@ -512,6 +532,7 @@ popen_protect_tool (const char *pgmname,
               "--p12-import",
               "--store", 
               "--no-fail-on-exist",
+              "--enable-status-msg",
               "--",
               NULL);
       /* No way to print anything, as we have closed all streams. */
@@ -540,7 +561,7 @@ popen_protect_tool (const char *pgmname,
    certificates. On success RETFP returns a temporary file with
    certificates. */
 static gpg_error_t
-parse_p12 (ksba_reader_t reader, FILE **retfp)
+parse_p12 (ksba_reader_t reader, FILE **retfp, struct stats_s *stats)
 {
   const char *pgmname;
   gpg_error_t err = 0, child_err = 0;
@@ -613,13 +634,39 @@ parse_p12 (ksba_reader_t reader, FILE **retfp)
          protect tool to figure out better error codes for
          CHILD_ERR. */
       buffer[pos++] = c;
-      if (pos >= 5 /*sizeof buffer - 1*/ || c == '\n')
+      if (pos >= sizeof buffer - 5 || c == '\n')
         {
           buffer[pos - (c == '\n')] = 0;
           if (cont_line)
             log_printf ("%s", buffer);
           else
-            log_info ("%s", buffer);
+            {
+              if (!strncmp (buffer, "gpg-protect-tool: [PROTECT-TOOL:] ",34))
+                {
+                  char *p, *pend;
+
+                  p = buffer + 34;
+                  pend = strchr (p, ' ');
+                  if (pend)
+                    *pend = 0;
+                  if ( !strcmp (p, "secretkey-stored"))
+                    {
+                      stats->count++;
+                      stats->secret_read++;
+                      stats->secret_imported++;
+                    }
+                  else if ( !strcmp (p, "secretkey-exists"))
+                    {
+                      stats->count++;
+                      stats->secret_read++;
+                      stats->secret_dups++;
+                    }
+                  else if ( !strcmp (p, "bad-passphrase"))
+                    ;
+                }
+              else
+                log_info ("%s", buffer);
+            }
           pos = 0;
           cont_line = (c != '\n');
         }
