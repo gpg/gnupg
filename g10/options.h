@@ -66,7 +66,7 @@ struct {
     int rfc1991;
     int rfc2440;
     int pgp2_workarounds;
-    unsigned emulate_bugs; /* bug emulation flags EMUBUG_xxxx */
+    unsigned int emulate_bugs; /* bug emulation flags EMUBUG_xxxx */
     int shm_coprocess;
     const char *set_filename;
     const char *comment_string;
@@ -95,6 +95,7 @@ struct {
 
 #define EMUBUG_GPGCHKSUM  1
 #define EMUBUG_3DESS2K	  2
+#define EMUBUG_MDENCODE   4
 
 #define DBG_PACKET_VALUE  1	/* debug packet reading/writing */
 #define DBG_MPI_VALUE	  2	/* debug mpi details */

@@ -374,13 +374,24 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
     md_final( digest );
 
     result = encode_md_value( pk->pubkey_algo, digest, sig->digest_algo,
-				      mpi_get_nbits(pk->pkey[0]));
-
+			      mpi_get_nbits(pk->pkey[0]), (sig->version < 4) );
     ctx.sig = sig;
     ctx.md = digest;
     rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
 			cmp_help, &ctx );
     mpi_free( result );
+    if( (opt.emulate_bugs & EMUBUG_MDENCODE)
+	&& rc == G10ERR_BAD_SIGN && is_ELGAMAL(pk->pubkey_algo) ) {
+	/* In this case we try again because old GnuPG versions didn't encode
+	 * the hash right. There is no problem with DSA here  */
+	result = encode_md_value( pk->pubkey_algo, digest, sig->digest_algo,
+				  mpi_get_nbits(pk->pkey[0]), (sig->version < 4) );
+	ctx.sig = sig;
+	ctx.md = digest;
+	rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
+			    cmp_help, &ctx );
+    }
+
     if( !rc && sig->flags.unknown_critical ) {
 	log_info(_("assuming bad signature due to an unknown critical bit\n"));
 	rc = G10ERR_BAD_SIGN;
@@ -518,7 +529,6 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 
 	    keyid_from_pk( pk, keyid );
 	    md = md_open( algo, 0 );
-	    md_start_debug( md, "rsa" );
 	    hash_public_key( md, pk );
 	    hash_uid_node( unode, md, sig );
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
@@ -526,8 +536,9 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 		    *is_selfsig = 1;
 		rc = do_check( pk, sig, md, r_expired );
 	    }
-	    else
+	    else {
 		rc = do_signature_check( sig, md, r_expiredate, r_expired );
+	    }
 	    md_close(md);
 	}
 	else {

@@ -109,7 +109,7 @@ void try_make_homedir( const char *fname );
 void make_session_key( DEK *dek );
 MPI encode_session_key( DEK *dek, unsigned nbits );
 MPI encode_md_value( int pubkey_algo,  MD_HANDLE md,
-		     int hash_algo, unsigned nbits );
+		     int hash_algo, unsigned nbits, int v3compathack );
 
 /*-- comment.c --*/
 KBNODE make_comment_node( const char *s );

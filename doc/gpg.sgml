@@ -1312,6 +1312,15 @@ This is not for normal use.  Use the source to see for what it might be useful.
 This is not for normal use.  Use the source to see for what it might be useful.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--emulate-md-encode-bug</term>
+<listitem><para>
+GnuPG versions prior to 1.0.2 had a bug in the way a signature was encode.
+This options enables a workaround by checking faulty signatures again with
+the encoding used in old versions.  This may only happen for ElGamal signatures
+which are not widely used.
+</para></listitem></varlistentry>
+
 
 </variablelist>
 </refsect1>

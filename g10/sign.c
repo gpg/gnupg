@@ -128,7 +128,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     sig->digest_start[0] = dp[0];
     sig->digest_start[1] = dp[1];
     frame = encode_md_value( sk->pubkey_algo, md,
-			     digest_algo, mpi_get_nbits(sk->skey[0]));
+			     digest_algo, mpi_get_nbits(sk->skey[0]), 0 );
     rc = pubkey_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
     mpi_free(frame);
     if( rc )

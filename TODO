@@ -12,6 +12,8 @@
 
   * Replace Valid/Invalid by Known/Unknown?
 
+  * Add an option to disable automatic key retrieve while verifing
+    signatures.
 
 Scheduled for 1.1
 -----------------

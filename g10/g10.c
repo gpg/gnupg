@@ -187,6 +187,7 @@ enum cmd_and_opt_values { aNull = 0,
     oIgnoreTimeConflict,
     oNoRandomSeedFile,
     oEmu3DESS2KBug,  /* will be removed in 1.1 */
+    oEmuMDEncodeBug,
 aTest };
 
 
@@ -367,6 +368,7 @@ static ARGPARSE_OPTS opts[] = {
     { oIgnoreTimeConflict, "ignore-time-conflict", 0, "@" },
     { oNoRandomSeedFile,  "no-random-seed-file", 0, "@" },
     { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
+    { oEmuMDEncodeBug,	"emulate-md-encode-bug", 0, "@"},
 {0} };
 
 
@@ -843,6 +845,7 @@ main( int argc, char **argv )
 	    break;
 	  case oEmuChecksumBug: opt.emulate_bugs |= EMUBUG_GPGCHKSUM; break;
 	  case oEmu3DESS2KBug:	opt.emulate_bugs |= EMUBUG_3DESS2K; break;
+	  case oEmuMDEncodeBug: opt.emulate_bugs |= EMUBUG_MDENCODE; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRunAsShmCP:
 	  #ifndef USE_SHM_COPROCESSING

@@ -142,7 +142,7 @@ encode_session_key( DEK *dek, unsigned nbits )
 
 static MPI
 do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
-				   const byte *asn, size_t asnlen )
+	      const byte *asn, size_t asnlen, int v3compathack )
 {
     int nframe = (nbits+7) / 8;
     byte *frame;
@@ -162,7 +162,7 @@ do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
     frame = md_is_secure(md)? m_alloc_secure( nframe ) : m_alloc( nframe );
     n = 0;
     frame[n++] = 0;
-    frame[n++] = algo;
+    frame[n++] = v3compathack? algo : 1; /* block type */
     i = nframe - len - asnlen -3 ;
     assert( i > 1 );
     memset( frame+n, 0xff, i ); n += i;
@@ -179,8 +179,15 @@ do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
 }
 
 
+/****************
+ * Encode a message digest into an MPI.
+ * v3compathack is used to work around a bug in old GnuPG versions
+ * which did put the algo identifier inseatd of the block type 1 into
+ * the encoded value.  setting this vare force the old behaviour.
+ */
 MPI
-encode_md_value( int pubkey_algo, MD_HANDLE md, int hash_algo, unsigned nbits )
+encode_md_value( int pubkey_algo, MD_HANDLE md, int hash_algo,
+		 unsigned nbits, int v3compathack )
 {
     int algo = hash_algo? hash_algo : md_get_algo(md);
     const byte *asn;
@@ -197,7 +204,7 @@ encode_md_value( int pubkey_algo, MD_HANDLE md, int hash_algo, unsigned nbits )
     }
     else {
        asn = md_asn_oid( algo, &asnlen, &mdlen );
-       frame = do_encode_md( md, algo, mdlen, nbits, asn, asnlen );
+       frame = do_encode_md( md, algo, mdlen, nbits, asn, asnlen, v3compathack);
     }
     return frame;
 }

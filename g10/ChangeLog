@@ -1,3 +1,10 @@
+Mon Jun  5 23:41:54 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * seskey.c (do_encode_md, encode_md_value): Add new arg v3compathack to work
+  around a bug in old versions.
+  * sig-check.c (do_check): use the aboved workaround when enabled.
+  * g10.c: New option --emulate-md-decode-bug
+
 Mon Jun  5 12:37:43 CEST 2000  Werner Koch  <wk@openit.de>
 
   * build-packet.c (do_mdc): New.
