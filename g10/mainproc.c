@@ -619,11 +619,14 @@ proc_compressed( CTX c, PACKET *pkt )
  * Returns: 0 = valid signature or an error code
  */
 static int
-do_check_sig( CTX c, KBNODE node, int *is_selfsig )
+do_check_sig( CTX c, KBNODE node, int *is_selfsig, int *is_expkey )
 {
     PKT_signature *sig;
     MD_HANDLE md = NULL, md2 = NULL;
-    int algo, rc;
+    int algo, rc, dummy, dum2;
+
+    if(!is_expkey)
+      is_expkey=&dum2;
 
     assert( node->pkt->pkttype == PKT_SIGNATURE );
     if( is_selfsig )
@@ -677,9 +680,9 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig )
     }
     else
 	return G10ERR_SIG_CLASS;
-    rc = signature_check( sig, md );
+    rc = signature_check2( sig, md, &dummy, is_expkey );
     if( rc == G10ERR_BAD_SIGN && md2 )
-	rc = signature_check( sig, md2 );
+	rc = signature_check2( sig, md2, &dummy, is_expkey );
     md_close(md);
     md_close(md2);
 
@@ -939,7 +942,7 @@ list_node( CTX c, KBNODE node )
 	    fputs("sig", stdout);
 	if( opt.check_sigs ) {
 	    fflush(stdout);
-	    switch( (rc2=do_check_sig( c, node, &is_selfsig )) ) {
+	    switch( (rc2=do_check_sig( c, node, &is_selfsig, NULL )) ) {
 	      case 0:		       sigrc = '!'; break;
 	      case G10ERR_BAD_SIGN:    sigrc = '-'; break;
 	      case G10ERR_NO_PUBKEY: 
@@ -1188,7 +1191,7 @@ check_sig_and_print( CTX c, KBNODE node )
 {
     PKT_signature *sig = node->pkt->pkt.signature;
     const char *astr, *tstr;
-    int rc;
+    int rc, is_expkey=0;
 
     if( opt.skip_verify ) {
 	log_info(_("signature verification suppressed\n"));
@@ -1257,15 +1260,24 @@ check_sig_and_print( CTX c, KBNODE node )
     log_info(_("Signature made %.*s using %s key ID %08lX\n"),
 	    (int)strlen(tstr), tstr, astr? astr: "?", (ulong)sig->keyid[1] );
 
-    rc = do_check_sig(c, node, NULL );
+    rc = do_check_sig(c, node, NULL, &is_expkey );
     if( rc == G10ERR_NO_PUBKEY && opt.keyserver_scheme && opt.keyserver_options.auto_key_retrieve) {
 	if( keyserver_import_keyid ( sig->keyid )==0 )
-	    rc = do_check_sig(c, node, NULL );
+	    rc = do_check_sig(c, node, NULL, &is_expkey );
     }
     if( !rc || rc == G10ERR_BAD_SIGN ) {
 	KBNODE un, keyblock;
-	int count=0;
+	int count=0, statno;
         char keyid_str[50];
+
+	if(rc)
+	  statno=STATUS_BADSIG;
+	else if(sig->flags.expired)
+	  statno=STATUS_EXPSIG;
+	else if(is_expkey)
+	  statno=STATUS_EXPKEYSIG;
+	else
+	  statno=STATUS_GOODSIG;
 
 	keyblock = get_pubkeyblock( sig->keyid );
 
@@ -1284,8 +1296,7 @@ check_sig_and_print( CTX c, KBNODE node )
                 continue;
             
             keyid_str[17] = 0; /* cut off the "[uncertain]" part */
-            write_status_text_and_buffer (rc? STATUS_BADSIG:STATUS_GOODSIG,
-                                          keyid_str, 
+            write_status_text_and_buffer (statno, keyid_str,
                                           un->pkt->pkt.user_id->name,
                                           un->pkt->pkt.user_id->len, 
                                           -1 );
@@ -1307,8 +1318,7 @@ check_sig_and_print( CTX c, KBNODE node )
             if (opt.always_trust || !un)
                 keyid_str[17] = 0; /* cut off the "[uncertain]" part */
 
-            write_status_text_and_buffer (rc? STATUS_BADSIG:STATUS_GOODSIG,
-                                          keyid_str, 
+            write_status_text_and_buffer (statno, keyid_str,
                                           un? un->pkt->pkt.user_id->name:"[?]",
                                           un? un->pkt->pkt.user_id->len:3, 
                                           -1 );
@@ -1354,16 +1364,17 @@ check_sig_and_print( CTX c, KBNODE node )
 
 	    if( !get_pubkey( pk, sig->keyid ) ) {
 		byte array[MAX_FINGERPRINT_LEN], *p;
-		char buf[MAX_FINGERPRINT_LEN*2+61];
+		char buf[MAX_FINGERPRINT_LEN*2+72];
 		size_t i, n;
 
 		fingerprint_from_pk( pk, array, &n );
 		p = array;
 		for(i=0; i < n ; i++, p++ )
 		    sprintf(buf+2*i, "%02X", *p );
-		sprintf(buf+strlen(buf), " %s %lu",
+		sprintf(buf+strlen(buf), " %s %lu %lu",
 					 strtimestamp( sig->timestamp ),
-					 (ulong)sig->timestamp );
+					 (ulong)sig->timestamp,
+			                 (ulong)sig->expiredate );
 		write_status_text( STATUS_VALIDSIG, buf );
 	    }
 	    free_public_key( pk );

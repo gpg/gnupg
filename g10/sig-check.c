@@ -39,12 +39,8 @@ struct cmp_help_context_s {
     MD_HANDLE md;
 };
 
-
-static int do_signature_check( PKT_signature *sig, MD_HANDLE digest,
-					 u32 *r_expiredate, int *r_expired );
 static int do_check( PKT_public_key *pk, PKT_signature *sig,
 					 MD_HANDLE digest, int *r_expired );
-
 
 /****************
  * Check the signature which is contained in SIG.
@@ -56,12 +52,12 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 {
     u32 dummy;
     int dum2;
-    return do_signature_check( sig, digest, &dummy, &dum2 );
+    return signature_check2( sig, digest, &dummy, &dum2 );
 }
 
-static int
-do_signature_check( PKT_signature *sig, MD_HANDLE digest,
-					u32 *r_expiredate, int *r_expired )
+int
+signature_check2( PKT_signature *sig, MD_HANDLE digest,
+		  u32 *r_expiredate, int *r_expired )
 {
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     int rc=0;
@@ -82,7 +78,7 @@ do_signature_check( PKT_signature *sig, MD_HANDLE digest,
 	 * this sig-id we could have also used the hash of the document
 	 * and the timestamp, but the drawback of this is, that it is
 	 * not possible to sign more than one identical document within
-	 * one second.	Some remote bacth processing applications might
+	 * one second.	Some remote batch processing applications might
 	 * like this feature here */
 	MD_HANDLE md;
 	u32 a = sig->timestamp;
@@ -233,6 +229,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
     }
 
     if( pk->expiredate && pk->expiredate < cur_time ) {
+        char buf[11];
         if (opt.verbose) {
 	    u32 tmp_kid[2];
 
@@ -240,6 +237,9 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
             log_info(_("NOTE: signature key %08lX expired %s\n"),
                      (ulong)tmp_kid[1], asctimestamp( pk->expiredate ) );
         }
+	/* SIGEXPIRED is deprecated.  Use KEYEXPIRED. */
+	sprintf(buf,"%lu",(ulong)pk->expiredate);
+	write_status_text(STATUS_KEYEXPIRED,buf);
 	write_status(STATUS_SIGEXPIRED);
 	*r_expired = 1;
     }
@@ -490,7 +490,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 		rc = do_check( pk, sig, md, r_expired );
 	    }
 	    else {
-		rc = do_signature_check( sig, md, r_expiredate, r_expired );
+		rc = signature_check2( sig, md, r_expiredate, r_expired );
 	    }
             cache_sig_result ( sig, rc );
 	    md_close(md);

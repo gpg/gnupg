@@ -1,3 +1,23 @@
+2002-04-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* status.h, status.c (get_status_string): Add KEYEXPIRED, EXPSIG,
+	and EXPKEYSIG.  Add "deprecated-use-keyexpired-instead" to
+	SIGEXPIRED.
+
+	* sig-check.c (do_check): Start transition from SIGEXPIRED to
+	KEYEXPIRED, since the actual event is signature verification by an
+	expired key and not an expired signature. (do_signature_check,
+	packet.h): Rename as signature_check2, make public, and change all
+	callers.
+
+	* mainproc.c (check_sig_and_print, do_check_sig): Use status
+	EXPSIG for an expired, but good, signature.  Add the expiration
+	time (or 0) to the VALIDSIG status line.  Use status KEYEXPSIG for
+	a good signature from an expired key.
+
+	* g10.c (main): remove checks for no arguments now that argparse
+	does it.
+
 2002-04-06  Werner Koch  <wk@gnupg.org>
 
 	* keyring.c (keyring_get_keyblock): Disable the keylist mode here.
@@ -1644,7 +1664,8 @@
 
 	* sign.c (make_keysig_packet): Added new sigversion argument to
 	allow the caller to force generation of required signature
-	version. Changed all callers. Suggested by Thomas Roessler. 
+	version. Changed all callers. Suggested by Thomas Roessler.
+
 	* keyedit.c (sign_uids): Force v4 signature generation for local
 	sigs.  Removed the check for local signature and pre-v4 keys.
 

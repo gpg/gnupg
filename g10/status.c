@@ -84,7 +84,7 @@ get_status_string ( int no )
       case STATUS_LEAVE  : s = "LEAVE"; break;
       case STATUS_ABORT  : s = "ABORT"; break;
       case STATUS_GOODSIG: s = "GOODSIG"; break;
-      case STATUS_SIGEXPIRED: s = "SIGEXPIRED"; break;
+      case STATUS_KEYEXPIRED: s = "KEYEXPIRED"; break;
       case STATUS_KEYREVOKED: s = "KEYREVOKED"; break;
       case STATUS_BADSIG : s = "BADSIG"; break;
       case STATUS_ERRSIG : s = "ERRSIG"; break;
@@ -143,6 +143,9 @@ get_status_string ( int no )
       case STATUS_INV_RECP       : s = "INV_RECP"; break;
       case STATUS_NO_RECP        : s = "NO_RECP"; break;
       case STATUS_ALREADY_SIGNED : s = "ALREADY_SIGNED"; break;
+      case STATUS_SIGEXPIRED     : s = "SIGEXPIRED deprecated-use-keyexpired-instead"; break;
+      case STATUS_EXPSIG         : s = "EXPSIG"; break;
+      case STATUS_EXPKEYSIG      : s = "EXPKEYSIG"; break;
       default: s = "?"; break;
     }
     return s;

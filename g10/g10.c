@@ -1191,25 +1191,23 @@ main( int argc, char **argv )
 #endif /* __riscos__ */
             break;
 	  case oKeyServer:
-	    if(pargs.r.ret_str==NULL || parse_keyserver_uri(pargs.r.ret_str))
+	    if(parse_keyserver_uri(pargs.r.ret_str))
 	      log_error(_("could not parse keyserver URI\n"));
 	    break;
 	  case oKeyServerOptions:
-	    if(pargs.r.ret_str)
-	      parse_keyserver_options(pargs.r.ret_str);
+	    parse_keyserver_options(pargs.r.ret_str);
 	    break;
 	  case oTempDir: opt.temp_dir=pargs.r.ret_str; break;
 	  case oExecPath:
-	    if(pargs.r.ret_str)
-	      {
-		/* Notice that path is never freed.  That is
-                   intentional due to the way putenv() works. */
-		char *path=m_alloc(5+strlen(pargs.r.ret_str)+1);
-		strcpy(path,"PATH=");
-		strcat(path,pargs.r.ret_str);
-		if(putenv(path)!=0)
-		  log_error(_("unable to set exec-path to %s\n"),path);
-	      }
+	    {
+	      /* Notice that path is never freed.  That is
+		 intentional due to the way putenv() works. */
+	      char *path=m_alloc(5+strlen(pargs.r.ret_str)+1);
+	      strcpy(path,"PATH=");
+	      strcat(path,pargs.r.ret_str);
+	      if(putenv(path)!=0)
+		log_error(_("unable to set exec-path to %s\n"),path);
+	    }
 	    break;
 	  case oNotation: add_notation_data( pargs.r.ret_str ); break;
 	  case oShowNotation: opt.show_notation=1; break;

@@ -33,7 +33,7 @@
 #define STATUS_BADARMOR  7
 
 #define STATUS_RSA_OR_IDEA 8
-#define STATUS_SIGEXPIRED  9
+#define STATUS_KEYEXPIRED  9
 #define STATUS_KEYREVOKED  10
 
 #define STATUS_TRUST_UNDEFINED 11
@@ -93,7 +93,9 @@
 #define STATUS_INV_RECP         61
 #define STATUS_NO_RECP          62
 #define STATUS_ALREADY_SIGNED   63
-
+#define STATUS_SIGEXPIRED       64
+#define STATUS_EXPSIG           65
+#define STATUS_EXPKEYSIG        66
 
 /*-- status.c --*/
 void set_status_fd ( int fd );
