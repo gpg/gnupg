@@ -312,11 +312,13 @@ define(GNUPG_CHECK_IPC,
 ######################################################################
 # Check whether mlock is broken (hpux 10.20 raises a SIGBUS if mlock
 # is not called from uid 0 (not tested whether uid 0 works)
+# For DECs Tru64 we have also to check whether mlock is in librt
 ######################################################################
 dnl GNUPG_CHECK_MLOCK
 dnl
 define(GNUPG_CHECK_MLOCK,
   [ AC_CHECK_FUNCS(mlock)
+    AC_CHECK_LIB(rt, mlock)
     if test "$ac_cv_func_mlock" = "yes"; then
         AC_MSG_CHECKING(whether mlock is broken)
           AC_CACHE_VAL(gnupg_cv_have_broken_mlock,
@@ -580,7 +582,7 @@ AC_CHECK_TOOL(AS, as, false)
 AC_DEFUN(GNUPG_SYS_SYMBOL_UNDERSCORE,
 [tmp_do_check="no"
 case "${target}" in
-    i386-emx-os2 | i[3456]86-pc-os2*emx )
+    i386-emx-os2 | i[3456]86-pc-os2*emx | i386-pc-msdosdjgpp)
         ac_cv_sys_symbol_underscore=yes
         ;;
     *)

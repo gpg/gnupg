@@ -1,16 +1,9 @@
 
-  * don't allow certain commands in the edit menu when the secret key is
-    selected.
-
-  * --delete-secret-key should work even when the public key is not there.
-
   * Print the reason for revocation at certain places.
 
   * at least an option to prefer DSA keys over RSA when selecting the key to
     use.  Depending on creatin time would be nice too.	I thing this is
     already done for the subkeys.
-
-  * write a M4 for the unsigned long long type.
 
 Scheduled for 1.1
 -----------------

@@ -1,3 +1,8 @@
+2000-03-14 13:49:38  Werner Koch  (wk@habibti.openit.de)
+
+	* keygen.c (keyedit_menu): Do not allow to use certain commands
+	while the secret key is selected.
+
 2000-03-09 12:53:09  Werner Koch  (wk@habibti.openit.de)
 
 	* keygen.c (ask_expire_interval): Movede parsig to ...

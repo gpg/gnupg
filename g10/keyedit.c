@@ -573,41 +573,42 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
     static struct { const char *name;
 		    enum cmdids id;
 		    int need_sk;
+		    int not_with_sk;
 		    int signmode;
 		    const char *desc;
 		  } cmds[] = {
-	{ N_("quit")    , cmdQUIT      , 0,1, N_("quit this menu") },
-	{ N_("q")       , cmdQUIT      , 0,1, NULL   },
-	{ N_("save")    , cmdSAVE      , 0,1, N_("save and quit") },
-	{ N_("help")    , cmdHELP      , 0,1, N_("show this help") },
-	{    "?"        , cmdHELP      , 0,1, NULL   },
-	{ N_("fpr")     , cmdFPR       , 0,1, N_("show fingerprint") },
-	{ N_("list")    , cmdLIST      , 0,1, N_("list key and user IDs") },
-	{ N_("l")       , cmdLIST      , 0,1, NULL   },
-	{ N_("uid")     , cmdSELUID    , 0,1, N_("select user ID N") },
-	{ N_("key")     , cmdSELKEY    , 0,0, N_("select secondary key N") },
-	{ N_("check")   , cmdCHECK     , 0,1, N_("list signatures") },
-	{ N_("c")       , cmdCHECK     , 0,1, NULL },
-	{ N_("sign")    , cmdSIGN      , 0,1, N_("sign the key") },
-	{ N_("s")       , cmdSIGN      , 0,1, NULL },
-	{ N_("lsign")   , cmdLSIGN     , 0,1, N_("sign the key locally") },
-	{ N_("debug")   , cmdDEBUG     , 0,0, NULL },
-	{ N_("adduid")  , cmdADDUID    , 1,0, N_("add a user ID") },
-	{ N_("deluid")  , cmdDELUID    , 0,0, N_("delete user ID") },
-	{ N_("addkey")  , cmdADDKEY    , 1,0, N_("add a secondary key") },
-	{ N_("delkey")  , cmdDELKEY    , 0,0, N_("delete a secondary key") },
-	{ N_("delsig")  , cmdDELSIG    , 0,0, N_("delete signatures") },
-	{ N_("expire")  , cmdEXPIRE    , 1,0, N_("change the expire date") },
-	{ N_("toggle")  , cmdTOGGLE    , 1,0, N_("toggle between secret "
-						 "and public key listing") },
-	{ N_("t"     )  , cmdTOGGLE    , 1,0, NULL },
-	{ N_("pref")    , cmdPREF      , 0,0,  N_("list preferences") },
-	{ N_("passwd")  , cmdPASSWD    , 1,0, N_("change the passphrase") },
-	{ N_("trust")   , cmdTRUST     , 0,0,  N_("change the ownertrust") },
-	{ N_("revsig")  , cmdREVSIG    , 0,0, N_("revoke signatures") },
-	{ N_("revkey")  , cmdREVKEY    , 1,0, N_("revoke a secondary key") },
-	{ N_("disable") , cmdDISABLEKEY, 0,0, N_("disable a key") },
-	{ N_("enable")  , cmdENABLEKEY , 0,0, N_("enable a key") },
+	{ N_("quit")    , cmdQUIT      , 0,0,1, N_("quit this menu") },
+	{ N_("q")       , cmdQUIT      , 0,0,1, NULL   },
+	{ N_("save")    , cmdSAVE      , 0,0,1, N_("save and quit") },
+	{ N_("help")    , cmdHELP      , 0,0,1, N_("show this help") },
+	{    "?"        , cmdHELP      , 0,0,1, NULL   },
+	{ N_("fpr")     , cmdFPR       , 0,0,1, N_("show fingerprint") },
+	{ N_("list")    , cmdLIST      , 0,0,1, N_("list key and user IDs") },
+	{ N_("l")       , cmdLIST      , 0,0,1, NULL   },
+	{ N_("uid")     , cmdSELUID    , 0,0,1, N_("select user ID N") },
+	{ N_("key")     , cmdSELKEY    , 0,0,0, N_("select secondary key N") },
+	{ N_("check")   , cmdCHECK     , 0,0,1, N_("list signatures") },
+	{ N_("c")       , cmdCHECK     , 0,0,1, NULL },
+	{ N_("sign")    , cmdSIGN      , 0,1,1, N_("sign the key") },
+	{ N_("s")       , cmdSIGN      , 0,1,1, NULL },
+	{ N_("lsign")   , cmdLSIGN     , 0,1,1, N_("sign the key locally") },
+	{ N_("debug")   , cmdDEBUG     , 0,1,0, NULL },
+	{ N_("adduid")  , cmdADDUID    , 1,1,0, N_("add a user ID") },
+	{ N_("deluid")  , cmdDELUID    , 0,1,0, N_("delete user ID") },
+	{ N_("addkey")  , cmdADDKEY    , 1,1,0, N_("add a secondary key") },
+	{ N_("delkey")  , cmdDELKEY    , 0,1,0, N_("delete a secondary key") },
+	{ N_("delsig")  , cmdDELSIG    , 0,1,0, N_("delete signatures") },
+	{ N_("expire")  , cmdEXPIRE    , 1,1,0, N_("change the expire date") },
+	{ N_("toggle")  , cmdTOGGLE    , 1,0,0, N_("toggle between secret "
+						   "and public key listing") },
+	{ N_("t"     )  , cmdTOGGLE    , 1,0,0, NULL },
+	{ N_("pref")    , cmdPREF      , 0,1,0, N_("list preferences") },
+	{ N_("passwd")  , cmdPASSWD    , 1,1,0, N_("change the passphrase") },
+	{ N_("trust")   , cmdTRUST     , 0,1,0, N_("change the ownertrust") },
+	{ N_("revsig")  , cmdREVSIG    , 0,1,0, N_("revoke signatures") },
+	{ N_("revkey")  , cmdREVKEY    , 1,1,0, N_("revoke a secondary key") },
+	{ N_("disable") , cmdDISABLEKEY, 0,1,0, N_("disable a key") },
+	{ N_("enable")  , cmdENABLEKEY , 0,1,0, N_("enable a key") },
 
     { NULL, cmdNONE } };
     enum cmdids cmd = 0;
@@ -724,6 +725,10 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		cmd = cmdINVCMD;
 	    else if( cmds[i].need_sk && !sec_keyblock ) {
 		tty_printf(_("Need the secret key to do this.\n"));
+		cmd = cmdNOP;
+	    }
+	    else if( cmds[i].not_with_sk && sec_keyblock && toggle ) {
+		tty_printf(_("Please use the command \"toggle\" first.\n"));
 		cmd = cmdNOP;
 	    }
 	    else

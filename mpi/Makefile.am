@@ -9,7 +9,7 @@ EXTRA_DIST = config.links
 DISTCLEANFILES = mpih-add1.S mpih-mul1.S mpih-mul2.S mpih-mul3.S  \
 		 mpih-lshift.S mpih-rshift.S mpih-sub1.S asm-syntax.h sysdep.h
 # Note: we only use .S files so we should delete all left over .s
-CLEANFILES = *.s
+CLEANFILES = _*.s
 
 noinst_LIBRARIES = libmpi.a
 
@@ -51,10 +51,10 @@ libmpi_a_LIBADD = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
 # cancel the default rules used by libtool which do not really
 # work and add one to cpp .S files
 .S.o:
+	 $(CPP) $(INCLUDES) $(DEFS) $< | grep -v '^#' > _$*.s
+	 $(COMPILE) -c _$*.s
+	 mv -f _$*.o $*.o
 
 .S.lo:
-
-.S.s:
-	 $(CPP) $(INCLUDES) $(DEFS) $< | grep -v '^#' >$*.s
 
 

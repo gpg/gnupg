@@ -1,3 +1,8 @@
+2000-03-14 12:03:56  Werner Koch  (wk@habibti.openit.de)
+
+	* Makefile.am: Do not use .s and .S files but a temp names, so that
+	OSes with caseinsensitive filenames do work.  From Frank Donahoe.
+
 Tue Mar  7 18:45:31 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* mpih-mul.c (mpihelp_mul_karatsuba_case): It seems that the

@@ -1,3 +1,10 @@
+2000-03-14 12:07:54  Werner Koch  (wk@habibti.openit.de)
+
+	* acinclude.m4 (GNUPG_SYS_SYMBOL_UNDERSCORE): Add support for
+	DJGPP.
+	(GNUPG_CHECK_MLOCK): Check whether mlock sits in librt.
+	* configure.in: Add a test for unisgned long long.
+
 Tue Mar  7 18:45:31 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* acinclude.m4 (GNUPG_CHECK_RDYNAMIC): Add NetBSD. By Thomas Klausner.
