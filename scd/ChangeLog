@@ -1,3 +1,12 @@
+2004-07-01  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (do_getattr): Fix for sending CA-FPR.
+
+2004-06-30  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (app_openpgp_readkey): Fixed check for valid
+	exponent.
+
 2004-06-18  Werner Koch  <wk@g10code.com>
 
 	* sc-investigate.c (my_read_line): Renamed from read_line.

@@ -561,7 +561,7 @@ do_getattr (APP app, CTRL ctrl, const char *name)
         {
           if (valuelen >= 60)
             for (i=0; i < 3; i++)
-              send_fpr_if_not_null (ctrl, "KEY-FPR", i+1, value+i*20);
+              send_fpr_if_not_null (ctrl, table[idx].name, i+1, value+i*20);
         }
       else
         send_status_info (ctrl, table[idx].name, value, valuelen, NULL, 0);
@@ -1619,7 +1619,7 @@ app_openpgp_readkey (APP app, int keyno, unsigned char **m, size_t *mlen,
   memcpy (*m, a, alen);
   
   a = find_tlv (keydata, keydatalen, 0x0082, &alen);
-  if (!e)
+  if (!a)
     {
       log_error ("response does not contain the RSA public exponent\n");
       rc = gpg_error (GPG_ERR_CARD);
