@@ -641,6 +641,23 @@ import_one( const char *fname, KBNODE keyblock, int fast,
 	log_error( _("key %08lX: no user ID\n"), (ulong)keyid[1]);
 	return 0;
     }
+    
+    if( opt.interactive ) {
+        char *prompt, *p;
+        size_t n = 0;
+        
+        p = get_user_id( pk->keyid, &n );
+        prompt = m_alloc( n + 16 + 128 + 1 );
+        snprintf( prompt, n + 16 + 128,
+                  "Do you want to import %08lX \"%s\" ? (y/n) ",
+                  (ulong)keyid[1], p );
+        m_free( p );
+        if( !cpr_get_answer_is_yes( "import.okay", prompt ) ) {
+            m_free( prompt );
+            return 0;
+        }
+        m_free( prompt );
+    }
 
     clear_kbnode_flags( keyblock );
 

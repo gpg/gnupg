@@ -403,7 +403,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDisableMDC, "disable-mdc", 0, N_("never use a MDC for encryption") },
     { oNoDisableMDC, "no-disable-mdc", 0, "@" },
     { oDryRun, "dry-run",   0, N_("do not make any changes") },
-  /*{ oInteractive, "interactive", 0, N_("prompt before overwriting") }, */
+    { oInteractive, "interactive", 0, N_("prompt before overwriting") },
     { oUseAgent, "use-agent",0, N_("use the gpg-agent")},
     { oNoUseAgent, "no-use-agent",0, "@"},
     { oGpgAgentInfo, "gpg-agent-info",2, "@"},
