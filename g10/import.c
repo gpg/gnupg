@@ -378,8 +378,8 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 		  pubkey_letter( pk->pubkey_algo ),
 		  (ulong)keyid[1], datestr_from_pk(pk) );
 	if( uidnode )
-	    print_string( stderr, uidnode->pkt->pkt.user_id->name,
-				  uidnode->pkt->pkt.user_id->len, 0 );
+	    print_utf8_string( stderr, uidnode->pkt->pkt.user_id->name,
+				       uidnode->pkt->pkt.user_id->len );
 	putc('\n', stderr);
     }
     if( !uidnode ) {
@@ -569,8 +569,8 @@ import_secret_one( const char *fname, KBNODE keyblock )
 		  pubkey_letter( sk->pubkey_algo ),
 		  (ulong)keyid[1], datestr_from_sk(sk) );
 	if( uidnode )
-	    print_string( stderr, uidnode->pkt->pkt.user_id->name,
-				  uidnode->pkt->pkt.user_id->len, 0 );
+	    print_utf8_string( stderr, uidnode->pkt->pkt.user_id->name,
+				       uidnode->pkt->pkt.user_id->len );
 	putc('\n', stderr);
     }
     stats.secret_read++;
@@ -831,8 +831,8 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 		if( opt.verbose ) {
 		    log_info( _("key %08lX: skipped user ID '"),
 							 (ulong)keyid[1]);
-		    print_string( stderr, node->pkt->pkt.user_id->name,
-				      node->pkt->pkt.user_id->len, 0 );
+		    print_utf8_string( stderr, node->pkt->pkt.user_id->name,
+				       node->pkt->pkt.user_id->len );
 		    fputs("'\n", stderr );
 		}
 		delete_kbnode( node ); /* the user-id */

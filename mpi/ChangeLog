@@ -1,3 +1,8 @@
+Wed Mar 22 13:50:24 CET 2000  Werner Koch  <wk@openit.de>
+
+	* config.links: Add support for FreeBSD 5 and made the case stmt
+	looking nicer.	From Jun Kuriyama.
+
 Fri Mar 17 17:50:25 CET 2000  Werner Koch  <wk@openit.de>
 
 	* config.links (sparc64-unknown-linux-gnu): use udic module.

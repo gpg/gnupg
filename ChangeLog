@@ -1,7 +1,12 @@
+Wed Mar 22 13:50:24 CET 2000  Werner Koch  <wk@openit.de>
+
+	* acinclude.m4 (GNUPG_CHECK_MLOCK): Changed the way to test for
+	librt.	Test suggested by Jeff Long.
+
 Fri Mar 17 17:50:25 CET 2000  Werner Koch  <wk@openit.de>
 
 	* acinclude.m4 (GNUPG_CHECK_MLOCK): Do librt check only when
-	we can't link a test progra,.  This way GNU systems don't need
+	we can't link a test program.  This way GNU systems don't need
 	to link against linrt.
 	(GNUPG_CHECK_IPC): Fixed use of TRY_COMPILE macro.  From Tim Mooney.
 

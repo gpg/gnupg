@@ -19,6 +19,6 @@ compress-sigs
 run-as-shm-coprocess [request-locked-shm-size]
 # very special :-)
 # You will have to use "--status-fd" too
-# Note:  This option dioes only work if given on the command line.
+# Note:  This option does only work if given on the command line.
 
 

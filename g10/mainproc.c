@@ -552,8 +552,12 @@ print_userid( PACKET *pkt )
 	printf("ERROR: unexpected packet type %d", pkt->pkttype );
 	return;
     }
-    print_string( stdout,  pkt->pkt.user_id->name, pkt->pkt.user_id->len,
-							opt.with_colons );
+    if( opt.with_colons )
+	print_string( stdout,  pkt->pkt.user_id->name,
+				pkt->pkt.user_id->len, ':');
+    else
+	print_utf8_string( stdout,  pkt->pkt.user_id->name,
+				     pkt->pkt.user_id->len );
 }
 
 

@@ -483,7 +483,7 @@ verify_own_keys(void)
 	if( DBG_TRUST )
 	    log_debug("key %08lX: checking secret key\n", (ulong)keyid[1] );
 
-	if( is_secret_key_protected( sk ) < 1 )
+	if( !opt.quiet && is_secret_key_protected( sk ) < 1 )
 	    log_info(_("NOTE: secret key %08lX is NOT protected.\n"),
 							    (ulong)keyid[1] );
 
