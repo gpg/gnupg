@@ -64,6 +64,7 @@ struct {
     int s2k_mode;
     int s2k_digest_algo;
     int s2k_cipher_algo;
+    int not_dash_escaped;
 } opt;
 
 

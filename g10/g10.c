@@ -146,6 +146,7 @@ enum cmd_and_opt_values { aNull = 0,
     oS2KDigest,
     oS2KCipher,
     oCharset,
+    oNotDashEscaped,
 aTest };
 
 
@@ -294,6 +295,7 @@ static ARGPARSE_OPTS opts[] = {
     { oRunAsShmCP, "run-as-shm-coprocess", 4, "@" },
     { oSetFilename, "set-filename", 2, "@" },
     { oComment, "comment", 2, "@" },
+    { oNotDashEscaped, "not-dash-escaped", 0, "@" },
 {0} };
 
 
@@ -767,6 +769,7 @@ main( int argc, char **argv )
 		log_error(_("%s is not a valid character set\n"),
 						    pargs.r.ret_str);
 	    break;
+	  case oNotDashEscaped: opt.not_dash_escaped = 1; break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}
@@ -988,9 +991,17 @@ main( int argc, char **argv )
 
       case aSignKey: /* sign the key given as argument */
       case aEditKey: /* Edit a key signature */
-	if( argc != 1 )
-	    wrong_args(_("--edit-key username"));
-	keyedit_menu(fname, locusr );
+	if( !argc )
+	    wrong_args(_("--edit-key username [commands]"));
+	if( argc > 1 ) {
+	    sl = NULL;
+	    for( argc--, argv++ ; argc; argc--, argv++ )
+		append_to_strlist( &sl, *argv );
+	    keyedit_menu( fname, locusr, sl );
+	    free_strlist(sl);
+	}
+	else
+	    keyedit_menu(fname, locusr, NULL );
 	break;
 
       #endif /* IS_G10 */

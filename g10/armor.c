@@ -1,4 +1,4 @@
-/* armor.c - Armor filter
+/* armor.c - Armor flter
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -74,7 +74,10 @@ typedef enum {
     fhdrENDClearsig,
     fhdrENDClearsigHelp,
     fhdrTESTSpaces,
+    fhdrCLEARSIGSimple,
+    fhdrCLEARSIGSimpleNext,
     fhdrTEXT,
+    fhdrTEXTSimple,
     fhdrERROR,
     fhdrERRORShow,
     fhdrEOF
@@ -110,7 +113,7 @@ static fhdr_state_t find_header( fhdr_state_t state,
 				 byte *buf, size_t *r_buflen,
 				 IOBUF a, size_t n,
 				 unsigned *r_empty, int *r_hashes,
-				 int only_keyblocks );
+				 int only_keyblocks, int *not_dashed );
 
 
 static void
@@ -262,7 +265,7 @@ parse_hash_header( const char *line )
 static fhdr_state_t
 find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	     IOBUF a, size_t n, unsigned *r_empty, int *r_hashes,
-	     int only_keyblocks )
+	     int only_keyblocks, int *not_dashed )
 {
     int c=0, i;
     const char *s;
@@ -343,8 +346,15 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 			    putc('\n', stderr);
 			}
 			if( clearsig && !(hashes=parse_hash_header( buf )) ) {
-			    log_error(_("invalid clearsig header\n"));
-			    state = fhdrERROR;
+			    if( strlen(buf) > 15
+				&& !memcmp( buf, "NotDashEscaped:", 15 ) ) {
+				*not_dashed = 1;
+				state = fhdrWAITHeader;
+			    }
+			    else {
+				log_error(_("invalid clearsig header\n"));
+				state = fhdrERROR;
+			    }
 			}
 			else {
 			    state = fhdrWAITHeader;
@@ -449,6 +459,31 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 		log_info(_("armor: %s\n"), head_strings[hdr_line]);
 	    break;
 
+	  case fhdrCLEARSIGSimple:
+	    /* we are at the begin of a new line */
+	  case fhdrCLEARSIGSimpleNext:
+	    n = 0;
+	    c = 0;
+	    while( n < buflen && (c=iobuf_get(a)) != -1 ) {
+		buf[n++] = c;
+		if( c == '\n' )
+		    break;
+	    }
+	    buf[n] = 0;
+	    if( c == -1 )
+		state = fhdrEOF;
+	    else if( state == fhdrCLEARSIGSimple
+		     && n > 15 && !memcmp(buf, "-----", 5 ) ) {
+		if( c == '\n' )
+		    buf[n-1] = 0;
+		state = fhdrENDClearsig;
+	    }
+	    else if( c == '\n' )
+		state = fhdrCLEARSIGSimple;
+	    else
+		state = fhdrCLEARSIGSimpleNext;
+	    break;
+
 	  case fhdrCLEARSIG:
 	  case fhdrEMPTYClearsig:
 	  case fhdrREADClearsig:
@@ -472,6 +507,10 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    break;
 
 	  case fhdrCHECKDashEscaped3:
+	    if( *not_dashed ) {
+		state = fhdrTEXTSimple;
+		break;
+	    }
 	    if( !(n > 1 && buf[0] == '-' && buf[1] == ' ' ) ) {
 		state = fhdrTEXT;
 		break;
@@ -501,7 +540,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    /* check the clearsig line */
 	    if( n > 15 && !memcmp(buf, "-----", 5 ) )
 		state = fhdrENDClearsig;
-	    else if( buf[0] == '-' && buf[1] == ' ' )
+	    else if( buf[0] == '-' && buf[1] == ' ' && !*not_dashed )
 		state = fhdrCHECKDashEscaped;
 	    else {
 		state = fhdrTESTSpaces;
@@ -512,7 +551,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    /* check the clearsig line */
 	    if( n > 15 && !memcmp(buf, "-----", 5 ) )
 		state = fhdrENDClearsig;
-	    else if( buf[0] == '-' && buf[1] == ' ' )
+	    else if( buf[0] == '-' && buf[1] == ' ' && !*not_dashed )
 		state = fhdrCHECKDashEscaped2;
 	    else {
 		state = fhdrREADClearsig;
@@ -591,6 +630,11 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 
     if( clearsig && state == fhdrTEXT )
 	state = fhdrCLEARSIG;
+    else if( clearsig && state == fhdrTEXTSimple ) {
+	state = fhdrCLEARSIGSimple;
+	buf[n] = '\n';
+	n++;
+    }
 
     if( state == fhdrCLEARSIG || state == fhdrREADClearsig ) {
 	/* append CR,LF after removing trailing wspaces */
@@ -631,7 +675,7 @@ check_input( armor_filter_context_t *afx, IOBUF a )
     n = DIM(afx->helpbuf);
     state = find_header( state, afx->helpbuf, &n, a,
 				afx->helplen, &emplines, &afx->hashes,
-				afx->only_keyblocks );
+				afx->only_keyblocks, &afx->not_dash_escaped );
     switch( state ) {
       case fhdrNOArmor:
 	afx->inp_checked = 1;
@@ -649,6 +693,8 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 
       case fhdrNullClearsig:
       case fhdrCLEARSIG: /* start fake package mode (for clear signatures) */
+      case fhdrCLEARSIGSimple:
+      case fhdrCLEARSIGSimpleNext:
 	afx->helplen = n;
 	afx->helpidx = 0;
 	afx->faked = 1;
@@ -718,7 +764,8 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	state = find_header( state, afx->helpbuf, &n, a,
 			      state == fhdrNullClearsig? afx->helplen:0,
 						&emplines, &afx->hashes,
-						afx->only_keyblocks );
+						afx->only_keyblocks,
+						&afx->not_dash_escaped );
 	switch( state) {
 	  case fhdrERROR:
 	    invalid_armor();
@@ -733,6 +780,8 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 
 	  case fhdrREADClearsig:
 	  case fhdrREADClearsigNext:
+	  case fhdrCLEARSIGSimple:
+	  case fhdrCLEARSIGSimpleNext:
 	    afx->helplen = n;
 	    break;
 

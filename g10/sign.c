@@ -458,6 +458,22 @@ write_dash_escaped( IOBUF inp, IOBUF out, MD_HANDLE md )
     int lastlf = 1;
     int state = 0;
 
+    if( opt.not_dash_escaped ) {
+	lastlf = 0;
+	while( (c = iobuf_get(inp)) != -1 ) {
+	    md_putc(md, c );
+	    iobuf_put( out, c );
+	    lastlf = c;
+	}
+	if( lastlf != '\n' ) {
+	    /* add a missing trailing LF */
+	    md_putc(md, '\n' );
+	    iobuf_put( out, '\n' );
+	}
+
+	return 0;
+    }
+
     while( (c = iobuf_get(inp)) != -1 ) {
 	/* Note: We don't escape "From " because the MUA should cope with it */
 	if( lastlf ) {
@@ -579,7 +595,11 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	    }
 	}
 	assert(any);
-	iobuf_writestr(out, "\n\n" );
+	iobuf_writestr(out, "\n" );
+	if( opt.not_dash_escaped )
+	    iobuf_writestr( out,
+		"NotDashEscaped: You need GnuPG to verify this message\n" );
+	iobuf_writestr(out, "\n" );
     }
 
 
@@ -588,7 +608,8 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	PKT_secret_key *sk = sk_rover->sk;
 	md_enable(textmd, hash_for(sk->pubkey_algo));
     }
-    iobuf_push_filter( inp, text_filter, &tfx );
+    if( !opt.not_dash_escaped )
+	iobuf_push_filter( inp, text_filter, &tfx );
     rc = write_dash_escaped( inp, out, textmd );
     if( rc )
 	goto leave;

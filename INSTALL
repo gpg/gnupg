@@ -34,7 +34,8 @@ Problems
 ========
 
 If you get unresolved externals "gettext" you should run configure again
-with the option "--with-included-gettext".
+with the option "--with-included-gettext"; this is version 0.10.35 which
+is available at alpha.gnu.org.
 
 If you have other compile problems, try the configure options
 "--with-included-zlib" or "--disable-nls" (See ABOUT-NLS)

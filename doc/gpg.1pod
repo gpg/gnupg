@@ -401,6 +401,16 @@ B<--throw-keyid>
     against traffic analysis.  It may slow down the decryption
     process because all available secret keys are tried.
 
+B<--not-dash-escaped>
+    This option changes the behaviour of cleartext signature
+    so that they can be used for patch files. You should not
+    send such an armored file via email because all spaces
+    and line endings are hashed too.  You can not use this
+    option for data which has 5 dashes somewhere at the
+    beginning of a line - patch files don't have this.
+    A special armor header line tells GnuPG about this
+    cleartext signature framework.
+
 B<--passphrase-fd> I<n>
     Read the passphrase from file descriptor I<n>. If you use
     0 for I<n>, the passphrase will be read from stdin.  This

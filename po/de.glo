@@ -1,0 +1,51 @@
+
+algorithm		Verfahren
+anonymous		ungenannter
+armor			ASCII-Hülle
+bug			Wanze (Programmfehler)
+certificate		Zertifikat
+checksum		Prüfsumme
+cipher algorithm	Verschlüsselungsverfahren
+compress algorithm	Komprimierverfahren
+corrupted		beschädigter
+digest algorithm	Hashmethode
+expire date		Verfallsdatum
+generated		erzeugter
+Good certificate	Korrektes Zertifikat
+hint			Tip
+key-ID			Schlüssel-ID
+keyring 		Schlüsselring -> Schlüsselbund
+malformed		Ungünstig aufgebaute
+message 		Botschaft
+note			Hinweis
+ownertrust		\"Owner trust\"
+packet			Paket
+packet type		Pakettyp
+passphrase		\"Passphrase\"
+preferences		bevorzugt
+primary keys		Hauptschlüssel
+protection algorithm	Schutzmethode
+pubkey algorithm	Public-Key Verfahren	 (*1)
+public key		öffentlicher Schüssel
+........		Authentisierung
+retry			????
+revo... 		Widerruf
+secondary key		Zweitschlüssel
+secret key		geheimer Schlüssel
+self-signature		Eigensignatur
+sender			Absender
+sign user id		User-ID beglaubigen
+throw			verwerfe
+Timestamp conflict	Zeitangaben differieren
+Trust-DB		'Trust'-Datenbank
+trying			Versuch
+update
+user ID 		User-ID
+user IDs		User-IDs
+weak key		unsicherer Schlüssel
+
+(*1) Uneinheitlich verwendet
+--
+Walter Koch			    Hochdahl am Neandertal
+walterk@mail.dip.de		    ham:dg9ep@db0iz
+http://home.pages.de/~dg9ep/	    qrv:db0iz-9

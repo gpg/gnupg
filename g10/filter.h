@@ -45,6 +45,7 @@ typedef struct {
     int inp_bypass;    /* set if the input is not armored */
     int any_data;
     const char *hdrlines;
+    int not_dash_escaped;
 } armor_filter_context_t;
 
 

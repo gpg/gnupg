@@ -77,7 +77,7 @@ int check_key_signature( KBNODE root, KBNODE node, int *is_selfsig );
 int delete_key( const char *username, int secure );
 
 /*-- keyedit.c --*/
-void keyedit_menu( const char *username, STRLIST locusr );
+void keyedit_menu( const char *username, STRLIST locusr, STRLIST cmds );
 
 /*-- keygen.c --*/
 u32 ask_expiredate(void);

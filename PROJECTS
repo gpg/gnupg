@@ -1,22 +1,27 @@
 
-  * Urko Lusa <ulusa@lacueva.ddns.org> is working on es.po
-
-
   * Check if an object (a message, detached sign, public key, or whatever)
     is signed by definite user, i.e. define user
     (userid, or any other unique identification) on command line.
 
+    * Change the internal represention of keyid into a struct which
+      can also hold the localid and extend the localid to hold information
+      of the subkey number because two subkeys may have the same keyid.
+
+    * signature verification is done duplicated on import: in import.c and
+      tehn in trustdb.c too.  Maybe we can use a flag to skip the actual
+      verification process (this should work if we use the same keyblock,
+      but I'm not sure how to accomplish that).  Another way is to allow
+      the import of bogus data and let trustdb mark these keys as invalid;
+      I see an advantage in this that it may help to prevent a DoS on a
+      keyserver by sending him a lot of bogus signatures which he has
+      to check - Needs further investigation.
 
   * abstraction of the MPI
 
   * Add a way to override the current cipher/md implementations
     by others (using extensions)
 
-  * add a fast-import command which does not do the signature checks
-    of other keys (processing of the sdir hintlist).  The signatures
-    may then be verified by a maintainence pass.
-
-  * Not GnupG replated:  What about option completion in bash?
+  * Not GnuPG replated:  What about option completion in bash?
     Can "--dump-options" be used for this or should we place the
     options in a special ELF segment?
 

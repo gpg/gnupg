@@ -310,7 +310,7 @@ expirestr_from_pk( PKT_public_key *pk )
 
     if( !pk->expiredate )
 	return "never     ";
-    atime =  pk->expiredate;
+    atime = pk->expiredate;
     tp = gmtime( &atime );
     sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
     return buffer;

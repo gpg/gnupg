@@ -33,6 +33,10 @@ cat <<EOF > $diff_name
 
 This is a patch file against $prev_ver.
 
+Please check the signature of this patch file:
+
+    zcat somepath/gnupg-$curr_ver.diff.gz | gpg --verify
+
 Change to directory gnupg-$prev_ver (or however you renamed it)
 and give this command:
 
@@ -52,8 +56,9 @@ sed -e '/^diff.*VERSION/,/^+[0-9][0-9]*/ d'  $tmp_name >> $diff_name
 
 rm $tmp_name
 
-echo "Compressing patch file"
-gzip -9 $diff_name
+echo "Signing and compressing patch file"
+../gnupg/g10/gpg --clearsign --not-dash-escaped -u "(gnupg sig)" \
+    < $diff_name | gzip --best > $diff_name.gz
 
 echo "Checking patch file"
 cd gnupg-$prev_ver
@@ -64,6 +69,10 @@ cd ..
 if ! diff -urN "gnupg-$prev_ver/" "gnupg-$curr_ver/" >/dev/null ; then
    echo "compare failed"
    exit 1
+fi
+
+if ! zcat $diff_name.gz | ../gnupg/g10/gpg --batch --verify ; then
+    exit 1
 fi
 
 

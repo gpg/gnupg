@@ -54,12 +54,13 @@ write_uid( KBNODE root, const char *s )
 int
 keygen_add_key_expire( PKT_signature *sig, void *opaque )
 {
-    PKT_secret_key *sk = opaque;
+    PKT_public_key *pk = opaque;
     byte buf[8];
     u32  u;
 
-    if( sk->expiredate ) {
-	u = sk->expiredate;
+    if( pk->expiredate ) {
+	u = pk->expiredate > pk->timestamp? pk->expiredate - pk->timestamp
+					  : pk->timestamp;
 	buf[0] = (u >> 24) & 0xff;
 	buf[1] = (u >> 16) & 0xff;
 	buf[2] = (u >>	8) & 0xff;
@@ -135,7 +136,7 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
 
     /* and make the signature */
     rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0,
-			     keygen_add_std_prefs, sk );
+			     keygen_add_std_prefs, pk );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
 	return rc;
@@ -176,7 +177,7 @@ write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
 
     /* and make the signature */
     rc = make_keysig_packet( &sig, pk, NULL, subpk, sk, 0x18, 0,
-				    keygen_add_key_expire, sk );
+				    keygen_add_key_expire, subpk );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
 	return rc;
@@ -192,7 +193,7 @@ write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
 
 static int
 gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expiredate,
+	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval,
 							int version )
 {
     int rc;
@@ -214,9 +215,9 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     pk = m_alloc_clear( sizeof *pk );
     sk->timestamp = pk->timestamp = make_timestamp();
     sk->version = pk->version = version;
-    if( expiredate && expiredate < sk->timestamp )
-	expiredate = sk->timestamp; /* key generatio may take long */
-    sk->expiredate = pk->expiredate = expiredate;
+    if( expireval ) {
+	sk->expiredate = pk->expiredate = sk->timestamp + expireval;
+    }
     sk->pubkey_algo = pk->pubkey_algo = algo;
 		       pk->pkey[0] = mpi_copy( skey[0] );
 		       pk->pkey[1] = mpi_copy( skey[1] );
@@ -268,7 +269,7 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
  */
 static int
 gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	    STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expiredate )
+	    STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval )
 {
     int rc;
     int i;
@@ -291,9 +292,9 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     pk = m_alloc_clear( sizeof *pk );
     sk->timestamp = pk->timestamp = make_timestamp();
     sk->version = pk->version = 4;
-    if( expiredate && expiredate < pk->timestamp )
-	expiredate = pk->timestamp; /* key generation may take long */
-    sk->expiredate = pk->expiredate = expiredate;
+    if( expireval ) {
+	sk->expiredate = pk->expiredate = sk->timestamp + expireval;
+    }
     sk->pubkey_algo = pk->pubkey_algo = PUBKEY_ALGO_DSA;
 		       pk->pkey[0] = mpi_copy( skey[0] );
 		       pk->pkey[1] = mpi_copy( skey[1] );
@@ -481,12 +482,12 @@ ask_keysize( int algo )
 }
 
 
-u32
-ask_expiredate()
+static u32
+ask_expire_interval()
 {
     char *answer;
     int valid_days=0;
-    u32 expiredate = 0;
+    u32 interval = 0;
 
     tty_printf(_("Please specify how long the key should be valid.\n"
 		 "         0 = key does not expire\n"
@@ -494,7 +495,7 @@ ask_expiredate()
 		 "      <n>w = key expires in n weeks\n"
 		 "      <n>m = key expires in n months\n"
 		 "      <n>y = key expires in n years\n"));
-    /* Note: The elgamal subkey for DSA has no exiration date because
+    /* Note: The elgamal subkey for DSA has no expiration date because
      * it must be signed with the DSA key and this one has the expiration
      * date */
 
@@ -520,12 +521,13 @@ ask_expiredate()
 
 	if( !valid_days ) {
 	    tty_printf(_("Key does not expire at all\n"));
-	    expiredate = 0;
+	    interval = 0;
 	}
 	else {
-	    expiredate = make_timestamp() + valid_days * 86400L;
+	    interval = valid_days * 86400L;
 	    /* print the date when the key expires */
-	    tty_printf(_("Key expires at %s\n"), asctimestamp(expiredate) );
+	    tty_printf(_("Key expires at %s\n"),
+			asctimestamp(make_timestamp() + interval ) );
 	}
 
 	if( !cpr_enabled()
@@ -534,9 +536,15 @@ ask_expiredate()
 	    break;
     }
     m_free(answer);
-    return expiredate;
+    return interval;
 }
 
+u32
+ask_expiredate()
+{
+    u32 x = ask_expire_interval();
+    return x? make_timestamp() + x : 0;
+}
 
 static int
 has_invalid_email_chars( const char *s )
@@ -804,7 +812,7 @@ generate_keypair()
     STRING2KEY *s2k;
     int rc;
     int algo;
-    u32 expiredate;
+    u32 expire;
     int v4;
     int both = 0;
 
@@ -820,7 +828,7 @@ generate_keypair()
 	tty_printf(_("DSA keypair will have 1024 bits.\n"));
     }
     nbits = ask_keysize( algo );
-    expiredate = ask_expiredate();
+    expire = ask_expire_interval();
     uid = ask_user_id(0);
     if( !uid ) {
 	log_error(_("Key generation cancelled.\n"));
@@ -847,10 +855,10 @@ generate_keypair()
 
     if( both )
 	rc = do_create( PUBKEY_ALGO_DSA, 1024, pub_root, sec_root,
-					       dek, s2k, &sk, expiredate, 1);
+					       dek, s2k, &sk, expire, 1);
     else
 	rc = do_create( algo,		nbits, pub_root, sec_root,
-					       dek, s2k, &sk, expiredate, v4);
+					       dek, s2k, &sk, expire, v4);
     if( !rc )
 	write_uid(pub_root, uid );
     if( !rc )
@@ -862,7 +870,7 @@ generate_keypair()
 
     if( both ) {
 	rc = do_create( algo, nbits, pub_root, sec_root,
-					  dek, s2k, NULL, expiredate, 1 );
+					  dek, s2k, NULL, expire, 1 );
 	if( !rc )
 	    rc = write_keybinding(pub_root, pub_root, sk);
 	if( !rc )
@@ -951,7 +959,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     KBNODE node;
     PKT_secret_key *sk = NULL; /* this is the primary sk */
     int v4, algo;
-    u32 expiredate;
+    u32 expire;
     unsigned nbits;
     char *passphrase = NULL;
     DEK *dek = NULL;
@@ -988,7 +996,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     algo = ask_algo( &v4, 1 );
     assert(algo);
     nbits = ask_keysize( algo );
-    expiredate = ask_expiredate();
+    expire = ask_expire_interval();
     if( !cpr_enabled() && !cpr_get_answer_is_yes(N_("keygen.sub.okay"),
 						  _("Really create? ") ) )
 	goto leave;
@@ -1002,7 +1010,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     }
 
     rc = do_create( algo, nbits, pub_keyblock, sec_keyblock,
-				      dek, s2k, NULL, expiredate, v4 );
+				      dek, s2k, NULL, expire, v4 );
     if( !rc )
 	rc = write_keybinding(pub_keyblock, pub_keyblock, sk);
     if( !rc )

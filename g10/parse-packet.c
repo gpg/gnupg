@@ -288,7 +288,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
     }
 
     if( do_skip || !pkttype || (reqtype && pkttype != reqtype) ) {
-	skip_packet(inp, pkttype, pktlen);
+	skip_rest(inp, pktlen);
 	*skip = 1;
 	rc = 0;
 	goto leave;
@@ -636,7 +636,8 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	break;
       case SIGSUBPKT_SIG_EXPIRE:
 	if( length >= 4 )
-	    printf("sig expires %s", strtimestamp( buffer_to_u32(buffer) ) );
+	    printf("sig expires after %s",
+				     strtimevalue( buffer_to_u32(buffer) ) );
 	break;
       case SIGSUBPKT_EXPORTABLE:
 	if( length )
@@ -653,7 +654,8 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	break;
       case SIGSUBPKT_KEY_EXPIRE:
 	if( length >= 4 )
-	    printf("key expires %s", strtimestamp( buffer_to_u32(buffer) ) );
+	    printf("key expires after %s",
+				    strtimevalue( buffer_to_u32(buffer) ) );
 	break;
       case SIGSUBPKT_ARR:
 	p = "additional recipient request";

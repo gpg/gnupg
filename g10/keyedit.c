@@ -475,7 +475,7 @@ fix_keyblock( KBNODE keyblock )
  */
 
 void
-keyedit_menu( const char *username, STRLIST locusr )
+keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 {
     enum cmdids { cmdNONE = 0,
 	   cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
@@ -527,9 +527,10 @@ keyedit_menu( const char *username, STRLIST locusr )
     int modified = 0;
     int sec_modified = 0;
     int toggle;
+    int have_commands = !!commands;
 
 
-    if( opt.batch ) {
+    if( opt.batch && !have_commands ) {
 	log_error(_("can't do that in batchmode\n"));
 	goto leave;
     }
@@ -574,8 +575,21 @@ keyedit_menu( const char *username, STRLIST locusr )
 	}
 	do {
 	    m_free(answer);
-	    answer = cpr_get(N_("keyedit.cmd"), _("Command> "));
-	    cpr_kill_prompt();
+	    if( have_commands ) {
+		if( commands ) {
+		    answer = m_strdup( commands->d );
+		    commands = commands->next;
+		}
+		else if( opt.batch ) {
+		    answer = m_strdup("quit");
+		}
+		else
+		    have_commands = 0;
+	    }
+	    if( !have_commands ) {
+		answer = cpr_get(N_("keyedit.cmd"), _("Command> "));
+		cpr_kill_prompt();
+	    }
 	    trim_spaces(answer);
 	} while( *answer == '#' );
 
@@ -617,6 +631,8 @@ keyedit_menu( const char *username, STRLIST locusr )
 	    break;
 
 	  case cmdQUIT:
+	    if( have_commands )
+		goto leave;
 	    if( !modified && !sec_modified )
 		goto leave;
 	    if( !cpr_get_answer_is_yes(N_("keyedit.save.okay"),
@@ -1023,7 +1039,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
     assert(pk && sk );
 
     rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0,
-			     keygen_add_std_prefs, sk );
+			     keygen_add_std_prefs, pk );
     free_secret_key( sk );
     if( rc ) {
 	log_error("signing failed: %s\n", g10_errstr(rc) );
@@ -1168,7 +1184,7 @@ menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
 static int
 menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 {
-    int n1, rc;
+    int n1, signumber, rc;
     u32 expiredate;
     int mainkey=0;
     PKT_secret_key *sk;    /* copy of the main sk */
@@ -1195,26 +1211,24 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
     }
 
     expiredate = ask_expiredate();
-    /* fixme: check that expiredate is > key creation date */
-
-    /* get the secret key , make a copy and set the expiration time into
-     * that key (because keygen_add-key-expire expects it there)
-     */
     node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
     sk = copy_secret_key( NULL, node->pkt->pkt.secret_key);
-    sk->expiredate = expiredate;
 
     /* Now we can actually change the self signature(s) */
     main_pk = sub_pk = NULL;
     uid = NULL;
+    signumber = 0;
     for( node=pub_keyblock; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
 	    main_pk = node->pkt->pkt.public_key;
 	    keyid_from_pk( main_pk, keyid );
+	    main_pk->expiredate = expiredate;
 	}
 	else if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
-		 && (node->flag & NODFLG_SELKEY ) )
+		 && (node->flag & NODFLG_SELKEY ) ) {
 	    sub_pk = node->pkt->pkt.public_key;
+	    sub_pk->expiredate = expiredate;
+	}
 	else if( node->pkt->pkttype == PKT_USER_ID )
 	    uid = node->pkt->pkt.user_id;
 	else if( main_pk && node->pkt->pkttype == PKT_SIGNATURE ) {
@@ -1222,16 +1236,31 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
 		&& (	(mainkey && uid && (sig->sig_class&~3) == 0x10)
 		     || (!mainkey && sig->sig_class == 0x18)  ) ) {
-		/* this is a selfsignature which should be replaced */
+		/* this is a selfsignature which is to be replaced */
 		PKT_signature *newsig;
 		PACKET *newpkt;
 		KBNODE sn;
+		int signumber2 = 0;
+
+		signumber++;
+
+		if( (mainkey && main_pk->version < 4)
+		    || (!mainkey && sub_pk->version < 4 ) ) {
+		    log_info(_(
+			"You can't change the expiration date of a v3 key\n"));
+		    free_secret_key( sk );
+		    return 0;
+		}
 
 		/* find the corresponding secret self-signature */
 		for( sn=sec_keyblock; sn; sn = sn->next ) {
-		    if( sn->pkt->pkttype == PKT_SIGNATURE
-			&& !cmp_signatures( sn->pkt->pkt.signature, sig ) )
-			break;
+		    if( sn->pkt->pkttype == PKT_SIGNATURE ) {
+			PKT_signature *b = sn->pkt->pkt.signature;
+			if( keyid[0] == b->keyid[0] && keyid[1] == b->keyid[1]
+			    && sig->sig_class == b->sig_class
+			    && ++signumber2 == signumber )
+			    break;
+		    }
 		}
 		if( !sn )
 		    log_info(_("No corresponding signature in secret ring\n"));
@@ -1240,11 +1269,11 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 		if( mainkey )
 		    rc = make_keysig_packet( &newsig, main_pk, uid, NULL,
 					     sk, 0x13, 0,
-					     keygen_add_std_prefs, sk );
+					     keygen_add_std_prefs, main_pk );
 		else
 		    rc = make_keysig_packet( &newsig, main_pk, NULL, sub_pk,
 					     sk, 0x18, 0,
-					     keygen_add_key_expire, sk );
+					     keygen_add_key_expire, sub_pk );
 		if( rc ) {
 		    log_error("make_keysig_packet failed: %s\n",
 						    g10_errstr(rc));

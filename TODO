@@ -4,18 +4,15 @@
 
     * Check Berkeley BD - it is in glibc -any licensing problems?
 
-    * I noticed, that we sometimes have only 3 items in atrustrecord, but
+    * I noticed, that we sometimes have only 3 items in a trustrecord, but
       a next pointer ro more records - check wehther the reuse code really
-      works. Maybe this is the reason for the "Hmmm puiblic key lost"
+      works. Maybe this is the reason for the "Hmmm public key lost"
 
     * Update the keyring at ftp.guug.de
 
     * expire date is not shown in --edit-key for subkeys.
 
     * check support for mpi/powerpc
-
-    * add a note, that gettext 10.35 is needed (for gettext) - and install
-      it on tobold.
 
     * use zlib 1.1.13 to avoid a bug with 13 bit windows
       but there are more problems with large files
@@ -24,11 +21,16 @@
 	#define USE_DYNAMIC_LINKING
 	#define HAVE_DL_DLOPEN
 	and the ld option -export-dynamic.
+      Why does autoconf not figure that out?
 
     * clearsig: keep lineendings as they are. Remember that trailings
       blanks are not hashed.
 
     * Check revocation and expire stuff.
+
+    * Always use the latest key signature (import).  This is needed, so
+      that we are able to chnage the expiration time or other info in the
+      selfsignature
 
     * OpenBSD: dynamic loading with dlopen works on OpenBSD, but:
 	OpenBSD binaries are a.out, so every symbol begins with "_"
@@ -58,8 +60,6 @@
     * add some sanity checks to read_keyblock, so that we are sure that
      the minimal requirements are met (?)
 
-    * decryption of message with multiple recipients does not work.
-
     * preferences of hash algorithms are not yet used.
 
     * rewrite --list-packets or put it into another tool.
@@ -67,25 +67,13 @@
     * Burn the buffers used by fopen(), or use read(2). Does this
       really make sense?
 
-    * Change the buffering to a mbuf like scheme? Need it for PSST anyway.
+    * Change the buffering to a mbuf like scheme? Need it for PSST anyway;
+      see Michael's proposal.
     * add checking of armor trailers
-    * remove all "Fixmes"
-
-    * Change the internal represention of keyid into a struct which
-      can also hold the localid and extend the localid to hold information
-      of the subkey number because two subkeys may have the same keyid.
+    * remove all "Fixmes" ;-)
 
     * add an option to re-create a public key from a secret key; we
       can do this in trustdb.c:verify_own_keys.
-
-    * signature verification is done duplicated on import: in import.c and
-      tehn in trustdb.c too.  Maybe we can use a flag to skip the actual
-      verification process (this should work if we use the same keyblock,
-      but I'm not sure how to accomplish that).  Another way is to allow
-      the import of bogus data and let trustdb mark these keys as invalid;
-      I see an advantage in this that it may help to prevent a DoS on a
-      keyserver by sending him a lot of bogus signatures which he has
-      to check - Needs further investigation.
 
     * change the fake_data stuff to mpi_set_opaque
 
@@ -93,5 +81,5 @@
 
     * Add some stuff for DU cc
 
-    * Use "user ID", "trustdb" and "WARNING".
+    * Use "user ID", "trustdb", "NOTE" and "WARNING".
 

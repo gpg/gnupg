@@ -1,6 +1,10 @@
 This is NOT a released version!
 -------------------------------
 
+    * Fixed the way the key expiration time is stored. If you have
+      an expiration time on your key you should fix it with --edit-key
+      and the command "expire".  I apologize for this inconvenience.
+
     * Add option --charset to support "koi8-r" encoding of user ids.
       (Not yet tested).
 
@@ -14,6 +18,16 @@ This is NOT a released version!
 
     * Spanish translation by Urko Lusa.
 
+    * Patch files are from now on signed.  See the man page
+      for the new option --not-dash-escaped.
+
+    * New syntax: --edit-key <userID> [<commands>]
+      If you run it without --batch the commands are executed and then
+      you are put into normal mode unless you use "quit" or "save" as
+      one of the commands.  When in batch mode, the program quits after
+      the last command, so you have to use "save" if you did some changes.
+      It does not yet work completey, but may be used to list so the
+      keys etc.
 
 
 Noteworthy changes in version 0.4.3

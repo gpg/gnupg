@@ -1,3 +1,7 @@
+Fri Nov 20 12:01:57 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* mkdiff: signs the pacth file
+
 Sat Oct 17 16:10:16 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* autogen.sh: New.

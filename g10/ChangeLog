@@ -1,3 +1,25 @@
+Fri Nov 20 16:54:52 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c (main): New option --not-dash-escaped
+	* sign.c (write_dashed_escaped): Ditto.
+	* armor.c (find_header): Support for NotDashEscaped header.
+
+Thu Nov 19 07:17:31 1998  Werner Koch  <werner.koch@guug.de>
+
+	* parse-packet.c (dump_sig_subpkt): Fixed expire listing
+	* getkey.c (merge_keys_and_selfsig): Fixed expire calculation.
+	(merge_one_pk_and_selfsig): Ditto.
+	* keyedit.c (menu_expire). Ditto.
+	* keygen.c (keygen_add_key_expire): Ditto.
+	(ask_expire_interval): New and changed all local function to use
+	this instead.
+	(keygen_add_key_expire): Opaque should now be a public key;
+	changed all callers.
+
+	* parse.packet.c (parse): use skip_rest to skip packets.
+
+	* keyedit.c (keyedit_menu): New arg for cmdline cmds.
+
 Wed Nov 18 20:33:50 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* trustdb.c (check_trustdb): Now rechecks all gived userids.

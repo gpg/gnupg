@@ -39,6 +39,35 @@ add_days_to_timestamp( u32 stamp, u16 days )
     return stamp + days*86400L;
 }
 
+
+/****************
+ * Return a string with a time value in the form: x Y, n D, n H
+ */
+
+const char *
+strtimevalue( u32 value )
+{
+    static char buffer[30];
+    unsigned int years, days, hours, minutes;
+
+    value /= 60;
+    minutes = value % 60;
+    value /= 60;
+    hours = value % 24;
+    value /= 24;
+    days = value % 365;
+    value /= 365;
+    years = value;
+
+    sprintf(buffer,"%uy%ud%uh%um", years, days, hours, minutes );
+    if( years )
+	return buffer;
+    if( days )
+	return strchr( buffer, 'y' ) + 1;
+    return strchr( buffer, 'd' ) + 1;
+}
+
+
 /****************
  * Note: this function returns GMT
  */

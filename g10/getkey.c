@@ -721,7 +721,7 @@ merge_one_pk_and_selfsig( KBNODE keyblock, KBNODE knode )
 	     */
 	    const byte *p;
 	    p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_KEY_EXPIRE, NULL );
-	    pk->expiredate = p? buffer_to_u32(p):0;
+	    pk->expiredate = p? pk->timestamp + buffer_to_u32(p):0;
 	    /* fixme: add usage etc. to pk */
 	    break;
 	}
@@ -739,7 +739,7 @@ merge_keys_and_selfsig( KBNODE keyblock )
     PKT_secret_key *sk = NULL;
     PKT_signature *sig;
     KBNODE k;
-    u32 kid[2];
+    u32 kid[2] = { 0, 0 };
 
     for(k=keyblock; k; k = k->next ) {
 	if( k->pkt->pkttype == PKT_PUBLIC_KEY
@@ -747,7 +747,7 @@ merge_keys_and_selfsig( KBNODE keyblock )
 	    pk = k->pkt->pkt.public_key; sk = NULL;
 	    if( pk->version < 4 )
 		pk = NULL; /* not needed for old keys */
-	    else
+	    else if( k->pkt->pkttype == PKT_PUBLIC_KEY )
 		keyid_from_pk( pk, kid );
 	}
 	else if( k->pkt->pkttype == PKT_SECRET_KEY
@@ -755,7 +755,7 @@ merge_keys_and_selfsig( KBNODE keyblock )
 	    pk = NULL; sk = k->pkt->pkt.secret_key;
 	    if( sk->version < 4 )
 		sk = NULL;
-	    else
+	    else if( k->pkt->pkttype == PKT_SECRET_KEY )
 		keyid_from_sk( sk, kid );
 	}
 	else if( (pk || sk ) && k->pkt->pkttype == PKT_SIGNATURE
@@ -770,12 +770,12 @@ merge_keys_and_selfsig( KBNODE keyblock )
 	    const byte *p;
 	    p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_KEY_EXPIRE, NULL );
 	    if( pk ) {
-		pk->expiredate = p? buffer_to_u32(p):0;
+		pk->expiredate = p? pk->timestamp + buffer_to_u32(p):0;
 		/* fixme: add usage etc. */
 		pk = NULL; /* use only the first self signature */
 	    }
 	    else {
-		sk->expiredate = p? buffer_to_u32(p):0;
+		sk->expiredate = p? sk->timestamp + buffer_to_u32(p):0;
 		sk = NULL; /* use only the first self signature */
 	    }
 	}
