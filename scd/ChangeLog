@@ -1,3 +1,7 @@
+2002-06-15  Werner Koch  <wk@gnupg.org>
+
+	* card-dinsig.c: Documented some stuff from the DIN norm.
+
 2002-04-15  Werner Koch  <wk@gnupg.org>
 
 	* command.c (cmd_pksign, cmd_pkdecrypt): Use a copy of the key ID.
