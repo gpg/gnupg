@@ -220,12 +220,13 @@ void show_photos(const struct user_attribute *attrs,
   int i;
   struct expando_args args;
   u32 len;
-  u32 kid[2];
+  u32 kid[2]={0,0};
 
   memset(&args,0,sizeof(args));
   args.pk=pk;
 
-  keyid_from_pk(pk,kid);
+  if(pk)
+    keyid_from_pk(pk,kid);
 
   for(i=0;i<count;i++)
     if(attrs[i].type==ATTRIB_IMAGE &&
