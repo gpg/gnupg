@@ -23,6 +23,12 @@ Noteworthy changes in version 1.3.6
       default), then the preferred keyserver is used when refreshing
       that key.
 
+    * The --sig-keyserver-url option can be used to inform signature
+      recipients where the signing key can be downloaded.  When
+      verifying the signature, if the signing key is not present, and
+      the keyserver options honor-keyserver-url and auto-key-retrieve
+      are set, this URL will be used to retrieve the key.
+
     * Support for fetching keys via HTTP has been added.  This is
       mainly useful for setting a preferred keyserver URL like
       "http://www.jabberwocky.com/key.asc".

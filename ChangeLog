@@ -1,5 +1,9 @@
 2004-05-21  David Shaw  <dshaw@jabberwocky.com>
 
+	* NEWS: Note --sig-keyserver-url and the ability to use a
+	preferred keyserver in a regular data sig to fetch the signing
+	key.
+
 	* configure.ac: Replacement function for timegm().  No need to
 	check for setenv() any longer.
 
