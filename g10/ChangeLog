@@ -15,6 +15,11 @@
 	behavior should only apply while data signing and not encryption.
 	Noted by Roger Sondermann.
 
+2002-04-19  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (keygen_set_std_prefs): Put back 3DES because the RFC
+	says it is good form to do so.
+
 2002-04-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (menu_deluid): Only cause a trust update if we delete

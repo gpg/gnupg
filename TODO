@@ -2,6 +2,9 @@
 
   * Do we need a configure test for putenv?
 
+  * Check for consistent spelling of user ID, key ID etc.
+    Replace "user id not found" in getkey.c by "no valid user ID found".
+ 
   * Add remarks to the man page about OpenPGP OPTIONAL algorithms and
     issue warnings when such an algorithm is used (disabled by expert modus?)
 
@@ -55,9 +58,6 @@
 
   * Add an is_valid flag to each user ID.
 
-  * Check for consistent spelling of user ID, key ID etc.
-    Replace "user id not found" in getkey.c by "no valid user ID found".
- 
   * Replace the printing of the user name by [self-signature] when
     appropriate so that a key listing does not get clobbered.
 

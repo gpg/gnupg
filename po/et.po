@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.6d\n"
 "POT-Creation-Date: 2002-04-19 11:22+0200\n"
-"PO-Revision-Date: 2002-03-08 11:47+0200\n"
+"PO-Revision-Date: 2002-04-22 12:07+0200\n"
 "Last-Translator: Toomas Soome <tsoome@ut.ee>\n"
 "Language-Team: Estonian <et@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -800,17 +800,17 @@ msgstr "ei saa parsida võtmeserveri URI\n"
 #: g10/g10.c:1216
 #, c-format
 msgid "unable to set exec-path to %s\n"
-msgstr ""
+msgstr "exec-path väärtuseks ei õnnestu seada %s\n"
 
 #: g10/g10.c:1239 g10/g10.c:1255
-#, fuzzy, c-format
+#, c-format
 msgid "WARNING: %s is a deprecated option.\n"
-msgstr "HOIATUS: `%s' on tühi fail\n"
+msgstr "HOIATUS: võtit %s ei soovitata kasutada.\n"
 
 #: g10/g10.c:1241 g10/g10.c:1258
 #, c-format
 msgid "please use \"--keyserver-options %s\" instead\n"
-msgstr ""
+msgstr "palun kasutage selle asemel \"--keyserver-options %s\"\n"
 
 #: g10/g10.c:1329
 msgid "WARNING: program may create a core file!\n"
@@ -1384,9 +1384,8 @@ msgid "too many `%c' preferences\n"
 msgstr "liiga palju `%c' eelistusi\n"
 
 #: g10/keygen.c:257
-#, fuzzy
 msgid "invalid character in preference string\n"
-msgstr "lubamatu sümbol sõnes\n"
+msgstr "lubamatu sümbol eelistuste sõnes\n"
 
 #: g10/keygen.c:399
 msgid "writing self signature\n"
@@ -1880,10 +1879,9 @@ msgid "[User id not found]"
 msgstr "[Kasutaja id puudub]"
 
 #: g10/getkey.c:1360
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
-msgstr ""
-"Vigane võti %08lX muudeti kehtivaks võtme --always-trust kasutamisega\n"
+msgstr "Vigane võti %08lX muudeti kehtivaks võtme --allow-non-selfsigned-uid kasutamisega\n"
 
 #: g10/getkey.c:1988
 #, c-format
@@ -1976,9 +1974,9 @@ msgid "key %08lX: no user ID\n"
 msgstr "võti %08lX: kasutaja ID puudub\n"
 
 #: g10/import.c:455
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: accepted non self-signed user ID '%s'\n"
-msgstr "võti %08lX: aktsepteerisin iseenda poolt allakirjutamata kasutaja ID '"
+msgstr "võti %08lX: aktsepteerisin iseenda poolt allakirjutamata kasutaja ID '%s'\n"
 
 #: g10/import.c:462
 #, c-format
@@ -2112,14 +2110,14 @@ msgid "key %08lX: no user ID for signature\n"
 msgstr "võti %08lX: allkirjal puudub kasutaja ID\n"
 
 #: g10/import.c:836
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: unsupported public key algorithm on user id \"%s\"\n"
-msgstr "võti %08lX: mittetoetatud avaliku võtme algoritm\n"
+msgstr "võti %08lX: mittetoetatud avaliku võtme algoritm kasutajaga \"%s\"\n"
 
 #: g10/import.c:838
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: invalid self-signature on user id \"%s\"\n"
-msgstr "võti %08lX: vigane iseenda allkiri\n"
+msgstr "võti %08lX: kasutajal \"%s\" on vigane iseenda allkiri\n"
 
 #: g10/import.c:855
 #, c-format
@@ -2173,12 +2171,12 @@ msgstr "võti %08lX: tuvastasin dubleeritud kasutaja ID - mestisin\n"
 #: g10/import.c:1128
 #, c-format
 msgid "Warning: key %08lX may be revoked: fetching revocation key %08lX\n"
-msgstr ""
+msgstr "Hoiatus: võti %08lX võib olla tühistatud: laen tühistamise võtit %08lX\n"
 
 #: g10/import.c:1142
 #, c-format
 msgid "Warning: key %08lX may be revoked: revocation key %08lX not present.\n"
-msgstr ""
+msgstr "Hoiatus: võti %08lX võib olla tühistatud: tühistamise võtit %08lX pole.\n"
 
 #: g10/import.c:1198
 #, c-format
@@ -2235,50 +2233,42 @@ msgid "%d user IDs without valid self-signatures detected\n"
 msgstr "tuvastasin %d kehtiva iseenda allkirjata kasutaja IDd\n"
 
 #: g10/keyedit.c:333
-#, fuzzy, c-format
+#, c-format
 msgid "User ID \"%s\" is revoked."
-msgstr "Kasutaja ID \"%s\" on tühistatud.\n"
+msgstr "Kasutaja ID \"%s\" on tühistatud."
 
 #: g10/keyedit.c:341 g10/keyedit.c:424 g10/keyedit.c:476 g10/keyedit.c:1048
-#, fuzzy
 msgid "Are you sure you still want to sign it? (y/N) "
-msgstr "Olete kindel, et soovite seda ikka lisada? (j/e) "
+msgstr "Olete kindel, et soovite seda ikka allkirjastada? (j/e) "
 
 #: g10/keyedit.c:348 g10/keyedit.c:430 g10/keyedit.c:1054
 msgid "  Unable to sign.\n"
-msgstr ""
+msgstr "  Ei saa allkirjastada.\n"
 
 #. It's a local sig, and we want to make a
 #. exportable sig.
 #: g10/keyedit.c:362
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Your current signature on \"%s\"\n"
 "is a local signature.\n"
 msgstr ""
 "Teie praegune allkiri \"%s\"\n"
 "on lokaalne allkiri.\n"
-"\n"
-"Kas te soovite seda edutada täielikuks eksporditavaks allkirjaks?\n"
 
 #: g10/keyedit.c:366
-#, fuzzy
 msgid "Do you want to promote it to a full exportable signature? (y/N) "
-msgstr ""
-"Teie praegune allkiri \"%s\"\n"
-"on lokaalne allkiri.\n"
-"\n"
-"Kas te soovite seda edutada täielikuks eksporditavaks allkirjaks?\n"
+msgstr "Kas te soovite seda edutada täielikuks eksporditavaks allkirjaks? (j/E) "
 
 #: g10/keyedit.c:386
-#, fuzzy, c-format
+#, c-format
 msgid "\"%s\" was already locally signed by key %08lX\n"
-msgstr "\"%s\" on juba %sallkirjastatud võtmega %08lX\n"
+msgstr "\"%s\" on juba lokaalselt allkirjastatud võtmega %08lX\n"
 
 #: g10/keyedit.c:391
-#, fuzzy, c-format
+#, c-format
 msgid "\"%s\" was already signed by key %08lX\n"
-msgstr "\"%s\" on juba %sallkirjastatud võtmega %08lX\n"
+msgstr "\"%s\" on juba allkirjastatud võtmega %08lX\n"
 
 #: g10/keyedit.c:403
 #, c-format
@@ -2295,21 +2285,18 @@ msgid "This key is due to expire on %s.\n"
 msgstr "See võti aegub %s.\n"
 
 #: g10/keyedit.c:440
-#, fuzzy
 msgid "Do you want your signature to expire at the same time? (y/N) "
-msgstr "Soovite et teie allkiri aeguks samal ajal? (j/e) "
+msgstr "Soovite, et teie allkiri aeguks samal ajal? (j/E) "
 
 #: g10/keyedit.c:469
-#, fuzzy
 msgid ""
 "You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
 "mode.\n"
-msgstr "PGP 2.x stiilis võtmetega saab allkirjastada ainult --pgp2 moodis\n"
+msgstr "--pgp2 moodis ei saa PGP 2.x võtmele OpenPGP allkirja anda.\n"
 
 #: g10/keyedit.c:471
-#, fuzzy
 msgid "This would make the key unusable in PGP 2.x.\n"
-msgstr "see teade ei pruugi olla PGP 2.x programmidega kasutatav\n"
+msgstr "See muudab võtme PGP 2.x programmidega mitte-kasutatavaks.\n"
 
 #: g10/keyedit.c:492
 msgid ""
@@ -2746,9 +2733,8 @@ msgid "Please use the command \"toggle\" first.\n"
 msgstr "Palun kasutage kõigepealt käsku \"toggle\".\n"
 
 #: g10/keyedit.c:1042
-#, fuzzy
 msgid "Key is revoked."
-msgstr "Võti on tühistatud.\n"
+msgstr "Võti on tühistatud."
 
 #: g10/keyedit.c:1061
 msgid "Really sign all user IDs? "
@@ -2875,6 +2861,8 @@ msgid ""
 "Please note that the shown key validity is not necessary correct\n"
 "unless you restart the program.\n"
 msgstr ""
+"Tuleb tähele panna, et kuni te pole programmi uuesti käivitanud,"
+"ei pruugi näidatud võtme kehtivus olla tingimata korrektne.\n"
 
 #: g10/keyedit.c:1651
 msgid ""
@@ -2886,9 +2874,8 @@ msgstr ""
 "         versiooni kasutamisel.\n"
 
 #: g10/keyedit.c:1655 g10/keyedit.c:1682
-#, fuzzy
 msgid "Are you sure you still want to add it? (y/N) "
-msgstr "Olete kindel, et soovite seda ikka lisada? (j/e) "
+msgstr "Olete kindel, et soovite seda ikka lisada? (j/E) "
 
 #: g10/keyedit.c:1663
 msgid "You may only have one photo ID on a key.\n"
@@ -2989,28 +2976,26 @@ msgstr ""
 "allkirjastatud teie võtmega %08lX %s\n"
 
 #: g10/keyedit.c:2428
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\"\n"
 "locally signed with your key %08lX at %s\n"
 msgstr ""
 "\"\n"
-"allkirjastatud teie võtmega %08lX %s\n"
+"lokaalselt allkirjastatud teie võtmega %08lX %s\n"
 
 #: g10/keyedit.c:2433
-#, fuzzy, c-format
+#, c-format
 msgid "This signature expired on %s.\n"
-msgstr "See võti aegub %s.\n"
+msgstr "See allkiri aegub %s.\n"
 
 #: g10/keyedit.c:2437
-#, fuzzy
 msgid "Are you sure you still want to revoke it? (y/N) "
-msgstr "Olete kindel, et soovite seda ikka lisada? (j/e) "
+msgstr "Olete kindel, et soovite seda ikka tühistada? (j/E) "
 
 #: g10/keyedit.c:2441
-#, fuzzy
 msgid "Create a revocation certificate for this signature? (y/N) "
-msgstr "Loon sellele allkirjale tühistamise sertifikaadi? (j/E)"
+msgstr "Loon sellele allkirjale tühistamise sertifikaadi? (j/E) "
 
 #. FIXME: detect duplicates here
 #: g10/keyedit.c:2467
@@ -3018,9 +3003,9 @@ msgid "You have signed these user IDs:\n"
 msgstr "Te olete allkirjastanud järgnevad kasutaja IDd:\n"
 
 #: g10/keyedit.c:2481
-#, fuzzy, c-format
+#, c-format
 msgid "   signed by %08lX at %s%s%s\n"
-msgstr "   allkirjastanud %08lX %s%s\n"
+msgstr "   allkirjastanud %08lX %s%s%s\n"
 
 #: g10/keyedit.c:2489
 #, c-format
@@ -3038,12 +3023,11 @@ msgstr "   allkirjastanud %08lX %s%s\n"
 
 #: g10/keyedit.c:2521
 msgid " (non-exportable)"
-msgstr ""
+msgstr " (mitte-eksporditav)"
 
 #: g10/keyedit.c:2528
-#, fuzzy
 msgid "Really create the revocation certificates? (y/N) "
-msgstr "Kas tõesti loon tühistamise sertifikaadid? (j/E)"
+msgstr "Kas tõesti loon tühistamise sertifikaadid? (j/E) "
 
 #: g10/keyedit.c:2558
 msgid "no secret key\n"
@@ -3052,7 +3036,7 @@ msgstr "salajast võtit pole\n"
 #: g10/keyedit.c:2710
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key 0x%08lX (uid %d)\n"
-msgstr ""
+msgstr "Näitan %s foto IDd suurusega %ld, võti 0x%08lX (uid %d)\n"
 
 #. This isn't UTF8 as it is a URL(?)
 #: g10/keylist.c:82
@@ -3246,14 +3230,14 @@ msgstr ""
 "see ¨ifri algoritm ei ole soovitatav; kasutage palun mõnd standardsemat!\n"
 
 #: g10/misc.c:378
-#, fuzzy, c-format
+#, c-format
 msgid "Warning: unsafe ownership on %s \"%s\"\n"
-msgstr "Hoiatus: Ebaturvaline omanik %s \"%s\"\n"
+msgstr "Hoiatus: ebaturvaline omanik %s \"%s\"\n"
 
 #: g10/misc.c:410
-#, fuzzy, c-format
+#, c-format
 msgid "Warning: unsafe permissions on %s \"%s\"\n"
-msgstr "Hoiatus: Ebaturvalised õigused %s \"%s\"\n"
+msgstr "Hoiatus: ebaturvalised õigused %s \"%s\"\n"
 
 #: g10/misc.c:435
 msgid "the IDEA cipher plugin is not present\n"
@@ -3498,7 +3482,7 @@ msgstr "HOIATUS: Tuvastasin nõrga võtme - palun muutke uuesti parooli.\n"
 
 #: g10/seckey-cert.c:311
 msgid "generating the deprecated 16-bit checksum for secret key protection\n"
-msgstr ""
+msgstr "loon salajase võtme kaitseks mittesoovitavat 16 bitist kontrollsummat\n"
 
 #: g10/sig-check.c:205
 msgid ""
@@ -3891,7 +3875,7 @@ msgstr ""
 
 #: g10/seskey.c:200
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
-msgstr ""
+msgstr "DSA nõuab 160 bitist räsialgoritmi kasutamist\n"
 
 #: g10/delkey.c:116
 msgid "can't do that in batchmode without \"--yes\"\n"
@@ -3912,7 +3896,7 @@ msgstr "võtmebloki kustutamine ebaõnnestus: %s\n"
 
 #: g10/delkey.c:161
 msgid "ownertrust information cleared\n"
-msgstr ""
+msgstr "omaniku usalduse info puhastatud\n"
 
 #: g10/delkey.c:189
 #, c-format
@@ -4186,13 +4170,12 @@ msgstr ""
 "olemas ka teine allkiri, mis kasutajat võtmega seob."
 
 #: g10/helptext.c:231
-#, fuzzy
 msgid ""
 "Change the preferences of all user IDs (or just of the selected ones)\n"
 "to the current list of preferences.  The timestamp of all affected\n"
 "self-signatures will be advanced by one second.\n"
 msgstr ""
-"Muuda kõikide kasutaja ID-de seadeid (või ainult valitud ID omi)\n"
+"Muuda kõikide kasutaja ID-de seaded (või ainult valitud)\n"
 "vastavaks hetkel määratud seadetele. Kõikide asjasse puutuvate\n"
 "ise loodud allkirjade ajatempleid suurendatakse ühe sekundi võrra.\n"
 
@@ -4325,22 +4308,3 @@ msgstr "kontrollitud %lu võtit (%lu allkirja)\n"
 #, c-format
 msgid "%s: keyring created\n"
 msgstr "%s: võtmehoidla on loodud\n"
-
-#~ msgid "Are you sure you still want to sign it?\n"
-#~ msgstr "Olete kindel, et soovite seda ikka allkirjastada?\n"
-
-#~ msgid "  Are you sure you still want to sign it?\n"
-#~ msgstr "  Olete kindel, et soovite seda ikkagi allkirjastada?\n"
-
-#, fuzzy
-#~ msgid "Really sign? (y/N) "
-#~ msgstr "Allkirjastan tõesti? "
-
-#~ msgid "key %08lX: our copy has no self-signature\n"
-#~ msgstr "võti %08lX: meie koopial puudub iseenda allkiri\n"
-
-#~ msgid "Do you really need such a large keysize? "
-#~ msgstr "Kas te tõesti soovite nii pikka võtit? "
-
-#~ msgid "   signed by %08lX at %s\n"
-#~ msgstr "   allkirjastanud %08lX %s\n"
