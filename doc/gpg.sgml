@@ -1,5 +1,5 @@
 <!-- gpg.sgml - the man page for GnuPG
-    Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
     This file is part of GnuPG.
 
@@ -326,8 +326,8 @@ trust-db immediately and no save is required.</para></listitem></varlistentry>
     <term>disable</term>
     <term>enable</term>
     <listitem><para>
-Disable or enable an entire key. A disabled key can normally not be used
-for encryption.</para></listitem></varlistentry>
+Disable or enable an entire key. A disabled key can not normally be
+used for encryption.</para></listitem></varlistentry>
     <varlistentry>
     <term>adduid</term>
     <listitem><para>
@@ -522,7 +522,7 @@ a subkey or a signature, use the --edit command.
 <term>--desig-revoke</term>
 <listitem><para>
 Generate a designated revocation certificate for a key.  This allows a
-user (with the permission of the keyholder) to revoke someone elses
+user (with the permission of the keyholder) to revoke someone else's
 key.
 </para></listitem></varlistentry>
 
@@ -754,17 +754,16 @@ Write output to &ParmFile;.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--no-mangle-dos-filenames</term>
 <term>--mangle-dos-filenames</term>
+<term>--no-mangle-dos-filenames</term>
 <listitem><para>
-The Windows version of GPG replaces the extension of an output
+The Windows version of GnuPG replaces the extension of an output
 filename to avoid problems with filenames containing more than one
-dot. This is not necessary for newer Windows version and such
---no-mangle-dos-filenames can be used to switch this feature off and 
-have GPG append the new extension.   This otion has no effect on
-non-windows platforms.
+dot.  This is not necessary for newer Windows versions and so
+--no-mangle-dos-filenames can be used to switch this feature off and
+have GnuPG append the new extension.  This option has no effect on
+non-Windows platforms.
 </para></listitem></varlistentry>
-
 
 
 <varlistentry>
@@ -2074,8 +2073,8 @@ in future versions.
 <varlistentry>
 <term>--fixed-list-mode</term>
 <listitem><para>
-Do not merge user ID and primary key in --with-colon listing mode and
-print all timestamps as seconds since 1970-01-01.
+Do not merge primary user ID and primary key in --with-colon listing
+mode and print all timestamps as seconds since 1970-01-01.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2214,7 +2213,7 @@ Experimental use only.
 <term>--group &ParmNameValues;</term>
 <listitem><para>
 Sets up a named group, which is similar to aliases in email programs.
-Any time the group name is a receipient (-r or --recipient), it will
+Any time the group name is a recipient (-r or --recipient), it will
 be expanded to the values specified.
 </para><para>
 The values are &ParmKeyIDs; or fingerprints, but any key description

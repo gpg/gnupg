@@ -1,3 +1,8 @@
+2003-01-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Minor language tweaks, spell check, copyright date,
+	etc.
+
 2003-01-07  David D. Scribner <dscribner@bigfoot.com>
 
 	* faq.raw: Update to version 1.6.1.  Applied by Werner Koch
@@ -585,7 +590,7 @@ Wed Feb 10 17:15:39 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 	* DETAILS: Ditto.
 
 
- Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
