@@ -760,6 +760,19 @@ Create ASCII armored output.
 Write output to &ParmFile;.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--no-mangle-dos-filenames</term>
+<term>--mangle-dos-filenames</term>
+<listitem><para>
+The Windows version of GPG replaces the extension of an output
+filename to avoid problems with filenames containing more than one
+dot. This is not necessary for newer Windows version and such
+--no-mangle-dos-filenames can be used to switch this feature off and 
+have GPG append the new extension.   This otion has no effect on
+non-windows platforms.
+</para></listitem></varlistentry>
+
+
 
 <varlistentry>
 <term>-u, --local-user &ParmName;</term>

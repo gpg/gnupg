@@ -1,3 +1,7 @@
+2002-12-05  Werner Koch  <wk@gnupg.org>
+
+	* gpg.sgml: Document --no-mangle-dos-filenames.
+
 2002-12-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Point out that if the user absolutely must, it's
