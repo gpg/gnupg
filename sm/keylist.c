@@ -249,21 +249,27 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
 
   /* FPR record */
   fprintf (fp, "fpr:::::::::%s:::", fpr);
-  xfree (fpr); fpr = NULL;
   /* print chaining ID (field 13)*/
   {
     ksba_cert_t next;
+    int rc;
     
-    if (!gpgsm_walk_cert_chain (cert, &next))
+    rc = gpgsm_walk_cert_chain (cert, &next);
+    if (!rc) /* We known the issuer's certificate. */
       {
         p = gpgsm_get_fingerprint_hexstring (next, GCRY_MD_SHA1);
         fputs (p, fp);
         xfree (p);
         ksba_cert_release (next);
       }
+    else if (rc == -1)  /* We reached the root certificate. */
+      {
+        fputs (fpr, fp);
+      }
   }
   putc (':', fp);
   putc ('\n', fp);
+  xfree (fpr); fpr = NULL;
 
 
   if (opt.with_key_data)

@@ -1,3 +1,8 @@
+2004-02-24  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (list_cert_colon): Print the fingerprint as the
+	cert-id for root certificates.
+
 2004-02-21  Werner Koch  <wk@gnupg.org>
 
 	* keylist.c (list_internal_keys): Return error codes.
