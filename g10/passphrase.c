@@ -732,6 +732,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text )
   else
     { /* The new Assuan protocol */
       char *line, *p;
+      const unsigned char *s;
       int i; 
 
       if (!tryagain_text)
@@ -751,33 +752,33 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text )
       else
         *p++ = 'X'; /* no caching */
       *p++ = ' ';
-      for (i=0; tryagain_text[i]; i++)
+      for (i=0, s=tryagain_text; *s; s++)
         {
-          if (tryagain_text[i] < ' ' || tryagain_text[i] == '+')
+          if (*s < ' ' || *s == '+')
             {
-              sprintf (p, "%%%02X", tryagain_text[i]);
+              sprintf (p, "%%%02X", *s);
               p += 3;
             }
-          else if (tryagain_text[i] == ' ')
+          else if (*s == ' ')
             *p++ = '+';
           else
-            *p++ = tryagain_text[i];
+            *p++ = *s;
         }
       *p++ = ' ';
       *p++ = 'X'; /* Use the standard prompt */
       *p++ = ' ';
       /* copy description */
-      for (i=0; atext[i]; i++)
+      for (i=0, s= atext; *s; s++)
         {
-          if (atext[i] < ' ' || atext[i] == '+')
+          if (*s < ' ' || *s == '+')
             {
-              sprintf (p, "%%%02X", atext[i]);
+              sprintf (p, "%%%02X", *s);
               p += 3;
             }
-          else if (atext[i] == ' ')
+          else if (*s == ' ')
             *p++ = '+';
           else
-            *p++ = atext[i];
+            *p++ = *s;
         }
       *p++ = '\n';
       i = writen (fd, line, p - line);

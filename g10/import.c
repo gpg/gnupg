@@ -193,14 +193,14 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames,
 
 	for(i=0; i < nnames; i++ ) {
 	    const char *fname = fnames? fnames[i] : NULL;
-	    IOBUF inp = iobuf_open(fname);
+	    IOBUF inp2 = iobuf_open(fname);
 	    if( !fname )
 	        fname = "[stdin]";
 	    if( !inp )
 	        log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
 	    else {
-	        rc = import( inp, fname, stats, options );
-	        iobuf_close(inp);
+	        rc = import( inp2, fname, stats, options );
+	        iobuf_close(inp2);
 	        if( rc )
 		    log_error("import from `%s' failed: %s\n", fname,
        	                      g10_errstr(rc) );

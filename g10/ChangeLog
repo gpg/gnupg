@@ -1,3 +1,11 @@
+2002-10-04  Werner Koch  <wk@gnupg.org>
+
+	* import.c (import_keys_internal): s/inp/inp2/ to avoid shadowing
+	warning.
+
+	* passphrase.c (agent_get_passphrase): Fixed signed/unsigned char
+	problem in %-escaping.  Noted by Ingo Klöcker.
+
 2002-10-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, g10.c (main): Add --strict and --no-strict to switch
