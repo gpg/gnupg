@@ -5,6 +5,8 @@ Noteworthy changes in the current CVS HEAD
 
     * Add Rijndael (AES) support.
 
+    * Removed gdbm support.
+
     * Fixed problems with piping to/from other MS-Windows software
 
     * Expiration time of the primary key can be changed again.
@@ -28,8 +30,6 @@ Noteworthy changes in the current CVS HEAD
     * Twofish and MDC enhanced encryption is now used.  PGP 7 supports 
       this.  Older versions of GnuPG don't support it, so they should be
       upgraded to at least 1.0.2
-      
-      
     
 
 Noteworthy changes in version 1.1.1

@@ -184,7 +184,6 @@ MPI_OPT_FLAGS=""
 
 
 try_gettext=yes
-try_gdbm=yes
 case "${target}" in
     *-*-mingw32*)
         # special stuff for Windoze NT
@@ -194,7 +193,6 @@ case "${target}" in
         AC_DEFINE(HAVE_DOSISH_SYSTEM)
         AC_DEFINE(USE_SIMPLE_GETTEXT)
         try_gettext="no"
-        try_gdbm="no"
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
         # OS/2 with the EMX environment
@@ -202,7 +200,6 @@ case "${target}" in
         AC_DEFINE(HAVE_DRIVE_LETTERS)
         AC_DEFINE(HAVE_DOSISH_SYSTEM)
         try_gettext="no"
-        try_gdbm="no"
         ;;
 
     i?86-*-msdosdjgpp*)
@@ -211,7 +208,6 @@ case "${target}" in
         AC_DEFINE(HAVE_DRIVE_LETTERS)
         AC_DEFINE(HAVE_DOSISH_SYSTEM)
         try_gettext="no"
-        try_gdbm="no"
         ;;
 
     *-*-freebsd*)
@@ -329,19 +325,6 @@ else
   AM_PATH_GTK(1.2.1, compile_agent=yes,compile_agent=no)
 fi
 AM_CONDITIONAL(COMPILE_AGENT, test x$compile_agent = xyes)
-
-
-
-dnl
-dnl There are lot of misconfigured systems.  We include
-dnl gdbm support only if the lib and the header is installed.
-dnl
-if test "$try_gdbm" = yes; then
-AC_CHECK_HEADERS(gdbm.h)
-if test "$ac_cv_header_gdbm_h" = yes ; then
-  AC_CHECK_LIB(gdbm,gdbm_firstkey)
-fi
-fi
 
 
 dnl Solaris needs -lsocket and -lnsl. Unisys system includes

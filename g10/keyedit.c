@@ -89,18 +89,13 @@ get_keyblock_byname( KBNODE *keyblock, KBPOS *kbpos, const char *username )
 
     *keyblock = NULL;
     /* search the userid */
-    rc = find_keyblock_byname( kbpos, username );
+    rc = find_keyblock_byname( keyblock, username );
     if( rc ) {
-	log_error(_("%s: user not found\n"), username );
+	log_error(_("%s: user not found: %s\n"), username, gpg_errstr(rc) );
 	return rc;
     }
 
-    /* read the keyblock */
-    rc = read_keyblock( kbpos, keyblock );
-    if( rc )
-	log_error("%s: keyblock read problem: %s\n", username, gpg_errstr(rc));
-    else
-	merge_keys_and_selfsig( *keyblock );
+    merge_keys_and_selfsig( *keyblock );
 
     return rc;
 }
@@ -616,7 +611,6 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
     KBNODE keyblock = NULL;
     KBPOS keyblockpos;
     KBNODE sec_keyblock = NULL;
-    KBPOS sec_keyblockpos;
     KBNODE cur_keyblock;
     char *answer = NULL;
     int redisplay = 1;
@@ -640,14 +634,11 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 
     if( !sign_mode ) {
 	/* first try to locate it as secret key */
-	rc = find_secret_keyblock_byname( &sec_keyblockpos, username );
-	if( !rc ) {
-	    rc = read_keyblock( &sec_keyblockpos, &sec_keyblock );
-	    if( rc ) {
-		log_error("%s: secret keyblock read problem: %s\n",
+	rc = find_secret_keyblock_byname( &sec_keyblock, username );
+        if( rc && rc != GPGERR_NO_SECKEY ) 
+            log_debug("%s: secret keyblock read problem: %s\n",
 						username, gpg_errstr(rc));
-		goto leave;
-	    }
+	if( !rc ) {
 	    merge_keys_and_selfsig( sec_keyblock );
 	    if( fix_keyblock( sec_keyblock ) )
 		sec_modified++;
@@ -966,14 +957,14 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	  do_cmd_save:
 	    if( modified || sec_modified  ) {
 		if( modified ) {
-		    rc = update_keyblock( &keyblockpos, keyblock );
+		    rc = update_keyblock( keyblock );
 		    if( rc ) {
 			log_error(_("update failed: %s\n"), gpg_errstr(rc) );
 			break;
 		    }
 		}
 		if( sec_modified ) {
-		    rc = update_keyblock( &sec_keyblockpos, sec_keyblock );
+		    rc = update_keyblock( sec_keyblock );
 		    if( rc ) {
 			log_error(_("update secret failed: %s\n"),
 							    gpg_errstr(rc) );

@@ -112,10 +112,6 @@ struct getkey_ctx_s {
     getkey_item_t items[1];
 };
 
-
-
-
-
 #if 0
 static struct {
     int any;
@@ -595,6 +591,8 @@ hextobyte( const byte *s )
  * 12 = it is a trustdb index (keyid is looked up)
  * 16 = it is a 16 byte fingerprint
  * 20 = it is a 20 byte fingerprint
+ * 21 = Unified fingerprint :fpr:pk_algo:
+ *      (We don't use pk_algo yet)
  *
  * if fprint is not NULL, it should be an array of at least 20 bytes.
  *
@@ -606,6 +604,8 @@ hextobyte( const byte *s )
  *   must be in the range 0..9), this is considered a fingerprint.
  * - If the username starts with a left angle, we assume it is a complete
  *   email address and look only at this part.
+ * - If the username starts with a colon we assume it is a unified 
+ *   key specfification. 
  * - If the username starts with a '.', we assume it is the ending
  *   part of an email address
  * - If the username starts with an '@', we assume it is a part of an
@@ -674,7 +674,32 @@ classify_user_id( const char *name, u32 *keyid, byte *fprint,
 		    keyid[0] = keyid[1] = 0;
 	    }
 	    break;
-
+        
+        case ':': /*Unified fingerprint */
+            {  
+                const char *se, *si;
+                int i;
+                
+                se = strchr( ++s,':');
+                if ( !se )
+                    return 0;
+                for (i=0,si=s; si < se; si++, i++ ) {
+                    if ( !strchr("01234567890abcdefABCDEF", *si ) )
+                        return 0; /* invalid digit */
+                }
+                if (i != 32 && i != 40)
+                    return 0; /* invalid length of fpr*/
+		if (fprint) {
+		    for (i=0,si=s; si < se; i++, si +=2) 
+			fprint[i] = hextobyte(si);
+                    for ( ; i < 20; i++)
+                        fprint[i]= 0;
+		}
+                s = se + 1;
+                mode = 21;
+            } 
+            break;
+           
 	default:
 	    if (s[0] == '0' && s[1] == 'x') {
 		hexprefix = 1;
@@ -803,7 +828,8 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
 
         /* if we don't use one of the exact key specifications, we assume that
          * the primary key is requested */
-        if ( mode != 10 && mode != 11 && mode != 16 && mode == 20 )
+        if ( mode != 10 && mode != 11
+             && mode != 16 && mode == 20 && mode != 21 )
             ctx->primary = 1; 
 
 	ctx->items[n].mode = mode;
@@ -836,6 +862,10 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
         }
     }
 
+    if (!rc )
+       log_debug ( "pk_byname: kbpos %s %lu %p\n",
+                   ctx->kbpos.valid? "valid":"",
+                   ctx->kbpos.offset, ctx->kbpos.fp );
     release_kbnode ( help_kb );
 
     if( retctx ) /* caller wants the context */
@@ -883,6 +913,7 @@ get_pubkey_next( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock )
     return rc;
 }
 
+
 void
 get_pubkey_end( GETKEY_CTX ctx )
 {
@@ -897,8 +928,66 @@ get_pubkey_end( GETKEY_CTX ctx )
     }
 }
 
+
+
+/****************
+ * Combined function to search for a username and get the position
+ * of the keyblock.
+ */
+int
+find_keyblock_byname( KBNODE *retblock, const char *username )
+{
+    PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
+    int rc;
+
+    rc = get_pubkey_byname( NULL, pk, username, retblock );
+    free_public_key(pk);
+    return rc;
+}
+
+
+/****************
+ * Combined function to search for a key and get the position
+ * of the keyblock.  Used for merging while importing keys.
+ */
+int
+find_keyblock_bypk( KBNODE *retblock, PKT_public_key *pk )
+{
+    char ufpr[50];
+
+    unified_fingerprint_from_pk( pk, ufpr, sizeof ufpr );
+    return find_keyblock_byname( retblock, ufpr );
+}
+
+int 
+find_kblocation_bypk( void *re_opaque, PKT_public_key *pk )
+{
+    PKT_public_key *dummy_pk = gcry_xcalloc( 1, sizeof *pk );
+    char ufpr[50];
+    GETKEY_CTX ctx;
+    int rc;
+     
+    unified_fingerprint_from_pk( pk, ufpr, sizeof ufpr );
+    /* FIXME: There is no need to return any informaton, we just
+     * wnat to know the location.  Using the general lookup function
+     * has the problem that we might not get the key becuase it has expired
+     * or due to some similar probelm.  A solotion would be a locate-only
+     * flag in the ctx */
+    rc = get_pubkey_byname( &ctx, dummy_pk, ufpr, NULL );
+    free_public_key(dummy_pk);
+    if ( !rc )
+        ringedit_copy_kbpos( re_opaque, &ctx->kbpos );
+    get_pubkey_end( ctx );
+
+    return rc;
+}
+
+
 /****************
  * Search for a key with the given fingerprint.
+ * FIXME:
+ * We should replace this with the _byname function.  Thiscsan be done
+ * by creating a userID conforming to the unified fingerprint style. 
  */
 int
 get_pubkey_byfprint( PKT_public_key *pk,
@@ -988,19 +1077,23 @@ get_keyblock_bylid( KBNODE *ret_keyblock, ulong lid )
  * If NAME is NULL use the default key
  */
 int
-get_seckey_byname( PKT_secret_key *sk, const char *name, int unprotect )
+get_seckey_byname( GETKEY_CTX *retctx,
+                   PKT_secret_key *sk, const char *name, int unprotect,
+                   KBNODE *retblock )
 {
     STRLIST namelist = NULL;
     int rc;
 
     if( !name && opt.def_secret_key && *opt.def_secret_key ) {
 	add_to_strlist( &namelist, opt.def_secret_key );
-	rc = key_byname( NULL, namelist, NULL, sk, NULL );
+	rc = key_byname( retctx, namelist, NULL, sk, retblock );
     }
     else if( !name ) { /* use the first one as default key */
 	struct getkey_ctx_s ctx;
         KBNODE kb = NULL;
 
+        assert (!retctx ); /* do we need this at all */
+        assert (!retblock);
 	memset( &ctx, 0, sizeof ctx );
 	ctx.not_allocated = 1;
 	ctx.primary = 1;
@@ -1014,7 +1107,7 @@ get_seckey_byname( PKT_secret_key *sk, const char *name, int unprotect )
     }
     else {
 	add_to_strlist( &namelist, name );
-	rc = key_byname( NULL, namelist, NULL, sk, NULL );
+	rc = key_byname( retctx, namelist, NULL, sk, retblock );
     }
 
     free_strlist( namelist );
@@ -1045,11 +1138,63 @@ get_seckey_next( GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_keyblock )
     return rc;
 }
 
+
 void
 get_seckey_end( GETKEY_CTX ctx )
 {
     get_pubkey_end( ctx );
 }
+
+
+
+/****************
+ * Combined function to search for a username and get the position
+ * of the keyblock. This function does not unprotect the secret key.
+ */
+int
+find_secret_keyblock_byname( KBNODE *retblock, const char *username )
+{
+    PKT_secret_key *sk = gcry_xcalloc( 1, sizeof *sk );
+    int rc;
+
+    rc = get_seckey_byname( NULL, sk, username, 0, retblock );
+    free_secret_key(sk);
+    return rc;
+}
+
+
+
+/****************
+ * Combined function to search for a key and get the position
+ * of the keyblock.
+ */
+int
+find_keyblock_bysk( KBNODE *retblock, PKT_secret_key *sk )
+{
+    char ufpr[50];
+
+    unified_fingerprint_from_sk( sk, ufpr, sizeof ufpr );
+    return find_secret_keyblock_byname( retblock, ufpr );
+}
+
+int 
+find_kblocation_bysk( void *re_opaque, PKT_secret_key *sk )
+{
+    PKT_secret_key *dummy_sk = gcry_xcalloc( 1, sizeof *sk );
+    char ufpr[50];
+    GETKEY_CTX ctx;
+    int rc;
+     
+    unified_fingerprint_from_sk( sk, ufpr, sizeof ufpr );
+    rc = get_seckey_byname( &ctx, dummy_sk, ufpr, 0, NULL );
+    free_secret_key(dummy_sk);
+    if ( !rc )
+        ringedit_copy_kbpos( re_opaque, &ctx->kbpos );
+    get_seckey_end( ctx );
+
+    return rc;
+}
+
 
 
 
@@ -1728,8 +1873,6 @@ void
 merge_public_with_secret ( KBNODE pubblock, KBNODE secblock )
 {
     KBNODE pub;
-    int deleting = 0;
-    int any_deleted = 0;
 
     assert ( pubblock->pkt->pkttype == PKT_PUBLIC_KEY );
     assert ( secblock->pkt->pkttype == PKT_SECRET_KEY );
@@ -1750,7 +1893,6 @@ merge_public_with_secret ( KBNODE pubblock, KBNODE secblock )
             KBNODE sec;
             PKT_public_key *pk = pub->pkt->pkt.public_key;
 
-            deleting = 0;
             /* this is more complicated: it may happen that the sequence
              * of the subkeys dosn't match, so we have to find the
              * appropriate secret key */
@@ -1766,26 +1908,57 @@ merge_public_with_secret ( KBNODE pubblock, KBNODE secblock )
                     }
                 }
             }
-            if ( !sec ) {
-                log_error ( "no corresponding secret subkey "
-                            "for public subkey - removing\n" );
-                /* better remove the public subkey in this case */
-                delete_kbnode ( pub );
-                deleting = 1;
-                any_deleted = 1;
-            }
-        }
-        else if ( deleting ) {
-            delete_kbnode (pub);
+            if ( !sec ) 
+                BUG(); /* already checked in premerge */
         }
     }
+}
 
-    if ( any_deleted ) {
-        /* because we have not deleted the root node, we don't need to
-         * update the pubblock */
-        pub = pubblock;
-        commit_kbnode ( &pubblock );
-        assert ( pub == pubblock );
+/* This function checks that for every public subkey a corresponding
+ * secret subkey is avalable and deletes the public subkey otherwise.
+ * We need this function becuase we can'tdelete it later when we
+ * actually merge the secret parts into the pubring.
+ */
+void
+premerge_public_with_secret ( KBNODE pubblock, KBNODE secblock )
+{
+    KBNODE last, pub;
+
+    assert ( pubblock->pkt->pkttype == PKT_PUBLIC_KEY );
+    assert ( secblock->pkt->pkttype == PKT_SECRET_KEY );
+    
+    for (pub=pubblock,last=NULL; pub; last = pub, pub = pub->next ) {
+        if ( pub->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
+            KBNODE sec;
+            PKT_public_key *pk = pub->pkt->pkt.public_key;
+
+            for (sec=secblock->next; sec; sec = sec->next ) {
+                if ( sec->pkt->pkttype == PKT_SECRET_SUBKEY ) {
+                    PKT_secret_key *sk = sec->pkt->pkt.secret_key;
+                    if ( !cmp_public_secret_key ( pk, sk ) ) 
+                        break;
+                }
+            }
+            if ( !sec ) {
+                KBNODE next, ll;
+                log_error ( "no corresponding secret subkey "
+                            "for public subkey - removing\n" );
+                /* we have to remove the subkey in this case */
+                assert ( last );
+                /* find the next subkey */
+                for (next=pub->next,ll=pub;
+                     next && pub->pkt->pkttype != PKT_PUBLIC_SUBKEY;
+                     ll = next, next = next->next ) 
+                    ;
+                /* make new link */
+                last->next = next;
+                /* release this public subkey with all sigs */
+                ll->next = NULL;
+                release_kbnode( pub );
+                /* let the loop continue */
+                pub = last;
+            }
+        }
     }
 }
 
@@ -1859,8 +2032,17 @@ find_by_fpr( KBNODE keyblock,  const char *name, int mode )
 	    size_t an;
 
 	    fingerprint_from_pk(k->pkt->pkt.public_key, afp, &an );
-	    if( an == mode && !memcmp( afp, name, an) ) {
-                return k;
+            if ( mode == 21 ) {
+                /* Unified fingerprint. The fingerprint is always 20 bytes*/
+                while ( an < 20 )
+                    afp[an++] = 0;
+                if ( !memcmp( afp, name, 20 ) )
+                    return k;
+            }
+	    else { 
+                if( an == mode && !memcmp( afp, name, an) ) {
+                    return k;
+                }
             }
 	}
     }
@@ -2055,6 +2237,7 @@ lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode )
                 }
                 secblock = ctx->keyblock;
                 ctx->keyblock = k;
+                premerge_public_with_secret ( ctx->keyblock, secblock );
             }
 
 
@@ -2078,7 +2261,8 @@ lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode )
 		else if( item->mode == 15 ) {
 		    found = 1;
                 }
-		else if( item->mode == 16 || item->mode == 20 ) {
+		else if( item->mode == 16 || item->mode == 20
+                         || item->mode == 21 ) {
 		    k = find_by_fpr( ctx->keyblock,
 				     item->fprint, item->mode );
                     found = !!k;
@@ -2218,7 +2402,7 @@ enum_secret_keys( void **context, PKT_secret_key *sk, int with_subkeys )
 
 	save_mode = set_packet_list_mode(0);
 	init_packet(&pkt);
-	while( (rc=parse_packet(c->iobuf, &pkt)) != -1 ) {
+	while( (rc=parse_packet(c->iobuf, &pkt, NULL)) != -1 ) {
 	    if( rc )
 		; /* e.g. unknown packet */
 	    else if( pkt.pkttype == PKT_SECRET_KEY

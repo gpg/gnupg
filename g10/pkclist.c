@@ -779,7 +779,7 @@ default_recipient(void)
     if( !opt.def_recipient_self )
 	return NULL;
     sk = gcry_xcalloc( 1, sizeof *sk );
-    i = get_seckey_byname( sk, NULL, 0 );
+    i = get_seckey_byname( NULL, sk, NULL, 0, NULL );
     if( i ) {
 	free_secret_key( sk );
 	return NULL;

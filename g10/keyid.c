@@ -436,6 +436,40 @@ fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
     return array;
 }
 
+
+/* Create a unified fingerprint, that is a printable fingerprint along
+ * wth some other information suitable to passto get_pubkye_byname.
+ * Pass NULL for buffer to let this function allocate the buffer.
+ * This function will truncate the buffer in a way that a valid C string
+ * is returnd (unless bufsize is 0)
+ * Returns: Supplied buffer or newly allocated buffer
+ */
+char *
+unified_fingerprint_from_pk( PKT_public_key *pk,
+                             char *buffer, size_t bufsize )
+{
+    byte fpr[MAX_FINGERPRINT_LEN];
+    size_t fprlen;
+    int i;
+
+    fingerprint_from_pk( pk, fpr, &fprlen );
+    if ( !buffer ) {
+        bufsize = 1+fprlen*2+1+4+1+1;
+        buffer = gcry_xmalloc( bufsize );
+    }
+    if ( bufsize < 1+fprlen*2+1+4+1+1 ) {
+        /* Hmmm, that should be sufficiend also not very nice */
+        if ( bufsize )
+            *buffer = 0;
+        return buffer;
+    }
+    *buffer = ':';
+    for (i=0; i < fprlen; i++ )
+        sprintf( buffer+1+i*2, "%02X", fpr[i] );
+    sprintf( buffer+1+i*2, ":%d:", (pk->pubkey_algo & 0xff) );
+    return buffer;
+}
+
 byte *
 fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
 {
@@ -494,6 +528,37 @@ fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
     *ret_len = len;
     return array;
 }
+
+char *
+unified_fingerprint_from_sk( PKT_secret_key *sk,
+                             char *buffer, size_t bufsize )
+{
+    byte fpr[MAX_FINGERPRINT_LEN];
+    size_t fprlen;
+    int i;
+
+    fingerprint_from_sk( sk, fpr, &fprlen );
+    if ( !buffer ) {
+        bufsize = 1+fprlen*2+1+4+1+1;
+        buffer = gcry_xmalloc( bufsize );
+    }
+    if ( bufsize < 1+fprlen*2+1+4+1+1 ) {
+        /* Hmmm, that should be sufficiend also not very nice */
+        if ( bufsize )
+            *buffer = 0;
+        return buffer;
+    }
+    *buffer = ':';
+    for (i=0; i < fprlen; i++ )
+        sprintf( buffer+1+i*2, "%02X", fpr[i] );
+    sprintf( buffer+1+i*2, ":%d:", (sk->pubkey_algo & 0xff) );
+    return buffer;
+}
+
+
+
+
+
 
 
 

@@ -147,22 +147,15 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 	}
 	else {
 	    /* search the userid */
-	    rc = secret? find_secret_keyblock_byname( &kbpos, sl->d )
-		       : find_keyblock_byname( &kbpos, sl->d );
+	    rc = secret? find_secret_keyblock_byname( &keyblock, sl->d )
+		       : find_keyblock_byname( &keyblock, sl->d );
 	    if( rc ) {
 		log_error(_("%s: user not found: %s\n"), sl->d, gpg_errstr(rc));
 		rc = 0;
 		continue;
 	    }
-	    /* read the keyblock */
-	    rc = read_keyblock( &kbpos, &keyblock );
 	}
 
-	if( rc ) {
-	    log_error(_("certificate read problem: %s\n"), gpg_errstr(rc));
-	    goto leave;
-	}
-      
 
 	/* do not export keys which are incompatible with rfc2440 */
 	if( onlyrfc && (node = find_kbnode( keyblock, PKT_PUBLIC_KEY )) ) {

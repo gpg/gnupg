@@ -87,7 +87,6 @@ gen_revoke( const char *uname )
     IOBUF out = NULL;
     KBNODE keyblock = NULL;
     KBNODE node;
-    KBPOS kbpos;
     struct revocation_reason_info *reason = NULL;
 
     if( opt.batch ) {
@@ -102,16 +101,10 @@ gen_revoke( const char *uname )
 
 
     /* search the userid */
-    rc = find_secret_keyblock_byname( &kbpos, uname );
+    rc = find_secret_keyblock_byname( &keyblock, uname );
     if( rc ) {
-	log_error(_("secret key for user `%s' not found\n"), uname );
-	goto leave;
-    }
-
-    /* read the keyblock */
-    rc = read_keyblock( &kbpos, &keyblock );
-    if( rc ) {
-	log_error(_("error reading the certificate: %s\n"), gpg_errstr(rc) );
+	log_error(_("secret key for user `%s' not found: %s\n"),
+                  uname, gpg_errstr(rc) );
 	goto leave;
     }
 

@@ -58,18 +58,11 @@ delete_key( const char *username, int secret )
     int yes;
 
     /* search the userid */
-    rc = secret? find_secret_keyblock_byname( &kbpos, username )
-	       : find_keyblock_byname( &kbpos, username );
+    rc = secret? find_secret_keyblock_byname( &keyblock, username )
+	       : find_keyblock_byname( &keyblock, username );
     if( rc ) {
-	log_error(_("%s: user not found\n"), username );
+	log_error(_("%s: user not found: %s\n"), username, gpg_errstr(rc) );
 	write_status_text( STATUS_DELETE_PROBLEM, "1" );
-	goto leave;
-    }
-
-    /* read the keyblock */
-    rc = read_keyblock( &kbpos, &keyblock );
-    if( rc ) {
-	log_error("%s: read problem: %s\n", username, gpg_errstr(rc) );
 	goto leave;
     }
 

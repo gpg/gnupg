@@ -1,3 +1,37 @@
+Fri Oct  6 14:29:16 CEST 2000  Werner Koch  <wk@openit.de>
+
+        Started to rework the whole getkey/ringedit stuff to make
+        it simpler, correcter and faster. 
+
+        * parse-packet.c (parse_packet): Add a 3rd arg to return the filepos.
+        Changed all callers.
+        * getkey.c (classify_user_id): Add new mode 21.
+        (find_by_fpr): Find using this new mode.
+        (get_seckey_byname): New arg to return the context. Changed all
+        callers.
+        * keyid.c (unified_fingerprint_from_pk): New.
+        (unified_fingerprint_from_sk): New.
+        * ringedit.c (find_keyblock_bypk): Changed to use the unified 
+        fingerprint for lookup.  I can't see a reason why we did compare
+        the entire public key.
+        (find_keyblock_bysk): Ditto.
+        (search,cmp_pubkey,cmp_seckey): Removed.
+        (keyring_search, do_kbxf_search): Removed.
+        (locate_keyblock_by_fpr,locate_keyblock_by_keyid): Removed.
+        (find_keyblock_byname): Removed use o search function.
+        (find_secret_keyblock_byname): Ditto.
+        (merge_public_with_secret): Fixed removing subkeys.
+        (premerge_public_with_secret): New.
+
+        * ringedit.c: Removed all GDBM support
+
+        * ringedit.c (read_keyblock): Removed.
+        * ringedit.c (find_keyblock_byname,find_secret_keyblock_byname,
+        find_keyblock_bypk,find_keyblock_bysk): Moved from here to ....
+        * getkey.c: ... here. Changed first arg to return a keyblock and
+        changed all callers to merge the old read_keyblock() with these
+        functions.       
+
 Wed Oct  4 13:16:18 CEST 2000  Werner Koch  <wk@openit.de>
 
         * getkey.c (merge_selfsigs_main): Fixed for v3 keys.

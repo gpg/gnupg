@@ -274,7 +274,7 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
 	in_cert = 0;
     pkt = gcry_xmalloc( sizeof *pkt );
     init_packet(pkt);
-    while( (rc=parse_packet(a, pkt)) != -1 ) {
+    while( (rc=parse_packet(a, pkt, NULL)) != -1 ) {
 	if( rc ) {  /* ignore errors */
 	    if( rc != GPGERR_UNKNOWN_PACKET ) {
 		log_error("read_block: read error: %s\n", gpg_errstr(rc) );
@@ -436,7 +436,7 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	if( (rc=lock_keyblock( &kbpos )) )
 	   log_error(_("can't lock keyring `%s': %s\n"),
 		       keyblock_resource_name(&kbpos), gpg_errstr(rc) );
-	else if( (rc=insert_keyblock( &kbpos, keyblock )) )
+	else if( (rc=insert_keyblock( keyblock )) )
 	   log_error( _("error writing keyring `%s': %s\n"),
 		       keyblock_resource_name(&kbpos), gpg_errstr(rc) );
 	unlock_keyblock( &kbpos );
@@ -466,16 +466,10 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	}
 
 	/* now read the original keyblock */
-	rc = find_keyblock_bypk( &kbpos, pk_orig );
+	rc = find_keyblock_bypk( &keyblock_orig, pk_orig );
 	if( rc ) {
 	    log_error( _("key %08lX: can't locate original keyblock: %s\n"),
 				     (ulong)keyid[1], gpg_errstr(rc));
-	    goto leave;
-	}
-	rc = read_keyblock( &kbpos, &keyblock_orig );
-	if( rc ) {
-	    log_error( _("key %08lX: can't read original keyblock: %s\n"),
-					    (ulong)keyid[1], gpg_errstr(rc));
 	    goto leave;
 	}
 
@@ -494,7 +488,7 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	    if( (rc=lock_keyblock( &kbpos )) )
 	       log_error( _("can't lock keyring `%s': %s\n"),
 			  keyblock_resource_name(&kbpos), gpg_errstr(rc) );
-	    else if( (rc=update_keyblock( &kbpos, keyblock_orig )) )
+	    else if( (rc=update_keyblock( keyblock_orig )) )
 		log_error( _("error writing keyring `%s': %s\n"),
 			     keyblock_resource_name(&kbpos), gpg_errstr(rc) );
 	    unlock_keyblock( &kbpos );
@@ -603,7 +597,7 @@ import_secret_one( const char *fname, KBNODE keyblock )
 	if( (rc=lock_keyblock( &kbpos )) )
 	    log_error( _("can't lock keyring `%s': %s\n"),
 			 keyblock_resource_name(&kbpos), gpg_errstr(rc) );
-	else if( (rc=insert_keyblock( &kbpos, keyblock )) )
+	else if( (rc=insert_keyblock( keyblock )) )
 	    log_error( _("error writing keyring `%s': %s\n"),
 		      keyblock_resource_name(&kbpos), gpg_errstr(rc) );
 	unlock_keyblock( &kbpos );
@@ -659,15 +653,9 @@ import_revoke_cert( const char *fname, KBNODE node )
     }
 
     /* read the original keyblock */
-    rc = find_keyblock_bypk( &kbpos, pk );
+    rc = find_keyblock_bypk( &keyblock, pk );
     if( rc ) {
 	log_error( _("key %08lX: can't locate original keyblock: %s\n"),
-					(ulong)keyid[1], gpg_errstr(rc));
-	goto leave;
-    }
-    rc = read_keyblock( &kbpos, &keyblock );
-    if( rc ) {
-	log_error( _("key %08lX: can't read original keyblock: %s\n"),
 					(ulong)keyid[1], gpg_errstr(rc));
 	goto leave;
     }
@@ -704,7 +692,7 @@ import_revoke_cert( const char *fname, KBNODE node )
     if( (rc=lock_keyblock( &kbpos )) )
 	log_error( _("can't lock keyring `%s': %s\n"),
 		   keyblock_resource_name(&kbpos), gpg_errstr(rc) );
-    else if( (rc=update_keyblock( &kbpos, keyblock )) )
+    else if( (rc=update_keyblock( keyblock )) )
 	log_error( _("error writing keyring `%s': %s\n"),
 		    keyblock_resource_name(&kbpos), gpg_errstr(rc) );
     unlock_keyblock( &kbpos );

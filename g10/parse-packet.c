@@ -127,23 +127,25 @@ unknown_pubkey_warning( int algo )
  */
 #ifdef DEBUG_PARSE_PACKET
 int
-dbg_parse_packet( IOBUF inp, PACKET *pkt, const char *dbg_f, int dbg_l )
+dbg_parse_packet( IOBUF inp, PACKET *pkt, ulong *retpos,
+                  const char *dbg_f, int dbg_l )
 {
     int skip, rc;
 
     do {
-	rc = parse( inp, pkt, 0, NULL, &skip, NULL, 0, "parse", dbg_f, dbg_l );
+	rc = parse( inp, pkt, 0, retpos,
+                    &skip, NULL, 0, "parse", dbg_f, dbg_l );
     } while( skip );
     return rc;
 }
 #else
 int
-parse_packet( IOBUF inp, PACKET *pkt )
+parse_packet( IOBUF inp, PACKET *pkt, ulong *retpos )
 {
     int skip, rc;
 
     do {
-	rc = parse( inp, pkt, 0, NULL, &skip, NULL, 0 );
+	rc = parse( inp, pkt, 0, retpos, &skip, NULL, 0 );
     } while( skip );
     return rc;
 }

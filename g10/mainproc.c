@@ -953,7 +953,7 @@ do_proc_packets( CTX c, IOBUF a )
 
     c->iobuf = a;
     init_packet(pkt);
-    while( (rc=parse_packet(a, pkt)) != -1 ) {
+    while( (rc=parse_packet(a, pkt, NULL)) != -1 ) {
 	any_data = 1;
 	if( rc ) {
 	    free_packet(pkt);

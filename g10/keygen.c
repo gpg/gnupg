@@ -1752,9 +1752,9 @@ do_generate_keypair( struct para_data_s *para,
 	    log_error("can't lock public keyring: %s\n", gpg_errstr(rc) );
 	else if( (rc=rc2=lock_keyblock( &sec_kbpos )) )
 	    log_error("can't lock secret keyring: %s\n", gpg_errstr(rc) );
-	else if( (rc=insert_keyblock( &pub_kbpos, pub_root )) )
+	else if( (rc=insert_keyblock( pub_root )) )
 	    log_error("can't write public key: %s\n", gpg_errstr(rc) );
-	else if( (rc=insert_keyblock( &sec_kbpos, sec_root )) )
+	else if( (rc=insert_keyblock( sec_root )) )
 	    log_error("can't write secret key: %s\n", gpg_errstr(rc) );
 	else {
 	    if( !opt.batch )
