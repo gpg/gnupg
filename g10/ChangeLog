@@ -1,3 +1,7 @@
+2001-01-09  Timo Schulz  <ts@winpt.org>
+
+	* exec.c: Include windows.h for dosish systems.
+
 2002-01-08  Timo Schulz  <ts@winpt.org>
 
 	* g10.c (main): New description for --encrypt-files.

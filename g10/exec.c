@@ -27,6 +27,9 @@
 #ifndef EXEC_TEMPFILE_ONLY
 #include <sys/wait.h>
 #endif
+#ifdef HAVE_DOSISH_SYSTEM
+#include <windows.h>
+#endif
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
