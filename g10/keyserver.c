@@ -91,9 +91,9 @@ parse_keyserver_options(char *options)
       else if(strcasecmp(tok,"no-refresh-add-fake-v3-keyids")==0)
 	opt.keyserver_options.refresh_add_fake_v3_keyids=0;
       else if(strcasecmp(tok,"auto-key-retrieve")==0)
-	opt.keyserver_options.refresh_add_fake_v3_keyids=1;
+	opt.keyserver_options.auto_key_retrieve=1;
       else if(strcasecmp(tok,"no-auto-key-retrieve")==0)
-	opt.keyserver_options.refresh_add_fake_v3_keyids=0;
+	opt.keyserver_options.auto_key_retrieve=0;
       else if(strlen(tok)>0)
 	add_to_strlist(&opt.keyserver_options.other,tok);
 

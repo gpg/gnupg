@@ -1,3 +1,11 @@
+2002-04-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (parse_keyserver_options): fix auto-key-retrieve to
+	actually work as a keyserver-option (noted by Roger Sondermann).
+
+	* keylist.c (reorder_keyblock): do not reorder the primary
+	attribute packet - the first user ID must be a genuine one.
+
 2002-03-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* keylist.c (list_keyblock_colon): Fix ownertrust display with

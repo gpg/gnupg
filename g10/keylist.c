@@ -781,9 +781,9 @@ list_keyblock_colon( KBNODE keyblock, int secret )
 }
 
 /*
- * Reorder the keyblock so that the primary user ID comes first.
- * Fixme: Replace this by a generic sort function.
- */
+ * Reorder the keyblock so that the primary user ID (and not attribute
+ * packet) comes first.  Fixme: Replace this by a generic sort
+ * function.  */
 static void
 reorder_keyblock (KBNODE keyblock)
 {
@@ -791,8 +791,9 @@ reorder_keyblock (KBNODE keyblock)
     KBNODE last, node;
 
     for (node=keyblock; node; primary0=node, node = node->next) {
-	if( node->pkt->pkttype == PKT_USER_ID 
-            && node->pkt->pkt.user_id->is_primary ) {
+	if( node->pkt->pkttype == PKT_USER_ID &&
+	    !node->pkt->pkt.user_id->attrib_data &&
+            node->pkt->pkt.user_id->is_primary ) {
             primary = primary2 = node;
             for (node=node->next; node; primary2=node, node = node->next ) {
                 if( node->pkt->pkttype == PKT_USER_ID 
