@@ -1,3 +1,8 @@
+2004-03-03  Werner Koch  <wk@gnupg.org>
+
+	* export.c (gpgsm_export): Make sure that we don't export more
+	than one certificate.
+
 2004-03-02  Werner Koch  <wk@gnupg.org>
 
 	* export.c (create_duptable, destroy_duptable)

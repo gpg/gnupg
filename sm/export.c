@@ -44,7 +44,7 @@
 #endif
 
 
-/* A table tem to store a fingerprint used in a duplicates table.  We
+/* A table to store a fingerprint as used in a duplicates table.  We
    don't need to hash here because a fingerprint is alrady a perfect
    hash value.  This we use the most significant bits to index the
    table and then use a linked list for the overflow.  Possible
@@ -105,8 +105,8 @@ insert_duptable (duptable_t *table, unsigned char *fpr, int *exists)
   
   *exists = 0;
   idx = fpr[0];
-#if DUPTABLE_BITS > 16
-#error cannot handle a table larger than 16 bits
+#if DUPTABLE_BITS > 16 || DUPTABLE_BITS < 8
+#error cannot handle a table larger than 16 bits or smaller than 8 bits
 #elif DUPTABLE_BITS > 8
   idx <<= (DUPTABLE_BITS - 8);  
   idx |= (fpr[1] & ~(~0 << 4)); 
@@ -237,6 +237,14 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
           log_error ("inserting into duplicates table fauiled: %s\n",
                      gpg_strerror (rc));
           goto leave;
+        }
+
+      if (!exists && count && !ctrl->create_pem)
+        {
+          log_info ("exporting more than one certificate "
+                    "is not possible in binary mode\n");
+          log_info ("ignoring other certificates\n");
+          break;
         }
 
       if (!exists)
