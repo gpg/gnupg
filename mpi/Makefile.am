@@ -3,8 +3,10 @@
 INCLUDES =  -I$(top_srcdir)/include
 CFLAGS += -O2
 
-noinst_LIBRARIES = mpi
+SUFFIXES = .S .s
 
+noinst_LIBRARIES = mpi
+noinst_HEADERS	 = sysdep.h
 
 mpi_SOURCES = longlong.h     \
 	      mpi-add.c      \
@@ -19,18 +21,28 @@ mpi_SOURCES = longlong.h     \
 	      mpi-pow.c      \
 	      mpi-scan.c     \
 	      mpicoder.c     \
-	      mpih-add.c     \
 	      mpih-cmp.c     \
+	      mpih-add.c     \
+	      mpih-sub.c     \
 	      mpih-div.c     \
 	      mpih-mul.c     \
-	      mpih-shift.c   \
-	      mpih-sub.c     \
-	      mpih-mul1.S    \
-	      mpih-mul2.S    \
-	      mpih-add1.S    \
-	      mpih-mul3.S    \
-	      mpih-sub1.S    \
-	      mpih-shift.S   \
-	      mpih-add.S     \
 	      mpiutil.c
+
+mpi_LIBADD =  mpih-mul1.o    \
+	      mpih-mul2.o    \
+	      mpih-mul3.o    \
+	      mpih-add1.o    \
+	      mpih-sub1.o    \
+	      mpih-shift.o
+
+#mpi_DEPENDENCIES = mpih-mul1.S    \
+#		    mpih-mul2.S    \
+#		    mpih-mul3.S    \
+#		    mpih-add1.S    \
+#		    mpih-sub1.S    \
+#		    mpih-shift.S
+#
+
+##DISTCLEANFILES = @MPI_DISTCLEANFILES@
+
 

@@ -66,7 +66,7 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 	    dp = rmd160_final( digest.u.rmd );
 	    result = encode_rmd160_value( dp, 20, mpi_get_nbits(pkc->d.elg.p));
 	}
-	else if( sig->d.rsa.digest_algo == DIGEST_ALGO_MD5 ) {
+	else if( sig->d.elg.digest_algo == DIGEST_ALGO_MD5 ) {
 	    md5_putchar( digest.u.md5, sig->sig_class );
 	    {	u32 a = sig->timestamp;
 		md5_putchar( digest.u.md5, (a >> 24) & 0xff );
@@ -89,6 +89,7 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 	if( !elg_verify( sig->d.elg.a, sig->d.elg.b, result, &pkey ) )
 	    rc = G10ERR_BAD_SIGN;
     }
+ #ifdef HAVE_RSA_CIPHER
     else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	RSA_public_key pkey;
 
@@ -214,6 +215,7 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 	    goto leave;
 	}
     }
+  #endif/*HAVE_RSA_CIPHER*/
     else {
 	log_debug("signature_check: unsupported pubkey algo %d\n",
 			pkc->pubkey_algo );

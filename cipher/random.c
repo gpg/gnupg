@@ -43,6 +43,7 @@ randomize_buffer( byte *buffer, size_t length, int level )
 
     if( level == 2 )
 	level = 1; /* 2 is much too slow */
+    /* FIXME: do a stat and check that we have the correct device numbers*/
     fp = fopen(level < 2? "/dev/urandom":"/dev/random", "r");
     if( !fp )
 	log_fatal("can't open random device: %s\n", strerror(errno) );

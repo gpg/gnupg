@@ -63,10 +63,10 @@ const void membug( const char *fmt, ... );
   #define FNAME(a)  m_ ##a
   #define FNAMEPRT
   #define FNAMEARG
-  #define store_len(p,n,m) do { ((byte*))p[0] = n;		    \
-				((byte*))p[2] = n >> 8 ;	    \
-				((byte*))p[3] = n >> 16 ;	    \
-				((byte*))p[4] = m? MAGIC_SEC_BYTE   \
+  #define store_len(p,n,m) do { ((byte*)p)[0] = n;		    \
+				((byte*)p)[1] = n >> 8 ;	    \
+				((byte*)p)[2] = n >> 16 ;	    \
+				((byte*)p)[3] = m? MAGIC_SEC_BYTE   \
 						 : MAGIC_NOR_BYTE;  \
 			      } while(0)
 #endif
@@ -213,8 +213,6 @@ check_mem( const byte *p, const char *info )
 	membug("memory at %p corrupted: underflow=%02x (%s)\n", p+4, p[3], info );
     if( p[4+e->user_n] != MAGIC_END_BYTE )
 	membug("memory at %p corrupted: overflow=%02x (%s)\n", p+4, p[4+e->user_n], info );
-    if( e->info->count > 20000 )
-	membug("memory at %p corrupted: count too high (%s)\n", p+4, info );
     return e;
 }
 
@@ -444,9 +442,9 @@ m_size( const void *a )
   #ifdef M_DEBUG
     n = check_mem(p-4, "m_size")->user_n;
   #else
-    n  = ((byte*)p[-4];
-    n |= ((byte*)p[-3] << 8;
-    n |= ((byte*)p[-2] << 16;
+    n  = ((byte*)p)[-4];
+    n |= ((byte*)p)[-3] << 8;
+    n |= ((byte*)p)[-2] << 16;
   #endif
     return n;
 }

@@ -40,27 +40,37 @@ transform = @program_transform_name@
 
 INCLUDES =  -I$(top_srcdir)/include
 
-noinst_LIBRARIES = mpi
+SUFFIXES = .S .s
 
-mpi_SOURCES = longlong.h	\
-	      mpi-add.c 	\
-	      mpi-bit.c 	\
-	      mpi-cmp.c 	\
-	      mpi-div.c 	\
-	      mpi-gcd.c 	\
-	      mpi-internal.h	\
-	      mpi-inv.c 	\
-	      mpi-mul.c 	\
-	      mpi-pow.c 	\
-	      mpi-scan.c	\
-	      mpicoder.c	\
-	      mpihelp-add.c	\
-	      mpihelp-cmp.c	\
-	      mpihelp-div.c	\
-	      mpihelp-mul.c	\
-	      mpihelp-shift.c	\
-	      mpihelp-sub.c	\
+noinst_LIBRARIES = mpi
+noinst_HEADERS	 = sysdep.h
+
+mpi_SOURCES = longlong.h     \
+	      mpi-add.c      \
+	      mpi-bit.c      \
+	      mpi-cmp.c      \
+	      mpi-div.c      \
+	      mpi-gcd.c      \
+	      mpi-internal.h \
+	      mpi-inline.h   \
+	      mpi-inv.c      \
+	      mpi-mul.c      \
+	      mpi-pow.c      \
+	      mpi-scan.c     \
+	      mpicoder.c     \
+	      mpih-cmp.c     \
+	      mpih-add.c     \
+	      mpih-sub.c     \
+	      mpih-div.c     \
+	      mpih-mul.c     \
 	      mpiutil.c
+
+mpi_LIBADD =  mpih-mul1.o    \
+	      mpih-mul2.o    \
+	      mpih-mul3.o    \
+	      mpih-add1.o    \
+	      mpih-sub1.o    \
+	      mpih-shift.o
 mkinstalldirs = $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
 LIBRARIES = $(noinst_LIBRARIES)
@@ -79,15 +89,15 @@ LIBS = @LIBS@
 
 COMPILE = $(CC) -c $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 LINK = $(CC) $(LDFLAGS) -o $@
-mpi_LIBADD =
 mpi_OBJECTS = mpi-add.o mpi-bit.o mpi-cmp.o mpi-div.o mpi-gcd.o \
-mpi-inv.o mpi-mul.o mpi-pow.o mpi-scan.o mpicoder.o mpihelp-add.o \
-mpihelp-cmp.o mpihelp-div.o mpihelp-mul.o mpihelp-shift.o mpihelp-sub.o \
-mpiutil.o
+mpi-inv.o mpi-mul.o mpi-pow.o mpi-scan.o mpicoder.o mpih-cmp.o \
+mpih-add.o mpih-sub.o mpih-div.o mpih-mul.o mpiutil.o
 EXTRA_mpi_SOURCES =
 LIBFILES =  libmpi.a
 AR = ar
 RANLIB = @RANLIB@
+HEADERS = $(noinst_HEADERS)
+
 DIST_COMMON = Makefile.am Makefile.in
 
 
@@ -105,10 +115,9 @@ $(srcdir)/.deps/mpi-cmp.P $(srcdir)/.deps/mpi-div.P \
 $(srcdir)/.deps/mpi-gcd.P $(srcdir)/.deps/mpi-inv.P \
 $(srcdir)/.deps/mpi-mul.P $(srcdir)/.deps/mpi-pow.P \
 $(srcdir)/.deps/mpi-scan.P $(srcdir)/.deps/mpicoder.P \
-$(srcdir)/.deps/mpihelp-add.P $(srcdir)/.deps/mpihelp-cmp.P \
-$(srcdir)/.deps/mpihelp-div.P $(srcdir)/.deps/mpihelp-mul.P \
-$(srcdir)/.deps/mpihelp-shift.P $(srcdir)/.deps/mpihelp-sub.P \
-$(srcdir)/.deps/mpiutil.P
+$(srcdir)/.deps/mpih-add.P $(srcdir)/.deps/mpih-cmp.P \
+$(srcdir)/.deps/mpih-div.P $(srcdir)/.deps/mpih-mul.P \
+$(srcdir)/.deps/mpih-sub.P $(srcdir)/.deps/mpiutil.P
 SOURCES = $(mpi_SOURCES)
 OBJECTS = $(mpi_OBJECTS)
 
@@ -218,7 +227,7 @@ install: install-exec install-data all
 
 uninstall: 
 
-all: $(LIBFILES) Makefile
+all: $(LIBFILES) $(HEADERS) Makefile
 
 install-strip:
 	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
@@ -263,8 +272,17 @@ install-exec install-data install uninstall all installdirs \
 mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
+CFLAGS += -O2
+
+#mpi_DEPENDENCIES = mpih-mul1.S    \
+#		    mpih-mul2.S    \
+#		    mpih-mul3.S    \
+#		    mpih-add1.S    \
+#		    mpih-sub1.S    \
+#		    mpih-shift.S
+#
 .SUFFIXES:
-.SUFFIXES: .c .o
+.SUFFIXES: .c .o $(SUFFIXES)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -349,7 +349,10 @@ show_help( ARGPARSE_OPTS *opts, unsigned flags )
 {
     const char *s;
 
-    puts( strusage(10) );
+    s = strusage(10);
+    fputs( s, stdout );
+    if( *s && s[strlen(s)-1] != '\n' )
+	putchar( '\n' );
     s = strusage(12);
     if( *s == '\n' )
 	s++;
@@ -366,6 +369,9 @@ show_help( ARGPARSE_OPTS *opts, unsigned flags )
 	indent += 10;
 	puts("Options:");
 	for(i=0; opts[i].short_opt; i++ ) {
+	    s = opts[i].description;
+	    if( s && *s== '\r' ) /* hide this line */
+		continue;
 	    if( opts[i].short_opt < 256 )
 		printf(" -%c", opts[i].short_opt );
 	    else
@@ -376,7 +382,7 @@ show_help( ARGPARSE_OPTS *opts, unsigned flags )
 					  opts[i].long_opt );
 	    for(;j < indent; j++ )
 		putchar(' ');
-	    if( (s = opts[i].description) ) {
+	    if( s ) {
 		for(; *s; s++ ) {
 		    if( *s == '\n' ) {
 			if( s[1] ) {
@@ -395,6 +401,10 @@ show_help( ARGPARSE_OPTS *opts, unsigned flags )
 	    puts("\n(A single dash may be used instead of the double ones)");
     }
     if( *(s=strusage(26)) ) {  /* bug reports to ... */
+	putchar('\n');
+	fputs(s, stdout);
+    }
+    if( *(s=strusage(30)) ) {  /* special notes */
 	putchar('\n');
 	fputs(s, stdout);
     }
@@ -497,7 +507,7 @@ default_strusage( int level )
    "it under the terms of the GNU General Public License as published by\n"
    "the Free Software Foundation; either version 2 of the License, or\n"
    "(at your option) any later version.\n\n"
-   "WkLib is distributed in the hope that it will be useful,\n"
+   "It is distributed in the hope that it will be useful,\n"
    "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
    "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
    "GNU General Public License for more details.\n\n"
@@ -537,6 +547,7 @@ default_strusage( int level )
 	    p = "UnknownOS";
 	  #endif
 	    break;
+      case 30: p = ""; break;
       case 31: p =
     "This program comes with ABSOLUTELY NO WARRANTY.\n"
     "This is free software, and you are welcome to redistribute it\n"

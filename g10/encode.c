@@ -251,6 +251,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 		m_free(ustr);
 	    }
 	}
+      #ifdef HAVE_RSA_CIPHER
 	else if( enc->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	    RSA_public_key pkey;
 
@@ -270,6 +271,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 		m_free(ustr);
 	    }
 	}
+      #endif/*HAVE_RSA_CIPHER*/
 	else {
 	    last_rc = rc = G10ERR_PUBKEY_ALGO;
 	    log_error("skipped '%s': %s\n", remusr->d, g10_errstr(rc) );

@@ -5,6 +5,7 @@ INCLUDES = -I$(top_srcdir)/include
 noinst_LIBRARIES = cipher
 
 
+# please add "rsa.c" and "rsa.h" manually in Makefile.am
 cipher_SOURCES = blowfish.c	\
 		 blowfish.h	\
 		 elgamal.c	\
@@ -15,12 +16,10 @@ cipher_SOURCES = blowfish.c	\
 		 md5.h		\
 		 primegen.c	\
 		 random.c	\
-		 ripemd.h	\
 		 rmd.h		\
 		 rmd160.c	\
-		 rsa.c		\
-		 rsa.h		\
 		 smallprime.c
 
+cipher_LIBADD = rsa.o
 
 

@@ -71,7 +71,7 @@ g10_SOURCES = g10.c		\
 	      comment.c 	\
 	      sig-check.c
 
-LDADD = -L ../cipher -L ../mpi -L ../util -lcipher -lmpi -lutil -lz
+LDADD = -L ../cipher -L ../mpi -L ../util -lcipher -lmpi -lutil
 mkinstalldirs = $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
 PROGRAMS = $(bin_PROGRAMS)

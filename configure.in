@@ -21,6 +21,22 @@ if test "$enableval" = y || test "$enableval" = yes; then
     CFLAGS="-g"
 fi
 
+dnl
+AC_CANONICAL_HOST
+AC_MSG_CHECKING(cached information)
+hostcheck="$host"
+AC_CACHE_VAL(ac_cv_mpi_hostcheck, [ ac_cv_mpi_hostcheck="$hostcheck" ])
+if test "$ac_cv_mpi_hostcheck" != "$hostcheck"; then
+    AC_MSG_RESULT(changed)
+    AC_MSG_WARN(config.cache exists!)
+    AC_MSG_ERROR(you must do 'make distclean' first to compile for
+different host or different parameters.)
+else
+    AC_MSG_RESULT(ok)
+fi
+
+
+
 dnl Checks for programs.
 
 AC_PROG_MAKE_SET
@@ -37,7 +53,11 @@ dnl Checks for libraries.
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(unistd.h)
-AC_CHECK_HEADERS(zlib.h)
+AC_CHECK_HEADERS(zlib.h,
+		 [LIBS="$LIBS -lz"],
+		 AC_MSG_WARN([zlib missing - creating without ZLIB support!])
+		)
+
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -48,7 +68,19 @@ dnl Checks for library functions.
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(strerror strtol strtoul)
 
-dnl
+
+
+dnl setup assembler stuff
+
+
+
+
+
+dnl checking wether we have the RSA source
+dnl fixme: I found no way (aside of using Makefile.am.in)
+dnl	   to add the requeired source int Makefile.am
+dnl I used: add_cipher_SOURCES="rsa.c rsa.h"
+dnl but of cource it can't work
 AC_MSG_CHECKING(wether we have the rsa source)
 if test -f cipher/rsa.c && test -f cipher/rsa.h; then
     AC_DEFINE(HAVE_RSA_CIPHER)
@@ -56,9 +88,12 @@ if test -f cipher/rsa.c && test -f cipher/rsa.h; then
 else
     AC_MSG_RESULT(no)
 fi
+AC_SUBST(add_cipher_SOURCES)
 
-AC_OUTPUT([ Makefile util/Makefile mpi/Makefile cipher/Makefile \
+AC_OUTPUT([ Makefile scripts/Makefile util/Makefile mpi/Makefile \
+	    cipher/Makefile \
+	    include/Makefile \
 	    g10/Makefile tools/Makefile ],
-	  [echo timestamp > stamp-h ])
+	  [echo timestamp > stamp-h ] )
 
 

@@ -33,6 +33,7 @@
 #include "cipher.h"
 #include "filter.h"
 
+static void do_test(void);
 
 const char *
 strusage( int level )
@@ -41,7 +42,7 @@ strusage( int level )
     switch( level ) {
       case 10:
       case 0:	p = "g10 - v" VERSION "; "
-		    "Copyright 1997 Werner Koch (dd9jn)" ; break;
+		    "Copyright 1997 Werner Koch (dd9jn)\n" ; break;
       case 13:	p = "g10"; break;
       case 14:	p = VERSION; break;
       case 1:
@@ -49,17 +50,24 @@ strusage( int level )
 		break;
       case 2:
       case 12:	p =
-    "\nSyntax: g10 [options] [files]\n"
+    "Syntax: g10 [options] [files]\n"
     "sign, check, encrypt or decrypt\n"
-    "default operation depends on the input data\n"
+    "default operation depends on the input data\n"; break;
+
+      case 26:
+	p = "Please report bugs to <g10-bugs@isil.d.shuttle.de>.\n";
+	break;
+
+      case 30: p = ""
+  #ifndef HAVE_ZLIB_H
+    "   NOTE: This version is compiled without ZLIB support;\n"
+    "         you are not able to process compresssed data!\n"
+  #endif
   #ifdef HAVE_RSA_CIPHER
     "WARNING: This version has RSA support! Your are not allowed to\n"
     "         use it inside the Unites States until Sep 30, 2000!\n"
   #endif
 	;
-	break;
-      case 26:
-	p = "Please report bugs to <g10-bugs@isil.d.shuttle.de>.\n";
 	break;
       default:	p = default_strusage(level);
     }
@@ -96,7 +104,7 @@ main( int argc, char **argv )
     { 'o', "output",    2, "use as output file" },
     { 501, "yes",       0, "assume yes on most questions"},
     { 502, "no",        0, "assume no on most questions"},
-    { 503, "make-key",  0, "generate a new key pair" },
+    { 503, "gen-key",   0, "generate a new key pair" },
     { 504, "add-key",   0, "add key to the public keyring" },
     { 505, "delete-key",0, "remove key from public keyring" },
     { 506, "sign-key"  ,0, "make a signature on a key in the keyring" },
@@ -112,18 +120,20 @@ main( int argc, char **argv )
     { 510, "debug"     ,4|16, "set debugging flags" },
     { 511, "debug-all" ,0, "enable full debugging"},
     { 512, "cache-all" ,0, "hold everything in memory"},
-    { 513, "gen-prime" , 1, "generate a prime of length n" },
-    { 514, "gen-key"   , 0, "generate a key pair" },
+    { 513, "gen-prime" , 1, "\rgenerate a prime of length n" },
+    { 514, "test"      , 0, "\rdevelopment usage" },
     {0} };
     ARGPARSE_ARGS pargs = { &argc, &argv, 0 };
     IOBUF a;
     int rc;
     enum { aNull, aSym, aStore, aEncr, aPrimegen, aKeygen, aSign, aSignEncr,
+	   aTest,
     } action = aNull;
     const char *fname, *fname_print;
     STRLIST sl, remusr= NULL, locusr=NULL;
     int nrings=0;
     armor_filter_context_t afx;
+    const char *s;
 
     opt.compress = -1; /* defaults to default compression level */
     while( arg_parse( &pargs, opts) ) {
@@ -155,6 +165,7 @@ main( int argc, char **argv )
 	    break;
 	  case 501: opt.answer_yes = 1; break;
 	  case 502: opt.answer_no = 1; break;
+	  case 503: action = aKeygen; break;
 	  case 507: action = aStore; break;
 	  case 508: opt.check_sigs = 1; break;
 	  case 509: add_keyring(pargs.r.ret_str); nrings++; break;
@@ -162,13 +173,18 @@ main( int argc, char **argv )
 	  case 511: opt.debug = ~0; break;
 	  case 512: opt.cache_all = 1; break;
 	  case 513: action = aPrimegen; break;
-	  case 514: action = aKeygen; break;
+	  case 514: action = aTest; break;
 	  default : pargs.err = 2; break;
 	}
     }
     set_debug();
     if( opt.verbose > 1 )
 	set_packet_list_mode(1);
+    if( !opt.batch && *(s=strusage(10))  )
+	fputs(s, stderr);
+    if( !opt.batch && *(s=strusage(30))  )
+	fputs(s, stderr);
+
 
     if( !nrings ) { /* add default rings */
 	add_keyring("../keys/ring.pgp");
@@ -230,6 +246,8 @@ main( int argc, char **argv )
 	generate_keypair();
 	break;
 
+      case aTest: do_test(); break;
+
       default:
 	if( argc > 1 )
 	    usage(1);
@@ -247,6 +265,39 @@ main( int argc, char **argv )
     FREE_STRLIST(remusr);
     FREE_STRLIST(locusr);
     return 0;
+}
+
+
+
+static void
+do_test()
+{
+    MPI t = mpi_alloc( 50 );
+    MPI m = mpi_alloc( 50 );
+    MPI a = mpi_alloc( 50 );
+    MPI b = mpi_alloc( 50 );
+    MPI p = mpi_alloc( 50 );
+    MPI x = mpi_alloc( 50 );
+    mpi_fromstr(a, "0xef45678343589854354a4545545454554545455"
+		   "aaaaaaaaaaaaa44444fffdecb33434343443331" );
+    mpi_fromstr(b, "0x8765765589854354a4545545454554545455"
+		   "aaaaaaa466577778decb36666343443331" );
+    mpi_fromstr(p, "0xcccddd456700000012222222222222254545455"
+		   "aaaaaaaaaaaaa44444fffdecb33434343443337" );
+    mpi_fromstr(x, "0x100004545543656456656545545454554545455"
+		    "aaa33aaaa465456544fffdecb33434bbbac3331" );
+
+    /* output = b/(a^x) mod p */
+    log_debug("powm ..\n");
+    mpi_powm( t, a, x, p );
+    log_debug("invm ..\n");
+    mpi_invm( t, t, p );
+    log_debug("mulm ..\n");
+    mpi_mulm( m, b, t, p );
+
+
+    m_check(NULL);
+
 }
 
 

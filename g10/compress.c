@@ -27,8 +27,6 @@
 #include <errno.h>
 #ifdef HAVE_ZLIB_H
   #include <zlib.h>
-#else
-  #error You need ZLIB to compile this module
 #endif
 
 #include "util.h"
@@ -38,6 +36,7 @@
 #include "options.h"
 
 
+#ifdef HAVE_ZLIB_H
 static void
 init_compress( compress_filter_context_t *zfx, z_stream *zs )
 {
@@ -163,7 +162,6 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
     return rc;
 }
 
-
 int
 compress_filter( void *opaque, int control,
 		 IOBUF a, byte *buf, size_t *ret_len)
@@ -228,6 +226,35 @@ compress_filter( void *opaque, int control,
 	*(char**)buf = "compress_filter";
     return rc;
 }
+#else /* No ZLIB */
+int
+compress_filter( void *opaque, int control,
+		 IOBUF a, byte *buf, size_t *ret_len)
+{
+    size_t size = *ret_len;
+    compress_filter_context_t *zfx = opaque;
+    int c, rc=0;
+    size_t n;
+
+    if( control == IOBUFCTRL_UNDERFLOW ) {
+	for( n=0; n < size; n++ ) {
+	    if( (c=iobuf_get(a)) == -1 )
+		break;
+	    buf[n] = c & 0xff;
+	}
+	if( !n )
+	    rc = -1;
+	*ret_len = n;
+    }
+    else if( control == IOBUFCTRL_FLUSH ) {
+	if( iobuf_write( a, buf, size ) )
+	    rc = G10ERR_WRITE_FILE;
+    }
+    else if( control == IOBUFCTRL_DESC )
+	*(char**)buf = "dummy compress_filter";
+    return rc;
+}
+#endif /*no ZLIB*/
 
 /****************
  * Handle a compressed packet

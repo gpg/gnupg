@@ -61,6 +61,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	elg_decipher( dek_frame, k->d.elg.a, k->d.elg.b, &skey );
 	memset( &skey, 0, sizeof skey );
     }
+  #ifdef HAVE_RSA_CIPHER
     else if( k->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	RSA_secret_key skey;
 
@@ -76,6 +77,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	rsa_secret( dek_frame, k->d.rsa.rsa_integer, &skey );
 	memset( &skey, 0, sizeof skey );
     }
+  #endif/*HAVE_RSA_CIPHER*/
     else {
 	rc = G10ERR_PUBKEY_ALGO; /* unsupported algorithm */
 	goto leave;
