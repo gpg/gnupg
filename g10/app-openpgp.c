@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *
+ * $Id$
  */
 
 #include <config.h>
@@ -34,12 +36,12 @@
 #include "errors.h"
 #include "memory.h"
 #include "util.h"
-#include "i18n.h"
 #include "cardglue.h"
 #else /* GNUPG_MAJOR_VERSION != 1 */
 #include "scdaemon.h"
 #endif /* GNUPG_MAJOR_VERSION != 1 */
 
+#include "i18n.h"
 #include "iso7816.h"
 #include "app-common.h"
 #include "tlv.h"
@@ -99,6 +101,11 @@ struct app_local_s {
     unsigned int change_force_chv:1;
     unsigned int private_dos:1;
   } extcap;
+  struct
+  {
+    unsigned int no_sync:1;   /* Do not sync CHV1 and CHV2 */
+    unsigned int def_chv2:1;  /* Use 123456 for CHV2.  */
+  } flags;
 };
 
 
@@ -409,6 +416,75 @@ count_bits (const unsigned char *a, size_t len)
   return n;
 }
 
+/* GnuPG makes special use of the login-data DO, this fucntion parses
+   the login data to store the flags for later use.  It may be called
+   at any time and should be called after changing the login-data DO.
+
+   Everything up to a LF is considered a mailbox or account name.  If
+   the first LF is follewed by DC4 (0x14) control sequence are
+   expected up to the next LF.  Control sequences are separated by FS
+   (0x28) and consist of key=value pairs.  There is one key defined:
+
+    F=<flags>
+
+    Were FLAGS is a plain hexadecimal number representing flag values.
+    The lsb is here the rightmost bit.  Defined flags bits are:
+
+      Bit 0 = CHV1 and CHV2 are not syncronized
+      Bit 1 = CHV2 has been been set to the default PIN of "123456"
+              (this implies that bit 0 is also set).
+
+*/
+static void
+parse_login_data (app_t app)
+{
+  unsigned char *buffer, *p;
+  size_t buflen, len;
+  void *relptr;
+
+  /* Set defaults.  */
+  app->app_local->flags.no_sync = 0;
+  app->app_local->flags.def_chv2 = 0;
+
+  /* Read the DO.  */
+  relptr = get_one_do (app, 0x005E, &buffer, &buflen);
+  if (!relptr)
+    return; /* Ooops. */
+  for (; buflen; buflen--, buffer++)
+    if (*buffer == '\n')
+      break;
+  if (buflen < 2 || buffer[1] != '\x14')
+    return; /* No control sequences.  */
+  buflen--;
+  buffer++;
+  do
+    {
+      buflen--;
+      buffer++;
+      if (buflen > 1 && *buffer == 'F' && buffer[1] == '=')
+        {
+          /* Flags control sequence found.  */
+          int lastdig = 0;
+
+          /* For now we are only interested in the last digit, so skip
+             any leading digits but bail out on invalid characters. */
+          for (p=buffer+2, len = buflen-2; len && hexdigitp (p); p++, len--)
+            lastdig = xtoi_1 (p);
+          if (len && !(*p == '\n' || *p == '\x18'))
+            goto next;  /* Invalid characters in field.  */
+          app->app_local->flags.no_sync = !!(lastdig & 1);
+          app->app_local->flags.def_chv2 = (lastdig & 3) == 3;
+        }
+    next:
+      for (; buflen && *buffer != '\x18'; buflen--, buffer++)
+        if (*buffer == '\n')
+          buflen = 1; 
+    }
+  while (buflen);
+
+  xfree (relptr);
+}
+
 /* Note, that FPR must be at least 20 bytes. */
 static int 
 store_fpr (int slot, int keynumber, u32 timestamp,
@@ -477,7 +553,7 @@ store_fpr (int slot, int keynumber, u32 timestamp,
 
        
 static void
-send_fpr_if_not_null (CTRL ctrl, const char *keyword,
+send_fpr_if_not_null (ctrl_t ctrl, const char *keyword,
                       int number, const unsigned char *fpr)
 {                      
   int i;
@@ -500,7 +576,7 @@ send_fpr_if_not_null (CTRL ctrl, const char *keyword,
 }
 
 static void
-send_key_data (CTRL ctrl, const char *name, 
+send_key_data (ctrl_t ctrl, const char *name, 
                const unsigned char *a, size_t alen)
 {
   char *p, *buf = xmalloc (alen*2+1);
@@ -518,7 +594,7 @@ send_key_data (CTRL ctrl, const char *name,
 /* Implement the GETATTR command.  This is similar to the LEARN
    command but returns just one value via the status interface. */
 static int 
-do_getattr (APP app, CTRL ctrl, const char *name)
+do_getattr (app_t app, ctrl_t ctrl, const char *name)
 {
   static struct {
     const char *name;
@@ -620,7 +696,7 @@ do_getattr (APP app, CTRL ctrl, const char *name)
 
 
 static int
-do_learn_status (APP app, CTRL ctrl)
+do_learn_status (app_t app, ctrl_t ctrl)
 {
   do_getattr (app, ctrl, "EXTCAP");
   do_getattr (app, ctrl, "DISP-NAME");
@@ -659,7 +735,7 @@ verify_chv2 (app_t app,
 
       if (strlen (pinvalue) < 6)
         {
-          log_error (_("prassphrase (CHV%d) is too short;"
+          log_error (_("PIN for CHV%d is too short;"
                        " minimum length is %d\n"), 2, 6);
           xfree (pinvalue);
           return gpg_error (GPG_ERR_BAD_PIN);
@@ -696,7 +772,7 @@ verify_chv2 (app_t app,
 
 /* Verify CHV3 if required. */
 static int
-verify_chv3 (APP app,
+verify_chv3 (app_t app,
              int (*pincb)(void*, const char *, char **),
              void *pincb_arg)
 {
@@ -778,7 +854,7 @@ verify_chv3 (APP app,
 /* Handle the SETATTR operation. All arguments are already basically
    checked. */
 static int 
-do_setattr (APP app, const char *name,
+do_setattr (app_t app, const char *name,
             int (*pincb)(void*, const char *, char **),
             void *pincb_arg,
             const unsigned char *value, size_t valuelen)
@@ -791,7 +867,7 @@ do_setattr (APP app, const char *name,
     int special;
   } table[] = {
     { "DISP-NAME",    0x005B },
-    { "LOGIN-DATA",   0x005E },
+    { "LOGIN-DATA",   0x005E, 2 },
     { "DISP-LANG",    0x5F2D },
     { "DISP-SEX",     0x5F35 },
     { "PUBKEY-URL",   0x5F50 },
@@ -822,6 +898,8 @@ do_setattr (APP app, const char *name,
 
   if (table[idx].special == 1)
     app->force_chv1 = (valuelen && *value == 0);
+  else if (table[idx].special == 2)
+    parse_login_data (app);
 
   return rc;
 }
@@ -829,7 +907,7 @@ do_setattr (APP app, const char *name,
 
 /* Handle the PASSWD command. */
 static int 
-do_change_pin (APP app, CTRL ctrl,  const char *chvnostr, int reset_mode,
+do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr, int reset_mode,
                int (*pincb)(void*, const char *, char **),
                void *pincb_arg)
 {
@@ -916,7 +994,7 @@ do_change_pin (APP app, CTRL ctrl,  const char *chvnostr, int reset_mode,
 
 /* Handle the GENKEY command. */
 static int 
-do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
+do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
           int (*pincb)(void*, const char *, char **),
           void *pincb_arg)
 {
@@ -1058,7 +1136,7 @@ convert_sig_counter_value (const unsigned char *value, size_t valuelen)
 }
 
 static unsigned long
-get_sig_counter (APP app)
+get_sig_counter (app_t app)
 {
   void *relptr;
   unsigned char *value;
@@ -1074,7 +1152,7 @@ get_sig_counter (APP app)
 }
 
 static int
-compare_fingerprint (APP app, int keyno, unsigned char *sha1fpr)
+compare_fingerprint (app_t app, int keyno, unsigned char *sha1fpr)
 {
   const unsigned char *fpr;
   unsigned char *buffer;
@@ -1114,7 +1192,7 @@ compare_fingerprint (APP app, int keyno, unsigned char *sha1fpr)
      known to gpg was not updated.  If there is no fingerprint we
      assume that this is okay. */
 static int
-check_against_given_fingerprint (APP app, const char *fpr, int keyno)
+check_against_given_fingerprint (app_t app, const char *fpr, int keyno)
 {
   unsigned char tmp[20];
   const char *s;
@@ -1145,7 +1223,7 @@ check_against_given_fingerprint (APP app, const char *fpr, int keyno)
    not match the one required for the requested action (e.g. the
    serial number does not match). */
 static int 
-do_sign (APP app, const char *keyidstr, int hashalgo,
+do_sign (app_t app, const char *keyidstr, int hashalgo,
          int (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
@@ -1220,20 +1298,20 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
 
       {
         char *prompt;
-        if (asprintf (&prompt, "PIN [sigs done: %lu]", sigcount) < 0)
+        if (asprintf (&prompt, _("PIN [sigs done: %lu]"), sigcount) < 0)
           return gpg_error_from_errno (errno);
         rc = pincb (pincb_arg, prompt, &pinvalue); 
         free (prompt);
       }
       if (rc)
         {
-          log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
+          log_info (_("PIN callback returned error: %s\n"), gpg_strerror (rc));
           return rc;
         }
 
       if (strlen (pinvalue) < 6)
         {
-          log_error (_("prassphrase (CHV%d) is too short;"
+          log_error (_("PIN for CHV%d is too short;"
                        " minimum length is %d\n"), 1, 6);
           xfree (pinvalue);
           return gpg_error (GPG_ERR_BAD_PIN);
@@ -1242,7 +1320,7 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
       rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
       if (rc)
         {
-          log_error (_("verify CHV%d failed\n"), 1);
+          log_error (_("verify CHV%d failed: %s\n"), 1, gpg_strerror (rc));
           xfree (pinvalue);
           flush_cache_after_error (app);
           return rc;
@@ -1256,7 +1334,7 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
             rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
           if (rc)
             {
-              log_error (_("verify CHV%d failed\n"), 2);
+              log_error (_("verify CHV%d failed: %s\n"), 2, gpg_strerror (rc));
               xfree (pinvalue);
               flush_cache_after_error (app);
               return rc;
@@ -1280,7 +1358,7 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
    not match the one required for the requested action (e.g. the
    serial number does not match). */
 static int 
-do_auth (APP app, const char *keyidstr,
+do_auth (app_t app, const char *keyidstr,
          int (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
@@ -1339,7 +1417,7 @@ do_auth (APP app, const char *keyidstr,
 
 
 static int 
-do_decipher (APP app, const char *keyidstr,
+do_decipher (app_t app, const char *keyidstr,
              int (pincb)(void*, const char *, char **),
              void *pincb_arg,
              const void *indata, size_t indatalen,
@@ -1401,7 +1479,7 @@ do_decipher (APP app, const char *keyidstr,
    dangerous CHV3.  KEYIDSTR is the usual card's serial number; an
    optional fingerprint part will be ignored. */
 static int 
-do_check_pin (APP app, const char *keyidstr,
+do_check_pin (app_t app, const char *keyidstr,
               int (pincb)(void*, const char *, char **),
               void *pincb_arg)
 {
@@ -1448,7 +1526,7 @@ do_check_pin (APP app, const char *keyidstr,
 /* Select the OpenPGP application on the card in SLOT.  This function
    must be used before any other OpenPGP application functions. */
 int
-app_select_openpgp (APP app)
+app_select_openpgp (app_t app)
 {
   static char const aid[] = { 0xD2, 0x76, 0x00, 0x01, 0x24, 0x01 };
   int slot = app->slot;
@@ -1501,8 +1579,8 @@ app_select_openpgp (APP app)
       relptr = get_one_do (app, 0x00C4, &buffer, &buflen);
       if (!relptr)
         {
-          log_error (_("can't access CHV Status Bytes "
-                       "- invalid OpenPGP card?\n"));
+          log_error (_("can't access %s - invalid OpenPGP card?\n"),
+                     "CHV Status Bytes");
           goto leave;
         }
       app->force_chv1 = (buflen && *buffer == 0);
@@ -1511,8 +1589,8 @@ app_select_openpgp (APP app)
       relptr = get_one_do (app, 0x00C0, &buffer, &buflen);
       if (!relptr)
         {
-          log_error (_("can't access Extended Capability Flags - "
-                       "invalid OpenPGP card?\n"));
+          log_error (_("can't access %s - invalid OpenPGP card?\n"),
+                     "Extended Capability Flags" );
           goto leave;
         }
       if (buflen)
@@ -1529,6 +1607,7 @@ app_select_openpgp (APP app)
       if (app->card_version <= 0x0100 && manufacturer == 1)
         app->app_local->extcap.change_force_chv = 1;
 
+      parse_login_data (app);
 
       if (opt.verbose > 1)
         dump_all_do (slot);
@@ -1560,7 +1639,7 @@ leave:
    buffers or NULL if the data object is not available.  All returned
    values are sanitized. */
 int
-app_openpgp_cardinfo (APP app,
+app_openpgp_cardinfo (app_t app,
                       char **serialno,
                       char **disp_name,
                       char **pubkey_url,
@@ -1642,7 +1721,7 @@ app_openpgp_cardinfo (APP app,
 
 
 /* This function is currently only used by the sc-copykeys program to
-   store a key on the smartcard.  APP ist the application handle,
+   store a key on the smartcard.  app_t ist the application handle,
    KEYNO is the number of the key and PINCB, PINCB_ARG are used to ask
    for the SO PIN.  TEMPLATE and TEMPLATE_LEN describe a buffer with
    the key template to store. CREATED_AT is the timestamp used to
@@ -1650,7 +1729,7 @@ app_openpgp_cardinfo (APP app,
    RSA public exponent. This function silently overwrites an existing
    key.*/
 int 
-app_openpgp_storekey (APP app, int keyno,
+app_openpgp_storekey (app_t app, int keyno,
                       unsigned char *template, size_t template_len,
                       time_t created_at,
                       const unsigned char *m, size_t mlen,
@@ -1695,7 +1774,7 @@ app_openpgp_storekey (APP app, int keyno,
 /* Utility function for external tools: Read the public RSA key at
    KEYNO and return modulus and exponent in (M,MLEN) and (E,ELEN). */
 int 
-app_openpgp_readkey (APP app, int keyno, unsigned char **m, size_t *mlen,
+app_openpgp_readkey (app_t app, int keyno, unsigned char **m, size_t *mlen,
                      unsigned char **e, size_t *elen)
 {
   int rc;

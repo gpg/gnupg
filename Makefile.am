@@ -20,7 +20,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 DISTCHECK_CONFIGURE_FLAGS = --enable-selinux-support
-AUTOMAKE_OPTIONS = dist-bzip2 std-options
+AUTOMAKE_OPTIONS = dist-bzip2
 
 if CROSS_COMPILING
 checks =

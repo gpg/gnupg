@@ -27,10 +27,10 @@ libexec_PROGRAMS = @GPGKEYS_LDAP@ @GPGKEYS_HKP@ @GPGKEYS_HTTP@ @GPGKEYS_FINGER@
 libexec_SCRIPTS = @GPGKEYS_MAILTO@
 noinst_SCRIPTS = gpgkeys_test
 
-gpgkeys_ldap_SOURCES = gpgkeys_ldap.c ksutil.c
-gpgkeys_hkp_SOURCES = gpgkeys_hkp.c ksutil.c
-gpgkeys_http_SOURCES = gpgkeys_http.c ksutil.c
-gpgkeys_finger_SOURCES = gpgkeys_finger.c ksutil.c
+gpgkeys_ldap_SOURCES = gpgkeys_ldap.c ksutil.c ksutil.h
+gpgkeys_hkp_SOURCES = gpgkeys_hkp.c ksutil.c ksutil.h
+gpgkeys_http_SOURCES = gpgkeys_http.c ksutil.c ksutil.h
+gpgkeys_finger_SOURCES = gpgkeys_finger.c ksutil.c ksutil.h
 
 gpgkeys_ldap_LDADD = ../util/libutil.a @LDAPLIBS@ @NETLIBS@ @LIBINTL@ @CAPLIBS@ @GETOPT@ @W32LIBS@
 gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ @LIBINTL@ @CAPLIBS@ @GETOPT@ @W32LIBS@

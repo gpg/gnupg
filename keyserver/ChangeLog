@@ -1,3 +1,7 @@
+2004-10-15  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am: Add ksutil.h.
+
 2004-10-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_finger.c (main): We do not support relay fingering

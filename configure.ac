@@ -35,7 +35,7 @@ development_version=yes
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_SRCDIR(g10/g10.c)
 AC_CANONICAL_TARGET
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([std-options])
 AM_CONFIG_HEADER(config.h)
 
 AC_GNU_SOURCE
