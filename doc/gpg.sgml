@@ -1223,8 +1223,9 @@ Include designated revoker information that was marked as
 <listitem><para>
 This is a space or comma delimited string that gives options used when
 listing keys and signatures (that is, --list-keys, --list-sigs,
---list-public-keys, and --list-secret-keys).  Options can be prepended
-with a `no-' to give the opposite meaning.  The options are:
+--list-public-keys, --list-secret-keys, and the --edit-key functions).
+Options can be prepended with a `no-' to give the opposite meaning.
+The options are:
 <variablelist>
 
 <varlistentry>
@@ -1250,10 +1251,38 @@ Defaults to no.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>show-preferred-keyserver</term>
+<listitem><para>
+Show any preferred keyserver URL in the --list-sigs or --check-sigs
+listings.  Defaults to no.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>show-validity</term>
+<listitem><para>
+Display the calculated validity of keys and user IDs during key
+listings.  Defaults to no.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>show-long-keyid</term>
+<listitem><para>
+Display all 64 bits (16 digits) of key IDs during key listings, rather
+than the more common 32 bit (8 digit) IDs.  Defaults to no.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>show-keyring</term>
 <listitem><para>
 Display the keyring name at the head of key listings to show which
 keyring a given key resides on.  Defaults to no.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>show-sig-expire</term>
+<listitem><para>
+Show signature expiration dates (if any) during --list-sigs or
+--check-sigs listings.  Defaults to no.
 </para></listitem></varlistentry>
 
 </variablelist>
@@ -1285,6 +1314,28 @@ Show policy URLs in the signature being verified.  Defaults to no.
 <listitem><para>
 Show signature notations in the signature being verified.  Defaults to
 no.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>show-preferred-keyserver</term>
+<listitem><para>
+Show any preferred keyserver URL in the signature being verified.
+Defaults to no.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>show-validity</term>
+<listitem><para>
+Display the calculated validity of the user IDs on the key that issued
+the signature.  Defaults to no.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>show-long-keyid</term>
+<listitem><para>
+Display all 64 bits (16 digits) of key IDs during signature
+verification, rather than the more common 32 bit (8 digit) IDs.
+Defaults to no.
 </para></listitem></varlistentry>
 
 </variablelist>

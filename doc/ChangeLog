@@ -1,3 +1,10 @@
+2003-08-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document list-options (show-preferred-keyserver,
+	show-validity, show-long-keyid, and show-sig-expire), and
+	verify-options (show-preferred-keyserver, show-validity,
+	show-long-keyid).
+
 2003-08-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* samplekeys.asc: Updated.
