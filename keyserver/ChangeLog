@@ -1,3 +1,8 @@
+2002-09-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (main): Remove warning - this is no longer
+	experimental code.
+
 2002-09-09  Werner Koch  <wk@gnupg.org>
 
 	* gpgkeys_hkp.c (send_key, get_key, search_key): Check return
