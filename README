@@ -25,21 +25,25 @@
 
     GnuPG works best on GNU/Linux or *BSD systems.  Most other Unices
     are also supported but are not as well tested as the Free Unices.
-    See http://www.gnupg.org/gnupg.html#supsys for a list of systems
-    which are known to work.
+    See http://www.gnupg.org/download/supported_systems.html for a
+    list of systems which are known to work.
 
     See the file COPYING for copyright and warranty information.
 
-    Because GnuPG does not use use any patented algorithm it cannot be
-    compatible with PGP2 versions.  PGP 2.x uses IDEA (which is patented
-    worldwide).
+    Because GnuPG does not use use any patented algorithms it is not
+    by default fully compatible with PGP 2.x, which uses the patented
+    IDEA algorithm.  See http://www.gnupg.org/why-not-idea.html for
+    more information on this subject, including what to do if you are
+    legally entitled to use IDEA.
 
     The default algorithms are DSA and ElGamal, but RSA is also
     supported.  ElGamal for signing is available, but because of the
-    larger size of such signatures it is deprecated (Please note that
-    the GnuPG implementation of ElGamal signatures is *not* insecure).
-    Symmetric algorithms are: AES, 3DES, Blowfish, CAST5 and Twofish.
-    Digest algorithms available are MD5, RIPEMD160 and SHA1.
+    larger size of such signatures it is strongly deprecated (Please
+    note that the GnuPG implementation of ElGamal signatures is *not*
+    insecure).  Symmetric algorithms are: AES, 3DES, Blowfish, CAST5
+    and Twofish.  Digest algorithms available are MD5, RIPEMD/160,
+    SHA-1, SHA-256, SHA-384, and SHA-512.  Compression algorithms
+    available are ZIP and ZLIB.
 
 
     Installation
@@ -50,12 +54,12 @@
     1) Check that you have unmodified sources.  See below on how to do
        this.  Don't skip it - this is an important step!
 
-    2)	Unpack the TAR.  With GNU tar you can do it this way:
-	"tar xzvf gnupg-x.y.z.tar.gz"
+    2) Unpack the tarball.  With GNU tar you can do it this way:
+       "tar xzvf gnupg-x.y.z.tar.gz"
 
     3) "cd gnupg-x.y.z"
 
-    4)	"./configure"
+    4) "./configure"
 
     5) "make"
 
@@ -63,9 +67,9 @@
 
     7) You end up with a "gpg" binary in /usr/local/bin.
 
-    8) To avoid swapping out of sensitive data, you can install "gpg" as
-       suid root.  If you don't do so, you may want to add the option
-       "no-secmem-warning" to ~/.gnupg/gpg.conf
+    8) To avoid swapping out of sensitive data, you can install "gpg"
+       setuid root.  If you don't do so, you may want to add the
+       option "no-secmem-warning" to ~/.gnupg/gpg.conf
 
 
     How to Verify the Source
@@ -113,23 +117,23 @@
        published via the announcement list and probably via Usenet.
 
 
-
     Documentation
     -------------
-    The manual will be distributed separate under the name "gph".
+
+    The manual will be distributed separately under the name "gph".
     An online version of the latest manual draft is available at the
     GnuPG web pages:
 
-	http://www.gnupg.org/gph/
+	http://www.gnupg.org/documentation/
 
-    A list of frequently asked questions is available in GnuPG's
-    distibution in the file doc/FAQ and online as:
+    A list of frequently asked questions is available in the GnuPG
+    distribution in the file doc/FAQ and online as:
 
-	http://www.gnupg.org/faq.html
+	http://www.gnupg.org/documentation/faqs.html
 
     A couple of HOWTO documents are available online; for a listing see:
 
-	http://www.gnupg.org/docs.html#howtos
+	http://www.gnupg.org/documentation/howtos.html
 
     A man page with a description of all commands and options gets installed
     along with the program. 
@@ -142,9 +146,15 @@
     cryptography.  GnuPG is only a tool, secure usage requires that
     YOU KNOW WHAT YOU ARE DOING.
 
-    If you already have a DSA key from PGP 5 (they call them DH/ElGamal)
-    you can simply copy the pgp keyrings over the GnuPG keyrings after
-    running gpg once to create the correct directory.
+    The first time you run gpg, it will create a .gnupg directory in
+    your home directory and populate it with a default configuration
+    file.  Once this is done, you may create a new key, or if you
+    already have keyrings from PGP, you can import them into GnuPG
+    with:
+
+        gpg --import path/to/pgp/keyring/pubring.pkr
+    and
+        gpg --import path/to/pgp/keyring/secring.skr
 
     The normal way to create a key is
 
@@ -154,23 +164,23 @@
     good random numbers for the key parameters, GnuPG needs to gather
     enough noise (entropy) from your system.  If you see no progress
     during key generation you should start some other activities such
-    as mouse moves or hitting on the CTRL and SHIFT keys.
+    as moving the mouse or hitting the CTRL and SHIFT keys.
 
     Generate a key ONLY on a machine where you have direct physical
-    access - don't do it over the network or on a machine used also
-    by others - especially if you have no access to the root account.
+    access - don't do it over the network or on a machine also used
+    by others, especially if you have no access to the root account.
 
     When you are asked for a passphrase use a good one which you can
-    easy remember.  Don't make the passphrase too long because you have
-    to type it for every decryption or signing; but, - AND THIS IS VERY
-    IMPORTANT - use a good one that is not easily to guess because the
-    security of the whole system relies on your secret key and the
-    passphrase that protects it when someone gains access to your secret
-    keyring.  A good way to select a passphrase is to figure out a short
-    nonsense sentence which makes some sense for you and modify it by
-    inserting extra spaces, non-letters and changing the case of some
-    characters - this is really easy to remember especially if you
-    associate some pictures with it.
+    easily remember.  Don't make the passphrase too long because you
+    have to type it for every decryption or signing; but, - AND THIS
+    IS VERY IMPORTANT - use a good one that is not easily to guess
+    because the security of the whole system relies on your secret key
+    and the passphrase that protects it when someone gains access to
+    your secret keyring.  One good way to select a passphrase is to
+    figure out a short nonsense sentence which makes some sense for
+    you and modify it by inserting extra spaces, non-letters and
+    changing the case of some characters - this is really easy to
+    remember especially if you associate some pictures with it.
 
     Next, you should create a revocation certificate in case someone
     gets knowledge of your secret key or you forgot your passphrase
@@ -472,9 +482,9 @@
                      as the socket to connect EGD.  Using this option the
                      socket name can be changed.  You may use any filename
                      here with 2 exceptions:  a filename starting with
-                     "~/" uses the socket in the homedirectory of the user
+                     "~/" uses the socket in the home directory of the user
                      and one starting with a "=" uses a socket in the
-                     GnuPG homedirectory which is bye default "~/.gnupg".
+                     GnuPG home directory which is "~/.gnupg" by default.
    
      --with-included-zlib
                      Forces usage of the local zlib sources. Default is
@@ -541,12 +551,14 @@
 
     We can't check all assembler files, so if you have problems
     assembling them (or the program crashes) use --disable-asm with
-    ./configure.  The configure scripts may consider several
-    subdirectories to get all available assembler files; be sure to
-    delete the correct ones. The assembler replacements are in C and
-    in mpi/generic; never delete udiv-qrnnd.S in any CPU directory,
-    because there may be no C substitute.  Don't forget to delete
-    "config.cache" and run "./config.status --recheck".
+    ./configure.  If you opt to delete individual replacement files in
+    hopes of using the remaining ones, be aware that the configure
+    scripts may consider several subdirectories to get all available
+    assembler files; be sure to delete the correct ones. The assembler
+    replacements are in C and in mpi/generic; never delete
+    udiv-qrnnd.S in any CPU directory, because there may be no C
+    substitute.  Don't forget to delete "config.cache" and run
+    "./config.status --recheck".
 
     Some make tools are broken - the best solution is to use GNU's
     make.  Try gmake or grab the sources from a GNU archive and
@@ -595,6 +607,7 @@
         read and follow the instructions at the top of
         intl/gettextP.h.
 
+
     The Random Device
     -----------------
 
@@ -630,9 +643,9 @@
     The primary WWW page is "http://www.gnupg.org"
     The primary FTP site is "ftp://ftp.gnupg.org/gcrypt/"
 
-    See http://www.gnupg.org/mirrors.html for a list of mirrors
-    and use them if possible.  You may also find GnuPG mirrored on
-    some of the regular GNU mirrors.
+    See http://www.gnupg.org/download/mirrors.html for a list of
+    mirrors and use them if possible.  You may also find GnuPG
+    mirrored on some of the regular GNU mirrors.
 
     We have some mailing lists dedicated to GnuPG:
 
@@ -649,7 +662,8 @@
     You subscribe to one of the list by sending mail with a subject
     of "subscribe" to x-request@gnupg.org, where x is the name of the
     mailing list (gnupg-announce, gnupg-users, etc.).  An archive of
-    the mailing lists is available at http://lists.gnupg.org .
+    the mailing lists are available at
+    http://www.gnupg.org/documentation/mailing-lists.html
 
     Please direct bug reports to http://bugs.gnupg.org or post
     them direct to the mailing list <gnupg-devel@gnupg.org>.

@@ -1,7 +1,10 @@
 2003-04-29  David Shaw  <dshaw@jabberwocky.com>
 
-	* README: Add note about the HP/UX inline problem.  Fix bug
-	reporting URL.
+	* NEWS: Add note about TIGER being dropped from OpenPGP.
+
+	* README: Add note about the HP/UX inline problem.  Fix all URLs
+	to point to the right place in the reorganized gnupg.org web
+	pages.  Some minor language fixes.
 
 2003-04-27  David Shaw  <dshaw@jabberwocky.com>
 

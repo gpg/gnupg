@@ -45,6 +45,13 @@ Noteworthy changes in version 1.2.2 (unreleased)
 
     * New option --enable-progress-filter for use with frontends.
 
+    * Note that the TIGER/192 digest algorithm is in the process of
+      being dropped from the OpenPGP standard.  While this release of
+      GnuPG still contains it, it is disabled by default.  To ensure
+      you will still be able to use your messages with future versions
+      of GnuPG and other OpenPGP programs, please do not use this
+      algorithm.
+
 
 Noteworthy changes in version 1.2.1 (2002-10-25)
 ------------------------------------------------
