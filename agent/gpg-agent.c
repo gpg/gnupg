@@ -1059,15 +1059,11 @@ handle_signal (int signo)
       break;
       
     case SIGUSR1:
-      if (opt.verbose < 5)
-        opt.verbose++;
-      log_info ("SIGUSR1 received - verbosity set to %d\n", opt.verbose);
+      log_info ("SIGUSR1 received - no action defined\n");
       break;
-
+      
     case SIGUSR2:
-      if (opt.verbose)
-        opt.verbose--;
-      log_info ("SIGUSR2 received - verbosity set to %d\n", opt.verbose );
+      log_info ("SIGUSR2 received - checking smartcard status\n");
       break;
 
     case SIGTERM:

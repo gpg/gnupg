@@ -33,6 +33,8 @@
 #include <assert.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #ifdef USE_GNU_PTH
 # include <pth.h>
 #endif
@@ -51,8 +53,8 @@ static ASSUAN_CONTEXT scd_ctx = NULL;
 static pth_mutex_t scd_lock = PTH_MUTEX_INIT;
 #endif
 /* We need to keep track of the connection currently using the SCD.
-   For a pipe server this is all a NOP becuase the connection will
-   always have the conenction indicator -1.  agent_reset_scd releases
+   For a pipe server this is all a NOP because the connection will
+   always have the connection indicator -1.  agent_reset_scd releases
    the active connection; i.e. sets it back to -1, so that a new
    connection can start using the SCD.  If we eventually allow
    multiple SCD session we will either make scdaemon multi-threaded or
@@ -195,6 +197,8 @@ start_scd (ctrl_t ctrl)
 
   if (scd_ctx)
     {
+      pid_t pid;
+
       /* If we are not the connection currently using the SCD, return
          an error. */
       if (!active_connection)
@@ -205,8 +209,19 @@ start_scd (ctrl_t ctrl)
       else if (ctrl->connection_fd != active_connection_fd)
         return unlock_scd (gpg_error (GPG_ERR_CONFLICT));
       
-      /* Okay, we scdaemon already started and used by us. */
-      return 0; 
+      /* Okay, we already started the scdaemon and it is used by us.*/
+
+      /* We better do a sanity check now to see whether it has
+         accidently died. */
+      pid = assuan_get_pid (scd_ctx);
+      if (pid != (pid_t)(-1) && pid
+          && ((rc=waitpid (pid, NULL, WNOHANG))==-1 || (rc == pid)) )
+        {
+          assuan_disconnect (scd_ctx);
+          scd_ctx = NULL;
+        }
+      else
+        return 0; 
     }
 
   if (opt.verbose)
@@ -254,6 +269,14 @@ start_scd (ctrl_t ctrl)
 
   if (DBG_ASSUAN)
     log_debug ("connection to SCdaemon established\n");
+
+  /* Tell the scdaemon that we want him to send us an event signal. */
+  {
+    char buf[100];
+
+    sprintf (buf, "OPTION event-signal=%d", SIGUSR2);
+    assuan_transact (scd_ctx, buf, NULL, NULL, NULL, NULL, NULL, NULL);
+  }
 
   return 0;
 }

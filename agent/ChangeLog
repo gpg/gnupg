@@ -1,3 +1,11 @@
+2004-04-21  Werner Koch  <wk@gnupg.org>
+
+	* call-scd.c (start_scd): Send event-signal option. Always check
+	that the scdaemon is still running.
+
+	* gpg-agent.c (handle_signal): Do not use SIGUSR{1,2} anymore for
+	changing the verbosity.
+
 2004-04-16  Werner Koch  <wk@gnupg.org>
 
 	* gpg-agent.c (main): Tell the logging code taht we are runnign

@@ -312,15 +312,6 @@ implementation, which calls the scdaemon only once, it is not of much
 use.
 
 
-@item SIGUSR1
-@cpindex SIGUSR1
-This signal increases the verbosity of the logging by one up to a value
-of 5.
-
-@item SIGUSR2
-@cpindex SIGUSR2
-This signal decreases the verbosity of the logging by one.
-
 @item SIGTERM
 @cpindex SIGTERM
 Shuts down the process but waits until all current requests are
@@ -330,6 +321,13 @@ are still pending, a shutdown is forced.
 @item SIGINT
 @cpindex SIGINT
 Shuts down the process immediately.
+
+
+@item SIGUSR1
+@itemx SIGUSR2
+@cpindex SIGUSR1
+@cpindex SIGUSR2
+These signals are used for internal purposes.
 
 @end table
 
