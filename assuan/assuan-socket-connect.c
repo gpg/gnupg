@@ -39,7 +39,7 @@
 #define LOGERROR(a)      fprintf (stderr, (a))
 #define LOGERROR1(a,b)   fprintf (stderr, (a), (b))
 #define LOGERROR2(a,b,c) fprintf (stderr, (a), (b), (c))
-#define LOGERRORX(a)     fputs (stderr, (a))
+#define LOGERRORX(a)     fputs ((a), stderror)
 #endif
 
 

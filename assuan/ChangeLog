@@ -1,3 +1,7 @@
+2002-01-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-socket-connect.c (LOGERRORX): Reverse arguments to fputs.
+
 2002-01-21  Werner Koch  <wk@gnupg.org>
 
 	* assuan-connect.c: Move all except assuan_get_pid to...
