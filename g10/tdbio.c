@@ -432,6 +432,7 @@ create_version_record (void)
   rec.r.ver.marginals  = opt.marginals_needed;
   rec.r.ver.completes  = opt.completes_needed;
   rec.r.ver.cert_depth = opt.max_cert_depth;
+  rec.r.ver.trust_model= 0;
   rec.rectype = RECTYPE_VER;
   rec.recnum = 0;
   rc = tdbio_write_record( &rec );
@@ -687,10 +688,16 @@ tdbio_write_nextcheck (ulong stamp)
 	log_fatal( _("%s: error reading version record: %s\n"),
 				       db_name, g10_errstr(rc) );
 
-    if (vr.r.ver.nextcheck == stamp)
+    if (vr.r.ver.nextcheck == stamp && vr.r.ver.trust_model == 0)
       return 0;
 
     vr.r.ver.nextcheck = stamp;
+    /* Force this to the classic trustdb since that is what we are
+       building.  This is to help smooth the 1.2->1.4 switchover, as
+       otherwise a 1.4 trustdb could be rebuilt as classic on 1.2
+       while still claiming to be a non-classic trust model. */
+    vr.r.ver.trust_model = 0;
+
     rc = tdbio_write_record( &vr );
     if( rc )
 	log_fatal( _("%s: error writing version record: %s\n"),
@@ -1169,10 +1176,8 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	rec->r.ver.marginals = *p++;
 	rec->r.ver.completes = *p++;
 	rec->r.ver.cert_depth = *p++;
-	/* Warning - one byte of this is used in the devel version.
-	   If you change this, make sure to consult the same code in
-	   devel. */
-	p += 4; /* lock flags */
+	rec->r.ver.trust_model = *p++;
+	p += 3;
 	rec->r.ver.created  = buftoulong(p); p += 4;
 	rec->r.ver.nextcheck = buftoulong(p); p += 4;
 	p += 4;
@@ -1257,10 +1262,8 @@ tdbio_write_record( TRUSTREC *rec )
 	*p++ = rec->r.ver.marginals;
 	*p++ = rec->r.ver.completes;
 	*p++ = rec->r.ver.cert_depth;
-	/* Warning - one byte of this is used in the devel version.
-	   If you change this, make sure to consult the same code in
-	   devel. */
-	p += 4; /* skip lock flags */
+	*p++ = rec->r.ver.trust_model;
+	p += 3;
 	ulongtobuf(p, rec->r.ver.created); p += 4;
 	ulongtobuf(p, rec->r.ver.nextcheck); p += 4;
 	p += 4;

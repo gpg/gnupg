@@ -54,6 +54,7 @@ struct trust_record {
 	    byte  marginals;
 	    byte  completes;
 	    byte  cert_depth;
+	    byte  trust_model;
 	    ulong created;   /* timestamp of trustdb creation  */
 	    ulong nextcheck; /* timestamp of next scheduled check */
 	    ulong reserved;  

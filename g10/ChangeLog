@@ -1,3 +1,14 @@
+2003-07-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* misc.c (pct_expando): Add two new expandos - signer's
+	fingerprint (%g), and signer's primary fingerprint (%p).
+
+	* tdbio.h, tdbio.c (create_version_record, tdbio_write_nextcheck,
+	tdbio_read_record, tdbio_write_record): Force a 0 into the
+	trust_model field.  This is to help smooth the 1.2->1.4
+	switchover, as otherwise a 1.4 trustdb could be rebuilt as classic
+	on 1.2 while still claiming to be a non-classic trust model.
+
 2003-06-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_spawn): Use ascii_isspace instead of
