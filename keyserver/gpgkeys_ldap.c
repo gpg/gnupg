@@ -110,19 +110,14 @@ send_key(int *eof)
   char line[MAX_LINE];
   char *key[2]={NULL,NULL};
   char keyid[17];
-#ifndef __riscos__
-  LDAPMod mod={LDAP_MOD_ADD,pgpkeystr,{key}},*attrs[2]={&mod,NULL};
-#else
   LDAPMod mod, *attrs[2];
-  
+
+  memset (&mod, 0, sizeof mod);
   mod.mod_op      = LDAP_MOD_ADD;
   mod.mod_type    = pgpkeystr;
-  mod.mod_values  = 0;
-  mod.mod_bvalues = 0;
-  
+  mod.mod_values  = key;
   attrs[0]    = &mod;
   attrs[1]    = NULL;
-#endif
 
   dn=malloc(strlen("pgpCertid=virtual,")+strlen(basekeyspacedn)+1);
   if(dn==NULL)
