@@ -1241,7 +1241,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
 
     signode = NULL;
     sigdate = 0; /* helper to find the latest signature */
-    for(k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY; k = k->next ) {
+    for(k=keyblock; k && k->pkt->pkttype != PKT_USER_ID; k = k->next ) {
         if ( k->pkt->pkttype == PKT_SIGNATURE ) {
             PKT_signature *sig = k->pkt->pkt.signature;
             if ( sig->keyid[0] == kid[0] && sig->keyid[1]==kid[1] ) { 
@@ -1534,6 +1534,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
 
     pk->has_expired = key_expire >= curtime? 0 : key_expire;
     pk->expiredate = key_expire;
+
     /* Fixme: we should see how to get rid of the expiretime fields  but
      * this needs changes at other places too. */
 

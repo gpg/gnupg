@@ -205,14 +205,9 @@ cmp_help( void *opaque, MPI result )
   #endif
 }
 
-
 static int
-do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
-						    int *r_expired )
+do_check_messages( PKT_public_key *pk, PKT_signature *sig, int *r_expired )
 {
-    MPI result = NULL;
-    int rc=0;
-    struct cmp_help_context_s ctx;
     u32 cur_time;
 
     *r_expired = 0;
@@ -259,7 +254,20 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
 	*r_expired = 1;
     }
 
+    return 0;
+}
 
+
+static int
+do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
+						    int *r_expired )
+{
+    MPI result = NULL;
+    int rc=0;
+    struct cmp_help_context_s ctx;
+
+    if( (rc=do_check_messages(pk,sig,r_expired)) )
+        return rc;
     if( (rc=check_digest_algo(sig->digest_algo)) )
 	return rc;
     if( (rc=check_pubkey_algo(sig->pubkey_algo)) )
@@ -436,6 +444,8 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 		if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
 		    *is_selfsig = 1;
 	    }
+	    if((rc=do_check_messages(pk,sig,r_expired)))
+	      return rc;
             return sig->flags.valid? 0 : G10ERR_BAD_SIGN;
         }
     }
@@ -532,5 +542,3 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 
     return rc;
 }
-
-

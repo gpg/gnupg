@@ -1,3 +1,11 @@
+2002-08-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* sig-check.c (do_check, do_check_messages): Emit the usual sig
+	warnings even for cached sigs.  This also serves to protect
+	against missing a sig expiring while cached.
+
+	* getkey.c (merge_selfsigs_main): Don't check UID self-sigs twice.
+
 2002-08-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* import.c (clean_subkeys, chk_self_sigs): Merge clean_subkeys
