@@ -1,3 +1,8 @@
+2004-04-30  Werner Koch  <wk@gnupg.org>
+
+	* import.c (check_and_store): Do not update the stats for hidden
+	imports of issuer certs.
+
 2004-04-28  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.c: New command --keydb-clear-some-cert-flags.

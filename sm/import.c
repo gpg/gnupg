@@ -139,11 +139,13 @@ check_and_store (CTRL ctrl, struct stats_s *stats, ksba_cert_t cert, int depth)
 {
   int rc;
 
-  stats->count++;
+  if (stats)
+    stats->count++;
   if ( depth >= 50 )
     {
       log_error (_("certificate chain too long\n"));
-      stats->not_imported++;
+      if (stats)
+        stats->not_imported++;
       print_import_problem (ctrl, cert, 3);
       return;
     }
@@ -167,12 +169,14 @@ check_and_store (CTRL ctrl, struct stats_s *stats, ksba_cert_t cert, int depth)
           if (!existed)
             {
               print_imported_status (ctrl, cert, 1);
-              stats->imported++;
+              if (stats)
+                stats->imported++;
             }
           else
             {
               print_imported_status (ctrl, cert, 0);
-              stats->unchanged++;
+              if (stats)
+                stats->unchanged++;
             }
             
           if (opt.verbose > 1 && existed)
@@ -192,24 +196,27 @@ check_and_store (CTRL ctrl, struct stats_s *stats, ksba_cert_t cert, int depth)
 
           /* Now lets walk up the chain and import all certificates up
              the chain.  This is required in case we already stored
-             parent certificates in the ephemeral keybox. */
+             parent certificates in the ephemeral keybox.  Do not
+             update the statistics, though. */
           if (!gpgsm_walk_cert_chain (cert, &next))
             {
-              check_and_store (ctrl, stats, next, depth+1);
+              check_and_store (ctrl, NULL, next, depth+1);
               ksba_cert_release (next);
             }
         }
       else
         {
           log_error (_("error storing certificate\n"));
-          stats->not_imported++;
+          if (stats)
+            stats->not_imported++;
           print_import_problem (ctrl, cert, 4);
         }
     }
   else
     {
       log_error (_("basic certificate checks failed - not imported\n"));
-      stats->not_imported++;
+      if (stats)
+        stats->not_imported++;
       print_import_problem (ctrl, cert,
                             gpg_err_code (rc) == GPG_ERR_MISSING_CERT? 2 :
                             gpg_err_code (rc) == GPG_ERR_BAD_CERT?     1 : 0);
