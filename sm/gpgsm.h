@@ -58,6 +58,8 @@ struct {
   char *def_recipient;    /* userID of the default recipient */
   int def_recipient_self; /* The default recipient is the default key */
 
+  char *local_user;       /* NULL or argument to -u */
+
   int always_trust;       /* Trust the given keys even if there is no
                              valid certification path */
   int skip_verify;        /* do not check signatures on data */
@@ -189,6 +191,7 @@ int gpgsm_import (CTRL ctrl, int in_fd);
 int gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp);
 
 /*-- sign.c --*/
+int gpgsm_get_default_cert (KsbaCert *r_cert);
 int gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp);
 
 /*-- encrypt.c --*/

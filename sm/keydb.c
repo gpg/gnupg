@@ -1197,4 +1197,3 @@ keydb_store_cert (KsbaCert cert)
 }
 
 
-

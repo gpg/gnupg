@@ -204,14 +204,15 @@ gpgsm_check_cms_signature (KsbaCert cert, KsbaConstSexp sigval,
     }
 
   p = ksba_cert_get_public_key (cert);
-  if (DBG_X509)
-    log_debug ("public key: %s\n", p);
   n = gcry_sexp_canon_len (p, 0, NULL, NULL);
   if (!n)
     {
       log_error ("libksba did not return a proper S-Exp\n");
       return GNUPG_Bug;
     }
+  if (DBG_X509)
+    log_printhex ("public key: ", p, n);
+
   rc = gcry_sexp_sscan ( &s_pkey, NULL, p, n);
   if (rc)
     {
@@ -256,7 +257,7 @@ gpgsm_create_cms_signature (KsbaCert cert, GCRY_MD_HD md, int mdalgo,
                            r_sigval, &siglen);
   xfree (grip);
   /* FIXME: we should check that the returned S-Exp is valid fits int
-     siglen.  It ould probaly be a good idea to scan and print it
+     siglen.  It ould probably be a good idea to scan and print it
      again to make this sure and be sure that we have canoncical
      encoding */
   return rc;

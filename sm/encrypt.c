@@ -58,45 +58,6 @@ struct encrypt_cb_parm_s {
 };
 
 
-static KsbaCert
-get_default_recipient (void)
-{
-  const char key[] =
-    "/CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Düsseldorf,C=DE";
-
-  KEYDB_SEARCH_DESC desc;
-  KsbaCert cert = NULL;
-  KEYDB_HANDLE kh = NULL;
-  int rc;
-
-  rc = keydb_classify_name (key, &desc);
-  if (rc)
-    {
-      log_error ("failed to find recipient: %s\n", gnupg_strerror (rc));
-      return NULL;
-    }
-
-  kh = keydb_new (0);
-  if (!kh)
-    return NULL;
-
-  rc = keydb_search (kh, &desc, 1);
-  if (rc)
-    {
-      log_debug ("failed to find default certificate: rc=%d\n", rc);
-    }
-  else 
-    {
-      rc = keydb_get_cert (kh, &cert);
-      if (rc)
-        {
-          log_debug ("failed to get cert: rc=%d\n", rc);
-        }
-    }
-
-  keydb_release (kh);
-  return cert;
-}
 
 
 
@@ -417,8 +378,8 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
      STATUS_NO_RECP */
   if (!recplist)
     {
-      help_recplist.cert = get_default_recipient ();
-      if (!help_recplist.cert)
+      rc = gpgsm_get_default_cert (&help_recplist.cert);
+      if (rc)
         {
           log_error ("no default recipient found\n");
           rc = seterr (General_Error);

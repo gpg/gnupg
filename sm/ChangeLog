@@ -1,3 +1,15 @@
+2002-03-05  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c, gpgsm.h: Add local_user.
+	* sign.c (gpgsm_get_default_cert): New.
+	(get_default_signer): Use the new function if local_user is not
+	set otherwise used that value.
+	* encrypt.c (get_default_recipient): Removed.
+	(gpgsm_encrypt): Use gpgsm_get_default_cert.
+
+	* verify.c (gpgsm_verify): Better error text for a bad signature
+	found by comparing the hashs.
+
 2002-02-27  Werner Koch  <wk@gnupg.org>
 
 	* call-dirmngr.c, call-agent.c: Add 2 more arguments to all uses

@@ -875,6 +875,7 @@ main ( int argc, char **argv)
         case oTextmode: /*fixme:opt.textmode=1;*/  break;
 
         case oUser: /* store the local users */
+          opt.local_user = pargs.r.ret_str;
           add_to_strlist ( &locusr, pargs.r.ret_str);
           break;
 

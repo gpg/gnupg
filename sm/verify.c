@@ -328,8 +328,8 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
                || gcry_md_get_algo_dlen (algo) != msgdigestlen
                || !s || memcmp (s, msgdigest, msgdigestlen) )
             {
-              log_error ("message digest attribute does not "
-                         "match calculated one\n");
+              log_error ("invalid signature: message digest attribute "
+                         "does not match calculated one\n");
               gpgsm_status (ctrl, STATUS_BADSIG, NULL);
               goto next_signer; 
             }
@@ -424,5 +424,3 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
     fclose (fp);
   return rc;
 }
-
-

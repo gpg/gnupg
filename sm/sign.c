@@ -61,19 +61,84 @@ hash_data (int fd, GCRY_MD_HD md)
 }
 
 
+/* Get the default certificate which is defined as the first one our
+   keyDB retruns and has a secret key available */
+int
+gpgsm_get_default_cert (KsbaCert *r_cert)
+{
+  KEYDB_HANDLE hd;
+  KsbaCert cert = NULL;
+  int rc;
+  char *p;
+
+  hd = keydb_new (0);
+  if (!hd)
+    return GNUPG_General_Error;
+  rc = keydb_search_first (hd);
+  if (rc)
+    {
+      keydb_release (hd);
+      return rc;
+    }
+
+  do
+    {
+      rc = keydb_get_cert (hd, &cert);
+      if (rc) 
+        {
+          log_error ("keydb_get_cert failed: %s\n", gnupg_strerror (rc));
+          keydb_release (hd);
+          return rc;
+        }
+      
+      p = gpgsm_get_keygrip_hexstring (cert);
+      if (p)
+        {
+          if (!gpgsm_agent_havekey (p))
+            {
+              xfree (p);
+              keydb_release (hd);
+              *r_cert = cert;
+              return 0; /* got it */
+            }
+          xfree (p);
+        }
+    
+      ksba_cert_release (cert); 
+      cert = NULL;
+    }
+  while (!(rc = keydb_search_next (hd)));
+  if (rc && rc != -1)
+    log_error ("keydb_search_next failed: %s\n", gnupg_strerror (rc));
+  
+  ksba_cert_release (cert);
+  keydb_release (hd);
+  return rc;
+}
+
+
 static KsbaCert
 get_default_signer (void)
 {
-  //  const char key[] = "1.2.840.113549.1.9.1=#7472757374407765622E6465#,CN=WEB.DE TrustCenter,OU=TrustCenter,O=WEB.DE AG,L=D-76227 Karlsruhe,C=DE";
-  const char key[] =
-    "/CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Düsseldorf,C=DE";
-
   KEYDB_SEARCH_DESC desc;
   KsbaCert cert = NULL;
   KEYDB_HANDLE kh = NULL;
   int rc;
 
-  rc = keydb_classify_name (key, &desc);
+  if (!opt.local_user)
+    {
+      rc = gpgsm_get_default_cert (&cert);
+      if (rc)
+        {
+          if (rc != -1)
+            log_debug ("failed to find default certificate: %s\n",
+                       gnupg_strerror (rc));
+          return NULL;
+        }
+      return cert;
+    }
+
+  rc = keydb_classify_name (opt.local_user, &desc);
   if (rc)
     {
       log_error ("failed to find default signer: %s\n", gnupg_strerror (rc));
@@ -101,6 +166,7 @@ get_default_signer (void)
   keydb_release (kh);
   return cert;
 }
+
 
 
 /* Depending on the options in CTRL add the certificate CERT as well as
