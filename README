@@ -605,6 +605,17 @@
                     This prevents access to certain files and won't
                     allow import or export of secret keys.
 
+     --disable-gnupg-iconv
+                    If iconv is available it is used to convert
+                    between utf-8 and the system character set.  This
+                    is in general the preferable solution.  However
+                    the code is new and under some cirumstances it may
+                    give different output than with the limited old
+                    support.  This option allows to explicity disable
+                    the use of iconv.  Note, that iconv is also
+                    disabled if getext has been disabled.
+                    
+
 
     Installation Problems
     ---------------------

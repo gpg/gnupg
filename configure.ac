@@ -124,6 +124,13 @@ AC_ARG_WITH(readline,
 case "$readline_support" in yes);; no);; *)readline_support=yes;; esac
 AC_MSG_RESULT($readline_support)
 
+AC_MSG_CHECKING([whether the new iconv based code is requested])
+AC_ARG_ENABLE(gnupg-iconv,
+              AC_HELP_STRING([--disable-gnupg-iconv],
+                             [disable the new iconv code]),
+              gnupg_use_iconv=$enableval, gnupg_use_iconv=yes)
+AC_MSG_RESULT($gnupg_use_iconv)
+
 
 dnl See if we are disabling any algorithms or features for a smaller
 dnl binary
@@ -732,11 +739,20 @@ if test "$selinux_support" = yes ; then
   AC_DEFINE(ENABLE_SELINUX_HACKS,1,[Define to enable SELinux support])
 fi
 
+if test "$gnupg_use_iconv" = yes ; then
+  AC_DEFINE(USE_GNUPG_ICONV,1,[Define to use the new iconv based code])
+fi
+
+
 AM_CONDITIONAL(ENABLE_CARD_SUPPORT, test "$card_support" = yes)
 
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(unistd.h langinfo.h termio.h locale.h getopt.h)
+
+# Note that we do not check for iconv here because this is done anyway
+# by the gettext checks and thus it allows us to disable the use of
+# iconv by using --disable-nls.
 
 
 dnl Checks for typedefs, structures, and compiler characteristics.
