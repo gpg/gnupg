@@ -1,3 +1,8 @@
+2004-01-16  Werner Koch  <wk@gnupg.org>
+
+	* watchgnupg.c (main): Need to use FD_ISSET for the client
+	descriptors too; aiiih.  Set the listening socket to non-blocking.
+
 2004-01-10  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am: Use GPG_ERROR_CFLAGS

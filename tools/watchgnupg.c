@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <fcntl.h>
 #include <time.h>
 
 #define PGM "watchgnupg"
@@ -178,6 +179,7 @@ main (int argc, char **argv)
   struct sockaddr_un srvr_addr;
   int addrlen;
   int server;
+  int flags;
   client_t client_list = NULL;
  
   if (argc)
@@ -227,6 +229,16 @@ main (int argc, char **argv)
   if (server == -1)
     die ("socket() failed: %s\n", strerror (errno));
 
+  /* We better set the listening socket to non-blocking so that we
+     don't get bitten by race conditions in accept.  The should not
+     happen for Unix Domain sockets but well, shit happens. */
+  flags = fcntl (server, F_GETFL, 0);
+  if (flags == -1)
+    die ("fcntl (F_GETFL) failed: %s\n", strerror (errno));
+  if ( fcntl (server, F_SETFL, (flags | O_NONBLOCK)) == -1)
+    die ("fcntl (F_SETFL) failed: %s\n", strerror (errno));
+  
+
   memset (&srvr_addr, 0, sizeof srvr_addr);
   srvr_addr.sun_family = AF_LOCAL;
   strncpy (srvr_addr.sun_path, *argv, sizeof (srvr_addr.sun_path) - 1);
@@ -257,8 +269,8 @@ main (int argc, char **argv)
       client_t client;
 
       /* Usually we don't have that many connections, thus it is okay
-         to set them al the time from scratch and don't maintain an
-         active fd_set. */
+         to set them allways from scratch and don't maintain an active
+         fd_set. */
       FD_ZERO (&rfds);
       FD_SET (server, &rfds);
       max_fd = server;
@@ -282,12 +294,12 @@ main (int argc, char **argv)
           fd = accept (server, (struct sockaddr *) &clnt_addr, &addrlen);
           if (fd == -1)
             {
-              printf ("accepting connection failed: %s\n", strerror (errno));
+              printf ("[accepting connection failed: %s]\n", strerror (errno));
             }
           else if (fd >= FD_SETSIZE)
             {
               close (fd);
-              printf ("[connection request denied: too many connections\n");
+              printf ("[connection request denied: too many connections]\n");
             }
           else 
             {
@@ -305,7 +317,7 @@ main (int argc, char **argv)
             }
         }
       for (client = client_list; client; client = client->next)
-        if (client->fd != -1)
+        if (client->fd != -1 && FD_ISSET (client->fd, &rfds))
           {
             char line[256];
             int n;
