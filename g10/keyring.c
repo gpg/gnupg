@@ -1316,6 +1316,10 @@ keyring_rebuild_cache (void *token)
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_FIRST;
 
+  rc=keyring_lock (hd, 1);
+  if(rc)
+    goto leave;
+
   while ( !(rc = keyring_search (hd, &desc, 1)) )
     {
       desc.mode = KEYDB_SEARCH_MODE_NEXT;
@@ -1410,6 +1414,7 @@ keyring_rebuild_cache (void *token)
   m_free (tmpfilename);  
   m_free (bakfilename);  
   release_kbnode (keyblock);
+  keyring_lock (hd, 0);
   keyring_release (hd);
   return rc;
 }

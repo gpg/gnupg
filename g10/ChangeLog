@@ -1,3 +1,15 @@
+2003-03-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyring.c (keyring_rebuild_cache): Lock the keyring while
+	rebuilding the signature caches to prevent another gpg from
+	tampering with the temporary copy.
+
+	* keydb.c: Double the maximum number of keyrings to 40.
+
+	* parse-packet.c (dump_sig_subpkt): Show the notation names for
+	not-human-readable notations.  Fix cosmetic off-by-one length
+	counter.
+
 2003-03-02  Timo Schulz  <twoaday@freakmail.de>
 
 	* seckey-cert.c (do_check): Issue the RSA_OR_IDEA status when
