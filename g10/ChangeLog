@@ -1,6 +1,10 @@
-2001-12-22  Timo Schulz <ts@winpt.org>
+2001-12-22  Werner Koch  <wk@gnupg.org>
 
-        * encode.c (encode_simple, encode_crypt): Use is_file_compressed
+	* encode.c (encode_simple, encode_crypt): i18n 2 strings.
+
+2001-12-22  Timo Schulz <ts@winpt.org>
+	
+	* encode.c (encode_simple, encode_crypt): Use is_file_compressed
 	to avoid to compress compressed files.
 
 2001-12-22  Werner Koch  <wk@gnupg.org>

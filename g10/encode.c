@@ -86,11 +86,12 @@ encode_simple( const char *filename, int mode )
     memset( &tfx, 0, sizeof tfx);
     init_packet(&pkt);
     
-    if (is_file_compressed(filename, &rc)) {
-    if (opt.verbose)
-        log_info("`%s' already compressed\n", filename);
-    do_compress = 0;        
-    }
+    if (is_file_compressed(filename, &rc))
+      {
+        if (opt.verbose)
+          log_info(_("`%s' already compressed\n"), filename);
+        do_compress = 0;        
+      }
     if (rc)
         return rc;
 
@@ -284,15 +285,17 @@ encode_crypt( const char *filename, STRLIST remusr )
 	  }
     }
 
-    if (is_file_compressed(filename, &rc2)) {
-    if (opt.verbose)
-        log_info("`%s' already compressed\n", filename);
-    do_compress = 0;        
-    }
-    if (rc2) {
-    rc = rc2;
-    goto leave;
-    }
+    if (is_file_compressed(filename, &rc2))
+      {
+        if (opt.verbose)
+          log_info(_("`%s' already compressed\n"), filename);
+        do_compress = 0;        
+      }
+    if (rc2)
+      {
+        rc = rc2;
+        goto leave;
+      }
     
     /* prepare iobufs */
     if( !(inp = iobuf_open(filename)) ) {

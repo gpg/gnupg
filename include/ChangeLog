@@ -1,6 +1,6 @@
 2001-12-22  Timo Schulz <ts@winpt.org>
 
-    * util.h: Add is_file_compressed().
+        * util.h (is_file_compressed): New.
 
 2001-12-19  Werner Koch  <wk@gnupg.org>
 

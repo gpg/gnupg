@@ -1,6 +1,6 @@
 2001-12-22  Timo Schulz <ts@winpt.org>
 
-    * fileutil.c (is_file_compressed): New.
+        * fileutil.c (is_file_compressed): New.
 
 2001-12-19  Werner Koch  <wk@gnupg.org>
 
