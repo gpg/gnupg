@@ -1,3 +1,8 @@
+2002-11-09  Werner Koch  <wk@gnupg.org>
+
+	* passphrase.c (agent_send_all_options): Use tty_get_ttyname to
+	get the default ttyname.
+
 2002-11-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (show_key_with_all_names_colon): Don't stick nulls
@@ -14,6 +19,26 @@
 	encode_simple, encode_crypt), sign.c (write_plaintext_packet): Use
 	wipememory() instead of memset() to wipe sensitive memory as the
 	memset() might be optimized away.
+
+2002-10-30  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (get_pubkey_direct): Renamed to...
+	(get_pubkey_fast): this and made extern.
+	(get_pubkey_byfprint_fast): New.
+	* import.c (import_one): Use get_pubkey_fast instead of
+	get_pubkey.  We don't need a merged key and actually this might
+	lead to recursions.
+	(revocation_present): Likewise for search by fingerprint.
+
+	* g10.c (main): Try to create the trustdb even for non-colon-mode
+	list-key operations.  This is required because getkey needs to
+	know whether a a key is ultimately trusted.
+
+2002-10-29  Werner Koch  <wk@gnupg.org>
+
+	* encode.c (encode_simple): Make sure that files larger than about
+	4G use partial length encoding.  This is required because OpenPGP
+	allows only for 32 bit length fields.
 
 2002-10-23  Werner Koch  <wk@gnupg.org>
 

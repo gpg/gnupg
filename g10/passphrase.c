@@ -360,8 +360,8 @@ agent_send_all_options (int fd)
         return -1;
     }
 
-  if (!opt.ttyname && ttyname (1))
-    dft_ttyname = ttyname (1);
+  if (!opt.ttyname)
+    dft_ttyname = tty_get_ttyname ();
   if (opt.ttyname || dft_ttyname)
     {
       if (agent_send_option (fd, "ttyname",
