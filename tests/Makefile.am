@@ -22,7 +22,7 @@
 GPGSM = ../sm/gpgsm
 
 # We can't unset a variable here so we unset GPG_AGENT_INFO in runtest
-TESTS_ENVIRONMENT = GNUPGHOME=`pwd` LC_ALL=C GPGSM=${GPGSM} ./runtest
+TESTS_ENVIRONMENT = GNUPGHOME=`pwd` LC_ALL=C GPGSM=$(GPGSM) $(srcdir)/runtest
 
 EXTRA_DIST = runtest inittests \
 	     text-1.txt text-2.txt text-3.txt \
@@ -50,6 +50,15 @@ inittests.stamp: inittests
 	$(TESTS_ENVIRONMENT) $(srcdir)/inittests
 	echo timestamp >./inittests.stamp
 
+# Include all files listed in the samplekeys/distfiles
+dist-hook:
+	@set -e; \
+         dir=$(srcdir)/samplekeys ; \
+         $(mkinstalldirs) $(distdir)/$$dir ; \
+         for i in distfiles `cat $$dir/distfiles` ; do \
+		ln $(srcdir)/$$dir/$$i $(distdir)/$$dir/$$i 2> /dev/null \
+		|| cp -p $(srcdir)/$$dir/$$i $(distdir)/$$dir/$$i; \
+	 done
 
 
 
