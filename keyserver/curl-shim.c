@@ -129,7 +129,7 @@ CURLcode curl_easy_perform(CURL *curl)
     }
   else
     {
-      size_t maxlen=1024,buflen,len;
+      unsigned int maxlen=1024,buflen,len;
       byte *line=NULL;
 
       while((len=iobuf_read_line(curl->hd.fp_read,&line,&buflen,&maxlen)))

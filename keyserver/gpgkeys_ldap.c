@@ -1549,6 +1549,7 @@ main(int argc,char *argv[])
   int version,failed=0,use_ssl=0,use_tls=0,bound=0,check_cert=1;
   struct keylist *keylist=NULL,*keyptr=NULL;
   unsigned int timeout=DEFAULT_KEYSERVER_TIMEOUT;
+  char *ca_cert_file=NULL;
 
   console=stderr;
 
@@ -1776,6 +1777,26 @@ main(int argc,char *argv[])
 	      else if(start[7]=='\0')
 		timeout=DEFAULT_KEYSERVER_TIMEOUT;
 	    }
+	  else if(strncasecmp(start,"ca-cert-file",12)==0)
+	    {
+	      if(no)
+		{
+		  free(ca_cert_file);
+		  ca_cert_file=NULL;
+		}
+	      else if(start[12]=='=')
+		{
+		  free(ca_cert_file);
+		  ca_cert_file=strdup(&start[13]);
+		  if(!ca_cert_file)
+		    {
+		      fprintf(console,"gpgkeys: out of memory while creating "
+			      "ca_cert_file\n");
+		      ret=KEYSERVER_NO_MEMORY;
+		      goto fail;
+		    }
+		}
+	    }
 
 	  continue;
 	}
@@ -1786,6 +1807,20 @@ main(int argc,char *argv[])
       fprintf(console,"gpgkeys: unable to register timeout handler\n");
       return KEYSERVER_INTERNAL_ERROR;
     }
+
+#if defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_OPT_X_TLS_CACERTFILE)
+  if(ca_cert_file)
+    {
+      err=ldap_set_option(NULL,LDAP_OPT_X_TLS_CACERTFILE,ca_cert_file);
+      if(err!=LDAP_SUCCESS)
+	{
+	  fprintf(console,"gpgkeys: unable to set ca-cert-file: %s\n",
+		  ldap_err2string(err));
+	  ret=KEYSERVER_INTERNAL_ERROR;
+	  goto fail;
+	}
+    }
+#endif /* HAVE_LDAP_SET_OPTION && LDAP_OPT_X_TLS_CACERTFILE */
 
   /* SSL trumps TLS */
   if(use_ssl)

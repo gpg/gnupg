@@ -42,7 +42,8 @@ typedef enum
     CURLOPT_STDERR,
     CURLOPT_VERBOSE,
     CURLOPT_SSL_VERIFYPEER,
-    CURLOPT_PROXY
+    CURLOPT_PROXY,
+    CURLOPT_CAINFO
   } CURLoption;
 
 typedef size_t (*write_func)(char *buffer,size_t size,

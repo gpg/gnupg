@@ -1,5 +1,10 @@
 2005-02-11  David Shaw  <dshaw@jabberwocky.com>
 
+	* curl-shim.c (curl_easy_perform): Fix compile warning.
+
+	* curl-shim.h, gpgkeys_curl.c (main), gpgkeys_ldap.c (main): Add
+	ca-cert-file option, to pass in the SSL cert.
+
 	* curl-shim.h, curl-shim.c: New.  This is code to fake the curl
 	API in terms of the current HTTP iobuf API.
 

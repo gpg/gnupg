@@ -158,6 +158,7 @@ main(int argc,char *argv[])
   char *thekey=NULL;
   unsigned int timeout=DEFAULT_KEYSERVER_TIMEOUT;
   long follow_redirects=5,debug=0,check_cert=1;
+  char *ca_cert_file=NULL;
 
   console=stderr;
 
@@ -344,6 +345,26 @@ main(int argc,char *argv[])
 	      else
 		check_cert=1;
 	    }
+	  else if(strncasecmp(start,"ca-cert-file",12)==0)
+	    {
+	      if(no)
+		{
+		  free(ca_cert_file);
+		  ca_cert_file=NULL;
+		}
+	      else if(start[12]=='=')
+		{
+		  free(ca_cert_file);
+		  ca_cert_file=strdup(&start[13]);
+		  if(!ca_cert_file)
+		    {
+		      fprintf(console,"gpgkeys: out of memory while creating "
+			      "ca_cert_file\n");
+		      ret=KEYSERVER_NO_MEMORY;
+		      goto fail;
+		    }
+		}
+	    }
 
 	  continue;
 	}
@@ -405,6 +426,9 @@ main(int argc,char *argv[])
     }
 
   curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,check_cert);
+
+  if(ca_cert_file)
+    curl_easy_setopt(curl,CURLOPT_CAINFO,ca_cert_file);
 
   if(proxy[0])
     curl_easy_setopt(curl,CURLOPT_PROXY,proxy);
