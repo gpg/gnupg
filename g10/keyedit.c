@@ -334,7 +334,14 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
 		/* Is this a self-sig? */
 		if(pk_keyid[0]==sk_keyid[0] && pk_keyid[1]==sk_keyid[1])
-		  selfsig=1;
+		  {
+		    selfsig=1;
+		    /* Do not force a v4 sig here, otherwise it would
+                       be difficult to remake a v3 selfsig.  If this
+                       is a v3->v4 promotion case, then we set
+                       force_v4 later anyway. */
+		    force_v4=0;
+		  }
 	    }
 	    else if( node->pkt->pkttype == PKT_USER_ID ) {
 		uidnode = (node->flag & NODFLG_MARK_A)? node : NULL;

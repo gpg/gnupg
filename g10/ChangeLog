@@ -1,3 +1,17 @@
+2002-05-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* sign.c (mk_notation_and_policy): Free unneeded buffer.
+
+	* hkp.c (parse_hkp_index): Properly handle the '&' character
+	(i.e. "&amp;") in HKP responses.
+
+	* getkey.c (merge_selfsigs_main): Fix reversed expiration time
+	check with self-sigs.
+
+	* keyedit.c (sign_uids): When making a new self-sig on a v3 key,
+	make a v3 self-sig unless it is currently a v3 self-sig being
+	promoted to v4.
+
 2002-05-31  Timo Schulz  <ts@winpt.org>
 
 	* pkclist.c (do_show_revocation_reason): Don't use capital

@@ -1280,7 +1280,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
                     
                     p = parse_sig_subpkt( sig->hashed,
                                           SIGSUBPKT_SIG_EXPIRE, NULL );
-                    if ( p && (sig->timestamp + buffer_to_u32(p)) >= curtime )
+                    if ( p && (sig->timestamp + buffer_to_u32(p)) <= curtime )
                         ; /* signature has expired - ignore it */
                     else {
                         sigdate = sig->timestamp;
@@ -1411,7 +1411,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
                     
                     p = parse_sig_subpkt (sig->hashed,
                                           SIGSUBPKT_SIG_EXPIRE, NULL );
-                    if ( p && (sig->timestamp + buffer_to_u32(p)) >= curtime )
+                    if ( p && (sig->timestamp + buffer_to_u32(p)) <= curtime )
                         ; /* signature/revocation has expired - ignore it */
                     else {
                         sigdate = sig->timestamp;

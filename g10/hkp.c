@@ -395,13 +395,21 @@ parse_hkp_index(IOBUF buffer,char *line)
 		  line+=4;
 		  break;
 		}
-
-	      if((*(line+1)!='\0' && tolower(*(line+1))=='g') &&
+	      else if((*(line+1)!='\0' && tolower(*(line+1))=='g') &&
 		 (*(line+2)!='\0' && tolower(*(line+2))=='t') &&
 		 (*(line+3)!='\0' && *(line+3)==';'))
 		{
 		  uid[uidindex++]='>';
 		  line+=4;
+		  break;
+		}
+	      else if((*(line+1)!='\0' && tolower(*(line+1))=='a') &&
+		 (*(line+2)!='\0' && tolower(*(line+2))=='m') &&
+		 (*(line+3)!='\0' && tolower(*(line+3))=='p') &&
+		 (*(line+4)!='\0' && *(line+4)==';'))
+		{
+		  uid[uidindex++]='&';
+		  line+=5;
 		  break;
 		}
 

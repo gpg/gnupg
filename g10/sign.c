@@ -117,6 +117,7 @@ mk_notation_and_policy( PKT_signature *sig,
 			  | ((nd->flags & 1)? SIGSUBPKT_FLAG_CRITICAL:0),
 			  buf, 8+n1+n2 );
 	m_free(expanded);
+	m_free(buf);
     }
 
     if(opt.show_notation)
