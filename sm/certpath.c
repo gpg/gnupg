@@ -84,6 +84,114 @@ allowed_ca (KsbaCert cert, int *pathlen)
   return 0;
 }
 
+
+static int
+check_cert_policy (KsbaCert cert)
+{
+  KsbaError err;
+  char *policies;
+  FILE *fp;
+  int any_critical;
+
+  err = ksba_cert_get_cert_policies (cert, &policies);
+  if (err == KSBA_No_Data)
+    return 0; /* no policy given */
+  if (err)
+    return map_ksba_err (err);
+
+  /* STRING is a line delimited list of certifiate policies as stored
+     in the certificate.  The line itself is colon delimted where the
+     first field is the OID of the policy and the second field either
+     N or C for normal or critical extension */
+
+  /* The check is very minimal but won't give false positives */
+  any_critical = !!strstr (policies, ":C");
+
+  if (!opt.policy_file)
+    { 
+      xfree (policies);
+      if (any_critical)
+        {
+          log_error ("critical marked policy without configured policies\n");
+          return GNUPG_No_Policy_Match;
+        }
+      return 0;
+    }
+
+  fp = fopen (opt.policy_file, "r");
+  if (!fp)
+    {
+      log_error ("failed to open `%s': %s\n",
+                 opt.policy_file, strerror (errno));
+      xfree (policies);
+      return GNUPG_Configuration_Error;
+    }
+
+  for (;;) 
+    {
+      int c;
+      char *p, line[256];
+      char *haystack, *allowed;
+
+      /* read line */
+      do
+        {
+          if (!fgets (line, DIM(line)-1, fp) )
+            {
+              xfree (policies);
+              if (feof (fp))
+                {
+                  fclose (fp);
+                  log_error (_("certificate policy not allowed\n"));
+                  /* with no critical policies this is only a warning */
+                  return any_critical? GNUPG_No_Policy_Match : 0;
+                }
+              fclose (fp);
+              return GNUPG_Read_Error;
+            }
+      
+          if (!*line || line[strlen(line)-1] != '\n')
+            {
+              /* eat until end of line */
+              while ( (c=getc (fp)) != EOF && c != '\n')
+                ;
+              fclose (fp);
+              xfree (policies);
+              return *line? GNUPG_Line_Too_Long: GNUPG_Incomplete_Line;
+            }
+          
+          /* Allow for empty lines and spaces */
+          for (p=line; spacep (p); p++)
+            ;
+        }
+      while (!*p || *p == '\n' || *p == '#');
+  
+      /* parse line */
+      for (allowed=line; spacep (allowed); allowed++)
+        ;
+      p = strpbrk (allowed, " :\n");
+      if (!*p || p == allowed)
+        {
+          fclose (fp);
+          xfree (policies);
+          return GNUPG_Configuration_Error;
+        }
+      *p = 0; /* strip the rest of the line */
+      /* See whether we find ALLOWED (which is an OID) in POLICIES */
+      for (haystack=policies; (p=strstr (haystack, allowed)); haystack = p+1)
+        {
+          if ( !(p == policies || p[-1] == '\n') )
+            continue; /* does not match the begin of a line */
+          if (p[strlen (allowed)] != ':')
+            continue; /* the length does not match */
+          /* Yep - it does match so return okay */
+          fclose (fp);
+          xfree (policies);
+          return 0;
+        }
+    }
+}
+
 /* Return the next certificate up in the chain starting at START.
    Returns -1 when there are no more certificates. */
 int
@@ -216,7 +324,14 @@ gpgsm_validate_path (KsbaCert cert)
       rc = unknown_criticals (subject_cert);
       if (rc)
         goto leave;
-        
+
+      if (!opt.no_policy_check)
+        {
+          rc = check_cert_policy (subject_cert);
+          if (rc)
+            goto leave;
+        }
+
       if (!opt.no_crl_check)
         {
           rc = gpgsm_dirmngr_isvalid (subject_cert);
@@ -360,9 +475,10 @@ gpgsm_validate_path (KsbaCert cert)
       issuer_cert = NULL;
     }
 
+  if (opt.no_policy_check)
+    log_info ("policies not checked due to --disable-policy-checks option\n");
   if (opt.no_crl_check)
-    log_info ("CRL was not checked due to --no-crl-cechk option\n");
-
+    log_info ("CRLs not checked due to --disable-crl-checks option\n");
   
  leave:
   xfree (issuer);

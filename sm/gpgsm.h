@@ -66,7 +66,10 @@ struct {
 
   int ignore_time_conflict; /* Ignore certain time conflicts */
 
-  int no_crl_check;       /* Don't do a CRL check */
+  int no_crl_check;         /* Don't do a CRL check */
+
+  char *policy_file;        /* full pathname of policy file */
+  int no_policy_check;      /* ignore certificate policies */
 
 } opt;
 
@@ -208,6 +211,7 @@ int gpgsm_agent_pkdecrypt (const char *keygrip,
 int gpgsm_agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey);
 int gpgsm_agent_istrusted (KsbaCert cert);
 int gpgsm_agent_havekey (const char *hexkeygrip);
+int gpgsm_agent_marktrusted (KsbaCert cert);
 
 /*-- call-dirmngr.c --*/
 int gpgsm_dirmngr_isvalid (KsbaCert cert);

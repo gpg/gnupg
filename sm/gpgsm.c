@@ -100,10 +100,9 @@ enum cmd_and_opt_values {
   oEnableCRLChecks,
 
   oIncludeCerts,
-
-
-
-
+  oPolicyFile,
+  oDisablePolicyChecks,
+  oEnablePolicyChecks,
 
 
 
@@ -242,6 +241,12 @@ static ARGPARSE_OPTS opts[] = {
     { oIncludeCerts, "include-certs", 1,
                                  N_("|N|number of certificates to include") },
 
+    { oPolicyFile, "policy-file", 2,
+                    N_("|FILE|take policy information from FILE") },
+
+    { oDisablePolicyChecks, "disable-policy-checks", 0,
+                           N_("do not check certificate policies")},
+    { oEnablePolicyChecks, "enable-policy-checks", 0, "@"},
 
 #if 0
     { oDefRecipient, "default-recipient" ,2,
@@ -654,6 +659,8 @@ main ( int argc, char **argv)
   /* set the default option file */
   if (default_config )
     configname = make_filename (opt.homedir, "gpgsm.conf", NULL);
+  /* cet the default policy file */
+  opt.policy_file = make_filename (opt.homedir, "policies.txt", NULL);
   
   argc        = orig_argc;
   argv        = orig_argv;
@@ -758,6 +765,22 @@ main ( int argc, char **argv)
           break;
 
         case oIncludeCerts: ctrl.include_certs = pargs.r.ret_int; break;
+
+        case oPolicyFile:
+          xfree (opt.policy_file);
+          if (*pargs.r.ret_str)
+            opt.policy_file = xstrdup (pargs.r.ret_str);
+          else
+            opt.policy_file = NULL;
+          break;
+
+        case oDisablePolicyChecks:
+          opt.no_policy_check = 1;
+          break;
+        case oEnablePolicyChecks:
+          opt.no_policy_check = 0;
+          break;
+
 
         case oOutput: opt.outfile = pargs.r.ret_str; break;
 

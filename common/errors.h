@@ -92,6 +92,8 @@ enum {
   GNUPG_Card_Not_Present = 63,
   GNUPG_No_PKCS15_App = 64,
   GNUPG_Not_Confirmed = 65,
+  GNUPG_Configuration_Error = 66,
+  GNUPG_No_Policy_Match = 67,
 };
 
 /* Status codes - fixme: should go into another file */
