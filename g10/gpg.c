@@ -25,6 +25,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#ifdef HAVE_DOSISH_SYSTEM
+  #include <fcntl.h> /* for setmode() */
+#endif
 
 
 #include <gcrypt.h>
@@ -1449,6 +1452,9 @@ main( int argc, char **argv )
 		size_t n = !endless && count < 100? count : 100;
 
 		p = gcry_random_bytes( n, level );
+	      #ifdef HAVE_DOSISH_SYSTEM
+		setmode ( fileno(stdout), O_BINARY );
+	      #endif
 		fwrite( p, n, 1, stdout );
 		gcry_free(p);
 		if( !endless )
@@ -1676,6 +1682,9 @@ print_mds( const char *fname, int algo, const char *key )
 
     if( !fname ) {
 	fp = stdin;
+      #ifdef HAVE_DOSISH_SYSTEM
+	setmode ( fileno(fp) , O_BINARY );
+      #endif
 	pname = gcry_xstrdup("[stdin]: ");
     }
     else {

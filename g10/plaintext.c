@@ -24,6 +24,10 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#ifdef HAVE_DOSISH_SYSTEM
+  #include <fcntl.h> /* for setmode() */
+#endif
+
 #include "util.h"
 #include <gcrypt.h>
 #include "options.h"
@@ -81,6 +85,9 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     else if( !*fname || (*fname=='-' && !fname[1])) {
 	/* no filename or "-" given; write to stdout */
 	fp = stdout;
+      #ifdef HAVE_DOSISH_SYSTEM
+	setmode ( fileno(fp) , O_BINARY );
+      #endif
     }
     else if( !overwrite_filep( fname ) ) {
 	rc = GPGERR_CREATE_FILE;

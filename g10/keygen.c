@@ -254,7 +254,7 @@ key_from_sexp( GCRY_MPI *array,
     list = gcry_sexp_find_token( sexp, topname, 0 );
     if( !list )
 	return GCRYERR_INV_OBJ;
-    l2 = gcry_sexp_cdr( list );
+    l2 = gcry_sexp_cadr( list );
     gcry_sexp_release ( list );
     list = l2;
     if( !list )
@@ -311,6 +311,7 @@ factors_from_sexp( MPI **retarray, GCRY_SEXP sexp )
     if( !list )
 	return GCRYERR_NO_OBJ;
 
+  #if 0
     /* count factors */
     ctx = NULL;
     for( n=0; (l2 = gcry_sexp_enum( list, &ctx, 0 )); n++ )
@@ -337,6 +338,10 @@ factors_from_sexp( MPI **retarray, GCRY_SEXP sexp )
 	    }
 	}
     }
+  #else
+    array = gcry_xcalloc( 1, sizeof *array );
+    #warning dummy code here
+  #endif
 
      gcry_sexp_release ( list );
     *retarray = array;

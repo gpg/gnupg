@@ -355,8 +355,10 @@ gcry_mpi_scan( struct gcry_mpi **ret_mpi, enum gcry_mpi_format format,
 	    else
 		mpi_set_buffer( a, s, len, 0 );
 	}
-	if( ret_mpi )
+	if( ret_mpi ) {
+	    mpi_normalize ( a );
 	    *ret_mpi = a;
+	}
 	else
 	    mpi_free(a);
 	return 0;
@@ -365,8 +367,10 @@ gcry_mpi_scan( struct gcry_mpi **ret_mpi, enum gcry_mpi_format format,
 	a = mpi_alloc( (len+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
 	if( len )  /* not zero */
 	    mpi_set_buffer( a, buffer, len, 0 );
-	if( ret_mpi )
+	if( ret_mpi ) {
+	    mpi_normalize ( a );
 	    *ret_mpi = a;
+	}
 	else
 	    mpi_free(a);
 	return 0;
@@ -375,8 +379,10 @@ gcry_mpi_scan( struct gcry_mpi **ret_mpi, enum gcry_mpi_format format,
 	a = mpi_read_from_buffer( (char*)buffer, &len, 0 );
 	if( nbytes )
 	    *nbytes = len;
-	if( ret_mpi )
+	if( ret_mpi ) {
+	    mpi_normalize ( a );
 	    *ret_mpi = a;
+	}
 	else
 	    mpi_free(a);
 	return a? 0 : GCRYERR_INV_OBJ;
@@ -405,8 +411,10 @@ gcry_mpi_scan( struct gcry_mpi **ret_mpi, enum gcry_mpi_format format,
 	}
 	if( nbytes )
 	    *nbytes = n+4;
-	if( ret_mpi )
+	if( ret_mpi ) {
+	    mpi_normalize ( a );
 	    *ret_mpi = a;
+	}
 	else
 	    mpi_free(a);
 	return 0;
@@ -417,8 +425,10 @@ gcry_mpi_scan( struct gcry_mpi **ret_mpi, enum gcry_mpi_format format,
 	a = mpi_alloc(0);
 	if( mpi_fromstr( a, buffer ) )
 	    return GCRYERR_INV_OBJ;
-	if( ret_mpi )
+	if( ret_mpi ) {
+	    mpi_normalize ( a );
 	    *ret_mpi = a;
+	}
 	else
 	    mpi_free(a);
 	return 0;

@@ -1,3 +1,7 @@
+Fri Jul 28 18:19:11 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * mpicoder.c (gcry_mpi_scan): Normalize the returned MPI.
+
 Tue Jul 25 17:44:15 CEST 2000  Werner Koch  <wk@openit.de>
 
   * config.links: Support for powerpc--netbsd by Gabriel Rosenkoetter.

@@ -1,3 +1,11 @@
+Fri Jul 28 18:19:11 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * sig-check.c (pk_verify): Fixed the S-Exp withe the pkey.
+
+  * gpg.c (main): Use setmode(O_BINARY) for MSDOS while generating random bytes
+  (print_mds): Likewise for stdin.
+  * plaintext.c (handle_plaintext): Likewise for stdout.
+
 Tue Jul 25 17:44:15 CEST 2000  Werner Koch  <wk@openit.de>
 
   * keyedit.c (menu_expire): expire date for primary key can be set again.

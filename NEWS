@@ -1,6 +1,87 @@
+Noteworthy changes in the current CVS HEAD
+------------------------------------------
 
     * Removed option --emulate-checksum-bug
 
+    * Fixed expiration handling of encryption keys.
+
+    * Add an experimental feature to do unattended key generation.
+
+    * The user is now asked for the reason of revocation as required
+      by the new OpenPGP draft.
+
+    * There is a ~/.gnupg/random_seed file now which saves the
+      state of the internal RNG and increases system performance
+      somewhat.  This way the full entropy source is only used in
+      cases were it is really required.
+      Use the option --no-random-seed-file to disable this feature.
+
+    * New options --ignore-time-conflict and --lock-never.
+
+    * Some fixes for the W32 version.
+
+    * The entropy.dll is not anymore used by the W32 version but replaced
+      by code derived from Cryptlib.
+
+    * Encryption is now much faster: About 2 times for 1k bit keys
+      and 8 times for 4k keys.
+
+    * New encryption keys are generated in a way which allows a much
+      faster decryption.
+
+    * New command --export-secret-subkeys which outputs the
+      the _primary_ key with it's secret parts deleted.  This is
+      useful for automated decryption/signature creation as it
+      allows to keep the real secret primary key offline and
+      thereby protecting the key certificates and allowing to
+      create revocations for the subkeys.  See the FAQ for a
+      procedure to install such secret keys.
+
+    * Keygeneration now writes to the first writeable keyring or
+      as default to the one in the homedirectory.  Prior versions
+      ignored all --keyring options.
+
+    * New option --command-fd to take user input from a file descriptor;
+      to be used with --status-fd by software which uses GnuPG as a backend.
+
+    * There is a new status PROGRESS which is used to show progress during
+      key generation.
+
+    * Support for the new MDC encryption packets.  To create them either
+      --force-mdc must be use or cipher algorithm with a blocksize other
+      than 64 bits is to be used.  --openpgp currently disables MDC packets
+      entirely.  This option should not yet be used.
+
+    * New option --no-auto-key-retrieve to disable retrieving of
+      a missing public key from a keyerver, when a keyerver has been set.
+
+    * New command --verify-files.  New option --fast-list-mode.
+
+    * $http_proxy is now used when --honor-http-proxy is set.
+
+    * Fixed some minor bugs and the problem with conventional encrypted
+      packets which did use the gpg v3 partial length headers.
+
+    * Some more translations.
+
+    * Fixed a bug with symmetric-only encryption using the non-default 3DES.
+      The option --emulate-3des-s2k-bug may be used to decrypt documents
+      which have been encrypted this way; this should be done immediately
+      as this workaround will be remove in 1.1
+
+    * Can now handle (but not display) PGP's photo IDs. I don't know the
+      format of that packet but after stripping a few bytes from the start
+      it looks like a JPEG (at least my test data).  Handling of this
+      package is required because otherwise it would mix up the
+      self signatures and you can't import those keys.
+
+    * Passing non-ascii user IDs on the commandline should now work in all
+      cases.
+
+    * New keys are now generated with an additional preference to Blowfish.
+
+    * Removed the GNU Privacy Handbook from the distribution because it
+      is now in the package GPH.
 
 
 Noteworthy changes in version 1.1.0 (1999-10-26)

@@ -67,7 +67,7 @@ pk_verify( int algo, MPI hash, MPI *data, MPI *pkey,
     }
     else if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
 	rc = gcry_sexp_build ( &s_pkey, NULL,
-			      "(public-key(dsa(p%m)(g%m)(y%m)))",
+			      "(public-key(elg(p%m)(g%m)(y%m)))",
 				  pkey[0], pkey[1], pkey[2] );
     }
     else if( algo == GCRY_PK_RSA ) {

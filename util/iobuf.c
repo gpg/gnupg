@@ -28,6 +28,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <gcrypt.h>
+#ifdef HAVE_DOSISH_SYSTEM
+  #include <fcntl.h> /* for setmode() */
+#endif
 
 #include "memory.h"
 #include "util.h"
@@ -580,7 +583,10 @@ iobuf_open( const char *fname )
     int print_only = 0;
 
     if( !fname || (*fname=='-' && !fname[1])  ) {
-	fp = stdin; /* fixme: set binary mode for msdoze */
+	fp = stdin;
+      #ifdef HAVE_DOSISH_SYSTEM
+	setmode ( fileno(fp) , O_BINARY );
+      #endif
 	fname = "[stdin]";
 	print_only = 1;
     }
@@ -647,6 +653,9 @@ iobuf_create( const char *fname )
 
     if( !fname || (*fname=='-' && !fname[1]) ) {
 	fp = stdout;
+      #ifdef HAVE_DOSISH_SYSTEM
+	setmode ( fileno(fp) , O_BINARY );
+      #endif
 	fname = "[stdout]";
 	print_only = 1;
     }
@@ -742,7 +751,10 @@ iobuf_fopen( const char *fname, const char *mode )
     int print_only = 0;
 
     if( !fname || (*fname=='-' && !fname[1])  ) {
-	fp = stdin; /* fixme: set binary mode for msdoze */
+	fp = stdin;
+      #ifdef HAVE_DOSISH_SYSTEM
+	setmode ( fileno(fp) , O_BINARY );
+      #endif
 	fname = "[stdin]";
 	print_only = 1;
     }

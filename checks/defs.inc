@@ -29,6 +29,7 @@ exp_files=""
 LANG=
 LANGUAGE=
 LC_ALL=
+LC_MESSAGES=
 
 #--------------------------------
 #------ utility functions -------
@@ -105,5 +106,6 @@ no-greeting
 no-secmem-warning
 load-extension ../cipher/tiger
 batch
+emulate-md-encode-bug
 EOF
 

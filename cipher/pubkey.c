@@ -701,16 +701,9 @@ sexp_to_key( GCRY_SEXP sexp, int want_private, MPI **retarray, int *retalgo)
 						    :"public-key", 0 );
     if( !list )
 	return GCRYERR_INV_OBJ; /* Does not contain a public- or private-key object */
-    l2 = gcry_sexp_cdr( list );
+    l2 = gcry_sexp_cadr( list );
     gcry_sexp_release ( list );
     list = l2;
-    if( !list )
-	return GCRYERR_NO_OBJ; /* no cdr for the key object */
-    l2 = gcry_sexp_car( list );
-    gcry_sexp_release ( list );
-    list = l2;
-    if( !list )
-	return GCRYERR_NO_OBJ; /* no car for the key object */
     name = gcry_sexp_car_data( list, &n );
     if( !name ) {
 	gcry_sexp_release ( list );
@@ -873,7 +866,7 @@ sexp_to_enc( GCRY_SEXP sexp, MPI **retarray, int *retalgo)
     list = gcry_sexp_find_token( sexp, "enc-val" , 0 );
     if( !list )
 	return GCRYERR_INV_OBJ; /* Does not contain a encrypted value object */
-    l2 = gcry_sexp_cdr( list );
+    l2 = gcry_sexp_cadr( list );
     gcry_sexp_release ( list );
     list = l2;
     if( !list ) {
@@ -1332,7 +1325,7 @@ gcry_pk_genkey( GCRY_SEXP *r_key, GCRY_SEXP s_parms )
     list = gcry_sexp_find_token( s_parms, "genkey", 0 );
     if( !list )
 	return GCRYERR_INV_OBJ; /* Does not contain genkey data */
-    l2 = gcry_sexp_cdr( list );
+    l2 = gcry_sexp_cadr( list );
     gcry_sexp_release ( list );
     list = l2;
     if( !list )
@@ -1402,7 +1395,7 @@ gcry_pk_genkey( GCRY_SEXP *r_key, GCRY_SEXP s_parms )
 	/* build the string */
 	nelem = 0;
 	string = p = g10_xmalloc ( needed );
-	p = stpcpy ( p, "(key-data(" );
+	p = stpcpy ( p, "(key-data" );
 
 	p = stpcpy ( p, "(public-key(" );
 	p = stpcpy ( p, algo_name );
@@ -1412,7 +1405,7 @@ gcry_pk_genkey( GCRY_SEXP *r_key, GCRY_SEXP s_parms )
 	    p = stpcpy ( p, "%m)" );
 	    mpis[nelem++] = skey[i];
 	}
-	strcpy ( p, "))" );
+	p = stpcpy ( p, "))" );
 
 	p = stpcpy ( p, "(private-key(" );
 	p = stpcpy ( p, algo_name );
@@ -1422,14 +1415,14 @@ gcry_pk_genkey( GCRY_SEXP *r_key, GCRY_SEXP s_parms )
 	    p = stpcpy ( p, "%m)" );
 	    mpis[nelem++] = skey[i];
 	}
-	strcpy ( p, "))" );
+	p = stpcpy ( p, "))" );
 
 	p = stpcpy ( p, "(misc-key-info(pm1-factors" );
 	for(i=0; factors[i]; i++ ) {
 	    p = stpcpy ( p, "%m" );
 	    mpis[nelem++] = factors[i];
 	}
-	strcpy ( p, "))" );
+	strcpy ( p, ")))" );
 
 	while ( nelem < DIM(mpis) )
 	    mpis[nelem++] = NULL;
@@ -1439,6 +1432,7 @@ gcry_pk_genkey( GCRY_SEXP *r_key, GCRY_SEXP s_parms )
 	 * we have. which normally should be no problem as only those
 	 * with a corresponding %m are used
 	 */
+	 log_debug ("retstr=`%s'\n", string);
 	if ( gcry_sexp_build ( r_key, NULL, string,
 		   mpis[0], mpis[1], mpis[2], mpis[3], mpis[4], mpis[5],
 		   mpis[6], mpis[7], mpis[8], mpis[9], mpis[10], mpis[11],
@@ -1447,7 +1441,7 @@ gcry_pk_genkey( GCRY_SEXP *r_key, GCRY_SEXP s_parms )
 		   mpis[24], mpis[25], mpis[26], mpis[27], mpis[28], mpis[29]
 		  ) )
 	    BUG ();
-	assert ( DIM(mpis) == 29 );
+	assert ( DIM(mpis) == 30 );
 	g10_free ( string );
     }
     release_mpi_array ( skey );
