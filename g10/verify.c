@@ -83,5 +83,63 @@ verify_signatures( int nfiles, char **files )
     return rc;
 }
 
+static int
+verify_one_file( const char *name )
+{
+    IOBUF fp;
+    armor_filter_context_t afx;
+    int rc;
 
+    fp = iobuf_open(name);
+    if( !fp ) {
+	log_error(_("can't open `%s'\n"), print_fname_stdin(name));
+	return G10ERR_OPEN_FILE;
+    }
+
+    if( !opt.no_armor ) {
+	if( use_armor_filter( fp ) ) {
+	    memset( &afx, 0, sizeof afx);
+	    iobuf_push_filter( fp, armor_filter, &afx );
+	}
+    }
+
+    rc = proc_signature_packets( NULL, fp, NULL, name );
+    iobuf_close(fp);
+    return rc;
+}
+
+/****************
+ * Verify each file given in the files array or read the names of the
+ * files from stdin.
+ * Note:  This function can not handle detached signatures.
+ */
+int
+verify_files( int nfiles, char **files )
+{
+    int i;
+
+    if( !nfiles ) { /* read the filenames from stdin */
+	char line[2048];
+	unsigned int lno = 0;
+
+	while( fgets(line, DIM(line), stdin) ) {
+	    lno++;
+	    if( !*line || line[strlen(line)-1] != '\n' ) {
+		log_error(_("input line %u too long or missing LF\n"), lno );
+		return G10ERR_GENERAL;
+	    }
+	    /* This code does not work on MSDOS but how cares there are
+	     * also no script languages available.  We don't strip any
+	     * spaces, so that we can process nearly all filenames */
+	    line[strlen(line)-1] = 0;
+	    verify_one_file( line );
+	}
+
+    }
+    else {  /* take filenames from the array */
+	for(i=0; i < nfiles; i++ )
+	    verify_one_file( files[i] );
+    }
+    return 0;
+}
 

@@ -156,6 +156,15 @@ filename to force a read from stdin). With more than
 and the remaining files are the signed stuff.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--verify-files <optional><optional><parameter/files/</optional>
+<listitem><para>
+This is a special version of the --verify command which does not work with
+detached signatures.  The command expects the files to bee verified either
+on the commandline or reads the filenames from stdin;  each anem muts be on
+separate line. The command is intended for quick checking of many files.
+</para></listitem></varlistentry>
+
 <!--
 B<-k> [I<username>] [I<keyring>]
     Kludge to be somewhat compatible with PGP.

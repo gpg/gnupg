@@ -11,7 +11,7 @@ all-local: ./signatures.jpg
 ./signatures.jpg: $(srcdir)/signatures.jpg.asc
 	../../g10/gpg --yes --dearmor \
 		      -o ./signatures.jpg $(srcdir)/signatures.jpg.asc
-	test -d manual && cp ./signatures.jpg ./manual/signatures.jpg
+	-test -d manual && cp ./signatures.jpg ./manual/signatures.jpg
 
 
 index.html: $(PARTS)

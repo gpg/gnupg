@@ -138,6 +138,7 @@ void secret_key_list( int nnames, char **names );
 
 /*-- verify.c --*/
 int verify_signatures( int nfiles, char **files );
+int verify_files( int nfiles, char **files );
 
 /*-- decrypt.c --*/
 int decrypt_message( const char *filename );

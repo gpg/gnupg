@@ -79,6 +79,7 @@ enum cmd_and_opt_values { aNull = 0,
     aImport,
     aFastImport,
     aVerify,
+    aVerifyFiles,
     aListKeys,
     aListSigs,
     aListSecretKeys,
@@ -193,6 +194,7 @@ static ARGPARSE_OPTS opts[] = {
     { aStore, "store",     256, N_("store only")},
     { aDecrypt, "decrypt",   256, N_("decrypt data (default)")},
     { aVerify, "verify"   , 256, N_("verify a signature")},
+    { aVerifyFiles, "verify-files" , 256, "@" },
     { aListKeys, "list-keys", 256, N_("list keys")},
     { aListKeys, "list-public-keys", 256, "@" },
     { aListSigs, "list-sigs", 256, N_("list keys and signatures")},
@@ -697,6 +699,7 @@ main( int argc, char **argv )
 	  case aClearsign: set_cmd( &cmd, aClearsign); break;
 	  case aGenRevoke: set_cmd( &cmd, aGenRevoke); break;
 	  case aVerify: set_cmd( &cmd, aVerify); break;
+	  case aVerifyFiles: set_cmd( &cmd, aVerifyFiles); break;
 	  case aPrimegen: set_cmd( &cmd, aPrimegen); break;
 	  case aGenRandom: set_cmd( &cmd, aGenRandom); break;
 	  case aPrintMD: set_cmd( &cmd, aPrintMD); break;
@@ -1114,6 +1117,11 @@ main( int argc, char **argv )
       case aVerify:
 	if( (rc = verify_signatures( argc, argv ) ))
 	    log_error("verify signatures failed: %s\n", g10_errstr(rc) );
+	break;
+
+      case aVerifyFiles:
+	if( (rc = verify_files( argc, argv ) ))
+	    log_error("verify files failed: %s\n", g10_errstr(rc) );
 	break;
 
       case aDecrypt:
