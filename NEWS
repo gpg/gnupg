@@ -1,11 +1,53 @@
-Noteworthy changes in version 1.0.?
+Noteworthy changes in version 1.1.90
 ------------------------------------------------
 
-   * ElGamal sign and encrypt is not anymore allowed in the key
-     generation dialog unless in expert mode.  RSA sign and encrypt
-     has been added with the same restrictions.
+    * New commands: --personal-cipher-preferences,
+      --personal-digest-preferences, and
+      --personal-compress-preferences allow the user to specify which
+      algorithms are to be preferred.  Note that this does not permit
+      using an algorithm that is not present in the recipient's
+      preferences (which would violate the OpenPGP standard).  This
+      just allows sorting the preferences differently.
 
-   * [W32] Keyserver access does work with Windows NT.
+    * New "group" command to refer to several keys with one name.
+
+    * A warning is issued if the user forces the use of an algorithm
+      that is not listed in the recipient's preferences.
+
+    * Full revocation key (aka "designated revoker") support.
+
+    * The preferred hash algorithms on a key are consulted when
+      encrypting a signed message to that key.  Note that this is
+      disabled by default by a SHA1 preference in
+      --personal-digest-preferences.
+
+    * --cert-digest-algo allows the user to specify the hash algorithm
+      to use when signing a key rather than the default SHA1 (or MD5
+      for PGP2 keys).  Do not use this feature unless you fully
+      understand the implications of this.
+
+    * --pgp7 mode automatically sets all necessary options to ensure
+      that the resulting message will be usable by a user of PGP 7.x.
+
+    * New --attribute-fd command for frontends and scripts to get the
+      contents of attribute packets (i.e. photos)
+
+    * In expert mode, the user can now re-sign a v3 key with a v4
+      self-signature.  This does not change the v3 key into a v4 key,
+      but it does allow the user to use preferences, primary ID flags,
+      etc.
+
+    * Significantly improved photo ID support on non-unixlike
+      platforms.
+
+    * The version number has jumped ahead to 1.1.90 to skip over the
+      old version 1.1 and to get ready for the upcoming 1.2.
+
+    * ElGamal sign and encrypt is not anymore allowed in the key
+      generation dialog unless in expert mode.  RSA sign and encrypt
+      has been added with the same restrictions.
+
+    * [W32] Keyserver access does work with Windows NT.
 
 
 Noteworthy changes in version 1.0.7 (2002-04-29)

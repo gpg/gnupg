@@ -21,10 +21,7 @@ dnl (Process this file with autoconf to produce a configure script.)
 dnlAC_REVISION($Revision$)dnl
 
 AC_PREREQ(2.52)
-dnl A snapshot release has a letter appended.  CVS files before a release
-dnl are suffixed with the string "-cvs", so "1.0.6a-cvs" is a cvs version
-dnl between 1.0.6 and 1.0.6a. 
-AC_INIT(gnupg, 1.0.7a-cvs, bug-gnupg@gnu.org)
+AC_INIT(gnupg, 1.1.90, bug-gnupg@gnu.org)
 ALL_LINGUAS="cs da de eo el es et fr gl id it ja nl pl pt_BR pt sv tr"
 static_modules="sha1 md5 rmd160"
 static_random_module=""
@@ -426,9 +423,18 @@ case "${target}" in
 	DYNLINK_MOD_CFLAGS='-shared -Wl,-expect_unresolved,\*'
          ;;
 
-    *-solaris* | *-irix* | *-dec-osf* )
-        DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"
-        ;;
+    *-solaris*)
+	# -shared is a gcc-ism.  Find pic flags from GNUPG_CHECK_PIC.
+	if test -n "$GCC" ; then
+	   DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"
+	else
+	   DYNLINK_MOD_CFLAGS="-G $CFLAGS_PIC"
+	fi
+	;;
+
+    *-irix* | *-dec-osf* )
+	DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"
+	;;
 
     *)
         # -shared is a gcc-ism.  Find pic flags from GNUPG_CHECK_PIC.

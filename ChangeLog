@@ -1,3 +1,10 @@
+2002-06-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: changes since 1.0.7.
+
+	* configure.ac: Set new version number (1.1.90), and fix Solaris
+	compiler flags for shared objects.
+
 2002-06-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Move -lsocket and -lnsl checks before LDAP link
