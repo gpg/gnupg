@@ -880,6 +880,10 @@ ccid_transceive (ccid_driver_t handle,
       if (rc)
         return rc;
 
+      /* Fixme: The next line for the current Valgrid without support
+         for USB IOCTLs. */
+      memset (recv_buffer, 0, sizeof recv_buffer);
+
       msg = recv_buffer;
       rc = bulk_in (handle, msg, sizeof recv_buffer, &msglen,
                     RDR_to_PC_DataBlock, seqno);

@@ -413,14 +413,14 @@ learn_status_cb (void *opaque, const char *line)
           while (spacep (p))
             p++;
           parm->chv1_cached = atoi (p);
-          while (!spacep (p))
+          while (*p && !spacep (p))
             p++;
           while (spacep (p))
             p++;
           for (i=0; *p && i < 3; i++)
             {
               parm->chvmaxlen[i] = atoi (p);
-              while (!spacep (p))
+              while (*p && !spacep (p))
                 p++;
               while (spacep (p))
                 p++;
@@ -428,7 +428,7 @@ learn_status_cb (void *opaque, const char *line)
           for (i=0; *p && i < 3; i++)
             {
               parm->chvretry[i] = atoi (p);
-              while (!spacep (p))
+              while (*p && !spacep (p))
                 p++;
               while (spacep (p))
                 p++;
@@ -439,7 +439,7 @@ learn_status_cb (void *opaque, const char *line)
   else if (keywordlen == 7 && !memcmp (keyword, "KEY-FPR", keywordlen))
     {
       int no = atoi (line);
-      while (!spacep (line))
+      while (* line && !spacep (line))
         line++;
       while (spacep (line))
         line++;
@@ -568,7 +568,7 @@ genkey_status_cb (void *opaque, const char *line)
       const char *name = line;
       char *buf;
 
-      while (!spacep (line))
+      while (*line && !spacep (line))
         line++;
       while (spacep (line))
         line++;

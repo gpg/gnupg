@@ -298,7 +298,8 @@ ct_activate_card (int reader)
         {
           log_error ("ct_activate_card(%d): activation failed: %s\n",
                      reader, ct_error_string (rc));
-          log_printhex ("buffer:", buf, buflen);
+          if (!rc)
+            log_printhex ("  received data:", buf, buflen);
           return -1;
         }
 
@@ -972,7 +973,7 @@ apdu_open_reader (const char *portstr)
       pcsc_disconnect        = dlsym (handle, "SCardDisconnect");
       pcsc_status            = dlsym (handle, "SCardStatus");
 #ifdef _WIN32
-      if (pcsc_status)
+      if (!pcsc_status)
         pcsc_status          = dlsym (handle, "SCardStatusA");
 #endif
       pcsc_begin_transaction = dlsym (handle, "SCardBeginTransaction");

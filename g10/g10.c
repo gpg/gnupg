@@ -1218,6 +1218,14 @@ main( int argc, char **argv )
     if( !*opt.homedir )
 	set_homedir ( GNUPG_HOMEDIR );
 
+#ifdef ENABLE_CARD_SUPPORT
+# ifdef _WIN32
+    opt.pcsc_driver = "winscard.dll"; 
+#else
+    opt.pcsc_driver = "libpcsclite.so"; 
+#endif
+#endif /*ENABLE_CARD_SUPPORT*/
+
     /* check whether we have a config file on the commandline */
     orig_argc = argc;
     orig_argv = argv;

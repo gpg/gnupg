@@ -1,3 +1,10 @@
+2003-10-25  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main) [ENABLE_CARD_SUPPORT]: Add a default for
+	--pcsc-driver.
+
+	* cardglue.c (learn_status_cb): Fixed faulty use of !space.
+
 2003-10-24  Werner Koch  <wk@gnupg.org>
 
 	* apdu.c (apdu_open_reader): Hacks for PC/SC under Windows.
