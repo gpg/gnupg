@@ -1,3 +1,9 @@
+2005-02-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.c (connect_server): Fix fd leak when connecting to a
+	round-robin server set that has some down servers.  Noted by Phil
+	Pennock.
+
 2005-01-20  Werner Koch  <wk@g10code.com>
 
 	* simple-gettext.c (set_gettext_file): Use MO files depending on

@@ -859,6 +859,8 @@ connect_server( const char *server, ushort port, unsigned int flags,
 	      connected=1;
 	      break;
 	    }
+
+	  sock_close(sock);
 	}
 
       freeaddrinfo(res);
@@ -879,6 +881,8 @@ connect_server( const char *server, ushort port, unsigned int flags,
 
       if((host=gethostbyname(srvlist[srv].target))==NULL)
 	continue;
+
+      hostfound=1;
 
       if((sock=socket(host->h_addrtype,SOCK_STREAM,0))==-1)
 	{
@@ -917,6 +921,8 @@ connect_server( const char *server, ushort port, unsigned int flags,
 
       if(host->h_addr_list[i])
 	break;
+
+      sock_close(sock);
     }
 #endif /* !HAVE_GETADDRINFO */
 
@@ -930,13 +936,15 @@ connect_server( const char *server, ushort port, unsigned int flags,
       else
 	log_error("%s: Host not found: ec=%d\n",server,(int)WSAGetLastError());
 #else
+      int err=errno;
       if(hostfound)
-	log_error("%s: %s\n",server,strerror(errno));
+	log_error("%s: %s\n",server,strerror(err));
       else
 	log_error("%s: Host not found\n",server);
 #endif
       if(sock!=-1)
 	sock_close(sock);
+      errno=err;
       return -1;
     }
 
