@@ -118,9 +118,7 @@ static ARGPARSE_OPTS opts[] = {
 };
 
 
-#ifndef USE_GNU_PTH
 static volatile int caught_fatal_sig = 0;
-#endif /*!USE_GNU_PTH*/
 
 /* flag to indicate that a shutdown was requested */
 static int shutdown_pending;
@@ -221,7 +219,6 @@ cleanup (void)
 }
 
 
-#ifndef USE_GNU_PTH
 static RETSIGTYPE
 cleanup_sh (int sig)
 {
@@ -243,7 +240,6 @@ cleanup_sh (int sig)
 #endif
   raise( sig );
 }
-#endif /*!USE_GNU_PTH*/
 
 int
 main (int argc, char **argv )
