@@ -1,3 +1,13 @@
+2002-07-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Clarify --edit/addrevoker (sensitive), and
+	--keyserver-options (--import/export-options may be used as well).
+	Document --import-options and --export-options with their various
+	options.  --show-photos now works during signature verification as
+	well.  Document --exec-path.  Note in --simple-sk-checksum that
+	the passphrase must be changed for this to take effect.  Note that
+	--pgp7 does not disable MDC.  Document --no-mdc-warning.
+
 2002-07-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Clarify the differences between "pref" and "showpref".

@@ -349,7 +349,10 @@ Remove a subkey.</para></listitem></varlistentry>
     <varlistentry>
     <term>addrevoker</term>
     <listitem><para>
-Add a designated revoker.</para></listitem></varlistentry>
+Add a designated revoker.  This takes one optional argument:
+"sensitive".  If a designated revoker is marked as sensitive, it will
+not be exported by default (see
+export-options).</para></listitem></varlistentry>
     <varlistentry>
     <term>revkey</term>
     <listitem><para>
@@ -962,8 +965,10 @@ each time.
 <listitem><para>
 This is a space or comma delimited string that gives options for the
 keyserver.  Options can be prepended with a `no-' to give the opposite
-meaning.  While not all options are available for all keyserver types,
-some common options are:
+meaning.  Valid import-options or export-options may be used here as
+well to apply to importing (--recv-key) or exporting (--send-key) a
+key from a keyserver.  While not all options are available for all
+keyserver types, some common options are:
 <variablelist>
 
 <varlistentry>
@@ -1027,11 +1032,80 @@ keyring.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--import-options <parameter>parameters</parameter></term>
+<listitem><para>
+This is a space or comma delimited string that gives options for
+importing keys.  Options can be prepended with a `no-' to give the
+opposite meaning.  The options are:
+<variablelist>
+
+<varlistentry>
+<term>allow-local-sigs</term>
+<listitem><para>
+Allow importing key signatures marked as "local".  This is not
+generally useful unless a shared keyring scheme is being used.
+Defaults to no.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>repair-hkp-subkey-bug</term>
+<listitem><para>
+During import, attempt to repair the HKP keyserver mangling multiple
+subkeys bug.  Note that this cannot completely repair the damaged key
+as some crucial data is removed by the keyserver, but it does at least
+give you back one subkey.  Defaults to no for regular --import and to
+yes for keyserver --recv-keys.
+</para></listitem></varlistentry>
+
+</variablelist>
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--export-options <parameter>parameters</parameter></term>
+<listitem><para>
+This is a space or comma delimited string that gives options for
+exporting keys.  Options can be prepended with a `no-' to give the
+opposite meaning.  The options are:
+<variablelist>
+
+<varlistentry>
+<term>include-non-rfc</term>
+<listitem><para>
+Include non-RFC compliant keys in the export.  Defaults to yes.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>include-local-sigs</term>
+<listitem><para>
+Allow exporting key signatures marked as "local".  This is not
+generally useful unless a shared keyring scheme is being used.
+Defaults to no.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>include-attributes</term>
+<listitem><para>
+Include attribute user IDs (photo IDs) while exporting.  This is
+useful to export keys if they are going to be used by an OpenPGP
+program that does not accept attribute user IDs.  Defaults to yes.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>include-sensitive-revkeys</term>
+<listitem><para>
+Include designated revoker information that was marked as
+"sensitive".  Defaults to no.
+</para></listitem></varlistentry>
+
+</variablelist>
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--show-photos</term>
 <listitem><para>
-Causes --list-keys, --list-sigs, --list-public-keys, and
---list-secret-keys to also display the photo ID attached to a key, if
-any.
+Causes --list-keys, --list-sigs, --list-public-keys,
+--list-secret-keys, and verifying a signature to also display the
+photo ID attached to the key, if any.
 See also --photo-viewer.
 </para></listitem></varlistentry>
 
@@ -1055,6 +1129,15 @@ then the photo will be supplied to the viewer on standard input.
 </para><para>
 The default viewer is "xloadimage -fork -quiet -title 'KeyID 0x%k'
 stdin"
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--exec-path &ParmString;</term>
+<listitem><para>
+Sets a list of directories to search for photo viewers and keyserver
+helpers.  If not provided, keyserver helpers use the compiled-in
+default directory, and photo viewers use the $PATH environment
+variable.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1427,7 +1510,10 @@ method will be part of an enhanced OpenPGP specification but GnuPG
 already uses it as a countermeasure against certain attacks.  Old
 applications don't understand this new format, so this option may be
 used to switch back to the old behaviour.  Using this this option
-bears a security risk.
+bears a security risk.  Note that using this option only takes effect
+when the secret key is encrypted - the simplest way to make this
+happen is to change the passphrase on the key (even changing it to the
+same value is acceptable).
 </para></listitem></varlistentry>
 
 
@@ -1617,8 +1703,9 @@ Resets the --pgp6 option.
 <term>--pgp7</term>
 <listitem><para>
 Set up all options to be as PGP 7 compliant as possible.  This is
-identical to --pgp6 except that the list of allowable ciphers is
-expanded to add AES128, AES192, AES256, and TWOFISH.
+identical to --pgp6 except that MDCs are not disabled, and the list of
+allowable ciphers is expanded to add AES128, AES192, AES256, and
+TWOFISH.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1792,6 +1879,11 @@ Suppress the warning about "using insecure memory".
 Suppress the warning about unsafe file permissions.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--no-mdc-warning</term>
+<listitem><para>
+Suppress the warning about missing MDC integrity protection.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--no-armor</term>
