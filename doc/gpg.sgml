@@ -499,8 +499,8 @@ are not already included in the preference list.
     <listitem><para>
 Set the list of user ID preferences to &ParmString;, this should be a
 string similar to the one printed by "pref".  Using an empty string
-will set the default preference string, using "none" will set the
-preferences to nil.  Use "gpg --version" to get a list of available
+will set the default preference string, using "none" will remove the
+preferences.  Use "gpg --version" to get a list of available
 algorithms.  This command just initializes an internal list and does
 not change anything unless another command (such as "updpref") which
 changes the self-signatures is used.
@@ -522,7 +522,8 @@ Set a preferred keyserver for the specified user ID(s).  This allows
 other users to know where you prefer they get your key from.  See
 --keyserver-option honor-keyserver-url.  Note that some versions of
 PGP interpret the presence of a keyserver URL as an instruction to
-enable PGP/MIME mail encoding.
+enable PGP/MIME mail encoding.  Setting a value of "none" removes a
+existing preferred keyserver.
 </para></listitem></varlistentry>
     <varlistentry>
     <term>toggle</term>
@@ -700,7 +701,7 @@ Option --keyserver must be used to give the name of this keyserver.
 <term>--update-trustdb</term>
 <listitem><para>
 Do trust database maintenance.  This command iterates over all keys
-and builds the Web-of-Trust. This is an interactive command because it
+and builds the Web of Trust. This is an interactive command because it
 may have to ask for the "ownertrust" values for keys.  The user has to
 give an estimation of how far she trusts the owner of the displayed
 key to correctly certify (sign) other keys.  GnuPG only asks for the
@@ -713,7 +714,7 @@ ownertrust value if it has not yet been assigned to a key.  Using the
 <listitem><para>
 Do trust database maintenance without user interaction.  From time to
 time the trust database must be updated so that expired keys or
-signatures and the resulting changes in the Web-of-Trust can be
+signatures and the resulting changes in the Web of Trust can be
 tracked.  Normally, GnuPG will calculate when this is required and do
 it automatically unless --no-auto-check-trustdb is set.  This command
 can be used to force a trust database check at any time.  The
@@ -1129,12 +1130,17 @@ Set what trust model GnuPG should follow.  The models are:
 <variablelist>
 
 <varlistentry><term>pgp</term><listitem><para>
-This is the web-of-trust combined with trust signatures as used in PGP
+This is the Web of Trust combined with trust signatures as used in PGP
 5.x and later.  This is the default trust model.
 </para></listitem></varlistentry>
 
 <varlistentry><term>classic</term><listitem><para>
-This is the standard web-of-trust as used in PGP 2.x and earlier.
+This is the standard Web of Trust as used in PGP 2.x and earlier.
+</para></listitem></varlistentry>
+
+<varlistentry><term>direct</term><listitem><para>
+Key validity is set directly by the user and not calculated via the
+Web of Trust.
 </para></listitem></varlistentry>
 
 <varlistentry><term>always</term><listitem><para>
@@ -1252,6 +1258,17 @@ protocol by reading the temporary files.
 <listitem><para>
 Tell the keyserver helper program to be more verbose.  This option can
 be repeated multiple times to increase the verbosity level.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>timeout</term>
+<listitem><para>
+Tell the keyserver helper program how long (in seconds) to try and
+perform a keyserver action before giving up.  Note that performing
+multiple actions at the same time uses this timeout value per action.
+For example, when retrieving multiple keys via --recv-keys, the
+timeout applies separately to each key retrieval, and not to the
+--recv-keys command as a whole.  Defaults to 30 seconds.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2016,7 +2033,7 @@ interaction, this performance penalty does not matter in most settings.
 <term>--auto-check-trustdb</term>
 <term>--no-auto-check-trustdb</term>
 <listitem><para>
-If GnuPG feels that its information about the Web-of-Trust has to be
+If GnuPG feels that its information about the Web of Trust has to be
 updated, it automatically runs the --check-trustdb command internally.
 This may be a time consuming process.  --no-auto-check-trustdb
 disables this option.
