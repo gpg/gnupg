@@ -753,8 +753,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
     hashrec += msb / ITEMS_PER_HTBL_RECORD;
     rc = tdbio_read_record( hashrec, &rec, RECTYPE_HTBL );
     if( rc ) {
-	log_error( db_name, "upd_hashtable: read failed: %s\n",
-							g10_errstr(rc) );
+	log_error("upd_hashtable: read failed: %s\n",	g10_errstr(rc) );
 	return rc;
     }
 
@@ -763,7 +762,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 	rec.r.htbl.item[msb % ITEMS_PER_HTBL_RECORD] = newrecnum;
 	rc = tdbio_write_record( &rec );
 	if( rc ) {
-	    log_error( db_name, "upd_hashtable: write htbl failed: %s\n",
+	    log_error("upd_hashtable: write htbl failed: %s\n",
 							    g10_errstr(rc) );
 	    return rc;
 	}
@@ -902,7 +901,7 @@ drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
     hashrec += msb / ITEMS_PER_HTBL_RECORD;
     rc = tdbio_read_record( hashrec, &rec, RECTYPE_HTBL );
     if( rc ) {
-	log_error( db_name, "drop_from_hashtable: read failed: %s\n",
+	log_error("drop_from_hashtable: read failed: %s\n",
 							g10_errstr(rc) );
 	return rc;
     }
@@ -915,7 +914,7 @@ drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
 	rec.r.htbl.item[msb % ITEMS_PER_HTBL_RECORD] = 0;
 	rc = tdbio_write_record( &rec );
 	if( rc )
-	    log_error( db_name, "drop_from_hashtable: write htbl failed: %s\n",
+	    log_error("drop_from_hashtable: write htbl failed: %s\n",
 							    g10_errstr(rc) );
 	return rc;
     }
@@ -944,7 +943,7 @@ drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
 		    rec.r.hlst.rnum[i] = 0; /* drop */
 		    rc = tdbio_write_record( &rec );
 		    if( rc )
-			log_error( db_name, "drop_from_hashtable: write htbl failed: %s\n",
+			log_error("drop_from_hashtable: write htbl failed: %s\n",
 									g10_errstr(rc) );
 		    return rc;
 		}
@@ -991,7 +990,7 @@ lookup_hashtable( ulong table, const byte *key, size_t keylen,
     hashrec += msb / ITEMS_PER_HTBL_RECORD;
     rc = tdbio_read_record( hashrec, rec, RECTYPE_HTBL );
     if( rc ) {
-	log_error( db_name, "lookup_hashtable failed: %s\n", g10_errstr(rc) );
+	log_error("lookup_hashtable failed: %s\n", g10_errstr(rc) );
 	return rc;
     }
 
@@ -1001,14 +1000,14 @@ lookup_hashtable( ulong table, const byte *key, size_t keylen,
 
     rc = tdbio_read_record( item, rec, 0 );
     if( rc ) {
-	log_error( db_name, "hashtable read failed: %s\n", g10_errstr(rc) );
+	log_error( "hashtable read failed: %s\n", g10_errstr(rc) );
 	return rc;
     }
     if( rec->rectype == RECTYPE_HTBL ) {
 	hashrec = item;
 	level++;
 	if( level >= keylen ) {
-	    log_error( db_name, "hashtable has invalid indirections\n");
+	    log_error("hashtable has invalid indirections\n");
 	    return G10ERR_TRUSTDB;
 	}
 	goto next_level;
