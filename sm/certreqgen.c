@@ -706,7 +706,7 @@ gpgsm_genkey (ctrl_t ctrl, int in_fd, FILE *out_fp)
       return tmperr;
     }
 
-  ctrl->pem_name = "NEW CERTIFICATE REQUEST";
+  ctrl->pem_name = "CERTIFICATE REQUEST";
   rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, &writer);
   if (rc)
     {

@@ -1,3 +1,8 @@
+2004-10-22  Werner Koch  <wk@g10code.com>
+
+	* certreqgen.c (gpgsm_genkey): Remove the NEW from the certificate
+	request PEM header.  This is according to the Sphinx standard.
+
 2004-10-08  Moritz Schulte  <moritz@g10code.com>
 
 	* certchain.c (gpgsm_validate_chain): Do not use keydb_new() in
