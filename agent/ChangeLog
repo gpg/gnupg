@@ -1,3 +1,11 @@
+2004-10-22  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (parse_rereadable_options): Return "not handled"
+	when the log file has not beend hadled.  This is will let the main
+	option processing continue. Fixed a bug introduced on 2004-09-4
+	resulting in logging to stderr until a HUP has been given.
+	(main): Don't close the listen FD.
+
 2004-09-30  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am: Adjusted from gettext 1.14.

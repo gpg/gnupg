@@ -166,7 +166,7 @@ static char *config_filename;
 static const char *debug_level;
 
 /* Keep track of the current log file so that we can avoid updating
-   the log file afte a SIGHUP if id didn't changed. Malloced. */
+   the log file after a SIGHUP if it didn't changed. Malloced. */
 static char *current_logfile;
 
 /* Local prototypes. */
@@ -362,9 +362,10 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oDebugLevel: debug_level = pargs->r.ret_str; break;
 
     case oLogFile:
-      if (reread 
-          && (!current_logfile || !pargs->r.ret_str
-              || strcmp (current_logfile, pargs->r.ret_str)))
+      if (!reread)
+        return 0; /* not handeld */
+      if (!current_logfile || !pargs->r.ret_str
+          || strcmp (current_logfile, pargs->r.ret_str))
         {
           log_set_file (pargs->r.ret_str);
           xfree (current_logfile);
@@ -415,6 +416,7 @@ main (int argc, char **argv )
   int disable_pth = 0;
   int gpgconf_list = 0;
   gpg_error_t err;
+
 
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
@@ -861,7 +863,7 @@ main (int argc, char **argv )
           /* Close stdin, stdout and stderr unless it is the log stream */
           for (i=0; i <= 2; i++) 
             {
-              if (!log_test_fd (i) )
+              if (!log_test_fd (i) && i != fd )
                 close (i);
             }
           if (setsid() == -1)
