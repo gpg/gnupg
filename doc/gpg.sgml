@@ -1212,12 +1212,11 @@ effect when listing all keys.
 <varlistentry>
 <term>--keyring &ParmFile;</term>
 <listitem><para>
-Add &ParmFile to the list of keyrings.
-If &ParmFile begins with a tilde and a slash, these
-are replaced by the HOME directory. If the filename
-does not contain a slash, it is assumed to be in the
-home-directory ("~/.gnupg" if --homedir is not used).
-The filename may be prefixed with a scheme:</para>
+Add &ParmFile; to the list of keyrings.  If &ParmFile; begins with a
+tilde and a slash, these are replaced by the HOME directory. If the
+filename does not contain a slash, it is assumed to be in the GnuPG
+home directory ("~/.gnupg" if --homedir is not used).  The filename
+may be prefixed with a scheme:</para>
 <para>"gnupg-ring:" is the default one.</para>
 <para>It might make sense to use it together with --no-default-keyring.
 </para></listitem></varlistentry>
@@ -1227,6 +1226,18 @@ The filename may be prefixed with a scheme:</para>
 <term>--secret-keyring &ParmFile;</term>
 <listitem><para>
 Same as --keyring but for the secret keyrings.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
+<term>--trustdb-name &ParmFile;</term>
+<listitem><para>
+
+Use &ParmFile; instead of the default trustdb.  If &ParmFile; begins
+with a tilde and a slash, these are replaced by the HOME directory. If
+the filename does not contain a slash, it is assumed to be in the
+GnuPG home directory ("~/.gnupg" if --homedir is not used).
+
 </para></listitem></varlistentry>
 
 
@@ -1374,15 +1385,16 @@ option.
 <varlistentry>
 <term>--no-comment</term>
 <listitem><para>
-See --sk-comments.  This option is deprecated and may be removed soon.
+See --no-sk-comments.  This option is deprecated and may be removed
+soon.
 </para></listitem></varlistentry>
 
 
 <varlistentry>
 <term>--comment &ParmString;</term>
 <listitem><para>
-Use &ParmString; as comment string in clear text signatures.
-The default is not do write a comment string.
+Use &ParmString; as the comment string in clear text signatures.  The
+default behavior is not to use a comment string.
 </para></listitem></varlistentry>
 
 
@@ -1454,10 +1466,8 @@ Use &ParmString; as Policy URL for signatures (rfc2440:5.2.3.19).  If
 you prefix it with an exclamation mark, the policy URL packet will be
 flagged as critical.  --sig-policy-url sets a a policy url for data
 signatures.  --cert-policy-url sets a policy url for key signatures
-(certifications).  -set-policy-url sets both.
-</para>
-
-<para>
+(certifications).  --set-policy-url sets both.
+</para><para>
 The same %-expandos used for notation data are available here as well.
 </para></listitem></varlistentry>
 
@@ -1473,8 +1483,9 @@ as when verifying a signature with a policy URL in it.
 <varlistentry>
 <term>--set-filename &ParmString;</term>
 <listitem><para>
-Use &ParmString; as the name of file which is stored in
-messages.
+Use &ParmString; as the filename which is stored inside messages.
+This overrides the default, which is to use the actual filename of the
+file being encrypted.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1727,16 +1738,44 @@ Override the value of the environment variable
 <literal>GPG_AGENT_INFO</literal>.  This is only used when --use-agent has been given
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>Compliance options</term>
+<listitem><para>
+These options control what GnuPG is compliant to.  Only one of these
+options may be active at a time.  Note that the default setting of
+this is nearly always the correct one.  See the INTEROPERABILITY WITH
+OTHER OPENPGP PROGRAMS section below before using one of these
+options.
+<variablelist>
+
+<varlistentry>
+<term>--gnupg</term>
+<listitem><para>
+Use standard GnuPG behavior.  This is essentially OpenPGP behavior
+(see --openpgp), but with some additional workarounds for common
+compatibility problems in different versions of PGP.  This is the
+default option, so it is not generally needed, but it may be useful to
+override a different compliance option in the gpg.conf file.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--openpgp</term>
+<listitem><para>
+Reset all packet, cipher and digest options to strict OpenPGP
+behavior.  Use this option to reset all previous options like
+--rfc1991, --force-v3-sigs, --s2k-*, --cipher-algo, --digest-algo and
+--compress-algo to OpenPGP compliant values.  All PGP workarounds are
+disabled.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--rfc1991</term>
 <listitem><para>
-Try to be more RFC1991 (PGP 2.x) compliant.
+Try to be more RFC-1991 (PGP 2.x) compliant.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--pgp2</term>
-<term>--no-pgp2</term>
 <listitem><para>
 Set up all options to be as PGP 2.x compliant as possible, and warn if
 an action is taken (e.g. encrypting to a non-RSA key) that will create
@@ -1744,16 +1783,15 @@ a message that PGP 2.x will not be able to handle.  Note that `PGP
 2.x' here means `MIT PGP 2.6.2'.  There are other versions of PGP 2.x
 available, but the MIT release is a good common baseline.
 </para><para>
-This option implies `--rfc1991 --no-openpgp --disable-mdc
---no-force-v4-certs --no-comment --escape-from-lines --force-v3-sigs
+This option implies `--rfc1991 --disable-mdc --no-force-v4-certs
+--no-sk-comment --escape-from-lines --force-v3-sigs
 --no-ask-sig-expire --no-ask-cert-expire --cipher-algo IDEA
 --digest-algo MD5 --compress-algo 1'.  It also disables --textmode
-when encrypting.  --no-pgp2 disables this option.
+when encrypting.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--pgp6</term>
-<term>--no-pgp6</term>
 <listitem><para>
 Set up all options to be as PGP 6 compliant as possible.  This
 restricts you to the ciphers IDEA (if the IDEA plugin is installed),
@@ -1762,42 +1800,30 @@ compression algorithms none and ZIP.  This also disables
 --throw-keyid, and making signatures with signing subkeys as PGP 6
 does not understand signatures made by signing subkeys.
 </para><para>
-This option implies `--disable-mdc --no-comment --escape-from-lines
---force-v3-sigs --no-ask-sig-expire --compress-algo 1' --no-pgp6
-disables this option.
+This option implies `--disable-mdc --no-sk-comment --escape-from-lines
+--force-v3-sigs --no-ask-sig-expire'
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--pgp7</term>
-<term>--no-pgp7</term>
 <listitem><para>
 Set up all options to be as PGP 7 compliant as possible.  This is
 identical to --pgp6 except that MDCs are not disabled, and the list of
 allowable ciphers is expanded to add AES128, AES192, AES256, and
-TWOFISH.  --no-pgp7 disables this option.
+TWOFISH.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--pgp8</term>
-<term>--no-pgp8</term>
 <listitem><para>
 Set up all options to be as PGP 8 compliant as possible.  PGP 8 is a
 lot closer to the OpenPGP standard than previous versions of PGP, so
-all this does is disable --throw-keyid and set --escape-from-lines and
---compress-algo 1.  The allowed algorithms list is the same as --pgp7
-with the addition of the SHA-256 digest algorithm.  --no-pgp8 disables
-this option.
+all this does is disable --throw-keyid and set --escape-from-lines.
+The allowed algorithms list is the same as --pgp7 with the addition of
+the SHA-256 digest algorithm.
 </para></listitem></varlistentry>
 
-<varlistentry>
-<term>--openpgp</term>
-<listitem><para>
-Reset all packet, cipher and digest options to OpenPGP behavior. Use
-this option to reset all previous options like --rfc1991,
---force-v3-sigs, --s2k-*, --cipher-algo, --digest-algo and
---compress-algo to OpenPGP compliant values.  All PGP workarounds and
---pgpX modes are also disabled.
-</para></listitem></varlistentry>
+</variablelist></para></listitem></varlistentry>
 
 <varlistentry>
 <term>--force-v3-sigs</term>

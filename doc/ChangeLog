@@ -1,3 +1,9 @@
+2003-05-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document --trustdb-name.  Document --gnupg in a new
+	compliance section, and remove the various --no-PGPX options.
+	Deprecate --no-comment in favor of --no-sk-comments.
+
 2003-05-01  Werner Koch  <wk@gnupg.org>
 
 	* faq.raw: List years of copyright notice separately.
