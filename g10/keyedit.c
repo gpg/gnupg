@@ -1175,6 +1175,35 @@ show_prefs (PKT_user_id *uid, int verbose)
                     tty_printf ("[%d]", prefs[i].value);
             }    
         }
+        tty_printf ("\n     Compression: ");
+        for(i=any=0; prefs[i].type; i++ ) {
+            if( prefs[i].type == PREFTYPE_ZIP ) {
+                const char *s=NULL;
+		switch(prefs[i].value)
+		  {
+		  case 0:
+		    s="Uncompressed";
+		    break;
+
+		  case 1:
+		    s="ZIP";
+		    break;
+
+		  case 2:
+		    s="ZLIB";
+		    break;
+		  }
+                
+                if (any)
+                    tty_printf (", ");
+                any = 1;
+                /* We don't want to display strings for experimental algos */
+                if (s && prefs[i].value < 100 )
+                    tty_printf ("%s", s );
+                else
+                    tty_printf ("[%d]", prefs[i].value);
+            }    
+        }
         tty_printf("\n");
     }
     else {

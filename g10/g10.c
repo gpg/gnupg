@@ -1238,8 +1238,8 @@ main( int argc, char **argv )
 	if( check_policy_url( opt.set_policy_url ) )
 	    log_error(_("the given policy URL is invalid\n"));
     }
-    if( opt.def_compress_algo < 1 || opt.def_compress_algo > 2 )
-	log_error(_("compress algorithm must be in range %d..%d\n"), 1, 2);
+    if( opt.def_compress_algo < 0 || opt.def_compress_algo > 2 )
+	log_error(_("compress algorithm must be in range %d..%d\n"), 0, 2);
     if( opt.completes_needed < 1 )
 	log_error(_("completes-needed must be greater than 0\n"));
     if( opt.marginals_needed < 2 )
@@ -1290,6 +1290,9 @@ main( int argc, char **argv )
 	g10_opt_verbose = opt.verbose;
     }
 
+    /* Compression algorithm 0 means no compression at all */
+    if( opt.def_compress_algo == 0)
+        opt.compress = 0;
 
     /* kludge to let -sat generate a clear text signature */
     if( opt.textmode == 2 && !detached_sig && opt.armor && cmd == aSign )

@@ -1163,7 +1163,7 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
         }
         for (; nzip; nzip--, n++) {
             uid->prefs[n].type = PREFTYPE_ZIP;
-            uid->prefs[n].value = *sym++;
+            uid->prefs[n].value = *zip++;
         }
         uid->prefs[n].type = PREFTYPE_NONE; /* end of list marker */
         uid->prefs[n].value = 0;

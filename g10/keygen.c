@@ -175,7 +175,7 @@ set_one_pref (ulong val, int type, int (*cf)(int), byte *buf, int *nbuf)
 {
     int i;
 
-    if (!val || val > 127 || cf (val)) {
+    if (cf (val)) {
         log_info (_("preference %c%lu is not valid\n"), type, val);
         return -1;
     }
