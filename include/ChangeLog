@@ -1,3 +1,8 @@
+2003-12-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.h: Pass the http proxy from outside rather than pulling it
+	from the evironment.
+
 2003-12-28  Stefan Bellon  <sbellon@sbellon.de>
 
 	* util.h [__riscos__]: Removal of unnecessary RISC OS stuff.

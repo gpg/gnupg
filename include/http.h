@@ -1,5 +1,5 @@
 /* http.h  -  HTTP protocol handler
- *	Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -17,6 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
+
 #ifndef G10_HTTP_H
 #define G10_HTTP_H 1
 
@@ -49,11 +50,12 @@ typedef enum {
     HTTP_REQ_POST = 3
 } HTTP_REQ_TYPE;
 
-enum {	/* put flag values into an enum, so that gdb can display them */
-    HTTP_FLAG_TRY_PROXY = 1,
-    HTTP_FLAG_NO_SHUTDOWN = 2,
-    HTTP_FLAG_TRY_SRV = 3
-};
+/* put flag values into an enum, so that gdb can display them */
+enum
+  { 
+    HTTP_FLAG_NO_SHUTDOWN = 1,
+    HTTP_FLAG_TRY_SRV = 2
+  };
 
 struct http_context {
     int initialized;
@@ -72,11 +74,11 @@ struct http_context {
 typedef struct http_context *HTTP_HD;
 
 int http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
-						  unsigned int flags );
+	       unsigned int flags, const char *proxy );
 void http_start_data( HTTP_HD hd );
 int  http_wait_response( HTTP_HD hd, unsigned int *ret_status );
 void http_close( HTTP_HD hd );
-
-int http_open_document( HTTP_HD hd, const char *document, unsigned int flags );
+int http_open_document( HTTP_HD hd, const char *document,
+			unsigned int flags, const char *proxy );
 
 #endif /*G10_HTTP_H*/
