@@ -1,8 +1,14 @@
 Noteworthy changes in version 1.3.4 (unreleased)
 ------------------------------------------------
 
-    * --symmetric --encrypt can now be used to generate a message that
-      can be decrypted by either a passphrase or a secret key.
+    * Added support for BZIP2 compression.  This should be considered
+      experimental, and is only available if the libbzip2 library
+      <http://sources.redhat.com/bzip2/> is installed.
+
+    * Added the ability to handle messages that can be decrypted with
+      either a passphrase or a secret key.  These messages may be
+      generated with --symmetric --encrypt or --symmetric --sign
+      --encrypt.
 
     * The config file search has been enhanced to try for more
       specific filename matches before giving up.  For example,
