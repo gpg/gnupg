@@ -1,5 +1,7 @@
 2002-02-18  Werner Koch  <wk@gnupg.org>
 
+	* findkey.c (unprotect): Show an error message for a bad passphrase.
+
 	* command.c (cmd_marktrusted): Implemented.
 	* trustlist.c (agent_marktrusted): New.
 	(open_list): Add APPEND arg.

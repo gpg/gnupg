@@ -39,6 +39,7 @@ unprotect (unsigned char **keybuf, const unsigned char *grip)
   size_t resultlen;
   int tries = 0;
   char hexgrip[40+1];
+  const char *errtext;
   
   for (i=0; i < 20; i++)
     sprintf (hexgrip+2*i, "%02X", grip[i]);
@@ -67,9 +68,10 @@ unprotect (unsigned char **keybuf, const unsigned char *grip)
   pi->max_digits = 8;
   pi->max_tries = 3;
 
+  errtext = NULL;
   do
     {
-      rc = agent_askpin (NULL, NULL, pi);
+      rc = agent_askpin (NULL, errtext, pi);
       if (!rc)
         {
           rc = agent_unprotect (*keybuf, pi->pin, &result, &resultlen);
@@ -82,6 +84,7 @@ unprotect (unsigned char **keybuf, const unsigned char *grip)
               return 0;
             }
         }
+      errtext = pi->min_digits? trans ("Bad PIN") : trans ("Bad Passphrase");
     }
   while ((rc == GNUPG_Bad_Passphrase || rc == GNUPG_Bad_PIN)
          && tries++ < 3);
