@@ -507,6 +507,11 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig )
 	    || c->list->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
 	    return check_key_signature( c->list, node, is_selfsig );
 	}
+	else if( sig->sig_class == 0x20 ) {
+	    log_info(_("standalone revocation - "
+		       "use \"gpg --import\" to apply\n"), sig->sig_class);
+	    return G10ERR_NOT_PROCESSED;
+	}
 	else {
 	    log_error("invalid root packet for sigclass %02x\n",
 							sig->sig_class);
@@ -1114,7 +1119,8 @@ check_sig_and_print( CTX c, KBNODE node )
 	    buf[16] = 0;
 	    write_status_text( STATUS_NO_PUBKEY, buf );
 	}
-	log_error(_("Can't check signature: %s\n"), g10_errstr(rc) );
+	if( rc != G10ERR_NOT_PROCESSED )
+	    log_error(_("Can't check signature: %s\n"), g10_errstr(rc) );
     }
     return rc;
 }
@@ -1174,7 +1180,10 @@ proc_tree( CTX c, KBNODE node )
     else if( node->pkt->pkttype == PKT_SIGNATURE ) {
 	PKT_signature *sig = node->pkt->pkt.signature;
 
-	if( !c->have_data ) {
+	if( sig->sig_class != 0x00 && sig->sig_class != 0x01 )
+	    log_info(_("standalone signature of class 0x%02x\n"),
+						    sig->sig_class);
+	else if( !c->have_data ) {
 	    /* detached signature */
 	    free_md_filter_context( &c->mfx );
 	    c->mfx.md = md_open(sig->digest_algo, 0);

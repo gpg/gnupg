@@ -1,8 +1,4 @@
 
-  * try to do --verify even if the files are swapped on the commandline
-    (requested by Herny Spencer) or change the error message to
-    a more clear one.
-
 
 Scheduled for 1.1
 -----------------
@@ -27,7 +23,7 @@ Scheduled for 1.1
   * Check the beginning of file to detect already compressed files (gzip,
     bzip2, xdelta and some picture formats)
 
-  * Delay the read of the passphrase-fd afte a NEED_PASSPHRASE.  But this
+  * Delay the read of the passphrase-fd after a NEED_PASSPHRASE.  But this
     may break some scripts.
 
 

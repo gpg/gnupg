@@ -291,7 +291,7 @@ md_reset( MD_HANDLE a )
 {
     struct md_digest_list_s *r;
 
-    a->bufcount = 0;
+    a->bufcount = a->finalized = 0;
     for( r=a->list; r; r = r->next ) {
 	memset( r->context.c, 0, r->contextsize );
 	(*r->init)( &r->context.c );

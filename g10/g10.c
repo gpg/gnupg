@@ -179,6 +179,7 @@ enum cmd_and_opt_values { aNull = 0,
     oNoLiteral,
     oSetFilesize,
     oEntropyDLLName,
+    oEmu3DESS2KBug,  /* will be removed in 1.1 */
 aTest };
 
 
@@ -346,6 +347,7 @@ static ARGPARSE_OPTS opts[] = {
     { oNoLiteral, "no-literal", 0, "@" },
     { oSetFilesize, "set-filesize", 20, "@" },
     { oEntropyDLLName, "entropy-dll-name", 2, "@" },
+    { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
 {0} };
 
 
@@ -805,6 +807,7 @@ main( int argc, char **argv )
 	    opt.s2k_cipher_algo = CIPHER_ALGO_BLOWFISH;
 	    break;
 	  case oEmuChecksumBug: opt.emulate_bugs |= EMUBUG_GPGCHKSUM; break;
+	  case oEmu3DESS2KBug:	opt.emulate_bugs |= EMUBUG_3DESS2K; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRunAsShmCP:
 	  #ifndef USE_SHM_COPROCESSING
@@ -1215,17 +1218,7 @@ main( int argc, char **argv )
 
       case aFastImport:
       case aImport:
-	if( !argc  ) {
-	    rc = import_keys( NULL, (cmd == aFastImport) );
-	    if( rc )
-		log_error("import failed: %s\n", g10_errstr(rc) );
-	}
-	for( ; argc; argc--, argv++ ) {
-	    rc = import_keys( *argv, (cmd == aFastImport) );
-	    if( rc )
-		log_error("import from `%s' failed: %s\n",
-						*argv, g10_errstr(rc) );
-	}
+	import_keys( argc? argv:NULL, argc, (cmd == aFastImport) );
 	break;
 
       case aExport:

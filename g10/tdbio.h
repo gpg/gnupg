@@ -52,6 +52,7 @@
 			/* one uid with a selfsignature or an revocation */
 #define DIRF_EXPIRED  4 /* the complete key has expired */
 #define DIRF_REVOKED  8 /* the complete key has been revoked */
+#define DIRF_NEWKEYS 128 /* new keys are available: we can check the sigs */
 
 #define KEYF_CHECKED  1 /* This key has been checked */
 #define KEYF_VALID    2 /* This is a valid (sub)key */
@@ -121,7 +122,7 @@ struct trust_record {
 	} uid;
 	struct {	    /* preference record */
 	    ulong lid;	    /* point back to the directory record */
-			    /* or 0 for a glocal pref record */
+			    /* or 0 for a global pref record */
 	    ulong next;    /* points to next pref record */
 	    byte  data[ITEMS_PER_PREF_RECORD];
 	} pref;

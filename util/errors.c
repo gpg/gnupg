@@ -100,6 +100,7 @@ g10_errstr( int err )
       X(NETWORK        ,N_("network error"))
       X(SELFTEST_FAILED,"selftest failed")
       X(NOT_ENCRYPTED  ,N_("not encrypted"))
+      X(NOT_PROCESSED  ,N_("not processed"))
       default: p = buf; sprintf(buf, "g10err=%d", err); break;
     }
   #undef X

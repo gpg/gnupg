@@ -1130,6 +1130,8 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 		fputs(", expired", fp );
 	    if( rec->r.dir.dirflags & DIRF_REVOKED )
 		fputs(", revoked", fp );
+	    if( rec->r.dir.dirflags & DIRF_NEWKEYS )
+		fputs(", newkeys", fp );
 	}
 	putc('\n', fp);
 	break;

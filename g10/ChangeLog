@@ -1,3 +1,44 @@
+Mon Oct  4 21:23:04 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* import.c (import_keys): Changed calling interface, adjusted caller.
+	(import): Moved printing of stats out ...
+	(print_stats): New. ... to here.
+	(import_keys_stream): Call stats print here.
+	(import_keys): Print stats as totals for all files.
+
+	* tdbio.h (DIRF_NEWKEYS): New
+	* tdbio.c (tdbio_dump_record): Print the new flag.
+	* trustdb.c (check_trust_record): New arg sigs_only.  Adapted all
+	callers.
+	(do_update_trust_record): Removed recheck arg and add a new sigs_only
+	do we can later improve on the performance.  Changed all callers too.
+	(check_trustdb): Evalutate the new flag and add a status output.
+	Do a check when the dir record has not been checked.
+	(build_cert_tree): Evaluate the new flag.
+	(check_trust): Ditto.  Do a trust_record check, when the dir record
+	is not marked as checked.
+	(mark_fresh_keys): New.
+	(clear_lid_table): New.
+	(sync_trustdb): New.
+	* import.c (import_keys): Call sync_trustdb() after processing.
+	(import_keys_stream): Ditto.
+	* tdbdump.c (import_ownertrust): Ditto.
+
+	* import.c (import_revoke_cert): Notify the trust DB.
+	(do_update_trust_record): Use |= to set the REVOKED bit and not &=;
+	shame on me for this bad copy+paste introduced bug.
+	(do_we_trust): Add trustmask to allow revoked key override to work.
+	Chnaged are to allow return of a mofified trustlevel. Adapted the
+	one caller.
+
+	* g10.c: New options --emulate-3des-s2k-bug
+	* passphrase.c (hash_passphrase): Implemented above.
+
+	* mainproc.c (proc_tree): Check for standalone signatures.
+	(do_check_sig): Print a notice for a standalone revocation
+	(check_sig_and_print): Do not print an error for unchecked standalone
+	revocations.
+
 Tue Sep 28 20:54:37 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* encode.c (encode_simple): Use new CTB when we don't have the

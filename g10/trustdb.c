@@ -125,12 +125,21 @@ static int do_check( TRUSTREC *drec, unsigned *trustlevel,
 						unsigned *retflgs);
 static int get_dir_record( PKT_public_key *pk, TRUSTREC *rec );
 static int do_update_trust_record( KBNODE keyblock, TRUSTREC *drec,
-					  int recheck, int *modified );
-static int check_trust_record( TRUSTREC *drec );
+				   int sigs_only, int *modified );
+static int check_trust_record( TRUSTREC *drec, int sigs_only );
+static void mark_fresh_keys(void);
 
 /* a table used to keep track of ultimately trusted keys
  * which are the ones from our secrings and the trusted keys */
 static LOCAL_ID_TABLE ultikey_table;
+
+
+/* a table to keep track of newly importted keys.  This one is
+ * create by the insert_trust_record function and from time to time
+ * used to verify key signature which have been done with these new keys */
+static LOCAL_ID_TABLE fresh_imported_keys;
+static int fresh_imported_keys_count;
+#define FRESH_KEY_CHECK_THRESHOLD 200
 
 /* list of unused lid items and tables */
 static LOCAL_ID_TABLE unused_lid_tables;
@@ -244,6 +253,27 @@ release_lid_table( LOCAL_ID_TABLE tbl )
     unused_lid_tables = tbl;
 }
 #endif
+
+
+/****************
+ * Remove all items from a LID table
+ */
+static void
+clear_lid_table( LOCAL_ID_TABLE tbl )
+{
+    struct local_id_item *a, *a2;
+    int i;
+
+    for(i=0; i < 16; i++ ) {
+	for(a=tbl->items[i]; a; a = a2 ) {
+	    a2 = a->next;
+	    a->next = unused_lid_items;
+	    unused_lid_items = a;
+	}
+	tbl->items[i] = NULL;
+    }
+}
+
 
 /****************
  * Add a new item to the table or return 1 if we already have this item
@@ -571,6 +601,18 @@ init_trustdb()
 }
 
 
+
+/****************
+ * This function should be called in certain cases to sync the internal state
+ * of the trustdb with the file image.	Currently it is needed after
+ * a sequence of insert_trust_record() calls.
+ */
+void
+sync_trustdb()
+{
+    if( fresh_imported_keys && fresh_imported_keys_count )
+	mark_fresh_keys();
+}
 
 
 
@@ -1082,7 +1124,7 @@ check_uidsigs( KBNODE keyblock, KBNODE keynode, u32 *mainkid, ulong lid,
 static unsigned int
 check_sig_record( KBNODE keyblock, KBNODE signode,
 		  ulong siglid, int sigidx, u32 *keyid, ulong lid,
-							u32 *r_expire )
+				  u32 *r_expire, int *mod_down, int *mod_up )
 {
     PKT_signature *sig = signode->pkt->pkt.signature;
     unsigned int sigflag = 0;
@@ -1114,16 +1156,16 @@ check_sig_record( KBNODE keyblock, KBNODE signode,
 	    sigflag |= SIGF_CHECKED | SIGF_VALID;
 	    if( revocation ) {
 		sigflag |= SIGF_REVOKED;
-		/**mod_down = 1;*/
+		*mod_down = 1;
 	    }
 	    else
-		/**mod_up = 1*/;
+		*mod_up = 1;
 	}
 	else if( rc == G10ERR_NO_PUBKEY ) {
 	    /* This may happen if the key is still in the trustdb
 	     * but not available in the keystorage */
 	    sigflag |= SIGF_NOPUBKEY;
-	    /**mod_down = 1;*/
+	    *mod_down = 1;
 	    if( revocation )
 		sigflag |= SIGF_REVOKED;
 	}
@@ -1137,7 +1179,7 @@ check_sig_record( KBNODE keyblock, KBNODE signode,
 	    sigflag |= SIGF_CHECKED;
 	    if( revocation ) {
 		sigflag |= SIGF_REVOKED;
-		/**mod_down = 1;*/
+		*mod_down = 1;
 	    }
 	}
     }
@@ -1168,7 +1210,8 @@ check_sig_record( KBNODE keyblock, KBNODE signode,
  */
 static ulong
 make_sig_records( KBNODE keyblock, KBNODE uidnode,
-		  ulong lid, u32 *mainkid, u32 *min_expire )
+		  ulong lid, u32 *mainkid, u32 *min_expire,
+					int *mod_down, int *mod_up  )
 {
     TRUSTREC *srecs, **s_end, *s=NULL, *s2;
     KBNODE  node;
@@ -1218,7 +1261,8 @@ make_sig_records( KBNODE keyblock, KBNODE uidnode,
 	s->r.sig.sig[sigidx].lid = siglid;
 	s->r.sig.sig[sigidx].flag= check_sig_record( keyblock, node,
 						     siglid, sigidx,
-						     mainkid, lid, &expire );
+						     mainkid, lid, &expire,
+						     mod_down, mod_up );
 
 	sigidx++;
 	if( sigidx == SIGS_PER_RECORD ) {
@@ -1319,7 +1363,8 @@ make_pref_record( PKT_signature *sig, ulong lid )
 
 
 static ulong
-make_uid_records( KBNODE keyblock, ulong lid, u32 *keyid, u32 *min_expire )
+make_uid_records( KBNODE keyblock, ulong lid, u32 *keyid, u32 *min_expire,
+						 int *mod_down, int *mod_up )
 {
     TRUSTREC *urecs, **uend, *u, *u2;
     KBNODE  node;
@@ -1351,9 +1396,21 @@ make_uid_records( KBNODE keyblock, ulong lid, u32 *keyid, u32 *min_expire )
 	    && (u->r.uid.uidflags & UIDF_VALID) ) {
 	    u->r.uid.prefrec = bestsig? make_pref_record( bestsig, lid ) : 0;
 	}
+
+	/* the next test is really bad because we should modify
+	 * out modification timestamps only if we really have a change.
+	 * But becuase we are deleting the uid records first it is somewhat
+	 * difficult to track those changes.  fixme */
+	if(   !( u->r.uid.uidflags & UIDF_VALID )
+	    || ( u->r.uid.uidflags & UIDF_REVOKED ) )
+	    *mod_down=1;
+	else
+	    *mod_up=1;
+
 	/* create the list of signatures */
 	u->r.uid.siglist = make_sig_records( keyblock, node,
-					     lid, keyid, min_expire );
+					     lid, keyid, min_expire,
+					     mod_down, mod_up );
     }
 
     uidrecno = urecs? urecs->recnum : 0;
@@ -1380,6 +1437,8 @@ update_trust_record( KBNODE keyblock, int recheck, int *modified )
     TRUSTREC drec;
     int rc;
 
+    /* NOTE: We don't need recheck anymore, but this might chnage again in
+     * the future */
     if( opt.dry_run )
 	return 0;
     if( modified )
@@ -1390,24 +1449,25 @@ update_trust_record( KBNODE keyblock, int recheck, int *modified )
     if( rc )
 	return rc;
 
-    rc = do_update_trust_record( keyblock, &drec, recheck, modified );
+    rc = do_update_trust_record( keyblock, &drec, 0, modified );
     return rc;
 }
 
 /****************
- * Same as update_trust_record, but tghis functions expects the dir record.
- * On exit the dirrecord will reflect any changes made.
+ * Same as update_trust_record, but this functions expects the dir record.
+ * On exit the dir record will reflect any changes made.
+ * With sigs_only set only foreign key signatures are checked.
  */
 static int
 do_update_trust_record( KBNODE keyblock, TRUSTREC *drec,
-			int recheck, int *modified )
+			int sigs_only, int *modified )
 {
     PKT_public_key *primary_pk;
     TRUSTREC krec, urec, prec, helprec;
     int i, rc = 0;
     u32 keyid[2]; /* keyid of primary key */
-/*    int mod_up = 0;
-    int mod_down = 0; */
+    int mod_up = 0;
+    int mod_down = 0;
     ulong recno, r2;
     u32 expire;
 
@@ -1424,7 +1484,7 @@ do_update_trust_record( KBNODE keyblock, TRUSTREC *drec,
     if( rc )
 	return rc;
 
-    /* delete the old stuff */
+    /* delete the old stuff FIXME: implementend sigs_only */
     for( recno=drec->r.dir.keylist; recno; recno = krec.r.key.next ) {
 	read_record( recno, &krec, RECTYPE_KEY );
 	delete_record( recno );
@@ -1447,22 +1507,13 @@ do_update_trust_record( KBNODE keyblock, TRUSTREC *drec,
 
     /* insert new stuff */
     drec->r.dir.dirflags &= ~DIRF_REVOKED;
+    drec->r.dir.dirflags &= ~DIRF_NEWKEYS;
     drec->r.dir.keylist = make_key_records( keyblock, drec->recnum, keyid, &i );
     if( i ) /* primary key has been revoked */
-	drec->r.dir.dirflags &= DIRF_REVOKED;
+	drec->r.dir.dirflags |= DIRF_REVOKED;
     expire = 0;
     drec->r.dir.uidlist = make_uid_records( keyblock, drec->recnum, keyid,
-								  &expire );
-    #if 0
-	if( orig_uidflags != urec.r.uid.uidflags ) {
-	    write_record( &urec );
-	    if(   !( urec.r.uid.uidflags & UIDF_VALID )
-		|| ( urec.r.uid.uidflags & UIDF_REVOKED ) )
-		*mod_down=1;
-	    else
-		*mod_up=1; /*(maybe a new user id)*/
-    #endif
-
+					    &expire, &mod_down, &mod_up );
     if( rc )
 	rc = tdbio_cancel_transaction();
     else {
@@ -1472,7 +1523,7 @@ do_update_trust_record( KBNODE keyblock, TRUSTREC *drec,
 	drec->r.dir.valcheck = 0;
 	drec->r.dir.checkat = expire;
 	write_record( drec );
-	/*tdbio_write_modify_stamp( mod_up, mod_down );*/
+	tdbio_write_modify_stamp( mod_up, mod_down );
 	rc = tdbio_end_transaction();
     }
     return rc;
@@ -1537,15 +1588,27 @@ insert_trust_record( KBNODE keyblock )
 	}
     }
 
+
     /* mark tdb as modified upwards */
     tdbio_write_modify_stamp( 1, 0 );
 
     /* and put all the other stuff into the keydb */
-    rc = do_update_trust_record( keyblock, &dirrec, 1, NULL );
+    rc = do_update_trust_record( keyblock, &dirrec, 0, NULL );
 
     do_sync();
+
+    /* keep track of new keys */
+    if( !fresh_imported_keys )
+	fresh_imported_keys = new_lid_table();
+    ins_lid_table_item( fresh_imported_keys, pk->local_id, 0 );
+    if( ++fresh_imported_keys_count > FRESH_KEY_CHECK_THRESHOLD )
+	mark_fresh_keys();
+
     return rc;
 }
+
+
+
 
 /****************
  * Insert a trust record indentified by a PK into the TrustDB
@@ -1584,7 +1647,7 @@ insert_trust_record_by_pk( PKT_public_key *pk )
  * Currently we only do an update_trust_record.
  */
 static int
-check_trust_record( TRUSTREC *drec )
+check_trust_record( TRUSTREC *drec, int sigs_only )
 {
     KBNODE keyblock;
     int modified, rc;
@@ -1596,7 +1659,7 @@ check_trust_record( TRUSTREC *drec )
 	return rc;
     }
 
-    rc = do_update_trust_record( keyblock, drec, 0, &modified );
+    rc = do_update_trust_record( keyblock, drec, sigs_only, &modified );
     release_kbnode( keyblock );
 
     return rc;
@@ -1673,7 +1736,7 @@ update_trustdb()
 
 
 /****************
- * Do all required check in the trustdb.  This function walks over all
+ * Do all required checks in the trustdb.  This function walks over all
  * records in the trustdb and does scheduled processing.
  */
 void
@@ -1681,7 +1744,7 @@ check_trustdb( const char *username )
 {
     TRUSTREC rec;
     ulong recnum;
-    ulong count=0, upd_count=0, err_count=0, skip_count=0;
+    ulong count=0, upd_count=0, err_count=0, skip_count=0, sigonly_count=0;
     ulong current_time = make_timestamp();
 
     if( username )
@@ -1690,15 +1753,25 @@ check_trustdb( const char *username )
     init_trustdb();
 
     for(recnum=0; !tdbio_read_record( recnum, &rec, 0); recnum++ ) {
+	int sigs_only;
+
 	if( rec.rectype != RECTYPE_DIR )
 	    continue; /* we only want the dir records */
 
 	if( count && !(count % 100) && !opt.quiet )
 	    log_info(_("%lu keys so far processed\n"), count);
 	count++;
-	if( !rec.r.dir.checkat || rec.r.dir.checkat > current_time ) {
-	    skip_count++;
-	    continue;  /* not scheduled for checking */
+	sigs_only = 0;
+
+	if( !(rec.r.dir.dirflags & DIRF_CHECKED) )
+	    ;
+	else if( !rec.r.dir.checkat || rec.r.dir.checkat > current_time ) {
+	    if( !(rec.r.dir.dirflags & DIRF_NEWKEYS) ) {
+		skip_count++;
+		continue;  /* not scheduled for checking */
+	    }
+	    sigs_only = 1; /* new public keys - check them */
+	    sigonly_count++;
 	}
 
 	if( !rec.r.dir.keylist ) {
@@ -1707,11 +1780,12 @@ check_trustdb( const char *username )
 	    continue;
 	}
 
-	check_trust_record( &rec );
-
+	check_trust_record( &rec, sigs_only );
     }
 
     log_info(_("%lu keys processed\n"), count);
+    if( sigonly_count )
+	log_info(_("\t%lu due to new pubkeys\n"), sigonly_count);
     if( skip_count )
 	log_info(_("\t%lu keys skipped\n"), skip_count);
     if( err_count )
@@ -1772,7 +1846,9 @@ build_cert_tree( ulong lid, int depth, int max_depth, TN helproot )
     }
 
     if( dirrec.r.dir.checkat && dirrec.r.dir.checkat <= make_timestamp() )
-	check_trust_record( &dirrec );
+	check_trust_record( &dirrec, 0 );
+    else if( (dirrec.r.dir.dirflags & DIRF_NEWKEYS) )
+	check_trust_record( &dirrec, 1 );
 
     keynode->n.k.ownertrust = dirrec.r.dir.ownertrust & TRUST_MASK;
 
@@ -2074,6 +2150,7 @@ do_check( TRUSTREC *dr, unsigned *validity,
     }
     else if( !add_fnc
 	&& tdbio_db_matches_options()
+	    /* FIXME, TODO: This comparision is WRONG ! */
 	&& dr->r.dir.valcheck
 	    > tdbio_read_modify_stamp( (dr->r.dir.validity < TRUST_FULLY) )
 	&& dr->r.dir.validity )
@@ -2241,8 +2318,13 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel,
 					  (ulong)keyid[1], pk->local_id );
 	return G10ERR_TIME_CONFLICT;
     }
-    if( rec.r.dir.checkat && rec.r.dir.checkat <= cur_time )
-	check_trust_record( &rec );
+
+    if( !(rec.r.dir.dirflags & DIRF_CHECKED) )
+	check_trust_record( &rec, 0 );
+    else if( rec.r.dir.checkat && rec.r.dir.checkat <= cur_time )
+	check_trust_record( &rec, 0 );
+    else if( (rec.r.dir.dirflags & DIRF_NEWKEYS) )
+	check_trust_record( &rec, 1 );
 
     if( pk->expiredate && pk->expiredate <= cur_time ) {
 	log_info(_("key %08lX.%lu: expired at %s\n"),
@@ -2296,6 +2378,51 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel,
     *r_trustlevel = trustlevel;
     return 0;
 }
+
+
+/****************
+ * scan the whole trustdb and mark all signature records whose keys
+ * are freshly imported.
+ */
+static void
+mark_fresh_keys()
+{
+    TRUSTREC dirrec, rec;
+    ulong recnum, lid;
+    int i;
+
+    memset( &dirrec, 0, sizeof dirrec );
+
+    for(recnum=0; !tdbio_read_record( recnum, &rec, 0); recnum++ ) {
+	if( rec.rectype != RECTYPE_SIG )
+	    continue;
+	/* if we have already have the dir record, we can check it now */
+	if( dirrec.recnum == rec.r.sig.lid
+	    && (dirrec.r.dir.dirflags & DIRF_NEWKEYS) )
+	    continue; /* flag is already set */
+
+	for(i=0; i < SIGS_PER_RECORD; i++ ) {
+	    if( !(lid=rec.r.sig.sig[i].lid) )
+		continue; /* skip deleted sigs */
+	    if( !(rec.r.sig.sig[i].flag & SIGF_CHECKED) )
+		continue; /* skip checked signatures */
+	    if( qry_lid_table_flag( fresh_imported_keys, lid, NULL ) )
+		continue; /* not in the list of new keys */
+	    read_record( rec.r.sig.lid, &dirrec, RECTYPE_DIR );
+	    if( !(dirrec.r.dir.dirflags & DIRF_NEWKEYS) ) {
+		dirrec.r.dir.dirflags |= DIRF_NEWKEYS;
+		write_record( &dirrec );
+	    }
+	    break;
+	}
+    }
+
+    do_sync();
+
+    clear_lid_table( fresh_imported_keys );
+    fresh_imported_keys_count = 0;
+}
+
 
 
 int

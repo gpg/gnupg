@@ -520,5 +520,6 @@ import_ownertrust( const char *fname )
     if( !is_stdin )
 	fclose(fp);
     do_sync();
+    sync_trustdb();
 }
 

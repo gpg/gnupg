@@ -242,7 +242,13 @@ hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
     md = md_open( s2k->hash_algo, 1);
     for(pass=0; used < dek->keylen ; pass++ ) {
 	if( pass ) {
-	    md_reset(md);
+	    if( (opt.emulate_bugs & EMUBUG_3DESS2K)) {
+		int tmp = md->finalized;
+		md_reset( md );
+		md->finalized = tmp;
+	    }
+	    else
+		md_reset(md);
 	    for(i=0; i < pass; i++ ) /* preset the hash context */
 		md_putc(md, 0 );
 	}

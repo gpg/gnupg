@@ -1,3 +1,7 @@
+Mon Oct  4 21:23:04 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* errors.h (G10ERR_NOT_PROCESSED): New.
+
 Wed Sep 15 16:22:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

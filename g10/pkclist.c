@@ -337,16 +337,17 @@ _("Could not find a valid trust path to the key.  Let's see whether we\n"
 
 /****************
  * Check whether we can trust this pk which has a trustlevel of TRUSTLEVEL
- * Returns: true if we trust.
+ * Returns: true if we trust. Might change the trustlevel
  */
 static int
-do_we_trust( PKT_public_key *pk, int trustlevel )
+do_we_trust( PKT_public_key *pk, int *trustlevel )
 {
     int rc;
     int did_add = 0;
+    int trustmask = 0;
 
   retry:
-    if( (trustlevel & TRUST_FLAG_REVOKED) ) {
+    if( (*trustlevel & TRUST_FLAG_REVOKED) ) {
 	log_info(_("key %08lX: key has been revoked!\n"),
 					(ulong)keyid_from_pk( pk, NULL) );
 	if( opt.batch )
@@ -355,8 +356,9 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 	if( !cpr_get_answer_is_yes("revoked_key.override",
 				    _("Use this key anyway? ")) )
 	    return 0;
+	trustmask |= TRUST_FLAG_REVOKED;
     }
-    else if( (trustlevel & TRUST_FLAG_SUB_REVOKED) ) {
+    else if( (*trustlevel & TRUST_FLAG_SUB_REVOKED) ) {
 	log_info(_("key %08lX: subkey has been revoked!\n"),
 					(ulong)keyid_from_pk( pk, NULL) );
 	if( opt.batch )
@@ -365,10 +367,12 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 	if( !cpr_get_answer_is_yes("revoked_key.override",
 				    _("Use this key anyway? ")) )
 	    return 0;
+	trustmask |= TRUST_FLAG_SUB_REVOKED;
     }
+    *trustlevel &= ~trustmask;
 
 
-    switch( (trustlevel & TRUST_MASK) ) {
+    switch( (*trustlevel & TRUST_MASK) ) {
       case TRUST_UNKNOWN: /* No pubkey in trustDB: Insert and check again */
 	rc = insert_trust_record_by_pk( pk );
 	if( rc ) {
@@ -376,11 +380,12 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 						      g10_errstr(rc) );
 	    return 0; /* no */
 	}
-	rc = check_trust( pk, &trustlevel, NULL, NULL, NULL );
+	rc = check_trust( pk, trustlevel, NULL, NULL, NULL );
+	*trustlevel &= ~trustmask;
 	if( rc )
 	    log_fatal("trust check after insert failed: %s\n",
 						      g10_errstr(rc) );
-	if( trustlevel == TRUST_UNKNOWN || trustlevel == TRUST_EXPIRED ) {
+	if( *trustlevel == TRUST_UNKNOWN || *trustlevel == TRUST_EXPIRED ) {
 	    log_debug("do_we_trust: oops at %d\n", __LINE__ );
 	    return 0;
 	}
@@ -398,7 +403,8 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 	else {
 	    int quit;
 
-	    rc = add_ownertrust( pk, &quit, &trustlevel );
+	    rc = add_ownertrust( pk, &quit, trustlevel );
+	    *trustlevel &= ~trustmask;
 	    if( !rc && !did_add && !quit ) {
 		did_add = 1;
 		goto retry;
@@ -444,7 +450,7 @@ do_we_trust_pre( PKT_public_key *pk, int trustlevel )
 {
     int rc;
 
-    rc = do_we_trust( pk, trustlevel );
+    rc = do_we_trust( pk, &trustlevel );
 
     if( (trustlevel & TRUST_FLAG_REVOKED) && !rc )
 	return 0;

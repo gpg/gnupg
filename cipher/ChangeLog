@@ -1,3 +1,8 @@
+Mon Oct  4 21:23:04 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* md.c (md_reset): Clear finalized; thanks to Ulf Moeller for
+	fixing this bug.
+
 Sat Sep 18 12:51:51 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

@@ -6,6 +6,12 @@
 
     * Add Indonesian and Portugese translations.
 
+    * Fixed a bug with symmetric-only encryption using the non-default 3DES.
+      The option --emulate-3des-s2k-bug may be used to decrypt documents
+      which have been encrypted this way; this should be done immediately
+      as this workaround will be remove in 1.1
+
+
 Noteworthy changes in version 1.0.0 (1999-09-07)
 -----------------------------------
 
