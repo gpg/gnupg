@@ -1,7 +1,7 @@
 #!/bin/sh
 # Helper to create the texinfo versions from gpg.sgml
 #
-# Copyright (C) 2002 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -16,13 +16,27 @@ set -e
 for file in gpg gpgv; do
    sgml2xml -x lower ${file}.sgml >${file}.xml
 #  docbook2texi ${file}.xml | sed 's,--,---,' | (
-   docbook2x-texi --to-stdout ${file}.xml | (
+   docbook2x-texi --to-stdout ${file}.xml | \
+   sed '/^@setfilename/,/^@end direntry/d' | (
   case "$file" in
     *gpgv)
-        sed 's/^@setfilename .*/@setfilename gpgv.info/'
+        sed '/\\input texinfo/a \
+@setfilename gpgv.info\
+@dircategory GnuPG\
+@direntry\
+* gpgv: (gpgv).                       GnuPG signature verification tool.\
+@end direntry
+'
          ;;
+
     gpg)
-        sed 's/^@setfilename .*/@setfilename gpg.info/'
+        sed '/\\input texinfo/a \
+@setfilename gpg.info\
+@dircategory GnuPG\
+@direntry\
+* gpg: (gpg).                         GnuPG encryption and signing tool.\
+@end direntry
+'
         ;;
 
     *)
@@ -32,6 +46,7 @@ for file in gpg gpgv; do
   ) >${file}.texi 
 
 done
+
 
 
 
