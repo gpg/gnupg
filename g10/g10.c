@@ -1705,6 +1705,7 @@ main( int argc, char **argv )
 	    g10_opt_verbose++;
 	    opt.verbose++;
 	    opt.list_options|=LIST_SHOW_UNUSABLE_UIDS;
+	    opt.list_options|=LIST_SHOW_UNUSABLE_SUBKEYS;
 	    break;
 	  case oKOption: set_cmd( &cmd, aKMode ); break;
 
@@ -2102,6 +2103,7 @@ main( int argc, char **argv )
 		  {"show-validity",LIST_SHOW_VALIDITY},
 		  {"show-long-keyids",LIST_SHOW_LONG_KEYIDS},
 		  {"show-unusable-uids",LIST_SHOW_UNUSABLE_UIDS},
+		  {"show-unusable-subkeys",LIST_SHOW_UNUSABLE_SUBKEYS},
 		  {"show-keyring",LIST_SHOW_KEYRING},
 		  {"show-sig-expire",LIST_SHOW_SIG_EXPIRE},
 		  {NULL,0}

@@ -605,7 +605,9 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
     struct sig_stats *stats=opaque;
     int skip_sigs=0;
     int newformat=((opt.list_options&LIST_SHOW_VALIDITY) && !secret)
-      || (opt.list_options & (LIST_SHOW_LONG_KEYIDS|LIST_SHOW_UNUSABLE_UIDS));
+      || (opt.list_options & (LIST_SHOW_LONG_KEYIDS
+			      | LIST_SHOW_UNUSABLE_UIDS
+			      | LIST_SHOW_UNUSABLE_SUBKEYS));
 
     /* get the keyid from the keyblock */
     node = find_kbnode( keyblock, secret? PKT_SECRET_KEY : PKT_PUBLIC_KEY );
@@ -742,6 +744,15 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    u32 keyid2[2];
 	    PKT_public_key *pk2 = node->pkt->pkt.public_key;
 
+	    if((pk2->is_revoked || pk2->has_expired)
+	       && !(opt.list_options&LIST_SHOW_UNUSABLE_SUBKEYS))
+	      {
+		skip_sigs=1;
+		continue;
+	      }
+	    else
+	      skip_sigs=0;
+
 	    if( !any ) {
 		putchar('\n');
 		if( fpr )
@@ -817,7 +828,6 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 		/* TODO: Make sure a cached sig record here still has
                    the pk that issued it.  See also
                    keyedit.c:print_and_check_one_sig */
-
 	    }
 	    else {
 		rc = 0;
