@@ -1,3 +1,8 @@
+2004-11-30  Timo Schulz  <ts@g10code.com>
+
+	* w32-afunix.c: New. AF_UNIX emulation for W32.
+	* w32-afunix.h: Likewise.
+	
 2004-11-22  Werner Koch  <wk@g10code.com>
 
 	* logging.c (log_test_fd): Add test on LOGSTREAM.  Reported by
