@@ -268,8 +268,8 @@ mpi_get_keyid( MPI a, u32 *keyid )
  * set to zero if the value of A is zero. If sign is not NULL, it will
  * be set to the sign of the A.
  */
-byte *
-mpi_get_buffer( MPI a, unsigned *nbytes, int *sign )
+static byte *
+do_get_buffer( MPI a, unsigned *nbytes, int *sign, int force_secure )
 {
     byte *p, *buffer;
     mpi_limb_t alimb;
@@ -278,7 +278,8 @@ mpi_get_buffer( MPI a, unsigned *nbytes, int *sign )
     if( sign )
 	*sign = a->sign;
     *nbytes = a->nlimbs * BYTES_PER_MPI_LIMB;
-    p = buffer = a->secure ? m_alloc_secure( *nbytes) : m_alloc( *nbytes );
+    p = buffer = force_secure || a->secure ? m_alloc_secure( *nbytes)
+					   : m_alloc( *nbytes );
 
     for(i=a->nlimbs-1; i >= 0; i-- ) {
 	alimb = a->d[i];
@@ -308,6 +309,19 @@ mpi_get_buffer( MPI a, unsigned *nbytes, int *sign )
     if( p != buffer )
 	memmove(buffer,p, *nbytes);
     return buffer;
+}
+
+
+byte *
+mpi_get_buffer( MPI a, unsigned *nbytes, int *sign )
+{
+    return do_get_buffer( a, nbytes, sign, 0 );
+}
+
+byte *
+mpi_get_secure_buffer( MPI a, unsigned *nbytes, int *sign )
+{
+    return do_get_buffer( a, nbytes, sign, 1 );
 }
 
 /****************

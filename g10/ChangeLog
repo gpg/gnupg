@@ -1,3 +1,15 @@
+Thu Apr  9 11:35:22 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* seckey-cert.c (do_check): New; combines all the check functions
+	into one.
+
+	* sign.c: removed all key management functions
+	* keyedit.c: New.
+
+Thu Apr  9 09:49:36 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* import.c (chk_self_sigs): Changed an error message.
+
 Wed Apr  8 16:19:39 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* packet.h: packet structs now uses structs from the pubkey,

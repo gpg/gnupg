@@ -2,7 +2,7 @@
 		  GNUPG - The GNU Privacy Guard
 		 -------------------------------
 
-    THIS IS ALPHA SOFTWARE, EXPECT BUGS AND UNIMPLEMENTED STUFF.
+    THIS IS ALPHA SOFTWARE, YOU MAY ENCOUNTER SOOME BUGS.
 
     On a Linux box (version 2.x.x, alpha or x86 CPU) it should
     work reliable. You may create your key on such a machine and
@@ -19,7 +19,6 @@
     verify new releases.  Because you verified the tar file containing
     this file here, you can be sure that the above fingerprint is correct.
 
-
     Please subscribe to g10@net.lut.ac.uk by sending a mail with
     the word "subscribe" in the body to "g10-request@net.lut.ac.uk".
 
@@ -30,7 +29,6 @@
     IDEA (which is worldwide patented) and RSA (which is patented in
     the United States until Sep 20, 2000).  I'm sorry about this, but
     this is the world we have created (e.g. by using proprietary software).
-
 
     Because the OpenPGP standard is still a draft, GNUPG is not yet
     compatible to it (or PGP 5) - but it will.	The data structures
@@ -215,7 +213,7 @@
 	"01AB3FED1347A5612"
 	"0x234AABBCC34567C4"
 
-    * By a fingerprint (not yet implemented):
+    * By a fingerprint:
 
 	"1234343434343434C434343434343434"
 	"123434343434343C3434343434343734349A3434"
@@ -268,7 +266,8 @@
     -----------
     GNUPG returns with an exit status of 1 if in batch mode and a bad signature
     has been detected or 2 or higher for all other errors.  You should parse
-    stderr to get detailed informations about the errors.
+    stderr or the output of the fd specified with --status-fd to get detailed
+    informations about the errors.
 
 
     Esoteric commands

@@ -9,7 +9,7 @@ Noteworthy changes in version 0.2.15
 
     * CAST5 works (using the PGP's special CFB mode).
 
-    * Now more PGP 5 compatible.
+    * Again somewhat more PGP 5 compatible.
 
     * Some new test cases
 

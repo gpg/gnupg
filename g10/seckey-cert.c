@@ -34,19 +34,19 @@
 
 
 static int
-check_elg( PKT_secret_cert *cert )
+do_check( PKT_secret_cert *cert )
 {
     byte *buffer;
     u16 csum=0;
     int res;
     unsigned nbytes;
-    u32 keyid[2];
-    char save_iv[8];
 
     if( cert->is_protected ) { /* remove the protection */
 	DEK *dek = NULL;
-	MPI test_x;
+	u32 keyid[2];
 	CIPHER_HANDLE cipher_hd=NULL;
+	PKT_secret_cert *save_cert;
+	char save_iv[8];
 
 	switch( cert->protect.algo ) {
 	  case CIPHER_ALGO_NONE: BUG(); break;
@@ -64,233 +64,142 @@ check_elg( PKT_secret_cert *cert )
 	    cipher_setkey( cipher_hd, dek->key, dek->keylen );
 	    cipher_setiv( cipher_hd, NULL );
 	    m_free(dek); /* pw is in secure memory, so m_free() burns it */
+	    save_cert = copy_secret_cert( NULL, cert );
 	    memcpy(save_iv, cert->protect.iv, 8 );
 	    cipher_decrypt( cipher_hd, cert->protect.iv, cert->protect.iv, 8 );
-	    mpi_set_secure(cert->d.elg.x );
-	    /*fixme: maybe it is better to set the buffer secure with a
-	     * new get_buffer_secure() function */
-	    buffer = mpi_get_buffer( cert->d.elg.x, &nbytes, NULL );
-	    cipher_decrypt( cipher_hd, buffer, buffer, nbytes );
-	    test_x = mpi_alloc_secure( mpi_get_nlimbs(cert->d.elg.x) );
-	    mpi_set_buffer( test_x, buffer, nbytes, 0 );
-	    csum = checksum_mpi( test_x );
-	    m_free( buffer );
+	    switch( cert->pubkey_algo ) {
+	      case PUBKEY_ALGO_ELGAMAL:
+		buffer = mpi_get_secure_buffer( cert->d.elg.x, &nbytes, NULL );
+		cipher_decrypt( cipher_hd, buffer, buffer, nbytes );
+		mpi_set_buffer( cert->d.elg.x, buffer, nbytes, 0 );
+		csum = checksum_mpi( cert->d.elg.x );
+		m_free( buffer );
+		break;
+	      case PUBKEY_ALGO_DSA:
+		buffer = mpi_get_secure_buffer( cert->d.dsa.x, &nbytes, NULL );
+		cipher_decrypt( cipher_hd, buffer, buffer, nbytes );
+		mpi_set_buffer( cert->d.dsa.x, buffer, nbytes, 0 );
+		csum = checksum_mpi( cert->d.dsa.x );
+		m_free( buffer );
+		break;
+	    #ifdef HAVE_RSA_CIPHER
+	      case PUBKEY_ALGO_RSA:
+		csum = 0;
+		#define X(a) do { \
+		    buffer = mpi_get_secure_buffer( cert->d.rsa.##a,	 \
+						    &nbytes, NULL );	 \
+		    csum += checksum_u16( nbytes*8 );			 \
+		    cipher_decrypt( cipher_hd, buffer, buffer, nbytes ); \
+		    csum += checksum( buffer, nbytes ); 		 \
+		    mpi_set_buffer(cert->d.rsa.##a, buffer, nbytes, 0 ); \
+		    m_free( buffer );					 \
+		   } while(0)
+		X(d);
+		X(p);
+		X(q);
+		X(u);
+		#undef X
+		break;
+	    #endif /* HAVE_RSA_CIPHER */
+
+	      default: BUG();
+	    }
 	    cipher_close( cipher_hd );
 	    /* now let's see wether we have used the right passphrase */
 	    if( csum != cert->csum ) {
-		/* very bad kludge to work around an early bug */
-		csum -= checksum_u16( mpi_get_nbits(test_x) );
-		nbytes = mpi_get_nlimbs(test_x) * 4;
-		csum += checksum_u16( nbytes*8 );
+		if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+		    /* very bad kludge to work around an early bug */
+		    csum -= checksum_u16( mpi_get_nbits(cert->d.elg.x) );
+		    nbytes = mpi_get_nlimbs(cert->d.elg.x) * 4;
+		    csum += checksum_u16( nbytes*8 );
+		    if( !opt.batch && csum == cert->csum )
+			log_info("Probably you have an old key - use "
+			     "\"--change-passphrase\" to convert.\n");
+		}
 		if( csum != cert->csum ) {
-		    mpi_free(test_x);
+		    copy_secret_cert( cert, save_cert );
+		    free_secret_cert( save_cert );
 		    memcpy( cert->protect.iv, save_iv, 8 );
 		    return G10ERR_BAD_PASS;
 		}
-		if( !opt.batch )
+	    }
+
+	    switch( cert->pubkey_algo ) {
+	      case PUBKEY_ALGO_ELGAMAL:
+		res = elg_check_secret_key( &cert->d.elg );
+		break;
+	      case PUBKEY_ALGO_DSA:
+		res = dsa_check_secret_key( &cert->d.dsa );
+		break;
+	    #ifdef HAVE_RSA_CIPHER
+	      case PUBKEY_ALGO_RSA:
+		res = rsa_check_secret_key( &cert->d.rsa );
+		break;
+	    #endif
+	      default: BUG();
+	    }
+	    if( !res ) {
+		copy_secret_cert( cert, save_cert );
+		free_secret_cert( save_cert );
+		memcpy( cert->protect.iv, save_iv, 8 );
+		return G10ERR_BAD_PASS;
+	    }
+	    free_secret_cert( save_cert );
+	    cert->is_protected = 0;
+	    break;
+
+	  default:
+	    return G10ERR_CIPHER_ALGO; /* unsupported protection algorithm */
+	}
+    }
+    else { /* not protected */
+	switch( cert->pubkey_algo ) {
+	  case PUBKEY_ALGO_ELGAMAL:
+	    csum = checksum_mpi( cert->d.elg.x );
+	    break;
+	  case PUBKEY_ALGO_DSA:
+	    csum = checksum_mpi( cert->d.dsa.x );
+	    break;
+	#ifdef HAVE_RSA_CIPHER
+	  case PUBKEY_ALGO_RSA:
+	    csum =0;
+	    buffer = mpi_get_buffer( cert->d.rsa.rsa_d, &nbytes, NULL );
+	    csum += checksum_u16( nbytes*8 );
+	    csum += checksum( buffer, nbytes );
+	    m_free( buffer );
+	    buffer = mpi_get_buffer( cert->d.rsa.rsa_p, &nbytes, NULL );
+	    csum += checksum_u16( nbytes*8 );
+	    csum += checksum( buffer, nbytes );
+	    m_free( buffer );
+	    buffer = mpi_get_buffer( cert->d.rsa.rsa_q, &nbytes, NULL );
+	    csum += checksum_u16( nbytes*8 );
+	    csum += checksum( buffer, nbytes );
+	    m_free( buffer );
+	    buffer = mpi_get_buffer( cert->d.rsa.rsa_u, &nbytes, NULL );
+	    csum += checksum_u16( nbytes*8 );
+	    csum += checksum( buffer, nbytes );
+	    m_free( buffer );
+	    break;
+	#endif
+	  default: BUG();
+	}
+	if( csum != cert->csum ) {
+	    if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+		/* very bad kludge to work around an early bug */
+		csum -= checksum_u16( mpi_get_nbits(cert->d.elg.x) );
+		nbytes = mpi_get_nlimbs(cert->d.elg.x) * 4;
+		csum += checksum_u16( nbytes*8 );
+		if( !opt.batch && csum == cert->csum )
 		    log_info("Probably you have an old key - use "
 			 "\"--change-passphrase\" to convert.\n");
 	    }
-
-	    mpi_swap( cert->d.elg.x, test_x );
-	    res = elg_check_secret_key( &cert->d.elg );
-	    mpi_swap( cert->d.elg.x, test_x );
-	    if( !res ) {
-		mpi_free(test_x);
-		memcpy( cert->protect.iv, save_iv, 8 );
-		return G10ERR_BAD_PASS;
-	    }
-	    mpi_set(cert->d.elg.x, test_x);
-	    mpi_free(test_x);
-	    cert->is_protected = 0;
-	    break;
-
-	  default:
-	    return G10ERR_CIPHER_ALGO; /* unsupported protection algorithm */
-	}
-    }
-    else { /* not protected */
-	csum = checksum_mpi( cert->d.elg.x );
-	if( csum != cert->csum ) {
-	    /* very bad kludge to work around an early bug */
-	    csum -= checksum_u16( mpi_get_nbits(cert->d.elg.x) );
-	    nbytes = mpi_get_nlimbs(cert->d.elg.x) * 4;
-	    csum += checksum_u16( nbytes*8 );
 	    if( csum != cert->csum )
 		return G10ERR_CHECKSUM;
-	    if( !opt.batch )
-		 log_info("Probably you have an old key - use "
-		     "\"--change-passphrase\" to convert.\n");
 	}
     }
 
     return 0;
 }
-
-
-static int
-check_dsa( PKT_secret_cert *cert )
-{
-    byte *buffer;
-    u16 csum=0;
-    int res;
-    unsigned nbytes;
-    u32 keyid[2];
-    char save_iv[8];
-
-    if( cert->is_protected ) { /* remove the protection */
-	DEK *dek = NULL;
-	MPI test_x;
-	CIPHER_HANDLE cipher_hd=NULL;
-
-	switch( cert->protect.algo ) {
-	  case CIPHER_ALGO_NONE: BUG(); break;
-	  case CIPHER_ALGO_BLOWFISH:
-	  case CIPHER_ALGO_CAST:
-	    keyid_from_skc( cert, keyid );
-	    if( cert->protect.s2k == 1 || cert->protect.s2k == 3 )
-		dek = get_passphrase_hash( keyid, NULL,
-						 cert->protect.salt );
-	    else
-		dek = get_passphrase_hash( keyid, NULL, NULL );
-
-	    cipher_hd = cipher_open( cert->protect.algo,
-				     CIPHER_MODE_AUTO_CFB, 1);
-	    cipher_setkey( cipher_hd, dek->key, dek->keylen );
-	    cipher_setiv( cipher_hd, NULL );
-	    m_free(dek); /* pw is in secure memory, so m_free() burns it */
-	    memcpy(save_iv, cert->protect.iv, 8 );
-	    cipher_decrypt( cipher_hd, cert->protect.iv, cert->protect.iv, 8 );
-	    mpi_set_secure(cert->d.dsa.x );
-	    /*fixme: maybe it is better to set the buffer secure with a
-	     * new get_buffer_secure() function */
-	    buffer = mpi_get_buffer( cert->d.dsa.x, &nbytes, NULL );
-	    cipher_decrypt( cipher_hd, buffer, buffer, nbytes );
-	    test_x = mpi_alloc_secure( mpi_get_nlimbs(cert->d.dsa.x) );
-	    mpi_set_buffer( test_x, buffer, nbytes, 0 );
-	    csum = checksum_mpi( test_x );
-	    m_free( buffer );
-	    cipher_close( cipher_hd );
-	    /* now let's see wether we have used the right passphrase */
-	    if( csum != cert->csum ) {
-		mpi_free(test_x);
-		memcpy( cert->protect.iv, save_iv, 8 );
-		return G10ERR_BAD_PASS;
-	    }
-
-	    mpi_swap( cert->d.dsa.x, test_x );
-	    res = dsa_check_secret_key( &cert->d.dsa );
-	    mpi_swap( cert->d.dsa.x, test_x );
-	    if( !res ) {
-		mpi_free(test_x);
-		memcpy( cert->protect.iv, save_iv, 8 );
-		return G10ERR_BAD_PASS;
-	    }
-	    mpi_set(cert->d.dsa.x, test_x);
-	    mpi_free(test_x);
-	    cert->is_protected = 0;
-	    break;
-
-	  default:
-	    return G10ERR_CIPHER_ALGO; /* unsupport protection algorithm */
-	}
-    }
-    else { /* not protected */
-	csum = checksum_mpi( cert->d.dsa.x );
-	if( csum != cert->csum )
-	    return G10ERR_CHECKSUM;
-    }
-
-    return 0;
-}
-
-
-
-#ifdef HAVE_RSA_CIPHER
-/****************
- * FIXME: fix checksum stuff
- */
-static int
-check_rsa( PKT_secret_cert *cert )
-{
-    byte *buffer;
-    u16 csum=0;
-    int res;
-    unsigned nbytes;
-    u32 keyid[2];
-
-    if( cert->is_protected ) { /* remove the protection */
-	DEK *dek = NULL;
-	BLOWFISH_context *blowfish_ctx=NULL;
-
-	switch( cert->protect.algo ) {
-	    /* FIXME: use test variables to check for the correct key */
-	  case CIPHER_ALGO_NONE: BUG(); break;
-	  case CIPHER_ALGO_BLOWFISH:
-	    keyid_from_skc( cert, keyid );
-	    dek = get_passphrase_hash( keyid, NULL, NULL );
-	    blowfish_ctx = m_alloc_secure( sizeof *blowfish_ctx );
-	    blowfish_setkey( blowfish_ctx, dek->key, dek->keylen );
-	    m_free(dek); /* pw is in secure memory, so m_free() burns it */
-	    blowfish_setiv( blowfish_ctx, NULL );
-	    blowfish_decode_cfb( blowfish_ctx, cert->protect.iv,
-					       cert->protect.iv, 8 );
-	    csum = 0;
-	    #define X(a) do { \
-		mpi_set_secure(cert->d.rsa.rsa_##a); \
-		buffer = mpi_get_buffer( cert->d.rsa.rsa_##a, &nbytes, NULL );\
-		csum += checksum_u16( nbytes*8 );			     \
-		blowfish_decode_cfb( blowfish_ctx, buffer, buffer, nbytes ); \
-		csum += checksum( buffer, nbytes );			     \
-		mpi_set_buffer(cert->d.rsa.rsa_##a, buffer, nbytes, 0 );     \
-		m_free( buffer );					     \
-	       } while(0)
-	    X(d);
-	    X(p);
-	    X(q);
-	    X(u);
-	    #undef X
-	    cert->is_protected = 0;
-	    m_free( blowfish_ctx );
-	    /* now let's see wether we have used the right passphrase */
-	    if( csum != cert->csum )
-		return G10ERR_BAD_PASS;
-
-	    res = rsa_check_secret_key( &cert->d.rsa );
-	    if( !res )
-		return G10ERR_BAD_PASS;
-	    break;
-
-	  default:
-	    return G10ERR_CIPHER_ALGO; /* unsupported protection algorithm */
-	}
-    }
-    else { /* not protected */
-	csum =0;
-	buffer = mpi_get_buffer( cert->d.rsa.rsa_d, &nbytes, NULL );
-	csum += checksum_u16( nbytes*8 );
-	csum += checksum( buffer, nbytes );
-	m_free( buffer );
-	buffer = mpi_get_buffer( cert->d.rsa.rsa_p, &nbytes, NULL );
-	csum += checksum_u16( nbytes*8 );
-	csum += checksum( buffer, nbytes );
-	m_free( buffer );
-	buffer = mpi_get_buffer( cert->d.rsa.rsa_q, &nbytes, NULL );
-	csum += checksum_u16( nbytes*8 );
-	csum += checksum( buffer, nbytes );
-	m_free( buffer );
-	buffer = mpi_get_buffer( cert->d.rsa.rsa_u, &nbytes, NULL );
-	csum += checksum_u16( nbytes*8 );
-	csum += checksum( buffer, nbytes );
-	m_free( buffer );
-	if( csum != cert->csum )
-	    return G10ERR_CHECKSUM;
-    }
-
-    return 0;
-}
-#endif /*HAVE_RSA_CIPHER*/
-
 
 
 
@@ -307,16 +216,13 @@ check_secret_key( PKT_secret_cert *cert )
     for(i=0; i < 3 && rc == G10ERR_BAD_PASS; i++ ) {
 	if( i )
 	    log_error("Invalid passphrase; please try again ...\n");
-	if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
-	    rc = check_elg( cert );
-	else if( cert->pubkey_algo == PUBKEY_ALGO_DSA )
-	    rc = check_dsa( cert );
-      #ifdef HAVE_RSA_CIPHER
-	else if( cert->pubkey_algo == PUBKEY_ALGO_RSA )
-	    rc = check_rsa( cert );
-      #endif
-	else
-	    rc = G10ERR_PUBKEY_ALGO;
+	switch( cert->pubkey_algo ) {
+	  case PUBKEY_ALGO_ELGAMAL:
+	  case PUBKEY_ALGO_DSA:
+	    rc = do_check( cert );
+	    break;
+	  default: rc = G10ERR_PUBKEY_ALGO;
+	}
 	if( get_passphrase_fd() != -1 )
 	    break;
     }

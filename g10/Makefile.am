@@ -45,6 +45,7 @@ common_source =  \
 	      status.c		\
 	      status.h		\
 	      sign.c		\
+	      keyedit.c 	\
 	      plaintext.c	\
 	      encr-data.c	\
 	      encode.c		\

@@ -9,8 +9,6 @@
 
     * enable a SIGSEGV handler while using zlib functions
 
-    * complete cipher/cast.c -- have to use the PGP CFBug
-
     * key generation for dsa and subpacket support.
 
     * Burn the buffers used by fopen(), or use read(2).
@@ -32,11 +30,8 @@
       them to your key and because the user id which is signed by others has
       also be signed by you, all user-ids are bound together.
 
-    * add an option to re-create a public key from a secret key
-
-    * cleanup mainproc.c, much stuff is duplicated.
-
-    * remove key management stuff from sign.c.
+    * add an option to re-create a public key from a secret key. Think about
+      a backup system of only the secret part of the secret key.
 
     * add fingerprint/keyid hashing. We need a new field in PKC to
       flag that we may have a cached signature for this (and use the address
@@ -45,11 +40,7 @@
     * change the misleading usage of public key certificate to public key data
       or something like this.
 
-    * seckey_cert.c: merge all the check funtions into one.
-
     * fix the problems with "\v" in gettext
 
     * replace getkey.c#enum_secret_keys
-
-
 

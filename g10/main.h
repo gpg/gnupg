@@ -54,16 +54,19 @@ int encrypt_filter( void *opaque, int control,
 
 
 /*-- sign.c --*/
+int complete_sig( PKT_signature *sig, PKT_secret_cert *skc, MD_HANDLE md );
 int sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	       int encrypt, STRLIST remusr, const char *outfile );
 int clearsign_file( const char *fname, STRLIST locusr, const char *outfile );
+
+/*-- sig-check.c --*/
+int check_key_signature( KBNODE root, KBNODE node, int *is_selfsig );
+
+/*-- keyedit.c --*/
 int sign_key( const char *username, STRLIST locusr );
 int edit_keysigs( const char *username );
 int delete_key( const char *username, int secure );
 int change_passphrase( const char *username );
-
-/*-- sig-check.c --*/
-int check_key_signature( KBNODE root, KBNODE node, int *is_selfsig );
 
 /*-- keygen.c --*/
 void generate_keypair(void);

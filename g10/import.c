@@ -501,8 +501,11 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 	    }
 	    rc = check_key_signature( keyblock, n, NULL);
 	    if( rc ) {
-		log_error("%s: key %08lX, invalid self-signature\n",
-					fname, (ulong)keyid[1]);
+		log_error( rc == G10ERR_PUBKEY_ALGO ?
+			  "%s: key %08lX, unsupported public key algorithm\n":
+			  "%s: key %08lX, invalid self-signature\n",
+			  fname, (ulong)keyid[1]);
+
 		unode->flag |= 2; /* mark as invalid */
 	    }
 	    unode->flag |= 1; /* mark that user-id checked */
