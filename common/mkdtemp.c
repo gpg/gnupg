@@ -38,7 +38,7 @@
 char *mkdtemp(char *template)
 {
   int attempts,idx,count=0;
-  byte *ch;
+  unsigned char *ch;
 
   idx=strlen(template);
 
@@ -62,7 +62,7 @@ char *mkdtemp(char *template)
     {
       int remaining=count;
       char *marker=ch;
-      byte *randombits;
+      unsigned char *randombits;
 
       idx=0;
 

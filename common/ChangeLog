@@ -1,3 +1,8 @@
+2002-05-22  Werner Koch  <wk@gnupg.org>
+
+	* mkdtemp.c: Replaced byte by unsigned char because it is no longer
+	defined in gcrypt.h.
+
 2002-05-21  Werner Koch  <wk@gnupg.org>
 
 	* maperror.c (map_gcry_err): Add libgcrypt's new S-expression errors.
