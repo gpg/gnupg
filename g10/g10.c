@@ -33,7 +33,7 @@
 #include "cipher.h"
 #include "filter.h"
 
-static void do_test(void);
+static void do_test(int);
 
 const char *
 strusage( int level )
@@ -114,7 +114,7 @@ main( int argc, char **argv )
     { 's', "sign",      0, "make a signature"},
     { 'e', "encrypt",   0, "encrypt data" },
     { 'd', "decrypt",   0, "decrypt data (default)" },
-    { 'c', "check",     0, "check a signature (default)" },
+  /*{ 'c', "check",     0, "check a signature (default)" }, */
     { 'l', "local-user",2, "use this user-id to sign or decrypt" },
     { 'r', "remote-user", 2, "use this user-id for encryption" },
     { 510, "debug"     ,4|16, "set debugging flags" },
@@ -246,7 +246,7 @@ main( int argc, char **argv )
 	generate_keypair();
 	break;
 
-      case aTest: do_test(); break;
+      case aTest: do_test( atoi(*argv) ); break;
 
       default:
 	if( argc > 1 )
@@ -270,7 +270,7 @@ main( int argc, char **argv )
 
 
 static void
-do_test()
+do_test(int times)
 {
     MPI t = mpi_alloc( 50 );
     MPI m = mpi_alloc( 50 );
@@ -278,22 +278,17 @@ do_test()
     MPI b = mpi_alloc( 50 );
     MPI p = mpi_alloc( 50 );
     MPI x = mpi_alloc( 50 );
-    mpi_fromstr(a, "0xef45678343589854354a4545545454554545455"
-		   "aaaaaaaaaaaaa44444fffdecb33434343443331" );
-    mpi_fromstr(b, "0x8765765589854354a4545545454554545455"
-		   "aaaaaaa466577778decb36666343443331" );
-    mpi_fromstr(p, "0xcccddd456700000012222222222222254545455"
-		   "aaaaaaaaaaaaa44444fffdecb33434343443337" );
-    mpi_fromstr(x, "0x100004545543656456656545545454554545455"
-		    "aaa33aaaa465456544fffdecb33434bbbac3331" );
 
     /* output = b/(a^x) mod p */
-    log_debug("powm ..\n");
-    mpi_powm( t, a, x, p );
-    log_debug("invm ..\n");
-    mpi_invm( t, t, p );
-    log_debug("mulm ..\n");
-    mpi_mulm( m, b, t, p );
+    log_debug("invm %d times ", times);
+    for( ; times > 0; times -- ) {
+	mpi_fromstr(a, "0xef45678343589854354a4545545454554545455"
+		       "aaaaaaaaaaaaa44444fffdecb33434343443331" );
+	mpi_fromstr(b, "0x8765765589854354a4545545454554545455"
+		       "aaaaaaa466577778decb36666343443331" );
+	mpi_invm( t, a, b );
+	fputc('.', stderr); fflush(stderr);
+    }
 
 
     m_check(NULL);

@@ -264,15 +264,15 @@ dump_entry(struct memtbl_entry *e )
 }
 
 static void
-dump_table(void)
+dump_table( void)
 {
     unsigned n;
     struct memtbl_entry *e;
     ulong sum = 0, chunks =0;
 
     for( e = memtbl, n = 0; n < memtbl_len; n++, e++ ) {
-	dump_entry(e);
 	if(e->inuse) {
+	    dump_entry(e);
 	    sum += e->user_n;
 	    chunks++;
 	}

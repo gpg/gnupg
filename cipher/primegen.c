@@ -28,7 +28,7 @@
 #include "cipher.h"
 
 static int no_of_small_prime_numbers;
-static int rabin_miller( MPI n );
+static int is_not_prime( MPI n, unsigned nbits, int steps, int *count );
 static MPI gen_prime( unsigned	nbits, int mode );
 
 
@@ -50,7 +50,6 @@ generate_public_prime( unsigned  nbits )
 static MPI
 gen_prime( unsigned  nbits, int secret )
 {
-
     unsigned  nlimbs;
     MPI prime, val_2, val_3, result;
     int i;
@@ -111,22 +110,9 @@ gen_prime( unsigned  nbits, int secret )
 		continue;  /* stepping (fermat test failed) */
 	    if( DBG_CIPHER )
 		fputc('+', stderr);
-	    /* and a second one */
-	    count2++;
-	    mpi_powm( result, val_3, prime, prime );
-	    if( mpi_cmp_ui(result, 3) )
-		continue;  /* stepping (fermat test failed) */
-	    if( DBG_CIPHER )
-		fputc('+', stderr);
 
-	    /* perform Rabin-Miller tests */
-	    for(i=5; i > 0; i-- ) {
-		if( DBG_CIPHER )
-		    fputc('+', stderr);
-		if( rabin_miller(prime) )
-		    break;
-	    }
-	    if( !i ) {
+	    /* perform stronger tests */
+	    if( !is_not_prime(prime, nbits, 5, &count2 ) ) {
 		if( !mpi_test_bit( prime, nbits-1 ) ) {
 		    if( DBG_CIPHER ) {
 			fputc('\n', stderr);
@@ -136,7 +122,7 @@ gen_prime( unsigned  nbits, int secret )
 		}
 		if( DBG_CIPHER ) {
 		    fputc('\n', stderr);
-		    log_debug("performed %u simple and %u Fermat/Rabin-Miller tests\n",
+		    log_debug("performed %u simple and %u stronger tests\n",
 					count1, count2 );
 		    log_mpidump("found prime: ", prime );
 		}
@@ -158,8 +144,53 @@ gen_prime( unsigned  nbits, int secret )
  * Return 1 if n is not a prime
  */
 static int
-rabin_miller( MPI n )
+is_not_prime( MPI n, unsigned nbits, int steps, int *count )
 {
-    return 0;
+    MPI x = mpi_alloc( mpi_get_nlimbs( n ) );
+    MPI y = mpi_alloc( mpi_get_nlimbs( n ) );
+    MPI z = mpi_alloc( mpi_get_nlimbs( n ) );
+    MPI nminus1 = mpi_alloc( mpi_get_nlimbs( n ) );
+    MPI a2 = mpi_alloc_set_ui( 2 );
+    MPI q;
+    unsigned i, j, k;
+    int rc = 1;
+
+    mpi_sub_ui( nminus1, n, 1 );
+
+    /* find q and k, so that n = 1 + 2^k * q */
+    q = mpi_copy( nminus1 );
+    k = mpi_trailing_zeros( q );
+    mpi_tdiv_q_2exp(q, q, k);
+
+    for(i=0 ; i < steps; i++ ) {
+	++*count;
+	do {
+	    mpi_set_bytes( x, nbits, get_random_byte, 0 );
+	} while( mpi_cmp( x, n ) < 0 && mpi_cmp_ui( x, 1 ) > 0 );
+	mpi_powm( y, x, q, n);
+	if( mpi_cmp_ui(y, 1) && mpi_cmp( y, nminus1 ) ) {
+	    for( j=1; j < k; j++ ) {
+		mpi_powm(y, y, a2, n);
+		if( !mpi_cmp_ui( y, 1 ) )
+		    goto leave; /* not a prime */
+		if( !mpi_cmp( y, nminus1 ) )
+		    break;  /* may be a prime */
+	    }
+	    if( j == k )
+		goto leave;
+	}
+	if( DBG_CIPHER )
+	    fputc('+', stderr);
+    }
+    rc = 0; /* may be a prime */
+
+  leave:
+    mpi_free( x );
+    mpi_free( y );
+    mpi_free( z );
+    mpi_free( nminus1 );
+    mpi_free( q );
+
+    return rc;
 }
 

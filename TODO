@@ -1,5 +1,5 @@
 
-    * write the assembler function for mpihelp ....
+    * add assembler support for more CPUs. (work, but easy)
     * improve iobuf by reading more than one byte at once,
       this shoud espceially done for the buffer in the chain.
     * add a way to difference between errors and eof in the underflow/flush
@@ -17,12 +17,10 @@
     * fix the memory stuff (secure memory)
     * add real secure memory
     * look for a way to reuse RSA signatures
-    * add ElGamal and make it the default one.
     * find a way to remove the armor filter after it
       has detected, that the data is not armored.
     * Use the Chines Remainder Theorem to speed up RSA calculations.
     * remove all "Fixmes"
-    * add credits for the MPI lib.
     * speed up the RIPE-MD-160
     * add signal handling
     * enable a SIGSEGV handler while using zlib functions

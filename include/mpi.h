@@ -129,6 +129,7 @@ void  mpi_fdiv_q( MPI quot, MPI dividend, MPI divisor );
 void  mpi_fdiv_qr( MPI quot, MPI rem, MPI dividend, MPI divisor );
 void  mpi_tdiv_r( MPI rem, MPI num, MPI den);
 void  mpi_tdiv_qr( MPI quot, MPI rem, MPI num, MPI den);
+void  mpi_tdiv_q_2exp( MPI w, MPI u, unsigned count );
 int   mpi_divisible_ui(MPI dividend, ulong divisor );
 
 /*-- mpi-gcd.c --*/
@@ -145,6 +146,7 @@ int mpi_cmp( MPI u, MPI v );
 /*-- mpi-scan.c --*/
 int mpi_getbyte( MPI a, unsigned index );
 void mpi_putbyte( MPI a, unsigned index, int value );
+unsigned mpi_trailing_zeros( MPI a );
 
 /*-- mpi-bit.c --*/
 unsigned mpi_get_nbits( MPI a );

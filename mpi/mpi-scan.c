@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "mpi-internal.h"
+#include "longlong.h"
 
 /****************
  * Scan through an mpi and return byte for byte. a -1 is returned to indicate
@@ -85,4 +86,29 @@ mpi_putbyte( MPI a, unsigned index, int c )
     }
     abort(); /* index out of range */
 }
+
+
+/****************
+ * Count the number of zerobits at the low end of A
+ */
+unsigned
+mpi_trailing_zeros( MPI a )
+{
+    unsigned n, count = 0;
+
+    for(n=0; n < a->nlimbs; n++ ) {
+	if( a->d[n] ) {
+	    unsigned nn;
+	    mpi_limb_t alimb = a->d[n];
+
+	    count_trailing_zeros( nn, alimb );
+	    count += nn;
+	    break;
+	}
+	count += BITS_PER_MPI_LIMB;
+    }
+    return count;
+
+}
+
 

@@ -278,6 +278,37 @@ mpi_tdiv_qr( MPI quot, MPI rem, MPI num, MPI den)
 	mpi_free_limb_space(marker[--markidx]);
 }
 
+void
+mpi_tdiv_q_2exp( MPI w, MPI u, unsigned count )
+{
+    mpi_size_t usize, wsize;
+    mpi_size_t limb_cnt;
+
+    usize = u->nlimbs;
+    limb_cnt = count / BITS_PER_MPI_LIMB;
+    wsize = usize - limb_cnt;
+    if( limb_cnt >= usize )
+	w->nlimbs = 0;
+    else {
+	mpi_ptr_t wp;
+	mpi_ptr_t up;
+
+	RESIZE_IF_NEEDED( w, wsize );
+	wp = w->d;
+	up = u->d;
+
+	count %= BITS_PER_MPI_LIMB;
+	if( count ) {
+	    mpihelp_rshift( wp, up + limb_cnt, wsize, count );
+	    wsize -= !wp[wsize - 1];
+	}
+	else {
+	    MPN_COPY_INCR( wp, up + limb_cnt, wsize);
+	}
+
+	w->nlimbs = wsize;
+    }
+}
 
 /****************
  * Check wether dividend is divisible by divisor
