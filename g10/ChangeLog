@@ -1,3 +1,8 @@
+2005-01-21  David Shaw  <dshaw@grover.jabberwocky.com>
+
+	* keyserver.c (free_keyserver_spec): Fix small leak.
+	(keyserver_typemap): Map https if we are supporting it.
+
 2005-01-20  Werner Koch  <wk@g10code.com>
 
 	* cardglue.c (open_card): Issue new CARDCTRL(4) status.

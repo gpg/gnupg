@@ -139,6 +139,8 @@ void
 free_keyserver_spec(struct keyserver_spec *keyserver)
 {
   m_free(keyserver->uri);
+  m_free(keyserver->scheme);
+  m_free(keyserver->auth);
   m_free(keyserver->host);
   m_free(keyserver->port);
   m_free(keyserver->path);
@@ -790,6 +792,10 @@ keyserver_typemap(const char *type)
 #endif
 #ifdef HTTP_VIA_LIBCURL
   else if(strcmp(type,"http")==0)
+    return "curl";
+#endif
+#ifdef HTTPS_VIA_LIBCURL
+  else if(strcmp(type,"https")==0)
     return "curl";
 #endif
   else
