@@ -41,7 +41,7 @@ gpgkeys_finger_LDADD = ../util/libutil.a @NETLIBS@ $(other_libs) @GETOPT@ @W32LI
 
 install-exec-hook:
 if GPGKEYS_LDAP
-	-(cd $(libexecdir) && $(LN_S) gpgkeys_ldap$(EXEEXT) gpgkeys_ldaps$(EXEEXT))
+	(cd $(libexecdir) && $(LN_S) -f gpgkeys_ldap$(EXEEXT) gpgkeys_ldaps$(EXEEXT))
 endif
 
 uninstall-hook:

@@ -1,3 +1,9 @@
+2004-12-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: The harmless "ignored error" on gpgkeys_ldap
+	install on top of an existing install is bound to confuse people.
+	Use ln -s -f to force the overwrite.
+
 2004-10-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_finger.c [_WIN32] (connect_server): Fix typo.
