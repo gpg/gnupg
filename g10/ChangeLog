@@ -1,3 +1,16 @@
+2004-12-28  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (find_endpoint): New.
+	(scan_or_find_devices): Add new args to return endpoint info and
+	interface number.
+	(ccid_open_reader, ccid_shutdown_reader): Take care of these new
+	args.
+	(bulk_in, bulk_out): Use the correct endpoints.
+	(ccid_transceive_apdu_level): New.
+	(ccid_transceive): Divert to above.
+	(parse_ccid_descriptor): Allow APDU level exchange mode.
+	(do_close_reader): Pass the interface number to usb_release_interface.
+
 2004-12-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_typemap): Only map HTTP and FTP if
