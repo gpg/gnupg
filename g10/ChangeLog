@@ -1,3 +1,11 @@
+2004-01-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* sig-check.c: Copyright typo.
+
+	* keylist.c (set_attrib_fd): Open attribute fd in binary mode.
+	This isn't meaningful on POSIX systems, but the Mingw builds
+	aren't exactly POSIX.
+
 2003-12-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* sig-check.c (check_revocation_keys): Comments.
@@ -8220,7 +8228,8 @@ Thu Feb 12 22:24:42 1998  Werner Koch  (wk@frodo)
 	* pubkey-enc.c (get_session_key): rewritten
 
 
- Copyright 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2002, 2003,
+	   2004 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

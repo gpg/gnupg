@@ -1136,7 +1136,7 @@ void set_attrib_fd(int fd)
   else if( fd == 2 )
     attrib_fp = stderr;
   else
-    attrib_fp = fdopen( fd, "w" );
+    attrib_fp = fdopen( fd, "wb" );
   if( !attrib_fp ) {
     log_fatal("can't open fd %d for attribute output: %s\n",
 	      fd, strerror(errno));
