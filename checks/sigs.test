@@ -9,6 +9,9 @@ for i in $plain_files $data_files; do
     cmp $i y || error "$i: mismatch"
 done
 
+# TODO: add the new SHAs here once we allow them to be used in new
+# documents.
+
 hash_algo_list="ripemd160 sha1 md5"
 if have_hash_algo "TIGER192"; then
   hash_algo_list="$hash_algo_list tiger192"
