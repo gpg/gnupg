@@ -949,8 +949,10 @@ main(int argc,char *argv[])
 	    {
 	      if(no)
 		timeout=0;
-	      else
+	      else if(start[7]=='=')
 		timeout=atoi(&start[8]);
+	      else if(start[7]=='\0')
+		timeout=DEFAULT_KEYSERVER_TIMEOUT;
 	    }
 
 	  continue;

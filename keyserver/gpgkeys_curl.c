@@ -123,6 +123,7 @@ main(int argc,char *argv[])
   char line[MAX_LINE];
   char *thekey=NULL;
   unsigned int timeout=DEFAULT_KEYSERVER_TIMEOUT;
+  long follow_redirects=5;
 
   console=stderr;
 
@@ -269,8 +270,19 @@ main(int argc,char *argv[])
 	    {
 	      if(no)
 		timeout=0;
-	      else
+	      else if(start[7]=='=')
 		timeout=atoi(&start[8]);
+	      else if(start[7]=='\0')
+		timeout=DEFAULT_KEYSERVER_TIMEOUT;
+	    }
+	  else if(strncasecmp(start,"follow-redirects",16)==0)
+	    {
+	      if(no)
+		follow_redirects=0;
+	      else if(start[16]=='=')
+		follow_redirects=atoi(&start[17]);
+	      else if(start[16]=='\0')
+		follow_redirects=-1;
 	    }
 
 	  continue;
@@ -311,6 +323,14 @@ main(int argc,char *argv[])
       ret=KEYSERVER_INTERNAL_ERROR;
       goto fail;
     }
+
+  if(follow_redirects)
+    {
+      curl_easy_setopt(curl,CURLOPT_FOLLOWLOCATION,1);
+      if(follow_redirects>0)
+	curl_easy_setopt(curl,CURLOPT_MAXREDIRS,follow_redirects);
+    }
+
 
   /* If it's a GET or a SEARCH, the next thing to come in is the
      keyids.  If it's a SEND, then there are no keyids. */

@@ -1,5 +1,14 @@
 2004-12-22  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_curl.c (main): New "follow-redirects" option.  Takes an
+	optional numeric value for the maximum number of redirects to
+	allow.  Defaults to 5.
+
+	* gpgkeys_curl.c (main), gpgkeys_finger.c (main), gpgkeys_hkp.c
+	(main), gpgkeys_http.c (main), gpgkeys_ldap.c (main): Make sure
+	that a "timeout" option passed with no arguments is properly
+	handled.
+
 	* gpgkeys_curl.c (get_key, writer): New function to wrap around
 	fwrite to avoid DLL access problem on win32.
 
