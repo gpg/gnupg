@@ -69,6 +69,8 @@ typedef enum {
   ASSUAN_Invalid_Data = 117,
   ASSUAN_Unexpected_Command = 118,
   ASSUAN_Too_Much_Data = 119,
+  ASSUAN_Inquire_Unknown = 120,
+  ASSUAN_Inquire_Error = 121,
 
   ASSUAN_Bad_Certificate = 201,
   ASSUAN_Bad_Certificate_Path = 202,
