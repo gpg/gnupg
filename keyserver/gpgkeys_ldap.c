@@ -466,6 +466,44 @@ build_attrs(LDAPMod ***modlist,char *line)
       make_one_attr(modlist,0,"pgpDisabled",disabled?"1":"0");
       make_one_attr(modlist,0,"pgpRevoked",revoked?"1":"0");
     }
+  else if(ascii_strcasecmp("sub",record)==0)
+    {
+      char *tok;
+
+      /* The long keyid */
+      if((tok=strsep(&line,":"))==NULL)
+	return;
+
+      if(strlen(tok)==16)
+	make_one_attr(modlist,0,"pgpSubKeyID",tok);
+      else
+	return;
+
+      /* The subkey algo */
+      if((tok=strsep(&line,":"))==NULL)
+	return;
+
+      /* Size of subkey */
+      if((tok=strsep(&line,":"))==NULL)
+	return;
+
+      if(atoi(tok)>0)
+	{
+	  char padded[6];
+	  int val=atoi(tok);
+
+	  /* We zero pad this on the left to make PGP happy. */
+
+	  if(val<99999 && val>0)
+	    {
+	      sprintf(padded,"%05u",atoi(tok));
+	      make_one_attr(modlist,0,"pgpKeySize",padded);
+	    }
+	}
+
+      /* Ignore the rest of the items for subkeys since the LDAP
+	 schema doesn't store them. */
+    }
   else if(ascii_strcasecmp("uid",record)==0)
     {
       char *userid,*tok;
@@ -1486,7 +1524,7 @@ main(int argc,char *argv[])
 {
   int port=0,arg,err,action=-1,ret=KEYSERVER_INTERNAL_ERROR;
   char line[MAX_LINE];
-  int version,failed=0,use_ssl=0,use_tls=0;
+  int version,failed=0,use_ssl=0,use_tls=0,bound=0;
   struct keylist *keylist=NULL,*keyptr=NULL;
 
   console=stderr;
@@ -1833,6 +1871,8 @@ main(int argc,char *argv[])
       fail_all(keylist,action,ldap_err_to_gpg_err(err));
       goto fail;
     }
+  else
+    bound=1;
 
   switch(action)
     {
@@ -1935,7 +1975,7 @@ main(int argc,char *argv[])
   if(output!=stdout)
     fclose(output);
 
-  if(ldap!=NULL)
+  if(ldap!=NULL && bound)
     ldap_unbind_s(ldap);
 
   free(basekeyspacedn);
