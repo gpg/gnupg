@@ -741,11 +741,11 @@ main( int argc, char **argv )
     opt.marginals_needed = 3;
     opt.max_cert_depth = 5;
     opt.pgp2_workarounds = 1;
-  #ifdef __MINGW32__
+#if defined (__MINGW32__) || defined (__CYGWIN32__)
     opt.homedir = read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" );
-  #else
+#else
     opt.homedir = getenv("GNUPGHOME");
-  #endif
+#endif
     if( !opt.homedir || !*opt.homedir ) {
 	opt.homedir = GNUPG_HOMEDIR;
     }

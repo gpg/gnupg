@@ -29,7 +29,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #endif
-#ifdef __MINGW32__
+#if defined (__MINGW32__) || defined (__CYGWIN32__)
 # include <windows.h>
 #endif
 #include <errno.h>
@@ -85,7 +85,7 @@ static char *fd_passwd = NULL;
 static char *next_pw = NULL;
 static char *last_pw = NULL;
 
-#ifdef __MINGW32__
+#if defined (__MINGW32__) || defined (__CYGWIN32__)
 static int read_fd = 0;
 static int write_fd = 0;
 #endif
@@ -164,7 +164,7 @@ read_passphrase_from_fd( int fd )
 static int
 writen ( int fd, const void *buf, size_t nbytes )
 {
-#ifdef __MINGW32__
+#if defined (__MINGW32__) || defined (__CYGWIN32__)
     DWORD nwritten, nleft = nbytes;
     
     while (nleft > 0) {
@@ -207,7 +207,7 @@ writen ( int fd, const void *buf, size_t nbytes )
 static int
 readn ( int fd, void *buf, size_t buflen, size_t *ret_nread )
 {
-#ifdef __MINGW32__
+#if defined (__MINGW32__) || defined (__CYGWIN32__)
     DWORD nread, nleft = buflen;
     
     while (nleft > 0) {
@@ -266,7 +266,7 @@ readn ( int fd, void *buf, size_t buflen, size_t *ret_nread )
 static int
 agent_open (void)
 {
-#ifdef __MINGW32__
+#if defined (__MINGW32__) || defined (__CYGWIN32__)
     int fd;
     char *infostr, *p;
     HANDLE h;
@@ -363,7 +363,7 @@ agent_open (void)
 static void
 agent_close ( int fd )
 {
-#ifdef __MINGW32__
+#if defined (__MINGW32__) || defined (__CYGWIN32__)
     HANDLE h = OpenEvent(EVENT_ALL_ACCESS, FALSE, "gpg_agent");
     ResetEvent(h);
 #else
