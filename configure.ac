@@ -94,33 +94,6 @@ dnl
 dnl  Check other options
 dnl
 
-# We don't need idea but some people claim that they need it for
-# research etc., so we allow to place an idea source code into the
-# cipher directory and statically link it if available, otherwise we
-# link to a stub.  We don't use AC_CHECK_FILE to avoid caching.
-AC_MSG_CHECKING(for extra cipher modules)
-tmp=""
-if test -f $srcdir/cipher/idea.c; then 
-   IDEA_O=idea.o
-   tmp=idea
-else
-   IDEA_O=idea-stub.o
-   tmp=no
-fi
-AC_SUBST(IDEA_O)
-AC_MSG_RESULT($tmp)
-
-# if the static idea is present, disable dynload.
-if test "$IDEA_O" = idea-stub.o ; then
-  AC_MSG_CHECKING([whether use of extensions is requested])
-  AC_ARG_ENABLE(dynload,
-  [  --disable-dynload       disable use of extensions],
-      try_dynload=$enableval, try_dynload=yes)
-  AC_MSG_RESULT($try_dynload)
-else
-  try_dynload=no
-fi
-
 AC_MSG_CHECKING([whether assembler modules are requested])
 AC_ARG_ENABLE(asm,
 [  --disable-asm           do not use assembler modules],
@@ -139,6 +112,9 @@ fi
 dnl See if we are disabling any algorithms or features for a smaller
 dnl binary
 
+try_dynload=no
+
+use_idea=yes
 use_cast5=yes
 use_blowfish=yes
 use_aes=yes
@@ -150,6 +126,7 @@ use_exec=yes
 
 AC_ARG_ENABLE(minimal,
    AC_HELP_STRING([--enable-minimal],[build the smallest gpg binary possible]),
+   use_idea=no
    use_cast5=no
    use_blowfish=no
    use_aes=no
@@ -158,6 +135,33 @@ AC_ARG_ENABLE(minimal,
    use_sha256=no
    use_sha512=no
    use_exec=no)
+
+AC_MSG_CHECKING([whether to enable the IDEA cipher])
+AC_ARG_ENABLE(idea,
+   AC_HELP_STRING([--disable-idea],[disable the IDEA cipher]),
+   use_idea=$enableval)
+AC_MSG_RESULT($use_idea)
+if test x"$use_idea" = xyes ; then
+   AC_DEFINE(USE_IDEA,1,[Define to include the IDEA cipher])
+
+# We don't need idea but some people claim that they need it for
+# research etc., so we allow to place an idea source code into the
+# cipher directory and statically link it if available, otherwise we
+# link to a stub.  We don't use AC_CHECK_FILE to avoid caching.
+
+   AC_MSG_CHECKING([for idea cipher module])
+   tmp=""
+   if test -f $srcdir/cipher/idea.c; then 
+      IDEA_O=idea.o
+      tmp=idea
+   else
+      IDEA_O=idea-stub.o
+      tmp=no
+      try_dynload=yes
+   fi
+   AC_SUBST(IDEA_O)
+   AC_MSG_RESULT($tmp)
+fi
 
 AC_MSG_CHECKING([whether to enable the CAST5 cipher])
 AC_ARG_ENABLE(cast5,
@@ -179,11 +183,11 @@ fi
 
 AC_MSG_CHECKING([whether to enable the AES ciphers])
 AC_ARG_ENABLE(aes,
-   AC_HELP_STRING([--disable-aes],[disable the AES ciphers]),
+   AC_HELP_STRING([--disable-aes],[disable the AES, AES192, and AES256 ciphers]),
    use_aes=$enableval)
 AC_MSG_RESULT($use_aes)
 if test x"$use_aes" = xyes ; then
-   AC_DEFINE(USE_AES,1,[Define to include the AES ciphers])
+   AC_DEFINE(USE_AES,1,[Define to include the AES, AES192, and AES256 ciphers])
 fi
 
 AC_MSG_CHECKING([whether to enable the TWOFISH cipher])
