@@ -115,6 +115,9 @@ import_keys( char **fnames, int nnames, int fast )
     /* fixme: don't use static variables */
     memset( &stats, 0, sizeof( stats ) );
 
+    if( !fnames && !nnames )
+	nnames = 1;  /* Ohh what a ugly hack to jump into the loop */
+
     for(i=0; i < nnames; i++ ) {
 	const char *fname = fnames? fnames[i] : NULL;
 	IOBUF inp = iobuf_open(fname);

@@ -74,7 +74,7 @@ build_packet( IOBUF out, PACKET *pkt )
     assert( pkt->pkt.generic );
 
     switch( (pkttype = pkt->pkttype) ) {
-      case PKT_OLD_COMMENT: pkt->pkttype = PKT_COMMENT; break;
+      case PKT_OLD_COMMENT: pkttype = pkt->pkttype = PKT_COMMENT; break;
       case PKT_PLAINTEXT: new_ctb = pkt->pkt.plaintext->new_ctb; break;
       case PKT_ENCRYPTED:
       case PKT_ENCRYPTED_MDC: new_ctb = pkt->pkt.encrypted->new_ctb; break;

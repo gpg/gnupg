@@ -1,3 +1,10 @@
+Tue Feb 15 08:48:13 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* build-packet.c (build_packet): Fixed fixing of old comment packets.
+
+	* import.c (import_keys): Fixed importing from stdin when called with
+	nnames set to zero as it normally happens.
+
 Mon Feb 14 14:30:20 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* sig-check.c (check_key_signature2): Add new arg r_expired.
