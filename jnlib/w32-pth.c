@@ -127,11 +127,27 @@ pth_kill (void)
 {
   pth_signo = 0;
   if (pth_signo_ev)
-    CloseHandle (pth_signo_ev);
-  DeleteCriticalSection (&pth_shd);
+    {
+      CloseHandle (pth_signo_ev);
+      pth_signo_ev = NULL;
+    }
+  if (pth_initialized)
+    DeleteCriticalSection (&pth_shd);
   WSACleanup ();
   pth_initialized = 0;
   return 0;
+}
+
+
+static const char *
+_pth_strerror (void)
+{
+  static char strerr[256];
+  
+  FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL, (int)GetLastError (),
+                 MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
+                 strerr, sizeof (strerr)-1, NULL);
+  return strerr;
 }
 
 
@@ -211,7 +227,11 @@ pth_read (int fd,  void * buffer, size_t size)
       DWORD nread = 0;
       n = ReadFile ((HANDLE)fd, buffer, size, &nread, NULL);
       if (!n)
-        n = -1;
+        {
+          fprintf (stderr, "pth_read(%d) failed read from: %s.\n", fd,
+                   _pth_strerror ());
+          n = -1;
+        }
       else
         n = (int)nread;
     }
@@ -238,22 +258,18 @@ pth_write (int fd, const void * buffer, size_t size)
   n = send (fd, buffer, size, 0);
   if (n == -1 && WSAGetLastError () == WSAENOTSOCK)
     {
-      char strerr[256];
-  
-      FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL, (int)GetLastError (),
-                     MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
-                     strerr, sizeof (strerr)-1, NULL);
-      fprintf (stderr, "pth_write(%d) failed in send: %s\n", fd, strerr);
-
- 
       DWORD nwrite;
+
+      /* this is no real error because we first need to figure out if
+         we have a handle or a socket. */
+      /*fprintf (stderr, "pth_write(%d) failed in send: %s\n", fd,
+                 _pth_strerror ());*/
+
       n = WriteFile ((HANDLE)fd, buffer, size, &nwrite, NULL);
       if (!n)
         {
-          FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL,(int)GetLastError (),
-                         MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
-                         strerr, sizeof (strerr)-1, NULL);
-          fprintf (stderr, "pth_write(%d) failed in write: %s\n", fd, strerr);
+          fprintf (stderr, "pth_write(%d) failed in write: %s\n", fd,
+                   _pth_strerror ());
           n = -1;
         }
       else
@@ -344,17 +360,18 @@ pth_accept_ev (int fd, struct sockaddr *addr, int *addrlen,
          (WSAGetLastError () == WSAEINPROGRESS || 
           WSAGetLastError () == WSAEWOULDBLOCK))
     {
-      if (ev == NULL) {
-        ev = do_pth_event (PTH_EVENT_FD|PTH_UNTIL_FD_READABLE|PTH_MODE_STATIC,
-                           &ev_key, fd);
-        if (ev == NULL)
-          {
-            leave_pth (__FUNCTION__);
-            return -1;
-          }
-        if (ev_extra != NULL)
-          pth_event_concat (ev, ev_extra, NULL);
-      }
+      if (ev == NULL)
+        {
+          ev = do_pth_event (PTH_EVENT_FD|PTH_UNTIL_FD_READABLE|
+                             PTH_MODE_STATIC, &ev_key, fd);
+          if (ev == NULL)
+            {
+              leave_pth (__FUNCTION__);
+              return -1;
+            }
+          if (ev_extra != NULL)
+            pth_event_concat (ev, ev_extra, NULL);
+        }
       /* Wait until accept has a chance. */
       do_pth_wait (ev);
       if (ev_extra != NULL)
@@ -450,14 +467,15 @@ pth_mutex_acquire (pth_mutex_t *hd, int tryonly, pth_event_t ev_extra)
       if (ev_extra != NULL)
         pth_event_concat (ev, ev_extra, NULL);
       pth_wait (ev);
-      if (ev_extra != NULL) {
-        pth_event_isolate (ev);
-        if (do_pth_event_status(ev) == PTH_STATUS_PENDING)
-          {
-            leave_pth (__FUNCTION__);
-            return -1;
-          }
-      }
+      if (ev_extra != NULL)
+        {
+          pth_event_isolate (ev);
+          if (do_pth_event_status(ev) == PTH_STATUS_PENDING)
+            {
+              leave_pth (__FUNCTION__);
+              return -1;
+            }
+        }
       if (!(mutex->mx_state & PTH_MUTEX_LOCKED))
         break;
     }
@@ -894,11 +912,14 @@ static void *
 helper_thread (void * ctx)
 {
   struct _pth_priv_hd_s * c = ctx;
-  
-  leave_pth (__FUNCTION__);
-  c->thread (c->arg);
-  enter_pth (__FUNCTION__);
-  free (c);
+
+  if (c)
+    {
+      leave_pth (__FUNCTION__);
+      c->thread (c->arg);
+      enter_pth (__FUNCTION__);
+      free (c);
+    }
   ExitThread (0);
   return NULL;
 }
@@ -1019,7 +1040,8 @@ do_pth_event_free (pth_event_t ev, int mode)
       while (ev)
         {
           n = ev->next;
-          CloseHandle (ev->hd); ev->hd = NULL;
+          CloseHandle (ev->hd);
+          ev->hd = NULL;
           free (ev);
           ev = n;
         }
@@ -1028,9 +1050,9 @@ do_pth_event_free (pth_event_t ev, int mode)
     {
       ev->prev->next = ev->next;
       ev->next->prev = ev->prev;
-      CloseHandle (ev->hd); ev->hd = NULL;	    
+      CloseHandle (ev->hd);
+      ev->hd = NULL;	    
       free (ev);
-	
     }
 
   return 0;
@@ -1061,14 +1083,14 @@ pth_event_isolate (pth_event_t ev)
 
 
 static int
-pth_event_count (pth_event_t ev)
+_pth_event_count (pth_event_t ev)
 {
   pth_event_t p;
   int cnt=0;
 
   if (!ev)
     return 0;
-  for (p=ev; p; p = p->next)
+  for (p = ev; p; p = p->next)
     cnt++;    
   return cnt;
 }
@@ -1103,7 +1125,10 @@ free_helper_threads (HANDLE *waitbuf, int *hdidx, int n)
   int i;
 
   for (i=0; i < n; i++)
-    CloseHandle (waitbuf[hdidx[i]]);
+    {
+      CloseHandle (waitbuf[hdidx[i]]);
+      waitbuf[hdidx[i]] = NULL;
+    }
 }
 
 
@@ -1146,19 +1171,17 @@ do_pth_wait (pth_event_t ev)
   if (!ev)
     return 0;
 
+  n =_pth_event_count (ev);
+  if (n > MAXIMUM_WAIT_OBJECTS/2)
+    return -1;
+
   attr = pth_attr_new ();
   pth_attr_set (attr, PTH_ATTR_JOINABLE, 1);
   pth_attr_set (attr, PTH_ATTR_STACK_SIZE, 4096);
     
-  fprintf (stderr, "pth_wait: cnt %d\n", pth_event_count (ev));
+  fprintf (stderr, "pth_wait: cnt %lu\n", n);
   for (tmp = ev; tmp; tmp = tmp->next)
     {
-      if (pos+1 > MAXIMUM_WAIT_OBJECTS/2)
-        {
-          free_helper_threads (waitbuf, hdidx, i);
-          pth_attr_destroy (attr);
-          return -1;
-        }
       switch (tmp->u_type)
         {
         case 0:

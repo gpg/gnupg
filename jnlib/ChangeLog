@@ -1,3 +1,11 @@
+2004-12-14  Timo Schulz  <twoaday@g10code.com>
+
+	* w32-pth.c (pth_kill): Just release the crit section if
+	pth_init was really called. And set all handles to NULL.
+	(_pth_strerror): New.
+	(do_pth_wait): Before we enter the loop we check if there
+	are too much events in the ring.
+	
 2004-12-14  Werner Koch  <wk@g10code.com>
 
 	* w32-pth.h (pth_event_occured): Removed macro. 
