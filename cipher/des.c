@@ -1,5 +1,12 @@
-/* des.c
+/* des.c - DES and Triple-DES encryption/decryption Algorithm
  *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *
+ * Please see below for more legal information!
+ *
+ * According to the definition of DES in FIPS PUB 46-2 from December 1993.
+ * For a description of triple encryption, see:
+ *   Bruce Schneier: Applied Cryptography. Second Edition. John Wiley & Sons, 1996
+ *   ISBN 0-471-12845-7. Pages 358 ff.
  *
  * This file is part of GNUPG.
  *
@@ -18,211 +25,692 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include <config.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include "util.h"
-#include "types.h"
-
-#define DES_BLOCKSIZE 8
-#define DES_ROUNDS 16
-
-typedef struct {
-    int tripledes;
-} DES_context;
-
-
-static const int IP[64] = {
-  58, 50, 42, 34, 26, 18, 10,  2, 60, 52, 44, 36, 28, 20, 12, 4,
-  62, 54, 46, 38, 30, 22, 14,  6, 64, 56, 48, 40, 32, 24, 16, 8,
-  57, 49, 41, 33, 25, 17,  9,  1, 59, 51, 43, 35, 27, 19, 11, 3,
-  61, 53, 45, 37, 29, 21, 13,  5, 63, 55, 47, 39, 31, 23, 15, 7
-};
-
-/* this is IP^(-1) */
-static const int IPinv[64] = {
-  40,  8, 48, 16, 56, 24, 64, 32, 39,  7, 47, 15, 55, 23, 63, 31,
-  38,  6, 46, 14, 54, 22, 62, 30, 37,  5, 45, 13, 53, 21, 61, 29,
-  36,  4, 44, 12, 52, 20, 60, 28, 35,  3, 43, 11, 51, 19, 59, 27,
-  34,  2, 42, 10, 50, 18, 58, 26, 33,  1, 41,  9, 49, 17, 57, 25
-};
-
-static const int E[48] = {
-  32,  1,  2,  3,  4,  5,  4,  5,  6,  7,  8,  9,
-   8,  9, 10, 11, 12, 13, 12, 13, 14, 15, 16, 17,
-  16, 17, 18, 19, 20, 21, 20, 21, 22, 23, 24, 25,
-  24, 25, 26, 27, 28, 29, 28, 29, 30, 31, 32,  1
-};
-
-static const int P[32] = {
-  16,  7, 20, 21, 29, 12, 28, 17,  1, 15, 23, 26,  5, 18, 31, 10,
-  2,   8, 24, 14, 32, 27,  3,  9, 19, 13, 30,  6, 22, 11,  4, 25
-};
-
-static const int PC1[56] = {
-  57, 49, 41, 33, 25, 17,  9, 1, 58, 50, 42, 34, 26, 18,
-  10,  2, 59, 51, 43, 35, 27, 19, 11,  3, 60, 52, 44, 36,
-  63, 55, 47, 39, 31, 23, 15,  7, 62, 54, 46, 38, 30, 22,
-  14,  6, 61, 53, 45, 37, 29, 21, 13,  5, 28, 20, 12,  4
-};
-
-static const int PC2[48] = {
-  14, 17, 11, 24,  1,  5,  3, 28, 15,  6, 21, 10,
-  23, 19, 12,  4, 26,  8, 16,  7, 27, 20, 13,  2,
-  41, 52, 31, 37, 47, 55, 30, 40, 51, 45, 33, 48,
-  44, 49, 39, 56, 34, 53, 46, 42, 50, 36, 29, 32
-};
-
-/* S-boxes */
-static const int sbox[8][4][16]= {
-    { { 14,  4, 13,  1,  2, 15, 11,  8,  3, 10,  6, 12,  5,  9,  0,  7 },
-      {  0, 15,  7,  4, 14,  2, 13,  1, 10,  6, 12, 11,  9,  5,  3,  8 },
-      {  4,  1, 14,  8, 13,  6,  2, 11, 15, 12,  9,  7,  3, 10,  5,  0 },
-      { 15, 12,  8,  2,  4,  9,  1,  7,  5, 11,  3, 14, 10,  0,  6, 13 }
-    },
-    { { 15,  1,  8, 14,  6, 11,  3,  4,  9,  7,  2, 13, 12,  0,  5, 10 },
-      {  3, 13,  4,  7, 15,  2,  8, 14, 12,  0,  1, 10,  6,  9, 11,  5 },
-      {  0, 14,  7, 11, 10,  4, 13,  1,  5,  8, 12,  6,  9,  3,  2, 15 },
-      { 13,  8, 10,  1,  3, 15,  4,  2, 11,  6,  7, 12,  0,  5, 14,  9 }
-    },
-    { { 10,  0,  9, 14,  6,  3, 15,  5,  1, 13, 12,  7, 11,  4,  2,  8 },
-      { 13,  7,  0,  9,  3,  4,  6, 10,  2,  8,  5, 14, 12, 11, 15,  1 },
-      { 13,  6,  4,  9,  8, 15,  3,  0, 11,  1,  2, 12,  5, 10, 14,  7 },
-      {  1, 10, 13,  0,  6,  9,  8,  7,  4, 15, 14,  3, 11,  5,  2, 12 }
-    },
-    { {  7, 13, 14,  3,  0,  6,  9, 10,  1,  2,  8,  5, 11, 12,  4, 15 },
-      { 13,  8, 11,  5,  6, 15,  0,  3,  4,  7,  2, 12,  1, 10, 14,  9 },
-      { 10,  6,  9,  0, 12, 11,  7, 13, 15,  1,  3, 14,  5,  2,  8,  4 },
-      {  3, 15,  0,  6, 10,  1, 13,  8,  9,  4,  5, 11, 12,  7,  2, 14 }
-    },
-    { {  2, 12,  4,  1,  7, 10, 11,  6,  8,  5,  3, 15, 13,  0, 14,  9 },
-      { 14, 11,  2, 12,  4,  7, 13,  1,  5,  0, 15, 10,  3,  9,  8,  6 },
-      {  4,  2,  1, 11, 10, 13,  7,  8, 15,  9, 12,  5,  6,  3,  0, 14 },
-      { 11,  8, 12,  7,  1, 14,  2, 13,  6, 15,  0,  9, 10,  4,  5,  3 }
-    },
-    { { 12,  1, 10, 15,  9,  2,  6,  8,  0, 13,  3,  4, 14,  7,  5, 11 },
-      { 10, 15,  4,  2,  7, 12,  9,  5,  6,  1, 13, 14,  0, 11,  3,  8 },
-      {  9, 14, 15,  5,  2,  8, 12,  3,  7,  0,  4, 10,  1, 13, 11,  6 },
-      {  4,  3,  2, 12,  9,  5, 15, 10, 11, 14,  1,  7,  6,  0,  8, 13 }
-    },
-    { {  4, 11,  2, 14, 15,  0,  8, 13,  3, 12,  9,  7,  5, 10,  6,  1 },
-      { 13,  0, 11,  7,  4,  9,  1, 10, 14,  3,  5, 12,  2, 15,  8,  6 },
-      {  1,  4, 11, 13, 12,  3,  7, 14, 10, 15,  6,  8,  0,  5,  9,  2 },
-      {  6, 11, 13,  8,  1,  4, 10,  7,  9,  5,  0, 15, 14,  2,  3, 12 }
-    },
-    { { 13,  2,  8,  4,  6, 15, 11,  1, 10,  9,  3, 14,  5,  0, 12,  7 },
-      {  1, 15, 13,  8, 10,  3,  7,  4, 12,  5,  6, 11,  0, 14,  9,  2 },
-      {  7, 11,  4,  1,  9, 12, 14,  2,  0,  6, 10, 13, 15,  3,  5,  8 },
-      {  2,  1, 14,  7,  4, 10,  8, 13, 15, 12,  9,  0,  3,  5,  6, 11 }
-    }
-};
 
 /*
- * How much to rotate each 28 bit half of the pc1 permutated
- *  56 bit key before using pc2 to give the i' key
+ * Written by Michael Roth <mroth@nessie.de>, September 1998
  */
-static const int rots[16] = {
+
+
+/*
+ *  U S A G E
+ * ===========
+ *
+ * For DES or Triple-DES encryption/decryption you must initialize a proper
+ * encryption context with a key.
+ *
+ * A DES key is 64bit wide but only 56bits of the key are used. The remaining
+ * bits are parity bits and they will _not_ checked in this implementation, but
+ * simply ignored.
+ *
+ * For Tripple-DES you could use either two 64bit keys or three 64bit keys.
+ * The parity bits will _not_ checked, too.
+ *
+ * After initializing a context with a key you could use this context to
+ * encrypt or decrypt data in 64bit blocks in Electronic Codebook Mode.
+ *
+ * (In the examples below the slashes at the beginning and ending of comments
+ * are omited.)
+ *
+ * DES Example
+ * -----------
+ *     unsigned char key[8];
+ *     unsigned char plaintext[8];
+ *     unsigned char ciphertext[8];
+ *     unsigned char recoverd[8];
+ *     des_ctx context;
+ *
+ *     * Fill 'key' and 'plaintext' with some data *
+ *     ....
+ *
+ *     * Set up the DES encryption context *
+ *     des_setkey(context, key);
+ *
+ *     * Encrypt the plaintext *
+ *     des_ecb_encrypt(context, plaintext, ciphertext);
+ *
+ *     * To recover the orginal plaintext from ciphertext use: *
+ *     des_ecb_decrypt(context, ciphertext, recoverd);
+ *
+ *
+ * Triple-DES Example
+ * ------------------
+ *     unsigned char key1[8];
+ *     unsigned char key2[8];
+ *     unsigned char key3[8];
+ *     unsigned char plaintext[8];
+ *     unsigned char ciphertext[8];
+ *     unsigned char recoverd[8];
+ *     tripledes_ctx context;
+ *
+ *     * If you would like to use two 64bit keys, fill 'key1' and'key2'
+ *	 then setup the encryption context: *
+ *     tripledes_set2keys(context, key1, key2);
+ *
+ *     * To use three 64bit keys with Triple-DES use: *
+ *     tripledes_set3keys(context, key1, key2, key3);
+ *
+ *     * Encrypting plaintext with Triple-DES *
+ *     tripledes_ecb_encrypt(context, plaintext, ciphertext);
+ *
+ *     * Decrypting ciphertext to recover the plaintext with Triple-DES *
+ *     tripledes_ecb_decrypt(context, ciphertext, recoverd);
+ *
+ *
+ * Selftest
+ * --------
+ *     char *error_msg;
+ *
+ *     * To perform a selftest of this DES/Triple-DES implementation use the
+ *	 function selftest(). It will return an error string if their are
+ *	 some problems with this library. *
+ *
+ *     if ( (error_msg = selftest()) )
+ *     {
+ *	   fprintf(stderr, "An error in the DES/Tripple-DES implementation occured: %s\n", error_msg);
+ *	   abort();
+ *     }
+ */
+
+
+
+
+
+#include <string.h>		/* memcpy, memcmp */
+
+typedef unsigned long u32;
+typedef unsigned char byte;
+
+
+
+/*
+ * Encryption/Decryption context of DES
+ */
+typedef struct _des_ctx
+  {
+    u32 encrypt_subkeys[32];
+    u32 decrypt_subkeys[32];
+  }
+des_ctx[1];
+
+/*
+ * Encryption/Decryption context of Triple-DES
+ */
+typedef struct _tripledes_ctx
+  {
+    u32 encrypt_subkeys[96];
+    u32 decrypt_subkeys[96];
+  }
+tripledes_ctx[1];
+
+
+static void des_key_schedule (const byte *, u32 *, int);
+static int des_setkey (struct _des_ctx *, const byte *);
+static int des_ecb_crypt (struct _des_ctx *, const byte *, byte *, int);
+static int tripledes_set2keys (struct _tripledes_ctx *, const byte *, const byte *);
+static int tripledes_set3keys (struct _tripledes_ctx *, const byte *, const byte *, const byte *);
+static int tripledes_ecb_crypt (struct _tripledes_ctx *, const byte *, byte *, int);
+static const char *selftest (void);
+
+
+
+
+
+
+/*
+ * The s-box values are permuted according to the 'primitive function P'
+ */
+static u32 sbox1[64] =
+{
+  0x00808200, 0x00000000, 0x00008000, 0x00808202, 0x00808002, 0x00008202, 0x00000002, 0x00008000,
+  0x00000200, 0x00808200, 0x00808202, 0x00000200, 0x00800202, 0x00808002, 0x00800000, 0x00000002,
+  0x00000202, 0x00800200, 0x00800200, 0x00008200, 0x00008200, 0x00808000, 0x00808000, 0x00800202,
+  0x00008002, 0x00800002, 0x00800002, 0x00008002, 0x00000000, 0x00000202, 0x00008202, 0x00800000,
+  0x00008000, 0x00808202, 0x00000002, 0x00808000, 0x00808200, 0x00800000, 0x00800000, 0x00000200,
+  0x00808002, 0x00008000, 0x00008200, 0x00800002, 0x00000200, 0x00000002, 0x00800202, 0x00008202,
+  0x00808202, 0x00008002, 0x00808000, 0x00800202, 0x00800002, 0x00000202, 0x00008202, 0x00808200,
+  0x00000202, 0x00800200, 0x00800200, 0x00000000, 0x00008002, 0x00008200, 0x00000000, 0x00808002
+};
+
+static u32 sbox2[64] =
+{
+  0x40084010, 0x40004000, 0x00004000, 0x00084010, 0x00080000, 0x00000010, 0x40080010, 0x40004010,
+  0x40000010, 0x40084010, 0x40084000, 0x40000000, 0x40004000, 0x00080000, 0x00000010, 0x40080010,
+  0x00084000, 0x00080010, 0x40004010, 0x00000000, 0x40000000, 0x00004000, 0x00084010, 0x40080000,
+  0x00080010, 0x40000010, 0x00000000, 0x00084000, 0x00004010, 0x40084000, 0x40080000, 0x00004010,
+  0x00000000, 0x00084010, 0x40080010, 0x00080000, 0x40004010, 0x40080000, 0x40084000, 0x00004000,
+  0x40080000, 0x40004000, 0x00000010, 0x40084010, 0x00084010, 0x00000010, 0x00004000, 0x40000000,
+  0x00004010, 0x40084000, 0x00080000, 0x40000010, 0x00080010, 0x40004010, 0x40000010, 0x00080010,
+  0x00084000, 0x00000000, 0x40004000, 0x00004010, 0x40000000, 0x40080010, 0x40084010, 0x00084000
+};
+
+static u32 sbox3[64] =
+{
+  0x00000104, 0x04010100, 0x00000000, 0x04010004, 0x04000100, 0x00000000, 0x00010104, 0x04000100,
+  0x00010004, 0x04000004, 0x04000004, 0x00010000, 0x04010104, 0x00010004, 0x04010000, 0x00000104,
+  0x04000000, 0x00000004, 0x04010100, 0x00000100, 0x00010100, 0x04010000, 0x04010004, 0x00010104,
+  0x04000104, 0x00010100, 0x00010000, 0x04000104, 0x00000004, 0x04010104, 0x00000100, 0x04000000,
+  0x04010100, 0x04000000, 0x00010004, 0x00000104, 0x00010000, 0x04010100, 0x04000100, 0x00000000,
+  0x00000100, 0x00010004, 0x04010104, 0x04000100, 0x04000004, 0x00000100, 0x00000000, 0x04010004,
+  0x04000104, 0x00010000, 0x04000000, 0x04010104, 0x00000004, 0x00010104, 0x00010100, 0x04000004,
+  0x04010000, 0x04000104, 0x00000104, 0x04010000, 0x00010104, 0x00000004, 0x04010004, 0x00010100
+};
+
+static u32 sbox4[64] =
+{
+  0x80401000, 0x80001040, 0x80001040, 0x00000040, 0x00401040, 0x80400040, 0x80400000, 0x80001000,
+  0x00000000, 0x00401000, 0x00401000, 0x80401040, 0x80000040, 0x00000000, 0x00400040, 0x80400000,
+  0x80000000, 0x00001000, 0x00400000, 0x80401000, 0x00000040, 0x00400000, 0x80001000, 0x00001040,
+  0x80400040, 0x80000000, 0x00001040, 0x00400040, 0x00001000, 0x00401040, 0x80401040, 0x80000040,
+  0x00400040, 0x80400000, 0x00401000, 0x80401040, 0x80000040, 0x00000000, 0x00000000, 0x00401000,
+  0x00001040, 0x00400040, 0x80400040, 0x80000000, 0x80401000, 0x80001040, 0x80001040, 0x00000040,
+  0x80401040, 0x80000040, 0x80000000, 0x00001000, 0x80400000, 0x80001000, 0x00401040, 0x80400040,
+  0x80001000, 0x00001040, 0x00400000, 0x80401000, 0x00000040, 0x00400000, 0x00001000, 0x00401040
+};
+
+static u32 sbox5[64] =
+{
+  0x00000080, 0x01040080, 0x01040000, 0x21000080, 0x00040000, 0x00000080, 0x20000000, 0x01040000,
+  0x20040080, 0x00040000, 0x01000080, 0x20040080, 0x21000080, 0x21040000, 0x00040080, 0x20000000,
+  0x01000000, 0x20040000, 0x20040000, 0x00000000, 0x20000080, 0x21040080, 0x21040080, 0x01000080,
+  0x21040000, 0x20000080, 0x00000000, 0x21000000, 0x01040080, 0x01000000, 0x21000000, 0x00040080,
+  0x00040000, 0x21000080, 0x00000080, 0x01000000, 0x20000000, 0x01040000, 0x21000080, 0x20040080,
+  0x01000080, 0x20000000, 0x21040000, 0x01040080, 0x20040080, 0x00000080, 0x01000000, 0x21040000,
+  0x21040080, 0x00040080, 0x21000000, 0x21040080, 0x01040000, 0x00000000, 0x20040000, 0x21000000,
+  0x00040080, 0x01000080, 0x20000080, 0x00040000, 0x00000000, 0x20040000, 0x01040080, 0x20000080
+};
+
+static u32 sbox6[64] =
+{
+  0x10000008, 0x10200000, 0x00002000, 0x10202008, 0x10200000, 0x00000008, 0x10202008, 0x00200000,
+  0x10002000, 0x00202008, 0x00200000, 0x10000008, 0x00200008, 0x10002000, 0x10000000, 0x00002008,
+  0x00000000, 0x00200008, 0x10002008, 0x00002000, 0x00202000, 0x10002008, 0x00000008, 0x10200008,
+  0x10200008, 0x00000000, 0x00202008, 0x10202000, 0x00002008, 0x00202000, 0x10202000, 0x10000000,
+  0x10002000, 0x00000008, 0x10200008, 0x00202000, 0x10202008, 0x00200000, 0x00002008, 0x10000008,
+  0x00200000, 0x10002000, 0x10000000, 0x00002008, 0x10000008, 0x10202008, 0x00202000, 0x10200000,
+  0x00202008, 0x10202000, 0x00000000, 0x10200008, 0x00000008, 0x00002000, 0x10200000, 0x00202008,
+  0x00002000, 0x00200008, 0x10002008, 0x00000000, 0x10202000, 0x10000000, 0x00200008, 0x10002008
+};
+
+static u32 sbox7[64] =
+{
+  0x00100000, 0x02100001, 0x02000401, 0x00000000, 0x00000400, 0x02000401, 0x00100401, 0x02100400,
+  0x02100401, 0x00100000, 0x00000000, 0x02000001, 0x00000001, 0x02000000, 0x02100001, 0x00000401,
+  0x02000400, 0x00100401, 0x00100001, 0x02000400, 0x02000001, 0x02100000, 0x02100400, 0x00100001,
+  0x02100000, 0x00000400, 0x00000401, 0x02100401, 0x00100400, 0x00000001, 0x02000000, 0x00100400,
+  0x02000000, 0x00100400, 0x00100000, 0x02000401, 0x02000401, 0x02100001, 0x02100001, 0x00000001,
+  0x00100001, 0x02000000, 0x02000400, 0x00100000, 0x02100400, 0x00000401, 0x00100401, 0x02100400,
+  0x00000401, 0x02000001, 0x02100401, 0x02100000, 0x00100400, 0x00000000, 0x00000001, 0x02100401,
+  0x00000000, 0x00100401, 0x02100000, 0x00000400, 0x02000001, 0x02000400, 0x00000400, 0x00100001
+};
+
+static u32 sbox8[64] =
+{
+  0x08000820, 0x00000800, 0x00020000, 0x08020820, 0x08000000, 0x08000820, 0x00000020, 0x08000000,
+  0x00020020, 0x08020000, 0x08020820, 0x00020800, 0x08020800, 0x00020820, 0x00000800, 0x00000020,
+  0x08020000, 0x08000020, 0x08000800, 0x00000820, 0x00020800, 0x00020020, 0x08020020, 0x08020800,
+  0x00000820, 0x00000000, 0x00000000, 0x08020020, 0x08000020, 0x08000800, 0x00020820, 0x00020000,
+  0x00020820, 0x00020000, 0x08020800, 0x00000800, 0x00000020, 0x08020020, 0x00000800, 0x00020820,
+  0x08000800, 0x00000020, 0x08000020, 0x08020000, 0x08020020, 0x08000000, 0x00020000, 0x08000820,
+  0x00000000, 0x08020820, 0x00020020, 0x08000020, 0x08020000, 0x08000800, 0x08000820, 0x00000000,
+  0x08020820, 0x00020800, 0x00020800, 0x00000820, 0x00000820, 0x00020020, 0x08000000, 0x08020800
+};
+
+
+
+/*
+ * These two tables are part of the 'permuted choice 1' function.
+ * In this implementation several speed improvements are done.
+ */
+u32 leftkey_swap[16] =
+{
+  0x00000000, 0x00000001, 0x00000100, 0x00000101,
+  0x00010000, 0x00010001, 0x00010100, 0x00010101,
+  0x01000000, 0x01000001, 0x01000100, 0x01000101,
+  0x01010000, 0x01010001, 0x01010100, 0x01010101
+};
+
+u32 rightkey_swap[16] =
+{
+  0x00000000, 0x01000000, 0x00010000, 0x01010000,
+  0x00000100, 0x01000100, 0x00010100, 0x01010100,
+  0x00000001, 0x01000001, 0x00010001, 0x01010001,
+  0x00000101, 0x01000101, 0x00010101, 0x01010101,
+};
+
+
+
+/*
+ * Numbers of left shifts per round for encryption subkey schedule
+ */
+static byte encrypt_rotate_tab[16] =
+{
   1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1
 };
 
-
-struct ip_table { u32 l, r };
-
-
-
-static struct ip_table *ip_tbl, *ipinv_tbl;
-
-static struct ip_table *
-make_ip_table( int *bitno )
+/*
+ * Numbers of right shifts per round for decryption subkey schedule
+ */
+static byte decrypt_rotate_tab[16] =
 {
-    struct ip_table *ip = m_alloc( 8*256* sizeof *ip );
-    for(i=0; i < 8; i++ )
-
-    return ip;
-}
+  0, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1
+};
 
 
+
+
+
+
+/*
+ * Macro to swap bits across two words
+ */
+#define DO_PERMUTATION(a, temp, b, offset, mask)	\
+    temp = ((a>>offset) ^ b) & mask;			\
+    b ^= temp;						\
+    a ^= temp<<offset;
+
+
+/*
+ * This performs the 'initial permutation' for the data to be encrypted or decrypted
+ */
+#define INITIAL_PERMUTATION(left, temp, right)		\
+    DO_PERMUTATION(left, temp, right, 4, 0x0f0f0f0f)	\
+    DO_PERMUTATION(left, temp, right, 16, 0x0000ffff)	\
+    DO_PERMUTATION(right, temp, left, 2, 0x33333333)	\
+    DO_PERMUTATION(right, temp, left, 8, 0x00ff00ff)	\
+    DO_PERMUTATION(left, temp, right, 1, 0x55555555)
+
+
+/*
+ * The 'inverse initial permutation'
+ */
+#define FINAL_PERMUTATION(left, temp, right)		\
+    DO_PERMUTATION(left, temp, right, 1, 0x55555555)	\
+    DO_PERMUTATION(right, temp, left, 8, 0x00ff00ff)	\
+    DO_PERMUTATION(right, temp, left, 2, 0x33333333)	\
+    DO_PERMUTATION(left, temp, right, 16, 0x0000ffff)	\
+    DO_PERMUTATION(left, temp, right, 4, 0x0f0f0f0f)
+
+
+/*
+ * A full DES round including 'expansion funtion', 'sbox substitution'
+ * and 'primitive function P' but without swapping the left and right word.
+ */
+#define DES_ROUND(from, to, work, subkey)		\
+    work = ((from<<1) | (from>>31)) ^ *subkey++;	\
+    to ^= sbox8[  work	    & 0x3f ];			\
+    to ^= sbox6[ (work>>8)  & 0x3f ];			\
+    to ^= sbox4[ (work>>16) & 0x3f ];			\
+    to ^= sbox2[ (work>>24) & 0x3f ];			\
+    work = ((from>>3) | (from<<29)) ^ *subkey++;	\
+    to ^= sbox7[  work	    & 0x3f ];			\
+    to ^= sbox5[ (work>>8)  & 0x3f ];			\
+    to ^= sbox3[ (work>>16) & 0x3f ];			\
+    to ^= sbox1[ (work>>24) & 0x3f ];
+
+
+/*
+ * Macros to convert 8 bytes from/to 32bit words
+ */
+#define READ_64BIT_DATA(data, left, right)					\
+    left  = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];	\
+    right = (data[4] << 24) | (data[5] << 16) | (data[6] << 8) | data[7];
+
+#define WRITE_64BIT_DATA(data, left, right)					\
+    data[0] = (left >> 24) &0xff; data[1] = (left >> 16) &0xff; 		\
+    data[2] = (left >> 8) &0xff; data[3] = left &0xff;				\
+    data[4] = (right >> 24) &0xff; data[5] = (right >> 16) &0xff;		\
+    data[6] = (right >> 8) &0xff; data[7] = right &0xff;
+
+
+/*
+ * Handy macros for encryption and decryption of data
+ */
+#define des_ecb_encrypt(ctx, from, to)		des_ecb_crypt(ctx, from, to, 0)
+#define des_ecb_decrypt(ctx, from, to)		des_ecb_crypt(ctx, from, to, 1)
+#define tripledes_ecb_encrypt(ctx, from, to)	tripledes_ecb_crypt(ctx, from, to, 0)
+#define tripledes_ecb_decrypt(ctx, from, to)	tripledes_ecb_crypt(ctx, from, to, 1)
+
+
+
+
+
+
+/*
+ * des_key_schedule():	  Calculate 16 subkeys pairs (even/odd) for one DES round
+ *
+ *    rawkey:	    8 Bytes of key data
+ *    subkey:	    Array of at least 32 u32s. Will be filled
+ *		    with calculated subkeys.
+ *    mode:	    Key schedule mode.
+ *		    mode == 0:	Calculate subkeys to encrypt
+ *		    mode != 0:	Calculate subkeys to decrypt
+ *
+ */
 static void
-gen_tables()
+des_key_schedule (const byte * rawkey, u32 * subkey, int mode)
 {
-    ip_tbl = make_ip_table( IP );
-    ipinv_tbl = make_ip_table( IPinv );
+  u32 left, right, work;
+  int round;
+
+
+  READ_64BIT_DATA (rawkey, left, right)
+
+  DO_PERMUTATION (right, work, left, 4, 0x0f0f0f0f)
+  DO_PERMUTATION (right, work, left, 0, 0x10101010)
+
+  left = (leftkey_swap[(left >> 0) & 0xf] << 3) | (leftkey_swap[(left >> 8) & 0xf] << 2)
+    | (leftkey_swap[(left >> 16) & 0xf] << 1) | (leftkey_swap[(left >> 24) & 0xf])
+    | (leftkey_swap[(left >> 5) & 0xf] << 7) | (leftkey_swap[(left >> 13) & 0xf] << 6)
+    | (leftkey_swap[(left >> 21) & 0xf] << 5) | (leftkey_swap[(left >> 29) & 0xf] << 4);
+
+  left &= 0x0fffffff;
+
+  right = (rightkey_swap[(right >> 1) & 0xf] << 3) | (rightkey_swap[(right >> 9) & 0xf] << 2)
+    | (rightkey_swap[(right >> 17) & 0xf] << 1) | (rightkey_swap[(right >> 25) & 0xf])
+    | (rightkey_swap[(right >> 4) & 0xf] << 7) | (rightkey_swap[(right >> 12) & 0xf] << 6)
+    | (rightkey_swap[(right >> 20) & 0xf] << 5) | (rightkey_swap[(right >> 28) & 0xf] << 4);
+
+  right &= 0x0fffffff;
+
+  for (round = 0; round < 16; ++round)
+    {
+      if (mode)
+	{
+	  /* decrypt */
+
+	  left = ((left >> decrypt_rotate_tab[round]) | (left << (28 - decrypt_rotate_tab[round]))) & 0x0fffffff;
+	  right = ((right >> decrypt_rotate_tab[round]) | (right << (28 - decrypt_rotate_tab[round]))) & 0x0fffffff;
+	}
+      else
+	{
+	  /* encrypt */
+
+	  left = ((left << encrypt_rotate_tab[round]) | (left >> (28 - encrypt_rotate_tab[round]))) & 0x0fffffff;
+	  right = ((right << encrypt_rotate_tab[round]) | (right >> (28 - encrypt_rotate_tab[round]))) & 0x0fffffff;
+	}
+
+      *subkey++ = ((left << 4) & 0x24000000)
+	| ((left << 28) & 0x10000000)
+	| ((left << 14) & 0x08000000)
+	| ((left << 18) & 0x02080000)
+	| ((left << 6) & 0x01000000)
+	| ((left << 9) & 0x00200000)
+	| ((left >> 1) & 0x00100000)
+	| ((left << 10) & 0x00040000)
+	| ((left << 2) & 0x00020000)
+	| ((left >> 10) & 0x00010000)
+	| ((right >> 13) & 0x00002000)
+	| ((right >> 4) & 0x00001000)
+	| ((right << 6) & 0x00000800)
+	| ((right >> 1) & 0x00000400)
+	| ((right >> 14) & 0x00000200)
+	| (right & 0x00000100)
+	| ((right >> 5) & 0x00000020)
+	| ((right >> 10) & 0x00000010)
+	| ((right >> 3) & 0x00000008)
+	| ((right >> 18) & 0x00000004)
+	| ((right >> 26) & 0x00000002)
+	| ((right >> 24) & 0x00000001);
+
+      *subkey++ = ((left << 15) & 0x20000000)
+	| ((left << 17) & 0x10000000)
+	| ((left << 10) & 0x08000000)
+	| ((left << 22) & 0x04000000)
+	| ((left >> 2) & 0x02000000)
+	| ((left << 1) & 0x01000000)
+	| ((left << 16) & 0x00200000)
+	| ((left << 11) & 0x00100000)
+	| ((left << 3) & 0x00080000)
+	| ((left >> 6) & 0x00040000)
+	| ((left << 15) & 0x00020000)
+	| ((left >> 4) & 0x00010000)
+	| ((right >> 2) & 0x00002000)
+	| ((right << 8) & 0x00001000)
+	| ((right >> 14) & 0x00000808)
+	| ((right >> 9) & 0x00000400)
+	| ((right) & 0x00000200)
+	| ((right << 7) & 0x00000100)
+	| ((right >> 7) & 0x00000020)
+	| ((right >> 3) & 0x00000011)
+	| ((right << 2) & 0x00000004)
+	| ((right >> 21) & 0x00000002);
+    }
 }
 
 
 
-
-
-
-
-void
-des_encrypt_block( DES_context *bc, byte *outbuf, byte *inbuf )
+/*
+ * Fill a DES context with subkeys calculated from a 64bit key.
+ * Does not check parity bits, but simply ignore them.
+ * Does not check for weak keys.
+ */
+static int
+des_setkey (struct _des_ctx *ctx, const byte * key)
 {
-    u32 l, r;
+  if (!ctx || !key)
+    return -1;
 
-    data =   inbuf[0] << 56 | inbuf[1] << 48 | inbuf[2] << 40 | inbuf[3] << 32
-	   | inbuf[4] << 24 | inbuf[5] << 16 | inbuf[6] <<  8 | inbuf[7];
+  des_key_schedule (key, ctx->encrypt_subkeys, 0);
+  des_key_schedule (key, ctx->decrypt_subkeys, 1);
 
-#define IP(L, R, B) \
-	L  = ip[0][B[0]].l; R  = ip[0][B[0]].r; \
-	L |= ip[1][B[1]].l; R |= ip[1][B[1]].r; \
-	L |= ip[2][B[2]].l; R |= ip[2][B[2]].r; \
-	L |= ip[3][B[3]].l; R |= ip[3][B[3]].r; \
-	L |= ip[4][B[4]].l; R |= ip[4][B[4]].r; \
-	L |= ip[5][B[5]].l; R |= ip[5][B[5]].r; \
-	L |= ip[6][B[6]].l; R |= ip[6][B[6]].r; \
-	L |= ip[7][B[7]].l; R |= ip[7][B[7]].r
-
-
-
-    encrypt( bc, &d1, &d2 );
-    outbuf[0] = (d1 >> 24) & 0xff;
-    outbuf[1] = (d1 >> 16) & 0xff;
-    outbuf[2] = (d1 >>	8) & 0xff;
-    outbuf[3] =  d1	   & 0xff;
-    outbuf[4] = (d2 >> 24) & 0xff;
-    outbuf[5] = (d2 >> 16) & 0xff;
-    outbuf[6] = (d2 >>	8) & 0xff;
-    outbuf[7] =  d2	   & 0xff;
+  return 0;
 }
 
 
-void
-des_decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
-{
-    u32 d1, d2;
 
-    d1 = inbuf[0] << 24 | inbuf[1] << 16 | inbuf[2] << 8 | inbuf[3];
-    d2 = inbuf[4] << 24 | inbuf[5] << 16 | inbuf[6] << 8 | inbuf[7];
-    decrypt( bc, &d1, &d2 );
-    outbuf[0] = (d1 >> 24) & 0xff;
-    outbuf[1] = (d1 >> 16) & 0xff;
-    outbuf[2] = (d1 >>	8) & 0xff;
-    outbuf[3] =  d1	   & 0xff;
-    outbuf[4] = (d2 >> 24) & 0xff;
-    outbuf[5] = (d2 >> 16) & 0xff;
-    outbuf[6] = (d2 >>	8) & 0xff;
-    outbuf[7] =  d2	   & 0xff;
+/*
+ * Electronic Codebook Mode DES encryption/decryption of data according to 'mode'.
+ */
+static int
+des_ecb_crypt (struct _des_ctx *ctx, const byte * from, byte * to, int mode)
+{
+  u32 left, right, work;
+  u32 *keys;
+
+  if (!ctx || !from || !to)
+    return -1;
+
+  keys = mode ? ctx->decrypt_subkeys : ctx->encrypt_subkeys;
+
+  READ_64BIT_DATA (from, left, right)
+  INITIAL_PERMUTATION (left, work, right)
+
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+
+  FINAL_PERMUTATION (right, work, left)
+  WRITE_64BIT_DATA (to, right, left)
+
+  return 0;
 }
 
 
-static void
-selftest()
+
+/*
+ * Fill a Triple-DES context with subkeys calculated from two 64bit keys.
+ * Does not check the parity bits of the keys, but simply ignore them.
+ * Does not check for weak keys.
+ */
+static int
+tripledes_set2keys (struct _tripledes_ctx *ctx,
+		    const byte * key1,
+		    const byte * key2)
 {
+  if (!ctx || !key1 || !key2)
+    return -1;
+
+  des_key_schedule (key1, ctx->encrypt_subkeys, 0);
+  des_key_schedule (key1, ctx->decrypt_subkeys, 1);
+
+  des_key_schedule (key2, &(ctx->encrypt_subkeys[32]), 1);
+  des_key_schedule (key2, &(ctx->decrypt_subkeys[32]), 0);
+
+  des_key_schedule (key1, &(ctx->encrypt_subkeys[64]), 0);
+  des_key_schedule (key1, &(ctx->decrypt_subkeys[64]), 1);
+
+  return 0;
 }
 
 
-void
-des_3des_setkey( DES_context *c, byte *key, unsigned keylen )
+
+/*
+ * Fill a Triple-DES context with subkeys calculated from three 64bit keys.
+ * Does not check the parity bits of the keys, but simply ignore them.
+ * Does not check for weak keys.
+ */
+static int
+tripledes_set3keys (struct _tripledes_ctx *ctx,
+		    const byte * key1,
+		    const byte * key2,
+		    const byte * key3)
 {
-    c->tripledes = 1;
+  if (!ctx || !key1 || !key2 || !key3)
+    return -1;
+
+  des_key_schedule (key1, ctx->encrypt_subkeys, 0);
+  des_key_schedule (key1, ctx->decrypt_subkeys, 1);
+
+  des_key_schedule (key2, &(ctx->encrypt_subkeys[32]), 1);
+  des_key_schedule (key2, &(ctx->decrypt_subkeys[32]), 0);
+
+  des_key_schedule (key3, &(ctx->encrypt_subkeys[64]), 0);
+  des_key_schedule (key3, &(ctx->decrypt_subkeys[64]), 1);
+
+  return 0;
 }
 
-void
-des_setkey( DES_context *c, byte *key, unsigned keylen )
+
+
+/*
+ * Electronic Codebook Mode Triple-DES encryption/decryption of data according to 'mode'.
+ */
+static int
+tripledes_ecb_crypt (struct _tripledes_ctx *ctx, const byte * from, byte * to, int mode)
 {
+  u32 left, right, work;
+  u32 *keys;
+
+  if (!ctx || !from || !to)
+    return -1;
+
+  keys = mode ? ctx->decrypt_subkeys : ctx->encrypt_subkeys;
+
+  READ_64BIT_DATA (from, left, right)
+  INITIAL_PERMUTATION (left, work, right)
+
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+
+  DES_ROUND (left, right, work, keys) DES_ROUND (right, left, work, keys)
+  DES_ROUND (left, right, work, keys) DES_ROUND (right, left, work, keys)
+  DES_ROUND (left, right, work, keys) DES_ROUND (right, left, work, keys)
+  DES_ROUND (left, right, work, keys) DES_ROUND (right, left, work, keys)
+  DES_ROUND (left, right, work, keys) DES_ROUND (right, left, work, keys)
+  DES_ROUND (left, right, work, keys) DES_ROUND (right, left, work, keys)
+  DES_ROUND (left, right, work, keys) DES_ROUND (right, left, work, keys)
+  DES_ROUND (left, right, work, keys) DES_ROUND (right, left, work, keys)
+
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+  DES_ROUND (right, left, work, keys) DES_ROUND (left, right, work, keys)
+
+  FINAL_PERMUTATION (right, work, left)
+  WRITE_64BIT_DATA (to, right, left)
+
+  return 0;
 }
 
 
+
+/*
+ * Performs a selftest of this DES/Triple-DES implementation.
+ * Returns an string with the error text on failure.
+ * Returns NULL if all is ok.
+ */
+static const char *
+selftest (void)
+{
+  /*
+   * Check if 'u32' is really 32 bits wide. This DES / 3DES implementation
+   * need this.
+   */
+  if (sizeof (u32) != 4)
+    return "Wrong word size for DES configured.";
+
+
+  /*
+   * DES Maintenance Test
+   */
+  {
+    int i;
+    byte key[8] =
+    {0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55};
+    byte input[8] =
+    {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+    byte result[8] =
+    {0x24, 0x6e, 0x9d, 0xb9, 0xc5, 0x50, 0x38, 0x1a};
+    byte temp1[8], temp2[8], temp3[8];
+    des_ctx des;
+
+    for (i = 0; i < 64; ++i)
+      {
+	des_setkey (des, key);
+	des_ecb_encrypt (des, input, temp1);
+	des_ecb_encrypt (des, temp1, temp2);
+	des_setkey (des, temp2);
+	des_ecb_decrypt (des, temp1, temp3);
+	memcpy (key, temp3, 8);
+	memcpy (input, temp1, 8);
+      }
+    if (memcmp (temp3, result, 8))
+      return "DES maintenace test failed.";
+  }
+
+
+  /*
+   * Triple-DES test  (Does somebody known on official test?)
+   */
+  {
+    int i;
+    byte input[8] =
+    {0xfe, 0xdc, 0xba, 0x98, 0x76, 0x54, 0x32, 0x10};
+    byte key1[8] =
+    {0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0};
+    byte key2[8] =
+    {0x11, 0x22, 0x33, 0x44, 0xff, 0xaa, 0xcc, 0xdd};
+    byte result[8] =
+    {0x7b, 0x38, 0x3b, 0x23, 0xa2, 0x7d, 0x26, 0xd3};
+
+    tripledes_ctx des3;
+
+    for (i = 0; i < 16; ++i)
+      {
+	tripledes_set2keys (des3, key1, key2);
+	tripledes_ecb_encrypt (des3, input, key1);
+	tripledes_ecb_decrypt (des3, input, key2);
+	tripledes_set3keys (des3, key1, input, key2);
+	tripledes_ecb_encrypt (des3, input, input);
+      }
+    if (memcmp (input, result, 8))
+      return "TRIPLE-DES test failed.";
+  }
+
+  return 0;
+}
