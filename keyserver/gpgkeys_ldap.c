@@ -438,8 +438,8 @@ void printquoted(FILE *stream,char *string,char delim)
 {
   while(*string)
     {
-      if(*string==delim)
-	fprintf(stream,"\\x%02X",*string);
+      if(*string==delim || *string=='\\')
+	fprintf(stream,"\\x%02x",*string);
       else
 	fputc(*string,stream);
 

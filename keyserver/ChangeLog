@@ -1,3 +1,7 @@
+2002-03-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (printquoted): Quote backslashes
+
 2002-02-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap (get_key): LDAP keyservers do not support v3
