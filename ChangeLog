@@ -1,3 +1,8 @@
+2002-09-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Try linking LDAP as just -lldap as it seems very
+	recent OpenLDAPs (>=2.0.23) support that.
+
 2002-09-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Try linking LDAP without -lresolv first, just in
