@@ -1,5 +1,9 @@
 2003-09-30  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpg.sgml: Note web bug behavior of auto-key-retrieve.  Note that
+	big photos mean big keys.  Document --rfc2440.  Document
+	verify-option show-unusable-uids.
+
 	* gpg.sgml: Clarify --mangle-dos-filenames, document list-option
 	show-unusable-uids, remove --no-comment (which is now
 	--no-sk-comments), add --no-comments (to remove --comment), remove

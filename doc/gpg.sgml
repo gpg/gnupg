@@ -364,7 +364,9 @@ Create an alternate user id.</para></listitem></varlistentry>
     <term>addphoto</term>
     <listitem><para>
 Create a photographic user id.  This will prompt for a JPEG file that
-will be embedded into the user ID.</para></listitem></varlistentry>
+will be embedded into the user ID.  A very large JPEG will make for a
+very large key.
+</para></listitem></varlistentry>
     <varlistentry>
     <term>deluid</term>
     <listitem><para>
@@ -1142,6 +1144,12 @@ keyserver over the proxy set with the environment variable
 This option enables the automatic retrieving of keys from a keyserver
 when verifying signatures made by keys that are not on the local
 keyring.
+</para><para>
+Note that this option makes a "web bug" like behavior possible.
+Keyserver operators can see which keys you request, so by sending you
+a message signed by a brand new key (which you naturally will not have
+on your local keyring), the operator can tell both your IP address and
+the time when you verified the signature.
 </para></listitem></varlistentry>
 
 </variablelist>
@@ -1340,6 +1348,13 @@ the signature.  Defaults to no.
 <listitem><para>
 Display all 64 bits (16 digits) of key IDs during signature
 verification, rather than the more common 32 bit (8 digit) IDs.
+Defaults to no.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>show-unusable-uids</term>
+<listitem><para>
+Show revoked and expired user IDs during signature verification.
 Defaults to no.
 </para></listitem></varlistentry>
 
@@ -1961,6 +1976,13 @@ behavior.  Use this option to reset all previous options like
 --rfc1991, --force-v3-sigs, --s2k-*, --cipher-algo, --digest-algo and
 --compress-algo to OpenPGP compliant values.  All PGP workarounds are
 disabled.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--rfc2440</term>
+<listitem><para>
+Reset all packet, cipher and digest options to strict RFC-2440
+behavior.  Note that this is currently the same thing as --openpgp.
 </para></listitem></varlistentry>
 
 <varlistentry>
