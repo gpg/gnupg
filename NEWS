@@ -7,6 +7,8 @@
 
     * Rijndael (AES) is now supported and listed as first preference.
 
+    * --with-colons now works with --print-md[s].
+
 Noteworthy changes in version 1.0.3 (2000-09-18)
 ------------------------------------------------
 

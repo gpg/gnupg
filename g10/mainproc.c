@@ -1114,6 +1114,37 @@ check_sig_and_print( CTX c, KBNODE node )
 	return 0;
     }
 
+    /* It is not in all cases possible to check multiple signatures:
+     * PGP 2 (which is also allowed by OpenPGP), does use the packet
+     * sequence: sig+data,  OpenPGP does use onepas+data=sig and GnuPG
+     * sometimes uses (because I did'nt read the specs right) data+sig.
+     * Because it is possible to create multiple signatures with
+     * different packet sequence (e.g. data+sig and sig+data) it might
+     * not be possible to get it right:  let's say we have:
+     * data+sig, sig+data,sig+data and we have not yet encountered the last
+     * data, we could also see this a one data with 2 signatures and then 
+     * data+sig.
+     * To protect against this we check that we all signatures follow
+     * without any intermediate packets.  Note, that we won't get this
+     * error when we use onepass packets or cleartext signatures because
+     * we reset the list every time
+     */
+    {
+        KBNODE n;
+        int tmp=0;
+
+        for(n=c->list; n; n=n->next ) {
+            if ( tmp && n->pkt->pkttype == PKT_SIGNATURE ) {
+                log_error("can't handle these multiple signatures\n");
+                return 0;
+            }
+            else if ( n->pkt->pkttype == PKT_SIGNATURE ) 
+                tmp = 1;
+        }
+    }
+    
+
+
     tstr = asctimestamp(sig->timestamp);
     astr = pubkey_algo_to_string( sig->pubkey_algo );
     log_info(_("Signature made %.*s using %s key ID %08lX\n"),
@@ -1335,6 +1366,7 @@ proc_tree( CTX c, KBNODE node )
 	log_error(_("invalid root packet detected in proc_tree()\n"));
 
 }
+
 
 
 

@@ -1608,6 +1608,30 @@ print_hex( byte *p, size_t n )
 }
 
 static void
+print_hashline( MD_HANDLE md, int algo, const char *fname )
+{
+    int i, n;
+    const byte *p;
+    
+    if ( fname ) {
+        for (p = fname; *p; p++ ) {
+            if ( *p <= 32 || *p > 127 || *p == ':' || *p == '%' )
+                printf("%%%02X", *p );
+            else 
+                putchar( *p );
+        }
+    }
+    putchar(':');
+    printf("%d:", algo );
+    p = md_read( md, algo );
+    n = md_digest_length(algo);
+    for(i=0; i < n ; i++, p++ ) 
+        printf("%02X", *p );
+    putchar(':');
+    putchar('\n');
+}
+
+static void
 print_mds( const char *fname, int algo )
 {
     FILE *fp;
@@ -1651,24 +1675,37 @@ print_mds( const char *fname, int algo )
 	log_error("%s%s\n", pname, strerror(errno) );
     else {
 	md_final(md);
-	if( algo ) {
-	    if( fname )
-		fputs( pname, stdout );
-	    print_hex(md_read(md, algo), md_digest_length(algo) );
-	}
-	else {
-	    printf(  "%s   MD5 = ", fname?pname:"" );
-			    print_hex(md_read(md, DIGEST_ALGO_MD5), 16 );
-	    printf("\n%s  SHA1 = ", fname?pname:""  );
-			    print_hex(md_read(md, DIGEST_ALGO_SHA1), 20 );
-	    printf("\n%sRMD160 = ", fname?pname:""  );
-			    print_hex(md_read(md, DIGEST_ALGO_RMD160), 20 );
-	    if( !check_digest_algo(DIGEST_ALGO_TIGER) ) {
-		printf("\n%s TIGER = ", fname?pname:""  );
-			    print_hex(md_read(md, DIGEST_ALGO_TIGER), 24 );
-	    }
-	}
-	putchar('\n');
+        if ( opt.with_colons ) {
+            if ( algo ) 
+                print_hashline( md, algo, fname );
+            else {
+                print_hashline( md, DIGEST_ALGO_MD5, fname );
+                print_hashline( md, DIGEST_ALGO_SHA1, fname );
+                print_hashline( md, DIGEST_ALGO_RMD160, fname );
+                if( !check_digest_algo(DIGEST_ALGO_TIGER) ) 
+                    print_hashline( md, DIGEST_ALGO_TIGER, fname );
+            }
+        }
+        else {
+            if( algo ) {
+                if( fname )
+                    fputs( pname, stdout );
+                print_hex(md_read(md, algo), md_digest_length(algo) );
+            }
+            else {
+                printf(  "%s   MD5 = ", fname?pname:"" );
+                print_hex(md_read(md, DIGEST_ALGO_MD5), 16 );
+                printf("\n%s  SHA1 = ", fname?pname:""  );
+                print_hex(md_read(md, DIGEST_ALGO_SHA1), 20 );
+                printf("\n%sRMD160 = ", fname?pname:""  );
+                print_hex(md_read(md, DIGEST_ALGO_RMD160), 20 );
+                if( !check_digest_algo(DIGEST_ALGO_TIGER) ) {
+                    printf("\n%s TIGER = ", fname?pname:""  );
+                    print_hex(md_read(md, DIGEST_ALGO_TIGER), 24 );
+                }
+            }
+            putchar('\n');
+        }
     }
     md_close(md);
 

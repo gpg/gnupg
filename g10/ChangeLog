@@ -1,3 +1,11 @@
+2000-10-16  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (print_hashline): New.
+	(print_mds): Use above func with --with-colons.
+
+	* mainproc.c (check_sig_and_print): Detect multiple signatures
+	and don't verify them.
+
 2000-10-14  Werner Koch  <wk@gnupg.org>
 
 	* mainproc.c (add_onepass_sig): There is an easier solution to the
