@@ -98,11 +98,5 @@ pgmname=`basename $0`
 
 [ -z "$srcdir" ] && fatal "not called from make"
 
-cat <<EOF  >./options
-no-greeting
-no-secmem-warning
-load-extension ../cipher/tiger
-batch
-emulate-md-encode-bug
-EOF
-
+:
+# end

@@ -18,8 +18,8 @@
 
 ## Process this file with automake to create Makefile.in
 
-GPG_DEARMOR = ../g10/gpg --no-options --quiet --yes --dearmor
-GPG_IMPORT  = ../g10/gpg --homedir . --no-options --quiet --yes --import
+GPG_DEARMOR = ../g10/gpg --no-options --no-greeting --batch --quiet --yes --dearmor
+GPG_IMPORT  = ../g10/gpg --homedir . --quiet --yes --import
 
 TESTS = version.test mds.test \
 	decrypt.test decrypt-dsa.test \
@@ -36,7 +36,7 @@ TESTS = version.test mds.test \
 
 TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
 	     plain-1.asc plain-2.asc plain-3.asc plain-1-pgp.asc \
-	     pubring.pkr.asc secring.skr.asc secdemo.asc pubdemo.asc
+	     pubring.pkr.asc secring.skr.asc secdemo.asc pubdemo.asc options.in
 
 DATA_FILES = data-500 data-9000 data-32000 data-80000 plain-large
 
@@ -44,7 +44,7 @@ EXTRA_DIST = defs.inc run-gpg run-gpg.patterns $(TESTS) $(TEST_FILES) \
 	     mkdemodirs signdemokey
 CLEANFILES = prepared.stamp x y yy z out err  $(DATA_FILES) \
 	     plain-1 plain-2 plain-3 options trustdb.gpg *.lock .\#lk* \
-	     pubring.gpg secring.gpg pubring.pkr secring.skr
+	     pubring.gpg secring.gpg pubring.pkr secring.skr options
 DISTCLEANFILES = pubring.gpg~
 
 
@@ -54,13 +54,15 @@ distclean-local:
 	./mkdemodirs --clean
 
 prepared.stamp: ./pubring.gpg ./secring.gpg ./plain-1 ./plain-2 ./plain-3 \
-		./pubring.pkr ./secring.skr $(DATA_FILES)
+		./pubring.pkr ./secring.skr ./options $(DATA_FILES)
+	 $(GPG_IMPORT) $(srcdir)/pubdemo.asc	 
 	 echo timestamp >./prepared.stamp
 
+./options: $(srcdir)/options.in
+	cat $(srcdir)/options.in >./options
 
 ./pubring.gpg: $(srcdir)/pubring.asc $(srcdir)/pubdemo.asc
 	 $(GPG_DEARMOR) -o ./pubring.gpg $(srcdir)/pubring.asc
-	 $(GPG_IMPORT) $(srcdir)/pubdemo.asc	 
 
 ./secring.gpg: $(srcdir)/secring.asc
 	 $(GPG_DEARMOR) -o ./secring.gpg $(srcdir)/secring.asc

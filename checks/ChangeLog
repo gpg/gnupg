@@ -1,5 +1,9 @@
 2001-03-27  Werner Koch  <wk@gnupg.org>
 
+	* defs.inc: Removed creation of options file.
+	* options.in: New.
+	* Makefile.am: Create options file and fixed import of pubdemo.asc.
+
 	* run-gpg.patterns (gpg): Add some more patterns.
 
 2001-03-20  Werner Koch  <wk@gnupg.org>
