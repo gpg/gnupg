@@ -1,3 +1,8 @@
+2002-11-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Add a mostly noop --trust-model option to smooth
+	transition to 1.4.
+
 2002-10-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* build-packet.c (do_plaintext), encode.c (encode_sesskey,

@@ -203,6 +203,7 @@ enum cmd_and_opt_values { aNull = 0,
     oCompressKeys,
     oCompressSigs,
     oAlwaysTrust,
+    oTrustModel,
     oEmuChecksumBug,
     oRunAsShmCP,
     oSetFilename,
@@ -513,6 +514,7 @@ static ARGPARSE_OPTS opts[] = {
     { oCompressSigs, "compress-sigs",0, "@"},
     { oDefCertCheckLevel, "default-cert-check-level", 1, "@"},
     { oAlwaysTrust, "always-trust", 0, "@"},
+    { oTrustModel, "trust-model", 2, "@"},
     { oEmuChecksumBug, "emulate-checksum-bug", 0, "@"},
     { oRunAsShmCP, "run-as-shm-coprocess", 4, "@" },
     { oSetFilename, "set-filename", 2, "@" },
@@ -1394,6 +1396,14 @@ main( int argc, char **argv )
 	  case oCompressKeys: opt.compress_keys = 1; break;
 	  case aListSecretKeys: set_cmd( &cmd, aListSecretKeys); break;
 	  case oAlwaysTrust: opt.always_trust = 1; break;
+	  case oTrustModel:
+	    if(ascii_strcasecmp(pargs.r.ret_str,"classic")==0)
+	      opt.always_trust=0;
+	    else if(ascii_strcasecmp(pargs.r.ret_str,"always")==0)
+	      opt.always_trust=1;
+	    else
+	      log_error("unknown trust model \"%s\"\n",pargs.r.ret_str);
+	    break;
 	  case oLoadExtension:
 #ifndef __riscos__
 #if defined(USE_DYNAMIC_LINKING) || defined(__MINGW32__)
