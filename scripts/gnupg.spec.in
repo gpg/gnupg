@@ -184,13 +184,15 @@ rm %{buildroot}%{_infodir}/dir
 %attr (0755,root,root) %{_libexecdir}/*
 
 %post
-/sbin/install-info %{_infodir}/gpg.info %{_infodir}/dir
-/sbin/install-info %{_infodir}/gpgv.info %{_infodir}/dir
+/sbin/install-info %{_infodir}/gpg.info %{_infodir}/dir 2>/dev/null || :
+/sbin/install-info %{_infodir}/gpgv.info %{_infodir}/dir 2>/dev/null || :
 
 %preun
 if [ $1 = 0 ]; then
-   /sbin/install-info --delete %{_infodir}/gpg.info %{_infodir}/dir
-   /sbin/install-info --delete %{_infodir}/gpgv.info %{_infodir}/dir
+   /sbin/install-info --delete %{_infodir}/gpg.info \
+	%{_infodir}/dir 2>/dev/null || :
+   /sbin/install-info --delete %{_infodir}/gpgv.info \
+	%{_infodir}/dir 2>/dev/null || :
 fi
 
 %clean
