@@ -171,10 +171,10 @@ void gpgsm_init_default_ctrl (struct server_control_s *ctrl);
 
 /*-- server.c --*/
 void gpgsm_server (certlist_t default_recplist);
-void gpgsm_status (ctrl_t ctrl, int no, const char *text);
-void gpgsm_status2 (ctrl_t ctrl, int no, ...);
-void gpgsm_status_with_err_code (ctrl_t ctrl, int no, const char *text,
-                                 gpg_err_code_t ec);
+gpg_error_t gpgsm_status (ctrl_t ctrl, int no, const char *text);
+gpg_error_t gpgsm_status2 (ctrl_t ctrl, int no, ...);
+gpg_error_t gpgsm_status_with_err_code (ctrl_t ctrl, int no, const char *text,
+                                        gpg_err_code_t ec);
 
 /*-- fingerprint --*/
 char *gpgsm_get_fingerprint (ksba_cert_t cert, int algo,

@@ -964,18 +964,19 @@ get_status_string ( int no )
 }
 
 
-void
+gpg_error_t
 gpgsm_status2 (CTRL ctrl, int no, ...)
 {
+  gpg_error_t err = 0;
   va_list arg_ptr;
   const char *text;
 
   va_start (arg_ptr, no);
 
-  if (ctrl->no_server)
+  if (ctrl->no_server && ctrl->status_fd == -1)
+    ; /* No status wanted. */
+  else if (ctrl->no_server)
     {
-      if (ctrl->status_fd == -1)
-        return; /* no status wanted */
       if (!statusfp)
         {
           if (ctrl->status_fd == 1)
@@ -1030,19 +1031,21 @@ gpgsm_status2 (CTRL ctrl, int no, ...)
             *p++ = *text++;
         }
       *p = 0;
-      assuan_write_status (ctx, get_status_string (no), buf);
+      err = map_assuan_err (assuan_write_status (ctx,
+                                                 get_status_string (no), buf));
     }
 
   va_end (arg_ptr);
+  return err;
 }
 
-void
+gpg_error_t
 gpgsm_status (CTRL ctrl, int no, const char *text)
 {
-  gpgsm_status2 (ctrl, no, text, NULL);
+  return gpgsm_status2 (ctrl, no, text, NULL);
 }
 
-void
+gpg_error_t
 gpgsm_status_with_err_code (CTRL ctrl, int no, const char *text,
                             gpg_err_code_t ec)
 {
@@ -1050,9 +1053,9 @@ gpgsm_status_with_err_code (CTRL ctrl, int no, const char *text,
 
   sprintf (buf, "%u", (unsigned int)ec);
   if (text)
-    gpgsm_status2 (ctrl, no, text, buf, NULL);
+    return gpgsm_status2 (ctrl, no, text, buf, NULL);
   else
-    gpgsm_status2 (ctrl, no, buf, NULL);
+    return gpgsm_status2 (ctrl, no, buf, NULL);
 }
 
 #if 0

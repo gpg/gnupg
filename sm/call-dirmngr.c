@@ -355,7 +355,8 @@ isvalid_status_cb (void *opaque, const char *line)
         {
           for (line += 8; *line == ' '; line++)
             ;
-          gpgsm_status (parm->ctrl, STATUS_PROGRESS, line);
+          if (gpgsm_status (parm->ctrl, STATUS_PROGRESS, line))
+            return ASSUAN_Canceled;
         }
     }
   else if (!strncmp (line, "ONLY_VALID_IF_CERT_VALID", 24)
@@ -625,7 +626,8 @@ lookup_status_cb (void *opaque, const char *line)
         {
           for (line += 8; *line == ' '; line++)
             ;
-          gpgsm_status (parm->ctrl, STATUS_PROGRESS, line);
+          if (gpgsm_status (parm->ctrl, STATUS_PROGRESS, line))
+            return ASSUAN_Canceled;
         }
     }
   else if (!strncmp (line, "TRUNCATED", 9) && (line[9]==' ' || !line[9]))
@@ -760,7 +762,8 @@ run_command_status_cb (void *opaque, const char *line)
         {
           for (line += 8; *line == ' '; line++)
             ;
-          gpgsm_status (ctrl, STATUS_PROGRESS, line);
+          if (gpgsm_status (ctrl, STATUS_PROGRESS, line))
+            return ASSUAN_Canceled;
         }
     }
   return 0;
