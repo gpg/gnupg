@@ -1,3 +1,13 @@
+2003-05-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Document --gnupg and the deprecation of --no-openpgp and
+	--no-pgpX.
+
+	* configure.ac: Put wsock32 in NETLIBS.  Put zlib in ZLIBS.  Put
+	dl in DLLIBS.  Check for getopt.h if available.  Look for getopt()
+	in libiberty if libc doesn't have it.  Enable GPGKEYS_HKP after
+	AC_PROG_CC so that any needed extension (i.e. ".exe") is defined.
+
 2003-05-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Edit preprocessor instructions in g10defs.h to

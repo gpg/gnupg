@@ -1,6 +1,12 @@
 Noteworthy changes in version 1.2.3 (unreleased)
 ------------------------------------------------
 
+    * New "--gnupg" option (set by default) that disables --openpgp,
+      and the various --pgpX emulation options.  This replaces
+      --no-openpgp, and --no-pgpX, and also means that GnuPG has now
+      grown a --gnupg option to make GnuPG act like GnuPG.
+
+
 Noteworthy changes in version 1.2.2 (2003-05-01)
 ------------------------------------------------
 
