@@ -54,7 +54,7 @@ typedef enum {
 typedef struct packet_struct PACKET;
 
 typedef struct {
-    byte mode;
+    int  mode;
     byte hash_algo;
     byte salt[8];
     u32  count;

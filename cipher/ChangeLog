@@ -1,3 +1,15 @@
+Fri Jan 14 18:32:01 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* rmd160.c (rmd160_get_info): Moved casting to the left side due to a
+	problem with UTS4.3.  Suggested by Dave Dykstra.
+	* sha1.c (sha1_get_info): Ditto.
+	* tiger.c (tiger_get_info): Ditto.
+	* md5.c (md5_get_info): Ditto
+	* des.c (des_get_info): Ditto.
+	* blowfish.c (blowfish_get_info): Ditto.
+	* cast5.c (cast5_get_info): Ditto.
+	* twofish.c (twofish_get_info): Ditto.
+
 Thu Jan 13 19:31:58 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* elgamal.c (wiener_map): New.
@@ -5,7 +17,7 @@ Thu Jan 13 19:31:58 CET 2000  Werner Koch  <wk@gnupg.de>
 	(generate): Calculate the qbits using the wiener map and
 	choose an x at a size comparable to the one choosen in gen_k
 
-	* random.c (read_pool): Print a more friendly erro message in
+	* random.c (read_pool): Print a more friendly error message in
 	cases when too much random is requested in one call.
 
 	* Makefile.am (tiger): Replaced -O1 by -O. Suggested by Alec Habig.

@@ -1,3 +1,14 @@
+Fri Jan 14 18:32:01 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* packet.h (STRING2KEY): Changed mode from byte to int.
+	* parse-packet.c (parse_key): Add the special GNU protection stuff
+	* build-packet.c (so_secret_key): Ditto.
+	* seckey-cert.c (do_check): Ditto.
+	* keyedit.c (change_passphrase): Ditto.
+	* export.c (export_secsubkeys): New.
+	(do_export_stream): Hack to export the primary key using mode 1001.
+	* g10.c: New command --export-secret-subkeys
+
 Thu Jan 13 19:31:58 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* armor.c (is_armored): Check for 1-pass-sig packets. Reported by

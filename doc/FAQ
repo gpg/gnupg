@@ -372,3 +372,30 @@
      message and encrypt it again without this option.	The option will
      be removed in 1.1, so better re-encrypt your message now.
 
+  Q: How can I used GnuPG in an automated environment?
+  A: You should use the option --batch and don't use passphrases as
+     there is usually no way to store it more secure than the secret
+     keyring itself.  The suggested way to create the keys for the
+     automated envirionment ist:
+	On a secure machine:
+	1. If you want to do automatic signing, create a signing subkey
+	   for your key (edit menu, choose "addkey" and the DSA).
+	2. Make sure that you use a passphrase (Needed by the current
+	   implementation)
+	3. gpg --export-secret-subkeys --no-comment foo >secring.auto
+	4. Copy secring.auto and the public keyring to a test directory.
+	5. Cd to this diectory
+	6. gpg --homedir . --edit foo
+	   and use "passwd" to remove the passphrase from the subkeys.
+	   You may also want to remove all unused subkeys.
+	7. copy secring.auto to a floppy and carry it to the
+	   target box
+	On the target machine:
+	8. Install secring.auto as secret keyring.
+	9. Now you can start your new service.	It is a good idea to
+	   install some intrusion detection system so that you hopefully
+	   get a notice of an successful intrusion, so that you in turn can
+	   revoke all the subkeys installed on that machine and install new
+	   subkeys.
+
+

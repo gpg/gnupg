@@ -407,6 +407,7 @@ change_passphrase( KBNODE keyblock )
     KBNODE node;
     PKT_secret_key *sk;
     char *passphrase = NULL;
+    int no_primary_secrets = 0;
 
     node = find_kbnode( keyblock, PKT_SECRET_KEY );
     if( !node ) {
@@ -423,10 +424,16 @@ change_passphrase( KBNODE keyblock )
 	tty_printf(_("This key is not protected.\n"));
 	break;
       default:
-	tty_printf(_("Key is protected.\n"));
-	rc = check_secret_key( sk, 0 );
-	if( !rc )
-	    passphrase = get_last_passphrase();
+	if( sk->protect.s2k.mode == 1001 ) {
+	    tty_printf(_("Secret parts of primary key are not available.\n"));
+	    no_primary_secrets = 1;
+	}
+	else {
+	    tty_printf(_("Key is protected.\n"));
+	    rc = check_secret_key( sk, 0 );
+	    if( !rc )
+		passphrase = get_last_passphrase();
+	}
 	break;
     }
 
@@ -436,6 +443,8 @@ change_passphrase( KBNODE keyblock )
 	    PKT_secret_key *subsk = node->pkt->pkt.secret_key;
 	    set_next_passphrase( passphrase );
 	    rc = check_secret_key( subsk, 0 );
+	    if( !rc && !passphrase )
+		passphrase = get_last_passphrase();
 	}
     }
 
@@ -465,9 +474,12 @@ change_passphrase( KBNODE keyblock )
 		break;
 	    }
 	    else { /* okay */
-		sk->protect.algo = dek->algo;
-		sk->protect.s2k = *s2k;
-		rc = protect_secret_key( sk, dek );
+		rc = 0;
+		if( !no_primary_secrets ) {
+		    sk->protect.algo = dek->algo;
+		    sk->protect.s2k = *s2k;
+		    rc = protect_secret_key( sk, dek );
+		}
 		for(node=keyblock; !rc && node; node = node->next ) {
 		    if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
 			PKT_secret_key *subsk = node->pkt->pkt.secret_key;

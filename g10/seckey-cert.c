@@ -49,6 +49,10 @@ do_check( PKT_secret_key *sk )
 	CIPHER_HANDLE cipher_hd=NULL;
 	PKT_secret_key *save_sk;
 
+	if( sk->protect.s2k.mode == 1001 ) {
+	    log_info(_("secret key parts are not available\n"));
+	    return G10ERR_GENERAL;
+	}
 	if( sk->protect.algo == CIPHER_ALGO_NONE )
 	    BUG();
 	if( check_cipher_algo( sk->protect.algo ) ) {

@@ -371,19 +371,30 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 	else {
 	    iobuf_put(a, 0xff );
 	    iobuf_put(a, sk->protect.algo );
-	    iobuf_put(a, sk->protect.s2k.mode );
-	    iobuf_put(a, sk->protect.s2k.hash_algo );
+	    if( sk->protect.s2k.mode >= 1000 ) {
+		iobuf_put(a, 101 );
+		iobuf_put(a, sk->protect.s2k.hash_algo );
+		iobuf_write(a, "GNU", 3 );
+		iobuf_put(a, sk->protect.s2k.mode - 1000 );
+	    }
+	    else {
+		iobuf_put(a, sk->protect.s2k.mode );
+		iobuf_put(a, sk->protect.s2k.hash_algo );
+	    }
 	    if( sk->protect.s2k.mode == 1
 		|| sk->protect.s2k.mode == 3 )
 		iobuf_write(a, sk->protect.s2k.salt, 8 );
 	    if( sk->protect.s2k.mode == 3 )
 		iobuf_put(a, sk->protect.s2k.count );
-	    iobuf_write(a, sk->protect.iv, sk->protect.ivlen );
+	    if( sk->protect.s2k.mode != 1001 )
+		iobuf_write(a, sk->protect.iv, sk->protect.ivlen );
 	}
     }
     else
 	iobuf_put(a, 0 );
-    if( sk->is_protected && sk->version >= 4 ) {
+    if( sk->protect.s2k.mode == 1001 )
+	;
+    else if( sk->is_protected && sk->version >= 4 ) {
 	byte *p;
 	assert( mpi_is_opaque( sk->skey[npkey] ) );
 	p = mpi_get_opaque( sk->skey[npkey], &i );

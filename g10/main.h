@@ -124,6 +124,7 @@ int collapse_uids( KBNODE *keyblock );
 int export_pubkeys( STRLIST users, int onlyrfc );
 int export_pubkeys_stream( IOBUF out, STRLIST users, int onlyrfc );
 int export_seckeys( STRLIST users );
+int export_secsubkeys( STRLIST users );
 
 /* dearmor.c --*/
 int dearmor_file( const char *fname );

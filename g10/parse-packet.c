@@ -1324,6 +1324,24 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		sk->protect.algo = iobuf_get_noeof(inp); pktlen--;
 		sk->protect.s2k.mode  = iobuf_get_noeof(inp); pktlen--;
 		sk->protect.s2k.hash_algo = iobuf_get_noeof(inp); pktlen--;
+		/* check for the special GNU extension */
+		if( is_v4 && sk->protect.s2k.mode == 101 ) {
+		    for(i=0; i < 4 && pktlen; i++, pktlen-- )
+			temp[i] = iobuf_get_noeof(inp);
+		    if( i < 4 || memcmp( temp, "GNU", 3 ) ) {
+			if( list_mode )
+			    printf(  "\tunknown S2K %d\n",
+						sk->protect.s2k.mode );
+			rc = G10ERR_INVALID_PACKET;
+			goto leave;
+		    }
+		    /* here we know that it is a gnu extension
+		     * What follows is the GNU protection mode:
+		     * All values have special meanings
+		     * and they are mapped in the mode with a base of 1000.
+		     */
+		    sk->protect.s2k.mode = 1000 + temp[3];
+		}
 		switch( sk->protect.s2k.mode ) {
 		  case 1:
 		  case 3:
@@ -1339,10 +1357,13 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		    break;
 		  case 3: if( list_mode ) printf(  "\titer+salt S2K" );
 		    break;
+		  case 1001: if( list_mode ) printf(  "\tgnu-dummy S2K" );
+		    break;
 		  default:
 		    if( list_mode )
-			printf(  "\tunknown S2K %d\n",
-					    sk->protect.s2k.mode );
+			printf(  "\tunknown %sS2K %d\n",
+				 sk->protect.s2k.mode < 1000? "":"GNU ",
+						   sk->protect.s2k.mode );
 		    rc = G10ERR_INVALID_PACKET;
 		    goto leave;
 		}
@@ -1395,6 +1416,9 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	      default:
 		sk->protect.ivlen = 8;
 	    }
+	    if( sk->protect.s2k.mode == 1001 )
+		sk->protect.ivlen = 0;
+
 	    if( pktlen < sk->protect.ivlen ) {
 		rc = G10ERR_INVALID_PACKET;
 		goto leave;
@@ -1415,7 +1439,12 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	 * If the user is so careless, not to protect his secret key,
 	 * we can assume, that he operates an open system :=(.
 	 * So we put the key into secure memory when we unprotect it. */
-	if( is_v4 && sk->is_protected ) {
+	if( sk->protect.s2k.mode == 1001 ) {
+	    /* better set some dummy stuff here */
+	    sk->skey[npkey] = mpi_set_opaque(NULL, m_strdup("dummydata"), 10);
+	    pktlen = 0;
+	}
+	else if( is_v4 && sk->is_protected ) {
 	    /* ugly; the length is encrypted too, so we read all
 	     * stuff up to the end of the packet into the first
 	     * skey element */

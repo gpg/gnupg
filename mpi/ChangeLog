@@ -5,7 +5,7 @@ Thu Jan 13 19:31:58 CET 2000  Werner Koch  <wk@gnupg.de>
 	(mpihelp_mul_karatsuba_case): New.
 	(mpihelp_mul): Splitted to make use of the new functions.
 	* mpi-pow.c (mpi_powm): Make use of the new splitted function
-	to avoid multiple allocation of temorary memory during the
+	to avoid multiple allocation of temporary memory during the
 	karatsuba operations.
 
 	* mpi_mpow.c: Removed the unused Barrett code.

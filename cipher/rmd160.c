@@ -562,10 +562,10 @@ rmd160_get_info( int algo, size_t *contextsize,
     *r_asnoid = asn;
     *r_asnlen = DIM(asn);
     *r_mdlen = 20;
-    *r_init  = (void (*)(void *))rmd160_init;
-    *r_write = (void (*)(void *, byte*, size_t))rmd160_write;
-    *r_final = (void (*)(void *))rmd160_final;
-    *r_read  = (byte *(*)(void *))rmd160_read;
+    *(void  (**)(RMD160_CONTEXT *))r_init		  = rmd160_init;
+    *(void  (**)(RMD160_CONTEXT *, byte*, size_t))r_write = rmd160_write;
+    *(void  (**)(RMD160_CONTEXT *))r_final		  = rmd160_final;
+    *(byte *(**)(RMD160_CONTEXT *))r_read		  = rmd160_read;
 
     return "RIPEMD160";
 }

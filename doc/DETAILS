@@ -494,6 +494,15 @@ There is one enhancement used with the old style packet headers:
 +  that this is the last packet.
 
 
+GNU extensions to the S2K algorithm
+===================================
+S2K mode 101 is used to identify these extensions.
+After the hash algorithm the 3 bytes "GNU" are used to make
+clear that these are extensions for GNU, the next bytes gives the
+GNU protection mode - 1000.  Defined modes are:
+  1001 - do not store the secret part at all
+
+
 Usage of gdbm files for keyrings
 ================================
     The key to store the keyblock is it's fingerprint, other records

@@ -88,6 +88,7 @@ enum cmd_and_opt_values { aNull = 0,
     aExport,
     aExportAll,
     aExportSecret,
+    aExportSecretSub,
     aCheckKeys,
     aGenRevoke,
     aPrimegen,
@@ -217,6 +218,7 @@ static ARGPARSE_OPTS opts[] = {
     { aRecvKeys, "recv-keys"     , 256, N_("import keys from a key server") },
     { aExportAll, "export-all"    , 256, "@" },
     { aExportSecret, "export-secret-keys" , 256, "@" },
+    { aExportSecretSub, "export-secret-subkeys" , 256, "@" },
     { aImport, "import",      256     , N_("import/merge keys")},
     { aFastImport, "fast-import",  256 , "@"},
     { aListPackets, "list-packets",256,N_("list only the sequence of packets")},
@@ -697,6 +699,7 @@ main( int argc, char **argv )
 	  case aListKeys: set_cmd( &cmd, aListKeys); break;
 	  case aListSigs: set_cmd( &cmd, aListSigs); break;
 	  case aExportSecret: set_cmd( &cmd, aExportSecret); break;
+	  case aExportSecretSub: set_cmd( &cmd, aExportSecretSub); break;
 	  case aDeleteSecretKey: set_cmd( &cmd, aDeleteSecretKey);
 							greeting=1; break;
 	  case aDeleteKey: set_cmd( &cmd, aDeleteKey); greeting=1; break;
@@ -1268,6 +1271,14 @@ main( int argc, char **argv )
 	for( ; argc; argc--, argv++ )
 	    add_to_strlist2( &sl, *argv, utf8_strings );
 	export_seckeys( sl );
+	free_strlist(sl);
+	break;
+
+      case aExportSecretSub:
+	sl = NULL;
+	for( ; argc; argc--, argv++ )
+	    add_to_strlist2( &sl, *argv, utf8_strings );
+	export_secsubkeys( sl );
 	free_strlist(sl);
 	break;
 

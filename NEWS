@@ -1,3 +1,5 @@
+Noteworthy changes in the current test release
+----------------------------------------------
 
     * Some fixes for the W32 version
 
@@ -6,6 +8,14 @@
 
     * New encryption keys are generated in way which allows a much
       faster decryption.
+
+    * New command --export-secret-subkeys which outputs the
+      the _primary_ key with is's secret parts deleted.  This is
+      useful for automated decryption/signature creation as it
+      allows to keep the real secret primary key offline and
+      thereby protecting the key certificates and allowing to
+      create revocations for the subkeys.  See the FAQ for a
+      procedure to install such secret keys.
 
 
 Noteworthy changes in version 1.0.1 (1999-12-16)

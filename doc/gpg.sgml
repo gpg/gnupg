@@ -27,7 +27,7 @@
 -->
 
 
-<!DOCTYPE RefEntry PUBLIC "-//Davenport//DTD DocBook V3.0//EN" [
+<!DOCTYPE refentry PUBLIC "-//Davenport//DTD DocBook V3.0//EN" [
 <!entity ParmDir "<parameter>directory</parameter>">
 <!entity ParmFile "<parameter>file</parameter>">
 <!entity OptParmFile "<optional>&ParmFile;</optional>">
@@ -157,7 +157,7 @@ and the remaining files are the signed stuff.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--verify-files <optional><optional><parameter/files/</optional>
+<term>--verify-files <optional><parameter/files/</optional></term>
 <listitem><para>
 This is a special version of the --verify command which does not work with
 detached signatures.  The command expects the files to bee verified either
@@ -431,9 +431,14 @@ are not compatible to OpenPGP.
 
 <varlistentry>
 <term>--export-secret-keys &OptParmNames;</term>
+<term>--export-secret-subkeys &OptParmNames;</term>
 <listitem><para>
 Same as --export, but does export the secret keys.
 This is normally not very useful and a security risk.
+the second form of the command has the special property to
+render the secret part of the primary key useless; this is
+a GNU extension to OpenPGP and other implementations can
+not be expected to successful import such a key.
 </para></listitem></varlistentry>
 
 
@@ -1418,6 +1423,7 @@ constructed by cutting off the extension (".asc" or ".sig") of
 <term>GNUPGHOME</term>
 <listitem><para>If set directory used instead of "~/.gnupg".</para></listitem>
 </varlistentry>
+<varlistentry>
 <term>http_proxy</term>
 <listitem><para>Only honored when the option --honor-http-proxy is set.</para></listitem>
 </varlistentry>
