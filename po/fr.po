@@ -1,4 +1,4 @@
-# gnupg french translation 
+# gnupg french translation
 # Copyright (C) 1998 Free Software Foundation, Inc.
 # Gaël Quéri <gqueri@mail.dotcom.fr>, 1998.
 #
@@ -298,7 +298,7 @@ msgstr ""
 " -sat [fichier]            faire une signature en texte clair\n"
 " -sb  [fichier]            faire une signature détachée\n"
 " -k   [utilisateur]        montrer les clés\n"
-" -kc  [utilisateur]        montrer les empreintes\n" 
+" -kc  [utilisateur]        montrer les empreintes\n"
 
 #: g10/g10.c:259
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
@@ -523,7 +523,7 @@ msgid ""
 "\n"
 msgstr ""
 "N'a pas pu trouver un chemin de confiance valide jusqu'à la clé. Voyons si\n"
-"nous ne pouvons pas assigner quelques valeurs de confiance.\n" 
+"nous ne pouvons pas assigner quelques valeurs de confiance.\n"
 
 #: g10/pkclist.c:166
 msgid ""
@@ -768,7 +768,7 @@ msgstr ""
 "      <n>  = la clé expire dans n jours\n"
 "      <n>w = la clé expire dans n semaines\n"
 "      <n>m = la clé expire dans n mois\n"
-"      <n>y = la clé expire dans n ans\n" 
+"      <n>y = la clé expire dans n ans\n"
 
 #: g10/keygen.c:500
 msgid "keygen.valid"
