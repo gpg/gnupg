@@ -1,3 +1,7 @@
+2003-04-08  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh: New option --build-uclinux.
+
 2003-03-24  Werner Koch  <wk@gnupg.org>
 
 	* autogen.sh: New option --build-coldfire 
